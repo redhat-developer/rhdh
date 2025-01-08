@@ -592,9 +592,8 @@ check_backstage_running() {
   local release_name=$1
   local namespace=$2
   local url=$3
-
-  local max_attempts=30
-  local wait_seconds=30
+  local max_attempts=$4
+  local wait_seconds=$5
 
   echo "Checking if Backstage is up and running at ${url}"
 
@@ -768,7 +767,9 @@ check_and_test() {
   local release_name=$1
   local namespace=$2
   local url=$3
-  if check_backstage_running "${release_name}" "${namespace}" "${url}"; then
+  local max_attempts=${4:-30}    # Default to 30 if not set
+  local wait_seconds=${5:-30}    # Default to 30 if not set
+  if check_backstage_running "${release_name}" "${namespace}" "${url}" "${max_attempts}" "${wait_seconds}"; then
     echo "Display pods for verification..."
     oc get pods -n "${namespace}"
     run_tests "${release_name}" "${namespace}"
