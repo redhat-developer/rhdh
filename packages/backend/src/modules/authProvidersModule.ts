@@ -17,12 +17,15 @@ import {
   oidcSignInResolvers,
 } from '@backstage/plugin-auth-backend-module-oidc-provider';
 import {
+  authOwnershipResolutionExtensionPoint,
   AuthProviderFactory,
   authProvidersExtensionPoint,
   AuthResolverCatalogUserQuery,
   AuthResolverContext,
   createOAuthProviderFactory,
 } from '@backstage/plugin-auth-node';
+
+import { TransientGroupOwnershipResolver } from '../transientGroupOwnershipResolver';
 
 /**
  * Function is responsible for signing in a user with the catalog user and
@@ -34,7 +37,7 @@ import {
  * @param ctx
  * @returns
  */
-async function signInWithCatalogUserOptional(
+export async function signInWithCatalogUserOptional(
   name: string | AuthResolverCatalogUserQuery,
   ctx: AuthResolverContext,
 ) {
@@ -283,9 +286,17 @@ const authProvidersModule = createBackendModule({
       deps: {
         config: coreServices.rootConfig,
         authProviders: authProvidersExtensionPoint,
+        authOwnershipResolution: authOwnershipResolutionExtensionPoint,
         logger: coreServices.logger,
+        discovery: coreServices.discovery,
       },
-      async init({ config, authProviders, logger }) {
+      async init({
+        config,
+        authProviders,
+        authOwnershipResolution,
+        logger,
+        discovery,
+      }) {
         const providersConfig = config.getConfig('auth.providers');
         const authFactories: ProviderFactories = {};
         providersConfig
@@ -303,6 +314,11 @@ const authProvidersModule = createBackendModule({
 
         logger.info(
           `Enabled Provider Factories : ${JSON.stringify(providerFactories)}`,
+        );
+        const transientGroupOwnershipResolver =
+          new TransientGroupOwnershipResolver({ discovery, config });
+        authOwnershipResolution.setAuthOwnershipResolver(
+          transientGroupOwnershipResolver,
         );
 
         Object.entries(providerFactories).forEach(([providerId, factory]) => {
