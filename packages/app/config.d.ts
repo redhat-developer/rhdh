@@ -134,4 +134,9 @@ export interface Config {
    * @visibility frontend
    */
   dangerouslyAllowSignInWithoutUserInCatalog?: boolean;
+  /**
+   * The option to includes transient parent groups when determining user group membership
+   * @visibility frontend
+   */
+  includeTransientGroupOwnership?: boolean;
 }
