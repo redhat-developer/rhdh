@@ -29,6 +29,7 @@ import DynamicRootContext, {
   ResolvedDynamicRouteMenuItem,
   ScaffolderFieldExtension,
   ScalprumMountPointConfig,
+  TechdocsFieldExtension,
 } from './DynamicRootContext';
 import Loader from './Loader';
 
@@ -79,6 +80,7 @@ export const DynamicRoot = ({
       routeBindings,
       routeBindingTargets,
       scaffolderFieldExtensions,
+      techdocsFieldExtensions,
       themes: pluginThemes,
     } = extractDynamicConfig(dynamicPlugins);
     const requiredModules = [
@@ -365,6 +367,26 @@ export const DynamicRoot = ({
       return acc;
     }, []);
 
+    const techdocsFieldExtensionComponents = techdocsFieldExtensions.reduce<
+      TechdocsFieldExtension[]
+    >((acc, { scope, module, importName }) => {
+      const extensionComponent = allPlugins[scope]?.[module]?.[importName];
+      if (extensionComponent) {
+        acc.push({
+          scope,
+          module,
+          importName,
+          Component: extensionComponent as React.ComponentType<unknown>,
+        });
+      } else {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `Plugin ${scope} is not configured properly: ${module}.${importName} not found, ignoring techdocsFieldExtension: ${importName}`,
+        );
+      }
+      return acc;
+    }, []);
+
     const dynamicThemeProviders = pluginThemes.reduce<AppThemeProvider[]>(
       (acc, { scope, module, importName, icon, ...rest }) => {
         const provider = allPlugins[scope]?.[module]?.[importName];
@@ -422,6 +444,8 @@ export const DynamicRoot = ({
     dynamicRootConfig.mountPoints = mountPointComponents;
     dynamicRootConfig.scaffolderFieldExtensions =
       scaffolderFieldExtensionComponents;
+    dynamicRootConfig.techdocsFieldExtensions =
+      techdocsFieldExtensionComponents;
 
     // make the dynamic UI configuration available to DynamicRootContext consumers
     setComponents({
@@ -432,6 +456,7 @@ export const DynamicRoot = ({
       entityTabOverrides,
       mountPoints: mountPointComponents,
       scaffolderFieldExtensions: scaffolderFieldExtensionComponents,
+      techdocsFieldExtensions: techdocsFieldExtensionComponents,
     });
 
     afterInit().then(({ default: Component }) => {

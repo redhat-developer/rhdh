@@ -93,6 +93,12 @@ type ScaffolderFieldExtension = {
   importName: string;
 };
 
+type TechdocsFieldExtension = {
+  scope: string;
+  module: string;
+  importName: string;
+};
+
 type EntityTab = {
   mountPoint: string;
   path: string;
@@ -134,6 +140,7 @@ type CustomProperties = {
   appIcons?: AppIcon[];
   apiFactories?: ApiFactory[];
   scaffolderFieldExtensions?: ScaffolderFieldExtension[];
+  techdocsFieldExtensions?: TechdocsFieldExtension[];
   themes?: ThemeEntry[];
 };
 
@@ -156,6 +163,7 @@ type DynamicConfig = {
   routeBindings: RouteBinding[];
   routeBindingTargets: BindingTarget[];
   scaffolderFieldExtensions: ScaffolderFieldExtension[];
+  techdocsFieldExtensions: TechdocsFieldExtension[];
   themes: ThemeEntry[];
 };
 
@@ -178,6 +186,7 @@ function extractDynamicConfig(
     routeBindings: [],
     routeBindingTargets: [],
     scaffolderFieldExtensions: [],
+    techdocsFieldExtensions: [],
     themes: [],
   };
   config.pluginModules = Object.entries(frontend).reduce<PluginModule[]>(
@@ -278,6 +287,18 @@ function extractDynamicConfig(
       })),
     );
     return accScaffolderFieldExtensions;
+  }, []);
+  config.techdocsFieldExtensions = Object.entries(frontend).reduce<
+    TechdocsFieldExtension[]
+  >((accTechdocsFieldExtensions, [scope, { techdocsFieldExtensions }]) => {
+    accTechdocsFieldExtensions.push(
+      ...(techdocsFieldExtensions ?? []).map(techdocsFieldExtension => ({
+        module: techdocsFieldExtension.module ?? 'PluginRoot',
+        importName: techdocsFieldExtension.importName ?? 'default',
+        scope,
+      })),
+    );
+    return accTechdocsFieldExtensions;
   }, []);
   config.entityTabs = Object.entries(frontend).reduce<EntityTabEntry[]>(
     (accEntityTabs, [scope, { entityTabs }]) => {
