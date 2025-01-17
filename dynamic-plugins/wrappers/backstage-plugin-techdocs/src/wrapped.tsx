@@ -3,7 +3,11 @@ import {
   TechDocsReaderPage as TechDocsReaderPageBase,
 } from "@backstage/plugin-techdocs";
 import { TechDocsAddons } from "@backstage/plugin-techdocs-react";
-
+import { useScalprum } from "@scalprum/react-core";
+import {
+  ReportIssue,
+  TextSize,
+} from "@backstage/plugin-techdocs-module-addons-contrib";
 import { SearchFilter, useSearch } from "@backstage/plugin-search-react";
 
 import {
@@ -13,24 +17,61 @@ import {
 
 import { useApi } from "@backstage/core-plugin-api";
 
-import { ReportIssue } from "./addons";
+const TechdocsAddonExtensionsWrapper = () => {
+  const { api } = useScalprum();
+  const techdocsExtensions = getTechdocsExensions<React.ComponentType>({
+    api,
+  });
+  const components = techdocsExtensions.map(({ Component, config }, idx) => {
+    const TypedComponent = Component as React.FunctionComponent;
+    return <TypedComponent {...(config?.props ?? {})} key={idx} />;
+  });
+  return (
+    <TechDocsAddons>
+      <TextSize />
+    </TechDocsAddons>
+  );
+};
+
+const TechdocsAddonExtensionsWrapper2 = () => {
+  const { api } = useScalprum();
+  const techdocsExtensions = getTechdocsExensions<React.ComponentType>({
+    api,
+  });
+  const components = techdocsExtensions.map(({ Component, config }, idx) => {
+    const TypedComponent = Component as React.FunctionComponent;
+    return <TypedComponent {...(config?.props ?? {})} key={idx} />;
+  });
+  return <TextSize />;
+};
+
+export const TechDocsReaderPageContent = () => {};
 
 export const TechDocsReaderPage = {
   element: TechDocsReaderPageBase,
+  // staticJSXContent: <TechdocsAddonExtensionsWrapper />,
   staticJSXContent: (
     <TechDocsAddons>
-      <ReportIssue />
+      <TechdocsAddonExtensionsWrapper2 />
     </TechDocsAddons>
   ),
+  // staticJSXContent: (
+  //   <TechDocsAddons>
+  //     <TextSize />
+  //   </TechDocsAddons>
+  // ),
 };
 
 export const EntityTechdocsContent = {
   element: EntityTechdocsContentBase,
-  staticJSXContent: (
-    <TechDocsAddons>
-      <ReportIssue />
-    </TechDocsAddons>
-  ),
+  staticJSXContent: (() => {
+    // const { api } = useScalprum();
+    return (
+      <TechDocsAddons>
+        <TextSize />
+      </TechDocsAddons>
+    );
+  })(),
 };
 
 export const TechdocsSearchFilter = () => {
