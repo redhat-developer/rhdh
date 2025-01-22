@@ -23407,6 +23407,22 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"backstage-plugin-techdocs-textsize@workspace:dynamic-plugins/wrappers/backstage-plugin-techdocs-addon-textsize":
+  version: 0.0.0-use.local
+  resolution: "backstage-plugin-techdocs-textsize@workspace:dynamic-plugins/wrappers/backstage-plugin-techdocs-addon-textsize"
+  dependencies:
+    "@backstage/cli": 0.28.2
+    "@backstage/plugin-techdocs-module-addons-contrib": 1.1.16
+    "@janus-idp/cli": 1.18.5
+    "@material-ui/core": 4.12.4
+    jss: 10.10.0
+    react: 18.3.1
+    typescript: 5.6.3
+  peerDependencies:
+    react: 16.13.1 || ^17.0.0 || ^18.0.0
+  languageName: unknown
+  linkType: soft
+
 "backstage-plugin-techdocs@workspace:dynamic-plugins/wrappers/backstage-plugin-techdocs":
   version: 0.0.0-use.local
   resolution: "backstage-plugin-techdocs@workspace:dynamic-plugins/wrappers/backstage-plugin-techdocs"
