@@ -5,7 +5,7 @@ metadata:
   title: GitHub Showcase repository
   description: We store our deployment manifests and code for the janus showcase in this GitHub repository.
   links:
-    - url: https://github.com/janus-idp/backstage-showcase
+    - url: https://github.com/redhat-developer/rhdh
       title: GitHub Repository
       icon: web
 spec:

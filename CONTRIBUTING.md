@@ -15,7 +15,7 @@ yarn tsc                                                           # Run type ge
 
 ### Run the Showcase App
 
-We currently have quite a bit of moving parts for the showcase application. As such, we have documentation dedicated to the requirements for running the showcase app under [getting-started.md](https://github.com/janus-idp/backstage-showcase/blob/main/docs/index.md).
+We currently have quite a bit of moving parts for the showcase application. As such, we have documentation dedicated to the requirements for running the showcase app under [getting-started.md](https://github.com/redhat-developer/rhdh/blob/main/docs/index.md).
 
 ### Useful Scripts
 
@@ -40,11 +40,11 @@ We welcome code and non-code contributions to our project. Non-code contribution
 
 ### Finding Issues to Work On
 
-Want to submit some changes to the code? The best place to start is to look through our issues for [bugs](https://github.com/janus-idp/backstage-showcase/issues?q=is%3Aopen+is%3Aissue+label%3Akind%2Fbug), [good first issues](https://github.com/janus-idp/backstage-showcase/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22), and [help wanted](https://github.com/janus-idp/backstage-showcase/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22). These are a great starting point for new contributors.
+Want to submit some changes to the code? The best place to start is to look through our issues for [bugs](https://github.com/redhat-developer/rhdh/issues?q=is%3Aopen+is%3Aissue+label%3Akind%2Fbug), [good first issues](https://github.com/redhat-developer/rhdh/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22), and [help wanted](https://github.com/redhat-developer/rhdh/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22). These are a great starting point for new contributors.
 
 ### Bug Reporting
 
-If you found a bug in our showcase app, please submit an [issue](https://github.com/janus-idp/backstage-showcase/issues/new?assignees=&labels=kind%2Fbug%2Cstatus%2Ftriage&template=bug.md) describing the problem that you ran into. Important information to include:
+If you found a bug in our showcase app, please submit an [issue](https://github.com/redhat-developer/rhdh/issues/new?assignees=&labels=kind%2Fbug%2Cstatus%2Ftriage&template=bug.md) describing the problem that you ran into. Important information to include:
 
 - Steps to reproduce the bug
 - The `app-config.yaml` that is being used (**remember to remove all secrets before sharing**)
@@ -62,7 +62,7 @@ yarn versions:bump     # Updates Backstage dependencies
 
 ### Enhancement Requests
 
-If you want an enhancement of a feature or workflow, you can submit an [issue](https://github.com/janus-idp/backstage-showcase/issues/new?assignees=&labels=kind%2Fenhancement%2Cstatus%2Ftriage&template=enhancement.md) describing the enhancement. Include:
+If you want an enhancement of a feature or workflow, you can submit an [issue](https://github.com/redhat-developer/rhdh/issues/new?assignees=&labels=kind%2Fenhancement%2Cstatus%2Ftriage&template=enhancement.md) describing the enhancement. Include:
 
 - What you are wanting to see improved
 - The current behavior
@@ -70,7 +70,7 @@ If you want an enhancement of a feature or workflow, you can submit an [issue](h
 
 ### Feature Requests
 
-If you want to see a new feature within the showcase app, file an [issue](https://github.com/janus-idp/backstage-showcase/issues/new?assignees=&labels=kind%2Ffeature%2Cstatus%2Ftriage&template=feature.md) detailing the new feature. Include:
+If you want to see a new feature within the showcase app, file an [issue](https://github.com/redhat-developer/rhdh/issues/new?assignees=&labels=kind%2Ffeature%2Cstatus%2Ftriage&template=feature.md) detailing the new feature. Include:
 
 - What you are trying to achieve with the new feature
 - What you will need
@@ -179,4 +179,4 @@ You can reach out to us in our [community Slack channel](https://join.slack.com/
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the [Apache-2.0 License](https://github.com/janus-idp/backstage-showcase/blob/main/LICENSE).
+By contributing, you agree that your contributions will be licensed under the [Apache-2.0 License](https://github.com/redhat-developer/rhdh/blob/main/LICENSE).

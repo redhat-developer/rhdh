@@ -1,4 +1,4 @@
-# Copyright 2023 The Janus IDP Authors
+# Copyright Red Hat, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -36,6 +36,15 @@ inputs:
   push:
     description: Whether to push the image
     required: true
+  platform:
+    description: "Target given CPU platform architecture (default: linux/amd64)"
+    required: false
+    default: linux/amd64
+
+outputs:
+  digest:
+    value: ${{ steps.build.outputs.digest }}
+
 
 runs:
   using: composite
@@ -77,6 +86,7 @@ runs:
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
+      id: build
       with:
         context: .
         file: docker/Dockerfile
@@ -84,3 +94,4 @@ runs:
         provenance: false
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
+        platforms: ${{ inputs.platform }}

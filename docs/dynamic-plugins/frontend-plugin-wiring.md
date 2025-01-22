@@ -172,7 +172,7 @@ Up to 3 levels of nested menu items are supported.
       - For `path: /docs`, the `menu_item_name` should be `docs`.
       - For `path: /metrics/users`, the `menu_item_name` should be `metrics.users`.
 
-- `icon` - Optional. Defines the icon for the menu item, which refers to a Backstage system icon. See [Backstage system icons](https://backstage.io/docs/getting-started/app-custom-theme/#icons) for the default list, or extend the icon set using dynamic plugins. RHDH also provides additional icons in its internal library. See [CommonIcons.tsx](https://github.com/janus-idp/backstage-showcase/blob/main/packages/app/src/components/DynamicRoot/CommonIcons.tsx) for reference. If the icon is already defined in the `dynamicRoutes` configuration under `menuItem.icon`, it can be omitted in the `menuItems` configuration.
+- `icon` - Optional. Defines the icon for the menu item, which refers to a Backstage system icon. See [Backstage system icons](https://backstage.io/docs/getting-started/app-custom-theme/#icons) for the default list, or extend the icon set using dynamic plugins. RHDH also provides additional icons in its internal library. See [CommonIcons.tsx](https://github.com/redhat-developer/rhdh/blob/main/packages/app/src/components/DynamicRoot/CommonIcons.tsx) for reference. If the icon is already defined in the `dynamicRoutes` configuration under `menuItem.icon`, it can be omitted in the `menuItems` configuration.
 - `title` - Optional. Specifies the display title of the menu item. This can also be omitted if it has already been defined in the `dynamicRoutes` configuration under `menuItem.text`.
 - `priority` - Optional. Defines the order in which menu items appear. The default priority is `0`, which places the item at the bottom of the list. A higher priority value will position the item higher in the sidebar.
 - `parent` - Optional. Defines the parent menu item to nest the current item under. If specified, the parent menu item must be defined somewhere else in the `menuItems` configuration of any enabled plugin.
@@ -459,7 +459,7 @@ dynamicPlugins:
 - `importName` is an optional import name that reference a `AnyApiFactory<{}>` implementation. Defaults to `default` export.
 - `module` is an optional argument which allows you to specify which set of assets you want to access within the plugin. If not provided, the default module named `PluginRoot` is used. This is the same as the key in `scalprum.exposedModules` key in plugin's `package.json`.
 
-There are a set of [API factories](https://github.com/janus-idp/backstage-showcase/blob/main/packages/app/src/apis.ts) already initialized by the Developer Hub application shell. These API factories can be overridden by an API factory provided by a dynamic plugin by specifying the same API ref ID, for example a dynamic plugin could export the following `AnyApiFactory<{}>` to cater for some specific use case:
+There are a set of [API factories](https://github.com/redhat-developer/rhdh/blob/main/packages/app/src/apis.ts) already initialized by the Developer Hub application shell. These API factories can be overridden by an API factory provided by a dynamic plugin by specifying the same API ref ID, for example a dynamic plugin could export the following `AnyApiFactory<{}>` to cater for some specific use case:
 
 ```typescript
 export const customScmAuthApiFactory = createApiFactory({

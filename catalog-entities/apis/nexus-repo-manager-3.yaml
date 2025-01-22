@@ -15,4 +15,4 @@ spec:
   owner: janus-authors
   lifecycle: production
   definition:
-    $openapi: https://github.com/janus-idp/backstage-showcase/blob/main/catalog-entities/apis/nexus-swagger.json
+    $openapi: https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/apis/nexus-swagger.json

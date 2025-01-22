@@ -14,7 +14,7 @@ HELM_IMAGE_NAME=backstage
 HELM_REPO_NAME=rhdh-chart
 HELM_REPO_URL="https://redhat-developer.github.io/rhdh-chart"
 K8S_CLUSTER_TOKEN_ENCODED=$(printf "%s" $K8S_CLUSTER_TOKEN | base64 | tr -d '\n')
-QUAY_REPO="${QUAY_REPO:-janus-idp/backstage-showcase}"
+QUAY_REPO="${QUAY_REPO:-rhdh-community/rhdh}"
 
 RELEASE_NAME=rhdh
 RELEASE_NAME_RBAC=rhdh-rbac

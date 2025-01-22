@@ -17,9 +17,9 @@ metadata:
   annotations:
     argocd/app-name: 'janus-idp'
     backstage.io/kubernetes-id: 'janus-idp'
-    github.com/project-slug: janus-idp/backstage-showcase
-    quay.io/repository-slug: janus-idp/backstage-showcase
-    backstage.io/techdocs-ref: url:https://github.com/janus-idp/backstage-showcase
+    github.com/project-slug: redhat-developer/rhdh
+    quay.io/repository-slug: rhdh-community/rhdh
+    backstage.io/techdocs-ref: url:https://github.com/redhat-developer/rhdh
     backstage.io/kubernetes-namespace: janus-idp-prod
     sonarqube.org/project-key: janus-idp_backstage-showcase
 spec:

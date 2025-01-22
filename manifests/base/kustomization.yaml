@@ -18,7 +18,7 @@ commonLabels:
   app.kubernetes.io/instance: backstage
 images:
   - name: backstage-showcase
-    newName: quay.io/janus-idp/backstage-showcase
+    newName: quay.io/rhdh-community/rhdh
 patchesJson6902:
   - patch: |-
       - op: remove

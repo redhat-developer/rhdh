@@ -8,7 +8,10 @@ test.describe("Verify TLS configuration with external Postgres DB", () => {
   }) => {
     const uiHelper = new UIhelper(page);
     const common = new Common(page);
-    await common.loginAsKeycloakUser();
+    await common.loginAsKeycloakUser(
+      process.env.GH_USER2_ID,
+      process.env.GH_USER2_PASS,
+    );
     await uiHelper.verifyHeading("Welcome back!");
     await uiHelper.verifyText("Quick Access");
     await page.getByLabel("Catalog").click();

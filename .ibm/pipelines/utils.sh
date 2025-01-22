@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 retrieve_pod_logs() {
   local pod_name=$1; local container=$2; local namespace=$3
@@ -36,6 +36,7 @@ save_all_pod_logs(){
 }
 
 droute_send() {
+  if [[ "${OPENSHIFT_CI}" != "true" ]]; then return 0; fi
   temp_kubeconfig=$(mktemp) # Create temporary KUBECONFIG to open second `oc` session
   ( # Open subshell
     if [ -n "${PULL_NUMBER:-}" ]; then
@@ -46,7 +47,7 @@ droute_send() {
     local release_name=$1
     local project=$2
     local droute_project="droute"
-    METEDATA_OUTPUT="data_router_metadata_output.json"
+    local metadata_output="data_router_metadata_output.json"
 
     oc login --token="${RHDH_PR_OS_CLUSTER_TOKEN}" --server="${RHDH_PR_OS_CLUSTER_URL}"
     oc whoami --show-server
@@ -59,7 +60,7 @@ droute_send() {
       ARTIFACTS_URL="https://gcsweb-ci.apps.ci.l2s4.p1.openshiftapps.com/gcs/test-platform-results/pr-logs/pull/${REPO_OWNER}_${REPO_NAME}/${PULL_NUMBER}/${JOB_NAME}/${BUILD_ID}/artifacts/e2e-tests/${REPO_OWNER}-${REPO_NAME}/artifacts/${project}"
     else
       JOB_URL="${JOB_BASE_URL}/logs/${JOB_NAME}/${BUILD_ID}"
-      ARTIFACTS_URL="https://gcsweb-ci.apps.ci.l2s4.p1.openshiftapps.com/gcs/test-platform-results/logs/${JOB_NAME}/${BUILD_ID}/artifacts/${JOB_NAME##periodic-ci-janus-idp-backstage-showcase-main-}/${REPO_OWNER}-${REPO_NAME}/artifacts/${project}"
+      ARTIFACTS_URL="https://gcsweb-ci.apps.ci.l2s4.p1.openshiftapps.com/gcs/test-platform-results/logs/${JOB_NAME}/${BUILD_ID}/artifacts/${JOB_NAME##periodic-ci-redhat-developer-rhdh-main-}/${REPO_OWNER}-${REPO_NAME}/artifacts/${project}"
     fi
 
     # Remove properties (only used for skipped test and invalidates the file if empty)
@@ -92,9 +93,9 @@ droute_send() {
           {"key": $key4, "value": $value4}
         ] |
       .targets.reportportal.processing.tfa.auto_finalization_threshold = ($auto_finalization_treshold | tonumber)
-      ' data_router/data_router_metadata_template.json > "${ARTIFACT_DIR}/${project}/${METEDATA_OUTPUT}"
+      ' data_router/data_router_metadata_template.json > "${ARTIFACT_DIR}/${project}/${metadata_output}"
 
-    oc rsync --include="${METEDATA_OUTPUT}" --include="${JUNIT_RESULTS}" --exclude="*" -n "${droute_project}" "${ARTIFACT_DIR}/${project}/" "${droute_project}/${droute_pod_name}:${temp_droute}/"
+    oc rsync --progress=true --include="${metadata_output}" --include="${JUNIT_RESULTS}" --exclude="*" -n "${droute_project}" "${ARTIFACT_DIR}/${project}/" "${droute_project}/${droute_pod_name}:${temp_droute}/"
 
     # "Install" Data Router
     oc exec -n "${droute_project}" "${droute_pod_name}" -- /bin/bash -c "
@@ -103,14 +104,37 @@ droute_send() {
       && /tmp/droute-linux-amd64 version"
 
     # Send test results through DataRouter and save the request ID.
-    DATA_ROUTER_REQUEST_ID=$(oc exec -n "${droute_project}" "${droute_pod_name}" -- /bin/bash -c "
-      /tmp/droute-linux-amd64 send --metadata ${temp_droute}/${METEDATA_OUTPUT} \
-      --url '${DATA_ROUTER_URL}' \
-      --username '${DATA_ROUTER_USERNAME}' \
-      --password '${DATA_ROUTER_PASSWORD}' \
-      --results '${temp_droute}/${JUNIT_RESULTS}' \
-      --verbose" | grep "request:" | awk '{print $2}')
+    local max_attempts=5
+    local wait_seconds=1
+    for ((i = 1; i <= max_attempts; i++)); do
+      echo "Attempt ${i} of ${max_attempts} to send test results through Data Router."
+      if output=$(oc exec -n "${droute_project}" "${droute_pod_name}" -- /bin/bash -c "
+        /tmp/droute-linux-amd64 send --metadata ${temp_droute}/${metadata_output} \
+        --url '${DATA_ROUTER_URL}' \
+        --username '${DATA_ROUTER_USERNAME}' \
+        --password '${DATA_ROUTER_PASSWORD}' \
+        --results '${temp_droute}/${JUNIT_RESULTS}' \
+        --verbose" 2>&1); then
+        if DATA_ROUTER_REQUEST_ID=$(echo "$output" | grep "request:" | awk '{print $2}') &&
+          [ -n "$DATA_ROUTER_REQUEST_ID" ]; then
+          echo "Test results successfully sent through Data Router."
+          echo "Request ID: $DATA_ROUTER_REQUEST_ID"
+          break
+        fi
+      fi
 
+      if ((i == max_attempts)); then
+        echo "Failed to send test results after ${max_attempts} attempts."
+        echo "Last Data Router error details:"
+        echo "${output}"
+        echo "Troubleshooting steps:"
+        echo "1. Restart $droute_pod_name in $droute_project project/namespace"
+        echo "2. Check the Data Router documentation: https://spaces.redhat.com/pages/viewpage.action?pageId=115488042"
+        echo "3. Ask for help at Slack: #forum-dno-datarouter"
+      fi
+    done
+
+    # shellcheck disable=SC2317
     if [[ "$JOB_NAME" == *periodic-* ]]; then
       local max_attempts=30
       local wait_seconds=2
@@ -223,7 +247,7 @@ wait_for_deployment() {
             local is_ready=$(oc get pod "$pod_name" -n "$namespace" -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}')
             # Verify pod is both Ready and Running
             if [[ "$is_ready" == "True" ]] && \
-               oc get pod "$pod_name" -n "$namespace" | grep -q "Running"; then
+                oc get pod "$pod_name" -n "$namespace" | grep -q "Running"; then
                 echo "Pod '$pod_name' is running and ready"
                 return 0
             else
@@ -334,7 +358,7 @@ configure_namespace() {
       echo "Error: Failed to create namespace ${project}" >&2
       exit 1
   fi
-   if ! oc config set-context --current --namespace="${project}"; then
+  if ! oc config set-context --current --namespace="${project}"; then
       echo "Error: Failed to set context for namespace ${project}" >&2
       exit 1
   fi
@@ -429,15 +453,15 @@ apply_yaml_files() {
     # Select the configuration file based on the namespace or job
     config_file=$(select_config_map_file)
     # Apply the ConfigMap with the correct file
-    if [[ "${project}" == *showcase-k8s* ]]; then
+    if [[ "${project}" == *showcase-k8s* ]]; then # Specific to non-RBAC deployment on K8S
       create_app_config_map_k8s "$config_file" "$project"
     else
       create_app_config_map "$config_file" "$project"
-      oc create configmap dynamic-homepage-and-sidebar-config \
+    fi
+    oc create configmap dynamic-homepage-and-sidebar-config \
       --from-file="dynamic-homepage-and-sidebar-config.yaml"="$dir/resources/config_map/dynamic-homepage-and-sidebar-config.yaml" \
       --namespace="${project}" \
       --dry-run=client -o yaml | oc apply -f -
-    fi
     oc create configmap rbac-policy \
       --from-file="rbac-policy.csv"="$dir/resources/config_map/rbac-policy.csv" \
       --namespace="$project" \
@@ -449,6 +473,10 @@ apply_yaml_files() {
     oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline.yaml"
     oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline-run.yaml"
 
+    # Create Deployment and Pipeline for Topology test.
+    if [[ "${project}" != *k8s* ]]; then # Specific to OCP deployments (uses Route which is not supported by K8S)
+      oc apply -f "$dir/resources/topology_test/topology-test.yaml"
+    fi
 }
 
 deploy_test_backstage_provider() {
@@ -462,7 +490,7 @@ deploy_test_backstage_provider() {
   else
     echo "BuildConfig for test-backstage-customization-provider already exists in ${project}. Skipping new-app creation."
   fi
-  
+
   echo "Exposing service for test-backstage-customization-provider"
   oc expose svc/test-backstage-customization-provider --namespace="${project}"
 }
@@ -501,7 +529,7 @@ create_app_config_map_k8s() {
     local config_file=$1
     local project=$2
 
-    echo "Creating app-config ConfigMap for AKS/GKE in namespace ${project}"
+    echo "Creating k8s-specific app-config ConfigMap in namespace ${project}"
 
     yq 'del(.backend.cache)' "$config_file" \
     | oc create configmap app-config-rhdh \
@@ -516,6 +544,9 @@ run_tests() {
   local project=$2
   project=${project}
   cd "${DIR}/../../e2e-tests"
+  local e2e_tests_dir
+  e2e_tests_dir=$(pwd)
+
   yarn install
   yarn playwright install chromium
 
@@ -534,20 +565,20 @@ run_tests() {
 
   mkdir -p "${ARTIFACT_DIR}/${project}/test-results"
   mkdir -p "${ARTIFACT_DIR}/${project}/attachments/screenshots"
-  cp -a /tmp/backstage-showcase/e2e-tests/test-results/* "${ARTIFACT_DIR}/${project}/test-results"
-  cp -a /tmp/backstage-showcase/e2e-tests/${JUNIT_RESULTS} "${ARTIFACT_DIR}/${project}/${JUNIT_RESULTS}"
+  cp -a "${e2e_tests_dir}/test-results/"* "${ARTIFACT_DIR}/${project}/test-results"
+  cp -a "${e2e_tests_dir}/${JUNIT_RESULTS}" "${ARTIFACT_DIR}/${project}/${JUNIT_RESULTS}"
 
-  if [ -d "/tmp/backstage-showcase/e2e-tests/screenshots" ]; then
-    cp -a /tmp/backstage-showcase/e2e-tests/screenshots/* "${ARTIFACT_DIR}/${project}/attachments/screenshots/"
+  if [ -d "${e2e_tests_dir}/screenshots" ]; then
+    cp -a "${e2e_tests_dir}/screenshots/"* "${ARTIFACT_DIR}/${project}/attachments/screenshots/"
   fi
 
-  if [ -d "/tmp/backstage-showcase/e2e-tests/auth-providers-logs" ]; then
-    cp -a /tmp/backstage-showcase/e2e-tests/auth-providers-logs/* "${ARTIFACT_DIR}/${project}/"
+  if [ -d "${e2e_tests_dir}/auth-providers-logs" ]; then
+    cp -a "${e2e_tests_dir}/auth-providers-logs/"* "${ARTIFACT_DIR}/${project}/"
   fi
 
   ansi2html <"/tmp/${LOGFILE}" >"/tmp/${LOGFILE}.html"
   cp -a "/tmp/${LOGFILE}.html" "${ARTIFACT_DIR}/${project}"
-  cp -a /tmp/backstage-showcase/e2e-tests/playwright-report/* "${ARTIFACT_DIR}/${project}"
+  cp -a "${e2e_tests_dir}/playwright-report/"* "${ARTIFACT_DIR}/${project}"
 
   droute_send "${release_name}" "${project}"
 
@@ -589,17 +620,6 @@ check_backstage_running() {
   return 1
 }
 
-install_tekton_pipelines() {
-  local dir=$1
-
-  if oc get pods -n "tekton-pipelines" | grep -q "tekton-pipelines"; then
-    echo "Tekton Pipelines are already installed."
-  else
-    echo "Tekton Pipelines is not installed. Installing..."
-    oc apply --filename https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
-  fi
-}
-
 # installs the advanced-cluster-management Operator
 install_acm_operator(){
   oc apply -f "${DIR}/cluster/operators/acm/operator-group.yaml"
@@ -637,11 +657,36 @@ install_pipelines_operator() {
   fi
 }
 
+# Installs the Tekton Pipelines if not already installed (alternative of OpenShift Pipelines for Kubernetes clusters)
+install_tekton_pipelines() {
+  DISPLAY_NAME="tekton-pipelines-webhook"
+  if oc get pods -n "tekton-pipelines" | grep -q "${DISPLAY_NAME}"; then
+    echo "Tekton Pipelines are already installed."
+  else
+    echo "Tekton Pipelines is not installed. Installing..."
+    oc apply --filename https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
+    wait_for_deployment "tekton-pipelines" "${DISPLAY_NAME}"
+    timeout 300 bash -c '
+    while ! oc get svc tekton-pipelines-webhook -n tekton-pipelines &> /dev/null; do
+        echo "Waiting for tekton-pipelines-webhook service to be created..."
+        sleep 5
+    done
+    echo "Service tekton-pipelines-webhook is created."
+    ' || echo "Error: Timed out waiting for tekton-pipelines-webhook service creation."
+  fi
+}
+
 cluster_setup() {
   install_pipelines_operator
   install_acm_operator
   install_crunchy_postgres_operator
   add_helm_repos
+}
+
+cluster_setup_operator() {
+  install_pipelines_operator
+  install_acm_operator
+  install_crunchy_postgres_operator
 }
 
 initiate_deployments() {

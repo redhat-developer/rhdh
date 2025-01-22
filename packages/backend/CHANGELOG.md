@@ -84,7 +84,7 @@
   +   permission: ${PERMISSION_ENABLED}
   ```
 
-- 83003f0: Added Gitlab Discovery via the GitlabDiscoveryEntityProvider. For more information on how to configure the showcase to enable Gitlab Discovery refer to the `getting-started` [documentation](https://github.com/janus-idp/backstage-showcase/blob/main/showcase-docs/getting-started.md#running-locally-with-the-optional-plugins)
+- 83003f0: Added Gitlab Discovery via the GitlabDiscoveryEntityProvider. For more information on how to configure the showcase to enable Gitlab Discovery refer to the `getting-started` [documentation](https://github.com/redhat-developer/rhdh/blob/main/showcase-docs/getting-started.md#running-locally-with-the-optional-plugins)
 
 ### Patch Changes
 

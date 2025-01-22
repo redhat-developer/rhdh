@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: backstage-app
   annotations:
-    app.openshift.io/vcs-uri: "https://github.com/janus-idp/backstage-showcase"
+    app.openshift.io/vcs-uri: "https://github.com/redhat-developer/rhdh"
     app.openshift.io/vcs-ref: main
   labels:
     backstage.io/kubernetes-id: developer-hub

@@ -29,12 +29,12 @@
   },
   "dependencies": {
     "@backstage-community/plugin-lighthouse": "0.4.24",
-    "@mui/icons-material": "5.16.11"
+    "@mui/icons-material": "5.16.14"
   },
   "devDependencies": {
     "@backstage/cli": "0.28.2",
     "@janus-idp/cli": "1.18.5",
-    "typescript": "5.6.3"
+    "typescript": "5.7.3"
   },
   "files": [
     "dist",
@@ -48,7 +48,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/janus-idp/backstage-showcase",
+    "url": "https://github.com/redhat-developer/rhdh",
     "directory": "dynamic-plugins/wrappers/backstage-community-plugin-lighthouse"
   },
   "maintainers": [

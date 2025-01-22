@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 handle_main() {
   echo "Configuring namespace: ${NAME_SPACE}"

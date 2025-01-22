@@ -1,6 +1,6 @@
 site_name: backstage-showcase
-site_description: 'Documentation for Janus Showcase'
-repo_url: https://github.com/janus-idp/backstage-showcase
+site_description: 'Documentation for RHDH'
+repo_url: https://github.com/redhat-developer/rhdh
 edit_uri: edit/main/docs
 
 plugins:

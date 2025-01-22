@@ -57,6 +57,16 @@ export class KubeClient {
     }
   }
 
+  async getNamespaceByName(name: string): Promise<k8s.V1Namespace | null> {
+    try {
+      LOGGER.debug(`Getting namespace ${name}.`);
+      return (await this.coreV1Api.readNamespace(name)).body;
+    } catch (e) {
+      LOGGER.error(`Error getting namespace ${name}: ${e.body?.message}`);
+      throw e;
+    }
+  }
+
   async scaleDeployment(
     deploymentName: string,
     namespace: string,

@@ -1,3 +1,5 @@
+#!/bin/bash
+
 gcloud_auth() {
   local service_account_name=$1
   local service_account_key_location=$2
@@ -18,7 +20,8 @@ gcloud_ssl_cert_create() {
 
   # Capture both stdout and stderr
   set +xe
-  local output=$(gcloud compute ssl-certificates create "${cert_name}" --domains="${domain}" --project="${project}" --global 2>&1)
+  local output
+  output=$(gcloud compute ssl-certificates create "${cert_name}" --domains="${domain}" --project="${project}" --global 2>&1)
   set -e
 
   # Check the return status

@@ -1,3 +1,5 @@
+#!/bin/bash
+
 export OC_URL=https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux.tar.gz
 export OI_URL=https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-install-linux.tar.gz
 

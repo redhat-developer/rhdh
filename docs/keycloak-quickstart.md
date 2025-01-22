@@ -1,6 +1,6 @@
 # Quick Start RHDH
 
-This guide will show you how to quickly start up a quick keycloak instance on Openshift with the [`deploy-keycloak.sh`](https://github.com/janus-idp/backstage-showcase/blob/main/scripts/keycloak-setup/deploy-keycloak.sh) script.
+This guide will show you how to quickly start up a quick keycloak instance on Openshift with the [`deploy-keycloak.sh`](https://github.com/redhat-developer/rhdh/blob/main/scripts/keycloak-setup/deploy-keycloak.sh) script.
 
 ## Usage
 

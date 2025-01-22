@@ -97,6 +97,7 @@ export default defineConfig({
         "**/playwright/e2e/authProviders/**/*.spec.ts",
         "**/playwright/e2e/plugins/bulk-import.spec.ts",
         "**/playwright/e2e/plugins/tekton/tekton.spec.ts",
+        "**/playwright/e2e/plugins/topology/topology.spec.ts", // uses Route (not supported in K8S)
         "**/playwright/e2e/catalog-scaffoldedfromLink.spec.ts",
         "**/playwright/e2e/plugins/ocm.spec.ts",
         "**/playwright/e2e/audit-log/**/*.spec.ts",

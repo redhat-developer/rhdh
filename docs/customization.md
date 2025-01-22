@@ -44,7 +44,7 @@ dynamicPlugins:
 
 See [Menu items](dynamic-plugins/frontend-plugin-wiring.md#menu-items) from dynamic-plugins documentation for more details.
 
-See [DefaultMainMenuItems](https://github.com/janus-idp/backstage-showcase/blob/main/packages/app/src/consts.ts#L1) for a list of main menu items, including their default priorities.
+See [DefaultMainMenuItems](https://github.com/redhat-developer/rhdh/blob/main/packages/app/src/consts.ts#L1) for a list of main menu items, including their default priorities.
 
 ## Changing the favicon and tab title
 
@@ -143,12 +143,12 @@ Example configurations:
 ```
 app:
   support:
-    url: https://github.com/janus-idp/backstage-showcase/issues # Used as contact support link on common ErrorPage
+    url: https://github.com/redhat-developer/rhdh/issues # Used as contact support link on common ErrorPage
     items:                                                      # Used by common SupportButton component
       - title: Issues
         icon: github
         links:
-          - url: https://github.com/janus-idp/backstage-showcase/issues
+          - url: https://github.com/redhat-developer/rhdh/issues
             title: GitHub Issues
       - title: Join the community
         icon: chat

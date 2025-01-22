@@ -65,7 +65,7 @@
 
 - 8356de2: The [Lighthouse plugin](https://github.com/backstage/backstage/tree/master/plugins/lighthouse) has been added with the `LighthouseCard` in the Lighthouse Tab in the Sidebar panel, the `EntityLighthouseContent` in the Entity Page Lighthouse Tab, and the `EntityLastLighthouseAuditCard` in the Entity Page Overview Tab.
 
-  These changes are **required** in `app-config.yaml` if you want to add the Lighthouse plugin. Please read the [README](https://github.com/janus-idp/backstage-showcase/blob/main/README.md) and [Getting Started](https://github.com/janus-idp/backstage-showcase/blob/main/showcase-docs/getting-started.md) for more details.
+  These changes are **required** in `app-config.yaml` if you want to add the Lighthouse plugin. Please read the [README](https://github.com/redhat-developer/rhdh/blob/main/README.md) and [Getting Started](https://github.com/redhat-developer/rhdh/blob/main/showcase-docs/getting-started.md) for more details.
 
   Please note that the Lighthouse plugin is a frontend for the [Lighthouse Audit Service](https://github.com/spotify/lighthouse-audit-service/tree/master) and requires it to be running.
 
@@ -129,7 +129,7 @@
 
 - 526b40d: The [Jira plugin](https://github.com/RoadieHQ/roadie-backstage-plugins/tree/main/plugins/frontend/backstage-plugin-jira) has been added with the `EntityJiraOverviewCard` in the Entity Page issues tab.
 
-  These changes are **required** to `app-config.yaml` if you want to add the Jira plugin. Please read the [README](https://github.com/janus-idp/backstage-showcase/blob/main/README.md) and [Getting Started](https://github.com/janus-idp/backstage-showcase/blob/main/showcase-docs/getting-started.md) for more details.
+  These changes are **required** to `app-config.yaml` if you want to add the Jira plugin. Please read the [README](https://github.com/redhat-developer/rhdh/blob/main/README.md) and [Getting Started](https://github.com/redhat-developer/rhdh/blob/main/showcase-docs/getting-started.md) for more details.
 
   ```diff
    backend:
@@ -166,7 +166,7 @@
 
 - cb6c541: The [Jfrog Artifactory plugin](https://github.com/janus-idp/backstage-plugins/tree/main/plugins/jfrog-artifactory) has been added with the `JfrogArtifactoryPage` in the Entity Page image registry tab.
 
-  These changes are **required** to `app-config.yaml` if you want to add the JFrog Artifactory plugin. Please read the [README](https://github.com/janus-idp/backstage-showcase/blob/main/README.md) and [Getting Started](https://github.com/janus-idp/backstage-showcase/blob/main/showcase-docs/getting-started.md) for more details.
+  These changes are **required** to `app-config.yaml` if you want to add the JFrog Artifactory plugin. Please read the [README](https://github.com/redhat-developer/rhdh/blob/main/README.md) and [Getting Started](https://github.com/redhat-developer/rhdh/blob/main/showcase-docs/getting-started.md) for more details.
 
   ```diff
    proxy:

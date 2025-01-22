@@ -4,7 +4,7 @@ import { Common } from "../../../utils/common";
 import { ImageRegistry } from "../../../utils/quay/quay";
 
 test.describe.skip("Test Quay.io plugin", () => {
-  const quayRepository = "janus-idp/backstage-showcase";
+  const quayRepository = "rhdh-community/rhdh";
   let uiHelper: UIhelper;
 
   test.beforeEach(async ({ page }) => {

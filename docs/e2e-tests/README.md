@@ -1,7 +1,7 @@
 # README for End-to-End Automation Framework
 
 **Stack**: [Playwright](https://playwright.dev/) over TypeScript  
-**Repository Location**: [GitHub Repository](https://github.com/janus-idp/backstage-showcase/tree/main/e2e-tests)
+**Repository Location**: [GitHub Repository](https://github.com/redhat-developer/rhdh/tree/main/e2e-tests)
 
 ## File Structure of the Testing Framework
 

@@ -14,7 +14,7 @@ Plugins are defined in the `plugins` array in the `dynamic-plugin-config.yaml` f
 
 ## Dynamic plugins included in the Showcase container image
 
-The showcase container image is preloaded with a variety of dynamic plugins, the majority of which are initially disabled due to mandatory configuration requirements. The comprehensive list of these plugins is outlined in the [`dynamic-plugins.default.yaml`](https://github.com/janus-idp/backstage-showcase/blob/main/dynamic-plugins.default.yaml) file.
+The showcase container image is preloaded with a variety of dynamic plugins, the majority of which are initially disabled due to mandatory configuration requirements. The comprehensive list of these plugins is outlined in the [`dynamic-plugins.default.yaml`](https://github.com/redhat-developer/rhdh/blob/main/dynamic-plugins.default.yaml) file.
 
 Upon the application startup, for each plugin disabled by default, the `install-dynamic-plugins` init container within the `backstage` Pod's log will exhibit a line similar to the following:
 

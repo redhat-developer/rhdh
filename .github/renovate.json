@@ -21,8 +21,7 @@
   "major": {
     "dependencyDashboardApproval": true
   },
-  "recreateWhen": "never",
-  "packageRules": [
+  "packageRules": [    
     {
       "matchCategories": [
         "python"
@@ -33,19 +32,43 @@
       "description": "require dashboard approval for all python dependencies due to potential conflicts"
     },
     {
+      "description": "disable docker digest updates",
       "matchCategories": [
         "docker"
       ],
       "digest": {
         "enabled": false
       }
-    },
+    },   
     {
+      "description": "Dockerfile non-major updates", 
       "matchDatasources": [
         "docker"
       ],
-      "groupName": "Docker base images"
-    },
+      "matchUpdateTypes": [
+        "patch",
+        "minor"
+      ],      
+      "additionalBranchPrefix": "dockerfile ",        
+      "groupName": "Dockerfile images (non-major)",
+      "automerge": false
+    },  
+    {
+      "description": "Test Dockerfile non-major updates", 
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchUpdateTypes": [
+        "patch",
+        "minor"
+      ],      
+      "matchFileNames": [
+        ".ibm/images/**"
+      ],         
+      "additionalBranchPrefix": "test-dockerfile ",        
+      "groupName": "Test dockerfile images (non-major)",
+      "automerge": false
+    },      
     {
       "matchDepTypes": [
         "devDependencies"
@@ -68,17 +91,29 @@
       "groupName": "DevDependencies "
     },
     {
+      "description": "Patch dependency updates", 
       "matchDepTypes": [
         "dependencies",
         "peerDependencies"
       ],
-      "groupName": "Dependencies (non-major)",
+      "groupName": "Dependencies (patch)",
       "matchUpdateTypes": [
-        "minor",
         "patch"
       ]
     },
     {
+      "description": "Minor dependency updates", 
+      "matchDepTypes": [
+        "dependencies",
+        "peerDependencies"
+      ],
+      "groupName": "Dependencies (minor)",
+      "matchUpdateTypes": [
+        "minor"
+      ]
+    },    
+    {
+      "description": "Major dependency updates", 
       "matchDepTypes": [
         "dependencies",
         "peerDependencies"
@@ -200,6 +235,48 @@
         "@types/{/,}**"
       ]
     },
+    {
+      "extends": [
+        "monorepo:opentelemetry-js"
+      ],
+      "matchUpdateTypes": [
+        "patch",
+        "minor"
+      ],  
+      "groupName": "opentelemetry-js (non-major)",
+      "automerge": false      
+    },
+    { 
+      "extends": [
+        "monorepo:opentelemetry-js"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ], 
+      "groupName": "opentelemetry-js",
+      "automerge": false      
+    },
+    {
+      "extends": [
+        "monorepo:opentelemetry-js-contrib"
+      ],
+      "matchUpdateTypes": [
+        "patch",
+        "minor"
+      ],  
+      "groupName": "opentelemetry-js-contrib (non-major)",
+      "automerge": false      
+    },
+    { 
+      "extends": [
+        "monorepo:opentelemetry-js-contrib"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ], 
+      "groupName": "opentelemetry-js-contrib",
+      "automerge": false      
+    },    
     {
       "matchUpdateTypes": [
         "major"

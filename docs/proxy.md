@@ -248,7 +248,7 @@ metadata:
 spec:
   application:
     # Support for Proxy settings added in PR 1225. Remove this once this PR is merged.
-    # image: quay.io/janus-idp/backstage-showcase:pr-1225
+    # image: quay.io/rhdh-community/rhdh:pr-1225
     appConfig:
       configMaps:
         - name: app-config-rhdh

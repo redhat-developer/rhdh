@@ -1,3 +1,5 @@
+#!/bin/bash
+
 az_login() {
   az login --service-principal -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET --tenant $ARM_TENANT_ID
   az account set --subscription $ARM_SUBSCRIPTION_ID
@@ -6,7 +8,16 @@ az_login() {
 az_aks_start() {
   local name=$1
   local resource_group=$2
-  az aks start --name $name --resource-group $resource_group
+
+  local power_state
+  power_state=$(az aks show --name=$name --resource-group $resource_group --query 'powerState.code' -o tsv)
+
+  if [ "$power_state" == "Running" ]; then
+    echo "AKS cluster is running."
+  else
+    echo "AKS cluster is not running (Current state: $power_state). Starting the cluster."
+    az aks start --name $name --resource-group $resource_group
+  fi
 }
 
 az_aks_stop() {
@@ -19,7 +30,8 @@ az_aks_approuting_enable() {
   local name=$1
   local resource_group=$2
   set +xe
-  local output=$(az aks approuting enable --name $name --resource-group $resource_group 2>&1 | sed 's/^ERROR: //')
+  local output
+  output=$(az aks approuting enable --name $name --resource-group $resource_group 2>&1 | sed 's/^ERROR: //')
   set -e
   exit_status=$?
 

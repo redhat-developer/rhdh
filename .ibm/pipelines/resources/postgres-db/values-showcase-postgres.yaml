@@ -11,7 +11,7 @@ upstream:
     image:
       pullPolicy: Always
       registry: quay.io
-      repository: janus-idp/backstage-showcase
+      repository: rhdh-community/rhdh
       tag: next
     appConfig:
       app:

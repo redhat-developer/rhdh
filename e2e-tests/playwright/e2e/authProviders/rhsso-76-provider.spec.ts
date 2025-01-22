@@ -15,7 +15,7 @@ import { HelmActions } from "../../utils/helm";
 import { GroupEntity } from "@backstage/catalog-model";
 import { APIHelper } from "../../utils/api-helper";
 import { RHSSOHelper } from "../../utils/authenticationProviders/rh-sso-helper";
-import { RhdhAuthHack } from "../../support/api/rhdh-auth-hack";
+import { RhdhAuthUiHack } from "../../support/api/rhdh-auth-hack";
 
 let page: Page;
 
@@ -431,7 +431,7 @@ for (const version of ["RHBK", "RHSSO"]) {
           constants.RHSSO76_DEFAULT_PASSWORD,
         );
 
-        apiToken = await RhdhAuthHack.getInstance().getApiToken(page);
+        apiToken = await RhdhAuthUiHack.getInstance().getApiToken(page);
         expect(apiToken).not.toBeUndefined();
 
         const statusBefore = await api.scheduleEntityRefreshFromAPI(
@@ -483,7 +483,7 @@ for (const version of ["RHBK", "RHSSO"]) {
         await page.goto("/");
         await uiHelper.verifyHeading("Welcome");
 
-        apiToken = await RhdhAuthHack.getInstance().getApiToken(page);
+        apiToken = await RhdhAuthUiHack.getInstance().getApiToken(page);
         expect(apiToken).not.toBeNull();
         const statusAfter = await api.scheduleEntityRefreshFromAPI(
           "example",

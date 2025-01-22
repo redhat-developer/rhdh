@@ -3,8 +3,8 @@ global:
     # -- Array of YAML files listing dynamic plugins to include with those listed in the `plugins` field.
     # Relative paths are resolved from the working directory of the initContainer that will install the plugins (`/opt/app-root/src`).
     includes:
-      # -- List of dynamic plugins included inside the `janus-idp/backstage-showcase` container image, some of which are disabled by default.
-      # This file ONLY works with the `janus-idp/backstage-showcase` container image.
+      # -- List of dynamic plugins included inside the `rhdh-community/rhdh` container image, some of which are disabled by default.
+      # This file ONLY works with the `rhdh-community/rhdh` container image.
       - 'dynamic-plugins.default.yaml'
 
     # -- List of dynamic plugins, possibly overriding the plugins listed in `includes` files.
@@ -101,6 +101,8 @@ global:
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-acr
         disabled: false
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-kubernetes-dynamic
+        disabled: false
       - package: ./dynamic-plugins/dist/roadiehq-scaffolder-backend-module-http-request-dynamic
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic
@@ -127,7 +129,7 @@ upstream:
     image:
       pullPolicy: Always
       registry: quay.io
-      repository: janus-idp/backstage-showcase
+      repository: rhdh-community/rhdh
       tag: next
     extraEnvVars:
       - name: BACKEND_SECRET
@@ -145,6 +147,8 @@ upstream:
         value: 'true'
       - name: NODE_OPTIONS
         value: '--no-node-snapshot'
+      - name: NODE_TLS_REJECT_UNAUTHORIZED
+        value: '0'
     extraAppConfig:
       - configMapRef: app-config-rhdh
         filename: app-config-rhdh.yaml

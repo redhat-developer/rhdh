@@ -55,7 +55,7 @@ data:
         - allow: [Component, System, Group, Resource, Location, Template, API]
       # locations:
       #   - type: url
-      #     target: https://github.com/janus-idp/backstage-showcase/blob/main/catalog-entities/all.yaml
+      #     target: https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/all.yaml
       #   - type: url
       #     target: https://github.com/janus-idp/software-templates/blob/main/showcase-templates.yaml
       providers:

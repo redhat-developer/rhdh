@@ -23,21 +23,12 @@ export class UIhelper {
   }
 
   /**
-   * Fills the search input with the provided text and waits for at least one
-   * search result containing the text to become visible.
+   * Fills the search input with the provided text.
    *
    * @param searchText - The text to be entered into the search input field.
    */
   async searchInputPlaceholder(searchText: string) {
-    // Wait for the search input to be visible
-    const searchInput = this.page.locator('input[placeholder="Search"]');
-    await expect(searchInput).toBeVisible();
-
-    await searchInput.fill(searchText);
-
-    // Wait for at least one search result to become visible
-    const resultLocator = this.page.locator(`text=${searchText}`);
-    await expect(resultLocator.first()).toBeVisible();
+    await this.page.fill('input[placeholder="Search"]', searchText);
   }
 
   async filterInputPlaceholder(searchText: string) {
@@ -46,6 +37,13 @@ export class UIhelper {
 
   async pressTab() {
     await this.page.keyboard.press("Tab");
+  }
+
+  async checkCheckbox(text: string) {
+    const locator = this.page.getByRole("checkbox", {
+      name: text,
+    });
+    await locator.check();
   }
 
   async clickButton(
@@ -218,6 +216,61 @@ export class UIhelper {
     await expect(elementLocator).toBeVisible();
   }
 
+  async verifyTextInSelector(selector: string, expectedText: string) {
+    const elementLocator = this.page
+      .locator(selector)
+      .getByText(expectedText, { exact: true });
+
+    try {
+      await elementLocator.waitFor({ state: "visible", timeout: 10000 });
+      const actualText = (await elementLocator.textContent()) || "No content";
+
+      if (actualText.trim() !== expectedText.trim()) {
+        console.error(
+          `Verification failed for text: Expected "${expectedText}", but got "${actualText}"`,
+        );
+        throw new Error(
+          `Expected text "${expectedText}" not found. Actual content: "${actualText}".`,
+        );
+      }
+      console.log(
+        `Text "${expectedText}" verified successfully in selector: ${selector}`,
+      );
+    } catch (error) {
+      const allTextContent = await this.page
+        .locator(selector)
+        .allTextContents();
+      console.error(
+        `Verification failed for text: Expected "${expectedText}". Selector content: ${allTextContent.join(", ")}`,
+      );
+      throw error;
+    }
+  }
+
+  async verifyPartialTextInSelector(selector: string, partialText: string) {
+    try {
+      const elements = await this.page.locator(selector);
+      const count = await elements.count();
+
+      for (let i = 0; i < count; i++) {
+        const textContent = await elements.nth(i).textContent();
+        if (textContent && textContent.includes(partialText)) {
+          console.log(
+            `Found partial text: ${partialText} in element: ${textContent}`,
+          );
+          return;
+        }
+      }
+
+      throw new Error(
+        `Verification failed: Partial text "${partialText}" not found in any elements matching selector "${selector}".`,
+      );
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  }
+
   async verifyColumnHeading(
     rowTexts: string[] | RegExp[],
     exact: boolean = true,
@@ -252,8 +305,8 @@ export class UIhelper {
     await expect(headingLocator).toBeVisible();
   }
 
-  async waitForH4Title(text: string) {
-    await this.page.waitForSelector(`h4:has-text("${text}")`, {
+  async waitForTitle(text: string, level: number = 1) {
+    await this.page.waitForSelector(`h${level}:has-text("${text}")`, {
       timeout: 10000,
     });
   }
@@ -298,11 +351,24 @@ export class UIhelper {
     });
   }
 
-  async verifyButtonURL(label: string | RegExp, url: string | RegExp) {
-    const buttonUrl = await this.page
-      .getByRole("button", { name: label })
-      .first()
-      .getAttribute("href");
+  async verifyButtonURL(
+    label: string | RegExp,
+    url: string | RegExp,
+    options: { locator?: string } = {
+      locator: "",
+    },
+  ) {
+    const buttonUrl =
+      options.locator == ""
+        ? await this.page
+            .getByRole("button", { name: label })
+            .first()
+            .getAttribute("href")
+        : await this.page
+            .locator(options.locator)
+            .getByRole("button", { name: label })
+            .first()
+            .getAttribute("href");
     expect(buttonUrl).toContain(url);
   }
 
@@ -375,6 +441,17 @@ export class UIhelper {
       .first();
     await link.scrollIntoViewIfNeeded();
     await expect(link).toBeVisible();
+  }
+
+  async clickBtnInCard(cardText: string, btnText: string, exact = true) {
+    const cardLocator = this.page
+      .locator(UI_HELPER_ELEMENTS.MuiCardRoot(cardText))
+      .first();
+    await cardLocator.scrollIntoViewIfNeeded();
+    await cardLocator
+      .getByRole("button", { name: btnText, exact: exact })
+      .first()
+      .click();
   }
 
   async verifyTextinCard(
@@ -538,5 +615,10 @@ export class UIhelper {
 
     await expect(enabledColumn).toHaveText(expectedEnabled);
     await expect(preinstalledColumn).toHaveText(expectedPreinstalled);
+  }
+
+  async verifyTextInTooltip(text: string | RegExp) {
+    const tooltip = await this.page.getByRole("tooltip").getByText(text);
+    expect(tooltip).toBeVisible();
   }
 }

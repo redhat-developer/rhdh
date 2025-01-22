@@ -11,7 +11,6 @@ import {
 
 // Pre-req : plugin-bulk-import & plugin-bulk-import-backend-dynamic
 test.describe.skip("Bulk Import plugin", () => {
-  // Skipping due to RHIDP-5258
   let page: Page;
   let uiHelper: UIhelper;
   let common: Common;
@@ -213,8 +212,7 @@ test.describe.skip("Bulk Import plugin", () => {
       notVisible: true,
     });
   });
-  // Skipping due to RHIDP-5258
-  test.skip("Verify Deleted Bulk Import Repositories Does not Appear in the Catalog", async () => {
+  test("Verify Deleted Bulk Import Repositories Does not Appear in the Catalog", async () => {
     await uiHelper.openSidebar("Catalog");
     await uiHelper.selectMuiBox("Kind", "Component");
     await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
@@ -231,85 +229,79 @@ test.describe.skip("Bulk Import plugin", () => {
   });
 });
 
-// Skipping due to RHIDP-5258
-test.describe.skip(
-  "Bulk Import - Verify existing repo are displayed in bulk import Added repositories",
-  () => {
-    let page: Page;
-    let uiHelper: UIhelper;
-    let common: Common;
-    let bulkimport: BulkImport;
-    let catalogImport: CatalogImport;
-    const existingRepoFromAppConfig = "janus-test-3-bulk-import";
+test.describe
+  .serial("Bulk Import - Verify existing repo are displayed in bulk import Added repositories", () => {
+  let page: Page;
+  let uiHelper: UIhelper;
+  let common: Common;
+  let bulkimport: BulkImport;
+  let catalogImport: CatalogImport;
+  const existingRepoFromAppConfig = "janus-test-3-bulk-import";
 
-    const existingComponentDetails = {
-      name: "janus-test-2-bulk-import-test",
-      repoName: "janus-test-2-bulk-import-test",
-      url: "https://github.com/janus-test/janus-test-2-bulk-import-test/blob/main/catalog-info.yaml",
-    };
-    test.beforeAll(async ({ browser }, testInfo) => {
-      page = (await setupBrowser(browser, testInfo)).page;
+  const existingComponentDetails = {
+    name: "janus-test-2-bulk-import-test",
+    repoName: "janus-test-2-bulk-import-test",
+    url: "https://github.com/janus-test/janus-test-2-bulk-import-test/blob/main/catalog-info.yaml",
+  };
+  test.beforeAll(async ({ browser }, testInfo) => {
+    page = (await setupBrowser(browser, testInfo)).page;
 
-      uiHelper = new UIhelper(page);
-      common = new Common(page);
-      bulkimport = new BulkImport(page);
-      catalogImport = new CatalogImport(page);
-      await common.loginAsKeycloakUser(
-        process.env.GH_USER2_ID,
-        process.env.GH_USER2_PASS,
-      );
-    });
+    uiHelper = new UIhelper(page);
+    common = new Common(page);
+    bulkimport = new BulkImport(page);
+    catalogImport = new CatalogImport(page);
+    await common.loginAsKeycloakUser(
+      process.env.GH_USER2_ID,
+      process.env.GH_USER2_PASS,
+    );
+  });
 
-    test("Verify existing repo from app-config is displayed in bulk import Added repositories", async () => {
-      await uiHelper.openSidebar("Bulk import");
-      await common.waitForLoad();
-      await bulkimport.filterAddedRepo(existingRepoFromAppConfig);
-      await uiHelper.verifyRowInTableByUniqueText(existingRepoFromAppConfig, [
-        "Added",
-      ]);
-    });
+  test("Verify existing repo from app-config is displayed in bulk import Added repositories", async () => {
+    await uiHelper.openSidebar("Bulk import");
+    await common.waitForLoad();
+    await bulkimport.filterAddedRepo(existingRepoFromAppConfig);
+    await uiHelper.verifyRowInTableByUniqueText(existingRepoFromAppConfig, [
+      "Added",
+    ]);
+  });
 
-    test('Verify repo from "register existing component"  are displayed in bulk import Added repositories', async () => {
-      // Register Existing Component
-      await uiHelper.openSidebar("Catalog");
-      await uiHelper.clickButton("Create");
-      await uiHelper.clickButton("Register Existing Component");
-      await catalogImport.registerExistingComponent(
-        existingComponentDetails.url,
-        true,
-      );
+  test('Verify repo from "register existing component"  are displayed in bulk import Added repositories', async () => {
+    // Register Existing Component
+    await uiHelper.openSidebar("Catalog");
+    await uiHelper.clickButton("Create");
+    await uiHelper.clickButton("Register Existing Component");
+    await catalogImport.registerExistingComponent(
+      existingComponentDetails.url,
+      true,
+    );
 
-      // Verify in bulk import's Added Repositories
-      await uiHelper.openSidebar("Bulk import");
-      await common.waitForLoad();
-      await bulkimport.filterAddedRepo(existingComponentDetails.repoName);
-      await uiHelper.verifyRowInTableByUniqueText(
-        existingComponentDetails.repoName,
-        ["Added"],
-      );
-    });
-  },
-);
+    // Verify in bulk import's Added Repositories
+    await uiHelper.openSidebar("Bulk import");
+    await common.waitForLoad();
+    await bulkimport.filterAddedRepo(existingComponentDetails.repoName);
+    await uiHelper.verifyRowInTableByUniqueText(
+      existingComponentDetails.repoName,
+      ["Added"],
+    );
+  });
+});
 
-// Skipping due to RHIDP-5258
-test.describe.skip(
-  "Bulk Import - Ensure users without bulk import permissions cannot access the bulk import plugin",
-  () => {
-    let page: Page;
-    let uiHelper: UIhelper;
-    let common: Common;
-    test.beforeAll(async ({ browser }, testInfo) => {
-      page = (await setupBrowser(browser, testInfo)).page;
+test.describe
+  .serial("Bulk Import - Ensure users without bulk import permissions cannot access the bulk import plugin", () => {
+  let page: Page;
+  let uiHelper: UIhelper;
+  let common: Common;
+  test.beforeAll(async ({ browser }, testInfo) => {
+    page = (await setupBrowser(browser, testInfo)).page;
 
-      uiHelper = new UIhelper(page);
-      common = new Common(page);
-      await common.loginAsGuest();
-    });
+    uiHelper = new UIhelper(page);
+    common = new Common(page);
+    await common.loginAsKeycloakUser();
+  });
 
-    test("Bulk Import - Verify users without permission cannot access", async () => {
-      await uiHelper.openSidebar("Bulk import");
-      await uiHelper.verifyText("Permission required");
-      expect(await uiHelper.isBtnVisible("Add")).toBeFalsy();
-    });
-  },
-);
+  test("Bulk Import - Verify users without permission cannot access", async () => {
+    await uiHelper.openSidebar("Bulk import");
+    await uiHelper.verifyText("Permission required");
+    expect(await uiHelper.isBtnVisible("Add")).toBeFalsy();
+  });
+});

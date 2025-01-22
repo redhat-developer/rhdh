@@ -3,8 +3,8 @@ global:
     # -- Array of YAML files listing dynamic plugins to include with those listed in the `plugins` field.
     # Relative paths are resolved from the working directory of the initContainer that will install the plugins (`/opt/app-root/src`).
     includes:
-      # -- List of dynamic plugins included inside the `janus-idp/backstage-showcase` container image, some of which are disabled by default.
-      # This file ONLY works with the `janus-idp/backstage-showcase` container image.
+      # -- List of dynamic plugins included inside the `rhdh-community/rhdh` container image, some of which are disabled by default.
+      # This file ONLY works with the `rhdh-community/rhdh` container image.
       - 'dynamic-plugins.default.yaml'
 
     # -- List of dynamic plugins, possibly overriding the plugins listed in `includes` files.
@@ -117,9 +117,9 @@ upstream:
   backstage:
     image:
       pullPolicy: Always
-      # using test image from https://quay.io/repository/janus-idp/backstage-showcase
+      # using test image from https://quay.io/repository/rhdh-community/rhdh
       registry: quay.io
-      repository: janus-idp/backstage-showcase
+      repository: rhdh-community/rhdh
       tag: next
     appConfig:
       app:
@@ -205,7 +205,7 @@ upstream:
       - name: install-dynamic-plugins
         # -- Image used by the initContainer to install dynamic plugins into the `dynamic-plugins-root` volume mount.
         # It could be replaced by a custom image based on this one.
-        # @default -- `quay.io/janus-idp/backstage-showcase:latest`
+        # @default -- `quay.io/rhdh-community/rhdh:latest`
         image: '{{ include "backstage.image" . }}'
         command:
           - sh

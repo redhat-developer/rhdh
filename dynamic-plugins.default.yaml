@@ -662,6 +662,9 @@ plugins:
   - package: ./dynamic-plugins/dist/roadiehq-scaffolder-backend-module-http-request-dynamic
     disabled: true
 
+  - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-kubernetes-dynamic
+    disabled: true
+
   - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-quay-dynamic
     disabled: false
 

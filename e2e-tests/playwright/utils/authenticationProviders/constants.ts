@@ -403,7 +403,7 @@ export const CHART_VERSION = process.env.CHART_VERSION
   : "2.15.2";
 export const QUAY_REPO = process.env.QUAY_REPO
   ? process.env.QUAY_REPO
-  : "janus-idp/backstage-showcase";
+  : "redhat-developer/rhdh";
 export const TAG_NAME = process.env.TAG_NAME;
 export const LOGS_FOLDER = process.env.LOGS_FOLDER
   ? process.env.LOGS_FOLDER

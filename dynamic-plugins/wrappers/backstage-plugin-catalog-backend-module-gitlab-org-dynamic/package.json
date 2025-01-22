@@ -32,16 +32,17 @@
     "test": "backstage-cli package test --passWithNoTests --coverage",
     "clean": "backstage-cli package clean",
     "clean-dynamic-sources": "yarn clean && rm -Rf node_modules",
-    "export-dynamic": "janus-cli package export-dynamic-plugin --embed-package @backstage/plugin-catalog-backend-module-gitlab-org",
+    "export-dynamic": "janus-cli package export-dynamic-plugin --embed-package @backstage/plugin-catalog-backend-module-gitlab-org --embed-package @backstage/plugin-catalog-backend-module-gitlab",
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
+    "@backstage/plugin-catalog-backend-module-gitlab": "0.4.4",
     "@backstage/plugin-catalog-backend-module-gitlab-org": "0.2.2"
   },
   "devDependencies": {
     "@backstage/cli": "0.28.2",
     "@janus-idp/cli": "1.18.5",
-    "typescript": "5.6.3"
+    "typescript": "5.7.3"
   },
   "files": [
     "dist",
@@ -50,7 +51,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/janus-idp/backstage-showcase",
+    "url": "https://github.com/redhat-developer/rhdh",
     "directory": "dynamic-plugins/wrappers/backstage-plugin-catalog-backend-module-gitlab-org-dynamic"
   },
   "maintainers": [

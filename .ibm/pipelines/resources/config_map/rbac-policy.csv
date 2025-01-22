@@ -8,7 +8,7 @@ p, role:xyz/team_a, catalog.entity.create, create, allow
 p, role:xyz/team_a, catalog.location.create, create, allow
 p, role:xyz/team_a, catalog.location.read, read, allow
 
-g, user:default/rhdh-qe-user, role:default/qe_rbac_admin
+g, user:default/rhdh-qe, role:default/qe_rbac_admin
 p, role:default/qe_rbac_admin, kubernetes.proxy, use, allow
 p, role:default/qe_rbac_admin, catalog.entity.create, create, allow
 p, role:default/qe_rbac_admin, catalog.location.create, create, allow
@@ -17,4 +17,4 @@ p, role:default/qe_rbac_admin, catalog.location.read, read, allow
 p, role:default/bulk_import, bulk.import, use, allow
 p, role:default/bulk_import, catalog.location.create, create, allow
 p, role:default/bulk_import, catalog.entity.create, create, allow
-g, group:default/rhdh-qe-2-team, role:default/bulk_import
+g, user:default/rhdh-qe-2, role:default/bulk_import

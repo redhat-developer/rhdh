@@ -1,5 +1,5 @@
-import { expect, Page, test } from "@playwright/test";
-import { Common, setupBrowser } from "../../utils/common";
+import { expect, test as base } from "@playwright/test";
+import { Common } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
 import { Clusters } from "../../support/pages/clusters";
 
@@ -15,23 +15,38 @@ const clusterDetails = {
   memorySize: /Memory size\d.*(Gi|Mi)/,
   ocVersion: /^\d+\.\d+\.\d+(Upgrade available)?$/,
 };
-let page: Page;
-test.describe.serial("Test OCM plugin", () => {
-  let uiHelper: UIhelper;
-  let clusters: Clusters;
-  let common: Common;
 
-  test.beforeAll(async ({ browser }, testInfo) => {
-    page = (await setupBrowser(browser, testInfo)).page;
-
-    common = new Common(page);
-    uiHelper = new UIhelper(page);
-    clusters = new Clusters(page);
-
+const test = base.extend<{
+  common: Common;
+  uiHelper: UIhelper;
+  clusters: Clusters;
+}>({
+  common: async ({ page }, use) => {
+    const common = new Common(page);
     await common.loginAsGuest();
-  });
-  test("Navigate to Clusters and Verify OCM Clusters", async () => {
+    await use(common);
+  },
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  uiHelper: async ({ page, common }, use) => {
+    const uiHelper = new UIhelper(page);
     await uiHelper.openSidebar("Clusters");
+    await use(uiHelper);
+  },
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  clusters: async ({ page, uiHelper }, use) => {
+    const clusters = new Clusters(page);
+    await use(clusters);
+  },
+});
+
+test.describe("Test OCM plugin", () => {
+  test("Navigate to Clusters and Verify OCM Clusters", async ({
+    page,
+    uiHelper,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    common,
+    clusters,
+  }) => {
     const expectedPath = "/ocm";
 
     // Wait for the expected path in the URL
@@ -63,7 +78,11 @@ test.describe.serial("Test OCM plugin", () => {
     );
   });
 
-  test("Navigate to Catalog > resources and verify cluster", async () => {
+  test("Navigate to Catalog > resources and verify cluster", async ({
+    uiHelper,
+    common,
+    clusters,
+  }) => {
     await uiHelper.openSidebar("Catalog");
     await common.waitForLoad();
     await uiHelper.selectMuiBox("Kind", "Resource");

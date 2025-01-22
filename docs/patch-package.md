@@ -48,7 +48,7 @@ This guide will show you how to patch a package in Backstage using the `patch-pa
 
 1. Repeat for the rest of your plugins/packages
 
-## Using the [`patch-package`](https://github.com/janus-idp/backstage-showcase/blob/main/scripts/patch-package.sh) script
+## Using the [`patch-package`](https://github.com/redhat-developer/rhdh/blob/main/scripts/patch-package.sh) script
 
 1. Create a new branch in your `backstage` instance for your target backstage version
 1. Navigate to the `backstage` project and make your changes to the package/plugin you want to patch as if you were going to submit a PR

@@ -3,17 +3,17 @@ import { UIhelper } from "../../utils/ui-helper";
 import playwrightConfig from "../../../playwright.config";
 
 //https://redhatquickcourses.github.io/devhub-admin/devhub-admin/1/chapter2/rbac.html#_lab_rbac_rest_api
-export class RhdhAuthHack {
-  private static instance: RhdhAuthHack;
+export class RhdhAuthUiHack {
+  private static instance: RhdhAuthUiHack;
   private token?: string;
 
   private constructor() {}
 
-  public static getInstance(): RhdhAuthHack {
-    if (!RhdhAuthHack.instance) {
-      RhdhAuthHack.instance = new RhdhAuthHack();
+  public static getInstance(): RhdhAuthUiHack {
+    if (!RhdhAuthUiHack.instance) {
+      RhdhAuthUiHack.instance = new RhdhAuthUiHack();
     }
-    return RhdhAuthHack.instance;
+    return RhdhAuthUiHack.instance;
   }
 
   async getApiToken(page: Page): Promise<string> {

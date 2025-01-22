@@ -1,4 +1,4 @@
-# Copyright 2024 The Janus IDP Authors
+# Copyright Red Hat, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -46,8 +46,8 @@ jobs:
         id: generate-token
         uses: actions/create-github-app-token@5d869da34e18e7287c1daad50e0b8ea0f506ce69 # v1.11.0
         with:
-          app-id: ${{ vars.JANUS_IDP_GITHUB_APP_ID }}
-          private-key: ${{ secrets.JANUS_IDP_GITHUB_APP_PRIVATE_KEY }}
+          app-id: ${{ secrets.RHDH_GITHUB_APP_ID }}
+          private-key: ${{ secrets.RHDH_GITHUB_APP_PRIVATE_KEY }}
 
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4

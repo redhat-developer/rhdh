@@ -15,9 +15,9 @@ import {
 import { BrowserContext } from "@playwright/test";
 import { APIHelper } from "../../utils/api-helper";
 import { GroupEntity } from "@backstage/catalog-model";
-import { RhdhAuthHack } from "../../support/api/rhdh-auth-hack";
 import * as ghHelper from "../../utils/authenticationProviders/github-helper";
 import { HelmActions } from "../../utils/helm";
+import { RhdhAuthUiHack } from "../../support/api/rhdh-auth-hack";
 
 let page: Page;
 
@@ -322,7 +322,7 @@ test.describe("Standard authentication providers: Github Provider", () => {
     api.UseStaticToken(constants.STATIC_API_TOKEN);
 
     await expect(async () => {
-      apiToken = await RhdhAuthHack.getInstance().getApiToken(page);
+      apiToken = await RhdhAuthUiHack.getInstance().getApiToken(page);
       expect(apiToken).not.toBeUndefined();
       const statusBefore = await api.scheduleEntityRefreshFromAPI(
         "example",
@@ -368,7 +368,7 @@ test.describe("Standard authentication providers: Github Provider", () => {
       await page.goto("/");
       await uiHelper.verifyHeading("Welcome");
 
-      apiToken = await RhdhAuthHack.getInstance().getApiToken(page);
+      apiToken = await RhdhAuthUiHack.getInstance().getApiToken(page);
       const statusAfter = await api.scheduleEntityRefreshFromAPI(
         "example",
         "location",

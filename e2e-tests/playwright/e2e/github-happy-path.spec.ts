@@ -19,7 +19,7 @@ test.describe.skip("GitHub Happy path", () => {
   let backstageShowcase: BackstageShowcase;
 
   const component =
-    "https://github.com/janus-idp/backstage-showcase/blob/main/catalog-entities/all.yaml";
+    "https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/all.yaml";
 
   test.beforeAll(async ({ browser }, testInfo) => {
     page = (await setupBrowser(browser, testInfo)).page;
@@ -80,7 +80,7 @@ test.describe.skip("GitHub Happy path", () => {
     await uiHelper.verifyHeading("Templates");
 
     for (const template of TEMPLATES) {
-      await uiHelper.waitForH4Title(template);
+      await uiHelper.waitForTitle(template, 4);
       await uiHelper.verifyHeading(template);
     }
   });

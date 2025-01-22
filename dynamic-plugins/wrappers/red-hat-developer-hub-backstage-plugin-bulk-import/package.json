@@ -29,13 +29,13 @@
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
-    "@mui/material": "5.16.11",
+    "@mui/material": "5.16.14",
     "@red-hat-developer-hub/backstage-plugin-bulk-import": "1.10.3"
   },
   "devDependencies": {
     "@backstage/cli": "0.28.2",
     "@janus-idp/cli": "1.18.5",
-    "typescript": "5.6.3"
+    "typescript": "5.7.3"
   },
   "files": [
     "dist",
@@ -49,7 +49,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/janus-idp/backstage-showcase",
+    "url": "https://github.com/redhat-developer/rhdh",
     "directory": "dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-bulk-import"
   },
   "maintainers": [

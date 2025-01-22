@@ -1,15 +1,19 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e
 export PS4='[$(date "+%Y-%m-%d %H:%M:%S")] ' # logs timestamp for every cmd.
 
+# Define log file names and directories.
 LOGFILE="test-log"
 export DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OVERALL_RESULT=0
 
+# Define a cleanup function to be executed upon script exit.
+# shellcheck disable=SC2317
 cleanup() {
   echo "Cleaning up before exiting"
-  if [[ "$JOB_NAME" == *aks* ]]; then
+  if [[ "$JOB_NAME" == *aks* && "${OPENSHIFT_CI}" == "true" ]]; then
+    # If the job is for Azure Kubernetes Service (AKS), stop the AKS cluster.
     az_aks_stop "${AKS_NIGHTLY_CLUSTER_NAME}" "${AKS_NIGHTLY_CLUSTER_RESOURCEGROUP}"
   fi
   rm -rf ~/tmpbin
@@ -44,7 +48,7 @@ main() {
       ;;
     *gke*)
       echo "Calling handle_gke"
-       handle_gke
+      handle_gke
       ;;
     *operator*)
       echo "Calling Operator"

@@ -1,4 +1,4 @@
-import { Page, test } from "@playwright/test";
+import { expect, Page, test } from "@playwright/test";
 import { UIhelper } from "../utils/ui-helper";
 import { Common, setupBrowser } from "../utils/common";
 import { CatalogImport } from "../support/pages/catalog-import";
@@ -7,7 +7,6 @@ import { GITHUB_API_ENDPOINTS } from "../utils/api-endpoints";
 
 let page: Page;
 
-// TODO: replace skip with serial
 test.describe.serial("Link Scaffolded Templates to Catalog Items", () => {
   let uiHelper: UIhelper;
   let common: Common;
@@ -19,6 +18,7 @@ test.describe.serial("Link Scaffolded Templates to Catalog Items", () => {
   const reactAppDetails = {
     owner: "janus-qe/maintainers",
     componentName: `test-scaffoldedfromlink-${Date.now()}`,
+    componentPartialName: `test-scaffoldedfromlink-`,
     description: "react app using template",
     repo: `test-scaffolded-${Date.now()}`,
     repoOwner: Buffer.from(
@@ -34,7 +34,7 @@ test.describe.serial("Link Scaffolded Templates to Catalog Items", () => {
     uiHelper = new UIhelper(page);
     catalogImport = new CatalogImport(page);
 
-    await common.loginAsKeycloakUser();
+    await common.loginAsGuest();
   });
 
   test("Register an Template", async () => {
@@ -82,13 +82,35 @@ test.describe.serial("Link Scaffolded Templates to Catalog Items", () => {
     await uiHelper.clickLink("Open in catalog");
   });
 
-  //FIXME
-  test.skip("Verify Scaffolded link in components Dependencies and scaffoldedFrom relation in entity Raw Yaml ", async () => {
-    await common.clickOnGHloginPopup();
+  test("Verify Scaffolded link in components Dependencies and scaffoldedFrom relation in entity Raw Yaml ", async () => {
+    await uiHelper.openSidebar("Catalog");
+    await uiHelper.clickByDataTestId("user-picker-all");
+    await uiHelper.searchInputPlaceholder("scaffoldedfromlink-\n");
+    await clickOnScaffoldedFromLink();
+
     await uiHelper.clickTab("Dependencies");
-    await uiHelper.verifyText(
-      `ownerOf / ownedByscaffoldedFromcomponent:${reactAppDetails.componentName}group:${reactAppDetails.owner}Create React App Template`,
+
+    // Define selectors for labels and nodes
+    const labelSelector = 'g[data-testid="label"]'; // Selector for labels
+    const nodeSelector = 'g[data-testid="node"]'; // Selector for nodes
+
+    // Verify text inside the 'label' selector
+    await uiHelper.verifyTextInSelector(labelSelector, "ownerOf");
+    await uiHelper.verifyTextInSelector(labelSelector, "/ ownedBy");
+    await uiHelper.verifyTextInSelector(labelSelector, "scaffoldedFrom");
+
+    // Verify text inside the 'node' selector
+    await uiHelper.verifyPartialTextInSelector(
+      nodeSelector,
+      reactAppDetails.componentPartialName,
     );
+
+    await uiHelper.verifyTextInSelector(
+      nodeSelector,
+      "Create React App Template",
+    );
+
+    // Verify the scaffoldedFrom relation in the YAML view of the entity
     await catalogImport.inspectEntityAndVerifyYaml(
       `- type: scaffoldedFrom\n    targetRef: template:default/create-react-app-template-with-timestamp-entityref\n    target:\n      kind: template\n      namespace: default\n      name: create-react-app-template-with-timestamp-entityref`,
     );
@@ -122,4 +144,13 @@ test.describe.serial("Link Scaffolded Templates to Catalog Items", () => {
     );
     await page.close();
   });
+
+  async function clickOnScaffoldedFromLink() {
+    const selector =
+      'a[href*="/catalog/default/component/test-scaffoldedfromlink-"]';
+    await page.locator(selector).first().waitFor({ state: "visible" });
+    const link = await page.locator(selector).first();
+    await expect(link).toBeVisible();
+    await link.click();
+  }
 });

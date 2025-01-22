@@ -1,6 +1,6 @@
 # Quick Start RHDH
 
-This guide will show you how to quickly start up a customized instance of RHDH using Helm with the[`quick-start-rhdh.sh`](https://github.com/janus-idp/backstage-showcase/blob/main/scripts/rhdh-openshift-setup/quick-start-rhdh.sh) script.
+This guide will show you how to quickly start up a customized instance of RHDH using Helm with the[`quick-start-rhdh.sh`](https://github.com/redhat-developer/rhdh/blob/main/scripts/rhdh-openshift-setup/quick-start-rhdh.sh) script.
 
 ## Usage
 

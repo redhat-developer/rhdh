@@ -8,7 +8,7 @@ global:
   dynamic:
     plugins:
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic
-        disabled: true
+        disabled: false
 upstream:
   backstage:
     extraEnvVarsSecrets:

@@ -76,7 +76,7 @@ catalog:
     - allow: [API, Component, Group, Location, Resource, System, Template]
   locations:
     - type: url
-      target: https://github.com/janus-idp/backstage-showcase/blob/main/catalog-entities/all.yaml
+      target: https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/all.yaml
     - type: url
       target: https://github.com/redhat-developer/red-hat-developer-hub-software-templates/blob/main/templates.yaml
     - type: url

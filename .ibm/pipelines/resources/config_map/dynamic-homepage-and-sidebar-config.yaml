@@ -118,7 +118,7 @@ dynamicPlugins:
                 
                 * [Website](https://developers.redhat.com/rhdh/overview)
                 * [Documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub/)
-                * [GitHub Showcase](https://github.com/janus-idp/backstage-showcase)
+                * [GitHub Showcase](https://github.com/redhat-developer/rhdh)
                 * [GitHub Plugins](https://github.com/janus-idp/backstage-plugins)
         - mountPoint: home.page/cards
           importName: Markdown
@@ -137,7 +137,7 @@ dynamicPlugins:
                 
                 * [Website](https://developers.redhat.com/rhdh/overview)
                 * [Documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub/)
-                * [GitHub Showcase](https://github.com/janus-idp/backstage-showcase)
+                * [GitHub Showcase](https://github.com/redhat-developer/rhdh)
                 * [GitHub Plugins](https://github.com/janus-idp/backstage-plugins)
         - mountPoint: home.page/cards
           importName: FeaturedDocsCard
