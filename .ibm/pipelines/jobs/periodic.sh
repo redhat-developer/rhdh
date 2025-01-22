@@ -15,16 +15,28 @@ handle_nightly() {
   initiate_deployments
   add_sanity_plugins_check
   deploy_test_backstage_provider "${NAME_SPACE}"
+
+  run_standard_deployment_tests
+  run_rds_deployment_tests
+  # run_runtime_config_change_tests
+
+}
+
+run_standard_deployment_tests() {
   local url="https://${RELEASE_NAME}-backstage-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${url}"
   local rbac_url="https://${RELEASE_NAME_RBAC}-backstage-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
   check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${rbac_url}"
+}
 
+run_rds_deployment_tests() {
   # Only test TLS config with RDS and Change configuration at runtime in nightly jobs
   initiate_rds_deployment "${RELEASE_NAME}" "${NAME_SPACE_RDS}"
   local rds_url="https://${RELEASE_NAME}-backstage-${NAME_SPACE_RDS}.${K8S_CLUSTER_ROUTER_BASE}"
   check_and_test "${RELEASE_NAME}" "${NAME_SPACE_RDS}" "${rds_url}"
+}
 
+run_runtime_config_change_tests() {
   # Deploy `showcase-runtime` to run tests that require configuration changes at runtime
   configure_namespace "${NAME_SPACE_RUNTIME}"
   uninstall_helmchart "${NAME_SPACE_RUNTIME}" "${RELEASE_NAME}"

@@ -10830,7 +10830,7 @@ __metadata:
     "@mui/material": 5.16.14
     "@testing-library/jest-dom": 6.6.3
     "@testing-library/react": 14.3.1
-    "@testing-library/user-event": 14.5.2
+    "@testing-library/user-event": 14.6.0
     glob: 11.0.1
     msw: 1.3.5
     prettier: 3.4.2
@@ -19388,12 +19388,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@testing-library/user-event@npm:14.5.2":
-  version: 14.5.2
-  resolution: "@testing-library/user-event@npm:14.5.2"
+"@testing-library/user-event@npm:14.6.0":
+  version: 14.6.0
+  resolution: "@testing-library/user-event@npm:14.6.0"
   peerDependencies:
     "@testing-library/dom": ">=7.21.4"
-  checksum: d76937dffcf0082fbf3bb89eb2b81a31bf5448048dd61c33928c5f10e33a58e035321d39145cefd469bb5a499c68a5b4086b22f1a44e3e7c7e817dc5f6782867
+  checksum: 39b078708a8e19e3efa544ac4ee6cfde4b4ec80a386794c13f52e64abbe14aa8ba4790108d8a8d962c3abed365e51a1de705d36c10496700af39c7c450a791d6
   languageName: node
   linkType: hard
 
@@ -20418,12 +20418,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:20.17.12":
-  version: 20.17.12
-  resolution: "@types/node@npm:20.17.12"
+"@types/node@npm:20.17.14":
+  version: 20.17.14
+  resolution: "@types/node@npm:20.17.14"
   dependencies:
     undici-types: ~6.19.2
-  checksum: 0c0dbeb4e1480a23071ec38e97bb3d776e0ae9828174bf45f9edcf277caa955945cb10d31d84f7a73c66aaf92ae2e022be6331bd00a4bed1f2ad9639a411d17e
+  checksum: a5a775f57271e5a73c9e1afc4f6ea0d24cb9b4856e3d7d1788ff9ba0cc3e3a90e7883383f183f193a36eed0c758809df626a9ad653458a06d4fc82644d89b6e0
   languageName: node
   linkType: hard
 
@@ -21925,8 +21925,8 @@ __metadata:
     "@testing-library/jest-dom": 6.6.3
     "@testing-library/react": 14.3.1
     "@testing-library/react-hooks": 8.0.1
-    "@testing-library/user-event": 14.5.2
-    "@types/node": 20.17.12
+    "@testing-library/user-event": 14.6.0
+    "@types/node": 20.17.14
     "@types/react": 18.3.18
     "@types/react-dom": 18.3.5
     lodash: 4.17.21
@@ -22728,7 +22728,7 @@ __metadata:
     app: "*"
     global-agent: 3.0.0
     prettier: 3.4.2
-    undici: 6.19.8
+    undici: 6.21.1
     winston: 3.14.2
   languageName: unknown
   linkType: soft
@@ -27041,7 +27041,7 @@ __metadata:
     "@kubernetes/client-node": 0.21.0
     "@microsoft/microsoft-graph-client": 3.0.7
     "@playwright/test": 1.49.1
-    "@types/node": 20.17.12
+    "@types/node": 20.17.14
     "@typescript-eslint/eslint-plugin": 6.21.0
     "@typescript-eslint/parser": 6.21.0
     eslint: 8.57.1
@@ -33759,9 +33759,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lint-staged@npm:15.3.0":
-  version: 15.3.0
-  resolution: "lint-staged@npm:15.3.0"
+"lint-staged@npm:15.4.1":
+  version: 15.4.1
+  resolution: "lint-staged@npm:15.4.1"
   dependencies:
     chalk: ~5.4.1
     commander: ~12.1.0
@@ -33775,7 +33775,7 @@ __metadata:
     yaml: ~2.6.1
   bin:
     lint-staged: bin/lint-staged.js
-  checksum: 9917a13c946cd812e4986a724602dfacf09baa4ddbbb4f08f7e59760181a7bf38459fcef54a396cc80b2af1655edae3e45410b23cfe1f70cf431662b2bf45624
+  checksum: 6c17747e9379a08ad3d15aab869a362c750d357182c76ca88121f01143910a2a2d5b1673536f3ba9db2331bf2102ffee115532736dd9c3fa2696344732a47d3d
   languageName: node
   linkType: hard
 
@@ -41360,7 +41360,7 @@ __metadata:
     "@spotify/prettier-config": 15.0.0
     glob: 11.0.1
     husky: 8.0.3
-    lint-staged: 15.3.0
+    lint-staged: 15.4.1
     node-gyp: 10.3.1
     sherif: 1.1.1
     turbo: 2.3.3
@@ -44493,10 +44493,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici@npm:6.19.8":
-  version: 6.19.8
-  resolution: "undici@npm:6.19.8"
-  checksum: 2f812769992a187d9c55809b6943059c0bb1340687a0891f769de02101342dded0b9c8874cd5af4a49daaeba8284101d74a1fbda4de04c604ba7a5f6190b9ea2
+"undici@npm:6.21.1":
+  version: 6.21.1
+  resolution: "undici@npm:6.21.1"
+  checksum: 2efc52f77224754a2efa7cb6459829f3c93c8321d17e76f574a904b353783d95073b6116f5b15637c4845d98c9dc5a019b809cb9d63b3529267e7727c49f6996
   languageName: node
   linkType: hard
 

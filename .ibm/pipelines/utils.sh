@@ -453,7 +453,7 @@ apply_yaml_files() {
     # Select the configuration file based on the namespace or job
     config_file=$(select_config_map_file)
     # Apply the ConfigMap with the correct file
-    if [[ "${project}" == *showcase-k8s* ]]; then
+    if [[ "${project}" == *showcase-k8s* ]]; then # Specific to non-RBAC deployment on K8S
       create_app_config_map_k8s "$config_file" "$project"
     else
       create_app_config_map "$config_file" "$project"
@@ -473,6 +473,10 @@ apply_yaml_files() {
     oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline.yaml"
     oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline-run.yaml"
 
+    # Create Deployment and Pipeline for Topology test.
+    if [[ "${project}" != *k8s* ]]; then # Specific to OCP deployments (uses Route which is not supported by K8S)
+      oc apply -f "$dir/resources/topology_test/topology-test.yaml"
+    fi
 }
 
 deploy_test_backstage_provider() {
@@ -542,7 +546,7 @@ run_tests() {
   cd "${DIR}/../../e2e-tests"
   local e2e_tests_dir
   e2e_tests_dir=$(pwd)
-  
+
   yarn install
   yarn playwright install chromium
 

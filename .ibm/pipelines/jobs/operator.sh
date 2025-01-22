@@ -11,19 +11,19 @@ install_rhdh_operator() {
   curl -L https://raw.githubusercontent.com/redhat-developer/rhdh-operator/refs/heads/main/.rhdh/scripts/install-rhdh-catalog-source.sh > /tmp/install-rhdh-catalog-source.sh
   chmod +x /tmp/install-rhdh-catalog-source.sh
   bash -x /tmp/install-rhdh-catalog-source.sh --next --install-operator rhdh
-  
-  # Wait for Operator to finish unpacking
-  sleep 30
 }
 
 deploy_rhdh_operator() {
   local dir=$1
   local namespace=$2
 
-  if ! oc get crd/backstages.rhdh.redhat.com -n "${namespace}" >/dev/null 2>&1; then
-    echo "Backstage CRD is still not ready, waiting 30 secs..."
-    sleep 30
-  fi
+  timeout 300 bash -c '
+    while ! oc get crd/backstages.rhdh.redhat.com -n "${namespace}" >/dev/null 2>&1; do
+        echo "Waiting for Backstage CRD to be created..."
+        sleep 20
+    done
+    echo "Backstage CRD is created."
+    ' || echo "Error: Timed out waiting for Backstage CRD creation."
   
   if [[ "${namespace}" == "showcase-op-rbac-nightly" ]]; then
     oc apply -f "${dir}/resources/rhdh-operator/rhdh-start-rbac.yaml" -n "${namespace}"

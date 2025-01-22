@@ -78,9 +78,9 @@ jobs:
         if: env.proceed_with_build == 'true'
         run: |
           IMAGE_TAG="pr-${{ github.event.number }}"
-          IMAGE_NAME="${{ env.REGISTRY }}/janus-idp/backstage-showcase:${IMAGE_TAG}"
+          IMAGE_NAME="${{ env.REGISTRY }}/rhdh-community/rhdh:${IMAGE_TAG}"
 
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "https://quay.io/v2/janus-idp/backstage-showcase/manifests/${IMAGE_TAG}")
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "https://quay.io/rhdh-community/rhdh/manifests/${IMAGE_TAG}")
 
           if [ "$HTTP_CODE" -eq 200 ]; then
             echo "Image $IMAGE_NAME already exists. Skipping the build."

@@ -1,4 +1,4 @@
-import { Page, expect, test } from "@playwright/test";
+import { Locator, Page, expect, test } from "@playwright/test";
 import { Response, Roles } from "../../../support/pages/rbac";
 import { UI_HELPER_ELEMENTS } from "../../../support/pageObjects/global-obj";
 import {
@@ -266,8 +266,22 @@ test.describe.serial("Test RBAC", () => {
       await page.locator(HOME_PAGE_COMPONENTS.searchBar).fill("Guest User");
       await page.click('button[aria-label="Remove"]');
       await uiHelper.verifyHeading("Users and groups (1 user, 1 group)");
-      await uiHelper.clickButton("Next");
-      await uiHelper.clickButton("Next");
+      await uiHelper.clickByDataTestId("nextButton-1");
+      await page.waitForSelector(".permission-policies-form", {
+        state: "visible",
+      });
+      let nextButton2: Locator;
+      let matchNextButton2: Locator[];
+      let attempts = 0;
+      do {
+        await page.waitForTimeout(500);
+        nextButton2 = page.locator('[data-testid="nextButton-2"]');
+        matchNextButton2 = await nextButton2.all();
+        attempts++;
+      } while (matchNextButton2.length > 1 && attempts < 5);
+      await nextButton2.click({
+        force: true,
+      });
       await uiHelper.clickButton("Save");
       await uiHelper.verifyText(
         "Role role:default/test-role1 updated successfully",
