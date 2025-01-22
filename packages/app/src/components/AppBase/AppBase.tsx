@@ -88,7 +88,7 @@ const AppBase = () => {
               path="/catalog/:namespace/:kind/:name"
               element={<CatalogEntityPage />}
             >
-              {entityPage(entityTabOverrides, techdocsFieldExtensions)}
+              {entityPage(entityTabOverrides)}
             </Route>
             <Route
               path="/create"

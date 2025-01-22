@@ -6,7 +6,7 @@ import { TechDocsAddons } from '@backstage/plugin-techdocs-react';
 import Box from '@mui/material/Box';
 
 import getMountPointData from '../../../utils/dynamicUI/getMountPointData';
-import { TechdocsFieldExtension } from '../../DynamicRoot/DynamicRootContext';
+import getTechDocsExtensionsData from '../../../utils/dynamicUI/getTechDocsExtentionsData';
 import Grid from '../Grid';
 
 export type DynamicEntityTabProps = {
@@ -15,7 +15,6 @@ export type DynamicEntityTabProps = {
   mountPoint: string;
   if?: (entity: Entity) => boolean;
   children?: React.ReactNode;
-  techdocsFieldExtensions: TechdocsFieldExtension[];
 };
 
 /**
@@ -33,7 +32,6 @@ export const dynamicEntityTab = ({
   mountPoint,
   children,
   if: condition,
-  techdocsFieldExtensions,
 }: DynamicEntityTabProps) => (
   <EntityLayout.Route
     key={`${path}`}
@@ -83,7 +81,9 @@ export const dynamicEntityTab = ({
                     <Component {...config.props}>
                       {importName === 'EntityTechdocsContent' ? (
                         <TechDocsAddons>
-                          {techdocsFieldExtensions.map(
+                          {getTechDocsExtensionsData<
+                            React.ComponentType<React.PropsWithChildren>
+                          >().map(
                             ({
                               scope,
                               module,
