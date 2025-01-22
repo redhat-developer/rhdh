@@ -11,8 +11,6 @@ import {
 
 import { useApi } from "@backstage/core-plugin-api";
 
-export const TechDocsReaderPageContent = () => {};
-
 export const TechDocsReaderPage = {
   element: TechDocsReaderPageBase,
 };
