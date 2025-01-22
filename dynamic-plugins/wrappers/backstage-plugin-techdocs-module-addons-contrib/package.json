@@ -1,5 +1,5 @@
 {
-  "name": "backstage-plugin-techdocs-textsize",
+  "name": "backstage-plugin-techdocs-module-addons-contrib",
   "version": "1.1.16",
   "main": "src/index.ts",
   "types": "src/index.ts",
@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@backstage/plugin-techdocs-module-addons-contrib": "1.1.16",
+    "@backstage/plugin-techdocs-react": "1.2.9",
     "@material-ui/core": "4.12.4",
     "jss": "10.10.0"
   },
@@ -44,7 +45,7 @@
     "dist-scalprum"
   ],
   "scalprum": {
-    "name": "backstage.plugin-techdocs-addon-textsize",
+    "name": "backstage.plugin-techdocs-module-addons-contrib",
     "exposedModules": {
       "PluginRoot": "./src/index.ts"
     }
@@ -52,7 +53,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/janus-idp/backstage-showcase",
-    "directory": "dynamic-plugins/wrappers/backstage-plugin-techdocs-addon-textsize"
+    "directory": "dynamic-plugins/wrappers/backstage-plugin-techdocs-module-addons-contrib"
   },
   "maintainers": [
     "@janus-idp/maintainers-showcase"
