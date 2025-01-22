@@ -6,6 +6,7 @@ function getMountPointData<T = any, T2 = any>(
   mountPoint: string,
 ): {
   config: ScalprumMountPointConfig;
+  importName: string;
   Component: T;
   staticJSXContent: T2;
 }[] {

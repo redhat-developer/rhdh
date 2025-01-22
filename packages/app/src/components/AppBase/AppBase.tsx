@@ -18,6 +18,7 @@ import { RequirePermission } from '@backstage/plugin-permission-react';
 import { ScaffolderPage } from '@backstage/plugin-scaffolder';
 import { ScaffolderFieldExtensions } from '@backstage/plugin-scaffolder-react';
 import { SearchPage as BackstageSearchPage } from '@backstage/plugin-search';
+import { TechDocsAddons } from '@backstage/plugin-techdocs-react';
 import { UserSettingsPage } from '@backstage/plugin-user-settings';
 
 import { entityPage } from '../catalog/EntityPage';
@@ -35,6 +36,7 @@ const AppBase = () => {
     dynamicRoutes,
     entityTabOverrides,
     scaffolderFieldExtensions,
+    techdocsFieldExtensions,
   } = useContext(DynamicRootContext);
 
   const myCustomColumnsFunc: CatalogTableColumnsFunc = entityListContext => [
@@ -86,7 +88,7 @@ const AppBase = () => {
               path="/catalog/:namespace/:kind/:name"
               element={<CatalogEntityPage />}
             >
-              {entityPage(entityTabOverrides)}
+              {entityPage(entityTabOverrides, techdocsFieldExtensions)}
             </Route>
             <Route
               path="/create"
@@ -123,15 +125,40 @@ const AppBase = () => {
             <Route path="/catalog-graph" element={<CatalogGraphPage />} />
             <Route path="/learning-paths" element={<LearningPaths />} />
             {dynamicRoutes.map(
-              ({ Component, staticJSXContent, path, config: { props } }) => (
-                <Route
-                  key={path}
-                  path={path}
-                  element={<Component {...props} />}
-                >
-                  {staticJSXContent}
-                </Route>
-              ),
+              ({
+                importName,
+                Component,
+                staticJSXContent,
+                path,
+                config: { props },
+              }) => {
+                return (
+                  <Route
+                    key={path}
+                    path={path}
+                    element={<Component {...props} />}
+                  >
+                    {importName === 'TechDocsReaderPage' ? (
+                      <TechDocsAddons>
+                        {techdocsFieldExtensions.map(
+                          ({
+                            scope,
+                            module,
+                            importName: techdocsImportName,
+                            Component: TechdocsComponent,
+                          }) => (
+                            <TechdocsComponent
+                              key={`${scope}-${module}-${techdocsImportName}`}
+                            />
+                          ),
+                        )}
+                      </TechDocsAddons>
+                    ) : (
+                      staticJSXContent
+                    )}
+                  </Route>
+                );
+              },
             )}
           </FlatRoutes>
         </Root>

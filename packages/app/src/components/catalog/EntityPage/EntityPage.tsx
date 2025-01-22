@@ -1,3 +1,4 @@
+import { TechdocsFieldExtension } from '../../DynamicRoot/DynamicRootContext';
 import { ContextMenuAwareEntityLayout } from './ContextMenuAwareEntityLayout';
 import { defaultTabs, tabChildren, tabRules } from './defaultTabs';
 import { dynamicEntityTab, DynamicEntityTabProps } from './DynamicEntityTab';
@@ -13,6 +14,7 @@ export const entityPage = (
     string,
     Omit<DynamicEntityTabProps, 'path' | 'if' | 'children'>
   > = {},
+  techdocsFieldExtensions: TechdocsFieldExtension[],
 ) => {
   return (
     <ContextMenuAwareEntityLayout>
@@ -23,6 +25,7 @@ export const entityPage = (
             path,
             ...(tabRules[path] ? tabRules[path] : {}),
             ...(tabChildren[path] ? tabChildren[path] : {}),
+            techdocsFieldExtensions,
           } as DynamicEntityTabProps);
         },
       )}

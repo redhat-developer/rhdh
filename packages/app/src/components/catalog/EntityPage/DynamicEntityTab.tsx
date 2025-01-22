@@ -1,10 +1,12 @@
 import { Entity } from '@backstage/catalog-model';
 import { ApiHolder } from '@backstage/core-plugin-api';
 import { EntityLayout, EntitySwitch } from '@backstage/plugin-catalog';
+import { TechDocsAddons } from '@backstage/plugin-techdocs-react';
 
 import Box from '@mui/material/Box';
 
 import getMountPointData from '../../../utils/dynamicUI/getMountPointData';
+import { TechdocsFieldExtension } from '../../DynamicRoot/DynamicRootContext';
 import Grid from '../Grid';
 
 export type DynamicEntityTabProps = {
@@ -13,6 +15,7 @@ export type DynamicEntityTabProps = {
   mountPoint: string;
   if?: (entity: Entity) => boolean;
   children?: React.ReactNode;
+  techdocsFieldExtensions: TechdocsFieldExtension[];
 };
 
 /**
@@ -30,6 +33,7 @@ export const dynamicEntityTab = ({
   mountPoint,
   children,
   if: condition,
+  techdocsFieldExtensions,
 }: DynamicEntityTabProps) => (
   <EntityLayout.Route
     key={`${path}`}
@@ -64,7 +68,7 @@ export const dynamicEntityTab = ({
           React.ComponentType<React.PropsWithChildren>,
           React.ReactNode
         >(`${mountPoint}/cards`).map(
-          ({ Component, config, staticJSXContent }, index) => {
+          ({ Component, config, staticJSXContent, importName }, index) => {
             return (
               <EntitySwitch key={`${Component.displayName}-${index}`}>
                 <EntitySwitch.Case
@@ -76,7 +80,26 @@ export const dynamicEntityTab = ({
                   }
                 >
                   <Box sx={config.layout}>
-                    <Component {...config.props}>{staticJSXContent}</Component>
+                    <Component {...config.props}>
+                      {importName === 'EntityTechdocsContent' ? (
+                        <TechDocsAddons>
+                          {techdocsFieldExtensions.map(
+                            ({
+                              scope,
+                              module,
+                              importName: techdocsImportName,
+                              Component: TechdocsComponent,
+                            }) => (
+                              <TechdocsComponent
+                                key={`${scope}-${module}-${techdocsImportName}`}
+                              />
+                            ),
+                          )}
+                        </TechDocsAddons>
+                      ) : (
+                        staticJSXContent
+                      )}
+                    </Component>
                   </Box>
                 </EntitySwitch.Case>
               </EntitySwitch>

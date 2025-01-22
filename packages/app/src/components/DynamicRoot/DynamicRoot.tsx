@@ -217,6 +217,7 @@ export const DynamicRoot = ({
         mountPoint: string;
         Component: React.ComponentType<{}>;
         config?: ScalprumMountPointConfig;
+        importName?: string;
         staticJSXContent?: React.ReactNode;
       }[]
     >((acc, { module, importName, mountPoint, scope, config }) => {
@@ -258,6 +259,7 @@ export const DynamicRoot = ({
             ...config,
             if: ifCondition,
           },
+          importName,
         });
       } else {
         // eslint-disable-next-line no-console
@@ -275,6 +277,7 @@ export const DynamicRoot = ({
         }
         acc[entry.mountPoint].push({
           Component: entry.Component,
+          importName: entry.importName,
           staticJSXContent: entry.staticJSXContent,
           config: entry.config,
         });
