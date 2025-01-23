@@ -29,6 +29,8 @@ handle_gke() {
   local rbac_rhdh_base_url="https://${K8S_CLUSTER_ROUTER_BASE}"
   check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC_K8S}" "${rbac_rhdh_base_url}"
   delete_namespace "${NAME_SPACE_RBAC_K8S}"
+}
 
+cleanup_gke() {
   delete_tekton_pipelines
 }

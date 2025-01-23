@@ -37,3 +37,7 @@ handle_aks() {
   check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC_K8S}" "${rbac_rhdh_base_url}"
   delete_namespace "${NAME_SPACE_RBAC_K8S}"
 }
+
+cleanup_aks() {
+  az_aks_stop "${AKS_NIGHTLY_CLUSTER_NAME}" "${AKS_NIGHTLY_CLUSTER_RESOURCEGROUP}"
+}
