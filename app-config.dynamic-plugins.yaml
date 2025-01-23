@@ -460,6 +460,9 @@ dynamicPlugins:
             props:
               name: Documentation
               icon: docs
+    backstage.plugin-techdocs-module-addons-contrib:
+      techdocsAddons:
+        - importName: ReportIssue
     backstage-community.plugin-tech-radar:
       apiFactories:
         - importName: TechRadarApi
