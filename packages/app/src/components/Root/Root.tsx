@@ -1,6 +1,7 @@
 import React, { PropsWithChildren, useContext, useState } from 'react';
 
 import {
+  ErrorBoundary,
   Sidebar,
   SidebarDivider,
   SidebarGroup,
@@ -30,6 +31,7 @@ import { policyEntityReadPermission } from '@janus-idp/backstage-plugin-rbac-com
 
 import DynamicRootContext, {
   ResolvedMenuItem,
+  ScalprumMountPoint,
 } from '../DynamicRoot/DynamicRootContext';
 import { MenuIcon } from './MenuIcon';
 import { SidebarLogo } from './SidebarLogo';
@@ -101,9 +103,24 @@ const getMenuItem = (menuItem: ResolvedMenuItem, isNestedMenuItem = false) => {
   );
 };
 
+const GlobalFABProvider = ({ context }: { context: ScalprumMountPoint[] }) => {
+  return context.map(({ Component }, index) => {
+    return (
+      <ErrorBoundary
+        // eslint-disable-next-line react/no-array-index-key
+        key={index}
+      >
+        <Component />
+      </ErrorBoundary>
+    );
+  });
+};
+
 export const Root = ({ children }: PropsWithChildren<{}>) => {
-  const { dynamicRoutes, menuItems } = useContext(DynamicRootContext);
+  const { dynamicRoutes, menuItems, mountPoints } =
+    useContext(DynamicRootContext);
   const [openItems, setOpenItems] = useState<{ [key: string]: boolean }>({});
+  const fabContext = mountPoints['application/context'] ?? [];
 
   const { loading: loadingPermission, allowed: canDisplayRBACMenuItem } =
     usePermission({
@@ -249,6 +266,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
   };
   return (
     <SidebarPage>
+      <GlobalFABProvider context={fabContext} />
       <Sidebar>
         <SidebarLogo />
         <SidebarGroup label="Search" icon={<SearchIcon />} to="/search">

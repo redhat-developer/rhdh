@@ -220,7 +220,7 @@ export const DynamicRoot = ({
     >((acc, { module, importName, mountPoint, scope, config }) => {
       const Component = allPlugins[scope]?.[module]?.[importName];
       // Only add mount points that have a component
-      if (Component) {
+      if (Component || mountPoint === 'global.floatingactionbutton/component') { // Fix this
         const ifCondition = configIfToCallable(
           Object.fromEntries(
             Object.entries(config?.if || {}).map(([k, v]) => [

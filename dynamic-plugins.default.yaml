@@ -523,6 +523,23 @@ plugins:
                   icon: bulkImportIcon
                   text: Bulk import
 
+  # Group: Global floating action button
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-floating-action-button
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-global-floating-action-button:
+            mountPoints:
+              - mountPoint: application/context
+                importName: DynamicGlobalFloatingActionButton
+              - mountPoint: global.floatingactionbutton/component
+                config:
+                  icon: github
+                  label: 'Git'
+                  toolTip: 'Github'
+                  to: https://github.com/debsmita1
+
   # Homepage
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-dynamic-home-page
     disabled: false

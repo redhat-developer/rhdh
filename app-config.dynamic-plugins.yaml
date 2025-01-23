@@ -242,6 +242,14 @@ dynamicPlugins:
               anyOf:
               - isQuayAvailable
     red-hat-developer-hub.backstage-plugin-bulk-import:
+      mountPoints:
+        - mountPoint: global.floatingactionbutton/component
+          config:
+            slot: 'page-end'
+            icon: bulkImportIcon
+            label: 'Bulk import'
+            toolTip: 'Register multiple repositories in bulk'
+            to: /bulk-import/repositories
       appIcons:
         - name: bulkImportIcon
           importName: BulkImportIcon
@@ -251,6 +259,18 @@ dynamicPlugins:
           menuItem:
             icon: bulkImportIcon
             text: Bulk import
+    red-hat-developer-hub.backstage-plugin-global-floating-action-button:
+      mountPoints:
+        - mountPoint: application/provider
+          importName: DynamicGlobalFloatingActionButton
+        - mountPoint: application/listener # Test and implement this
+          importName: DynamicGlobalFloatingActionButtonRouteListener
+        - mountPoint: global.floatingactionbutton/component
+          config:
+            icon: github
+            label: 'Git'
+            toolTip: 'Github'
+            to: https://github.com/debsmita1
     red-hat-developer-hub.backstage-plugin-dynamic-home-page:
       dynamicRoutes:
         - path: /
