@@ -666,7 +666,7 @@ install_tekton_pipelines() {
     echo "Tekton Pipelines are already installed."
   else
     echo "Tekton Pipelines is not installed. Installing..."
-    oc apply --filename https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
+    kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
     wait_for_deployment "tekton-pipelines" "${DISPLAY_NAME}"
     timeout 300 bash -c '
     while ! oc get svc tekton-pipelines-webhook -n tekton-pipelines &> /dev/null; do
