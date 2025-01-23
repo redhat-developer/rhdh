@@ -676,6 +676,27 @@ install_tekton_pipelines() {
   fi
 }
 
+delete_tekton_pipelines() {
+    echo "Checking for Tekton Pipelines installation..."
+    # Check if tekton-pipelines namespace exists
+    if kubectl get namespace tekton-pipelines &> /dev/null; then
+        echo "Found Tekton Pipelines installation. Attempting to delete..."
+        # Delete the resources and ignore errors
+        kubectl delete -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml --ignore-not-found=true 2>/dev/null || true
+        # Wait for namespace deletion (with timeout)
+        echo "Waiting for Tekton Pipelines namespace to be deleted..."
+        timeout 30 bash -c '
+        while kubectl get namespace tekton-pipelines &> /dev/null; do
+            echo "Waiting for tekton-pipelines namespace deletion..."
+            sleep 5
+        done
+        echo "Tekton Pipelines deleted successfully."
+        ' || echo "Warning: Timed out waiting for namespace deletion, continuing..."
+    else
+        echo "Tekton Pipelines is not installed. Nothing to delete."
+    fi
+}
+
 cluster_setup() {
   install_pipelines_operator
   install_acm_operator
