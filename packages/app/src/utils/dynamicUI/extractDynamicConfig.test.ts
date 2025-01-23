@@ -157,6 +157,7 @@ describe('extractDynamicConfig', () => {
       routeBindingTargets: [],
       apiFactories: [],
       scaffolderFieldExtensions: [],
+      techdocsFieldExtensions: [],
       themes: [],
     });
   });
@@ -495,6 +496,59 @@ describe('extractDynamicConfig', () => {
         ],
       },
     ],
+    [
+      'a techdocs field extension',
+      {
+        techdocsFieldExtensions: [{ importName: 'foo', module: 'FooRoot' }],
+      },
+      {
+        techdocsFieldExtensions: [
+          {
+            importName: 'foo',
+            module: 'FooRoot',
+            scope: 'janus-idp.plugin-foo',
+          },
+        ],
+      },
+    ],
+    [
+      'a techdocs field extension; default module',
+      {
+        techdocsFieldExtensions: [{ importName: 'foo' }],
+      },
+      {
+        techdocsFieldExtensions: [
+          {
+            importName: 'foo',
+            module: 'PluginRoot',
+            scope: 'janus-idp.plugin-foo',
+          },
+        ],
+      },
+    ],
+    [
+      'multiple techdocs field extensions',
+      {
+        techdocsFieldExtensions: [
+          { importName: 'foo', module: 'FooRoot' },
+          { importName: 'bar', module: 'BarRoot' },
+        ],
+      },
+      {
+        techdocsFieldExtensions: [
+          {
+            importName: 'foo',
+            module: 'FooRoot',
+            scope: 'janus-idp.plugin-foo',
+          },
+          {
+            importName: 'bar',
+            module: 'BarRoot',
+            scope: 'janus-idp.plugin-foo',
+          },
+        ],
+      },
+    ],
   ])('parses %s', (_, source: any, output) => {
     const config = extractDynamicConfig({
       frontend: { 'janus-idp.plugin-foo': source },
@@ -515,6 +569,7 @@ describe('extractDynamicConfig', () => {
       appIcons: [],
       apiFactories: [],
       scaffolderFieldExtensions: [],
+      techdocsFieldExtensions: [],
       themes: [],
       ...output,
     });
