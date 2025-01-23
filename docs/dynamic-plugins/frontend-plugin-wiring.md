@@ -545,6 +545,39 @@ A plugin can specify multiple field extensions, in which case each field extensi
 - `importName` is an optional import name that should reference the value returned the scaffolder field extension API
 - `module` is an optional argument which allows you to specify which set of assets you want to access within the plugin. If not provided, the default module named `PluginRoot` is used. This is the same as the key in `scalprum.exposedModules` key in plugin's `package.json`.
 
+## Provide custom TechDocs addons
+
+The Backstage TechDocs component supports specifying [custom addons](https://backstage.io/docs/features/techdocs/addons/) to extend TechDocs functionality, like rendering a component or accessing and manipulating TechDocs's DOM.
+
+Here is an example of creating an addon:
+
+```typescript
+export const ExampleAddon = techdocsPlugin.provide(
+  createTechDocsAddonExtension({
+    name: "ExampleAddon",
+    location: TechDocsAddonLocations.Content,
+    component: ExampleTestAddon,
+  }),
+);
+```
+
+These components can be contributed by plugins by exposing the TechDocs addon component via the `techdocsAddons` configuration:
+
+```yaml
+dynamicPlugins:
+  frontend:
+    <package_name>: # same as `scalprum.name` key in plugin's `package.json`
+      techdocsAddons:
+        - importName: ExampleAddon
+          config:
+            props: ... # optional, React props to pass to the addon
+```
+
+A plugin can specify multiple addons, in which case each techdocsAddon will need to supply an `importName` for each addon.
+
+- `importName` name of an exported `Addon` component
+- `module` is an optional argument which allows you to specify which set of assets you want to access within the plugin. If not provided, the default module named `PluginRoot` is used. This is the same as the key in `scalprum.exposedModules` key in plugin's `package.json`.
+
 ## Add a custom Backstage theme or replace the provided theme
 
 The look and feel of a Backstage application is handled by Backstage theming. Out of the box Developer Hub provides a theme with a number of [configuration overrides](../customization.md) that allow for user customization. It's also possible to provide additional Backstage themes as well as replace the out of box Developer Hub themes from a dynamic plugin.
