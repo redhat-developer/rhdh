@@ -6,7 +6,7 @@ import { TechDocsAddons } from '@backstage/plugin-techdocs-react';
 import Box from '@mui/material/Box';
 
 import getMountPointData from '../../../utils/dynamicUI/getMountPointData';
-import getTechDocsExtensionsData from '../../../utils/dynamicUI/getTechDocsExtentionsData';
+import getTechdocsExtensionsData from '../../../utils/dynamicUI/getTechdocsExtentionsData';
 import Grid from '../Grid';
 
 export type DynamicEntityTabProps = {
@@ -81,7 +81,7 @@ export const dynamicEntityTab = ({
                     <Component {...config.props}>
                       {importName === 'EntityTechdocsContent' ? (
                         <TechDocsAddons>
-                          {getTechDocsExtensionsData<
+                          {getTechdocsExtensionsData<
                             React.ComponentType<React.PropsWithChildren>
                           >().map(
                             ({
