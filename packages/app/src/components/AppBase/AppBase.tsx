@@ -146,9 +146,11 @@ const AppBase = () => {
                             module,
                             importName: techdocsImportName,
                             Component: TechdocsComponent,
+                            config,
                           }) => (
                             <TechdocsComponent
                               key={`${scope}-${module}-${techdocsImportName}`}
+                              {...config.props}
                             />
                           ),
                         )}

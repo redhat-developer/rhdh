@@ -372,7 +372,7 @@ export const DynamicRoot = ({
 
     const techdocsFieldExtensionComponents = techdocsFieldExtensions.reduce<
       TechdocsFieldExtension[]
-    >((acc, { scope, module, importName }) => {
+    >((acc, { scope, module, importName, config }) => {
       const extensionComponent = allPlugins[scope]?.[module]?.[importName];
       if (extensionComponent) {
         acc.push({
@@ -380,6 +380,9 @@ export const DynamicRoot = ({
           module,
           importName,
           Component: extensionComponent as React.ComponentType<unknown>,
+          config: {
+            ...config,
+          },
         });
       } else {
         // eslint-disable-next-line no-console

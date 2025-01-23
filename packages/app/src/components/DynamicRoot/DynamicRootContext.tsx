@@ -119,6 +119,9 @@ export type TechdocsFieldExtension = {
   module: string;
   importName: string;
   Component: React.ComponentType<{}>;
+  config: {
+    props?: Record<string, any>;
+  };
 };
 
 export type DynamicRootConfig = {

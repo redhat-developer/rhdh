@@ -5,6 +5,9 @@ function getTechDocsExtentionsData<T = any>(): {
   module: string;
   importName: string;
   Component: T;
+  config: {
+    props?: Record<string, any>;
+  };
 }[] {
   return getScalprum().api.dynamicRootConfig?.techdocsFieldExtensions ?? [];
 }

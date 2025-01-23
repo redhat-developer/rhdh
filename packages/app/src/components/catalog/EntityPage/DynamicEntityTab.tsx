@@ -89,9 +89,11 @@ export const dynamicEntityTab = ({
                               module,
                               importName: techdocsImportName,
                               Component: TechdocsComponent,
+                              config: techdocsConfig,
                             }) => (
                               <TechdocsComponent
                                 key={`${scope}-${module}-${techdocsImportName}`}
+                                {...techdocsConfig.props}
                               />
                             ),
                           )}

@@ -97,6 +97,9 @@ type TechdocsFieldExtension = {
   scope: string;
   module: string;
   importName: string;
+  config?: {
+    props?: Record<string, any>;
+  };
 };
 
 type EntityTab = {
@@ -293,6 +296,7 @@ function extractDynamicConfig(
   >((accTechdocsFieldExtensions, [scope, { techdocsFieldExtensions }]) => {
     accTechdocsFieldExtensions.push(
       ...(techdocsFieldExtensions ?? []).map(techdocsFieldExtension => ({
+        ...techdocsFieldExtension,
         module: techdocsFieldExtension.module ?? 'PluginRoot',
         importName: techdocsFieldExtension.importName ?? 'default',
         scope,
