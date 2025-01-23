@@ -157,7 +157,7 @@ describe('extractDynamicConfig', () => {
       routeBindingTargets: [],
       apiFactories: [],
       scaffolderFieldExtensions: [],
-      techdocsFieldExtensions: [],
+      techdocsAddons: [],
       themes: [],
     });
   });
@@ -499,10 +499,10 @@ describe('extractDynamicConfig', () => {
     [
       'a techdocs field extension',
       {
-        techdocsFieldExtensions: [{ importName: 'foo', module: 'FooRoot' }],
+        techdocsAddons: [{ importName: 'foo', module: 'FooRoot' }],
       },
       {
-        techdocsFieldExtensions: [
+        techdocsAddons: [
           {
             importName: 'foo',
             module: 'FooRoot',
@@ -514,10 +514,10 @@ describe('extractDynamicConfig', () => {
     [
       'a techdocs field extension; default module',
       {
-        techdocsFieldExtensions: [{ importName: 'foo' }],
+        techdocsAddons: [{ importName: 'foo' }],
       },
       {
-        techdocsFieldExtensions: [
+        techdocsAddons: [
           {
             importName: 'foo',
             module: 'PluginRoot',
@@ -529,13 +529,13 @@ describe('extractDynamicConfig', () => {
     [
       'multiple techdocs field extensions',
       {
-        techdocsFieldExtensions: [
+        techdocsAddons: [
           { importName: 'foo', module: 'FooRoot' },
           { importName: 'bar', module: 'BarRoot' },
         ],
       },
       {
-        techdocsFieldExtensions: [
+        techdocsAddons: [
           {
             importName: 'foo',
             module: 'FooRoot',
@@ -569,7 +569,7 @@ describe('extractDynamicConfig', () => {
       appIcons: [],
       apiFactories: [],
       scaffolderFieldExtensions: [],
-      techdocsFieldExtensions: [],
+      techdocsAddons: [],
       themes: [],
       ...output,
     });

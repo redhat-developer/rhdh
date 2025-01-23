@@ -36,7 +36,7 @@ const AppBase = () => {
     dynamicRoutes,
     entityTabOverrides,
     scaffolderFieldExtensions,
-    techdocsFieldExtensions,
+    techdocsAddons,
   } = useContext(DynamicRootContext);
 
   const myCustomColumnsFunc: CatalogTableColumnsFunc = entityListContext => [
@@ -140,7 +140,7 @@ const AppBase = () => {
                   >
                     {importName === 'TechDocsReaderPage' ? (
                       <TechDocsAddons>
-                        {techdocsFieldExtensions.map(
+                        {techdocsAddons.map(
                           ({
                             scope,
                             module,

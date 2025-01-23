@@ -42,7 +42,7 @@ const TestRoot = ({ children }: PropsWithChildren<{}>) => {
       mountPoints: {},
       entityTabOverrides: {},
       scaffolderFieldExtensions: [],
-      techdocsFieldExtensions: [],
+      techdocsAddons: [],
     }),
     [current],
   );

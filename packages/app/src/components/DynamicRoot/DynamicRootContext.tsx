@@ -114,7 +114,7 @@ export type ScaffolderFieldExtension = {
   Component: React.ComponentType<{}>;
 };
 
-export type TechdocsFieldExtension = {
+export type TechdocsAddon = {
   scope: string;
   module: string;
   importName: string;
@@ -130,7 +130,7 @@ export type DynamicRootConfig = {
   mountPoints: MountPoints;
   menuItems: ResolvedMenuItem[];
   scaffolderFieldExtensions: ScaffolderFieldExtension[];
-  techdocsFieldExtensions: TechdocsFieldExtension[];
+  techdocsAddons: TechdocsAddon[];
 };
 
 export type ComponentRegistry = {
@@ -146,7 +146,7 @@ const DynamicRootContext = createContext<ComponentRegistry>({
   mountPoints: {},
   menuItems: [],
   scaffolderFieldExtensions: [],
-  techdocsFieldExtensions: [],
+  techdocsAddons: [],
 });
 
 export default DynamicRootContext;

@@ -1,6 +1,6 @@
 import { getScalprum } from '@scalprum/core';
 
-function getTechdocsExtentionsData<T = any>(): {
+function getTechdocsAddonData<T = any>(): {
   scope: string;
   module: string;
   importName: string;
@@ -9,7 +9,7 @@ function getTechdocsExtentionsData<T = any>(): {
     props?: Record<string, any>;
   };
 }[] {
-  return getScalprum().api.dynamicRootConfig?.techdocsFieldExtensions ?? [];
+  return getScalprum().api.dynamicRootConfig?.techdocsAddons ?? [];
 }
 
-export default getTechdocsExtentionsData;
+export default getTechdocsAddonData;

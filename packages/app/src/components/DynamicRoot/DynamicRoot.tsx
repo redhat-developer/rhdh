@@ -29,7 +29,7 @@ import DynamicRootContext, {
   ResolvedDynamicRouteMenuItem,
   ScaffolderFieldExtension,
   ScalprumMountPointConfig,
-  TechdocsFieldExtension,
+  TechdocsAddon,
 } from './DynamicRootContext';
 import Loader from './Loader';
 
@@ -80,7 +80,7 @@ export const DynamicRoot = ({
       routeBindings,
       routeBindingTargets,
       scaffolderFieldExtensions,
-      techdocsFieldExtensions,
+      techdocsAddons: techdocsAddons,
       themes: pluginThemes,
     } = extractDynamicConfig(dynamicPlugins);
     const requiredModules = [
@@ -370,28 +370,29 @@ export const DynamicRoot = ({
       return acc;
     }, []);
 
-    const techdocsFieldExtensionComponents = techdocsFieldExtensions.reduce<
-      TechdocsFieldExtension[]
-    >((acc, { scope, module, importName, config }) => {
-      const extensionComponent = allPlugins[scope]?.[module]?.[importName];
-      if (extensionComponent) {
-        acc.push({
-          scope,
-          module,
-          importName,
-          Component: extensionComponent as React.ComponentType<unknown>,
-          config: {
-            ...config,
-          },
-        });
-      } else {
-        // eslint-disable-next-line no-console
-        console.warn(
-          `Plugin ${scope} is not configured properly: ${module}.${importName} not found, ignoring techdocsFieldExtension: ${importName}`,
-        );
-      }
-      return acc;
-    }, []);
+    const techdocsAddonComponents = techdocsAddons.reduce<TechdocsAddon[]>(
+      (acc, { scope, module, importName, config }) => {
+        const extensionComponent = allPlugins[scope]?.[module]?.[importName];
+        if (extensionComponent) {
+          acc.push({
+            scope,
+            module,
+            importName,
+            Component: extensionComponent as React.ComponentType<unknown>,
+            config: {
+              ...config,
+            },
+          });
+        } else {
+          // eslint-disable-next-line no-console
+          console.warn(
+            `Plugin ${scope} is not configured properly: ${module}.${importName} not found, ignoring techdocsAddon: ${importName}`,
+          );
+        }
+        return acc;
+      },
+      [],
+    );
 
     const dynamicThemeProviders = pluginThemes.reduce<AppThemeProvider[]>(
       (acc, { scope, module, importName, icon, ...rest }) => {
@@ -450,8 +451,7 @@ export const DynamicRoot = ({
     dynamicRootConfig.mountPoints = mountPointComponents;
     dynamicRootConfig.scaffolderFieldExtensions =
       scaffolderFieldExtensionComponents;
-    dynamicRootConfig.techdocsFieldExtensions =
-      techdocsFieldExtensionComponents;
+    dynamicRootConfig.techdocsAddons = techdocsAddonComponents;
 
     // make the dynamic UI configuration available to DynamicRootContext consumers
     setComponents({
@@ -462,7 +462,7 @@ export const DynamicRoot = ({
       entityTabOverrides,
       mountPoints: mountPointComponents,
       scaffolderFieldExtensions: scaffolderFieldExtensionComponents,
-      techdocsFieldExtensions: techdocsFieldExtensionComponents,
+      techdocsAddons: techdocsAddonComponents,
     });
 
     afterInit().then(({ default: Component }) => {
