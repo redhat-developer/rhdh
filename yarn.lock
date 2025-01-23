@@ -17138,7 +17138,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@scalprum/react-core@npm:0.9.3":
+"@scalprum/react-core@npm:0.9.3, @scalprum/react-core@npm:^0.9.3":
   version: 0.9.3
   resolution: "@scalprum/react-core@npm:0.9.3"
   dependencies:
@@ -17157,6 +17157,8 @@ __metadata:
   resolution: "@scalprum/react-test-utils@npm:0.2.4"
   dependencies:
     "@openshift/dynamic-plugin-sdk": ^5.0.1
+    "@scalprum/core": ^0.8.1
+    "@scalprum/react-core": ^0.9.3
     tslib: ^2.6.2
     whatwg-fetch: ^3.6.0
   checksum: cc20bd4e4b6e12981aa1d745e50bf4825dd4395d2be19812251d75cfe0e23a1ceba9d5576dcab018a1ed9ab5c6578e668597744d22d850ca3062ee4848fd049e
