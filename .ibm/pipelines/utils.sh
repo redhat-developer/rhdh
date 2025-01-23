@@ -598,6 +598,8 @@ check_backstage_running() {
 
   echo "Checking if Backstage is up and running at ${url}"
 
+  trap cleanup EXIT INT ERR # reapply trap
+
   for ((i = 1; i <= max_attempts; i++)); do
     local http_status
     http_status=$(curl --insecure -I -s -o /dev/null -w "%{http_code}" "${url}")
