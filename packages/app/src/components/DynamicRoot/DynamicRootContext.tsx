@@ -47,7 +47,9 @@ export type ResolvedDynamicRoute = DynamicModuleEntry & {
   importName: string;
   menuItem?: ResolvedDynamicRouteMenuItem;
   Component: React.ComponentType<any>;
-  staticJSXContent?: React.ReactNode;
+  staticJSXContent?:
+    | React.ReactNode
+    | ((children: React.ReactNode[]) => React.ReactNode);
   config: {
     props?: Record<string, any>;
   };

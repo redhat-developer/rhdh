@@ -218,7 +218,9 @@ export const DynamicRoot = ({
         Component: React.ComponentType<{}>;
         config?: ScalprumMountPointConfig;
         importName?: string;
-        staticJSXContent?: React.ReactNode;
+        staticJSXContent?:
+          | React.ReactNode
+          | ((children: React.ReactNode) => React.ReactNode);
       }[]
     >((acc, { module, importName, mountPoint, scope, config }) => {
       const Component = allPlugins[scope]?.[module]?.[importName];

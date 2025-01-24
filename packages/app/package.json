@@ -36,7 +36,6 @@
     "@backstage/plugin-scaffolder-react": "1.14.3",
     "@backstage/plugin-search": "1.4.22",
     "@backstage/plugin-search-react": "1.8.5",
-    "@backstage/plugin-techdocs-react": "1.2.9",
     "@backstage/plugin-user-settings": "0.8.18",
     "@backstage/theme": "0.6.3",
     "@emotion/react": "11.14.0",

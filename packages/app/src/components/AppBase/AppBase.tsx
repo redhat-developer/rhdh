@@ -18,7 +18,6 @@ import { RequirePermission } from '@backstage/plugin-permission-react';
 import { ScaffolderPage } from '@backstage/plugin-scaffolder';
 import { ScaffolderFieldExtensions } from '@backstage/plugin-scaffolder-react';
 import { SearchPage as BackstageSearchPage } from '@backstage/plugin-search';
-import { TechDocsAddons } from '@backstage/plugin-techdocs-react';
 import { UserSettingsPage } from '@backstage/plugin-user-settings';
 
 import { entityPage } from '../catalog/EntityPage';
@@ -125,39 +124,31 @@ const AppBase = () => {
             <Route path="/catalog-graph" element={<CatalogGraphPage />} />
             <Route path="/learning-paths" element={<LearningPaths />} />
             {dynamicRoutes.map(
-              ({
-                importName,
-                Component,
-                staticJSXContent,
-                path,
-                config: { props },
-              }) => {
+              ({ Component, staticJSXContent, path, config: { props } }) => {
                 return (
                   <Route
                     key={path}
                     path={path}
                     element={<Component {...props} />}
                   >
-                    {importName === 'TechDocsReaderPage' ? (
-                      <TechDocsAddons>
-                        {techdocsAddons.map(
-                          ({
-                            scope,
-                            module,
-                            importName: techdocsImportName,
-                            Component: TechdocsComponent,
-                            config,
-                          }) => (
-                            <TechdocsComponent
-                              key={`${scope}-${module}-${techdocsImportName}`}
-                              {...config.props}
-                            />
+                    {typeof staticJSXContent === 'function'
+                      ? staticJSXContent(
+                          techdocsAddons.map(
+                            ({
+                              scope,
+                              module,
+                              importName: techdocsImportName,
+                              Component: TechdocsComponent,
+                              config,
+                            }) => (
+                              <TechdocsComponent
+                                key={`${scope}-${module}-${techdocsImportName}`}
+                                {...config.props}
+                              />
+                            ),
                           ),
-                        )}
-                      </TechDocsAddons>
-                    ) : (
-                      staticJSXContent
-                    )}
+                        )
+                      : staticJSXContent}
                   </Route>
                 );
               },

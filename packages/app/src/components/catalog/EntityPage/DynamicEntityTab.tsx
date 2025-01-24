@@ -1,7 +1,6 @@
 import { Entity } from '@backstage/catalog-model';
 import { ApiHolder } from '@backstage/core-plugin-api';
 import { EntityLayout, EntitySwitch } from '@backstage/plugin-catalog';
-import { TechDocsAddons } from '@backstage/plugin-techdocs-react';
 
 import Box from '@mui/material/Box';
 
@@ -64,9 +63,9 @@ export const dynamicEntityTab = ({
         {children}
         {getMountPointData<
           React.ComponentType<React.PropsWithChildren>,
-          React.ReactNode
+          (children: React.ReactNode) => React.ReactNode
         >(`${mountPoint}/cards`).map(
-          ({ Component, config, staticJSXContent, importName }, index) => {
+          ({ Component, config, staticJSXContent }, index) => {
             return (
               <EntitySwitch key={`${Component.displayName}-${index}`}>
                 <EntitySwitch.Case
@@ -79,28 +78,26 @@ export const dynamicEntityTab = ({
                 >
                   <Box sx={config.layout}>
                     <Component {...config.props}>
-                      {importName === 'EntityTechdocsContent' ? (
-                        <TechDocsAddons>
-                          {getTechdocsAddonData<
-                            React.ComponentType<React.PropsWithChildren>
-                          >().map(
-                            ({
-                              scope,
-                              module,
-                              importName: techdocsImportName,
-                              Component: TechdocsComponent,
-                              config: techdocsConfig,
-                            }) => (
-                              <TechdocsComponent
-                                key={`${scope}-${module}-${techdocsImportName}`}
-                                {...techdocsConfig.props}
-                              />
+                      {typeof staticJSXContent === 'function'
+                        ? staticJSXContent(
+                            getTechdocsAddonData<
+                              React.ComponentType<React.PropsWithChildren>
+                            >().map(
+                              ({
+                                scope,
+                                module,
+                                importName: techdocsImportName,
+                                Component: TechdocsComponent,
+                                config: techdocsConfig,
+                              }) => (
+                                <TechdocsComponent
+                                  key={`${scope}-${module}-${techdocsImportName}`}
+                                  {...techdocsConfig.props}
+                                />
+                              ),
                             ),
-                          )}
-                        </TechDocsAddons>
-                      ) : (
-                        staticJSXContent
-                      )}
+                          )
+                        : staticJSXContent}
                     </Component>
                   </Box>
                 </EntitySwitch.Case>
