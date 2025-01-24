@@ -11,7 +11,7 @@ import { TEMPLATES } from "../support/testData/templates";
 let page: Page;
 
 // TODO: replace skip with serial
-test.describe.skip("GitHub Happy path", () => {
+test.describe.serial("GitHub Happy path", () => {
   //TODO: skipping due to RHIDP-4992
   let common: Common;
   let uiHelper: UIhelper;
