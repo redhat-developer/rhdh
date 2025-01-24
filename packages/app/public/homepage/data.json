@@ -1,36 +1,5 @@
 [
   {
-    "title": "Community",
-    "isExpanded": false,
-    "links": [
-      {
-        "iconUrl": "/homepage/icons/icons8/web.png",
-        "label": "Website",
-        "url": "https://developers.redhat.com/rhdh/overview"
-      },
-      {
-        "iconUrl": "/homepage/icons/icons8/external-blog-copywriting-itim2101-lineal-itim2101.png",
-        "label": "Blog",
-        "url": "https://developers.redhat.com/blog"
-      },
-      {
-        "iconUrl": "/homepage/icons/icons8/github.png",
-        "label": "GitHub",
-        "url": "https://github.com/redhat-developer/rhdh"
-      },
-      {
-        "iconUrl": "/homepage/icons/icons8/discord.png",
-        "label": "Discord",
-        "url": "https://discord.com/invite/backstage-687207715902193673"
-      },
-      {
-        "iconUrl": "/homepage/icons/icons8/youtube-play.png",
-        "label": "YouTube Channel",
-        "url": "https://www.youtube.com/@RedHatDevelopers"
-      }
-    ]
-  },
-  {
     "title": "Developer Tools",
     "isExpanded": true,
     "links": [
