@@ -1,6 +1,6 @@
 {
   "name": "backstage-community-plugin-lighthouse",
-  "version": "0.4.24",
+  "version": "0.5.0",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "license": "Apache-2.0",
@@ -28,7 +28,7 @@
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
-    "@backstage-community/plugin-lighthouse": "0.4.24",
+    "@backstage-community/plugin-lighthouse": "0.5.0",
     "@mui/icons-material": "5.16.14"
   },
   "devDependencies": {
