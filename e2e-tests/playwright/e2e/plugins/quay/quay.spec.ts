@@ -3,7 +3,7 @@ import { UIhelper } from "../../../utils/ui-helper";
 import { Common } from "../../../utils/common";
 import { ImageRegistry } from "../../../utils/quay/quay";
 
-test.describe.skip("Test Quay.io plugin", () => {
+test.describe("Test Quay.io plugin", () => {
   const quayRepository = "rhdh-community/rhdh";
   let uiHelper: UIhelper;
 
@@ -15,15 +15,25 @@ test.describe.skip("Test Quay.io plugin", () => {
     await uiHelper.openSidebar("Catalog");
     await uiHelper.selectMuiBox("Kind", "Component");
     await uiHelper.clickByDataTestId("user-picker-all");
-    await uiHelper.clickLink("backstage-janus");
+    await uiHelper.clickLink("Backstage Showcase");
     await uiHelper.clickTab("Image Registry");
   });
 
-  test("Check if Image Registry is present", async () => {
-    const allGridColumnsText = ImageRegistry.getAllGridColumnsText();
-    await uiHelper.verifyColumnHeading(allGridColumnsText);
-    await uiHelper.verifyHeading(`Quay repository: ${quayRepository}`);
+  test("Check if Image Registry is present", async ({ page }) => {
+    await uiHelper.verifyHeading(quayRepository);
 
+    const allGridColumnsText = ImageRegistry.getAllGridColumnsText();
+
+    // Verify Headers
+    for (const column of allGridColumnsText) {
+      const columnLocator = page.locator("th").filter({ hasText: column });
+      await expect(columnLocator).toBeVisible();
+    }
+
+    await page
+      .locator('div[data-testid="quay-repo-table"]')
+      .waitFor({ state: "visible" });
+    // Verify cells with the adjusted selector
     const allCellsIdentifier = ImageRegistry.getAllCellsIdentifier();
     await uiHelper.verifyCellsInTable(allCellsIdentifier);
   });

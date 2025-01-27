@@ -31,6 +31,7 @@ import { policyEntityReadPermission } from '@janus-idp/backstage-plugin-rbac-com
 import DynamicRootContext, {
   ResolvedMenuItem,
 } from '../DynamicRoot/DynamicRootContext';
+import { ApplicationHeaders } from './ApplicationHeaders';
 import { MenuIcon } from './MenuIcon';
 import { SidebarLogo } from './SidebarLogo';
 
@@ -248,49 +249,53 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
     );
   };
   return (
-    <SidebarPage>
-      <Sidebar>
-        <SidebarLogo />
-        <SidebarGroup label="Search" icon={<SearchIcon />} to="/search">
-          <SidebarSearchModal />
-        </SidebarGroup>
-        <SidebarDivider />
-        <SidebarGroup label="Menu" icon={<MuiMenuIcon />}>
-          {/* Global nav, not org-specific */}
-          {renderMenuItems(true, false)}
-          {/* End global nav */}
+    <>
+      <ApplicationHeaders position="above-sidebar" />
+      <SidebarPage>
+        <ApplicationHeaders position="above-main-content" />
+        <Sidebar>
+          <SidebarLogo />
+          <SidebarGroup label="Search" icon={<SearchIcon />} to="/search">
+            <SidebarSearchModal />
+          </SidebarGroup>
           <SidebarDivider />
-          <SidebarScrollWrapper>
-            {renderMenuItems(false, false)}
-            {dynamicRoutes.map(({ scope, menuItem, path }) => {
-              if (menuItem && 'Component' in menuItem) {
-                return (
-                  <menuItem.Component
-                    {...(menuItem.config?.props || {})}
-                    key={`${scope}/${path}`}
-                    to={path}
-                  />
-                );
-              }
-              return null;
-            })}
-          </SidebarScrollWrapper>
-        </SidebarGroup>
-        <SidebarSpace />
-        <SidebarDivider />
-        <SidebarGroup label="Administration" icon={<AdminIcon />}>
-          {renderMenuItems(false, true)}
-        </SidebarGroup>
-        <SidebarDivider />
-        <SidebarGroup
-          label="Settings"
-          to="/settings"
-          icon={<AccountCircleOutlinedIcon />}
-        >
-          <SidebarSettings icon={AccountCircleOutlinedIcon} />
-        </SidebarGroup>
-      </Sidebar>
-      {children}
-    </SidebarPage>
+          <SidebarGroup label="Menu" icon={<MuiMenuIcon />}>
+            {/* Global nav, not org-specific */}
+            {renderMenuItems(true, false)}
+            {/* End global nav */}
+            <SidebarDivider />
+            <SidebarScrollWrapper>
+              {renderMenuItems(false, false)}
+              {dynamicRoutes.map(({ scope, menuItem, path }) => {
+                if (menuItem && 'Component' in menuItem) {
+                  return (
+                    <menuItem.Component
+                      {...(menuItem.config?.props || {})}
+                      key={`${scope}/${path}`}
+                      to={path}
+                    />
+                  );
+                }
+                return null;
+              })}
+            </SidebarScrollWrapper>
+          </SidebarGroup>
+          <SidebarSpace />
+          <SidebarDivider />
+          <SidebarGroup label="Administration" icon={<AdminIcon />}>
+            {renderMenuItems(false, true)}
+          </SidebarGroup>
+          <SidebarDivider />
+          <SidebarGroup
+            label="Settings"
+            to="/settings"
+            icon={<AccountCircleOutlinedIcon />}
+          >
+            <SidebarSettings icon={AccountCircleOutlinedIcon} />
+          </SidebarGroup>
+        </Sidebar>
+        {children}
+      </SidebarPage>
+    </>
   );
 };

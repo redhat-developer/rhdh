@@ -4,7 +4,7 @@ This document provides a comprehensive overview of our Continuous Integration (C
 
 ## GitHub Pull Requests
 
-When a new Pull Request (PR) is opened at [backstage-showcase](https://github.com/redhat-developer/rhdh), tests are triggered based on the nature of the changes and the contributor's role.
+When a new Pull Request (PR) is opened at [rhdh](https://github.com/redhat-developer/rhdh), tests are triggered based on the nature of the changes and the contributor's role.
 
 ### Automatic Triggering of Tests
 

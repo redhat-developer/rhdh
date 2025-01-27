@@ -4,7 +4,7 @@ This guide will show you how to patch a package in Backstage using the `patch-pa
 
 ## Prerequisites
 
-- Have a `backstage-showcase` instance locally cloned
+- Have a `rhdh` instance locally cloned
 - Have a `backstage` instance/fork locally cloned
 
 ## Manually patching a package
@@ -33,11 +33,11 @@ This guide will show you how to patch a package in Backstage using the `patch-pa
 
    # This is an optional step to remove the old .cjs.js and .cjs.js.map files in the dist/cjs directory of the package. Please refer to the caveats section for more information
    update_file_references
-   # Merge the contents of the patched package into the node_modules directory of the backstage-showcase project
-   cp -Rv plugin-scaffolder-backend/* /home/user/backstage-showcase/node_modules/@backstage/plugin-scaffolder-backend
+   # Merge the contents of the patched package into the node_modules directory of the rhdh project
+   cp -Rv plugin-scaffolder-backend/* /home/user/rhdh/node_modules/@backstage/plugin-scaffolder-backend
    ```
 
-1. Then navigate to the `backstage-showcase` project and run the following commands to generate the patch files:
+1. Then navigate to the `rhdh` project and run the following commands to generate the patch files:
 
    ```bash
    # Generate the patch file
@@ -52,26 +52,26 @@ This guide will show you how to patch a package in Backstage using the `patch-pa
 
 1. Create a new branch in your `backstage` instance for your target backstage version
 1. Navigate to the `backstage` project and make your changes to the package/plugin you want to patch as if you were going to submit a PR
-1. Navigate to the `backstage-showcase` project and run the `.scripts/patch-package.sh` to create a patch file for the package(s) you want to patch.
+1. Navigate to the `rhdh` project and run the `.scripts/patch-package.sh` to create a patch file for the package(s) you want to patch.
 
    - Script Usage: `./patch-package.sh [src] [dest] [package-name-1] [package-name-2] ...`
    - The `src` is the path to the `backstage` project containing your patch changes
-   - The `dest` is the path to the `backstage-showcase` project where the patch file will be created
+   - The `dest` is the path to the `rhdh` project where the patch file will be created
    - The `package-name` array of arguments is the name of the package(s) you want to patch
-   - When listing package names, please ensure it matches the package name in the `@backstage/node_modules` directory of the `backstage-showcase` project
+   - When listing package names, please ensure it matches the package name in the `@backstage/node_modules` directory of the `rhdh` project
    - Example usage of patching a plugin and a package:
 
      ```bash
-     ./patch-package.sh /path/to/backstage /path/to/backstage-showcase @backstage/plugin-scaffolder-backend @backstage/integration
+     ./patch-package.sh /path/to/backstage /path/to/rhdh @backstage/plugin-scaffolder-backend @backstage/integration
      ```
 
-1. The script will create patch files in the `patches` directory of the `backstage-showcase` project. Run `yarn install --force` in the `backstage-showcase` project and verify that the patches were applied correctly
+1. The script will create patch files in the `patches` directory of the `rhdh` project. Run `yarn install --force` in the `rhdh` project and verify that the patches were applied correctly
 
 ## Caveats
 
-- The `patch-package` script will not work if the package you are trying to patch is not installed in the `backstage-showcase` project
+- The `patch-package` script will not work if the package you are trying to patch is not installed in the `rhdh` project
 - The `patch-package` script will not be able to patch modifications to the `package.json` to add new dependencies or change the version of existing dependencies
-  - You will need to manually update the `package.json` in the `backstage-showcase` project to include the new dependencies or changes to existing dependencies since the patches are applied after the `yarn install` command is run
+  - You will need to manually update the `package.json` in the `rhdh` project to include the new dependencies or changes to existing dependencies since the patches are applied after the `yarn install` command is run
 - The `patch-package` script will leave behind the old `.cjs.js` and `.cjs.js.map` files in the `dist/cjs` directory of the package if the resultant package's a `dist/cjs` directory that contains more than 2 files
 
   - This is due to the resultant file names after a build being different if any modifications were made to them.
@@ -115,4 +115,4 @@ This guide will show you how to patch a package in Backstage using the `patch-pa
        ```
 
     3. Repeat for any other files that need to be renamed
-    4. Merge the patched package with the `node_modules` package in the `backstage-showcase` project
+    4. Merge the patched package with the `node_modules` package in the `rhdh` project

@@ -10,7 +10,7 @@
   },
   "backstage": {
     "role": "backend-plugin-module",
-    "supported-versions": "1.32.6",
+    "supported-versions": "1.35.0",
     "pluginId": "scaffolder",
     "pluginPackage": "@backstage/plugin-scaffolder-backend"
   },
@@ -32,15 +32,15 @@
     "test": "backstage-cli package test --passWithNoTests --coverage",
     "clean": "backstage-cli package clean",
     "clean-dynamic-sources": "yarn clean && rm -Rf node_modules",
-    "export-dynamic": "janus-cli package export-dynamic-plugin --embed-package @roadiehq/scaffolder-backend-argocd --embed-package @roadiehq/backstage-plugin-argo-cd-backend",
+    "export-dynamic": "janus-cli package export-dynamic-plugin --embed-package @roadiehq/scaffolder-backend-argocd --embed-package @roadiehq/backstage-plugin-argo-cd-backend --ignore-version-check @backstage/backend-common --ignore-version-check @backstage/backend-plugin-api",
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
     "@roadiehq/scaffolder-backend-argocd": "1.2.0"
   },
   "devDependencies": {
-    "@backstage/cli": "0.28.2",
-    "@janus-idp/cli": "1.18.5",
+    "@backstage/cli": "0.29.5",
+    "@janus-idp/cli": "3.0.0",
     "typescript": "5.7.3"
   },
   "files": [

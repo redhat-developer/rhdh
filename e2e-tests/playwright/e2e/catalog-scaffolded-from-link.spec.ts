@@ -112,7 +112,16 @@ test.describe.serial("Link Scaffolded Templates to Catalog Items", () => {
 
     // Verify the scaffoldedFrom relation in the YAML view of the entity
     await catalogImport.inspectEntityAndVerifyYaml(
-      `- type: scaffoldedFrom\n    targetRef: template:default/create-react-app-template-with-timestamp-entityref\n    target:\n      kind: template\n      namespace: default\n      name: create-react-app-template-with-timestamp-entityref`,
+      `relations:
+      - type: ownedBy
+        targetRef: group:janus-qe/maintainers
+      - type: scaffoldedFrom
+        targetRef: template:default/create-react-app-template-with-timestamp-entityref
+    spec:
+      type: website
+      lifecycle: experimental
+      owner: group:janus-qe/maintainers
+      scaffoldedFrom: template:default/create-react-app-template-with-timestamp-entityref`,
     );
   });
 
@@ -127,7 +136,7 @@ test.describe.serial("Link Scaffolded Templates to Catalog Items", () => {
     await uiHelper.clickLink("Create React App Template");
 
     await catalogImport.inspectEntityAndVerifyYaml(
-      `- type: scaffolderOf\n    targetRef: component:default/${reactAppDetails.componentName}\n    target:\n      kind: component\n      namespace: default\n      name: ${reactAppDetails.componentName}\n`,
+      `- type: scaffolderOf\n    targetRef: component:default/${reactAppDetails.componentName}\n`,
     );
 
     await uiHelper.clickLink("Launch Template");

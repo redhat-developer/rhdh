@@ -1,6 +1,6 @@
-# Getting Started running Backstage Showcase
+# Getting Started running RHDH
 
-There are several different methods for running the Backstage Showcase app today. We currently have support for running the application locally, using a helm chart to deploy to a cluster, and manifests for deployment using ArgoCD.
+There are several different methods for running the RHDH app today. We currently have support for running the application locally, using a helm chart to deploy to a cluster, and manifests for deployment using ArgoCD.
 
 ## Telemetry collection
 
@@ -153,7 +153,7 @@ If you wish to subsequently disable telemetry data collection, use one of the fo
 
 ## Running Locally with a basic configuration
 
-The easiest and fastest method for getting started: Backstage Showcase app, running it locally only requires a few simple steps.
+The easiest and fastest method for getting started: RHDH app, running it locally only requires a few simple steps.
 
 1. Copy `app-config.example.yaml` and rename it as `app-config.local.yaml`.
 

@@ -251,6 +251,13 @@ dynamicPlugins:
           menuItem:
             icon: bulkImportIcon
             text: Bulk import
+    red-hat-developer-hub.backstage-plugin-global-header:
+      mountPoints:
+        - mountPoint: application/header
+          importName: GlobalHeader
+          config:
+            layout:
+              position: above-main-content
     red-hat-developer-hub.backstage-plugin-dynamic-home-page:
       dynamicRoutes:
         - path: /
@@ -486,3 +493,17 @@ dynamicPlugins:
               rbac:
                 parent: admin
                 icon: rbacIcon
+    red-hat-developer-hub.backstage-plugin-marketplace:
+      appIcons:
+        - name: marketplace
+          importName: MarketplaceIcon
+      dynamicRoutes:
+        - path: /marketplace
+          importName: MarketplacePage
+          menuItem:
+            icon: marketplace
+            text: Marketplace
+      mountPoints:
+        - mountPoint: admin.page.plugins/cards
+          importName: MarketplaceCatalogContent
+

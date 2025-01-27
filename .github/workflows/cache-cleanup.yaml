@@ -5,12 +5,15 @@ on:
   pull_request:
     types:
       - closed
+      - labeled
 
 jobs:
   cleanup:
     runs-on: ubuntu-latest
     steps:
       - name: Cleanup
+        # when the PR is closed or labeled as 'Stale'
+        if: ${{ github.event.action == 'closed' || github.event.label.name == 'Stale' }}
         run: |
           gh extension install actions/gh-actions-cache
 

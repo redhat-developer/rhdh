@@ -72,7 +72,11 @@ COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/roadiehq-backstage-plugin-
 COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/roadiehq-backstage-plugin-datadog/package.json ./dynamic-plugins/wrappers/roadiehq-backstage-plugin-datadog/package.json
 COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/roadiehq-backstage-plugin-argo-cd/package.json ./dynamic-plugins/wrappers/roadiehq-backstage-plugin-argo-cd/package.json
 COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/roadiehq-backstage-plugin-argo-cd-backend-dynamic/package.json ./dynamic-plugins/wrappers/roadiehq-backstage-plugin-argo-cd-backend-dynamic/package.json
+COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-marketplace/package.json ./dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-marketplace/package.json
+COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-marketplace-backend-dynamic/package.json ./dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-marketplace-backend-dynamic/package.json
+COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-global-header/package.json ./dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-global-header/package.json
 COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-dynamic-home-page/package.json ./dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-dynamic-home-page/package.json
+COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-catalog-backend-module-marketplace-dynamic/package.json ./dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-catalog-backend-module-marketplace-dynamic/package.json
 COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-bulk-import/package.json ./dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-bulk-import/package.json
 COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-bulk-import-backend-dynamic/package.json ./dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-bulk-import-backend-dynamic/package.json
 COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/parfuemerie-douglas-scaffolder-backend-module-azure-repositories-dynamic/package.json ./dynamic-plugins/wrappers/parfuemerie-douglas-scaffolder-backend-module-azure-repositories-dynamic/package.json
@@ -213,8 +217,10 @@ WORKDIR $CONTAINER_SOURCE/
 # When updating version of mkdocs-techdocs-core remember to update ../.rhdh/docker/requirement* files too
 # hadolint ignore=DL3041,DL3042
 RUN microdnf update --setopt=install_weak_deps=0 -y && \
-  microdnf install -y python3 python3-pip skopeo && \
-  pip3 install mkdocs-techdocs-core~=1.3.3 && \
+  microdnf install -y python3.11 python3.11-pip skopeo && \
+  alternatives --install /usr/bin/python python /usr/bin/python3.11 1 && \
+  alternatives --install /usr/bin/pip pip /usr/bin/pip3.11 1 && \
+  pip install mkdocs-techdocs-core~=1.3.3 && \
   microdnf clean all
 
 # Upstream only - copy from cleanup stage

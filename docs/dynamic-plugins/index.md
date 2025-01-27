@@ -45,6 +45,7 @@ Example of this process on the [todo](https://github.com/backstage/community-plu
     $ git clone https://github.com/backstage/community-plugins
     $ cd community-plugins/workspaces/todo
     $ yarn install
+    $ yarn tsc
     ```
 
 2. Export the backend and frontend plugins
@@ -52,7 +53,7 @@ Example of this process on the [todo](https://github.com/backstage/community-plu
     Export backend plugin.
 
     ```console
-    $ cd todo-backend
+    $ cd plugins/todo-backend
     $ npx @janus-idp/cli@latest package export-dynamic-plugin
     Building main package
       executing     yarn build ✔
@@ -148,22 +149,22 @@ Example of this process on the [todo](https://github.com/backstage/community-plu
     Add plugins defintion to the `dynamic-plugins.yaml` file.
 
     ```yaml
-    # dynamic-plugins.yaml
-    packages:
-     - package: oci://quay.io/tkral/backstage-community-plugin-todo:v0.1.1!backstage-community-plugin-todo
-       pluginConfig:
-         dynamicPlugins:
-           frontend:
-             backstage-community.plugin-todo:
-               mountPoints:
-                 - mountPoint: entity.page.todo/cards
-                   importName: EntityTodoContent
-               entityTabs:
-                 - path: /todo
-                   title: Todo
-                   mountPoint: entity.page.todo
-     - package: oci://quay.io/tkral/backstage-community-plugin-todo:v0.1.1!backstage-community-plugin-todo-backend-dynamic
-       disabled: false
+    # frontend and backend plugins for the todo plugin
+    - package: oci://quay.io/user/backstage-community-plugin-todo:v0.1.1!backstage-community-plugin-todo
+      disabled: false
+      pluginConfig:
+        dynamicPlugins:
+          frontend:
+            backstage-community.plugin-todo:
+              mountPoints:
+                - mountPoint: entity.page.todo/cards
+                  importName: EntityTodoContent
+              entityTabs:
+                - path: /todo
+                  title: Todo
+                  mountPoint: entity.page.todo
+    - package: oci://quay.io/user/backstage-community-plugin-todo:v0.1.1!backstage-community-plugin-todo-backend-dynamic
+      disabled: false
     ```
 
 

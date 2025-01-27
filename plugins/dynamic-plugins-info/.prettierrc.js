@@ -2,7 +2,7 @@
 
 /** @type {import("@ianvs/prettier-plugin-sort-imports").PrettierConfig} */
 module.exports = {
-  ...require('@spotify/prettier-config'),
+  ...require('@backstage/cli/config/prettier.json'),
   plugins: ['@ianvs/prettier-plugin-sort-imports'],
   importOrder: [
     '^react(.*)$',

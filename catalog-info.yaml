@@ -1,0 +1,82 @@
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: rhdh
+  title: RHDH
+  description: Red Hat Developer Hub is an enterprise-grade Internal Developer Portal based on Backstage.
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+    github.com/project-slug: redhat-developer/rhdh
+    github.com/team-slug: redhat-developer/rhdh-team
+    quay.io/repository-slug: rhdh-community/rhdh
+    sonarqube.org/project-key: janus-idp_backstage-showcase
+  tags:
+    - backstage
+    - rhdh
+  links:
+    - url: https://red.ht/rhdh
+      title: Product website
+      icon: star
+      type: website
+    - url: https://developers.redhat.com/blog
+      title: Red Hat Developer Blog
+      icon: catalog
+      type: blog
+    - url: https://docs.redhat.com/fr/documentation/red_hat_developer_hub/
+      title: Official documentation
+      icon: docs
+      type: docs
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Jira issues
+      icon: help
+      type: jira
+    - url: https://github.com/redhat-developer/rhdh
+      title: Sourcecode on GitHub
+      icon: github
+      type: sourcecode
+spec:
+  type: product
+  owner: rhdh-team
+  lifecycle: production
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: rhdh
+  title: RHDH
+  description: Red Hat Developer Hub is an enterprise-grade Internal Developer Portal based on Backstage.
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+    github.com/project-slug: redhat-developer/rhdh
+    github.com/team-slug: redhat-developer/rhdh-team
+    quay.io/repository-slug: rhdh-community/rhdh
+    sonarqube.org/project-key: janus-idp_backstage-showcase
+  tags:
+    - backstage
+    - rhdh
+  links:
+    - url: https://red.ht/rhdh
+      title: Product website
+      icon: star
+      type: website
+    - url: https://developers.redhat.com/blog
+      title: Red Hat Developer Blog
+      icon: catalog
+      type: blog
+    - url: https://docs.redhat.com/fr/documentation/red_hat_developer_hub/
+      title: Official documentation
+      icon: docs
+      type: docs
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Jira issues
+      icon: help
+      type: jira
+    - url: https://github.com/redhat-developer/rhdh
+      title: Sourcecode on GitHub
+      icon: github
+      type: sourcecode
+spec:
+  type: product
+  owner: rhdh-team
+  lifecycle: production
+  system: rhdh

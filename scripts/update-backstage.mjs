@@ -341,7 +341,7 @@ async function main() {
     updateBuildMetadata(backstageVersion);
 
     console.log(
-      `Successfully updated the Backstage Showcase to ${backstageVersion}!`,
+      `Successfully updated Backstage to ${backstageVersion}!`,
     );
   } catch (error) {
     console.error("An error occurred during the update process:", error);

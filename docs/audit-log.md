@@ -1,6 +1,6 @@
-# Audit Logging for Backstage Showcase
+# Audit Logging for RHDH
 
-Backstage Showcase supports audit logging for both the catalog and scaffolder. Audit logs can be identified by the `isAuditLog: true` field.
+RHDH supports audit logging for both the catalog and scaffolder. Audit logs can be identified by the `isAuditLog: true` field.
 
 ## Configuring the audit logger
 

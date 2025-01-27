@@ -1,8 +1,8 @@
-# Setting up Metrics Monitoring and Logging for Backstage Showcase
+# Setting up Metrics Monitoring and Logging for RHDH
 
-The Backstage Showcase provides a `/metrics` endpoint on port `9464` that provides OpenTelemetry metrics about your backstage application. This endpoint can be used to monitor your backstage instance using OpenTelemetry and Grafana.
+The RHDH provides a `/metrics` endpoint on port `9464` that provides OpenTelemetry metrics about your backstage application. This endpoint can be used to monitor your backstage instance using OpenTelemetry and Grafana.
 
-When deploying Backstage Showcase onto a kubernetes cluster with the [RHDH Helm chart](https://github.com/redhat-developer/rhdh-chart) or the [RHDH Operator](https://github.com/janus-idp/operator), monitoring and logging for your RHDH instance can be configured using the following steps.
+When deploying RHDH onto a kubernetes cluster with the [RHDH Helm chart](https://github.com/redhat-developer/rhdh-chart) or the [RHDH Operator](https://github.com/janus-idp/operator), monitoring and logging for your RHDH instance can be configured using the following steps.
 
 ## Prerequisites
 
@@ -86,13 +86,13 @@ Similar to the instructions above for a Helm-based deployment, you can then veri
 
 ### Enabling Metrics Monitoring on Azure Kubernetes Service (AKS)
 
-To enable metrics monitoring for Backstage Showcase on Azure Kubernetes Service (AKS), you can use the [Azure Monitor managed service for Prometheus](https://learn.microsoft.com/en-us/azure/azure-monitor/essentials/prometheus-metrics-overview). The AKS cluster will need to have an associated [Azure Monitor workspace](https://learn.microsoft.com/en-us/azure/azure-monitor/containers/prometheus-metrics-enable?tabs=azure-portal).
+To enable metrics monitoring for RHDH on Azure Kubernetes Service (AKS), you can use the [Azure Monitor managed service for Prometheus](https://learn.microsoft.com/en-us/azure/azure-monitor/essentials/prometheus-metrics-overview). The AKS cluster will need to have an associated [Azure Monitor workspace](https://learn.microsoft.com/en-us/azure/azure-monitor/containers/prometheus-metrics-enable?tabs=azure-portal).
 
 One method is to configure the metrics scraping of your AKS cluster using the [Azure Monitor _metrics_ add-on](https://learn.microsoft.com/en-us/azure/azure-monitor/containers/prometheus-metrics-scrape-configuration).
 
 The other method is to configure the Azure Monitor _monitoring_ add-on which also allows you to [send Prometheus metrics to the Log Analytics workspace](https://learn.microsoft.com/en-us/azure/azure-monitor/containers/container-insights-prometheus-logs). These metrics can then be queried using [Log Analytics queries](https://learn.microsoft.com/en-us/azure/azure-monitor/containers/container-insights-log-query#prometheus-metrics) as well as be visible in a Grafana instance.
 
-In both methods, we can configure the metrics scraping to scrap from pods based on pod Annotations. Follow the steps below depending on how the Backstage Showcase application is deployed.
+In both methods, we can configure the metrics scraping to scrap from pods based on pod Annotations. Follow the steps below depending on how the RHDH application is deployed.
 
 #### Helm deployment
 
@@ -196,7 +196,7 @@ InsightsMetrics
 
 ## Logging
 
-Logging in backstage showcase is conducted using the [winston](https://github.com/winstonjs/winston) library. By default, logs of level `debug` are not logged. To enable debug logs, you will need to set the environment variable `LOG_LEVEL` to `debug` in your deployment.
+Logging in RHDH is conducted using the [winston](https://github.com/winstonjs/winston) library. By default, logs of level `debug` are not logged. To enable debug logs, you will need to set the environment variable `LOG_LEVEL` to `debug` in your deployment.
 
 ### Helm deployment
 

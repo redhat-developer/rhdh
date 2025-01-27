@@ -52,6 +52,26 @@ jobs:
           git fetch base-origin ${{ github.event.pull_request.base.ref }}
           git merge --no-edit base-origin/${{ github.event.pull_request.base.ref }}
 
+      - name: Get the last commit short SHA of the PR
+        uses: ./.github/actions/get-sha
+
+      - name: Check if Image Already Exists
+        id: image-check
+        run: |
+          IMAGE_TAG_COMMIT="pr-${{ github.event.number }}-${{ env.SHORT_SHA }}"
+          IMAGE_NAME_COMMIT="${{ env.REGISTRY }}/rhdh-community/rhdh:${IMAGE_TAG_COMMIT}"
+
+          # Check if any image exists for the specific commit
+          IMAGE_EXISTS_COMMIT=$(curl -s "https://quay.io/api/v1/repository/rhdh-community/rhdh/tag/" | jq -r --arg tag "$IMAGE_TAG_COMMIT" '.tags[] | select(.name == $tag) | .name')
+
+          if [ -n "$IMAGE_EXISTS_COMMIT" ]; then
+            echo "Image $IMAGE_NAME_COMMIT already exists for the current commit."
+            echo "image_exists=true" >> $GITHUB_ENV
+          else
+            echo "Image $IMAGE_NAME_COMMIT does not exist for the current commit."
+            echo "image_exists=false" >> $GITHUB_ENV
+          fi
+
       - name: Determine Changed Files
         id: changes
         run: |
@@ -63,35 +83,17 @@ jobs:
           echo "Changed files:"
           echo "$CHANGED_FILES"
 
+          # Check if changes are only in .ibm/ or e2e-tests/
           if echo "$CHANGED_FILES" | grep -qvE '^(e2e-tests/|\.ibm/)'; then
-            echo "Changes detected outside the e2e-tests or .ibm folders. Proceeding with the build."
-            echo "proceed_with_build=true" >> $GITHUB_ENV
+            echo "Changes detected outside the e2e-tests or .ibm folders. Build required."
+            echo "relevant_changes=true" >> $GITHUB_ENV
           else
-            echo "No changes outside the e2e-tests or .ibm folders. Skipping the build."
-            echo "proceed_with_build=false" >> $GITHUB_ENV
-          fi
-
-      - name: Get the last commit short SHA of the PR
-        uses: ./.github/actions/get-sha
-
-      - name: Check if Image Already Exists
-        if: env.proceed_with_build == 'true'
-        run: |
-          IMAGE_TAG="pr-${{ github.event.number }}"
-          IMAGE_NAME="${{ env.REGISTRY }}/rhdh-community/rhdh:${IMAGE_TAG}"
-
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "https://quay.io/rhdh-community/rhdh/manifests/${IMAGE_TAG}")
-
-          if [ "$HTTP_CODE" -eq 200 ]; then
-            echo "Image $IMAGE_NAME already exists. Skipping the build."
-            echo "image_exists=true" >> $GITHUB_ENV
-          else
-            echo "Image $IMAGE_NAME does not exist. Proceeding with the build."
-            echo "image_exists=false" >> $GITHUB_ENV
+            echo "No relevant changes detected."
+            echo "relevant_changes=false" >> $GITHUB_ENV
           fi
 
       - name: Build and Push with Buildx
-        if: env.proceed_with_build == 'true' && env.image_exists == 'false'
+        if: env.relevant_changes == 'true' && env.image_exists == 'false'
         uses: ./.github/actions/docker-build
         with:
           registry: ${{ env.REGISTRY }}
@@ -99,14 +101,14 @@ jobs:
           password: ${{ secrets.QUAY_TOKEN }}
           imageName: rhdh-community/rhdh
           imageTags: |
-            type=ref,prefix=pr-,event=pr
             type=ref,prefix=pr-,suffix=-${{ env.SHORT_SHA }},event=pr
+            type=ref,prefix=pr-,event=pr
           imageLabels: quay.expires-after=14d
           push: true
           platform: linux/amd64
 
       - name: Comment the image pull link
-        if: env.proceed_with_build == 'true' && env.image_exists == 'false'
+        if: env.relevant_changes == 'true' && env.image_exists == 'false'
         uses: actions/github-script@v7
         with:
           script: |

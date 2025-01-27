@@ -56,9 +56,9 @@ spec:
         pgbackrest:
           resources:
             limits:
-              cpu: 300m
-            requests:
               cpu: 200m
+            requests:
+              cpu: 100m
         pgbackrestConfig:
           resources:
             limits:

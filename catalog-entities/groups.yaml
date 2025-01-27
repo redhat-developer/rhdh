@@ -6,3 +6,4 @@ metadata:
 spec:
   targets:
     - ./groups/janus-authors.yaml
+    - ./groups/rhdh-team.yaml

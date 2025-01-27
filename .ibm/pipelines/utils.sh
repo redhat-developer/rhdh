@@ -290,8 +290,8 @@ spec:
 EOD
 }
 
-# Monitors the status of an operator in an OpenShift namespace. 
-# It checks the ClusterServiceVersion (CSV) for a specific operator to verify if its phase matches an expected value. 
+# Monitors the status of an operator in an OpenShift namespace.
+# It checks the ClusterServiceVersion (CSV) for a specific operator to verify if its phase matches an expected value.
 check_operator_status() {
   local timeout=${1:-300} # Timeout in seconds (default 300)
   local namespace=$2 # Namespace to check
@@ -302,7 +302,7 @@ check_operator_status() {
   echo "Expected status: ${expected_status}"
 
   timeout "${timeout}" bash -c "
-    while true; do 
+    while true; do
       CURRENT_PHASE=\$(oc get csv -n '${namespace}' -o jsonpath='{.items[?(@.spec.displayName==\"${operator_name}\")].status.phase}')
       echo \"Operator '${operator_name}' current phase: \${CURRENT_PHASE}\"
       [[ \"\${CURRENT_PHASE}\" == \"${expected_status}\" ]] && echo \"Operator '${operator_name}' is now in '${expected_status}' phase.\" && break
@@ -627,7 +627,7 @@ install_acm_operator(){
   wait_for_deployment "open-cluster-management" "multiclusterhub-operator"
   oc apply -f "${DIR}/cluster/operators/acm/multiclusterhub.yaml"
   # wait until multiclusterhub is Running.
-  timeout 600 bash -c 'while true; do 
+  timeout 600 bash -c 'while true; do
     CURRENT_PHASE=$(oc get multiclusterhub multiclusterhub -n open-cluster-management -o jsonpath="{.status.phase}")
     echo "MulticlusterHub Current Status: $CURRENT_PHASE"
     [[ "$CURRENT_PHASE" == "Running" ]] && echo "MulticlusterHub is now in Running phase." && break
@@ -705,7 +705,7 @@ initiate_deployments() {
   configure_namespace "${NAME_SPACE_RBAC}"
   configure_external_postgres_db "${NAME_SPACE_RBAC}"
 
-  # Initiate rbac instace deployment.
+  # Initiate rbac instance deployment.
   local rbac_rhdh_base_url="https://${RELEASE_NAME_RBAC}-backstage-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
   echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${RELEASE_NAME_RBAC}"
@@ -769,7 +769,7 @@ force_delete_namespace() {
 }
 
 oc_login() {
-  oc login --token="${K8S_CLUSTER_TOKEN}" --server="${K8S_CLUSTER_URL}"
+  oc login --token="${K8S_CLUSTER_TOKEN}" --server="${K8S_CLUSTER_URL}" --insecure-skip-tls-verify=true
   echo "OCP version: $(oc version)"
   export K8S_CLUSTER_ROUTER_BASE=$(oc get route console -n openshift-console -o=jsonpath='{.spec.host}' | sed 's/^[^.]*\.//')
 }

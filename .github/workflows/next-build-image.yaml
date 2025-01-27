@@ -12,12 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: Build Next Image
+name: Build Next and Tag Image
 
 on:
+  # workflow_dispatch so that it can be triggered manually if needed
+  workflow_dispatch:
+  schedule:
+    # run at 3:18 UTC every day
+    - cron: "18 3 * * *"
   push:
-    branches:
-      - main
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -50,6 +55,11 @@ jobs:
       - name: Prepare
         run: |
           platform=${{ matrix.platform }}
+          ref_name=${{ github.ref_name }}
+          if [ "$ref_name" == "main" ]; then
+            ref_name="next"
+          fi
+          echo "REF_NAME=$ref_name" >> $GITHUB_ENV
           echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
           echo "PLATFORM_ARCH=${platform#*/}" >> $GITHUB_ENV
 
@@ -66,8 +76,8 @@ jobs:
           password: ${{ secrets.QUAY_TOKEN }}
           imageName: ${{ env.REGISTRY_IMAGE }}
           imageTags: |
-            type=raw,value=next-${{ env.PLATFORM_ARCH }}
-            type=raw,value=next-${{ env.SHORT_SHA }}-${{ env.PLATFORM_ARCH }}
+            type=raw,value=${{ env.REF_NAME }}-${{ env.PLATFORM_ARCH }}
+            type=raw,value=${{ env.REF_NAME }}-${{ env.SHORT_SHA }}-${{ env.PLATFORM_ARCH }}
           imageLabels: quay.expires-after=14d
           push: true
           platform: ${{ matrix.platform }}
@@ -116,8 +126,8 @@ jobs:
           with:
             images: ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}
             tags: |
-              type=raw,value=next
-              type=raw,value=next-${{ env.SHORT_SHA }}
+              type=raw,value=${{ env.REF_NAME }}
+              type=raw,value=${{ env.REF_NAME }}-${{ env.SHORT_SHA }}
 
         - name: Login to Docker Hub
           uses: docker/login-action@v3

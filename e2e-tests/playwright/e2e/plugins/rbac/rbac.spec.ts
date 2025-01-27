@@ -14,10 +14,11 @@ import { RhdhAuthApiHack } from "../../../support/api/rhdh-auth-api-hack";
 import RhdhRbacApi from "../../../support/api/rbac-api";
 import { RbacConstants } from "../../../data/rbac-constants";
 import { Policy } from "../../../support/api/rbac-api-structures";
+import { CatalogImport } from "../../../support/pages/catalog-import";
 
 /*
     Note that:
-    The policies generated from a policy.csv or ConfigMap file cannot be edited or deleted using the Developer Hub Web UI. 
+    The policies generated from a policy.csv or ConfigMap file cannot be edited or deleted using the Developer Hub Web UI.
     https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.3/html/authorization/managing-authorizations-by-using-the-web-ui#proc-rbac-ui-edit-role_title-authorization
 */
 test.describe.serial("Test RBAC", () => {
@@ -454,6 +455,11 @@ test.describe.serial("Test RBAC", () => {
     test("Test catalog-entity create is allowed", async () => {
       await uiHelper.openSidebar("Create...");
       expect(await uiHelper.isLinkVisible("Register Existing Component"));
+      await uiHelper.clickButton("Register Existing Component");
+      const catalogImport = new CatalogImport(page);
+      const component =
+        "https://github.com/janus-qe/custom-catalog-entities/blob/main/timestamp-catalog-info.yaml";
+      await catalogImport.registerExistingComponent(component);
     });
 
     test("Test bad PUT and PUT catalog-entity update policy", async () => {

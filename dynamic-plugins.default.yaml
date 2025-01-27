@@ -522,6 +522,19 @@ plugins:
                 menuItem:
                   icon: bulkImportIcon
                   text: Bulk import
+  # Global Header
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-header
+    disabled: true
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-global-header:
+            mountPoints:
+              - mountPoint: application/header
+                importName: GlobalHeader
+                config:
+                  layout:
+                    position: above-main-content
 
   # Homepage
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-dynamic-home-page
@@ -1010,3 +1023,26 @@ plugins:
       catalog:
         providers:
           pingIdentityOrg: {}
+  # Group: Marketplace
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-catalog-backend-module-marketplace-dynamic
+    disabled: true
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-marketplace-backend-dynamic
+    disabled: true
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-marketplace
+    disabled: true
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-marketplace:
+            appIcons:
+              - name: marketplace
+                importName: MarketplaceIcon
+            dynamicRoutes:
+              - path: /marketplace
+                importName: MarketplacePage
+                menuItem:
+                  icon: marketplace
+                  text: Marketplace
+            mountPoints:
+              - mountPoint: admin.page.plugins/cards
+                importName: MarketplaceCatalogContent

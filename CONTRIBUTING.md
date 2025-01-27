@@ -7,10 +7,10 @@ We are excited to see you want to be a part of this project by contributing. Her
 ### Clone and Install
 
 ```bash
-git clone https://github.com/your-username/backstage-showcase.git  # Clone your forked repository
-cd backstage-showcase                                              # Change to the project directory
-yarn install                                                       # Install dependencies
-yarn tsc                                                           # Run type generation and checks
+git clone https://github.com/your-username/rhdh.git   # Clone your forked repository
+cd rhdh                                               # Change to the project directory
+yarn install                                          # Install dependencies
+yarn tsc                                              # Run type generation and checks
 ```
 
 ### Run the Showcase App

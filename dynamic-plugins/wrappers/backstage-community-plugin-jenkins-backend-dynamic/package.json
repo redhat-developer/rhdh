@@ -10,7 +10,7 @@
   },
   "backstage": {
     "role": "backend-plugin",
-    "supported-versions": "1.32.6",
+    "supported-versions": "1.35.0",
     "pluginId": "jenkins",
     "pluginPackages": [
       "backstage-community-plugin-jenkins",
@@ -42,8 +42,8 @@
     "@backstage-community/plugin-jenkins-backend": "0.6.2"
   },
   "devDependencies": {
-    "@backstage/cli": "0.28.2",
-    "@janus-idp/cli": "1.18.5",
+    "@backstage/cli": "0.29.5",
+    "@janus-idp/cli": "3.0.0",
     "typescript": "5.7.3"
   },
   "files": [

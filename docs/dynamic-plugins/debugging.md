@@ -3,7 +3,7 @@
 
 ## Backend Dynamic Plugins Local Debug
 
-For local debugging of Dynamic Plugins you need to clone `backstage-showcase`, run it with debugging enabled and attach your IDE debugger to the backend process. First it is required to build and copy the dynamic plugin:
+For local debugging of Dynamic Plugins you need to clone `rhdh`, run it with debugging enabled and attach your IDE debugger to the backend process. First it is required to build and copy the dynamic plugin:
 
 * Build your plugin and export the dynamic package
 
@@ -16,7 +16,7 @@ yarn build && yarn run export-dynamic
 
 Once the plugin is built and deployed, it is time to prepare the showcase to run it debug mode:
 
-* Go to `backstage-showcase` root directory;
+* Go to `rhdh` root directory;
 * Run `yarn workspace backend start --inspect`
 * In logs you should see something like the following:
 
@@ -30,7 +30,7 @@ Debugger listening on ws://127.0.0.1:9229/9299bb26-3c32-4781-9488-7759b8781db5
 
 ## Backend Dynamic Plugins Container Debug
 
-It is possible to run RHDH on a container and debug plugins that are running on it. In this case you don't need to clone the `backstage-showcase` code locally, instead you must make sure that the running container has the [Node.js debug](https://nodejs.org/en/learn/getting-started/debugging) port open and exposed to the host machine. These are the steps to debug backend dynamic plugins on a container:
+It is possible to run RHDH on a container and debug plugins that are running on it. In this case you don't need to clone the `rhdh` code locally, instead you must make sure that the running container has the [Node.js debug](https://nodejs.org/en/learn/getting-started/debugging) port open and exposed to the host machine. These are the steps to debug backend dynamic plugins on a container:
 
 * Create directory `dynamic-plugins-root`
 * Build your plugin and copy the folder `dist-dynamic` to `dynamic-plugins-root`
