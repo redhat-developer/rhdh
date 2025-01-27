@@ -51,7 +51,7 @@ jobs:
         run: rm app-config.yaml && mv app-config.example.yaml app-config.yaml
 
       - name: Install dependencies
-        uses: backstage/actions/yarn-install@25145dd4117d50e1da9330e9ed2893bc6b75373e # v0.6.15
+        uses: backstage/actions/yarn-install@b3c1841fd69e1658ac631afafd0fb140a2309024 # v0.6.17
         with:
           cache-prefix: ${{ runner.os }}-v${{ matrix.node-version }}
 
@@ -83,7 +83,7 @@ jobs:
         run: rm app-config.yaml && mv app-config.example.yaml app-config.yaml
 
       - name: Install dependencies
-        uses: backstage/actions/yarn-install@25145dd4117d50e1da9330e9ed2893bc6b75373e # v0.6.15
+        uses: backstage/actions/yarn-install@b3c1841fd69e1658ac631afafd0fb140a2309024 # v0.6.17
         with:
           cache-prefix: ${{ runner.os }}-v${{ matrix.node-version }}
 
