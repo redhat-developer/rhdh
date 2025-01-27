@@ -1,5 +1,5 @@
 import { Entity } from '@backstage/catalog-model';
-import { ApiHolder } from '@backstage/core-plugin-api';
+import { ApiHolder, AppComponents } from '@backstage/core-plugin-api';
 import { isKind } from '@backstage/plugin-catalog';
 
 import { hasAnnotation, isType } from '../../components/catalog/utils';
@@ -116,8 +116,17 @@ type ThemeEntry = {
   importName: string;
 };
 
+type ComponentEntry = {
+  scope: string;
+  module: string;
+  id: string;
+  importName: string;
+  name: keyof AppComponents;
+};
+
 type CustomProperties = {
   pluginModule?: string;
+  components: ComponentEntry[];
   dynamicRoutes?: (DynamicModuleEntry & {
     importName?: string;
     module?: string;
@@ -149,6 +158,7 @@ type DynamicConfig = {
   pluginModules: PluginModule[];
   apiFactories: ApiFactory[];
   appIcons: AppIcon[];
+  components: ComponentEntry[];
   dynamicRoutes: DynamicRoute[];
   menuItems: MenuItem[];
   entityTabs: EntityTabEntry[];
@@ -171,6 +181,7 @@ function extractDynamicConfig(
     pluginModules: [],
     apiFactories: [],
     appIcons: [],
+    components: [],
     dynamicRoutes: [],
     menuItems: [],
     entityTabs: [],
@@ -186,6 +197,20 @@ function extractDynamicConfig(
         scope,
         module: customProperties.pluginModule ?? 'PluginRoot',
       });
+      return pluginSet;
+    },
+    [],
+  );
+  config.components = Object.entries(frontend).reduce<ComponentEntry[]>(
+    (pluginSet, [scope, customProperties]) => {
+      pluginSet.push(
+        ...(customProperties.components ?? []).map(component => ({
+          ...component,
+          module: component.module ?? 'PluginRoot',
+          importName: component.importName ?? 'default',
+          scope,
+        })),
+      );
       return pluginSet;
     },
     [],
