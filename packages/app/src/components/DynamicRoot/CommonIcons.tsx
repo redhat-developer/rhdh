@@ -19,6 +19,8 @@ import School from '@mui/icons-material/SchoolOutlined';
 import Star from '@mui/icons-material/Star';
 import Storefront from '@mui/icons-material/StorefrontOutlined';
 import Textsms from '@mui/icons-material/TextsmsOutlined';
+import Help from '@mui/icons-material/HelpOutline';
+import Notifications from '@mui/icons-material/NotificationsOutlined';
 
 const CommonIcons: {
   [k: string]: React.ComponentType<{}>;
@@ -44,6 +46,8 @@ const CommonIcons: {
   feedback: Textsms,
   validate: Rule,
   security: GppGood,
+  support: Help,
+  notifications: Notifications
 };
 
 export default CommonIcons;

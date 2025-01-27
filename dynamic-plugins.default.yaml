@@ -535,6 +535,29 @@ plugins:
                 config:
                   layout:
                     position: above-main-content
+              - mountPoint: application/header/component
+                importName: SearchComponent
+                config:
+                  type: search
+                  enabled: true
+                  slot: header-start
+                  priority: 100
+              - mountPoint: application/header/component
+                importName: CreateDropdown
+                config:
+                  type: dropdown_button
+                  enabled: true
+                  key: create
+                  slot: header-start
+                  priority: 90
+              - mountPoint: application/header/component
+                importName: ProfileDropdown
+                config:
+                  type: dropdown_button
+                  enabled: true
+                  key: profile
+                  slot: header-end
+                  priority: 0
 
   # Group: Global floating action button
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-floating-action-button
