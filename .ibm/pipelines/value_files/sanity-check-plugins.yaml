@@ -48,8 +48,11 @@ global:
         disabled: false
         pluginConfig:
           sonarqube:
-            baseUrl: 'temp'
-            apiKey: 'temp'
+            instances:
+              - name: default
+                instanceKey: mySonarqube
+                baseUrl: https://default-sonarqube.example.com
+                apiKey: 123456789abcdef0123456789abcedf012
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-dynamic-home-page
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-techdocs-backend-dynamic
