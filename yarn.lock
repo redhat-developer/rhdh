@@ -23393,10 +23393,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backstage-plugin-techdocs-module-addons-contrib@workspace:dynamic-plugins/wrappers/backstage-plugin-techdocs-module-addons-contrib"
   dependencies:
-    "@backstage/cli": 0.28.2
-    "@backstage/plugin-techdocs-module-addons-contrib": 1.1.16
+    "@backstage/cli": 0.29.5
+    "@backstage/plugin-techdocs-module-addons-contrib": 1.1.20
     "@backstage/plugin-techdocs-react": 1.2.13
-    "@janus-idp/cli": 1.18.5
+    "@janus-idp/cli": 3.0.0
     "@material-ui/core": 4.12.4
     jss: 10.10.0
     react: 18.3.1
@@ -23417,8 +23417,6 @@ __metadata:
     "@backstage/plugin-techdocs": 1.12.1
     "@backstage/plugin-techdocs-react": 1.2.13
     "@janus-idp/cli": 3.0.0
-    "@material-ui/core": 4.12.4
-    jss: 10.10.0
     react: 18.3.1
     typescript: 5.7.3
   peerDependencies:
