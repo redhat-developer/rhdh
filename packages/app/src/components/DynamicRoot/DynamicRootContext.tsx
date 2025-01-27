@@ -44,7 +44,6 @@ export type DynamicModuleEntry = Pick<
 
 export type ResolvedDynamicRoute = DynamicModuleEntry & {
   path: string;
-  importName: string;
   menuItem?: ResolvedDynamicRouteMenuItem;
   Component: React.ComponentType<any>;
   staticJSXContent?:
@@ -80,7 +79,6 @@ export type ScalprumMountPointConfigRaw = ScalprumMountPointConfigBase & {
 export type ScalprumMountPoint = {
   Component: React.ComponentType<React.PropsWithChildren>;
   config?: ScalprumMountPointConfig;
-  importName?: string;
   staticJSXContent?:
     | React.ReactNode
     | ((config: DynamicRootConfig) => React.ReactNode);
