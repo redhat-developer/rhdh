@@ -130,4 +130,30 @@ export const DynamicEntityTechdocsContent = {
 };
 ```
 
+To include components provided by other dynamic plugins inside static JSX as element children with your dynamically imported component, you can extract them from [dynamicConfig](https://github.com/redhat-developer/rhdh/blob/main/packages/app/src/components/DynamicRoot/DynamicRootContext.tsx#L115) that is passed to the `staticJSXContent`:
+
+```tsx
+// Used by a static plugin
+export const EntityTechdocsContent = () => {...}
+
+// Custom function that extracts addon components from dynamic config
+function getTechdocsAddonComponents(dynamicConfig: DynamicConfig) {
+  const techdocsAddonsData = dynamicConfig?.techdocsAddons ?? [];
+  return techdocsAddonsData.map(
+    ({ scope, module, importName, Component, config }) => (
+      <Component key={`${scope}-${module}-${importName}`} {...config.props} />
+    ),
+  );
+}
+
+// Used by a dynamic plugin
+export const DynamicEntityTechdocsContent = {
+  element: EntityTechdocsContent,
+  staticJSXContent: (dynamicConfig: DynamicConfig) => {
+    const children = getTechdocsAddonComponents(dynamicConfig);
+    return <TechDocsAddons>{children}</TechDocsAddons>;
+  },
+};
+```
+
 Important part of the frontend dynamic plugins is its layout configuration (bindings and routes). For more information on how to configure bindings and routes, see [Frontend Plugin Wiring](frontend-plugin-wiring.md).
