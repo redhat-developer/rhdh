@@ -1,11 +1,5 @@
 export const DefaultMainMenuItems = {
   menuItems: {
-    'default.home': {
-      title: 'Home',
-      icon: 'home',
-      to: '/',
-      priority: 100,
-    },
     'default.my-group': {
       title: 'My Group',
       icon: 'group',
