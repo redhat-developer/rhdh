@@ -22,6 +22,7 @@ import defaultAppComponents from './defaultAppComponents';
 import DynamicRootContext, {
   AppThemeProvider,
   ComponentRegistry,
+  DynamicRootConfig,
   EntityTabOverrides,
   MountPoints,
   RemotePlugins,
@@ -220,7 +221,7 @@ export const DynamicRoot = ({
         importName?: string;
         staticJSXContent?:
           | React.ReactNode
-          | ((children: React.ReactNode) => React.ReactNode);
+          | ((dynamicRootConfig: DynamicRootConfig) => React.ReactNode);
       }[]
     >((acc, { module, importName, mountPoint, scope, config }) => {
       const Component = allPlugins[scope]?.[module]?.[importName];

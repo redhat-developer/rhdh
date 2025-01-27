@@ -49,7 +49,7 @@ export type ResolvedDynamicRoute = DynamicModuleEntry & {
   Component: React.ComponentType<any>;
   staticJSXContent?:
     | React.ReactNode
-    | ((children: React.ReactNode[]) => React.ReactNode);
+    | ((dynamicRootConfig: DynamicRootConfig) => React.ReactNode);
   config: {
     props?: Record<string, any>;
   };
@@ -81,7 +81,9 @@ export type ScalprumMountPoint = {
   Component: React.ComponentType<React.PropsWithChildren>;
   config?: ScalprumMountPointConfig;
   importName?: string;
-  staticJSXContent?: React.ReactNode;
+  staticJSXContent?:
+    | React.ReactNode
+    | ((config: DynamicRootConfig) => React.ReactNode);
 };
 
 export type RemotePlugins = {
@@ -93,7 +95,9 @@ export type RemotePlugins = {
         | BackstagePlugin<{}>
         | {
             element: React.ComponentType<React.PropsWithChildren>;
-            staticJSXContent: React.ReactNode;
+            staticJSXContent:
+              | React.ReactNode
+              | ((config: DynamicRootConfig) => React.ReactNode);
           }
         | AnyApiFactory;
     };

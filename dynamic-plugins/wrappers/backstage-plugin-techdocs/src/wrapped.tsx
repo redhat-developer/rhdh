@@ -11,19 +11,23 @@ import {
 
 import { useApi } from "@backstage/core-plugin-api";
 import { TechDocsAddons } from "@backstage/plugin-techdocs-react";
+import { getTechdocsAddonComponents } from "./utils";
+import { type DynamicConfig } from "./types";
 
 export const TechDocsReaderPage = {
   element: TechDocsReaderPageBase,
-  staticJSXContent: (children: React.ReactNode) => (
-    <TechDocsAddons>{children}</TechDocsAddons>
-  ),
+  staticJSXContent: (dynamicConfig: DynamicConfig) => {
+    const children = getTechdocsAddonComponents(dynamicConfig);
+    return <TechDocsAddons>{children}</TechDocsAddons>;
+  },
 };
 
 export const EntityTechdocsContent = {
   element: EntityTechdocsContentBase,
-  staticJSXContent: (children: React.ReactNode) => (
-    <TechDocsAddons>{children}</TechDocsAddons>
-  ),
+  staticJSXContent: (dynamicConfig: DynamicConfig) => {
+    const children = getTechdocsAddonComponents(dynamicConfig);
+    return <TechDocsAddons>{children}</TechDocsAddons>;
+  },
 };
 
 export const TechdocsSearchFilter = () => {

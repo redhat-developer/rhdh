@@ -4,8 +4,9 @@ import { EntityLayout, EntitySwitch } from '@backstage/plugin-catalog';
 
 import Box from '@mui/material/Box';
 
+import getDynamicRootConfig from '../../../utils/dynamicUI/getDynamicRootConfig';
 import getMountPointData from '../../../utils/dynamicUI/getMountPointData';
-import getTechdocsAddonData from '../../../utils/dynamicUI/getTechdocsAddonData';
+import { DynamicRootConfig } from '../../DynamicRoot/DynamicRootContext';
 import Grid from '../Grid';
 
 export type DynamicEntityTabProps = {
@@ -63,7 +64,7 @@ export const dynamicEntityTab = ({
         {children}
         {getMountPointData<
           React.ComponentType<React.PropsWithChildren>,
-          (children: React.ReactNode) => React.ReactNode
+          React.ReactNode | ((config: DynamicRootConfig) => React.ReactNode)
         >(`${mountPoint}/cards`).map(
           ({ Component, config, staticJSXContent }, index) => {
             return (
@@ -79,24 +80,7 @@ export const dynamicEntityTab = ({
                   <Box sx={config.layout}>
                     <Component {...config.props}>
                       {typeof staticJSXContent === 'function'
-                        ? staticJSXContent(
-                            getTechdocsAddonData<
-                              React.ComponentType<React.PropsWithChildren>
-                            >().map(
-                              ({
-                                scope,
-                                module,
-                                importName: techdocsImportName,
-                                Component: TechdocsComponent,
-                                config: techdocsConfig,
-                              }) => (
-                                <TechdocsComponent
-                                  key={`${scope}-${module}-${techdocsImportName}`}
-                                  {...techdocsConfig.props}
-                                />
-                              ),
-                            ),
-                          )
+                        ? staticJSXContent(getDynamicRootConfig())
                         : staticJSXContent}
                     </Component>
                   </Box>
