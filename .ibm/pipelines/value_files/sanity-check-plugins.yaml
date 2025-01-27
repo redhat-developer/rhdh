@@ -30,6 +30,13 @@ global:
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-jenkins-backend-dynamic
         disabled: false
+        pluginConfig:
+          jenkins:
+            instances:
+              - name: default
+                baseUrl: 'temp'
+                username: 'temp'
+                apiKey: 'temp'
       - package: ./dynamic-plugins/dist/backstage-community-plugin-jenkins
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-notifications
@@ -38,6 +45,12 @@ global:
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-notifications-backend-module-email-dynamic
         disabled: false
+        pluginConfig:
+          notifications:
+            processors:
+              email:
+                transportConfig:
+                sender: 'temp'
       - package: ./dynamic-plugins/dist/backstage-plugin-signals-backend-dynamic
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-signals
@@ -103,6 +116,13 @@ global:
                   authorization: "temp"
       - package: ./dynamic-plugins/dist/backstage-community-plugin-3scale-backend-dynamic
         disabled: false
+        pluginConfig:
+          catalog:
+            providers:
+              threeScaleApiEntity:
+                default:
+                  baseUrl: 'temp'
+                  accessToken: 'temp'
       - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-bitbucket-cloud-dynamic
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-bitbucket-cloud-dynamic
