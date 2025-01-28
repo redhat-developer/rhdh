@@ -22,6 +22,7 @@ import defaultAppComponents from './defaultAppComponents';
 import DynamicRootContext, {
   AppThemeProvider,
   ComponentRegistry,
+  DynamicRootConfig,
   EntityTabOverrides,
   MountPoints,
   RemotePlugins,
@@ -29,6 +30,7 @@ import DynamicRootContext, {
   ResolvedDynamicRouteMenuItem,
   ScaffolderFieldExtension,
   ScalprumMountPointConfig,
+  TechdocsAddon,
 } from './DynamicRootContext';
 import Loader from './Loader';
 
@@ -79,6 +81,7 @@ export const DynamicRoot = ({
       routeBindings,
       routeBindingTargets,
       scaffolderFieldExtensions,
+      techdocsAddons: techdocsAddons,
       themes: pluginThemes,
     } = extractDynamicConfig(dynamicPlugins);
     const requiredModules = [
@@ -215,7 +218,9 @@ export const DynamicRoot = ({
         mountPoint: string;
         Component: React.ComponentType<{}>;
         config?: ScalprumMountPointConfig;
-        staticJSXContent?: React.ReactNode;
+        staticJSXContent?:
+          | React.ReactNode
+          | ((dynamicRootConfig: DynamicRootConfig) => React.ReactNode);
       }[]
     >((acc, { module, importName, mountPoint, scope, config }) => {
       const Component = allPlugins[scope]?.[module]?.[importName];
@@ -365,6 +370,30 @@ export const DynamicRoot = ({
       return acc;
     }, []);
 
+    const techdocsAddonComponents = techdocsAddons.reduce<TechdocsAddon[]>(
+      (acc, { scope, module, importName, config }) => {
+        const extensionComponent = allPlugins[scope]?.[module]?.[importName];
+        if (extensionComponent) {
+          acc.push({
+            scope,
+            module,
+            importName,
+            Component: extensionComponent as React.ComponentType<unknown>,
+            config: {
+              ...config,
+            },
+          });
+        } else {
+          // eslint-disable-next-line no-console
+          console.warn(
+            `Plugin ${scope} is not configured properly: ${module}.${importName} not found, ignoring techdocsAddon: ${importName}`,
+          );
+        }
+        return acc;
+      },
+      [],
+    );
+
     const dynamicThemeProviders = pluginThemes.reduce<AppThemeProvider[]>(
       (acc, { scope, module, importName, icon, ...rest }) => {
         const provider = allPlugins[scope]?.[module]?.[importName];
@@ -422,6 +451,7 @@ export const DynamicRoot = ({
     dynamicRootConfig.mountPoints = mountPointComponents;
     dynamicRootConfig.scaffolderFieldExtensions =
       scaffolderFieldExtensionComponents;
+    dynamicRootConfig.techdocsAddons = techdocsAddonComponents;
 
     // make the dynamic UI configuration available to DynamicRootContext consumers
     setComponents({
@@ -432,6 +462,7 @@ export const DynamicRoot = ({
       entityTabOverrides,
       mountPoints: mountPointComponents,
       scaffolderFieldExtensions: scaffolderFieldExtensionComponents,
+      techdocsAddons: techdocsAddonComponents,
     });
 
     afterInit().then(({ default: Component }) => {

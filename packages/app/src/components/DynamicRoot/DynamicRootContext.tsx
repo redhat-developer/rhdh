@@ -46,7 +46,9 @@ export type ResolvedDynamicRoute = DynamicModuleEntry & {
   path: string;
   menuItem?: ResolvedDynamicRouteMenuItem;
   Component: React.ComponentType<any>;
-  staticJSXContent?: React.ReactNode;
+  staticJSXContent?:
+    | React.ReactNode
+    | ((dynamicRootConfig: DynamicRootConfig) => React.ReactNode);
   config: {
     props?: Record<string, any>;
   };
@@ -77,7 +79,9 @@ export type ScalprumMountPointConfigRaw = ScalprumMountPointConfigBase & {
 export type ScalprumMountPoint = {
   Component: React.ComponentType<React.PropsWithChildren>;
   config?: ScalprumMountPointConfig;
-  staticJSXContent?: React.ReactNode;
+  staticJSXContent?:
+    | React.ReactNode
+    | ((config: DynamicRootConfig) => React.ReactNode);
 };
 
 export type RemotePlugins = {
@@ -89,7 +93,9 @@ export type RemotePlugins = {
         | BackstagePlugin<{}>
         | {
             element: React.ComponentType<React.PropsWithChildren>;
-            staticJSXContent: React.ReactNode;
+            staticJSXContent:
+              | React.ReactNode
+              | ((config: DynamicRootConfig) => React.ReactNode);
           }
         | AnyApiFactory;
     };
@@ -112,12 +118,23 @@ export type ScaffolderFieldExtension = {
   Component: React.ComponentType<{}>;
 };
 
+export type TechdocsAddon = {
+  scope: string;
+  module: string;
+  importName: string;
+  Component: React.ComponentType<{}>;
+  config: {
+    props?: Record<string, any>;
+  };
+};
+
 export type DynamicRootConfig = {
   dynamicRoutes: ResolvedDynamicRoute[];
   entityTabOverrides: EntityTabOverrides;
   mountPoints: MountPoints;
   menuItems: ResolvedMenuItem[];
   scaffolderFieldExtensions: ScaffolderFieldExtension[];
+  techdocsAddons: TechdocsAddon[];
 };
 
 export type ComponentRegistry = {
@@ -133,6 +150,7 @@ const DynamicRootContext = createContext<ComponentRegistry>({
   mountPoints: {},
   menuItems: [],
   scaffolderFieldExtensions: [],
+  techdocsAddons: [],
 });
 
 export default DynamicRootContext;

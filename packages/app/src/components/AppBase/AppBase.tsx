@@ -20,6 +20,7 @@ import { ScaffolderFieldExtensions } from '@backstage/plugin-scaffolder-react';
 import { SearchPage as BackstageSearchPage } from '@backstage/plugin-search';
 import { UserSettingsPage } from '@backstage/plugin-user-settings';
 
+import getDynamicRootConfig from '../../utils/dynamicUI/getDynamicRootConfig';
 import { entityPage } from '../catalog/EntityPage';
 import DynamicRootContext from '../DynamicRoot/DynamicRootContext';
 import { LearningPaths } from '../learningPaths/LearningPathsPage';
@@ -123,15 +124,19 @@ const AppBase = () => {
             <Route path="/catalog-graph" element={<CatalogGraphPage />} />
             <Route path="/learning-paths" element={<LearningPaths />} />
             {dynamicRoutes.map(
-              ({ Component, staticJSXContent, path, config: { props } }) => (
-                <Route
-                  key={path}
-                  path={path}
-                  element={<Component {...props} />}
-                >
-                  {staticJSXContent}
-                </Route>
-              ),
+              ({ Component, staticJSXContent, path, config: { props } }) => {
+                return (
+                  <Route
+                    key={path}
+                    path={path}
+                    element={<Component {...props} />}
+                  >
+                    {typeof staticJSXContent === 'function'
+                      ? staticJSXContent(getDynamicRootConfig())
+                      : staticJSXContent}
+                  </Route>
+                );
+              },
             )}
           </FlatRoutes>
         </Root>

@@ -86,6 +86,7 @@ COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/janus-idp-backstage-plugin
 COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/immobiliarelabs-backstage-plugin-gitlab/package.json ./dynamic-plugins/wrappers/immobiliarelabs-backstage-plugin-gitlab/package.json
 COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/immobiliarelabs-backstage-plugin-gitlab-backend-dynamic/package.json ./dynamic-plugins/wrappers/immobiliarelabs-backstage-plugin-gitlab-backend-dynamic/package.json
 COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-plugin-techdocs/package.json ./dynamic-plugins/wrappers/backstage-plugin-techdocs/package.json
+COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-plugin-techdocs-module-addons-contrib/package.json ./dynamic-plugins/wrappers/backstage-plugin-techdocs-module-addons-contrib/package.json
 COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-plugin-techdocs-backend-dynamic/package.json ./dynamic-plugins/wrappers/backstage-plugin-techdocs-backend-dynamic/package.json
 COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-plugin-signals/package.json ./dynamic-plugins/wrappers/backstage-plugin-signals/package.json
 COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-plugin-signals-backend-dynamic/package.json ./dynamic-plugins/wrappers/backstage-plugin-signals-backend-dynamic/package.json

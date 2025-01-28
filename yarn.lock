@@ -23398,6 +23398,23 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"backstage-plugin-techdocs-module-addons-contrib@workspace:dynamic-plugins/wrappers/backstage-plugin-techdocs-module-addons-contrib":
+  version: 0.0.0-use.local
+  resolution: "backstage-plugin-techdocs-module-addons-contrib@workspace:dynamic-plugins/wrappers/backstage-plugin-techdocs-module-addons-contrib"
+  dependencies:
+    "@backstage/cli": 0.29.5
+    "@backstage/plugin-techdocs-module-addons-contrib": 1.1.20
+    "@backstage/plugin-techdocs-react": 1.2.13
+    "@janus-idp/cli": 3.0.0
+    "@material-ui/core": 4.12.4
+    jss: 10.10.0
+    react: 18.3.1
+    typescript: 5.7.3
+  peerDependencies:
+    react: 16.13.1 || ^17.0.0 || ^18.0.0
+  languageName: unknown
+  linkType: soft
+
 "backstage-plugin-techdocs@workspace:dynamic-plugins/wrappers/backstage-plugin-techdocs":
   version: 0.0.0-use.local
   resolution: "backstage-plugin-techdocs@workspace:dynamic-plugins/wrappers/backstage-plugin-techdocs"
@@ -23407,11 +23424,8 @@ __metadata:
     "@backstage/plugin-catalog-react": 1.15.1
     "@backstage/plugin-search-react": 1.8.5
     "@backstage/plugin-techdocs": 1.12.1
-    "@backstage/plugin-techdocs-module-addons-contrib": 1.1.20
     "@backstage/plugin-techdocs-react": 1.2.13
     "@janus-idp/cli": 3.0.0
-    "@material-ui/core": 4.12.4
-    jss: 10.10.0
     react: 18.3.1
     typescript: 5.7.3
   peerDependencies:
