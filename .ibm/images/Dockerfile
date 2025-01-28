@@ -1,5 +1,5 @@
 # Base image from Microsoft Playwright
-FROM mcr.microsoft.com/playwright:v1.47.2-jammy
+FROM mcr.microsoft.com/playwright:v1.50.0-jammy
 
 # Set environment variables for the container
 ENV CI=1 \
