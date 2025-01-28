@@ -4,5 +4,4 @@ metadata:
   name: components
   description: A collection of all components
 spec:
-  targets:
-    - ./components/showcase.yaml
+  targets: []

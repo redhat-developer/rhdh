@@ -38,7 +38,7 @@ metadata:
     app.kubernetes.io/name: topology-test
     backstage.io/kubernetes-id: developer-hub
   annotations: 
-    app.openshift.io/vcs-uri: "https://github.com/janus-idp/backstage-showcase"
+    app.openshift.io/vcs-uri: "https://github.com/redhat-developer/rhdh"
 spec:
   replicas: 1
   selector:

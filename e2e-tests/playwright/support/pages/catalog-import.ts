@@ -69,8 +69,8 @@ export class BackstageShowcase {
     paginated = false,
   ) {
     return await APIHelper.getGitHubPRs(
-      "janus-idp",
-      "backstage-showcase",
+      "redhat-developer",
+      "rhdh",
       state,
       paginated,
     );

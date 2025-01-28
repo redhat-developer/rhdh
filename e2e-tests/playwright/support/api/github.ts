@@ -1,4 +1,4 @@
-import { JANUS_ORG } from "../../utils/constants";
+import { REDHAT_DEVELOPER_ORG } from "../../utils/constants";
 import { APIResponse, request } from "@playwright/test";
 import { GetOrganizationResponse } from "./github-structures";
 
@@ -13,13 +13,13 @@ export default class GithubApi {
   };
 
   public async getOrganization(
-    org = JANUS_ORG,
+    org = REDHAT_DEVELOPER_ORG,
   ): Promise<GetOrganizationResponse> {
     const req = await this._organization(org).get();
     return new GetOrganizationResponse(req.json());
   }
 
-  public async getReposFromOrg(org = JANUS_ORG) {
+  public async getReposFromOrg(org = REDHAT_DEVELOPER_ORG) {
     const req = await this._organization(org).repos();
     return req.json();
   }
