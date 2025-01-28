@@ -6,6 +6,7 @@ import {
   ROLES_PAGE_COMPONENTS,
 } from "../pageObjects/page-obj";
 import { Policy, Role } from "../api/rbac-api-structures";
+import { LOGGER } from "../../utils/logger";
 
 export class Roles {
   private readonly page: Page;
@@ -97,7 +98,7 @@ export class Response {
 
       return responseClean;
     } catch (error) {
-      console.error("Error processing API response:", error);
+      LOGGER.error("Error processing API response:", error);
       throw new Error("Failed to process the API response");
     }
   }

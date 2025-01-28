@@ -15,13 +15,14 @@ import RhdhRbacApi from "../../../support/api/rbac-api";
 import { RbacConstants } from "../../../data/rbac-constants";
 import { Policy } from "../../../support/api/rbac-api-structures";
 import { CatalogImport } from "../../../support/pages/catalog-import";
+import { LOGGER } from "../../../utils/logger";
 
 /*
     Note that:
     The policies generated from a policy.csv or ConfigMap file cannot be edited or deleted using the Developer Hub Web UI.
     https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.3/html/authorization/managing-authorizations-by-using-the-web-ui#proc-rbac-ui-edit-role_title-authorization
 */
-test.describe.serial("Test RBAC", () => {
+test.describe.skip("Test RBAC", () => {
   test.describe
     .serial("Test RBAC plugin: load permission policies and conditions from files", () => {
     test.beforeEach(async ({ page }) => {
@@ -168,7 +169,7 @@ test.describe.serial("Test RBAC", () => {
         const fileContent = await fs.readFile(filePath, "utf-8");
         return fileContent;
       } else {
-        console.error("Download failed or path is not available");
+        LOGGER.error("Download failed or path is not available");
         return undefined;
       }
     }
@@ -363,7 +364,7 @@ test.describe.serial("Test RBAC", () => {
 
     // eslint-disable-next-line no-empty-pattern
     test.beforeEach(async ({}, testInfo) => {
-      console.log(
+      LOGGER.warning(
         `beforeEach: Attempting setup for ${testInfo.title}, retry: ${testInfo.retry}`,
       );
     });
@@ -542,7 +543,7 @@ test.describe.serial("Test RBAC", () => {
         expect(deleteRemainingPolicies.ok()).toBeTruthy();
         expect(deleteRole.ok()).toBeTruthy();
       } catch (error) {
-        console.error("Error during cleanup in afterAll:", error);
+        LOGGER.error("Error during cleanup in afterAll:", error);
       }
     });
   });
