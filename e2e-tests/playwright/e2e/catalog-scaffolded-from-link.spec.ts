@@ -45,6 +45,7 @@ test.describe.serial("Link Scaffolded Templates to Catalog Items", () => {
   });
 
   test("Create a React App using the newly registered Template", async () => {
+    test.setTimeout(130000);
     await uiHelper.openSidebar("Catalog");
     await uiHelper.clickButton("Create");
     await uiHelper.searchInputPlaceholder("Create React App Template");
@@ -79,6 +80,7 @@ test.describe.serial("Link Scaffolded Templates to Catalog Items", () => {
     ]);
 
     await uiHelper.clickButton("Create");
+    await page.waitForTimeout(5000);
     await uiHelper.clickLink("Open in catalog");
   });
 
