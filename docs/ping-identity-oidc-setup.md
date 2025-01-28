@@ -37,6 +37,9 @@ auth:
         clientId: ${PING_IDENTITY_CLIENT_ID}
         clientSecret: ${PING_IDENTITY_CLIENT_SECRET}
         prompt: auto #optional
+        signIn:
+          resolvers:
+            - resolver: oidcSubClaimMatchingPingIdentityUserId
 ```
 
 The OIDC provider requires three mandatory configuration keys:
@@ -46,6 +49,7 @@ The OIDC provider requires three mandatory configuration keys:
 - `metadataUrl`: Copy from `OIDC Discovery Endpoint` under `Configuration` tab in `URLs` drop down.
 - `prompt` (optional): Recommended to use auto so the browser will request login to the IDP if the user has no active session.
 - `additionalScopes` (optional): List of scopes for the App Registration, to be requested in addition to the required ones.
+- `signIn.resolvers.resolver` (optional): `oidcSubClaimMatchingPingIdentityUserId` is a secure user resolver that matches the `sub` claim from OIDC to the Ping Identity user ID. 
 
 #### Known Issues
 

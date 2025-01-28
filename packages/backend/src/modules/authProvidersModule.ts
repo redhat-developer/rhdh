@@ -24,6 +24,8 @@ import {
   createOAuthProviderFactory,
 } from '@backstage/plugin-auth-node';
 
+import { rhdhSignInResolvers } from './authResolvers';
+
 /**
  * Function is responsible for signing in a user with the catalog user and
  * creating an entity reference based on the provided name parameter.
@@ -221,6 +223,10 @@ function getAuthProviderFactory(providerId: string): AuthProviderFactory {
         signInResolver:
           oidcSignInResolvers.emailLocalPartMatchingUserEntityName(),
         signInResolverFactories: {
+          oidcSubClaimMatchingKeycloakUserId:
+            rhdhSignInResolvers.oidcSubClaimMatchingKeycloakUserId,
+          oidcSubClaimMatchingPingIdentityUserId:
+            rhdhSignInResolvers.oidcSubClaimMatchingPingIdentityUserId,
           ...oidcSignInResolvers,
         },
       });
