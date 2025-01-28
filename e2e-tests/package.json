@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "@azure/identity": "4.4.1",
-    "@keycloak/keycloak-admin-client": "25.0.2",
+    "@keycloak/keycloak-admin-client": "25.0.6",
     "@kubernetes/client-node": "0.21.0",
     "@microsoft/microsoft-graph-client": "3.0.7",
     "isomorphic-fetch": "3.0.0",
