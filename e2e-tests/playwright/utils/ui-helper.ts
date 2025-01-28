@@ -1,5 +1,6 @@
 import { expect, Locator, Page } from "@playwright/test";
 import { UI_HELPER_ELEMENTS } from "../support/pageObjects/global-obj";
+import { SidebarTabs } from "./navbar";
 
 export class UIhelper {
   private page: Page;
@@ -151,10 +152,10 @@ export class UIhelper {
   }
 
   async waitForSideBarVisible() {
-    await this.page.waitForSelector("nav a", { timeout: 10 * 1000 });
+    await this.page.waitForSelector("nav a", { timeout: 10_000 });
   }
 
-  async openSidebar(navBarText: string) {
+  async openSidebar(navBarText: SidebarTabs) {
     const navLink = this.page
       .locator(`nav a:has-text("${navBarText}")`)
       .first();
