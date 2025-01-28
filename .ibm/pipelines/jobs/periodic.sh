@@ -13,12 +13,12 @@ handle_nightly() {
 
   cluster_setup
   initiate_deployments
-  add_sanity_plugins_check
   deploy_test_backstage_provider "${NAME_SPACE}"
 
   run_standard_deployment_tests
   run_rds_deployment_tests
-  # run_runtime_config_change_tests
+  add_sanity_plugins_check
+  run_runtime_config_change_tests
 
 }
 
@@ -50,12 +50,20 @@ run_runtime_config_change_tests() {
 }
 
 add_sanity_plugins_check() {
+  configure_namespace "${NAME_SPACE_SANITY_PLUGINS_CHECK}"
+  uninstall_helmchart "${NAME_SPACE_SANITY_PLUGINS_CHECK}" "${RELEASE_NAME}"
+  oc apply -f "$DIR/resources/redis-cache/redis-deployment.yaml" --namespace="${NAME_SPACE_SANITY_PLUGINS_CHECK}"
+  local sanity_plugins_url="https://${RELEASE_NAME}-backstage-${NAME_SPACE_SANITY_PLUGINS_CHECK}.${K8S_CLUSTER_ROUTER_BASE}"
+  apply_yaml_files "${DIR}" "${NAME_SPACE_SANITY_PLUGINS_CHECK}" "${sanity_plugins_url}"
+
   helm upgrade -i "${RELEASE_NAME}" \
-     -n "${NAME_SPACE}" "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" \
+     -n "${NAME_SPACE_SANITY_PLUGINS_CHECK}" "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" \
      --version "${CHART_VERSION}" \
      -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" \
      -f "${DIR}/value_files/sanity-check-plugins.yaml" \
      --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
      --set upstream.backstage.image.repository="${QUAY_REPO}" \
      --set upstream.backstage.image.tag="${TAG_NAME}"
+
+  check_and_test "${RELEASE_NAME}" "${NAME_SPACE_SANITY_PLUGINS_CHECK}" "${sanity_plugins_url}"
 }

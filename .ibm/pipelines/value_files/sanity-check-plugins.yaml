@@ -30,6 +30,13 @@ global:
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-jenkins-backend-dynamic
         disabled: false
+        pluginConfig:
+          jenkins:
+            instances:
+              - name: default
+                baseUrl: 'temp'
+                username: 'temp'
+                apiKey: 'temp'
       - package: ./dynamic-plugins/dist/backstage-community-plugin-jenkins
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-notifications
@@ -38,6 +45,12 @@ global:
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-notifications-backend-module-email-dynamic
         disabled: false
+        pluginConfig:
+          notifications:
+            processors:
+              email:
+                transportConfig:
+                sender: 'temp'
       - package: ./dynamic-plugins/dist/backstage-plugin-signals-backend-dynamic
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-signals
@@ -48,8 +61,11 @@ global:
         disabled: false
         pluginConfig:
           sonarqube:
-            baseUrl: 'temp'
-            apiKey: 'temp'
+            instances:
+              - name: default
+                instanceKey: mySonarqube
+                baseUrl: https://default-sonarqube.example.com
+                apiKey: 123456789abcdef0123456789abcedf012
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-dynamic-home-page
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-techdocs-backend-dynamic
@@ -100,6 +116,13 @@ global:
                   authorization: "temp"
       - package: ./dynamic-plugins/dist/backstage-community-plugin-3scale-backend-dynamic
         disabled: false
+        pluginConfig:
+          catalog:
+            providers:
+              threeScaleApiEntity:
+                default:
+                  baseUrl: 'temp'
+                  accessToken: 'temp'
       - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-bitbucket-cloud-dynamic
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-bitbucket-cloud-dynamic
@@ -109,19 +132,6 @@ global:
       - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-bitbucket-server-dynamic
         disabled: false
         pluginConfig:
-          # https://backstage.io/docs/integrations/bitbucketServer/discovery#configuration
-          catalog:
-            providers:
-              bitbucketServer:
-                default: # identifies your ingested dataset
-                  host: 'temp'
-                  schedule:
-                    frequency:
-                      minutes: 30
-                    initialDelay:
-                      minutes: 1
-                    timeout:
-                      minutes: 3
       - package: ./dynamic-plugins/dist/backstage-community-plugin-dynatrace
         disabled: false
       - package: ./dynamic-plugins/dist/roadiehq-backstage-plugin-jira
