@@ -39,11 +39,11 @@
     "@material-table/core": "3.2.5",
     "@mui/icons-material": "5.16.14",
     "@mui/material": "5.16.14",
-    "react-use": "17.5.1"
+    "react-use": "17.6.0"
   },
   "peerDependencies": {
     "react": "16.13.1 || ^17.0.0 || ^18.2.0",
-    "react-router-dom": "6.26.2"
+    "react-router-dom": "6.28.2"
   },
   "devDependencies": {
     "@backstage/cli": "0.29.5",
