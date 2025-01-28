@@ -1,22 +1,5 @@
-# Showcase end-to-end tests
+# Readme for e2e tests
 
-### How to setup backstage configuration during the pipeline
-
-[app-config-rhdh.yaml](../.ibm/pipelines/resources/config_map/app-config-rhdh.yaml) is the
-configuration file
-to add plugins or any other kind of configuration into Backstage
-
-### Environment Variables into app-config-rhdh.yaml
-
-To use environment variables
-on [app-config-rhdh.yaml](../.ibm/pipelines/resources/config_map/app-config-rhdh.yaml)
-we need to set the envs encoded as Base64 in the
-[secrets-rhdh-secrets.yaml](.ibm/pipelines/auth/secrets-rhdh-secrets.yaml) .
-You can use temporary values for the secrets because it can be replaced by the pipeline.
-Add the environments needed in our as Base64 encoded values and using secure property.
-
-To replace the values into secrets-rhdh-secrets.yaml we need to create the replace function using
-[openshift-tests.sh](.ibm/pipelines/openshift-tests.sh) script. For example:
-
-`sed -i "s|KEYCLOAK_BASE_URL:.*|KEYCLOAK_BASE_URL: $KEYCLOAK_BASE_URL|g" $DIR/auth/secrets-rhdh-secrets.yaml
-`
+The readme for the e2e framework is located [here](../docs/e2e-tests/README.md)
+The contribution guidelines are [here](../docs/e2e-tests/CONTRIBUTING.MD)
+The example and bootstraps to create tests are [here](../docs/e2e-tests/examples.md)
