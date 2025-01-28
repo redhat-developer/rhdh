@@ -20,7 +20,6 @@
     "prettier:fix": "prettier --ignore-unknown --write ."
   },
   "dependencies": {
-    "@backstage-community/plugin-rbac-backend": "5.2.10",
     "@backstage-community/plugin-rbac-node": "1.8.2",
     "@backstage-community/plugin-scaffolder-backend-module-annotator": "2.2.2",
     "@backstage/backend-app-api": "1.1.1",
@@ -51,6 +50,7 @@
     "@internal/plugin-licensed-users-info-backend": "*",
     "@internal/plugin-scalprum-backend": "*",
     "@janus-idp/backstage-plugin-audit-log-node": "1.7.2",
+    "@oandriie/plugin-rbac-backend": "6.2.6",
     "@opentelemetry/api": "1.9.0",
     "@opentelemetry/auto-instrumentations-node": "0.55.3",
     "@opentelemetry/exporter-prometheus": "0.57.1",

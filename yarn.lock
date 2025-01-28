@@ -3739,35 +3739,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-rbac-backend@npm:5.2.10":
-  version: 5.2.10
-  resolution: "@backstage-community/plugin-rbac-backend@npm:5.2.10"
-  dependencies:
-    "@backstage-community/plugin-rbac-common": ^1.12.3
-    "@backstage-community/plugin-rbac-node": ^1.8.4
-    "@backstage/backend-defaults": ^0.5.2
-    "@backstage/backend-plugin-api": ^1.0.1
-    "@backstage/catalog-client": ^1.7.1
-    "@backstage/catalog-model": ^1.7.0
-    "@backstage/errors": ^1.2.4
-    "@backstage/plugin-auth-node": ^0.5.3
-    "@backstage/plugin-permission-backend": ^0.5.50
-    "@backstage/plugin-permission-common": ^0.8.1
-    "@backstage/plugin-permission-node": ^0.8.4
-    "@dagrejs/graphlib": ^2.1.13
-    "@janus-idp/backstage-plugin-audit-log-node": ^1.7.1
-    casbin: ^5.27.1
-    chokidar: ^3.6.0
-    csv-parse: ^5.5.5
-    express: ^4.18.2
-    js-yaml: ^4.1.0
-    knex: ^3.0.0
-    lodash: ^4.17.21
-    typeorm-adapter: ^1.6.1
-  checksum: 1e77a7ada4a490b2a9a00eda29fac5b3bf9f007faaa4028aabc483d408362f99555af9af3daef2c4785ee75d8fb784f9bf175b29c86f8591678b1589ed1f0355
-  languageName: node
-  linkType: hard
-
 "@backstage-community/plugin-rbac-common@npm:1.12.3, @backstage-community/plugin-rbac-common@npm:^1.12.3":
   version: 1.12.3
   resolution: "@backstage-community/plugin-rbac-common@npm:1.12.3"
@@ -13036,6 +13007,36 @@ __metadata:
   dependencies:
     semver: ^7.3.5
   checksum: d960cab4b93adcb31ce223bfb75c5714edbd55747342efb67dcc2f25e023d930a7af6ece3e75f2f459b6f38fc14d031c766f116cd124fdc937fd33112579e820
+  languageName: node
+  linkType: hard
+
+"@oandriie/plugin-rbac-backend@npm:6.2.6":
+  version: 6.2.6
+  resolution: "@oandriie/plugin-rbac-backend@npm:6.2.6"
+  dependencies:
+    "@backstage-community/plugin-rbac-common": ^1.12.3
+    "@backstage-community/plugin-rbac-node": ^1.8.4
+    "@backstage/backend-defaults": ^0.5.2
+    "@backstage/backend-plugin-api": ^1.0.1
+    "@backstage/catalog-client": ^1.7.1
+    "@backstage/catalog-model": ^1.7.0
+    "@backstage/errors": ^1.2.4
+    "@backstage/plugin-auth-node": ^0.5.3
+    "@backstage/plugin-permission-backend": ^0.5.50
+    "@backstage/plugin-permission-common": ^0.8.1
+    "@backstage/plugin-permission-node": ^0.8.4
+    "@dagrejs/graphlib": ^2.1.13
+    "@janus-idp/backstage-plugin-audit-log-node": ^1.7.1
+    casbin: ^5.27.1
+    casbin-pg-watcher: ^0.2.0
+    chokidar: ^3.6.0
+    csv-parse: ^5.5.5
+    express: ^4.18.2
+    js-yaml: ^4.1.0
+    knex: ^3.0.0
+    lodash: ^4.17.21
+    typeorm-adapter: ^1.6.1
+  checksum: 4fb899822c29b36fffce8ba0640a626fad1469959017268559958555f48ab476b751cc6ada84f13647711f7a3ca200b5b7f5b0a75c2ecfd2cd2ad2e405807487
   languageName: node
   linkType: hard
 
@@ -22717,7 +22718,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backend@workspace:packages/backend"
   dependencies:
-    "@backstage-community/plugin-rbac-backend": 5.2.10
     "@backstage-community/plugin-rbac-node": 1.8.2
     "@backstage-community/plugin-scaffolder-backend-module-annotator": 2.2.2
     "@backstage/backend-app-api": 1.1.1
@@ -22749,6 +22749,7 @@ __metadata:
     "@internal/plugin-licensed-users-info-backend": "*"
     "@internal/plugin-scalprum-backend": "*"
     "@janus-idp/backstage-plugin-audit-log-node": 1.7.2
+    "@oandriie/plugin-rbac-backend": 6.2.6
     "@opentelemetry/api": 1.9.0
     "@opentelemetry/auto-instrumentations-node": 0.55.3
     "@opentelemetry/exporter-prometheus": 0.57.1
@@ -24133,6 +24134,15 @@ __metadata:
   version: 1.0.30001669
   resolution: "caniuse-lite@npm:1.0.30001669"
   checksum: 8ed0c69d0c6aa3b1cbc5ba4e5f5330943e7b7165e257f6955b8b73f043d07ad922265261f2b54d9bbaf02886bbdba5e6f5b16662310a13f91f17035af3212de1
+  languageName: node
+  linkType: hard
+
+"casbin-pg-watcher@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "casbin-pg-watcher@npm:0.2.0"
+  dependencies:
+    pg-listen: ^1.6.0
+  checksum: 577986e5130f30257298e92df43c36896577e33a52e7ad2d0a455678fa120b89c41c7c826913eb4ac821cb0ca35421e045e34d77d06e4e523b7d80a99c830629
   languageName: node
   linkType: hard
 
@@ -38122,6 +38132,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"pg-listen@npm:^1.6.0":
+  version: 1.7.0
+  resolution: "pg-listen@npm:1.7.0"
+  dependencies:
+    debug: ^4.1.1
+    pg-format: ^1.0.4
+    typed-emitter: ^0.1.0
+  peerDependencies:
+    pg: 7.x || 8.x
+  checksum: 900997272d939f0db073143e9b3d27871997deeb5d5fc5d8118fdc95cdbc2ae072e126290cfdea1b5755c1883332395eb67e93fdcf53a345e5121d063ef537c4
+  languageName: node
+  linkType: hard
+
 "pg-numeric@npm:1.0.2":
   version: 1.0.2
   resolution: "pg-numeric@npm:1.0.2"
@@ -44351,6 +44374,13 @@ __metadata:
     possible-typed-array-names: ^1.0.0
     reflect.getprototypeof: ^1.0.6
   checksum: deb1a4ffdb27cd930b02c7030cb3e8e0993084c643208e52696e18ea6dd3953dfc37b939df06ff78170423d353dc8b10d5bae5796f3711c1b3abe52872b3774c
+  languageName: node
+  linkType: hard
+
+"typed-emitter@npm:^0.1.0":
+  version: 0.1.0
+  resolution: "typed-emitter@npm:0.1.0"
+  checksum: b0878795f0443a14cdef7a7b2f87692637230a40dd35ce337f716e1a26f45ea3a929f339c7577afbe6974fcae587397f9b8599ea72ea3647bb5c01d2788633a9
   languageName: node
   linkType: hard
 
