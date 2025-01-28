@@ -474,8 +474,11 @@ apply_yaml_files() {
     oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline-run.yaml"
 
     # Create Deployment and Pipeline for Topology test.
-    if [[ "${project}" != *k8s* ]]; then # Specific to OCP deployments (uses Route which is not supported by K8S)
-      oc apply -f "$dir/resources/topology_test/topology-test.yaml"
+    oc apply -f "$dir/resources/topology_test/topology-test.yaml"
+    if [[ "${project}" == *k8s* ]]; then
+      oc apply -f "$dir/resources/topology_test/topology-test-ingress.yaml"
+    else
+      oc apply -f "$dir/resources/topology_test/topology-test-route.yaml"
     fi
 }
 
