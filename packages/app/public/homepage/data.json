@@ -1,46 +1,5 @@
 [
   {
-    "title": "Community",
-    "isExpanded": false,
-    "links": [
-      {
-        "iconUrl": "/homepage/icons/icons8/web.png",
-        "label": "Website",
-        "url": "https://janus-idp.io/community"
-      },
-      {
-        "iconUrl": "/homepage/icons/icons8/external-blog-copywriting-itim2101-lineal-itim2101.png",
-        "label": "Blog",
-        "url": "https://janus-idp.io/blog"
-      },
-      {
-        "iconUrl": "/homepage/icons/icons8/github.png",
-        "label": "GitHub",
-        "url": "https://github.com/orgs/janus-idp"
-      },
-      {
-        "iconUrl": "/homepage/icons/icons8/slack-new.png",
-        "label": "Slack",
-        "url": "https://join.slack.com/t/janus-idp/shared_invite/zt-1pxtehxom-fCFtF9rRe3vFqUiFFeAkmg"
-      },
-      {
-        "iconUrl": "/homepage/icons/icons8/youtube-play.png",
-        "label": "YouTube Channel",
-        "url": "https://www.youtube.com/@januscommunity"
-      },
-      {
-        "iconUrl": "/homepage/icons/icons8/external-mailing-list-information-technology-solid-solidglyph-m-oki-orlando.png",
-        "label": "Mailing List",
-        "url": "https://groups.google.com/g/janus-idp-community"
-      },
-      {
-        "iconUrl": "/homepage/icons/icons8/tear-off-calendar.png",
-        "label": "Calendar",
-        "url": "https://calendar.google.com/calendar/u/0?cid=amFudXMuaWRwLmNvbW11bml0eUBnbWFpbC5jb20"
-      }
-    ]
-  },
-  {
     "title": "Developer Tools",
     "isExpanded": true,
     "links": [
