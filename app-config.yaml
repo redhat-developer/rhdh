@@ -150,8 +150,15 @@ catalog:
   rules:
     - allow: [Component, System, Group, Resource, Location, Template, API]
   locations:
-    - type: url
-      target: https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/all.yaml
+    - type: file
+      target: ../../catalog-info.yaml
+      rules:
+        - allow: [Component, System]
+
+    - type: file
+      target: ../../catalog-entities/all.yaml
+      rules:
+        - allow: [Component, System, Group, Resource, Location, Template, API]
 
     - type: url
       target: https://github.com/redhat-developer/red-hat-developer-hub-software-templates/blob/main/templates.yaml
