@@ -1,9 +1,17 @@
 #!/bin/bash
+set -e
 
 export OC_URL=https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux.tar.gz
 export OI_URL=https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-install-linux.tar.gz
 
+WORKSPACE=$(pwd)/osdcluster
+mkdir -p $WORKSPACE
 export PATH=$WORKSPACE:$PATH
+
+CLIENT_ID=$(cat /tmp/osdsecrets/OSD_CLIENT_ID)
+CLIENT_SECRET=$(cat /tmp/osdsecrets/OSD_CLIENT_SECRET)
+SERVICE_ACCOUNT_FILE=$(cat /tmp/osdsecrets/SERVICE_ACCOUNT_FILE)
+OSD_VERSION="${OSD_VERSION:-4.17.10}"
 
 if [ -n "$CLUSTER_NAME" ]; then
     echo $CLUSTER_NAME > $WORKSPACE/cluster-info.name
@@ -22,14 +30,14 @@ ocm login --client-id=$CLIENT_ID --client-secret=$CLIENT_SECRET
 
 echo "Logged in as $(ocm whoami | jq -rc '.username')"
 
-OSD_VERSION=4.16.16
-SERVICE_ACCOUNT_FILE=temp
+echo $SERVICE_ACCOUNT_FILE > $WORKSPACE/gcp_service_account_json.json
+SERVICE_ACCOUNT_FILE=$WORKSPACE/gcp_service_account_json.json
 
 # OSD_VERSION=${OSD_VERSION:-$(ocm list versions | tail -n1)}
 echo "creating OSD_VERSION : $OSD_VERSION"
 
 
-ocm create cluster --ccs --provider gcp --region us-east1 --service-account-file  $SERVICE_ACCOUNT_FILE --subscription-type marketplace-gcp --marketplace-gcp-terms  --version "$OSD_VERSION" "$CLUSTER_NAME"
+ocm create cluster --ccs --provider gcp --compute-machine-type n2-standard-4 --compute-nodes 2 --region us-east1 --service-account-file  $SERVICE_ACCOUNT_FILE --subscription-type marketplace-gcp --marketplace-gcp-terms  --version "$OSD_VERSION" "$CLUSTER_NAME"
 CLUSTER_ID=$(ocm list clusters --columns "id,name" | grep $CLUSTER_NAME| cut -d " " -f1)
 
 echo "CLUSTER_ID : $CLUSTER_ID"
@@ -59,22 +67,19 @@ echo "    api_url: $(ocm describe cluster $CLUSTER_ID --json | jq -rc '.api.url'
 echo "    $KUBEADMIN_USER: $KUBEADMIN_PASSWORD" >> $CLUSTER_CONFIG
 echo "    cli: oc login $(ocm describe cluster $CLUSTER_ID --json | jq -rc '.api.url') --username $KUBEADMIN_USER --password $KUBEADMIN_PASSWORD" >> $CLUSTER_CONFIG
 
-echo
-cat $CLUSTER_CONFIG
-echo
-
 export KUBECONFIG=$WORKSPACE/kubeconfig
 rm -rvf $KUBECONFIG
-retries=50
-until [[ $retries == 0 ]]; do
-    echo "Attempting to login to get kubeconfig - $retries attempts remaining..."
-    oc login $(ocm describe cluster $CLUSTER_ID --json | jq -rc '.api.url') --username $KUBEADMIN_USER --password $KUBEADMIN_PASSWORD >/dev/null 2>&1 && break
+CLUSTER_API_URL=$(ocm describe cluster $CLUSTER_ID --json | jq -rc '.api.url')
+for i in {1..50}; do
+    echo "Attempt $i: Logging in..."
+    if oc login "$CLUSTER_API_URL" --username "$KUBEADMIN_USER" --password "$KUBEADMIN_PASSWORD" --insecure-skip-tls-verify=true; then
+        echo "Login successful!"
+        ocm describe cluster $CLUSTER_ID > $WORKSPACE/cluster-info.yaml
+        exit 0
+    fi
+    echo "Login failed. Retrying in 30 seconds..."
     sleep 30
-    retries=$(($retries - 1))
 done
-if [[ $retries == 0 ]]; then
-    echo "Unable to login as $KUBEADMIN_USER!"
-else
-    echo "Successfull logged in as $KUBEADMIN_USER"
-fi
-ocm describe cluster $CLUSTER_NAME > $WORKSPACE/cluster-info.yaml
+
+echo "Exceeded maximum retries. Login failed."
+exit 1

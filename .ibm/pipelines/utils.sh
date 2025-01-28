@@ -267,6 +267,20 @@ wait_for_deployment() {
     return 1
 }
 
+wait_for_svc(){
+  local svc_name=$1
+  local namespace=$2
+  local timeout=${3:-300}
+  
+  timeout $timeout bash -c "
+    while ! oc get svc $svc_name -n $namespace &> /dev/null; do
+        echo "Waiting for $svc_name service to be created..."
+        sleep 5
+    done
+    echo "Service $svc_name is created."
+    " || echo "Error: Timed out waiting for $svc_name service creation."
+}
+
 # Creates an OpenShift Operator subscription
 install_subscription(){
   name=$1  # Name of the subscription
@@ -486,7 +500,7 @@ deploy_test_backstage_provider() {
   # Check if the buildconfig already exists
   if ! oc get buildconfig test-backstage-customization-provider -n "${project}" >/dev/null 2>&1; then
     echo "Creating new app for test-backstage-customization-provider"
-    oc new-app https://github.com/janus-qe/test-backstage-customization-provider --namespace="${project}"
+    oc new-app https://github.com/janus-qe/test-backstage-customization-provider --image-stream="openshift/nodejs:18-minimal-ubi8" --namespace="${project}"
   else
     echo "BuildConfig for test-backstage-customization-provider already exists in ${project}. Skipping new-app creation."
   fi
@@ -625,14 +639,15 @@ install_acm_operator(){
   oc apply -f "${DIR}/cluster/operators/acm/operator-group.yaml"
   oc apply -f "${DIR}/cluster/operators/acm/subscription-acm.yaml"
   wait_for_deployment "open-cluster-management" "multiclusterhub-operator"
+  wait_for_svc multiclusterhub-operator-webhook open-cluster-management
   oc apply -f "${DIR}/cluster/operators/acm/multiclusterhub.yaml"
   # wait until multiclusterhub is Running.
-  timeout 600 bash -c 'while true; do
+  timeout 900 bash -c 'while true; do 
     CURRENT_PHASE=$(oc get multiclusterhub multiclusterhub -n open-cluster-management -o jsonpath="{.status.phase}")
     echo "MulticlusterHub Current Status: $CURRENT_PHASE"
     [[ "$CURRENT_PHASE" == "Running" ]] && echo "MulticlusterHub is now in Running phase." && break
     sleep 10
-  done' || echo "Timed out after 10 minutes"
+  done' || echo "Timed out after 15 minutes"
 
 }
 
