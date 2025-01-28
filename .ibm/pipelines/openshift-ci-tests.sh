@@ -37,6 +37,10 @@ for SCRIPT in "${SCRIPTS[@]}"; do
     echo "Loaded ${SCRIPT}"
 done
 
+NAME_SPACE=showcase-op-rbac-nightly
+NAME_SPACE_RBAC=showcase-operator-nightly
+JOB_NAME=periodic-operator-nightly
+
 main() {
   echo "Log file: ${LOGFILE}"
   echo "JOB_NAME : $JOB_NAME"
