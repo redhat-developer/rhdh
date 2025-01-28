@@ -26,7 +26,7 @@
     "prettier:fix": "prettier --ignore-unknown --write ."
   },
   "devDependencies": {
-    "@playwright/test": "1.49.1",
+    "@playwright/test": "1.50.0",
     "@types/node": "20.17.16",
     "@typescript-eslint/eslint-plugin": "6.21.0",
     "@typescript-eslint/parser": "6.21.0",
