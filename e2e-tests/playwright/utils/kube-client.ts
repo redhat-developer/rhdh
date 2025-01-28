@@ -1,4 +1,5 @@
-import k8s, { V1ConfigMap } from "@kubernetes/client-node";
+import * as k8s from "@kubernetes/client-node";
+import { V1ConfigMap } from "@kubernetes/client-node";
 import { LOGGER } from "./logger";
 import * as yaml from "js-yaml";
 
