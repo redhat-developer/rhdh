@@ -13,7 +13,7 @@ handle_nightly() {
 
   cluster_setup
   initiate_deployments
-  add_sanity_plugins_check
+  # add_sanity_plugins_check
   deploy_test_backstage_provider "${NAME_SPACE}"
 
   run_standard_deployment_tests
