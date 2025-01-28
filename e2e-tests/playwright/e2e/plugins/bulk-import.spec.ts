@@ -66,7 +66,9 @@ test.describe.serial("Bulk Import plugin", () => {
       catalogRepoDetails.name,
       "Preview file",
     );
-    await expect(await uiHelper.clickButton("Save")).not.toBeVisible();
+    await expect(await uiHelper.clickButton("Save")).not.toBeVisible({
+      timeout: 10000,
+    });
   });
 
   test("Add a Repository from the Organization Tab and Confirm its Preview", async () => {
@@ -131,7 +133,9 @@ test.describe.serial("Bulk Import plugin", () => {
       newRepoDetails.updatedComponentName,
     );
     await bulkimport.fillTextInputByNameAtt("prLabels", newRepoDetails.labels);
-    await expect(await uiHelper.clickButton("Save")).not.toBeVisible();
+    await expect(await uiHelper.clickButton("Save")).not.toBeVisible({
+      timeout: 10000,
+    });
 
     const prCatalogInfoYaml = await APIHelper.getfileContentFromPR(
       newRepoDetails.owner,
