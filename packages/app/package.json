@@ -53,7 +53,7 @@
     "react-dom": "18.3.1",
     "react-router-dom": "6.26.2",
     "react-use": "17.5.1",
-    "tss-react": "4.9.13"
+    "tss-react": "4.9.15"
   },
   "devDependencies": {
     "@backstage/cli": "0.29.5",
