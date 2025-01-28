@@ -26,6 +26,21 @@ For scenarios where tests are not automatically triggered, or when you need to m
 2. **Triggering Tests Post-Validation:**
    - After a janus-idp member has validated the PR with `/ok-to-test`, anyone can trigger tests using the following commands:
      - `/test`, `/test images`, `/test all` or `/test e2e-tests`
+3. **Triggering Optional Nightly Job Execution on Pull Requests:**
+     The following optional nightly jobs can be manually triggered on PRs targeting the `main` branch. These jobs help validate changes across various deployment environments by commenting the trigger command on PR.
+     ### Available Nightly Jobs on PR
+     - **Operator-Specific Test:**  
+          Runs PR tests using an operator-based deployment on an OpenShift (OCP) cluster.  
+          Trigger command: `/test periodic-e2e-tests-operator`
+     - **Azure Kubernetes Service (AKS) Test:**  
+          Runs PR tests on AKS.  
+          Trigger command: `/test periodic-e2e-tests-aks`
+     - **Google Kubernetes Engine (GKE) Test:**  
+          Runs PR tests on GKE.  
+          Trigger command:  `/test periodic-e2e-tests-gke`
+     - **Standard Nightly Test on OpenShift v4.17:**  
+          Runs PR tests on OCP version 4.17.  
+          Trigger command:  `/test periodic-e2e-tests`
 
 These interactions are picked up by the OpenShift-CI service, which sets up a test environment on the **IBM Cloud**, specifically on an OpenShift Container Platform (OCP) cluster. The configurations and steps for setting up this environment are defined in the `openshift-ci-tests.sh` script. For more details, see the [High-Level Overview of `openshift-ci-tests.sh`](#high-level-overview-of-openshift-ci-testssh).
 
