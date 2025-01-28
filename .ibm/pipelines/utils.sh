@@ -712,7 +712,7 @@ initiate_deployments() {
   helm upgrade -i "${RELEASE_NAME_RBAC}" -n "${NAME_SPACE_RBAC}" "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" --version "${CHART_VERSION}" -f "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" --set upstream.backstage.image.repository="${QUAY_REPO}" --set upstream.backstage.image.tag="${TAG_NAME}"
 }
 
-initiate_rds_deployment() {
+initiate_runtime_deployment() {
   local release_name=$1
   local namespace=$2
   configure_namespace "${namespace}"
