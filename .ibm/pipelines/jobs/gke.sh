@@ -23,11 +23,14 @@ handle_gke() {
   export OCM_CLUSTER_URL=$(printf "%s" "$K8S_CLUSTER_URL" | base64 | tr -d '\n')
 
   initiate_gke_deployment
-  check_and_test "${RELEASE_NAME}" "${NAME_SPACE_K8S}" "${url}"
+  check_and_test "${RELEASE_NAME}" "${NAME_SPACE_K8S}" "${url}" 50 30
   delete_namespace "${NAME_SPACE_K8S}"
   initiate_rbac_gke_deployment
   local rbac_rhdh_base_url="https://${K8S_CLUSTER_ROUTER_BASE}"
   check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC_K8S}" "${rbac_rhdh_base_url}"
   delete_namespace "${NAME_SPACE_RBAC_K8S}"
+}
 
+cleanup_gke() {
+  delete_tekton_pipelines
 }
