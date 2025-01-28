@@ -17,11 +17,9 @@ test.describe("TechDocs", () => {
     await uiHelper.openSidebar("Docs");
   });
 
-  test("Verify that TechDocs for Backstage Showcase works", async ({
-    page,
-  }) => {
+  test("Verify that TechDocs for RHDH works", async ({ page }) => {
     await uiHelper.openSidebarButton("Favorites");
     await uiHelper.openSidebar("Docs");
-    await page.getByRole("link", { name: "Backstage Showcase" }).click();
+    await page.getByRole("link", { name: "Red Hat Developer Hub" }).click();
   });
 });

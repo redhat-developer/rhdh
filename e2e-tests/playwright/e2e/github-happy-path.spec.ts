@@ -57,7 +57,7 @@ test.describe.skip("GitHub Happy path", () => {
 
     await uiHelper.verifyComponentInCatalog("API", ["Petstore"]);
     await uiHelper.verifyComponentInCatalog("Component", [
-      "Backstage Showcase",
+      "Red Hat Developer Hub",
     ]);
 
     await uiHelper.selectMuiBox("Kind", "Resource");
@@ -89,9 +89,9 @@ test.describe.skip("GitHub Happy path", () => {
     await uiHelper.openSidebar("Catalog");
     await uiHelper.selectMuiBox("Kind", "Component");
     await uiHelper.clickByDataTestId("user-picker-all");
-    await uiHelper.clickLink("Backstage Showcase");
+    await uiHelper.clickLink("Red Hat Developer Hub");
 
-    const expectedPath = "/catalog/default/component/backstage-showcase";
+    const expectedPath = "/catalog/default/component/rhdh";
     // Wait for the expected path in the URL
     await page.waitForURL(`**${expectedPath}`, {
       waitUntil: "domcontentloaded", // Wait until the DOM is loaded
@@ -159,7 +159,7 @@ test.describe.skip("GitHub Happy path", () => {
   //FIXME
   test.skip("Verify that the 5, 10, 20 items per page option properly displays the correct number of PRs", async () => {
     await uiHelper.openSidebar("Catalog");
-    await uiHelper.clickLink("Backstage Showcase");
+    await uiHelper.clickLink("Red Hat Developer Hub");
     await common.clickOnGHloginPopup();
     await uiHelper.clickTab("Pull/Merge Requests");
     await uiHelper.clickButton("ALL", { force: false });

@@ -57,7 +57,7 @@ test.describe("Test Topology Plugin", () => {
     await uiHelper.verifyText("1Running");
     await uiHelper.verifyButtonURL(
       "Edit source code",
-      "https://github.com/janus-idp/backstage-showcase",
+      "https://github.com/redhat-developer/rhdh",
     );
     await uiHelper.clickTab("Resources");
     await uiHelper.verifyText("P");

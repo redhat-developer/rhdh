@@ -2,7 +2,7 @@ apiVersion: backstage.io/v1alpha1
 kind: System
 metadata:
   name: rhdh
-  title: RHDH
+  title: Red Hat Developer Hub
   description: Red Hat Developer Hub is an enterprise-grade Internal Developer Portal based on Backstage.
   annotations:
     backstage.io/techdocs-ref: dir:.
@@ -43,7 +43,7 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: rhdh
-  title: RHDH
+  title: Red Hat Developer Hub
   description: Red Hat Developer Hub is an enterprise-grade Internal Developer Portal based on Backstage.
   annotations:
     backstage.io/techdocs-ref: dir:.

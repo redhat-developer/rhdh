@@ -4,5 +4,4 @@ metadata:
   name: systems
   description: A collection of all systems
 spec:
-  targets:
-    - ./systems/janus-idp.yaml
+  targets: []
