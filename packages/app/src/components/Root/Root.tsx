@@ -28,9 +28,8 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import { makeStyles } from 'tss-react/mui';
 
-import DynamicRootContext, {
-  ResolvedMenuItem,
-} from '../DynamicRoot/DynamicRootContext';
+import { useDisplayedSidebarItems } from '../../utils/dynamicUI/useDisplayedSidebarItems';
+import DynamicRootContext, { ResolvedMenuItem } from '../DynamicRoot/DynamicRootContext';
 import { ApplicationHeaders } from './ApplicationHeaders';
 import { MenuIcon } from './MenuIcon';
 import { SidebarLogo } from './SidebarLogo';
@@ -267,11 +266,13 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
         <Sidebar>
           {showLogo && <SidebarLogo />}
           {showSearch && (
-            <SidebarGroup label="Search" icon={<SearchIcon />} to="/search">
-              <SidebarSearchModal />
-            </SidebarGroup>
+            <>
+              <SidebarGroup label="Search" icon={<SearchIcon />} to="/search">
+                <SidebarSearchModal />
+              </SidebarGroup>
+              <SidebarDivider />
+            </>
           )}
-          {(showLogo || showSearch) && <SidebarDivider />}
           <SidebarGroup label="Menu" icon={<MuiMenuIcon />}>
             {/* Global nav, not org-specific */}
             {renderMenuItems(true, false)}
