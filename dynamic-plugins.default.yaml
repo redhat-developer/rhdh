@@ -535,14 +535,14 @@ plugins:
                 config:
                   layout:
                     position: above-main-content
-              - mountPoint: application/header/component
+              - mountPoint: global.header/component
                 importName: SearchComponent
                 config:
                   type: search
                   enabled: true
                   slot: header-start
                   priority: 100
-              - mountPoint: application/header/component
+              - mountPoint: global.header/component
                 importName: CreateDropdown
                 config:
                   type: dropdown_button
@@ -550,7 +550,7 @@ plugins:
                   key: create
                   slot: header-start
                   priority: 90
-              - mountPoint: application/header/component
+              - mountPoint: global.header/component
                 importName: ProfileDropdown
                 config:
                   type: dropdown_button

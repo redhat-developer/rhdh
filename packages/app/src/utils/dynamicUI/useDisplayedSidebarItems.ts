@@ -5,7 +5,7 @@ import DynamicRootContext from '../../components/DynamicRoot/DynamicRootContext'
 export const useDisplayedSidebarItems = () => {
   const { dynamicRoutes, menuItems, mountPoints } =
     useContext(DynamicRootContext);
-  const headerComponents = mountPoints['application/header/component'] ?? [];
+  const headerComponents = mountPoints['global.header/component'] ?? [];
 
   const headerPaths = headerComponents
     .map(({ config }) => config?.props?.to)
