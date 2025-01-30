@@ -16,7 +16,6 @@
     "showcase-rbac-k8s-ci-nightly": "playwright test --project=showcase-rbac-k8s",
     "showcase-operator-nightly": "playwright test --project=showcase-operator",
     "showcase-op-rbac-nightly": "playwright test --project=showcase-operator-rbac",
-    "showcase-rds-nightly": "playwright test --project=postgres-health-check",
     "showcase-runtime": "playwright test --project=showcase-runtime",
     "lint:check": "eslint . --ext .js,.ts",
     "lint:fix": "eslint . --ext .js,.ts --fix",

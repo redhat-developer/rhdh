@@ -15,6 +15,7 @@ upstream:
       tag: next
     appConfig:
       app:
+        title: Red Hat Developer Hub
         baseUrl: 'https://{{- include "janus-idp.hostname" . }}'
       backend:
         auth:

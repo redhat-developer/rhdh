@@ -144,14 +144,12 @@ export default defineConfig({
       ],
     },
     {
-      name: "postgres-health-check",
-      ...useCommonDeviceAndViewportConfig,
-      testMatch: ["**/playwright/e2e/verify-tls-config-health-check.spec.ts"],
-    },
-    {
       name: "showcase-runtime",
       ...useCommonDeviceAndViewportConfig,
-      testMatch: ["**/playwright/e2e/configuration-test/config-map.spec.ts"],
+      testMatch: [
+        "**/playwright/e2e/configuration-test/config-map.spec.ts",
+        "**/playwright/e2e/verify-tls-config-health-check.spec.ts",
+      ],
     },
   ],
 });
