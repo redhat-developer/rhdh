@@ -12,6 +12,8 @@ import Home from '@mui/icons-material/HomeOutlined';
 import InsertChart from '@mui/icons-material/InsertChartOutlined';
 import Layers from '@mui/icons-material/Layers';
 import List from '@mui/icons-material/List';
+import Logout from '@mui/icons-material/LogoutOutlined';
+import ManageAccounts from '@mui/icons-material/ManageAccountsOutlined';
 import MonitorHeart from '@mui/icons-material/MonitorHeartOutlined';
 import Notifications from '@mui/icons-material/NotificationsOutlined';
 import People from '@mui/icons-material/People';
@@ -21,8 +23,6 @@ import School from '@mui/icons-material/SchoolOutlined';
 import Star from '@mui/icons-material/Star';
 import Storefront from '@mui/icons-material/StorefrontOutlined';
 import Textsms from '@mui/icons-material/TextsmsOutlined';
-import ManageAccounts from '@mui/icons-material/ManageAccountsOutlined';
-import Logout from '@mui/icons-material/LogoutOutlined';
 
 const CommonIcons: {
   [k: string]: React.ComponentType<{}>;
