@@ -539,24 +539,44 @@ plugins:
                 importName: SearchComponent
                 config:
                   type: search
-                  enabled: true
                   slot: header-start
                   priority: 100
               - mountPoint: global.header/component
                 importName: CreateDropdown
                 config:
                   type: dropdown_button
-                  enabled: true
                   key: create
                   slot: header-start
                   priority: 90
+              - mountPoint: global.header/create
+                importName: SoftwareTemplatesSection
+                config:
+                  type: list
+                  priority: 10
+              - mountPoint: global.header/create
+                importName: RegisterAComponentSection
+                config:
+                  type: link
               - mountPoint: global.header/component
                 importName: ProfileDropdown
                 config:
                   type: dropdown_button
-                  enabled: true
                   key: profile
                   slot: header-end
+                  priority: 0
+              - mountPoint: global.header/profile
+                importName: HeaderLink
+                config:
+                  type: link
+                  priority: 10
+                  props:
+                    title: Settings
+                    link: /settings
+                    icon: manageAccounts
+              - mountPoint: global.header/profile
+                importName: LogoutButton
+                config:
+                  type: logout
                   priority: 0
 
   # Group: Global floating action button
