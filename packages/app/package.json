@@ -45,7 +45,7 @@
     "@mui/icons-material": "5.16.7",
     "@mui/material": "5.16.7",
     "@mui/styled-engine": "5.16.6",
-    "@redhat-developer/red-hat-developer-hub-theme": "0.4.0",
+    "@red-hat-developer-hub/backstage-plugin-theme": "0.4.9",
     "@scalprum/core": "0.8.1",
     "@scalprum/react-core": "0.9.3",
     "lodash": "4.17.21",

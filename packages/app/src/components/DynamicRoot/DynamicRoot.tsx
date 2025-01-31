@@ -5,7 +5,7 @@ import { createApp } from '@backstage/app-defaults';
 import { BackstageApp } from '@backstage/core-app-api';
 import { AnyApiFactory, BackstagePlugin } from '@backstage/core-plugin-api';
 
-import { useThemes } from '@redhat-developer/red-hat-developer-hub-theme';
+import { useThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 import { AppsConfig } from '@scalprum/core';
 import { useScalprum } from '@scalprum/react-core';
 
