@@ -6781,7 +6781,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-catalog-node@npm:^1.12.4, @backstage/plugin-catalog-node@npm:^1.13.1, @backstage/plugin-catalog-node@npm:^1.15.0, @backstage/plugin-catalog-node@npm:^1.15.1":
+"@backstage/plugin-catalog-node@npm:1.15.1, @backstage/plugin-catalog-node@npm:^1.12.4, @backstage/plugin-catalog-node@npm:^1.13.1, @backstage/plugin-catalog-node@npm:^1.15.0, @backstage/plugin-catalog-node@npm:^1.15.1":
   version: 1.15.1
   resolution: "@backstage/plugin-catalog-node@npm:1.15.1"
   dependencies:
@@ -22748,6 +22748,8 @@ __metadata:
     "@backstage/backend-defaults": 0.7.0
     "@backstage/backend-dynamic-feature-service": 0.5.3
     "@backstage/backend-plugin-api": 1.1.1
+    "@backstage/backend-test-utils": 1.2.1
+    "@backstage/catalog-client": 1.9.1
     "@backstage/catalog-model": 1.7.3
     "@backstage/cli": 0.29.5
     "@backstage/cli-node": 0.2.12
@@ -22762,6 +22764,7 @@ __metadata:
     "@backstage/plugin-catalog-backend-module-logs": 0.1.6
     "@backstage/plugin-catalog-backend-module-openapi": 0.2.6
     "@backstage/plugin-catalog-backend-module-scaffolder-entity-model": 0.2.4
+    "@backstage/plugin-catalog-node": 1.15.1
     "@backstage/plugin-events-backend": 0.4.1
     "@backstage/plugin-events-node": 0.4.7
     "@backstage/plugin-proxy-backend": 0.5.10

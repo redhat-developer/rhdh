@@ -190,3 +190,27 @@ auth:
   providers:
     # provider configs ...
 ```
+
+### includeTransientGroupOwnership configuration value
+
+This option allows users to add transient parent groups into the resolved user group membership during the authentication process. i.e., the parent group of the user's direct group will be included in the user ownership entities. By default, this option is set to false. 
+
+For instance, with this group hierarchy:
+
+```
+group_admin  
+  └── group_developers  
+        └── user_alice  
+```
+
+- If `includeTransientGroupOwnership: false`, `test_user` is only a member of `group_developers`.
+- If `includeTransientGroupOwnership: true`, `test_user` is a member of `group_developers` AND `group_admin`.
+
+To enable this option:
+
+```yaml
+includeTransientGroupOwnership: true
+auth:
+  providers:
+    # provider configs ...
+```
