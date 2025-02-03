@@ -79,7 +79,7 @@ run_operator_runtime_config_change_tests() {
   check_and_test "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${runtime_url}"
 }
 
-handle_operator() {
+handle_ocp_operator() {
   oc_login
 
   export K8S_CLUSTER_ROUTER_BASE=$(oc get route console -n openshift-console -o=jsonpath='{.spec.host}' | sed 's/^[^.]*\.//')

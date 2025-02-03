@@ -1,6 +1,6 @@
 #!/bin/bash
 
-handle_nightly() {
+handle_ocp_nightly() {
   export NAME_SPACE="showcase-ci-nightly"
   export NAME_SPACE_RBAC="showcase-rbac-nightly"
   export NAME_SPACE_POSTGRES_DB="postgress-external-db-nightly"
