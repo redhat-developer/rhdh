@@ -1,6 +1,6 @@
 #!/bin/bash
 
-handle_aks() {
+handle_aks_helm() {
   echo "Starting AKS deployment"
   for file in ${DIR}/cluster/aks/*.sh; do source $file; done
 
