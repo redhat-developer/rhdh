@@ -26,21 +26,22 @@ cleanup() {
 trap cleanup EXIT INT ERR
 
 SCRIPTS=(
-    "env_variables.sh"
-    "utils.sh"
-    "jobs/aks.sh"
-    "jobs/gke.sh"
-    "jobs/main.sh"
-    "jobs/operator.sh"
-    "jobs/upgrade.sh"
-    "jobs/periodic.sh"
-    "jobs/auth-providers.sh"
+  "env_variables.sh"
+  "utils.sh"
 )
 
-# Source each script dynamically
+# Source explicitly specified scripts
 for SCRIPT in "${SCRIPTS[@]}"; do
-    source "${DIR}/${SCRIPT}"
+  source "${DIR}/${SCRIPT}"
+  echo "Loaded ${SCRIPT}"
+done
+
+# Source all scripts in jobs directory
+for SCRIPT in "${DIR}"/jobs/*.sh; do
+  if [ -f "$SCRIPT" ]; then
+    source "$SCRIPT"
     echo "Loaded ${SCRIPT}"
+  fi
 done
 
 main() {
@@ -48,33 +49,33 @@ main() {
   echo "JOB_NAME : $JOB_NAME"
 
   case "$JOB_NAME" in
-    *aks*)
-      echo "Calling handle_aks"
-      handle_aks
+    *aks-helm*)
+      echo "Calling handle_aks_helm"
+      handle_aks_helm
       ;;
     *e2e-tests-nightly-auth-providers)
       echo "Calling handle_auth_providers"
       handle_auth_providers
       ;;
-    *gke*)
-      echo "Calling handle_gke"
-      handle_gke
+    *gke-helm*)
+      echo "Calling handle_gke_helm"
+      handle_gke_helm
       ;;
     *operator*)
-      echo "Calling Operator"
-      handle_operator
+      echo "Calling handle_ocp_operator"
+      handle_ocp_operator
       ;;
     *upgrade*)
       echo "Calling helm upgrade"
       handle_upgrade
       ;;
     *nightly*)
-      echo "Calling handle_periodic"
-      handle_nightly
+      echo "Calling handle_ocp_nightly"
+      handle_ocp_nightly
       ;;
     *pull*)
-      echo "Calling handle_main"
-      handle_main
+      echo "Calling handle_ocp_pull"
+      handle_ocp_pull
       ;;
   esac
 
