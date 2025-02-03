@@ -62,7 +62,7 @@ initiate_operator_deployments() {
   deploy_rhdh_operator "${DIR}" "${NAME_SPACE_RBAC}"
 }
 
-handle_operator() {
+handle_ocp_operator() {
   oc_login
 
   export K8S_CLUSTER_ROUTER_BASE=$(oc get route console -n openshift-console -o=jsonpath='{.spec.host}' | sed 's/^[^.]*\.//')
