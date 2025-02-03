@@ -1,6 +1,6 @@
 #!/bin/bash
 
-initiate_aks_deployment() {
+initiate_aks_helm_deployment() {
   install_tekton_pipelines
   add_helm_repos
   delete_namespace "${NAME_SPACE_RBAC_K8S}"
@@ -21,7 +21,7 @@ initiate_aks_deployment() {
     --set upstream.backstage.image.tag="${TAG_NAME}"
 }
 
-initiate_rbac_aks_deployment() {
+initiate_rbac_aks_helm_deployment() {
   install_tekton_pipelines
   add_helm_repos
   delete_namespace "${NAME_SPACE_K8S}"
