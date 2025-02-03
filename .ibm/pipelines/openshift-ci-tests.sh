@@ -61,6 +61,10 @@ main() {
       echo "Calling handle_gke_helm"
       handle_gke_helm
       ;;
+    *gke-operator*)
+      echo "Calling handle_gke_operator"
+      handle_gke_operator
+      ;;
     *operator*)
       echo "Calling handle_ocp_operator"
       handle_ocp_operator
