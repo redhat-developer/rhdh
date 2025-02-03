@@ -1,6 +1,6 @@
 #!/bin/bash
 
-handle_main() {
+handle_ocp_pull() {
   echo "Configuring namespace: ${NAME_SPACE}"
   oc_login
   echo "OCP version: $(oc version)"

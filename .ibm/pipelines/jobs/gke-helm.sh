@@ -1,6 +1,6 @@
 #!/bin/bash
 
-handle_gke() {
+handle_gke_helm() {
   echo "Starting GKE deployment"
   for file in ${DIR}/cluster/gke/*.sh; do source $file; done
 
