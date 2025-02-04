@@ -373,6 +373,12 @@ install_crunchy_postgres_ocp_operator(){
   check_operator_status 300 "openshift-operators" "Crunchy Postgres for Kubernetes" "Succeeded"
 }
 
+# Installs the Crunchy Postgres Operator from OperatorHub.io
+install_crunchy_postgres_k8s_operator(){
+  install_subscription crunchy-postgres-operator operators v5 postgresql operatorhubio-catalog olm
+  check_operator_status 300 "operators" "Crunchy Postgres for Kubernetes" "Succeeded"
+}
+
 add_helm_repos() {
   helm version
 
@@ -760,6 +766,21 @@ install_acm_ocp_operator(){
 
 }
 
+# Installs Open Cluster Management K8S Operator (alternative of advanced-cluster-management for K8S clusters)
+install_ocm_k8s_operator(){
+  install_subscription my-cluster-manager operators stable cluster-manager operatorhubio-catalog olm
+  wait_for_deployment "operators" "cluster-manager"
+  # oc apply -f "${DIR}/cluster/operators/acm/multiclusterhub.yaml"
+  # wait until multiclusterhub is Running.
+  timeout 600 bash -c 'while true; do
+    CURRENT_PHASE=$(oc get multiclusterhub multiclusterhub -n open-cluster-management -o jsonpath="{.status.phase}")
+    echo "MulticlusterHub Current Status: $CURRENT_PHASE"
+    [[ "$CURRENT_PHASE" == "Running" ]] && echo "MulticlusterHub is now in Running phase." && break
+    sleep 10
+  done' || echo "Timed out after 10 minutes"
+
+}
+
 # Installs the Red Hat OpenShift Pipelines operator if not already installed
 install_pipelines_operator() {
   DISPLAY_NAME="Red Hat OpenShift Pipelines"
@@ -832,6 +853,13 @@ cluster_setup_ocp_operator() {
   install_pipelines_operator
   install_acm_ocp_operator
   install_crunchy_postgres_ocp_operator
+}
+
+cluster_setup_k8s_operator() {
+  install_olm
+  install_tekton_pipelines
+  # install_acm_ocp_operator
+  install_crunchy_postgres_k8s_operator
 }
 
 initiate_deployments() {
