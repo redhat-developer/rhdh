@@ -86,7 +86,7 @@ handle_ocp_operator() {
   local url="https://backstage-${RELEASE_NAME}-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   local rbac_url="https://backstage-${RELEASE_NAME_RBAC}-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
 
-  cluster_setup_operator
+  cluster_setup_ocp_operator
   initiate_operator_deployments
   check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${url}"
   check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${rbac_url}"

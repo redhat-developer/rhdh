@@ -326,9 +326,10 @@ wait_for_svc(){
 install_subscription(){
   name=$1  # Name of the subscription
   namespace=$2 # Namespace to install the operator
-  package=$3 # Package name of the operator
-  channel=$4 # Channel to subscribe to
+  channel=$3 # Channel to subscribe to
+  package=$4 # Package name of the operator
   source_name=$5 # Name of the source catalog
+  source_namespace=$6 # Source namespace (typically openshift-marketplace or olm)
   # Apply the subscription manifest
   oc apply -f - << EOD
 apiVersion: operators.coreos.com/v1alpha1
@@ -341,7 +342,7 @@ spec:
   installPlanApproval: Automatic
   name: $package
   source: $source_name
-  sourceNamespace: openshift-marketplace
+  sourceNamespace: $source_namespace
 EOD
 }
 
@@ -366,9 +367,9 @@ check_operator_status() {
   " || echo "Timed out after ${timeout} seconds. Operator '${operator_name}' did not reach '${expected_status}' phase."
 }
 
-# Installs the Crunchy Postgres Operator using predefined parameters
-install_crunchy_postgres_operator(){
-  install_subscription crunchy-postgres-operator openshift-operators crunchy-postgres-operator v5 certified-operators
+# Installs the Crunchy Postgres Operator from Openshift Marketplace using predefined parameters
+install_crunchy_postgres_ocp_operator(){
+  install_subscription crunchy-postgres-operator openshift-operators v5 crunchy-postgres-operator certified-operators openshift-marketplace
   check_operator_status 300 "openshift-operators" "Crunchy Postgres for Kubernetes" "Succeeded"
 }
 
@@ -730,10 +731,10 @@ check_backstage_running() {
   return 1
 }
 
-# installs the advanced-cluster-management Operator
-install_acm_operator(){
+# Installs the advanced-cluster-management OCP Operator
+install_acm_ocp_operator(){
   oc apply -f "${DIR}/cluster/operators/acm/operator-group.yaml"
-  oc apply -f "${DIR}/cluster/operators/acm/subscription-acm.yaml"
+  install_subscription advanced-cluster-management open-cluster-management release-2.12 advanced-cluster-management redhat-operators openshift-marketplace
   wait_for_deployment "open-cluster-management" "multiclusterhub-operator"
   wait_for_svc multiclusterhub-operator-webhook open-cluster-management
   oc apply -f "${DIR}/cluster/operators/acm/multiclusterhub.yaml"
@@ -756,7 +757,7 @@ install_pipelines_operator() {
   else
     echo "Red Hat OpenShift Pipelines operator is not installed. Installing..."
     # Install the operator and wait for deployment
-    install_subscription openshift-pipelines-operator openshift-operators openshift-pipelines-operator-rh latest redhat-operators
+    install_subscription openshift-pipelines-operator openshift-operators latest openshift-pipelines-operator-rh redhat-operators openshift-marketplace
     wait_for_deployment "openshift-operators" "pipelines"
     timeout 300 bash -c '
     while ! oc get svc tekton-pipelines-webhook -n openshift-pipelines &> /dev/null; do
@@ -810,15 +811,15 @@ delete_tekton_pipelines() {
 
 cluster_setup() {
   install_pipelines_operator
-  install_acm_operator
-  install_crunchy_postgres_operator
+  install_acm_ocp_operator
+  install_crunchy_postgres_ocp_operator
   add_helm_repos
 }
 
-cluster_setup_operator() {
+cluster_setup_ocp_operator() {
   install_pipelines_operator
-  install_acm_operator
-  install_crunchy_postgres_operator
+  install_acm_ocp_operator
+  install_crunchy_postgres_ocp_operator
 }
 
 initiate_deployments() {
