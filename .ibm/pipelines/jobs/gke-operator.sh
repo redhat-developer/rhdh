@@ -77,4 +77,5 @@ EOF
 
 cleanup_gke() {
   delete_tekton_pipelines
+  uninstall_olm
 }

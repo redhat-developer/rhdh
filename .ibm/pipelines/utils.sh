@@ -731,6 +731,18 @@ check_backstage_running() {
   return 1
 }
 
+install_olm() {
+  if operator-sdk olm status > /dev/null 2>&1; then
+    echo "OLM is already installed."
+  else
+    operator-sdk olm install
+  fi
+}
+
+uninstall_olm() {
+  operator-sdk olm uninstall
+}
+
 # Installs the advanced-cluster-management OCP Operator
 install_acm_ocp_operator(){
   oc apply -f "${DIR}/cluster/operators/acm/operator-group.yaml"
