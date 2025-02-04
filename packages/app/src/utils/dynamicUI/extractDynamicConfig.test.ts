@@ -148,6 +148,7 @@ describe('extractDynamicConfig', () => {
     const config = extractDynamicConfig(source as DynamicPluginConfig);
     expect(config).toEqual({
       pluginModules: [],
+      components: [],
       routeBindings: [],
       dynamicRoutes: [],
       entityTabs: [],
@@ -162,6 +163,20 @@ describe('extractDynamicConfig', () => {
   });
 
   it.each([
+    [
+      'a component',
+      { components: [{ name: 'foo', importName: 'blah' }] },
+      {
+        components: [
+          {
+            importName: 'blah',
+            module: 'PluginRoot',
+            name: 'foo',
+            scope: 'janus-idp.plugin-foo',
+          },
+        ],
+      },
+    ],
     [
       'a dynamicRoute',
       { dynamicRoutes: [{ path: '/foo' }] },
@@ -506,6 +521,7 @@ describe('extractDynamicConfig', () => {
           scope: 'janus-idp.plugin-foo',
         },
       ],
+      components: [],
       routeBindings: [],
       routeBindingTargets: [],
       dynamicRoutes: [],
