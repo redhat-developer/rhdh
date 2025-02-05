@@ -118,6 +118,7 @@ test.describe("Standard authentication providers: Github Provider", () => {
 
     await uiHelper.openSidebar("Settings");
     await common.signOut();
+    await context.clearCookies();
   });
 
   test("Ingestion of Users and Nested Groups: verify the UserEntities and Groups are created with the correct relationships in RHDH ", async () => {
@@ -224,7 +225,7 @@ test.describe("Standard authentication providers: Github Provider", () => {
     );
     expect(loginSucceded).toContain("Login successful");
 
-    await uiHelper.verifyAlertErrorMessage(/User not found/gm);
+    await uiHelper.verifyAlertErrorMessage(/unable to resolve user identity/gm);
 
     await context.clearCookies();
 
