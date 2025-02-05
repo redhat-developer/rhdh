@@ -25,11 +25,12 @@ handle_gke() {
 
   local url="https://${K8S_CLUSTER_ROUTER_BASE}"
   initiate_gke_deployment
-  check_and_test "${RELEASE_NAME}" "${NAME_SPACE_K8S}" "${url}" 50 30
+  check_and_test "${RELEASE_NAME}" "${NAME_SPACE_K8S}" "${url}" 50 30 20
   delete_namespace "${NAME_SPACE_K8S}"
+
   local rbac_rhdh_base_url="https://${K8S_CLUSTER_ROUTER_BASE}"
   initiate_rbac_gke_deployment
-  check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC_K8S}" "${rbac_rhdh_base_url}"
+  check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC_K8S}" "${rbac_rhdh_base_url}" 50 30 20
   delete_namespace "${NAME_SPACE_RBAC_K8S}"
 }
 
