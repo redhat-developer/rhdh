@@ -582,13 +582,10 @@ create_app_config_map_k8s() {
 run_tests() {
   local release_name=$1
   local project=$2
-  local initial_delay=$3
   project=${project}
   cd "${DIR}/../../e2e-tests"
   local e2e_tests_dir
   e2e_tests_dir=$(pwd)
-
-  sleep "${initial_delay}"
 
   yarn install
   yarn playwright install chromium
@@ -813,11 +810,10 @@ check_and_test() {
   local url=$3
   local max_attempts=${4:-30}    # Default to 30 if not set
   local wait_seconds=${5:-30}    # Default to 30 if not set
-  local initial_delay=${6:-0} # Default to 0 if not set
   if check_backstage_running "${release_name}" "${namespace}" "${url}" "${max_attempts}" "${wait_seconds}"; then
     echo "Display pods for verification..."
     oc get pods -n "${namespace}"
-    run_tests "${release_name}" "${namespace}" "${initial_delay}"
+    run_tests "${release_name}" "${namespace}"
   else
     echo "Backstage is not running. Exiting..."
     OVERALL_RESULT=1
