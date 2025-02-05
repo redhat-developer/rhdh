@@ -273,6 +273,10 @@ dynamicPlugins:
       dynamicRoutes:
         - path: /
           importName: DynamicHomePage
+          menuItem:
+            icon: home
+            text: Home
+            priority: 100
       mountPoints:
         - mountPoint: home.page/cards
           importName: SearchBar
