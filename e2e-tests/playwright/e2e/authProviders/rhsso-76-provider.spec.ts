@@ -1,6 +1,6 @@
 import { test, Page, expect } from "@playwright/test";
 import { Common, setupBrowser } from "../../utils/common";
-import { UIhelper } from "../../utils/ui-helper";
+import { UiHelper } from "../../utils/ui-helper";
 import UserRepresentation from "@keycloak/keycloak-admin-client/lib/defs/userRepresentation";
 import * as constants from "../../utils/authenticationProviders/constants";
 import { LOGGER } from "../../utils/logger";
@@ -24,7 +24,7 @@ for (const version of ["RHBK", "RHSSO"]) {
     test.use({ baseURL: constants.AUTH_PROVIDERS_BASE_URL });
 
     let common: Common;
-    let uiHelper: UIhelper;
+    let uiHelper: UiHelper;
     let usersCreated: Map<string, UserRepresentation>;
     let groupsCreated: Map<string, GroupRepresentation>;
     const syntTime = 60;
@@ -73,7 +73,7 @@ for (const version of ["RHBK", "RHSSO"]) {
 
       page = (await setupBrowser(browser, testInfo)).page;
       common = new Common(page);
-      uiHelper = new UIhelper(page);
+      uiHelper = new UiHelper(page);
 
       if (version == "RHSSO") {
         helmParams = [];

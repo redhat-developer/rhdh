@@ -1,5 +1,5 @@
 import { expect, Page, test } from "@playwright/test";
-import { UIhelper } from "../utils/ui-helper";
+import { UiHelper } from "../utils/ui-helper";
 import { Common, setupBrowser } from "../utils/common";
 import { CatalogImport } from "../support/pages/catalog-import";
 import { APIHelper } from "../utils/api-helper";
@@ -8,7 +8,7 @@ import { GITHUB_API_ENDPOINTS } from "../utils/api-endpoints";
 let page: Page;
 
 test.describe.serial("Link Scaffolded Templates to Catalog Items", () => {
-  let uiHelper: UIhelper;
+  let uiHelper: UiHelper;
   let common: Common;
   let catalogImport: CatalogImport;
 
@@ -31,7 +31,7 @@ test.describe.serial("Link Scaffolded Templates to Catalog Items", () => {
     page = (await setupBrowser(browser, testInfo)).page;
 
     common = new Common(page);
-    uiHelper = new UIhelper(page);
+    uiHelper = new UiHelper(page);
     catalogImport = new CatalogImport(page);
 
     await common.loginAsGuest();

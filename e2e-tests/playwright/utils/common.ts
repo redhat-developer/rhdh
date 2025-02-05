@@ -1,4 +1,4 @@
-import { UIhelper } from "./ui-helper";
+import { UiHelper } from "./ui-helper";
 import { authenticator } from "otplib";
 import { test, Browser, expect, Page, TestInfo } from "@playwright/test";
 import { APIHelper } from "./api-helper";
@@ -11,12 +11,12 @@ import fs from "fs";
 
 export class Common {
   page: Page;
-  uiHelper: UIhelper;
+  uiHelper: UiHelper;
   private readonly authStateFileName = "authState.json";
 
   constructor(page: Page) {
     this.page = page;
-    this.uiHelper = new UIhelper(page);
+    this.uiHelper = new UiHelper(page);
   }
 
   async loginAsGuest() {
@@ -24,7 +24,7 @@ export class Common {
     await this.waitForLoad(240000);
     // TODO - Remove it after https://issues.redhat.com/browse/RHIDP-2043. A Dynamic plugin for Guest Authentication Provider needs to be created
     this.page.on("dialog", async (dialog) => {
-      console.log(`Dialog message: ${dialog.message()}`);
+      LOGGER.info(`Dialog message: ${dialog.message()}`);
       await dialog.accept();
     });
 
@@ -117,7 +117,7 @@ export class Common {
         fs.readFileSync(sessionFileName, "utf-8"),
       ).cookies;
       await this.page.context().addCookies(cookies);
-      console.log(`Reusing existing authentication state for user: ${userid}`);
+      LOGGER.info(`Reusing existing authentication state for user: ${userid}`);
       await this.page.goto("/");
       await this.waitForLoad(12000);
       await this.uiHelper.clickButton("Sign In");
@@ -131,7 +131,7 @@ export class Common {
       await this.checkAndReauthorizeGithubApp();
       await this.uiHelper.waitForSideBarVisible();
       await this.page.context().storageState({ path: sessionFileName });
-      console.log(`Authentication state saved for user: ${userid}`);
+      LOGGER.info(`Authentication state saved for user: ${userid}`);
     }
   }
 
@@ -199,7 +199,7 @@ export class Common {
       await this.checkAndReauthorizeGithubApp();
       await this.uiHelper.waitForLoginBtnDisappear();
     } else {
-      console.log(
+      LOGGER.info(
         '"Log in" button is not visible. Skipping login popup actions.',
       );
     }

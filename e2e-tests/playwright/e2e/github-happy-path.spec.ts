@@ -1,5 +1,5 @@
 import { test, expect, Page } from "@playwright/test";
-import { UIhelper } from "../utils/ui-helper";
+import { UiHelper } from "../utils/ui-helper";
 import { Common, setupBrowser } from "../utils/common";
 import { RESOURCES } from "../support/testData/resources";
 import {
@@ -7,6 +7,7 @@ import {
   CatalogImport,
 } from "../support/pages/catalog-import";
 import { TEMPLATES } from "../support/testData/templates";
+import { LOGGER } from "../utils/logger";
 
 let page: Page;
 
@@ -14,7 +15,7 @@ let page: Page;
 test.describe.skip("GitHub Happy path", () => {
   //TODO: skipping due to RHIDP-4992
   let common: Common;
-  let uiHelper: UIhelper;
+  let uiHelper: UiHelper;
   let catalogImport: CatalogImport;
   let backstageShowcase: BackstageShowcase;
 
@@ -24,7 +25,7 @@ test.describe.skip("GitHub Happy path", () => {
   test.beforeAll(async ({ browser }, testInfo) => {
     page = (await setupBrowser(browser, testInfo)).page;
 
-    uiHelper = new UIhelper(page);
+    uiHelper = new UiHelper(page);
     common = new Common(page);
     catalogImport = new CatalogImport(page);
     backstageShowcase = new BackstageShowcase(page);
@@ -134,24 +135,24 @@ test.describe.skip("GitHub Happy path", () => {
 
   // TODO https://issues.redhat.com/browse/RHIDP-3159 The last ~10 GitHub Pull Requests are missing from the list
   test.skip("Click on the arrows to verify that the next/previous/first/last pages of PRs are loaded", async () => {
-    console.log("Fetching all PRs from GitHub");
+    LOGGER.info("Fetching all PRs from GitHub");
     const allPRs = await BackstageShowcase.getShowcasePRs("all", true);
 
-    console.log("Clicking on ALL button");
+    LOGGER.info("Clicking on ALL button");
     await uiHelper.clickButton("ALL", { force: true });
     await backstageShowcase.verifyPRRows(allPRs, 0, 5);
 
-    console.log("Clicking on Next Page button");
+    LOGGER.info("Clicking on Next Page button");
     await backstageShowcase.clickNextPage();
     await backstageShowcase.verifyPRRows(allPRs, 5, 10);
 
     const lastPagePRs = Math.floor((allPRs.length - 1) / 5) * 5;
 
-    console.log("Clicking on Last Page button");
+    LOGGER.info("Clicking on Last Page button");
     await backstageShowcase.clickLastPage();
     await backstageShowcase.verifyPRRows(allPRs, lastPagePRs, allPRs.length);
 
-    console.log("Clicking on Previous Page button");
+    LOGGER.info("Clicking on Previous Page button");
     await backstageShowcase.clickPreviousPage();
     await backstageShowcase.verifyPRRows(allPRs, lastPagePRs - 5, lastPagePRs);
   });

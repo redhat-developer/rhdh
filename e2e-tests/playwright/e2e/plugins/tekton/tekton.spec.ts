@@ -1,6 +1,6 @@
 import { test } from "@playwright/test";
 import { Common, setupBrowser } from "../../../utils/common";
-import { UIhelper } from "../../../utils/ui-helper";
+import { UiHelper } from "../../../utils/ui-helper";
 import { Tekton } from "../../../utils/tekton/tekton";
 import { Catalog } from "../../../support/pages/catalog";
 
@@ -13,7 +13,7 @@ import { Catalog } from "../../../support/pages/catalog";
 
 test.describe("Test Tekton plugin", () => {
   let common: Common;
-  let uiHelper: UIhelper;
+  let uiHelper: UiHelper;
   let tekton: Tekton;
   let catalog: Catalog;
 
@@ -21,7 +21,7 @@ test.describe("Test Tekton plugin", () => {
     const page = (await setupBrowser(browser, testInfo)).page;
     common = new Common(page);
     await common.loginAsGuest();
-    uiHelper = new UIhelper(page);
+    uiHelper = new UiHelper(page);
     tekton = new Tekton(page);
     catalog = new Catalog(page);
   });

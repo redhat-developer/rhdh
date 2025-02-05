@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { KubeClient } from "../../utils/kube-client";
 import { LOGGER } from "../../utils/logger";
 import { Common } from "../../utils/common";
-import { UIhelper } from "../../utils/ui-helper";
+import { UiHelper } from "../../utils/ui-helper";
 
 test.describe.skip("Change app-config at e2e test runtime", () => {
   test("Verify title change after ConfigMap modification", async ({ page }) => {
@@ -14,7 +14,7 @@ test.describe.skip("Change app-config at e2e test runtime", () => {
 
     const kubeUtils = new KubeClient();
     const dynamicTitle = generateDynamicTitle();
-    const uiHelper = new UIhelper(page);
+    const uiHelper = new UiHelper(page);
     try {
       LOGGER.info(`Updating ConfigMap '${configMapName}' with new title.`);
       await kubeUtils.updateConfigMapTitle(
@@ -33,7 +33,7 @@ test.describe.skip("Change app-config at e2e test runtime", () => {
       await page.context().clearPermissions();
       await page.reload({ waitUntil: "domcontentloaded" });
       await common.loginAsGuest();
-      await new UIhelper(page).openSidebar("Home");
+      await new UiHelper(page).openSidebar("Home");
       await uiHelper.verifyHeading("Welcome back!");
       await uiHelper.verifyText("Quick Access");
       await expect(page.locator("#search-bar-text-field")).toBeVisible();

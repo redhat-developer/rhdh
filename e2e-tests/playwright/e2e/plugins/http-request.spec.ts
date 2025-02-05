@@ -1,5 +1,5 @@
 import { test } from "@playwright/test";
-import { UIhelper } from "../../utils/ui-helper";
+import { UiHelper } from "../../utils/ui-helper";
 import { Common } from "../../utils/common";
 import { CatalogImport } from "../../support/pages/catalog-import";
 
@@ -8,14 +8,14 @@ import { CatalogImport } from "../../support/pages/catalog-import";
 // Pre-req: Enable janus-idp-backstage-plugin-quay plugin
 //TODO Re-enable when roadiehq-scaffolder-backend-module-http-request-dynamic is included in the Helm image
 test.describe("Testing scaffolder-backend-module-http-request to invoke an external request", () => {
-  let uiHelper: UIhelper;
+  let uiHelper: UiHelper;
   let common: Common;
   let catalogImport: CatalogImport;
   const template =
     "https://github.com/janus-qe/software-template/blob/main/test-http-request.yaml";
 
   test.beforeEach(async ({ page }) => {
-    uiHelper = new UIhelper(page);
+    uiHelper = new UiHelper(page);
     common = new Common(page);
     await common.loginAsGuest();
     catalogImport = new CatalogImport(page);

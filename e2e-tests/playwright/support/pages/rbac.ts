@@ -1,19 +1,20 @@
 import { APIResponse, Page, expect } from "@playwright/test";
-import { UIhelper } from "../../utils/ui-helper";
+import { UiHelper } from "../../utils/ui-helper";
 import {
   DELETE_ROLE_COMPONENTS,
   HOME_PAGE_COMPONENTS,
   ROLES_PAGE_COMPONENTS,
 } from "../pageObjects/page-obj";
 import { Policy, Role } from "../api/rbac-api-structures";
+import { LOGGER } from "../../utils/logger";
 
 export class Roles {
   private readonly page: Page;
-  private readonly uiHelper: UIhelper;
+  private readonly uiHelper: UiHelper;
 
   constructor(page: Page) {
     this.page = page;
-    this.uiHelper = new UIhelper(page);
+    this.uiHelper = new UiHelper(page);
   }
   static getRolesListCellsIdentifier() {
     const roleName = new RegExp(/^(role|user|group):[a-zA-Z]+\/[\w@*.~-]+$/);
@@ -97,7 +98,7 @@ export class Response {
 
       return responseClean;
     } catch (error) {
-      console.error("Error processing API response:", error);
+      LOGGER.error("Error processing API response:", error);
       throw new Error("Failed to process the API response");
     }
   }

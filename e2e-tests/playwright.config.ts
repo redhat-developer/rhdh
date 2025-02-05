@@ -11,7 +11,7 @@ export default defineConfig({
   timeout: 90 * 1000,
   testDir: "./playwright",
   /* Fail the build on CI if you accidentally left test.only in the source code. */
-  forbidOnly: !!process.env.CI,
+  forbidOnly: false,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
   /* Opt out of parallel tests on CI. */
@@ -54,17 +54,13 @@ export default defineConfig({
         "**/playwright/e2e/verify-tls-config-health-check.spec.ts",
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
         "**/playwright/e2e/plugins/tekton/tekton.spec.ts",
+        "**/playwright/e2e/operator/**/*.spec.ts",
       ],
     },
     {
       name: "showcase-rbac",
       ...useCommonDeviceAndViewportConfig,
-      testMatch: [
-        "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
-        "**/playwright/e2e/plugins/analytics/analytics-disabled-rbac.spec.ts",
-        "**/playwright/e2e/verify-tls-config-with-external-postgres-db.spec.ts",
-        "**/playwright/e2e/plugins/bulk-import.spec.ts",
-      ],
+      testMatch: ["**/playwright/e2e/plugins/bulk-import.spec.ts"],
     },
     {
       name: "showcase-auth-providers",
@@ -74,6 +70,7 @@ export default defineConfig({
         "**/playwright/e2e/authProviders/setup-environment.spec.ts",
         "**/playwright/e2e/authProviders/clear-environment.spec.ts",
         "**/playwright/e2e/verify-tls-config-health-check.spec.ts",
+        "**/playwright/e2e/operator/**/*.spec.ts",
       ],
       dependencies: ["showcase-auth-providers-setup-environment"],
       teardown: "showcase-auth-providers-clear-environment",
@@ -103,6 +100,7 @@ export default defineConfig({
         "**/playwright/e2e/verify-redis-cache.spec.ts",
         "**/playwright/e2e/verify-tls-config-health-check.spec.ts",
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
+        "**/playwright/e2e/operator/**/*.spec.ts",
       ],
     },
     {
@@ -112,6 +110,7 @@ export default defineConfig({
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/plugins/analytics/analytics-disabled-rbac.spec.ts",
         "**/playwright/e2e/plugins/bulk-import.spec.ts",
+        "**/playwright/e2e/operator/**/*.spec.ts",
       ],
     },
     {

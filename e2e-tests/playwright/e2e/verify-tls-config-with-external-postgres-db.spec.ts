@@ -1,12 +1,12 @@
 import { test, expect } from "@playwright/test";
-import { UIhelper } from "../utils/ui-helper";
+import { UiHelper } from "../utils/ui-helper";
 import { Common } from "../utils/common";
 
 test.describe("Verify TLS configuration with external Postgres DB", () => {
   test("Verify successful DB connection and display of expected entities in the Home Page and Catalog", async ({
     page,
   }) => {
-    const uiHelper = new UIhelper(page);
+    const uiHelper = new UiHelper(page);
     const common = new Common(page);
     await common.loginAsKeycloakUser(
       process.env.GH_USER2_ID,

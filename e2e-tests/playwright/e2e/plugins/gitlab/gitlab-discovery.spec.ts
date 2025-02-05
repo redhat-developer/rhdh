@@ -1,15 +1,15 @@
 import { test } from "@playwright/test";
-import { UIhelper } from "../../../utils/ui-helper";
+import { UiHelper } from "../../../utils/ui-helper";
 import { Common } from "../../../utils/common";
 
 // Pre-req: backstage-plugin-catalog-backend-module-gitlab-dynamic
 // Pre-req: immobiliarelabs-backstage-plugin-gitlab-backend-dynamic
 test.describe("gitlab discovery UI tests", () => {
-  let uiHelper: UIhelper;
+  let uiHelper: UiHelper;
   let common: Common;
 
   test.beforeEach(async ({ page }) => {
-    uiHelper = new UIhelper(page);
+    uiHelper = new UiHelper(page);
     common = new Common(page);
     await common.loginAsGuest();
     await uiHelper.openSidebar("Catalog");

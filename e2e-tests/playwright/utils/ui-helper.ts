@@ -2,7 +2,7 @@ import { expect, Locator, Page } from "@playwright/test";
 import { UI_HELPER_ELEMENTS } from "../support/pageObjects/global-obj";
 import { SidebarTabs } from "./navbar";
 
-export class UIhelper {
+export class UiHelper {
   private page: Page;
 
   constructor(page: Page) {

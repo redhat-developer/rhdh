@@ -1,15 +1,15 @@
 import { test } from "@playwright/test";
-import { UIhelper } from "../utils/ui-helper";
+import { UiHelper } from "../utils/ui-helper";
 import { HomePage } from "../support/pages/home-page";
 import { Common } from "../utils/common";
 
 test.describe("Guest Signing Happy path", () => {
-  let uiHelper: UIhelper;
+  let uiHelper: UiHelper;
   let homePage: HomePage;
   let common: Common;
 
   test.beforeEach(async ({ page }) => {
-    uiHelper = new UIhelper(page);
+    uiHelper = new UiHelper(page);
     homePage = new HomePage(page);
     common = new Common(page);
     await common.loginAsGuest();

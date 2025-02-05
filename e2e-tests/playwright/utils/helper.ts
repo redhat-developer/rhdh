@@ -8,25 +8,46 @@ import { GroupEntity } from "@backstage/catalog-model";
 import fs from "fs";
 import { APIHelper } from "./api-helper";
 
-export async function runShellCmd(command: string) {
-  return new Promise<string>((resolve) => {
-    //logger.info(`Executing command ${command}`);
+export async function runShellCmd(command: string, timeout?: number) {
+  return new Promise<string>((resolve, reject) => {
     const process = spawn("/bin/sh", ["-c", command]);
-    let result: string;
+    let result: string = "";
+    let timeoutHandle: NodeJS.Timeout | undefined;
+
+    if (timeout && timeout > 0) {
+      timeoutHandle = setTimeout(() => {
+        process.kill("SIGTERM");
+        reject(`Process timed out after ${timeout} ms`);
+      }, timeout);
+    }
+
     process.stdout.on("data", (data) => {
-      result = data;
+      result += data.toString();
     });
+
     process.stderr.on("data", (data) => {
-      result = data;
+      result += data.toString();
     });
+
     process.on("exit", (code) => {
-      if (code == 0) {
+      if (timeoutHandle) {
+        clearTimeout(timeoutHandle);
+      }
+
+      result += "";
+      if (code === 0) {
         resolve(result);
-        return;
       } else {
         LOGGER.info(`Process failed with code ${code}: ${result}`);
-        throw Error(`Error executing shell command; exit code ${code}`);
+        reject(`Process failed with code ${code}: ${result}`);
       }
+    });
+
+    process.on("error", (err) => {
+      if (timeoutHandle) {
+        clearTimeout(timeoutHandle);
+      }
+      reject(`Process execution failed: ${err.message}`);
     });
   });
 }
