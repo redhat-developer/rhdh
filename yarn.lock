@@ -16118,7 +16118,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-dynamic-home-page@npm:^1.1.0":
+"@red-hat-developer-hub/backstage-plugin-dynamic-home-page@npm:1.1.0":
   version: 1.1.0
   resolution: "@red-hat-developer-hub/backstage-plugin-dynamic-home-page@npm:1.1.0"
   dependencies:
@@ -16306,13 +16306,6 @@ __metadata:
   peerDependencies:
     "@redis/client": ^1.0.0
   checksum: 785f024e1c83866708beb254f765e561ccd6e6caad61b697223b3355ee92ca1e99a4d312c4ce03a3d6a29a223f38a2ec844c80b47990fa3bd9ddc56a30c1376f
-  languageName: node
-  linkType: hard
-
-"@remix-run/router@npm:1.21.1":
-  version: 1.21.1
-  resolution: "@remix-run/router@npm:1.21.1"
-  checksum: a7f618a33cbee44491f17db302a89eebf9f2d72892a7e918433cee5a0006935185f1f2946b8ff6f669184c6ca75babff1cdfa15a016a87ac7b5353cb4fd2c470
   languageName: node
   linkType: hard
 
@@ -39819,7 +39812,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router-dom@npm:6.29.0":
+"react-router-dom@npm:6.29.0, react-router-dom@npm:^6.26.2":
   version: 6.29.0
   resolution: "react-router-dom@npm:6.29.0"
   dependencies:
@@ -39829,30 +39822,6 @@ __metadata:
     react: ">=16.8"
     react-dom: ">=16.8"
   checksum: 0000208e404ba09a03937c3a543e688d59bb4f23a902a7f343ca69d8315b262849745f8e3ef1dedf322be87856103f08cab689da39b67b65153606ed788dd51e
-  languageName: node
-  linkType: hard
-
-"react-router-dom@npm:^6.26.2":
-  version: 6.28.2
-  resolution: "react-router-dom@npm:6.28.2"
-  dependencies:
-    "@remix-run/router": 1.21.1
-    react-router: 6.28.2
-  peerDependencies:
-    react: ">=16.8"
-    react-dom: ">=16.8"
-  checksum: daa7a0f10c2d9861225c12d896bd4839da61ed1bbee945dc730fe27e8545d2dd1655cbbd6efe8b8f9647cad79bd98f9fed001073f93d5216be08b76f3aa4e88c
-  languageName: node
-  linkType: hard
-
-"react-router@npm:6.28.2":
-  version: 6.28.2
-  resolution: "react-router@npm:6.28.2"
-  dependencies:
-    "@remix-run/router": 1.21.1
-  peerDependencies:
-    react: ">=16.8"
-  checksum: 3e47c475293a54ae7067cc12d26947b6d73586916fc17ccd32215524c6ae7aa52b64d8d748a75152fa2bc72193ca709181c8aa24bfcd60efe08243357afed6e0
   languageName: node
   linkType: hard
 
@@ -40173,7 +40142,7 @@ __metadata:
     "@backstage/cli": 0.29.6
     "@janus-idp/cli": 3.0.0
     "@mui/material": 5.16.14
-    "@red-hat-developer-hub/backstage-plugin-dynamic-home-page": ^1.1.0
+    "@red-hat-developer-hub/backstage-plugin-dynamic-home-page": 1.1.0
     typescript: 5.7.3
   languageName: unknown
   linkType: soft
