@@ -17,6 +17,8 @@ upstream:
       fsGroup: 2000
     startupProbe:
       failureThreshold: 10 # Override the default to account for longer startup time on Kubernetes.
+    readinessProbe:
+      successThreshold: 4 # Override the default to make sure the app is stable and the first e2e test won't fail.
   postgresql:
     primary:
       podSecurityContext:
