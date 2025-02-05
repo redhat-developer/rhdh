@@ -1,6 +1,6 @@
 {
   "name": "red-hat-developer-hub-backstage-plugin-global-header",
-  "version": "0.0.5",
+  "version": "1.0.0",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "license": "Apache-2.0",
@@ -59,7 +59,7 @@
   "homepage": "https://red.ht/rhdh",
   "bugs": "https://issues.redhat.com/browse/RHIDP",
   "keywords": [
-    "support:tech-preview",
+    "support:production",
     "lifecycle:active"
   ]
 }
