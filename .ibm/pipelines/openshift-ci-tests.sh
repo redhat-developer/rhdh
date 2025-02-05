@@ -41,6 +41,10 @@ for SCRIPT in "${SCRIPTS[@]}"; do
     echo "Loaded ${SCRIPT}"
 done
 
+export K8S_CLUSTER_URL='https://api.uei2j-rwdy3-why.x1ie.p3.openshiftapps.com:443'
+export K8S_CLUSTER_TOKEN=${K8S_CLUSTER_TOKEN_TEMPORARY}
+export JOB_NAME=pull
+
 main() {
   echo "Log file: ${LOGFILE}"
   echo "JOB_NAME : $JOB_NAME"
