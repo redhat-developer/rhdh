@@ -25,6 +25,10 @@ import shutil
 import subprocess
 import base64
 import binascii
+import atexit
+import time
+import signal
+
 # This script is used to install dynamic plugins in the Backstage application,
 # and is available in the container image to be called at container initialization,
 # for example in an init container when using Kubernetes.
@@ -181,8 +185,39 @@ def verify_package_integrity(plugin: dict, archive: str, working_directory: str)
     if hash_digest != output.decode('utf-8').strip():
       raise InstallException(f'{package}: The hash of the downloaded package {output.decode("utf-8").strip()} does not match the provided integrity hash {hash_digest} provided in the configuration file')
 
+# Create the lock file, so that other instances of the script will wait for this one to finish
+def create_lock(lock_file_path):
+    while True:
+      try:
+        with open(lock_file_path, 'x'):
+          print(f"======= Created lock file: {lock_file_path}")
+          return
+      except FileExistsError:
+        wait_for_lock_release(lock_file_path)
+
+# Remove the lock file
+def remove_lock(lock_file_path):
+   os.remove(lock_file_path)
+   print(f"======= Removed lock file: {lock_file_path}")
+
+# Wait for the lock file to be released
+def wait_for_lock_release(lock_file_path):
+   print("======= Waiting for lock release...", flush=True)
+   while True:
+     if not os.path.exists(lock_file_path):
+       break
+     time.sleep(1)
+   print("======= Lock released.")
+
 def main():
+
     dynamicPluginsRoot = sys.argv[1]
+
+    lock_file_path = os.path.join(dynamicPluginsRoot, 'install-dynamic-plugins.lock')
+    atexit.register(remove_lock, lock_file_path)
+    signal.signal(signal.SIGTERM, lambda signum, frame: sys.exit(0))
+    create_lock(lock_file_path)
+
     maxEntrySize = int(os.environ.get('MAX_ENTRY_SIZE', 20000000))
     skipIntegrityCheck = os.environ.get("SKIP_INTEGRITY_CHECK", "").lower() == "true"
 
