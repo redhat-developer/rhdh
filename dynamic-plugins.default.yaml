@@ -565,8 +565,7 @@ plugins:
                   priority: 80
                   props:
                     icon: support
-                    tooltip: Support
-                    to: https://github.com/redhat-developer/rhdh/issues
+                    tooltip: Support (external site)
               - mountPoint: global.header/component
                 importName: HeaderIconButton
                 config:
