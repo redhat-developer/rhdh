@@ -280,6 +280,9 @@ COPY --chown=1001:1001 $EXTERNAL_SOURCE_NESTED/packages/backend/src/instrumentat
 # Remove write and execute permissions
 RUN chmod a=r ./instrumentation.js
 
-ENTRYPOINT ["node", "--require", "./instrumentation.js", "packages/backend", "--no-node-snapshot", "--config", "app-config.yaml", "--config", "app-config.example.yaml", "--config", "app-config.example.production.yaml"]
+# Enables the usage of the backstage scaffolder on nodejs 20
+ENV NODE_OPTIONS='--no-node-snapshot'
+
+ENTRYPOINT ["node", "--require", "./instrumentation.js", "packages/backend", "--config", "app-config.yaml", "--config", "app-config.example.yaml", "--config", "app-config.example.production.yaml"]
 
 # append Brew metadata here
