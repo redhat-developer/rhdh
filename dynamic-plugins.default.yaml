@@ -558,6 +558,26 @@ plugins:
                 config:
                   type: link
               - mountPoint: global.header/component
+                importName: HeaderIconButton
+                config:
+                  type: icon_button
+                  slot: header-start
+                  priority: 80
+                  props:
+                    icon: support
+                    tooltip: Support
+                    to: https://github.com/redhat-developer/rhdh/issues
+              - mountPoint: global.header/component
+                importName: HeaderIconButton
+                config:
+                  type: icon_button
+                  slot: header-start
+                  priority: 70
+                  props:
+                    icon: notifications
+                    tooltip: Notifications
+                    to: /notifications
+              - mountPoint: global.header/component
                 importName: ProfileDropdown
                 config:
                   type: dropdown_button
