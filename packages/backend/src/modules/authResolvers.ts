@@ -60,7 +60,8 @@ const createOidcSubClaimResolver = (userIdKey: string, providerName: string) =>
             ctx,
             error,
             userEntityName: info.result.fullProfile.userinfo.name!,
-            dangerouslyAllowSignInWithoutUserInCatalog: options?.dangerouslyAllowSignInWithoutUserInCatalog
+            dangerouslyAllowSignInWithoutUserInCatalog:
+              options?.dangerouslyAllowSignInWithoutUserInCatalog,
           });
         }
       };
