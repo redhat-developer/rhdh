@@ -44,6 +44,8 @@ for SCRIPT in "${DIR}"/jobs/*.sh; do
   fi
 done
 
+detect_ocp_and_set_env_var
+
 main() {
   echo "Log file: ${LOGFILE}"
   echo "JOB_NAME : $JOB_NAME"
