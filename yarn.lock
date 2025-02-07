@@ -5980,7 +5980,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-auth-backend-module-atlassian-provider@npm:^0.3.4":
+"@backstage/plugin-auth-backend-module-atlassian-provider@npm:0.3.4":
   version: 0.3.4
   resolution: "@backstage/plugin-auth-backend-module-atlassian-provider@npm:0.3.4"
   dependencies:
@@ -5993,7 +5993,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-auth-backend-module-auth0-provider@npm:^0.1.4":
+"@backstage/plugin-auth-backend-module-atlassian-provider@patch:@backstage/plugin-auth-backend-module-atlassian-provider@npm%3A0.3.4#./.yarn/patches/@backstage-plugin-auth-backend-module-atlassian-provider-npm-0.3.4-c82f4982c5.patch::locator=root%40workspace%3A.":
+  version: 0.3.4
+  resolution: "@backstage/plugin-auth-backend-module-atlassian-provider@patch:@backstage/plugin-auth-backend-module-atlassian-provider@npm%3A0.3.4#./.yarn/patches/@backstage-plugin-auth-backend-module-atlassian-provider-npm-0.3.4-c82f4982c5.patch::version=0.3.4&hash=c4e0cf&locator=root%40workspace%3A."
+  dependencies:
+    "@backstage/backend-plugin-api": ^1.1.1
+    "@backstage/plugin-auth-node": ^0.5.6
+    express: ^4.18.2
+    passport: ^0.7.0
+    passport-atlassian-oauth2: ^2.1.0
+  checksum: 4a6f1ff274a2d3ab5d8d54f2d876ec419aecc25d67e381c45f12d14ab1499d4ab3f855d741180645372fc926d2b5b59c396b4d5bc16c398e91d85983f67a0420
+  languageName: node
+  linkType: hard
+
+"@backstage/plugin-auth-backend-module-auth0-provider@npm:0.1.4, @backstage/plugin-auth-backend-module-auth0-provider@npm:^0.1.4":
   version: 0.1.4
   resolution: "@backstage/plugin-auth-backend-module-auth0-provider@npm:0.1.4"
   dependencies:
@@ -6020,7 +6033,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-auth-backend-module-azure-easyauth-provider@npm:^0.2.4":
+"@backstage/plugin-auth-backend-module-azure-easyauth-provider@npm:0.2.4":
   version: 0.2.4
   resolution: "@backstage/plugin-auth-backend-module-azure-easyauth-provider@npm:0.2.4"
   dependencies:
@@ -6036,7 +6049,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-auth-backend-module-bitbucket-provider@npm:^0.2.4":
+"@backstage/plugin-auth-backend-module-azure-easyauth-provider@patch:@backstage/plugin-auth-backend-module-azure-easyauth-provider@npm%3A0.2.4#./.yarn/patches/@backstage-plugin-auth-backend-module-azure-easyauth-provider-npm-0.2.4-a2db8644ad.patch::locator=root%40workspace%3A.":
+  version: 0.2.4
+  resolution: "@backstage/plugin-auth-backend-module-azure-easyauth-provider@patch:@backstage/plugin-auth-backend-module-azure-easyauth-provider@npm%3A0.2.4#./.yarn/patches/@backstage-plugin-auth-backend-module-azure-easyauth-provider-npm-0.2.4-a2db8644ad.patch::version=0.2.4&hash=d8b5a7&locator=root%40workspace%3A."
+  dependencies:
+    "@backstage/backend-plugin-api": ^1.1.1
+    "@backstage/catalog-model": ^1.7.3
+    "@backstage/errors": ^1.2.7
+    "@backstage/plugin-auth-node": ^0.5.6
+    "@types/passport": ^1.0.16
+    express: ^4.19.2
+    jose: ^5.0.0
+    passport: ^0.7.0
+  checksum: 3b13d2a1487887162bdace962cded2e18ea91d2777709158ca5796ae9e9fb77cd2e0aa0ac6a4fe5efe81f33f76e1da11067b94b591545ae73a0d98f60ef7fc13
+  languageName: node
+  linkType: hard
+
+"@backstage/plugin-auth-backend-module-bitbucket-provider@npm:0.2.4":
   version: 0.2.4
   resolution: "@backstage/plugin-auth-backend-module-bitbucket-provider@npm:0.2.4"
   dependencies:
@@ -6049,7 +6078,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-auth-backend-module-bitbucket-server-provider@npm:^0.1.4":
+"@backstage/plugin-auth-backend-module-bitbucket-provider@patch:@backstage/plugin-auth-backend-module-bitbucket-provider@npm%3A0.2.4#./.yarn/patches/@backstage-plugin-auth-backend-module-bitbucket-provider-npm-0.2.4-8521163175.patch::locator=root%40workspace%3A.":
+  version: 0.2.4
+  resolution: "@backstage/plugin-auth-backend-module-bitbucket-provider@patch:@backstage/plugin-auth-backend-module-bitbucket-provider@npm%3A0.2.4#./.yarn/patches/@backstage-plugin-auth-backend-module-bitbucket-provider-npm-0.2.4-8521163175.patch::version=0.2.4&hash=6d471d&locator=root%40workspace%3A."
+  dependencies:
+    "@backstage/backend-plugin-api": ^1.1.1
+    "@backstage/plugin-auth-node": ^0.5.6
+    express: ^4.18.2
+    passport: ^0.7.0
+    passport-bitbucket-oauth2: ^0.1.2
+  checksum: b53b1a07f6216a583a9415106ab29fc056d2f52092b20d10504d91d6adc0a78a3817d9c92d0dec1c552555d070a0be752fe8ee2ed79f7a235d569465ee1d91db
+  languageName: node
+  linkType: hard
+
+"@backstage/plugin-auth-backend-module-bitbucket-server-provider@npm:0.1.4":
   version: 0.1.4
   resolution: "@backstage/plugin-auth-backend-module-bitbucket-server-provider@npm:0.1.4"
   dependencies:
@@ -6061,7 +6103,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-auth-backend-module-cloudflare-access-provider@npm:^0.3.4":
+"@backstage/plugin-auth-backend-module-bitbucket-server-provider@patch:@backstage/plugin-auth-backend-module-bitbucket-server-provider@npm%3A0.1.4#./.yarn/patches/@backstage-plugin-auth-backend-module-bitbucket-server-provider-npm-0.1.4-49ea866e93.patch::locator=root%40workspace%3A.":
+  version: 0.1.4
+  resolution: "@backstage/plugin-auth-backend-module-bitbucket-server-provider@patch:@backstage/plugin-auth-backend-module-bitbucket-server-provider@npm%3A0.1.4#./.yarn/patches/@backstage-plugin-auth-backend-module-bitbucket-server-provider-npm-0.1.4-49ea866e93.patch::version=0.1.4&hash=2375aa&locator=root%40workspace%3A."
+  dependencies:
+    "@backstage/backend-plugin-api": ^1.1.1
+    "@backstage/plugin-auth-node": ^0.5.6
+    passport: ^0.7.0
+    passport-oauth2: ^1.6.1
+  checksum: 44e46ffda25e58a7be12701d19a80a99c9af031ca19bb292758a91811de25e85d6358ea67bb62ed4ae979b35a3ec4aa359442bb24d21fbac0e48df784248fd87
+  languageName: node
+  linkType: hard
+
+"@backstage/plugin-auth-backend-module-cloudflare-access-provider@npm:0.3.4":
   version: 0.3.4
   resolution: "@backstage/plugin-auth-backend-module-cloudflare-access-provider@npm:0.3.4"
   dependencies:
@@ -6075,7 +6129,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-auth-backend-module-gcp-iap-provider@npm:^0.3.4":
+"@backstage/plugin-auth-backend-module-cloudflare-access-provider@patch:@backstage/plugin-auth-backend-module-cloudflare-access-provider@npm%3A0.3.4#./.yarn/patches/@backstage-plugin-auth-backend-module-cloudflare-access-provider-npm-0.3.4-f0bd0e70b3.patch::locator=root%40workspace%3A.":
+  version: 0.3.4
+  resolution: "@backstage/plugin-auth-backend-module-cloudflare-access-provider@patch:@backstage/plugin-auth-backend-module-cloudflare-access-provider@npm%3A0.3.4#./.yarn/patches/@backstage-plugin-auth-backend-module-cloudflare-access-provider-npm-0.3.4-f0bd0e70b3.patch::version=0.3.4&hash=f93bb0&locator=root%40workspace%3A."
+  dependencies:
+    "@backstage/backend-plugin-api": ^1.1.1
+    "@backstage/config": ^1.3.2
+    "@backstage/errors": ^1.2.7
+    "@backstage/plugin-auth-node": ^0.5.6
+    express: ^4.18.2
+    jose: ^5.0.0
+  checksum: 0d7c557756554de04e89926830a864ce6eb2ec16b3dba633fa60db0d22e1ead35746aa5bd65dbc8729b393ed0c3b07c192a11e6f74e35d7e0686a73bc0bbe942
+  languageName: node
+  linkType: hard
+
+"@backstage/plugin-auth-backend-module-gcp-iap-provider@npm:0.3.4":
   version: 0.3.4
   resolution: "@backstage/plugin-auth-backend-module-gcp-iap-provider@npm:0.3.4"
   dependencies:
@@ -6088,7 +6156,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-auth-backend-module-github-provider@npm:^0.2.4":
+"@backstage/plugin-auth-backend-module-gcp-iap-provider@patch:@backstage/plugin-auth-backend-module-gcp-iap-provider@npm%3A0.3.4#./.yarn/patches/@backstage-plugin-auth-backend-module-gcp-iap-provider-npm-0.3.4-8a91641643.patch::locator=root%40workspace%3A.":
+  version: 0.3.4
+  resolution: "@backstage/plugin-auth-backend-module-gcp-iap-provider@patch:@backstage/plugin-auth-backend-module-gcp-iap-provider@npm%3A0.3.4#./.yarn/patches/@backstage-plugin-auth-backend-module-gcp-iap-provider-npm-0.3.4-8a91641643.patch::version=0.3.4&hash=80c72b&locator=root%40workspace%3A."
+  dependencies:
+    "@backstage/backend-plugin-api": ^1.1.1
+    "@backstage/errors": ^1.2.7
+    "@backstage/plugin-auth-node": ^0.5.6
+    "@backstage/types": ^1.2.1
+    google-auth-library: ^9.0.0
+  checksum: eba5154a55b0f09aada5c4aa94659420a9f91dbff2fa7c015bdf40035e8a5cd4536b3ee4afdba80553af72407912d260b74489fdf8919bd852ae021913a8db2c
+  languageName: node
+  linkType: hard
+
+"@backstage/plugin-auth-backend-module-github-provider@npm:0.2.4":
   version: 0.2.4
   resolution: "@backstage/plugin-auth-backend-module-github-provider@npm:0.2.4"
   dependencies:
@@ -6099,7 +6180,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-auth-backend-module-gitlab-provider@npm:^0.2.4":
+"@backstage/plugin-auth-backend-module-github-provider@patch:@backstage/plugin-auth-backend-module-github-provider@npm%3A0.2.4#./.yarn/patches/@backstage-plugin-auth-backend-module-github-provider-npm-0.2.4-ca975ad168.patch::locator=root%40workspace%3A.":
+  version: 0.2.4
+  resolution: "@backstage/plugin-auth-backend-module-github-provider@patch:@backstage/plugin-auth-backend-module-github-provider@npm%3A0.2.4#./.yarn/patches/@backstage-plugin-auth-backend-module-github-provider-npm-0.2.4-ca975ad168.patch::version=0.2.4&hash=ed40ec&locator=root%40workspace%3A."
+  dependencies:
+    "@backstage/backend-plugin-api": ^1.1.1
+    "@backstage/plugin-auth-node": ^0.5.6
+    passport-github2: ^0.1.12
+  checksum: 6a5150e5c5fb56f62650d683a01cc08527d82926a07b088a45a629e016fdb3585fc3920647d02c28de23c55a0f84deb18b3a8da812a10faca963ad978206a0a3
+  languageName: node
+  linkType: hard
+
+"@backstage/plugin-auth-backend-module-gitlab-provider@npm:0.2.4":
   version: 0.2.4
   resolution: "@backstage/plugin-auth-backend-module-gitlab-provider@npm:0.2.4"
   dependencies:
@@ -6112,7 +6204,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-auth-backend-module-google-provider@npm:^0.2.4":
+"@backstage/plugin-auth-backend-module-gitlab-provider@patch:@backstage/plugin-auth-backend-module-gitlab-provider@npm%3A0.2.4#./.yarn/patches/@backstage-plugin-auth-backend-module-gitlab-provider-npm-0.2.4-8ff797ad5c.patch::locator=root%40workspace%3A.":
+  version: 0.2.4
+  resolution: "@backstage/plugin-auth-backend-module-gitlab-provider@patch:@backstage/plugin-auth-backend-module-gitlab-provider@npm%3A0.2.4#./.yarn/patches/@backstage-plugin-auth-backend-module-gitlab-provider-npm-0.2.4-8ff797ad5c.patch::version=0.2.4&hash=8d7bf2&locator=root%40workspace%3A."
+  dependencies:
+    "@backstage/backend-plugin-api": ^1.1.1
+    "@backstage/plugin-auth-node": ^0.5.6
+    express: ^4.18.2
+    passport: ^0.7.0
+    passport-gitlab2: ^5.0.0
+  checksum: b465ad8218a6933db4e6b0decf04fa2400dbe3ac49db50202f6bc6c14f1aab923a93d33697682ae1e2d9b7b17ad9fe96d5a1538876f9751da25c02a14631f3ea
+  languageName: node
+  linkType: hard
+
+"@backstage/plugin-auth-backend-module-google-provider@npm:0.2.4, @backstage/plugin-auth-backend-module-google-provider@npm:^0.2.4":
   version: 0.2.4
   resolution: "@backstage/plugin-auth-backend-module-google-provider@npm:0.2.4"
   dependencies:
@@ -6137,7 +6242,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-auth-backend-module-microsoft-provider@npm:^0.2.4":
+"@backstage/plugin-auth-backend-module-microsoft-provider@npm:0.2.4":
   version: 0.2.4
   resolution: "@backstage/plugin-auth-backend-module-microsoft-provider@npm:0.2.4"
   dependencies:
@@ -6147,6 +6252,19 @@ __metadata:
     jose: ^5.0.0
     passport-microsoft: ^1.0.0
   checksum: 5c814d3a5e81fcd77c44f94726e3b6bcfafe8257548ee65bf7d646a33cbc5b4fffb7abe77ea58b8ad1820002f7c3f17731d26a45ae3cf23ccad2a3cc88ff14b4
+  languageName: node
+  linkType: hard
+
+"@backstage/plugin-auth-backend-module-microsoft-provider@patch:@backstage/plugin-auth-backend-module-microsoft-provider@npm%3A0.2.4#./.yarn/patches/@backstage-plugin-auth-backend-module-microsoft-provider-npm-0.2.4-002c0c3367.patch::locator=root%40workspace%3A.":
+  version: 0.2.4
+  resolution: "@backstage/plugin-auth-backend-module-microsoft-provider@patch:@backstage/plugin-auth-backend-module-microsoft-provider@npm%3A0.2.4#./.yarn/patches/@backstage-plugin-auth-backend-module-microsoft-provider-npm-0.2.4-002c0c3367.patch::version=0.2.4&hash=4e24c5&locator=root%40workspace%3A."
+  dependencies:
+    "@backstage/backend-plugin-api": ^1.1.1
+    "@backstage/plugin-auth-node": ^0.5.6
+    express: ^4.18.2
+    jose: ^5.0.0
+    passport-microsoft: ^1.0.0
+  checksum: 94046d08d7d8978d96fe1963d9a02ae0e2323cb10c02e56a0cf984de89965600710556a60c4f81a142af19320cec21fb14e71dbbebdc6bec0dfa17553fc1b458
   languageName: node
   linkType: hard
 
@@ -6162,7 +6280,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-auth-backend-module-oauth2-proxy-provider@npm:^0.2.4":
+"@backstage/plugin-auth-backend-module-oauth2-proxy-provider@npm:0.2.4":
   version: 0.2.4
   resolution: "@backstage/plugin-auth-backend-module-oauth2-proxy-provider@npm:0.2.4"
   dependencies:
@@ -6171,6 +6289,18 @@ __metadata:
     "@backstage/plugin-auth-node": ^0.5.6
     jose: ^5.0.0
   checksum: 7c7a6a71566e2a92eb8ab45d31be40dbd8ee1c8398ef4c37472747d6aeb1d75dda97eb68d42346862b9d66fbad756b6bebcc83ca224ec23aaa0f162aa45363e2
+  languageName: node
+  linkType: hard
+
+"@backstage/plugin-auth-backend-module-oauth2-proxy-provider@patch:@backstage/plugin-auth-backend-module-oauth2-proxy-provider@npm%3A0.2.4#./.yarn/patches/@backstage-plugin-auth-backend-module-oauth2-proxy-provider-npm-0.2.4-a7c0682667.patch::locator=root%40workspace%3A.":
+  version: 0.2.4
+  resolution: "@backstage/plugin-auth-backend-module-oauth2-proxy-provider@patch:@backstage/plugin-auth-backend-module-oauth2-proxy-provider@npm%3A0.2.4#./.yarn/patches/@backstage-plugin-auth-backend-module-oauth2-proxy-provider-npm-0.2.4-a7c0682667.patch::version=0.2.4&hash=ef5fcf&locator=root%40workspace%3A."
+  dependencies:
+    "@backstage/backend-plugin-api": ^1.1.1
+    "@backstage/errors": ^1.2.7
+    "@backstage/plugin-auth-node": ^0.5.6
+    jose: ^5.0.0
+  checksum: 0af5d18c830cbcda0c19428c7b1fb7735b5452fd0486b048a92afd12abd6979b88922947ea849da9cd40d191af72ed0386b152a9993f6e71c6532083ed53c374
   languageName: node
   linkType: hard
 
@@ -6202,7 +6332,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-auth-backend-module-okta-provider@npm:^0.1.4":
+"@backstage/plugin-auth-backend-module-okta-provider@npm:0.1.4":
   version: 0.1.4
   resolution: "@backstage/plugin-auth-backend-module-okta-provider@npm:0.1.4"
   dependencies:
@@ -6215,7 +6345,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-auth-backend-module-onelogin-provider@npm:^0.2.4":
+"@backstage/plugin-auth-backend-module-okta-provider@patch:@backstage/plugin-auth-backend-module-okta-provider@npm%3A0.1.4#./.yarn/patches/@backstage-plugin-auth-backend-module-okta-provider-npm-0.1.4-6e105e61f8.patch::locator=root%40workspace%3A.":
+  version: 0.1.4
+  resolution: "@backstage/plugin-auth-backend-module-okta-provider@patch:@backstage/plugin-auth-backend-module-okta-provider@npm%3A0.1.4#./.yarn/patches/@backstage-plugin-auth-backend-module-okta-provider-npm-0.1.4-6e105e61f8.patch::version=0.1.4&hash=77e81c&locator=root%40workspace%3A."
+  dependencies:
+    "@backstage/backend-plugin-api": ^1.1.1
+    "@backstage/plugin-auth-node": ^0.5.6
+    "@davidzemon/passport-okta-oauth": ^0.0.5
+    express: ^4.18.2
+    passport: ^0.7.0
+  checksum: 32054fd56176f6573839d270b8fc7529d9bd038ab9b30146774b6d90f6d7d75f2a361b5067dbf030b016cad7e250609febdfece4d54b8833cb93445157a3a4af
+  languageName: node
+  linkType: hard
+
+"@backstage/plugin-auth-backend-module-onelogin-provider@npm:0.2.4":
   version: 0.2.4
   resolution: "@backstage/plugin-auth-backend-module-onelogin-provider@npm:0.2.4"
   dependencies:
@@ -6225,6 +6368,19 @@ __metadata:
     passport: ^0.7.0
     passport-onelogin-oauth: ^0.0.1
   checksum: 020aef08f71d9309bd4b6ce8c8dbafb4f321b9090abc9d924e10677b2bc02608ee8e9a23e6a468721de8d1c7dcb8a6e08c4a859827dfbe8eb96c69a9e0505af9
+  languageName: node
+  linkType: hard
+
+"@backstage/plugin-auth-backend-module-onelogin-provider@patch:@backstage/plugin-auth-backend-module-onelogin-provider@npm%3A0.2.4#./.yarn/patches/@backstage-plugin-auth-backend-module-onelogin-provider-npm-0.2.4-f2bab85a73.patch::locator=root%40workspace%3A.":
+  version: 0.2.4
+  resolution: "@backstage/plugin-auth-backend-module-onelogin-provider@patch:@backstage/plugin-auth-backend-module-onelogin-provider@npm%3A0.2.4#./.yarn/patches/@backstage-plugin-auth-backend-module-onelogin-provider-npm-0.2.4-f2bab85a73.patch::version=0.2.4&hash=093682&locator=root%40workspace%3A."
+  dependencies:
+    "@backstage/backend-plugin-api": ^1.1.1
+    "@backstage/plugin-auth-node": ^0.5.6
+    express: ^4.18.2
+    passport: ^0.7.0
+    passport-onelogin-oauth: ^0.0.1
+  checksum: 0db85633f01c8f61593acaa50609c2eac994c453bbaf24fdc1c04d822a8c284813d3be5943474969e8e3e9073477c7271ec0a233d6c2f3f3c1a28748f16576e9
   languageName: node
   linkType: hard
 
@@ -16576,13 +16732,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@remix-run/router@npm:1.21.1":
-  version: 1.21.1
-  resolution: "@remix-run/router@npm:1.21.1"
-  checksum: a7f618a33cbee44491f17db302a89eebf9f2d72892a7e918433cee5a0006935185f1f2946b8ff6f669184c6ca75babff1cdfa15a016a87ac7b5353cb4fd2c470
-  languageName: node
-  linkType: hard
-
 "@remix-run/router@npm:1.22.0":
   version: 1.22.0
   resolution: "@remix-run/router@npm:1.22.0"
@@ -20429,7 +20578,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:20.17.17":
+"@types/node@npm:20.17.17, @types/node@npm:^20.1.1":
   version: 20.17.17
   resolution: "@types/node@npm:20.17.17"
   dependencies:
@@ -20458,15 +20607,6 @@ __metadata:
   dependencies:
     undici-types: ~5.26.4
   checksum: 8e45a05aa91437d3d11a346775ac16589353070c504f91a62cd91945a384231ccbbe92009a8e1ae653f954f9de5bf8ff106cc8e26721ecab98914dc019217aef
-  languageName: node
-  linkType: hard
-
-"@types/node@npm:^20.1.1":
-  version: 20.17.16
-  resolution: "@types/node@npm:20.17.16"
-  dependencies:
-    undici-types: ~6.19.2
-  checksum: dd19c04c592b602f20448187b4b6ab0293f22173a8bbe53aa3b559188f078b5261d748a107b84ee0580e2074cda760049b13d6e210f9850039bead01cb666a3f
   languageName: node
   linkType: hard
 
@@ -22787,8 +22927,22 @@ __metadata:
     "@backstage/config-loader": 1.9.5
     "@backstage/plugin-app-backend": 0.4.4
     "@backstage/plugin-auth-backend": 0.24.2
+    "@backstage/plugin-auth-backend-module-atlassian-provider": 0.3.4
+    "@backstage/plugin-auth-backend-module-auth0-provider": 0.1.4
+    "@backstage/plugin-auth-backend-module-azure-easyauth-provider": 0.2.4
+    "@backstage/plugin-auth-backend-module-bitbucket-provider": 0.2.4
+    "@backstage/plugin-auth-backend-module-bitbucket-server-provider": 0.1.4
+    "@backstage/plugin-auth-backend-module-cloudflare-access-provider": 0.3.4
+    "@backstage/plugin-auth-backend-module-gcp-iap-provider": 0.3.4
+    "@backstage/plugin-auth-backend-module-github-provider": 0.2.4
+    "@backstage/plugin-auth-backend-module-gitlab-provider": 0.2.4
+    "@backstage/plugin-auth-backend-module-google-provider": 0.2.4
     "@backstage/plugin-auth-backend-module-guest-provider": 0.2.4
+    "@backstage/plugin-auth-backend-module-microsoft-provider": 0.2.4
+    "@backstage/plugin-auth-backend-module-oauth2-proxy-provider": 0.2.4
     "@backstage/plugin-auth-backend-module-oidc-provider": 0.3.4
+    "@backstage/plugin-auth-backend-module-okta-provider": 0.1.4
+    "@backstage/plugin-auth-backend-module-onelogin-provider": 0.2.4
     "@backstage/plugin-auth-node": 0.5.6
     "@backstage/plugin-catalog-backend": 1.30.0
     "@backstage/plugin-catalog-backend-module-logs": 0.1.6
@@ -22821,6 +22975,7 @@ __metadata:
     prettier: 3.5.0
     undici: 6.21.1
     winston: 3.14.2
+    zod: 3.23.8
   languageName: unknown
   linkType: soft
 
@@ -40138,7 +40293,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router-dom@npm:6.29.0":
+"react-router-dom@npm:6.29.0, react-router-dom@npm:^6.26.2":
   version: 6.29.0
   resolution: "react-router-dom@npm:6.29.0"
   dependencies:
@@ -40148,30 +40303,6 @@ __metadata:
     react: ">=16.8"
     react-dom: ">=16.8"
   checksum: 0000208e404ba09a03937c3a543e688d59bb4f23a902a7f343ca69d8315b262849745f8e3ef1dedf322be87856103f08cab689da39b67b65153606ed788dd51e
-  languageName: node
-  linkType: hard
-
-"react-router-dom@npm:^6.26.2":
-  version: 6.28.2
-  resolution: "react-router-dom@npm:6.28.2"
-  dependencies:
-    "@remix-run/router": 1.21.1
-    react-router: 6.28.2
-  peerDependencies:
-    react: ">=16.8"
-    react-dom: ">=16.8"
-  checksum: daa7a0f10c2d9861225c12d896bd4839da61ed1bbee945dc730fe27e8545d2dd1655cbbd6efe8b8f9647cad79bd98f9fed001073f93d5216be08b76f3aa4e88c
-  languageName: node
-  linkType: hard
-
-"react-router@npm:6.28.2":
-  version: 6.28.2
-  resolution: "react-router@npm:6.28.2"
-  dependencies:
-    "@remix-run/router": 1.21.1
-  peerDependencies:
-    react: ">=16.8"
-  checksum: 3e47c475293a54ae7067cc12d26947b6d73586916fc17ccd32215524c6ae7aa52b64d8d748a75152fa2bc72193ca709181c8aa24bfcd60efe08243357afed6e0
   languageName: node
   linkType: hard
 
@@ -46946,7 +47077,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:^3.20.0, zod@npm:^3.22.4":
+"zod@npm:3.23.8, zod@npm:^3.20.0, zod@npm:^3.22.4":
   version: 3.23.8
   resolution: "zod@npm:3.23.8"
   checksum: 15949ff82118f59c893dacd9d3c766d02b6fa2e71cf474d5aa888570c469dbf5446ac5ad562bb035bf7ac9650da94f290655c194f4a6de3e766f43febd432c5c
