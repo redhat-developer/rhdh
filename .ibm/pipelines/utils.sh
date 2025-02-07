@@ -346,6 +346,35 @@ spec:
 EOD
 }
 
+create_secret_dockerconfigjson(){
+  namespace=$1
+  secret_name=$2
+  dockerconfigjson_value=$3
+  echo "Creating dockerconfigjson secret $secret_name in namespace $namespace"
+  kubectl apply -n "$namespace" -f - << EOD
+apiVersion: v1
+kind: Secret
+metadata:
+  name: $secret_name
+data:
+  .dockerconfigjson: $dockerconfigjson_value
+type: kubernetes.io/dockerconfigjson
+EOD
+}
+add_image_pull_secret_to_namespace_default_serviceaccount() {
+  namespace=$1
+  secret_name=$2
+  echo "Adding image pull secret $secret_name to default service account"
+  kubectl -n "${namespace}" patch serviceaccount default -p "{\"imagePullSecrets\": [{\"name\": \"${secret_name}\"}]}"
+}
+setup_image_pull_secret() {
+  local namespace=$1
+  local secret_name=$2
+  local dockerconfigjson_value=$3
+  create_secret_dockerconfigjson "$namespace" "$secret_name" "$dockerconfigjson_value"
+  add_image_pull_secret_to_namespace_default_serviceaccount "$namespace" "$secret_name"
+}
+
 # Monitors the status of an operator in an OpenShift namespace.
 # It checks the ClusterServiceVersion (CSV) for a specific operator to verify if its phase matches an expected value.
 check_operator_status() {
@@ -860,6 +889,7 @@ cluster_setup_k8s_operator() {
   install_tekton_pipelines
   # install_acm_ocp_operator
   install_crunchy_postgres_k8s_operator
+  setup_image_pull_secret "showcase" "rh-pull-secret" "${REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON}"
 }
 
 initiate_deployments() {
