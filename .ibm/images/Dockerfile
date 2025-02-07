@@ -20,6 +20,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     make gcc g++ python3 rsync sshpass \
     nodejs \
     openssl libssl-dev ca-certificates \
+    apache2-utils \
     curl wget jq colorized-logs && \
     npm install -g typescript yarn@latest && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
