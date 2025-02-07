@@ -1,0 +1,38 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: backstage-community-plugin-jenkins-backend
+  namespace: rhdh
+  title: "@backstage-community/plugin-jenkins-backend"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-jenkins-backend-dynamic
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-jenkins-backend-dynamic
+  tags: []
+spec:
+  packageName: "@backstage-community/plugin-jenkins-backend"
+  dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-jenkins-backend-dynamic
+  version: 0.6.2
+  backstage:
+    role: backend-plugin
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+  partOf:
+    - jenkins
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        jenkins:
+          instances:
+            - name: default
+              baseUrl: ${JENKINS_URL}
+              username: ${JENKINS_USERNAME}
+              apiKey: ${JENKINS_TOKEN}

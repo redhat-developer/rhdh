@@ -1,0 +1,21 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: kubernetes
+  namespace: rhdh
+  title: Kubernetes
+  tags: []
+  description: ''
+spec:
+  packageName: "@backstage-community/plugin-scaffolder-backend-module-kubernetes"
+  dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-kubernetes-dynamic
+  version: 2.2.2
+  backstage:
+    role: backend-plugin-module
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: production
+  lifecycle: active
+  partOf:
+    - backstage-community-kubernetes-scaffolder-module
+  appConfigExamples: []

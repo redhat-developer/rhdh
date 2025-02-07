@@ -1,0 +1,55 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: roadiehq-backstage-plugin-github-pull-requests
+  namespace: rhdh
+  title: "@roadiehq/backstage-plugin-github-pull-requests"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/roadiehq-backstage-plugin-github-pull-requests
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/roadiehq-backstage-plugin-github-pull-requests
+  tags: []
+spec:
+  packageName: "@roadiehq/backstage-plugin-github-pull-requests"
+  dynamicArtifact: ./dynamic-plugins/dist/roadiehq-backstage-plugin-github-pull-requests
+  version: 2.6.0
+  backstage:
+    role: frontend-plugin
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+  partOf:
+    - roadiehq-github-pull-requests
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        dynamicPlugins:
+          frontend:
+            roadiehq.backstage-plugin-github-pull-requests:
+              mountPoints:
+                - mountPoint: entity.page.overview/cards
+                  importName: EntityGithubPullRequestsOverviewCard
+                  config:
+                    layout:
+                      gridColumnEnd:
+                        lg: span 4
+                        md: span 6
+                        xs: span 12
+                    if:
+                      allOf:
+                        - isGithubPullRequestsAvailable
+                - mountPoint: entity.page.pull-requests/cards
+                  importName: EntityGithubPullRequestsContent
+                  config:
+                    layout:
+                      gridColumn: 1 / -1
+                    if:
+                      allOf:
+                        - isGithubPullRequestsAvailable

@@ -1,0 +1,22 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: red-hat-developer-hub-backstage-plugin-marketplace
+  namespace: rhdh
+  title: Marketplace
+  tags: []
+  description: ''
+spec:
+  categories:
+    - 
+  icon: acr.svg
+  developers:
+    - name: Backstage Community
+  publisher: Red Hat
+  support:
+    level: tech-preview
+  lifecycle: production
+  description: |
+    
+  installation:
+    markdown: |

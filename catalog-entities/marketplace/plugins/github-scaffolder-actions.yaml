@@ -1,0 +1,17 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: github-scaffolder-actions
+  namespace: rhdh
+  title: GitHub Software Template Actions
+  tags:
+    - software-templates
+  description: ''
+spec:
+
+  categories:
+    - Software Templates
+
+  documentation:
+    - type: about
+      markdown: |

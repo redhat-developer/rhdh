@@ -1,0 +1,35 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: backstage-community-plugin-catalog-backend-module-pingidentity
+  namespace: rhdh
+  title: "@backstage-community/plugin-catalog-backend-module-pingidentity"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-catalog-backend-module-pingidentity-dynamic
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-catalog-backend-module-pingidentity-dynamic
+  tags: []
+spec:
+  packageName: "@backstage-community/plugin-catalog-backend-module-pingidentity"
+  dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-pingidentity-dynamic
+  version: 0.1.5
+  backstage:
+    role: backend-plugin-module
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+  partOf:
+    - backstage-community-pingidentity-catalog-module
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        catalog:
+          providers:
+            pingIdentityOrg: {}

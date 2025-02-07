@@ -1,0 +1,38 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: backstage-plugin-techdocs-backend
+  namespace: rhdh
+  title: "@backstage/plugin-techdocs-backend"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-plugin-techdocs-backend-dynamic
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-plugin-techdocs-backend-dynamic
+  tags: []
+spec:
+  packageName: "@backstage/plugin-techdocs-backend"
+  dynamicArtifact: ./dynamic-plugins/dist/backstage-plugin-techdocs-backend-dynamic
+  version: 1.11.5
+  backstage:
+    role: backend-plugin
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: production
+  lifecycle: active
+  partOf:
+    - techdocs
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        techdocs:
+          builder: local
+          generator:
+            runIn: local
+          publisher:
+            type: local

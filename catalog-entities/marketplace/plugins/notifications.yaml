@@ -1,0 +1,35 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: backstage-plugin-notifications
+  namespace: rhdh
+  title: Notifications
+  tags: []
+  description: ''
+spec:
+  packageName: "@backstage/plugin-notifications"
+  dynamicArtifact: ./dynamic-plugins/dist/backstage-plugin-notifications
+  version: 0.5.1
+  backstage:
+    role: frontend-plugin
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+  partOf:
+    - notifications
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        dynamicPlugins:
+          frontend:
+            backstage.plugin-notifications:
+              dynamicRoutes:
+                - importName: NotificationsPage
+                  menuItem:
+                    config:
+                      props:
+                        titleCounterEnabled: true
+                        webNotificationsEnabled: false
+                    importName: NotificationsSidebarItem
+                  path: /notifications

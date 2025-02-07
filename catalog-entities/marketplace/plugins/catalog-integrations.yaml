@@ -1,0 +1,24 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: catalog-integrations
+  namespace: rhdh
+  title: Software Catalog integraions
+  tags:
+    - software-catalog
+  description: A list of common Backstage Software Catalog extensions.
+spec:
+  packages:
+    - backstage-github-catalog-module
+    - backstage-community-plugin-catalog-backend-module-keycloak
+    - backstage-community-plugin-catalog-backend-module-pingidentity
+    - backstage-community-plugin-catalog-backend-module-scaffolder-re
+    - backstage-plugin-catalog-backend-module-bitbucket-cloud
+    - backstage-plugin-catalog-backend-module-bitbucket-server
+    - backstage-plugin-catalog-backend-module-github-org
+    - backstage-plugin-catalog-backend-module-github
+    - backstage-plugin-catalog-backend-module-gitlab-org
+    - backstage-plugin-catalog-backend-module-gitlab
+    - backstage-plugin-catalog-backend-module-ldap
+    - backstage-plugin-catalog-backend-module-msgraph
+    #- red-hat-developer-hub-backstage-plugin-catalog-backend-module-m

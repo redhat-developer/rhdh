@@ -1,0 +1,44 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: red-hat-developer-hub-backstage-plugin-bulk-import
+  namespace: rhdh
+  title: "@red-hat-developer-hub/backstage-plugin-bulk-import"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-bulk-import
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-bulk-import
+  tags: []
+spec:
+  packageName: "@red-hat-developer-hub/backstage-plugin-bulk-import"
+  dynamicArtifact: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import
+  version: 1.10.3
+  backstage:
+    role: frontend-plugin
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+  partOf:
+    - red-hat-developer-hub-backstage-plugin-bulk-import-backend
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        dynamicPlugins:
+          frontend:
+            red-hat-developer-hub.backstage-plugin-bulk-import:
+              appIcons:
+                - name: bulkImportIcon
+                  importName: BulkImportIcon
+              dynamicRoutes:
+                - path: /bulk-import/repositories
+                  importName: BulkImportPage
+                  menuItem:
+                    icon: bulkImportIcon
+                    text: Bulk import

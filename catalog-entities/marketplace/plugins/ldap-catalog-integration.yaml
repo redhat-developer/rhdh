@@ -1,0 +1,26 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: ldap-catalog-integration
+  namespace: rhdh
+  title: LDAP Catalog Integration
+  tags: []
+  description: ''
+spec:
+  packageName: "@backstage/plugin-catalog-backend-module-ldap"
+  dynamicArtifact: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-ldap-dynamic
+  version: 0.11.1
+  backstage:
+    role: backend-plugin-module
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+  partOf:
+    - backstage-ldap-catalog-module
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        catalog:
+          providers:
+            ldapOrg: {}

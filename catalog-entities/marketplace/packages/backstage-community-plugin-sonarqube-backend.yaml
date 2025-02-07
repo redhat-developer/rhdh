@@ -1,0 +1,35 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: backstage-community-plugin-sonarqube-backend
+  namespace: rhdh
+  title: "@backstage-community/plugin-sonarqube-backend"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-sonarqube-backend-dynamic
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-sonarqube-backend-dynamic
+  tags: []
+spec:
+  packageName: "@backstage-community/plugin-sonarqube-backend"
+  dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-sonarqube-backend-dynamic
+  version: 0.3.0
+  backstage:
+    role: backend-plugin
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+  partOf:
+    - sonarqube
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        sonarqube:
+          baseUrl: ${SONARQUBE_URL}
+          apiKey: ${SONARQUBE_TOKEN}

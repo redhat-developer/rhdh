@@ -1,0 +1,12 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: servicenow-scaffolder-actions
+  namespace: rhdh
+  title: ServiceNow Software template Actions
+  tags: []
+  description: ''
+spec:
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active

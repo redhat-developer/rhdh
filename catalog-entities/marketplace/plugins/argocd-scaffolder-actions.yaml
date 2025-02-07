@@ -1,0 +1,18 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: roadiehq-scaffolder-backend-argocd
+  namespace: rhdh
+  title: Argo CD Software Template Actions
+  description: ''
+  tags:
+    - cicd
+spec:
+  author: Roadie
+  publisher: Red Hat
+
+  categories:
+    - CI/CD
+
+  packages:
+    - roadiehq-scaffolder-backend-argocd-dynamic

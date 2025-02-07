@@ -1,0 +1,40 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: backstage-community-plugin-ocm-backend
+  namespace: rhdh
+  title: "@backstage-community/plugin-ocm-backend"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-ocm-backend-dynamic
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-ocm-backend-dynamic
+  tags: []
+spec:
+  packageName: "@backstage-community/plugin-ocm-backend"
+  dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-ocm-backend-dynamic
+  version: 5.2.3
+  backstage:
+    role: backend-plugin
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: production
+  lifecycle: active
+  partOf:
+    - backstage-community-ocm-backend
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        catalog:
+          providers:
+            ocm:
+              default:
+                name: ${OCM_HUB_NAME}
+                url: ${OCM_HUB_URL}
+                serviceAccountToken: ${OCM_SA_TOKEN}
+                owner: janus-authors

@@ -1,0 +1,52 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: backstage-community-plugin-azure-devops
+  namespace: rhdh
+  title: "@backstage-community/plugin-azure-devops"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-azure-devops
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-azure-devops
+  tags: []
+spec:
+  packageName: "@backstage-community/plugin-azure-devops"
+  dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-azure-devops
+  version: 0.6.2
+  backstage:
+    role: frontend-plugin
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+  partOf:
+    - azure-devops
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        dynamicPlugins:
+          frontend:
+            backstage-community.plugin-azure-devops:
+              mountPoints:
+                - mountPoint: entity.page.ci/cards
+                  importName: EntityAzurePipelinesContent
+                  config:
+                    layout:
+                      gridColumn: 1 / -1
+                    if:
+                      allOf:
+                        - isAzureDevOpsAvailable
+                - mountPoint: entity.page.pull-requests/cards
+                  importName: EntityAzurePullRequestsContent
+                  config:
+                    layout:
+                      gridColumn: 1 / -1
+                    if:
+                      allOf:
+                        - isAzureDevOpsAvailable

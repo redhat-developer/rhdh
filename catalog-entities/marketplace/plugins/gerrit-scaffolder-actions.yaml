@@ -1,0 +1,24 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: gerrit-scaffolder-actions
+  namespace: rhdh
+  title: Gerrit Software Template Actions
+  tags:
+    - scaffolder
+    - software-templates
+  description: ''
+spec:
+  categories:
+    - Scaffolder
+  icon: gerrit.svg
+  developers:
+    - name: Backstage Community
+  publisher: Red Hat
+  support:
+    level: tech-preview
+  lifecycle: production
+  description: |
+    
+  installation:
+    markdown: |

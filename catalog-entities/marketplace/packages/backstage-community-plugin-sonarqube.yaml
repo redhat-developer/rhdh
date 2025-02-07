@@ -1,0 +1,47 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: backstage-community-plugin-sonarqube
+  namespace: rhdh
+  title: "@backstage-community/plugin-sonarqube"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-sonarqube
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-sonarqube
+  tags: []
+spec:
+  packageName: "@backstage-community/plugin-sonarqube"
+  dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-sonarqube
+  version: 0.8.7
+  backstage:
+    role: frontend-plugin
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+  partOf:
+    - sonarqube
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        dynamicPlugins:
+          frontend:
+            backstage-community.plugin-sonarqube:
+              mountPoints:
+                - mountPoint: entity.page.overview/cards
+                  importName: EntitySonarQubeCard
+                  config:
+                    layout:
+                      gridColumnEnd:
+                        lg: span 4
+                        md: span 6
+                        xs: span 12
+                    if:
+                      allOf:
+                        - isSonarQubeAvailable

@@ -1,0 +1,30 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: red-hat-developer-hub-backstage-plugin-catalog-backend-module-m
+  namespace: rhdh
+  title: "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-catalog-backend-module-marketplace-dynamic
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-catalog-backend-module-marketplace-dynamic
+  tags: []
+spec:
+  packageName: "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace"
+  dynamicArtifact: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-catalog-backend-module-marketplace-dynamic
+  version: 0.0.2
+  backstage:
+    role: backend-plugin-module
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+  partOf:
+    - red-hat-developer-hub-marketplace-catalog-module
+  appConfigExamples: []

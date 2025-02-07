@@ -1,0 +1,14 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: http-request-scaffolder-action
+  namespace: rhdh
+  title: HTTP request Software Template Action
+  tags: []
+  description: ''
+spec:
+  author: Roadie
+  publisher: Red Hat
+
+  packages:
+    - roadiehq-scaffolder-backend-module-http-request-dynamic

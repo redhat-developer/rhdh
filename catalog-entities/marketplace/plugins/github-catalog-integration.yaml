@@ -1,0 +1,20 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: github-catalog-integration
+  namespace: rhdh
+  title: GitHub Software Catalog Integration
+  tags:
+    - software-catalog
+  description: ''
+spec:
+  categories:
+    - Software Catalog
+
+  documentation:
+    - type: about
+      markdown: |
+
+  packages:
+    - backstage-plugin-catalog-backend-module-github
+    - backstage-plugin-catalog-backend-module-github-org

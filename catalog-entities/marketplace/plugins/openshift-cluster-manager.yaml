@@ -1,0 +1,12 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: openshift-cluster-manager
+  namespace: rhdh
+  title: OpenShift Cluster Manager
+  tags: []
+  description: ''
+spec:
+  author: Red Hat
+  support: production
+  lifecycle: active

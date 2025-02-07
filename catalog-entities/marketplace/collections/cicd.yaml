@@ -1,0 +1,12 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: PluginCollection
+metadata:
+  name: cicd
+  namespace: rhdh
+  title: CI/CD plugins
+  tags: []
+  description: TODO
+spec:
+  type: filter-based
+  filter:
+    metadata.tags: cicd

@@ -1,0 +1,39 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: rbac
+  namespace: rhdh
+  title: RBAC
+  tags: []
+  description: ''
+spec:
+  packageName: "@backstage-community/plugin-rbac"
+  dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-rbac
+  version: 1.33.4
+  backstage:
+    role: frontend-plugin
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: production
+  lifecycle: active
+  partOf:
+    - rbac
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        dynamicPlugins:
+          frontend:
+            backstage-community.plugin-rbac:
+              appIcons:
+                - name: rbacIcon
+                  importName: RbacIcon
+              dynamicRoutes:
+                - path: /rbac
+                  importName: RbacPage
+                  menuItem:
+                    icon: rbacIcon
+                    text: RBAC
+              menuItems:
+                rbac:
+                  parent: admin
+                  icon: rbacIcon

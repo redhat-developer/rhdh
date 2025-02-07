@@ -1,0 +1,71 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: immobiliarelabs-backstage-plugin-gitlab
+  namespace: rhdh
+  title: "@immobiliarelabs/backstage-plugin-gitlab"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/immobiliarelabs-backstage-plugin-gitlab
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/immobiliarelabs-backstage-plugin-gitlab
+  tags: []
+spec:
+  packageName: "@immobiliarelabs/backstage-plugin-gitlab"
+  dynamicArtifact: ./dynamic-plugins/dist/immobiliarelabs-backstage-plugin-gitlab
+  version: 6.6.1
+  backstage:
+    role: frontend-plugin
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+  partOf:
+    - immobiliarelabs-gitlab
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        dynamicPlugins:
+          frontend:
+            immobiliarelabs.backstage-plugin-gitlab:
+              mountPoints:
+                - mountPoint: entity.page.overview/cards
+                  importName: EntityGitlabMergeRequestStatsCard
+                  config:
+                    layout:
+                      gridColumnEnd:
+                        lg: span 4
+                        md: span 6
+                        xs: span 12
+                    if:
+                      allOf:
+                        - isGitlabAvailable
+                - mountPoint: entity.page.ci/cards
+                  importName: EntityGitlabPipelinesTable
+                  config:
+                    layout:
+                      gridColumn: 1 / -1
+                    if:
+                      allOf:
+                        - isGitlabAvailable
+                - mountPoint: entity.page.issues/cards
+                  importName: EntityGitlabIssuesTable
+                  config:
+                    layout:
+                      gridColumn: 1 / -1
+                    if:
+                      allOf:
+                        - isGitlabAvailable
+                - mountPoint: entity.page.pull-requests/cards
+                  importName: EntityGitlabMergeRequestsTable
+                  config:
+                    layout:
+                      gridColumn: 1 / -1
+                    if:
+                      allOf:
+                        - isGitlabAvailable

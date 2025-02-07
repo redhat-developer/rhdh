@@ -1,0 +1,35 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: backstage-community-plugin-dynatrace
+  namespace: rhdh
+  title: DynaTrace
+  tags: []
+  description: ''
+spec:
+  packageName: "@backstage-community/plugin-dynatrace"
+  dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-dynatrace
+  version: 10.0.8
+  backstage:
+    role: frontend-plugin
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+  partOf:
+    - dynatrace
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        dynamicPlugins:
+          frontend:
+            backstage-community.plugin-dynatrace:
+              mountPoints:
+                - mountPoint: entity.page.monitoring/cards
+                  importName: DynatraceTab
+                  config:
+                    layout:
+                      gridColumn: 1 / -1
+                    if:
+                      allOf:
+                        - isDynatraceAvailable

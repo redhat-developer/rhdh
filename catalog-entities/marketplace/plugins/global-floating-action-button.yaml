@@ -1,0 +1,29 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: global-floating-action-button
+  namespace: rhdh
+  title: Global Floating Action Button
+  description: ''
+  tags:
+    - rhdh-default-plugin
+  annotations:
+    # tbd!!
+    # Mark this plugin as a plugin which is installed and enabled by default!?!
+    # Mark this plugin as a non-custom plugin, i.e. a plugin that is not created by the user
+    marketplace.backstage.io/default-plugin: 'true'
+    marketplace.backstage.io/pre-installed: 'true'
+spec:
+  categories:
+    - 
+  icon: acr.svg
+  developers:
+    - name: Backstage Community
+  publisher: Red Hat
+  support:
+    level: tech-preview
+  lifecycle: production
+  description: |
+    
+  installation:
+    markdown: |

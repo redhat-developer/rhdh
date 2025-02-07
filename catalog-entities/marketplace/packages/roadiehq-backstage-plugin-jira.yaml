@@ -1,0 +1,44 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: roadiehq-backstage-plugin-jira
+  namespace: rhdh
+  title: "@roadiehq/backstage-plugin-jira"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/roadiehq-backstage-plugin-jira
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/roadiehq-backstage-plugin-jira
+  tags: []
+spec:
+  packageName: "@roadiehq/backstage-plugin-jira"
+  dynamicArtifact: ./dynamic-plugins/dist/roadiehq-backstage-plugin-jira
+  version: 2.8.0
+  backstage:
+    role: frontend-plugin
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+  partOf:
+    - roadiehq-jira
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        dynamicPlugins:
+          frontend:
+            roadiehq.backstage-plugin-jira:
+              mountPoints:
+                - mountPoint: entity.page.issues/cards
+                  importName: EntityJiraOverviewCard
+                  config:
+                    layout:
+                      gridColumn: 1 / -1
+                    if:
+                      allOf:
+                        - isJiraAvailable

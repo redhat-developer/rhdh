@@ -1,0 +1,15 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: techdocs
+  namespace: rhdh
+  title: TechDocs
+  description: Docs like code
+  tags:
+    - backstage-core
+    - techdocs
+spec:
+  categories:
+    - Backstage Core
+
+  documentation: []

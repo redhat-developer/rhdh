@@ -1,0 +1,11 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: backstage-community-plugin-jenkins
+  namespace: rhdh
+  title: Jenkins
+  tags: []
+  description: ''
+spec:
+  packages:
+    - backstage-community-plugin-jenkins

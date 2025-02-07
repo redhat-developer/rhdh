@@ -1,0 +1,11 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: nexus-repository-manager
+  namespace: rhdh
+  title: Nexus Repository Manager
+  tags: []
+  description: ''
+spec:
+  packages:
+    - backstage-community-plugin-nexus-repository-manager
