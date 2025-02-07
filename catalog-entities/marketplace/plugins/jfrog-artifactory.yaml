@@ -1,0 +1,11 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: jfrog-artifactory
+  namespace: rhdh
+  title: JFrog Artifactory
+  tags: []
+  description: ''
+spec:
+  packages:
+    - backstage-community-plugin-jfrog-artifactory

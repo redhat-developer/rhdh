@@ -1,0 +1,26 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: scaffolder-integrations
+  namespace: rhdh
+  title: Software Template Actions
+  tags: []
+  description: A list of common Backstage Software Template actions.
+spec:
+  packages:
+    - backstage-community-plugin-catalog-backend-module-scaffolder-re
+    - backstage-community-plugin-scaffolder-backend-module-kubernetes
+    - backstage-community-plugin-scaffolder-backend-module-quay
+    - backstage-community-plugin-scaffolder-backend-module-regex
+    - backstage-community-plugin-scaffolder-backend-module-servicenow
+    - backstage-community-plugin-scaffolder-backend-module-sonarqube
+    - backstage-plugin-scaffolder-backend-module-azure
+    - backstage-plugin-scaffolder-backend-module-bitbucket-cloud
+    - backstage-plugin-scaffolder-backend-module-bitbucket-server
+    - backstage-plugin-scaffolder-backend-module-gerrit
+    - backstage-plugin-scaffolder-backend-module-github
+    - backstage-plugin-scaffolder-backend-module-gitlab
+    - parfuemerie-douglas-scaffolder-backend-module-azure-repositorie
+    - roadiehq-scaffolder-backend-argocd
+    - roadiehq-scaffolder-backend-module-http-request
+    - roadiehq-scaffolder-backend-module-utils

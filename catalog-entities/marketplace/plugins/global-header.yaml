@@ -1,0 +1,23 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: global-header
+  namespace: rhdh
+  title: Global Header
+  tags:
+    - rhdh-default-plugin
+  description: ''
+spec:
+  categories:
+    - 
+  icon: acr.svg
+  developers:
+    - name: Backstage Community
+  publisher: Red Hat
+  support:
+    level: tech-preview
+  lifecycle: production
+  description: |
+    
+  installation:
+    markdown: |

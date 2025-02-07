@@ -1,0 +1,54 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: backstage-community-plugin-redhat-argocd
+  namespace: rhdh
+  title: "@backstage-community/plugin-redhat-argocd"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-redhat-argocd
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-redhat-argocd
+  tags: []
+spec:
+  packageName: "@backstage-community/plugin-redhat-argocd"
+  dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-redhat-argocd
+  version: 1.11.0
+  backstage:
+    role: frontend-plugin
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+  partOf:
+    - redhat-argocd
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        dynamicPlugins:
+          frontend:
+            backstage-community.plugin-redhat-argocd:
+              mountPoints:
+                - mountPoint: entity.page.overview/cards
+                  importName: ArgocdDeploymentSummary
+                  config:
+                    layout:
+                      gridColumnEnd:
+                        lg: span 8
+                        xs: span 12
+                    if:
+                      allOf:
+                        - isArgocdConfigured
+                - mountPoint: entity.page.cd/cards
+                  importName: ArgocdDeploymentLifecycle
+                  config:
+                    layout:
+                      gridColumn: 1 / -1
+                    if:
+                      allOf:
+                        - isArgocdConfigured

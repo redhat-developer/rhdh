@@ -1,0 +1,20 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: pagerduty
+  namespace: rhdh
+  title: Pager Duty
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/pagerduty-backstage-plugin
+  annotations: {}
+  tags: []
+  description: ''
+spec:
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active

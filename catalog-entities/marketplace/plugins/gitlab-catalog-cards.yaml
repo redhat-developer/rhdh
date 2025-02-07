@@ -1,0 +1,19 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: backstage-catalog-cards
+  namespace: rhdh
+  title: GitLab Catalog Cards
+  tags: []
+  description: ''
+spec:
+  author: ImmobiliareLabs
+  publisher: Red Hat
+
+  documentation:
+    - type: about
+      markdown: |
+
+  packages:
+    - immobiliarelabs-backstage-plugin-gitlab
+    - immobiliarelabs-backstage-plugin-gitlab-backend

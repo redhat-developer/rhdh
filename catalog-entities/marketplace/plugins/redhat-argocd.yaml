@@ -1,0 +1,18 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: redhat-argocd
+  namespace: rhdh
+  title: Red Hat Argo CD
+  description: ''
+  tags:
+    - cicd
+spec:
+  author: Red Hat
+  publisher: Red Hat
+
+  categories:
+    - CI/CD
+
+  packages:
+    - backstage-community-plugin-redhat-argocd

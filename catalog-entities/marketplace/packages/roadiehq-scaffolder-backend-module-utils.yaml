@@ -1,0 +1,30 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: roadiehq-scaffolder-backend-module-utils
+  namespace: rhdh
+  title: "@roadiehq/scaffolder-backend-module-utils"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/roadiehq-scaffolder-backend-module-utils-dynamic
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/roadiehq-scaffolder-backend-module-utils-dynamic
+  tags: []
+spec:
+  packageName: "@roadiehq/scaffolder-backend-module-utils"
+  dynamicArtifact: ./dynamic-plugins/dist/roadiehq-scaffolder-backend-module-utils-dynamic
+  version: 3.0.0
+  backstage:
+    role: backend-plugin-module
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+  partOf:
+    - roadiehq-utils-scaffolder-module
+  appConfigExamples: []

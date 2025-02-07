@@ -1,0 +1,46 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: backstage-plugin-catalog-backend-module-github-org
+  namespace: rhdh
+  title: "@backstage/plugin-catalog-backend-module-github-org"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-plugin-catalog-backend-module-github-org-dynamic
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-plugin-catalog-backend-module-github-org-dynamic
+  tags: []
+spec:
+  packageName: "@backstage/plugin-catalog-backend-module-github-org"
+  dynamicArtifact: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-org-dynamic
+  version: 0.3.6
+  backstage:
+    role: backend-plugin-module
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: production
+  lifecycle: active
+  partOf:
+    - backstage-github-org-catalog-module
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        catalog:
+          providers:
+            githubOrg:
+              id: production
+              githubUrl: ${GITHUB_URL}
+              orgs:
+                - ${GITHUB_ORG}
+              schedule:
+                frequency:
+                  minutes: 60
+                initialDelay:
+                  seconds: 15
+                timeout:
+                  minutes: 15

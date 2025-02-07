@@ -1,0 +1,30 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: parfuemerie-douglas-scaffolder-backend-module-azure-repositorie
+  namespace: rhdh
+  title: "@parfuemerie-douglas/scaffolder-backend-module-azure-repositories"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/parfuemerie-douglas-scaffolder-backend-module-azure-repositories-dynamic
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/parfuemerie-douglas-scaffolder-backend-module-azure-repositories-dynamic
+  tags: []
+spec:
+  packageName: "@parfuemerie-douglas/scaffolder-backend-module-azure-repositories"
+  dynamicArtifact: ./dynamic-plugins/dist/parfuemerie-douglas-scaffolder-backend-module-azure-repositories-dynamic
+  version: 0.3.0
+  backstage:
+    role: backend-plugin-module
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+  partOf:
+    - parfuemerie-douglas-azure-repositories-scaffolder-module
+  appConfigExamples: []

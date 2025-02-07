@@ -1,0 +1,18 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: github-insights
+  namespace: rhdh
+  title: GitHub Insights
+  tags: []
+  description: ''
+spec:
+  author: Roadie
+  publisher: Red Hat
+
+  documentation:
+    - type: about
+      markdown: |
+
+  packages:
+    - roadiehq-backstage-plugin-github-insights

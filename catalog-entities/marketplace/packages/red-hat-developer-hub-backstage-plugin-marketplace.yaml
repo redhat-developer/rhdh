@@ -1,0 +1,47 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: red-hat-developer-hub-backstage-plugin-marketplace
+  namespace: rhdh
+  title: "@red-hat-developer-hub/backstage-plugin-marketplace"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-marketplace
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-marketplace
+  tags: []
+spec:
+  packageName: "@red-hat-developer-hub/backstage-plugin-marketplace"
+  dynamicArtifact: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-marketplace
+  version: 0.0.2
+  backstage:
+    role: frontend-plugin
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+  partOf:
+    - red-hat-developer-hub-backstage-plugin-marketplace
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        dynamicPlugins:
+          frontend:
+            red-hat-developer-hub.backstage-plugin-marketplace:
+              appIcons:
+                - name: marketplace
+                  importName: MarketplaceIcon
+              dynamicRoutes:
+                - path: /marketplace
+                  importName: MarketplacePage
+                  menuItem:
+                    icon: marketplace
+                    text: Marketplace
+              mountPoints:
+                - mountPoint: admin.page.plugins/cards
+                  importName: MarketplaceCatalogContent

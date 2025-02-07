@@ -1,0 +1,37 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: backstage-plugin-catalog-backend-module-github
+  namespace: rhdh
+  title: "@backstage/plugin-catalog-backend-module-github"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-plugin-catalog-backend-module-github-dynamic
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-plugin-catalog-backend-module-github-dynamic
+  tags: []
+spec:
+  packageName: "@backstage/plugin-catalog-backend-module-github"
+  dynamicArtifact: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-dynamic
+  version: 0.7.9
+  backstage:
+    role: backend-plugin-module
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: production
+  lifecycle: active
+  partOf:
+    - backstage-github-catalog-module
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        catalog:
+          providers:
+            github:
+              providerId:
+                organization: ${GITHUB_ORG}

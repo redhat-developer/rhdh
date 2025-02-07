@@ -1,0 +1,30 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: backstage-plugin-scaffolder-backend-module-gitlab
+  namespace: rhdh
+  title: "@backstage/plugin-scaffolder-backend-module-gitlab"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-plugin-scaffolder-backend-module-gitlab-dynamic
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-plugin-scaffolder-backend-module-gitlab-dynamic
+  tags: []
+spec:
+  packageName: "@backstage/plugin-scaffolder-backend-module-gitlab"
+  dynamicArtifact: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-gitlab-dynamic
+  version: 0.7.1
+  backstage:
+    role: backend-plugin-module
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+  partOf:
+    - backstage-gitlab-scaffolder-module
+  appConfigExamples: []

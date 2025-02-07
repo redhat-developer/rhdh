@@ -1,0 +1,11 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: microsoft-graph-catalog-integration
+  namespace: rhdh
+  title: Microsoft Graph API Catalog Integration
+  tags: []
+  description: ''
+spec:
+  packages:
+    - backstage-plugin-catalog-backend-module-msgraph-dynamic

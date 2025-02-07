@@ -1,0 +1,30 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: backstage-plugin-notifications-backend
+  namespace: rhdh
+  title: "@backstage/plugin-notifications-backend"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-plugin-notifications-backend-dynamic
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-plugin-notifications-backend-dynamic
+  tags: []
+spec:
+  packageName: "@backstage/plugin-notifications-backend"
+  dynamicArtifact: ./dynamic-plugins/dist/backstage-plugin-notifications-backend-dynamic
+  version: 0.5.1
+  backstage:
+    role: backend-plugin
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+  partOf:
+    - notifications
+  appConfigExamples: []

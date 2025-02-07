@@ -1,0 +1,14 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: jira
+  namespace: rhdh
+  title: Jira
+  tags: []
+  description: ''
+spec:
+  author: Roadie
+  publisher: Red Hat
+
+  packages:
+    - roadiehq-backstage-plugin-jira

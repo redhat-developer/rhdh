@@ -1,0 +1,36 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: backstage-community-plugin-scaffolder-backend-module-servicenow
+  namespace: rhdh
+  title: "@backstage-community/plugin-scaffolder-backend-module-servicenow"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-scaffolder-backend-module-servicenow-dynamic
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-scaffolder-backend-module-servicenow-dynamic
+  tags: []
+spec:
+  packageName: "@backstage-community/plugin-scaffolder-backend-module-servicenow"
+  dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-servicenow-dynamic
+  version: 2.2.3
+  backstage:
+    role: backend-plugin-module
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+  partOf:
+    - backstage-community-servicenow-scaffolder-module
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        servicenow:
+          baseUrl: ${SERVICENOW_BASE_URL}
+          username: ${SERVICENOW_USERNAME}
+          password: ${SERVICENOW_PASSWORD}

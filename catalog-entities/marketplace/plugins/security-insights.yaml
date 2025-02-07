@@ -1,0 +1,15 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: security-insights
+  namespace: rhdh
+  title: Security insights
+  tags:
+    - security
+  description: ''
+spec:
+  author: Roadie
+  publisher: Red Hat
+
+  packages:
+    - roadiehq-backstage-plugin-security-insights

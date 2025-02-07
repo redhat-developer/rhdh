@@ -1,0 +1,22 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: github-pull-requests
+  namespace: rhdh
+  title: GitHub Pull Requests
+  tags:
+    - codereviews
+  description: ''
+spec:
+  author: Roadie
+  publisher: Red Hat
+
+  categories:
+    - Code review
+
+  documentation:
+    - type: about
+      markdown: |
+
+  packages:
+    - roadiehq-backstage-plugin-github-pull-requests

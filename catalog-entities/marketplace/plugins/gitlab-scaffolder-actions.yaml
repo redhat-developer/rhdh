@@ -1,0 +1,16 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: gitlab-scaffolder-actions
+  namespace: rhdh
+  title: GitLab Software Template Actions
+  tags: []
+  description: ''
+spec:
+  documentation:
+    - type: about
+      markdown: |
+  packages:
+    - backstage-plugin-scaffolder-backend-module-gitlab
+    - immobiliarelabs-backstage-plugin-gitlab
+    - immobiliarelabs-backstage-plugin-gitlab-backend

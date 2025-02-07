@@ -1,0 +1,15 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: sonarqube-scaffolder-actions
+  namespace: rhdh
+  title: SonarQube Software Template Actions
+  tags: []
+  description: ''
+spec:
+  documentation:
+    - type: about
+      markdown: |
+
+  packages:
+    - backstage-community-plugin-scaffolder-backend-module-sonarqube

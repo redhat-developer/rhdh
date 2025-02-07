@@ -1,0 +1,12 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: PluginCollection
+metadata:
+  name: featured
+  namespace: rhdh
+  title: Featured plugins
+  tags: []
+  description: TODO
+spec:
+  type: currated-list
+  plugins:
+   - tekton

@@ -1,0 +1,20 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: github-issues
+  namespace: rhdh
+  title: GitHub Issues
+  tags:
+    - issue-tracker
+  description: ''
+spec:
+  categories:
+    - Issue tracker
+
+  documentation:
+    - type: about
+      markdown: |
+
+
+  packages:
+    - backstage-community-plugin-github-issues

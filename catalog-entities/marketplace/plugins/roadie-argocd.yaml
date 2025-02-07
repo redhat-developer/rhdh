@@ -1,0 +1,18 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: roadie-argocd
+  namespace: rhdh
+  title: Roadie Argo CD
+  description: ''
+  tags:
+    - cicd
+spec:
+  author: Roadie
+  publisher: Red Hat
+
+  categories:
+    - CI/CD
+
+  packages:
+    - roadiehq-backstage-plugin-argo-cd

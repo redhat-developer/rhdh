@@ -1,0 +1,44 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: backstage-community-plugin-jfrog-artifactory
+  namespace: rhdh
+  title: "@backstage-community/plugin-jfrog-artifactory"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-jfrog-artifactory
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-jfrog-artifactory
+  tags: []
+spec:
+  packageName: "@backstage-community/plugin-jfrog-artifactory"
+  dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-jfrog-artifactory
+  version: 1.10.2
+  backstage:
+    role: frontend-plugin
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+  partOf:
+    - jfrog-artifactory
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        dynamicPlugins:
+          frontend:
+            backstage-community.plugin-jfrog-artifactory:
+              mountPoints:
+                - mountPoint: entity.page.image-registry/cards
+                  importName: JfrogArtifactoryPage
+                  config:
+                    layout:
+                      gridColumn: 1 / -1
+                    if:
+                      anyOf:
+                        - isJfrogArtifactoryAvailable

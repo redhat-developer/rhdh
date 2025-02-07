@@ -1,0 +1,66 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  namespace: rhdh
+  name: plugins
+spec:
+  targets:
+    - ./3scale.yaml
+    - ./analytics-provider-segment.yaml
+    - ./argocd-scaffolder-actions.yaml
+    - ./azure-container-registry.yaml
+    - ./azure-devops.yaml
+    - ./azure-repositories.yaml
+    - ./azure-scaffolder-actions.yaml
+    - ./bitbucket-cloud-catalog-integration.yaml
+    - ./bitbucket-server-catalog-integration.yaml
+    - ./bulk-import.yaml
+    - ./catalog-integrations.yaml
+    - ./datadog.yaml
+    - ./dynatrace.yaml
+    - ./gerrit-scaffolder-actions.yaml
+    - ./github-actions.yaml
+    - ./github-catalog-integration.yaml
+    - ./github-insights.yaml
+    - ./github-issues.yaml
+    - ./github-pull-requests.yaml
+    - ./github-scaffolder-actions.yaml
+    - ./gitlab-catalog-cards.yaml
+    - ./gitlab-catalog-integration.yaml
+    - ./gitlab-scaffolder-actions.yaml
+    - ./global-floating-action-button.yaml
+    - ./global-header.yaml
+    - ./home-page.yaml
+    - ./http-request-scaffolder-action.yaml
+    - ./jenkins.yaml
+    - ./jfrog-artifactory.yaml
+    - ./jira.yaml
+    - ./keycloak-catalog-integration.yaml
+    - ./kubernetes-scaffolder-actions.yaml
+    - ./kubernetes.yaml
+    - ./ldap-catalog-integration.yaml
+    - ./lighthouse.yaml
+    - ./marketplace.yaml
+    - ./microsoft-graph-catalog-integration.yaml
+    - ./nexus-repository-manager.yaml
+    - ./notifications.yaml
+    - ./openshift-cluster-manager.yaml
+    - ./pagerduty.yaml
+    - ./pingidentity.yaml
+    - ./quay-catalog-integration.yaml
+    - ./quay-scaffolder-actions.yaml
+    - ./rbac.yaml
+    - ./redhat-argocd.yaml
+    - ./regex-scaffolder-actions.yaml
+    - ./roadie-argocd.yaml
+    - ./roadie-scaffolder-util-actions.yaml
+    - ./scaffolder-integrations.yaml
+    - ./security-insights.yaml
+    - ./servicenow-scaffolder-actions.yaml
+    - ./signals.yaml
+    - ./sonarqube-catalog-cards.yaml
+    - ./sonarqube-scaffolder-actions.yaml
+    - ./tech-radar.yaml
+    - ./techdocs.yaml
+    - ./tekton.yaml
+    - ./topology.yaml
