@@ -1065,3 +1065,17 @@ oc_login() {
   echo "OCP version: $(oc version)"
   export K8S_CLUSTER_ROUTER_BASE=$(oc get route console -n openshift-console -o=jsonpath='{.spec.host}' | sed 's/^[^.]*\.//')
 }
+
+function is_openshift() {
+  set -euo pipefail
+
+  oc get routes.route.openshift.io &> /dev/null || kubectl get routes.route.openshift.io &> /dev/null
+}
+
+function detect_ocp_and_set_env_var() {
+  set -euo pipefail
+
+  if [[ "${IS_OPENSHIFT}" = "" ]]; then
+    IS_OPENSHIFT=$(is_openshift && echo 'true' || echo 'false')
+  fi
+}
