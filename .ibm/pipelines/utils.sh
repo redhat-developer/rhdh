@@ -565,10 +565,10 @@ apply_yaml_files() {
 
     # Create Deployment and Pipeline for Topology test.
     oc apply -f "$dir/resources/topology_test/topology-test.yaml"
-    if [[ "${project}" == *k8s* ]]; then
-      oc apply -f "$dir/resources/topology_test/topology-test-ingress.yaml"
-    else
+    if [[ "${IS_OPENSHIFT}" = "true" ]]; then
       oc apply -f "$dir/resources/topology_test/topology-test-route.yaml"
+    else
+      kubectl apply -f "$dir/resources/topology_test/topology-test-ingress.yaml"
     fi
 }
 

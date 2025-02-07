@@ -147,4 +147,6 @@ KEYCLOAK_AUTH_CLIENT_SECRET=$(cat /tmp/secrets/KEYCLOAK_AUTH_CLIENT_SECRET)
 KEYCLOAK_AUTH_LOGIN_REALM=$(cat /tmp/secrets/KEYCLOAK_AUTH_LOGIN_REALM)
 KEYCLOAK_AUTH_REALM=$(cat /tmp/secrets/KEYCLOAK_AUTH_REALM)
 
+IS_OPENSHIFT=""
+
 set +a  # Stop automatically exporting variables
