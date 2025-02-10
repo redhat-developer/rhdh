@@ -1097,14 +1097,10 @@ oc_login() {
 }
 
 function is_openshift() {
-  set -euo pipefail
-
   oc get routes.route.openshift.io &> /dev/null || kubectl get routes.route.openshift.io &> /dev/null
 }
 
 function detect_ocp_and_set_env_var() {
-  set -euo pipefail
-
   if [[ "${IS_OPENSHIFT}" = "" ]]; then
     IS_OPENSHIFT=$(is_openshift && echo 'true' || echo 'false')
   fi
