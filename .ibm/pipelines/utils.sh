@@ -889,7 +889,7 @@ cluster_setup_k8s_operator() {
   install_tekton_pipelines
   # install_acm_ocp_operator
   install_crunchy_postgres_k8s_operator
-  setup_image_pull_secret "showcase" "rh-pull-secret" "${REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON}"
+  setup_image_pull_secret "rhdh-operator" "rh-pull-secret" "${REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON}"
 }
 
 initiate_deployments() {
