@@ -6,6 +6,9 @@ install_rhdh_operator() {
 
   configure_namespace $namespace
 
+  if [[ "${IS_OPENSHIFT}" = "false" ]]; then
+    setup_image_pull_secret "rhdh-operator" "rh-pull-secret" "${REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON}"
+  fi
   # Make sure script is up to date
   rm -f /tmp/install-rhdh-catalog-source.sh
   curl -L "https://raw.githubusercontent.com/redhat-developer/rhdh-operator/refs/heads/${RELEASE_BRANCH_NAME}/.rhdh/scripts/install-rhdh-catalog-source.sh" > /tmp/install-rhdh-catalog-source.sh
