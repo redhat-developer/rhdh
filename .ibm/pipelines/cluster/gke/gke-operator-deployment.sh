@@ -14,6 +14,8 @@ initiate_gke_operator_deployment() {
   create_dynamic_plugins_config "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "/tmp/configmap-dynamic-plugins.yaml"
   oc apply -f /tmp/configmap-dynamic-plugins.yaml -n "${NAME_SPACE}"
   oc apply -f "$DIR/resources/redis-cache/redis-deployment.yaml" --namespace="${NAME_SPACE}"
+  setup_image_pull_secret "${NAME_SPACE}" "rh-pull-secret" "${REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON}"
+
   deploy_rhdh_operator "${DIR}" "${NAME_SPACE}"
 
   # add_helm_repos

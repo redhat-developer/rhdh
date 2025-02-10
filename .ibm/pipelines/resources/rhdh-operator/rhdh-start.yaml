@@ -1,10 +1,12 @@
 kind: Backstage
 apiVersion: rhdh.redhat.com/v1alpha2
-metadata: 
+metadata:
   name: rhdh
 spec:
   application:
     image: 'quay.io/rhdh-community/rhdh:next'
+    imagePullSecrets:
+      - "rh-pull-secret"
     appConfig:
       configMaps:
         - name: app-config-rhdh
