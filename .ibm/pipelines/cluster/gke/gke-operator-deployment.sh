@@ -3,8 +3,8 @@
 initiate_gke_operator_deployment() {
   gcloud_ssl_cert_create $GKE_CERT_NAME $GKE_INSTANCE_DOMAIN_NAME $GOOGLE_CLOUD_PROJECT
 
-  # configure_namespace "${OPERATOR_MANAGER}"
-  # install_rhdh_operator "${DIR}" "${OPERATOR_MANAGER}"
+  configure_namespace "${OPERATOR_MANAGER}"
+  install_rhdh_operator "${DIR}" "${OPERATOR_MANAGER}"
   create_conditional_policies_operator /tmp/conditional-policies.yaml
 
   configure_namespace "${NAME_SPACE}"
