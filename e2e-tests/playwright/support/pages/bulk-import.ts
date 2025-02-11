@@ -17,7 +17,7 @@ export class BulkImport {
   }
 
   async filterAddedRepo(searchText: string) {
-    await this.page.getByPlaceholder("Filter").fill(searchText);
+    await this.page.getByPlaceholder("Search").fill(searchText);
   }
 
   async newGitHubRepo(owner: string, repoName: string) {
