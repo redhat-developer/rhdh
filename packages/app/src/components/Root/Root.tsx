@@ -264,13 +264,15 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
         <ApplicationHeaders position="above-main-content" />
         <Sidebar>
           {showLogo && <SidebarLogo />}
-          {showSearch && (
+          {showSearch ? (
             <>
               <SidebarGroup label="Search" icon={<SearchIcon />} to="/search">
                 <SidebarSearchModal />
               </SidebarGroup>
               <SidebarDivider />
             </>
+          ) : (
+          <Box sx={{ height: '1.2rem' }} />
           )}
           <SidebarGroup label="Menu" icon={<MuiMenuIcon />}>
             {/* Global nav, not org-specific */}
