@@ -2,11 +2,13 @@ import { OidcAuthResult } from '@backstage/plugin-auth-backend-module-oidc-provi
 import {
   AuthResolverContext,
   createSignInResolverFactory,
+  handleSignInUserNotFound,
   OAuthAuthenticatorResult,
   SignInInfo,
 } from '@backstage/plugin-auth-node';
 
 import { decodeJwt } from 'jose';
+import { z } from 'zod';
 
 const KEYCLOAK_ID_ANNOTATION = 'keycloak.org/id';
 const PING_IDENTITY_ID_ANNOTATION = 'pingidentity.org/id';
@@ -19,7 +21,12 @@ const PING_IDENTITY_ID_ANNOTATION = 'pingidentity.org/id';
  */
 const createOidcSubClaimResolver = (userIdKey: string, providerName: string) =>
   createSignInResolverFactory({
-    create() {
+    optionsSchema: z
+      .object({
+        dangerouslyAllowSignInWithoutUserInCatalog: z.boolean().optional(),
+      })
+      .optional(),
+    create(options) {
       return async (
         info: SignInInfo<OAuthAuthenticatorResult<OidcAuthResult>>,
         ctx: AuthResolverContext,
@@ -44,10 +51,19 @@ const createOidcSubClaimResolver = (userIdKey: string, providerName: string) =>
             `There was a problem verifying your identity with ${providerName} due to a mismatching 'sub' claim. Please contact your system administrator for assistance.`,
           );
         }
-
-        return ctx.signInWithCatalogUser({
-          annotations: { [userIdKey]: sub },
-        });
+        try {
+          return await ctx.signInWithCatalogUser({
+            annotations: { [userIdKey]: sub },
+          });
+        } catch (error: any) {
+          return await handleSignInUserNotFound({
+            ctx,
+            error,
+            userEntityName: info.result.fullProfile.userinfo.name!,
+            dangerouslyAllowSignInWithoutUserInCatalog:
+              options?.dangerouslyAllowSignInWithoutUserInCatalog,
+          });
+        }
       };
     },
   });

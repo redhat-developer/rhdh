@@ -1,0 +1,114 @@
+diff --git a/dist/index.d.ts b/dist/index.d.ts
+index 010e6ce0777e71d2ec34edbe35d7c0296be7b504..eabf3e557d289d8aaa9aae1707dec3995bffbd39 100644
+--- a/dist/index.d.ts
++++ b/dist/index.d.ts
+@@ -17,11 +17,15 @@ declare namespace bitbucketSignInResolvers {
+     /**
+      * Looks up the user by matching their Bitbucket user ID with the `bitbucket.org/user-id` annotation.
+      */
+-    const userIdMatchingUserEntityAnnotation: _backstage_plugin_auth_node.SignInResolverFactory<OAuthAuthenticatorResult<PassportProfile>, unknown>;
++    const userIdMatchingUserEntityAnnotation: _backstage_plugin_auth_node.SignInResolverFactory<OAuthAuthenticatorResult<PassportProfile>, {
++        dangerouslyAllowSignInWithoutUserInCatalog?: boolean | undefined;
++    } | undefined>;
+     /**
+      * Looks up the user by matching their Bitbucket username with the `bitbucket.org/username` annotation.
+      */
+-    const usernameMatchingUserEntityAnnotation: _backstage_plugin_auth_node.SignInResolverFactory<OAuthAuthenticatorResult<PassportProfile>, unknown>;
++    const usernameMatchingUserEntityAnnotation: _backstage_plugin_auth_node.SignInResolverFactory<OAuthAuthenticatorResult<PassportProfile>, {
++        dangerouslyAllowSignInWithoutUserInCatalog?: boolean | undefined;
++    } | undefined>;
+ }
+ 
+ export { bitbucketAuthenticator, bitbucketSignInResolvers, authModuleBitbucketProvider as default };
+diff --git a/dist/resolvers.cjs.js b/dist/resolvers.cjs.js
+index ac8d8b26754fbd954ee1ddb12cdff54f7d2abbaa..582142b85c12ab9e2f0e1d42f935804560e6baa0 100644
+--- a/dist/resolvers.cjs.js
++++ b/dist/resolvers.cjs.js
+@@ -1,29 +1,45 @@
+ 'use strict';
+ 
+ var pluginAuthNode = require('@backstage/plugin-auth-node');
++var zod = require('zod');
+ 
+ exports.bitbucketSignInResolvers = void 0;
+ ((bitbucketSignInResolvers2) => {
+   bitbucketSignInResolvers2.userIdMatchingUserEntityAnnotation = pluginAuthNode.createSignInResolverFactory(
+     {
+-      create() {
++      optionsSchema: zod.z.object({
++        dangerouslyAllowSignInWithoutUserInCatalog: zod.z.boolean().optional()
++      }).optional(),
++      create(options = {}) {
+         return async (info, ctx) => {
+           const { result } = info;
+           const id = result.fullProfile.id;
+           if (!id) {
+             throw new Error("Bitbucket user profile does not contain an ID");
+           }
+-          return ctx.signInWithCatalogUser({
+-            annotations: {
+-              "bitbucket.org/user-id": id
+-            }
+-          });
++          try {
++            return await ctx.signInWithCatalogUser({
++              annotations: {
++                "bitbucket.org/user-id": id
++              }
++            });
++          } catch (error) {
++            return await pluginAuthNode.handleSignInUserNotFound({
++              ctx,
++              error,
++              userEntityName: id,
++              dangerouslyAllowSignInWithoutUserInCatalog: options?.dangerouslyAllowSignInWithoutUserInCatalog
++            });
++          }
+         };
+       }
+     }
+   );
+   bitbucketSignInResolvers2.usernameMatchingUserEntityAnnotation = pluginAuthNode.createSignInResolverFactory({
+-    create() {
++    optionsSchema: zod.z.object({
++      dangerouslyAllowSignInWithoutUserInCatalog: zod.z.boolean().optional()
++    }).optional(),
++    create(options = {}) {
+       return async (info, ctx) => {
+         const { result } = info;
+         const username = result.fullProfile.username;
+@@ -32,11 +48,20 @@ exports.bitbucketSignInResolvers = void 0;
+             "Bitbucket user profile does not contain a Username"
+           );
+         }
+-        return ctx.signInWithCatalogUser({
+-          annotations: {
+-            "bitbucket.org/username": username
+-          }
+-        });
++        try {
++          return await ctx.signInWithCatalogUser({
++            annotations: {
++              "bitbucket.org/username": username
++            }
++          });
++        } catch (error) {
++          return await pluginAuthNode.handleSignInUserNotFound({
++            ctx,
++            error,
++            userEntityName: username,
++            dangerouslyAllowSignInWithoutUserInCatalog: options?.dangerouslyAllowSignInWithoutUserInCatalog
++          });
++        }
+       };
+     }
+   });
+diff --git a/dist/resolvers.cjs.js.map b/dist/resolvers.cjs.js.map
+index 6ca5c291243ef49b0b5e33ac90f8e892e9dfa68d..3fdb373e97d99516751a4d65647edf215e85a32b 100644
+--- a/dist/resolvers.cjs.js.map
++++ b/dist/resolvers.cjs.js.map
+@@ -1 +1 @@
+-{"version":3,"file":"resolvers.cjs.js","sources":["../src/resolvers.ts"],"sourcesContent":["/*\n * Copyright 2024 The Backstage Authors\n *\n * Licensed under the Apache License, Version 2.0 (the \"License\");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *     http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n\nimport {\n  createSignInResolverFactory,\n  OAuthAuthenticatorResult,\n  PassportProfile,\n  SignInInfo,\n} from '@backstage/plugin-auth-node';\n\n/**\n * Available sign-in resolvers for the Bitbucket auth provider.\n *\n * @public\n */\nexport namespace bitbucketSignInResolvers {\n  /**\n   * Looks up the user by matching their Bitbucket user ID with the `bitbucket.org/user-id` annotation.\n   */\n  export const userIdMatchingUserEntityAnnotation = createSignInResolverFactory(\n    {\n      create() {\n        return async (\n          info: SignInInfo<OAuthAuthenticatorResult<PassportProfile>>,\n          ctx,\n        ) => {\n          const { result } = info;\n\n          const id = result.fullProfile.id;\n          if (!id) {\n            throw new Error('Bitbucket user profile does not contain an ID');\n          }\n\n          return ctx.signInWithCatalogUser({\n            annotations: {\n              'bitbucket.org/user-id': id,\n            },\n          });\n        };\n      },\n    },\n  );\n\n  /**\n   * Looks up the user by matching their Bitbucket username with the `bitbucket.org/username` annotation.\n   */\n  export const usernameMatchingUserEntityAnnotation =\n    createSignInResolverFactory({\n      create() {\n        return async (\n          info: SignInInfo<OAuthAuthenticatorResult<PassportProfile>>,\n          ctx,\n        ) => {\n          const { result } = info;\n\n          const username = result.fullProfile.username;\n          if (!username) {\n            throw new Error(\n              'Bitbucket user profile does not contain a Username',\n            );\n          }\n\n          return ctx.signInWithCatalogUser({\n            annotations: {\n              'bitbucket.org/username': username,\n            },\n          });\n        };\n      },\n    });\n}\n"],"names":["bitbucketSignInResolvers","createSignInResolverFactory"],"mappings":";;;;AA4BiBA;AAAA,CAAV,CAAUA,yBAAV,KAAA;AAIE,EAAMA,0BAAA,kCAAqC,GAAAC,0CAAA;AAAA,IAChD;AAAA,MACE,MAAS,GAAA;AACP,QAAO,OAAA,OACL,MACA,GACG,KAAA;AACH,UAAM,MAAA,EAAE,QAAW,GAAA,IAAA;AAEnB,UAAM,MAAA,EAAA,GAAK,OAAO,WAAY,CAAA,EAAA;AAC9B,UAAA,IAAI,CAAC,EAAI,EAAA;AACP,YAAM,MAAA,IAAI,MAAM,+CAA+C,CAAA;AAAA;AAGjE,UAAA,OAAO,IAAI,qBAAsB,CAAA;AAAA,YAC/B,WAAa,EAAA;AAAA,cACX,uBAAyB,EAAA;AAAA;AAC3B,WACD,CAAA;AAAA,SACH;AAAA;AACF;AACF,GACF;AAKO,EAAMD,yBAAAA,CAAA,uCACXC,0CAA4B,CAAA;AAAA,IAC1B,MAAS,GAAA;AACP,MAAO,OAAA,OACL,MACA,GACG,KAAA;AACH,QAAM,MAAA,EAAE,QAAW,GAAA,IAAA;AAEnB,QAAM,MAAA,QAAA,GAAW,OAAO,WAAY,CAAA,QAAA;AACpC,QAAA,IAAI,CAAC,QAAU,EAAA;AACb,UAAA,MAAM,IAAI,KAAA;AAAA,YACR;AAAA,WACF;AAAA;AAGF,QAAA,OAAO,IAAI,qBAAsB,CAAA;AAAA,UAC/B,WAAa,EAAA;AAAA,YACX,wBAA0B,EAAA;AAAA;AAC5B,SACD,CAAA;AAAA,OACH;AAAA;AACF,GACD,CAAA;AAAA,CAtDY,EAAAD,gCAAA,KAAAA,gCAAA,GAAA,EAAA,CAAA,CAAA;;"}
+\ No newline at end of file
++{"version":3,"file":"resolvers.cjs.js","sources":["../src/resolvers.ts"],"sourcesContent":["/*\n * Copyright 2024 The Backstage Authors\n *\n * Licensed under the Apache License, Version 2.0 (the \"License\");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *     http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n\nimport {\n  createSignInResolverFactory,\n  handleSignInUserNotFound,\n  OAuthAuthenticatorResult,\n  PassportProfile,\n  SignInInfo,\n} from '@backstage/plugin-auth-node';\nimport { z } from 'zod';\n\n/**\n * Available sign-in resolvers for the Bitbucket auth provider.\n *\n * @public\n */\nexport namespace bitbucketSignInResolvers {\n  /**\n   * Looks up the user by matching their Bitbucket user ID with the `bitbucket.org/user-id` annotation.\n   */\n  export const userIdMatchingUserEntityAnnotation = createSignInResolverFactory({\n    optionsSchema: z\n      .object({\n        dangerouslyAllowSignInWithoutUserInCatalog: z.boolean().optional(),\n      })\n      .optional(),\n    create(options = {}) {\n      return async (\n        info: SignInInfo<OAuthAuthenticatorResult<PassportProfile>>,\n        ctx,\n      ) => {\n        const { result } = info;\n\n        const id = result.fullProfile.id;\n        if (!id) {\n          throw new Error('Bitbucket user profile does not contain an ID');\n        }\n\n        try {\n          return await ctx.signInWithCatalogUser({\n            annotations: {\n              'bitbucket.org/user-id': id,\n            },\n          });\n        } catch (error) {\n          return await handleSignInUserNotFound({\n            ctx,\n            error,\n            userEntityName: id,\n            dangerouslyAllowSignInWithoutUserInCatalog:\n              options?.dangerouslyAllowSignInWithoutUserInCatalog,\n          });\n        }\n      };\n    },\n  },\n  );\n\n  /**\n   * Looks up the user by matching their Bitbucket username with the `bitbucket.org/username` annotation.\n   */\n  export const usernameMatchingUserEntityAnnotation =\n    createSignInResolverFactory({\n      optionsSchema: z\n        .object({\n          dangerouslyAllowSignInWithoutUserInCatalog: z.boolean().optional(),\n        })\n        .optional(),\n      create(options = {}) {\n        return async (\n          info: SignInInfo<OAuthAuthenticatorResult<PassportProfile>>,\n          ctx,\n        ) => {\n          const { result } = info;\n\n          const username = result.fullProfile.username;\n          if (!username) {\n            throw new Error(\n              'Bitbucket user profile does not contain a Username',\n            );\n          }\n\n          try {\n            return await ctx.signInWithCatalogUser({\n              annotations: {\n                'bitbucket.org/username': username,\n              },\n            });\n          } catch (error) {\n            return await handleSignInUserNotFound({\n              ctx,\n              error,\n              userEntityName: username,\n              dangerouslyAllowSignInWithoutUserInCatalog:\n                options?.dangerouslyAllowSignInWithoutUserInCatalog,\n            });\n          }\n\n        };\n      },\n    });\n}\n"],"names":["bitbucketSignInResolvers","createSignInResolverFactory","z","handleSignInUserNotFound"],"mappings":";;;;;AA8BiBA;AAAA,CAAV,CAAUA,yBAAV,KAAA;AAIE,EAAMA,0BAAA,kCAAqC,GAAAC,0CAAA;AAAA,IAA4B;AAAA,MAC5E,aAAA,EAAeC,MACZ,MAAO,CAAA;AAAA,QACN,0CAA4C,EAAAA,KAAA,CAAE,OAAQ,EAAA,CAAE,QAAS;AAAA,OAClE,EACA,QAAS,EAAA;AAAA,MACZ,MAAA,CAAO,OAAU,GAAA,EAAI,EAAA;AACnB,QAAO,OAAA,OACL,MACA,GACG,KAAA;AACH,UAAM,MAAA,EAAE,QAAW,GAAA,IAAA;AAEnB,UAAM,MAAA,EAAA,GAAK,OAAO,WAAY,CAAA,EAAA;AAC9B,UAAA,IAAI,CAAC,EAAI,EAAA;AACP,YAAM,MAAA,IAAI,MAAM,+CAA+C,CAAA;AAAA;AAGjE,UAAI,IAAA;AACF,YAAO,OAAA,MAAM,IAAI,qBAAsB,CAAA;AAAA,cACrC,WAAa,EAAA;AAAA,gBACX,uBAAyB,EAAA;AAAA;AAC3B,aACD,CAAA;AAAA,mBACM,KAAO,EAAA;AACd,YAAA,OAAO,MAAMC,uCAAyB,CAAA;AAAA,cACpC,GAAA;AAAA,cACA,KAAA;AAAA,cACA,cAAgB,EAAA,EAAA;AAAA,cAChB,4CACE,OAAS,EAAA;AAAA,aACZ,CAAA;AAAA;AACH,SACF;AAAA;AACF;AACF,GACA;AAKO,EAAMH,yBAAAA,CAAA,uCACXC,0CAA4B,CAAA;AAAA,IAC1B,aAAA,EAAeC,MACZ,MAAO,CAAA;AAAA,MACN,0CAA4C,EAAAA,KAAA,CAAE,OAAQ,EAAA,CAAE,QAAS;AAAA,KAClE,EACA,QAAS,EAAA;AAAA,IACZ,MAAA,CAAO,OAAU,GAAA,EAAI,EAAA;AACnB,MAAO,OAAA,OACL,MACA,GACG,KAAA;AACH,QAAM,MAAA,EAAE,QAAW,GAAA,IAAA;AAEnB,QAAM,MAAA,QAAA,GAAW,OAAO,WAAY,CAAA,QAAA;AACpC,QAAA,IAAI,CAAC,QAAU,EAAA;AACb,UAAA,MAAM,IAAI,KAAA;AAAA,YACR;AAAA,WACF;AAAA;AAGF,QAAI,IAAA;AACF,UAAO,OAAA,MAAM,IAAI,qBAAsB,CAAA;AAAA,YACrC,WAAa,EAAA;AAAA,cACX,wBAA0B,EAAA;AAAA;AAC5B,WACD,CAAA;AAAA,iBACM,KAAO,EAAA;AACd,UAAA,OAAO,MAAMC,uCAAyB,CAAA;AAAA,YACpC,GAAA;AAAA,YACA,KAAA;AAAA,YACA,cAAgB,EAAA,QAAA;AAAA,YAChB,4CACE,OAAS,EAAA;AAAA,WACZ,CAAA;AAAA;AACH,OAEF;AAAA;AACF,GACD,CAAA;AAAA,CApFY,EAAAH,gCAAA,KAAAA,gCAAA,GAAA,EAAA,CAAA,CAAA;;"}
+\ No newline at end of file
