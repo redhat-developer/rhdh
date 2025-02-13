@@ -14,6 +14,9 @@ handle_aks_helm() {
 
   url="https://${K8S_CLUSTER_ROUTER_BASE}"
 
+  add_helm_repos
+  install_tekton_pipelines
+
   initiate_aks_helm_deployment
   check_and_test "${RELEASE_NAME}" "${NAME_SPACE_K8S}" "${url}" 50 30 50
   delete_namespace "${NAME_SPACE_K8S}"
