@@ -1,5 +1,9 @@
 #!/bin/bash
 
+source ../utils.sh
+source ../cluster/aks/aks-helm-deployment.sh
+source ../cluster/aks/az.sh
+
 handle_aks_helm() {
   echo "Starting AKS deployment"
   for file in ${DIR}/cluster/aks/*.sh; do source $file; done
