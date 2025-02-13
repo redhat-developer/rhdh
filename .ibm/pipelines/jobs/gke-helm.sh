@@ -28,12 +28,12 @@ handle_gke_helm() {
   export K8S_CLUSTER_TOKEN K8S_CLUSTER_TOKEN_ENCODED K8S_SERVICE_ACCOUNT_TOKEN OCM_CLUSTER_TOKEN
 
   local url="https://${K8S_CLUSTER_ROUTER_BASE}"
-  initiate_gke_deployment
+  initiate_gke_helm_deployment
   check_and_test "${RELEASE_NAME}" "${NAME_SPACE_K8S}" "${url}" 50 30 20
   delete_namespace "${NAME_SPACE_K8S}"
 
   local rbac_rhdh_base_url="https://${K8S_CLUSTER_ROUTER_BASE}"
-  initiate_rbac_gke_deployment
+  initiate_rbac_gke_helm_deployment
   check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC_K8S}" "${rbac_rhdh_base_url}" 50 30 20
   delete_namespace "${NAME_SPACE_RBAC_K8S}"
 }
