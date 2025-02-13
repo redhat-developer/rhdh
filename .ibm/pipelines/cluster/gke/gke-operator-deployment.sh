@@ -1,5 +1,8 @@
 #!/bin/bash
 
+source ../../utils.sh
+source gcloud.sh
+
 initiate_gke_operator_deployment() {
   gcloud_ssl_cert_create $GKE_CERT_NAME $GKE_INSTANCE_DOMAIN_NAME $GOOGLE_CLOUD_PROJECT
 
