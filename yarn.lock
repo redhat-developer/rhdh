@@ -16505,9 +16505,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@redhat-developer/red-hat-developer-hub-theme@npm:0.4.0":
-  version: 0.4.0
-  resolution: "@redhat-developer/red-hat-developer-hub-theme@npm:0.4.0"
+"@redhat-developer/red-hat-developer-hub-theme@npm:0.5.0":
+  version: 0.5.0
+  resolution: "@redhat-developer/red-hat-developer-hub-theme@npm:0.5.0"
   peerDependencies:
     "@backstage/theme": ^0.5.2
     "@emotion/react": ^11.11.1
@@ -16516,7 +16516,7 @@ __metadata:
     "@material-ui/icons": ^4.11.3
     "@mui/icons-material": ^5.14.19
     "@mui/material": ^5.14.20
-  checksum: 8684f8faa2fe87100dba2c19f1e1a306e808cf98bc65da829c3203a325ea6520a93e54c174e25a220ccf8280ecc2750a178a0d18b12f5ba354c7c415e8a9dc7b
+  checksum: 158667ac33e7b926fec2c7ed9d26c3bd81deafe8b0026316ab171e66dd2f3a36474225e42b7ac8527d0e357c1c11432fe767f0cd46b2cd86464e53e4c146a09c
   languageName: node
   linkType: hard
 
@@ -22015,7 +22015,7 @@ __metadata:
     "@mui/icons-material": 5.16.14
     "@mui/material": 5.16.14
     "@mui/styled-engine": 5.16.14
-    "@redhat-developer/red-hat-developer-hub-theme": 0.4.0
+    "@redhat-developer/red-hat-developer-hub-theme": 0.5.0
     "@scalprum/core": 0.8.1
     "@scalprum/react-core": 0.9.3
     "@scalprum/react-test-utils": 0.2.4
