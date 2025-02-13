@@ -1,5 +1,9 @@
 #!/bin/bash
 
+source ../utils.sh
+source ../cluster/gke/gcloud.sh
+source ../cluster/gke/gke-helm-deployment.sh
+
 handle_gke_helm() {
   echo "Starting GKE deployment"
   for file in ${DIR}/cluster/gke/*.sh; do source $file; done
