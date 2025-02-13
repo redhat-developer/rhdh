@@ -27,6 +27,9 @@ handle_gke_helm() {
   OCM_CLUSTER_TOKEN=$K8S_CLUSTER_TOKEN_ENCODED
   export K8S_CLUSTER_TOKEN K8S_CLUSTER_TOKEN_ENCODED K8S_SERVICE_ACCOUNT_TOKEN OCM_CLUSTER_TOKEN
 
+  add_helm_repos
+  install_tekton_pipelines
+
   local url="https://${K8S_CLUSTER_ROUTER_BASE}"
   initiate_gke_helm_deployment
   check_and_test "${RELEASE_NAME}" "${NAME_SPACE_K8S}" "${url}" 50 30 20

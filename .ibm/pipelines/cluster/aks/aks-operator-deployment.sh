@@ -1,13 +1,10 @@
 #!/bin/bash
 
-initiate_gke_operator_deployment() {
-  gcloud_ssl_cert_create $GKE_CERT_NAME $GKE_INSTANCE_DOMAIN_NAME $GOOGLE_CLOUD_PROJECT
-
+initiate_aks_operator_deployment() {
   configure_namespace "${OPERATOR_MANAGER}"
   install_rhdh_operator "${DIR}" "${OPERATOR_MANAGER}"
   create_conditional_policies_operator /tmp/conditional-policies.yaml
 
-  # add_helm_repos
   # delete_namespace "${NAME_SPACE_RBAC_K8S}"
   # configure_namespace "${NAME_SPACE_K8S}"
   # uninstall_helmchart "${NAME_SPACE_K8S}" "${RELEASE_NAME}"
@@ -28,11 +25,8 @@ initiate_gke_operator_deployment() {
   #   --set upstream.ingress.annotations."ingress\.gcp\.kubernetes\.io/pre-shared-cert"="${GKE_CERT_NAME}"
 }
 
-initiate_rbac_gke_operator_deployment() {
-  gcloud_ssl_cert_create $GKE_CERT_NAME $GKE_INSTANCE_DOMAIN_NAME $GOOGLE_CLOUD_PROJECT
-  
-#   add_helm_repos
-#   delete_namespace "${NAME_SPACE_K8S}"
+initiate_rbac_aks_operator_deployment() {  
+  delete_namespace "${NAME_SPACE_K8S}"
 #   configure_namespace "${NAME_SPACE_RBAC_K8S}"
 #   uninstall_helmchart "${NAME_SPACE_RBAC_K8S}" "${RELEASE_NAME_RBAC}"
 #   cd "${DIR}" || exit

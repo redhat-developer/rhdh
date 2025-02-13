@@ -1,8 +1,8 @@
 #!/bin/bash
 
+source ../../utils.sh
+
 initiate_aks_helm_deployment() {
-  install_tekton_pipelines
-  add_helm_repos
   delete_namespace "${NAME_SPACE_RBAC_K8S}"
   configure_namespace "${NAME_SPACE_K8S}"
   uninstall_helmchart "${NAME_SPACE_K8S}" "${RELEASE_NAME}"
@@ -22,8 +22,6 @@ initiate_aks_helm_deployment() {
 }
 
 initiate_rbac_aks_helm_deployment() {
-  install_tekton_pipelines
-  add_helm_repos
   delete_namespace "${NAME_SPACE_K8S}"
   configure_namespace "${NAME_SPACE_RBAC_K8S}"
   uninstall_helmchart "${NAME_SPACE_RBAC_K8S}" "${RELEASE_NAME_RBAC}"
