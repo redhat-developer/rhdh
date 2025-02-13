@@ -12,14 +12,14 @@ initiate_gke_operator_deployment() {
 
   configure_namespace "${NAME_SPACE}"
   # deploy_test_backstage_provider "${NAME_SPACE}" # Doesn't work on K8S
-  local rhdh_base_url="https://backstage-${RELEASE_NAME}-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
+  local rhdh_base_url="https://${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
   create_dynamic_plugins_config "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "/tmp/configmap-dynamic-plugins.yaml"
   oc apply -f /tmp/configmap-dynamic-plugins.yaml -n "${NAME_SPACE}"
   oc apply -f "$DIR/resources/redis-cache/redis-deployment.yaml" --namespace="${NAME_SPACE}"
   setup_image_pull_secret "${NAME_SPACE}" "rh-pull-secret" "${REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON}"
 
-  deploy_rhdh_operator "${DIR}" "${NAME_SPACE}"
+  deploy_rhdh_operator "${NAME_SPACE}" "${DIR}/resources/rhdh-operator/rhdh-start_GKE.yaml"
 
   # add_helm_repos
   # delete_namespace "${NAME_SPACE_RBAC_K8S}"
@@ -44,6 +44,8 @@ initiate_gke_operator_deployment() {
 
 initiate_rbac_gke_operator_deployment() {
   gcloud_ssl_cert_create $GKE_CERT_NAME $GKE_INSTANCE_DOMAIN_NAME $GOOGLE_CLOUD_PROJECT
+
+  deploy_rhdh_operator "${NAME_SPACE}" "${DIR}/resources/rhdh-operator/rhdh-start-rbac_GKE.yaml"
   
 #   add_helm_repos
 #   delete_namespace "${NAME_SPACE_K8S}"

@@ -4,11 +4,15 @@ metadata:
   name: rhdh
 spec:
   application:
-    image: 'quay.io/rhdh-community/rhdh:next'
+    imagePullSecrets:
+      - "rh-pull-secret"
+    route:
+      enabled: false
+    image: 'quay.io/rhdh/rhdh-hub-rhel9:next'
     appConfig:
       configMaps:
         - name: app-config-rhdh
-        - name: dynamic-plugins-config
+        - name: dynamic-homepage-and-sidebar-config
       mountPath: /opt/app-root/src
     dynamicPluginsConfigMapName: dynamic-plugins
     extraEnvs:
