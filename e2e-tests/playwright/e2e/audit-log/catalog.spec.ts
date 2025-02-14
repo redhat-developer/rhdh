@@ -1,11 +1,11 @@
 import { test } from "@playwright/test";
 import { Common } from "../../utils/common";
-import { UIhelper } from "../../utils/ui-helper";
+import { UiHelper } from "../../utils/ui-helper";
 import { LogUtils } from "./log-utils";
 import { CatalogImport } from "../../support/pages/catalog-import";
 
 test.describe.skip("Audit Log check for Catalog Plugin", () => {
-  let uiHelper: UIhelper;
+  let uiHelper: UiHelper;
   let common: Common;
   let catalogImport: CatalogImport;
   let baseApiUrl: string;
@@ -16,7 +16,7 @@ test.describe.skip("Audit Log check for Catalog Plugin", () => {
   });
 
   test.beforeEach(async ({ page }) => {
-    uiHelper = new UIhelper(page);
+    uiHelper = new UiHelper(page);
     common = new Common(page);
     catalogImport = new CatalogImport(page);
     await common.loginAsGuest();

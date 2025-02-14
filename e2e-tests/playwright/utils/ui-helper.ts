@@ -3,7 +3,7 @@ import { UI_HELPER_ELEMENTS } from "../support/pageObjects/global-obj";
 import { SidebarTabs } from "./navbar";
 import { SEARCH_OBJECTS_COMPONENTS } from "../support/pageObjects/page-obj";
 
-export class UIhelper {
+export class UiHelper {
   private page: Page;
 
   constructor(page: Page) {

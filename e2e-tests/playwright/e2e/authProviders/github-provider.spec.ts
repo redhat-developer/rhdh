@@ -1,6 +1,6 @@
 import { test, Page, expect } from "@playwright/test";
 import { Common, setupBrowser } from "../../utils/common";
-import { UIhelper } from "../../utils/ui-helper";
+import { UiHelper } from "../../utils/ui-helper";
 import * as constants from "../../utils/authenticationProviders/constants";
 import { LOGGER } from "../../utils/logger";
 import {
@@ -26,7 +26,7 @@ test.describe("Standard authentication providers: Github Provider", () => {
 
   let common: Common;
   let context: BrowserContext;
-  let uiHelper: UIhelper;
+  let uiHelper: UiHelper;
   let mustSync = false;
   const syncTime = 60;
 
@@ -35,7 +35,7 @@ test.describe("Standard authentication providers: Github Provider", () => {
     page = browserSetup.page;
     context = browserSetup.context;
     common = new Common(page);
-    uiHelper = new UIhelper(page);
+    uiHelper = new UiHelper(page);
     expect(process.env.BASE_URL).not.toBeNull();
     expect(process.env.AUTH_PROVIDERS_GH_USER_2FA).not.toBeNull();
     expect(process.env.AUTH_PROVIDERS_GH_ADMIN_2FA).not.toBeNull();

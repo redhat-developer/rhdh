@@ -2,7 +2,7 @@ import fetch from "node-fetch";
 import User from "./user";
 import Group from "./group";
 import { expect, Page } from "@playwright/test";
-import { UIhelper } from "../ui-helper";
+import { UiHelper } from "../ui-helper";
 import { CatalogUsersPO } from "../../support/pageObjects/catalog/catalog-users-obj";
 
 interface AuthResponse {
@@ -75,7 +75,7 @@ class Keycloak {
     page: Page,
     keycloakUser: User,
     token: string,
-    uiHelper: UIhelper,
+    uiHelper: UiHelper,
     keycloak: Keycloak,
   ) {
     await CatalogUsersPO.visitUserPage(page, keycloakUser.username);

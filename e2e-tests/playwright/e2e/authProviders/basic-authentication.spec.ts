@@ -1,6 +1,6 @@
 import { test, Page, expect } from "@playwright/test";
 import { Common, setupBrowser } from "../../utils/common";
-import { UIhelper } from "../../utils/ui-helper";
+import { UiHelper } from "../../utils/ui-helper";
 import * as constants from "../../utils/authenticationProviders/constants";
 import { dumpAllPodsLogs, dumpRHDHUsersAndGroups } from "../../utils/helper";
 import { APIHelper } from "../../utils/api-helper";
@@ -13,12 +13,12 @@ test.describe("Standard authentication providers: Basic authentication", () => {
   test.use({ baseURL: constants.AUTH_PROVIDERS_BASE_URL });
 
   let common: Common;
-  let uiHelper: UIhelper;
+  let uiHelper: UiHelper;
 
   test.beforeAll(async ({ browser }, testInfo) => {
     page = (await setupBrowser(browser, testInfo)).page;
     common = new Common(page);
-    uiHelper = new UIhelper(page);
+    uiHelper = new UiHelper(page);
     expect(process.env.BASE_URL).not.toBeNull();
     LOGGER.info(`Base Url is ${process.env.BASE_URL}`);
     LOGGER.info(

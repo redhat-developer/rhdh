@@ -2,33 +2,34 @@ import * as k8s from "@kubernetes/client-node";
 import { V1ConfigMap } from "@kubernetes/client-node";
 import { LOGGER } from "./logger";
 import * as yaml from "js-yaml";
+import { IncomingMessage } from "http";
 
 export class KubeClient {
   coreV1Api: k8s.CoreV1Api;
   appsApi: k8s.AppsV1Api;
   kc: k8s.KubeConfig;
 
-  constructor() {
+  constructor(server?: string, user?: string, token?: string) {
     try {
       this.kc = new k8s.KubeConfig();
       this.kc.loadFromOptions({
         clusters: [
           {
             name: "my-openshift-cluster",
-            server: process.env.K8S_CLUSTER_URL,
+            server: server ?? process.env.K8S_CLUSTER_URL,
             skipTLSVerify: true,
           },
         ],
         users: [
           {
-            name: "ci-user",
-            token: process.env.K8S_CLUSTER_TOKEN,
+            name: user ?? "ci-user",
+            token: token ?? process.env.K8S_CLUSTER_TOKEN,
           },
         ],
         contexts: [
           {
             name: "default-context",
-            user: "ci-user",
+            user: user ?? "ci-user",
             cluster: "my-openshift-cluster",
           },
         ],
@@ -88,9 +89,9 @@ export class KubeClient {
           headers: { "Content-Type": "application/strategic-merge-patch+json" },
         },
       );
-      console.log(`Deployment scaled to ${replicas} replicas.`);
+      LOGGER.info(`Deployment scaled to ${replicas} replicas.`);
     } catch (error) {
-      console.error("Error scaling deployment:", error);
+      LOGGER.error("Error scaling deployment:", error);
     }
   }
 
@@ -110,9 +111,9 @@ export class KubeClient {
     patch: object,
   ) {
     try {
-      console.log("updateConfigMap called");
-      console.log("Namespace: ", namespace);
-      console.log("ConfigMap: ", configmapName);
+      LOGGER.info("updating Config Map");
+      LOGGER.info("Namespace: " + namespace);
+      LOGGER.info("ConfigMap: " + configmapName);
       const options = {
         headers: { "Content-type": k8s.PatchUtils.PATCH_FORMAT_JSON_PATCH },
       };
@@ -162,9 +163,9 @@ export class KubeClient {
         namespace,
         configMap,
       );
-      console.log("ConfigMap updated successfully.");
+      LOGGER.log("info", "ConfigMap updated successfully.");
     } catch (error) {
-      console.error("Error updating ConfigMap:", error);
+      LOGGER.error("Error updating ConfigMap:", error);
       throw new Error("Failed to update ConfigMap");
     }
   }
@@ -241,8 +242,15 @@ export class KubeClient {
   }
 
   async createNamespaceIfNotExists(namespace: string) {
-    const nsList = await this.coreV1Api.listNamespace();
-    const ns = nsList.body.items.map((ns) => ns.metadata.name);
+    let ns: string | string[];
+    let nsList: { body: k8s.V1NamespaceList; response: IncomingMessage };
+    try {
+      nsList = await this.coreV1Api.listNamespace();
+      ns = nsList.body.items.map((ns) => ns.metadata.name);
+    } catch (err) {
+      LOGGER.error("error listing namespaces: " + err);
+      throw err;
+    }
     if (ns.includes(namespace)) {
       LOGGER.info(`Delete and re-create namespace ${namespace}`);
       try {
@@ -266,6 +274,12 @@ export class KubeClient {
     }
   }
 
+  async checkNamespaceExists(namespace: string) {
+    const nsList = await this.coreV1Api.listNamespace();
+    const ns = nsList.body.items.map((ns) => ns.metadata.name);
+    return ns.includes(namespace);
+  }
+
   async createSecret(secret: k8s.V1Secret, namespace: string) {
     try {
       LOGGER.info(
@@ -282,8 +296,8 @@ export class KubeClient {
     deploymentName: string,
     namespace: string,
     expectedReplicas: number,
-    timeout: number = 300000, // 5 minutes
-    checkInterval: number = 10000, // 10 seconds
+    timeout: number = 300_000, // 5 minutes
+    checkInterval: number = 10_000, // 10 seconds
   ) {
     const start = Date.now();
     const labelSelector =
@@ -300,8 +314,8 @@ export class KubeClient {
         const availableReplicas = response.body.status?.availableReplicas || 0;
         const conditions = response.body.status?.conditions || [];
 
-        console.log(`Available replicas: ${availableReplicas}`);
-        console.log(
+        LOGGER.info(`Available replicas: ${availableReplicas}`);
+        LOGGER.info(
           "Deployment conditions:",
           JSON.stringify(conditions, null, 2),
         );
@@ -311,17 +325,17 @@ export class KubeClient {
 
         // Check if the expected replicas match
         if (availableReplicas === expectedReplicas) {
-          console.log(
+          LOGGER.info(
             `Deployment ${deploymentName} is ready with ${availableReplicas} replicas.`,
           );
           return;
         }
 
-        console.log(
+        LOGGER.info(
           `Waiting for ${deploymentName} to reach ${expectedReplicas} replicas, currently has ${availableReplicas}.`,
         );
       } catch (error) {
-        console.error(`Error checking deployment status: ${error}`);
+        LOGGER.error(`Error checking deployment status: ${error}`);
       }
 
       await new Promise((resolve) => setTimeout(resolve, checkInterval));
@@ -334,23 +348,23 @@ export class KubeClient {
 
   async restartDeployment(deploymentName: string, namespace: string) {
     try {
-      console.log(`Scaling down deployment ${deploymentName} to 0 replicas.`);
-      console.log(`Deployment: ${deploymentName}, Namespace: ${namespace}`);
+      LOGGER.info(`Scaling down deployment ${deploymentName} to 0 replicas.`);
+      LOGGER.info(`Deployment: ${deploymentName}, Namespace: ${namespace}`);
       await this.logPodConditions(namespace);
       await this.scaleDeployment(deploymentName, namespace, 0);
 
       await this.waitForDeploymentReady(deploymentName, namespace, 0);
 
-      console.log(`Scaling up deployment ${deploymentName} to 1 replica.`);
+      LOGGER.info(`Scaling up deployment ${deploymentName} to 1 replica.`);
       await this.scaleDeployment(deploymentName, namespace, 1);
 
       await this.waitForDeploymentReady(deploymentName, namespace, 1);
 
-      console.log(
+      LOGGER.info(
         `Restart of deployment ${deploymentName} completed successfully.`,
       );
     } catch (error) {
-      console.error(
+      LOGGER.error(
         `Error during deployment restart: Deployment '${deploymentName}' in namespace '${namespace}'.`,
       );
       await this.logPodConditions(namespace);
@@ -381,14 +395,14 @@ export class KubeClient {
       }
 
       for (const pod of response.body.items) {
-        console.log(`Pod: ${pod.metadata?.name}`);
-        console.log(
+        LOGGER.info(`Pod: ${pod.metadata?.name}`);
+        LOGGER.info(
           "Conditions:",
           JSON.stringify(pod.status?.conditions, null, 2),
         );
       }
     } catch (error) {
-      console.error(
+      LOGGER.error(
         `Error while retrieving pod conditions for selector '${selector}':`,
         error,
       );
@@ -405,7 +419,7 @@ export class KubeClient {
         `involvedObject.name=${deploymentName}`,
       );
 
-      console.log(
+      LOGGER.info(
         `Events for deployment ${deploymentName}: ${JSON.stringify(
           eventsResponse.body.items.map((event) => ({
             message: event.message,
@@ -417,7 +431,7 @@ export class KubeClient {
         )}`,
       );
     } catch (error) {
-      console.error(
+      LOGGER.error(
         `Error retrieving events for deployment ${deploymentName}: ${error}`,
       );
     }

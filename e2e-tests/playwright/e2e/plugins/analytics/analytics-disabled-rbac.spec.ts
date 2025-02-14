@@ -1,15 +1,15 @@
 import { test, expect } from "@playwright/test";
 import { Common } from "../../../utils/common";
-import { UIhelper } from "../../../utils/ui-helper";
+import { UiHelper } from "../../../utils/ui-helper";
 import { UI_HELPER_ELEMENTS } from "../../../support/pageObjects/global-obj";
 
 // TODO: reenable tests
 test.describe.skip('Check RBAC "analytics-provider-segment" plugin', () => {
   let common: Common;
-  let uiHelper: UIhelper;
+  let uiHelper: UiHelper;
 
   test.beforeEach(async ({ page }) => {
-    uiHelper = new UIhelper(page);
+    uiHelper = new UiHelper(page);
     common = new Common(page);
     await common.loginAsKeycloakUser();
     await uiHelper.openSidebarButton("Administration");

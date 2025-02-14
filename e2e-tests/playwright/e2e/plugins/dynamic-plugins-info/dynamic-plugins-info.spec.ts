@@ -1,14 +1,14 @@
 import { expect, test } from "@playwright/test";
-import { UIhelper } from "../../../utils/ui-helper";
+import { UiHelper } from "../../../utils/ui-helper";
 import { Common } from "../../../utils/common";
 import { UI_HELPER_ELEMENTS } from "../../../support/pageObjects/global-obj";
 
 test.describe("dynamic-plugins-info UI tests", () => {
-  let uiHelper: UIhelper;
+  let uiHelper: UiHelper;
   let common: Common;
 
   test.beforeEach(async ({ page }) => {
-    uiHelper = new UIhelper(page);
+    uiHelper = new UiHelper(page);
     common = new Common(page);
     await common.loginAsGuest();
     await uiHelper.openSidebarButton("Administration");
