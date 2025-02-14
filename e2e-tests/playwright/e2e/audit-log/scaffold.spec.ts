@@ -26,7 +26,7 @@ test.describe("Audit Log check for Catalog Plugin", () => {
   });
 
   test("Should fetch logs for ScaffolderParameterSchemaFetch event and validate log structure and values", async ({
-    baseURL
+    baseURL,
   }) => {
     await uiHelper.clickButton("Register Existing Component");
     await catalogImport.registerExistingComponent(template, false);
