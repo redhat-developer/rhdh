@@ -25,7 +25,7 @@ test.describe("Audit Log check for Catalog Plugin", () => {
     await uiHelper.openSidebar("Create");
   });
 
-  test.fixme(
+  test(
     "Should fetch logs for ScaffolderParameterSchemaFetch event and validate log structure and values",
     async ({ baseURL }) => {
       await uiHelper.clickButton("Register Existing Component");
@@ -47,7 +47,7 @@ test.describe("Audit Log check for Catalog Plugin", () => {
     },
   );
 
-  test.fixme(
+  test(
     "Should fetch logs for ScaffolderInstalledActionsFetch event and validate log structure and values",
     async ({ baseURL }) => {
       await uiHelper.clickById("long-menu");
@@ -64,7 +64,7 @@ test.describe("Audit Log check for Catalog Plugin", () => {
     },
   );
 
-  test.fixme(
+  test(
     "Should fetch logs for ScaffolderTaskListFetch event and validate log structure and values",
     async ({ baseURL }) => {
       await uiHelper.clickById("long-menu");
