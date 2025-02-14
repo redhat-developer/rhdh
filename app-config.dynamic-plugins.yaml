@@ -266,6 +266,10 @@ dynamicPlugins:
       dynamicRoutes:
         - path: /
           importName: DynamicHomePage
+          menuItem:
+            icon: home
+            text: Home
+            priority: 100
       mountPoints:
         - mountPoint: application/listener
           importName: VisitListener
