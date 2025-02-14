@@ -24,7 +24,7 @@ test.describe("Test Topology Plugin", () => {
 
   test("Verify pods visibility in the Topology tab", async ({ page }) => {
     test.setTimeout(150000);
-    await catalog.goToBackstageJanusProject();
+    await catalog.goToBackstageShowcaseProject();
     await uiHelper.clickTab("Topology");
     await uiHelper.verifyText("backstage-janus");
     await page.getByRole("button", { name: "Fit to Screen" }).click();

@@ -19,16 +19,16 @@ export class Catalog {
   }
 
   async goToBackstageJanusProjectCITab() {
-    await this.goToBackstageJanusProject();
+    await this.goToBackstageShowcaseProject();
     await this.uiHelper.clickTab("CI");
     await this.page.waitForSelector('h2:text("Pipeline Runs")');
     await this.uiHelper.verifyHeading("Pipeline Runs");
   }
 
-  async goToBackstageJanusProject() {
+  async goToBackstageShowcaseProject() {
     await this.uiHelper.openSidebar("Catalog");
     await this.uiHelper.clickByDataTestId("user-picker-all");
-    await this.uiHelper.clickLink("backstage-janus");
+    await this.page.getByRole("link", { name: "Backstage Showcase" }).click();
   }
 
   async search(s: string) {
