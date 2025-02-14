@@ -317,7 +317,7 @@ export class UIhelper {
   }
 
   async clickTab(tabName: string) {
-    const tabLocator = this.page.locator(`text="${tabName}"`);
+    const tabLocator = this.page.getByRole("tab", { name: tabName });
     await tabLocator.waitFor({ state: "visible" });
     await tabLocator.click();
   }
