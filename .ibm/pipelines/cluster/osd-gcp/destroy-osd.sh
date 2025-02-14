@@ -12,7 +12,7 @@ CLUSTER_ID=$(ocm list clusters | awk -v name="$CLUSTER_NAME" '$2 == name {print 
 
 ocm describe cluster $CLUSTER_ID
 
-ocm delete /api/clusters_mgmt/v1/clusters/$CLUSTER_ID
+# ocm delete /api/clusters_mgmt/v1/clusters/$CLUSTER_ID
 
 # while [[ -z $(ocm cluster status $CLUSTER_ID 2>&1 | grep "not found") ]]; do
 #     echo "Waiting for cluster $CLUSTER_ID to be completely uninstalled...";

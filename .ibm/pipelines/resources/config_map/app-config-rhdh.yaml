@@ -42,13 +42,13 @@ integrations:
           webhookSecret: ${GITHUB_APP_WEBHOOK_SECRET}
           privateKey: |
             ${GITHUB_APP_PRIVATE_KEY}
-        - appId: ${GITHUB_APP_JANUS_TEST_APP_ID}
-          clientId: ${GITHUB_APP_JANUS_TEST_CLIENT_ID}
-          clientSecret: ${GITHUB_APP_JANUS_TEST_CLIENT_SECRET}
-          webhookUrl: ${GITHUB_APP_WEBHOOK_URL}
-          webhookSecret: ${GITHUB_APP_WEBHOOK_SECRET}
-          privateKey: |
-            ${GITHUB_APP_JANUS_TEST_PRIVATE_KEY}
+        # - appId: ${GITHUB_APP_JANUS_TEST_APP_ID}
+        #   clientId: ${GITHUB_APP_JANUS_TEST_CLIENT_ID}
+        #   clientSecret: ${GITHUB_APP_JANUS_TEST_CLIENT_SECRET}
+        #   webhookUrl: ${GITHUB_APP_WEBHOOK_URL}
+        #   webhookSecret: ${GITHUB_APP_WEBHOOK_SECRET}
+        #   privateKey: |
+        #     ${GITHUB_APP_JANUS_TEST_PRIVATE_KEY}
   bitbucketServer:
     - host: bitbucket.com
       apiBaseUrl: temp
