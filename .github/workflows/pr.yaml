@@ -20,55 +20,61 @@ on:
 env:
   TURBO_SCM_BASE: ${{ github.event.pull_request.base.sha }}
   TURBO_SCM_HEAD: ${{ github.sha }}
+  REGISTRY: image-registry.openshift-image-registry.svc:5000
+  IMAGE_NAME: ci/rhdh-e2e-runner
+  TEMP_IMAGE_TAG: temp-${{ github.run_id }} # Temporary image tag for this PR.
+  BRANCH_NAME: ${{ github.ref_name }} # Official image tag in the OpenShift Registry.
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build:
-    name: Build with Node.js ${{ matrix.node-version }}
+  ######################################################################
+  ## JOB: Uses a temporary OpenShift image for testing                ##
+  ######################################################################
+  update-openshift-image:
+    name: Use Temporary OpenShift Image
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [20]
+    if: contains(github.event.pull_request.changed_files, '.ibm/images/')  # Runs only if there are changes in .ibm/images/
+    outputs:
+      image_tag: ${{ env.TEMP_IMAGE_TAG }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-        with:
-          fetch-depth: 0
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          registry-url: 'https://registry.npmjs.org'
+      - name: Authenticate with OpenShift
+        run: |
+          oc registry login
 
-      - name: Setup local Turbo cache
-        uses: dtinth/setup-github-actions-caching-for-turbo@cc723b4600e40a6b8815b65701d8614b91e2669e # v1
+      - name: Fetch Current OpenShift Image for Rollback
+        run: |
+          echo "Fetching current image reference..."
+          export CURRENT_IMAGE=$(oc get istag ${IMAGE_NAME}:${BRANCH_NAME} -o jsonpath='{.image.dockerImageReference}')
+          echo "CURRENT_IMAGE=${CURRENT_IMAGE}" >> $GITHUB_ENV
 
-      - name: Use app-config.example.yaml
-        run: rm app-config.yaml && mv app-config.example.yaml app-config.yaml
+      - name: Tag Image for Testing in OpenShift
+        run: |
+          echo "Tagging the current image with a temporary tag for testing..."
+          oc tag ${IMAGE_NAME}:${BRANCH_NAME} ${IMAGE_NAME}:${TEMP_IMAGE_TAG}
 
-      - name: Install dependencies
-        uses: backstage/actions/yarn-install@b3c1841fd69e1658ac631afafd0fb140a2309024 # v0.6.17
-        with:
-          cache-prefix: ${{ runner.os }}-v${{ matrix.node-version }}
-
-      - name: Build packages
-        run: yarn run build --continue --affected
-
+  ######################################################################
+  ## JOB: Runs tests using the correct OpenShift image                ##
+  ## - Uses the temporary image IF .ibm/images/ was modified.         ##
+  ## - Otherwise, uses the mirror image directly.                     ##
+  ######################################################################
   test:
     name: Test with Node.js ${{ matrix.node-version }}
     runs-on: ubuntu-latest
+    needs: [build]
     strategy:
       matrix:
         node-version: [20]
+    env:
+      TEST_IMAGE_TAG: ${{ needs.update-openshift-image.outputs.image_tag || env.BRANCH_NAME }} # Uses TEMP_IMAGE_TAG if exists, otherwise BRANCH_NAME
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-        with:
-          fetch-depth: 0
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4
@@ -102,8 +108,29 @@ jobs:
             echo "ERROR: Workspace is dirty! Must run 'yarn build:dockerfile' and commit changes!"; exit 1; \
           fi
 
-      - name: Run tests
-        run: yarn run test --continue --affected
+      - name: Run tests using the correct image
+        run: |
+          echo "Running tests using image: ${REGISTRY}/${IMAGE_NAME}:${TEST_IMAGE_TAG}"
+          yarn run test --continue --affected
 
       - name: Verify wrappers
         run: yarn workspace dynamic-plugins-utils run test:wrappers
+
+  ######################################################################
+  ## JOB: Rollback OpenShift image in case of failure                 ##
+  ## - Only rolls back if update-openshift-image was executed         ##
+  ######################################################################
+  rollback-openshift-image:
+    name: Rollback OpenShift Image
+    runs-on: ubuntu-latest
+    if: failure() && contains(github.event.pull_request.changed_files, '.ibm/images/')
+    needs: [ test, update-openshift-image ]
+    steps:
+      - name: Authenticate with OpenShift
+        run: |
+          oc registry login
+
+      - name: Rollback to Previous Image
+        run: |
+          echo "Tests failed! Rolling back to previous stable image..."
+          oc tag ${CURRENT_IMAGE} ${IMAGE_NAME}:${BRANCH_NAME}

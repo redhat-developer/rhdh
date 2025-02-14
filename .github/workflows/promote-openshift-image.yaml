@@ -1,0 +1,28 @@
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.ibm/images/**'
+
+jobs:
+  update-openshift-image:
+    name: Update OpenShift Image (Final)
+    runs-on: ubuntu-latest
+    env:
+      REGISTRY: image-registry.openshift-image-registry.svc:5000
+      IMAGE_NAME: ci/rhdh-e2e-runner
+      BRANCH_NAME: ${{ github.ref_name }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate with OpenShift
+        run: |
+          oc registry login
+
+      - name: Promote Latest Image in OpenShift
+        run: |
+          echo "Promoting the tested image to OpenShift CI for the main branch..."
+          oc tag ${IMAGE_NAME}:${BRANCH_NAME} ${IMAGE_NAME}:main
