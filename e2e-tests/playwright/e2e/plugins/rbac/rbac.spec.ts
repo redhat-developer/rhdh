@@ -68,13 +68,17 @@ test.describe.serial("Test RBAC", () => {
         Roles.getPermissionPoliciesListCellsIdentifier();
       await uiHelper.verifyCellsInTable(permissionPoliciesCellsIdentifier);
 
-      await expect(page.getByRole("cell")).toContainText("catalog-entity.read");
-      await expect(page.getByRole("cell")).toContainText(
-        "catalog-entity.delete",
-      );
-      await expect(page.getByRole("cell")).toContainText("Read, Update");
-      await expect(page.getByRole("cell")).toContainText("Delete");
-    });
+      await expect(
+        page.getByRole("cell", { name: "catalog.entity.read" }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("cell", { name: "catalog.entity.read" }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("cell", { name: "Read, Update" }),
+      ).toBeVisible();
+      await expect(page.getByRole("cell", { name: "Delete" }),
+      ).toBeVisible();
   });
 
   test.describe
