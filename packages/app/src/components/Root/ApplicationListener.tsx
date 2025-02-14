@@ -1,20 +1,19 @@
 import { useContext } from 'react';
 
-import { ErrorBoundary } from '@backstage/core-components';
-
 import DynamicRootContext from '../DynamicRoot/DynamicRootContext';
+import { CustomErrorBoundary } from './CustomErrorBoundary';
 
 export const ApplicationListener = () => {
   const { mountPoints } = useContext(DynamicRootContext);
   const listeners = mountPoints['application/listener'] ?? [];
   return listeners.map(({ Component }, index) => {
     return (
-      <ErrorBoundary
+      <CustomErrorBoundary
         // eslint-disable-next-line react/no-array-index-key
         key={index}
       >
         <Component />
-      </ErrorBoundary>
+      </CustomErrorBoundary>
     );
   });
 };
