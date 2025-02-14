@@ -260,65 +260,67 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
   return (
     <>
       <ApplicationHeaders position="above-sidebar" />
-      <SidebarPage>
-        <ApplicationHeaders position="above-main-content" />
-        <Sidebar>
-          {showLogo && <SidebarLogo />}
-          {showSearch ? (
-            <>
-              <SidebarGroup label="Search" icon={<SearchIcon />} to="/search">
-                <SidebarSearchModal />
-              </SidebarGroup>
+      <Box sx={{ height: '100vh', overflow: 'auto', scrollbarWidth: 'none' }}>
+        <SidebarPage>
+          <ApplicationHeaders position="above-main-content" />
+          <Sidebar>
+            <SidebarLogo />
+            {showSearch ? (
+              <>
+                <SidebarGroup label="Search" icon={<SearchIcon />} to="/search">
+                  <SidebarSearchModal />
+                </SidebarGroup>
+                <SidebarDivider />
+              </>
+            ) : (
+              <Box sx={{ height: '1.2rem' }} />
+            )}
+            <SidebarGroup label="Menu" icon={<MuiMenuIcon />}>
+              {/* Global nav, not org-specific */}
+              {renderMenuItems(true, false)}
+              {/* End global nav */}
               <SidebarDivider />
-            </>
-          ) : (
-          <Box sx={{ height: '1.2rem' }} />
-          )}
-          <SidebarGroup label="Menu" icon={<MuiMenuIcon />}>
-            {/* Global nav, not org-specific */}
-            {renderMenuItems(true, false)}
-            {/* End global nav */}
-            <SidebarDivider />
-            <SidebarScrollWrapper>
-              {renderMenuItems(false, false)}
-              {dynamicRoutes.map(({ scope, menuItem, path }) => {
-                if (menuItem && 'Component' in menuItem) {
-                  return (
-                    <menuItem.Component
-                      {...(menuItem.config?.props || {})}
-                      key={`${scope}/${path}`}
-                      to={path}
-                    />
-                  );
-                }
-                return null;
-              })}
-            </SidebarScrollWrapper>
-          </SidebarGroup>
-          <SidebarSpace />
-          {showAdministration && (
-            <>
-              <SidebarDivider />
-              <SidebarGroup label="Administration" icon={<AdminIcon />}>
-                {renderMenuItems(false, true)}
-              </SidebarGroup>
-            </>
-          )}
-          {showSettings && (
-            <>
-              <SidebarDivider />
-              <SidebarGroup
-                label="Settings"
-                to="/settings"
-                icon={<AccountCircleOutlinedIcon />}
-              >
-                <SidebarSettings icon={AccountCircleOutlinedIcon} />
-              </SidebarGroup>
-            </>
-          )}
-        </Sidebar>
-        {children}
-      </SidebarPage>
+              <SidebarScrollWrapper>
+                {renderMenuItems(false, false)}
+                {dynamicRoutes.map(({ scope, menuItem, path }) => {
+                  if (menuItem && 'Component' in menuItem) {
+                    return (
+                      <menuItem.Component
+                        {...(menuItem.config?.props || {})}
+                        key={`${scope}/${path}`}
+                        to={path}
+                      />
+                    );
+                  }
+                  return null;
+                })}
+              </SidebarScrollWrapper>
+            </SidebarGroup>
+            <SidebarSpace />
+            {showAdministration && (
+              <>
+                <SidebarDivider />
+                <SidebarGroup label="Administration" icon={<AdminIcon />}>
+                  {renderMenuItems(false, true)}
+                </SidebarGroup>
+              </>
+            )}
+            {showSettings && (
+              <>
+                <SidebarDivider />
+                <SidebarGroup
+                  label="Settings"
+                  to="/settings"
+                  icon={<AccountCircleOutlinedIcon />}
+                >
+                  <SidebarSettings icon={AccountCircleOutlinedIcon} />
+                </SidebarGroup>
+              </>
+            )}
+          </Sidebar>
+          {children}
+        </SidebarPage>
+      </Box>
     </>
   );
 };
