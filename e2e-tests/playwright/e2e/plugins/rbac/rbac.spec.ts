@@ -68,7 +68,10 @@ test.describe.serial("Test RBAC", () => {
         Roles.getPermissionPoliciesListCellsIdentifier();
       await uiHelper.verifyCellsInTable(permissionPoliciesCellsIdentifier);
 
-      await expect(page.getByRole("cell")).toContainText("catalog-entity");
+      await expect(page.getByRole("cell")).toContainText("catalog-entity.read");
+      await expect(page.getByRole("cell")).toContainText(
+        "catalog-entity.delete",
+      );
       await expect(page.getByRole("cell")).toContainText("Read, Update");
       await expect(page.getByRole("cell")).toContainText("Delete");
     });
