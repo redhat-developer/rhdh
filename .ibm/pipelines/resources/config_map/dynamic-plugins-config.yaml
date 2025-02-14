@@ -1,6 +1,16 @@
 dynamicPlugins:
   rootDirectory: dynamic-plugins-root
   frontend:
+    internal.backstage-plugin-simple-chat:
+      appIcons:
+        - name: chatIcon
+          importName: ChatIcon
+      dynamicRoutes:
+        - path: /simple-chat
+          importName: SimpleChatPage
+          menuItem:
+            text: 'Simple Chat'
+            icon: chatIcon
     red-hat-developer-hub.backstage-plugin-dynamic-home-page:
       mountPoints:
         - mountPoint: home.page/cards
