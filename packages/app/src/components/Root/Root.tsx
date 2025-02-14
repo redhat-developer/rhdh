@@ -101,8 +101,18 @@ const getMenuItem = (menuItem: ResolvedMenuItem, isNestedMenuItem = false) => {
   );
 };
 
+const getSearchMenuItem = (menuItem: ResolvedMenuItem) => {
+  return (
+    <SidebarGroup label={menuItem.title} icon={<SearchIcon />} to={menuItem.to ?? ''}>
+      <SidebarSearchModal
+        icon={renderIcon(menuItem.icon ?? '')}
+      />
+    </SidebarGroup>
+  );
+};
+
 export const Root = ({ children }: PropsWithChildren<{}>) => {
-  const { dynamicRoutes, menuItems } = useContext(DynamicRootContext);
+  const { dynamicRoutes, menuItems, searchMenuItem } = useContext(DynamicRootContext);
   const [openItems, setOpenItems] = useState<{ [key: string]: boolean }>({});
 
   const { loading: loadingPermission, allowed: canDisplayRBACMenuItem } =
@@ -247,6 +257,22 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
       </>
     );
   };
+
+  const renderSearchMenuItem = () => {
+    const searchMenuItemArray = searchMenuItem.filter(mi => mi.name.startsWith('default.'));
+    return (
+      <>
+        {searchMenuItemArray.map(menuItem => {
+          return (
+            <React.Fragment key={menuItem.name}>
+              {menuItem.children!.length === 0 && getSearchMenuItem(menuItem)}
+            </React.Fragment>
+          );
+        })}
+      </>
+    );
+  };
+
   return (
     <>
       <ApplicationHeaders position="above-sidebar" />
@@ -254,9 +280,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
         <ApplicationHeaders position="above-main-content" />
         <Sidebar>
           <SidebarLogo />
-          <SidebarGroup label="Search" icon={<SearchIcon />} to="/search">
-            <SidebarSearchModal />
-          </SidebarGroup>
+          {renderSearchMenuItem()}
           <SidebarDivider />
           <SidebarGroup label="Menu" icon={<MuiMenuIcon />}>
             {/* Global nav, not org-specific */}

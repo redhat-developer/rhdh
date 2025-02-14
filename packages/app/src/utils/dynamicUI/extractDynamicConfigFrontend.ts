@@ -105,3 +105,18 @@ export function extractMenuItems(frontend: FrontendConfig): MenuItem[] {
 
   return buildTree(items);
 }
+
+export function extractSearchMenuItem(frontend: FrontendConfig): MenuItem[] {
+  const items: MenuItem[] = [];
+
+  Object.entries(frontend).forEach(([_, customProperties]) => {
+    if (customProperties.searchMenuItem) {
+      const searchMenuItemsArray = convertMenuItemsRecordToArray(
+        customProperties.searchMenuItem
+      );
+      items.push(...searchMenuItemsArray);
+    }
+  });
+
+  return buildTree(items);
+}

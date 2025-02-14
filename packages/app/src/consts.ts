@@ -37,3 +37,13 @@ export const DefaultMainMenuItems = {
     },
   },
 };
+
+export const SearchMenuItem = {
+  searchMenuItem: {
+    'default.search': {
+      title: 'Search',
+      icon: 'search',
+      to: 'search'
+    }
+  }
+};

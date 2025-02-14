@@ -6,6 +6,7 @@ import { RemotePlugins } from '../../components/DynamicRoot/DynamicRootContext';
 // See packages/app/src/App.tsx
 const ignoreStaticPlugins = [
   'default.main-menu-items',
+  'default.search-menu-item',
   'internal.plugin-dynamic-plugins-info',
 ];
 

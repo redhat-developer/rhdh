@@ -39,6 +39,7 @@ const TestRoot = ({ children }: PropsWithChildren<{}>) => {
       AppRouter: current.getRouter(),
       dynamicRoutes: [],
       menuItems: [],
+      searchMenuItem: [],
       mountPoints: {},
       entityTabOverrides: {},
       scaffolderFieldExtensions: [],

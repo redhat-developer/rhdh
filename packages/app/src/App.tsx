@@ -1,7 +1,7 @@
 import { apis } from './apis';
 import { StaticPlugins } from './components/DynamicRoot/DynamicRoot';
 import ScalprumRoot from './components/DynamicRoot/ScalprumRoot';
-import { DefaultMainMenuItems } from './consts';
+import { DefaultMainMenuItems, SearchMenuItem } from './consts';
 
 // Statically integrated frontend plugins
 const { dynamicPluginsInfoPlugin, ...dynamicPluginsInfoPluginModule } =
@@ -15,6 +15,7 @@ const baseFrontendConfig = {
     dynamicPlugins: {
       frontend: {
         'default.main-menu-items': DefaultMainMenuItems,
+        'default.search-menu-item': SearchMenuItem,
         // please keep this in sync with plugins/dynamic-plugins-info/app-config.janus-idp.yaml
         'internal.plugin-dynamic-plugins-info': {
           appIcons: [
