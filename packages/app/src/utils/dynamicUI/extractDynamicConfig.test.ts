@@ -154,14 +154,29 @@ describe('extractDynamicConfig', () => {
       menuItems: [],
       mountPoints: [],
       appIcons: [],
+      providerSettings: [],
       routeBindingTargets: [],
       apiFactories: [],
       scaffolderFieldExtensions: [],
+      signInPages: [],
       themes: [],
     });
   });
 
   it.each([
+    [
+      'a SignInPage',
+      { signInPage: { importName: 'blah' } },
+      {
+        signInPages: [
+          {
+            importName: 'blah',
+            module: 'PluginRoot',
+            scope: 'janus-idp.plugin-foo',
+          },
+        ],
+      },
+    ],
     [
       'a dynamicRoute',
       { dynamicRoutes: [{ path: '/foo' }] },
@@ -495,6 +510,58 @@ describe('extractDynamicConfig', () => {
         ],
       },
     ],
+    [
+      'a providerSettings',
+      {
+        providerSettings: [
+          {
+            title: 'foo',
+            description: 'bar',
+            provider: 'foo.bar',
+          },
+        ],
+      },
+      {
+        providerSettings: [
+          {
+            title: 'foo',
+            description: 'bar',
+            provider: 'foo.bar',
+          },
+        ],
+      },
+    ],
+    [
+      'multiple providerSettings',
+      {
+        providerSettings: [
+          {
+            title: 'foo1',
+            description: 'bar1',
+            provider: 'foo.bar1',
+          },
+          {
+            title: 'foo2',
+            description: 'bar2',
+            provider: 'foo.bar2',
+          },
+        ],
+      },
+      {
+        providerSettings: [
+          {
+            title: 'foo1',
+            description: 'bar1',
+            provider: 'foo.bar1',
+          },
+          {
+            title: 'foo2',
+            description: 'bar2',
+            provider: 'foo.bar2',
+          },
+        ],
+      },
+    ],
   ])('parses %s', (_, source: any, output) => {
     const config = extractDynamicConfig({
       frontend: { 'janus-idp.plugin-foo': source },
@@ -515,7 +582,9 @@ describe('extractDynamicConfig', () => {
       appIcons: [],
       apiFactories: [],
       scaffolderFieldExtensions: [],
+      signInPages: [],
       themes: [],
+      providerSettings: [],
       ...output,
     });
   });

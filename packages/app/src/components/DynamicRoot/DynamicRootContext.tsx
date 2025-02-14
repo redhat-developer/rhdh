@@ -112,11 +112,18 @@ export type ScaffolderFieldExtension = {
   Component: React.ComponentType<{}>;
 };
 
+export type ProviderSetting = {
+  title: string;
+  description: string;
+  provider: string;
+};
+
 export type DynamicRootConfig = {
   dynamicRoutes: ResolvedDynamicRoute[];
   entityTabOverrides: EntityTabOverrides;
   mountPoints: MountPoints;
   menuItems: ResolvedMenuItem[];
+  providerSettings: ProviderSetting[];
   scaffolderFieldExtensions: ScaffolderFieldExtension[];
 };
 
@@ -132,6 +139,7 @@ const DynamicRootContext = createContext<ComponentRegistry>({
   entityTabOverrides: {},
   mountPoints: {},
   menuItems: [],
+  providerSettings: [],
   scaffolderFieldExtensions: [],
 });
 

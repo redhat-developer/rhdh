@@ -34,6 +34,7 @@ const AppBase = () => {
     AppRouter,
     dynamicRoutes,
     entityTabOverrides,
+    providerSettings,
     scaffolderFieldExtensions,
   } = useContext(DynamicRootContext);
 
@@ -118,7 +119,7 @@ const AppBase = () => {
               <SearchPage />
             </Route>
             <Route path="/settings" element={<UserSettingsPage />}>
-              {settingsPage}
+              {settingsPage(providerSettings)}
             </Route>
             <Route path="/catalog-graph" element={<CatalogGraphPage />} />
             <Route path="/learning-paths" element={<LearningPaths />} />
