@@ -68,9 +68,16 @@ test.describe.serial("Test RBAC", () => {
         Roles.getPermissionPoliciesListCellsIdentifier();
       await uiHelper.verifyCellsInTable(permissionPoliciesCellsIdentifier);
 
-      await expect(page.getByRole("article")).toContainText("catalog-entity");
-      await expect(page.getByRole("article")).toContainText("Read, Update");
-      await expect(page.getByRole("article")).toContainText("Delete");
+      await expect(
+        page.getByRole("cell", { name: "catalog.entity.read" }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("cell", { name: "catalog.entity.read" }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("cell", { name: "Read, Update" }),
+      ).toBeVisible();
+      await expect(page.getByRole("cell", { name: "Delete" })).toBeVisible();
     });
   });
 
@@ -288,9 +295,7 @@ test.describe.serial("Test RBAC", () => {
         matchNextButton2 = await nextButton2.all();
         attempts++;
       } while (matchNextButton2.length > 1 && attempts < 5);
-      await nextButton2.click({
-        force: true,
-      });
+      await nextButton2.click({ force: true });
       await uiHelper.clickButton("Save");
       await uiHelper.verifyText(
         "Role role:default/test-role1 updated successfully",
@@ -423,10 +428,7 @@ test.describe.serial("Test RBAC", () => {
         name: "role:default/admin",
       };
 
-      const newRole = {
-        memberReferences: members,
-        name: "role:default/test",
-      };
+      const newRole = { memberReferences: members, name: "role:default/test" };
 
       const rolePostResponse = await rbacApi.createRoles(firstRole);
 
