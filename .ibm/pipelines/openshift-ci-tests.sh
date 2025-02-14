@@ -1,4 +1,5 @@
 #!/bin/sh
+# THIS IS NOT FOR MERGING ONLY FOR TESTING IF 1.3 IMAGE IS READY FOR RELEASE
 echo "Enable e2e-tests on release-1.3"
 set -xe
 export PS4='[$(date "+%Y-%m-%d %H:%M:%S")] ' # logs timestamp for every cmd.
