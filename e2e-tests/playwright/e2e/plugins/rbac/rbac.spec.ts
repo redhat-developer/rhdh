@@ -220,6 +220,8 @@ test.describe.serial("Test RBAC", () => {
       const rolesHelper = new Roles(page);
       const uiHelper = new UIhelper(page);
 
+      await uiHelper.clickButton("Create");
+      await uiHelper.verifyHeading("Create role");
       await page
         .getByRole("combobox", { name: "Select users and groups" })
         .fill("Guest user");
@@ -232,6 +234,9 @@ test.describe.serial("Test RBAC", () => {
       await expect(
         page.getByRole("combobox", { name: "Select users and groups" }),
       ).toBeEmpty();
+      await uiHelper.clickButton("Cancel");
+      await expect(page.getByText("Exit role editing?")).toBeVisible();
+      await uiHelper.clickButton("Discard");
 
       const rbacPo = new RbacPo(page);
       const testUser = "Jonathon Page";
