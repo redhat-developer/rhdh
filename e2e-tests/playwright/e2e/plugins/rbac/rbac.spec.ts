@@ -328,6 +328,18 @@ test.describe.serial("Test RBAC", () => {
     }) => {
       const rolesHelper = new Roles(page);
       const uiHelper = new UIhelper(page);
+      await page
+        .getByRole("combobox", { name: "Select users and groups" })
+        .fill("Guest user");
+      await page
+        .getByTestId("users-and-groups-text-field")
+        .getByRole("button", {
+          name: "clear search",
+        })
+        .click();
+      await expect(
+        page.getByRole("combobox", { name: "Select users and groups" }),
+      ).toBeEmpty();
       await new RbacPo(page).createRole(
         "test-role",
         ["Guest User", "rhdh-qe", "Backstage"],
