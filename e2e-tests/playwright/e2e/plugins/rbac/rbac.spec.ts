@@ -77,7 +77,9 @@ test.describe.serial("Test RBAC", () => {
       await expect(
         page.getByRole("cell", { name: "Read, Update" }),
       ).toBeVisible();
-      await expect(page.getByRole("cell", { name: "Delete" })).toBeVisible();
+      await expect(
+        page.getByRole("cell", { name: "Delete", exact: true }),
+      ).toBeVisible();
     });
   });
 
