@@ -16385,7 +16385,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-dynamic-home-page@npm:^1.1.0":
+"@red-hat-developer-hub/backstage-plugin-dynamic-home-page@npm:1.1.0":
   version: 1.1.0
   resolution: "@red-hat-developer-hub/backstage-plugin-dynamic-home-page@npm:1.1.0"
   dependencies:
@@ -16573,13 +16573,6 @@ __metadata:
   peerDependencies:
     "@redis/client": ^1.0.0
   checksum: 785f024e1c83866708beb254f765e561ccd6e6caad61b697223b3355ee92ca1e99a4d312c4ce03a3d6a29a223f38a2ec844c80b47990fa3bd9ddc56a30c1376f
-  languageName: node
-  linkType: hard
-
-"@remix-run/router@npm:1.21.1":
-  version: 1.21.1
-  resolution: "@remix-run/router@npm:1.21.1"
-  checksum: a7f618a33cbee44491f17db302a89eebf9f2d72892a7e918433cee5a0006935185f1f2946b8ff6f669184c6ca75babff1cdfa15a016a87ac7b5353cb4fd2c470
   languageName: node
   linkType: hard
 
@@ -20429,7 +20422,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:20.17.17":
+"@types/node@npm:20.17.17, @types/node@npm:^20.1.1":
   version: 20.17.17
   resolution: "@types/node@npm:20.17.17"
   dependencies:
@@ -20458,15 +20451,6 @@ __metadata:
   dependencies:
     undici-types: ~5.26.4
   checksum: 8e45a05aa91437d3d11a346775ac16589353070c504f91a62cd91945a384231ccbbe92009a8e1ae653f954f9de5bf8ff106cc8e26721ecab98914dc019217aef
-  languageName: node
-  linkType: hard
-
-"@types/node@npm:^20.1.1":
-  version: 20.17.16
-  resolution: "@types/node@npm:20.17.16"
-  dependencies:
-    undici-types: ~6.19.2
-  checksum: dd19c04c592b602f20448187b4b6ab0293f22173a8bbe53aa3b559188f078b5261d748a107b84ee0580e2074cda760049b13d6e210f9850039bead01cb666a3f
   languageName: node
   linkType: hard
 
@@ -31409,7 +31393,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ioredis@npm:5.5.0":
+"ioredis@npm:5.5.0, ioredis@npm:^5.3.2":
   version: 5.5.0
   resolution: "ioredis@npm:5.5.0"
   dependencies:
@@ -31423,23 +31407,6 @@ __metadata:
     redis-parser: ^3.0.0
     standard-as-callback: ^2.1.0
   checksum: 3dcca32094a71f28c27a31790dbeb1be48520d670a122313e195588fc966183089e3d7db25893705324127f127a23605d4c78e0d55fedfd06256167dec3da40d
-  languageName: node
-  linkType: hard
-
-"ioredis@npm:^5.3.2":
-  version: 5.4.2
-  resolution: "ioredis@npm:5.4.2"
-  dependencies:
-    "@ioredis/commands": ^1.1.1
-    cluster-key-slot: ^1.1.0
-    debug: ^4.3.4
-    denque: ^2.1.0
-    lodash.defaults: ^4.2.0
-    lodash.isarguments: ^3.1.0
-    redis-errors: ^1.2.0
-    redis-parser: ^3.0.0
-    standard-as-callback: ^2.1.0
-  checksum: 6c40ef071c5fb481f4911c69512371f0a435cc426f07b8905df415030fb9a92266d63e3a674fc3b5aa1e551cda12c00965f2618bda757f164c4a3aa696822427
   languageName: node
   linkType: hard
 
@@ -40138,7 +40105,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router-dom@npm:6.29.0":
+"react-router-dom@npm:6.29.0, react-router-dom@npm:^6.26.2":
   version: 6.29.0
   resolution: "react-router-dom@npm:6.29.0"
   dependencies:
@@ -40148,30 +40115,6 @@ __metadata:
     react: ">=16.8"
     react-dom: ">=16.8"
   checksum: 0000208e404ba09a03937c3a543e688d59bb4f23a902a7f343ca69d8315b262849745f8e3ef1dedf322be87856103f08cab689da39b67b65153606ed788dd51e
-  languageName: node
-  linkType: hard
-
-"react-router-dom@npm:^6.26.2":
-  version: 6.28.2
-  resolution: "react-router-dom@npm:6.28.2"
-  dependencies:
-    "@remix-run/router": 1.21.1
-    react-router: 6.28.2
-  peerDependencies:
-    react: ">=16.8"
-    react-dom: ">=16.8"
-  checksum: daa7a0f10c2d9861225c12d896bd4839da61ed1bbee945dc730fe27e8545d2dd1655cbbd6efe8b8f9647cad79bd98f9fed001073f93d5216be08b76f3aa4e88c
-  languageName: node
-  linkType: hard
-
-"react-router@npm:6.28.2":
-  version: 6.28.2
-  resolution: "react-router@npm:6.28.2"
-  dependencies:
-    "@remix-run/router": 1.21.1
-  peerDependencies:
-    react: ">=16.8"
-  checksum: 3e47c475293a54ae7067cc12d26947b6d73586916fc17ccd32215524c6ae7aa52b64d8d748a75152fa2bc72193ca709181c8aa24bfcd60efe08243357afed6e0
   languageName: node
   linkType: hard
 
@@ -40492,7 +40435,7 @@ __metadata:
     "@backstage/cli": 0.29.6
     "@janus-idp/cli": 3.2.0
     "@mui/material": 5.16.14
-    "@red-hat-developer-hub/backstage-plugin-dynamic-home-page": ^1.1.0
+    "@red-hat-developer-hub/backstage-plugin-dynamic-home-page": 1.1.0
     typescript: 5.7.3
   languageName: unknown
   linkType: soft
