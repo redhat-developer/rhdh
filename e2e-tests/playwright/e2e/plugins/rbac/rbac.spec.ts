@@ -222,21 +222,25 @@ test.describe.serial("Test RBAC", () => {
 
       await uiHelper.clickButton("Create");
       await uiHelper.verifyHeading("Create role");
-      await page
-        .getByRole("combobox", { name: "Select users and groups" })
-        .fill("Guest user");
+      await page.fill('input[name="name"]', "sample-role-1");
+      await page.fill('textarea[name="description"]', "Test Description data");
+      await uiHelper.clickButton("Next");
       await page
         .getByTestId("users-and-groups-text-field")
-        .getByRole("button", {
-          name: "clear search",
-        })
+        .locator("input")
+        .fill("Guest Use");
+      await page
+        .getByTestId("users-and-groups-text-field")
+        .getByLabel("clear search")
         .click();
-      await expect(
-        page.getByRole("combobox", { name: "Select users and groups" }),
+      expect(
+        await page.getByTestId("users-and-groups-text-field").locator("input"),
       ).toBeEmpty();
+      await uiHelper.verifyHeading("No users and groups selected");
       await uiHelper.clickButton("Cancel");
       await expect(page.getByText("Exit role editing?")).toBeVisible();
       await uiHelper.clickButton("Discard");
+      await expect(page.getByRole("alert")).toHaveCount(0);
 
       const rbacPo = new RbacPo(page);
       const testUser = "Jonathon Page";
