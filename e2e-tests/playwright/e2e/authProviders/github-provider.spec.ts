@@ -224,7 +224,7 @@ test.describe("Standard authentication providers: Github Provider", () => {
     );
     expect(loginSucceded).toContain("Login successful");
 
-    await uiHelper.verifyAlertErrorMessage(/User not found/gm);
+    await uiHelper.verifyAlertErrorMessage(/unable to resolve user identity/gm);
 
     await context.clearCookies();
 

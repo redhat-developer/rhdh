@@ -28,15 +28,24 @@ upstream:
               clientSecret: ${AUTH_PROVIDERS_AZURE_CLIENT_SECRET}
               tenantId: ${AUTH_PROVIDERS_AZURE_TENANT_ID}
               domainHint: ${AUTH_PROVIDERS_AZURE_TENANT_ID}
+              signIn:
+                resolvers:
+                  - resolver: userIdMatchingUserEntityAnnotation
             production:
               clientId: ${AUTH_PROVIDERS_AZURE_CLIENT_ID}
               clientSecret: ${AUTH_PROVIDERS_AZURE_CLIENT_SECRET}
               tenantId: ${AUTH_PROVIDERS_AZURE_TENANT_ID}
               domainHint: ${AUTH_PROVIDERS_AZURE_TENANT_ID}
+              signIn:
+                resolvers:
+                  - resolver: userIdMatchingUserEntityAnnotation
           github:
             production:
               clientSecret: ${AUTH_ORG_CLIENT_SECRET}
               clientId: ${AUTH_ORG_CLIENT_ID}
+              signIn:
+                resolvers:
+                  - resolver: usernameMatchingUserEntityName
           oidc:
             production:
               metadataUrl: ${RHSSO76_METADATA_URL}

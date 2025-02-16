@@ -89,17 +89,17 @@ test.describe("Standard authentication providers: Basic authentication", () => {
     );
 
     await uiHelper.verifyAlertErrorMessage(
-      /Login failed; caused by Error: Sign in failed: User not found in the RHDH software catalog/gm,
+      /Login failed; caused by Error: Failed to sign-in, unable to resolve user identity./gm,
     );
   });
 
-  test("3. Set dangerouslyAllowSignInWithoutUserInCatalog to false. Login should now work but no User Entities are in the Catalog", async () => {
+  test("3. Set dangerouslyAllowSignInWithoutUserInCatalog to true. Login should now work but no User Entities are in the Catalog", async () => {
     // Set upstream.backstage.appConfig.dangerouslyAllowSignInWithoutUserInCatalog = true
     // The Microsoft login should now be successful
 
     test.setTimeout(300 * 1000);
     LOGGER.info(
-      "Execute testcase: Set dangerouslyAllowSignInWithoutUserInCatalog to false. Login should now work but no User Entities are in the Catalog",
+      "Execute testcase: Set dangerouslyAllowSignInWithoutUserInCatalog to true. Login should now work but no User Entities are in the Catalog",
     );
 
     await HelmActions.upgradeHelmChartWithWait(
@@ -113,7 +113,8 @@ test.describe("Standard authentication providers: Basic authentication", () => {
       [
         "--set upstream.backstage.appConfig.auth.environment=development",
         "--set upstream.backstage.appConfig.signInPage=microsoft",
-        "--set upstream.backstage.appConfig.dangerouslyAllowSignInWithoutUserInCatalog=true",
+        "--set upstream.backstage.appConfig.auth.providers.microsoft.development.signIn.resolvers[0].resolver=userIdMatchingUserEntityAnnotation",
+        "--set upstream.backstage.appConfig.auth.providers.microsoft.development.signIn.resolvers[0].dangerouslyAllowSignInWithoutUserInCatalog=true",
         "--set upstream.backstage.appConfig.catalog.providers=null",
         "--set upstream.backstage.appConfig.permission.enabled=false",
       ],
@@ -156,7 +157,8 @@ test.describe("Standard authentication providers: Basic authentication", () => {
       [
         "--set upstream.backstage.appConfig.auth.environment=production",
         "--set upstream.backstage.appConfig.signInPage=microsoft",
-        "--set upstream.backstage.appConfig.dangerouslyAllowSignInWithoutUserInCatalog=true",
+        "--set upstream.backstage.appConfig.auth.providers.microsoft.production.signIn.resolvers[0].resolver=userIdMatchingUserEntityAnnotation",
+        "--set upstream.backstage.appConfig.auth.providers.microsoft.production.signIn.resolvers[0].dangerouslyAllowSignInWithoutUserInCatalog=true",
         "--set upstream.backstage.appConfig.catalog.providers=null",
         "--set upstream.backstage.appConfig.permission.enabled=false",
       ],
