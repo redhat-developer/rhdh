@@ -238,7 +238,7 @@ test.describe.serial("Test RBAC", () => {
       ).toBeEmpty();
       await uiHelper.verifyHeading("No users and groups selected");
       await uiHelper.clickButton("Cancel");
-      await expect(page.getByText("Exit role editing?")).toBeVisible();
+      await expect(page.getByText("Exit role creation?")).toBeVisible();
       await uiHelper.clickButton("Discard");
       await expect(page.getByRole("alert")).toHaveCount(0);
 
