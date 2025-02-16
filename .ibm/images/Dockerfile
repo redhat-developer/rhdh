@@ -7,6 +7,7 @@ ENV CI=1 \
     _X11_NO_MITSHM=1 \
     _MITSHM=0 \
     NODE_PATH=/usr/local/lib/node_modules \
+    NODE_VERSION="20.18.2" \
     HELM_VERSION="v3.12.3" \
     OC_VERSION="4.14.3" \
     OCM_VERSION="0.1.76" \
@@ -14,6 +15,15 @@ ENV CI=1 \
     GO_SHA256="464b6b66591f6cf055bc5df90a9750bf5fbc9d038722bb84a9d56a2bea974be6" \
     GOPATH="/go" \
     PATH="$GOPATH/bin:/usr/local/go/bin:$PATH"
+
+    RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+    ENV NVM_DIR=/root/.nvm
+    RUN . "$NVM_DIR/nvm.sh" && nvm install ${NODE_VERSION}
+    RUN . "$NVM_DIR/nvm.sh" && nvm use v${NODE_VERSION}
+    RUN . "$NVM_DIR/nvm.sh" && nvm alias default v${NODE_VERSION}
+    ENV PATH="/root/.nvm/versions/node/v${NODE_VERSION}/bin/:${PATH}"
+    RUN node --version
+    RUN npm --version
 
 # Install essential dependencies and Node.js tools
 RUN apt-get update && apt-get install -y --no-install-recommends \
