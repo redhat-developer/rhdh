@@ -8,8 +8,8 @@ import {
   createServiceRef,
 } from '@backstage/backend-plugin-api';
 
-import { PluginIdProvider } from '@backstage-community/plugin-rbac-backend';
 import { pluginIdProviderExtensionPoint } from '@backstage-community/plugin-rbac-node';
+import { PluginIdProvider } from '@oandriie/plugin-rbac-backend';
 
 const pluginIDProviderServiceRef = createServiceRef<PluginIdProvider>({
   id: 'pluginIDProvider',
