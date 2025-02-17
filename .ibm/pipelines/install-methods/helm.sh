@@ -1,3 +1,4 @@
 #!/bin/bash
 
-source ../utils.sh
+# shellcheck source-path=.ibm/pipelines
+source utils.sh
