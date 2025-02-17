@@ -21,9 +21,10 @@ import { CatalogImport } from "../../../support/pages/catalog-import";
     The policies generated from a policy.csv or ConfigMap file cannot be edited or deleted using the Developer Hub Web UI.
     https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.3/html/authorization/managing-authorizations-by-using-the-web-ui#proc-rbac-ui-edit-role_title-authorization
 */
-test.describe.serial("Test RBAC", () => {
-  test.describe
-    .serial("Test RBAC plugin: load permission policies and conditions from files", () => {
+test.describe.configure({ mode: "serial" });
+test.describe("Test RBAC", () => {
+  test.describe("Test RBAC plugin: load permission policies and conditions from files", () => {
+    test.describe.configure({ mode: "serial" });
     test.beforeEach(async ({ page }) => {
       await new Common(page).loginAsKeycloakUser();
       await page.goto("/rbac");
@@ -354,8 +355,8 @@ test.describe.serial("Test RBAC", () => {
     });
   });
 
-  test.describe.serial("Test RBAC API", () => {
-    test.describe.configure({ retries: 0 });
+  test.describe("Test RBAC API", () => {
+    test.describe.configure({ mode: "serial", retries: 0 });
     let common: Common;
     let uiHelper: UIhelper;
     let page: Page;

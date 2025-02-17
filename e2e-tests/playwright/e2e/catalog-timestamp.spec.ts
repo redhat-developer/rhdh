@@ -5,6 +5,7 @@ import { CatalogImport } from "../support/pages/catalog-import";
 import { UI_HELPER_ELEMENTS } from "../support/pageObjects/global-obj";
 
 let page: Page;
+test.describe.configure({ mode: "serial" });
 test.describe("Test timestamp column on Catalog", () => {
   let uiHelper: UIhelper;
   let common: Common;

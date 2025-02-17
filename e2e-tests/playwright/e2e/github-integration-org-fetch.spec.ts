@@ -3,7 +3,8 @@ import { UIhelper } from "../utils/ui-helper";
 import { Common, setupBrowser } from "../utils/common";
 
 let page: Page;
-test.describe.serial("GitHub integration with Org data fetching", () => {
+test.describe.configure({ mode: "serial" });
+test.describe("GitHub integration with Org data fetching", () => {
   let common: Common;
   let uiHelper: UIhelper;
 

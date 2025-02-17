@@ -7,7 +7,8 @@ import { GITHUB_API_ENDPOINTS } from "../utils/api-endpoints";
 
 let page: Page;
 
-test.describe.serial("Link Scaffolded Templates to Catalog Items", () => {
+test.describe.configure({ mode: "serial" });
+test.describe("Link Scaffolded Templates to Catalog Items", () => {
   let uiHelper: UIhelper;
   let common: Common;
   let catalogImport: CatalogImport;
@@ -37,7 +38,7 @@ test.describe.serial("Link Scaffolded Templates to Catalog Items", () => {
     await common.loginAsGuest();
   });
 
-  test("Register an Template", async () => {
+  test("Register a Template", async () => {
     await uiHelper.openSidebar("Catalog");
     await uiHelper.clickButton("Create");
     await uiHelper.clickButton("Register Existing Component");

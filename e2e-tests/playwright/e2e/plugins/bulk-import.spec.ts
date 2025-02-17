@@ -10,7 +10,8 @@ import {
 } from "../../support/testData/bulk-import";
 
 // Pre-req : plugin-bulk-import & plugin-bulk-import-backend-dynamic
-test.describe.serial("Bulk Import plugin", () => {
+test.describe.configure({ mode: "serial" });
+test.describe("Bulk Import plugin", () => {
   test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
   let page: Page;
   let uiHelper: UIhelper;
