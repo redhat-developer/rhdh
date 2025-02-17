@@ -23,6 +23,7 @@ export class RbacPo extends PageObject {
   private addRuleButton: Locator = this.page.getByRole("button", {
     name: "Add rule",
   });
+
   private hasLabel: Locator;
   private label: Locator;
 
@@ -32,6 +33,9 @@ export class RbacPo extends PageObject {
     backstage: "Backstage",
     rhdhqe: "rhdh-qe",
   };
+  private selectPluginsCombobox: Locator = this.page.getByRole("combobox", {
+    name: "Select plugins",
+  });
 
   private stringForRegexUsersAndGroups = (
     numUsers: number,
@@ -156,7 +160,11 @@ export class RbacPo extends PageObject {
   }
 
   public async selectOption(
-    option: "catalog" | "catalog-entity" | "scaffolder" | "scaffolder-template",
+    option:
+      | "catalog"
+      | "catalog.entity.read"
+      | "scaffolder"
+      | "scaffolder-template",
   ) {
     const optionSelector = `li[role="option"]:has-text("${option}")`;
     await this.page.waitForSelector(optionSelector);
@@ -177,6 +185,10 @@ export class RbacPo extends PageObject {
     await this.usersAndGroupsField.fill(userOrRole);
   }
 
+  async selectPermissionCheckbox(name: string) {
+    this.page.getByRole("cell", { name: name }).getByRole("checkbox").click();
+  }
+
   async createRole(
     name: string,
     usersAndGroups: string[],
@@ -187,9 +199,10 @@ export class RbacPo extends PageObject {
     await this.uiHelper.verifyHeading("Create role");
     await this.roleName.fill(name);
     await this.uiHelper.clickButton("Next");
+    await this.usersAndGroupsField.click();
 
     for (const userOrRole of usersAndGroups) {
-      await this.addUsersAndGroups(userOrRole);
+      // await this.addUsersAndGroups(userOrRole);
       await this.page.click(this.selectMember(userOrRole));
     }
 
@@ -204,19 +217,21 @@ export class RbacPo extends PageObject {
     );
 
     await this.next();
-    await this.page.click(this.selectPermissionPolicyPlugin(0));
+    await this.selectPluginsCombobox.click();
     await this.selectOption("catalog");
-    await this.page.click(this.selectPermissionPolicyPermission(0));
-    await this.selectOption("catalog-entity");
+    // await this.page.getByTestId("expand-row-catalog").click();
+    await this.page.getByText("Select...").click();
+    // await this.selectPermissionCheckbox("catalog.entity.read");
 
     if (permissionPolicyType === "none") {
-      await this.page.uncheck(this.selectPolicy(0, 1, "Delete"));
+      await this.selectPermissionCheckbox("catalog.entity.delete");
+      // await this.page.uncheck(this.selectPolicy(0, 1, "Delete"));
       await this.next();
       await this.uiHelper.verifyHeading("Review and create");
       await this.uiHelper.verifyText(
         this.regexpLongUsersAndGroups(numUsers - numGroups, numGroups),
       );
-      await this.verifyPermissionPoliciesHeader(2);
+      await this.verifyPermissionPoliciesHeader(1);
       await this.create();
       await this.page
         .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)

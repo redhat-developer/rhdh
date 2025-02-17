@@ -68,9 +68,18 @@ test.describe.serial("Test RBAC", () => {
         Roles.getPermissionPoliciesListCellsIdentifier();
       await uiHelper.verifyCellsInTable(permissionPoliciesCellsIdentifier);
 
-      await expect(page.getByRole("article")).toContainText("catalog-entity");
-      await expect(page.getByRole("article")).toContainText("Read, Update");
-      await expect(page.getByRole("article")).toContainText("Delete");
+      await expect(
+        page.getByRole("cell", { name: "catalog.entity.read" }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("cell", { name: "catalog.entity.read" }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("cell", { name: "Read, Update" }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("cell", { name: "Delete", exact: true }),
+      ).toBeVisible();
     });
   });
 
@@ -211,6 +220,28 @@ test.describe.serial("Test RBAC", () => {
       const rolesHelper = new Roles(page);
       const uiHelper = new UIhelper(page);
 
+      await uiHelper.clickButton("Create");
+      await uiHelper.verifyHeading("Create role");
+      await page.fill('input[name="name"]', "sample-role-1");
+      await page.fill('textarea[name="description"]', "Test Description data");
+      await uiHelper.clickButton("Next");
+      await page
+        .getByTestId("users-and-groups-text-field")
+        .locator("input")
+        .fill("Guest Use");
+      await page
+        .getByTestId("users-and-groups-text-field")
+        .getByLabel("clear search")
+        .click();
+      expect(
+        await page.getByTestId("users-and-groups-text-field").locator("input"),
+      ).toBeEmpty();
+      await uiHelper.verifyHeading("No users and groups selected");
+      await uiHelper.clickButton("Cancel");
+      await expect(page.getByText("Exit role creation?")).toBeVisible();
+      await uiHelper.clickButton("Discard");
+      await expect(page.getByRole("alert")).toHaveCount(0);
+
       const rbacPo = new RbacPo(page);
       const testUser = "Jonathon Page";
       await rbacPo.createRole("test-role", [
@@ -288,9 +319,7 @@ test.describe.serial("Test RBAC", () => {
         matchNextButton2 = await nextButton2.all();
         attempts++;
       } while (matchNextButton2.length > 1 && attempts < 5);
-      await nextButton2.click({
-        force: true,
-      });
+      await nextButton2.click({ force: true });
       await uiHelper.clickButton("Save");
       await uiHelper.verifyText(
         "Role role:default/test-role1 updated successfully",
@@ -423,10 +452,7 @@ test.describe.serial("Test RBAC", () => {
         name: "role:default/admin",
       };
 
-      const newRole = {
-        memberReferences: members,
-        name: "role:default/test",
-      };
+      const newRole = { memberReferences: members, name: "role:default/test" };
 
       const rolePostResponse = await rbacApi.createRoles(firstRole);
 
