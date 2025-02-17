@@ -1,8 +1,11 @@
 #!/bin/bash
 
-source ../utils.sh
-source ../cluster/gke/gcloud.sh
-source ../cluster/gke/gke-helm-deployment.sh
+# shellcheck source-path=.ibm/pipelines
+source utils.sh
+# shellcheck source-path=.ibm/pipelines
+source cluster/gke/gcloud.sh
+# shellcheck source-path=.ibm/pipelines
+source cluster/gke/gke-helm-deployment.sh
 
 handle_gke_helm() {
   echo "Starting GKE deployment"

@@ -1,8 +1,11 @@
 #!/bin/bash
 
-source ../utils.sh
-source ../cluster/aks/aks-helm-deployment.sh
-source ../cluster/aks/az.sh
+# shellcheck source-path=.ibm/pipelines
+source utils.sh
+# shellcheck source-path=.ibm/pipelines
+source cluster/aks/aks-helm-deployment.sh
+# shellcheck source-path=.ibm/pipelines
+source cluster/aks/az.sh
 
 handle_aks_helm() {
   echo "Starting AKS deployment"
