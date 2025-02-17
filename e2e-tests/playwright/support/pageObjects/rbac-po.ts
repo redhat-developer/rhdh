@@ -215,7 +215,8 @@ export class RbacPo extends PageObject {
     await this.next();
     await this.selectPluginsCombobox.click();
     await this.selectOption("catalog");
-    await this.page.getByTestId("expand-row-catalog").click();
+    // await this.page.getByTestId("expand-row-catalog").click();
+    await this.page.getByText("Select...").click();
     await this.selectOption("catalog.entity.read");
 
     if (permissionPolicyType === "none") {
