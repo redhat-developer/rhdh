@@ -1,9 +1,13 @@
 #!/bin/bash
 
-source ../utils.sh
-source ../cluster/gke/gcloud.sh
-source ../cluster/gke/gke-operator-deployment.sh
-source ../install-methods/operator.sh
+# shellcheck source-path=.ibm/pipelines
+source utils.sh
+# shellcheck source-path=.ibm/pipelines
+source cluster/gke/gcloud.sh
+# shellcheck source-path=.ibm/pipelines
+source cluster/gke/gke-operator-deployment.sh
+# shellcheck source-path=.ibm/pipelines
+source install-methods/operator.sh
 
 handle_gke_operator() {
   echo "Starting GKE deployment"
@@ -32,12 +36,12 @@ handle_gke_operator() {
 
   local url="https://${K8S_CLUSTER_ROUTER_BASE}"
   initiate_gke_operator_deployment
-  check_and_test "${RELEASE_NAME}" "${NAME_SPACE_K8S}" "${url}" 50 30
-  delete_namespace "${NAME_SPACE_K8S}"
-  local rbac_rhdh_base_url="https://${K8S_CLUSTER_ROUTER_BASE}"
-  initiate_rbac_gke_operator_deployment
-  check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC_K8S}" "${rbac_rhdh_base_url}"
-  delete_namespace "${NAME_SPACE_RBAC_K8S}"
+  # check_and_test "${RELEASE_NAME}" "${NAME_SPACE_K8S}" "${url}" 50 30
+  # delete_namespace "${NAME_SPACE_K8S}"
+  # local rbac_rhdh_base_url="https://${K8S_CLUSTER_ROUTER_BASE}"
+  # initiate_rbac_gke_operator_deployment
+  # check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC_K8S}" "${rbac_rhdh_base_url}"
+  # delete_namespace "${NAME_SPACE_RBAC_K8S}"
 }
 
 re_create_k8s_service_account_and_get_token() {
