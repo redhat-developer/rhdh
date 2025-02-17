@@ -54,7 +54,7 @@ export type ResolvedDynamicRoute = DynamicModuleEntry & {
   };
 };
 
-type ScalprumMountPointConfigBase = {
+export type ScalprumMountPointConfigBase = {
   layout?: Record<string, string>;
   props?: Record<string, any>;
 };

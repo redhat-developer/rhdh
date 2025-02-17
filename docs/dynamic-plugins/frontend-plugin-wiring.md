@@ -386,8 +386,7 @@ dynamicPlugins:
         - mountPoint: application/header # mount point for a global header
           importName: <header_component> # e.g., `GlobalHeader` for `red-hat-developer-hub.backstage-plugin-global-header`
           config:
-            layout:
-              position: above-main-content # options: `above-main-content` or `above-sidebar`
+            position: above-main-content # options: `above-main-content` or `above-sidebar`
 ```
 
 Each global header entry requires the following attributes:
