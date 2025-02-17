@@ -1,6 +1,6 @@
 import { test, Page, expect } from "@playwright/test";
 import { Common, setupBrowser } from "../../utils/common";
-import { UIhelper } from "../../utils/ui-helper";
+import { UiHelper } from "../../utils/ui-helper";
 import UserRepresentation from "@keycloak/keycloak-admin-client/lib/defs/userRepresentation";
 import * as constants from "../../utils/authenticationProviders/constants";
 import { LOGGER } from "../../utils/logger";
@@ -27,7 +27,7 @@ test.describe("Standard authentication providers: Micorsoft Azure EntraID", () =
   test.use({ baseURL: constants.AUTH_PROVIDERS_BASE_URL });
   let common: Common;
   let context: BrowserContext;
-  let uiHelper: UIhelper;
+  let uiHelper: UiHelper;
   let usersCreated: Map<string, UserRepresentation>;
   let groupsCreated: Map<string, GroupRepresentation>;
   const syncTime = 60;
@@ -42,7 +42,7 @@ test.describe("Standard authentication providers: Micorsoft Azure EntraID", () =
     page = browserSetup.page;
     context = browserSetup.context;
     common = new Common(page);
-    uiHelper = new UIhelper(page);
+    uiHelper = new UiHelper(page);
     expect(process.env.BASE_URL).not.toBeNull();
     expect(constants.AUTH_PROVIDERS_BASE_URL).not.toBeNull();
     expect(constants.AUTH_PROVIDERS_NAMESPACE).not.toBeNull();
