@@ -264,7 +264,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
         <SidebarPage>
           <ApplicationHeaders position="above-main-content" />
           <Sidebar>
-            <SidebarLogo />
+            {showLogo && <SidebarLogo />}
             {showSearch ? (
               <>
                 <SidebarGroup label="Search" icon={<SearchIcon />} to="/search">
