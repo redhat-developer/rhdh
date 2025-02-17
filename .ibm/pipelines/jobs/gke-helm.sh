@@ -1,15 +1,14 @@
 #!/bin/bash
 
 # shellcheck source-path=.ibm/pipelines
-source utils.sh
+source "$DIR"/utils.sh
 # shellcheck source-path=.ibm/pipelines
-source cluster/gke/gcloud.sh
+source "$DIR"/cluster/gke/gcloud.sh
 # shellcheck source-path=.ibm/pipelines
-source cluster/gke/gke-helm-deployment.sh
+source "$DIR"/cluster/gke/gke-helm-deployment.sh
 
 handle_gke_helm() {
   echo "Starting GKE deployment"
-  for file in ${DIR}/cluster/gke/*.sh; do source $file; done
 
   K8S_CLUSTER_ROUTER_BASE=$GKE_INSTANCE_DOMAIN_NAME
   NAME_SPACE_K8S="showcase-k8s-ci-nightly"

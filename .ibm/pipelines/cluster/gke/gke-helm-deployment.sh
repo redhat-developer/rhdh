@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # shellcheck source-path=.ibm/pipelines
-source utils.sh
+source "$DIR"/utils.sh
 # shellcheck source-path=.ibm/pipelines
-source cluster/gke/gcloud.sh
+source "$DIR"/cluster/gke/gcloud.sh
 
 initiate_gke_helm_deployment() {
   gcloud_ssl_cert_create $GKE_CERT_NAME $GKE_INSTANCE_DOMAIN_NAME $GOOGLE_CLOUD_PROJECT

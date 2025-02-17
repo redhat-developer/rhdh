@@ -1,13 +1,13 @@
 #!/bin/bash
 
 # shellcheck source-path=.ibm/pipelines
-source utils.sh
+source "$DIR"/utils.sh
 
 install_rhdh_operator() {
   local dir=$1
   local namespace=$2
 
-  configure_namespace $namespace
+  configure_namespace "$namespace"
 
   if [[ "${IS_OPENSHIFT}" = "false" ]]; then
     setup_image_pull_secret "rhdh-operator" "rh-pull-secret" "${REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON}"
@@ -41,7 +41,7 @@ deploy_rhdh_operator() {
   local namespace=$1
   local backstage_crd_path=$2
 
-  wait_for_backstage_crd $namespace
+  wait_for_backstage_crd "$namespace"
 
   if [[ "${IS_OPENSHIFT}" = "true" ]]; then
     oc apply -f "$backstage_crd_path" -n "${namespace}"
