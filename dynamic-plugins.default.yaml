@@ -528,84 +528,63 @@ plugins:
     pluginConfig:
       dynamicPlugins:
         frontend:
+      default.main-menu-items:
+        menuItems:
+          default.create:
+            title: ''
           red-hat-developer-hub.backstage-plugin-global-header:
-            mountPoints:
-              - mountPoint: application/header
-                importName: GlobalHeader
-                config:
-                  position: above-main-content # above-main-content | above-sidebar
-              - mountPoint: global.header/component
-                importName: SearchComponent
-                config:
-                  type: search
-                  slot: header-start
-                  priority: 100
-              - mountPoint: global.header/component
-                importName: HeaderIconButton
-                config:
-                  type: icon_button
-                  slot: header-start
-                  priority: 90
-                  props:
-                    icon: add
-                    tooltip: Create...
-                    to: create
-              # - mountPoint: global.header/component
-              #   importName: CreateDropdown
-              #   config:
-              #     type: dropdown_button
-              #     key: create
-              #     slot: header-start
-              #     priority: 90
-              # - mountPoint: global.header/create
-              #   importName: SoftwareTemplatesSection
-              #   config:
-              #     type: list
-              #     priority: 10
-              # - mountPoint: global.header/create
-              #   importName: RegisterAComponentSection
-              #   config:
-              #     type: link
-              - mountPoint: global.header/component
-                importName: HeaderIconButton
-                config:
-                  type: icon_button
-                  slot: header-start
-                  priority: 80
-                  props:
-                    icon: support
-                    tooltip: Support (external site)
-              - mountPoint: global.header/component
-                importName: HeaderIconButton
-                config:
-                  type: icon_button
-                  slot: header-start
-                  priority: 70
-                  props:
-                    icon: notifications
-                    tooltip: Notifications
-                    to: /notifications
-              - mountPoint: global.header/component
-                importName: ProfileDropdown
-                config:
-                  type: dropdown_button
-                  key: profile
-                  slot: header-end
-                  priority: 0
-              - mountPoint: global.header/profile
-                importName: HeaderLink
-                config:
-                  type: link
-                  priority: 10
-                  props:
-                    title: Settings
-                    link: /settings
-                    icon: manageAccounts
-              - mountPoint: global.header/profile
-                importName: LogoutButton
-                config:
-                  type: logout
-                  priority: 0
+      mountPoints:
+        - mountPoint: application/header
+          importName: GlobalHeader
+          config:
+            position: above-main-content # above-main-content | below-main-content
+        - mountPoint: global.header/component
+          importName: SearchComponent
+          config:
+            priority: 100
+        - mountPoint: global.header/component
+          importName: Spacer
+          config:
+            priority: 99
+            props:
+              growFactor: 0
+        - mountPoint: global.header/component
+          importName: HeaderIconButton
+          config:
+            priority: 90
+            props:
+              title: Create...
+              icon: add
+              to: create
+        - mountPoint: global.header/component
+          importName: SupportButton
+          config:
+            priority: 80
+        - mountPoint: global.header/component
+          importName: NotificationButton
+          config:
+            priority: 70
+        - mountPoint: global.header/component
+          importName: Divider
+          config:
+            priority: 50
+        - mountPoint: global.header/component
+          importName: ProfileDropdown
+          config:
+            priority: 10
+        - mountPoint: global.header/profile
+          importName: MenuItemLink
+          config:
+            priority: 100
+            props:
+              title: Settings
+              link: /settings
+              icon: manageAccounts
+        - mountPoint: global.header/profile
+          importName: LogoutButton
+          config:
+            priority: 10
+
 
   # Group: Global floating action button
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-floating-action-button
