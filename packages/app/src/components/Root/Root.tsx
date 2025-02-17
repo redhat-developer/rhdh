@@ -28,7 +28,9 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import { makeStyles } from 'tss-react/mui';
 
-import DynamicRootContext, { ResolvedMenuItem } from '../DynamicRoot/DynamicRootContext';
+import DynamicRootContext, {
+  ResolvedMenuItem,
+} from '../DynamicRoot/DynamicRootContext';
 import { ApplicationHeaders } from './ApplicationHeaders';
 import { MenuIcon } from './MenuIcon';
 import { SidebarLogo } from './SidebarLogo';
