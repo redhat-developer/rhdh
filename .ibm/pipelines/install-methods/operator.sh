@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# shellcheck source-path=.ibm/pipelines
+# shellcheck source=.ibm/pipelines/utils.sh
 source "$DIR"/utils.sh
 
 install_rhdh_operator() {

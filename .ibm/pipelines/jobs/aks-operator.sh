@@ -1,4 +1,4 @@
 #!/bin/bash
 
-# shellcheck source-path=.ibm/pipelines
+# shellcheck source=.ibm/pipelines/install-methods/operator.sh
 source "$DIR"/install-methods/operator.sh
