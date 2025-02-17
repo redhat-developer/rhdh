@@ -25,59 +25,53 @@ test.describe("Audit Log check for Catalog Plugin", () => {
     await uiHelper.openSidebar("Create");
   });
 
-  test.fixme(
-    "Should fetch logs for ScaffolderParameterSchemaFetch event and validate log structure and values",
-    async ({ baseURL }) => {
-      await uiHelper.clickButton("Register Existing Component");
-      await catalogImport.registerExistingComponent(template, false);
-      await uiHelper.openSidebar("Create");
-      await common.waitForLoad();
-      await uiHelper.searchInputAriaLabel("Hello World 2");
-      await uiHelper.pressTab();
-      await uiHelper.clickButton("Choose");
+  test("Should fetch logs for ScaffolderParameterSchemaFetch event and validate log structure and values", async ({
+    baseURL,
+  }) => {
+    await uiHelper.clickButton("Register Existing Component");
+    await catalogImport.registerExistingComponent(template, false);
+    await uiHelper.openSidebar("Create");
+    await common.waitForLoad();
+    await uiHelper.clickBtnInCard("Hello World 2", "Choose");
+    await LogUtils.validateLogEvent(
+      "ScaffolderParameterSchemaFetch",
+      "user:development/guest requested the parameter schema for template:default/hello-world-2",
+      "GET",
+      "/api/scaffolder/v2/templates/default/template/hello-world-2/parameter-schema",
+      baseURL!,
+      "scaffolder",
+    );
+  });
 
-      await LogUtils.validateLogEvent(
-        "ScaffolderParameterSchemaFetch",
-        "user:development/guest requested the parameter schema for template:default/hello-world-2",
-        "GET",
-        "/api/scaffolder/v2/templates/default/template/hello-world-2/parameter-schema",
-        baseURL!,
-        "scaffolder",
-      );
-    },
-  );
+  test("Should fetch logs for ScaffolderInstalledActionsFetch event and validate log structure and values", async ({
+    baseURL,
+  }) => {
+    await uiHelper.clickById("long-menu");
+    await uiHelper.clickSpanByText("Installed Actions");
 
-  test.fixme(
-    "Should fetch logs for ScaffolderInstalledActionsFetch event and validate log structure and values",
-    async ({ baseURL }) => {
-      await uiHelper.clickById("long-menu");
-      await uiHelper.clickSpanByText("Installed Actions");
+    await LogUtils.validateLogEvent(
+      "ScaffolderInstalledActionsFetch",
+      "user:development/guest requested the list of installed actions",
+      "GET",
+      "/api/scaffolder/v2/actions",
+      baseURL!,
+      "scaffolder",
+    );
+  });
 
-      await LogUtils.validateLogEvent(
-        "ScaffolderInstalledActionsFetch",
-        "user:development/guest requested the list of installed actions",
-        "GET",
-        "/api/scaffolder/v2/actions",
-        baseURL!,
-        "scaffolder",
-      );
-    },
-  );
+  test("Should fetch logs for ScaffolderTaskListFetch event and validate log structure and values", async ({
+    baseURL,
+  }) => {
+    await uiHelper.clickById("long-menu");
+    await uiHelper.clickSpanByText("Task List");
 
-  test.fixme(
-    "Should fetch logs for ScaffolderTaskListFetch event and validate log structure and values",
-    async ({ baseURL }) => {
-      await uiHelper.clickById("long-menu");
-      await uiHelper.clickSpanByText("Task List");
-
-      await LogUtils.validateLogEvent(
-        "ScaffolderTaskListFetch",
-        "user:development/guest requested for the list of scaffolder tasks",
-        "GET",
-        "/api/scaffolder/v2/tasks?createdBy=user%3Adevelopment%2Fguest",
-        baseURL!,
-        "scaffolder",
-      );
-    },
-  );
+    await LogUtils.validateLogEvent(
+      "ScaffolderTaskListFetch",
+      "user:development/guest requested for the list of scaffolder tasks",
+      "GET",
+      "/api/scaffolder/v2/tasks?createdBy=user%3Adevelopment%2Fguest",
+      baseURL!,
+      "scaffolder",
+    );
+  });
 });
