@@ -195,6 +195,7 @@ export class RbacPo extends PageObject {
     await this.uiHelper.verifyHeading("Create role");
     await this.roleName.fill(name);
     await this.uiHelper.clickButton("Next");
+    await this.usersAndGroupsField.click();
 
     for (const userOrRole of usersAndGroups) {
       // await this.addUsersAndGroups(userOrRole);
