@@ -1,6 +1,7 @@
 #!/bin/bash
 
-source ../utils.sh
+# shellcheck source-path=.ibm/pipelines
+source utils.sh
 
 install_rhdh_operator() {
   local dir=$1
