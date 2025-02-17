@@ -1,6 +1,6 @@
 {
   "name": "red-hat-developer-hub-backstage-plugin-catalog-backend-module-marketplace",
-  "version": "0.0.2",
+  "version": "0.0.10",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "license": "Apache-2.0",
@@ -23,11 +23,11 @@
     "test": "backstage-cli package test --passWithNoTests --coverage",
     "clean": "backstage-cli package clean",
     "clean-dynamic-sources": "yarn clean && rm -Rf node_modules",
-    "export-dynamic": "janus-cli package export-dynamic-plugin --embed-package @red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace",
+    "export-dynamic": "janus-cli package export-dynamic-plugin --embed-package @red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace --shared-package !@backstage/backend-common --shared-package !@backstage/backend-common --shared-package !@backstage/backend-dev-utils --shared-package !@backstage/backend-plugin-api --shared-package !@backstage/catalog-client --shared-package !@backstage/catalog-model --shared-package !@backstage/cli-common --shared-package !@backstage/config-loader --shared-package !@backstage/config --shared-package !@backstage/errors --shared-package !@backstage/integration-aws-node --shared-package !@backstage/integration --shared-package !@backstage/plugin-auth-node --shared-package !@backstage/plugin-permission-common --shared-package !@backstage/types --suppress-native-package cpu-features",
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
-    "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace": "0.0.2"
+    "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace": "0.0.10"
   },
   "devDependencies": {
     "@backstage/cli": "0.29.6",
