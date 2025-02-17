@@ -221,6 +221,7 @@ export class RbacPo extends PageObject {
     await this.selectOption("catalog");
     // await this.page.getByTestId("expand-row-catalog").click();
     await this.page.getByText("Select...").click();
+    await this.selectPermissionCheckbox("catalog.entity.read");
 
     if (permissionPolicyType === "none") {
       await this.selectPermissionCheckbox("catalog.entity.delete");
