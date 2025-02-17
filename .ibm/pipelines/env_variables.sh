@@ -22,6 +22,7 @@ NAME_SPACE="${NAME_SPACE:-showcase}"
 NAME_SPACE_RBAC="${NAME_SPACE_RBAC:-showcase-rbac}"
 NAME_SPACE_RUNTIME="${NAME_SPACE_RUNTIME:-showcase-runtime}"
 NAME_SPACE_POSTGRES_DB="${NAME_SPACE_POSTGRES_DB:-postgress-external-db}"
+NAME_SPACE_SANITY_PLUGINS_CHECK="showcase-sanity-plugins"
 OPERATOR_MANAGER='rhdh-operator'
 CHART_VERSION="2.15.2" # Fixed version should be used for release branches.
 GITHUB_APP_APP_ID=$(cat /tmp/secrets/GITHUB_APP_3_APP_ID)
