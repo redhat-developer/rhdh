@@ -360,6 +360,23 @@ uninstall_helmchart() {
   fi
 }
 
+local_install_middleware_plugins(){
+  initial_dir=$(pwd)
+  git clone https://github.com/gashcrumb/dynamic-plugins-root-http-middleware.git "${DIR}/middleware"
+  (
+    cd "${DIR}/middleware"
+    echo "Running yarn install..."
+    yarn install
+    echo "Running yarn tsc..."
+    yarn tsc
+    echo "Running yarn build..."
+    yarn build
+    echo "Running yarn export-local..."
+    yarn export-local
+  )
+  cd "$initial_dir"
+}
+
 configure_namespace() {
   local project=$1
   echo "Deleting and recreating namespace: $project"
@@ -469,8 +486,8 @@ apply_yaml_files() {
     else
       create_app_config_map "$config_file" "$project"
     fi
-    oc create configmap dynamic-homepage-and-sidebar-config \
-      --from-file="dynamic-homepage-and-sidebar-config.yaml"="$dir/resources/config_map/dynamic-homepage-and-sidebar-config.yaml" \
+    oc create configmap dynamic-plugins-config \
+      --from-file="dynamic-plugins-config.yaml"="$dir/resources/config_map/dynamic-plugins-config.yaml" \
       --namespace="${project}" \
       --dry-run=client -o yaml | oc apply -f -
 
@@ -737,6 +754,7 @@ delete_tekton_pipelines() {
 }
 
 cluster_setup() {
+  local_install_middleware_plugins
   install_pipelines_operator
   install_acm_operator
   install_crunchy_postgres_operator
