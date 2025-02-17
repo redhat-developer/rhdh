@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# shellcheck source-path=.ibm/pipelines
+# shellcheck source=.ibm/pipelines/utils.sh
 source "$DIR"/utils.sh
-# shellcheck source-path=.ibm/pipelines
+# shellcheck source=.ibm/pipelines/cluster/gke/gcloud.sh
 source "$DIR"/cluster/gke/gcloud.sh
-# shellcheck source-path=.ibm/pipelines
+# shellcheck source=.ibm/pipelines/cluster/gke/gke-helm-deployment.sh
 source "$DIR"/cluster/gke/gke-helm-deployment.sh
 
 handle_gke_helm() {
