@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # shellcheck source-path=.ibm/pipelines
-source utils.sh
+source "$DIR"/utils.sh
 
 initiate_aks_helm_deployment() {
   delete_namespace "${NAME_SPACE_RBAC_K8S}"

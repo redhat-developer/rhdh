@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # shellcheck source-path=.ibm/pipelines
-source utils.sh
+source "$DIR"/utils.sh
 # shellcheck source-path=.ibm/pipelines
-source install-methods/operator.sh
+source "$DIR"/install-methods/operator.sh
 
 initiate_operator_deployments() {
   configure_namespace "${OPERATOR_MANAGER}"
