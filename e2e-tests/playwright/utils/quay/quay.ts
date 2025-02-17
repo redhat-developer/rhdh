@@ -31,7 +31,7 @@ export class ImageRegistry {
     const securityScan = ["Critical", "High", "Medium", "Low", "Unknown"].map(
       (i) => `(${i}:\\s\\d+[^\\w]*)`,
     );
-    return new RegExp(`^(Passed|unsupported|(?:${securityScan.join("|")})+)$`);
+    return new RegExp(`^(Passed|unsupported|Queued|(?:${securityScan.join("|")})+)$`);
   }
 
   static getAllScanColumnsText() {
