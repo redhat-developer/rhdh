@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# shellcheck source-path=.ibm/pipelines
+# shellcheck source=.ibm/pipelines/utils.sh
 source "$DIR"/utils.sh
-# shellcheck source-path=.ibm/pipelines
+# shellcheck source=.ibm/pipelines/cluster/aks/aks-helm-deployment.sh
 source "$DIR"/cluster/aks/aks-helm-deployment.sh
-# shellcheck source-path=.ibm/pipelines
+# shellcheck source=.ibm/pipelines/cluster/aks/az.sh
 source "$DIR"/cluster/aks/az.sh
 
 handle_aks_helm() {
