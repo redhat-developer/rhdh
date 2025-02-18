@@ -120,7 +120,7 @@ for (const version of ["RHBK"]) {
         constants.RHSSO76_USERS["user_1"].username,
         constants.RHSSO76_DEFAULT_PASSWORD,
       );
-      await page.goto("/settings");
+      await uiHelper.goToSettingsPage();
       await uiHelper.verifyHeading(
         await rhssoHelper.getRHSSOUserDisplayName(
           constants.RHSSO76_USERS["user_1"],
@@ -184,7 +184,7 @@ for (const version of ["RHBK"]) {
         constants.RHSSO76_USERS["user_1"].username,
         constants.RHSSO76_DEFAULT_PASSWORD,
       );
-      await page.goto("/settings");
+      await uiHelper.goToSettingsPage();
       await uiHelper.verifyHeading(
         await rhssoHelper.getRHSSOUserDisplayName(
           constants.RHSSO76_USERS["user_1"],
@@ -241,7 +241,7 @@ for (const version of ["RHBK"]) {
         constants.RHSSO76_USERS["user_1"].username,
         constants.RHSSO76_DEFAULT_PASSWORD,
       );
-      await page.goto("/settings");
+      await uiHelper.goToSettingsPage();
       await uiHelper.verifyHeading(
         rhssoHelper.getRHSSOUserDisplayName(constants.RHSSO76_USERS["user_1"]),
       );
@@ -252,7 +252,7 @@ for (const version of ["RHBK"]) {
         constants.RHSSO76_USERS["jenny_doe"].username,
         constants.RHSSO76_DEFAULT_PASSWORD,
       );
-      await page.goto("/settings");
+      await uiHelper.goToSettingsPage();
       await uiHelper.verifyHeading(
         rhssoHelper.getRHSSOUserDisplayName(
           constants.RHSSO76_USERS["jenny_doe"],
@@ -265,7 +265,7 @@ for (const version of ["RHBK"]) {
         constants.RHSSO76_USERS["user_2"].username,
         constants.RHSSO76_DEFAULT_PASSWORD,
       );
-      await page.goto("/settings");
+      await uiHelper.goToSettingsPage();
       await uiHelper.verifyHeading(
         rhssoHelper.getRHSSOUserDisplayName(constants.RHSSO76_USERS["user_2"]),
       );
@@ -445,7 +445,8 @@ for (const version of ["RHBK"]) {
         expect(statusBefore).toBe(403);
 
         // logout
-        await page.goto("/settings");
+        await uiHelper.clickByDataTestId("KeyboardArrowDownOutlinedIcon");
+        await uiHelper.clickLinkByHref("/settings");
         await common.signOut();
       }).toPass({
         intervals: [1_000, 2_000, 5_000],
@@ -499,7 +500,7 @@ for (const version of ["RHBK"]) {
         timeout: 60 * 1000,
       });
 
-      await page.goto("/settings");
+      await uiHelper.goToSettingsPage();
       await common.signOut();
     });
 
@@ -518,7 +519,7 @@ for (const version of ["RHBK"]) {
         constants.RHSSO76_DEFAULT_PASSWORD,
       );
 
-      await page.goto("/settings");
+      await uiHelper.goToSettingsPage();
       await common.signOut();
 
       // group_4 should exist in rhdh
@@ -572,7 +573,7 @@ for (const version of ["RHBK"]) {
         timeout: 30 * 1000,
       });
 
-      await page.goto("/settings");
+      await uiHelper.goToSettingsPage();
       await common.signOut();
     });
 
@@ -626,7 +627,7 @@ for (const version of ["RHBK"]) {
         constants.RHSSO76_DEFAULT_PASSWORD,
       );
 
-      await page.goto("/settings");
+      await uiHelper.goToSettingsPage();
       await common.signOut();
     });
 
@@ -722,7 +723,7 @@ for (const version of ["RHBK"]) {
         constants.RHSSO76_GROUPS["group_2"].name + "_renamed",
       );
 
-      await page.goto("/settings");
+      await uiHelper.goToSettingsPage();
       // user should see the entities again
       await expect(async () => {
         await page.reload();
@@ -742,7 +743,7 @@ for (const version of ["RHBK"]) {
         constants.RHSSO76_GROUPS["group_2"].name + "_renamed",
       );
 
-      await page.goto("/settings");
+      await uiHelper.goToSettingsPage();
       await common.signOut();
     });
 

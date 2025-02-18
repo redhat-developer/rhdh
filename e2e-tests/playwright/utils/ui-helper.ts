@@ -95,6 +95,29 @@ export class UIhelper {
     await this.page.locator(`a`).filter({ hasText: linkText }).first().click();
   }
 
+  async clickLinkByAriaLabel(ariaLabel: string) {
+    await this.page
+      .locator("a")
+      .getByLabel(ariaLabel, { exact: true })
+      .first()
+      .click();
+  }
+
+  async clickLinkByHref(href: string) {
+    const link = this.page.locator(`a[href="${href}"]`);
+    await link.waitFor({ state: "visible" });
+    await link.dispatchEvent("click");
+  }
+
+  async clickPbyText(text: string) {
+    await this.page.locator(`p`).getByText(text).first().click();
+  }
+
+  async goToSettingsPage() {
+    await this.clickByDataTestId("KeyboardArrowDownOutlinedIcon");
+    await this.clickLinkByHref("/settings");
+  }
+
   async verifyLink(
     linkText: string,
     options: {

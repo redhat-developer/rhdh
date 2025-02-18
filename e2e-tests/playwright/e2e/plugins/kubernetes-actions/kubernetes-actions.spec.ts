@@ -18,7 +18,7 @@ test.describe("Test Kubernetes Actions plugin", () => {
     kubeClient = new KubeClient();
 
     await common.loginAsGuest();
-    await uiHelper.openSidebar("Create...");
+    await uiHelper.clickLinkByAriaLabel("Create...");
   });
 
   test("Creates kubernetes namespace", async () => {

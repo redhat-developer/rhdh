@@ -50,8 +50,7 @@ test.describe("Standard authentication providers: Basic authentication", () => {
 
     // Guest login should work
     await common.loginAsGuest();
-    await page.goto("/");
-    await page.goto("/settings");
+    await uiHelper.goToSettingsPage();
     await common.signOut();
   });
 
@@ -123,7 +122,7 @@ test.describe("Standard authentication providers: Basic authentication", () => {
       constants.AZURE_LOGIN_PASSWORD,
     );
 
-    await page.goto("/settings");
+    await uiHelper.goToSettingsPage();
     await uiHelper.verifyParagraph(constants.AZURE_LOGIN_USERNAME);
 
     // check no entities are in the catalog
@@ -131,7 +130,7 @@ test.describe("Standard authentication providers: Basic authentication", () => {
     api.UseStaticToken(constants.STATIC_API_TOKEN);
     const catalogUsers = await api.getAllCatalogUsersFromAPI();
     expect(catalogUsers.totalItems).toBe(0);
-    await page.goto("/settings");
+    await uiHelper.goToSettingsPage();
     await common.signOut();
   });
 
