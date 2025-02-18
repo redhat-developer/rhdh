@@ -32,6 +32,8 @@ elif [[ "$JOB_NAME" == *gke* ]]; then
   for file in ${DIR}/cluster/gke/*.sh; do source $file; done
 fi
 
+export TAG_NAME="1.4-153 "
+
 set_cluster_info() {
   export K8S_CLUSTER_URL=$(cat /tmp/secrets/RHDH_PR_OS_CLUSTER_URL)
   export K8S_CLUSTER_TOKEN=$(cat /tmp/secrets/RHDH_PR_OS_CLUSTER_TOKEN)
