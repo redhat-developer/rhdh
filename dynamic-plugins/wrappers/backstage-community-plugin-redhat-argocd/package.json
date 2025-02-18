@@ -39,7 +39,7 @@
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
-    "@backstage-community/plugin-redhat-argocd": "1.11.0",
+    "@backstage-community/plugin-redhat-argocd": "1.14.0",
     "@mui/material": "5.16.14"
   },
   "devDependencies": {
