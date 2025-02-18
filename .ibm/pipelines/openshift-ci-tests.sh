@@ -8,22 +8,22 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 secret_name="rhdh-k8s-plugin-secret"
 OVERALL_RESULT=0
 
-cleanup() {
-  echo "Cleaning up before exiting"
-  if [[ "$JOB_NAME" == *aks* ]]; then
-    az_aks_stop "${AKS_NIGHTLY_CLUSTER_NAME}" "${AKS_NIGHTLY_CLUSTER_RESOURCEGROUP}"
-  else
-    # Cleanup namespaces after main branch PR e2e tests execution.
-    delete_namespace "${NAME_SPACE}"
-    delete_namespace "${NAME_SPACE_POSTGRES_DB}"
-    delete_namespace "${NAME_SPACE_RBAC}"
-    delete_namespace "${NAME_SPACE_RDS}"
-    delete_namespace "${NAME_SPACE_RUNTIME}"
-  fi
-  rm -rf ~/tmpbin
-}
-
-trap cleanup EXIT INT ERR
+#cleanup() {
+#  echo "Cleaning up before exiting"
+#  if [[ "$JOB_NAME" == *aks* ]]; then
+#    az_aks_stop "${AKS_NIGHTLY_CLUSTER_NAME}" "${AKS_NIGHTLY_CLUSTER_RESOURCEGROUP}"
+#  else
+#    # Cleanup namespaces after main branch PR e2e tests execution.
+#    delete_namespace "${NAME_SPACE}"
+#    delete_namespace "${NAME_SPACE_POSTGRES_DB}"
+#    delete_namespace "${NAME_SPACE_RBAC}"
+#    delete_namespace "${NAME_SPACE_RDS}"
+#    delete_namespace "${NAME_SPACE_RUNTIME}"
+#  fi
+#  rm -rf ~/tmpbin
+#}
+#
+#trap cleanup EXIT INT ERR
 
 source "${DIR}/utils.sh"
 if [[ "$JOB_NAME" == *aks* ]]; then
