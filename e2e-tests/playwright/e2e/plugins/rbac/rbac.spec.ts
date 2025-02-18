@@ -337,13 +337,13 @@ test.describe.serial("Test RBAC", () => {
       await rbacPo.selectOption("scaffolder");
       // await page.click(rbacPo.selectPermissionPolicyPermission(1));
       await page.getByText("Select...").click();
-      await rbacPo.selectOption("scaffolder-template.read");
+      await rbacPo.selectPermissionCheckbox("scaffolder.template.parameter");
       await uiHelper.clickButton("Next");
       await uiHelper.clickButton("Save");
       await uiHelper.verifyText(
         "Role role:default/test1-role updated successfully",
       );
-      await uiHelper.verifyHeading("Permission Policies (3)");
+      await uiHelper.verifyHeading("Permission Policies (2)");
 
       await rolesHelper.deleteRole("role:default/test1-role");
     });

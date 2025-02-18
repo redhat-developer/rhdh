@@ -189,6 +189,14 @@ export class RbacPo extends PageObject {
     this.page.getByRole("cell", { name: name }).getByRole("checkbox").click();
   }
 
+  async verifyPolicyBadge(number: string) {
+    expect(
+      this.page
+        .locator('span[class*="MuiBadge-badge"]')
+        .filter({ hasText: number }),
+    ).toBeVisible();
+  }
+
   async createRole(
     name: string,
     usersAndGroups: string[],
@@ -242,7 +250,11 @@ export class RbacPo extends PageObject {
       await this.uiHelper.verifyHeading("All roles (1)");
     } else if (permissionPolicyType === "anyOf") {
       // Scenario 2: Permission policies using AnyOf
-      await this.configureAccess.click();
+      await this.selectPermissionCheckbox("catalog.entity.read");
+      await this.page
+        .getByRole("row", { name: "catalog.entity.read" })
+        .getByLabel("remove")
+        .click();
       await this.anyOfButton.click();
       await this.clickOpenSidebar();
       await this.isEntityKindButton.click();
@@ -251,19 +263,19 @@ export class RbacPo extends PageObject {
         .getByPlaceholder("string, string")
         .fill("component,template");
       await this.addRuleButton.click();
-      await this.page.getByLabel("Open").nth(3).click();
+      await this.page.getByLabel("Open").nth(2).click();
       await this.hasSpecButton.click();
       await this.key.click();
       await this.key.fill("lifecycle");
       await this.key.press("Tab");
       await this.key.fill("experimental");
       await this.addRuleButton.click();
-      await this.page.getByLabel("Open").nth(4).click();
+      await this.page.getByLabel("Open").nth(3).click();
       await this.hasLabel.click();
       await this.label.click();
       await this.label.fill("partner");
       await this.saveConditions.click();
-      await this.uiHelper.verifyText("Configure access (3 rules)");
+      await this.verifyPolicyBadge("3");
       await this.next();
       await this.uiHelper.verifyHeading("Review and create");
       await this.uiHelper.verifyText(
@@ -277,7 +289,11 @@ export class RbacPo extends PageObject {
       );
     } else if (permissionPolicyType === "not") {
       // Scenario 3: Permission policies using Not
-      await this.configureAccess.click();
+      await this.selectPermissionCheckbox("catalog.entity.read");
+      await this.page
+        .getByRole("row", { name: "catalog.entity.read" })
+        .getByLabel("remove")
+        .click();
       await this.notButton.click();
       await this.clickOpenSidebar();
       await this.hasSpecButton.click();
@@ -286,7 +302,7 @@ export class RbacPo extends PageObject {
       await this.key.press("Tab");
       await this.key.fill("experimental");
       await this.saveConditions.click();
-      await this.uiHelper.verifyText("Configure access (1 rule)");
+      await this.verifyPolicyBadge("1");
       await this.next();
       await this.uiHelper.verifyHeading("Review and create");
       await this.verifyPermissionPoliciesHeader(1);
