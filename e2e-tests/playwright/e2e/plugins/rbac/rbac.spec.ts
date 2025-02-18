@@ -329,13 +329,15 @@ test.describe.serial("Test RBAC", () => {
 
       await page.click(ROLE_OVERVIEW_COMPONENTS.updatePolicies);
       await uiHelper.verifyHeading("Edit Role");
-      await rbacPo.clickAddPermissionPolicy();
-      await page.click(rbacPo.selectPermissionPolicyPlugin(1), {
-        timeout: 10_000,
-      });
+      // await rbacPo.clickAddPermissionPolicy();
+      // await page.click(rbacPo.selectPermissionPolicyPlugin(1), {
+      //   timeout: 10_000,
+      // });
+      await rbacPo.selectPluginsCombobox.click();
       await rbacPo.selectOption("scaffolder");
-      await page.click(rbacPo.selectPermissionPolicyPermission(1));
-      await rbacPo.selectOption("scaffolder-template");
+      // await page.click(rbacPo.selectPermissionPolicyPermission(1));
+      await page.getByTestId("expand-row-scaffolder").click();
+      await rbacPo.selectOption("scaffolder-template.read");
       await uiHelper.clickButton("Next");
       await uiHelper.clickButton("Save");
       await uiHelper.verifyText(
