@@ -39,7 +39,7 @@
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
-    "@backstage-community/plugin-topology": "1.29.7",
+    "@backstage-community/plugin-topology": "1.32.0 ",
     "@mui/material": "5.16.14"
   },
   "devDependencies": {

@@ -28,7 +28,7 @@
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
-    "@backstage-community/plugin-tekton": "3.17.0",
+    "@backstage-community/plugin-tekton": "3.19.0",
     "@mui/material": "5.16.14"
   },
   "devDependencies": {

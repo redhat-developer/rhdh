@@ -28,7 +28,7 @@
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
-    "@backstage-community/plugin-acr": "1.10.0",
+    "@backstage-community/plugin-acr": "1.11.0",
     "@backstage/core-plugin-api": "1.10.3",
     "@mui/icons-material": "5.16.14",
     "@mui/material": "5.16.14"

@@ -29,7 +29,7 @@
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
-    "@backstage-community/plugin-quay": "1.14.4",
+    "@backstage-community/plugin-quay": "1.18.1",
     "@mui/material": "5.16.14"
   },
   "devDependencies": {
