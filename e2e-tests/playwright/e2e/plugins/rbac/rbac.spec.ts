@@ -336,7 +336,7 @@ test.describe.serial("Test RBAC", () => {
       await rbacPo.selectPluginsCombobox.click();
       await rbacPo.selectOption("scaffolder");
       // await page.click(rbacPo.selectPermissionPolicyPermission(1));
-      await page.getByTestId("expand-row-scaffolder").click();
+      await page.getByText("Select...").click();
       await rbacPo.selectOption("scaffolder-template.read");
       await uiHelper.clickButton("Next");
       await uiHelper.clickButton("Save");
