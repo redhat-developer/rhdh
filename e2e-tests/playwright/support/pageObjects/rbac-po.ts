@@ -33,7 +33,7 @@ export class RbacPo extends PageObject {
     backstage: "Backstage",
     rhdhqe: "rhdh-qe",
   };
-  private selectPluginsCombobox: Locator = this.page.getByRole("combobox", {
+  public selectPluginsCombobox: Locator = this.page.getByRole("combobox", {
     name: "Select plugins",
   });
 
@@ -164,7 +164,7 @@ export class RbacPo extends PageObject {
       | "catalog"
       | "catalog.entity.read"
       | "scaffolder"
-      | "scaffolder-template",
+      | "scaffolder-template.read",
   ) {
     const optionSelector = `li[role="option"]:has-text("${option}")`;
     await this.page.waitForSelector(optionSelector);
