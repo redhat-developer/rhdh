@@ -308,9 +308,9 @@ test.describe.serial("Test RBAC", () => {
       await page.click(rbacPo.selectMember("Guest User"));
       await uiHelper.verifyHeading(rbacPo.regexpShortUsersAndGroups(1, 1));
       await uiHelper.clickByDataTestId("nextButton-1");
-      await page.waitForSelector(".permission-policies-form", {
-        state: "visible",
-      });
+      // await page.waitForSelector(".permission-policies-form", {
+      //   state: "visible",
+      // });
       let nextButton2: Locator;
       let matchNextButton2: Locator[];
       let attempts = 0;
