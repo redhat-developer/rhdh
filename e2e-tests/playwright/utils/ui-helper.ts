@@ -97,8 +97,7 @@ export class UIhelper {
 
   async clickLinkByAriaLabel(ariaLabel: string) {
     await this.page
-      .locator("a")
-      .getByLabel(ariaLabel, { exact: true })
+      .locator(`a[aria-label='${ariaLabel}']`)
       .first()
       .click();
   }
@@ -114,6 +113,7 @@ export class UIhelper {
   }
 
   async goToSettingsPage() {
+    await expect(this.page.locator("nav[id='global-header']")).toBeVisible();
     await this.clickByDataTestId("KeyboardArrowDownOutlinedIcon");
     await this.clickLinkByHref("/settings");
   }
@@ -173,8 +173,18 @@ export class UIhelper {
     return await this.isElementVisible(locator, timeout);
   }
 
+  async isSearchBarVisible(): Promise<boolean> {
+    const locator = `input[placeholder="Search..."]`;
+    return await this.isElementVisible(locator);
+  }
+
   async isLinkVisible(text: string): Promise<boolean> {
     const locator = `a:has-text("${text}")`;
+    return await this.isElementVisible(locator);
+  }
+
+  async isLinkVisibleByLabel(label: string): Promise<boolean> {
+    const locator = `a[aria-label="${label}"]`;
     return await this.isElementVisible(locator);
   }
 
