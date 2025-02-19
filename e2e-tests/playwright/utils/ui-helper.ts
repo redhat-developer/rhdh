@@ -96,10 +96,7 @@ export class UIhelper {
   }
 
   async clickLinkByAriaLabel(ariaLabel: string) {
-    await this.page
-      .locator(`a[aria-label='${ariaLabel}']`)
-      .first()
-      .click();
+    await this.page.locator(`a[aria-label='${ariaLabel}']`).first().click();
   }
 
   async clickLinkByHref(href: string) {

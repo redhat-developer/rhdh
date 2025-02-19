@@ -16,7 +16,11 @@ test.describe("Default Global Header", () => {
   test("Verify that global header and default header components are visible", async () => {
     expect(await uiHelper.isSearchBarVisible()).toBeTruthy();
     expect(await uiHelper.isLinkVisibleByLabel("Create...")).toBeTruthy();
-    expect(await uiHelper.isLinkVisibleByLabel("Support (external link), Opens in a new window")).toBeTruthy();
+    expect(
+      await uiHelper.isLinkVisibleByLabel(
+        "Support (external link), Opens in a new window",
+      ),
+    ).toBeTruthy();
     expect(await uiHelper.isBtnVisible("Guest")).toBeTruthy();
   });
 
@@ -30,19 +34,27 @@ test.describe("Default Global Header", () => {
     await uiHelper.verifyHeading("Software Templates");
   });
 
-  test("Verify that clicking on Support button opens a new tab", async ({ context }) => {
+  test("Verify that clicking on Support button opens a new tab", async ({
+    context,
+  }) => {
     const [newTab] = await Promise.all([
       context.waitForEvent("page"),
-      uiHelper.clickLinkByAriaLabel("Support (external link), Opens in a new window"),
+      uiHelper.clickLinkByAriaLabel(
+        "Support (external link), Opens in a new window",
+      ),
     ]);
     expect(newTab).not.toBeNull();
     await newTab.waitForLoadState();
-    expect(newTab.url()).toContain("https://github.com/redhat-developer/rhdh/issues");
+    expect(newTab.url()).toContain(
+      "https://github.com/redhat-developer/rhdh/issues",
+    );
     await newTab.close();
   });
 
   test("Verify Profile Dropdown behaves as expected", async ({ page }) => {
-    const profileDropdown = page.locator("[data-testid='KeyboardArrowDownOutlinedIcon']");
+    const profileDropdown = page.locator(
+      "[data-testid='KeyboardArrowDownOutlinedIcon']",
+    );
     await profileDropdown.click();
     expect(await uiHelper.isLinkVisible("Settings")).toBeTruthy();
     expect(await uiHelper.isTextVisible("Logout")).toBeTruthy();
