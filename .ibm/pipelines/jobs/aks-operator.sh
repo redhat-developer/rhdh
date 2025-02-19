@@ -19,4 +19,8 @@ handle_aks_operator() {
   cluster_setup_k8s_operator
 
   initiate_aks_operator_deployment
+
+  check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${url}"
+
+  cleanup_aks_deployment "${NAME_SPACE}"
 }
