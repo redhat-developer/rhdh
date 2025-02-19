@@ -47,7 +47,7 @@ test.describe.serial("Test RBAC", () => {
     }) => {
       const uiHelper = new UIhelper(page);
 
-      const testRole: string = "role:default/test1-role";
+      const testRole: string = "role:default/test2-role";
 
       await uiHelper.verifyHeading(/All roles \(\d+\)/);
       await uiHelper.verifyLink(testRole);
