@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# shellcheck source=.ibm/pipelines/utils.sh
+source "$DIR"/utils.sh
+# shellcheck source=.ibm/pipelines/install-methods/operator.sh
+source "$DIR"/install-methods/operator.sh
+
 initiate_aks_operator_deployment() {
   configure_namespace "${OPERATOR_MANAGER}"
   install_rhdh_operator "${DIR}" "${OPERATOR_MANAGER}"
@@ -9,49 +14,36 @@ initiate_aks_operator_deployment() {
   # deploy_test_backstage_provider "${NAME_SPACE}" # Doesn't work on K8S
   local rhdh_base_url="https://${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
-  create_dynamic_plugins_config "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "/tmp/configmap-dynamic-plugins.yaml"
+
+  # Create a ConfigMap for dynamic plugins
+  yq_merge_value_files "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_AKS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}"
+  create_dynamic_plugins_config "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}" "/tmp/configmap-dynamic-plugins.yaml"
+  mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE_K8S}"
+  cp -a "/tmp/configmap-dynamic-plugins.yaml" "${ARTIFACT_DIR}/${NAME_SPACE_K8S}/" # Save the final value-file into the artifacts directory.
   oc apply -f /tmp/configmap-dynamic-plugins.yaml -n "${NAME_SPACE}"
+
   oc apply -f "$DIR/resources/redis-cache/redis-deployment.yaml" --namespace="${NAME_SPACE}"
   setup_image_pull_secret "${NAME_SPACE}" "rh-pull-secret" "${REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON}"
 
   deploy_rhdh_operator "${NAME_SPACE}" "${DIR}/resources/rhdh-operator/rhdh-start_AKS.yaml"
 
-  # delete_namespace "${NAME_SPACE_RBAC_K8S}"
-  # configure_namespace "${NAME_SPACE_K8S}"
-  # uninstall_helmchart "${NAME_SPACE_K8S}" "${RELEASE_NAME}"
-  # cd "${DIR}" || exit
-  # local rhdh_base_url="https://${K8S_CLUSTER_ROUTER_BASE}"
-  # apply_yaml_files "${DIR}" "${NAME_SPACE_K8S}" "${rhdh_base_url}"
-  # oc apply -f "${DIR}/cluster/gke/frontend-config.yaml" --namespace="${project}"
-  # yq_merge_value_files "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_GKE_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}"
-  # mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE_K8S}"
-  # cp -a "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}" "${ARTIFACT_DIR}/${NAME_SPACE_K8S}/" # Save the final value-file into the artifacts directory.
-  # echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE_K8S}"
-  # helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE_K8S}" \
-  #   "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" --version "${CHART_VERSION}" \
-  #   -f "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}" \
-  #   --set global.host="${K8S_CLUSTER_ROUTER_BASE}" \
-  #   --set upstream.backstage.image.repository="${QUAY_REPO}" \
-  #   --set upstream.backstage.image.tag="${TAG_NAME}" \
-  #   --set upstream.ingress.annotations."ingress\.gcp\.kubernetes\.io/pre-shared-cert"="${GKE_CERT_NAME}"
+  operation_aks_operator_ingress create "$NAME_SPACE"
+
+
+
 }
 
 initiate_rbac_aks_operator_deployment() {  
   delete_namespace "${NAME_SPACE_K8S}"
-#   configure_namespace "${NAME_SPACE_RBAC_K8S}"
-#   uninstall_helmchart "${NAME_SPACE_RBAC_K8S}" "${RELEASE_NAME_RBAC}"
-#   cd "${DIR}" || exit
-#   local rbac_rhdh_base_url="https://${K8S_CLUSTER_ROUTER_BASE}"
-#   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC_K8S}"  "${rbac_rhdh_base_url}"
-#   yq_merge_value_files "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_RBAC_GKE_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_RBAC_K8S_MERGED_VALUE_FILE_NAME}"
-#   mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE_RBAC_K8S}"
-#   cp -a "/tmp/${HELM_CHART_RBAC_K8S_MERGED_VALUE_FILE_NAME}" "${ARTIFACT_DIR}/${NAME_SPACE_RBAC_K8S}/" # Save the final value-file into the artifacts directory.
-#   echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE_RBAC_K8S}"
-#   helm upgrade -i "${RELEASE_NAME_RBAC}" -n "${NAME_SPACE_RBAC_K8S}" \
-#     "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" --version "${CHART_VERSION}" \
-#     -f "/tmp/${HELM_CHART_RBAC_K8S_MERGED_VALUE_FILE_NAME}" \
-#     --set global.host="${K8S_CLUSTER_ROUTER_BASE}" \
-#     --set upstream.backstage.image.repository="${QUAY_REPO}" \
-#     --set upstream.backstage.image.tag="${TAG_NAME}" \
-#     --set upstream.ingress.annotations."ingress\.gcp\.kubernetes\.io/pre-shared-cert"="${GKE_CERT_NAME}"
+}
+
+operation_aks_operator_ingress() {
+  local operation=$1
+  local name_space=$2
+  kubectl $operation -f "$DIR/cluster/aks/manifest/aks-operator-ingress.yaml" --namespace="${name_space}"
+}
+
+cleanup_aks_deployment() {
+  local name_space=$
+  operation_aks_operator_ingress delete "$name_space"
 }
