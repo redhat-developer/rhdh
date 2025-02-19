@@ -47,7 +47,7 @@ test.describe.serial("Test RBAC", () => {
     }) => {
       const uiHelper = new UIhelper(page);
 
-      const testRole: string = "role:default/test2-role";
+      const testRole: string = "role:default/test1-role";
 
       await uiHelper.verifyHeading(/All roles \(\d+\)/);
       await uiHelper.verifyLink(testRole);
@@ -354,7 +354,7 @@ test.describe.serial("Test RBAC", () => {
       const rolesHelper = new Roles(page);
       const uiHelper = new UIhelper(page);
       await new RbacPo(page).createRole(
-        "test2-role",
+        "test1-role",
         ["Guest User", "rhdh-qe", "Backstage"],
         "anyOf",
       );
@@ -364,9 +364,9 @@ test.describe.serial("Test RBAC", () => {
         .waitFor({ state: "visible" });
       await page
         .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)
-        .fill("test2-role");
+        .fill("test1-role");
       await uiHelper.verifyHeading("All roles (1)");
-      await rolesHelper.deleteRole("role:default/test2-role");
+      await rolesHelper.deleteRole("role:default/test1-role");
     });
   });
 
