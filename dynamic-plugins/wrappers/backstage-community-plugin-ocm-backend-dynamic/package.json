@@ -38,7 +38,7 @@
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
-    "@backstage-community/plugin-ocm-backend": "5.3.0"
+    "@backstage-community/plugin-ocm-backend": "5.4.0"
   },
   "devDependencies": {
     "@backstage/cli": "0.29.6",
