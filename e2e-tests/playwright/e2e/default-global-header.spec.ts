@@ -9,7 +9,10 @@ test.describe("Default Global Header", () => {
   test.beforeEach(async ({ page }) => {
     uiHelper = new UIhelper(page);
     common = new Common(page);
-    await common.loginAsGuest();
+    await common.loginAsKeycloakUser(
+      process.env.GH_USER2_ID,
+      process.env.GH_USER2_PASS,
+    );
     await expect(page.locator("nav[id='global-header']")).toBeVisible();
   });
 
@@ -81,5 +84,34 @@ test.describe("Default Global Header", () => {
       `input[id="search-bar-text-field"]`,
     );
     await expect(searchResultPageInput).toHaveValue("test query term");
+  });
+
+  test("Verify Notifications button behaves as expected", async ({
+    baseURL,
+    request,
+    page,
+  }) => {
+    await uiHelper.clickLinkByAriaLabel("Notifications");
+    await uiHelper.verifyHeading("Notifications");
+
+    const response = await request.post(`${baseURL}/api/notifications`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer test-token",
+      },
+      data: {
+        recipients: { type: "broadcast" },
+        payload: {
+          title: "Demo test notification message!",
+          link: "http://foo.com/bar",
+          severity: "high",
+          topic: "The topic",
+        },
+      },
+    });
+
+    expect(response.status()).toBe(200);
+    const notificationsBadge = page.locator("span[class*='-badge']");
+    await expect(notificationsBadge).toHaveText("1");
   });
 });

@@ -119,6 +119,18 @@ global:
         disabled: false
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-header
         disabled: false
+        pluginConfig:
+          app:
+            sidebar:
+              search: false
+              settings: false
+            support:
+              url: https://github.com/redhat-developer/rhdh/issues
+              items:
+                - title: Red Hat Developer Hub
+                  links:
+                    - url: https://access.redhat.com/products/red-hat-developer-hub
+                      title: Product Information
       # Enable notifications plugins.
       - package: ./dynamic-plugins/dist/backstage-plugin-notifications
         disabled: false
@@ -176,6 +188,15 @@ upstream:
   commonLabels:
     backstage.io/kubernetes-id: developer-hub
   backstage:
+    appConfig:
+      backend:
+        auth:
+          dangerouslyDisableDefaultAuthPolicy: true
+          externalAccess:
+            - type: static
+              options:
+                token: test-token
+                subject: test-subject
     image:
       pullPolicy: Always
       registry: quay.io
