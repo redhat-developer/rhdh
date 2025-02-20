@@ -23,7 +23,7 @@ test.describe("Default Global Header", () => {
       await uiHelper.isLinkVisibleByLabel("Support (external link)"),
     ).toBeTruthy();
     expect(await uiHelper.isLinkVisibleByLabel("Notifications")).toBeTruthy();
-    expect(await uiHelper.isBtnVisible("Guest")).toBeTruthy();
+    expect(await uiHelper.isBtnVisible("rhdh-qe-2")).toBeTruthy();
   });
 
   test("Verify that search modal and settings button in sidebar are not visible", async () => {
