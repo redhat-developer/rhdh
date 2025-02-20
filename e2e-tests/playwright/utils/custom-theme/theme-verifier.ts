@@ -22,7 +22,8 @@ export class ThemeVerifier {
   }
 
   async verifyBorderLeftColor(expectedColor: string) {
-    const locator = await this.page.locator("a[aria-label='Settings']");
+    await this.uiHelper.openSidebar("Home");
+    const locator = await this.page.locator("a[aria-label='Home']");
     await expect(locator).toHaveCSS(
       "border-left",
       `3px solid ${expectedColor}`,

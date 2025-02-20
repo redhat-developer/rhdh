@@ -20,9 +20,7 @@ test.describe("Default Global Header", () => {
     expect(await uiHelper.isSearchBarVisible()).toBeTruthy();
     expect(await uiHelper.isLinkVisibleByLabel("Create...")).toBeTruthy();
     expect(
-      await uiHelper.isLinkVisibleByLabel(
-        "Support (external link), Opens in a new window",
-      ),
+      await uiHelper.isLinkVisibleByLabel("Support (external link)"),
     ).toBeTruthy();
     expect(await uiHelper.isLinkVisibleByLabel("Notifications")).toBeTruthy();
     expect(await uiHelper.isBtnVisible("Guest")).toBeTruthy();
@@ -43,9 +41,7 @@ test.describe("Default Global Header", () => {
   }) => {
     const [newTab] = await Promise.all([
       context.waitForEvent("page"),
-      uiHelper.clickLinkByAriaLabel(
-        "Support (external link), Opens in a new window",
-      ),
+      uiHelper.clickLinkByAriaLabel("Support (external link)"),
     ]);
     expect(newTab).not.toBeNull();
     await newTab.waitForLoadState();
@@ -111,7 +107,9 @@ test.describe("Default Global Header", () => {
     });
 
     expect(response.status()).toBe(200);
-    const notificationsBadge = page.locator("span[class*='-badge']");
+    const notificationsBadge = page
+      .locator("#global-header")
+      .getByRole("link", { name: "Notifications" });
     await expect(notificationsBadge).toHaveText("1");
   });
 });
