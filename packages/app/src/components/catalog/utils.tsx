@@ -1,4 +1,5 @@
 import { type Entity } from '@backstage/catalog-model';
+
 import { defaultTabs } from './EntityPage/defaultTabs';
 import { DynamicEntityTabProps } from './EntityPage/DynamicEntityTab';
 
