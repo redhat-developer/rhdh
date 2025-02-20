@@ -12,7 +12,7 @@ export class ThemeVerifier {
   }
 
   async setTheme(theme: "Light" | "Dark" | "Light Dynamic" | "Dark Dynamic") {
-    await this.uiHelper.openSidebar("Settings");
+    await this.uiHelper.goToSettingsPage();
     await this.uiHelper.clickBtnByTitleIfNotPressed(`Select theme ${theme}`);
   }
 
@@ -46,7 +46,7 @@ export class ThemeVerifier {
       UI_HELPER_ELEMENTS.MuiButtonTextPrimary,
       colorPrimary,
     );
-    await this.uiHelper.openSidebar("Settings");
+    await this.uiHelper.goToSettingsPage();
   }
 
   async takeScreenshotAndAttach(
