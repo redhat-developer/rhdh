@@ -3776,9 +3776,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-rbac@npm:1.38.0":
-  version: 1.38.0
-  resolution: "@backstage-community/plugin-rbac@npm:1.38.0"
+"@backstage-community/plugin-rbac@npm:1.38.1":
+  version: 1.38.1
+  resolution: "@backstage-community/plugin-rbac@npm:1.38.1"
   dependencies:
     "@backstage-community/plugin-rbac-common": ^1.13.0
     "@backstage/catalog-model": ^1.7.3
@@ -3804,7 +3804,7 @@ __metadata:
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.0.0
-  checksum: 3db98150cf9f477968ff7eac54d7e92aff8d278dff921bfa04538c0efa25161936bf1710bbd50ce656a96c3be3dda63d4636d2b26bb0eac82795040610e10759
+  checksum: e7cde5eebf859355062ad70b3c106f3c60599aa25a7a670efa35e7276ca8e6df91b3f297742f736ee1575e323587afd08daf27abdd575f68675a1287a5173380
   languageName: node
   linkType: hard
 
@@ -22895,7 +22895,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backstage-community-plugin-rbac@workspace:dynamic-plugins/wrappers/backstage-community-plugin-rbac"
   dependencies:
-    "@backstage-community/plugin-rbac": 1.38.0
+    "@backstage-community/plugin-rbac": 1.38.1
     "@backstage/cli": 0.29.6
     "@janus-idp/cli": 3.2.0
     "@mui/material": 5.16.14
