@@ -106,6 +106,7 @@ type EntityTab = {
   mountPoint: string;
   path: string;
   title: string;
+  pariority?: number;
 };
 
 type EntityTabEntry = {
@@ -113,6 +114,7 @@ type EntityTabEntry = {
   mountPoint: string;
   path: string;
   title: string;
+  priority?: number;
 };
 
 type ThemeEntry = {
@@ -343,12 +345,14 @@ function extractDynamicConfig(
   );
   config.entityTabs = Object.entries(frontend).reduce<EntityTabEntry[]>(
     (accEntityTabs, [scope, { entityTabs }]) => {
+      // console.log('accEntityTabs',accEntityTabs,scope,entityTabs)
       accEntityTabs.push(
         ...(entityTabs ?? []).map(entityTab => ({
           ...entityTab,
           scope,
         })),
       );
+      console.log('accEntityTabs', accEntityTabs);
       return accEntityTabs;
     },
     [],

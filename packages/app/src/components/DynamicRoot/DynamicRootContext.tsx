@@ -104,7 +104,7 @@ export type RemotePlugins = {
 
 export type EntityTabOverrides = Record<
   string,
-  { title: string; mountPoint: string }
+  { title: string; mountPoint: string; priority?: number }
 >;
 
 export type MountPoints = Record<string, ScalprumMountPoint[]>;

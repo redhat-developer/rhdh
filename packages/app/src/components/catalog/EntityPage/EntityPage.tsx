@@ -1,6 +1,7 @@
 import { ContextMenuAwareEntityLayout } from './ContextMenuAwareEntityLayout';
-import { defaultTabs, tabChildren, tabRules } from './defaultTabs';
+import { tabChildren, tabRules } from './defaultTabs';
 import { dynamicEntityTab, DynamicEntityTabProps } from './DynamicEntityTab';
+import {mergeTabs} from '../utils'
 
 /**
  * Displays the tabs and content for a catalog entity
@@ -16,7 +17,7 @@ export const entityPage = (
 ) => {
   return (
     <ContextMenuAwareEntityLayout>
-      {Object.entries({ ...defaultTabs, ...entityTabOverrides }).map(
+      {mergeTabs(entityTabOverrides).map(
         ([path, config]) => {
           return dynamicEntityTab({
             ...config,
