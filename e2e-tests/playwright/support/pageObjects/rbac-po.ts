@@ -16,12 +16,17 @@ export class RbacPo extends PageObject {
   private notButton: Locator;
   private rulesSideBar: Locator;
   private hasSpecButton: Locator;
+  private hasAnnotationButton: Locator;
   private key: Locator;
+  private annotation: Locator;
   private saveConditions: Locator;
   private anyOfButton: Locator;
   private isEntityKindButton: Locator;
   private addRuleButton: Locator = this.page.getByRole("button", {
     name: "Add rule",
+  });
+  private addNestedConditionButton: Locator = this.page.getByRole("button", {
+    name: "Add Nested Condition",
   });
 
   private hasLabel: Locator;
@@ -100,7 +105,9 @@ export class RbacPo extends PageObject {
     this.notButton = this.page.getByRole("button", { name: "Not" });
     this.rulesSideBar = this.page.getByTestId("rules-sidebar");
     this.hasSpecButton = this.page.getByText("HAS_SPEC");
+    this.hasAnnotationButton = this.page.getByText("HAS_ANNOTATION");
     this.key = this.page.getByLabel("key *");
+    this.annotation = this.page.getByLabel("annotation *");
     this.saveConditions = this.page.getByTestId("save-conditions");
     this.anyOfButton = this.page.getByRole("button", { name: "AnyOf" });
     this.isEntityKindButton = this.page.getByText("IS_ENTITY_KIND");
@@ -210,7 +217,6 @@ export class RbacPo extends PageObject {
     await this.usersAndGroupsField.click();
 
     for (const userOrRole of usersAndGroups) {
-      // await this.addUsersAndGroups(userOrRole);
       await this.page.click(this.selectMember(userOrRole));
     }
 
@@ -227,13 +233,10 @@ export class RbacPo extends PageObject {
     await this.next();
     await this.selectPluginsCombobox.click();
     await this.selectOption("catalog");
-    // await this.page.getByTestId("expand-row-catalog").click();
     await this.page.getByText("Select...").click();
-    // await this.selectPermissionCheckbox("catalog.entity.read");
 
     if (permissionPolicyType === "none") {
       await this.selectPermissionCheckbox("catalog.entity.delete");
-      // await this.page.uncheck(this.selectPolicy(0, 1, "Delete"));
       await this.next();
       await this.uiHelper.verifyHeading("Review and create");
       await this.uiHelper.verifyText(
@@ -274,15 +277,21 @@ export class RbacPo extends PageObject {
       await this.hasLabel.click();
       await this.label.click();
       await this.label.fill("partner");
+      // Add nested condition
+      await this.addNestedConditionButton.click();
+      await this.page.getByLabel("Open").nth(4).click();
+      await this.hasAnnotationButton.click();
+      await this.annotation.click();
+      await this.annotation.fill("test");
       await this.saveConditions.click();
-      await this.verifyPolicyBadge("3");
+      await this.verifyPolicyBadge("4");
       await this.next();
       await this.uiHelper.verifyHeading("Review and create");
       await this.uiHelper.verifyText(
         this.regexpLongUsersAndGroups(numUsers - numGroups, numGroups),
       );
       await this.verifyPermissionPoliciesHeader(1);
-      await this.uiHelper.verifyText("3 rules");
+      await this.uiHelper.verifyText("4 rules");
       await this.uiHelper.clickButton("Create");
       await this.uiHelper.verifyText(
         `Role role:default/${name} created successfully`,

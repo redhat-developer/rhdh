@@ -68,18 +68,18 @@ test.describe.serial("Test RBAC", () => {
         Roles.getPermissionPoliciesListCellsIdentifier();
       await uiHelper.verifyCellsInTable(permissionPoliciesCellsIdentifier);
 
-      await expect(
-        page.getByRole("cell", { name: "catalog.entity.read" }),
-      ).toBeVisible();
-      await expect(
-        page.getByRole("cell", { name: "catalog.entity.read" }),
-      ).toBeVisible();
-      await expect(
-        page.getByRole("cell", { name: "Read, Update" }),
-      ).toBeVisible();
-      await expect(
-        page.getByRole("cell", { name: "Delete", exact: true }),
-      ).toBeVisible();
+      await uiHelper.verifyRowInTableByUniqueText("rhdh-qe-2-team", [
+        "Group",
+        "1",
+      ]);
+      await uiHelper.verifyRowInTableByUniqueText("catalog.entity.read", [
+        "Read",
+        "1 rule",
+      ]);
+      await uiHelper.verifyRowInTableByUniqueText("catalog.entity.delete", [
+        "Delete",
+        "1 rule",
+      ]);
     });
   });
 
@@ -222,23 +222,27 @@ test.describe.serial("Test RBAC", () => {
 
       await uiHelper.clickButton("Create");
       await uiHelper.verifyHeading("Create role");
-      await page.fill('input[name="name"]', "sample-role-1");
-      await page.fill('textarea[name="description"]', "Test Description data");
+      await uiHelper.fillTextInputByLabel("name", "sample-role-1");
+      await uiHelper.fillTextInputByLabel(
+        "description",
+        "Test Description data",
+      );
+
       await uiHelper.clickButton("Next");
-      await page
-        .getByTestId("users-and-groups-text-field")
-        .locator("input")
-        .fill("Guest Use");
+      await uiHelper.fillTextInputByLabel(
+        "Select users and groups",
+        "sample-role-1",
+      );
       await page
         .getByTestId("users-and-groups-text-field")
         .getByLabel("clear search")
         .click();
-      expect(
-        await page.getByTestId("users-and-groups-text-field").locator("input"),
+      await expect(
+        page.getByTestId("users-and-groups-text-field").locator("input"),
       ).toBeEmpty();
       await uiHelper.verifyHeading("No users and groups selected");
       await uiHelper.clickButton("Cancel");
-      await expect(page.getByText("Exit role creation?")).toBeVisible();
+      await uiHelper.verifyText("Exit role creation?");
       await uiHelper.clickButton("Discard");
       await expect(page.getByRole("alert")).toHaveCount(0);
 
@@ -301,16 +305,13 @@ test.describe.serial("Test RBAC", () => {
 
       await page.click(ROLE_OVERVIEW_COMPONENTS.updateMembers);
       await uiHelper.verifyHeading("Edit Role");
-      await page
-        .getByRole("combobox", { name: "Select users and groups" })
-        .fill("Guest User");
-      // await page.click('button[aria-label="Remove"]');
+      await uiHelper.fillTextInputByLabel(
+        "Select users and groups",
+        "Guest User",
+      );
       await page.click(rbacPo.selectMember("Guest User"));
       await uiHelper.verifyHeading(rbacPo.regexpShortUsersAndGroups(1, 1));
       await uiHelper.clickByDataTestId("nextButton-1");
-      // await page.waitForSelector(".permission-policies-form", {
-      //   state: "visible",
-      // });
       let nextButton2: Locator;
       let matchNextButton2: Locator[];
       let attempts = 0;
@@ -329,13 +330,8 @@ test.describe.serial("Test RBAC", () => {
 
       await page.click(ROLE_OVERVIEW_COMPONENTS.updatePolicies);
       await uiHelper.verifyHeading("Edit Role");
-      // await rbacPo.clickAddPermissionPolicy();
-      // await page.click(rbacPo.selectPermissionPolicyPlugin(1), {
-      //   timeout: 10_000,
-      // });
       await rbacPo.selectPluginsCombobox.click();
       await rbacPo.selectOption("scaffolder");
-      // await page.click(rbacPo.selectPermissionPolicyPermission(1));
       await page.getByText("Select...").click();
       await rbacPo.selectPermissionCheckbox("scaffolder.template.parameter");
       await uiHelper.clickButton("Next");
