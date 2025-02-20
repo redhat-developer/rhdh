@@ -96,7 +96,7 @@ export class UIhelper {
   }
 
   async clickLinkByAriaLabel(ariaLabel: string) {
-    await this.page.locator(`a[aria-label='${ariaLabel}']`).first().click();
+    await this.page.locator(`div[aria-label='${ariaLabel}'] a`).first().click();
   }
 
   async clickLinkByHref(href: string) {
@@ -181,7 +181,7 @@ export class UIhelper {
   }
 
   async isLinkVisibleByLabel(label: string): Promise<boolean> {
-    const locator = `a[aria-label="${label}"]`;
+    const locator = `div[aria-label="${label}"] a`;
     return await this.isElementVisible(locator);
   }
 
