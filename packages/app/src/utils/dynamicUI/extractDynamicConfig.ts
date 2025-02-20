@@ -345,14 +345,12 @@ function extractDynamicConfig(
   );
   config.entityTabs = Object.entries(frontend).reduce<EntityTabEntry[]>(
     (accEntityTabs, [scope, { entityTabs }]) => {
-      // console.log('accEntityTabs',accEntityTabs,scope,entityTabs)
       accEntityTabs.push(
         ...(entityTabs ?? []).map(entityTab => ({
           ...entityTab,
           scope,
         })),
       );
-      console.log('accEntityTabs', accEntityTabs);
       return accEntityTabs;
     },
     [],
