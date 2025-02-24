@@ -64,7 +64,7 @@ test.describe("Test Topology Plugin", () => {
     await expect(page.locator("rect").first()).toBeVisible();
     await uiHelper.clickTab("Details");
     await page.getByLabel("Pod").hover();
-    await page.getByLabel("Display options").click();
+    await page.getByText("Display options").click();
     await page.getByLabel("Pod count").click();
     await uiHelper.verifyText("1");
     await uiHelper.verifyText("Pod");
