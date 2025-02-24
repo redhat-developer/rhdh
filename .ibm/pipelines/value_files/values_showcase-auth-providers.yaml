@@ -11,6 +11,30 @@ global:
         disabled: true
       - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
         disabled: true
+      - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-github-dynamic
+        disabled: true
+      - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-dynamic
+        disabled: true
+        pluginConfig:
+          catalog:
+            providers:
+              github:
+                my-test-org:
+                  organization: janus-qe
+                  catalogPath: '/catalog-info.yaml'
+                  schedule:
+                    frequency:
+                      minutes: 1
+                    timeout:
+                      minutes: 1
+                    initialDelay:
+                      seconds: 15
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-github-issues
+        disabled: true
+      - package: ./dynamic-plugins/dist/roadiehq-backstage-plugin-github-pull-requests
+        disabled: true
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-github-actions
+        disabled: true
 upstream:
   backstage:
     appConfig:

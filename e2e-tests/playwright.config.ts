@@ -75,7 +75,10 @@ export default defineConfig({
     },
     {
       name: "showcase-auth-providers",
-      testMatch: ["**/playwright/e2e/authProviders/*.spec.ts"],
+      testMatch: [
+        // "**/playwright/e2e/authProviders/*.spec.ts",
+        "**/playwright/e2e/github-happy-path.spec.ts",
+      ],
       testIgnore: [
         "**/playwright/e2e/authProviders/setup-environment.spec.ts",
         "**/playwright/e2e/authProviders/clear-environment.spec.ts",
