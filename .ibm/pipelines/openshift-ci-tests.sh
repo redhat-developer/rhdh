@@ -23,7 +23,7 @@ cleanup() {
   rm -rf ~/tmpbin
 }
 
-trap cleanup EXIT INT ERR
+# trap cleanup EXIT INT ERR
 
 JOB_NAME=periodic-ci-redhat-developer-rhdh-release-1.5-e2e-tests-nightly-auth-providers
 
