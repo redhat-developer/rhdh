@@ -33,7 +33,6 @@ test.describe.serial("GitHub Happy path", () => {
     common = new Common(page);
     catalogImport = new CatalogImport(page);
     backstageShowcase = new BackstageShowcase(page);
-    await common.loginAsGithubUser();
   });
 
   test.beforeEach(
@@ -76,6 +75,7 @@ test.describe.serial("GitHub Happy path", () => {
     );
 
     await waitForNextSync("github", syncTime);
+    await common.loginAsGithubUser();
   });
 
   test("Verify Profile is Github Account Name in the Settings page", async () => {
