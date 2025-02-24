@@ -290,17 +290,17 @@ test.describe.serial("Test RBAC", () => {
       const rolesHelper = new Roles(page);
       const uiHelper = new UIhelper(page);
       const rbacPo = new RbacPo(page);
-      await rbacPo.createRole("test1-role", [
+      await rbacPo.createRole("test-role1", [
         RbacPo.rbacTestUsers.guest,
         RbacPo.rbacTestUsers.tara,
         RbacPo.rbacTestUsers.backstage,
       ]);
 
-      await uiHelper.searchInputAriaLabel("test1-role");
+      await uiHelper.searchInputAriaLabel("test-role1");
 
-      await uiHelper.clickLink("role:default/test1-role");
+      await uiHelper.clickLink("role:default/test-role1");
 
-      await uiHelper.verifyHeading("role:default/test1-role");
+      await uiHelper.verifyHeading("role:default/test-role1");
       await uiHelper.clickTab("Overview");
 
       await page.click(ROLE_OVERVIEW_COMPONENTS.updateMembers);
@@ -324,7 +324,7 @@ test.describe.serial("Test RBAC", () => {
       await nextButton2.click({ force: true });
       await uiHelper.clickButton("Save");
       await uiHelper.verifyText(
-        "Role role:default/test1-role updated successfully",
+        "Role role:default/test-role1 updated successfully",
       );
       await uiHelper.verifyHeading(rbacPo.regexpShortUsersAndGroups(1, 1));
 
@@ -337,11 +337,11 @@ test.describe.serial("Test RBAC", () => {
       await uiHelper.clickButton("Next");
       await uiHelper.clickButton("Save");
       await uiHelper.verifyText(
-        "Role role:default/test1-role updated successfully",
+        "Role role:default/test-role1 updated successfully",
       );
       await uiHelper.verifyHeading("Permission Policies (2)");
 
-      await rolesHelper.deleteRole("role:default/test1-role");
+      await rolesHelper.deleteRole("role:default/test-role1");
     });
 
     test("Create a role with a permission policy per resource type and verify that the only authorized users can access specific resources.", async ({
@@ -350,7 +350,7 @@ test.describe.serial("Test RBAC", () => {
       const rolesHelper = new Roles(page);
       const uiHelper = new UIhelper(page);
       await new RbacPo(page).createRole(
-        "test1-role",
+        "test-role1",
         ["Guest User", "rhdh-qe", "Backstage"],
         "anyOf",
       );
@@ -360,9 +360,9 @@ test.describe.serial("Test RBAC", () => {
         .waitFor({ state: "visible" });
       await page
         .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)
-        .fill("test1-role");
+        .fill("test-role1");
       await uiHelper.verifyHeading("All roles (1)");
-      await rolesHelper.deleteRole("role:default/test1-role");
+      await rolesHelper.deleteRole("role:default/test-role1");
     });
   });
 

@@ -196,7 +196,7 @@ export class RbacPo extends PageObject {
     this.page.getByRole("cell", { name: name }).getByRole("checkbox").click();
   }
 
-  async verifyPolicyBadge(number: string) {
+  async pluginRuleCount(number: string) {
     expect(
       this.page
         .locator('span[class*="MuiBadge-badge"]')
@@ -284,7 +284,7 @@ export class RbacPo extends PageObject {
       await this.annotation.click();
       await this.annotation.fill("test");
       await this.saveConditions.click();
-      await this.verifyPolicyBadge("4");
+      await this.pluginRuleCount("4");
       await this.next();
       await this.uiHelper.verifyHeading("Review and create");
       await this.uiHelper.verifyText(
@@ -311,7 +311,7 @@ export class RbacPo extends PageObject {
       await this.key.press("Tab");
       await this.key.fill("experimental");
       await this.saveConditions.click();
-      await this.verifyPolicyBadge("1");
+      await this.pluginRuleCount("1");
       await this.next();
       await this.uiHelper.verifyHeading("Review and create");
       await this.verifyPermissionPoliciesHeader(1);
