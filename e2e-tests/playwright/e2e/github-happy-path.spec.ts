@@ -75,7 +75,6 @@ test.describe.serial("GitHub Happy path", () => {
     );
 
     await waitForNextSync("github", syncTime);
-    await common.loginAsGithubUser();
   });
 
   test("Login as a Github user.", async () => {
