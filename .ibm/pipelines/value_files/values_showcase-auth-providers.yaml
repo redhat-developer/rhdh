@@ -87,7 +87,7 @@ upstream:
           githubOrg:
             - id: github
               githubUrl: https://github.com
-              orgs: ['${AUTH_PROVIDERS_GH_ORG_NAME}']
+              orgs: ['janus-qe']
               schedule:
                 initialDelay: { seconds: 0 }
                 frequency: { minutes: 1 }
