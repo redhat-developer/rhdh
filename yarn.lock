@@ -4137,7 +4137,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-topology@npm:1.32.0 ":
+"@backstage-community/plugin-topology@npm:1.32.0":
   version: 1.32.0
   resolution: "@backstage-community/plugin-topology@npm:1.32.0"
   dependencies:
@@ -23116,7 +23116,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backstage-community-plugin-topology@workspace:dynamic-plugins/wrappers/backstage-community-plugin-topology"
   dependencies:
-    "@backstage-community/plugin-topology": "1.32.0 "
+    "@backstage-community/plugin-topology": 1.32.0
     "@backstage/cli": 0.29.6
     "@janus-idp/cli": 3.2.0
     "@mui/material": 5.16.14
