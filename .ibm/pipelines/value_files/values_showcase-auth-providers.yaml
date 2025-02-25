@@ -44,6 +44,9 @@ upstream:
               clientSecret: ${RHSSO76_CLIENT_SECRET}
               prompt: auto 
               callbackUrl: ${RHSSO76_CALLBACK_URL}
+              signIn:
+                resolvers:
+                  - resolver: oidcSubClaimMatchingKeycloakUserId
       integrations:
         github:
           - host: github.com
