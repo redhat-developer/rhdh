@@ -16,7 +16,7 @@ initiate_aks_operator_deployment() {
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
 
   # Create a ConfigMap for dynamic plugins
-  yq_merge_value_files "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_AKS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}"
+  yq_merge_value_files "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_AKS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}"
   create_dynamic_plugins_config "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}" "/tmp/configmap-dynamic-plugins.yaml"
   mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE_K8S}"
   cp -a "/tmp/configmap-dynamic-plugins.yaml" "${ARTIFACT_DIR}/${NAME_SPACE_K8S}/" # Save the final value-file into the artifacts directory.
@@ -44,6 +44,6 @@ operation_aks_operator_ingress() {
 }
 
 cleanup_aks_deployment() {
-  local name_space=$
+  local name_space=$1
   operation_aks_operator_ingress delete "$name_space"
 }
