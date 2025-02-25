@@ -1,7 +1,7 @@
-import { mergeTabs } from '../utils';
 import { ContextMenuAwareEntityLayout } from './ContextMenuAwareEntityLayout';
 import { tabChildren, tabRules } from './defaultTabs';
 import { dynamicEntityTab, DynamicEntityTabProps } from './DynamicEntityTab';
+import { mergeTabs } from './utils';
 
 /**
  * Displays the tabs and content for a catalog entity
