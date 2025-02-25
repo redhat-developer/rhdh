@@ -30,7 +30,7 @@ upstream:
         effect: "NoSchedule"
       affinity:
         nodeAffinity:
-          perferredDuringSchedulingIgnoredDuringExecution:
+          preferredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
               - key: "kubernetes.azure.com/scalesetpriority"
