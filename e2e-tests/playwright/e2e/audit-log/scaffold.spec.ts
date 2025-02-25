@@ -22,7 +22,7 @@ test.describe("Audit Log check for Catalog Plugin", () => {
     common = new Common(page);
     catalogImport = new CatalogImport(page);
     await common.loginAsGuest();
-    await uiHelper.clickLinkByAriaLabel("Create...");
+    await uiHelper.clickLink({ ariaLabel: "Create..." });
   });
 
   test.fixme(
@@ -30,7 +30,7 @@ test.describe("Audit Log check for Catalog Plugin", () => {
     async ({ baseURL }) => {
       await uiHelper.clickButton("Register Existing Component");
       await catalogImport.registerExistingComponent(template, false);
-      await uiHelper.clickLinkByAriaLabel("Create...");
+      await uiHelper.clickLink({ ariaLabel: "Create..." });
       await common.waitForLoad();
       await uiHelper.searchInputAriaLabel("Hello World 2");
       await uiHelper.pressTab();

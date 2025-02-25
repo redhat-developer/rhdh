@@ -16,13 +16,13 @@ test.describe("Default Global Header", () => {
     await expect(page.locator("nav[id='global-header']")).toBeVisible();
   });
 
-  test("Verify that global header and default header components are visible", async () => {
-    expect(await uiHelper.isSearchBarVisible()).toBeTruthy();
-    expect(await uiHelper.isLinkVisibleByLabel("Create...")).toBeTruthy();
-    expect(
-      await uiHelper.isLinkVisibleByLabel("Support (external link)"),
-    ).toBeTruthy();
-    expect(await uiHelper.isLinkVisibleByLabel("Notifications")).toBeTruthy();
+  test("Verify that global header and default header components are visible", async ({
+    page,
+  }) => {
+    await expect(page.locator(`input[placeholder="Search..."]`)).toBeVisible();
+    await uiHelper.verifyLink({ label: "Create..." });
+    await uiHelper.verifyLink({ label: "Support (external link)" });
+    await uiHelper.verifyLink({ label: "Notifications" });
     expect(await uiHelper.isBtnVisible("rhdh-qe-2")).toBeTruthy();
   });
 
@@ -32,7 +32,7 @@ test.describe("Default Global Header", () => {
   });
 
   test("Verify that clicking on Create button opens the Software Templates page", async () => {
-    await uiHelper.clickLinkByAriaLabel("Create...");
+    await uiHelper.clickLink({ ariaLabel: "Create..." });
     await uiHelper.verifyHeading("Software Templates");
   });
 
@@ -41,7 +41,7 @@ test.describe("Default Global Header", () => {
   }) => {
     const [newTab] = await Promise.all([
       context.waitForEvent("page"),
-      uiHelper.clickLinkByAriaLabel("Support (external link)"),
+      uiHelper.clickLink({ ariaLabel: "Support (external link)" }),
     ]);
     expect(newTab).not.toBeNull();
     await newTab.waitForLoadState();
@@ -52,18 +52,15 @@ test.describe("Default Global Header", () => {
   });
 
   test("Verify Profile Dropdown behaves as expected", async ({ page }) => {
-    const profileDropdown = page.locator(
-      "[data-testid='KeyboardArrowDownOutlinedIcon']",
-    );
-    await profileDropdown.click();
+    await uiHelper.openProfileDropdown();
     expect(await uiHelper.isLinkVisible("Settings")).toBeTruthy();
     expect(await uiHelper.isTextVisible("Logout")).toBeTruthy();
 
-    await uiHelper.clickLinkByHref("/settings");
+    await uiHelper.clickLink({ href: "/settings" });
     await uiHelper.verifyHeading("Settings");
 
-    await profileDropdown.click();
-    await uiHelper.clickPbyText("Logout");
+    await uiHelper.openProfileDropdown();
+    await page.locator(`p`).getByText("Logout").first().click();
     await uiHelper.verifyHeading("Select a sign-in method");
   });
 
@@ -87,7 +84,7 @@ test.describe("Default Global Header", () => {
     request,
     page,
   }) => {
-    await uiHelper.clickLinkByAriaLabel("Notifications");
+    await uiHelper.clickLink({ ariaLabel: "Notifications" });
     await uiHelper.verifyHeading("Notifications");
 
     const response = await request.post(`${baseURL}/api/notifications`, {

@@ -445,8 +445,7 @@ for (const version of ["RHBK"]) {
         expect(statusBefore).toBe(403);
 
         // logout
-        await uiHelper.clickByDataTestId("KeyboardArrowDownOutlinedIcon");
-        await uiHelper.clickLinkByHref("/settings");
+        await uiHelper.goToSettingsPage();
         await common.signOut();
       }).toPass({
         intervals: [1_000, 2_000, 5_000],

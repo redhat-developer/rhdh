@@ -91,32 +91,39 @@ export class UIhelper {
     await expect(this.page.locator(`div`).getByText(divText)).toBeVisible();
   }
 
-  async clickLink(linkText: string) {
-    await this.page.locator(`a`).filter({ hasText: linkText }).first().click();
+  async clickLink(options: string | { href: string } | { ariaLabel: string }) {
+    let linkLocator: Locator;
+
+    if (typeof options === "string") {
+      linkLocator = this.page.locator("a").filter({ hasText: options }).first();
+    } else if ("href" in options) {
+      linkLocator = this.page.locator(`a[href="${options.href}"]`);
+    } else {
+      linkLocator = this.page
+        .locator(`div[aria-label='${options.ariaLabel}'] a`)
+        .first();
+    }
+
+    await linkLocator.waitFor({ state: "visible" });
+    await linkLocator.click();
   }
 
-  async clickLinkByAriaLabel(ariaLabel: string) {
-    await this.page.locator(`div[aria-label='${ariaLabel}'] a`).first().click();
-  }
-
-  async clickLinkByHref(href: string) {
-    const link = this.page.locator(`a[href="${href}"]`);
-    await link.waitFor({ state: "visible" });
-    await link.dispatchEvent("click");
-  }
-
-  async clickPbyText(text: string) {
-    await this.page.locator(`p`).getByText(text).first().click();
+  async openProfileDropdown() {
+    const header = this.page.locator("nav[id='global-header']");
+    await expect(header).toBeVisible();
+    await header
+      .locator("[data-testid='KeyboardArrowDownOutlinedIcon']")
+      .click();
   }
 
   async goToSettingsPage() {
     await expect(this.page.locator("nav[id='global-header']")).toBeVisible();
-    await this.clickByDataTestId("KeyboardArrowDownOutlinedIcon");
-    await this.clickLinkByHref("/settings");
+    await this.openProfileDropdown();
+    await this.clickLink({ href: "/settings" });
   }
 
   async verifyLink(
-    linkText: string,
+    arg: string | { label: string },
     options: {
       exact?: boolean;
       notVisible?: boolean;
@@ -125,12 +132,22 @@ export class UIhelper {
       notVisible: false,
     },
   ) {
-    const linkLocator = this.page
-      .locator("a")
-      .getByText(linkText, { exact: options.exact })
-      .first();
+    let linkLocator: Locator;
+    let notVisibleCheck: boolean;
 
-    if (options?.notVisible) {
+    if (typeof arg === "string") {
+      linkLocator = this.page
+        .locator("a")
+        .getByText(arg, { exact: options.exact })
+        .first();
+
+      notVisibleCheck = options?.notVisible;
+    } else {
+      linkLocator = this.page.locator(`div[aria-label="${arg.label}"] a`);
+      notVisibleCheck = false;
+    }
+
+    if (notVisibleCheck) {
       await expect(linkLocator).not.toBeVisible();
     } else {
       await expect(linkLocator).toBeVisible();
@@ -170,18 +187,8 @@ export class UIhelper {
     return await this.isElementVisible(locator, timeout);
   }
 
-  async isSearchBarVisible(): Promise<boolean> {
-    const locator = `input[placeholder="Search..."]`;
-    return await this.isElementVisible(locator);
-  }
-
   async isLinkVisible(text: string): Promise<boolean> {
     const locator = `a:has-text("${text}")`;
-    return await this.isElementVisible(locator);
-  }
-
-  async isLinkVisibleByLabel(label: string): Promise<boolean> {
-    const locator = `div[aria-label="${label}"] a`;
     return await this.isElementVisible(locator);
   }
 

@@ -76,7 +76,7 @@ test.describe.skip("GitHub Happy path", () => {
   });
 
   test("Verify all 12 Software Templates appear in the Create page", async () => {
-    await uiHelper.clickLinkByAriaLabel("Create...");
+    await uiHelper.clickLink({ ariaLabel: "Create..." });
     await uiHelper.verifyHeading("Templates");
 
     for (const template of TEMPLATES) {
