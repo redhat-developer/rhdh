@@ -135,6 +135,10 @@ export default defineConfig({
       ...useCommonDeviceAndViewportConfig,
       testMatch: ["**/playwright/e2e/configuration-test/config-map.spec.ts"],
     },
+    {
+      name: "any-test",
+      testMatch: "**/*.spec.ts", // Allows running any test file
+    },
 
     // {
     //   name: 'firefox',
