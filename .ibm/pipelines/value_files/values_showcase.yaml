@@ -150,3 +150,5 @@ upstream:
       - redis-secret
   ingress:
     host: '{{ .Values.global.host }}'
+
+# test
