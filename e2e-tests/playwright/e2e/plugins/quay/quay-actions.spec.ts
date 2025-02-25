@@ -36,7 +36,7 @@ test.describe("Test Quay Actions plugin", () => {
     await uiHelper.fillTextInputByLabel("Repository name", repository);
     await uiHelper.fillTextInputByLabel("Token", process.env.QUAY_TOKEN);
     await uiHelper.fillTextInputByLabel("namespace", process.env.QUAY_USERNAME);
-    await page.getByRole("button", { name: "Visibility​ " }).click();
+    await page.getByRole("button", { name: "Visiblity​" }).click();
     await page.click('li[data-value="0"]');
     await uiHelper.fillTextInputByLabel("Description", description);
     await uiHelper.clickButton("Review");
