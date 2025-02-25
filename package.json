@@ -55,11 +55,6 @@
   "resolutions": {
     "@types/react": "18.3.12",
     "@types/react-dom": "18.3.1",
-    "@backstage/plugin-notifications-node": "0.2.9",
-    "@backstage/plugin-signals-node": "0.1.14",
-    "@backstage/plugin-catalog-backend-module-github": "0.7.6",
-    "@backstage/plugin-search-backend-module-techdocs": "0.3.1",
-    "@backstage/backend-test-utils": "1.0.2",
     "@backstage/backend-dynamic-feature-service@0.4.4": "patch:@backstage/backend-dynamic-feature-service@npm%3A0.4.4#./.yarn/patches/@backstage-backend-dynamic-feature-service-npm-0.4.4.patch",
     "@backstage/plugin-auth-backend-module-oidc-provider@0.3.1": "patch:@backstage/plugin-auth-backend-module-oidc-provider@npm%3A0.3.1#./.yarn/patches/@backstage-plugin-auth-backend-module-oidc-provider-npm-0.3.1.patch",
     "@backstage/plugin-auth-backend-module-oidc-provider@^0.3.1": "patch:@backstage/plugin-auth-backend-module-oidc-provider@npm%3A0.3.1#./.yarn/patches/@backstage-plugin-auth-backend-module-oidc-provider-npm-0.3.1.patch",
