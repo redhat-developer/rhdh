@@ -14,9 +14,13 @@ handle_aks_operator() {
 
   cluster_setup_k8s_operator
 
-  initiate_aks_operator_deployment
+  prepare_aks_operator
 
+  initiate_aks_operator_deployment "${NAME_SPACE}"
   check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${url}"
-
   cleanup_aks_deployment "${NAME_SPACE}"
+
+  initiate_rbac_aks_operator_deployment "${NAME_SPACE_RBAC}"
+  check_and_test "${RELEASE_NAME}" "${NAME_SPACE_RBAC}" "${url}"
+  cleanup_aks_deployment "${NAME_SPACE_RBAC}"
 }
