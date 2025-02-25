@@ -133,7 +133,7 @@ for (const version of ["RHBK"]) {
         constants.RHSSO76_DEFAULT_PASSWORD,
       );
       await uiHelper.verifyAlertErrorMessage(
-        "Login failed; caused by NotFoundError: User not found",
+        /Login failed; caused by Error: Failed to sign-in, unable to resolve user identity./gm,
       );
 
       await rhssoHelper.clearUserSessions(

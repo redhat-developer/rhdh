@@ -188,9 +188,15 @@ This option allows users to sign in even if their profile has not been ingested 
 To enable this option:
 
 ```yaml
-dangerouslyAllowSignInWithoutUserInCatalog: true
 auth:
   providers:
+    oidc:
+      development:
+      ...
+      signIn:
+        resolvers:
+          - resolver: preferredUsernameMatchingUserEntityName
+            dangerouslyAllowSignInWithoutUserInCatalog: true
     # provider configs ...
 ```
 

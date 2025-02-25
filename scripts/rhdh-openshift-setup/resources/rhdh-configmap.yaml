@@ -37,10 +37,15 @@ data:
             signIn:
               resolvers:
                 - resolver: preferredUsernameMatchingUserEntityName
+                  dangerouslyAllowSignInWithoutUserInCatalog: true
         github:
           development:
             clientId: ${GITHUB_APP_CLIENT_ID}
             clientSecret: ${GITHUB_APP_CLIENT_SECRET}
+            signIn:
+              resolvers:
+                - resolver: usernameMatchingUserEntityName
+                  dangerouslyAllowSignInWithoutUserInCatalog: true
         # oauth2Proxy: {}
         guest:
           dangerouslyAllowOutsideDevelopment: true
@@ -115,5 +120,3 @@ data:
         admin:
           superUsers:
             - name: user:development/guest
-    dangerouslyAllowSignInWithoutUserInCatalog: true
-
