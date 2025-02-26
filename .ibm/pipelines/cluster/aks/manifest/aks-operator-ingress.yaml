@@ -11,6 +11,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: backstage-rhdh
+                name:
                 port:
                   name: http-backend

@@ -15,7 +15,7 @@ initiate_gke_operator_deployment() {
   create_conditional_policies_operator /tmp/conditional-policies.yaml
 
   configure_namespace "${NAME_SPACE}"
-  # deploy_test_backstage_provider "${NAME_SPACE}" # Doesn't work on K8S
+  # deploy_test_backstage_customization_provider "${NAME_SPACE}" # Doesn't work on K8S
   local rhdh_base_url="https://${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
   oc apply -f "${DIR}/cluster/gke/frontend-config.yaml" --namespace="${project}"

@@ -14,7 +14,7 @@ handle_aks_operator() {
 
   cluster_setup_k8s_operator
 
-  prepare_aks_operator
+  prepare_operator
 
   initiate_aks_operator_deployment "${NAME_SPACE}"
   check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${url}" 50 30 20

@@ -601,7 +601,7 @@ apply_yaml_files() {
     fi
 }
 
-deploy_test_backstage_provider() {
+deploy_test_backstage_customization_provider() {
   local project=$1
   echo "Deploying test-backstage-customization-provider in namespace ${project}"
 

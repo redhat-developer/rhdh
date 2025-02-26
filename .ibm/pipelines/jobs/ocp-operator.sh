@@ -10,7 +10,7 @@ initiate_operator_deployments() {
   install_rhdh_operator "${DIR}" "${OPERATOR_MANAGER}"
   
   configure_namespace "${NAME_SPACE}"
-  deploy_test_backstage_provider "${NAME_SPACE}"
+  deploy_test_backstage_customization_provider "${NAME_SPACE}"
   local rhdh_base_url="https://backstage-${RELEASE_NAME}-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
   create_dynamic_plugins_config "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "/tmp/configmap-dynamic-plugins.yaml"
