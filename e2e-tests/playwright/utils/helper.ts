@@ -284,7 +284,7 @@ export async function ensureEnvSecretExists(
       constants.RHSSO76_DEFAULT_PASSWORD,
     ).toString("base64"),
     RHBK_METADATA_URL: Buffer.from(
-      `${constants.RHBK_URL}/realms/authProviders`,
+      `${constants.RHBK_URL}/realms/${constants.AUTH_PROVIDERS_REALM_NAME}`,
     ).toString("base64"),
     RHBK_CLIENT_ID: Buffer.from(constants.RHBK_CLIENTID).toString("base64"),
     RHBK_ADMIN_USERNAME: Buffer.from(constants.RHBK_ADMIN_USERNAME).toString(

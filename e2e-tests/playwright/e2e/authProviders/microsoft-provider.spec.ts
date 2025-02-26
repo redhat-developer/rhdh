@@ -92,8 +92,8 @@ test.describe("Standard authentication providers: Micorsoft Azure EntraID", () =
       "--set upstream.backstage.appConfig.auth.providers.oidc.production.clientSecret=${AUTH_PROVIDERS_AZURE_CLIENT_SECRET}",
       "--set upstream.backstage.appConfig.auth.providers.oidc.production.prompt=auto",
       "--set upstream.backstage.appConfig.auth.providers.oidc.production.callbackUrl=${BASE_URL}/api/auth/oidc/handler/frame",
-      "--set upstream.backstage.appConfig.dangerouslyAllowSignInWithoutUserInCatalog=true",
       "--set upstream.backstage.appConfig.auth.providers.oidc.production.signIn.resolvers[0].resolver=emailMatchingUserEntityProfileEmail",
+      "--set upstream.backstage.appConfig.auth.providers.oidc.production.signIn.resolvers[0].dangerouslyAllowSignInWithoutUserInCatalog=true",
     ];
     // setup RHSSO provider with user ingestion
     await HelmActions.upgradeHelmChartWithWait(
@@ -513,7 +513,7 @@ test.describe("Standard authentication providers: Micorsoft Azure EntraID", () =
     expect(loginSucceded).toContain("Login successful");
 
     await uiHelper.verifyAlertErrorMessage(
-      /User not found in the RHDH software catalog/gm,
+      /Login failed; caused by Error: Failed to sign-in, unable to resolve user identity./gm,
     );
 
     await context.clearCookies(); // If we don't clear cookies, Microsoft Login popup will present the last logger user

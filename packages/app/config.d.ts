@@ -182,12 +182,7 @@ export interface Config {
    */
   signInPage?: string;
   /**
-   * The option to allow sign in without existing user in the catalog, defaults to false
-   * @visibility frontend
-   */
-  dangerouslyAllowSignInWithoutUserInCatalog?: boolean;
-  /**
-   * The option to includes transitive parent groups when determining user group membership
+   * The option to includes transient parent groups when determining user group membership
    * @visibility frontend
    */
   includeTransitiveGroupOwnership?: boolean;
