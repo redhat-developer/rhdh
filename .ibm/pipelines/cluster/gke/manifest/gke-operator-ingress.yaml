@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rhdh-gke-operator-ingress
+  annotations:
+    # If the class annotation is not specified it defaults to "gce".
+    kubernetes.io/ingress.class: "gce"
+    kubernetes.io/ingress.global-static-ip-name: rhdh-static-ip
+    networking.gke.io/managed-certificates: ${GKE_CERT_NAME}
+    networking.gke.io/v1beta1.FrontendConfig: rhdh-gke-ingress-security-config
+spec:
+  ingressClassName: gce
+  rules:
+    - host: https://${K8S_CLUSTER_ROUTER_BASE}
+      http:
+        paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: ${CURRENT_RELEASE_NAME}
+              port:
+                name: http-backend

@@ -6,21 +6,19 @@ source "$DIR"/install-methods/operator.sh
 source "$DIR"/cluster/aks/aks-operator-deployment.sh
 
 handle_aks_operator() {
-  echo "Starting AKS deployment"
-  
-  export K8S_CLUSTER_ROUTER_BASE=$(kubectl get svc nginx --namespace app-routing-system -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+  K8S_CLUSTER_ROUTER_BASE=$(kubectl get svc nginx --namespace app-routing-system -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+  export K8S_CLUSTER_ROUTER_BASE
   local url="https://${K8S_CLUSTER_ROUTER_BASE}"
-
 
   cluster_setup_k8s_operator
 
   prepare_operator
 
-  initiate_aks_operator_deployment "${NAME_SPACE}"
+  initiate_aks_operator_deployment "${NAME_SPACE}" "https://${K8S_CLUSTER_ROUTER_BASE}"
   check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${url}" 50 30 20
   cleanup_aks_deployment "${NAME_SPACE}"
 
-  initiate_rbac_aks_operator_deployment "${NAME_SPACE_RBAC}"
+  initiate_rbac_aks_operator_deployment "${NAME_SPACE_RBAC}" "https://${K8S_CLUSTER_ROUTER_BASE}"
   check_and_test "${RELEASE_NAME}" "${NAME_SPACE_RBAC}" "${url}" 50 30 20
   cleanup_aks_deployment "${NAME_SPACE_RBAC}"
 }

@@ -371,6 +371,7 @@ setup_image_pull_secret() {
   local namespace=$1
   local secret_name=$2
   local dockerconfigjson_value=$3
+  echo "Creating $secret_name secret in $namespace namespace"
   create_secret_dockerconfigjson "$namespace" "$secret_name" "$dockerconfigjson_value"
   add_image_pull_secret_to_namespace_default_serviceaccount "$namespace" "$secret_name"
 }
