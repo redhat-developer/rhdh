@@ -561,7 +561,7 @@ apply_yaml_files() {
       --namespace="${project}" \
       --dry-run=client -o yaml | oc apply -f -
 
-    if [[ "${project}" == *showcase-op* ]]; then
+    if [[ "$JOB_NAME" == *operator* ]] && [[ "${project}" == *rbac* ]]; then
       oc create configmap rbac-policy \
         --from-file="rbac-policy.csv"="$dir/resources/config_map/rbac-policy.csv" \
         --from-file="conditional-policies.yaml"="/tmp/conditional-policies.yaml" \
@@ -741,8 +741,6 @@ check_backstage_running() {
   local wait_seconds=$5
 
   echo "Checking if Backstage is up and running at ${url}"
-
-  trap cleanup EXIT INT ERR # reapply trap
 
   for ((i = 1; i <= max_attempts; i++)); do
     local http_status
