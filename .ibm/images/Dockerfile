@@ -71,7 +71,7 @@ RUN curl -LO "https://github.com/operator-framework/operator-registry/releases/d
     chmod +x linux-amd64-opm && \
     mv linux-amd64-opm /usr/local/bin/opm
 
-# Install Operator SDK CLI (required to install OLM on k8s clusters)
+# Install Operator SDK CLI (required to install OLM on K8s clusters)
 RUN export ARCH=$(case $(uname -m) in x86_64) echo -n amd64 ;; aarch64) echo -n arm64 ;; *) echo -n $(uname -m) ;; esac) && \
     export OS=$(uname | awk '{print tolower($0)}') && \
     curl -LO "https://github.com/operator-framework/operator-sdk/releases/download/v1.39.1/operator-sdk_${OS}_${ARCH}" && \
