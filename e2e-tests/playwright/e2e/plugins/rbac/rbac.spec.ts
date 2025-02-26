@@ -237,7 +237,10 @@ test.describe.serial("Test RBAC plugin as an admin user", () => {
     await page.click(RoleFormPO.selectMember("Jonathon Page"));
     await uiHelper.verifyHeading("Users and groups (3 users, 1 group)");
     await uiHelper.clickButton("Next");
+    const addButton = page.getByRole("button", { name: "Add" });
+    await addButton.waitFor();
     await uiHelper.clickButton("Next");
+
     await uiHelper.clickButton("Save");
     await uiHelper.verifyText(
       "Role role:default/test-role updated successfully",
