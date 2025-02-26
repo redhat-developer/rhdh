@@ -26,6 +26,11 @@ install_rhdh_operator() {
   fi
 }
 
+prepare_operator() {
+  configure_namespace "${OPERATOR_MANAGER}"
+  install_rhdh_operator "${DIR}" "${OPERATOR_MANAGER}"
+}
+
 wait_for_backstage_crd() {
   local namespace=$1
   timeout 300 bash -c "
