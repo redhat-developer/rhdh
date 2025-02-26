@@ -35,7 +35,10 @@ test.describe("Test Quay Actions plugin", () => {
 
     await uiHelper.fillTextInputByLabel("Repository name", repository);
     await uiHelper.fillTextInputByLabel("Token", process.env.QUAY_TOKEN);
-    await uiHelper.fillTextInputByLabel("namespace", process.env.QUAY_USERNAME);
+    await uiHelper.fillTextInputByLabel(
+      "namespace",
+      process.env.QUAY_NAMESPACE,
+    );
     await page.getByRole("button", { name: "Visiblity​" }).click();
     await page.click('li[data-value="0"]');
     await uiHelper.fillTextInputByLabel("Description", description);
@@ -48,6 +51,6 @@ test.describe("Test Quay Actions plugin", () => {
   });
 
   test.afterEach(async () => {
-    await quayClient.deleteRepository(process.env.QUAY_USERNAME, repository);
+    await quayClient.deleteRepository(process.env.QUAY_NAMESPACE, repository);
   });
 });
