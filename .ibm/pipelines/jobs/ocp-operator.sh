@@ -6,9 +6,11 @@ source "$DIR"/utils.sh
 source "$DIR"/install-methods/operator.sh
 
 initiate_operator_deployments() {
+  echo "Initiating Operator-backed deployments on OCP"
+
   configure_namespace "${OPERATOR_MANAGER}"
   install_rhdh_operator "${DIR}" "${OPERATOR_MANAGER}"
-  
+
   configure_namespace "${NAME_SPACE}"
   deploy_test_backstage_customization_provider "${NAME_SPACE}"
   local rhdh_base_url="https://backstage-${RELEASE_NAME}-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
