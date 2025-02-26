@@ -1,5 +1,6 @@
 export const HOME_PAGE_COMPONENTS = {
   MuiAccordion: 'div[class*="MuiAccordion-root-"]',
+  MuiCard: 'div[class*="MuiCard-root-"]',
 };
 
 export const SEARCH_OBJECTS_COMPONENTS = {

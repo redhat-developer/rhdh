@@ -12,7 +12,7 @@ test.describe("Smoke test", () => {
     uiHelper = new UIhelper(page);
     homePage = new HomePage(page);
     common = new Common(page);
-    await common.loginAsKeycloakUser();
+    await common.loginAsGuest();
   });
 
   test("Verify the Homepage renders with Search Bar, Quick Access and Starred Entities", async () => {

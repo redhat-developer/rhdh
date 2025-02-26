@@ -526,6 +526,12 @@ apply_yaml_files() {
 
     oc apply -f "$dir/auth/secrets-rhdh-secrets.yaml" --namespace="${project}"
 
+    # configuration for testing global floating action button.
+    oc create configmap dynamic-global-floating-action-button-config \
+      --from-file="dynamic-global-floating-action-button-config.yaml"="$dir/resources/config_map/dynamic-global-floating-action-button-config.yaml" \
+      --namespace="${project}" \
+      --dry-run=client -o yaml | oc apply -f -
+
     # Create Pipeline run for tekton test case.
     oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline.yaml"
     oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline-run.yaml"

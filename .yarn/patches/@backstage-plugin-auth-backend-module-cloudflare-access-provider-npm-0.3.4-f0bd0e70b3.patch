@@ -1,0 +1,71 @@
+diff --git a/dist/index.d.ts b/dist/index.d.ts
+index 6d4255780c2889eeee08f8c0d98b8b87469d4c65..3ba8019cebab9777bcecaede4ff9a16a80cd3c47 100644
+--- a/dist/index.d.ts
++++ b/dist/index.d.ts
+@@ -107,7 +107,9 @@ declare namespace cloudflareAccessSignInResolvers {
+     /**
+      * Looks up the user by matching their email to the entity email.
+      */
+-    const emailMatchingUserEntityProfileEmail: _backstage_plugin_auth_node.SignInResolverFactory<CloudflareAccessResult, unknown>;
++    const emailMatchingUserEntityProfileEmail: _backstage_plugin_auth_node.SignInResolverFactory<CloudflareAccessResult, {
++        dangerouslyAllowSignInWithoutUserInCatalog?: boolean | undefined;
++    } | undefined>;
+ }
+ 
+ export { type CloudflareAccessClaims, type CloudflareAccessGroup, type CloudflareAccessIdentityProfile, type CloudflareAccessResult, cloudflareAccessSignInResolvers, createCloudflareAccessAuthenticator, authModuleCloudflareAccessProvider as default };
+diff --git a/dist/resolvers.cjs.js b/dist/resolvers.cjs.js
+index e245ef09e85dd3f8d29c9e6ccbc93334e422fc9b..bba6bfe1fae01890e8ca80de7ecef87f9c4a739c 100644
+--- a/dist/resolvers.cjs.js
++++ b/dist/resolvers.cjs.js
+@@ -1,11 +1,15 @@
+ 'use strict';
+ 
+ var pluginAuthNode = require('@backstage/plugin-auth-node');
++var zod = require('zod');
+ 
+ exports.cloudflareAccessSignInResolvers = void 0;
+ ((cloudflareAccessSignInResolvers2) => {
+   cloudflareAccessSignInResolvers2.emailMatchingUserEntityProfileEmail = pluginAuthNode.createSignInResolverFactory({
+-    create() {
++    optionsSchema: zod.z.object({
++      dangerouslyAllowSignInWithoutUserInCatalog: zod.z.boolean().optional()
++    }).optional(),
++    create(options = {}) {
+       return async (info, ctx) => {
+         const { profile } = info;
+         if (!profile.email) {
+@@ -13,11 +17,20 @@ exports.cloudflareAccessSignInResolvers = void 0;
+             "Login failed, user profile does not contain an email"
+           );
+         }
+-        return ctx.signInWithCatalogUser({
+-          filter: {
+-            "spec.profile.email": profile.email
+-          }
+-        });
++        try {
++          return await ctx.signInWithCatalogUser({
++            filter: {
++              "spec.profile.email": profile.email
++            }
++          });
++        } catch (error) {
++          return await pluginAuthNode.handleSignInUserNotFound({
++            ctx,
++            error,
++            userEntityName: profile.email,
++            dangerouslyAllowSignInWithoutUserInCatalog: options?.dangerouslyAllowSignInWithoutUserInCatalog
++          });
++        }
+       };
+     }
+   });
+diff --git a/dist/resolvers.cjs.js.map b/dist/resolvers.cjs.js.map
+index da722e883f8d2b01a4a385c95e5f061262153d31..6bb6df4cb5b5ddff8d10a0c8eaf41ced1e31b146 100644
+--- a/dist/resolvers.cjs.js.map
++++ b/dist/resolvers.cjs.js.map
+@@ -1 +1 @@
+-{"version":3,"file":"resolvers.cjs.js","sources":["../src/resolvers.ts"],"sourcesContent":["/*\n * Copyright 2023 The Backstage Authors\n *\n * Licensed under the Apache License, Version 2.0 (the \"License\");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *     http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n\nimport {\n  createSignInResolverFactory,\n  SignInInfo,\n} from '@backstage/plugin-auth-node';\nimport { CloudflareAccessResult } from './types';\n\n/**\n * Available sign-in resolvers for the Cloudflare Access auth provider.\n *\n * @public\n */\nexport namespace cloudflareAccessSignInResolvers {\n  /**\n   * Looks up the user by matching their email to the entity email.\n   */\n  export const emailMatchingUserEntityProfileEmail =\n    createSignInResolverFactory({\n      create() {\n        return async (info: SignInInfo<CloudflareAccessResult>, ctx) => {\n          const { profile } = info;\n\n          if (!profile.email) {\n            throw new Error(\n              'Login failed, user profile does not contain an email',\n            );\n          }\n\n          return ctx.signInWithCatalogUser({\n            filter: {\n              'spec.profile.email': profile.email,\n            },\n          });\n        };\n      },\n    });\n}\n"],"names":["cloudflareAccessSignInResolvers","createSignInResolverFactory"],"mappings":";;;;AA2BiBA;AAAA,CAAV,CAAUA,gCAAV,KAAA;AAIE,EAAMA,gCAAAA,CAAA,sCACXC,0CAA4B,CAAA;AAAA,IAC1B,MAAS,GAAA;AACP,MAAO,OAAA,OAAO,MAA0C,GAAQ,KAAA;AAC9D,QAAM,MAAA,EAAE,SAAY,GAAA,IAAA;AAEpB,QAAI,IAAA,CAAC,QAAQ,KAAO,EAAA;AAClB,UAAA,MAAM,IAAI,KAAA;AAAA,YACR;AAAA,WACF;AAAA;AAGF,QAAA,OAAO,IAAI,qBAAsB,CAAA;AAAA,UAC/B,MAAQ,EAAA;AAAA,YACN,sBAAsB,OAAQ,CAAA;AAAA;AAChC,SACD,CAAA;AAAA,OACH;AAAA;AACF,GACD,CAAA;AAAA,CAvBY,EAAAD,uCAAA,KAAAA,uCAAA,GAAA,EAAA,CAAA,CAAA;;"}
+\ No newline at end of file
++{"version":3,"file":"resolvers.cjs.js","sources":["../src/resolvers.ts"],"sourcesContent":["/*\n * Copyright 2023 The Backstage Authors\n *\n * Licensed under the Apache License, Version 2.0 (the \"License\");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *     http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n\nimport {\n  createSignInResolverFactory,\n  handleSignInUserNotFound,\n  SignInInfo,\n} from '@backstage/plugin-auth-node';\nimport { CloudflareAccessResult } from './types';\nimport { z } from 'zod';\n\n/**\n * Available sign-in resolvers for the Cloudflare Access auth provider.\n *\n * @public\n */\nexport namespace cloudflareAccessSignInResolvers {\n  /**\n   * Looks up the user by matching their email to the entity email.\n   */\n  export const emailMatchingUserEntityProfileEmail =\n    createSignInResolverFactory({\n      optionsSchema: z\n        .object({\n          dangerouslyAllowSignInWithoutUserInCatalog: z.boolean().optional(),\n        })\n        .optional(),\n      create(options = {}) {\n        return async (info: SignInInfo<CloudflareAccessResult>, ctx) => {\n          const { profile } = info;\n\n          if (!profile.email) {\n            throw new Error(\n              'Login failed, user profile does not contain an email',\n            );\n          }\n          try {\n            return await ctx.signInWithCatalogUser({\n              filter: {\n                'spec.profile.email': profile.email,\n              },\n            });\n          } catch (error) {\n            return await handleSignInUserNotFound({\n              ctx,\n              error,\n              userEntityName: profile.email,\n              dangerouslyAllowSignInWithoutUserInCatalog:\n                options?.dangerouslyAllowSignInWithoutUserInCatalog,\n            });\n          }\n        };\n      },\n    });\n}\n"],"names":["cloudflareAccessSignInResolvers","createSignInResolverFactory","z","handleSignInUserNotFound"],"mappings":";;;;;AA6BiBA;AAAA,CAAV,CAAUA,gCAAV,KAAA;AAIE,EAAMA,gCAAAA,CAAA,sCACXC,0CAA4B,CAAA;AAAA,IAC1B,aAAA,EAAeC,MACZ,MAAO,CAAA;AAAA,MACN,0CAA4C,EAAAA,KAAA,CAAE,OAAQ,EAAA,CAAE,QAAS;AAAA,KAClE,EACA,QAAS,EAAA;AAAA,IACZ,MAAA,CAAO,OAAU,GAAA,EAAI,EAAA;AACnB,MAAO,OAAA,OAAO,MAA0C,GAAQ,KAAA;AAC9D,QAAM,MAAA,EAAE,SAAY,GAAA,IAAA;AAEpB,QAAI,IAAA,CAAC,QAAQ,KAAO,EAAA;AAClB,UAAA,MAAM,IAAI,KAAA;AAAA,YACR;AAAA,WACF;AAAA;AAEF,QAAI,IAAA;AACF,UAAO,OAAA,MAAM,IAAI,qBAAsB,CAAA;AAAA,YACrC,MAAQ,EAAA;AAAA,cACN,sBAAsB,OAAQ,CAAA;AAAA;AAChC,WACD,CAAA;AAAA,iBACM,KAAO,EAAA;AACd,UAAA,OAAO,MAAMC,uCAAyB,CAAA;AAAA,YACpC,GAAA;AAAA,YACA,KAAA;AAAA,YACA,gBAAgB,OAAQ,CAAA,KAAA;AAAA,YACxB,4CACE,OAAS,EAAA;AAAA,WACZ,CAAA;AAAA;AACH,OACF;AAAA;AACF,GACD,CAAA;AAAA,CArCY,EAAAH,uCAAA,KAAAA,uCAAA,GAAA,EAAA,CAAA,CAAA;;"}
+\ No newline at end of file
