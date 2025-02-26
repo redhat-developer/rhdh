@@ -310,8 +310,9 @@ export class UIhelper {
     await expect(headingLocator).toBeVisible();
   }
 
-  async waitForTitle(text: string, level: number = 1) {
-    await this.page.waitForSelector(`h${level}:has-text("${text}")`);
+  async waitForTitle(text: string, level: number = 1, timeout?: number) {
+    const options = timeout !== undefined ? { timeout: timeout } : undefined;
+    await this.page.waitForSelector(`h${level}:has-text("${text}")`, options);
   }
 
   async clickTab(tabName: string) {
