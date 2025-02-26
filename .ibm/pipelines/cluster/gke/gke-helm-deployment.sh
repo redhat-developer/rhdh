@@ -16,6 +16,7 @@ initiate_gke_helm_deployment() {
   local rhdh_base_url="https://${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE_K8S}" "${rhdh_base_url}"
   apply_gke_frontend_config "${NAME_SPACE_K8S}"
+  kubectl apply -f "$DIR/resources/redis-cache/redis-deployment.yaml" --namespace="${name_space}"
   yq_merge_value_files "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_GKE_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}"
   mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE_K8S}"
   cp -a "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}" "${ARTIFACT_DIR}/${NAME_SPACE_K8S}/" # Save the final value-file into the artifacts directory.

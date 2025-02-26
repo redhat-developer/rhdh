@@ -887,7 +887,15 @@ cluster_setup_k8s_operator() {
   install_olm
   install_tekton_pipelines
   # install_ocm_k8s_operator
-  install_crunchy_postgres_k8s_operator
+  # install_crunchy_postgres_k8s_operator # Works with K8s but disabled in values file
+}
+
+cluster_setup_k8s_helm() {
+  install_olm
+  install_tekton_pipelines
+  # install_ocm_k8s_operator
+  # install_crunchy_postgres_k8s_operator # Works with K8s but disabled in values file
+  add_helm_repos
 }
 
 initiate_deployments() {
