@@ -56,7 +56,7 @@ kubeTest.describe.serial("OpenShift Operator Tests", () => {
       );
 
       LOGGER.info("rhdhUrl: " + operator.rhdhUrl);
-      await page.waitForTimeout(160_000);
+      await page.waitForTimeout(300_000);
       await common.loginAsGuest(operator.rhdhUrl);
       await uiHelper.openSidebar("Settings");
       const version13 = await page
@@ -72,7 +72,7 @@ kubeTest.describe.serial("OpenShift Operator Tests", () => {
         ],
         namespace,
       );
-      await page.waitForTimeout(160_000);
+      await page.waitForTimeout(300_000);
 
       await common.loginAsGuest(operator.rhdhUrl);
       await uiHelper.openSidebar("Settings");
