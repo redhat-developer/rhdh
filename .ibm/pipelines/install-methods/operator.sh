@@ -48,9 +48,5 @@ deploy_rhdh_operator() {
 
   wait_for_backstage_crd "$namespace"
 
-  if [[ "${IS_OPENSHIFT}" = "true" ]]; then
-    oc apply -f "$backstage_crd_path" -n "${namespace}"
-  else
-    kubectl apply -f "$backstage_crd_path" -n "${namespace}"
-  fi
+  oc apply -f "$backstage_crd_path" -n "${namespace}"
 }
