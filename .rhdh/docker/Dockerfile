@@ -21,8 +21,8 @@
 # 4. add Brew metadata
 
 # Stage 1 - Build nodejs skeleton
-#@follow_tag(registry.access.redhat.com/ubi9/nodejs-20:1)
-# https://registry.access.redhat.com/ubi9/nodejs-20
+#@follow_tag(registry.access.redhat.com/ubi9/nodejs-22:1)
+# https://registry.access.redhat.com/ubi9/nodejs-222
 FROM registry.access.redhat.com/ubi9/nodejs-22:9.5-1739786380 AS build
 # hadolint ignore=DL3002
 USER 0
@@ -264,8 +264,8 @@ RUN "$YARN" workspaces focus --all --production && \
   npm config set cafile /opt/app-root/src/registry-ca.pem
 
 # Stage 5 - Build the runner image
-#@follow_tag(registry.access.redhat.com/ubi9/nodejs-20-minimal:1)
-# https://registry.access.redhat.com/ubi9/nodejs-20-minimal
+#@follow_tag(registry.access.redhat.com/ubi9/nodejs-22-minimal:1)
+# https://registry.access.redhat.com/ubi9/nodejs-22-minimal
 FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:9.5-1739448964 AS runner
 USER 0
 
