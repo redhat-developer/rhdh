@@ -78,6 +78,7 @@ const ScalprumRoot = ({
       mountPoints: {},
       scaffolderFieldExtensions: [],
       techdocsAddons: [],
+      providerSettings: [],
     } as DynamicRootConfig,
   };
   return (
