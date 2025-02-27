@@ -116,6 +116,18 @@ type ThemeEntry = {
   importName: string;
 };
 
+type SignInPageEntry = {
+  scope: string;
+  module: string;
+  importName: string;
+};
+
+type ProviderSetting = {
+  title: string;
+  description: string;
+  provider: string;
+};
+
 type CustomProperties = {
   pluginModule?: string;
   dynamicRoutes?: (DynamicModuleEntry & {
@@ -133,7 +145,9 @@ type CustomProperties = {
   mountPoints?: MountPoint[];
   appIcons?: AppIcon[];
   apiFactories?: ApiFactory[];
+  providerSettings?: ProviderSetting[];
   scaffolderFieldExtensions?: ScaffolderFieldExtension[];
+  signInPage: SignInPageEntry;
   themes?: ThemeEntry[];
 };
 
@@ -153,9 +167,11 @@ type DynamicConfig = {
   menuItems: MenuItem[];
   entityTabs: EntityTabEntry[];
   mountPoints: MountPoint[];
+  providerSettings: ProviderSetting[];
   routeBindings: RouteBinding[];
   routeBindingTargets: BindingTarget[];
   scaffolderFieldExtensions: ScaffolderFieldExtension[];
+  signInPages: SignInPageEntry[];
   themes: ThemeEntry[];
 };
 
@@ -177,9 +193,29 @@ function extractDynamicConfig(
     mountPoints: [],
     routeBindings: [],
     routeBindingTargets: [],
+    providerSettings: [],
     scaffolderFieldExtensions: [],
+    signInPages: [],
     themes: [],
   };
+  config.signInPages = Object.entries(frontend).reduce<SignInPageEntry[]>(
+    (pluginSet, [scope, { signInPage }]) => {
+      if (!signInPage) {
+        return pluginSet;
+      }
+      const { importName, module } = signInPage;
+      if (!importName) {
+        return pluginSet;
+      }
+      pluginSet.push({
+        scope,
+        module: module ?? 'PluginRoot',
+        importName: importName ?? 'default',
+      });
+      return pluginSet;
+    },
+    [],
+  );
   config.pluginModules = Object.entries(frontend).reduce<PluginModule[]>(
     (pluginSet, [scope, customProperties]) => {
       pluginSet.push({
@@ -301,6 +337,12 @@ function extractDynamicConfig(
         })),
       );
       return accThemeEntries;
+    },
+    [],
+  );
+  config.providerSettings = Object.entries(frontend).reduce<ProviderSetting[]>(
+    (accProviderSettings, [_, { providerSettings = [] }]) => {
+      return [...accProviderSettings, ...providerSettings];
     },
     [],
   );
