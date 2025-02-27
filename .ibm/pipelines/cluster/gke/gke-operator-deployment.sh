@@ -18,7 +18,7 @@ initiate_gke_operator_deployment() {
   configure_namespace "${namespace}"
   # deploy_test_backstage_customization_provider "${namespace}" # Doesn't work on K8s
   apply_yaml_files "${DIR}" "${namespace}" "${rhdh_base_url}"
-  apply_gke_frontend_config
+  apply_gke_frontend_config "${namespace}"
 
   echo "Creating and applying ConfigMap for dynamic plugins"
   yq_merge_value_files "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_GKE_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}"
@@ -33,7 +33,7 @@ initiate_gke_operator_deployment() {
 
   deploy_rhdh_operator "${namespace}" "${DIR}/resources/rhdh-operator/rhdh-start_K8s.yaml"
 
-  apply_gke_operator_ingress "backstage-$RELEASE_NAME"
+  apply_gke_operator_ingress "backstage-$RELEASE_NAME" "$namespace"
 }
 
 initiate_rbac_gke_operator_deployment() {
@@ -47,7 +47,7 @@ initiate_rbac_gke_operator_deployment() {
   create_conditional_policies_operator /tmp/conditional-policies.yaml
   prepare_operator_app_config "${DIR}/resources/config_map/app-config-rhdh-rbac.yaml"
   apply_yaml_files "${DIR}" "${namespace}" "${rhdh_base_url}"
-  apply_gke_frontend_config
+  apply_gke_frontend_config "${namespace}"
 
   echo "Creating and applying ConfigMap for dynamic plugins"
   yq_merge_value_files "merge" "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_RBAC_GKE_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}"
@@ -60,5 +60,5 @@ initiate_rbac_gke_operator_deployment() {
 
   deploy_rhdh_operator "${NAME_SPACE}" "${DIR}/resources/rhdh-operator/rhdh-start-rbac_K8s.yaml"
 
-  apply_gke_operator_ingress "backstage-$RELEASE_NAME_RBAC"
+  apply_gke_operator_ingress "backstage-$RELEASE_NAME_RBAC" "$namespace"
 }
