@@ -28,7 +28,7 @@ initiate_aks_operator_deployment() {
 
   deploy_rhdh_operator "${namespace}" "${DIR}/resources/rhdh-operator/rhdh-start_K8s.yaml"
 
-  apply_aks_operator_ingress "backstage-$RELEASE_NAME" "$namespace"
+  apply_aks_operator_ingress "$namespace" "backstage-$RELEASE_NAME"
 }
 
 initiate_rbac_aks_operator_deployment() {
@@ -54,12 +54,12 @@ initiate_rbac_aks_operator_deployment() {
 
   deploy_rhdh_operator "${namespace}" "${DIR}/resources/rhdh-operator/rhdh-start-rbac_K8s.yaml"
 
-  apply_aks_operator_ingress "backstage-$RELEASE_NAME_RBAC" "$namespace"
+  apply_aks_operator_ingress "$namespace" "backstage-$RELEASE_NAME_RBAC"
 }
 
 apply_aks_operator_ingress() {
-  local service_name=$1
-  local namespace=$2
+  local namespace=$1
+  local service_name=$2
   cat "$DIR/cluster/aks/manifest/aks-operator-ingress.yaml" | \
     yq ".spec.rules[0].http.paths[0].backend.service.name = \"$service_name\"" - | \
     kubectl apply --namespace="${namespace}" -f -
