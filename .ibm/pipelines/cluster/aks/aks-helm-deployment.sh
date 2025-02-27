@@ -1,10 +1,12 @@
 #!/bin/bash
 
-initiate_aks_deployment() {
-  install_tekton_pipelines
-  add_helm_repos
+# shellcheck source=.ibm/pipelines/utils.sh
+source "$DIR"/utils.sh
+
+initiate_aks_helm_deployment() {
   delete_namespace "${NAME_SPACE_RBAC_K8S}"
   configure_namespace "${NAME_SPACE_K8S}"
+  kubectl apply -f "$DIR/resources/redis-cache/redis-deployment.yaml" --namespace="${namespace}"
   uninstall_helmchart "${NAME_SPACE_K8S}" "${RELEASE_NAME}"
   cd "${DIR}" || exit
   local rhdh_base_url="https://${K8S_CLUSTER_ROUTER_BASE}"
@@ -21,9 +23,7 @@ initiate_aks_deployment() {
     --set upstream.backstage.image.tag="${TAG_NAME}"
 }
 
-initiate_rbac_aks_deployment() {
-  install_tekton_pipelines
-  add_helm_repos
+initiate_rbac_aks_helm_deployment() {
   delete_namespace "${NAME_SPACE_K8S}"
   configure_namespace "${NAME_SPACE_RBAC_K8S}"
   uninstall_helmchart "${NAME_SPACE_RBAC_K8S}" "${RELEASE_NAME_RBAC}"
