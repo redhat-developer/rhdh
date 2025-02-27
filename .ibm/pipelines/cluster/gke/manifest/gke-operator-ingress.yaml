@@ -6,18 +6,18 @@ metadata:
     # If the class annotation is not specified it defaults to "gce".
     kubernetes.io/ingress.class: "gce"
     kubernetes.io/ingress.global-static-ip-name: rhdh-static-ip
-    networking.gke.io/managed-certificates: ${GKE_CERT_NAME}
+    networking.gke.io/managed-certificates: $GKE_CERT_NAME
     networking.gke.io/v1beta1.FrontendConfig: rhdh-gke-ingress-security-config
 spec:
   ingressClassName: gce
   rules:
-    - host: ${K8S_CLUSTER_ROUTER_BASE}
+    - host: $K8S_CLUSTER_ROUTER_BASE
       http:
         paths:
         - path: /
           pathType: Prefix
           backend:
             service:
-              name: ${SERVICE_NAME}
+              name: $SERVICE_NAME
               port:
                 name: http-backend

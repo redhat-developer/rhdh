@@ -6,6 +6,12 @@ apply_gke_frontend_config() {
   kubectl apply -f "${DIR}/cluster/gke/manifest/frontend-config.yaml" --namespace="${namespace}"
 }
 
+apply_gke_managed_certificate() {
+  local namespace=$1
+  echo "Applying GKE Managed Certificate"
+  envsubst < "${DIR}/cluster/gke/manifest/managed-certificate.yaml" | kubectl apply --namespace="${namespace}" -f -
+}
+
 apply_gke_operator_ingress() {
   local namespace=$1
   local service_name=$2
