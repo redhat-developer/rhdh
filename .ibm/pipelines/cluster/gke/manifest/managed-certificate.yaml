@@ -1,7 +1,0 @@
-apiVersion: networking.gke.io/v1
-kind: ManagedCertificate
-metadata:
-  name: $GKE_CERT_NAME
-spec:
-  domains:
-    - $GKE_INSTANCE_DOMAIN_NAME

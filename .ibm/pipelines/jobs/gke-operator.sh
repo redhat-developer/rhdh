@@ -8,6 +8,8 @@ source "$DIR"/cluster/gke/gcloud.sh
 source "$DIR"/cluster/gke/gke-operator-deployment.sh
 # shellcheck source=.ibm/pipelines/install-methods/operator.sh
 source "$DIR"/install-methods/operator.sh
+# shellcheck source=.ibm/pipelines/cluster/k8s/k8s-utils.sh
+source "$DIR"/cluster/k8s/k8s-utils.sh
 
 handle_gke_operator() {
   K8S_CLUSTER_ROUTER_BASE=$GKE_INSTANCE_DOMAIN_NAME
