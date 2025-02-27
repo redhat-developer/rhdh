@@ -12,7 +12,7 @@ export class ThemeVerifier {
   }
 
   async setTheme(theme: "Light" | "Dark" | "Light Dynamic" | "Dark Dynamic") {
-    await this.uiHelper.openSidebar("Settings");
+    await this.uiHelper.goToSettingsPage();
     await this.uiHelper.clickBtnByTitleIfNotPressed(`Select theme ${theme}`);
   }
 
@@ -22,7 +22,8 @@ export class ThemeVerifier {
   }
 
   async verifyBorderLeftColor(expectedColor: string) {
-    const locator = await this.page.locator("a[aria-label='Settings']");
+    await this.uiHelper.openSidebar("Home");
+    const locator = await this.page.locator("a").filter({ hasText: "Home" });
     await expect(locator).toHaveCSS(
       "border-left",
       `3px solid ${expectedColor}`,
@@ -46,7 +47,7 @@ export class ThemeVerifier {
       UI_HELPER_ELEMENTS.MuiButtonTextPrimary,
       colorPrimary,
     );
-    await this.uiHelper.openSidebar("Settings");
+    await this.uiHelper.goToSettingsPage();
   }
 
   async takeScreenshotAndAttach(
