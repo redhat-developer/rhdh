@@ -25,9 +25,9 @@ global:
                   catalogPath: '/catalog-info.yaml'
                   schedule:
                     frequency:
-                      minutes: 1
+                      minutes: 5
                     timeout:
-                      minutes: 1
+                      minutes: 5
                     initialDelay:
                       seconds: 15
       - package: '@red-hat-developer-hub/backstage-plugin-application-provider-test@0.0.2'
