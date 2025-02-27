@@ -24,7 +24,7 @@
 
 # Stage 1 - Build nodejs skeleton
 # https://registry.access.redhat.com/ubi9/nodejs-22
-FROM registry.access.redhat.com/ubi9/nodejs-22:9.5-1739786380 AS skeleton
+FROM registry.access.redhat.com/ubi9/nodejs-22:9.5-1740412185 AS skeleton
 # hadolint ignore=DL3002
 USER 0
 
@@ -205,7 +205,7 @@ RUN "$YARN" workspaces focus --all --production && \
 
 # Stage 5 - Build the runner image
 # https://registry.access.redhat.com/ubi9/nodejs-22-minimal
-FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:9.5-1739448964 AS runner
+FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:9.5-1740651938 AS runner
 USER 0
 
 # Upstream only
