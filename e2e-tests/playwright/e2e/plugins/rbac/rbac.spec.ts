@@ -163,7 +163,16 @@ test.describe.serial("Test RBAC", () => {
         .slice(1)
         .every((line) => line.startsWith("user:default"));
       if (!allUsersValid) {
-        throw new Error("Not all users info are valid");
+        const invalidUsers = lines
+          .slice(1)
+          .filter((line) => !line.startsWith("user:default"));
+
+        if (invalidUsers.length > 0) {
+          throw new Error(
+            `Invalid user data detected. Each line must start with 'user:default', but found ${invalidUsers.length} invalid entries:\n` +
+              invalidUsers.join("\n"),
+          );
+        }
       }
     });
 
