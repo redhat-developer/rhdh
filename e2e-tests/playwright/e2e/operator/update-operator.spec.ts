@@ -36,7 +36,7 @@ const kubeTest = base.extend<OcFixture>({
 });
 
 kubeTest.describe.serial("OpenShift Operator Tests", () => {
-  kubeTest.slow();
+  kubeTest.setTimeout(1_000_000);
 
   kubeTest(
     "Build OperatorScript",

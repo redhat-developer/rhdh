@@ -69,9 +69,18 @@ test.describe.skip("Test RBAC", () => {
         Roles.getPermissionPoliciesListCellsIdentifier();
       await uiHelper.verifyCellsInTable(permissionPoliciesCellsIdentifier);
 
-      await expect(page.getByRole("article")).toContainText("catalog-entity");
-      await expect(page.getByRole("article")).toContainText("Read, Update");
-      await expect(page.getByRole("article")).toContainText("Delete");
+      await uiHelper.verifyRowInTableByUniqueText("rhdh-qe-2-team", [
+        "Group",
+        "1",
+      ]);
+      await uiHelper.verifyRowInTableByUniqueText("catalog.entity.read", [
+        "Read",
+        "1 rule",
+      ]);
+      await uiHelper.verifyRowInTableByUniqueText("catalog.entity.delete", [
+        "Delete",
+        "1 rule",
+      ]);
     });
   });
 
@@ -212,6 +221,32 @@ test.describe.skip("Test RBAC", () => {
       const rolesHelper = new Roles(page);
       const uiHelper = new UiHelper(page);
 
+      await uiHelper.clickButton("Create");
+      await uiHelper.verifyHeading("Create role");
+      await uiHelper.fillTextInputByLabel("name", "sample-role-1");
+      await uiHelper.fillTextInputByLabel(
+        "description",
+        "Test Description data",
+      );
+
+      await uiHelper.clickButton("Next");
+      await uiHelper.fillTextInputByLabel(
+        "Select users and groups",
+        "sample-role-1",
+      );
+      await page
+        .getByTestId("users-and-groups-text-field")
+        .getByLabel("clear search")
+        .click();
+      await expect(
+        page.getByTestId("users-and-groups-text-field").locator("input"),
+      ).toBeEmpty();
+      await uiHelper.verifyHeading("No users and groups selected");
+      await uiHelper.clickButton("Cancel");
+      await uiHelper.verifyText("Exit role creation?");
+      await uiHelper.clickButton("Discard");
+      await expect(page.getByRole("alert")).toHaveCount(0);
+
       const rbacPo = new RbacPo(page);
       const testUser = "Jonathon Page";
       await rbacPo.createRole("test-role", [
@@ -271,15 +306,13 @@ test.describe.skip("Test RBAC", () => {
 
       await page.click(ROLE_OVERVIEW_COMPONENTS.updateMembers);
       await uiHelper.verifyHeading("Edit Role");
-      await page
-        .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)
-        .fill("Guest User");
-      await page.click('button[aria-label="Remove"]');
+      await uiHelper.fillTextInputByLabel(
+        "Select users and groups",
+        "Guest User",
+      );
+      await page.click(rbacPo.selectMember("Guest User"));
       await uiHelper.verifyHeading(rbacPo.regexpShortUsersAndGroups(1, 1));
       await uiHelper.clickByDataTestId("nextButton-1");
-      await page.waitForSelector(".permission-policies-form", {
-        state: "visible",
-      });
       let nextButton2: Locator;
       let matchNextButton2: Locator[];
       let attempts = 0;
@@ -289,9 +322,7 @@ test.describe.skip("Test RBAC", () => {
         matchNextButton2 = await nextButton2.all();
         attempts++;
       } while (matchNextButton2.length > 1 && attempts < 5);
-      await nextButton2.click({
-        force: true,
-      });
+      await nextButton2.click({ force: true });
       await uiHelper.clickButton("Save");
       await uiHelper.verifyText(
         "Role role:default/test-role1 updated successfully",
@@ -300,19 +331,16 @@ test.describe.skip("Test RBAC", () => {
 
       await page.click(ROLE_OVERVIEW_COMPONENTS.updatePolicies);
       await uiHelper.verifyHeading("Edit Role");
-      await rbacPo.clickAddPermissionPolicy();
-      await page.click(rbacPo.selectPermissionPolicyPlugin(1), {
-        timeout: 10_000,
-      });
+      await rbacPo.selectPluginsCombobox.click();
       await rbacPo.selectOption("scaffolder");
-      await page.click(rbacPo.selectPermissionPolicyPermission(1));
-      await rbacPo.selectOption("scaffolder-template");
+      await page.getByText("Select...").click();
+      await rbacPo.selectPermissionCheckbox("scaffolder.template.parameter");
       await uiHelper.clickButton("Next");
       await uiHelper.clickButton("Save");
       await uiHelper.verifyText(
         "Role role:default/test-role1 updated successfully",
       );
-      await uiHelper.verifyHeading("Permission Policies (3)");
+      await uiHelper.verifyHeading("Permission Policies (2)");
 
       await rolesHelper.deleteRole("role:default/test-role1");
     });
@@ -323,7 +351,7 @@ test.describe.skip("Test RBAC", () => {
       const rolesHelper = new Roles(page);
       const uiHelper = new UiHelper(page);
       await new RbacPo(page).createRole(
-        "test-role",
+        "test-role1",
         ["Guest User", "rhdh-qe", "Backstage"],
         "anyOf",
       );
@@ -333,9 +361,9 @@ test.describe.skip("Test RBAC", () => {
         .waitFor({ state: "visible" });
       await page
         .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)
-        .fill("test-role");
+        .fill("test-role1");
       await uiHelper.verifyHeading("All roles (1)");
-      await rolesHelper.deleteRole("role:default/test-role");
+      await rolesHelper.deleteRole("role:default/test-role1");
     });
   });
 
@@ -424,10 +452,7 @@ test.describe.skip("Test RBAC", () => {
         name: "role:default/admin",
       };
 
-      const newRole = {
-        memberReferences: members,
-        name: "role:default/test",
-      };
+      const newRole = { memberReferences: members, name: "role:default/test" };
 
       const rolePostResponse = await rbacApi.createRoles(firstRole);
 
