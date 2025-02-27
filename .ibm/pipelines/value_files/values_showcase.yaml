@@ -134,7 +134,7 @@ global:
                   - mountPoint: global.header/component
                     importName: TestButton
                     config:
-                      priority: 90
+                      priority: 95
       # Enable notifications plugins.
       - package: ./dynamic-plugins/dist/backstage-plugin-notifications
         disabled: false
@@ -229,6 +229,8 @@ upstream:
         filename: dynamic-homepage-and-sidebar-config.yaml
       - configMapRef: dynamic-global-floating-action-button-config
         filename: dynamic-global-floating-action-button-config.yaml
+      - configMapRef: dynamic-global-header-config
+        filename: dynamic-global-header-config.yaml
     startupProbe:
       # This gives enough time upon container startup before the liveness and readiness probes are triggered.
       # Giving (120s = initialDelaySeconds + failureThreshold * periodSeconds) to account for the worst case scenario.
