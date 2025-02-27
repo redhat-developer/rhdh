@@ -73,6 +73,7 @@ kubeTest.describe.serial("OpenShift Operator Tests", () => {
         namespace,
       );
       await page.waitForTimeout(300_000);
+      await page.context().clearCookies();
 
       await common.loginAsGuest(operator.rhdhUrl);
       await uiHelper.openSidebar("Settings");
