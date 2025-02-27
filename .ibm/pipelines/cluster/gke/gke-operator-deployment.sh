@@ -6,8 +6,8 @@ source "$DIR"/utils.sh
 source "$DIR"/cluster/gke/gcloud.sh
 # shellcheck source=.ibm/pipelines/install-methods/operator.sh
 source "$DIR"/install-methods/operator.sh
-# shellcheck source=.ibm/pipelines/cluster/gke/manifests.sh
-source "$DIR"/cluster/gke/manifests.sh
+# shellcheck source=.ibm/pipelines/cluster/gke/manifest.sh
+source "$DIR"/cluster/gke/manifest.sh
 
 initiate_gke_operator_deployment() {
   local namespace=$1
@@ -34,7 +34,7 @@ initiate_gke_operator_deployment() {
 
   deploy_rhdh_operator "${namespace}" "${DIR}/resources/rhdh-operator/rhdh-start_K8s.yaml"
 
-  apply_gke_operator_ingress "backstage-$RELEASE_NAME" "$namespace"
+  apply_gke_operator_ingress "$namespace" "backstage-$RELEASE_NAME"
 }
 
 initiate_rbac_gke_operator_deployment() {
@@ -62,5 +62,5 @@ initiate_rbac_gke_operator_deployment() {
 
   deploy_rhdh_operator "${NAME_SPACE}" "${DIR}/resources/rhdh-operator/rhdh-start-rbac_K8s.yaml"
 
-  apply_gke_operator_ingress "backstage-$RELEASE_NAME_RBAC" "$namespace"
+  apply_gke_operator_ingress "$namespace" "backstage-$RELEASE_NAME_RBAC"
 }
