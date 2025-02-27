@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.13-labs
+# syntax=docker/dockerfile:1.14-labs
 
 # THIS IS USED BY Konflux builds >= 1.4
 # TODO verify this works with Cachi2 once we enable that, or switch to use ../.rhdh/docker/Dockerfile as input
