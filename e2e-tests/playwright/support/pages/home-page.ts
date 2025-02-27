@@ -2,16 +2,16 @@ import {
   HOME_PAGE_COMPONENTS,
   SEARCH_OBJECTS_COMPONENTS,
 } from "../pageObjects/page-obj";
-import { UIhelper } from "../../utils/ui-helper";
+import { UiHelper } from "../../utils/ui-helper";
 import { Page, expect } from "@playwright/test";
 
 export class HomePage {
   private page: Page;
-  private uiHelper: UIhelper;
+  private uiHelper: UiHelper;
 
   constructor(page: Page) {
     this.page = page;
-    this.uiHelper = new UIhelper(page);
+    this.uiHelper = new UiHelper(page);
   }
   async verifyQuickSearchBar(text: string) {
     const searchBar = this.page.locator(

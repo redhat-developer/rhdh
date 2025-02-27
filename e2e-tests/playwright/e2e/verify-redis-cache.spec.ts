@@ -1,15 +1,15 @@
 import { expect, test } from "@playwright/test";
-import { UIhelper } from "../utils/ui-helper";
+import { UiHelper } from "../utils/ui-helper";
 import { Common } from "../utils/common";
 import Redis from "ioredis";
 import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 
 test.describe("Verify Redis Cache DB", () => {
   let common: Common;
-  let uiHelper: UIhelper;
+  let uiHelper: UiHelper;
   let portForward: ChildProcessWithoutNullStreams;
   test.beforeEach(async ({ page }) => {
-    uiHelper = new UIhelper(page);
+    uiHelper = new UiHelper(page);
     common = new Common(page);
     await common.loginAsGuest();
 

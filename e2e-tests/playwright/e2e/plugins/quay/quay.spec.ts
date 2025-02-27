@@ -1,17 +1,17 @@
 import { expect, test } from "@playwright/test";
-import { UIhelper } from "../../../utils/ui-helper";
+import { UiHelper } from "../../../utils/ui-helper";
 import { Common } from "../../../utils/common";
 import { ImageRegistry } from "../../../utils/quay/quay";
 
 test.describe("Test Quay.io plugin", () => {
   const quayRepository = "rhdh-community/rhdh";
-  let uiHelper: UIhelper;
+  let uiHelper: UiHelper;
 
   test.beforeEach(async ({ page }) => {
     const common = new Common(page);
     await common.loginAsGuest();
 
-    uiHelper = new UIhelper(page);
+    uiHelper = new UiHelper(page);
     await uiHelper.openSidebar("Catalog");
     await uiHelper.selectMuiBox("Kind", "Component");
     await uiHelper.clickByDataTestId("user-picker-all");

@@ -1,16 +1,16 @@
 import { Locator, Page } from "@playwright/test";
 import playwrightConfig from "../../../playwright.config";
-import { UIhelper } from "../../utils/ui-helper";
+import { UiHelper } from "../../utils/ui-helper";
 
 //${BASE_URL}/catalog page
 export class Catalog {
   private page: Page;
-  private uiHelper: UIhelper;
+  private uiHelper: UiHelper;
   private searchField: Locator;
 
   constructor(page: Page) {
     this.page = page;
-    this.uiHelper = new UIhelper(page);
+    this.uiHelper = new UiHelper(page);
     this.searchField = page.locator("#input-with-icon-adornment");
   }
 

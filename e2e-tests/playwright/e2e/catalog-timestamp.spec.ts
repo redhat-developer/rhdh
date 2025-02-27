@@ -1,12 +1,12 @@
 import { Page, expect, test } from "@playwright/test";
-import { UIhelper } from "../utils/ui-helper";
+import { UiHelper } from "../utils/ui-helper";
 import { Common, setupBrowser } from "../utils/common";
 import { CatalogImport } from "../support/pages/catalog-import";
 import { UI_HELPER_ELEMENTS } from "../support/pageObjects/global-obj";
 
 let page: Page;
 test.describe("Test timestamp column on Catalog", () => {
-  let uiHelper: UIhelper;
+  let uiHelper: UiHelper;
   let common: Common;
   let catalogImport: CatalogImport;
 
@@ -17,7 +17,7 @@ test.describe("Test timestamp column on Catalog", () => {
     page = (await setupBrowser(browser, testInfo)).page;
 
     common = new Common(page);
-    uiHelper = new UIhelper(page);
+    uiHelper = new UiHelper(page);
     catalogImport = new CatalogImport(page);
 
     await common.loginAsGuest();
