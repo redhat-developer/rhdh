@@ -11,13 +11,13 @@ metadata:
 spec:
   ingressClassName: gce
   rules:
-    - host: https://${K8S_CLUSTER_ROUTER_BASE}
+    - host: ${K8S_CLUSTER_ROUTER_BASE}
       http:
         paths:
         - path: /
           pathType: Prefix
           backend:
             service:
-              name: ${CURRENT_RELEASE_NAME}
+              name: ${SERVICE_NAME}
               port:
                 name: http-backend

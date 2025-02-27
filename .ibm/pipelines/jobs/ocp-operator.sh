@@ -8,8 +8,7 @@ source "$DIR"/install-methods/operator.sh
 initiate_operator_deployments() {
   echo "Initiating Operator-backed deployments on OCP"
 
-  configure_namespace "${OPERATOR_MANAGER}"
-  install_rhdh_operator "${DIR}" "${OPERATOR_MANAGER}"
+  prepare_operator
 
   configure_namespace "${NAME_SPACE}"
   deploy_test_backstage_customization_provider "${NAME_SPACE}"
