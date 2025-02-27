@@ -26,17 +26,18 @@ handle_gke_operator() {
   export K8S_CLUSTER_URL K8S_CLUSTER_API_SERVER_URL OCM_CLUSTER_URL
 
   re_create_k8s_service_account_and_get_token # Populate K8S_CLUSTER_TOKEN
+  source "$DIR"/env_variables.sh
 
   cluster_setup_k8s_operator
 
   prepare_operator
 
   initiate_gke_operator_deployment "${NAME_SPACE}" "https://${K8S_CLUSTER_ROUTER_BASE}"
-  check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${url}" 50 30 20
+  check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${url}" 50 30 50
   delete_namespace "${NAME_SPACE}"
 
   initiate_rbac_gke_operator_deployment "${NAME_SPACE_RBAC}" "https://${K8S_CLUSTER_ROUTER_BASE}"
-  check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${url}" 50 30 20
+  check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${url}" 50 30 50
   delete_namespace "${NAME_SPACE_RBAC}"
 }
 

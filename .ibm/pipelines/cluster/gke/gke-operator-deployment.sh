@@ -16,6 +16,7 @@ initiate_gke_operator_deployment() {
   echo "Initiating Operator-backed non-RBAC deployment on GKE"
 
   configure_namespace "${namespace}"
+  kubectl apply -f "$DIR/resources/redis-cache/redis-deployment.yaml" --namespace="${namespace}"
   # deploy_test_backstage_customization_provider "${namespace}" # Doesn't work on K8s
   apply_yaml_files "${DIR}" "${namespace}" "${rhdh_base_url}"
   apply_gke_frontend_config "${namespace}"
@@ -26,8 +27,6 @@ initiate_gke_operator_deployment() {
   mkdir -p "${ARTIFACT_DIR}/${namespace}"
   cp -a "/tmp/configmap-dynamic-plugins.yaml" "${ARTIFACT_DIR}/${namespace}/" # Save the final value-file into the artifacts directory.
   kubectl apply -f /tmp/configmap-dynamic-plugins.yaml -n "${namespace}"
-
-  kubectl apply -f "$DIR/resources/redis-cache/redis-deployment.yaml" --namespace="${namespace}"
 
   setup_image_pull_secret "${namespace}" "rh-pull-secret" "${REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON}"
 

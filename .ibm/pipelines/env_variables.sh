@@ -152,3 +152,5 @@ REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON=$(cat /tmp/secrets/REGISTRY_
 IS_OPENSHIFT=""
 
 set +a  # Stop automatically exporting variables
+
+detect_ocp_and_set_env_var

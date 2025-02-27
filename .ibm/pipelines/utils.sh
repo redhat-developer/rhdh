@@ -1027,7 +1027,7 @@ check_and_test() {
   local namespace=$2
   local url=$3
   local max_attempts=${4:-30}    # Default to 30 if not set
-  local wait_seconds=${5:-30}    # Default to 30 if not set
+  local wait_seconds=${5:-0}    # Default to 0 if not set
   if check_backstage_running "${release_name}" "${namespace}" "${url}" "${max_attempts}" "${wait_seconds}"; then
     echo "Display pods for verification..."
     oc get pods -n "${namespace}"

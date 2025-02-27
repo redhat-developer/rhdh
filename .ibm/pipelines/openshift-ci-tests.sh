@@ -26,8 +26,8 @@ cleanup() {
 trap cleanup EXIT INT ERR
 
 SCRIPTS=(
-  "env_variables.sh"
   "utils.sh"
+  "env_variables.sh"
 )
 
 # Source explicitly specified scripts
@@ -43,8 +43,6 @@ for SCRIPT in "${DIR}"/jobs/*.sh; do
     echo "Loaded ${SCRIPT}"
   fi
 done
-
-detect_ocp_and_set_env_var
 
 main() {
   echo "Log file: ${LOGFILE}"
