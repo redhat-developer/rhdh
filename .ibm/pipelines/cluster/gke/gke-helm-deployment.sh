@@ -4,8 +4,8 @@
 source "$DIR"/utils.sh
 # shellcheck source=.ibm/pipelines/cluster/gke/gcloud.sh
 source "$DIR"/cluster/gke/gcloud.sh
-# shellcheck source=.ibm/pipelines/cluster/gke/manifests.sh
-source "$DIR"/cluster/gke/manifests.sh
+# shellcheck source=.ibm/pipelines/cluster/gke/manifest.sh
+source "$DIR"/cluster/gke/manifest.sh
 
 initiate_gke_helm_deployment() {
   delete_namespace "${NAME_SPACE_RBAC_K8S}"
