@@ -4,7 +4,6 @@ metadata:
   name: rhdh-rbac
 spec:
   application:
-    image: 'quay.io/rhdh/rhdh-hub-rhel9:next'
     appConfig:
       configMaps:
         - name: app-config-rhdh
