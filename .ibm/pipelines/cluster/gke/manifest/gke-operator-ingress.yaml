@@ -4,9 +4,9 @@ metadata:
   name: rhdh-gke-operator-ingress
   annotations:
     # If the class annotation is not specified it defaults to "gce".
-    kubernetes.io/ingress.class: "gce"
+    kubernetes.io/ingress.class: gce
     kubernetes.io/ingress.global-static-ip-name: rhdh-static-ip
-    networking.gke.io/managed-certificates: $GKE_CERT_NAME
+    ingress.gcp.kubernetes.io/pre-shared-cert: $GKE_CERT_NAME
     networking.gke.io/v1beta1.FrontendConfig: rhdh-gke-ingress-security-config
 spec:
   ingressClassName: gce

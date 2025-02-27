@@ -4,6 +4,8 @@
 source "$DIR"/install-methods/operator.sh
 # shellcheck source=.ibm/pipelines/cluster/aks/aks-operator-deployment.sh
 source "$DIR"/cluster/aks/aks-operator-deployment.sh
+# shellcheck source=.ibm/pipelines/cluster/k8s/k8s-utils.sh
+source "$DIR"/cluster/k8s/k8s-utils.sh
 
 handle_aks_operator() {
   K8S_CLUSTER_ROUTER_BASE=$(kubectl get svc nginx --namespace app-routing-system -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
