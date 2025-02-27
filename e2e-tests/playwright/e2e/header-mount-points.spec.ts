@@ -7,7 +7,6 @@ test.describe("Header mount points", () => {
   let uiHelper: UIhelper;
 
   test.beforeEach(async ({ page }) => {
-    uiHelper = new UIhelper(page);
     common = new Common(page);
     await common.loginAsGuest();
     await expect(page.locator("nav[id='global-header']")).toBeVisible();
