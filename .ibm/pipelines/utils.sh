@@ -607,6 +607,12 @@ deploy_test_backstage_customization_provider() {
   oc expose svc/test-backstage-customization-provider --namespace="${project}"
 }
 
+deploy_redis_cache() {
+  local namespace=$1
+  oc apply -f "$DIR/resources/redis-cache/redis-deployment.yaml" --namespace="${namespace}"
+  envsubst < "$DIR/resources/redis-cache/redis-secret.yaml" | oc apply --namespace="${namespace}" -f -
+}
+
 create_app_config_map() {
   local config_file=$1
   local project=$2
@@ -624,8 +630,6 @@ select_config_map_file() {
     echo "$dir/resources/config_map/app-config-rhdh.yaml"
   fi
 }
-
-
 
 create_dynamic_plugins_config() {
   local base_file=$1
@@ -875,8 +879,7 @@ cluster_setup_k8s_helm() {
 initiate_deployments() {
   configure_namespace ${NAME_SPACE}
 
-  # Deploy redis cache db.
-  oc apply -f "$DIR/resources/redis-cache/redis-deployment.yaml" --namespace="${NAME_SPACE}"
+  deploy_redis_cache "${NAME_SPACE}"
 
   cd "${DIR}"
   local rhdh_base_url="https://${RELEASE_NAME}-backstage-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
@@ -982,7 +985,7 @@ initiate_runtime_deployment() {
 initiate_sanity_plugin_checks_deployment() {
   configure_namespace "${NAME_SPACE_SANITY_PLUGINS_CHECK}"
   uninstall_helmchart "${NAME_SPACE_SANITY_PLUGINS_CHECK}" "${RELEASE_NAME}"
-  oc apply -f "$DIR/resources/redis-cache/redis-deployment.yaml" --namespace="${NAME_SPACE_SANITY_PLUGINS_CHECK}"
+  deploy_redis_cache "${NAME_SPACE_SANITY_PLUGINS_CHECK}"
   apply_yaml_files "${DIR}" "${NAME_SPACE_SANITY_PLUGINS_CHECK}" "${sanity_plugins_url}"
   yq_merge_value_files "overwrite" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_SANITY_PLUGINS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}"
   mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE_SANITY_PLUGINS_CHECK}"
