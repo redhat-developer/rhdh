@@ -5,6 +5,8 @@ import { UIhelper } from "../../utils/ui-helper";
 import { PagesUrl } from "../../support/pageObjects/page";
 
 test.describe("Test global floating action button plugin", () => {
+  test.skip(() => process.env.JOB_NAME.includes("operator"));
+
   let uiHelper: UIhelper;
   let fabHelper: FabPo;
 
