@@ -43,7 +43,9 @@ If you are developing your own plugin that is going to be used as a dynamic plug
 To be compatible with the showcase dynamic plugin support, and used as dynamic plugins, existing plugins must be based on, or compatible with, the new backend system, as well as rebuilt with a dedicated CLI command.
 
 The new backend system standard entry point (created using `createBackendPlugin()` or `createBackendModule()`) should be exported as the default export of either the main package or of an `alpha` package (if the new backend support is still provided as `alpha` APIs). This doesn't add any additional requirement on top of the standard plugin development guidelines of the new backend system.
+
 For a practical example of a dynamic plugin entry point built upon the new backend system, please refer to the [Backstage community plugins repository](https://github.com/backstage/community-plugins/blob/main/workspaces/3scale/plugins/3scale-backend/src/module.ts).
+
 
 The dynamic export mechanism identifies private, non-backstage dependencies, and sets the `bundleDependencies` field in the `package.json` file for them, so that the dynamic plugin package can be published as a self-contained package, along with its private dependencies bundled in a private `node_modules` folder.
 
