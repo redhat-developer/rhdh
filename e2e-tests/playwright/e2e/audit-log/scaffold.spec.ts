@@ -67,7 +67,7 @@ test.describe("Audit Log check for Catalog Plugin", () => {
 
     await LogUtils.validateLogEvent(
       "ScaffolderTaskListFetch",
-      "user:development/guest requested for the list of scaffolder tasks",
+      "user:development/guest successfully requested for the list of scaffolder tasks",
       "GET",
       "/api/scaffolder/v2/tasks?createdBy=user%3Adevelopment%2Fguest",
       baseURL!,
