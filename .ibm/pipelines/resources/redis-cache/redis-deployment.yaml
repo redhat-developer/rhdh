@@ -62,12 +62,3 @@ spec:
     targetPort: 6379
   selector:
     app: redis
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: redis-secret
-type: Opaque
-data:
-  REDIS_USERNAME: dGVtcA==  # base64 encoded
-  REDIS_PASSWORD: dGVzdDEyMw==  # base64 encoded

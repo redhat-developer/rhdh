@@ -26,7 +26,6 @@ handle_gke_operator() {
   export K8S_CLUSTER_URL K8S_CLUSTER_API_SERVER_URL OCM_CLUSTER_URL
 
   re_create_k8s_service_account_and_get_token # Populate K8S_CLUSTER_TOKEN
-  source "$DIR"/env_variables.sh
 
   cluster_setup_k8s_operator
 
