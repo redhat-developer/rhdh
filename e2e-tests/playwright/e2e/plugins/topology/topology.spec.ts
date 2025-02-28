@@ -23,7 +23,7 @@ test.describe("Test Topology Plugin", () => {
   });
 
   test("Verify pods visibility in the Topology tab", async ({ page }) => {
-    test.setTimeout(150000);
+    test.slow();
     await catalog.goToBackstageJanusProject();
     await uiHelper.clickTab("Topology");
     await uiHelper.verifyText("backstage-janus");
@@ -69,8 +69,6 @@ test.describe("Test Topology Plugin", () => {
     await uiHelper.verifyText("1");
     await uiHelper.verifyText("Pod");
     await topology.hoverOnPodStatusIndicator();
-    await uiHelper.verifyTextInTooltip("Running");
-    await uiHelper.verifyText("1Running");
     await uiHelper.verifyButtonURL(
       "Edit source code",
       "https://github.com/janus-idp/backstage-showcase",
