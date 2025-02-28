@@ -12,7 +12,7 @@ initiate_aks_operator_deployment() {
   echo "Initiating Operator-backed non-RBAC deployment on AKS"
 
   configure_namespace "${namespace}"
-  kubectl apply -f "$DIR/resources/redis-cache/redis-deployment.yaml" --namespace="${namespace}"
+  deploy_redis_cache "${namespace}"
   # deploy_test_backstage_customization_provider "${namespace}" # Doesn't work on K8s
   apply_yaml_files "${DIR}" "${namespace}" "${rhdh_base_url}"
 
