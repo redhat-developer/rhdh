@@ -531,11 +531,7 @@ apply_yaml_files() {
     # Select the configuration file based on the namespace or job
     config_file=$(select_config_map_file)
     # Apply the ConfigMap with the correct file
-    if [[ "${project}" == *showcase-k8s* ]]; then # Specific to non-RBAC deployment on K8S
-      create_app_config_map_k8s "$config_file" "$project"
-    else
-      create_app_config_map "$config_file" "$project"
-    fi
+    create_app_config_map "$config_file" "$project"
     oc create configmap dynamic-homepage-and-sidebar-config \
       --from-file="dynamic-homepage-and-sidebar-config.yaml"="$dir/resources/config_map/dynamic-homepage-and-sidebar-config.yaml" \
       --namespace="${project}" \
@@ -637,20 +633,6 @@ create_conditional_policies_operator() {
 prepare_operator_app_config() {
   local config_file=$1
   yq e -i '.permission.rbac.conditionalPoliciesFile = "./rbac/conditional-policies.yaml"' ${config_file}
-}
-
-create_app_config_map_k8s() {
-    local config_file=$1
-    local project=$2
-
-    echo "Creating k8s-specific app-config ConfigMap in namespace ${project}"
-
-    yq 'del(.backend.cache)' "$config_file" \
-    | oc create configmap app-config-rhdh \
-        --from-file="app-config-rhdh.yaml"="/dev/stdin" \
-        --namespace="${project}" \
-        --dry-run=client -o yaml \
-    | oc apply -f -
 }
 
 run_tests() {
