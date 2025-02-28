@@ -1,6 +1,6 @@
 #!/bin/bash
 
-handle_nightly() {
+handle_ocp_nightly() {
   export NAME_SPACE="showcase-ci-nightly"
   export NAME_SPACE_RBAC="showcase-rbac-nightly"
   export NAME_SPACE_POSTGRES_DB="postgress-external-db-nightly"
@@ -13,7 +13,7 @@ handle_nightly() {
 
   cluster_setup
   initiate_deployments
-  deploy_test_backstage_provider "${NAME_SPACE}"
+  deploy_test_backstage_customization_provider "${NAME_SPACE}"
 
   run_standard_deployment_tests
   run_runtime_config_change_tests

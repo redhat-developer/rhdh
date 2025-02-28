@@ -19,7 +19,7 @@ gcloud_ssl_cert_create() {
   local project=$3
 
   # Capture both stdout and stderr
-  set +xe
+  set +e
   local output
   output=$(gcloud compute ssl-certificates create "${cert_name}" --domains="${domain}" --project="${project}" --global 2>&1)
   set -e

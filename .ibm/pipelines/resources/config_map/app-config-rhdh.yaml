@@ -36,7 +36,8 @@ backend:
   cache:
     store: redis
     connection: redis://${REDIS_USERNAME}:${REDIS_PASSWORD}@redis:6379
-    useRedisSets: true
+    # redis sets are no longer supported from 1.5
+    # useRedisSets: true
 integrations:
   # Plugin: GitHub
   github:
