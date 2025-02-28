@@ -56,3 +56,9 @@ To allow a dynamic plugin to load a core service override, start the Developer H
 - `ENABLE_CORE_USERINFO_OVERRIDE` - allow overriding the `core.userInfo` service
 - `ENABLE_CORE_URLREADER_OVERRIDE` - allow overriding the `core.urlReader` service
 - `ENABLE_EVENTS_SERVICE_OVERRIDE` - allow overriding the `events.service` service
+
+## Overriding the provided authentication module
+
+Developer Hub ships with an opinionated authentication module setup that supports many use-cases.  However it is also possible to disable this authentication module entirely and compose an authentication solution from a set of dynamic frontend and backend plugins.  This requires disabling the provided authentication module so it doesn't conflict with any custom authentication configuration.
+
+- `ENABLE_AUTH_PROVIDER_MODULE_OVERRIDE` - set to "true" to disable the Developer Hub provided backend authentication module

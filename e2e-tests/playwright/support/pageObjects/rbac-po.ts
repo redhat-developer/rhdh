@@ -1,6 +1,6 @@
 import { expect, Locator, Page } from "@playwright/test";
 import { PageObject, PagesUrl } from "./page";
-import { HOME_PAGE_COMPONENTS } from "./page-obj";
+import { SEARCH_OBJECTS_COMPONENTS } from "./page-obj";
 
 type PermissionPolicyType = "none" | "anyOf" | "not";
 
@@ -16,13 +16,19 @@ export class RbacPo extends PageObject {
   private notButton: Locator;
   private rulesSideBar: Locator;
   private hasSpecButton: Locator;
+  private hasAnnotationButton: Locator;
   private key: Locator;
+  private annotation: Locator;
   private saveConditions: Locator;
   private anyOfButton: Locator;
   private isEntityKindButton: Locator;
   private addRuleButton: Locator = this.page.getByRole("button", {
     name: "Add rule",
   });
+  private addNestedConditionButton: Locator = this.page.getByRole("button", {
+    name: "Add Nested Condition",
+  });
+
   private hasLabel: Locator;
   private label: Locator;
 
@@ -31,6 +37,34 @@ export class RbacPo extends PageObject {
     tara: "Tara MacGovern",
     backstage: "Backstage",
     rhdhqe: "rhdh-qe",
+  };
+  public selectPluginsCombobox: Locator = this.page.getByRole("combobox", {
+    name: "Select plugins",
+  });
+
+  private stringForRegexUsersAndGroups = (
+    numUsers: number,
+    numGroups: number,
+  ): string => {
+    const usersText = `${numUsers} ${numUsers === 1 ? "user" : "users"}`;
+    const groupsText = `${numGroups} ${numGroups === 1 ? "group" : "groups"}`;
+    return `(${groupsText}, ${usersText}|${usersText}, ${groupsText})`;
+  };
+
+  public regexpShortUsersAndGroups = (
+    numUsers: number,
+    numGroups: number,
+  ): RegExp => {
+    return new RegExp(this.stringForRegexUsersAndGroups(numUsers, numGroups));
+  };
+
+  public regexpLongUsersAndGroups = (
+    numUsers: number,
+    numGroups: number,
+  ): RegExp => {
+    return new RegExp(
+      `Users and groups \\(${this.stringForRegexUsersAndGroups(numUsers, numGroups)}\\)`,
+    );
   };
 
   selectMember(label: string): string {
@@ -71,7 +105,9 @@ export class RbacPo extends PageObject {
     this.notButton = this.page.getByRole("button", { name: "Not" });
     this.rulesSideBar = this.page.getByTestId("rules-sidebar");
     this.hasSpecButton = this.page.getByText("HAS_SPEC");
+    this.hasAnnotationButton = this.page.getByText("HAS_ANNOTATION");
     this.key = this.page.getByLabel("key *");
+    this.annotation = this.page.getByLabel("annotation *");
     this.saveConditions = this.page.getByTestId("save-conditions");
     this.anyOfButton = this.page.getByRole("button", { name: "AnyOf" });
     this.isEntityKindButton = this.page.getByText("IS_ENTITY_KIND");
@@ -104,7 +140,7 @@ export class RbacPo extends PageObject {
   }
 
   private async verifyOverviewHeading(groups: number) {
-    await this.uiHelper.verifyHeading(`Users and groups (${groups} group)`);
+    await this.uiHelper.verifyHeading(`${groups} group`);
   }
 
   private async verifyPermissionPoliciesHeader(policies: number) {
@@ -131,7 +167,11 @@ export class RbacPo extends PageObject {
   }
 
   public async selectOption(
-    option: "catalog" | "catalog-entity" | "scaffolder" | "scaffolder-template",
+    option:
+      | "catalog"
+      | "catalog.entity.read"
+      | "scaffolder"
+      | "scaffolder-template.read",
   ) {
     const optionSelector = `li[role="option"]:has-text("${option}")`;
     await this.page.waitForSelector(optionSelector);
@@ -152,6 +192,18 @@ export class RbacPo extends PageObject {
     await this.usersAndGroupsField.fill(userOrRole);
   }
 
+  async selectPermissionCheckbox(name: string) {
+    this.page.getByRole("cell", { name: name }).getByRole("checkbox").click();
+  }
+
+  async pluginRuleCount(number: string) {
+    expect(
+      this.page
+        .locator('span[class*="MuiBadge-badge"]')
+        .filter({ hasText: number }),
+    ).toBeVisible();
+  }
+
   async createRole(
     name: string,
     usersAndGroups: string[],
@@ -162,42 +214,50 @@ export class RbacPo extends PageObject {
     await this.uiHelper.verifyHeading("Create role");
     await this.roleName.fill(name);
     await this.uiHelper.clickButton("Next");
+    await this.usersAndGroupsField.click();
 
     for (const userOrRole of usersAndGroups) {
-      await this.addUsersAndGroups(userOrRole);
       await this.page.click(this.selectMember(userOrRole));
     }
+
+    // Close dropdown after selecting users and groups
+    await this.page.getByTestId("ArrowDropDownIcon").click();
 
     // Dynamically verify the heading based on users and groups added
     const numUsers = usersAndGroups.length;
     const numGroups = 1; // Update this based on your logic
     await this.uiHelper.verifyHeading(
-      `Users and groups (${numUsers - numGroups} users, ${numGroups} group)`,
+      this.regexpShortUsersAndGroups(numUsers - numGroups, numGroups),
     );
 
     await this.next();
-    await this.page.click(this.selectPermissionPolicyPlugin(0));
+    await this.selectPluginsCombobox.click();
     await this.selectOption("catalog");
-    await this.page.click(this.selectPermissionPolicyPermission(0));
-    await this.selectOption("catalog-entity");
+    await this.page.getByText("Select...").click();
 
     if (permissionPolicyType === "none") {
-      await this.page.uncheck(this.selectPolicy(0, 1, "Delete"));
+      await this.selectPermissionCheckbox("catalog.entity.delete");
       await this.next();
       await this.uiHelper.verifyHeading("Review and create");
       await this.uiHelper.verifyText(
-        `Users and groups (${numUsers - numGroups} users, ${numGroups} group)`,
+        this.regexpLongUsersAndGroups(numUsers - numGroups, numGroups),
       );
-      await this.verifyPermissionPoliciesHeader(2);
+      await this.verifyPermissionPoliciesHeader(1);
       await this.create();
       await this.page
-        .locator(HOME_PAGE_COMPONENTS.searchBar)
-        .waitFor({ timeout: 10000 });
-      await this.page.locator(HOME_PAGE_COMPONENTS.searchBar).fill(name);
+        .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)
+        .waitFor();
+      await this.page
+        .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)
+        .fill(name);
       await this.uiHelper.verifyHeading("All roles (1)");
     } else if (permissionPolicyType === "anyOf") {
       // Scenario 2: Permission policies using AnyOf
-      await this.configureAccess.click();
+      await this.selectPermissionCheckbox("catalog.entity.read");
+      await this.page
+        .getByRole("row", { name: "catalog.entity.read" })
+        .getByLabel("remove")
+        .click();
       await this.anyOfButton.click();
       await this.clickOpenSidebar();
       await this.isEntityKindButton.click();
@@ -206,33 +266,43 @@ export class RbacPo extends PageObject {
         .getByPlaceholder("string, string")
         .fill("component,template");
       await this.addRuleButton.click();
-      await this.page.getByLabel("Open").nth(3).click();
+      await this.page.getByLabel("Open").nth(2).click();
       await this.hasSpecButton.click();
       await this.key.click();
       await this.key.fill("lifecycle");
       await this.key.press("Tab");
       await this.key.fill("experimental");
       await this.addRuleButton.click();
-      await this.page.getByLabel("Open").nth(4).click();
+      await this.page.getByLabel("Open").nth(3).click();
       await this.hasLabel.click();
       await this.label.click();
       await this.label.fill("partner");
+      // Add nested condition
+      await this.addNestedConditionButton.click();
+      await this.page.getByLabel("Open").nth(4).click();
+      await this.hasAnnotationButton.click();
+      await this.annotation.click();
+      await this.annotation.fill("test");
       await this.saveConditions.click();
-      await this.uiHelper.verifyText("Configure access (3 rules)");
+      await this.pluginRuleCount("4");
       await this.next();
       await this.uiHelper.verifyHeading("Review and create");
       await this.uiHelper.verifyText(
-        `Users and groups (${numUsers - numGroups} users, ${numGroups} group)`,
+        this.regexpLongUsersAndGroups(numUsers - numGroups, numGroups),
       );
       await this.verifyPermissionPoliciesHeader(1);
-      await this.uiHelper.verifyText("3 rules");
+      await this.uiHelper.verifyText("4 rules");
       await this.uiHelper.clickButton("Create");
       await this.uiHelper.verifyText(
         `Role role:default/${name} created successfully`,
       );
     } else if (permissionPolicyType === "not") {
       // Scenario 3: Permission policies using Not
-      await this.configureAccess.click();
+      await this.selectPermissionCheckbox("catalog.entity.read");
+      await this.page
+        .getByRole("row", { name: "catalog.entity.read" })
+        .getByLabel("remove")
+        .click();
       await this.notButton.click();
       await this.clickOpenSidebar();
       await this.hasSpecButton.click();
@@ -241,7 +311,7 @@ export class RbacPo extends PageObject {
       await this.key.press("Tab");
       await this.key.fill("experimental");
       await this.saveConditions.click();
-      await this.uiHelper.verifyText("Configure access (1 rule)");
+      await this.pluginRuleCount("1");
       await this.next();
       await this.uiHelper.verifyHeading("Review and create");
       await this.verifyPermissionPoliciesHeader(1);

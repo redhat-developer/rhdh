@@ -116,7 +116,10 @@ function validateDynamicPluginsConfig(
 ): void {
   const dynamicPluginsPackageNames = config.plugins.reduce(
     (packageNames, plugin) => {
-      const isExternalPlugin = externalDynamicPlugins?.some((externalDynamicPlugin) => externalDynamicPlugin.package === plugin.package)
+      const isExternalPlugin = externalDynamicPlugins?.some(
+        (externalDynamicPlugin) =>
+          externalDynamicPlugin.package === plugin.package,
+      );
       if (!isExternalPlugin) {
         // We want the third index ['.', 'dynamic-plugins', 'dist', 'backstage-plugin-scaffolder-backend-module-github-dynamic']
         packageNames.push(plugin.package.split("/")[3]);
@@ -241,13 +244,22 @@ describe("Dynamic Plugin Wrappers", () => {
       IBM_VALUES_SHOWCASE_CONFIG_FILE,
     );
 
-    const externalDynamicPluginsConfig: DynamicPluginConfig[] = [{
-      package: "@pataknight/backstage-plugin-rhdh-qe-theme@0.5.5",
-      disabled: false,
-    },
+    const externalDynamicPluginsConfig: DynamicPluginConfig[] = [
       {
-        package: "@backstage-community/plugin-todo@0.2.42"
-      }
+        package: "@pataknight/backstage-plugin-rhdh-qe-theme@0.5.5",
+        disabled: false,
+      },
+      {
+        package: "@backstage-community/plugin-todo@0.2.42",
+      },
+      {
+        package:
+          "@red-hat-developer-hub/backstage-plugin-application-provider-test@0.0.2",
+      },
+      {
+        package:
+          "@red-hat-developer-hub/backstage-plugin-application-listener-test@0.0.2",
+      },
     ];
 
     it("should have a corresponding package", () => {

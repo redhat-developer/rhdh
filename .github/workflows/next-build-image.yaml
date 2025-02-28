@@ -35,13 +35,13 @@ env:
 jobs:
   build-image:
     name: Build Image
-    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        platform:
-          - linux/amd64
-          - linux/arm64
+        os:
+          - ubuntu-24.04-arm
+          - ubuntu-24.04
+    runs-on: ${{ matrix.os }}
     permissions:
       contents: read
       packages: write
@@ -54,12 +54,21 @@ jobs:
 
       - name: Prepare
         run: |
-          platform=${{ matrix.platform }}
+          if [ "${{ matrix.os }}" == "ubuntu-24.04" ]; then
+            platform="linux/amd64"
+          elif [ "${{ matrix.os }}" == "ubuntu-24.04-arm" ]; then
+            platform="linux/arm64"
+          else
+            echo "Unknown platform"
+            exit 1
+          fi
+
           ref_name=${{ github.ref_name }}
           if [ "$ref_name" == "main" ]; then
             ref_name="next"
           fi
           echo "REF_NAME=$ref_name" >> $GITHUB_ENV
+          echo "PLATFORM=$platform" >> $GITHUB_ENV
           echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
           echo "PLATFORM_ARCH=${platform#*/}" >> $GITHUB_ENV
 
@@ -80,7 +89,7 @@ jobs:
             type=raw,value=${{ env.REF_NAME }}-${{ env.SHORT_SHA }}-${{ env.PLATFORM_ARCH }}
           imageLabels: quay.expires-after=14d
           push: true
-          platform: ${{ matrix.platform }}
+          platform: ${{ env.PLATFORM }}
 
       - name: Export digest
         run: |

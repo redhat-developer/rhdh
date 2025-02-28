@@ -3,218 +3,181 @@ import {
   createBackendModule,
 } from '@backstage/backend-plugin-api';
 import {
-  DEFAULT_NAMESPACE,
-  stringifyEntityRef,
-} from '@backstage/catalog-model';
-import { ConfigSources } from '@backstage/config-loader';
-import {
   defaultAuthProviderFactories,
   ProviderFactories,
-  providers,
 } from '@backstage/plugin-auth-backend';
+import {
+  atlassianAuthenticator,
+  atlassianSignInResolvers,
+} from '@backstage/plugin-auth-backend-module-atlassian-provider';
+import { auth0Authenticator } from '@backstage/plugin-auth-backend-module-auth0-provider';
+import {
+  azureEasyAuthAuthenticator,
+  azureEasyAuthSignInResolvers,
+} from '@backstage/plugin-auth-backend-module-azure-easyauth-provider';
+import {
+  bitbucketAuthenticator,
+  bitbucketSignInResolvers,
+} from '@backstage/plugin-auth-backend-module-bitbucket-provider';
+import {
+  bitbucketServerAuthenticator,
+  bitbucketServerSignInResolvers,
+} from '@backstage/plugin-auth-backend-module-bitbucket-server-provider';
+import {
+  cloudflareAccessSignInResolvers,
+  createCloudflareAccessAuthenticator,
+} from '@backstage/plugin-auth-backend-module-cloudflare-access-provider';
+import {
+  gcpIapAuthenticator,
+  gcpIapSignInResolvers,
+} from '@backstage/plugin-auth-backend-module-gcp-iap-provider';
+import {
+  githubAuthenticator,
+  githubSignInResolvers,
+} from '@backstage/plugin-auth-backend-module-github-provider';
+import {
+  gitlabAuthenticator,
+  gitlabSignInResolvers,
+} from '@backstage/plugin-auth-backend-module-gitlab-provider';
+import { googleAuthenticator } from '@backstage/plugin-auth-backend-module-google-provider';
+import {
+  microsoftAuthenticator,
+  microsoftSignInResolvers,
+} from '@backstage/plugin-auth-backend-module-microsoft-provider';
+import {
+  oauth2ProxyAuthenticator,
+  oauth2ProxySignInResolvers,
+} from '@backstage/plugin-auth-backend-module-oauth2-proxy-provider';
 import {
   oidcAuthenticator,
   oidcSignInResolvers,
 } from '@backstage/plugin-auth-backend-module-oidc-provider';
 import {
+  oktaAuthenticator,
+  oktaSignInResolvers,
+} from '@backstage/plugin-auth-backend-module-okta-provider';
+import {
+  oneLoginAuthenticator,
+  oneLoginSignInResolvers,
+} from '@backstage/plugin-auth-backend-module-onelogin-provider';
+import {
+  authOwnershipResolutionExtensionPoint,
   AuthProviderFactory,
   authProvidersExtensionPoint,
-  AuthResolverCatalogUserQuery,
-  AuthResolverContext,
+  commonSignInResolvers,
   createOAuthProviderFactory,
+  createProxyAuthProviderFactory,
 } from '@backstage/plugin-auth-node';
 
+import { TransitiveGroupOwnershipResolver } from '../transitiveGroupOwnershipResolver';
 import { rhdhSignInResolvers } from './authResolvers';
-
-/**
- * Function is responsible for signing in a user with the catalog user and
- * creating an entity reference based on the provided name parameter.
- * If the user exist in the catalog , it returns the signed-in user.
- * If an error occurs, it issues a token with the user entity reference.
- *
- * @param name
- * @param ctx
- * @returns
- */
-async function signInWithCatalogUserOptional(
-  name: string | AuthResolverCatalogUserQuery,
-  ctx: AuthResolverContext,
-) {
-  try {
-    const query: AuthResolverCatalogUserQuery =
-      typeof name === 'string'
-        ? {
-            entityRef: { name },
-          }
-        : name;
-    const signedInUser = await ctx.signInWithCatalogUser(query);
-
-    return Promise.resolve(signedInUser);
-  } catch (e) {
-    const config = await ConfigSources.toConfig(
-      await ConfigSources.default({}),
-    );
-    const dangerouslyAllowSignInWithoutUserInCatalog =
-      config.getOptionalBoolean('dangerouslyAllowSignInWithoutUserInCatalog') ||
-      false;
-    if (!dangerouslyAllowSignInWithoutUserInCatalog) {
-      throw new Error(
-        `Sign in failed: User not found in the RHDH software catalog. Verify that users/groups are synchronized to the software catalog. For non-production environments, manually provision the user or disable the user provisioning requirement. Refer to the RHDH Authentication documentation for further details.`,
-      );
-    }
-    let entityRef: string = typeof name === 'string' ? name : '';
-    if (typeof name !== 'string' && 'annotations' in name)
-      entityRef = Object.values(name.annotations)[0];
-    const userEntityRef = stringifyEntityRef({
-      kind: 'User',
-      name: entityRef,
-      namespace: DEFAULT_NAMESPACE,
-    });
-
-    return ctx.issueToken({
-      claims: {
-        sub: userEntityRef,
-        ent: [userEntityRef],
-      },
-    });
-  }
-}
 
 function getAuthProviderFactory(providerId: string): AuthProviderFactory {
   switch (providerId) {
     case 'atlassian':
-      return providers.atlassian.create({
-        signIn: {
-          async resolver({ result: { fullProfile } }, ctx) {
-            const userId = fullProfile.username;
-            if (!userId) {
-              throw new Error(
-                'Atlassian user profile does not contain a username',
-              );
-            }
-            return await signInWithCatalogUserOptional(userId, ctx);
-          },
+      return createOAuthProviderFactory({
+        authenticator: atlassianAuthenticator,
+        signInResolver:
+          atlassianSignInResolvers.usernameMatchingUserEntityName(),
+        signInResolverFactories: {
+          ...atlassianSignInResolvers,
+          ...commonSignInResolvers,
         },
       });
     case `auth0`:
-      return providers.auth0.create({
-        signIn: {
-          async resolver({ result: { fullProfile } }, ctx) {
-            const userId = fullProfile.id;
-            if (!userId) {
-              throw new Error(`Auth0 user profile does not contain an id`);
-            }
-            return await signInWithCatalogUserOptional(userId, ctx);
-          },
+      return createOAuthProviderFactory({
+        authenticator: auth0Authenticator,
+        signInResolver:
+          commonSignInResolvers.emailMatchingUserEntityProfileEmail(),
+        signInResolverFactories: {
+          ...commonSignInResolvers,
         },
       });
     case 'azure-easyauth':
-      return providers.easyAuth.create({
-        signIn: {
-          async resolver({ result: { fullProfile } }, ctx) {
-            const userId = fullProfile.id;
-            if (!userId) {
-              throw new Error(
-                'Azure Easy Auth user profile does not contain an id',
-              );
-            }
-            return await ctx.signInWithCatalogUser({
-              annotations: {
-                'graph.microsoft.com/user-id': userId,
-              },
-            });
-          },
+      return createProxyAuthProviderFactory({
+        authenticator: azureEasyAuthAuthenticator,
+        signInResolver:
+          azureEasyAuthSignInResolvers.idMatchingUserEntityAnnotation(),
+        signInResolverFactories: {
+          ...azureEasyAuthSignInResolvers,
+          ...commonSignInResolvers,
         },
       });
     case 'bitbucket':
-      return providers.bitbucket.create({
-        signIn: {
-          resolver:
-            providers.bitbucket.resolvers.usernameMatchingUserEntityAnnotation(),
+      return createOAuthProviderFactory({
+        authenticator: bitbucketAuthenticator,
+        signInResolver:
+          bitbucketSignInResolvers.usernameMatchingUserEntityAnnotation(),
+        signInResolverFactories: {
+          ...bitbucketSignInResolvers,
+          ...commonSignInResolvers,
         },
       });
     case 'bitbucketServer':
-      return providers.bitbucketServer.create({
-        signIn: {
-          resolver:
-            providers.bitbucketServer.resolvers.emailMatchingUserEntityProfileEmail(),
+      return createOAuthProviderFactory({
+        authenticator: bitbucketServerAuthenticator,
+        signInResolver:
+          bitbucketServerSignInResolvers.emailMatchingUserEntityProfileEmail(),
+        signInResolverFactories: {
+          ...bitbucketServerSignInResolvers,
+          ...commonSignInResolvers,
         },
       });
     case 'cfaccess':
-      return providers.cfAccess.create({
-        async authHandler({ claims }) {
-          return { profile: { email: claims.email } };
-        },
-        signIn: {
-          resolver:
-            providers.cfAccess.resolvers.emailMatchingUserEntityProfileEmail(),
+      return createProxyAuthProviderFactory({
+        authenticator: createCloudflareAccessAuthenticator(),
+        signInResolver:
+          cloudflareAccessSignInResolvers.emailMatchingUserEntityProfileEmail(),
+        signInResolverFactories: {
+          ...cloudflareAccessSignInResolvers,
+          ...commonSignInResolvers,
         },
       });
     case 'github':
-      return providers.github.create({
-        signIn: {
-          async resolver({ result: { fullProfile } }, ctx) {
-            const userId = fullProfile.username;
-            if (!userId) {
-              throw new Error(
-                `GitHub user profile does not contain a username`,
-              );
-            }
-            return await signInWithCatalogUserOptional(userId, ctx);
-          },
+      return createOAuthProviderFactory({
+        authenticator: githubAuthenticator,
+        signInResolver: githubSignInResolvers.usernameMatchingUserEntityName(),
+        signInResolverFactories: {
+          ...githubSignInResolvers,
+          ...commonSignInResolvers,
         },
       });
     case 'gitlab':
-      return providers.gitlab.create({
-        signIn: {
-          async resolver({ result: { fullProfile } }, ctx) {
-            const userId = fullProfile.username;
-            if (!userId) {
-              throw new Error(
-                `GitLab user profile does not contain an username`,
-              );
-            }
-            return await signInWithCatalogUserOptional(userId, ctx);
-          },
+      return createOAuthProviderFactory({
+        authenticator: gitlabAuthenticator,
+        signInResolver: gitlabSignInResolvers.usernameMatchingUserEntityName(),
+        signInResolverFactories: {
+          ...gitlabSignInResolvers,
+          ...commonSignInResolvers,
         },
       });
     case 'google':
-      return providers.google.create({
-        signIn: {
-          resolver:
-            providers.google.resolvers.emailLocalPartMatchingUserEntityName(),
+      return createOAuthProviderFactory({
+        authenticator: googleAuthenticator,
+        signInResolver:
+          commonSignInResolvers.emailLocalPartMatchingUserEntityName(),
+        signInResolverFactories: {
+          ...commonSignInResolvers,
         },
       });
     case 'gcp-iap':
-      return providers.gcpIap.create({
-        async authHandler({ iapToken }) {
-          return { profile: { email: iapToken.email } };
-        },
-        signIn: {
-          async resolver({ result: { iapToken } }, ctx) {
-            const userId = iapToken.email.split('@')[0];
-            if (!userId) {
-              throw new Error(
-                'Google IAP user profile does not contain an email',
-              );
-            }
-            return await signInWithCatalogUserOptional(userId, ctx);
-          },
+      return createProxyAuthProviderFactory({
+        authenticator: gcpIapAuthenticator,
+        signInResolver:
+          gcpIapSignInResolvers.emailMatchingUserEntityAnnotation(),
+        signInResolverFactories: {
+          ...gcpIapSignInResolvers,
+          ...commonSignInResolvers,
         },
       });
     case `oauth2Proxy`:
-      return providers.oauth2Proxy.create({
-        signIn: {
-          async resolver({ result }, ctx) {
-            const name = process.env.OAUTH_USER_HEADER
-              ? result.getHeader(process.env.OAUTH_USER_HEADER)
-              : result.getHeader('x-forwarded-preferred-username') ||
-                result.getHeader('x-forwarded-user');
-            if (!name) {
-              throw new Error('Request did not contain a user');
-            }
-            return await signInWithCatalogUserOptional(name, ctx);
-          },
+      return createProxyAuthProviderFactory({
+        authenticator: oauth2ProxyAuthenticator,
+        signInResolver:
+          oauth2ProxySignInResolvers.forwardedUserMatchingUserEntityName(),
+        signInResolverFactories: {
+          ...oauth2ProxySignInResolvers,
+          ...commonSignInResolvers,
         },
       });
     case 'oidc':
@@ -228,52 +191,36 @@ function getAuthProviderFactory(providerId: string): AuthProviderFactory {
           oidcSubClaimMatchingPingIdentityUserId:
             rhdhSignInResolvers.oidcSubClaimMatchingPingIdentityUserId,
           ...oidcSignInResolvers,
+          ...commonSignInResolvers,
         },
       });
     case 'okta':
-      return providers.okta.create({
-        signIn: {
-          resolver:
-            providers.okta.resolvers.emailMatchingUserEntityAnnotation(),
+      return createOAuthProviderFactory({
+        authenticator: oktaAuthenticator,
+        signInResolver: oktaSignInResolvers.emailMatchingUserEntityAnnotation(),
+        signInResolverFactories: {
+          ...oktaSignInResolvers,
+          ...commonSignInResolvers,
         },
       });
     case 'onelogin':
-      return providers.onelogin.create({
-        signIn: {
-          async resolver({ result: { fullProfile } }, ctx) {
-            const userId = fullProfile.id;
-            if (!userId) {
-              throw new Error(
-                `OneLogin user profile does not contain a user id`,
-              );
-            }
-            return await signInWithCatalogUserOptional(userId, ctx);
-          },
+      return createOAuthProviderFactory({
+        authenticator: oneLoginAuthenticator,
+        signInResolver:
+          oneLoginSignInResolvers.usernameMatchingUserEntityName(),
+        signInResolverFactories: {
+          ...oneLoginSignInResolvers,
+          ...commonSignInResolvers,
         },
       });
     case `microsoft`:
-      return providers.microsoft.create({
-        signIn: {
-          async resolver({ result: { fullProfile } }, ctx) {
-            const userId = fullProfile.id;
-            if (!userId) {
-              throw new Error(`Microsoft user profile does not contain an id`);
-            }
-            return await signInWithCatalogUserOptional(
-              {
-                annotations: {
-                  'graph.microsoft.com/user-id': userId,
-                },
-              },
-              ctx,
-            );
-          },
-        },
-      });
-    case 'saml':
-      return providers.saml.create({
-        signIn: {
-          resolver: providers.saml.resolvers.nameIdMatchingUserEntityName(),
+      return createOAuthProviderFactory({
+        authenticator: microsoftAuthenticator,
+        signInResolver:
+          microsoftSignInResolvers.userIdMatchingUserEntityAnnotation(),
+        signInResolverFactories: {
+          ...microsoftSignInResolvers,
+          ...commonSignInResolvers,
         },
       });
     default:
@@ -289,9 +236,19 @@ const authProvidersModule = createBackendModule({
       deps: {
         config: coreServices.rootConfig,
         authProviders: authProvidersExtensionPoint,
+        authOwnershipResolution: authOwnershipResolutionExtensionPoint,
         logger: coreServices.logger,
+        discovery: coreServices.discovery,
+        auth: coreServices.auth,
       },
-      async init({ config, authProviders, logger }) {
+      async init({
+        config,
+        authProviders,
+        authOwnershipResolution,
+        logger,
+        discovery,
+        auth,
+      }) {
         const providersConfig = config.getConfig('auth.providers');
         const authFactories: ProviderFactories = {};
         providersConfig
@@ -309,6 +266,11 @@ const authProvidersModule = createBackendModule({
 
         logger.info(
           `Enabled Provider Factories : ${JSON.stringify(providerFactories)}`,
+        );
+        const transitiveGroupOwnershipResolver =
+          new TransitiveGroupOwnershipResolver({ discovery, config, auth });
+        authOwnershipResolution.setAuthOwnershipResolver(
+          transitiveGroupOwnershipResolver,
         );
 
         Object.entries(providerFactories).forEach(([providerId, factory]) => {

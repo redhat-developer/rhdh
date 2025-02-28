@@ -4,7 +4,9 @@ import { EntityLayout, EntitySwitch } from '@backstage/plugin-catalog';
 
 import Box from '@mui/material/Box';
 
+import getDynamicRootConfig from '../../../utils/dynamicUI/getDynamicRootConfig';
 import getMountPointData from '../../../utils/dynamicUI/getMountPointData';
+import { DynamicRootConfig } from '../../DynamicRoot/DynamicRootContext';
 import Grid from '../Grid';
 
 export type DynamicEntityTabProps = {
@@ -62,7 +64,7 @@ export const dynamicEntityTab = ({
         {children}
         {getMountPointData<
           React.ComponentType<React.PropsWithChildren>,
-          React.ReactNode
+          React.ReactNode | ((config: DynamicRootConfig) => React.ReactNode)
         >(`${mountPoint}/cards`).map(
           ({ Component, config, staticJSXContent }, index) => {
             return (
@@ -76,7 +78,11 @@ export const dynamicEntityTab = ({
                   }
                 >
                   <Box sx={config.layout}>
-                    <Component {...config.props}>{staticJSXContent}</Component>
+                    <Component {...config.props}>
+                      {typeof staticJSXContent === 'function'
+                        ? staticJSXContent(getDynamicRootConfig())
+                        : staticJSXContent}
+                    </Component>
                   </Box>
                 </EntitySwitch.Case>
               </EntitySwitch>

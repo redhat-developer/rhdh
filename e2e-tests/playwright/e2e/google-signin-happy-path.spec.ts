@@ -26,7 +26,7 @@ test.describe.skip("Google signin happy path", () => {
   });
 
   test("Verify Google Sign in", async () => {
-    await uiHelper.openSidebar("Settings");
+    await uiHelper.goToSettingsPage();
     await uiHelper.clickTab("Authentication Providers");
     await page.getByTitle("Sign in to Google").click();
     await uiHelper.clickButton("Log in");

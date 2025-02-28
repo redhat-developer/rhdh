@@ -256,24 +256,18 @@ dynamicPlugins:
         - mountPoint: application/header
           importName: GlobalHeader
           config:
-            layout:
-              position: above-main-content
+            position: above-main-content # above-main-content | above-sidebar
     red-hat-developer-hub.backstage-plugin-global-floating-action-button:
       mountPoints:
         - mountPoint: application/listener
           importName: DynamicGlobalFloatingActionButton
-        - mountPoint: global.floatingactionbutton/component
-          importName: NullComponent
-          config:
-            icon: github
-            label: Git
-            toolTip: Github
-            to: https://github.com/redhat-developer/rhdh
     red-hat-developer-hub.backstage-plugin-dynamic-home-page:
       dynamicRoutes:
         - path: /
           importName: DynamicHomePage
       mountPoints:
+        - mountPoint: application/listener
+          importName: VisitListener
         - mountPoint: home.page/cards
           importName: SearchBar
           config:
@@ -471,6 +465,9 @@ dynamicPlugins:
             props:
               name: Documentation
               icon: docs
+    backstage.plugin-techdocs-module-addons-contrib:
+      techdocsAddons:
+        - importName: ReportIssue
     backstage-community.plugin-tech-radar:
       apiFactories:
         - importName: TechRadarApi

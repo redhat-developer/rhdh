@@ -18,6 +18,7 @@
     "prettier:fix": "prettier --ignore-unknown --write ."
   },
   "dependencies": {
+    "@backstage-community/plugin-rbac-common": "1.13.0",
     "@backstage/app-defaults": "1.5.16",
     "@backstage/catalog-model": "1.7.3",
     "@backstage/config": "1.3.2",
@@ -41,11 +42,10 @@
     "@emotion/react": "11.14.0",
     "@emotion/styled": "11.14.0",
     "@internal/plugin-dynamic-plugins-info": "*",
-    "@janus-idp/backstage-plugin-rbac-common": "1.12.0",
     "@mui/icons-material": "5.16.14",
     "@mui/material": "5.16.14",
     "@mui/styled-engine": "5.16.14",
-    "@redhat-developer/red-hat-developer-hub-theme": "0.4.0",
+    "@redhat-developer/red-hat-developer-hub-theme": "0.5.0",
     "@scalprum/core": "0.8.1",
     "@scalprum/react-core": "0.9.3",
     "lodash": "4.17.21",
@@ -58,17 +58,17 @@
   "devDependencies": {
     "@backstage/cli": "0.29.6",
     "@backstage/test-utils": "1.7.4",
-    "@janus-idp/cli": "3.0.0",
+    "@janus-idp/cli": "3.2.0",
     "@scalprum/react-test-utils": "0.2.4",
     "@testing-library/dom": "9.3.4",
     "@testing-library/jest-dom": "6.6.3",
     "@testing-library/react": "14.3.1",
     "@testing-library/react-hooks": "8.0.1",
     "@testing-library/user-event": "14.6.1",
-    "@types/node": "20.17.16",
+    "@types/node": "20.17.19",
     "@types/react": "18.3.18",
     "@types/react-dom": "18.3.5",
-    "prettier": "3.4.2"
+    "prettier": "3.5.2"
   },
   "browserslist": {
     "production": [

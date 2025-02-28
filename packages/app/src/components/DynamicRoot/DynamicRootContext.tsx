@@ -46,13 +46,15 @@ export type ResolvedDynamicRoute = DynamicModuleEntry & {
   path: string;
   menuItem?: ResolvedDynamicRouteMenuItem;
   Component: React.ComponentType<any>;
-  staticJSXContent?: React.ReactNode;
+  staticJSXContent?:
+    | React.ReactNode
+    | ((dynamicRootConfig: DynamicRootConfig) => React.ReactNode);
   config: {
     props?: Record<string, any>;
   };
 };
 
-type ScalprumMountPointConfigBase = {
+export type ScalprumMountPointConfigBase = {
   layout?: Record<string, string>;
   props?: Record<string, any>;
 };
@@ -77,7 +79,9 @@ export type ScalprumMountPointConfigRaw = ScalprumMountPointConfigBase & {
 export type ScalprumMountPoint = {
   Component: React.ComponentType<React.PropsWithChildren>;
   config?: ScalprumMountPointConfig;
-  staticJSXContent?: React.ReactNode;
+  staticJSXContent?:
+    | React.ReactNode
+    | ((config: DynamicRootConfig) => React.ReactNode);
 };
 
 export type RemotePlugins = {
@@ -89,7 +93,9 @@ export type RemotePlugins = {
         | BackstagePlugin<{}>
         | {
             element: React.ComponentType<React.PropsWithChildren>;
-            staticJSXContent: React.ReactNode;
+            staticJSXContent:
+              | React.ReactNode
+              | ((config: DynamicRootConfig) => React.ReactNode);
           }
         | AnyApiFactory;
     };
@@ -112,12 +118,30 @@ export type ScaffolderFieldExtension = {
   Component: React.ComponentType<{}>;
 };
 
+export type TechdocsAddon = {
+  scope: string;
+  module: string;
+  importName: string;
+  Component: React.ComponentType<{}>;
+  config: {
+    props?: Record<string, any>;
+  };
+};
+
+export type ProviderSetting = {
+  title: string;
+  description: string;
+  provider: string;
+};
+
 export type DynamicRootConfig = {
   dynamicRoutes: ResolvedDynamicRoute[];
   entityTabOverrides: EntityTabOverrides;
   mountPoints: MountPoints;
   menuItems: ResolvedMenuItem[];
+  providerSettings: ProviderSetting[];
   scaffolderFieldExtensions: ScaffolderFieldExtension[];
+  techdocsAddons: TechdocsAddon[];
 };
 
 export type ComponentRegistry = {
@@ -132,7 +156,9 @@ const DynamicRootContext = createContext<ComponentRegistry>({
   entityTabOverrides: {},
   mountPoints: {},
   menuItems: [],
+  providerSettings: [],
   scaffolderFieldExtensions: [],
+  techdocsAddons: [],
 });
 
 export default DynamicRootContext;

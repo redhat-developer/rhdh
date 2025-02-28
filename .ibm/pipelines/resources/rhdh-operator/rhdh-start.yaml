@@ -12,6 +12,9 @@ spec:
       mountPath: /opt/app-root/src
     dynamicPluginsConfigMapName: dynamic-plugins
     extraEnvs:
+      envs:
+        - name: NODE_OPTIONS
+          value: '--no-node-snapshot'
       secrets:
         - name: rhdh-secrets
         - name: redis-secret

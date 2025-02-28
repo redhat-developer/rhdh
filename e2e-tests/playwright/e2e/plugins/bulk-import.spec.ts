@@ -11,7 +11,7 @@ import {
 
 // Pre-req : plugin-bulk-import & plugin-bulk-import-backend-dynamic
 test.describe.serial("Bulk Import plugin", () => {
-  test.skip(() => process.env.JOB_NAME.endsWith("osd-gcp-helm-nightly")); // skipping due to RHIDP-5704 on OSD Env
+  test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
   let page: Page;
   let uiHelper: UIhelper;
   let common: Common;
@@ -133,9 +133,7 @@ test.describe.serial("Bulk Import plugin", () => {
       newRepoDetails.updatedComponentName,
     );
     await bulkimport.fillTextInputByNameAtt("prLabels", newRepoDetails.labels);
-    await expect(await uiHelper.clickButton("Save")).not.toBeVisible({
-      timeout: 10000,
-    });
+    await expect(await uiHelper.clickButton("Save")).not.toBeVisible();
 
     const prCatalogInfoYaml = await APIHelper.getfileContentFromPR(
       newRepoDetails.owner,
@@ -236,7 +234,7 @@ test.describe.serial("Bulk Import plugin", () => {
 
 test.describe
   .serial("Bulk Import - Verify existing repo are displayed in bulk import Added repositories", () => {
-  test.skip(() => process.env.JOB_NAME.endsWith("osd-gcp-helm-nightly")); // skipping due to RHIDP-5704 on OSD Env
+  test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
   let page: Page;
   let uiHelper: UIhelper;
   let common: Common;
@@ -294,7 +292,7 @@ test.describe
 
 test.describe
   .serial("Bulk Import - Ensure users without bulk import permissions cannot access the bulk import plugin", () => {
-  test.skip(() => process.env.JOB_NAME.endsWith("osd-gcp-helm-nightly")); // skipping due to RHIDP-5704 on OSD Env
+  test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
   let page: Page;
   let uiHelper: UIhelper;
   let common: Common;

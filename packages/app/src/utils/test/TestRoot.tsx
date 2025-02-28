@@ -42,6 +42,8 @@ const TestRoot = ({ children }: PropsWithChildren<{}>) => {
       mountPoints: {},
       entityTabOverrides: {},
       scaffolderFieldExtensions: [],
+      providerSettings: [],
+      techdocsAddons: [],
     }),
     [current],
   );

@@ -324,13 +324,28 @@
       "matchPackageNames": [
         "/^@backstage//",
         "/^@backstage-community//",
-        "/^@janus-idp//",
         "/^@immobiliarelabs//",
         "/^@red-hat-developer-hub//",
         "/^@roadiehq//",
         "/^@pagerduty//",
         "/^@internal//"
       ]
+    },
+    {
+      "description": "patch and minor updates for the janus cli",
+      "groupName": "janus cli updates",
+      "matchPackageNames": [
+        "@janus-idp/cli"
+      ],
+      "matchDepTypes": [
+        "dependencies",
+        "peerDependencies",
+        "devDependencies"
+      ],
+      "matchUpdateTypes": [
+        "patch",
+        "minor"
+      ]      
     }
   ],
   "ignorePaths": [

@@ -44,6 +44,9 @@ To be compatible with the showcase dynamic plugin support, and used as dynamic p
 
 The new backend system standard entry point (created using `createBackendPlugin()` or `createBackendModule()`) should be exported as the default export of either the main package or of an `alpha` package (if the new backend support is still provided as `alpha` APIs). This doesn't add any additional requirement on top of the standard plugin development guidelines of the new backend system.
 
+For a practical example of a dynamic plugin entry point built upon the new backend system, please refer to the [Backstage community plugins repository](https://github.com/backstage/community-plugins/blob/main/workspaces/3scale/plugins/3scale-backend/src/module.ts).
+
+
 The dynamic export mechanism identifies private, non-backstage dependencies, and sets the `bundleDependencies` field in the `package.json` file for them, so that the dynamic plugin package can be published as a self-contained package, along with its private dependencies bundled in a private `node_modules` folder.
 
 ### Shared dependencies
@@ -126,6 +129,32 @@ export const DynamicEntityTechdocsContent = {
       <ReportIssue />
     </TechDocsAddons>
   ),
+};
+```
+
+To include components provided by other dynamic plugins inside static JSX as element children with your dynamically imported component, you can extract them from [dynamicConfig](https://github.com/redhat-developer/rhdh/blob/main/packages/app/src/components/DynamicRoot/DynamicRootContext.tsx#L115) that is passed to the `staticJSXContent`:
+
+```tsx
+// Used by a static plugin
+export const EntityTechdocsContent = () => {...}
+
+// Custom function that extracts addon components from dynamic config
+function getTechdocsAddonComponents(dynamicConfig: DynamicConfig) {
+  const techdocsAddonsData = dynamicConfig?.techdocsAddons ?? [];
+  return techdocsAddonsData.map(
+    ({ scope, module, importName, Component, config }) => (
+      <Component key={`${scope}-${module}-${importName}`} {...config.props} />
+    ),
+  );
+}
+
+// Used by a dynamic plugin
+export const DynamicEntityTechdocsContent = {
+  element: EntityTechdocsContent,
+  staticJSXContent: (dynamicConfig: DynamicConfig) => {
+    const children = getTechdocsAddonComponents(dynamicConfig);
+    return <TechDocsAddons>{children}</TechDocsAddons>;
+  },
 };
 ```
 

@@ -2,8 +2,6 @@ import {
   EntityTechdocsContent as EntityTechdocsContentBase,
   TechDocsReaderPage as TechDocsReaderPageBase,
 } from "@backstage/plugin-techdocs";
-import { TechDocsAddons } from "@backstage/plugin-techdocs-react";
-
 import { SearchFilter, useSearch } from "@backstage/plugin-search-react";
 
 import {
@@ -12,25 +10,24 @@ import {
 } from "@backstage/plugin-catalog-react";
 
 import { useApi } from "@backstage/core-plugin-api";
-
-import { ReportIssue } from "./addons";
+import { TechDocsAddons } from "@backstage/plugin-techdocs-react";
+import { getTechdocsAddonComponents } from "./utils";
+import { type DynamicConfig } from "./types";
 
 export const TechDocsReaderPage = {
   element: TechDocsReaderPageBase,
-  staticJSXContent: (
-    <TechDocsAddons>
-      <ReportIssue />
-    </TechDocsAddons>
-  ),
+  staticJSXContent: (dynamicConfig: DynamicConfig) => {
+    const children = getTechdocsAddonComponents(dynamicConfig);
+    return <TechDocsAddons>{children}</TechDocsAddons>;
+  },
 };
 
 export const EntityTechdocsContent = {
   element: EntityTechdocsContentBase,
-  staticJSXContent: (
-    <TechDocsAddons>
-      <ReportIssue />
-    </TechDocsAddons>
-  ),
+  staticJSXContent: (dynamicConfig: DynamicConfig) => {
+    const children = getTechdocsAddonComponents(dynamicConfig);
+    return <TechDocsAddons>{children}</TechDocsAddons>;
+  },
 };
 
 export const TechdocsSearchFilter = () => {

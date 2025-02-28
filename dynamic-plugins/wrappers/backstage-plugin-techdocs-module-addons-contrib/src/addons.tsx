@@ -1,10 +1,16 @@
-import React from 'react';
+import {
+  ReportIssue as ReportIssueBase,
+  techdocsModuleAddonsContribPlugin,
+} from "@backstage/plugin-techdocs-module-addons-contrib";
 
-import { techdocsPlugin } from '@backstage/plugin-techdocs';
-import { createTechDocsAddonExtension, TechDocsAddonLocations } from '@backstage/plugin-techdocs-react';
+import React from "react";
 
-import { ReportIssue as ReportIssueBase } from "@backstage/plugin-techdocs-module-addons-contrib";
-import { ShadowRootStylesProvider } from './ShadowRootStylesProvider';
+import {
+  createTechDocsAddonExtension,
+  TechDocsAddonLocations,
+} from "@backstage/plugin-techdocs-react";
+
+import { ShadowRootStylesProvider } from "./ShadowRootStylesProvider";
 
 /**
  * Automatically wrap the backstage ReportIssue component with a (JSS)
@@ -44,9 +50,9 @@ const ReportIssueWrapper = () => {
   );
 };
 
-export const ReportIssue = techdocsPlugin.provide(
+export const ReportIssue = techdocsModuleAddonsContribPlugin.provide(
   createTechDocsAddonExtension<{}>({
-    name: 'ReportIssue',
+    name: "ReportIssue",
     location: TechDocsAddonLocations.Content,
     component: ReportIssueWrapper,
   }),

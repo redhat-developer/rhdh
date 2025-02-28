@@ -95,13 +95,29 @@ droute_send() {
       .targets.reportportal.processing.tfa.auto_finalization_threshold = ($auto_finalization_treshold | tonumber)
       ' data_router/data_router_metadata_template.json > "${ARTIFACT_DIR}/${project}/${metadata_output}"
 
-    oc rsync --progress=true --include="${metadata_output}" --include="${JUNIT_RESULTS}" --exclude="*" -n "${droute_project}" "${ARTIFACT_DIR}/${project}/" "${droute_project}/${droute_pod_name}:${temp_droute}/"
+    # Send test by rsync to bastion pod.
+    local max_attempts=5
+    local wait_seconds=4
+    for ((i = 1; i <= max_attempts; i++)); do
+      echo "Attempt ${i} of ${max_attempts} to rsync test resuls to bastion pod."
+      if output=$(oc rsync --progress=true --include="${metadata_output}" --include="${JUNIT_RESULTS}" --exclude="*" -n "${droute_project}" "${ARTIFACT_DIR}/${project}/" "${droute_project}/${droute_pod_name}:${temp_droute}/" 2>&1); then
+        echo "$output"
+        break
+      fi
+      if ((i == max_attempts)); then
+        echo "Failed to rsync test results after ${max_attempts} attempts."
+        echo "Last rsync error details:"
+        echo "${output}"
+        echo "Troubleshooting steps:"
+        echo "1. Restart $droute_pod_name in $droute_project project/namespace"
+      fi
+    done
 
     # "Install" Data Router
     oc exec -n "${droute_project}" "${droute_pod_name}" -- /bin/bash -c "
-      curl -fsSLk -o /tmp/droute-linux-amd64 'https://${DATA_ROUTER_NEXUS_HOSTNAME}/nexus/repository/dno-raw/droute-client/${droute_version}/droute-linux-amd64' \
-      && chmod +x /tmp/droute-linux-amd64 \
-      && /tmp/droute-linux-amd64 version"
+      curl -fsSLk -o ${temp_droute}/droute-linux-amd64 'https://${DATA_ROUTER_NEXUS_HOSTNAME}/nexus/repository/dno-raw/droute-client/${droute_version}/droute-linux-amd64' \
+      && chmod +x ${temp_droute}/droute-linux-amd64 \
+      && ${temp_droute}/droute-linux-amd64 version"
 
     # Send test results through DataRouter and save the request ID.
     local max_attempts=5
@@ -109,12 +125,12 @@ droute_send() {
     for ((i = 1; i <= max_attempts; i++)); do
       echo "Attempt ${i} of ${max_attempts} to send test results through Data Router."
       if output=$(oc exec -n "${droute_project}" "${droute_pod_name}" -- /bin/bash -c "
-        /tmp/droute-linux-amd64 send --metadata ${temp_droute}/${metadata_output} \
-        --url '${DATA_ROUTER_URL}' \
-        --username '${DATA_ROUTER_USERNAME}' \
-        --password '${DATA_ROUTER_PASSWORD}' \
-        --results '${temp_droute}/${JUNIT_RESULTS}' \
-        --verbose" 2>&1); then
+        ${temp_droute}/droute-linux-amd64 send --metadata ${temp_droute}/${metadata_output} \
+          --url '${DATA_ROUTER_URL}' \
+          --username '${DATA_ROUTER_USERNAME}' \
+          --password '${DATA_ROUTER_PASSWORD}' \
+          --results '${temp_droute}/${JUNIT_RESULTS}' \
+          --verbose" 2>&1); then
         if DATA_ROUTER_REQUEST_ID=$(echo "$output" | grep "request:" | awk '{print $2}') &&
           [ -n "$DATA_ROUTER_REQUEST_ID" ]; then
           echo "Test results successfully sent through Data Router."
@@ -142,40 +158,15 @@ droute_send() {
       for ((i = 1; i <= max_attempts; i++)); do
         # Get DataRouter request information.
         DATA_ROUTER_REQUEST_OUTPUT=$(oc exec -n "${droute_project}" "${droute_pod_name}" -- /bin/bash -c "
-          /tmp/droute-linux-amd64 request get \
+          ${temp_droute}/droute-linux-amd64 request get \
           --url ${DATA_ROUTER_URL} \
           --username ${DATA_ROUTER_USERNAME} \
           --password ${DATA_ROUTER_PASSWORD} \
           ${DATA_ROUTER_REQUEST_ID}")
         # Try to extract the ReportPortal launch URL from the request. This fails if it doesn't contain the launch URL.
         REPORTPORTAL_LAUNCH_URL=$(echo "$DATA_ROUTER_REQUEST_OUTPUT" | yq e '.targets[0].events[] | select(.component == "reportportal-connector") | .message | fromjson | .[0].launch_url' -)
-        if [[ $? -eq 0 ]]; then
-          if [[ "$release_name" == *rbac* ]]; then
-            RUN_TYPE="rbac-nightly"
-          else
-            RUN_TYPE="nightly"
-          fi
-          if [[ ${PIPESTATUS[0]} -eq 0 ]]; then
-            RUN_STATUS_EMOJI=":done-circle-check:"
-            RUN_STATUS="passed"
-          else
-            RUN_STATUS_EMOJI=":failed:"
-            RUN_STATUS="failed"
-          fi
-          jq -n \
-            --arg run_status "$RUN_STATUS" \
-            --arg run_type "$RUN_TYPE" \
-            --arg reportportal_launch_url "$REPORTPORTAL_LAUNCH_URL" \
-            --arg job_name "$JOB_NAME" \
-            --arg run_status_emoji "$RUN_STATUS_EMOJI" \
-            '{
-              "RUN_STATUS": $run_status,
-              "RUN_TYPE": $run_type,
-              "REPORTPORTAL_LAUNCH_URL": $reportportal_launch_url,
-              "JOB_NAME": $job_name,
-              "RUN_STATUS_EMOJI": $run_status_emoji
-            }' > /tmp/data_router_slack_message.json
-          curl -X POST -H 'Content-type: application/json' --data @/tmp/data_router_slack_message.json  $SLACK_DATA_ROUTER_WEBHOOK_URL
+        if [[ -n "$REPORTPORTAL_LAUNCH_URL" ]]; then
+          reportportal_slack_alert $release_name $REPORTPORTAL_LAUNCH_URL
           return 0
         else
           echo "Attempt ${i} of ${max_attempts}: ReportPortal launch URL not ready yet."
@@ -193,30 +184,72 @@ droute_send() {
   oc whoami --show-server
 }
 
+reportportal_slack_alert() {
+  local release_name=$1
+  local reportportal_launch_url=$2
+
+  if [[ "$release_name" == *rbac* ]]; then
+    RUN_TYPE="rbac-nightly"
+  else
+    RUN_TYPE="nightly"
+  fi
+  if [[ ${RESULT} -eq 0 ]]; then
+    RUN_STATUS_EMOJI=":done-circle-check:"
+    RUN_STATUS="passed"
+  else
+    RUN_STATUS_EMOJI=":failed:"
+    RUN_STATUS="failed"
+  fi
+  jq -n \
+    --arg run_status "$RUN_STATUS" \
+    --arg run_type "$RUN_TYPE" \
+    --arg reportportal_launch_url "$reportportal_launch_url" \
+    --arg job_name "$JOB_NAME" \
+    --arg run_status_emoji "$RUN_STATUS_EMOJI" \
+    '{
+      "RUN_STATUS": $run_status,
+      "RUN_TYPE": $run_type,
+      "REPORTPORTAL_LAUNCH_URL": $reportportal_launch_url,
+      "JOB_NAME": $job_name,
+      "RUN_STATUS_EMOJI": $run_status_emoji
+    }' > /tmp/data_router_slack_message.json
+  curl -X POST -H 'Content-type: application/json' --data @/tmp/data_router_slack_message.json  $SLACK_DATA_ROUTER_WEBHOOK_URL
+}
+
 # Merge the base YAML value file with the differences file for Kubernetes
 yq_merge_value_files() {
-  local base_file=$1
-  local diff_file=$2
+  local plugin_operation=$1 # Chose whether you want to merge or overwrite the plugins key (the second file will overwrite the first)
+  local base_file=$2
+  local diff_file=$3
   local step_1_file="/tmp/step-without-plugins.yaml"
   local step_2_file="/tmp/step-only-plugins.yaml"
-  local final_file=$3
-  # Step 1: Merge files, excluding the .global.dynamic.plugins key
-  # Values from `diff_file` override those in `base_file`
-  yq eval-all '
-    select(fileIndex == 0) * select(fileIndex == 1) |
-    del(.global.dynamic.plugins)
-  ' "${base_file}" "${diff_file}" > "${step_1_file}"
-  # Step 2: Merge files, combining the .global.dynamic.plugins key
-  # Values from `diff_file` take precedence; plugins are merged and deduplicated by the .package field
-  yq eval-all '
-    select(fileIndex == 0) *+ select(fileIndex == 1) |
-    .global.dynamic.plugins |= (reverse | unique_by(.package) | reverse)
-  ' "${base_file}" "${diff_file}" > "${step_2_file}"
-  # Step 3: Combine results from the previous steps and remove null values
-  # Values from `step_2_file` override those in `step_1_file`
-  yq eval-all '
-    select(fileIndex == 0) * select(fileIndex == 1) | del(.. | select(. == null))
-  ' "${step_2_file}" "${step_1_file}" > "${final_file}"
+  local final_file=$4
+  if [ "$plugin_operation" = "merge" ]; then
+    # Step 1: Merge files, excluding the .global.dynamic.plugins key
+    # Values from `diff_file` override those in `base_file`
+    yq eval-all '
+      select(fileIndex == 0) * select(fileIndex == 1) |
+      del(.global.dynamic.plugins)
+    ' "${base_file}" "${diff_file}" > "${step_1_file}"
+    # Step 2: Merge files, combining the .global.dynamic.plugins key
+    # Values from `diff_file` take precedence; plugins are merged and deduplicated by the .package field
+    yq eval-all '
+      select(fileIndex == 0) *+ select(fileIndex == 1) |
+      .global.dynamic.plugins |= (reverse | unique_by(.package) | reverse)
+    ' "${base_file}" "${diff_file}" > "${step_2_file}"
+    # Step 3: Combine results from the previous steps and remove null values
+    # Values from `step_2_file` override those in `step_1_file`
+    yq eval-all '
+      select(fileIndex == 0) * select(fileIndex == 1) | del(.. | select(. == null))
+    ' "${step_2_file}" "${step_1_file}" > "${final_file}"
+  elif [ "$plugin_operation" = "overwrite" ]; then
+    yq eval-all '
+    select(fileIndex == 0) * select(fileIndex == 1)
+  ' "${base_file}" "${diff_file}" > "${final_file}"
+  else
+    echo "Invalid operation with plugins key: $plugin_operation"
+    exit 1
+  fi
 }
 
 # Waits for a Kubernetes/OpenShift deployment to become ready within a specified timeout period
@@ -271,7 +304,7 @@ wait_for_svc(){
   local svc_name=$1
   local namespace=$2
   local timeout=${3:-300}
-  
+
   timeout "${timeout}" bash -c "
     echo ${svc_name}
     while ! oc get svc $svc_name -n $namespace &> /dev/null; do
@@ -493,6 +526,12 @@ apply_yaml_files() {
 
     oc apply -f "$dir/auth/secrets-rhdh-secrets.yaml" --namespace="${project}"
 
+    # configuration for testing global floating action button.
+    oc create configmap dynamic-global-floating-action-button-config \
+      --from-file="dynamic-global-floating-action-button-config.yaml"="$dir/resources/config_map/dynamic-global-floating-action-button-config.yaml" \
+      --namespace="${project}" \
+      --dry-run=client -o yaml | oc apply -f -
+
     # Create Pipeline run for tekton test case.
     oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline.yaml"
     oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline-run.yaml"
@@ -513,7 +552,8 @@ deploy_test_backstage_provider() {
   # Check if the buildconfig already exists
   if ! oc get buildconfig test-backstage-customization-provider -n "${project}" >/dev/null 2>&1; then
     echo "Creating new app for test-backstage-customization-provider"
-    oc new-app https://github.com/janus-qe/test-backstage-customization-provider --image-stream="openshift/nodejs:18-minimal-ubi8" --namespace="${project}"
+    oc new-app -S openshift/nodejs:18-minimal-ubi8
+    oc new-app https://github.com/janus-qe/test-backstage-customization-provider --image-stream="openshift/nodejs:18-ubi8" --namespace="${project}"
   else
     echo "BuildConfig for test-backstage-customization-provider already exists in ${project}. Skipping new-app creation."
   fi
@@ -669,7 +709,7 @@ install_acm_operator(){
   wait_for_svc multiclusterhub-operator-webhook open-cluster-management
   oc apply -f "${DIR}/cluster/operators/acm/multiclusterhub.yaml"
   # wait until multiclusterhub is Running.
-  timeout 900 bash -c 'while true; do 
+  timeout 900 bash -c 'while true; do
     CURRENT_PHASE=$(oc get multiclusterhub multiclusterhub -n open-cluster-management -o jsonpath="{.status.phase}")
     echo "MulticlusterHub Current Status: $CURRENT_PHASE"
     [[ "$CURRENT_PHASE" == "Running" ]] && echo "MulticlusterHub is now in Running phase." && break
@@ -785,7 +825,7 @@ initiate_deployments() {
     --set upstream.backstage.image.tag="${TAG_NAME}"
 }
 
-initiate_rds_deployment() {
+initiate_runtime_deployment() {
   local release_name=$1
   local namespace=$2
   configure_namespace "${namespace}"
@@ -799,6 +839,23 @@ initiate_rds_deployment() {
   helm upgrade -i "${release_name}" -n "${namespace}" \
     "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" --version "${CHART_VERSION}" \
     -f "$DIR/resources/postgres-db/values-showcase-postgres.yaml" \
+    --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
+    --set upstream.backstage.image.repository="${QUAY_REPO}" \
+    --set upstream.backstage.image.tag="${TAG_NAME}"
+}
+
+initiate_sanity_plugin_checks_deployment() {
+  configure_namespace "${NAME_SPACE_SANITY_PLUGINS_CHECK}"
+  uninstall_helmchart "${NAME_SPACE_SANITY_PLUGINS_CHECK}" "${RELEASE_NAME}"
+  oc apply -f "$DIR/resources/redis-cache/redis-deployment.yaml" --namespace="${NAME_SPACE_SANITY_PLUGINS_CHECK}"
+  apply_yaml_files "${DIR}" "${NAME_SPACE_SANITY_PLUGINS_CHECK}" "${sanity_plugins_url}"
+  yq_merge_value_files "overwrite" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_SANITY_PLUGINS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}"
+  mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE_SANITY_PLUGINS_CHECK}"
+  cp -a "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" "${ARTIFACT_DIR}/${NAME_SPACE_SANITY_PLUGINS_CHECK}/" # Save the final value-file into the artifacts directory.
+  helm upgrade -i "${RELEASE_NAME}" \
+    -n "${NAME_SPACE_SANITY_PLUGINS_CHECK}" "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" \
+    --version "${CHART_VERSION}" \
+    -f "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO}" \
     --set upstream.backstage.image.tag="${TAG_NAME}"

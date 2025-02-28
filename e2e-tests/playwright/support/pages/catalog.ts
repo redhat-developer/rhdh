@@ -18,6 +18,12 @@ export class Catalog {
     await this.uiHelper.openSidebar("Catalog");
   }
 
+  async goToByName(name: string) {
+    await this.go();
+    await this.uiHelper.clickByDataTestId("user-picker-all");
+    await this.uiHelper.clickLink(name);
+  }
+
   async goToBackstageJanusProjectCITab() {
     await this.goToBackstageJanusProject();
     await this.uiHelper.clickTab("CI");
@@ -26,9 +32,7 @@ export class Catalog {
   }
 
   async goToBackstageJanusProject() {
-    await this.uiHelper.openSidebar("Catalog");
-    await this.uiHelper.clickByDataTestId("user-picker-all");
-    await this.uiHelper.clickLink("backstage-janus");
+    await this.goToByName("backstage-janus");
   }
 
   async search(s: string) {

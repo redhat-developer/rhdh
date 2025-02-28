@@ -14,6 +14,7 @@
 #
 
 import copy
+from enum import StrEnum
 import hashlib
 import json
 import os
@@ -25,6 +26,10 @@ import shutil
 import subprocess
 import base64
 import binascii
+import atexit
+import time
+import signal
+
 # This script is used to install dynamic plugins in the Backstage application,
 # and is available in the container image to be called at container initialization,
 # for example in an init container when using Kubernetes.
@@ -58,9 +63,20 @@ import binascii
 #   - merge the plugin-specific configuration fragment in a global configuration file named `app-config.dynamic-plugins.yaml`
 #
 
+class PullPolicy(StrEnum):
+    IF_NOT_PRESENT = 'IfNotPresent'
+    ALWAYS = 'Always'
+    # NEVER = 'Never' not needed
+
 class InstallException(Exception):
     """Exception class from which every exception in this library will derive."""
     pass
+
+RECOGNIZED_ALGORITHMS = (
+    'sha512',
+    'sha384',
+    'sha256',
+)
 
 def merge(source, destination, prefix = ''):
     for key, value in source.items():
@@ -77,11 +93,6 @@ def merge(source, destination, prefix = ''):
 
     return destination
 
-RECOGNIZED_ALGORITHMS = (
-    'sha512',
-    'sha384',
-    'sha256',
-)
 
 class OciDownloader:
     def __init__(self, destination: str):
@@ -95,9 +106,10 @@ class OciDownloader:
         self.destination = destination
 
     def skopeo(self, command):
-        rv = subprocess.run([self._skopeo] + command, check=True)
+        rv = subprocess.run([self._skopeo] + command, check=True, capture_output=True)
         if rv.returncode != 0:
             raise InstallException(f'Error while running skopeo command: {rv.stderr}')
+        return rv.stdout
 
     def get_plugin_tar(self, image: str) -> str:
         if image not in self.image_to_tarball:
@@ -149,6 +161,15 @@ class OciDownloader:
             shutil.rmtree(plugin_directory, ignore_errors=True, onerror=None)
         self.extract_plugin(tar_file=tar_file, plugin_path=plugin_path)
         return plugin_path
+    
+    def digest(self, package: str) -> str:
+        (image, plugin_path) = package.split('!')
+        image_url = image.replace('oci://', 'docker://')
+        output = self.skopeo(['inspect', image_url])
+        data = json.loads(output)
+        # OCI artifact digest field is defined as "hash method" ":" "hash"
+        digest = data['Digest'].split(':')[1]
+        return f"{digest}"
 
 def verify_package_integrity(plugin: dict, archive: str, working_directory: str) -> None:
     package = plugin['package']
@@ -181,8 +202,39 @@ def verify_package_integrity(plugin: dict, archive: str, working_directory: str)
     if hash_digest != output.decode('utf-8').strip():
       raise InstallException(f'{package}: The hash of the downloaded package {output.decode("utf-8").strip()} does not match the provided integrity hash {hash_digest} provided in the configuration file')
 
+# Create the lock file, so that other instances of the script will wait for this one to finish
+def create_lock(lock_file_path):
+    while True:
+      try:
+        with open(lock_file_path, 'x'):
+          print(f"======= Created lock file: {lock_file_path}")
+          return
+      except FileExistsError:
+        wait_for_lock_release(lock_file_path)
+
+# Remove the lock file
+def remove_lock(lock_file_path):
+   os.remove(lock_file_path)
+   print(f"======= Removed lock file: {lock_file_path}")
+
+# Wait for the lock file to be released
+def wait_for_lock_release(lock_file_path):
+   print(f"======= Waiting for lock release (file: {lock_file_path})...", flush=True)
+   while True:
+     if not os.path.exists(lock_file_path):
+       break
+     time.sleep(1)
+   print("======= Lock released.")
+
 def main():
+
     dynamicPluginsRoot = sys.argv[1]
+
+    lock_file_path = os.path.join(dynamicPluginsRoot, 'install-dynamic-plugins.lock')
+    atexit.register(remove_lock, lock_file_path)
+    signal.signal(signal.SIGTERM, lambda signum, frame: sys.exit(0))
+    create_lock(lock_file_path)
+
     maxEntrySize = int(os.environ.get('MAX_ENTRY_SIZE', 20000000))
     skipIntegrityCheck = os.environ.get("SKIP_INTEGRITY_CHECK", "").lower() == "true"
 
@@ -279,12 +331,13 @@ def main():
     # add a hash for each plugin configuration to detect changes
     for plugin in allPlugins.values():
         hash_dict = copy.deepcopy(plugin)
+        # remove elements that shouldn't be tracked for installation detection
         hash_dict.pop('pluginConfig', None)
         hash = hashlib.sha256(json.dumps(hash_dict, sort_keys=True).encode('utf-8')).hexdigest()
         plugin['hash'] = hash
 
-    # create a dict installed_plugins of all installed plugins in dynamicPluginsRoot
-    installed_plugins = {}
+    # create a dict of all currently installed plugins in dynamicPluginsRoot
+    plugin_path_by_hash = {}
     for dir_name in os.listdir(dynamicPluginsRoot):
         dir_path = os.path.join(dynamicPluginsRoot, dir_name)
         if os.path.isdir(dir_path):
@@ -292,9 +345,10 @@ def main():
             if os.path.isfile(hash_file_path):
                 with open(hash_file_path, 'r') as hash_file:
                     hash_value = hash_file.read().strip()
-                    installed_plugins[hash_value] = dir_name
-
+                    plugin_path_by_hash[hash_value] = dir_name
+                    
     oci_downloader = OciDownloader(dynamicPluginsRoot)
+
     # iterate through the list of plugins
     for plugin in allPlugins.values():
         package = plugin['package']
@@ -303,28 +357,64 @@ def main():
             print('\n======= Skipping disabled dynamic plugin', package, flush=True)
             continue
 
-        plugin_already_installed = False
-        if plugin['hash'] in installed_plugins:
-            force_download = plugin.get('forceDownload', False)
-            if force_download:
-                print('\n======= Forcing download of already installed dynamic plugin', package, flush=True)
-            else:
-                print('\n======= Skipping download of already installed dynamic plugin', package, flush=True)
-                plugin_already_installed = True
-            # remove the hash from installed_plugins so that we can detect plugins that have been removed
-            installed_plugins.pop(plugin['hash'])
-
-        if not plugin_already_installed:
-            print('\n======= Installing dynamic plugin', package, flush=True)
-
-        package_is_oci = package.startswith('oci://')
+        # Stores the relative path of the plugin directory once downloaded
         plugin_path = ''
-        if package_is_oci and not plugin_already_installed:
+        if package.startswith('oci://'):
+            # The OCI downloader
             try:
+                pull_policy = plugin.get('pullPolicy', PullPolicy.ALWAYS if ':latest!' in package else PullPolicy.IF_NOT_PRESENT)
+                
+                if plugin['hash'] in plugin_path_by_hash and pull_policy == PullPolicy.IF_NOT_PRESENT:
+                    print('\n======= Skipping download of already installed dynamic plugin', package, flush=True)
+                    plugin_path_by_hash.pop(plugin['hash'])
+                    continue
+
+                if plugin['hash'] in plugin_path_by_hash and pull_policy == PullPolicy.ALWAYS:
+                    digest_file_path = os.path.join(dynamicPluginsRoot, plugin_path_by_hash.pop(plugin['hash']), 'dynamic-plugin-image.hash')
+                    local_image_digest = None
+                    if os.path.isfile(digest_file_path):
+                        with open(digest_file_path, 'r') as digest_file:
+                            digest_value = digest_file.read().strip()
+                            local_image_digest = digest_value
+                    remote_image_digest = oci_downloader.digest(package)
+                    if remote_image_digest == local_image_digest:
+                        print('\n======= Skipping download of already installed dynamic plugin', package, flush=True)
+                        continue
+                    else:
+                        print('\n======= Installing dynamic plugin', package, flush=True)
+                        
+                else:    
+                    print('\n======= Installing dynamic plugin', package, flush=True)
+
                 plugin_path = oci_downloader.download(package)
+                digest_file_path = os.path.join(dynamicPluginsRoot, plugin_path, 'dynamic-plugin-image.hash')
+                with open(digest_file_path, 'w') as digest_file:
+                    digest_file.write(oci_downloader.digest(package))
+                # remove any duplicate hashes which can occur when only the version is updated
+                for key in [k for k, v in plugin_path_by_hash.items() if v == plugin_path]:
+                    plugin_path_by_hash.pop(key)
             except Exception as e:
                 raise InstallException(f"Error while adding OCI plugin {package} to downloader: {e}")
-        elif not plugin_already_installed:
+        else:
+            # The NPM downloader
+            plugin_already_installed = False
+            pull_policy = plugin.get('pullPolicy', PullPolicy.IF_NOT_PRESENT)
+
+            if plugin['hash'] in plugin_path_by_hash:
+                force_download = plugin.get('forceDownload', False)
+                if pull_policy == PullPolicy.ALWAYS or force_download:
+                    print('\n======= Forcing download of already installed dynamic plugin', package, flush=True)
+                else:
+                    print('\n======= Skipping download of already installed dynamic plugin', package, flush=True)
+                    plugin_already_installed = True
+                # remove the hash from plugin_path_by_hash so that we can detect plugins that have been removed
+                plugin_path_by_hash.pop(plugin['hash'])
+            else:
+                print('\n======= Installing dynamic plugin', package, flush=True)
+
+            if plugin_already_installed:
+                continue
+
             package_is_local = package.startswith('./')
 
             # If package is not local, then integrity check is mandatory
@@ -399,18 +489,16 @@ def main():
             os.remove(archive)
 
         # create a hash file in the plugin directory
-        if not plugin_already_installed:
-            hash = plugin['hash']
-            hash_file_path = os.path.join(dynamicPluginsRoot, plugin_path, 'dynamic-plugin-config.hash')
-            with open(hash_file_path, 'w') as hash_file:
-                hash_file.write(hash)
+        hash = plugin['hash']
+        hash_file_path = os.path.join(dynamicPluginsRoot, plugin_path, 'dynamic-plugin-config.hash')
+        with open(hash_file_path, 'w') as digest_file:
+            digest_file.write(hash)
 
         if 'pluginConfig' not in plugin:
           print('\t==> Successfully installed dynamic plugin', package, flush=True)
           continue
 
         # if some plugin configuration is defined, merge it with the global configuration
-
         print('\t==> Merging plugin-specific configuration', flush=True)
         config = plugin['pluginConfig']
         if config is not None and isinstance(config, dict):
@@ -421,9 +509,9 @@ def main():
     yaml.safe_dump(globalConfig, open(dynamicPluginsGlobalConfigFile, 'w'))
 
     # remove plugins that have been removed from the configuration
-    for hash_value in installed_plugins:
-        plugin_directory = os.path.join(dynamicPluginsRoot, installed_plugins[hash_value])
-        print('\n======= Removing previously installed dynamic plugin', installed_plugins[hash_value], flush=True)
+    for hash_value in plugin_path_by_hash:
+        plugin_directory = os.path.join(dynamicPluginsRoot, plugin_path_by_hash[hash_value])
+        print('\n======= Removing previously installed dynamic plugin', plugin_path_by_hash[hash_value], flush=True)
         shutil.rmtree(plugin_directory, ignore_errors=True, onerror=None)
 
 main()
