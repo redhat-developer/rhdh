@@ -29,12 +29,12 @@ test.describe("Verify Redis Cache DB", () => {
 
     // ensure that the docs are generated. if redis configuration has an error, this page will hang and docs won't be generated
     await expect(async () => {
-      await uiHelper.verifyHeading("rhdh")
+      await uiHelper.verifyHeading("rhdh");
     }).toPass({
       intervals: [3_000],
       timeout: 30_000,
     });
-    
+
     // Wait for port-forward to be ready
     await new Promise<void>((resolve, reject) => {
       portForward.stdout.on("data", (data) => {
@@ -56,8 +56,10 @@ test.describe("Verify Redis Cache DB", () => {
       expect(keys).toContainEqual(expect.stringContaining("techdocs"));
 
       // Additionally, verify the format of the key
-      const key = keys.filter(k => k.startsWith("techdocs"))[0]
-      expect(key).toMatch(/techdocs:(?:[A-Za-z0-9+]{4})*(?:[A-Za-z0-9+]{2}==|[A-Za-z0-9+]{3}=)$/gm);
+      const key = keys.filter((k) => k.startsWith("techdocs"))[0];
+      expect(key).toMatch(
+        /techdocs:(?:[A-Za-z0-9+]{4})*(?:[A-Za-z0-9+]{2}==|[A-Za-z0-9+]{3}=)$/gm,
+      );
     }).toPass({
       intervals: [3_000],
       timeout: 30_000,
