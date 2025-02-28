@@ -1,13 +1,13 @@
 import { expect, Page } from "@playwright/test";
-import { UIhelper } from "../ui-helper";
+import { UiHelper } from "../ui-helper";
 
 export class Tekton {
   page: Page;
-  uiHelper: UIhelper;
+  uiHelper: UiHelper;
 
   constructor(page: Page) {
     this.page = page;
-    this.uiHelper = new UIhelper(page);
+    this.uiHelper = new UiHelper(page);
   }
 
   getAllGridColumnsTextForPipelineRunsTable() {

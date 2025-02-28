@@ -1,13 +1,14 @@
 import { expect, test } from "@playwright/test";
-import { UIhelper } from "../../utils/ui-helper";
+
 import { Common } from "../../utils/common";
+import { UiHelper } from "../../utils/ui-helper";
 
 test.describe("Test ApplicationListener", () => {
-  let uiHelper: UIhelper;
+  let uiHelper: UiHelper;
 
   test.beforeEach(async ({ page }) => {
     const common = new Common(page);
-    uiHelper = new UIhelper(page);
+    uiHelper = new UiHelper(page);
     await common.loginAsGuest();
   });
 

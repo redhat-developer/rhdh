@@ -63,3 +63,5 @@ dynamic-plugins-root/*
 
 # Private Keys
 *.pem
+
+e2e-tests/operator-project
