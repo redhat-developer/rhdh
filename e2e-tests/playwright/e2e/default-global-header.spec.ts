@@ -1,13 +1,13 @@
 import { expect, test } from "@playwright/test";
-import { UIhelper } from "../utils/ui-helper";
+import { UiHelper } from "../utils/ui-helper";
 import { Common } from "../utils/common";
 
 test.describe("Default Global Header", () => {
   let common: Common;
-  let uiHelper: UIhelper;
+  let uiHelper: UiHelper;
 
   test.beforeEach(async ({ page }) => {
-    uiHelper = new UIhelper(page);
+    uiHelper = new UiHelper(page);
     common = new Common(page);
     await common.loginAsKeycloakUser(
       process.env.GH_USER2_ID,
