@@ -4,7 +4,7 @@ import { Common } from "../utils/common";
 import Redis from "ioredis";
 import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 
-test.describe("Verify Redis Cache DB", () => {
+test.describe.only("Verify Redis Cache DB", () => {
   let common: Common;
   let uiHelper: UIhelper;
   let portForward: ChildProcessWithoutNullStreams;
@@ -17,7 +17,7 @@ test.describe("Verify Redis Cache DB", () => {
     portForward = spawn("/bin/sh", [
       "-c",
       `
-      oc login --token="${process.env.K8S_CLUSTER_TOKEN}" --server="${process.env.K8S_CLUSTER_URL}" --insecure-skip-tls-verify=true && \
+      oc login --token="${process.env.K8S_CLUSTER_TOKEN}" --server="${process.env.K8S_CLUSTER_URL}" --insecure-skip-tls-verify=true &&
       oc port-forward service/redis 6379:6379 --namespace="${process.env.NAME_SPACE}"
     `,
     ]);
