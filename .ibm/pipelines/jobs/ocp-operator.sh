@@ -16,7 +16,7 @@ initiate_operator_deployments() {
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
   create_dynamic_plugins_config "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "/tmp/configmap-dynamic-plugins.yaml"
   oc apply -f /tmp/configmap-dynamic-plugins.yaml -n "${NAME_SPACE}"
-  oc apply -f "$DIR/resources/redis-cache/redis-deployment.yaml" --namespace="${NAME_SPACE}"
+  deploy_redis_cache "${NAME_SPACE}"
   deploy_rhdh_operator "${NAME_SPACE}" "${DIR}/resources/rhdh-operator/rhdh-start.yaml"
 
   configure_namespace "${NAME_SPACE_RBAC}"
