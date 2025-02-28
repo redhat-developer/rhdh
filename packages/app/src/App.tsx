@@ -24,8 +24,18 @@ const baseFrontendConfig = {
           dynamicRoutes: [
             {
               path: '/plugins',
-              importName: 'DynamicPluginsInfo',
+              importName: 'DynamicPluginsInfoPage',
               menuItem: { text: 'Plugins', icon: 'pluginsInfoIcon' },
+            },
+          ],
+          mountPoints: [
+            {
+              mountPoint: 'internal.plugins/tab',
+              importName: 'DynamicPluginsInfoContent',
+              config: {
+                path: 'installed',
+                title: 'Installed plugins',
+              },
             },
           ],
           menuItems: {

@@ -1,3 +1,3 @@
-import { DynamicPluginsInfoPage } from '../DynamicPluginsInfoPage';
+import { DynamicPluginsTable } from '../DynamicPluginsTable/DynamicPluginsTable';
 
-export const DynamicPluginsInfoContent = () => <DynamicPluginsInfoPage />;
+export const DynamicPluginsInfoContent = () => <DynamicPluginsTable />;
