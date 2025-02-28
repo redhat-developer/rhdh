@@ -32,6 +32,7 @@ test.describe("Audit Log check for Catalog Plugin", () => {
     await catalogImport.registerExistingComponent(template, false);
     await uiHelper.clickLink({ ariaLabel: "Create..." });
     await common.waitForLoad();
+    await uiHelper.searchInputPlaceholder("Hello World 2");
     await uiHelper.clickBtnInCard("Hello World 2", "Choose");
     await LogUtils.validateLogEvent(
       "ScaffolderParameterSchemaFetch",
