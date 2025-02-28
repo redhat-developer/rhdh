@@ -117,8 +117,9 @@ test.describe("Standard authentication providers: Github Provider", () => {
       timeout: 90 * 1000,
     });
 
-    await page.goto("/settings");
+    await uiHelper.goToSettingsPage();
     await common.signOut();
+    await context.clearCookies();
   });
 
   test("Ingestion of Users and Nested Groups: verify the UserEntities and Groups are created with the correct relationships in RHDH ", async () => {
@@ -225,7 +226,7 @@ test.describe("Standard authentication providers: Github Provider", () => {
     );
     expect(loginSucceded).toContain("Login successful");
 
-    await uiHelper.verifyAlertErrorMessage(/User not found/gm);
+    await uiHelper.verifyAlertErrorMessage(/unable to resolve user identity/gm);
 
     await context.clearCookies();
 
@@ -242,7 +243,7 @@ test.describe("Standard authentication providers: Github Provider", () => {
       constants.GH_USER_PASSWORD,
       constants.AUTH_PROVIDERS_GH_USER_2FA,
     );
-    await page.goto("/settings");
+    await uiHelper.goToSettingsPage();
     await common.signOut();
     await context.clearCookies();
   });
@@ -339,7 +340,7 @@ test.describe("Standard authentication providers: Github Provider", () => {
       timeout: 90 * 1000,
     });
 
-    await page.goto("/settings");
+    await uiHelper.goToSettingsPage();
     await common.signOut();
 
     await waitForNextSync("github", syncTime);
@@ -384,7 +385,7 @@ test.describe("Standard authentication providers: Github Provider", () => {
       timeout: 60 * 1000,
     });
 
-    await page.goto("/settings");
+    await uiHelper.goToSettingsPage();
     await common.signOut();
     await context.clearCookies();
   });
@@ -452,7 +453,7 @@ test.describe("Standard authentication providers: Github Provider", () => {
       timeout: 30 * 1000,
     });
 
-    await page.goto("/settings");
+    await uiHelper.goToSettingsPage();
     await common.signOut();
     await context.clearCookies();
   });
@@ -530,7 +531,7 @@ test.describe("Standard authentication providers: Github Provider", () => {
       constants.GH_TEAMS["team_2"].name + "_renamed",
     );
 
-    await page.goto("/settings");
+    await uiHelper.goToSettingsPage();
     // user should see the entities again
     await expect(async () => {
       await page.reload();
@@ -549,7 +550,7 @@ test.describe("Standard authentication providers: Github Provider", () => {
       constants.GH_TEAMS["team_2"].name + "_renamed",
     );
 
-    await page.goto("/settings");
+    await uiHelper.goToSettingsPage();
     await common.signOut();
     await context.clearCookies();
   });

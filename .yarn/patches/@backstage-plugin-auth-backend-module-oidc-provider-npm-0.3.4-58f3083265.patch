@@ -1,27 +1,36 @@
 diff --git a/dist/index.d.ts b/dist/index.d.ts
-index bd2eb330b124be25d60f9dd2bb325a5cf02c1761..a62032d81fc209832492b36f8a9cb70c02354a56 100644
+index bd2eb330b124be25d60f9dd2bb325a5cf02c1761..7ba8d6e9d7c8c93bd5f35f6bf6c1a951042e017d 100644
 --- a/dist/index.d.ts
 +++ b/dist/index.d.ts
-@@ -1,8 +1,9 @@
+@@ -1,5 +1,5 @@
  import * as _backstage_plugin_auth_node from '@backstage/plugin-auth-node';
 -import { PassportOAuthAuthenticatorHelper } from '@backstage/plugin-auth-node';
 +import { PassportOAuthAuthenticatorHelper, OAuthAuthenticatorResult } from '@backstage/plugin-auth-node';
  import * as openid_client from 'openid-client';
  import { TokenSet, UserinfoResponse, Strategy } from 'openid-client';
  import * as _backstage_backend_plugin_api from '@backstage/backend-plugin-api';
-+import { OidcAuthResult as OidcAuthResult$1 } from '@backstage/plugin-auth-backend-module-oidc-provider';
- 
- /**
-  * authentication result for the OIDC which includes the token set and user
-@@ -44,6 +45,11 @@ declare namespace oidcSignInResolvers {
+@@ -37,13 +37,23 @@ declare namespace oidcSignInResolvers {
+      * their email address as the entity name.
+      */
+     const emailLocalPartMatchingUserEntityName: _backstage_plugin_auth_node.SignInResolverFactory<unknown, {
++        dangerouslyAllowSignInWithoutUserInCatalog?: boolean | undefined;
+         allowedDomains?: string[] | undefined;
+     } | undefined>;
+     /**
+      * A oidc resolver that looks up the user using their email address
       * as email of the entity.
       */
-     const emailMatchingUserEntityProfileEmail: _backstage_plugin_auth_node.SignInResolverFactory<unknown, unknown>;
+-    const emailMatchingUserEntityProfileEmail: _backstage_plugin_auth_node.SignInResolverFactory<unknown, unknown>;
++    const emailMatchingUserEntityProfileEmail: _backstage_plugin_auth_node.SignInResolverFactory<unknown, {
++        dangerouslyAllowSignInWithoutUserInCatalog?: boolean | undefined;
++    } | undefined>;
 +    /**
 +     * A oidc resolver that looks up the user using their preferred username
 +     * as the entity name
 +     */
-+    const preferredUsernameMatchingUserEntityName: _backstage_plugin_auth_node.SignInResolverFactory<OAuthAuthenticatorResult<OidcAuthResult$1>, unknown>;
++    const preferredUsernameMatchingUserEntityName: _backstage_plugin_auth_node.SignInResolverFactory<OAuthAuthenticatorResult<OidcAuthResult>, {
++        dangerouslyAllowSignInWithoutUserInCatalog?: boolean | undefined;
++    } | undefined>;
  }
  
  export { type OidcAuthResult, authModuleOidcProvider as default, oidcAuthenticator, oidcSignInResolvers };
@@ -49,32 +58,50 @@ index 1828ebab3e6150790de88f7f5b104b734ac8a60e..27b88fa8482434b6df07f01f4b73ba73
 +{"version":3,"file":"module.cjs.js","sources":["../src/module.ts"],"sourcesContent":["/*\n * Copyright 2023 The Backstage Authors\n *\n * Licensed under the Apache License, Version 2.0 (the \"License\");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *     http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\nimport { createBackendModule } from '@backstage/backend-plugin-api';\nimport {\n  authProvidersExtensionPoint,\n  createOAuthProviderFactory,\n} from '@backstage/plugin-auth-node';\nimport { oidcAuthenticator } from './authenticator';\nimport { oidcSignInResolvers } from './resolvers';\n\n/** @public */\nexport const authModuleOidcProvider = createBackendModule({\n  pluginId: 'auth',\n  moduleId: 'oidc-provider',\n  register(reg) {\n    reg.registerInit({\n      deps: {\n        providers: authProvidersExtensionPoint,\n      },\n      async init({ providers }) {\n        providers.registerProvider({\n          providerId: 'oidc',\n          factory: createOAuthProviderFactory({\n            authenticator: oidcAuthenticator,\n            signInResolverFactories: {\n              ...oidcSignInResolvers,\n            },\n          }),\n        });\n      },\n    });\n  },\n});\n"],"names":["createBackendModule","authProvidersExtensionPoint","createOAuthProviderFactory","oidcAuthenticator","oidcSignInResolvers"],"mappings":";;;;;;;AAwBO,MAAM,yBAAyBA,oCAAoB,CAAA;AAAA,EACxD,QAAU,EAAA,MAAA;AAAA,EACV,QAAU,EAAA,eAAA;AAAA,EACV,SAAS,GAAK,EAAA;AACZ,IAAA,GAAA,CAAI,YAAa,CAAA;AAAA,MACf,IAAM,EAAA;AAAA,QACJ,SAAW,EAAAC;AAAA,OACb;AAAA,MACA,MAAM,IAAA,CAAK,EAAE,SAAA,EAAa,EAAA;AACxB,QAAA,SAAA,CAAU,gBAAiB,CAAA;AAAA,UACzB,UAAY,EAAA,MAAA;AAAA,UACZ,SAASC,yCAA2B,CAAA;AAAA,YAClC,aAAe,EAAAC,+BAAA;AAAA,YACf,uBAAyB,EAAA;AAAA,cACvB,GAAGC;AAAA;AACL,WACD;AAAA,SACF,CAAA;AAAA;AACH,KACD,CAAA;AAAA;AAEL,CAAC;;;;"}
 \ No newline at end of file
 diff --git a/dist/resolvers.cjs.js b/dist/resolvers.cjs.js
-index 380a9624cb461b3782fc319d7722dc1da1c442d7..dc3ebe39b74807c3b0a94835030a89640d7ce976 100644
+index 380a9624cb461b3782fc319d7722dc1da1c442d7..3c6b164f5baa2f90bb03a57c532f80625cec4d3d 100644
 --- a/dist/resolvers.cjs.js
 +++ b/dist/resolvers.cjs.js
-@@ -6,5 +6,16 @@ exports.oidcSignInResolvers = void 0;
+@@ -1,10 +1,34 @@
+ 'use strict';
+ 
+ var pluginAuthNode = require('@backstage/plugin-auth-node');
++var zod = require('zod');
+ 
+ exports.oidcSignInResolvers = void 0;
  ((oidcSignInResolvers2) => {
    oidcSignInResolvers2.emailLocalPartMatchingUserEntityName = pluginAuthNode.commonSignInResolvers.emailLocalPartMatchingUserEntityName;
    oidcSignInResolvers2.emailMatchingUserEntityProfileEmail = pluginAuthNode.commonSignInResolvers.emailMatchingUserEntityProfileEmail;
 +  oidcSignInResolvers2.preferredUsernameMatchingUserEntityName = pluginAuthNode.createSignInResolverFactory({
-+    create() {
++    optionsSchema: zod.z.object({
++      dangerouslyAllowSignInWithoutUserInCatalog: zod.z.boolean().optional()
++    }).optional(),
++    create(options) {
 +      return async (info, ctx) => {
 +        const userId = info.result.fullProfile.userinfo.preferred_username;
 +        if (!userId) {
 +          throw new Error(`OIDC user profile does not contain a username`);
 +        }
-+        return ctx.signInWithCatalogUser({ entityRef: { name: userId } });
++        try {
++          return await ctx.signInWithCatalogUser({ entityRef: { name: userId } });
++        } catch (error) {
++          return await pluginAuthNode.handleSignInUserNotFound({
++            ctx,
++            error,
++            userEntityName: userId,
++            dangerouslyAllowSignInWithoutUserInCatalog: options?.dangerouslyAllowSignInWithoutUserInCatalog
++          });
++        }
 +      };
 +    }
 +  });
  })(exports.oidcSignInResolvers || (exports.oidcSignInResolvers = {}));
  //# sourceMappingURL=resolvers.cjs.js.map
 diff --git a/dist/resolvers.cjs.js.map b/dist/resolvers.cjs.js.map
-index b73b722e66f171691c3d683007b00c54633f4310..10f3cabad94281225604bbfd24b36cf7ce5713c7 100644
+index b73b722e66f171691c3d683007b00c54633f4310..81e629d383f94e598d2595b453f2e6d08e8ffc7d 100644
 --- a/dist/resolvers.cjs.js.map
 +++ b/dist/resolvers.cjs.js.map
 @@ -1 +1 @@
 -{"version":3,"file":"resolvers.cjs.js","sources":["../src/resolvers.ts"],"sourcesContent":["/*\n * Copyright 2023 The Backstage Authors\n *\n * Licensed under the Apache License, Version 2.0 (the \"License\");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *     http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n\nimport { commonSignInResolvers } from '@backstage/plugin-auth-node';\n\n/**\n * Available sign-in resolvers for the Oidc auth provider.\n *\n * @public\n */\nexport namespace oidcSignInResolvers {\n  /**\n   * A oidc resolver that looks up the user using the local part of\n   * their email address as the entity name.\n   */\n  export const emailLocalPartMatchingUserEntityName =\n    commonSignInResolvers.emailLocalPartMatchingUserEntityName;\n\n  /**\n   * A oidc resolver that looks up the user using their email address\n   * as email of the entity.\n   */\n  export const emailMatchingUserEntityProfileEmail =\n    commonSignInResolvers.emailMatchingUserEntityProfileEmail;\n}\n"],"names":["oidcSignInResolvers","commonSignInResolvers"],"mappings":";;;;AAuBiBA;AAAA,CAAV,CAAUA,oBAAV,KAAA;AAKE,EAAMA,oBAAAA,CAAA,uCACXC,oCAAsB,CAAA,oCAAA;AAMjB,EAAMD,oBAAAA,CAAA,sCACXC,oCAAsB,CAAA,mCAAA;AAAA,CAbT,EAAAD,2BAAA,KAAAA,2BAAA,GAAA,EAAA,CAAA,CAAA;;"}
 \ No newline at end of file
-+{"version":3,"file":"resolvers.cjs.js","sources":["../src/resolvers.ts"],"sourcesContent":["/*\n * Copyright 2023 The Backstage Authors\n *\n * Licensed under the Apache License, Version 2.0 (the \"License\");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *     http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n\nimport { OidcAuthResult } from '@backstage/plugin-auth-backend-module-oidc-provider';\nimport {\n  AuthResolverContext,\n  OAuthAuthenticatorResult,\n  SignInInfo,\n  commonSignInResolvers,\n  createSignInResolverFactory,\n} from '@backstage/plugin-auth-node';\n\n/**\n * Available sign-in resolvers for the Oidc auth provider.\n *\n * @public\n */\nexport namespace oidcSignInResolvers {\n  /**\n   * A oidc resolver that looks up the user using the local part of\n   * their email address as the entity name.\n   */\n  export const emailLocalPartMatchingUserEntityName =\n    commonSignInResolvers.emailLocalPartMatchingUserEntityName;\n\n  /**\n   * A oidc resolver that looks up the user using their email address\n   * as email of the entity.\n   */\n  export const emailMatchingUserEntityProfileEmail =\n    commonSignInResolvers.emailMatchingUserEntityProfileEmail;\n\n  /**\n   * A oidc resolver that looks up the user using their preferred username\n   * as the entity name\n   */\n  export const preferredUsernameMatchingUserEntityName =\n    createSignInResolverFactory({\n      create() {\n        return async (\n          info: SignInInfo<OAuthAuthenticatorResult<OidcAuthResult>>,\n          ctx: AuthResolverContext,\n        ) => {\n          const userId = info.result.fullProfile.userinfo.preferred_username;\n\n          if (!userId) {\n            throw new Error(`OIDC user profile does not contain a username`);\n          }\n          return ctx.signInWithCatalogUser({ entityRef: { name: userId } });\n        };\n      },\n    });\n}\n"],"names":["oidcSignInResolvers","commonSignInResolvers","createSignInResolverFactory"],"mappings":";;;;AA8BiBA;AAAA,CAAV,CAAUA,oBAAV,KAAA;AAKE,EAAMA,oBAAAA,CAAA,uCACXC,oCAAsB,CAAA,oCAAA;AAMjB,EAAMD,oBAAAA,CAAA,sCACXC,oCAAsB,CAAA,mCAAA;AAMjB,EAAMD,oBAAAA,CAAA,0CACXE,0CAA4B,CAAA;AAAA,IAC1B,MAAS,GAAA;AACP,MAAO,OAAA,OACL,MACA,GACG,KAAA;AACH,QAAA,MAAM,MAAS,GAAA,IAAA,CAAK,MAAO,CAAA,WAAA,CAAY,QAAS,CAAA,kBAAA;AAEhD,QAAA,IAAI,CAAC,MAAQ,EAAA;AACX,UAAM,MAAA,IAAI,MAAM,CAA+C,6CAAA,CAAA,CAAA;AAAA;AAEjE,QAAO,OAAA,GAAA,CAAI,sBAAsB,EAAE,SAAA,EAAW,EAAE,IAAM,EAAA,MAAA,IAAU,CAAA;AAAA,OAClE;AAAA;AACF,GACD,CAAA;AAAA,CAlCY,EAAAF,2BAAA,KAAAA,2BAAA,GAAA,EAAA,CAAA,CAAA;;"}
++{"version":3,"file":"resolvers.cjs.js","sources":["../src/resolvers.ts"],"sourcesContent":["/*\n * Copyright 2023 The Backstage Authors\n *\n * Licensed under the Apache License, Version 2.0 (the \"License\");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *     http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n\nimport {\n  createSignInResolverFactory,\n  SignInInfo,\n  commonSignInResolvers,\n  OAuthAuthenticatorResult,\n  handleSignInUserNotFound\n} from '@backstage/plugin-auth-node';\nimport { OidcAuthResult } from './authenticator';\nimport { z } from 'zod';\n\n/**\n * Available sign-in resolvers for the Oidc auth provider.\n *\n * @public\n */\nexport namespace oidcSignInResolvers {\n  /**\n   * A oidc resolver that looks up the user using the local part of\n   * their email address as the entity name.\n   */\n  export const emailLocalPartMatchingUserEntityName =\n    commonSignInResolvers.emailLocalPartMatchingUserEntityName;\n\n  /**\n   * A oidc resolver that looks up the user using their email address\n   * as email of the entity.\n   */\n  export const emailMatchingUserEntityProfileEmail =\n    commonSignInResolvers.emailMatchingUserEntityProfileEmail;\n\n  /**\n   * A oidc resolver that looks up the user using their preferred username\n   * as the entity name\n   */\n  export const preferredUsernameMatchingUserEntityName = createSignInResolverFactory({\n    optionsSchema: z\n      .object({\n        dangerouslyAllowSignInWithoutUserInCatalog: z.boolean().optional(),\n      })\n      .optional(),\n    create(options) {\n      return async (info: SignInInfo<OAuthAuthenticatorResult<OidcAuthResult>>, ctx) => {\n        const userId = info.result.fullProfile.userinfo.preferred_username;\n        if (!userId) {\n          throw new Error(`OIDC user profile does not contain a username`);\n        }\n        try {\n          return await ctx.signInWithCatalogUser({ entityRef: { name: userId } });\n        } catch (error) {\n          return await handleSignInUserNotFound({\n            ctx,\n            error,\n            userEntityName: userId,\n            dangerouslyAllowSignInWithoutUserInCatalog: options?.dangerouslyAllowSignInWithoutUserInCatalog\n          });\n        }\n      };\n    }\n  });\n}\n"],"names":["oidcSignInResolvers","commonSignInResolvers","createSignInResolverFactory","z","handleSignInUserNotFound"],"mappings":";;;;;AA+BiBA;AAAA,CAAV,CAAUA,oBAAV,KAAA;AAKE,EAAMA,oBAAAA,CAAA,uCACXC,oCAAsB,CAAA,oCAAA;AAMjB,EAAMD,oBAAAA,CAAA,sCACXC,oCAAsB,CAAA,mCAAA;AAMjB,EAAMD,oBAAAA,CAAA,0CAA0CE,0CAA4B,CAAA;AAAA,IACjF,aAAA,EAAeC,MACZ,MAAO,CAAA;AAAA,MACN,0CAA4C,EAAAA,KAAA,CAAE,OAAQ,EAAA,CAAE,QAAS;AAAA,KAClE,EACA,QAAS,EAAA;AAAA,IACZ,OAAO,OAAS,EAAA;AACd,MAAO,OAAA,OAAO,MAA4D,GAAQ,KAAA;AAChF,QAAA,MAAM,MAAS,GAAA,IAAA,CAAK,MAAO,CAAA,WAAA,CAAY,QAAS,CAAA,kBAAA;AAChD,QAAA,IAAI,CAAC,MAAQ,EAAA;AACX,UAAM,MAAA,IAAI,MAAM,CAA+C,6CAAA,CAAA,CAAA;AAAA;AAEjE,QAAI,IAAA;AACF,UAAO,OAAA,MAAM,IAAI,qBAAsB,CAAA,EAAE,WAAW,EAAE,IAAA,EAAM,MAAO,EAAA,EAAG,CAAA;AAAA,iBAC/D,KAAO,EAAA;AACd,UAAA,OAAO,MAAMC,uCAAyB,CAAA;AAAA,YACpC,GAAA;AAAA,YACA,KAAA;AAAA,YACA,cAAgB,EAAA,MAAA;AAAA,YAChB,4CAA4C,OAAS,EAAA;AAAA,WACtD,CAAA;AAAA;AACH,OACF;AAAA;AACF,GACD,CAAA;AAAA,CA3Cc,EAAAJ,2BAAA,KAAAA,2BAAA,GAAA,EAAA,CAAA,CAAA;;"}
 \ No newline at end of file

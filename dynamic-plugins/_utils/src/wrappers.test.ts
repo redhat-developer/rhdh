@@ -262,6 +262,10 @@ describe("Dynamic Plugin Wrappers", () => {
       },
       {
         package:
+          "@red-hat-developer-hub/backstage-plugin-global-header-test@0.0.2",
+      },
+      {
+        package:
           "oci://quay.io/gashcrumb/example-root-http-middleware:latest!internal-backstage-plugin-middleware-header-example-dynamic",
       },
       {
