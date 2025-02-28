@@ -1,8 +1,10 @@
-import { test } from "@playwright/test";
-import { Common } from "../../utils/common";
+import { Page, test } from "@playwright/test";
+import { Common, setupBrowser } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
 import { LogUtils } from "./log-utils";
 import { CatalogImport } from "../../support/pages/catalog-import";
+
+let page: Page;
 
 test.describe("Audit Log check for Catalog Plugin", () => {
   let uiHelper: UIhelper;
@@ -12,7 +14,8 @@ test.describe("Audit Log check for Catalog Plugin", () => {
     "https://github.com/RoadieHQ/sample-service/blob/main/demo_template.yaml";
 
   // Login to OpenShift before all tests
-  test.beforeAll(async () => {
+  test.beforeAll(async ({ browser }, testInfo) => {
+    page = (await setupBrowser(browser, testInfo)).page;
     await LogUtils.loginToOpenShift();
   });
 
@@ -30,13 +33,13 @@ test.describe("Audit Log check for Catalog Plugin", () => {
   }) => {
     await uiHelper.clickButton("Register Existing Component");
     await catalogImport.registerExistingComponent(template, false);
+    await page.waitForTimeout(1000);
     await uiHelper.clickLink({ ariaLabel: "Create..." });
     await common.waitForLoad();
-    await uiHelper.searchInputPlaceholder("Hello World 2");
     await uiHelper.clickBtnInCard("Hello World 2", "Choose");
     await LogUtils.validateLogEvent(
       "ScaffolderParameterSchemaFetch",
-      "user:development/guest successfully requested the parameter schema for template:default/hello-world-2",
+      "user:development/guest requested the parameter schema for template:default/hello-world-2",
       "GET",
       "/api/scaffolder/v2/templates/default/template/hello-world-2/parameter-schema",
       baseURL!,
@@ -52,7 +55,7 @@ test.describe("Audit Log check for Catalog Plugin", () => {
 
     await LogUtils.validateLogEvent(
       "ScaffolderInstalledActionsFetch",
-      "user:development/guest successfully requested the list of installed actions",
+      "user:development/guest requested the list of installed actions",
       "GET",
       "/api/scaffolder/v2/actions",
       baseURL!,
@@ -68,7 +71,7 @@ test.describe("Audit Log check for Catalog Plugin", () => {
 
     await LogUtils.validateLogEvent(
       "ScaffolderTaskListFetch",
-      "user:development/guest successfully requested for the list of scaffolder tasks",
+      "user:development/guest requested for the list of scaffolder tasks",
       "GET",
       "/api/scaffolder/v2/tasks?createdBy=user%3Adevelopment%2Fguest",
       baseURL!,
