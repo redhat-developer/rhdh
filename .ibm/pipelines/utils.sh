@@ -547,8 +547,8 @@ apply_yaml_files() {
     else
       create_app_config_map "$config_file" "$project"
     fi
-    oc create configmap dynamic-plugins-config \
-      --from-file="dynamic-plugins-config.yaml"="$dir/resources/config_map/dynamic-plugins-config.yaml" \
+    oc create configmap dynamic-homepage-and-sidebar-config \
+      --from-file="dynamic-homepage-and-sidebar-config.yaml"="$dir/resources/config_map/dynamic-homepage-and-sidebar-config.yaml" \
       --namespace="${project}" \
       --dry-run=client -o yaml | oc apply -f -
 
@@ -648,20 +648,6 @@ create_conditional_policies_operator() {
 prepare_operator_app_config() {
   local config_file=$1
   yq e -i '.permission.rbac.conditionalPoliciesFile = "./rbac/conditional-policies.yaml"' ${config_file}
-}
-
-create_app_config_map_k8s() {
-    local config_file=$1
-    local project=$2
-
-    echo "Creating k8s-specific app-config ConfigMap in namespace ${project}"
-
-    yq 'del(.backend.cache)' "$config_file" \
-    | oc create configmap app-config-rhdh \
-        --from-file="app-config-rhdh.yaml"="/dev/stdin" \
-        --namespace="${project}" \
-        --dry-run=client -o yaml \
-    | oc apply -f -
 }
 
 run_tests() {
