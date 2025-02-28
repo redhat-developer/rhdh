@@ -19,7 +19,7 @@ test.describe.skip('Check RBAC "analytics-provider-segment" plugin', () => {
 
   test("is disabled", async ({ page }) => {
     await page
-      .getByPlaceholder("Search")
+      .getByPlaceholder("Search", { exact: true })
       .pressSequentially("plugin-analytics-provider-segment\n", {
         delay: 300,
       });
