@@ -7,7 +7,7 @@ import {
 } from '@backstage/catalog-model';
 import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
 
-import { TransientGroupOwnershipResolver } from './transientGroupOwnershipResolver';
+import { TransitiveGroupOwnershipResolver } from './transitiveGroupOwnershipResolver';
 
 describe('resolveParentGroups', () => {
   const mockUser: UserEntity = {
@@ -68,12 +68,12 @@ describe('resolveParentGroups', () => {
   ];
 
   const config = mockServices.rootConfig({
-    data: { includeTransientGroupOwnership: true },
+    data: { includeTransitiveGroupOwnership: true },
   });
 
   it('should resolve parent groups recursively', async () => {
     const catalogApi = catalogServiceMock({ entities: mockGroups });
-    const resolver = new TransientGroupOwnershipResolver({
+    const resolver = new TransitiveGroupOwnershipResolver({
       discovery: mockServices.discovery(),
       config: config,
       auth: mockServices.auth.mock({
@@ -118,7 +118,7 @@ describe('resolveParentGroups', () => {
     const catalogApi = catalogServiceMock({
       entities: mockGroupsWithoutParent,
     });
-    const resolver = new TransientGroupOwnershipResolver({
+    const resolver = new TransitiveGroupOwnershipResolver({
       discovery: mockServices.discovery(),
       config: config,
       auth: mockServices.auth.mock({
@@ -175,7 +175,7 @@ describe('resolveParentGroups', () => {
     const catalogApi = catalogServiceMock({
       entities: mockGroupsMultipleGroups,
     });
-    const resolver = new TransientGroupOwnershipResolver({
+    const resolver = new TransitiveGroupOwnershipResolver({
       discovery: mockServices.discovery(),
       config: config,
       auth: mockServices.auth.mock({
@@ -215,9 +215,9 @@ describe('resolveParentGroups', () => {
     });
   });
 
-  it('should not resolve parent groups recursively by default (with includeTransientGroupOwnership to false)', async () => {
+  it('should not resolve parent groups recursively by default (with includeTransitiveGroupOwnership to false)', async () => {
     const catalogApi = catalogServiceMock({ entities: mockGroups });
-    const resolver = new TransientGroupOwnershipResolver({
+    const resolver = new TransitiveGroupOwnershipResolver({
       discovery: mockServices.discovery(),
       config: mockServices.rootConfig(),
       auth: mockServices.auth.mock({
@@ -237,7 +237,7 @@ describe('resolveParentGroups', () => {
 
   it('should handle an user with no group membership', async () => {
     const catalogApi = catalogServiceMock({ entities: [] });
-    const resolver = new TransientGroupOwnershipResolver({
+    const resolver = new TransitiveGroupOwnershipResolver({
       discovery: mockServices.discovery(),
       config: config,
       auth: mockServices.auth.mock({
@@ -290,7 +290,7 @@ describe('resolveParentGroups', () => {
     const catalogApi = catalogServiceMock({
       entities: mockGroupsWithDifferentNamespace,
     });
-    const resolver = new TransientGroupOwnershipResolver({
+    const resolver = new TransitiveGroupOwnershipResolver({
       discovery: mockServices.discovery(),
       config: config,
       auth: mockServices.auth.mock({
@@ -358,7 +358,7 @@ describe('resolveParentGroups', () => {
     const catalogApi = catalogServiceMock({
       entities: mockCyclicGroups,
     });
-    const resolver = new TransientGroupOwnershipResolver({
+    const resolver = new TransitiveGroupOwnershipResolver({
       discovery: mockServices.discovery(),
       config: config,
       auth: mockServices.auth.mock({

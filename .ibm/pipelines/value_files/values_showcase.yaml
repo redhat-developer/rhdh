@@ -30,6 +30,29 @@ global:
                       minutes: 1
                     initialDelay:
                       seconds: 15
+      - package: '@red-hat-developer-hub/backstage-plugin-application-provider-test@0.0.2'
+        integrity: 'sha512-N3HxvTNe/CxTDtXIsvfre3ZoFLWYfPxz/IJiKY3nzA5C0wcH4lZn+fI+mDFoTUXogt7fZWyl3mCrdwQWrOEM8A=='
+        pluginConfig:
+          dynamicPlugins:
+            frontend:
+              red-hat-developer-hub.backstage-plugin-application-provider-test:
+                dynamicRoutes:
+                  - path: /application-provider-test-page
+                    importName: TestPage
+                mountPoints:
+                  - mountPoint: application/provider
+                    importName: TestProviderOne
+                  - mountPoint: application/provider
+                    importName: TestProviderTwo
+      - package: '@red-hat-developer-hub/backstage-plugin-application-listener-test@0.0.2'
+        integrity: 'sha512-GRLbpjXE9ZyfRJr/iyp+1L2sUQL97aPc+FV/IORH63eGT32Uc0xCFBu51fGPYJFmXY49BlSh+CnVnbKNsyiOAQ=='
+        pluginConfig:
+          dynamicPlugins:
+            frontend:
+              red-hat-developer-hub.backstage-plugin-application-listener-test:
+                mountPoints:
+                  - mountPoint: application/listener
+                    importName: LocationListener
       - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-org-dynamic
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-github-issues
@@ -94,11 +117,46 @@ global:
         disabled: false
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import
         disabled: false
+      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-header
+        disabled: false
+      # Enable an extra header test plugin
+      - package: '@red-hat-developer-hub/backstage-plugin-global-header-test@0.0.2'
+        integrity: 'sha512-Dlay4DUAC3SifSJx4dmKDeD07DITGX9ZZ2SMCgcMMc00GJVKToD3DFuPYZ7lV2C2Ve7gWDufCf5NUmqaUWf6GA=='
+        pluginConfig:
+          dynamicPlugins:
+            frontend:
+              red-hat-developer-hub.backstage-plugin-global-header-test:
+                mountPoints:
+                  - mountPoint: application/header
+                    importName: TestHeader
+                    config:
+                      position: above-main-content
+                  - mountPoint: global.header/component
+                    importName: TestButton
+                    config:
+                      priority: 95
+      # Enable notifications plugins.
+      - package: ./dynamic-plugins/dist/backstage-plugin-notifications
+        disabled: false
+      - package: ./dynamic-plugins/dist/backstage-plugin-notifications-backend-dynamic
+        disabled: false
+      - package: ./dynamic-plugins/dist/backstage-plugin-signals-backend-dynamic
+        disabled: false
+      - package: ./dynamic-plugins/dist/backstage-plugin-signals
+        disabled: false
       # Enable tech-radar plugins.
       - package: ./dynamic-plugins/dist/backstage-community-plugin-tech-radar
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-tech-radar-backend-dynamic
         disabled: false
+      - package: ./dynamic-plugins/dist/backstage-plugin-techdocs-module-addons-contrib
+        disabled: false
+        pluginConfig:
+          dynamicPlugins:
+            frontend:
+              backstage.plugin-techdocs-module-addons-contrib:
+                techdocsAddons:
+                  - importName: ReportIssue
       - package: ./dynamic-plugins/dist/backstage-community-plugin-acr
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-kubernetes-dynamic
@@ -125,6 +183,8 @@ global:
         disabled: false
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-marketplace
         disabled: false
+      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-floating-action-button
+        disabled: false
 
 # -- Upstream Backstage [chart configuration](https://github.com/backstage/charts/blob/main/charts/backstage/values.yaml)
 upstream:
@@ -132,6 +192,15 @@ upstream:
   commonLabels:
     backstage.io/kubernetes-id: developer-hub
   backstage:
+    appConfig:
+      backend:
+        auth:
+          dangerouslyDisableDefaultAuthPolicy: true
+          externalAccess:
+            - type: static
+              options:
+                token: test-token
+                subject: test-subject
     image:
       pullPolicy: Always
       registry: quay.io
@@ -158,6 +227,10 @@ upstream:
         filename: app-config-rhdh.yaml
       - configMapRef: dynamic-homepage-and-sidebar-config
         filename: dynamic-homepage-and-sidebar-config.yaml
+      - configMapRef: dynamic-global-floating-action-button-config
+        filename: dynamic-global-floating-action-button-config.yaml
+      - configMapRef: dynamic-global-header-config
+        filename: dynamic-global-header-config.yaml
     startupProbe:
       # This gives enough time upon container startup before the liveness and readiness probes are triggered.
       # Giving (120s = initialDelaySeconds + failureThreshold * periodSeconds) to account for the worst case scenario.

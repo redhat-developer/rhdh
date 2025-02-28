@@ -133,9 +133,7 @@ test.describe.serial("Bulk Import plugin", () => {
       newRepoDetails.updatedComponentName,
     );
     await bulkimport.fillTextInputByNameAtt("prLabels", newRepoDetails.labels);
-    await expect(await uiHelper.clickButton("Save")).not.toBeVisible({
-      timeout: 10000,
-    });
+    await expect(await uiHelper.clickButton("Save")).not.toBeVisible();
 
     const prCatalogInfoYaml = await APIHelper.getfileContentFromPR(
       newRepoDetails.owner,

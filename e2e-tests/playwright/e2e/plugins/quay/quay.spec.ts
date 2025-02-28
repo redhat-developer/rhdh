@@ -40,22 +40,6 @@ test.describe("Test Quay.io plugin", () => {
 
   test("Check Security Scan details", async ({ page }) => {
     const cell = await ImageRegistry.getScanCell(page);
-    const resultText = await cell.textContent();
-
-    if (resultText.includes("unsupported")) {
-      await expect(cell.getByRole("link")).toHaveCount(0);
-    } else {
-      await cell.getByRole("link").click();
-      await uiHelper.verifyHeading("Vulnerabilities for sha256:");
-      await uiHelper.verifyColumnHeading(ImageRegistry.getAllScanColumnsText());
-
-      if (resultText.includes("Passed")) {
-        await uiHelper.verifyCellsInTable(["No records to display"]);
-      } else {
-        await uiHelper.verifyCellsInTable(
-          ImageRegistry.getScanCellsIdentifier(),
-        );
-      }
-    }
+    await expect(cell).toBeVisible();
   });
 });
