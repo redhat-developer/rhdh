@@ -119,6 +119,22 @@ global:
         disabled: false
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-header
         disabled: false
+      # Enable an extra header test plugin
+      - package: '@red-hat-developer-hub/backstage-plugin-global-header-test@0.0.2'
+        integrity: 'sha512-Dlay4DUAC3SifSJx4dmKDeD07DITGX9ZZ2SMCgcMMc00GJVKToD3DFuPYZ7lV2C2Ve7gWDufCf5NUmqaUWf6GA=='
+        pluginConfig:
+          dynamicPlugins:
+            frontend:
+              red-hat-developer-hub.backstage-plugin-global-header-test:
+                mountPoints:
+                  - mountPoint: application/header
+                    importName: TestHeader
+                    config:
+                      position: above-main-content
+                  - mountPoint: global.header/component
+                    importName: TestButton
+                    config:
+                      priority: 95
       # Enable notifications plugins.
       - package: ./dynamic-plugins/dist/backstage-plugin-notifications
         disabled: false
@@ -213,6 +229,8 @@ upstream:
         filename: dynamic-homepage-and-sidebar-config.yaml
       - configMapRef: dynamic-global-floating-action-button-config
         filename: dynamic-global-floating-action-button-config.yaml
+      - configMapRef: dynamic-global-header-config
+        filename: dynamic-global-header-config.yaml
     startupProbe:
       # This gives enough time upon container startup before the liveness and readiness probes are triggered.
       # Giving (120s = initialDelaySeconds + failureThreshold * periodSeconds) to account for the worst case scenario.

@@ -532,6 +532,12 @@ apply_yaml_files() {
       --namespace="${project}" \
       --dry-run=client -o yaml | oc apply -f -
 
+    # configuration for testing global header and header mount points.
+    oc create configmap dynamic-global-header-config \
+      --from-file="dynamic-global-header-config.yaml"="$dir/resources/config_map/dynamic-global-header-config.yaml" \
+      --namespace="${project}" \
+      --dry-run=client -o yaml | oc apply -f -
+
     # Create Pipeline run for tekton test case.
     oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline.yaml"
     oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline-run.yaml"
