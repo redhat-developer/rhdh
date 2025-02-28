@@ -4,6 +4,7 @@ handle_upgrade() {
   export NAME_SPACE="showcase-upgrade-nightly"
   export NAME_SPACE_POSTGRES_DB="${NAME_SPACE}-postgres-external-db"
   export DEPLOYMENT_NAME="rhdh-backstage"
+  export TAG_NAME_BASE="1.4"
   
   configure_namespace "${NAME_SPACE}"
 
