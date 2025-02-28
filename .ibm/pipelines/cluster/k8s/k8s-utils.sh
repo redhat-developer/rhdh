@@ -9,7 +9,6 @@ re_create_k8s_service_account_and_get_token() {
   if token="$(kubectl get secret ${sa_secret_name} -n ${sa_namespace} -o jsonpath='{.data.token}' 2>/dev/null)"; then
     K8S_CLUSTER_TOKEN=$(echo "${token}" | base64 --decode)
     echo "Acquired existing token for the service account into K8S_CLUSTER_TOKEN"
-    return 0
   else
     echo "Creating service account"
     if ! kubectl get serviceaccount ${sa_name} -n ${sa_namespace} &> /dev/null; then
@@ -38,10 +37,9 @@ EOF
     token="$(kubectl get secret ${sa_secret_name} -n ${sa_namespace} -o jsonpath='{.data.token}' 2>/dev/null)"
     K8S_CLUSTER_TOKEN=$(echo "${token}" | base64 --decode)
     echo "Acquired token for the service account into K8S_CLUSTER_TOKEN"
-    K8S_CLUSTER_TOKEN_ENCODED=$(printf "%s" $K8S_CLUSTER_TOKEN | base64 | tr -d '\n')
-    K8S_SERVICE_ACCOUNT_TOKEN=$K8S_CLUSTER_TOKEN_ENCODED
-    OCM_CLUSTER_TOKEN=$K8S_CLUSTER_TOKEN_ENCODED
-    export K8S_CLUSTER_TOKEN K8S_CLUSTER_TOKEN_ENCODED K8S_SERVICE_ACCOUNT_TOKEN OCM_CLUSTER_TOKEN
-    return 0
   fi
+  K8S_CLUSTER_TOKEN_ENCODED=$(printf "%s" $K8S_CLUSTER_TOKEN | base64 | tr -d '\n')
+  K8S_SERVICE_ACCOUNT_TOKEN=$K8S_CLUSTER_TOKEN_ENCODED
+  OCM_CLUSTER_TOKEN=$K8S_CLUSTER_TOKEN_ENCODED
+  export K8S_CLUSTER_TOKEN K8S_CLUSTER_TOKEN_ENCODED K8S_SERVICE_ACCOUNT_TOKEN OCM_CLUSTER_TOKEN
 }
