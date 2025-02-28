@@ -96,9 +96,8 @@ global:
         disabled: false
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import
         disabled: false
-      # Disable global header plugin for now. See https://issues.redhat.com/browse/RHIDP-5474
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-header
-        disabled: true
+        disabled: false
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-dynamic-home-page
         disabled: false
       # Enable tech-radar plugin.

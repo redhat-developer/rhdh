@@ -1,4 +1,11 @@
 app:
+  support:
+    url: https://github.com/redhat-developer/rhdh/issues
+    items:
+      - title: Red Hat Developer Hub
+        links:
+          - url: https://access.redhat.com/products/red-hat-developer-hub
+            title: Product Information
   baseUrl: ${RHDH_BASE_URL}
   title: Red Hat Developer Hub
   branding:
