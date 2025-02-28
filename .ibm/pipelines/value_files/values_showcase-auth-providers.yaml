@@ -77,6 +77,7 @@ upstream:
                 clientSecret: ${AUTH_ORG_CLIENT_SECRET}
                 privateKey: ${AUTH_ORG1_PRIVATE_KEY}
                 webhookSecret: ${AUTH_ORG_WEBHOOK_SECRET}
+      dangerouslyAllowSignInWithoutUserInCatalog: true
       catalog:
         locations:
           - type: url
