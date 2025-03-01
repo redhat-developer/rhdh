@@ -35,7 +35,7 @@ test.describe("Audit Log check for Catalog Plugin", () => {
     await uiHelper.clickBtnInCard("Hello World 2", "Choose");
     await LogUtils.validateLogEvent(
       "ScaffolderParameterSchemaFetch",
-      "user:development/guest requested the parameter schema for template:default/hello-world-2",
+      "user:development/guest successfully requested the parameter schema for Template:default/hello-world-2",
       "GET",
       "/api/scaffolder/v2/templates/default/template/hello-world-2/parameter-schema",
       baseURL!,
@@ -51,7 +51,7 @@ test.describe("Audit Log check for Catalog Plugin", () => {
 
     await LogUtils.validateLogEvent(
       "ScaffolderInstalledActionsFetch",
-      "user:development/guest requested the list of installed actions",
+      "user:development/guest successfully requested the list of installed actions",
       "GET",
       "/api/scaffolder/v2/actions",
       baseURL!,
@@ -67,7 +67,7 @@ test.describe("Audit Log check for Catalog Plugin", () => {
 
     await LogUtils.validateLogEvent(
       "ScaffolderTaskListFetch",
-      "user:development/guest requested for the list of scaffolder tasks",
+      "user:development/guest successfully requested for the list of scaffolder tasks",
       "GET",
       "/api/scaffolder/v2/tasks?createdBy=user%3Adevelopment%2Fguest",
       baseURL!,
