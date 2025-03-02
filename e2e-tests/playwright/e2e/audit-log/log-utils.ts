@@ -1,4 +1,3 @@
-import { expect } from "@playwright/test";
 import { execFile } from "child_process";
 import { Log } from "./logs";
 
@@ -33,13 +32,17 @@ export class LogUtils {
    * @param actual The actual log returned by the system
    * @param expected The expected log values to validate against
    */
-  public static validateLog(actual: Log, expected: Partial<Log>) {
-    Object.keys(expected).forEach((key) => {
-      const expectedValue = expected[key as keyof Log];
-      const actualValue = actual[key as keyof Log];
-
-      LogUtils.compareValues(actualValue, expectedValue);
-    });
+  public static validateLog(logs: Log[], expected: Partial<Log>) {
+    for (const log of logs) {
+      const isMatched = LogUtils.compareValues(log, expected);
+      if (isMatched) {
+        console.log(`Found matched log line: ${JSON.stringify(log)}`);
+        return;
+      }
+    }
+    throw new Error(
+      `Unable to find expected log line "${JSON.stringify(expected)}" in the actual logs`,
+    );
   }
 
   /**
@@ -49,18 +52,49 @@ export class LogUtils {
    * @param actual The actual value to compare
    * @param expected The expected value
    */
-  private static compareValues(actual: unknown, expected: unknown) {
-    if (typeof expected === "object" && expected !== null) {
-      Object.keys(expected).forEach((subKey) => {
-        const expectedSubValue = expected[subKey];
-        const actualSubValue = actual?.[subKey];
-        LogUtils.compareValues(actualSubValue, expectedSubValue);
-      });
-    } else if (typeof expected === "number") {
-      expect(actual).toBe(expected);
-    } else {
-      expect(actual).toContain(expected);
+  private static compareValues(actual: unknown, expected: unknown): boolean {
+    // check that actual and expected are of the same type
+    if (
+      Object.prototype.toString.call(actual) !==
+      Object.prototype.toString.call(expected)
+    ) {
+      return false;
     }
+
+    if (Array.isArray(expected) && Array.isArray(actual)) {
+      if (expected.length !== actual.length) {
+        return false;
+      }
+      const isEveryElemTheSame = expected.every((expItem, index) =>
+        LogUtils.compareValues(actual[index], expItem),
+      );
+      if (!isEveryElemTheSame) {
+        return false;
+      }
+    }
+
+    if (typeof expected === "object" && typeof actual === "object") {
+      const isObjectsTheSame = Object.keys(expected).every((subKey) =>
+        LogUtils.compareValues(
+          (actual as Record<string, unknown>)[subKey],
+          expected[subKey],
+        ),
+      );
+
+      if (!isObjectsTheSame) {
+        return false;
+      }
+    }
+
+    if (typeof expected === "number" || typeof expected === "boolean") {
+      return actual === expected;
+    }
+
+    if (typeof expected === "string" && typeof actual === "string") {
+      return actual.includes(expected);
+    }
+
+    return true;
   }
 
   /**
@@ -116,7 +150,7 @@ export class LogUtils {
     filter: string,
     maxRetries: number = 3,
     retryDelay: number = 5000,
-  ): Promise<string> {
+  ): Promise<string[]> {
     const podSelector =
       "app.kubernetes.io/component=backstage,app.kubernetes.io/instance=rhdh,app.kubernetes.io/name=backstage";
     const tailNumber = 30;
@@ -148,8 +182,8 @@ export class LogUtils {
         const filteredLines = logLines.filter((line) => line.includes(filter));
 
         if (filteredLines.length > 0) {
-          console.log("Matching log line found:", filteredLines[0]);
-          return filteredLines[0]; // Return the first matching log
+          console.log("Matching log line found:", filteredLines);
+          return filteredLines;
         }
 
         console.warn(
@@ -223,12 +257,15 @@ export class LogUtils {
     plugin: string,
   ) {
     try {
-      const actualLog = await LogUtils.getPodLogsWithRetry(eventName);
+      const actualLog = await LogUtils.getPodLogsWithRetry(eventName, 0);
       console.log("Raw log output before filtering:", actualLog);
 
-      let parsedLog: Log;
+      const parsedLog: Log[] = [];
       try {
-        parsedLog = JSON.parse(actualLog);
+        for (const logLine of actualLog) {
+          const log = JSON.parse(logLine);
+          parsedLog.push(log);
+        }
       } catch (parseError) {
         console.error("Failed to parse log JSON. Log content:", actualLog);
         throw new Error(`Invalid JSON received for log: ${parseError}`);
