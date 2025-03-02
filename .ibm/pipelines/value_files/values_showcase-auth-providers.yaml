@@ -11,6 +11,30 @@ global:
         disabled: true
       - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
         disabled: true
+      - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-github-dynamic
+        disabled: true
+      - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-dynamic
+        disabled: true
+        pluginConfig:
+          catalog:
+            providers:
+              github:
+                my-test-org:
+                  organization: janus-qe
+                  catalogPath: '/catalog-info.yaml'
+                  schedule:
+                    frequency:
+                      minutes: 1
+                    timeout:
+                      minutes: 1
+                    initialDelay:
+                      seconds: 15
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-github-issues
+        disabled: true
+      - package: ./dynamic-plugins/dist/roadiehq-backstage-plugin-github-pull-requests
+        disabled: true
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-github-actions
+        disabled: true
 upstream:
   backstage:
     appConfig:
@@ -53,6 +77,7 @@ upstream:
                 clientSecret: ${AUTH_ORG_CLIENT_SECRET}
                 privateKey: ${AUTH_ORG1_PRIVATE_KEY}
                 webhookSecret: ${AUTH_ORG_WEBHOOK_SECRET}
+      dangerouslyAllowSignInWithoutUserInCatalog: true
       catalog:
         locations:
           - type: url
@@ -63,7 +88,7 @@ upstream:
           githubOrg:
             - id: github
               githubUrl: https://github.com
-              orgs: ['${AUTH_PROVIDERS_GH_ORG_NAME}']
+              orgs: ['janus-qe']
               schedule:
                 initialDelay: { seconds: 0 }
                 frequency: { minutes: 1 }

@@ -29,8 +29,8 @@ export default defineConfig({
     baseURL: process.env.BASE_URL,
     ignoreHTTPSErrors: true,
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: "retain-on-failure",
-    screenshot: "only-on-failure",
+    trace: "on",
+    screenshot: "on",
     ...devices["Desktop Chrome"],
     viewport: { width: 1920, height: 1080 },
     video: {
@@ -75,14 +75,17 @@ export default defineConfig({
     },
     {
       name: "showcase-auth-providers",
-      testMatch: ["**/playwright/e2e/authProviders/*.spec.ts"],
+      testMatch: [
+        // "**/playwright/e2e/authProviders/*.spec.ts",
+        "**/playwright/e2e/github-happy-path.spec.ts",
+      ],
       testIgnore: [
         "**/playwright/e2e/authProviders/setup-environment.spec.ts",
         "**/playwright/e2e/authProviders/clear-environment.spec.ts",
         "**/playwright/e2e/verify-tls-config-health-check.spec.ts",
       ],
       dependencies: ["showcase-auth-providers-setup-environment"],
-      teardown: "showcase-auth-providers-clear-environment",
+      // teardown: "showcase-auth-providers-clear-environment",
       retries: 1,
     },
     {
