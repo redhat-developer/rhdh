@@ -53,9 +53,6 @@ export class LogUtils {
    * @param expected The expected value
    */
   private static compareValues(actual: unknown, expected: unknown): boolean {
-    console.log(
-      `==========  actual: ${JSON.stringify(actual)} and expected: ${JSON.stringify(expected)}`,
-    );
     // check that actual and expected are of the same type
     if (
       Object.prototype.toString.call(actual) !==
@@ -77,14 +74,13 @@ export class LogUtils {
     }
 
     if (typeof expected === "object" && typeof actual === "object") {
-      console.log(`++++++++ ${Object.keys(expected)}`);
       const isObjectsTheSame = Object.keys(expected).every((subKey) =>
         LogUtils.compareValues(
           (actual as Record<string, unknown>)[subKey],
           expected[subKey],
         ),
       );
-      console.log(`==========  isObjectsTheSame: ${isObjectsTheSame}`);
+
       if (!isObjectsTheSame) {
         return false;
       }
