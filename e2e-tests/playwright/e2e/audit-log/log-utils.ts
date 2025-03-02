@@ -289,9 +289,6 @@ export class LogUtils {
 
       console.log("Validating log with expected values:", expectedLog);
       LogUtils.validateLog(parsedLog, expectedLog);
-      throw new Error(
-        `Unable to find expected log line "${JSON.stringify(expectedLog)}" in the actual logs`,
-      );
     } catch (error) {
       console.error("Error validating log event:", error);
       console.error("Event name:", eventName);
