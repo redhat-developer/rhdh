@@ -117,7 +117,7 @@ test.describe("Standard authentication providers: Github Provider", () => {
       timeout: 90 * 1000,
     });
 
-    await page.goto("/settings");
+    await uiHelper.goToSettingsPage();
     await common.signOut();
     await context.clearCookies();
   });
@@ -243,7 +243,7 @@ test.describe("Standard authentication providers: Github Provider", () => {
       constants.GH_USER_PASSWORD,
       constants.AUTH_PROVIDERS_GH_USER_2FA,
     );
-    await page.goto("/settings");
+    await uiHelper.goToSettingsPage();
     await common.signOut();
     await context.clearCookies();
   });
@@ -340,7 +340,7 @@ test.describe("Standard authentication providers: Github Provider", () => {
       timeout: 90 * 1000,
     });
 
-    await page.goto("/settings");
+    await uiHelper.goToSettingsPage();
     await common.signOut();
 
     await waitForNextSync("github", syncTime);
@@ -385,7 +385,7 @@ test.describe("Standard authentication providers: Github Provider", () => {
       timeout: 60 * 1000,
     });
 
-    await page.goto("/settings");
+    await uiHelper.goToSettingsPage();
     await common.signOut();
     await context.clearCookies();
   });
@@ -453,7 +453,7 @@ test.describe("Standard authentication providers: Github Provider", () => {
       timeout: 30 * 1000,
     });
 
-    await page.goto("/settings");
+    await uiHelper.goToSettingsPage();
     await common.signOut();
     await context.clearCookies();
   });
@@ -531,7 +531,7 @@ test.describe("Standard authentication providers: Github Provider", () => {
       constants.GH_TEAMS["team_2"].name + "_renamed",
     );
 
-    await page.goto("/settings");
+    await uiHelper.goToSettingsPage();
     // user should see the entities again
     await expect(async () => {
       await page.reload();
@@ -550,7 +550,7 @@ test.describe("Standard authentication providers: Github Provider", () => {
       constants.GH_TEAMS["team_2"].name + "_renamed",
     );
 
-    await page.goto("/settings");
+    await uiHelper.goToSettingsPage();
     await common.signOut();
     await context.clearCookies();
   });

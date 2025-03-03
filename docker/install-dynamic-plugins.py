@@ -219,7 +219,7 @@ def remove_lock(lock_file_path):
 
 # Wait for the lock file to be released
 def wait_for_lock_release(lock_file_path):
-   print("======= Waiting for lock release...", flush=True)
+   print(f"======= Waiting for lock release (file: {lock_file_path})...", flush=True)
    while True:
      if not os.path.exists(lock_file_path):
        break

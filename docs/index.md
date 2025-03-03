@@ -8,7 +8,7 @@ The telemetry data collection feature is used to enhance your experience with th
 
 **Telemetry data collection is enabled by default.**
 
-To disable telemetry data collection, you need to disable the [`@janus-idp/backstage-plugin-analytics-provider-segment`](https://github.com/janus-idp/backstage-plugins/tree/main/plugins/analytics-provider-segment) plugin as documented below.
+To disable telemetry data collection, you need to disable the [`@backstage-community/plugin-analytics-provider-segment`](https://github.com/backstage/community-plugins/tree/main/workspaces/analytics/plugins/analytics-provider-segment) plugin as documented below.
 
 - **Anonymous configuration**:
 
