@@ -5098,7 +5098,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/catalog-client@npm:1.9.1, @backstage/catalog-client@npm:^1.6.5, @backstage/catalog-client@npm:^1.6.6, @backstage/catalog-client@npm:^1.7.1, @backstage/catalog-client@npm:^1.8.0, @backstage/catalog-client@npm:^1.9.1":
+"@backstage/catalog-client@npm:1.9.1, @backstage/catalog-client@npm:^1.6.5, @backstage/catalog-client@npm:^1.6.6, @backstage/catalog-client@npm:^1.7.1, @backstage/catalog-client@npm:^1.9.1":
   version: 1.9.1
   resolution: "@backstage/catalog-client@npm:1.9.1"
   dependencies:
@@ -16244,18 +16244,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace@npm:0.0.2":
-  version: 0.0.2
-  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace@npm:0.0.2"
+"@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace@npm:0.1.2":
+  version: 0.1.2
+  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace@npm:0.1.2"
   dependencies:
-    "@backstage/backend-plugin-api": ^1.0.1
-    "@backstage/catalog-model": ^1.7.0
-    "@backstage/plugin-catalog-common": ^1.1.0
-    "@backstage/plugin-catalog-node": ^1.13.1
-    "@backstage/types": ^1.1.1
-    "@red-hat-developer-hub/backstage-plugin-marketplace-common": ^0.0.2
+    "@backstage/backend-plugin-api": ^1.1.1
+    "@backstage/catalog-model": ^1.7.3
+    "@backstage/plugin-catalog-common": ^1.1.3
+    "@backstage/plugin-catalog-node": ^1.15.1
+    "@backstage/types": ^1.2.1
+    "@red-hat-developer-hub/backstage-plugin-marketplace-common": ^0.1.2
     semver: ^7.6.3
-  checksum: 381b6ea930fbfc86644d95fffb970fcff445ff05f604cb39dda043886cb756f85dd7399a0fb41c1faf4b42f6822f70eb0b1b5d599c4605b606ca1157950fa8a4
+  checksum: 573da133beb79b0776f892f5456b34ef7b26299edd8e90edc045e6edd78b3eae170ce610d2e58e2d53320a47659192d9f4591ba66337555d7914aa7c0ef9b6e4
   languageName: node
   linkType: hard
 
@@ -16334,52 +16334,56 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-marketplace-backend@npm:0.0.2":
-  version: 0.0.2
-  resolution: "@red-hat-developer-hub/backstage-plugin-marketplace-backend@npm:0.0.2"
+"@red-hat-developer-hub/backstage-plugin-marketplace-backend@npm:0.1.2":
+  version: 0.1.2
+  resolution: "@red-hat-developer-hub/backstage-plugin-marketplace-backend@npm:0.1.2"
   dependencies:
-    "@backstage/backend-defaults": ^0.5.2
-    "@backstage/backend-plugin-api": ^1.0.1
-    "@backstage/catalog-client": ^1.8.0
-    "@backstage/errors": ^1.2.4
-    "@red-hat-developer-hub/backstage-plugin-marketplace-common": ^0.0.2
+    "@backstage/backend-defaults": ^0.7.0
+    "@backstage/backend-plugin-api": ^1.1.1
+    "@backstage/catalog-client": ^1.9.1
+    "@backstage/errors": ^1.2.7
+    "@backstage/plugin-catalog-node": ^1.15.1
+    "@red-hat-developer-hub/backstage-plugin-marketplace-common": ^0.1.2
     express: ^4.17.1
     express-promise-router: ^4.1.0
-    glob: ^10.4.5
-    yaml: ^2.6.0
-    zod: ^3.22.4
-  checksum: 61e429fd6cde71700506b22459a4bbebb523c95714c01c353b16450caed999947572d5bdd8219a0c15acdea1924dc9042938919139fd6a8ba367bf18efd813c4
+  checksum: 55a2b3a6dbd80b37c870c82e9290e7a8044a3593a906ca4057a0d434e0bea5547ee870ed098446624b21213bf13b9da5b353e02fef99f8fe970ea5d53f6e4f2d
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-marketplace-common@npm:^0.0.2":
-  version: 0.0.2
-  resolution: "@red-hat-developer-hub/backstage-plugin-marketplace-common@npm:0.0.2"
-  peerDependencies:
-    "@backstage/catalog-model": ^1.7.0
-    "@backstage/types": ^1.1.1
-  checksum: 4f1783ab36fe4b0823e5e96c5a43e0292157696230036dfa8ce06cef94c0b58a8fbb2de75e9c0688391da6340265c3f075fe35f783538a2b82037bb639252036
-  languageName: node
-  linkType: hard
-
-"@red-hat-developer-hub/backstage-plugin-marketplace@npm:0.0.2":
-  version: 0.0.2
-  resolution: "@red-hat-developer-hub/backstage-plugin-marketplace@npm:0.0.2"
+"@red-hat-developer-hub/backstage-plugin-marketplace-common@npm:^0.1.2":
+  version: 0.1.2
+  resolution: "@red-hat-developer-hub/backstage-plugin-marketplace-common@npm:0.1.2"
   dependencies:
-    "@backstage/core-components": ^0.15.1
-    "@backstage/core-plugin-api": ^1.10.0
-    "@backstage/plugin-catalog-react": ^1.14.0
-    "@backstage/theme": ^0.6.0
+    "@backstage/backend-plugin-api": ^1.1.1
+    "@backstage/catalog-client": ^1.9.1
+    "@backstage/catalog-model": ^1.7.3
+    "@backstage/errors": ^1.2.7
+  peerDependencies:
+    "@backstage/backend-plugin-api": ^1.1.1
+    "@backstage/types": ^1.2.1
+  checksum: aafda2938056ac067c8530d93e42949eb57b62a477b952044eacfad58c618fe12254d52a2312f6853001771da41c7d6e478ed98c04c6c080e52a23ff47b09af4
+  languageName: node
+  linkType: hard
+
+"@red-hat-developer-hub/backstage-plugin-marketplace@npm:0.1.3":
+  version: 0.1.3
+  resolution: "@red-hat-developer-hub/backstage-plugin-marketplace@npm:0.1.3"
+  dependencies:
+    "@backstage/catalog-client": ^1.9.1
+    "@backstage/core-components": ^0.16.3
+    "@backstage/core-plugin-api": ^1.10.3
+    "@backstage/plugin-catalog-react": ^1.15.1
+    "@backstage/theme": ^0.6.3
     "@mui/icons-material": ^5.16.7
     "@mui/material": ^5.12.2
-    "@red-hat-developer-hub/backstage-plugin-marketplace-common": ^0.0.2
+    "@red-hat-developer-hub/backstage-plugin-marketplace-common": ^0.1.2
+    "@scalprum/react-core": 0.9.3
     "@tanstack/react-query": ^5.60.5
-    react-use: ^17.2.4
   peerDependencies:
     react: ^17.0.0 || ^18.0.0
     react-dom: ^17.0.0 || ^18.0.0
     react-router-dom: ^6.3.0
-  checksum: 70b9898bf2f6f880e2d58c9c426ef6e010314f5d8a5953ce725991e83e3bcfd8d0d8d7580aad645c427700593cce785f59199acc6e37cbd3f31d38b751d73f3a
+  checksum: 194eaa5fe845e68dfca8a6fcd023a8f17ad1835ff007057fd725b04db84ac42380b4a4f6f3c997810dfda4183b2a37492b060df8d0eab2d16fe9c90214c0bf4e
   languageName: node
   linkType: hard
 
@@ -29875,7 +29879,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"glob@npm:^10.0.0, glob@npm:^10.2.2, glob@npm:^10.3.10, glob@npm:^10.3.7, glob@npm:^10.4.1, glob@npm:^10.4.5":
+"glob@npm:^10.0.0, glob@npm:^10.2.2, glob@npm:^10.3.10, glob@npm:^10.3.7, glob@npm:^10.4.1":
   version: 10.4.5
   resolution: "glob@npm:10.4.5"
   dependencies:
@@ -40303,7 +40307,7 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.29.6
     "@janus-idp/cli": 3.2.0
-    "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace": 0.0.2
+    "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace": 0.1.2
     typescript: 5.7.3
   languageName: unknown
   linkType: soft
@@ -40350,7 +40354,7 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.29.6
     "@janus-idp/cli": 3.2.0
-    "@red-hat-developer-hub/backstage-plugin-marketplace-backend": 0.0.2
+    "@red-hat-developer-hub/backstage-plugin-marketplace-backend": 0.1.2
     typescript: 5.7.3
   languageName: unknown
   linkType: soft
@@ -40361,7 +40365,7 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.29.6
     "@janus-idp/cli": 3.2.0
-    "@red-hat-developer-hub/backstage-plugin-marketplace": 0.0.2
+    "@red-hat-developer-hub/backstage-plugin-marketplace": 0.1.3
     typescript: 5.7.3
   languageName: unknown
   linkType: soft
