@@ -33,8 +33,10 @@ test.describe.serial("GitHub Happy path", () => {
     common = new Common(page);
     catalogImport = new CatalogImport(page);
     backstageShowcase = new BackstageShowcase(page);
+  });
 
-    test.setTimeout(400 * 1000);
+  test("Setup Github authentication provider and wait for first sync", async () => {
+    test.setTimeout(300 * 1000);
 
     LOGGER.info(`Base Url is ${process.env.BASE_URL}`);
     LOGGER.info(
@@ -111,7 +113,9 @@ test.describe.serial("GitHub Happy path", () => {
     );
 
     await waitForNextSync("github", syncTime);
+  });
 
+  test("Login as a Github user.", async () => {
     await common.loginAsGithubUser();
   });
 
