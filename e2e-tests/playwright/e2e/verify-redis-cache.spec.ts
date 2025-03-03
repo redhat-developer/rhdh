@@ -4,7 +4,8 @@ import { Common } from "../utils/common";
 import Redis from "ioredis";
 import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 
-test.describe.only("Verify Redis Cache DB", () => {
+test.describe("Verify Redis Cache DB", () => {
+  test.describe.configure({ mode: "serial" });
   let common: Common;
   let uiHelper: UIhelper;
   let portForward: ChildProcessWithoutNullStreams;
