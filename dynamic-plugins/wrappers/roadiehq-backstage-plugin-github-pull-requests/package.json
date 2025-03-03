@@ -1,6 +1,6 @@
 {
   "name": "roadiehq-backstage-plugin-github-pull-requests",
-  "version": "2.6.0",
+  "version": "3.2.1",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "license": "Apache-2.0",
@@ -28,7 +28,7 @@
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
-    "@roadiehq/backstage-plugin-github-pull-requests": "2.6.0"
+    "@roadiehq/backstage-plugin-github-pull-requests": "3.2.1"
   },
   "devDependencies": {
     "@backstage/cli": "0.29.6",
