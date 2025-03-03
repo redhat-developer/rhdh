@@ -96,6 +96,8 @@ global:
         disabled: false
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import
         disabled: false
+      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-header
+        disabled: false
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-dynamic-home-page
         disabled: false
       # Enable tech-radar plugin.

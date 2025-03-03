@@ -2,7 +2,7 @@ import { APIResponse, Page, expect } from "@playwright/test";
 import { UIhelper } from "../../utils/ui-helper";
 import {
   DELETE_ROLE_COMPONENTS,
-  HOME_PAGE_COMPONENTS,
+  SEARCH_OBJECTS_COMPONENTS,
   ROLES_PAGE_COMPONENTS,
 } from "../pageObjects/page-obj";
 import { Policy, Role } from "../api/rbac-api-structures";
@@ -57,7 +57,7 @@ export class Roles {
 
   async deleteRole(name: string) {
     await this.page.goto("/rbac");
-    await this.uiHelper.searchInputPlaceholder(name);
+    await this.uiHelper.searchInputAriaLabel(name);
     const button = this.page.locator(ROLES_PAGE_COMPONENTS.deleteRole(name));
     await button.waitFor({ state: "visible" });
     await button.click();
@@ -67,7 +67,9 @@ export class Roles {
     await this.uiHelper.clickButton("Delete");
 
     await this.uiHelper.verifyText(`Role ${name} deleted successfully`);
-    await this.page.locator(HOME_PAGE_COMPONENTS.searchBar).fill(name);
+    await this.page
+      .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)
+      .fill(name);
     await this.uiHelper.verifyHeading("All roles (0)");
   }
 }

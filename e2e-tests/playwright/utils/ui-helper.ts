@@ -1,6 +1,7 @@
 import { expect, Locator, Page } from "@playwright/test";
 import { UI_HELPER_ELEMENTS } from "../support/pageObjects/global-obj";
 import { SidebarTabs } from "./navbar";
+import { SEARCH_OBJECTS_COMPONENTS } from "../support/pageObjects/page-obj";
 
 export class UIhelper {
   private page: Page;
@@ -29,7 +30,14 @@ export class UIhelper {
    * @param searchText - The text to be entered into the search input field.
    */
   async searchInputPlaceholder(searchText: string) {
-    await this.page.fill('input[placeholder="Search"]', searchText);
+    await this.page.fill(
+      SEARCH_OBJECTS_COMPONENTS.placeholderSearch,
+      searchText,
+    );
+  }
+
+  async searchInputAriaLabel(searchText: string) {
+    await this.page.fill(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch, searchText);
   }
 
   async pressTab() {
@@ -76,19 +84,46 @@ export class UIhelper {
   async clickByDataTestId(dataTestId: string) {
     const element = this.page.getByTestId(dataTestId);
     await element.waitFor({ state: "visible" });
-    await element.click();
+    await element.dispatchEvent("click");
   }
 
   async verifyDivHasText(divText: string | RegExp) {
     await expect(this.page.locator(`div`).getByText(divText)).toBeVisible();
   }
 
-  async clickLink(linkText: string) {
-    await this.page.locator(`a`).filter({ hasText: linkText }).first().click();
+  async clickLink(options: string | { href: string } | { ariaLabel: string }) {
+    let linkLocator: Locator;
+
+    if (typeof options === "string") {
+      linkLocator = this.page.locator("a").filter({ hasText: options }).first();
+    } else if ("href" in options) {
+      linkLocator = this.page.locator(`a[href="${options.href}"]`);
+    } else {
+      linkLocator = this.page
+        .locator(`div[aria-label='${options.ariaLabel}'] a`)
+        .first();
+    }
+
+    await linkLocator.waitFor({ state: "visible" });
+    await linkLocator.click();
+  }
+
+  async openProfileDropdown() {
+    const header = this.page.locator("nav[id='global-header']");
+    await expect(header).toBeVisible();
+    await header
+      .locator("[data-testid='KeyboardArrowDownOutlinedIcon']")
+      .click();
+  }
+
+  async goToSettingsPage() {
+    await expect(this.page.locator("nav[id='global-header']")).toBeVisible();
+    await this.openProfileDropdown();
+    await this.clickLink({ href: "/settings" });
   }
 
   async verifyLink(
-    linkText: string,
+    arg: string | { label: string },
     options: {
       exact?: boolean;
       notVisible?: boolean;
@@ -97,12 +132,22 @@ export class UIhelper {
       notVisible: false,
     },
   ) {
-    const linkLocator = this.page
-      .locator("a")
-      .getByText(linkText, { exact: options.exact })
-      .first();
+    let linkLocator: Locator;
+    let notVisibleCheck: boolean;
 
-    if (options?.notVisible) {
+    if (typeof arg === "string") {
+      linkLocator = this.page
+        .locator("a")
+        .getByText(arg, { exact: options.exact })
+        .first();
+
+      notVisibleCheck = options?.notVisible;
+    } else {
+      linkLocator = this.page.locator(`div[aria-label="${arg.label}"] a`);
+      notVisibleCheck = false;
+    }
+
+    if (notVisibleCheck) {
       await expect(linkLocator).not.toBeVisible();
     } else {
       await expect(linkLocator).toBeVisible();
@@ -200,8 +245,8 @@ export class UIhelper {
       ? this.page.locator(locator).getByText(text, { exact }).first()
       : this.page.getByText(text, { exact }).first();
 
-    await elementLocator.waitFor({ state: "visible", timeout: 10000 });
-    await elementLocator.waitFor({ state: "attached", timeout: 10000 });
+    await elementLocator.waitFor({ state: "visible" });
+    await elementLocator.waitFor({ state: "attached" });
 
     try {
       await elementLocator.scrollIntoViewIfNeeded();
@@ -219,7 +264,7 @@ export class UIhelper {
       .getByText(expectedText, { exact: true });
 
     try {
-      await elementLocator.waitFor({ state: "visible", timeout: 10000 });
+      await elementLocator.waitFor({ state: "visible" });
       const actualText = (await elementLocator.textContent()) || "No content";
 
       if (actualText.trim() !== expectedText.trim()) {
@@ -303,13 +348,11 @@ export class UIhelper {
   }
 
   async waitForTitle(text: string, level: number = 1) {
-    await this.page.waitForSelector(`h${level}:has-text("${text}")`, {
-      timeout: 10000,
-    });
+    await this.page.waitForSelector(`h${level}:has-text("${text}")`);
   }
 
   async clickTab(tabName: string) {
-    const tabLocator = this.page.locator(`text="${tabName}"`);
+    const tabLocator = this.page.getByRole("tab", { name: tabName });
     await tabLocator.waitFor({ state: "visible" });
     await tabLocator.click();
   }
@@ -522,7 +565,9 @@ export class UIhelper {
   }
 
   async clickById(id: string) {
-    await this.page.click(`#${id}`);
+    const locator = this.page.locator(`#${id}`);
+    await locator.waitFor({ state: "attached" });
+    await locator.click();
   }
 
   async clickSpanByText(text: string) {

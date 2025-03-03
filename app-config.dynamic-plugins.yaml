@@ -256,8 +256,7 @@ dynamicPlugins:
         - mountPoint: application/header
           importName: GlobalHeader
           config:
-            layout:
-              position: above-main-content
+            position: above-main-content # above-main-content | above-sidebar
     red-hat-developer-hub.backstage-plugin-global-floating-action-button:
       mountPoints:
         - mountPoint: application/listener

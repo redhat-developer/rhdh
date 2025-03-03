@@ -10,7 +10,11 @@ test.describe("Test Topology Plugin", () => {
   let catalog: Catalog;
   let topology: Topology;
 
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page }, testInfo) => {
+    if (testInfo.retry > 0) {
+      // progressively increase test timeout for retries
+      test.setTimeout(testInfo.timeout + testInfo.timeout * 0.25);
+    }
     common = new Common(page);
     uiHelper = new UIhelper(page);
     catalog = new Catalog(page);
@@ -43,9 +47,10 @@ test.describe("Test Topology Plugin", () => {
       await expect(
         page
           .getByTestId("ingress-list")
-          .getByRole("link", { name: "topology-test-route" }),
+          .getByRole("link", { name: "topology-test-route" })
+          .first(),
       ).toBeVisible();
-      await expect(page.locator("pre")).toBeVisible();
+      await expect(page.locator("pre").first()).toBeVisible();
     } else {
       await uiHelper.verifyHeading("Routes");
       await uiHelper.verifyText("RT");

@@ -1,0 +1,111 @@
+diff --git a/dist/index.d.ts b/dist/index.d.ts
+index 273e84a3a0dff11ad3d88d72227bab430c0cc153..93e0dfa6454475d5f937212a03674ff3e7b02a94 100644
+--- a/dist/index.d.ts
++++ b/dist/index.d.ts
+@@ -20,11 +20,15 @@ declare namespace microsoftSignInResolvers {
+     /**
+      * Looks up the user by matching their Microsoft email to the email entity annotation.
+      */
+-    const emailMatchingUserEntityAnnotation: _backstage_plugin_auth_node.SignInResolverFactory<OAuthAuthenticatorResult<PassportProfile>, unknown>;
++    const emailMatchingUserEntityAnnotation: _backstage_plugin_auth_node.SignInResolverFactory<OAuthAuthenticatorResult<PassportProfile>, {
++        dangerouslyAllowSignInWithoutUserInCatalog?: boolean | undefined;
++    } | undefined>;
+     /**
+      * Looks up the user by matching their Microsoft user id to the user id entity annotation.
+      */
+-    const userIdMatchingUserEntityAnnotation: _backstage_plugin_auth_node.SignInResolverFactory<OAuthAuthenticatorResult<PassportProfile>, unknown>;
++    const userIdMatchingUserEntityAnnotation: _backstage_plugin_auth_node.SignInResolverFactory<OAuthAuthenticatorResult<PassportProfile>, {
++        dangerouslyAllowSignInWithoutUserInCatalog?: boolean | undefined;
++    } | undefined>;
+ }
+ 
+ /**
+diff --git a/dist/resolvers.cjs.js b/dist/resolvers.cjs.js
+index 2282c63a709186dea9db0735176e02eac5744ee2..9c7f9155256acb862c51b9e80d9b10ba9e3df880 100644
+--- a/dist/resolvers.cjs.js
++++ b/dist/resolvers.cjs.js
+@@ -1,38 +1,63 @@
+ 'use strict';
+ 
+ var pluginAuthNode = require('@backstage/plugin-auth-node');
++var zod = require('zod');
+ 
+ exports.microsoftSignInResolvers = void 0;
+ ((microsoftSignInResolvers2) => {
+   microsoftSignInResolvers2.emailMatchingUserEntityAnnotation = pluginAuthNode.createSignInResolverFactory({
+-    create() {
++    optionsSchema: zod.z.object({
++      dangerouslyAllowSignInWithoutUserInCatalog: zod.z.boolean().optional()
++    }).optional(),
++    create(options = {}) {
+       return async (info, ctx) => {
+         const { profile } = info;
+         if (!profile.email) {
+           throw new Error("Microsoft profile contained no email");
+         }
+-        return ctx.signInWithCatalogUser({
+-          annotations: {
+-            "microsoft.com/email": profile.email
+-          }
+-        });
++        try {
++          return await ctx.signInWithCatalogUser({
++            annotations: {
++              "microsoft.com/email": profile.email
++            }
++          });
++        } catch (error) {
++          return await pluginAuthNode.handleSignInUserNotFound({
++            ctx,
++            error,
++            userEntityName: profile.email,
++            dangerouslyAllowSignInWithoutUserInCatalog: options?.dangerouslyAllowSignInWithoutUserInCatalog
++          });
++        }
+       };
+     }
+   });
+   microsoftSignInResolvers2.userIdMatchingUserEntityAnnotation = pluginAuthNode.createSignInResolverFactory(
+     {
+-      create() {
++      optionsSchema: zod.z.object({
++        dangerouslyAllowSignInWithoutUserInCatalog: zod.z.boolean().optional()
++      }).optional(),
++      create(options = {}) {
+         return async (info, ctx) => {
+           const { result } = info;
+           const id = result.fullProfile.id;
+           if (!id) {
+             throw new Error("Microsoft profile contained no id");
+           }
+-          return ctx.signInWithCatalogUser({
+-            annotations: {
+-              "graph.microsoft.com/user-id": id
+-            }
+-          });
++          try {
++            return await ctx.signInWithCatalogUser({
++              annotations: {
++                "graph.microsoft.com/user-id": id
++              }
++            });
++          } catch (error) {
++            return await pluginAuthNode.handleSignInUserNotFound({
++              ctx,
++              error,
++              userEntityName: id,
++              dangerouslyAllowSignInWithoutUserInCatalog: options?.dangerouslyAllowSignInWithoutUserInCatalog
++            });
++          }
+         };
+       }
+     }
+diff --git a/dist/resolvers.cjs.js.map b/dist/resolvers.cjs.js.map
+index 2cd406f37d98224596a8af14aa0af1710e2b2d8a..6706e81b42591f244ac8f46133f79fcf04d520eb 100644
+--- a/dist/resolvers.cjs.js.map
++++ b/dist/resolvers.cjs.js.map
+@@ -1 +1 @@
+-{"version":3,"file":"resolvers.cjs.js","sources":["../src/resolvers.ts"],"sourcesContent":["/*\n * Copyright 2023 The Backstage Authors\n *\n * Licensed under the Apache License, Version 2.0 (the \"License\");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *     http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n\nimport {\n  OAuthAuthenticatorResult,\n  createSignInResolverFactory,\n  PassportProfile,\n  SignInInfo,\n} from '@backstage/plugin-auth-node';\n\n/**\n * Available sign-in resolvers for the Microsoft auth provider.\n *\n * @public\n */\nexport namespace microsoftSignInResolvers {\n  /**\n   * Looks up the user by matching their Microsoft email to the email entity annotation.\n   */\n  export const emailMatchingUserEntityAnnotation = createSignInResolverFactory({\n    create() {\n      return async (\n        info: SignInInfo<OAuthAuthenticatorResult<PassportProfile>>,\n        ctx,\n      ) => {\n        const { profile } = info;\n\n        if (!profile.email) {\n          throw new Error('Microsoft profile contained no email');\n        }\n\n        return ctx.signInWithCatalogUser({\n          annotations: {\n            'microsoft.com/email': profile.email,\n          },\n        });\n      };\n    },\n  });\n  /**\n   * Looks up the user by matching their Microsoft user id to the user id entity annotation.\n   */\n  export const userIdMatchingUserEntityAnnotation = createSignInResolverFactory(\n    {\n      create() {\n        return async (\n          info: SignInInfo<OAuthAuthenticatorResult<PassportProfile>>,\n          ctx,\n        ) => {\n          const { result } = info;\n\n          const id = result.fullProfile.id;\n\n          if (!id) {\n            throw new Error('Microsoft profile contained no id');\n          }\n\n          return ctx.signInWithCatalogUser({\n            annotations: {\n              'graph.microsoft.com/user-id': id,\n            },\n          });\n        };\n      },\n    },\n  );\n}\n"],"names":["microsoftSignInResolvers","createSignInResolverFactory"],"mappings":";;;;AA4BiBA;AAAA,CAAV,CAAUA,yBAAV,KAAA;AAIE,EAAMA,yBAAAA,CAAA,oCAAoCC,0CAA4B,CAAA;AAAA,IAC3E,MAAS,GAAA;AACP,MAAO,OAAA,OACL,MACA,GACG,KAAA;AACH,QAAM,MAAA,EAAE,SAAY,GAAA,IAAA;AAEpB,QAAI,IAAA,CAAC,QAAQ,KAAO,EAAA;AAClB,UAAM,MAAA,IAAI,MAAM,sCAAsC,CAAA;AAAA;AAGxD,QAAA,OAAO,IAAI,qBAAsB,CAAA;AAAA,UAC/B,WAAa,EAAA;AAAA,YACX,uBAAuB,OAAQ,CAAA;AAAA;AACjC,SACD,CAAA;AAAA,OACH;AAAA;AACF,GACD,CAAA;AAIM,EAAMD,0BAAA,kCAAqC,GAAAC,0CAAA;AAAA,IAChD;AAAA,MACE,MAAS,GAAA;AACP,QAAO,OAAA,OACL,MACA,GACG,KAAA;AACH,UAAM,MAAA,EAAE,QAAW,GAAA,IAAA;AAEnB,UAAM,MAAA,EAAA,GAAK,OAAO,WAAY,CAAA,EAAA;AAE9B,UAAA,IAAI,CAAC,EAAI,EAAA;AACP,YAAM,MAAA,IAAI,MAAM,mCAAmC,CAAA;AAAA;AAGrD,UAAA,OAAO,IAAI,qBAAsB,CAAA;AAAA,YAC/B,WAAa,EAAA;AAAA,cACX,6BAA+B,EAAA;AAAA;AACjC,WACD,CAAA;AAAA,SACH;AAAA;AACF;AACF,GACF;AAAA,CAlDe,EAAAD,gCAAA,KAAAA,gCAAA,GAAA,EAAA,CAAA,CAAA;;"}
+\ No newline at end of file
++{"version":3,"file":"resolvers.cjs.js","sources":["../src/resolvers.ts"],"sourcesContent":["/*\n * Copyright 2023 The Backstage Authors\n *\n * Licensed under the Apache License, Version 2.0 (the \"License\");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *     http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n\nimport {\n  OAuthAuthenticatorResult,\n  createSignInResolverFactory,\n  handleSignInUserNotFound,\n  PassportProfile,\n  SignInInfo,\n} from '@backstage/plugin-auth-node';\nimport { z } from 'zod';\n\n/**\n * Available sign-in resolvers for the Microsoft auth provider.\n *\n * @public\n */\nexport namespace microsoftSignInResolvers {\n  /**\n   * Looks up the user by matching their Microsoft email to the email entity annotation.\n   */\n  export const emailMatchingUserEntityAnnotation = createSignInResolverFactory({\n    optionsSchema: z\n      .object({\n        dangerouslyAllowSignInWithoutUserInCatalog: z.boolean().optional(),\n      })\n      .optional(),\n    create(options = {}) {\n      return async (\n        info: SignInInfo<OAuthAuthenticatorResult<PassportProfile>>,\n        ctx,\n      ) => {\n        const { profile } = info;\n\n        if (!profile.email) {\n          throw new Error('Microsoft profile contained no email');\n        }\n\n        try {\n          return await ctx.signInWithCatalogUser({\n            annotations: {\n              'microsoft.com/email': profile.email,\n            },\n          });\n        } catch (error) {\n          return await handleSignInUserNotFound({\n            ctx,\n            error,\n            userEntityName: profile.email,\n            dangerouslyAllowSignInWithoutUserInCatalog:\n              options?.dangerouslyAllowSignInWithoutUserInCatalog,\n          });\n        }\n      };\n    },\n  });\n  /**\n   * Looks up the user by matching their Microsoft user id to the user id entity annotation.\n   */\n  export const userIdMatchingUserEntityAnnotation = createSignInResolverFactory({\n    optionsSchema: z\n      .object({\n        dangerouslyAllowSignInWithoutUserInCatalog: z.boolean().optional(),\n      })\n      .optional(),\n    create(options = {}) {\n      return async (\n        info: SignInInfo<OAuthAuthenticatorResult<PassportProfile>>,\n        ctx,\n      ) => {\n        const { result } = info;\n\n        const id = result.fullProfile.id;\n\n        if (!id) {\n          throw new Error('Microsoft profile contained no id');\n        }\n\n        try {\n          return await ctx.signInWithCatalogUser({\n            annotations: {\n              'graph.microsoft.com/user-id': id,\n            },\n          });\n        } catch (error) {\n          return await handleSignInUserNotFound({\n            ctx,\n            error,\n            userEntityName: id,\n            dangerouslyAllowSignInWithoutUserInCatalog:\n              options?.dangerouslyAllowSignInWithoutUserInCatalog,\n          });\n        }\n      };\n    },\n  },\n  );\n}\n"],"names":["microsoftSignInResolvers","createSignInResolverFactory","z","handleSignInUserNotFound"],"mappings":";;;;;AA8BiBA;AAAA,CAAV,CAAUA,yBAAV,KAAA;AAIE,EAAMA,yBAAAA,CAAA,oCAAoCC,0CAA4B,CAAA;AAAA,IAC3E,aAAA,EAAeC,MACZ,MAAO,CAAA;AAAA,MACN,0CAA4C,EAAAA,KAAA,CAAE,OAAQ,EAAA,CAAE,QAAS;AAAA,KAClE,EACA,QAAS,EAAA;AAAA,IACZ,MAAA,CAAO,OAAU,GAAA,EAAI,EAAA;AACnB,MAAO,OAAA,OACL,MACA,GACG,KAAA;AACH,QAAM,MAAA,EAAE,SAAY,GAAA,IAAA;AAEpB,QAAI,IAAA,CAAC,QAAQ,KAAO,EAAA;AAClB,UAAM,MAAA,IAAI,MAAM,sCAAsC,CAAA;AAAA;AAGxD,QAAI,IAAA;AACF,UAAO,OAAA,MAAM,IAAI,qBAAsB,CAAA;AAAA,YACrC,WAAa,EAAA;AAAA,cACX,uBAAuB,OAAQ,CAAA;AAAA;AACjC,WACD,CAAA;AAAA,iBACM,KAAO,EAAA;AACd,UAAA,OAAO,MAAMC,uCAAyB,CAAA;AAAA,YACpC,GAAA;AAAA,YACA,KAAA;AAAA,YACA,gBAAgB,OAAQ,CAAA,KAAA;AAAA,YACxB,4CACE,OAAS,EAAA;AAAA,WACZ,CAAA;AAAA;AACH,OACF;AAAA;AACF,GACD,CAAA;AAIM,EAAMH,0BAAA,kCAAqC,GAAAC,0CAAA;AAAA,IAA4B;AAAA,MAC5E,aAAA,EAAeC,MACZ,MAAO,CAAA;AAAA,QACN,0CAA4C,EAAAA,KAAA,CAAE,OAAQ,EAAA,CAAE,QAAS;AAAA,OAClE,EACA,QAAS,EAAA;AAAA,MACZ,MAAA,CAAO,OAAU,GAAA,EAAI,EAAA;AACnB,QAAO,OAAA,OACL,MACA,GACG,KAAA;AACH,UAAM,MAAA,EAAE,QAAW,GAAA,IAAA;AAEnB,UAAM,MAAA,EAAA,GAAK,OAAO,WAAY,CAAA,EAAA;AAE9B,UAAA,IAAI,CAAC,EAAI,EAAA;AACP,YAAM,MAAA,IAAI,MAAM,mCAAmC,CAAA;AAAA;AAGrD,UAAI,IAAA;AACF,YAAO,OAAA,MAAM,IAAI,qBAAsB,CAAA;AAAA,cACrC,WAAa,EAAA;AAAA,gBACX,6BAA+B,EAAA;AAAA;AACjC,aACD,CAAA;AAAA,mBACM,KAAO,EAAA;AACd,YAAA,OAAO,MAAMC,uCAAyB,CAAA;AAAA,cACpC,GAAA;AAAA,cACA,KAAA;AAAA,cACA,cAAgB,EAAA,EAAA;AAAA,cAChB,4CACE,OAAS,EAAA;AAAA,aACZ,CAAA;AAAA;AACH,SACF;AAAA;AACF;AACF,GACA;AAAA,CA/Ee,EAAAH,gCAAA,KAAAA,gCAAA,GAAA,EAAA,CAAA,CAAA;;"}
+\ No newline at end of file

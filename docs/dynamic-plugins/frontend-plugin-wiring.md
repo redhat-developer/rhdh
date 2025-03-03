@@ -386,15 +386,14 @@ dynamicPlugins:
         - mountPoint: application/header # mount point for a global header
           importName: <header_component> # e.g., `GlobalHeader` for `red-hat-developer-hub.backstage-plugin-global-header`
           config:
-            layout:
-              position: above-main-content # options: `above-main-content` or `above-sidebar`
+            position: above-main-content # options: `above-main-content` or `above-sidebar`
 ```
 
 Each global header entry requires the following attributes:
 
 - `mountPoint`: Defines where the header will be added. Use `application/header` to specify it as a global header.
 - `importName`: Specifies the component exported by the global header plugin (e.g., `GlobalHeader`).
-- `config.layout.position`: Determines the header's position. Supported values are:
+- `config.position`: Determines the header's position. Supported values are:
   - `above-main-content`: Positions the header above the main content area.
   - `above-sidebar`: Positions the header above the sidebar.
 
@@ -434,7 +433,6 @@ dynamicPlugins:
 ```
 
 Users can configure multiple application providers by adding entries to the `mountPoints` field.
-
 
 ## Customizing and Adding Entity tabs
 
@@ -551,6 +549,43 @@ dynamicPlugins:
 ```
 
 which would override the default `ScmAuth` API factory that Developer Hub defaults to.
+
+## Adding custom authentication provider settings
+
+Out of the box the Backstage user settings page supports all of the documented authentication providers, such as "github" or "microsoft".  However it is possible to install new authentication providers from a dynamic plugin that either adds additional configuration support for an existing provider or adds a new authentication provider altogether.  In either case, these providers are normally listed in the user settings section of the app under the "Authentication Providers" tab.  To add entries for an authentication provider from a dynamic plugin, use the `providerSettings` configuration:
+
+```yaml
+dynamicPlugins:
+  frontend:
+    <package_name>:
+      providerSettings:
+        - title: My Custom Auth Provider
+          description: Sign in using My Custom Auth Provider
+          provider: core.auth.my-custom-auth-provider
+```
+
+Each provider settings entry should define the following attributes:
+
+- `title`: The title for the authentication provider shown above the user's profile image if available.
+- `description`: a short description of the authentication provider.
+- `provider`: The ID of the authentication provider as provided to the `createApiRef` API call.  This value is used to look up the corresponding API factory for the authentication provider to connect the provider's Sign In/Sign Out button.
+
+## Use a custom SignInPage component
+
+In a Backstage app the SignInPage component is used to connect one or more authentication providers to the application sign-in process.  Out of the box in Developer Hub a static SignInPage is already set up and supports all of the built-in authentication providers already.  To use a different authentication provider, for example from a dynamic plugin use the `signInPage` configuration:
+
+```yaml
+dynamicPlugins:
+  frontend:
+    <package_name>:
+      signInPage:
+        importName: CustomSignInPage
+```
+
+Only one `signInPage` is specified and used by the application, this configuration object supports the following properties:
+
+- `module`: optional setting to specify which set of assets should be accessed from the dynamic plugin, defaults to `PluginRoot`
+- `importName`: Required setting that should resolve to a component that returns a configured `SignInPage` component that connects the appropriate authentication provider factories, or a compatible custom implementation.
 
 ## Provide custom Scaffolder field extensions
 

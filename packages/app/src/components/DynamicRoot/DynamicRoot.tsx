@@ -3,7 +3,11 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { createApp } from '@backstage/app-defaults';
 import { BackstageApp } from '@backstage/core-app-api';
-import { AnyApiFactory, BackstagePlugin } from '@backstage/core-plugin-api';
+import {
+  AnyApiFactory,
+  AppComponents,
+  BackstagePlugin,
+} from '@backstage/core-plugin-api';
 
 import { useThemes } from '@redhat-developer/red-hat-developer-hub-theme';
 import { AppsConfig } from '@scalprum/core';
@@ -63,7 +67,9 @@ export const DynamicRoot = ({
     React.ComponentType | undefined
   >(undefined);
   // registry of remote components loaded at bootstrap
-  const [components, setComponents] = useState<ComponentRegistry | undefined>();
+  const [componentRegistry, setComponentRegistry] = useState<
+    ComponentRegistry | undefined
+  >();
   const { initialized, pluginStore, api: scalprumApi } = useScalprum();
 
   const themes = useThemes();
@@ -78,11 +84,13 @@ export const DynamicRoot = ({
       menuItems,
       entityTabs,
       mountPoints,
+      providerSettings,
       routeBindings,
       routeBindingTargets,
       scaffolderFieldExtensions,
       techdocsAddons,
       themes: pluginThemes,
+      signInPages,
     } = extractDynamicConfig(dynamicPlugins);
     const requiredModules = [
       ...pluginModules.map(({ scope, module }) => ({
@@ -114,6 +122,10 @@ export const DynamicRoot = ({
         module,
       })),
       ...pluginThemes.map(({ scope, module }) => ({
+        scope,
+        module,
+      })),
+      ...signInPages.map(({ scope, module }) => ({
         scope,
         module,
       })),
@@ -416,6 +428,25 @@ export const DynamicRoot = ({
       [],
     );
 
+    // the config allows for multiple sign-in pages, discover and use the first
+    // working instance but check all of them
+    const signInPage = signInPages
+      .map<React.ComponentType<{}> | undefined>(
+        ({ scope, module, importName }) => {
+          const candidate = allPlugins[scope]?.[module]?.[
+            importName
+          ] as React.ComponentType<{}>;
+          if (!candidate) {
+            // eslint-disable-next-line no-console
+            console.warn(
+              `Plugin ${scope} is not configured properly: ${module}.${importName} not found, ignoring SignInPage: ${importName}`,
+            );
+          }
+          return candidate;
+        },
+      )
+      .find(candidate => candidate !== undefined);
+
     if (!app.current) {
       const filteredStaticThemes = themes.filter(
         theme =>
@@ -437,7 +468,12 @@ export const DynamicRoot = ({
           ...remoteBackstagePlugins,
         ],
         themes: [...filteredStaticThemes, ...dynamicThemeProviders],
-        components: defaultAppComponents,
+        components: {
+          ...defaultAppComponents,
+          ...(signInPage && {
+            SignInPage: signInPage,
+          }),
+        } as Partial<AppComponents>,
       });
     }
 
@@ -454,17 +490,17 @@ export const DynamicRoot = ({
     dynamicRootConfig.techdocsAddons = techdocsAddonComponents;
 
     // make the dynamic UI configuration available to DynamicRootContext consumers
-    setComponents({
+    setComponentRegistry({
       AppProvider: app.current.getProvider(),
       AppRouter: app.current.getRouter(),
       dynamicRoutes: dynamicRoutesComponents,
       menuItems: dynamicRoutesMenuItems,
       entityTabOverrides,
       mountPoints: mountPointComponents,
+      providerSettings,
       scaffolderFieldExtensions: scaffolderFieldExtensionComponents,
       techdocsAddons: techdocsAddonComponents,
     });
-
     afterInit().then(({ default: Component }) => {
       setChildComponent(() => Component);
     });
@@ -480,17 +516,17 @@ export const DynamicRoot = ({
   ]);
 
   useEffect(() => {
-    if (initialized && !components) {
+    if (initialized && !componentRegistry) {
       initializeRemoteModules();
     }
-  }, [initialized, components, initializeRemoteModules]);
+  }, [initialized, componentRegistry, initializeRemoteModules]);
 
-  if (!initialized || !components) {
+  if (!initialized || !componentRegistry) {
     return <Loader />;
   }
 
   return (
-    <DynamicRootContext.Provider value={components}>
+    <DynamicRootContext.Provider value={componentRegistry}>
       {ChildComponent ? <ChildComponent /> : <Loader />}
     </DynamicRootContext.Provider>
   );

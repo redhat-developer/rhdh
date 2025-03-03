@@ -123,7 +123,8 @@ In an example using Keycloak for authentication with the OIDC provider, there ar
 The default resolver provided by the `oidc` auth provider is the `emailLocalPartMatchingUserEntityName` resolver.
 
 If you want to use a different resolver, add the resolver you want to use in the `auth.providers.oidc.[environment].signIn.resolvers` configuration as soon in the example above, and it will override the default resolver.
-* For enhanced security, consider using the `oidcSubClaimMatchingKeycloakUserId` resolver which matches the user with the immutable `sub` parameter from OIDC to the Keycloak user ID.
+
+- For enhanced security, consider using the `oidcSubClaimMatchingKeycloakUserId` resolver which matches the user with the immutable `sub` parameter from OIDC to the Keycloak user ID.
 
 For more information on setting up the OIDC auth provider, consult the [Backstage documentation](https://backstage.io/docs/auth/oidc#the-configuration).
 
@@ -187,32 +188,46 @@ This option allows users to sign in even if their profile has not been ingested 
 To enable this option:
 
 ```yaml
-dangerouslyAllowSignInWithoutUserInCatalog: true
 auth:
   providers:
+    oidc:
+      development:
+      ...
+      signIn:
+        resolvers:
+          - resolver: preferredUsernameMatchingUserEntityName
+            dangerouslyAllowSignInWithoutUserInCatalog: true
     # provider configs ...
 ```
 
-### includeTransientGroupOwnership configuration value
+### includeTransitiveGroupOwnership configuration value
 
-This option allows users to add transient parent groups into the resolved user group membership during the authentication process. i.e., the parent group of the user's direct group will be included in the user ownership entities. By default, this option is set to false. 
+This option allows users to add transitive parent groups into the resolved user group membership during the authentication process. i.e., the parent group of the user's direct group will be included in the user ownership entities. By default, this option is set to false.
 
 For instance, with this group hierarchy:
 
-```
+```text
 group_admin  
   └── group_developers  
         └── user_alice  
 ```
 
-- If `includeTransientGroupOwnership: false`, `test_user` is only a member of `group_developers`.
-- If `includeTransientGroupOwnership: true`, `test_user` is a member of `group_developers` AND `group_admin`.
+- If `includeTransitiveGroupOwnership: false`, `user_alice` is only a member of `group_developers`.
+- If `includeTransitiveGroupOwnership: true`, `user_alice` is a member of `group_developers` AND `group_admin`.
 
 To enable this option:
 
 ```yaml
-includeTransientGroupOwnership: true
+includeTransitiveGroupOwnership: true
 auth:
   providers:
     # provider configs ...
 ```
+
+## External authentication providers
+
+External authentication providers can be loaded using the dynamic plugins mechanism.  Typically this will require a backend plugin to provide the authentication provider API implementation and callback handling, and a frontend plugin to connect this API to important parts of the UI in the form of a [custom SignInPage](dynamic-plugins/frontend-plugin-wiring.md#use-a-custom-signinpage-component) and [provider settings](dynamic-plugins/frontend-plugin-wiring.md#adding-custom-authentication-provider-settings) entries for the user settings page.  
+
+The existing Developer Hub authentication module will need to be disabled by setting an [environment variable](dynamic-plugins/override-core-services.md#overriding-the-provided-authentication-module), `ENABLE_AUTH_PROVIDER_MODULE_OVERRIDE` to `true` for the Developer Hub backend.
+
+Some examples of composing dynamic plugins to provide an authentication solution are available in the [dynamic plugins examples](dynamic-plugins/examples.md).

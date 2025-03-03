@@ -10,7 +10,7 @@ import {
 import { Config } from '@backstage/config';
 import { AuthOwnershipResolver } from '@backstage/plugin-auth-node';
 
-export class TransientGroupOwnershipResolver implements AuthOwnershipResolver {
+export class TransitiveGroupOwnershipResolver implements AuthOwnershipResolver {
   private readonly catalogApi: CatalogApi;
   private readonly config: Config;
   private readonly auth: AuthService;
@@ -32,15 +32,15 @@ export class TransientGroupOwnershipResolver implements AuthOwnershipResolver {
     groupRefs: string[],
     processedGroups: Set<string> = new Set(),
   ): Promise<string[]> {
-    const allTransientGroupRefs = new Set<string>();
+    const allTransitiveGroupRefs = new Set<string>();
 
     for (const groupRef of groupRefs) {
       if (processedGroups.has(groupRef)) continue;
       processedGroups.add(groupRef);
 
-      if (allTransientGroupRefs.has(groupRef)) continue;
+      if (allTransitiveGroupRefs.has(groupRef)) continue;
 
-      allTransientGroupRefs.add(groupRef);
+      allTransitiveGroupRefs.add(groupRef);
 
       const { token } = await this.auth.getPluginRequestToken({
         onBehalfOf: await this.auth.getOwnServiceCredentials(),
@@ -71,16 +71,16 @@ export class TransientGroupOwnershipResolver implements AuthOwnershipResolver {
         processedGroups,
       );
       parentGroups.forEach(parentGroup =>
-        allTransientGroupRefs.add(parentGroup),
+        allTransitiveGroupRefs.add(parentGroup),
       );
     }
 
-    return Array.from(allTransientGroupRefs);
+    return Array.from(allTransitiveGroupRefs);
   }
 
   /**
    * Returns the user’s own entity reference and direct group memberships.
-   * Includes nested group hierarchies if the `includeTransientGroupOwnership` config is enabled.
+   * Includes nested group hierarchies if the `includeTransitiveGroupOwnership` config is enabled.
    *
    * @param entity user entity to resolve ownership references for
    *
@@ -97,9 +97,10 @@ export class TransientGroupOwnershipResolver implements AuthOwnershipResolver {
         )
         .map(r => r.targetRef) ?? [];
 
-    const includeTransientGroupOwnership =
-      this.config.getOptionalBoolean('includeTransientGroupOwnership') || false;
-    if (includeTransientGroupOwnership) {
+    const includeTransitiveGroupOwnership =
+      this.config.getOptionalBoolean('includeTransitiveGroupOwnership') ||
+      false;
+    if (includeTransitiveGroupOwnership) {
       membershipRefs = await this.resolveParentGroups(membershipRefs);
     }
     return {

@@ -55,7 +55,7 @@ export const SidebarLogo = () => {
           <LogoRender
             base64Logo={logoFullBase64URI}
             defaultLogo={<LogoFull />}
-            width={fullLogoWidth ?? 110}
+            width={fullLogoWidth ?? 170}
           />
         ) : (
           <LogoRender

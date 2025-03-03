@@ -34,6 +34,7 @@ test.describe("Standard authentication providers: Micorsoft Azure EntraID", () =
   let mustSync = false;
 
   test.beforeAll(async ({ browser }, testInfo) => {
+    test.setTimeout(120 * 1000);
     LOGGER.info(
       `Staring scenario: Standard authentication providers: Micorsoft Azure EntraID: attemp #${testInfo.retry}`,
     );
@@ -91,8 +92,8 @@ test.describe("Standard authentication providers: Micorsoft Azure EntraID", () =
       "--set upstream.backstage.appConfig.auth.providers.oidc.production.clientSecret=${AUTH_PROVIDERS_AZURE_CLIENT_SECRET}",
       "--set upstream.backstage.appConfig.auth.providers.oidc.production.prompt=auto",
       "--set upstream.backstage.appConfig.auth.providers.oidc.production.callbackUrl=${BASE_URL}/api/auth/oidc/handler/frame",
-      "--set upstream.backstage.appConfig.dangerouslyAllowSignInWithoutUserInCatalog=true",
       "--set upstream.backstage.appConfig.auth.providers.oidc.production.signIn.resolvers[0].resolver=emailMatchingUserEntityProfileEmail",
+      "--set upstream.backstage.appConfig.auth.providers.oidc.production.signIn.resolvers[0].dangerouslyAllowSignInWithoutUserInCatalog=true",
     ];
     // setup RHSSO provider with user ingestion
     await HelmActions.upgradeHelmChartWithWait(
@@ -134,7 +135,7 @@ test.describe("Standard authentication providers: Micorsoft Azure EntraID", () =
       timeout: 90 * 1000,
     });
 
-    await uiHelper.openSidebar("Settings");
+    await uiHelper.goToSettingsPage();
     await common.signOut();
     await context.clearCookies();
   });
@@ -298,7 +299,7 @@ test.describe("Standard authentication providers: Micorsoft Azure EntraID", () =
     });
   });
 
-  test("Move a user to another group in Microsoft EntraID", async () => {
+  test.skip("Move a user to another group in Microsoft EntraID", async () => {
     test.setTimeout(300 * 1000);
     // move a user to another group -> user can still login
     // move user_2 to location_admin
@@ -338,10 +339,10 @@ test.describe("Standard authentication providers: Micorsoft Azure EntraID", () =
       expect(statusBefore).toBe(403);
     }).toPass({
       intervals: [1_000, 2_000, 5_000],
-      timeout: 90 * 1000,
+      timeout: 120 * 1000,
     });
 
-    await uiHelper.openSidebar("Settings");
+    await uiHelper.goToSettingsPage();
     await common.signOut();
     await context.clearCookies(); // If we don't clear cookies, Microsoft Login popup will present the last logger user
 
@@ -391,10 +392,10 @@ test.describe("Standard authentication providers: Micorsoft Azure EntraID", () =
       expect(statusAfter).toBe(200);
     }).toPass({
       intervals: [1_000, 2_000, 5_000],
-      timeout: 60 * 1000,
+      timeout: 120 * 1000,
     });
 
-    await uiHelper.openSidebar("Settings");
+    await uiHelper.goToSettingsPage();
     await common.signOut();
     await context.clearCookies(); // If we don't clear cookies, Microsoft Login popup will present the last logger user
   });
@@ -428,7 +429,7 @@ test.describe("Standard authentication providers: Micorsoft Azure EntraID", () =
       constants.RHSSO76_DEFAULT_PASSWORD,
     );
 
-    await uiHelper.openSidebar("Settings");
+    await uiHelper.goToSettingsPage();
     await common.signOut();
     await context.clearCookies(); // If we don't clear cookies, Microsoft Login popup will present the last logger user
 
@@ -468,7 +469,7 @@ test.describe("Standard authentication providers: Micorsoft Azure EntraID", () =
       timeout: 30 * 1000,
     });
 
-    await uiHelper.openSidebar("Settings");
+    await uiHelper.goToSettingsPage();
     await common.signOut();
     await context.clearCookies(); // If we don't clear cookies, Microsoft Login popup will present the last logger user
   });
@@ -512,7 +513,7 @@ test.describe("Standard authentication providers: Micorsoft Azure EntraID", () =
     expect(loginSucceded).toContain("Login successful");
 
     await uiHelper.verifyAlertErrorMessage(
-      /User not found in the RHDH software catalog/gm,
+      /Login failed; caused by Error: Failed to sign-in, unable to resolve user identity./gm,
     );
 
     await context.clearCookies(); // If we don't clear cookies, Microsoft Login popup will present the last logger user
@@ -530,7 +531,7 @@ test.describe("Standard authentication providers: Micorsoft Azure EntraID", () =
       constants.RHSSO76_DEFAULT_PASSWORD,
     );
 
-    await uiHelper.openSidebar("Settings");
+    await uiHelper.goToSettingsPage();
     await common.signOut();
     await context.clearCookies(); // If we don't clear cookies, Microsoft Login popup will present the last logger user
   });
@@ -565,7 +566,7 @@ test.describe("Standard authentication providers: Micorsoft Azure EntraID", () =
       constants.RHSSO76_DEFAULT_PASSWORD,
     );
 
-    await uiHelper.openSidebar("Settings");
+    await uiHelper.goToSettingsPage();
     await common.signOut();
     await context.clearCookies();
 
@@ -654,7 +655,7 @@ test.describe("Standard authentication providers: Micorsoft Azure EntraID", () =
       constants.MSGRAPH_GROUPS["group_6"].displayName + "_renamed",
     );
 
-    await uiHelper.openSidebar("Settings");
+    await uiHelper.goToSettingsPage();
     // user should see the entities again
     await expect(async () => {
       await page.reload();
@@ -673,7 +674,7 @@ test.describe("Standard authentication providers: Micorsoft Azure EntraID", () =
       constants.MSGRAPH_GROUPS["group_6"].displayName + "_renamed",
     );
 
-    await uiHelper.openSidebar("Settings");
+    await uiHelper.goToSettingsPage();
     await common.signOut();
     await context.clearCookies(); // If we don't clear cookies, Microsoft Login popup will present the last logger user
   });

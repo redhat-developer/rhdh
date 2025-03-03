@@ -524,17 +524,70 @@ plugins:
                   text: Bulk import
   # Global Header
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-header
-    disabled: true
+    disabled: false
     pluginConfig:
+      app:
+        sidebar:
+          search: false
+          settings: false
       dynamicPlugins:
         frontend:
+          default.main-menu-items:
+            menuItems:
+              default.create:
+                title: ''
           red-hat-developer-hub.backstage-plugin-global-header:
             mountPoints:
               - mountPoint: application/header
                 importName: GlobalHeader
                 config:
-                  layout:
-                    position: above-main-content
+                  position: above-main-content # above-main-content | above-sidebar
+              - mountPoint: global.header/component
+                importName: SearchComponent
+                config:
+                  priority: 100
+              - mountPoint: global.header/component
+                importName: Spacer
+                config:
+                  priority: 99
+                  props:
+                    growFactor: 0
+              - mountPoint: global.header/component
+                importName: HeaderIconButton
+                config:
+                  priority: 90
+                  props:
+                    title: Create...
+                    icon: add
+                    to: create
+              - mountPoint: global.header/component
+                importName: SupportButton
+                config:
+                  priority: 80
+              - mountPoint: global.header/component
+                importName: NotificationButton
+                config:
+                  priority: 70
+              - mountPoint: global.header/component
+                importName: Divider
+                config:
+                  priority: 50
+              - mountPoint: global.header/component
+                importName: ProfileDropdown
+                config:
+                  priority: 10
+              - mountPoint: global.header/profile
+                importName: MenuItemLink
+                config:
+                  priority: 100
+                  props:
+                    title: Settings
+                    link: /settings
+                    icon: manageAccounts
+              - mountPoint: global.header/profile
+                importName: LogoutButton
+                config:
+                  priority: 10
 
   # Group: Global floating action button
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-floating-action-button

@@ -1,9 +1,11 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const useCommonDeviceAndViewportConfig = {
+const k8sSpecificConfig = {
   use: {
-    ...devices["Desktop Chrome"],
-    viewport: { width: 1920, height: 1080 },
+    actionTimeout: 15 * 1000,
+  },
+  expect: {
+    timeout: 15 * 1000, // Global expect timeout
   },
 };
 
@@ -29,6 +31,8 @@ export default defineConfig({
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
+    ...devices["Desktop Chrome"],
+    viewport: { width: 1920, height: 1080 },
     video: {
       mode: "on",
       size: { width: 1920, height: 1080 },
@@ -44,13 +48,11 @@ export default defineConfig({
   projects: [
     {
       name: "smoke-test",
-      ...useCommonDeviceAndViewportConfig,
       testMatch: "**/playwright/e2e/smoke-test.spec.ts",
       retries: 10,
     },
     {
       name: "showcase",
-      ...useCommonDeviceAndViewportConfig,
       testIgnore: [
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/plugins/analytics/analytics-disabled-rbac.spec.ts",
@@ -64,7 +66,6 @@ export default defineConfig({
     },
     {
       name: "showcase-rbac",
-      ...useCommonDeviceAndViewportConfig,
       testMatch: [
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/plugins/analytics/analytics-disabled-rbac.spec.ts",
@@ -74,7 +75,6 @@ export default defineConfig({
     },
     {
       name: "showcase-auth-providers",
-      ...useCommonDeviceAndViewportConfig,
       testMatch: ["**/playwright/e2e/authProviders/*.spec.ts"],
       testIgnore: [
         "**/playwright/e2e/authProviders/setup-environment.spec.ts",
@@ -95,15 +95,10 @@ export default defineConfig({
     },
     {
       name: "showcase-k8s",
-      ...useCommonDeviceAndViewportConfig,
-      use: {
-        actionTimeout: 15 * 1000,
-      },
-      expect: {
-        timeout: 15 * 1000, // Global expect timeout
-      },
+      ...k8sSpecificConfig,
       dependencies: ["smoke-test"],
       testIgnore: [
+        "**/playwright/e2e/smoke-test.spec.ts",
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/plugins/analytics/analytics-disabled-rbac.spec.ts",
         "**/playwright/e2e/verify-tls-config-with-external-postgres-db.spec.ts",
@@ -120,13 +115,7 @@ export default defineConfig({
     },
     {
       name: "showcase-rbac-k8s",
-      ...useCommonDeviceAndViewportConfig,
-      use: {
-        actionTimeout: 15 * 1000,
-      },
-      expect: {
-        timeout: 15 * 1000, // Global expect timeout
-      },
+      ...k8sSpecificConfig,
       dependencies: ["smoke-test"],
       testMatch: [
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
@@ -136,10 +125,6 @@ export default defineConfig({
     },
     {
       name: "showcase-operator",
-      use: {
-        ...devices["Desktop Chrome"],
-        viewport: { width: 1920, height: 1080 },
-      },
       testIgnore: [
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/plugins/analytics/analytics-disabled-rbac.spec.ts",
@@ -156,7 +141,6 @@ export default defineConfig({
     },
     {
       name: "showcase-operator-rbac",
-      ...useCommonDeviceAndViewportConfig,
       testMatch: [
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/plugins/analytics/analytics-disabled-rbac.spec.ts",
@@ -165,11 +149,24 @@ export default defineConfig({
     },
     {
       name: "showcase-runtime",
-      ...useCommonDeviceAndViewportConfig,
       testMatch: [
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
         "**/playwright/e2e/verify-tls-config-health-check.spec.ts",
       ],
+    },
+
+    {
+      name: "showcase-sanity-plugins",
+      testMatch: [
+        "**/playwright/e2e/catalog-timestamp.spec.ts",
+        "**/playwright/e2e/plugins/frontend/sidebar.spec.ts",
+        "**/playwright/e2e/home-page-customization.spec.ts",
+        "**/playwright/e2e/instance-health-check.spec.ts",
+      ],
+    },
+    {
+      name: "any-test",
+      testMatch: "**/*.spec.ts", // Allows running any test file
     },
   ],
 });
