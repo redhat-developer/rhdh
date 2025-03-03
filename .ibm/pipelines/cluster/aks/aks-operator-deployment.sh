@@ -26,6 +26,7 @@ initiate_aks_operator_deployment() {
   setup_image_pull_secret "${namespace}" "rh-pull-secret" "${REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON}"
 
   deploy_rhdh_operator "${namespace}" "${DIR}/resources/rhdh-operator/rhdh-start_K8s.yaml"
+  patch_and_restart_aks_spot "${namespace}"
 
   apply_aks_operator_ingress "$namespace" "backstage-$RELEASE_NAME"
 }
@@ -54,6 +55,37 @@ initiate_rbac_aks_operator_deployment() {
   deploy_rhdh_operator "${namespace}" "${DIR}/resources/rhdh-operator/rhdh-start-rbac_K8s.yaml"
 
   apply_aks_operator_ingress "$namespace" "backstage-$RELEASE_NAME_RBAC"
+}
+
+patch_and_restart() {
+  local namespace=$1
+  local resource_type=$2
+  local resource_name=$3
+  local patch_file=$4
+
+  echo "Waiting for $resource_type/$resource_name to be present..."
+  kubectl wait --for=jsonpath='{.metadata.name}'="$resource_name" "$resource_type/$resource_name" -n "$namespace" --timeout=60s
+  
+  echo "Patching $resource_type/$resource_name in namespace $namespace with file $patch_file"
+  kubectl patch "$resource_type" "$resource_name" -n "$namespace" --type=merge --patch-file "$patch_file"
+  
+  echo "Scaling down $resource_type/$resource_name to 0 replicas"
+  kubectl scale "$resource_type" "$resource_name" --replicas=0 -n "$namespace"
+  
+  echo "Waiting for pods to terminate..."
+  kubectl wait --for=delete pods -l app="$resource_name" -n "$namespace" --timeout=30s || true
+  
+  echo "Scaling up $resource_type/$resource_name to 1 replica"
+  kubectl scale "$resource_type" "$resource_name" --replicas=1 -n "$namespace"
+  
+  echo "Patch and restart completed for $resource_type/$resource_name"
+}
+
+patch_and_restart_aks_spot() {
+  local namespace=$1
+  patch_and_restart "$namespace" "deployment" "redis" "${DIR}/cluster/aks/patch/aks-spot-patch.yaml"
+  patch_and_restart "$namespace" "statefulset" "backstage-psql-$RELEASE_NAME" "${DIR}/cluster/aks/patch/aks-spot-patch.yaml"
+  patch_and_restart "$namespace" "deployment" "backstage-$RELEASE_NAME" "${DIR}/cluster/aks/patch/aks-spot-patch.yaml"
 }
 
 apply_aks_operator_ingress() {
