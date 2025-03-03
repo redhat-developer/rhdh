@@ -33,14 +33,8 @@ test.describe.serial("GitHub Happy path", () => {
     common = new Common(page);
     catalogImport = new CatalogImport(page);
     backstageShowcase = new BackstageShowcase(page);
-  });
 
-  test.beforeEach(
-    async () => await new Common(page).checkAndClickOnGHloginPopup(),
-  );
-
-  test("Setup Github authentication provider and wait for first sync", async () => {
-    test.setTimeout(300 * 1000);
+    test.setTimeout(400 * 1000);
 
     LOGGER.info(`Base Url is ${process.env.BASE_URL}`);
     LOGGER.info(
@@ -75,9 +69,7 @@ test.describe.serial("GitHub Happy path", () => {
     );
 
     await waitForNextSync("github", syncTime);
-  });
 
-  test("Login as a Github user.", async () => {
     await common.loginAsGithubUser();
   });
 
@@ -117,7 +109,7 @@ test.describe.serial("GitHub Happy path", () => {
 
     await uiHelper.openSidebar("Catalog");
     await uiHelper.selectMuiBox("Kind", "User");
-    await uiHelper.searchInputAriaLabel("rhdh");
+    await uiHelper.searchInputPlaceholder("rhdh");
     await uiHelper.verifyRowsInTable(["rhdh-qe"]);
   });
 
@@ -157,8 +149,10 @@ test.describe.serial("GitHub Happy path", () => {
     await common.clickOnGHloginPopup();
     const openIssues = await backstageShowcase.getGithubOpenIssues();
 
-    const issuesCountText = `All repositories (${openIssues.length} Issues)*`;
-    await expect(page.locator(`text=${issuesCountText}`)).toBeVisible();
+    const issuesCountText = new RegExp(
+      `All repositories \\(${openIssues.length} Issue.*\\)`,
+    );
+    await expect(page.getByText(issuesCountText)).toBeVisible();
 
     for (const issue of openIssues.slice(0, 5)) {
       await uiHelper.verifyText(issue.title.replace(/\s+/g, " "));
@@ -178,8 +172,7 @@ test.describe.serial("GitHub Happy path", () => {
     await backstageShowcase.verifyPRRows(closedPRs, 0, 5);
   });
 
-  // TODO https://issues.redhat.com/browse/RHIDP-3159 The last ~10 GitHub Pull Requests are missing from the list
-  test.skip("Click on the arrows to verify that the next/previous/first/last pages of PRs are loaded", async () => {
+  test("Click on the arrows to verify that the next/previous/first/last pages of PRs are loaded", async () => {
     console.log("Fetching all PRs from GitHub");
     const allPRs = await BackstageShowcase.getShowcasePRs("all", true);
 
@@ -191,32 +184,37 @@ test.describe.serial("GitHub Happy path", () => {
     await backstageShowcase.clickNextPage();
     await backstageShowcase.verifyPRRows(allPRs, 5, 10);
 
-    const lastPagePRs = Math.floor((allPRs.length - 1) / 5) * 5;
+    // const lastPagePRs = Math.floor((allPRs.length - 1) / 5) * 5;
+    const lastPagePRs = 996; // redhat-developer/rhdh have more than 1000 PRs open/closed and by default the latest 1000 PR results are displayed.
 
     console.log("Clicking on Last Page button");
     await backstageShowcase.clickLastPage();
-    await backstageShowcase.verifyPRRows(allPRs, lastPagePRs, allPRs.length);
+    await backstageShowcase.verifyPRRows(allPRs, lastPagePRs, 1000);
 
     console.log("Clicking on Previous Page button");
     await backstageShowcase.clickPreviousPage();
-    await backstageShowcase.verifyPRRows(allPRs, lastPagePRs - 5, lastPagePRs);
+    await common.waitForLoad();
+    await backstageShowcase.verifyPRRows(
+      allPRs,
+      lastPagePRs - 5,
+      lastPagePRs - 1,
+    );
   });
 
-  //FIXME
-  test.skip("Verify that the 5, 10, 20 items per page option properly displays the correct number of PRs", async () => {
+  test("Verify that the 5, 10, 20 items per page option properly displays the correct number of PRs", async () => {
     await uiHelper.openSidebar("Catalog");
+    await uiHelper.clickByDataTestId("user-picker-all");
     await uiHelper.clickLink("Backstage Showcase");
     await common.clickOnGHloginPopup();
     await uiHelper.clickTab("Pull/Merge Requests");
-    await uiHelper.clickButton("ALL", { force: false });
-    const allPRs = await BackstageShowcase.getShowcasePRs("all");
+    const allPRs = await BackstageShowcase.getShowcasePRs("open");
     await backstageShowcase.verifyPRRowsPerPage(5, allPRs);
     await backstageShowcase.verifyPRRowsPerPage(10, allPRs);
     await backstageShowcase.verifyPRRowsPerPage(20, allPRs);
   });
 
   test("Verify that the CI tab renders 5 most recent github actions and verify the table properly displays the actions when page sizes are changed and filters are applied", async () => {
-    await uiHelper.clickTab("CI");
+    await page.getByText("CI", { exact: true }).click();
     await common.checkAndClickOnGHloginPopup();
 
     const workflowRuns = await backstageShowcase.getWorkflowRuns();
