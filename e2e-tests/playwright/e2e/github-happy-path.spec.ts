@@ -56,15 +56,57 @@ test.describe.serial("GitHub Happy path", () => {
         "--set upstream.backstage.appConfig.catalog.providers.keycloakOrg=null",
         "--set upstream.backstage.appConfig.auth.providers.microsoft=null",
         "--set upstream.backstage.appConfig.auth.providers.oidc=null",
-        "--set global.dynamic.plugins[1].disabled=false",
-        "--set global.dynamic.plugins[3].disabled=false",
-        "--set global.dynamic.plugins[4].disabled=false",
-        "--set global.dynamic.plugins[5].disabled=false",
-        "--set global.dynamic.plugins[6].disabled=false",
-        "--set global.dynamic.plugins[7].disabled=false",
-        "--set global.dynamic.plugins[8].disabled=false",
         "--set upstream.backstage.appConfig.permission.enabled=false",
         "--set upstream.postgresql.primary.persistence.enabled=false",
+        `--set-json global.dynamic.plugins='[
+          {
+            "package": "./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-github-dynamic",
+            "disabled": false
+          },
+          {
+            "package": "./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-dynamic",
+            "disabled": false,
+            "pluginConfig": {
+              "catalog": {
+                "providers": {
+                  "github": {
+                    "my-test-org": {
+                      "organization": "janus-qe",
+                      "catalogPath": "/catalog-info.yaml",
+                      "schedule": {
+                        "frequency": {
+                          "minutes": 1
+                        },
+                        "timeout": {
+                          "minutes": 1
+                        },
+                        "initialDelay": {
+                          "seconds": 15
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "package": "./dynamic-plugins/dist/backstage-community-plugin-github-issues",
+            "disabled": false
+          },
+          {
+            "package": "./dynamic-plugins/dist/roadiehq-backstage-plugin-github-pull-requests",
+            "disabled": false
+          },
+          {
+            "package": "./dynamic-plugins/dist/backstage-community-plugin-github-actions",
+            "disabled": false
+          },
+          {
+            "package": "./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-org-dynamic",
+            "disabled": false
+          }
+        ]'`,
       ],
     );
 
