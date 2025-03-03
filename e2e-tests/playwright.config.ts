@@ -62,7 +62,6 @@ export default defineConfig({
         "**/playwright/e2e/verify-tls-config-health-check.spec.ts",
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
         "**/playwright/e2e/plugins/tekton/tekton.spec.ts",
-        "**/playwright/e2e/audit-log/**/*.spec.ts",
       ],
     },
     {
@@ -164,6 +163,10 @@ export default defineConfig({
         "**/playwright/e2e/home-page-customization.spec.ts",
         "**/playwright/e2e/instance-health-check.spec.ts",
       ],
+    },
+    {
+      name: "any-test",
+      testMatch: "**/*.spec.ts", // Allows running any test file
     },
   ],
 });

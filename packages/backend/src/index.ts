@@ -91,7 +91,11 @@ backend.add(rbacDynamicPluginsProvider);
 
 backend.add(import('@backstage/plugin-auth-backend'));
 backend.add(import('@backstage/plugin-auth-backend-module-guest-provider'));
-backend.add(import('./modules/authProvidersModule'));
+if (process.env.ENABLE_AUTH_PROVIDER_MODULE_OVERRIDE !== 'true') {
+  backend.add(import('./modules/authProvidersModule'));
+} else {
+  staticLogger.info(`Default authentication provider module disabled`);
+}
 
 backend.add(import('@internal/plugin-dynamic-plugins-info-backend'));
 backend.add(import('@internal/plugin-scalprum-backend'));

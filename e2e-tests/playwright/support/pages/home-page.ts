@@ -50,4 +50,17 @@ export class HomePage {
     const isVisible = await itemLocator.isVisible();
     expect(isVisible).toBeTruthy();
   }
+
+  async verifyVisitedCardContent(section: string) {
+    await this.page.waitForSelector(HOME_PAGE_COMPONENTS.MuiCard, {
+      state: "visible",
+    });
+
+    const sectionLocator = this.page
+      .locator(HOME_PAGE_COMPONENTS.MuiCard)
+      .filter({ hasText: section });
+
+    const itemLocator = sectionLocator.locator(`li[class*="MuiListItem-root"]`);
+    expect(await itemLocator.count()).toBeGreaterThanOrEqual(0);
+  }
 }

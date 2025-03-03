@@ -10,6 +10,9 @@ HELM_CHART_AKS_DIFF_VALUE_FILE_NAME="diff-values_showcase_AKS.yaml"
 HELM_CHART_RBAC_AKS_DIFF_VALUE_FILE_NAME="diff-values_showcase-rbac_AKS.yaml"
 HELM_CHART_GKE_DIFF_VALUE_FILE_NAME="diff-values_showcase_GKE.yaml"
 HELM_CHART_RBAC_GKE_DIFF_VALUE_FILE_NAME="diff-values_showcase-rbac_GKE.yaml"
+HELM_CHART_SANITY_PLUGINS_DIFF_VALUE_FILE_NAME="diff-values_showcase-sanity-plugins.yaml"
+HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME="merged-values_showcase-sanity-plugins.yaml"
+
 HELM_IMAGE_NAME=backstage
 HELM_REPO_NAME=rhdh-chart
 HELM_REPO_URL="https://redhat-developer.github.io/rhdh-chart"

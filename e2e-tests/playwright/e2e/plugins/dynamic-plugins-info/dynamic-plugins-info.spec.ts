@@ -33,7 +33,7 @@ test.describe("dynamic-plugins-info UI tests", () => {
     // dynamic-plugins-info plugin, which is required for this test to run
     // properly anyways
     await page
-      .getByPlaceholder("Search")
+      .getByPlaceholder("Search", { exact: true })
       .pressSequentially("techdocs\n", { delay: 300 });
     await uiHelper.verifyRowsInTable(["backstage-plugin-techdocs"], true);
   });
@@ -42,7 +42,7 @@ test.describe("dynamic-plugins-info UI tests", () => {
     page,
   }) => {
     await page
-      .getByPlaceholder("Search")
+      .getByPlaceholder("Search", { exact: true })
       .pressSequentially("plugin-tech-radar\n", { delay: 300 });
     const row = await page.locator(
       UI_HELPER_ELEMENTS.rowByText("backstage-community-plugin-tech-radar"),
@@ -55,7 +55,7 @@ test.describe("dynamic-plugins-info UI tests", () => {
     page,
   }) => {
     await page
-      .getByPlaceholder("Search")
+      .getByPlaceholder("Search", { exact: true })
       .pressSequentially("plugin-3scale-backend-dynamic\n", {
         delay: 100,
       });
@@ -74,7 +74,7 @@ test.describe("dynamic-plugins-info UI tests", () => {
     page,
   }) => {
     await page
-      .getByPlaceholder("Search")
+      .getByPlaceholder("Search", { exact: true })
       .pressSequentially("plugin-todo\n", { delay: 300 });
 
     // Verify the Enabled and Preinstalled column values for the specific row

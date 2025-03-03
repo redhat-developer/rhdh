@@ -128,11 +128,18 @@ export type TechdocsAddon = {
   };
 };
 
+export type ProviderSetting = {
+  title: string;
+  description: string;
+  provider: string;
+};
+
 export type DynamicRootConfig = {
   dynamicRoutes: ResolvedDynamicRoute[];
   entityTabOverrides: EntityTabOverrides;
   mountPoints: MountPoints;
   menuItems: ResolvedMenuItem[];
+  providerSettings: ProviderSetting[];
   scaffolderFieldExtensions: ScaffolderFieldExtension[];
   techdocsAddons: TechdocsAddon[];
 };
@@ -149,6 +156,7 @@ const DynamicRootContext = createContext<ComponentRegistry>({
   entityTabOverrides: {},
   mountPoints: {},
   menuItems: [],
+  providerSettings: [],
   scaffolderFieldExtensions: [],
   techdocsAddons: [],
 });

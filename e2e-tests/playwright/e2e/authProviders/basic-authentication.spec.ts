@@ -27,10 +27,10 @@ test.describe("Standard authentication providers: Basic authentication", () => {
     );
   });
 
-  test("1. Verify guest login can work when no auth provider is configured (dangerouslyAllowSignInWithoutUserInCatalog is enabled by default but it should not conflict with the guest login).", async () => {
+  test("1. Verify guest login can work when no auth provider is configured.", async () => {
     test.setTimeout(300 * 1000);
     LOGGER.info(
-      "Executing testcase: Verify guest login can work when no auth provider is configured (dangerouslyAllowSignInWithoutUserInCatalog is enabled by default but it should not conflict with the guest login).",
+      "Executing testcase: Verify guest login can work when no auth provider is configured.",
     );
 
     await HelmActions.upgradeHelmChartWithWait(
@@ -51,17 +51,14 @@ test.describe("Standard authentication providers: Basic authentication", () => {
 
     // Guest login should work
     await common.loginAsGuest();
-    await page.goto("/");
-    await uiHelper.openSidebar("Settings");
+    await uiHelper.goToSettingsPage();
     await common.signOut();
   });
 
   test("2. Login should fail when an authProvider is configured without the ingester.", async () => {
-    // Update cofiguration to setup authentication providers, but no ingesters
-    // Only providers using the 'signInWithCatalogUserOptionalmethod' to sign in are affected by the 'dangerouslyAllowSignInWoutUserInCatalog' setting
-    // At the moment, Microsoft yes, oidc no, github (yes by default, ingestion is not working)
+    // Update configuration to setup authentication providers, but no ingesters
     // Since no ingester is configured for Microsoft Auth Provider, the login should fail with the error:
-    // "Login failed; caused by Error: Sign in failed: users/groups have not been ingested into the catalog. Please refer to the authentication provider docs for more information on how to ingest users/groups to the catalog with the appropriate entity provider."
+    // "Failed to sign-in, unable to resolve user identity. Please verify that your catalog contains the expected User entities that would match your configured sign-in resolver."
 
     test.setTimeout(300 * 1000);
     LOGGER.info(
@@ -90,17 +87,17 @@ test.describe("Standard authentication providers: Basic authentication", () => {
     );
 
     await uiHelper.verifyAlertErrorMessage(
-      /Login failed; caused by Error: Sign in failed: User not found in the RHDH software catalog/gm,
+      /Login failed; caused by Error: Failed to sign-in, unable to resolve user identity./gm,
     );
   });
 
-  test.skip("3. Set dangerouslyAllowSignInWithoutUserInCatalog to false. Login should now work but no User Entities are in the Catalog", async () => {
-    // Set upstream.backstage.appConfig.dangerouslyAllowSignInWithoutUserInCatalog = true
+  test("3. Set dangerouslyAllowSignInWithoutUserInCatalog to true. Login should now work but no User Entities are in the Catalog", async () => {
+    // Set upstream.backstage.appConfig.auth.providers.microsoft.development.signIn.resolvers[0].dangerouslyAllowSignInWithoutUserInCatalog = true
     // The Microsoft login should now be successful
 
     test.setTimeout(300 * 1000);
     LOGGER.info(
-      "Execute testcase: Set dangerouslyAllowSignInWithoutUserInCatalog to false. Login should now work but no User Entities are in the Catalog",
+      "Execute testcase: Set dangerouslyAllowSignInWithoutUserInCatalog to true. Login should now work but no User Entities are in the Catalog",
     );
 
     await HelmActions.upgradeHelmChartWithWait(
@@ -114,7 +111,8 @@ test.describe("Standard authentication providers: Basic authentication", () => {
       [
         "--set upstream.backstage.appConfig.auth.environment=development",
         "--set upstream.backstage.appConfig.signInPage=microsoft",
-        "--set upstream.backstage.appConfig.dangerouslyAllowSignInWithoutUserInCatalog=true",
+        "--set upstream.backstage.appConfig.auth.providers.microsoft.development.signIn.resolvers[0].resolver=userIdMatchingUserEntityAnnotation",
+        "--set upstream.backstage.appConfig.auth.providers.microsoft.development.signIn.resolvers[0].dangerouslyAllowSignInWithoutUserInCatalog=true",
         "--set upstream.backstage.appConfig.catalog.providers=null",
         "--set upstream.backstage.appConfig.permission.enabled=false",
       ],
@@ -125,7 +123,7 @@ test.describe("Standard authentication providers: Basic authentication", () => {
       constants.AZURE_LOGIN_PASSWORD,
     );
 
-    await uiHelper.openSidebar("Settings");
+    await uiHelper.goToSettingsPage();
     await uiHelper.verifyParagraph(constants.AZURE_LOGIN_USERNAME);
 
     // check no entities are in the catalog
@@ -133,7 +131,7 @@ test.describe("Standard authentication providers: Basic authentication", () => {
     api.UseStaticToken(constants.STATIC_API_TOKEN);
     const catalogUsers = await api.getAllCatalogUsersFromAPI();
     expect(catalogUsers.totalItems).toBe(0);
-    await uiHelper.openSidebar("Settings");
+    await uiHelper.goToSettingsPage();
     await common.signOut();
   });
 
@@ -157,7 +155,8 @@ test.describe("Standard authentication providers: Basic authentication", () => {
       [
         "--set upstream.backstage.appConfig.auth.environment=production",
         "--set upstream.backstage.appConfig.signInPage=microsoft",
-        "--set upstream.backstage.appConfig.dangerouslyAllowSignInWithoutUserInCatalog=true",
+        "--set upstream.backstage.appConfig.auth.providers.microsoft.production.signIn.resolvers[0].resolver=userIdMatchingUserEntityAnnotation",
+        "--set upstream.backstage.appConfig.auth.providers.microsoft.production.signIn.resolvers[0].dangerouslyAllowSignInWithoutUserInCatalog=true",
         "--set upstream.backstage.appConfig.catalog.providers=null",
         "--set upstream.backstage.appConfig.permission.enabled=false",
       ],

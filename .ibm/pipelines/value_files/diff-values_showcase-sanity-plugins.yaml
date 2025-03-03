@@ -91,6 +91,14 @@ global:
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-techdocs
         disabled: false
+      - package: ./dynamic-plugins/dist/backstage-plugin-techdocs-module-addons-contrib
+        disabled: false
+        pluginConfig:
+          dynamicPlugins:
+            frontend:
+              backstage.plugin-techdocs-module-addons-contrib:
+                techdocsAddons:
+                  - importName: ReportIssue
       - package: ./dynamic-plugins/dist/pagerduty-backstage-plugin
         disabled: false
       - package: ./dynamic-plugins/dist/pagerduty-backstage-plugin-backend-dynamic

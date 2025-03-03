@@ -143,6 +143,36 @@ export interface Config {
           module?: string;
           importName?: string;
         }[];
+        providerSettings?: {
+          title: string;
+          description: string;
+          provider: string;
+        }[];
+        scaffolderFieldExtensions?: {
+          module?: string;
+          importName?: string;
+        }[];
+        signInPage?: {
+          module?: string;
+          importName: string;
+        };
+        techdocsAddons?: {
+          module?: string;
+          importName?: string;
+          config?: {
+            props?: {
+              [key: string]: string;
+            };
+          };
+        }[];
+        themes?: {
+          module?: string;
+          id: string;
+          title: string;
+          variant: 'light' | 'dark';
+          icon: string;
+          importName?: string;
+        }[];
       };
     };
   };
@@ -152,12 +182,7 @@ export interface Config {
    */
   signInPage?: string;
   /**
-   * The option to allow sign in without existing user in the catalog, defaults to false
-   * @visibility frontend
-   */
-  dangerouslyAllowSignInWithoutUserInCatalog?: boolean;
-  /**
-   * The option to includes transitive parent groups when determining user group membership
+   * The option to includes transient parent groups when determining user group membership
    * @visibility frontend
    */
   includeTransitiveGroupOwnership?: boolean;

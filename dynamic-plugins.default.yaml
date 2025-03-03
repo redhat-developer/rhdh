@@ -536,10 +536,6 @@ plugins:
             menuItems:
               default.create:
                 title: ''
-          backstage.plugin-notifications:
-            dynamicRoutes:
-              - importName: NotificationsPage
-                path: /notifications
           red-hat-developer-hub.backstage-plugin-global-header:
             mountPoints:
               - mountPoint: application/header
