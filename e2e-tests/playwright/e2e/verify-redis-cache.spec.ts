@@ -39,6 +39,7 @@ test.describe("Verify Redis Cache DB", () => {
     await uiHelper.openSidebar("Docs");
     await uiHelper.clickLink("Backstage Showcase");
 
+    // ensure that the docs are generated. if redis configuration has an error, this page will hang and docs won't be generated
     await expect(async () => {
       await uiHelper.verifyHeading("rhdh");
     }).toPass({
@@ -62,8 +63,9 @@ test.describe("Verify Redis Cache DB", () => {
     });
 
     console.log("Connecting to Redis...");
-    const redis = new Redis(`redis://temp:test123@localhost:6379`);
-
+    const redis = new Redis(
+      `redis://${process.env.REDIS_TEMP_USER}:${process.env.REDIS_TEMP_PASS}@localhost:6379`,
+    );
     console.log("Verifying Redis keys...");
     await expect(async () => {
       const keys = await redis.keys("*");
