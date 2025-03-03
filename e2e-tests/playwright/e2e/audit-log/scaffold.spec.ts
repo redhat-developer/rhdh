@@ -1,10 +1,8 @@
-import { Page, test } from "@playwright/test";
-import { Common, setupBrowser } from "../../utils/common";
+import { test } from "@playwright/test";
+import { Common } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
 import { LogUtils } from "./log-utils";
 import { CatalogImport } from "../../support/pages/catalog-import";
-
-let page: Page;
 
 test.describe("Audit Log check for Catalog Plugin", () => {
   let uiHelper: UIhelper;
@@ -14,8 +12,7 @@ test.describe("Audit Log check for Catalog Plugin", () => {
     "https://github.com/RoadieHQ/sample-service/blob/main/demo_template.yaml";
 
   // Login to OpenShift before all tests
-  test.beforeAll(async ({ browser }, testInfo) => {
-    page = (await setupBrowser(browser, testInfo)).page;
+  test.beforeAll(async () => {
     await LogUtils.loginToOpenShift();
   });
 
@@ -30,6 +27,7 @@ test.describe("Audit Log check for Catalog Plugin", () => {
 
   test("Should fetch logs for ScaffolderParameterSchemaFetch event and validate log structure and values", async ({
     baseURL,
+    page,
   }) => {
     await uiHelper.clickButton("Register Existing Component");
     await catalogImport.registerExistingComponent(template, false);
