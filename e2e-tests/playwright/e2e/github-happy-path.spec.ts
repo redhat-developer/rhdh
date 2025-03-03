@@ -69,7 +69,7 @@ test.describe.serial("GitHub Happy path", () => {
         "--set global.dynamic.plugins[6].disabled=false",
         "--set global.dynamic.plugins[7].disabled=false",
         "--set global.dynamic.plugins[8].disabled=false",
-        "--set upstream.backstage.appConfig.permission.enabled=true",
+        "--set upstream.backstage.appConfig.permission.enabled=false",
         "--set upstream.postgresql.primary.persistence.enabled=false",
       ],
     );
