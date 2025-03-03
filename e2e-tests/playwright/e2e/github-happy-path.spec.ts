@@ -54,6 +54,7 @@ test.describe.serial("GitHub Happy path", () => {
       [
         "--set upstream.backstage.appConfig.signInPage=github",
         "--set upstream.backstage.appConfig.auth.environment=production",
+        "--set upstream.backstage.appConfig.catalog.providers.githubOrg[0].orgs[0]=janus-qe",
         "--set upstream.backstage.appConfig.catalog.providers.microsoftGraphOrg=null",
         "--set upstream.backstage.appConfig.catalog.providers.keycloakOrg=null",
         "--set upstream.backstage.appConfig.auth.providers.microsoft=null",
