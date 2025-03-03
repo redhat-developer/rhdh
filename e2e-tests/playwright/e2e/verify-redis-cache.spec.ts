@@ -23,7 +23,7 @@ test.describe("Verify Redis Cache DB", () => {
   });
 
   test("Open techdoc and verify the cache generated in redis db", async () => {
-    test.setTimeout(120_000)
+    test.setTimeout(120_000);
 
     await uiHelper.openSidebarButton("Favorites");
     await uiHelper.openSidebar("Docs");
