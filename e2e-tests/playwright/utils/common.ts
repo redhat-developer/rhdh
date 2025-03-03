@@ -80,10 +80,7 @@ export class Common {
       await this.page.fill("#app_totp", this.getGitHub2FAOTP(userid));
     }
 
-    await this.page.waitForTimeout(10_000);
-    // await expect(this.page.locator("#app_totp")).toBeHidden({
-    //   timeout: 120000,
-    // });
+    await this.page.waitForTimeout(3_000);
   }
 
   async logintoKeycloak(userid: string, password: string) {

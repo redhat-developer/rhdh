@@ -261,7 +261,7 @@ test.describe.serial("GitHub Happy path", () => {
   });
 
   test("Verify that the CI tab renders 5 most recent github actions and verify the table properly displays the actions when page sizes are changed and filters are applied", async () => {
-    await page.getByText("CI", { exact: true }).click();
+    await page.locator("a").getByText("CI", { exact: true }).first().click();
     await common.checkAndClickOnGHloginPopup();
 
     const workflowRuns = await backstageShowcase.getWorkflowRuns();
