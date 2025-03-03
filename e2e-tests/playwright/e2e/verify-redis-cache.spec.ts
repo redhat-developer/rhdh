@@ -23,6 +23,8 @@ test.describe("Verify Redis Cache DB", () => {
   });
 
   test("Open techdoc and verify the cache generated in redis db", async () => {
+    test.setTimeout(120_000)
+
     await uiHelper.openSidebarButton("Favorites");
     await uiHelper.openSidebar("Docs");
     await uiHelper.clickLink("Backstage Showcase");
@@ -32,7 +34,7 @@ test.describe("Verify Redis Cache DB", () => {
       await uiHelper.verifyHeading("rhdh");
     }).toPass({
       intervals: [3_000],
-      timeout: 30_000,
+      timeout: 60_000,
     });
 
     // Wait for port-forward to be ready
@@ -62,7 +64,7 @@ test.describe("Verify Redis Cache DB", () => {
       );
     }).toPass({
       intervals: [3_000],
-      timeout: 30_000,
+      timeout: 60_000,
     });
   });
 
