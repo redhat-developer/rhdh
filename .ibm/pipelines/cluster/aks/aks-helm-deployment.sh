@@ -7,7 +7,7 @@ initiate_aks_helm_deployment() {
   delete_namespace "${NAME_SPACE_RBAC_K8S}"
   configure_namespace "${NAME_SPACE_K8S}"
   deploy_redis_cache "${NAME_SPACE_K8S}"
-  patch_and_restart "$namespace" "deployment" "redis" "${DIR}/cluster/aks/patch/aks-spot-patch.yaml" # Patch Redis deployment to run on spot cluster
+  patch_and_restart "$NAME_SPACE_K8S" "deployment" "redis" "${DIR}/cluster/aks/patch/aks-spot-patch.yaml" # Patch Redis deployment to run on spot cluster
   uninstall_helmchart "${NAME_SPACE_K8S}" "${RELEASE_NAME}"
   cd "${DIR}" || exit
   local rhdh_base_url="https://${K8S_CLUSTER_ROUTER_BASE}"
