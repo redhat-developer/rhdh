@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../schema/plugin-schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
 apiVersion: marketplace.backstage.io/v1alpha1
 kind: Plugin
 metadata:
@@ -11,9 +11,11 @@ metadata:
     - url: https://backstage.io/docs/features/kubernetes/
       title: Backstage Documentation
 spec:
-  author: Spotify
-  authorUrl: https://github.com/spotify
+  authors:
+    - name: Spotify
+      url: https://github.com/spotify
 
-  assets:
-    - type: icon
-      Url: /img/backstage-k8s.svg
+  # unused yet
+  # assets:
+  #   - type: icon
+  #     Url: /img/backstage-k8s.svg

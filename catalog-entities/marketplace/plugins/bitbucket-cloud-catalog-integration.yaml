@@ -1,14 +1,13 @@
-# yaml-language-server: $schema=../schema/plugin-schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
 apiVersion: marketplace.backstage.io/v1alpha1
 kind: Plugin
 metadata:
   name: bitbucket-cloud-catalog-integration
   namespace: rhdh
   title: Bitbucket Cloud Catalog Integration
-  annotations:
+  description: This is an extension module to the catalog-backend plugin, providing extensions targeted at Bitbucket Cloud offerings.
   tags:
     - software-catalog
-  description: This is an extension module to the catalog-backend plugin, providing extensions targeted at Bitbucket Cloud offerings.
 spec:
   categories:
     - Software Catalog
@@ -16,8 +15,8 @@ spec:
   developers:
     - name: Backstage Core
   publisher: Red Hat
-  support:
-    level: tech-preview
+  # support:
+  #   level: tech-preview
   lifecycle: production
   description: |
     This is an extension module to the catalog-backend plugin, providing extensions targeted at Bitbucket Cloud offerings.

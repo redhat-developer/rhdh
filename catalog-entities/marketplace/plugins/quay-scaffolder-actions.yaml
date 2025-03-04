@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../schema/plugin-schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
 apiVersion: marketplace.backstage.io/v1alpha1
 kind: Plugin
 metadata:
@@ -8,5 +8,6 @@ metadata:
   tags: []
   description: ''
 spec:
-  author: Red Hat
-  authorUrl: https://redhat.com
+  authors:
+   - name: Red Hat
+     url: https://redhat.com

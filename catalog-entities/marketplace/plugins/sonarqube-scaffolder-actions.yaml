@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../schema/plugin-schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
 apiVersion: marketplace.backstage.io/v1alpha1
 kind: Plugin
 metadata:
@@ -8,9 +8,7 @@ metadata:
   tags: []
   description: ''
 spec:
-  documentation:
-    - type: about
-      markdown: |
+  description: |
 
   packages:
     - backstage-community-plugin-scaffolder-backend-module-sonarqube

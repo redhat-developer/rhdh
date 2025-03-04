@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../schema/plugin-schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
 apiVersion: marketplace.backstage.io/v1alpha1
 kind: Plugin
 metadata:
@@ -9,7 +9,8 @@ metadata:
   tags:
     - security
   links:
-    - documentation: https://roadie.io/backstage/plugins/security-insights/?utm_source=backstage.io&utm_medium=marketplace&utm_campaign=security-insights
+    - url: https://roadie.io/backstage/plugins/security-insights/
+      title: Documentation
 
 spec:
   author: Roadie
@@ -21,8 +22,10 @@ spec:
   packages:
     - roadiehq-backstage-plugin-security-insights
 
+  # unused yet
   assets:
     - type: icon
+      filename: github.png
       originUri: https://roadie.io/images/logos/github.png
 
   history:

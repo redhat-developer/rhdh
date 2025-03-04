@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../schema/plugin-schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
 apiVersion: marketplace.backstage.io/v1alpha1
 kind: Plugin
 metadata:
@@ -20,9 +20,10 @@ spec:
   packages:
     - roadiehq-backstage-plugin-datadog
 
-  assets:
-    - type: icon
-      Url: https://roadie.io/images/logos/datadog-white-background.png
+  # not yet
+  # assets:
+  #   - type: icon
+  #     Url: https://roadie.io/images/logos/datadog-white-background.png
 
   history:
     added: '2021-04-20'

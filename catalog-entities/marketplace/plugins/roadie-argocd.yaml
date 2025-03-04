@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../schema/plugin-schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
 apiVersion: marketplace.backstage.io/v1alpha1
 kind: Plugin
 metadata:
@@ -10,11 +10,12 @@ metadata:
     - cicd
   links:
     - url: https://roadie.io/backstage/plugins/argo-cd/
+      title: Roadie Documentation
 
 spec:
-  author: Roadie
-  authorUrl: https://roadie.io/
-  publisher: Red Hat
+  authors:
+    - name: Roadie
+      url: https://roadie.io/
 
   categories:
     - CI/CD
@@ -23,10 +24,9 @@ spec:
     - roadiehq-backstage-plugin-argo-cd
 
   assets:
-    - iconUrl: https://roadie.io/images/logos/argo.png
+    - type: icon
+      filename: argo.png
+      originUri: https://roadie.io/images/logos/argo.png
 
   history:
     added: '2021-04-20'
-
-  packages:
-    - 
