@@ -14,6 +14,7 @@ test.describe("dynamic-plugins-info UI tests", () => {
     await uiHelper.openSidebarButton("Administration");
     await uiHelper.openSidebar("Plugins");
     await uiHelper.verifyHeading("Plugins");
+    await uiHelper.clickTab("Installed plugins");
   });
 
   test("it should show a table, and the table should contain techdocs plugins", async ({
