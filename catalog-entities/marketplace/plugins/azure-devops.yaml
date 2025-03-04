@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../schema/plugin-schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
 apiVersion: marketplace.backstage.io/v1alpha1
 kind: Plugin
 metadata:
@@ -14,7 +14,6 @@ metadata:
       title: Bugs
     - title: Source Code
       url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-azure-devops-backend-dynamic
-  annotations:
   tags:
     - azure
     - devops
@@ -27,8 +26,8 @@ spec:
   developers:
     - name: Backstage Community
   publisher: Red Hat
-  support:
-    level: tech-preview
+  # support:
+  #   level: tech-preview
   lifecycle: production
   description: |
     # Features

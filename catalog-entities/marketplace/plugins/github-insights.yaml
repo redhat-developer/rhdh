@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../schema/plugin-schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
 apiVersion: marketplace.backstage.io/v1alpha1
 kind: Plugin
 metadata:
@@ -16,12 +16,9 @@ spec:
   publisher: Red Hat
   category: Source Control Mgmt
 
-  documentation:
-    - type: about
-      markdown: |
-
-  assets:
-    iconUrl: https://roadie.io/images/logos/insights.png
+  # unused yet
+  # assets:
+  #   iconUrl: https://roadie.io/images/logos/insights.png
 
   packages:
     - roadiehq-backstage-plugin-github-insights

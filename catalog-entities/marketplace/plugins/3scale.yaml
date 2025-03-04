@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../schema/plugin-schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
 apiVersion: marketplace.backstage.io/v1alpha1
 kind: Plugin
 metadata:
@@ -21,16 +21,14 @@ spec:
     - Red Hat integration
   icon: 3scale.svg
   author: Red Hat
-  authorUrl: https://redhat.com
   support: tech-preview
   lifecycle: active
-  developers:
-    - name: Red Hat
-    - name: Backstage Community
   publisher: Red Hat
+  description: |
+    The 3scale Backstage provider plugin synchronizes the 3scale content into the software catalog.
+
+  # unused yet
   documentation:
-    - type: about
-      markdown: The 3scale Backstage provider plugin synchronizes the 3scale content into the software catalog.
     - type: configuration
       title: Configuration
       markdown: |

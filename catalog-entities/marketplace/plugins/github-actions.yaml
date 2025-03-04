@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../schema/plugin-schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
 apiVersion: marketplace.backstage.io/v1alpha1
 kind: Plugin
 metadata:
@@ -18,13 +18,10 @@ spec:
   categories:
     - CI/CD
 
-  documentation:
-    - type: about
-      markdown: |
-
-  assets:
-    - type: icon
-      Url: https://avatars2.githubusercontent.com/u/44036562?s=400&v=4
+  # unused yet
+  # assets:
+  #   - type: icon
+  #     Url: https://avatars2.githubusercontent.com/u/44036562?s=400&v=4
 
   packages:
     - name: backstage-community-plugin-github-actions

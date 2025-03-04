@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../schema/plugin-schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
 apiVersion: marketplace.backstage.io/v1alpha1
 kind: Plugin
 metadata:
@@ -9,6 +9,7 @@ metadata:
   tags: []
   links:
     - url: https://github.com/RoadieHQ/roadie-backstage-plugins/blob/main/plugins/scaffolder-actions/scaffolder-backend-module-http-request/README.md
+      title: Documentation
 spec:
   author: Roadie
   publisher: Red Hat
@@ -16,9 +17,10 @@ spec:
   packages:
     - roadiehq-scaffolder-backend-module-http-request-dynamic
 
-  assets:
-    - type: icon
-      filename: /img/scaffolder-http-request-logo.svg
+  # unused yet
+  # assets:
+  #   - type: icon
+  #     filename: /img/scaffolder-http-request-logo.svg
 
   history:
     added: '2022-03-03'

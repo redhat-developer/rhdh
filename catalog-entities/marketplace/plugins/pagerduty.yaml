@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../schema/plugin-schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
 apiVersion: marketplace.backstage.io/v1alpha1
 kind: Plugin
 metadata:
@@ -30,9 +30,10 @@ spec:
   support: tech-preview
   lifecycle: active
 
-  assets:
-    - type: icon
-      Url: https://avatars2.githubusercontent.com/u/766800?s=200&v=4
+  # unnused yet
+  # assets:
+  #   - type: icon
+  #     Url: https://avatars2.githubusercontent.com/u/766800?s=200&v=4
 
   history:
     added: '2020-12-22'

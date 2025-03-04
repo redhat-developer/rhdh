@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../schema/plugin-schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
 apiVersion: marketplace.backstage.io/v1alpha1
 kind: Plugin
 metadata:
@@ -20,17 +20,14 @@ spec:
   categories:
     - CI/CD
 
-  documentation:
-    - type: about
-      markdown: asd
-
   packages:
     - backstage-plugin-scaffolder-backend-module-gitlab
     - immobiliarelabs-backstage-plugin-gitlab
     - immobiliarelabs-backstage-plugin-gitlab-backend
 
-  assets:
-    iconUrl: https://about.gitlab.com/images/press/logo/png/gitlab-icon-rgb.png
+  # unused yet
+  # assets:
+  #   iconUrl: https://about.gitlab.com/images/press/logo/png/gitlab-icon-rgb.png
 
   history:
     added: '2021-08-17'

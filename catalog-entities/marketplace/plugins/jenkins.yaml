@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../schema/plugin-schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
 apiVersion: marketplace.backstage.io/v1alpha1
 kind: Plugin
 metadata:
@@ -11,6 +11,7 @@ metadata:
     - cd
   links:
     - url: https://github.com/backstage/community-plugins/tree/main/workspaces/jenkins/plugins/jenkins
+      title: Documentation
 
 spec:
   author: '@timja'
@@ -22,9 +23,10 @@ spec:
   packages:
     - backstage-community-plugin-jenkins
 
-  assets:
-    - type: icon
-      originUri: https://img.icons8.com/color/1600/jenkins.png
+  # unused yet
+  # assets:
+  #   - type: icon
+  #     originUri: https://img.icons8.com/color/1600/jenkins.png
 
   history:
     added: '2021-01-20'
