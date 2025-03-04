@@ -1,14 +1,30 @@
+# yaml-language-server: $schema=../schema/plugin-schema.json
 apiVersion: marketplace.backstage.io/v1alpha1
 kind: Plugin
 metadata:
   name: jira
   namespace: rhdh
   title: Jira
+  description: View Jira summary for your projects in Backstage.
   tags: []
-  description: ''
+  links:
+    - url: https://roadie.io/backstage/plugins/jira/
+      title: Roadie Documentation
 spec:
-  author: Roadie
+  author: roadie.io
+  authorUrl: https://roadie.io/
+
   publisher: Red Hat
+
+  categories:
+    - Planning
 
   packages:
     - roadiehq-backstage-plugin-jira
+
+  assets:
+    - type: icon
+      Url: https://roadie.io/images/logos/jira.png
+
+  history:
+    added: '2021-04-20'

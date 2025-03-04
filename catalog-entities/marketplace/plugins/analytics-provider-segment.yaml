@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=../schema/plugin-schema.json
 apiVersion: marketplace.backstage.io/v1alpha1
 kind: Plugin
 metadata:
@@ -11,7 +12,6 @@ metadata:
       title: Bugs
     - title: Source Code
       url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-analytics-provider-segment
-  annotations:
   tags: []
   description: ''
 spec:

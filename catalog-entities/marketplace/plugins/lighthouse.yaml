@@ -1,46 +1,16 @@
+# yaml-language-server: $schema=../schema/plugin-schema.json
 apiVersion: marketplace.backstage.io/v1alpha1
 kind: Plugin
 metadata:
-  name: backstage-community-plugin-lighthouse
+  name: lighthouse
   namespace: rhdh
   title: LightHouse
   tags: []
   description: ''
 spec:
-  packageName: "@backstage-community/plugin-lighthouse"
-  dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-lighthouse
-  version: 0.4.24
-  backstage:
-    role: frontend-plugin
-    supportedVersions: 1.35.1
   author: Red Hat
   support: tech-preview
   lifecycle: active
-  partOf:
-    - lighthouse
-  appConfigExamples:
-    - title: Default configuration
-      content:
-        dynamicPlugins:
-          frontend:
-            backstage-community.plugin-lighthouse:
-              appIcons:
-                - name: lighthouse
-                  importName: LighthouseIcon
-              dynamicRoutes:
-                - path: /lighthouse
-                  importName: LighthousePage
-                  menuItem:
-                    icon: lighthouse
-                    text: Lighthouse
-              mountPoints:
-                - mountPoint: entity.page.overview/cards
-                  importName: EntityLastLighthouseAuditCard
-                  config:
-                    layout:
-                      gridColumnEnd:
-                        md: span 6
-                        xs: span 12
-                    if:
-                      allOf:
-                        - isLighthouseAvailable
+
+  packages:
+    - backstage-community-plugin-lighthouse

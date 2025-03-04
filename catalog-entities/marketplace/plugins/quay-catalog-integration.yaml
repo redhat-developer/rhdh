@@ -1,21 +1,30 @@
+# yaml-language-server: $schema=../schema/plugin-schema.json
 apiVersion: marketplace.backstage.io/v1alpha1
 kind: Plugin
 metadata:
   name: quay-catalog-integration
   namespace: rhdh
   title: Quay Catalog Integration
-  tags: []
-  description: ''
+  description: View container image details from Quay in Backstage.
+  tags:
+    - kubernetes
+    - openshift
 spec:
-  packageName: "@backstage-community/plugin-scaffolder-backend-module-quay"
-  dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-quay-dynamic
-  version: 2.2.2
-  backstage:
-    role: backend-plugin-module
-    supportedVersions: 1.35.1
   author: Red Hat
+  authorUrl: https://redhat.com
+
+  categories:
+    - OpenShift
+
   support: production
   lifecycle: active
-  partOf:
-    - backstage-community-quay-scaffolder-module
-  appConfigExamples: []
+
+  packages:
+    - plugin-scaffolder-backend-module-quay
+
+  assets:
+    - type: icon
+      Url: /img/quay.svg
+
+  history:
+    added: '2023-05-15'

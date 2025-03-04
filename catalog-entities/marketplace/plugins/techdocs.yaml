@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=../schema/plugin-schema.json
 apiVersion: marketplace.backstage.io/v1alpha1
 kind: Plugin
 metadata:
@@ -8,8 +9,43 @@ metadata:
   tags:
     - backstage-core
     - techdocs
+  links:
+    - url: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/customizing/configuring-techdocs
+      title: Red Hat Developer Hub Documentation
+    - url: https://backstage.io/docs/features/techdocs/
+      title: Backstage Documentation
+    - url: https://github.com/backstage/backstage/tree/master/plugins/techdocs
+      title: Frontend Sourcecode
+    - url: https://github.com/backstage/backstage/tree/master/plugins/techdocs-backend
+      title: Backend Sourcecode
 spec:
+  author: Spotify
+  publisher: Red Hat
+  license: Apache-2.0
   categories:
     - Backstage Core
 
-  documentation: []
+  documentation:
+    content: |
+      # About TechDocs
+
+      The Red Hat Developer Hub instance comes with the TechDocs plugin preinstalled and enabled by default. Your organization can use the TechDocs plugin to create, find, and manage documentation in a central location and in a standardized way. You can also enhance your technical documentation experience with built-in TechDocs features and add-ons. For example:
+
+      ## Docs-like-code approach
+
+      Write your technical documentation in Markdown files that are stored inside your project repository along with your code.
+
+      ## Documentation site generation
+
+      Use MkDocs to create a full-featured, Markdown-based, static HTML site for your documentation that is rendered centrally in {product-short}.
+
+      ## Documentation site metadata and integrations
+      See additional metadata about the documentation site alongside the static documentation, such as the date of the last update, the site owner, top contributors, open GitHub issues, Slack support channels, and Stack Overflow Enterprise tags.
+
+      ## Built-in navigation and search
+
+      Locate the information that you need within a document quickly and easily.
+
+      ## Add-ons
+
+      Customize your TechDocs experience with add-ons to address higher-order documentation needs.

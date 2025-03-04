@@ -1,14 +1,28 @@
+# yaml-language-server: $schema=../schema/plugin-schema.json
 apiVersion: marketplace.backstage.io/v1alpha1
 kind: Plugin
 metadata:
   name: datadog
   namespace: rhdh
   title: Datadog
+  description: Embed Datadog graphs and dashboards in Backstage.
   tags: []
-  description: ''
+  links:
+    - url: https://roadie.io/backstage/plugins/datadog/
+      title: Roadie Documentation
 spec:
   author: Roadie
+  authorUrl: https://roadie.io/
   publisher: Red Hat
+
+  category: Monitoring
 
   packages:
     - roadiehq-backstage-plugin-datadog
+
+  assets:
+    - type: icon
+      Url: https://roadie.io/images/logos/datadog-white-background.png
+
+  history:
+    added: '2021-04-20'

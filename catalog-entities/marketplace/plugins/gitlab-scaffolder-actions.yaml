@@ -1,16 +1,36 @@
+# yaml-language-server: $schema=../schema/plugin-schema.json
 apiVersion: marketplace.backstage.io/v1alpha1
 kind: Plugin
 metadata:
   name: gitlab-scaffolder-actions
   namespace: rhdh
   title: GitLab Software Template Actions
-  tags: []
-  description: ''
+  description: View GitLab pipelines, merge requests, languages and contributors.
+  tags:
+    - ci
+    - cd
+    - gitlab
+  links:
+    - url: https://github.com/immobiliare/backstage-plugin-gitlab
+      title: Documentation
 spec:
+  author: ImmobiliareLabs
+  authorUrl: https://github.com/immobiliare
+
+  categories:
+    - CI/CD
+
   documentation:
     - type: about
-      markdown: |
+      markdown: asd
+
   packages:
     - backstage-plugin-scaffolder-backend-module-gitlab
     - immobiliarelabs-backstage-plugin-gitlab
     - immobiliarelabs-backstage-plugin-gitlab-backend
+
+  assets:
+    iconUrl: https://about.gitlab.com/images/press/logo/png/gitlab-icon-rgb.png
+
+  history:
+    added: '2021-08-17'

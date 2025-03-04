@@ -1,11 +1,13 @@
+# yaml-language-server: $schema=../schema/plugin-schema.json
 apiVersion: marketplace.backstage.io/v1alpha1
 kind: Plugin
 metadata:
   name: azure-scaffolder-actions
   namespace: rhdh
   title: Azure Software Template Actions
-  tags: []
   description: ''
+  tags: []
+  links: []
 spec:
   packageName: "@backstage/plugin-scaffolder-backend-module-azure"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-azure-dynamic

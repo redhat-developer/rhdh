@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=../schema/plugin-schema.json
 apiVersion: marketplace.backstage.io/v1alpha1
 kind: Plugin
 metadata:
@@ -5,8 +6,17 @@ metadata:
   namespace: rhdh
   title: OpenShift Cluster Manager
   tags: []
-  description: ''
+  description: View clusters from OCM's MultiClusterHub and MultiCluster Engine in Backstage.
+  documentation: https://github.com/backstage/community-plugins/blob/main/workspaces/ocm/plugins/ocm/README.md
 spec:
   author: Red Hat
   support: production
+  category: Infrastructure
   lifecycle: active
+
+  assets:
+    - type: icon
+      iconUrl: /img/ocm.svg
+
+  history:
+    added: '2023-05-15'

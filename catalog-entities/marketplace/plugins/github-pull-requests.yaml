@@ -1,14 +1,19 @@
+# yaml-language-server: $schema=../schema/plugin-schema.json
 apiVersion: marketplace.backstage.io/v1alpha1
 kind: Plugin
 metadata:
   name: github-pull-requests
   namespace: rhdh
   title: GitHub Pull Requests
+  description: View GitHub pull requests for your service in Backstage.
   tags:
     - codereviews
-  description: ''
+  links:
+    - url: https://roadie.io/backstage/plugins/github-pull-requests/
+      title: Roadie Documentation
 spec:
   author: Roadie
+  authorUrl: https://roadie.io/?utm_source=backstage.io&utm_medium=marketplace&utm_campaign=github-pull-requests
   publisher: Red Hat
 
   categories:
@@ -20,3 +25,10 @@ spec:
 
   packages:
     - roadiehq-backstage-plugin-github-pull-requests
+
+  assets:
+    - type: icon
+      Url: https://roadie.io/images/logos/github.png
+
+  history:
+    added: '2021-04-20'

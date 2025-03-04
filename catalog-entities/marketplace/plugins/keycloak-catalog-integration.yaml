@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=../schema/plugin-schema.json
 apiVersion: marketplace.backstage.io/v1alpha1
 kind: Plugin
 metadata:
@@ -5,17 +6,24 @@ metadata:
   namespace: rhdh
   title: Keycloak Catalog Integration
   tags:
+    - authentication
+    - authorization
     - iam
     - software-catalog
   description: Automatically import Keycloak users and groups into RHDH
+  links:
+    - url: https://github.com/backstage/community-plugins/blob/main/workspaces/keycloak/plugins/catalog-backend-module-keycloak/README.md
+
 spec:
-  categories:
-    - Identity and Access Management
-  icon: keycloak.svg
   developers:
     - name: Red Hat
     - name: Backstage Community
   publisher: Red Hat
+
+  categories:
+    - Identity and Access Management
+
+  icon: keycloak.svg
   support:
     level: tech-preview
   lifecycle: production
@@ -190,3 +198,11 @@ spec:
       The solution of setting the `NODE_TLS_REJECT_UNAUTHORIZED` environment variable is not recommended.
 
       ---
+
+  assets:
+    type: icon
+    filename: /img/keycloak.svg
+
+  history:
+    added: '2023-05-15'
+

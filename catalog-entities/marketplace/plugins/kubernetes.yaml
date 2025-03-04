@@ -1,21 +1,19 @@
+# yaml-language-server: $schema=../schema/plugin-schema.json
 apiVersion: marketplace.backstage.io/v1alpha1
 kind: Plugin
 metadata:
   name: kubernetes
   namespace: rhdh
   title: Kubernetes
+  description: Monitor all your service's deployments at a glance, even across clusters.
   tags: []
-  description: ''
+  links:
+    - url: https://backstage.io/docs/features/kubernetes/
+      title: Backstage Documentation
 spec:
-  packageName: "@backstage-community/plugin-scaffolder-backend-module-kubernetes"
-  dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-kubernetes-dynamic
-  version: 2.2.2
-  backstage:
-    role: backend-plugin-module
-    supportedVersions: 1.35.1
-  author: Red Hat
-  support: production
-  lifecycle: active
-  partOf:
-    - backstage-community-kubernetes-scaffolder-module
-  appConfigExamples: []
+  author: Spotify
+  authorUrl: https://github.com/spotify
+
+  assets:
+    - type: icon
+      Url: /img/backstage-k8s.svg
