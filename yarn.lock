@@ -3728,9 +3728,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-rbac-backend@npm:5.4.0":
-  version: 5.4.0
-  resolution: "@backstage-community/plugin-rbac-backend@npm:5.4.0"
+"@backstage-community/plugin-rbac-backend@npm:5.5.2":
+  version: 5.5.2
+  resolution: "@backstage-community/plugin-rbac-backend@npm:5.5.2"
   dependencies:
     "@backstage-community/plugin-rbac-common": ^1.13.0
     "@backstage-community/plugin-rbac-node": ^1.9.0
@@ -3753,7 +3753,7 @@ __metadata:
     knex: ^3.0.0
     lodash: ^4.17.21
     typeorm-adapter: ^1.6.1
-  checksum: 238da807f7796de690db2f58c053687dc4427b0086f40b7771cbd28d83ea0615a4d49b626757c0acaada4341967e7a04662b64ed0c3376462bb2d446625cee8b
+  checksum: a4d8b81198068fb7975ef9941614b548ddd71040e3e4bf710f0c4e629e7d4c26decd52617ae55717f4a98f4b253a2eb2073876ef587d8afd026363700fac8414
   languageName: node
   linkType: hard
 
@@ -22590,7 +22590,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backend@workspace:packages/backend"
   dependencies:
-    "@backstage-community/plugin-rbac-backend": 5.4.0
+    "@backstage-community/plugin-rbac-backend": 5.5.2
     "@backstage-community/plugin-rbac-node": 1.9.0
     "@backstage-community/plugin-scaffolder-backend-module-annotator": 2.2.2
     "@backstage/backend-app-api": 1.1.1
