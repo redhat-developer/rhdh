@@ -164,7 +164,7 @@
      generator:
   ```
 
-- cb6c541: The [Jfrog Artifactory plugin](https://github.com/janus-idp/backstage-plugins/tree/main/plugins/jfrog-artifactory) has been added with the `JfrogArtifactoryPage` in the Entity Page image registry tab.
+- cb6c541: The [Jfrog Artifactory plugin](https://github.com/backstage/community-plugins/tree/main/workspaces/jfrog-artifactory/plugins/jfrog-artifactory) has been added with the `JfrogArtifactoryPage` in the Entity Page image registry tab.
 
   These changes are **required** to `app-config.yaml` if you want to add the JFrog Artifactory plugin. Please read the [README](https://github.com/redhat-developer/rhdh/blob/main/README.md) and [Getting Started](https://github.com/redhat-developer/rhdh/blob/main/showcase-docs/getting-started.md) for more details.
 

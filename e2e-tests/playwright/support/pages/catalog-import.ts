@@ -71,8 +71,8 @@ export class BackstageShowcase {
     paginated = false,
   ) {
     return await APIHelper.getGitHubPRs(
-      "janus-idp",
-      "backstage-showcase",
+      "redhat-developer",
+      "rhdh",
       state,
       paginated,
     );
@@ -99,7 +99,7 @@ export class BackstageShowcase {
     await this.uiHelper.verifyText(allPRs[rows - 1].title, false);
     await this.uiHelper.verifyLink(allPRs[rows].number, {
       exact: false,
-      notVisible: false,
+      notVisible: true,
     });
 
     const tableRows = this.page.locator(
