@@ -3825,9 +3825,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-rbac@npm:1.38.1":
-  version: 1.38.1
-  resolution: "@backstage-community/plugin-rbac@npm:1.38.1"
+"@backstage-community/plugin-rbac@npm:1.38.2":
+  version: 1.38.2
+  resolution: "@backstage-community/plugin-rbac@npm:1.38.2"
   dependencies:
     "@backstage-community/plugin-rbac-common": ^1.13.0
     "@backstage/catalog-model": ^1.7.3
@@ -3839,7 +3839,7 @@ __metadata:
     "@backstage/plugin-permission-react": ^0.4.30
     "@backstage/theme": ^0.6.3
     "@janus-idp/shared-react": ^2.16.0
-    "@mui/icons-material": 5.16.4
+    "@mui/icons-material": 5.16.14
     "@mui/material": ^5.14.18
     "@mui/styles": ^6.1.7
     "@rjsf/core": ^5.21.2
@@ -3853,7 +3853,7 @@ __metadata:
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.0.0
-  checksum: e7cde5eebf859355062ad70b3c106f3c60599aa25a7a670efa35e7276ca8e6df91b3f297742f736ee1575e323587afd08daf27abdd575f68675a1287a5173380
+  checksum: bb31d8067d00d56dd37bda3cb5ec98b77e885bef0dfa178deb4ecc444d48dcae31821db2a07710d7788f09e8015af81145c17a9e0e74401bdb9204999f593dd6
   languageName: node
   linkType: hard
 
@@ -12437,22 +12437,6 @@ __metadata:
     "@types/react":
       optional: true
   checksum: 14c01298e47972099ce71a8f142e2bb93dfc61a3ac0239030c55b3e5c6719f692e9c2fac131247c52f4922e74b08291ecb1f3398117222cc7baa82ec6f38e073
-  languageName: node
-  linkType: hard
-
-"@mui/icons-material@npm:5.16.4":
-  version: 5.16.4
-  resolution: "@mui/icons-material@npm:5.16.4"
-  dependencies:
-    "@babel/runtime": ^7.23.9
-  peerDependencies:
-    "@mui/material": ^5.0.0
-    "@types/react": ^17.0.0 || ^18.0.0
-    react: ^17.0.0 || ^18.0.0
-  peerDependenciesMeta:
-    "@types/react":
-      optional: true
-  checksum: b0559215a10819a082539a7ae43aedafb30bc109c5d6994ac6d748e46688d705e6b44b62693f89aea1fca3afdc6deb665d884c6bad0a2cffde9c5443027e3019
   languageName: node
   linkType: hard
 
@@ -22972,7 +22956,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backstage-community-plugin-rbac@workspace:dynamic-plugins/wrappers/backstage-community-plugin-rbac"
   dependencies:
-    "@backstage-community/plugin-rbac": 1.38.1
+    "@backstage-community/plugin-rbac": 1.38.2
     "@backstage/cli": 0.29.6
     "@janus-idp/cli": 3.2.0
     "@mui/material": 5.16.14
