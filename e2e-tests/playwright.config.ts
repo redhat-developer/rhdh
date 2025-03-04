@@ -76,7 +76,7 @@ export default defineConfig({
     {
       name: "showcase-auth-providers",
       testMatch: [
-        // "**/playwright/e2e/authProviders/*.spec.ts",
+        "**/playwright/e2e/authProviders/*.spec.ts",
         "**/playwright/e2e/github-happy-path.spec.ts",
       ],
       testIgnore: [
@@ -85,7 +85,7 @@ export default defineConfig({
         "**/playwright/e2e/verify-tls-config-health-check.spec.ts",
       ],
       dependencies: ["showcase-auth-providers-setup-environment"],
-      // teardown: "showcase-auth-providers-clear-environment",
+      teardown: "showcase-auth-providers-clear-environment",
       retries: 1,
     },
     {

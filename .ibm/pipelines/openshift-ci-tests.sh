@@ -25,8 +25,6 @@ cleanup() {
 
 trap cleanup EXIT INT ERR
 
-JOB_NAME=periodic-ci-redhat-developer-rhdh-release-1.5-e2e-tests-nightly-auth-providers
-
 SCRIPTS=(
     "env_variables.sh"
     "utils.sh"
