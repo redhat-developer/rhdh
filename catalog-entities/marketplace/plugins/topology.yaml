@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=../schema/plugin-schema.json
 apiVersion: marketplace.backstage.io/v1alpha1
 kind: Plugin
 metadata:
@@ -6,8 +7,6 @@ metadata:
   title: Topology
   description: The Topology plugin enables you to visualize the workloads such as Deployment, Job, Daemonset, Statefulset, CronJob, Pods and Virtual Machines powering any service on the Kubernetes cluster.
 
-  annotations:
-    github.com/project-slug: backstage/community-plugins
   tags:
     - kubernetes
     - openshift
@@ -18,6 +17,7 @@ metadata:
       type: source
 
 spec:
+  author: Red Hat
   categories:
     - Kubernetes
     - OpenShift

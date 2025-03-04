@@ -1,13 +1,29 @@
+# yaml-language-server: $schema=../schema/plugin-schema.json
 apiVersion: marketplace.backstage.io/v1alpha1
 kind: Plugin
 metadata:
   name: tech-radar
   namespace: rhdh
   title: Tech Radar
-  description: A Backstage plugin that lets you display a Tech Radar for your organization.
+  description: Visualize the your company's official guidelines of different areas of software development.
+  links:
+    - url: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/customizing/proc-customize-rhdh-tech-radar-page_configuring-techdocs
+      title: Red Hat Developer Hub Documentation
+    - url: https://github.com/backstage/community-plugins/tree/main/workspaces/tech-radar/plugins/tech-radar
+      title: Backstage Community Documentation
 spec:
+  author: Spotify
+  authorUrl: https://github.com/spotify
+  publisher: Red Hat
+  license: Apache-2.0
+
+  categories:
+    - Discovery
+
   documentation:
     - type: readme
+      credits: |
+        Based on https://github.com/backstage/community-plugins/blob/main/workspaces/tech-radar/plugins/tech-radar/README.md
       markdown: |
         <img src="docs/screenshot.png" alt="Screenshot of Tech Radar plugin" />
 
@@ -313,3 +329,19 @@ spec:
         ### How do I support multiple radars
 
         The `TechRadarPage` and `TechRadarComponent` components both take an optional `id` prop which is subsequently passed to the `load` method of the API to distinguish which radar's data to load.
+
+  assets:
+    - type: icon
+      filename: img/tech-radar.svg
+      originUri: https://github.com/backstage/backstage/blob/master/microsite/static/img/tech-radar.svg
+    - type: screenshot
+      filename: docs/screenshot.png
+      originUri: https://github.com/backstage/community-plugins/blob/main/workspaces/tech-radar/plugins/tech-radar/docs/screenshot.png?raw=true
+      capture: Screenshot of Tech Radar plugin
+
+  packages:
+    - backstage-community-plugin-tech-radar
+    - backstage-community-plugin-tech-radar-backend
+
+  history:
+    added: 2020-11-03'

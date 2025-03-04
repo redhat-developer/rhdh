@@ -1,11 +1,30 @@
+# yaml-language-server: $schema=../schema/plugin-schema.json
 apiVersion: marketplace.backstage.io/v1alpha1
 kind: Plugin
 metadata:
   name: backstage-community-plugin-jenkins
   namespace: rhdh
   title: Jenkins
-  tags: []
-  description: ''
+  description: Jenkins offers a simple way to set up a continuous integration and continuous delivery environment.
+  tags:
+    - ci
+    - cd
+  links:
+    - url: https://github.com/backstage/community-plugins/tree/main/workspaces/jenkins/plugins/jenkins
+
 spec:
+  author: '@timja'
+  authorUrl: https://github.com/timja
+
+  categories: 
+    - CI/CD
+
   packages:
     - backstage-community-plugin-jenkins
+
+  assets:
+    - type: icon
+      originUri: https://img.icons8.com/color/1600/jenkins.png
+
+  history:
+    added: '2021-01-20'

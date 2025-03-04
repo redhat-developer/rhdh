@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=../schema/plugin-schema.json
 apiVersion: marketplace.backstage.io/v1alpha1
 kind: Plugin
 metadata:
@@ -11,7 +12,6 @@ metadata:
       title: Bugs
     - title: Source Code
       url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-3scale-backend-dynamic
-  annotations:
   tags:
     - apis
   description: The 3scale Backstage provider plugin synchronizes the 3scale content into the software catalog.
@@ -21,6 +21,7 @@ spec:
     - Red Hat integration
   icon: 3scale.svg
   author: Red Hat
+  authorUrl: https://redhat.com
   support: tech-preview
   lifecycle: active
   developers:
@@ -82,3 +83,11 @@ spec:
         [1] 2023-02-13T15:26:09.819Z catalog info Discovered ApiEntity Red Hat Event (PROD, v1.1.0) type=plugin target=ThreeScaleApiEntityProvider:dev
         [1] 2023-02-13T15:26:09.819Z catalog info Applying the mutation with 3 entities type=plugin target=ThreeScaleApiEntityProvider:dev
         ```
+
+  assets:
+    - type: icon
+      filename: img/3scale.svg
+      originUri: https://github.com/backstage/backstage/blob/master/microsite/static/img/3scale.svg
+
+  history:
+    added: '2023-05-15'

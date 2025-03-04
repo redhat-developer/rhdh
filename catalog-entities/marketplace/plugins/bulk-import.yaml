@@ -1,11 +1,13 @@
+# yaml-language-server: $schema=../schema/plugin-schema.json
 apiVersion: marketplace.backstage.io/v1alpha1
 kind: Plugin
 metadata:
   name: bulk-import
   namespace: rhdh
   title: Bulk Import
-  tags: []
   description: ''
+  tags: []
+  links: []
 spec:
   packages:
     - red-hat-developer-hub-backstage-plugin-bulk-import

@@ -1,11 +1,28 @@
+# yaml-language-server: $schema=../schema/plugin-schema.json
 apiVersion: marketplace.backstage.io/v1alpha1
 kind: Plugin
 metadata:
   name: jfrog-artifactory
   namespace: rhdh
   title: JFrog Artifactory
+  description: View container image details from JFrog Artifactory in Backstage.
   tags: []
-  description: ''
+  links:
+    - url: https://github.com/backstage/community-plugins/blob/main/workspaces/jfrog-artifactory/plugins/jfrog-artifactory/README.md
+      title: Upstream Documentation
 spec:
+  author: Red Hat
+  authorUrl: https://redhat.com
+
+  categories:
+    - Container Image Registry
+
   packages:
     - backstage-community-plugin-jfrog-artifactory
+
+  assets:
+    - type: icon
+      Url: /img/jfrog-artifactory.svg
+
+  history:
+    added: '2023-05-15'

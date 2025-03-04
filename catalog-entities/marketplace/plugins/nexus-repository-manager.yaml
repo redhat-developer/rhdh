@@ -1,11 +1,28 @@
+# yaml-language-server: $schema=../schema/plugin-schema.json
 apiVersion: marketplace.backstage.io/v1alpha1
 kind: Plugin
 metadata:
   name: nexus-repository-manager
   namespace: rhdh
   title: Nexus Repository Manager
+  description: View information about the build artifacts in your Nexus Repository Manager in Backstage.
   tags: []
-  description: ''
+  links:
+    - url: https://github.com/backstage/community-plugins/blob/main/workspaces/nexus-repository-manager/plugins/nexus-repository-manager/README.md
+      title: Documentation
 spec:
+  author: Red Hat
+  authorUrl: https://redhat.com
+
+  categories:
+    - Image
+
   packages:
     - backstage-community-plugin-nexus-repository-manager
+
+  assets:
+    - type: icon
+      Url: /img/nexus-repository-manager.svg
+
+  history:
+    added: '2023-10-25'

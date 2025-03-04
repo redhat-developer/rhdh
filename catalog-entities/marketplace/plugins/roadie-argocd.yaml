@@ -1,14 +1,19 @@
+# yaml-language-server: $schema=../schema/plugin-schema.json
 apiVersion: marketplace.backstage.io/v1alpha1
 kind: Plugin
 metadata:
   name: roadie-argocd
   namespace: rhdh
   title: Roadie Argo CD
-  description: ''
+  description: View Argo CD status for your projects in Backstage.
   tags:
     - cicd
+  links:
+    - url: https://roadie.io/backstage/plugins/argo-cd/
+
 spec:
   author: Roadie
+  authorUrl: https://roadie.io/
   publisher: Red Hat
 
   categories:
@@ -16,3 +21,12 @@ spec:
 
   packages:
     - roadiehq-backstage-plugin-argo-cd
+
+  assets:
+    - iconUrl: https://roadie.io/images/logos/argo.png
+
+  history:
+    added: '2021-04-20'
+
+  packages:
+    - 

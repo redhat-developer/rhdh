@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=../schema/plugin-schema.json
 apiVersion: marketplace.backstage.io/v1alpha1
 kind: Plugin
 metadata:
@@ -388,3 +389,8 @@ spec:
         The results emitted in the pipelinerun resource will be available in the Others section in the output modal.
 
         ![tekton-pipelinerun-report](./docs/images/tekton-plugin-pipelinerun-output.png)
+
+  iconUrl: /img/tekton.svg
+
+  history:
+    added: '2023-05-15'
