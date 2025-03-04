@@ -16314,9 +16314,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-marketplace@npm:0.1.3":
-  version: 0.1.3
-  resolution: "@red-hat-developer-hub/backstage-plugin-marketplace@npm:0.1.3"
+"@red-hat-developer-hub/backstage-plugin-marketplace@npm:0.1.4":
+  version: 0.1.4
+  resolution: "@red-hat-developer-hub/backstage-plugin-marketplace@npm:0.1.4"
   dependencies:
     "@backstage/catalog-client": ^1.9.1
     "@backstage/core-components": ^0.16.3
@@ -16332,7 +16332,7 @@ __metadata:
     react: ^17.0.0 || ^18.0.0
     react-dom: ^17.0.0 || ^18.0.0
     react-router-dom: ^6.3.0
-  checksum: 194eaa5fe845e68dfca8a6fcd023a8f17ad1835ff007057fd725b04db84ac42380b4a4f6f3c997810dfda4183b2a37492b060df8d0eab2d16fe9c90214c0bf4e
+  checksum: bff5ca771647d270f3bb836bc79365aeb8b81a85b24dae37940b63a3ddc6fc4b70fa5a12fbb45aea5ea1ff83d13f9b310ea7d7c87dd1aae3f51ca77e0576d9a7
   languageName: node
   linkType: hard
 
@@ -40336,7 +40336,7 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.29.6
     "@janus-idp/cli": 3.2.0
-    "@red-hat-developer-hub/backstage-plugin-marketplace": 0.1.3
+    "@red-hat-developer-hub/backstage-plugin-marketplace": 0.1.4
     typescript: 5.7.3
   languageName: unknown
   linkType: soft
