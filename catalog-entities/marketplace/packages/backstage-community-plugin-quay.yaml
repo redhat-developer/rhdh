@@ -18,7 +18,7 @@ metadata:
 spec:
   packageName: "@backstage-community/plugin-quay"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-quay
-  version: 1.14.4
+  version: 1.18.1
   backstage:
     role: frontend-plugin
     supportedVersions: 1.35.1

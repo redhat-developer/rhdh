@@ -18,7 +18,7 @@ metadata:
 spec:
   packageName: "@backstage-community/plugin-topology"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-topology
-  version: 1.29.7
+  version: 1.32.0
   backstage:
     role: frontend-plugin
     supportedVersions: 1.35.1

@@ -18,7 +18,7 @@ metadata:
 spec:
   packageName: "@backstage-community/plugin-acr"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-acr
-  version: 1.10.0
+  version: 1.11.0
   backstage:
     role: frontend-plugin
     supportedVersions: 1.35.1

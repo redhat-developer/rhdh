@@ -1,0 +1,37 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: backstage-plugin-techdocs-module-addons-contrib
+  namespace: rhdh
+  title: "@backstage/plugin-techdocs-module-addons-contrib"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-plugin-techdocs-module-addons-contrib
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-plugin-techdocs-module-addons-contrib
+  tags: []
+spec:
+  packageName: "@backstage/plugin-techdocs-module-addons-contrib"
+  dynamicArtifact: ./dynamic-plugins/dist/backstage-plugin-techdocs-module-addons-contrib
+  version: 1.1.20
+  backstage:
+    role: frontend-plugin-module
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: production
+  lifecycle: active
+  partOf:
+    - techdocs
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        dynamicPlugins:
+          frontend:
+            backstage.plugin-techdocs-module-addons-contrib:
+              techdocsAddons:
+                - importName: ReportIssue

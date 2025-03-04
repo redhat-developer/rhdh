@@ -20,7 +20,7 @@ spec:
   packageName: "@backstage-community/plugin-catalog-backend-module-scaffolder-rel\
     ation-processor"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic
-  version: 2.0.2
+  version: 2.2.0
   backstage:
     role: backend-plugin-module
     supportedVersions: 1.35.1

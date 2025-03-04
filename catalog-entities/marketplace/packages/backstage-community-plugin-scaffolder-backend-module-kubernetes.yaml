@@ -18,7 +18,7 @@ metadata:
 spec:
   packageName: "@backstage-community/plugin-scaffolder-backend-module-kubernetes"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-kubernetes-dynamic
-  version: 2.2.2
+  version: 2.5.0
   backstage:
     role: backend-plugin-module
     supportedVersions: 1.35.1
