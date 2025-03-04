@@ -3864,14 +3864,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-scaffolder-backend-module-quay@npm:2.2.2":
-  version: 2.2.2
-  resolution: "@backstage-community/plugin-scaffolder-backend-module-quay@npm:2.2.2"
+"@backstage-community/plugin-scaffolder-backend-module-quay@npm:2.4.0":
+  version: 2.4.0
+  resolution: "@backstage-community/plugin-scaffolder-backend-module-quay@npm:2.4.0"
   dependencies:
-    "@backstage/backend-plugin-api": ^1.0.1
-    "@backstage/plugin-scaffolder-node": ^0.5.0
+    "@backstage/backend-plugin-api": ^1.1.1
+    "@backstage/plugin-scaffolder-node": ^0.6.3
     yaml: ^2.6.0
-  checksum: d76d498e49c0010e8268e76d1628d96bc3203c9034b7d2f5c13776cf375bf291b1f0ec29fd9d0a0a063c0631ed102513b8d207056221b3d4ed8246ac44e208bd
+  checksum: f3c735ed99301f728395724788c03b6c492ce5b5b3c16c5796385c65266aca2e60f467f6ead1fe58cbddd5306531c2a1d0c1f4a95cb60ecdc70aa24f1c2efb6c
   languageName: node
   linkType: hard
 
@@ -23308,7 +23308,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backstage-community-plugin-scaffolder-backend-module-quay@workspace:dynamic-plugins/wrappers/backstage-community-plugin-scaffolder-backend-module-quay-dynamic"
   dependencies:
-    "@backstage-community/plugin-scaffolder-backend-module-quay": 2.2.2
+    "@backstage-community/plugin-scaffolder-backend-module-quay": 2.4.0
     "@backstage/cli": 0.29.6
     "@janus-idp/cli": 3.2.0
     typescript: 5.7.3
