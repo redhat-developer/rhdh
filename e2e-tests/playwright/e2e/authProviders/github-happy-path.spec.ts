@@ -1,16 +1,16 @@
 import { test, expect, Page } from "@playwright/test";
-import { UIhelper } from "../utils/ui-helper";
-import { Common, setupBrowser } from "../utils/common";
-import { RESOURCES } from "../support/testData/resources";
+import { UIhelper } from "../../utils/ui-helper";
+import { Common, setupBrowser } from "../../utils/common";
+import { RESOURCES } from "../../support/testData/resources";
 import {
   BackstageShowcase,
   CatalogImport,
-} from "../support/pages/catalog-import";
-import { TEMPLATES } from "../support/testData/templates";
-import { HelmActions } from "../utils/helm";
-import * as constants from "../utils/authenticationProviders/constants";
-import { LOGGER } from "../utils/logger";
-import { waitForNextSync } from "../utils/helper";
+} from "../../support/pages/catalog-import";
+import { TEMPLATES } from "../../support/testData/templates";
+import { HelmActions } from "../../utils/helm";
+import * as constants from "../../utils/authenticationProviders/constants";
+import { LOGGER } from "../../utils/logger";
+import { waitForNextSync } from "../../utils/helper";
 
 let page: Page;
 
