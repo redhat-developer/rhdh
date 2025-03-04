@@ -1089,11 +1089,11 @@ plugins:
           pingIdentityOrg: {}
   # Group: Marketplace
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-catalog-backend-module-marketplace-dynamic
-    disabled: true
+    disabled: false
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-marketplace-backend-dynamic
-    disabled: true
+    disabled: false
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-marketplace
-    disabled: true
+    disabled: false
     pluginConfig:
       dynamicPlugins:
         frontend:
