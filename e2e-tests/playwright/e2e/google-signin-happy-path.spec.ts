@@ -1,10 +1,10 @@
 import { test, Page } from "@playwright/test";
 import { Common } from "../utils/common";
-import { UIhelper } from "../utils/ui-helper";
+import { UiHelper } from "../utils/ui-helper";
 
 let page: Page;
 test.describe.skip("Google signin happy path", () => {
-  let uiHelper: UIhelper;
+  let uiHelper: UiHelper;
   let common: Common;
   const googleUserId = process.env.GOOGLE_USER_ID;
 
@@ -19,7 +19,7 @@ test.describe.skip("Google signin happy path", () => {
     });
     page = await context.newPage();
 
-    uiHelper = new UIhelper(page);
+    uiHelper = new UiHelper(page);
     common = new Common(page);
 
     await common.loginAsGuest();

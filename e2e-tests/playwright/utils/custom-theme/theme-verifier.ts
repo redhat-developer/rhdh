@@ -1,14 +1,14 @@
 import { Page, expect, TestInfo } from "@playwright/test";
-import { UIhelper } from "../ui-helper";
+import { UiHelper } from "../ui-helper";
 import { UI_HELPER_ELEMENTS } from "../../support/pageObjects/global-obj";
 
 export class ThemeVerifier {
   private readonly page: Page;
-  private uiHelper: UIhelper;
+  private uiHelper: UiHelper;
 
   constructor(page: Page) {
     this.page = page;
-    this.uiHelper = new UIhelper(page);
+    this.uiHelper = new UiHelper(page);
   }
 
   async setTheme(theme: "Light" | "Dark" | "Light Dynamic" | "Dark Dynamic") {

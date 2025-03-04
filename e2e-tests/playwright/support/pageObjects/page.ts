@@ -1,5 +1,5 @@
 import { Page } from "@playwright/test";
-import { UIhelper } from "../../utils/ui-helper";
+import { UiHelper } from "../../utils/ui-helper";
 
 export enum PagesUrl {
   RBAC = "/rbac",
@@ -8,12 +8,12 @@ export enum PagesUrl {
 export abstract class PageObject {
   protected page: Page;
   protected url: PagesUrl;
-  protected uiHelper: UIhelper;
+  protected uiHelper: UiHelper;
 
   constructor(page: Page, url: PagesUrl) {
     this.page = page;
     this.url = url;
-    this.uiHelper = new UIhelper(this.page);
+    this.uiHelper = new UiHelper(this.page);
   }
 
   async goto() {

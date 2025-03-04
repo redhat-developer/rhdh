@@ -1,13 +1,13 @@
 import { Page } from "@playwright/test";
-import { UIhelper } from "../../utils/ui-helper";
+import { UiHelper } from "../../utils/ui-helper";
 
 export class Clusters {
   private page: Page;
-  private uiHelper: UIhelper;
+  private uiHelper: UiHelper;
 
   constructor(page: Page) {
     this.page = page;
-    this.uiHelper = new UIhelper(page);
+    this.uiHelper = new UiHelper(page);
   }
 
   async verifyOCMLinksCardDetails() {

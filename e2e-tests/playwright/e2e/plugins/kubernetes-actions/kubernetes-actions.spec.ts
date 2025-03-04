@@ -1,12 +1,12 @@
 import { Page, test } from "@playwright/test";
 import { Common, setupBrowser } from "../../../utils/common";
-import { UIhelper } from "../../../utils/ui-helper";
+import { UiHelper } from "../../../utils/ui-helper";
 import { KubeClient } from "../../../utils/kube-client";
 import { UI_HELPER_ELEMENTS } from "../../../support/pageObjects/global-obj";
 
 test.describe("Test Kubernetes Actions plugin", () => {
   let common: Common;
-  let uiHelper: UIhelper;
+  let uiHelper: UiHelper;
   let page: Page;
   let kubeClient: KubeClient;
   let namespace: string;
@@ -14,7 +14,7 @@ test.describe("Test Kubernetes Actions plugin", () => {
   test.beforeAll(async ({ browser }, testInfo) => {
     page = (await setupBrowser(browser, testInfo)).page;
     common = new Common(page);
-    uiHelper = new UIhelper(page);
+    uiHelper = new UiHelper(page);
     kubeClient = new KubeClient();
 
     await common.loginAsGuest();

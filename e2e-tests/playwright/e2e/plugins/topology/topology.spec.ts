@@ -1,12 +1,12 @@
 import { test, expect } from "@playwright/test";
 import { Common } from "../../../utils/common";
-import { UIhelper } from "../../../utils/ui-helper";
+import { UiHelper } from "../../../utils/ui-helper";
 import { Catalog } from "../../../support/pages/catalog";
 import { Topology } from "../../../support/pages/topology";
 
 test.describe("Test Topology Plugin", () => {
   let common: Common;
-  let uiHelper: UIhelper;
+  let uiHelper: UiHelper;
   let catalog: Catalog;
   let topology: Topology;
 
@@ -16,7 +16,7 @@ test.describe("Test Topology Plugin", () => {
       test.setTimeout(testInfo.timeout + testInfo.timeout * 0.25);
     }
     common = new Common(page);
-    uiHelper = new UIhelper(page);
+    uiHelper = new UiHelper(page);
     catalog = new Catalog(page);
     topology = new Topology(page);
     await common.loginAsGuest();

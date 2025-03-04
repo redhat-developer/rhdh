@@ -1,5 +1,5 @@
 import { expect, Page, test } from "@playwright/test";
-import { UIhelper } from "../../utils/ui-helper";
+import { UiHelper } from "../../utils/ui-helper";
 import { Common, setupBrowser } from "../../utils/common";
 import { APIHelper } from "../../utils/api-helper";
 import { BulkImport } from "../../support/pages/bulk-import";
@@ -13,7 +13,7 @@ import {
 test.describe.serial("Bulk Import plugin", () => {
   test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
   let page: Page;
-  let uiHelper: UIhelper;
+  let uiHelper: UiHelper;
   let common: Common;
   let bulkimport: BulkImport;
 
@@ -34,7 +34,7 @@ test.describe.serial("Bulk Import plugin", () => {
   test.beforeAll(async ({ browser }, testInfo) => {
     page = (await setupBrowser(browser, testInfo)).page;
 
-    uiHelper = new UIhelper(page);
+    uiHelper = new UiHelper(page);
     common = new Common(page);
     bulkimport = new BulkImport(page);
 
@@ -236,7 +236,7 @@ test.describe
   .serial("Bulk Import - Verify existing repo are displayed in bulk import Added repositories", () => {
   test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
   let page: Page;
-  let uiHelper: UIhelper;
+  let uiHelper: UiHelper;
   let common: Common;
   let bulkimport: BulkImport;
   let catalogImport: CatalogImport;
@@ -250,7 +250,7 @@ test.describe
   test.beforeAll(async ({ browser }, testInfo) => {
     page = (await setupBrowser(browser, testInfo)).page;
 
-    uiHelper = new UIhelper(page);
+    uiHelper = new UiHelper(page);
     common = new Common(page);
     bulkimport = new BulkImport(page);
     catalogImport = new CatalogImport(page);
@@ -294,12 +294,12 @@ test.describe
   .serial("Bulk Import - Ensure users without bulk import permissions cannot access the bulk import plugin", () => {
   test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
   let page: Page;
-  let uiHelper: UIhelper;
+  let uiHelper: UiHelper;
   let common: Common;
   test.beforeAll(async ({ browser }, testInfo) => {
     page = (await setupBrowser(browser, testInfo)).page;
 
-    uiHelper = new UIhelper(page);
+    uiHelper = new UiHelper(page);
     common = new Common(page);
     await common.loginAsKeycloakUser();
   });

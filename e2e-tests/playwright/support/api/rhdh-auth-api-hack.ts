@@ -1,4 +1,5 @@
 import { Page } from "@playwright/test";
+import { LOGGER } from "../../utils/logger";
 
 // here, we spy on the request to get the Backstage token to use APIs
 export class RhdhAuthApiHack {
@@ -32,7 +33,7 @@ export class RhdhAuthApiHack {
         throw new Error("Token not found in response body");
       }
     } catch (error) {
-      console.error("Failed to retrieve the token:", error);
+      LOGGER.error("Failed to retrieve the token:", error);
 
       throw error;
     }

@@ -1,5 +1,5 @@
 import { Page, expect } from "@playwright/test";
-import { UIhelper } from "../../utils/ui-helper";
+import { UiHelper } from "../../utils/ui-helper";
 import {
   BACKSTAGE_SHOWCASE_COMPONENTS,
   CATALOG_IMPORT_COMPONENTS,
@@ -9,11 +9,11 @@ import { GITHUB_API_ENDPOINTS } from "../../utils/api-endpoints";
 
 export class CatalogImport {
   private page: Page;
-  private uiHelper: UIhelper;
+  private uiHelper: UiHelper;
 
   constructor(page: Page) {
     this.page = page;
-    this.uiHelper = new UIhelper(page);
+    this.uiHelper = new UiHelper(page);
   }
   async registerExistingComponent(
     url: string,
@@ -50,11 +50,11 @@ export class CatalogImport {
 
 export class BackstageShowcase {
   private readonly page: Page;
-  private uiHelper: UIhelper;
+  private uiHelper: UiHelper;
 
   constructor(page: Page) {
     this.page = page;
-    this.uiHelper = new UIhelper(page);
+    this.uiHelper = new UiHelper(page);
   }
 
   async getGithubOpenIssues() {

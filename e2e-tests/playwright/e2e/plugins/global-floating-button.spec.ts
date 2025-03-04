@@ -1,18 +1,18 @@
 import { test } from "@playwright/test";
 import { Common } from "../../utils/common";
 import { FabPo } from "../../support/pageObjects/global-fab-po";
-import { UIhelper } from "../../utils/ui-helper";
+import { UiHelper } from "../../utils/ui-helper";
 import { PagesUrl } from "../../support/pageObjects/page";
 
 test.describe("Test global floating action button plugin", () => {
-  let uiHelper: UIhelper;
+  let uiHelper: UiHelper;
   let fabHelper: FabPo;
 
   test.beforeEach(async ({ page }) => {
     const common = new Common(page);
     await common.loginAsGuest();
 
-    uiHelper = new UIhelper(page);
+    uiHelper = new UiHelper(page);
     fabHelper = new FabPo(page, "/" as PagesUrl);
   });
 

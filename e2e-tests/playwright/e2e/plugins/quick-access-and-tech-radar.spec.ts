@@ -1,7 +1,7 @@
 import { test } from "@playwright/test";
 import { HomePage } from "../../support/pages/home-page";
 import { Common } from "../../utils/common";
-import { UIhelper } from "../../utils/ui-helper";
+import { UiHelper } from "../../utils/ui-helper";
 import { TechRadar } from "../../support/pages/tech-radar";
 
 // Pre-req: Enable plugin-tech-radar and plugin-tech-radar-backend Plugin
@@ -19,7 +19,7 @@ test.describe("Test Customized Quick Access and tech-radar plugin", () => {
   });
 
   test("Verify tech-radar", async ({ page }) => {
-    const uiHelper = new UIhelper(page);
+    const uiHelper = new UiHelper(page);
     const techRadar = new TechRadar(page);
 
     await uiHelper.openSidebar("Tech Radar");

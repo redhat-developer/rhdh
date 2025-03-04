@@ -1,12 +1,12 @@
 import { Page, test } from "@playwright/test";
-import { UIhelper } from "../utils/ui-helper";
+import { UiHelper } from "../utils/ui-helper";
 import { Common } from "../utils/common";
 import { expect } from "@playwright/test";
 import { Catalog } from "../support/pages/catalog";
 
 test.describe("TechDocs", () => {
   let common: Common;
-  let uiHelper: UIhelper;
+  let uiHelper: UiHelper;
   let catalog: Catalog;
 
   async function docsTextHighlight(page: Page) {
@@ -27,7 +27,7 @@ test.describe("TechDocs", () => {
   }
 
   test.beforeEach(async ({ page }) => {
-    uiHelper = new UIhelper(page);
+    uiHelper = new UiHelper(page);
     common = new Common(page);
     catalog = new Catalog(page);
     await common.loginAsGuest();

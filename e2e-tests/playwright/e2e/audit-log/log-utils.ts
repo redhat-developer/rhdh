@@ -1,6 +1,7 @@
 import { expect } from "@playwright/test";
 import { execFile } from "child_process";
 import { Log } from "./logs";
+import { LOGGER } from "../../utils/logger";
 
 export class LogUtils {
   /**
@@ -198,7 +199,7 @@ export class LogUtils {
       await LogUtils.executeCommand(command, args);
       console.log("Login successful.");
     } catch (error) {
-      console.error("Error during login:", error);
+      LOGGER.error("Error during login:", error);
       throw new Error(`Failed to login to OpenShift: ${error}`);
     }
   }

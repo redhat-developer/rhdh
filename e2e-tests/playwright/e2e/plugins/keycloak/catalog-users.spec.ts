@@ -1,11 +1,11 @@
 import { CatalogUsersPO } from "../../../support/pageObjects/catalog/catalog-users-obj";
 import Keycloak from "../../../utils/keycloak/keycloak";
-import { UIhelper } from "../../../utils/ui-helper";
+import { UiHelper } from "../../../utils/ui-helper";
 import { Common } from "../../../utils/common";
 import { test, expect } from "@playwright/test";
 
 test.describe("Test Keycloak plugin", () => {
-  let uiHelper: UIhelper;
+  let uiHelper: UiHelper;
   let keycloak: Keycloak;
   let common: Common;
   let token: string;
@@ -16,7 +16,7 @@ test.describe("Test Keycloak plugin", () => {
   });
 
   test.beforeEach(async ({ page }) => {
-    uiHelper = new UIhelper(page);
+    uiHelper = new UiHelper(page);
     common = new Common(page);
     await common.loginAsGuest();
     await CatalogUsersPO.visitBaseURL(page);

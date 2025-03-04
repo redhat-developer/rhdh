@@ -1,6 +1,6 @@
 import { expect, test as base } from "@playwright/test";
 import { Common } from "../../utils/common";
-import { UIhelper } from "../../utils/ui-helper";
+import { UiHelper } from "../../utils/ui-helper";
 import { Clusters } from "../../support/pages/clusters";
 
 //Pre-req: Enable backstage-community-plugin-ocm-backend-dynamic and backstage-community-plugin-ocm Plugins
@@ -18,7 +18,7 @@ const clusterDetails = {
 
 const test = base.extend<{
   common: Common;
-  uiHelper: UIhelper;
+  uiHelper: UiHelper;
   clusters: Clusters;
 }>({
   common: async ({ page }, use) => {
@@ -28,7 +28,7 @@ const test = base.extend<{
   },
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   uiHelper: async ({ page, common }, use) => {
-    const uiHelper = new UIhelper(page);
+    const uiHelper = new UiHelper(page);
     await uiHelper.openSidebar("Clusters");
     await use(uiHelper);
   },

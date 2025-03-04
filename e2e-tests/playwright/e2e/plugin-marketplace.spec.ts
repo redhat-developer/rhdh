@@ -1,10 +1,10 @@
 import { test as base } from "@playwright/test";
 import { Common } from "../utils/common";
-import { UIhelper } from "../utils/ui-helper";
+import { UiHelper } from "../utils/ui-helper";
 
-const test = base.extend<{ uiHelper: UIhelper }>({
+const test = base.extend<{ uiHelper: UiHelper }>({
   uiHelper: async ({ page }, use) => {
-    use(new UIhelper(page));
+    use(new UiHelper(page));
   },
 });
 

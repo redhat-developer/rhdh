@@ -1,5 +1,5 @@
 import { Page } from "@playwright/test";
-import { UIhelper } from "../../utils/ui-helper";
+import { UiHelper } from "../../utils/ui-helper";
 import playwrightConfig from "../../../playwright.config";
 
 //https://redhatquickcourses.github.io/devhub-admin/devhub-admin/1/chapter2/rbac.html#_lab_rbac_rest_api
@@ -25,7 +25,7 @@ export class RhdhAuthUiHack {
   }
 
   private async _getApiToken(page: Page) {
-    const uiHelper = new UIhelper(page);
+    const uiHelper = new UiHelper(page);
 
     await uiHelper.openSidebar("Catalog");
     const requestPromise = page.waitForRequest(
