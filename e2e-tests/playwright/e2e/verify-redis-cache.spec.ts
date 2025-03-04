@@ -60,7 +60,7 @@ test.describe("Verify Redis Cache DB", () => {
       // Additionally, verify the format of the key
       const key = keys.filter((k) => k.startsWith("techdocs"))[0];
       expect(key).toMatch(
-        /techdocs:(?:[A-Za-z0-9+]{4})*(?:[A-Za-z0-9+]{2}==|[A-Za-z0-9+]{3}=)$/gm,
+        /(?:techdocs|bulk-import):(?:[A-Za-z0-9+]{4})*(?:[A-Za-z0-9+]{2}==|[A-Za-z0-9+]{3}=)$/gm,
       );
     }).toPass({
       intervals: [3_000],

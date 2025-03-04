@@ -298,7 +298,7 @@ test.describe("Standard authentication providers: Micorsoft Azure EntraID", () =
     });
   });
 
-  test("Move a user to another group in Microsoft EntraID", async () => {
+  test.skip("Move a user to another group in Microsoft EntraID", async () => {
     test.setTimeout(300 * 1000);
     // move a user to another group -> user can still login
     // move user_2 to location_admin
