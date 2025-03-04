@@ -60,7 +60,7 @@ test.describe.serial("Test RBAC", () => {
       await uiHelper.verifyText("csv permission policy file");
 
       await uiHelper.verifyHeading("1 group");
-      await uiHelper.verifyHeading("Permission policies (2)");
+      await uiHelper.verifyHeading("Permission policies (3)");
       const permissionPoliciesColumnsText =
         Roles.getPermissionPoliciesListColumnsText();
       await uiHelper.verifyColumnHeading(permissionPoliciesColumnsText);
@@ -74,6 +74,10 @@ test.describe.serial("Test RBAC", () => {
       ]);
       await uiHelper.verifyRowInTableByUniqueText("catalog.entity.read", [
         "Read",
+        "1 rule",
+      ]);
+      await uiHelper.verifyRowInTableByUniqueText("catalog.entity.refresh", [
+        "Update",
         "1 rule",
       ]);
       await uiHelper.verifyRowInTableByUniqueText("catalog.entity.delete", [
