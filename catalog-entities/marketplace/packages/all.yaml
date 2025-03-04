@@ -47,6 +47,7 @@ spec:
     - ./red-hat-developer-hub-backstage-plugin-dynamic-home-page.yaml
     - ./backstage-plugin-techdocs-backend.yaml
     - ./backstage-plugin-techdocs.yaml
+    - ./backstage-plugin-techdocs-module-addons-contrib.yaml
     - ./pagerduty-backstage-plugin.yaml
     - ./pagerduty-backstage-plugin-backend.yaml
     - ./backstage-plugin-scaffolder-backend-module-gerrit.yaml

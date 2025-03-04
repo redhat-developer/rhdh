@@ -18,7 +18,7 @@ metadata:
 spec:
   packageName: "@red-hat-developer-hub/backstage-plugin-dynamic-home-page"
   dynamicArtifact: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-dynamic-home-page
-  version: 1.0.1
+  version: 1.1.0
   backstage:
     role: frontend-plugin
     supportedVersions: 1.35.1
@@ -37,6 +37,8 @@ spec:
                 - path: /
                   importName: DynamicHomePage
               mountPoints:
+                - mountPoint: application/listener
+                  importName: VisitListener
                 - mountPoint: home.page/cards
                   importName: SearchBar
                   config:

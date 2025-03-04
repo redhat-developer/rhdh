@@ -20,10 +20,10 @@ metadata:
 spec:
   packageName: "@red-hat-developer-hub/backstage-plugin-global-floating-action-button"
   dynamicArtifact: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-floating-action-button
-  version: 0.0.6
+  version: 1.0.0
   backstage:
     role: frontend-plugin
-    supportedVersions: 1.35.0
+    supportedVersions: 1.35.1
   author: Red Hat
   lifecycle: unknown
   partOf:
@@ -37,10 +37,3 @@ spec:
               mountPoints:
                 - mountPoint: application/listener
                   importName: DynamicGlobalFloatingActionButton
-                - mountPoint: global.floatingactionbutton/component
-                  importName: NullComponent
-                  config:
-                    icon: github
-                    label: Git
-                    toolTip: Github
-                    to: https://github.com/redhat-developer/rhdh

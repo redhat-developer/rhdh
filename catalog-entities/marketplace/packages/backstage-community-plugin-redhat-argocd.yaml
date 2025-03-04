@@ -18,7 +18,7 @@ metadata:
 spec:
   packageName: "@backstage-community/plugin-redhat-argocd"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-redhat-argocd
-  version: 1.11.0
+  version: 1.14.0
   backstage:
     role: frontend-plugin
     supportedVersions: 1.35.1
