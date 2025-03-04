@@ -7,7 +7,7 @@ import { GITHUB_API_ENDPOINTS } from "../utils/api-endpoints";
 
 let page: Page;
 
-test.describe.serial("Link Scaffolded Templates to Catalog Items", () => {
+test("Link Scaffolded Templates to Catalog Items", () => {
   let uiHelper: UIhelper;
   let common: Common;
   let catalogImport: CatalogImport;
@@ -37,14 +37,14 @@ test.describe.serial("Link Scaffolded Templates to Catalog Items", () => {
     await common.loginAsGuest();
   });
 
-  test("Register an Template", async () => {
+  test.step("Register an Template", async () => {
     await uiHelper.openSidebar("Catalog");
     await uiHelper.clickButton("Create");
     await uiHelper.clickButton("Register Existing Component");
     await catalogImport.registerExistingComponent(template, false);
   });
 
-  test("Create a React App using the newly registered Template", async () => {
+  test.step("Create a React App using the newly registered Template", async () => {
     test.setTimeout(130000);
     await uiHelper.openSidebar("Catalog");
     await uiHelper.clickButton("Create");
@@ -84,7 +84,7 @@ test.describe.serial("Link Scaffolded Templates to Catalog Items", () => {
     await uiHelper.clickLink("Open in catalog");
   });
 
-  test("Verify Scaffolded link in components Dependencies and scaffoldedFrom relation in entity Raw Yaml ", async () => {
+  test.step("Verify Scaffolded link in components Dependencies and scaffoldedFrom relation in entity Raw Yaml ", async () => {
     await uiHelper.openSidebar("Catalog");
     await uiHelper.clickByDataTestId("user-picker-all");
     await uiHelper.searchInputPlaceholder("scaffoldedfromlink-\n");
@@ -127,7 +127,7 @@ test.describe.serial("Link Scaffolded Templates to Catalog Items", () => {
     );
   });
 
-  test("Verify Registered Template and scaffolderOf relation in entity Raw Yaml", async () => {
+  test.step("Verify Registered Template and scaffolderOf relation in entity Raw Yaml", async () => {
     await uiHelper.openSidebar("Catalog");
     await uiHelper.selectMuiBox("Kind", "Template");
 
