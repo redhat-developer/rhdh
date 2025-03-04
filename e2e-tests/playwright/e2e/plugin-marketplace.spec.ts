@@ -9,11 +9,15 @@ const test = base.extend<{ uiHelper: UIhelper }>({
 });
 
 test.describe("Plugin Marketplace", () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, uiHelper }) => {
     await new Common(page).loginAsKeycloakUser();
+    await uiHelper.openSidebarButton("Administration");
+    await uiHelper.openSidebar("Plugins");
+    await uiHelper.verifyHeading("Plugins");
   });
+
   test("The navBar includes the marketplace", async ({ uiHelper }) => {
-    await uiHelper.openSidebar("Marketplace");
-    await uiHelper.waitForTitle("Plugins");
+    await uiHelper.clickTab("Marketplace");
+    // TODO: check plugins when we initialized some test data
   });
 });
