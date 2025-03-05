@@ -3381,7 +3381,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-catalog-backend-module-keycloak@npm:^3.7.0":
+"@backstage-community/plugin-catalog-backend-module-keycloak@npm:3.7.0":
   version: 3.7.0
   resolution: "@backstage-community/plugin-catalog-backend-module-keycloak@npm:3.7.0"
   dependencies:
@@ -23355,7 +23355,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backstage-community-plugin-catalog-backend-module-keycloak@workspace:dynamic-plugins/wrappers/backstage-community-plugin-catalog-backend-module-keycloak-dynamic"
   dependencies:
-    "@backstage-community/plugin-catalog-backend-module-keycloak": ^3.7.0
+    "@backstage-community/plugin-catalog-backend-module-keycloak": 3.7.0
     "@backstage/cli": 0.29.6
     "@janus-idp/cli": 3.2.0
     typescript: 5.7.3
