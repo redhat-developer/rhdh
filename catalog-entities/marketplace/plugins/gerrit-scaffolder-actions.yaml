@@ -14,8 +14,7 @@ metadata:
 spec:
   categories:
     - Scaffolder
-  icon: gerrit.svg
-  developers:
+  authors:
     - name: Backstage Community
   publisher: Red Hat
   # support:
@@ -23,5 +22,3 @@ spec:
   lifecycle: production
   description: |
     
-  installation:
-    markdown: |

@@ -18,7 +18,7 @@ metadata:
       title: Documentation
 
 spec:
-  developers:
+  authors:
     - name: Red Hat
     - name: Backstage Community
   publisher: Red Hat
@@ -26,7 +26,6 @@ spec:
   categories:
     - Identity and Access Management
 
-  icon: keycloak.svg
   # support:
   #   level: tech-preview
   lifecycle: production

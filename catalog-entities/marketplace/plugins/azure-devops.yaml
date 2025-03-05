@@ -24,8 +24,7 @@ spec:
   categories:
     - DevOps
     - Software Catalog
-  icon: azure-devops.svg
-  developers:
+  authors:
     - name: Backstage Community
   publisher: Red Hat
   # support:

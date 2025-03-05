@@ -13,8 +13,7 @@ metadata:
 spec:
   categories:
     - Software Catalog
-  icon: bitbucket.svg
-  developers:
+  authors:
     - name: Backstage Core
   publisher: Red Hat
   # support:
@@ -22,6 +21,5 @@ spec:
   lifecycle: production
   description: |
     This is an extension module to the catalog-backend plugin, providing extensions targeted at Bitbucket Cloud offerings.
-  installation:
-    markdown: |
-      https://backstage.io/docs/integrations/bitbucketCloud/discovery/
+  installation: |
+    https://backstage.io/docs/integrations/bitbucketCloud/discovery/
