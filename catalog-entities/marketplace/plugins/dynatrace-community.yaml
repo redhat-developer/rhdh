@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: dynatrace-community
+  namespace: rhdh
+  title: DynaTrace
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
+  description: ''
+  tags: []
+spec:
+  description: ''
+  packages:
+    - backstage-community-plugin-dynatrace

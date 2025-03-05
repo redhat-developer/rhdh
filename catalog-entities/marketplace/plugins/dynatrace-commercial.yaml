@@ -2,11 +2,12 @@
 apiVersion: extensions.backstage.io/v1alpha1
 kind: Plugin
 metadata:
-  name: backstage-community-plugin-dynatrace
+  name: dynatrace-commercial
   namespace: rhdh
   title: DynaTrace
   annotations:
     extensions.backstage.io/pre-installed: 'true'
+    extensions.backstage.io/certified-by: Red Hat
   description: ''
   tags: []
 spec:
