@@ -37,8 +37,8 @@ export const DynamicPluginsInfoPage = () => {
   const FirstComponent = tabs[0]?.Component;
 
   return (
-    <Page themeId="plugins">
-      <Header title="Plugins" />
+    <Page themeId="extensions">
+      <Header title="Extensions" />
       {tabs.length > 1 ? (
         <TabbedLayout>
           {tabs.map(({ Component, config }) => (

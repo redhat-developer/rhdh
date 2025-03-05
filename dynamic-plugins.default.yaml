@@ -1102,11 +1102,11 @@ plugins:
               - name: marketplace
                 importName: MarketplaceIcon
             dynamicRoutes:
-              - path: /plugins/marketplace
+              - path: /extensions/catalog
                 importName: DynamicMarketplacePluginRouter
             mountPoints:
               - mountPoint: internal.plugins/tab
                 importName: DynamicMarketplacePluginContent
                 config:
                   path: marketplace
-                  title: Marketplace
+                  title: Catalog
