@@ -8,22 +8,22 @@ dynamicPlugins:
         - name: adminIcon
           importName: AdminIcon
       dynamicRoutes:
-        - path: /admin/plugins
+        - path: /extensions
           importName: DynamicPluginsInfoPage
           menuItem:
-            text: Plugins
+            text: Extensions
             icon: pluginsInfoIcon
       mountPoints:
         - mountPoint: internal.plugins/tab
           importName: DynamicPluginsInfoContent
           config:
             path: installed
-            title: Installed plugins
+            title: Installed
       menuItems:
         admin:
           title: Administration
           icon: adminIcon
-        plugins:
+        extensions:
           parent: admin
-          title: Plugins
+          title: Extensions
           icon: pluginsInfoIcon
