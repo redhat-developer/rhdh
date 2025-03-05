@@ -17,7 +17,8 @@ spec:
     - ./bulk-import.yaml
     - ./catalog-integrations.yaml
     - ./datadog.yaml
-    - ./dynatrace.yaml
+    - ./dynatrace-commercial.yaml
+    - ./dynatrace-community.yaml
     - ./gerrit-scaffolder-actions.yaml
     - ./github-actions.yaml
     - ./github-catalog-integration.yaml
