@@ -1,13 +1,13 @@
-apiVersion: marketplace.backstage.io/v1alpha1
+apiVersion: extensions.backstage.io/v1alpha1
 kind: PluginCollection
 metadata:
   name: redhat
   namespace: rhdh
   title: Plugins build by Red Hat
+  description: ''
   tags: []
-  description: TODO
 spec:
+  # filter based collections are not implemented yet!!!
   type: filter-based
   filter:
-    metadata.namespace: rhdh
-    metadata.author: Red Hat
+    metadata.authors.name: Red Hat

@@ -1,4 +1,4 @@
-apiVersion: marketplace.backstage.io/v1alpha1
+apiVersion: extensions.backstage.io/v1alpha1
 kind: Package
 metadata:
   name: backstage-plugin-catalog-backend-module-github

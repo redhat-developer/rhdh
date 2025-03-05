@@ -1,12 +1,14 @@
-apiVersion: marketplace.backstage.io/v1alpha1
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/collections.json
+apiVersion: extensions.backstage.io/v1alpha1
 kind: PluginCollection
 metadata:
   name: cicd
   namespace: rhdh
   title: CI/CD plugins
-  tags: []
   description: TODO
+  tags: []
 spec:
-  type: filter-based
+  # filter based collections are not implemented yet!!!
+  type: filter
   filter:
     metadata.tags: cicd
