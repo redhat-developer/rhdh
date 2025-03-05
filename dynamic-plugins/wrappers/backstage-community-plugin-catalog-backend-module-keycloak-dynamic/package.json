@@ -36,7 +36,7 @@
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
-    "@backstage-community/plugin-catalog-backend-module-keycloak": "^3.7.0"
+    "@backstage-community/plugin-catalog-backend-module-keycloak": "3.7.0"
   },
   "devDependencies": {
     "@backstage/cli": "0.29.6",
