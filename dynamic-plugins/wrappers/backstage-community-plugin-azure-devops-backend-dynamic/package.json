@@ -10,7 +10,7 @@
   },
   "backstage": {
     "role": "backend-plugin",
-    "supported-versions": "1.35.1",
+    "supported-versions": "1.36.1",
     "pluginId": "azure-devops",
     "pluginPackage": "backstage-community-plugin-azure-devops-backend",
     "pluginPackages": [
@@ -43,7 +43,7 @@
     "@backstage-community/plugin-azure-devops-backend": "0.8.0"
   },
   "devDependencies": {
-    "@backstage/cli": "0.29.6",
+    "@backstage/cli": "0.30.0",
     "@janus-idp/cli": "3.2.0",
     "typescript": "5.7.3"
   },
