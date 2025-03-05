@@ -21,12 +21,28 @@ metadata:
     - azure
     - devops
 spec:
-  categories:
-    - DevOps
-    - Software Catalog
   authors:
     - name: Backstage Community
   publisher: Red Hat
+  categories:
+    - DevOps
+    - Software Catalog
+
+  icon: data:image/svg+xml;base64,
+    PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjgg
+    MTI4Ij4KICAgIDxkZWZzPgogICAgICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYSIgZ3JhZGllbnRV
+    bml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSI5IiB5MT0iMTYuOTciIHgyPSI5IiB5Mj0iMS4wMyIg
+    Z3JhZGllbnRUcmFuc2Zvcm09InNjYWxlKDcuMTExMTEpIj4KICAgICAgICAgICAgPHN0b3Agb2Zm
+    c2V0PSIwIiBzdG9wLWNvbG9yPSIjMDA3OGQ0Ii8+CiAgICAgICAgICAgIDxzdG9wIG9mZnNldD0i
+    LjE2IiBzdG9wLWNvbG9yPSIjMTM4MGRhIi8+CiAgICAgICAgICAgIDxzdG9wIG9mZnNldD0iLjUz
+    IiBzdG9wLWNvbG9yPSIjM2M5MWU1Ii8+CiAgICAgICAgICAgIDxzdG9wIG9mZnNldD0iLjgyIiBz
+    dG9wLWNvbG9yPSIjNTU5Y2VjIi8+CiAgICAgICAgICAgIDxzdG9wIG9mZnNldD0iMSIgc3RvcC1j
+    b2xvcj0iIzVlYTBlZiIvPgogICAgICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8L2RlZnM+CiAg
+    ICA8cGF0aCBmaWxsPSJ1cmwoI2EpIiBkPSJNMTIwLjg5IDI4LjQ0NXY2OS4yNjJsLTI4LjQ0NSAy
+    My4zMjQtNDQuMDktMTYuMDd2MTUuOTNMMjMuMzk1IDg4LjI1bDcyLjc0NiA1LjY4OFYzMS41NzRa
+    TTk2LjY0IDMxLjkzIDU1LjgyIDcuMTF2MTYuMjg1TDE4LjM0OCAzNC40MTggNy4xMDkgNDguODUy
+    djMyLjc4NWwxNi4wNzUgNy4xMVY0Ni43MThabTAgMCIvPgo8L3N2Zz4K
+
   # support:
   #   level: tech-preview
   lifecycle: production

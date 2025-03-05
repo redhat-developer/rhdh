@@ -17,6 +17,18 @@ spec:
   authors:
     - name: Backstage Community
   publisher: Red Hat
+
+  icon: data:image/svg+xml;base64,
+    PHN2ZyB3aWR0aD0iNTIiIGhlaWdodD0iNTIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAw
+    L3N2ZyI+CjxyZWN0IHJ5PSI0IiByeD0iNCIgaGVpZ2h0PSI0MCIgd2lkdGg9IjQwIiB5PSIwIiB4
+    PSIwIiBmaWxsPSIjZmZhYWFhIi8+CjxyZWN0IHJ5PSI0IiByeD0iNCIgaGVpZ2h0PSI0MCIgd2lk
+    dGg9IjQwIiB5PSIxMiIgeD0iMTIiIGZpbGw9IiNhYWZmYWEiLz4KPHBhdGggZD0ibTE4LDIybDEy
+    LDBsMCw0bC0xMiwwbDAsLTR6IiBmaWxsPSIjZmYwMDAwIi8+CjxwYXRoIGQ9Im0zNCwyMmwxMiww
+    bDAsNGwtMTIsMGwwLC00eiIgZmlsbD0iI2ZmMDAwMCIvPgo8cGF0aCBkPSJtMTgsMzZsNCwwbDAs
+    LTRsNCwwbDAsNGw0LDBsMCw0bC00LDBsMCw0bC00LDBsMCwtNGwtNCwwbDAsLTR6IiBmaWxsPSIj
+    MDA4MDAwIi8+CjxwYXRoIGQ9Im0zNCwzNmw0LDBsMCwtNGw0LDBsMCw0bDQsMGwwLDRsLTQsMGww
+    LDRsLTQsMGwwLC00bC00LDBsMCwtNHoiIGZpbGw9IiMwMDgwMDAiLz4KPC9zdmc+
+
   # support:
   #   level: tech-preview
   lifecycle: production
