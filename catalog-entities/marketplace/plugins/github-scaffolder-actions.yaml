@@ -14,3 +14,6 @@ spec:
 
   categories:
     - Software Templates
+
+  packages:
+    - backstage-plugin-scaffolder-backend-module-github

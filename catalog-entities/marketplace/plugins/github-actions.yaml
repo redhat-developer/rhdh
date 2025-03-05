@@ -14,8 +14,9 @@ metadata:
     - url: https://github.com/backstage/community-plugins/tree/main/workspaces/github-actions/plugins/github-actions
       title: Documentation
 spec:
-  author: Spotify
-  authorUrl: https://github.com/spotify
+  authors:
+    - name: Spotify
+      url: https://github.com/spotify
 
   categories:
     - CI/CD

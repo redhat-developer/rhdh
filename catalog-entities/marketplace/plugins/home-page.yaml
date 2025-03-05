@@ -13,3 +13,6 @@ spec:
   author: Red Hat
   support: production
   lifecycle: active
+
+  packages:
+    - red-hat-developer-hub-backstage-plugin-dynamic-home-page

@@ -13,8 +13,9 @@ metadata:
     - url: https://roadie.io/backstage/plugins/github-insights/
       title: Documentation
 spec:
-  author: Roadie
-  authorUrl: https://roadie.io/
+  authors: 
+    - name: Roadie
+      url: https://roadie.io/
   publisher: Red Hat
   category: Source Control Mgmt
 

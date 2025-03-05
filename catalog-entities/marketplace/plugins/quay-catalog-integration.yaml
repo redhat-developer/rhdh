@@ -12,8 +12,9 @@ metadata:
     - kubernetes
     - openshift
 spec:
-  author: Red Hat
-  authorUrl: https://redhat.com
+  authors:
+    - name: Red Hat
+      url: https://redhat.com
 
   categories:
     - OpenShift

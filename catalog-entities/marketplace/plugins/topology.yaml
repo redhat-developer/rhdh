@@ -432,3 +432,6 @@ spec:
       ![topology-tab-open-url](./images/topology-tab-user3.png)
 
       When you click on the open URL button, it allows you to access the associated **Ingresses** and runs your application in a new tab.
+
+  packages:
+    - backstage-community-plugin-topology

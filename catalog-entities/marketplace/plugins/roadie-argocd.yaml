@@ -23,6 +23,7 @@ spec:
 
   packages:
     - roadiehq-backstage-plugin-argo-cd
+    - roadiehq-backstage-plugin-argo-cd-backend
 
   assets:
     - type: icon

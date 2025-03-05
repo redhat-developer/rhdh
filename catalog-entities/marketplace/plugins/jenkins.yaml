@@ -16,8 +16,9 @@ metadata:
       title: Documentation
 
 spec:
-  author: '@timja'
-  authorUrl: https://github.com/timja
+  authors:
+    - name: '@timja'
+      url: https://github.com/timja
 
   categories: 
     - CI/CD

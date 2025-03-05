@@ -14,8 +14,9 @@ metadata:
     - url: https://github.com/backstage/community-plugins/tree/main/workspaces/tech-radar/plugins/tech-radar
       title: Backstage Community Documentation
 spec:
-  author: Spotify
-  authorUrl: https://github.com/spotify
+  authors:
+    - name: Spotify
+      url: https://github.com/spotify
   publisher: Red Hat
   license: Apache-2.0
 

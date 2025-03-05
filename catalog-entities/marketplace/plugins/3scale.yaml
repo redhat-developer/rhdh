@@ -213,3 +213,6 @@ spec:
 
   history:
     added: '2023-05-15'
+
+  packages:
+    - backstage-community-plugin-3scale-backend

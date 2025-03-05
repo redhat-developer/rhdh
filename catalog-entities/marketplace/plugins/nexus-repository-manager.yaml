@@ -13,8 +13,9 @@ metadata:
     - url: https://github.com/backstage/community-plugins/blob/main/workspaces/nexus-repository-manager/plugins/nexus-repository-manager/README.md
       title: Documentation
 spec:
-  author: Red Hat
-  authorUrl: https://redhat.com
+  authors:
+    - name: Red Hat
+      url: https://redhat.com
 
   categories:
     - Image

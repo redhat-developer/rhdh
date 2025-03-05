@@ -11,3 +11,6 @@ metadata:
   tags: []
 spec:
   author: Red Hat
+
+  packages:
+    - backstage-community-plugin-rbac

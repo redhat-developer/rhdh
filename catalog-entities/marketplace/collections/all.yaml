@@ -5,8 +5,8 @@ metadata:
   name: collections
 spec:
   targets:
-    - ./cicd.yaml
-    - ./featured.yaml
-    - ./openshift.yaml
-    - ./recommended.yaml
-    - ./redhat.yaml
+    #- ./cicd.yaml
+    #- ./featured.yaml
+    #- ./openshift.yaml
+    #- ./recommended.yaml
+    #- ./redhat.yaml

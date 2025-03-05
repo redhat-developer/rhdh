@@ -17,6 +17,11 @@ spec:
     - name: Spotify
       url: https://github.com/spotify
 
+  packages:
+    - backstage-plugin-kubernetes
+    - backstage-plugin-kubernetes-backend
+    #- backstage-community-plugin-scaffolder-backend-module-kubernetes
+
   # unused yet
   # assets:
   #   - type: icon
