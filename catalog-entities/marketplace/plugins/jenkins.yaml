@@ -6,6 +6,8 @@ metadata:
   namespace: rhdh
   title: Jenkins
   description: Jenkins offers a simple way to set up a continuous integration and continuous delivery environment.
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
   tags:
     - ci
     - cd

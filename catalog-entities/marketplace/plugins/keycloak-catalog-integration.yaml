@@ -5,12 +5,14 @@ metadata:
   name: keycloak-catalog-integration
   namespace: rhdh
   title: Keycloak Catalog Integration
+  description: Automatically import Keycloak users and groups into RHDH
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
   tags:
     - authentication
     - authorization
     - iam
     - software-catalog
-  description: Automatically import Keycloak users and groups into RHDH
   links:
     - url: https://github.com/backstage/community-plugins/blob/main/workspaces/keycloak/plugins/catalog-backend-module-keycloak/README.md
       title: Documentation

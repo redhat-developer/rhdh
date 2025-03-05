@@ -5,8 +5,10 @@ metadata:
   name: scaffolder-integrations
   namespace: rhdh
   title: Software Template Actions
-  tags: []
   description: A list of common Backstage Software Template actions.
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
+  tags: []
 spec:
   packages:
     - backstage-community-plugin-catalog-backend-module-scaffolder-re

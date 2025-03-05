@@ -5,7 +5,11 @@ metadata:
   name: backstage-community-plugin-dynatrace
   namespace: rhdh
   title: DynaTrace
-  tags: []
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
   description: ''
+  tags: []
 spec:
   description: ''
+  packages:
+    - backstage-community-plugin-dynatrace

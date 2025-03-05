@@ -5,7 +5,9 @@ metadata:
   name: rbac
   namespace: rhdh
   title: RBAC
-  tags: []
   description: ''
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
+  tags: []
 spec:
   author: Red Hat

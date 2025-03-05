@@ -6,6 +6,8 @@ metadata:
   namespace: rhdh
   title: Bulk Import
   description: ''
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
   tags: []
   links: []
 spec:

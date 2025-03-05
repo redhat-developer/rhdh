@@ -6,6 +6,8 @@ metadata:
   namespace: rhdh
   title: Datadog
   description: Embed Datadog graphs and dashboards in Backstage.
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
   tags: []
   links:
     - url: https://roadie.io/backstage/plugins/datadog/

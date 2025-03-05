@@ -6,6 +6,8 @@ metadata:
   namespace: rhdh
   title: GitHub Pull Requests
   description: View GitHub pull requests for your service in Backstage.
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
   tags:
     - codereviews
   links:

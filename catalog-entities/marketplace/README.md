@@ -1,4 +1,4 @@
-# Plugins are mnually created
+# Plugins are manually created
 
 # Packages are generated with
 

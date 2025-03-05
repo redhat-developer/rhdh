@@ -6,11 +6,12 @@ metadata:
   namespace: rhdh
   title: Azure Repository Software Template Actions
   description: A collection of Backstage scaffolder backend modules for Azure repositories.
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
+    github.com/project-slug: Parfuemerie-Douglas/scaffolder-backend-module-azure-repositories
   links:
     - url: https://github.com/Parfuemerie-Douglas/scaffolder-backend-module-azure-repositories
       title: GitHub
-  annotations:
-    github.com/project-slug: Parfuemerie-Douglas/scaffolder-backend-module-azure-repositories
   tags:
     - microsoft
     - azure

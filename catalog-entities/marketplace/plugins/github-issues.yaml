@@ -5,9 +5,11 @@ metadata:
   name: github-issues
   namespace: rhdh
   title: GitHub Issues
+  description: ''
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
   tags:
     - issue-tracker
-  description: ''
 spec:
   categories:
     - Issue tracker

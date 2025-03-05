@@ -6,6 +6,8 @@ metadata:
   namespace: rhdh
   title: Kubernetes
   description: Monitor all your service's deployments at a glance, even across clusters.
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
   tags: []
   links:
     - url: https://backstage.io/docs/features/kubernetes/

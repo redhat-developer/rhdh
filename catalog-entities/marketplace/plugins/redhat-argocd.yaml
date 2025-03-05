@@ -6,6 +6,8 @@ metadata:
   namespace: rhdh
   title: Red Hat Argo CD
   description: ''
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
   tags:
     - cicd
 spec:

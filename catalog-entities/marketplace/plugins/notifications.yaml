@@ -5,7 +5,9 @@ metadata:
   name: backstage-plugin-notifications
   namespace: rhdh
   title: Notifications
-  tags: []
   description: ''
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
+  tags: []
 spec:
   description: ''

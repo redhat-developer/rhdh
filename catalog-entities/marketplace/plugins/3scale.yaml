@@ -5,6 +5,8 @@ metadata:
   name: 3scale
   namespace: rhdh
   title: 3scale
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
   links:
     - url: https://red.ht/rhdh
       title: Homepage

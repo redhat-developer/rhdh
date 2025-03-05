@@ -5,9 +5,11 @@ metadata:
   name: github-scaffolder-actions
   namespace: rhdh
   title: GitHub Software Template Actions
+  description: ''
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
   tags:
     - software-templates
-  description: ''
 spec:
 
   categories:
