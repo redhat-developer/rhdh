@@ -6,6 +6,8 @@ metadata:
   namespace: rhdh
   title: HTTP request Software Template Action
   description: An action to fire an arbitrary HTTP request
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
   tags: []
   links:
     - url: https://github.com/RoadieHQ/roadie-backstage-plugins/blob/main/plugins/scaffolder-actions/scaffolder-backend-module-http-request/README.md

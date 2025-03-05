@@ -6,6 +6,8 @@ metadata:
   namespace: rhdh
   title: Security Insights
   description: View Security Insights for your components in Backstage.
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
   tags:
     - security
   links:

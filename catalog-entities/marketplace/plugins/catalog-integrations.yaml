@@ -5,9 +5,11 @@ metadata:
   name: catalog-integrations
   namespace: rhdh
   title: Software Catalog integraions
+  description: A list of common Backstage Software Catalog extensions.
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
   tags:
     - software-catalog
-  description: A list of common Backstage Software Catalog extensions.
 spec:
   packages:
     - backstage-github-catalog-module

@@ -6,6 +6,8 @@ metadata:
   namespace: rhdh
   title: PagerDuty
   description: Bring the power of PagerDuty to Backstage, reduce cognitive load, improve service visibility and enforce incident management best practices.
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
   links:
     - url: https://pagerduty.github.io/backstage-plugin-docs/index.html
       title: PagerDuty Documentation
@@ -15,7 +17,6 @@ metadata:
       title: Bugs
     - title: Source Code
       url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/pagerduty-backstage-plugin
-  annotations: {}
   tags:
     - monitoring
     - errors

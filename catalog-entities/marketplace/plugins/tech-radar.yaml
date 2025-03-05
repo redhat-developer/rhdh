@@ -6,6 +6,8 @@ metadata:
   namespace: rhdh
   title: Tech Radar
   description: Visualize the your company's official guidelines of different areas of software development.
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
   links:
     - url: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/customizing/proc-customize-rhdh-tech-radar-page_configuring-techdocs
       title: Red Hat Developer Hub Documentation

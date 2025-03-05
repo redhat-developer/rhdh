@@ -5,7 +5,9 @@ metadata:
   name: pingidentity
   namespace: rhdh
   title: PingIdentity
-  tags: []
   description: ''
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
+  tags: []
 spec:
   description: ''

@@ -6,6 +6,8 @@ metadata:
   namespace: rhdh
   title: GitHub Actions
   description: GitHub Actions makes it easy to automate all your software workflows, now with world-class CI/CD. Build, test, and deploy your code right from GitHub.
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
   tags:
     - cicd
   links:

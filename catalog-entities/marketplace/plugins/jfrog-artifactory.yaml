@@ -6,6 +6,8 @@ metadata:
   namespace: rhdh
   title: JFrog Artifactory
   description: View container image details from JFrog Artifactory in Backstage.
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
   tags: []
   links:
     - url: https://github.com/backstage/community-plugins/blob/main/workspaces/jfrog-artifactory/plugins/jfrog-artifactory/README.md

@@ -5,12 +5,12 @@ metadata:
   name: global-header
   namespace: rhdh
   title: Global Header
+  description: ''
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
   tags:
     - rhdh-default-plugin
-  description: ''
 spec:
-  categories:
-    - 
   icon: acr.svg
   developers:
     - name: Backstage Community

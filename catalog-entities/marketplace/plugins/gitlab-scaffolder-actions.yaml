@@ -6,6 +6,8 @@ metadata:
   namespace: rhdh
   title: GitLab Software Template Actions
   description: View GitLab pipelines, merge requests, languages and contributors.
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
   tags:
     - ci
     - cd

@@ -5,8 +5,10 @@ metadata:
   name: red-hat-developer-hub-backstage-plugin-marketplace
   namespace: rhdh
   title: Marketplace
-  tags: []
   description: ''
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
+  tags: []
 spec:
   icon: acr.svg
   developers:

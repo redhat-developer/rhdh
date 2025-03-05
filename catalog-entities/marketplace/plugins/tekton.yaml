@@ -6,7 +6,8 @@ metadata:
   namespace: rhdh
   title: Tekton
   description: The Tekton plugin enables you to visualize the `PipelineRun` resources available on the Kubernetes cluster.
-
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
   tags:
     - kubernetes
     - openshift

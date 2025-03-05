@@ -5,8 +5,10 @@ metadata:
   name: roadie-scaffolder-util-actions
   namespace: rhdh
   title: Roadie Software Template Util Actions
-  tags: []
   description: ''
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
+  tags: []
 spec:
   authors:
    - name: Roadie

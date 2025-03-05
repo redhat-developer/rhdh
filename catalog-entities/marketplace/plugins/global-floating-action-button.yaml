@@ -6,14 +6,10 @@ metadata:
   namespace: rhdh
   title: Global Floating Action Button
   description: ''
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
   tags:
     - rhdh-default-plugin
-  annotations:
-    # tbd!!
-    # Mark this plugin as a plugin which is installed and enabled by default!?!
-    # Mark this plugin as a non-custom plugin, i.e. a plugin that is not created by the user
-    marketplace.backstage.io/default-plugin: 'true'
-    marketplace.backstage.io/pre-installed: 'true'
 spec:
   icon: acr.svg
   developers:

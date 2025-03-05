@@ -6,7 +6,8 @@ metadata:
   namespace: rhdh
   title: Topology
   description: The Topology plugin enables you to visualize the workloads such as Deployment, Job, Daemonset, Statefulset, CronJob, Pods and Virtual Machines powering any service on the Kubernetes cluster.
-
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
   tags:
     - kubernetes
     - openshift
@@ -15,7 +16,6 @@ metadata:
       title: GitHub Source
       icon: source
       type: source
-
 spec:
   author: Red Hat
   categories:
