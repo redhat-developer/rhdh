@@ -3381,23 +3381,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-catalog-backend-module-keycloak@npm:3.5.1":
-  version: 3.5.1
-  resolution: "@backstage-community/plugin-catalog-backend-module-keycloak@npm:3.5.1"
+"@backstage-community/plugin-catalog-backend-module-keycloak@npm:^3.7.0":
+  version: 3.7.0
+  resolution: "@backstage-community/plugin-catalog-backend-module-keycloak@npm:3.7.0"
   dependencies:
     "@backstage/backend-plugin-api": ^1.1.1
     "@backstage/catalog-model": ^1.7.3
     "@backstage/errors": ^1.2.7
     "@backstage/plugin-catalog-node": ^1.15.1
     "@common.js/p-limit": ^6.1.0
-    "@keycloak/keycloak-admin-client": 26.1.0
+    "@keycloak/keycloak-admin-client": 26.1.2
     inclusion: ^1.0.1
     jsonwebtoken: ^9.0.0
     lodash: ^4.17.21
     p-limit: ^6.1.0
     pg-format: ^1.0.4
     uuid: ^9.0.1
-  checksum: df347da9d867ab37feec7f95628b1a221f3113eb38c2b2341e9c94cdeef8c08ba5aa59de353ad1fe38036fbc95d5ed91d078254f9d3d29733fc3940fd07246bd
+  checksum: ab6d0fd3538cc225364ac53a519dfc5e85811830bfb225f23dc9376aa59368f92a36f8a7e6af9094f317c7e206ab9d2d3917fe139a909fd0d89165a49dc364d8
   languageName: node
   linkType: hard
 
@@ -11827,14 +11827,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@keycloak/keycloak-admin-client@npm:26.1.0":
-  version: 26.1.0
-  resolution: "@keycloak/keycloak-admin-client@npm:26.1.0"
+"@keycloak/keycloak-admin-client@npm:26.1.2":
+  version: 26.1.2
+  resolution: "@keycloak/keycloak-admin-client@npm:26.1.2"
   dependencies:
     camelize-ts: ^3.0.0
     url-join: ^5.0.0
     url-template: ^3.1.1
-  checksum: 04a573b48e24f31d2f409aee17894e70389e7eb3df0ef8fd7b169d8a8966feba6db287b3e88e403507455f20f9f6d3d1c60e80ac99d99e7e718bc8f8ec7ba2cf
+  checksum: 550c8f457c9804710a5d34bdde9071d0fec46177d8dd62d11c28075f0bd8247c7b81e3ca3f92e17785b5f47a14c3639bcabce7199f78082d015f6e543305114d
   languageName: node
   linkType: hard
 
@@ -23355,7 +23355,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backstage-community-plugin-catalog-backend-module-keycloak@workspace:dynamic-plugins/wrappers/backstage-community-plugin-catalog-backend-module-keycloak-dynamic"
   dependencies:
-    "@backstage-community/plugin-catalog-backend-module-keycloak": 3.5.1
+    "@backstage-community/plugin-catalog-backend-module-keycloak": ^3.7.0
     "@backstage/cli": 0.29.6
     "@janus-idp/cli": 3.2.0
     typescript: 5.7.3
