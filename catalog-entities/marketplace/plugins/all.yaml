@@ -19,6 +19,7 @@ spec:
     - ./datadog.yaml
     - ./dynatrace-commercial.yaml
     - ./dynatrace-community.yaml
+    - ./extensions.yaml
     - ./gerrit-scaffolder-actions.yaml
     - ./github-actions.yaml
     - ./github-catalog-integration.yaml
@@ -41,7 +42,6 @@ spec:
     - ./kubernetes.yaml
     - ./ldap-catalog-integration.yaml
     - ./lighthouse.yaml
-    - ./marketplace.yaml
     - ./microsoft-graph-catalog-integration.yaml
     - ./nexus-repository-manager.yaml
     - ./notifications.yaml

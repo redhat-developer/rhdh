@@ -336,7 +336,7 @@ spec:
     - type: screenshot
       filename: docs/screenshot.png
       originUri: https://github.com/backstage/community-plugins/blob/main/workspaces/tech-radar/plugins/tech-radar/docs/screenshot.png?raw=true
-      capture: Screenshot of Tech Radar plugin
+      # capture: Screenshot of Tech Radar plugin
 
   packages:
     - backstage-community-plugin-tech-radar

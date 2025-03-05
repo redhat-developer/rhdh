@@ -2,7 +2,7 @@
 apiVersion: extensions.backstage.io/v1alpha1
 kind: Plugin
 metadata:
-  name: backstage-plugin-notifications
+  name: notifications
   namespace: rhdh
   title: Notifications
   description: ''
