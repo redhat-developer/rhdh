@@ -11,8 +11,7 @@ metadata:
   tags:
     - rhdh-default-plugin
 spec:
-  icon: acr.svg
-  developers:
+  authors:
     - name: Backstage Community
   publisher: Red Hat
   # support:

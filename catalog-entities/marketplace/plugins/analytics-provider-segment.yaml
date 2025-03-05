@@ -19,8 +19,7 @@ metadata:
 spec:
   categories:
     - Analytics
-  icon: segment.svg
-  developers:
+  authors:
     - name: Backstage Community
   publisher: Red Hat
   # support:
