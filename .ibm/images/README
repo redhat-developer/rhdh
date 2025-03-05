@@ -1,1 +1,23 @@
 This Dockerfile creates an image to be used by the IBM Cloud pipelines
+
+Currently this image is built by hand at intervals and pushed to https://quay.io/repository/rhdh-community/rhdh-e2e-runner?tab=tags when in need of an update.
+
+```
+SHA="$(git rev-parse --short=8 HEAD)"
+# main or release-1.y
+branch="$(git rev-parse --abbrev-ref HEAD)" 
+image="quay.io/rhdh-community/rhdh-e2e-runner:${branch}"
+
+# build and push
+podman build . -f Dockerfile -t "${image}-${SHA}" && podman push "${image}-${SHA}"
+
+# update the floating (branch-named) tag too
+skopeo --insecure-policy copy --all docker://${image}-${SHA} docker://${image} 
+```
+
+In future this might be automated so that if the contents of this folder changes, a new image is pushed automatically.
+
+See also:
+
+* https://quay.io/repository/rhdh-community/rhdh-e2e-runner?tab=info
+* https://issues.redhat.com/browse/RHIDP-6244
