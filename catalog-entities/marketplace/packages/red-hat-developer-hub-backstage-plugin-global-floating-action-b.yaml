@@ -1,4 +1,4 @@
-apiVersion: marketplace.backstage.io/v1alpha1
+apiVersion: extensions.backstage.io/v1alpha1
 kind: Package
 metadata:
   name: red-hat-developer-hub-backstage-plugin-global-floating-action-b
