@@ -69,6 +69,6 @@ test.describe("Verify Redis Cache DB", () => {
   });
 
   test.afterAll(() => {
-    portForward.kill();
+    portForward.kill("SIGKILL");
   });
 });
