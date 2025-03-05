@@ -7,9 +7,12 @@ Some contraints in the current architecture do not facilitate the use of Fixture
 
 You can see an examples of fixture usage at [github discovery test](../../e2e-tests/playwright/e2e/github-discovery.spec.ts).
 
-An example on the before/after approach is the [github happy path](../../e2e-tests/playwright/e2e/github-happy-path.spec.ts), but almoust any test that you will find at e2e will follow this approach.
+Some tests use a global page variable `let page: Page;`. This is used to avoid reauthentications on the test due to the current rate limits on github.
 
-Also, note that some test (like [github happy path](../../e2e-tests/playwright/e2e/github-happy-path.spec.ts)) uses a global page variable `let page: Page;`. This is used to avoid reauthentications on the test due to the current rate limits on github.
+Examples:
+
+* https://github.com/redhat-developer/rhdh/blob/release-1.5/e2e-tests/playwright/e2e/google-signin-happy-path.spec.ts
+* https://github.com/redhat-developer/rhdh/blob/release-1.5/e2e-tests/playwright/e2e/guest-signin-happy-path.spec.ts
 
 ## Types of tests
 
