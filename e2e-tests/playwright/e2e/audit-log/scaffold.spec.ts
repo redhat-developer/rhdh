@@ -27,9 +27,10 @@ test.describe("Audit Log check for Catalog Plugin", () => {
 
   test.fixme(
     "Should fetch logs for ScaffolderParameterSchemaFetch event and validate log structure and values",
-    async ({ baseURL }) => {
+    async ({ baseURL, page }) => {
       await uiHelper.clickButton("Register Existing Component");
       await catalogImport.registerExistingComponent(template, false);
+      await page.waitForTimeout(1000);
       await uiHelper.clickLink({ ariaLabel: "Create..." });
       await common.waitForLoad();
       await uiHelper.searchInputAriaLabel("Hello World 2");

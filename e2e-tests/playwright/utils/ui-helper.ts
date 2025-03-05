@@ -135,7 +135,7 @@ export class UIhelper {
     let linkLocator: Locator;
     let notVisibleCheck: boolean;
 
-    if (typeof arg === "string") {
+    if (typeof arg != "object") {
       linkLocator = this.page
         .locator("a")
         .getByText(arg, { exact: options.exact })
