@@ -18,6 +18,9 @@ spec:
   category: Infrastructure
   lifecycle: active
 
+  packages:
+    - backstage-community-plugin-ocm
+
   # unused yet
   # assets:
   #   - type: icon

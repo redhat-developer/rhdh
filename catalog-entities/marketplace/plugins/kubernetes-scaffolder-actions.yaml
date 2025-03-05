@@ -11,3 +11,6 @@ metadata:
   tags: []
 spec:
   description: ''
+
+  packages:
+    - backstage-community-plugin-scaffolder-backend-module-kubernetes

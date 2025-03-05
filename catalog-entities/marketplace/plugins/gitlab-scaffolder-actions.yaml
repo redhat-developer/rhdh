@@ -16,8 +16,9 @@ metadata:
     - url: https://github.com/immobiliare/backstage-plugin-gitlab
       title: Documentation
 spec:
-  author: ImmobiliareLabs
-  authorUrl: https://github.com/immobiliare
+  authors:
+    - name: ImmobiliareLabs
+      url: https://github.com/immobiliare
 
   categories:
     - CI/CD

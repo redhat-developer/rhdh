@@ -13,8 +13,9 @@ metadata:
     - url: https://roadie.io/backstage/plugins/jira/
       title: Roadie Documentation
 spec:
-  author: roadie.io
-  authorUrl: https://roadie.io/
+  authors:
+    - name: roadie.io
+      url: https://roadie.io/
 
   publisher: Red Hat
 

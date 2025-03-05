@@ -20,6 +20,6 @@ spec:
   author: Red Hat
   support: tech-preview
   lifecycle: active
-  partOf:
+  packages:
     - backstage-azure-scaffolder-module
   appConfigExamples: []

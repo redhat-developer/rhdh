@@ -17,3 +17,8 @@ spec:
   #   level: tech-preview
   lifecycle: production
   description: ''
+
+  packages:
+    - red-hat-developer-hub-backstage-plugin-marketplace
+    - red-hat-developer-hub-backstage-plugin-marketplace-backend
+    - red-hat-developer-hub-backstage-plugin-catalog-backend-module-m

@@ -13,3 +13,6 @@ spec:
   authors:
    - name: Red Hat
      url: https://redhat.com
+
+  packages:
+    - backstage-community-plugin-scaffolder-backend-module-quay

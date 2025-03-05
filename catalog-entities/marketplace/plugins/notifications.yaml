@@ -11,3 +11,8 @@ metadata:
   tags: []
 spec:
   description: ''
+
+  packages:
+    - backstage-plugin-notifications
+    - backstage-plugin-notifications-backend
+    - backstage-plugin-notifications-backend-module-email

@@ -19,7 +19,7 @@ metadata:
     - azure
     - container-registry
     - kubernetes
-    - openShift
+    - openshift
     - cicd
     - software-catalog
 spec:

@@ -13,3 +13,6 @@ spec:
   author: Red Hat
   support: tech-preview
   lifecycle: active
+
+  packages:
+    - backstage-community-plugin-scaffolder-backend-module-servicenow

@@ -393,3 +393,6 @@ spec:
   iconUrl: /img/tekton.svg
   history:
     added: '2023-05-15'
+
+  packages:
+    - backstage-community-plugin-tekton

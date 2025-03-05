@@ -22,14 +22,19 @@ metadata:
     - errors
     - alerting
 spec:
-  author: PagerDuty
-  authorUrl: https://github.com/pagerduty
+  authors:
+    - name: PagerDuty
+      url: https://github.com/pagerduty
 
   categories:
     - Monitoring
 
   support: tech-preview
   lifecycle: active
+
+  packages:
+    - pagerduty-backstage-plugin
+    - pagerduty-backstage-plugin-backend
 
   # unnused yet
   # assets:

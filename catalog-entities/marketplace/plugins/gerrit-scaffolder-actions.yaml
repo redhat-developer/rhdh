@@ -21,4 +21,6 @@ spec:
   #   level: tech-preview
   lifecycle: production
   description: |
-    
+  
+  packages:
+    - backstage-plugin-scaffolder-backend-module-gerrit

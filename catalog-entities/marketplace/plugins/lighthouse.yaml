@@ -10,7 +10,6 @@ metadata:
     extensions.backstage.io/pre-installed: 'true'
   tags: []
 spec:
-  author: Red Hat
   support: tech-preview
   lifecycle: active
 
