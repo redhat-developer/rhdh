@@ -4,7 +4,7 @@ metadata:
   namespace: rhdh
   name: collections
 spec:
-  targets:
+  targets: []
     #- ./cicd.yaml
     #- ./featured.yaml
     #- ./openshift.yaml
