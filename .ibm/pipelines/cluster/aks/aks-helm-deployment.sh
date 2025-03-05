@@ -1,10 +1,13 @@
 #!/bin/bash
 
-initiate_aks_deployment() {
-  install_tekton_pipelines
-  add_helm_repos
+# shellcheck source=.ibm/pipelines/utils.sh
+source "$DIR"/utils.sh
+
+initiate_aks_helm_deployment() {
   delete_namespace "${NAME_SPACE_RBAC_K8S}"
   configure_namespace "${NAME_SPACE_K8S}"
+  deploy_redis_cache "${NAME_SPACE_K8S}"
+  patch_and_restart "$NAME_SPACE_K8S" "deployment" "redis" "${DIR}/cluster/aks/patch/aks-spot-patch.yaml" # Patch Redis deployment to run on spot cluster
   uninstall_helmchart "${NAME_SPACE_K8S}" "${RELEASE_NAME}"
   cd "${DIR}" || exit
   local rhdh_base_url="https://${K8S_CLUSTER_ROUTER_BASE}"
@@ -21,9 +24,7 @@ initiate_aks_deployment() {
     --set upstream.backstage.image.tag="${TAG_NAME}"
 }
 
-initiate_rbac_aks_deployment() {
-  install_tekton_pipelines
-  add_helm_repos
+initiate_rbac_aks_helm_deployment() {
   delete_namespace "${NAME_SPACE_K8S}"
   configure_namespace "${NAME_SPACE_RBAC_K8S}"
   uninstall_helmchart "${NAME_SPACE_RBAC_K8S}" "${RELEASE_NAME_RBAC}"

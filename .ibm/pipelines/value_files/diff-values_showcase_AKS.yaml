@@ -30,13 +30,14 @@ upstream:
         effect: "NoSchedule"
       affinity:
         nodeAffinity:
-          perferredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            preference:
+              matchExpressions:
               - key: "kubernetes.azure.com/scalesetpriority"
                 operator: In
                 values:
-                - "spot":
+                - "spot"
   volumePermissions:
     enabled: true
   ingress:
