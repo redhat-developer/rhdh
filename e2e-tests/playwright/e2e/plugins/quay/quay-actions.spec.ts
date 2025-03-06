@@ -22,16 +22,12 @@ test.describe("Test Quay Actions plugin", () => {
   });
 
   test("Creates Quay repository", async () => {
-    repository = `rhdh-testing-quay-actions-${Date.now()}`;
-    const description = "This is just a test repository to test the template";
+    repository = `quay-actions-create-${Date.now()}`;
+    const description =
+      "This is just a test repository to test the 'quay:create-repository' template action";
     await uiHelper.verifyHeading("Software Templates");
     await uiHelper.clickBtnInCard("Create a Quay repository", "Choose");
     await uiHelper.waitForTitle("Create a Quay repository", 2);
-
-    await page.getByLabel("Token").evaluate((el) => (el.style.opacity = "0"));
-    await page
-      .getByLabel("namespace")
-      .evaluate((el) => (el.style.opacity = "0"));
 
     await uiHelper.fillTextInputByLabel("Repository name", repository);
     await uiHelper.fillTextInputByLabel("Token", process.env.QUAY_TOKEN);
@@ -39,7 +35,7 @@ test.describe("Test Quay Actions plugin", () => {
       "namespace",
       process.env.QUAY_NAMESPACE,
     );
-    await page.getByRole("button", { name: "Visiblity​" }).click();
+    await page.getByRole("button", { name: "Visibility​" }).click();
     await page.click('li[data-value="0"]');
     await uiHelper.fillTextInputByLabel("Description", description);
     await uiHelper.clickButton("Review");
