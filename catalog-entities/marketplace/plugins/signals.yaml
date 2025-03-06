@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: signals
+  namespace: rhdh
+  title: Signals
+  description: Signals plugin allows backend plugins to publish messages to frontend plugins.
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
+  tags:
+    - backstage-core
+  links:
+    - url: https://backstage.io/docs/notifications/
+      title: Backstage documentation
+spec:
+  description: |
+    The Backstage Notifications System provides a way for plugins and external services to send notifications to Backstage users. These notifications are displayed in the dedicated page of the Backstage frontend UI or by frontend plugins per specific scenarios. Additionally, notifications can be sent to external channels (like email) via "processors" implemented within plugins.

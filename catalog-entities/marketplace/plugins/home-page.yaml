@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: home-page
+  namespace: rhdh
+  title: Home Page
+  description: ''
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
+  tags: []
+spec:
+  author: Red Hat
+  support: production
+  lifecycle: active
+
+  packages:
+    - red-hat-developer-hub-backstage-plugin-dynamic-home-page

@@ -266,7 +266,9 @@ test.describe.serial("Test RBAC", () => {
       await page.click(rbacPo.selectMember(testUser));
       await uiHelper.verifyHeading(rbacPo.regexpShortUsersAndGroups(3, 1));
       await uiHelper.clickButton("Next");
+      await page.waitForTimeout(1_000);
       await uiHelper.clickButton("Next");
+      await page.waitForTimeout(1_000);
       await uiHelper.clickButton("Save");
       await uiHelper.verifyText(
         "Role role:default/test-role updated successfully",
@@ -326,6 +328,7 @@ test.describe.serial("Test RBAC", () => {
         attempts++;
       } while (matchNextButton2.length > 1 && attempts < 5);
       await nextButton2.click({ force: true });
+      await page.waitForTimeout(1_000);
       await uiHelper.clickButton("Save");
       await uiHelper.verifyText(
         "Role role:default/test-role1 updated successfully",

@@ -456,6 +456,16 @@ plugins:
               - path: /
                 title: General
                 mountPoint: entity.page.overview #this can be customized too
+              # Prioritizing tabs (higher priority appears first)
+              - path: "/pr"
+                title: "Changed Pull/Merge Requests"
+                priority: 1  # Added priority field
+                mountPoint: "entity.page.pull-requests"
+              # Negative priority hides default tabs
+              - path: "/"
+                title: "Changed Overview"
+                mountPoint: "entity.page.overview"
+                priority: -6  
 ```
 
 Each entity tab entry requires the following attributes:
@@ -463,6 +473,7 @@ Each entity tab entry requires the following attributes:
 - `path`: Specifies the sub-path route in the catalog where this tab will be available
 - `title`: The title that is displayed to the user
 - `mountPoint`: The base mount point name that will be available on the tab. This name will be expanded to create two mount points per tab, one appended with `/context` and the second appended with `/cards`.
+- `priority` **(optional)**: Determines the order of tabs. **Tabs with higher priority values appear first** . You can set a **negative priority to hide default tabs**. If priority is omitted , no special ordering is applied.
 
 Dynamic frontend plugins can then be configured to target the mount points exposed by the `entityTabs` configuration.
 
