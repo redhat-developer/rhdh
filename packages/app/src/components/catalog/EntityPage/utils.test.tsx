@@ -1,5 +1,5 @@
 import { defaultTabs } from './defaultTabs';
-import { mergeTabs } from './utils'; 
+import { mergeTabs } from './utils';
 
 describe('mergeTabs', () => {
   it('should return defaultTabs when no overrides are provided', () => {
@@ -38,7 +38,7 @@ describe('mergeTabs', () => {
       },
     };
     const result = mergeTabs(overrides);
-    expect(result[0][0]).toBe('/topology'); 
+    expect(result[0][0]).toBe('/topology');
     expect(result[1][0]).toBe('/docs');
   });
 });
