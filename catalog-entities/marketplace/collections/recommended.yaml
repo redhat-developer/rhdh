@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/collections.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: PluginCollection
+metadata:
+  name: recommended
+  namespace: rhdh
+  title: Recommended plugins
+  description: ''
+  tags: []
+spec:
+  type: curated
+  plugins:
+   - tekton

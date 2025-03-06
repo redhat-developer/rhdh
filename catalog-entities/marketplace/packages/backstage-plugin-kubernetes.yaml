@@ -1,0 +1,45 @@
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: backstage-plugin-kubernetes
+  namespace: rhdh
+  title: "@backstage/plugin-kubernetes"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-plugin-kubernetes
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-plugin-kubernetes
+  tags: []
+spec:
+  packageName: "@backstage/plugin-kubernetes"
+  dynamicArtifact: ./dynamic-plugins/dist/backstage-plugin-kubernetes
+  version: 0.12.3
+  backstage:
+    role: frontend-plugin
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+  partOf:
+    - kubernetes
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        dynamicPlugins:
+          frontend:
+            backstage.plugin-kubernetes:
+              mountPoints:
+                - mountPoint: entity.page.kubernetes/cards
+                  importName: EntityKubernetesContent
+                  config:
+                    layout:
+                      gridColumn: 1 / -1
+                    if:
+                      anyOf:
+                        - hasAnnotation: backstage.io/kubernetes-id
+                        - hasAnnotation: backstage.io/kubernetes-namespace

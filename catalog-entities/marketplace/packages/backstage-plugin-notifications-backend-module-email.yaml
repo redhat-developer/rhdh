@@ -1,0 +1,44 @@
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: backstage-plugin-notifications-backend-module-email
+  namespace: rhdh
+  title: "@backstage/plugin-notifications-backend-module-email"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-plugin-notifications-backend-module-email-dynamic
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-plugin-notifications-backend-module-email-dynamic
+  tags: []
+spec:
+  packageName: "@backstage/plugin-notifications-backend-module-email"
+  dynamicArtifact: ./dynamic-plugins/dist/backstage-plugin-notifications-backend-module-email-dynamic
+  version: 0.3.5
+  backstage:
+    role: backend-plugin-module
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+  partOf:
+    - backstage-email-notifications-module
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        notifications:
+          processors:
+            email:
+              transportConfig:
+                transport: smtp
+                hostname: ${EMAIL_HOSTNAME}
+                port: 587
+                username: ${EMAIL_USERNAME}
+                password: ${EMAIL_PASSWORD}
+              sender: ${EMAIL_SENDER}
+              broadcastConfig:
+                receiver: users

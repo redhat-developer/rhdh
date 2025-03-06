@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: http-request-scaffolder-action
+  namespace: rhdh
+  title: HTTP request Software Template Action
+  description: An action to fire an arbitrary HTTP request
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
+  tags: []
+  links:
+    - url: https://github.com/RoadieHQ/roadie-backstage-plugins/blob/main/plugins/scaffolder-actions/scaffolder-backend-module-http-request/README.md
+      title: Documentation
+spec:
+  author: Roadie
+  publisher: Red Hat
+
+  packages:
+    - roadiehq-scaffolder-backend-module-http-request-dynamic
+
+  # unused yet
+  # assets:
+  #   - type: icon
+  #     filename: /img/scaffolder-http-request-logo.svg
+
+  history:
+    added: '2022-03-03'
