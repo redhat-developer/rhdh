@@ -23,9 +23,19 @@ test.describe("Verify Redis Cache DB", () => {
   });
 
   test("Open techdoc and verify the cache generated in redis db", async () => {
+    test.setTimeout(120_000);
+
     await uiHelper.openSidebarButton("Favorites");
     await uiHelper.openSidebar("Docs");
     await uiHelper.clickLink("Backstage Showcase");
+
+    // ensure that the docs are generated. if redis configuration has an error, this page will hang and docs won't be generated
+    await expect(async () => {
+      await uiHelper.verifyHeading("rhdh");
+    }).toPass({
+      intervals: [3_000],
+      timeout: 60_000,
+    });
 
     // Wait for port-forward to be ready
     await new Promise<void>((resolve, reject) => {
@@ -46,13 +56,19 @@ test.describe("Verify Redis Cache DB", () => {
     await expect(async () => {
       const keys = await redis.keys("*");
       expect(keys).toContainEqual(expect.stringContaining("techdocs"));
+
+      // Additionally, verify the format of the key
+      const key = keys.filter((k) => k.startsWith("techdocs"))[0];
+      expect(key).toMatch(
+        /(?:techdocs|bulk-import):(?:[A-Za-z0-9+]{4})*(?:[A-Za-z0-9+]{2}==|[A-Za-z0-9+]{3}=)$/gm,
+      );
     }).toPass({
       intervals: [3_000],
-      timeout: 30_000,
+      timeout: 60_000,
     });
   });
 
   test.afterAll(() => {
-    portForward.kill();
+    portForward.kill("SIGKILL");
   });
 });

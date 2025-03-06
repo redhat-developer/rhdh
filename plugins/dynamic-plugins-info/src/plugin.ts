@@ -1,5 +1,6 @@
 import {
   createApiFactory,
+  createComponentExtension,
   createPlugin,
   createRoutableExtension,
   discoveryApiRef,
@@ -30,13 +31,25 @@ export const dynamicPluginsInfoPlugin = createPlugin({
   ],
 });
 
-export const DynamicPluginsInfo = dynamicPluginsInfoPlugin.provide(
+export const DynamicPluginsInfoPage = dynamicPluginsInfoPlugin.provide(
   createRoutableExtension({
-    name: 'DynamicPluginsInfo',
+    name: 'DynamicPluginsInfoPage',
     component: () =>
-      import(
-        './components/DynamicPluginsInfoContent/DynamicPluginsInfoContent'
-      ).then(m => m.DynamicPluginsInfoContent),
+      import('./components/DynamicPluginsInfoPage').then(
+        m => m.DynamicPluginsInfoPage,
+      ),
     mountPoint: dynamicPluginsInfoRouteRef,
+  }),
+);
+
+export const DynamicPluginsInfoContent = dynamicPluginsInfoPlugin.provide(
+  createComponentExtension({
+    name: 'DynamicPluginsInfoContent',
+    component: {
+      lazy: () =>
+        import(
+          './components/DynamicPluginsInfoContent/DynamicPluginsInfoContent'
+        ).then(m => m.DynamicPluginsInfoContent),
+    },
   }),
 );
