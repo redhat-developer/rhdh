@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: sonarqube-catalog-cards
+  namespace: rhdh
+  title: SonarQube Catalog cards
+  description: ''
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
+  tags: []
+spec:
+  description: |
+
+  packages:
+    - backstage-community-plugin-sonarqube
+    - backstage-community-plugin-sonarqube-backend

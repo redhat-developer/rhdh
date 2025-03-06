@@ -1,0 +1,44 @@
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: roadiehq-backstage-plugin-argo-cd-backend
+  namespace: rhdh
+  title: "@roadiehq/backstage-plugin-argo-cd-backend"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/roadiehq-backstage-plugin-argo-cd-backend-dynamic
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/roadiehq-backstage-plugin-argo-cd-backend-dynamic
+  tags: []
+spec:
+  packageName: "@roadiehq/backstage-plugin-argo-cd-backend"
+  dynamicArtifact: ./dynamic-plugins/dist/roadiehq-backstage-plugin-argo-cd-backend-dynamic
+  version: 3.2.3
+  backstage:
+    role: backend-plugin
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: production
+  lifecycle: active
+  partOf:
+    - roadiehq-argo-cd
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        argocd:
+          username: ${ARGOCD_USERNAME}
+          password: ${ARGOCD_PASSWORD}
+          appLocatorMethods:
+            - type: config
+              instances:
+                - name: argoInstance1
+                  url: ${ARGOCD_INSTANCE1_URL}
+                  token: ${ARGOCD_AUTH_TOKEN}
+                - name: argoInstance2
+                  url: ${ARGOCD_INSTANCE2_URL}
+                  token: ${ARGOCD_AUTH_TOKEN2}

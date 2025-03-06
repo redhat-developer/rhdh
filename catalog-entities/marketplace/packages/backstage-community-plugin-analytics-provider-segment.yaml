@@ -1,0 +1,49 @@
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: backstage-community-plugin-analytics-provider-segment
+  namespace: rhdh
+  title: "@backstage-community/plugin-analytics-provider-segment"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-analytics-provider-segment
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-analytics-provider-segment
+  tags: []
+spec:
+  packageName: "@backstage-community/plugin-analytics-provider-segment"
+  dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-analytics-provider-segment
+  version: 1.12.0
+  backstage:
+    role: frontend-plugin
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: production
+  lifecycle: active
+  partOf:
+    - backstage-community-analytics-provider-segment
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        dynamicPlugins:
+          frontend:
+            backstage-community.plugin-analytics-provider-segment:
+              apiFactories:
+                - importName: SegmentAnalyticsApi
+        backend:
+          csp:
+            script-src:
+              - "'self'"
+              - "'unsafe-eval'"
+              - https://cdn.segment.com
+        app:
+          analytics:
+            segment:
+              writeKey: ${SEGMENT_WRITE_KEY}
+              maskIP: true
+              testMode: ${SEGMENT_TEST_MODE}

@@ -1,0 +1,46 @@
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: pagerduty-backstage-plugin
+  namespace: rhdh
+  title: "@pagerduty/backstage-plugin"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/pagerduty-backstage-plugin
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/pagerduty-backstage-plugin
+  tags: []
+spec:
+  packageName: "@pagerduty/backstage-plugin"
+  dynamicArtifact: ./dynamic-plugins/dist/pagerduty-backstage-plugin
+  version: 0.15.2
+  backstage:
+    role: frontend-plugin
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+  partOf:
+    - pagerduty
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        dynamicPlugins:
+          frontend:
+            pagerduty.backstage-plugin:
+              mountPoints:
+                - mountPoint: entity.page.overview/cards
+                  importName: EntityPagerDutyCard
+                  config:
+                    layout:
+                      gridColumnEnd:
+                        md: span 6
+                        xs: span 12
+                    if:
+                      allOf:
+                        - isPluginApplicableToEntity

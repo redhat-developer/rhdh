@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: notifications
+  namespace: rhdh
+  title: Notifications
+  description: ''
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
+  tags: []
+spec:
+  description: ''
+
+  packages:
+    - backstage-plugin-notifications
+    - backstage-plugin-notifications-backend
+    - backstage-plugin-notifications-backend-module-email
