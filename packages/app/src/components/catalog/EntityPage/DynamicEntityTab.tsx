@@ -15,6 +15,7 @@ export type DynamicEntityTabProps = {
   mountPoint: string;
   if?: (entity: Entity) => boolean;
   children?: React.ReactNode;
+  priority?: number;
 };
 
 /**
