@@ -54,11 +54,19 @@ upstream:
                 privateKey: ${AUTH_ORG1_PRIVATE_KEY}
                 webhookSecret: ${AUTH_ORG_WEBHOOK_SECRET}
       catalog:
+        import:
+          entityFilename: catalog-info.yaml
+          # pullRequestBranchName: rhdh-integration
+          pullRequestBranchName: backstage-integration
         locations:
           - type: url
             target: https://github.com/janus-qe/auth-providers/blob/main/location.yaml
+          - type: url
+            target: https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/all.yaml
+          - type: url
+            target: https://github.com/redhat-developer/red-hat-developer-hub-software-templates/blob/main/templates.yaml
         rules:
-          - allow: [Component, Group, User, Resource, Location, Template]          
+          - allow: [API, Component, Group, User, Resource, Location, System, Template]          
         providers:
           githubOrg:
             - id: github
