@@ -25,7 +25,7 @@ test.describe("Audit Log check for Catalog Plugin", () => {
     await uiHelper.clickLink({ ariaLabel: "Create..." });
   });
 
-  test.fixme(
+  test(
     "Should fetch logs for ScaffolderParameterSchemaFetch event and validate log structure and values",
     async ({ baseURL, page }) => {
       await uiHelper.clickButton("Register Existing Component");
@@ -33,10 +33,7 @@ test.describe("Audit Log check for Catalog Plugin", () => {
       await page.waitForTimeout(1000);
       await uiHelper.clickLink({ ariaLabel: "Create..." });
       await common.waitForLoad();
-      await uiHelper.searchInputAriaLabel("Hello World 2");
-      await uiHelper.pressTab();
-      await uiHelper.clickButton("Choose");
-
+      await uiHelper.clickBtnInCard("Hello World 2", "Choose")
       await LogUtils.validateLogEvent(
         "ScaffolderParameterSchemaFetch",
         "user:development/guest requested the parameter schema for template:default/hello-world-2",
@@ -48,12 +45,11 @@ test.describe("Audit Log check for Catalog Plugin", () => {
     },
   );
 
-  test.fixme(
+  test(
     "Should fetch logs for ScaffolderInstalledActionsFetch event and validate log structure and values",
     async ({ baseURL }) => {
       await uiHelper.clickById("long-menu");
       await uiHelper.clickSpanByText("Installed Actions");
-
       await LogUtils.validateLogEvent(
         "ScaffolderInstalledActionsFetch",
         "user:development/guest requested the list of installed actions",
@@ -65,7 +61,7 @@ test.describe("Audit Log check for Catalog Plugin", () => {
     },
   );
 
-  test.fixme(
+  test(
     "Should fetch logs for ScaffolderTaskListFetch event and validate log structure and values",
     async ({ baseURL }) => {
       await uiHelper.clickById("long-menu");
