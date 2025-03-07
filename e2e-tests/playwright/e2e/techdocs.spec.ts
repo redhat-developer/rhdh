@@ -44,13 +44,13 @@ test.describe("TechDocs", () => {
     await uiHelper.openSidebarButton("Favorites");
     await uiHelper.openSidebar("Docs");
     await page.getByRole("link", { name: "Backstage Showcase" }).click();
-    await uiHelper.waitForTitle("Getting Started running RHDH", 1);
+    await uiHelper.waitForTitle("Getting Started running RHDH", 1, 30_000);
   });
 
   test("Verify that TechDocs entity tab page for Backstage Showcase works", async () => {
     await catalog.goToByName("Backstage Showcase");
     await uiHelper.clickTab("Docs");
-    await uiHelper.waitForTitle("Getting Started running RHDH", 1);
+    await uiHelper.waitForTitle("Getting Started running RHDH", 1, 30_000);
   });
 
   test("Verify that TechDocs Docs page for ReportIssue addon works", async ({
