@@ -279,6 +279,19 @@ upstream:
               params:
                 claims:
                   - \$currentUser
+            ---
+            result: CONDITIONAL
+            roleEntityRef: 'role:default/transitive-owner'
+            pluginId: catalog
+            resourceType: catalog-entity
+            permissionMapping:
+              - read
+            conditions:
+              rule: IS_ENTITY_OWNER
+              resourceType: catalog-entity
+              params:
+                claims:
+                  - \$ownerRefs
             EOF
 
             python install-dynamic-plugins.py /dynamic-plugins-root
