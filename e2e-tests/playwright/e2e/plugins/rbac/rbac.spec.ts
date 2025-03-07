@@ -75,7 +75,7 @@ test.describe.serial("Test RBAC", () => {
   });
 
   test.describe
-    .serial("Test RBAC plugin: Aliases used in conditional access policies", () => {
+    .serial("Test RBAC plugin: $currentUser alias used in conditional access policies", () => {
     test.beforeEach(async ({ page }) => {
       await new Common(page).loginAsKeycloakUser(
         process.env.GH_USER2_ID,
@@ -117,6 +117,39 @@ test.describe.serial("Test RBAC", () => {
       await expect(unregisterGroupOwned).toBeDisabled();
     });
   });
+
+  test.describe
+    .serial("Test RBAC plugin: $ownerRefs alias used in conditional access policies", () => {
+      test.beforeEach(async ({ page }) => {
+        await new Common(page).loginAsKeycloakUser(
+          process.env.QE_USER3_ID,
+          process.env.QE_USER3_PASS,
+        );
+      });
+
+      test("Check if $ownerRefs alias used in conditions with includeTransitiveGroupOwnership: the user is allowed to unregister component owned by transitive parent group.", async ({
+        page,
+      }) => {
+        const uiHelper = new UIhelper(page);
+        const testUser = "rhdh-qe-3";
+        const testParentGroup = "group:default/rhdh-qe-parent-team";
+        await page.goto("/catalog");
+        await uiHelper.selectMuiBox("Kind", "Component");
+
+        await uiHelper.searchInputPlaceholder( "mock-site");
+        await page.getByRole("link", { name: "mock-site" }).click();
+        await expect(page.locator("header")).toContainText(testParentGroup);
+        await page.getByTestId("menu-button").click();
+        const unregisterUserOwned = page.getByText("Unregister entity");
+        await expect(unregisterUserOwned).toBeEnabled();
+
+        await page.getByText("Unregister entity").click();
+        await expect(page.getByRole("heading")).toContainText(
+          "Are you sure you want to unregister this entity?",
+        );
+        await page.getByRole("button", { name: "Cancel" }).click();
+      });
+    });
 
   test.describe("Test RBAC plugin as an admin user", () => {
     test.beforeEach(async ({ page }, testInfo) => {
