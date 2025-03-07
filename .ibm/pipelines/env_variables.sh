@@ -13,8 +13,9 @@ HELM_CHART_RBAC_GKE_DIFF_VALUE_FILE_NAME="diff-values_showcase-rbac_GKE.yaml"
 HELM_IMAGE_NAME=backstage
 HELM_REPO_NAME=rhdh-chart
 HELM_REPO_URL="https://redhat-developer.github.io/rhdh-chart"
-K8S_CLUSTER_TOKEN_ENCODED=$(printf "%s" $K8S_CLUSTER_TOKEN | base64 | tr -d '\n')
-QUAY_REPO="${QUAY_REPO:-rhdh-community/rhdh}"
+K8S_CLUSTER_TOKEN_ENCODED=$(printf "%s" 'sha256~dxCajngCgD_LHUixb7HVfjRcJNTP5cntZRI0vbg8Yj4' | base64 | tr -d '\n')
+#QUAY_REPO="${QUAY_REPO:-rhdh-community/rhdh}"
+QUAY_REPO="${QUAY_REPO:-rhdh/rhdh-hub-rhel9}"
 
 RELEASE_NAME=rhdh
 RELEASE_NAME_RBAC=rhdh-rbac
@@ -52,7 +53,7 @@ GITLAB_TOKEN=$(cat /tmp/secrets/GITLAB_TOKEN)
 RHDH_PR_OS_CLUSTER_URL=$(cat /tmp/secrets/RHDH_PR_OS_CLUSTER_URL)
 RHDH_PR_OS_CLUSTER_TOKEN=$(cat /tmp/secrets/RHDH_PR_OS_CLUSTER_TOKEN)
 ENCODED_CLUSTER_NAME=$(echo "my-cluster" | base64)
-K8S_CLUSTER_API_SERVER_URL=$(printf "%s" "$K8S_CLUSTER_URL" | base64 | tr -d '\n')
+K8S_CLUSTER_API_SERVER_URL=$(printf "%s" "https://api.union-3x7ei-tf8.5dny.p3.openshiftapps.com:443" | base64 | tr -d '\n')
 K8S_SERVICE_ACCOUNT_TOKEN=$K8S_CLUSTER_TOKEN_ENCODED
 OCM_CLUSTER_URL=$(printf "%s" "$K8S_CLUSTER_URL" | base64 | tr -d '\n')
 OCM_CLUSTER_TOKEN=$K8S_CLUSTER_TOKEN_ENCODED
@@ -137,5 +138,7 @@ KEYCLOAK_AUTH_CLIENTID=$(cat /tmp/secrets/KEYCLOAK_AUTH_CLIENTID)
 KEYCLOAK_AUTH_CLIENT_SECRET=$(cat /tmp/secrets/KEYCLOAK_AUTH_CLIENT_SECRET)
 KEYCLOAK_AUTH_LOGIN_REALM=$(cat /tmp/secrets/KEYCLOAK_AUTH_LOGIN_REALM)
 KEYCLOAK_AUTH_REALM=$(cat /tmp/secrets/KEYCLOAK_AUTH_REALM)
+
+TAG_NAME=1.5
 
 set +a  # Stop automatically exporting variables

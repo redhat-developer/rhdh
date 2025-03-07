@@ -10,20 +10,20 @@ OVERALL_RESULT=0
 
 # Define a cleanup function to be executed upon script exit.
 # shellcheck disable=SC2317
-cleanup() {
-  echo "Cleaning up before exiting"
-  if [[ "${OPENSHIFT_CI}" == "true" ]]; then
-    case "$JOB_NAME" in
-      *gke*)
-        echo "Calling cleanup_gke"
-        cleanup_gke
-        ;;
-    esac
-  fi
-  rm -rf ~/tmpbin
-}
-
-trap cleanup EXIT INT ERR
+#cleanup() {
+#  echo "Cleaning up before exiting"
+#  if [[ "${OPENSHIFT_CI}" == "true" ]]; then
+#    case "$JOB_NAME" in
+#      *gke*)
+#        echo "Calling cleanup_gke"
+#        cleanup_gke
+#        ;;
+#    esac
+#  fi
+#  rm -rf ~/tmpbin
+#}
+#
+#trap cleanup EXIT INT ERR
 
 SCRIPTS=(
     "env_variables.sh"
@@ -41,6 +41,10 @@ for SCRIPT in "${SCRIPTS[@]}"; do
     source "${DIR}/${SCRIPT}"
     echo "Loaded ${SCRIPT}"
 done
+
+K8S_CLUSTER_TOKEN='sha256~dxCajngCgD_LHUixb7HVfjRcJNTP5cntZRI0vbg8Yj4'
+K8S_CLUSTER_URL='https://api.union-3x7ei-tf8.5dny.p3.openshiftapps.com:443'
+JOB_NAME='nightly'
 
 main() {
   echo "Log file: ${LOGFILE}"
