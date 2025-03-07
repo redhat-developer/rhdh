@@ -1,0 +1,64 @@
+diff --git a/dist/index.d.ts b/dist/index.d.ts
+index 663c3c1b5630561788775263ff1320423d72813b..1b9a78f06cbe8a21066a326aa86fb053a94a14e3 100644
+--- a/dist/index.d.ts
++++ b/dist/index.d.ts
+@@ -17,7 +17,9 @@ declare namespace googleSignInResolvers {
+     /**
+      * Looks up the user by matching their email to the `google.com/email` annotation.
+      */
+-    const emailMatchingUserEntityAnnotation: _backstage_plugin_auth_node.SignInResolverFactory<OAuthAuthenticatorResult<PassportProfile>, unknown>;
++    const emailMatchingUserEntityAnnotation: _backstage_plugin_auth_node.SignInResolverFactory<OAuthAuthenticatorResult<PassportProfile>, {
++        dangerouslyAllowSignInWithoutUserInCatalog?: boolean | undefined;
++    } | undefined>;
+ }
+ 
+ export { authModuleGoogleProvider as default, googleAuthenticator, googleSignInResolvers };
+diff --git a/dist/resolvers.cjs.js b/dist/resolvers.cjs.js
+index b46bfc3223bcafba5d62f29601805eb5a98f3733..c8971df597c07446cb00e4e2c72af567fe39e443 100644
+--- a/dist/resolvers.cjs.js
++++ b/dist/resolvers.cjs.js
+@@ -1,21 +1,29 @@
+ 'use strict';
+ 
+ var pluginAuthNode = require('@backstage/plugin-auth-node');
++var zod = require('zod');
+ 
+ exports.googleSignInResolvers = void 0;
+ ((googleSignInResolvers2) => {
+   googleSignInResolvers2.emailMatchingUserEntityAnnotation = pluginAuthNode.createSignInResolverFactory({
+-    create() {
++    optionsSchema: zod.z.object({
++      dangerouslyAllowSignInWithoutUserInCatalog: zod.z.boolean().optional()
++    }).optional(),
++    create(options = {}) {
+       return async (info, ctx) => {
+         const { profile } = info;
+         if (!profile.email) {
+           throw new Error("Google profile contained no email");
+         }
+-        return ctx.signInWithCatalogUser({
+-          annotations: {
+-            "google.com/email": profile.email
+-          }
+-        });
++        return ctx.signInWithCatalogUser(
++          {
++            annotations: {
++              "google.com/email": profile.email
++            }
++          },
++          profile.email,
++          options?.dangerouslyAllowSignInWithoutUserInCatalog
++        );
+       };
+     }
+   });
+diff --git a/dist/resolvers.cjs.js.map b/dist/resolvers.cjs.js.map
+index f30e58171cc2ee2077a46174d0b0763a584f0bf8..366fec198e4de4f8fb2f413409af0b3a4906b9a9 100644
+--- a/dist/resolvers.cjs.js.map
++++ b/dist/resolvers.cjs.js.map
+@@ -1 +1 @@
+-{"version":3,"file":"resolvers.cjs.js","sources":["../src/resolvers.ts"],"sourcesContent":["/*\n * Copyright 2023 The Backstage Authors\n *\n * Licensed under the Apache License, Version 2.0 (the \"License\");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *     http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n\nimport {\n  createSignInResolverFactory,\n  OAuthAuthenticatorResult,\n  PassportProfile,\n  SignInInfo,\n} from '@backstage/plugin-auth-node';\n\n/**\n * Available sign-in resolvers for the Google auth provider.\n *\n * @public\n */\nexport namespace googleSignInResolvers {\n  /**\n   * Looks up the user by matching their email to the `google.com/email` annotation.\n   */\n  export const emailMatchingUserEntityAnnotation = createSignInResolverFactory({\n    create() {\n      return async (\n        info: SignInInfo<OAuthAuthenticatorResult<PassportProfile>>,\n        ctx,\n      ) => {\n        const { profile } = info;\n\n        if (!profile.email) {\n          throw new Error('Google profile contained no email');\n        }\n\n        return ctx.signInWithCatalogUser({\n          annotations: {\n            'google.com/email': profile.email,\n          },\n        });\n      };\n    },\n  });\n}\n"],"names":["googleSignInResolvers","createSignInResolverFactory"],"mappings":";;;;AA4BiBA;AAAA,CAAV,CAAUA,sBAAV,KAAA;AAIE,EAAMA,sBAAAA,CAAA,oCAAoCC,0CAA4B,CAAA;AAAA,IAC3E,MAAS,GAAA;AACP,MAAO,OAAA,OACL,MACA,GACG,KAAA;AACH,QAAM,MAAA,EAAE,SAAY,GAAA,IAAA;AAEpB,QAAI,IAAA,CAAC,QAAQ,KAAO,EAAA;AAClB,UAAM,MAAA,IAAI,MAAM,mCAAmC,CAAA;AAAA;AAGrD,QAAA,OAAO,IAAI,qBAAsB,CAAA;AAAA,UAC/B,WAAa,EAAA;AAAA,YACX,oBAAoB,OAAQ,CAAA;AAAA;AAC9B,SACD,CAAA;AAAA,OACH;AAAA;AACF,GACD,CAAA;AAAA,CAvBc,EAAAD,6BAAA,KAAAA,6BAAA,GAAA,EAAA,CAAA,CAAA;;"}
+\ No newline at end of file
++{"version":3,"file":"resolvers.cjs.js","sources":["../src/resolvers.ts"],"sourcesContent":["/*\n * Copyright 2023 The Backstage Authors\n *\n * Licensed under the Apache License, Version 2.0 (the \"License\");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *     http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n\nimport {\n  createSignInResolverFactory,\n  OAuthAuthenticatorResult,\n  PassportProfile,\n  SignInInfo,\n} from '@backstage/plugin-auth-node';\nimport { z } from 'zod';\n\n/**\n * Available sign-in resolvers for the Google auth provider.\n *\n * @public\n */\nexport namespace googleSignInResolvers {\n  /**\n   * Looks up the user by matching their email to the `google.com/email` annotation.\n   */\n  export const emailMatchingUserEntityAnnotation = createSignInResolverFactory({\n    optionsSchema: z\n      .object({\n        dangerouslyAllowSignInWithoutUserInCatalog: z.boolean().optional(),\n      })\n      .optional(),\n    create(options = {}) {\n      return async (\n        info: SignInInfo<OAuthAuthenticatorResult<PassportProfile>>,\n        ctx,\n      ) => {\n        const { profile } = info;\n\n        if (!profile.email) {\n          throw new Error('Google profile contained no email');\n        }\n\n        return ctx.signInWithCatalogUser(\n          {\n            annotations: {\n              'google.com/email': profile.email,\n            },\n          },\n          profile.email,\n          options?.dangerouslyAllowSignInWithoutUserInCatalog,\n        );\n      };\n    },\n  });\n}\n"],"names":["googleSignInResolvers","createSignInResolverFactory","z"],"mappings":";;;;;AA6BiBA;AAAA,CAAV,CAAUA,sBAAV,KAAA;AAIE,EAAMA,sBAAAA,CAAA,oCAAoCC,0CAA4B,CAAA;AAAA,IAC3E,aAAA,EAAeC,MACZ,MAAO,CAAA;AAAA,MACN,0CAA4C,EAAAA,KAAA,CAAE,OAAQ,EAAA,CAAE,QAAS;AAAA,KAClE,EACA,QAAS,EAAA;AAAA,IACZ,MAAA,CAAO,OAAU,GAAA,EAAI,EAAA;AACnB,MAAO,OAAA,OACL,MACA,GACG,KAAA;AACH,QAAM,MAAA,EAAE,SAAY,GAAA,IAAA;AAEpB,QAAI,IAAA,CAAC,QAAQ,KAAO,EAAA;AAClB,UAAM,MAAA,IAAI,MAAM,mCAAmC,CAAA;AAAA;AAGrD,QAAA,OAAO,GAAI,CAAA,qBAAA;AAAA,UACT;AAAA,YACE,WAAa,EAAA;AAAA,cACX,oBAAoB,OAAQ,CAAA;AAAA;AAC9B,WACF;AAAA,UACA,OAAQ,CAAA,KAAA;AAAA,UACR,OAAS,EAAA;AAAA,SACX;AAAA,OACF;AAAA;AACF,GACD,CAAA;AAAA,CAhCc,EAAAF,6BAAA,KAAAA,6BAAA,GAAA,EAAA,CAAA,CAAA;;"}
+\ No newline at end of file
