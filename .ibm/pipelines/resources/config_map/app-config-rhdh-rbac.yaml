@@ -104,6 +104,10 @@ catalog:
       id: production
       githubUrl: "${GITHUB_URL}"
       orgs: ["${GITHUB_ORG}", "${GITHUB_ORG_2}"]
+      schedule:
+        initialDelay: { seconds: 15 }
+        frequency: { minutes: 5 }
+        timeout: { minutes: 5 }
 dynatrace:
   baseUrl: temp
 argocd:
