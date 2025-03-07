@@ -44,6 +44,7 @@
     "@backstage/plugin-api-docs": "0.12.3",
     "@ianvs/prettier-plugin-sort-imports": "4.4.1",
     "@manypkg/cli": "0.23.0",
+    "@swagger-api/apidom-parser-adapter-json": "1.0.0-beta.12",
     "glob": "11.0.1",
     "husky": "8.0.3",
     "lint-staged": "15.4.3",
