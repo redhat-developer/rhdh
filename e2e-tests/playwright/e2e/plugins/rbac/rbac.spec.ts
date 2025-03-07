@@ -341,8 +341,8 @@ test.describe.serial("Test RBAC", () => {
       await rbacPo.selectOption("scaffolder");
       await page.getByText("Select...").click();
       await rbacPo.selectPermissionCheckbox("scaffolder.template.parameter");
-      await uiHelper.clickButton("Next");
-      await uiHelper.clickButton("Save");
+      await uiHelper.clickButton("Next", { force: true });
+      await uiHelper.clickButton("Save", { force: true });
       await uiHelper.verifyText(
         "Role role:default/test-role1 updated successfully",
       );
