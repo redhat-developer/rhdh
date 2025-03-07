@@ -32,6 +32,7 @@ SCRIPTS=(
     "jobs/gke.sh"
     "jobs/main.sh"
     "jobs/operator.sh"
+    "jobs/upgrade.sh"
     "jobs/periodic.sh"
     "jobs/auth-providers.sh"
 )
@@ -62,6 +63,10 @@ main() {
     *operator*)
       echo "Calling Operator"
       handle_operator
+      ;;
+    *upgrade*)
+      echo "Calling helm upgrade"
+      handle_upgrade
       ;;
     *nightly*)
       echo "Calling handle_periodic"
