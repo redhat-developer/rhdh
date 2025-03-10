@@ -137,6 +137,47 @@ spec: # Custom information processed by the Extensions plugin
 
 You **must** add your plugin yaml file to the list in the `plugins/all.yaml` file to get it picked up by RHDH and loaded into the catalog. To check if it's loading, check the catalog.
 
+
+# Using RHDH-local
+
+You need to reconfigure a few bits for the rhdh-1.5 image build, but when you do your local edits will show up within 15 secs...
+
+In `app-config.yaml` do this:
+
+```yaml:app-config.yaml
+
+catalog:
+  # Speed up the metadata refresh interval (when testing)
+  processingInterval: { seconds: 15 }
+
+  locations:
+    # Extensions Plugin needs this target to pull in the information about Plugins
+    - type: file
+      target: /marketplace/catalog-entities/plugins/all.yaml
+      rules:
+        - allow: [Location, Plugin]
+    - type: file
+      target: /marketplace/catalog-entities/packages/all.yaml
+      rules:
+        - allow: [Location, Package]
+
+```
+
+In `docker-compose.yaml` do this:
+
+```yaml:docker-compose.yaml
+services:
+  rhdh:
+    volumes:
+      # Add an Extensions overwrite
+      - type: bind
+        source: <your rhdh cloned repo>/catalog-entities/marketplace/plugins/
+        target: /marketplace/catalog-entities/plugins
+      - type: bind
+        source: <your rhdh cloned repo>/catalog-entities/marketplace/packages/
+        target: /marketplace/catalog-entities/packages
+```
+
 ## Important Notes:
 
 * Plugins are manually created
