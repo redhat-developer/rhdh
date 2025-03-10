@@ -18,7 +18,7 @@ metadata:
   tags: []
 spec:
   packageName: "@dynatrace/backstage-plugin-dql"
-  dynamicArtifact: ./dynamic-plugins/dist/dynatrace-backstage-plugin-dql
+  #dynamicArtifact: ./dynamic-plugins/dist/dynatrace-backstage-plugin-dql
   version: 2.1.5
   backstage:
     role: frontend-plugin

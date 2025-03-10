@@ -6,7 +6,7 @@ metadata:
   namespace: dynatrace
   title: Dynatrace
   annotations:
-    extensions.backstage.io/pre-installed: 'true'
+    extensions.backstage.io/pre-installed: 'false'
     extensions.backstage.io/certified-by: Red Hat
   description: 'This officially supported plugin from Dynatrace provides customizable context-rich observability and security insights for services in your software catalog.'
 
