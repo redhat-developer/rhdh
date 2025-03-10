@@ -1,0 +1,33 @@
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: dynatrace-backstage-plugin-dql-backend
+  namespace: dynatrace
+  title: "@dynatrace/backstage-plugin-dql-backend"
+  links:
+    - url: https://www.dynatrace.com/
+      title: Homepage
+    - url: https://github.com/Dynatrace/backstage-plugin/issues
+      title: Issues
+    - title: Source Code
+      url: https://github.com/Dynatrace/backstage-plugin
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/Dynatrace/backstage-plugin
+  tags: []
+spec:
+  packageName: "@dynatrace/backstage-plugin-dql-backend"
+  dynamicArtifact: ./dynamic-plugins/dist/dynatrace-backstage-plugin-dql-backend
+  version: 2.1.5
+  backstage:
+    role: backend-plugin
+    supportedVersions: 1.35.1
+  author: Dynatrace
+  support: production
+  lifecycle: active
+  partOf:
+    - dynatrace-commercial
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        dynamicPlugins:
