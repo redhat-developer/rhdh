@@ -8,7 +8,7 @@ test.describe("Change app-config at e2e test runtime", () => {
   test("Verify title change after ConfigMap modification", async ({ page }) => {
     test.setTimeout(300000); // Increasing to 5 minutes
 
-    const configMapName = "rhdh-backstage-app-config";
+    const configMapNameKey = "app-config.yaml";
     const namespace = process.env.NAME_SPACE_RUNTIME || "showcase-runtime";
     const deploymentName = "rhdh-backstage";
 
@@ -16,9 +16,9 @@ test.describe("Change app-config at e2e test runtime", () => {
     const dynamicTitle = generateDynamicTitle();
     const uiHelper = new UIhelper(page);
     try {
-      LOGGER.info(`Updating ConfigMap '${configMapName}' with new title.`);
+      LOGGER.info(`Updating ConfigMap '${configMapNameKey}' with new title.`);
       await kubeUtils.updateConfigMapTitle(
-        configMapName,
+        configMapNameKey,
         namespace,
         dynamicTitle,
       );
