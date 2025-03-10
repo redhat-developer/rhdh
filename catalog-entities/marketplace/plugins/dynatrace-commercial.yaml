@@ -34,8 +34,6 @@ spec:
     The screenshot shows three Kubernetes deployments of the easytrade-frontend component running in different namespaces, 
     i.e., development, hardening, and production. The table provides smart links for more details about the workload and logs in Dynatrace.
 
-    ![A screenshot of the Dynatrace DQL plugin in action.](https://github.com/Dynatrace/backstage-plugin/blob/a307710edfb23a196c30790b9afceb9fb9af27df/docs/images/backstage_dynatrace_plugin.png?raw=true)
-
     ## Adding The Plugin To Red Hat Developer Hub
 
     In the `app-config.yaml` add the details needed for your Dynatrace connection:
