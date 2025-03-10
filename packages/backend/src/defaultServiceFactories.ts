@@ -46,6 +46,8 @@ export const DEFAULT_SERVICE_FACTORIES: ServiceFactory[] = [
   userInfoServiceFactory,
   urlReaderServiceFactory,
   eventsServiceFactory,
+  auditorServiceFactory,
+  permissionsRegistryServiceFactory,
 ] as const;
 
 export const getDefaultServiceFactories = ({
