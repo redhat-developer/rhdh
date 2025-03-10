@@ -86,4 +86,3 @@ spec:
     - ./red-hat-developer-hub-backstage-plugin-marketplace.yaml
     - ./dynatrace-backstage-plugin-dql.yaml
     - ./dynatrace-backstage-plugin-dql-backend.yaml
-    - ./dynatrace-backstage-plugin-dql-common.yaml
