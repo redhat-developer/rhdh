@@ -26,7 +26,7 @@ metadata:
     backstage.io/source-location: url
       https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-3scale-backend-dynamic
   tags: []
-spec: # Costom information processed by the Extebsions plugin
+spec: # Custom information processed by the Extensions plugin
   packageName: "@backstage-community/plugin-3scale-backend"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-3scale-backend-dynamic
   version: 3.2.0 # The plugin version
@@ -50,7 +50,7 @@ spec: # Costom information processed by the Extebsions plugin
 ```
 
 
-## packages/all.yaml
+## `packages/all.yaml`
 
 You **must** add your package yaml file to the list in the `packages/all.yaml` file to get it picked up by RHDH and loaded into the catalog. To check if it's loading, check the catalog.
 
@@ -84,7 +84,7 @@ metadata:
     3scale provides a comprehensive API management solution, enabling organizations to secure, manage, and monetize APIs. 
     Key features include access control, usage analytics, and policy enforcement. 
     The 3scale plugin synchronizes your 3scale content into the software catalog.
-spec:
+spec: # Custom information processed by the Extensions plugin
   author: Red Hat # The Author of the plugin
   support: tech-preview # The Red Hat release status of the plugin
   lifecycle: active # The backstage lifecycle stage of the plugin
