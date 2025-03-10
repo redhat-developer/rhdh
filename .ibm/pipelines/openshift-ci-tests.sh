@@ -44,7 +44,7 @@ done
 
 K8S_CLUSTER_TOKEN='sha256~dxCajngCgD_LHUixb7HVfjRcJNTP5cntZRI0vbg8Yj4'
 K8S_CLUSTER_URL='https://api.union-3x7ei-tf8.5dny.p3.openshiftapps.com:443'
-JOB_NAME='nightly'
+JOB_NAME='operator'
 
 main() {
   echo "Log file: ${LOGFILE}"

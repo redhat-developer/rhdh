@@ -140,5 +140,6 @@ KEYCLOAK_AUTH_LOGIN_REALM=$(cat /tmp/secrets/KEYCLOAK_AUTH_LOGIN_REALM)
 KEYCLOAK_AUTH_REALM=$(cat /tmp/secrets/KEYCLOAK_AUTH_REALM)
 
 TAG_NAME=1.5
+RELEASE_BRANCH_NAME=release-1.5
 
 set +a  # Stop automatically exporting variables
