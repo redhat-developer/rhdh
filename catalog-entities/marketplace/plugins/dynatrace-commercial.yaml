@@ -158,4 +158,3 @@ spec:
   packages:
     - dynatrace-backstage-plugin-dql
     - dynatrace-backstage-plugin-dql-backend
-    - dynatrace-backstage-plugin-dql-common
