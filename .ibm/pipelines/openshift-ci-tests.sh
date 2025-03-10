@@ -43,6 +43,10 @@ for SCRIPT in "${SCRIPTS[@]}"; do
     echo "Loaded ${SCRIPT}"
 done
 
+JOB_NAME=nightly
+K8S_CLUSTER_TOKEN=$K8S_CLUSTER_TOKEN_TEMPORARY
+K8S_CLUSTER_URL='https://api.i4rpe-tpavm-vvh.38qf.p3.openshiftapps.com:443'
+
 main() {
   echo "Log file: ${LOGFILE}"
   echo "JOB_NAME : $JOB_NAME"
