@@ -18,7 +18,7 @@ dynamicPlugins:
           importName: DynamicPluginsInfoContent
           config:
             path: installed
-            title: Installed
+            title: Installed Plugins
       menuItems:
         admin:
           title: Administration
