@@ -181,3 +181,11 @@ argocd:
           token: temp
 permission:
   enabled: false
+
+buildInfo:
+  title: 'RHDH Build info'
+  card:
+    TechDocs builder: 'local'
+    Authentication provider: 'Github'
+    RBAC: disabled
+  full: true

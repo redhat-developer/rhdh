@@ -4,6 +4,7 @@ import {
   InfoCard as BSInfoCard,
   CopyTextButton,
 } from '@backstage/core-components';
+import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
@@ -11,8 +12,12 @@ import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 
 import buildMetadata from '../../build-metadata.json';
+import { BuildInfo } from '../../types/types';
 
 export const InfoCard = () => {
+  const config = useApi(configApiRef);
+  const buildInfo: BuildInfo | undefined = config.getOptional('buildInfo');
+
   const [showBuildInformation, setShowBuildInformation] =
     React.useState<boolean>(
       () =>
@@ -32,24 +37,35 @@ export const InfoCard = () => {
     }
   };
 
-  let clipboardText = buildMetadata.title;
-  if (buildMetadata.card?.length) {
+  const title = buildInfo?.title ?? buildMetadata.title;
+
+  let clipboardText = title;
+  const buildDetails = Object.entries(
+    buildInfo?.full === false // append build versions to the object only when buildInfo.full === false
+      ? { ...buildInfo?.card, ...buildMetadata?.card }
+      : (buildInfo?.card ?? buildMetadata?.card),
+  ).map(([key, value]) => `${key}: ${value}`);
+  if (buildDetails?.length) {
     clipboardText += '\n\n';
-    buildMetadata.card.forEach(text => {
+    buildDetails.forEach(text => {
       clipboardText += `${text}\n`;
     });
   }
 
-  const filteredCards = showBuildInformation
-    ? buildMetadata.card
-    : buildMetadata.card.filter(
-        text =>
-          text.startsWith('RHDH Version') ||
-          text.startsWith('Backstage Version'),
-      );
+  const filteredContent = () => {
+    if (buildInfo?.card) {
+      return buildDetails.slice(0, 2);
+    }
+    return buildDetails.filter(
+      text =>
+        text.startsWith('RHDH Version') || text.startsWith('Backstage Version'),
+    );
+  };
+
+  const filteredCards = showBuildInformation ? buildDetails : filteredContent();
   // Ensure that we show always some information
   const versionInfo =
-    filteredCards.length > 0 ? filteredCards.join('\n') : buildMetadata.card[0];
+    filteredCards.length > 0 ? filteredCards.join('\n') : buildDetails[0];
 
   /**
    * Show all build information and automatically select them
@@ -80,7 +96,7 @@ export const InfoCard = () => {
 
   return (
     <BSInfoCard
-      title={buildMetadata.title}
+      title={title}
       action={
         // This is a workaround to ensure that the buttons doesn't increase the header size.
         <div style={{ position: 'relative' }}>

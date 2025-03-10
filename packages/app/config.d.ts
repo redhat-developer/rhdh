@@ -188,4 +188,14 @@ export interface Config {
    * @visibility frontend
    */
   includeTransitiveGroupOwnership?: boolean;
+
+  /**
+   * Allows you to customize RHDH Metadata card
+   * @deepVisibility frontend
+   */
+  buildInfo?: {
+    title: string;
+    card: { [key: string]: string };
+    full?: boolean;
+  };
 }
