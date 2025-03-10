@@ -11,7 +11,7 @@ metadata:
   tags: []
 spec:
   authors:
-    - name: Backstage Community
+    - name: Red Hat
   publisher: Red Hat
   # support:
   #   level: tech-preview
