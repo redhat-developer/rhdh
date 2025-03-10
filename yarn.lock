@@ -16839,9 +16839,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace@npm:0.2.0":
-  version: 0.2.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace@npm:0.2.0"
+"@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace@npm:0.2.1":
+  version: 0.2.1
+  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace@npm:0.2.1"
   dependencies:
     "@backstage/backend-plugin-api": ^1.1.1
     "@backstage/catalog-model": ^1.7.3
@@ -16849,8 +16849,11 @@ __metadata:
     "@backstage/plugin-catalog-node": ^1.15.1
     "@backstage/types": ^1.2.1
     "@red-hat-developer-hub/backstage-plugin-marketplace-common": ^0.2.0
+    find-root: ^1.1.0
+    glob: ^8.1.0
+    js-yaml: ^4.1.0
     semver: ^7.6.3
-  checksum: e5c4ccf34eb1a55468c6b2786c0f6671cf592d98c025312b07272a2aab24e229d4c80901bec4bd77e464050deeefb3bc8f5708a01dcd5784c18b636363c671c4
+  checksum: 8c5d65b0aa2ce258a107bf0dc2363cb92511dccab8a927b01ff1cec2a71a451e86d18c7f109d143ea35aeb7f2b9d6886e1a8efb11777ef6836d229ac217ee980
   languageName: node
   linkType: hard
 
@@ -40978,7 +40981,7 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.29.6
     "@janus-idp/cli": 3.2.0
-    "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace": 0.2.0
+    "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace": 0.2.1
     typescript: 5.7.3
   languageName: unknown
   linkType: soft
