@@ -10,3 +10,4 @@ spec:
     #- ./openshift.yaml
     #- ./recommended.yaml
     #- ./redhat.yaml
+    #- ./dynatrace.yaml
