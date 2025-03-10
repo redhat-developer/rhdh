@@ -17,10 +17,10 @@ metadata:
   tags: []
 spec:
   packageName: "@dynatrace/backstage-plugin-dql-common"
-  dynamicArtifact: ./dynamic-plugins/dist/dynatrace-backstage-plugin-dql-backend
+  #dynamicArtifact: ./dynamic-plugins/dist/dynatrace-backstage-plugin-dql-backend
   version: 2.1.5
   backstage:
-    role: backend-plugin
+    role: common-library
     supportedVersions: 1.35.1
   author: Dynatrace
   support: production
