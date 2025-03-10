@@ -36,34 +36,9 @@ spec:
 
     ## Adding The Plugin To Red Hat Developer Hub
 
-    In the `app-config.yaml` add the details needed for your Dynatrace connection:
+    Contact Dynatrace support for help installing this plugin in your Red Hat Developer Hub instance.
 
-    ```yaml
-    dynatrace:
-      environments:
-        - name: xxxxxxxx
-          url: https://xxxxxxxx.apps.dynatrace.com
-          tokenUrl: https://sso.dynatrace.com/sso/oauth2/token
-          accountUrn: <accountUrn>
-          clientId: <clientId>
-          clientSecret: <clientSecret>`
-    ```
-
-    You can then activate plugin(s) by adding their OCI package(s) to the `dynamic-plugins.yaml` file and setting their `disabled` property to `false`.
-
-    ```yaml
-    plugins: 
-      - package: oci://ghcr.io/davidfestal/dynatrace-backstage-plugin-dql:bs_1.32.6__0.1.0  
-        disabled: false
-      - package: oci://ghcr.io/davidfestal/dynatrace-backstage-plugin-dql-backend:bs_1.32.6__0.1.0 
-        disabled: false
-    ```
-
-    **TODO:** Update to the official images and check if a GUI mountpoint configuration is needed
-
-    **NOTE:** You will need to restart your RHDH instance for the plugin to be automatically downloaded and for the activation setting to take effect.
-
-    See the plugin's source code repository in the link below for additional information about this plugin such as 
+    You can also see the plugin's source code repository in the link below for additional information about this plugin such as 
     multi-environment support, sample queries, and registering custom queries in the `metadata.dynatrace.queries` 
     property of a component within the `catalog-info.yaml` file.
     
