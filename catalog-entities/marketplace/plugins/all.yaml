@@ -49,7 +49,6 @@ spec:
     - ./openshift-cluster-manager.yaml
     - ./pagerduty.yaml
     - ./pingidentity.yaml
-    - ./quay-catalog-integration.yaml
     - ./quay-scaffolder-actions.yaml
     - ./rbac.yaml
     - ./redhat-argocd.yaml
