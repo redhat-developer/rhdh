@@ -8,6 +8,7 @@ metadata:
   description: ''
   annotations:
     extensions.backstage.io/pre-installed: 'true'
+    extensions.backstage.io/verified-by: Red Hat
   tags:
     - software-catalog
 spec:
