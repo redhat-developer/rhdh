@@ -43,6 +43,9 @@ jobs:
 
       - name: Prepare Environment Variables
         run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          echo "SHORT_SHA=$SHORT_SHA" >> $GITHUB_ENV
+
           echo "PLATFORM=linux/amd64" >> $GITHUB_ENV
           latestNext="next"
           # for main branch, use next tags; for 1.y branches, use :latest tags
