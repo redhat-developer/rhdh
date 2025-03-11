@@ -1,12 +1,19 @@
 name: Build & Push e2e-runner Image to Quay.io
 
 on:
-  pull_request:
+  push:
     branches:
       - main
+      - release-1.[0-9]+
     paths:
       - '.ibm/images/Dockerfile'
       - '.yarnrc.yml'
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: Target branch to build
+        required: true
+        default: 'NONE'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -15,7 +22,6 @@ concurrency:
 env:
   REGISTRY: quay.io
   REGISTRY_IMAGE: rhdh-community/rhdh-e2e-runner
-  IMAGE_TAG: main
 
 jobs:
   build-image:
@@ -38,6 +44,21 @@ jobs:
       - name: Prepare Environment Variables
         run: |
           echo "PLATFORM=linux/amd64" >> $GITHUB_ENV
+          latestNext="next"
+          # for main branch, use next tags; for 1.y branches, use :latest tags
+          if [[ $(git rev-parse --abbrev-ref HEAD) != "main" ]]; then
+            latestNext="latest" 
+          fi
+          echo "LATESTNEXT=${latestNext}" >> $GITHUB_ENV
+
+          # create image tag from the correct branch (either from a push or a workflow_dispatch trigger)
+          if [[ "${{ inputs.branch }}"  != "NONE" ]]; then
+            git checkout "${{ inputs.branch }}"
+            IMAGE_TAG="${{ inputs.branch }}"
+          else
+            IMAGE_TAG=$(git rev-parse --abbrev-ref HEAD)
+          fi
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -58,4 +79,5 @@ jobs:
           tags: |
             ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:${{ env.IMAGE_TAG }}
             ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:${{ env.IMAGE_TAG }}-${{ env.SHORT_SHA }}
+            ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:${{ env.LATESTNEXT }}
           platforms: ${{ env.PLATFORM }}
