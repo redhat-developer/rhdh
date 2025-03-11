@@ -5,26 +5,39 @@ metadata:
   name: keycloak-catalog-integration
   namespace: rhdh
   title: Keycloak Catalog Integration
-  description: Automatically import Keycloak users and groups into RHDH
+  description: Automatically import Keycloak users and groups into Red Hat Developer Hub
   annotations:
     extensions.backstage.io/pre-installed: 'true'
+    extensions.backstage.io/verified-by: Red Hat
   tags:
     - authentication
     - authorization
     - iam
     - software-catalog
   links:
-    - url: https://github.com/backstage/community-plugins/blob/main/workspaces/keycloak/plugins/catalog-backend-module-keycloak/README.md
-      title: Documentation
+    - url: https://github.com/backstage/community-plugins/blob/main/workspaces/keycloak/plugins/catalog-backend-module-keycloak
+      title: Source Code
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Documentation for Red Hat Developer Hub
+      url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
 
 spec:
   authors:
     - name: Red Hat
     - name: Backstage Community
   publisher: Red Hat
+  support: production
+  lifecycle: active
 
   categories:
     - Identity and Access Management
+
+  highlights:
+    - Synchronization of Keycloak users
+    - Synchronization of Keycloak groups
 
   icon: data:image/svg+xml;base64,
     PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNjcuMTE3IiBo
@@ -80,29 +93,23 @@ spec:
     aWxsLXJ1bGU6bm9uemVybztzdHJva2U6bm9uZTtzdHJva2Utd2lkdGg6LjMzMDcyOSIgdHJhbnNm
     b3JtPSJ0cmFuc2xhdGUoLTgyLjgxNSAtMTI4LjU4OCkiLz48L3N2Zz4=
 
-  # support:
-  #   level: tech-preview
-  lifecycle: production
   description: |
-    # Automatically import Keycloak users and groups into RHDH
+    Automatically import Keycloak users and groups into Red Hat Developer Hub. After configuring 
+    the plugin successfully, the plugin imports the users and groups each time when started.
 
-    After configuring the plugin successfully, the plugin imports the users and groups each time when started.
+    After the first import is complete, you can select the **User** kind in the software catalog to see a list of users.
 
-    After the first import is complete, you can select **User** to list the users from the catalog page:
+    ## Adding The Plugin To Red Hat Developer Hub
 
-    ![catalog-list](./images/users.jpg)
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub) 
+    for further instructions on how to add, enable, configure, and remove plugins in your instance.
 
-    You can see the list of users on the page:
+    ## Configuring The Plugin ##
 
-    ![user-list](./images/user-list.jpg)
+    Plugins often need additional configuration to work correctly - particularly those that integrate with other 
+    systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further details regarding the configuration required.
 
-    When you select a user, you can see the information imported from Keycloak:
-
-    ![user-profile](./images/user2.jpg)
-
-    You can also select a group, view the list, and select or view the information imported from Keycloak for a group:
-
-    ![group-profile](./images/group1.jpg)
   installation: |
     # Keycloak backend plugin for Backstage
 
