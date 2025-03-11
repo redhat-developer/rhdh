@@ -4,8 +4,8 @@ kind: Plugin
 metadata:
   name: bitbucket-cloud-catalog-integration
   namespace: rhdh
-  title: Bitbucket Cloud Catalog Integration
-  description: This is an extension module to the catalog-backend plugin, providing extensions targeted at Bitbucket Cloud offerings.
+  title: Bitbucket Cloud Discovery
+  description: This is an extension module to the catalog-backend plugin, providing auto discovery for Bitbucket Cloud offerings.
   annotations:
     extensions.backstage.io/pre-installed: 'true'
   tags:
