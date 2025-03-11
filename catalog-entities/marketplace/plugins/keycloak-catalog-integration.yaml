@@ -5,7 +5,8 @@ metadata:
   name: keycloak-catalog-integration
   namespace: rhdh
   title: Keycloak Catalog Integration
-  description: Automatically import Keycloak users and groups into Red Hat Developer Hub
+  description: |
+    Automatically import Keycloak users and groups into Red Hat Developer Hub for enterprise ready authentication and authorization.
   annotations:
     extensions.backstage.io/pre-installed: 'true'
     extensions.backstage.io/verified-by: Red Hat
@@ -94,10 +95,21 @@ spec:
     b3JtPSJ0cmFuc2xhdGUoLTgyLjgxNSAtMTI4LjU4OCkiLz48L3N2Zz4=
 
   description: |
-    Automatically import Keycloak users and groups into Red Hat Developer Hub. After configuring 
-    the plugin successfully, the plugin imports the users and groups each time when started.
+    With this plugin you can automatically import Keycloak users and groups into Red Hat Developer Hub for enterprise ready 
+    authentication and authorization. Keycloak provides user federation, strong authentication, user 
+    management, fine-grained authorization, and more. Keycloak has built-in support to connect to 
+    existing LDAP or Active Directory servers. You can also implement your own provider if you have 
+    users in other stores, such as a relational database.
+    
+    ## Implement Single-Sign On In Red Hat Developer Hub
 
-    After the first import is complete, you can select the **User** kind in the software catalog to see a list of users.
+    Users authenticate with Keycloak rather than individual applications. This means that your applications don't have to deal with 
+    login forms, authenticating users, and storing users. Once logged-in to Keycloak, users don't have to login again to access a 
+    different application. This also applies to logout. Keycloak provides single-sign out, which means users only have to logout 
+    once to be logged-out of all applications that use Keycloak.
+    
+    After configuring the plugin successfully, the plugin imports the users and groups each time when started. After the first import 
+    is complete, you can select the **User** kind in the software catalog to see a list of users.
 
     ## Adding The Plugin To Red Hat Developer Hub
 
