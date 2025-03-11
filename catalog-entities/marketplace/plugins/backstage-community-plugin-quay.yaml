@@ -4,7 +4,7 @@ kind: Plugin
 metadata:
   name: backstage-community-plugin-quay
   namespace: rhdh
-  title: Quay
+  title: Container Image Registry for Quay
   annotations:
     extensions.backstage.io/pre-installed: 'true' # For plugins contained in the RHDH image
     extensions.backstage.io/verified-by: Red Hat # For verified plugins
@@ -20,7 +20,8 @@ metadata:
   tags:
     - cicd # Used for filtering
   description: |
-     Quay allows integration with your container registry.
+     Quay allows you to integrate Backstage with your container registry to provide information 
+     about the containers associated with the compenents in your software catalog.
 spec:
   author: Red Hat
   support: production
@@ -29,6 +30,7 @@ spec:
 
   categories:
     - CI/CD # One category will show up on the tile view
+
   highlights:
     - Add some highlights of the plugins features
 
@@ -46,8 +48,6 @@ spec:
     Plugins often need additional configuration to work correctly - particularly those that integrate with other 
     systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
     for further details regarding the configuration required.
-
-
 
   # Images are base 64 encoded SVGs (below is a blank square from the mockup)
   icon: data:image/svg+xml;base64,
