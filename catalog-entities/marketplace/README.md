@@ -178,6 +178,16 @@ services:
         target: /marketplace/catalog-entities/packages
 ```
 
+## Troubleshooting
+
+Because Backstage doesn't remove catalog entries when the source changes, sometimes you will end up with duplicates. For example
+if you rename a plugin file, you may end up with the old catalog entry sticking around. To fix this you need to purge the
+backstage database. If running the in-memory database, this is easily acheived by restarting the container:
+
+```bash
+docker compose restart rhdh # or podman-compose restart rhdh
+```
+
 ## Important Notes:
 
 * Plugins are manually created
