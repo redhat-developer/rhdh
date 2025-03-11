@@ -5,7 +5,7 @@ metadata:
   name: github-scaffolder-actions
   namespace: rhdh
   title: GitHub Software Template Actions
-  description: ''
+  description: 'This plugin contains a collection of actions for working with GitHub'
   annotations:
     extensions.backstage.io/pre-installed: 'true'
   tags:
@@ -13,6 +13,10 @@ metadata:
 spec:
   categories:
     - Software Templates
+  author: Backstage Community
+  support: tech-preview
+  lifecycle: active
+  publisher: Red Hat
 
   icon: data:image/svg+xml;base64,
     PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjgg
@@ -48,6 +52,29 @@ spec:
     ODcgMS4zMDYuODh6bTQuNTk4LS43ODJjLjA4Ni40ODUtLjQxMy45ODQtMS4xMjYgMS4xMTctLjcu
     MTMtMS4zNS0uMTcyLTEuNDQtLjY1My0uMDg2LS40OTguNDIyLS45OTcgMS4xMjItMS4xMjYuNzE0
     LS4xMjMgMS4zNTQuMTcgMS40NDQuNjYzem0wIDAiLz48L2c+PC9zdmc+
+
+  description: |
+    This plugin contains a collection of actions for working with GitHub
+
+    - publish:github
+    - github:repo:create
+    - github:actions:dispatch
+    - github:issues:label
+    - github:autolinks:create
+    - publish:github:pull-request
+    - github:repo:push
+
+
+    ## Adding The Plugin To Red Hat Developer Hub
+
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further instructions on how to add, enable, and configure plugins in your instance.
+
+    ## Configuring The Plugin ##
+
+    Plugins often need additional configuration to work correctly - particularly those that integrate with other
+    systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further details on the configuration required.
 
   packages:
     - backstage-plugin-scaffolder-backend-module-github
