@@ -29,6 +29,8 @@ spec:
   support: production
   lifecycle: active
   description: |
+    This plugin ships as enabled by default in Red Hat Developer Hub.
+
     This plugin provides an implementation of the Backstage Analytics API for
     Segment. Once installed and configured, analytics events will be sent to
     Segment as your users navigate and use your Backstage instance.
