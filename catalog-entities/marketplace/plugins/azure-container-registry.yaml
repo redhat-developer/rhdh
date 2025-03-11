@@ -18,10 +18,6 @@ metadata:
   tags:
     - azure
     - container-registry
-    - kubernetes
-    - openshift
-    - cicd
-    - software-catalog
 spec:
   categories:
     - Azure
