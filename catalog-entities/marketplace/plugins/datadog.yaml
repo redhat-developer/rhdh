@@ -5,19 +5,29 @@ metadata:
   name: datadog
   namespace: rhdh
   title: Datadog
-  description: Embed Datadog graphs and dashboards in Backstage.
+  description: Embed Datadog graphs and dashboards into Red Hat Developer Hub
   annotations:
     extensions.backstage.io/pre-installed: 'true'
   tags: []
   links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Documentation for Red Hat developer Hub
+      url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
+    - title: Source Code
+      url: https://github.com/RoadieHQ/roadie-backstage-plugins/tree/main/plugins/frontend/backstage-plugin-datadog
     - url: https://roadie.io/backstage/plugins/datadog/
       title: Roadie Documentation
+
 spec:
-  authors: 
+  authors:
     - name: Roadie
       url: https://roadie.io/
+  support: tech-preview
+  lifecycle: active
   publisher: Red Hat
-
   category: Monitoring
 
   icon: data:image/svg+xml;base64,
@@ -87,10 +97,24 @@ spec:
   packages:
     - roadiehq-backstage-plugin-datadog
 
-  # not yet
-  # assets:
-  #   - type: icon
-  #     Url: https://roadie.io/images/logos/datadog-white-background.png
+  description: |
+    Embed Datadog graphs and dashboards into Backstage.
+
+    Datadog is a monitoring service for cloud-scale applications, providing monitoring of servers, databases, tools, and services through a SaaS-based data analytics platform.
+    ## Adding The Plugin To Red Hat Developer Hub
+
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further instructions on how to add, enable, and configure plugins in your instance.
+
+    ## Configuring The Plugin ##
+
+    Plugins often need additional configuration to work correctly - particularly those that integrate with other
+    systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further details on the configuration required.
+
+  highlights:
+    - Embed Datadog graphs and dashboards into RHDH
+
 
   history:
     added: '2021-04-20'
