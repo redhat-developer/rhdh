@@ -5,17 +5,47 @@ metadata:
   name: kubernetes
   namespace: rhdh
   title: Kubernetes
-  description: Monitor all your service's deployments at a glance, even across clusters.
+  description: |
+    Monitor all your service's deployments at a glance.
   annotations:
     extensions.backstage.io/pre-installed: 'true'
-  tags: []
+    extensions.backstage.io/verified-by: Red Hat
+  tags: 
+    - kubernetes
   links:
-    - url: https://backstage.io/docs/features/kubernetes/
-      title: Backstage Documentation
+    - title: Backstage Documentation
+      url: https://backstage.io/docs/features/kubernetes/      
+    - title: Documentation for Red Hat Developer Hub
+      url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/
+      
 spec:
-  authors:
-    - name: Spotify
-      url: https://github.com/spotify
+  author: Spotify
+  support: production
+  lifecycle: active
+  publisher: Red Hat
+
+  description: |
+    This plugin provides a Kubernetes integration for Backstage. Once installed and configured, you can monitor all your service's deployments at a glance.
+
+    ## Adding The Plugin To Red Hat Developer Hub
+
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub) 
+    for further instructions on how to add, enable, configure, and remove plugins in your instance.
+
+    ## Configuring The Plugin ##
+
+    Plugins often need additional configuration to work correctly - particularly those that integrate with other 
+    systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further details regarding the configuration required.
+
+  categories:
+    - Observability # One category will show up on the tile view
+
+  highlights:
+    - Monitor all your deployments at a glance.
+    - View the status of your services.
 
   icon: data:image/svg+xml;base64,
     PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjgg
@@ -92,8 +122,3 @@ spec:
     - backstage-plugin-kubernetes
     - backstage-plugin-kubernetes-backend
     #- backstage-community-plugin-scaffolder-backend-module-kubernetes
-
-  # unused yet
-  # assets:
-  #   - type: icon
-  #     Url: /img/backstage-k8s.svg

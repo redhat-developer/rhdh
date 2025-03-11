@@ -1,5 +1,7 @@
 # Creating & Editing Extension Catalog Plugins
 
+Spreadsheet for tracking the work is here: https://docs.google.com/spreadsheets/d/1K_LqKYma9nRM5teKD-uCnbB3qKC8Hk2E5jvcpMSfjTs/edit?gid=771893283#gid=771893283
+
 ## Working with Plugin Folders & Files
 
 Below are some practical instructions that might help you in the process of creating and updating plugins and packages for use in the RHDH Extensions catalog plugin.
@@ -180,6 +182,10 @@ services:
 
 ## Troubleshooting
 
+Some issues you may encounter and how to get around them.
+
+### Duplicate Entries
+
 Because Backstage doesn't remove catalog entries when the source changes, sometimes you will end up with duplicates. For example
 if you rename a plugin file, you may end up with the old catalog entry sticking around. To fix this you need to purge the
 backstage database. If running the in-memory database, this is easily acheived by restarting the container:
@@ -187,6 +193,32 @@ backstage database. If running the in-memory database, this is easily acheived b
 ```bash
 docker compose restart rhdh # or podman-compose restart rhdh
 ```
+
+### Catalog stops loading or refreshing
+
+Sometimes you might make a mistake with a plugin yaml file. If that happens you can use commenting of lines in the `plugins/all.yaml`
+to stop certain plugins from being loaded into the catalog. You can allso search for `all.yaml` in the RHDH logs to see if you can 
+find a clue as to what caused the catalog entries to stop loading. For example:
+
+```bash
+rhdh  | {"entity":"location:rhdh/plugins","level":"\u001b[33mwarn\u001b[39m","location":"file:/marketplace/catalog-entities/plugins/all.yaml","message":"YAML error at file:/marketplace/catalog-entities/plugins/keycloak-catalog-integration.yaml, YAMLParseError: Map keys must be unique at line 99, column 3:\n\n  #   level: tech-preview\n  lifecycle: production\n  ^\n","plugin":"catalog","service":"backstage","timestamp":"2025-03-11 15:56:57"}
+```
+
+### Is my plugin here or missing?
+
+You can trace packages back to plugin entries using the VS Code "Find In Folder..." feature. For example:
+
+1. Given the plugin ID `@backstage-community/plugin-quay` (replace with the plugin ID you need)
+1. Do a "Find in Folder..." search for the `package/` file that contains this entry.
+1. The `/packages/backstage-community-plugin-quay.yaml` contains this entry. 
+1. Open this file and look for the `metadata.name` (`backstage-community-plugin-quay`).
+1. Now do a search in the plugins folder for the text `backstage-community-plugin-quay`.
+1. The `plugins/backstage-community-plugin-quay.yaml` contains this text.
+1. You can open the file and edit the text.
+
+If you do not find a plugin.yaml associated with this plugin ID then it is probably missing and you need to create one. The
+file `1boilerplate.yaml` has a good starting point for creating these files.
+
 
 ## Important Notes:
 
