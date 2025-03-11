@@ -55,5 +55,7 @@ jobs:
           context: .
           file: .ibm/images/Dockerfile
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:${{ env.IMAGE_TAG }}
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:${{ env.IMAGE_TAG }}
+            ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:${{ env.IMAGE_TAG }}-${{ env.SHORT_SHA }}
           platforms: ${{ env.PLATFORM }}
