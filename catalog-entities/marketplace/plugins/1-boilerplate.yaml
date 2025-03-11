@@ -19,7 +19,7 @@ metadata:
     - title: Source Code
       url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/
   tags:
-    - apis # Used for fildering
+    - apis # Used for filtering
   description: |
     This is the description text used for the Tile view - keep it short.
 spec:
@@ -27,6 +27,12 @@ spec:
   support: tech-preview
   lifecycle: active
   publisher: Red Hat
+  
+  categories:
+    - API Management # One category will show up on the tile view
+  highlights:
+    - Add some highlights of the plugins features
+
   description: |
     This is the long description used for the Expanded view. Uses Markdown.
 
@@ -41,10 +47,7 @@ spec:
     systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
     for further details regarding the configuration required.
 
-  categories:
-    - API Management # One category will show up on the tile view
-  highlights:
-    - Add some highlights of the plugins features
+
 
   # Images are base 64 encoded SVGs (below is a blank square from the mockup)
   icon: data:image/svg+xml;base64,
