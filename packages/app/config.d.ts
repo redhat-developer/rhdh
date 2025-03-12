@@ -72,6 +72,7 @@ export interface Config {
           menuItem?: {
             icon: string;
             text: string;
+            enabled?: boolean;
           };
           config: {
             props?: {

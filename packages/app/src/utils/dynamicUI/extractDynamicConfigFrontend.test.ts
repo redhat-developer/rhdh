@@ -103,12 +103,14 @@ const createMenuItem = (
   icon: string,
   parent?: string,
   children = [],
+  enabled?: boolean,
 ) => ({
   name,
   title,
   icon,
   parent,
   children,
+  enabled: enabled,
 });
 
 describe('buildTree', () => {
@@ -152,15 +154,16 @@ describe('buildTree', () => {
       ],
     },
     {
-      description: 'should filter out items with no title',
+      description: 'should filter out items with enabled as false or no title',
       input: [
         createMenuItem('item1', 'Item 1', 'icon1'),
         createMenuItem('item2', '', 'icon2'),
-        createMenuItem('item3', 'Item 3', 'icon3'),
+        createMenuItem('item3', 'Item 3', 'icon3', undefined, [], false),
+        createMenuItem('item4', 'Item 4', 'icon4'),
       ],
       expectedOutput: [
         createMenuItem('item1', 'Item 1', 'icon1'),
-        createMenuItem('item3', 'Item 3', 'icon3'),
+        createMenuItem('item4', 'Item 4', 'icon4'),
       ],
     },
   ];
