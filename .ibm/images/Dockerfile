@@ -1,5 +1,5 @@
 # Base image from Microsoft Playwright
-# Must stay pinned to a version which includes Node.js 22!
+# Must stay pinned to a version which includes Nodejs 22!
 FROM mcr.microsoft.com/playwright:v1.50.1-jammy
 
 # Set environment variables for the container
@@ -16,19 +16,18 @@ ENV CI=1 \
     GOPATH="/go" \
     PATH="$GOPATH/bin:/usr/local/go/bin:$PATH"
 
-# Copy Yarn configuration files
+# Copy Yarn configuration files to correctly use the project-defined Yarn version
 COPY .yarn /root/.yarn
 COPY .yarnrc.yml /root/.yarnrc.yml
+RUN rm -f $(which yarn) || true
 
-# Remove existing Yarn binary if present
-RUN rm -f $(which yarn) || true \
-    && corepack enable
-
-# Extract Yarn version from .yarnrc.yml and install it
+# Extract the correct Yarn version from .yarnrc.yml and install it
 RUN YARN_VERSION=$(awk -F'[-.]' '/yarnPath:/ {print $(NF-3)"."$(NF-2)"."$(NF-1)}' /root/.yarnrc.yml) \
   && echo "Detected Yarn Version: $YARN_VERSION" \
+  && corepack enable \
   && corepack prepare "yarn@$YARN_VERSION" --activate \
-  && yarn -v
+  && yarn -v \
+  && rm -f /root/.yarnrc.yml
 
 # Install essential dependencies and Node.js tools
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -37,14 +36,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     openssl libssl-dev ca-certificates \
     apache2-utils \
     gettext \
-    curl wget jq colorized-logs \
-    skopeo \
-    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    curl wget jq colorized-logs && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
+    echo "Node: $(node -v)\nNPM: $(npm -v)\nYarn: $(yarn -v)\nTypeScript: $(tsc -v)"
 
 # Ensure the current user is root and verify permissions
 RUN echo "whoami: $(whoami)" \
+    # The "id" command should confirm the user is root
     && id \
+    # Make the "/root" folder readable for all users
     && chmod 755 /root \
+    # Check where Node.js loads required modules
     && node -p 'module.paths'
 
 # Install Helm, OpenShift CLI, ocm-cli, and yq
@@ -69,11 +71,17 @@ RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.
     apt-get install google-cloud-cli google-cloud-sdk-gke-gcloud-auth-plugin -y && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Install additional CLI tools
+# Install skopeo
+RUN apt-get update -y && \
+    apt-get install -y skopeo
+
+# Install umoci
 RUN curl -LO "https://github.com/opencontainers/umoci/releases/download/v0.4.7/umoci.amd64" && \
     chmod +x umoci.amd64 && \
-    mv umoci.amd64 /usr/local/bin/umoci && \
-    curl -LO "https://github.com/operator-framework/operator-registry/releases/download/v1.47.0/linux-amd64-opm" && \
+    mv umoci.amd64 /usr/local/bin/umoci
+
+# Install opm
+RUN curl -LO "https://github.com/operator-framework/operator-registry/releases/download/v1.47.0/linux-amd64-opm" && \
     chmod +x linux-amd64-opm && \
     mv linux-amd64-opm /usr/local/bin/opm
 
@@ -83,9 +91,9 @@ RUN export ARCH=$(case $(uname -m) in x86_64) echo -n amd64 ;; aarch64) echo -n 
     curl -LO "https://github.com/operator-framework/operator-sdk/releases/download/v1.39.1/operator-sdk_${OS}_${ARCH}" && \
     chmod +x operator-sdk_${OS}_${ARCH} && mv operator-sdk_${OS}_${ARCH} /usr/local/bin/operator-sdk
 
-# Ensure Yarn is always activated in interactive shells
-RUN echo "corepack enable" >> /root/.bashrc \
-    && echo "corepack prepare yarn@$(awk -F'[-.]' '/yarnPath:/ {print $(NF-3)"."$(NF-2)"."$(NF-1)}' /root/.yarnrc.yml) --activate" >> /root/.bashrc
+# Ensure that corepack is enabled and the correct Yarn version is set up for interactive shell sessions
+RUN echo "corepack enable" >> /root/.bashrc && \
+    echo "corepack prepare yarn@$(awk -F'[-.]' '/yarnPath:/ {print $(NF-3)"."$(NF-2)"."$(NF-1)}' /root/.yarnrc.yml) --activate" >> /root/.bashrc
 
 # Set working directory
 WORKDIR /tmp/
