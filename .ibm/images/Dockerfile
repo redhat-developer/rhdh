@@ -1,4 +1,5 @@
 # Base image from Microsoft Playwright
+# DO NOT UPDATE to 1.49 or newer -- must stay pinned to Nodejs 20!
 FROM mcr.microsoft.com/playwright:v1.47.2-jammy
 
 # Set environment variables for the container
