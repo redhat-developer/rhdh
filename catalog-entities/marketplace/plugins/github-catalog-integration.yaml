@@ -2,12 +2,14 @@
 apiVersion: extensions.backstage.io/v1alpha1
 kind: Plugin
 metadata:
-  name: github-catalog-integration
+  name: backstage-plugin-catalog-backend-module-github-org
   namespace: rhdh
   title: GitHub Software Catalog Integration
   description: |
     Provides a GitHub integration for the Software Catalog. Searches your 
-    GitHub account and registers catalog files matching the configured path.
+    GitHub account and registers catalog files matching the configured path. 
+    It can also import your users and groups from GitHub.
+
   annotations:
     extensions.backstage.io/pre-installed: 'true'
     extensions.backstage.io/verified-by: Red Hat
@@ -40,10 +42,30 @@ spec:
     - Software Catalog
   
   description: |
-    Discovers catalog files located in [GitHub](https://github.com). The provider will search your 
+    Discovers catalog files, users, and groups located in [GitHub](https://github.com). The provider will search your 
     GitHub account and register catalog files matching the configured path as Location entity and via 
     following processing steps add all contained catalog entities. This can be useful as an 
     alternative to static locations or manually adding things to the catalog.
+
+    The plugin also extracts software repositories from GitHub Orgs and ingests org data (users and groups) from GitHub.
+
+    Features include:
+
+    * Discovers catalog files located in [GitHub](https://github.com).
+    * Extracts software repositories from GitHub Orgs
+    * Ingests org data (users and groups) from GitHub.
+    * Provides a GitHub integration for the Software Catalog
+
+    ## Adding The Plugin To Red Hat Developer Hub
+
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub) 
+    for further instructions on how to add, enable, configure, and remove plugins in your instance.
+
+    ## Configuring The Plugin ##
+
+    Plugins often need additional configuration to work correctly - particularly those that integrate with other 
+    systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further details regarding the configuration required.
 
   icon: data:image/svg+xml;base64,
     PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjgg
