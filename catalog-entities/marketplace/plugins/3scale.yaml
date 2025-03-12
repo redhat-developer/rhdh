@@ -4,10 +4,9 @@ kind: Plugin
 metadata:
   name: 3scale
   namespace: rhdh
-  title: 3scale
+  title: APIs with 3scale
   annotations:
     extensions.backstage.io/pre-installed: 'true'
-    extensions.backstage.io/verified-by: Red Hat
   links:
     - url: https://red.ht/rhdh
       title: Homepage
@@ -41,9 +40,14 @@ spec:
 
     ## Adding The Plugin To Red Hat Developer Hub
 
-    **<insert plugin activation instructions & RHDH GUI mountpoint information here>**
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub) 
+    for further instructions on how to add, enable, configure, and remove plugins in your instance.
 
-    ## Configuring The Plugin
+    ## Configuring The Plugin ##
+
+    Plugins often need additional configuration to work correctly - particularly those that integrate with other 
+    systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further details regarding the configuration required.
 
     3scale Backstage provider allows configuration of one or multiple providers using the `app-config.yaml` configuration file of Backstage.
 
@@ -66,6 +70,7 @@ spec:
   categories:
     - API Management
     - Red Hat integration
+
   highlights:
     - OpenShift support
     - Access Control & Security (Managed within 3scale)
