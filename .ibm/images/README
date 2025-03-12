@@ -36,3 +36,12 @@ For branches **other than `main`**, OpenShift CI does **not** fetch from Quay:
 - **GitHub Actions automates the push process** only for `main` branch updates.
 - **OpenShift CI mirror has a delay** in updating the image after it is pushed to Quay.
 - **Other branches build the image directly**, so changes take effect immediately.
+
+# ----------------------------------------------------------------------------
+# IMPORTANT: The build context must be set to the root of the project!
+# This is required to ensure the .yarnrc.yml file is included in the build.
+#
+# To build this image, run the following command from the project root:
+#
+# podman build -t quay.io/rhdh-community/rhdh-e2e-runner:release-1.y -f .ibm/images/Dockerfile .
+# ----------------------------------------------------------------------------
