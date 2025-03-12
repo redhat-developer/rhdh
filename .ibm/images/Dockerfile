@@ -93,7 +93,8 @@ RUN export ARCH=$(case $(uname -m) in x86_64) echo -n amd64 ;; aarch64) echo -n 
 
 # Ensure that corepack is enabled and the correct Yarn version is set up for interactive shell sessions
 RUN echo "corepack enable" >> /root/.bashrc && \
-    echo "corepack prepare yarn@$(awk -F'[-.]' '/yarnPath:/ {print $(NF-3)"."$(NF-2)"."$(NF-1)}' /root/.yarnrc.yml) --activate" >> /root/.bashrc
+    echo "corepack prepare yarn@$(awk -F'[-.]' '/yarnPath:/ {print $(NF-3)"."$(NF-2)"."$(NF-1)}' /root/.yarnrc.yml) --activate" >> /root/.bashrc && \
+    echo 'echo "Yarn version: $(yarn -v)"' >> /root/.bashrc
 
 # Set working directory
 WORKDIR /tmp/
