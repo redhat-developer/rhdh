@@ -46,12 +46,15 @@ jobs:
           echo "PLATFORM=linux/amd64" >> $GITHUB_ENV
 
           # create image tag from the correct branch (either from a push or a workflow_dispatch trigger)
-          if [[ "${{ inputs.branch }}"  != "NONE" ]]; then
+          if [[ "${{ inputs.branch }}" ]] && [[ "${{ inputs.branch }}"  != "NONE" ]]; then
+            echo "Switch to ${{ inputs.branch }}"
             git checkout "${{ inputs.branch }}"
             IMAGE_TAG="${{ inputs.branch }}"
           else
+            echo "Use current branch ${{ github.ref }}"
             IMAGE_TAG=$(git rev-parse --abbrev-ref HEAD)
           fi
+          echo "Use IMAGE_TAG = $IMAGE_TAG"
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
       - name: Get the last commit short SHA
