@@ -1,4 +1,5 @@
-# pin to an image using Node 20
+# Base image from Microsoft Playwright
+# Must stay pinned to a version which includes Nodejs 20
 FROM mcr.microsoft.com/playwright:v1.46.1-jammy
 
 ENV CI=1 \
