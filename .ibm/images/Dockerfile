@@ -14,7 +14,7 @@ ENV OC_VERSION="4.14.3"
 
 ARG CI_XBUILD
 
-# should be root user
+# should be root user 
 RUN echo "whoami: $(whoami)" \
   # command "id" should print:
   # uid=0(root) gid=0(root) groups=0(root)
