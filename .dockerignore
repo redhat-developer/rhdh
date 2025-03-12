@@ -15,4 +15,3 @@ examples
 .ibm/images/*
 !.ibm/images/Dockerfile
 !.yarnrc.yml
-!.ibm/images/.yarnrc.yml
