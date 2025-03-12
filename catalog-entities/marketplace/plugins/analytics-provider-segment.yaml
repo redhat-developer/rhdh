@@ -5,7 +5,8 @@ metadata:
   name: analytics-provider-segment
   namespace: rhdh
   title: Segment Analytics Module
-  description: 'Segment Analytics Module for Backstage'
+  description: |
+    Segment Analytics Module for Backstage. This plugin ships as enabled by default in Red Hat Developer Hub.
   annotations:
     extensions.backstage.io/pre-installed: 'true'
     extensions.backstage.io/verified-by: Red Hat
