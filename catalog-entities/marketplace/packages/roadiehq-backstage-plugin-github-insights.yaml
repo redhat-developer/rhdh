@@ -1,0 +1,47 @@
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: roadiehq-backstage-plugin-github-insights
+  namespace: rhdh
+  title: "@roadiehq/backstage-plugin-github-insights"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/roadiehq-backstage-plugin-github-insights
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/roadiehq-backstage-plugin-github-insights
+  tags: []
+spec:
+  packageName: "@roadiehq/backstage-plugin-github-insights"
+  dynamicArtifact: ./dynamic-plugins/dist/roadiehq-backstage-plugin-github-insights
+  version: 2.5.1
+  backstage:
+    role: frontend-plugin
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+  partOf:
+    - roadiehq-github-insights
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        dynamicPlugins:
+          frontend:
+            roadiehq.backstage-plugin-github-insights:
+              mountPoints:
+                - mountPoint: entity.page.overview/cards
+                  importName: EntityGithubInsightsComplianceCard
+                  config:
+                    layout:
+                      gridColumnEnd:
+                        lg: span 4
+                        md: span 6
+                        xs: span 12
+                    if:
+                      allOf:
+                        - isGithubInsightsAvailable

@@ -13,8 +13,9 @@ test.describe.skip('Check RBAC "analytics-provider-segment" plugin', () => {
     common = new Common(page);
     await common.loginAsKeycloakUser();
     await uiHelper.openSidebarButton("Administration");
-    await uiHelper.openSidebar("Plugins");
-    await uiHelper.verifyHeading("Plugins");
+    await uiHelper.openSidebar("Extensions");
+    await uiHelper.verifyHeading("Extensions");
+    await uiHelper.clickTab("Installed");
   });
 
   test("is disabled", async ({ page }) => {

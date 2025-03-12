@@ -93,6 +93,12 @@ def merge(source, destination, prefix = ''):
 
     return destination
 
+def maybeMergeConfig(config, globalConfig):
+    if config is not None and isinstance(config, dict):
+        print('\t==> Merging plugin-specific configuration', flush=True)
+        return merge(config, globalConfig)
+    else:
+        return globalConfig
 
 class OciDownloader:
     def __init__(self, destination: str):
@@ -367,6 +373,7 @@ def main():
                 if plugin['hash'] in plugin_path_by_hash and pull_policy == PullPolicy.IF_NOT_PRESENT:
                     print('\n======= Skipping download of already installed dynamic plugin', package, flush=True)
                     plugin_path_by_hash.pop(plugin['hash'])
+                    globalConfig = maybeMergeConfig(plugin.get('pluginConfig'), globalConfig)
                     continue
 
                 if plugin['hash'] in plugin_path_by_hash and pull_policy == PullPolicy.ALWAYS:
@@ -379,6 +386,7 @@ def main():
                     remote_image_digest = oci_downloader.digest(package)
                     if remote_image_digest == local_image_digest:
                         print('\n======= Skipping download of already installed dynamic plugin', package, flush=True)
+                        globalConfig = maybeMergeConfig(plugin.get('pluginConfig'), globalConfig)
                         continue
                     else:
                         print('\n======= Installing dynamic plugin', package, flush=True)
@@ -413,6 +421,7 @@ def main():
                 print('\n======= Installing dynamic plugin', package, flush=True)
 
             if plugin_already_installed:
+                globalConfig = maybeMergeConfig(plugin.get('pluginConfig'), globalConfig)
                 continue
 
             package_is_local = package.startswith('./')
@@ -499,10 +508,7 @@ def main():
           continue
 
         # if some plugin configuration is defined, merge it with the global configuration
-        print('\t==> Merging plugin-specific configuration', flush=True)
-        config = plugin['pluginConfig']
-        if config is not None and isinstance(config, dict):
-                merge(config, globalConfig)
+        globalConfig = maybeMergeConfig(plugin.get('pluginConfig'), globalConfig)
 
         print('\t==> Successfully installed dynamic plugin', package, flush=True)
 

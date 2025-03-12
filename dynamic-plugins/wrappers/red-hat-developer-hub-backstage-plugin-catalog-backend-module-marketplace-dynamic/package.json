@@ -1,13 +1,12 @@
 {
   "name": "red-hat-developer-hub-backstage-plugin-catalog-backend-module-marketplace",
-  "version": "0.0.2",
+  "version": "0.2.2",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "license": "Apache-2.0",
+  "private": true,
   "publishConfig": {
-    "access": "public",
-    "main": "dist/index.cjs.js",
-    "types": "dist/index.d.ts"
+    "access": "public"
   },
   "backstage": {
     "role": "backend-plugin-module",
@@ -15,7 +14,17 @@
     "pluginId": "catalog",
     "pluginPackage": "@backstage/plugin-catalog-backend"
   },
-  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts",
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "package.json": [
+        "package.json"
+      ]
+    }
+  },
   "scripts": {
     "tsc": "tsc",
     "build": "backstage-cli package build",
@@ -23,11 +32,11 @@
     "test": "backstage-cli package test --passWithNoTests --coverage",
     "clean": "backstage-cli package clean",
     "clean-dynamic-sources": "yarn clean && rm -Rf node_modules",
-    "export-dynamic": "janus-cli package export-dynamic-plugin --embed-package @red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace",
+    "export-dynamic": "janus-cli package export-dynamic-plugin --embed-package @red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace --embed-package @red-hat-developer-hub/backstage-plugin-marketplace-common",
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
-    "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace": "0.0.2"
+    "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace": "0.2.2"
   },
   "devDependencies": {
     "@backstage/cli": "0.29.6",
@@ -35,16 +44,10 @@
     "typescript": "5.7.3"
   },
   "files": [
-    "app-config.dynamic.yaml",
     "dist",
-    "dist-scalprum"
+    "dist-dynamic/*.*",
+    "dist-dynamic/dist/**"
   ],
-  "scalprum": {
-    "name": "red-hat-developer-hub.backstage-plugin-catalog-backend-module-marketplace-dynamic",
-    "exposedModules": {
-      "PluginRoot": "./src/index.ts"
-    }
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/redhat-developer/rhdh",

@@ -14,7 +14,6 @@ export class LogUtils {
     return new Promise((resolve, reject) => {
       execFile(command, args, { encoding: "utf8" }, (error, stdout, stderr) => {
         if (error) {
-          console.error("Error executing command:", error);
           reject(`Error: ${error.message}`);
           return;
         }
@@ -192,14 +191,19 @@ export class LogUtils {
     }
 
     const command = "oc";
-    const args = ["login", `--token=${token}`, `--server=${server}`];
+    const args = [
+      "login",
+      `--token=${token}`,
+      `--server=${server}`,
+      `--insecure-skip-tls-verify=true`,
+    ];
 
     try {
       await LogUtils.executeCommand(command, args);
       console.log("Login successful.");
     } catch (error) {
-      console.error("Error during login:", error);
-      throw new Error(`Failed to login to OpenShift: ${error}`);
+      console.error("Error during login");
+      throw new Error(`Failed to login to OpenShift`);
     }
   }
 

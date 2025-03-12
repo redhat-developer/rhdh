@@ -1,4 +1,5 @@
 # Base image from Microsoft Playwright
+# Must stay pinned to a version which includes Nodejs 22!
 FROM mcr.microsoft.com/playwright:v1.50.1-jammy
 
 # Set environment variables for the container
@@ -15,6 +16,12 @@ ENV CI=1 \
     GOPATH="/go" \
     PATH="$GOPATH/bin:/usr/local/go/bin:$PATH"
 
+# Copy the .yarnrc.yml file to the environment
+COPY .yarnrc.yml /root/.yarnrc.yml
+
+# Extract the correct version from the file and install
+RUN YARN_VERSION=$(awk '/yarnPath:/ {print $2}' /root/.yarnrc.yml | awk -F'[-.]' '{print $(NF-1)"."$NF}') && rm -f /root/.yarnrc.yml
+
 # Install essential dependencies and Node.js tools
 RUN apt-get update && apt-get install -y --no-install-recommends \
     make gcc g++ python3 rsync sshpass \
@@ -23,7 +30,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     apache2-utils \
     gettext \
     curl wget jq colorized-logs && \
-    npm install -g typescript yarn@latest && \
+    npm install -g typescript yarn@$YARN_VERSION && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     echo "Node: $(node -v)\nNPM: $(npm -v)\nYarn: $(yarn -v)\nTypeScript: $(tsc -v)"
 
@@ -63,12 +70,12 @@ RUN apt-get update -y && \
     apt-get install -y skopeo
 
 # Install umoci
-RUN curl -LO "https://github.com/opencontainers/umoci/releases/download/v0.4.7/umoci.amd64" && \ 
+RUN curl -LO "https://github.com/opencontainers/umoci/releases/download/v0.4.7/umoci.amd64" && \
     chmod +x umoci.amd64 && \
     mv umoci.amd64 /usr/local/bin/umoci
 
 # Install opm
-RUN curl -LO "https://github.com/operator-framework/operator-registry/releases/download/v1.23.0/linux-amd64-opm" && \ 
+RUN curl -LO "https://github.com/operator-framework/operator-registry/releases/download/v1.47.0/linux-amd64-opm" && \
     chmod +x linux-amd64-opm && \
     mv linux-amd64-opm /usr/local/bin/opm
 

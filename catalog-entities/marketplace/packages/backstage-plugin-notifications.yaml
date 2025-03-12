@@ -1,0 +1,44 @@
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: backstage-plugin-notifications
+  namespace: rhdh
+  title: "@backstage/plugin-notifications"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-plugin-notifications
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-plugin-notifications
+  tags: []
+spec:
+  packageName: "@backstage/plugin-notifications"
+  dynamicArtifact: ./dynamic-plugins/dist/backstage-plugin-notifications
+  version: 0.5.1
+  backstage:
+    role: frontend-plugin
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+  partOf:
+    - notifications
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        dynamicPlugins:
+          frontend:
+            backstage.plugin-notifications:
+              dynamicRoutes:
+                - importName: NotificationsPage
+                  menuItem:
+                    config:
+                      props:
+                        titleCounterEnabled: true
+                        webNotificationsEnabled: false
+                    importName: NotificationsSidebarItem
+                  path: /notifications

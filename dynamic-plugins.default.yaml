@@ -1089,11 +1089,11 @@ plugins:
           pingIdentityOrg: {}
   # Group: Marketplace
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-catalog-backend-module-marketplace-dynamic
-    disabled: true
+    disabled: false
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-marketplace-backend-dynamic
-    disabled: true
+    disabled: false
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-marketplace
-    disabled: true
+    disabled: false
     pluginConfig:
       dynamicPlugins:
         frontend:
@@ -1102,11 +1102,11 @@ plugins:
               - name: marketplace
                 importName: MarketplaceIcon
             dynamicRoutes:
-              - path: /marketplace
-                importName: MarketplacePage
-                menuItem:
-                  icon: marketplace
-                  text: Marketplace
+              - path: /extensions/catalog
+                importName: DynamicMarketplacePluginRouter
             mountPoints:
-              - mountPoint: admin.page.plugins/cards
-                importName: MarketplaceCatalogContent
+              - mountPoint: internal.plugins/tab
+                importName: DynamicMarketplacePluginContent
+                config:
+                  path: marketplace
+                  title: Catalog

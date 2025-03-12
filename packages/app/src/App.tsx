@@ -23,9 +23,19 @@ const baseFrontendConfig = {
           ],
           dynamicRoutes: [
             {
-              path: '/plugins',
-              importName: 'DynamicPluginsInfo',
+              path: '/extensions',
+              importName: 'DynamicPluginsInfoPage',
               menuItem: { text: 'Plugins', icon: 'pluginsInfoIcon' },
+            },
+          ],
+          mountPoints: [
+            {
+              mountPoint: 'internal.plugins/tab',
+              importName: 'DynamicPluginsInfoContent',
+              config: {
+                path: 'installed',
+                title: 'Installed',
+              },
             },
           ],
           menuItems: {
@@ -33,9 +43,9 @@ const baseFrontendConfig = {
               title: 'Administration',
               icon: 'adminIcon',
             },
-            plugins: {
+            extensions: {
               parent: 'admin',
-              title: 'Plugins',
+              title: 'Extensions',
               icon: 'pluginsInfoIcon',
             },
           },

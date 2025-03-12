@@ -628,12 +628,21 @@ create_app_config_map_k8s() {
 run_tests() {
   local release_name=$1
   local project=$2
-  project=${project}
   cd "${DIR}/../../e2e-tests"
   local e2e_tests_dir
   e2e_tests_dir=$(pwd)
 
-  yarn install
+  yarn install --immutable > /tmp/yarn.install.log.txt 2>&1
+
+  INSTALL_STATUS=$?
+  if [ $INSTALL_STATUS -ne 0 ]; then
+    echo "=== YARN INSTALL FAILED ==="
+    cat /tmp/yarn.install.log.txt
+    exit $INSTALL_STATUS
+  else
+    echo "Yarn install completed successfully."
+  fi
+
   yarn playwright install chromium
 
   Xvfb :99 &

@@ -1,0 +1,45 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: pagerduty
+  namespace: rhdh
+  title: PagerDuty
+  description: Bring the power of PagerDuty to Backstage, reduce cognitive load, improve service visibility and enforce incident management best practices.
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
+  links:
+    - url: https://pagerduty.github.io/backstage-plugin-docs/index.html
+      title: PagerDuty Documentation
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/pagerduty-backstage-plugin
+  tags:
+    - monitoring
+    - errors
+    - alerting
+spec:
+  authors:
+    - name: PagerDuty
+      url: https://github.com/pagerduty
+
+  categories:
+    - Monitoring
+
+  support: tech-preview
+  lifecycle: active
+
+  packages:
+    - pagerduty-backstage-plugin
+    - pagerduty-backstage-plugin-backend
+
+  # unnused yet
+  # assets:
+  #   - type: icon
+  #     Url: https://avatars2.githubusercontent.com/u/766800?s=200&v=4
+
+  history:
+    added: '2020-12-22'

@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: ldap-catalog-integration
+  namespace: rhdh
+  title: LDAP Catalog Integration
+  description: ''
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
+  tags: []
+spec:
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+
+  packages:
+    - backstage-plugin-catalog-backend-module-ldap-dynamic

@@ -1,0 +1,48 @@
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: backstage-community-plugin-rbac
+  namespace: rhdh
+  title: "@backstage-community/plugin-rbac"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-rbac
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-rbac
+  tags: []
+spec:
+  packageName: "@backstage-community/plugin-rbac"
+  dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-rbac
+  version: 1.38.2
+  backstage:
+    role: frontend-plugin
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: production
+  lifecycle: active
+  partOf:
+    - rbac
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        dynamicPlugins:
+          frontend:
+            backstage-community.plugin-rbac:
+              appIcons:
+                - name: rbacIcon
+                  importName: RbacIcon
+              dynamicRoutes:
+                - path: /rbac
+                  importName: RbacPage
+                  menuItem:
+                    icon: rbacIcon
+                    text: RBAC
+              menuItems:
+                rbac:
+                  parent: admin
+                  icon: rbacIcon

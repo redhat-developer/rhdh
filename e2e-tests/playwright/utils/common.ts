@@ -455,9 +455,9 @@ export class Common {
     const catalogUsers: UserEntity[] =
       response && response.items ? response.items : [];
     expect(catalogUsers.length).toBeGreaterThan(0);
-    const catalogUsersDisplayNames: string[] = catalogUsers.map(
-      (u) => u.spec.profile.displayName,
-    );
+    const catalogUsersDisplayNames: string[] = catalogUsers
+      .filter((u) => u.spec.profile && u.spec.profile.displayName)
+      .map((u) => u.spec.profile.displayName);
     LOGGER.info(
       `Checking ${JSON.stringify(catalogUsersDisplayNames)} contains users ${JSON.stringify(users)}`,
     );
@@ -475,9 +475,9 @@ export class Common {
     const catalogGroups: GroupEntity[] =
       response && response.items ? response.items : [];
     expect(catalogGroups.length).toBeGreaterThan(0);
-    const catalogGroupsDisplayNames: string[] = catalogGroups.map(
-      (u) => u.spec.profile.displayName,
-    );
+    const catalogGroupsDisplayNames: string[] = catalogGroups
+      .filter((u) => u.spec.profile && u.spec.profile.displayName)
+      .map((u) => u.spec.profile.displayName);
     LOGGER.info(
       `Checking ${JSON.stringify(catalogGroupsDisplayNames)} contains groups ${JSON.stringify(groups)}`,
     );

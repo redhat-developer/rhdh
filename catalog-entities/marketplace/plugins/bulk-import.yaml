@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: bulk-import
+  namespace: rhdh
+  title: Bulk Import
+  description: ''
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
+  tags: []
+  links: []
+spec:
+  packages:
+    - red-hat-developer-hub-backstage-plugin-bulk-import

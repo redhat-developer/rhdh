@@ -1,0 +1,72 @@
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: backstage-plugin-techdocs
+  namespace: rhdh
+  title: "@backstage/plugin-techdocs"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-plugin-techdocs
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-plugin-techdocs
+  tags: []
+spec:
+  packageName: "@backstage/plugin-techdocs"
+  dynamicArtifact: ./dynamic-plugins/dist/backstage-plugin-techdocs
+  version: 1.12.2
+  backstage:
+    role: frontend-plugin
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: production
+  lifecycle: active
+  partOf:
+    - techdocs
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        dynamicPlugins:
+          frontend:
+            backstage.plugin-techdocs:
+              routeBindings:
+                targets:
+                  - importName: techdocsPlugin
+                bindings:
+                  - bindTarget: catalogPlugin.externalRoutes
+                    bindMap:
+                      viewTechDoc: techdocsPlugin.routes.docRoot
+                  - bindTarget: scaffolderPlugin.externalRoutes
+                    bindMap:
+                      viewTechDoc: techdocsPlugin.routes.docRoot
+              dynamicRoutes:
+                - path: /docs
+                  importName: TechDocsIndexPage
+                  menuItem:
+                    icon: docs
+                    text: Docs
+                - path: /docs/:namespace/:kind/:name/*
+                  importName: TechDocsReaderPage
+              mountPoints:
+                - mountPoint: entity.page.docs/cards
+                  importName: EntityTechdocsContent
+                  config:
+                    layout:
+                      gridColumn: 1 / -1
+                    if:
+                      allOf:
+                        - isTechDocsAvailable
+                - mountPoint: search.page.results
+                  importName: TechDocsSearchResultListItem
+                - mountPoint: search.page.filters
+                  importName: TechdocsSearchFilter
+                - mountPoint: search.page.types
+                  importName: techdocsSearchType
+                  config:
+                    props:
+                      name: Documentation
+                      icon: docs

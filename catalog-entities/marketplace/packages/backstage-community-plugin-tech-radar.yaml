@@ -1,0 +1,50 @@
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: backstage-community-plugin-tech-radar
+  namespace: rhdh
+  title: "@backstage-community/plugin-tech-radar"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-tech-radar
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-tech-radar
+  tags: []
+spec:
+  packageName: "@backstage-community/plugin-tech-radar"
+  dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-tech-radar
+  version: 1.0.0
+  backstage:
+    role: frontend-plugin
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+  partOf:
+    - tech-radar
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        dynamicPlugins:
+          frontend:
+            backstage-community.plugin-tech-radar:
+              apiFactories:
+                - importName: TechRadarApi
+              appIcons:
+                - name: techRadar
+                  importName: TechRadarIcon
+              dynamicRoutes:
+                - path: /tech-radar
+                  importName: TechRadarPage
+                  menuItem:
+                    icon: techRadar
+                    text: Tech Radar
+                  config:
+                    props:
+                      width: 1500
+                      height: 800

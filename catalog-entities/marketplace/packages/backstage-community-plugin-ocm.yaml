@@ -1,0 +1,71 @@
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: backstage-community-plugin-ocm
+  namespace: rhdh
+  title: "@backstage-community/plugin-ocm"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-ocm
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-ocm
+  tags: []
+spec:
+  packageName: "@backstage-community/plugin-ocm"
+  dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-ocm
+  version: 5.3.0
+  backstage:
+    role: frontend-plugin
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: production
+  lifecycle: active
+  partOf:
+    - backstage-community-plugin-ocm
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        dynamicPlugins:
+          frontend:
+            backstage-community.plugin-ocm:
+              appIcons:
+                - name: ocmIcon
+                  importName: OcmIcon
+              dynamicRoutes:
+                - path: /ocm
+                  importName: OcmPage
+                  menuItem:
+                    icon: ocmIcon
+                    text: Clusters
+              mountPoints:
+                - mountPoint: entity.page.overview/context
+                  importName: ClusterContextProvider
+                - mountPoint: entity.page.overview/cards
+                  importName: ClusterAvailableResourceCard
+                  config:
+                    layout:
+                      gridColumnEnd:
+                        lg: span 4
+                        md: span 6
+                        xs: span 12
+                    if:
+                      allOf:
+                        - isKind: resource
+                        - isType: kubernetes-cluster
+                - mountPoint: entity.page.overview/cards
+                  importName: ClusterInfoCard
+                  config:
+                    layout:
+                      gridColumnEnd:
+                        lg: span 4
+                        md: span 6
+                        xs: span 12
+                    if:
+                      allOf:
+                        - isKind: resource
+                        - isType: kubernetes-cluster

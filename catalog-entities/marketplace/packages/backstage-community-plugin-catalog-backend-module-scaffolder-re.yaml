@@ -1,0 +1,32 @@
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: backstage-community-plugin-catalog-backend-module-scaffolder-re
+  namespace: rhdh
+  title: "@backstage-community/plugin-catalog-backend-module-scaffolder-relation-\
+    processor"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic
+  tags: []
+spec:
+  packageName: "@backstage-community/plugin-catalog-backend-module-scaffolder-rel\
+    ation-processor"
+  dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic
+  version: 2.2.0
+  backstage:
+    role: backend-plugin-module
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+  partOf:
+    - backstage-community-scaffolder-relation-processor-catalog-module
+  appConfigExamples: []
