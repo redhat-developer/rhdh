@@ -5,7 +5,10 @@ metadata:
   name: bulk-import
   namespace: rhdh
   title: Bulk Import
-  description: 'With this plugin you can import multiple code repositories into your software catalog at once.'
+  description: |
+    With this plugin you can import multiple code repositories into your software catalog at once. The plugin provides
+    a simple to use interface that can list all the repositories in your organization and allows you to select the ones
+    you want to import.
   annotations:
     extensions.backstage.io/pre-installed: 'true'
   tags: 
@@ -21,8 +24,6 @@ metadata:
     - title: Source Code
       url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/
 
-
-
 spec:
 
   author: Red Hat
@@ -32,6 +33,7 @@ spec:
 
   categories:
     - Software Catalog # One category will show up on the tile view
+
   highlights:
     - Fills your software-catalog 
     - Creates `catalog-info.yaml` files
@@ -39,7 +41,14 @@ spec:
     - Intuative UI
 
   description: |
-    With this plugin you can import multiple code repositories into your software catalog at once. 
+    With this plugin you can import multiple code repositories into your software catalog with ease. The plugin provides
+    a simple to use interface that can list all the repositories in your organization and allows you to select the ones
+    you want to import. The plugin will then create a `catalog-info.yaml` file for each repository and register the code
+    in your software catalog. 
+
+    Using a wizard style approach, you can quickly fill your software catalog with the projects you care about and share
+    information with your team and organization. Repositories listed in your catalog can be easily discovered using search
+    and filters, and you can view detailed information about each repository, including the code, documentation, and more.
 
     ## Adding The Plugin To Red Hat Developer Hub
 
