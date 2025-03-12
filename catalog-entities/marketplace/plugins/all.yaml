@@ -41,6 +41,7 @@ spec:
     - ./keycloak-catalog-integration.yaml
     - ./kubernetes-scaffolder-actions.yaml
     - ./kubernetes.yaml
+    - ./kubernetes-backend.yaml
     - ./ldap-catalog-integration.yaml
     - ./lighthouse.yaml
     - ./microsoft-graph-catalog-integration.yaml

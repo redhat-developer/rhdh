@@ -24,7 +24,7 @@ metadata:
     This is the description text used for the Tile view - keep it short.
 spec:
   author: Red Hat
-  support: production
+  support: tech-preview  # production, tech-preview, dev-preveiw
   lifecycle: active
   publisher: Red Hat
 
