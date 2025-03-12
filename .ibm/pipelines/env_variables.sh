@@ -134,7 +134,7 @@ GH_USER_PASSWORD=$(cat /tmp/secrets/GH_USER_PASSWORD)
 
 AUTH_PROVIDERS_RELEASE="rhdh-auth-providers"
 AUTH_PROVIDERS_NAMESPACE="showcase-auth-providers"
-STATIC_API_TOKEN="somecicdtoken"
+STATIC_API_TOKEN=$(cat /tmp/secrets/STATIC_API_TOKEN)
 AUTH_PROVIDERS_CHART="rhdh-chart/backstage"
 
 KEYCLOAK_AUTH_BASE_URL=$(cat /tmp/secrets/KEYCLOAK_AUTH_BASE_URL)
