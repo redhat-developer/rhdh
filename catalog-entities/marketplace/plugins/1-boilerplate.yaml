@@ -10,10 +10,10 @@ metadata:
     extensions.backstage.io/verified-by: Red Hat # For verified plugins
     extensions.backstage.io/certified-by: Red Hat # For certified plugins
   links:
-    - url: https://red.ht/rhdh
-      title: Homepage
-    - url: https://issues.redhat.com/browse/RHIDP
-      title: Bugs
+    - title: Homepage
+      url: https://red.ht/rhdh
+    - title: Bugs
+      url: https://issues.redhat.com/browse/RHIDP
     - title: Documentation for Red Hat Developer Hub
       url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
     - title: Source Code
@@ -24,7 +24,7 @@ metadata:
     This is the description text used for the Tile view - keep it short.
 spec:
   author: Red Hat
-  support: tech-preview
+  support: production
   lifecycle: active
   publisher: Red Hat
 
