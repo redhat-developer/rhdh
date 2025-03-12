@@ -22,11 +22,11 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import MuiMenuIcon from '@mui/icons-material/Menu';
 import SearchIcon from '@mui/icons-material/Search';
-import { SxProps } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Collapse from '@mui/material/Collapse';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
+import { SxProps } from '@mui/material/styles';
 import { makeStyles } from 'tss-react/mui';
 
 import DynamicRootContext, {
