@@ -21,13 +21,15 @@ COPY .yarn /root/.yarn
 COPY .yarnrc.yml /root/.yarnrc.yml
 RUN rm -f $(which yarn) || true
 
-# Extract the correct Yarn version from .yarnrc.yml and install it
+# Extract the correct version from the file and install
 RUN YARN_VERSION=$(awk -F'[-.]' '/yarnPath:/ {print $(NF-3)"."$(NF-2)"."$(NF-1)}' /root/.yarnrc.yml) \
   && echo "Detected Yarn Version: $YARN_VERSION" \
   && corepack enable \
   && corepack prepare "yarn@$YARN_VERSION" --activate \
   && yarn -v \
-  && rm -f /root/.yarnrc.yml
+  && rm -f /root/.yarnrc.yml \
+  && echo "export PATH=\"\$HOME/.yarn/bin:\$HOME/.config/yarn/global/node_modules/.bin:\$PATH\"" >> /root/.bashrc \
+  && echo 'echo "Yarn version: $(yarn -v)"' >> /root/.bashrc
 
 # Install essential dependencies and Node.js tools
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -90,11 +92,6 @@ RUN export ARCH=$(case $(uname -m) in x86_64) echo -n amd64 ;; aarch64) echo -n 
     export OS=$(uname | awk '{print tolower($0)}') && \
     curl -LO "https://github.com/operator-framework/operator-sdk/releases/download/v1.39.1/operator-sdk_${OS}_${ARCH}" && \
     chmod +x operator-sdk_${OS}_${ARCH} && mv operator-sdk_${OS}_${ARCH} /usr/local/bin/operator-sdk
-
-# Ensure that corepack is enabled and the correct Yarn version is set up for interactive shell sessions
-RUN echo "corepack enable" >> /root/.bashrc && \
-    echo "corepack prepare yarn@$(awk -F'[-.]' '/yarnPath:/ {print $(NF-3)"."$(NF-2)"."$(NF-1)}' /root/.yarnrc.yml) --activate" >> /root/.bashrc && \
-    echo 'echo "Yarn version: $(yarn -v)"' >> /root/.bashrc
 
 # Set working directory
 WORKDIR /tmp/
