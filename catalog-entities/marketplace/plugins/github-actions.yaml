@@ -5,19 +5,25 @@ metadata:
   name: github-actions
   namespace: rhdh
   title: GitHub Actions
-  description: GitHub Actions makes it easy to automate all your software workflows, now with world-class CI/CD. Build, test, and deploy your code right from GitHub.
+  description: The GitHub Actions Plugin integrates GitHub Actions workflow data into your catalog.
   annotations:
     extensions.backstage.io/pre-installed: 'true'
   tags:
     - cicd
   links:
-    - url: https://github.com/backstage/community-plugins/tree/main/workspaces/github-actions/plugins/github-actions
-      title: Documentation
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Documentation for Red Hat developer Hub
+      url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
+    - title: Source Code
+      url: https://github.com/backstage/community-plugins/tree/main/workspaces/github-actions/plugins/github-actions
 spec:
-  authors:
-    - name: Spotify
-      url: https://github.com/spotify
-
+  author: Backstage Community
+  support: tech-preview
+  lifecycle: active
+  publisher: Red Hat
   categories:
     - CI/CD
 
@@ -55,6 +61,29 @@ spec:
     ODcgMS4zMDYuODh6bTQuNTk4LS43ODJjLjA4Ni40ODUtLjQxMy45ODQtMS4xMjYgMS4xMTctLjcu
     MTMtMS4zNS0uMTcyLTEuNDQtLjY1My0uMDg2LS40OTguNDIyLS45OTcgMS4xMjItMS4xMjYuNzE0
     LS4xMjMgMS4zNTQuMTcgMS40NDQuNjYzem0wIDAiLz48L2c+PC9zdmc+
+
+  description: |
+
+    The GitHub Actions Plugin integrates GitHub Actions workflow data into your catalog.
+
+    GitHub Actions makes it easy to automate all your software workflows, now with world-class CI/CD. Build, test, and deploy your code right from GitHub.
+
+    Plugin features:
+    - List workflow runs for a project
+    - Dive into one run to see a job steps
+    - Retry runs
+    - Pagination for runs
+
+    ## Adding The Plugin To Red Hat Developer Hub
+
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further instructions on how to add, enable, and configure plugins in your instance.
+
+    ## Configuring The Plugin ##
+
+    Plugins often need additional configuration to work correctly - particularly those that integrate with other
+    systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further details on the configuration required.
 
   # unused yet
   # assets:
