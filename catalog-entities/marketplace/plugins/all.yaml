@@ -60,6 +60,7 @@ spec:
     - ./security-insights.yaml
     - ./servicenow-scaffolder-actions.yaml
     - ./signals.yaml
+    - ./signals-backend.yaml
     - ./sonarqube-catalog-cards.yaml
     - ./sonarqube-scaffolder-actions.yaml
     - ./tech-radar.yaml
