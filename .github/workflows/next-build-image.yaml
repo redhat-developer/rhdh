@@ -75,7 +75,6 @@ jobs:
       - name: Get the last commit short SHA
         uses: ./.github/actions/get-sha
 
-
       - name: Build and Push with Buildx
         uses: ./.github/actions/docker-build
         id: build
@@ -104,7 +103,6 @@ jobs:
           path: /tmp/digests/*
           if-no-files-found: error
           retention-days: 1
-
 
   merge:
       runs-on: ubuntu-latest
