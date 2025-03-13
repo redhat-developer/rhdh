@@ -1,5 +1,6 @@
 # Base image from Microsoft Playwright
-FROM mcr.microsoft.com/playwright:v1.50.1-jammy
+# DO NOT UPDATE to 1.49 or newer -- must stay pinned to Nodejs 20
+FROM mcr.microsoft.com/playwright:v1.48.2-jammy
 
 # Set environment variables for the container
 ENV CI=1 \
@@ -20,6 +21,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     make gcc g++ python3 rsync sshpass \
     nodejs \
     openssl libssl-dev ca-certificates \
+    apache2-utils \
+    gettext \
     curl wget jq colorized-logs && \
     npm install -g typescript yarn@latest && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
@@ -70,5 +73,11 @@ RUN curl -LO "https://github.com/operator-framework/operator-registry/releases/d
     chmod +x linux-amd64-opm && \
     mv linux-amd64-opm /usr/local/bin/opm
 
-# Set working directory    
+# Install Operator SDK CLI (required to install OLM on K8s clusters)
+RUN export ARCH=$(case $(uname -m) in x86_64) echo -n amd64 ;; aarch64) echo -n arm64 ;; *) echo -n $(uname -m) ;; esac) && \
+    export OS=$(uname | awk '{print tolower($0)}') && \
+    curl -LO "https://github.com/operator-framework/operator-sdk/releases/download/v1.39.1/operator-sdk_${OS}_${ARCH}" && \
+    chmod +x operator-sdk_${OS}_${ARCH} && mv operator-sdk_${OS}_${ARCH} /usr/local/bin/operator-sdk
+
+# Set working directory
 WORKDIR /tmp/

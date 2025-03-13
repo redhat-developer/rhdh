@@ -1,22 +1,27 @@
 import { test, expect, Page } from "@playwright/test";
-import { UIhelper } from "../utils/ui-helper";
-import { Common, setupBrowser } from "../utils/common";
-import { RESOURCES } from "../support/testData/resources";
+import { UIhelper } from "../../utils/ui-helper";
+import { Common, setupBrowser } from "../../utils/common";
+import { RESOURCES } from "../../support/testData/resources";
 import {
   BackstageShowcase,
   CatalogImport,
-} from "../support/pages/catalog-import";
-import { TEMPLATES } from "../support/testData/templates";
+} from "../../support/pages/catalog-import";
+import { TEMPLATES } from "../../support/testData/templates";
+import { HelmActions } from "../../utils/helm";
+import * as constants from "../../utils/authenticationProviders/constants";
+import { LOGGER } from "../../utils/logger";
+import { waitForNextSync } from "../../utils/helper";
 
 let page: Page;
 
 // TODO: replace skip with serial
-test.describe.skip("GitHub Happy path", () => {
+test.describe.serial("GitHub Happy path", () => {
   //TODO: skipping due to RHIDP-4992
   let common: Common;
   let uiHelper: UIhelper;
   let catalogImport: CatalogImport;
   let backstageShowcase: BackstageShowcase;
+  const syncTime = 60;
 
   const component =
     "https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/all.yaml";
@@ -28,15 +33,95 @@ test.describe.skip("GitHub Happy path", () => {
     common = new Common(page);
     catalogImport = new CatalogImport(page);
     backstageShowcase = new BackstageShowcase(page);
+  });
+
+  test("Setup Github authentication provider and wait for first sync", async () => {
+    test.setTimeout(300 * 1000);
+
+    LOGGER.info(`Base Url is ${process.env.BASE_URL}`);
+    LOGGER.info(
+      "Execute testcase: Setup Github authentication provider and wait for first sync",
+    );
+
+    await HelmActions.upgradeHelmChartWithWait(
+      constants.AUTH_PROVIDERS_RELEASE,
+      constants.AUTH_PROVIDERS_CHART,
+      constants.AUTH_PROVIDERS_NAMESPACE,
+      constants.AUTH_PROVIDERS_VALUES_FILE,
+      constants.CHART_VERSION,
+      constants.QUAY_REPO,
+      constants.TAG_NAME,
+      [
+        "--set upstream.backstage.appConfig.signInPage=github",
+        "--set upstream.backstage.appConfig.auth.environment=production",
+        "--set upstream.backstage.appConfig.catalog.providers.githubOrg[0].orgs[0]=janus-qe",
+        "--set upstream.backstage.appConfig.catalog.providers.microsoftGraphOrg=null",
+        "--set upstream.backstage.appConfig.catalog.providers.keycloakOrg=null",
+        "--set upstream.backstage.appConfig.auth.providers.microsoft=null",
+        "--set upstream.backstage.appConfig.auth.providers.oidc=null",
+        "--set upstream.backstage.appConfig.permission.enabled=false",
+        "--set upstream.postgresql.primary.persistence.enabled=false",
+        `--set-json global.dynamic.plugins='[
+          {
+            "package": "./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-github-dynamic",
+            "disabled": false
+          },
+          {
+            "package": "./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-dynamic",
+            "disabled": false,
+            "pluginConfig": {
+              "catalog": {
+                "providers": {
+                  "github": {
+                    "my-test-org": {
+                      "organization": "janus-qe",
+                      "catalogPath": "/catalog-info.yaml",
+                      "schedule": {
+                        "frequency": {
+                          "minutes": 1
+                        },
+                        "timeout": {
+                          "minutes": 1
+                        },
+                        "initialDelay": {
+                          "seconds": 15
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "package": "./dynamic-plugins/dist/backstage-community-plugin-github-issues",
+            "disabled": false
+          },
+          {
+            "package": "./dynamic-plugins/dist/roadiehq-backstage-plugin-github-pull-requests",
+            "disabled": false
+          },
+          {
+            "package": "./dynamic-plugins/dist/backstage-community-plugin-github-actions",
+            "disabled": false
+          },
+          {
+            "package": "./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-org-dynamic",
+            "disabled": false
+          }
+        ]'`,
+      ],
+    );
+
+    await waitForNextSync("github", syncTime);
+  });
+
+  test("Login as a Github user.", async () => {
     await common.loginAsGithubUser();
   });
 
-  test.beforeEach(
-    async () => await new Common(page).checkAndClickOnGHloginPopup(),
-  );
-
   test("Verify Profile is Github Account Name in the Settings page", async () => {
-    await uiHelper.openSidebar("Settings");
+    await uiHelper.goToSettingsPage();
     await expect(page).toHaveURL("/settings");
     await uiHelper.verifyHeading(process.env.GH_USER_ID);
     await uiHelper.verifyHeading(`User Entity: ${process.env.GH_USER_ID}`);
@@ -71,12 +156,12 @@ test.describe.skip("GitHub Happy path", () => {
 
     await uiHelper.openSidebar("Catalog");
     await uiHelper.selectMuiBox("Kind", "User");
-    await uiHelper.searchInputAriaLabel("rhdh");
+    await uiHelper.searchInputPlaceholder("rhdh");
     await uiHelper.verifyRowsInTable(["rhdh-qe"]);
   });
 
   test("Verify all 12 Software Templates appear in the Create page", async () => {
-    await uiHelper.openSidebar("Create...");
+    await uiHelper.clickLink({ ariaLabel: "Create..." });
     await uiHelper.verifyHeading("Templates");
 
     for (const template of TEMPLATES) {
@@ -111,8 +196,10 @@ test.describe.skip("GitHub Happy path", () => {
     await common.clickOnGHloginPopup();
     const openIssues = await backstageShowcase.getGithubOpenIssues();
 
-    const issuesCountText = `All repositories (${openIssues.length} Issues)*`;
-    await expect(page.locator(`text=${issuesCountText}`)).toBeVisible();
+    const issuesCountText = new RegExp(
+      `All repositories \\(${openIssues.length} Issue.*\\)`,
+    );
+    await expect(page.getByText(issuesCountText)).toBeVisible();
 
     for (const issue of openIssues.slice(0, 5)) {
       await uiHelper.verifyText(issue.title.replace(/\s+/g, " "));
@@ -132,8 +219,7 @@ test.describe.skip("GitHub Happy path", () => {
     await backstageShowcase.verifyPRRows(closedPRs, 0, 5);
   });
 
-  // TODO https://issues.redhat.com/browse/RHIDP-3159 The last ~10 GitHub Pull Requests are missing from the list
-  test.skip("Click on the arrows to verify that the next/previous/first/last pages of PRs are loaded", async () => {
+  test("Click on the arrows to verify that the next/previous/first/last pages of PRs are loaded", async () => {
     console.log("Fetching all PRs from GitHub");
     const allPRs = await BackstageShowcase.getShowcasePRs("all", true);
 
@@ -145,32 +231,37 @@ test.describe.skip("GitHub Happy path", () => {
     await backstageShowcase.clickNextPage();
     await backstageShowcase.verifyPRRows(allPRs, 5, 10);
 
-    const lastPagePRs = Math.floor((allPRs.length - 1) / 5) * 5;
+    // const lastPagePRs = Math.floor((allPRs.length - 1) / 5) * 5;
+    const lastPagePRs = 996; // redhat-developer/rhdh have more than 1000 PRs open/closed and by default the latest 1000 PR results are displayed.
 
     console.log("Clicking on Last Page button");
     await backstageShowcase.clickLastPage();
-    await backstageShowcase.verifyPRRows(allPRs, lastPagePRs, allPRs.length);
+    await backstageShowcase.verifyPRRows(allPRs, lastPagePRs, 1000);
 
     console.log("Clicking on Previous Page button");
     await backstageShowcase.clickPreviousPage();
-    await backstageShowcase.verifyPRRows(allPRs, lastPagePRs - 5, lastPagePRs);
+    await common.waitForLoad();
+    await backstageShowcase.verifyPRRows(
+      allPRs,
+      lastPagePRs - 5,
+      lastPagePRs - 1,
+    );
   });
 
-  //FIXME
-  test.skip("Verify that the 5, 10, 20 items per page option properly displays the correct number of PRs", async () => {
+  test("Verify that the 5, 10, 20 items per page option properly displays the correct number of PRs", async () => {
     await uiHelper.openSidebar("Catalog");
+    await uiHelper.clickByDataTestId("user-picker-all");
     await uiHelper.clickLink("Backstage Showcase");
     await common.clickOnGHloginPopup();
     await uiHelper.clickTab("Pull/Merge Requests");
-    await uiHelper.clickButton("ALL", { force: false });
-    const allPRs = await BackstageShowcase.getShowcasePRs("all");
+    const allPRs = await BackstageShowcase.getShowcasePRs("open");
     await backstageShowcase.verifyPRRowsPerPage(5, allPRs);
     await backstageShowcase.verifyPRRowsPerPage(10, allPRs);
     await backstageShowcase.verifyPRRowsPerPage(20, allPRs);
   });
 
   test("Verify that the CI tab renders 5 most recent github actions and verify the table properly displays the actions when page sizes are changed and filters are applied", async () => {
-    await uiHelper.clickTab("CI");
+    await page.locator("a").getByText("CI", { exact: true }).first().click();
     await common.checkAndClickOnGHloginPopup();
 
     const workflowRuns = await backstageShowcase.getWorkflowRuns();
@@ -192,7 +283,7 @@ test.describe.skip("GitHub Happy path", () => {
   });
 
   test("Sign out and verify that you return back to the Sign in page", async () => {
-    await uiHelper.openSidebar("Settings");
+    await uiHelper.goToSettingsPage();
     await common.signOut();
   });
 

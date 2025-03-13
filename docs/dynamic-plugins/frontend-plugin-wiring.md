@@ -434,7 +434,6 @@ dynamicPlugins:
 
 Users can configure multiple application providers by adding entries to the `mountPoints` field.
 
-
 ## Customizing and Adding Entity tabs
 
 Out of the box the frontend system provides an opinionated set of tabs for catalog entity views. This set of tabs can be further customized and extended as needed via the `entityTabs` configuration:
@@ -457,6 +456,16 @@ plugins:
               - path: /
                 title: General
                 mountPoint: entity.page.overview #this can be customized too
+              # Prioritizing tabs (higher priority appears first)
+              - path: "/pr"
+                title: "Changed Pull/Merge Requests"
+                priority: 1  # Added priority field
+                mountPoint: "entity.page.pull-requests"
+              # Negative priority hides default tabs
+              - path: "/"
+                title: "Changed Overview"
+                mountPoint: "entity.page.overview"
+                priority: -6  
 ```
 
 Each entity tab entry requires the following attributes:
@@ -464,6 +473,7 @@ Each entity tab entry requires the following attributes:
 - `path`: Specifies the sub-path route in the catalog where this tab will be available
 - `title`: The title that is displayed to the user
 - `mountPoint`: The base mount point name that will be available on the tab. This name will be expanded to create two mount points per tab, one appended with `/context` and the second appended with `/cards`.
+- `priority` **(optional)**: Determines the order of tabs. **Tabs with higher priority values appear first** . You can set a **negative priority to hide default tabs**. If priority is omitted , no special ordering is applied.
 
 Dynamic frontend plugins can then be configured to target the mount points exposed by the `entityTabs` configuration.
 
@@ -550,6 +560,43 @@ dynamicPlugins:
 ```
 
 which would override the default `ScmAuth` API factory that Developer Hub defaults to.
+
+## Adding custom authentication provider settings
+
+Out of the box the Backstage user settings page supports all of the documented authentication providers, such as "github" or "microsoft".  However it is possible to install new authentication providers from a dynamic plugin that either adds additional configuration support for an existing provider or adds a new authentication provider altogether.  In either case, these providers are normally listed in the user settings section of the app under the "Authentication Providers" tab.  To add entries for an authentication provider from a dynamic plugin, use the `providerSettings` configuration:
+
+```yaml
+dynamicPlugins:
+  frontend:
+    <package_name>:
+      providerSettings:
+        - title: My Custom Auth Provider
+          description: Sign in using My Custom Auth Provider
+          provider: core.auth.my-custom-auth-provider
+```
+
+Each provider settings entry should define the following attributes:
+
+- `title`: The title for the authentication provider shown above the user's profile image if available.
+- `description`: a short description of the authentication provider.
+- `provider`: The ID of the authentication provider as provided to the `createApiRef` API call.  This value is used to look up the corresponding API factory for the authentication provider to connect the provider's Sign In/Sign Out button.
+
+## Use a custom SignInPage component
+
+In a Backstage app the SignInPage component is used to connect one or more authentication providers to the application sign-in process.  Out of the box in Developer Hub a static SignInPage is already set up and supports all of the built-in authentication providers already.  To use a different authentication provider, for example from a dynamic plugin use the `signInPage` configuration:
+
+```yaml
+dynamicPlugins:
+  frontend:
+    <package_name>:
+      signInPage:
+        importName: CustomSignInPage
+```
+
+Only one `signInPage` is specified and used by the application, this configuration object supports the following properties:
+
+- `module`: optional setting to specify which set of assets should be accessed from the dynamic plugin, defaults to `PluginRoot`
+- `importName`: Required setting that should resolve to a component that returns a configured `SignInPage` component that connects the appropriate authentication provider factories, or a compatible custom implementation.
 
 ## Provide custom Scaffolder field extensions
 

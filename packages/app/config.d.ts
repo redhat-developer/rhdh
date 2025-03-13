@@ -96,6 +96,7 @@ export interface Config {
           path: string;
           title: string;
           mountPoint: string;
+          priority?: number;
         }[];
         mountPoints?: {
           mountPoint: string;
@@ -141,6 +142,36 @@ export interface Config {
         }[];
         apiFactories?: {
           module?: string;
+          importName?: string;
+        }[];
+        providerSettings?: {
+          title: string;
+          description: string;
+          provider: string;
+        }[];
+        scaffolderFieldExtensions?: {
+          module?: string;
+          importName?: string;
+        }[];
+        signInPage?: {
+          module?: string;
+          importName: string;
+        };
+        techdocsAddons?: {
+          module?: string;
+          importName?: string;
+          config?: {
+            props?: {
+              [key: string]: string;
+            };
+          };
+        }[];
+        themes?: {
+          module?: string;
+          id: string;
+          title: string;
+          variant: 'light' | 'dark';
+          icon: string;
           importName?: string;
         }[];
       };

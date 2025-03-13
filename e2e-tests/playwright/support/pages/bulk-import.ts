@@ -12,12 +12,14 @@ export class BulkImport {
   async searchInOrg(searchText: string) {
     await this.page
       .getByTestId("search-in-organization")
-      .getByPlaceholder("Search")
+      .getByPlaceholder("Search", { exact: true })
       .fill(searchText);
   }
 
   async filterAddedRepo(searchText: string) {
-    await this.page.getByPlaceholder("Filter").fill(searchText);
+    await this.page
+      .getByPlaceholder("Search", { exact: true })
+      .fill(searchText);
   }
 
   async newGitHubRepo(owner: string, repoName: string) {

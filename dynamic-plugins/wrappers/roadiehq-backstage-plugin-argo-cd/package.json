@@ -58,7 +58,8 @@
   "homepage": "https://red.ht/rhdh",
   "bugs": "https://issues.redhat.com/browse/RHIDP",
   "keywords": [
-    "support:production",
-    "lifecycle:active"
+    "support:deprecated",
+    "lifecycle:deprecated",
+    "deprecation-notice:This plugin is deprecated and will be removed in a future release."
   ]
 }

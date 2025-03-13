@@ -23,7 +23,7 @@
 # Stage 1 - Build nodejs skeleton
 #@follow_tag(registry.access.redhat.com/ubi9/nodejs-20:1)
 # https://registry.access.redhat.com/ubi9/nodejs-20
-FROM registry.access.redhat.com/ubi9/nodejs-20:9.5-1739783265 AS build
+FROM registry.access.redhat.com/ubi9/nodejs-20:9.5-1741006255 AS build
 # hadolint ignore=DL3002
 USER 0
 
@@ -292,6 +292,9 @@ COPY --from=build "$REMOTE_SOURCES_DIR"/dynamic-plugins/dist/ ./dynamic-plugins/
 
 # RHIDP-4220 - make Konflux preflight and EC checks happy - [check-container] Create a directory named /licenses and include all relevant licensing
 COPY $EXTERNAL_SOURCE/LICENSE /licenses/
+
+# RHIDP-5216/RHIDP-5215 - interim marketplace catalog entities until these data will be loaded from container images
+COPY $EXTERNAL_SOURCE/catalog-entities/marketplace /marketplace/catalog-entities/
 
 # Copy script to gather dynamic plugins; copy embedded dynamic plugins to root folder; fix permissions
 COPY docker/install-dynamic-plugins.py docker/install-dynamic-plugins.sh ./

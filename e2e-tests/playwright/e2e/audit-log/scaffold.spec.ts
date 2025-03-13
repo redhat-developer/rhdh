@@ -22,15 +22,16 @@ test.describe("Audit Log check for Catalog Plugin", () => {
     common = new Common(page);
     catalogImport = new CatalogImport(page);
     await common.loginAsGuest();
-    await uiHelper.openSidebar("Create");
+    await uiHelper.clickLink({ ariaLabel: "Create..." });
   });
 
   test.fixme(
     "Should fetch logs for ScaffolderParameterSchemaFetch event and validate log structure and values",
-    async ({ baseURL }) => {
+    async ({ baseURL, page }) => {
       await uiHelper.clickButton("Register Existing Component");
       await catalogImport.registerExistingComponent(template, false);
-      await uiHelper.openSidebar("Create");
+      await page.waitForTimeout(1000);
+      await uiHelper.clickLink({ ariaLabel: "Create..." });
       await common.waitForLoad();
       await uiHelper.searchInputAriaLabel("Hello World 2");
       await uiHelper.pressTab();

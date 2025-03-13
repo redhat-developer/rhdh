@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: security-insights
+  namespace: rhdh
+  title: Security Insights
+  description: View Security Insights for your components in Backstage.
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
+  tags:
+    - security
+  links:
+    - url: https://roadie.io/backstage/plugins/security-insights/
+      title: Documentation
+
+spec:
+  author: Roadie
+  publisher: Red Hat
+
+  categories:
+    - Security
+
+  packages:
+    - roadiehq-backstage-plugin-security-insights
+
+  # unused yet
+  assets:
+    - type: icon
+      filename: github.png
+      originUri: https://roadie.io/images/logos/github.png
+
+  history:
+    added: '2021-04-20'
