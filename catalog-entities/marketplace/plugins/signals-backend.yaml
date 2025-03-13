@@ -2,45 +2,47 @@
 apiVersion: extensions.backstage.io/v1alpha1
 kind: Plugin
 metadata:
-  name: http-request-scaffolder-action
+  name: signals-backend
   namespace: rhdh
-  title: Scaffolder HTTP Request Action
+  title: Signals Backend Plugin
   description: |
-    An action to fire an arbitrary HTTP request. Use the response in your scaffolder templates. This contains one action: `http:backstage:request`.
+    Signals backend plugin allows backend plugins to publish messages to frontend plugins. It is used by the Notifications system in Backstage
   annotations:
     extensions.backstage.io/pre-installed: 'true'
-  tags: 
-    - scaffolder
+    extensions.backstage.io/verified-by: Red Hat
+  tags:
+    - backstage-core
+    - messaging
   links:
-    - url: https://github.com/RoadieHQ/roadie-backstage-plugins/blob/main/plugins/scaffolder-actions/scaffolder-backend-module-http-request/README.md
-      title: readme  
-    - title: Homepage
-      url: https://red.ht/rhdh
+    - url: https://backstage.io/docs/notifications/
+      title: Backstage documentation
     - title: Bugs
       url: https://issues.redhat.com/browse/RHIDP
     - title: Documentation for Red Hat Developer Hub
       url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
     - title: Source Code
       url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/
+
 spec:
-  author: Roadie
-  publisher: Red Hat
-  support: tech-preview
+
+  author: Red Hat
+  support: production  # This plugin has GA status
   lifecycle: active
+  publisher: Red Hat
 
   categories:
-    - Scaffolder
+    - Messaging # One category will show up on the tile view
 
-  highlights: 
-    - Fire arbitrary HTTP requests
-    - Use the response in your scaffolder templates
+  highlights:
+    - Allows backend plugins to publish messages to frontend plugins
 
   description: |
-    An action to fire an arbitrary HTTP request. Use the response in your scaffolder templates. This contains one action: `http:backstage:request`.
+    This Signals backend plugin allows backend plugins to publish messages to frontend plugins.
+    It is used by the Notifications system in Backstage.
 
-    The `http:backstage:request` action allows the task to call any of the backstage APIs available to the user that triggers it. 
-    The action takes care of passing the authentication token of the user to the task execution so that the action can perform actions 
-    on behalf of the user that triggers it.
+    The Backstage Notifications System provides a way for plugins and external services to send notifications to Backstage users. 
+    These notifications are displayed in the dedicated page of the Backstage frontend UI or by frontend plugins per specific scenarios. 
+    Additionally, notifications can be sent to external channels (like email) via "processors" implemented within plugins.
 
     ## Adding The Plugin To Red Hat Developer Hub
 
@@ -54,11 +56,10 @@ spec:
     for further details regarding the configuration required.
 
 
+  # Images are base 64 encoded SVGs (below is a blank square from the mockup)
   icon: data:image/svg+xml;base64,
     PHN2ZyB3aWR0aD0iNzAiIGhlaWdodD0iNzAiIHZpZXdCb3g9IjAgMCA3MCA3MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93
     d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjcwIiBoZWlnaHQ9IjcwIiBmaWxsPSIjQzRDNEM0Ii8+Cjwvc3ZnPgo=
 
   packages:
-    - roadiehq-scaffolder-backend-module-http-request-dynamic
-
-
+  - backstage-plugin-signals-backend

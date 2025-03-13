@@ -2,14 +2,14 @@
 apiVersion: extensions.backstage.io/v1alpha1
 kind: Plugin
 metadata:
-  name: kubernetes
+  name: kubernetes-backend
   namespace: rhdh
-  title: Kubernetes
+  title: Kubernetes Backend
   description: |
-    Frontend component that helps you monitor all your service's deployments at a glance.
+    Backend plugin to help you monitor all your service's deployments at a glance.
   annotations:
     extensions.backstage.io/pre-installed: 'true'
-
+    extensions.backstage.io/verified-by: Red Hat # The backend is GA for RHDH
   tags:
     - kubernetes
   links:
@@ -22,7 +22,7 @@ metadata:
 
 spec:
   author: Backstage Community
-  support: tech-preview # The frontend is tech-preview for RHDH
+  support: tech-preview
   lifecycle: active
   publisher: Red Hat
 
@@ -119,4 +119,5 @@ spec:
     PjwvZz48L3N2Zz4=
 
   packages:
-    - backstage-plugin-kubernetes
+    - backstage-plugin-kubernetes-backend
+    #- backstage-community-plugin-scaffolder-backend-module-kubernetes

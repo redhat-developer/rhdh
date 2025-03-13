@@ -2,18 +2,14 @@
 apiVersion: extensions.backstage.io/v1alpha1
 kind: Plugin
 metadata:
-  name: http-request-scaffolder-action
+  name: plugin-name
   namespace: rhdh
-  title: Scaffolder HTTP Request Action
-  description: |
-    An action to fire an arbitrary HTTP request. Use the response in your scaffolder templates. This contains one action: `http:backstage:request`.
+  title: Plugin Title
   annotations:
-    extensions.backstage.io/pre-installed: 'true'
-  tags: 
-    - scaffolder
+    extensions.backstage.io/pre-installed: 'true' # For plugins contained in the RHDH image
+    extensions.backstage.io/verified-by: Red Hat # For verified plugins
+    extensions.backstage.io/certified-by: Red Hat # For certified plugins
   links:
-    - url: https://github.com/RoadieHQ/roadie-backstage-plugins/blob/main/plugins/scaffolder-actions/scaffolder-backend-module-http-request/README.md
-      title: readme  
     - title: Homepage
       url: https://red.ht/rhdh
     - title: Bugs
@@ -22,25 +18,23 @@ metadata:
       url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
     - title: Source Code
       url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/
+  tags:
+    - apis # Used for filtering
+  description: |
+    This is the description text used for the Tile view - keep it short.
 spec:
-  author: Roadie
-  publisher: Red Hat
-  support: tech-preview
+  author: Red Hat
+  support: tech-preview  # production, tech-preview, dev-preveiw
   lifecycle: active
+  publisher: Red Hat
 
   categories:
-    - Scaffolder
-
-  highlights: 
-    - Fire arbitrary HTTP requests
-    - Use the response in your scaffolder templates
+    - API Management # One category will show up on the tile view
+  highlights:
+    - Add some highlights of the plugins features
 
   description: |
-    An action to fire an arbitrary HTTP request. Use the response in your scaffolder templates. This contains one action: `http:backstage:request`.
-
-    The `http:backstage:request` action allows the task to call any of the backstage APIs available to the user that triggers it. 
-    The action takes care of passing the authentication token of the user to the task execution so that the action can perform actions 
-    on behalf of the user that triggers it.
+    This is the long description used for the Expanded view. Uses Markdown.
 
     ## Adding The Plugin To Red Hat Developer Hub
 
@@ -54,11 +48,19 @@ spec:
     for further details regarding the configuration required.
 
 
+
+  # Images are base 64 encoded SVGs (below is a blank square from the mockup)
   icon: data:image/svg+xml;base64,
     PHN2ZyB3aWR0aD0iNzAiIGhlaWdodD0iNzAiIHZpZXdCb3g9IjAgMCA3MCA3MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93
     d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjcwIiBoZWlnaHQ9IjcwIiBmaWxsPSIjQzRDNEM0Ii8+Cjwvc3ZnPgo=
 
-  packages:
-    - roadiehq-scaffolder-backend-module-http-request-dynamic
+  assets: # Not used yet
+    - type: icon
+      filename: img/3scale.svg
+      originUri: https://github.com/backstage/backstage/blob/master/microsite/static/img/3scale.svg
 
+  history: # Not used yet
+    added: '2023-05-15'
 
+  packages: # link to the name used in the associated package documents in ../packages
+    - blah-blah-blah-blah  

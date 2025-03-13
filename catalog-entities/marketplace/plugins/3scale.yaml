@@ -4,7 +4,7 @@ kind: Plugin
 metadata:
   name: 3scale
   namespace: rhdh
-  title: 3scale
+  title: APIs with 3scale
   annotations:
     extensions.backstage.io/pre-installed: 'true'
   links:
@@ -14,13 +14,70 @@ metadata:
       title: Bugs
     - title: Source Code
       url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-3scale-backend-dynamic
+    - title: Documentation for Red Hat Developer Hub
+      url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
   tags:
     - apis
-  description: The 3scale Backstage provider plugin synchronizes the 3scale content into the software catalog.
+  description: |
+    3scale provides a comprehensive API management solution, enabling organizations to secure, manage, and monetize APIs. 
+    Key features include access control, usage analytics, and policy enforcement. 
+    The 3scale plugin synchronizes your 3scale content into the software catalog.
 spec:
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+  publisher: Red Hat
+
+  description: |
+    The 3scale Backstage plugin surfaces critical API management data within the Backstage ecosystem, providing a read-only view of API usage, plans, 
+    and policies, streamlining developer workflows and providing a unified view of software assets. The plugin does not manage the APIs, but rather 
+    displays important information. Specifically, the plugin:
+
+    * Presents API usage statistics, allowing developers to monitor API performance and consumption directly within Backstage.
+    * Provides direct links to the 3scale management console, enabling users to quickly navigate to 3scale for detailed API management tasks.
+    * The plugin aims to consolidate important API information, reducing context switching and improving developer efficiency by providing a 
+      central point for API visibility.
+
+    ## Adding The Plugin To Red Hat Developer Hub
+
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub) 
+    for further instructions on how to add, enable, configure, and remove plugins in your instance.
+
+    ## Configuring The Plugin ##
+
+    Plugins often need additional configuration to work correctly - particularly those that integrate with other 
+    systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further details regarding the configuration required.
+
+    3scale Backstage provider allows configuration of one or multiple providers using the `app-config.yaml` configuration file of Backstage.
+
+    ```yaml title="app-config.yaml"
+    catalog:
+      providers:
+        threeScaleApiEntity:
+          dev:
+            baseUrl: https://<TENANT>-admin.3scale.net
+            accessToken: <ACCESS_TOKEN>
+            schedule: # optional; same options as in TaskScheduleDefinition
+              # supports cron, ISO duration, "human duration" as used in code
+              frequency: { minutes: 30 }
+              # supports ISO duration, "human duration" as used in code
+              timeout: { minutes: 3 }
+    ```
+
+    **NOTE:** Be sure to configure the schedule inside the `app-config.yaml` file. The default schedule is a frequency of 30 minutes and a timeout of 3 minutes.
+
   categories:
     - API Management
     - Red Hat integration
+
+  highlights:
+    - OpenShift support
+    - Access Control & Security (Managed within 3scale)
+    - Rate Limiting & Quotas (Managed within 3scale)
+    - API Monetization Tools (Managed within 3scale)
+    - Policy Enforcement (Managed within 3scale)
+
   icon: data:image/svg+xml;base64,
     PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHZpZXdCb3g9IjAgMCA5NiA5NiIgZmlsbD0ibm9u
     ZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHhtbG5zOnhsaW5rPSJodHRw
@@ -144,12 +201,7 @@ spec:
     QUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFB
     QUFBQUFBQlFRZGQxL3djREhSTTluMmhnRlFBQUFBQkpSVTVFcmtKZ2dnPT0iIC8+CiAgPC9kZWZz
     Pgo8L3N2Zz4=
-  author: Red Hat
-  support: tech-preview
-  lifecycle: active
-  publisher: Red Hat
-  description: |
-    The 3scale Backstage provider plugin synchronizes the 3scale content into the software catalog.
+
 
   # unused yet
   documentation:

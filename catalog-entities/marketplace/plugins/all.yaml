@@ -7,11 +7,13 @@ spec:
   targets:
     - ./3scale.yaml
     - ./analytics-provider-segment.yaml
+    - ./ansible-plugin.yaml
     - ./argocd-scaffolder-actions.yaml
     - ./azure-container-registry.yaml
     - ./azure-devops.yaml
     - ./azure-repositories.yaml
     - ./azure-scaffolder-actions.yaml
+    - ./backstage-community-plugin-quay.yaml
     - ./bitbucket-cloud-catalog-integration.yaml
     - ./bitbucket-server-catalog-integration.yaml
     - ./bulk-import.yaml
@@ -40,15 +42,17 @@ spec:
     - ./keycloak-catalog-integration.yaml
     - ./kubernetes-scaffolder-actions.yaml
     - ./kubernetes.yaml
+    - ./kubernetes-backend.yaml
     - ./ldap-catalog-integration.yaml
     - ./lighthouse.yaml
     - ./microsoft-graph-catalog-integration.yaml
     - ./nexus-repository-manager.yaml
     - ./notifications.yaml
+    - ./notifications-email.yaml
     - ./openshift-cluster-manager.yaml
+    - ./orchestrator.yaml
     - ./pagerduty.yaml
     - ./pingidentity.yaml
-    - ./quay-catalog-integration.yaml
     - ./quay-scaffolder-actions.yaml
     - ./rbac.yaml
     - ./redhat-argocd.yaml
@@ -59,6 +63,7 @@ spec:
     - ./security-insights.yaml
     - ./servicenow-scaffolder-actions.yaml
     - ./signals.yaml
+    - ./signals-backend.yaml
     - ./sonarqube-catalog-cards.yaml
     - ./sonarqube-scaffolder-actions.yaml
     - ./tech-radar.yaml

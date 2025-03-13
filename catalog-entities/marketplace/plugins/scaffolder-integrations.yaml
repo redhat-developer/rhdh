@@ -5,11 +5,24 @@ metadata:
   name: scaffolder-integrations
   namespace: rhdh
   title: Software Template Actions
-  description: A list of common Backstage Software Template actions.
+  description: |
+    A list of common Backstage Software Template actions.
   annotations:
     extensions.backstage.io/pre-installed: 'true'
-  tags: []
+  tags: 
+    - software-templates
+    
 spec:
+
+  description: |
+    A list of common Backstage Software Scaffolder extensions used by the template system. These extensions are used 
+    to scaffold new software components in your Backstage instance.
+
+    # Images are base 64 encoded SVGs (below is a blank square from the mockup)
+  icon: data:image/svg+xml;base64,
+    PHN2ZyB3aWR0aD0iNzAiIGhlaWdodD0iNzAiIHZpZXdCb3g9IjAgMCA3MCA3MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93
+    d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjcwIiBoZWlnaHQ9IjcwIiBmaWxsPSIjQzRDNEM0Ii8+Cjwvc3ZnPgo=
+
   packages:
     - backstage-community-plugin-catalog-backend-module-scaffolder-re
     - backstage-community-plugin-scaffolder-backend-module-kubernetes

@@ -2,13 +2,12 @@
 apiVersion: extensions.backstage.io/v1alpha1
 kind: Plugin
 metadata:
-  name: openshift-cluster-manager
+  name: notifications-email
   namespace: rhdh
-  title: OpenShift Cluster Manager
-  description: The Open Cluster Management (OCM) plugin integrates your Red Hat Developer instance with the MultiClusterHub and MultiCluster engines of OCM.
+  title: Notifications Email Processor
+  description: 'Adds support for sending Red Hat Developer Hub notifications as emails to users.'
   annotations:
     extensions.backstage.io/pre-installed: 'true'
-    extensions.backstage.io/verified-by: Red Hat
   tags: []
   links:
     - title: Homepage
@@ -18,26 +17,23 @@ metadata:
     - title: Documentation for Red Hat Developer Hub
       url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
     - title: Source Code
-      url: https://github.com/backstage/community-plugins/tree/main/workspaces/ocm/plugins/ocm
+      url: https://github.com/backstage/backstage/tree/master/plugins/notifications-backend-module-email
+    - title: Backstage Documentation
+      url: https://backstage.io/docs/notifications/
 spec:
-  author: Red Hat
-  support: production
-  category: Infrastructure
+  author: Backstage Community
+  support: tech-preview
   lifecycle: active
+  publisher: Red Hat
+
+  categories:
+    - Notifications
 
   description: |
-    The Open Cluster Management (OCM) plugin integrates your Backstage instance with the `MultiClusterHub` and `MultiCluster` engines of OCM.
+    Adds support for sending Red Hat Developer Hub notifications as emails to users.
 
-    The OCM plugin has the following capabilities:
+    Supports sending emails using SMTP, SES, azure, sendmail, or stream (for debugging purposes).
 
-    - All clusters represented as `ManagedCluster` in `MultiClusterHub` or MCE are discovered and imported into the Backstage catalog, such as:
-      - Entity is defined as `kind: Resource` with `spec.type` set to `kubernetes-cluster`.
-      - Links to the OpenShift Container Platform (OCP) console, OCM console, and OpenShift Cluster Manager are provided in `metadata.links`.
-    - Shows real-time data from OCM on the Resource entity page, including:
-      - Cluster current status (up or down)
-      - Cluster nodes status (up or down)
-      - Cluster details (console link, OCP, and Kubernetes version)
-      - Details about available compute resources on the cluster
 
     ## Adding The Plugin To Red Hat Developer Hub
 
@@ -54,9 +50,14 @@ spec:
     PHN2ZyB3aWR0aD0iNzAiIGhlaWdodD0iNzAiIHZpZXdCb3g9IjAgMCA3MCA3MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93
     d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjcwIiBoZWlnaHQ9IjcwIiBmaWxsPSIjQzRDNEM0Ii8+Cjwvc3ZnPgo=
 
-  packages:
-    - backstage-community-plugin-ocm
-    - backstage-community-plugin-ocm-backend
+  highlights:
+    - Notifications as emails
+    - SMTP, SES, Azure, Sendmail support
 
-  history:
-    added: '2023-05-15'
+
+
+  packages:
+    - backstage-plugin-notifications-backend-module-email
+
+
+
