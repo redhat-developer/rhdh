@@ -817,27 +817,27 @@ initiate_deployments() {
   local rhdh_base_url="https://${RELEASE_NAME}-backstage-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
   echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
-  helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
-    "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" --version "${CHART_VERSION}" \
-    -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" \
-    --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    --set upstream.backstage.image.repository="${QUAY_REPO}" \
-    --set upstream.backstage.image.tag="${TAG_NAME}"
+#  helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
+#    "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" --version "${CHART_VERSION}" \
+#    -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" \
+#    --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
+#    --set upstream.backstage.image.repository="${QUAY_REPO}" \
+#    --set upstream.backstage.image.tag="${TAG_NAME}"
 
   configure_namespace "${NAME_SPACE_POSTGRES_DB}"
-  configure_namespace "${NAME_SPACE_RBAC}"
+#  configure_namespace "${NAME_SPACE_RBAC}"
   configure_external_postgres_db "${NAME_SPACE_RBAC}"
 
-  # Initiate rbac instance deployment.
-  local rbac_rhdh_base_url="https://${RELEASE_NAME_RBAC}-backstage-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
-  apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
-  echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${RELEASE_NAME_RBAC}"
-  helm upgrade -i "${RELEASE_NAME_RBAC}" -n "${NAME_SPACE_RBAC}" \
-    "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" --version "${CHART_VERSION}" \
-    -f "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" \
-    --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    --set upstream.backstage.image.repository="${QUAY_REPO}" \
-    --set upstream.backstage.image.tag="${TAG_NAME}"
+#  # Initiate rbac instance deployment.
+#  local rbac_rhdh_base_url="https://${RELEASE_NAME_RBAC}-backstage-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
+#  apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
+#  echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${RELEASE_NAME_RBAC}"
+#  helm upgrade -i "${RELEASE_NAME_RBAC}" -n "${NAME_SPACE_RBAC}" \
+#    "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" --version "${CHART_VERSION}" \
+#    -f "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" \
+#    --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
+#    --set upstream.backstage.image.repository="${QUAY_REPO}" \
+#    --set upstream.backstage.image.tag="${TAG_NAME}"
 }
 
 # install base RHDH deployment before upgrade
