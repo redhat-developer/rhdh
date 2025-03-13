@@ -32,7 +32,7 @@ spec:
     - CI/CD # One category will show up on the tile view
 
   highlights:
-    - Add some highlights of the plugins features
+    - Display information about the container images.
 
   description: |
     The Quay plugin displays the information about your Quay registry container images in your software catalog component entity page. from

@@ -22,6 +22,9 @@ spec:
   author: Red Hat
   categories:
     - Container Image Registry
+  
+  highlights:
+    - Display information about the container images.
 
   description: |  
    The Jfrog Artifactory plugin displays information about your container images within the Jfrog Artifactory registry.
