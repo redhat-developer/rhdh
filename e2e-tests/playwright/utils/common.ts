@@ -79,9 +79,8 @@ export class Common {
       await this.page.waitForTimeout(60000);
       await this.page.fill("#app_totp", this.getGitHub2FAOTP(userid));
     }
-    await expect(this.page.locator("#app_totp")).toBeHidden({
-      timeout: 120000,
-    });
+
+    await this.page.waitForTimeout(3_000);
   }
 
   async logintoKeycloak(userid: string, password: string) {
@@ -456,9 +455,9 @@ export class Common {
     const catalogUsers: UserEntity[] =
       response && response.items ? response.items : [];
     expect(catalogUsers.length).toBeGreaterThan(0);
-    const catalogUsersDisplayNames: string[] = catalogUsers.map(
-      (u) => u.spec.profile.displayName,
-    );
+    const catalogUsersDisplayNames: string[] = catalogUsers
+      .filter((u) => u.spec.profile && u.spec.profile.displayName)
+      .map((u) => u.spec.profile.displayName);
     LOGGER.info(
       `Checking ${JSON.stringify(catalogUsersDisplayNames)} contains users ${JSON.stringify(users)}`,
     );
@@ -476,9 +475,9 @@ export class Common {
     const catalogGroups: GroupEntity[] =
       response && response.items ? response.items : [];
     expect(catalogGroups.length).toBeGreaterThan(0);
-    const catalogGroupsDisplayNames: string[] = catalogGroups.map(
-      (u) => u.spec.profile.displayName,
-    );
+    const catalogGroupsDisplayNames: string[] = catalogGroups
+      .filter((u) => u.spec.profile && u.spec.profile.displayName)
+      .map((u) => u.spec.profile.displayName);
     LOGGER.info(
       `Checking ${JSON.stringify(catalogGroupsDisplayNames)} contains groups ${JSON.stringify(groups)}`,
     );

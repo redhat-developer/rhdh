@@ -12,3 +12,6 @@ plugins
 coverage
 dist-types
 examples
+.ibm/images/*
+!.ibm/images/Dockerfile
+!.yarnrc.yml

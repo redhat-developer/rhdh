@@ -1,0 +1,43 @@
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: backstage-plugin-kubernetes-backend
+  namespace: rhdh
+  title: "@backstage/plugin-kubernetes-backend"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-plugin-kubernetes-backend-dynamic
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-plugin-kubernetes-backend-dynamic
+  tags: []
+spec:
+  packageName: "@backstage/plugin-kubernetes-backend"
+  dynamicArtifact: ./dynamic-plugins/dist/backstage-plugin-kubernetes-backend-dynamic
+  version: 0.19.2
+  backstage:
+    role: backend-plugin
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: production
+  lifecycle: active
+  partOf:
+    - kubernetes
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        kubernetes:
+          serviceLocatorMethod:
+            type: multiTenant
+          clusterLocatorMethods:
+            - type: config
+              clusters:
+                - name: ${K8S_CLUSTER_NAME}
+                  url: ${K8S_CLUSTER_URL}
+                  authProvider: serviceAccount
+                  skipTLSVerify: true
+                  serviceAccountToken: ${K8S_CLUSTER_TOKEN}

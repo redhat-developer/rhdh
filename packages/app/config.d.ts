@@ -96,6 +96,7 @@ export interface Config {
           path: string;
           title: string;
           mountPoint: string;
+          priority?: number;
         }[];
         mountPoints?: {
           mountPoint: string;

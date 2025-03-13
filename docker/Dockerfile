@@ -23,8 +23,8 @@
 # 4. add Brew metadata
 
 # Stage 1 - Build nodejs skeleton
-# https://registry.access.redhat.com/ubi9/nodejs-20
-FROM registry.access.redhat.com/ubi9/nodejs-20:9.5-1739783265 AS skeleton
+# https://registry.access.redhat.com/ubi9/nodejs-22
+FROM registry.access.redhat.com/ubi9/nodejs-22:9.5-1741181304 AS skeleton
 # hadolint ignore=DL3002
 USER 0
 
@@ -204,8 +204,8 @@ RUN "$YARN" workspaces focus --all --production && \
   npm config set cafile /opt/app-root/src/registry-ca.pem
 
 # Stage 5 - Build the runner image
-# https://registry.access.redhat.com/ubi9/nodejs-20-minimal
-FROM registry.access.redhat.com/ubi9/nodejs-20-minimal:9.5-1739448741 AS runner
+# https://registry.access.redhat.com/ubi9/nodejs-22-minimal
+FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:9.5-1741243183 AS runner
 USER 0
 
 # Upstream only
@@ -231,6 +231,9 @@ COPY --from=build $CONTAINER_SOURCE/dynamic-plugins/dist/ ./dynamic-plugins/dist
 
 # RHIDP-4220 - make Konflux preflight and EC checks happy - [check-container] Create a directory named /licenses and include all relevant licensing
 COPY $EXTERNAL_SOURCE/LICENSE /licenses/
+
+# RHIDP-5216/RHIDP-5215 - interim marketplace catalog entities until these data will be loaded from container images
+COPY $EXTERNAL_SOURCE/catalog-entities/marketplace /marketplace/catalog-entities/
 
 # Copy script to gather dynamic plugins; copy embedded dynamic plugins to root folder; fix permissions
 COPY docker/install-dynamic-plugins.py docker/install-dynamic-plugins.sh ./

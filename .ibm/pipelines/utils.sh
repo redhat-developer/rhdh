@@ -628,12 +628,21 @@ create_app_config_map_k8s() {
 run_tests() {
   local release_name=$1
   local project=$2
-  project=${project}
   cd "${DIR}/../../e2e-tests"
   local e2e_tests_dir
   e2e_tests_dir=$(pwd)
 
-  yarn install
+  yarn install --immutable > /tmp/yarn.install.log.txt 2>&1
+
+  INSTALL_STATUS=$?
+  if [ $INSTALL_STATUS -ne 0 ]; then
+    echo "=== YARN INSTALL FAILED ==="
+    cat /tmp/yarn.install.log.txt
+    exit $INSTALL_STATUS
+  else
+    echo "Yarn install completed successfully."
+  fi
+
   yarn playwright install chromium
 
   Xvfb :99 &
@@ -782,7 +791,7 @@ delete_tekton_pipelines() {
         ' || echo "Warning: Timed out waiting for namespace deletion, continuing..."
     else
         echo "Tekton Pipelines is not installed. Nothing to delete."
-    fi
+  fi
 }
 
 cluster_setup() {
@@ -829,6 +838,59 @@ initiate_deployments() {
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO}" \
     --set upstream.backstage.image.tag="${TAG_NAME}"
+}
+
+# install base RHDH deployment before upgrade
+initiate_upgrade_base_deployments() {
+  echo "Initiating base RHDH deployment before upgrade"
+  
+  # Deploy redis cache db.
+  oc apply -f "$DIR/resources/redis-cache/redis-deployment.yaml" --namespace="${NAME_SPACE}"
+
+  cd "${DIR}"
+  local rhdh_base_url="https://${RELEASE_NAME}-backstage-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
+  apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
+  echo "Deploying image from repository: ${QUAY_REPO_BASE}, TAG_NAME: ${TAG_NAME_BASE}, in NAME_SPACE: ${NAME_SPACE}"
+  
+  helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
+    "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" --version "${CHART_VERSION_BASE}" \
+    -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME_BASE}" \
+    --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
+    --set upstream.backstage.image.repository="${QUAY_REPO_BASE}" \
+    --set upstream.backstage.image.tag="${TAG_NAME_BASE}"
+}
+
+initiate_upgrade_deployments() {
+  local release_name=$1
+  local namespace=$2
+  local url=$3
+  local max_attempts=${4:-30}    # Default to 30 if not set
+  local wait_seconds=${5:-30} 
+  local wait_upgrade="10m"
+
+  # check if the base rhdh deployment is running
+  if check_backstage_running "${release_name}" "${namespace}" "${url}" "${max_attempts}" "${wait_seconds}"; then
+    
+    echo "Display pods of base RHDH deployment before upgrade for verification..."
+    oc get pods -n "${namespace}"
+    
+    echo "Initiating upgrade deployment"
+    cd "${DIR}"
+    
+    echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
+    
+    helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
+    "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" \
+    -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" \
+    --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
+    --set upstream.backstage.image.repository="${QUAY_REPO}" \
+    --set upstream.backstage.image.tag="${TAG_NAME}" \
+    --wait --timeout=${wait_upgrade}
+
+    oc get pods -n "${namespace}"
+  else
+    echo "Backstage is not running. Exiting..."
+  fi
 }
 
 initiate_runtime_deployment() {
@@ -882,6 +944,36 @@ check_and_test() {
     OVERALL_RESULT=1
   fi
   save_all_pod_logs $namespace
+}
+
+check_upgrade_and_test() {
+  local deployment_name="$1"
+  local release_name="$2"
+  local namespace="$3"
+  local url=$4
+  local timeout=${5:-600} # Timeout in seconds (default: 600 seconds)
+  
+  if check_helm_upgrade "${deployment_name}" "${namespace}" "${timeout}"; then
+    check_and_test "${release_name}" "${namespace}" "${url}"
+  else
+    echo "Helm upgrade encountered an issue or timed out. Exiting..."
+  fi
+}
+
+check_helm_upgrade() {
+  local deployment_name="$1"
+  local namespace="$2"       
+  local timeout="$3"      
+  
+  echo "Checking rollout status for deployment: ${deployment_name} in namespace: ${namespace}..."
+  
+  if oc rollout status "deployment/${deployment_name}" -n "${namespace}" --timeout="${timeout}s" -w; then
+      echo "RHDH upgrade is complete."
+      return 0
+  else
+      echo "RHDH upgrade encountered an issue or timed out."
+      return 1
+  fi
 }
 
 # Function to remove finalizers from specific resources in a namespace that are blocking deletion.
