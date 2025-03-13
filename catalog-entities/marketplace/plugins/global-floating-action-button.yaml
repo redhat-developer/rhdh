@@ -33,8 +33,8 @@ spec:
 
   description: |
     This plugin enables you to add a floating button, with or without submenu options, to your desired pages.
-    The feature enables the platform administrator to add floating action button(s) for quick and easy access to resources like plugins, feedback forms, support links, etc.
-
+    The feature enables the platform administrator to add floating action button(s) for quick and easy access to resources like plugins, feedback forms, support links, etc. This plugin ships as enabled by default in Red Hat Developer Hub.
+    
     ## Adding The Plugin To Red Hat Developer Hub
 
     See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub) 

@@ -37,7 +37,7 @@ spec:
 
   
   description: |
-    The Global Header feature enhances user experience by providing a consistent and customizable navigation bar across all pages of a Backstage instance. Administrators can easily enable or disable this feature, which is active by default, and tailor it to their organization's needs. They can add elements such as search bars, notification indicators, and user settings, positioning them as desired. Users benefit from immediate access to these tools, with interactive elements like searchable input fields and dynamic notification alerts, streamlining their interaction with the platform.
+    The Global Header feature enhances user experience by providing a consistent and customizable navigation bar across all pages of a Backstage instance. Administrators can easily enable or disable this feature, which is active by default, and tailor it to their organization's needs. They can add elements such as search bars, notification indicators, and user settings, positioning them as desired. Users benefit from immediate access to these tools, with interactive elements like searchable input fields and dynamic notification alerts, streamlining their interaction with the platform. This plugin ships as enabled by default in Red Hat Developer Hub.
 
     ## Adding The Plugin To Red Hat Developer Hub
 
