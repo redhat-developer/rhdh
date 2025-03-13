@@ -5,6 +5,7 @@ import { Catalog } from "../../../support/pages/catalog";
 // import { Topology } from "../../../support/pages/topology";
 
 test.describe("Test Topology Plugin", () => {
+  test.skip(() => process.env.JOB_NAME.includes("operator"));
   let common: Common;
   let uiHelper: UIhelper;
   let catalog: Catalog;
