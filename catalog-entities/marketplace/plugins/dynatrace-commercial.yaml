@@ -24,6 +24,19 @@ metadata:
     - observability
 
 spec:
+  
+  author: Dynatrace
+  support: production
+  lifecycle: active
+  publisher: Dynatrace
+
+  categories:
+    - Observability
+
+  highlights:
+    - Supported by Dynatrace
+    - Support requires a Dynatrace subscription
+
   description: |
     This officially supported plugin from Dynatrace provides customizable context-rich observability and security insights for services in your 
     software catalog. Once installed the plugin can provide live data from Dynatrace by running DQL against it.
@@ -53,13 +66,6 @@ spec:
 
     There is another method, you can open firewall for Dynatrace tokenUrl https://sso.dynatrace.com 
     and https://xxxxxxxx.apps.dynatrace.com. In that case, you don't need `HTTPS_PROXY`.
-
-  categories:
-    - Observability
-
-  highlights:
-    - Supported by Dynatrace
-    - Support requires a Dynatrace subscription
 
   icon: data:image/svg+xml;base64,
     PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPCEtLSBVcGxvYWRlZCB0bzog
@@ -127,16 +133,6 @@ spec:
     MTczLjMxMDEzNywyNTEuOTQ2Njc3IEMxNjQuNDMyNzU1LDI2MC4wODQyNzggMTU1LjM3MDQyNywy
     NTguOTc0NjA1IDE1NC40NDU3LDI1OC45NzQ2MDUgTDE1NC40NDU3LDI1OC45NzQ2MDUgWiIgZmls
     bD0iIzczQkUyOCI+Cg08L3BhdGg+CiAgICA8L2c+Cjwvc3ZnPg==
-
-  author: Dynatrace
-  support: production
-  lifecycle: active
-  publisher: Dynatrace
-
-  assets:
-    - type: screenshot
-      filename: img/backstage_dynatrace_plugin.png
-      originUri: https://github.com/Dynatrace/backstage-plugin/blob/a307710edfb23a196c30790b9afceb9fb9af27df/docs/images/backstage_dynatrace_plugin.png?raw=true
 
   packages:
     - dynatrace-backstage-plugin-dql
