@@ -1,0 +1,56 @@
+name: "Check Image and Relevant Changes"
+description: "Checks if the image already exists and if changes are relevant"
+outputs:
+  image_exists:
+    description: "True if the image already exists"
+    value: ${{ steps.image-check.outputs.exists }}
+  relevant_changes:
+    description: "True if changes require a build"
+    value: ${{ steps.changes.outputs.relevant }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Get the last commit short SHA of the PR
+      id: sha
+      shell: bash
+      run: |
+        SHORT_SHA=$(git rev-parse --short HEAD)
+        echo "SHORT_SHA=$SHORT_SHA" >> $GITHUB_ENV
+
+    - name: Check if Image Already Exists
+      id: image-check
+      shell: bash
+      run: |
+        IMAGE_TAG_COMMIT="pr-${{ github.event.number }}-${{ env.SHORT_SHA }}"
+        IMAGE_NAME_COMMIT="${{ env.REGISTRY }}/rhdh-community/rhdh:${IMAGE_TAG_COMMIT}"
+
+        IMAGE_EXISTS_COMMIT=$(curl -s "https://quay.io/api/v1/repository/rhdh-community/rhdh/tag/" | jq -r --arg tag "$IMAGE_TAG_COMMIT" '.tags[] | select(.name == $tag) | .name')
+
+        if [ -n "$IMAGE_EXISTS_COMMIT" ]; then
+          echo "Image $IMAGE_NAME_COMMIT already exists."
+          echo "exists=true" >> $GITHUB_OUTPUT
+        else
+          echo "Image $IMAGE_NAME_COMMIT does not exist."
+          echo "exists=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Determine Changed Files
+      id: changes
+      shell: bash
+      run: |
+        BASE_COMMIT=${{ github.event.pull_request.base.sha }}
+        HEAD_COMMIT=${{ github.event.pull_request.head.sha }}
+
+        CHANGED_FILES=$(git diff --name-only "$BASE_COMMIT" "$HEAD_COMMIT")
+
+        echo "Changed files:"
+        echo "$CHANGED_FILES"
+
+        if echo "$CHANGED_FILES" | grep -qvE '^(e2e-tests/|\.ibm/)'; then
+          echo "Changes detected outside the e2e-tests or .ibm folders. Build required."
+          echo "relevant=true" >> $GITHUB_OUTPUT
+        else
+          echo "No relevant changes detected."
+          echo "relevant=false" >> $GITHUB_OUTPUT
+        fi

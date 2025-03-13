@@ -36,7 +36,7 @@ jobs:
       pull-requests: write
 
     steps:
-      - name: Checkout
+      - name: Checkout PR branch
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -52,48 +52,12 @@ jobs:
           git fetch base-origin ${{ github.event.pull_request.base.ref }}
           git merge --no-edit base-origin/${{ github.event.pull_request.base.ref }}
 
-      - name: Get the last commit short SHA of the PR
-        uses: ./.github/actions/get-sha
-
-      - name: Check if Image Already Exists
-        id: image-check
-        run: |
-          IMAGE_TAG_COMMIT="pr-${{ github.event.number }}-${{ env.SHORT_SHA }}"
-          IMAGE_NAME_COMMIT="${{ env.REGISTRY }}/rhdh-community/rhdh:${IMAGE_TAG_COMMIT}"
-
-          # Check if any image exists for the specific commit
-          IMAGE_EXISTS_COMMIT=$(curl -s "https://quay.io/api/v1/repository/rhdh-community/rhdh/tag/" | jq -r --arg tag "$IMAGE_TAG_COMMIT" '.tags[] | select(.name == $tag) | .name')
-
-          if [ -n "$IMAGE_EXISTS_COMMIT" ]; then
-            echo "Image $IMAGE_NAME_COMMIT already exists for the current commit."
-            echo "image_exists=true" >> $GITHUB_ENV
-          else
-            echo "Image $IMAGE_NAME_COMMIT does not exist for the current commit."
-            echo "image_exists=false" >> $GITHUB_ENV
-          fi
-
-      - name: Determine Changed Files
-        id: changes
-        run: |
-          BASE_COMMIT=${{ github.event.pull_request.base.sha }}
-          HEAD_COMMIT=${{ github.event.pull_request.head.sha }}
-
-          CHANGED_FILES=$(git diff --name-only "$BASE_COMMIT" "$HEAD_COMMIT")
-
-          echo "Changed files:"
-          echo "$CHANGED_FILES"
-
-          # Check if changes are only in .ibm/ or e2e-tests/
-          if echo "$CHANGED_FILES" | grep -qvE '^(e2e-tests/|\.ibm/)'; then
-            echo "Changes detected outside the e2e-tests or .ibm folders. Build required."
-            echo "relevant_changes=true" >> $GITHUB_ENV
-          else
-            echo "No relevant changes detected."
-            echo "relevant_changes=false" >> $GITHUB_ENV
-          fi
+      - name: Run Check Image and Relevant Changes
+        id: check-image
+        uses: ./.github/actions/check-image-and-changes
 
       - name: Build and Push with Buildx
-        if: env.relevant_changes == 'true' && env.image_exists == 'false'
+        if: ${{steps.check-image.outputs.relevant_changes == 'true' && steps.check-image.outputs.image_exists == 'false'}}
         uses: ./.github/actions/docker-build
         with:
           registry: ${{ env.REGISTRY }}
@@ -101,14 +65,15 @@ jobs:
           password: ${{ secrets.QUAY_TOKEN }}
           imageName: rhdh-community/rhdh
           imageTags: |
-            type=ref,prefix=pr-,suffix=-${{ env.SHORT_SHA }},event=pr
+            type=ref,prefix=pr-,suffix=-${{ github.event.number }},event=pr
             type=ref,prefix=pr-,event=pr
           imageLabels: quay.expires-after=14d
           push: true
           platform: linux/amd64
 
       - name: Comment the image pull link
-        if: env.relevant_changes == 'true' && env.image_exists == 'false'
+        if: ${{steps.check-image.outputs.relevant_changes == 'true' && steps.check-image.outputs.image_exists == 'false'}}
+
         uses: actions/github-script@v7
         with:
           script: |
@@ -118,3 +83,10 @@ jobs:
               repo: context.repo.repo,
               body: 'The image is available at:\n* [`quay.io/rhdh-community/rhdh:pr-${{ github.event.number }}`](https://quay.io/rhdh-community/rhdh:pr-${{ github.event.number }}) or\n* [`quay.io/rhdh-community/rhdh:pr-${{ github.event.number }}-${{ env.SHORT_SHA }}`](https://quay.io/rhdh-community/rhdh:pr-${{ github.event.number }}-${{ env.SHORT_SHA }})'
             })
+
+      - name: Skip build notification
+        if: ${{ steps.check-image.outputs.relevant_changes == 'false' && steps.check-image.outputs.image_exists == 'true' }}
+        run: |
+          echo "Skipping build: Image already exists and no relevant changes detected."
+
+
