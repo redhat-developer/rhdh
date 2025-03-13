@@ -7,6 +7,9 @@ outputs:
   relevant_changes:
     description: "True if changes require a build"
     value: ${{ steps.changes.outputs.relevant }}
+  short_sha:
+    description: "Short SHA of the latest commit"
+    value: ${{ steps.sha.outputs.short_sha }}
 
 runs:
   using: "composite"
@@ -17,12 +20,13 @@ runs:
       run: |
         SHORT_SHA=$(git rev-parse --short HEAD)
         echo "SHORT_SHA=$SHORT_SHA" >> $GITHUB_ENV
+        echo "short_sha=$SHORT_SHA" >> $GITHUB_OUTPUT  # Corrigindo para ser um output
 
     - name: Check if Image Already Exists
       id: image-check
       shell: bash
       run: |
-        IMAGE_TAG_COMMIT="pr-${{ github.event.number }}-${{ env.SHORT_SHA }}"
+        IMAGE_TAG_COMMIT="pr-${{ github.event.number }}-${{ steps.sha.outputs.short_sha }}"
         IMAGE_NAME_COMMIT="${{ env.REGISTRY }}/rhdh-community/rhdh:${IMAGE_TAG_COMMIT}"
 
         IMAGE_EXISTS_COMMIT=$(curl -s "https://quay.io/api/v1/repository/rhdh-community/rhdh/tag/" | jq -r --arg tag "$IMAGE_TAG_COMMIT" '.tags[] | select(.name == $tag) | .name')
