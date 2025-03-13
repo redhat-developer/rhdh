@@ -2,7 +2,6 @@ import { OidcAuthResult } from '@backstage/plugin-auth-backend-module-oidc-provi
 import {
   AuthResolverContext,
   createSignInResolverFactory,
-  handleSignInUserNotFound,
   OAuthAuthenticatorResult,
   SignInInfo,
 } from '@backstage/plugin-auth-node';
@@ -51,19 +50,13 @@ const createOidcSubClaimResolver = (userIdKey: string, providerName: string) =>
             `There was a problem verifying your identity with ${providerName} due to a mismatching 'sub' claim. Please contact your system administrator for assistance.`,
           );
         }
-        try {
-          return await ctx.signInWithCatalogUser({
+        return ctx.signInWithCatalogUser(
+          {
             annotations: { [userIdKey]: sub },
-          });
-        } catch (error: any) {
-          return await handleSignInUserNotFound({
-            ctx,
-            error,
-            userEntityName: info.result.fullProfile.userinfo.name!,
-            dangerouslyAllowSignInWithoutUserInCatalog:
-              options?.dangerouslyAllowSignInWithoutUserInCatalog,
-          });
-        }
+          },
+          sub,
+          options?.dangerouslyAllowSignInWithoutUserInCatalog,
+        );
       };
     },
   });
