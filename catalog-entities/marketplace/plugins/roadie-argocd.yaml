@@ -8,6 +8,7 @@ metadata:
   description: View Argo CD status for your projects in Backstage.
   annotations:
     extensions.backstage.io/pre-installed: 'true'
+    extensions.backstage.io/verified-by: Red Hat
   tags:
     - cicd
   links:
