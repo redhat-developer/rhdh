@@ -30,7 +30,7 @@ export class Common {
 
     await this.uiHelper.verifyHeading("Select a sign-in method");
     await this.uiHelper.clickButton("Enter");
-    await expect(this.page.locator("nav[id='global-header']")).toBeVisible();
+    await this.uiHelper.waitForSideBarVisible();
   }
 
   async waitForLoad(timeout = 120000) {
@@ -103,7 +103,7 @@ export class Common {
     await this.waitForLoad(240000);
     await this.uiHelper.clickButton("Sign In");
     await this.logintoKeycloak(userid, password);
-    await expect(this.page.locator("nav[id='global-header']")).toBeVisible();
+    await this.uiHelper.waitForSideBarVisible();
   }
 
   async loginAsGithubUser(userid: string = process.env.GH_USER_ID) {
@@ -128,7 +128,7 @@ export class Common {
       await this.waitForLoad(240000);
       await this.uiHelper.clickButton("Sign In");
       await this.checkAndReauthorizeGithubApp();
-      await expect(this.page.locator("nav[id='global-header']")).toBeVisible();
+      await this.uiHelper.waitForSideBarVisible();
       await this.page.context().storageState({ path: sessionFileName });
       console.log(`Authentication state saved for user: ${userid}`);
     }
