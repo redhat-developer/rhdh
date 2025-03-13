@@ -2,10 +2,10 @@
 apiVersion: extensions.backstage.io/v1alpha1
 kind: Plugin
 metadata:
-  name: notifications
+  name: notifications-email
   namespace: rhdh
-  title: Notifications
-  description: 'Notifications System provides a way for plugins and external services to send notifications to Red Hat Developer Hub users'
+  title: Notifications Email Processor
+  description: 'Adds support for sending Red Hat Developer Hub notifications as emails to users.'
   annotations:
     extensions.backstage.io/pre-installed: 'true'
   tags: []
@@ -17,7 +17,7 @@ metadata:
     - title: Documentation for Red Hat Developer Hub
       url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
     - title: Source Code
-      url: https://github.com/backstage/backstage/tree/master/plugins/notifications
+      url: https://github.com/backstage/backstage/tree/master/plugins/notifications-backend-module-email
     - title: Backstage Documentation
       url: https://backstage.io/docs/notifications/
 spec:
@@ -30,24 +30,10 @@ spec:
     - Notifications
 
   description: |
-    The Notifications System provides a way for plugins and external services to send notifications to Red Hat Developer Hub users. These notifications are displayed in the dedicated page of the Red Hat Developer Hub frontend UI or by frontend plugins per specific scenarios. Additionally, notifications can be sent to external channels (like email) via "processors" implemented within plugins.
+    Adds support for sending Red Hat Developer Hub notifications as emails to users.
 
-    Notifications can be optionally integrated with the signals (a push mechanism) to ensure users receive them immediately.
+    Supports sending emails using SMTP, SES, azure, sendmail, or stream (for debugging purposes).
 
-
-    Notifications are messages sent to either individual users or groups. They are not intended for inter-process communication of any kind.
-
-    There are two basic types of notifications:
-
-    - Broadcast: Messages sent to all users of Backstage.
-    - Entity: Messages delivered to specific listed entities, such as Users or Groups.
-
-    Example of use-cases:
-
-    - System-wide announcements or alerts
-    - Notifications for component owners: e.g., build failures, successful deployments, new vulnerabilities
-    - Notifications for individuals: e.g., updates you have subscribed to, new required training courses
-    - Notifications pertaining to a particular entity in the catalog: A notification might apply to an entity and the owning team.
 
     ## Adding The Plugin To Red Hat Developer Hub
 
@@ -65,13 +51,13 @@ spec:
     d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjcwIiBoZWlnaHQ9IjcwIiBmaWxsPSIjQzRDNEM0Ii8+Cjwvc3ZnPgo=
 
   highlights:
-    - System-wide announcements or alerts
-    - Notifications for component owners
+    - Notifications as emails
+    - SMTP, SES, Azure, Sendmail support
 
 
 
   packages:
-    - backstage-plugin-notifications
-    - backstage-plugin-notifications-backend
+    - backstage-plugin-notifications-backend-module-email
+
 
 
