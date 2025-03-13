@@ -8,6 +8,7 @@ metadata:
   description: 'The Global Header feature enhances user experience by providing a consistent and customizable navigation bar across all pages.'
   annotations:
     extensions.backstage.io/pre-installed: 'true'
+    extensions.backstage.io/verified-by: Red Hat
   tags:
     - customization
   links:
