@@ -32,10 +32,6 @@ spec:
     Dynatrace to be displayed at software components managed in your Backstage Software Catalog. The data is in tabular format with smart 
     links to Dynatrace Apps for deeper analysis and root cause investigation in case of a related problem or security vulnerability.
 
-    With the plugins installed, the Software Catalog component entity can be associated with real-time monitoring data. 
-    The screenshot shows three Kubernetes deployments of the easytrade-frontend component running in different namespaces, 
-    i.e., development, hardening, and production. The table provides smart links for more details about the workload and logs in Dynatrace.
-
     ## Adding The Plugin To Red Hat Developer Hub
 
     Contact Dynatrace support for help installing this plugin in your Red Hat Developer Hub instance.
@@ -43,7 +39,7 @@ spec:
     You can also see the plugin's source code repository in the link below for additional information about this plugin such as 
     multi-environment support, sample queries, and registering custom queries in the `metadata.dynatrace.queries` 
     property of a component within the `catalog-info.yaml` file.
-    
+
     ## Technical Notes:
 
     The ID of the plugin is `dynatrace-dql` (to not conflict with other plugins).
