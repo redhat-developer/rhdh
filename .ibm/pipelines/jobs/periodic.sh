@@ -13,7 +13,7 @@ handle_nightly() {
 
   cluster_setup
   initiate_deployments
-  deploy_test_backstage_provider "${NAME_SPACE}"
+#  deploy_test_backstage_provider "${NAME_SPACE}"
 
 #  run_standard_deployment_tests
   run_runtime_config_change_tests
