@@ -15,8 +15,8 @@ metadata:
       url: https://access.redhat.com/
     - title: Documentation for Red Hat Developer Hub
       url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
-    - title: Documentation for Ansible
-      url: https://docs.redhat.com/en/documentation/red_hat_ansible_automation_platform/
+    - title: Documentation for Ansible Plugins For Developer Hub
+      url: https://docs.redhat.com/en/documentation/red_hat_ansible_automation_platform
 
   tags:
     - automation
