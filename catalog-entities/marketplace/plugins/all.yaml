@@ -49,6 +49,7 @@ spec:
     - ./nexus-repository-manager.yaml
     - ./notifications.yaml
     - ./openshift-cluster-manager.yaml
+    - ./orchestrator.yaml
     - ./pagerduty.yaml
     - ./pingidentity.yaml
     - ./quay-scaffolder-actions.yaml
