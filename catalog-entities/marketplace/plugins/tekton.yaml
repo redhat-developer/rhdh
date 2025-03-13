@@ -7,7 +7,7 @@ metadata:
   title: Pipelines With Tekton
   description: |
     The Tekton plugin enables you to visualize the PipelineRun resources available on your Kubernetes cluster. Once
-    enabled a CI/CD tab will display the list of these resources and associated pipeline run details such as 
+    enabled a CI/CD tab will display the list of these resources and associated pipeline run details such as
     NAME, STATUS, TASK STATUS, STARTED, and DURATION.
   annotations:
     extensions.backstage.io/pre-installed: 'true'
@@ -27,7 +27,7 @@ metadata:
 
 spec:
 
-  author: Red Hat
+  author: Backstage Community
   support: production
   lifecycle: active
   publisher: Red Hat
@@ -39,11 +39,11 @@ spec:
     - View pipeline run details
 
   description: |
-    The Tekton plugin enables you to visualize the `PipelineRun` resources available on the Kubernetes cluster. 
-    The CI/CD tab displays the list of PipelineRun resources associated with a Kubernetes cluster. 
+    The Tekton plugin enables you to visualize the `PipelineRun` resources available on the Kubernetes cluster.
+    The CI/CD tab displays the list of PipelineRun resources associated with a Kubernetes cluster.
     The list contains pipeline run details, such as NAME, STATUS, TASK STATUS, STARTED, and DURATION.
 
-    Vulnerabilities column provides a visual representation of identified vulnerabilities in the OCI image produced by the pipelinerun. 
+    Vulnerabilities column provides a visual representation of identified vulnerabilities in the OCI image produced by the pipelinerun.
     The Author of the pipeline scanner task would provide the CVE summary data using the below format that the UI can interpret.
     The result of the scanner task should be emitted back to the pipelinerun and it should contain a result that ends with SCAN_OUTPUT string.
 
@@ -51,12 +51,12 @@ spec:
 
     ## Adding The Plugin To Red Hat Developer Hub
 
-    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub) 
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
     for further instructions on how to add, enable, configure, and remove plugins in your instance.
 
     ## Configuring The Plugin ##
 
-    Plugins often need additional configuration to work correctly - particularly those that integrate with other 
+    Plugins often need additional configuration to work correctly - particularly those that integrate with other
     systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
     for further details regarding the configuration required.
 

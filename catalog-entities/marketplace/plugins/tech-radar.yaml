@@ -6,9 +6,9 @@ metadata:
   namespace: rhdh
   title: Tech Radar
   description: |
-    Visualize the your company's official guidelines of different areas of software development. Technologies on the 
-    Radar are organized into four rings: Adopt, Trial, Assess, and Hold so you can quickly separate the hotties from 
-    the notties! 
+    Visualize the your company's official guidelines of different areas of software development. Technologies on the
+    Radar are organized into four rings: Adopt, Trial, Assess, and Hold so you can quickly separate the hotties from
+    the notties!
   annotations:
     extensions.backstage.io/pre-installed: 'true'
   links:
@@ -28,9 +28,9 @@ metadata:
     - discovery
     - guidelines
     - software-development
-    
+
 spec:
-  author: Spotify
+  author: Backstage Community
   publisher: Red Hat
   license: Apache-2.0
   support: tech-preview
@@ -45,29 +45,29 @@ spec:
     - Software Development
 
   description: |
-    The Backstage integration for the Tech Radar based on Zalando's Tech Radar open sourced on GitHub. 
-    This plugin is used at Spotify for visualizing the official guidelines of different areas of software development 
+    The Backstage integration for the Tech Radar based on Zalando's Tech Radar open sourced on GitHub.
+    This plugin is used at Spotify for visualizing the official guidelines of different areas of software development
     such as languages, frameworks, infrastructure and processes.
 
     Zalando's description of TechRadar:
 
-    > The Tech Radar is a tool to inspire and support engineering teams at Zalando to pick the best 
+    > The Tech Radar is a tool to inspire and support engineering teams at Zalando to pick the best
     technologies for new projects; it provides a platform to share knowledge and experience in t
-    echnologies, to reflect on technology decisions and continuously evolve our technology landscape. 
-    Based on the pioneering work of ThoughtWorks, our Tech Radar sets out the changes in technologies 
-    that are interesting in software development — changes that we think our engineering teams should pay 
+    echnologies, to reflect on technology decisions and continuously evolve our technology landscape.
+    Based on the pioneering work of ThoughtWorks, our Tech Radar sets out the changes in technologies
+    that are interesting in software development — changes that we think our engineering teams should pay
     attention to and consider using in their projects.
 
     Technologies on the Radar are organized into four rings: Adopt, Trial, Assess, and Hold.
 
     ## Adding The Plugin To Red Hat Developer Hub
 
-    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub) 
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
     for further instructions on how to add, enable, configure, and remove plugins in your instance.
 
     ## Configuring The Plugin ##
 
-    Plugins often need additional configuration to work correctly - particularly those that integrate with other 
+    Plugins often need additional configuration to work correctly - particularly those that integrate with other
     systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
     for further details regarding the configuration required.
 
