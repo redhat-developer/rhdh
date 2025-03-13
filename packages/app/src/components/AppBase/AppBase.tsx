@@ -97,9 +97,7 @@ const AppBase = () => {
               <Route
                 path="/create"
                 element={
-                  <ScaffolderPage
-                    headerOptions={{ title: 'Software Templates' }}
-                  />
+                  <ScaffolderPage headerOptions={{ title: 'Self-service' }} />
                 }
               >
                 <ScaffolderFieldExtensions>

@@ -104,5 +104,8 @@
   "jest": {
     "testTimeout": 20000
   },
-  "packageManager": "yarn@3.8.7"
+  "packageManager": "yarn@3.8.7",
+  "dependencies": {
+    "@backstage/plugin-catalog": "^1.27.0"
+  }
 }
