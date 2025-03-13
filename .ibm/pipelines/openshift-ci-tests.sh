@@ -10,20 +10,24 @@ OVERALL_RESULT=0
 
 # Define a cleanup function to be executed upon script exit.
 # shellcheck disable=SC2317
-cleanup() {
-  echo "Cleaning up before exiting"
-  if [[ "${OPENSHIFT_CI}" == "true" ]]; then
-    case "$JOB_NAME" in
-      *gke*)
-        echo "Calling cleanup_gke"
-        cleanup_gke
-        ;;
-    esac
-  fi
-  rm -rf ~/tmpbin
-}
+#cleanup() {
+#  echo "Cleaning up before exiting"
+#  if [[ "${OPENSHIFT_CI}" == "true" ]]; then
+#    case "$JOB_NAME" in
+#      *gke*)
+#        echo "Calling cleanup_gke"
+#        cleanup_gke
+#        ;;
+#    esac
+#  fi
+#  rm -rf ~/tmpbin
+#}
+#
+#trap cleanup EXIT INT ERR
 
-trap cleanup EXIT INT ERR
+export JOB_NAME=nightly
+export K8S_CLUSTER_TOKEN=$K8S_CLUSTER_TOKEN_TEMPORARY
+export K8S_CLUSTER_URL='https://api.wnayy-383nx-m7s.ckkb.p3.openshiftapps.com:443'
 
 SCRIPTS=(
     "env_variables.sh"

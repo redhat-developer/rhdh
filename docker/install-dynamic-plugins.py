@@ -167,7 +167,7 @@ class OciDownloader:
             shutil.rmtree(plugin_directory, ignore_errors=True, onerror=None)
         self.extract_plugin(tar_file=tar_file, plugin_path=plugin_path)
         return plugin_path
-    
+
     def digest(self, package: str) -> str:
         (image, plugin_path) = package.split('!')
         image_url = image.replace('oci://', 'docker://')
@@ -233,7 +233,7 @@ def wait_for_lock_release(lock_file_path):
    print("======= Lock released.")
 
 def main():
-
+    start_time = datetime.now()
     dynamicPluginsRoot = sys.argv[1]
 
     lock_file_path = os.path.join(dynamicPluginsRoot, 'install-dynamic-plugins.lock')
@@ -352,7 +352,7 @@ def main():
                 with open(hash_file_path, 'r') as hash_file:
                     hash_value = hash_file.read().strip()
                     plugin_path_by_hash[hash_value] = dir_name
-                    
+
     oci_downloader = OciDownloader(dynamicPluginsRoot)
 
     # iterate through the list of plugins
@@ -369,7 +369,7 @@ def main():
             # The OCI downloader
             try:
                 pull_policy = plugin.get('pullPolicy', PullPolicy.ALWAYS if ':latest!' in package else PullPolicy.IF_NOT_PRESENT)
-                
+
                 if plugin['hash'] in plugin_path_by_hash and pull_policy == PullPolicy.IF_NOT_PRESENT:
                     print('\n======= Skipping download of already installed dynamic plugin', package, flush=True)
                     plugin_path_by_hash.pop(plugin['hash'])
@@ -390,8 +390,8 @@ def main():
                         continue
                     else:
                         print('\n======= Installing dynamic plugin', package, flush=True)
-                        
-                else:    
+
+                else:
                     print('\n======= Installing dynamic plugin', package, flush=True)
 
                 plugin_path = oci_downloader.download(package)
@@ -520,4 +520,7 @@ def main():
         print('\n======= Removing previously installed dynamic plugin', plugin_path_by_hash[hash_value], flush=True)
         shutil.rmtree(plugin_directory, ignore_errors=True, onerror=None)
 
+    end_time = datetime.now()
+    elapsed_time = end_time - start_time
+    print(f"Total Execution Time: {elapsed_time}")
 main()

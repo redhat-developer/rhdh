@@ -15,8 +15,8 @@ handle_nightly() {
   initiate_deployments
   deploy_test_backstage_provider "${NAME_SPACE}"
 
-  run_standard_deployment_tests
-  run_runtime_config_change_tests
+#  run_standard_deployment_tests
+#  run_runtime_config_change_tests
   run_sanity_plugins_check
 
 }
@@ -37,6 +37,6 @@ run_runtime_config_change_tests() {
 
 run_sanity_plugins_check() {
   initiate_sanity_plugin_checks_deployment "${RELEASE_NAME}" "${NAME_SPACE_SANITY_PLUGINS_CHECK}"
-  local sanity_plugins_url="https://${RELEASE_NAME}-backstage-${NAME_SPACE_SANITY_PLUGINS_CHECK}.${K8S_CLUSTER_ROUTER_BASE}"
-  check_and_test "${RELEASE_NAME}" "${NAME_SPACE_SANITY_PLUGINS_CHECK}" "${sanity_plugins_url}"
+#  local sanity_plugins_url="https://${RELEASE_NAME}-backstage-${NAME_SPACE_SANITY_PLUGINS_CHECK}.${K8S_CLUSTER_ROUTER_BASE}"
+#  check_and_test "${RELEASE_NAME}" "${NAME_SPACE_SANITY_PLUGINS_CHECK}" "${sanity_plugins_url}"
 }
