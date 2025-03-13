@@ -3,15 +3,69 @@ apiVersion: extensions.backstage.io/v1alpha1
 kind: Plugin
 metadata:
   name: dynatrace-commercial
-  namespace: rhdh
-  title: DynaTrace
+  namespace: dynatrace
+  title: Dynatrace
   annotations:
-    extensions.backstage.io/pre-installed: 'true'
+    extensions.backstage.io/pre-installed: 'false'
     extensions.backstage.io/certified-by: Red Hat
-  description: ''
-  tags: []
+  description: |
+    This officially supported plugin from Dynatrace provides customizable context-rich observability and security insights 
+    for services in your software catalog.
+
+  links:
+    - url: https://www.dynatrace.com/
+      title: Homepage
+    - url: https://github.com/Dynatrace/backstage-plugin/issues
+      title: Issues
+    - title: Source Code
+      url: https://github.com/Dynatrace/backstage-plugin
+
+  tags:
+    - observability
+
 spec:
-  description: ''
+  
+  author: Dynatrace
+  support: production
+  lifecycle: active
+  publisher: Dynatrace
+
+  categories:
+    - Observability
+
+  highlights:
+    - Supported by Dynatrace
+    - Support requires a Dynatrace subscription
+
+  description: |
+    This officially supported plugin from Dynatrace provides customizable context-rich observability and security insights for services in your 
+    software catalog. Once installed the plugin can provide live data from Dynatrace by running DQL against it.
+
+    Context-rich observability and security insights. The Dynatrace Backstage plugins enable you to fetch observability and security data from 
+    Dynatrace to be displayed at software components managed in your Backstage Software Catalog. The data is in tabular format with smart 
+    links to Dynatrace Apps for deeper analysis and root cause investigation in case of a related problem or security vulnerability.
+
+    ## Adding The Plugin To Red Hat Developer Hub
+
+    Contact Dynatrace support for help installing this plugin in your Red Hat Developer Hub instance.
+
+    You can also see the plugin's source code repository in the link below for additional information about this plugin such as 
+    multi-environment support, sample queries, and registering custom queries in the `metadata.dynatrace.queries` 
+    property of a component within the `catalog-info.yaml` file.
+
+    ## Technical Notes:
+
+    The ID of the plugin is `dynatrace-dql` (to not conflict with other plugins).
+
+    The ID of the backend plugin API is set to be `plugin.dynatrace-dql.service`.
+
+    #### Behind a corporate proxy
+
+    If your application is behind a corporate proxy, set `HTTPS_PROXY` as an environment variable. This will be passed to 
+    HttpsProxyAgent as agent in the fetch request.
+
+    There is another method, you can open firewall for Dynatrace tokenUrl https://sso.dynatrace.com 
+    and https://xxxxxxxx.apps.dynatrace.com. In that case, you don't need `HTTPS_PROXY`.
 
   icon: data:image/svg+xml;base64,
     PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPCEtLSBVcGxvYWRlZCB0bzog
@@ -81,4 +135,5 @@ spec:
     bD0iIzczQkUyOCI+Cg08L3BhdGg+CiAgICA8L2c+Cjwvc3ZnPg==
 
   packages:
-    - backstage-community-plugin-dynatrace
+    - dynatrace-backstage-plugin-dql
+    - dynatrace-backstage-plugin-dql-backend

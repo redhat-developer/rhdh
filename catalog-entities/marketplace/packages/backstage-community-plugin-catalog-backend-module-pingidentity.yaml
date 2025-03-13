@@ -14,7 +14,8 @@ metadata:
   annotations:
     backstage.io/source-location: url
       https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-catalog-backend-module-pingidentity-dynamic
-  tags: []
+  tags: 
+    - identity-management
 spec:
   packageName: "@backstage-community/plugin-catalog-backend-module-pingidentity"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-pingidentity-dynamic

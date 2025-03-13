@@ -5,14 +5,22 @@ metadata:
   name: redhat-argocd
   namespace: rhdh
   title: Red Hat Argo CD
-  description: ''
+  description: 'This plugin provides a visual overview of the application’s status, deployment details, commit message, author of the commit, container image promoted to environment and deployment history.'
   annotations:
     extensions.backstage.io/pre-installed: 'true'
   tags:
     - cicd
+    - argocd
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Documentation for Red Hat developer Hub
+      url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
+    - title: Source Code
+      url: https://github.com/backstage/community-plugins/tree/main/workspaces/redhat-argocd
 spec:
-  author: Red Hat
-  publisher: Red Hat
   categories:
     - CI/CD
   icon: data:image/svg+xml;base64,
@@ -126,6 +134,31 @@ spec:
     NDI2LS40MjUuNDI2LS44NDcuNDI2em0wIDAiIGZpbGw9IiNmZmYiLz48dXNlIHhsaW5rOmhyZWY9
     IiNhcmdvY2Qtb3JpZ2luYWwtayIgbWFzaz0idXJsKCNhcmdvY2Qtb3JpZ2luYWwtbCkiLz48L3N2
     Zz4K
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+  publisher: Red Hat
+  description: |
+    You can use the Argo CD plugin to visualize the Continuous Delivery (CD) workflows in OpenShift GitOps.
+    This plugin provides a visual overview of the application's status, deployment details, commit message,
+    author of the commit, container image promoted to environment and deployment history.
+
+    ## Adding The Plugin To Red Hat Developer Hub
+
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further instructions on how to add, enable, and configure plugins in your instance.
+
+    ## Configuring The Plugin ##
+
+    Plugins often need additional configuration to work correctly - particularly those that integrate with other
+    systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further details on the configuration required.
+
+  highlights:
+    - Visual overview of the application's status
+    - Deployment details
+    - Argo CD Rollouts
+
 
   packages:
     - backstage-community-plugin-redhat-argocd
