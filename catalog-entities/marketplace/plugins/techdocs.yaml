@@ -5,9 +5,9 @@ metadata:
   name: techdocs
   namespace: rhdh
   title: TechDocs Plugin For Backstage
-  description: TechDocs is a core Backstage feature that lets you treat your Docs like code. Create, 
-    find, and manage documentation in one central location and in a standardized way. Sources live 
-    alongside your code in your repositories where you can manage them easily. 
+  description: TechDocs is a core Backstage feature that lets you treat your Docs like code. Create,
+    find, and manage documentation in one central location and in a standardized way. Sources live
+    alongside your code in your repositories where you can manage them easily.
     TechDocs generates, stores, and shares your docs with your team.
   annotations:
     extensions.backstage.io/pre-installed: 'true'
@@ -26,7 +26,7 @@ metadata:
       title: Backend Sourcecode
 
 spec:
-  author: Spotify
+  author: Backstage Community
   publisher: Red Hat
   license: Apache-2.0
   lifecycle: active
@@ -43,9 +43,9 @@ spec:
     - Add-ons
 
   description: |
-    The Red Hat Developer Hub instance comes with the TechDocs plugin preinstalled and enabled by default. 
-    Your organization can use the TechDocs plugin to create, 
-    find, and manage documentation in a central location and in a standardized way. You can also enhance your technical 
+    The Red Hat Developer Hub instance comes with the TechDocs plugin preinstalled and enabled by default.
+    Your organization can use the TechDocs plugin to create,
+    find, and manage documentation in a central location and in a standardized way. You can also enhance your technical
     documentation experience with built-in TechDocs features and add-ons. For example:
 
     * Discover your technical documentation directly from the Software Catalog.
@@ -54,7 +54,7 @@ spec:
     * Explore and take advantage of the large ecosystem of MkDocs plugins to create a rich reading experience.
     * Integrated with Backstage search - search for and find docs instantly.
 
-     Your organization can use the TechDocs plugin to create, find, and manage documentation in a central location and in a standardized way. 
+     Your organization can use the TechDocs plugin to create, find, and manage documentation in a central location and in a standardized way.
      You can also enhance your technical documentation experience with built-in TechDocs features and add-ons. For example:
 
     ## Docs-like-code approach
@@ -79,12 +79,12 @@ spec:
 
     ## Adding The Plugin To Red Hat Developer Hub
 
-    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub) 
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
     for further instructions on how to add, enable, configure, and remove plugins in your instance.
 
     ## Configuring The Plugin ##
 
-    Plugins often need additional configuration to work correctly - particularly those that integrate with other 
+    Plugins often need additional configuration to work correctly - particularly those that integrate with other
     systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
     for further details regarding the configuration required.
 

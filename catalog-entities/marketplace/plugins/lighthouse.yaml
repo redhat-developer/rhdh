@@ -25,7 +25,7 @@ metadata:
     Google's Lighthouse tool is a great resource for benchmarking and improving the accessibility, performance, SEO, and best practices of your website.
 
 spec:
-  author: Spotify
+  author: Backstage Community
   support: tech-preview
   lifecycle: active
   publisher: Red Hat
@@ -36,16 +36,16 @@ spec:
 
     Google's Lighthouse tool is a great resource for benchmarking and improving the accessibility, performance, SEO, and best practices of your website.
 
-    This plugin allows you to generate on-demand Lighthouse audits for websites, and to track the trends for the top-level categories of Lighthouse at a glance.    
+    This plugin allows you to generate on-demand Lighthouse audits for websites, and to track the trends for the top-level categories of Lighthouse at a glance.
 
     ## Adding The Plugin To Red Hat Developer Hub
 
-    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub) 
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
     for further instructions on how to add, enable, configure, and remove plugins in your instance.
 
     ## Configuring The Plugin ##
 
-    Plugins often need additional configuration to work correctly - particularly those that integrate with other 
+    Plugins often need additional configuration to work correctly - particularly those that integrate with other
     systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
     for further details regarding the configuration required.
 
