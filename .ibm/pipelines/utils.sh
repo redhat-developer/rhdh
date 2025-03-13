@@ -817,33 +817,33 @@ initiate_deployments() {
   local rhdh_base_url="https://${RELEASE_NAME}-backstage-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
   echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
-#  helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
-#    "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" --version "${CHART_VERSION}" \
-#    -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" \
-#    --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-#    --set upstream.backstage.image.repository="${QUAY_REPO}" \
-#    --set upstream.backstage.image.tag="${TAG_NAME}"
+  helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
+    "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" --version "${CHART_VERSION}" \
+    -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" \
+    --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
+    --set upstream.backstage.image.repository="${QUAY_REPO}" \
+    --set upstream.backstage.image.tag="${TAG_NAME}"
 
   configure_namespace "${NAME_SPACE_POSTGRES_DB}"
-#  configure_namespace "${NAME_SPACE_RBAC}"
+  configure_namespace "${NAME_SPACE_RBAC}"
   configure_external_postgres_db "${NAME_SPACE_RBAC}"
 
-#  # Initiate rbac instance deployment.
-#  local rbac_rhdh_base_url="https://${RELEASE_NAME_RBAC}-backstage-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
-#  apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
-#  echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${RELEASE_NAME_RBAC}"
-#  helm upgrade -i "${RELEASE_NAME_RBAC}" -n "${NAME_SPACE_RBAC}" \
-#    "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" --version "${CHART_VERSION}" \
-#    -f "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" \
-#    --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-#    --set upstream.backstage.image.repository="${QUAY_REPO}" \
-#    --set upstream.backstage.image.tag="${TAG_NAME}"
+  # Initiate rbac instance deployment.
+  local rbac_rhdh_base_url="https://${RELEASE_NAME_RBAC}-backstage-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
+  apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
+  echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${RELEASE_NAME_RBAC}"
+  helm upgrade -i "${RELEASE_NAME_RBAC}" -n "${NAME_SPACE_RBAC}" \
+    "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" --version "${CHART_VERSION}" \
+    -f "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" \
+    --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
+    --set upstream.backstage.image.repository="${QUAY_REPO}" \
+    --set upstream.backstage.image.tag="${TAG_NAME}"
 }
 
 # install base RHDH deployment before upgrade
 initiate_upgrade_base_deployments() {
   echo "Initiating base RHDH deployment before upgrade"
-  
+
   # Deploy redis cache db.
   oc apply -f "$DIR/resources/redis-cache/redis-deployment.yaml" --namespace="${NAME_SPACE}"
 
@@ -851,7 +851,7 @@ initiate_upgrade_base_deployments() {
   local rhdh_base_url="https://${RELEASE_NAME}-backstage-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
   echo "Deploying image from repository: ${QUAY_REPO_BASE}, TAG_NAME: ${TAG_NAME_BASE}, in NAME_SPACE: ${NAME_SPACE}"
-  
+
   helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
     "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" --version "${CHART_VERSION_BASE}" \
     -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME_BASE}" \
@@ -865,20 +865,20 @@ initiate_upgrade_deployments() {
   local namespace=$2
   local url=$3
   local max_attempts=${4:-30}    # Default to 30 if not set
-  local wait_seconds=${5:-30} 
+  local wait_seconds=${5:-30}
   local wait_upgrade="10m"
 
   # check if the base rhdh deployment is running
   if check_backstage_running "${release_name}" "${namespace}" "${url}" "${max_attempts}" "${wait_seconds}"; then
-    
+
     echo "Display pods of base RHDH deployment before upgrade for verification..."
     oc get pods -n "${namespace}"
-    
+
     echo "Initiating upgrade deployment"
     cd "${DIR}"
-    
+
     echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
-    
+
     helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
     "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" \
     -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" \
@@ -952,7 +952,7 @@ check_upgrade_and_test() {
   local namespace="$3"
   local url=$4
   local timeout=${5:-600} # Timeout in seconds (default: 600 seconds)
-  
+
   if check_helm_upgrade "${deployment_name}" "${namespace}" "${timeout}"; then
     check_and_test "${release_name}" "${namespace}" "${url}"
   else
@@ -962,11 +962,11 @@ check_upgrade_and_test() {
 
 check_helm_upgrade() {
   local deployment_name="$1"
-  local namespace="$2"       
-  local timeout="$3"      
-  
+  local namespace="$2"
+  local timeout="$3"
+
   echo "Checking rollout status for deployment: ${deployment_name} in namespace: ${namespace}..."
-  
+
   if oc rollout status "deployment/${deployment_name}" -n "${namespace}" --timeout="${timeout}s" -w; then
       echo "RHDH upgrade is complete."
       return 0
