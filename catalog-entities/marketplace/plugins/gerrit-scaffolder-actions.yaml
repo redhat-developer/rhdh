@@ -5,7 +5,16 @@ metadata:
   name: gerrit-scaffolder-actions
   namespace: rhdh
   title: Gerrit Software Template Actions
-  description: ''
+  description: 'This plugin contains a collection of actions for working with Gerrit'
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Documentation for Red Hat developer Hub
+      url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
+    - title: Source Code
+      url: https://github.com/backstage/backstage/tree/master/plugins/scaffolder-backend-module-gerrit
   annotations:
     extensions.backstage.io/pre-installed: 'true'
   tags:
@@ -17,6 +26,8 @@ spec:
   authors:
     - name: Backstage Community
   publisher: Red Hat
+  lifecycle: active
+  support: tech-preview
 
   icon: data:image/svg+xml;base64,
     PHN2ZyB3aWR0aD0iNTIiIGhlaWdodD0iNTIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAw
@@ -29,10 +40,24 @@ spec:
     MDA4MDAwIi8+CjxwYXRoIGQ9Im0zNCwzNmw0LDBsMCwtNGw0LDBsMCw0bDQsMGwwLDRsLTQsMGww
     LDRsLTQsMGwwLC00bC00LDBsMCwtNHoiIGZpbGw9IiMwMDgwMDAiLz4KPC9zdmc+
 
-  # support:
-  #   level: tech-preview
-  lifecycle: production
   description: |
-  
+
+    This plugin contains a collection of actions for working with Gerrit
+
+    - publish:gerrit
+    - publish:gerrit:review
+
+
+    ## Adding The Plugin To Red Hat Developer Hub
+
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further instructions on how to add, enable, and configure plugins in your instance.
+
+    ## Configuring The Plugin ##
+
+    Plugins often need additional configuration to work correctly - particularly those that integrate with other
+    systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further details on the configuration required.
+
   packages:
     - backstage-plugin-scaffolder-backend-module-gerrit
