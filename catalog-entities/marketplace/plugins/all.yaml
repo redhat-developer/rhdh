@@ -48,6 +48,7 @@ spec:
     - ./microsoft-graph-catalog-integration.yaml
     - ./nexus-repository-manager.yaml
     - ./notifications.yaml
+    - ./notifications-email.yaml
     - ./openshift-cluster-manager.yaml
     - ./orchestrator.yaml
     - ./pagerduty.yaml
