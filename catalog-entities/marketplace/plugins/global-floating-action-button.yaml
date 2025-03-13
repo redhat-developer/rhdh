@@ -8,6 +8,7 @@ metadata:
   description: 'This plugin enables you to add a floating button, with or without submenu options, to your desired pages.'
   annotations:
     extensions.backstage.io/pre-installed: 'true'
+    extensions.backstage.io/verified-by: Red Hat
   tags: 
     - customization
   links:
