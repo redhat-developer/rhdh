@@ -8,17 +8,35 @@ metadata:
   description: View container image details from JFrog Artifactory in Backstage.
   annotations:
     extensions.backstage.io/pre-installed: 'true'
-  tags: []
+  tags: 
+    - image-registry
   links:
     - url: https://github.com/backstage/community-plugins/blob/main/workspaces/jfrog-artifactory/plugins/jfrog-artifactory/README.md
       title: Upstream Documentation
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
 spec:
-  authors:
-    - name: Red Hat
-      url: https://redhat.com
-
+  support: tech-preview
+  lifecycle: active
+  publisher: Red Hat
+  author: Red Hat
   categories:
     - Container Image Registry
+
+  description: |  
+   The Jfrog Artifactory plugin displays information about your container images within the Jfrog Artifactory registry.
+
+    ## Adding The Plugin To Red Hat Developer Hub
+
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub) 
+    for further instructions on how to add, enable, configure, and remove plugins in your instance.
+
+    ## Configuring The Plugin ##
+
+    Plugins often need additional configuration to work correctly - particularly those that integrate with other 
+    systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further details regarding the configuration required.
+
 
   icon: data:image/svg+xml;base64,
     PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPCEtLSBVcGxvYWRlZCB0bzog
