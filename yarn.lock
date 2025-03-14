@@ -1700,9 +1700,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@azure/identity@npm:4.7.0":
-  version: 4.7.0
-  resolution: "@azure/identity@npm:4.7.0"
+"@azure/identity@npm:4.8.0":
+  version: 4.8.0
+  resolution: "@azure/identity@npm:4.8.0"
   dependencies:
     "@azure/abort-controller": ^2.0.0
     "@azure/core-auth": ^1.9.0
@@ -1712,13 +1712,13 @@ __metadata:
     "@azure/core-util": ^1.11.0
     "@azure/logger": ^1.0.0
     "@azure/msal-browser": ^4.2.0
-    "@azure/msal-node": ^3.2.1
+    "@azure/msal-node": ^3.2.3
     events: ^3.0.0
     jws: ^4.0.0
     open: ^10.1.0
     stoppable: ^1.1.0
     tslib: ^2.2.0
-  checksum: eb373d50d271c3d147e2d4f34367f5170c707039b26a7814f0337cce7e5334a3b96c35a699e344e0b6b8c83dd5fc5097193bae3a1d0493efbc44e472a47a81f0
+  checksum: f05ca78fcd44fcbae093c91498f2ab8af069425f0dc37812e26349f2a87b107ad9659538a0dac031b9179c393997a707c776d0128a0774f0bcb93ac8c8f3774a
   languageName: node
   linkType: hard
 
@@ -1792,6 +1792,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@azure/msal-common@npm:15.2.1":
+  version: 15.2.1
+  resolution: "@azure/msal-common@npm:15.2.1"
+  checksum: fc12f36fbbdefde58250251a57693e7e924880bd0cc759a225139d9aaa3be6020fd420f616514476084dcf3171feecfe8fc4d959f48f18f0bd41f225cbca7475
+  languageName: node
+  linkType: hard
+
 "@azure/msal-node@npm:^2.15.0":
   version: 2.15.0
   resolution: "@azure/msal-node@npm:2.15.0"
@@ -1803,14 +1810,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@azure/msal-node@npm:^3.2.1":
-  version: 3.2.3
-  resolution: "@azure/msal-node@npm:3.2.3"
+"@azure/msal-node@npm:^3.2.3":
+  version: 3.3.0
+  resolution: "@azure/msal-node@npm:3.3.0"
   dependencies:
-    "@azure/msal-common": 15.2.0
+    "@azure/msal-common": 15.2.1
     jsonwebtoken: ^9.0.0
     uuid: ^8.3.0
-  checksum: ec5aa9b3a48dfdbd25608c09b9d157e45ebaefd04455bc0618a6b395c01400447d1b4113d9c6b605f08e9fceb8565bbfe305d08c020a378135a996f35eb4a333
+  checksum: ed3a2bf75865a7bd029618bcf4323030a2b4d5b17936834386e31fe6f301f78ff8aa450ac2130ade9328adab00c13bdd52b84f6a2dc2536e24c5004a2e507bfb
   languageName: node
   linkType: hard
 
@@ -23373,7 +23380,7 @@ __metadata:
     prettier: 3.5.2
     undici: 6.21.1
     winston: 3.14.2
-    zod: 3.23.8
+    zod: 3.24.2
   languageName: unknown
   linkType: soft
 
@@ -27691,7 +27698,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "e2e-tests@workspace:e2e-tests"
   dependencies:
-    "@azure/identity": 4.7.0
+    "@azure/identity": 4.8.0
     "@keycloak/keycloak-admin-client": 25.0.6
     "@kubernetes/client-node": 0.22.3
     "@microsoft/microsoft-graph-client": 3.0.7
@@ -47897,7 +47904,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:3.23.8, zod@npm:^3.20.0, zod@npm:^3.22.4":
+"zod@npm:3.24.2":
+  version: 3.24.2
+  resolution: "zod@npm:3.24.2"
+  checksum: c02455c09678c5055c636d64f9fcda2424fea0aa46ac7d9681e7f41990bc55f488bcd84b9d7cfef0f6e906f51f55b245239d92a9f726248aa74c5b84edf00c2d
+  languageName: node
+  linkType: hard
+
+"zod@npm:^3.20.0, zod@npm:^3.22.4":
   version: 3.23.8
   resolution: "zod@npm:3.23.8"
   checksum: 15949ff82118f59c893dacd9d3c766d02b6fa2e71cf474d5aa888570c469dbf5446ac5ad562bb035bf7ac9650da94f290655c194f4a6de3e766f43febd432c5c
