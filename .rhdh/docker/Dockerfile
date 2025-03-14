@@ -260,7 +260,7 @@ RUN "$YARN" workspaces focus --all --production && \
 # Stage 5 - Build the runner image
 #@follow_tag(registry.access.redhat.com/ubi9/nodejs-20-minimal:1)
 # https://registry.access.redhat.com/ubi9/nodejs-20-minimal
-FROM registry.access.redhat.com/ubi9/nodejs-20-minimal:9.5-1739448741 AS runner
+FROM registry.access.redhat.com/ubi9/nodejs-20-minimal:9.5-1741860594 AS runner
 USER 0
 
 # Downstream sources
