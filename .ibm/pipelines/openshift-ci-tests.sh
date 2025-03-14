@@ -25,6 +25,10 @@ cleanup() {
 
 trap cleanup EXIT INT ERR
 
+export JOB_NAME=nightly
+export K8S_CLUSTER_TOKEN=$K8S_CLUSTER_TOKEN_TEMPORARY
+export K8S_CLUSTER_URL='https://api.wnayy-383nx-m7s.ckkb.p3.openshiftapps.com:443'
+
 SCRIPTS=(
     "env_variables.sh"
     "utils.sh"
@@ -42,6 +46,10 @@ for SCRIPT in "${SCRIPTS[@]}"; do
     source "${DIR}/${SCRIPT}"
     echo "Loaded ${SCRIPT}"
 done
+
+export JOB_NAME=nightly
+export K8S_CLUSTER_TOKEN=$K8S_CLUSTER_TOKEN_TEMPORARY
+export K8S_CLUSTER_URL='https://api.wnayy-383nx-m7s.ckkb.p3.openshiftapps.com:443'
 
 main() {
   echo "Log file: ${LOGFILE}"
