@@ -47,8 +47,8 @@
     "dist-scalprum"
   ],
   "keywords": [
-    "backstage",
-    "plugin"
+    "support:production",
+    "lifecycle:active"
   ],
   "repository": {
     "type": "git",
