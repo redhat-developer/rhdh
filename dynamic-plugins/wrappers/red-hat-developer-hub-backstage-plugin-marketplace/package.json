@@ -29,6 +29,7 @@
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
+    "@mui/material": "5.17.1",
     "@red-hat-developer-hub/backstage-plugin-marketplace": "0.5.3"
   },
   "devDependencies": {
