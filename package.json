@@ -52,8 +52,6 @@
     "typescript": "5.7.3"
   },
   "resolutions": {
-    "@types/react": "18.3.18",
-    "@types/react-dom": "18.3.5",
     "@aws-sdk/util-utf8-browser": "npm:@smithy/util-utf8@~2",
     "@backstage/plugin-scaffolder-node@^0.5.0": "patch:@backstage/plugin-scaffolder-node@npm%3A0.6.3#./.yarn/patches/@backstage-plugin-scaffolder-node-npm-0.6.3-1423303d33.patch",
     "@backstage/plugin-scaffolder-node@^0.6.3": "patch:@backstage/plugin-scaffolder-node@npm%3A0.6.3#./.yarn/patches/@backstage-plugin-scaffolder-node-npm-0.6.3-1423303d33.patch",
@@ -100,7 +98,16 @@
     "@backstage/plugin-auth-backend-module-okta-provider@0.1.4": "patch:@backstage/plugin-auth-backend-module-okta-provider@npm%3A0.1.4#./.yarn/patches/@backstage-plugin-auth-backend-module-okta-provider-npm-0.1.4-6e105e61f8.patch",
     "@backstage/plugin-auth-backend-module-okta-provider@^0.1.4": "patch:@backstage/plugin-auth-backend-module-okta-provider@npm%3A0.1.4#./.yarn/patches/@backstage-plugin-auth-backend-module-okta-provider-npm-0.1.4-6e105e61f8.patch",
     "@backstage/plugin-auth-backend-module-onelogin-provider@0.2.4": "patch:@backstage/plugin-auth-backend-module-onelogin-provider@npm%3A0.2.4#./.yarn/patches/@backstage-plugin-auth-backend-module-onelogin-provider-npm-0.2.4-f2bab85a73.patch",
-    "@backstage/plugin-auth-backend-module-onelogin-provider@^0.2.4": "patch:@backstage/plugin-auth-backend-module-onelogin-provider@npm%3A0.2.4#./.yarn/patches/@backstage-plugin-auth-backend-module-onelogin-provider-npm-0.2.4-f2bab85a73.patch"
+    "@backstage/plugin-auth-backend-module-onelogin-provider@^0.2.4": "patch:@backstage/plugin-auth-backend-module-onelogin-provider@npm%3A0.2.4#./.yarn/patches/@backstage-plugin-auth-backend-module-onelogin-provider-npm-0.2.4-f2bab85a73.patch",
+    "@mui/icons-material": "^5",
+    "@mui/material": "^5",
+    "@mui/private-theming": "^5",
+    "@mui/styled-engine": "^5",
+    "@mui/styles": "^5",
+    "@mui/system": "^5",
+    "@mui/utils": "^5",
+    "@types/react-dom": "18.3.5",
+    "@types/react": "18.3.18"
   },
   "jest": {
     "testTimeout": 20000
