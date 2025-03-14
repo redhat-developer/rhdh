@@ -31,13 +31,16 @@ Order and parent-children relationship of sidebar main menu items can be customi
 dynamicPlugins:
   frontend:
     default.main-menu-items: # key for configuring static main menu items
-      default.<menu_item_name>: # key of the menu item configuration. `default.` prefix is required for a main menu item key
-        parent: my_menu_group # optional, specifies the parent menu item for this item
-        priority: 10 # optional, specifies the order of this menu item within its menu level
       default.<menu_group_parent_item_name>: # must be configured if it is specified as the parent of any menu items. `default.` prefix is required for a main menu item key
         icon: my_menu_group_icon # required for parent menu items, defines the icon for the menu group
         title: my_menu_group_title # required for parent menu items, defines the icon for the menu group
         priority: 100 # optional, specifies the order of the parent menu item in the sidebar
+      default.<menu_item_name>: # key of the menu item configuration. `default.` prefix is required for a main menu item key
+        parent: my_menu_group # optional, specifies the parent menu item for this item
+        priority: 10 # optional, specifies the order of this menu item within its menu level
+        icon: my_menu_group_icon # optional, defines the icon for the menu group
+        title: my_menu_group_title # required for new menu items, for default menu items if not provided will pick the default title and if provided as empty string '', then this will be hidden
+        to: </path/to/the/target/page> # optional, specifies the target navigation path
 ```
 
 `default.<menu_item_name>`: The `default.` prefix is mandatory to ensure that the menu item is recognized as a main menu item. It should be used for both individual menu items and parent menu group configurations.
