@@ -40955,6 +40955,7 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.29.6
     "@janus-idp/cli": 3.2.0
+    "@mui/material": 5.16.14
     "@red-hat-developer-hub/backstage-plugin-marketplace": 0.2.1
     typescript: 5.7.3
   languageName: unknown
