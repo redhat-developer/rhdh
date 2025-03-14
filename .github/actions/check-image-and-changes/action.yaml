@@ -17,13 +17,13 @@ runs:
   steps:
     - name: Get the last commit short SHA of the PR
       id: get-sha
-      uses: ./.github/actions/get-sha  # Chamando a action existente
+      uses: ./.github/actions/get-sha
 
     - name: Check if Image Already Exists
       id: image-check
       shell: bash
       run: |
-        IMAGE_TAG_COMMIT="pr-${{ github.event.number }}-${{ steps.get-sha.outputs.short_sha }}"
+        IMAGE_TAG_COMMIT="pr-${{ github.event.number }}-${{ env.SHORT_SHA }}"
         IMAGE_NAME_COMMIT="${{ env.REGISTRY }}/rhdh-community/rhdh:${IMAGE_TAG_COMMIT}"
 
         IMAGE_EXISTS_COMMIT=$(curl -s "https://quay.io/api/v1/repository/rhdh-community/rhdh/tag/" | jq -r --arg tag "$IMAGE_TAG_COMMIT" '.tags[] | select(.name == $tag) | .name')
