@@ -307,12 +307,12 @@ wait_for_svc(){
 
   timeout "${timeout}" bash -c "
     echo ${svc_name}
-    while ! oc get svc $svc_name -n $namespace &> /dev/null; do
-      echo \"Waiting for ${svc_name} service to be created...\"
+    while ! kubectl get endpoints $svc_name -n $namespace &> /dev/null; do
+      echo \"Waiting for ${svc_name} endpoints to be ready...\"
       sleep 5
     done
     echo \"Service ${svc_name} is created.\"
-    " || echo "Error: Timed out waiting for $svc_name service creation."
+    " || echo "Error: Timed out waiting for $svc_name endpoints."
 }
 
 # Creates an OpenShift Operator subscription
@@ -814,15 +814,15 @@ initiate_deployments() {
   oc apply -f "$DIR/resources/redis-cache/redis-deployment.yaml" --namespace="${NAME_SPACE}"
 
   cd "${DIR}"
-  local rhdh_base_url="https://${RELEASE_NAME}-backstage-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
-  apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
-  echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
-  helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
-    "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" --version "${CHART_VERSION}" \
-    -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" \
-    --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    --set upstream.backstage.image.repository="${QUAY_REPO}" \
-    --set upstream.backstage.image.tag="${TAG_NAME}"
+  # local rhdh_base_url="https://${RELEASE_NAME}-backstage-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
+  # apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
+  # echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
+  # helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
+  #   "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" --version "${CHART_VERSION}" \
+  #   -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" \
+  #   --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
+  #   --set upstream.backstage.image.repository="${QUAY_REPO}" \
+  #   --set upstream.backstage.image.tag="${TAG_NAME}"
 
   configure_namespace "${NAME_SPACE_POSTGRES_DB}"
   configure_namespace "${NAME_SPACE_RBAC}"
@@ -938,6 +938,7 @@ check_and_test() {
   if check_backstage_running "${release_name}" "${namespace}" "${url}" "${max_attempts}" "${wait_seconds}"; then
     echo "Display pods for verification..."
     oc get pods -n "${namespace}"
+    sleep 300
     run_tests "${release_name}" "${namespace}"
   else
     echo "Backstage is not running. Exiting..."
