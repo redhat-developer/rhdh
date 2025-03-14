@@ -33,7 +33,6 @@ jobs:
   build-image:
     name: Build Image
     needs: check-image
-    if: ${{ needs.check-image.outputs.relevant_changes == 'true' || needs.check-image.outputs.image_exists == 'false' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -56,6 +55,13 @@ jobs:
           echo "Updating PR with latest commits from ${{ github.event.pull_request.base.ref }} ..."
           git fetch base-origin ${{ github.event.pull_request.base.ref }}
           git merge --no-edit base-origin/${{ github.event.pull_request.base.ref }}
+
+      - name: Check if Build is Necessary
+        run: |
+          if [[ "${{ needs.check-image.outputs.relevant_changes }}" == "false" && "${{ needs.check-image.outputs.image_exists }}" == "true" ]]; then
+            echo "Skipping build: Image already exists and no relevant changes detected."
+            exit 0
+          fi
 
       - name: Build and Push with Buildx
         uses: ./.github/actions/docker-build
@@ -81,13 +87,3 @@ jobs:
               repo: context.repo.repo,
               body: 'The image is available at:\n* [`quay.io/rhdh-community/rhdh:pr-${{ github.event.number }}`](https://quay.io/rhdh-community/rhdh:pr-${{ github.event.number }}) or\n* [`quay.io/rhdh-community/rhdh:pr-${{ github.event.number }}-${{ needs.check-image.outputs.short_sha }}`](https://quay.io/rhdh-community/rhdh:pr-${{ github.event.number }}-${{ needs.check-image.outputs.short_sha }})'
             })
-
-  skip-build:
-    name: Skip Build Notification
-    needs: check-image
-    if: ${{ needs.check-image.outputs.relevant_changes == 'false' && needs.check-image.outputs.image_exists == 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Skip build notification
-        run: |
-          echo "Skipping build: Image already exists and no relevant changes detected."
