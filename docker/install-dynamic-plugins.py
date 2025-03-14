@@ -29,6 +29,7 @@ import binascii
 import atexit
 import time
 import signal
+from datetime import datetime
 
 # This script is used to install dynamic plugins in the Backstage application,
 # and is available in the container image to be called at container initialization,
