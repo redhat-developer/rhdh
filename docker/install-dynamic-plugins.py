@@ -571,8 +571,9 @@ def main():
                     existing_hash = hf.read().strip()
                     plugin_path_by_hash[existing_hash] = dir_name
 
+    tools = check_prerequisites()
     # Prepara downloader OCI
-    oci_downloader = OciDownloader(dynamicPluginsRoot)
+    oci_downloader = OciDownloader(dynamicPluginsRoot, tools)
 
     # Percorre plugins e instala
     for plugin in allPlugins.values():
