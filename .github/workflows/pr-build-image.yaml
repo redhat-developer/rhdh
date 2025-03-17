@@ -90,4 +90,4 @@ jobs:
     steps:
       - name: Skip build notification
         run: |
-          echo "Skipping build: Image already exists and no relevant changes detected."
+          echo "::notice::Skipping build: Image already exists and no relevant changes detected."
