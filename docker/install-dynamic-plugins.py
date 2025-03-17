@@ -1,47 +1,154 @@
-import copy
-from enum import StrEnum
-import hashlib
-import json
-import os
-import sys
-import tempfile
-import yaml
-import tarfile
-import shutil
-import subprocess
+#!/usr/bin/env python3
+"""
+Script para instalar plugins dinâmicos a partir de imagens OCI ou pacotes NPM.
+Otimizado para contêineres Kubernetes com foco em confiabilidade e diagnóstico.
+"""
+
 import base64
 import binascii
-import atexit
-import time
-import signal
-import logging
+import copy
 from datetime import datetime
+import hashlib
+import json
+import logging
+import os
+import shutil
+import signal
+import subprocess
+import sys
+import tarfile
+import tempfile
+import time
+import yaml
+from enum import StrEnum
+from functools import lru_cache
+from pathlib import Path
+from typing import Dict, List, Any, Optional, Set, Tuple, Union
 
-# Configuração básica de logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+# ------------------------------------------------------------------------------
+# Configuração de Logging
+# ------------------------------------------------------------------------------
+
+class OptimizedLogger:
+    """Sistema de logging otimizado para ambientes containerizados."""
+
+    def __init__(self, log_dir=None):
+        """Inicializa o logger com opções para arquivo de log."""
+        self.logger = logging.getLogger('dynamic-plugins')
+        self.logger.setLevel(logging.INFO)
+        self.log_file = None
+
+        # Remover handlers existentes para evitar duplicação
+        for handler in self.logger.handlers[:]:
+            self.logger.removeHandler(handler)
+
+        # Formatador para mensagens de log
+        formatter = logging.Formatter(
+            '%(asctime)s - %(levelname)s - %(message)s',
+            datefmt='%Y-%m-%d %H:%M:%S'
+        )
+
+        # Handler para console sempre presente
+        console_handler = logging.StreamHandler()
+        console_handler.setFormatter(formatter)
+        self.logger.addHandler(console_handler)
+
+        # Opcionalmente adicionar handler de arquivo
+        if log_dir:
+            try:
+                log_path = Path(log_dir)
+                log_path.mkdir(parents=True, exist_ok=True)
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                self.log_file = log_path / f"plugin_install_{timestamp}.log"
+
+                file_handler = logging.FileHandler(str(self.log_file))
+                file_handler.setFormatter(formatter)
+                self.logger.addHandler(file_handler)
+
+                self.info(f"Log file created at: {self.log_file}")
+            except Exception as e:
+                # Falha silenciosamente mas continua com logging no console
+                self.logger.warning(f"Could not set up file logging: {e}")
+
+    def info(self, msg, *args, **kwargs):
+        """Log com nível INFO."""
+        self.logger.info(msg, *args, **kwargs)
+
+    def warning(self, msg, *args, **kwargs):
+        """Log com nível WARNING."""
+        self.logger.warning(msg, *args, **kwargs)
+
+    def error(self, msg, *args, **kwargs):
+        """Log com nível ERROR."""
+        self.logger.error(msg, *args, **kwargs)
+
+    def debug(self, msg, *args, **kwargs):
+        """Log com nível DEBUG."""
+        self.logger.debug(msg, *args, **kwargs)
+
+    def critical(self, msg, *args, **kwargs):
+        """Log com nível CRITICAL."""
+        self.logger.critical(msg, *args, **kwargs)
+
+    def log_system_info(self):
+        """Registra informações do sistema para diagnóstico."""
+        self.info("-" * 50)
+        self.info("System Information:")
+        self.info(f"  Hostname: {os.environ.get('HOSTNAME', 'unknown')}")
+        self.info(f"  Time: {datetime.now().isoformat()}")
+
+        # Informações específicas do Kubernetes se disponíveis
+        if os.path.exists('/var/run/secrets/kubernetes.io/serviceaccount'):
+            try:
+                with open('/var/run/secrets/kubernetes.io/serviceaccount/namespace', 'r') as f:
+                    namespace = f.read().strip()
+                self.info(f"  Kubernetes namespace: {namespace}")
+            except Exception:
+                pass
+
+        # Informações de sistema
+        try:
+            import platform
+            self.info(f"  Python version: {platform.python_version()}")
+            self.info(f"  Platform: {platform.platform()}")
+        except ImportError:
+            pass
+
+        self.info("-" * 50)
+
+    def log_execution_result(self, success=True, error=None):
+        """Registra o resultado da execução do script."""
+        if success:
+            self.info("Plugin installation completed successfully!")
+        else:
+            self.error(f"Plugin installation failed: {error}")
+
+        if self.log_file:
+            self.info(f"Full logs available at: {self.log_file}")
+
+# Inicializa logger global para uso durante importação do módulo
+logger = OptimizedLogger()
 
 # ------------------------------------------------------------------------------
 # Definições de Classes e Constantes
 # ------------------------------------------------------------------------------
+
 class PullPolicy(StrEnum):
     IF_NOT_PRESENT = 'IfNotPresent'
     ALWAYS = 'Always'
-    # NEVER = 'Never' not needed
 
 class InstallException(Exception):
     """Exceção base para erros neste script."""
     pass
 
-RECOGNIZED_ALGORITHMS = (
-    'sha512',
-    'sha384',
-    'sha256',
-)
+# Algoritmos de hash suportados para verificação de integridade
+RECOGNIZED_ALGORITHMS = frozenset(['sha512', 'sha384', 'sha256'])
 
 # ------------------------------------------------------------------------------
 # Funções Auxiliares
 # ------------------------------------------------------------------------------
-def merge(source, destination, prefix=''):
+
+def merge(source: Dict[str, Any], destination: Dict[str, Any], prefix: str = '') -> Dict[str, Any]:
     """
     Faz merge recursivo do dicionário 'source' em 'destination'.
     Se encontrar chave com valor conflitante, lança InstallException.
@@ -58,125 +165,184 @@ def merge(source, destination, prefix=''):
             destination[key] = value
     return destination
 
-def maybeMergeConfig(config, globalConfig):
+def maybe_merge_config(config: Optional[Dict[str, Any]], global_config: Dict[str, Any]) -> Dict[str, Any]:
     """
     Se 'config' for dict, faz merge no 'globalConfig'; caso contrário, retorna 'globalConfig' inalterado.
     """
     if config is not None and isinstance(config, dict):
-        logging.info('\t==> Merging plugin-specific configuration')
-        return merge(config, globalConfig)
-    return globalConfig
+        logger.info('\t==> Merging plugin-specific configuration')
+        return merge(config, global_config)
+    return global_config
+
+def check_prerequisites() -> Tuple[str, ...]:
+    """
+    Verifica e retorna o caminho de ferramentas necessárias.
+    Lança InstallException se alguma não estiver disponível.
+    """
+    required_tools = {
+        'skopeo': "Skopeo is required for OCI image handling",
+        'npm': "NPM is required for NPM package handling"
+    }
+    missing = []
+    found_tools = {}
+
+    for tool, description in required_tools.items():
+        path = shutil.which(tool)
+        if path:
+            found_tools[tool] = path
+        else:
+            missing.append(f"- {tool}: {description}")
+
+    if missing:
+        raise InstallException(f"Required tools not found in PATH:\n" + "\n".join(missing))
+
+    return found_tools
 
 # ------------------------------------------------------------------------------
 # Funções de Lock
 # ------------------------------------------------------------------------------
-def create_lock(lock_file_path):
+
+def create_lock(lock_file_path: Union[str, Path]):
     """
     Cria arquivo de lock. Se já existir, aguarda até ele ser liberado.
     """
+    lock_path = Path(lock_file_path)
     while True:
         try:
-            with open(lock_file_path, 'x'):
-                logging.info(f"======= Created lock file: {lock_file_path}")
-                return
+            lock_path.touch(exist_ok=False)
+            logger.info(f"======= Created lock file: {lock_path}")
+            return
         except FileExistsError:
-            wait_for_lock_release(lock_file_path)
+            wait_for_lock_release(lock_path)
 
-def remove_lock(lock_file_path):
+def remove_lock(lock_file_path: Union[str, Path]):
     """
     Remove o lock file, se existir.
     """
-    if os.path.exists(lock_file_path):
-        os.remove(lock_file_path)
-        logging.info(f"======= Removed lock file: {lock_file_path}")
+    lock_path = Path(lock_file_path)
+    if lock_path.exists():
+        try:
+            lock_path.unlink()
+            logger.info(f"======= Removed lock file: {lock_path}")
+        except OSError as e:
+            logger.warning(f"======= Failed to remove lock file: {e}")
 
-def wait_for_lock_release(lock_file_path):
+def wait_for_lock_release(lock_file_path: Union[str, Path]):
     """
-    Fica em loop até o arquivo de lock ser removido, indicando que outro processo concluiu.
+    Fica em loop até o arquivo de lock ser removido, com detecção de locks obsoletos.
     """
-    logging.info(f"======= Waiting for lock release (file: {lock_file_path})...")
-    while os.path.exists(lock_file_path):
+    lock_path = Path(lock_file_path)
+    logger.info(f"======= Waiting for lock release (file: {lock_path})...")
+
+    start_time = time.time()
+    timeout = 300  # 5 minutos
+
+    while lock_path.exists():
         time.sleep(1)
-    logging.info("======= Lock released.")
+
+        # Verificar timeout
+        if time.time() - start_time > timeout:
+            logger.warning(f"Lock wait timeout after {timeout}s - may be stale, removing")
+            remove_lock(lock_path)
+            break
+
+    logger.info("======= Lock released.")
 
 # ------------------------------------------------------------------------------
-# Função para carregar YAML
+# Funções para carregamento de arquivos
 # ------------------------------------------------------------------------------
-def load_yaml(file_path):
+
+def load_yaml(file_path: Union[str, Path]) -> Optional[Any]:
     """
     Carrega o conteúdo YAML de 'file_path'.
     Retorna None se o arquivo não existir.
     Lança InstallException em caso de erros de parsing.
     """
-    if not os.path.isfile(file_path):
-        logging.warning(f"File not found: {file_path}")
+    path = Path(file_path)
+    if not path.is_file():
+        logger.warning(f"File not found: {path}")
         return None
+
     try:
-        with open(file_path, 'r') as file:
+        with path.open('r') as file:
             return yaml.safe_load(file)
     except yaml.YAMLError as e:
-        raise InstallException(f"Error parsing YAML file {file_path}: {e}")
+        raise InstallException(f"Error parsing YAML file {path}: {e}")
 
 # ------------------------------------------------------------------------------
-# Classe para lidar com download via OCI (skopeo)
+# OCI Downloader com otimizações
 # ------------------------------------------------------------------------------
+
 class OciDownloader:
-    def __init__(self, destination: str):
-        self._skopeo = shutil.which('skopeo')
-        if self._skopeo is None:
+    def __init__(self, destination: Union[str, Path], tools: Dict[str, str]):
+        """
+        Inicializa o OciDownloader com ferramentas validadas.
+
+        Args:
+            destination: Diretório onde os plugins serão extraídos
+            tools: Dicionário com caminhos para ferramentas necessárias
+        """
+        self._skopeo = tools.get('skopeo')
+        if not self._skopeo:
             raise InstallException('skopeo executable not found in PATH')
 
         self.tmp_dir_obj = tempfile.TemporaryDirectory()
-        self.tmp_dir = self.tmp_dir_obj.name
-        self.image_to_tarball = {}
-        self.destination = destination
+        self.tmp_dir = Path(self.tmp_dir_obj.name)
+        self.image_to_tarball: Dict[str, Path] = {}
+        self.destination = Path(destination)
+        self._digest_cache: Dict[str, str] = {}
 
-        self.openssl_cmd = shutil.which('openssl')
-        if not self.openssl_cmd:
-            raise InstallException("Required utility 'openssl' not found in PATH.")
-
-    def skopeo(self, command):
+    def skopeo(self, command: List[str]) -> str:
         """
-        Executa 'skopeo' com os argumentos especificados e retorna stdout como string.
+        Executa 'skopeo' com os argumentos especificados e retorna stdout.
         """
-        rv = subprocess.run([self._skopeo] + command, check=True, capture_output=True, text=True)
-        if rv.returncode != 0:
-            raise InstallException(f'Error while running skopeo command: {rv.stderr}')
-        return rv.stdout
+        try:
+            result = subprocess.run(
+                [self._skopeo] + command,
+                check=True,
+                capture_output=True,
+                text=True
+            )
+            return result.stdout
+        except subprocess.CalledProcessError as e:
+            error_msg = f'Error while running skopeo command: {e.stderr}'
+            logger.error(error_msg)
+            raise InstallException(error_msg)
 
-    def get_plugin_tar(self, image: str) -> str:
+    def get_plugin_tar(self, image: str) -> Path:
         """
         Faz o download da imagem (se ainda não feito), usando skopeo, e retorna o caminho local ao tar.
         """
-        if image not in self.image_to_tarball:
-            logging.info(f'\t==> Copying image {image} to local filesystem')
-            image_digest = hashlib.sha256(image.encode('utf-8'), usedforsecurity=False).hexdigest()
+        if image in self.image_to_tarball:
+            return self.image_to_tarball[image]
 
-            local_dir = os.path.join(self.tmp_dir, image_digest)
-            image_url = image.replace('oci://', 'docker://')
-            self.skopeo(['copy', image_url, f'dir:{local_dir}'])
+        logger.info(f'\t==> Copying image {image} to local filesystem')
+        image_digest = hashlib.sha256(image.encode('utf-8'), usedforsecurity=False).hexdigest()
 
-            manifest_path = os.path.join(local_dir, 'manifest.json')
-            with open(manifest_path, 'r') as f:
-                manifest = json.load(f)
+        local_dir = self.tmp_dir / image_digest
+        image_url = image.replace('oci://', 'docker://')
+        self.skopeo(['copy', image_url, f'dir:{local_dir}'])
 
-            layer_digest = manifest['layers'][0]['digest']
-            _, filename = layer_digest.split(':')
-            local_path = os.path.join(local_dir, filename)
-            self.image_to_tarball[image] = local_path
+        manifest_path = local_dir / 'manifest.json'
+        with manifest_path.open('r') as f:
+            manifest = json.load(f)
 
-        return self.image_to_tarball[image]
+        layer_digest = manifest['layers'][0]['digest']
+        _, filename = layer_digest.split(':')
+        local_path = local_dir / filename
+        self.image_to_tarball[image] = local_path
+        return local_path
 
-    def extract_plugin(self, tar_file: str, plugin_path: str) -> None:
+    def extract_plugin(self, tar_file: Path, plugin_path: str) -> None:
         """
-        Extrai apenas arquivos que começam com 'plugin_path' do tar.gz, verificando tamanho (anti zip-bomb)
-        e possíveis links fora do escopo.
+        Extrai apenas arquivos que começam com 'plugin_path' do tar.gz,
+        verificando tamanho (anti zip-bomb) e possíveis links fora do escopo.
         """
-        extracted_path = os.path.abspath(self.destination)
+        extracted_path = self.destination.absolute()
         max_size = int(os.environ.get('MAX_ENTRY_SIZE', 20000000))
 
         with tarfile.open(tar_file, 'r:gz') as tar:
-            members = []
+            members_to_extract = []
             for member in tar.getmembers():
                 if not member.name.startswith(plugin_path):
                     continue
@@ -185,18 +351,21 @@ class OciDownloader:
                     raise InstallException(f'Zip bomb detected in {member.name}')
 
                 if member.islnk() or member.issym():
-                    realpath = os.path.realpath(
-                        os.path.join(extracted_path, plugin_path, *os.path.split(member.linkname))
-                    )
-                    if not realpath.startswith(extracted_path):
-                        logging.warning(
+                    realpath = Path(extracted_path / plugin_path).joinpath(
+                        *Path(member.linkname).parts).resolve()
+
+                    if not str(realpath).startswith(str(extracted_path)):
+                        logger.warning(
                             f'\t==> WARNING: skipping file containing link outside of the archive: '
                             f'{member.name} -> {member.linkpath}'
                         )
                         continue
-                members.append(member)
 
-            tar.extractall(extracted_path, members=members, filter='tar')
+                members_to_extract.append(member)
+
+            # Extração em batch é mais eficiente
+            if members_to_extract:
+                tar.extractall(extracted_path, members=members_to_extract, filter='tar')
 
     def download(self, package: str) -> str:
         """
@@ -206,24 +375,32 @@ class OciDownloader:
         image, plugin_path = package.split('!')
         tar_file = self.get_plugin_tar(image)
 
-        plugin_directory = os.path.join(self.destination, plugin_path)
-        if os.path.exists(plugin_directory):
-            logging.info(f'\t==> Removing previous plugin directory {plugin_directory}')
-            shutil.rmtree(plugin_directory, ignore_errors=True, onerror=None)
+        plugin_directory = self.destination / plugin_path
+        if plugin_directory.exists():
+            logger.info(f'\t==> Removing previous plugin directory {plugin_directory}')
+            try:
+                shutil.rmtree(plugin_directory)
+            except OSError as e:
+                logger.warning(f'\t==> Could not remove directory: {e}, trying alternative method')
+                # Tentar removê-lo forçadamente se o método normal falhar
+                try:
+                    os.system(f'rm -rf "{plugin_directory}"')
+                except Exception as e2:
+                    raise InstallException(f"Failed to remove directory {plugin_directory}: {e2}")
 
         self.extract_plugin(tar_file=tar_file, plugin_path=plugin_path)
         return plugin_path
 
     def digest(self, package: str) -> str:
         """
-        Retorna o digest da imagem OCI usando 'skopeo inspect'.
+        Retorna o digest da imagem OCI usando 'skopeo inspect' com cache.
         """
         image, _ = package.split('!')
-        image_url = image.replace('oci://', 'docker://')
-        output = self.skopeo(['inspect', image_url])
-        data = json.loads(output)
-        # Ex.: 'Digest': 'sha256:3a033c...'
-        return data['Digest'].split(':')[1]
+
+        # Verificar cache primeiro
+        if image in self._digest_cache:
+            return self._digest_cache[image]
+
 
 # ------------------------------------------------------------------------------
 # Verificação de Integridade
