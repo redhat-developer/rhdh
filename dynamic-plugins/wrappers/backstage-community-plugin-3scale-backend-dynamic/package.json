@@ -10,7 +10,7 @@
   },
   "backstage": {
     "role": "backend-plugin",
-    "supported-versions": "1.35.1",
+    "supported-versions": "1.36.1",
     "pluginId": "backstage-community-plugin-3scale-backend",
     "pluginPackages": [
       "backstage-community-plugin-3scale-backend"
@@ -41,7 +41,7 @@
     "@backstage-community/plugin-3scale-backend": "3.2.0"
   },
   "devDependencies": {
-    "@backstage/cli": "0.29.6",
+    "@backstage/cli": "0.30.0",
     "@janus-idp/cli": "3.3.0",
     "typescript": "5.8.2"
   },

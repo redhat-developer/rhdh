@@ -11,7 +11,7 @@
   },
   "backstage": {
     "role": "frontend-plugin",
-    "supported-versions": "1.35.1",
+    "supported-versions": "1.36.1",
     "pluginId": "pagerduty",
     "pluginPackages": [
       "pagerduty-backstage-plugin",
@@ -32,7 +32,7 @@
     "@pagerduty/backstage-plugin": "0.15.2"
   },
   "devDependencies": {
-    "@backstage/cli": "0.29.6",
+    "@backstage/cli": "0.30.0",
     "@janus-idp/cli": "3.3.0",
     "typescript": "5.8.2"
   },
