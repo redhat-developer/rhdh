@@ -1,7 +1,5 @@
 import type { AppComponents } from '@backstage/core-plugin-api';
-
-import Button from '@material-ui/core/Button'; // workaround for broken-looking MUI5 button
-
+import Button from '@mui/material/Button';
 import { ErrorPage } from './ErrorPage';
 
 export const NotFoundErrorPage: AppComponents['NotFoundErrorPage'] = ({
