@@ -89,7 +89,7 @@ test.describe("Audit Log check for Catalog Plugin", () => {
   });
 
   test("Should fetch logs for QueriedCatalogEntityFetch event and validate log structure and values", async () => {
-    await uiHelper.clickButton("Create");
+    await uiHelper.clickButton("Self-service");
     await validateCatalogLogEvent(
       "QueriedCatalogEntityFetch",
       "Queried entity fetch attempt",
@@ -101,7 +101,7 @@ test.describe("Audit Log check for Catalog Plugin", () => {
   test("Should fetch logs for CatalogLocationCreation event and validate log structure and values", async () => {
     const template =
       "https://github.com/RoadieHQ/sample-service/blob/main/demo_template.yaml";
-    await uiHelper.clickButton("Create");
+    await uiHelper.clickButton("Self-service");
     await uiHelper.clickButton("Register Existing Component");
     await catalogImport.analyzeComponent(template);
 

@@ -130,7 +130,7 @@ test.describe.serial("GitHub Happy path", () => {
   test("Register an existing component", async () => {
     await uiHelper.openSidebar("Catalog");
     await uiHelper.selectMuiBox("Kind", "Component");
-    await uiHelper.clickButton("Create");
+    await uiHelper.clickButton("Self-service");
     await uiHelper.clickButton("Register Existing Component");
     await catalogImport.registerExistingComponent(component);
   });
@@ -161,7 +161,7 @@ test.describe.serial("GitHub Happy path", () => {
   });
 
   test("Verify all 12 Software Templates appear in the Create page", async () => {
-    await uiHelper.clickLink({ ariaLabel: "Create..." });
+    await uiHelper.clickLink({ ariaLabel: "Self-service" });
     await uiHelper.verifyHeading("Templates");
 
     for (const template of TEMPLATES) {

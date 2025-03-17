@@ -30,7 +30,7 @@ dynamicPlugins:
           config:
             priority: 90
             props:
-              title: Create...
+              title: Self-service
               icon: add
               to: create
         - mountPoint: global.header/component

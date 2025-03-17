@@ -480,7 +480,7 @@ test.describe.serial("Test RBAC", () => {
       await uiHelper.openSidebar("Catalog");
       await uiHelper.selectMuiBox("Kind", "Component");
       await uiHelper.verifyTableIsEmpty();
-      await uiHelper.clickLink({ ariaLabel: "Create..." });
+      await uiHelper.clickLink({ ariaLabel: "Self-service" });
       await page.reload();
       await uiHelper.verifyText(
         "No templates found that match your filter. Learn more about",
@@ -495,7 +495,7 @@ test.describe.serial("Test RBAC", () => {
     });
 
     test("Test catalog-entity create is allowed", async () => {
-      await uiHelper.clickLink({ ariaLabel: "Create..." });
+      await uiHelper.clickLink({ ariaLabel: "Self-service" });
       expect(await uiHelper.isLinkVisible("Register Existing Component"));
       await uiHelper.clickButton("Register Existing Component");
       const catalogImport = new CatalogImport(page);

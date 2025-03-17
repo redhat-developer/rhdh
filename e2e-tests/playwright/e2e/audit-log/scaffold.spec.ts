@@ -22,7 +22,7 @@ test.describe("Audit Log check for Catalog Plugin", () => {
     common = new Common(page);
     catalogImport = new CatalogImport(page);
     await common.loginAsGuest();
-    await uiHelper.clickLink({ ariaLabel: "Create..." });
+    await uiHelper.clickLink({ ariaLabel: "Self-service" });
   });
 
   test("Should fetch logs for ScaffolderParameterSchemaFetch event and validate log structure and values", async ({
@@ -32,7 +32,7 @@ test.describe("Audit Log check for Catalog Plugin", () => {
     await uiHelper.clickButton("Register Existing Component");
     await catalogImport.registerExistingComponent(template, false);
     await page.waitForTimeout(1000);
-    await uiHelper.clickLink({ ariaLabel: "Create..." });
+    await uiHelper.clickLink({ ariaLabel: "Self-service" });
     await common.waitForLoad();
     await uiHelper.clickBtnInCard("Hello World 2", "Choose");
     await LogUtils.validateLogEvent(
