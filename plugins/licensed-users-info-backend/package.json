@@ -43,7 +43,7 @@
     "@backstage/types": "1.2.1",
     "express": "4.21.2",
     "express-promise-router": "4.1.1",
-    "json-2-csv": "5.5.8",
+    "json-2-csv": "5.5.9",
     "knex": "3.1.0",
     "luxon": "3.5.0",
     "node-fetch": "2.7.0"
