@@ -15,6 +15,7 @@ import atexit
 import time
 import signal
 import logging
+from datetime import datetime
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -209,6 +210,7 @@ def load_yaml(file_path):
 
 def main():
 
+    start_time = datetime.now()
     dynamicPluginsRoot = sys.argv[1]
 
     lock_file_path = os.path.join(dynamicPluginsRoot, 'install-dynamic-plugins.lock')
@@ -484,6 +486,10 @@ def main():
         plugin_directory = os.path.join(dynamicPluginsRoot, plugin_path_by_hash[hash_value])
         logging.info('\n======= Removing previously installed dynamic plugin %s', plugin_path_by_hash[hash_value])
         shutil.rmtree(plugin_directory, ignore_errors=True, onerror=None)
+
+    end_time = datetime.now()
+    elapsed_time = end_time - start_time
+    print(f"Total Execution Time: {elapsed_time}")
 
 if __name__ == "__main__":
     main()
