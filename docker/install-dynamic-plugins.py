@@ -406,11 +406,23 @@ class OciDownloader:
 # ------------------------------------------------------------------------------
 # Verificação de Integridade
 # ------------------------------------------------------------------------------
-def verify_package_integrity(plugin: dict, archive: str, working_directory: str, openssl_cmd: str) -> None:
+def verify_package_integrity(plugin: dict, archive: Union[str, Path], logger=None) -> None:
     """
-    Verifica integridade do arquivo 'archive' usando plugin['integrity'] no formato <alg>-<base64hash>.
+    Verifica a integridade do pacote usando algoritmos de hash nativos do Python.
+
+    Args:
+        plugin: Dicionário contendo informações do plugin, incluindo a chave 'integrity'
+        archive: Caminho para o arquivo a ser verificado
+        logger: Objeto logger para logging (opcional)
+
+    Raises:
+        InstallException: Se a verificação de integridade falhar ou parâmetros inválidos
     """
+    # Use o logger global se nenhum for fornecido
+    log = logger or globals().get('logger', logging)
     package = plugin['package']
+
+    # Verificar se a chave 'integrity' existe
     integrity = plugin.get('integrity')
     if not integrity:
         raise InstallException(f'Package integrity for {package} is missing')
@@ -418,43 +430,58 @@ def verify_package_integrity(plugin: dict, archive: str, working_directory: str,
     if not isinstance(integrity, str):
         raise InstallException(f'Package integrity for {package} must be a string')
 
+    # Analisar a string de integridade
     parts = integrity.split('-')
     if len(parts) != 2:
         raise InstallException(
             f'Package integrity for {package} must be <algorithm>-<base64hash>'
         )
 
-    algorithm, base64_digest = parts
+    algorithm, hash_digest = parts
+
+    # Verificar se o algoritmo é suportado
     if algorithm not in RECOGNIZED_ALGORITHMS:
         raise InstallException(
-            f'{package}: Provided Package integrity algorithm {algorithm} is not supported. '
-            f'Use one of {RECOGNIZED_ALGORITHMS}.'
+            f'{package}: Algorithm {algorithm} not supported. Use one of: {", ".join(RECOGNIZED_ALGORITHMS)}'
         )
 
+    # Verificar se o hash é base64 válido
     try:
-        base64.b64decode(base64_digest, validate=True)
+        base64.b64decode(hash_digest, validate=True)
     except binascii.Error:
         raise InstallException(
-            f'{package}: Provided Package integrity hash {base64_digest} is not valid base64'
+            f'{package}: Provided Package integrity hash {hash_digest} is not valid base64'
         )
 
-    # Lê o arquivo em Python (sem usar 'cat') e passa ao openssl
-    with open(archive, 'rb') as archive_file:
-        dgst_proc = subprocess.Popen(
-            [openssl_cmd, 'dgst', f'-{algorithm}', '-binary'],
-            stdin=archive_file, stdout=subprocess.PIPE
-        )
-        base64_proc = subprocess.Popen(
-            [openssl_cmd, 'base64', '-A'],
-            stdin=dgst_proc.stdout, stdout=subprocess.PIPE
-        )
-        output, _ = base64_proc.communicate()
-        calculated_hash = output.decode('utf-8').strip()
+    # Mapear algoritmos para funções do hashlib
+    hash_algorithms = {
+        'sha256': hashlib.sha256,
+        'sha384': hashlib.sha384,
+        'sha512': hashlib.sha512
+    }
 
-    if base64_digest != calculated_hash:
-        raise InstallException(
-            f'{package}: Hash mismatch. Expected={base64_digest}, got={calculated_hash}'
-        )
+    # Calcular hash do arquivo
+    log.info(f'\t==> Verifying {algorithm} integrity of {Path(archive).name}')
+
+    try:
+        hasher = hash_algorithms[algorithm]()
+        with open(archive, 'rb') as f:
+            # Ler em chunks para evitar carregar todo o arquivo na memória
+            for chunk in iter(lambda: f.read(65536), b''):
+                hasher.update(chunk)
+
+        calculated = base64.b64encode(hasher.digest()).decode('utf-8')
+
+        if hash_digest != calculated:
+            raise InstallException(
+                f'{package}: Hash mismatch.\n'
+                f'Expected: {hash_digest}\n'
+                f'Got:      {calculated}'
+            )
+
+        log.info(f'\t==> Integrity verification passed')
+    except IOError as e:
+        raise InstallException(f"Failed to read file {archive}: {e}")
 
 # ------------------------------------------------------------------------------
 # Função Principal
@@ -678,9 +705,7 @@ def main():
             # Verifica integridade se aplicável
             if not package_is_local and not skipIntegrityCheck:
                 logging.info('\t==> Verifying package integrity')
-                verify_package_integrity(
-                    plugin, archive, dynamicPluginsRoot, oci_downloader.openssl_cmd
-                )
+                verify_package_integrity(plugin, archive)
 
             directory = archive.replace('.tgz', '')
             directoryRealpath = os.path.realpath(directory)
