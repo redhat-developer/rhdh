@@ -599,7 +599,7 @@ def main():
                     # Já instalado e policy = IfNotPresent => skip
                     logging.info('\n======= Skipping download of installed plugin %s', package)
                     plugin_path_by_hash.pop(plugin['hash'])
-                    globalConfig = maybeMergeConfig(plugin.get('pluginConfig'), globalConfig)
+                    globalConfig = maybe_merge_config(plugin.get('pluginConfig'), globalConfig)
                     continue
 
                 # Se já instalado e policy = ALWAYS => checar se digest mudou
@@ -613,7 +613,7 @@ def main():
                     remote_digest = oci_downloader.digest(package)
                     if remote_digest == local_digest:
                         logging.info('\n======= Skipping download of installed plugin (same digest) %s', package)
-                        globalConfig = maybeMergeConfig(plugin.get('pluginConfig'), globalConfig)
+                        globalConfig = maybe_merge_config(plugin.get('pluginConfig'), globalConfig)
                         continue
                     else:
                         logging.info('\n======= Installing dynamic plugin %s', package)
@@ -652,7 +652,7 @@ def main():
 
             if plugin_already_installed:
                 # apenas faz merge de config, se houver
-                globalConfig = maybeMergeConfig(plugin.get('pluginConfig'), globalConfig)
+                globalConfig = maybe_merge_config(plugin.get('pluginConfig'), globalConfig)
                 continue
 
             # Verifica se local => se for, pula check de integridade
@@ -750,8 +750,7 @@ def main():
             continue
 
         # Faz merge de config do plugin
-        globalConfig = maybeMergeConfig(plugin.get('pluginConfig'), globalConfig)
-
+        globalConfig = maybe_merge_config(plugin.get('pluginConfig'), globalConfig)
         logging.info('\t==> Successfully installed dynamic plugin %s', package)
 
     # Salva config global no final
