@@ -765,7 +765,7 @@ def main():
     # Exibe tempo total
     end_time = datetime.now()
     elapsed_time = end_time - start_time
-    print(f"Total Execution Timeee: {elapsed_time}")
+    print(f"Total Execution Timeeeee: {elapsed_time}")
 
 if __name__ == "__main__":
     main()
