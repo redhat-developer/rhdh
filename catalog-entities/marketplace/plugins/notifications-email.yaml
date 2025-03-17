@@ -1,0 +1,63 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: notifications-email
+  namespace: rhdh
+  title: Notifications Email Processor
+  description: 'Adds support for sending Red Hat Developer Hub notifications as emails to users.'
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
+  tags: []
+  links:
+    - title: Homepage
+      url: https://red.ht/rhdh
+    - title: Bugs
+      url: https://issues.redhat.com/browse/RHIDP
+    - title: Documentation for Red Hat Developer Hub
+      url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
+    - title: Source Code
+      url: https://github.com/backstage/backstage/tree/master/plugins/notifications-backend-module-email
+    - title: Backstage Documentation
+      url: https://backstage.io/docs/notifications/
+spec:
+  author: Backstage Community
+  support: tech-preview
+  lifecycle: active
+  publisher: Red Hat
+
+  categories:
+    - Notifications
+
+  description: |
+    Adds support for sending Red Hat Developer Hub notifications as emails to users.
+
+    Supports sending emails using SMTP, SES, azure, sendmail, or stream (for debugging purposes).
+
+
+    ## Adding The Plugin To Red Hat Developer Hub
+
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further instructions on how to add, enable, configure, and remove plugins in your instance.
+
+    ## Configuring The Plugin ##
+
+    Plugins often need additional configuration to work correctly - particularly those that integrate with other
+    systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further details regarding the configuration required.
+
+  icon: data:image/svg+xml;base64,
+    PHN2ZyB3aWR0aD0iNzAiIGhlaWdodD0iNzAiIHZpZXdCb3g9IjAgMCA3MCA3MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93
+    d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjcwIiBoZWlnaHQ9IjcwIiBmaWxsPSIjQzRDNEM0Ii8+Cjwvc3ZnPgo=
+
+  highlights:
+    - Notifications as emails
+    - SMTP, SES, Azure, Sendmail support
+
+
+
+  packages:
+    - backstage-plugin-notifications-backend-module-email
+
+
+

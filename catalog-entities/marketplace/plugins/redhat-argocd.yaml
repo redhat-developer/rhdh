@@ -1,0 +1,164 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: redhat-argocd
+  namespace: rhdh
+  title: Red Hat Argo CD
+  description: 'This plugin provides a visual overview of the application’s status, deployment details, commit message, author of the commit, container image promoted to environment and deployment history.'
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
+  tags:
+    - cicd
+    - argocd
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Documentation for Red Hat developer Hub
+      url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
+    - title: Source Code
+      url: https://github.com/backstage/community-plugins/tree/main/workspaces/redhat-argocd
+spec:
+  categories:
+    - CI/CD
+  icon: data:image/svg+xml;base64,
+    PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRw
+    Oi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB2aWV3Qm94PSIwIDAgMTI4IDEyOCI+PGRlZnM+PGNs
+    aXBQYXRoIGlkPSJhcmdvY2Qtb3JpZ2luYWwtZSI+PHBhdGggZD0iTTQyIDQxaDQ0djUxSDQyem0w
+    IDAiLz48L2NsaXBQYXRoPjxjbGlwUGF0aCBpZD0iYXJnb2NkLW9yaWdpbmFsLWQiPjxwYXRoIGQ9
+    Ik0wIDBoMTI4djEyOEgweiIvPjwvY2xpcFBhdGg+PGNsaXBQYXRoIGlkPSJhcmdvY2Qtb3JpZ2lu
+    YWwtYyI+PHBhdGggZD0iTTAgMGgxMjh2MTI4SDB6Ii8+PC9jbGlwUGF0aD48Y2xpcFBhdGggaWQ9
+    ImFyZ29jZC1vcmlnaW5hbC1mIj48cGF0aCBkPSJNODUuNjk1IDQxLjEzM2wtMi41NSA1OC4yMzhI
+    NDQuODg3bC0yLjEyNS01OC4yMzgiLz48L2NsaXBQYXRoPjxjbGlwUGF0aCBpZD0iYXJnb2NkLW9y
+    aWdpbmFsLWIiPjxwYXRoIGQ9Ik0wIDBoMTI4djEyOEgweiIvPjwvY2xpcFBhdGg+PG1hc2sgaWQ9
+    ImFyZ29jZC1vcmlnaW5hbC1sIj48ZyBmaWx0ZXI9InVybCgjYXJnb2NkLW9yaWdpbmFsLWEpIj48
+    cGF0aCBkPSJNMCAwaDEyOHYxMjhIMHoiIGZpbGwtb3BhY2l0eT0iLjI1MSIvPjwvZz48L21hc2s+
+    PG1hc2sgaWQ9ImFyZ29jZC1vcmlnaW5hbC1oIj48ZyBmaWx0ZXI9InVybCgjYXJnb2NkLW9yaWdp
+    bmFsLWEpIj48cGF0aCBkPSJNMCAwaDEyOHYxMjhIMHoiIGZpbGwtb3BhY2l0eT0iLjIyIi8+PC9n
+    PjwvbWFzaz48bWFzayBpZD0iYXJnb2NkLW9yaWdpbmFsLWoiPjxnIGZpbHRlcj0idXJsKCNhcmdv
+    Y2Qtb3JpZ2luYWwtYSkiPjxwYXRoIGQ9Ik0wIDBoMTI4djEyOEgweiIgZmlsbC1vcGFjaXR5PSIu
+    NTAyIi8+PC9nPjwvbWFzaz48ZyBpZD0iYXJnb2NkLW9yaWdpbmFsLWkiIGNsaXAtcGF0aD0idXJs
+    KCNhcmdvY2Qtb3JpZ2luYWwtYikiPjxwYXRoIGQ9Ik01OC40ODggMzAuNTA4YTIuOTc0IDIuOTc0
+    IDAgMTEtNS45NDgtLjAwMyAyLjk3NCAyLjk3NCAwIDAxNS45NDguMDAzem0wIDAiIGZpbGw9IiNm
+    YmRmYzMiLz48L2c+PGcgaWQ9ImFyZ29jZC1vcmlnaW5hbC1nIiBjbGlwLXBhdGg9InVybCgjYXJn
+    b2NkLW9yaWdpbmFsLWMpIj48cGF0aCBkPSJNODQuNDIyIDY1LjM2M3MyLjU1LTIyLjUzMS0uODUy
+    LTMxLjAzMUM3Ny4xOTUgMTkuNDUzIDYyLjMxNiAyMC43MyA2Mi4zMTYgMjAuNzNzOC41IDMuMzk5
+    IDguOTI2IDE2LjE1M2MuNDI2IDguOTI2IDAgMjIuMTA1IDAgMjIuMTA1em0wIDAiIGZpbGw9IiNl
+    MzRlM2IiLz48L2c+PGcgaWQ9ImFyZ29jZC1vcmlnaW5hbC1rIiBjbGlwLXBhdGg9InVybCgjYXJn
+    b2NkLW9yaWdpbmFsLWQpIj48cGF0aCBkPSJNODMuMTQ1IDkwLjg2N1Y4Ny40N2MtNS45NSAzLjM5
+    OC0xMi4zMjkgNi44LTE5Ljk3NyA2LjgtOC41MDQgMC0xNC4wMzEtMy44MjQtMTkuNTU1LTYuOGwu
+    NDIyIDMuMzk4czYuMzggNi44MDUgMTkuNTU1IDYuODA1YzEyLjMyOC0uNDI2IDE5LjU1NS02Ljgw
+    NSAxOS41NTUtNi44MDV6bTAgMCIgZmlsbD0iI2U5NjU0YiIvPjwvZz48ZmlsdGVyIGlkPSJhcmdv
+    Y2Qtb3JpZ2luYWwtYSIgZmlsdGVyVW5pdHM9Im9iamVjdEJvdW5kaW5nQm94IiB4PSIwJSIgeT0i
+    MCUiIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxmZUNvbG9yTWF0cml4IGluPSJTb3VyY2VH
+    cmFwaGljIiB2YWx1ZXM9IjAgMCAwIDAgMSAwIDAgMCAwIDEgMCAwIDAgMCAxIDAgMCAwIDEgMCIv
+    PjwvZmlsdGVyPjwvZGVmcz48cGF0aCBkPSJNNDQuMDM1IDg5LjU5NHMtLjg0NyAyLjU1LTIuMTI1
+    IDMuODI0YTMuODQ0IDMuODQ0IDAgMDEtMi45NzIgMS4yNzcgNDkuOTQ2IDQ5Ljk0NiAwIDAxLTYu
+    MzggMS4yNzRzMi45NzcuNDI2IDYuMzguODUxYzEuMjczIDAgMS4yNzMgMCAyLjEyNC40MjYgMi4x
+    MjYgMCAyLjk3My0xLjI3NyAyLjk3My0xLjI3N3ptMzkuMTEgMHMuODUxIDIuNTUgMi4xMjUgMy44
+    MjRhMy44NTggMy44NTggMCAwMDIuOTc2IDEuMjc3IDQ5LjggNDkuOCAwIDAwNi4zNzUgMS4yNzRz
+    LTIuOTczLjQyNi02LjguODUxYy0xLjI3NCAwLTEuMjc0IDAtMi4xMjYuNDI2LTIuNTUgMC0yLjk3
+    Ni0xLjI3Ny0yLjk3Ni0xLjI3N3ptMCAwIiBmaWxsPSIjZTk2NTRiIi8+PHBhdGggZD0iTTEwOS45
+    MjYgNDcuNTA4YzAgMjUuMzU1LTIwLjU1NSA0NS45MS00NS45MSA0NS45MS0yNS4zNTYgMC00NS45
+    MS0yMC41NTUtNDUuOTEtNDUuOTEgMC0yNS4zNTIgMjAuNTU0LTQ1LjkwNiA0NS45MS00NS45MDYg
+    MjUuMzU1IDAgNDUuOTEgMjAuNTU0IDQ1LjkxIDQ1LjkwNnptMCAwIiBmaWxsPSIjYjZjZmVhIi8+
+    PHBhdGggZD0iTTEwOC4yMjcgNDcuNTA4YzAgMjQuNDE4LTE5Ljc5MyA0NC4yMS00NC4yMTEgNDQu
+    MjEtMjQuNDE0IDAtNDQuMjA3LTE5Ljc5Mi00NC4yMDctNDQuMjFDMTkuODA5IDIzLjA5NCAzOS42
+    MDIgMy4zIDY0LjAxNiAzLjNjMjQuNDE4IDAgNDQuMjEgMTkuNzkzIDQ0LjIxIDQ0LjIwN3ptMCAw
+    IiBmaWxsPSIjZTZmNWY4Ii8+PHBhdGggZD0iTTEwMC4xNDggNDguMzZjMCAxOS45NTYtMTYuMTc1
+    IDM2LjEzMi0zNi4xMzIgMzYuMTMyLTE5Ljk1NCAwLTM2LjEzMy0xNi4xNzYtMzYuMTMzLTM2LjEz
+    MyAwLTE5Ljk1MyAxNi4xOC0zNi4xMzIgMzYuMTMzLTM2LjEzMiAxOS45NTcgMCAzNi4xMzIgMTYu
+    MTggMzYuMTMyIDM2LjEzMnptMCAwIiBmaWxsPSIjZDBlOGYwIi8+PHBhdGggZD0iTTQyLjc2MiA2
+    NS4zNjNzMi45NzYgNDguMDM1IDIuOTc2IDQ4Ljg4N2MwIC40MjIuNDI2IDEuMjczLTEuNzAzIDIu
+    MTI1LTIuMTI1Ljg0OC04LjkyNiAyLjU1LTguOTI2IDIuNTVoMTAuMjAzYzQuNjc2IDAgNC42NzYt
+    My44MjcgNC42NzYtNC42NzUgMC0uODUyIDEuMjc0LTE5LjEyOSAxLjI3NC0xOS4xMjlzLjQyNSAy
+    MS42OC40MjUgMjIuNTI3YzAgLjg1Mi0uNDI1IDIuMTI1LTMuMzk4IDIuOTc3LTIuMTI1LjQyNi04
+    LjUwNCAxLjctOC41MDQgMS43aDkuNzc4YzUuOTUzIDAgNS45NTMtMy44MjUgNS45NTMtMy44MjVs
+    MS4yNzMtMTkuMTI5cy40MjYgMTkuMTI5LjQyNiAyMS4yNTRjMCAxLjctMS4yNzQgMi45NzctNS45
+    NTMgMy44MjQtMi45NzMuODUyLTYuODAxIDEuNzAzLTYuODAxIDEuNzAzaDExLjA1NWM1LjUyMy0u
+    NDI1IDYuMzc1LTQuMjU0IDYuMzc1LTQuMjU0bDkuMzUxLTQ3LjYwOXptMCAwIiBmaWxsPSIjZWU3
+    OTRiIi8+PHBhdGggZD0iTTg1LjI3IDY1LjM2M3MtMi45NzMgNDguMDM1LTIuOTczIDQ4Ljg4N2Mw
+    IC40MjItLjQyNiAxLjI3MyAxLjcgMi4xMjUgMi4xMjQuODQ4IDguOTI1IDIuNTUgOC45MjUgMi41
+    NUg4Mi43MTljLTQuNjc2IDAtNC42NzYtMy44MjctNC42NzYtNC42NzUgMC0uODUyLTEuMjczLTE5
+    LjEyOS0xLjI3My0xOS4xMjlzLS40MjYgMjEuNjgtLjQyNiAyMi41MjdjMCAuODUyLjQyNiAyLjEy
+    NSAzLjQwMiAyLjk3N2w4LjUgMS43SDc4LjQ3Yy01Ljk1IDAtNS45NS0zLjgyNS01Ljk1LTMuODI1
+    bC0xLjI3Ny0xOS4xMjlzLS40MjYgMTkuMTI5LS40MjYgMjEuMjU0YzAgMS43IDEuMjc4IDIuOTc3
+    IDUuOTU0IDMuODI0IDIuOTc2Ljg1MiA2LjggMS43MDMgNi44IDEuNzAzSDcyLjUyYy01LjUyOC0u
+    NDI1LTYuMzgtNC4yNTQtNi4zOC00LjI1NEw1Ni43OSA3NC4yOXptLjQyNS0yMy4zNzljMCAxMS45
+    MDMtOS43NzcgMjEuMjU0LTIxLjI1NCAyMS4yNTQtMTEuNDc2IDAtMjEuMjU0LTkuNzc3LTIxLjI1
+    NC0yMS4yNTQgMC0xMS40NzYgOS43NzgtMjEuMjU0IDIxLjI1NC0yMS4yNTQgMTEuNDc3IDAgMjEu
+    MjU0IDkuMzUyIDIxLjI1NCAyMS4yNTR6bTAgMCIgZmlsbD0iI2VlNzk0YiIvPjxnIGNsaXAtcGF0
+    aD0idXJsKCNhcmdvY2Qtb3JpZ2luYWwtZSkiPjxnIGNsaXAtcGF0aD0idXJsKCNhcmdvY2Qtb3Jp
+    Z2luYWwtZikiPjxwYXRoIGQ9Ik0xMDIuMjczIDUzLjQ2YzAgMjAuODk1LTE2LjkzNyAzNy44MzMt
+    MzcuODMyIDM3LjgzMy0yMC44OTQgMC0zNy44MzItMTYuOTM4LTM3LjgzMi0zNy44MzIgMC0yMC44
+    OTUgMTYuOTM4LTM3LjgzMiAzNy44MzItMzcuODMyIDIwLjg5NSAwIDM3LjgzMiAxNi45MzcgMzcu
+    ODMyIDM3LjgzMnptMCAwIiBmaWxsPSIjZWU3OTRiIi8+PC9nPjwvZz48dXNlIHhsaW5rOmhyZWY9
+    IiNhcmdvY2Qtb3JpZ2luYWwtZyIgbWFzaz0idXJsKCNhcmdvY2Qtb3JpZ2luYWwtaCkiLz48dXNl
+    IHhsaW5rOmhyZWY9IiNhcmdvY2Qtb3JpZ2luYWwtaSIgbWFzaz0idXJsKCNhcmdvY2Qtb3JpZ2lu
+    YWwtaikiLz48cGF0aCBkPSJNNzEuNjY4IDczLjg2M2MwIDcuMjI3LTMuNDAyIDExLjkwNy03LjY1
+    MiAxMS45MDdzLTcuNjUzLTUuNTI4LTcuNjUzLTEyLjc1NGMwIDAgMy40MDMgNi44IDguMDc4IDYu
+    OCA0LjY3NiAwIDcuMjI3LTUuOTUzIDcuMjI3LTUuOTUzem0wIDAiIGZpbGw9IiMwMTAxMDEiLz48
+    cGF0aCBkPSJNNzEuNjY4IDczLjg2M2MwIDQuNjgtMy40MDIgNy4yMjctNy42NTIgNy4yMjdzLTcu
+    MjI3LTMuMzk5LTcuMjI3LTcuNjQ5YzAgMCAzLjQwMiA0LjI1IDguMDc4IDQuMjUgNC42NzYgMCA2
+    LjgwMS0zLjgyOCA2LjgwMS0zLjgyOHptMCAwIiBmaWxsPSIjZmZmIi8+PHBhdGggZD0iTTkyLjA3
+    IDUzLjg4N2MwIDcuMjc3LTUuODk4IDEzLjE3NS0xMy4xNzUgMTMuMTc1LTcuMjc4IDAtMTMuMTgt
+    NS44OTgtMTMuMTgtMTMuMTc1IDAtNy4yNzggNS45MDItMTMuMTggMTMuMTgtMTMuMTggNy4yNzcg
+    MCAxMy4xNzUgNS45MDIgMTMuMTc1IDEzLjE4em0tMjkuNzU0IDBjMCA3LjI3Ny01LjkwMiAxMy4x
+    NzUtMTMuMTggMTMuMTc1LTcuMjc3IDAtMTMuMTc1LTUuODk4LTEzLjE3NS0xMy4xNzUgMC03LjI3
+    OCA1Ljg5OC0xMy4xOCAxMy4xNzYtMTMuMTggNy4yNzcgMCAxMy4xOCA1LjkwMiAxMy4xOCAxMy4x
+    OHptMCAwIiBmaWxsPSIjZTk2NTRiIi8+PHBhdGggZD0iTTg5LjA5OCA1My44ODdjMCA1LjYzMy00
+    LjU3IDEwLjIwMy0xMC4yMDMgMTAuMjAzLTUuNjMzIDAtMTAuMjA0LTQuNTctMTAuMjA0LTEwLjIw
+    MyAwLTUuNjM3IDQuNTctMTAuMjAzIDEwLjIwNC0xMC4yMDMgNS42MzIgMCAxMC4yMDMgNC41NjYg
+    MTAuMjAzIDEwLjIwM3ptLTMwLjYxIDBjMCA1LjYzMy00LjU2NiAxMC4yMDMtMTAuMTk5IDEwLjIw
+    My01LjYzNyAwLTEwLjIwMy00LjU3LTEwLjIwMy0xMC4yMDNhMTAuMjAxIDEwLjIwMSAwIDAxMTAu
+    MjAzLTEwLjIwM2M1LjYzMyAwIDEwLjIgNC41NjYgMTAuMiAxMC4yMDN6bTAgMCIgZmlsbD0iI2Zm
+    ZiIvPjxwYXRoIGQ9Ik01MS4yNjIgNTIuNjFhMi45NzUgMi45NzUgMCAxMS01Ljk1LjAwMyAyLjk3
+    NSAyLjk3NSAwIDAxNS45NS0uMDA0em0zMC42MDkgMGEyLjk3NiAyLjk3NiAwIDExLTUuOTUxLjAw
+    MSAyLjk3NiAyLjk3NiAwIDAxNS45NTEtLjAwMnptMCAwIiBmaWxsPSIjMDEwMTAxIi8+PHBhdGgg
+    ZD0iTTE3LjI1OCA1OC45ODhhMi4wMDUgMi4wMDUgMCAwMS0yLjEyNS0yLjEyNVYzOS44NmEyLjAw
+    OCAyLjAwOCAwIDAxLjU4Mi0xLjU0MyAyLjAwOCAyLjAwOCAwIDAxMS41NDMtLjU4MiAyLjAwNSAy
+    LjAwNSAwIDAxMi4xMjUgMi4xMjV2MTcuMDA0Yy4wMzUuNTctLjE4IDEuMTMzLS41ODYgMS41NGEy
+    LjAwOCAyLjAwOCAwIDAxLTEuNTQuNTg1em05Mi42NjggMGEyLjAwMyAyLjAwMyAwIDAxLTEuNTQt
+    LjU4NiAyLjAwOCAyLjAwOCAwIDAxLS41ODUtMS41MzlWMzkuODZhMi4wMTEgMi4wMTEgMCAwMS41
+    ODYtMS41NDMgMiAyIDAgMDExLjUzOS0uNTgyIDIgMiAwIDAxMS41MzkuNTgyYy40MS40MDcuNjIu
+    OTcuNTg2IDEuNTQzdjE3LjAwNGExLjk5NCAxLjk5NCAwIDAxLS41ODYgMS41NCAyLjAwMyAyLjAw
+    MyAwIDAxLTEuNTQuNTg1em0wIDAiIGZpbGw9IiNiNmNmZWEiLz48cGF0aCBkPSJNNTEuNjg4IDEz
+    LjUwNGEyLjEyNSAyLjEyNSAwIDExLTQuMjUgMCAyLjEyNSAyLjEyNSAwIDAxNC4yNSAwek0zNC4y
+    NjIgNzAuODlhMS41NTkgMS41NTkgMCAwMS0xLjI3OC0uNDI1Yy01LjEwMS02LjM3NS03LjY1Mi0x
+    NC40NTMtNy42NTItMjIuNTMxYTM3LjkzMyAzNy45MzMgMCAwMTUuMTAyLTE5LjEzIDQxLjY0MSA0
+    MS42NDEgMCAwMTEzLjYwMS0xMy42IDEuODczIDEuODczIDAgMDEyLjEzLjQyNSAxLjg3NCAxLjg3
+    NCAwIDAxLS40MjcgMi4xMjUgMzQuMzA1IDM0LjMwNSAwIDAwLTE3LjQzIDI5Ljc1NCAzMy40ODcg
+    MzMuNDg3IDAgMDA3LjIyNyAyMC44MzJjLjQyNi40MjYuNDI2IDEuNy0uNDI2IDIuMTI1LS40MjUu
+    NDI2LS40MjUuNDI2LS44NDcuNDI2em0wIDAiIGZpbGw9IiNmZmYiLz48dXNlIHhsaW5rOmhyZWY9
+    IiNhcmdvY2Qtb3JpZ2luYWwtayIgbWFzaz0idXJsKCNhcmdvY2Qtb3JpZ2luYWwtbCkiLz48L3N2
+    Zz4K
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+  publisher: Red Hat
+  description: |
+    You can use the Argo CD plugin to visualize the Continuous Delivery (CD) workflows in OpenShift GitOps.
+    This plugin provides a visual overview of the application's status, deployment details, commit message,
+    author of the commit, container image promoted to environment and deployment history.
+
+    ## Adding The Plugin To Red Hat Developer Hub
+
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further instructions on how to add, enable, and configure plugins in your instance.
+
+    ## Configuring The Plugin ##
+
+    Plugins often need additional configuration to work correctly - particularly those that integrate with other
+    systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further details on the configuration required.
+
+  highlights:
+    - Visual overview of the application's status
+    - Deployment details
+    - Argo CD Rollouts
+
+
+  packages:
+    - backstage-community-plugin-redhat-argocd

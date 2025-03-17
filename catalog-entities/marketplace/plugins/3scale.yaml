@@ -1,0 +1,270 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: 3scale
+  namespace: rhdh
+  title: APIs with 3scale
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-3scale-backend-dynamic
+    - title: Documentation for Red Hat Developer Hub
+      url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
+  tags:
+    - apis
+  description: |
+    3scale provides a comprehensive API management solution, enabling organizations to secure, manage, and monetize APIs. 
+    Key features include access control, usage analytics, and policy enforcement. 
+    The 3scale plugin synchronizes your 3scale content into the software catalog.
+spec:
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+  publisher: Red Hat
+
+  description: |
+    The 3scale Backstage plugin surfaces critical API management data within the Backstage ecosystem, providing a read-only view of API usage, plans, 
+    and policies, streamlining developer workflows and providing a unified view of software assets. The plugin does not manage the APIs, but rather 
+    displays important information. Specifically, the plugin:
+
+    * Presents API usage statistics, allowing developers to monitor API performance and consumption directly within Backstage.
+    * Provides direct links to the 3scale management console, enabling users to quickly navigate to 3scale for detailed API management tasks.
+    * The plugin aims to consolidate important API information, reducing context switching and improving developer efficiency by providing a 
+      central point for API visibility.
+
+    ## Adding The Plugin To Red Hat Developer Hub
+
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub) 
+    for further instructions on how to add, enable, configure, and remove plugins in your instance.
+
+    ## Configuring The Plugin ##
+
+    Plugins often need additional configuration to work correctly - particularly those that integrate with other 
+    systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further details regarding the configuration required.
+
+    3scale Backstage provider allows configuration of one or multiple providers using the `app-config.yaml` configuration file of Backstage.
+
+    ```yaml title="app-config.yaml"
+    catalog:
+      providers:
+        threeScaleApiEntity:
+          dev:
+            baseUrl: https://<TENANT>-admin.3scale.net
+            accessToken: <ACCESS_TOKEN>
+            schedule: # optional; same options as in TaskScheduleDefinition
+              # supports cron, ISO duration, "human duration" as used in code
+              frequency: { minutes: 30 }
+              # supports ISO duration, "human duration" as used in code
+              timeout: { minutes: 3 }
+    ```
+
+    **NOTE:** Be sure to configure the schedule inside the `app-config.yaml` file. The default schedule is a frequency of 30 minutes and a timeout of 3 minutes.
+
+  categories:
+    - API Management
+    - Red Hat integration
+
+  highlights:
+    - OpenShift support
+    - Access Control & Security (Managed within 3scale)
+    - Rate Limiting & Quotas (Managed within 3scale)
+    - API Monetization Tools (Managed within 3scale)
+    - Policy Enforcement (Managed within 3scale)
+
+  icon: data:image/svg+xml;base64,
+    PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHZpZXdCb3g9IjAgMCA5NiA5NiIgZmlsbD0ibm9u
+    ZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHhtbG5zOnhsaW5rPSJodHRw
+    Oi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIj4KICA8ZyBjbGlwLXBhdGg9InVybCgjY2xpcDBfMjZf
+    OTcpIj4KICAgIDxnIGNsaXAtcGF0aD0idXJsKCNjbGlwMV8yNl85NykiPgogICAgICA8Y2lyY2xl
+    IGN4PSI0OCIgY3k9IjQ4IiByPSI0OCIgZmlsbD0iIzAwOTU5NiIgLz4KICAgIDwvZz4KICAgIDxy
+    ZWN0IHg9IjkiIHk9IjkiIHdpZHRoPSI3OCIgaGVpZ2h0PSI3OCIgZmlsbD0idXJsKCNwYXR0ZXJu
+    MCkiIC8+CiAgPC9nPgogIDxkZWZzPgogICAgPHBhdHRlcm4gaWQ9InBhdHRlcm4wIiBwYXR0ZXJu
+    Q29udGVudFVuaXRzPSJvYmplY3RCb3VuZGluZ0JveCIgd2lkdGg9IjEiIGhlaWdodD0iMSI+CiAg
+    ICAgIDx1c2UgeGxpbms6aHJlZj0iI2ltYWdlMF8yNl85NyIgdHJhbnNmb3JtPSJzY2FsZSgwLjAw
+    Mjc3Nzc4KSIgLz4KICAgIDwvcGF0dGVybj4KICAgIDxjbGlwUGF0aCBpZD0iY2xpcDBfMjZfOTci
+    PgogICAgICA8cmVjdCB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIGZpbGw9IndoaXRlIiAvPgogICAg
+    PC9jbGlwUGF0aD4KICAgIDxjbGlwUGF0aCBpZD0iY2xpcDFfMjZfOTciPgogICAgICA8cmVjdCB3
+    aWR0aD0iOTYiIGhlaWdodD0iOTYiIGZpbGw9IndoaXRlIiAvPgogICAgPC9jbGlwUGF0aD4KICAg
+    IDxpbWFnZSBpZD0iaW1hZ2UwXzI2Xzk3IiB3aWR0aD0iMzYwIiBoZWlnaHQ9IjM2MCIKICAgICAg
+    eGxpbms6aHJlZj0iZGF0YTppbWFnZS9wbmc7YmFzZTY0LGlWQk9SdzBLR2dvQUFBQU5TVWhFVWdB
+    QUFXZ0FBQUZvQ0FZQUFBQjY1V0hWQUFBQUNYQklXWE1BQUc2NkFBQnV1Z0hXM3JFWEFBQVJhMGxF
+    UVZSNG5PM2RnWEhjUnJJQVVPQ1hBMUFHbGlLd0hJR2xDRTZLd0hJRVowZGdPZ0xkajRDNkNPaUxn
+    TG9JUkVkQU9nSXlnL21GNythZGlzVWxkNEVCMEFPOFY2VXFseXh5c1pqcDN0bkJ6SFFIQUFBQUFB
+    QUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFB
+    QUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFB
+    QUFBQUFBQUFBQUFBQUFBQVFHWDlYbTlvS2VWRjEzVnZ1cTU3M1hYZEQxM1h2WWovZnN4ZDEzVlhY
+    ZGZkZEYzM1I5ZDFuL3UrdjFyM0hVQTdTaW12STk2KzY3cnVaY1RhaXdOdjRDcGk3dC94MzBPODNX
+    bnVqUnVTY2lubFF5bmxva3gzWFVyNUdCMFBlR0NJallpUjZ3cnhkaEd4ZXlpcDA2cFN5c3RTeW5r
+    cDViWkNSM25NWlNubGpRNEMveDl2YnlJbTVuQWJzZnpTclc1Y2pKalBaK29vaHhLMUVUVzdGQ1Bt
+    dVJMelk4Nk5xQnRWU25rMzQ0ajVPV2Q3di8vc3k5RG5WNHExSWNiZjZXNk5XR0hVZk1pbFQzZTJM
+    dUp0eVZIeklVYlQyVVZuK1pLZ3M5ejdZc3FEcllvcGpXenh0cWtrdlpsbGR0RXdsMDhzbFZ2THNE
+    em9yV1Y1YkVrTVBDNmZXQ3EzbHF1SXQwMHN5OXRFZ2s2Y25POXRxdE93YitKdE9WdEowRjhTZDVa
+    N3cyTDd0emt1QmNZYjVweGowMGxtVjMzZmY5OTZNLzlQZ211WVpGZ0kzMEJ5SHJ5eHVvUFdSUjl1
+    WWMzLzY4Z05UV3Q2QkIyYlF5NFRYTW9wdmpjZlRZdGkzdmxMWTVjK1RIVjhUbkFkbzdTZW9LOWpY
+    MzhOVi9Ibnp3ZS82OXNZb2RjYXBadnFvRW1WcHphV2lyZWJ2dTlmVmZwZEhLdlN3dmpiK0QzUEp2
+    bllMbjVXYWZPTGJlRTBKYlp2dHhwdnBoYVhWcUhoUG81Wk14bHJyVDlPZk8zV3BtWFl1UXFiVWRh
+    TXQ5dTl0OStpNGxTcjBZMVZZMnRvaGEza05yRFFoTmlRMG5xOGZkRGJGakpoOTlKdHpjUVlIWGRz
+    cHpuUGZwK2grNnVmanowNklWTzh0Zlp3czAweE56Vlc5VS9SQ2FONVg3dG93b1NrbUNuZWlpTktG
+    ekNoZ1M3bXVyb0pCUUE4TENTMUNROEhNOFpiYzlNYzN5UzRobFA5TVBMbmZwbnhtb2JmUFdhZTdj
+    ZFN5cFRYdmJPbW1xZkVGTU9VOHpKK0hQbHpHZU50eUIyZlpyZ2U3bzBzbnpQN2ZPK0tSNXhlT3cr
+    WGgrS2JabzFTVTJOa2piZnIxanBLaTF1OXg4d2ovV3VHNjFqak5SNHozSThMRHgyNUYzM2h2T0lt
+    cmxObGpiZm01cUNiMmtrNGRxdHAzL2VMdk04eWNiNmlnazk5My8rMDhqV3dva2pPcTg2MUpvKzNw
+    clordHphQ0hqT1h0bVJqck4zd0g0eWs5eXREY3Q1WnZNMnUrZFBzanJEa21iQVp6cCtWcEhjb1NY
+    THVkaGh2czlyRENQcVBHYTRqdzJzOVJaTGVrVVRKdWR0cHZNMW1EeVBvdlpLa2R5QlpjcWF5MWhM
+    MG1LODAzODF3SFllTVhhTTlGMGw2dzVJbTV6M0hXM1Y3R0VIdnZSUzdKTDFCaVVmT2U0KzNxaXl6
+    cXlqQk1ydW5XSUszRWRtbk5aTEhXMU1WalpvYVFZKzlzVXZzdEd0Z041K1I5QWEwTU9lY09kNWFP
+    eHFoeFNtT01UZjRiek5jeHhxdk1aVWszYkNHSGdobWpiZWJHYTVqVnMzVkpJeEt2VCtQK05GWGZk
+    L1Awa0J4ak9HWWZmN0R3UzMvUE9IZi8xZ3BRRTEzTktaaWNsNnF6NldNTi8xK1psRlpZWXlNeHgr
+    ZWZKaDV4VU9aaktRYnNXYWJPMjZVVXh2bnhjakdtYVdCMWppd1g1TGVqd3h0N2NCK1RtMmtMWlRn
+    K1RqeHRTWHBqY3ZTeGtwZWNXcERUU2tCbjZXSTVlUlBjMGw2dXpLMXJhS3hqR213bHN2QVY1dWZr
+    NlMzSjJPYk5oNXY2bjh1YmVJbytqOE5WMG81TzJZMEc4VnF6eVoraXQrcjlyV3ZrNlEzSld0Yk5o
+    NXZaNjMya2VhVzJYMXQrRlR2dXE1VzRkV3IrUFBuZzcvL3R1dTYxL0duaGxtVyt0UmNobVVwMGpx
+    eXQyR2o4WGJUOS8yclNyK0xVOFNuYkkxUDJLWGNqdm1hZHl3ajZYYTEwSFlUNTZMWG9uTCttaVl1
+    dTFuYUVsdGdKZW5HdE5SbU1lM1Fpa2tycGFoa3hZcmFwMWlzczFTOEgyTjJiSEphVy8xY3FhMFcr
+    MEN0OE1Cd0NaYlZaVEkwU09MT010dXVxa01xSldsUHYyZFdhWXB1MFc4N3NiSWljN3g5bVhNcWtS
+    RVNkNXJWT2t1bEpHME9ieWFWVmthc01oVTFjZFBJbkRhVm5EZHpZSC9mOTBPMWxiY2pUN3VieSs5
+    UjVuMlY0cGJ4SlAvVHhGOGpRZWUxMm9xYk9MWXpXN3hkclJsdmM5aFVSWldoWWZxKy83NUNVcXBo
+    Q0o3M2EzZVdDa2w2ODVXVEc3WDZjc2l2a3ZUbkJMZncwOWFTODZiRjZvNDF2b0pWMmRwYTI0VHBq
+    cXFiYXZpdkNjdlcwcTJ3V1hGMVI4cDQ0d2l4VG5ySko4NFhtVS9NR3BHa3g1eTV5Mmx0Y24xaW02
+    UmQvaGdmT0V2RzI3bUhnUnNRRDJQbTdEaVhyVHhNT3pGSm0zK2UyWW5ubXpleE5uM21lTHVOUHV6
+    bzBLMkpqbk5lYWVyanZxTTBsOFNPVE5KTy8xcklrWWNCTmJkeEtFYlVIMGQ4UzNqTVJVeGJHakZ2
+    WFN6SmV4ZWQ1NVNsZVYvaVo1cWY4NG9ORW85OVVGMGJPUy92bWZaby9zTXlrdlhQTVRpNGZHYVE5
+    Q1grelZuRTZXNlRjdE9ISmRVVUQ4TU9kWVM3MXFvQkh5dVM4WnRZcmZGNXErK3pGUTgrSERmYjd3
+    QUFBQUFBQUFBQW9CMlcyWEVVYTZQcjZ2cyt3d0ZESkNkQjg2VFlKUEZyMTNXMjF0WjEwM1hkTDMz
+    Zi83NmxOMFZkRWpRSFZhd3l6V0dxcUhPUUJNMmpZanY3NHFXNmR1cW52dTh6bkdGT01oSTBqNHFq
+    UmsxckxPT203L3RYZTNpam5HWlRGVldvSXg0SVNzN0xlZWtoTEkrUm9IbU1JeDBoQVFrYUlDa0pt
+    c2NvdkFrSlNOQUFTVW5RQUVsSjBBQkpTZEFBU1gyallhamtsNjdyMU0vN3kxRGY4bU9HQzZGdEVq
+    UzFYRG1oN1MrbGxBeVh3UWFZNGdCSVNvSUdTRXFDQmtoS2dnWklTb0lHU0tyNVZSeXRIZE5vcFFN
+    dEUyL0xhalpCdDFvcnI1U2lGaDNORVcvcmFIS0tJMnJsblRkNnFQeHd6UmZ4SGlBOThiYWU1aEow
+    MU1yYlFpSFREekVxZ2JURTI3cGFIRUZ2YVF2dHJ3bXVBWjRpM2xiVVZJTGVZSzA4dGVoSVM3eXRy
+    N1VSdEZwNXNCenh0akxyb0FHU2FpMUJxNVVIeXhGdkt6T0NCa2hLZ2daSVNvSUdTRXFDQmtocUR5
+    V3ZscXlWcHhZZGV5ZmVLdHBEZ2w2c1ZwNWFkQ0RlYWpMRkFaQ1VCQTJRbEFRTmtKUUVEWkNVQkEy
+    UTFCNVdjV1QzZW9tbjBXb2hic3RDeDJhKzN0TTl6VWlDWHQ4aTZ6aExLY1BCTi8vYjkvMVo4dnZC
+    RTBvcFEvdjkzVkdnK3lCQjc4Y1EwTCtXVXI3dCsvNm52ZCtNRmtWZFBXWFNkc1FjOVA2b2hkaWdh
+    RFB0dGpNUzlENnBoZGdlYmJaREV2UStEYlhadGxScmJ0T2lyYlRYRGtuUSt5WGcyNkd0ZGtxQ0Jr
+    aEtndDZ2bTczZmdJWm9xNTJTb1BmcHB1OTdRZCtJYUN2dHRVTVM5RDc5dHZjYjBDQnR0a01TOVA1
+    ODZ2diswOTV2UW11aXpiVGJ6a2pRK3pGczlmN05Mc0oyUmR2OUZtM0pEdGpxdmI1RmFyZzVMR2ti
+    NGl5VnN3VVBTMUpqYzBVUzlQb1dxK0hHZGl6Ulo5VFlYSjhwRG9Da0pHaUFwQ1JvZ0tRa2FJQ2tK
+    R2lBcFBhd2ltT1Jtbi8zcjdYVUMwRlM0cTJpUFNSbzZ6aGhPZUt0SWxNY0FFbEowQUJKU2RBQVNV
+    blFBRWxKMEFCSlNkQUFTVW5RQUVrMWxhRGppTVV0MVdhN2NkUW9XWW0zOWJVNGd0NVNiYlpmRWx3
+    RFBFVzhyYWk1QkwyaDJteERiY0RmRTF3SEhDVGUxdFhrSEhUVVpudmY2TmV2NFpyZnF3MUlLOFRi
+    ZXBvOWl5TStEWDlmcURaYk5lYWNhWkY0VzBmemh5VkplTEFjOGJZc3krd0FrcEtnQVpLU29BR1Nr
+    cUFCa3BLZ0FaTGFROGtybHJGa0xicnMxS2FrQ2dtYVd0U2lnOHBNY1FBa0pVRURKQ1ZCQXlRbFFR
+    TWtKVUVESkNWQkF5UWxRUU1rMVdzWUhsTkt1ZTY2N3FXYnM0aWhWdDZySGJ4UFRtUUV6U0ZicWtX
+    WG5kcVVQRXFDNWxFYnFrV1huZHFVSENSQmMxRGp0ZWl5VTV1U1o1bUQ1aWl0MWFMTFR1a29BQUFB
+    QUFBQUFBQm9oV1YyTzFaS2VSSDE4NFlsZEhkZDEzM3UrLzVxNy9kbFRhV1UrL1lZMm1aWWluZlY5
+    LzNkUnQvbml3UC8rMDQvM0xraE9aVlMzcFZTemtvcGw2V1VMK1d3Mi9nMzU2V1VuNk56TlMzZXgr
+    MGo3L2h5Qysrdk5jTTlqM3YvME5CR1AyL2cvUTJ4OXZHWk9Idm9TL3pNdXhoTXNHV1JsRCtVVWk1
+    TzZDU0hYRWZuYVM2WnhRZk5jejRrdU5SZGlENzVuUFBXN3NXd3VTbjYybU1EZ1ZQZHh1K3lZV3By
+    U2lrdkszYVV4MXkyMG5HT1RNNzNqS1JuRmlQbll6V1JwQ014UC9adFlIZnh4aE5peEh4S1FxclJj
+    ZEltdFJIMzRqTEJaVy9haUVTV05rbkhRS2pHdDlOakRmZk9rYmd0aW5tcnVVYk16em5MZHNzbWZG
+    QVpSYy9reE5IejE5SWw2UlhqN2RaMFhFTldHRFVmY3BubHdjYkUrOUg4QTZxczRrSHRXR21TZEpK
+    NGEyNk8vaGliT200MEV1THd0VHpESitvd1I3YjZsRWQwM0NuM3c5UHorVXk1dHgvV1Rrb3hHTHBJ
+    RW04Zll0V0gvcHBSZEpaVGx2QXM1WGF0SkYxcFpPTmh6RXppWWRwVXF5VHB4UEVtU1dlVHVMUGNX
+    N3pUVkVyT3R6cjdmS0xmMXBpM1hUeEpML3d3OEZSZmxyNGZQQ0Y1Y3I2MzJJcUlpbk9DNXA5bk5u
+    RWUrbXVMSmVsWS81L2RKdWVrbTlOSVo3azMrK3FPaXNsWkIxOUlTMjBXcXpWYVlYWEhtaXJONFMx
+    dHR2bG95YmxkTGJSZHhTbVpwZHkydms2NjZjT1NodTNXWGRmVmFvQ3IrUFBuZzcvL05nNFVxcFZZ
+    aHdPSjNsYjZYZjlSWWJYR3ZVOEttYTRqZXh0V3ZMNnU5WGpqR1hISTBWUzM4WHVlVGZLeFMrcXMw
+    Z2lpNnNvSUkrZnR5TnFXRXpiVmZHMFQ4Y1lSS2pUY3h6RXJGT0pyM3RSNTcyb1BEQ1huN2NuWXBo
+    VldiV3dpM2ppdTBZNDUvZXVRSWJHL20zcWZLMnh0bmZ3VlRuTGVya3h0RzZQWnNiTEVtMUgwVWlZ
+    c3E2dTZhU1MrOW8zdE5KTUNSM0xldml4dFBHRUV1NWw0NC9oR212SnBYbjNaellUUi9PMkUxNVNj
+    ZHlKRFcwOUlpcG5pcmRoMHRZQUpEWFF4MTlWTm1KODcrV3VYNUx3L2E3YjVoSWVER2VOdDhsVEww
+    cjVwN1lLN3J2dmJ5Si83cGZKMVBQemRZeHIveDFMS1NmL2VVcnI5R2RvcStzblV0djhRditlZkov
+    ek1qeU5mSzJPOC9kQjEzZTh6WEEvM290VFVxWmJZWVpYaHlNVmpHRGszU2gvN3I1SDNvcmt6T2xv
+    OGJuVE14cFIvelhBZGE3ekdWRWJPRFl1Mis5VEFPOGdhYjgwVm4yaHFKMkhNMlo2OHBySHYrMFhl
+    WnpseHZtSmhrdk5HVk43UlYxM3llUHUrNy91ckdTNW5GcHM2c1ArQXp4dDlyVk5Jemh1U2ZDU2RQ
+    ZDZhV3NteGh3Ujl0OUhYT3Bia3ZFR0prL1RlNDYycTFoTDBtRSsvUDJhNGpneXZkUXpKZWNPU0p1
+    azl4MXQxZXhoQjc1WGt2QU1OUFRqTW9xbmpSMXRMMEdPKzBudzN3M1VjOHNPQ3IvVVV5WGxIa2lY
+    cDdQRjJNOE4xekdZUEkraTliZStVbkhjb1VaSzJuYnFpUFNUb0pVK3hXdnZFTE1sNXg1SWs2VDNG
+    Mit5YVN0QjkzNDlhd3JQRUh2d0UrL3dsWjFJazZjenhOamFIcktYRkVmU1lPYVN4NTNka2U0M0hE
+    UGZqdmVUTXZlZ0w3MWVjYjgwYWIwM05QM2N0MWlTY3NJdnFWZC8zc3pSUWxQQzVIdkdqbjA0OHVP
+    YWh1NVoyUmJHOE9JOTV5cnp3MkFPNlVzYWJnY3pNOW43Y0tDeHBRdVg4alBHV2Rudjhaaml3SDVh
+    MW9RUDdtMW9EM1N3bHIyQTVFNDQ1elJSdnpSMDEyaXhGWTJFNUU2cXFaSW8zMHh0TG10aFlSUmw0
+    T043UVp4dU9OOU9KU3l1bG5FMXN0QkpKL3V5WXVhbVkrejZyOE1GUVBCeWtOUk1lRm1hSXQ3TldP
+    MXh6eSt5K05wUy9xbmo0eVZYOCtmUEIzMzhibFJocVRVbDg3dnYrYmFYZkJZdUpiMzYxQmhkTHhk
+    dE4zL2V2S3YydXhiV2VvRWRWV0ZsWlV4VWQ0RjQ4TjJudFlkdmIxbllQZnEzcHN6aml4djhqd2FV
+    YzZ6ZkptVlpGMy8ydG9jdi9SOHZKdVd0OUJIMHZsdEJrWHhWaGFvTk5xRHpWTVplcnZ1Ky9iLzEr
+    YitVMHU3Y3huNVhWVlp5TkFGdnd2b0Y0MjhSZ2FCTWo2QzZXNDhSOGRMYVI5RjNNZzVuYVlETmlQ
+    dm95NGZuUFZ4RnZtNmhYdUpuem9LTkJzbzJrcnlSbnRpajZkTlo0MjN3eDJXYkZ3dmF4VzFOcnVo
+    eXpNQjlhRXZFMmRSTkxEZWZpclNFVnRvWk8wZXpDZUJpajBzYXhNYXBzSldjRks0eW1MNTJ4d1Y3
+    Rm1SMUxqcWFObXJjZ3RvMmV6emlpdnJSOUcvNFMyOExuU3RTM0VjdU9EdDJhR0ZGL21IRGc5OWV1
+    NHhBWEkyWjRSSXlvUDBhc1RIVVJzYnVyRWZObWx0bWRLaHI2VFN6TCt5R1dDeDFLdG5meGhIZ280
+    Zk5IYkRxeE1nT09GQU9aSWQ2K2kvTnpuaXJGZFJVeDkrLzQ3ODlXWmdBQUFBQUFBQUFBQUFBQUFB
+    QUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFB
+    QUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFB
+    QUFBQUFBQlFRZGQxL3djREhSTTluMmhnRlFBQUFBQkpSVTVFcmtKZ2dnPT0iIC8+CiAgPC9kZWZz
+    Pgo8L3N2Zz4=
+
+
+  # unused yet
+  documentation:
+    - type: configuration
+      title: Configuration
+      markdown: |
+        # Configuration
+
+        3scale Backstage provider allows configuration of one or multiple providers using the `app-config.yaml` configuration file of Backstage.
+
+        ## New Backend Procedure
+
+        1. Use a `threeScaleApiEntity` marker to start configuring the `app-config.yaml` file of Backstage:
+
+          ```yaml title="app-config.yaml"
+          catalog:
+            providers:
+              threeScaleApiEntity:
+                dev:
+                  baseUrl: https://<TENANT>-admin.3scale.net
+                  accessToken: <ACCESS_TOKEN>
+                  schedule: # optional; same options as in TaskScheduleDefinition
+                    # supports cron, ISO duration, "human duration" as used in code
+                    frequency: { minutes: 30 }
+                    # supports ISO duration, "human duration" as used in code
+                    timeout: { minutes: 3 }
+          ```
+
+          **NOTE**
+          Make sure to configure the schedule inside the `app-config.yaml` file. The default schedule is a frequency of 30 minutes and a timeout of 3 minutes.
+
+        2. Add the following code to the `packages/backend/src/index.ts` file:
+
+          ```ts title="packages/backend/src/index.ts"
+          const backend = createBackend();
+
+          /* highlight-add-next-line */
+          backend.add(import('@backstage-community/plugin-3scale-backend'));
+
+          backend.start();
+          ```
+    - type: usage
+      title: Troubleshooting
+      markdown: |
+        # Troubleshooting
+
+        When you start your Backstage application, you can see some log lines as follows:
+
+        ```log
+        [1] 2023-02-13T15:26:09.356Z catalog info Discovered ApiEntity API type=plugin target=ThreeScaleApiEntityProvider:dev
+        [1] 2023-02-13T15:26:09.423Z catalog info Discovered ApiEntity Red Hat Event (DEV, v1.2.0) type=plugin target=ThreeScaleApiEntityProvider:dev
+        [1] 2023-02-13T15:26:09.620Z catalog info Discovered ApiEntity Red Hat Event (TEST, v1.1.0) type=plugin target=ThreeScaleApiEntityProvider:dev
+        [1] 2023-02-13T15:26:09.819Z catalog info Discovered ApiEntity Red Hat Event (PROD, v1.1.0) type=plugin target=ThreeScaleApiEntityProvider:dev
+        [1] 2023-02-13T15:26:09.819Z catalog info Applying the mutation with 3 entities type=plugin target=ThreeScaleApiEntityProvider:dev
+        ```
+
+  assets:
+    - type: icon
+      filename: img/3scale.svg
+      originUri: https://github.com/backstage/backstage/blob/master/microsite/static/img/3scale.svg
+
+  history:
+    added: '2023-05-15'
+
+  packages:
+    - backstage-community-plugin-3scale-backend

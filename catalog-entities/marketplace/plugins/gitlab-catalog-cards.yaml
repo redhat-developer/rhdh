@@ -1,0 +1,89 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: backstage-catalog-cards
+  namespace: rhdh
+  title: GitLab Catalog Cards
+  description: 'Collection of GitLab catalog cards for the Red Hat Developer Hub.'
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
+  tags: []
+  links:
+    - title: Homepage
+      url: https://red.ht/rhdh
+    - title: Bugs
+      url: https://issues.redhat.com/browse/RHIDP
+    - title: Documentation for Red Hat Developer Hub
+      url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
+    - title: Source Code
+      url: https://github.com/immobiliare/backstage-plugin-gitlab
+spec:
+  author: ImmobiliareLabs
+  publisher: Red Hat
+  support: tech-preview  # production, tech-preview, dev-preveiw
+  lifecycle: active
+
+  icon: data:image/svg+xml;base64,
+    PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjgg
+    MTI4IiB4bWw6c3BhY2U9InByZXNlcnZlIj48cGF0aCBmaWxsPSIjRTI0MzI5IiBkPSJtMTI0Ljc1
+    NSA1MS4zODItLjE3Ny0uNDUyTDEwNy40NyA2LjI4MmE0LjQ1OSA0LjQ1OSAwIDAgMC0xLjc2MS0y
+    LjEyMSA0LjU4MSA0LjU4MSAwIDAgMC01LjIzNi4yODEgNC41NzggNC41NzggMCAwIDAtMS41MTgg
+    Mi4zMDRMODcuNDA0IDQyLjA4OEg0MC42MjlMMjkuMDc3IDYuNzQ2YTQuNDkyIDQuNDkyIDAgMCAw
+    LTEuNTE4LTIuMzEgNC41ODEgNC41ODEgMCAwIDAtNS4yMzYtLjI4MSA0LjUwMiA0LjUwMiAwIDAg
+    MC0xLjc2MSAyLjEyMUwzLjQyMiA1MC45MDRsLS4xNy40NTJjLTUuMDU5IDEzLjIxOS0uNzYzIDI4
+    LjE5MiAxMC41MzcgMzYuNzE2bC4wNTkuMDQ2LjE1Ny4xMTEgMjYuMDYxIDE5LjUxNiAxMi44OTMg
+    OS43NTggNy44NTQgNS45M2E1LjI4MyA1LjI4MyAwIDAgMCA2LjM4OCAwbDcuODU0LTUuOTMgMTIu
+    ODkzLTkuNzU4IDI2LjIxOC0xOS42MzQuMDY1LS4wNTJjMTEuMjczLTguNTI2IDE1LjU2Mi0yMy40
+    NzIgMTAuNTI0LTM2LjY3N3oiLz48cGF0aCBmaWxsPSIjRkM2RDI2IiBkPSJtMTI0Ljc1NSA1MS4z
+    ODItLjE3Ny0uNDUyYTU3Ljc5IDU3Ljc5IDAgMCAwLTIzLjAwNSAxMC4zNDFMNjQgODkuNjgyYzEy
+    Ljc5NSA5LjY4IDIzLjkzNCAxOC4wOSAyMy45MzQgMTguMDlsMjYuMjE4LTE5LjYzNC4wNjUtLjA1
+    MmMxMS4yOTEtOC41MjcgMTUuNTg2LTIzLjQ4OCAxMC41MzgtMzYuNzA0eiIvPjxwYXRoIGZpbGw9
+    IiNGQ0EzMjYiIGQ9Im00MC4wNjYgMTA3Ljc3MSAxMi44OTMgOS43NTggNy44NTQgNS45M2E1LjI4
+    MyA1LjI4MyAwIDAgMCA2LjM4OCAwbDcuODU0LTUuOTMgMTIuODkzLTkuNzU4cy0xMS4xNTItOC40
+    MzYtMjMuOTQ3LTE4LjA5YTE4Mzc5LjIwMiAxODM3OS4yMDIgMCAwIDAtMjMuOTM1IDE4LjA5eiIv
+    PjxwYXRoIGZpbGw9IiNGQzZEMjYiIGQ9Ik0yNi40MiA2MS4yNzFBNTcuNzMgNTcuNzMgMCAwIDAg
+    My40MjIgNTAuOTA0bC0uMTcuNDUyYy01LjA1OSAxMy4yMTktLjc2MyAyOC4xOTIgMTAuNTM3IDM2
+    LjcxNmwuMDU5LjA0Ni4xNTcuMTExIDI2LjA2MSAxOS41MTZMNjQgODkuNjU1IDI2LjQyIDYxLjI3
+    MXoiLz48L3N2Zz4=
+
+  categories:
+    - Source Control
+  highlights:
+    - List build, MRs, Issues, releases
+    - View Code Owners, Contributors,
+    - Show MRs and Languages statistics
+  description: |
+    Collection of GitLab catalog cards for the Red Hat Developer Hub.
+
+    Works for both project and personal tokens.
+    Support for Olds/New GitLab APIs version.
+    Support for multi GitLab Instance.
+
+    Available cards:
+    - List top 20 builds for a project
+    - List top 20 Merge Requests for a project
+    - List top 20 Issues for a project
+    - List last releases
+    - View Code Owners for a project
+    - View Contributors for a project
+    - View Languages used for a project
+    - View Pipeline status for a project
+    - View README for a project (with partial support for GLFM)
+    - Merge Requests Statistics
+
+    ## Adding The Plugin To Red Hat Developer Hub
+
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further instructions on how to add, enable, configure, and remove plugins in your instance.
+
+    ## Configuring The Plugin ##
+
+    Plugins often need additional configuration to work correctly - particularly those that integrate with other
+    systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further details regarding the configuration required.
+
+
+  packages:
+    - immobiliarelabs-backstage-plugin-gitlab
+    - immobiliarelabs-backstage-plugin-gitlab-backend

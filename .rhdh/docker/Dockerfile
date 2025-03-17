@@ -23,7 +23,7 @@
 # Stage 1 - Build nodejs skeleton
 #@follow_tag(registry.access.redhat.com/ubi9/nodejs-22:1)
 # https://registry.access.redhat.com/ubi9/nodejs-222
-FROM registry.access.redhat.com/ubi9/nodejs-22:9.5-1740412185 AS build
+FROM registry.access.redhat.com/ubi9/nodejs-22:9.5-1741891114 AS build
 # hadolint ignore=DL3002
 USER 0
 
@@ -266,7 +266,7 @@ RUN "$YARN" workspaces focus --all --production && \
 # Stage 5 - Build the runner image
 #@follow_tag(registry.access.redhat.com/ubi9/nodejs-22-minimal:1)
 # https://registry.access.redhat.com/ubi9/nodejs-22-minimal
-FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:9.5-1741091630 AS runner
+FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:9.5-1741873206 AS runner
 USER 0
 
 # Downstream sources
@@ -292,6 +292,9 @@ COPY --from=build "$REMOTE_SOURCES_DIR"/dynamic-plugins/dist/ ./dynamic-plugins/
 
 # RHIDP-4220 - make Konflux preflight and EC checks happy - [check-container] Create a directory named /licenses and include all relevant licensing
 COPY $EXTERNAL_SOURCE/LICENSE /licenses/
+
+# RHIDP-5216/RHIDP-5215 - interim marketplace catalog entities until these data will be loaded from container images
+COPY $EXTERNAL_SOURCE/catalog-entities/marketplace /marketplace/catalog-entities/
 
 # Copy script to gather dynamic plugins; copy embedded dynamic plugins to root folder; fix permissions
 COPY docker/install-dynamic-plugins.py docker/install-dynamic-plugins.sh ./

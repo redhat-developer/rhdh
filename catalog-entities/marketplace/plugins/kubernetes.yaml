@@ -1,0 +1,122 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: kubernetes
+  namespace: rhdh
+  title: Kubernetes
+  description: |
+    Frontend component that helps you monitor all your service's deployments at a glance.
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
+
+  tags:
+    - kubernetes
+  links:
+    - title: Backstage Documentation
+      url: https://backstage.io/docs/features/kubernetes/
+    - title: Documentation for Red Hat Developer Hub
+      url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/
+
+spec:
+  author: Backstage Community
+  support: tech-preview # The frontend is tech-preview for RHDH
+  lifecycle: active
+  publisher: Red Hat
+
+  description: |
+    This plugin provides a Kubernetes integration for Backstage. Once installed and configured, you can monitor all your service's deployments at a glance.
+
+    ## Adding The Plugin To Red Hat Developer Hub
+
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further instructions on how to add, enable, configure, and remove plugins in your instance.
+
+    ## Configuring The Plugin ##
+
+    Plugins often need additional configuration to work correctly - particularly those that integrate with other
+    systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further details regarding the configuration required.
+
+  categories:
+    - Observability # One category will show up on the tile view
+
+  highlights:
+    - Monitor all your deployments at a glance.
+    - View the status of your services.
+
+  icon: data:image/svg+xml;base64,
+    PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjgg
+    MTI4Ij48ZyBmaWxsPSIjNDg2YmIzIj48cGF0aCBkPSJNNTYuNDg0IDU1LjA5OGMuMzcuMjcuODIu
+    NDMgMS4zMS40MyAxLjIgMCAyLjE4LS45NSAyLjIzLTIuMTNsLjA1LS4wMy43NS0xMy4yNmMtLjku
+    MTEtMS44LjI2LTIuNy40Ni00LjkzIDEuMTItOS4yIDMuNTUtMTIuNTQgNi44M2wxMC44NyA3Ljcx
+    LjAzLS4wMXpNNTUuMDM0IDc0LjUyOGEyLjIxOCAyLjIxOCAwIDAwLTIuNTgtMS42OWwtLjAyLS4w
+    My0xMy4wNSAyLjIxYTI2LjE1IDI2LjE1IDAgMDAxMC41MSAxMy4xNWw1LjA2LTEyLjIyLS4wNC0u
+    MDVjLjE3LS40Mi4yMy0uODkuMTItMS4zN3pNNTAuNjk0IDY1LjExOGMuNDQtLjEyLjg1LS4zOCAx
+    LjE2LS43Ni43NS0uOTQuNjItMi4yOS0uMjgtMy4wN2wuMDEtLjA1LTkuOTMtOC44OGEyNi4wNyAy
+    Ni4wNyAwIDAwLTMuNyAxNi40OGwxMi43My0zLjY3LjAxLS4wNXpNNjAuMzM0IDY5LjAxOGwzLjY2
+    IDEuNzYgMy42Ni0xLjc1LjktMy45NS0yLjUzLTMuMTZoLTQuMDZsLTIuNTQgMy4xNnpNNjcuOTM0
+    IDUzLjM0OGMuMDIuNDYuMTguOTEuNDkgMS4yOS43NS45NCAyLjEgMS4xMSAzLjA2LjQxbC4wNC4w
+    MiAxMC44LTcuNjZjLTQuMDgtMy45OS05LjQtNi42LTE1LjE1LTcuM2wuNzUgMTMuMjRoLjAxek03
+    NS41MTQgNzIuNzc4Yy0uMTctLjAzLS4zNC0uMDUtLjUxLS4wNC0uMjkuMDEtLjU4LjA5LS44NS4y
+    MmEyLjIzIDIuMjMgMCAwMC0xLjA4IDIuODlsLS4wMi4wMiA1LjExIDEyLjM0YzQuOTMtMy4xNCA4
+    LjYxLTcuODMgMTAuNTQtMTMuMjRsLTEzLjE2LTIuMjMtLjAzLjA0ek02NS45NTQgNzkuMzE4YTIu
+    MjQ2IDIuMjQ2IDAgMDAtMi4wNC0xLjE3Yy0uNzcuMDMtMS41LjQ2LTEuODkgMS4xOGgtLjAxbC02
+    LjQyIDExLjZhMjYuMTYgMjYuMTYgMCAwMDE0LjI3LjczYy44OC0uMiAxLjc0LS40NCAyLjU3LS43
+    MmwtNi40My0xMS42M2gtLjA1eiIvPjxwYXRoIGQ9Ik0xMjQuNTQ0IDc2Ljc4OGwtMTAuNDQtNDUu
+    MzNhOC4wMTIgOC4wMTIgMCAwMC00LjM3LTUuNDNsLTQyLjI0LTIwLjE4YTguMTU3IDguMTU3IDAg
+    MDAtMy45Mi0uNzggOC4xNSA4LjE1IDAgMDAtMy4xLjc4bC00Mi4yNCAyMC4xOGE4LjA1NSA4LjA1
+    NSAwIDAwLTQuMzcgNS40M2wtMTAuNDEgNDUuMzRhNy45MiA3LjkyIDAgMDAxLjEgNi4xNGMuMTQu
+    MjIuMy40My40Ni42NGwyOS4yNCAzNi4zNWE4LjA4NyA4LjA4NyAwIDAwNi4zMiAzLjAxbDQ2Ljg5
+    LS4wMWMyLjQ2IDAgNC43OC0xLjExIDYuMzItMy4wMWwyOS4yMy0zNi4zNmE3Ljk4MSA3Ljk4MSAw
+    IDAwMS41My02Ljc3em0tMTYuMDctLjU1Yy0uMzEgMS4zNS0xLjc2IDIuMTctMy4yNiAxLjg1LS4w
+    MSAwLS4wMyAwLS4wNC0uMDEtLjAyIDAtLjAzLS4wMS0uMDUtLjAyLS4yMS0uMDUtLjQ3LS4wOS0u
+    NjUtLjE0LS44Ni0uMjMtMS40OS0uNTgtMi4yNy0uODgtMS42Ny0uNi0zLjA2LTEuMS00LjQxLTEu
+    My0uNjktLjA1LTEuMDQuMjctMS40Mi41Mi0uMTgtLjA0LS43NS0uMTQtMS4wOC0uMTktMi40MiA3
+    LjYxLTcuNTggMTQuMjEtMTQuNTcgMTguMzMuMTIuMjkuMzMuOTEuNDIgMS4wMi0uMTYuNDMtLjQu
+    ODMtLjE5IDEuNDkuNDkgMS4yNyAxLjI4IDIuNTIgMi4yNCA0LjAxLjQ2LjY5Ljk0IDEuMjIgMS4z
+    NiAyLjAyLjEuMTkuMjMuNDguMzMuNjguNjUgMS4zOS4xNyAyLjk5LTEuMDggMy41OS0xLjI2LjYx
+    LTIuODItLjAzLTMuNS0xLjQzLS4xLS4yLS4yMy0uNDYtLjMxLS42NS0uMzYtLjgyLS40OC0xLjUy
+    LS43My0yLjMyLS41Ny0xLjY4LTEuMDUtMy4wNy0xLjczLTQuMjUtLjM5LS41Ny0uODYtLjY0LTEu
+    MjktLjc4LS4wOC0uMTQtLjM4LS42OS0uNTQtLjk3LTEuNC41My0yLjg0Ljk3LTQuMzQgMS4zMS02
+    LjU2IDEuNDktMTMuMTMuODktMTguOTktMS4zN2wtLjU3IDEuMDRjLS40My4xMS0uODQuMjMtMS4w
+    OS41My0uOTIgMS4xLTEuMjkgMi44Ni0xLjk2IDQuNTQtLjI1Ljc5LS4zNyAxLjUtLjczIDIuMzIt
+    LjA4LjE5LS4yMi40NS0uMzEuNjR2LjAxbC0uMDEuMDFjLS42NyAxLjM5LTIuMjMgMi4wMy0zLjQ5
+    IDEuNDMtMS4yNS0uNi0xLjcyLTIuMi0xLjA4LTMuNTkuMS0uMi4yMi0uNDkuMzItLjY4LjQyLS43
+    OS44OS0xLjMzIDEuMzYtMi4wMi45Ni0xLjUgMS44LTIuODQgMi4yOS00LjExLjEyLS40Mi0uMDYt
+    MS0uMjItMS40M2wuNDYtMS4xYy02LjczLTMuOTktMTIuMDQtMTAuMzQtMTQuNTgtMTguMjFsLTEu
+    MS4xOWMtLjMtLjE3LS44OS0uNTYtMS40NS0uNTEtMS4zNS4yLTIuNzQuNy00LjQxIDEuMy0uNzgu
+    My0xLjQuNjQtMi4yNy44Ny0uMTguMDUtLjQ0LjEtLjY1LjE1LS4wMiAwLS4wMy4wMS0uMDUuMDIt
+    LjAxIDAtLjAzIDAtLjA0LjAxLTEuNS4zMi0yLjk1LS41LTMuMjYtMS44NS0uMzEtMS4zNS42NS0y
+    LjcyIDIuMTQtMy4wOC4wMSAwIC4wMy0uMDEuMDQtLjAxLjAxIDAgLjAxIDAgLjAyLS4wMS4yMS0u
+    MDUuNDgtLjEyLjY4LS4xNi44OC0uMTcgMS42LS4xMyAyLjQzLS4xOSAxLjc3LS4xOSAzLjIzLS4z
+    NCA0LjUzLS43NS40MS0uMTcuODEtLjc0IDEuMDktMS4xbDEuMDYtLjMxYy0xLjE5LTguMjIuODIt
+    MTYuMjggNS4xNi0yMi44MWwtLjgxLS43MmMtLjA1LS4zMi0uMTItMS4wNC0uNTEtMS40Ni0uOTkt
+    LjkzLTIuMjUtMS43MS0zLjc2LTIuNjQtLjcyLS40Mi0xLjM4LS42OS0yLjEtMS4yMy0uMTUtLjEx
+    LS4zNi0uMjktLjUyLS40Mi0uMDEtLjAxLS4wMy0uMDItLjA0LS4wMy0xLjIxLS45Ny0xLjQ5LTIu
+    NjQtLjYyLTMuNzMuNDktLjYxIDEuMjQtLjkyIDIuMDEtLjg5LjYuMDIgMS4yMy4yNCAxLjc2LjY2
+    LjE3LjE0LjQxLjMyLjU2LjQ1LjY4LjU4IDEuMDkgMS4xNiAxLjY2IDEuNzcgMS4yNSAxLjI3IDIu
+    MjggMi4zMiAzLjQxIDMuMDguNTkuMzUgMS4wNS4yMSAxLjUuMTUuMTUuMTEuNjMuNDYuOTEuNjUg
+    NC4zLTQuNTcgOS45Ni03Ljk1IDE2LjUyLTkuNDQgMS41My0uMzUgMy4wNS0uNTggNC41Ny0uN2wu
+    MDYtMS4wN2MuMzQtLjMzLjcxLS43OS44Mi0xLjMxLjExLTEuMzYtLjA3LTIuODItLjI4LTQuNTkt
+    LjEyLS44Mi0uMzEtMS41MS0uMzUtMi40LS4wMS0uMTggMC0uNDQuMDEtLjY1IDAtLjAyLS4wMS0u
+    MDUtLjAxLS4wNyAwLTEuNTUgMS4xMy0yLjgxIDIuNTMtMi44MXMyLjUzIDEuMjYgMi41MyAyLjgx
+    YzAgLjIyLjAxLjUyLjAxLjcyLS4wMy44OS0uMjMgMS41OC0uMzUgMi40LS4yMSAxLjc2LS40IDMu
+    MjMtLjI5IDQuNTkuMS42OC41Ljk1LjgzIDEuMjYuMDEuMTguMDQuNzkuMDYgMS4xMyA4LjA0Ljcx
+    IDE1LjUgNC4zOSAyMC45OSAxMC4xNGwuOTYtLjY5Yy4zMy4wMiAxLjA0LjEyIDEuNTMtLjE3IDEu
+    MTMtLjc2IDIuMTYtMS44MiAzLjQxLTMuMDguNTctLjYxLjk5LTEuMTggMS42Ny0xLjc3LjE1LS4x
+    My4zOS0uMzEuNTYtLjQ1IDEuMjEtLjk3IDIuOS0uODYgMy43Ny4yM3MuNTkgMi43Ni0uNjIgMy43
+    M2MtLjE3LjE0LS4zOS4zMy0uNTYuNDUtLjcyLjUzLTEuMzguOC0yLjEgMS4yMy0xLjUxLjkzLTIu
+    NzcgMS43MS0zLjc2IDIuNjQtLjQ3LjUtLjQzLjk4LS40OCAxLjQzLS4xNC4xMy0uNjMuNTctLjku
+    OGEzMi43NSAzMi43NSAwIDAxNC43NCAxMC45NWMuOTIgMy45OSAxLjA2IDcuOTcuNTMgMTEuOGwx
+    LjAyLjNjLjE4LjI2LjU2Ljg5IDEuMDkgMS4xIDEuMy40MSAyLjc2LjU2IDQuNTMuNzUuODMuMDcg
+    MS41NS4wMyAyLjQzLjE5LjIxLjA0LjUyLjEyLjczLjE3IDEuNS4zNyAyLjQ1IDEuNzQgMi4xNCAz
+    LjA5eiIvPjxwYXRoIGQ9Ik04Ni4yNzQgNTIuMzU4bC05Ljg4IDguODQuMDEuMDNjLS4zNC4zLS42
+    LjctLjcxIDEuMTgtLjI3IDEuMTcuNDQgMi4zMyAxLjU4IDIuNjVsLjAxLjA1IDEyLjc5IDMuNjhj
+    LjI3LTIuNzYuMTEtNS42Mi0uNTUtOC40OC0uNjYtMi44OS0xLjc3LTUuNTYtMy4yNS03Ljk1eiIv
+    PjwvZz48L3N2Zz4=
+
+  packages:
+    - backstage-plugin-kubernetes

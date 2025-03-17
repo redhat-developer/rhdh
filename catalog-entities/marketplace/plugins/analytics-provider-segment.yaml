@@ -1,0 +1,113 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: analytics-provider-segment
+  namespace: rhdh
+  title: Segment Analytics Module
+  description: |
+    Segment Analytics Module for Backstage. This plugin ships as enabled by default in Red Hat Developer Hub.
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
+    extensions.backstage.io/verified-by: Red Hat
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Documentation for Red Hat Developer Hub
+      url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-analytics-provider-segment
+  tags: 
+    - analytics
+spec:
+  categories:
+    - Analytics
+  authors:
+    - name: Backstage Community
+  publisher: Red Hat
+  support: production
+  lifecycle: active
+  description: |
+    This plugin ships as enabled by default in Red Hat Developer Hub.
+
+    This plugin provides an implementation of the Backstage Analytics API for
+    Segment. Once installed and configured, analytics events will be sent to
+    Segment as your users navigate and use your Backstage instance.
+
+    This plugin contains no other functionality.
+
+    ## Adding The Plugin To Red Hat Developer Hub
+
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub) 
+    for further instructions on how to add, enable, configure, and remove plugins in your instance.
+
+  # Images are base 64 encoded SVGs (below is a blank square from the mockup)
+  icon: data:image/svg+xml;base64,
+    PHN2ZyB3aWR0aD0iNzAiIGhlaWdodD0iNzAiIHZpZXdCb3g9IjAgMCA3MCA3MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93
+    d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjcwIiBoZWlnaHQ9IjcwIiBmaWxsPSIjQzRDNEM0Ii8+Cjwvc3ZnPgo=
+
+  installation: |
+    ## Configuration
+
+    1. Wire up the API implementation to your App in `packages/app/src/apis.ts`:
+
+      ```tsx title="packages/app/src/apis.ts"
+      /* highlight-add-start */
+      import { SegmentAnalytics } from '@backstage-community/plugin-analytics-provider-segment';
+      import {
+        analyticsApiRef,
+        configApiRef,
+        identityApiRef,
+      } from '@backstage/core-plugin-api';
+
+      /* highlight-add-end */
+
+      export const apis: AnyApiFactory[] = [
+        // Other APIs...
+        // Instantiate and register the GA Analytics API Implementation.
+        /* highlight-add-start */
+        createApiFactory({
+          api: analyticsApiRef,
+          deps: { configApi: configApiRef, identityApi: identityApiRef },
+          factory: ({ configApi, identityApi }) =>
+            SegmentAnalytics.fromConfig(configApi, identityApi),
+        }),
+        /* highlight-add-end */
+      ];
+      ```
+
+    2. Configure the plugin in your `app-config.yaml`:
+
+    The following is the minimum configuration required to start sending analytics
+    events to Segment. All that's needed is your Segment Write Key
+
+    ```yaml title="app-config.yaml"
+    app:
+      analytics:
+        segment:
+          # highlight-start
+          writeKey: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+          maskIP: true # prevents IP addresses from being sent if true
+          # highlight-end
+    ```
+
+    ## Debugging and Testing
+
+    In pre-production environments, you may wish to set additional configurations
+    to turn off reporting to Analytics. You can do so like this:
+
+    ```yaml title="app-config.yaml"
+    app:
+      analytics:
+        segment:
+          # highlight-next-line
+          testMode: true # prevents data from being sent if true
+    ```
+
+    You might commonly set the above in an `app-config.local.yaml` file, which is
+    normally `gitignore`'d but loaded and merged in when Backstage is bootstrapped.
+
+  packages:
+     - backstage-community-plugin-analytics-provider-segment

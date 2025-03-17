@@ -28,6 +28,7 @@ NAME_SPACE_POSTGRES_DB="${NAME_SPACE_POSTGRES_DB:-postgress-external-db}"
 NAME_SPACE_SANITY_PLUGINS_CHECK="showcase-sanity-plugins"
 OPERATOR_MANAGER='rhdh-operator'
 CHART_VERSION="2.15.2" # Fixed version should be used for release branches.
+CHART_VERSION_BASE="2.15.2"
 GITHUB_APP_APP_ID=$(cat /tmp/secrets/GITHUB_APP_3_APP_ID)
 GITHUB_APP_CLIENT_ID=$(cat /tmp/secrets/GITHUB_APP_3_CLIENT_ID)
 GITHUB_APP_PRIVATE_KEY=$(cat /tmp/secrets/GITHUB_APP_3_PRIVATE_KEY)
@@ -133,7 +134,7 @@ GH_USER_PASSWORD=$(cat /tmp/secrets/GH_USER_PASSWORD)
 
 AUTH_PROVIDERS_RELEASE="rhdh-auth-providers"
 AUTH_PROVIDERS_NAMESPACE="showcase-auth-providers"
-STATIC_API_TOKEN="somecicdtoken"
+STATIC_API_TOKEN=$(cat /tmp/secrets/STATIC_API_TOKEN)
 AUTH_PROVIDERS_CHART="rhdh-chart/backstage"
 
 KEYCLOAK_AUTH_BASE_URL=$(cat /tmp/secrets/KEYCLOAK_AUTH_BASE_URL)

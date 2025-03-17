@@ -1,0 +1,13 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  namespace: rhdh
+  name: collections
+spec:
+  targets: []
+    #- ./cicd.yaml
+    #- ./featured.yaml
+    #- ./openshift.yaml
+    #- ./recommended.yaml
+    #- ./redhat.yaml
+    #- ./dynatrace.yaml

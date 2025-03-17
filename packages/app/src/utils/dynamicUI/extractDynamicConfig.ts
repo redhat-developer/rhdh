@@ -106,6 +106,7 @@ type EntityTab = {
   mountPoint: string;
   path: string;
   title: string;
+  pariority?: number;
 };
 
 type EntityTabEntry = {
@@ -113,6 +114,7 @@ type EntityTabEntry = {
   mountPoint: string;
   path: string;
   title: string;
+  priority?: number;
 };
 
 type ThemeEntry = {

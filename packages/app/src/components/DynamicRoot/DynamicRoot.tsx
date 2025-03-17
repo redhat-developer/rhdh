@@ -348,14 +348,14 @@ export const DynamicRoot = ({
     }, []);
 
     const entityTabOverrides = entityTabs.reduce<EntityTabOverrides>(
-      (acc, { path, title, mountPoint, scope }) => {
+      (acc, { path, title, mountPoint, scope, priority }) => {
         if (acc[path]) {
           // eslint-disable-next-line no-console
           console.warn(
             `Plugin ${scope} is not configured properly: a tab has already been configured for "${path}", ignoring entry with title: "${title}" and mountPoint: "${mountPoint}"`,
           );
         } else {
-          acc[path] = { title, mountPoint };
+          acc[path] = { title, mountPoint, priority };
         }
         return acc;
       },
