@@ -26,7 +26,7 @@ class PullPolicy(StrEnum):
     # NEVER = 'Never' not needed
 
 class InstallException(Exception):
-    """Exception class from which every exception in this library will derive."""
+    """Base exception for all custom exceptions in this script."""
     pass
 
 RECOGNIZED_ALGORITHMS = (
@@ -35,29 +35,37 @@ RECOGNIZED_ALGORITHMS = (
     'sha256',
 )
 
-def merge(source, destination, prefix = ''):
+def merge(source, destination, prefix=''):
+    """
+    Recursively merges the 'source' dictionary into 'destination'.
+    Raises an InstallException if a conflicting key/value pair is found.
+    """
     for key, value in source.items():
         if isinstance(value, dict):
-            # get node or create one
             node = destination.setdefault(key, {})
-            merge(value, node, key + '.')
+            merge(value, node, prefix + key + '.')
         else:
-            # if key exists in destination trigger an error
             if key in destination and destination[key] != value:
-                raise InstallException(f"Config key '{ prefix + key }' defined differently for 2 dynamic plugins")
-
+                raise InstallException(
+                    f"Config key '{prefix + key}' is defined differently in two dynamic plugins."
+                )
             destination[key] = value
-
     return destination
 
 def maybeMergeConfig(config, globalConfig):
+    """
+    If 'config' is a dict, merges it into 'globalConfig'.
+    Otherwise, returns 'globalConfig' unchanged.
+    """
     if config is not None and isinstance(config, dict):
         logging.info('\t==> Merging plugin-specific configuration')
         return merge(config, globalConfig)
-    else:
-        return globalConfig
+    return globalConfig
 
 class OciDownloader:
+    """
+    Handles downloading and extracting plugins stored in OCI registries (via 'skopeo').
+    """
     def __init__(self, destination: str):
         self._skopeo = shutil.which('skopeo')
         if self._skopeo is None:
@@ -67,81 +75,117 @@ class OciDownloader:
         self.tmp_dir = self.tmp_dir_obj.name
         self.image_to_tarball = {}
         self.destination = destination
-        self.cat_cmd = shutil.which('cat')
-        self.openssl_cmd = shutil.which('openssl')
 
-        if not self.cat_cmd or not self.openssl_cmd:
-            raise InstallException("Required utilities 'cat' and 'openssl' not found in PATH.")
+        self.openssl_cmd = shutil.which('openssl')
+        if not self.openssl_cmd:
+            raise InstallException("Required utility 'openssl' not found in PATH.")
 
     def skopeo(self, command):
-        rv = subprocess.run([self._skopeo] + command, check=True, capture_output=True, text=True)
+        """
+        Executes a 'skopeo' command and returns its stdout as a string.
+        Raises InstallException on failure.
+        """
+        rv = subprocess.run(
+            [self._skopeo] + command,
+            check=True,
+            capture_output=True,
+            text=True
+        )
         if rv.returncode != 0:
             raise InstallException(f'Error while running skopeo command: {rv.stderr}')
         return rv.stdout
 
     def get_plugin_tar(self, image: str) -> str:
+        """
+        Downloads the specified OCI image (if not already downloaded) using skopeo
+        and returns the local path to the tar file.
+        """
         if image not in self.image_to_tarball:
-            # run skopeo copy to copy the tar ball to the local filesystem
             logging.info(f'\t==> Copying image {image} to local filesystem')
             image_digest = hashlib.sha256(image.encode('utf-8'), usedforsecurity=False).hexdigest()
+
             local_dir = os.path.join(self.tmp_dir, image_digest)
-            # replace oci:// prefix with docker://
             image_url = image.replace('oci://', 'docker://')
             self.skopeo(['copy', image_url, f'dir:{local_dir}'])
+
             manifest_path = os.path.join(local_dir, 'manifest.json')
             with open(manifest_path, 'r') as f:
                 manifest = json.load(f)
 
-            # get the first layer of the image
+            # Retrieves the first layer from the manifest
             layer = manifest['layers'][0]['digest']
-            (_sha, filename) = layer.split(':')
+            _, filename = layer.split(':')
             local_path = os.path.join(local_dir, filename)
             self.image_to_tarball[image] = local_path
 
         return self.image_to_tarball[image]
 
     def extract_plugin(self, tar_file: str, plugin_path: str) -> None:
+        """
+        Extracts only files under 'plugin_path' from 'tar_file'. Also performs
+        size checks and symlink verifications to protect against zip bombs or link escapes.
+        """
         extracted_path = os.path.abspath(self.destination)
+        max_entry_size = int(os.environ.get('MAX_ENTRY_SIZE', 20000000))
+
         with tarfile.open(tar_file, 'r:gz') as tar:
             members = []
             for member in tar.getmembers():
                 if not member.name.startswith(plugin_path):
                     continue
 
-                if member.size > int(os.environ.get('MAX_ENTRY_SIZE', 20000000)):
+                if member.size > max_entry_size:
                     raise InstallException(f'Zip bomb detected in {member.name}')
 
                 if member.islnk() or member.issym():
-                    realpath = os.path.realpath(os.path.join(extracted_path, plugin_path, *os.path.split(member.linkname)))
+                    realpath = os.path.realpath(
+                        os.path.join(extracted_path, plugin_path, *os.path.split(member.linkname))
+                    )
                     if not realpath.startswith(extracted_path):
-                        logging.warning(f'\t==> WARNING: skipping file containing link outside of the archive: {member.name} -> {member.linkpath}')
+                        logging.warning(
+                            f'\t==> WARNING: skipping file containing link outside of the archive: '
+                            f'{member.name} -> {member.linkpath}'
+                        )
                         continue
                 members.append(member)
 
             tar.extractall(extracted_path, members=members, filter='tar')
 
-
     def download(self, package: str) -> str:
-        # split by ! to get the path in the image
-        (image, plugin_path) = package.split('!')
+        """
+        Receives something like 'oci://repo/image!path_in_tar', downloads and extracts only
+        the 'path_in_tar' directory into self.destination. Returns 'plugin_path'.
+        """
+        image, plugin_path = package.split('!')
         tar_file = self.get_plugin_tar(image)
+
         plugin_directory = os.path.join(self.destination, plugin_path)
         if os.path.exists(plugin_directory):
             logging.info(f'\t==> Removing previous plugin directory {plugin_directory}')
             shutil.rmtree(plugin_directory, ignore_errors=True, onerror=None)
+
         self.extract_plugin(tar_file=tar_file, plugin_path=plugin_path)
         return plugin_path
 
     def digest(self, package: str) -> str:
-        (image, plugin_path) = package.split('!')
+        """
+        Returns the digest of the OCI artifact using 'skopeo inspect'.
+        """
+        image, _ = package.split('!')
         image_url = image.replace('oci://', 'docker://')
         output = self.skopeo(['inspect', image_url])
         data = json.loads(output)
-        # OCI artifact digest field is defined as "hash method" ":" "hash"
+        # For example: 'Digest': 'sha256:3a033c...'
         digest = data['Digest'].split(':')[1]
         return f"{digest}"
 
-def verify_package_integrity(plugin: dict, archive: str, working_directory: str, cat_cmd, openssl_cmd) -> None:
+def verify_package_integrity(plugin: dict, archive: str, working_directory: str, openssl_cmd: str) -> None:
+    """
+    Verifies the integrity of the specified 'archive' based on plugin['integrity'],
+    which must be of the form <algorithm>-<base64digest>.
+    Uses: openssl dgst -<algorithm> -binary | openssl base64 -A
+    Compares the calculated base64 hash to the one provided in the plugin definition.
+    """
     package = plugin['package']
     if 'integrity' not in plugin:
         raise InstallException(f'Package integrity for {package} is missing')
@@ -150,55 +194,82 @@ def verify_package_integrity(plugin: dict, archive: str, working_directory: str,
     if not isinstance(integrity, str):
         raise InstallException(f'Package integrity for {package} must be a string')
 
-    integrity = integrity.split('-')
-    if len(integrity) != 2:
-        raise InstallException(f'Package integrity for {package} must be a string of the form <algorithm>-<hash>')
+    parts = integrity.split('-')
+    if len(parts) != 2:
+        raise InstallException(
+            f'Package integrity for {package} must be <algorithm>-<base64digest>'
+        )
 
-    algorithm = integrity[0]
+    algorithm, hash_digest = parts
     if algorithm not in RECOGNIZED_ALGORITHMS:
-        raise InstallException(f'{package}: Provided Package integrity algorithm {algorithm} is not supported, please use one of following algorithms {RECOGNIZED_ALGORITHMS} instead')
+        raise InstallException(
+            f'{package}: Provided Package integrity algorithm {algorithm} is not supported. '
+            f'Use one of: {RECOGNIZED_ALGORITHMS}'
+        )
 
-    hash_digest = integrity[1]
     try:
-      base64.b64decode(hash_digest, validate=True)
+        base64.b64decode(hash_digest, validate=True)
     except binascii.Error:
-      raise InstallException(f'{package}: Provided Package integrity hash {hash_digest} is not a valid base64 encoding')
+        raise InstallException(
+            f'{package}: The provided hash {hash_digest} is not valid base64'
+        )
 
-    # Use pre-validated commands from OciDownloader
-    cat_process = subprocess.Popen([cat_cmd, archive], stdout=subprocess.PIPE)
-    openssl_dgst_process = subprocess.Popen([openssl_cmd, "dgst", "-" + algorithm, "-binary"], stdin=cat_process.stdout, stdout=subprocess.PIPE)
-    openssl_base64_process = subprocess.Popen([openssl_cmd, "base64", "-A"], stdin=openssl_dgst_process.stdout, stdout=subprocess.PIPE)
+    # Instead of using 'cat', we open the file in Python and pipe its contents to openssl
+    with open(archive, 'rb') as archive_file:
+        # Equivalent to: cat archive | openssl dgst -<alg> -binary | openssl base64 -A
+        openssl_dgst_process = subprocess.Popen(
+            [openssl_cmd, 'dgst', f'-{algorithm}', '-binary'],
+            stdin=archive_file,
+            stdout=subprocess.PIPE
+        )
+        openssl_base64_process = subprocess.Popen(
+            [openssl_cmd, 'base64', '-A'],
+            stdin=openssl_dgst_process.stdout,
+            stdout=subprocess.PIPE
+        )
 
-    output, _ = openssl_base64_process.communicate()
-    if hash_digest != output.decode('utf-8').strip():
-      raise InstallException(f'{package}: The hash of the downloaded package {output.decode("utf-8").strip()} does not match the provided integrity hash {hash_digest} provided in the configuration file')
+        output, _ = openssl_base64_process.communicate()
+        calculated_hash = output.decode('utf-8').strip()
 
-# Create the lock file, so that other instances of the script will wait for this one to finish
+    if hash_digest != calculated_hash:
+        raise InstallException(
+            f'{package}: The archive hash {calculated_hash} does not match the integrity hash {hash_digest}'
+        )
+
 def create_lock(lock_file_path):
+    """
+    Creates a lock file. If the file already exists, waits until it is released.
+    """
     while True:
-      try:
-        with open(lock_file_path, 'x'):
-          logging.info(f"======= Created lock file: {lock_file_path}")
-          return
-      except FileExistsError:
-        wait_for_lock_release(lock_file_path)
+        try:
+            with open(lock_file_path, 'x'):
+                logging.info(f"======= Created lock file: {lock_file_path}")
+                return
+        except FileExistsError:
+            wait_for_lock_release(lock_file_path)
 
-# Remove the lock file
 def remove_lock(lock_file_path):
-   os.remove(lock_file_path)
-   logging.info(f"======= Removed lock file: {lock_file_path}")
+    """
+    Removes the lock file if it exists.
+    """
+    if os.path.exists(lock_file_path):
+        os.remove(lock_file_path)
+        logging.info(f"======= Removed lock file: {lock_file_path}")
 
-# Wait for the lock file to be released
 def wait_for_lock_release(lock_file_path):
-   logging.info(f"======= Waiting for lock release (file: {lock_file_path})...")
-   while True:
-     if not os.path.exists(lock_file_path):
-       break
-     time.sleep(1)
-   logging.info("======= Lock released.")
+    """
+    Waits for the specified lock file to be removed, indicating that another process has finished.
+    """
+    logging.info(f"======= Waiting for lock release (file: {lock_file_path})...")
+    while os.path.exists(lock_file_path):
+        time.sleep(1)
+    logging.info("======= Lock released.")
 
 def load_yaml(file_path):
-    """Load YAML content from a file."""
+    """
+    Loads YAML content from 'file_path'. Returns None if the file does not exist.
+    Raises InstallException if there's a parsing error.
+    """
     try:
         with open(file_path, 'r') as file:
             return yaml.safe_load(file)
