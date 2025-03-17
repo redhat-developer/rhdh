@@ -24,6 +24,7 @@ from enum import StrEnum
 from functools import lru_cache
 from pathlib import Path
 from typing import Dict, List, Any, Optional, Set, Tuple, Union
+import atexit
 
 # ------------------------------------------------------------------------------
 # Configuração de Logging
