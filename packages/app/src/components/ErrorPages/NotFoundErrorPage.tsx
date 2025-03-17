@@ -1,5 +1,7 @@
 import type { AppComponents } from '@backstage/core-plugin-api';
+
 import Button from '@mui/material/Button';
+
 import { ErrorPage } from './ErrorPage';
 
 export const NotFoundErrorPage: AppComponents['NotFoundErrorPage'] = ({
