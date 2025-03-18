@@ -11255,7 +11255,7 @@ __metadata:
     "@types/supertest": 6.0.2
     express: 4.21.2
     express-promise-router: 4.1.1
-    json-2-csv: 5.5.8
+    json-2-csv: 5.5.9
     knex: 3.1.0
     luxon: 3.5.0
     msw: 1.3.5
@@ -23371,7 +23371,7 @@ __metadata:
     global-agent: 3.0.0
     jose: 5.10.0
     prettier: 3.5.3
-    undici: 6.21.1
+    undici: 6.21.2
     winston: 3.14.2
     zod: 3.23.8
   languageName: unknown
@@ -33633,13 +33633,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"json-2-csv@npm:5.5.8":
-  version: 5.5.8
-  resolution: "json-2-csv@npm:5.5.8"
+"json-2-csv@npm:5.5.9":
+  version: 5.5.9
+  resolution: "json-2-csv@npm:5.5.9"
   dependencies:
     deeks: 3.1.0
     doc-path: 4.1.1
-  checksum: 0c8b247c7351c20ff79c775e0fdea923874f029c1b6b45f86d8719db3f34e60c72b753c682fcbdd77ae51a48c83bfce84ce11e739b442dcf2edaae47c404fe9b
+  checksum: ad9cd8d399061438b4085fe7f12d163fbb4447433dbfe01e175e5cd764c4668abffbc0b5380af395eaf0cfff28609ee6c4d32ba0d230d7c09bc23bef05edcf92
   languageName: node
   linkType: hard
 
@@ -45372,10 +45372,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici@npm:6.21.1":
-  version: 6.21.1
-  resolution: "undici@npm:6.21.1"
-  checksum: 2efc52f77224754a2efa7cb6459829f3c93c8321d17e76f574a904b353783d95073b6116f5b15637c4845d98c9dc5a019b809cb9d63b3529267e7727c49f6996
+"undici@npm:6.21.2":
+  version: 6.21.2
+  resolution: "undici@npm:6.21.2"
+  checksum: 4d7227910bfee0703ea5c5c9d4343bcb2a80d2ce2eb64698b6fb8cc48852e29f7c7c623126161a5073fd594c9040ae7e7ecc8e093fe6e84a9394dd2595754ec5
   languageName: node
   linkType: hard
 

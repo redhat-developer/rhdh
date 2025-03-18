@@ -844,6 +844,8 @@ initiate_deployments() {
 # install base RHDH deployment before upgrade
 initiate_upgrade_base_deployments() {
   echo "Initiating base RHDH deployment before upgrade"
+
+  configure_namespace ${NAME_SPACE}
   
   # Deploy redis cache db.
   oc apply -f "$DIR/resources/redis-cache/redis-deployment.yaml" --namespace="${NAME_SPACE}"
@@ -851,7 +853,7 @@ initiate_upgrade_base_deployments() {
   cd "${DIR}"
   local rhdh_base_url="https://${RELEASE_NAME}-backstage-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
-  echo "Deploying image from repository: ${QUAY_REPO_BASE}, TAG_NAME: ${TAG_NAME_BASE}, in NAME_SPACE: ${NAME_SPACE}"
+  echo "Deploying image from base repository: ${QUAY_REPO_BASE}, TAG_NAME_BASE: ${TAG_NAME_BASE}, in NAME_SPACE: ${NAME_SPACE}"
   
   helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
     "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" --version "${CHART_VERSION_BASE}" \
