@@ -121,7 +121,7 @@ upstream:
           externalAccess:
             - type: static
               options:
-                token: "somecicdtoken"
+                token: ${STATIC_API_TOKEN}
                 subject: e2e-tests-ci
     extraEnvVarsSecrets:
       - rhdh-secrets

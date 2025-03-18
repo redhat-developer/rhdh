@@ -280,7 +280,7 @@ The easiest and fastest method for getting started: RHDH app, running it locally
      - This [URL](https://github.com/backstage/community-plugins/tree/main/workspaces/dynatrace/plugins/dynatrace#getting-started) explains how to use the Dynatrace Plugin
      - `${DYNATRACE_URL}`: The baseURL for rendering links to problems in the table
      - `${DYNATRACE_API_URL}`: The URL to the Dynatrace API
-     - `{DYNATRACE_ACCESS_TOKEN}`: API access token (see [documentation](https://www.dynatrace.com/support/help/dynatrace-api/basics/dynatrace-api-authentication)) with `entities.read`,`problems.read` permissions. It will also need one of the following permissions: `DataExport`, `ExternalSyntheticIntegration`, or `ReadSyntheticData`.
+     - `{DYNATRACE_ACCESS_TOKEN}`: API access token (see [documentation](https://docs.dynatrace.com/docs/discover-dynatrace/references/dynatrace-api/basics/dynatrace-api-authentication)) with `entities.read`,`problems.read` permissions. It will also need one of the following permissions: `DataExport`, `ExternalSyntheticIntegration`, or `ReadSyntheticData`.
 
    - Enabling Authentication in Showcase
 

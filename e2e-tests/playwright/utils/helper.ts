@@ -306,6 +306,9 @@ export async function ensureEnvSecretExists(
     AUTH_PROVIDERS_GH_ADMIN_2FA: Buffer.from(
       constants.AUTH_PROVIDERS_GH_ADMIN_2FA,
     ).toString("base64"),
+    STATIC_API_TOKEN: Buffer.from(constants.STATIC_API_TOKEN).toString(
+      "base64",
+    ),
   };
   const secret: V1Secret = {
     metadata: {

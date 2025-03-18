@@ -5,7 +5,7 @@ metadata:
   name: gitlab-scaffolder-actions
   namespace: rhdh
   title: GitLab Software Template Actions
-  description: View GitLab pipelines, merge requests, languages and contributors.
+  description: Software template actions for working with GitLab
   annotations:
     extensions.backstage.io/pre-installed: 'true'
   tags:
@@ -13,15 +13,21 @@ metadata:
     - cd
     - gitlab
   links:
-    - url: https://github.com/immobiliare/backstage-plugin-gitlab
-      title: Documentation
+    - title: Homepage
+      url: https://red.ht/rhdh
+    - title: Bugs
+      url: https://issues.redhat.com/browse/RHIDP
+    - title: Documentation for Red Hat Developer Hub
+      url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
+    - title: Source Code
+      url: https://github.com/backstage/backstage/tree/master/plugins/scaffolder-backend-module-gitlab
 spec:
-  authors:
-    - name: ImmobiliareLabs
-      url: https://github.com/immobiliare
-
+  author: Backstage Community
+  support: tech-preview
+  lifecycle: active
+  publisher: Red Hat
   categories:
-    - CI/CD
+    - Source Control
 
   icon: data:image/svg+xml;base64,
     PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjgg
@@ -46,14 +52,35 @@ spec:
     LjcxNmwuMDU5LjA0Ni4xNTcuMTExIDI2LjA2MSAxOS41MTZMNjQgODkuNjU1IDI2LjQyIDYxLjI3
     MXoiLz48L3N2Zz4=
 
+  description: |
+    Collection of software template actions for working with GitLab.
+
+    Provided actions:
+
+    - publish:gitlab
+    - gitlab:group:ensureExists
+    - gitlab:issues:create
+    - publish:gitlab:merge-request
+    - gitlab:pipeline:trigger
+    - gitlab:projectAccessToken:create
+    - gitlab:projectDeployToken:create
+    - gitlab:group:migrate
+    - gitlab:projectVariable:create
+    - gitlab:repo:push
+
+    ## Adding The Plugin To Red Hat Developer Hub
+
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further instructions on how to add, enable, configure, and remove plugins in your instance.
+
+    ## Configuring The Plugin ##
+
+    Plugins often need additional configuration to work correctly - particularly those that integrate with other
+    systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further details regarding the configuration required.
+
+
+
   packages:
     - backstage-plugin-scaffolder-backend-module-gitlab
-    - immobiliarelabs-backstage-plugin-gitlab
-    - immobiliarelabs-backstage-plugin-gitlab-backend
 
-  # unused yet
-  # assets:
-  #   iconUrl: https://about.gitlab.com/images/press/logo/png/gitlab-icon-rgb.png
-
-  history:
-    added: '2021-08-17'
