@@ -23,7 +23,7 @@ test.describe("Test Kubernetes Actions plugin", () => {
 
   test("Creates kubernetes namespace", async () => {
     namespace = `test-kubernetes-actions-${Date.now()}`;
-    await uiHelper.verifyHeading("Software Templates");
+    await uiHelper.verifyHeading("Self-service");
     await uiHelper.clickBtnInCard("Create a kubernetes namespace", "Choose");
     await uiHelper.waitForTitle("Create a kubernetes namespace", 2);
 

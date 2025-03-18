@@ -31,9 +31,9 @@ test.describe("Default Global Header", () => {
     expect(await uiHelper.isBtnVisible("Settings")).toBeFalsy();
   });
 
-  test("Verify that clicking on Self-service button opens the Software Templates page", async () => {
+  test("Verify that clicking on Self-service button opens the Templates page", async () => {
     await uiHelper.clickLink({ ariaLabel: "Self-service" });
-    await uiHelper.verifyHeading("Software Templates");
+    await uiHelper.verifyHeading("Self-service");
   });
 
   test("Verify that clicking on Support button opens a new tab", async ({
