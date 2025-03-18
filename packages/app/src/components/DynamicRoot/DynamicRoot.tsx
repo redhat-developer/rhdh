@@ -20,7 +20,7 @@ import extractDynamicConfig, {
   DynamicRoute,
 } from '../../utils/dynamicUI/extractDynamicConfig';
 import initializeRemotePlugins from '../../utils/dynamicUI/initializeRemotePlugins';
-import { catalogTranslations } from '../catalog/catalog-translations/catalog';
+import { catalogTranslations } from '../catalog/translations/catalog';
 import { MenuIcon } from '../Root/MenuIcon';
 import CommonIcons from './CommonIcons';
 import defaultAppComponents from './defaultAppComponents';

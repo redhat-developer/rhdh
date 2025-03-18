@@ -1,6 +1,5 @@
 export type SidebarTabs =
   | "Catalog"
-  | "Self-service"
   | "Settings"
   | "My Group"
   | "Home"
