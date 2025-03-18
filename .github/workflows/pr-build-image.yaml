@@ -1,3 +1,17 @@
+# Copyright Red Hat, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 name: PR Build Image
 
 on:
@@ -19,12 +33,15 @@ jobs:
     outputs:
       image_exists: ${{ steps.check-image.outputs.image_exists }}
       relevant_changes: ${{ steps.check-image.outputs.relevant_changes }}
-      short_sha: ${{ steps.check-image.outputs.short_sha }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Get the last commit short SHA
+        id: get-sha
+        uses: ./.github/actions/get-sha
 
       - name: Check Image and Relevant Changes
         id: check-image
@@ -33,7 +50,6 @@ jobs:
   build-image:
     name: Build Image
     needs: check-image
-    if: ${{ needs.check-image.outputs.relevant_changes == 'true' || needs.check-image.outputs.image_exists == 'false' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -47,6 +63,13 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
+
+      - name: Check if build should be skipped
+        run: |
+          if [[ "${{ needs.check-image.outputs.relevant_changes }}" == "false" && "${{ needs.check-image.outputs.image_exists }}" == "true" ]]; then
+            echo "::notice::Skipping build: Image already exists and no relevant changes detected."
+            exit 0
+          fi
 
       - name: Get the latest commits from base branch
         run: |
@@ -65,7 +88,7 @@ jobs:
           password: ${{ secrets.QUAY_TOKEN }}
           imageName: rhdh-community/rhdh
           imageTags: |
-            type=ref,prefix=pr-,suffix=-${{ needs.check-image.outputs.short_sha }},event=pr
+            type=ref,prefix=pr-,suffix=-${{ env.SHORT_SHA }},event=pr
             type=ref,prefix=pr-,event=pr
           imageLabels: quay.expires-after=14d
           push: true
@@ -79,15 +102,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: 'The image is available at:\n* [`quay.io/rhdh-community/rhdh:pr-${{ github.event.number }}`](https://quay.io/rhdh-community/rhdh:pr-${{ github.event.number }}) or\n* [`quay.io/rhdh-community/rhdh:pr-${{ github.event.number }}-${{ needs.check-image.outputs.short_sha }}`](https://quay.io/rhdh-community/rhdh:pr-${{ github.event.number }}-${{ needs.check-image.outputs.short_sha }})'
+              body: 'The image is available at:\n* [`quay.io/rhdh-community/rhdh:pr-${{ github.event.number }}`](https://quay.io/rhdh-community/rhdh:pr-${{ github.event.number }}) or\n* [`quay.io/rhdh-community/rhdh:pr-${{ github.event.number }}-${{ env.SHORT_SHA }}`](https://quay.io/rhdh-community/rhdh:pr-${{ github.event.number }}-${{ env.SHORT_SHA }})'
             })
-
-  skip-build:
-    name: Skip Build Notification
-    needs: check-image
-    if: ${{ needs.check-image.outputs.relevant_changes == 'false' && needs.check-image.outputs.image_exists == 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Skip build notification
-        run: |
-          echo "::notice::Skipping build: Image already exists and no relevant changes detected."

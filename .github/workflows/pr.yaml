@@ -37,7 +37,7 @@ jobs:
         uses: ./.github/actions/check-image-and-changes
 
   linting:
-    name: Run Linting & Prettier
+    name: Checkout, install deps, run lint and prettier checks
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -66,7 +66,6 @@ jobs:
     name: Build with Node.js ${{ matrix.node-version }}
     runs-on: ubuntu-latest
     needs: check-image
-    if: always()
     strategy:
       matrix:
         node-version: [22]
