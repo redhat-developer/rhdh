@@ -843,6 +843,8 @@ initiate_deployments() {
 # install base RHDH deployment before upgrade
 initiate_upgrade_base_deployments() {
   echo "Initiating base RHDH deployment before upgrade"
+
+  configure_namespace ${NAME_SPACE}
   
   # Deploy redis cache db.
   oc apply -f "$DIR/resources/redis-cache/redis-deployment.yaml" --namespace="${NAME_SPACE}"
