@@ -37,20 +37,21 @@ save_all_pod_logs(){
 
 droute_send() {
   if [[ "${OPENSHIFT_CI}" != "true" ]]; then return 0; fi
-  temp_kubeconfig=$(mktemp) # Create temporary KUBECONFIG to open second `oc` session
-  ( # Open subshell
+    local original_context=$(oc config current-context) # Save original context
     if [ -n "${PULL_NUMBER:-}" ]; then
       set +e
     fi
-    export KUBECONFIG="$temp_kubeconfig"
     local droute_version="1.2.2"
     local release_name=$1
     local project=$2
     local droute_project="droute"
     local metadata_output="data_router_metadata_output.json"
 
-    oc login --token="${RHDH_PR_OS_CLUSTER_TOKEN}" --server="${RHDH_PR_OS_CLUSTER_URL}"
+    oc config set-credentials temp-user --token="${RHDH_PR_OS_CLUSTER_TOKEN}"
+    oc config set-cluster temp-cluster --server="${RHDH_PR_OS_CLUSTER_URL}"
+    oc config set-context temp-context --user=temp-user --cluster=temp-cluster
     oc whoami --show-server
+
     local droute_pod_name=$(oc get pods -n droute --no-headers -o custom-columns=":metadata.name" | grep ubi9-cert-rsync)
     local temp_droute=$(oc exec -n "${droute_project}" "${droute_pod_name}" -- /bin/bash -c "mktemp -d")
 
@@ -179,8 +180,7 @@ droute_send() {
     if [ -n "${PULL_NUMBER:-}" ]; then
       set -e
     fi
-  ) # Close subshell
-  rm -f "$temp_kubeconfig" # Destroy temporary KUBECONFIG
+  oc config use-context "$original_context" # Restore original context
   oc whoami --show-server
 }
 
