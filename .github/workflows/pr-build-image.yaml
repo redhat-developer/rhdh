@@ -27,29 +27,8 @@ env:
   REGISTRY: quay.io
 
 jobs:
-  check-image:
-    name: Check Image and Relevant Changes
-    runs-on: ubuntu-latest
-    outputs:
-      image_exists: ${{ steps.check-image.outputs.image_exists }}
-      relevant_changes: ${{ steps.check-image.outputs.relevant_changes }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Get the last commit short SHA
-        id: get-sha
-        uses: ./.github/actions/get-sha
-
-      - name: Check Image and Relevant Changes
-        id: check-image
-        uses: ./.github/actions/check-image-and-changes
-
   build-image:
     name: Build Image
-    needs: check-image
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -64,9 +43,13 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
 
+      - name: Check Image and Relevant Changes
+        id: check-image
+        uses: ./.github/actions/check-image-and-changes
+
       - name: Check if build should be skipped
         run: |
-          if [[ "${{ needs.check-image.outputs.relevant_changes }}" == "false" && "${{ needs.check-image.outputs.image_exists }}" == "true" ]]; then
+          if [[ "${{ steps.check-image.outputs.relevant_changes }}" == "false" && "${{ steps.check-image.outputs.image_exists }}" == "true" ]]; then
             echo "::notice::Skipping build: Image already exists and no relevant changes detected."
             exit 0
           fi
@@ -88,7 +71,7 @@ jobs:
           password: ${{ secrets.QUAY_TOKEN }}
           imageName: rhdh-community/rhdh
           imageTags: |
-            type=ref,prefix=pr-,suffix=-${{ env.SHORT_SHA }},event=pr
+            type=ref,prefix=pr-,suffix=-${{ steps.check-image.outputs.short_sha }},event=pr
             type=ref,prefix=pr-,event=pr
           imageLabels: quay.expires-after=14d
           push: true
@@ -102,5 +85,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: 'The image is available at:\n* [`quay.io/rhdh-community/rhdh:pr-${{ github.event.number }}`](https://quay.io/rhdh-community/rhdh:pr-${{ github.event.number }}) or\n* [`quay.io/rhdh-community/rhdh:pr-${{ github.event.number }}-${{ env.SHORT_SHA }}`](https://quay.io/rhdh-community/rhdh:pr-${{ github.event.number }}-${{ env.SHORT_SHA }})'
+              body: 'The image is available at:\n* [`quay.io/rhdh-community/rhdh:pr-${{ github.event.number }}`](https://quay.io/rhdh-community/rhdh:pr-${{ github.event.number }}) or\n* [`quay.io/rhdh-community/rhdh:pr-${{ github.event.number }}-${{ steps.check-image.outputs.short_sha }}`](https://quay.io/rhdh-community/rhdh:pr-${{ github.event.number }}-${{ steps.check-image.outputs.short_sha }})'
             })
