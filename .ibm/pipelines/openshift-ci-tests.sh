@@ -1,5 +1,5 @@
 #!/bin/bash
-
+ 
 set -e
 export PS4='[$(date "+%Y-%m-%d %H:%M:%S")] ' # logs timestamp for every cmd.
 
