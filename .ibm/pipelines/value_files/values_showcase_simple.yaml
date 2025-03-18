@@ -1,0 +1,105 @@
+global:
+  dynamic:
+    # -- Array of YAML files listing dynamic plugins to include with those listed in the `plugins` field.
+    # Relative paths are resolved from the working directory of the initContainer that will install the plugins (`/opt/app-root/src`).
+    includes:
+      # -- List of dynamic plugins included inside the `rhdh-community/rhdh` container image, some of which are disabled by default.
+      # This file ONLY works with the `rhdh-community/rhdh` container image.
+      - 'dynamic-plugins.default.yaml'
+
+    # -- List of dynamic plugins, possibly overriding the plugins listed in `includes` files.
+    # Every item defines the plugin `package` as a [NPM package spec](https://docs.npmjs.com/cli/v10/using-npm/package-spec),
+    # an optional `pluginConfig` with plugin-specific backstage configuration, and an optional `disabled` flag to disable/enable a plugin
+    # listed in `includes` files. It also includes an `integrity` field that is used to verify the plugin package [integrity](https://w3c.github.io/webappsec-subresource-integrity/#integrity-metadata-description).
+    plugins: []
+
+# -- Upstream Backstage [chart configuration](https://github.com/backstage/charts/blob/main/charts/backstage/values.yaml)
+upstream:
+  nameOverride: backstage
+  commonLabels:
+    backstage.io/kubernetes-id: developer-hub
+  backstage:
+    appConfig:
+      backend:
+        auth:
+          dangerouslyDisableDefaultAuthPolicy: true
+          externalAccess:
+            - type: static
+              options:
+                token: test-token
+                subject: test-subject
+    image:
+      pullPolicy: Always
+      registry: quay.io
+      repository: rhdh-community/rhdh
+      tag: next
+    extraEnvVars:
+      - name: BACKEND_SECRET
+        valueFrom:
+          secretKeyRef:
+            key: backend-secret
+            name: '{{ include "janus-idp.backend-secret-name" $ }}'
+      - name: POSTGRESQL_ADMIN_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            key: postgres-password
+            name: '{{ .Release.Name }}-postgresql'
+      # disable telemetry in CI
+      - name: SEGMENT_TEST_MODE
+        value: 'true'
+      - name: NODE_TLS_REJECT_UNAUTHORIZED
+        value: '0'
+    extraAppConfig:
+      - configMapRef: app-config-rhdh
+        filename: app-config-rhdh.yaml
+      - configMapRef: dynamic-homepage-and-sidebar-config
+        filename: dynamic-homepage-and-sidebar-config.yaml
+      - configMapRef: dynamic-global-floating-action-button-config
+        filename: dynamic-global-floating-action-button-config.yaml
+      - configMapRef: dynamic-global-header-config
+        filename: dynamic-global-header-config.yaml
+    startupProbe:
+      # This gives enough time upon container startup before the liveness and readiness probes are triggered.
+      # Giving (120s = initialDelaySeconds + failureThreshold * periodSeconds) to account for the worst case scenario.
+      httpGet:
+        path: /.backstage/health/v1/liveness
+        port: backend
+        scheme: HTTP
+      initialDelaySeconds: 30
+      timeoutSeconds: 4
+      periodSeconds: 20
+      successThreshold: 1
+      failureThreshold: 3
+    readinessProbe:
+      failureThreshold: 3
+      httpGet:
+        path: /.backstage/health/v1/readiness
+        port: backend
+        scheme: HTTP
+      # Both liveness and readiness probes won't be triggered until the startup probe is successful.
+      # The startup probe is already configured to give enough time for the application to be started.
+      # So removing the additional delay here allows the readiness probe to be checked right away after the startup probe,
+      # which helps make the application available faster to the end-user.
+      # initialDelaySeconds: 30
+      periodSeconds: 10
+      successThreshold: 2
+      timeoutSeconds: 4
+    livenessProbe:
+      failureThreshold: 3
+      httpGet:
+        path: /.backstage/health/v1/liveness
+        port: backend
+        scheme: HTTP
+      # Both liveness and readiness probes won't be triggered until the startup probe is successful.
+      # The startup probe is already configured to give enough time for the application to be started.
+      # So removing the additional delay here allows the liveness probe to be checked right away after the startup probe,
+      # which helps make the application available faster to the end-user.
+      # initialDelaySeconds: 60
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 4
+    extraEnvVarsSecrets:
+      - rhdh-secrets
+      - redis-secret
+  ingress:
+    host: '{{ .Values.global.host }}'

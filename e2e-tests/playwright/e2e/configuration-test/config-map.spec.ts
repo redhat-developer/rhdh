@@ -4,15 +4,20 @@ import { LOGGER } from "../../utils/logger";
 import { Common } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
 
-test.describe.skip("Change app-config at e2e test runtime", () => {
+test.describe("Change app-config at e2e test runtime", () => {
   test("Verify title change after ConfigMap modification", async ({ page }) => {
     test.setTimeout(300000); // Increasing to 5 minutes
 
-    const configMapName = "rhdh-backstage-app-config";
+    const configMapName = "app-config-rhdh";
+    // const configMapName = "rhdh-backstage-app-config";
     const namespace = process.env.NAME_SPACE_RUNTIME || "showcase-runtime";
+    // const namespace = "showcase-ci-nightly";
+    // const namespace = "showcase-runtime";
     const deploymentName = "rhdh-backstage";
 
-    const kubeUtils = new KubeClient();
+    // const kubeUtils = await KubeClient.create();
+    const kubeUtils = await new KubeClient();
+
     const dynamicTitle = generateDynamicTitle();
     const uiHelper = new UIhelper(page);
     try {
@@ -54,3 +59,4 @@ function generateDynamicTitle() {
   const timestamp = new Date().toISOString().replace(/[-:.]/g, "");
   return `New Title - ${timestamp}`;
 }
+
