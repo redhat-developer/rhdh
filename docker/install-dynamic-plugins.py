@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Script para instalar plugins dinâmicos a partir de imagens OCI ou pacotes NPM.
-Otimizado para contêineres Kubernetes com foco em confiabilidade e diagnóstico.
+Script para instalar plugins dinâmicos a partir de imagens OCI ou pacotes NPM,
+agora com instalação paralela via ThreadPoolExecutor.
 """
 
 import base64
@@ -23,8 +23,9 @@ import yaml
 from enum import StrEnum
 from functools import lru_cache
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Set, Tuple, Union
+from typing import Dict, List, Any, Optional, Tuple, Union
 import atexit
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # ------------------------------------------------------------------------------
 # Configuração de Logging
@@ -68,27 +69,21 @@ class OptimizedLogger:
 
                 self.info(f"Log file created at: {self.log_file}")
             except Exception as e:
-                # Falha silenciosamente mas continua com logging no console
                 self.logger.warning(f"Could not set up file logging: {e}")
 
     def info(self, msg, *args, **kwargs):
-        """Log com nível INFO."""
         self.logger.info(msg, *args, **kwargs)
 
     def warning(self, msg, *args, **kwargs):
-        """Log com nível WARNING."""
         self.logger.warning(msg, *args, **kwargs)
 
     def error(self, msg, *args, **kwargs):
-        """Log com nível ERROR."""
         self.logger.error(msg, *args, **kwargs)
 
     def debug(self, msg, *args, **kwargs):
-        """Log com nível DEBUG."""
         self.logger.debug(msg, *args, **kwargs)
 
     def critical(self, msg, *args, **kwargs):
-        """Log com nível CRITICAL."""
         self.logger.critical(msg, *args, **kwargs)
 
     def log_system_info(self):
@@ -98,7 +93,6 @@ class OptimizedLogger:
         self.info(f"  Hostname: {os.environ.get('HOSTNAME', 'unknown')}")
         self.info(f"  Time: {datetime.now().isoformat()}")
 
-        # Informações específicas do Kubernetes se disponíveis
         if os.path.exists('/var/run/secrets/kubernetes.io/serviceaccount'):
             try:
                 with open('/var/run/secrets/kubernetes.io/serviceaccount/namespace', 'r') as f:
@@ -107,7 +101,6 @@ class OptimizedLogger:
             except Exception:
                 pass
 
-        # Informações de sistema
         try:
             import platform
             self.info(f"  Python version: {platform.python_version()}")
@@ -127,7 +120,6 @@ class OptimizedLogger:
         if self.log_file:
             self.info(f"Full logs available at: {self.log_file}")
 
-# Inicializa logger global para uso durante importação do módulo
 logger = OptimizedLogger()
 
 # ------------------------------------------------------------------------------
@@ -142,7 +134,6 @@ class InstallException(Exception):
     """Exceção base para erros neste script."""
     pass
 
-# Algoritmos de hash suportados para verificação de integridade
 RECOGNIZED_ALGORITHMS = frozenset(['sha512', 'sha384', 'sha256'])
 
 # ------------------------------------------------------------------------------
@@ -150,10 +141,6 @@ RECOGNIZED_ALGORITHMS = frozenset(['sha512', 'sha384', 'sha256'])
 # ------------------------------------------------------------------------------
 
 def merge(source: Dict[str, Any], destination: Dict[str, Any], prefix: str = '') -> Dict[str, Any]:
-    """
-    Faz merge recursivo do dicionário 'source' em 'destination'.
-    Se encontrar chave com valor conflitante, lança InstallException.
-    """
     for key, value in source.items():
         if isinstance(value, dict):
             node = destination.setdefault(key, {})
@@ -167,46 +154,33 @@ def merge(source: Dict[str, Any], destination: Dict[str, Any], prefix: str = '')
     return destination
 
 def maybe_merge_config(config: Optional[Dict[str, Any]], global_config: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Se 'config' for dict, faz merge no 'globalConfig'; caso contrário, retorna 'globalConfig' inalterado.
-    """
     if config is not None and isinstance(config, dict):
         logger.info('\t==> Merging plugin-specific configuration')
         return merge(config, global_config)
     return global_config
 
-def check_prerequisites() -> Tuple[str, ...]:
-    """
-    Verifica e retorna o caminho de ferramentas necessárias.
-    Lança InstallException se alguma não estiver disponível.
-    """
+def check_prerequisites() -> Dict[str, str]:
     required_tools = {
         'skopeo': "Skopeo is required for OCI image handling",
         'npm': "NPM is required for NPM package handling"
     }
+    found = {}
     missing = []
-    found_tools = {}
-
-    for tool, description in required_tools.items():
+    for tool, desc in required_tools.items():
         path = shutil.which(tool)
         if path:
-            found_tools[tool] = path
+            found[tool] = path
         else:
-            missing.append(f"- {tool}: {description}")
-
+            missing.append(f"- {tool}: {desc}")
     if missing:
-        raise InstallException(f"Required tools not found in PATH:\n" + "\n".join(missing))
-
-    return found_tools
+        raise InstallException("Required tools not found:\n" + "\n".join(missing))
+    return found
 
 # ------------------------------------------------------------------------------
 # Funções de Lock
 # ------------------------------------------------------------------------------
 
 def create_lock(lock_file_path: Union[str, Path]):
-    """
-    Cria arquivo de lock. Se já existir, aguarda até ele ser liberado.
-    """
     lock_path = Path(lock_file_path)
     while True:
         try:
@@ -217,36 +191,25 @@ def create_lock(lock_file_path: Union[str, Path]):
             wait_for_lock_release(lock_path)
 
 def remove_lock(lock_file_path: Union[str, Path]):
-    """
-    Remove o lock file, se existir.
-    """
     lock_path = Path(lock_file_path)
     if lock_path.exists():
         try:
             lock_path.unlink()
             logger.info(f"======= Removed lock file: {lock_path}")
         except OSError as e:
-            logger.warning(f"======= Failed to remove lock file: {e}")
+            logger.warning(f"Failed to remove lock file: {e}")
 
-def wait_for_lock_release(lock_file_path: Union[str, Path]):
-    """
-    Fica em loop até o arquivo de lock ser removido, com detecção de locks obsoletos.
-    """
-    lock_path = Path(lock_file_path)
+def wait_for_lock_release(lock_path: Path):
     logger.info(f"======= Waiting for lock release (file: {lock_path})...")
-
     start_time = time.time()
-    timeout = 300  # 5 minutos
+    timeout = 300  # 5 minutos de timeout
 
     while lock_path.exists():
         time.sleep(1)
-
-        # Verificar timeout
         if time.time() - start_time > timeout:
-            logger.warning(f"Lock wait timeout after {timeout}s - may be stale, removing")
+            logger.warning(f"Lock wait timed out after {timeout}s - removing stale lock.")
             remove_lock(lock_path)
             break
-
     logger.info("======= Lock released.")
 
 # ------------------------------------------------------------------------------
@@ -254,21 +217,15 @@ def wait_for_lock_release(lock_file_path: Union[str, Path]):
 # ------------------------------------------------------------------------------
 
 def load_yaml(file_path: Union[str, Path]) -> Optional[Any]:
-    """
-    Carrega o conteúdo YAML de 'file_path'.
-    Retorna None se o arquivo não existir.
-    Lança InstallException em caso de erros de parsing.
-    """
-    path = Path(file_path)
-    if not path.is_file():
-        logger.warning(f"File not found: {path}")
+    p = Path(file_path)
+    if not p.is_file():
+        logger.warning(f"File not found: {p}")
         return None
-
     try:
-        with path.open('r') as file:
-            return yaml.safe_load(file)
+        with p.open('r') as f:
+            return yaml.safe_load(f)
     except yaml.YAMLError as e:
-        raise InstallException(f"Error parsing YAML file {path}: {e}")
+        raise InstallException(f"Error parsing YAML file {p}: {e}")
 
 # ------------------------------------------------------------------------------
 # OCI Downloader com otimizações
@@ -276,27 +233,17 @@ def load_yaml(file_path: Union[str, Path]) -> Optional[Any]:
 
 class OciDownloader:
     def __init__(self, destination: Union[str, Path], tools: Dict[str, str]):
-        """
-        Inicializa o OciDownloader com ferramentas validadas.
-
-        Args:
-            destination: Diretório onde os plugins serão extraídos
-            tools: Dicionário com caminhos para ferramentas necessárias
-        """
         self._skopeo = tools.get('skopeo')
         if not self._skopeo:
-            raise InstallException('skopeo executable not found in PATH')
+            raise InstallException('skopeo not in PATH')
 
         self.tmp_dir_obj = tempfile.TemporaryDirectory()
         self.tmp_dir = Path(self.tmp_dir_obj.name)
-        self.image_to_tarball: Dict[str, Path] = {}
+        self.image_to_tarball = {}
         self.destination = Path(destination)
-        self._digest_cache: Dict[str, str] = {}
+        self._digest_cache = {}
 
     def skopeo(self, command: List[str]) -> str:
-        """
-        Executa 'skopeo' com os argumentos especificados e retorna stdout.
-        """
         try:
             result = subprocess.run(
                 [self._skopeo] + command,
@@ -306,21 +253,18 @@ class OciDownloader:
             )
             return result.stdout
         except subprocess.CalledProcessError as e:
-            error_msg = f'Error while running skopeo command: {e.stderr}'
-            logger.error(error_msg)
-            raise InstallException(error_msg)
+            msg = f"Error running skopeo: {e.stderr}"
+            logger.error(msg)
+            raise InstallException(msg)
 
     def get_plugin_tar(self, image: str) -> Path:
-        """
-        Faz o download da imagem (se ainda não feito), usando skopeo, e retorna o caminho local ao tar.
-        """
         if image in self.image_to_tarball:
             return self.image_to_tarball[image]
 
         logger.info(f'\t==> Copying image {image} to local filesystem')
-        image_digest = hashlib.sha256(image.encode('utf-8'), usedforsecurity=False).hexdigest()
+        digest = hashlib.sha256(image.encode('utf-8'), usedforsecurity=False).hexdigest()
+        local_dir = self.tmp_dir / digest
 
-        local_dir = self.tmp_dir / image_digest
         image_url = image.replace('oci://', 'docker://')
         self.skopeo(['copy', image_url, f'dir:{local_dir}'])
 
@@ -328,164 +272,112 @@ class OciDownloader:
         with manifest_path.open('r') as f:
             manifest = json.load(f)
 
-        layer_digest = manifest['layers'][0]['digest']
-        _, filename = layer_digest.split(':')
-        local_path = local_dir / filename
+        layer_digest = manifest['layers'][0]['digest'].split(':')[1]
+        local_path = local_dir / layer_digest
         self.image_to_tarball[image] = local_path
         return local_path
 
-    def extract_plugin(self, tar_file: Path, plugin_path: str) -> None:
-        """
-        Extrai apenas arquivos que começam com 'plugin_path' do tar.gz,
-        verificando tamanho (anti zip-bomb) e possíveis links fora do escopo.
-        """
+    def extract_plugin(self, tar_file: Path, plugin_path: str):
         extracted_path = self.destination.absolute()
         max_size = int(os.environ.get('MAX_ENTRY_SIZE', 20000000))
 
         with tarfile.open(tar_file, 'r:gz') as tar:
-            members_to_extract = []
+            members = []
             for member in tar.getmembers():
                 if not member.name.startswith(plugin_path):
                     continue
-
                 if member.size > max_size:
-                    raise InstallException(f'Zip bomb detected in {member.name}')
-
+                    raise InstallException(f'Zip bomb in {member.name}')
                 if member.islnk() or member.issym():
-                    realpath = Path(extracted_path / plugin_path).joinpath(
-                        *Path(member.linkname).parts).resolve()
-
+                    realpath = (extracted_path / plugin_path).joinpath(*Path(member.linkname).parts).resolve()
                     if not str(realpath).startswith(str(extracted_path)):
                         logger.warning(
-                            f'\t==> WARNING: skipping file containing link outside of the archive: '
-                            f'{member.name} -> {member.linkpath}'
+                            f'\t==> WARNING: skipping symlink outside: {member.name} -> {member.linkpath}'
                         )
                         continue
-
-                members_to_extract.append(member)
-
-            # Extração em batch é mais eficiente
-            if members_to_extract:
-                tar.extractall(extracted_path, members=members_to_extract, filter='tar')
+                members.append(member)
+            tar.extractall(extracted_path, members=members, filter='tar')
 
     def download(self, package: str) -> str:
-        """
-        Recebe algo como 'oci://repo/img!path_no_tar' e extrai só o diretório path_no_tar no destino.
-        Retorna plugin_path.
-        """
         image, plugin_path = package.split('!')
-        tar_file = self.get_plugin_tar(image)
+        tar_path = self.get_plugin_tar(image)
 
-        plugin_directory = self.destination / plugin_path
-        if plugin_directory.exists():
-            logger.info(f'\t==> Removing previous plugin directory {plugin_directory}')
-            try:
-                shutil.rmtree(plugin_directory)
-            except OSError as e:
-                logger.warning(f'\t==> Could not remove directory: {e}, trying alternative method')
-                # Tentar removê-lo forçadamente se o método normal falhar
-                try:
-                    os.system(f'rm -rf "{plugin_directory}"')
-                except Exception as e2:
-                    raise InstallException(f"Failed to remove directory {plugin_directory}: {e2}")
+        plugin_dir = self.destination / plugin_path
+        if plugin_dir.exists():
+            logger.info(f'\t==> Removing previous plugin directory {plugin_dir}')
+            shutil.rmtree(plugin_dir, ignore_errors=True)
 
-        self.extract_plugin(tar_file=tar_file, plugin_path=plugin_path)
+        self.extract_plugin(tar_path, plugin_path)
         return plugin_path
 
     def digest(self, package: str) -> str:
-        """
-        Retorna o digest da imagem OCI usando 'skopeo inspect' com cache.
-        """
         image, _ = package.split('!')
-
-        # Verificar cache primeiro
         if image in self._digest_cache:
             return self._digest_cache[image]
 
+        image_url = image.replace('oci://', 'docker://')
+        output = self.skopeo(['inspect', image_url])
+        data = json.loads(output)
+        result = data['Digest'].split(':')[1]
+        self._digest_cache[image] = result
+        return result
 
 # ------------------------------------------------------------------------------
-# Verificação de Integridade
+# Verificação de Integridade com hashlib (sem openssl)
 # ------------------------------------------------------------------------------
-def verify_package_integrity(plugin: dict, archive: Union[str, Path], logger=None) -> None:
-    """
-    Verifica a integridade do pacote usando algoritmos de hash nativos do Python.
 
-    Args:
-        plugin: Dicionário contendo informações do plugin, incluindo a chave 'integrity'
-        archive: Caminho para o arquivo a ser verificado
-        logger: Objeto logger para logging (opcional)
-
-    Raises:
-        InstallException: Se a verificação de integridade falhar ou parâmetros inválidos
-    """
-    # Use o logger global se nenhum for fornecido
-    log = logger or globals().get('logger', logging)
+def verify_package_integrity(plugin: dict, archive: Union[str, Path]):
     package = plugin['package']
 
-    # Verificar se a chave 'integrity' existe
     integrity = plugin.get('integrity')
     if not integrity:
         raise InstallException(f'Package integrity for {package} is missing')
-
     if not isinstance(integrity, str):
         raise InstallException(f'Package integrity for {package} must be a string')
 
-    # Analisar a string de integridade
     parts = integrity.split('-')
     if len(parts) != 2:
         raise InstallException(
-            f'Package integrity for {package} must be <algorithm>-<base64hash>'
+            f'Integrity must be <algorithm>-<base64hash> for {package}'
         )
 
-    algorithm, hash_digest = parts
-
-    # Verificar se o algoritmo é suportado
+    algorithm, b64_digest = parts
     if algorithm not in RECOGNIZED_ALGORITHMS:
         raise InstallException(
-            f'{package}: Algorithm {algorithm} not supported. Use one of: {", ".join(RECOGNIZED_ALGORITHMS)}'
+            f'{package}: Provided algorithm {algorithm} not supported. '
+            f'Use one of: {RECOGNIZED_ALGORITHMS}'
         )
 
-    # Verificar se o hash é base64 válido
     try:
-        base64.b64decode(hash_digest, validate=True)
+        base64.b64decode(b64_digest, validate=True)
     except binascii.Error:
-        raise InstallException(
-            f'{package}: Provided Package integrity hash {hash_digest} is not valid base64'
-        )
+        raise InstallException(f'{package}: Invalid base64: {b64_digest}')
 
-    # Mapear algoritmos para funções do hashlib
-    hash_algorithms = {
+    # Mapear algoritmo
+    import hashlib
+    hash_map = {
         'sha256': hashlib.sha256,
         'sha384': hashlib.sha384,
         'sha512': hashlib.sha512
     }
+    hasher = hash_map[algorithm]()
 
-    # Calcular hash do arquivo
-    log.info(f'\t==> Verifying {algorithm} integrity of {Path(archive).name}')
+    with open(archive, 'rb') as f:
+        for chunk in iter(lambda: f.read(65536), b''):
+            hasher.update(chunk)
 
-    try:
-        hasher = hash_algorithms[algorithm]()
-        with open(archive, 'rb') as f:
-            # Ler em chunks para evitar carregar todo o arquivo na memória
-            for chunk in iter(lambda: f.read(65536), b''):
-                hasher.update(chunk)
-
-        calculated = base64.b64encode(hasher.digest()).decode('utf-8')
-
-        if hash_digest != calculated:
-            raise InstallException(
-                f'{package}: Hash mismatch.\n'
-                f'Expected: {hash_digest}\n'
-                f'Got:      {calculated}'
-            )
-
-        log.info(f'\t==> Integrity verification passed')
-    except IOError as e:
-        raise InstallException(f"Failed to read file {archive}: {e}")
+    calculated = base64.b64encode(hasher.digest()).decode('utf-8')
+    if calculated != b64_digest:
+        raise InstallException(
+            f'{package}: integrity check failed. '
+            f'Expected={b64_digest}, Got={calculated}'
+        )
+    logger.info(f'\t==> Integrity check passed for {package}')
 
 # ------------------------------------------------------------------------------
-# Função Principal
+# Função principal com paralelismo
 # ------------------------------------------------------------------------------
+
 def main():
     start_time = datetime.now()
 
@@ -506,7 +398,7 @@ def main():
     dynamicPluginsGlobalConfigFile = os.path.join(dynamicPluginsRoot, 'app-config.dynamic-plugins.yaml')
 
     if not os.path.isfile(dynamicPluginsFile):
-        logging.info(f"No {dynamicPluginsFile} file found. Skipping dynamic plugins installation.")
+        logger.info(f"No {dynamicPluginsFile} file found. Skipping dynamic plugins installation.")
         with open(dynamicPluginsGlobalConfigFile, 'w') as f:
             f.write('')
         sys.exit(0)
@@ -519,7 +411,7 @@ def main():
 
     content = load_yaml(dynamicPluginsFile)
     if not content:
-        logging.info(f"{dynamicPluginsFile} is empty or invalid. Skipping installation.")
+        logger.info(f"{dynamicPluginsFile} is empty or invalid. Skipping installation.")
         with open(dynamicPluginsGlobalConfigFile, 'w') as f:
             f.write('')
         sys.exit(0)
@@ -528,7 +420,7 @@ def main():
         raise InstallException(f"{dynamicPluginsFile} must be a YAML object")
 
     if skipIntegrityCheck:
-        logging.info(f"SKIP_INTEGRITY_CHECK={skipIntegrityCheck}, skipping integrity checks")
+        logger.info(f"SKIP_INTEGRITY_CHECK={skipIntegrityCheck}, skipping integrity checks")
 
     includes = content.get('includes', [])
     if not isinstance(includes, list):
@@ -538,12 +430,11 @@ def main():
     for include in includes:
         if not isinstance(include, str):
             raise InstallException(f"'includes' must be a list of strings in {dynamicPluginsFile}")
-        logging.info('\n======= Including dynamic plugins from %s', include)
+        logger.info('\n======= Including dynamic plugins from %s', include)
 
         includeContent = load_yaml(include)
         if not includeContent:
             continue
-
         if not isinstance(includeContent, dict):
             raise InstallException(f"{include} must be a YAML object")
 
@@ -559,47 +450,56 @@ def main():
     if not isinstance(plugins, list):
         raise InstallException(f"'plugins' must be a list in {dynamicPluginsFile}")
 
+    # Override
     for plugin in plugins:
         package = plugin['package']
-        if not isinstance(package, str):
-            raise InstallException(f"'plugins.package' must be a string")
         if package in allPlugins:
-            logging.info('\n======= Overriding dynamic plugin configuration %s', package)
+            logger.info('\n======= Overriding dynamic plugin configuration %s', package)
             for k, v in plugin.items():
                 if k != 'package':
                     allPlugins[package][k] = v
         else:
             allPlugins[package] = plugin
 
-    # Calcula hash
+    # Gera hash
     for plugin in allPlugins.values():
         hash_dict = copy.deepcopy(plugin)
         hash_dict.pop('pluginConfig', None)
         h = hashlib.sha256(json.dumps(hash_dict, sort_keys=True).encode('utf-8')).hexdigest()
         plugin['hash'] = h
 
-    # Lê diretorios instalados
+    # Lê instalados
     plugin_path_by_hash = {}
     for dir_name in os.listdir(dynamicPluginsRoot):
         dir_path = os.path.join(dynamicPluginsRoot, dir_name)
         if os.path.isdir(dir_path):
-            hash_file = os.path.join(dir_path, 'dynamic-plugin-config.hash')
-            if os.path.isfile(hash_file):
-                with open(hash_file, 'r') as hf:
-                    old_hash = hf.read().strip()
+            hf = os.path.join(dir_path, 'dynamic-plugin-config.hash')
+            if os.path.isfile(hf):
+                with open(hf, 'r') as hf2:
+                    old_hash = hf2.read().strip()
                     plugin_path_by_hash[old_hash] = dir_name
 
     tools = check_prerequisites()
     oci_downloader = OciDownloader(dynamicPluginsRoot, tools)
 
-    # Instala cada plugin
-    for plugin in allPlugins.values():
+    # Filtrar plugins ativos
+    active_plugins = []
+    for p in allPlugins.values():
+        if not p.get('disabled'):
+            active_plugins.append(p)
+        else:
+            logger.info('\n======= Skipping disabled dynamic plugin %s', p['package'])
+
+    # -----------
+    # Passo 1: função para instalar 1 plugin (chamada em paralelo)
+    # -----------
+    def install_one_plugin(plugin):
+        """
+        Retorna (plugin, installed_path, erro_ou_None).
+        Se erro, installed_path será None, e vice-versa.
+        """
         package = plugin['package']
-
-        if plugin.get('disabled'):
-            logging.info('\n======= Skipping disabled dynamic plugin %s', package)
-            continue
-
+        plugin_hash = plugin['hash']
         pull_policy = plugin.get(
             'pullPolicy',
             PullPolicy.ALWAYS if ':latest!' in package else PullPolicy.IF_NOT_PRESENT
@@ -607,17 +507,20 @@ def main():
         if isinstance(pull_policy, str):
             pull_policy = PullPolicy(pull_policy)
 
-        if package.startswith('oci://'):
-            # Instala via OCI
-            try:
-                if plugin['hash'] in plugin_path_by_hash and pull_policy == PullPolicy.IF_NOT_PRESENT:
-                    logging.info('\n======= Skipping download of installed plugin %s', package)
-                    plugin_path_by_hash.pop(plugin['hash'])
-                    globalConfig = maybe_merge_config(plugin.get('pluginConfig'), globalConfig)
-                    continue
+        installed_path = None
 
-                if plugin['hash'] in plugin_path_by_hash and pull_policy == PullPolicy.ALWAYS:
-                    old_dir = plugin_path_by_hash.pop(plugin['hash'])
+        # Se OCI
+        if package.startswith('oci://'):
+            try:
+                # If already installed & policy=IF_NOT_PRESENT => skip
+                if plugin_hash in plugin_path_by_hash and pull_policy == PullPolicy.IF_NOT_PRESENT:
+                    logger.info('\n======= Skipping download of installed plugin %s', package)
+                    plugin_path_by_hash.pop(plugin_hash)
+                    return (plugin, None, None)
+
+                # If already installed & policy=ALWAYS => check digest
+                if plugin_hash in plugin_path_by_hash and pull_policy == PullPolicy.ALWAYS:
+                    old_dir = plugin_path_by_hash.pop(plugin_hash)
                     old_digest_file = os.path.join(dynamicPluginsRoot, old_dir, 'dynamic-plugin-image.hash')
                     local_digest = None
                     if os.path.isfile(old_digest_file):
@@ -625,52 +528,52 @@ def main():
                             local_digest = df.read().strip()
                     remote_digest = oci_downloader.digest(package)
                     if remote_digest == local_digest:
-                        logging.info('\n======= Skipping download (same digest) %s', package)
-                        globalConfig = maybe_merge_config(plugin.get('pluginConfig'), globalConfig)
-                        continue
+                        logger.info('\n======= Skipping download (same digest) %s', package)
+                        return (plugin, None, None)
                     else:
-                        logging.info('\n======= Installing dynamic plugin %s', package)
+                        logger.info('\n======= Installing dynamic plugin %s', package)
                 else:
-                    logging.info('\n======= Installing dynamic plugin %s', package)
+                    logger.info('\n======= Installing dynamic plugin %s', package)
 
-                plugin_path = oci_downloader.download(package)
-                digest_path = os.path.join(dynamicPluginsRoot, plugin_path, 'dynamic-plugin-image.hash')
+                installed_path = oci_downloader.download(package)
+                digest_path = os.path.join(dynamicPluginsRoot, installed_path, 'dynamic-plugin-image.hash')
                 with open(digest_path, 'w') as df:
                     df.write(oci_downloader.digest(package))
 
                 # Remove duplicatas
-                duplicates = [k for k, v in plugin_path_by_hash.items() if v == plugin_path]
+                duplicates = [k for k, v in plugin_path_by_hash.items() if v == installed_path]
                 for dup in duplicates:
                     plugin_path_by_hash.pop(dup)
+
             except Exception as e:
-                raise InstallException(f"Error while adding OCI plugin {package}: {e}")
+                return (plugin, None, f"Error while adding OCI plugin {package}: {e}")
 
         else:
-            # NPM plugin
-            already_installed = False
-            if plugin['hash'] in plugin_path_by_hash:
+            # NPM
+            plugin_already_installed = False
+            if plugin_hash in plugin_path_by_hash:
                 force_dl = plugin.get('forceDownload', False)
                 if pull_policy == PullPolicy.ALWAYS or force_dl:
-                    logging.info('\n======= Forcing download of installed plugin %s', package)
+                    logger.info('\n======= Forcing download of installed plugin %s', package)
                 else:
-                    logging.info('\n======= Skipping download of installed plugin %s', package)
-                    already_installed = True
-                plugin_path_by_hash.pop(plugin['hash'])
+                    logger.info('\n======= Skipping download of installed plugin %s', package)
+                    plugin_already_installed = True
+                plugin_path_by_hash.pop(plugin_hash)
             else:
-                logging.info('\n======= Installing dynamic plugin %s', package)
+                logger.info('\n======= Installing dynamic plugin %s', package)
 
-            if already_installed:
-                globalConfig = maybe_merge_config(plugin.get('pluginConfig'), globalConfig)
-                continue
+            if plugin_already_installed:
+                # skip
+                return (plugin, None, None)
 
             package_is_local = package.startswith('./')
             if (not package_is_local) and (not skipIntegrityCheck) and 'integrity' not in plugin:
-                raise InstallException(f"No integrity hash for {package}")
+                return (plugin, None, f"No integrity hash for {package}")
 
             if package_is_local:
                 package = os.path.join(os.getcwd(), package[2:])
 
-            logging.info('\t==> Grabbing package archive through `npm pack`')
+            logger.info('\t==> Grabbing package archive through `npm pack`')
             completed = subprocess.run(
                 ['npm', 'pack', package],
                 cwd=dynamicPluginsRoot,
@@ -678,89 +581,128 @@ def main():
                 text=True
             )
             if completed.returncode != 0:
-                raise InstallException(
-                    f"Error installing plugin {package}: {completed.stderr}"
-                )
+                return (plugin, None, f"Error installing plugin {package}: {completed.stderr}")
 
             archive = os.path.join(dynamicPluginsRoot, completed.stdout.strip())
 
-            if not package_is_local and not skipIntegrityCheck:
-                logging.info('\t==> Verifying package integrity')
-                verify_package_integrity(plugin, archive)
+            if (not package_is_local) and (not skipIntegrityCheck):
+                logger.info('\t==> Verifying package integrity')
+                try:
+                    verify_package_integrity(plugin, archive)
+                except Exception as e:
+                    return (plugin, None, f"Integrity check failed for {package}: {e}")
 
             directory = archive.replace('.tgz', '')
             directory_realpath = os.path.realpath(directory)
-            plugin_path = os.path.basename(directory_realpath)
+            installed_path = os.path.basename(directory_realpath)
 
             if os.path.exists(directory):
-                logging.info('\t==> Removing previous plugin directory %s', directory)
+                logger.info('\t==> Removing previous plugin directory %s', directory)
                 shutil.rmtree(directory, ignore_errors=True)
             os.mkdir(directory)
 
-            logging.info('\t==> Extracting package archive %s', archive)
-            with tarfile.open(archive, 'r:gz') as f:
-                for member in f.getmembers():
-                    if member.isreg():
-                        if not member.name.startswith('package/'):
-                            raise InstallException(
-                                f"NPM package archive doesn't start with 'package/': {member.name}"
-                            )
-                        if member.size > maxEntrySize:
-                            raise InstallException('Zip bomb detected in ' + member.name)
-                        member.name = member.name.removeprefix('package/')
-                        f.extract(member, path=directory, filter='tar')
-                    elif member.isdir():
-                        logging.info('\t\tSkipping directory entry %s', member.name)
-                    elif member.islnk() or member.issym():
-                        if not member.linkpath.startswith('package/'):
-                            raise InstallException(
-                                f"NPM package link outside: {member.name} -> {member.linkpath}"
-                            )
-                        member.name = member.name.removeprefix('package/')
-                        member.linkpath = member.linkpath.removeprefix('package/')
+            logger.info('\t==> Extracting package archive %s', archive)
+            try:
+                with tarfile.open(archive, 'r:gz') as f:
+                    for member in f.getmembers():
+                        if member.isreg():
+                            if not member.name.startswith('package/'):
+                                raise InstallException(
+                                    f"NPM package archive doesn't start with 'package/': {member.name}"
+                                )
+                            if member.size > maxEntrySize:
+                                raise InstallException('Zip bomb detected in ' + member.name)
+                            member.name = member.name.removeprefix('package/')
+                            f.extract(member, path=directory, filter='tar')
+                        elif member.isdir():
+                            logger.info('\t\tSkipping directory entry %s', member.name)
+                        elif member.islnk() or member.issym():
+                            if not member.linkpath.startswith('package/'):
+                                raise InstallException(
+                                    f"NPM package link outside: {member.name} -> {member.linkpath}"
+                                )
+                            member.name = member.name.removeprefix('package/')
+                            member.linkpath = member.linkpath.removeprefix('package/')
 
-                        rp = os.path.realpath(os.path.join(directory, *os.path.split(member.linkname)))
-                        if not rp.startswith(directory_realpath):
+                            rp = os.path.realpath(os.path.join(directory, *os.path.split(member.linkname)))
+                            if not rp.startswith(directory_realpath):
+                                raise InstallException(
+                                    f"NPM package link escapes archive: {member.name} -> {member.linkpath}"
+                                )
+                            f.extract(member, path=directory, filter='tar')
+                        else:
+                            t_str = 'unknown'
+                            if member.type == tarfile.CHRTYPE:
+                                t_str = 'character device'
+                            elif member.type == tarfile.BLKTYPE:
+                                t_str = 'block device'
+                            elif member.type == tarfile.FIFOTYPE:
+                                t_str = 'FIFO'
                             raise InstallException(
-                                f"NPM package link escapes archive: {member.name} -> {member.linkpath}"
+                                f'Archive has a non-regular file: {member.name} - {t_str}'
                             )
-                        f.extract(member, path=directory, filter='tar')
-                    else:
-                        t_str = 'unknown'
-                        if member.type == tarfile.CHRTYPE:
-                            t_str = 'character device'
-                        elif member.type == tarfile.BLKTYPE:
-                            t_str = 'block device'
-                        elif member.type == tarfile.FIFOTYPE:
-                            t_str = 'FIFO'
-                        raise InstallException(
-                            f'Archive has a non-regular file: {member.name} - {t_str}'
-                        )
+            except Exception as ex:
+                return (plugin, None, str(ex))
 
-            logging.info('\t==> Removing package archive %s', archive)
+            logger.info('\t==> Removing package archive %s', archive)
             os.remove(archive)
 
         # Cria arquivo de hash
-        hash_file_path = os.path.join(dynamicPluginsRoot, plugin_path, 'dynamic-plugin-config.hash')
-        with open(hash_file_path, 'w') as hf:
-            hf.write(plugin['hash'])
+        if installed_path:
+            hash_file_path = os.path.join(dynamicPluginsRoot, installed_path, 'dynamic-plugin-config.hash')
+            with open(hash_file_path, 'w') as hf:
+                hf.write(plugin_hash)
 
-        # Se não tem pluginConfig, acabou
-        if 'pluginConfig' not in plugin:
-            logging.info('\t==> Successfully installed dynamic plugin %s', package)
-            continue
+        return (plugin, installed_path, None)
 
-        globalConfig = maybe_merge_config(plugin.get('pluginConfig'), globalConfig)
-        logging.info('\t==> Successfully installed dynamic plugin %s', package)
+    # -----------
+    # Passo 2: instalar plugins em paralelo
+    # -----------
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+    results = []
+    exceptions = []
+
+    # Ajuste o max_workers conforme o ambiente
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        future_map = {}
+        for p in active_plugins:
+            f = executor.submit(install_one_plugin, p)
+            future_map[f] = p['package']
+
+        for f in as_completed(future_map):
+            pkg = future_map[f]
+            try:
+                plugin_obj, installed_path, error = f.result()
+                if error:
+                    exceptions.append((pkg, error))
+                else:
+                    results.append((plugin_obj, installed_path))
+            except Exception as e:
+                exceptions.append((pkg, str(e)))
+
+    # Se houve exceções, aborta
+    if exceptions:
+        for pkg, err in exceptions:
+            logger.error(f"Error installing {pkg}: {err}")
+        raise InstallException("One or more plugins failed to install in parallel")
+
+    # -----------
+    # Passo 3: merges de config e logs de finalização
+    # -----------
+    for plugin_obj, installed_path in results:
+        # Se installed_path for None => plugin não foi reinstalado, mas não é erro
+        if 'pluginConfig' in plugin_obj:
+            globalConfig = maybe_merge_config(plugin_obj.get('pluginConfig'), globalConfig)
+        logger.info('\t==> Successfully installed dynamic plugin %s', plugin_obj['package'])
 
     # Salva config final
-    yaml.safe_dump(globalConfig, open(dynamicPluginsGlobalConfigFile, 'w'))
+    with open(dynamicPluginsGlobalConfigFile, 'w') as gf:
+        yaml.safe_dump(globalConfig, gf)
 
-    # Remove plugins não mencionados
+    # Plugins que não foram removidos do plugin_path_by_hash => não aparecem mais na config
     for old_hash, old_dir in plugin_path_by_hash.items():
-        logging.info('\n======= Removing previously installed dynamic plugin %s', old_dir)
-        plugin_dir = os.path.join(dynamicPluginsRoot, old_dir)
-        shutil.rmtree(plugin_dir, ignore_errors=True)
+        logger.info('\n======= Removing previously installed dynamic plugin %s', old_dir)
+        shutil.rmtree(os.path.join(dynamicPluginsRoot, old_dir), ignore_errors=True)
 
     end_time = datetime.now()
     print(f"Total Execution Timeex: {end_time - start_time}")
