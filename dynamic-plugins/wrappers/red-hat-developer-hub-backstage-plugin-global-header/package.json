@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "@mui/material": "5.16.14",
-    "@red-hat-developer-hub/backstage-plugin-global-header": "1.0.0"
+    "@red-hat-developer-hub/backstage-plugin-global-header": "1.1.0"
   },
   "devDependencies": {
     "@backstage/cli": "0.29.6",
