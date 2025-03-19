@@ -105,7 +105,6 @@ droute_send() {
       echo "Attempt ${i} of ${max_attempts} to rsync test resuls to bastion pod."
       if output=$(oc rsync --progress=true --include="${metadata_output}" --include="${JUNIT_RESULTS}" --exclude="*" -n "${droute_project}" "${ARTIFACT_DIR}/${project}/" "${droute_project}/${droute_pod_name}:${temp_droute}/" 2>&1); then
         echo "$output"
-        return
       else
         sleep $((wait_seconds_step * i))
       fi
@@ -115,6 +114,7 @@ droute_send() {
         echo "${output}"
         echo "Troubleshooting steps:"
         echo "1. Restart $droute_pod_name in $droute_project project/namespace"
+        return 1
       fi
     done
 
@@ -140,7 +140,6 @@ droute_send() {
           [ -n "$DATA_ROUTER_REQUEST_ID" ]; then
           echo "Test results successfully sent through Data Router."
           echo "Request ID: $DATA_ROUTER_REQUEST_ID"
-          return
         else
           sleep $((wait_seconds_step * i))
         fi
@@ -154,6 +153,7 @@ droute_send() {
         echo "1. Restart $droute_pod_name in $droute_project project/namespace"
         echo "2. Check the Data Router documentation: https://spaces.redhat.com/pages/viewpage.action?pageId=115488042"
         echo "3. Ask for help at Slack: #forum-dno-datarouter"
+        return 1
       fi
     done
 
