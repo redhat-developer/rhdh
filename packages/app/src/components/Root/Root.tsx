@@ -226,7 +226,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
         menuItems={menuItem.children ?? []}
         isOpen={isSubMenuOpen}
         sx={{
-          paddingLeft: '4rem',
+          paddingLeft: '4.25rem',
           fontSize: 12,
           '& span.MuiTypography-subtitle2': {
             fontSize: 12,
