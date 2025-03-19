@@ -98,7 +98,7 @@ droute_send() {
 
     # Send test by rsync to bastion pod.
     local max_attempts=5
-    local wait_seconds_step=0.5
+    local wait_seconds_step=1
     for ((i = 1; i <= max_attempts; i++)); do
       echo "Attempt ${i} of ${max_attempts} to rsync test resuls to bastion pod."
       if output=$(oc rsync --progress=true --include="${metadata_output}" --include="${JUNIT_RESULTS}" --exclude="*" -n "${droute_project}" "${ARTIFACT_DIR}/${project}/" "${droute_project}/${droute_pod_name}:${temp_droute}/" 2>&1); then
@@ -124,7 +124,7 @@ droute_send() {
 
     # Send test results through DataRouter and save the request ID.
     local max_attempts=10
-    local wait_seconds_step=0.5
+    local wait_seconds_step=1
     for ((i = 1; i <= max_attempts; i++)); do
       echo "Attempt ${i} of ${max_attempts} to send test results through Data Router."
       if output=$(oc exec -n "${droute_project}" "${droute_pod_name}" -- /bin/bash -c "
