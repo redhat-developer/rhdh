@@ -52,7 +52,7 @@ droute_send() {
     oc config set-context temp-context --user=temp-user --cluster=temp-cluster
     oc config use-context temp-context
     oc whoami --show-server
-    trap 'oc config use-context "$original_context" 2>/dev/null && oc whoami --show-server || true' RETURN EXIT
+    trap 'oc config use-context "$original_context" 2>/dev/null && oc whoami --show-server || true' RETURN
 
     local droute_pod_name=$(oc get pods -n droute --no-headers -o custom-columns=":metadata.name" | grep ubi9-cert-rsync)
     local temp_droute=$(oc exec -n "${droute_project}" "${droute_pod_name}" -- /bin/bash -c "mktemp -d")
@@ -105,7 +105,7 @@ droute_send() {
       echo "Attempt ${i} of ${max_attempts} to rsync test resuls to bastion pod."
       if output=$(oc rsync --progress=true --include="${metadata_output}" --include="${JUNIT_RESULTS}" --exclude="*" -n "${droute_project}" "${ARTIFACT_DIR}/${project}/" "${droute_project}/${droute_pod_name}:${temp_droute}/" 2>&1); then
         echo "$output"
-        break
+        return
       else
         sleep $((wait_seconds_step * i))
       fi
@@ -140,7 +140,7 @@ droute_send() {
           [ -n "$DATA_ROUTER_REQUEST_ID" ]; then
           echo "Test results successfully sent through Data Router."
           echo "Request ID: $DATA_ROUTER_REQUEST_ID"
-          break
+          return
         else
           sleep $((wait_seconds_step * i))
         fi
