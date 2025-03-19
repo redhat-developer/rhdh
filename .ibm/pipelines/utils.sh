@@ -37,8 +37,9 @@ save_all_pod_logs(){
 
 droute_send() {
   if [[ "${OPENSHIFT_CI}" != "true" ]]; then return 0; fi
-    local original_context
-    original_context=$(oc config current-context) # Save original context
+  local original_context
+  original_context=$(oc config current-context) # Save original context
+  ( # Open subshell
     if [ -n "${PULL_NUMBER:-}" ]; then
       set +e
     fi
@@ -106,16 +107,16 @@ droute_send() {
       echo "Attempt ${i} of ${max_attempts} to rsync test resuls to bastion pod."
       if output=$(oc rsync --progress=true --include="${metadata_output}" --include="${JUNIT_RESULTS}" --exclude="*" -n "${droute_project}" "${ARTIFACT_DIR}/${project}/" "${droute_project}/${droute_pod_name}:${temp_droute}/" 2>&1); then
         echo "$output"
-      else
-        sleep $((wait_seconds_step * i))
-      fi
-      if ((i == max_attempts)); then
+        break
+      elif ((i == max_attempts)); then
         echo "Failed to rsync test results after ${max_attempts} attempts."
         echo "Last rsync error details:"
         echo "${output}"
         echo "Troubleshooting steps:"
         echo "1. Restart $droute_pod_name in $droute_project project/namespace"
         return 1
+      else
+        sleep $((wait_seconds_step * i))
       fi
     done
 
@@ -130,23 +131,19 @@ droute_send() {
     local wait_seconds_step=1
     for ((i = 1; i <= max_attempts; i++)); do
       echo "Attempt ${i} of ${max_attempts} to send test results through Data Router."
-      if output=$(oc exec -n "${droute_project}" "${droute_pod_name}" -- /bin/bash -c "
+      output=$(oc exec -n "${droute_project}" "${droute_pod_name}" -- /bin/bash -c "
         ${temp_droute}/droute-linux-amd64 send --metadata ${temp_droute}/${metadata_output} \
           --url '${DATA_ROUTER_URL}' \
           --username '${DATA_ROUTER_USERNAME}' \
           --password '${DATA_ROUTER_PASSWORD}' \
           --results '${temp_droute}/${JUNIT_RESULTS}' \
-          --verbose" 2>&1); then
-        if DATA_ROUTER_REQUEST_ID=$(echo "$output" | grep "request:" | awk '{print $2}') &&
-          [ -n "$DATA_ROUTER_REQUEST_ID" ]; then
-          echo "Test results successfully sent through Data Router."
-          echo "Request ID: $DATA_ROUTER_REQUEST_ID"
-        else
-          sleep $((wait_seconds_step * i))
-        fi
-      fi
-
-      if ((i == max_attempts)); then
+          --verbose" 2>&1)
+      if DATA_ROUTER_REQUEST_ID=$(echo "$output" | grep "request:" | awk '{print $2}') &&
+        [ -n "$DATA_ROUTER_REQUEST_ID" ]; then
+        echo "Test results successfully sent through Data Router."
+        echo "Request ID: $DATA_ROUTER_REQUEST_ID"
+        break
+      elif ((i == max_attempts)); then
         echo "Failed to send test results after ${max_attempts} attempts."
         echo "Last Data Router error details:"
         echo "${output}"
@@ -155,6 +152,8 @@ droute_send() {
         echo "2. Check the Data Router documentation: https://spaces.redhat.com/pages/viewpage.action?pageId=115488042"
         echo "3. Ask for help at Slack: #forum-dno-datarouter"
         return 1
+      else
+        sleep $((wait_seconds_step * i))
       fi
     done
 
@@ -187,7 +186,7 @@ droute_send() {
     if [ -n "${PULL_NUMBER:-}" ]; then
       set -e
     fi
-  
+  ) # Close subshell
   oc config use-context "$original_context" # Restore original context
   oc whoami --show-server
 }
