@@ -23134,8 +23134,8 @@ __metadata:
   resolution: "backstage-community-plugin-redhat-argocd@workspace:dynamic-plugins/wrappers/backstage-community-plugin-redhat-argocd"
   dependencies:
     "@backstage-community/plugin-redhat-argocd": 1.17.0
-    "@backstage/cli": 0.29.6
-    "@janus-idp/cli": 3.2.0
+    "@backstage/cli": 0.30.0
+    "@janus-idp/cli": 3.3.0
     "@mui/material": 5.16.14
     typescript: 5.8.2
   languageName: unknown
@@ -41448,10 +41448,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "roadiehq-backstage-plugin-argo-cd-backend@workspace:dynamic-plugins/wrappers/roadiehq-backstage-plugin-argo-cd-backend-dynamic"
   dependencies:
-    "@backstage/cli": 0.29.6
-    "@janus-idp/cli": 3.2.0
+    "@backstage/cli": 0.30.0
+    "@janus-idp/cli": 3.3.0
     "@roadiehq/backstage-plugin-argo-cd-backend": 4.1.0
-    typescript: 5.7.3
+    typescript: 5.8.2
   languageName: unknown
   linkType: soft
 
