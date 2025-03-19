@@ -1,4 +1,4 @@
-import { Page, test } from "@playwright/test";
+import { expect, Page, test } from "@playwright/test";
 import { Common, setupBrowser } from "../../../utils/common";
 import { UIhelper } from "../../../utils/ui-helper";
 import { KubeClient } from "../../../utils/kube-client";
@@ -36,6 +36,9 @@ test.describe("Test Kubernetes Actions plugin", () => {
     await page.waitForSelector(
       `${UI_HELPER_ELEMENTS.MuiTypography}:has-text("second")`,
     );
+    await expect(
+      page.locator(`${UI_HELPER_ELEMENTS.MuiTypography}:has-text("Error")`),
+    ).not.toBeVisible();
     await kubeClient.getNamespaceByName(namespace);
   });
 
