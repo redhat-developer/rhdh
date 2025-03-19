@@ -50,8 +50,9 @@ droute_send() {
     oc config set-credentials temp-user --token="${RHDH_PR_OS_CLUSTER_TOKEN}"
     oc config set-cluster temp-cluster --server="${RHDH_PR_OS_CLUSTER_URL}"
     oc config set-context temp-context --user=temp-user --cluster=temp-cluster
+    oc config use-context temp-context
     oc whoami --show-server
-    trap 'oc config use-context "$original_context" 2>/dev/null && oc whoami --show-server || true' RETURN
+    trap 'oc config use-context "$original_context" 2>/dev/null && oc whoami --show-server || true' RETURN EXIT
 
     local droute_pod_name=$(oc get pods -n droute --no-headers -o custom-columns=":metadata.name" | grep ubi9-cert-rsync)
     local temp_droute=$(oc exec -n "${droute_project}" "${droute_pod_name}" -- /bin/bash -c "mktemp -d")
