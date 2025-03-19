@@ -23247,8 +23247,8 @@ __metadata:
   resolution: "backstage-community-plugin-tekton@workspace:dynamic-plugins/wrappers/backstage-community-plugin-tekton"
   dependencies:
     "@backstage-community/plugin-tekton": 3.20.0
-    "@backstage/cli": 0.29.6
-    "@janus-idp/cli": 3.2.0
+    "@backstage/cli": 0.30.0
+    "@janus-idp/cli": 3.3.0
     "@mui/material": 5.16.14
     typescript: 5.8.2
   languageName: unknown
