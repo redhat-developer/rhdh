@@ -10,7 +10,7 @@
   },
   "backstage": {
     "role": "backend-plugin",
-    "supported-versions": "1.35.1",
+    "supported-versions": "1.36.1",
     "pluginId": "immobiliarelabs-gitlab",
     "pluginPackages": [
       "immobiliarelabs-backstage-plugin-gitlab",
@@ -39,11 +39,11 @@
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
-    "@backstage/backend-plugin-api": "1.1.1",
+    "@backstage/backend-plugin-api": "1.2.0",
     "@immobiliarelabs/backstage-plugin-gitlab-backend": "6.8.0"
   },
   "devDependencies": {
-    "@backstage/cli": "0.29.6",
+    "@backstage/cli": "0.30.0",
     "@janus-idp/cli": "3.3.0",
     "typescript": "5.8.2"
   },
