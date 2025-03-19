@@ -34,7 +34,7 @@ jobs:
         node-version: [22]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           fetch-depth: 0
 
@@ -50,19 +50,19 @@ jobs:
           fi
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4
         with:
           node-version: ${{ matrix.node-version }}
           registry-url: 'https://registry.npmjs.org'
 
       - name: Setup local Turbo cache
-        uses: dtinth/setup-github-actions-caching-for-turbo@v1
+        uses: dtinth/setup-github-actions-caching-for-turbo@cc723b4600e40a6b8815b65701d8614b91e2669e # v1
 
       - name: Use app-config.example.yaml
         run: rm app-config.yaml && mv app-config.example.yaml app-config.yaml
 
       - name: Install dependencies
-        uses: backstage/actions/yarn-install@v0.6.17
+        uses: backstage/actions/yarn-install@b3c1841fd69e1658ac631afafd0fb140a2309024 # v0.6.17
         with:
           cache-prefix: ${{ runner.os }}-v${{ matrix.node-version }}
 
@@ -77,7 +77,7 @@ jobs:
         node-version: [22]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           fetch-depth: 0
 
@@ -93,21 +93,36 @@ jobs:
           fi
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4
         with:
           node-version: ${{ matrix.node-version }}
           registry-url: 'https://registry.npmjs.org'
 
       - name: Setup local Turbo cache
-        uses: dtinth/setup-github-actions-caching-for-turbo@v1
+        uses: dtinth/setup-github-actions-caching-for-turbo@cc723b4600e40a6b8815b65701d8614b91e2669e # v1
 
       - name: Use app-config.example.yaml
         run: rm app-config.yaml && mv app-config.example.yaml app-config.yaml
 
       - name: Install dependencies
-        uses: backstage/actions/yarn-install@v0.6.17
+        uses: backstage/actions/yarn-install@b3c1841fd69e1658ac631afafd0fb140a2309024 # v0.6.17
         with:
           cache-prefix: ${{ runner.os }}-v${{ matrix.node-version }}
+
+      - name: Run prettier
+        run: yarn prettier:check --continue --affected
+
+      - name: Run lint
+        run: yarn run lint:check --continue --affected
+
+      - name: Run monorepo tools
+        run: yarn run monorepo:check
+
+      - name: Regenerate dockerfiles
+        run: |
+          yarn run build:dockerfile; if [[ $(git diff --name-only | grep Dockerfile || true) != "" ]]; then \
+            echo "ERROR: Workspace is dirty! Must run 'yarn build:dockerfile' and commit changes!"; exit 1; \
+          fi
 
       - name: Run tests
         run: yarn run test --continue --affected
