@@ -37,7 +37,8 @@ save_all_pod_logs(){
 
 droute_send() {
   if [[ "${OPENSHIFT_CI}" != "true" ]]; then return 0; fi
-    local original_context=$(oc config current-context) # Save original context
+    local original_context
+    original_context=$(oc config current-context) # Save original context
     if [ -n "${PULL_NUMBER:-}" ]; then
       set +e
     fi
@@ -52,7 +53,7 @@ droute_send() {
     oc config set-context temp-context --user=temp-user --cluster=temp-cluster
     oc config use-context temp-context
     oc whoami --show-server
-    trap 'oc config use-context "$original_context" 2>/dev/null && oc whoami --show-server || true' RETURN
+    trap 'oc config use-context "$original_context"' RETURN
 
     local droute_pod_name=$(oc get pods -n droute --no-headers -o custom-columns=":metadata.name" | grep ubi9-cert-rsync)
     local temp_droute=$(oc exec -n "${droute_project}" "${droute_pod_name}" -- /bin/bash -c "mktemp -d")
