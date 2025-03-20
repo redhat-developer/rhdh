@@ -37,20 +37,25 @@ save_all_pod_logs(){
 
 droute_send() {
   if [[ "${OPENSHIFT_CI}" != "true" ]]; then return 0; fi
-  temp_kubeconfig=$(mktemp) # Create temporary KUBECONFIG to open second `oc` session
+  local original_context
+  original_context=$(oc config current-context) # Save original context
   ( # Open subshell
     if [ -n "${PULL_NUMBER:-}" ]; then
       set +e
     fi
-    export KUBECONFIG="$temp_kubeconfig"
     local droute_version="1.2.2"
     local release_name=$1
     local project=$2
     local droute_project="droute"
     local metadata_output="data_router_metadata_output.json"
 
-    oc login --token="${RHDH_PR_OS_CLUSTER_TOKEN}" --server="${RHDH_PR_OS_CLUSTER_URL}"
+    oc config set-credentials temp-user --token="${RHDH_PR_OS_CLUSTER_TOKEN}"
+    oc config set-cluster temp-cluster --server="${RHDH_PR_OS_CLUSTER_URL}"
+    oc config set-context temp-context --user=temp-user --cluster=temp-cluster
+    oc config use-context temp-context
     oc whoami --show-server
+    trap 'oc config use-context "$original_context"' RETURN
+
     local droute_pod_name=$(oc get pods -n droute --no-headers -o custom-columns=":metadata.name" | grep ubi9-cert-rsync)
     local temp_droute=$(oc exec -n "${droute_project}" "${droute_pod_name}" -- /bin/bash -c "mktemp -d")
 
@@ -97,19 +102,21 @@ droute_send() {
 
     # Send test by rsync to bastion pod.
     local max_attempts=5
-    local wait_seconds=4
+    local wait_seconds_step=1
     for ((i = 1; i <= max_attempts; i++)); do
       echo "Attempt ${i} of ${max_attempts} to rsync test resuls to bastion pod."
       if output=$(oc rsync --progress=true --include="${metadata_output}" --include="${JUNIT_RESULTS}" --exclude="*" -n "${droute_project}" "${ARTIFACT_DIR}/${project}/" "${droute_project}/${droute_pod_name}:${temp_droute}/" 2>&1); then
         echo "$output"
         break
-      fi
-      if ((i == max_attempts)); then
+      elif ((i == max_attempts)); then
         echo "Failed to rsync test results after ${max_attempts} attempts."
         echo "Last rsync error details:"
         echo "${output}"
         echo "Troubleshooting steps:"
         echo "1. Restart $droute_pod_name in $droute_project project/namespace"
+        return 1
+      else
+        sleep $((wait_seconds_step * i))
       fi
     done
 
@@ -120,26 +127,23 @@ droute_send() {
       && ${temp_droute}/droute-linux-amd64 version"
 
     # Send test results through DataRouter and save the request ID.
-    local max_attempts=5
-    local wait_seconds=1
+    local max_attempts=10
+    local wait_seconds_step=1
     for ((i = 1; i <= max_attempts; i++)); do
       echo "Attempt ${i} of ${max_attempts} to send test results through Data Router."
-      if output=$(oc exec -n "${droute_project}" "${droute_pod_name}" -- /bin/bash -c "
+      output=$(oc exec -n "${droute_project}" "${droute_pod_name}" -- /bin/bash -c "
         ${temp_droute}/droute-linux-amd64 send --metadata ${temp_droute}/${metadata_output} \
           --url '${DATA_ROUTER_URL}' \
           --username '${DATA_ROUTER_USERNAME}' \
           --password '${DATA_ROUTER_PASSWORD}' \
           --results '${temp_droute}/${JUNIT_RESULTS}' \
-          --verbose" 2>&1); then
-        if DATA_ROUTER_REQUEST_ID=$(echo "$output" | grep "request:" | awk '{print $2}') &&
-          [ -n "$DATA_ROUTER_REQUEST_ID" ]; then
-          echo "Test results successfully sent through Data Router."
-          echo "Request ID: $DATA_ROUTER_REQUEST_ID"
-          break
-        fi
-      fi
-
-      if ((i == max_attempts)); then
+          --verbose" 2>&1)
+      if DATA_ROUTER_REQUEST_ID=$(echo "$output" | grep "request:" | awk '{print $2}') &&
+        [ -n "$DATA_ROUTER_REQUEST_ID" ]; then
+        echo "Test results successfully sent through Data Router."
+        echo "Request ID: $DATA_ROUTER_REQUEST_ID"
+        break
+      elif ((i == max_attempts)); then
         echo "Failed to send test results after ${max_attempts} attempts."
         echo "Last Data Router error details:"
         echo "${output}"
@@ -147,6 +151,9 @@ droute_send() {
         echo "1. Restart $droute_pod_name in $droute_project project/namespace"
         echo "2. Check the Data Router documentation: https://spaces.redhat.com/pages/viewpage.action?pageId=115488042"
         echo "3. Ask for help at Slack: #forum-dno-datarouter"
+        return 1
+      else
+        sleep $((wait_seconds_step * i))
       fi
     done
 
@@ -180,7 +187,7 @@ droute_send() {
       set -e
     fi
   ) # Close subshell
-  rm -f "$temp_kubeconfig" # Destroy temporary KUBECONFIG
+  oc config use-context "$original_context" # Restore original context
   oc whoami --show-server
 }
 
