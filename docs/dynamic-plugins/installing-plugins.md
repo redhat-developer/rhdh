@@ -140,5 +140,5 @@ oc logs -n <namespace-name> -f backstage-<backstage-name>-<pod-suffix> -c instal
 In such a case, you can delete the lock file manually from any of the Pods:
 
 ```console
-oc exec -n <namespace-name> deploy/backstage-<backstage-name> -c install-dynamic-plugins -- rm -f /dynamic-plugins-root/dynamic-plugins.lock
+oc exec -n <namespace-name> deploy/backstage-<backstage-name> -c install-dynamic-plugins -- rm -f /dynamic-plugins-root/install-dynamic-plugins.lock
 ```
