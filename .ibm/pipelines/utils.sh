@@ -326,9 +326,10 @@ wait_for_svc(){
 install_subscription(){
   name=$1  # Name of the subscription
   namespace=$2 # Namespace to install the operator
-  package=$3 # Package name of the operator
-  channel=$4 # Channel to subscribe to
+  channel=$3 # Channel to subscribe to
+  package=$4 # Package name of the operator
   source_name=$5 # Name of the source catalog
+  source_namespace=$6 # Source namespace (typically openshift-marketplace or olm)
   # Apply the subscription manifest
   oc apply -f - << EOD
 apiVersion: operators.coreos.com/v1alpha1
@@ -341,8 +342,38 @@ spec:
   installPlanApproval: Automatic
   name: $package
   source: $source_name
-  sourceNamespace: openshift-marketplace
+  sourceNamespace: $source_namespace
 EOD
+}
+
+create_secret_dockerconfigjson(){
+  namespace=$1
+  secret_name=$2
+  dockerconfigjson_value=$3
+  echo "Creating dockerconfigjson secret $secret_name in namespace $namespace"
+  kubectl apply -n "$namespace" -f - << EOD
+apiVersion: v1
+kind: Secret
+metadata:
+  name: $secret_name
+data:
+  .dockerconfigjson: $dockerconfigjson_value
+type: kubernetes.io/dockerconfigjson
+EOD
+}
+add_image_pull_secret_to_namespace_default_serviceaccount() {
+  namespace=$1
+  secret_name=$2
+  echo "Adding image pull secret $secret_name to default service account"
+  kubectl -n "${namespace}" patch serviceaccount default -p "{\"imagePullSecrets\": [{\"name\": \"${secret_name}\"}]}"
+}
+setup_image_pull_secret() {
+  local namespace=$1
+  local secret_name=$2
+  local dockerconfigjson_value=$3
+  echo "Creating $secret_name secret in $namespace namespace"
+  create_secret_dockerconfigjson "$namespace" "$secret_name" "$dockerconfigjson_value"
+  add_image_pull_secret_to_namespace_default_serviceaccount "$namespace" "$secret_name"
 }
 
 # Monitors the status of an operator in an OpenShift namespace.
@@ -366,10 +397,16 @@ check_operator_status() {
   " || echo "Timed out after ${timeout} seconds. Operator '${operator_name}' did not reach '${expected_status}' phase."
 }
 
-# Installs the Crunchy Postgres Operator using predefined parameters
-install_crunchy_postgres_operator(){
-  install_subscription crunchy-postgres-operator openshift-operators crunchy-postgres-operator v5 certified-operators
+# Installs the Crunchy Postgres Operator from Openshift Marketplace using predefined parameters
+install_crunchy_postgres_ocp_operator(){
+  install_subscription crunchy-postgres-operator openshift-operators v5 crunchy-postgres-operator certified-operators openshift-marketplace
   check_operator_status 300 "openshift-operators" "Crunchy Postgres for Kubernetes" "Succeeded"
+}
+
+# Installs the Crunchy Postgres Operator from OperatorHub.io
+install_crunchy_postgres_k8s_operator(){
+  install_subscription crunchy-postgres-operator operators v5 postgresql operatorhubio-catalog olm
+  check_operator_status 300 "operators" "Crunchy Postgres for Kubernetes" "Succeeded"
 }
 
 add_helm_repos() {
@@ -475,7 +512,6 @@ apply_yaml_files() {
       "$dir/resources/cluster_role_binding/cluster-role-binding-k8s.yaml"
       "$dir/resources/cluster_role/cluster-role-k8s.yaml"
       "$dir/resources/cluster_role/cluster-role-ocm.yaml"
-      "$dir/auth/secrets-rhdh-secrets.yaml"
     )
 
     for file in "${files[@]}"; do
@@ -483,42 +519,32 @@ apply_yaml_files() {
     done
 
     DH_TARGET_URL=$(echo -n "test-backstage-customization-provider-${project}.${K8S_CLUSTER_ROUTER_BASE}" | base64 -w 0)
-    local RHDH_BASE_URL=$(echo -n "$rhdh_base_url" | base64 | tr -d '\n')
-
-    for key in GITHUB_APP_APP_ID GITHUB_APP_CLIENT_ID GITHUB_APP_PRIVATE_KEY GITHUB_APP_CLIENT_SECRET GITHUB_APP_JANUS_TEST_APP_ID GITHUB_APP_JANUS_TEST_CLIENT_ID GITHUB_APP_JANUS_TEST_CLIENT_SECRET GITHUB_APP_JANUS_TEST_PRIVATE_KEY GITHUB_APP_WEBHOOK_URL GITHUB_APP_WEBHOOK_SECRET KEYCLOAK_CLIENT_SECRET ACR_SECRET GOOGLE_CLIENT_ID GOOGLE_CLIENT_SECRET K8S_CLUSTER_TOKEN_ENCODED OCM_CLUSTER_URL GITLAB_TOKEN KEYCLOAK_AUTH_BASE_URL KEYCLOAK_AUTH_CLIENTID KEYCLOAK_AUTH_CLIENT_SECRET KEYCLOAK_AUTH_LOGIN_REALM KEYCLOAK_AUTH_REALM RHDH_BASE_URL DH_TARGET_URL; do
-      sed -i "s|${key}:.*|${key}: ${!key}|g" "$dir/auth/secrets-rhdh-secrets.yaml"
-    done
+    export DH_TARGET_URL
+    RHDH_BASE_URL=$(echo -n "$rhdh_base_url" | base64 | tr -d '\n')
+    export RHDH_BASE_URL
 
     oc apply -f "$dir/resources/service_account/service-account-rhdh.yaml" --namespace="${project}"
     oc apply -f "$dir/auth/service-account-rhdh-secret.yaml" --namespace="${project}"
-    oc apply -f "$dir/auth/secrets-rhdh-secrets.yaml" --namespace="${project}"
 
     oc apply -f "$dir/resources/cluster_role/cluster-role-k8s.yaml" --namespace="${project}"
     oc apply -f "$dir/resources/cluster_role_binding/cluster-role-binding-k8s.yaml" --namespace="${project}"
     oc apply -f "$dir/resources/cluster_role/cluster-role-ocm.yaml" --namespace="${project}"
     oc apply -f "$dir/resources/cluster_role_binding/cluster-role-binding-ocm.yaml" --namespace="${project}"
 
-    sed -i "s/K8S_CLUSTER_API_SERVER_URL:.*/K8S_CLUSTER_API_SERVER_URL: ${K8S_CLUSTER_API_SERVER_URL}/g" "$dir/auth/secrets-rhdh-secrets.yaml"
-
-    sed -i "s/K8S_CLUSTER_NAME:.*/K8S_CLUSTER_NAME: ${ENCODED_CLUSTER_NAME}/g" "$dir/auth/secrets-rhdh-secrets.yaml"
-
-    token=$(oc get secret rhdh-k8s-plugin-secret -n "${project}" -o=jsonpath='{.data.token}')
-    sed -i "s/OCM_CLUSTER_TOKEN: .*/OCM_CLUSTER_TOKEN: ${token}/" "$dir/auth/secrets-rhdh-secrets.yaml"
+    OCM_CLUSTER_TOKEN=$(oc get secret rhdh-k8s-plugin-secret -n "${project}" -o=jsonpath='{.data.token}')
+    export OCM_CLUSTER_TOKEN
+    envsubst < "${DIR}/auth/secrets-rhdh-secrets.yaml" | oc apply --namespace="${project}" -f -
 
     # Select the configuration file based on the namespace or job
     config_file=$(select_config_map_file)
     # Apply the ConfigMap with the correct file
-    if [[ "${project}" == *showcase-k8s* ]]; then # Specific to non-RBAC deployment on K8S
-      create_app_config_map_k8s "$config_file" "$project"
-    else
-      create_app_config_map "$config_file" "$project"
-    fi
+    create_app_config_map "$config_file" "$project"
     oc create configmap dynamic-homepage-and-sidebar-config \
       --from-file="dynamic-homepage-and-sidebar-config.yaml"="$dir/resources/config_map/dynamic-homepage-and-sidebar-config.yaml" \
       --namespace="${project}" \
       --dry-run=client -o yaml | oc apply -f -
 
-    if [[ "${project}" == *showcase-op* ]]; then
+    if [[ "$JOB_NAME" == *operator* ]] && [[ "${project}" == *rbac* ]]; then
       oc create configmap rbac-policy \
         --from-file="rbac-policy.csv"="$dir/resources/config_map/rbac-policy.csv" \
         --from-file="conditional-policies.yaml"="/tmp/conditional-policies.yaml" \
@@ -530,8 +556,6 @@ apply_yaml_files() {
         --namespace="$project" \
         --dry-run=client -o yaml | oc apply -f -
     fi
-
-    oc apply -f "$dir/auth/secrets-rhdh-secrets.yaml" --namespace="${project}"
 
     # configuration for testing global floating action button.
     oc create configmap dynamic-global-floating-action-button-config \
@@ -551,14 +575,14 @@ apply_yaml_files() {
 
     # Create Deployment and Pipeline for Topology test.
     oc apply -f "$dir/resources/topology_test/topology-test.yaml"
-    if [[ "${project}" == *k8s* ]]; then
-      oc apply -f "$dir/resources/topology_test/topology-test-ingress.yaml"
-    else
+    if [[ "${IS_OPENSHIFT}" = "true" ]]; then
       oc apply -f "$dir/resources/topology_test/topology-test-route.yaml"
+    else
+      kubectl apply -f "$dir/resources/topology_test/topology-test-ingress.yaml"
     fi
 }
 
-deploy_test_backstage_provider() {
+deploy_test_backstage_customization_provider() {
   local project=$1
   echo "Deploying test-backstage-customization-provider in namespace ${project}"
 
@@ -573,6 +597,12 @@ deploy_test_backstage_provider() {
 
   echo "Exposing service for test-backstage-customization-provider"
   oc expose svc/test-backstage-customization-provider --namespace="${project}"
+}
+
+deploy_redis_cache() {
+  local namespace=$1
+  oc apply -f "$DIR/resources/redis-cache/redis-deployment.yaml" --namespace="${namespace}"
+  envsubst < "$DIR/resources/redis-cache/redis-secret.yaml" | oc apply --namespace="${namespace}" -f -
 }
 
 create_app_config_map() {
@@ -593,8 +623,6 @@ select_config_map_file() {
   fi
 }
 
-
-
 create_dynamic_plugins_config() {
   local base_file=$1
   local final_file=$2
@@ -603,7 +631,7 @@ apiVersion: v1
 metadata:
   name: dynamic-plugins
 data:
-  dynamic-plugins.yaml: |" >> ${final_file}
+  dynamic-plugins.yaml: |" > ${final_file}
   yq '.global.dynamic' ${base_file} | sed -e 's/^/    /' >> ${final_file}
 }
 
@@ -616,20 +644,6 @@ create_conditional_policies_operator() {
 prepare_operator_app_config() {
   local config_file=$1
   yq e -i '.permission.rbac.conditionalPoliciesFile = "./rbac/conditional-policies.yaml"' ${config_file}
-}
-
-create_app_config_map_k8s() {
-    local config_file=$1
-    local project=$2
-
-    echo "Creating k8s-specific app-config ConfigMap in namespace ${project}"
-
-    yq 'del(.backend.cache)' "$config_file" \
-    | oc create configmap app-config-rhdh \
-        --from-file="app-config-rhdh.yaml"="/dev/stdin" \
-        --namespace="${project}" \
-        --dry-run=client -o yaml \
-    | oc apply -f -
 }
 
 run_tests() {
@@ -699,8 +713,6 @@ check_backstage_running() {
 
   echo "Checking if Backstage is up and running at ${url}"
 
-  trap cleanup EXIT INT ERR # reapply trap
-
   for ((i = 1; i <= max_attempts; i++)); do
     local http_status
     http_status=$(curl --insecure -I -s -o /dev/null -w "%{http_code}" "${url}")
@@ -723,10 +735,22 @@ check_backstage_running() {
   return 1
 }
 
-# installs the advanced-cluster-management Operator
-install_acm_operator(){
+install_olm() {
+  if operator-sdk olm status > /dev/null 2>&1; then
+    echo "OLM is already installed."
+  else
+    operator-sdk olm install
+  fi
+}
+
+uninstall_olm() {
+  operator-sdk olm uninstall
+}
+
+# Installs the advanced-cluster-management OCP Operator
+install_acm_ocp_operator(){
   oc apply -f "${DIR}/cluster/operators/acm/operator-group.yaml"
-  oc apply -f "${DIR}/cluster/operators/acm/subscription-acm.yaml"
+  install_subscription advanced-cluster-management open-cluster-management release-2.12 advanced-cluster-management redhat-operators openshift-marketplace
   wait_for_deployment "open-cluster-management" "multiclusterhub-operator"
   wait_for_svc multiclusterhub-operator-webhook open-cluster-management
   oc apply -f "${DIR}/cluster/operators/acm/multiclusterhub.yaml"
@@ -737,8 +761,23 @@ install_acm_operator(){
     [[ "$CURRENT_PHASE" == "Running" ]] && echo "MulticlusterHub is now in Running phase." && break
     sleep 10
   done' || echo "Timed out after 15 minutes"
-
 }
+
+# TODO
+# Installs Open Cluster Management K8S Operator (alternative of advanced-cluster-management for K8S clusters)
+# install_ocm_k8s_operator(){
+#   install_subscription my-cluster-manager operators stable cluster-manager operatorhubio-catalog olm
+#   wait_for_deployment "operators" "cluster-manager"
+#   wait_for_svc multiclusterhub-operator-work-webhook open-cluster-management
+#   oc apply -f "${DIR}/cluster/operators/acm/multiclusterhub.yaml"
+#   # wait until multiclusterhub is Running.
+#   timeout 600 bash -c 'while true; do
+#     CURRENT_PHASE=$(oc get multiclusterhub multiclusterhub -n open-cluster-management -o jsonpath="{.status.phase}")
+#     echo "MulticlusterHub Current Status: $CURRENT_PHASE"
+#     [[ "$CURRENT_PHASE" == "Running" ]] && echo "MulticlusterHub is now in Running phase." && break
+#     sleep 10
+#   done' || echo "Timed out after 10 minutes"
+# }
 
 # Installs the Red Hat OpenShift Pipelines operator if not already installed
 install_pipelines_operator() {
@@ -749,7 +788,7 @@ install_pipelines_operator() {
   else
     echo "Red Hat OpenShift Pipelines operator is not installed. Installing..."
     # Install the operator and wait for deployment
-    install_subscription openshift-pipelines-operator openshift-operators openshift-pipelines-operator-rh latest redhat-operators
+    install_subscription openshift-pipelines-operator openshift-operators latest openshift-pipelines-operator-rh redhat-operators openshift-marketplace
     wait_for_deployment "openshift-operators" "pipelines"
     timeout 300 bash -c '
     while ! oc get svc tekton-pipelines-webhook -n openshift-pipelines &> /dev/null; do
@@ -803,22 +842,36 @@ delete_tekton_pipelines() {
 
 cluster_setup() {
   install_pipelines_operator
-  install_acm_operator
-  install_crunchy_postgres_operator
+  install_acm_ocp_operator
+  install_crunchy_postgres_ocp_operator
   add_helm_repos
 }
 
-cluster_setup_operator() {
+cluster_setup_ocp_operator() {
   install_pipelines_operator
-  install_acm_operator
-  install_crunchy_postgres_operator
+  install_acm_ocp_operator
+  install_crunchy_postgres_ocp_operator
+}
+
+cluster_setup_k8s_operator() {
+  install_olm
+  install_tekton_pipelines
+  # install_ocm_k8s_operator
+  # install_crunchy_postgres_k8s_operator # Works with K8s but disabled in values file
+}
+
+cluster_setup_k8s_helm() {
+  install_olm
+  install_tekton_pipelines
+  # install_ocm_k8s_operator
+  # install_crunchy_postgres_k8s_operator # Works with K8s but disabled in values file
+  add_helm_repos
 }
 
 initiate_deployments() {
   configure_namespace ${NAME_SPACE}
 
-  # Deploy redis cache db.
-  oc apply -f "$DIR/resources/redis-cache/redis-deployment.yaml" --namespace="${NAME_SPACE}"
+  deploy_redis_cache "${NAME_SPACE}"
 
   cd "${DIR}"
   local rhdh_base_url="https://${RELEASE_NAME}-backstage-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
@@ -924,7 +977,7 @@ initiate_runtime_deployment() {
 initiate_sanity_plugin_checks_deployment() {
   configure_namespace "${NAME_SPACE_SANITY_PLUGINS_CHECK}"
   uninstall_helmchart "${NAME_SPACE_SANITY_PLUGINS_CHECK}" "${RELEASE_NAME}"
-  oc apply -f "$DIR/resources/redis-cache/redis-deployment.yaml" --namespace="${NAME_SPACE_SANITY_PLUGINS_CHECK}"
+  deploy_redis_cache "${NAME_SPACE_SANITY_PLUGINS_CHECK}"
   apply_yaml_files "${DIR}" "${NAME_SPACE_SANITY_PLUGINS_CHECK}" "${sanity_plugins_url}"
   yq_merge_value_files "overwrite" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_SANITY_PLUGINS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}"
   mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE_SANITY_PLUGINS_CHECK}"
@@ -943,7 +996,7 @@ check_and_test() {
   local namespace=$2
   local url=$3
   local max_attempts=${4:-30}    # Default to 30 if not set
-  local wait_seconds=${5:-30}    # Default to 30 if not set
+  local wait_seconds=${5:-0}    # Default to 0 if not set
   if check_backstage_running "${release_name}" "${namespace}" "${url}" "${max_attempts}" "${wait_seconds}"; then
     echo "Display pods for verification..."
     oc get pods -n "${namespace}"
@@ -1016,4 +1069,14 @@ oc_login() {
   oc login --token="${K8S_CLUSTER_TOKEN}" --server="${K8S_CLUSTER_URL}" --insecure-skip-tls-verify=true
   echo "OCP version: $(oc version)"
   export K8S_CLUSTER_ROUTER_BASE=$(oc get route console -n openshift-console -o=jsonpath='{.spec.host}' | sed 's/^[^.]*\.//')
+}
+
+function is_openshift() {
+  oc get routes.route.openshift.io &> /dev/null || kubectl get routes.route.openshift.io &> /dev/null
+}
+
+function detect_ocp_and_set_env_var() {
+  if [[ "${IS_OPENSHIFT}" = "" ]]; then
+    IS_OPENSHIFT=$(is_openshift && echo 'true' || echo 'false')
+  fi
 }
