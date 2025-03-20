@@ -23,6 +23,19 @@ app:
 ![Default Icon Logo when side bar is collapsed](images/default-collapsed-icon.png)
 ![Default Full Logo when side bar is expanded](images/default-expanded-logo.png)
 
+## Hiding Sidebar search, logo, settings, administration
+
+```yaml title="app-config.yaml"
+app:
+  sidebar:
+    search: false # optional, when set to false hides sidebar search
+    logo: false # optional, when set to false hides sidebar logo
+    settings: false # optional, when set to false hides settings menu item
+    administration: false # # optional, when set to false hides administration menu item
+```
+
+![Hidden Sidebar search, logo, settings, administration](images/sidebar-search-hidden.png)
+
 ## Customizing the Sidebar Menu Items
 
 Order and parent-children relationship of sidebar main menu items can be customized using the `dynamicPlugins.frontend.default.main-menu-items.menuItems` field in the `app-config.yaml`. To ensure the menu item is recognized as a main menu item, the key must be prefixed with `default.`.
