@@ -18,12 +18,12 @@ test.describe("Test Kubernetes Actions plugin", () => {
     kubeClient = new KubeClient();
 
     await common.loginAsGuest();
-    await uiHelper.clickLink({ ariaLabel: "Create..." });
+    await uiHelper.clickLink({ ariaLabel: "Self-service" });
   });
 
   test("Creates kubernetes namespace", async () => {
     namespace = `test-kubernetes-actions-${Date.now()}`;
-    await uiHelper.verifyHeading("Software Templates");
+    await uiHelper.verifyHeading("Self-service");
     await uiHelper.clickBtnInCard("Create a kubernetes namespace", "Choose");
     await uiHelper.waitForTitle("Create a kubernetes namespace", 2);
 

@@ -20,6 +20,7 @@ import extractDynamicConfig, {
   DynamicRoute,
 } from '../../utils/dynamicUI/extractDynamicConfig';
 import initializeRemotePlugins from '../../utils/dynamicUI/initializeRemotePlugins';
+import { catalogTranslations } from '../catalog/translations/catalog';
 import { MenuIcon } from '../Root/MenuIcon';
 import CommonIcons from './CommonIcons';
 import defaultAppComponents from './defaultAppComponents';
@@ -458,6 +459,10 @@ export const DynamicRoot = ({
         api => !remoteApis.some(remoteApi => remoteApi.api.id === api.api.id),
       );
       app.current = createApp({
+        __experimentalTranslations: {
+          availableLanguages: ['en'],
+          resources: [catalogTranslations],
+        },
         apis: [...filteredStaticApis, ...remoteApis],
         bindRoutes({ bind }) {
           bindAppRoutes(bind, resolvedRouteBindingTargets, routeBindings);

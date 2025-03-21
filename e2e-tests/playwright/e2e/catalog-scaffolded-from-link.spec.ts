@@ -39,7 +39,7 @@ test.describe.serial("Link Scaffolded Templates to Catalog Items", () => {
 
   test("Register an Template", async () => {
     await uiHelper.openSidebar("Catalog");
-    await uiHelper.clickButton("Create");
+    await uiHelper.clickButton("Self-service");
     await uiHelper.clickButton("Register Existing Component");
     await catalogImport.registerExistingComponent(template, false);
   });
@@ -47,7 +47,7 @@ test.describe.serial("Link Scaffolded Templates to Catalog Items", () => {
   test("Create a React App using the newly registered Template", async () => {
     test.setTimeout(130000);
     await uiHelper.openSidebar("Catalog");
-    await uiHelper.clickButton("Create");
+    await uiHelper.clickButton("Self-service");
     await uiHelper.searchInputPlaceholder("Create React App Template");
     await uiHelper.verifyText("Create React App Template");
     await uiHelper.waitForTextDisappear("Add ArgoCD to an existing project");

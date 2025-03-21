@@ -20,7 +20,7 @@ test.describe("Default Global Header", () => {
     page,
   }) => {
     await expect(page.locator(`input[placeholder="Search..."]`)).toBeVisible();
-    await uiHelper.verifyLink({ label: "Create..." });
+    await uiHelper.verifyLink({ label: "Self-service" });
     await uiHelper.verifyLink({ label: "Support (external link)" });
     await uiHelper.verifyLink({ label: "Notifications" });
     expect(await uiHelper.isBtnVisible("rhdh-qe-2")).toBeTruthy();
@@ -31,9 +31,9 @@ test.describe("Default Global Header", () => {
     expect(await uiHelper.isBtnVisible("Settings")).toBeFalsy();
   });
 
-  test("Verify that clicking on Create button opens the Software Templates page", async () => {
-    await uiHelper.clickLink({ ariaLabel: "Create..." });
-    await uiHelper.verifyHeading("Software Templates");
+  test("Verify that clicking on Self-service button opens the Templates page", async () => {
+    await uiHelper.clickLink({ ariaLabel: "Self-service" });
+    await uiHelper.verifyHeading("Self-service");
   });
 
   test("Verify that clicking on Support button opens a new tab", async ({
