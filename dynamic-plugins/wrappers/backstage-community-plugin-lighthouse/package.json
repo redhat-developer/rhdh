@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "@backstage-community/plugin-lighthouse": "0.6.0",
-    "@mui/icons-material": "5.16.14"
+    "@mui/icons-material": "5.17.1"
   },
   "devDependencies": {
     "@backstage/cli": "0.30.0",
