@@ -174,7 +174,7 @@ function getAuthProviderFactory(providerId: string): AuthProviderFactory {
       return createProxyAuthProviderFactory({
         authenticator: oauth2ProxyAuthenticator,
         signInResolver:
-          oauth2ProxySignInResolvers.forwardedUserMatchingUserEntityName(),
+          rhdhSignInResolvers.oauth2ProxyUserHeaderMatchingUserEntityName(),
         signInResolverFactories: {
           ...oauth2ProxySignInResolvers,
           ...commonSignInResolvers,
