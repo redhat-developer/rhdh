@@ -264,6 +264,7 @@ describe('extractDynamicConfig', () => {
             name: 'foo',
             title: 'Foo',
             to: '/foo',
+            enabled: true,
           },
         ],
       },

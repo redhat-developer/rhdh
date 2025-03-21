@@ -20,6 +20,18 @@ import { HelmActions } from "../../utils/helm";
 import { RhdhAuthUiHack } from "../../support/api/rhdh-auth-hack";
 
 let page: Page;
+const githubFlags = [
+  "--set upstream.backstage.appConfig.signInPage=github",
+  "--set upstream.backstage.appConfig.auth.environment=production",
+  "--set upstream.backstage.appConfig.catalog.providers.microsoftGraphOrg=null",
+  "--set upstream.backstage.appConfig.catalog.providers.keycloakOrg=null",
+  "--set upstream.backstage.appConfig.auth.providers.microsoft=null",
+  "--set upstream.backstage.appConfig.auth.providers.oidc=null",
+  "--set global.dynamic.plugins[1].disabled=false",
+  "--set global.dynamic.plugins[3].disabled=false",
+  "--set upstream.backstage.appConfig.permission.enabled=true",
+  "--set upstream.postgresql.primary.persistence.enabled=false",
+];
 
 test.describe("Standard authentication providers: Github Provider", () => {
   test.use({ baseURL: constants.AUTH_PROVIDERS_BASE_URL });
@@ -43,14 +55,14 @@ test.describe("Standard authentication providers: Github Provider", () => {
 
     LOGGER.info(`Base Url is ${process.env.BASE_URL}`);
     LOGGER.info(
-      `Starting scenario: Standard authentication providers: Basic authentication: attemp #${testInfo.retry}`,
+      `Starting scenario: Standard authentication providers: Basic authentication: attempt #${testInfo.retry}`,
     );
 
     await ghHelper.setupGithubEnvironment();
   });
 
   test("Setup Github authentication provider and wait for first sync", async () => {
-    test.setTimeout(300 * 1000);
+    test.setTimeout(600 * 1000);
     LOGGER.info(
       "Execute testcase: Setup Github authentication provider and wait for first sync",
     );
@@ -63,21 +75,79 @@ test.describe("Standard authentication providers: Github Provider", () => {
       constants.CHART_VERSION,
       constants.QUAY_REPO,
       constants.TAG_NAME,
+      githubFlags,
+    );
+
+    await waitForNextSync("github", syncTime);
+  });
+
+  test("Set sessionDuration and confirm in auth cookie duration has been set", async () => {
+    LOGGER.info(`Executing testcase: ${test.info().title}`);
+
+    test.setTimeout(600 * 1000);
+    if (test.info().retry > 0) {
+      await waitForNextSync("github", syncTime);
+    }
+
+    await HelmActions.upgradeHelmChartWithWait(
+      constants.AUTH_PROVIDERS_RELEASE,
+      constants.AUTH_PROVIDERS_CHART,
+      constants.AUTH_PROVIDERS_NAMESPACE,
+      constants.AUTH_PROVIDERS_VALUES_FILE,
+      constants.CHART_VERSION,
+      constants.QUAY_REPO,
+      constants.TAG_NAME,
       [
-        "--set upstream.backstage.appConfig.signInPage=github",
-        "--set upstream.backstage.appConfig.auth.environment=production",
-        "--set upstream.backstage.appConfig.catalog.providers.microsoftGraphOrg=null",
-        "--set upstream.backstage.appConfig.catalog.providers.keycloakOrg=null",
-        "--set upstream.backstage.appConfig.auth.providers.microsoft=null",
-        "--set upstream.backstage.appConfig.auth.providers.oidc=null",
-        "--set global.dynamic.plugins[1].disabled=false",
-        "--set global.dynamic.plugins[3].disabled=false",
-        "--set upstream.backstage.appConfig.permission.enabled=true",
-        "--set upstream.postgresql.primary.persistence.enabled=false",
+        ...githubFlags,
+        "--set upstream.backstage.appConfig.auth.providers.github.production.sessionDuration=3days",
       ],
     );
 
     await waitForNextSync("github", syncTime);
+
+    await page.goto("/");
+    await uiHelper.verifyHeading("Select a sign-in method");
+    const singInMethods = await page
+      .locator("div[class^='MuiCardHeader-root']")
+      .allInnerTexts();
+    expect(singInMethods).not.toContain("Guest");
+
+    await common.githubLogin(
+      constants.GH_USERS["admin"].name,
+      constants.GH_USER_PASSWORD,
+      constants.AUTH_PROVIDERS_GH_ADMIN_2FA,
+    );
+
+    await expect(async () => {
+      expect(
+        await common.CheckUserIsIngestedInCatalog(
+          [constants.GH_USERS["user_1"].displayName],
+          constants.STATIC_API_TOKEN,
+        ),
+      ).toBe(true);
+    }).toPass({
+      intervals: [1_000, 2_000, 5_000],
+      timeout: 90 * 1000,
+    });
+
+    await page.reload();
+
+    const cookies = await context.cookies();
+    const authCookie = cookies.find(
+      (cookie) => cookie.name === "github-refresh-token",
+    );
+
+    const threeDays = 3 * 24 * 60 * 60 * 1000; // expected duration of 3 days in ms
+    const tolerance = 3 * 60 * 1000; // allow for 3 minutes tolerance
+
+    const actualDuration = authCookie.expires * 1000 - Date.now();
+
+    expect(actualDuration).toBeGreaterThan(threeDays - tolerance);
+    expect(actualDuration).toBeLessThan(threeDays + tolerance);
+
+    await uiHelper.goToSettingsPage();
+    await common.signOut();
+    await context.clearCookies();
   });
 
   test("Github with default resolver: user should login and entity is in the catalog", async () => {

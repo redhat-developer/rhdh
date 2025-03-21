@@ -89,6 +89,8 @@ catalog:
       target: https://github.com/backstage/backstage/blob/master/packages/catalog-model/examples/acme-corp.yaml
       rules:
         - allow: [User, Group]
+    - type: url
+      target: https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/e2e-test-resources/rbac-transitive-parent-ownership.yaml
   providers:
     keycloakOrg:
       default:
@@ -130,3 +132,4 @@ permission:
     admin:
       users:
         - name: user:default/rhdh-qe
+includeTransitiveGroupOwnership: true

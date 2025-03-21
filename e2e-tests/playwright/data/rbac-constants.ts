@@ -23,6 +23,13 @@ export class RbacConstants {
         memberReferences: ["user:default/rhdh-qe-2"],
         name: "role:default/bulk_import",
       },
+      {
+        memberReferences: [
+          "group:default/rhdh-qe-parent-team",
+          "group:default/rhdh-qe-child-team",
+        ],
+        name: "role:default/transitive-owner",
+      },
     ];
   }
 

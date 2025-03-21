@@ -18,3 +18,6 @@ p, role:default/bulk_import, bulk.import, use, allow
 p, role:default/bulk_import, catalog.location.create, create, allow
 p, role:default/bulk_import, catalog.entity.create, create, allow
 g, user:default/rhdh-qe-2, role:default/bulk_import
+
+g, group:default/rhdh-qe-parent-team, role:default/transitive-owner
+g, group:default/rhdh-qe-child-team, role:default/transitive-owner
