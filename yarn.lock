@@ -7645,7 +7645,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-catalog@npm:1.27.0, @backstage/plugin-catalog@npm:^1.26.1":
+"@backstage/plugin-catalog@npm:1.27.0":
   version: 1.27.0
   resolution: "@backstage/plugin-catalog@npm:1.27.0"
   dependencies:
