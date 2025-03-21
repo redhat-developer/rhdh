@@ -144,7 +144,7 @@ class OciDownloader:
                 if not member.name.startswith(plugin_path):
                     continue
                 # zip bomb protection
-                if member.size > int(os.environ.get('MAX_ENTRY_SIZE', 20000000)):
+                if member.size > int(os.environ.get('MAX_ENTRY_SIZE', 30000000)):
                     raise InstallException('Zip bomb detected in ' + member.name)
 
                 if member.islnk() or member.issym():
@@ -241,7 +241,7 @@ def main():
     signal.signal(signal.SIGTERM, lambda signum, frame: sys.exit(0))
     create_lock(lock_file_path)
 
-    maxEntrySize = int(os.environ.get('MAX_ENTRY_SIZE', 20000000))
+    maxEntrySize = int(os.environ.get('MAX_ENTRY_SIZE', 30000000))
     skipIntegrityCheck = os.environ.get("SKIP_INTEGRITY_CHECK", "").lower() == "true"
 
     dynamicPluginsFile = 'dynamic-plugins.yaml'
