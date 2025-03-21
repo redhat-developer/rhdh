@@ -231,9 +231,11 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
           '& span.MuiTypography-subtitle2': {
             fontSize: 12,
             whiteSpace: 'normal',
+            wordBreak: 'break-word',
+            overflowWrap: 'break-word',
           },
           '& div': { width: 36, boxShadow: '-1px 0 0 0 #3c3f42' },
-          "& div[class*='BackstageSidebarItem-secondaryAction']": { width: 18 },
+          "& div[class*='BackstageSidebarItem-secondaryAction']": { width: 20 },
           a: {
             width: 'auto',
             '@media (min-width: 600px)': { width: 160 },
@@ -273,6 +275,8 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
                   width: 78,
                   fontSize: 12,
                   whiteSpace: 'normal',
+                  wordBreak: 'break-word',
+                  overflowWrap: 'break-word',
                 },
                 "& div[class*='BackstageSidebarItem-secondaryAction']": {
                   width:
