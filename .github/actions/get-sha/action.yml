@@ -42,6 +42,6 @@ runs:
         if [[ -f packages/app/src/build-metadata.json ]]; then
           now="$(date -u +%FT%TZ)"
           sed -i packages/app/src/build-metadata.json -r \
-            -e 's|("Last Commit:.+)|"Last Commit: '$REPO' @ '$SHORT_SHA'"|'
+            -e 's|("Last Commit":.+)|"Last Commit": "'$REPO' @ '$SHORT_SHA'"|'
         fi
         echo "short_sha=$SHORT_SHA" >> "$GITHUB_OUTPUT"
