@@ -20,9 +20,9 @@
     "prettier:fix": "prettier --ignore-unknown --write ."
   },
   "dependencies": {
-    "@backstage-community/plugin-rbac-backend": "5.5.2",
-    "@backstage-community/plugin-rbac-node": "1.9.0",
-    "@backstage-community/plugin-scaffolder-backend-module-annotator": "2.4.0",
+    "@backstage-community/plugin-rbac-backend": "5.6.0",
+    "@backstage-community/plugin-rbac-node": "1.10.0",
+    "@backstage-community/plugin-scaffolder-backend-module-annotator": "2.5.0",
     "@backstage/backend-app-api": "1.2.0",
     "@backstage/backend-defaults": "0.8.1",
     "@backstage/backend-dynamic-feature-service": "0.6.0",
