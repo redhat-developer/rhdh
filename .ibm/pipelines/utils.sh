@@ -484,13 +484,20 @@ apply_yaml_files() {
 
     DH_TARGET_URL=$(echo -n "test-backstage-customization-provider-${project}.${K8S_CLUSTER_ROUTER_BASE}" | base64 -w 0)
     echo "[DEBUG] key: DH_TARGET_URL value: $(echo -n "test-backstage-customization-provider-${project}.${K8S_CLUSTER_ROUTER_BASE}")"
+    echo "[DEBUG] key: DH_TARGET_URL encoded: ${DH_TARGET_URL}"
+    echo "[DEBUG] key: rhdh_base_url value: @@@${rhdh_base_url}@@@"
     
+    # sed: -e expression #1, char 110: unterminated `s' command
     local RHDH_BASE_URL=$(echo -n "$rhdh_base_url" | base64)
-    local RHDH_BASE_URL_HTTP=$(echo -n "${rhdh_base_url/https/http}" | base64)    
+    echo "[DEBUG] key: RHDH_BASE_URL encoded: @@@${RHDH_BASE_URL}@@@"
+    echo "[DEBUG] key: RHDH_BASE_URL_HTTP value: @@@${rhdh_base_url/https/http}@@@"
     
-    for key in GITHUB_APP_APP_ID GITHUB_APP_CLIENT_ID GITHUB_APP_PRIVATE_KEY GITHUB_APP_CLIENT_SECRET GITHUB_APP_JANUS_TEST_APP_ID GITHUB_APP_JANUS_TEST_CLIENT_ID GITHUB_APP_JANUS_TEST_CLIENT_SECRET GITHUB_APP_JANUS_TEST_PRIVATE_KEY GITHUB_APP_WEBHOOK_URL GITHUB_APP_WEBHOOK_SECRET KEYCLOAK_CLIENT_SECRET ACR_SECRET GOOGLE_CLIENT_ID GOOGLE_CLIENT_SECRET K8S_CLUSTER_TOKEN_ENCODED OCM_CLUSTER_URL GITLAB_TOKEN KEYCLOAK_AUTH_BASE_URL KEYCLOAK_AUTH_CLIENTID KEYCLOAK_AUTH_CLIENT_SECRET KEYCLOAK_AUTH_LOGIN_REALM KEYCLOAK_AUTH_REALM RHDH_BASE_URL RHDH_BASE_URL_HTTP; do
+    local RHDH_BASE_URL_HTTP=$(echo -n "${rhdh_base_url/https/http}" | base64)    
+    echo "[DEBUG] key: RHDH_BASE_URL_HTTP encoded : @@@${rhdh_base_url/https/http}@@@"
+    
+    for key in GITHUB_APP_APP_ID GITHUB_APP_CLIENT_ID GITHUB_APP_PRIVATE_KEY GITHUB_APP_CLIENT_SECRET GITHUB_APP_JANUS_TEST_APP_ID GITHUB_APP_JANUS_TEST_CLIENT_ID GITHUB_APP_JANUS_TEST_CLIENT_SECRET GITHUB_APP_JANUS_TEST_PRIVATE_KEY GITHUB_APP_WEBHOOK_URL GITHUB_APP_WEBHOOK_SECRET KEYCLOAK_CLIENT_SECRET ACR_SECRET GOOGLE_CLIENT_ID GOOGLE_CLIENT_SECRET K8S_CLUSTER_TOKEN_ENCODED OCM_CLUSTER_URL GITLAB_TOKEN KEYCLOAK_AUTH_BASE_URL KEYCLOAK_AUTH_CLIENTID KEYCLOAK_AUTH_CLIENT_SECRET KEYCLOAK_AUTH_LOGIN_REALM KEYCLOAK_AUTH_REALM RHDH_BASE_URL_HTTP DH_TARGET_URL RHDH_BASE_URL; do
       echo "[DEBUG] key: ${key}"
-      sed -i "s|${key}:.*|${key}: ${!key}|g" "$dir/auth/secrets-rhdh-secrets.yaml"
+      sed -i "s#${key}:.*#${key}: ${!key}#g" "$dir/auth/secrets-rhdh-secrets.yaml"
     done
     
     oc apply -f "$dir/resources/service_account/service-account-rhdh.yaml" --namespace="${project}"
