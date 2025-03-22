@@ -38,6 +38,17 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Check Image and Relevant Changes
+        id: check-image
+        uses: ./.github/actions/check-image-and-changes
+
+      - name: Check if build should be skipped
+        run: |
+          if [[ "${{ steps.check-image.outputs.relevant_changes }}" == "false" && "${{ steps.check-image.outputs.image_exists }}" == "true" ]]; then
+            echo "Skipping build: Image already exists and no relevant changes detected."
+            exit 0
+          fi
+
       - name: Setup Node.js
         uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4
         with:
@@ -69,6 +80,17 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           fetch-depth: 0
+
+      - name: Check Image and Relevant Changes
+        id: check-image
+        uses: ./.github/actions/check-image-and-changes
+
+      - name: Check if tests should be skipped
+        run: |
+          if [[ "${{ steps.check-image.outputs.relevant_changes }}" == "false" && "${{ steps.check-image.outputs.image_exists }}" == "true" ]]; then
+            echo "Skipping tests: No relevant changes detected."
+            exit 0
+          fi
 
       - name: Setup Node.js
         uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4
