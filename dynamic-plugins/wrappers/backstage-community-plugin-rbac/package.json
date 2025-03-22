@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "@backstage-community/plugin-rbac": "1.38.2",
-    "@mui/material": "5.16.14"
+    "@mui/material": "5.17.1"
   },
   "devDependencies": {
     "@backstage/cli": "0.30.0",

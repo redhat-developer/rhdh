@@ -28,7 +28,7 @@
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
-    "@mui/material": "5.16.14",
+    "@mui/material": "5.17.1",
     "@red-hat-developer-hub/backstage-plugin-global-floating-action-button": "1.0.0"
   },
   "devDependencies": {

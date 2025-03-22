@@ -30,8 +30,8 @@
   "dependencies": {
     "@backstage-community/plugin-acr": "1.11.0",
     "@backstage/core-plugin-api": "1.10.4",
-    "@mui/icons-material": "5.16.14",
-    "@mui/material": "5.16.14"
+    "@mui/icons-material": "5.17.1",
+    "@mui/material": "5.17.1"
   },
   "devDependencies": {
     "@backstage/cli": "0.30.0",
