@@ -4,6 +4,7 @@ import { Common, setupBrowser } from "../utils/common";
 
 let page: Page;
 test.describe.serial("GitHub integration with Org data fetching", () => {
+  test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
   let common: Common;
   let uiHelper: UIhelper;
 
