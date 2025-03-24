@@ -64,7 +64,7 @@ test.describe("Verify Redis Cache DB", () => {
 
     console.log("Connecting to Redis...");
     const redis = new Redis(
-      `redis://${process.env.REDIS_TEMP_USER}:${process.env.REDIS_TEMP_PASS}@localhost:6379`,
+      `redis://${process.env.REDIS_USERNAME}:${process.env.REDIS_PASSWORD}@localhost:6379`,
     );
     console.log("Verifying Redis keys...");
     await expect(async () => {

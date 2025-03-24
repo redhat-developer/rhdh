@@ -914,8 +914,7 @@ initiate_upgrade_base_deployments() {
 
   configure_namespace ${NAME_SPACE}
   
-  # Deploy redis cache db.
-  oc apply -f "$DIR/resources/redis-cache/redis-deployment.yaml" --namespace="${NAME_SPACE}"
+  deploy_redis_cache "${NAME_SPACE}"
 
   cd "${DIR}"
   local rhdh_base_url="https://${RELEASE_NAME}-backstage-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
