@@ -64,6 +64,8 @@ export class UIhelper {
       .getByText(label, { exact: options.exact })
       .first();
 
+    await button.scrollIntoViewIfNeeded();
+
     if (options?.force) {
       await button.click({ force: true });
     } else {
