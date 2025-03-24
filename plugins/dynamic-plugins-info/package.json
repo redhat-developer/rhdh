@@ -39,7 +39,7 @@
     "@material-table/core": "3.2.5",
     "@mui/icons-material": "5.17.1",
     "@mui/material": "5.17.1",
-    "@scalprum/react-core": "0.9.3",
+    "@scalprum/react-core": "0.9.4",
     "react-use": "17.6.0"
   },
   "peerDependencies": {

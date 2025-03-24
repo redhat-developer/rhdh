@@ -11335,7 +11335,7 @@ __metadata:
     "@material-table/core": 3.2.5
     "@mui/icons-material": 5.17.1
     "@mui/material": 5.17.1
-    "@scalprum/react-core": 0.9.3
+    "@scalprum/react-core": 0.9.4
     "@testing-library/jest-dom": 6.6.3
     "@testing-library/react": 14.3.1
     "@testing-library/user-event": 14.6.1
@@ -17808,7 +17808,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@scalprum/core@npm:0.8.1, @scalprum/core@npm:^0.8.1":
+"@scalprum/core@npm:0.8.2, @scalprum/core@npm:^0.8.2":
+  version: 0.8.2
+  resolution: "@scalprum/core@npm:0.8.2"
+  dependencies:
+    "@openshift/dynamic-plugin-sdk": ^5.0.1
+    tslib: ^2.6.2
+  checksum: a7f71411c4ee02913f57fcba599f3ab491d98acb848f9e546dd40e90612468538fce81136f8c7fd0a7ae40b24772e31fbbb0b943e8d98f5510b37b9276c418b2
+  languageName: node
+  linkType: hard
+
+"@scalprum/core@npm:^0.8.1":
   version: 0.8.1
   resolution: "@scalprum/core@npm:0.8.1"
   dependencies:
@@ -17829,6 +17839,20 @@ __metadata:
     react: ">=16.8.0 || >=17.0.0 || ^18.0.0"
     react-dom: ">=16.8.0 || >=17.0.0 || ^18.0.0"
   checksum: 19c29a54e25c8025b668a96291741ce4b68dc0c87684cc39c260fc29aa2e0fc0d3e01266e0b5f64a290607e3df8d766539b619d23b756e2d09534b37034c313c
+  languageName: node
+  linkType: hard
+
+"@scalprum/react-core@npm:0.9.4":
+  version: 0.9.4
+  resolution: "@scalprum/react-core@npm:0.9.4"
+  dependencies:
+    "@openshift/dynamic-plugin-sdk": ^5.0.1
+    "@scalprum/core": ^0.8.2
+    lodash: ^4.17.0
+  peerDependencies:
+    react: ">=16.8.0 || >=17.0.0 || ^18.0.0"
+    react-dom: ">=16.8.0 || >=17.0.0 || ^18.0.0"
+  checksum: 33ea8633f44e030a087e08ae441ef7a7425194c78ae6c340271d8d0f69b95e046cbb17165d1e85c5728facd8b4eec31348903898b0f7bd36268835cf208b7941
   languageName: node
   linkType: hard
 
@@ -22775,8 +22799,8 @@ __metadata:
     "@mui/material": 5.17.1
     "@mui/styled-engine": 5.16.14
     "@redhat-developer/red-hat-developer-hub-theme": 0.5.0
-    "@scalprum/core": 0.8.1
-    "@scalprum/react-core": 0.9.3
+    "@scalprum/core": 0.8.2
+    "@scalprum/react-core": 0.9.4
     "@scalprum/react-test-utils": 0.2.4
     "@testing-library/dom": 9.3.4
     "@testing-library/jest-dom": 6.6.3
