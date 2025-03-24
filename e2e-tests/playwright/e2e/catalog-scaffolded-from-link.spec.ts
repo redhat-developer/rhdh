@@ -39,7 +39,7 @@ test.describe.serial("Link Scaffolded Templates to Catalog Items", () => {
 
   test("Register an Template", async () => {
     await uiHelper.openSidebar("Catalog");
-    await uiHelper.clickButton("Self-service");
+    await uiHelper.clickButton("Create");
     await uiHelper.clickButton("Register Existing Component");
     await catalogImport.registerExistingComponent(template, false);
   });
