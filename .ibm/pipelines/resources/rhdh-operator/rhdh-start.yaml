@@ -8,7 +8,7 @@ spec:
     appConfig:
       configMaps:
         - name: app-config-rhdh
-        - name: dynamic-homepage-and-sidebar-config
+        - name: dynamic-plugins-config
       mountPath: /opt/app-root/src
     dynamicPluginsConfigMapName: dynamic-plugins
     extraEnvs:
