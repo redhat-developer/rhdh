@@ -6,3 +6,9 @@ export type LearningPathLink = {
   minutes?: number;
   paths?: number;
 };
+
+export type BuildInfo = {
+  title: string;
+  card: { [key: string]: string };
+  full?: boolean;
+};

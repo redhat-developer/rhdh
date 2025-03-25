@@ -23,6 +23,19 @@ app:
 ![Default Icon Logo when side bar is collapsed](images/default-collapsed-icon.png)
 ![Default Full Logo when side bar is expanded](images/default-expanded-logo.png)
 
+## Hiding Sidebar search, logo, settings, administration
+
+```yaml title="app-config.yaml"
+app:
+  sidebar:
+    search: false # optional, when set to false hides sidebar search
+    logo: false # optional, when set to false hides sidebar logo
+    settings: false # optional, when set to false hides settings menu item
+    administration: false # # optional, when set to false hides administration menu item
+```
+
+![Hidden Sidebar search, logo, settings, administration](images/sidebar-search-hidden.png)
+
 ## Customizing the Sidebar Menu Items
 
 Order and parent-children relationship of sidebar main menu items can be customized using the `dynamicPlugins.frontend.default.main-menu-items.menuItems` field in the `app-config.yaml`. To ensure the menu item is recognized as a main menu item, the key must be prefixed with `default.`.
@@ -91,9 +104,9 @@ app:
   branding:
     theme:
       light:
-        primaryColor: '#38be8b'
+        primaryColor: "#38be8b"
       dark:
-        primaryColor: '#ab75cf'
+        primaryColor: "#ab75cf"
 ```
 
 ![Example Light Mode Primary Color](images/example-light-mode-primary-color.png)
@@ -110,11 +123,11 @@ app:
   branding:
     theme:
       light:
-        headerColor1: 'hsl(204 100% 71%)'
-        headerColor2: 'color(a98-rgb 1 0 0)'
+        headerColor1: "hsl(204 100% 71%)"
+        headerColor2: "color(a98-rgb 1 0 0)"
       dark:
-        headerColor1: '#0000d0'
-        headerColor2: 'rgb(255 246 140)'
+        headerColor1: "#0000d0"
+        headerColor2: "rgb(255 246 140)"
 ```
 
 ![Example Light Mode Banner](images/example-light-mode-banner.png)
@@ -129,9 +142,9 @@ app:
   branding:
     theme:
       light:
-        navigationIndicatorColor: '#be0000'
+        navigationIndicatorColor: "#be0000"
       dark:
-        navigationIndicatorColor: '#f4eea9'
+        navigationIndicatorColor: "#f4eea9"
 ```
 
 ![Example Light Mode Sidebar Indicator](images/example-sidebar-indicator-light.png)
@@ -165,3 +178,19 @@ app:
 If support is not configured, it would look as below.
 
 ![Example Support Not Configured](images/support-not-configured.png)
+
+## Customizing Build info content in the user settings page
+
+To customize the build info content in the user settings page, provide your content to the `buildInfo` field in the `app-config.yaml` file.
+
+Example configurations:
+
+```
+buildInfo:
+  title: <Specify the title you want to display in the build info card.>
+  card:
+    TechDocs builder: 'local'
+    Authentication provider: 'Github'
+    RBAC: disabled
+  full: true # If set to true, only the information specified in this configuration will be displayed. If set to false, the provided details will be shown along with the build versions. By default it will only display the configured information.
+```

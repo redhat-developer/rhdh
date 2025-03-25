@@ -1,10 +1,9 @@
 export type SidebarTabs =
   | "Catalog"
-  | "Create"
   | "Settings"
   | "My Group"
   | "Home"
-  | "Create..."
+  | "Self-service"
   | "Learning Paths"
   | "Extensions"
   | "Bulk import"

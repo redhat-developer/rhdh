@@ -37,20 +37,25 @@ save_all_pod_logs(){
 
 droute_send() {
   if [[ "${OPENSHIFT_CI}" != "true" ]]; then return 0; fi
-  temp_kubeconfig=$(mktemp) # Create temporary KUBECONFIG to open second `oc` session
+  local original_context
+  original_context=$(oc config current-context) # Save original context
   ( # Open subshell
     if [ -n "${PULL_NUMBER:-}" ]; then
       set +e
     fi
-    export KUBECONFIG="$temp_kubeconfig"
     local droute_version="1.2.2"
     local release_name=$1
     local project=$2
     local droute_project="droute"
     local metadata_output="data_router_metadata_output.json"
 
-    oc login --token="${RHDH_PR_OS_CLUSTER_TOKEN}" --server="${RHDH_PR_OS_CLUSTER_URL}"
+    oc config set-credentials temp-user --token="${RHDH_PR_OS_CLUSTER_TOKEN}"
+    oc config set-cluster temp-cluster --server="${RHDH_PR_OS_CLUSTER_URL}"
+    oc config set-context temp-context --user=temp-user --cluster=temp-cluster
+    oc config use-context temp-context
     oc whoami --show-server
+    trap 'oc config use-context "$original_context"' RETURN
+
     local droute_pod_name=$(oc get pods -n droute --no-headers -o custom-columns=":metadata.name" | grep ubi9-cert-rsync)
     local temp_droute=$(oc exec -n "${droute_project}" "${droute_pod_name}" -- /bin/bash -c "mktemp -d")
 
@@ -97,19 +102,21 @@ droute_send() {
 
     # Send test by rsync to bastion pod.
     local max_attempts=5
-    local wait_seconds=4
+    local wait_seconds_step=1
     for ((i = 1; i <= max_attempts; i++)); do
       echo "Attempt ${i} of ${max_attempts} to rsync test resuls to bastion pod."
       if output=$(oc rsync --progress=true --include="${metadata_output}" --include="${JUNIT_RESULTS}" --exclude="*" -n "${droute_project}" "${ARTIFACT_DIR}/${project}/" "${droute_project}/${droute_pod_name}:${temp_droute}/" 2>&1); then
         echo "$output"
         break
-      fi
-      if ((i == max_attempts)); then
+      elif ((i == max_attempts)); then
         echo "Failed to rsync test results after ${max_attempts} attempts."
         echo "Last rsync error details:"
         echo "${output}"
         echo "Troubleshooting steps:"
         echo "1. Restart $droute_pod_name in $droute_project project/namespace"
+        return 1
+      else
+        sleep $((wait_seconds_step * i))
       fi
     done
 
@@ -120,8 +127,8 @@ droute_send() {
       && ${temp_droute}/droute-linux-amd64 version"
 
     # Send test results through DataRouter and save the request ID.
-    local max_attempts=5
-    local wait_seconds=1
+    local max_attempts=10
+    local wait_seconds_step=1
     for ((i = 1; i <= max_attempts; i++)); do
       echo "Attempt ${i} of ${max_attempts} to send test results through Data Router."
       if output=$(oc exec -n "${droute_project}" "${droute_pod_name}" -- /bin/bash -c "
@@ -130,16 +137,13 @@ droute_send() {
           --username '${DATA_ROUTER_USERNAME}' \
           --password '${DATA_ROUTER_PASSWORD}' \
           --results '${temp_droute}/${JUNIT_RESULTS}' \
-          --verbose" 2>&1); then
-        if DATA_ROUTER_REQUEST_ID=$(echo "$output" | grep "request:" | awk '{print $2}') &&
-          [ -n "$DATA_ROUTER_REQUEST_ID" ]; then
-          echo "Test results successfully sent through Data Router."
-          echo "Request ID: $DATA_ROUTER_REQUEST_ID"
-          break
-        fi
-      fi
-
-      if ((i == max_attempts)); then
+          --verbose" 2>&1) && \
+        DATA_ROUTER_REQUEST_ID=$(echo "$output" | grep "request:" | awk '{print $2}') &&
+        [ -n "$DATA_ROUTER_REQUEST_ID" ]; then
+        echo "Test results successfully sent through Data Router."
+        echo "Request ID: $DATA_ROUTER_REQUEST_ID"
+        break
+      elif ((i == max_attempts)); then
         echo "Failed to send test results after ${max_attempts} attempts."
         echo "Last Data Router error details:"
         echo "${output}"
@@ -147,6 +151,9 @@ droute_send() {
         echo "1. Restart $droute_pod_name in $droute_project project/namespace"
         echo "2. Check the Data Router documentation: https://spaces.redhat.com/pages/viewpage.action?pageId=115488042"
         echo "3. Ask for help at Slack: #forum-dno-datarouter"
+        return 1
+      else
+        sleep $((wait_seconds_step * i))
       fi
     done
 
@@ -180,7 +187,7 @@ droute_send() {
       set -e
     fi
   ) # Close subshell
-  rm -f "$temp_kubeconfig" # Destroy temporary KUBECONFIG
+  oc config use-context "$original_context" # Restore original context
   oc whoami --show-server
 }
 
@@ -477,11 +484,18 @@ apply_yaml_files() {
 
     DH_TARGET_URL=$(echo -n "test-backstage-customization-provider-${project}.${K8S_CLUSTER_ROUTER_BASE}" | base64 -w 0)
     local RHDH_BASE_URL=$(echo -n "$rhdh_base_url" | base64 | tr -d '\n')
-
-    for key in GITHUB_APP_APP_ID GITHUB_APP_CLIENT_ID GITHUB_APP_PRIVATE_KEY GITHUB_APP_CLIENT_SECRET GITHUB_APP_JANUS_TEST_APP_ID GITHUB_APP_JANUS_TEST_CLIENT_ID GITHUB_APP_JANUS_TEST_CLIENT_SECRET GITHUB_APP_JANUS_TEST_PRIVATE_KEY GITHUB_APP_WEBHOOK_URL GITHUB_APP_WEBHOOK_SECRET KEYCLOAK_CLIENT_SECRET ACR_SECRET GOOGLE_CLIENT_ID GOOGLE_CLIENT_SECRET K8S_CLUSTER_TOKEN_ENCODED OCM_CLUSTER_URL GITLAB_TOKEN KEYCLOAK_AUTH_BASE_URL KEYCLOAK_AUTH_CLIENTID KEYCLOAK_AUTH_CLIENT_SECRET KEYCLOAK_AUTH_LOGIN_REALM KEYCLOAK_AUTH_REALM RHDH_BASE_URL DH_TARGET_URL; do
+    local RHDH_BASE_URL_HTTP=$(echo -n "${rhdh_base_url/https/http}" | base64 | tr -d '\n')
+    
+    for key in GITHUB_APP_APP_ID GITHUB_APP_CLIENT_ID GITHUB_APP_PRIVATE_KEY GITHUB_APP_CLIENT_SECRET GITHUB_APP_JANUS_TEST_APP_ID GITHUB_APP_JANUS_TEST_CLIENT_ID GITHUB_APP_JANUS_TEST_CLIENT_SECRET GITHUB_APP_JANUS_TEST_PRIVATE_KEY GITHUB_APP_WEBHOOK_URL GITHUB_APP_WEBHOOK_SECRET KEYCLOAK_CLIENT_SECRET ACR_SECRET GOOGLE_CLIENT_ID GOOGLE_CLIENT_SECRET K8S_CLUSTER_TOKEN_ENCODED OCM_CLUSTER_URL GITLAB_TOKEN KEYCLOAK_AUTH_BASE_URL KEYCLOAK_AUTH_CLIENTID KEYCLOAK_AUTH_CLIENT_SECRET KEYCLOAK_AUTH_LOGIN_REALM KEYCLOAK_AUTH_REALM DH_TARGET_URL; do
       sed -i "s|${key}:.*|${key}: ${!key}|g" "$dir/auth/secrets-rhdh-secrets.yaml"
     done
 
+    for key in RHDH_BASE_URL RHDH_BASE_URL_HTTP; do
+      # Escape any special characters in the base64 value
+      local escaped_value=$(printf '%s' "${!key}" | sed 's/[\/&]/\\&/g')
+      sed -i "s|${key}:.*|${key}: ${escaped_value}|g" "$dir/auth/secrets-rhdh-secrets.yaml"
+    done
+    
     oc apply -f "$dir/resources/service_account/service-account-rhdh.yaml" --namespace="${project}"
     oc apply -f "$dir/auth/service-account-rhdh-secret.yaml" --namespace="${project}"
     oc apply -f "$dir/auth/secrets-rhdh-secrets.yaml" --namespace="${project}"
@@ -506,8 +520,8 @@ apply_yaml_files() {
     else
       create_app_config_map "$config_file" "$project"
     fi
-    oc create configmap dynamic-homepage-and-sidebar-config \
-      --from-file="dynamic-homepage-and-sidebar-config.yaml"="$dir/resources/config_map/dynamic-homepage-and-sidebar-config.yaml" \
+    oc create configmap dynamic-plugins-config \
+      --from-file="dynamic-plugins-config.yaml"="$dir/resources/config_map/dynamic-plugins-config.yaml" \
       --namespace="${project}" \
       --dry-run=client -o yaml | oc apply -f -
 

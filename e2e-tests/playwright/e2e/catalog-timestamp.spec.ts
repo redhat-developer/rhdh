@@ -31,7 +31,7 @@ test.describe("Test timestamp column on Catalog", () => {
   });
 
   test("Register an existing component and verify `Created At` column and value in the Catalog Page", async () => {
-    await uiHelper.clickButton("Create");
+    await uiHelper.clickButton("Self-service");
     await uiHelper.clickButton("Register Existing Component");
     await catalogImport.registerExistingComponent(component);
     await uiHelper.openSidebar("Catalog");

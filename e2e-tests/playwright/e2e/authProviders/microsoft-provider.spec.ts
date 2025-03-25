@@ -22,6 +22,35 @@ import { HelmActions } from "../../utils/helm";
 import { RhdhAuthUiHack } from "../../support/api/rhdh-auth-hack";
 
 let page: Page;
+const oauthFlags = [
+  "--set upstream.backstage.appConfig.auth.providers.github=null",
+  "--set upstream.backstage.appConfig.signInPage=microsoft",
+  "--set upstream.backstage.appConfig.auth.environment=production",
+  "--set upstream.backstage.appConfig.catalog.providers.githubOrg=null",
+  "--set upstream.backstage.appConfig.catalog.providers.keycloakOrg=null",
+  "--set global.dynamic.plugins[2].disabled=false",
+  "--set global.dynamic.plugins[3].disabled=false",
+  "--set upstream.backstage.appConfig.permission.enabled=true",
+];
+
+const oidcFlags = [
+  "--set upstream.backstage.appConfig.auth.providers.github=null",
+  "--set upstream.backstage.appConfig.signInPage=oidc",
+  "--set upstream.backstage.appConfig.auth.environment=production",
+  "--set upstream.backstage.appConfig.catalog.providers.githubOrg=null",
+  "--set upstream.backstage.appConfig.catalog.providers.keycloakOrg=null",
+  "--set global.dynamic.plugins[2].disabled=false",
+  "--set global.dynamic.plugins[3].disabled=false",
+  "--set upstream.backstage.appConfig.permission.enabled=true",
+  "--set upstream.backstage.appConfig.auth.providers.oidc.production.metadataUrl=https://login.microsoftonline.com/${AUTH_PROVIDERS_AZURE_TENANT_ID}/.well-known/openid-configuration",
+  "--set upstream.backstage.appConfig.auth.providers.oidc.production.tenantId=${AUTH_PROVIDERS_AZURE_TENANT_ID}",
+  "--set upstream.backstage.appConfig.auth.providers.oidc.production.clientId=${AUTH_PROVIDERS_AZURE_CLIENT_ID}",
+  "--set upstream.backstage.appConfig.auth.providers.oidc.production.clientSecret=${AUTH_PROVIDERS_AZURE_CLIENT_SECRET}",
+  "--set upstream.backstage.appConfig.auth.providers.oidc.production.prompt=auto",
+  "--set upstream.backstage.appConfig.auth.providers.oidc.production.callbackUrl=${BASE_URL}/api/auth/oidc/handler/frame",
+  "--set upstream.backstage.appConfig.auth.providers.oidc.production.signIn.resolvers[0].resolver=emailMatchingUserEntityProfileEmail",
+  "--set upstream.backstage.appConfig.auth.providers.oidc.production.signIn.resolvers[0].dangerouslyAllowSignInWithoutUserInCatalog=true",
+];
 
 test.describe("Standard authentication providers: Micorsoft Azure EntraID", () => {
   test.use({ baseURL: constants.AUTH_PROVIDERS_BASE_URL });
@@ -36,7 +65,7 @@ test.describe("Standard authentication providers: Micorsoft Azure EntraID", () =
   test.beforeAll(async ({ browser }, testInfo) => {
     test.setTimeout(120 * 1000);
     LOGGER.info(
-      `Staring scenario: Standard authentication providers: Micorsoft Azure EntraID: attemp #${testInfo.retry}`,
+      `Staring scenario: Standard authentication providers: Microsoft Azure EntraID: attempt #${testInfo.retry}`,
     );
 
     const browserSetup = await setupBrowser(browser, testInfo);
@@ -66,35 +95,6 @@ test.describe("Standard authentication providers: Micorsoft Azure EntraID", () =
   test("Setup RHDH with Microsoft EntraID ingestion and eventually wait for the first sync", async () => {
     test.setTimeout(600 * 1000);
     const oidcFlow = false;
-    const oauthFlags = [
-      "--set upstream.backstage.appConfig.auth.providers.github=null",
-      "--set upstream.backstage.appConfig.signInPage=microsoft",
-      "--set upstream.backstage.appConfig.auth.environment=production",
-      "--set upstream.backstage.appConfig.catalog.providers.githubOrg=null",
-      "--set upstream.backstage.appConfig.catalog.providers.keycloakOrg=null",
-      "--set global.dynamic.plugins[2].disabled=false",
-      "--set global.dynamic.plugins[3].disabled=false",
-      "--set upstream.backstage.appConfig.permission.enabled=true",
-    ];
-
-    const oidcFlags = [
-      "--set upstream.backstage.appConfig.auth.providers.github=null",
-      "--set upstream.backstage.appConfig.signInPage=oidc",
-      "--set upstream.backstage.appConfig.auth.environment=production",
-      "--set upstream.backstage.appConfig.catalog.providers.githubOrg=null",
-      "--set upstream.backstage.appConfig.catalog.providers.keycloakOrg=null",
-      "--set global.dynamic.plugins[2].disabled=false",
-      "--set global.dynamic.plugins[3].disabled=false",
-      "--set upstream.backstage.appConfig.permission.enabled=true",
-      "--set upstream.backstage.appConfig.auth.providers.oidc.production.metadataUrl=https://login.microsoftonline.com/${AUTH_PROVIDERS_AZURE_TENANT_ID}/.well-known/openid-configuration",
-      "--set upstream.backstage.appConfig.auth.providers.oidc.production.tenantId=${AUTH_PROVIDERS_AZURE_TENANT_ID}",
-      "--set upstream.backstage.appConfig.auth.providers.oidc.production.clientId=${AUTH_PROVIDERS_AZURE_CLIENT_ID}",
-      "--set upstream.backstage.appConfig.auth.providers.oidc.production.clientSecret=${AUTH_PROVIDERS_AZURE_CLIENT_SECRET}",
-      "--set upstream.backstage.appConfig.auth.providers.oidc.production.prompt=auto",
-      "--set upstream.backstage.appConfig.auth.providers.oidc.production.callbackUrl=${BASE_URL}/api/auth/oidc/handler/frame",
-      "--set upstream.backstage.appConfig.auth.providers.oidc.production.signIn.resolvers[0].resolver=emailMatchingUserEntityProfileEmail",
-      "--set upstream.backstage.appConfig.auth.providers.oidc.production.signIn.resolvers[0].dangerouslyAllowSignInWithoutUserInCatalog=true",
-    ];
     // setup RHSSO provider with user ingestion
     await HelmActions.upgradeHelmChartWithWait(
       constants.AUTH_PROVIDERS_RELEASE,
@@ -108,6 +108,64 @@ test.describe("Standard authentication providers: Micorsoft Azure EntraID", () =
     );
 
     await waitForNextSync("microsoft", syncTime);
+  });
+
+  test("Set sessionDuration and confirm in auth cookie duration has been set", async () => {
+    LOGGER.info(`Executing testcase: ${test.info().title}`);
+
+    test.setTimeout(600 * 1000);
+
+    await HelmActions.upgradeHelmChartWithWait(
+      constants.AUTH_PROVIDERS_RELEASE,
+      constants.AUTH_PROVIDERS_CHART,
+      constants.AUTH_PROVIDERS_NAMESPACE,
+      constants.AUTH_PROVIDERS_VALUES_FILE,
+      constants.CHART_VERSION,
+      constants.QUAY_REPO,
+      constants.TAG_NAME,
+      [
+        ...oauthFlags,
+        "--set upstream.backstage.appConfig.auth.providers.microsoft.production.sessionDuration=3days",
+      ],
+    );
+
+    await waitForNextSync("microsoft", syncTime);
+
+    await common.MicrosoftAzureLogin(
+      constants.MSGRAPH_USERS["user_1"].userPrincipalName,
+      constants.RHSSO76_DEFAULT_PASSWORD,
+    );
+
+    await expect(async () => {
+      expect(
+        await common.CheckUserIsIngestedInCatalog(
+          [constants.MSGRAPH_USERS["user_1"].displayName],
+          constants.STATIC_API_TOKEN,
+        ),
+      ).toBe(true);
+    }).toPass({
+      intervals: [1_000, 2_000, 5_000],
+      timeout: 90 * 1000,
+    });
+
+    await page.reload();
+
+    const cookies = await context.cookies();
+    const authCookie = cookies.find(
+      (cookie) => cookie.name === "microsoft-refresh-token",
+    );
+
+    const threeDays = 3 * 24 * 60 * 60 * 1000; // expected duration of 3 days in ms
+    const tolerance = 3 * 60 * 1000; // allow for 3 minutes tolerance
+
+    const actualDuration = authCookie.expires * 1000 - Date.now();
+
+    expect(actualDuration).toBeGreaterThan(threeDays - tolerance);
+    expect(actualDuration).toBeLessThan(threeDays + tolerance);
+
+    await uiHelper.goToSettingsPage();
+    await common.signOut();
+    await context.clearCookies();
   });
 
   test("Microsoft EntraID with default resolver: user_1 should login and entity is in the catalog", async () => {

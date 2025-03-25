@@ -54,7 +54,9 @@ export function buildTree(menuItemsArray: MenuItem[]): MenuItem[] {
   });
 
   const filteredItemMap = Object.fromEntries(
-    Object.entries(itemMap).filter(([_, item]) => item.title),
+    Object.entries(itemMap).filter(
+      ([_, item]) => item.enabled !== false && item.title,
+    ),
   );
 
   const tree: MenuItem[] = [];
@@ -89,6 +91,7 @@ export function extractMenuItems(frontend: FrontendConfig): MenuItem[] {
             title: 'text' in mi && mi.text ? mi.text : '',
             to: dr.path ?? '',
             children: [],
+            enabled: 'enabled' in mi ? mi.enabled : true,
           });
         }
       });

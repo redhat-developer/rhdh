@@ -214,7 +214,7 @@ COPY packages/app/src/build-metadata.json ./packages/app/src/
 RUN \
   # Downstream only - relabel upstream + append build time into packages/app/src/build-metadata.json
   now=$(date -u +%FT%TZ); sed -i packages/app/src/build-metadata.json -r \
-  -e "s/\"Last Commit: (.+)\"/\"Upstream: \1\", \"Build Time: $now\"/" && \
+  -e "s/\"Last Commit\": \"(.+)\"/\"Upstream\": \"\1\", \"Build Time\": \"$now\"/" && \
   cat packages/app/src/build-metadata.json; echo && \
   "$YARN" build --filter=backend && \
   # Downstream only - replace registry refs with cachito ones

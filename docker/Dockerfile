@@ -162,7 +162,7 @@ RUN rm app-config.yaml && mv app-config.example.yaml app-config.yaml
 RUN \
   # Upstream only - append build time into packages/app/src/build-metadata.json
   now=$(date -u +%FT%TZ); sed -i packages/app/src/build-metadata.json -r \
-  -e "s/(\"Last Commit: .+\")/\1, \"Build Time: $now\"/" && \
+  -e "s/(\"Last Commit\": \"(.+)\")/\1, \"Build Time\": \"$now\"/" && \
   cat packages/app/src/build-metadata.json; echo
 
 RUN "$YARN" build --filter=backend

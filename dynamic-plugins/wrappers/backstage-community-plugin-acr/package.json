@@ -11,7 +11,7 @@
   },
   "backstage": {
     "role": "frontend-plugin",
-    "supported-versions": "1.35.1",
+    "supported-versions": "1.36.1",
     "pluginId": "acr",
     "pluginPackages": [
       "backstage-community-plugin-acr"
@@ -29,13 +29,13 @@
   },
   "dependencies": {
     "@backstage-community/plugin-acr": "1.11.0",
-    "@backstage/core-plugin-api": "1.10.3",
-    "@mui/icons-material": "5.16.14",
-    "@mui/material": "5.16.14"
+    "@backstage/core-plugin-api": "1.10.4",
+    "@mui/icons-material": "5.17.1",
+    "@mui/material": "5.17.1"
   },
   "devDependencies": {
-    "@backstage/cli": "0.29.6",
-    "@janus-idp/cli": "3.3.0",
+    "@backstage/cli": "0.30.0",
+    "@janus-idp/cli": "3.3.1",
     "typescript": "5.8.2"
   },
   "files": [

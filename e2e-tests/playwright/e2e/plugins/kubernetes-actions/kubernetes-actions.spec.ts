@@ -1,4 +1,4 @@
-import { Page, test } from "@playwright/test";
+import { expect, Page, test } from "@playwright/test";
 import { Common, setupBrowser } from "../../../utils/common";
 import { UIhelper } from "../../../utils/ui-helper";
 import { KubeClient } from "../../../utils/kube-client";
@@ -18,12 +18,12 @@ test.describe("Test Kubernetes Actions plugin", () => {
     kubeClient = new KubeClient();
 
     await common.loginAsGuest();
-    await uiHelper.clickLink({ ariaLabel: "Create..." });
+    await uiHelper.clickLink({ ariaLabel: "Self-service" });
   });
 
   test("Creates kubernetes namespace", async () => {
     namespace = `test-kubernetes-actions-${Date.now()}`;
-    await uiHelper.verifyHeading("Software Templates");
+    await uiHelper.verifyHeading("Self-service");
     await uiHelper.clickBtnInCard("Create a kubernetes namespace", "Choose");
     await uiHelper.waitForTitle("Create a kubernetes namespace", 2);
 
@@ -36,6 +36,9 @@ test.describe("Test Kubernetes Actions plugin", () => {
     await page.waitForSelector(
       `${UI_HELPER_ELEMENTS.MuiTypography}:has-text("second")`,
     );
+    await expect(
+      page.locator(`${UI_HELPER_ELEMENTS.MuiTypography}:has-text("Error")`),
+    ).not.toBeVisible();
     await kubeClient.getNamespaceByName(namespace);
   });
 
