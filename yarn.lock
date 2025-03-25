@@ -29,9 +29,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aonic-ui/pipelines@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "@aonic-ui/pipelines@npm:3.0.0"
+"@aonic-ui/pipelines@npm:^3.1.0":
+  version: 3.1.1
+  resolution: "@aonic-ui/pipelines@npm:3.1.1"
   dependencies:
     "@patternfly/react-table": ^6.0.0
     js-yaml: ^4.1.0
@@ -42,7 +42,7 @@ __metadata:
     "@patternfly/react-tokens": ^6.0.0
     "@testing-library/jest-dom": ^6.2.0
     react: ^18.2.0
-  checksum: 979464b65b6b21da54f210d6e210e330b96ef56202aa9a102951f041f38a8f94a86130441e776b4d4b02140f7d99b199ed3d20d9874d6741862630a28797990b
+  checksum: 4e7a436b3e7c7c1236703787c326a388918fbf51be91b6c15c5328f8e724bd2894279dc50027b3ae4a8c5753c28942853bb3d4cc5ac250979afa053c9f3b4ae6
   languageName: node
   linkType: hard
 
@@ -4043,28 +4043,28 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-tekton-common@npm:^1.5.0":
-  version: 1.5.0
-  resolution: "@backstage-community/plugin-tekton-common@npm:1.5.0"
+"@backstage-community/plugin-tekton-common@npm:^1.7.0":
+  version: 1.7.0
+  resolution: "@backstage-community/plugin-tekton-common@npm:1.7.0"
   peerDependencies:
     "@backstage/plugin-permission-common": ^0.8.4
-  checksum: 6e565c40a4bc382ce53fd55f6b6bf7c832ac7bacbb790716b94b538cdd24027e690786d9be6e99aaf2d496de3c95931e267a7681f6f5cfe16189c372ace01ae8
+  checksum: e054b90785761f4395ef34497684bfa6ca9a7b8dbc055b9cff8ed727090b93f685c12893dfbfc43091ca2d48b9538ddb546a7e699e82b8851c2d1e6ff4b3a924
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-tekton@npm:3.19.0":
-  version: 3.19.0
-  resolution: "@backstage-community/plugin-tekton@npm:3.19.0"
+"@backstage-community/plugin-tekton@npm:3.21.1":
+  version: 3.21.1
+  resolution: "@backstage-community/plugin-tekton@npm:3.21.1"
   dependencies:
-    "@aonic-ui/pipelines": ^3.0.0
-    "@backstage-community/plugin-tekton-common": ^1.5.0
+    "@aonic-ui/pipelines": ^3.1.0
+    "@backstage-community/plugin-tekton-common": ^1.7.0
     "@backstage/catalog-model": ^1.7.3
     "@backstage/core-components": ^0.16.3
     "@backstage/core-plugin-api": ^1.10.3
     "@backstage/plugin-catalog-react": ^1.15.1
-    "@backstage/plugin-kubernetes": ^0.12.3
-    "@backstage/plugin-kubernetes-common": ^0.9.2
-    "@backstage/plugin-kubernetes-react": ^0.5.3
+    "@backstage/plugin-kubernetes": ^0.12.4
+    "@backstage/plugin-kubernetes-common": ^0.9.3
+    "@backstage/plugin-kubernetes-react": ^0.5.4
     "@backstage/plugin-permission-react": ^0.4.30
     "@backstage/theme": ^0.6.3
     "@janus-idp/shared-react": ^2.16.0
@@ -4072,7 +4072,7 @@ __metadata:
     "@material-ui/core": ^4.9.13
     "@material-ui/icons": ^4.11.3
     "@material-ui/lab": ^4.0.0-alpha.45
-    "@mui/icons-material": 5.15.17
+    "@mui/icons-material": 5.16.14
     "@patternfly/patternfly": ^6.0.0
     "@patternfly/react-charts": ^7.1.1
     "@patternfly/react-core": ^6.0.0
@@ -4087,7 +4087,7 @@ __metadata:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.0.0
-  checksum: 48d8a44574e102354c3dffd770383fe90ffe8dc76621e5620548e54b082dc3781f35e8a632e9e61ed137c4d986056fb2f2e3e12b1b82f3627ee884b4ee09525a
+  checksum: d2520628fb24ee8aec5c3862d4d9bc2bed3aa1e5a4531c6cc13ada839229429431737b47e84dd0cd423d4e18768221eb811fa8dae14ee3c9784704cc93de242a
   languageName: node
   linkType: hard
 
@@ -24351,7 +24351,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backstage-community-plugin-tekton@workspace:dynamic-plugins/wrappers/backstage-community-plugin-tekton"
   dependencies:
-    "@backstage-community/plugin-tekton": 3.19.0
+    "@backstage-community/plugin-tekton": 3.21.1
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.3.1
     "@mui/material": 5.17.1
