@@ -3398,21 +3398,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-catalog-backend-module-keycloak@npm:3.9.0":
-  version: 3.9.0
-  resolution: "@backstage-community/plugin-catalog-backend-module-keycloak@npm:3.9.0"
+"@backstage-community/plugin-catalog-backend-module-keycloak@npm:3.10.0":
+  version: 3.10.0
+  resolution: "@backstage-community/plugin-catalog-backend-module-keycloak@npm:3.10.0"
   dependencies:
     "@backstage/backend-plugin-api": ^1.2.0
     "@backstage/catalog-model": ^1.7.3
     "@backstage/errors": ^1.2.7
     "@backstage/plugin-catalog-node": ^1.16.0
     "@keycloak/keycloak-admin-client": 26.1.4
+    "@opentelemetry/api": ^1.9.0
     jsonwebtoken: ^9.0.0
     lodash: ^4.17.21
     p-limit: ^6.1.0
     pg-format: ^1.0.4
     uuid: ^9.0.1
-  checksum: f7216a63d7de7fb1367ef5746da00c90aaed925ca3cabf7f6b370e3f7e11b8a892b045e53bf41b44bcb4e2ddabf0501deee8dad5af072eefcaae82acec20808d
+  checksum: 7c5b9b1a073b4896f56f4841765df7af039ac49a1c9b11f5e8163040cda5255dcb234102076367792446794bce2a03510be3ba1a9c602e40b915946c14c08900
   languageName: node
   linkType: hard
 
@@ -24048,7 +24049,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backstage-community-plugin-catalog-backend-module-keycloak@workspace:dynamic-plugins/wrappers/backstage-community-plugin-catalog-backend-module-keycloak-dynamic"
   dependencies:
-    "@backstage-community/plugin-catalog-backend-module-keycloak": 3.9.0
+    "@backstage-community/plugin-catalog-backend-module-keycloak": 3.10.0
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.3.1
     typescript: 5.8.2
