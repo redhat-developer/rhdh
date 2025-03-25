@@ -17135,21 +17135,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace@npm:0.2.2":
-  version: 0.2.2
-  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace@npm:0.2.2"
+"@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace@npm:0.3.0":
+  version: 0.3.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace@npm:0.3.0"
   dependencies:
-    "@backstage/backend-plugin-api": ^1.1.1
+    "@backstage/backend-plugin-api": ^1.2.0
     "@backstage/catalog-model": ^1.7.3
     "@backstage/plugin-catalog-common": ^1.1.3
-    "@backstage/plugin-catalog-node": ^1.15.1
+    "@backstage/plugin-catalog-node": ^1.16.0
     "@backstage/types": ^1.2.1
-    "@red-hat-developer-hub/backstage-plugin-marketplace-common": ^0.2.0
+    "@red-hat-developer-hub/backstage-plugin-marketplace-common": ^0.3.0
     find-root: ^1.1.0
     glob: ^8.1.0
     js-yaml: ^4.1.0
     semver: ^7.6.3
-  checksum: 6e77fcf5dc546a8e75b27a8713102a8c5440ba89da27a6c020dd868eabeef480372ab1936ed3889eef335fc1f76a299be59eb5c0d7854e46e8318fffd000b3df
+  checksum: 266b1cf09dcf5ccf766f7e884d2809be7463632d9cc0a923e7b9e1c4612cf8fea1be094962bac335cae2f81131984fbcb7e3bb419dd8952e3372b102cdcf1ba0
   languageName: node
   linkType: hard
 
@@ -17242,21 +17242,6 @@ __metadata:
     express: ^4.17.1
     express-promise-router: ^4.1.0
   checksum: b97495942f1c72104c3d221567cbf7d6700de8ad2d0cebc4ba0253990cdb9ee474f79b9e03328267458073180d4477cc7ca72a04cb3268289ca4d9ab811bb410
-  languageName: node
-  linkType: hard
-
-"@red-hat-developer-hub/backstage-plugin-marketplace-common@npm:^0.2.0":
-  version: 0.2.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-marketplace-common@npm:0.2.0"
-  dependencies:
-    "@backstage/backend-plugin-api": ^1.1.1
-    "@backstage/catalog-client": ^1.9.1
-    "@backstage/catalog-model": ^1.7.3
-    "@backstage/errors": ^1.2.7
-  peerDependencies:
-    "@backstage/backend-plugin-api": ^1.1.1
-    "@backstage/types": ^1.2.1
-  checksum: 51bc30fda4ad88026991179f09a8154005d2334634a7441adcab6792993f1af426dc95a00c7f605f159490064b6396c3c974378f7c5aad80d4fbfecfffde0eef
   languageName: node
   linkType: hard
 
