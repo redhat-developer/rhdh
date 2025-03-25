@@ -17250,9 +17250,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@roadiehq/backstage-plugin-argo-cd-backend@npm:4.1.0":
-  version: 4.1.0
-  resolution: "@roadiehq/backstage-plugin-argo-cd-backend@npm:4.1.0"
+"@roadiehq/backstage-plugin-argo-cd-backend@npm:4.2.0":
+  version: 4.2.0
+  resolution: "@roadiehq/backstage-plugin-argo-cd-backend@npm:4.2.0"
   dependencies:
     "@backstage/backend-common": ^0.25.0
     "@backstage/backend-plugin-api": ^1.0.2
@@ -17262,7 +17262,7 @@ __metadata:
     express: ^4.17.1
     express-promise-router: ^4.1.0
     winston: ^3.2.1
-  checksum: ef356e0559a639373b3a2cf571717f4b21fef9dbdcc0e0cddd8589a150aec79b660a51650bd5c2c5ce1e7b432541100121daf81a6332797f7b901b83aa1b998c
+  checksum: 3ccc831ecb5c70ca91f34c05d5106cb07712bcdd399a9db5dc4652ad736f7e7ca8241349ba34d03828ebfa97ed96e182077ecec99edfca135a43e6e13630b7ad
   languageName: node
   linkType: hard
 
@@ -42324,7 +42324,7 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.3.1
-    "@roadiehq/backstage-plugin-argo-cd-backend": 4.1.0
+    "@roadiehq/backstage-plugin-argo-cd-backend": 4.2.0
     typescript: 5.8.2
   languageName: unknown
   linkType: soft
