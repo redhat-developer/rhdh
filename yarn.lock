@@ -3398,23 +3398,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-catalog-backend-module-keycloak@npm:3.8.0":
-  version: 3.8.0
-  resolution: "@backstage-community/plugin-catalog-backend-module-keycloak@npm:3.8.0"
+"@backstage-community/plugin-catalog-backend-module-keycloak@npm:3.9.0":
+  version: 3.9.0
+  resolution: "@backstage-community/plugin-catalog-backend-module-keycloak@npm:3.9.0"
   dependencies:
     "@backstage/backend-plugin-api": ^1.2.0
     "@backstage/catalog-model": ^1.7.3
     "@backstage/errors": ^1.2.7
     "@backstage/plugin-catalog-node": ^1.16.0
-    "@common.js/p-limit": ^6.1.0
-    "@keycloak/keycloak-admin-client": 26.1.2
-    inclusion: ^1.0.1
+    "@keycloak/keycloak-admin-client": 26.1.4
     jsonwebtoken: ^9.0.0
     lodash: ^4.17.21
     p-limit: ^6.1.0
     pg-format: ^1.0.4
     uuid: ^9.0.1
-  checksum: 24d4596f79c968194ef3191df93b6e20b074a27660c160acaa22115a2590479cceffaf6b7f5403ff18ef870244117e959682c3c40e150b0b5a79e2ac50948d64
+  checksum: f7216a63d7de7fb1367ef5746da00c90aaed925ca3cabf7f6b370e3f7e11b8a892b045e53bf41b44bcb4e2ddabf0501deee8dad5af072eefcaae82acec20808d
   languageName: node
   linkType: hard
 
@@ -9670,22 +9668,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@common.js/p-limit@npm:^6.1.0":
-  version: 6.1.0
-  resolution: "@common.js/p-limit@npm:6.1.0"
-  dependencies:
-    "@common.js/yocto-queue": ^1.1.1
-  checksum: 6ebc19dffce939c9bd5ced0b1c0799a65d27d886f58fb0cf8ba571e5fec3949869337622587a4a9e4f491c47026c0a5d586ea6a2012a83ac75666dcf381af76c
-  languageName: node
-  linkType: hard
-
-"@common.js/yocto-queue@npm:^1.1.1":
-  version: 1.1.1
-  resolution: "@common.js/yocto-queue@npm:1.1.1"
-  checksum: 7987b2e5686b53794915503099a893f95b8ba9da97443a3f33e30fae6d5f75815d4bf4cbcbd96209a17de381b90b6238cb8250cb22d5bffc7cc0503639655a20
-  languageName: node
-  linkType: hard
-
 "@cspotcode/source-map-support@npm:^0.8.0":
   version: 0.8.1
   resolution: "@cspotcode/source-map-support@npm:0.8.1"
@@ -12307,14 +12289,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@keycloak/keycloak-admin-client@npm:26.1.2":
-  version: 26.1.2
-  resolution: "@keycloak/keycloak-admin-client@npm:26.1.2"
+"@keycloak/keycloak-admin-client@npm:26.1.4":
+  version: 26.1.4
+  resolution: "@keycloak/keycloak-admin-client@npm:26.1.4"
   dependencies:
     camelize-ts: ^3.0.0
     url-join: ^5.0.0
     url-template: ^3.1.1
-  checksum: 550c8f457c9804710a5d34bdde9071d0fec46177d8dd62d11c28075f0bd8247c7b81e3ca3f92e17785b5f47a14c3639bcabce7199f78082d015f6e543305114d
+  checksum: ab88b9826fbf91969c94c6e801e8da966c19eb5855d1b3d8e982726c01f53b2ec98cf63cb78dd15438fce37a65e60d1ee6f5e657223cf8625ae4a35b086e3d23
   languageName: node
   linkType: hard
 
@@ -24066,7 +24048,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backstage-community-plugin-catalog-backend-module-keycloak@workspace:dynamic-plugins/wrappers/backstage-community-plugin-catalog-backend-module-keycloak-dynamic"
   dependencies:
-    "@backstage-community/plugin-catalog-backend-module-keycloak": 3.8.0
+    "@backstage-community/plugin-catalog-backend-module-keycloak": 3.9.0
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.3.1
     typescript: 5.8.2
@@ -25318,7 +25300,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"callsites@npm:^3.0.0, callsites@npm:^3.1.0":
+"callsites@npm:^3.0.0":
   version: 3.1.0
   resolution: "callsites@npm:3.1.0"
   checksum: 072d17b6abb459c2ba96598918b55868af677154bec7e73d222ef95a8fdb9bbf7dae96a8421085cdad8cd190d86653b5b6dc55a4484f2e5b2e27d5e0c3fc15b3
@@ -32553,15 +32535,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"inclusion@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "inclusion@npm:1.0.1"
-  dependencies:
-    parent-module: ^2.0.0
-  checksum: 1ee1d829d4f354797b3c7ccca2a5fb669e7d4dafb83aaa96837265bbb6041eb4f7a6cab075730ba77c6b7b78c2918124411ba48092fa1bd13ee18c4b408ef36c
-  languageName: node
-  linkType: hard
-
 "indent-string@npm:^4.0.0":
   version: 4.0.0
   resolution: "indent-string@npm:4.0.0"
@@ -39155,15 +39128,6 @@ __metadata:
   dependencies:
     callsites: ^3.0.0
   checksum: 6ba8b255145cae9470cf5551eb74be2d22281587af787a2626683a6c20fbb464978784661478dd2a3f1dad74d1e802d403e1b03c1a31fab310259eec8ac560ff
-  languageName: node
-  linkType: hard
-
-"parent-module@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "parent-module@npm:2.0.0"
-  dependencies:
-    callsites: ^3.1.0
-  checksum: f131f13d687a938556a01033561fb1b274b39921eb4425c7a691f0d91dcfbe9b19759c2b8d425a3ee7c8a46874e57fa418a690643880c3c7c56827aba12f78dd
   languageName: node
   linkType: hard
 
