@@ -8077,7 +8077,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-kubernetes@npm:0.12.4, @backstage/plugin-kubernetes@npm:^0.12.3":
+"@backstage/plugin-kubernetes@npm:0.12.4":
   version: 0.12.4
   resolution: "@backstage/plugin-kubernetes@npm:0.12.4"
   dependencies:
