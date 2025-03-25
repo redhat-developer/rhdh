@@ -17259,9 +17259,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-marketplace@npm:0.5.1":
-  version: 0.5.1
-  resolution: "@red-hat-developer-hub/backstage-plugin-marketplace@npm:0.5.1"
+"@red-hat-developer-hub/backstage-plugin-marketplace@npm:0.5.2":
+  version: 0.5.2
+  resolution: "@red-hat-developer-hub/backstage-plugin-marketplace@npm:0.5.2"
   dependencies:
     "@backstage/catalog-client": ^1.9.1
     "@backstage/core-components": ^0.16.4
@@ -17282,7 +17282,7 @@ __metadata:
     react: ^17.0.0 || ^18.0.0
     react-dom: ^17.0.0 || ^18.0.0
     react-router-dom: ^6.3.0
-  checksum: 654c5ddebb8a9e7f6c9103a8bbd2cef241f5148b5c4da2c7ddc9e531b922787d0d0d0e1c113bff136ca87856ee213112ac4ccc9b36b73a73b162c5529ad4c1e0
+  checksum: 131ef09b5ba2eff48f3f97f3abf1adc093d5cb3dd977947b7bf7166f4c095fd215ccc9d0809010c19264149a58fede0856373c9c41242037deb7b6c78d2db09c
   languageName: node
   linkType: hard
 
