@@ -17220,9 +17220,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-bulk-import-backend@npm:5.4.0":
-  version: 5.4.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import-backend@npm:5.4.0"
+"@red-hat-developer-hub/backstage-plugin-bulk-import-backend@npm:6.0.0":
+  version: 6.0.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import-backend@npm:6.0.0"
   dependencies:
     "@backstage/backend-defaults": ^0.8.1
     "@backstage/backend-plugin-api": ^1.2.0
@@ -17238,12 +17238,13 @@ __metadata:
     express: ^4.17.1
     git-url-parse: ^14.0.0
     js-yaml: ^4.1.0
+    just-kebab-case: 4.2.0
     luxon: ^3.4.4
     node-fetch: ^2.6.7
     openapi-backend: ^5.10.6
   peerDependencies:
     "@janus-idp/backstage-plugin-audit-log-node": ^1.7.0
-  checksum: e2a9ade6194ff16f899c0ef9b13c0e80fafacc0e3bd963ce95896d0745b6240e84e86c23f13d863f7814f6669d0963eb94e2435a4c22bee156cc53cfa0d2677e
+  checksum: b88443d84b130f323ea93edccca84403b53cc176e45160e255ccd9b5db02d770437f34951324999127df9daf8c7680da7187b98f0e0fb84a5326f08a8ef7e8d8
   languageName: node
   linkType: hard
 
@@ -34763,6 +34764,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"just-kebab-case@npm:4.2.0":
+  version: 4.2.0
+  resolution: "just-kebab-case@npm:4.2.0"
+  checksum: 3f8b1041a56bfb7dd9d789ba4da8c244fa10775c7ed900440eb6c9002292caa3dbb6c88792907c830fea328db85a92ba2c302c31dbd740a58d81fd364423db4c
+  languageName: node
+  linkType: hard
+
 "jwa@npm:^1.4.1":
   version: 1.4.1
   resolution: "jwa@npm:1.4.1"
@@ -41880,7 +41888,7 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.3.1
-    "@red-hat-developer-hub/backstage-plugin-bulk-import-backend": 5.4.0
+    "@red-hat-developer-hub/backstage-plugin-bulk-import-backend": 6.0.0
     typescript: 5.8.2
   languageName: unknown
   linkType: soft
