@@ -29,7 +29,7 @@
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
-    "@red-hat-developer-hub/backstage-plugin-marketplace": "0.5.1"
+    "@red-hat-developer-hub/backstage-plugin-marketplace": "0.5.2"
   },
   "devDependencies": {
     "@backstage/cli": "0.30.0",
