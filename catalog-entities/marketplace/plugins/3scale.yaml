@@ -69,7 +69,6 @@ spec:
 
   categories:
     - API Management
-    - Red Hat integration
 
   highlights:
     - OpenShift support
