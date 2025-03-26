@@ -28,6 +28,7 @@ spec:
   support: production
   lifecycle: active
   author: Red Hat
+  publisher: Red Hat
 
   categories:
     - Kubernetes
