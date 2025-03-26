@@ -10,7 +10,7 @@ source "$DIR"/cluster/gke/gke-helm-deployment.sh
 source "$DIR"/cluster/k8s/k8s-utils.sh
 
 handle_gke_helm() {
-  echo "Starting GKE deployment"
+  echo "Starting GKE Helm deployment"
 
   K8S_CLUSTER_ROUTER_BASE=$GKE_INSTANCE_DOMAIN_NAME
   NAME_SPACE_K8S="showcase-k8s-ci-nightly"
@@ -30,13 +30,11 @@ handle_gke_helm() {
 
   cluster_setup_k8s_helm
 
-  local url="https://${K8S_CLUSTER_ROUTER_BASE}"
   initiate_gke_helm_deployment
-  check_and_test "${RELEASE_NAME}" "${NAME_SPACE_K8S}" "${url}" 50 30 20
+  check_and_test "${RELEASE_NAME}" "${NAME_SPACE_K8S}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30 20
   delete_namespace "${NAME_SPACE_K8S}"
 
-  local rbac_rhdh_base_url="https://${K8S_CLUSTER_ROUTER_BASE}"
   initiate_rbac_gke_helm_deployment
-  check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC_K8S}" "${rbac_rhdh_base_url}" 50 30 20
+  check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC_K8S}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30 20
   delete_namespace "${NAME_SPACE_RBAC_K8S}"
 }

@@ -12,9 +12,10 @@ source "$DIR"/install-methods/operator.sh
 source "$DIR"/cluster/k8s/k8s-utils.sh
 
 handle_gke_operator() {
+  echo "Starting GKE Operator deployment"
+
   K8S_CLUSTER_ROUTER_BASE=$GKE_INSTANCE_DOMAIN_NAME
   export K8S_CLUSTER_ROUTER_BASE
-  local url="https://${K8S_CLUSTER_ROUTER_BASE}"
 
   gcloud_auth "${GKE_SERVICE_ACCOUNT_NAME}" "/tmp/secrets/GKE_SERVICE_ACCOUNT_KEY"
   gcloud_gke_get_credentials "${GKE_CLUSTER_NAME}" "${GKE_CLUSTER_REGION}" "${GOOGLE_CLOUD_PROJECT}"
@@ -25,17 +26,17 @@ handle_gke_operator() {
   OCM_CLUSTER_URL=$(printf "%s" "$K8S_CLUSTER_URL" | base64 | tr -d '\n')
   export K8S_CLUSTER_URL K8S_CLUSTER_API_SERVER_URL OCM_CLUSTER_URL
 
-  re_create_k8s_service_account_and_get_token
+  re_create_k8s_service_account_and_get_token # Populate K8S_CLUSTER_TOKEN
 
   cluster_setup_k8s_operator
 
   prepare_operator
 
   initiate_gke_operator_deployment "${NAME_SPACE}" "https://${K8S_CLUSTER_ROUTER_BASE}"
-  check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${url}" 50 30 50
+  check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30 50
   delete_namespace "${NAME_SPACE}"
 
   initiate_rbac_gke_operator_deployment "${NAME_SPACE_RBAC}" "https://${K8S_CLUSTER_ROUTER_BASE}"
-  check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${url}" 50 30 50
+  check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30 50
   delete_namespace "${NAME_SPACE_RBAC}"
 }
