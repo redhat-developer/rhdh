@@ -602,8 +602,8 @@ deploy_test_backstage_customization_provider() {
 
 deploy_redis_cache() {
   local namespace=$1
-  oc apply -f "$DIR/resources/redis-cache/redis-deployment.yaml" --namespace="${namespace}"
   envsubst < "$DIR/resources/redis-cache/redis-secret.yaml" | oc apply --namespace="${namespace}" -f -
+  oc apply -f "$DIR/resources/redis-cache/redis-deployment.yaml" --namespace="${namespace}"
 }
 
 create_app_config_map() {
