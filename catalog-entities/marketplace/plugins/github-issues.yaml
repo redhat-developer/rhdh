@@ -21,7 +21,7 @@ metadata:
       url: https://github.com/backstage/community-plugins/tree/main/workspaces/github-issues/plugins/github-issues
 spec:
   categories:
-    - Issue tracker
+    - Code Quality
 
   icon: data:image/svg+xml;base64,
     PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjgg
