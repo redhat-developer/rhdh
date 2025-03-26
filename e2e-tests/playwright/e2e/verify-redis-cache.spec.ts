@@ -19,7 +19,7 @@ test.describe("Verify Redis Cache DB", () => {
       "-c",
       `
       oc login --token="${process.env.K8S_CLUSTER_TOKEN}" --server="${process.env.K8S_CLUSTER_URL}" --insecure-skip-tls-verify=true &&
-      kubectl port-forward service/redis 6379:6379 -n ${process.env.NAME_SPACE}
+      oc port-forward service/redis 6379:6379 --namespace="${process.env.NAME_SPACE}"
     `,
     ]);
 
