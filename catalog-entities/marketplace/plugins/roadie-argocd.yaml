@@ -15,11 +15,14 @@ metadata:
     - url: https://roadie.io/backstage/plugins/argo-cd/
       title: Roadie Documentation
 spec:
-  authors:
-    - name: Roadie
-      url: https://roadie.io/
+  lifecycle: active
+  support: production
+  publisher: Red Hat
+  author: Roadie
+
   categories:
     - CI/CD
+    
   icon: data:image/svg+xml;base64,
     PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRw
     Oi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB2aWV3Qm94PSIwIDAgMTI4IDEyOCI+PGRlZnM+PGNs
