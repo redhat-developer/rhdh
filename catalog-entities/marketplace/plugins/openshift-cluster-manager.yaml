@@ -25,6 +25,8 @@ spec:
   category: Infrastructure
   lifecycle: active
 
+  categories: Monitoring
+
   description: |
     The Open Cluster Management (OCM) plugin integrates your Backstage instance with the `MultiClusterHub` and `MultiCluster` engines of OCM.
 
