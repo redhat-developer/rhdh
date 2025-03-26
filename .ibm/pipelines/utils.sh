@@ -188,7 +188,9 @@ droute_send() {
     fi
   ) # Close subshell
   oc config use-context "$original_context" # Restore original context
-  oc whoami --show-server
+  if ! oc whoami 2>/dev/null; then
+    oc_login
+  fi
 }
 
 reportportal_slack_alert() {
