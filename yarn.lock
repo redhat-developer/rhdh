@@ -3398,23 +3398,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-catalog-backend-module-keycloak@npm:3.8.0":
-  version: 3.8.0
-  resolution: "@backstage-community/plugin-catalog-backend-module-keycloak@npm:3.8.0"
+"@backstage-community/plugin-catalog-backend-module-keycloak@npm:3.10.0":
+  version: 3.10.0
+  resolution: "@backstage-community/plugin-catalog-backend-module-keycloak@npm:3.10.0"
   dependencies:
     "@backstage/backend-plugin-api": ^1.2.0
     "@backstage/catalog-model": ^1.7.3
     "@backstage/errors": ^1.2.7
     "@backstage/plugin-catalog-node": ^1.16.0
-    "@common.js/p-limit": ^6.1.0
-    "@keycloak/keycloak-admin-client": 26.1.2
-    inclusion: ^1.0.1
+    "@keycloak/keycloak-admin-client": 26.1.4
+    "@opentelemetry/api": ^1.9.0
     jsonwebtoken: ^9.0.0
     lodash: ^4.17.21
     p-limit: ^6.1.0
     pg-format: ^1.0.4
     uuid: ^9.0.1
-  checksum: 24d4596f79c968194ef3191df93b6e20b074a27660c160acaa22115a2590479cceffaf6b7f5403ff18ef870244117e959682c3c40e150b0b5a79e2ac50948d64
+  checksum: 7c5b9b1a073b4896f56f4841765df7af039ac49a1c9b11f5e8163040cda5255dcb234102076367792446794bce2a03510be3ba1a9c602e40b915946c14c08900
   languageName: node
   linkType: hard
 
@@ -9670,22 +9669,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@common.js/p-limit@npm:^6.1.0":
-  version: 6.1.0
-  resolution: "@common.js/p-limit@npm:6.1.0"
-  dependencies:
-    "@common.js/yocto-queue": ^1.1.1
-  checksum: 6ebc19dffce939c9bd5ced0b1c0799a65d27d886f58fb0cf8ba571e5fec3949869337622587a4a9e4f491c47026c0a5d586ea6a2012a83ac75666dcf381af76c
-  languageName: node
-  linkType: hard
-
-"@common.js/yocto-queue@npm:^1.1.1":
-  version: 1.1.1
-  resolution: "@common.js/yocto-queue@npm:1.1.1"
-  checksum: 7987b2e5686b53794915503099a893f95b8ba9da97443a3f33e30fae6d5f75815d4bf4cbcbd96209a17de381b90b6238cb8250cb22d5bffc7cc0503639655a20
-  languageName: node
-  linkType: hard
-
 "@cspotcode/source-map-support@npm:^0.8.0":
   version: 0.8.1
   resolution: "@cspotcode/source-map-support@npm:0.8.1"
@@ -11655,7 +11638,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@backstage/config": 1.3.2
     "@types/express": 4.17.21
-    "@types/supertest": 6.0.2
+    "@types/supertest": 6.0.3
     express: 4.21.2
     msw: 1.3.5
     node-fetch: 2.7.0
@@ -11713,7 +11696,7 @@ __metadata:
     "@backstage/plugin-permission-common": 0.8.4
     "@backstage/types": 1.2.1
     "@types/express": 4.17.21
-    "@types/supertest": 6.0.2
+    "@types/supertest": 6.0.3
     express: 4.21.2
     express-promise-router: 4.1.1
     json-2-csv: 5.5.9
@@ -11738,7 +11721,7 @@ __metadata:
     "@backstage/config": 1.3.2
     "@types/express": 4.17.21
     "@types/mock-fs": 4.13.4
-    "@types/supertest": 6.0.2
+    "@types/supertest": 6.0.3
     express: 4.21.2
     mock-fs: 5.5.0
     msw: 1.3.5
@@ -12307,14 +12290,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@keycloak/keycloak-admin-client@npm:26.1.2":
-  version: 26.1.2
-  resolution: "@keycloak/keycloak-admin-client@npm:26.1.2"
+"@keycloak/keycloak-admin-client@npm:26.1.4":
+  version: 26.1.4
+  resolution: "@keycloak/keycloak-admin-client@npm:26.1.4"
   dependencies:
     camelize-ts: ^3.0.0
     url-join: ^5.0.0
     url-template: ^3.1.1
-  checksum: 550c8f457c9804710a5d34bdde9071d0fec46177d8dd62d11c28075f0bd8247c7b81e3ca3f92e17785b5f47a14c3639bcabce7199f78082d015f6e543305114d
+  checksum: ab88b9826fbf91969c94c6e801e8da966c19eb5855d1b3d8e982726c01f53b2ec98cf63cb78dd15438fce37a65e60d1ee6f5e657223cf8625ae4a35b086e3d23
   languageName: node
   linkType: hard
 
@@ -17220,9 +17203,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-bulk-import-backend@npm:5.4.0":
-  version: 5.4.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import-backend@npm:5.4.0"
+"@red-hat-developer-hub/backstage-plugin-bulk-import-backend@npm:6.0.0":
+  version: 6.0.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import-backend@npm:6.0.0"
   dependencies:
     "@backstage/backend-defaults": ^0.8.1
     "@backstage/backend-plugin-api": ^1.2.0
@@ -17238,12 +17221,13 @@ __metadata:
     express: ^4.17.1
     git-url-parse: ^14.0.0
     js-yaml: ^4.1.0
+    just-kebab-case: 4.2.0
     luxon: ^3.4.4
     node-fetch: ^2.6.7
     openapi-backend: ^5.10.6
   peerDependencies:
     "@janus-idp/backstage-plugin-audit-log-node": ^1.7.0
-  checksum: e2a9ade6194ff16f899c0ef9b13c0e80fafacc0e3bd963ce95896d0745b6240e84e86c23f13d863f7814f6669d0963eb94e2435a4c22bee156cc53cfa0d2677e
+  checksum: b88443d84b130f323ea93edccca84403b53cc176e45160e255ccd9b5db02d770437f34951324999127df9daf8c7680da7187b98f0e0fb84a5326f08a8ef7e8d8
   languageName: node
   linkType: hard
 
@@ -21528,12 +21512,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:22.13.10":
-  version: 22.13.10
-  resolution: "@types/node@npm:22.13.10"
+"@types/node@npm:22.13.13":
+  version: 22.13.13
+  resolution: "@types/node@npm:22.13.13"
   dependencies:
     undici-types: ~6.20.0
-  checksum: 1cd6b899df728732c60c0defad63e26ca18d87a3b81bd75666fe9aed6cdf9e488433976b22ffcabfdeef9d351cf8ff94853b0686e6708ef62065482ccf5b0a6e
+  checksum: 763c120725c4817227d3043095fd1e764744b2f3632e3e3c8242e1620a8e6fe1c9eeae38074dee3e39af6b890de142c3b6067f9b31e36635c44f3f5f4f2bb8cf
   languageName: node
   linkType: hard
 
@@ -21740,13 +21724,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:18.3.18":
-  version: 18.3.18
-  resolution: "@types/react@npm:18.3.18"
+"@types/react@npm:18.3.20":
+  version: 18.3.20
+  resolution: "@types/react@npm:18.3.20"
   dependencies:
     "@types/prop-types": "*"
     csstype: ^3.0.2
-  checksum: 5933597bc9f53e282f0438f0bb76d0f0fab60faabe760ea806e05ffe6f5c61b9b4d363e1a03a8fea47c510d493c6cf926cdeeba9f7074fa97b61940c350245e7
+  checksum: a93a4eec87c671ad9d68eaedaa2aa3688926409802939d2b291800cf926c771eb505a18721174364217ae9e1e8b89d09c1519f06ba1f168271de9f4c832710ea
   languageName: node
   linkType: hard
 
@@ -21910,13 +21894,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/supertest@npm:6.0.2":
-  version: 6.0.2
-  resolution: "@types/supertest@npm:6.0.2"
+"@types/supertest@npm:6.0.3":
+  version: 6.0.3
+  resolution: "@types/supertest@npm:6.0.3"
   dependencies:
     "@types/methods": ^1.1.4
     "@types/superagent": ^8.1.0
-  checksum: 1eafa472665757a6fd984439d11f388ae0480c6d243a6884066c474c4e0357de5373316488da503b1690c3163e075ca8c64c0c4853b3bb7deb09e05d1b64e556
+  checksum: 5f75e4190620bb06168cca6998c1af29168e7ca64de34abe522002573d96b37ce2611ee53a9a360b3f42d44f0bfea547d0bb258f038ab69ac50d90bd5b96fc13
   languageName: node
   linkType: hard
 
@@ -23157,8 +23141,8 @@ __metadata:
     "@testing-library/react": 14.3.1
     "@testing-library/react-hooks": 8.0.1
     "@testing-library/user-event": 14.6.1
-    "@types/node": 22.13.10
-    "@types/react": 18.3.18
+    "@types/node": 22.13.13
+    "@types/react": 18.3.20
     "@types/react-dom": 18.3.5
     lodash: 4.17.21
     prettier: 3.5.3
@@ -24066,7 +24050,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backstage-community-plugin-catalog-backend-module-keycloak@workspace:dynamic-plugins/wrappers/backstage-community-plugin-catalog-backend-module-keycloak-dynamic"
   dependencies:
-    "@backstage-community/plugin-catalog-backend-module-keycloak": 3.8.0
+    "@backstage-community/plugin-catalog-backend-module-keycloak": 3.10.0
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.3.1
     typescript: 5.8.2
@@ -25318,7 +25302,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"callsites@npm:^3.0.0, callsites@npm:^3.1.0":
+"callsites@npm:^3.0.0":
   version: 3.1.0
   resolution: "callsites@npm:3.1.0"
   checksum: 072d17b6abb459c2ba96598918b55868af677154bec7e73d222ef95a8fdb9bbf7dae96a8421085cdad8cd190d86653b5b6dc55a4484f2e5b2e27d5e0c3fc15b3
@@ -28351,7 +28335,7 @@ __metadata:
     "@kubernetes/client-node": 0.22.3
     "@microsoft/microsoft-graph-client": 3.0.7
     "@playwright/test": 1.51.1
-    "@types/node": 22.13.10
+    "@types/node": 22.13.13
     "@typescript-eslint/eslint-plugin": 6.21.0
     "@typescript-eslint/parser": 6.21.0
     eslint: 8.57.1
@@ -32553,15 +32537,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"inclusion@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "inclusion@npm:1.0.1"
-  dependencies:
-    parent-module: ^2.0.0
-  checksum: 1ee1d829d4f354797b3c7ccca2a5fb669e7d4dafb83aaa96837265bbb6041eb4f7a6cab075730ba77c6b7b78c2918124411ba48092fa1bd13ee18c4b408ef36c
-  languageName: node
-  linkType: hard
-
 "indent-string@npm:^4.0.0":
   version: 4.0.0
   resolution: "indent-string@npm:4.0.0"
@@ -34760,6 +34735,13 @@ __metadata:
     readable-stream: ~2.3.6
     setimmediate: ^1.0.5
   checksum: abc77bfbe33e691d4d1ac9c74c8851b5761fba6a6986630864f98d876f3fcc2d36817dfc183779f32c00157b5d53a016796677298272a714ae096dfe6b1c8b60
+  languageName: node
+  linkType: hard
+
+"just-kebab-case@npm:4.2.0":
+  version: 4.2.0
+  resolution: "just-kebab-case@npm:4.2.0"
+  checksum: 3f8b1041a56bfb7dd9d789ba4da8c244fa10775c7ed900440eb6c9002292caa3dbb6c88792907c830fea328db85a92ba2c302c31dbd740a58d81fd364423db4c
   languageName: node
   linkType: hard
 
@@ -39158,15 +39140,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"parent-module@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "parent-module@npm:2.0.0"
-  dependencies:
-    callsites: ^3.1.0
-  checksum: f131f13d687a938556a01033561fb1b274b39921eb4425c7a691f0d91dcfbe9b19759c2b8d425a3ee7c8a46874e57fa418a690643880c3c7c56827aba12f78dd
-  languageName: node
-  linkType: hard
-
 "parfuemerie-douglas-scaffolder-backend-module-azure-repositories@workspace:dynamic-plugins/wrappers/parfuemerie-douglas-scaffolder-backend-module-azure-repositories-dynamic":
   version: 0.0.0-use.local
   resolution: "parfuemerie-douglas-scaffolder-backend-module-azure-repositories@workspace:dynamic-plugins/wrappers/parfuemerie-douglas-scaffolder-backend-module-azure-repositories-dynamic"
@@ -41880,7 +41853,7 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.3.1
-    "@red-hat-developer-hub/backstage-plugin-bulk-import-backend": 5.4.0
+    "@red-hat-developer-hub/backstage-plugin-bulk-import-backend": 6.0.0
     typescript: 5.8.2
   languageName: unknown
   linkType: soft

@@ -1,4 +1,5 @@
-import { OidcAuthResult } from '@backstage/plugin-auth-backend-module-oidc-provider';
+import type { OAuth2ProxyResult } from '@backstage/plugin-auth-backend-module-oauth2-proxy-provider';
+import type { OidcAuthResult } from '@backstage/plugin-auth-backend-module-oidc-provider';
 import {
   AuthResolverContext,
   createSignInResolverFactory,
@@ -80,4 +81,38 @@ export namespace rhdhSignInResolvers {
    */
   export const oidcSubClaimMatchingPingIdentityUserId =
     createOidcSubClaimResolver(PING_IDENTITY_ID_ANNOTATION, 'Ping Identity');
+
+  /**
+   * An oauth2proxy resolver that looks up the user using the OAUTH_USER_HEADER environment variable,
+   * 'x-forwarded-preferred-username' or 'x-forwarded-user'.
+   */
+  export const oauth2ProxyUserHeaderMatchingUserEntityName =
+    createSignInResolverFactory({
+      optionsSchema: z
+        .object({
+          dangerouslyAllowSignInWithoutUserInCatalog: z.boolean().optional(),
+        })
+        .optional(),
+      create(options) {
+        return async (
+          info: SignInInfo<OAuth2ProxyResult>,
+          ctx: AuthResolverContext,
+        ) => {
+          const name = process.env.OAUTH_USER_HEADER
+            ? info.result.getHeader(process.env.OAUTH_USER_HEADER)
+            : info.result.getHeader('x-forwarded-preferred-username') ||
+              info.result.getHeader('x-forwarded-user');
+          if (!name) {
+            throw new Error('Request did not contain a user');
+          }
+          return ctx.signInWithCatalogUser(
+            {
+              entityRef: { name },
+            },
+            name,
+            options?.dangerouslyAllowSignInWithoutUserInCatalog,
+          );
+        };
+      },
+    });
 }
