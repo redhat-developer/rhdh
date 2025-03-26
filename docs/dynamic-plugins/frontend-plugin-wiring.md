@@ -94,6 +94,7 @@ plugins:
                 menuItem: # optional, allows you to populate main sidebar navigation
                   icon: fooIcon # Backstage system icon
                   text: Foo Plugin Page # menu item text
+                  enabled: false # optional, allows you to remove the menu item when set to false
                 config:
                   props: ... # optional, React props to pass to the component
 ```
@@ -106,10 +107,11 @@ Each plugin can expose multiple routes and each route is required to define its 
 - `menuItem` - This property allows users to extend the main sidebar navigation and point to their new route. It accepts the following properties:
   - `text`: The label shown to the user
   - `icon`: refers to a Backstage system icon name. See [Backstage system icons](https://backstage.io/docs/getting-started/app-custom-theme/#icons) for the list of default icons and [Extending Icons Library](#extend-internal-library-of-available-icons) to extend this with dynamic plugins.
+  - `enabled`: Optional. This property allows user to remove a menuItem from sidebar when it is set to `false`.
   - `importName`: optional name of an exported `SidebarItem` component. The component will receive a `to` property as well as any properties specified in `config.props`
 - `config` - An optional field which is a holder to pass `props` to a custom sidebar item
 
-A custom `SidebarItem` offers opportunities to provide a richer user experience such as notification badges.  The component should accept the following properties:
+A custom `SidebarItem` offers opportunities to provide a richer user experience such as notification badges. The component should accept the following properties:
 
 ```typescript
 export type MySidebarItemProps = {
@@ -159,6 +161,7 @@ plugins:
                 title: Foo Plugin Page # optional, same as `menuItem.text` in `dynamicRoutes`
                 priority: 10 # optional, defines the order of menu items in the sidebar
                 parent: favorites # optional, defines parent-child relationships for nested menu items
+                enabled: false # optional, allows you to remove the menu item when set to false
 ```
 
 Up to 3 levels of nested menu items are supported.
@@ -176,6 +179,7 @@ Up to 3 levels of nested menu items are supported.
 - `title` - Optional. Specifies the display title of the menu item. This can also be omitted if it has already been defined in the `dynamicRoutes` configuration under `menuItem.text`.
 - `priority` - Optional. Defines the order in which menu items appear. The default priority is `0`, which places the item at the bottom of the list. A higher priority value will position the item higher in the sidebar.
 - `parent` - Optional. Defines the parent menu item to nest the current item under. If specified, the parent menu item must be defined somewhere else in the `menuItems` configuration of any enabled plugin.
+- `enabled` - Optional. This property allows user to remove a menuItem from sidebar when it is set to `false`.
 
 ```yaml
 # dynamic-plugins-config.yaml
@@ -234,9 +238,9 @@ plugins:
                   importName: barPlugin # Required. Explicit import name that reference a BackstagePlugin<{}> implementation.
                   module: CustomModule # Optional, same as key in `scalprum.exposedModules` key in plugin's `package.json`
               bindings:
-                - bindTarget: 'barPlugin.externalRoutes' # Required. One of the supported or imported bind targets
+                - bindTarget: "barPlugin.externalRoutes" # Required. One of the supported or imported bind targets
                   bindMap: # Required. Map of bindings, same as the `bind` function options argument in the example above
-                    headerLink: 'fooPlugin.routes.root'
+                    headerLink: "fooPlugin.routes.root"
 ```
 
 This configuration allows you to bind to existing plugins and their routes as well as declare new targets sourced from dynamic plugins:
@@ -341,7 +345,7 @@ Each mount point supports additional configuration:
   - `hasAnnotation`: Accepts a string or a list of string with annotation keys. For example `hasAnnotation: my-annotation` will render the component only for entities that have `metadata.annotations['my-annotation']` defined.
   - Condition imported from the plugin's `module`: Must be function name exported from the same `module` within the plugin. For example `isMyPluginAvailable` will render the component only if `isMyPluginAvailable` function returns `true`. The function must have the following signature: `(e: Entity) => boolean`
 
-The entity page also supports adding more items to the context menu at the top right of the page.  Components targeting the `entity.context.menu` mount point have some constraints to follow.  The exported component should be some form of dialog wrapper component that accepts an `open` boolean property and an `onClose` event handler property, like so:
+The entity page also supports adding more items to the context menu at the top right of the page. Components targeting the `entity.context.menu` mount point have some constraints to follow. The exported component should be some form of dialog wrapper component that accepts an `open` boolean property and an `onClose` event handler property, like so:
 
 ```typescript
 export type SimpleDialogProps = {
@@ -350,9 +354,9 @@ export type SimpleDialogProps = {
 };
 ```
 
- The context menu entry can be configured via the `props` configuration entry for the mount point.  The `title` and `icon` properties will set the menu item's text and icon.  Any system icon or icon added via a dynamic plugin can be used.  Here is an example configuration:
+The context menu entry can be configured via the `props` configuration entry for the mount point. The `title` and `icon` properties will set the menu item's text and icon. Any system icon or icon added via a dynamic plugin can be used. Here is an example configuration:
 
- ```yaml
+```yaml
 # dynamic-plugins-config.yaml
 plugins:
   - plugin: <plugin_path_or_url>
@@ -371,7 +375,7 @@ plugins:
                   props:
                     title: Open Simple Dialog
                     icon: dialogIcon
- ```
+```
 
 ### Adding application header
 
@@ -407,7 +411,7 @@ The users can add application listeners using the `application/listener` mount p
 # app-config.yaml
 dynamicPlugins:
   frontend:
-    <package_name>:  # plugin_package_name same as `scalprum.name` key in plugin's `package.json`
+    <package_name>: # plugin_package_name same as `scalprum.name` key in plugin's `package.json`
       mountPoints:
         - mountPoint: application/listener
           importName: <exported listener component>
@@ -423,7 +427,7 @@ The users can add application providers using the `application/provider` mount p
 # app-config.yaml
 dynamicPlugins:
   frontend:
-    <package_name>:  # plugin_package_name same as `scalprum.name` key in plugin's `package.json`
+    <package_name>: # plugin_package_name same as `scalprum.name` key in plugin's `package.json`
       dynamicRoutes:
         - path: /<route>
           importName: Component # Component you want to load on the route
@@ -456,6 +460,16 @@ plugins:
               - path: /
                 title: General
                 mountPoint: entity.page.overview #this can be customized too
+              # Prioritizing tabs (higher priority appears first)
+              - path: "/pr"
+                title: "Changed Pull/Merge Requests"
+                priority: 1 # Added priority field
+                mountPoint: "entity.page.pull-requests"
+              # Negative priority hides default tabs
+              - path: "/"
+                title: "Changed Overview"
+                mountPoint: "entity.page.overview"
+                priority: -6
 ```
 
 Each entity tab entry requires the following attributes:
@@ -463,6 +477,7 @@ Each entity tab entry requires the following attributes:
 - `path`: Specifies the sub-path route in the catalog where this tab will be available
 - `title`: The title that is displayed to the user
 - `mountPoint`: The base mount point name that will be available on the tab. This name will be expanded to create two mount points per tab, one appended with `/context` and the second appended with `/cards`.
+- `priority` **(optional)**: Determines the order of tabs. **Tabs with higher priority values appear first** . You can set a **negative priority to hide default tabs**. If priority is omitted , no special ordering is applied.
 
 Dynamic frontend plugins can then be configured to target the mount points exposed by the `entityTabs` configuration.
 
@@ -496,9 +511,9 @@ Backstage offers a Utility API mechanism that provide ways for plugins to commun
 - Custom plugin-made API that can be already self-contained within any plugin (including dynamic plugins)
 - [App API implementations and overrides](https://backstage.io/docs/api/utility-apis/#app-apis) which needs to be added separately.
 
-and a plugin can potentially expose multiple API Factories.  Dynamic plugins allow a couple different ways to take advantage of this functionality.
+and a plugin can potentially expose multiple API Factories. Dynamic plugins allow a couple different ways to take advantage of this functionality.
 
-If a dynamic plugin exports the plugin object returned by `createPlugin`, it will be supplied to the `createApp` API and all API factories exported by the plugin will be automatically registered and available in the frontend application.  Dynamic plugins that follow this pattern should not use the `apiFactories` configuration.  Also, if a dynamic plugin only contains API factories and follows this pattern, it will just be necessary to add an entry to the `dynamicPlugins.frontend` config for the dynamic plugin package name, for example:
+If a dynamic plugin exports the plugin object returned by `createPlugin`, it will be supplied to the `createApp` API and all API factories exported by the plugin will be automatically registered and available in the frontend application. Dynamic plugins that follow this pattern should not use the `apiFactories` configuration. Also, if a dynamic plugin only contains API factories and follows this pattern, it will just be necessary to add an entry to the `dynamicPlugins.frontend` config for the dynamic plugin package name, for example:
 
 ```yaml
 # app-config.yaml
@@ -530,9 +545,9 @@ export const customScmAuthApiFactory = createApiFactory({
   deps: { githubAuthApi: githubAuthApiRef },
   factory: ({ githubAuthApi }) =>
     ScmAuth.merge(
-      ScmAuth.forGithub(githubAuthApi, { host: 'github.someinstance.com' }),
+      ScmAuth.forGithub(githubAuthApi, { host: "github.someinstance.com" }),
       ScmAuth.forGithub(githubAuthApi, {
-        host: 'github.someotherinstance.com',
+        host: "github.someotherinstance.com",
       }),
     ),
 });
@@ -552,7 +567,7 @@ which would override the default `ScmAuth` API factory that Developer Hub defaul
 
 ## Adding custom authentication provider settings
 
-Out of the box the Backstage user settings page supports all of the documented authentication providers, such as "github" or "microsoft".  However it is possible to install new authentication providers from a dynamic plugin that either adds additional configuration support for an existing provider or adds a new authentication provider altogether.  In either case, these providers are normally listed in the user settings section of the app under the "Authentication Providers" tab.  To add entries for an authentication provider from a dynamic plugin, use the `providerSettings` configuration:
+Out of the box the Backstage user settings page supports all of the documented authentication providers, such as "github" or "microsoft". However it is possible to install new authentication providers from a dynamic plugin that either adds additional configuration support for an existing provider or adds a new authentication provider altogether. In either case, these providers are normally listed in the user settings section of the app under the "Authentication Providers" tab. To add entries for an authentication provider from a dynamic plugin, use the `providerSettings` configuration:
 
 ```yaml
 dynamicPlugins:
@@ -568,11 +583,11 @@ Each provider settings entry should define the following attributes:
 
 - `title`: The title for the authentication provider shown above the user's profile image if available.
 - `description`: a short description of the authentication provider.
-- `provider`: The ID of the authentication provider as provided to the `createApiRef` API call.  This value is used to look up the corresponding API factory for the authentication provider to connect the provider's Sign In/Sign Out button.
+- `provider`: The ID of the authentication provider as provided to the `createApiRef` API call. This value is used to look up the corresponding API factory for the authentication provider to connect the provider's Sign In/Sign Out button.
 
 ## Use a custom SignInPage component
 
-In a Backstage app the SignInPage component is used to connect one or more authentication providers to the application sign-in process.  Out of the box in Developer Hub a static SignInPage is already set up and supports all of the built-in authentication providers already.  To use a different authentication provider, for example from a dynamic plugin use the `signInPage` configuration:
+In a Backstage app the SignInPage component is used to connect one or more authentication providers to the application sign-in process. Out of the box in Developer Hub a static SignInPage is already set up and supports all of the built-in authentication providers already. To use a different authentication provider, for example from a dynamic plugin use the `signInPage` configuration:
 
 ```yaml
 dynamicPlugins:
@@ -594,7 +609,7 @@ The Backstage scaffolder component supports specifying [custom form fields](http
 ```typescript
 export const MyNewFieldExtension = scaffolderPlugin.provide(
   createScaffolderFieldExtension({
-    name: 'MyNewFieldExtension',
+    name: "MyNewFieldExtension",
     component: MyNewField,
     validation: myNewFieldValidator,
   }),

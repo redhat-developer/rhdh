@@ -5,7 +5,11 @@ import { KubeClient } from "../utils/kube-client";
 test.describe
   .serial("Verify TLS configuration with Postgres DB health check", () => {
   const namespace = process.env.NAME_SPACE_RUNTIME || "showcase-runtime";
-  const deploymentName = "rhdh-backstage";
+  const job: string = process.env.JOB_NAME;
+  let deploymentName = "rhdh-backstage";
+  if (job.includes("operator")) {
+    deploymentName = "backstage-rhdh";
+  }
   const secretName = "postgres-cred";
   const hostLatest2 = Buffer.from(process.env.RDS_2_HOST).toString("base64");
   const hostLatest3 = Buffer.from(process.env.RDS_3_HOST).toString("base64");

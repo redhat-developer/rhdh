@@ -1,0 +1,38 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: catalog-integrations
+  namespace: rhdh
+  title: Software Catalog Integrations
+  description: |
+    A list of common Backstage Software Catalog extensions.
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
+  tags:
+    - software-catalog
+spec:
+
+  description: |
+    A grouping of common Backstage Software Catalog extensions. These extensions are used to integrate with various 
+    systems and services to provide a more complete view of your software ecosystem. 
+
+  # Images are base 64 encoded SVGs (below is a blank square from the mockup)
+  icon: data:image/svg+xml;base64,
+    PHN2ZyB3aWR0aD0iNzAiIGhlaWdodD0iNzAiIHZpZXdCb3g9IjAgMCA3MCA3MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93
+    d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjcwIiBoZWlnaHQ9IjcwIiBmaWxsPSIjQzRDNEM0Ii8+Cjwvc3ZnPgo=
+
+  packages:
+    - backstage-github-catalog-module
+    - backstage-community-plugin-catalog-backend-module-keycloak
+    - backstage-community-plugin-catalog-backend-module-pingidentity
+    - backstage-community-plugin-catalog-backend-module-scaffolder-re
+    - backstage-plugin-catalog-backend-module-bitbucket-cloud
+    - backstage-plugin-catalog-backend-module-bitbucket-server
+    - backstage-plugin-catalog-backend-module-github-org
+    - backstage-plugin-catalog-backend-module-github
+    - backstage-plugin-catalog-backend-module-gitlab-org
+    - backstage-plugin-catalog-backend-module-gitlab
+    - backstage-plugin-catalog-backend-module-ldap
+    - backstage-plugin-catalog-backend-module-msgraph
+

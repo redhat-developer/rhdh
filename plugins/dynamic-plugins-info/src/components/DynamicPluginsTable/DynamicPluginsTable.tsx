@@ -72,7 +72,10 @@ export const DynamicPluginsTable = () => {
               enabled: true,
             };
           }
-          return plugin;
+          return {
+            ...plugin,
+            enabled: true,
+          };
         },
       );
       const notEnabledInternalPlugins = getNotEnabledInternalPlugins(

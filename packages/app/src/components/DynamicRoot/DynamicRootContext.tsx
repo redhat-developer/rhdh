@@ -20,6 +20,7 @@ export type ResolvedDynamicRouteMenuItem =
   | {
       text: string;
       icon: string;
+      enabled?: boolean;
     }
   | {
       Component: React.ComponentType<any>;
@@ -35,6 +36,7 @@ export type ResolvedMenuItem = {
   children?: ResolvedMenuItem[];
   to?: string;
   priority?: number;
+  enabled?: boolean;
 };
 
 export type DynamicModuleEntry = Pick<
@@ -104,7 +106,7 @@ export type RemotePlugins = {
 
 export type EntityTabOverrides = Record<
   string,
-  { title: string; mountPoint: string }
+  { title: string; mountPoint: string; priority?: number }
 >;
 
 export type MountPoints = Record<string, ScalprumMountPoint[]>;

@@ -100,7 +100,7 @@ global:
 
 #### Using RHDH Operator
 
-If you have created the `dynamic-plugins-rhdh` ConfigMap file as described in the [Configuring dynamic plugins with the Red Hat Developer Hub Operator](https://access.redhat.com/documentation/en-us/red_hat_developer_hub/1.1/html-single/administration_guide_for_red_hat_developer_hub/index#configuring-dynamic-plugins-with-the-red-hat-developer-hub-operator) section, add the `analytics-provider-segment` plugin to the list of plugins and set the `plugins.disabled` parameter to `true` to disable telemetry, or `false` to enable it.
+If you have created the `dynamic-plugins-rhdh` ConfigMap file, add the `analytics-provider-segment` plugin to the list of plugins and set the `plugins.disabled` parameter to `true` to disable telemetry, or `false` to enable it.
 
 If you have not created the `dynamic-plugins-rhdh` ConfigMap file, create it with the following content:
 
@@ -125,6 +125,11 @@ spec:
   application:
     dynamicPluginsConfigMapName: dynamic-plugins-rhdh
 ```
+
+See these docs for more info:
+* https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.4/html-single/configuring_dynamic_plugins/index#installing-ansible-plug-ins-for-red-hat-developer-hub or
+* https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.4/html-single/configuring/configuring-the-deployment#configuring-the-deployment
+
 
 ### Customizing Telemetry Destination
 
@@ -275,7 +280,7 @@ The easiest and fastest method for getting started: RHDH app, running it locally
      - This [URL](https://github.com/backstage/community-plugins/tree/main/workspaces/dynatrace/plugins/dynatrace#getting-started) explains how to use the Dynatrace Plugin
      - `${DYNATRACE_URL}`: The baseURL for rendering links to problems in the table
      - `${DYNATRACE_API_URL}`: The URL to the Dynatrace API
-     - `{DYNATRACE_ACCESS_TOKEN}`: API access token (see [documentation](https://www.dynatrace.com/support/help/dynatrace-api/basics/dynatrace-api-authentication)) with `entities.read`,`problems.read` permissions. It will also need one of the following permissions: `DataExport`, `ExternalSyntheticIntegration`, or `ReadSyntheticData`.
+     - `{DYNATRACE_ACCESS_TOKEN}`: API access token (see [documentation](https://docs.dynatrace.com/docs/discover-dynatrace/references/dynatrace-api/basics/dynatrace-api-authentication)) with `entities.read`,`problems.read` permissions. It will also need one of the following permissions: `DataExport`, `ExternalSyntheticIntegration`, or `ReadSyntheticData`.
 
    - Enabling Authentication in Showcase
 

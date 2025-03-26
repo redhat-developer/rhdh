@@ -21,9 +21,9 @@
 # 4. add Brew metadata
 
 # Stage 1 - Build nodejs skeleton
-#@follow_tag(registry.access.redhat.com/ubi9/nodejs-20:1)
-# https://registry.access.redhat.com/ubi9/nodejs-20
-FROM registry.access.redhat.com/ubi9/nodejs-20:9.5-1739783265 AS build
+#@follow_tag(registry.access.redhat.com/ubi9/nodejs-22:1)
+# https://registry.access.redhat.com/ubi9/nodejs-222
+FROM registry.access.redhat.com/ubi9/nodejs-22:9.5-1741891114 AS build
 # hadolint ignore=DL3002
 USER 0
 
@@ -214,7 +214,7 @@ COPY packages/app/src/build-metadata.json ./packages/app/src/
 RUN \
   # Downstream only - relabel upstream + append build time into packages/app/src/build-metadata.json
   now=$(date -u +%FT%TZ); sed -i packages/app/src/build-metadata.json -r \
-  -e "s/\"Last Commit: (.+)\"/\"Upstream: \1\", \"Build Time: $now\"/" && \
+  -e "s/\"Last Commit\": \"(.+)\"/\"Upstream\": \"\1\", \"Build Time\": \"$now\"/" && \
   cat packages/app/src/build-metadata.json; echo && \
   "$YARN" build --filter=backend && \
   # Downstream only - replace registry refs with cachito ones
@@ -264,9 +264,9 @@ RUN "$YARN" workspaces focus --all --production && \
   npm config set cafile /opt/app-root/src/registry-ca.pem
 
 # Stage 5 - Build the runner image
-#@follow_tag(registry.access.redhat.com/ubi9/nodejs-20-minimal:1)
-# https://registry.access.redhat.com/ubi9/nodejs-20-minimal
-FROM registry.access.redhat.com/ubi9/nodejs-20-minimal:9.5-1739448741 AS runner
+#@follow_tag(registry.access.redhat.com/ubi9/nodejs-22-minimal:1)
+# https://registry.access.redhat.com/ubi9/nodejs-22-minimal
+FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:9.5-1742929466 AS runner
 USER 0
 
 # Downstream sources
@@ -292,6 +292,9 @@ COPY --from=build "$REMOTE_SOURCES_DIR"/dynamic-plugins/dist/ ./dynamic-plugins/
 
 # RHIDP-4220 - make Konflux preflight and EC checks happy - [check-container] Create a directory named /licenses and include all relevant licensing
 COPY $EXTERNAL_SOURCE/LICENSE /licenses/
+
+# RHIDP-5216/RHIDP-5215 - interim marketplace catalog entities until these data will be loaded from container images
+COPY $EXTERNAL_SOURCE/catalog-entities/marketplace /marketplace/catalog-entities/
 
 # Copy script to gather dynamic plugins; copy embedded dynamic plugins to root folder; fix permissions
 COPY docker/install-dynamic-plugins.py docker/install-dynamic-plugins.sh ./

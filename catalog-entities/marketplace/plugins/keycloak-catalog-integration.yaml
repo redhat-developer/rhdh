@@ -1,0 +1,285 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: keycloak-catalog-integration
+  namespace: rhdh
+  title: Keycloak Catalog Integration
+  description: |
+    Automatically import Keycloak users and groups into Red Hat Developer Hub for enterprise ready authentication and authorization.
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
+    extensions.backstage.io/verified-by: Red Hat
+  tags:
+    - authentication
+    - authorization
+    - iam
+    - software-catalog
+  links:
+    - url: https://github.com/backstage/community-plugins/blob/main/workspaces/keycloak/plugins/catalog-backend-module-keycloak
+      title: Source Code
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Documentation for Red Hat Developer Hub
+      url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
+
+spec:
+  authors:
+    - name: Red Hat
+    - name: Backstage Community
+  publisher: Red Hat
+  support: production
+  lifecycle: active
+
+  categories:
+    - Identity and Access Management
+
+  highlights:
+    - Synchronization of Keycloak users
+    - Synchronization of Keycloak groups
+
+  icon: data:image/svg+xml;base64,
+    PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNjcuMTE3IiBo
+    ZWlnaHQ9IjE1MC42NTgiIHZpZXdCb3g9IjAgMCA0NC4yMTYgMzkuODYxIj48cGF0aCBkPSJtODgu
+    NjEgMTM4LjQ1NiA1LjcxNi05Ljg2NSAyMy4wMTgtLjAwNCA1LjY4NiA5Ljk2NS4wMDcgMTkuOTMy
+    LTUuNjkxIDkuOTU3LTIzLjAxMi4wMDgtNS43ODItOS45NjV6IiBzdHlsZT0iZGlzcGxheTppbmxp
+    bmU7ZmlsbDojNGQ0ZDRkO2ZpbGwtb3BhY2l0eToxO3N0cm9rZS13aWR0aDouMjY0NTgzIiB0cmFu
+    c2Zvcm09InRyYW5zbGF0ZSgtODIuODE1IC0xMjguNTg4KSIvPjxwYXRoIGQ9Ik04OC41NTIgMTU4
+    LjQ4MWgxMC4zNzVsLTUuNjk5LTEwLjA0MSA0LjYzNC05Ljk4Mi05LjI1Mi0uMDAyLTUuNzk1IDEw
+    LjA2NSIgc3R5bGU9ImZpbGw6I2VkZWRlZDtmaWxsLW9wYWNpdHk6MTtmaWxsLXJ1bGU6bm9uemVy
+    bztzdHJva2U6bm9uZTtzdHJva2Utd2lkdGg6LjMzMDcyOSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUo
+    LTgyLjgxNSAtMTI4LjU4OCkiLz48cGF0aCBkPSJNMTAyLjA3MyAxNTguNDgxaDcuNTgybDYuNzA2
+    LTkuNzczLTYuNTg5LTEwLjE1NmgtOC45MjFsLTUuMzczIDkuODE0eiIgc3R5bGU9ImZpbGw6I2Uw
+    ZTBlMDtmaWxsLW9wYWNpdHk6MTtmaWxsLXJ1bGU6bm9uemVybztzdHJva2U6bm9uZTtzdHJva2Ut
+    d2lkdGg6LjMzMDcyOSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoLTgyLjgxNSAtMTI4LjU4OCkiLz48
+    cGF0aCBkPSJtODIuODE1IDE0OC41MiA1LjczOCA5Ljk2NGgxMC4zNzRsLTUuNjM2LTkuOTN6IiBz
+    dHlsZT0iZmlsbDojYWNhY2FjO2ZpbGwtb3BhY2l0eToxO2ZpbGwtcnVsZTpub256ZXJvO3N0cm9r
+    ZTpub25lO3N0cm9rZS13aWR0aDouMzMwNzI5IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgtODIuODE1
+    IC0xMjguNTg4KSIvPjxwYXRoIGQ9Im05NS41ODkgMTQ4LjUyMiA2LjQ4NCA5Ljk2M2g3LjU4Mmw2
+    LjYwMS05Ljk1OXoiIHN0eWxlPSJmaWxsOiM5ZTllOWU7ZmlsbC1vcGFjaXR5OjE7ZmlsbC1ydWxl
+    Om5vbnplcm87c3Ryb2tlOm5vbmU7c3Ryb2tlLXdpZHRoOi4zMzA3MjkiIHRyYW5zZm9ybT0idHJh
+    bnNsYXRlKC04Mi44MTUgLTEyOC41ODgpIi8+PHBhdGggZD0ibTk4LjE1NyAxNDguNTI5LTEuOTU4
+    LjU2OS0xLjg3Ny0uNTcyIDcuNjY3LTEzLjI4OCAxLjkxOCAzLjMxNiIgc3R5bGU9ImZpbGw6IzAw
+    YjhlMztmaWxsLW9wYWNpdHk6MTtmaWxsLXJ1bGU6bm9uemVybztzdHJva2U6bm9uZTtzdHJva2Ut
+    d2lkdGg6LjMzMDcyOSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoLTgyLjgxNSAtMTI4LjU4OCkiLz48
+    cGF0aCBkPSJtMTAzLjkgMTU4LjQ4Mi0xLjkwOSAzLjMzMi01LjA5My01LjQ4Ny0yLjU4LTcuNzk3
+    di0uMDA0aDMuODM4IiBzdHlsZT0iZmlsbDojMzNjNmU5O2ZpbGwtb3BhY2l0eToxO2ZpbGwtcnVs
+    ZTpub256ZXJvO3N0cm9rZTpub25lO3N0cm9rZS13aWR0aDouMzMwNzI5IiB0cmFuc2Zvcm09InRy
+    YW5zbGF0ZSgtODIuODE1IC0xMjguNTg4KSIvPjxwYXRoIGQ9Ik05NC4zMjIgMTQ4LjUyNmgtLjAw
+    M3YuMDAzbC0xLjkxOCAzLjMyMi0xLjkyNS0zLjMwNyAxLjk1Mi0zLjM4NiA1LjcyOC05LjkyaDMu
+    ODM0IiBzdHlsZT0iZmlsbDojMDA4YWFhO2ZpbGwtb3BhY2l0eToxO2ZpbGwtcnVsZTpub256ZXJv
+    O3N0cm9rZTpub25lO3N0cm9rZS13aWR0aDouMzMwNzI5IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgt
+    ODIuODE1IC0xMjguNTg4KSIvPjxwYXRoIGQ9Ik0xMTUuNDIgMTU4LjQ4MWgxMS42MTFsLS4wMDct
+    MTkuOTNoLTExLjYwNXoiIHN0eWxlPSJmaWxsOiNkNGQ0ZDQ7ZmlsbC1vcGFjaXR5OjE7ZmlsbC1y
+    dWxlOm5vbnplcm87c3Ryb2tlOm5vbmU7c3Ryb2tlLXdpZHRoOi4zMzA3MjkiIHRyYW5zZm9ybT0i
+    dHJhbnNsYXRlKC04Mi44MTUgLTEyOC41ODgpIi8+PHBhdGggZD0iTTExNS40MiAxNDguNTU0djku
+    OTNoMTEuNTl2LTkuOTN6IiBzdHlsZT0iZmlsbDojOTE5MTkxO2ZpbGwtb3BhY2l0eToxO2ZpbGwt
+    cnVsZTpub256ZXJvO3N0cm9rZTpub25lO3N0cm9rZS13aWR0aDouMzMwNzI5IiB0cmFuc2Zvcm09
+    InRyYW5zbGF0ZSgtODIuODE1IC0xMjguNTg4KSIvPjxwYXRoIGQ9Ik0xMDEuOTkyIDE2MS44MTdo
+    LTMuODM2bC01Ljc1NS05Ljk2NiAxLjkxOC0zLjMyMXoiIHN0eWxlPSJmaWxsOiMwMGI4ZTM7Zmls
+    bC1vcGFjaXR5OjE7ZmlsbC1ydWxlOm5vbnplcm87c3Ryb2tlOm5vbmU7c3Ryb2tlLXdpZHRoOi4z
+    MzA3MjkiIHRyYW5zZm9ybT0idHJhbnNsYXRlKC04Mi44MTUgLTEyOC41ODgpIi8+PHBhdGggZD0i
+    bTExNy4zMzMgMTQ4LjUyNi03LjY2OSAxMy4yODljLS43MDUtMS4wMzYtMS45MTMtMy4zMzEtMS45
+    MTMtMy4zMzFsNS43NTMtOS45NTl6IiBzdHlsZT0iZmlsbDojMDA4YWFhO2ZpbGwtb3BhY2l0eTox
+    O2ZpbGwtcnVsZTpub256ZXJvO3N0cm9rZTpub25lO3N0cm9rZS13aWR0aDouMzMwNzI5IiB0cmFu
+    c2Zvcm09InRyYW5zbGF0ZSgtODIuODE1IC0xMjguNTg4KSIvPjxwYXRoIGQ9Im0xMTMuNDk1IDE2
+    MS44MTUtMy44MzEtLjAwMSA3LjY3LTEzLjI4OCAxLjkxNy0zLjMxNyAxLjkyMSAzLjM0bS0zLjgz
+    OS0uMDIzaC0zLjgyOGwtNS43NTUtOS45NzMgMS45MDUtMy4zMTQgNC42NTggNS45MjJ6IiBzdHls
+    ZT0iZmlsbDojMDBiOGUzO2ZpbGwtb3BhY2l0eToxO2ZpbGwtcnVsZTpub256ZXJvO3N0cm9rZTpu
+    b25lO3N0cm9rZS13aWR0aDouMzMwNzI5IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgtODIuODE1IC0x
+    MjguNTg4KSIvPjxwYXRoIGQ9Ik0xMTkuMjUgMTQ1LjIwNXYuMDAzbC0xLjkxNyAzLjMxOC03LjY3
+    Ny0xMy4yODYgMy44NDEuMDAyeiIgc3R5bGU9ImZpbGw6IzMzYzZlOTtmaWxsLW9wYWNpdHk6MTtm
+    aWxsLXJ1bGU6bm9uemVybztzdHJva2U6bm9uZTtzdHJva2Utd2lkdGg6LjMzMDcyOSIgdHJhbnNm
+    b3JtPSJ0cmFuc2xhdGUoLTgyLjgxNSAtMTI4LjU4OCkiLz48L3N2Zz4=
+
+  description: |
+    With this plugin you can automatically import Keycloak users and groups into Red Hat Developer Hub for enterprise ready 
+    authentication and authorization. Keycloak provides user federation, strong authentication, user 
+    management, fine-grained authorization, and more. Keycloak has built-in support to connect to 
+    existing LDAP or Active Directory servers. You can also implement your own provider if you have 
+    users in other stores, such as a relational database.
+    
+    ## Implement Single-Sign On In Red Hat Developer Hub
+
+    Users authenticate with Keycloak rather than individual applications. This means that your applications don't have to deal with 
+    login forms, authenticating users, and storing users. Once logged-in to Keycloak, users don't have to login again to access a 
+    different application. This also applies to logout. Keycloak provides single-sign out, which means users only have to logout 
+    once to be logged-out of all applications that use Keycloak.
+    
+    After configuring the plugin successfully, the plugin imports the users and groups each time when started. After the first import 
+    is complete, you can select the **User** kind in the software catalog to see a list of users.
+
+    ## Adding The Plugin To Red Hat Developer Hub
+
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub) 
+    for further instructions on how to add, enable, configure, and remove plugins in your instance.
+
+    ## Configuring The Plugin ##
+
+    Plugins often need additional configuration to work correctly - particularly those that integrate with other 
+    systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further details regarding the configuration required.
+
+  installation: |
+    # Keycloak backend plugin for Backstage
+
+    The Keycloak backend plugin integrates Keycloak into Backstage.
+
+    ## Capabilities
+
+    The Keycloak backend plugin has the following capabilities:
+
+    - Synchronization of Keycloak users in a realm
+    - Synchronization of Keycloak groups and their users in a realm
+
+    ## For administrators
+
+    ### Installation
+
+    Install the Backstage package into the backend. When not integrating with a published package, clone the repository locally and add the Backstage as follows:
+
+    ```console
+    yarn workspace backend add @backstage-community/plugin-catalog-backend-module-keycloak
+    ```
+
+    ### Configuration
+
+    #### New Backend Configuration
+
+    1. Add the following configuration to the `app-config.yaml` file. The default schedule is a frequency of 30 minutes and a timeout of 3 minutes, please configure the schedule in the `app-config.yaml` as per your requirement.
+
+      ```yaml title="app-config.yaml"
+      catalog:
+        providers:
+          keycloakOrg:
+            default:
+              baseUrl: https://<keycloak_host>
+              loginRealm: ${KEYCLOAK_REALM}
+              realm: ${KEYCLOAK_REALM}
+              clientId: ${KEYCLOAK_CLIENTID}
+              clientSecret: ${KEYCLOAK_CLIENTSECRET}
+              schedule: # Optional (defaults to the configurations below if not provided); same options as in TaskScheduleDefinition
+                # supports cron, ISO duration, "human duration" as used in code
+                frequency: { minutes: 30 } # Customize this to fit your needs
+                # supports ISO duration, "human duration" as used in code
+                timeout: { minutes: 3 } # Customize this to fit your needs
+      ```
+
+    1. Register the plugin in the `packages/backend/src/index.ts` file:
+
+      ```ts title="packages/backend/src/index.ts"
+      const backend = createBackend();
+
+      /* highlight-add-next-line */
+      backend.add(
+        import('@backstage-community/plugin-catalog-backend-module-keycloak'),
+      );
+
+      backend.start();
+      ```
+
+    1. Optional: To configure custom transformer function for user/group to mutate the entity generated by the catalog-backend-module-keycloak. Create a new backend module with the `yarn new` command and add your custom user and group transformers to the `keycloakTransformerExtensionPoint`. Then install this new backend module into your backstage backend. Below is an example of how the backend module can be defined:
+
+      ```ts title="plugins/<module-name>/src/module.ts"
+      /* highlight-add-start */
+      import {
+        GroupTransformer,
+        keycloakTransformerExtensionPoint,
+        UserTransformer,
+      } from '@backstage-community/plugin-catalog-backend-module-keycloak';
+
+      const customGroupTransformer: GroupTransformer = async (
+        entity,
+        realm,
+        groups,
+      ) => {
+        /* apply transformations */
+        return entity;
+      };
+      const customUserTransformer: UserTransformer = async (
+        entity,
+        user,
+        realm,
+        groups,
+      ) => {
+        /* apply transformations */
+        return entity;
+      };
+      /* highlight-add-end */
+
+      export const keycloakBackendModuleTransformer = createBackendModule({
+        pluginId: 'catalog',
+        moduleId: 'keycloak-transformer',
+        register(reg) {
+          reg.registerInit({
+            deps: {
+              /* highlight-add-start */
+              keycloak: keycloakTransformerExtensionPoint,
+              /* highlight-add-end */
+            },
+            /* highlight-add-start */
+            async init({ keycloak }) {
+              keycloak.setUserTransformer(customUserTransformer);
+              keycloak.setGroupTransformer(customGroupTransformer);
+              /* highlight-add-end */
+            },
+          });
+        },
+      });
+      ```
+
+      ***
+
+      **IMPORTANT**
+
+      The `pluginId` for the module **MUST** be set to `catalog` to match the `pluginId` of the `catalog-backend-module-keycloak` or else the module will fail to initialize.
+
+      ***
+
+    Communication between Backstage and Keycloak is enabled by using the Keycloak API. Username/password or client credentials are supported authentication methods.
+
+    The following table describes the parameters that you can configure to enable the plugin under `catalog.providers.keycloakOrg.<ENVIRONMENT_NAME>` object in the `app-config.yaml` file:
+
+    | Name             | Description                                                        | Default Value | Required                                             |
+    | ---------------- | ------------------------------------------------------------------ | ------------- | ---------------------------------------------------- |
+    | `baseUrl`        | Location of the Keycloak server, such as `https://localhost:8443`. | ""            | Yes                                                  |
+    | `realm`          | Realm to synchronize                                               | `master`      | No                                                   |
+    | `loginRealm`     | Realm used to authenticate                                         | `master`      | No                                                   |
+    | `username`       | Username to authenticate                                           | ""            | Yes if using password based authentication           |
+    | `password`       | Password to authenticate                                           | ""            | Yes if using password based authentication           |
+    | `clientId`       | Client ID to authenticate                                          | ""            | Yes if using client credentials based authentication |
+    | `clientSecret`   | Client Secret to authenticate                                      | ""            | Yes if using client credentials based authentication |
+    | `userQuerySize`  | Number of users to query at a time                                 | `100`         | No                                                   |
+    | `groupQuerySize` | Number of groups to query at a time                                | `100`         | No                                                   |
+
+    When using client credentials, the access type must be set to `confidential` and service accounts must be enabled. You must also add the following roles from the `realm-management` client role:
+
+    - `query-groups`
+    - `query-users`
+    - `view-users`
+
+    ### Limitations
+
+    If you have self-signed or corporate certificate issues, you can set the following environment variable before starting Backstage:
+
+    `NODE_TLS_REJECT_UNAUTHORIZED=0`
+
+    ---
+
+    **NOTE**
+    The solution of setting the `NODE_TLS_REJECT_UNAUTHORIZED` environment variable is not recommended.
+
+    ---
+
+  packages:
+    - backstage-community-plugin-catalog-backend-module-keycloak
+
+  # unused yet
+  # assets:
+  #   type: icon
+  #   filename: /img/keycloak.svg
+
+  history:
+    added: '2023-05-15'

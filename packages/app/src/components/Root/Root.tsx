@@ -26,6 +26,7 @@ import Box from '@mui/material/Box';
 import Collapse from '@mui/material/Collapse';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
+import { SxProps } from '@mui/material/styles';
 import { makeStyles } from 'tss-react/mui';
 
 import DynamicRootContext, {
@@ -117,13 +118,13 @@ const SideBarItemWrapper = (props: SidebarItemProps) => {
 
 const renderIcon = (iconName: string) => () => <MenuIcon icon={iconName} />;
 
-const renderExpandIcon = (expand: boolean, isSecondLevelMenuItem = false) => {
+const renderExpandIcon = (expand: boolean) => {
   return expand ? (
     <ExpandMore
       fontSize="small"
       style={{
         display: 'flex',
-        marginLeft: isSecondLevelMenuItem ? '' : '0.5rem',
+        marginLeft: 8,
       }}
     />
   ) : (
@@ -131,7 +132,7 @@ const renderExpandIcon = (expand: boolean, isSecondLevelMenuItem = false) => {
       fontSize="small"
       style={{
         display: 'flex',
-        marginLeft: isSecondLevelMenuItem ? '' : '0.5rem',
+        marginLeft: 8,
       }}
     />
   );
@@ -158,6 +159,30 @@ const getMenuItem = (menuItem: ResolvedMenuItem, isNestedMenuItem = false) => {
       text={menuItem.title}
       style={menuItemStyle}
     />
+  );
+};
+
+interface ExpandableMenuListProps {
+  menuItems: ResolvedMenuItem[];
+  isOpen: boolean;
+  renderItem: (item: ResolvedMenuItem) => JSX.Element;
+  sx?: SxProps;
+}
+
+const ExpandableMenuList: React.FC<ExpandableMenuListProps> = ({
+  menuItems,
+  isOpen,
+  renderItem,
+  sx = {},
+}) => {
+  if (!menuItems || menuItems.length === 0) return null;
+
+  return (
+    <Collapse in={isOpen} timeout="auto" unmountOnExit>
+      <List disablePadding sx={sx}>
+        {menuItems.map(item => renderItem(item))}
+      </List>
+    </Collapse>
   );
 };
 
@@ -197,85 +222,91 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
     isSubMenuOpen: boolean,
   ) => {
     return (
-      <>
-        {menuItem.children &&
-          menuItem.children.length > 0 &&
-          menuItem.children?.map(child => (
-            <Collapse
-              key={child.name}
-              in={isSubMenuOpen}
-              timeout="auto"
-              unmountOnExit
-            >
-              <List
-                disablePadding
-                sx={{
-                  paddingLeft: '4rem',
-                  fontSize: 12,
-                  '& span.MuiTypography-subtitle2': { fontSize: 12 },
-                  '& div': { width: '36px', boxShadow: '-1px 0 0 0 #3c3f42' },
-                }}
-              >
-                <SideBarItemWrapper
-                  icon={() => null}
-                  text={child.title}
-                  to={child.to ?? ''}
-                />
-              </List>
-            </Collapse>
-          ))}
-      </>
+      <ExpandableMenuList
+        menuItems={menuItem.children ?? []}
+        isOpen={isSubMenuOpen}
+        sx={{
+          paddingLeft: '4.25rem',
+          fontSize: 12,
+          '& span.MuiTypography-subtitle2': {
+            fontSize: 12,
+            whiteSpace: 'normal',
+            wordBreak: 'break-word',
+            overflowWrap: 'break-word',
+          },
+          '& div': { width: 36, boxShadow: '-1px 0 0 0 #3c3f42' },
+          "& div[class*='BackstageSidebarItem-secondaryAction']": { width: 20 },
+          a: {
+            width: 'auto',
+            '@media (min-width: 600px)': { width: 160 },
+          },
+        }}
+        renderItem={child => (
+          <SideBarItemWrapper
+            key={child.title}
+            icon={() => null}
+            text={child.title}
+            to={child.to ?? ''}
+          />
+        )}
+      />
     );
   };
+
   const renderExpandableMenuItems = (
     menuItem: ResolvedMenuItem,
     isOpen: boolean,
   ) => {
     return (
-      <>
-        {menuItem.children &&
-          menuItem.children.length > 0 &&
-          menuItem.children?.map(child => {
-            const isNestedMenuOpen = openItems[child.name] || false;
-            return (
-              <Collapse
-                key={child.name}
-                in={isOpen}
-                timeout="auto"
-                unmountOnExit
-              >
-                <List disablePadding>
-                  {child.children && child.children.length === 0 && (
-                    <ListItem disableGutters disablePadding>
-                      {getMenuItem(child, true)}
-                    </ListItem>
-                  )}
-                  {child.children && child.children.length > 0 && (
-                    <ListItem
-                      disableGutters
-                      disablePadding
-                      sx={{
-                        display: 'block',
-                        '& .MuiButton-label': { paddingLeft: '2rem' },
-                      }}
-                    >
-                      <SideBarItemWrapper
-                        key={child.name}
-                        icon={renderIcon(child.icon ?? '')}
-                        text={child.title}
-                        onClick={() => handleClick(child.name)}
-                      >
-                        {child.children.length > 0 &&
-                          renderExpandIcon(isNestedMenuOpen, true)}
-                      </SideBarItemWrapper>
-                      {renderExpandableNestedMenuItems(child, isNestedMenuOpen)}
-                    </ListItem>
-                  )}
-                </List>
-              </Collapse>
-            );
-          })}
-      </>
+      <ExpandableMenuList
+        menuItems={menuItem.children ?? []}
+        isOpen={isOpen}
+        renderItem={child => {
+          const isNestedMenuOpen = openItems[child.name] || false;
+          return (
+            <ListItem
+              key={child.name}
+              disableGutters
+              disablePadding
+              sx={{
+                display: 'block',
+                '& .MuiButton-label': { paddingLeft: '2rem' },
+                "& span[class*='-subtitle2']": {
+                  width: 78,
+                  fontSize: 12,
+                  whiteSpace: 'normal',
+                  wordBreak: 'break-word',
+                  overflowWrap: 'break-word',
+                },
+                "& div[class*='BackstageSidebarItem-secondaryAction']": {
+                  width:
+                    child.children && child.children.length === 0 ? 18 : 48,
+                },
+                a: {
+                  width: 'auto',
+                  '@media (min-width: 600px)': { width: 224 },
+                },
+              }}
+            >
+              {child.children && child.children.length === 0 ? (
+                getMenuItem(child, true)
+              ) : (
+                <>
+                  <SideBarItemWrapper
+                    icon={renderIcon(child.icon ?? '')}
+                    text={child.title}
+                    onClick={() => handleClick(child.name)}
+                  >
+                    {child.children!.length > 0 &&
+                      renderExpandIcon(isNestedMenuOpen)}
+                  </SideBarItemWrapper>
+                  {renderExpandableNestedMenuItems(child, isNestedMenuOpen)}
+                </>
+              )}
+            </ListItem>
+          );
+        }}
+      />
     );
   };
 

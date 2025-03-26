@@ -72,6 +72,7 @@ export interface Config {
           menuItem?: {
             icon: string;
             text: string;
+            enabled?: boolean;
           };
           config: {
             props?: {
@@ -96,6 +97,7 @@ export interface Config {
           path: string;
           title: string;
           mountPoint: string;
+          priority?: number;
         }[];
         mountPoints?: {
           mountPoint: string;
@@ -186,4 +188,14 @@ export interface Config {
    * @visibility frontend
    */
   includeTransitiveGroupOwnership?: boolean;
+
+  /**
+   * Allows you to customize RHDH Metadata card
+   * @deepVisibility frontend
+   */
+  buildInfo?: {
+    title: string;
+    card: { [key: string]: string };
+    full?: boolean;
+  };
 }

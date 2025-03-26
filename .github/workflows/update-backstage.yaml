@@ -44,7 +44,7 @@ jobs:
     steps:
       - name: Generate token
         id: generate-token
-        uses: actions/create-github-app-token@0d564482f06ca65fa9e77e2510873638c82206f2 # v1.11.5
+        uses: actions/create-github-app-token@af35edadc00be37caa72ed9f3e6d5f7801bfdf09 # v1.11.7
         with:
           app-id: ${{ secrets.RHDH_GITHUB_APP_ID }}
           private-key: ${{ secrets.RHDH_GITHUB_APP_PRIVATE_KEY }}
@@ -55,7 +55,7 @@ jobs:
           token: ${{ steps.generate-token.outputs.token }}
 
       - name: Setup Node.js
-        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4
         with:
           node-version-file: '.nvmrc'
           registry-url: 'https://registry.npmjs.org'

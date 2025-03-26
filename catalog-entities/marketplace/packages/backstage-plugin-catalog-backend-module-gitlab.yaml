@@ -1,0 +1,35 @@
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: backstage-plugin-catalog-backend-module-gitlab
+  namespace: rhdh
+  title: "@backstage/plugin-catalog-backend-module-gitlab"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-plugin-catalog-backend-module-gitlab-dynamic
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-plugin-catalog-backend-module-gitlab-dynamic
+  tags: []
+spec:
+  packageName: "@backstage/plugin-catalog-backend-module-gitlab"
+  dynamicArtifact: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-gitlab-dynamic
+  version: 0.6.2
+  backstage:
+    role: backend-plugin-module
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+  partOf:
+    - backstage-gitlab-catalog-module
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        catalog:
+          providers:
+            gitlab: {}

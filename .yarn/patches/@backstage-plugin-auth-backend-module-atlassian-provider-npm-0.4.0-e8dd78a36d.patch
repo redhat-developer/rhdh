@@ -1,0 +1,57 @@
+diff --git a/dist/index.d.ts b/dist/index.d.ts
+index 48136a1320584e3af0abfd4b7e5d28bfc77368f6..bde4ec87b64984d49397a85564264bbbd98f7f72 100644
+--- a/dist/index.d.ts
++++ b/dist/index.d.ts
+@@ -17,7 +17,9 @@ declare namespace atlassianSignInResolvers {
+     /**
+      * Looks up the user by matching their Atlassian username to the entity name.
+      */
+-    const usernameMatchingUserEntityName: _backstage_plugin_auth_node.SignInResolverFactory<OAuthAuthenticatorResult<PassportProfile>, unknown>;
++    const usernameMatchingUserEntityName: _backstage_plugin_auth_node.SignInResolverFactory<OAuthAuthenticatorResult<PassportProfile>, {
++        dangerouslyAllowSignInWithoutUserInCatalog?: boolean | undefined;
++    } | undefined>;
+ }
+ 
+ export { atlassianAuthenticator, atlassianSignInResolvers, authModuleAtlassianProvider as default };
+diff --git a/dist/resolvers.cjs.js b/dist/resolvers.cjs.js
+index 58621485a7d045b7c26dc1e28814c8f5c9f15729..8e98243547fc5c8d3bbfef50489b34bdc47843ac 100644
+--- a/dist/resolvers.cjs.js
++++ b/dist/resolvers.cjs.js
+@@ -1,18 +1,26 @@
+ 'use strict';
+ 
+ var pluginAuthNode = require('@backstage/plugin-auth-node');
++var zod = require('zod');
+ 
+ exports.atlassianSignInResolvers = void 0;
+ ((atlassianSignInResolvers2) => {
+   atlassianSignInResolvers2.usernameMatchingUserEntityName = pluginAuthNode.createSignInResolverFactory({
+-    create() {
++    optionsSchema: zod.z.object({
++      dangerouslyAllowSignInWithoutUserInCatalog: zod.z.boolean().optional()
++    }).optional(),
++    create(options = {}) {
+       return async (info, ctx) => {
+         const { result } = info;
+         const id = result.fullProfile.username;
+         if (!id) {
+           throw new Error(`Atlassian user profile does not contain a username`);
+         }
+-        return ctx.signInWithCatalogUser({ entityRef: { name: id } });
++        return ctx.signInWithCatalogUser(
++          { entityRef: { name: id } },
++          id,
++          options?.dangerouslyAllowSignInWithoutUserInCatalog
++        );
+       };
+     }
+   });
+diff --git a/dist/resolvers.cjs.js.map b/dist/resolvers.cjs.js.map
+index 050a899e3e01fa6023a99fc63ce5fbcbfb14450e..21de910979770f9109f5ce05924ba42d499e05e9 100644
+--- a/dist/resolvers.cjs.js.map
++++ b/dist/resolvers.cjs.js.map
+@@ -1 +1 @@
+-{"version":3,"file":"resolvers.cjs.js","sources":["../src/resolvers.ts"],"sourcesContent":["/*\n * Copyright 2023 The Backstage Authors\n *\n * Licensed under the Apache License, Version 2.0 (the \"License\");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *     http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n\nimport {\n  createSignInResolverFactory,\n  OAuthAuthenticatorResult,\n  PassportProfile,\n  SignInInfo,\n} from '@backstage/plugin-auth-node';\n\n/**\n * Available sign-in resolvers for the Atlassian auth provider.\n *\n * @public\n */\nexport namespace atlassianSignInResolvers {\n  /**\n   * Looks up the user by matching their Atlassian username to the entity name.\n   */\n  export const usernameMatchingUserEntityName = createSignInResolverFactory({\n    create() {\n      return async (\n        info: SignInInfo<OAuthAuthenticatorResult<PassportProfile>>,\n        ctx,\n      ) => {\n        const { result } = info;\n\n        const id = result.fullProfile.username;\n        if (!id) {\n          throw new Error(`Atlassian user profile does not contain a username`);\n        }\n\n        return ctx.signInWithCatalogUser({ entityRef: { name: id } });\n      };\n    },\n  });\n}\n"],"names":["atlassianSignInResolvers","createSignInResolverFactory"],"mappings":";;;;AA4BiBA;AAAA,CAAV,CAAUA,yBAAV,KAAA;AAIE,EAAMA,yBAAAA,CAAA,iCAAiCC,0CAA4B,CAAA;AAAA,IACxE,MAAS,GAAA;AACP,MAAO,OAAA,OACL,MACA,GACG,KAAA;AACH,QAAM,MAAA,EAAE,QAAW,GAAA,IAAA;AAEnB,QAAM,MAAA,EAAA,GAAK,OAAO,WAAY,CAAA,QAAA;AAC9B,QAAA,IAAI,CAAC,EAAI,EAAA;AACP,UAAM,MAAA,IAAI,MAAM,CAAoD,kDAAA,CAAA,CAAA;AAAA;AAGtE,QAAO,OAAA,GAAA,CAAI,sBAAsB,EAAE,SAAA,EAAW,EAAE,IAAM,EAAA,EAAA,IAAM,CAAA;AAAA,OAC9D;AAAA;AACF,GACD,CAAA;AAAA,CApBc,EAAAD,gCAAA,KAAAA,gCAAA,GAAA,EAAA,CAAA,CAAA;;"}
+\ No newline at end of file
++{"version":3,"file":"resolvers.cjs.js","sources":["../src/resolvers.ts"],"sourcesContent":["/*\n * Copyright 2023 The Backstage Authors\n *\n * Licensed under the Apache License, Version 2.0 (the \"License\");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *     http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n\nimport {\n  createSignInResolverFactory,\n  OAuthAuthenticatorResult,\n  PassportProfile,\n  SignInInfo,\n} from '@backstage/plugin-auth-node';\nimport { z } from 'zod';\n\n/**\n * Available sign-in resolvers for the Atlassian auth provider.\n *\n * @public\n */\nexport namespace atlassianSignInResolvers {\n  /**\n   * Looks up the user by matching their Atlassian username to the entity name.\n   */\n  export const usernameMatchingUserEntityName = createSignInResolverFactory({\n    optionsSchema: z\n      .object({\n        dangerouslyAllowSignInWithoutUserInCatalog: z.boolean().optional(),\n      })\n      .optional(),\n    create(options = {}) {\n      return async (\n        info: SignInInfo<OAuthAuthenticatorResult<PassportProfile>>,\n        ctx,\n      ) => {\n        const { result } = info;\n\n        const id = result.fullProfile.username;\n        if (!id) {\n          throw new Error(`Atlassian user profile does not contain a username`);\n        }\n\n        return ctx.signInWithCatalogUser(\n          { entityRef: { name: id } },\n          id,\n          options?.dangerouslyAllowSignInWithoutUserInCatalog,\n        );\n      };\n    },\n  });\n}\n"],"names":["atlassianSignInResolvers","createSignInResolverFactory","z"],"mappings":";;;;;AA6BiBA;AAAA,CAAV,CAAUA,yBAAV,KAAA;AAIE,EAAMA,yBAAAA,CAAA,iCAAiCC,0CAA4B,CAAA;AAAA,IACxE,aAAA,EAAeC,MACZ,MAAO,CAAA;AAAA,MACN,0CAA4C,EAAAA,KAAA,CAAE,OAAQ,EAAA,CAAE,QAAS;AAAA,KAClE,EACA,QAAS,EAAA;AAAA,IACZ,MAAA,CAAO,OAAU,GAAA,EAAI,EAAA;AACnB,MAAO,OAAA,OACL,MACA,GACG,KAAA;AACH,QAAM,MAAA,EAAE,QAAW,GAAA,IAAA;AAEnB,QAAM,MAAA,EAAA,GAAK,OAAO,WAAY,CAAA,QAAA;AAC9B,QAAA,IAAI,CAAC,EAAI,EAAA;AACP,UAAM,MAAA,IAAI,MAAM,CAAoD,kDAAA,CAAA,CAAA;AAAA;AAGtE,QAAA,OAAO,GAAI,CAAA,qBAAA;AAAA,UACT,EAAE,SAAA,EAAW,EAAE,IAAA,EAAM,IAAK,EAAA;AAAA,UAC1B,EAAA;AAAA,UACA,OAAS,EAAA;AAAA,SACX;AAAA,OACF;AAAA;AACF,GACD,CAAA;AAAA,CA7Bc,EAAAF,gCAAA,KAAAA,gCAAA,GAAA,EAAA,CAAA,CAAA;;"}
+\ No newline at end of file

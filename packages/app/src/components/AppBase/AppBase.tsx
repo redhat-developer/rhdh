@@ -76,8 +76,8 @@ const AppBase = () => {
     <AppProvider>
       <AlertDisplay />
       <OAuthRequestDialog />
+      <ConfigUpdater />
       <AppRouter>
-        <ConfigUpdater />
         <ApplicationListener />
         <Root>
           <ApplicationProvider>
@@ -97,9 +97,7 @@ const AppBase = () => {
               <Route
                 path="/create"
                 element={
-                  <ScaffolderPage
-                    headerOptions={{ title: 'Software Templates' }}
-                  />
+                  <ScaffolderPage headerOptions={{ title: 'Self-service' }} />
                 }
               >
                 <ScaffolderFieldExtensions>

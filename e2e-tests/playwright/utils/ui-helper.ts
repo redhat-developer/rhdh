@@ -135,7 +135,7 @@ export class UIhelper {
     let linkLocator: Locator;
     let notVisibleCheck: boolean;
 
-    if (typeof arg === "string") {
+    if (typeof arg != "object") {
       linkLocator = this.page
         .locator("a")
         .getByText(arg, { exact: options.exact })
@@ -508,6 +508,8 @@ export class UIhelper {
   }
 
   async verifyTableHeadingAndRows(texts: string[]) {
+    // Wait for the table to load by checking for the presence of table rows
+    await this.page.waitForSelector("table tbody tr", { state: "visible" });
     for (const column of texts) {
       const columnSelector = `table th:has-text("${column}")`;
       //check if  columnSelector has at least one element or more

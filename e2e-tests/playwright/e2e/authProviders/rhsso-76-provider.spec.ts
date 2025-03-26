@@ -1,4 +1,4 @@
-import { test, Page, expect } from "@playwright/test";
+import { test, Page, BrowserContext, expect } from "@playwright/test";
 import { Common, setupBrowser } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
 import UserRepresentation from "@keycloak/keycloak-admin-client/lib/defs/userRepresentation";
@@ -18,6 +18,7 @@ import { RHSSOHelper } from "../../utils/authenticationProviders/rh-sso-helper";
 import { RhdhAuthUiHack } from "../../support/api/rhdh-auth-hack";
 
 let page: Page;
+let context: BrowserContext;
 
 for (const version of ["RHBK"]) {
   test.describe(`Standard authentication providers: OIDC with ${version}`, () => {
@@ -27,7 +28,7 @@ for (const version of ["RHBK"]) {
     let uiHelper: UIhelper;
     let usersCreated: Map<string, UserRepresentation>;
     let groupsCreated: Map<string, GroupRepresentation>;
-    const syntTime = 60;
+    const syncTime = 60;
     let mustSync = false;
     let rhssoHelper: RHSSOHelper;
 
@@ -71,7 +72,7 @@ for (const version of ["RHBK"]) {
 
       LOGGER.info(`Base Url is ${process.env.BASE_URL}`);
 
-      page = (await setupBrowser(browser, testInfo)).page;
+      ({ context, page } = await setupBrowser(browser, testInfo));
       common = new Common(page);
       uiHelper = new UIhelper(page);
 
@@ -90,6 +91,113 @@ for (const version of ["RHBK"]) {
       groupsCreated = created.groupsCreated;
     });
 
+    test(`${version} - set sessionDuration and confirm in auth cookie duration has been set`, async () => {
+      test.setTimeout(600 * 1000);
+
+      LOGGER.info(`Executing testcase: ${test.info().title}`);
+      // setup RHSSO provider with user ingestion and sessionDuration of 3 days
+      await HelmActions.upgradeHelmChartWithWait(
+        constants.AUTH_PROVIDERS_RELEASE,
+        constants.AUTH_PROVIDERS_CHART,
+        constants.AUTH_PROVIDERS_NAMESPACE,
+        constants.AUTH_PROVIDERS_VALUES_FILE,
+        constants.CHART_VERSION,
+        constants.QUAY_REPO,
+        constants.TAG_NAME,
+        [
+          "--set global.dynamic.plugins[0].disabled=false",
+          "--set global.dynamic.plugins[1].disabled=true",
+          "--set global.dynamic.plugins[2].disabled=true",
+          "--set upstream.postgresql.primary.persistence.enabled=false",
+          "--set global.dynamic.plugins[3].disabled=false",
+          "--set upstream.backstage.appConfig.permission.enabled=true",
+          "--set upstream.backstage.appConfig.auth.providers.oidc.production.sessionDuration=3days",
+          ...helmParams,
+        ],
+      );
+
+      await waitForNextSync("rhsso", syncTime);
+
+      await common.keycloakLogin(
+        constants.RHSSO76_USERS["user_1"].username,
+        constants.RHSSO76_DEFAULT_PASSWORD,
+      );
+      await page.goto("/settings");
+      await uiHelper.verifyHeading(
+        await rhssoHelper.getRHSSOUserDisplayName(
+          constants.RHSSO76_USERS["user_1"],
+        ),
+      );
+
+      await page.reload();
+
+      const cookies = await context.cookies();
+      const authCookie = cookies.find(
+        (cookie) => cookie.name === "oidc-refresh-token",
+      );
+
+      const threeDays = 3 * 24 * 60 * 60 * 1000; // expected duration of 3 days in ms
+      const tolerance = 3 * 60 * 1000; // allow for 3 minutes tolerance
+
+      const actualDuration = authCookie.expires * 1000 - Date.now();
+
+      expect(actualDuration).toBeGreaterThan(threeDays - tolerance);
+      expect(actualDuration).toBeLessThan(threeDays + tolerance);
+
+      await common.signOut();
+    });
+
+    test(`${version} - default resolver for RHSSO tests is set to oidcSubClaimMatchingKeycloakUserId, user_1 and user_2 should both authenticate`, async () => {
+      test.setTimeout(600 * 1000);
+
+      LOGGER.info(`Executing testcase: ${test.info().title}`);
+      // setup RHSSO provider with user ingestion
+      await HelmActions.upgradeHelmChartWithWait(
+        constants.AUTH_PROVIDERS_RELEASE,
+        constants.AUTH_PROVIDERS_CHART,
+        constants.AUTH_PROVIDERS_NAMESPACE,
+        constants.AUTH_PROVIDERS_VALUES_FILE,
+        constants.CHART_VERSION,
+        constants.QUAY_REPO,
+        constants.TAG_NAME,
+        [
+          "--set global.dynamic.plugins[0].disabled=false",
+          "--set global.dynamic.plugins[1].disabled=true",
+          "--set global.dynamic.plugins[2].disabled=true",
+          "--set upstream.postgresql.primary.persistence.enabled=false",
+          "--set global.dynamic.plugins[3].disabled=false",
+          "--set upstream.backstage.appConfig.permission.enabled=true",
+          ...helmParams,
+        ],
+      );
+
+      await waitForNextSync("rhsso", syncTime);
+
+      await common.keycloakLogin(
+        constants.RHSSO76_USERS["user_1"].username,
+        constants.RHSSO76_DEFAULT_PASSWORD,
+      );
+      await page.goto("/settings");
+      await uiHelper.verifyHeading(
+        await rhssoHelper.getRHSSOUserDisplayName(
+          constants.RHSSO76_USERS["user_1"],
+        ),
+      );
+      await common.signOut();
+
+      await common.keycloakLogin(
+        constants.RHSSO76_USERS["user_2"].username,
+        constants.RHSSO76_DEFAULT_PASSWORD,
+      );
+      await page.goto("/settings");
+      await uiHelper.verifyHeading(
+        await rhssoHelper.getRHSSOUserDisplayName(
+          constants.RHSSO76_USERS["user_2"],
+        ),
+      );
+      await common.signOut();
+    });
+
     test(`${version} - default resolver should be emailLocalPartMatchingUserEntityName: user_1 should authenticate, user_2 should not`, async () => {
       test.setTimeout(600 * 1000);
 
@@ -106,6 +214,7 @@ for (const version of ["RHBK"]) {
         [
           "--set global.dynamic.plugins[0].disabled=false",
           "--set upstream.postgresql.primary.persistence.enabled=false",
+          "--set upstream.backstage.appConfig.auth.providers.oidc.production.signIn.resolvers[0].resolver=emailLocalPartMatchingUserEntityName",
           "--set upstream.backstage.appConfig.catalog.providers.githubOrg=null",
           "--set upstream.backstage.appConfig.catalog.providers.microsoftOrg=null",
           "--set global.dynamic.plugins[3].disabled=false",
@@ -114,7 +223,7 @@ for (const version of ["RHBK"]) {
         ],
       );
 
-      await waitForNextSync("rhsso", syntTime);
+      await waitForNextSync("rhsso", syncTime);
 
       await common.keycloakLogin(
         constants.RHSSO76_USERS["user_1"].username,
@@ -170,7 +279,7 @@ for (const version of ["RHBK"]) {
         ],
       );
 
-      await waitForNextSync("rhsso", syntTime);
+      await waitForNextSync("rhsso", syncTime);
 
       // emailMatchingUserEntityProfileEmail should only allow authentication of keycloak users that match the email attribute with the entity one.
       // update jdoe email -> login should fail with error Login failed; caused by Error: Failed to sign-in, unable to resolve user identity
@@ -234,7 +343,7 @@ for (const version of ["RHBK"]) {
 
       // preferredUsernameMatchingUserEntityName should allow authentication of any keycloak.
 
-      await waitForNextSync("rhsso", syntTime);
+      await waitForNextSync("rhsso", syncTime);
 
       // login with testuser1 -> login should succeed
       await common.keycloakLogin(
@@ -369,7 +478,7 @@ for (const version of ["RHBK"]) {
 
       await uiHelper.verifyAlertErrorMessage(/Login failed/gm);
 
-      await waitForNextSync("rhsso", syntTime);
+      await waitForNextSync("rhsso", syncTime);
 
       await expect(async () => {
         expect(
@@ -452,7 +561,7 @@ for (const version of ["RHBK"]) {
         timeout: 90 * 1000,
       });
 
-      await waitForNextSync("rhsso", syntTime);
+      await waitForNextSync("rhsso", syncTime);
 
       // ensure the change is mirrored in the catalog
       // location_admin should show user_3
@@ -540,7 +649,7 @@ for (const version of ["RHBK"]) {
       });
 
       // waiting for next sync
-      await waitForNextSync("rhsso", syntTime);
+      await waitForNextSync("rhsso", syncTime);
 
       // after the sync ensure the group entity is removed
       // group_4 should not be in the catalog anymore
@@ -618,7 +727,7 @@ for (const version of ["RHBK"]) {
         constants.AUTH_PROVIDERS_REALM_NAME,
       );
 
-      await waitForNextSync("rhsso", syntTime);
+      await waitForNextSync("rhsso", syncTime);
 
       // user_4 should login
       await common.keycloakLogin(
@@ -651,7 +760,7 @@ for (const version of ["RHBK"]) {
         timeout: 60 * 1000,
       });
 
-      await waitForNextSync("rhsso", syntTime);
+      await waitForNextSync("rhsso", syncTime);
 
       // after sync, ensure group is created again and memembers can login
       await expect(async () => {
@@ -682,7 +791,7 @@ for (const version of ["RHBK"]) {
       });
 
       // waiting for next sync
-      await waitForNextSync("rhsso", syntTime);
+      await waitForNextSync("rhsso", syncTime);
 
       // after sync, ensure group is mirrored
       // after sync, ensure user change is mirrorred
@@ -762,7 +871,7 @@ for (const version of ["RHBK"]) {
         LOGGER.info(
           `Waiting for sync. Retry #${test.info().retry}. Needed sync after failure: ${mustSync}.`,
         );
-        await waitForNextSync("rhsso", syntTime);
+        await waitForNextSync("rhsso", syncTime);
         mustSync = false;
       }
     });

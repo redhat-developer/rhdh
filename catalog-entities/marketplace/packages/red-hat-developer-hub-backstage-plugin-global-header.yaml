@@ -1,0 +1,94 @@
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: red-hat-developer-hub-backstage-plugin-global-header
+  namespace: rhdh
+  title: "@red-hat-developer-hub/backstage-plugin-global-header"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-global-header
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-global-header
+  tags: []
+spec:
+  packageName: "@red-hat-developer-hub/backstage-plugin-global-header"
+  dynamicArtifact: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-header
+  version: 1.0.0
+  backstage:
+    role: frontend-plugin
+    supportedVersions: 1.35.1
+  author: Red Hat
+  support: production
+  lifecycle: active
+  partOf:
+    - red-hat-developer-hub-backstage-plugin-global-header
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        app:
+          sidebar:
+            search: false
+            settings: false
+        dynamicPlugins:
+          frontend:
+            default.main-menu-items:
+              menuItems:
+                default.create:
+                  title: ""
+            red-hat-developer-hub.backstage-plugin-global-header:
+              mountPoints:
+                - mountPoint: application/header
+                  importName: GlobalHeader
+                  config:
+                    position: above-main-content
+                - mountPoint: global.header/component
+                  importName: SearchComponent
+                  config:
+                    priority: 100
+                - mountPoint: global.header/component
+                  importName: Spacer
+                  config:
+                    priority: 99
+                    props:
+                      growFactor: 0
+                - mountPoint: global.header/component
+                  importName: HeaderIconButton
+                  config:
+                    priority: 90
+                    props:
+                      title: Self-service
+                      icon: add
+                      to: create
+                - mountPoint: global.header/component
+                  importName: SupportButton
+                  config:
+                    priority: 80
+                - mountPoint: global.header/component
+                  importName: NotificationButton
+                  config:
+                    priority: 70
+                - mountPoint: global.header/component
+                  importName: Divider
+                  config:
+                    priority: 50
+                - mountPoint: global.header/component
+                  importName: ProfileDropdown
+                  config:
+                    priority: 10
+                - mountPoint: global.header/profile
+                  importName: MenuItemLink
+                  config:
+                    priority: 100
+                    props:
+                      title: Settings
+                      link: /settings
+                      icon: manageAccounts
+                - mountPoint: global.header/profile
+                  importName: LogoutButton
+                  config:
+                    priority: 10

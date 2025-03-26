@@ -1,0 +1,64 @@
+diff --git a/dist/index.d.ts b/dist/index.d.ts
+index 6a709c0bc7737ed2e78f710ddd6f46da68253432..097f8ac45fff2c0c6464eeea9720458a4e5bd069 100644
+--- a/dist/index.d.ts
++++ b/dist/index.d.ts
+@@ -17,7 +17,9 @@ declare namespace oktaSignInResolvers {
+     /**
+      * Looks up the user by matching their Okta   email to the entity email.
+      */
+-    const emailMatchingUserEntityAnnotation: _backstage_plugin_auth_node.SignInResolverFactory<OAuthAuthenticatorResult<PassportProfile>, unknown>;
++    const emailMatchingUserEntityAnnotation: _backstage_plugin_auth_node.SignInResolverFactory<OAuthAuthenticatorResult<PassportProfile>, {
++        dangerouslyAllowSignInWithoutUserInCatalog?: boolean | undefined;
++    } | undefined>;
+ }
+ 
+ export { authModuleOktaProvider as default, oktaAuthenticator, oktaSignInResolvers };
+diff --git a/dist/resolvers.cjs.js b/dist/resolvers.cjs.js
+index d0c04cc21a7a53298f8f4acb2348bfba1d6ac19e..4655691b032d5cf9dd703705b255bf1db56e1c4b 100644
+--- a/dist/resolvers.cjs.js
++++ b/dist/resolvers.cjs.js
+@@ -1,21 +1,29 @@
+ 'use strict';
+ 
+ var pluginAuthNode = require('@backstage/plugin-auth-node');
++var zod = require('zod');
+ 
+ exports.oktaSignInResolvers = void 0;
+ ((oktaSignInResolvers2) => {
+   oktaSignInResolvers2.emailMatchingUserEntityAnnotation = pluginAuthNode.createSignInResolverFactory({
+-    create() {
++    optionsSchema: zod.z.object({
++      dangerouslyAllowSignInWithoutUserInCatalog: zod.z.boolean().optional()
++    }).optional(),
++    create(options = {}) {
+       return async (info, ctx) => {
+         const { profile } = info;
+         if (!profile.email) {
+           throw new Error("Okta profile contained no email");
+         }
+-        return ctx.signInWithCatalogUser({
+-          annotations: {
+-            "okta.com/email": profile.email
+-          }
+-        });
++        return ctx.signInWithCatalogUser(
++          {
++            annotations: {
++              "okta.com/email": profile.email
++            }
++          },
++          profile.email,
++          options?.dangerouslyAllowSignInWithoutUserInCatalog
++        );
+       };
+     }
+   });
+diff --git a/dist/resolvers.cjs.js.map b/dist/resolvers.cjs.js.map
+index eb0dd65e2c4d08db3fca00baa1b9a546e583d083..d6512024fe5bc27bca0e48af8ac409c789a1ab9a 100644
+--- a/dist/resolvers.cjs.js.map
++++ b/dist/resolvers.cjs.js.map
+@@ -1 +1 @@
+-{"version":3,"file":"resolvers.cjs.js","sources":["../src/resolvers.ts"],"sourcesContent":["/*\n * Copyright 2023 The Backstage Authors\n *\n * Licensed under the Apache License, Version 2.0 (the \"License\");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *     http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n\nimport {\n  createSignInResolverFactory,\n  OAuthAuthenticatorResult,\n  PassportProfile,\n  SignInInfo,\n} from '@backstage/plugin-auth-node';\n\n/**\n * Available sign-in resolvers for the Okta auth provider.\n *\n * @public\n */\nexport namespace oktaSignInResolvers {\n  /**\n   * Looks up the user by matching their Okta   email to the entity email.\n   */\n\n  export const emailMatchingUserEntityAnnotation = createSignInResolverFactory({\n    create() {\n      return async (\n        info: SignInInfo<OAuthAuthenticatorResult<PassportProfile>>,\n        ctx,\n      ) => {\n        const { profile } = info;\n\n        if (!profile.email) {\n          throw new Error('Okta profile contained no email');\n        }\n\n        return ctx.signInWithCatalogUser({\n          annotations: {\n            'okta.com/email': profile.email,\n          },\n        });\n      };\n    },\n  });\n}\n"],"names":["oktaSignInResolvers","createSignInResolverFactory"],"mappings":";;;;AA4BiBA;AAAA,CAAV,CAAUA,oBAAV,KAAA;AAKE,EAAMA,oBAAAA,CAAA,oCAAoCC,0CAA4B,CAAA;AAAA,IAC3E,MAAS,GAAA;AACP,MAAO,OAAA,OACL,MACA,GACG,KAAA;AACH,QAAM,MAAA,EAAE,SAAY,GAAA,IAAA;AAEpB,QAAI,IAAA,CAAC,QAAQ,KAAO,EAAA;AAClB,UAAM,MAAA,IAAI,MAAM,iCAAiC,CAAA;AAAA;AAGnD,QAAA,OAAO,IAAI,qBAAsB,CAAA;AAAA,UAC/B,WAAa,EAAA;AAAA,YACX,kBAAkB,OAAQ,CAAA;AAAA;AAC5B,SACD,CAAA;AAAA,OACH;AAAA;AACF,GACD,CAAA;AAAA,CAxBc,EAAAD,2BAAA,KAAAA,2BAAA,GAAA,EAAA,CAAA,CAAA;;"}
+\ No newline at end of file
++{"version":3,"file":"resolvers.cjs.js","sources":["../src/resolvers.ts"],"sourcesContent":["/*\n * Copyright 2023 The Backstage Authors\n *\n * Licensed under the Apache License, Version 2.0 (the \"License\");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *     http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n\nimport {\n  createSignInResolverFactory,\n  OAuthAuthenticatorResult,\n  PassportProfile,\n  SignInInfo,\n} from '@backstage/plugin-auth-node';\nimport { z } from 'zod';\n\n/**\n * Available sign-in resolvers for the Okta auth provider.\n *\n * @public\n */\nexport namespace oktaSignInResolvers {\n  /**\n   * Looks up the user by matching their Okta   email to the entity email.\n   */\n\n  export const emailMatchingUserEntityAnnotation = createSignInResolverFactory({\n    optionsSchema: z\n      .object({\n        dangerouslyAllowSignInWithoutUserInCatalog: z.boolean().optional(),\n      })\n      .optional(),\n    create(options = {}) {\n      return async (\n        info: SignInInfo<OAuthAuthenticatorResult<PassportProfile>>,\n        ctx,\n      ) => {\n        const { profile } = info;\n\n        if (!profile.email) {\n          throw new Error('Okta profile contained no email');\n        }\n\n        return ctx.signInWithCatalogUser(\n          {\n            annotations: {\n              'okta.com/email': profile.email,\n            },\n          },\n          profile.email,\n          options?.dangerouslyAllowSignInWithoutUserInCatalog,\n        );\n      };\n    },\n  });\n}\n"],"names":["oktaSignInResolvers","createSignInResolverFactory","z"],"mappings":";;;;;AA6BiBA;AAAA,CAAV,CAAUA,oBAAV,KAAA;AAKE,EAAMA,oBAAAA,CAAA,oCAAoCC,0CAA4B,CAAA;AAAA,IAC3E,aAAA,EAAeC,MACZ,MAAO,CAAA;AAAA,MACN,0CAA4C,EAAAA,KAAA,CAAE,OAAQ,EAAA,CAAE,QAAS;AAAA,KAClE,EACA,QAAS,EAAA;AAAA,IACZ,MAAA,CAAO,OAAU,GAAA,EAAI,EAAA;AACnB,MAAO,OAAA,OACL,MACA,GACG,KAAA;AACH,QAAM,MAAA,EAAE,SAAY,GAAA,IAAA;AAEpB,QAAI,IAAA,CAAC,QAAQ,KAAO,EAAA;AAClB,UAAM,MAAA,IAAI,MAAM,iCAAiC,CAAA;AAAA;AAGnD,QAAA,OAAO,GAAI,CAAA,qBAAA;AAAA,UACT;AAAA,YACE,WAAa,EAAA;AAAA,cACX,kBAAkB,OAAQ,CAAA;AAAA;AAC5B,WACF;AAAA,UACA,OAAQ,CAAA,KAAA;AAAA,UACR,OAAS,EAAA;AAAA,SACX;AAAA,OACF;AAAA;AACF,GACD,CAAA;AAAA,CAjCc,EAAAF,2BAAA,KAAAA,2BAAA,GAAA,EAAA,CAAA,CAAA;;"}
+\ No newline at end of file

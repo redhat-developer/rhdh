@@ -1,0 +1,42 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: mock-sub-child-site
+  description: A mock site for testing RBAC permissions with includeTransitiveGroupOwnership config.
+  links:
+    - title: Janus Website
+      url: https://janus-idp.io
+spec:
+  type: website
+  lifecycle: experimental
+  owner: group:default/rhdh-qe-sub-child-team
+
+---
+
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: mock-site
+  description: A mock site for testing RBAC permissions with includeTransitiveGroupOwnership config.
+  links:
+    - title: Janus Website
+      url: https://janus-idp.io
+spec:
+  type: website
+  lifecycle: experimental
+  owner: group:default/rhdh-qe-parent-team
+
+---
+
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: mock-child-site
+  description: A mock site for testing RBAC permissions with includeTransitiveGroupOwnership config.
+  links:
+    - title: Janus Website
+      url: https://janus-idp.io
+spec:
+  type: website
+  lifecycle: experimental
+  owner: group:default/rhdh-qe-child-team

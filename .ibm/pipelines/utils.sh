@@ -37,20 +37,25 @@ save_all_pod_logs(){
 
 droute_send() {
   if [[ "${OPENSHIFT_CI}" != "true" ]]; then return 0; fi
-  temp_kubeconfig=$(mktemp) # Create temporary KUBECONFIG to open second `oc` session
+  local original_context
+  original_context=$(oc config current-context) # Save original context
   ( # Open subshell
     if [ -n "${PULL_NUMBER:-}" ]; then
       set +e
     fi
-    export KUBECONFIG="$temp_kubeconfig"
     local droute_version="1.2.2"
     local release_name=$1
     local project=$2
     local droute_project="droute"
     local metadata_output="data_router_metadata_output.json"
 
-    oc login --token="${RHDH_PR_OS_CLUSTER_TOKEN}" --server="${RHDH_PR_OS_CLUSTER_URL}"
+    oc config set-credentials temp-user --token="${RHDH_PR_OS_CLUSTER_TOKEN}"
+    oc config set-cluster temp-cluster --server="${RHDH_PR_OS_CLUSTER_URL}"
+    oc config set-context temp-context --user=temp-user --cluster=temp-cluster
+    oc config use-context temp-context
     oc whoami --show-server
+    trap 'oc config use-context "$original_context"' RETURN
+
     local droute_pod_name=$(oc get pods -n droute --no-headers -o custom-columns=":metadata.name" | grep ubi9-cert-rsync)
     local temp_droute=$(oc exec -n "${droute_project}" "${droute_pod_name}" -- /bin/bash -c "mktemp -d")
 
@@ -97,19 +102,21 @@ droute_send() {
 
     # Send test by rsync to bastion pod.
     local max_attempts=5
-    local wait_seconds=4
+    local wait_seconds_step=1
     for ((i = 1; i <= max_attempts; i++)); do
       echo "Attempt ${i} of ${max_attempts} to rsync test resuls to bastion pod."
       if output=$(oc rsync --progress=true --include="${metadata_output}" --include="${JUNIT_RESULTS}" --exclude="*" -n "${droute_project}" "${ARTIFACT_DIR}/${project}/" "${droute_project}/${droute_pod_name}:${temp_droute}/" 2>&1); then
         echo "$output"
         break
-      fi
-      if ((i == max_attempts)); then
+      elif ((i == max_attempts)); then
         echo "Failed to rsync test results after ${max_attempts} attempts."
         echo "Last rsync error details:"
         echo "${output}"
         echo "Troubleshooting steps:"
         echo "1. Restart $droute_pod_name in $droute_project project/namespace"
+        return 1
+      else
+        sleep $((wait_seconds_step * i))
       fi
     done
 
@@ -120,8 +127,8 @@ droute_send() {
       && ${temp_droute}/droute-linux-amd64 version"
 
     # Send test results through DataRouter and save the request ID.
-    local max_attempts=5
-    local wait_seconds=1
+    local max_attempts=10
+    local wait_seconds_step=1
     for ((i = 1; i <= max_attempts; i++)); do
       echo "Attempt ${i} of ${max_attempts} to send test results through Data Router."
       if output=$(oc exec -n "${droute_project}" "${droute_pod_name}" -- /bin/bash -c "
@@ -130,16 +137,13 @@ droute_send() {
           --username '${DATA_ROUTER_USERNAME}' \
           --password '${DATA_ROUTER_PASSWORD}' \
           --results '${temp_droute}/${JUNIT_RESULTS}' \
-          --verbose" 2>&1); then
-        if DATA_ROUTER_REQUEST_ID=$(echo "$output" | grep "request:" | awk '{print $2}') &&
-          [ -n "$DATA_ROUTER_REQUEST_ID" ]; then
-          echo "Test results successfully sent through Data Router."
-          echo "Request ID: $DATA_ROUTER_REQUEST_ID"
-          break
-        fi
-      fi
-
-      if ((i == max_attempts)); then
+          --verbose" 2>&1) && \
+        DATA_ROUTER_REQUEST_ID=$(echo "$output" | grep "request:" | awk '{print $2}') &&
+        [ -n "$DATA_ROUTER_REQUEST_ID" ]; then
+        echo "Test results successfully sent through Data Router."
+        echo "Request ID: $DATA_ROUTER_REQUEST_ID"
+        break
+      elif ((i == max_attempts)); then
         echo "Failed to send test results after ${max_attempts} attempts."
         echo "Last Data Router error details:"
         echo "${output}"
@@ -147,6 +151,9 @@ droute_send() {
         echo "1. Restart $droute_pod_name in $droute_project project/namespace"
         echo "2. Check the Data Router documentation: https://spaces.redhat.com/pages/viewpage.action?pageId=115488042"
         echo "3. Ask for help at Slack: #forum-dno-datarouter"
+        return 1
+      else
+        sleep $((wait_seconds_step * i))
       fi
     done
 
@@ -180,7 +187,7 @@ droute_send() {
       set -e
     fi
   ) # Close subshell
-  rm -f "$temp_kubeconfig" # Destroy temporary KUBECONFIG
+  oc config use-context "$original_context" # Restore original context
   oc whoami --show-server
 }
 
@@ -477,11 +484,18 @@ apply_yaml_files() {
 
     DH_TARGET_URL=$(echo -n "test-backstage-customization-provider-${project}.${K8S_CLUSTER_ROUTER_BASE}" | base64 -w 0)
     local RHDH_BASE_URL=$(echo -n "$rhdh_base_url" | base64 | tr -d '\n')
-
-    for key in GITHUB_APP_APP_ID GITHUB_APP_CLIENT_ID GITHUB_APP_PRIVATE_KEY GITHUB_APP_CLIENT_SECRET GITHUB_APP_JANUS_TEST_APP_ID GITHUB_APP_JANUS_TEST_CLIENT_ID GITHUB_APP_JANUS_TEST_CLIENT_SECRET GITHUB_APP_JANUS_TEST_PRIVATE_KEY GITHUB_APP_WEBHOOK_URL GITHUB_APP_WEBHOOK_SECRET KEYCLOAK_CLIENT_SECRET ACR_SECRET GOOGLE_CLIENT_ID GOOGLE_CLIENT_SECRET K8S_CLUSTER_TOKEN_ENCODED OCM_CLUSTER_URL GITLAB_TOKEN KEYCLOAK_AUTH_BASE_URL KEYCLOAK_AUTH_CLIENTID KEYCLOAK_AUTH_CLIENT_SECRET KEYCLOAK_AUTH_LOGIN_REALM KEYCLOAK_AUTH_REALM RHDH_BASE_URL DH_TARGET_URL; do
+    local RHDH_BASE_URL_HTTP=$(echo -n "${rhdh_base_url/https/http}" | base64 | tr -d '\n')
+    
+    for key in GITHUB_APP_APP_ID GITHUB_APP_CLIENT_ID GITHUB_APP_PRIVATE_KEY GITHUB_APP_CLIENT_SECRET GITHUB_APP_JANUS_TEST_APP_ID GITHUB_APP_JANUS_TEST_CLIENT_ID GITHUB_APP_JANUS_TEST_CLIENT_SECRET GITHUB_APP_JANUS_TEST_PRIVATE_KEY GITHUB_APP_WEBHOOK_URL GITHUB_APP_WEBHOOK_SECRET KEYCLOAK_CLIENT_SECRET ACR_SECRET GOOGLE_CLIENT_ID GOOGLE_CLIENT_SECRET K8S_CLUSTER_TOKEN_ENCODED OCM_CLUSTER_URL GITLAB_TOKEN KEYCLOAK_AUTH_BASE_URL KEYCLOAK_AUTH_CLIENTID KEYCLOAK_AUTH_CLIENT_SECRET KEYCLOAK_AUTH_LOGIN_REALM KEYCLOAK_AUTH_REALM DH_TARGET_URL; do
       sed -i "s|${key}:.*|${key}: ${!key}|g" "$dir/auth/secrets-rhdh-secrets.yaml"
     done
 
+    for key in RHDH_BASE_URL RHDH_BASE_URL_HTTP; do
+      # Escape any special characters in the base64 value
+      local escaped_value=$(printf '%s' "${!key}" | sed 's/[\/&]/\\&/g')
+      sed -i "s|${key}:.*|${key}: ${escaped_value}|g" "$dir/auth/secrets-rhdh-secrets.yaml"
+    done
+    
     oc apply -f "$dir/resources/service_account/service-account-rhdh.yaml" --namespace="${project}"
     oc apply -f "$dir/auth/service-account-rhdh-secret.yaml" --namespace="${project}"
     oc apply -f "$dir/auth/secrets-rhdh-secrets.yaml" --namespace="${project}"
@@ -506,8 +520,8 @@ apply_yaml_files() {
     else
       create_app_config_map "$config_file" "$project"
     fi
-    oc create configmap dynamic-homepage-and-sidebar-config \
-      --from-file="dynamic-homepage-and-sidebar-config.yaml"="$dir/resources/config_map/dynamic-homepage-and-sidebar-config.yaml" \
+    oc create configmap dynamic-plugins-config \
+      --from-file="dynamic-plugins-config.yaml"="$dir/resources/config_map/dynamic-plugins-config.yaml" \
       --namespace="${project}" \
       --dry-run=client -o yaml | oc apply -f -
 
@@ -628,12 +642,21 @@ create_app_config_map_k8s() {
 run_tests() {
   local release_name=$1
   local project=$2
-  project=${project}
   cd "${DIR}/../../e2e-tests"
   local e2e_tests_dir
   e2e_tests_dir=$(pwd)
 
-  yarn install
+  yarn install --immutable > /tmp/yarn.install.log.txt 2>&1
+
+  INSTALL_STATUS=$?
+  if [ $INSTALL_STATUS -ne 0 ]; then
+    echo "=== YARN INSTALL FAILED ==="
+    cat /tmp/yarn.install.log.txt
+    exit $INSTALL_STATUS
+  else
+    echo "Yarn install completed successfully."
+  fi
+
   yarn playwright install chromium
 
   Xvfb :99 &
@@ -782,7 +805,7 @@ delete_tekton_pipelines() {
         ' || echo "Warning: Timed out waiting for namespace deletion, continuing..."
     else
         echo "Tekton Pipelines is not installed. Nothing to delete."
-    fi
+  fi
 }
 
 cluster_setup() {
@@ -829,6 +852,61 @@ initiate_deployments() {
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO}" \
     --set upstream.backstage.image.tag="${TAG_NAME}"
+}
+
+# install base RHDH deployment before upgrade
+initiate_upgrade_base_deployments() {
+  echo "Initiating base RHDH deployment before upgrade"
+
+  configure_namespace ${NAME_SPACE}
+  
+  # Deploy redis cache db.
+  oc apply -f "$DIR/resources/redis-cache/redis-deployment.yaml" --namespace="${NAME_SPACE}"
+
+  cd "${DIR}"
+  local rhdh_base_url="https://${RELEASE_NAME}-backstage-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
+  apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
+  echo "Deploying image from base repository: ${QUAY_REPO_BASE}, TAG_NAME_BASE: ${TAG_NAME_BASE}, in NAME_SPACE: ${NAME_SPACE}"
+  
+  helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
+    "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" --version "${CHART_VERSION_BASE}" \
+    -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME_BASE}" \
+    --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
+    --set upstream.backstage.image.repository="${QUAY_REPO_BASE}" \
+    --set upstream.backstage.image.tag="${TAG_NAME_BASE}"
+}
+
+initiate_upgrade_deployments() {
+  local release_name=$1
+  local namespace=$2
+  local url=$3
+  local max_attempts=${4:-30}    # Default to 30 if not set
+  local wait_seconds=${5:-30} 
+  local wait_upgrade="10m"
+
+  # check if the base rhdh deployment is running
+  if check_backstage_running "${release_name}" "${namespace}" "${url}" "${max_attempts}" "${wait_seconds}"; then
+    
+    echo "Display pods of base RHDH deployment before upgrade for verification..."
+    oc get pods -n "${namespace}"
+    
+    echo "Initiating upgrade deployment"
+    cd "${DIR}"
+    
+    echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
+    
+    helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
+    "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" \
+    -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" \
+    --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
+    --set upstream.backstage.image.repository="${QUAY_REPO}" \
+    --set upstream.backstage.image.tag="${TAG_NAME}" \
+    --wait --timeout=${wait_upgrade}
+
+    oc get pods -n "${namespace}"
+  else
+    echo "Backstage is not running. Exiting..."
+  fi
 }
 
 initiate_runtime_deployment() {
@@ -882,6 +960,36 @@ check_and_test() {
     OVERALL_RESULT=1
   fi
   save_all_pod_logs $namespace
+}
+
+check_upgrade_and_test() {
+  local deployment_name="$1"
+  local release_name="$2"
+  local namespace="$3"
+  local url=$4
+  local timeout=${5:-600} # Timeout in seconds (default: 600 seconds)
+  
+  if check_helm_upgrade "${deployment_name}" "${namespace}" "${timeout}"; then
+    check_and_test "${release_name}" "${namespace}" "${url}"
+  else
+    echo "Helm upgrade encountered an issue or timed out. Exiting..."
+  fi
+}
+
+check_helm_upgrade() {
+  local deployment_name="$1"
+  local namespace="$2"       
+  local timeout="$3"      
+  
+  echo "Checking rollout status for deployment: ${deployment_name} in namespace: ${namespace}..."
+  
+  if oc rollout status "deployment/${deployment_name}" -n "${namespace}" --timeout="${timeout}s" -w; then
+      echo "RHDH upgrade is complete."
+      return 0
+  else
+      echo "RHDH upgrade encountered an issue or timed out."
+      return 1
+  fi
 }
 
 # Function to remove finalizers from specific resources in a namespace that are blocking deletion.

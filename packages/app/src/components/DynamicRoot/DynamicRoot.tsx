@@ -20,6 +20,7 @@ import extractDynamicConfig, {
   DynamicRoute,
 } from '../../utils/dynamicUI/extractDynamicConfig';
 import initializeRemotePlugins from '../../utils/dynamicUI/initializeRemotePlugins';
+import { catalogTranslations } from '../catalog/translations/catalog';
 import { MenuIcon } from '../Root/MenuIcon';
 import CommonIcons from './CommonIcons';
 import defaultAppComponents from './defaultAppComponents';
@@ -348,14 +349,14 @@ export const DynamicRoot = ({
     }, []);
 
     const entityTabOverrides = entityTabs.reduce<EntityTabOverrides>(
-      (acc, { path, title, mountPoint, scope }) => {
+      (acc, { path, title, mountPoint, scope, priority }) => {
         if (acc[path]) {
           // eslint-disable-next-line no-console
           console.warn(
             `Plugin ${scope} is not configured properly: a tab has already been configured for "${path}", ignoring entry with title: "${title}" and mountPoint: "${mountPoint}"`,
           );
         } else {
-          acc[path] = { title, mountPoint };
+          acc[path] = { title, mountPoint, priority };
         }
         return acc;
       },
@@ -458,6 +459,10 @@ export const DynamicRoot = ({
         api => !remoteApis.some(remoteApi => remoteApi.api.id === api.api.id),
       );
       app.current = createApp({
+        __experimentalTranslations: {
+          availableLanguages: ['en'],
+          resources: [catalogTranslations],
+        },
         apis: [...filteredStaticApis, ...remoteApis],
         bindRoutes({ bind }) {
           bindAppRoutes(bind, resolvedRouteBindingTargets, routeBindings);

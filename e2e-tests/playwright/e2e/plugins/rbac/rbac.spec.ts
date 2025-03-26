@@ -60,7 +60,7 @@ test.describe.serial("Test RBAC", () => {
       await uiHelper.verifyText("csv permission policy file");
 
       await uiHelper.verifyHeading("1 group");
-      await uiHelper.verifyHeading("Permission policies (2)");
+      await uiHelper.verifyHeading("Permission policies (3)");
       const permissionPoliciesColumnsText =
         Roles.getPermissionPoliciesListColumnsText();
       await uiHelper.verifyColumnHeading(permissionPoliciesColumnsText);
@@ -76,6 +76,10 @@ test.describe.serial("Test RBAC", () => {
         "Read",
         "1 rule",
       ]);
+      await uiHelper.verifyRowInTableByUniqueText("catalog.entity.refresh", [
+        "Update",
+        "1 rule",
+      ]);
       await uiHelper.verifyRowInTableByUniqueText("catalog.entity.delete", [
         "Delete",
         "1 rule",
@@ -84,7 +88,7 @@ test.describe.serial("Test RBAC", () => {
   });
 
   test.describe
-    .serial("Test RBAC plugin: Aliases used in conditional access policies", () => {
+    .serial("Test RBAC plugin: $currentUser alias used in conditional access policies", () => {
     test.beforeEach(async ({ page }) => {
       await new Common(page).loginAsKeycloakUser(
         process.env.GH_USER2_ID,
@@ -124,6 +128,76 @@ test.describe.serial("Test RBAC", () => {
       await page.getByTestId("menu-button").click();
       const unregisterGroupOwned = page.getByText("Unregister entity");
       await expect(unregisterGroupOwned).toBeDisabled();
+    });
+  });
+
+  test.describe
+    .serial("Test RBAC plugin: $ownerRefs alias used in conditional access policies with includeTransitiveGroupOwnership", () => {
+    test("Check if user is allowed to read component owned by transitive parent group.", async ({
+      page,
+    }) => {
+      // login as rhdh-qe-3: belongs in rhdh-qe-child-team, which is a sub group of rhdh-qe-parent-team
+      await new Common(page).loginAsKeycloakUser(
+        process.env.QE_USER3_ID,
+        process.env.QE_USER3_PASS,
+      );
+
+      const uiHelper = new UIhelper(page);
+      // rhdh-qe-parent-team owns mock-site
+      const testParentGroup = "rhdh-qe-parent-team";
+      await page.goto("/catalog");
+      await uiHelper.selectMuiBox("Kind", "Component");
+
+      await uiHelper.searchInputPlaceholder("mock-site");
+      await page.getByRole("link", { name: "mock-site" }).click();
+      await expect(page.locator("header")).toContainText(testParentGroup);
+
+      // rhdh-qe-child-team owns mock-child-site, check that it can see it's own groups' components
+      const testChildGroup = "rhdh-qe-child-team";
+      await page.goto("/catalog");
+      await uiHelper.selectMuiBox("Kind", "Component");
+
+      await uiHelper.searchInputPlaceholder("mock-child-site");
+      await page.getByRole("link", { name: "mock-child-site" }).click();
+      await expect(page.locator("header")).toContainText(testChildGroup);
+    });
+
+    test("Check if user is allowed to read component owned by transitive parent group with 2 layers of hierarchy.", async ({
+      page,
+    }) => {
+      // login as rhdh-qe-4: belongs in rhdh-qe-sub-child-team, which is a sub group of rhdh-qe-child-team
+      await new Common(page).loginAsKeycloakUser(
+        process.env.QE_USER4_ID,
+        process.env.QE_USER4_PASS,
+      );
+
+      const uiHelper = new UIhelper(page);
+      // rhdh-qe-parent-team owns mock-site
+      const testParentGroup = "rhdh-qe-parent-team";
+      await page.goto("/catalog");
+      await uiHelper.selectMuiBox("Kind", "Component");
+
+      await uiHelper.searchInputPlaceholder("mock-site");
+      await page.getByRole("link", { name: "mock-site" }).click();
+      await expect(page.locator("header")).toContainText(testParentGroup);
+
+      // rhdh-qe-child-team owns mock-child-site
+      const testChildGroup = "rhdh-qe-child-team";
+      await page.goto("/catalog");
+      await uiHelper.selectMuiBox("Kind", "Component");
+
+      await uiHelper.searchInputPlaceholder("mock-child-site");
+      await page.getByRole("link", { name: "mock-child-site" }).click();
+      await expect(page.locator("header")).toContainText(testChildGroup);
+
+      // rhdh-qe-sub-child-team owns mock-sub-child-site, check that it can see it's own groups' components
+      const testSubChildGroup = "rhdh-qe-sub-child-team";
+      await page.goto("/catalog");
+      await uiHelper.selectMuiBox("Kind", "Component");
+
+      await uiHelper.searchInputPlaceholder("mock-sub-child-site");
+      await page.getByRole("link", { name: "mock-sub-child-site" }).click();
+      await expect(page.locator("header")).toContainText(testSubChildGroup);
     });
   });
 
@@ -262,7 +336,9 @@ test.describe.serial("Test RBAC", () => {
       await page.click(rbacPo.selectMember(testUser));
       await uiHelper.verifyHeading(rbacPo.regexpShortUsersAndGroups(3, 1));
       await uiHelper.clickButton("Next");
+      await page.waitForTimeout(1_000);
       await uiHelper.clickButton("Next");
+      await page.waitForTimeout(1_000);
       await uiHelper.clickButton("Save");
       await uiHelper.verifyText(
         "Role role:default/test-role updated successfully",
@@ -322,6 +398,7 @@ test.describe.serial("Test RBAC", () => {
         attempts++;
       } while (matchNextButton2.length > 1 && attempts < 5);
       await nextButton2.click({ force: true });
+      await page.waitForTimeout(1_000);
       await uiHelper.clickButton("Save");
       await uiHelper.verifyText(
         "Role role:default/test-role1 updated successfully",
@@ -473,7 +550,7 @@ test.describe.serial("Test RBAC", () => {
       await uiHelper.openSidebar("Catalog");
       await uiHelper.selectMuiBox("Kind", "Component");
       await uiHelper.verifyTableIsEmpty();
-      await uiHelper.clickLink({ ariaLabel: "Create..." });
+      await uiHelper.clickLink({ ariaLabel: "Self-service" });
       await page.reload();
       await uiHelper.verifyText(
         "No templates found that match your filter. Learn more about",
@@ -488,7 +565,7 @@ test.describe.serial("Test RBAC", () => {
     });
 
     test("Test catalog-entity create is allowed", async () => {
-      await uiHelper.clickLink({ ariaLabel: "Create..." });
+      await uiHelper.clickLink({ ariaLabel: "Self-service" });
       expect(await uiHelper.isLinkVisible("Register Existing Component"));
       await uiHelper.clickButton("Register Existing Component");
       const catalogImport = new CatalogImport(page);

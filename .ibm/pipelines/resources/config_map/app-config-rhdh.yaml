@@ -36,7 +36,8 @@ backend:
   cache:
     store: redis
     connection: redis://${REDIS_USERNAME}:${REDIS_PASSWORD}@redis:6379
-    useRedisSets: true
+    # redis sets are no longer supported from 1.5
+    # useRedisSets: true
 integrations:
   # Plugin: GitHub
   github:
@@ -105,6 +106,11 @@ proxy:
         X-Requested-With: 'XMLHttpRequest'
       changeOrigin: true
       secure: true
+    '/add-test-header': 
+      target: ${RHDH_BASE_URL_HTTP}/api/simple-chat
+      credentials: forward
+      headers:
+        'x-proxy-test-header': 'hello!'
 catalog:
   import:
     entityFilename: catalog-info.yaml
@@ -175,3 +181,11 @@ argocd:
           token: temp
 permission:
   enabled: false
+
+buildInfo:
+  title: 'RHDH Build info'
+  card:
+    TechDocs builder: 'local'
+    Authentication provider: 'Github'
+    RBAC: disabled
+  full: true

@@ -17,6 +17,7 @@ export type DynamicRouteMenuItem =
       icon: string;
       parent?: string;
       priority?: number;
+      enabled?: boolean;
     }
   | {
       module?: string;
@@ -41,6 +42,7 @@ export type MenuItem = {
   priority?: number;
   to?: string;
   parent?: string;
+  enabled?: boolean;
 };
 
 export type DynamicRoute = {
@@ -106,6 +108,7 @@ type EntityTab = {
   mountPoint: string;
   path: string;
   title: string;
+  pariority?: number;
 };
 
 type EntityTabEntry = {
@@ -113,6 +116,7 @@ type EntityTabEntry = {
   mountPoint: string;
   path: string;
   title: string;
+  priority?: number;
 };
 
 type ThemeEntry = {
