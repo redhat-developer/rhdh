@@ -12,7 +12,7 @@ metadata:
     - software-templates
 spec:
   categories:
-    - Software Templates
+    - Scaffolder
   author: Backstage Community
   support: tech-preview
   lifecycle: active
