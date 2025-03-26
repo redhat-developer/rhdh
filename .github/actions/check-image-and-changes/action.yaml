@@ -17,7 +17,7 @@ runs:
   steps:
     - name: Get the last commit short SHA of the PR
       id: get-sha
-      uses: ./.github/actions/get-sha  # Chamando a action existente
+      uses: ./.github/actions/get-sha  # Use existing action
 
     - name: Check if Image Already Exists
       id: image-check
