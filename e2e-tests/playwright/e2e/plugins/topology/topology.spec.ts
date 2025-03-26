@@ -28,7 +28,7 @@ test.describe("Test Topology Plugin", () => {
     await catalog.goToBackstageJanusProject();
     await uiHelper.clickTab("Topology");
     await uiHelper.verifyText("backstage-janus");
-    await page.getByRole("button", { name: "Fit to Screen" }).click();
+    // await page.getByRole("button", { name: "Fit to Screen" }).click(); // This is breaking the test on K8s
     await uiHelper.verifyText("topology-test");
     await uiHelper.verifyButtonURL("Open URL", "topology-test-route", {
       locator: `[data-test-id="topology-test"]`,

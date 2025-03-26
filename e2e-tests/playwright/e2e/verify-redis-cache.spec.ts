@@ -84,7 +84,7 @@ test.describe("Verify Redis Cache DB", () => {
     });
   });
 
-  test.afterAll(() => {
+  test.afterEach(() => {
     console.log("Killing port-forward process...");
     portForward.kill("SIGKILL");
   });
