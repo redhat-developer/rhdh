@@ -75,7 +75,7 @@ main() {
       ;;
     *upgrade*)
       echo "Calling helm upgrade"
-      handle_upgrade
+      handle_ocp_helm_upgrade
       ;;
     *nightly*)
       echo "Calling handle_ocp_nightly"
