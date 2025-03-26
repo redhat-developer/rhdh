@@ -39,8 +39,3 @@ handle_gke_operator() {
   check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${url}" 50 30 50
   delete_namespace "${NAME_SPACE_RBAC}"
 }
-
-cleanup_gke() {
-  delete_tekton_pipelines
-  uninstall_olm
-}

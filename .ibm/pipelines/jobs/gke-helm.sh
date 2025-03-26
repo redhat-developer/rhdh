@@ -40,7 +40,3 @@ handle_gke_helm() {
   check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC_K8S}" "${rbac_rhdh_base_url}" 50 30 20
   delete_namespace "${NAME_SPACE_RBAC_K8S}"
 }
-
-cleanup_gke() {
-  delete_tekton_pipelines
-}
