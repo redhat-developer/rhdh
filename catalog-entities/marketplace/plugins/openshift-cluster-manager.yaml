@@ -22,7 +22,7 @@ metadata:
 spec:
   author: Red Hat
   support: production
-  category: Infrastructure
+  publisher: Red Hat
   lifecycle: active
 
   categories: Monitoring
