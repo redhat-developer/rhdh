@@ -19,7 +19,7 @@ metadata:
       url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/roadiehq-backstage-plugin-jira
 spec:
   authors:
-    - name: roadie.io
+    - name: Roadie
       url: https://roadie.io/
 
   publisher: Red Hat
