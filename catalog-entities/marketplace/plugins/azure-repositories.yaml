@@ -34,7 +34,7 @@ spec:
 
   categories:
     - Automation
-    - Software Templates
+    - Scaffolder
 
   icon: data:image/svg+xml;base64,
     PHN2ZyB2aWV3Qm94PSIwIDAgMTI4IDEyOCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAv
