@@ -33,7 +33,6 @@ spec:
   lifecycle: active
 
   categories:
-    - Automation
     - Scaffolder
 
   icon: data:image/svg+xml;base64,
