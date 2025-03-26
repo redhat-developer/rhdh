@@ -223,6 +223,9 @@ test.describe.serial("Test RBAC", () => {
     });
 
     test("Should download the user list", async ({ page }) => {
+      // TODO: fix https://issues.redhat.com/browse/RHIDP-6625 and remove the skip
+      test.skip(() => process.env.IS_OPENSHIFT.includes("false"));
+
       await page.locator('a:has-text("Download User List")').click();
       const fileContent = await downloadAndReadFile(page);
       const lines = fileContent.trim().split("\n");

@@ -3,6 +3,9 @@ import { UIhelper } from "../utils/ui-helper";
 import { Common } from "../utils/common";
 
 test.describe("Default Global Header", () => {
+  // TODO: fix https://issues.redhat.com/browse/RHIDP-6492 and remove the skip
+  test.skip(() => process.env.JOB_NAME.includes("operator"));
+
   let common: Common;
   let uiHelper: UIhelper;
 

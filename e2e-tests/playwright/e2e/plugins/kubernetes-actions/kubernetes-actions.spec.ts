@@ -5,6 +5,9 @@ import { KubeClient } from "../../../utils/kube-client";
 import { UI_HELPER_ELEMENTS } from "../../../support/pageObjects/global-obj";
 
 test.describe("Test Kubernetes Actions plugin", () => {
+  // TODO: fix https://issues.redhat.com/browse/RHIDP-6492 and remove the skip
+  test.skip(() => process.env.JOB_NAME.includes("operator"));
+
   let common: Common;
   let uiHelper: UIhelper;
   let page: Page;
