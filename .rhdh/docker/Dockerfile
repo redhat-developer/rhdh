@@ -23,7 +23,7 @@
 # Stage 1 - Build nodejs skeleton
 #@follow_tag(registry.access.redhat.com/ubi9/nodejs-22:1)
 # https://registry.access.redhat.com/ubi9/nodejs-222
-FROM registry.access.redhat.com/ubi9/nodejs-22:9.5-1741891114 AS build
+FROM registry.access.redhat.com/ubi9/nodejs-22:9.5-1742955796 AS build
 # hadolint ignore=DL3002
 USER 0
 
