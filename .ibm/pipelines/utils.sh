@@ -768,19 +768,20 @@ install_acm_ocp_operator(){
 
 # TODO
 # Installs Open Cluster Management K8S Operator (alternative of advanced-cluster-management for K8S clusters)
-# install_ocm_k8s_operator(){
-#   install_subscription my-cluster-manager operators stable cluster-manager operatorhubio-catalog olm
-#   wait_for_deployment "operators" "cluster-manager"
-#   wait_for_svc multiclusterhub-operator-work-webhook open-cluster-management
-#   oc apply -f "${DIR}/cluster/operators/acm/multiclusterhub.yaml"
-#   # wait until multiclusterhub is Running.
-#   timeout 600 bash -c 'while true; do
-#     CURRENT_PHASE=$(oc get multiclusterhub multiclusterhub -n open-cluster-management -o jsonpath="{.status.phase}")
-#     echo "MulticlusterHub Current Status: $CURRENT_PHASE"
-#     [[ "$CURRENT_PHASE" == "Running" ]] && echo "MulticlusterHub is now in Running phase." && break
-#     sleep 10
-#   done' || echo "Timed out after 10 minutes"
-# }
+# TODO: Verify K8s compatibility and enable OCM tests if compatible
+install_ocm_k8s_operator(){
+  install_subscription my-cluster-manager operators stable cluster-manager operatorhubio-catalog olm
+  wait_for_deployment "operators" "cluster-manager"
+  wait_for_svc multiclusterhub-operator-work-webhook open-cluster-management
+  oc apply -f "${DIR}/cluster/operators/acm/multiclusterhub.yaml"
+  # wait until multiclusterhub is Running.
+  timeout 600 bash -c 'while true; do
+    CURRENT_PHASE=$(oc get multiclusterhub multiclusterhub -n open-cluster-management -o jsonpath="{.status.phase}")
+    echo "MulticlusterHub Current Status: $CURRENT_PHASE"
+    [[ "$CURRENT_PHASE" == "Running" ]] && echo "MulticlusterHub is now in Running phase." && break
+    sleep 10
+  done' || echo "Timed out after 10 minutes"
+}
 
 # Installs the Red Hat OpenShift Pipelines operator if not already installed
 install_pipelines_operator() {
