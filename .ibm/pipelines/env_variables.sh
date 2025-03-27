@@ -55,6 +55,7 @@ QE_USER4_ID=$(cat /tmp/secrets/QE_USER4_ID)
 QE_USER4_PASS=$(cat /tmp/secrets/QE_USER4_PASS)
 
 K8S_CLUSTER_TOKEN_TEMPORARY=$(cat /tmp/secrets/K8S_CLUSTER_TOKEN_TEMPORARY)
+CLUSTER_BOT_TOKEN=$(cat /tmp/secrets/CLUSTER_BOT_TOKEN)
 
 GITLAB_TOKEN=$(cat /tmp/secrets/GITLAB_TOKEN)
 
