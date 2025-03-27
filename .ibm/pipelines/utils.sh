@@ -864,7 +864,7 @@ cluster_setup_k8s_operator() {
 }
 
 cluster_setup_k8s_helm() {
-  install_olm
+  # install_olm
   install_tekton_pipelines
   # install_ocm_k8s_operator
   # install_crunchy_postgres_k8s_operator # Works with K8s but disabled in values file
@@ -1073,11 +1073,11 @@ oc_login() {
   export K8S_CLUSTER_ROUTER_BASE=$(oc get route console -n openshift-console -o=jsonpath='{.spec.host}' | sed 's/^[^.]*\.//')
 }
 
-function is_openshift() {
+is_openshift() {
   oc get routes.route.openshift.io &> /dev/null || kubectl get routes.route.openshift.io &> /dev/null
 }
 
-function detect_ocp_and_set_env_var() {
+detect_ocp_and_set_env_var() {
   if [[ "${IS_OPENSHIFT}" = "" ]]; then
     IS_OPENSHIFT=$(is_openshift && echo 'true' || echo 'false')
   fi

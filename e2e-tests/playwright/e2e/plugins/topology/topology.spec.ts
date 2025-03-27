@@ -6,6 +6,7 @@ import { Catalog } from "../../../support/pages/catalog";
 
 test.describe("Test Topology Plugin", () => {
   test.skip(() => process.env.JOB_NAME.includes("operator"));
+  test.setTimeout(150000);
   let common: Common;
   let uiHelper: UIhelper;
   let catalog: Catalog;
@@ -24,11 +25,10 @@ test.describe("Test Topology Plugin", () => {
   });
 
   test("Verify pods visibility in the Topology tab", async ({ page }) => {
-    test.setTimeout(150000);
     await catalog.goToBackstageJanusProject();
     await uiHelper.clickTab("Topology");
     await uiHelper.verifyText("backstage-janus");
-    // await page.getByRole("button", { name: "Fit to Screen" }).click(); // This is breaking the test on K8s
+    await page.getByRole("button", { name: "Fit to Screen" }).click();
     await uiHelper.verifyText("topology-test");
     await uiHelper.verifyButtonURL("Open URL", "topology-test-route", {
       locator: `[data-test-id="topology-test"]`,

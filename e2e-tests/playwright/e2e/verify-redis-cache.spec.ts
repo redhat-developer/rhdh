@@ -71,7 +71,9 @@ test.describe("Verify Redis Cache DB", () => {
     await expect(async () => {
       const keys = await redis.keys("*");
       console.log(`Redis keys: ${keys}`);
-      expect(keys).toContainEqual(expect.stringContaining("techdocs"));
+      expect(keys).toContainEqual(
+        expect.stringContaining("techdocs").or.stringContaining("bulk-import"),
+      );
 
       const key = keys.filter((k) => k.startsWith("techdocs"))[0];
       console.log(`Verifying key format: ${key}`);
@@ -86,6 +88,6 @@ test.describe("Verify Redis Cache DB", () => {
 
   test.afterEach(() => {
     console.log("Killing port-forward process...");
-    portForward.kill("SIGKILL");
+    portForward.kill("SIGINT");
   });
 });

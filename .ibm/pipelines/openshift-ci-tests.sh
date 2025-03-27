@@ -48,6 +48,8 @@ main() {
   echo "Log file: ${LOGFILE}"
   echo "JOB_NAME : $JOB_NAME"
 
+  detect_ocp_and_set_env_var
+
   case "$JOB_NAME" in
     *aks-helm*)
       echo "Calling handle_aks_helm"
