@@ -55,6 +55,7 @@
     "@types/react": "18.3.20",
     "@types/react-dom": "18.3.5",
     "@aws-sdk/util-utf8-browser": "npm:@smithy/util-utf8@~2",
+    "@kubernetes/client-node@npm:0.20.0/jsonpath-plus": "^10.3.0",
     "@backstage/plugin-auth-backend-module-cloudflare-access-provider@0.4.0": "patch:@backstage/plugin-auth-backend-module-cloudflare-access-provider@npm%3A0.4.0#./.yarn/patches/@backstage-plugin-auth-backend-module-cloudflare-access-provider-npm-0.4.0-16adf3630c.patch",
     "@backstage/plugin-auth-backend-module-cloudflare-access-provider@^0.4.0": "patch:@backstage/plugin-auth-backend-module-cloudflare-access-provider@npm%3A0.4.0#./.yarn/patches/@backstage-plugin-auth-backend-module-cloudflare-access-provider-npm-0.4.0-16adf3630c.patch",
     "@backstage/plugin-auth-backend-module-bitbucket-server-provider@0.2.0": "patch:@backstage/plugin-auth-backend-module-bitbucket-server-provider@npm%3A0.2.0#./.yarn/patches/@backstage-plugin-auth-backend-module-bitbucket-server-provider-npm-0.2.0-d0da297c04.patch",
