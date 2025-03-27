@@ -71,7 +71,7 @@ jobs:
           password: ${{ secrets.QUAY_TOKEN }}
           imageName: rhdh-community/rhdh
           imageTags: |
-            type=ref,prefix=pr-,suffix=-${{ steps.check-image.outputs.short_sha }},event=pr
+            type=ref,prefix=pr-,suffix=-${{ env.SHORT_SHA }},event=pr
             type=ref,prefix=pr-,event=pr
           imageLabels: quay.expires-after=14d
           push: true
@@ -85,5 +85,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: 'The image is available at:\n* [`quay.io/rhdh-community/rhdh:pr-${{ github.event.number }}`](https://quay.io/rhdh-community/rhdh:pr-${{ github.event.number }}) or\n* [`quay.io/rhdh-community/rhdh:pr-${{ github.event.number }}-${{ steps.check-image.outputs.short_sha }}`](https://quay.io/rhdh-community/rhdh:pr-${{ github.event.number }}-${{ steps.check-image.outputs.short_sha }})'
+              body: 'The image is available at:\n* [`quay.io/rhdh-community/rhdh:pr-${{ github.event.number }}`](https://quay.io/rhdh-community/rhdh:pr-${{ github.event.number }}) or\n* [`quay.io/rhdh-community/rhdh:pr-${{ github.event.number }}-${{ env.SHORT_SHA }}`](https://quay.io/rhdh-community/rhdh:pr-${{ github.event.number }}-${{ env.SHORT_SHA }})'
             })

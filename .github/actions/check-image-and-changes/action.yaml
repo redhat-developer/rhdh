@@ -10,7 +10,7 @@ outputs:
     value: ${{ steps.changes.outputs.relevant }}
   short_sha:
     description: "Short SHA of the latest commit"
-    value: ${{ steps.get-sha.outputs.short_sha }}
+    value: ${{ env.SHORT_SHA }}
 
 runs:
   using: "composite"
@@ -23,7 +23,7 @@ runs:
       id: image-check
       shell: bash
       run: |
-        IMAGE_TAG_COMMIT="pr-${{ github.event.number }}-${{ steps.get-sha.outputs.short_sha }}"
+        IMAGE_TAG_COMMIT="pr-${{ github.event.number }}-${{ env.SHORT_SHA }}"
         IMAGE_NAME_COMMIT="${{ env.REGISTRY }}/rhdh-community/rhdh:${IMAGE_TAG_COMMIT}"
 
         IMAGE_EXISTS_COMMIT=$(curl -s "https://quay.io/api/v1/repository/rhdh-community/rhdh/tag/" | jq -r --arg tag "$IMAGE_TAG_COMMIT" '.tags[] | select(.name == $tag) | .name')
