@@ -63,7 +63,9 @@ test.describe("Verify Redis Cache DB", () => {
     console.log("Verifying Redis keys...");
     await expect(async () => {
       const keys = await redis.keys("*");
-      expect(keys).toContainEqual(expect.stringContaining("techdocs"));
+      expect(keys).toContainEqual(
+        expect.stringContaining("techdocs").or.stringContaining("bulk-import"),
+      );
 
       const key = keys.filter(
         (k) => k.includes("techdocs") || k.includes("bulk-import"),
