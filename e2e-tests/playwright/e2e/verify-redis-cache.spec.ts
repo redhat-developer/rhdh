@@ -62,14 +62,11 @@ test.describe("Verify Redis Cache DB", () => {
     );
     console.log("Verifying Redis keys...");
     await expect(async () => {
-      const keys = await redis.keys("*");
-      expect(keys).toContainEqual(
-        expect.stringContaining("techdocs").or.stringContaining("bulk-import"),
+      const keys = (await redis.keys("*")).filter((k) =>
+        k.includes("techdocs"),
       );
-
-      const key = keys.filter(
-        (k) => k.includes("techdocs") || k.includes("bulk-import"),
-      )[0];
+      expect(keys).toContainEqual(expect.stringContaining("techdocs"));
+      const key = keys[0];
       console.log(`Verifying key format: ${key}`);
       expect(key).toMatch(
         /(?:techdocs|bulk-import):(?:[A-Za-z0-9+]{4})*(?:[A-Za-z0-9+]{2}==|[A-Za-z0-9+]{3}=)$/gm,
