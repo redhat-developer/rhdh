@@ -79,7 +79,6 @@ test.describe("Verify Redis Cache DB", () => {
   });
 
   test.afterEach(() => {
-    portForward.kill("SIGINT");
     redis.disconnect();
     console.log("Killing port-forward process with ID:", portForward.pid);
     portForward.kill("SIGKILL");
