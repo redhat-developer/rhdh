@@ -4093,25 +4093,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-topology-common@npm:^1.7.0":
-  version: 1.7.0
-  resolution: "@backstage-community/plugin-topology-common@npm:1.7.0"
+"@backstage-community/plugin-topology@npm:2.0.0":
+  version: 2.0.0
+  resolution: "@backstage-community/plugin-topology@npm:2.0.0"
   dependencies:
-    "@backstage/plugin-permission-common": ^0.8.4
-  checksum: df8ad9eae046b16279af2aaae17519032b838ff423a890f8d6ad47537dca50aa463933bfe830ee13c0d49dbe357ca5bee15dfaa2c5aa568fe5a7f89809bfc4f0
-  languageName: node
-  linkType: hard
-
-"@backstage-community/plugin-topology@npm:1.33.0":
-  version: 1.33.0
-  resolution: "@backstage-community/plugin-topology@npm:1.33.0"
-  dependencies:
-    "@backstage-community/plugin-topology-common": ^1.7.0
     "@backstage/catalog-model": ^1.7.3
     "@backstage/core-components": ^0.16.4
     "@backstage/core-plugin-api": ^1.10.4
     "@backstage/plugin-catalog-react": ^1.15.2
-    "@backstage/plugin-kubernetes": ^0.12.4
     "@backstage/plugin-kubernetes-common": ^0.9.3
     "@backstage/plugin-kubernetes-react": ^0.5.4
     "@backstage/plugin-permission-common": ^0.8.4
@@ -4140,7 +4129,7 @@ __metadata:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.0.0
-  checksum: d5dc8466df42f37d5c016efc44207745ad6259f735e8e6bc13cb5b255b2c8f1a80e09cf42e7e9c81dbc9e27a7623ad6dadfcec9c862f817e0d0bc2ed7cdd7ab6
+  checksum: ca568c2aaa1b39f67fd37d93dd830edf503281de88078255be55faae0c1cfbfc065391fd1dd91c0f4be9fd0b2730619a27c20a814a0dfdc3e3759bbaee918c3c
   languageName: node
   linkType: hard
 
@@ -24348,7 +24337,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backstage-community-plugin-topology@workspace:dynamic-plugins/wrappers/backstage-community-plugin-topology"
   dependencies:
-    "@backstage-community/plugin-topology": 1.33.0
+    "@backstage-community/plugin-topology": 2.0.0
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.3.1
     "@mui/material": 5.17.1
