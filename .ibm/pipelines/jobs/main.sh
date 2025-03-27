@@ -4,7 +4,7 @@ handle_main() {
   echo "Configuring namespace: ${NAME_SPACE}"
   oc_login
   echo "OCP version: $(oc version)"
-  export TAG_NAME="1.5-178"
+  echo "Testing imgae ${QUAY_REPO} with tag ${TAG_NAME}"
   export K8S_CLUSTER_ROUTER_BASE=$(oc get route console -n openshift-console -o=jsonpath='{.spec.host}' | sed 's/^[^.]*\.//')
   cluster_setup
   initiate_deployments
