@@ -202,6 +202,8 @@ test.describe.serial("Test RBAC", () => {
   });
 
   test.describe("Test RBAC plugin as an admin user", () => {
+    // TODO: fix https://issues.redhat.com/browse/RHIDP-6625 and remove the skip
+    test.skip(() => process.env.IS_OPENSHIFT.includes("false"));
     test.beforeEach(async ({ page }, testInfo) => {
       testInfo.setTimeout(testInfo.timeout + 30_000); // Additional time due to repeated timeout failure in OSD env.
       const common = new Common(page);
@@ -223,9 +225,6 @@ test.describe.serial("Test RBAC", () => {
     });
 
     test("Should download the user list", async ({ page }) => {
-      // TODO: fix https://issues.redhat.com/browse/RHIDP-6625 and remove the skip
-      test.skip(() => process.env.IS_OPENSHIFT.includes("false"));
-
       await page.locator('a:has-text("Download User List")').click();
       const fileContent = await downloadAndReadFile(page);
       const lines = fileContent.trim().split("\n");
