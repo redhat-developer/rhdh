@@ -20,16 +20,25 @@ test.describe("Verify Redis Cache DB", () => {
       `
       oc login --token="${process.env.K8S_CLUSTER_TOKEN}" --server="${process.env.K8S_CLUSTER_URL}" --insecure-skip-tls-verify=true &&
       kubectl config set-context --current --namespace="${process.env.NAME_SPACE}" &&
-      kubectl port-forward service/redis 6379:6379 --namespace="${process.env.NAME_SPACE}"
+      kubectl port-forward service/redis 6379:6379 --namespace="${process.env.NAME_SPACE}" & pid=$!
+      trap '{
+        kill $pid
+      }' SIGINT
     `,
     ]);
 
-    portForward.stdout.on("data", (data) => {
-      console.log(`Port-forward stdout: ${data}`);
-    });
+    console.log("Waiting for port-forward to be ready...");
+    await new Promise<void>((resolve, reject) => {
+      portForward.stdout.on("data", (data) => {
+        if (data.toString().includes("Forwarding from 127.0.0.1:6379")) {
+          resolve();
+        }
+      });
 
-    portForward.stderr.on("data", (data) => {
-      console.error(`Port-forward stderr: ${data}`);
+      portForward.stderr.on("data", (data) => {
+        console.error(`Port forwarding failed: ${data.toString()}`);
+        reject(new Error(`Port forwarding failed: ${data.toString()}`));
+      });
     });
   });
 
@@ -46,21 +55,6 @@ test.describe("Verify Redis Cache DB", () => {
     }).toPass({
       intervals: [3_000],
       timeout: 60_000,
-    });
-
-    console.log("Waiting for port-forward to be ready...");
-    await new Promise<void>((resolve, reject) => {
-      portForward.stdout.on("data", (data) => {
-        if (data.toString().includes("Forwarding from 127.0.0.1:6379")) {
-          console.log("Port-forward is ready.");
-          resolve();
-        }
-      });
-
-      portForward.stderr.on("data", (data) => {
-        console.error(`Port forwarding failed: ${data.toString()}`);
-        reject(new Error(`Port forwarding failed: ${data.toString()}`));
-      });
     });
 
     console.log("Connecting to Redis...");
