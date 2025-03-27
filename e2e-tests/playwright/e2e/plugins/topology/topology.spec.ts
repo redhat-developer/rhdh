@@ -6,17 +6,14 @@ import { Catalog } from "../../../support/pages/catalog";
 
 test.describe("Test Topology Plugin", () => {
   test.skip(() => process.env.JOB_NAME.includes("operator"));
-  test.setTimeout(150000);
   let common: Common;
   let uiHelper: UIhelper;
   let catalog: Catalog;
   // let topology: Topology;
 
   test.beforeEach(async ({ page }, testInfo) => {
-    if (testInfo.retry > 0) {
-      // progressively increase test timeout for retries
-      test.setTimeout(testInfo.timeout + testInfo.timeout * 0.25);
-    }
+    // progressively increase test timeout for retries
+    test.setTimeout(150000 + testInfo.retry * 30000);
     common = new Common(page);
     uiHelper = new UIhelper(page);
     catalog = new Catalog(page);
