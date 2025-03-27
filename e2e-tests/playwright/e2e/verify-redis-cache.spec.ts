@@ -2,13 +2,14 @@ import { expect, test } from "@playwright/test";
 import { UIhelper } from "../utils/ui-helper";
 import { Common } from "../utils/common";
 import Redis from "ioredis";
-import { ChildProcessWithoutNullStreams, spawn } from "child_process";
+import { ChildProcessWithoutNullStreams, exec, spawn } from "child_process";
 
 test.describe("Verify Redis Cache DB", () => {
   test.describe.configure({ mode: "serial" });
   let common: Common;
   let uiHelper: UIhelper;
   let portForward: ChildProcessWithoutNullStreams;
+  let redis: Redis;
   test.beforeEach(async ({ page }) => {
     uiHelper = new UIhelper(page);
     common = new Common(page);
@@ -20,16 +21,14 @@ test.describe("Verify Redis Cache DB", () => {
       `
       oc login --token="${process.env.K8S_CLUSTER_TOKEN}" --server="${process.env.K8S_CLUSTER_URL}" --insecure-skip-tls-verify=true &&
       kubectl config set-context --current --namespace="${process.env.NAME_SPACE}" &&
-      kubectl port-forward service/redis 6379:6379 --namespace="${process.env.NAME_SPACE}" & pid=$!
-      trap '{
-        kill $pid
-      }' SIGINT
+      kubectl port-forward service/redis 6379:6379 --namespace="${process.env.NAME_SPACE}"
     `,
     ]);
 
     console.log("Waiting for port-forward to be ready...");
     await new Promise<void>((resolve, reject) => {
       portForward.stdout.on("data", (data) => {
+        console.log(`Port-forward stdout: ${data.toString()}`);
         if (data.toString().includes("Forwarding from 127.0.0.1:6379")) {
           resolve();
         }
@@ -58,18 +57,17 @@ test.describe("Verify Redis Cache DB", () => {
     });
 
     console.log("Connecting to Redis...");
-    const redis = new Redis(
+    redis = new Redis(
       `redis://${process.env.REDIS_USERNAME}:${process.env.REDIS_PASSWORD}@localhost:6379`,
     );
     console.log("Verifying Redis keys...");
     await expect(async () => {
       const keys = await redis.keys("*");
-      console.log(`Redis keys: ${keys}`);
-      expect(keys).toContainEqual(
-        expect.stringContaining("techdocs").or.stringContaining("bulk-import"),
-      );
+      expect(keys).toContainEqual(expect.stringContaining("techdocs"));
 
-      const key = keys.filter((k) => k.startsWith("techdocs"))[0];
+      const key = keys.filter(
+        (k) => k.includes("techdocs") || k.includes("bulk-import"),
+      )[0];
       console.log(`Verifying key format: ${key}`);
       expect(key).toMatch(
         /(?:techdocs|bulk-import):(?:[A-Za-z0-9+]{4})*(?:[A-Za-z0-9+]{2}==|[A-Za-z0-9+]{3}=)$/gm,
@@ -81,7 +79,13 @@ test.describe("Verify Redis Cache DB", () => {
   });
 
   test.afterEach(() => {
-    console.log("Killing port-forward process...");
     portForward.kill("SIGINT");
+    redis.disconnect();
+    console.log("Killing port-forward process with ID:", portForward.pid);
+    portForward.kill("SIGKILL");
+    console.log("Killing remaining port-forward process.");
+    exec(
+      `ps aux | grep 'kubectl port-forward' | grep -v grep | awk '{print $2}' | xargs kill -9`,
+    );
   });
 });
