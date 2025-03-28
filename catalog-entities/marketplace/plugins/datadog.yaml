@@ -28,7 +28,8 @@ spec:
   support: tech-preview
   lifecycle: active
   publisher: Red Hat
-  categories: Monitoring
+  categories:
+    - Monitoring
 
   icon: data:image/svg+xml;base64,
     PHN2ZyBoZWlnaHQ9IjI1MDAiIHZpZXdCb3g9Ii4yNyAuMjcgODAwLjAxIDg1OC45OCIgd2lkdGg9

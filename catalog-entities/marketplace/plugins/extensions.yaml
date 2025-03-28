@@ -29,8 +29,8 @@ spec:
   lifecycle: active
 
   categories:    
-    - Marketplace
-    
+    - Extensions
+
   highlights: 
     - Provides a catalog of available plugins for Red Hat Developer Hub
     - Browse the available plugins 
