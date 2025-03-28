@@ -11,9 +11,7 @@ test.describe("Test Topology Plugin", () => {
   let catalog: Catalog;
   // let topology: Topology;
 
-  test.beforeEach(async ({ page }, testInfo) => {
-    // progressively increase test timeout for retries
-    test.setTimeout(150000 + testInfo.retry * 30000);
+  test.beforeEach(async ({ page }) => {
     common = new Common(page);
     uiHelper = new UIhelper(page);
     catalog = new Catalog(page);
@@ -21,7 +19,11 @@ test.describe("Test Topology Plugin", () => {
     await common.loginAsGuest();
   });
 
-  test("Verify pods visibility in the Topology tab", async ({ page }) => {
+  test("Verify pods visibility in the Topology tab", async ({
+    page,
+  }, testInfo) => {
+    // progressively increase test timeout for retries
+    test.setTimeout(150000 + testInfo.retry * 30000);
     await catalog.goToBackstageJanusProject();
     await uiHelper.clickTab("Topology");
     await uiHelper.verifyText("backstage-janus");
