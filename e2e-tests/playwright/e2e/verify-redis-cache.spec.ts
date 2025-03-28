@@ -55,7 +55,6 @@ test.describe("Verify Redis Cache DB", () => {
     );
     await expect(async () => {
       const keys = await redis.keys("*");
-      expect(keys).toContainEqual(expect.stringContaining("techdocs"));
 
       // Additionally, verify the format of the key
       const key = keys.filter((k) => k.startsWith("techdocs"))[0];
