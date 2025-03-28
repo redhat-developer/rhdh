@@ -69,7 +69,7 @@ test.describe("Verify Redis Cache DB", () => {
       const key = keys[0];
       console.log(`Verifying key format: ${key}`);
       expect(key).toMatch(
-        /(?:techdocs|bulk-import):(?:[A-Za-z0-9+]{4})*(?:[A-Za-z0-9+]{2}==|[A-Za-z0-9+]{3}=)$/gm,
+        /(?:techdocs|bulk-import):(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{4})$/gm,
       );
     }).toPass({
       intervals: [3_000],
