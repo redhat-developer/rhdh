@@ -1723,7 +1723,29 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@azure/identity@npm:4.7.0, @azure/identity@npm:^4.0.0":
+"@azure/identity@npm:4.8.0":
+  version: 4.8.0
+  resolution: "@azure/identity@npm:4.8.0"
+  dependencies:
+    "@azure/abort-controller": ^2.0.0
+    "@azure/core-auth": ^1.9.0
+    "@azure/core-client": ^1.9.2
+    "@azure/core-rest-pipeline": ^1.17.0
+    "@azure/core-tracing": ^1.0.0
+    "@azure/core-util": ^1.11.0
+    "@azure/logger": ^1.0.0
+    "@azure/msal-browser": ^4.2.0
+    "@azure/msal-node": ^3.2.3
+    events: ^3.0.0
+    jws: ^4.0.0
+    open: ^10.1.0
+    stoppable: ^1.1.0
+    tslib: ^2.2.0
+  checksum: f05ca78fcd44fcbae093c91498f2ab8af069425f0dc37812e26349f2a87b107ad9659538a0dac031b9179c393997a707c776d0128a0774f0bcb93ac8c8f3774a
+  languageName: node
+  linkType: hard
+
+"@azure/identity@npm:^4.0.0":
   version: 4.7.0
   resolution: "@azure/identity@npm:4.7.0"
   dependencies:
@@ -1770,6 +1792,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@azure/msal-common@npm:15.4.0":
+  version: 15.4.0
+  resolution: "@azure/msal-common@npm:15.4.0"
+  checksum: 1d4808f3d2ae362958e654a711bef13e02ada1e190582054a7c687d5de9cbd60a8621ddaf80ac7bd772a7c443831efd96fbea66c00c40525994fca89a8bb9b8a
+  languageName: node
+  linkType: hard
+
 "@azure/msal-node@npm:^3.2.1":
   version: 3.2.3
   resolution: "@azure/msal-node@npm:3.2.3"
@@ -1778,6 +1807,17 @@ __metadata:
     jsonwebtoken: ^9.0.0
     uuid: ^8.3.0
   checksum: ec5aa9b3a48dfdbd25608c09b9d157e45ebaefd04455bc0618a6b395c01400447d1b4113d9c6b605f08e9fceb8565bbfe305d08c020a378135a996f35eb4a333
+  languageName: node
+  linkType: hard
+
+"@azure/msal-node@npm:^3.2.3":
+  version: 3.4.1
+  resolution: "@azure/msal-node@npm:3.4.1"
+  dependencies:
+    "@azure/msal-common": 15.4.0
+    jsonwebtoken: ^9.0.0
+    uuid: ^8.3.0
+  checksum: 598504421084a26f507b98a0a306c825656d896ed313f984aa12ccea89b3332228132dc117d823034d901f5d9986f9ce1043a8ea547add1f88b6856f84b0d384
   languageName: node
   linkType: hard
 
@@ -11693,7 +11733,7 @@ __metadata:
     express-promise-router: 4.1.1
     json-2-csv: 5.5.9
     knex: 3.1.0
-    luxon: 3.5.0
+    luxon: 3.6.0
     msw: 1.3.5
     node-fetch: 2.7.0
     prettier: 3.5.3
@@ -23947,7 +23987,7 @@ __metadata:
     prettier: 3.5.3
     undici: 6.21.2
     winston: 3.14.2
-    zod: 3.23.8
+    zod: 3.24.2
   languageName: unknown
   linkType: soft
 
@@ -28297,7 +28337,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "e2e-tests@workspace:e2e-tests"
   dependencies:
-    "@azure/identity": 4.7.0
+    "@azure/identity": 4.8.0
     "@keycloak/keycloak-admin-client": 25.0.6
     "@kubernetes/client-node": 0.22.3
     "@microsoft/microsoft-graph-client": 3.0.7
@@ -35620,7 +35660,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"luxon@npm:3.5.0, luxon@npm:^3.0.0, luxon@npm:^3.2.1, luxon@npm:^3.4.1, luxon@npm:^3.4.3, luxon@npm:^3.4.4":
+"luxon@npm:3.6.0":
+  version: 3.6.0
+  resolution: "luxon@npm:3.6.0"
+  checksum: 4a5578a805bdf5d425072c9a7430f69768d950b546f7ff9eadd6de8bb2e928701b6989ebc8a92be7bec936e85c5ecea564c89c5f30b1d8420b58e9878e3e9704
+  languageName: node
+  linkType: hard
+
+"luxon@npm:^3.0.0, luxon@npm:^3.2.1, luxon@npm:^3.4.1, luxon@npm:^3.4.3, luxon@npm:^3.4.4":
   version: 3.5.0
   resolution: "luxon@npm:3.5.0"
   checksum: f290fe5788c8e51e748744f05092160d4be12150dca70f9fadc0d233e53d60ce86acd82e7d909a114730a136a77e56f0d3ebac6141bbb82fd310969a4704825b
@@ -48801,7 +48848,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:3.23.8, zod@npm:^3.20.0, zod@npm:^3.22.4":
+"zod@npm:3.24.2":
+  version: 3.24.2
+  resolution: "zod@npm:3.24.2"
+  checksum: c02455c09678c5055c636d64f9fcda2424fea0aa46ac7d9681e7f41990bc55f488bcd84b9d7cfef0f6e906f51f55b245239d92a9f726248aa74c5b84edf00c2d
+  languageName: node
+  linkType: hard
+
+"zod@npm:^3.20.0, zod@npm:^3.22.4":
   version: 3.23.8
   resolution: "zod@npm:3.23.8"
   checksum: 15949ff82118f59c893dacd9d3c766d02b6fa2e71cf474d5aa888570c469dbf5446ac5ad562bb035bf7ac9650da94f290655c194f4a6de3e766f43febd432c5c
