@@ -7901,7 +7901,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-kubernetes@npm:^0.12.3, @backstage/plugin-kubernetes@npm:^0.12.4":
+"@backstage/plugin-kubernetes@npm:^0.12.4":
   version: 0.12.5
   resolution: "@backstage/plugin-kubernetes@npm:0.12.5"
   dependencies:
@@ -13265,7 +13265,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/material@npm:5.16.14, @mui/material@npm:^5.12.2, @mui/material@npm:^5.14.18, @mui/material@npm:^5.15.16, @mui/material@npm:^5.15.17, @mui/material@npm:^5.15.19":
+"@mui/material@npm:5.16.14":
   version: 5.16.14
   resolution: "@mui/material@npm:5.16.14"
   dependencies:
@@ -13298,7 +13298,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/material@npm:5.17.1, @mui/material@npm:^5.12.2, @mui/material@npm:^5.14.18, @mui/material@npm:^5.15.17, @mui/material@npm:^5.15.19":
+"@mui/material@npm:5.17.1, @mui/material@npm:^5.12.2, @mui/material@npm:^5.14.18, @mui/material@npm:^5.15.16, @mui/material@npm:^5.15.17, @mui/material@npm:^5.15.19":
   version: 5.17.1
   resolution: "@mui/material@npm:5.17.1"
   dependencies:
