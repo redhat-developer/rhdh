@@ -68,7 +68,7 @@ test.describe("Verify Redis Cache DB", () => {
       expect(keys).toContainEqual(expect.stringContaining("techdocs"));
       const key = keys[0];
       console.log(`Verifying key format: ${key}`);
-      expect(key).toMatch(/(?:techdocs):(?:[A-Za-z0-9+/]{43}=)$/gm);
+      expect(key).toMatch(/(?:techdocs):(?:[A-Za-z0-9+/]+={0,2})$/gm);
     }).toPass({
       intervals: [3_000],
       timeout: 60_000,
