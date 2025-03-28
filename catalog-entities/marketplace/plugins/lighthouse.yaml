@@ -30,7 +30,8 @@ spec:
   lifecycle: active
   publisher: Red Hat
 
-  categories: Analytics
+  categories:
+    - Analytics
 
   description: |
 

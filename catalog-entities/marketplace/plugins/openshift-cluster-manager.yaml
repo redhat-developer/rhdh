@@ -25,7 +25,8 @@ spec:
   publisher: Red Hat
   lifecycle: active
 
-  categories: Monitoring
+  categories:
+    - Monitoring
 
   description: |
     The Open Cluster Management (OCM) plugin integrates your Backstage instance with the `MultiClusterHub` and `MultiCluster` engines of OCM.
