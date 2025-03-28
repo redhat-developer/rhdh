@@ -29,6 +29,7 @@ spec:
   author: Backstage Community
   support: tech-preview
   lifecycle: active
+  publisher: Red Hat
 
   categories:
     - Software Catalog # One category will show up on the tile view

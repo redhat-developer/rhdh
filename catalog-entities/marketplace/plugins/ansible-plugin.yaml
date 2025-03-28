@@ -6,7 +6,7 @@ metadata:
   namespace: rhdh
   title: Ansible Plugins for Red Hat Developer Hub
   annotations:
-    extensions.backstage.io/pre-installed: 'true' # For plugins contained in the RHDH image
+    extensions.backstage.io/pre-installed: 'false' # For plugins contained in the RHDH image
     extensions.backstage.io/verified-by: Red Hat # For verified plugins
   links:
     - title: Homepage

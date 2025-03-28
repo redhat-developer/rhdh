@@ -19,10 +19,34 @@ metadata:
     - azure
     - container-registry
 spec:
+
+  author: Backstage Community
+  publisher: Red Hat
+  support: tech-preview
+  lifecycle: active
+    
   categories:
-    - Azure
+    - Container Image Registry
   highlights:
     - Display images from Azure Container Registry.
+    
+  description: |
+    The Azure Container Registry (ACR) plugin displays information about your container images available in the Azure Container Registry.
+
+    ACR is a front-end plugin that enables you to view information about the container images from your Azure Container Registry in Backstage.
+
+    ## Adding The Plugin To Red Hat Developer Hub
+
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further instructions on how to add, enable, and configure plugins in your instance.
+
+    ## Configuring The Plugin ##
+
+    Plugins often need additional configuration to work correctly - particularly those that integrate with other
+    systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further details on the configuration required.
+
+
   icon: data:image/svg+xml;base64,
     PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHZpZXdCb3g9IjAgMCA5NiA5NiIgZmlsbD0ibm9u
     ZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogIHhtbG5zOnhsaW5rPSJodHRw
@@ -165,25 +189,6 @@ spec:
     ZFhIZEQrTzZCd0FBQUFBQUFBQUFBQUFBWVBNQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFB
     QUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFOaU1ydXYrRC9XWnUyRmNZZmExQUFBQUFF
     bEZUa1N1UW1DQyIgLz4KICA8L2RlZnM+Cjwvc3ZnPg==
-  author: Backstage Community
-  publisher: Red Hat
-  support: production
-  lifecycle: active
-  description: |
-    The Azure Container Registry (ACR) plugin displays information about your container images available in the Azure Container Registry.
-
-    ACR is a front-end plugin that enables you to view information about the container images from your Azure Container Registry in Backstage.
-
-    ## Adding The Plugin To Red Hat Developer Hub
-
-    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
-    for further instructions on how to add, enable, and configure plugins in your instance.
-
-    ## Configuring The Plugin ##
-
-    Plugins often need additional configuration to work correctly - particularly those that integrate with other
-    systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
-    for further details on the configuration required.
 
 
   packages:

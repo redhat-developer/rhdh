@@ -29,7 +29,7 @@ spec:
   publisher: Red Hat
 
   categories:
-    - CI/CD # One category will show up on the tile view
+    - Container Image Registry # One category will show up on the tile view
 
   highlights:
     - Display information about the container images.

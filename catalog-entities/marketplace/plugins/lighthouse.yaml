@@ -30,6 +30,8 @@ spec:
   lifecycle: active
   publisher: Red Hat
 
+  categories: Analytics
+
   description: |
 
     A frontend for lighthouse-audit-service, this plugin allows you to trigger Lighthouse audits on websites and track them over time.
