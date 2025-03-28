@@ -2,7 +2,7 @@
 apiVersion: extensions.backstage.io/v1alpha1
 kind: Plugin
 metadata:
-  name: plugin-name
+  name: orchestrator
   namespace: rhdh
   title: Orchestrator For Red Hat Developer Hub
   annotations:
