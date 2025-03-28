@@ -87,6 +87,9 @@ auth:
 signInPage: oidc
 techRadar:
   url: "http://${DH_TARGET_URL}/tech-radar"
+techdocs:
+  cache:
+    ttl: 3600000 # 1 hour, required for Redis cache tests to be stable
 proxy:
   skipInvalidProxies: true
   # endpoints: {}
