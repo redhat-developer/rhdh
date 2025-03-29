@@ -30,6 +30,7 @@ test.describe.serial("Link Scaffolded Templates to Catalog Items", () => {
   test.beforeAll(async ({ browser }, testInfo) => {
     page = (await setupBrowser(browser, testInfo)).page;
 
+    console.log('test');
     common = new Common(page);
     uiHelper = new UIhelper(page);
     catalogImport = new CatalogImport(page);
