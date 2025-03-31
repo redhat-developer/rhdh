@@ -3741,9 +3741,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-rbac-backend@npm:5.6.0":
-  version: 5.6.0
-  resolution: "@backstage-community/plugin-rbac-backend@npm:5.6.0"
+"@backstage-community/plugin-rbac-backend@npm:6.0.0":
+  version: 6.0.0
+  resolution: "@backstage-community/plugin-rbac-backend@npm:6.0.0"
   dependencies:
     "@backstage-community/plugin-rbac-common": ^1.14.0
     "@backstage-community/plugin-rbac-node": ^1.10.0
@@ -3757,7 +3757,6 @@ __metadata:
     "@backstage/plugin-permission-common": ^0.8.4
     "@backstage/plugin-permission-node": ^0.8.8
     "@dagrejs/graphlib": ^2.1.13
-    "@janus-idp/backstage-plugin-audit-log-node": ^1.7.1
     casbin: ^5.27.1
     chokidar: ^3.6.0
     csv-parse: ^5.5.5
@@ -3766,7 +3765,7 @@ __metadata:
     knex: ^3.0.0
     lodash: ^4.17.21
     typeorm-adapter: ^1.6.1
-  checksum: db228978516913081a4ea4d503bc0c204143a865efb9d144495b392edcb576fc2f8665a0beb61fabc3094c00b1a92cd1ab717970a48b6773355ce78dc53cea4b
+  checksum: 6bda86e7950495d3bf74658bdac73f2fbbf2d46948cb6fa6464aa2b1cf7d0d392946e94dae57f9f73cc568fe8ce9d841bfaf3a8363c163cc2aac86e8ab2fd5a1
   languageName: node
   linkType: hard
 
@@ -3789,9 +3788,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-rbac@npm:1.39.0":
-  version: 1.39.0
-  resolution: "@backstage-community/plugin-rbac@npm:1.39.0"
+"@backstage-community/plugin-rbac@npm:1.39.2":
+  version: 1.39.2
+  resolution: "@backstage-community/plugin-rbac@npm:1.39.2"
   dependencies:
     "@backstage-community/plugin-rbac-common": ^1.14.0
     "@backstage/catalog-model": ^1.7.3
@@ -3817,7 +3816,7 @@ __metadata:
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.0.0
-  checksum: 8b46bfc6aae186216c8cd99077286beb71a0baca4e5e691a4f1ca30c912bf56385f0420feaf3e34706f94f72b17b08d9f7f71e8609d56fdc36d981c1e84d2561
+  checksum: 9b8544073b6234e631e363aff2d3c8b642c53db2713307729e5894c575c9105d73966e49a3f90a2b505887d828db6d2237d1a62609404c27cea1d8994acfb65a
   languageName: node
   linkType: hard
 
@@ -11774,7 +11773,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@janus-idp/backstage-plugin-audit-log-node@npm:1.7.2, @janus-idp/backstage-plugin-audit-log-node@npm:^1.7.1":
+"@janus-idp/backstage-plugin-audit-log-node@npm:1.7.2":
   version: 1.7.2
   resolution: "@janus-idp/backstage-plugin-audit-log-node@npm:1.7.2"
   dependencies:
@@ -23883,7 +23882,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backend@workspace:packages/backend"
   dependencies:
-    "@backstage-community/plugin-rbac-backend": 5.6.0
+    "@backstage-community/plugin-rbac-backend": 6.0.0
     "@backstage-community/plugin-rbac-node": 1.10.0
     "@backstage-community/plugin-scaffolder-backend-module-annotator": 2.5.0
     "@backstage/backend-app-api": 1.2.0
@@ -24188,7 +24187,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backstage-community-plugin-rbac@workspace:dynamic-plugins/wrappers/backstage-community-plugin-rbac"
   dependencies:
-    "@backstage-community/plugin-rbac": 1.39.0
+    "@backstage-community/plugin-rbac": 1.39.2
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.3.1
     "@mui/material": 5.17.1
