@@ -11,7 +11,7 @@ let page: Page;
 
 test.describe("Standard authentication providers: Basic authentication", () => {
   test.use({ baseURL: constants.AUTH_PROVIDERS_BASE_URL });
-
+  console.log('test');
   let common: Common;
   let uiHelper: UIhelper;
 
