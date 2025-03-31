@@ -578,10 +578,10 @@ apply_yaml_files() {
 
     # Create Deployment and Pipeline for Topology test.
     oc apply -f "$dir/resources/topology_test/topology-test.yaml"
-    if [[ "${IS_OPENSHIFT}" = "true" ]]; then
-      oc apply -f "$dir/resources/topology_test/topology-test-route.yaml"
-    else
+    if [[ -z "${IS_OPENSHIFT}" || "${IS_OPENSHIFT,,}" == "false" ]]; then
       kubectl apply -f "$dir/resources/topology_test/topology-test-ingress.yaml"
+    else
+      oc apply -f "$dir/resources/topology_test/topology-test-route.yaml"
     fi
 }
 
@@ -1079,7 +1079,7 @@ is_openshift() {
 }
 
 detect_ocp_and_set_env_var() {
-  if [[ "${IS_OPENSHIFT}" = "" ]]; then
+  if [[ "${IS_OPENSHIFT}" == "" ]]; then
     IS_OPENSHIFT=$(is_openshift && echo 'true' || echo 'false')
   fi
 }
