@@ -12,6 +12,8 @@ source "$DIR"/cluster/k8s/k8s-utils.sh
 handle_gke_helm() {
   echo "Starting GKE Helm deployment"
 
+  IS_OPENSHIFT=false
+
   K8S_CLUSTER_ROUTER_BASE=$GKE_INSTANCE_DOMAIN_NAME
   NAME_SPACE_K8S="showcase-k8s-ci-nightly"
   NAME_SPACE_RBAC_K8S="showcase-rbac-k8s-ci-nightly"
@@ -25,8 +27,6 @@ handle_gke_helm() {
   K8S_CLUSTER_API_SERVER_URL=$(printf "%s" "$K8S_CLUSTER_URL" | base64 | tr -d '\n')
   OCM_CLUSTER_URL=$(printf "%s" "$K8S_CLUSTER_URL" | base64 | tr -d '\n')
   export K8S_CLUSTER_URL K8S_CLUSTER_API_SERVER_URL OCM_CLUSTER_URL
-
-  detect_ocp_and_set_env_var
 
   re_create_k8s_service_account_and_get_token # Populate K8S_CLUSTER_TOKEN
 
