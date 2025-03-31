@@ -1,13 +1,26 @@
 import * as React from 'react';
 
-import { render } from '@testing-library/react';
+import { renderInTestApp } from '@backstage/test-utils';
 
+import DynamicRootContext, {
+  MountPoints,
+} from '../DynamicRoot/DynamicRootContext';
 import { ApplicationProvider } from './ApplicationProvider';
 
-jest.mock('react', () => ({
-  ...jest.requireActual('react'),
-  useContext: jest.fn(),
-}));
+const MountPointProvider = ({
+  mountPoints,
+  children,
+}: {
+  mountPoints: MountPoints;
+  children: React.ReactNode;
+}) => {
+  const value = React.useMemo(() => ({ mountPoints }), [mountPoints]);
+  return (
+    <DynamicRootContext.Provider value={value as any}>
+      {children}
+    </DynamicRootContext.Provider>
+  );
+};
 
 type ContextOneValue = {
   name: string;
@@ -20,24 +33,20 @@ type ContextTwoValue = {
 const TestContextOne = React.createContext<ContextOneValue>(
   {} as ContextOneValue,
 );
+
 const TestContextTwo = React.createContext<ContextTwoValue>(
   {} as ContextTwoValue,
 );
 
 const TestProviderOne = ({ children }: React.PropsWithChildren<{}>) => {
-  const value = {
-    name: '',
-    salute: '',
-  };
+  const value = React.useMemo(() => ({ name: 'Context' }), []);
   return (
     <TestContextOne.Provider value={value}>{children}</TestContextOne.Provider>
   );
 };
 
 const TestProviderTwo = ({ children }: React.PropsWithChildren<{}>) => {
-  const value = {
-    salute: '',
-  };
+  const value = React.useMemo(() => ({ salute: 'Good day!' }), []);
   return (
     <TestContextTwo.Provider value={value}>{children}</TestContextTwo.Provider>
   );
@@ -55,80 +64,79 @@ const TestComponent = () => {
 
 describe('ApplicationProvider', () => {
   it('should return the children when there are no providers', async () => {
-    (React.useContext as any).mockReturnValue({
-      mountPoints: { 'application/provider': [] },
-    });
-    const { getByText } = render(
-      <ApplicationProvider>
-        <TestComponent />
-      </ApplicationProvider>,
+    const mountPoints = {
+      'application/provider': [],
+    };
+    const { getByText } = await renderInTestApp(
+      <MountPointProvider mountPoints={mountPoints}>
+        <ApplicationProvider>
+          <TestComponent />
+        </ApplicationProvider>
+      </MountPointProvider>,
     );
     expect(getByText('Hello !')).toBeTruthy();
   });
 
   it('should return the children when provider throws an error', async () => {
-    (React.useContext as any).mockReturnValue({
-      mountPoints: {
-        'application/provider': [
-          {
-            Component: () => {
-              throw new Error('Provider failed to render');
-            },
+    const mountPoints = {
+      'application/provider': [
+        {
+          Component: () => {
+            throw new Error('Provider failed to render');
           },
-        ],
-      },
-    });
-    const { getByText } = render(
-      <ApplicationProvider>
-        <TestComponent />
-      </ApplicationProvider>,
+        },
+      ],
+    };
+    const { getByText } = await renderInTestApp(
+      <MountPointProvider mountPoints={mountPoints}>
+        <ApplicationProvider>
+          <TestComponent />
+        </ApplicationProvider>
+      </MountPointProvider>,
     );
     expect(getByText('Hello !')).toBeInTheDocument();
   });
 
   it('should return the children when one of the providers throw an error', async () => {
-    (React.useContext as any).mockReturnValue({
-      name: 'Context',
-      mountPoints: {
-        'application/provider': [
-          {
-            Component: () => {
-              throw new Error('Provider failed to render');
-            },
+    const mountPoints = {
+      'application/provider': [
+        {
+          Component: () => {
+            throw new Error('Provider failed to render');
           },
-          {
-            Component: TestProviderOne,
-          },
-        ],
-      },
-    });
-    const { getByText } = render(
-      <ApplicationProvider>
-        <TestComponent />
-      </ApplicationProvider>,
+        },
+        {
+          Component: TestProviderOne,
+        },
+      ],
+    };
+    const { getByText } = await renderInTestApp(
+      <MountPointProvider mountPoints={mountPoints}>
+        <ApplicationProvider>
+          <TestComponent />
+        </ApplicationProvider>
+      </MountPointProvider>,
     );
     expect(getByText('Hello Context!')).toBeInTheDocument();
   });
 
   it('should return the children', async () => {
-    (React.useContext as any).mockReturnValue({
-      name: 'Context',
-      salute: 'Good day!',
-      mountPoints: {
-        'application/provider': [
-          {
-            Component: TestProviderOne,
-          },
-          {
-            Component: TestProviderTwo,
-          },
-        ],
-      },
-    });
-    const { getByText } = render(
-      <ApplicationProvider>
-        <TestComponent />
-      </ApplicationProvider>,
+    const mountPoints = {
+      'application/provider': [
+        {
+          Component: TestProviderOne,
+        },
+        {
+          Component: TestProviderTwo,
+        },
+      ],
+    };
+    const { getByText } = await renderInTestApp(
+      <MountPointProvider mountPoints={mountPoints}>
+        <ApplicationProvider>
+          <TestComponent />
+        </ApplicationProvider>
+      </MountPointProvider>,
     );
     expect(getByText('Hello Context!Good day!')).toBeInTheDocument();
   });
