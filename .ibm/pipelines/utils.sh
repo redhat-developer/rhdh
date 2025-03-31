@@ -742,12 +742,18 @@ install_olm() {
   if operator-sdk olm status > /dev/null 2>&1; then
     echo "OLM is already installed."
   else
+    echo "OLM is not installed. Installing..."
     operator-sdk olm install
   fi
 }
 
 uninstall_olm() {
-  operator-sdk olm uninstall
+  if operator-sdk olm status > /dev/null 2>&1; then
+    echo "OLM is installed. Uninstalling..."
+    operator-sdk olm uninstall
+  else
+    echo "OLM is not installed. Nothing to uninstall."
+  fi
 }
 
 # Installs the advanced-cluster-management OCP Operator
