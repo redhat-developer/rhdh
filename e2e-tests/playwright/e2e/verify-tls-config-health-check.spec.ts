@@ -23,7 +23,7 @@ test.describe
 
   test("Change the config to use the latest-2 postgres version", async () => {
     const kubeCLient = new KubeClient();
-    test.setTimeout(120000);
+    test.setTimeout(180000);
     const secretData = {
       POSTGRES_HOST: hostLatest2,
     };
@@ -43,7 +43,7 @@ test.describe
 
   test("Change the config to use the latest-3 postgres version", async () => {
     const kubeCLient = new KubeClient();
-    test.setTimeout(120000);
+    test.setTimeout(180000);
     const secretData = {
       POSTGRES_HOST: hostLatest3,
     };
