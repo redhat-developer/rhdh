@@ -1,25 +1,30 @@
 import * as React from 'react';
 import { useLocation } from 'react-router-dom';
 
-import { render } from '@testing-library/react';
+import { renderInTestApp } from '@backstage/test-utils';
 
+import DynamicRootContext, {
+  MountPoints,
+} from '../DynamicRoot/DynamicRootContext';
 import { ApplicationListener } from './ApplicationListener';
 
-jest.mock('react', () => ({
-  ...jest.requireActual('react'),
-  useContext: jest.fn(),
-}));
-
-jest.mock('react-router-dom', () => ({
-  useLocation: jest.fn(() => ({
-    pathname: '/test-path',
-  })),
-}));
+const MountPointProvider = ({
+  mountPoints,
+  children,
+}: {
+  mountPoints: MountPoints;
+  children: React.ReactNode;
+}) => {
+  const value = React.useMemo(() => ({ mountPoints }), [mountPoints]);
+  return (
+    <DynamicRootContext.Provider value={value as any}>
+      {children}
+    </DynamicRootContext.Provider>
+  );
+};
 
 const TestListener = () => {
   const loc = useLocation();
-  // eslint-disable-next-line no-console
-  console.log('LocationListener', loc);
   return <div>{loc.pathname}</div>;
 };
 
@@ -29,84 +34,75 @@ const TestComponent = () => {
 
 describe('ApplicationListener', () => {
   it('should render the UI when there are no listeners', async () => {
-    (React.useContext as any).mockReturnValue({
-      mountPoints: { 'application/listener': [] },
-    });
-    const { getByText } = render(
-      <div>
+    const mountPoints = {
+      'application/listener': [],
+    };
+    const { getByText } = await renderInTestApp(
+      <MountPointProvider mountPoints={mountPoints}>
         <ApplicationListener />
         <TestComponent />
-      </div>,
+      </MountPointProvider>,
     );
     expect(getByText('Hello!')).toBeTruthy();
   });
 
   it('should return the UI when the listener throws an error', async () => {
-    (React.useContext as any).mockReturnValue({
-      mountPoints: {
-        'application/listener': [
-          {
-            Component: () => {
-              throw new Error('Listener failed to render');
-            },
+    const mountPoints = {
+      'application/listener': [
+        {
+          Component: () => {
+            throw new Error('Listener failed to render');
           },
-        ],
-      },
-    });
-    const { getByText } = render(
-      <div>
+        },
+      ],
+    };
+    const { getByText } = await renderInTestApp(
+      <MountPointProvider mountPoints={mountPoints}>
         <ApplicationListener />
         <TestComponent />
-      </div>,
+      </MountPointProvider>,
     );
     expect(getByText('Hello!')).toBeInTheDocument();
   });
 
   it('should render the UI when one of the listeners throw an error', async () => {
-    (React.useContext as any).mockReturnValue({
-      name: 'Context',
-      mountPoints: {
-        'application/listener': [
-          {
-            Component: () => {
-              throw new Error('Listener failed to render');
-            },
+    const mountPoints = {
+      'application/listener': [
+        {
+          Component: () => {
+            throw new Error('Listener failed to render');
           },
-          {
-            Component: TestListener,
-          },
-        ],
-      },
-    });
-    const { getByText } = render(
-      <div>
+        },
+        {
+          Component: TestListener,
+        },
+      ],
+    };
+    const { getByText } = await renderInTestApp(
+      <MountPointProvider mountPoints={mountPoints}>
         <ApplicationListener />
         <TestComponent />
-      </div>,
+      </MountPointProvider>,
     );
     expect(getByText('Hello!')).toBeInTheDocument();
-    expect(getByText('/test-path')).toBeInTheDocument();
+    expect(getByText('/')).toBeInTheDocument();
   });
 
   it('should return the UI', async () => {
-    (React.useContext as any).mockReturnValue({
-      name: 'Context',
-      salute: 'Good day!',
-      mountPoints: {
-        'application/listener': [
-          {
-            Component: TestListener,
-          },
-        ],
-      },
-    });
-    const { getByText } = render(
-      <div>
+    const mountPoints = {
+      'application/listener': [
+        {
+          Component: TestListener,
+        },
+      ],
+    };
+    const { getByText } = await renderInTestApp(
+      <MountPointProvider mountPoints={mountPoints}>
         <ApplicationListener />
         <TestComponent />
-      </div>,
+      </MountPointProvider>,
     );
     expect(getByText('Hello!')).toBeInTheDocument();
-    expect(getByText('/test-path')).toBeInTheDocument();
+    expect(getByText('/')).toBeInTheDocument();
   });
 });
