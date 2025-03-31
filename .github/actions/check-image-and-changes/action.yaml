@@ -19,6 +19,13 @@ runs:
       id: get-sha
       uses: ./.github/actions/get-sha  # Use existing action
 
+    # Ensure that SHORT_SHA is available for subsequent steps in this context
+    - name: Export SHORT_SHA
+      shell: bash
+      run: |
+        echo "SHORT_SHA=${SHORT_SHA:-${{ steps.get-sha.outputs.short_sha }}}" >> $GITHUB_ENV
+        echo "Usando SHA curto: ${SHORT_SHA:-${{ steps.get-sha.outputs.short_sha }}}"
+
     - name: Check if Image Already Exists
       id: image-check
       shell: bash

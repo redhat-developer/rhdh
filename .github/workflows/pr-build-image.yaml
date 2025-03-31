@@ -64,6 +64,7 @@ jobs:
           git merge --no-edit base-origin/${{ github.event.pull_request.base.ref }}
 
       - name: Build and Push with Buildx
+        if: ${{ steps.check-image.outputs.relevant_changes == 'true' || steps.check-image.outputs.image_exists == 'false' }}
         uses: ./.github/actions/docker-build
         with:
           registry: ${{ env.REGISTRY }}
@@ -71,8 +72,8 @@ jobs:
           password: ${{ secrets.QUAY_TOKEN }}
           imageName: rhdh-community/rhdh
           imageTags: |
-            type=ref,prefix=pr-,suffix=-${{ env.SHORT_SHA }},event=pr
-            type=ref,prefix=pr-,event=pr
+            pr-${{ github.event.number }}
+            pr-${{ github.event.number }}-${{ env.SHORT_SHA }}
           imageLabels: quay.expires-after=14d
           push: true
           platform: linux/amd64
