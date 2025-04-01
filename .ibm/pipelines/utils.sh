@@ -37,6 +37,7 @@ save_all_pod_logs(){
 
 droute_send() {
   if [[ "${OPENSHIFT_CI}" != "true" ]]; then return 0; fi
+  if [[ "${JOB_NAME}" == *rehearse* ]]; then return 0; fi
   local original_context
   original_context=$(oc config current-context) # Save original context
   ( # Open subshell
