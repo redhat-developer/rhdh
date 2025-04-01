@@ -50,3 +50,7 @@ deploy_rhdh_operator() {
 
   oc apply -f "$backstage_crd_path" -n "${namespace}"
 }
+
+delete_rhdh_operator() {
+  oc delete namespace "$OPERATOR_MANAGER"
+}
