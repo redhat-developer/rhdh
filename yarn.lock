@@ -18144,6 +18144,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@scalprum/core@npm:^0.8.3":
+  version: 0.8.3
+  resolution: "@scalprum/core@npm:0.8.3"
+  dependencies:
+    "@openshift/dynamic-plugin-sdk": ^5.0.1
+    tslib: ^2.6.2
+  checksum: 31d1d376c795d47cfc7c4cf84d262989f7a62e3c536aedff03cfa6e23bf969713f70f0e3c9035fe46b280a5133c85c416f1cd2b46c98f9822080ac9d7c752819
+  languageName: node
+  linkType: hard
+
 "@scalprum/react-core@npm:0.9.3":
   version: 0.9.3
   resolution: "@scalprum/react-core@npm:0.9.3"
@@ -18158,7 +18168,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@scalprum/react-core@npm:0.9.4, @scalprum/react-core@npm:^0.9.4":
+"@scalprum/react-core@npm:0.9.4":
   version: 0.9.4
   resolution: "@scalprum/react-core@npm:0.9.4"
   dependencies:
@@ -18172,16 +18182,30 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@scalprum/react-test-utils@npm:0.2.5":
-  version: 0.2.5
-  resolution: "@scalprum/react-test-utils@npm:0.2.5"
+"@scalprum/react-core@npm:^0.9.5":
+  version: 0.9.5
+  resolution: "@scalprum/react-core@npm:0.9.5"
   dependencies:
     "@openshift/dynamic-plugin-sdk": ^5.0.1
-    "@scalprum/core": ^0.8.2
-    "@scalprum/react-core": ^0.9.4
+    "@scalprum/core": ^0.8.3
+    lodash: ^4.17.0
+  peerDependencies:
+    react: ">=16.8.0 || >=17.0.0 || ^18.0.0"
+    react-dom: ">=16.8.0 || >=17.0.0 || ^18.0.0"
+  checksum: 824cc4c53437a3d0da9a760fefa31a6aba436caef7b2cad69838fb43bd19b6301f90d60e33e823628596ef5e7174a208ba0e67ab129688cf122771fc101b0598
+  languageName: node
+  linkType: hard
+
+"@scalprum/react-test-utils@npm:0.2.6":
+  version: 0.2.6
+  resolution: "@scalprum/react-test-utils@npm:0.2.6"
+  dependencies:
+    "@openshift/dynamic-plugin-sdk": ^5.0.1
+    "@scalprum/core": ^0.8.3
+    "@scalprum/react-core": ^0.9.5
     tslib: ^2.6.2
     whatwg-fetch: ^3.6.0
-  checksum: 28c73bd8dc4772c46874c9abdb9e289f221cf6a57ee5a1784deb9b5f080f0d10f85e4c22ab9094a695ba6a8cf534762e87bd2eb7174c966dba261b98e0b77201
+  checksum: dbd6b3cb48c6cfd7c957a6d3ce6be298e45f325928a5638506ffa14605415a7fd566e3e1703bf8ff67b656eac798a8b077c69e9ade97db5dfbad3b09720d5e4b
   languageName: node
   linkType: hard
 
@@ -23124,7 +23148,7 @@ __metadata:
     "@redhat-developer/red-hat-developer-hub-theme": 0.5.0
     "@scalprum/core": 0.8.2
     "@scalprum/react-core": 0.9.4
-    "@scalprum/react-test-utils": 0.2.5
+    "@scalprum/react-test-utils": 0.2.6
     "@testing-library/dom": 9.3.4
     "@testing-library/jest-dom": 6.6.3
     "@testing-library/react": 14.3.1
