@@ -189,7 +189,7 @@ droute_send() {
     fi
   ) # Close subshell
   oc config use-context "$original_context" # Restore original context
-  if ! oc whoami 2>/dev/null; then
+  if ! kubectl auth can-i get pods 2>/dev/null; then
     oc_login
   fi
 }
@@ -1078,7 +1078,6 @@ force_delete_namespace() {
 oc_login() {
   oc login --token="${K8S_CLUSTER_TOKEN}" --server="${K8S_CLUSTER_URL}" --insecure-skip-tls-verify=true
   echo "OCP version: $(oc version)"
-  export K8S_CLUSTER_ROUTER_BASE=$(oc get route console -n openshift-console -o=jsonpath='{.spec.host}' | sed 's/^[^.]*\.//')
 }
 
 is_openshift() {
