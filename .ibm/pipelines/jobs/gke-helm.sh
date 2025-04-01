@@ -18,6 +18,8 @@ handle_gke_helm() {
   NAME_SPACE="showcase-k8s-ci-nightly"
   NAME_SPACE_RBAC="showcase-rbac-k8s-ci-nightly"
   export K8S_CLUSTER_ROUTER_BASE NAME_SPACE NAME_SPACE_RBAC
+  local rhdh_base_url="https://${K8S_CLUSTER_ROUTER_BASE}"
+  local rbac_rhdh_base_url="https://${K8S_CLUSTER_ROUTER_BASE}"
 
   gcloud_auth "${GKE_SERVICE_ACCOUNT_NAME}" "/tmp/secrets/GKE_SERVICE_ACCOUNT_KEY"
   gcloud_gke_get_credentials "${GKE_CLUSTER_NAME}" "${GKE_CLUSTER_REGION}" "${GOOGLE_CLOUD_PROJECT}"
@@ -33,10 +35,10 @@ handle_gke_helm() {
   cluster_setup_k8s_helm
 
   initiate_gke_helm_deployment
-  check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
+  check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${rhdh_base_url}" 50 30
   delete_namespace "${NAME_SPACE}"
 
   initiate_rbac_gke_helm_deployment
-  check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
+  check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}" 50 30
   delete_namespace "${NAME_SPACE_RBAC}"
 }
