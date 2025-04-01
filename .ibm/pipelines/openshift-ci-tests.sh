@@ -25,7 +25,7 @@ OVERALL_RESULT=0
 #
 #trap cleanup EXIT INT ERR
 
-export K8S_CLUSTER_TOKEN=$TOKEN_TEST_AI
+export K8S_CLUSTER_TOKEN=$K8S_CLUSTER_TOKEN_TEMPORARY
 export K8S_CLUSTER_URL='https://c109-e.us-east.containers.cloud.ibm.com:31502'
 
 SCRIPTS=(
