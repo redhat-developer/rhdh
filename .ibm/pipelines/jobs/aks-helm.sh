@@ -11,10 +11,11 @@ handle_aks_helm() {
   echo "Starting AKS Helm deployment"
 
   K8S_CLUSTER_ROUTER_BASE=$(kubectl get svc nginx --namespace app-routing-system -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+  export K8S_CLUSTER_ROUTER_BASE
+
   NAME_SPACE="showcase-k8s-ci-nightly"
   NAME_SPACE_RBAC="showcase-rbac-k8s-ci-nightly"
-  export K8S_CLUSTER_ROUTER_BASE NAME_SPACE NAME_SPACE_RBAC
-
+  export NAME_SPACE NAME_SPACE_RBAC
 
   cluster_setup_k8s_helm
 
