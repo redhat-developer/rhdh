@@ -18,8 +18,6 @@ handle_gke_operator() {
 
   K8S_CLUSTER_ROUTER_BASE=$GKE_INSTANCE_DOMAIN_NAME
   export K8S_CLUSTER_ROUTER_BASE
-  local rhdh_base_url="https://${K8S_CLUSTER_ROUTER_BASE}"
-  local rbac_rhdh_base_url="https://${K8S_CLUSTER_ROUTER_BASE}"
 
   gcloud_auth "${GKE_SERVICE_ACCOUNT_NAME}" "/tmp/secrets/GKE_SERVICE_ACCOUNT_KEY"
   gcloud_gke_get_credentials "${GKE_CLUSTER_NAME}" "${GKE_CLUSTER_REGION}" "${GOOGLE_CLOUD_PROJECT}"
@@ -36,11 +34,11 @@ handle_gke_operator() {
 
   prepare_operator
 
-  initiate_gke_operator_deployment "${NAME_SPACE}" "${rhdh_base_url}"
-  check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${rhdh_base_url}" 50 30
+  initiate_gke_operator_deployment "${NAME_SPACE}" "https://${K8S_CLUSTER_ROUTER_BASE}"
+  check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
   delete_namespace "${NAME_SPACE}"
 
-  initiate_rbac_gke_operator_deployment "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
-  check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}" 50 30
+  initiate_rbac_gke_operator_deployment "${NAME_SPACE_RBAC}" "https://${K8S_CLUSTER_ROUTER_BASE}"
+  check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
   delete_namespace "${NAME_SPACE_RBAC}"
 }
