@@ -40,6 +40,7 @@ droute_send() {
   if [[ "${JOB_NAME}" == *rehearse* ]]; then return 0; fi
   local original_context
   original_context=$(oc config current-context) # Save original context
+  echo "Saving original context: $original_context"
   ( # Open subshell
     if [ -n "${PULL_NUMBER:-}" ]; then
       set +e
@@ -190,6 +191,7 @@ droute_send() {
   ) # Close subshell
   oc config use-context "$original_context" # Restore original context
   if ! kubectl auth can-i get pods 2>/dev/null; then
+    echo "Failed to restore the context and authenticate with the cluster. Logging in again."
     oc_login
   fi
 }
