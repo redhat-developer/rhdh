@@ -24,7 +24,7 @@ runs:
       shell: bash
       run: |
         echo "SHORT_SHA=${SHORT_SHA:-${{ steps.get-sha.outputs.short_sha }}}" >> $GITHUB_ENV
-        echo "Usando SHA curto: ${SHORT_SHA:-${{ steps.get-sha.outputs.short_sha }}}"
+        echo "Using SHORT_SHA: ${SHORT_SHA:-${{ steps.get-sha.outputs.short_sha }}}"
 
     - name: Check if Image Already Exists
       id: image-check
