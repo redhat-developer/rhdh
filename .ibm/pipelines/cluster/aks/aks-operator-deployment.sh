@@ -73,8 +73,14 @@ patch_and_restart() {
   echo "Scaling down $resource_type/$resource_name to 0 replicas"
   kubectl scale "$resource_type" "$resource_name" --replicas=0 -n "$namespace"
   
-  echo "Waiting for pods to terminate..."
-  kubectl wait --for=delete pods -l app="$resource_name" -n "$namespace" --timeout=30s || true
+  echo "Waiting for pods to terminate gracefully (timeout: 60s)..."
+  if ! kubectl wait --for=delete pods -l app="$resource_name" -n "$namespace" --timeout=60s; then
+    echo "Warning: Pods did not terminate gracefully within 60s"
+    echo "Attempting force deletion of pods..."
+    kubectl delete pods -l app="$resource_name" -n "$namespace" --force --grace-period=0
+    # Wait a bit to ensure pods are actually gone
+    sleep 5
+  fi
   
   echo "Scaling up $resource_type/$resource_name to 1 replica"
   kubectl scale "$resource_type" "$resource_name" --replicas=1 -n "$namespace"
