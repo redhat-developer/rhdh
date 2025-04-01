@@ -717,6 +717,11 @@ check_backstage_running() {
   local max_attempts=$4
   local wait_seconds=$5
 
+  if [ -z "${url}" ]; then
+    echo "Error: URL is not set. Please provide a valid URL."
+    return 1
+  fi
+
   echo "Checking if Backstage is up and running at ${url}"
 
   for ((i = 1; i <= max_attempts; i++)); do
