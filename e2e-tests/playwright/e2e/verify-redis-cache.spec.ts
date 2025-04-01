@@ -28,7 +28,6 @@ test.describe("Verify Redis Cache DB", () => {
     console.log("Waiting for port-forward to be ready...");
     await new Promise<void>((resolve, reject) => {
       portForward.stdout.on("data", (data) => {
-        console.log(`Port-forward stdout: ${data.toString()}`);
         if (data.toString().includes("Forwarding from 127.0.0.1:6379")) {
           resolve();
         }
@@ -43,6 +42,10 @@ test.describe("Verify Redis Cache DB", () => {
 
   test("Open techdoc and verify the cache generated in redis db", async () => {
     test.setTimeout(120_000);
+
+    portForward.stdout.on("data", (data) => {
+      console.log(`Port-forward stdout: ${data.toString()}`);
+    });
 
     await uiHelper.openSidebarButton("Favorites");
     await uiHelper.openSidebar("Docs");
