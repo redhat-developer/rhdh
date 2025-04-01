@@ -190,7 +190,7 @@ droute_send() {
     fi
   ) # Close subshell
   oc config use-context "$original_context" # Restore original context
-  if ! kubectl auth can-i get pods 2>/dev/null; then
+  if ! kubectl auth can-i get pods >/dev/null 2>&1; then
     echo "Failed to restore the context and authenticate with the cluster. Logging in again."
     oc_login
   fi

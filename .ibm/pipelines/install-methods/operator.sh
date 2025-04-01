@@ -52,5 +52,5 @@ deploy_rhdh_operator() {
 }
 
 delete_rhdh_operator() {
-  oc delete namespace "$OPERATOR_MANAGER"
+  kubectl delete namespace "$OPERATOR_MANAGER" --ignore-not-found
 }
