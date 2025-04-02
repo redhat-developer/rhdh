@@ -1,5 +1,6 @@
-# THIS IS USED BY OSBS BUILDS <=1.3
-# FOR KONFLUX >=1.4, see ../../docker/Dockerfile
+# syntax=docker/dockerfile:1.14-labs
+
+# THIS IS USED BY Konflux builds >= 1.6
 #
 # Copyright (c) 2023-2024 Red Hat, Inc.
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,23 +22,47 @@
 # 4. add Brew metadata
 
 # Stage 1 - Build nodejs skeleton
-#@follow_tag(registry.access.redhat.com/ubi9/nodejs-22:1)
 # https://registry.access.redhat.com/ubi9/nodejs-22
-FROM registry.access.redhat.com/ubi9/nodejs-22:9.5-1742955796 AS build
+FROM registry.access.redhat.com/ubi9/nodejs-22:9.5-1742955796 AS skeleton
 # hadolint ignore=DL3002
 USER 0
 
+# debug
+# RUN cat /cachi2/cachi2.env 
+
 # Install isolated-vm dependencies
 # hadolint ignore=DL3041
-RUN dnf install -y -q --allowerasing --nobest nodejs-devel nodejs-libs \
-  # already installed or installed as deps:
-  openssl openssl-devel ca-certificates make cmake cpp gcc gcc-c++ zlib zlib-devel brotli brotli-devel python3 nodejs-packaging && \
-  dnf update -y && dnf clean all
+RUN dnf install -q -y --allowerasing --nobest \
+  acl alternatives attr audit-libs basesystem bash binutils binutils-gold brotli brotli-devel bsdtar bzip2-libs ca-certificates cmake containers-common coreutils-single cpp \
+  cracklib cracklib-dicts criu criu-libs crun crypto-policies crypto-policies-scripts curl-minimal cyrus-sasl-lib dbus dbus-broker dbus-common dbus-libs dejavu-sans-fonts \
+  dmidecode dnf dnf-data elfutils-debuginfod-client elfutils-default-yama-scope elfutils-libelf elfutils-libs emacs-filesystem environment-modules expat file-libs filesystem \
+  findutils fonts-filesystem fuse-common fuse-overlayfs fuse3 fuse3-libs gawk gcc gcc-c++ gdb-gdbserver gdbm-libs gettext gettext-libs git git-core git-core-doc glib2 glibc \
+  glibc-common glibc-devel glibc-headers glibc-langpack-en glibc-locale-source glibc-minimal-langpack gmp gnupg2 gnutls gobject-introspection gpgme grep groff-base gzip \
+  ima-evm-utils iproute json-c json-glib kernel-headers keyutils keyutils-libs kmod kmod-libs krb5-libs langpacks-core-en langpacks-core-font-en langpacks-en less \
+  libacl libarchive libassuan libattr libblkid libbpf libbrotli libcap libcap-ng libcbor libcom_err libcomps libcurl-minimal libdb libdnf libdnf-plugin-subscription-manager \
+  libeconf libedit libevent libfdisk libffi libfido2 libgcc libgcrypt libgomp libgpg-error libidn2 libksba libmnl libmodulemd libmount libmpc libnet libnghttp2 libnl3 \
+  libpipeline libpkgconf libpwquality librepo libreport-filesystem librhsm libseccomp libselinux libsemanage libsepol libsigsegv libslirp libsmartcols libsolv libstdc++ libstdc++-devel \
+  libtasn1 libunistring libuser libutempter libuuid libverto libxcrypt libxcrypt-compat libxcrypt-devel libxml2 libyaml libzstd lua-libs lz4-libs make man mpfr \
+  ncurses ncurses-base ncurses-libs nettle nodejs nodejs-devel nodejs-docs nodejs-full-i18n nodejs-libs nodejs-nodemon nodejs-packaging npm npth nss_wrapper-libs openldap \
+  openssh openssh-clients openssl openssl-devel openssl-fips-provider openssl-fips-provider-so openssl-libs p11-kit p11-kit-trust pam passwd pcre pcre2 pcre2-syntax \
+  perl perl-AutoLoader perl-B perl-base perl-Carp perl-Class-Struct perl-constant perl-Data-Dumper perl-Digest perl-Digest-MD5 perl-DynaLoader perl-Encode perl-Errno perl-Error \
+  perl-Exporter perl-Fcntl perl-File-Basename perl-File-Find perl-File-Path perl-File-stat perl-File-Temp perl-FileHandle perl-Getopt-Long perl-Getopt-Std perl-Git perl-HTTP-Tiny \
+  perl-interpreter perl-IO perl-IO-Socket-IP perl-IO-Socket-SSL perl-IPC-Open3 perl-lib perl-libnet perl-libs perl-MIME-Base64 perl-Mozilla-CA perl-mro perl-NDBM_File perl-Net-SSLeay \
+  perl-overload perl-overloading perl-parent perl-PathTools perl-Pod-Escapes perl-Pod-Perldoc perl-Pod-Simple perl-Pod-Usage perl-podlators perl-POSIX perl-Scalar-List-Utils perl-SelectSaver \
+  perl-Socket perl-Storable perl-subs perl-Symbol perl-Term-ANSIColor perl-Term-Cap perl-TermReadKey perl-Text-ParseWords perl-Text-Tabs+Wrap perl-Time-Local perl-URI perl-vars pkgconf \
+  pkgconf-m4 pkgconf-pkg-config popt procps-ng protobuf-c psmisc python-unversioned-command python3 python3-chardet python3-cloud-what python3-dateutil python3-dbus python3-decorator \
+  python3-dnf python3-dnf-plugins-core python3-gobject-base python3-gobject-base-noarch python3-gpg python3-hawkey python3-idna python3-iniparse python3-inotify python3-libcomps \
+  python3-libdnf python3-librepo python3-libs python3-pip python3-pip-wheel python3-pysocks python3-requests python3-rpm python3-setuptools python3-setuptools-wheel python3-six \
+  python3-subscription-manager-rhsm python3-systemd python3-urllib3 readline redhat-release rootfiles rpm rpm-build-libs rpm-libs rpm-plugin-selinux rpm-sign-libs rsync scl-utils \
+  sed selinux-policy selinux-policy-targeted setup shadow-utils skopeo slirp4netns sqlite-libs subscription-manager subscription-manager-rhsm-certificates systemd systemd-libs \
+  systemd-pam systemd-rpm-macros tar tcl tpm2-tss tzdata unzip usermode util-linux util-linux-core vim-filesystem vim-minimal virt-what which xz xz-libs yajl yum zlib zlib-devel && \
+  
+  # '(micro)dnf update -y' not allowed in Konflux+Cachi2: instead use renovate or https://github.com/konflux-ci/rpm-lockfile-prototype to update the rpms.lock.yaml file
+  dnf clean all
 
-# Downstream sources
-ENV EXTERNAL_SOURCE_NESTED=$REMOTE_SOURCES/upstream1/app/distgit/containers/rhdh-hub
-# /remote-source/
-ENV CONTAINER_SOURCE=$REMOTE_SOURCES_DIR
+# sources
+ENV EXTERNAL_SOURCE_NESTED=.
+ENV CONTAINER_SOURCE=/opt/app-root/src
 
 # Env vars
 ENV YARN=$CONTAINER_SOURCE/.yarn/releases/yarn-3.8.7.cjs
@@ -50,6 +75,7 @@ COPY $EXTERNAL_SOURCE_NESTED/.yarnrc.yml ./
 RUN chmod +x "$YARN" && ln -s "$YARN" /usr/local/bin/yarn
 
 # Stage 2 - Install dependencies
+FROM skeleton AS deps
 COPY $EXTERNAL_SOURCE_NESTED/yarn.lock ./
 # BEGIN COPY package.json files
 COPY $EXTERNAL_SOURCE_NESTED/plugins/scalprum-backend/package.json ./plugins/scalprum-backend/package.json
@@ -143,64 +169,67 @@ COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin
 # END COPY package.json files
 
 # Downstream only - debugging
-# COPY $REMOTE_SOURCES/ ./
-# hadolint ignore=SC2086
-# RUN for d in $(find / -name ".npmrc" -o -name ".yarnrc" 2>/dev/null); do echo; echo "==== $d ===="; cat $d; done
-# # ls -la ./ upstream1 upstream1/app/ upstream1/app/distgit/containers/ upstream1/app/distgit/containers/rhdh-hub/ || true
-# # debug contents of /remote-source/
-#  echo "###### /tmp/tls-ca-bundle.pem ######>>"; cat /tmp/tls-ca-bundle.pem; echo "<<###### /tmp/tls-ca-bundle.pem ######"
-#  echo "###### $CONTAINER_SOURCE/registry-ca.pem ######>>"; cat $CONTAINER_SOURCE/registry-ca.pem; echo "<<###### $CONTAINER_SOURCE/registry-ca.pem ######"
+# RUN ls -la /cachi2/output/deps/yarn/*
 
-# Downstream only - Cachito configuration
-# see https://docs.engineering.redhat.com/pages/viewpage.action?pageId=228017926#UpstreamSources(Cachito,ContainerFirst)-CachitoIntegrationfornpm
-COPY $REMOTE_SOURCES/upstream1/cachito.env \
-  $REMOTE_SOURCES/upstream1/app/registry-ca.pem \
-  $REMOTE_SOURCES/upstream1/app/distgit/containers/rhdh-hub/.npmrc \
-  ./
-# registry=https://cachito-nexus.engineering.redhat.com/repository/cachito-yarn-814335/
-# email=noreply@domain.local
-# always-auth=true
-# //cachito-nexus.engineering.redhat.com/repository/cachito-yarn-814335/:_auth=SHA-goes-here==
-# fetch-retries=5
-# fetch-retry-factor=2
-# strict-ssl=true
-# cafile="../../../registry-ca.pem"
-# NOTE: this is overridden to "/remote-source/registry-ca.pem" below
-# hadolint ignore=SC1091,SC2046
-RUN \
-  # debug
-  # cat $CONTAINER_SOURCE/cachito.env; \
-  # load envs
-  source "$CONTAINER_SOURCE/cachito.env"; \
-  \
-  # load cert
-  cert_path="$CONTAINER_SOURCE/registry-ca.pem"; \
-  # debug
-  # ls -la "${cert_path}"; \
-  npm config set cafile "${cert_path}"; "$YARN" config set cafile "${cert_path}" -g; \
-  \
-  # set longer timeouts
-  # npm config set fetch-retry-maxtimeout 6000000; \
-  # npm config set fetch-retry-mintimeout 1000000; \
-  # set cachito as default registry
-  "$YARN" config set registry $(npm config get registry) -g; \
-  \
-  # debug
-  # ls -l /usr/; \
-  # set up node dir with common.gypi and unsafe-perms=true
-  ln -s /usr/include/node/common.gypi /usr/common.gypi; "$YARN" config set nodedir /usr; "$YARN" config set unsafe-perm true
+# Downstream only - enable offline node-gyp install from local headers - see artifacts.lock.yaml for tar.gz
+ENV NODE_HEADERS_VERSION="22.13.1"
+RUN mkdir -p ~/.cache/node-gyp/${NODE_HEADERS_VERSION}; \
+tar -xf /cachi2/output/deps/generic/node-v${NODE_HEADERS_VERSION}-headers.tar.gz --directory ~/.cache/node-gyp/${NODE_HEADERS_VERSION}/ --strip-components 1; \
+echo "11" > ~/.cache/node-gyp/${NODE_HEADERS_VERSION}/installVersion
 
-# Downstream only - debug
-# RUN echo $PATH; ls -la /usr/local/bin/yarn; whereis yarn;which yarn; yarn --version; \
-# cat "$CONTAINER_SOURCE"/.npmrc || true; \
-# "$YARN" config list --verbose; npm config list; npm config list -l
+# Downstream only - enable offline playwright - see artifacts.lock.yaml for zip
+ENV CHROMIUM_VERSION="1155" \
+    HEADLESS_VERSION="1155" \
+    FFMPEG_VERSION="1011" \
+    PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
+    PLAYWRIGHT_BROWSERS_PATH=/cachi2/output/deps/generic/pw-browsers \
+    CHROMIUM_DIR=$PLAYWRIGHT_BROWSERS_PATH/chromium-${CHROMIUM_VERSION} \
+    HEADLESS_DIR=$PLAYWRIGHT_BROWSERS_PATH/chromium_headless_shell-${HEADLESS_VERSION} \
+    FFMPEG_DIR=$PLAYWRIGHT_BROWSERS_PATH/ffmpeg-${FFMPEG_VERSION}
+
+# # python3 -m playwright install chromium firefox --dry-run
+# browser: chromium version 133.0.6943.16
+#   Install location:    /opt/app-root/src/.cache/ms-playwright/chromium-1155
+#   Download url:        https://cdn.playwright.dev/dbazure/download/playwright/builds/chromium/1155/chromium-linux.zip
+# browser: ffmpeg
+#   Install location:    /opt/app-root/src/.cache/ms-playwright/ffmpeg-1011
+#   Download url:        https://cdn.playwright.dev/dbazure/download/playwright/builds/ffmpeg/1011/ffmpeg-linux.zip
+# browser: chromium-headless-shell version 133.0.6943.16
+#   Install location:    /opt/app-root/src/.cache/ms-playwright/chromium_headless_shell-1155
+#   Download url:        https://cdn.playwright.dev/dbazure/download/playwright/builds/chromium/1155/chromium-headless-shell-linux.zip
+# browser: ffmpeg
+#   Install location:    /opt/app-root/src/.cache/ms-playwright/ffmpeg-1011
+#   Download url:        https://cdn.playwright.dev/dbazure/download/playwright/builds/ffmpeg/1011/ffmpeg-linux.zip
+
+RUN dnf install -q -y alsa-lib at-spi2-atk at-spi2-core atk cairo cups-libs libdrm libX11 libX11-xcb libXcomposite libXdamage libXext libXfixes libxkbcommon libXrandr mesa-libgbm nspr nss pango; \
+  export PLAYWRIGHT_BROWSERS_PATH=$PLAYWRIGHT_BROWSERS_PATH/; \
+  ls -la /cachi2/output/deps/generic/; \
+  mkdir -p $CHROMIUM_DIR; unzip -q /cachi2/output/deps/generic/chromium-linux.zip                    -d $CHROMIUM_DIR/; touch $CHROMIUM_DIR/DEPENDENCIES_VALIDATED $CHROMIUM_DIR/INSTALLATION_COMPLETE; \
+  mkdir -p $HEADLESS_DIR; unzip -q /cachi2/output/deps/generic/chromium-headless-shell-linux.zip     -d $HEADLESS_DIR/; touch $HEADLESS_DIR/DEPENDENCIES_VALIDATED $HEADLESS_DIR/INSTALLATION_COMPLETE; \
+  mkdir -p $FFMPEG_DIR;   unzip -q /cachi2/output/deps/generic/ffmpeg-linux.zip                      -d $FFMPEG_DIR/;   touch $FFMPEG_DIR/DEPENDENCIES_VALIDATED   $FFMPEG_DIR/INSTALLATION_COMPLETE; \
+  # echo "Chromium: "; ls -1 $CHROMIUM_DIR; \
+  # echo "Chromium Headless Shell:"; ls -1 $HEADLESS_DIR; \
+  # echo "ffmpeg:"; ls -1 $FFMPEG_DIR; \
+  pip3 install playwright==1.49.1 && playwright --version
+
+# debugging
+# Redirect console output and errors to a log file to make this log shorter
+# RUN exec 3>&1 4>&2 1>> /tmp/build.log.txt 2>> /tmp/build.log.txt
 
 # Increate timeout for yarn install
 RUN "$YARN" config set httpTimeout 600000
 
-RUN "$YARN" install --immutable
+# Using cachi2 env vars:
+#   export YARN_ENABLE_GLOBAL_CACHE=false
+#   export YARN_ENABLE_IMMUTABLE_CACHE=false
+#   export YARN_ENABLE_MIRROR=true
+#   export YARN_GLOBAL_FOLDER=/cachi2/output/deps/yarn
+RUN echo "=== YARN INSTALL ==="; "$YARN" install --immutable | tee /tmp/yarn.install.log.txt 2>&1; \
+  for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then echo; echo $d; echo "======"; cat ${d}/build.log; fi; done
 
 # Stage 3 - Build packages
+FROM deps AS build
+
 COPY $EXTERNAL_SOURCE_NESTED ./
 
 RUN git config --global --add safe.directory ./
@@ -212,83 +241,111 @@ COPY packages/app/src/build-metadata.json ./packages/app/src/
 
 # hadolint ignore=DL3059,DL4006,SC2086
 RUN \
-  # Downstream only - relabel upstream + append build time into packages/app/src/build-metadata.json
+  # Append build time into packages/app/src/build-metadata.json
   now=$(date -u +%FT%TZ); sed -i packages/app/src/build-metadata.json -r \
-  -e "s/\"Last Commit\": \"(.+)\"/\"Upstream\": \"\1\", \"Build Time\": \"$now\"/" && \
-  cat packages/app/src/build-metadata.json; echo && \
-  "$YARN" build --filter=backend && \
-  # Downstream only - replace registry refs with cachito ones
-  cachitoRegistry=$(npm config get registry); echo "cachito registry: $cachitoRegistry"; \
-  for d in $(find . -name yarn.lock); do echo; echo "===== $d ====="; \
-  sed -i "$d" -r -e "s#(https://registry.yarnpkg.com|https://registry.npmjs.org)#${cachitoRegistry}#g"; \
-  grep resolved "$d" | head -1; echo "Total $(grep resolved $d | wc -l) resolution lines in $d"; \
-  done; \
-  # Already imported the packages above; need to `yarn install` on the `dist-dynamic` sub-folder for backend plugins
-  "$YARN" export-dynamic --filter=./dynamic-plugins/wrappers/* && \
-  "$YARN" copy-dynamic-plugins dist
+  -e "s/(\"Last Commit\": \"(.+)\")/\1, \"Build Time\": \"$now\"/" && \
+  cat packages/app/src/build-metadata.json; echo
 
-# Downstream only - debug
-# hadolint ignore=SC3010,DL4006
-RUN echo "=== Check for yarn.lock files that don't use cachito registry ===>"; \
-  for d in $(find . -name yarn.lock); do \
-  found=$(grep -E "yarnpkg.com|npmjs.org" "$d" | head -1); \
-  if [[ "$found" ]]; then echo;echo "$d : $found"; fi; \
-  done; \
-  echo "<=== Check for yarn.lock files that don't use cachito registry ==="
+RUN echo "=== YARN BUILD ==="; "$YARN" build --filter=backend \
+   >/tmp/yarn.build.log.txt 2>&1 \
+  || { for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then echo; echo $d; echo "======"; cat ${d}/build.log; fi; done } 
 
+# >/tmp/yarn.export.dynamic.log.txt 2>&1
+RUN echo "=== EXPORT DYNAMIC PLUGINS (with --no-install) ==="; "$YARN" export-dynamic --filter=./dynamic-plugins/wrappers/*; \
+  for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then echo; echo $d; echo "======"; cat ${d}/build.log; fi; done; \
+  for d in $(find . -name yarn-install.log); do echo; echo "===== EXPORT DYNAMIC PLUGINS: $d =====>"; cat ${d}; echo "<===== EXPORT DYNAMIC PLUGINS: $d ====="; done; 
+
+# Stan says we can  omit this step - https://redhat-internal.slack.com/archives/C08A1KD7TNY/p1741805639019149?thread_ts=1741720088.366109&cid=C08A1KD7TNY
+# RUN echo "=== DIST-DYNAMIC YARN INSTALLS ==="; for f in $(find ./dynamic-plugins/wrappers/ -maxdepth 2 -type d -name dist-dynamic); do g=${f#*/wrappers/}; echo " > $g"; g=${g//\//_}; \
+#   pushd $f >/dev/null; "$YARN" install --immutable >"/tmp/yarn.install.${g}.log.txt" 2>&1; popd >/dev/null; done
+
+#  >/tmp/yarn.copy.dynamic.log.txt 2>&1
+RUN echo "=== YARN COPY DYNAMIC PLUGINS in $(pwd) ==="; "$YARN" copy-dynamic-plugins dist
+# RUN ls -la dynamic-plugins/*
 # Downstream only - clean up dynamic plugins sources:
 # Only keep the dist sub-folder in the dynamic-plugins folder
-RUN find dynamic-plugins -maxdepth 1 -mindepth 1 -type d -not -name dist -exec rm -Rf {} \;
+RUN echo "=== DELETE DYNAMIC PLUGINS/* (except dist/) from $(pwd) ==="; find dynamic-plugins -maxdepth 1 -mindepth 1 -type d -not -name dist -exec rm -Rf {} \;
+# RUN ls -la dynamic-plugins/dist/*
 
 # Stage 4 - Build the actual backend image and install production dependencies
+FROM skeleton AS cleanup
 
-# Downstream only - files already exist, nothing to copy; next line for debugging only
-# RUN ls -l "$CONTAINER_SOURCE"/ "$CONTAINER_SOURCE"/packages/backend/dist/
-ENV TARBALL_PATH=./packages/backend/dist
+# Upstream only - copy the install dependencies from the build stage and context
+COPY --from=build $CONTAINER_SOURCE/yarn.lock \
+  $CONTAINER_SOURCE/package.json \
+  $CONTAINER_SOURCE/packages/backend/dist/skeleton.tar.gz \
+  $CONTAINER_SOURCE/packages/backend/dist/bundle.tar.gz \
+  ./
+ENV TARBALL_PATH=.
+
+# Increate timeout for yarn install
+RUN "$YARN" config set httpTimeout 600000
 
 RUN tar xzf "$TARBALL_PATH"/skeleton.tar.gz; tar xzf "$TARBALL_PATH"/bundle.tar.gz; \
   rm -f "$TARBALL_PATH"/skeleton.tar.gz "$TARBALL_PATH"/bundle.tar.gz
 
 # Copy app-config files needed in runtime
-# Upstream only
-# COPY $EXTERNAL_SOURCE_NESTED/app-config*.yaml ./
-# COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins.default.yaml ./
+COPY $EXTERNAL_SOURCE_NESTED/app-config*.yaml ./
+COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins.default.yaml ./
 
+#  >/tmp/yarn.workspaces.focus.log.txt 2>&1 
 # Install production dependencies
 # hadolint ignore=DL3059
-RUN "$YARN" workspaces focus --all --production && \
+RUN "$YARN" workspaces focus --all --production \
+|| { for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then echo; echo $d; echo "======"; cat ${d}/build.log; fi; done } 
+
+RUN \
   # delete all the nested .npmrc files and set default values
   find . -type f -name .npmrc -exec rm -Rf {} \; && \
   # reset npm config to the default registry and absolute path to .pem file
   npm config set registry=https://registry.npmjs.org/ && \
   npm config set cafile /opt/app-root/src/registry-ca.pem
 
+# dump console logs if they have errors
+RUN hadFail=0; for d in $(find /tmp -name "yarn*log*" || true) $(find /tmp/xfs-*  -name build.log || true); do \
+failsCheck="$(grep -E "Failed with errors|Failed to execute command|Failed to install|Failed to download|exit code 1" "$d")"; \
+if [[ $failsCheck != "" ]]; then \
+  echo "==== $d SUMMARY ===="; echo "$failsCheck"; \
+  echo "==== $d FULL ====";    cat "$d"; echo "==== $d ===="; \
+  (( hadFail = hadFail +1 )); \
+fi; \
+done; if [[ $hadFail -gt 0 ]]; then exit $hadFail; fi
+
 # Stage 5 - Build the runner image
-#@follow_tag(registry.access.redhat.com/ubi9/nodejs-22-minimal:1)
 # https://registry.access.redhat.com/ubi9/nodejs-22-minimal
 FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:9.5-1742929466 AS runner
 USER 0
 
-# Downstream sources
-ENV EXTERNAL_SOURCE_NESTED=$REMOTE_SOURCES/upstream1/app/distgit/containers/rhdh-hub
+# sources
+ENV EXTERNAL_SOURCE_NESTED=.
 
 ENV CONTAINER_SOURCE=/opt/app-root/src
 WORKDIR $CONTAINER_SOURCE/
 
 # Downstream only - install techdocs dependencies using cachito sources
-COPY $REMOTE_SOURCES/upstream2 $REMOTE_SOURCES_DIR/upstream2/
+# Using cachi2 env vars:
+#   export PIP_FIND_LINKS=/cachi2/output/deps/pip
+#   export PIP_NO_INDEX=true
 # hadolint ignore=DL3013,DL3041,SC2086
-RUN microdnf update --setopt=install_weak_deps=0 -y && \
-  microdnf install -y python3.11 python3.11-pip skopeo && \
+COPY "$EXTERNAL_SOURCE_NESTED"/docker/ ./docker
+RUN microdnf install -y python3.11 python3.11-pip python3.11-devel make cmake cpp gcc gcc-c++ skopeo 1>/dev/null 2>&1; \
   alternatives --install /usr/bin/python python /usr/bin/python3.11 1 && \
   alternatives --install /usr/bin/pip pip /usr/bin/pip3.11 1 && \
-  pip install mkdocs-techdocs-core~=1.3.3 && \
+  # fix ownership for pip install folder
+  mkdir -p /opt/app-root/src/.cache/pip && chown -R root:root /opt/app-root && \
+  # ls -ld /opt/ /opt/app-root /opt/app-root/src/ /opt/app-root/src/.cache /opt/app-root/src/.cache/pip || true; \
+  pushd "$EXTERNAL_SOURCE_NESTED"/docker/ >/dev/null && \
+  set -e; \
+  python3.11 -V; pip3.11 -V; \
+  pip install --no-cache-dir --upgrade pip setuptools pyyaml; \
+  pip install --no-cache-dir -r requirements.txt -r requirements-build.txt; mkdocs --version; \
+  popd >/dev/null; \
   microdnf clean all
 
-# Downstream only - copy from build, not cleanup stage
-COPY --from=build --chown=1001:1001 "$REMOTE_SOURCES_DIR"/ ./
-# Downstream only - copy embedded dynamic plugins from "$REMOTE_SOURCES_DIR"
-COPY --from=build "$REMOTE_SOURCES_DIR"/dynamic-plugins/dist/ ./dynamic-plugins/dist/
+# Upstream only - copy from cleanup stage
+COPY --from=cleanup --chown=1001:1001 $CONTAINER_SOURCE/ ./
+# Upstream only - copy embedded dynamic plugins from $CONTAINER_SOURCE
+COPY --from=build $CONTAINER_SOURCE/dynamic-plugins/dist/ ./dynamic-plugins/dist/
 
 # RHIDP-4220 - make Konflux preflight and EC checks happy - [check-container] Create a directory named /licenses and include all relevant licensing
 COPY $EXTERNAL_SOURCE/LICENSE /licenses/
@@ -299,20 +356,20 @@ COPY $EXTERNAL_SOURCE/catalog-entities/marketplace /marketplace/catalog-entities
 # Copy script to gather dynamic plugins; copy embedded dynamic plugins to root folder; fix permissions
 COPY docker/install-dynamic-plugins.py docker/install-dynamic-plugins.sh ./
 RUN chmod -R a+r ./dynamic-plugins/ ./install-dynamic-plugins.py; \
-  chmod -R a+rx ./install-dynamic-plugins.sh;
-
-# Downstream only - fix for https://issues.redhat.com/browse/RHIDP-728
-RUN mkdir /opt/app-root/src/.npm
-RUN chown -R 1001:1001 /opt/app-root/src/.npm
+  chmod -R a+rx ./install-dynamic-plugins.sh
 
 # The existence of the index.html.tmpl tells Backstage to take that file and load it into memory, inject the needed appConfig (instead of writing
 # it into a random *.chunk.js file, and then serve that file from memory so that we can set the readOnlyRootFilesystem: true option for
 # the container.
 RUN ln -s /opt/app-root/src/packages/app/dist/index.html /opt/app-root/src/packages/app/dist/index.html.tmpl
 
+# Downstream only - fix for https://issues.redhat.com/browse/RHIDP-728 + some cleanup of unneeded files
+RUN mkdir /opt/app-root/src/.npm; chown -R 1001:1001 /opt/app-root/src/.npm; rm -fr docker/
+
 # The fix-permissions script is important when operating in environments that dynamically use a random UID at runtime, such as OpenShift.
 # The upstream backstage image does not account for this and it causes the container to fail at runtime.
-RUN fix-permissions ./
+# suppress warnings about dereferencing symlinks 
+RUN fix-permissions ./ 2>&1 | grep -v "chgrp: cannot dereference" || true
 
 # Switch to nodejs user
 USER 1001
