@@ -17803,23 +17803,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@scalprum/core@npm:0.8.2, @scalprum/core@npm:^0.8.2":
-  version: 0.8.2
-  resolution: "@scalprum/core@npm:0.8.2"
+"@scalprum/core@npm:0.8.3, @scalprum/core@npm:^0.8.1, @scalprum/core@npm:^0.8.3":
+  version: 0.8.3
+  resolution: "@scalprum/core@npm:0.8.3"
   dependencies:
     "@openshift/dynamic-plugin-sdk": ^5.0.1
     tslib: ^2.6.2
   checksum: a7f71411c4ee02913f57fcba599f3ab491d98acb848f9e546dd40e90612468538fce81136f8c7fd0a7ae40b24772e31fbbb0b943e8d98f5510b37b9276c418b2
-  languageName: node
-  linkType: hard
-
-"@scalprum/core@npm:^0.8.1":
-  version: 0.8.1
-  resolution: "@scalprum/core@npm:0.8.1"
-  dependencies:
-    "@openshift/dynamic-plugin-sdk": ^5.0.1
-    tslib: ^2.6.2
-  checksum: 581631848bda2081dfe797c4c4326b442ce086d69117cc1eb74c18d345124825d87f570d09e8edaaa132d32a7720db0e728971834f1509aca9349aff21246a52
   languageName: node
   linkType: hard
 
