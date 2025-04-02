@@ -2,6 +2,8 @@
 
 # shellcheck source=.ibm/pipelines/utils.sh
 source "$DIR"/utils.sh
+# shellcheck source=.ibm/pipelines/install-methods/operator.sh
+source "$DIR"/install-methods/operator.sh
 
 gcloud_auth() {
   local service_account_name=$1
@@ -45,4 +47,5 @@ gcloud_ssl_cert_create() {
 cleanup_gke() {
   delete_tekton_pipelines
   uninstall_olm
+  delete_rhdh_operator
 }

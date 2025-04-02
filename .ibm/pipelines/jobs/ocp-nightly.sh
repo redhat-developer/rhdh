@@ -4,8 +4,6 @@ handle_ocp_nightly() {
   export NAME_SPACE="showcase-ci-nightly"
   export NAME_SPACE_RBAC="showcase-rbac-nightly"
   export NAME_SPACE_POSTGRES_DB="postgress-external-db-nightly"
-  export NAME_SPACE_K8S="showcase-k8s-ci-nightly"
-  export NAME_SPACE_RBAC_K8S="showcase-rbac-k8s-ci-nightly"
 
   oc_login
 

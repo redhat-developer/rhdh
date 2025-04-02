@@ -37,8 +37,10 @@ save_all_pod_logs(){
 
 droute_send() {
   if [[ "${OPENSHIFT_CI}" != "true" ]]; then return 0; fi
+  if [[ "${JOB_NAME}" == *rehearse* ]]; then return 0; fi
   local original_context
   original_context=$(oc config current-context) # Save original context
+  echo "Saving original context: $original_context"
   ( # Open subshell
     if [ -n "${PULL_NUMBER:-}" ]; then
       set +e
@@ -188,7 +190,8 @@ droute_send() {
     fi
   ) # Close subshell
   oc config use-context "$original_context" # Restore original context
-  if ! oc whoami 2>/dev/null; then
+  if ! kubectl auth can-i get pods >/dev/null 2>&1; then
+    echo "Failed to restore the context and authenticate with the cluster. Logging in again."
     oc_login
   fi
 }
@@ -578,10 +581,10 @@ apply_yaml_files() {
 
     # Create Deployment and Pipeline for Topology test.
     oc apply -f "$dir/resources/topology_test/topology-test.yaml"
-    if [[ "${IS_OPENSHIFT}" = "true" ]]; then
-      oc apply -f "$dir/resources/topology_test/topology-test-route.yaml"
-    else
+    if [[ -z "${IS_OPENSHIFT}" || "${IS_OPENSHIFT,,}" == "false" ]]; then
       kubectl apply -f "$dir/resources/topology_test/topology-test-ingress.yaml"
+    else
+      oc apply -f "$dir/resources/topology_test/topology-test-route.yaml"
     fi
 }
 
@@ -714,6 +717,11 @@ check_backstage_running() {
   local max_attempts=$4
   local wait_seconds=$5
 
+  if [ -z "${url}" ]; then
+    echo "Error: URL is not set. Please provide a valid URL."
+    return 1
+  fi
+
   echo "Checking if Backstage is up and running at ${url}"
 
   for ((i = 1; i <= max_attempts; i++)); do
@@ -742,12 +750,18 @@ install_olm() {
   if operator-sdk olm status > /dev/null 2>&1; then
     echo "OLM is already installed."
   else
+    echo "OLM is not installed. Installing..."
     operator-sdk olm install
   fi
 }
 
 uninstall_olm() {
-  operator-sdk olm uninstall
+  if operator-sdk olm status > /dev/null 2>&1; then
+    echo "OLM is installed. Uninstalling..."
+    operator-sdk olm uninstall
+  else
+    echo "OLM is not installed. Nothing to uninstall."
+  fi
 }
 
 # Installs the advanced-cluster-management OCP Operator
@@ -1071,7 +1085,6 @@ force_delete_namespace() {
 oc_login() {
   oc login --token="${K8S_CLUSTER_TOKEN}" --server="${K8S_CLUSTER_URL}" --insecure-skip-tls-verify=true
   echo "OCP version: $(oc version)"
-  export K8S_CLUSTER_ROUTER_BASE=$(oc get route console -n openshift-console -o=jsonpath='{.spec.host}' | sed 's/^[^.]*\.//')
 }
 
 is_openshift() {
@@ -1079,7 +1092,9 @@ is_openshift() {
 }
 
 detect_ocp_and_set_env_var() {
-  if [[ "${IS_OPENSHIFT}" = "" ]]; then
+  echo "Detecting OCP or K8s and populating IS_OPENSHIFT variable..."
+  if [[ "${IS_OPENSHIFT}" == "" ]]; then
     IS_OPENSHIFT=$(is_openshift && echo 'true' || echo 'false')
   fi
+  echo IS_OPENSHIFT: "${IS_OPENSHIFT}"
 }

@@ -28,7 +28,6 @@ test.describe("Verify Redis Cache DB", () => {
     console.log("Waiting for port-forward to be ready...");
     await new Promise<void>((resolve, reject) => {
       portForward.stdout.on("data", (data) => {
-        console.log(`Port-forward stdout: ${data.toString()}`);
         if (data.toString().includes("Forwarding from 127.0.0.1:6379")) {
           resolve();
         }
@@ -43,6 +42,10 @@ test.describe("Verify Redis Cache DB", () => {
 
   test("Open techdoc and verify the cache generated in redis db", async () => {
     test.setTimeout(120_000);
+
+    portForward.stdout.on("data", (data) => {
+      console.log(`Port-forward stdout: ${data.toString()}`);
+    });
 
     await uiHelper.openSidebarButton("Favorites");
     await uiHelper.openSidebar("Docs");
@@ -76,7 +79,9 @@ test.describe("Verify Redis Cache DB", () => {
   });
 
   test.afterEach(() => {
-    redis.disconnect();
+    if (redis?.status === "ready") {
+      redis.disconnect();
+    }
     console.log("Killing port-forward process with ID:", portForward.pid);
     portForward.kill("SIGKILL");
     console.log("Killing remaining port-forward process.");
