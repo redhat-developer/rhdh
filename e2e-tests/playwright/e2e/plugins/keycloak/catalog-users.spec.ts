@@ -60,6 +60,8 @@ test.describe("Test Keycloak plugin", () => {
   test("Test keycloak metrics with failure counters", async () => {
     const kubeClient = new KubeClient();
     let metricLines: string[];
+    // todo remove this log
+    console.log(`===== base url ${baseRHDHURL}`);
 
     if (isRunningInKubernetes()) {
       // for Openshift ci
