@@ -1,7 +1,6 @@
 # syntax=docker/dockerfile:1.14-labs
 
 # THIS IS USED BY Konflux builds >= 1.6
-# TODO verify this works with Cachi2 once we enable that, or switch to use ../.rhdh/docker/Dockerfile as input
 #
 # Copyright (c) 2023-2024 Red Hat, Inc.
 # Licensed under the Apache License, Version 2.0 (the "License");
