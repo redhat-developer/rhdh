@@ -6,6 +6,7 @@ import * as yaml from "js-yaml";
 export class KubeClient {
   coreV1Api: k8s.CoreV1Api;
   appsApi: k8s.AppsV1Api;
+  k8sCustomAPI: k8s.CustomObjectsApi;
   kc: k8s.KubeConfig;
 
   constructor() {
@@ -37,6 +38,7 @@ export class KubeClient {
 
       this.appsApi = this.kc.makeApiClient(k8s.AppsV1Api);
       this.coreV1Api = this.kc.makeApiClient(k8s.CoreV1Api);
+      this.k8sCustomAPI = this.kc.makeApiClient(k8s.CustomObjectsApi);
     } catch (e) {
       LOGGER.info(e);
       throw e;
@@ -420,6 +422,39 @@ export class KubeClient {
       console.error(
         `Error retrieving events for deployment ${deploymentName}: ${error}`,
       );
+    }
+  }
+
+  async createRoute(namespace: string, body: k8s.KubernetesObject) {
+    try {
+      const response = await this.k8sCustomAPI.createNamespacedCustomObject(
+        "route.openshift.io",
+        "v1",
+        namespace,
+        "routes",
+        body,
+      );
+      return response.body;
+    } catch (error) {
+      console.error("Error creating Route:", error);
+    }
+  }
+
+  async getRoute(namespace, routeName) {
+    try {
+      const response = await this.k8sCustomAPI.getNamespacedCustomObject(
+        "route.openshift.io",
+        "v1",
+        namespace,
+        "routes",
+        routeName,
+      );
+      return response.body;
+    } catch (error) {
+      if (error.statusCode === 404) {
+        return null;
+      }
+      throw error;
     }
   }
 }
