@@ -3,6 +3,7 @@ import Keycloak from "../../../utils/keycloak/keycloak";
 import { UIhelper } from "../../../utils/ui-helper";
 import { Common } from "../../../utils/common";
 import { test, expect } from "@playwright/test";
+import { KubeClient } from "../../../utils/kube-client";
 
 test.describe.skip("Test Keycloak plugin", () => {
   // Skipping this test due to https://issues.redhat.com/browse/RHIDP-6844
@@ -10,6 +11,9 @@ test.describe.skip("Test Keycloak plugin", () => {
   let keycloak: Keycloak;
   let common: Common;
   let token: string;
+
+  const namespace = process.env.NAME_SPACE_RUNTIME || "showcase-runtime";
+  const baseRHDHURL: string = process.env.BASE_URL;
 
   test.beforeAll(async () => {
     keycloak = new Keycloak();
@@ -28,9 +32,11 @@ test.describe.skip("Test Keycloak plugin", () => {
   }) => {
     const keycloakUsers = await keycloak.getUsers(token);
     const backStageUsersLocator = await CatalogUsersPO.getListOfUsers(page);
+    await backStageUsersLocator.first().waitFor({ state: "visible" });
     const backStageUsersCount = await backStageUsersLocator.count();
 
     expect(keycloakUsers.length).toBeGreaterThan(0);
+    expect(backStageUsersCount).toBeGreaterThan(0);
 
     for (let i = 0; i < backStageUsersCount; i++) {
       const backStageUser = backStageUsersLocator.nth(i);
@@ -51,4 +57,68 @@ test.describe.skip("Test Keycloak plugin", () => {
       }
     }
   });
+
+  test("Test keycloak metrics with failure counters", async () => {
+    const kubeClient = new KubeClient();
+    let metricLines: string[];
+
+    if (isRunningInKubernetes()) {
+      // for Openshift ci
+      const internalNetworkMetricsURL = `http://backstage-developer-hub.${namespace}.svc.cluster.local:9464/metrics`;
+      metricLines = await fetchMetrics(internalNetworkMetricsURL);
+    } else {
+      // just for local development
+      const serviceName = "rhdh-metrics";
+      const host: string = new URL(baseRHDHURL).hostname;
+      const domain = host.split(".").slice(1).join(".");
+      const metricsEndpointURL = `https://${serviceName}.${domain}/metrics`;
+      const route = {
+        apiVersion: "route.openshift.io/v1",
+        kind: "Route",
+        metadata: { name: serviceName, namespace },
+        spec: {
+          host: `${serviceName}.${domain}`,
+          to: { kind: "Service", name: "backstage-developer-hub" },
+          port: { targetPort: "http-metrics" },
+          tls: { termination: "edge" },
+        },
+      };
+
+      const metricsRoute = await kubeClient.getRoute(
+        namespace,
+        route.metadata.name,
+      );
+      if (!metricsRoute) {
+        await kubeClient.createRoute(namespace, route);
+      }
+      metricLines = await fetchMetrics(metricsEndpointURL);
+    }
+
+    const metricLineStartWith =
+      'backend_keycloak_fetch_task_failure_count_total{taskInstanceId="';
+    const metricLineEndsWith = '"} 1';
+    const isContainMetricFailureCounter = metricLines.find(
+      (line) =>
+        line.startsWith(metricLineStartWith) &&
+        line.endsWith(metricLineEndsWith),
+    );
+    expect(isContainMetricFailureCounter).toBeTruthy();
+  });
 });
+
+async function fetchMetrics(metricsEndpoitUrl: string): Promise<string[]> {
+  const response = await fetch(metricsEndpoitUrl, {
+    method: "GET",
+    headers: { "Content-Type": "plain/text" },
+  });
+
+  if (response.status !== 200)
+    throw new Error("Failed to retrieve metrics from RHDH");
+  const data = await response.text();
+
+  return data.split("\n");
+}
+
+function isRunningInKubernetes() {
+  return process.env.KUBERNETES_SERVICE_HOST !== undefined;
+}
