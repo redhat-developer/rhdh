@@ -47,6 +47,15 @@ jobs:
         id: check-image
         uses: ./.github/actions/check-image-and-changes
 
+      - name: Debug outputs
+        run: |
+              echo "Image exists: ${{ steps.check-image.outputs.image_exists }}"
+              echo "Relevant changes: ${{ steps.check-image.outputs.relevant_changes }}"
+              echo "SHORT_SHA: ${{ env.SHORT_SHA }}"
+              echo "PR Number: ${{ github.event.number }}"
+              echo "Base Tag: pr-${{ github.event.number }}"
+              echo "Commit Tag: pr-${{ github.event.number }}-${{ env.SHORT_SHA }}"
+
       - name: Check if build should be skipped
         run: |
           if [[ "${{ steps.check-image.outputs.relevant_changes }}" == "false" && "${{ steps.check-image.outputs.image_exists }}" == "true" ]]; then
