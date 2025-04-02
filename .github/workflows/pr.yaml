@@ -98,7 +98,7 @@ jobs:
 
   test:
     needs: check-pr-comments
-    name: Test with Node.js ${{ matrix.node-version }}
+    name: "Test with Node.js ${{ matrix.node-version }}"
     if: "!contains(github.event.pull_request.title, '[skip e2e]') && !needs.check-pr-comments.outputs.skip-test"
     runs-on: ubuntu-latest
     strategy:
