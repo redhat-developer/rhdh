@@ -11,6 +11,7 @@ Cython==0.29.37
 editables==0.5
 flit_core==3.9.0
 ghp-import==2.1.0
+greenlet==3.1.1
 hatch-nodejs-version==0.3.2
 hatch-requirements-txt
 hatch-vcs==0.4.0
@@ -31,7 +32,9 @@ packaging==24.1
 pathspec==0.12.1
 plantuml-markdown @ https://github.com/mikitex70/plantuml-markdown/archive/fcf62aa930708368ec1daaad8b5b5dbe1d1b2014.zip#cachito_hash=sha256:a487c2312a53fe47a0947e8624290b2c8ea51e373140d02950531966b1db5caa
 platformdirs==3.11.0
+playwright==1.49.1
 pluggy==1.5.0
+pyee==12.0.0
 pygments==2.17.2
 pymdown-extensions==10.3.1
 python-dateutil>=2.9.0.post0
