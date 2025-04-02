@@ -15,50 +15,73 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Get the last commit short SHA of the PR
+    - name: Get the last commit short SHA
       id: get-sha
-      uses: ./.github/actions/get-sha  # Use existing action
+      uses: ./.github/actions/get-sha
 
-    # Ensure that SHORT_SHA is available for subsequent steps in this context
-    - name: Export SHORT_SHA
+    - name: Check for relevant changes
+      id: changes
       shell: bash
       run: |
+        # Ensure that SHORT_SHA is available for subsequent steps in this context
         echo "SHORT_SHA=${SHORT_SHA:-${{ steps.get-sha.outputs.short_sha }}}" >> $GITHUB_ENV
-        echo "Using SHORT_SHA: ${SHORT_SHA:-${{ steps.get-sha.outputs.short_sha }}}"
 
-    - name: Check if Image Already Exists
+        # Get base commit for comparison
+        BASE_COMMIT=$(git merge-base ${{ github.event.pull_request.base.sha }} HEAD)
+        echo "BASE_COMMIT=$BASE_COMMIT"
+
+        # Get list of changed files
+        CHANGED_FILES=$(git diff --name-only "$BASE_COMMIT" HEAD)
+        echo "Changed files:"
+        echo "$CHANGED_FILES"
+
+        # Flag to track if we found any relevant changes
+        RELEVANT_CHANGES=false
+
+        # Check each file to see if it's in a non-essential directory
+        while IFS= read -r file; do
+          if [[ -n "$file" ]]; then
+            # If file is NOT in one of the non-essential directories, mark as relevant
+            if ! [[ "$file" =~ ^(e2e|e2e-tests|doc|docs|\.ibm)/ ]]; then
+              echo "Relevant change detected: $file"
+              RELEVANT_CHANGES=true
+              break
+            fi
+          fi
+        done <<< "$CHANGED_FILES"
+
+        if [[ "$RELEVANT_CHANGES" == "true" ]]; then
+          echo "Relevant changes detected outside of non-essential directories."
+          echo "relevant=true" >> $GITHUB_OUTPUT
+        else
+          echo "Changes detected only in non-essential directories (e2e, e2e-tests, doc, docs, .ibm)."
+          echo "relevant=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Check if Docker image exists
       id: image-check
       shell: bash
       run: |
-        IMAGE_TAG_COMMIT="pr-${{ github.event.number }}-${{ env.SHORT_SHA }}"
+        # First check the PR base tag (most important for skipping builds)
+        IMAGE_TAG_PR="pr-${{ github.event.number }}"
+        IMAGE_NAME_PR="${{ env.REGISTRY }}/rhdh-community/rhdh:${IMAGE_TAG_PR}"
+
+        IMAGE_EXISTS_PR=$(curl -s "https://quay.io/api/v1/repository/rhdh-community/rhdh/tag/" | jq -r --arg tag "$IMAGE_TAG_PR" '.tags[] | select(.name == $tag) | .name')
+
+        # For safety, also check commit-specific tag
+        IMAGE_TAG_COMMIT="pr-${{ github.event.number }}-${SHORT_SHA}"
         IMAGE_NAME_COMMIT="${{ env.REGISTRY }}/rhdh-community/rhdh:${IMAGE_TAG_COMMIT}"
 
         IMAGE_EXISTS_COMMIT=$(curl -s "https://quay.io/api/v1/repository/rhdh-community/rhdh/tag/" | jq -r --arg tag "$IMAGE_TAG_COMMIT" '.tags[] | select(.name == $tag) | .name')
 
-        if [ -n "$IMAGE_EXISTS_COMMIT" ]; then
+        # Set image_exists to true if PR tag exists (primary) or commit tag exists (secondary)
+        if [ -n "$IMAGE_EXISTS_PR" ]; then
+          echo "Image $IMAGE_NAME_PR already exists (PR base tag)."
+          echo "exists=true" >> $GITHUB_OUTPUT
+        elif [ -n "$IMAGE_EXISTS_COMMIT" ]; then
           echo "Image $IMAGE_NAME_COMMIT already exists."
           echo "exists=true" >> $GITHUB_OUTPUT
         else
-          echo "Image $IMAGE_NAME_COMMIT does not exist."
+          echo "Image does not exist (checked both $IMAGE_NAME_PR and $IMAGE_NAME_COMMIT)."
           echo "exists=false" >> $GITHUB_OUTPUT
-        fi
-
-    - name: Determine Changed Files
-      id: changes
-      shell: bash
-      run: |
-        BASE_COMMIT=${{ github.event.pull_request.base.sha }}
-        HEAD_COMMIT=${{ github.event.pull_request.head.sha }}
-
-        CHANGED_FILES=$(git diff --name-only "$BASE_COMMIT" "$HEAD_COMMIT")
-
-        echo "Changed files:"
-        echo "$CHANGED_FILES"
-
-        if echo "$CHANGED_FILES" | grep -qvE '^(e2e-tests/|\.ibm/)'; then
-          echo "Changes detected outside the e2e-tests or .ibm folders. Build required."
-          echo "relevant=true" >> $GITHUB_OUTPUT
-        else
-          echo "No relevant changes detected."
-          echo "relevant=false" >> $GITHUB_OUTPUT
         fi
