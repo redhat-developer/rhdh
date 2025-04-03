@@ -70,6 +70,7 @@ test.describe("Test Keycloak plugin", () => {
       "app.kubernetes.io/name=backstage",
     );
     expect(service.length).toBe(1);
+    console.log(`Service: ${JSON.stringify(service)}`);
     const rhdhServiceName = service[0].metadata.name;
 
     if (isRunningInKubernetes()) {
