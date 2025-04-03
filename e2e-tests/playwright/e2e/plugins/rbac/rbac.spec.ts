@@ -8,13 +8,13 @@ import {
 } from "../../../support/pageObjects/page-obj";
 import { Common, setupBrowser } from "../../../utils/common";
 import { UIhelper } from "../../../utils/ui-helper";
-import fs from "fs/promises";
 import { RbacPo } from "../../../support/pageObjects/rbac-po";
 import { RhdhAuthApiHack } from "../../../support/api/rhdh-auth-api-hack";
 import RhdhRbacApi from "../../../support/api/rbac-api";
 import { RbacConstants } from "../../../data/rbac-constants";
 import { Policy } from "../../../support/api/rbac-api-structures";
 import { CatalogImport } from "../../../support/pages/catalog-import";
+import { downloadAndReadFile } from "../../../utils/helper";
 
 /*
     Note that:
@@ -226,7 +226,10 @@ test.describe.serial("Test RBAC", () => {
 
     test("Should download the user list", async ({ page }) => {
       await page.locator('a:has-text("Download User List")').click();
-      const fileContent = await downloadAndReadFile(page);
+      const fileContent = await downloadAndReadFile(
+        page,
+        'a:has-text("Download User List")',
+      );
       const lines = fileContent.trim().split("\n");
 
       const header = "userEntityRef,displayName,email,lastAuthTime";
@@ -242,25 +245,6 @@ test.describe.serial("Test RBAC", () => {
         throw new Error("Not all users info are valid");
       }
     });
-
-    async function downloadAndReadFile(
-      page: Page,
-    ): Promise<string | undefined> {
-      const [download] = await Promise.all([
-        page.waitForEvent("download"),
-        page.locator('a:has-text("Download User List")').click(),
-      ]);
-
-      const filePath = await download.path();
-
-      if (filePath) {
-        const fileContent = await fs.readFile(filePath, "utf-8");
-        return fileContent;
-      } else {
-        console.error("Download failed or path is not available");
-        return undefined;
-      }
-    }
 
     test("View details of a role", async ({ page }) => {
       const uiHelper = new UIhelper(page);
