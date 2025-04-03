@@ -457,4 +457,27 @@ export class KubeClient {
       throw error;
     }
   }
+
+  async getServiceByLabel(
+    namespace: string,
+    labelSelector: string,
+  ): Promise<k8s.V1Service[]> {
+    try {
+      const response = await this.coreV1Api.listNamespacedService(
+        namespace,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        labelSelector,
+      );
+      return response.body.items;
+    } catch (error) {
+      console.error(
+        `Error fetching services with label ${labelSelector}:`,
+        error,
+      );
+      throw error;
+    }
+  }
 }
