@@ -291,9 +291,6 @@ export class Common {
       try {
         await popup.locator("#login_field").click({ timeout: 5000 });
         await popup.locator("#login_field").fill(username, { timeout: 5000 });
-        if (await popup.locator("#wcpConsentBannerCtrl")) {
-          await popup.click('button:has-text("Reject")', { timeout: 5000 });
-        }
         await popup.locator("#password").click({ timeout: 5000 });
         await popup.locator("#password").fill(password, { timeout: 5000 });
         await popup.locator("[type='submit']").click({ timeout: 5000 });
