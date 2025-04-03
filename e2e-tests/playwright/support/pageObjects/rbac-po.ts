@@ -51,9 +51,13 @@ export class RbacPo extends PageObject {
     numUsers: number,
     numGroups: number,
   ): string => {
-    const usersText = `${numUsers} ${numUsers === 1 ? "user" : "users"}`;
-    const groupsText = `${numGroups} ${numGroups === 1 ? "group" : "groups"}`;
-    return `(${groupsText}, ${usersText}|${usersText}, ${groupsText})`;
+    const usersText =
+      numUsers === 0 ? "" : `${numUsers} ${numUsers === 1 ? "user" : "users"}`;
+    const groupsText =
+      numGroups === 0
+        ? ""
+        : `${numGroups} ${numGroups === 1 ? "group" : "groups"}`;
+    return `(${groupsText}${numGroups === 0 ? "" : ", "}${usersText}|${usersText}${numUsers === 0 ? "" : ", "}${groupsText})`;
   };
 
   public regexpShortUsersAndGroups = (
