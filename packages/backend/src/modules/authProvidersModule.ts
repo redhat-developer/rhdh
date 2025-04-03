@@ -183,8 +183,7 @@ function getAuthProviderFactory(providerId: string): AuthProviderFactory {
     case 'oidc':
       return createOAuthProviderFactory({
         authenticator: oidcAuthenticator,
-        signInResolver:
-          oidcSignInResolvers.emailLocalPartMatchingUserEntityName(),
+        signInResolver: rhdhSignInResolvers.oidcSubClaimMatchingIdPUserId(),
         signInResolverFactories: {
           oidcSubClaimMatchingKeycloakUserId:
             rhdhSignInResolvers.oidcSubClaimMatchingKeycloakUserId,
