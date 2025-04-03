@@ -1,10 +1,5 @@
 import { APIResponse, Page, expect } from "@playwright/test";
 import { UIhelper } from "../../utils/ui-helper";
-import {
-  DELETE_ROLE_COMPONENTS,
-  SEARCH_OBJECTS_COMPONENTS,
-  ROLES_PAGE_COMPONENTS,
-} from "../pageObjects/page-obj";
 import { Policy, Role } from "../api/rbac-api-structures";
 
 export class Roles {
@@ -53,24 +48,6 @@ export class Roles {
 
   static getPermissionPoliciesListColumnsText() {
     return ["Plugin", "Permission", "Policies"];
-  }
-
-  async deleteRole(name: string) {
-    await this.page.goto("/rbac");
-    await this.uiHelper.searchInputAriaLabel(name);
-    const button = this.page.locator(ROLES_PAGE_COMPONENTS.deleteRole(name));
-    await button.waitFor({ state: "visible" });
-    await button.click();
-    await this.uiHelper.verifyHeading("Delete this role?");
-    await this.page.locator(DELETE_ROLE_COMPONENTS.roleName).click();
-    await this.page.fill(DELETE_ROLE_COMPONENTS.roleName, name);
-    await this.uiHelper.clickButton("Delete");
-
-    await this.uiHelper.verifyText(`Role ${name} deleted successfully`);
-    await this.page
-      .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)
-      .fill(name);
-    await this.uiHelper.verifyHeading("All roles (0)");
   }
 }
 
