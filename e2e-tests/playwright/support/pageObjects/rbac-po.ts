@@ -1,7 +1,10 @@
 import { expect, Locator, Page } from "@playwright/test";
 import { PageObject, PagesUrl } from "./page";
-import { SEARCH_OBJECTS_COMPONENTS } from "./page-obj";
-
+import {
+  DELETE_ROLE_COMPONENTS,
+  SEARCH_OBJECTS_COMPONENTS,
+  ROLES_PAGE_COMPONENTS,
+} from "../pageObjects/page-obj";
 type PermissionPolicyType = "none" | "anyOf" | "not";
 
 export class RbacPo extends PageObject {
@@ -319,5 +322,23 @@ export class RbacPo extends PageObject {
       await this.uiHelper.clickButton("Create");
       await this.uiHelper.verifyText(`role:default/${name}`);
     }
+  }
+
+  async deleteRole(name: string) {
+    await this.page.goto("/rbac");
+    await this.uiHelper.searchInputAriaLabel(name);
+    const button = this.page.locator(ROLES_PAGE_COMPONENTS.deleteRole(name));
+    await button.waitFor({ state: "visible" });
+    await button.click();
+    await this.uiHelper.verifyHeading("Delete this role?");
+    await this.page.locator(DELETE_ROLE_COMPONENTS.roleName).click();
+    await this.page.fill(DELETE_ROLE_COMPONENTS.roleName, name);
+    await this.uiHelper.clickButton("Delete");
+
+    await this.uiHelper.verifyText(`Role ${name} deleted successfully`);
+    await this.page
+      .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)
+      .fill(name);
+    await this.uiHelper.verifyHeading("All roles (0)");
   }
 }
