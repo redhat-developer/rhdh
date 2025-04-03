@@ -311,3 +311,9 @@ upstream:
       - name: http-metrics
         port: 9464
         targetPort: 9464
+
+  metrics:
+    serviceMonitor:
+      enabled: true
+      path: /metrics
+      port: http-metrics
