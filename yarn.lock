@@ -21510,12 +21510,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:22.13.14":
-  version: 22.13.14
-  resolution: "@types/node@npm:22.13.14"
+"@types/node@npm:22.13.17":
+  version: 22.13.17
+  resolution: "@types/node@npm:22.13.17"
   dependencies:
     undici-types: ~6.20.0
-  checksum: 8c5a3c1ec085bc320d6b19915406920e41bc482aed24098bf9858957ace22b762b50594a2805766b2d09966ea457dfad847b51a2d10dd4c1931955f80de598ce
+  checksum: 671e5120fa7f8ce82e7bc2652c3283be14e28a4c9558705553991902961cf0f1cba8789f9940c64063112b27010a5cd5e8d9bdd154564e68ca05c7cbce181280
   languageName: node
   linkType: hard
 
@@ -21674,12 +21674,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-dom@npm:18.3.5":
-  version: 18.3.5
-  resolution: "@types/react-dom@npm:18.3.5"
+"@types/react-dom@npm:18.3.6":
+  version: 18.3.6
+  resolution: "@types/react-dom@npm:18.3.6"
   peerDependencies:
     "@types/react": ^18.0.0
-  checksum: 95c757684f71e761515c5a11299e5feec550c72bb52975487f360e6f0d359b26454c26eaf2ce45dd22748205aa9b2c2fe0abe7005ebcbd233a7615283ac39a7d
+  checksum: 03434d70eb3213413514303c684fe56672a0e5ac6629be92a34d521f926f9e9eb89dcabf9ff485df485a11244e0f4b47dbb6168f7a6a0b664518c9bafb25711d
   languageName: node
   linkType: hard
 
@@ -23139,9 +23139,9 @@ __metadata:
     "@testing-library/react": 14.3.1
     "@testing-library/react-hooks": 8.0.1
     "@testing-library/user-event": 14.6.1
-    "@types/node": 22.13.14
+    "@types/node": 22.13.17
     "@types/react": 18.3.20
-    "@types/react-dom": 18.3.5
+    "@types/react-dom": 18.3.6
     lodash: 4.17.21
     prettier: 3.5.3
     react: 18.3.1
@@ -28343,7 +28343,7 @@ __metadata:
     "@kubernetes/client-node": 0.22.3
     "@microsoft/microsoft-graph-client": 3.0.7
     "@playwright/test": 1.51.1
-    "@types/node": 22.13.14
+    "@types/node": 22.13.17
     "@typescript-eslint/eslint-plugin": 6.21.0
     "@typescript-eslint/parser": 6.21.0
     eslint: 8.57.1
