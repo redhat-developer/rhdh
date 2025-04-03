@@ -11,7 +11,7 @@ test.describe("Test Keycloak plugin", () => {
   let common: Common;
   let token: string;
 
-  const namespace = process.env.NAME_SPACE_RUNTIME || "showcase-runtime";
+  const namespace = process.env.NAME_SPACE;
   const baseRHDHURL: string = process.env.BASE_URL;
 
   test.beforeAll(async () => {
