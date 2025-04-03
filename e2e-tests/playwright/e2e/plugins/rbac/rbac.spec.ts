@@ -293,7 +293,6 @@ test.describe.serial("Test RBAC", () => {
     test("Create and edit a role from the roles list page", async ({
       page,
     }) => {
-      const rolesHelper = new Roles(page);
       const uiHelper = new UIhelper(page);
 
       await uiHelper.clickButton("Create");
@@ -359,13 +358,12 @@ test.describe.serial("Test RBAC", () => {
       await usersAndGroupsLocator.waitFor();
       await expect(usersAndGroupsLocator).toBeVisible();
 
-      await rolesHelper.deleteRole("role:default/test-role");
+      await rbacPo.deleteRole("role:default/test-role");
     });
 
     test("Edit users and groups and update policies of a role from the overview page", async ({
       page,
     }) => {
-      const rolesHelper = new Roles(page);
       const uiHelper = new UIhelper(page);
       const rbacPo = new RbacPo(page);
       await rbacPo.createRole("test-role1", [
@@ -420,15 +418,15 @@ test.describe.serial("Test RBAC", () => {
       );
       await uiHelper.verifyHeading("Permission Policies (2)");
 
-      await rolesHelper.deleteRole("role:default/test-role1");
+      await rbacPo.deleteRole("role:default/test-role1");
     });
 
     test("Create a role with a permission policy per resource type and verify that the only authorized users can access specific resources.", async ({
       page,
     }) => {
-      const rolesHelper = new Roles(page);
       const uiHelper = new UIhelper(page);
-      await new RbacPo(page).createRole(
+      const rbacPo = new RbacPo(page);
+      await rbacPo.createRole(
         "test-role1",
         ["Guest User", "rhdh-qe", "Backstage"],
         "anyOf",
@@ -441,7 +439,7 @@ test.describe.serial("Test RBAC", () => {
         .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)
         .fill("test-role1");
       await uiHelper.verifyHeading("All roles (1)");
-      await rolesHelper.deleteRole("role:default/test-role1");
+      await rbacPo.deleteRole("role:default/test-role1");
     });
   });
 
