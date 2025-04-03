@@ -140,6 +140,10 @@ export class RbacPo extends PageObject {
     await this.uiHelper.verifyLink(role);
   }
 
+  public async isRoleListed(role: string) {
+    return await this.uiHelper.isLinkVisible(role);
+  }
+
   private async clickOnRoleLink(role: string) {
     await this.uiHelper.clickLink(role);
   }
