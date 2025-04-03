@@ -12,7 +12,7 @@ test.describe.skip("Test Keycloak plugin", () => {
   let common: Common;
   let token: string;
 
-  const namespace = process.env.NAME_SPACE;
+  const namespace = process.env.NAME_SPACE || "showcase-ci-nightly";
   const baseRHDHURL: string = process.env.BASE_URL;
 
   test.beforeAll(async () => {
@@ -62,7 +62,9 @@ test.describe.skip("Test Keycloak plugin", () => {
     const kubeClient = new KubeClient();
     let metricLines: string[];
     // todo remove this log
-    console.log(`===== base url ${baseRHDHURL}`);
+    console.log(
+      `===== base url ${baseRHDHURL} and namespace ${process.env.NAME_SPACE}`,
+    );
 
     if (isRunningInKubernetes()) {
       // for Openshift ci
