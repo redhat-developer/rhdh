@@ -66,9 +66,16 @@ test.describe.skip("Test Keycloak plugin", () => {
       `===== base url ${baseRHDHURL} and namespace ${process.env.NAME_SPACE}`,
     );
 
+    const service = await kubeClient.getServiceByLabel(
+      namespace,
+      "app.kubernetes.io/name=backstage",
+    );
+    expect(service.length).toBe(1);
+    const rhdhServiceName = service[0].metadata.name;
+
     if (isRunningInKubernetes()) {
       // for Openshift ci
-      const internalNetworkMetricsURL = `http://backstage-developer-hub.${namespace}.svc.cluster.local:9464/metrics`;
+      const internalNetworkMetricsURL = `http://${rhdhServiceName}.${namespace}.svc.cluster.local:9464/metrics`;
       metricLines = await fetchMetrics(internalNetworkMetricsURL);
     } else {
       // just for local development
@@ -82,7 +89,7 @@ test.describe.skip("Test Keycloak plugin", () => {
         metadata: { name: serviceName, namespace },
         spec: {
           host: `${serviceName}.${domain}`,
-          to: { kind: "Service", name: "backstage-developer-hub" },
+          to: { kind: "Service", name: rhdhServiceName },
           port: { targetPort: "http-metrics" },
           tls: { termination: "edge" },
         },
