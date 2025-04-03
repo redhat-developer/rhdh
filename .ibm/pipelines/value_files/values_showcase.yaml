@@ -304,3 +304,10 @@ upstream:
       - redis-secret
   ingress:
     host: '{{ .Values.global.host }}'
+  
+  # Enable metrics
+  service:
+    extraPorts:
+      - name: http-metrics
+        port: 9464
+        targetPort: 9464
