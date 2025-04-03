@@ -305,13 +305,14 @@ upstream:
   ingress:
     host: '{{ .Values.global.host }}'
   
-  # Enable metrics
-  service:
-    extraPorts:
-      - name: http-metrics
-        port: 9464
-        targetPort: 9464
 
+  # service:
+  #   extraPorts:
+  #     - name: http-metrics
+  #       port: 9464
+  #       targetPort: 9464
+
+  # Enable metrics
   metrics:
     serviceMonitor:
       enabled: true
