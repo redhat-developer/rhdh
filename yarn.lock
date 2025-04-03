@@ -3627,9 +3627,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-nexus-repository-manager@npm:1.12.0":
-  version: 1.12.0
-  resolution: "@backstage-community/plugin-nexus-repository-manager@npm:1.12.0"
+"@backstage-community/plugin-nexus-repository-manager@npm:1.13.0":
+  version: 1.13.0
+  resolution: "@backstage-community/plugin-nexus-repository-manager@npm:1.13.0"
   dependencies:
     "@backstage/catalog-model": ^1.7.3
     "@backstage/core-components": ^0.16.3
@@ -3644,7 +3644,7 @@ __metadata:
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.0.0
-  checksum: f5081f9fb62d08397ffceaa8c5af27fe226a1cbf81710c429c2cee119090547cf62671f335bd86640c4621862ce334d1cccba2660eb0c8419a8c108f72eb8539
+  checksum: a8d3191b5d076d178792e1901467cc6466757889ee4ea0fa7dfaa03936849ed55afa0a9fd263f04e0214d8b2dc10c798e8cb686c04d8eb6e826685bf84a8e5b0
   languageName: node
   linkType: hard
 
@@ -24149,7 +24149,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backstage-community-plugin-nexus-repository-manager@workspace:dynamic-plugins/wrappers/backstage-community-plugin-nexus-repository-manager"
   dependencies:
-    "@backstage-community/plugin-nexus-repository-manager": 1.12.0
+    "@backstage-community/plugin-nexus-repository-manager": 1.13.0
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.3.1
     "@mui/material": 5.17.1
