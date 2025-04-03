@@ -307,11 +307,12 @@ test.describe.serial("Test RBAC", () => {
 
       const rbacPo = new RbacPo(page);
       const testUser = "Jonathon Page";
-      await rbacPo.createRole("test-role", [
-        RbacPo.rbacTestUsers.guest,
-        RbacPo.rbacTestUsers.tara,
-        RbacPo.rbacTestUsers.backstage,
-      ]);
+      await rbacPo.createRole(
+        "test-role",
+        [RbacPo.rbacTestUsers.guest, RbacPo.rbacTestUsers.tara],
+        [RbacPo.rbacTestUsers.backstage],
+        [{ permission: "catalog.entity.delete" }],
+      );
       await page.click(
         ROLES_PAGE_COMPONENTS.editRole("role:default/test-role"),
       );
@@ -350,11 +351,12 @@ test.describe.serial("Test RBAC", () => {
     }) => {
       const uiHelper = new UIhelper(page);
       const rbacPo = new RbacPo(page);
-      await rbacPo.createRole("test-role1", [
-        RbacPo.rbacTestUsers.guest,
-        RbacPo.rbacTestUsers.tara,
-        RbacPo.rbacTestUsers.backstage,
-      ]);
+      await rbacPo.createRole(
+        "test-role1",
+        [RbacPo.rbacTestUsers.guest, RbacPo.rbacTestUsers.tara],
+        [RbacPo.rbacTestUsers.backstage],
+        [{ permission: "catalog.entity.delete" }],
+      );
 
       await uiHelper.searchInputAriaLabel("test-role1");
 
@@ -410,9 +412,10 @@ test.describe.serial("Test RBAC", () => {
     }) => {
       const uiHelper = new UIhelper(page);
       const rbacPo = new RbacPo(page);
-      await rbacPo.createRole(
+      await rbacPo.createConditionalRole(
         "test-role1",
-        ["Guest User", "rhdh-qe", "Backstage"],
+        ["Guest User", "rhdh-qe"],
+        ["Backstage"],
         "anyOf",
       );
 
