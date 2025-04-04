@@ -35,5 +35,11 @@ test.describe("Validate Sidebar Navigation Customization", () => {
     // Verify if the Documentation page has loaded
     await uiHelper.verifyHeading("Documentation");
     await uiHelper.verifyText("Documentation available in", false);
+
+    // Verify the presense/absense of the 'Test' buttons in the sidebar
+    await uiHelper.verifyText("Test enabled");
+    await expect(
+      page.getByRole("link", { name: "Test disabled" }),
+    ).not.toBeVisible();
   });
 });

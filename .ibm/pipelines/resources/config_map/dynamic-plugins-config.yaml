@@ -175,6 +175,12 @@ dynamicPlugins:
           parent: default.list
         default.learning-path:
           parent: default.list
+        default.test_enabled:
+          title: Test enabled
+          enabled: true
+        default.test_disabled:
+          title: Test disabled
+          enabled: false
     backstage.plugin-techdocs:
       menuItems:
         favorites:
