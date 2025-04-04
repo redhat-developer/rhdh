@@ -291,7 +291,7 @@ export class Common {
       try {
         await popup.locator("#login_field").click({ timeout: 5000 });
         await popup.locator("#login_field").fill(username, { timeout: 5000 });
-        const cookieLocator = await popup.locator("#wcpConsentBannerCtrl")
+        const cookieLocator = popup.locator("#wcpConsentBannerCtrl")
         if (await cookieLocator.isVisible()) {
           await popup.click('button:has-text("Reject")', { timeout: 5000 });
         }
