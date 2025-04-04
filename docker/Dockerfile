@@ -35,7 +35,6 @@ RUN dnf install -q -y --allowerasing --nobest \
   openssl openssl-devel ca-certificates make cmake cpp gcc gcc-c++ zlib zlib-devel brotli brotli-devel python3 nodejs-packaging && \
   dnf update -y && dnf clean all
 
-# sources
 ENV EXTERNAL_SOURCE_NESTED=.
 ENV CONTAINER_SOURCE=/opt/app-root/src
 
@@ -210,7 +209,6 @@ FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:9.5-1742929466 AS runner
 USER 0
 
 ENV EXTERNAL_SOURCE_NESTED=.
-
 ENV CONTAINER_SOURCE=/opt/app-root/src
 WORKDIR $CONTAINER_SOURCE/
 
