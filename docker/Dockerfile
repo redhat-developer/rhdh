@@ -1,7 +1,6 @@
 # syntax=docker/dockerfile:1.14-labs
 
-# THIS IS USED BY Konflux builds >= 1.4
-# TODO verify this works with Cachi2 once we enable that, or switch to use ../.rhdh/docker/Dockerfile as input
+# THIS IS USED BY Konflux builds == 1.4 - 1.5; see ../.rhdh/docker/Dockerfile for >=1.6
 #
 # Copyright (c) 2023-2024 Red Hat, Inc.
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,12 +29,13 @@ USER 0
 
 # Install isolated-vm dependencies
 # hadolint ignore=DL3041
-RUN dnf install -y -q --allowerasing --nobest nodejs-devel nodejs-libs \
+RUN dnf install -q -y --allowerasing --nobest \
+  nodejs-devel nodejs-libs \
   # already installed or installed as deps:
   openssl openssl-devel ca-certificates make cmake cpp gcc gcc-c++ zlib zlib-devel brotli brotli-devel python3 nodejs-packaging && \
   dnf update -y && dnf clean all
 
-# Upstream sources
+# sources
 ENV EXTERNAL_SOURCE_NESTED=.
 ENV CONTAINER_SOURCE=/opt/app-root/src
 
@@ -146,10 +146,9 @@ COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin
 # Increate timeout for yarn install
 RUN "$YARN" config set httpTimeout 600000
 
-RUN "$YARN" install --immutable
+RUN echo "=== YARN INSTALL ==="; "$YARN" install --immutable
 
 # Stage 3 - Build packages
-# Upstream only
 FROM deps AS build
 
 COPY $EXTERNAL_SOURCE_NESTED ./
@@ -158,21 +157,23 @@ RUN git config --global --add safe.directory ./
 # Upstream only
 RUN rm app-config.yaml && mv app-config.example.yaml app-config.yaml
 
+# Downstream only - replace midstream build-metadata.json with the version from downstream (where we include the midstream SHA)
+# COPY packages/app/src/build-metadata.json ./packages/app/src/
+
 # hadolint ignore=DL3059,DL4006,SC2086
 RUN \
-  # Upstream only - append build time into packages/app/src/build-metadata.json
+  # Append build time into packages/app/src/build-metadata.json
   now=$(date -u +%FT%TZ); sed -i packages/app/src/build-metadata.json -r \
   -e "s/(\"Last Commit\": \"(.+)\")/\1, \"Build Time\": \"$now\"/" && \
   cat packages/app/src/build-metadata.json; echo
 
-RUN "$YARN" build --filter=backend
+RUN echo "=== YARN BUILD ==="; "$YARN" build --filter=backend 
 
-RUN "$YARN" export-dynamic --filter=./dynamic-plugins/wrappers/*
+RUN echo "=== EXPORT DYNAMIC PLUGINS ==="; "$YARN" export-dynamic --filter=./dynamic-plugins/wrappers/*
 
-RUN "$YARN" copy-dynamic-plugins dist
+RUN echo "=== YARN COPY DYNAMIC PLUGINS in $(pwd) ==="; "$YARN" copy-dynamic-plugins dist
 
 # Stage 4 - Build the actual backend image and install production dependencies
-# Upstream only
 FROM skeleton AS cleanup
 
 # Upstream only - copy the install dependencies from the build stage and context
@@ -190,13 +191,13 @@ RUN tar xzf "$TARBALL_PATH"/skeleton.tar.gz; tar xzf "$TARBALL_PATH"/bundle.tar.
   rm -f "$TARBALL_PATH"/skeleton.tar.gz "$TARBALL_PATH"/bundle.tar.gz
 
 # Copy app-config files needed in runtime
-# Upstream only
 COPY $EXTERNAL_SOURCE_NESTED/app-config*.yaml ./
 COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins.default.yaml ./
 
 # Install production dependencies
 # hadolint ignore=DL3059
-RUN "$YARN" workspaces focus --all --production && \
+RUN "$YARN" workspaces focus --all --production
+RUN \
   # delete all the nested .npmrc files and set default values
   find . -type f -name .npmrc -exec rm -Rf {} \; && \
   # reset npm config to the default registry and absolute path to .pem file
@@ -208,12 +209,12 @@ RUN "$YARN" workspaces focus --all --production && \
 FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:9.5-1742929466 AS runner
 USER 0
 
-# Upstream only
 ENV EXTERNAL_SOURCE_NESTED=.
 
 ENV CONTAINER_SOURCE=/opt/app-root/src
 WORKDIR $CONTAINER_SOURCE/
 
+# TODO https://issues.redhat.com/browse/RHIDP-6561 install techdocs using requirements*.txt so we have the same version in up and downstream consistently
 # Upstream only - install techdocs dependencies (PyPI source tarballs not required)
 # When updating version of mkdocs-techdocs-core remember to update ../.rhdh/docker/requirement* files too
 # hadolint ignore=DL3041,DL3042
@@ -238,16 +239,20 @@ COPY $EXTERNAL_SOURCE/catalog-entities/marketplace /marketplace/catalog-entities
 # Copy script to gather dynamic plugins; copy embedded dynamic plugins to root folder; fix permissions
 COPY docker/install-dynamic-plugins.py docker/install-dynamic-plugins.sh ./
 RUN chmod -R a+r ./dynamic-plugins/ ./install-dynamic-plugins.py; \
-  chmod -R a+rx ./install-dynamic-plugins.sh;
+  chmod -R a+rx ./install-dynamic-plugins.sh
 
 # The existence of the index.html.tmpl tells Backstage to take that file and load it into memory, inject the needed appConfig (instead of writing
 # it into a random *.chunk.js file, and then serve that file from memory so that we can set the readOnlyRootFilesystem: true option for
 # the container.
 RUN ln -s /opt/app-root/src/packages/app/dist/index.html /opt/app-root/src/packages/app/dist/index.html.tmpl
 
+# Fix for https://issues.redhat.com/browse/RHIDP-728
+RUN mkdir /opt/app-root/src/.npm; chown -R 1001:1001 /opt/app-root/src/.npm; 
+
 # The fix-permissions script is important when operating in environments that dynamically use a random UID at runtime, such as OpenShift.
 # The upstream backstage image does not account for this and it causes the container to fail at runtime.
-RUN fix-permissions ./
+# suppress warnings about dereferencing symlinks 
+RUN fix-permissions ./ 2>&1 | grep -v "chgrp: cannot dereference" || true
 
 # Switch to nodejs user
 USER 1001
@@ -260,7 +265,7 @@ ENV CHOKIDAR_USEPOLLING='1' CHOKIDAR_INTERVAL='10000'
 ENV NPM_CONFIG_ignore-scripts='true'
 
 # gGVM6sYRK0D0ndVX22BOtS7NRcxPej8t is key for dev environment
-# Upstream only - Use dev key in all branches
+# Upstream - Use dev key in all branches
 ENV SEGMENT_WRITE_KEY=gGVM6sYRK0D0ndVX22BOtS7NRcxPej8t
 ENV SEGMENT_TEST_MODE=false
 

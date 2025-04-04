@@ -27,9 +27,6 @@ FROM registry.access.redhat.com/ubi9/nodejs-22:9.5-1742955796 AS skeleton
 # hadolint ignore=DL3002
 USER 0
 
-# debug
-# RUN cat /cachi2/cachi2.env 
-
 # Install isolated-vm dependencies
 # hadolint ignore=DL3041
 RUN dnf install -q -y --allowerasing --nobest \
@@ -168,9 +165,6 @@ COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin
 COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin-3scale-backend-dynamic/package.json ./dynamic-plugins/wrappers/backstage-community-plugin-3scale-backend-dynamic/package.json
 # END COPY package.json files
 
-# Downstream only - debugging
-# RUN ls -la /cachi2/output/deps/yarn/*
-
 # Downstream only - enable offline node-gyp install from local headers - see artifacts.lock.yaml for tar.gz
 ENV NODE_HEADERS_VERSION="22.13.1"
 RUN mkdir -p ~/.cache/node-gyp/${NODE_HEADERS_VERSION}; \
@@ -212,7 +206,7 @@ RUN dnf install -q -y alsa-lib at-spi2-atk at-spi2-core atk cairo cups-libs libd
   # echo "ffmpeg:"; ls -1 $FFMPEG_DIR; \
   pip3 install playwright==1.49.1 && playwright --version
 
-# debugging
+# debug
 # Redirect console output and errors to a log file to make this log shorter
 # RUN exec 3>&1 4>&2 1>> /tmp/build.log.txt 2>> /tmp/build.log.txt
 
@@ -224,8 +218,12 @@ RUN "$YARN" config set httpTimeout 600000
 #   export YARN_ENABLE_IMMUTABLE_CACHE=false
 #   export YARN_ENABLE_MIRROR=true
 #   export YARN_GLOBAL_FOLDER=/cachi2/output/deps/yarn
-RUN echo "=== YARN INSTALL ==="; "$YARN" install --immutable | tee /tmp/yarn.install.log.txt 2>&1; \
-  for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then echo; echo $d; echo "======"; cat ${d}/build.log; fi; done
+# RUN cat /cachi2/cachi2.env; echo; ls -la /cachi2/output/deps/yarn/*
+
+RUN echo "=== YARN INSTALL ==="; "$YARN" install --immutable
+# debug
+#  | tee /tmp/yarn.install.log.txt 2>&1; \
+#   for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then echo; echo $d; echo "======"; cat ${d}/build.log; fi; done
 
 # Stage 3 - Build packages
 FROM deps AS build
@@ -246,25 +244,29 @@ RUN \
   -e "s/(\"Last Commit\": \"(.+)\")/\1, \"Build Time\": \"$now\"/" && \
   cat packages/app/src/build-metadata.json; echo
 
-RUN echo "=== YARN BUILD ==="; "$YARN" build --filter=backend \
-   >/tmp/yarn.build.log.txt 2>&1 \
-  || { for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then echo; echo $d; echo "======"; cat ${d}/build.log; fi; done } 
+RUN echo "=== YARN BUILD ==="; "$YARN" build --filter=backend 
+# debug
+# >/tmp/yarn.build.log.txt 2>&1
+# || { for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then echo; echo $d; echo "======"; cat ${d}/build.log; fi; done } 
 
 # >/tmp/yarn.export.dynamic.log.txt 2>&1
-RUN echo "=== EXPORT DYNAMIC PLUGINS (with --no-install) ==="; "$YARN" export-dynamic --filter=./dynamic-plugins/wrappers/*; \
-  for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then echo; echo $d; echo "======"; cat ${d}/build.log; fi; done; \
-  for d in $(find . -name yarn-install.log); do echo; echo "===== EXPORT DYNAMIC PLUGINS: $d =====>"; cat ${d}; echo "<===== EXPORT DYNAMIC PLUGINS: $d ====="; done; 
+RUN echo "=== EXPORT DYNAMIC PLUGINS (with --no-install) ==="; "$YARN" export-dynamic --filter=./dynamic-plugins/wrappers/*
+# debug
+#  for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then echo; echo $d; echo "======"; cat ${d}/build.log; fi; done; \
+#  for d in $(find . -name yarn-install.log); do echo; echo "===== EXPORT DYNAMIC PLUGINS: $d =====>"; cat ${d}; echo "<===== EXPORT DYNAMIC PLUGINS: $d ====="; done; 
 
 # Stan says we can  omit this step - https://redhat-internal.slack.com/archives/C08A1KD7TNY/p1741805639019149?thread_ts=1741720088.366109&cid=C08A1KD7TNY
 # RUN echo "=== DIST-DYNAMIC YARN INSTALLS ==="; for f in $(find ./dynamic-plugins/wrappers/ -maxdepth 2 -type d -name dist-dynamic); do g=${f#*/wrappers/}; echo " > $g"; g=${g//\//_}; \
 #   pushd $f >/dev/null; "$YARN" install --immutable >"/tmp/yarn.install.${g}.log.txt" 2>&1; popd >/dev/null; done
 
-#  >/tmp/yarn.copy.dynamic.log.txt 2>&1
 RUN echo "=== YARN COPY DYNAMIC PLUGINS in $(pwd) ==="; "$YARN" copy-dynamic-plugins dist
+#  >/tmp/yarn.copy.dynamic.log.txt 2>&1
 # RUN ls -la dynamic-plugins/*
+
 # Downstream only - clean up dynamic plugins sources:
+# DISABLE THIS 04/04 to try to fix startup problems in RHIDP-4014
 # Only keep the dist sub-folder in the dynamic-plugins folder
-RUN echo "=== DELETE DYNAMIC PLUGINS/* (except dist/) from $(pwd) ==="; find dynamic-plugins -maxdepth 1 -mindepth 1 -type d -not -name dist -exec rm -Rf {} \;
+# RUN echo "=== DELETE DYNAMIC PLUGINS/* (except dist/) from $(pwd) ==="; find dynamic-plugins -maxdepth 1 -mindepth 1 -type d -not -name dist -exec rm -Rf {} \;
 # RUN ls -la dynamic-plugins/dist/*
 
 # Stage 4 - Build the actual backend image and install production dependencies
@@ -288,11 +290,12 @@ RUN tar xzf "$TARBALL_PATH"/skeleton.tar.gz; tar xzf "$TARBALL_PATH"/bundle.tar.
 COPY $EXTERNAL_SOURCE_NESTED/app-config*.yaml ./
 COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins.default.yaml ./
 
-#  >/tmp/yarn.workspaces.focus.log.txt 2>&1 
 # Install production dependencies
 # hadolint ignore=DL3059
-RUN "$YARN" workspaces focus --all --production \
-|| { for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then echo; echo $d; echo "======"; cat ${d}/build.log; fi; done } 
+RUN "$YARN" workspaces focus --all --production
+# debug
+#  >/tmp/yarn.workspaces.focus.log.txt 2>&1 
+# || { for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then echo; echo $d; echo "======"; cat ${d}/build.log; fi; done } 
 
 RUN \
   # delete all the nested .npmrc files and set default values
@@ -316,12 +319,12 @@ done; if [[ $hadFail -gt 0 ]]; then exit $hadFail; fi
 FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:9.5-1742929466 AS runner
 USER 0
 
-# sources
 ENV EXTERNAL_SOURCE_NESTED=.
 
 ENV CONTAINER_SOURCE=/opt/app-root/src
 WORKDIR $CONTAINER_SOURCE/
 
+# TODO https://issues.redhat.com/browse/RHIDP-6561 install techdocs using requirements*.txt so we have the same version in up and downstream consistently
 # Downstream only - install techdocs dependencies using cachito sources
 # Using cachi2 env vars:
 #   export PIP_FIND_LINKS=/cachi2/output/deps/pip
@@ -340,6 +343,7 @@ RUN microdnf install -y python3.11 python3.11-pip python3.11-devel make cmake cp
   pip install --no-cache-dir --upgrade pip setuptools pyyaml; \
   pip install --no-cache-dir -r requirements.txt -r requirements-build.txt; mkdocs --version; \
   popd >/dev/null; \
+  rm -fr docker/; \
   microdnf clean all
 
 # Upstream only - copy from cleanup stage
@@ -363,8 +367,8 @@ RUN chmod -R a+r ./dynamic-plugins/ ./install-dynamic-plugins.py; \
 # the container.
 RUN ln -s /opt/app-root/src/packages/app/dist/index.html /opt/app-root/src/packages/app/dist/index.html.tmpl
 
-# Downstream only - fix for https://issues.redhat.com/browse/RHIDP-728 + some cleanup of unneeded files
-RUN mkdir /opt/app-root/src/.npm; chown -R 1001:1001 /opt/app-root/src/.npm; rm -fr docker/
+# Fix for https://issues.redhat.com/browse/RHIDP-728
+RUN mkdir /opt/app-root/src/.npm; chown -R 1001:1001 /opt/app-root/src/.npm; 
 
 # The fix-permissions script is important when operating in environments that dynamically use a random UID at runtime, such as OpenShift.
 # The upstream backstage image does not account for this and it causes the container to fail at runtime.
