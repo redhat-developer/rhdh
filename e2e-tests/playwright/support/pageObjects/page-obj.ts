@@ -12,6 +12,13 @@ export const CATALOG_IMPORT_COMPONENTS = {
   componentURL: 'input[name="url"]',
 };
 
+export const KUBERNETES_COMPONENTS = {
+  MuiAccordion: 'div[class*="MuiAccordion-root-"]',
+  statusOk: 'span[aria-label="Status ok"]',
+  podLogs: 'label[aria-label="get logs"]',
+  MuiSnackbarContent: 'div[class*="MuiSnackbarContent-message-"]',
+};
+
 export const BACKSTAGE_SHOWCASE_COMPONENTS = {
   tableNextPage: 'button[aria-label="Next Page"]',
   tablePreviousPage: 'button[aria-label="Previous Page"]',

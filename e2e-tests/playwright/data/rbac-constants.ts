@@ -30,6 +30,14 @@ export class RbacConstants {
         ],
         name: "role:default/transitive-owner",
       },
+      {
+        memberReferences: ["user:default/rhdh-qe-5"],
+        name: "role:default/kubernetes_reader",
+      },
+      {
+        memberReferences: ["user:default/rhdh-qe-5", "user:default/rhdh-qe-6"],
+        name: "role:default/catalog_reader",
+      },
     ];
   }
 
@@ -109,6 +117,18 @@ export class RbacConstants {
       },
       {
         entityReference: "role:default/qe_rbac_admin",
+        permission: "kubernetes.resources.read",
+        policy: "read",
+        effect: "allow",
+      },
+      {
+        entityReference: "role:default/qe_rbac_admin",
+        permission: "kubernetes.clusters.read",
+        policy: "read",
+        effect: "allow",
+      },
+      {
+        entityReference: "role:default/qe_rbac_admin",
         permission: "catalog.entity.create",
         policy: "create",
         effect: "allow",
@@ -141,6 +161,24 @@ export class RbacConstants {
         entityReference: "role:default/bulk_import",
         permission: "catalog.entity.create",
         policy: "create",
+        effect: "allow",
+      },
+      {
+        entityReference: "role:default/kubernetes_reader",
+        permission: "kubernetes.resources.read",
+        policy: "read",
+        effect: "allow",
+      },
+      {
+        entityReference: "role:default/kubernetes_reader",
+        permission: "kubernetes.clusters.read",
+        policy: "read",
+        effect: "allow",
+      },
+      {
+        entityReference: "role:default/catalog_reader",
+        permission: "catalog.entity.read",
+        policy: "read",
         effect: "allow",
       },
     ];
