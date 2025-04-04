@@ -14,12 +14,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-# To transform into Brew-friendly Dockerfile:
-# 1. comment out lines with EXTERNAL_SOURCE_NESTED=. and CONTAINER_SOURCE=/opt/app-root/src
-# 2. uncomment lines with EXTERNAL_SOURCE_NESTED and CONTAINER_SOURCE pointing at $REMOTE_SOURCES and $REMOTE_SOURCES_DIR instead (Brew defines these paths)
-# 3. uncomment lines with RUN source .../cachito.env
-# 4. add Brew metadata
 
 # Stage 1 - Build nodejs skeleton
 # https://registry.access.redhat.com/ubi9/nodejs-22
@@ -269,19 +263,20 @@ RUN echo "=== YARN COPY DYNAMIC PLUGINS in $(pwd) ==="; "$YARN" copy-dynamic-plu
 # RUN ls -la dynamic-plugins/dist/*
 
 # Stage 4 - Build the actual backend image and install production dependencies
-FROM skeleton AS cleanup
+# Upstream only
+# FROM skeleton AS cleanup
 
 # Upstream only - copy the install dependencies from the build stage and context
-COPY --from=build $CONTAINER_SOURCE/yarn.lock \
-  $CONTAINER_SOURCE/package.json \
-  $CONTAINER_SOURCE/packages/backend/dist/skeleton.tar.gz \
-  $CONTAINER_SOURCE/packages/backend/dist/bundle.tar.gz \
-  ./
-ENV TARBALL_PATH=.
+# COPY --from=build $CONTAINER_SOURCE/yarn.lock \
+#   $CONTAINER_SOURCE/package.json \
+#   ./
+# COPY --from=build \
+#   $CONTAINER_SOURCE/packages/backend/dist/skeleton.tar.gz \
+#   $CONTAINER_SOURCE/packages/backend/dist/bundle.tar.gz \
+#   ./packages/backend/dist/
 
-# Increate timeout for yarn install
-RUN "$YARN" config set httpTimeout 600000
-
+# unpack and remove tarballs
+ENV TARBALL_PATH=./packages/backend/dist
 RUN tar xzf "$TARBALL_PATH"/skeleton.tar.gz; tar xzf "$TARBALL_PATH"/bundle.tar.gz; \
   rm -f "$TARBALL_PATH"/skeleton.tar.gz "$TARBALL_PATH"/bundle.tar.gz
 
@@ -293,6 +288,9 @@ COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins.default.yaml ./
 RUN for l in libbrotlidec.so.1 libbrotlienc.so.1 libbrotlicommon.so.1 libc.so.6 ld-linux-x86-64.so.2 libcrypto.so.3 libk5crypto.so.3 libz.so.1 libssl.so.3; do \
       ln -s /usr/lib64/$l /usr/lib64/${l%.*} || true; \
     done
+
+# Increate timeout for yarn install
+RUN "$YARN" config set httpTimeout 600000
 
 # Install production dependencies
 # hadolint ignore=DL3059
@@ -351,8 +349,11 @@ RUN microdnf install -y python3.11 python3.11-pip python3.11-devel make cmake cp
   microdnf clean all
 
 # Upstream only - copy from cleanup stage
-COPY --from=cleanup --chown=1001:1001 $CONTAINER_SOURCE/ ./
-# Upstream only - copy embedded dynamic plugins from $CONTAINER_SOURCE
+# COPY --from=cleanup --chown=1001:1001 $CONTAINER_SOURCE/ ./
+# Downstream only - copy from build, not cleanup stage
+COPY --from=build --chown=1001:1001 "$CONTAINER_SOURCE"/ ./
+
+# Copy embedded dynamic plugins from $CONTAINER_SOURCE
 COPY --from=build $CONTAINER_SOURCE/dynamic-plugins/dist/ ./dynamic-plugins/dist/
 
 # RHIDP-4220 - make Konflux preflight and EC checks happy - [check-container] Create a directory named /licenses and include all relevant licensing
