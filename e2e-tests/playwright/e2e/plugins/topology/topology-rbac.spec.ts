@@ -10,20 +10,21 @@ test.describe("Test Topology Plugin with RBAC", () => {
   let uiHelper: UIhelper;
   let catalog: Catalog;
   let rbacPo: RbacPo;
-  const topologyRoleName = "topology-viewer";
+  let kubernetesRoleName: string | undefined = undefined;
 
   test.beforeEach(async ({ page }) => {
     common = new Common(page);
     uiHelper = new UIhelper(page);
     catalog = new Catalog(page);
     rbacPo = new RbacPo(page);
-    await common.loginAsKeycloakUser();
   });
 
-  test.afterEach(async ({ page }) => {
-    await page.goto("/rbac");
-    if (await rbacPo.isRoleListed(`role:default/${topologyRoleName}`)) {
-      await rbacPo.deleteRole(`role:default/${topologyRoleName}`);
+  test.afterEach(async () => {
+    if (kubernetesRoleName) {
+      await common.signOut();
+      await common.loginAsKeycloakUser();
+      await rbacPo.deleteRole(`role:default/${kubernetesRoleName}`);
+      kubernetesRoleName = undefined;
     }
   });
 
@@ -37,18 +38,29 @@ test.describe("Test Topology Plugin with RBAC", () => {
   }
 
   test("Missing all Kubernetes permissions", async ({ page }) => {
+    await common.loginAsKeycloakUser(
+      process.env.QE_USER6_ID,
+      process.env.QE_USER6_PASS,
+    );
     await verifyMissingTopologyPermission(page);
   });
 
   test("Insufficient permissions: missing 'kubernetes.clusters.read'", async ({
     page,
   }) => {
+    kubernetesRoleName = "kubernetes_resources_viewer";
+    await common.loginAsKeycloakUser();
     await rbacPo.createRole(
-      topologyRoleName,
-      [RbacPo.rbacTestUsers.rhdhqe],
+      kubernetesRoleName,
+      [RbacPo.rbacTestUsers.rhdhqe6],
       [],
       [{ permission: "kubernetes.resources.read" }],
       "kubernetes",
+    );
+    await common.signOut();
+    await common.loginAsKeycloakUser(
+      process.env.QE_USER6_ID,
+      process.env.QE_USER6_PASS,
     );
     await verifyMissingTopologyPermission(page);
   });
@@ -56,12 +68,18 @@ test.describe("Test Topology Plugin with RBAC", () => {
   test("Insufficient permissions: missing 'kubernetes.resources.read'", async ({
     page,
   }) => {
+    kubernetesRoleName = "kubernetes_clusters_viewer";
     await rbacPo.createRole(
-      topologyRoleName,
-      [RbacPo.rbacTestUsers.rhdhqe],
+      kubernetesRoleName,
+      [RbacPo.rbacTestUsers.rhdhqe6],
       [],
       [{ permission: "kubernetes.clusters.read" }],
       "kubernetes",
+    );
+    await common.signOut();
+    await common.loginAsKeycloakUser(
+      process.env.QE_USER6_ID,
+      process.env.QE_USER6_PASS,
     );
     await verifyMissingTopologyPermission(page);
   });
@@ -69,17 +87,10 @@ test.describe("Test Topology Plugin with RBAC", () => {
   test("Authorized topology user without 'kubernetes.proxy' permission is able to view Topology information but not logs", async ({
     page,
   }) => {
-    await rbacPo.createRole(
-      topologyRoleName,
-      [RbacPo.rbacTestUsers.rhdhqe],
-      [],
-      [
-        { permission: "kubernetes.clusters.read" },
-        { permission: "kubernetes.resources.read" },
-      ],
-      "kubernetes",
+    await common.loginAsKeycloakUser(
+      process.env.QE_USER5_ID,
+      process.env.QE_USER5_PASS,
     );
-
     await catalog.goToBackstageJanusProject();
     await uiHelper.clickTab("Topology");
     await page.locator("[data-test-id=topology-test] image").first().click();
@@ -93,18 +104,7 @@ test.describe("Test Topology Plugin with RBAC", () => {
   test("Authorized topology user with 'kubernetes.proxy' permission is able to view Topology logs", async ({
     page,
   }) => {
-    await rbacPo.createRole(
-      topologyRoleName,
-      [RbacPo.rbacTestUsers.rhdhqe],
-      [],
-      [
-        { permission: "kubernetes.clusters.read" },
-        { permission: "kubernetes.resources.read" },
-        { permission: "kubernetes.proxy" },
-      ],
-      "kubernetes",
-    );
-
+    await common.loginAsKeycloakUser();
     await catalog.goToBackstageJanusProject();
     await uiHelper.clickTab("Topology");
     await page.locator("[data-test-id=topology-test] image").first().click();

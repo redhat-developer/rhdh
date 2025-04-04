@@ -42,6 +42,7 @@ export class RbacPo extends PageObject {
     tara: "Tara MacGovern",
     backstage: "Backstage",
     rhdhqe: "rhdh-qe",
+    rhdhqe6: "rhdh-qe-6",
   };
   public selectPluginsCombobox: Locator = this.page.getByRole("combobox", {
     name: "Select plugins",
@@ -138,10 +139,6 @@ export class RbacPo extends PageObject {
 
   private async verifyRoleIsListed(role: string) {
     await this.uiHelper.verifyLink(role);
-  }
-
-  public async isRoleListed(role: string) {
-    return await this.uiHelper.isLinkVisible(role);
   }
 
   private async clickOnRoleLink(role: string) {
