@@ -289,12 +289,18 @@ RUN tar xzf "$TARBALL_PATH"/skeleton.tar.gz; tar xzf "$TARBALL_PATH"/bundle.tar.
 COPY $EXTERNAL_SOURCE_NESTED/app-config*.yaml ./
 COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins.default.yaml ./
 
+# Create library symlinks to build: isolated-vm node-gyp better-sqlite cpu-features
+RUN for l in libbrotlidec.so.1 libbrotlienc.so.1 libbrotlicommon.so.1 libc.so.6 ld-linux-x86-64.so.2 libcrypto.so.3 libk5crypto.so.3 libz.so.1 libssl.so.3; do \
+      ln -s /usr/lib64/$l /usr/lib64/${l%.*} || true; \
+    done
+
 # Install production dependencies
 # hadolint ignore=DL3059
-RUN "$YARN" workspaces focus --all --production
-# debug
-#  >/tmp/yarn.workspaces.focus.log.txt 2>&1 
-# || { for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then echo; echo $d; echo "======"; cat ${d}/build.log; fi; done } 
+RUN FAILED=0; "$YARN" workspaces focus --all --production || true; \ 
+  for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then \
+    (( FAILED = FAILED + 1 )); echo; echo $d; echo "======"; cat ${d}/build.log; \
+  fi; done; \
+  if [[ $FAILED -gt 0 ]]; then exit $FAILED; fi
 
 RUN \
   # delete all the nested .npmrc files and set default values
