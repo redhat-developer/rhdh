@@ -301,7 +301,7 @@ wait_for_svc(){
   local svc_name=$1
   local namespace=$2
   local timeout=${3:-300}
-  
+
   timeout "${timeout}" bash -c "
     echo ${svc_name}
     while ! oc get svc $svc_name -n $namespace &> /dev/null; do
@@ -712,7 +712,7 @@ install_acm_operator(){
   wait_for_svc multiclusterhub-operator-webhook open-cluster-management
   oc apply -f "${DIR}/cluster/operators/acm/multiclusterhub.yaml"
   # wait until multiclusterhub is Running.
-  timeout 900 bash -c 'while true; do 
+  timeout 900 bash -c 'while true; do
     CURRENT_PHASE=$(oc get multiclusterhub multiclusterhub -n open-cluster-management -o jsonpath="{.status.phase}")
     echo "MulticlusterHub Current Status: $CURRENT_PHASE"
     [[ "$CURRENT_PHASE" == "Running" ]] && echo "MulticlusterHub is now in Running phase." && break

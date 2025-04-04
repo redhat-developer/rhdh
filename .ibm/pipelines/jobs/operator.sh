@@ -31,10 +31,10 @@ deploy_rhdh_operator() {
     done
     echo "Backstage CRD is created."
     ' || echo "Error: Timed out waiting for Backstage CRD creation."
-  
+
   if [[ "${namespace}" == "showcase-op-rbac-nightly" ]]; then
     oc apply -f "${dir}/resources/rhdh-operator/rhdh-start-rbac.yaml" -n "${namespace}"
-  else 
+  else
     oc apply -f "${dir}/resources/rhdh-operator/rhdh-start.yaml" -n "${namespace}"
   fi
 }
@@ -43,7 +43,7 @@ initiate_operator_deployments() {
   configure_namespace "${OPERATOR_MANAGER}"
   install_rhdh_operator "${DIR}" "${OPERATOR_MANAGER}"
   create_conditional_policies_operator /tmp/conditional-policies.yaml
-  
+
   configure_namespace "${NAME_SPACE}"
   deploy_test_backstage_provider "${NAME_SPACE}"
   local rhdh_base_url="https://backstage-${RELEASE_NAME}-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
