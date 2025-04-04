@@ -147,7 +147,7 @@ for (const version of ["RHBK"]) {
       await common.signOut();
     });
 
-    test(`${version} - default resolver for RHSSO tests is set to oidcSubClaimMatchingKeycloakUserId, user_1 and user_2 should both authenticate`, async () => {
+    test(`${version} - default resolver for RHSSO tests is set to oidcSubClaimMatchingIdPUserId, user_1 and user_2 should both authenticate`, async () => {
       test.setTimeout(600 * 1000);
 
       LOGGER.info(`Executing testcase: ${test.info().title}`);
@@ -198,7 +198,61 @@ for (const version of ["RHBK"]) {
       await common.signOut();
     });
 
-    test(`${version} - default resolver should be emailLocalPartMatchingUserEntityName: user_1 should authenticate, user_2 should not`, async () => {
+    test(`${version} - set resolver for RHSSO tests to oidcSubClaimMatchingKeycloakUserId (recommended secure resolver), user_1 and user_2 should both authenticate`, async () => {
+      test.setTimeout(600 * 1000);
+
+      LOGGER.info(`Executing testcase: ${test.info().title}`);
+      // setup RHSSO provider with user ingestion
+      await HelmActions.upgradeHelmChartWithWait(
+        constants.AUTH_PROVIDERS_RELEASE,
+        constants.AUTH_PROVIDERS_CHART,
+        constants.AUTH_PROVIDERS_NAMESPACE,
+        constants.AUTH_PROVIDERS_VALUES_FILE,
+        constants.CHART_VERSION,
+        constants.QUAY_REPO,
+        constants.TAG_NAME,
+        [
+          "--set global.dynamic.plugins[0].disabled=false",
+          "--set global.dynamic.plugins[1].disabled=true",
+          "--set global.dynamic.plugins[2].disabled=true",
+          "--set upstream.postgresql.primary.persistence.enabled=false",
+          "--set global.dynamic.plugins[3].disabled=false",
+          "--set upstream.backstage.appConfig.permission.enabled=true",
+          "--set upstream.backstage.appConfig.auth.providers.oidc.production.signIn.resolvers[0].resolver=oidcSubClaimMatchingKeycloakUserId",
+          "--set upstream.backstage.appConfig.catalog.providers.githubOrg=null",
+          "--set upstream.backstage.appConfig.catalog.providers.microsoftOrg=null",
+          ...helmParams,
+        ],
+      );
+
+      await waitForNextSync("rhsso", syncTime);
+
+      await common.keycloakLogin(
+        constants.RHSSO76_USERS["user_1"].username,
+        constants.RHSSO76_DEFAULT_PASSWORD,
+      );
+      await page.goto("/settings");
+      await uiHelper.verifyHeading(
+        await rhssoHelper.getRHSSOUserDisplayName(
+          constants.RHSSO76_USERS["user_1"],
+        ),
+      );
+      await common.signOut();
+
+      await common.keycloakLogin(
+        constants.RHSSO76_USERS["user_2"].username,
+        constants.RHSSO76_DEFAULT_PASSWORD,
+      );
+      await page.goto("/settings");
+      await uiHelper.verifyHeading(
+        await rhssoHelper.getRHSSOUserDisplayName(
+          constants.RHSSO76_USERS["user_2"],
+        ),
+      );
+      await common.signOut();
+    });
+
+    test(`${version} - testing resolver emailLocalPartMatchingUserEntityName: user_1 should authenticate, user_2 should not`, async () => {
       test.setTimeout(600 * 1000);
 
       LOGGER.info(`Executing testcase: ${test.info().title}`);
