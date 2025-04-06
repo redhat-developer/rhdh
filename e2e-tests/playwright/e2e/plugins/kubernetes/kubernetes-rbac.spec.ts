@@ -30,7 +30,10 @@ test.describe("Test Kubernetes Plugin", () => {
       await uiHelper.clickTab("Kubernetes");
       await uiHelper.verifyText("backstage-janus");
 
-      await page.locator(KUBERNETES_COMPONENTS.MuiAccordion).click();
+      await page
+        .locator(KUBERNETES_COMPONENTS.MuiAccordion)
+        .getByText("my-cluster")
+        .click();
     });
 
     test("Verify pods visibility in the Kubernetes tab", async () => {
