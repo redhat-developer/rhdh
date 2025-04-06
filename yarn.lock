@@ -23982,7 +23982,7 @@ __metadata:
     "@backstage-community/plugin-3scale-backend": 3.3.0
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -23996,7 +23996,7 @@ __metadata:
     "@janus-idp/cli": 3.4.0
     "@mui/icons-material": 5.17.1
     "@mui/material": 5.17.1
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24007,7 +24007,7 @@ __metadata:
     "@backstage-community/plugin-analytics-provider-segment": 1.13.0
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24018,7 +24018,7 @@ __metadata:
     "@backstage-community/plugin-azure-devops-backend": 0.12.0
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24029,7 +24029,7 @@ __metadata:
     "@backstage-community/plugin-azure-devops": 0.10.0
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24040,7 +24040,7 @@ __metadata:
     "@backstage-community/plugin-catalog-backend-module-keycloak": 3.10.0
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24051,7 +24051,7 @@ __metadata:
     "@backstage-community/plugin-catalog-backend-module-pingidentity": 0.3.0
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24062,7 +24062,7 @@ __metadata:
     "@backstage-community/plugin-catalog-backend-module-scaffolder-relation-processor": 2.3.0
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24073,7 +24073,7 @@ __metadata:
     "@backstage-community/plugin-dynatrace": 10.3.0
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24084,7 +24084,7 @@ __metadata:
     "@backstage-community/plugin-github-actions": 0.8.0
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24095,7 +24095,7 @@ __metadata:
     "@backstage-community/plugin-github-issues": 0.7.0
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24106,7 +24106,7 @@ __metadata:
     "@backstage-community/plugin-jenkins-backend": 0.12.1
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24117,7 +24117,7 @@ __metadata:
     "@backstage-community/plugin-jenkins": 0.17.0
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24129,7 +24129,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
     "@mui/material": 5.17.1
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24141,7 +24141,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
     "@mui/icons-material": 5.17.1
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24153,7 +24153,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
     "@mui/material": 5.17.1
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24164,7 +24164,7 @@ __metadata:
     "@backstage-community/plugin-ocm-backend": 5.5.0
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24176,7 +24176,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
     "@mui/material": 5.17.1
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24188,7 +24188,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
     "@mui/material": 5.17.1
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24200,7 +24200,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
     "@mui/material": 5.17.1
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24212,7 +24212,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
     "@mui/material": 5.17.1
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24223,7 +24223,7 @@ __metadata:
     "@backstage-community/plugin-scaffolder-backend-module-kubernetes": 2.6.0
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24234,7 +24234,7 @@ __metadata:
     "@backstage-community/plugin-scaffolder-backend-module-quay": 2.6.0
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24245,7 +24245,7 @@ __metadata:
     "@backstage-community/plugin-scaffolder-backend-module-regex": 2.5.0
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24256,7 +24256,7 @@ __metadata:
     "@backstage-community/plugin-scaffolder-backend-module-servicenow": 2.5.0
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24267,7 +24267,7 @@ __metadata:
     "@backstage-community/plugin-scaffolder-backend-module-sonarqube": 2.5.0
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24278,7 +24278,7 @@ __metadata:
     "@backstage-community/plugin-sonarqube-backend": 0.5.0
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24289,7 +24289,7 @@ __metadata:
     "@backstage-community/plugin-sonarqube": 0.10.0
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24300,7 +24300,7 @@ __metadata:
     "@backstage-community/plugin-tech-radar-backend": 1.3.0
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24314,7 +24314,7 @@ __metadata:
     "@backstage/core-plugin-api": 1.10.4
     "@janus-idp/cli": 3.4.0
     "@mui/icons-material": 5.17.1
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24326,7 +24326,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
     "@mui/material": 5.17.1
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24338,7 +24338,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
     "@mui/material": 5.17.1
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24349,7 +24349,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@backstage/plugin-catalog-backend-module-bitbucket-cloud": 0.4.5
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24360,7 +24360,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@backstage/plugin-catalog-backend-module-bitbucket-server": 0.3.2
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24371,7 +24371,7 @@ __metadata:
     "@backstage/plugin-catalog-backend-module-github": 0.7.10
     "@backstage/plugin-catalog-backend-module-github-org": 0.3.7
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24382,7 +24382,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@backstage/plugin-catalog-backend-module-github": 0.7.10
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24394,7 +24394,7 @@ __metadata:
     "@backstage/plugin-catalog-backend-module-gitlab": 0.6.3
     "@backstage/plugin-catalog-backend-module-gitlab-org": 0.2.6
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24405,7 +24405,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@backstage/plugin-catalog-backend-module-gitlab": 0.6.3
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24416,7 +24416,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@backstage/plugin-catalog-backend-module-ldap": 0.11.2
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24427,7 +24427,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@backstage/plugin-catalog-backend-module-msgraph": 0.6.7
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24438,7 +24438,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@backstage/plugin-kubernetes-backend": 0.19.3
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24450,7 +24450,7 @@ __metadata:
     "@backstage/core-plugin-api": 1.10.4
     "@backstage/plugin-kubernetes": 0.12.4
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24461,7 +24461,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@backstage/plugin-notifications-backend-module-email": 0.3.6
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24473,7 +24473,7 @@ __metadata:
     "@backstage/plugin-notifications-backend": 0.5.3
     "@backstage/plugin-signals-node": 0.1.17
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24485,7 +24485,7 @@ __metadata:
     "@backstage/plugin-notifications": 0.5.2
     "@janus-idp/cli": 3.4.0
     "@mui/material": 5.17.1
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24496,7 +24496,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@backstage/plugin-scaffolder-backend-module-azure": 0.2.6
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24507,7 +24507,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@backstage/plugin-scaffolder-backend-module-bitbucket-cloud": 0.2.6
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24518,7 +24518,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@backstage/plugin-scaffolder-backend-module-bitbucket-server": 0.2.6
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24529,7 +24529,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@backstage/plugin-scaffolder-backend-module-gerrit": 0.2.6
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24540,7 +24540,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@backstage/plugin-scaffolder-backend-module-github": 0.6.0
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24551,7 +24551,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@backstage/plugin-scaffolder-backend-module-gitlab": 0.8.0
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24562,7 +24562,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@backstage/plugin-signals-backend": 0.3.1
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24574,7 +24574,7 @@ __metadata:
     "@backstage/plugin-signals": 0.0.16
     "@janus-idp/cli": 3.4.0
     "@mui/material": 5.17.1
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24587,7 +24587,7 @@ __metadata:
     "@backstage/plugin-search-backend-module-techdocs": 0.3.6
     "@backstage/plugin-techdocs-backend": 1.11.6
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -24602,7 +24602,7 @@ __metadata:
     "@material-ui/core": 4.12.4
     jss: 10.10.0
     react: 18.3.1
-    typescript: 5.8.2
+    typescript: 5.8.3
   peerDependencies:
     react: 16.13.1 || ^17.0.0 || ^18.0.0
   languageName: unknown
@@ -24620,7 +24620,7 @@ __metadata:
     "@backstage/plugin-techdocs-react": 1.2.14
     "@janus-idp/cli": 3.4.0
     react: 18.3.1
-    typescript: 5.8.2
+    typescript: 5.8.3
   peerDependencies:
     react: 16.13.1 || ^17.0.0 || ^18.0.0
   languageName: unknown
@@ -28330,7 +28330,7 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.30.0
     glob: 11.0.1
-    yaml: 2.7.0
+    yaml: 2.7.1
   languageName: unknown
   linkType: soft
 
@@ -28355,7 +28355,7 @@ __metadata:
     octokit: 4.1.2
     otplib: 12.0.1
     prettier: 3.5.3
-    typescript: 5.8.2
+    typescript: 5.8.3
     winston: 3.14.2
   languageName: unknown
   linkType: soft
@@ -32464,7 +32464,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@immobiliarelabs/backstage-plugin-gitlab-backend": 6.8.0
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -32475,7 +32475,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@immobiliarelabs/backstage-plugin-gitlab": 6.8.0
     "@janus-idp/cli": 3.4.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -39079,7 +39079,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
     "@pagerduty/backstage-plugin-backend": 0.9.2
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -39090,7 +39090,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
     "@pagerduty/backstage-plugin": 0.15.2
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -39134,7 +39134,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
     "@parfuemerie-douglas/scaffolder-backend-module-azure-repositories": 0.3.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -41841,7 +41841,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
     "@red-hat-developer-hub/backstage-plugin-bulk-import-backend": 6.0.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -41853,7 +41853,7 @@ __metadata:
     "@janus-idp/cli": 3.4.0
     "@mui/material": 5.17.1
     "@red-hat-developer-hub/backstage-plugin-bulk-import": 1.12.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -41864,7 +41864,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
     "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace": 0.2.2
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -41876,7 +41876,7 @@ __metadata:
     "@janus-idp/cli": 3.4.0
     "@mui/material": 5.17.1
     "@red-hat-developer-hub/backstage-plugin-dynamic-home-page": 1.1.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -41888,7 +41888,7 @@ __metadata:
     "@janus-idp/cli": 3.4.0
     "@mui/material": 5.17.1
     "@red-hat-developer-hub/backstage-plugin-global-floating-action-button": 1.0.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -41900,7 +41900,7 @@ __metadata:
     "@janus-idp/cli": 3.4.0
     "@mui/material": 5.17.1
     "@red-hat-developer-hub/backstage-plugin-global-header": 1.1.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -41911,7 +41911,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
     "@red-hat-developer-hub/backstage-plugin-marketplace-backend": 0.2.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -41922,7 +41922,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
     "@red-hat-developer-hub/backstage-plugin-marketplace": 0.2.1
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -42667,7 +42667,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
     "@roadiehq/backstage-plugin-argo-cd-backend": 4.2.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -42678,7 +42678,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
     "@roadiehq/backstage-plugin-argo-cd": 2.8.4
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -42689,7 +42689,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
     "@roadiehq/backstage-plugin-datadog": 2.4.2
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -42700,7 +42700,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
     "@roadiehq/backstage-plugin-github-insights": 3.1.3
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -42711,7 +42711,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
     "@roadiehq/backstage-plugin-github-pull-requests": 3.2.1
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -42722,7 +42722,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
     "@roadiehq/backstage-plugin-jira": 2.8.2
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -42733,7 +42733,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
     "@roadiehq/backstage-plugin-security-insights": 3.1.2
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -42744,7 +42744,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
     "@roadiehq/scaffolder-backend-argocd": 1.5.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -42755,7 +42755,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
     "@roadiehq/scaffolder-backend-module-http-request": 5.3.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -42766,7 +42766,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
     "@roadiehq/scaffolder-backend-module-utils": 3.3.0
-    typescript: 5.8.2
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -42970,8 +42970,8 @@ __metadata:
     lint-staged: 15.5.0
     node-gyp: 10.3.1
     sherif: 1.4.0
-    turbo: 2.4.4
-    typescript: 5.8.2
+    turbo: 2.5.0
+    typescript: 5.8.3
   languageName: unknown
   linkType: soft
 
@@ -45794,58 +45794,58 @@ __metadata:
   languageName: node
   linkType: hard
 
-"turbo-darwin-64@npm:2.4.4":
-  version: 2.4.4
-  resolution: "turbo-darwin-64@npm:2.4.4"
+"turbo-darwin-64@npm:2.5.0":
+  version: 2.5.0
+  resolution: "turbo-darwin-64@npm:2.5.0"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"turbo-darwin-arm64@npm:2.4.4":
-  version: 2.4.4
-  resolution: "turbo-darwin-arm64@npm:2.4.4"
+"turbo-darwin-arm64@npm:2.5.0":
+  version: 2.5.0
+  resolution: "turbo-darwin-arm64@npm:2.5.0"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"turbo-linux-64@npm:2.4.4":
-  version: 2.4.4
-  resolution: "turbo-linux-64@npm:2.4.4"
+"turbo-linux-64@npm:2.5.0":
+  version: 2.5.0
+  resolution: "turbo-linux-64@npm:2.5.0"
   conditions: os=linux & cpu=x64
   languageName: node
   linkType: hard
 
-"turbo-linux-arm64@npm:2.4.4":
-  version: 2.4.4
-  resolution: "turbo-linux-arm64@npm:2.4.4"
+"turbo-linux-arm64@npm:2.5.0":
+  version: 2.5.0
+  resolution: "turbo-linux-arm64@npm:2.5.0"
   conditions: os=linux & cpu=arm64
   languageName: node
   linkType: hard
 
-"turbo-windows-64@npm:2.4.4":
-  version: 2.4.4
-  resolution: "turbo-windows-64@npm:2.4.4"
+"turbo-windows-64@npm:2.5.0":
+  version: 2.5.0
+  resolution: "turbo-windows-64@npm:2.5.0"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"turbo-windows-arm64@npm:2.4.4":
-  version: 2.4.4
-  resolution: "turbo-windows-arm64@npm:2.4.4"
+"turbo-windows-arm64@npm:2.5.0":
+  version: 2.5.0
+  resolution: "turbo-windows-arm64@npm:2.5.0"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
 
-"turbo@npm:2.4.4":
-  version: 2.4.4
-  resolution: "turbo@npm:2.4.4"
+"turbo@npm:2.5.0":
+  version: 2.5.0
+  resolution: "turbo@npm:2.5.0"
   dependencies:
-    turbo-darwin-64: 2.4.4
-    turbo-darwin-arm64: 2.4.4
-    turbo-linux-64: 2.4.4
-    turbo-linux-arm64: 2.4.4
-    turbo-windows-64: 2.4.4
-    turbo-windows-arm64: 2.4.4
+    turbo-darwin-64: 2.5.0
+    turbo-darwin-arm64: 2.5.0
+    turbo-linux-64: 2.5.0
+    turbo-linux-arm64: 2.5.0
+    turbo-windows-64: 2.5.0
+    turbo-windows-arm64: 2.5.0
   dependenciesMeta:
     turbo-darwin-64:
       optional: true
@@ -45861,7 +45861,7 @@ __metadata:
       optional: true
   bin:
     turbo: bin/turbo
-  checksum: 16731ef4a4b3d33ca16ca8641e5f8125e8487215c099a92f6e104d30b2f46bea0f7fad438124aec26507dd5afb72f54e56cf10d5839735ba4e0bf1d2d9ea1078
+  checksum: 27ecd83501a2b8127d149b983848557db346a09a4e6674f048daa7598b9ffeebd0a42dea08c9478254e7be174177e9011d51937316bdad0d936eab5b99d65c01
   languageName: node
   linkType: hard
 
@@ -46169,13 +46169,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:5.8.2":
-  version: 5.8.2
-  resolution: "typescript@npm:5.8.2"
+"typescript@npm:5.8.3":
+  version: 5.8.3
+  resolution: "typescript@npm:5.8.3"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 7f9e3d7ac15da6df713e439e785e51facd65d6450d5f51fab3e8d2f2e3f4eb317080d895480b8e305450cdbcb37e17383e8bf521e7395f8b556e2f2a4730ed86
+  checksum: cb1d081c889a288b962d3c8ae18d337ad6ee88a8e81ae0103fa1fecbe923737f3ba1dbdb3e6d8b776c72bc73bfa6d8d850c0306eed1a51377d2fccdfd75d92c4
   languageName: node
   linkType: hard
 
@@ -46199,13 +46199,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@5.8.2#~builtin<compat/typescript>":
-  version: 5.8.2
-  resolution: "typescript@patch:typescript@npm%3A5.8.2#~builtin<compat/typescript>::version=5.8.2&hash=5786d5"
+"typescript@patch:typescript@5.8.3#~builtin<compat/typescript>":
+  version: 5.8.3
+  resolution: "typescript@patch:typescript@npm%3A5.8.3#~builtin<compat/typescript>::version=5.8.3&hash=5786d5"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 557109f14248260656c551f1a8bf8de188d5397928a8ae6e6f00e268f25975b6e572522085ae8e06683de019b1885781f50090f07c4f0a9a34d60c459305f80d
+  checksum: f1743b6850976b3debf7cbd53d2bc0b67e75d47eb6410db564c8bb475e92a8a48f8a3fcd14d89cf93426835281c31a8f8a94dad90be4dc899279a898532ba97f
   languageName: node
   linkType: hard
 
@@ -48659,12 +48659,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yaml@npm:2.7.0, yaml@npm:^2.0.0, yaml@npm:^2.1.1, yaml@npm:^2.2.1, yaml@npm:^2.2.2, yaml@npm:^2.3.3, yaml@npm:^2.5.1, yaml@npm:^2.6.0, yaml@npm:^2.6.1, yaml@npm:^2.7.0":
-  version: 2.7.0
-  resolution: "yaml@npm:2.7.0"
+"yaml@npm:2.7.1":
+  version: 2.7.1
+  resolution: "yaml@npm:2.7.1"
   bin:
     yaml: bin.mjs
-  checksum: 6e8b2f9b9d1b18b10274d58eb3a47ec223d9a93245a890dcb34d62865f7e744747190a9b9177d5f0ef4ea2e44ad2c0214993deb42e0800766203ac46f00a12dd
+  checksum: 385f8115ddfafdf8e599813cca8b2bf4e3f6a01b919fff5ae7da277e164df684d7dfe558b4085172094792b5a04786d3c55fa8b74abb0ee029873f031150bb80
   languageName: node
   linkType: hard
 
@@ -48672,6 +48672,15 @@ __metadata:
   version: 1.10.2
   resolution: "yaml@npm:1.10.2"
   checksum: ce4ada136e8a78a0b08dc10b4b900936912d15de59905b2bf415b4d33c63df1d555d23acb2a41b23cf9fb5da41c256441afca3d6509de7247daa062fd2c5ea5f
+  languageName: node
+  linkType: hard
+
+"yaml@npm:^2.0.0, yaml@npm:^2.1.1, yaml@npm:^2.2.1, yaml@npm:^2.2.2, yaml@npm:^2.3.3, yaml@npm:^2.5.1, yaml@npm:^2.6.0, yaml@npm:^2.6.1, yaml@npm:^2.7.0":
+  version: 2.7.0
+  resolution: "yaml@npm:2.7.0"
+  bin:
+    yaml: bin.mjs
+  checksum: 6e8b2f9b9d1b18b10274d58eb3a47ec223d9a93245a890dcb34d62865f7e744747190a9b9177d5f0ef4ea2e44ad2c0214993deb42e0800766203ac46f00a12dd
   languageName: node
   linkType: hard
 
