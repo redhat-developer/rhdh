@@ -19,4 +19,4 @@ spec:
   owner: janus-authors
   lifecycle: production
   definition:
-    $openapi: https://github.com/OAI/OpenAPI-Specification/blob/main/tests/v3.0/pass/petstore.yaml
+    $openapi: https://github.com/OAI/learn.openapis.org/blob/main/examples/v3.0/petstore.yaml
