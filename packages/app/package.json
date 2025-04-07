@@ -58,14 +58,14 @@
   "devDependencies": {
     "@backstage/cli": "0.30.0",
     "@backstage/test-utils": "1.7.5",
-    "@janus-idp/cli": "3.3.1",
+    "@janus-idp/cli": "3.4.0",
     "@scalprum/react-test-utils": "0.2.6",
     "@testing-library/dom": "9.3.4",
     "@testing-library/jest-dom": "6.6.3",
     "@testing-library/react": "14.3.1",
     "@testing-library/react-hooks": "8.0.1",
     "@testing-library/user-event": "14.6.1",
-    "@types/node": "22.13.17",
+    "@types/node": "22.14.0",
     "@types/react": "18.3.20",
     "@types/react-dom": "18.3.6",
     "prettier": "3.5.3"
