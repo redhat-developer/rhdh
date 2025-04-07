@@ -306,15 +306,10 @@ upstream:
     host: '{{ .Values.global.host }}'
   
 
-  # service:
-  #   extraPorts:
-  #     - name: http-metrics
-  #       port: 9464
-  #       targetPort: 9464
+  service:
+    extraPorts:
+      - name: http-metrics
+        port: 9464
+        targetPort: 9464
 
-  # Enable metrics
-  metrics:
-    serviceMonitor:
-      enabled: true
-      path: /metrics
-      port: http-metrics
+ 
