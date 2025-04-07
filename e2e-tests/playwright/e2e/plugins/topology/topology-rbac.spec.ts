@@ -1,121 +1,107 @@
-import { test, expect, Page } from "@playwright/test";
+import { test } from "@playwright/test";
 import { Common } from "../../../utils/common";
 import { UIhelper } from "../../../utils/ui-helper";
 import { Catalog } from "../../../support/pages/catalog";
 import { RbacPo } from "../../../support/pageObjects/rbac-po";
-import { downloadAndReadFile } from "../../../utils/helper";
+import { Topology } from "../../../support/pages/topology";
 
 test.describe("Test Topology Plugin with RBAC", () => {
   let common: Common;
   let uiHelper: UIhelper;
   let catalog: Catalog;
   let rbacPo: RbacPo;
-  let kubernetesRoleName: string | undefined = undefined;
+  let topology: Topology;
 
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page }, testInfo) => {
+    if (testInfo.retry > 0) {
+      // progressively increase test timeout for retries
+      test.setTimeout(testInfo.timeout + testInfo.timeout * 0.25);
+    }
     common = new Common(page);
     uiHelper = new UIhelper(page);
     catalog = new Catalog(page);
     rbacPo = new RbacPo(page);
+    topology = new Topology(page);
   });
 
-  test.afterEach(async () => {
-    if (kubernetesRoleName) {
-      await common.signOut();
+  test.describe("Verify a user without permissions is not able to access parts of the Topology plugin", () => {
+    let kubernetesRoleName: string | undefined = undefined;
+
+    test.afterEach(async () => {
+      if (kubernetesRoleName) {
+        await common.signOut();
+        await common.loginAsKeycloakUser();
+        await rbacPo.deleteRole(`role:default/${kubernetesRoleName}`);
+        kubernetesRoleName = undefined;
+      }
+    });
+
+    // User is able to read from the catalog
+    [
+      { permission: undefined }, // missing 'kubernetes.clusters.read', 'kubernetes.resources.read', 'kubernetes.proxy'
+      { permission: "kubernetes.resources.read" }, // missing 'kubernetes.clusters.read', 'kubernetes.proxy'
+      { permission: "kubernetes.clusters.read" }, // missing 'kubernetes.resources.read', 'kubernetes.proxy'
+    ].forEach(({ permission }) => {
+      test(`Verify pods are not visible in the Topology tab with ${permission ? "only " + permission : "no"} permission`, async ({
+        page,
+      }) => {
+        if (permission) {
+          // create role with permission
+          kubernetesRoleName = "kubernetes_viewer";
+          await common.loginAsKeycloakUser();
+          await page.goto("/rbac");
+          await rbacPo.createRole(
+            kubernetesRoleName,
+            [RbacPo.rbacTestUsers.rhdhqe6],
+            [],
+            [{ permission }],
+            "kubernetes",
+          );
+          await common.signOut();
+        }
+
+        await common.loginAsKeycloakUser(
+          process.env.QE_USER6_ID,
+          process.env.QE_USER6_PASS,
+        );
+
+        await catalog.goToBackstageJanusProject();
+        await uiHelper.clickTab("Topology");
+        await topology.verifyMissingTopologyPermission();
+      });
+    });
+
+    // User is able to read from the catalog
+    // User is missing 'kubernetes.proxy' permission (needed for pod logs)
+    test("Verify pod logs are not visible in the Topology tab", async () => {
+      await common.loginAsKeycloakUser(
+        process.env.QE_USER5_ID,
+        process.env.QE_USER5_PASS,
+      );
+      await catalog.goToBackstageJanusProject();
+      await uiHelper.clickTab("Topology");
+
+      await topology.verifyPodLogs(false);
+    });
+  });
+
+  // User is able to read from the catalog
+  // User has 'kubernetes.clusters.read', 'kubernetes.resources.read', 'kubernetes.proxy' permissions
+  test.describe("Verify a user with permissions is able to access the Topology plugin", () => {
+    test.beforeEach(async () => {
       await common.loginAsKeycloakUser();
-      await rbacPo.deleteRole(`role:default/${kubernetesRoleName}`);
-      kubernetesRoleName = undefined;
-    }
-  });
 
-  async function verifyMissingTopologyPermission(page: Page) {
-    await catalog.goToBackstageJanusProject();
-    await uiHelper.clickTab("Topology");
-    await uiHelper.verifyHeading("Missing Permission");
-    await uiHelper.verifyText("kubernetes.clusters.read");
-    await uiHelper.verifyText("kubernetes.resources.read");
-    await expect(page.getByLabel("Pod")).not.toBeVisible();
-  }
+      await catalog.goToBackstageJanusProject();
+      await uiHelper.clickTab("Topology");
+    });
 
-  test("Missing all Kubernetes permissions", async ({ page }) => {
-    await common.loginAsKeycloakUser(
-      process.env.QE_USER6_ID,
-      process.env.QE_USER6_PASS,
-    );
-    await verifyMissingTopologyPermission(page);
-  });
+    test("Verify pods visibility in the Topology tab", async () => {
+      await topology.verifyDeployment("topology-test");
+    });
 
-  test("Insufficient permissions: missing 'kubernetes.clusters.read'", async ({
-    page,
-  }) => {
-    kubernetesRoleName = "kubernetes_resources_viewer";
-    await common.loginAsKeycloakUser();
-    await rbacPo.createRole(
-      kubernetesRoleName,
-      [RbacPo.rbacTestUsers.rhdhqe6],
-      [],
-      [{ permission: "kubernetes.resources.read" }],
-      "kubernetes",
-    );
-    await common.signOut();
-    await common.loginAsKeycloakUser(
-      process.env.QE_USER6_ID,
-      process.env.QE_USER6_PASS,
-    );
-    await verifyMissingTopologyPermission(page);
-  });
-
-  test("Insufficient permissions: missing 'kubernetes.resources.read'", async ({
-    page,
-  }) => {
-    kubernetesRoleName = "kubernetes_clusters_viewer";
-    await rbacPo.createRole(
-      kubernetesRoleName,
-      [RbacPo.rbacTestUsers.rhdhqe6],
-      [],
-      [{ permission: "kubernetes.clusters.read" }],
-      "kubernetes",
-    );
-    await common.signOut();
-    await common.loginAsKeycloakUser(
-      process.env.QE_USER6_ID,
-      process.env.QE_USER6_PASS,
-    );
-    await verifyMissingTopologyPermission(page);
-  });
-
-  test("Authorized topology user without 'kubernetes.proxy' permission is able to view Topology information but not logs", async ({
-    page,
-  }) => {
-    await common.loginAsKeycloakUser(
-      process.env.QE_USER5_ID,
-      process.env.QE_USER5_PASS,
-    );
-    await catalog.goToBackstageJanusProject();
-    await uiHelper.clickTab("Topology");
-    await page.locator("[data-test-id=topology-test] image").first().click();
-    await page.getByLabel("Pod").click();
-    await uiHelper.clickTab("Resources");
-    await page.locator('button:has(span:text("View Logs"))').first().click();
-    await uiHelper.verifyHeading("Missing Permission");
-    await uiHelper.verifyText("kubernetes.proxy");
-  });
-
-  test("Authorized topology user with 'kubernetes.proxy' permission is able to view Topology logs", async ({
-    page,
-  }) => {
-    await common.loginAsKeycloakUser();
-    await catalog.goToBackstageJanusProject();
-    await uiHelper.clickTab("Topology");
-    await page.locator("[data-test-id=topology-test] image").first().click();
-    await page.getByLabel("Pod").click();
-    await uiHelper.clickTab("Resources");
-    await page.locator('button:has(span:text("View Logs"))').first().click();
-    const fileContent = await downloadAndReadFile(
-      page,
-      'role=button[name="download logs"]',
-    );
-    expect(fileContent).not.toBeUndefined();
-    expect(fileContent).not.toBe("");
+    test("Verify pod logs visibility in the Topology tab", async () => {
+      await topology.verifyDeployment("topology-test");
+      await topology.verifyPodLogs(true);
+    });
   });
 });
