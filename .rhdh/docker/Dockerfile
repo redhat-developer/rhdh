@@ -257,9 +257,9 @@ RUN echo "=== YARN COPY DYNAMIC PLUGINS in $(pwd) ==="; "$YARN" copy-dynamic-plu
 # RUN ls -la dynamic-plugins/*
 
 # Downstream only - clean up dynamic plugins sources:
+# DISABLE THIS 04/04 to try to fix startup problems in RHIDP-4014
 # Only keep the dist sub-folder in the dynamic-plugins folder
-RUN echo "=== DELETE DYNAMIC PLUGINS/* (except dist/) from $(pwd) ==="; find dynamic-plugins -maxdepth 1 -mindepth 1 -type d -not -name dist -exec rm -Rf {} \;
-# debug
+# RUN echo "=== DELETE DYNAMIC PLUGINS/* (except dist/) from $(pwd) ==="; find dynamic-plugins -maxdepth 1 -mindepth 1 -type d -not -name dist -exec rm -Rf {} \;
 # RUN ls -la dynamic-plugins/dist/*
 
 # Stage 4 - Build the actual backend image and install production dependencies
@@ -284,10 +284,13 @@ RUN tar xzf "$TARBALL_PATH"/skeleton.tar.gz; tar xzf "$TARBALL_PATH"/bundle.tar.
 COPY $EXTERNAL_SOURCE_NESTED/app-config*.yaml ./
 COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins.default.yaml ./
 
-# Create library symlinks to build: isolated-vm node-gyp better-sqlite cpu-features
-RUN for l in libbrotlidec.so.1 libbrotlienc.so.1 libbrotlicommon.so.1 libc.so.6 ld-linux-x86-64.so.2 libcrypto.so.3 libk5crypto.so.3 libz.so.1 libssl.so.3; do \
-      ln -s /usr/lib64/$l /usr/lib64/${l%.*} || true; \
-    done
+# Hackaround: create library symlinks to build: isolated-vm node-gyp better-sqlite cpu-features
+# TODO is this still needed? maintaining it over time will be a chore if the .so files change
+RUN echo "=== lib64 symlinks ==="; \
+  for l in libbrotlidec.so.1 libbrotlienc.so.1 libbrotlicommon.so.1 libc.so.6 ld-linux-x86-64.so.2 libcrypto.so.3 libk5crypto.so.3 libz.so.1 libssl.so.3; do \
+    ln -s /usr/lib64/$l /usr/lib64/${l%.*} 2>/dev/null || true; \
+    ls -l /usr/lib64/${l%.*}; \
+  done
 
 # Increate timeout for yarn install
 RUN "$YARN" config set httpTimeout 600000
