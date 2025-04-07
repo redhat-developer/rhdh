@@ -60,7 +60,6 @@ test.skip("Test Keycloak plugin", () => {
 
   test("Test keycloak metrics with failure counters", async () => {
     const kubeClient = new KubeClient();
-    let metricLines: string[];
     // todo remove this log
     console.log(
       `===== base url ${baseRHDHURL} and namespace ${process.env.NAME_SPACE}`,
@@ -74,16 +73,13 @@ test.skip("Test Keycloak plugin", () => {
     console.log(`Service: ${JSON.stringify(service)}`);
     const rhdhServiceName = service[0].metadata.name;
 
-    if (isRunningInKubernetes()) {
-      // for Openshift ci
-      const internalNetworkMetricsURL = `http://${rhdhServiceName}.${namespace}.svc.cluster.local:9464/metrics`;
-      metricLines = await fetchMetrics(internalNetworkMetricsURL);
-    } else {
-      // just for local development
+    let metricsEndpointURL = `http://${rhdhServiceName}.${namespace}.svc.cluster.local:9464/metrics`;
+
+    // just for local development
+    if (!isRunningInKubernetes()) {
       const serviceName = "rhdh-metrics";
       const host: string = new URL(baseRHDHURL).hostname;
       const domain = host.split(".").slice(1).join(".");
-      const metricsEndpointURL = `https://${serviceName}.${domain}/metrics`;
       const route = {
         apiVersion: "route.openshift.io/v1",
         kind: "Route",
@@ -103,8 +99,10 @@ test.skip("Test Keycloak plugin", () => {
       if (!metricsRoute) {
         await kubeClient.createRoute(namespace, route);
       }
-      metricLines = await fetchMetrics(metricsEndpointURL);
+      metricsEndpointURL = `https://${serviceName}.${domain}/metrics`;
     }
+
+    const metricLines = await fetchMetrics(metricsEndpointURL);
 
     const metricLineStartWith =
       'backend_keycloak_fetch_task_failure_count_total{taskInstanceId="';
