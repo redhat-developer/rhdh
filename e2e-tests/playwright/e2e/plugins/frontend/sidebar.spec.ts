@@ -41,5 +41,12 @@ test.describe("Validate Sidebar Navigation Customization", () => {
     await expect(
       page.getByRole("link", { name: "Test disabled" }),
     ).not.toBeVisible();
+
+    // Verify the presence/absense of nested 'Test' buttons in the sidebar
+    await uiHelper.openSidebarButton("Test enabled");
+    await uiHelper.verifyText("Test nested enabled");
+    await expect(
+      page.getByRole("link", { name: "Test nested disabled" }),
+    ).not.toBeVisible();
   });
 });

@@ -178,6 +178,14 @@ dynamicPlugins:
         default.test_enabled:
           title: Test enabled
           enabled: true
+        default.test_nested_enabled:
+          parent: default.test_enabled
+          title: Test nested enabled
+          enabled: true
+        default.test_nested_disabled:
+          parent: default.test_enabled
+          title: Test nested disabled
+          enabled: false
         default.test_disabled:
           title: Test disabled
           enabled: false
