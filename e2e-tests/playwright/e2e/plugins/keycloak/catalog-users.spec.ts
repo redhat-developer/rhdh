@@ -4,6 +4,8 @@ import { UIhelper } from "../../../utils/ui-helper";
 import { Common } from "../../../utils/common";
 import { test, expect } from "@playwright/test";
 import { KubeClient } from "../../../utils/kube-client";
+import https from "https";
+import fetch from "node-fetch";
 
 test.describe.skip("Test Keycloak plugin", () => {
   // Skipping this test due to https://issues.redhat.com/browse/RHIDP-6844
@@ -120,9 +122,13 @@ test.describe("Test Keycloak plugin metrics", () => {
 });
 
 async function fetchMetrics(metricsEndpoitUrl: string): Promise<string[]> {
+  const httpsAgent = new https.Agent({
+    rejectUnauthorized: false,
+  });
   const response = await fetch(metricsEndpoitUrl, {
     method: "GET",
     headers: { "Content-Type": "plain/text" },
+    agent: httpsAgent,
   });
 
   if (response.status !== 200)
