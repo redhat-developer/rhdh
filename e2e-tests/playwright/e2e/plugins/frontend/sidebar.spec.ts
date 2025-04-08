@@ -48,5 +48,10 @@ test.describe("Validate Sidebar Navigation Customization", () => {
     await expect(
       page.getByRole("link", { name: "Test nested disabled" }),
     ).not.toBeVisible();
+
+    await uiHelper.verifyText("Test_i enabled");
+    await expect(
+      page.getByRole("link", { name: "Test_i disabled" }),
+    ).not.toBeVisible();
   });
 });
