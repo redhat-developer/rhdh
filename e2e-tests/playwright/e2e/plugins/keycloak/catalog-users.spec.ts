@@ -5,15 +5,12 @@ import { Common } from "../../../utils/common";
 import { test, expect } from "@playwright/test";
 import { KubeClient } from "../../../utils/kube-client";
 
-test.describe("Test Keycloak plugin", () => {
+test.describe.skip("Test Keycloak plugin", () => {
   // Skipping this test due to https://issues.redhat.com/browse/RHIDP-6844
   let uiHelper: UIhelper;
   let keycloak: Keycloak;
   let common: Common;
   let token: string;
-
-  const namespace = process.env.NAME_SPACE || "showcase-ci-nightly";
-  const baseRHDHURL: string = process.env.BASE_URL;
 
   test.beforeAll(async () => {
     keycloak = new Keycloak();
@@ -27,7 +24,7 @@ test.describe("Test Keycloak plugin", () => {
     await CatalogUsersPO.visitBaseURL(page);
   });
 
-  test.skip("Users on keycloak should match users on backstage", async ({
+  test("Users on keycloak should match users on backstage", async ({
     page,
   }) => {
     const keycloakUsers = await keycloak.getUsers(token);
@@ -57,6 +54,11 @@ test.describe("Test Keycloak plugin", () => {
       }
     }
   });
+});
+
+test.describe("Test Keycloak plugin metrics", () => {
+  const namespace = process.env.NAME_SPACE || "showcase-ci-nightly";
+  const baseRHDHURL: string = process.env.BASE_URL;
 
   test("Test keycloak metrics with failure counters", async () => {
     const kubeClient = new KubeClient();
