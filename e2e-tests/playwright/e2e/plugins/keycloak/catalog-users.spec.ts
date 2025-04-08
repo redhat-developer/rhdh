@@ -5,7 +5,7 @@ import { Common } from "../../../utils/common";
 import { test, expect } from "@playwright/test";
 import { KubeClient } from "../../../utils/kube-client";
 
-test.skip("Test Keycloak plugin", () => {
+test.describe("Test Keycloak plugin", () => {
   // Skipping this test due to https://issues.redhat.com/browse/RHIDP-6844
   let uiHelper: UIhelper;
   let keycloak: Keycloak;
@@ -27,7 +27,7 @@ test.skip("Test Keycloak plugin", () => {
     await CatalogUsersPO.visitBaseURL(page);
   });
 
-  test("Users on keycloak should match users on backstage", async ({
+  test.skip("Users on keycloak should match users on backstage", async ({
     page,
   }) => {
     const keycloakUsers = await keycloak.getUsers(token);
