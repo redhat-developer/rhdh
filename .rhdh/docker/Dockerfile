@@ -75,7 +75,6 @@ COPY $EXTERNAL_SOURCE_NESTED/plugins/dynamic-plugins-info-backend/package.json .
 COPY $EXTERNAL_SOURCE_NESTED/packages/backend/package.json ./packages/backend/package.json
 COPY $EXTERNAL_SOURCE_NESTED/packages/app/package.json ./packages/app/package.json
 COPY $EXTERNAL_SOURCE_NESTED/package.json ./package.json
-COPY $EXTERNAL_SOURCE_NESTED/e2e-tests/package.json ./e2e-tests/package.json
 COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/_utils/package.json ./dynamic-plugins/_utils/package.json
 COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/roadiehq-scaffolder-backend-module-utils-dynamic/package.json ./dynamic-plugins/wrappers/roadiehq-scaffolder-backend-module-utils-dynamic/package.json
 COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/roadiehq-scaffolder-backend-module-http-request-dynamic/package.json ./dynamic-plugins/wrappers/roadiehq-scaffolder-backend-module-http-request-dynamic/package.json
