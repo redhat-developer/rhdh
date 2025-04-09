@@ -163,45 +163,6 @@ RUN mkdir -p ~/.cache/node-gyp/${NODE_HEADERS_VERSION}; \
 tar -xf /cachi2/output/deps/generic/node-v${NODE_HEADERS_VERSION}-headers.tar.gz --directory ~/.cache/node-gyp/${NODE_HEADERS_VERSION}/ --strip-components 1; \
 echo "11" > ~/.cache/node-gyp/${NODE_HEADERS_VERSION}/installVersion
 
-# Downstream only - enable offline playwright - see artifacts.lock.yaml for zip
-ENV CHROMIUM_VERSION="1155" \
-    HEADLESS_VERSION="1155" \
-    FFMPEG_VERSION="1011" \
-    PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
-    PLAYWRIGHT_BROWSERS_PATH=/cachi2/output/deps/generic/pw-browsers \
-    CHROMIUM_DIR=$PLAYWRIGHT_BROWSERS_PATH/chromium-${CHROMIUM_VERSION} \
-    HEADLESS_DIR=$PLAYWRIGHT_BROWSERS_PATH/chromium_headless_shell-${HEADLESS_VERSION} \
-    FFMPEG_DIR=$PLAYWRIGHT_BROWSERS_PATH/ffmpeg-${FFMPEG_VERSION}
-
-# # python3 -m playwright install chromium firefox --dry-run
-# browser: chromium version 133.0.6943.16
-#   Install location:    /opt/app-root/src/.cache/ms-playwright/chromium-1155
-#   Download url:        https://cdn.playwright.dev/dbazure/download/playwright/builds/chromium/1155/chromium-linux.zip
-# browser: ffmpeg
-#   Install location:    /opt/app-root/src/.cache/ms-playwright/ffmpeg-1011
-#   Download url:        https://cdn.playwright.dev/dbazure/download/playwright/builds/ffmpeg/1011/ffmpeg-linux.zip
-# browser: chromium-headless-shell version 133.0.6943.16
-#   Install location:    /opt/app-root/src/.cache/ms-playwright/chromium_headless_shell-1155
-#   Download url:        https://cdn.playwright.dev/dbazure/download/playwright/builds/chromium/1155/chromium-headless-shell-linux.zip
-# browser: ffmpeg
-#   Install location:    /opt/app-root/src/.cache/ms-playwright/ffmpeg-1011
-#   Download url:        https://cdn.playwright.dev/dbazure/download/playwright/builds/ffmpeg/1011/ffmpeg-linux.zip
-
-RUN dnf install -q -y alsa-lib at-spi2-atk at-spi2-core atk cairo cups-libs libdrm libX11 libX11-xcb libXcomposite libXdamage libXext libXfixes libxkbcommon libXrandr mesa-libgbm nspr nss pango; \
-  export PLAYWRIGHT_BROWSERS_PATH=$PLAYWRIGHT_BROWSERS_PATH/; \
-  ls -la /cachi2/output/deps/generic/; \
-  mkdir -p $CHROMIUM_DIR; unzip -q /cachi2/output/deps/generic/chromium-linux.zip                    -d $CHROMIUM_DIR/; touch $CHROMIUM_DIR/DEPENDENCIES_VALIDATED $CHROMIUM_DIR/INSTALLATION_COMPLETE; \
-  mkdir -p $HEADLESS_DIR; unzip -q /cachi2/output/deps/generic/chromium-headless-shell-linux.zip     -d $HEADLESS_DIR/; touch $HEADLESS_DIR/DEPENDENCIES_VALIDATED $HEADLESS_DIR/INSTALLATION_COMPLETE; \
-  mkdir -p $FFMPEG_DIR;   unzip -q /cachi2/output/deps/generic/ffmpeg-linux.zip                      -d $FFMPEG_DIR/;   touch $FFMPEG_DIR/DEPENDENCIES_VALIDATED   $FFMPEG_DIR/INSTALLATION_COMPLETE; \
-  # echo "Chromium: "; ls -1 $CHROMIUM_DIR; \
-  # echo "Chromium Headless Shell:"; ls -1 $HEADLESS_DIR; \
-  # echo "ffmpeg:"; ls -1 $FFMPEG_DIR; \
-  pip3 install playwright==1.49.1 && playwright --version
-
-# debug
-# Redirect console output and errors to a log file to make this log shorter
-# RUN exec 3>&1 4>&2 1>> /tmp/build.log.txt 2>> /tmp/build.log.txt
-
 # Increate timeout for yarn install
 RUN "$YARN" config set httpTimeout 600000
 
