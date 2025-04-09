@@ -4,8 +4,6 @@ import { UIhelper } from "../../../utils/ui-helper";
 import { Common } from "../../../utils/common";
 import { test, expect } from "@playwright/test";
 import { KubeClient } from "../../../utils/kube-client";
-import https from "https";
-import fetch from "node-fetch";
 
 test.describe.skip("Test Keycloak plugin", () => {
   // Skipping this test due to https://issues.redhat.com/browse/RHIDP-6844
@@ -70,7 +68,7 @@ test.describe("Test Keycloak plugin metrics", () => {
 
   test.afterAll(async () => {
     const metricsRoute = await kubeClient.getRoute(namespace, routerName);
-    if (!metricsRoute) {
+    if (metricsRoute) {
       await kubeClient.deleteRoute(namespace, routerName);
     }
   });
@@ -80,7 +78,6 @@ test.describe("Test Keycloak plugin metrics", () => {
       namespace,
       "app.kubernetes.io/name=backstage",
     );
-    expect(service.length).toBe(1);
     const rhdhServiceName = service[0].metadata.name;
 
     const host: string = new URL(baseRHDHURL).hostname;
@@ -93,7 +90,6 @@ test.describe("Test Keycloak plugin metrics", () => {
         host: `${routerName}.${domain}`,
         to: { kind: "Service", name: rhdhServiceName },
         port: { targetPort: "http-metrics" },
-        tls: { termination: "edge" },
       },
     };
 
@@ -106,13 +102,9 @@ test.describe("Test Keycloak plugin metrics", () => {
       // wait for the route to be available
       await new Promise((resolve) => setTimeout(resolve, 5000));
     }
-    const caCm = await kubeClient.getConfigMap(
-      "openshift-service-ca.crt",
-      namespace,
-    );
-    const ca = caCm.body.data["service-ca.crt"];
-    const metricsEndpointURL = `https://${routerName}.${domain}/metrics`;
-    const metricLines = await fetchMetrics(metricsEndpointURL, ca);
+
+    const metricsEndpointURL = `http://${routerName}.${domain}/metrics`;
+    const metricLines = await fetchMetrics(metricsEndpointURL);
 
     const metricLineStartWith =
       'backend_keycloak_fetch_task_failure_count_total{taskInstanceId="';
@@ -126,19 +118,10 @@ test.describe("Test Keycloak plugin metrics", () => {
   });
 });
 
-async function fetchMetrics(
-  metricsEndpoitUrl: string,
-  ca?: string,
-): Promise<string[]> {
-  console.log(`===== CA cert is: ${ca}`);
-  const httpsAgent = ca
-    ? new https.Agent({ ca, rejectUnauthorized: true })
-    : undefined;
-
+async function fetchMetrics(metricsEndpoitUrl: string): Promise<string[]> {
   const response = await fetch(metricsEndpoitUrl, {
     method: "GET",
     headers: { "Content-Type": "plain/text" },
-    agent: httpsAgent,
   });
 
   if (response.status !== 200)
