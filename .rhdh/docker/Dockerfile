@@ -158,11 +158,11 @@ COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin
 COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin-3scale-backend-dynamic/package.json ./dynamic-plugins/wrappers/backstage-community-plugin-3scale-backend-dynamic/package.json
 # END COPY package.json files
 
-# Downstream only - enable offline node-gyp install from local headers - see artifacts.lock.yaml for tar.gz
-ENV NODE_HEADERS_VERSION="22.13.1"
-RUN mkdir -p ~/.cache/node-gyp/${NODE_HEADERS_VERSION}; \
-tar -xf /cachi2/output/deps/generic/node-v${NODE_HEADERS_VERSION}-headers.tar.gz --directory ~/.cache/node-gyp/${NODE_HEADERS_VERSION}/ --strip-components 1; \
-echo "11" > ~/.cache/node-gyp/${NODE_HEADERS_VERSION}/installVersion
+# unpack headers from tarball to save time (both upstream and downstream)
+COPY $EXTERNAL_SOURCE_NESTED/.nvmrc $EXTERNAL_SOURCE_NESTED/.nvm/releases/* .
+RUN NODE_HEADERS_VERSION=$(cat .nvmrc); mkdir -p ~/.cache/node-gyp/${NODE_HEADERS_VERSION}; \
+  tar -xf node-v${NODE_HEADERS_VERSION}-headers.tar.gz --directory ~/.cache/node-gyp/${NODE_HEADERS_VERSION}/ --strip-components 1; \
+  echo "11" > ~/.cache/node-gyp/${NODE_HEADERS_VERSION}/installVersion; rm -fr .nvmrc node-v${NODE_HEADERS_VERSION}-headers.tar.gz
 
 # Downstream only - enable offline playwright - see artifacts.lock.yaml for zip
 ENV CHROMIUM_VERSION="1155" \

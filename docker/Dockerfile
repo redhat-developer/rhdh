@@ -136,6 +136,12 @@ COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin
 COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin-3scale-backend-dynamic/package.json ./dynamic-plugins/wrappers/backstage-community-plugin-3scale-backend-dynamic/package.json
 # END COPY package.json files
 
+# unpack headers from tarball to save time (both upstream and downstream)
+COPY $EXTERNAL_SOURCE_NESTED/.nvmrc $EXTERNAL_SOURCE_NESTED/.nvm/releases/* .
+RUN NODE_HEADERS_VERSION=$(cat .nvmrc); mkdir -p ~/.cache/node-gyp/${NODE_HEADERS_VERSION}; \
+  tar -xf node-v${NODE_HEADERS_VERSION}-headers.tar.gz --directory ~/.cache/node-gyp/${NODE_HEADERS_VERSION}/ --strip-components 1; \
+  echo "11" > ~/.cache/node-gyp/${NODE_HEADERS_VERSION}/installVersion; rm -fr .nvmrc node-v${NODE_HEADERS_VERSION}-headers.tar.gz
+
 # Increate timeout for yarn install
 RUN "$YARN" config set httpTimeout 600000
 
