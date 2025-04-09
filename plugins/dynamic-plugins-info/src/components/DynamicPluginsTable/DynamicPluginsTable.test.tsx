@@ -1,25 +1,14 @@
 import { renderWithEffects } from '@backstage/test-utils';
 
 import { listLoadedPluginsResult } from '../../__fixtures__/listLoadedPluginsResult';
-import { InternalPluginsMap } from '../InternalPluginsMap';
 import { DynamicPluginsTable } from './DynamicPluginsTable';
 
 const DEFAULT_ROWS_DISPLAYED = 5;
 
-// 6 mockapi returned external(enabled) + 53 internal(not enabled)
+// 6 mockapi returned external(enabled)
 // mockapi returns enabled plugins
 // keys from InternalPluginsMap are internal plugins
-const plugins = [
-  ...Object.keys(InternalPluginsMap).map(name => ({
-    name,
-    version: undefined,
-    role: undefined,
-    platform: undefined,
-    internal: true,
-    enabled: true,
-  })),
-  ...listLoadedPluginsResult,
-];
+const plugins = [...listLoadedPluginsResult];
 
 jest.mock('@backstage/core-plugin-api', () => {
   const actual = jest.requireActual('@backstage/core-plugin-api');
