@@ -129,6 +129,6 @@ test.describe("Admin > Extensions > Catalog", () => {
     expect(clipboardContent).toContain("backstage-community.plugin-topology:");
     await uiHelper.clickButton("Cancel");
     await expect(page.getByRole("button", { name: "Install" })).toBeVisible();
-    await uiHelper.verifyHeading("Install Application Topology for Kubernetes");
+    await uiHelper.verifyHeading("Application Topology for Kubernetes");
   });
 });
