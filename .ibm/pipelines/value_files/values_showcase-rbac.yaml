@@ -54,7 +54,7 @@ global:
               - clusters:
                   - authProvider: serviceAccount
                     name: 'my-cluster'
-                    serviceAccountToken: ${K8S_SERVICE_ACCOUNT_TOKEN}
+                    serviceAccountToken: ${K8S_CLUSTER_TOKEN_ENCODED}
                     url: ${K8S_CLUSTER_API_SERVER_URL}
                 type: config
             customResources:
