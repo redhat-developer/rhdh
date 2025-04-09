@@ -257,10 +257,8 @@ RUN echo "=== YARN COPY DYNAMIC PLUGINS in $(pwd) ==="; "$YARN" copy-dynamic-plu
 # RUN ls -la dynamic-plugins/*
 
 # Downstream only - clean up dynamic plugins sources:
-# DISABLE THIS 04/04 to try to fix startup problems in RHIDP-4014
 # Only keep the dist sub-folder in the dynamic-plugins folder
-# RUN echo "=== DELETE DYNAMIC PLUGINS/* (except dist/) from $(pwd) ==="; find dynamic-plugins -maxdepth 1 -mindepth 1 -type d -not -name dist -exec rm -Rf {} \;
-# RUN ls -la dynamic-plugins/dist/*
+RUN echo "=== DELETE DYNAMIC PLUGINS/* (except dist/) from $(pwd) ==="; find dynamic-plugins -maxdepth 1 -mindepth 1 -type d -not -name dist -exec rm -Rf {} \;
 
 # Stage 4 - Build the actual backend image and install production dependencies
 # Upstream only
