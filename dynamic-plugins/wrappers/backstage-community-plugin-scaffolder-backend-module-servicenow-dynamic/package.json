@@ -10,7 +10,7 @@
   },
   "backstage": {
     "role": "backend-plugin-module",
-    "supported-versions": "1.36.1",
+    "supported-versions": "1.37.1",
     "pluginId": "scaffolder",
     "pluginPackage": "@backstage/plugin-scaffolder-backend"
   },
@@ -59,7 +59,7 @@
     "lifecycle:active"
   ],
   "devDependencies": {
-    "@backstage/cli": "0.30.0",
+    "@backstage/cli": "0.31.1",
     "@janus-idp/cli": "3.4.0",
     "typescript": "5.8.3"
   }
