@@ -130,10 +130,10 @@ async function fetchMetrics(
   metricsEndpoitUrl: string,
   ca?: string,
 ): Promise<string[]> {
-  let httpsAgent;
-  if (ca) {
-    httpsAgent = new https.Agent({ ca: ca });
-  }
+  console.log(`===== CA cert is: ${ca}`);
+  const httpsAgent = ca
+    ? new https.Agent({ ca, rejectUnauthorized: true })
+    : undefined;
 
   const response = await fetch(metricsEndpoitUrl, {
     method: "GET",
