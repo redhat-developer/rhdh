@@ -3575,9 +3575,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-jfrog-artifactory@npm:1.13.0":
-  version: 1.13.0
-  resolution: "@backstage-community/plugin-jfrog-artifactory@npm:1.13.0"
+"@backstage-community/plugin-jfrog-artifactory@npm:1.13.3":
+  version: 1.13.3
+  resolution: "@backstage-community/plugin-jfrog-artifactory@npm:1.13.3"
   dependencies:
     "@backstage/catalog-model": ^1.7.3
     "@backstage/core-components": ^0.16.3
@@ -3587,12 +3587,11 @@ __metadata:
     "@janus-idp/shared-react": ^2.16.0
     "@material-ui/core": ^4.9.13
     "@material-ui/icons": ^4.11.3
-    "@material-ui/lab": ^4.0.0-alpha.45
     react-use: ^17.4.0
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 626c80938504756ebb3bf938b5b150d052c229f0f311cf4a8807c74e0deb3e49b0ebd1cc4a9046e1f6f093939643d886e5dada83b900720e48374a1b3578fd89
+  checksum: d4af1644d7a4b289884329550bde78f5a46ad6dcf2bd434c049666af8d782770ccacafeaf322b78ec51cec6eada5277b904cd66a6750ba3d4d0ceb28af582d7f
   languageName: node
   linkType: hard
 
@@ -24153,7 +24152,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backstage-community-plugin-jfrog-artifactory@workspace:dynamic-plugins/wrappers/backstage-community-plugin-jfrog-artifactory"
   dependencies:
-    "@backstage-community/plugin-jfrog-artifactory": 1.13.0
+    "@backstage-community/plugin-jfrog-artifactory": 1.13.3
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.4.0
     "@mui/material": 5.17.1
