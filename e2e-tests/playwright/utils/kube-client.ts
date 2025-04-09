@@ -437,6 +437,23 @@ export class KubeClient {
       return response.body;
     } catch (error) {
       console.error("Error creating Route:", error);
+      throw error;
+    }
+  }
+
+  async deleteRoute(namespace: string, name: string) {
+    try {
+      const response = await this.k8sCustomAPI.deleteNamespacedCustomObject(
+        "route.openshift.io",
+        "v1",
+        namespace,
+        "routes",
+        name,
+      );
+      return response.body;
+    } catch (error) {
+      console.error("Error deleting Route:", error);
+      throw error;
     }
   }
 

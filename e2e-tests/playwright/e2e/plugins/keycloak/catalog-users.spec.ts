@@ -61,36 +61,36 @@ test.describe.skip("Test Keycloak plugin", () => {
 test.describe("Test Keycloak plugin metrics", () => {
   const namespace = process.env.NAME_SPACE || "showcase-ci-nightly";
   const baseRHDHURL: string = process.env.BASE_URL;
+  let kubeClient: KubeClient;
+  const routerName = "rhdh-metrics";
+
+  test.beforeEach(() => {
+    kubeClient = new KubeClient();
+  });
+
+  test.afterAll(async () => {
+    const metricsRoute = await kubeClient.getRoute(namespace, routerName);
+    if (!metricsRoute) {
+      await kubeClient.deleteRoute(namespace, routerName);
+    }
+  });
 
   test("Test keycloak metrics with failure counters", async () => {
-    const kubeClient = new KubeClient();
-    // todo remove this log
-    console.log(
-      `===== base url ${baseRHDHURL} and namespace ${process.env.NAME_SPACE}`,
-    );
-
     const service = await kubeClient.getServiceByLabel(
       namespace,
       "app.kubernetes.io/name=backstage",
     );
     expect(service.length).toBe(1);
-    console.log(`Service: ${JSON.stringify(service)}`);
     const rhdhServiceName = service[0].metadata.name;
 
-    // let metricsEndpointURL = `http://${rhdhServiceName}.${namespace}.svc.cluster.local:9464/metrics`;
-    // console.log(`metricsEndpointURL: ${metricsEndpointURL}`);
-
-    // just for local development
-    // if (!isRunningInKubernetes()) {
-    const serviceName = "rhdh-metrics";
     const host: string = new URL(baseRHDHURL).hostname;
     const domain = host.split(".").slice(1).join(".");
     const route = {
       apiVersion: "route.openshift.io/v1",
       kind: "Route",
-      metadata: { name: serviceName, namespace },
+      metadata: { name: routerName, namespace },
       spec: {
-        host: `${serviceName}.${domain}`,
+        host: `${routerName}.${domain}`,
         to: { kind: "Service", name: rhdhServiceName },
         port: { targetPort: "http-metrics" },
         tls: { termination: "edge" },
@@ -104,8 +104,7 @@ test.describe("Test Keycloak plugin metrics", () => {
     if (!metricsRoute) {
       await kubeClient.createRoute(namespace, route);
     }
-    const metricsEndpointURL = `https://${serviceName}.${domain}/metrics`;
-    // }
+    const metricsEndpointURL = `https://${routerName}.${domain}/metrics`;
 
     const metricLines = await fetchMetrics(metricsEndpointURL);
 
@@ -137,7 +136,3 @@ async function fetchMetrics(metricsEndpoitUrl: string): Promise<string[]> {
 
   return data.split("\n");
 }
-
-// function isRunningInKubernetes() {
-//   return process.env.KUBERNETES_SERVICE_HOST !== undefined;
-// }
