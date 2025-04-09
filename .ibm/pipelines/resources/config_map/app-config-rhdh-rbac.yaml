@@ -46,7 +46,9 @@ auth:
         clientSecret: ${KEYCLOAK_AUTH_CLIENT_SECRET}
         prompt: auto
         callbackUrl: ${RHDH_BASE_URL}/api/auth/oidc/handler/frame
-
+        signIn:
+          resolvers:
+            - resolver: emailLocalPartMatchingUserEntityName
 signInPage: oidc
 proxy:
   skipInvalidProxies: true
