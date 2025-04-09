@@ -72,10 +72,6 @@ global:
               - apiVersion: 'v1'
                 group: 'route.openshift.io'
                 plural: 'routes'
-              # Add to view topology code decorators
-              - group: 'org.eclipse.che'
-                apiVersion: 'v2'
-                plural: 'checlusters'
             serviceLocatorMethod:
               type: multiTenant
       # Enable OCM plugins.
