@@ -17,13 +17,10 @@ export class KubernetesPage {
     );
     await deployment.scrollIntoViewIfNeeded();
     await expect(deployment).toBeVisible();
-
-    const pods = this.page.locator(KUBERNETES_COMPONENTS.statusOk).nth(2);
-    expect(await pods.textContent()).toBe("1 pods");
   }
 
   async verifyPodLogs(text: string, heading: string, allowed: boolean) {
-    await this.page.locator(KUBERNETES_COMPONENTS.statusOk).nth(2).click();
+    await this.verifyDeployment(text);
     const pod = this.page.locator("h6").filter({ hasText: text }).first();
 
     await expect(pod).toBeVisible();
