@@ -12,16 +12,18 @@ export class KubernetesPage {
   }
 
   async verifyDeployment(text: string) {
-    const deployment = this.page.locator(`text=${text}Deploymentnamespace`);
+    const deployment = this.page.locator(
+      `text=${text}Deploymentnamespace: showcase-rbac`,
+    );
     await deployment.scrollIntoViewIfNeeded();
     await expect(deployment).toBeVisible();
 
-    const pods = this.page.locator(KUBERNETES_COMPONENTS.statusOk).nth(1);
+    const pods = this.page.locator(KUBERNETES_COMPONENTS.statusOk).nth(2);
     expect(await pods.textContent()).toBe("1 pods");
   }
 
   async verifyPodLogs(text: string, heading: string, allowed: boolean) {
-    await this.page.locator(KUBERNETES_COMPONENTS.statusOk).nth(1).click();
+    await this.page.locator(KUBERNETES_COMPONENTS.statusOk).nth(2).click();
     const pod = this.page.locator("h6").filter({ hasText: text }).first();
 
     await expect(pod).toBeVisible();

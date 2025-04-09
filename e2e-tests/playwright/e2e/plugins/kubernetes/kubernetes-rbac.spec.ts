@@ -32,7 +32,7 @@ test.describe("Test Kubernetes Plugin", () => {
 
       await page
         .locator(KUBERNETES_COMPONENTS.MuiAccordion)
-        .getByText("my-cluster")
+        .getByRole("button", { name: "my-cluster Cluster" })
         .click();
     });
 
@@ -53,8 +53,8 @@ test.describe("Test Kubernetes Plugin", () => {
       page,
     }) => {
       await common.loginAsKeycloakUser(
-        process.env.QE_USER5_ID,
-        process.env.QE_USER5_PASS,
+        process.env.QE_USER6_ID,
+        process.env.QE_USER6_PASS,
       );
 
       await catalog.goToBackstageJanusProject();
@@ -72,15 +72,18 @@ test.describe("Test Kubernetes Plugin", () => {
       page,
     }) => {
       await common.loginAsKeycloakUser(
-        process.env.QE_USER6_ID,
-        process.env.QE_USER6_PASS,
+        process.env.QE_USER5_ID,
+        process.env.QE_USER5_PASS,
       );
 
       await catalog.goToBackstageJanusProject();
       await uiHelper.clickTab("Kubernetes");
       await uiHelper.verifyText("backstage-janus");
 
-      await page.locator(KUBERNETES_COMPONENTS.MuiAccordion).click();
+      await page
+        .locator(KUBERNETES_COMPONENTS.MuiAccordion)
+        .getByRole("button", { name: "my-cluster Cluster" })
+        .click();
       await kubernetes.verifyDeployment("topology-test");
       await kubernetes.verifyPodLogs("topology-test", "topology-test", false);
     });
