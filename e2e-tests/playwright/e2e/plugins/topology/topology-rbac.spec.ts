@@ -29,6 +29,7 @@ test.describe("Test Topology Plugin with RBAC", () => {
 
     test.afterEach(async () => {
       if (kubernetesRoleName) {
+        await uiHelper.goToSettingsPage();
         await common.signOut();
         await common.loginAsKeycloakUser();
         await rbacPo.deleteRole(`role:default/${kubernetesRoleName}`);
@@ -57,6 +58,7 @@ test.describe("Test Topology Plugin with RBAC", () => {
             [{ permission }],
             "kubernetes",
           );
+          await uiHelper.goToSettingsPage();
           await common.signOut();
         }
 
