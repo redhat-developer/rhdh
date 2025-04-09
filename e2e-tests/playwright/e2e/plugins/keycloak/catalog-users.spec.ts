@@ -106,9 +106,13 @@ test.describe("Test Keycloak plugin metrics", () => {
       // wait for the route to be available
       await new Promise((resolve) => setTimeout(resolve, 5000));
     }
+    const caCm = await kubeClient.getConfigMap(
+      "openshift-service-ca.crt",
+      namespace,
+    );
+    const ca = caCm.body.data["service-ca.crt"];
     const metricsEndpointURL = `https://${routerName}.${domain}/metrics`;
-
-    const metricLines = await fetchMetrics(metricsEndpointURL);
+    const metricLines = await fetchMetrics(metricsEndpointURL, ca);
 
     const metricLineStartWith =
       'backend_keycloak_fetch_task_failure_count_total{taskInstanceId="';
@@ -122,10 +126,15 @@ test.describe("Test Keycloak plugin metrics", () => {
   });
 });
 
-async function fetchMetrics(metricsEndpoitUrl: string): Promise<string[]> {
-  const httpsAgent = new https.Agent({
-    rejectUnauthorized: false,
-  });
+async function fetchMetrics(
+  metricsEndpoitUrl: string,
+  ca?: string,
+): Promise<string[]> {
+  let httpsAgent;
+  if (ca) {
+    httpsAgent = new https.Agent({ ca: ca });
+  }
+
   const response = await fetch(metricsEndpoitUrl, {
     method: "GET",
     headers: { "Content-Type": "plain/text" },
