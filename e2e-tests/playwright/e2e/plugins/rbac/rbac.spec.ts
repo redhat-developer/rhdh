@@ -305,6 +305,7 @@ test.describe.serial("Test RBAC", () => {
       );
 
       await uiHelper.clickButton("Next");
+      await page.waitForTimeout(1_000);
       await uiHelper.fillTextInputByLabel(
         "Select users and groups",
         "sample-role-1",
@@ -334,6 +335,7 @@ test.describe.serial("Test RBAC", () => {
       );
       await uiHelper.verifyHeading("Edit Role");
       await uiHelper.clickButton("Next");
+      await page.waitForTimeout(1_000);
       await rbacPo.addUsersAndGroups(testUser);
       await page.click(rbacPo.selectMember(testUser));
       await uiHelper.verifyHeading(rbacPo.regexpShortUsersAndGroups(3, 1));
@@ -414,6 +416,7 @@ test.describe.serial("Test RBAC", () => {
       await page.getByText("Select...").click();
       await rbacPo.selectPermissionCheckbox("scaffolder.template.parameter");
       await uiHelper.clickButton("Next");
+      await page.waitForTimeout(1_000);
       await uiHelper.clickButton("Save");
       await uiHelper.verifyText(
         "Role role:default/test-role1 updated successfully",
