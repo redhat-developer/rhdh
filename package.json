@@ -34,8 +34,6 @@
     "packages": [
       "packages/*",
       "plugins/*",
-      "dynamic-plugins/_utils",
-      "dynamic-plugins/wrappers/*",
       "e2e-tests"
     ]
   },
