@@ -36,6 +36,7 @@ test.describe("Test Topology Plugin with RBAC", () => {
     });
 
     // User is able to read from the catalog
+    // User has 'kubernetes.clusters.read' and 'kubernetes.resources.read' permissions
     // User is missing 'kubernetes.proxy' permission (needed for pod logs)
     test("Verify pod logs are not visible in the Topology tab", async () => {
       await common.loginAsKeycloakUser(
@@ -45,6 +46,7 @@ test.describe("Test Topology Plugin with RBAC", () => {
       await catalog.goToBackstageJanusProject();
       await uiHelper.clickTab("Topology");
 
+      await topology.verifyDeployment("topology-test");
       await topology.verifyPodLogs(false);
     });
   });

@@ -39,7 +39,6 @@ export class Topology {
   }
 
   async verifyPodLogs(allowed: boolean) {
-    await this.page.getByLabel("Pod").click();
     await this.uiHelper.clickTab("Resources");
     await this.page
       .locator('button:has(span:text("View Logs"))')
