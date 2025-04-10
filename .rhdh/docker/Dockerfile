@@ -47,7 +47,7 @@ RUN dnf install -q -y --allowerasing --nobest \
   python3-subscription-manager-rhsm python3-systemd python3-urllib3 readline redhat-release rootfiles rpm rpm-build-libs rpm-libs rpm-plugin-selinux rpm-sign-libs rsync scl-utils \
   sed selinux-policy selinux-policy-targeted setup shadow-utils skopeo slirp4netns sqlite-libs subscription-manager subscription-manager-rhsm-certificates systemd systemd-libs \
   systemd-pam systemd-rpm-macros tar tcl tpm2-tss tzdata unzip usermode util-linux util-linux-core vim-filesystem vim-minimal virt-what which xz xz-libs yajl yum zlib zlib-devel && \
-  
+
   # '(micro)dnf update -y' not allowed in Konflux+Cachi2: instead use renovate or https://github.com/konflux-ci/rpm-lockfile-prototype to update the rpms.lock.yaml file
   dnf clean all
 
@@ -174,9 +174,6 @@ RUN "$YARN" config set httpTimeout 600000
 # RUN cat /cachi2/cachi2.env; echo; ls -la /cachi2/output/deps/yarn/*
 
 RUN echo "=== YARN INSTALL ==="; "$YARN" install --immutable
-# debug
-#  | tee /tmp/yarn.install.log.txt 2>&1; \
-#   for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then echo; echo $d; echo "======"; cat ${d}/build.log; fi; done
 
 # Stage 3 - Build packages
 FROM deps AS build
@@ -197,24 +194,15 @@ RUN \
   -e "s/(\"Last Commit\": \"(.+)\")/\1, \"Build Time\": \"$now\"/" && \
   cat packages/app/src/build-metadata.json; echo
 
-RUN echo "=== YARN BUILD ==="; "$YARN" build --filter=backend 
-# debug
-# >/tmp/yarn.build.log.txt 2>&1
-# || { for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then echo; echo $d; echo "======"; cat ${d}/build.log; fi; done } 
+RUN echo "=== YARN BUILD ==="; "$YARN" build --filter=backend
 
-# >/tmp/yarn.export.dynamic.log.txt 2>&1
-RUN echo "=== EXPORT DYNAMIC PLUGINS (with --no-install) ==="; "$YARN" export-dynamic --filter=./dynamic-plugins/wrappers/*
-# debug
-#  for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then echo; echo $d; echo "======"; cat ${d}/build.log; fi; done; \
-#  for d in $(find . -name yarn-install.log); do echo; echo "===== EXPORT DYNAMIC PLUGINS: $d =====>"; cat ${d}; echo "<===== EXPORT DYNAMIC PLUGINS: $d ====="; done; 
-
-# Stan says we can  omit this step - https://redhat-internal.slack.com/archives/C08A1KD7TNY/p1741805639019149?thread_ts=1741720088.366109&cid=C08A1KD7TNY
-# RUN echo "=== DIST-DYNAMIC YARN INSTALLS ==="; for f in $(find ./dynamic-plugins/wrappers/ -maxdepth 2 -type d -name dist-dynamic); do g=${f#*/wrappers/}; echo " > $g"; g=${g//\//_}; \
-#   pushd $f >/dev/null; "$YARN" install --immutable >"/tmp/yarn.install.${g}.log.txt" 2>&1; popd >/dev/null; done
+RUN echo "=== EXPORT DYNAMIC PLUGINS (with --no-install) ==="; FAILED=0; "$YARN" export-dynamic --filter=./dynamic-plugins/wrappers/* || true; \
+for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then \
+  (( FAILED = FAILED + 1 )); echo; echo $d; echo "======"; cat ${d}/build.log; \
+fi; done; \
+if [[ $FAILED -gt 0 ]]; then exit $FAILED; fi
 
 RUN echo "=== YARN COPY DYNAMIC PLUGINS in $(pwd) ==="; "$YARN" copy-dynamic-plugins dist
-#  >/tmp/yarn.copy.dynamic.log.txt 2>&1
-# RUN ls -la dynamic-plugins/*
 
 # Downstream only - clean up dynamic plugins sources:
 # Only keep the dist sub-folder in the dynamic-plugins folder
@@ -255,7 +243,7 @@ RUN "$YARN" config set httpTimeout 600000
 
 # Install production dependencies
 # hadolint ignore=DL3059
-RUN FAILED=0; "$YARN" workspaces focus --all --production || true; \ 
+RUN echo "=== YARN WORKSPACES FOCUS ==="; FAILED=0; "$YARN" workspaces focus --all --production || true; \
   for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then \
     (( FAILED = FAILED + 1 )); echo; echo $d; echo "======"; cat ${d}/build.log; \
   fi; done; \
@@ -334,11 +322,11 @@ RUN chmod -R a+r ./dynamic-plugins/ ./install-dynamic-plugins.py; \
 RUN ln -s /opt/app-root/src/packages/app/dist/index.html /opt/app-root/src/packages/app/dist/index.html.tmpl
 
 # Fix for https://issues.redhat.com/browse/RHIDP-728
-RUN mkdir /opt/app-root/src/.npm; chown -R 1001:1001 /opt/app-root/src/.npm; 
+RUN mkdir /opt/app-root/src/.npm; chown -R 1001:1001 /opt/app-root/src/.npm;
 
 # The fix-permissions script is important when operating in environments that dynamically use a random UID at runtime, such as OpenShift.
 # The upstream backstage image does not account for this and it causes the container to fail at runtime.
-# suppress warnings about dereferencing symlinks 
+# suppress warnings about dereferencing symlinks
 RUN fix-permissions ./ 2>&1 | grep -v "chgrp: cannot dereference" || true
 
 # Switch to nodejs user

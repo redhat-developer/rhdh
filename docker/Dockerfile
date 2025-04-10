@@ -166,9 +166,13 @@ RUN \
   -e "s/(\"Last Commit\": \"(.+)\")/\1, \"Build Time\": \"$now\"/" && \
   cat packages/app/src/build-metadata.json; echo
 
-RUN echo "=== YARN BUILD ==="; "$YARN" build --filter=backend 
+RUN echo "=== YARN BUILD ==="; "$YARN" build --filter=backend
 
-RUN echo "=== EXPORT DYNAMIC PLUGINS ==="; "$YARN" export-dynamic --filter=./dynamic-plugins/wrappers/*
+RUN echo "=== EXPORT DYNAMIC PLUGINS ==="; FAILED=0; "$YARN" export-dynamic --filter=./dynamic-plugins/wrappers/* || true; \
+for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then \
+  (( FAILED = FAILED + 1 )); echo; echo $d; echo "======"; cat ${d}/build.log; \
+fi; done; \
+if [[ $FAILED -gt 0 ]]; then exit $FAILED; fi
 
 RUN echo "=== YARN COPY DYNAMIC PLUGINS in $(pwd) ==="; "$YARN" copy-dynamic-plugins dist
 
@@ -194,17 +198,20 @@ RUN tar xzf "$TARBALL_PATH"/skeleton.tar.gz; tar xzf "$TARBALL_PATH"/bundle.tar.
 COPY $EXTERNAL_SOURCE_NESTED/app-config*.yaml ./
 COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins.default.yaml ./
 
-# Create library symlinks to build: isolated-vm node-gyp better-sqlite cpu-features
-RUN for l in libbrotlidec.so.1 libbrotlienc.so.1 libbrotlicommon.so.1 libc.so.6 ld-linux-x86-64.so.2 libcrypto.so.3 libk5crypto.so.3 libz.so.1 libssl.so.3; do \
-      ln -s /usr/lib64/$l /usr/lib64/${l%.*} || true; \
-    done
+# Hackaround: create library symlinks to build: isolated-vm node-gyp better-sqlite cpu-features
+# TODO is this still needed? maintaining it over time will be a chore if the .so files change
+RUN echo "=== lib64 symlinks ==="; \
+  for l in libbrotlidec.so.1 libbrotlienc.so.1 libbrotlicommon.so.1 libc.so.6 ld-linux-x86-64.so.2 libcrypto.so.3 libk5crypto.so.3 libz.so.1 libssl.so.3; do \
+    ln -s /usr/lib64/$l /usr/lib64/${l%.*} 2>/dev/null || true; \
+    ls -l /usr/lib64/${l%.*}; \
+  done
 
 # Increate timeout for yarn install
 RUN "$YARN" config set httpTimeout 600000
 
 # Install production dependencies
 # hadolint ignore=DL3059
-RUN FAILED=0; "$YARN" workspaces focus --all --production || true; \ 
+RUN echo "=== YARN WORKSPACES FOCUS ==="; FAILED=0; "$YARN" workspaces focus --all --production || true; \
   for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then \
     (( FAILED = FAILED + 1 )); echo; echo $d; echo "======"; cat ${d}/build.log; \
   fi; done; \
@@ -269,11 +276,11 @@ RUN chmod -R a+r ./dynamic-plugins/ ./install-dynamic-plugins.py; \
 RUN ln -s /opt/app-root/src/packages/app/dist/index.html /opt/app-root/src/packages/app/dist/index.html.tmpl
 
 # Fix for https://issues.redhat.com/browse/RHIDP-728
-RUN mkdir /opt/app-root/src/.npm; chown -R 1001:1001 /opt/app-root/src/.npm; 
+RUN mkdir /opt/app-root/src/.npm; chown -R 1001:1001 /opt/app-root/src/.npm;
 
 # The fix-permissions script is important when operating in environments that dynamically use a random UID at runtime, such as OpenShift.
 # The upstream backstage image does not account for this and it causes the container to fail at runtime.
-# suppress warnings about dereferencing symlinks 
+# suppress warnings about dereferencing symlinks
 RUN fix-permissions ./ 2>&1 | grep -v "chgrp: cannot dereference" || true
 
 # Switch to nodejs user
