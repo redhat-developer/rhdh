@@ -1,6 +1,10 @@
 import { createBackend } from '@backstage/backend-defaults';
 import { dynamicPluginsFeatureLoader } from '@backstage/backend-dynamic-feature-service';
 import { PackageRoles } from '@backstage/cli-node';
+import { rootHttpRouterServiceFactory } from '@backstage/backend-defaults/rootHttpRouter';
+import http from 'node:http';
+import https from 'node:https';
+
 
 import * as path from 'path';
 
@@ -29,6 +33,18 @@ const defaultServiceFactories = getDefaultServiceFactories({
 defaultServiceFactories.forEach(serviceFactory => {
   backend.add(serviceFactory);
 });
+
+backend.add(
+  rootHttpRouterServiceFactory({
+    configure: ({ server, applyDefaults }) => {
+      applyDefaults();
+      https.globalAgent = new https.Agent({ keepAlive: false });
+      http.globalAgent = new http.Agent({ keepAlive: false });
+      server.keepAliveTimeout = 0;
+    },
+  }),
+);
+
 
 backend.add(
   dynamicPluginsFeatureLoader({
