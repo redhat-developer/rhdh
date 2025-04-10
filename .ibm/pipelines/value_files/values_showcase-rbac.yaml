@@ -56,6 +56,7 @@ global:
                     name: 'my-cluster'
                     serviceAccountToken: ${K8S_CLUSTER_TOKEN_ENCODED}
                     url: ${K8S_CLUSTER_API_SERVER_URL}
+                    skipTLSVerify: true
                 type: config
             customResources:
               # Add for tekton
