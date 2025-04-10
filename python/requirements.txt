@@ -36,10 +36,6 @@ ghp-import==2.1.0
     # via
     #   -r requirements.in
     #   mkdocs
-greenlet==3.1.1
-    # via
-    #   -r requirements.in
-    #   playwright
 hatch-nodejs-version==0.3.2
     # via -r requirements.in
 hatch-requirements-txt==0.4.1
@@ -133,16 +129,10 @@ platformdirs==3.11.0
     # via
     #   -r requirements.in
     #   mkdocs-get-deps
-playwright==1.49.1
-    # via -r requirements.in
 pluggy==1.5.0
     # via
     #   -r requirements.in
     #   hatchling
-pyee==12.0.0
-    # via
-    #   -r requirements.in
-    #   playwright
 pygments==2.17.2
     # via
     #   -r requirements.in
@@ -203,7 +193,6 @@ trove-classifiers==2024.7.2
 typing-extensions==4.12.2
     # via
     #   -r requirements.in
-    #   pyee
     #   setuptools-scm
 urllib3==2.2.2
     # via
