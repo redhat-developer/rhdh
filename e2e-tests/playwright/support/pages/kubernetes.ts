@@ -11,17 +11,21 @@ export class KubernetesPage {
     this.uiHelper = new UIhelper(page);
   }
 
-  async verifyDeployment(text: string) {
+  async verifyDeployment(text: string, shouldClick?: boolean) {
     const deployment = this.page.locator(
       `text=${text}Deploymentnamespace: showcase-rbac`,
     );
     await deployment.scrollIntoViewIfNeeded();
     await expect(deployment).toBeVisible();
+
+    if (shouldClick) {
+      await deployment.click();
+    }
   }
 
-  async verifyPodLogs(text: string, heading: string, allowed: boolean) {
-    await this.verifyDeployment(text);
-    const pod = this.page.locator("h6").filter({ hasText: text }).first();
+  async verifyPodLogs(text: string, heading: string, allowed?: boolean) {
+    await this.verifyDeployment(text, true);
+    const pod = this.page.locator("h5").filter({ hasText: text }).first();
 
     await expect(pod).toBeVisible();
     await pod.click();

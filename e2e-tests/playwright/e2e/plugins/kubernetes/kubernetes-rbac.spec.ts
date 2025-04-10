@@ -83,7 +83,7 @@ test.describe("Test Kubernetes Plugin", () => {
         .locator(KUBERNETES_COMPONENTS.MuiAccordion)
         .getByRole("button", { name: "my-cluster Cluster" })
         .click();
-      await kubernetes.verifyPodLogs("topology-test", "topology-test", false);
+      await kubernetes.verifyPodLogs("topology-test", "topology-test");
     });
   });
 });
