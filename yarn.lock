@@ -18160,9 +18160,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@scalprum/core@npm:0.8.3, @scalprum/core@npm:^0.8.3":
-  version: 0.8.3
-  resolution: "@scalprum/core@npm:0.8.3"
+"@scalprum/core@npm:0.8.2, @scalprum/core@npm:^0.8.2":
+  version: 0.8.2
+  resolution: "@scalprum/core@npm:0.8.2"
   dependencies:
     "@openshift/dynamic-plugin-sdk": ^5.0.1
     tslib: ^2.6.2
@@ -41896,9 +41896,9 @@ __metadata:
   resolution: "red-hat-developer-hub-backstage-plugin-catalog-backend-module-marketplace@workspace:dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-catalog-backend-module-marketplace-dynamic"
   dependencies:
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.4.0
+    "@janus-idp/cli": 3.3.1
     "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace": 0.3.0
-    typescript: 5.8.3
+    typescript: 5.8.2
   languageName: unknown
   linkType: soft
 
@@ -41943,9 +41943,9 @@ __metadata:
   resolution: "red-hat-developer-hub-backstage-plugin-marketplace-backend@workspace:dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-marketplace-backend-dynamic"
   dependencies:
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.4.0
+    "@janus-idp/cli": 3.3.1
     "@red-hat-developer-hub/backstage-plugin-marketplace-backend": 0.3.1
-    typescript: 5.8.3
+    typescript: 5.8.2
   languageName: unknown
   linkType: soft
 
@@ -41954,9 +41954,9 @@ __metadata:
   resolution: "red-hat-developer-hub-backstage-plugin-marketplace@workspace:dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-marketplace"
   dependencies:
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.4.0
+    "@janus-idp/cli": 3.3.1
     "@red-hat-developer-hub/backstage-plugin-marketplace": 0.5.3
-    typescript: 5.8.3
+    typescript: 5.8.2
   languageName: unknown
   linkType: soft
 
