@@ -157,11 +157,17 @@ COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin
 COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin-3scale-backend-dynamic/package.json ./dynamic-plugins/wrappers/backstage-community-plugin-3scale-backend-dynamic/package.json
 # END COPY package.json files
 
-# unpack headers from tarball to save time (both upstream and downstream)
-COPY $EXTERNAL_SOURCE_NESTED/.nvmrc $EXTERNAL_SOURCE_NESTED/.nvm/releases/* .
-RUN NODE_HEADERS_VERSION=$(cat .nvmrc); mkdir -p ~/.cache/node-gyp/${NODE_HEADERS_VERSION}; \
-  tar -xf node-v${NODE_HEADERS_VERSION}-headers.tar.gz --directory ~/.cache/node-gyp/${NODE_HEADERS_VERSION}/ --strip-components 1; \
-  echo "11" > ~/.cache/node-gyp/${NODE_HEADERS_VERSION}/installVersion; rm -fr .nvmrc node-v${NODE_HEADERS_VERSION}-headers.tar.gz
+# unpack headers from tarball (includes openssl headers not present in /usr/include/node
+COPY $EXTERNAL_SOURCE_NESTED/.nvm/ .
+RUN NODE_HEADERS_VERSION=$(node --version); echo "=== Install node headers $NODE_HEADERS_VERSION from tar.gz ==="; \
+  mkdir -p ~/.cache/node-gyp/${NODE_HEADERS_VERSION/v/}; \
+  if [[ ! -f releases/node-${NODE_HEADERS_VERSION}-headers.tar.gz ]]; then \
+    echo "[ERROR] Base image includes nodejs $NODE_HEADERS_VERSION but could not find releases/node-${NODE_HEADERS_VERSION}-headers.tar.gz to install!"; \
+    echo "[ERROR] To fix, upload the node-${NODE_HEADERS_VERSION}-headers.tar.gz file into https://github.com/redhat-developer/rhdh/tree/main/.nvm/releases (or related branch)!"; \
+  fi; \
+  tar -xf releases/node-${NODE_HEADERS_VERSION}-headers.tar.gz --directory ~/.cache/node-gyp/${NODE_HEADERS_VERSION/v/}/ --strip-components 1; \
+  echo "11" > ~/.cache/node-gyp/${NODE_HEADERS_VERSION/v/}/installVersion; \
+  rm -fr releases/node-${NODE_HEADERS_VERSION}-headers.tar.gz
 
 # Increate timeout for yarn install
 RUN "$YARN" config set httpTimeout 600000
@@ -173,10 +179,11 @@ RUN "$YARN" config set httpTimeout 600000
 #   export YARN_GLOBAL_FOLDER=/cachi2/output/deps/yarn
 # RUN cat /cachi2/cachi2.env; echo; ls -la /cachi2/output/deps/yarn/*
 
-RUN echo "=== YARN INSTALL ==="; "$YARN" install --immutable
-# debug
-#  | tee /tmp/yarn.install.log.txt 2>&1; \
-#   for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then echo; echo $d; echo "======"; cat ${d}/build.log; fi; done
+RUN echo "=== YARN INSTALL ==="; FAILED=0; "$YARN" install --immutable || true; \
+  for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then \
+    (( FAILED = FAILED + 1 )); echo; echo $d; echo "======"; cat ${d}/build.log; \
+  fi; done; \
+  if [[ $FAILED -gt 0 ]]; then exit $FAILED; fi
 
 # Stage 3 - Build packages
 FROM deps AS build
