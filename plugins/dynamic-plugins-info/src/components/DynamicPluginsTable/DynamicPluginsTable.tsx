@@ -10,10 +10,6 @@ import { useApi } from '@backstage/core-plugin-api';
 import { Query, QueryResult } from '@material-table/core';
 
 import { DynamicPluginInfo, dynamicPluginsInfoApiRef } from '../../api/types';
-import {
-  getNotEnabledInternalPlugins,
-  InternalPluginsMap,
-} from '../InternalPluginsMap';
 
 export const DynamicPluginsTable = () => {
   const [error, setError] = useState<Error | undefined>(undefined);
@@ -65,25 +61,13 @@ export const DynamicPluginsTable = () => {
       // for now sorting/searching/pagination is handled client-side
       const enabledPlugins = (await dynamicPluginInfo.listLoadedPlugins()).map(
         plugin => {
-          if (plugin.name in InternalPluginsMap) {
-            return {
-              ...plugin,
-              internal: true,
-              enabled: true,
-            };
-          }
           return {
             ...plugin,
             enabled: true,
           };
         },
       );
-      const notEnabledInternalPlugins = getNotEnabledInternalPlugins(
-        enabledPlugins.map(plugin => plugin.name),
-      );
       data = [...enabledPlugins]
-        // add other internal plugins that are not enabled
-        .concat(notEnabledInternalPlugins)
         .sort(
           (
             a: Record<string, string | boolean>,
