@@ -157,11 +157,18 @@ COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin
 COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin-3scale-backend-dynamic/package.json ./dynamic-plugins/wrappers/backstage-community-plugin-3scale-backend-dynamic/package.json
 # END COPY package.json files
 
-# unpack headers from tarball to save time (both upstream and downstream)
-COPY $EXTERNAL_SOURCE_NESTED/.nvmrc $EXTERNAL_SOURCE_NESTED/.nvm/releases/* .
-RUN NODE_HEADERS_VERSION=$(cat .nvmrc); mkdir -p ~/.cache/node-gyp/${NODE_HEADERS_VERSION}; \
-  tar -xf node-v${NODE_HEADERS_VERSION}-headers.tar.gz --directory ~/.cache/node-gyp/${NODE_HEADERS_VERSION}/ --strip-components 1; \
-  echo "11" > ~/.cache/node-gyp/${NODE_HEADERS_VERSION}/installVersion; rm -fr .nvmrc node-v${NODE_HEADERS_VERSION}-headers.tar.gz
+# unpack headers from tarball (includes openssl headers not present in /usr/include/node) - see RHIDP-6755 for why we need this upstream
+COPY $EXTERNAL_SOURCE_NESTED/.nvm/ .
+RUN NODE_HEADERS_VERSION=$(node --version); echo "=== Install node headers $NODE_HEADERS_VERSION from tar.gz ==="; \
+  if [[ ! -f releases/node-${NODE_HEADERS_VERSION}-headers.tar.gz ]]; then \
+    echo "[ERROR] Base image includes nodejs $NODE_HEADERS_VERSION but could not find releases/node-${NODE_HEADERS_VERSION}-headers.tar.gz to install!"; \
+    echo "[ERROR] To fix, upload the node-${NODE_HEADERS_VERSION}-headers.tar.gz file into https://github.com/redhat-developer/rhdh/tree/main/.nvm/releases (or related branch)!"; \
+    exit 1; \
+  fi; \
+  mkdir -p ~/.cache/node-gyp/${NODE_HEADERS_VERSION/v/}; \
+  tar -xf releases/node-${NODE_HEADERS_VERSION}-headers.tar.gz --directory ~/.cache/node-gyp/${NODE_HEADERS_VERSION/v/}/ --strip-components 1; \
+  echo "11" > ~/.cache/node-gyp/${NODE_HEADERS_VERSION/v/}/installVersion; \
+  rm -fr releases/node-${NODE_HEADERS_VERSION}-headers.tar.gz
 
 # Increate timeout for yarn install
 RUN "$YARN" config set httpTimeout 600000
@@ -173,7 +180,11 @@ RUN "$YARN" config set httpTimeout 600000
 #   export YARN_GLOBAL_FOLDER=/cachi2/output/deps/yarn
 # RUN cat /cachi2/cachi2.env; echo; ls -la /cachi2/output/deps/yarn/*
 
-RUN echo "=== YARN INSTALL ==="; "$YARN" install --immutable
+RUN echo "=== YARN INSTALL ==="; FAILED=0; "$YARN" install --immutable || true; \
+  for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then \
+    (( FAILED = FAILED + 1 )); echo; echo $d; echo "======"; cat ${d}/build.log; \
+  fi; done; \
+  if [[ $FAILED -gt 0 ]]; then exit $FAILED; fi
 
 # Stage 3 - Build packages
 FROM deps AS build
@@ -322,7 +333,7 @@ RUN chmod -R a+r ./dynamic-plugins/ ./install-dynamic-plugins.py; \
 RUN ln -s /opt/app-root/src/packages/app/dist/index.html /opt/app-root/src/packages/app/dist/index.html.tmpl
 
 # Fix for https://issues.redhat.com/browse/RHIDP-728
-RUN mkdir /opt/app-root/src/.npm; chown -R 1001:1001 /opt/app-root/src/.npm;
+RUN mkdir -p /opt/app-root/src/.npm; chown -R 1001:1001 /opt/app-root/src/.npm
 
 # The fix-permissions script is important when operating in environments that dynamically use a random UID at runtime, such as OpenShift.
 # The upstream backstage image does not account for this and it causes the container to fail at runtime.
