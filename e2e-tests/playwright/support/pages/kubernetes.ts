@@ -24,7 +24,15 @@ export class KubernetesPage {
   }
 
   async verifyPodLogs(text: string, heading: string, allowed?: boolean) {
-    await this.verifyDeployment(text, true);
+    await this.verifyDeployment(text);
+    const pods = this.page
+      .locator(KUBERNETES_COMPONENTS.statusOk)
+      .getByRole("button", {
+        name: `${text} Deployment namespace: showcase-rbac`,
+      })
+      .first();
+    expect(await pods.textContent()).toBe("1 pods");
+
     const pod = this.page.locator("h5").filter({ hasText: text }).first();
 
     await expect(pod).toBeVisible();
