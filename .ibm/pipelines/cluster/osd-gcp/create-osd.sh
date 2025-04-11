@@ -8,7 +8,9 @@ export PATH=$WORKSPACE:$PATH
 CLIENT_ID="${CLIENT_ID:-$(cat /tmp/osdsecrets/OSD_CLIENT_ID)}"
 CLIENT_SECRET="${CLIENT_SECRET:-$(cat /tmp/osdsecrets/OSD_CLIENT_SECRET)}"
 SERVICE_ACCOUNT_FILE="${SERVICE_ACCOUNT_FILE:-$(cat /tmp/osdsecrets/SERVICE_ACCOUNT_FILE)}"
-OSD_VERSION="${OSD_VERSION:-4.17.12}"
+# OSD_VERSION="${OSD_VERSION:-4.17.12}"
+
+OSD_VERSION=4.18.6
 
 if [ -n "$CLUSTER_NAME" ]; then
     echo $CLUSTER_NAME > $WORKSPACE/cluster-info.name
@@ -34,7 +36,7 @@ SERVICE_ACCOUNT_FILE=$WORKSPACE/gcp_service_account_json.json
 echo "creating OSD_VERSION : $OSD_VERSION"
 
 
-ocm create cluster --ccs --provider gcp --region us-west1 --service-account-file  $SERVICE_ACCOUNT_FILE --subscription-type marketplace-gcp --marketplace-gcp-terms  --version "$OSD_VERSION" "$CLUSTER_NAME"
+ocm create cluster --ccs --provider gcp --region us-west2 --service-account-file  $SERVICE_ACCOUNT_FILE --subscription-type marketplace-gcp --marketplace-gcp-terms  --version "$OSD_VERSION" "$CLUSTER_NAME"
 CLUSTER_ID=$(ocm list clusters --columns "id,name" | grep $CLUSTER_NAME| cut -d " " -f1)
 
 echo "CLUSTER_ID : $CLUSTER_ID"
