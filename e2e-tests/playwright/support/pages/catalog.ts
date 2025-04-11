@@ -19,8 +19,7 @@ export class Catalog {
   }
 
   async goToByName(name: string) {
-    await this.go();
-    await this.uiHelper.clickByDataTestId("user-picker-all");
+    await this.uiHelper.openCatalogSidebar("Component");
     await this.uiHelper.clickLink(name);
   }
 

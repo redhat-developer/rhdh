@@ -204,6 +204,23 @@ export class UIhelper {
     await navLink.dispatchEvent("click");
   }
 
+  async openCatalogSidebar(kind: string) {
+    await this.openSidebar("Catalog");
+    await this.selectMuiBox("Kind", kind);
+    await expect(async () => {
+      await this.clickByDataTestId("user-picker-all");
+      await this.page.waitForTimeout(1_000);
+      await expect(this.page.getByTestId("user-picker-all")).toHaveClass(
+        "Mui-selected",
+      );
+      const currentURL = this.page.url();
+      expect(currentURL).toContain("filters[user]=all");
+    }).toPass({
+      intervals: [3_000],
+      timeout: 20_000,
+    });
+  }
+
   async openSidebarButton(navBarButtonLabel: string) {
     const navLink = this.page.locator(
       `nav button[aria-label="${navBarButtonLabel}"]`,

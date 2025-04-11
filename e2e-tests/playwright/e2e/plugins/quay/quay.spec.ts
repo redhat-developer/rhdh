@@ -12,9 +12,7 @@ test.describe("Test Quay.io plugin", () => {
     await common.loginAsGuest();
 
     uiHelper = new UIhelper(page);
-    await uiHelper.openSidebar("Catalog");
-    await uiHelper.selectMuiBox("Kind", "Component");
-    await uiHelper.clickByDataTestId("user-picker-all");
+    await uiHelper.openCatalogSidebar("Component");
     await uiHelper.clickLink("Backstage Showcase");
     await uiHelper.clickTab("Image Registry");
   });
