@@ -15,12 +15,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-# To transform into Brew-friendly Dockerfile:
-# 1. comment out lines with EXTERNAL_SOURCE_NESTED=. and CONTAINER_SOURCE=/opt/app-root/src
-# 2. uncomment lines with EXTERNAL_SOURCE_NESTED and CONTAINER_SOURCE pointing at $REMOTE_SOURCES and $REMOTE_SOURCES_DIR instead (Brew defines these paths)
-# 3. uncomment lines with RUN source .../cachito.env
-# 4. add Brew metadata
 
 # Stage 1 - Build nodejs skeleton
 # https://registry.access.redhat.com/ubi9/nodejs-20
@@ -214,14 +208,22 @@ ENV EXTERNAL_SOURCE_NESTED=.
 ENV CONTAINER_SOURCE=/opt/app-root/src
 WORKDIR $CONTAINER_SOURCE/
 
-# Upstream only - install techdocs dependencies (PyPI source tarballs not required)
-# When updating version of mkdocs-techdocs-core remember to update ../.rhdh/docker/requirement* files too
-# hadolint ignore=DL3041,DL3042
-RUN microdnf update --setopt=install_weak_deps=0 -y && \
-  microdnf install -y python3.11 python3.11-pip skopeo && \
+# Install techdocs dependencies using requirements files
+# hadolint ignore=DL3013,DL3041,SC2086
+COPY "$EXTERNAL_SOURCE_NESTED"/python/ ./python
+RUN microdnf install -y python3.11 python3.11-pip python3.11-devel make cmake cpp gcc gcc-c++ skopeo 1>/dev/null 2>&1; \
   alternatives --install /usr/bin/python python /usr/bin/python3.11 1 && \
   alternatives --install /usr/bin/pip pip /usr/bin/pip3.11 1 && \
-  pip install mkdocs-techdocs-core~=1.3.3 && \
+  # fix ownership for pip install folder
+  mkdir -p /opt/app-root/src/.cache/pip && chown -R root:root /opt/app-root && \
+  # ls -ld /opt/ /opt/app-root /opt/app-root/src/ /opt/app-root/src/.cache /opt/app-root/src/.cache/pip || true; \
+  pushd "$EXTERNAL_SOURCE_NESTED"/python/ >/dev/null && \
+  set -e; \
+  python3.11 -V; pip3.11 -V; \
+  pip install --no-cache-dir --upgrade pip setuptools pyyaml; \
+  pip install --no-cache-dir -r requirements.txt -r requirements-build.txt; mkdocs --version; \
+  popd >/dev/null; \
+  rm -fr python/; \
   microdnf clean all
 
 # Upstream only - copy from cleanup stage
