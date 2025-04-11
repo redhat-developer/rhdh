@@ -30,6 +30,15 @@ Review the contents of `requirements-build.in` to remove dupes. Then regenerate 
 pip-compile --allow-unsafe --strip-extras requirements-build.in -o requirements-build.txt
 ```
 
+If it passes, you can run `cachito_hash.sh` to fix the sha256sums.
+
+Finally, MAKE SURE YOU OVERRIDE what's in the .txt files to add in the cachito_hash values, as pip-compile will remove them. This can be done by running `cachito_hash.sh`.
+
+```
+mkdocs-techdocs-core @ https://github.com/backstage/mkdocs-techdocs-core/archive/bbdab44e0d3aecfdc4e77b14c72b57791d4902b2.zip#cachito_hash=sha256:40421a5f43b11fd9ea9f92e107f91089b6bfa326967ad497666ab5a451fcf136
+plantuml-markdown @ https://github.com/mikitex70/plantuml-markdown/archive/fcf62aa930708368ec1daaad8b5b5dbe1d1b2014.zip#cachito_hash=sha256:a487c2312a53fe47a0947e8624290b2c8ea51e373140d02950531966b1db5caa
+```
+
 To test in Konflux, using something like:
 
 ```
