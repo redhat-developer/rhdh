@@ -54,8 +54,7 @@ test.describe.skip("Audit Log check for Catalog Plugin", () => {
   });
 
   test("Should fetch logs for CatalogEntityFetchByName event and validate log structure and values", async () => {
-    await uiHelper.selectMuiBox("Kind", "Component");
-    await uiHelper.clickByDataTestId("user-picker-all");
+    await uiHelper.openCatalogSidebar("Component");
     await uiHelper.clickLink("backstage-janus");
     await validateCatalogLogEvent(
       "CatalogEntityFetchByName",
@@ -66,8 +65,7 @@ test.describe.skip("Audit Log check for Catalog Plugin", () => {
   });
 
   test("Should fetch logs for CatalogEntityBatchFetch event and validate log structure and values", async () => {
-    await uiHelper.selectMuiBox("Kind", "Component");
-    await uiHelper.clickByDataTestId("user-picker-all");
+    await uiHelper.openCatalogSidebar("Component");
     await uiHelper.clickLink("backstage-janus");
     await validateCatalogLogEvent(
       "CatalogEntityBatchFetch",
@@ -78,8 +76,7 @@ test.describe.skip("Audit Log check for Catalog Plugin", () => {
   });
 
   test("Should fetch logs for CatalogEntityAncestryFetch event and validate log structure and values", async () => {
-    await uiHelper.selectMuiBox("Kind", "Component");
-    await uiHelper.clickByDataTestId("user-picker-all");
+    await uiHelper.openCatalogSidebar("Component");
     await uiHelper.clickLink("backstage-janus");
     await validateCatalogLogEvent(
       "CatalogEntityAncestryFetch",
