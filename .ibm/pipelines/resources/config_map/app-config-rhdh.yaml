@@ -157,10 +157,11 @@ catalog:
         loginRealm: ${KEYCLOAK_AUTH_LOGIN_REALM}
         realm: ${KEYCLOAK_AUTH_REALM}
         clientId: ${KEYCLOAK_AUTH_CLIENTID}
-        # intentionally wrong client secret
+        # Intentionally incorrect client secret for test purposes.
         clientSecret: ABC
         schedule:
-          frequency: { minutes: 1 }
+          # Let's perform a single execution to trigger the metrics fetch failure counter; next fetch will never happen again.
+          frequency: { years: 10 }
           timeout: { minutes: 1 }
     github:
       providerId:

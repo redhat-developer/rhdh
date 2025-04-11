@@ -74,32 +74,28 @@ test.describe("Test Keycloak plugin metrics", () => {
   });
 
   test("Test keycloak metrics with failure counters", async () => {
-    const service = await kubeClient.getServiceByLabel(
-      namespace,
-      "app.kubernetes.io/name=backstage",
-    );
-    const rhdhServiceName = service[0].metadata.name;
-
     const host: string = new URL(baseRHDHURL).hostname;
     const domain = host.split(".").slice(1).join(".");
-    const route = {
-      apiVersion: "route.openshift.io/v1",
-      kind: "Route",
-      metadata: { name: routerName, namespace },
-      spec: {
-        host: `${routerName}.${domain}`,
-        to: { kind: "Service", name: rhdhServiceName },
-        port: { targetPort: "http-metrics" },
-      },
-    };
 
-    const metricsRoute = await kubeClient.getRoute(
-      namespace,
-      route.metadata.name,
-    );
+    const metricsRoute = await kubeClient.getRoute(namespace, routerName);
     if (!metricsRoute) {
+      const service = await kubeClient.getServiceByLabel(
+        namespace,
+        "app.kubernetes.io/name=backstage",
+      );
+      const rhdhServiceName = service[0].metadata.name;
+      const route = {
+        apiVersion: "route.openshift.io/v1",
+        kind: "Route",
+        metadata: { name: routerName, namespace },
+        spec: {
+          host: `${routerName}.${domain}`,
+          to: { kind: "Service", name: rhdhServiceName },
+          port: { targetPort: "http-metrics" },
+        },
+      };
       await kubeClient.createRoute(namespace, route);
-      // wait for the route to be available
+      // Wait until the route is available.
       await new Promise((resolve) => setTimeout(resolve, 5000));
     }
 
