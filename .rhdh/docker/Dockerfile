@@ -205,7 +205,8 @@ RUN \
   -e "s/(\"Last Commit\": \"(.+)\")/\1, \"Build Time\": \"$now\"/" && \
   cat packages/app/src/build-metadata.json; echo
 
-RUN echo "=== YARN BUILD ==="; "$YARN" build --filter=backend
+# suppress git warnings about dubious ownership in repository at '/opt/app-root/src' when building the backend app
+RUN echo "=== YARN BUILD BACKEND ==="; git config --global --add safe.directory /opt/app-root/src; "$YARN" build --filter=backend
 
 RUN echo "=== EXPORT DYNAMIC PLUGINS (with --no-install) ==="; FAILED=0; "$YARN" export-dynamic --filter=./dynamic-plugins/wrappers/* || true; \
 for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then \
