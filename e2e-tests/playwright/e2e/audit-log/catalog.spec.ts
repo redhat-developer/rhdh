@@ -4,7 +4,7 @@ import { UIhelper } from "../../utils/ui-helper";
 import { LogUtils } from "./log-utils";
 import { CatalogImport } from "../../support/pages/catalog-import";
 
-test.describe.skip("Audit Log check for Catalog Plugin", () => {
+test.describe("Audit Log check for Catalog Plugin", () => {
   let uiHelper: UIhelper;
   let common: Common;
   let catalogImport: CatalogImport;
@@ -55,19 +55,19 @@ test.describe.skip("Audit Log check for Catalog Plugin", () => {
   test("Should fetch logs for CatalogEntityFetchByName event and validate log structure and values", async () => {
     await uiHelper.selectMuiBox("Kind", "Component");
     await uiHelper.clickByDataTestId("user-picker-all");
-    await uiHelper.clickLink("backstage-janus");
+    await uiHelper.clickLink("Backstage Showcase");
     await validateCatalogLogEvent(
       "CatalogEntityFetchByName",
-      "Fetch attempt for entity with entityRef component:default/backstage-janus",
+      "Fetch attempt for entity with entityRef component:default/backstage-showcase",
       "GET",
-      "/api/catalog/entities/by-name/component/default/backstage-janus",
+      "/api/catalog/entities/by-name/component/default/backstage-showcase",
     );
   });
 
   test("Should fetch logs for CatalogEntityBatchFetch event and validate log structure and values", async () => {
     await uiHelper.selectMuiBox("Kind", "Component");
     await uiHelper.clickByDataTestId("user-picker-all");
-    await uiHelper.clickLink("backstage-janus");
+    await uiHelper.clickLink("Backstage Showcase");
     await validateCatalogLogEvent(
       "CatalogEntityBatchFetch",
       "Batch entity fetch attempt",
@@ -79,12 +79,12 @@ test.describe.skip("Audit Log check for Catalog Plugin", () => {
   test("Should fetch logs for CatalogEntityAncestryFetch event and validate log structure and values", async () => {
     await uiHelper.selectMuiBox("Kind", "Component");
     await uiHelper.clickByDataTestId("user-picker-all");
-    await uiHelper.clickLink("backstage-janus");
+    await uiHelper.clickLink("Backstage Showcase");
     await validateCatalogLogEvent(
       "CatalogEntityAncestryFetch",
-      "Fetch attempt for entity ancestor of entity component:default/backstage-janus",
+      "Fetch attempt for entity ancestor of entity component:default/backstage-showcase",
       "GET",
-      "/api/catalog/entities/by-name/component/default/backstage-janus/ancestry",
+      "/api/catalog/entities/by-name/component/default/backstage-showcase/ancestry",
     );
   });
 
