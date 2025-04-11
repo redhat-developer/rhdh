@@ -15,12 +15,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-# To transform into Brew-friendly Dockerfile:
-# 1. comment out lines with EXTERNAL_SOURCE_NESTED=. and CONTAINER_SOURCE=/opt/app-root/src
-# 2. uncomment lines with EXTERNAL_SOURCE_NESTED and CONTAINER_SOURCE pointing at $REMOTE_SOURCES and $REMOTE_SOURCES_DIR instead (Brew defines these paths)
-# 3. uncomment lines with RUN source .../cachito.env
-# 4. add Brew metadata
 
 # Stage 1 - Build nodejs skeleton
 # https://registry.access.redhat.com/ubi9/nodejs-22
@@ -35,7 +29,6 @@ RUN dnf install -y -q --allowerasing --nobest nodejs-devel nodejs-libs \
   openssl openssl-devel ca-certificates make cmake cpp gcc gcc-c++ zlib zlib-devel brotli brotli-devel python3 nodejs-packaging && \
   dnf update -y && dnf clean all
 
-# Upstream sources
 ENV EXTERNAL_SOURCE_NESTED=.
 ENV CONTAINER_SOURCE=/opt/app-root/src
 
@@ -143,13 +136,29 @@ COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin
 COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin-3scale-backend-dynamic/package.json ./dynamic-plugins/wrappers/backstage-community-plugin-3scale-backend-dynamic/package.json
 # END COPY package.json files
 
+# unpack headers from tarball (includes openssl headers not present in /usr/include/node) - see RHIDP-6755 for why we need this upstream
+COPY $EXTERNAL_SOURCE_NESTED/.nvm/ .
+RUN NODE_HEADERS_VERSION=$(node --version); echo "=== Install node headers $NODE_HEADERS_VERSION from tar.gz ==="; \
+  if [[ ! -f releases/node-${NODE_HEADERS_VERSION}-headers.tar.gz ]]; then \
+    echo "[ERROR] Base image includes nodejs $NODE_HEADERS_VERSION but could not find releases/node-${NODE_HEADERS_VERSION}-headers.tar.gz to install!"; \
+    echo "[ERROR] To fix, upload the node-${NODE_HEADERS_VERSION}-headers.tar.gz file into https://github.com/redhat-developer/rhdh/tree/main/.nvm/releases (or related branch)!"; \
+    exit 1; \
+  fi; \
+  mkdir -p ~/.cache/node-gyp/${NODE_HEADERS_VERSION/v/}; \
+  tar -xf releases/node-${NODE_HEADERS_VERSION}-headers.tar.gz --directory ~/.cache/node-gyp/${NODE_HEADERS_VERSION/v/}/ --strip-components 1; \
+  echo "11" > ~/.cache/node-gyp/${NODE_HEADERS_VERSION/v/}/installVersion; \
+  rm -fr releases/node-${NODE_HEADERS_VERSION}-headers.tar.gz
+
 # Increate timeout for yarn install
 RUN "$YARN" config set httpTimeout 600000
 
-RUN "$YARN" install --immutable
+RUN echo "=== YARN INSTALL ==="; FAILED=0; "$YARN" install --immutable || true; \
+  for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then \
+    (( FAILED = FAILED + 1 )); echo; echo $d; echo "======"; cat ${d}/build.log; \
+  fi; done; \
+  if [[ $FAILED -gt 0 ]]; then exit $FAILED; fi
 
 # Stage 3 - Build packages
-# Upstream only
 FROM deps AS build
 
 COPY $EXTERNAL_SOURCE_NESTED ./
@@ -158,21 +167,27 @@ RUN git config --global --add safe.directory ./
 # Upstream only
 RUN rm app-config.yaml && mv app-config.example.yaml app-config.yaml
 
+# Downstream only - replace midstream build-metadata.json with the version from downstream (where we include the midstream SHA)
+# COPY packages/app/src/build-metadata.json ./packages/app/src/
+
 # hadolint ignore=DL3059,DL4006,SC2086
 RUN \
-  # Upstream only - append build time into packages/app/src/build-metadata.json
+  # Append build time into packages/app/src/build-metadata.json
   now=$(date -u +%FT%TZ); sed -i packages/app/src/build-metadata.json -r \
   -e "s/(\"Last Commit\": \"(.+)\")/\1, \"Build Time\": \"$now\"/" && \
   cat packages/app/src/build-metadata.json; echo
 
-RUN "$YARN" build --filter=backend
+RUN echo "=== YARN BUILD ==="; "$YARN" build --filter=backend
 
-RUN "$YARN" export-dynamic --filter=./dynamic-plugins/wrappers/*
+RUN echo "=== EXPORT DYNAMIC PLUGINS (with --no-install) ==="; FAILED=0; "$YARN" export-dynamic --filter=./dynamic-plugins/wrappers/* || true; \
+for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then \
+  (( FAILED = FAILED + 1 )); echo; echo $d; echo "======"; cat ${d}/build.log; \
+fi; done; \
+if [[ $FAILED -gt 0 ]]; then exit $FAILED; fi
 
-RUN "$YARN" copy-dynamic-plugins dist
+RUN echo "=== YARN COPY DYNAMIC PLUGINS in $(pwd) ==="; "$YARN" copy-dynamic-plugins dist
 
 # Stage 4 - Build the actual backend image and install production dependencies
-# Upstream only
 FROM skeleton AS cleanup
 
 # Upstream only - copy the install dependencies from the build stage and context
@@ -183,20 +198,25 @@ COPY --from=build $CONTAINER_SOURCE/yarn.lock \
   ./
 ENV TARBALL_PATH=.
 
-# Increate timeout for yarn install
-RUN "$YARN" config set httpTimeout 600000
-
 RUN tar xzf "$TARBALL_PATH"/skeleton.tar.gz; tar xzf "$TARBALL_PATH"/bundle.tar.gz; \
   rm -f "$TARBALL_PATH"/skeleton.tar.gz "$TARBALL_PATH"/bundle.tar.gz
 
 # Copy app-config files needed in runtime
-# Upstream only
 COPY $EXTERNAL_SOURCE_NESTED/app-config*.yaml ./
 COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins.default.yaml ./
 
+# Increate timeout for yarn install
+RUN "$YARN" config set httpTimeout 600000
+
 # Install production dependencies
 # hadolint ignore=DL3059
-RUN "$YARN" workspaces focus --all --production && \
+RUN echo "=== YARN WORKSPACES FOCUS ==="; FAILED=0; "$YARN" workspaces focus --all --production || true; \
+  for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then \
+    (( FAILED = FAILED + 1 )); echo; echo $d; echo "======"; cat ${d}/build.log; \
+  fi; done; \
+  if [[ $FAILED -gt 0 ]]; then exit $FAILED; fi
+
+RUN \
   # delete all the nested .npmrc files and set default values
   find . -type f -name .npmrc -exec rm -Rf {} \; && \
   # reset npm config to the default registry and absolute path to .pem file
@@ -208,20 +228,26 @@ RUN "$YARN" workspaces focus --all --production && \
 FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:9.5-1742929466 AS runner
 USER 0
 
-# Upstream only
 ENV EXTERNAL_SOURCE_NESTED=.
-
 ENV CONTAINER_SOURCE=/opt/app-root/src
 WORKDIR $CONTAINER_SOURCE/
 
-# Upstream only - install techdocs dependencies (PyPI source tarballs not required)
-# When updating version of mkdocs-techdocs-core remember to update ../.rhdh/docker/requirement* files too
-# hadolint ignore=DL3041,DL3042
-RUN microdnf update --setopt=install_weak_deps=0 -y && \
-  microdnf install -y python3.11 python3.11-pip skopeo && \
+# Install techdocs dependencies using requirements files
+# hadolint ignore=DL3013,DL3041,SC2086
+COPY "$EXTERNAL_SOURCE_NESTED"/python/ ./python
+RUN microdnf install -y python3.11 python3.11-pip python3.11-devel make cmake cpp gcc gcc-c++ skopeo 1>/dev/null 2>&1; \
   alternatives --install /usr/bin/python python /usr/bin/python3.11 1 && \
   alternatives --install /usr/bin/pip pip /usr/bin/pip3.11 1 && \
-  pip install mkdocs-techdocs-core~=1.3.3 && \
+  # fix ownership for pip install folder
+  mkdir -p /opt/app-root/src/.cache/pip && chown -R root:root /opt/app-root && \
+  # ls -ld /opt/ /opt/app-root /opt/app-root/src/ /opt/app-root/src/.cache /opt/app-root/src/.cache/pip || true; \
+  pushd "$EXTERNAL_SOURCE_NESTED"/python/ >/dev/null && \
+  set -e; \
+  python3.11 -V; pip3.11 -V; \
+  pip install --no-cache-dir --upgrade pip setuptools pyyaml; \
+  pip install --no-cache-dir -r requirements.txt -r requirements-build.txt; mkdocs --version; \
+  popd >/dev/null; \
+  rm -fr python/; \
   microdnf clean all
 
 # Upstream only - copy from cleanup stage
@@ -238,16 +264,20 @@ COPY $EXTERNAL_SOURCE/catalog-entities/marketplace /marketplace/catalog-entities
 # Copy script to gather dynamic plugins; copy embedded dynamic plugins to root folder; fix permissions
 COPY docker/install-dynamic-plugins.py docker/install-dynamic-plugins.sh ./
 RUN chmod -R a+r ./dynamic-plugins/ ./install-dynamic-plugins.py; \
-  chmod -R a+rx ./install-dynamic-plugins.sh;
+  chmod -R a+rx ./install-dynamic-plugins.sh
 
 # The existence of the index.html.tmpl tells Backstage to take that file and load it into memory, inject the needed appConfig (instead of writing
 # it into a random *.chunk.js file, and then serve that file from memory so that we can set the readOnlyRootFilesystem: true option for
 # the container.
 RUN ln -s /opt/app-root/src/packages/app/dist/index.html /opt/app-root/src/packages/app/dist/index.html.tmpl
 
+# Fix for https://issues.redhat.com/browse/RHIDP-728
+RUN mkdir -p /opt/app-root/src/.npm; chown -R 1001:1001 /opt/app-root/src/.npm
+
 # The fix-permissions script is important when operating in environments that dynamically use a random UID at runtime, such as OpenShift.
 # The upstream backstage image does not account for this and it causes the container to fail at runtime.
-RUN fix-permissions ./
+# suppress warnings about dereferencing symlinks
+RUN fix-permissions ./ 2>&1 | grep -v "chgrp: cannot dereference" || true
 
 # Switch to nodejs user
 USER 1001

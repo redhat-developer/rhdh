@@ -14,21 +14,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-# To transform into Brew-friendly Dockerfile:
-# 1. comment out lines with EXTERNAL_SOURCE_NESTED=. and CONTAINER_SOURCE=/opt/app-root/src
-# 2. uncomment lines with EXTERNAL_SOURCE_NESTED and CONTAINER_SOURCE pointing at $REMOTE_SOURCES and $REMOTE_SOURCES_DIR instead (Brew defines these paths)
-# 3. uncomment lines with RUN source .../cachito.env
-# 4. add Brew metadata
 
 # Stage 1 - Build nodejs skeleton
 # https://registry.access.redhat.com/ubi9/nodejs-22
 FROM registry.access.redhat.com/ubi9/nodejs-22:9.5-1744136606 AS skeleton
 # hadolint ignore=DL3002
 USER 0
-
-# debug
-# RUN cat /cachi2/cachi2.env 
 
 # Install isolated-vm dependencies
 # hadolint ignore=DL3041
@@ -56,11 +47,10 @@ RUN dnf install -q -y --allowerasing --nobest \
   python3-subscription-manager-rhsm python3-systemd python3-urllib3 readline redhat-release rootfiles rpm rpm-build-libs rpm-libs rpm-plugin-selinux rpm-sign-libs rsync scl-utils \
   sed selinux-policy selinux-policy-targeted setup shadow-utils skopeo slirp4netns sqlite-libs subscription-manager subscription-manager-rhsm-certificates systemd systemd-libs \
   systemd-pam systemd-rpm-macros tar tcl tpm2-tss tzdata unzip usermode util-linux util-linux-core vim-filesystem vim-minimal virt-what which xz xz-libs yajl yum zlib zlib-devel && \
-  
+
   # '(micro)dnf update -y' not allowed in Konflux+Cachi2: instead use renovate or https://github.com/konflux-ci/rpm-lockfile-prototype to update the rpms.lock.yaml file
   dnf clean all
 
-# sources
 ENV EXTERNAL_SOURCE_NESTED=.
 ENV CONTAINER_SOURCE=/opt/app-root/src
 
@@ -85,7 +75,6 @@ COPY $EXTERNAL_SOURCE_NESTED/plugins/dynamic-plugins-info-backend/package.json .
 COPY $EXTERNAL_SOURCE_NESTED/packages/backend/package.json ./packages/backend/package.json
 COPY $EXTERNAL_SOURCE_NESTED/packages/app/package.json ./packages/app/package.json
 COPY $EXTERNAL_SOURCE_NESTED/package.json ./package.json
-COPY $EXTERNAL_SOURCE_NESTED/e2e-tests/package.json ./e2e-tests/package.json
 COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/_utils/package.json ./dynamic-plugins/_utils/package.json
 COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/roadiehq-scaffolder-backend-module-utils-dynamic/package.json ./dynamic-plugins/wrappers/roadiehq-scaffolder-backend-module-utils-dynamic/package.json
 COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/roadiehq-scaffolder-backend-module-http-request-dynamic/package.json ./dynamic-plugins/wrappers/roadiehq-scaffolder-backend-module-http-request-dynamic/package.json
@@ -168,53 +157,18 @@ COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin
 COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin-3scale-backend-dynamic/package.json ./dynamic-plugins/wrappers/backstage-community-plugin-3scale-backend-dynamic/package.json
 # END COPY package.json files
 
-# Downstream only - debugging
-# RUN ls -la /cachi2/output/deps/yarn/*
-
-# Downstream only - enable offline node-gyp install from local headers - see artifacts.lock.yaml for tar.gz
-ENV NODE_HEADERS_VERSION="22.13.1"
-RUN mkdir -p ~/.cache/node-gyp/${NODE_HEADERS_VERSION}; \
-tar -xf /cachi2/output/deps/generic/node-v${NODE_HEADERS_VERSION}-headers.tar.gz --directory ~/.cache/node-gyp/${NODE_HEADERS_VERSION}/ --strip-components 1; \
-echo "11" > ~/.cache/node-gyp/${NODE_HEADERS_VERSION}/installVersion
-
-# Downstream only - enable offline playwright - see artifacts.lock.yaml for zip
-ENV CHROMIUM_VERSION="1155" \
-    HEADLESS_VERSION="1155" \
-    FFMPEG_VERSION="1011" \
-    PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
-    PLAYWRIGHT_BROWSERS_PATH=/cachi2/output/deps/generic/pw-browsers \
-    CHROMIUM_DIR=$PLAYWRIGHT_BROWSERS_PATH/chromium-${CHROMIUM_VERSION} \
-    HEADLESS_DIR=$PLAYWRIGHT_BROWSERS_PATH/chromium_headless_shell-${HEADLESS_VERSION} \
-    FFMPEG_DIR=$PLAYWRIGHT_BROWSERS_PATH/ffmpeg-${FFMPEG_VERSION}
-
-# # python3 -m playwright install chromium firefox --dry-run
-# browser: chromium version 133.0.6943.16
-#   Install location:    /opt/app-root/src/.cache/ms-playwright/chromium-1155
-#   Download url:        https://cdn.playwright.dev/dbazure/download/playwright/builds/chromium/1155/chromium-linux.zip
-# browser: ffmpeg
-#   Install location:    /opt/app-root/src/.cache/ms-playwright/ffmpeg-1011
-#   Download url:        https://cdn.playwright.dev/dbazure/download/playwright/builds/ffmpeg/1011/ffmpeg-linux.zip
-# browser: chromium-headless-shell version 133.0.6943.16
-#   Install location:    /opt/app-root/src/.cache/ms-playwright/chromium_headless_shell-1155
-#   Download url:        https://cdn.playwright.dev/dbazure/download/playwright/builds/chromium/1155/chromium-headless-shell-linux.zip
-# browser: ffmpeg
-#   Install location:    /opt/app-root/src/.cache/ms-playwright/ffmpeg-1011
-#   Download url:        https://cdn.playwright.dev/dbazure/download/playwright/builds/ffmpeg/1011/ffmpeg-linux.zip
-
-RUN dnf install -q -y alsa-lib at-spi2-atk at-spi2-core atk cairo cups-libs libdrm libX11 libX11-xcb libXcomposite libXdamage libXext libXfixes libxkbcommon libXrandr mesa-libgbm nspr nss pango; \
-  export PLAYWRIGHT_BROWSERS_PATH=$PLAYWRIGHT_BROWSERS_PATH/; \
-  ls -la /cachi2/output/deps/generic/; \
-  mkdir -p $CHROMIUM_DIR; unzip -q /cachi2/output/deps/generic/chromium-linux.zip                    -d $CHROMIUM_DIR/; touch $CHROMIUM_DIR/DEPENDENCIES_VALIDATED $CHROMIUM_DIR/INSTALLATION_COMPLETE; \
-  mkdir -p $HEADLESS_DIR; unzip -q /cachi2/output/deps/generic/chromium-headless-shell-linux.zip     -d $HEADLESS_DIR/; touch $HEADLESS_DIR/DEPENDENCIES_VALIDATED $HEADLESS_DIR/INSTALLATION_COMPLETE; \
-  mkdir -p $FFMPEG_DIR;   unzip -q /cachi2/output/deps/generic/ffmpeg-linux.zip                      -d $FFMPEG_DIR/;   touch $FFMPEG_DIR/DEPENDENCIES_VALIDATED   $FFMPEG_DIR/INSTALLATION_COMPLETE; \
-  # echo "Chromium: "; ls -1 $CHROMIUM_DIR; \
-  # echo "Chromium Headless Shell:"; ls -1 $HEADLESS_DIR; \
-  # echo "ffmpeg:"; ls -1 $FFMPEG_DIR; \
-  pip3 install playwright==1.49.1 && playwright --version
-
-# debugging
-# Redirect console output and errors to a log file to make this log shorter
-# RUN exec 3>&1 4>&2 1>> /tmp/build.log.txt 2>> /tmp/build.log.txt
+# unpack headers from tarball (includes openssl headers not present in /usr/include/node) - see RHIDP-6755 for why we need this upstream
+COPY $EXTERNAL_SOURCE_NESTED/.nvm/ .
+RUN NODE_HEADERS_VERSION=$(node --version); echo "=== Install node headers $NODE_HEADERS_VERSION from tar.gz ==="; \
+  if [[ ! -f releases/node-${NODE_HEADERS_VERSION}-headers.tar.gz ]]; then \
+    echo "[ERROR] Base image includes nodejs $NODE_HEADERS_VERSION but could not find releases/node-${NODE_HEADERS_VERSION}-headers.tar.gz to install!"; \
+    echo "[ERROR] To fix, upload the node-${NODE_HEADERS_VERSION}-headers.tar.gz file into https://github.com/redhat-developer/rhdh/tree/main/.nvm/releases (or related branch)!"; \
+    exit 1; \
+  fi; \
+  mkdir -p ~/.cache/node-gyp/${NODE_HEADERS_VERSION/v/}; \
+  tar -xf releases/node-${NODE_HEADERS_VERSION}-headers.tar.gz --directory ~/.cache/node-gyp/${NODE_HEADERS_VERSION/v/}/ --strip-components 1; \
+  echo "11" > ~/.cache/node-gyp/${NODE_HEADERS_VERSION/v/}/installVersion; \
+  rm -fr releases/node-${NODE_HEADERS_VERSION}-headers.tar.gz
 
 # Increate timeout for yarn install
 RUN "$YARN" config set httpTimeout 600000
@@ -224,8 +178,13 @@ RUN "$YARN" config set httpTimeout 600000
 #   export YARN_ENABLE_IMMUTABLE_CACHE=false
 #   export YARN_ENABLE_MIRROR=true
 #   export YARN_GLOBAL_FOLDER=/cachi2/output/deps/yarn
-RUN echo "=== YARN INSTALL ==="; "$YARN" install --immutable | tee /tmp/yarn.install.log.txt 2>&1; \
-  for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then echo; echo $d; echo "======"; cat ${d}/build.log; fi; done
+# RUN cat /cachi2/cachi2.env; echo; ls -la /cachi2/output/deps/yarn/*
+
+RUN echo "=== YARN INSTALL ==="; FAILED=0; "$YARN" install --immutable || true; \
+  for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then \
+    (( FAILED = FAILED + 1 )); echo; echo $d; echo "======"; cat ${d}/build.log; \
+  fi; done; \
+  if [[ $FAILED -gt 0 ]]; then exit $FAILED; fi
 
 # Stage 3 - Build packages
 FROM deps AS build
@@ -246,26 +205,19 @@ RUN \
   -e "s/(\"Last Commit\": \"(.+)\")/\1, \"Build Time\": \"$now\"/" && \
   cat packages/app/src/build-metadata.json; echo
 
-RUN echo "=== YARN BUILD ==="; "$YARN" build --filter=backend \
-   >/tmp/yarn.build.log.txt 2>&1 \
-  || { for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then echo; echo $d; echo "======"; cat ${d}/build.log; fi; done } 
+RUN echo "=== YARN BUILD ==="; "$YARN" build --filter=backend
 
-# >/tmp/yarn.export.dynamic.log.txt 2>&1
-RUN echo "=== EXPORT DYNAMIC PLUGINS (with --no-install) ==="; "$YARN" export-dynamic --filter=./dynamic-plugins/wrappers/*; \
-  for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then echo; echo $d; echo "======"; cat ${d}/build.log; fi; done; \
-  for d in $(find . -name yarn-install.log); do echo; echo "===== EXPORT DYNAMIC PLUGINS: $d =====>"; cat ${d}; echo "<===== EXPORT DYNAMIC PLUGINS: $d ====="; done; 
+RUN echo "=== EXPORT DYNAMIC PLUGINS (with --no-install) ==="; FAILED=0; "$YARN" export-dynamic --filter=./dynamic-plugins/wrappers/* || true; \
+for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then \
+  (( FAILED = FAILED + 1 )); echo; echo $d; echo "======"; cat ${d}/build.log; \
+fi; done; \
+if [[ $FAILED -gt 0 ]]; then exit $FAILED; fi
 
-# Stan says we can  omit this step - https://redhat-internal.slack.com/archives/C08A1KD7TNY/p1741805639019149?thread_ts=1741720088.366109&cid=C08A1KD7TNY
-# RUN echo "=== DIST-DYNAMIC YARN INSTALLS ==="; for f in $(find ./dynamic-plugins/wrappers/ -maxdepth 2 -type d -name dist-dynamic); do g=${f#*/wrappers/}; echo " > $g"; g=${g//\//_}; \
-#   pushd $f >/dev/null; "$YARN" install --immutable >"/tmp/yarn.install.${g}.log.txt" 2>&1; popd >/dev/null; done
-
-#  >/tmp/yarn.copy.dynamic.log.txt 2>&1
 RUN echo "=== YARN COPY DYNAMIC PLUGINS in $(pwd) ==="; "$YARN" copy-dynamic-plugins dist
-# RUN ls -la dynamic-plugins/*
+
 # Downstream only - clean up dynamic plugins sources:
 # Only keep the dist sub-folder in the dynamic-plugins folder
 RUN echo "=== DELETE DYNAMIC PLUGINS/* (except dist/) from $(pwd) ==="; find dynamic-plugins -maxdepth 1 -mindepth 1 -type d -not -name dist -exec rm -Rf {} \;
-# RUN ls -la dynamic-plugins/dist/*
 
 # Stage 4 - Build the actual backend image and install production dependencies
 FROM skeleton AS cleanup
@@ -278,9 +230,6 @@ COPY --from=build $CONTAINER_SOURCE/yarn.lock \
   ./
 ENV TARBALL_PATH=.
 
-# Increate timeout for yarn install
-RUN "$YARN" config set httpTimeout 600000
-
 RUN tar xzf "$TARBALL_PATH"/skeleton.tar.gz; tar xzf "$TARBALL_PATH"/bundle.tar.gz; \
   rm -f "$TARBALL_PATH"/skeleton.tar.gz "$TARBALL_PATH"/bundle.tar.gz
 
@@ -288,11 +237,24 @@ RUN tar xzf "$TARBALL_PATH"/skeleton.tar.gz; tar xzf "$TARBALL_PATH"/bundle.tar.
 COPY $EXTERNAL_SOURCE_NESTED/app-config*.yaml ./
 COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins.default.yaml ./
 
-#  >/tmp/yarn.workspaces.focus.log.txt 2>&1 
+# Hackaround: create library symlinks to build: isolated-vm node-gyp better-sqlite cpu-features
+# TODO is this still needed? maintaining it over time will be a chore if the .so files change
+RUN echo "=== lib64 symlinks ==="; \
+  for l in libbrotlidec.so.1 libbrotlienc.so.1 libbrotlicommon.so.1 libc.so.6 ld-linux-x86-64.so.2 libcrypto.so.3 libk5crypto.so.3 libz.so.1 libssl.so.3; do \
+    ln -s /usr/lib64/$l /usr/lib64/${l%.*} 2>/dev/null || true; \
+    ls -l /usr/lib64/${l%.*}; \
+  done
+
+# Increate timeout for yarn install
+RUN "$YARN" config set httpTimeout 600000
+
 # Install production dependencies
 # hadolint ignore=DL3059
-RUN "$YARN" workspaces focus --all --production \
-|| { for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then echo; echo $d; echo "======"; cat ${d}/build.log; fi; done } 
+RUN echo "=== YARN WORKSPACES FOCUS ==="; FAILED=0; "$YARN" workspaces focus --all --production || true; \
+  for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then \
+    (( FAILED = FAILED + 1 )); echo; echo $d; echo "======"; cat ${d}/build.log; \
+  fi; done; \
+  if [[ $FAILED -gt 0 ]]; then exit $FAILED; fi
 
 RUN \
   # delete all the nested .npmrc files and set default values
@@ -316,30 +278,30 @@ done; if [[ $hadFail -gt 0 ]]; then exit $hadFail; fi
 FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:9.5-1742929466 AS runner
 USER 0
 
-# sources
 ENV EXTERNAL_SOURCE_NESTED=.
-
 ENV CONTAINER_SOURCE=/opt/app-root/src
 WORKDIR $CONTAINER_SOURCE/
 
-# Downstream only - install techdocs dependencies using cachito sources
-# Using cachi2 env vars:
+# cachi2 env vars:
 #   export PIP_FIND_LINKS=/cachi2/output/deps/pip
 #   export PIP_NO_INDEX=true
+
+# Install techdocs dependencies using requirements files
 # hadolint ignore=DL3013,DL3041,SC2086
-COPY "$EXTERNAL_SOURCE_NESTED"/docker/ ./docker
+COPY "$EXTERNAL_SOURCE_NESTED"/python/ ./python
 RUN microdnf install -y python3.11 python3.11-pip python3.11-devel make cmake cpp gcc gcc-c++ skopeo 1>/dev/null 2>&1; \
   alternatives --install /usr/bin/python python /usr/bin/python3.11 1 && \
   alternatives --install /usr/bin/pip pip /usr/bin/pip3.11 1 && \
   # fix ownership for pip install folder
   mkdir -p /opt/app-root/src/.cache/pip && chown -R root:root /opt/app-root && \
   # ls -ld /opt/ /opt/app-root /opt/app-root/src/ /opt/app-root/src/.cache /opt/app-root/src/.cache/pip || true; \
-  pushd "$EXTERNAL_SOURCE_NESTED"/docker/ >/dev/null && \
+  pushd "$EXTERNAL_SOURCE_NESTED"/python/ >/dev/null && \
   set -e; \
   python3.11 -V; pip3.11 -V; \
   pip install --no-cache-dir --upgrade pip setuptools pyyaml; \
   pip install --no-cache-dir -r requirements.txt -r requirements-build.txt; mkdocs --version; \
   popd >/dev/null; \
+  rm -fr python/; \
   microdnf clean all
 
 # Upstream only - copy from cleanup stage
@@ -363,12 +325,12 @@ RUN chmod -R a+r ./dynamic-plugins/ ./install-dynamic-plugins.py; \
 # the container.
 RUN ln -s /opt/app-root/src/packages/app/dist/index.html /opt/app-root/src/packages/app/dist/index.html.tmpl
 
-# Downstream only - fix for https://issues.redhat.com/browse/RHIDP-728 + some cleanup of unneeded files
-RUN mkdir /opt/app-root/src/.npm; chown -R 1001:1001 /opt/app-root/src/.npm; rm -fr docker/
+# Fix for https://issues.redhat.com/browse/RHIDP-728
+RUN mkdir -p /opt/app-root/src/.npm; chown -R 1001:1001 /opt/app-root/src/.npm
 
 # The fix-permissions script is important when operating in environments that dynamically use a random UID at runtime, such as OpenShift.
 # The upstream backstage image does not account for this and it causes the container to fail at runtime.
-# suppress warnings about dereferencing symlinks 
+# suppress warnings about dereferencing symlinks
 RUN fix-permissions ./ 2>&1 | grep -v "chgrp: cannot dereference" || true
 
 # Switch to nodejs user
