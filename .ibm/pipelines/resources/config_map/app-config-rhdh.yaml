@@ -161,7 +161,7 @@ catalog:
         clientSecret: ABC
         schedule:
           # Let's perform a single execution to trigger the metrics fetch failure counter; next fetch will never happen again.
-          frequency: { years: 10 }
+          frequency: { minutes: 10000 }
           timeout: { minutes: 1 }
           initialDelay: { seconds: 15 }
     github:
