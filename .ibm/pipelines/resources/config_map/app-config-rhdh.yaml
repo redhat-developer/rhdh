@@ -152,7 +152,7 @@ catalog:
         schedule:
           frequency: { minutes: 1 }
           timeout: { minutes: 1 }
-      wrong-configuration-for-metrics:
+      badConfigForMetrics:
         baseUrl: ${KEYCLOAK_AUTH_BASE_URL}/auth
         loginRealm: ${KEYCLOAK_AUTH_LOGIN_REALM}
         realm: ${KEYCLOAK_AUTH_REALM}
