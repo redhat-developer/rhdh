@@ -126,7 +126,7 @@ export default defineConfig({
       name: "showcase-operator",
       testIgnore: [
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
-        "**/playwright/e2e/plugins/**/*-rbac.spec.ts",
+        "**/playwright/e2e/**/*-rbac.spec.ts",
         "**/playwright/e2e/verify-tls-config-with-external-postgres-db.spec.ts",
         "**/playwright/e2e/authProviders/**/*.spec.ts",
         "**/playwright/e2e/plugins/bulk-import.spec.ts",
