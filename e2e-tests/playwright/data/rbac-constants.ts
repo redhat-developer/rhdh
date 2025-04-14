@@ -8,6 +8,14 @@ export class RbacConstants {
         name: "role:default/rbac_admin",
       },
       {
+        memberReferences: ["user:default/guest"],
+        name: "role:default/guests",
+      },
+      {
+        memberReferences: ["user:default/user_team_a"],
+        name: "role:default/team_a",
+      },
+      {
         memberReferences: ["user:xyz/user"],
         name: "role:xyz/team_a",
       },
@@ -43,7 +51,7 @@ export class RbacConstants {
       },
       {
         entityReference: "role:default/rbac_admin",
-        permission: "policy-entity",
+        permission: "policy.entity.create",
         policy: "create",
         effect: "allow",
       },
