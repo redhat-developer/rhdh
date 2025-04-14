@@ -40,6 +40,7 @@
     "@backstage/plugin-catalog-backend-module-github-org": "0.3.7"
   },
   "devDependencies": {
+    "@backstage/cli": "0.30.0",
     "@janus-idp/cli": "3.5.0",
     "typescript": "5.8.3"
   },

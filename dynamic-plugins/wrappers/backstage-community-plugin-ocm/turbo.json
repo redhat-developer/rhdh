@@ -2,9 +2,7 @@
   "extends": ["//"],
   "tasks": {
     "tsc": {
-      "outputs": [
-        "../../../dist-types/dynamic-plugins/wrappers/backstage-community-plugin-ocm/**"
-      ]
+      "outputs": ["../../dist-types/wrappers/backstage-community-plugin-ocm/**"]
     }
   }
 }
