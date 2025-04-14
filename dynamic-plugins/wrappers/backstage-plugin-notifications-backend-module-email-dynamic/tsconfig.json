@@ -3,7 +3,7 @@
   "include": ["src", "dev", "migrations"],
   "exclude": ["node_modules"],
   "compilerOptions": {
-    "outDir": "../../../dist-types/dynamic-plugins/wrappers/backstage-plugin-notifications-backend-module-email-dynamic",
+    "outDir": "../../dist-types/wrappers/backstage-plugin-notifications-backend-module-email-dynamic",
     "rootDir": "."
   }
 }

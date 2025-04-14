@@ -3,7 +3,7 @@
   "tasks": {
     "tsc": {
       "outputs": [
-        "../../../dist-types/dynamic-plugins/wrappers/immobiliarelabs-backstage-plugin-gitlab/**"
+        "../../dist-types/wrappers/immobiliarelabs-backstage-plugin-gitlab/**"
       ]
     }
   }
