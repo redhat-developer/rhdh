@@ -9,7 +9,7 @@ export default class RhdhRbacApi {
     Authorization: string;
   };
   private myContext: APIRequestContext;
-  private readonly roleRegex = /^[a-zA-Z]+\/[a-zA-Z]+$/;
+  private readonly roleRegex = /^[a-zA-Z]+\/[a-zA-Z_]+$/;
 
   private constructor(private readonly token: string) {
     this.authHeader = {
@@ -33,8 +33,8 @@ export default class RhdhRbacApi {
     return await this.myContext.get("roles");
   }
 
-  public async getRole(): Promise<APIResponse> {
-    return await this.myContext.get("role");
+  public async getRole(role: string): Promise<APIResponse> {
+    return await this.myContext.get(`roles/role/${role}`);
   }
   public async updateRole(
     role: string /* shall be like: default/admin */,
@@ -60,8 +60,14 @@ export default class RhdhRbacApi {
     return await this.myContext.get("policies");
   }
 
-  public async getPolicy(policy: string): Promise<APIResponse> {
-    return await this.myContext.get(`policies/${policy}`);
+  public async getPoliciesByRole(policy: string): Promise<APIResponse> {
+    return await this.myContext.get(`policies/role/${policy}`);
+  }
+
+  public async getPoliciesByQuery(
+    params: string | { [key: string]: string | number | boolean },
+  ): Promise<APIResponse> {
+    return await this.myContext.get("policies", { params });
   }
 
   public async createPolicies(policy: Policy[]): Promise<APIResponse> {
@@ -83,6 +89,22 @@ export default class RhdhRbacApi {
     return await this.myContext.delete(`policies/role/${policy}`, {
       data: policies,
     });
+  }
+
+  // Conditions
+
+  public async getConditions(): Promise<APIResponse> {
+    return await this.myContext.get("roles/conditions");
+  }
+
+  public async getConditionByQuery(
+    params: string | { [key: string]: string | number | boolean },
+  ): Promise<APIResponse> {
+    return await this.myContext.get("roles/conditions", { params });
+  }
+
+  public async getConditionById(id: number): Promise<APIResponse> {
+    return await this.myContext.get(`roles/conditions/${id}`);
   }
 
   private checkRoleFormat(role: string) {

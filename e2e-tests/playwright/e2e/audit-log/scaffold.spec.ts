@@ -3,6 +3,7 @@ import { Common } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
 import { LogUtils } from "./log-utils";
 import { CatalogImport } from "../../support/pages/catalog-import";
+import { type LogRequest } from "./logs";
 
 test.describe.skip("Audit Log check for Catalog Plugin", () => {
   let uiHelper: UIhelper;
@@ -25,8 +26,25 @@ test.describe.skip("Audit Log check for Catalog Plugin", () => {
     await uiHelper.clickLink({ ariaLabel: "Self-service" });
   });
 
-  test("Should fetch logs for ScaffolderParameterSchemaFetch event and validate log structure and values", async ({
-    baseURL,
+  /**
+   * Helper function to validate log events for Scaffolder Plugin
+   */
+  async function validateScaffolderLogEvent(
+    eventId: string,
+    request: LogRequest,
+  ) {
+    await LogUtils.validateLogEvent(
+      eventId,
+      "user:development/guest",
+      request,
+      undefined,
+      undefined,
+      "succeeded",
+      "scaffolder",
+    );
+  }
+
+  test("Should fetch logs for 'template-parameter-schema' event and validate log structure and values", async ({
     page,
   }) => {
     await uiHelper.clickButton("Register Existing Component");
@@ -35,45 +53,29 @@ test.describe.skip("Audit Log check for Catalog Plugin", () => {
     await uiHelper.clickLink({ ariaLabel: "Self-service" });
     await common.waitForLoad();
     await uiHelper.clickBtnInCard("Hello World 2", "Choose");
-    await LogUtils.validateLogEvent(
-      "ScaffolderParameterSchemaFetch",
-      "user:development/guest requested the parameter schema for template:default/hello-world-2",
-      "GET",
-      "/api/scaffolder/v2/templates/default/template/hello-world-2/parameter-schema",
-      baseURL!,
-      "scaffolder",
-    );
+    await validateScaffolderLogEvent("template-parameter-schema", {
+      method: "GET",
+      url: "/api/scaffolder/v2/templates/default/template/hello-world-2/parameter-schema",
+    });
   });
 
-  test("Should fetch logs for ScaffolderInstalledActionsFetch event and validate log structure and values", async ({
-    baseURL,
-  }) => {
+  test("Should fetch logs for 'action-fetch' event and validate log structure and values", async () => {
     await uiHelper.clickById("long-menu");
     await uiHelper.clickSpanByText("Installed Actions");
 
-    await LogUtils.validateLogEvent(
-      "ScaffolderInstalledActionsFetch",
-      "user:development/guest requested the list of installed actions",
-      "GET",
-      "/api/scaffolder/v2/actions",
-      baseURL!,
-      "scaffolder",
-    );
+    await validateScaffolderLogEvent("action-fetch", {
+      method: "GET",
+      url: "/api/scaffolder/v2/actions",
+    });
   });
 
-  test("Should fetch logs for ScaffolderTaskListFetch event and validate log structure and values", async ({
-    baseURL,
-  }) => {
+  test("Should fetch logs for 'task' event actionType 'list' and validate log structure and values", async () => {
     await uiHelper.clickById("long-menu");
     await uiHelper.clickSpanByText("Task List");
 
-    await LogUtils.validateLogEvent(
-      "ScaffolderTaskListFetch",
-      "user:development/guest requested for the list of scaffolder tasks",
-      "GET",
-      "/api/scaffolder/v2/tasks?createdBy=user%3Adevelopment%2Fguest",
-      baseURL!,
-      "scaffolder",
-    );
+    await validateScaffolderLogEvent("task", {
+      method: "GET",
+      url: "/api/scaffolder/v2/tasks?createdBy=user%3Adevelopment%2Fguest",
+    });
   });
 });
