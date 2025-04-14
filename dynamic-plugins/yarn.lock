@@ -12780,9 +12780,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rjsf/utils@npm:5.23.2":
-  version: 5.23.2
-  resolution: "@rjsf/utils@npm:5.23.2"
+"@rjsf/utils@npm:=5.24.0":
+  version: 5.24.0
+  resolution: "@rjsf/utils@npm:5.24.0"
   dependencies:
     json-schema-merge-allof: ^0.8.1
     jsonpointer: ^5.0.1
@@ -12791,22 +12791,7 @@ __metadata:
     react-is: ^18.2.0
   peerDependencies:
     react: ^16.14.0 || >=17
-  checksum: 16980013258bab7accaff961c533e4bb8e3326c37a84670a7667b2a10c1ca395451eb51a6cf819ccbafb1aa8838df325ff1f314b410bb186fef98856135e1a06
-  languageName: node
-  linkType: hard
-
-"@rjsf/utils@npm:^5.21.2":
-  version: 5.24.8
-  resolution: "@rjsf/utils@npm:5.24.8"
-  dependencies:
-    json-schema-merge-allof: ^0.8.1
-    jsonpointer: ^5.0.1
-    lodash: ^4.17.21
-    lodash-es: ^4.17.21
-    react-is: ^18.2.0
-  peerDependencies:
-    react: ^16.14.0 || >=17
-  checksum: d476260ad9ed7c7bb7e65787420eef26c22b452b77f8ebfadcb79eca13a0c73452fec833c9bf941a3c4f967ea299dcf1a42c72e99f238882c9b39d481548b927
+  checksum: 6da5d345ba66ce15d0cfad91dce293d9c081fcf34f575c6aa18fa6ff90d5f9521116e46912fdcc5560027a06b488930f735fd91c6483c0a5071694a95dacbec0
   languageName: node
   linkType: hard
 
