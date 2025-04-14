@@ -1,6 +1,12 @@
 import { expect } from "@playwright/test";
-import { execFile } from "child_process";
-import { Log } from "./logs";
+import { execFile, exec } from "child_process";
+import { type JsonObject } from "@backstage/types";
+import {
+  Log,
+  type LogRequest,
+  type EventStatus,
+  type EventSeverityLevel,
+} from "./logs";
 
 export class LogUtils {
   /**
@@ -26,6 +32,27 @@ export class LogUtils {
   }
 
   /**
+   * Executes a shell command and returns the output as a promise.
+   *
+   * @param command The shell command to execute
+   * @returns A promise that resolves with the command output
+   */
+  static executeShellCommand(command: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      exec(command, { encoding: "utf8" }, (error, stdout, stderr) => {
+        if (error) {
+          reject(`Error: ${error.message}`);
+          return;
+        }
+        if (stderr) {
+          console.warn("stderr warning:", stderr);
+        }
+        resolve(stdout);
+      });
+    });
+  }
+
+  /**
    * Validates if the actual log matches the expected log values.
    * It compares both primitive and nested object properties.
    *
@@ -35,9 +62,10 @@ export class LogUtils {
   public static validateLog(actual: Log, expected: Partial<Log>) {
     Object.keys(expected).forEach((key) => {
       const expectedValue = expected[key as keyof Log];
-      const actualValue = actual[key as keyof Log];
-
-      LogUtils.compareValues(actualValue, expectedValue);
+      if (expectedValue !== undefined) {
+        const actualValue = actual[key as keyof Log];
+        LogUtils.compareValues(actualValue, expectedValue);
+      }
     });
   }
 
@@ -57,8 +85,13 @@ export class LogUtils {
       });
     } else if (typeof expected === "number") {
       expect(actual).toBe(expected);
+    } else if (typeof expected === "string") {
+      if (actual === undefined || actual === null) {
+        throw new Error(`Expected value "${expected}" but got ${actual}`);
+      }
+      expect(String(actual)).toContain(expected);
     } else {
-      expect(actual).toContain(expected);
+      expect(actual).toBe(expected);
     }
   }
 
@@ -104,57 +137,47 @@ export class LogUtils {
   }
 
   /**
-   * Fetches logs with retry logic in case the log is not immediately available.
+   * Fetches logs using grep for filtering directly in the shell.
    *
-   * @param filter The string to filter the logs
+   * @param filterWords The required words the logs must contain to filter the logs
+   * @param namespace The namespace to use to retrieve logs from pod
    * @param maxRetries Maximum number of retry attempts
    * @param retryDelay Delay (in milliseconds) between retries
    * @returns The log line matching the filter, or throws an error if not found
    */
-  static async getPodLogsWithRetry(
-    filter: string,
-    maxRetries: number = 3,
-    retryDelay: number = 5000,
+  static async getPodLogsWithGrep(
+    filterWords: string[] = [],
+    namespace: string = process.env.NAME_SPACE || "showcase-ci-nightly",
+    maxRetries: number = 4,
+    retryDelay: number = 2000,
   ): Promise<string> {
     const podSelector =
-      "app.kubernetes.io/component=backstage,app.kubernetes.io/instance=rhdh,app.kubernetes.io/name=backstage";
-    const tailNumber = 30;
-    const namespace = process.env.NAME_SPACE || "showcase-ci-nightly";
+      "app.kubernetes.io/component=backstage,app.kubernetes.io/name=backstage";
+    const tailNumber = 100;
+
+    let grepCommand = `oc logs -l ${podSelector} --tail=${tailNumber} -c backstage-backend -n ${namespace}`;
+    for (const word of filterWords) {
+      grepCommand += ` | grep '${word}'`;
+    }
 
     let attempt = 0;
     while (attempt <= maxRetries) {
       try {
         console.log(
-          `Attempt ${attempt + 1}/${maxRetries + 1}: Fetching logs...`,
+          `Attempt ${attempt + 1}/${maxRetries + 1}: Fetching logs with grep...`,
         );
-        const args = [
-          "logs",
-          "-l",
-          podSelector,
-          `--tail=${tailNumber}`,
-          "-c",
-          "backstage-backend",
-          "-n",
-          namespace,
-        ];
+        const output = await LogUtils.executeShellCommand(grepCommand);
 
-        console.log("Executing command:", "oc", args.join(" "));
-        const output = await LogUtils.executeCommand("oc", args);
-
-        console.log("Raw log output:", output);
-
-        const logLines = output.split("\n");
-        const filteredLines = logLines.filter((line) => line.includes(filter));
-
-        if (filteredLines.length > 0) {
-          console.log("Matching log line found:", filteredLines[0]);
-          return filteredLines[0]; // Return the first matching log
+        const logLines = output
+          .split("\n")
+          .filter((line) => line.trim() !== "");
+        if (logLines.length > 0) {
+          console.log("Matching log line found:", logLines[0]);
+          return logLines[0]; // Return the first matching log
         }
 
         console.warn(
-          `No matching logs found for filter "${filter}" on attempt ${
-            attempt + 1
-          }. Retrying...`,
+          `No matching logs found for filter "${filterWords}" on attempt ${attempt + 1}. Retrying...`,
         );
       } catch (error) {
         console.error(
@@ -171,7 +194,7 @@ export class LogUtils {
     }
 
     throw new Error(
-      `Failed to fetch logs for filter "${filter}" after ${maxRetries + 1} attempts.`,
+      `Failed to fetch logs for filter "${filterWords}" after ${maxRetries + 1} attempts.`,
     );
   }
 
@@ -211,24 +234,37 @@ export class LogUtils {
    * Validates if the actual log matches the expected log values for a specific event.
    * This is a reusable method for different log validations across various tests.
    *
-   * @param eventName The name of the event to filter in the logs
-   * @param message The expected log message
-   * @param method The HTTP method used in the log (GET, POST, etc.)
-   * @param url The URL endpoint that was hit in the log
-   * @param baseURL The base URL of the application, used to get the hostname
+   * @param eventId The id of the event to filter in the logs
+   * @param actorId The id of actor initiating the request
+   * @param request The url endpoint and HTTP method (GET, POST, etc.) hit
+   * @param meta The metadata about the event
+   * @param error The error that occurred
+   * @param status The status of event
    * @param plugin The plugin name that triggered the log event
+   * @param severityLevel The level of severity of the event
+   * @param filterWords The required words the logs must contain to filter the logs besides eventId and request url if specified
+   * @param namespace The namespace to use to retrieve logs from pod
    */
   public static async validateLogEvent(
-    eventName: string,
-    message: string,
-    method: string,
-    url: string,
-    baseURL: string,
-    plugin: string,
+    eventId: string,
+    actorId: string,
+    request?: LogRequest,
+    meta?: JsonObject,
+    error?: string,
+    status: EventStatus = "succeeded",
+    plugin: string = "catalog",
+    severityLevel: EventSeverityLevel = "medium",
+    filterWords: string[] = [],
+    namespace: string = process.env.NAME_SPACE || "showcase-ci-nightly",
   ) {
+    const filterWordsAll = [eventId, status, ...filterWords];
+    if (request?.method) filterWordsAll.push(request.method);
+    if (request?.url) filterWordsAll.push(request.url);
     try {
-      const actualLog = await LogUtils.getPodLogsWithRetry(eventName);
-      console.log("Raw log output before filtering:", actualLog);
+      const actualLog = await LogUtils.getPodLogsWithGrep(
+        filterWordsAll,
+        namespace,
+      );
 
       let parsedLog: Log;
       try {
@@ -240,25 +276,25 @@ export class LogUtils {
 
       const expectedLog: Partial<Log> = {
         actor: {
-          hostname: new URL(baseURL).hostname,
+          actorId,
         },
-        message,
         plugin,
-        request: {
-          method,
-          url,
-        },
+        request,
+        meta,
+        error,
+        status,
+        severityLevel,
       };
 
       console.log("Validating log with expected values:", expectedLog);
       LogUtils.validateLog(parsedLog, expectedLog);
     } catch (error) {
       console.error("Error validating log event:", error);
-      console.error("Event name:", eventName);
-      console.error("Expected message:", message);
-      console.error("Expected method:", method);
-      console.error("Expected URL:", url);
-      console.error("Base URL:", baseURL);
+      console.error("Event id:", eventId);
+      console.error("Actor id:", actorId);
+      console.error("Meta:", meta);
+      console.error("Expected method:", request?.method);
+      console.error("Expected URL:", request?.url);
       console.error("Plugin:", plugin);
       throw error;
     }
