@@ -9,7 +9,7 @@
   "scripts": {
     "copy-dynamic-plugins": "node ./copy-plugins.js",
     "lint": "backstage-cli package lint",
-    "test:wrappers": "backstage-cli package test --passWithNoTests --coverage"
+    "test": "backstage-cli package test --passWithNoTests --coverage"
   },
   "devDependencies": {
     "@backstage/cli": "0.30.0",
