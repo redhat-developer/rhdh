@@ -3,6 +3,7 @@ import { Common } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
 import { LogUtils } from "./log-utils";
 import { CatalogImport } from "../../support/pages/catalog-import";
+import { type LogRequest } from "./logs";
 
 // Re-enable with after adapting the tests to the new audit log service
 test.describe.skip("Audit Log check for Catalog Plugin", () => {
@@ -10,6 +11,7 @@ test.describe.skip("Audit Log check for Catalog Plugin", () => {
   let common: Common;
   let catalogImport: CatalogImport;
   let baseApiUrl: string;
+  const actorId = "user:development/guest";
 
   test.beforeAll(async ({ baseURL }) => {
     await LogUtils.loginToOpenShift();
@@ -29,85 +31,75 @@ test.describe.skip("Audit Log check for Catalog Plugin", () => {
    */
   async function validateCatalogLogEvent(
     eventName: string,
-    message: string,
-    method: string,
-    apiPath: string,
+    actorId: string,
+    request?: LogRequest,
     plugin: string = "catalog",
   ) {
     await LogUtils.validateLogEvent(
       eventName,
-      message,
-      method,
-      apiPath,
-      baseApiUrl,
+      actorId,
+      request,
+      undefined,
+      undefined,
+      "succeeded",
       plugin,
+      undefined,
+      baseApiUrl,
     );
   }
 
-  test("Should fetch logs for CatalogEntityFacetFetch event and validate log structure and values", async () => {
-    await validateCatalogLogEvent(
-      "CatalogEntityFacetFetch",
-      "Entity facet fetch attempt",
-      "GET",
-      "/api/catalog/entity-facets",
-    );
+  test("Should fetch logs for 'entity-facets' event and validate log structure and values", async () => {
+    await validateCatalogLogEvent("entity-facets", actorId, {
+      method: "GET",
+      url: "/api/catalog/entity-facets",
+    });
   });
 
-  test("Should fetch logs for CatalogEntityFetchByName event and validate log structure and values", async () => {
+  test("Should fetch logs for 'entity-fetch' event queryType 'by-name' and validate log structure and values", async () => {
     await uiHelper.openCatalogSidebar("Component");
     await uiHelper.clickLink("backstage-janus");
-    await validateCatalogLogEvent(
-      "CatalogEntityFetchByName",
-      "Fetch attempt for entity with entityRef component:default/backstage-janus",
-      "GET",
-      "/api/catalog/entities/by-name/component/default/backstage-janus",
-    );
+    await validateCatalogLogEvent("entity-fetch", actorId, {
+      method: "GET",
+      url: "/api/catalog/entities/by-name/component/default/backstage-janus",
+    });
   });
 
-  test("Should fetch logs for CatalogEntityBatchFetch event and validate log structure and values", async () => {
+  test("Should fetch logs for 'entity-fetch' event queryType 'by-refs' and validate log structure and values", async () => {
     await uiHelper.openCatalogSidebar("Component");
     await uiHelper.clickLink("backstage-janus");
-    await validateCatalogLogEvent(
-      "CatalogEntityBatchFetch",
-      "Batch entity fetch attempt",
-      "POST",
-      "/api/catalog/entities/by-refs",
-    );
+    await validateCatalogLogEvent("entity-fetch", actorId, {
+      method: "POST",
+      url: "/api/catalog/entities/by-refs",
+    });
   });
 
-  test("Should fetch logs for CatalogEntityAncestryFetch event and validate log structure and values", async () => {
+  test("Should fetch logs for 'entity-fetch' event queryType 'ancestry' and validate log structure and values", async () => {
     await uiHelper.openCatalogSidebar("Component");
     await uiHelper.clickLink("backstage-janus");
-    await validateCatalogLogEvent(
-      "CatalogEntityAncestryFetch",
-      "Fetch attempt for entity ancestor of entity component:default/backstage-janus",
-      "GET",
-      "/api/catalog/entities/by-name/component/default/backstage-janus/ancestry",
-    );
+    await validateCatalogLogEvent("entity-fetch", actorId, {
+      method: "GET",
+      url: "/api/catalog/entities/by-name/component/default/backstage-janus/ancestry",
+    });
   });
 
-  test("Should fetch logs for QueriedCatalogEntityFetch event and validate log structure and values", async () => {
+  test("Should fetch logs for 'entity-fetch' event queryType 'by-query' and validate log structure and values", async () => {
     await uiHelper.clickButton("Self-service");
-    await validateCatalogLogEvent(
-      "QueriedCatalogEntityFetch",
-      "Queried entity fetch attempt",
-      "GET",
-      "/api/catalog/entities/by-query",
-    );
+    await validateCatalogLogEvent("entity-fetch", actorId, {
+      method: "GET",
+      url: "/api/catalog/entities/by-query",
+    });
   });
 
-  test("Should fetch logs for CatalogLocationCreation event and validate log structure and values", async () => {
+  test("Should fetch logs for 'location-mutate' event actionType 'create' and validate log structure and values", async () => {
     const template =
       "https://github.com/RoadieHQ/sample-service/blob/main/demo_template.yaml";
     await uiHelper.clickButton("Self-service");
     await uiHelper.clickButton("Register Existing Component");
     await catalogImport.analyzeComponent(template);
 
-    await validateCatalogLogEvent(
-      "CatalogLocationCreation",
-      template,
-      "POST",
-      "/api/catalog/locations?dryRun=true",
-    );
+    await validateCatalogLogEvent("location-mutate", actorId, {
+      method: "POST",
+      url: "/api/catalog/locations?dryRun=true",
+    });
   });
 });
