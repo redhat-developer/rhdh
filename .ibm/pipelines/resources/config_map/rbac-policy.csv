@@ -1,5 +1,7 @@
 p, role:default/guests, catalog.entity.create, create, allow
+g, user:default/guest, role:default/guests
 p, role:default/team_a, catalog-entity, read, allow
+g, user:default/user_team_a, role:default/team_a
 g, user:xyz/user, role:xyz/team_a
 g, group:default/rhdh-qe-2-team, role:default/test2-role
 

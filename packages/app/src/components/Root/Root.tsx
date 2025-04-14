@@ -15,7 +15,7 @@ import { usePermission } from '@backstage/plugin-permission-react';
 import { SidebarSearchModal } from '@backstage/plugin-search';
 import { Settings as SidebarSettings } from '@backstage/plugin-user-settings';
 
-import { policyEntityReadPermission } from '@backstage-community/plugin-rbac-common';
+import { policyEntityCreatePermission } from '@backstage-community/plugin-rbac-common';
 import { AdminIcon } from '@internal/plugin-dynamic-plugins-info';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
@@ -206,8 +206,8 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
 
   const { loading: loadingPermission, allowed: canDisplayRBACMenuItem } =
     usePermission({
-      permission: policyEntityReadPermission,
-      resourceRef: policyEntityReadPermission.resourceType,
+      permission: policyEntityCreatePermission,
+      resourceRef: undefined,
     });
 
   const handleClick = (itemName: string) => {
