@@ -423,7 +423,7 @@ p, role:default/admin, kubernetes.proxy, use, allow
 p, role:default/admin, catalog.location.create, create, allow
 p, role:default/admin, catalog.location.read, read, allow
 p, role:default/admin, policy-entity, read, allow
-p, role:default/admin, policy-entity, create, allow
+p, role:default/admin, policy.entity.create, create, allow
 p, role:default/reader, catalog-entity, read, allow
 p, role:default/reader, catalog.entity.read, read, allow
 p, role:default/reader, catalog.location.read, read, allow

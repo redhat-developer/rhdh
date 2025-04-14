@@ -31,7 +31,7 @@
     "prettier:fix": "prettier --ignore-unknown --write ."
   },
   "dependencies": {
-    "@backstage-community/plugin-rbac-common": "1.14.0",
+    "@backstage-community/plugin-rbac-common": "1.15.0",
     "@backstage/backend-defaults": "0.8.1",
     "@backstage/backend-plugin-api": "1.2.0",
     "@backstage/catalog-client": "1.9.1",
