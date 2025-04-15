@@ -4,7 +4,8 @@ import { UIhelper } from "../../../utils/ui-helper";
 import { Common } from "../../../utils/common";
 import { test, expect } from "@playwright/test";
 
-test.describe("Test Keycloak plugin", () => {
+test.describe.skip("Test Keycloak plugin", () => {
+  // Skipping this test due to https://issues.redhat.com/browse/RHIDP-6844
   let uiHelper: UIhelper;
   let keycloak: Keycloak;
   let common: Common;
