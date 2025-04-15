@@ -24,17 +24,15 @@ test.describe("Admin > Extensions > Catalog", () => {
   });
 
   test("Verify filters in extensions", async ({ page }) => {
+    await uiHelper.verifyHeading(/Plugins \(\d+\)/);
     await uiHelper.clickTab("Catalog");
     await uiHelper.clickButton("CI/CD");
     await extensions.selectDropdown("Category");
-    await page
-      .getByRole("option", { name: "CI/CD" })
-      .getByRole("checkbox")
-      .isChecked();
-    await extensions.clickAway();
+    await page.getByRole("option", { name: "CI/CD" }).isChecked();
+    await page.keyboard.press(`Escape`);
     await extensions.selectDropdown("Author");
     await extensions.toggleOption("Red Hat");
-    await extensions.clickAway();
+    await page.keyboard.press(`Escape`);
     await uiHelper.verifyHeading("Red Hat Argo CD");
     await uiHelper.verifyText("by Red Hat");
     await page.getByRole("heading", { name: "Red Hat Argo CD" }).click();
@@ -51,16 +49,22 @@ test.describe("Admin > Extensions > Catalog", () => {
     await page.getByRole("button", { name: "close" }).click();
     await extensions.selectDropdown("Author");
     await extensions.toggleOption("Red Hat");
-    await extensions.clickAway();
-    await extensions.selectDropdown("Category");
-    await extensions.toggleOption("CI/CD");
-    await extensions.clickAway();
+    await expect(
+      page.getByRole("option", { name: "Red Hat" }).getByRole("checkbox"),
+    ).not.toBeChecked();
+    await expect(
+      page.getByRole("button", { name: "Red Hat" }),
+    ).not.toBeVisible();
+    await page.keyboard.press(`Escape`);
+    await page.getByTestId("CancelIcon").first().click();
+    await expect(page.getByLabel("Category").getByRole("combobox")).toBeEmpty();
+    await page.keyboard.press(`Escape`);
   });
 
   test("Verify certified badge in extensions", async ({ page }) => {
     await extensions.selectDropdown("Support type");
     await extensions.toggleOption("Certified by Red Hat");
-    await extensions.clickAway();
+    await page.keyboard.press(`Escape`);
     await uiHelper.verifyHeading("DynaTrace");
     await expect(page.getByLabel("Certified by Red Hat").first()).toBeVisible();
     await expect(extensions.badge.first()).toBeVisible();
@@ -84,7 +88,7 @@ test.describe("Admin > Extensions > Catalog", () => {
     await extensions.selectDropdown("Support type");
     await extensions.toggleOption("Certified by Red Hat");
     await extensions.toggleOption("Verified by Red Hat");
-    await extensions.clickAway();
+    await page.keyboard.press(`Escape`);
     await expect(page.getByLabel("Verified by Red Hat").first()).toBeVisible();
     await expect(extensions.badge.first()).toBeVisible();
     await extensions.badge.first().hover();
