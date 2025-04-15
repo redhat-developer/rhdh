@@ -12,4 +12,4 @@ Depending on what you're trying to accomplish you have some options:
 
 * create your own hermeto cache folder with https://github.com/hermetoproject/hermeto and then tweak this Dockerfile using ENV vars, to use your local cache folder
 
-* Use Konflux to build a merge request against the midstream repo. See link:https://gitlab.cee.redhat.com/rhidp/rhdh/-/tree/rhdh-1-rhel-9/docs[details here]. Note: RH VPN required.
+* Use Konflux to build a merge request against the midstream repo. See link:https://gitlab.cee.redhat.com/rhidp/rhdh/-/blob/rhdh-1-rhel-9/docs/RHDH-Konflux-user-guide.adoc#user-content-building-locally[Konflux user guide - building locally]. Note: RH VPN required.
