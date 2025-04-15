@@ -126,7 +126,7 @@ export class LogUtils {
   ): Promise<string> {
     const podSelector =
       "app.kubernetes.io/component=backstage,app.kubernetes.io/instance=rhdh,app.kubernetes.io/name=backstage";
-    const tailNumber = 100;
+    const tailNumber = 500;
     const namespace = process.env.NAME_SPACE || "showcase-ci-nightly";
 
     let attempt = 0;
