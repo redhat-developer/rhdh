@@ -5692,7 +5692,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/core-app-api@npm:1.15.5, @backstage/core-app-api@npm:^1.15.2, @backstage/core-app-api@npm:^1.15.5":
+"@backstage/core-app-api@npm:1.15.5":
   version: 1.15.5
   resolution: "@backstage/core-app-api@npm:1.15.5"
   dependencies:
@@ -8204,7 +8204,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-permission-react@npm:0.4.31, @backstage/plugin-permission-react@npm:^0.4.31":
+"@backstage/plugin-permission-react@npm:0.4.31":
   version: 0.4.31
   resolution: "@backstage/plugin-permission-react@npm:0.4.31"
   dependencies:
@@ -8224,7 +8224,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-permission-react@npm:^0.4.30, @backstage/plugin-permission-react@npm:^0.4.31, @backstage/plugin-permission-react@npm:^0.4.32":
+"@backstage/plugin-permission-react@npm:^0.4.31, @backstage/plugin-permission-react@npm:^0.4.32":
   version: 0.4.32
   resolution: "@backstage/plugin-permission-react@npm:0.4.32"
   dependencies:
@@ -13166,7 +13166,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/base@npm:5.0.0-beta.40-0, @mui/base@npm:^5.0.0-beta.22, @mui/base@npm:^5.0.0-beta.40":
+"@mui/base@npm:5.0.0-beta.40-0":
   version: 5.0.0-beta.40-0
   resolution: "@mui/base@npm:5.0.0-beta.40-0"
   dependencies:
@@ -13317,7 +13317,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/material@npm:5.16.14, @mui/material@npm:^5.12.2, @mui/material@npm:^5.14.18, @mui/material@npm:^5.15.16, @mui/material@npm:^5.15.17, @mui/material@npm:^5.15.19":
+"@mui/material@npm:5.16.14":
   version: 5.16.14
   resolution: "@mui/material@npm:5.16.14"
   dependencies:
@@ -13517,7 +13517,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/system@npm:^5.16.12, @mui/system@npm:^5.16.13, @mui/system@npm:^5.16.14, @mui/system@npm:^5.16.5, @mui/system@npm:^5.17.1":
+"@mui/system@npm:^5.16.12, @mui/system@npm:^5.17.1":
   version: 5.17.1
   resolution: "@mui/system@npm:5.17.1"
   dependencies:
