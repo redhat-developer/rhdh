@@ -15,6 +15,7 @@ export class RbacPo extends PageObject {
   // roles
   private roleName: Locator;
   private roledescription: Locator;
+  private roleOwner: Locator;
   private usersAndGroupsField: Locator;
   private addPermissionPolicy: Locator;
   private configureAccess: Locator;
@@ -27,6 +28,7 @@ export class RbacPo extends PageObject {
   private saveConditions: Locator;
   private anyOfButton: Locator;
   private isEntityKindButton: Locator;
+  private isOwnerButton: Locator;
   private addRuleButton: Locator = this.page.getByRole("button", {
     name: "Add rule",
   });
@@ -104,7 +106,8 @@ export class RbacPo extends PageObject {
       .getByTestId("update-members")
       .getByLabel("Update");
     this.roleName = this.page.locator('input[name="name"]');
-    this.roledescription = this.page.locator('input[name="description"]');
+    this.roledescription = this.page.locator('textarea[name="description"]');
+    this.roleOwner = this.page.locator('textarea[name="owner"]');
     this.usersAndGroupsField = this.page.locator(
       'input[name="add-users-and-groups"]',
     );
@@ -121,6 +124,7 @@ export class RbacPo extends PageObject {
     this.saveConditions = this.page.getByTestId("save-conditions");
     this.anyOfButton = this.page.getByRole("button", { name: "AnyOf" });
     this.isEntityKindButton = this.page.getByText("IS_ENTITY_KIND");
+    this.isOwnerButton = this.page.getByText("IS_OWNER");
     this.hasLabel = this.page.getByText("HAS_LABEL");
     this.label = this.page.getByLabel("label *");
   }
@@ -182,7 +186,8 @@ export class RbacPo extends PageObject {
       | "kubernetes"
       | "catalog.entity.read"
       | "scaffolder"
-      | "scaffolder-template.read",
+      | "scaffolder-template.read"
+      | "permission",
   ) {
     const optionSelector = `li[role="option"]:has-text("${option}")`;
     await this.page.waitForSelector(optionSelector);
@@ -204,7 +209,10 @@ export class RbacPo extends PageObject {
   }
 
   async selectPermissionCheckbox(name: string) {
-    this.page.getByRole("cell", { name: name }).getByRole("checkbox").click();
+    await this.page
+      .getByRole("cell", { name: name })
+      .getByRole("checkbox")
+      .click();
   }
 
   async pluginRuleCount(number: string) {
@@ -219,11 +227,15 @@ export class RbacPo extends PageObject {
     name: string,
     users: string[],
     groups: string[],
+    owner?: string,
   ) {
     if (!this.page.url().includes("rbac")) await this.goto();
     await this.uiHelper.clickButton("Create");
     await this.uiHelper.verifyHeading("Create role");
     await this.roleName.fill(name);
+    if (owner) {
+      this.roleOwner.fill(owner);
+    }
     await this.uiHelper.clickButton("Next");
     await this.usersAndGroupsField.click();
 
@@ -248,8 +260,9 @@ export class RbacPo extends PageObject {
     groups: string[],
     policies: RoleBasedPolicy[],
     pluginId: "catalog" | "kubernetes" | "scaffolder" = "catalog",
+    owner?: string,
   ) {
-    await this.createRoleUsers(name, users, groups);
+    await this.createRoleUsers(name, users, groups, owner);
 
     // select permissions
     await this.selectPluginsCombobox.click();
@@ -360,7 +373,7 @@ export class RbacPo extends PageObject {
     }
   }
 
-  async deleteRole(name: string) {
+  async deleteRole(name: string, header: string = "All roles (0)") {
     await this.page.goto("/rbac");
     await this.uiHelper.searchInputAriaLabel(name);
     const button = this.page.locator(ROLES_PAGE_COMPONENTS.deleteRole(name));
@@ -375,6 +388,77 @@ export class RbacPo extends PageObject {
     await this.page
       .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)
       .fill(name);
-    await this.uiHelper.verifyHeading("All roles (0)");
+    await this.uiHelper.verifyHeading(header);
+  }
+
+  private async createRBACConditions(owner: string) {
+    const permissions = [
+      "policy.entity.read",
+      "policy.entity.update",
+      "policy.entity.delete",
+    ];
+    for (const permission of permissions) {
+      await this.selectPermissionCheckbox(permission);
+      await this.page
+        .getByRole("row", { name: permission })
+        .getByLabel("remove")
+        .click();
+      await this.clickOpenSidebar();
+      await this.isOwnerButton.click();
+      await this.page.getByPlaceholder("string, string").click();
+      await this.page.getByPlaceholder("string, string").fill(owner);
+      await this.saveConditions.click();
+    }
+  }
+
+  async createRBACConditionRole(name: string, users: string[], owner: string) {
+    if (!this.page.url().includes("rbac")) await this.goto();
+    await this.uiHelper.clickButton("Create");
+    await this.uiHelper.verifyHeading("Create role");
+    await this.roleName.fill(name);
+    await this.uiHelper.clickButton("Next");
+    await this.usersAndGroupsField.click();
+
+    for (const user of users) {
+      await this.page.click(this.selectMember(user));
+    }
+
+    // Close dropdown after selecting users and groups
+    await this.page.getByTestId("ArrowDropDownIcon").click();
+
+    // Dynamically verify the heading based on users and groups added
+    const numUsers = users.length;
+    await this.uiHelper.verifyHeading(
+      this.regexpShortUsersAndGroups(numUsers, 0),
+    );
+
+    await this.next();
+    await this.selectPluginsCombobox.click();
+    await this.selectOption("catalog");
+    await this.page.getByText("Select...").click();
+
+    await this.selectPermissionCheckbox("catalog.entity.read");
+    await this.page.getByTestId("expand-row-catalog").click();
+
+    await this.selectPluginsCombobox.click();
+    await this.selectOption("permission");
+    await this.page.getByText("Select...").click();
+
+    await this.selectPermissionCheckbox("policy.entity.create");
+
+    await this.createRBACConditions(owner);
+
+    await this.next();
+    await this.uiHelper.verifyHeading("Review and create");
+    await this.uiHelper.verifyText(this.regexpLongUsersAndGroups(numUsers, 0));
+    await this.verifyPermissionPoliciesHeader(5);
+    await this.create();
+    await this.page
+      .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)
+      .waitFor();
+    await this.page
+      .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)
+      .fill(name);
+    await this.uiHelper.verifyHeading("All roles (1)");
   }
 }
