@@ -121,12 +121,12 @@ export class LogUtils {
   static async getPodLogsWithRetry(
     eventId?: string,
     filter?: string,
-    maxRetries: number = 3,
-    retryDelay: number = 5000,
+    maxRetries: number = 4,
+    retryDelay: number = 2000,
   ): Promise<string> {
     const podSelector =
       "app.kubernetes.io/component=backstage,app.kubernetes.io/instance=rhdh,app.kubernetes.io/name=backstage";
-    const tailNumber = 50;
+    const tailNumber = 100;
     const namespace = process.env.NAME_SPACE || "showcase-ci-nightly";
 
     let attempt = 0;
