@@ -47,7 +47,13 @@ test.describe("Auditor check for RBAC Plugin", () => {
 
   test.describe("Logs should have correct structure for 'role-read' event", () => {
     test("Validate 'role-read' queryType 'all'", async () => {
-      await rbacApi.getRoles();
+      console.log(
+        "Validate 'role-read' queryType 'all'",
+        new Date().toISOString(),
+      );
+      const resp = await rbacApi.getRoles();
+      console.log(new Date().toISOString(), await resp.text());
+
       await validateRbacLogEvent(
         "role-read",
         userEntityRef,
@@ -168,12 +174,17 @@ test.describe("Auditor check for RBAC Plugin", () => {
     });
 
     test("Validate 'policy-read' queryType 'by-query'", async () => {
-      await rbacApi.getPoliciesByQuery({
+      console.log(
+        "Validate 'policy-read' queryType 'by-query",
+        new Date().toISOString(),
+      );
+      const resp = await rbacApi.getPoliciesByQuery({
         entityRef: userEntityRef,
         permission: "policy-entity",
         policy: "read",
         effect: "allow",
       });
+      console.log(new Date().toISOString(), await resp.text());
 
       await validateRbacLogEvent(
         "policy-read",
@@ -280,12 +291,18 @@ test.describe("Auditor check for RBAC Plugin", () => {
     });
 
     test("Validate 'condition-read' queryType 'by-query'", async () => {
-      await rbacApi.getConditionByQuery({
+      console.log(
+        "Validate 'condition-read' queryType 'by-query'",
+        new Date().toISOString(),
+      );
+      const resp = await rbacApi.getConditionByQuery({
         roleEntityRef: "role:default/test2-role",
         pluginId: "catalog",
         resourceType: "catalog-entity",
         actions: "read",
       });
+      console.log(new Date().toISOString(), await resp.text());
+
       await validateRbacLogEvent(
         "condition-read",
         userEntityRef,
