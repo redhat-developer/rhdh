@@ -1,0 +1,15 @@
+# Downstream Dockerfile
+
+This folder contains the containerfile (dockerfile) used in Konflux downstream for RHDH builds.
+
+It requires hermeto to cache dependencies (rpm, pip, yarn) before the build can proceed, so that the build is reproduceable/offline/hermetically sealed.
+
+## How do I build this dockerfile
+
+Depending on what you're trying to accomplish you have some options:
+
+* build from the link:../../docker/Dockerfile[docker/Dockerfile] instead of link:Dockerfile[.rhdh/docker/Dockerfile], using `podman build` or equivalent
+
+* create your own hermeto cache folder with https://github.com/hermetoproject/hermeto and then tweak this Dockerfile using ENV vars, to use your local cache folder
+
+* Use Konflux to build a merge request against the midstream repo. See link:https://gitlab.cee.redhat.com/rhidp/rhdh/-/tree/rhdh-1-rhel-9/docs[details here]. Note: RH VPN required.
