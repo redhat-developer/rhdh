@@ -7649,7 +7649,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-catalog@npm:1.27.0":
+"@backstage/plugin-catalog@npm:1.27.0, @backstage/plugin-catalog@npm:^1.27.0":
   version: 1.27.0
   resolution: "@backstage/plugin-catalog@npm:1.27.0"
   dependencies:
@@ -7688,49 +7688,6 @@ __metadata:
     "@types/react":
       optional: true
   checksum: ad5bac0944b1d7b709880d4093360b1bac0daea3e1dbb3b298317459552293a3be410771d77e7475804477994e5f7d525b48531259e1d8f6ca7352f46168f39c
-  languageName: node
-  linkType: hard
-
-"@backstage/plugin-catalog@npm:^1.27.0":
-  version: 1.28.0
-  resolution: "@backstage/plugin-catalog@npm:1.28.0"
-  dependencies:
-    "@backstage/catalog-client": ^1.9.1
-    "@backstage/catalog-model": ^1.7.3
-    "@backstage/core-compat-api": ^0.4.0
-    "@backstage/core-components": ^0.17.0
-    "@backstage/core-plugin-api": ^1.10.5
-    "@backstage/errors": ^1.2.7
-    "@backstage/frontend-plugin-api": ^0.10.0
-    "@backstage/integration-react": ^1.2.5
-    "@backstage/plugin-catalog-common": ^1.1.3
-    "@backstage/plugin-catalog-react": ^1.16.0
-    "@backstage/plugin-permission-react": ^0.4.32
-    "@backstage/plugin-scaffolder-common": ^1.5.10
-    "@backstage/plugin-search-common": ^1.2.17
-    "@backstage/plugin-search-react": ^1.8.7
-    "@backstage/types": ^1.2.1
-    "@material-ui/core": ^4.12.2
-    "@material-ui/icons": ^4.9.1
-    "@material-ui/lab": 4.0.0-alpha.61
-    "@mui/utils": ^5.14.15
-    classnames: ^2.3.1
-    dataloader: ^2.0.0
-    history: ^5.0.0
-    lodash: ^4.17.21
-    pluralize: ^8.0.0
-    react-helmet: 6.1.0
-    react-use: ^17.2.4
-    zen-observable: ^0.10.0
-  peerDependencies:
-    "@types/react": ^17.0.0 || ^18.0.0
-    react: ^17.0.0 || ^18.0.0
-    react-dom: ^17.0.0 || ^18.0.0
-    react-router-dom: ^6.3.0
-  peerDependenciesMeta:
-    "@types/react":
-      optional: true
-  checksum: 08538f830fddf7cba807ecd8de5c35c020d1b6e3e3ac971d8ac49f769a44e377f31b9bb5441b059bb84a62ec537954021b11f1d934e48f4e45089adb23672e8d
   languageName: node
   linkType: hard
 
@@ -8666,17 +8623,6 @@ __metadata:
     "@backstage/plugin-permission-common": ^0.8.4
     "@backstage/types": ^1.2.1
   checksum: e192066677d2a7d1dfe4870476043015018062e7b68020bd00e1eefa84142367626c85effe0777143c01afd0d5c978942fcbb12e598bcfdff5cbee3965713a5e
-  languageName: node
-  linkType: hard
-
-"@backstage/plugin-scaffolder-common@npm:^1.5.10":
-  version: 1.5.10
-  resolution: "@backstage/plugin-scaffolder-common@npm:1.5.10"
-  dependencies:
-    "@backstage/catalog-model": ^1.7.3
-    "@backstage/plugin-permission-common": ^0.8.4
-    "@backstage/types": ^1.2.1
-  checksum: e6ba556ef0b8ac5144572546ca1353acf2ae82df568cf13e710d65bc7b2ea62eaf515a9e178e9546c053a5bb259b7a2659abfbf0f3abdb26d129afa575340c12
   languageName: node
   linkType: hard
 
@@ -28802,7 +28748,7 @@ __metadata:
     "@typescript-eslint/parser": 6.21.0
     eslint: 8.57.1
     eslint-plugin-filenames: 1.3.2
-    ioredis: 5.6.0
+    ioredis: 5.6.1
     isomorphic-fetch: 3.0.0
     js-yaml: 4.1.0
     node-fetch: 2.7.0
@@ -33148,9 +33094,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ioredis@npm:5.6.0":
-  version: 5.6.0
-  resolution: "ioredis@npm:5.6.0"
+"ioredis@npm:5.6.1":
+  version: 5.6.1
+  resolution: "ioredis@npm:5.6.1"
   dependencies:
     "@ioredis/commands": ^1.1.1
     cluster-key-slot: ^1.1.0
@@ -33161,7 +33107,7 @@ __metadata:
     redis-errors: ^1.2.0
     redis-parser: ^3.0.0
     standard-as-callback: ^2.1.0
-  checksum: b085cec251581224c6b9e3e4b0c1f92f99a272976ebcad552bc9d0c63d31abbe0208294b3acedeae4f29759ff3821478727207a47597e2ba081b1036fbc69181
+  checksum: 89100a97b2210fed2aca45daf902adee8aa2294e56f817742651c86234a3efa56f82aa5aa762a94f5fbf806942f259ef5e628f626d1841d20d5cbb163fc8bd3f
   languageName: node
   linkType: hard
 
@@ -35622,9 +35568,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lint-staged@npm:15.5.0":
-  version: 15.5.0
-  resolution: "lint-staged@npm:15.5.0"
+"lint-staged@npm:15.5.1":
+  version: 15.5.1
+  resolution: "lint-staged@npm:15.5.1"
   dependencies:
     chalk: ^5.4.1
     commander: ^13.1.0
@@ -35638,7 +35584,7 @@ __metadata:
     yaml: ^2.7.0
   bin:
     lint-staged: bin/lint-staged.js
-  checksum: 9d5854d1bef3b0b604b3c10e56f73ee49026ff700e5f9497522c852356b25a0a43f9897e9e336ed99bf91e6bde978279f6a6d59b9b94716c1dd6d46b6ddad462
+  checksum: aa285bf6c55459030254536661e2cf4a69d8084ff945a088b1a60a94b96e3593c866b2804e7a5b6168f65ea675b785657e70ade9248e9c6f3023d3bd35b497b5
   languageName: node
   linkType: hard
 
@@ -43429,7 +43375,7 @@ __metadata:
     "@manypkg/cli": 0.23.0
     glob: 11.0.1
     husky: 8.0.3
-    lint-staged: 15.5.0
+    lint-staged: 15.5.1
     node-gyp: 10.3.1
     sherif: 1.5.0
     turbo: 2.5.0
