@@ -10,7 +10,10 @@ export class Extensions {
   }
 
   async selectDropdown(name: string) {
-    await this.page.getByLabel(name).getByRole("button").first().click();
+    await this.page
+      .getByLabel(name)
+      .getByRole("button", { name: "Open" })
+      .click();
   }
 
   async toggleOption(name: string) {
