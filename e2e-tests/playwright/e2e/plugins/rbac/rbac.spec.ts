@@ -540,7 +540,7 @@ test.describe.serial("Test RBAC", () => {
       await uiHelper.openSidebar("Catalog");
       await uiHelper.selectMuiBox("Kind", "Component");
       await uiHelper.verifyTableIsEmpty();
-      await uiHelper.clickLink({ ariaLabel: "Self-service" });
+      await uiHelper.clickButton("Self-service");
       await page.reload();
       await uiHelper.verifyText(
         "No templates found that match your filter. Learn more about",
@@ -555,7 +555,7 @@ test.describe.serial("Test RBAC", () => {
     });
 
     test("Test catalog-entity create is allowed", async () => {
-      await uiHelper.clickLink({ ariaLabel: "Self-service" });
+      await uiHelper.clickButton("Self-service");
       expect(await uiHelper.isLinkVisible("Register Existing Component"));
       await uiHelper.clickButton("Register Existing Component");
       const catalogImport = new CatalogImport(page);
@@ -646,6 +646,112 @@ test.describe.serial("Test RBAC", () => {
       } catch (error) {
         console.error("Error during cleanup in afterAll:", error);
       }
+    });
+  });
+
+  test.describe.serial("Test RBAC ownership conditional rule", () => {
+    // eslint-disable-next-line no-empty-pattern
+    test.beforeEach(async ({}, testInfo) => {
+      testInfo.setTimeout(testInfo.timeout + 30_000); // Additional time due to repeated timeout failure in OSD env.
+    });
+
+    test("Create a role with the `IsOwner` conditional rule.", async ({
+      page,
+    }) => {
+      const common = new Common(page);
+      await common.loginAsKeycloakUser();
+      await page.goto("/rbac");
+      await common.waitForLoad();
+      await new UIhelper(page).verifyHeading("RBAC", 30_000);
+
+      const uiHelper = new UIhelper(page);
+      const rbacPo = new RbacPo(page);
+      await rbacPo.createRBACConditionRole("test-conditional-role", [
+        process.env.QE_USER6_ID,
+      ]);
+
+      await page
+        .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)
+        .waitFor({ state: "visible" });
+      await page
+        .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)
+        .fill("test-conditional-role");
+      await uiHelper.verifyHeading("All roles (1)");
+    });
+
+    test("Test that user with `IsOwner` condition can access the RBAC page, create a role, edit a role, and delete the role", async ({
+      page,
+    }) => {
+      const common = new Common(page);
+      await common.loginAsKeycloakUser(
+        process.env.QE_USER6_ID,
+        process.env.QE_USER6_PASS,
+      );
+      await page.goto("/rbac");
+      await common.waitForLoad();
+      await new UIhelper(page).verifyHeading("RBAC", 30_000);
+
+      const uiHelper = new UIhelper(page);
+      const rbacPo = new RbacPo(page);
+      const testUser = "Jonathon Page";
+      await rbacPo.createRole(
+        "test-role",
+        [RbacPo.rbacTestUsers.guest, RbacPo.rbacTestUsers.tara],
+        [RbacPo.rbacTestUsers.backstage],
+        [{ permission: "catalog.entity.delete" }],
+        "catalog",
+        "user:default/rhdh-qe-6",
+      );
+
+      await page.click(
+        ROLES_PAGE_COMPONENTS.editRole("role:default/test-role"),
+      );
+      await uiHelper.verifyHeading("Edit Role");
+      await uiHelper.clickButton("Next");
+      await page.waitForTimeout(1_000);
+      await rbacPo.addUsersAndGroups(testUser);
+      await page.click(rbacPo.selectMember(testUser));
+      await uiHelper.verifyHeading(rbacPo.regexpShortUsersAndGroups(2, 0));
+      await uiHelper.clickButton("Next");
+      await page.waitForTimeout(1_000);
+      await uiHelper.clickButton("Next");
+      await page.waitForTimeout(1_000);
+      await uiHelper.clickButton("Save");
+      await uiHelper.verifyText(
+        "Role role:default/test-role updated successfully",
+      );
+
+      await page
+        .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)
+        .waitFor({ state: "visible" });
+      await page
+        .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)
+        .fill("test-role");
+      await uiHelper.verifyHeading("All roles (1)");
+      await rbacPo.deleteRole("role:default/test-role");
+    });
+
+    test("Ensure that the admin can revoke access", async ({ page }) => {
+      const common = new Common(page);
+      await common.loginAsKeycloakUser();
+      await page.goto("/rbac");
+      await common.waitForLoad();
+      await new UIhelper(page).verifyHeading("RBAC", 30_000);
+
+      const rbacPo = new RbacPo(page);
+      await rbacPo.deleteRole("role:default/test-conditional-role");
+    });
+
+    test("Ensure access to user has been revoked", async ({ page }) => {
+      const common = new Common(page);
+      await common.loginAsKeycloakUser(
+        process.env.QE_USER6_ID,
+        process.env.QE_USER6_PASS,
+      );
+      const uiHelper = new UIhelper(page);
+      await uiHelper.openSidebarButton("Administration");
+      const dropdownMenuLocator = page.locator(`text="RBAC"`);
+      await expect(dropdownMenuLocator).not.toBeVisible();
     });
   });
 });
