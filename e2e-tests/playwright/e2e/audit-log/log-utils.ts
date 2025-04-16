@@ -121,13 +121,13 @@ export class LogUtils {
   static async getPodLogsWithRetry(
     eventId?: string,
     filter?: string,
+    namespace: string = process.env.NAME_SPACE || "showcase-ci-nightly",
     maxRetries: number = 4,
     retryDelay: number = 2000,
   ): Promise<string> {
     const podSelector =
       "app.kubernetes.io/component=backstage,app.kubernetes.io/instance=rhdh,app.kubernetes.io/name=backstage";
     const tailNumber = 500;
-    const namespace = process.env.NAME_SPACE || "showcase-ci-nightly";
 
     let attempt = 0;
     while (attempt <= maxRetries) {
@@ -231,6 +231,7 @@ export class LogUtils {
    * @param status The status of event
    * @param plugin The plugin name that triggered the log event
    * @param severityLevel The level of severity of the event
+   * @param namespace The namespace to use to retrieve logs from pod
    * @param baseURL The base URL of the application, used to get the hostname
    */
   public static async validateLogEvent(
@@ -242,10 +243,15 @@ export class LogUtils {
     status: EventStatus = "succeeded",
     plugin: string = "catalog",
     severityLevel: EventSeverityLevel = "medium",
+    namespace: string = process.env.NAME_SPACE || "showcase-ci-nightly",
     baseURL: string = process.env.BASE_URL,
   ) {
     try {
-      const actualLog = await LogUtils.getPodLogsWithRetry(eventId, status);
+      const actualLog = await LogUtils.getPodLogsWithRetry(
+        eventId,
+        status,
+        namespace,
+      );
       console.log("Raw log output before filtering:", actualLog);
 
       let parsedLog: Log;
