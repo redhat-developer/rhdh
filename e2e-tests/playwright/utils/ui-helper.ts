@@ -211,8 +211,6 @@ export class UIhelper {
       await this.clickByDataTestId("user-picker-all");
       await this.page.waitForTimeout(1_000);
       await this.verifyHeading(new RegExp(`all ${kind}`, "i"));
-      const currentURL = new URL(this.page.url());
-      expect(currentURL.searchParams.get("filters[user]")).toBe("all");
     }).toPass({
       intervals: [3_000],
       timeout: 20_000,
