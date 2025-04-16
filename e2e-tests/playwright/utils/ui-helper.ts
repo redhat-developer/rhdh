@@ -210,9 +210,7 @@ export class UIhelper {
     await expect(async () => {
       await this.clickByDataTestId("user-picker-all");
       await this.page.waitForTimeout(1_000);
-      await expect(this.page.getByTestId("user-picker-all")).toHaveClass(
-        /Mui-selected/,
-      );
+      await this.verifyHeading(new RegExp(`all ${kind}`, "i"));
       const currentURL = new URL(this.page.url());
       expect(currentURL.searchParams.get("filters[user]")).toBe("all");
     }).toPass({
