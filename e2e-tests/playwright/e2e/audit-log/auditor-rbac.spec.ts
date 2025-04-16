@@ -42,6 +42,8 @@ test.describe("Auditor check for RBAC Plugin", () => {
       error,
       status,
       "permission",
+      "medium",
+      process.env.NAME_SPACE_RBAC,
     );
   }
 
