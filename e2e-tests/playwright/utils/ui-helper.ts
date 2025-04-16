@@ -213,8 +213,8 @@ export class UIhelper {
       await expect(this.page.getByTestId("user-picker-all")).toHaveClass(
         /Mui-selected/,
       );
-      const currentURL = this.page.url();
-      expect(currentURL).toContain("filters[user]=all");
+      const currentURL = new URL(this.page.url());
+      expect(currentURL.searchParams.get("filters[user]")).toBe("all");
     }).toPass({
       intervals: [3_000],
       timeout: 20_000,
