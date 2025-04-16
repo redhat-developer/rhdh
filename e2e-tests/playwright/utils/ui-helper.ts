@@ -210,7 +210,9 @@ export class UIhelper {
     await expect(async () => {
       await this.clickByDataTestId("user-picker-all");
       await this.page.waitForTimeout(1_000);
-      await expect(this.page.getByTestId("user-picker-all")).toHaveClass(/Mui-selected/);
+      await expect(this.page.getByTestId("user-picker-all")).toHaveClass(
+        /Mui-selected/,
+      );
       const currentURL = this.page.url();
       expect(currentURL).toContain("filters[user]=all");
     }).toPass({
