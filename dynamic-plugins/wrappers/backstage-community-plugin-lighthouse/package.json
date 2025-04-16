@@ -11,7 +11,7 @@
   },
   "backstage": {
     "role": "frontend-plugin",
-    "supported-versions": "1.36.1",
+    "supported-versions": "1.38.0",
     "pluginId": "lighthouse",
     "pluginPackages": [
       "backstage-community-plugin-lighthouse"
@@ -32,7 +32,7 @@
     "@mui/icons-material": "5.17.1"
   },
   "devDependencies": {
-    "@backstage/cli": "0.30.0",
+    "@backstage/cli": "0.32.0",
     "@janus-idp/cli": "3.4.1",
     "typescript": "5.8.3"
   },
