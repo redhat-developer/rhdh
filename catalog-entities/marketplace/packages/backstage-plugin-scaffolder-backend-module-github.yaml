@@ -18,12 +18,12 @@ metadata:
 spec:
   packageName: "@backstage/plugin-scaffolder-backend-module-github"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-github-dynamic
-  version: 0.5.5
+  version: 0.6.0
   backstage:
     role: backend-plugin-module
-    supportedVersions: 1.35.1
+    supportedVersions: 1.36.1
   author: Red Hat
-  support: tech-preview
+  support: production
   lifecycle: active
   partOf:
     - backstage-github-scaffolder-module

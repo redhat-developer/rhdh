@@ -18,10 +18,10 @@ metadata:
 spec:
   packageName: "@backstage/plugin-kubernetes-backend"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-plugin-kubernetes-backend-dynamic
-  version: 0.19.2
+  version: 0.19.3
   backstage:
     role: backend-plugin
-    supportedVersions: 1.35.1
+    supportedVersions: 1.36.1
   author: Red Hat
   support: production
   lifecycle: active

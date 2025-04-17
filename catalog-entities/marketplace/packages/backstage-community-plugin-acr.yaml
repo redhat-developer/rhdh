@@ -18,10 +18,10 @@ metadata:
 spec:
   packageName: "@backstage-community/plugin-acr"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-acr
-  version: 1.11.0
+  version: 1.12.1
   backstage:
     role: frontend-plugin
-    supportedVersions: 1.35.1
+    supportedVersions: 1.36.1
   author: Red Hat
   support: tech-preview
   lifecycle: active

@@ -18,10 +18,10 @@ metadata:
 spec:
   packageName: "@backstage-community/plugin-tekton"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-tekton
-  version: 3.19.0
+  version: 3.22.0
   backstage:
     role: frontend-plugin
-    supportedVersions: 1.35.1
+    supportedVersions: 1.36.1
   author: Red Hat
   support: production
   lifecycle: active
