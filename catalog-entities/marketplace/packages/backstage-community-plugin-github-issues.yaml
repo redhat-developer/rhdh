@@ -18,7 +18,7 @@ metadata:
 spec:
   packageName: "@backstage-community/plugin-github-issues"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-github-issues
-  version: 0.4.8
+  version: 0.6.0
   backstage:
     role: frontend-plugin
     supportedVersions: 1.35.1

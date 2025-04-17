@@ -14,7 +14,9 @@ metadata:
   annotations:
     backstage.io/source-location: url
       https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/roadiehq-backstage-plugin-argo-cd
-  tags: []
+  tags:
+    - deprecation-notice:This plugin is deprecated and will be removed in a
+      future release.
 spec:
   packageName: "@roadiehq/backstage-plugin-argo-cd"
   dynamicArtifact: ./dynamic-plugins/dist/roadiehq-backstage-plugin-argo-cd
@@ -23,8 +25,8 @@ spec:
     role: frontend-plugin
     supportedVersions: 1.35.1
   author: Red Hat
-  support: production
-  lifecycle: active
+  support: deprecated
+  lifecycle: deprecated
   partOf:
     - roadiehq-argo-cd
   appConfigExamples:
