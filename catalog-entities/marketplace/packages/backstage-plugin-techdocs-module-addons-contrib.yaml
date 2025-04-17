@@ -18,10 +18,10 @@ metadata:
 spec:
   packageName: "@backstage/plugin-techdocs-module-addons-contrib"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-plugin-techdocs-module-addons-contrib
-  version: 1.1.20
+  version: 1.1.21
   backstage:
     role: frontend-plugin-module
-    supportedVersions: 1.35.1
+    supportedVersions: 1.36.1
   author: Red Hat
   support: production
   lifecycle: active

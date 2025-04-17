@@ -18,15 +18,15 @@ metadata:
 spec:
   packageName: "@backstage-community/plugin-dynatrace"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-dynatrace
-  version: 10.0.8
+  version: 10.3.0
   backstage:
     role: frontend-plugin
-    supportedVersions: 1.35.1
+    supportedVersions: 1.36.1
   author: Red Hat
   support: tech-preview
   lifecycle: active
   partOf:
-    - dynatrace-community
+    - dynatrace
   appConfigExamples:
     - title: Default configuration
       content:

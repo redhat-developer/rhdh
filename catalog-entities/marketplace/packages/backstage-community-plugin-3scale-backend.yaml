@@ -18,10 +18,10 @@ metadata:
 spec:
   packageName: "@backstage-community/plugin-3scale-backend"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-3scale-backend-dynamic
-  version: 3.2.0
+  version: 3.3.0
   backstage:
     role: backend-plugin
-    supportedVersions: 1.35.1
+    supportedVersions: 1.36.1
   author: Red Hat
   support: tech-preview
   lifecycle: active

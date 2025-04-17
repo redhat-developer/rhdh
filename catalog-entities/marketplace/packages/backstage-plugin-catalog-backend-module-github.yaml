@@ -18,10 +18,10 @@ metadata:
 spec:
   packageName: "@backstage/plugin-catalog-backend-module-github"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-dynamic
-  version: 0.7.9
+  version: 0.7.10
   backstage:
     role: backend-plugin-module
-    supportedVersions: 1.35.1
+    supportedVersions: 1.36.1
   author: Red Hat
   support: production
   lifecycle: active
