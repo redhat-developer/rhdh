@@ -18,7 +18,7 @@ metadata:
 spec:
   packageName: "@roadiehq/backstage-plugin-datadog"
   dynamicArtifact: ./dynamic-plugins/dist/roadiehq-backstage-plugin-datadog
-  version: 2.4.0
+  version: 2.4.2
   backstage:
     role: frontend-plugin
     supportedVersions: 1.35.1

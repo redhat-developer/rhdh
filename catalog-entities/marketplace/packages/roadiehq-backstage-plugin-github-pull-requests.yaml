@@ -18,7 +18,7 @@ metadata:
 spec:
   packageName: "@roadiehq/backstage-plugin-github-pull-requests"
   dynamicArtifact: ./dynamic-plugins/dist/roadiehq-backstage-plugin-github-pull-requests
-  version: 2.6.0
+  version: 3.2.1
   backstage:
     role: frontend-plugin
     supportedVersions: 1.35.1

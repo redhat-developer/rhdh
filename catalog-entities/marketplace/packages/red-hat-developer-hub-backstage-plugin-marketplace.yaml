@@ -18,7 +18,7 @@ metadata:
 spec:
   packageName: "@red-hat-developer-hub/backstage-plugin-marketplace"
   dynamicArtifact: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-marketplace
-  version: 0.0.2
+  version: 0.2.1
   backstage:
     role: frontend-plugin
     supportedVersions: 1.35.1
@@ -37,11 +37,11 @@ spec:
                 - name: marketplace
                   importName: MarketplaceIcon
               dynamicRoutes:
-                - path: /marketplace
-                  importName: MarketplacePage
-                  menuItem:
-                    icon: marketplace
-                    text: Marketplace
+                - path: /extensions/catalog
+                  importName: DynamicMarketplacePluginRouter
               mountPoints:
-                - mountPoint: admin.page.plugins/cards
-                  importName: MarketplaceCatalogContent
+                - mountPoint: internal.plugins/tab
+                  importName: DynamicMarketplacePluginContent
+                  config:
+                    path: marketplace
+                    title: Catalog
