@@ -18,10 +18,10 @@ metadata:
 spec:
   packageName: "@roadiehq/backstage-plugin-argo-cd-backend"
   dynamicArtifact: ./dynamic-plugins/dist/roadiehq-backstage-plugin-argo-cd-backend-dynamic
-  version: 3.2.3
+  version: 4.2.0
   backstage:
     role: backend-plugin
-    supportedVersions: 1.35.1
+    supportedVersions: 1.36.1
   author: Red Hat
   support: production
   lifecycle: active
