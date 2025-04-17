@@ -209,7 +209,7 @@ export class UIhelper {
     await this.selectMuiBox("Kind", kind);
     await expect(async () => {
       await this.clickByDataTestId("user-picker-all");
-      await this.page.waitForTimeout(1_000);
+      await this.page.waitForTimeout(1_500);
       await this.verifyHeading(new RegExp(`all ${kind}`, "i"));
     }).toPass({
       intervals: [3_000],
