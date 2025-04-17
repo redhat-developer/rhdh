@@ -18,7 +18,7 @@ metadata:
 spec:
   packageName: "@backstage-community/plugin-sonarqube"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-sonarqube
-  version: 0.8.7
+  version: 0.10.0
   backstage:
     role: frontend-plugin
     supportedVersions: 1.35.1
