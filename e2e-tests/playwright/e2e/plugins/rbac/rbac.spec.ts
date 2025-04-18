@@ -628,7 +628,7 @@ test.describe.serial("Test RBAC", () => {
 
       try {
         const remainingPoliciesResponse =
-          await rbacApi.getPolicy("default/test");
+          await rbacApi.getPoliciesByRole("default/test");
 
         const remainingPolicies = await Response.removeMetadataFromResponse(
           remainingPoliciesResponse,

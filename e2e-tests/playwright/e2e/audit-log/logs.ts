@@ -1,9 +1,11 @@
+import { type JsonObject } from "@backstage/types";
+
 class Actor {
   actorId?: string;
   hostname: string;
 }
 
-class LogRequest {
+export class LogRequest {
   body?: object;
   method: string;
   params?: object;
@@ -19,20 +21,23 @@ class LogResponse {
   status: number;
 }
 
+export type EventStatus = "initiated" | "succeeded" | "failed";
+
+export type EventSeverityLevel = "low" | "medium" | "high" | "critical";
+
 export class Log {
   actor: Actor;
-  eventName: string;
-  isAuditLog: boolean;
-  level: string;
-  message: string;
-  meta: object;
+  eventId: string;
+  isAuditEvent: boolean;
+  severityLevel: EventSeverityLevel;
   plugin: string;
-  request: LogRequest;
-  response: LogResponse;
+  request?: LogRequest;
+  response?: LogResponse;
   service: string;
-  stage: string;
-  status: string;
+  status: EventStatus;
   timestamp: string;
+  meta?: JsonObject;
+  error?: string;
 
   /**
    * Constructor for the Log class.
@@ -43,7 +48,7 @@ export class Log {
   constructor(overrides: Partial<Log> = {}) {
     // Default value for status
     this.status = overrides.status || "succeeded";
-    this.isAuditLog = overrides.isAuditLog || true;
+    this.isAuditEvent = overrides.isAuditEvent || true;
 
     // Default value for actorId, with other actor properties being optional
     this.actor = {
@@ -52,15 +57,9 @@ export class Log {
     };
 
     // Other properties without default values
-    this.eventName = overrides.eventName || "";
+    this.eventId = overrides.eventId || "";
     this.plugin = overrides.plugin || "";
-    this.message = overrides.message || "";
-    this.request = {
-      method: overrides.request?.method || "",
-      url: overrides.request?.url || "",
-    };
-    this.response = {
-      status: overrides.response?.status || 0,
-    };
+    this.request = overrides.request;
+    this.response = overrides.response;
   }
 }
