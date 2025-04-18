@@ -18,10 +18,10 @@ metadata:
 spec:
   packageName: "@backstage-community/plugin-jenkins-backend"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-jenkins-backend-dynamic
-  version: 0.6.2
+  version: 0.12.1
   backstage:
     role: backend-plugin
-    supportedVersions: 1.35.1
+    supportedVersions: 1.36.1
   author: Red Hat
   support: tech-preview
   lifecycle: active

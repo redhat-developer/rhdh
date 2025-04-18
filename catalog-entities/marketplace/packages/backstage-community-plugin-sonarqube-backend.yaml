@@ -18,10 +18,10 @@ metadata:
 spec:
   packageName: "@backstage-community/plugin-sonarqube-backend"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-sonarqube-backend-dynamic
-  version: 0.3.0
+  version: 0.5.0
   backstage:
     role: backend-plugin
-    supportedVersions: 1.35.1
+    supportedVersions: 1.36.1
   author: Red Hat
   support: tech-preview
   lifecycle: active

@@ -18,10 +18,10 @@ metadata:
 spec:
   packageName: "@backstage-community/plugin-azure-devops"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-azure-devops
-  version: 0.6.2
+  version: 0.10.0
   backstage:
     role: frontend-plugin
-    supportedVersions: 1.35.1
+    supportedVersions: 1.36.1
   author: Red Hat
   support: tech-preview
   lifecycle: active

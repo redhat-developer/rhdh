@@ -18,10 +18,10 @@ metadata:
 spec:
   packageName: "@backstage/plugin-catalog-backend-module-ldap"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-ldap-dynamic
-  version: 0.11.1
+  version: 0.11.2
   backstage:
     role: backend-plugin-module
-    supportedVersions: 1.35.1
+    supportedVersions: 1.36.1
   author: Red Hat
   support: tech-preview
   lifecycle: active

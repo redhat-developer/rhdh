@@ -18,10 +18,10 @@ metadata:
 spec:
   packageName: "@backstage-community/plugin-ocm-backend"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-ocm-backend-dynamic
-  version: 5.4.0
+  version: 5.5.0
   backstage:
     role: backend-plugin
-    supportedVersions: 1.35.1
+    supportedVersions: 1.36.1
   author: Red Hat
   support: production
   lifecycle: active

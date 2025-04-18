@@ -14,18 +14,17 @@ metadata:
   annotations:
     backstage.io/source-location: url
       https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-global-floating-action-button
-  tags:
-    - backstage
-    - plugin
+  tags: []
 spec:
   packageName: "@red-hat-developer-hub/backstage-plugin-global-floating-action-button"
   dynamicArtifact: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-floating-action-button
-  version: 1.0.0
+  version: 1.1.4
   backstage:
     role: frontend-plugin
-    supportedVersions: 1.35.1
+    supportedVersions: 1.36.1
   author: Red Hat
-  lifecycle: unknown
+  support: production
+  lifecycle: active
   partOf:
     - red-hat-developer-hub-backstage-plugin-global-floating-action-button
   appConfigExamples:
