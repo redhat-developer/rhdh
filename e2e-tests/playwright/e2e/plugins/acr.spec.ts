@@ -17,10 +17,7 @@ test.describe("Test ACR plugin", () => {
   });
 
   test("Verify ACR Images are visible", async () => {
-    await uiHelper.openSidebar("Catalog");
-    await uiHelper.verifyHeading("My Org Catalog");
-    await uiHelper.selectMuiBox("Kind", "component");
-    await uiHelper.clickByDataTestId("user-picker-all");
+    await uiHelper.openCatalogSidebar("Component");
     await uiHelper.clickLink("acr-test-entity");
     await uiHelper.clickTab("Image Registry");
     await uiHelper.verifyHeading(
