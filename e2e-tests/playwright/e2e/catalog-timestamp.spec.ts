@@ -6,6 +6,7 @@ import { UI_HELPER_ELEMENTS } from "../support/pageObjects/global-obj";
 
 let page: Page;
 test.describe("Test timestamp column on Catalog", () => {
+  test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
   let uiHelper: UIhelper;
   let common: Common;
   let catalogImport: CatalogImport;
