@@ -4,7 +4,7 @@ kind: Plugin
 metadata:
   name: techdocs
   namespace: rhdh
-  title: TechDocs Plugin For Backstage
+  title: TechDocs
   description: TechDocs is a core Backstage feature that lets you treat your Docs like code. Create,
     find, and manage documentation in one central location and in a standardized way. Sources live
     alongside your code in your repositories where you can manage them easily.
