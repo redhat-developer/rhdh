@@ -4,7 +4,7 @@ kind: Plugin
 metadata:
   name: http-request-scaffolder-action
   namespace: rhdh
-  title: Scaffolder HTTP Request Action
+  title: HTTP Request Software Template Action
   description: |
     An action to fire an arbitrary HTTP request. Use the response in your scaffolder templates. This contains one action: `http:backstage:request`.
   annotations:
