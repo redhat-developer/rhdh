@@ -24,8 +24,7 @@ metadata:
       url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/
 
 spec:
-
-  author: Red Hat
+  author: Backstage Community
   support: production  # This plugin has GA status
   lifecycle: active
   publisher: Red Hat
