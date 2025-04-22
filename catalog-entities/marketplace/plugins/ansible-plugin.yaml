@@ -68,9 +68,9 @@ spec:
     systems. See the original source code repository, the software vendor, or the [Ansible documentation](https://docs.redhat.com/en/documentation/red_hat_ansible_automation_platform/)
     for further details regarding the configuration required.
 
-    The Ansible plug-ins for Red Hat Developer Hub link to Learning Paths on the Red Hat developer portal, [developers.redhat.com/learn](developers.redhat.com/learn).
+    The Ansible plug-ins for Red Hat Developer Hub link to Learning Paths on the Red Hat developer portal, [developers.redhat.com/learn](https://developers.redhat.com/learn).
 
-    To access the Learning Paths, you must have a Red Hat account and you must be able to log in to [developers.redhat.com](developers.redhat.com).
+    To access the Learning Paths, you must have a Red Hat account and you must be able to log in to [developers.redhat.com](https://developers.redhat.com).
 
 
   # Images are base 64 encoded SVGs (below is a blank square from the mockup)
