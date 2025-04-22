@@ -4,7 +4,7 @@ kind: Plugin
 metadata:
   name: roadie-scaffolder-util-actions
   namespace: rhdh
-  title: Scaffolder Utility Actions
+  title: Software Template Utility Actions
   annotations:
     extensions.backstage.io/pre-installed: 'true' # For plugins contained in the RHDH image
   links:

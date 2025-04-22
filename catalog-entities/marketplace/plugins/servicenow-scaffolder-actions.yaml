@@ -4,7 +4,7 @@ kind: Plugin
 metadata:
   name: servicenow-scaffolder-actions
   namespace: rhdh
-  title: ServiceNow Scaffolder Actions
+  title: ServiceNow Software Template Actions
   description: |
     This plugin provides Backstage template actions for ServiceNow. The actions include creating, deleting, 
     getting, updating, and retrieving records from ServiceNow.
