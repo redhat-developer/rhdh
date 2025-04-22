@@ -96,7 +96,7 @@ test.describe("Test Keycloak plugin metrics", () => {
       };
       await kubeClient.createRoute(namespace, route);
       // Wait until the route is available.
-      await new Promise((resolve) => setTimeout(resolve, 5000));
+      await new Promise((resolve) => setTimeout(resolve, 10000));
     }
 
     const metricsEndpointURL = `http://${routerName}.${domain}/metrics`;
