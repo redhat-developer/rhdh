@@ -35,7 +35,7 @@ spec:
     - Software Catalog # One category will show up on the tile view
 
   highlights:
-    - Add some highlights of the plugins features
+    - Software Catalog integration
 
   description: |
     This is an extension module to the plugin-catalog-backend plugin, providing an LdapOrgReaderProcessor that can be used to ingest
