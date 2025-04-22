@@ -18,7 +18,7 @@ metadata:
     - title: Source Code
       url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-catalog-backend-module-pingidentity-dynamic
 spec:
-  author: Red Hat
+  author: Backstage Community
   support: tech-preview
   lifecycle: active
   publisher: Red Hat
