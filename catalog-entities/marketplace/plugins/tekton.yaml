@@ -260,3 +260,4 @@ spec:
 
   packages:
     - backstage-community-plugin-tekton
+    - backstage-plugin-kubernetes-backend

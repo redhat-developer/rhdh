@@ -120,4 +120,3 @@ spec:
 
   packages:
     - backstage-plugin-kubernetes-backend
-    #- backstage-community-plugin-scaffolder-backend-module-kubernetes
