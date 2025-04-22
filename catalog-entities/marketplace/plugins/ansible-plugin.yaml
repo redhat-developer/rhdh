@@ -4,7 +4,7 @@ kind: Plugin
 metadata:
   name: ansible-plugin
   namespace: rhdh
-  title: Ansible Plugins for Red Hat Developer Hub
+  title: Ansible for Red Hat Developer Hub
   annotations:
     extensions.backstage.io/pre-installed: 'true' # Plugin is automatically listed in the catalog.
     extensions.backstage.io/verified-by: Red Hat # For verified plugins
@@ -23,8 +23,8 @@ metadata:
     - infrastructure # Used for filtering
 
   description: |
-    Ansible plug-ins for Red Hat Developer Hub deliver an Ansible-first Red Hat Developer Hub user experience 
-    that simplifies the automation experience for Ansible users of all skill levels. 
+    Ansible plug-in for Red Hat Developer Hub deliver an Ansible-first Red Hat Developer Hub user experience 
+    that simplifies the automation experience for Ansible users of all skill levels.
 
 spec:
   author: Red Hat
