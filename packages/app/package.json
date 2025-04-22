@@ -68,7 +68,8 @@
     "@types/node": "22.14.1",
     "@types/react": "18.3.20",
     "@types/react-dom": "18.3.6",
-    "prettier": "3.5.3"
+    "prettier": "3.5.3",
+    "typescript": "5.8.3"
   },
   "browserslist": {
     "production": [

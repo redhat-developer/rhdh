@@ -1,4 +1,5 @@
 import { createBackend } from '@backstage/backend-defaults';
+import { WinstonLogger } from '@backstage/backend-defaults/rootLogger';
 import { dynamicPluginsFeatureLoader } from '@backstage/backend-dynamic-feature-service';
 import { PackageRoles } from '@backstage/cli-node';
 
@@ -7,7 +8,6 @@ import * as path from 'path';
 import { configureCorporateProxyAgent } from './corporate-proxy';
 import { getDefaultServiceFactories } from './defaultServiceFactories';
 import { CommonJSModuleLoader } from './loader';
-import { createStaticLogger, transports } from './logger';
 import {
   healthCheckPlugin,
   pluginIDProviderService,
@@ -15,7 +15,9 @@ import {
 } from './modules';
 
 // Create a logger to cover logging static initialization tasks
-const staticLogger = createStaticLogger({ service: 'developer-hub-init' });
+const staticLogger = WinstonLogger.create({
+  meta: { service: 'developer-hub-init' },
+});
 staticLogger.info('Starting Developer Hub backend');
 
 // RHIDP-2217: adds support for corporate proxy
@@ -42,12 +44,6 @@ backend.add(
       );
     },
     moduleLoader: logger => new CommonJSModuleLoader(logger),
-    logger: config => {
-      const auditLogConfig = config?.getOptionalConfig('auditLog');
-      return {
-        transports: [...transports.log, ...transports.auditLog(auditLogConfig)],
-      };
-    },
   }),
 );
 
