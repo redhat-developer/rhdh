@@ -9,7 +9,7 @@ metadata:
   annotations:
     extensions.backstage.io/pre-installed: 'true'
   tags:
-    - software-catalog
+    - software-templates
   links:
     - url: https://red.ht/rhdh
       title: Homepage
@@ -21,7 +21,7 @@ metadata:
       url: https://github.com/backstage/backstage/tree/master/plugins/scaffolder-backend-module-bitbucket-server
 spec:
   categories:
-    - Software Catalog
+    - Scaffolder
 
   publisher: Red Hat
   author: Backstage Community

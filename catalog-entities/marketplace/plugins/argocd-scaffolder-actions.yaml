@@ -12,6 +12,7 @@ metadata:
     - argocd
     - kubernetes
     - cicd
+    - software-templates
   links:
     - url: https://red.ht/rhdh
       title: Homepage
@@ -28,6 +29,8 @@ spec:
   lifecycle: active
   categories:
     - CI/CD
+    - Scaffolder
+
   highlights:
     - Create Argo CD Resources
   icon: data:image/svg+xml;base64,
