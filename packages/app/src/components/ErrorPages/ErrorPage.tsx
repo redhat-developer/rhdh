@@ -1,8 +1,8 @@
-import Box from '@mui/material/Box';
+import Box, { BoxProps } from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 
-import ErrorImage from './collaboration.png';
+import { CollaborationIllustration } from './illustrations/collaboration/collaboration';
 
 interface ErrorPageProps {
   /** The title to display. */
@@ -13,8 +13,8 @@ interface ErrorPageProps {
   actions?: React.ReactNode;
   /** Additional content to display below the message and above the actions. */
   children?: React.ReactNode;
-  /** The source URL of the image to display. Defaults to a Red Hat-branded image. */
-  image?: string;
+  /** The component to use for the illustration. */
+  Illustration?: React.ComponentType<BoxProps<'img'>>;
 }
 
 const ErrorPageGutters = {
@@ -28,7 +28,7 @@ export const ErrorPage = ({
   title,
   message,
   actions,
-  image = ErrorImage,
+  Illustration = CollaborationIllustration,
   children,
 }: ErrorPageProps) => (
   <Grid container sx={{ flexGrow: 1 }} spacing={0}>
@@ -63,11 +63,7 @@ export const ErrorPage = ({
       </Box>
     </Grid>
     <Grid item xs={12} md={6} sx={{ display: 'flex' }}>
-      <Box
-        component="img"
-        src={image}
-        alt=""
-        aria-hidden="true"
+      <Illustration
         sx={{
           maxWidth: '100%',
           maxHeight: '100vh',
