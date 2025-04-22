@@ -85,4 +85,4 @@ spec:
     L2c+Cjwvc3ZnPg==
 
   packages:
-    - backstage-plugin-catalog-backend-module-msgraph-dynamic
+    - backstage-plugin-catalog-backend-module-msgraph
