@@ -96,7 +96,7 @@ test.describe.serial("Test RBAC", () => {
       );
     });
 
-    test.skip("Check if aliases used in conditions: the user is allowed to unregister only components they own, not those owned by the group.", async ({
+    test("Check if aliases used in conditions: the user is allowed to unregister only components they own, not those owned by the group.", async ({
       // Skipping this test as it is failing multiple times.
       page,
     }) => {
