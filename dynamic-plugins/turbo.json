@@ -28,6 +28,7 @@
     },
     "tsc": {
       "dependsOn": ["^tsc"]
-    }
+    },
+    "copy-dynamic-plugins": {}
   }
 }
