@@ -126,8 +126,8 @@ export class LogUtils {
     retryDelay: number = 2000,
   ): Promise<string> {
     const podSelector =
-      "app.kubernetes.io/component=backstage,app.kubernetes.io/instance=rhdh,app.kubernetes.io/name=backstage";
-    const tailNumber = 500;
+      "app.kubernetes.io/component=backstage,app.kubernetes.io/name=backstage";
+    const tailNumber = 100;
 
     let attempt = 0;
     while (attempt <= maxRetries) {
