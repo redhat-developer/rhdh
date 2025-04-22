@@ -53,7 +53,7 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: ${{ matrix.node-version }}
-          registry-url: 'https://registry.npmjs.org'
+          registry-url: "https://registry.npmjs.org"
 
       - name: Setup local Turbo cache
         uses: dtinth/setup-github-actions-caching-for-turbo@cc723b4600e40a6b8815b65701d8614b91e2669e # v1
@@ -96,7 +96,7 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: ${{ matrix.node-version }}
-          registry-url: 'https://registry.npmjs.org'
+          registry-url: "https://registry.npmjs.org"
 
       - name: Setup local Turbo cache
         uses: dtinth/setup-github-actions-caching-for-turbo@cc723b4600e40a6b8815b65701d8614b91e2669e # v1
@@ -127,5 +127,8 @@ jobs:
       - name: Run tests
         run: yarn run test --continue --affected
 
-      - name: Verify wrappers
-        run: yarn workspace dynamic-plugins-utils run test:wrappers
+      - name: Install dynamic plugin dependencies
+        run: cd ./dynamic-plugins && yarn install && cd ..
+
+      - name: Verify dynamic plugin wrappers
+        run: cd ./dynamic-plugins && yarn test && cd ..
