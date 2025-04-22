@@ -19,8 +19,7 @@ metadata:
     - azure
     - container-registry
 spec:
-
-  author: Backstage Community
+  author: Red Hat
   publisher: Red Hat
   support: tech-preview
   lifecycle: active
