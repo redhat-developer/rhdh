@@ -5,7 +5,7 @@ metadata:
   name: bitbucket-server-scaffolder-actions
   namespace: rhdh
   title: Bitbucket Server Software Template Actions
-  description: Provides the set of Software Template Actions for Bitbucket Server
+  description: Provides a set of Software Template Actions for Bitbucket Server
   annotations:
     extensions.backstage.io/pre-installed: 'true'
   tags:
