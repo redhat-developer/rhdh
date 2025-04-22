@@ -33,7 +33,7 @@ spec:
     - Messaging # One category will show up on the tile view
 
   highlights:
-    - Allows backend plugins to publish messages to frontend plugins
+    - Allows plugins to publish messages
 
   description: |
     This Signals backend plugin allows backend plugins to publish messages to frontend plugins.

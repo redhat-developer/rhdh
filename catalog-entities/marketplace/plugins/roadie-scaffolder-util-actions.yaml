@@ -30,8 +30,9 @@ spec:
 
   categories:
     - Scaffolder # One category will show up on the tile view
+
   highlights:
-    - Add some highlights of the plugins features
+    - Extends Software Templates
 
   description: |
     These utility actions for the scaffolder-backend offer a set of actions that can be used in extensively scaffolder templates.
