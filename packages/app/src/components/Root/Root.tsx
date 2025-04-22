@@ -98,6 +98,16 @@ const useStyles = makeStyles()({
   },
   sidebarItem: {
     textDecorationLine: 'none',
+    '& .MuiTypography-root': {
+      color: '#ffffff !important',
+    },
+    '& svg': {
+      color: '#ffffff !important',
+    },
+    '&.MuiButton-root, &.MuiButton-text': {
+      padding: '0 !important',
+      minWidth: 'auto',
+    },
   },
 });
 
