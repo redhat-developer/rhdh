@@ -15,7 +15,7 @@ metadata:
       title: Homepage
     - url: https://issues.redhat.com/browse/RHIDP
       title: Bugs
-    - title: Documentation for Red Hat developer Hub
+    - title: Documentation for Red Hat Developer Hub
       url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
     - title: Source Code
       url: https://github.com/backstage/backstage/tree/master/plugins/catalog-backend-module-bitbucket-server
