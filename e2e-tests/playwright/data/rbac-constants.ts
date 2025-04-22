@@ -8,6 +8,14 @@ export class RbacConstants {
         name: "role:default/rbac_admin",
       },
       {
+        memberReferences: ["user:default/guest"],
+        name: "role:default/guests",
+      },
+      {
+        memberReferences: ["user:default/user_team_a"],
+        name: "role:default/team_a",
+      },
+      {
         memberReferences: ["user:xyz/user"],
         name: "role:xyz/team_a",
       },
@@ -30,6 +38,14 @@ export class RbacConstants {
         ],
         name: "role:default/transitive-owner",
       },
+      {
+        memberReferences: ["user:default/rhdh-qe-5"],
+        name: "role:default/kubernetes_reader",
+      },
+      {
+        memberReferences: ["user:default/rhdh-qe-5", "user:default/rhdh-qe-6"],
+        name: "role:default/catalog_reader",
+      },
     ];
   }
 
@@ -43,7 +59,7 @@ export class RbacConstants {
       },
       {
         entityReference: "role:default/rbac_admin",
-        permission: "policy-entity",
+        permission: "policy.entity.create",
         policy: "create",
         effect: "allow",
       },
@@ -109,6 +125,18 @@ export class RbacConstants {
       },
       {
         entityReference: "role:default/qe_rbac_admin",
+        permission: "kubernetes.resources.read",
+        policy: "read",
+        effect: "allow",
+      },
+      {
+        entityReference: "role:default/qe_rbac_admin",
+        permission: "kubernetes.clusters.read",
+        policy: "read",
+        effect: "allow",
+      },
+      {
+        entityReference: "role:default/qe_rbac_admin",
         permission: "catalog.entity.create",
         policy: "create",
         effect: "allow",
@@ -141,6 +169,24 @@ export class RbacConstants {
         entityReference: "role:default/bulk_import",
         permission: "catalog.entity.create",
         policy: "create",
+        effect: "allow",
+      },
+      {
+        entityReference: "role:default/kubernetes_reader",
+        permission: "kubernetes.resources.read",
+        policy: "read",
+        effect: "allow",
+      },
+      {
+        entityReference: "role:default/kubernetes_reader",
+        permission: "kubernetes.clusters.read",
+        policy: "read",
+        effect: "allow",
+      },
+      {
+        entityReference: "role:default/catalog_reader",
+        permission: "catalog.entity.read",
+        policy: "read",
         effect: "allow",
       },
     ];

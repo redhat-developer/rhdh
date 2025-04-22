@@ -1,8 +1,13 @@
 import { expect, Locator, Page } from "@playwright/test";
 import { PageObject, PagesUrl } from "./page";
-import { SEARCH_OBJECTS_COMPONENTS } from "./page-obj";
+import {
+  DELETE_ROLE_COMPONENTS,
+  SEARCH_OBJECTS_COMPONENTS,
+  ROLES_PAGE_COMPONENTS,
+} from "../pageObjects/page-obj";
+import { type RoleBasedPolicy } from "@backstage-community/plugin-rbac-common";
 
-type PermissionPolicyType = "none" | "anyOf" | "not";
+type PermissionPolicyType = "anyOf" | "not";
 
 export class RbacPo extends PageObject {
   private article: Locator;
@@ -37,6 +42,7 @@ export class RbacPo extends PageObject {
     tara: "Tara MacGovern",
     backstage: "Backstage",
     rhdhqe: "rhdh-qe",
+    rhdhqe6: "rhdh-qe-6",
   };
   public selectPluginsCombobox: Locator = this.page.getByRole("combobox", {
     name: "Select plugins",
@@ -46,9 +52,13 @@ export class RbacPo extends PageObject {
     numUsers: number,
     numGroups: number,
   ): string => {
-    const usersText = `${numUsers} ${numUsers === 1 ? "user" : "users"}`;
-    const groupsText = `${numGroups} ${numGroups === 1 ? "group" : "groups"}`;
-    return `(${groupsText}, ${usersText}|${usersText}, ${groupsText})`;
+    const usersText =
+      numUsers === 0 ? "" : `${numUsers} ${numUsers === 1 ? "user" : "users"}`;
+    const groupsText =
+      numGroups === 0
+        ? ""
+        : `${numGroups} ${numGroups === 1 ? "group" : "groups"}`;
+    return `(${groupsText}${numGroups === 0 ? "" : ", "}${usersText}|${usersText}${numUsers === 0 ? "" : ", "}${groupsText})`;
   };
 
   public regexpShortUsersAndGroups = (
@@ -169,6 +179,7 @@ export class RbacPo extends PageObject {
   public async selectOption(
     option:
       | "catalog"
+      | "kubernetes"
       | "catalog.entity.read"
       | "scaffolder"
       | "scaffolder-template.read",
@@ -204,10 +215,10 @@ export class RbacPo extends PageObject {
     ).toBeVisible();
   }
 
-  async createRole(
+  private async createRoleUsers(
     name: string,
-    usersAndGroups: string[],
-    permissionPolicyType: PermissionPolicyType = "none",
+    users: string[],
+    groups: string[],
   ) {
     if (!this.page.url().includes("rbac")) await this.goto();
     await this.uiHelper.clickButton("Create");
@@ -216,43 +227,71 @@ export class RbacPo extends PageObject {
     await this.uiHelper.clickButton("Next");
     await this.usersAndGroupsField.click();
 
-    for (const userOrRole of usersAndGroups) {
-      await this.page.click(this.selectMember(userOrRole));
+    for (const userOrGroup of users.concat(groups)) {
+      await this.page.click(this.selectMember(userOrGroup));
     }
 
     // Close dropdown after selecting users and groups
     await this.page.getByTestId("ArrowDropDownIcon").click();
 
     // Dynamically verify the heading based on users and groups added
-    const numUsers = usersAndGroups.length;
-    const numGroups = 1; // Update this based on your logic
     await this.uiHelper.verifyHeading(
-      this.regexpShortUsersAndGroups(numUsers - numGroups, numGroups),
+      this.regexpShortUsersAndGroups(users.length, groups.length),
     );
 
     await this.next();
+  }
+
+  async createRole(
+    name: string,
+    users: string[],
+    groups: string[],
+    policies: RoleBasedPolicy[],
+    pluginId: "catalog" | "kubernetes" | "scaffolder" = "catalog",
+  ) {
+    await this.createRoleUsers(name, users, groups);
+
+    // select permissions
     await this.selectPluginsCombobox.click();
-    await this.selectOption("catalog");
+    await this.selectOption(pluginId);
     await this.page.getByText("Select...").click();
 
-    if (permissionPolicyType === "none") {
-      await this.selectPermissionCheckbox("catalog.entity.delete");
-      await this.next();
-      await this.uiHelper.verifyHeading("Review and create");
-      await this.uiHelper.verifyText(
-        this.regexpLongUsersAndGroups(numUsers - numGroups, numGroups),
-      );
-      await this.verifyPermissionPoliciesHeader(1);
-      await this.create();
-      await this.page
-        .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)
-        .waitFor();
-      await this.page
-        .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)
-        .fill(name);
-      await this.uiHelper.verifyHeading("All roles (1)");
-    } else if (permissionPolicyType === "anyOf") {
-      // Scenario 2: Permission policies using AnyOf
+    for (const policy of policies) {
+      await this.selectPermissionCheckbox(policy.permission!);
+    }
+
+    await this.next();
+    await this.uiHelper.verifyHeading("Review and create");
+    await this.uiHelper.verifyText(
+      this.regexpLongUsersAndGroups(users.length, groups.length),
+    );
+    await this.verifyPermissionPoliciesHeader(policies.length);
+    await this.create();
+    await this.page
+      .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)
+      .waitFor();
+    await this.page
+      .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)
+      .fill(name);
+    await this.uiHelper.verifyHeading("All roles (1)");
+  }
+
+  async createConditionalRole(
+    name: string,
+    users: string[],
+    groups: string[],
+    permissionPolicyType: PermissionPolicyType,
+    pluginId: "catalog" | "kubernetes" | "scaffolder" = "catalog",
+  ) {
+    await this.createRoleUsers(name, users, groups);
+
+    // select permissions
+    await this.selectPluginsCombobox.click();
+    await this.selectOption(pluginId);
+    await this.page.getByText("Select...").click();
+
+    if (permissionPolicyType === "anyOf") {
+      // Conditional Scenario 1: Permission policies using AnyOf
       await this.selectPermissionCheckbox("catalog.entity.read");
       await this.page
         .getByRole("row", { name: "catalog.entity.read" })
@@ -288,7 +327,7 @@ export class RbacPo extends PageObject {
       await this.next();
       await this.uiHelper.verifyHeading("Review and create");
       await this.uiHelper.verifyText(
-        this.regexpLongUsersAndGroups(numUsers - numGroups, numGroups),
+        this.regexpLongUsersAndGroups(users.length, groups.length),
       );
       await this.verifyPermissionPoliciesHeader(1);
       await this.uiHelper.verifyText("4 rules");
@@ -297,7 +336,7 @@ export class RbacPo extends PageObject {
         `Role role:default/${name} created successfully`,
       );
     } else if (permissionPolicyType === "not") {
-      // Scenario 3: Permission policies using Not
+      // Conditional Scenario 2: Permission policies using Not
       await this.selectPermissionCheckbox("catalog.entity.read");
       await this.page
         .getByRole("row", { name: "catalog.entity.read" })
@@ -319,5 +358,23 @@ export class RbacPo extends PageObject {
       await this.uiHelper.clickButton("Create");
       await this.uiHelper.verifyText(`role:default/${name}`);
     }
+  }
+
+  async deleteRole(name: string) {
+    await this.page.goto("/rbac");
+    await this.uiHelper.searchInputAriaLabel(name);
+    const button = this.page.locator(ROLES_PAGE_COMPONENTS.deleteRole(name));
+    await button.waitFor({ state: "visible" });
+    await button.click();
+    await this.uiHelper.verifyHeading("Delete this role?");
+    await this.page.locator(DELETE_ROLE_COMPONENTS.roleName).click();
+    await this.page.fill(DELETE_ROLE_COMPONENTS.roleName, name);
+    await this.uiHelper.clickButton("Delete");
+
+    await this.uiHelper.verifyText(`Role ${name} deleted successfully`);
+    await this.page
+      .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)
+      .fill(name);
+    await this.uiHelper.verifyHeading("All roles (0)");
   }
 }

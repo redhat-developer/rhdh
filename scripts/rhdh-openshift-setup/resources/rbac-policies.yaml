@@ -24,6 +24,6 @@ data:
     p, role:default/admin, catalog.entity.read, read, allow
 
     p, role:default/admin, policy-entity, read, allow
-    p, role:default/admin, policy-entity, create, allow
+    p, role:default/admin, policy.entity.create, create, allow
 
     g, user:development/guest, role:default/admin

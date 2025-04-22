@@ -1,6 +1,6 @@
 {
   "name": "red-hat-developer-hub-backstage-plugin-bulk-import",
-  "version": "1.12.0",
+  "version": "1.12.1",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "license": "Apache-2.0",
@@ -30,11 +30,11 @@
   },
   "dependencies": {
     "@mui/material": "5.17.1",
-    "@red-hat-developer-hub/backstage-plugin-bulk-import": "1.12.0"
+    "@red-hat-developer-hub/backstage-plugin-bulk-import": "1.12.1"
   },
   "devDependencies": {
     "@backstage/cli": "0.30.0",
-    "@janus-idp/cli": "3.4.1",
+    "@janus-idp/cli": "3.5.0",
     "typescript": "5.8.3"
   },
   "files": [
