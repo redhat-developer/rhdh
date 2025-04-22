@@ -10,7 +10,7 @@
     "tsc": "turbo run tsc",
     "export-dynamic": "turbo run export-dynamic",
     "export-dynamic:clean": "turbo run export-dynamic:clean",
-    "copy-dynamic-plugins": "yarn --cwd ./_utils run copy-dynamic-plugins",
+    "copy-dynamic-plugins": "turbo copy-dynamic-plugins --",
     "clean": "turbo run clean",
     "test": "turbo run test",
     "lint:check": "turbo run lint:check",
