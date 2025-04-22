@@ -127,7 +127,9 @@ test.describe.serial("Test RBAC", () => {
         "janus-qe/rhdh-qe-2-team",
       );
       await page.getByTestId("menu-button").click();
-      const unregisterGroupOwned = page.getByText("Unregister entity");
+      const unregisterGroupOwned = page.getByText("Unregister entity", {
+        exact: true,
+      });
       await expect(unregisterGroupOwned).toBeDisabled();
     });
   });
