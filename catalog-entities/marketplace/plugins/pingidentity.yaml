@@ -24,7 +24,7 @@ spec:
   publisher: Red Hat
 
   categories:
-    - Identity Management
+    - Identity and Access Management
 
   highlights:
     - Synchronization of Ping Identity users in an environment
