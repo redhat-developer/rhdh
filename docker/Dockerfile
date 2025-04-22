@@ -68,7 +68,7 @@ RUN NODE_HEADERS_VERSION=$(node --version); echo "=== Install node headers $NODE
   echo "11" > ~/.cache/node-gyp/${NODE_HEADERS_VERSION/v/}/installVersion; \
   rm -fr releases/node-${NODE_HEADERS_VERSION}-headers.tar.gz
 
-# Increate timeout for yarn install
+# Increase timeout for yarn install
 RUN "$YARN" config set httpTimeout 600000
 
 RUN echo "=== YARN INSTALL ==="; FAILED=0; "$YARN" install --immutable; \
@@ -100,7 +100,7 @@ RUN \
   cat packages/app/src/build-metadata.json; echo
 
 # suppress git warnings about dubious ownership in repository at '/opt/app-root/src' when building
-RUN echo "=== YARN BUILD (including dynamic plugins) ==="; FAILED=0; \
+RUN echo "=== YARN BUILD ==="; FAILED=0; \
   git config --global --add safe.directory /opt/app-root/src; \
   "$YARN" build || true; \
   for d in $(find . -name yarn-install.log); do \
@@ -110,19 +110,25 @@ RUN echo "=== YARN BUILD (including dynamic plugins) ==="; FAILED=0; \
 
 WORKDIR $CONTAINER_SOURCE/dynamic-plugins
 
-RUN echo "=== DYNAMIC PLUGIN YARN INSTALL ==="; FAILED=0; "$YARN" install --immutable || true; \
+RUN echo "=== DYNAMIC PLUGIN YARN INSTALL ==="; FAILED=0; "$YARN" install --immutable; \
   for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then \
-  (( FAILED = FAILED + 1 )); echo; echo $d; echo "======"; cat ${d}/build.log; \
+  (( FAILED = FAILED + 1 )); \
+  echo; echo $d; \
+  echo "!!! DYNAMIC PLUGIN YARN INSTALL FAILED !!!"; \
+  cat ${d}/build.log; \
   fi; done; \
   if [[ $FAILED -gt 0 ]]; then exit $FAILED; fi
 
-RUN echo "=== EXPORT DYNAMIC PLUGINS ==="; FAILED=0; "$YARN" export-dynamic || true; \
-  for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then \
-  (( FAILED = FAILED + 1 )); echo; echo $d; echo "======"; cat ${d}/build.log; \
-  fi; done; \
+RUN echo "=== EXPORT DYNAMIC PLUGINS ==="; FAILED=0; \
+  "$YARN" export-dynamic || true; \
+  for d in $(find . -name yarn-install.log); do \
+  (( FAILED = FAILED + 1 )); echo; echo $d; echo "======"; cat ${d}; \
+  done; \
   if [[ $FAILED -gt 0 ]]; then exit $FAILED; fi
 
 RUN echo "=== YARN COPY DYNAMIC PLUGINS in $(pwd) ==="; "$YARN" copy-dynamic-plugins dist
+
+WORKDIR $CONTAINER_SOURCE
 
 # Stage 4 - Build the actual backend image and install production dependencies
 # Upstream only
