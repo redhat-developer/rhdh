@@ -58,4 +58,4 @@ spec:
     d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjcwIiBoZWlnaHQ9IjcwIiBmaWxsPSIjQzRDNEM0Ii8+Cjwvc3ZnPgo=
 
   packages:
-    - backstage-plugin-catalog-backend-module-msgraph-dynamic
+    - backstage-plugin-catalog-backend-module-msgraph

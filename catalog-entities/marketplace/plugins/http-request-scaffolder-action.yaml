@@ -59,6 +59,6 @@ spec:
     d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjcwIiBoZWlnaHQ9IjcwIiBmaWxsPSIjQzRDNEM0Ii8+Cjwvc3ZnPgo=
 
   packages:
-    - roadiehq-scaffolder-backend-module-http-request-dynamic
+    - roadiehq-scaffolder-backend-module-http-request
 
 
