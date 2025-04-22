@@ -58,3 +58,4 @@ spec:
 
   packages:
     - backstage-community-plugin-topology
+    - backstage-plugin-kubernetes-backend
