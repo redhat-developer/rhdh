@@ -81,9 +81,9 @@ COPY $EXTERNAL_SOURCE_NESTED/package.json ./package.json
 COPY $EXTERNAL_SOURCE_NESTED/.nvm/ .
 RUN NODE_HEADERS_VERSION=$(node --version); echo "=== Install node headers $NODE_HEADERS_VERSION from tar.gz ==="; \
   if [[ ! -f releases/node-${NODE_HEADERS_VERSION}-headers.tar.gz ]]; then \
-    echo "[ERROR] Base image includes nodejs $NODE_HEADERS_VERSION but could not find releases/node-${NODE_HEADERS_VERSION}-headers.tar.gz to install!"; \
-    echo "[ERROR] To fix, upload the node-${NODE_HEADERS_VERSION}-headers.tar.gz file into https://github.com/redhat-developer/rhdh/tree/main/.nvm/releases (or related branch)!"; \
-    exit 1; \
+  echo "[ERROR] Base image includes nodejs $NODE_HEADERS_VERSION but could not find releases/node-${NODE_HEADERS_VERSION}-headers.tar.gz to install!"; \
+  echo "[ERROR] To fix, upload the node-${NODE_HEADERS_VERSION}-headers.tar.gz file into https://github.com/redhat-developer/rhdh/tree/main/.nvm/releases (or related branch)!"; \
+  exit 1; \
   fi; \
   mkdir -p ~/.cache/node-gyp/${NODE_HEADERS_VERSION/v/}; \
   tar -xf releases/node-${NODE_HEADERS_VERSION}-headers.tar.gz --directory ~/.cache/node-gyp/${NODE_HEADERS_VERSION/v/}/ --strip-components 1; \
@@ -102,7 +102,7 @@ RUN "$YARN" config set httpTimeout 600000
 
 RUN echo "=== YARN INSTALL ==="; FAILED=0; "$YARN" install --immutable || true; \
   for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then \
-    (( FAILED = FAILED + 1 )); echo; echo $d; echo "======"; cat ${d}/build.log; \
+  (( FAILED = FAILED + 1 )); echo; echo $d; echo "======"; cat ${d}/build.log; \
   fi; done; \
   if [[ $FAILED -gt 0 ]]; then exit $FAILED; fi
 
@@ -128,13 +128,23 @@ RUN \
 # suppress git warnings about dubious ownership in repository at '/opt/app-root/src' when building the backend app
 RUN echo "=== YARN BUILD BACKEND ==="; git config --global --add safe.directory /opt/app-root/src; "$YARN" build --filter=backend
 
-RUN echo "=== EXPORT DYNAMIC PLUGINS (with --no-install) ==="; FAILED=0; "$YARN" export-dynamic --filter=./dynamic-plugins/wrappers/* || true; \
-for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then \
+WORKDIR $CONTAINER_SOURCE/dynamic-plugins
+
+RUN echo "=== DYNAMIC PLUGIN YARN INSTALL ==="; FAILED=0; "$YARN" install --immutable || true; \
+  for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then \
   (( FAILED = FAILED + 1 )); echo; echo $d; echo "======"; cat ${d}/build.log; \
-fi; done; \
-if [[ $FAILED -gt 0 ]]; then exit $FAILED; fi
+  fi; done; \
+  if [[ $FAILED -gt 0 ]]; then exit $FAILED; fi
+
+RUN echo "=== EXPORT DYNAMIC PLUGINS (with --no-install) ==="; FAILED=0; "$YARN" export-dynamic || true; \
+  for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then \
+  (( FAILED = FAILED + 1 )); echo; echo $d; echo "======"; cat ${d}/build.log; \
+  fi; done; \
+  if [[ $FAILED -gt 0 ]]; then exit $FAILED; fi
 
 RUN echo "=== YARN COPY DYNAMIC PLUGINS in $(pwd) ==="; "$YARN" copy-dynamic-plugins dist
+
+WORKDIR $CONTAINER_SOURCE
 
 # Downstream only - clean up dynamic plugins sources:
 # Only keep the dist sub-folder in the dynamic-plugins folder
@@ -166,18 +176,18 @@ COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins.default.yaml ./
 # TODO is this still needed? maintaining it over time will be a chore if the .so files change
 RUN echo "=== lib64 symlinks ==="; \
   for l in libbrotlidec.so.1 libbrotlienc.so.1 libbrotlicommon.so.1 libc.so.6 ld-linux-x86-64.so.2 libcrypto.so.3 libk5crypto.so.3 libz.so.1 libssl.so.3; do \
-    ln -s /usr/lib64/$l /usr/lib64/${l%.*} 2>/dev/null || true; \
-    ls -l /usr/lib64/${l%.*}; \
+  ln -s /usr/lib64/$l /usr/lib64/${l%.*} 2>/dev/null || true; \
+  ls -l /usr/lib64/${l%.*}; \
   done
 
-# Increate timeout for yarn install
+# Increase timeout for yarn install
 RUN "$YARN" config set httpTimeout 600000
 
 # Install production dependencies
 # hadolint ignore=DL3059
 RUN echo "=== YARN WORKSPACES FOCUS ==="; FAILED=0; "$YARN" workspaces focus --all --production || true; \
   for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then \
-    (( FAILED = FAILED + 1 )); echo; echo $d; echo "======"; cat ${d}/build.log; \
+  (( FAILED = FAILED + 1 )); echo; echo $d; echo "======"; cat ${d}/build.log; \
   fi; done; \
   if [[ $FAILED -gt 0 ]]; then exit $FAILED; fi
 
@@ -190,13 +200,13 @@ RUN \
 
 # dump console logs if they have errors
 RUN hadFail=0; for d in $(find /tmp -name "yarn*log*" || true) $(find /tmp/xfs-*  -name build.log || true); do \
-failsCheck="$(grep -E "Failed with errors|Failed to execute command|Failed to install|Failed to download|exit code 1" "$d")"; \
-if [[ $failsCheck != "" ]]; then \
+  failsCheck="$(grep -E "Failed with errors|Failed to execute command|Failed to install|Failed to download|exit code 1" "$d")"; \
+  if [[ $failsCheck != "" ]]; then \
   echo "==== $d SUMMARY ===="; echo "$failsCheck"; \
   echo "==== $d FULL ====";    cat "$d"; echo "==== $d ===="; \
   (( hadFail = hadFail +1 )); \
-fi; \
-done; if [[ $hadFail -gt 0 ]]; then exit $hadFail; fi
+  fi; \
+  done; if [[ $hadFail -gt 0 ]]; then exit $hadFail; fi
 
 # Stage 5 - Build the runner image
 # https://registry.access.redhat.com/ubi9/nodejs-22-minimal
@@ -234,18 +244,15 @@ RUN microdnf install -y python3.11 python3.11-pip python3.11-devel make cmake cp
 # Downstream only - copy from build, not cleanup stage
 COPY --from=build --chown=1001:1001 "$CONTAINER_SOURCE"/ ./
 
-# Copy embedded dynamic plugins from $CONTAINER_SOURCE
-COPY --from=build $CONTAINER_SOURCE/dynamic-plugins/dist/ ./dynamic-plugins/dist/
-
 # RHIDP-4220 - make Konflux preflight and EC checks happy - [check-container] Create a directory named /licenses and include all relevant licensing
-COPY $EXTERNAL_SOURCE/LICENSE /licenses/
+COPY $EXTERNAL_SOURCE_NESTED/LICENSE /licenses/
 
 # RHIDP-5216/RHIDP-5215 - interim marketplace catalog entities until these data will be loaded from container images
-COPY $EXTERNAL_SOURCE/catalog-entities/marketplace /marketplace/catalog-entities/
+COPY $EXTERNAL_SOURCE_NESTED/catalog-entities/marketplace /marketplace/catalog-entities/
 
 # Copy script to gather dynamic plugins; copy embedded dynamic plugins to root folder; fix permissions
-COPY docker/install-dynamic-plugins.py docker/install-dynamic-plugins.sh ./
-RUN chmod -R a+r ./dynamic-plugins/ ./install-dynamic-plugins.py; \
+COPY $EXTERNAL_SOURCE_NESTED/docker/install-dynamic-plugins.py $EXTERNAL_SOURCE_NESTED/docker/install-dynamic-plugins.sh ./
+RUN ./install-dynamic-plugins.py; \
   chmod -R a+rx ./install-dynamic-plugins.sh
 
 # The existence of the index.html.tmpl tells Backstage to take that file and load it into memory, inject the needed appConfig (instead of writing
