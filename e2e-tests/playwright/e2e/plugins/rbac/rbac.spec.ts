@@ -110,7 +110,9 @@ test.describe.serial("Test RBAC", () => {
 
       await expect(page.locator("header")).toContainText(testUser);
       await page.getByTestId("menu-button").click();
-      const unregisterUserOwned = page.getByText("Unregister entity");
+      const unregisterUserOwned = page.getByRole("menuitem", {
+        name: "Unregister entity",
+      });
       await expect(unregisterUserOwned).toBeEnabled();
 
       await page.getByText("Unregister entity").click();
@@ -127,8 +129,8 @@ test.describe.serial("Test RBAC", () => {
         "janus-qe/rhdh-qe-2-team",
       );
       await page.getByTestId("menu-button").click();
-      const unregisterGroupOwned = page.getByText("Unregister entity", {
-        exact: true,
+      const unregisterGroupOwned = page.getByRole("menuitem", {
+        name: "Unregister entity",
       });
       await expect(unregisterGroupOwned).toBeDisabled();
     });
