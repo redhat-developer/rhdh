@@ -2,20 +2,20 @@ import { test, expect } from "@playwright/test";
 import { Common } from "../../../utils/common";
 import { UIhelper } from "../../../utils/ui-helper";
 import { Catalog } from "../../../support/pages/catalog";
-import { Topology } from "../../../support/pages/topology";
+// import { Topology } from "../../../support/pages/topology";
 
 test.describe("Test Topology Plugin", () => {
   test.skip(() => process.env.JOB_NAME.includes("operator"));
   let common: Common;
   let uiHelper: UIhelper;
   let catalog: Catalog;
-  let topology: Topology;
+  // let topology: Topology;
 
   test.beforeEach(async ({ page }) => {
     common = new Common(page);
     uiHelper = new UIhelper(page);
     catalog = new Catalog(page);
-    topology = new Topology(page);
+    // topology = new Topology(page);
     await common.loginAsGuest();
   });
 
