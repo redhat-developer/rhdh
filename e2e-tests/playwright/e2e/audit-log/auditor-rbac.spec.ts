@@ -53,8 +53,7 @@ test.describe("Auditor check for RBAC Plugin", () => {
         "Validate 'role-read' queryType 'all'",
         new Date().toISOString(),
       );
-      const resp = await rbacApi.getRoles();
-      console.log(new Date().toISOString(), await resp.text());
+      await rbacApi.getRoles();
 
       await validateRbacLogEvent(
         "role-read",

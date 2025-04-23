@@ -112,22 +112,20 @@ export class LogUtils {
   /**
    * Fetches logs with retry logic in case the log is not immediately available.
    *
-   * @param eventId The event to filter the logs
-   * @param filter The string to filter the logs
+   * @param filterWords The required words the logs must contain to filter the logs
    * @param maxRetries Maximum number of retry attempts
    * @param retryDelay Delay (in milliseconds) between retries
    * @returns The log line matching the filter, or throws an error if not found
    */
   static async getPodLogsWithRetry(
-    eventId?: string,
-    filter?: string,
+    filterWords: string[] = [],
     namespace: string = process.env.NAME_SPACE || "showcase-ci-nightly",
     maxRetries: number = 4,
     retryDelay: number = 2000,
   ): Promise<string> {
     const podSelector =
       "app.kubernetes.io/component=backstage,app.kubernetes.io/name=backstage";
-    const tailNumber = 100;
+    const tailNumber = 30;
 
     let attempt = 0;
     while (attempt <= maxRetries) {
@@ -152,11 +150,9 @@ export class LogUtils {
         console.log("Raw log output:", output);
 
         const logLines = output.split("\n");
-        const filteredLines = logLines.filter((line) => {
-          const matchEvent = !eventId || line.includes(eventId);
-          const matchFilter = !filter || line.includes(filter);
-          return matchEvent && matchFilter;
-        });
+        const filteredLines = logLines.filter((line) =>
+          filterWords.every((filterWord) => line.includes(filterWord)),
+        );
 
         if (filteredLines.length > 0) {
           console.log("Matching log line found:", filteredLines[0]);
@@ -164,7 +160,7 @@ export class LogUtils {
         }
 
         console.warn(
-          `No matching logs found for filter "${eventId} ${filter}" on attempt ${
+          `No matching logs found for filter "${filterWords}" on attempt ${
             attempt + 1
           }. Retrying...`,
         );
@@ -183,7 +179,7 @@ export class LogUtils {
     }
 
     throw new Error(
-      `Failed to fetch logs for filter "${eventId} ${filter}" after ${maxRetries + 1} attempts.`,
+      `Failed to fetch logs for filter "${filterWords}" after ${maxRetries + 1} attempts.`,
     );
   }
 
@@ -246,10 +242,12 @@ export class LogUtils {
     namespace: string = process.env.NAME_SPACE || "showcase-ci-nightly",
     baseURL: string = process.env.BASE_URL,
   ) {
+    const filterWords = [eventId, status];
+    if (request?.method) filterWords.push(request.method);
+    if (request?.url) filterWords.push(request.url);
     try {
       const actualLog = await LogUtils.getPodLogsWithRetry(
-        eventId,
-        status,
+        filterWords,
         namespace,
       );
       console.log("Raw log output before filtering:", actualLog);
