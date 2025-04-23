@@ -18,7 +18,7 @@ metadata:
 spec:
   packageName: "@backstage-community/plugin-azure-devops-backend"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-azure-devops-backend-dynamic
-  version: 0.8.0
+  version: 0.11.0
   backstage:
     role: backend-plugin
     supportedVersions: 1.35.1

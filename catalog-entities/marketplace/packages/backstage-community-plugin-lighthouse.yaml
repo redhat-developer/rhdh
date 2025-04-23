@@ -18,7 +18,7 @@ metadata:
 spec:
   packageName: "@backstage-community/plugin-lighthouse"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-lighthouse
-  version: 0.4.24
+  version: 0.6.0
   backstage:
     role: frontend-plugin
     supportedVersions: 1.35.1

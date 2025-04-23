@@ -18,7 +18,7 @@ metadata:
 spec:
   packageName: "@backstage-community/plugin-tech-radar-backend"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-tech-radar-backend-dynamic
-  version: 1.0.0
+  version: 1.2.0
   backstage:
     role: backend-plugin
     supportedVersions: 1.35.1
