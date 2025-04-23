@@ -575,20 +575,13 @@ test.describe.serial("Test RBAC", () => {
     test("Test bad PUT and PUT catalog-entity update policy", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
 
-      const oldBadPolicy = [
+      const oldPolicy = [
         { permission: "catalog-entity", policy: "read", effect: "deny" },
       ];
       const newBadPolicy = [
         { permission: "catalog-entity", policy: "refresh", effect: "allow" },
       ];
 
-      const oldGoodPolicy = [
-        {
-          permission: "catalog-entity",
-          policy: "read",
-          effect: "deny",
-        },
-      ];
       const newGoodPolicy = [
         {
           permission: "catalog.entity.refresh",
@@ -599,13 +592,13 @@ test.describe.serial("Test RBAC", () => {
 
       const badPutResponse = await rbacApi.updatePolicy(
         "default/test",
-        oldBadPolicy,
+        oldPolicy,
         newBadPolicy,
       );
 
       const goodPutResponse = await rbacApi.updatePolicy(
         "default/test",
-        oldGoodPolicy,
+        oldPolicy,
         newGoodPolicy,
       );
 

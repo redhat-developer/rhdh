@@ -14,7 +14,7 @@ export class RbacPo extends PageObject {
   private updateMemberButton: Locator;
   // roles
   private roleName: Locator;
-  private roledescription: Locator;
+  private roleDescription: Locator;
   private roleOwner: Locator;
   private usersAndGroupsField: Locator;
   private addPermissionPolicy: Locator;
@@ -106,7 +106,7 @@ export class RbacPo extends PageObject {
       .getByTestId("update-members")
       .getByLabel("Update");
     this.roleName = this.page.locator('input[name="name"]');
-    this.roledescription = this.page.locator('textarea[name="description"]');
+    this.roleDescription = this.page.locator('textarea[name="description"]');
     this.roleOwner = this.page.locator('textarea[name="owner"]');
     this.usersAndGroupsField = this.page.locator(
       'input[name="add-users-and-groups"]',
