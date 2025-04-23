@@ -5,9 +5,11 @@ import Button from '@mui/material/Button';
 
 export const ContactSupportButton = () => {
   const configApi = useApi(configApiRef);
-  const supportUrl = configApi.getOptionalString('app.support.url');
+  const supportUrl =
+    configApi.getOptionalString('app.support.url') ??
+    'https://access.redhat.com/documentation/red_hat_developer_hub';
 
-  return supportUrl ? (
+  return (
     <Button
       variant="text"
       color="primary"
@@ -19,5 +21,5 @@ export const ContactSupportButton = () => {
     >
       Contact support
     </Button>
-  ) : null;
+  );
 };
