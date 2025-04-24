@@ -178,11 +178,14 @@ RUN "$YARN" config set httpTimeout 600000
 #   export YARN_ENABLE_IMMUTABLE_CACHE=false
 #   export YARN_ENABLE_MIRROR=true
 #   export YARN_GLOBAL_FOLDER=/cachi2/output/deps/yarn
-# RUN cat /cachi2/cachi2.env; echo; ls -la /cachi2/output/deps/yarn/*
+RUN cat /cachi2/cachi2.env; echo; find /cachi2/output/deps/yarn/*
 
-RUN echo "=== YARN INSTALL ==="; FAILED=0; "$YARN" install --immutable || true; \
+RUN echo "=== YARN INSTALL ==="; FAILED=0; "$YARN" install --immutable; \
   for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then \
-    (( FAILED = FAILED + 1 )); echo; echo $d; echo "======"; cat ${d}/build.log; \
+    (( FAILED = FAILED + 1 )); \
+    echo; echo $d; \
+    echo "!!! YARN INSTALL FAILED !!!"; \
+    cat ${d}/build.log; \
   fi; done; \
   if [[ $FAILED -gt 0 ]]; then exit $FAILED; fi
 
@@ -190,6 +193,13 @@ RUN echo "=== YARN INSTALL ==="; FAILED=0; "$YARN" install --immutable || true; 
 FROM deps AS build
 
 COPY $EXTERNAL_SOURCE_NESTED ./
+
+# debug: to explicitly disable networking + use local cache:
+# echo "enableNetwork: false" >> .yarnrc.yml && \
+RUN echo "=== TWEAK .yarnrc.yml ==="; \
+  echo "cacheFolder: $YARN_GLOBAL_FOLDER" >> .yarnrc.yml && \
+  echo "Current .yarnrc.yml" && \
+  cat .yarnrc.yml
 
 RUN git config --global --add safe.directory ./
 # Upstream only
@@ -205,14 +215,14 @@ RUN \
   -e "s/(\"Last Commit\": \"(.+)\")/\1, \"Build Time\": \"$now\"/" && \
   cat packages/app/src/build-metadata.json; echo
 
-# suppress git warnings about dubious ownership in repository at '/opt/app-root/src' when building the backend app
-RUN echo "=== YARN BUILD BACKEND ==="; git config --global --add safe.directory /opt/app-root/src; "$YARN" build --filter=backend
-
-RUN echo "=== EXPORT DYNAMIC PLUGINS (with --no-install) ==="; FAILED=0; "$YARN" export-dynamic --filter=./dynamic-plugins/wrappers/* || true; \
-for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then \
-  (( FAILED = FAILED + 1 )); echo; echo $d; echo "======"; cat ${d}/build.log; \
-fi; done; \
-if [[ $FAILED -gt 0 ]]; then exit $FAILED; fi
+# suppress git warnings about dubious ownership in repository at '/opt/app-root/src' when building
+RUN echo "=== YARN BUILD (including dynamic plugins) ==="; FAILED=0; \
+  git config --global --add safe.directory /opt/app-root/src; \
+  "$YARN" build || true; \
+  for d in $(find yarn-install.log); do \
+    (( FAILED = FAILED + 1 )); echo; echo $d; echo "======"; cat ${d}; \
+  done; \
+  if [[ $FAILED -gt 0 ]]; then exit $FAILED; fi
 
 RUN echo "=== YARN COPY DYNAMIC PLUGINS in $(pwd) ==="; "$YARN" copy-dynamic-plugins dist
 
