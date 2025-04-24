@@ -16,7 +16,7 @@ metadata:
       title: Homepage
     - url: https://issues.redhat.com/browse/RHIDP
       title: Bugs
-    - title: Documentation for Red Hat developer Hub
+    - title: Documentation for Red Hat Developer Hub
       url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
     - title: Source Code
       url: https://github.com/backstage/backstage/tree/master/plugins/scaffolder-backend-module-azure
@@ -72,9 +72,10 @@ spec:
     for further details on the configuration required.
 
   categories:
-    - API Management # One category will show up on the tile view
+    - Scaffolder
+
   highlights:
-    - Add some highlights of the plugins features
+    - Extends Software Templates
 
   packages:
-  - backstage-plugin-scaffolder-backend-module-azure
+    - backstage-plugin-scaffolder-backend-module-azure

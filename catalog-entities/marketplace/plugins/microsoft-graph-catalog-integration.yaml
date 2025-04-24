@@ -26,7 +26,7 @@ metadata:
     - software-catalog
 
 spec:
-  author: Red Hat
+  author: Backstage Community
   support: tech-preview  # production, tech-preview, dev-preveiw
   lifecycle: active
   publisher: Red Hat
@@ -85,4 +85,4 @@ spec:
     L2c+Cjwvc3ZnPg==
 
   packages:
-    - backstage-plugin-catalog-backend-module-msgraph-dynamic
+    - backstage-plugin-catalog-backend-module-msgraph

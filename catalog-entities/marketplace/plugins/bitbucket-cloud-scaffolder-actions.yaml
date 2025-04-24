@@ -5,23 +5,23 @@ metadata:
   name: bitbucket-cloud-scaffolder-actions
   namespace: rhdh
   title: Bitbucket Cloud Software Template Actions
-  description: Provides the set of Software Template Actions for Bitbucket Cloud
+  description: Provides a set of Software Template Actions for Bitbucket Cloud
   annotations:
     extensions.backstage.io/pre-installed: 'true'
   tags:
-    - software-catalog
+    - software-templates
   links:
     - url: https://red.ht/rhdh
       title: Homepage
     - url: https://issues.redhat.com/browse/RHIDP
       title: Bugs
-    - title: Documentation for Red Hat developer Hub
+    - title: Documentation for Red Hat Developer Hub
       url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
     - title: Source Code
       url: https://github.com/backstage/backstage/tree/master/plugins/scaffolder-backend-module-bitbucket-cloud
 spec:
   categories:
-    - Software Catalog
+    - Scaffolder
 
   publisher: Red Hat
   author: Backstage Community

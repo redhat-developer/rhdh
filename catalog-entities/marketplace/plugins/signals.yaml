@@ -23,8 +23,7 @@ metadata:
       url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/
 
 spec:
-
-  author: Red Hat
+  author: Backstage Community
   support: tech-preview  # production, tech-preview, dev-preveiw
   lifecycle: active
   publisher: Red Hat
@@ -32,7 +31,7 @@ spec:
   categories:
     - Messaging # One category will show up on the tile view
   highlights:
-    - Add some highlights of the plugins features
+    - Allows plugins to publish messages
 
   description: |
     The Backstage Notifications System provides a way for plugins and external services to send notifications to Backstage users. 

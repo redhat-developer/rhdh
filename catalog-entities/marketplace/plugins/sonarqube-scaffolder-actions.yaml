@@ -14,7 +14,7 @@ metadata:
     - code-quality
     - sonarqube
     - scaffolder
-    - templates
+    - software-templates
   links:
     - title: Homepage
       url: https://red.ht/rhdh
@@ -34,6 +34,7 @@ spec:
 
   categories:
     - Code Quality # One category will show up on the tile view
+    - Scaffolder
 
   highlights:
     - Code Quality

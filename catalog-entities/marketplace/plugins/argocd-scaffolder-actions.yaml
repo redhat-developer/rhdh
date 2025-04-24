@@ -12,12 +12,13 @@ metadata:
     - argocd
     - kubernetes
     - cicd
+    - software-templates
   links:
     - url: https://red.ht/rhdh
       title: Homepage
     - url: https://issues.redhat.com/browse/RHIDP
       title: Bugs
-    - title: Documentation for Red Hat developer Hub
+    - title: Documentation for Red Hat Developer Hub
       url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
     - title: Source Code
       url: https://github.com/RoadieHQ/roadie-backstage-plugins/tree/main/plugins/scaffolder-actions/scaffolder-backend-argocd
@@ -28,6 +29,8 @@ spec:
   lifecycle: active
   categories:
     - CI/CD
+    - Scaffolder
+
   highlights:
     - Create Argo CD Resources
   icon: data:image/svg+xml;base64,
@@ -159,6 +162,7 @@ spec:
         labelValue: ${{ parameters.name }}
         path: "kubernetes/nonprod"
     ```
+
     ## Adding The Plugin To Red Hat Developer Hub
 
     See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
@@ -170,6 +174,5 @@ spec:
     systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
     for further details on the configuration required.
 
-    ```
   packages:
-    - roadiehq-scaffolder-backend-argocd-dynamic
+    - roadiehq-scaffolder-backend-argocd
