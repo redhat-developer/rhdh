@@ -5778,7 +5778,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/core-app-api@npm:^1.15.2, @backstage/core-app-api@npm:^1.15.5":
+"@backstage/core-app-api@npm:^1.15.2, @backstage/core-app-api@npm:^1.15.5, @backstage/core-app-api@npm:^1.16.1":
   version: 1.16.1
   resolution: "@backstage/core-app-api@npm:1.16.1"
   dependencies:
@@ -5831,34 +5831,6 @@ __metadata:
     "@types/react":
       optional: true
   checksum: 370126fc41440ab448b21dd2ebe9e986345396a291ea50ba6b2220e2125137fe05c0f7a48a653491bd20580b18eb5c776c1268290d3efe2394bc465cba366cc3
-  languageName: node
-  linkType: hard
-
-"@backstage/core-app-api@npm:^1.16.1":
-  version: 1.16.1
-  resolution: "@backstage/core-app-api@npm:1.16.1"
-  dependencies:
-    "@backstage/config": ^1.3.2
-    "@backstage/core-plugin-api": ^1.10.6
-    "@backstage/types": ^1.2.1
-    "@backstage/version-bridge": ^1.0.11
-    "@types/prop-types": ^15.7.3
-    history: ^5.0.0
-    i18next: ^22.4.15
-    lodash: ^4.17.21
-    prop-types: ^15.7.2
-    react-use: ^17.2.4
-    zen-observable: ^0.10.0
-    zod: ^3.22.4
-  peerDependencies:
-    "@types/react": ^17.0.0 || ^18.0.0
-    react: ^17.0.0 || ^18.0.0
-    react-dom: ^17.0.0 || ^18.0.0
-    react-router-dom: ^6.3.0
-  peerDependenciesMeta:
-    "@types/react":
-      optional: true
-  checksum: f10fe66f4f5e6522691979de7cbefe4ef15cb3934f6777be578c26a180324e336ef6ab7a054ebb839efe9c6535ff3a9ab5d658e023d2441b4d34c378faa1e015
   languageName: node
   linkType: hard
 
@@ -6494,7 +6466,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-app@npm:^0.1.6, @backstage/plugin-app@npm:^0.1.7":
+"@backstage/plugin-app@npm:^0.1.6":
   version: 0.1.7
   resolution: "@backstage/plugin-app@npm:0.1.7"
   dependencies:
@@ -7553,50 +7525,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-catalog-react@npm:1.15.2, @backstage/plugin-catalog-react@npm:^1.12.2, @backstage/plugin-catalog-react@npm:^1.12.3, @backstage/plugin-catalog-react@npm:^1.14.2, @backstage/plugin-catalog-react@npm:^1.15.1, @backstage/plugin-catalog-react@npm:^1.15.2":
+"@backstage/plugin-catalog-react@npm:1.15.2":
   version: 1.15.2
   resolution: "@backstage/plugin-catalog-react@npm:1.15.2"
-  dependencies:
-    "@backstage/catalog-client": ^1.9.1
-    "@backstage/catalog-model": ^1.7.3
-    "@backstage/core-compat-api": ^0.3.6
-    "@backstage/core-components": ^0.16.4
-    "@backstage/core-plugin-api": ^1.10.4
-    "@backstage/errors": ^1.2.7
-    "@backstage/frontend-plugin-api": ^0.9.5
-    "@backstage/frontend-test-utils": ^0.2.6
-    "@backstage/integration-react": ^1.2.4
-    "@backstage/plugin-catalog-common": ^1.1.3
-    "@backstage/plugin-permission-common": ^0.8.4
-    "@backstage/plugin-permission-react": ^0.4.31
-    "@backstage/types": ^1.2.1
-    "@backstage/version-bridge": ^1.0.11
-    "@material-ui/core": ^4.12.2
-    "@material-ui/icons": ^4.9.1
-    "@material-ui/lab": 4.0.0-alpha.61
-    "@react-hookz/web": ^24.0.0
-    classnames: ^2.2.6
-    lodash: ^4.17.21
-    material-ui-popup-state: ^1.9.3
-    qs: ^6.9.4
-    react-use: ^17.2.4
-    yaml: ^2.0.0
-    zen-observable: ^0.10.0
-  peerDependencies:
-    "@types/react": ^17.0.0 || ^18.0.0
-    react: ^17.0.0 || ^18.0.0
-    react-dom: ^17.0.0 || ^18.0.0
-    react-router-dom: ^6.3.0
-  peerDependenciesMeta:
-    "@types/react":
-      optional: true
-  checksum: ecc20f468cb2845b82cda5ca6ca5f64ef3dae5f13675529b1fc5795b0f89970bd2b5e245a058561b9766c5a48a15c35366af44767f7a8a0329e03fc260318fff
-  languageName: node
-  linkType: hard
-
-"@backstage/plugin-catalog-react@npm:^1.16.0":
-  version: 1.16.0
-  resolution: "@backstage/plugin-catalog-react@npm:1.16.0"
   dependencies:
     "@backstage/catalog-client": ^1.9.1
     "@backstage/catalog-model": ^1.7.3
@@ -9392,7 +9323,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/test-utils@npm:1.7.5, @backstage/test-utils@npm:^1.7.5":
+"@backstage/test-utils@npm:1.7.5":
   version: 1.7.5
   resolution: "@backstage/test-utils@npm:1.7.5"
   dependencies:
