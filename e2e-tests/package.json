@@ -40,7 +40,7 @@
     "typescript": "5.8.3"
   },
   "dependencies": {
-    "@azure/identity": "4.9.0",
+    "@azure/identity": "4.9.1",
     "@keycloak/keycloak-admin-client": "25.0.6",
     "@kubernetes/client-node": "0.22.3",
     "@microsoft/microsoft-graph-client": "3.0.7",
