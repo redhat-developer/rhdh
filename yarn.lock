@@ -17705,7 +17705,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-marketplace-common@npm:^0.3.0":
+"@red-hat-developer-hub/backstage-plugin-marketplace-common@npm:0.3.0, @red-hat-developer-hub/backstage-plugin-marketplace-common@npm:^0.3.0":
   version: 0.3.0
   resolution: "@red-hat-developer-hub/backstage-plugin-marketplace-common@npm:0.3.0"
   dependencies:
@@ -41998,6 +41998,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.5.0
     "@red-hat-developer-hub/backstage-plugin-marketplace-backend": 0.3.1
+    "@red-hat-developer-hub/backstage-plugin-marketplace-common": 0.3.0
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
