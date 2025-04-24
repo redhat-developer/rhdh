@@ -32,13 +32,15 @@
     "@aws-sdk/util-utf8-browser": "npm:@smithy/util-utf8@~2",
     "@kubernetes/client-node@npm:0.20.0/jsonpath-plus": "^10.3.0",
     "@backstage/plugin-auth-node@^0.6.0": "patch:@backstage/plugin-auth-node@npm%3A0.6.0#./.yarn/patches/@backstage-plugin-auth-node-npm-0.6.0-69f2f0dc3f.patch",
-    "@backstage/plugin-auth-node@0.6.0": "patch:@backstage/plugin-auth-node@npm%3A0.6.0#./.yarn/patches/@backstage-plugin-auth-node-npm-0.6.0-69f2f0dc3f.patch",
-    "@backstage/plugin-auth-node@^0.5.6": "patch:@backstage/plugin-auth-node@npm%3A0.6.0#./.yarn/patches/@backstage-plugin-auth-node-npm-0.6.0-69f2f0dc3f.patch",
-    "@backstage/plugin-auth-node@^0.5.1": "patch:@backstage/plugin-auth-node@npm%3A0.6.0#./.yarn/patches/@backstage-plugin-auth-node-npm-0.6.0-69f2f0dc3f.patch",
+    "@backstage/plugin-auth-node@^0.6.1": "patch:@backstage/plugin-auth-node@npm%3A0.6.0#./.yarn/patches/@backstage-plugin-auth-node-npm-0.6.0-69f2f0dc3f.patch",
     "@backstage/plugin-auth-node@^0.4.17": "patch:@backstage/plugin-auth-node@npm%3A0.6.0#./.yarn/patches/@backstage-plugin-auth-node-npm-0.6.0-69f2f0dc3f.patch",
+    "@backstage/plugin-auth-node@^0.4.16": "patch:@backstage/plugin-auth-node@npm%3A0.6.0#./.yarn/patches/@backstage-plugin-auth-node-npm-0.6.0-69f2f0dc3f.patch",
     "@backstage/plugin-auth-node@^0.4.13": "patch:@backstage/plugin-auth-node@npm%3A0.6.0#./.yarn/patches/@backstage-plugin-auth-node-npm-0.6.0-69f2f0dc3f.patch",
     "@backstage/plugin-auth-node@^0.5.2": "patch:@backstage/plugin-auth-node@npm%3A0.6.0#./.yarn/patches/@backstage-plugin-auth-node-npm-0.6.0-69f2f0dc3f.patch",
-    "@backstage/plugin-auth-node@^0.4.16": "patch:@backstage/plugin-auth-node@npm%3A0.6.0#./.yarn/patches/@backstage-plugin-auth-node-npm-0.6.0-69f2f0dc3f.patch"
+    "@backstage/plugin-auth-node@^0.5.6": "patch:@backstage/plugin-auth-node@npm%3A0.6.0#./.yarn/patches/@backstage-plugin-auth-node-npm-0.6.0-69f2f0dc3f.patch",
+    "@backstage/plugin-auth-node@^0.5.1": "patch:@backstage/plugin-auth-node@npm%3A0.6.0#./.yarn/patches/@backstage-plugin-auth-node-npm-0.6.0-69f2f0dc3f.patch",
+    "@backstage/plugin-auth-node@^0.4.8": "patch:@backstage/plugin-auth-node@npm%3A0.6.0#./.yarn/patches/@backstage-plugin-auth-node-npm-0.6.0-69f2f0dc3f.patch",
+    "@backstage/plugin-auth-node@^0.4.12": "patch:@backstage/plugin-auth-node@npm%3A0.6.0#./.yarn/patches/@backstage-plugin-auth-node-npm-0.6.0-69f2f0dc3f.patch"
   },
   "packageManager": "yarn@3.8.7"
 }

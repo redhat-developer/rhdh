@@ -5935,57 +5935,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-auth-node@npm:^0.4.12, @backstage/plugin-auth-node@npm:^0.4.8":
-  version: 0.4.17
-  resolution: "@backstage/plugin-auth-node@npm:0.4.17"
-  dependencies:
-    "@backstage/backend-common": ^0.23.3
-    "@backstage/backend-plugin-api": ^0.7.0
-    "@backstage/catalog-client": ^1.6.5
-    "@backstage/catalog-model": ^1.5.0
-    "@backstage/config": ^1.2.0
-    "@backstage/errors": ^1.2.4
-    "@backstage/types": ^1.1.1
-    "@types/express": "*"
-    "@types/passport": ^1.0.3
-    express: ^4.17.1
-    jose: ^5.0.0
-    lodash: ^4.17.21
-    node-fetch: ^2.6.7
-    passport: ^0.7.0
-    winston: ^3.2.1
-    zod: ^3.22.4
-    zod-to-json-schema: ^3.21.4
-  checksum: 2506045877e9f76f70d4d5541725a0c6cf9ba0f1604bade22ec92852e887e7b844bc815cdace74c5053ef23c4306e18b6b1b4bdefe6dfab62dd9e03bd66e2d08
-  languageName: node
-  linkType: hard
-
-"@backstage/plugin-auth-node@npm:^0.6.1":
-  version: 0.6.1
-  resolution: "@backstage/plugin-auth-node@npm:0.6.1"
-  dependencies:
-    "@backstage/backend-plugin-api": ^1.2.1
-    "@backstage/catalog-client": ^1.9.1
-    "@backstage/catalog-model": ^1.7.3
-    "@backstage/config": ^1.3.2
-    "@backstage/errors": ^1.2.7
-    "@backstage/types": ^1.2.1
-    "@types/express": ^4.17.6
-    "@types/passport": ^1.0.3
-    express: ^4.17.1
-    jose: ^5.0.0
-    lodash: ^4.17.21
-    passport: ^0.7.0
-    zod: ^3.22.4
-    zod-to-json-schema: ^3.21.4
-    zod-validation-error: ^3.4.0
-  checksum: 3ea509a085cf864138819658608e53978ce7847303e021679a25a23a1a241daf15c95c4e14f1e823a833a89dbd0a462e35e428a40493875b8488be77ed3583af
-  languageName: node
-  linkType: hard
-
 "@backstage/plugin-auth-node@patch:@backstage/plugin-auth-node@npm%3A0.6.0#./.yarn/patches/@backstage-plugin-auth-node-npm-0.6.0-69f2f0dc3f.patch::locator=dynamic-plugins-root%40workspace%3A.":
   version: 0.6.0
-  resolution: "@backstage/plugin-auth-node@patch:@backstage/plugin-auth-node@npm%3A0.6.0#./.yarn/patches/@backstage-plugin-auth-node-npm-0.6.0-69f2f0dc3f.patch::version=0.6.0&hash=45bb46&locator=dynamic-plugins-root%40workspace%3A."
+  resolution: "@backstage/plugin-auth-node@patch:@backstage/plugin-auth-node@npm%3A0.6.0#./.yarn/patches/@backstage-plugin-auth-node-npm-0.6.0-69f2f0dc3f.patch::version=0.6.0&hash=183dd1&locator=dynamic-plugins-root%40workspace%3A."
   dependencies:
     "@backstage/backend-plugin-api": ^1.2.0
     "@backstage/catalog-client": ^1.9.1
@@ -6002,7 +5954,7 @@ __metadata:
     zod: ^3.22.4
     zod-to-json-schema: ^3.21.4
     zod-validation-error: ^3.4.0
-  checksum: 77ffbf96126a8c0dbacb70da872c6555f7d89f9ec010a437d11aab7fb33ebc99d61a6d73da767ec96c9eb4109e906cb19472e2d118056be43e2be8f421acba8a
+  checksum: 1bb3a01444c3d547daa8586fb70e581886bdb24979e6d68ee3e3d87ac3a774ebb771461cd3df9b530ebb0b69c75765a105e1e6ea83994a0f781e794d81e3fe38
   languageName: node
   linkType: hard
 
