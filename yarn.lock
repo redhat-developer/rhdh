@@ -5387,7 +5387,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/catalog-model@npm:1.7.3, @backstage/catalog-model@npm:^1.4.3, @backstage/catalog-model@npm:^1.5.0, @backstage/catalog-model@npm:^1.6.0, @backstage/catalog-model@npm:^1.7.0, @backstage/catalog-model@npm:^1.7.1, @backstage/catalog-model@npm:^1.7.3":
+"@backstage/catalog-model@npm:1.7.3, @backstage/catalog-model@npm:^1.4.3, @backstage/catalog-model@npm:^1.5.0, @backstage/catalog-model@npm:^1.7.0, @backstage/catalog-model@npm:^1.7.1, @backstage/catalog-model@npm:^1.7.3":
   version: 1.7.3
   resolution: "@backstage/catalog-model@npm:1.7.3"
   dependencies:
@@ -5834,22 +5834,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/core-compat-api@npm:^0.2.8":
-  version: 0.2.8
-  resolution: "@backstage/core-compat-api@npm:0.2.8"
-  dependencies:
-    "@backstage/core-plugin-api": ^1.9.3
-    "@backstage/frontend-plugin-api": ^0.7.0
-    "@backstage/version-bridge": ^1.0.8
-    "@types/react": ^16.13.1 || ^17.0.0
-    lodash: ^4.17.21
-  peerDependencies:
-    react: ^16.13.1 || ^17.0.0 || ^18.0.0
-    react-router-dom: 6.0.0-beta.0 || ^6.3.0
-  checksum: 3f0cdb7f2b68f9a173128438b8d5cad460f434b3811db9bda2ae356000a736103971e13fb4d6ab893ed44fcbede9c8e464f381b025d05f468773aa2f9790eb50
-  languageName: node
-  linkType: hard
-
 "@backstage/core-compat-api@npm:^0.3.3, @backstage/core-compat-api@npm:^0.3.5, @backstage/core-compat-api@npm:^0.3.6":
   version: 0.3.6
   resolution: "@backstage/core-compat-api@npm:0.3.6"
@@ -5945,7 +5929,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/core-components@npm:^0.14.10, @backstage/core-components@npm:^0.14.9":
+"@backstage/core-components@npm:^0.14.9":
   version: 0.14.10
   resolution: "@backstage/core-components@npm:0.14.10"
   dependencies:
@@ -6275,26 +6259,6 @@ __metadata:
     "@types/react":
       optional: true
   checksum: aa56771b94033d4825aaad0007d93f99061b60d114d0cf10c54aacc5087806cf709bdc2c5d30e32bb3a49cce050dcc5068fea4d14d099f4589c2400bd2ad45a1
-  languageName: node
-  linkType: hard
-
-"@backstage/frontend-plugin-api@npm:^0.7.0":
-  version: 0.7.0
-  resolution: "@backstage/frontend-plugin-api@npm:0.7.0"
-  dependencies:
-    "@backstage/core-components": ^0.14.10
-    "@backstage/core-plugin-api": ^1.9.3
-    "@backstage/types": ^1.1.1
-    "@backstage/version-bridge": ^1.0.8
-    "@material-ui/core": ^4.12.4
-    "@types/react": ^16.13.1 || ^17.0.0 || ^18.0.0
-    lodash: ^4.17.21
-    zod: ^3.22.4
-    zod-to-json-schema: ^3.21.4
-  peerDependencies:
-    react: ^16.13.1 || ^17.0.0 || ^18.0.0
-    react-router-dom: 6.0.0-beta.0 || ^6.3.0
-  checksum: 11d11db0af0d57014f9c16de37a1871d951ec70cdda70b8f25d4a52d46cdbccaf8c94656c6d2c939689c9b3e4fb668d96becfd58d1c00f1e33c39cf9bad97d4a
   languageName: node
   linkType: hard
 
@@ -7624,7 +7588,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-catalog-react@npm:1.15.2, @backstage/plugin-catalog-react@npm:^1.12.2, @backstage/plugin-catalog-react@npm:^1.12.3, @backstage/plugin-catalog-react@npm:^1.14.2, @backstage/plugin-catalog-react@npm:^1.15.1, @backstage/plugin-catalog-react@npm:^1.15.2":
+"@backstage/plugin-catalog-react@npm:1.15.2, @backstage/plugin-catalog-react@npm:^1.12.2, @backstage/plugin-catalog-react@npm:^1.14.2, @backstage/plugin-catalog-react@npm:^1.15.1, @backstage/plugin-catalog-react@npm:^1.15.2":
   version: 1.15.2
   resolution: "@backstage/plugin-catalog-react@npm:1.15.2"
   dependencies:
@@ -17940,38 +17904,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@roadiehq/backstage-plugin-argo-cd@npm:2.8.4":
-  version: 2.8.4
-  resolution: "@roadiehq/backstage-plugin-argo-cd@npm:2.8.4"
-  dependencies:
-    "@backstage/catalog-model": ^1.6.0
-    "@backstage/core-compat-api": ^0.2.8
-    "@backstage/core-components": ^0.14.10
-    "@backstage/core-plugin-api": ^1.9.3
-    "@backstage/frontend-plugin-api": ^0.7.0
-    "@backstage/plugin-catalog-react": ^1.12.3
-    "@backstage/theme": ^0.5.6
-    "@material-ui/core": ^4.12.2
-    "@material-ui/icons": ^4.9.1
-    "@material-ui/lab": 4.0.0-alpha.45
-    cross-fetch: ^3.1.4
-    date-fns: ^2.21.1
-    fp-ts: ^2.10.0
-    history: ^5.0.0
-    io-ts: ^2.2.16
-    io-ts-promise: ^2.0.2
-    io-ts-reporters: ^1.2.2
-    moment: ^2.29.1
-    react-use: ^17.2.4
-  peerDependencies:
-    react: ^16.13.1 || ^17.0.0 || ^18.0.0
-    react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
-    react-router: 6.0.0-beta.0  || ^6.3.0
-    react-router-dom: 6.0.0-beta.0  || ^6.3.0
-  checksum: 831eb3beb85075eb47e67d8ef3336b155c66518d84e49930523ed3e4d7765f40f571b2203c36d2feeb11765a623f5e0e8dad696ebecf4d980ae6f1784c516890
-  languageName: node
-  linkType: hard
-
 "@roadiehq/backstage-plugin-datadog@npm:2.4.2":
   version: 2.4.2
   resolution: "@roadiehq/backstage-plugin-datadog@npm:2.4.2"
@@ -27576,7 +27508,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"date-fns@npm:^2.16.1, date-fns@npm:^2.21.1, date-fns@npm:^2.30.0":
+"date-fns@npm:^2.16.1, date-fns@npm:^2.30.0":
   version: 2.30.0
   resolution: "date-fns@npm:2.30.0"
   dependencies:
@@ -27712,20 +27644,6 @@ __metadata:
   version: 3.1.0
   resolution: "deeks@npm:3.1.0"
   checksum: d4b92aea7bee3a77adad0d84da67c8afe9693cc22c89bf10e01bc30eb0dd5e53a7958ce12f6f0b5f1cbb0f54f0a7aa603555725688fc0eb3a6ce80e6950be05a
-  languageName: node
-  linkType: hard
-
-"deep-equal@npm:^1.1.0":
-  version: 1.1.2
-  resolution: "deep-equal@npm:1.1.2"
-  dependencies:
-    is-arguments: ^1.1.1
-    is-date-object: ^1.0.5
-    is-regex: ^1.1.4
-    object-is: ^1.1.5
-    object-keys: ^1.1.1
-    regexp.prototype.flags: ^1.5.1
-  checksum: 2d50f27fff785fb272cdef038ee5365ee5a30ab1aab053976e6a6add44cc60abd99b38179a46a01ac52c5e54ebb220e8f1a3a1954da20678b79c46ef4d97c9db
   languageName: node
   linkType: hard
 
@@ -30850,13 +30768,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fp-ts@npm:^2.10.0":
-  version: 2.16.2
-  resolution: "fp-ts@npm:2.16.2"
-  checksum: 5c2e3f096ba4be5646bda38a43e3e8ca3bd7693fefb26e6c4d4c451efbc9a227f7f7cad562b087cb134d4e41f4ae615602f0b17890e9e40a9e83f2f8822da666
-  languageName: node
-  linkType: hard
-
 "fraction.js@npm:4.3.4":
   version: 4.3.4
   resolution: "fraction.js@npm:4.3.4"
@@ -32787,37 +32698,6 @@ __metadata:
   dependencies:
     loose-envify: ^1.0.0
   checksum: cc3182d793aad82a8d1f0af697b462939cb46066ec48bbf1707c150ad5fad6406137e91a262022c269702e01621f35ef60269f6c0d7fd178487959809acdfb14
-  languageName: node
-  linkType: hard
-
-"io-ts-promise@npm:^2.0.2":
-  version: 2.0.2
-  resolution: "io-ts-promise@npm:2.0.2"
-  dependencies:
-    deep-equal: ^1.1.0
-  peerDependencies:
-    fp-ts: 2.x
-    io-ts: 2.x
-  checksum: 781f4e67bed680848e7ae058e7b4754c0372c5bf4501adb3fa38206c9d738bac7c7d8e13d656512950b1932f454ed4cb92a07f163e009b7cdda31cd9dd8751b3
-  languageName: node
-  linkType: hard
-
-"io-ts-reporters@npm:^1.2.2":
-  version: 1.2.2
-  resolution: "io-ts-reporters@npm:1.2.2"
-  peerDependencies:
-    fp-ts: ^2.0.2
-    io-ts: ^2.0.0
-  checksum: 50dd159570ec4cee07ae07c138674163aab51ef64866078cbf16af7880d2ded53005b4b42e49ff13edb4f45adc8d924bdf342d3c291700e9e33acedd0fde7926
-  languageName: node
-  linkType: hard
-
-"io-ts@npm:^2.2.16":
-  version: 2.2.21
-  resolution: "io-ts@npm:2.2.21"
-  peerDependencies:
-    fp-ts: ^2.5.0
-  checksum: c6ae5237e313f7428c874fa5667b3656adaa5ec29f7f34194ad8ea8894b525c89322a5b74ca560e7cd66f8334b0b48cae6c4dc517c662de72da86110140646d4
   languageName: node
   linkType: hard
 
@@ -37627,7 +37507,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"moment@npm:^2.29.1, moment@npm:^2.30.1":
+"moment@npm:^2.30.1":
   version: 2.30.1
   resolution: "moment@npm:2.30.1"
   checksum: 859236bab1e88c3e5802afcf797fc801acdbd0ee509d34ea3df6eea21eb6bcc2abd4ae4e4e64aa7c986aa6cba563c6e62806218e6412a765010712e5fa121ba6
@@ -42755,17 +42635,6 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.5.0
     "@roadiehq/backstage-plugin-argo-cd-backend": 4.2.0
-    typescript: 5.8.3
-  languageName: unknown
-  linkType: soft
-
-"roadiehq-backstage-plugin-argo-cd@workspace:dynamic-plugins/wrappers/roadiehq-backstage-plugin-argo-cd":
-  version: 0.0.0-use.local
-  resolution: "roadiehq-backstage-plugin-argo-cd@workspace:dynamic-plugins/wrappers/roadiehq-backstage-plugin-argo-cd"
-  dependencies:
-    "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.5.0
-    "@roadiehq/backstage-plugin-argo-cd": 2.8.4
     typescript: 5.8.3
   languageName: unknown
   linkType: soft

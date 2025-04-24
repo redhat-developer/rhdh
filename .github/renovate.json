@@ -362,9 +362,6 @@
   "ignorePaths": [
     "**/dist-dynamic/**"
   ],
-  "ignoreDeps": [
-    "@roadiehq/backstage-plugin-argo-cd"
-  ],
   "vulnerabilityAlerts": {
     "enabled": true,
     "addLabels": [

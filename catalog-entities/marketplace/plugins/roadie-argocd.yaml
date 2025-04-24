@@ -136,7 +136,6 @@ spec:
     Zz4K
 
   packages:
-    - roadiehq-backstage-plugin-argo-cd
     - roadiehq-backstage-plugin-argo-cd-backend
 
   assets:
