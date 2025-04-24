@@ -32,7 +32,7 @@ spec:
   publisher: Red Hat
 
   categories:
-    - CI/CD
+    - Container Image Registry
 
   highlights:
     - View build artifacts stored in Nexus Repository Manager
