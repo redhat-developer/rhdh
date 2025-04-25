@@ -147,27 +147,27 @@ async function main() {
   const allBranches = await listBranchNames(repository);
 
   // only release branches and not in skipBranches
-  const relaseBranches = allBranches
+  const releaseBranches = allBranches
     .filter((branch) => branch.startsWith('release-'))
     .filter((branch) => !skipBranches.includes(branch))
 
 
   // sort the branches by the number after release- in descending order
-  relaseBranches.sort((a, b) => {
+  releaseBranches.sort((a, b) => {
     const aNum = parseFloat(a.split('-')[1]);
     const bNum = parseFloat(b.split('-')[1]);
     return bNum - aNum;
   });
 
   // add main branch as first in the list as we want to document version for pre-release
-  relaseBranches.unshift("main")
+  releaseBranches.unshift("main")
 
-  console.log(`Release branches found: ${relaseBranches.join(", ")}`);
+  console.log(`Release branches found: ${releaseBranches.join(", ")}`);
 
   // Collect all outputs
   let allOutputs = '';
 
-  for (const branch of relaseBranches) {
+  for (const branch of releaseBranches) {
     console.log(`Processing branch ${branch}`)
 
     let release = ""
