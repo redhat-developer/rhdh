@@ -200,7 +200,8 @@ async function main() {
     const createAppVersion = JSON.parse(createAppPackageJson).version
 
     if (!createAppVersion) {
-      console.fail(`Unable to find create-app version in ${createAppPackageJson}`)
+      console.error(`Unable to find create-app version in ${createAppPackageJson}`)
+      process.exit(1);
     }
 
     const out = `
