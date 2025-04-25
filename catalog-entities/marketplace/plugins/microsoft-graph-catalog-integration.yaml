@@ -26,7 +26,7 @@ metadata:
     - software-catalog
 
 spec:
-  author: Red Hat
+  author: Backstage Community
   support: tech-preview  # production, tech-preview, dev-preveiw
   lifecycle: active
   publisher: Red Hat
@@ -52,37 +52,5 @@ spec:
     systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
     for further details regarding the configuration required.
 
-  icon: data:image/svg+xml;base64,
-    PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPCEtLSBHZW5lcmF0b3I6IEFk
-    b2JlIElsbHVzdHJhdG9yIDI1LjIuMSwgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246
-    IDYuMDAgQnVpbGQgMCkgIC0tPgo8c3ZnIHZlcnNpb249IjEuMSIgaWQ9IkxheWVyXzEiIHhtbG5z
-    PSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMu
-    b3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4IiB2aWV3Qm94PSIwIDAgNDggNDgiIHN0eWxl
-    PSJlbmFibGUtYmFja2dyb3VuZDpuZXcgMCAwIDQ4IDQ4OyIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+
-    CjxzdHlsZSB0eXBlPSJ0ZXh0L2NzcyI+Cgkuc3Qwe2NsaXAtcGF0aDp1cmwoI1NWR0lEXzJfKTtm
-    aWxsOiMyOEE4RUE7fQoJLnN0MXtjbGlwLXBhdGg6dXJsKCNTVkdJRF8yXyk7ZmlsbDojMDA3OEQ0
-    O30KCS5zdDJ7Y2xpcC1wYXRoOnVybCgjU1ZHSURfMl8pO2ZpbGw6IzAzNjRCODt9Cgkuc3Qze2Ns
-    aXAtcGF0aDp1cmwoI1NWR0lEXzJfKTtmaWxsOiMxNDQ0N0Q7fQoJLnN0NHtjbGlwLXBhdGg6dXJs
-    KCNTVkdJRF8yXyk7ZmlsbDojMEYzMzVFO30KCS5zdDV7Y2xpcC1wYXRoOnVybCgjU1ZHSURfMl8p
-    O2ZpbGw6IzUwRDlGRjt9Cjwvc3R5bGU+CjxnPgoJPGRlZnM+CgkJPHBhdGggaWQ9IlNWR0lEXzFf
-    IiBkPSJNMzQuOSwzLjJIMTMuMWMtMC43LDAtMS40LDAuNC0xLjgsMUwwLjUsMjNjLTAuNCwwLjYt
-    MC40LDEuNCwwLDIuMWwxMC45LDE4LjdjMC40LDAuNiwxLjEsMSwxLjgsMWgyMS43ICAgIGMwLjcs
-    MCwxLjQtMC40LDEuOC0xTDQ3LjUsMjVjMC40LTAuNiwwLjQtMS40LDAtMi4xTDM2LjcsNC4zQzM2
-    LjMsMy42LDM1LjYsMy4yLDM0LjksMy4yeiIvPgoJPC9kZWZzPgoJPGNsaXBQYXRoIGlkPSJTVkdJ
-    RF8yXyI+CgkJPHVzZSB4bGluazpocmVmPSIjU1ZHSURfMV8iIHN0eWxlPSJvdmVyZmxvdzp2aXNp
-    YmxlOyIvPgoJPC9jbGlwUGF0aD4KCTxwb2x5Z29uIGNsYXNzPSJzdDAiIHBvaW50cz0iMTEuMywz
-    LjEgMTUuNiwxMS4xIDM1LjQsMy4xICAiLz4KCTxwb2x5Z29uIGNsYXNzPSJzdDEiIHBvaW50cz0i
-    MTEuMywzLjEgMTUuNiwxMS4xIDAuMiwyMy4zIDAuMiwzLjEgICIvPgoJPHBvbHlnb24gY2xhc3M9
-    InN0MiIgcG9pbnRzPSItMC44LDI0IDE1LjYsMTEuMSAxNi41LDM3LjEgICIvPgoJPHBvbHlnb24g
-    Y2xhc3M9InN0MyIgcG9pbnRzPSItMC44LDI0IDE2LjUsMzcuMSAxMS41LDQ0LjggMC4yLDQ1LjIg
-    ICIvPgoJPHBvbHlnb24gY2xhc3M9InN0NCIgcG9pbnRzPSIxMS41LDQ0LjggMTYuNSwzNy4xIDM2
-    LjIsNDUuMiAgIi8+Cgk8cG9seWdvbiBjbGFzcz0ic3QyIiBwb2ludHM9IjE2LjUsMzcuMSAzNi43
-    LDI0IDM2LjIsNDUuMiAgIi8+Cgk8cG9seWdvbiBjbGFzcz0ic3QwIiBwb2ludHM9IjE2LjUsMzcu
-    MSAxNS42LDExLjEgMzYuNywyNCAgIi8+Cgk8cG9seWdvbiBjbGFzcz0ic3Q1IiBwb2ludHM9IjE1
-    LjYsMTEuMSAzNi4yLDIuOCAzNi43LDI0ICAiLz4KCTxwb2x5Z29uIGNsYXNzPSJzdDAiIHBvaW50
-    cz0iMzYuNywyNCAzNi4yLDIuOCA0OC4xLDMuMSA0OC4xLDI0ICAiLz4KCTxwb2x5Z29uIGNsYXNz
-    PSJzdDEiIHBvaW50cz0iMzYuNywyNCAzNi4yLDQ1LjkgNDcuNSw0NS45IDQ4LjEsMjQgICIvPgo8
-    L2c+Cjwvc3ZnPg==
-
   packages:
-    - backstage-plugin-catalog-backend-module-msgraph-dynamic
+    - backstage-plugin-catalog-backend-module-msgraph

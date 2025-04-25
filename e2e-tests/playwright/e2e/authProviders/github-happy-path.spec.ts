@@ -171,9 +171,7 @@ test.describe.serial("GitHub Happy path", () => {
   });
 
   test("Click login on the login popup and verify that Overview tab renders", async () => {
-    await uiHelper.openSidebar("Catalog");
-    await uiHelper.selectMuiBox("Kind", "Component");
-    await uiHelper.clickByDataTestId("user-picker-all");
+    await uiHelper.openCatalogSidebar("Component");
     await uiHelper.clickLink("Backstage Showcase");
 
     const expectedPath = "/catalog/default/component/backstage-showcase";
@@ -249,8 +247,7 @@ test.describe.serial("GitHub Happy path", () => {
   });
 
   test("Verify that the 5, 10, 20 items per page option properly displays the correct number of PRs", async () => {
-    await uiHelper.openSidebar("Catalog");
-    await uiHelper.clickByDataTestId("user-picker-all");
+    await uiHelper.openCatalogSidebar("Component");
     await uiHelper.clickLink("Backstage Showcase");
     await common.clickOnGHloginPopup();
     await uiHelper.clickTab("Pull/Merge Requests");

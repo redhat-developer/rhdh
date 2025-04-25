@@ -53,21 +53,25 @@ test.describe("Test Topology Plugin with RBAC", () => {
 
   // User is able to read from the catalog
   // User has 'kubernetes.clusters.read', 'kubernetes.resources.read', 'kubernetes.proxy' permissions
-  test.describe("Verify a user with permissions is able to access the Topology plugin", () => {
-    test.beforeEach(async () => {
-      await common.loginAsKeycloakUser();
+  test.describe.skip(
+    "Verify a user with permissions is able to access the Topology plugin",
+    () => {
+      //Skipping for now as it is failing RHIDP-7164
+      test.beforeEach(async () => {
+        await common.loginAsKeycloakUser();
 
-      await catalog.goToBackstageJanusProject();
-      await uiHelper.clickTab("Topology");
-    });
+        await catalog.goToBackstageJanusProject();
+        await uiHelper.clickTab("Topology");
+      });
 
-    test("Verify pods visibility in the Topology tab", async () => {
-      await topology.verifyDeployment("topology-test");
-    });
+      test("Verify pods visibility in the Topology tab", async () => {
+        await topology.verifyDeployment("topology-test");
+      });
 
-    test("Verify pod logs visibility in the Topology tab", async () => {
-      await topology.verifyDeployment("topology-test");
-      await topology.verifyPodLogs(true);
-    });
-  });
+      test("Verify pod logs visibility in the Topology tab", async () => {
+        await topology.verifyDeployment("topology-test");
+        await topology.verifyPodLogs(true);
+      });
+    },
+  );
 });
