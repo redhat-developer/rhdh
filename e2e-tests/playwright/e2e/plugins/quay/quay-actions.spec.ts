@@ -18,14 +18,14 @@ test.describe("Test Quay Actions plugin", () => {
     quayClient = new QuayClient();
 
     await common.loginAsGuest();
-    await uiHelper.openSidebar("Create...");
+    await uiHelper.clickLink({ ariaLabel: "Self-service" });
   });
 
   test("Creates Quay repository", async () => {
     repository = `quay-actions-create-${Date.now()}`;
     const description =
       "This is just a test repository to test the 'quay:create-repository' template action";
-    await uiHelper.verifyHeading("Software Templates");
+    await uiHelper.verifyHeading("Self-service");
     await uiHelper.clickBtnInCard("Create a Quay repository", "Choose");
     await uiHelper.waitForTitle("Create a Quay repository", 2);
 
