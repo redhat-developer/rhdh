@@ -36,7 +36,7 @@ test.describe("Test Quay Actions plugin", () => {
       process.env.QUAY_NAMESPACE,
     );
     await page.getByRole("button", { name: "Visibility​" }).click();
-    await page.click('li[data-value="0"]');
+    await page.click('li:has-text("public")');
     await uiHelper.fillTextInputByLabel("Description", description);
     await uiHelper.clickButton("Review");
     await uiHelper.clickButton("Create");
