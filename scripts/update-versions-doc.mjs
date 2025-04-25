@@ -182,7 +182,8 @@ async function main() {
     const backstageVersion = JSON.parse(backstageJson).version
 
     if (!backstageVersion) {
-      console.fail(`Unable to find backstage version in ${backstageJson}`)
+      console.error(`Unable to find backstage version in ${backstageJson}`);
+      process.exit(1);
     }
 
     const minorBackstageVersion = backstageVersion.split('.').slice(0, 2).join('.')
