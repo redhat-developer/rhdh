@@ -1,6 +1,12 @@
 import { expect } from "@playwright/test";
 import { execFile } from "child_process";
-import { Log } from "./logs";
+import { type JsonObject } from "@backstage/types";
+import {
+  Log,
+  type LogRequest,
+  type EventStatus,
+  type EventSeverityLevel,
+} from "./logs";
 
 export class LogUtils {
   /**
@@ -106,19 +112,21 @@ export class LogUtils {
   /**
    * Fetches logs with retry logic in case the log is not immediately available.
    *
+   * @param eventId The event to filter the logs
    * @param filter The string to filter the logs
    * @param maxRetries Maximum number of retry attempts
    * @param retryDelay Delay (in milliseconds) between retries
    * @returns The log line matching the filter, or throws an error if not found
    */
   static async getPodLogsWithRetry(
-    filter: string,
+    eventId?: string,
+    filter?: string,
     maxRetries: number = 3,
     retryDelay: number = 5000,
   ): Promise<string> {
     const podSelector =
       "app.kubernetes.io/component=backstage,app.kubernetes.io/instance=rhdh,app.kubernetes.io/name=backstage";
-    const tailNumber = 30;
+    const tailNumber = 50;
     const namespace = process.env.NAME_SPACE || "showcase-ci-nightly";
 
     let attempt = 0;
@@ -144,7 +152,11 @@ export class LogUtils {
         console.log("Raw log output:", output);
 
         const logLines = output.split("\n");
-        const filteredLines = logLines.filter((line) => line.includes(filter));
+        const filteredLines = logLines.filter((line) => {
+          const matchEvent = !eventId || line.includes(eventId);
+          const matchFilter = !filter || line.includes(filter);
+          return matchEvent && matchFilter;
+        });
 
         if (filteredLines.length > 0) {
           console.log("Matching log line found:", filteredLines[0]);
@@ -152,7 +164,7 @@ export class LogUtils {
         }
 
         console.warn(
-          `No matching logs found for filter "${filter}" on attempt ${
+          `No matching logs found for filter "${eventId} ${filter}" on attempt ${
             attempt + 1
           }. Retrying...`,
         );
@@ -171,7 +183,7 @@ export class LogUtils {
     }
 
     throw new Error(
-      `Failed to fetch logs for filter "${filter}" after ${maxRetries + 1} attempts.`,
+      `Failed to fetch logs for filter "${eventId} ${filter}" after ${maxRetries + 1} attempts.`,
     );
   }
 
@@ -211,23 +223,29 @@ export class LogUtils {
    * Validates if the actual log matches the expected log values for a specific event.
    * This is a reusable method for different log validations across various tests.
    *
-   * @param eventName The name of the event to filter in the logs
-   * @param message The expected log message
-   * @param method The HTTP method used in the log (GET, POST, etc.)
-   * @param url The URL endpoint that was hit in the log
-   * @param baseURL The base URL of the application, used to get the hostname
+   * @param eventId The id of the event to filter in the logs
+   * @param actorId The id of actor initiating the request
+   * @param request The url endpoint and HTTP method (GET, POST, etc.) hit
+   * @param meta The metadata about the event
+   * @param error The error that occurred
+   * @param status The status of event
    * @param plugin The plugin name that triggered the log event
+   * @param severityLevel The level of severity of the event
+   * @param baseURL The base URL of the application, used to get the hostname
    */
   public static async validateLogEvent(
-    eventName: string,
-    message: string,
-    method: string,
-    url: string,
-    baseURL: string,
-    plugin: string,
+    eventId: string,
+    actorId: string,
+    request?: LogRequest,
+    meta?: JsonObject,
+    error?: string,
+    status: EventStatus = "succeeded",
+    plugin: string = "catalog",
+    severityLevel: EventSeverityLevel = "medium",
+    baseURL: string = process.env.BASE_URL,
   ) {
     try {
-      const actualLog = await LogUtils.getPodLogsWithRetry(eventName);
+      const actualLog = await LogUtils.getPodLogsWithRetry(eventId, status);
       console.log("Raw log output before filtering:", actualLog);
 
       let parsedLog: Log;
@@ -240,24 +258,26 @@ export class LogUtils {
 
       const expectedLog: Partial<Log> = {
         actor: {
-          hostname: new URL(baseURL).hostname,
+          actorId,
+          ...(request && { hostname: new URL(baseURL).hostname }),
         },
-        message,
         plugin,
-        request: {
-          method,
-          url,
-        },
+        ...(request && { request }),
+        ...(meta && { meta }),
+        ...(error && { error }),
+        status,
+        severityLevel,
       };
 
       console.log("Validating log with expected values:", expectedLog);
       LogUtils.validateLog(parsedLog, expectedLog);
     } catch (error) {
       console.error("Error validating log event:", error);
-      console.error("Event name:", eventName);
-      console.error("Expected message:", message);
-      console.error("Expected method:", method);
-      console.error("Expected URL:", url);
+      console.error("Event id:", eventId);
+      console.error("Actor id:", actorId);
+      console.error("Meta:", meta);
+      console.error("Expected method:", request?.method);
+      console.error("Expected URL:", request?.url);
       console.error("Base URL:", baseURL);
       console.error("Plugin:", plugin);
       throw error;
