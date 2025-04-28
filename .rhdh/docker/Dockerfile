@@ -218,7 +218,7 @@ RUN \
 RUN echo "=== YARN BUILD (including dynamic plugins) ==="; FAILED=0; \
   git config --global --add safe.directory /opt/app-root/src; \
   "$YARN" build || true; \
-  for d in $(find yarn-install.log); do \
+  for d in $(find . -name yarn-install.log); do \
     (( FAILED = FAILED + 1 )); echo; echo $d; echo "======"; cat ${d}; \
   done; \
   if [[ $FAILED -gt 0 ]]; then exit $FAILED; fi
