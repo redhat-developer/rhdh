@@ -19,10 +19,14 @@ Usage:
   $0 [OPTIONS]
 
 OPTIONS:
-  -gc,  --generate-certificates <hostname> : Generates an SSL certificate for the specified hostname. Returns a key.pem and a certificate.pem file in the ${PWD}/tls directory
+  -gc,  --generate-certs <hostname> : Generates an SSL certificate for the specified hostname. Returns a key.pem and a certificate.pem file in the ${PWD}/tls directory
   -n,   --namespace <namespace>            : The namespace the keycloak resources are installed onto. Default: keycloak
         --uninstall <options>              : Uninstall specified keycloak resources. Options:  database, keycloak, secrets, all
   -h,   --help                             : Prints this help message and exits
+
+Examples:
+$ ./deploy-keycloak.sh --generate-certs keycloak.apps.crc.test
+$ ./deploy-keycloak.sh --uninstall all 
 
 "
 }
@@ -34,10 +38,13 @@ deployDB(){
 }
 
 generateSSLCerts(){
-  openssl req -subj "/CN=${CERT_HOSTNAME}/O=RHDH/C=CA" -newkey rsa:2048 -nodes -keyout "${PWD}/tls/key.pem" -x509 -days 365 -out "${PWD}/tls/" certificate.pem -addext "subjectAltName = DNS:${CERT_HOSTNAME}"
+  rm -rf  "${PWD}/tls"
+  mkdir -p "${PWD}/tls"
+  openssl req -subj "/CN=${CERT_HOSTNAME}/O=RHDH/C=CA" -newkey rsa:2048 -nodes -keyout "${PWD}/tls/key.pem" -x509 -days 365 -out "${PWD}/tls/certificate.pem" -addext "subjectAltName = DNS:${CERT_HOSTNAME}"
 }
+
 deployTLSKeys(){
-  oc create secret tls example-tls-secret --cert ${PWD}/tls/certificate.pem --key ${PWD}/tls/key.pem -n ${KEYCLOAK_NAMESPACE}
+  oc create secret tls example-tls-secret --cert ${PWD}/tls/certificate.pem --key ${PWD}/tls/key.pem -n ${KEYCLOAK_NAMESPACE} || true
 }
 
 deploySecrets(){
@@ -46,6 +53,7 @@ deploySecrets(){
 
 deployKeyCloak(){
   oc apply -f ${PWD}/keycloak.yaml -n ${KEYCLOAK_NAMESPACE}
+  oc patch keycloak development-keycloak --type=merge -p "{\"spec\":{\"hostname\":{\"hostname\": \"${CERT_HOSTNAME}\"}}}" -n ${KEYCLOAK_NAMESPACE}
 }
 
 deleteKeyCloak(){
@@ -75,6 +83,7 @@ deployAll(){
   deployKeyCloak
 }
 
+DELETE=""
 while [[ "$#" -gt 0 ]]; do
     case $1 in
         --generate-certs | -gc)
@@ -98,9 +107,9 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 # Create Namespace and switch to it
-oc new-project ${KEYCLOAK_NAMESPACE}
-if [ $? -ne 0 ]; then
-  # Switch to it if it already exists
+if ! oc get project -n ${KEYCLOAK_NAMESPACE} >/dev/null 2>&1; then
+  oc new-project ${KEYCLOAK_NAMESPACE}
+else
   oc project ${KEYCLOAK_NAMESPACE}
 fi
 
