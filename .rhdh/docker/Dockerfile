@@ -195,7 +195,7 @@ COPY $EXTERNAL_SOURCE_NESTED ./
 
 # Explicitly disable networking + use local cache:
 RUN echo "=== TWEAK .yarnrc.yml ==="; \
-echo "enableNetwork: false" >> .yarnrc.yml && \
+  echo "enableNetwork: false" >> .yarnrc.yml && \
 echo "cacheFolder: $YARN_GLOBAL_FOLDER" >> .yarnrc.yml && \
   echo "Current .yarnrc.yml" && \
   cat .yarnrc.yml
