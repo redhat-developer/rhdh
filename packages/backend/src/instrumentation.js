@@ -1,27 +1,32 @@
-const { NodeSDK } = require('@opentelemetry/sdk-node');
-const {
-  getNodeAutoInstrumentations,
-} = require('@opentelemetry/auto-instrumentations-node');
-const {
-  RuntimeNodeInstrumentation,
-} = require('@opentelemetry/instrumentation-runtime-node');
-const { PrometheusExporter } = require('@opentelemetry/exporter-prometheus');
-const { HostMetrics } = require('@opentelemetry/host-metrics');
-const { metrics } = require('@opentelemetry/api');
+// Prevent from running more than once (due to worker threads)
+const { isMainThread } = require('node:worker_threads');
 
-// Metrics will be exported to localhost:9464/metrics
-const prometheus = new PrometheusExporter();
-const sdk = new NodeSDK({
-  metricReader: prometheus,
-  instrumentations: [
-    getNodeAutoInstrumentations(),
-    new RuntimeNodeInstrumentation(),
-  ],
-});
+if (isMainThread) {
+  const { NodeSDK } = require('@opentelemetry/sdk-node');
+  const {
+    getNodeAutoInstrumentations,
+  } = require('@opentelemetry/auto-instrumentations-node');
+  const {
+    RuntimeNodeInstrumentation,
+  } = require('@opentelemetry/instrumentation-runtime-node');
+  const { PrometheusExporter } = require('@opentelemetry/exporter-prometheus');
+  const { HostMetrics } = require('@opentelemetry/host-metrics');
+  const { metrics } = require('@opentelemetry/api');
 
-sdk.start();
+  // Metrics will be exported to localhost:9464/metrics
+  const prometheus = new PrometheusExporter();
+  const sdk = new NodeSDK({
+    metricReader: prometheus,
+    instrumentations: [
+      getNodeAutoInstrumentations(),
+      new RuntimeNodeInstrumentation(),
+    ],
+  });
 
-const hostMetrics = new HostMetrics({
-  meterProvider: metrics.getMeterProvider(),
-});
-hostMetrics.start();
+  sdk.start();
+
+  const hostMetrics = new HostMetrics({
+    meterProvider: metrics.getMeterProvider(),
+  });
+  hostMetrics.start();
+}
