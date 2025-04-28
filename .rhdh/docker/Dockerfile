@@ -194,10 +194,10 @@ FROM deps AS build
 
 COPY $EXTERNAL_SOURCE_NESTED ./
 
-# debug: to explicitly disable networking + use local cache:
-# echo "enableNetwork: false" >> .yarnrc.yml && \
+# Explicitly disable networking + use local cache:
 RUN echo "=== TWEAK .yarnrc.yml ==="; \
-  echo "cacheFolder: $YARN_GLOBAL_FOLDER" >> .yarnrc.yml && \
+echo "enableNetwork: false" >> .yarnrc.yml && \
+echo "cacheFolder: $YARN_GLOBAL_FOLDER" >> .yarnrc.yml && \
   echo "Current .yarnrc.yml" && \
   cat .yarnrc.yml
 
