@@ -336,10 +336,8 @@ test.describe("Auditor check for RBAC Plugin", () => {
     });
   });
 
-  test("Logs should have correct structure for 'permission-evaluation' event", async ({
-    page,
-  }) => {
-    await page.goto("/rbac");
+  test("Logs should have correct structure for 'permission-evaluation' event", async () => {
+    await rbacApi.getRoles();
     await validateRbacLogEvent(
       "permission-evaluation",
       pluginActorId,
