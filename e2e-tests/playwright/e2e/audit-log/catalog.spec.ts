@@ -10,12 +10,10 @@ test.describe.skip("Audit Log check for Catalog Plugin", () => {
   let uiHelper: UIhelper;
   let common: Common;
   let catalogImport: CatalogImport;
-  let baseApiUrl: string;
   const actorId = "user:development/guest";
 
-  test.beforeAll(async ({ baseURL }) => {
+  test.beforeAll(async () => {
     await LogUtils.loginToOpenShift();
-    baseApiUrl = baseURL!;
   });
 
   test.beforeEach(async ({ page }) => {
@@ -33,7 +31,6 @@ test.describe.skip("Audit Log check for Catalog Plugin", () => {
     eventName: string,
     actorId: string,
     request?: LogRequest,
-    plugin: string = "catalog",
   ) {
     await LogUtils.validateLogEvent(
       eventName,
@@ -42,9 +39,7 @@ test.describe.skip("Audit Log check for Catalog Plugin", () => {
       undefined,
       undefined,
       "succeeded",
-      plugin,
-      undefined,
-      baseApiUrl,
+      "catalog",
     );
   }
 
