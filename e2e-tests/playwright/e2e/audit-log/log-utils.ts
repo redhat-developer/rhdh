@@ -227,6 +227,7 @@ export class LogUtils {
    * @param status The status of event
    * @param plugin The plugin name that triggered the log event
    * @param severityLevel The level of severity of the event
+   * @param filterWords The required words the logs must contain to filter the logs besides eventId and request url if specified
    * @param namespace The namespace to use to retrieve logs from pod
    * @param baseURL The base URL of the application, used to get the hostname
    */
@@ -239,18 +240,18 @@ export class LogUtils {
     status: EventStatus = "succeeded",
     plugin: string = "catalog",
     severityLevel: EventSeverityLevel = "medium",
+    filterWords: string[] = [],
     namespace: string = process.env.NAME_SPACE || "showcase-ci-nightly",
     baseURL: string = process.env.BASE_URL,
   ) {
-    const filterWords = [eventId, status];
-    if (request?.method) filterWords.push(request.method);
-    if (request?.url) filterWords.push(request.url);
+    const filterWordsAll = [eventId, status, ...filterWords];
+    if (request?.method) filterWordsAll.push(request.method);
+    if (request?.url) filterWordsAll.push(request.url);
     try {
       const actualLog = await LogUtils.getPodLogsWithRetry(
-        filterWords,
+        filterWordsAll,
         namespace,
       );
-      console.log("Raw log output before filtering:", actualLog);
 
       let parsedLog: Log;
       try {

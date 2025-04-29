@@ -33,6 +33,7 @@ test.describe("Auditor check for RBAC Plugin", () => {
     meta?: JsonObject,
     error?: string,
     status: EventStatus = "succeeded",
+    filterWords: string[] = [],
   ) {
     await LogUtils.validateLogEvent(
       eventId,
@@ -43,6 +44,7 @@ test.describe("Auditor check for RBAC Plugin", () => {
       status,
       "permission",
       "medium",
+      filterWords,
       process.env.NAME_SPACE_RBAC,
     );
   }
@@ -349,6 +351,9 @@ test.describe("Auditor check for RBAC Plugin", () => {
         result: "ALLOW",
         userEntityRef,
       },
+      undefined,
+      "succeeded",
+      ["policy.entity.read", userEntityRef],
     );
   });
 });
