@@ -195,6 +195,8 @@ upstream:
         value: 'true'
       - name: NODE_TLS_REJECT_UNAUTHORIZED
         value: '0'
+      - name: NODE_ENV
+        value: 'production'
     extraVolumeMounts:
       # The initContainer below will install dynamic plugins in this volume mount.
       - name: dynamic-plugins-root
