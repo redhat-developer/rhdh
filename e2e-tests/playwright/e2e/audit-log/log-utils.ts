@@ -125,7 +125,7 @@ export class LogUtils {
   ): Promise<string> {
     const podSelector =
       "app.kubernetes.io/component=backstage,app.kubernetes.io/name=backstage";
-    const tailNumber = 50;
+    const tailNumber = 100;
 
     let attempt = 0;
     while (attempt <= maxRetries) {
