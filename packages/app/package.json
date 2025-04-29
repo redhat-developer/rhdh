@@ -65,7 +65,7 @@
     "@testing-library/react": "14.3.1",
     "@testing-library/react-hooks": "8.0.1",
     "@testing-library/user-event": "14.6.1",
-    "@types/node": "22.15.2",
+    "@types/node": "22.15.3",
     "@types/react": "18.3.20",
     "@types/react-dom": "18.3.6",
     "prettier": "3.5.3",
