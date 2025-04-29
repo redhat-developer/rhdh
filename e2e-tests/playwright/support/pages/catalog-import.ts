@@ -62,7 +62,8 @@ export class CatalogImport {
     clickViewComponent: boolean = true,
   ) {
     await this.analyzeAndWait(url);
-    const isComponentAlreadyRegistered = await this.isComponentAlreadyRegistered();
+    const isComponentAlreadyRegistered =
+      await this.isComponentAlreadyRegistered();
     if (isComponentAlreadyRegistered) {
       await this.uiHelper.clickButton("Refresh");
       expect(await this.uiHelper.isBtnVisible("Register another")).toBeTruthy();

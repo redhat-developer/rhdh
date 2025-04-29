@@ -39,7 +39,7 @@ export class LogUtils {
           // If the command failed but it's just because grep didn't find anything,
           // we should return an empty string rather than rejecting
           if (error.code === 1 && !stderr) {
-            resolve('');
+            resolve("");
             return;
           }
           reject(`Error: ${error.message}`);
@@ -78,7 +78,9 @@ export class LogUtils {
    */
   private static compareValues(actual: unknown, expected: unknown) {
     if (actual === undefined) {
-      throw new Error(`Expected value exists but actual value is undefined. Expected: ${JSON.stringify(expected)}`);
+      throw new Error(
+        `Expected value exists but actual value is undefined. Expected: ${JSON.stringify(expected)}`,
+      );
     }
 
     if (typeof expected === "object" && expected !== null) {
@@ -87,7 +89,9 @@ export class LogUtils {
         const actualSubValue = actual?.[subKey];
 
         if (actualSubValue === undefined) {
-          throw new Error(`Expected sub-value exists for key '${subKey}' but actual value is undefined. Expected: ${JSON.stringify(expectedSubValue)}`);
+          throw new Error(
+            `Expected sub-value exists for key '${subKey}' but actual value is undefined. Expected: ${JSON.stringify(expectedSubValue)}`,
+          );
         }
 
         LogUtils.compareValues(actualSubValue, expectedSubValue);
@@ -173,8 +177,10 @@ export class LogUtils {
         const output = await this.executeShellCommand(command);
 
         // Further filter by the specific filter provided (e.g., eventId)
-        const logLines = output.split("\n").filter(line => line.trim() !== '');
-        const filteredLines = logLines.filter(line => line.includes(filter));
+        const logLines = output
+          .split("\n")
+          .filter((line) => line.trim() !== "");
+        const filteredLines = logLines.filter((line) => line.includes(filter));
 
         if (filteredLines.length > 0) {
           console.log("Matching log line found:", filteredLines[0]);
@@ -246,20 +252,22 @@ export class LogUtils {
    */
   private static parseBackstageLog(logText: string): Log {
     // Remove ANSI color codes from the log text
-    const cleanedLog = logText.replace(/\x1B\[\d+m/g, '');
+    const cleanedLog = logText.replace(/\x1B\[\d+m/g, "");
 
     const log: Log = {
-      isAuditEvent: true // Since we're filtering by isAuditEvent=true
+      isAuditEvent: true, // Since we're filtering by isAuditEvent=true
     };
 
     // Extract timestamp
-    const timestampMatch = cleanedLog.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z)/);
+    const timestampMatch = cleanedLog.match(
+      /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z)/,
+    );
     if (timestampMatch) {
       log.timestamp = timestampMatch[1];
     }
 
     // Extract plugin and message details
-    const parts = cleanedLog.split(' ');
+    const parts = cleanedLog.split(" ");
     if (parts.length > 1) {
       log.plugin = parts[1]; // 'catalog'
     }
@@ -294,7 +302,7 @@ export class LogUtils {
         const char = cleanedLog[i];
 
         if (!started) {
-          if (char === '{') {
+          if (char === "{") {
             started = true;
             depth = 1;
             jsonStr += char;
@@ -308,7 +316,7 @@ export class LogUtils {
           continue;
         }
 
-        if (char === '\\') {
+        if (char === "\\") {
           jsonStr += char;
           escaping = true;
           continue;
@@ -319,8 +327,8 @@ export class LogUtils {
         }
 
         if (!inQuote) {
-          if (char === '{') depth++;
-          if (char === '}') depth--;
+          if (char === "{") depth++;
+          if (char === "}") depth--;
         }
 
         jsonStr += char;
@@ -337,9 +345,9 @@ export class LogUtils {
     };
 
     // Extract JSON objects
-    log.actor = extractJson('actor');
-    log.request = extractJson('request');
-    log.meta = extractJson('meta');
+    log.actor = extractJson("actor");
+    log.request = extractJson("request");
+    log.meta = extractJson("meta");
 
     // Extract status
     const statusMatch = cleanedLog.match(/status="([^"]+)"/);
@@ -419,7 +427,10 @@ export class LogUtils {
         eventId,
       };
 
-      console.log("Validating log with expected values:", JSON.stringify(expectedLog, null, 2));
+      console.log(
+        "Validating log with expected values:",
+        JSON.stringify(expectedLog, null, 2),
+      );
       LogUtils.validateLog(parsedLog, expectedLog);
       console.log("Log validation successful!");
     } catch (error) {

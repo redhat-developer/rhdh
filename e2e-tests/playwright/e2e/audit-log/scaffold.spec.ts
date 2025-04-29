@@ -22,7 +22,7 @@ test.describe("Audit Log check for Catalog Plugin", () => {
     common = new Common(page);
     catalogImport = new CatalogImport(page);
     await common.loginAsGuest();
-    await page.goto('/create')
+    await page.goto("/create");
   });
 
   test("Should fetch logs for ScaffolderParameterSchemaFetch event and validate log structure and values", async ({
@@ -30,19 +30,19 @@ test.describe("Audit Log check for Catalog Plugin", () => {
     page,
   }) => {
     await uiHelper.clickButton("Register Existing Component");
-    const isComponentIsAlreadyRegistered = await catalogImport.registerExistingComponent(template, false);
+    const isComponentIsAlreadyRegistered =
+      await catalogImport.registerExistingComponent(template, false);
     await page.waitForTimeout(1000);
 
-    if(isComponentIsAlreadyRegistered) {
-
+    if (isComponentIsAlreadyRegistered) {
       // Then validate the log event
       await LogUtils.validateLogEvent(
-        "entity-mutate",          // eventId to search for in logs
-        "catalog.entity-mutate",  // expected message
-        "POST",                   // expected HTTP method
-        "/api/catalog/refresh",   // expected URL
-        baseURL!,                // base URL of the application
-        "catalog",               // expected plugin name
+        "entity-mutate", // eventId to search for in logs
+        "catalog.entity-mutate", // expected message
+        "POST", // expected HTTP method
+        "/api/catalog/refresh", // expected URL
+        baseURL!, // base URL of the application
+        "catalog", // expected plugin name
       );
     } else {
       await LogUtils.validateLogEvent(
@@ -54,7 +54,5 @@ test.describe("Audit Log check for Catalog Plugin", () => {
         "catalog",
       );
     }
-
   });
-
 });
