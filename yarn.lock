@@ -11675,7 +11675,7 @@ __metadata:
     "@testing-library/jest-dom": 6.6.3
     "@testing-library/react": 14.3.1
     "@testing-library/user-event": 14.6.1
-    glob: 11.0.1
+    glob: 11.0.2
     msw: 1.3.5
     prettier: 3.5.3
     react: 18.3.1
@@ -28409,7 +28409,7 @@ __metadata:
   resolution: "dynamic-plugins-utils@workspace:dynamic-plugins/_utils"
   dependencies:
     "@backstage/cli": 0.30.0
-    glob: 11.0.1
+    glob: 11.0.2
     yaml: 2.7.1
   languageName: unknown
   linkType: soft
@@ -31301,9 +31301,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"glob@npm:11.0.1":
-  version: 11.0.1
-  resolution: "glob@npm:11.0.1"
+"glob@npm:11.0.2":
+  version: 11.0.2
+  resolution: "glob@npm:11.0.2"
   dependencies:
     foreground-child: ^3.1.0
     jackspeak: ^4.0.1
@@ -31313,7 +31313,7 @@ __metadata:
     path-scurry: ^2.0.0
   bin:
     glob: dist/esm/bin.mjs
-  checksum: ffbbafe1d2dae2fa68f190ac76df7254e840b27f59df34129fd658bd9da0c50b538d144eb0962dc7fa71cdaccf3fe108f045d4a15b3f5815e465749a6bf00965
+  checksum: e936aa9b26d5c9687ec1cad53ead521122a7297528856f0c909bfff5a5af16be791d7da8289ab0cfe583470328287adff8f455c1fbf4fa2d8a040a55f9c8c50a
   languageName: node
   linkType: hard
 
@@ -42919,12 +42919,12 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@ianvs/prettier-plugin-sort-imports": 4.4.1
     "@manypkg/cli": 0.23.0
-    glob: 11.0.1
+    glob: 11.0.2
     husky: 8.0.3
     lint-staged: 15.5.1
     node-gyp: 10.3.1
     sherif: 1.5.0
-    turbo: 2.5.0
+    turbo: 2.5.2
   languageName: unknown
   linkType: soft
 
@@ -45706,58 +45706,58 @@ __metadata:
   languageName: node
   linkType: hard
 
-"turbo-darwin-64@npm:2.5.0":
-  version: 2.5.0
-  resolution: "turbo-darwin-64@npm:2.5.0"
+"turbo-darwin-64@npm:2.5.2":
+  version: 2.5.2
+  resolution: "turbo-darwin-64@npm:2.5.2"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"turbo-darwin-arm64@npm:2.5.0":
-  version: 2.5.0
-  resolution: "turbo-darwin-arm64@npm:2.5.0"
+"turbo-darwin-arm64@npm:2.5.2":
+  version: 2.5.2
+  resolution: "turbo-darwin-arm64@npm:2.5.2"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"turbo-linux-64@npm:2.5.0":
-  version: 2.5.0
-  resolution: "turbo-linux-64@npm:2.5.0"
+"turbo-linux-64@npm:2.5.2":
+  version: 2.5.2
+  resolution: "turbo-linux-64@npm:2.5.2"
   conditions: os=linux & cpu=x64
   languageName: node
   linkType: hard
 
-"turbo-linux-arm64@npm:2.5.0":
-  version: 2.5.0
-  resolution: "turbo-linux-arm64@npm:2.5.0"
+"turbo-linux-arm64@npm:2.5.2":
+  version: 2.5.2
+  resolution: "turbo-linux-arm64@npm:2.5.2"
   conditions: os=linux & cpu=arm64
   languageName: node
   linkType: hard
 
-"turbo-windows-64@npm:2.5.0":
-  version: 2.5.0
-  resolution: "turbo-windows-64@npm:2.5.0"
+"turbo-windows-64@npm:2.5.2":
+  version: 2.5.2
+  resolution: "turbo-windows-64@npm:2.5.2"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"turbo-windows-arm64@npm:2.5.0":
-  version: 2.5.0
-  resolution: "turbo-windows-arm64@npm:2.5.0"
+"turbo-windows-arm64@npm:2.5.2":
+  version: 2.5.2
+  resolution: "turbo-windows-arm64@npm:2.5.2"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
 
-"turbo@npm:2.5.0":
-  version: 2.5.0
-  resolution: "turbo@npm:2.5.0"
+"turbo@npm:2.5.2":
+  version: 2.5.2
+  resolution: "turbo@npm:2.5.2"
   dependencies:
-    turbo-darwin-64: 2.5.0
-    turbo-darwin-arm64: 2.5.0
-    turbo-linux-64: 2.5.0
-    turbo-linux-arm64: 2.5.0
-    turbo-windows-64: 2.5.0
-    turbo-windows-arm64: 2.5.0
+    turbo-darwin-64: 2.5.2
+    turbo-darwin-arm64: 2.5.2
+    turbo-linux-64: 2.5.2
+    turbo-linux-arm64: 2.5.2
+    turbo-windows-64: 2.5.2
+    turbo-windows-arm64: 2.5.2
   dependenciesMeta:
     turbo-darwin-64:
       optional: true
@@ -45773,7 +45773,7 @@ __metadata:
       optional: true
   bin:
     turbo: bin/turbo
-  checksum: 27ecd83501a2b8127d149b983848557db346a09a4e6674f048daa7598b9ffeebd0a42dea08c9478254e7be174177e9011d51937316bdad0d936eab5b99d65c01
+  checksum: 1b45e4d93f19acc8dd2f7d2cc8794c9741d89ffa297be70bbb1b68ed6c79912f2b9142695840f3539d342ff386aaa2ba7fc37baba7887d315037e52a166fdc77
   languageName: node
   linkType: hard
 
