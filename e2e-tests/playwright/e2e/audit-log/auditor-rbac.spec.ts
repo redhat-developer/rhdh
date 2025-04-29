@@ -175,17 +175,12 @@ test.describe("Auditor check for RBAC Plugin", () => {
     });
 
     test("Validate 'policy-read' queryType 'by-query'", async () => {
-      console.log(
-        "Validate 'policy-read' queryType 'by-query",
-        new Date().toISOString(),
-      );
-      const resp = await rbacApi.getPoliciesByQuery({
+      await rbacApi.getPoliciesByQuery({
         entityRef: userEntityRef,
         permission: "policy-entity",
         policy: "read",
         effect: "allow",
       });
-      console.log(new Date().toISOString(), await resp.text());
 
       await validateRbacLogEvent(
         "policy-read",
@@ -196,7 +191,7 @@ test.describe("Auditor check for RBAC Plugin", () => {
         },
         {
           query: {
-            effect: "ALLOW",
+            effect: "allow",
             entityRef: userEntityRef,
             permission: "policy-entity",
             policy: "read",
