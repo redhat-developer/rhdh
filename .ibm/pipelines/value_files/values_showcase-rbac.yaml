@@ -41,6 +41,8 @@ global:
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-keycloak-dynamic
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-tekton
+        disabled: true
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-tekton:pr_977__3.21.1!backstage-community-plugin-tekton
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-kubernetes
         disabled: false
