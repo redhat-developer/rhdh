@@ -44,24 +44,23 @@ test.describe("Audit Log check for Catalog Plugin", () => {
   //   );
   // }
 
-  test("Should fetch logs for 'template-parameter-schema' event and validate log structure and values", async ()=> {
+  test("Should fetch logs for 'template-parameter-schema' event and validate log structure and values", async () => {
     await uiHelper.clickButton("Register Existing Component");
     const isComponentIsAlreadyRegistered =
-    await catalogImport.registerExistingComponent(template, false);
+      await catalogImport.registerExistingComponent(template, false);
     if (isComponentIsAlreadyRegistered) {
       // Then validate the log event
       await LogUtils.validateLogEvent(
         "entity-mutate",
         "user:development/guest",
-        { method: 'GET', url:  "/api/catalog/refresh"},
+        { method: "GET", url: "/api/catalog/refresh" },
       );
     } else {
       await LogUtils.validateLogEvent(
         "location-mutate",
         "user:development/guest",
-        { method: 'POST', url:  "/api/catalog/locations"}
+        { method: "POST", url: "/api/catalog/locations" },
       );
     }
   });
-
 });
