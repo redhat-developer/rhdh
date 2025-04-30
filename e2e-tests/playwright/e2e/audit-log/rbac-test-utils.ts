@@ -2,38 +2,41 @@
  * Shared utilities and constants for RBAC audit-log Playwright tests
  * --------------------------------------------------------------------------*/
 
-import { type JsonObject } from '@backstage/types';
-import { Page } from '@playwright/test';
-import RhdhRbacApi from '../../support/api/rbac-api';
-import { LogUtils } from './log-utils';
-import { EventStatus, LogRequest } from './logs';
+import { type JsonObject } from "@backstage/types";
+import { Page } from "@playwright/test";
+import RhdhRbacApi from "../../support/api/rbac-api";
+import { LogUtils } from "./log-utils";
+import { EventStatus, LogRequest } from "./logs";
 
 /* ───────────────────────────────── CONSTANTS ───────────────────────────── */
-export const USER_ENTITY_REF = 'user:default/rhdh-qe';
-export const PLUGIN_ACTOR_ID = 'plugin:permission';
-export const ROLE_NAME       = 'default/rbac_admin';
+export const USER_ENTITY_REF = "user:default/rhdh-qe";
+export const PLUGIN_ACTOR_ID = "plugin:permission";
+export const ROLE_NAME = "default/rbac_admin";
 
 export const API = {
   role: {
-    collection: '/api/permission/roles',
+    collection: "/api/permission/roles",
     item: (name: string) => `/api/permission/roles/role/${name}`,
   },
   policy: {
-    collection: '/api/permission/policies',
+    collection: "/api/permission/policies",
     item: (name: string) => `/api/permission/policies/role/${name}`,
   },
   condition: {
-    collection: '/api/permission/roles/conditions',
+    collection: "/api/permission/roles/conditions",
     item: (id: number | string) => `/api/permission/roles/conditions/${id}`,
   },
 };
 
 /* ───────────────────────────── ERROR-MESSAGE HELPER ────────────────────── */
 // Backend verbs differ from our logical action names:
-export const BACKEND_VERB: Record<'create' | 'update' | 'delete', 'add' | 'edit' | 'delete'> = {
-  create: 'add',
-  update: 'edit',
-  delete: 'delete',
+export const BACKEND_VERB: Record<
+  "create" | "update" | "delete",
+  "add" | "edit" | "delete"
+> = {
+  create: "add",
+  update: "edit",
+  delete: "delete",
 };
 
 /**
@@ -41,9 +44,13 @@ export const BACKEND_VERB: Record<'create' | 'update' | 'delete', 'add' | 'edit'
  * For role operations the backend omits the entityRef after "role:".
  * For policy operations ele inclui "policy role:<entityRef>".
  */
-export function buildNotAllowedError(action: 'create' | 'update' | 'delete', entityType: 'role' | 'policy', entityRef?: string): string {
+export function buildNotAllowedError(
+  action: "create" | "update" | "delete",
+  entityType: "role" | "policy",
+  entityRef?: string,
+): string {
   const verb = BACKEND_VERB[action];
-  if (entityType === 'role') {
+  if (entityType === "role") {
     return `NotAllowedError: Unable to ${verb} role: source does not match originating role role:${ROLE_NAME}, consider making changes to the 'CONFIGURATION'`;
   }
   // policy
@@ -57,9 +64,9 @@ export const ROLE_PAYLOAD = {
 };
 
 export const POLICY_DATA = {
-  permission: 'policy-entity',
-  policy: 'read',
-  effect: 'allow',
+  permission: "policy-entity",
+  policy: "read",
+  effect: "allow",
 };
 
 export const POLICY_PAYLOAD = {
@@ -68,16 +75,18 @@ export const POLICY_PAYLOAD = {
 };
 
 /* ──────────────────────────── HTTP-METHOD HELPER ───────────────────────── */
-export function httpMethod(action: 'create' | 'update' | 'delete' | 'read'): 'GET' | 'POST' | 'PUT' | 'DELETE' {
+export function httpMethod(
+  action: "create" | "update" | "delete" | "read",
+): "GET" | "POST" | "PUT" | "DELETE" {
   switch (action) {
-    case 'create':
-      return 'POST';
-    case 'update':
-      return 'PUT';
-    case 'delete':
-      return 'DELETE';
+    case "create":
+      return "POST";
+    case "update":
+      return "PUT";
+    case "delete":
+      return "DELETE";
     default:
-      return 'GET';
+      return "GET";
   }
 }
 
@@ -88,7 +97,7 @@ export async function validateRbacLogEvent(
   request?: LogRequest,
   meta?: JsonObject,
   error?: string,
-  status: EventStatus = 'succeeded',
+  status: EventStatus = "succeeded",
   filterWords: string[] = [],
 ) {
   await LogUtils.validateLogEvent(
@@ -98,8 +107,8 @@ export async function validateRbacLogEvent(
     meta,
     error,
     status,
-    'permission', // plugin name (RBAC)
-    'medium',     // expected severity
+    "permission", // plugin name (RBAC)
+    "medium", // expected severity
     filterWords,
     process.env.NAME_SPACE_RBAC,
   );
@@ -107,6 +116,8 @@ export async function validateRbacLogEvent(
 
 /* ───────────────────────── BUILD RBAC REST API HELPER ──────────────────── */
 export async function buildRbacApi(page: Page): Promise<RhdhRbacApi> {
-  const token = await (await import('../../support/api/rhdh-auth-api-hack')).RhdhAuthApiHack.getToken(page);
+  const token = await (
+    await import("../../support/api/rhdh-auth-api-hack")
+  ).RhdhAuthApiHack.getToken(page);
   return RhdhRbacApi.build(token);
 }
