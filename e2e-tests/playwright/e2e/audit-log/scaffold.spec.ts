@@ -3,7 +3,6 @@ import { Common } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
 import { LogUtils } from "./log-utils";
 import { CatalogImport } from "../../support/pages/catalog-import";
-import { type LogRequest } from "./logs";
 
 test.describe("Audit Log check for Catalog Plugin", () => {
   let uiHelper: UIhelper;
