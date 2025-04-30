@@ -48,6 +48,7 @@ main() {
   echo "Log file: ${LOGFILE}"
   echo "JOB_NAME : $JOB_NAME"
 
+  export_chart_version
   detect_ocp_and_set_env_var
 
   case "$JOB_NAME" in
