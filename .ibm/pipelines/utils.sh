@@ -3,6 +3,8 @@
 export_chart_version() {
   # change reference to https://raw.githubusercontent.com/redhat-developer/rhdh-chart/refs/heads/main/.rhdh/docs/installing-ci-charts.adoc after RHIDP-6668
   export CHART_VERSION=$(echo $(curl -sS https://raw.githubusercontent.com/rhdh-bot/openshift-helm-charts/refs/heads/rhdh-1-rhel-9/installation/README.md | grep -oE '[0-9]+\.[0-9]+-[0-9]+-CI'))
+  # REMOVE BEFORE MERGING --- PURELY FOR TESTING
+  CHART_VERSION="1.7-35-CI"
 }
 
 retrieve_pod_logs() {
