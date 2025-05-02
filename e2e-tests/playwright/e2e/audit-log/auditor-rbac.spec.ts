@@ -162,11 +162,12 @@ test.describe("Auditor check for RBAC Plugin", () => {
     },
     {
       name: "update",
-      call: () => rbacApi.updatePolicy(
-        ROLE_NAME,
-        [POLICY_DATA],
-        [{ ...POLICY_DATA, effect: "deny" }],
-      ),
+      call: () =>
+        rbacApi.updatePolicy(
+          ROLE_NAME,
+          [POLICY_DATA],
+          [{ ...POLICY_DATA, effect: "deny" }],
+        ),
       url: RBAC_API.policy.item(ROLE_NAME),
       action: "update" as const,
     },

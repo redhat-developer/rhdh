@@ -27,7 +27,7 @@ test.describe("Audit Log check for Catalog Plugin", () => {
     await uiHelper.clickButton("Register Existing Component");
     const isComponentAlreadyRegistered =
       await catalogImport.registerExistingComponent(template, false);
-    
+
     const expectedEvent = isComponentAlreadyRegistered
       ? {
           eventId: "entity-mutate",
