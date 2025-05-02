@@ -211,7 +211,7 @@ export class KubeClient {
   async deleteNamespaceAndWait(namespace: string) {
     const watch = new k8s.Watch(this.kc);
     try {
-      await this.coreV1Api.deleteNamespace(namespace);
+      await this.coreV1Api.deleteNamespace({ name: namespace });
       LOGGER.info(`Namespace '${namespace}' deletion initiated.`);
 
       await new Promise<void>((resolve, reject) => {
