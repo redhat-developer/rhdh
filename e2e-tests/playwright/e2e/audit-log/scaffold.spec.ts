@@ -23,23 +23,25 @@ test.describe("Audit Log check for Catalog Plugin", () => {
     await page.goto("/create");
   });
 
-  test("Should fetch logs for 'entity-mutate or location-mutate' event and validate log structure and values", async () => {
+  test("Should fetch logs for entity-mutate event and validate log structure and values", async () => {
     await uiHelper.clickButton("Register Existing Component");
-    const isComponentIsAlreadyRegistered =
+    const isComponentAlreadyRegistered =
       await catalogImport.registerExistingComponent(template, false);
-    if (isComponentIsAlreadyRegistered) {
-      // Then validate the log event
-      await LogUtils.validateLogEvent(
-        "entity-mutate",
-        "user:development/guest",
-        { method: "GET", url: "/api/catalog/refresh" },
-      );
-    } else {
-      await LogUtils.validateLogEvent(
-        "location-mutate",
-        "user:development/guest",
-        { method: "POST", url: "/api/catalog/locations" },
-      );
-    }
+    
+    const expectedEvent = isComponentAlreadyRegistered
+      ? {
+          eventId: "entity-mutate",
+          url: "/api/catalog/refresh",
+        }
+      : {
+          eventId: "location-mutate",
+          url: "/api/catalog/locations",
+        };
+
+    await LogUtils.validateLogEvent(
+      expectedEvent.eventId,
+      "user:development/guest",
+      { method: "GET", url: expectedEvent.url },
+    );
   });
 });

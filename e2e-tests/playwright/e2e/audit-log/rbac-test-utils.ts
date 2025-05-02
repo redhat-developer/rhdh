@@ -13,7 +13,7 @@ export const USER_ENTITY_REF = "user:default/rhdh-qe";
 export const PLUGIN_ACTOR_ID = "plugin:permission";
 export const ROLE_NAME = "default/rbac_admin";
 
-export const API = {
+export const RBAC_API = {
   role: {
     collection: "/api/permission/roles",
     item: (name: string) => `/api/permission/roles/role/${name}`,
@@ -28,28 +28,27 @@ export const API = {
   },
 };
 
-/* ───────────────────────────── ERROR-MESSAGE HELPER ────────────────────── */
-// Backend verbs differ from our logical action names:
-export const BACKEND_VERB: Record<
-  "create" | "update" | "delete",
-  "add" | "edit" | "delete"
-> = {
-  create: "add",
-  update: "edit",
-  delete: "delete",
-};
-
 /**
  * Build the expected NotAllowedError message exactly as the backend returns.
  * For role operations the backend omits the entityRef after "role:".
- * For policy operations ele inclui "policy role:<entityRef>".
+ * For policy operations it includes "policy role:<entityRef>".
  */
 export function buildNotAllowedError(
   action: "create" | "update" | "delete",
   entityType: "role" | "policy",
   entityRef?: string,
 ): string {
-  const verb = BACKEND_VERB[action];
+  // Backend verbs differ from our logical action names:
+  const backendVerb: Record<
+    "create" | "update" | "delete",
+    "add" | "edit" | "delete"
+  > = {
+    create: "add",
+    update: "edit",
+    delete: "delete",
+  };
+
+  const verb = backendVerb[action];
   if (entityType === "role") {
     return `NotAllowedError: Unable to ${verb} role: source does not match originating role role:${ROLE_NAME}, consider making changes to the 'CONFIGURATION'`;
   }

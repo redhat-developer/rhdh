@@ -1,7 +1,7 @@
 import { test } from "@playwright/test";
 import { Common, setupBrowser } from "../../utils/common";
 import {
-  API,
+  RBAC_API,
   ROLE_NAME,
   USER_ENTITY_REF,
   PLUGIN_ACTOR_ID,
@@ -39,13 +39,13 @@ test.describe("Auditor check for RBAC Plugin", () => {
     {
       name: "all",
       call: () => rbacApi.getRoles(),
-      url: API.role.collection,
+      url: RBAC_API.role.collection,
       meta: { queryType: "all", source: "rest" },
     },
     {
       name: "by-role",
       call: () => rbacApi.getRole(ROLE_NAME),
-      url: API.role.item(ROLE_NAME),
+      url: RBAC_API.role.item(ROLE_NAME),
       meta: { queryType: "by-role", source: "rest" },
     },
   ];
@@ -65,25 +65,40 @@ test.describe("Auditor check for RBAC Plugin", () => {
   /* --------------------------------------------------------------------- */
   /*  ROLE WRITE                                                           */
   /* --------------------------------------------------------------------- */
-  (["create", "update", "delete"] as const).forEach((action) => {
-    test(`role-write → ${action}`, async () => {
-      const url =
-        action === "create" ? API.role.collection : API.role.item(ROLE_NAME);
-      if (action === "create") await rbacApi.createRoles(ROLE_PAYLOAD);
-      if (action === "update")
-        await rbacApi.updateRole(ROLE_NAME, ROLE_PAYLOAD, ROLE_PAYLOAD);
-      if (action === "delete") await rbacApi.deleteRole(ROLE_NAME);
+  const roleWrite = [
+    {
+      name: "create",
+      call: () => rbacApi.createRoles(ROLE_PAYLOAD),
+      url: RBAC_API.role.collection,
+      action: "create" as const,
+    },
+    {
+      name: "update",
+      call: () => rbacApi.updateRole(ROLE_NAME, ROLE_PAYLOAD, ROLE_PAYLOAD),
+      url: RBAC_API.role.item(ROLE_NAME),
+      action: "update" as const,
+    },
+    {
+      name: "delete",
+      call: () => rbacApi.deleteRole(ROLE_NAME),
+      url: RBAC_API.role.item(ROLE_NAME),
+      action: "delete" as const,
+    },
+  ];
 
+  for (const s of roleWrite) {
+    test(`role-write → ${s.name}`, async () => {
+      await s.call();
       await validateRbacLogEvent(
         "role-write",
         USER_ENTITY_REF,
-        { method: httpMethod(action), url },
-        { actionType: action, source: "rest" },
-        buildNotAllowedError(action, "role"),
+        { method: httpMethod(s.action), url: s.url },
+        { actionType: s.action, source: "rest" },
+        buildNotAllowedError(s.action, "role"),
         "failed" as EventStatus,
       );
     });
-  });
+  }
 
   /* --------------------------------------------------------------------- */
   /*  POLICY READ                                                          */
@@ -92,13 +107,13 @@ test.describe("Auditor check for RBAC Plugin", () => {
     {
       name: "all",
       call: () => rbacApi.getPolicies(),
-      url: API.policy.collection,
+      url: RBAC_API.policy.collection,
       meta: { queryType: "all", source: "rest" },
     },
     {
       name: "by-role",
       call: () => rbacApi.getPoliciesByRole(ROLE_NAME),
-      url: API.policy.item(ROLE_NAME),
+      url: RBAC_API.policy.item(ROLE_NAME),
       meta: {
         entityRef: `role:${ROLE_NAME}`,
         queryType: "by-role",
@@ -114,7 +129,7 @@ test.describe("Auditor check for RBAC Plugin", () => {
           policy: POLICY_DATA.policy,
           effect: POLICY_DATA.effect,
         }),
-      url: `${API.policy.collection}?entityRef=${encodeURIComponent(USER_ENTITY_REF)}&permission=${POLICY_DATA.permission}&policy=${POLICY_DATA.policy}&effect=${POLICY_DATA.effect}`,
+      url: `${RBAC_API.policy.collection}?entityRef=${encodeURIComponent(USER_ENTITY_REF)}&permission=${POLICY_DATA.permission}&policy=${POLICY_DATA.policy}&effect=${POLICY_DATA.effect}`,
       meta: {
         query: { ...POLICY_DATA, entityRef: USER_ENTITY_REF },
         queryType: "by-query",
@@ -138,36 +153,48 @@ test.describe("Auditor check for RBAC Plugin", () => {
   /* --------------------------------------------------------------------- */
   /*  POLICY WRITE                                                         */
   /* --------------------------------------------------------------------- */
-  (["create", "update", "delete"] as const).forEach((action) => {
-    test(`policy-write → ${action}`, async () => {
-      const url =
-        action === "create"
-          ? API.policy.collection
-          : API.policy.item(ROLE_NAME);
-      if (action === "create") await rbacApi.createPolicies([POLICY_PAYLOAD]);
-      if (action === "update")
-        await rbacApi.updatePolicy(
-          ROLE_NAME,
-          [POLICY_DATA],
-          [{ ...POLICY_DATA, effect: "deny" }],
-        );
-      if (action === "delete")
-        await rbacApi.deletePolicy(ROLE_NAME, [POLICY_PAYLOAD]);
+  const policyWrite = [
+    {
+      name: "create",
+      call: () => rbacApi.createPolicies([POLICY_PAYLOAD]),
+      url: RBAC_API.policy.collection,
+      action: "create" as const,
+    },
+    {
+      name: "update",
+      call: () => rbacApi.updatePolicy(
+        ROLE_NAME,
+        [POLICY_DATA],
+        [{ ...POLICY_DATA, effect: "deny" }],
+      ),
+      url: RBAC_API.policy.item(ROLE_NAME),
+      action: "update" as const,
+    },
+    {
+      name: "delete",
+      call: () => rbacApi.deletePolicy(ROLE_NAME, [POLICY_PAYLOAD]),
+      url: RBAC_API.policy.item(ROLE_NAME),
+      action: "delete" as const,
+    },
+  ];
 
+  for (const s of policyWrite) {
+    test(`policy-write → ${s.name}`, async () => {
+      await s.call();
       await validateRbacLogEvent(
         "policy-write",
         USER_ENTITY_REF,
-        { method: httpMethod(action), url },
-        { actionType: action, source: "rest" },
+        { method: httpMethod(s.action), url: s.url },
+        { actionType: s.action, source: "rest" },
         buildNotAllowedError(
-          action,
+          s.action,
           "policy",
           `${ROLE_NAME},policy-entity,read,allow`,
         ),
         "failed" as EventStatus,
       );
     });
-  });
+  }
 
   /* --------------------------------------------------------------------- */
   /*  CONDITION READ                                                       */
@@ -176,7 +203,7 @@ test.describe("Auditor check for RBAC Plugin", () => {
     {
       name: "all",
       call: () => rbacApi.getConditions(),
-      url: API.condition.collection,
+      url: RBAC_API.condition.collection,
       meta: { queryType: "all", source: "rest" },
     },
     {
@@ -188,7 +215,7 @@ test.describe("Auditor check for RBAC Plugin", () => {
           resourceType: "catalog-entity",
           actions: "read",
         }),
-      url: `${API.condition.collection}?roleEntityRef=role%3Adefault%2Ftest2-role&pluginId=catalog&resourceType=catalog-entity&actions=read`,
+      url: `${RBAC_API.condition.collection}?roleEntityRef=role%3Adefault%2Ftest2-role&pluginId=catalog&resourceType=catalog-entity&actions=read`,
       meta: {
         query: {
           actions: "read",
@@ -203,7 +230,7 @@ test.describe("Auditor check for RBAC Plugin", () => {
     {
       name: "by-id",
       call: () => rbacApi.getConditionById(1),
-      url: API.condition.item(1),
+      url: RBAC_API.condition.item(1),
       meta: { id: "1", queryType: "by-id", source: "rest" },
     },
   ];
