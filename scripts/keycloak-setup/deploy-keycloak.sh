@@ -5,6 +5,7 @@
 set -e
 
 KEYCLOAK_NAMESPACE=keycloak
+KEYCLOAK_OPERATOR_DISPLAY_NAME="Red Hat build of Keycloak Operator"
 CERT_HOSTNAME="" # Ex: keycloak.apps-crc.testing
 DELETE=false
 
@@ -33,6 +34,30 @@ $ ./deploy-keycloak.sh --uninstall all
 PWD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 echo "${PWD}"
 
+createProject() {
+  # Create Namespace and switch to it
+  if ! oc get project "${KEYCLOAK_NAMESPACE}" >/dev/null 2>&1; then
+    oc new-project ${KEYCLOAK_NAMESPACE}
+  else
+    oc project ${KEYCLOAK_NAMESPACE}
+  fi
+}
+
+installKeycloakOperator() {
+    if oc get csv -n "${KEYCLOAK_NAMESPACE}" | grep -q "${KEYCLOAK_OPERATOR_DISPLAY_NAME}"; then
+      echo "Keycloak operator has been already installed."
+    else
+      echo "Keycloak operator is not installed. Installing..."
+      oc apply -f "./keycloak-operator/redhat/operator-group.yaml"
+      oc apply -f "./keycloak-operator/redhat/operator-subscription.yaml"
+    fi
+
+    until oc get csv -n "${KEYCLOAK_NAMESPACE}" | grep -q "${KEYCLOAK_OPERATOR_DISPLAY_NAME}.*Succeeded"; do
+        echo "Waiting for the CSV to reach the 'Succeeded' phase..."
+        sleep 10
+    done
+}
+
 deployDB(){
   oc apply -f ${PWD}/database/postgres.yaml -n ${KEYCLOAK_NAMESPACE}
 }
@@ -52,11 +77,19 @@ deploySecrets(){
 }
 
 deployKeyCloak(){
+  installKeycloakOperator
   oc apply -f ${PWD}/keycloak.yaml -n ${KEYCLOAK_NAMESPACE}
   oc patch keycloak development-keycloak --type=merge -p "{\"spec\":{\"hostname\":{\"hostname\": \"${CERT_HOSTNAME}\"}}}" -n ${KEYCLOAK_NAMESPACE}
 }
 
-deleteKeyCloak(){
+deleteKeycloakOperator() {
+  oc delete subscription rhbk-operator -n "${KEYCLOAK_NAMESPACE}"
+  oc delete csv -n "${KEYCLOAK_NAMESPACE}" "$(oc get csv -n "${KEYCLOAK_NAMESPACE}" | grep "${KEYCLOAK_OPERATOR_DISPLAY_NAME}" | awk '{print $1}')"
+  oc delete operatorgroup keycloak-operator -n ${KEYCLOAK_NAMESPACE}
+}
+
+deleteKeycloak(){
+  deleteKeycloakOperator
   oc delete keycloak development-keycloak -n ${KEYCLOAK_NAMESPACE}
 }
 
@@ -77,6 +110,7 @@ deleteAll(){
 }
 
 deployAll(){
+  createProject
   deployTLSKeys
   deploySecrets
   deployDB
@@ -105,13 +139,6 @@ while [[ "$#" -gt 0 ]]; do
     esac
     shift
 done
-
-# Create Namespace and switch to it
-if ! oc get project -n ${KEYCLOAK_NAMESPACE} >/dev/null 2>&1; then
-  oc new-project ${KEYCLOAK_NAMESPACE}
-else
-  oc project ${KEYCLOAK_NAMESPACE}
-fi
 
 case "${DELETE}" in
   "")
