@@ -1,5 +1,5 @@
 import { expect } from "@playwright/test";
-import { execFile } from "child_process";
+import { exec, execFile } from "child_process";
 import { Log } from "./logs";
 
 export class LogUtils {
@@ -14,6 +14,34 @@ export class LogUtils {
     return new Promise((resolve, reject) => {
       execFile(command, args, { encoding: "utf8" }, (error, stdout, stderr) => {
         if (error) {
+          reject(`Error: ${error.message}`);
+          return;
+        }
+        if (stderr) {
+          console.warn("stderr warning:", stderr);
+        }
+        resolve(stdout);
+      });
+    });
+  }
+
+  /**
+   * Executes a command with shell support and returns the output as a promise.
+   * This allows the use of pipes and other shell features.
+   *
+   * @param command The full command to execute including pipes and shell features
+   * @returns A promise that resolves with the command output
+   */
+  static executeShellCommand(command: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      exec(command, { encoding: "utf8" }, (error, stdout, stderr) => {
+        if (error) {
+          // If the command failed but it's just because grep didn't find anything,
+          // we should return an empty string rather than rejecting
+          if (error.code === 1 && !stderr) {
+            resolve("");
+            return;
+          }
           reject(`Error: ${error.message}`);
           return;
         }
@@ -43,16 +71,29 @@ export class LogUtils {
 
   /**
    * Compare the actual and expected values. Uses 'toBe' for numbers and 'toContain' for strings/arrays.
-   * Handles nested object comparison.
+   * Handles nested object comparison with better error reporting.
    *
    * @param actual The actual value to compare
    * @param expected The expected value
    */
   private static compareValues(actual: unknown, expected: unknown) {
+    if (actual === undefined) {
+      throw new Error(
+        `Expected value exists but actual value is undefined. Expected: ${JSON.stringify(expected)}`,
+      );
+    }
+
     if (typeof expected === "object" && expected !== null) {
       Object.keys(expected).forEach((subKey) => {
         const expectedSubValue = expected[subKey];
         const actualSubValue = actual?.[subKey];
+
+        if (actualSubValue === undefined) {
+          throw new Error(
+            `Expected sub-value exists for key '${subKey}' but actual value is undefined. Expected: ${JSON.stringify(expectedSubValue)}`,
+          );
+        }
+
         LogUtils.compareValues(actualSubValue, expectedSubValue);
       });
     } else if (typeof expected === "number") {
@@ -104,12 +145,13 @@ export class LogUtils {
   }
 
   /**
-   * Fetches logs with retry logic in case the log is not immediately available.
+   * Fetches logs from OpenShift with retry logic and filters by isAuditEvent and a specified string.
+   * Uses grep directly in the shell command for more efficient filtering.
    *
-   * @param filter The string to filter the logs
+   * @param filter The string to filter the logs (eventId)
    * @param maxRetries Maximum number of retry attempts
    * @param retryDelay Delay (in milliseconds) between retries
-   * @returns The log line matching the filter, or throws an error if not found
+   * @returns A promise that resolves to the raw log string matching the filter
    */
   static async getPodLogsWithRetry(
     filter: string,
@@ -118,7 +160,7 @@ export class LogUtils {
   ): Promise<string> {
     const podSelector =
       "app.kubernetes.io/component=backstage,app.kubernetes.io/instance=rhdh,app.kubernetes.io/name=backstage";
-    const tailNumber = 30;
+
     const namespace = process.env.NAME_SPACE || "showcase-ci-nightly";
 
     let attempt = 0;
@@ -127,28 +169,22 @@ export class LogUtils {
         console.log(
           `Attempt ${attempt + 1}/${maxRetries + 1}: Fetching logs...`,
         );
-        const args = [
-          "logs",
-          "-l",
-          podSelector,
-          `--tail=${tailNumber}`,
-          "-c",
-          "backstage-backend",
-          "-n",
-          namespace,
-        ];
 
-        console.log("Executing command:", "oc", args.join(" "));
-        const output = await LogUtils.executeCommand("oc", args);
+        // Using shell execution to include grep in the command
+        const command = `oc logs -l ${podSelector} -c backstage-backend -n ${namespace} | grep isAuditEvent`;
 
-        console.log("Raw log output:", output);
+        console.log("Executing command:", command);
+        const output = await this.executeShellCommand(command);
 
-        const logLines = output.split("\n");
+        // Further filter by the specific filter provided (e.g., eventId)
+        const logLines = output
+          .split("\n")
+          .filter((line) => line.trim() !== "");
         const filteredLines = logLines.filter((line) => line.includes(filter));
 
         if (filteredLines.length > 0) {
           console.log("Matching log line found:", filteredLines[0]);
-          return filteredLines[0]; // Return the first matching log
+          return filteredLines[0]; // Return the first matching log line
         }
 
         console.warn(
@@ -195,7 +231,7 @@ export class LogUtils {
       "login",
       `--token=${token}`,
       `--server=${server}`,
-      `--insecure-skip-tls-verify=true`,
+      "--insecure-skip-tls-verify=true",
     ];
 
     try {
@@ -208,10 +244,152 @@ export class LogUtils {
   }
 
   /**
-   * Validates if the actual log matches the expected log values for a specific event.
-   * This is a reusable method for different log validations across various tests.
+   * Parses a Backstage log string into a structured Log object.
+   * Handles ANSI color codes and properly extracts nested JSON objects from the log.
    *
-   * @param eventName The name of the event to filter in the logs
+   * @param logText The raw log text to parse
+   * @returns A structured Log object with extracted fields
+   */
+  private static parseBackstageLog(logText: string): Log {
+    // Remove ANSI color codes from the log text
+    const cleanedLog = logText.replace(/\x1B\[\d+m/g, "");
+
+    const log: Log = {
+      isAuditEvent: true, // Since we're filtering by isAuditEvent=true
+    };
+
+    // Extract timestamp
+    const timestampMatch = cleanedLog.match(
+      /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z)/,
+    );
+    if (timestampMatch) {
+      log.timestamp = timestampMatch[1];
+    }
+
+    // Extract plugin and message details
+    const parts = cleanedLog.split(" ");
+    if (parts.length > 1) {
+      log.plugin = parts[1]; // 'catalog'
+    }
+    if (parts.length > 3) {
+      log.message = parts[3]; // 'catalog.entity-mutate'
+    }
+
+    // Extract eventId
+    const eventIdMatch = cleanedLog.match(/eventId="([^"]+)"/);
+    if (eventIdMatch) {
+      log.eventId = eventIdMatch[1];
+    }
+
+    // Extract severityLevel
+    const severityMatch = cleanedLog.match(/severityLevel="([^"]+)"/);
+    if (severityMatch) {
+      log.severityLevel = severityMatch[1];
+    }
+
+    // Helper function to extract JSON objects
+    const extractJson = (prefix: string): any => {
+      const startIdx = cleanedLog.indexOf(`${prefix}=`);
+      if (startIdx === -1) return null;
+
+      let jsonStr = "";
+      let depth = 0;
+      let inQuote = false;
+      let escaping = false;
+      let started = false;
+
+      for (let i = startIdx + prefix.length + 1; i < cleanedLog.length; i++) {
+        const char = cleanedLog[i];
+
+        if (!started) {
+          if (char === "{") {
+            started = true;
+            depth = 1;
+            jsonStr += char;
+          }
+          continue;
+        }
+
+        if (escaping) {
+          jsonStr += char;
+          escaping = false;
+          continue;
+        }
+
+        if (char === "\\") {
+          jsonStr += char;
+          escaping = true;
+          continue;
+        }
+
+        if (char === '"' && !escaping) {
+          inQuote = !inQuote;
+        }
+
+        if (!inQuote) {
+          if (char === "{") depth++;
+          if (char === "}") depth--;
+        }
+
+        jsonStr += char;
+
+        if (depth === 0) break;
+      }
+
+      try {
+        return JSON.parse(jsonStr);
+      } catch (e) {
+        console.error(`Failed to parse ${prefix} JSON:`, jsonStr, e);
+        return null;
+      }
+    };
+
+    // Extract JSON objects
+    log.actor = extractJson("actor");
+    log.request = extractJson("request");
+    log.meta = extractJson("meta");
+
+    // Extract status
+    const statusMatch = cleanedLog.match(/status="([^"]+)"/);
+    if (statusMatch) {
+      log.status = statusMatch[1];
+    }
+
+    // Extract trace information
+    const traceIdMatch = cleanedLog.match(/trace_id="([^"]+)"/);
+    if (traceIdMatch) {
+      log.trace_id = traceIdMatch[1];
+    }
+
+    const spanIdMatch = cleanedLog.match(/span_id="([^"]+)"/);
+    if (spanIdMatch) {
+      log.span_id = spanIdMatch[1];
+    }
+
+    const traceFlagsMatch = cleanedLog.match(/trace_flags="([^"]+)"/);
+    if (traceFlagsMatch) {
+      log.trace_flags = traceFlagsMatch[1];
+    }
+
+    // Add debug output with all parsed fields
+    console.log("Parsed log fields:");
+    console.log("- timestamp:", log.timestamp);
+    console.log("- plugin:", log.plugin);
+    console.log("- message:", log.message);
+    console.log("- eventId:", log.eventId);
+    console.log("- actor:", JSON.stringify(log.actor));
+    console.log("- request:", JSON.stringify(log.request));
+    console.log("- meta:", JSON.stringify(log.meta));
+
+    return log;
+  }
+
+  /**
+   * Validates if the actual log matches the expected log values for a specific event.
+   * First gets the log string using getPodLogsWithRetry, parses it to a Log object,
+   * then validates it against the expected values.
+   *
+   * @param eventId The id of the event to filter in the logs
    * @param message The expected log message
    * @param method The HTTP method used in the log (GET, POST, etc.)
    * @param url The URL endpoint that was hit in the log
@@ -219,7 +397,7 @@ export class LogUtils {
    * @param plugin The plugin name that triggered the log event
    */
   public static async validateLogEvent(
-    eventName: string,
+    eventId: string,
     message: string,
     method: string,
     url: string,
@@ -227,17 +405,15 @@ export class LogUtils {
     plugin: string,
   ) {
     try {
-      const actualLog = await LogUtils.getPodLogsWithRetry(eventName);
-      console.log("Raw log output before filtering:", actualLog);
+      // Get the raw log string matching the filter
+      const logString = await LogUtils.getPodLogsWithRetry(eventId);
+      console.log("Raw log output:", logString);
 
-      let parsedLog: Log;
-      try {
-        parsedLog = JSON.parse(actualLog);
-      } catch (parseError) {
-        console.error("Failed to parse log JSON. Log content:", actualLog);
-        throw new Error(`Invalid JSON received for log: ${parseError}`);
-      }
+      // Parse the log string into a structured Log object
+      const parsedLog: Log = this.parseBackstageLog(logString);
+      console.log("Parsed log object:", JSON.stringify(parsedLog, null, 2));
 
+      // Create expected log object with the values to validate
       const expectedLog: Partial<Log> = {
         actor: {
           hostname: new URL(baseURL).hostname,
@@ -248,13 +424,18 @@ export class LogUtils {
           method,
           url,
         },
+        eventId,
       };
 
-      console.log("Validating log with expected values:", expectedLog);
+      console.log(
+        "Validating log with expected values:",
+        JSON.stringify(expectedLog, null, 2),
+      );
       LogUtils.validateLog(parsedLog, expectedLog);
+      console.log("Log validation successful!");
     } catch (error) {
       console.error("Error validating log event:", error);
-      console.error("Event name:", eventName);
+      console.error("Event ID:", eventId);
       console.error("Expected message:", message);
       console.error("Expected method:", method);
       console.error("Expected URL:", url);
