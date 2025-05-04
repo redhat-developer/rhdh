@@ -1,3 +1,5 @@
+import { type JsonObject } from "@backstage/types";
+
 class Actor {
   actorId?: string;
 }
@@ -33,6 +35,7 @@ export class Log {
   service: string;
   status: EventStatus;
   timestamp: string;
+  meta?: JsonObject;
 
   error?: string;
 
@@ -57,5 +60,6 @@ export class Log {
     this.plugin = overrides.plugin || "";
     this.request = overrides.request;
     this.response = overrides.response;
+    this.meta = overrides.meta;
   }
 }

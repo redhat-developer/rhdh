@@ -13,7 +13,6 @@ import {
   httpMethod,
   buildRbacApi,
 } from "./rbac-test-utils";
-import { EventStatus } from "./logs";
 import RhdhRbacApi from "../../support/api/rbac-api";
 
 let common: Common;
@@ -95,7 +94,7 @@ test.describe("Auditor check for RBAC Plugin", () => {
         { method: httpMethod(s.action), url: s.url },
         { actionType: s.action, source: "rest" },
         buildNotAllowedError(s.action, "role"),
-        "failed" as EventStatus,
+        "failed",
       );
     });
   }
@@ -192,7 +191,7 @@ test.describe("Auditor check for RBAC Plugin", () => {
           "policy",
           `${ROLE_NAME},policy-entity,read,allow`,
         ),
-        "failed" as EventStatus,
+        "failed",
       );
     });
   }

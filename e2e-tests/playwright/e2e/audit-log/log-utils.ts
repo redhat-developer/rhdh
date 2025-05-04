@@ -1,6 +1,12 @@
 import { expect } from "@playwright/test";
 import { execFile } from "child_process";
-import { Log, type LogRequest, type EventSeverityLevel } from "./logs";
+import { type JsonObject } from "@backstage/types";
+import {
+  Log,
+  type LogRequest,
+  type EventStatus,
+  type EventSeverityLevel,
+} from "./logs";
 
 export class LogUtils {
   /**
@@ -221,7 +227,9 @@ export class LogUtils {
    * @param eventId The id of the event to filter in the logs
    * @param actorId The id of actor initiating the request
    * @param request The url endpoint and HTTP method (GET, POST, etc.) hit
+   * @param meta The metadata about the event
    * @param error The error that occurred
+   * @param status The status of event
    * @param plugin The plugin name that triggered the log event
    * @param severityLevel The level of severity of the event
    * @param filterWords The required words the logs must contain to filter the logs besides eventId and request url if specified
@@ -231,13 +239,15 @@ export class LogUtils {
     eventId: string,
     actorId: string,
     request?: LogRequest,
+    meta?: JsonObject,
     error?: string,
+    status: EventStatus = "succeeded",
     plugin: string = "catalog",
     severityLevel: EventSeverityLevel = "medium",
     filterWords: string[] = [],
     namespace: string = process.env.NAME_SPACE || "showcase-ci-nightly",
   ) {
-    const filterWordsAll = [eventId, ...filterWords];
+    const filterWordsAll = [eventId, status, ...filterWords];
     if (request?.method) filterWordsAll.push(request.method);
     if (request?.url) filterWordsAll.push(request.url);
     try {
@@ -257,11 +267,12 @@ export class LogUtils {
       const expectedLog: Partial<Log> = {
         actor: {
           actorId,
-          ...request,
         },
         plugin,
-        ...(request && { request }),
-        ...(error && { error }),
+        request,
+        meta,
+        error,
+        status,
         severityLevel,
       };
 
@@ -271,6 +282,7 @@ export class LogUtils {
       console.error("Error validating log event:", error);
       console.error("Event id:", eventId);
       console.error("Actor id:", actorId);
+      console.error("Meta:", meta);
       console.error("Expected method:", request?.method);
       console.error("Expected URL:", request?.url);
       console.error("Plugin:", plugin);
