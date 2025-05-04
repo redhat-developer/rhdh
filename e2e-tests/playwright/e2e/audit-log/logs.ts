@@ -1,8 +1,5 @@
-import { type JsonObject } from "@backstage/types";
-
 class Actor {
   actorId?: string;
-  hostname: string;
 }
 
 export class LogRequest {
@@ -36,7 +33,7 @@ export class Log {
   service: string;
   status: EventStatus;
   timestamp: string;
-  meta?: JsonObject;
+
   error?: string;
 
   /**
@@ -53,7 +50,6 @@ export class Log {
     // Default value for actorId, with other actor properties being optional
     this.actor = {
       actorId: overrides.actor?.actorId || "user:development/guest", // Default actorId
-      hostname: overrides.actor?.hostname || "",
     };
 
     // Other properties without default values

@@ -71,9 +71,9 @@ droute_send() {
     fi
 
     # Remove properties (only used for skipped test and invalidates the file if empty)
-    sed -i '/<properties>/,/<\/properties>/d' "${ARTIFACT_DIR}/${project}/${JUNIT_RESULTS}"
+    sed_inplace '/<properties>/,/<\/properties>/d' "${ARTIFACT_DIR}/${project}/${JUNIT_RESULTS}"
     # Replace attachments with link to OpenShift CI storage
-    sed -iE "s#\[\[ATTACHMENT|\(.*\)\]\]#${ARTIFACTS_URL}/\1#g" "${ARTIFACT_DIR}/${project}/${JUNIT_RESULTS}"
+    sed_inplace "s#\[\[ATTACHMENT|\(.*\)\]\]#${ARTIFACTS_URL}/\1#g" "${ARTIFACT_DIR}/${project}/${JUNIT_RESULTS}"
 
     jq \
       --arg hostname "$REPORTPORTAL_HOSTNAME" \
@@ -498,9 +498,9 @@ configure_external_postgres_db() {
   --dry-run=client -o yaml | oc apply -f - --namespace="${project}"
 
   POSTGRES_PASSWORD=$(oc get secret/postgress-external-db-pguser-janus-idp -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath={.data.password})
-  sed -i "s|POSTGRES_PASSWORD:.*|POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
+  sed_inplace "s|POSTGRES_PASSWORD:.*|POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
   POSTGRES_HOST=$(echo -n "postgress-external-db-primary.$NAME_SPACE_POSTGRES_DB.svc.cluster.local" | base64 | tr -d '\n')
-  sed -i "s|POSTGRES_HOST:.*|POSTGRES_HOST: ${POSTGRES_HOST}|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
+  sed_inplace "s|POSTGRES_HOST:.*|POSTGRES_HOST: ${POSTGRES_HOST}|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
   oc apply -f "${DIR}/resources/postgres-db/postgres-cred.yaml"  --namespace="${project}"
 }
 
@@ -520,7 +520,7 @@ apply_yaml_files() {
     )
 
     for file in "${files[@]}"; do
-      sed -i "s/namespace:.*/namespace: ${project}/g" "$file"
+      sed_inplace "s/namespace:.*/namespace: ${project}/g" "$file"
     done
 
     DH_TARGET_URL=$(echo -n "test-backstage-customization-provider-${project}.${K8S_CLUSTER_ROUTER_BASE}" | base64 -w 0)
@@ -581,7 +581,7 @@ apply_yaml_files() {
 
     # Create Deployment and Pipeline for Topology test.
     oc apply -f "$dir/resources/topology_test/topology-test.yaml"
-    if [[ -z "${IS_OPENSHIFT}" || "${IS_OPENSHIFT,,}" == "false" ]]; then
+    if [[ -z "${IS_OPENSHIFT}" || "$(to_lowercase "${IS_OPENSHIFT}")" == "false" ]]; then
       kubectl apply -f "$dir/resources/topology_test/topology-test-ingress.yaml"
     else
       oc apply -f "$dir/resources/topology_test/topology-test-route.yaml"
@@ -860,14 +860,14 @@ delete_tekton_pipelines() {
 
 cluster_setup() {
   install_pipelines_operator
-  install_acm_ocp_operator
+#  install_acm_ocp_operator
   install_crunchy_postgres_ocp_operator
   add_helm_repos
 }
 
 cluster_setup_ocp_operator() {
   install_pipelines_operator
-  install_acm_ocp_operator
+#  install_acm_ocp_operator
   install_crunchy_postgres_ocp_operator
 }
 
@@ -923,14 +923,14 @@ initiate_upgrade_base_deployments() {
   echo "Initiating base RHDH deployment before upgrade"
 
   configure_namespace ${NAME_SPACE}
-  
+
   deploy_redis_cache "${NAME_SPACE}"
 
   cd "${DIR}"
   local rhdh_base_url="https://${RELEASE_NAME}-backstage-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
   echo "Deploying image from base repository: ${QUAY_REPO_BASE}, TAG_NAME_BASE: ${TAG_NAME_BASE}, in NAME_SPACE: ${NAME_SPACE}"
-  
+
   helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
     "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" --version "${CHART_VERSION_BASE}" \
     -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME_BASE}" \
@@ -944,20 +944,20 @@ initiate_upgrade_deployments() {
   local namespace=$2
   local url=$3
   local max_attempts=${4:-30}    # Default to 30 if not set
-  local wait_seconds=${5:-30} 
+  local wait_seconds=${5:-30}
   local wait_upgrade="10m"
 
   # check if the base rhdh deployment is running
   if check_backstage_running "${release_name}" "${namespace}" "${url}" "${max_attempts}" "${wait_seconds}"; then
-    
+
     echo "Display pods of base RHDH deployment before upgrade for verification..."
     oc get pods -n "${namespace}"
-    
+
     echo "Initiating upgrade deployment"
     cd "${DIR}"
-    
+
     echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
-    
+
     helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
     "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" \
     -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" \
@@ -977,9 +977,9 @@ initiate_runtime_deployment() {
   local namespace=$2
   configure_namespace "${namespace}"
   uninstall_helmchart "${namespace}" "${release_name}"
-  sed -i "s|POSTGRES_USER:.*|POSTGRES_USER: $RDS_USER|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
-  sed -i "s|POSTGRES_PASSWORD:.*|POSTGRES_PASSWORD: $(echo -n $RDS_PASSWORD | base64 -w 0)|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
-  sed -i "s|POSTGRES_HOST:.*|POSTGRES_HOST: $(echo -n $RDS_1_HOST | base64 -w 0)|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
+  sed_inplace "s|POSTGRES_USER:.*|POSTGRES_USER: $RDS_USER|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
+  sed_inplace "s|POSTGRES_PASSWORD:.*|POSTGRES_PASSWORD: $(echo -n $RDS_PASSWORD | base64 -w 0)|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
+  sed_inplace "s|POSTGRES_HOST:.*|POSTGRES_HOST: $(echo -n $RDS_1_HOST | base64 -w 0)|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
   oc apply -f "$DIR/resources/postgres-db/postgres-crt-rds.yaml" -n "${namespace}"
   oc apply -f "$DIR/resources/postgres-db/postgres-cred.yaml" -n "${namespace}"
   oc apply -f "$DIR/resources/postgres-db/dynamic-plugins-root-PVC.yaml" -n "${namespace}"
@@ -1031,7 +1031,7 @@ check_upgrade_and_test() {
   local namespace="$3"
   local url=$4
   local timeout=${5:-600} # Timeout in seconds (default: 600 seconds)
-  
+
   if check_helm_upgrade "${deployment_name}" "${namespace}" "${timeout}"; then
     check_and_test "${release_name}" "${namespace}" "${url}"
   else
@@ -1041,11 +1041,11 @@ check_upgrade_and_test() {
 
 check_helm_upgrade() {
   local deployment_name="$1"
-  local namespace="$2"       
-  local timeout="$3"      
-  
+  local namespace="$2"
+  local timeout="$3"
+
   echo "Checking rollout status for deployment: ${deployment_name} in namespace: ${namespace}..."
-  
+
   if oc rollout status "deployment/${deployment_name}" -n "${namespace}" --timeout="${timeout}s" -w; then
       echo "RHDH upgrade is complete."
       return 0
@@ -1097,4 +1097,26 @@ detect_ocp_and_set_env_var() {
     IS_OPENSHIFT=$(is_openshift && echo 'true' || echo 'false')
   fi
   echo IS_OPENSHIFT: "${IS_OPENSHIFT}"
+}
+
+# Helper function for cross-platform sed
+sed_inplace() {
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS
+    sed -i '' "$@"
+  else
+    # Linux
+    sed -i "$@"
+  fi
+}
+
+# Helper function for case conversion
+to_lowercase() {
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS - using tr
+    echo "$1" | tr '[:upper:]' '[:lower:]'
+  else
+    # Linux - using bash parameter expansion
+    echo "${1,,}"
+  fi
 }

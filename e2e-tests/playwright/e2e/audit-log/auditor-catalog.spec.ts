@@ -3,6 +3,7 @@ import { Common } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
 import { LogUtils } from "./log-utils";
 import { CatalogImport } from "../../support/pages/catalog-import";
+import { Log } from "./logs";
 
 test.describe("Audit Log check for Scaffold Plugin", () => {
   let uiHelper: UIhelper;
@@ -10,10 +11,6 @@ test.describe("Audit Log check for Scaffold Plugin", () => {
   let catalogImport: CatalogImport;
   const template =
     "https://github.com/RoadieHQ/sample-service/blob/main/demo_template.yaml";
-
-  test.beforeAll(async () => {
-    await LogUtils.loginToOpenShift();
-  });
 
   test.beforeEach(async ({ page }) => {
     uiHelper = new UIhelper(page);
@@ -32,16 +29,35 @@ test.describe("Audit Log check for Scaffold Plugin", () => {
       ? {
           eventId: "entity-mutate",
           url: "/api/catalog/refresh",
+          method: "POST",
         }
       : {
           eventId: "location-mutate",
           url: "/api/catalog/locations",
+          method: "POST",
         };
 
-    await LogUtils.validateLogEvent(
-      expectedEvent.eventId,
-      "user:development/guest",
-      { method: "GET", url: expectedEvent.url },
+    const expectedLog: Partial<Log> = {
+      eventId: expectedEvent.eventId,
+      actor: {
+        actorId: "user:development/guest",
+      },
+      request: {
+        method: expectedEvent.method,
+        url: expectedEvent.url,
+      },
+      plugin: "catalog",
+      severityLevel: "medium",
+      isAuditEvent: true,
+      service: "backstage",
+    };
+
+    const logLine = await LogUtils.getPodLogsWithRetry(
+      [expectedEvent.eventId, expectedEvent.method, expectedEvent.url],
+      process.env.NAME_SPACE || "showcase-ci-nightly",
     );
+
+    const actualLog = JSON.parse(logLine);
+    LogUtils.validateLog(actualLog, expectedLog);
   });
 });

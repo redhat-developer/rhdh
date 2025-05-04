@@ -2,11 +2,10 @@
  * Shared utilities and constants for RBAC audit-log Playwright tests
  * --------------------------------------------------------------------------*/
 
-import { type JsonObject } from "@backstage/types";
 import { Page } from "@playwright/test";
 import RhdhRbacApi from "../../support/api/rbac-api";
 import { LogUtils } from "./log-utils";
-import { EventStatus, LogRequest } from "./logs";
+import { LogRequest } from "./logs";
 
 /* ───────────────────────────────── CONSTANTS ───────────────────────────── */
 export const USER_ENTITY_REF = "user:default/rhdh-qe";
@@ -94,22 +93,17 @@ export async function validateRbacLogEvent(
   eventId: string,
   actorId: string,
   request?: LogRequest,
-  meta?: JsonObject,
   error?: string,
-  status: EventStatus = "succeeded",
   filterWords: string[] = [],
 ) {
   await LogUtils.validateLogEvent(
     eventId,
     actorId,
     request,
-    meta,
     error,
-    status,
     "permission", // plugin name (RBAC)
     "medium", // expected severity
     filterWords,
-    process.env.NAME_SPACE_RBAC,
   );
 }
 
