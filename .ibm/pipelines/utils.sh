@@ -860,14 +860,14 @@ delete_tekton_pipelines() {
 
 cluster_setup() {
   install_pipelines_operator
-#  install_acm_ocp_operator
+  install_acm_ocp_operator
   install_crunchy_postgres_ocp_operator
   add_helm_repos
 }
 
 cluster_setup_ocp_operator() {
   install_pipelines_operator
-#  install_acm_ocp_operator
+  install_acm_ocp_operator
   install_crunchy_postgres_ocp_operator
 }
 
