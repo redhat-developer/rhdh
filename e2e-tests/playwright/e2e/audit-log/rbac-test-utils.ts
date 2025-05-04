@@ -106,7 +106,7 @@ export async function validateRbacLogEvent(
     meta,
     error,
     status,
-    "rbac", // plugin name (RBAC)
+    "permission", // plugin name
     "medium", // expected severity
     filterWords,
     process.env.NAME_SPACE_RBAC,
