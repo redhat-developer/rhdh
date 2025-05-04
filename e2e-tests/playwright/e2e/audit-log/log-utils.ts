@@ -1,10 +1,6 @@
 import { expect } from "@playwright/test";
 import { execFile } from "child_process";
-import {
-  Log,
-  type LogRequest,
-  type EventSeverityLevel,
-} from "./logs";
+import { Log, type LogRequest, type EventSeverityLevel } from "./logs";
 
 export class LogUtils {
   /**
