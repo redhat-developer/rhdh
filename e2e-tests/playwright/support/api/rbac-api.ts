@@ -1,6 +1,12 @@
-import { APIRequestContext, APIResponse, request } from "@playwright/test";
+import {
+  APIRequestContext,
+  APIResponse,
+  Page,
+  request,
+} from "@playwright/test";
 import playwrightConfig from "../../../playwright.config";
 import { Policy, Role } from "./rbac-api-structures";
+import { RhdhAuthApiHack } from "./rhdh-auth-api-hack";
 
 export default class RhdhRbacApi {
   private readonly apiUrl = playwrightConfig.use.baseURL + "/api/permission/";
@@ -112,5 +118,10 @@ export default class RhdhRbacApi {
       throw Error(
         "roles passed to the Rbac api must have format like: default/admin",
       );
+  }
+
+  public static async buildRbacApi(page: Page): Promise<RhdhRbacApi> {
+    const token = await RhdhAuthApiHack.getToken(page);
+    return RhdhRbacApi.build(token);
   }
 }

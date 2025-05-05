@@ -3,8 +3,6 @@
  * --------------------------------------------------------------------------*/
 
 import { type JsonObject } from "@backstage/types";
-import { Page } from "@playwright/test";
-import RhdhRbacApi from "../../support/api/rbac-api";
 import { LogUtils } from "./log-utils";
 import { EventStatus, LogRequest } from "./logs";
 
@@ -111,12 +109,4 @@ export async function validateRbacLogEvent(
     filterWords,
     process.env.NAME_SPACE_RBAC,
   );
-}
-
-/* ───────────────────────── BUILD RBAC REST API HELPER ──────────────────── */
-export async function buildRbacApi(page: Page): Promise<RhdhRbacApi> {
-  const token = await (
-    await import("../../support/api/rhdh-auth-api-hack")
-  ).RhdhAuthApiHack.getToken(page);
-  return RhdhRbacApi.build(token);
 }

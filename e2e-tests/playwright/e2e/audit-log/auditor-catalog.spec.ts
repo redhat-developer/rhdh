@@ -3,7 +3,6 @@ import { Common } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
 import { LogUtils } from "./log-utils";
 import { CatalogImport } from "../../support/pages/catalog-import";
-import { Log } from "./logs";
 
 test.describe("Audit Log check for Scaffold Plugin", () => {
   let uiHelper: UIhelper;
@@ -37,27 +36,17 @@ test.describe("Audit Log check for Scaffold Plugin", () => {
           method: "POST",
         };
 
-    const expectedLog: Partial<Log> = {
-      eventId: expectedEvent.eventId,
-      actor: {
-        actorId: "user:development/guest",
-      },
-      request: {
-        method: expectedEvent.method,
-        url: expectedEvent.url,
-      },
-      plugin: "catalog",
-      severityLevel: "medium",
-      isAuditEvent: true,
-      service: "backstage",
-    };
-
-    const logLine = await LogUtils.getPodLogsWithRetry(
+    await LogUtils.validateLogEvent(
+      expectedEvent.eventId,
+      "user:development/guest",
+      { method: expectedEvent.method, url: expectedEvent.url },
+      undefined, // meta
+      undefined, // error
+      "succeeded", // status
+      "catalog", // plugin
+      "medium", // severityLevel
       [expectedEvent.eventId, expectedEvent.method, expectedEvent.url],
       process.env.NAME_SPACE || "showcase-ci-nightly",
     );
-
-    const actualLog = JSON.parse(logLine);
-    LogUtils.validateLog(actualLog, expectedLog);
   });
 });

@@ -118,6 +118,7 @@ export class LogUtils {
    * Fetches logs with retry logic in case the log is not immediately available.
    *
    * @param filterWords The required words the logs must contain to filter the logs
+   * @param namespace
    * @param maxRetries Maximum number of retry attempts
    * @param retryDelay Delay (in milliseconds) between retries
    * @returns The log line matching the filter, or throws an error if not found

@@ -11,7 +11,6 @@ import {
   validateRbacLogEvent,
   buildNotAllowedError,
   httpMethod,
-  buildRbacApi,
 } from "./rbac-test-utils";
 import RhdhRbacApi from "../../support/api/rbac-api";
 
@@ -28,7 +27,7 @@ test.describe("Auditor check for RBAC Plugin", () => {
     const page = (await setupBrowser(browser, testInfo)).page;
     common = new Common(page);
     await common.loginAsKeycloakUser();
-    rbacApi = await buildRbacApi(page);
+    rbacApi = await RhdhRbacApi.buildRbacApi(page);
   });
 
   /* --------------------------------------------------------------------- */
