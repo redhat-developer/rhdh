@@ -23296,6 +23296,7 @@ __metadata:
     prettier: 3.5.3
     react: 18.3.1
     react-dom: 18.3.1
+    react-helmet: ^6.1.0
     react-router-dom: 6.30.0
     react-use: 17.6.0
     tss-react: 4.9.16
@@ -41302,7 +41303,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-helmet@npm:6.1.0":
+"react-helmet@npm:6.1.0, react-helmet@npm:^6.1.0":
   version: 6.1.0
   resolution: "react-helmet@npm:6.1.0"
   dependencies:
