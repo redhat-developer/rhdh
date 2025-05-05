@@ -1,8 +1,10 @@
 import React, { useContext } from 'react';
+import { Helmet } from 'react-helmet';
 import { Route } from 'react-router-dom';
 
 import { FlatRoutes } from '@backstage/core-app-api';
 import { AlertDisplay, OAuthRequestDialog } from '@backstage/core-components';
+import { configApiRef, useApi } from '@backstage/core-plugin-api';
 import { ApiExplorerPage } from '@backstage/plugin-api-docs';
 import {
   CatalogEntityPage,
@@ -30,6 +32,21 @@ import { ApplicationProvider } from '../Root/ApplicationProvider';
 import ConfigUpdater from '../Root/ConfigUpdater';
 import { SearchPage } from '../search/SearchPage';
 import { settingsPage } from '../UserSettings/SettingsPages';
+
+export const TitleSetter = () => {
+  const config = useApi(configApiRef);
+  const titleFromConfig = config.getOptionalString('app.title');
+  const title = `Welcome back! | ${titleFromConfig}`;
+  const [mounted, setMounted] = React.useState(Boolean(titleFromConfig));
+
+  React.useEffect(() => {
+    // Wait for React hydration and then disable Helmet
+    const timeout = setTimeout(() => setMounted(false), 300);
+    return () => clearTimeout(timeout);
+  }, []);
+
+  return mounted ? <Helmet defaultTitle={title} /> : null;
+};
 
 const AppBase = () => {
   const {
@@ -78,6 +95,7 @@ const AppBase = () => {
       <OAuthRequestDialog />
       <ConfigUpdater />
       <AppRouter>
+        <TitleSetter />
         <ApplicationListener />
         <Root>
           <ApplicationProvider>
