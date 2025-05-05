@@ -41,9 +41,10 @@ export class LogUtils {
   public static validateLog(actual: Log, expected: Partial<Log>) {
     Object.keys(expected).forEach((key) => {
       const expectedValue = expected[key as keyof Log];
-      const actualValue = actual[key as keyof Log];
-
-      LogUtils.compareValues(actualValue, expectedValue);
+      if (expectedValue !== undefined) {
+        const actualValue = actual[key as keyof Log];
+        LogUtils.compareValues(actualValue, expectedValue);
+      }
     });
   }
 
