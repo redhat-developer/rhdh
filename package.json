@@ -43,6 +43,7 @@
     "@backstage/cli": "0.30.0",
     "@ianvs/prettier-plugin-sort-imports": "4.4.1",
     "@manypkg/cli": "0.24.0",
+    "@types/react-helmet": "^6.1.11",
     "glob": "11.0.2",
     "husky": "8.0.3",
     "lint-staged": "15.5.1",
