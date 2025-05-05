@@ -36,16 +36,14 @@ import { settingsPage } from '../UserSettings/SettingsPages';
 export const TitleSetter = () => {
   const config = useApi(configApiRef);
   const titleFromConfig = config.getOptionalString('app.title');
-  const title = `Welcome back! | ${titleFromConfig}`;
-  const [mounted, setMounted] = React.useState(Boolean(titleFromConfig));
 
   React.useEffect(() => {
-    // Wait for React hydration and then disable Helmet
-    const timeout = setTimeout(() => setMounted(false), 300);
-    return () => clearTimeout(timeout);
-  }, []);
+    if (titleFromConfig) {
+      document.title = `Welcome back! | ${titleFromConfig}`;
+    }
+  }, [titleFromConfig]);
 
-  return mounted ? <Helmet defaultTitle={title} /> : null;
+  return null;
 };
 
 const AppBase = () => {

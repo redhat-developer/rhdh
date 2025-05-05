@@ -21824,15 +21824,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-helmet@npm:^6.1.11":
-  version: 6.1.11
-  resolution: "@types/react-helmet@npm:6.1.11"
-  dependencies:
-    "@types/react": "*"
-  checksum: e329d8ad82c365fec7dd7d91c8b6d167faac30cef0d9f1e27d7e895172a0ebfa65829fb4acabbe79283b01cbbe5840a845caeb50148ceef6f3fad42b3c2c4bdc
-  languageName: node
-  linkType: hard
-
 "@types/react-measure@npm:^2.0.6":
   version: 2.0.12
   resolution: "@types/react-measure@npm:2.0.12"
@@ -23296,7 +23287,6 @@ __metadata:
     prettier: 3.5.3
     react: 18.3.1
     react-dom: 18.3.1
-    react-helmet: ^6.1.0
     react-router-dom: 6.30.0
     react-use: 17.6.0
     tss-react: 4.9.16
@@ -41303,7 +41293,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-helmet@npm:6.1.0, react-helmet@npm:^6.1.0":
+"react-helmet@npm:6.1.0":
   version: 6.1.0
   resolution: "react-helmet@npm:6.1.0"
   dependencies:
@@ -42948,7 +42938,6 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@ianvs/prettier-plugin-sort-imports": 4.4.1
     "@manypkg/cli": 0.24.0
-    "@types/react-helmet": ^6.1.11
     glob: 11.0.2
     husky: 8.0.3
     lint-staged: 15.5.1
