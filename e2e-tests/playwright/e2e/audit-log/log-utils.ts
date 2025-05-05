@@ -1,5 +1,5 @@
 import { expect } from "@playwright/test";
-import { execFile } from "child_process";
+import { execFile, exec } from "child_process";
 import { type JsonObject } from "@backstage/types";
 import {
   Log,
@@ -19,6 +19,27 @@ export class LogUtils {
   static executeCommand(command: string, args: string[] = []): Promise<string> {
     return new Promise((resolve, reject) => {
       execFile(command, args, { encoding: "utf8" }, (error, stdout, stderr) => {
+        if (error) {
+          reject(`Error: ${error.message}`);
+          return;
+        }
+        if (stderr) {
+          console.warn("stderr warning:", stderr);
+        }
+        resolve(stdout);
+      });
+    });
+  }
+
+  /**
+   * Executes a shell command and returns the output as a promise.
+   *
+   * @param command The shell command to execute
+   * @returns A promise that resolves with the command output
+   */
+  static executeShellCommand(command: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      exec(command, { encoding: "utf8" }, (error, stdout, stderr) => {
         if (error) {
           reject(`Error: ${error.message}`);
           return;
@@ -116,15 +137,15 @@ export class LogUtils {
   }
 
   /**
-   * Fetches logs with retry logic in case the log is not immediately available.
+   * Fetches logs using grep for filtering directly in the shell.
    *
    * @param filterWords The required words the logs must contain to filter the logs
-   * @param namespace
+   * @param namespace The namespace to use to retrieve logs from pod
    * @param maxRetries Maximum number of retry attempts
    * @param retryDelay Delay (in milliseconds) between retries
    * @returns The log line matching the filter, or throws an error if not found
    */
-  static async getPodLogsWithRetry(
+  static async getPodLogsWithGrep(
     filterWords: string[] = [],
     namespace: string = process.env.NAME_SPACE || "showcase-ci-nightly",
     maxRetries: number = 4,
@@ -134,42 +155,25 @@ export class LogUtils {
       "app.kubernetes.io/component=backstage,app.kubernetes.io/name=backstage";
     const tailNumber = 100;
 
+    let grepCommand = `oc logs -l ${podSelector} --tail=${tailNumber} -c backstage-backend -n ${namespace}`;
+    for (const word of filterWords) {
+      grepCommand += ` | grep '${word}'`;
+    }
+
     let attempt = 0;
     while (attempt <= maxRetries) {
       try {
-        console.log(
-          `Attempt ${attempt + 1}/${maxRetries + 1}: Fetching logs...`,
-        );
-        const args = [
-          "logs",
-          "-l",
-          podSelector,
-          `--tail=${tailNumber}`,
-          "-c",
-          "backstage-backend",
-          "-n",
-          namespace,
-        ];
+        console.log(`Attempt ${attempt + 1}/${maxRetries + 1}: Fetching logs with grep...`);
+        const output = await LogUtils.executeShellCommand(grepCommand);
 
-        console.log("Executing command:", "oc", args.join(" "));
-        const output = await LogUtils.executeCommand("oc", args);
-
-        console.log("Raw log output:", output);
-
-        const logLines = output.split("\n");
-        const filteredLines = logLines.filter((line) =>
-          filterWords.every((filterWord) => line.includes(filterWord)),
-        );
-
-        if (filteredLines.length > 0) {
-          console.log("Matching log line found:", filteredLines[0]);
-          return filteredLines[0]; // Return the first matching log
+        const logLines = output.split("\n").filter(line => line.trim() !== "");
+        if (logLines.length > 0) {
+          console.log("Matching log line found:", logLines[0]);
+          return logLines[0]; // Return the first matching log
         }
 
         console.warn(
-          `No matching logs found for filter "${filterWords}" on attempt ${
-            attempt + 1
-          }. Retrying...`,
+          `No matching logs found for filter "${filterWords}" on attempt ${attempt + 1}. Retrying...`,
         );
       } catch (error) {
         console.error(
@@ -253,7 +257,7 @@ export class LogUtils {
     if (request?.method) filterWordsAll.push(request.method);
     if (request?.url) filterWordsAll.push(request.url);
     try {
-      const actualLog = await LogUtils.getPodLogsWithRetry(
+      const actualLog = await LogUtils.getPodLogsWithGrep(
         filterWordsAll,
         namespace,
       );
