@@ -163,10 +163,14 @@ export class LogUtils {
     let attempt = 0;
     while (attempt <= maxRetries) {
       try {
-        console.log(`Attempt ${attempt + 1}/${maxRetries + 1}: Fetching logs with grep...`);
+        console.log(
+          `Attempt ${attempt + 1}/${maxRetries + 1}: Fetching logs with grep...`,
+        );
         const output = await LogUtils.executeShellCommand(grepCommand);
 
-        const logLines = output.split("\n").filter(line => line.trim() !== "");
+        const logLines = output
+          .split("\n")
+          .filter((line) => line.trim() !== "");
         if (logLines.length > 0) {
           console.log("Matching log line found:", logLines[0]);
           return logLines[0]; // Return the first matching log

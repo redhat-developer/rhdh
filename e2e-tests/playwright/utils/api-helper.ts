@@ -337,7 +337,7 @@ export class APIHelper {
    */
   static async getTemplateEntityUidByName(
     name: string,
-    namespace: string = "default"
+    namespace: string = "default",
   ): Promise<string | undefined> {
     const baseUrl = process.env.BASE_URL;
     const url = `${baseUrl}/api/catalog/locations/by-entity/template/${namespace}/${name}`;
@@ -395,7 +395,9 @@ export class APIHelper {
    * @param target - The target URL of the location to search for.
    * @returns The ID string if found, otherwise undefined.
    */
-  static async getLocationIdByTarget(target: string): Promise<string | undefined> {
+  static async getLocationIdByTarget(
+    target: string,
+  ): Promise<string | undefined> {
     const baseUrl = process.env.BASE_URL;
     const url = `${baseUrl}/api/catalog/locations`;
     const context = await request.newContext();
@@ -406,9 +408,8 @@ export class APIHelper {
     const data = await response.json();
     // data is expected to be an array of objects with a 'data' property
     const location = (Array.isArray(data) ? data : []).find(
-      (entry) => entry?.data?.target === target
+      (entry) => entry?.data?.target === target,
     );
     return location?.data?.id;
   }
-
 }
