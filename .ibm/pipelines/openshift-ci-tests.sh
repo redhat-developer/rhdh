@@ -30,6 +30,8 @@ SCRIPTS=(
   "env_variables.sh"
 )
 
+echo "Test Day!"
+
 # Source explicitly specified scripts
 for SCRIPT in "${SCRIPTS[@]}"; do
   source "${DIR}/${SCRIPT}"
