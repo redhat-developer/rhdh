@@ -2,6 +2,7 @@ import { createBackend } from '@backstage/backend-defaults';
 import { WinstonLogger } from '@backstage/backend-defaults/rootLogger';
 import { dynamicPluginsFeatureLoader } from '@backstage/backend-dynamic-feature-service';
 import { PackageRoles } from '@backstage/cli-node';
+import { rootHttpRouterServiceFactory } from '@backstage/backend-defaults/rootHttpRouter';
 
 import * as path from 'path';
 
@@ -31,6 +32,17 @@ const defaultServiceFactories = getDefaultServiceFactories({
 defaultServiceFactories.forEach(serviceFactory => {
   backend.add(serviceFactory);
 });
+
+
+backend.add(
+  rootHttpRouterServiceFactory({
+    configure: ({ server, applyDefaults }) => {
+      applyDefaults();
+      server.keepAliveTimeout = 480 * 1000;
+      server.headersTimeout = 480 * 1000;
+    },
+  }),
+);
 
 backend.add(
   dynamicPluginsFeatureLoader({
