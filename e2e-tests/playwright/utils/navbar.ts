@@ -9,4 +9,5 @@ export type SidebarTabs =
   | "Bulk import"
   | "Docs"
   | "Clusters"
-  | "Tech Radar";
+  | "Tech Radar"
+  | "Notifications";
