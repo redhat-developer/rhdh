@@ -54,6 +54,13 @@ test.describe("Default Global Header", () => {
     await newTab.close();
   });
 
+  test("Verify that profile dropdown displays user name correctly", async ({
+    page,
+  }) => {
+    const header = page.locator("nav[id='global-header']");
+    await expect(header).toHaveText("rhdh-qe");
+  });
+
   test("Verify Profile Dropdown behaves as expected", async ({ page }) => {
     await uiHelper.openProfileDropdown();
     expect(await uiHelper.isLinkVisible("Settings")).toBeTruthy();
