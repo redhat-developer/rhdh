@@ -37,7 +37,7 @@ export const TitleSetter = () => {
   const titleFromConfig = config.getOptionalString('app.title');
 
   React.useEffect(() => {
-    if (titleFromConfig) {
+    if (location.pathname === '/' && titleFromConfig) {
       document.title = `Welcome back! | ${titleFromConfig}`;
     }
   }, [titleFromConfig]);
