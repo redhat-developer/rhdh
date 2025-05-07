@@ -17,10 +17,9 @@ import {
 
 import Star from '@mui/icons-material/Star';
 
+import { oidcAuthApiRef } from '../../api/AuthApiRefs';
 import { ProviderSetting } from '../DynamicRoot/DynamicRootContext';
 import { GeneralPage } from './GeneralPage';
-import { oidcAuthApiRef } from '../../api/AuthApiRefs';
-
 
 const DynamicProviderSettingsItem = ({
   title,
@@ -69,11 +68,11 @@ const DynamicProviderSettings = ({
       {configuredProviders.includes('oidc') && (
         <ProviderSettingsItem
           title="OIDC"
-          description='Provides authentication towards OIDC Provider APIs and identities'
+          description="Provides authentication towards OIDC Provider APIs and identities"
           apiRef={oidcAuthApiRef}
           icon={Star}
         />
-        )}     
+      )}
       {providerSettings.map(({ title, description, provider }) => (
         <ErrorBoundary>
           <DynamicProviderSettingsItem
