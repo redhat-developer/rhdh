@@ -38,7 +38,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     openssl libssl-dev ca-certificates \
     apache2-utils \
     gettext \
-    curl wget jq colorized-logs && \
+    curl wget jq colorized-logs \
+    unzip dnsutils && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     echo "Node: $(node -v)\nNPM: $(npm -v)\nYarn: $(yarn -v)\nTypeScript: $(tsc -v)"
 
@@ -72,6 +73,11 @@ RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.
     apt-get update -y && \
     apt-get install google-cloud-cli google-cloud-sdk-gke-gcloud-auth-plugin -y && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Install AWS CLI
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
+    unzip awscliv2.zip && \
+    ./aws/install
 
 # Install skopeo
 RUN apt-get update -y && \
