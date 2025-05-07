@@ -45,8 +45,11 @@ for SCRIPT in "${DIR}"/jobs/*.sh; do
 done
 
 main() {
+  export AUTH_PROVIDERS_NAMESPACE="degub-auth-providers-e2e"
+  export JOB_NAME="periodic-ci-redhat-developer-rhdh-main-e2e-tests-nightly-auth-providers"
   echo "Log file: ${LOGFILE}"
   echo "JOB_NAME : $JOB_NAME"
+  echo "AUTH_PROVIDERS_NAMESPACE : $AUTH_PROVIDERS_NAMESPACE"
 
   detect_ocp_and_set_env_var
 
