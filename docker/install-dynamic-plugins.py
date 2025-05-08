@@ -125,7 +125,12 @@ class OciDownloader:
             local_dir = os.path.join(self.tmp_dir, image_digest)
             # replace oci:// prefix with docker://
             image_url = image.replace('oci://', 'docker://')
-            self.skopeo(['copy', image_url, f'dir:{local_dir}'])
+            command = ['copy', image_url, f'dir:{local_dir}']
+            # Use the specified auth file in the command if found
+            auth_file = os.environ.get("REGISTRY_AUTH_FILE")
+            if auth_file:
+             command = ['copy', image_url, '--authfile', auth_file, f'dir:{local_dir}']
+            self.skopeo(command)
             manifest_path = os.path.join(local_dir, 'manifest.json')
             manifest = json.load(open(manifest_path))
             # get the first layer of the image
@@ -167,7 +172,7 @@ class OciDownloader:
             shutil.rmtree(plugin_directory, ignore_errors=True, onerror=None)
         self.extract_plugin(tar_file=tar_file, plugin_path=plugin_path)
         return plugin_path
-    
+
     def digest(self, package: str) -> str:
         (image, plugin_path) = package.split('!')
         image_url = image.replace('oci://', 'docker://')
@@ -352,7 +357,7 @@ def main():
                 with open(hash_file_path, 'r') as hash_file:
                     hash_value = hash_file.read().strip()
                     plugin_path_by_hash[hash_value] = dir_name
-                    
+
     oci_downloader = OciDownloader(dynamicPluginsRoot)
 
     # iterate through the list of plugins
@@ -369,7 +374,7 @@ def main():
             # The OCI downloader
             try:
                 pull_policy = plugin.get('pullPolicy', PullPolicy.ALWAYS if ':latest!' in package else PullPolicy.IF_NOT_PRESENT)
-                
+
                 if plugin['hash'] in plugin_path_by_hash and pull_policy == PullPolicy.IF_NOT_PRESENT:
                     print('\n======= Skipping download of already installed dynamic plugin', package, flush=True)
                     plugin_path_by_hash.pop(plugin['hash'])
@@ -390,8 +395,8 @@ def main():
                         continue
                     else:
                         print('\n======= Installing dynamic plugin', package, flush=True)
-                        
-                else:    
+
+                else:
                     print('\n======= Installing dynamic plugin', package, flush=True)
 
                 plugin_path = oci_downloader.download(package)
