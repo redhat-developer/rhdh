@@ -17,6 +17,8 @@ p, role:default/qe_rbac_admin, kubernetes.clusters.read, read, allow
 p, role:default/qe_rbac_admin, catalog.entity.create, create, allow
 p, role:default/qe_rbac_admin, catalog.location.create, create, allow
 p, role:default/qe_rbac_admin, catalog.location.read, read, allow
+p, role:default/qe_rbac_admin, topology.view.read, read, allow
+p, role:default/qe_rbac_admin, catalog-entity, read, allow
 
 p, role:default/bulk_import, bulk.import, use, allow
 p, role:default/bulk_import, catalog.location.create, create, allow
