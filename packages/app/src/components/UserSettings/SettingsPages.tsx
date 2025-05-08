@@ -68,7 +68,7 @@ const DynamicProviderSettings = ({
       {configuredProviders.includes('oidc') && (
         <ProviderSettingsItem
           title="OIDC"
-          description="Provides authentication towards OIDC Provider APIs and identities"
+          description="Provides authentication through an OIDC Provider"
           apiRef={oidcAuthApiRef}
           icon={Star}
         />
