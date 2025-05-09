@@ -28,7 +28,7 @@
   "resolutions": {
     "@types/react": "18.3.20",
     "@types/react-dom": "18.3.7",
-    "@rjsf/utils": "=5.24.0",
+    "@rjsf/utils": "=5.24.10",
     "@aws-sdk/util-utf8-browser": "npm:@smithy/util-utf8@~2",
     "@kubernetes/client-node@npm:0.20.0/jsonpath-plus": "^10.3.0",
     "@backstage/plugin-auth-node@^0.6.0": "patch:@backstage/plugin-auth-node@npm%3A0.6.0#./.yarn/patches/@backstage-plugin-auth-node-npm-0.6.0-69f2f0dc3f.patch",
