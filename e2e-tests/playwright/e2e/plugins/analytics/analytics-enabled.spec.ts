@@ -6,6 +6,9 @@ test('Check "analytics-provider-segment" plugin is enabled', async () => {
   const analytics = new Analytics();
   const api = new APIHelper();
 
+  // This test uses the Guest token to check the loaded plugins.
+  // Static token is not allowed to list the plugins.
+  // If this breaks, we can use RhdhAuthApiHack to get the User token.
   const authHeader = await api.getGuestAuthHeader();
   const pluginsList = await analytics.getLoadedDynamicPluginsList(authHeader);
   const isPluginListed = analytics.checkPluginListed(
