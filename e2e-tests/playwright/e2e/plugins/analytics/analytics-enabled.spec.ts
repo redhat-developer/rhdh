@@ -4,9 +4,9 @@ import { APIHelper } from "../../../utils/api-helper";
 
 test('Check "analytics-provider-segment" plugin is enabled', async () => {
   const analytics = new Analytics();
-  const apihelper = new APIHelper();
+  const api = new APIHelper();
 
-  const authHeader = await apihelper.getGuestAuthHeader();
+  const authHeader = await api.getGuestAuthHeader();
   const pluginsList = await analytics.getLoadedDynamicPluginsList(authHeader);
   const isPluginListed = analytics.checkPluginListed(
     pluginsList,
