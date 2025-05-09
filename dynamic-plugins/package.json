@@ -26,7 +26,7 @@
     "turbo": "2.5.0"
   },
   "resolutions": {
-    "@types/react": "18.3.20",
+    "@types/react": "18.3.21",
     "@types/react-dom": "18.3.7",
     "@rjsf/utils": "=5.24.10",
     "@aws-sdk/util-utf8-browser": "npm:@smithy/util-utf8@~2",
