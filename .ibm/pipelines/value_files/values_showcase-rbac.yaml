@@ -144,6 +144,13 @@ upstream:
                 $file: /opt/app-root/src/postgres-key.key
               cert:
                 $file: /opt/app-root/src/postgres-crt.pem
+        auth:
+          dangerouslyDisableDefaultAuthPolicy: true
+          externalAccess:
+            - type: static
+              options:
+                token: ${STATIC_API_TOKEN}
+                subject: e2e-tests-ci
     startupProbe:
       # This gives enough time upon container startup before the liveness and readiness probes are triggered.
       # Giving (120s = initialDelaySeconds + failureThreshold * periodSeconds) to account for the worst case scenario.

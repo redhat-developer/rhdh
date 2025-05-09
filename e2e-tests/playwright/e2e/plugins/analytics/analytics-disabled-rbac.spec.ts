@@ -1,34 +1,17 @@
 import { test, expect } from "@playwright/test";
-import { Common } from "../../../utils/common";
-import { UIhelper } from "../../../utils/ui-helper";
-import { UI_HELPER_ELEMENTS } from "../../../support/pageObjects/global-obj";
+import { Analytics } from "../../../utils/analytics/analytics";
+import { APIHelper } from "../../../utils/api-helper";
 
-// TODO: reenable tests
-test.describe.skip('Check RBAC "analytics-provider-segment" plugin', () => {
-  let common: Common;
-  let uiHelper: UIhelper;
+test('Check RBAC "analytics-provider-segment" plugin is disabled', async () => {
+  const analytics = new Analytics();
+  const api = new APIHelper();
 
-  test.beforeEach(async ({ page }) => {
-    uiHelper = new UIhelper(page);
-    common = new Common(page);
-    await common.loginAsKeycloakUser();
-    await uiHelper.openSidebarButton("Administration");
-    await uiHelper.openSidebar("Extensions");
-    await uiHelper.verifyHeading("Extensions");
-    await uiHelper.clickTab("Installed");
-  });
+  api.UseStaticToken(process.env.STATIC_API_TOKEN);
+  const pluginsList = await api.getLoadedDynamicPluginsListFromAPI();
+  const isPluginListed = analytics.checkPluginListed(
+    pluginsList,
+    "backstage-community-plugin-analytics-provider-segment",
+  );
 
-  test("is disabled", async ({ page }) => {
-    await page
-      .getByPlaceholder("Search", { exact: true })
-      .pressSequentially("plugin-analytics-provider-segment\n", {
-        delay: 300,
-      });
-    const row = page.locator(
-      UI_HELPER_ELEMENTS.rowByText(
-        "backstage-community-plugin-analytics-provider-segment",
-      ),
-    );
-    expect(await row.locator("td").nth(2).innerText()).toBe("No"); // not enabled
-  });
+  expect(isPluginListed).toBe(false);
 });

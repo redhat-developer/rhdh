@@ -7,7 +7,7 @@ test('Check "analytics-provider-segment" plugin is enabled', async () => {
   const apihelper = new APIHelper();
 
   const authHeader = await apihelper.getGuestAuthHeader();
-  const pluginsList = await analytics.getDynamicPluginsList(authHeader);
+  const pluginsList = await analytics.getLoadedDynamicPluginsList(authHeader);
   const isPluginListed = analytics.checkPluginListed(
     pluginsList,
     "backstage-community-plugin-analytics-provider-segment",

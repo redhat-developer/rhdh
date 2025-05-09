@@ -187,6 +187,17 @@ export class APIHelper {
     return response;
   }
 
+  async getLoadedDynamicPluginsListFromAPI() {
+    const loadedPluginsEndpoint = "/api/dynamic-plugins-info/loaded-plugins";
+    const token = this.useStaticToken ? this.staticToken : "";
+    const response = await APIHelper.APIRequestWithStaticToken(
+      "GET",
+      loadedPluginsEndpoint,
+      token,
+    );
+    return response.json();
+  }
+
   async getAllCatalogUsersFromAPI() {
     const url = `${authProvidersConstants.AUTH_PROVIDERS_BASE_URL}/api/catalog/entities/by-query?orderField=metadata.name%2Casc&filter=kind%3Duser`;
     const token = this.useStaticToken ? this.staticToken : "";
