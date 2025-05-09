@@ -6,8 +6,8 @@ test('Check RBAC "analytics-provider-segment" plugin is disabled', async () => {
   const analytics = new Analytics();
   const api = new APIHelper();
 
-  api.UseStaticToken(process.env.STATIC_API_TOKEN);
-  const pluginsList = await api.getLoadedDynamicPluginsListFromAPI();
+  const authHeader = await api.getGuestAuthHeader();
+  const pluginsList = await analytics.getLoadedDynamicPluginsList(authHeader);
   const isPluginListed = analytics.checkPluginListed(
     pluginsList,
     "backstage-community-plugin-analytics-provider-segment",
