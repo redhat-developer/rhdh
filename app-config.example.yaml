@@ -1,6 +1,6 @@
 app:
   title: RHDH
-  baseUrl: http://localhost:7007
+  baseUrl: http://localhost:3000
 
 organization:
   name: My Org
