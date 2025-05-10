@@ -26294,9 +26294,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lint-staged@npm:15.5.1":
-  version: 15.5.1
-  resolution: "lint-staged@npm:15.5.1"
+"lint-staged@npm:15.5.2":
+  version: 15.5.2
+  resolution: "lint-staged@npm:15.5.2"
   dependencies:
     chalk: ^5.4.1
     commander: ^13.1.0
@@ -26310,7 +26310,7 @@ __metadata:
     yaml: ^2.7.0
   bin:
     lint-staged: bin/lint-staged.js
-  checksum: aa285bf6c55459030254536661e2cf4a69d8084ff945a088b1a60a94b96e3593c866b2804e7a5b6168f65ea675b785657e70ade9248e9c6f3023d3bd35b497b5
+  checksum: 70380f07be12b3557ae5857a6f081c03f3c62774afd3015ca77dd20fbad991c3b28de4981c3a7b0c61d482c1b3a0d2310f031f9d3ae36cb0e21e1e8a674ed30e
   languageName: node
   linkType: hard
 
@@ -32356,10 +32356,10 @@ __metadata:
     "@manypkg/cli": 0.24.0
     glob: 11.0.2
     husky: 8.0.3
-    lint-staged: 15.5.1
+    lint-staged: 15.5.2
     node-gyp: 10.3.1
     sherif: 1.5.0
-    turbo: 2.5.2
+    turbo: 2.5.3
   languageName: unknown
   linkType: soft
 
@@ -34853,58 +34853,58 @@ __metadata:
   languageName: node
   linkType: hard
 
-"turbo-darwin-64@npm:2.5.2":
-  version: 2.5.2
-  resolution: "turbo-darwin-64@npm:2.5.2"
+"turbo-darwin-64@npm:2.5.3":
+  version: 2.5.3
+  resolution: "turbo-darwin-64@npm:2.5.3"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"turbo-darwin-arm64@npm:2.5.2":
-  version: 2.5.2
-  resolution: "turbo-darwin-arm64@npm:2.5.2"
+"turbo-darwin-arm64@npm:2.5.3":
+  version: 2.5.3
+  resolution: "turbo-darwin-arm64@npm:2.5.3"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"turbo-linux-64@npm:2.5.2":
-  version: 2.5.2
-  resolution: "turbo-linux-64@npm:2.5.2"
+"turbo-linux-64@npm:2.5.3":
+  version: 2.5.3
+  resolution: "turbo-linux-64@npm:2.5.3"
   conditions: os=linux & cpu=x64
   languageName: node
   linkType: hard
 
-"turbo-linux-arm64@npm:2.5.2":
-  version: 2.5.2
-  resolution: "turbo-linux-arm64@npm:2.5.2"
+"turbo-linux-arm64@npm:2.5.3":
+  version: 2.5.3
+  resolution: "turbo-linux-arm64@npm:2.5.3"
   conditions: os=linux & cpu=arm64
   languageName: node
   linkType: hard
 
-"turbo-windows-64@npm:2.5.2":
-  version: 2.5.2
-  resolution: "turbo-windows-64@npm:2.5.2"
+"turbo-windows-64@npm:2.5.3":
+  version: 2.5.3
+  resolution: "turbo-windows-64@npm:2.5.3"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"turbo-windows-arm64@npm:2.5.2":
-  version: 2.5.2
-  resolution: "turbo-windows-arm64@npm:2.5.2"
+"turbo-windows-arm64@npm:2.5.3":
+  version: 2.5.3
+  resolution: "turbo-windows-arm64@npm:2.5.3"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
 
-"turbo@npm:2.5.2":
-  version: 2.5.2
-  resolution: "turbo@npm:2.5.2"
+"turbo@npm:2.5.3":
+  version: 2.5.3
+  resolution: "turbo@npm:2.5.3"
   dependencies:
-    turbo-darwin-64: 2.5.2
-    turbo-darwin-arm64: 2.5.2
-    turbo-linux-64: 2.5.2
-    turbo-linux-arm64: 2.5.2
-    turbo-windows-64: 2.5.2
-    turbo-windows-arm64: 2.5.2
+    turbo-darwin-64: 2.5.3
+    turbo-darwin-arm64: 2.5.3
+    turbo-linux-64: 2.5.3
+    turbo-linux-arm64: 2.5.3
+    turbo-windows-64: 2.5.3
+    turbo-windows-arm64: 2.5.3
   dependenciesMeta:
     turbo-darwin-64:
       optional: true
@@ -34920,7 +34920,7 @@ __metadata:
       optional: true
   bin:
     turbo: bin/turbo
-  checksum: 1b45e4d93f19acc8dd2f7d2cc8794c9741d89ffa297be70bbb1b68ed6c79912f2b9142695840f3539d342ff386aaa2ba7fc37baba7887d315037e52a166fdc77
+  checksum: d0d2ad87feb9c636d43e18515dde21f2fa946497e4f11c192dee5e8bb7829352ec46a977a6ca247b37c0df1c5d897791288d7b658355977265b33b29cb6be6ad
   languageName: node
   linkType: hard
 
