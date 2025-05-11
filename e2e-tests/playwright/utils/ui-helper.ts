@@ -512,12 +512,35 @@ export class UIhelper {
     text: string | RegExp,
     exact = true,
   ) {
-    const locator = this.page
-      .locator(UI_HELPER_ELEMENTS.MuiCard(cardHeading))
-      .getByText(text, { exact: exact })
-      .first();
-    await locator.scrollIntoViewIfNeeded();
-    await expect(locator).toBeVisible();
+    const card = this.page.locator(UI_HELPER_ELEMENTS.MuiCard(cardHeading));
+    if (exact && typeof text === "string") {
+      await expect(card.getByText(text, { exact })).toBeVisible();
+    } else {
+      await expect(card.locator("div").filter({ hasText: text })).toBeVisible();
+    }
+  }
+
+  /**
+   * Verifies multiple text elements in a single card
+   * @param cardHeading The heading of the card
+   * @param texts Array of strings or RegExp to verify in the card
+   * @param exact Whether to match exact text
+   */
+  async verifyMultipleTextsInCard(
+    cardHeading: string,
+    texts: (string | RegExp)[],
+    exact = true,
+  ) {
+    const card = this.page.locator(UI_HELPER_ELEMENTS.MuiCard(cardHeading));
+    for (const text of texts) {
+      if (exact && typeof text === "string") {
+        await expect(card.getByText(text, { exact })).toBeVisible();
+      } else {
+        await expect(
+          card.locator("div").filter({ hasText: text }),
+        ).toBeVisible();
+      }
+    }
   }
 
   async verifyTableHeadingAndRows(texts: string[]) {
@@ -677,5 +700,15 @@ export class UIhelper {
   async verifyTextInTooltip(text: string | RegExp) {
     const tooltip = this.page.getByRole("tooltip").getByText(text);
     await expect(tooltip).toBeVisible();
+  }
+
+  /**
+   * Navigates to the Extensions page in the Administration section
+   * and selects the Installed tab
+   */
+  async navigateToExtensions() {
+    await this.openSidebarButton("Administration");
+    await this.openSidebar("Extensions");
+    await this.clickTab("Installed");
   }
 }

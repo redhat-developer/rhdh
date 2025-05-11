@@ -3,27 +3,17 @@ import { UIhelper } from "../../../utils/ui-helper";
 import { Common } from "../../../utils/common";
 import { UI_HELPER_ELEMENTS } from "../../../support/pageObjects/global-obj";
 
-// Test to verify if the GitHub Insights plugin is installed - runs independently
 test("Verify GitHub Insights plugin is installed", async ({ page }) => {
   const common = new Common(page);
   await common.loginAsGuest();
 
   const uiHelper = new UIhelper(page);
 
-  // Navigate to the Administration in the sidebar
-  await uiHelper.openSidebarButton("Administration");
+  // Navigate to Extensions page
+  await uiHelper.navigateToExtensions();
 
-  // Click on Extensions
-  await uiHelper.openSidebar("Extensions");
-
-  // Wait for the page to load
-  await page.waitForLoadState("networkidle");
-
-  // Verify Extensions page heading is visible
+  // Wait for the Extensions heading to be visible
   await uiHelper.verifyHeading("Extensions");
-
-  // Make sure we're on the Installed tab
-  await uiHelper.clickTab("Installed");
 
   // Search for the GitHub Insights plugin
   await uiHelper.searchInputPlaceholder("github-insights");
@@ -52,13 +42,13 @@ test.describe("Test GitHub Insights plugin functionality", () => {
     await common.loginAsGithubUser();
 
     uiHelper = new UIhelper(page);
-    await uiHelper.openSidebar("Catalog");
-    await uiHelper.selectMuiBox("Kind", "Component");
-    await uiHelper.clickByDataTestId("user-picker-all");
-    await uiHelper.clickLink(repoWithGitHubInsights);
 
-    // Wait for entity page to load
-    await page.waitForLoadState("networkidle");
+    // Use the helper method for opening catalog
+    await uiHelper.openCatalogSidebar("Component");
+
+    // Click on the repo link and wait for entity page heading to appear
+    await uiHelper.clickLink(repoWithGitHubInsights);
+    await page.waitForSelector("h1", { state: "visible" });
 
     // Ensure we're on the right page by clicking the Overview tab
     await uiHelper.clickTab("Overview");
@@ -85,8 +75,10 @@ test.describe("Test GitHub Insights plugin functionality", () => {
     console.log(`Found ${releaseCount} release versions`);
 
     // Verify license information
-    await uiHelper.verifyTextinCard("Compliance report", "License");
-    await uiHelper.verifyTextinCard("Compliance report", "Apache License");
+    await uiHelper.verifyMultipleTextsInCard("Compliance report", [
+      "License",
+      "Apache License",
+    ]);
 
     console.log("GitHub Insights compliance information is available");
   });
