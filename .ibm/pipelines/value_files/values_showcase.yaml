@@ -216,7 +216,7 @@ global:
 
 # -- Upstream Backstage [chart configuration](https://github.com/backstage/charts/blob/main/charts/backstage/values.yaml)
 upstream:
-  nameOverride: backstage
+  nameOverride: developer-hub
   commonLabels:
     backstage.io/kubernetes-id: developer-hub
   backstage:
