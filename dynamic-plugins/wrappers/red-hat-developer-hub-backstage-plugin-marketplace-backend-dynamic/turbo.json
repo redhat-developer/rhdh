@@ -3,7 +3,7 @@
   "tasks": {
     "tsc": {
       "outputs": [
-        "../../../dist-types/dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-marketplace-backend-dynamic/**"
+        "../../dist-types/wrappers/red-hat-developer-hub-backstage-plugin-marketplace-backend-dynamic/**"
       ]
     }
   }

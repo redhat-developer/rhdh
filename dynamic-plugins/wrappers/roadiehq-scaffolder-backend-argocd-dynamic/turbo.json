@@ -3,7 +3,7 @@
   "tasks": {
     "tsc": {
       "outputs": [
-        "../../../dist-types/dynamic-plugins/wrappers/roadiehq-scaffolder-backend-argocd-dynamic/**"
+        "../../dist-types/wrappers/roadiehq-scaffolder-backend-argocd-dynamic/**"
       ]
     }
   }

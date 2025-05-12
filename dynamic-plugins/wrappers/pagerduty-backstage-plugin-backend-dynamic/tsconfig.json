@@ -3,7 +3,7 @@
   "include": ["src", "dev", "migrations"],
   "exclude": ["node_modules"],
   "compilerOptions": {
-    "outDir": "../../../dist-types/dynamic-plugins/wrappers/pagerduty-backstage-plugin-backend-dynamic",
+    "outDir": "../../dist-types/wrappers/pagerduty-backstage-plugin-backend-dynamic",
     "rootDir": "."
   }
 }

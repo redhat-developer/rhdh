@@ -23,7 +23,6 @@ spec:
     - ./backstage-community-plugin-topology.yaml
     - ./roadiehq-backstage-plugin-argo-cd-backend.yaml
     - ./roadiehq-scaffolder-backend-argocd.yaml
-    - ./roadiehq-backstage-plugin-argo-cd.yaml
     - ./backstage-community-plugin-redhat-argocd.yaml
     - ./backstage-plugin-scaffolder-backend-module-azure.yaml
     - ./backstage-community-plugin-azure-devops-backend.yaml

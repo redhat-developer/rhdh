@@ -21,7 +21,6 @@ Our current list of plugins include:
 - [Quay plugin](https://github.com/backstage/community-plugins/tree/main/workspaces/quay/plugins/quay)
 - [Kubernetes plugin](https://github.com/backstage/backstage/tree/master/plugins/kubernetes)
 - [Topology plugin](https://github.com/backstage/community-plugins/blob/main/workspaces/topology/plugins/topology/README.md)
-- [ArgoCD plugin](https://github.com/RoadieHQ/roadie-backstage-plugins/tree/main/plugins/frontend/backstage-plugin-argo-cd)
 - [GitHub Insights plugin](https://github.com/RoadieHQ/roadie-backstage-plugins/tree/main/plugins/frontend/backstage-plugin-github-insights)
 - [GitHub Pull Requests plugin](https://github.com/backstage/community-plugins/tree/main/workspaces/github-pull-requests-board/plugins/github-pull-requests-board)
 - [GitHub Actions plugin](https://github.com/backstage/community-plugins/tree/main/workspaces/github-actions/plugins/github-actions)

@@ -4,10 +4,13 @@ import { APIHelper } from "../../../utils/api-helper";
 
 test('Check "analytics-provider-segment" plugin is enabled', async () => {
   const analytics = new Analytics();
-  const apihelper = new APIHelper();
+  const api = new APIHelper();
 
-  const authHeader = await apihelper.getGuestAuthHeader();
-  const pluginsList = await analytics.getDynamicPluginsList(authHeader);
+  // This test uses the Guest token to check the loaded plugins.
+  // Static token is not allowed to list the plugins.
+  // If this breaks, we can use RhdhAuthApiHack to get the User token.
+  const authHeader = await api.getGuestAuthHeader();
+  const pluginsList = await analytics.getLoadedDynamicPluginsList(authHeader);
   const isPluginListed = analytics.checkPluginListed(
     pluginsList,
     "backstage-community-plugin-analytics-provider-segment",

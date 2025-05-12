@@ -3,7 +3,7 @@
   "include": ["src", "dev", "migrations"],
   "exclude": ["node_modules"],
   "compilerOptions": {
-    "outDir": "../../../dist-types/dynamic-plugins/wrappers/roadiehq-backstage-plugin-argo-cd-backend-dynamic",
+    "outDir": "../../dist-types/wrappers/roadiehq-backstage-plugin-argo-cd-backend-dynamic",
     "rootDir": "."
   }
 }
