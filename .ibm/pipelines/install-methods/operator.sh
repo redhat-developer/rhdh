@@ -47,6 +47,6 @@ deploy_rhdh_operator() {
   local backstage_crd_path=$2
 
   wait_for_backstage_crd "$namespace"
-
-  oc apply -f "$backstage_crd_path" -n "${namespace}"
+  echo "Applying Backstage CRD from: $backstage_crd_path"
+  envsubst < "$backstage_crd_path" | tee /dev/tty | oc apply -f - -n "${namespace}"
 }
