@@ -1,12 +1,10 @@
 {
   "name": "e2e-tests",
   "version": "1.7.0",
-  "description": "Showcase E2E test",
-  "main": "index.js",
-  "type": "module",
-  "repository": "https://github.com/janus-idp/showcase-e2e",
-  "author": "janus-idp",
-  "license": "Apache-2.0",
+  "private": true,
+  "engines": {
+    "node": "22"
+  },
   "scripts": {
     "showcase": "playwright test --project=showcase",
     "showcase-rbac": "playwright test --project=showcase-rbac",
@@ -28,8 +26,9 @@
     "prettier:fix": "prettier --ignore-unknown --write ."
   },
   "devDependencies": {
+    "@microsoft/microsoft-graph-types": "2.40.0",
     "@playwright/test": "1.52.0",
-    "@types/node": "22.15.3",
+    "@types/node": "22.15.17",
     "@typescript-eslint/eslint-plugin": "6.21.0",
     "@typescript-eslint/parser": "6.21.0",
     "eslint": "8.57.1",
@@ -49,5 +48,9 @@
     "node-fetch": "2.7.0",
     "octokit": "4.1.3",
     "winston": "3.14.2"
-  }
+  },
+  "jest": {
+    "testTimeout": 20000
+  },
+  "packageManager": "yarn@3.8.7"
 }

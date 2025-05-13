@@ -12,9 +12,9 @@
     "build": "turbo run build",
     "build:dockerfile": "bash ./scripts/update-Dockerfile.sh",
     "tsc": "turbo run tsc",
-    "export-dynamic": "turbo run export-dynamic",
-    "export-dynamic:clean": "turbo run export-dynamic:clean",
-    "copy-dynamic-plugins": "yarn workspace dynamic-plugins-utils run copy-dynamic-plugins",
+    "export-dynamic": "echo \"Command moved to dynamic-plugins/package.json\"",
+    "export-dynamic:clean": "echo \"Command moved to dynamic-plugins/package.json\"",
+    "copy-dynamic-plugins": "echo \"Command moved to dynamic-plugins/package.json\"",
     "clean": "turbo run clean",
     "test": "turbo run test",
     "lint:check": "turbo run lint:check",
@@ -33,10 +33,7 @@
   "workspaces": {
     "packages": [
       "packages/*",
-      "plugins/*",
-      "dynamic-plugins/_utils",
-      "dynamic-plugins/wrappers/*",
-      "e2e-tests"
+      "plugins/*"
     ]
   },
   "devDependencies": {
@@ -45,13 +42,13 @@
     "@manypkg/cli": "0.24.0",
     "glob": "11.0.2",
     "husky": "8.0.3",
-    "lint-staged": "15.5.1",
+    "lint-staged": "15.5.2",
     "node-gyp": "10.3.1",
     "sherif": "1.5.0",
-    "turbo": "2.5.2"
+    "turbo": "2.5.3"
   },
   "resolutions": {
-    "@types/react": "18.3.20",
+    "@types/react": "18.3.21",
     "@types/react-dom": "18.3.7",
     "@aws-sdk/util-utf8-browser": "npm:@smithy/util-utf8@~2",
     "@kubernetes/client-node@npm:0.20.0/jsonpath-plus": "^10.3.0",

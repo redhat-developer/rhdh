@@ -3,7 +3,7 @@
   "tasks": {
     "tsc": {
       "outputs": [
-        "../../../dist-types/dynamic-plugins/wrappers/backstage-community-plugin-jfrog-artifactory/**"
+        "../../dist-types/wrappers/backstage-community-plugin-jfrog-artifactory/**"
       ]
     }
   }
