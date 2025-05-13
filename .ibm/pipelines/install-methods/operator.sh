@@ -46,7 +46,8 @@ deploy_rhdh_operator() {
   local namespace=$1
   local backstage_crd_path=$2
 
-  wait_for_backstage_crd "$namespace"
-  echo "Applying Backstage CRD from: $backstage_crd_path"
-  envsubst < "$backstage_crd_path" | tee /dev/tty | oc apply -f - -n "${namespace}"
+  wait_for_backstage_crd "$namespace"]
+  rendered_yaml=$(envsubst < "$backstage_crd_path")
+  echo -e "Applying Backstage CRD from: $backstage_crd_path\n$rendered_yaml"
+  echo "$rendered_yaml" | oc apply -f - -n "$namespace"
 }
