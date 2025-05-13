@@ -44,77 +44,75 @@ import { SidebarLogo } from './SidebarLogo';
 
 type StylesProps = { aboveSidebarHeaderHeight?: number };
 
-const useStyles = makeStyles<StylesProps>()(
-  (_, props: { aboveSidebarHeaderHeight?: number }) => ({
-    /**
-     * This is a workaround to remove the fix height of the Page component
-     * to support the application headers (and the global header plugin)
-     * without having multiple scrollbars.
-     *
-     * This solves also the duplicate scrollbar issues in tech docs:
-     * https://issues.redhat.com/browse/RHIDP-4637 (Scrollbar for docs behaves weirdly if there are over a page of headings)
-     *
-     * Which was also reported and tried to fix upstream:
-     * https://github.com/backstage/backstage/issues/13717
-     * https://github.com/backstage/backstage/pull/14138
-     * https://github.com/backstage/backstage/issues/19427
-     * https://github.com/backstage/backstage/issues/22745
-     *
-     * See also
-     * https://github.com/backstage/backstage/blob/v1.35.0/packages/core-components/src/layout/Page/Page.tsx#L31-L34
-     *
-     * The following rules are based on the current DOM structure
-     *
-     * ```
-     * <body>
-     *   <div id="root">
-     *     // snackbars and toasts
-     *     <div className="pageWithoutFixHeight">
-     *       <nav />                               // Optional nav(s) if a header with position: above-sidebar is configured
-     *       <div>                                 // Backstage SidebarPage component
-     *         <nav />                             // Optional nav(s) if a header with position: above-main-content is configured
-     *         <nav aria-label="sidebar nav" />    // Sidebar content
-     *         <main />                            // Backstage Page component
-     *       </div>
-     *     </div>
-     *   </div>
-     *   // some modals and other overlays
-     * </body>
-     * ```
-     */
-    pageWithoutFixHeight: {
-      // Use 100vh for the complete viewport (similar to how Backstage does it)
-      // and makes the page content part scrollable below...
-      // But instead of using 100vh on the content below,
-      // we use it here so that it includes the header.
-      '> div[class*="-sidebarLayout"]': {
-        height: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-      },
+const useStyles = makeStyles<StylesProps>()((_, props: StylesProps) => ({
+  /**
+   * This is a workaround to remove the fix height of the Page component
+   * to support the application headers (and the global header plugin)
+   * without having multiple scrollbars.
+   *
+   * This solves also the duplicate scrollbar issues in tech docs:
+   * https://issues.redhat.com/browse/RHIDP-4637 (Scrollbar for docs behaves weirdly if there are over a page of headings)
+   *
+   * Which was also reported and tried to fix upstream:
+   * https://github.com/backstage/backstage/issues/13717
+   * https://github.com/backstage/backstage/pull/14138
+   * https://github.com/backstage/backstage/issues/19427
+   * https://github.com/backstage/backstage/issues/22745
+   *
+   * See also
+   * https://github.com/backstage/backstage/blob/v1.35.0/packages/core-components/src/layout/Page/Page.tsx#L31-L34
+   *
+   * The following rules are based on the current DOM structure
+   *
+   * ```
+   * <body>
+   *   <div id="root">
+   *     // snackbars and toasts
+   *     <div className="pageWithoutFixHeight">
+   *       <nav />                               // Optional nav(s) if a header with position: above-sidebar is configured
+   *       <div>                                 // Backstage SidebarPage component
+   *         <nav />                             // Optional nav(s) if a header with position: above-main-content is configured
+   *         <nav aria-label="sidebar nav" />    // Sidebar content
+   *         <main />                            // Backstage Page component
+   *       </div>
+   *     </div>
+   *   </div>
+   *   // some modals and other overlays
+   * </body>
+   * ```
+   */
+  pageWithoutFixHeight: {
+    // Use 100vh for the complete viewport (similar to how Backstage does it)
+    // and makes the page content part scrollable below...
+    // But instead of using 100vh on the content below,
+    // we use it here so that it includes the header.
+    '> div[class*="-sidebarLayout"]': {
+      height: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+    },
 
-      // But we unset the Backstage default 100vh value here and use flex box
-      // to grow to the full height of the parent container.
-      '> div > main': {
-        height: 'unset',
-        flexGrow: 1,
-      },
-      // This solves the same issue for techdocs, which was reported as
-      // https://issues.redhat.com/browse/RHIDP-4637
-      '.techdocs-reader-page > main': {
-        height: 'unset',
-      },
+    // But we unset the Backstage default 100vh value here and use flex box
+    // to grow to the full height of the parent container.
+    '> div > main': {
+      height: 'unset',
+      flexGrow: 1,
     },
-    sidebarItem: {
-      textDecorationLine: 'none',
+    // This solves the same issue for techdocs, which was reported as
+    // https://issues.redhat.com/browse/RHIDP-4637
+    '.techdocs-reader-page > main': {
+      height: 'unset',
     },
-    sidebarLayout: {
-      '& div[class*="BackstageSidebar-drawer"]': {
-        top: Math.max(props.aboveSidebarHeaderHeight ?? 0, 0),
-      },
+  },
+  sidebarItem: {
+    textDecorationLine: 'none',
+  },
+  sidebarLayout: {
+    '& div[class*="BackstageSidebar-drawer"]': {
+      top: Math.max(props.aboveSidebarHeaderHeight ?? 0, 0),
     },
-  }),
-);
+  },
+}));
 
 // Backstage does not expose the props object, pulling it from the component argument
 type SidebarItemProps = Parameters<typeof SidebarItem>[0];
