@@ -3,7 +3,7 @@
   "tasks": {
     "tsc": {
       "outputs": [
-        "../../../dist-types/dynamic-plugins/wrappers/backstage-plugin-catalog-backend-module-gitlab-dynamic/**"
+        "../../dist-types/wrappers/backstage-plugin-catalog-backend-module-gitlab-dynamic/**"
       ]
     }
   }

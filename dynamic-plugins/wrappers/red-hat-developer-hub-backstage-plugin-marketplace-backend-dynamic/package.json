@@ -39,11 +39,12 @@
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
-    "@red-hat-developer-hub/backstage-plugin-marketplace-backend": "0.3.1"
+    "@red-hat-developer-hub/backstage-plugin-marketplace-backend": "0.3.1",
+    "@red-hat-developer-hub/backstage-plugin-marketplace-common": "0.3.0"
   },
   "devDependencies": {
     "@backstage/cli": "0.30.0",
-    "@janus-idp/cli": "3.4.0",
+    "@janus-idp/cli": "3.5.0",
     "typescript": "5.8.3"
   },
   "files": [

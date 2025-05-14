@@ -89,6 +89,8 @@ global:
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-quay
         disabled: false
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-quay-dynamic
+        disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-keycloak-dynamic
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-tekton
@@ -248,6 +250,8 @@ upstream:
         value: 'true'
       - name: NODE_TLS_REJECT_UNAUTHORIZED
         value: '0'
+      - name: NODE_ENV
+        value: 'production'
       - name: ENABLE_CORE_ROOTHTTPROUTER_OVERRIDE
         value: 'true' 
     extraAppConfig:
@@ -304,3 +308,10 @@ upstream:
       - redis-secret
   ingress:
     host: '{{ .Values.global.host }}'
+  
+
+  service:
+    extraPorts:
+      - name: http-metrics
+        port: 9464
+        targetPort: 9464

@@ -298,6 +298,17 @@
       ]
     },
     {
+      "description": "disable major and minor updates for Zod",
+      "matchPackageNames": [
+        "zod"
+      ],
+      "enabled": false,
+      "matchUpdateTypes": [
+        "major",
+        "minor"
+      ]
+    },    
+    {
       "description": "react-router-dom: group all dependencies",
       "matchPackageNames": [
         "react-router-dom"
@@ -350,9 +361,6 @@
   ],
   "ignorePaths": [
     "**/dist-dynamic/**"
-  ],
-  "ignoreDeps": [
-    "@roadiehq/backstage-plugin-argo-cd"
   ],
   "vulnerabilityAlerts": {
     "enabled": true,

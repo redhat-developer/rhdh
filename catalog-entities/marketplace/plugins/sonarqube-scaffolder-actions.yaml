@@ -14,7 +14,7 @@ metadata:
     - code-quality
     - sonarqube
     - scaffolder
-    - templates
+    - software-templates
   links:
     - title: Homepage
       url: https://red.ht/rhdh
@@ -34,6 +34,7 @@ spec:
 
   categories:
     - Code Quality # One category will show up on the tile view
+    - Scaffolder
 
   highlights:
     - Code Quality
@@ -41,7 +42,6 @@ spec:
     - Static Analysis
 
   description: |
-
     The SonarQube scaffolder actions plugin provides a set of actions to be used in the Backstage software template
     scaffolder. This module provides Backstage template actions for SonarQube.
 
@@ -59,9 +59,6 @@ spec:
     Plugins often need additional configuration to work correctly - particularly those that integrate with other 
     systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
     for further details regarding the configuration required.  
-
-  icon: data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiBpZD0iQ2FscXVlXzEiIHg9IjAiIHk9IjAiIHZlcnNpb249IjEuMSIgdmlld0JveD0iMCAwIDUxMiA1MTIiIHhtbDpzcGFjZT0icHJlc2VydmUiIHN0eWxlPSJlbmFibGUtYmFja2dyb3VuZDpuZXcgMCAwIDUxMiA1MTIiPjxzdHlsZSB0eXBlPSJ0ZXh0L2NzcyI+LnN0MHtmaWxsOiM1NDlkZDB9LnN0MXtjbGlwLXBhdGg6dXJsKCNTVkdJRF8yXyk7ZmlsbDojZmZmfS5zdDIsLnN0M3tjbGlwLXBhdGg6dXJsKCNTVkdJRF80Xyk7ZmlsbDojZmZmfS5zdDN7Y2xpcC1wYXRoOnVybCgjU1ZHSURfNl8pfTwvc3R5bGU+PHJlY3Qgd2lkdGg9IjUxMiIgaGVpZ2h0PSI1MTIiIGNsYXNzPSJzdDAiLz48Zz48Zz48ZGVmcz48cmVjdCBpZD0iU1ZHSURfMV8iIHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiB5PSIwIi8+PC9kZWZzPjxjbGlwUGF0aCBpZD0iU1ZHSURfMl8iPjx1c2UgeGxpbms6aHJlZj0iI1NWR0lEXzFfIiBzdHlsZT0ib3ZlcmZsb3c6dmlzaWJsZSIvPjwvY2xpcFBhdGg+PHBhdGggZD0iTTQwOC44LDQ0OC4xaC0yMi4zYzAtMTc5LjQtMTQ4LTMyNS4zLTMyOS45LTMyNS4zdi0yMi4zQzI1MC44LDEwMC41LDQwOC44LDI1Ni40LDQwOC44LDQ0OC4xIiBjbGFzcz0ic3QxIi8+PC9nPjxnPjxkZWZzPjxyZWN0IGlkPSJTVkdJRF8zXyIgd2lkdGg9IjUxMiIgaGVpZ2h0PSI1MTIiIHk9IjAiLz48L2RlZnM+PGNsaXBQYXRoIGlkPSJTVkdJRF80XyI+PHVzZSB4bGluazpocmVmPSIjU1ZHSURfM18iIHN0eWxlPSJvdmVyZmxvdzp2aXNpYmxlIi8+PC9jbGlwUGF0aD48cGF0aCBkPSJNNDI0LjIsMzI4LjVDMzk3LjQsMjE1LjksMzA2LjMsMTIyLDE5Miw4OS4ybDUuMS0xNy44QzMxNy43LDEwNiw0MTQsMjA1LjIsNDQyLjIsMzI0LjJMNDI0LjIsMzI4LjV6IiBjbGFzcz0ic3QyIi8+PC9nPjxnPjxkZWZzPjxyZWN0IGlkPSJTVkdJRF81XyIgd2lkdGg9IjUxMiIgaGVpZ2h0PSI1MTIiIHk9IjAiLz48L2RlZnM+PGNsaXBQYXRoIGlkPSJTVkdJRF82XyI+PHVzZSB4bGluazpocmVmPSIjU1ZHSURfNV8iIHN0eWxlPSJvdmVyZmxvdzp2aXNpYmxlIi8+PC9jbGlwUGF0aD48cGF0aCBkPSJNNDQxLjMsMjIyLjljLTI3LjYtNjAuMS03NC41LTExMi41LTEzMi4yLTE0Ny41bDcuNy0xMi43YzYwLjIsMzYuNiwxMDkuMiw5MS4zLDEzOCwxNTRMNDQxLjMsMjIyLjl6IiBjbGFzcz0ic3QzIi8+PC9nPjwvZz48L3N2Zz4=
-
 
   packages:
     - backstage-community-plugin-scaffolder-backend-module-sonarqube

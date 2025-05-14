@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.14-labs
+# syntax=docker/dockerfile:1.15-labs
 
 # THIS IS USED BY Konflux builds >= 1.6
 #
@@ -17,7 +17,7 @@
 
 # Stage 1 - Build nodejs skeleton
 # https://registry.access.redhat.com/ubi9/nodejs-22
-FROM registry.access.redhat.com/ubi9/nodejs-22:9.5-1742955796 AS skeleton
+FROM registry.access.redhat.com/ubi9/nodejs-22:9.5-1746535891 AS skeleton
 # hadolint ignore=DL3002
 USER 0
 
@@ -47,7 +47,7 @@ RUN dnf install -q -y --allowerasing --nobest \
   python3-subscription-manager-rhsm python3-systemd python3-urllib3 readline redhat-release rootfiles rpm rpm-build-libs rpm-libs rpm-plugin-selinux rpm-sign-libs rsync scl-utils \
   sed selinux-policy selinux-policy-targeted setup shadow-utils skopeo slirp4netns sqlite-libs subscription-manager subscription-manager-rhsm-certificates systemd systemd-libs \
   systemd-pam systemd-rpm-macros tar tcl tpm2-tss tzdata unzip usermode util-linux util-linux-core vim-filesystem vim-minimal virt-what which xz xz-libs yajl yum zlib zlib-devel && \
-  
+
   # '(micro)dnf update -y' not allowed in Konflux+Cachi2: instead use renovate or https://github.com/konflux-ci/rpm-lockfile-prototype to update the rpms.lock.yaml file
   dnf clean all
 
@@ -75,135 +75,22 @@ COPY $EXTERNAL_SOURCE_NESTED/plugins/dynamic-plugins-info-backend/package.json .
 COPY $EXTERNAL_SOURCE_NESTED/packages/backend/package.json ./packages/backend/package.json
 COPY $EXTERNAL_SOURCE_NESTED/packages/app/package.json ./packages/app/package.json
 COPY $EXTERNAL_SOURCE_NESTED/package.json ./package.json
-COPY $EXTERNAL_SOURCE_NESTED/e2e-tests/package.json ./e2e-tests/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/_utils/package.json ./dynamic-plugins/_utils/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/roadiehq-scaffolder-backend-module-utils-dynamic/package.json ./dynamic-plugins/wrappers/roadiehq-scaffolder-backend-module-utils-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/roadiehq-scaffolder-backend-module-http-request-dynamic/package.json ./dynamic-plugins/wrappers/roadiehq-scaffolder-backend-module-http-request-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/roadiehq-scaffolder-backend-argocd-dynamic/package.json ./dynamic-plugins/wrappers/roadiehq-scaffolder-backend-argocd-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/roadiehq-backstage-plugin-security-insights/package.json ./dynamic-plugins/wrappers/roadiehq-backstage-plugin-security-insights/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/roadiehq-backstage-plugin-jira/package.json ./dynamic-plugins/wrappers/roadiehq-backstage-plugin-jira/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/roadiehq-backstage-plugin-github-pull-requests/package.json ./dynamic-plugins/wrappers/roadiehq-backstage-plugin-github-pull-requests/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/roadiehq-backstage-plugin-github-insights/package.json ./dynamic-plugins/wrappers/roadiehq-backstage-plugin-github-insights/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/roadiehq-backstage-plugin-datadog/package.json ./dynamic-plugins/wrappers/roadiehq-backstage-plugin-datadog/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/roadiehq-backstage-plugin-argo-cd/package.json ./dynamic-plugins/wrappers/roadiehq-backstage-plugin-argo-cd/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/roadiehq-backstage-plugin-argo-cd-backend-dynamic/package.json ./dynamic-plugins/wrappers/roadiehq-backstage-plugin-argo-cd-backend-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-marketplace/package.json ./dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-marketplace/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-marketplace-backend-dynamic/package.json ./dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-marketplace-backend-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-global-header/package.json ./dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-global-header/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-global-floating-action-button/package.json ./dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-global-floating-action-button/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-dynamic-home-page/package.json ./dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-dynamic-home-page/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-catalog-backend-module-marketplace-dynamic/package.json ./dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-catalog-backend-module-marketplace-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-bulk-import/package.json ./dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-bulk-import/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-bulk-import-backend-dynamic/package.json ./dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-bulk-import-backend-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/parfuemerie-douglas-scaffolder-backend-module-azure-repositories-dynamic/package.json ./dynamic-plugins/wrappers/parfuemerie-douglas-scaffolder-backend-module-azure-repositories-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/pagerduty-backstage-plugin/package.json ./dynamic-plugins/wrappers/pagerduty-backstage-plugin/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/pagerduty-backstage-plugin-backend-dynamic/package.json ./dynamic-plugins/wrappers/pagerduty-backstage-plugin-backend-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/immobiliarelabs-backstage-plugin-gitlab/package.json ./dynamic-plugins/wrappers/immobiliarelabs-backstage-plugin-gitlab/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/immobiliarelabs-backstage-plugin-gitlab-backend-dynamic/package.json ./dynamic-plugins/wrappers/immobiliarelabs-backstage-plugin-gitlab-backend-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-plugin-techdocs/package.json ./dynamic-plugins/wrappers/backstage-plugin-techdocs/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-plugin-techdocs-module-addons-contrib/package.json ./dynamic-plugins/wrappers/backstage-plugin-techdocs-module-addons-contrib/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-plugin-techdocs-backend-dynamic/package.json ./dynamic-plugins/wrappers/backstage-plugin-techdocs-backend-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-plugin-signals/package.json ./dynamic-plugins/wrappers/backstage-plugin-signals/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-plugin-signals-backend-dynamic/package.json ./dynamic-plugins/wrappers/backstage-plugin-signals-backend-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-plugin-scaffolder-backend-module-gitlab-dynamic/package.json ./dynamic-plugins/wrappers/backstage-plugin-scaffolder-backend-module-gitlab-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-plugin-scaffolder-backend-module-github-dynamic/package.json ./dynamic-plugins/wrappers/backstage-plugin-scaffolder-backend-module-github-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-plugin-scaffolder-backend-module-gerrit-dynamic/package.json ./dynamic-plugins/wrappers/backstage-plugin-scaffolder-backend-module-gerrit-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-plugin-scaffolder-backend-module-bitbucket-server-dynamic/package.json ./dynamic-plugins/wrappers/backstage-plugin-scaffolder-backend-module-bitbucket-server-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-plugin-scaffolder-backend-module-bitbucket-cloud-dynamic/package.json ./dynamic-plugins/wrappers/backstage-plugin-scaffolder-backend-module-bitbucket-cloud-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-plugin-scaffolder-backend-module-azure-dynamic/package.json ./dynamic-plugins/wrappers/backstage-plugin-scaffolder-backend-module-azure-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-plugin-notifications/package.json ./dynamic-plugins/wrappers/backstage-plugin-notifications/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-plugin-notifications-backend-module-email-dynamic/package.json ./dynamic-plugins/wrappers/backstage-plugin-notifications-backend-module-email-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-plugin-notifications-backend-dynamic/package.json ./dynamic-plugins/wrappers/backstage-plugin-notifications-backend-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-plugin-kubernetes/package.json ./dynamic-plugins/wrappers/backstage-plugin-kubernetes/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-plugin-kubernetes-backend-dynamic/package.json ./dynamic-plugins/wrappers/backstage-plugin-kubernetes-backend-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-plugin-catalog-backend-module-msgraph-dynamic/package.json ./dynamic-plugins/wrappers/backstage-plugin-catalog-backend-module-msgraph-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-plugin-catalog-backend-module-ldap-dynamic/package.json ./dynamic-plugins/wrappers/backstage-plugin-catalog-backend-module-ldap-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-plugin-catalog-backend-module-gitlab-org-dynamic/package.json ./dynamic-plugins/wrappers/backstage-plugin-catalog-backend-module-gitlab-org-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-plugin-catalog-backend-module-gitlab-dynamic/package.json ./dynamic-plugins/wrappers/backstage-plugin-catalog-backend-module-gitlab-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-plugin-catalog-backend-module-github-org-dynamic/package.json ./dynamic-plugins/wrappers/backstage-plugin-catalog-backend-module-github-org-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-plugin-catalog-backend-module-github-dynamic/package.json ./dynamic-plugins/wrappers/backstage-plugin-catalog-backend-module-github-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-plugin-catalog-backend-module-bitbucket-server-dynamic/package.json ./dynamic-plugins/wrappers/backstage-plugin-catalog-backend-module-bitbucket-server-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-plugin-catalog-backend-module-bitbucket-cloud-dynamic/package.json ./dynamic-plugins/wrappers/backstage-plugin-catalog-backend-module-bitbucket-cloud-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin-topology/package.json ./dynamic-plugins/wrappers/backstage-community-plugin-topology/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin-tekton/package.json ./dynamic-plugins/wrappers/backstage-community-plugin-tekton/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin-tech-radar/package.json ./dynamic-plugins/wrappers/backstage-community-plugin-tech-radar/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin-tech-radar-backend-dynamic/package.json ./dynamic-plugins/wrappers/backstage-community-plugin-tech-radar-backend-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin-sonarqube/package.json ./dynamic-plugins/wrappers/backstage-community-plugin-sonarqube/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin-sonarqube-backend-dynamic/package.json ./dynamic-plugins/wrappers/backstage-community-plugin-sonarqube-backend-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin-scaffolder-backend-module-sonarqube-dynamic/package.json ./dynamic-plugins/wrappers/backstage-community-plugin-scaffolder-backend-module-sonarqube-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin-scaffolder-backend-module-servicenow-dynamic/package.json ./dynamic-plugins/wrappers/backstage-community-plugin-scaffolder-backend-module-servicenow-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin-scaffolder-backend-module-regex-dynamic/package.json ./dynamic-plugins/wrappers/backstage-community-plugin-scaffolder-backend-module-regex-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin-scaffolder-backend-module-quay-dynamic/package.json ./dynamic-plugins/wrappers/backstage-community-plugin-scaffolder-backend-module-quay-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin-scaffolder-backend-module-kubernetes-dynamic/package.json ./dynamic-plugins/wrappers/backstage-community-plugin-scaffolder-backend-module-kubernetes-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin-redhat-argocd/package.json ./dynamic-plugins/wrappers/backstage-community-plugin-redhat-argocd/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin-rbac/package.json ./dynamic-plugins/wrappers/backstage-community-plugin-rbac/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin-quay/package.json ./dynamic-plugins/wrappers/backstage-community-plugin-quay/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin-ocm/package.json ./dynamic-plugins/wrappers/backstage-community-plugin-ocm/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin-ocm-backend-dynamic/package.json ./dynamic-plugins/wrappers/backstage-community-plugin-ocm-backend-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin-nexus-repository-manager/package.json ./dynamic-plugins/wrappers/backstage-community-plugin-nexus-repository-manager/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin-lighthouse/package.json ./dynamic-plugins/wrappers/backstage-community-plugin-lighthouse/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin-jfrog-artifactory/package.json ./dynamic-plugins/wrappers/backstage-community-plugin-jfrog-artifactory/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin-jenkins/package.json ./dynamic-plugins/wrappers/backstage-community-plugin-jenkins/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin-jenkins-backend-dynamic/package.json ./dynamic-plugins/wrappers/backstage-community-plugin-jenkins-backend-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin-github-issues/package.json ./dynamic-plugins/wrappers/backstage-community-plugin-github-issues/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin-github-actions/package.json ./dynamic-plugins/wrappers/backstage-community-plugin-github-actions/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin-dynatrace/package.json ./dynamic-plugins/wrappers/backstage-community-plugin-dynatrace/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic/package.json ./dynamic-plugins/wrappers/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin-catalog-backend-module-pingidentity-dynamic/package.json ./dynamic-plugins/wrappers/backstage-community-plugin-catalog-backend-module-pingidentity-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin-catalog-backend-module-keycloak-dynamic/package.json ./dynamic-plugins/wrappers/backstage-community-plugin-catalog-backend-module-keycloak-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin-azure-devops/package.json ./dynamic-plugins/wrappers/backstage-community-plugin-azure-devops/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin-azure-devops-backend-dynamic/package.json ./dynamic-plugins/wrappers/backstage-community-plugin-azure-devops-backend-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin-analytics-provider-segment/package.json ./dynamic-plugins/wrappers/backstage-community-plugin-analytics-provider-segment/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin-acr/package.json ./dynamic-plugins/wrappers/backstage-community-plugin-acr/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-community-plugin-3scale-backend-dynamic/package.json ./dynamic-plugins/wrappers/backstage-community-plugin-3scale-backend-dynamic/package.json
 # END COPY package.json files
 
-# Downstream only - enable offline node-gyp install from local headers - see artifacts.lock.yaml for tar.gz
-ENV NODE_HEADERS_VERSION="22.13.1"
-RUN mkdir -p ~/.cache/node-gyp/${NODE_HEADERS_VERSION}; \
-tar -xf /cachi2/output/deps/generic/node-v${NODE_HEADERS_VERSION}-headers.tar.gz --directory ~/.cache/node-gyp/${NODE_HEADERS_VERSION}/ --strip-components 1; \
-echo "11" > ~/.cache/node-gyp/${NODE_HEADERS_VERSION}/installVersion
+# unpack headers from tarball (includes openssl headers not present in /usr/include/node) - see RHIDP-6755 for why we need this upstream
+COPY $EXTERNAL_SOURCE_NESTED/.nvm/ .
+RUN NODE_HEADERS_VERSION=$(node --version); echo "=== Install node headers $NODE_HEADERS_VERSION from tar.gz ==="; \
+  if [[ ! -f releases/node-${NODE_HEADERS_VERSION}-headers.tar.gz ]]; then \
+  echo "[ERROR] Base image includes nodejs $NODE_HEADERS_VERSION but could not find releases/node-${NODE_HEADERS_VERSION}-headers.tar.gz to install!"; \
+  echo "[ERROR] To fix, upload the node-${NODE_HEADERS_VERSION}-headers.tar.gz file into https://github.com/redhat-developer/rhdh/tree/main/.nvm/releases (or related branch)!"; \
+  exit 1; \
+  fi; \
+  mkdir -p ~/.cache/node-gyp/${NODE_HEADERS_VERSION/v/}; \
+  tar -xf releases/node-${NODE_HEADERS_VERSION}-headers.tar.gz --directory ~/.cache/node-gyp/${NODE_HEADERS_VERSION/v/}/ --strip-components 1; \
+  echo "11" > ~/.cache/node-gyp/${NODE_HEADERS_VERSION/v/}/installVersion; \
+  rm -fr releases/node-${NODE_HEADERS_VERSION}-headers.tar.gz
 
-# Downstream only - enable offline playwright - see artifacts.lock.yaml for zip
-ENV CHROMIUM_VERSION="1155" \
-    HEADLESS_VERSION="1155" \
-    FFMPEG_VERSION="1011" \
-    PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
-    PLAYWRIGHT_BROWSERS_PATH=/cachi2/output/deps/generic/pw-browsers \
-    CHROMIUM_DIR=$PLAYWRIGHT_BROWSERS_PATH/chromium-${CHROMIUM_VERSION} \
-    HEADLESS_DIR=$PLAYWRIGHT_BROWSERS_PATH/chromium_headless_shell-${HEADLESS_VERSION} \
-    FFMPEG_DIR=$PLAYWRIGHT_BROWSERS_PATH/ffmpeg-${FFMPEG_VERSION}
-
-# # python3 -m playwright install chromium firefox --dry-run
-# browser: chromium version 133.0.6943.16
-#   Install location:    /opt/app-root/src/.cache/ms-playwright/chromium-1155
-#   Download url:        https://cdn.playwright.dev/dbazure/download/playwright/builds/chromium/1155/chromium-linux.zip
-# browser: ffmpeg
-#   Install location:    /opt/app-root/src/.cache/ms-playwright/ffmpeg-1011
-#   Download url:        https://cdn.playwright.dev/dbazure/download/playwright/builds/ffmpeg/1011/ffmpeg-linux.zip
-# browser: chromium-headless-shell version 133.0.6943.16
-#   Install location:    /opt/app-root/src/.cache/ms-playwright/chromium_headless_shell-1155
-#   Download url:        https://cdn.playwright.dev/dbazure/download/playwright/builds/chromium/1155/chromium-headless-shell-linux.zip
-# browser: ffmpeg
-#   Install location:    /opt/app-root/src/.cache/ms-playwright/ffmpeg-1011
-#   Download url:        https://cdn.playwright.dev/dbazure/download/playwright/builds/ffmpeg/1011/ffmpeg-linux.zip
-
-RUN dnf install -q -y alsa-lib at-spi2-atk at-spi2-core atk cairo cups-libs libdrm libX11 libX11-xcb libXcomposite libXdamage libXext libXfixes libxkbcommon libXrandr mesa-libgbm nspr nss pango; \
-  export PLAYWRIGHT_BROWSERS_PATH=$PLAYWRIGHT_BROWSERS_PATH/; \
-  ls -la /cachi2/output/deps/generic/; \
-  mkdir -p $CHROMIUM_DIR; unzip -q /cachi2/output/deps/generic/chromium-linux.zip                    -d $CHROMIUM_DIR/; touch $CHROMIUM_DIR/DEPENDENCIES_VALIDATED $CHROMIUM_DIR/INSTALLATION_COMPLETE; \
-  mkdir -p $HEADLESS_DIR; unzip -q /cachi2/output/deps/generic/chromium-headless-shell-linux.zip     -d $HEADLESS_DIR/; touch $HEADLESS_DIR/DEPENDENCIES_VALIDATED $HEADLESS_DIR/INSTALLATION_COMPLETE; \
-  mkdir -p $FFMPEG_DIR;   unzip -q /cachi2/output/deps/generic/ffmpeg-linux.zip                      -d $FFMPEG_DIR/;   touch $FFMPEG_DIR/DEPENDENCIES_VALIDATED   $FFMPEG_DIR/INSTALLATION_COMPLETE; \
-  # echo "Chromium: "; ls -1 $CHROMIUM_DIR; \
-  # echo "Chromium Headless Shell:"; ls -1 $HEADLESS_DIR; \
-  # echo "ffmpeg:"; ls -1 $FFMPEG_DIR; \
-  pip3 install playwright==1.49.1 && playwright --version
-
-# debug
-# Redirect console output and errors to a log file to make this log shorter
-# RUN exec 3>&1 4>&2 1>> /tmp/build.log.txt 2>> /tmp/build.log.txt
-
-# Increate timeout for yarn install
+# Increase timeout for yarn install
 RUN "$YARN" config set httpTimeout 600000
 
 # Using cachi2 env vars:
@@ -211,17 +98,28 @@ RUN "$YARN" config set httpTimeout 600000
 #   export YARN_ENABLE_IMMUTABLE_CACHE=false
 #   export YARN_ENABLE_MIRROR=true
 #   export YARN_GLOBAL_FOLDER=/cachi2/output/deps/yarn
-# RUN cat /cachi2/cachi2.env; echo; ls -la /cachi2/output/deps/yarn/*
+RUN cat /cachi2/cachi2.env; echo; find /cachi2/output/deps/yarn/*
 
-RUN echo "=== YARN INSTALL ==="; "$YARN" install --immutable
-# debug
-#  | tee /tmp/yarn.install.log.txt 2>&1; \
-#   for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then echo; echo $d; echo "======"; cat ${d}/build.log; fi; done
+RUN echo "=== YARN INSTALL ==="; FAILED=0; "$YARN" install --immutable; \
+  for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then \
+  (( FAILED = FAILED + 1 )); \
+  echo; echo $d; \
+  echo "!!! YARN INSTALL FAILED !!!"; \
+  cat ${d}/build.log; \
+  fi; done; \
+  if [[ $FAILED -gt 0 ]]; then exit $FAILED; fi
 
 # Stage 3 - Build packages
 FROM deps AS build
 
 COPY $EXTERNAL_SOURCE_NESTED ./
+
+# Explicitly disable networking + use local cache:
+RUN echo "=== TWEAK .yarnrc.yml ==="; \
+  echo "enableNetwork: false" >> .yarnrc.yml && \
+  echo "cacheFolder: $YARN_GLOBAL_FOLDER" >> .yarnrc.yml && \
+  echo "Current .yarnrc.yml" && \
+  cat .yarnrc.yml
 
 RUN git config --global --add safe.directory ./
 # Upstream only
@@ -237,30 +135,40 @@ RUN \
   -e "s/(\"Last Commit\": \"(.+)\")/\1, \"Build Time\": \"$now\"/" && \
   cat packages/app/src/build-metadata.json; echo
 
-RUN echo "=== YARN BUILD ==="; "$YARN" build --filter=backend 
-# debug
-# >/tmp/yarn.build.log.txt 2>&1
-# || { for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then echo; echo $d; echo "======"; cat ${d}/build.log; fi; done } 
+# suppress git warnings about dubious ownership in repository at '/opt/app-root/src' when building
+RUN echo "=== YARN BUILD ==="; FAILED=0; \
+  git config --global --add safe.directory /opt/app-root/src; \
+  "$YARN" build || true; \
+  for d in $(find . -name yarn-install.log); do \
+  (( FAILED = FAILED + 1 )); echo; echo $d; echo "======"; cat ${d}; \
+  done; \
+  if [[ $FAILED -gt 0 ]]; then exit $FAILED; fi
 
-# >/tmp/yarn.export.dynamic.log.txt 2>&1
-RUN echo "=== EXPORT DYNAMIC PLUGINS (with --no-install) ==="; "$YARN" export-dynamic --filter=./dynamic-plugins/wrappers/*
-# debug
-#  for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then echo; echo $d; echo "======"; cat ${d}/build.log; fi; done; \
-#  for d in $(find . -name yarn-install.log); do echo; echo "===== EXPORT DYNAMIC PLUGINS: $d =====>"; cat ${d}; echo "<===== EXPORT DYNAMIC PLUGINS: $d ====="; done; 
+WORKDIR $CONTAINER_SOURCE/dynamic-plugins
 
-# Stan says we can  omit this step - https://redhat-internal.slack.com/archives/C08A1KD7TNY/p1741805639019149?thread_ts=1741720088.366109&cid=C08A1KD7TNY
-# RUN echo "=== DIST-DYNAMIC YARN INSTALLS ==="; for f in $(find ./dynamic-plugins/wrappers/ -maxdepth 2 -type d -name dist-dynamic); do g=${f#*/wrappers/}; echo " > $g"; g=${g//\//_}; \
-#   pushd $f >/dev/null; "$YARN" install --immutable >"/tmp/yarn.install.${g}.log.txt" 2>&1; popd >/dev/null; done
+RUN echo "=== DYNAMIC PLUGIN YARN INSTALL ==="; FAILED=0; "$YARN" install --immutable; \
+  for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then \
+  (( FAILED = FAILED + 1 )); \
+  echo; echo $d; \
+  echo "!!! DYNAMIC PLUGIN YARN INSTALL FAILED !!!"; \
+  cat ${d}/build.log; \
+  fi; done; \
+  if [[ $FAILED -gt 0 ]]; then exit $FAILED; fi
+
+RUN echo "=== EXPORT DYNAMIC PLUGINS ==="; FAILED=0; \
+  "$YARN" export-dynamic || true; \
+  for d in $(find . -name yarn-install.log); do \
+  (( FAILED = FAILED + 1 )); echo; echo $d; echo "======"; cat ${d}; \
+  done; \
+  if [[ $FAILED -gt 0 ]]; then exit $FAILED; fi
 
 RUN echo "=== YARN COPY DYNAMIC PLUGINS in $(pwd) ==="; "$YARN" copy-dynamic-plugins dist
-#  >/tmp/yarn.copy.dynamic.log.txt 2>&1
-# RUN ls -la dynamic-plugins/*
+
+WORKDIR $CONTAINER_SOURCE
 
 # Downstream only - clean up dynamic plugins sources:
-# DISABLE THIS 04/04 to try to fix startup problems in RHIDP-4014
 # Only keep the dist sub-folder in the dynamic-plugins folder
-# RUN echo "=== DELETE DYNAMIC PLUGINS/* (except dist/) from $(pwd) ==="; find dynamic-plugins -maxdepth 1 -mindepth 1 -type d -not -name dist -exec rm -Rf {} \;
-# RUN ls -la dynamic-plugins/dist/*
+RUN echo "=== DELETE DYNAMIC PLUGINS/* (except dist/) from $(pwd) ==="; find dynamic-plugins -maxdepth 1 -mindepth 1 -type d -not -name dist -exec rm -Rf {} \;
 
 # Stage 4 - Build the actual backend image and install production dependencies
 # Upstream only
@@ -288,18 +196,18 @@ COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins.default.yaml ./
 # TODO is this still needed? maintaining it over time will be a chore if the .so files change
 RUN echo "=== lib64 symlinks ==="; \
   for l in libbrotlidec.so.1 libbrotlienc.so.1 libbrotlicommon.so.1 libc.so.6 ld-linux-x86-64.so.2 libcrypto.so.3 libk5crypto.so.3 libz.so.1 libssl.so.3; do \
-    ln -s /usr/lib64/$l /usr/lib64/${l%.*} 2>/dev/null || true; \
-    ls -l /usr/lib64/${l%.*}; \
+  ln -s /usr/lib64/$l /usr/lib64/${l%.*} 2>/dev/null || true; \
+  ls -l /usr/lib64/${l%.*}; \
   done
 
-# Increate timeout for yarn install
+# Increase timeout for yarn install
 RUN "$YARN" config set httpTimeout 600000
 
 # Install production dependencies
 # hadolint ignore=DL3059
-RUN FAILED=0; "$YARN" workspaces focus --all --production || true; \ 
+RUN echo "=== YARN WORKSPACES FOCUS ==="; FAILED=0; "$YARN" workspaces focus --all --production || true; \
   for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then \
-    (( FAILED = FAILED + 1 )); echo; echo $d; echo "======"; cat ${d}/build.log; \
+  (( FAILED = FAILED + 1 )); echo; echo $d; echo "======"; cat ${d}/build.log; \
   fi; done; \
   if [[ $FAILED -gt 0 ]]; then exit $FAILED; fi
 
@@ -312,43 +220,43 @@ RUN \
 
 # dump console logs if they have errors
 RUN hadFail=0; for d in $(find /tmp -name "yarn*log*" || true) $(find /tmp/xfs-*  -name build.log || true); do \
-failsCheck="$(grep -E "Failed with errors|Failed to execute command|Failed to install|Failed to download|exit code 1" "$d")"; \
-if [[ $failsCheck != "" ]]; then \
+  failsCheck="$(grep -E "Failed with errors|Failed to execute command|Failed to install|Failed to download|exit code 1" "$d")"; \
+  if [[ $failsCheck != "" ]]; then \
   echo "==== $d SUMMARY ===="; echo "$failsCheck"; \
   echo "==== $d FULL ====";    cat "$d"; echo "==== $d ===="; \
   (( hadFail = hadFail +1 )); \
-fi; \
-done; if [[ $hadFail -gt 0 ]]; then exit $hadFail; fi
+  fi; \
+  done; if [[ $hadFail -gt 0 ]]; then exit $hadFail; fi
 
 # Stage 5 - Build the runner image
 # https://registry.access.redhat.com/ubi9/nodejs-22-minimal
-FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:9.5-1742929466 AS runner
+FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:9.5-1746535384 AS runner
 USER 0
 
 ENV EXTERNAL_SOURCE_NESTED=.
 ENV CONTAINER_SOURCE=/opt/app-root/src
 WORKDIR $CONTAINER_SOURCE/
 
-# TODO https://issues.redhat.com/browse/RHIDP-6561 install techdocs using requirements*.txt so we have the same version in up and downstream consistently
-# Downstream only - install techdocs dependencies using cachito sources
-# Using cachi2 env vars:
+# cachi2 env vars:
 #   export PIP_FIND_LINKS=/cachi2/output/deps/pip
 #   export PIP_NO_INDEX=true
+
+# Install techdocs dependencies using requirements files
 # hadolint ignore=DL3013,DL3041,SC2086
-COPY "$EXTERNAL_SOURCE_NESTED"/docker/ ./docker
+COPY "$EXTERNAL_SOURCE_NESTED"/python/ ./python
 RUN microdnf install -y python3.11 python3.11-pip python3.11-devel make cmake cpp gcc gcc-c++ skopeo 1>/dev/null 2>&1; \
   alternatives --install /usr/bin/python python /usr/bin/python3.11 1 && \
   alternatives --install /usr/bin/pip pip /usr/bin/pip3.11 1 && \
   # fix ownership for pip install folder
   mkdir -p /opt/app-root/src/.cache/pip && chown -R root:root /opt/app-root && \
   # ls -ld /opt/ /opt/app-root /opt/app-root/src/ /opt/app-root/src/.cache /opt/app-root/src/.cache/pip || true; \
-  pushd "$EXTERNAL_SOURCE_NESTED"/docker/ >/dev/null && \
+  pushd "$EXTERNAL_SOURCE_NESTED"/python/ >/dev/null && \
   set -e; \
   python3.11 -V; pip3.11 -V; \
   pip install --no-cache-dir --upgrade pip setuptools pyyaml; \
   pip install --no-cache-dir -r requirements.txt -r requirements-build.txt; mkdocs --version; \
   popd >/dev/null; \
-  rm -fr docker/; \
+  rm -fr python/; \
   microdnf clean all
 
 # Upstream only - copy from cleanup stage
@@ -356,18 +264,15 @@ RUN microdnf install -y python3.11 python3.11-pip python3.11-devel make cmake cp
 # Downstream only - copy from build, not cleanup stage
 COPY --from=build --chown=1001:1001 "$CONTAINER_SOURCE"/ ./
 
-# Copy embedded dynamic plugins from $CONTAINER_SOURCE
-COPY --from=build $CONTAINER_SOURCE/dynamic-plugins/dist/ ./dynamic-plugins/dist/
-
 # RHIDP-4220 - make Konflux preflight and EC checks happy - [check-container] Create a directory named /licenses and include all relevant licensing
-COPY $EXTERNAL_SOURCE/LICENSE /licenses/
+COPY $EXTERNAL_SOURCE_NESTED/LICENSE /licenses/
 
 # RHIDP-5216/RHIDP-5215 - interim marketplace catalog entities until these data will be loaded from container images
-COPY $EXTERNAL_SOURCE/catalog-entities/marketplace /marketplace/catalog-entities/
+COPY $EXTERNAL_SOURCE_NESTED/catalog-entities/marketplace /marketplace/catalog-entities/
 
 # Copy script to gather dynamic plugins; copy embedded dynamic plugins to root folder; fix permissions
-COPY docker/install-dynamic-plugins.py docker/install-dynamic-plugins.sh ./
-RUN chmod -R a+r ./dynamic-plugins/ ./install-dynamic-plugins.py; \
+COPY $EXTERNAL_SOURCE_NESTED/docker/install-dynamic-plugins.py $EXTERNAL_SOURCE_NESTED/docker/install-dynamic-plugins.sh ./
+RUN ./install-dynamic-plugins.py; \
   chmod -R a+rx ./install-dynamic-plugins.sh
 
 # The existence of the index.html.tmpl tells Backstage to take that file and load it into memory, inject the needed appConfig (instead of writing
@@ -376,11 +281,11 @@ RUN chmod -R a+r ./dynamic-plugins/ ./install-dynamic-plugins.py; \
 RUN ln -s /opt/app-root/src/packages/app/dist/index.html /opt/app-root/src/packages/app/dist/index.html.tmpl
 
 # Fix for https://issues.redhat.com/browse/RHIDP-728
-RUN mkdir /opt/app-root/src/.npm; chown -R 1001:1001 /opt/app-root/src/.npm; 
+RUN mkdir -p /opt/app-root/src/.npm; chown -R 1001:1001 /opt/app-root/src/.npm
 
 # The fix-permissions script is important when operating in environments that dynamically use a random UID at runtime, such as OpenShift.
 # The upstream backstage image does not account for this and it causes the container to fail at runtime.
-# suppress warnings about dereferencing symlinks 
+# suppress warnings about dereferencing symlinks
 RUN fix-permissions ./ 2>&1 | grep -v "chgrp: cannot dereference" || true
 
 # Switch to nodejs user

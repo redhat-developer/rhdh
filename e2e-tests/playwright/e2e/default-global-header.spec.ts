@@ -57,13 +57,13 @@ test.describe("Default Global Header", () => {
   test("Verify Profile Dropdown behaves as expected", async ({ page }) => {
     await uiHelper.openProfileDropdown();
     expect(await uiHelper.isLinkVisible("Settings")).toBeTruthy();
-    expect(await uiHelper.isTextVisible("Logout")).toBeTruthy();
+    expect(await uiHelper.isTextVisible("Sign out")).toBeTruthy();
 
     await uiHelper.clickLink({ href: "/settings" });
     await uiHelper.verifyHeading("Settings");
 
     await uiHelper.openProfileDropdown();
-    await page.locator(`p`).getByText("Logout").first().click();
+    await page.locator(`p`).getByText("Sign out").first().click();
     await uiHelper.verifyHeading("Select a sign-in method");
   });
 

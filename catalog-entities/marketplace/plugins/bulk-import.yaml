@@ -68,4 +68,5 @@ spec:
 
   packages:
     - red-hat-developer-hub-backstage-plugin-bulk-import
+    - red-hat-developer-hub-backstage-plugin-bulk-import-backend
 

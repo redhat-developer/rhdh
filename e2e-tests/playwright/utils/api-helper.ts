@@ -295,4 +295,121 @@ export class APIHelper {
     );
     return responseRefresh.status();
   }
+
+  /**
+   * Fetches the UID of an entity by its name from the Backstage catalog.
+   *
+   * @param name - The name of the entity (e.g., 'hello-world-2').
+   * @returns The UID string if found, otherwise undefined.
+   */
+  static async getEntityUidByName(name: string): Promise<string | undefined> {
+    const baseUrl = process.env.BASE_URL;
+    const url = `${baseUrl}/api/catalog/entities/by-name/template/default/${name}`;
+    const context = await request.newContext();
+    const response = await context.get(url);
+    if (response.status() !== 200) {
+      return undefined;
+    }
+    const data = await response.json();
+    return data?.metadata?.uid;
+  }
+
+  /**
+   * Deletes a location from the Backstage catalog by its UID.
+   *
+   * @param uid - The UID of the location to delete.
+   * @returns The status code of the delete operation.
+   */
+  static async deleteLocationByUid(uid: string): Promise<number> {
+    const baseUrl = process.env.BASE_URL;
+    const url = `${baseUrl}/api/catalog/locations/${uid}`;
+    const context = await request.newContext();
+    const response = await context.delete(url);
+    return response.status();
+  }
+
+  /**
+   * Fetches the UID of a Template entity by its name and namespace from the Backstage catalog.
+   *
+   * @param name - The name of the template entity (e.g., 'hello-world-2').
+   * @param namespace - The namespace of the template entity (default: 'default').
+   * @returns The UID string if found, otherwise undefined.
+   */
+  static async getTemplateEntityUidByName(
+    name: string,
+    namespace: string = "default",
+  ): Promise<string | undefined> {
+    const baseUrl = process.env.BASE_URL;
+    const url = `${baseUrl}/api/catalog/locations/by-entity/template/${namespace}/${name}`;
+    const context = await request.newContext();
+    const response = await context.get(url);
+    if (response.status() === 200) {
+      const data = await response.json();
+      return data?.metadata?.uid;
+    }
+    if (response.status() === 404) {
+      return undefined;
+    }
+    return undefined;
+  }
+
+  /**
+   * Deletes an entity location from the Backstage catalog by its ID.
+   *
+   * @param id - The ID of the entity to delete.
+   * @returns The status code of the delete operation.
+   */
+  static async deleteEntityLocationById(id: string): Promise<number> {
+    const baseUrl = process.env.BASE_URL;
+    const url = `${baseUrl}/api/catalog/locations/${id}`;
+    const context = await request.newContext();
+    const response = await context.delete(url);
+    return response.status();
+  }
+
+  /**
+   * Registers a new location in the Backstage catalog.
+   *
+   * @param target - The target URL of the location to register.
+   * @returns The status code of the registration operation.
+   */
+  static async registerLocation(target: string): Promise<number> {
+    const baseUrl = process.env.BASE_URL;
+    const url = `${baseUrl}/api/catalog/locations`;
+    const context = await request.newContext();
+    const response = await context.post(url, {
+      data: {
+        type: "url",
+        target,
+      },
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    return response.status();
+  }
+
+  /**
+   * Fetches the ID of a location from the Backstage catalog by its target URL.
+   *
+   * @param target - The target URL of the location to search for.
+   * @returns The ID string if found, otherwise undefined.
+   */
+  static async getLocationIdByTarget(
+    target: string,
+  ): Promise<string | undefined> {
+    const baseUrl = process.env.BASE_URL;
+    const url = `${baseUrl}/api/catalog/locations`;
+    const context = await request.newContext();
+    const response = await context.get(url);
+    if (response.status() !== 200) {
+      return undefined;
+    }
+    const data = await response.json();
+    // data is expected to be an array of objects with a 'data' property
+    const location = (Array.isArray(data) ? data : []).find(
+      (entry) => entry?.data?.target === target,
+    );
+    return location?.data?.id;
+  }
 }

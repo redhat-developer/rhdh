@@ -1,7 +1,7 @@
 import { LOGGER } from "./logger";
 import { spawn } from "child_process";
 import * as constants from "./authenticationProviders/constants";
-import { expect } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
 import { KubeClient } from "./kube-client";
 import { V1ConfigMap, V1Secret } from "@kubernetes/client-node";
 import { GroupEntity } from "@backstage/catalog-model";
@@ -438,4 +438,23 @@ export async function dumpRHDHUsersAndGroups(
     JSON.stringify({ users, groups, locations }),
     { flag: "w" },
   );
+}
+
+export async function downloadAndReadFile(
+  page: Page,
+  locator: string,
+): Promise<string | undefined> {
+  const [download] = await Promise.all([
+    page.waitForEvent("download"),
+    page.locator(locator).click(),
+  ]);
+
+  const filePath = await download.path();
+
+  if (filePath) {
+    return fs.readFileSync(filePath, "utf-8");
+  } else {
+    console.error("Download failed or path is not available");
+    return undefined;
+  }
 }

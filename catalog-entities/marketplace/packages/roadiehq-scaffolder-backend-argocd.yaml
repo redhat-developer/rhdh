@@ -18,10 +18,10 @@ metadata:
 spec:
   packageName: "@roadiehq/scaffolder-backend-argocd"
   dynamicArtifact: ./dynamic-plugins/dist/roadiehq-scaffolder-backend-argocd-dynamic
-  version: 1.2.0
+  version: 1.5.0
   backstage:
     role: backend-plugin-module
-    supportedVersions: 1.35.1
+    supportedVersions: 1.36.1
   author: Red Hat
   support: tech-preview
   lifecycle: active

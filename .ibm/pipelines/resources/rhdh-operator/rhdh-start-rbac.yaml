@@ -4,7 +4,7 @@ metadata:
   name: rhdh-rbac
 spec:
   application:
-    image: "quay.io/rhdh-community/rhdh:next"
+    image: 'quay.io/$QUAY_REPO:$TAG_NAME'
     appConfig:
       configMaps:
         - name: app-config-rhdh

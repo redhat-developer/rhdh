@@ -198,95 +198,37 @@ The easiest and fastest method for getting started: RHDH app, running it locally
 
    **Note:** The `-- --` arguments are required to forward the `--dev` argument to every yarn workspace providing an `export-dynamic` script.
 
-5. Copy the required code snippet from `app-config.yaml` into `app-config.local.yaml`. Note: Each plugin has a `# Plugin: <PLUGIN_NAME>` comment above the required code snippet(s).
+5. Copy the required configuration to the `app-config.local.yaml` file
 
-   - Set your Organization Name
 
-     - ${ORGANIZATION_NAME}: organization name
+6. Start the application using `yarn start`, please note that the frontend will be served from the backend as static assets
 
-   - Enable plugins (All plugins have a default of `false`)
+7. Navigate to <http://localhost:7007>
 
-     - `${PERMISSION_ENABLED}` Set to `true` to enable RBAC (permission will be available on `http://localhost:7007/permission`).
+8.  Alternatively, you can start application using `yarn dev` which would run the frontend using webpack, which allows for hot reloads.
 
-   - Setup the Jira plugin
+    To use `yarn dev`, change the following in your app-config.local.yaml:
 
-     - This [URL](https://github.com/RoadieHQ/roadie-backstage-plugins/tree/main/plugins/frontend/backstage-plugin-jira#how-to-use-jira-plugin-in-backstage) explains how to use the Jira plugin
-     - `${JIRA_URL}`: URL for the Jira instance
-     - `${JIRA_TOKEN}`: API token
-     - `${JIRA_USER_AGENT}`: User-Agent (UA) string (Any dummy string without whitespace works because Jira APIs reject browser origin requests)
+    ```yaml
+    app:
+      baseUrl: http://localhost:3000
 
-   - Setup the Jfrog Artifactory plugin
+    backend:
+      baseUrl: http://localhost:7007
+      cors:
+        origin: http://localhost:3000
+        methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+        credentials: true
+    ```
 
-     - This [URL](https://github.com/backstage/community-plugins/tree/main/workspaces/jfrog-artifactory/plugins/jfrog-artifactory) explains how to use the Jfrog Artifactory plugin
-     - `${ARTIFACTORY_URL}`: URL for the Jfrog Artifactory instance
-     - `${ARTIFACTORY_TOKEN}`: API token
-     - `${ARTIFACTORY_SECURE}`: Change to `false` in case of using self hosted artifactory instance with a self-signed certificate
+    This will automatically open `http://localhost:3000` in your default browser.
 
-   - Setup the SonarQube instance
+## Optional Configuration and Plugins
 
-     - `${SONARQUBE_URL}` the url at which sonarqube can be found. Mandatory if plugin is enabled
-     - `${SONARQUBE_TOKEN}` a sonarqube [token](https://docs.sonarqube.org/9.8/user-guide/user-account/generating-and-using-tokens/) with enough permission to read all the SonaQube projects. Mandatory if plugin is enabled
-
-   - Setup a Jenkins instance and then pass the following environment variables to backstage:
-
-     - `${JENKINS_URL}` with the URL where your Jenkins instance can be accessed
-     - `${JENKINS_USERNAME}` with the name of the user to be accessed through the API
-     - `${JENKINS_TOKEN}` with the API token to be used
-
-   - Setup the Notifications email plugin
-
-     - `${EMAIL_HOSTNAME}`: SMTP server hostname
-     - `${EMAIL_USERNAME}`: SMTP username
-     - `${EMAIL_PASSWORD}`: SMTP password
-     - `${EMAIL_SENDER}`: Sender email address
-
-   - Setup the PagerDuty plugin
-
-     - `${PAGERDUTY_TOKEN}` with the [API token](https://support.pagerduty.com/docs/api-access-keys#generating-a-general-access-rest-api-key) used to make requests to the [PagerDuty API](https://developer.pagerduty.com/docs/rest-api-v2/rest-api/). Note that this will require a PaperDuty Admin role.
-     - To integrate with a PagerDuty Service, you will need to annotate the appropriate entity with the [PagerDuty Integration key](https://pagerduty.github.io/backstage-plugin-docs/getting-started/pagerduty/) in its `.yaml` configuration file:
-
-     ```yaml
-     annotations:
-       pagerduty.com/integration-key: [INTEGRATION_KEY]
-     ```
-
-     - Alternatively, you can integrate with the [PagerDuty ServiceID](https://pagerduty.github.io/backstage-plugin-docs/getting-started/backstage/#annotating-entities) instead of the integration key:
-
-     ```yaml
-     annotations:
-       pagerduty.com/service-id: [SERVICE_ID]
-     ```
-
-   - Setup the Lighthouse plugin
-
-     - `${LIGHTHOUSE_BASEURL}`: Base URL for the `lighthouse-audit-service` instance
-     - To integrate the Lighthouse plugin into the catalog so that the Lighthouse audit info for a component can be displayed in that component's entity page, it is necessary to annotate the entity as shown below.
-     - Please note that it is **essential** to include the `https://` or `http::/` in front of the link for this plugin to function correctly.
-
-     ```yaml
-     apiVersion: backstage.io/v1alpha1
-     kind: Component
-     metadata:
-       # ...
-       annotations:
-         lighthouse.com/website-url: # A single website url e.g. https://backstage.io/
-     ```
-
-     - Also please note that ending the website url with a `/` will cause it to be treated as a separate link compared to the same url without the `/`.
-       - i.e. `https://backstage.io/` and `https://backstage.io` are not considered the same, therefore audits for each will be grouped separately.
-
-   - Setup the Dynatrace plugin
-
-     - This [URL](https://github.com/backstage/community-plugins/tree/main/workspaces/dynatrace/plugins/dynatrace#getting-started) explains how to use the Dynatrace Plugin
-     - `${DYNATRACE_URL}`: The baseURL for rendering links to problems in the table
-     - `${DYNATRACE_API_URL}`: The URL to the Dynatrace API
-     - `{DYNATRACE_ACCESS_TOKEN}`: API access token (see [documentation](https://docs.dynatrace.com/docs/discover-dynatrace/references/dynatrace-api/basics/dynatrace-api-authentication)) with `entities.read`,`problems.read` permissions. It will also need one of the following permissions: `DataExport`, `ExternalSyntheticIntegration`, or `ReadSyntheticData`.
-
-   - Enabling Authentication in Showcase
-
+- Enabling Authentication in Showcase
      - Refer to the [authentication documentation](./auth.md) for the available auth providers and the steps to configure them.
 
-   - Setup the RBAC plugin
+- Setup the RBAC plugin
 
      - This [URL](https://github.com/backstage/community-plugins/tree/main/workspaces/rbac/plugins/rbac-backend) explains how to use the RBAC Backend Plugin.
 
@@ -332,44 +274,7 @@ The easiest and fastest method for getting started: RHDH app, running it locally
                - name: user:default/<USERNAME>
        ```
 
-   - Setup the Nexus Repository Manager plugin
 
-     - `${NEXUS_REPOSITORY_MANAGER_URL}`: The URL to the Nexus Repository Manager instance.
-     - `${NEXUS_REPOSITORY_MANAGER_SECURE}`: Change to `false` in case of using self hosted artifactory instance with a self-signed certificate
-     - If using a private Nexus Repository Manager instance, you will need to add an Authorization header for the nexus proxy in your `app-config.yaml` or `app-config.local.yaml`:
-
-       ```yaml
-       '/nexus-repository-manager':
-         target: ${NEXUS_REPOSITORY_MANAGER_URL}
-         headers:
-           X-Requested-With: 'XMLHttpRequest'
-           # Uncomment the following line to access a private Nexus Repository Manager using a token
-           Authorization: 'Bearer ${NEXUS_REPOSITORY_MANAGER_TOKEN}'
-       ```
-
-       - `${NEXUS_REPOSITORY_MANAGER_TOKEN}` (Only for private Nexus Repository Manager instances): Nexus instance API token (see [documentation](https://help.sonatype.com/repomanager3/nexus-repository-administration/user-authentication/user-tokens)) with `nx-repository-view-*-*-read` [permissions](https://help.sonatype.com/repomanager3/nexus-repository-administration/access-control/privileges), or read permissions to view all the repositories you want to display in the plugin.
-
-6. Start the application using `yarn start`, please note that the frontend will be served from the backend as static assets
-
-7. Navigate to <http://localhost:7007>
-
-8. Alternatively, you can start application using `yarn dev` which would run the frontend using webpack, which allows for hot reloads.
-
-To use `yarn dev`, change the following in your app-config.local.yaml:
-
-```yaml
-app:
-  baseUrl: http://localhost:3000
-
-backend:
-  baseUrl: http://localhost:7007
-  cors:
-    origin: http://localhost:3000
-    methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
-    credentials: true
-```
-
-This will automatically open `http://localhost:3000` in your default browser.
 
 ### Note: Extension to Kubernetes Backend Plugin
 
@@ -383,11 +288,3 @@ kubernetes:
         authProvider: 'oidc'
         oidcTokenProvider: 'oidc'
 ```
-
-## Running with Helm
-
-COMING SOON
-
-## Deploying with ArgoCD
-
-COMING SOON

@@ -1,6 +1,12 @@
-import { APIRequestContext, APIResponse, request } from "@playwright/test";
+import {
+  APIRequestContext,
+  APIResponse,
+  Page,
+  request,
+} from "@playwright/test";
 import playwrightConfig from "../../../playwright.config";
 import { Policy, Role } from "./rbac-api-structures";
+import { RhdhAuthApiHack } from "./rhdh-auth-api-hack";
 
 export default class RhdhRbacApi {
   private readonly apiUrl = playwrightConfig.use.baseURL + "/api/permission/";
@@ -9,7 +15,7 @@ export default class RhdhRbacApi {
     Authorization: string;
   };
   private myContext: APIRequestContext;
-  private readonly roleRegex = /^[a-zA-Z]+\/[a-zA-Z]+$/;
+  private readonly roleRegex = /^[a-zA-Z]+\/[a-zA-Z_]+$/;
 
   private constructor(private readonly token: string) {
     this.authHeader = {
@@ -33,8 +39,8 @@ export default class RhdhRbacApi {
     return await this.myContext.get("roles");
   }
 
-  public async getRole(): Promise<APIResponse> {
-    return await this.myContext.get("role");
+  public async getRole(role: string): Promise<APIResponse> {
+    return await this.myContext.get(`roles/role/${role}`);
   }
   public async updateRole(
     role: string /* shall be like: default/admin */,
@@ -60,8 +66,14 @@ export default class RhdhRbacApi {
     return await this.myContext.get("policies");
   }
 
-  public async getPolicy(policy: string): Promise<APIResponse> {
-    return await this.myContext.get(`policies/${policy}`);
+  public async getPoliciesByRole(policy: string): Promise<APIResponse> {
+    return await this.myContext.get(`policies/role/${policy}`);
+  }
+
+  public async getPoliciesByQuery(
+    params: string | { [key: string]: string | number | boolean },
+  ): Promise<APIResponse> {
+    return await this.myContext.get("policies", { params });
   }
 
   public async createPolicies(policy: Policy[]): Promise<APIResponse> {
@@ -74,15 +86,31 @@ export default class RhdhRbacApi {
     newPolicy: Policy[],
   ): Promise<APIResponse> {
     this.checkRoleFormat(role);
-    return await this.myContext.put(`/policies/role/${role}`, {
+    return await this.myContext.put(`policies/role/${role}`, {
       data: { oldPolicy, newPolicy },
     });
   }
   public async deletePolicy(policy: string, policies: Policy[]) {
     this.checkRoleFormat(policy);
-    return await this.myContext.delete(`/policies/role/${policy}`, {
+    return await this.myContext.delete(`policies/role/${policy}`, {
       data: policies,
     });
+  }
+
+  // Conditions
+
+  public async getConditions(): Promise<APIResponse> {
+    return await this.myContext.get("roles/conditions");
+  }
+
+  public async getConditionByQuery(
+    params: string | { [key: string]: string | number | boolean },
+  ): Promise<APIResponse> {
+    return await this.myContext.get("roles/conditions", { params });
+  }
+
+  public async getConditionById(id: number): Promise<APIResponse> {
+    return await this.myContext.get(`roles/conditions/${id}`);
   }
 
   private checkRoleFormat(role: string) {
@@ -90,5 +118,10 @@ export default class RhdhRbacApi {
       throw Error(
         "roles passed to the Rbac api must have format like: default/admin",
       );
+  }
+
+  public static async buildRbacApi(page: Page): Promise<RhdhRbacApi> {
+    const token = await RhdhAuthApiHack.getToken(page);
+    return RhdhRbacApi.build(token);
   }
 }

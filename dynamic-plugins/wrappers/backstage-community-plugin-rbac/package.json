@@ -28,12 +28,12 @@
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
-    "@backstage-community/plugin-rbac": "1.39.2",
+    "@backstage-community/plugin-rbac": "1.40.0",
     "@mui/material": "5.17.1"
   },
   "devDependencies": {
     "@backstage/cli": "0.30.0",
-    "@janus-idp/cli": "3.4.0",
+    "@janus-idp/cli": "3.5.0",
     "typescript": "5.8.3"
   },
   "files": [
