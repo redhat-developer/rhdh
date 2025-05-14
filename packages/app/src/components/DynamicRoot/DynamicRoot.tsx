@@ -34,9 +34,9 @@ import DynamicRootContext, {
   ResolvedDynamicRoute,
   ResolvedDynamicRouteMenuItem,
   ScaffolderFieldExtension,
-  ScalprumMountPointConfig,
+  MountPointConfig,
   TechdocsAddon,
-} from './DynamicRootContext';
+} from '@internal/plugin-utils';
 import Loader from './Loader';
 
 export type StaticPlugins = Record<
@@ -230,7 +230,7 @@ export const DynamicRoot = ({
       {
         mountPoint: string;
         Component: React.ComponentType<{}>;
-        config?: ScalprumMountPointConfig;
+        config?: MountPointConfig;
         staticJSXContent?:
           | React.ReactNode
           | ((dynamicRootConfig: DynamicRootConfig) => React.ReactNode);

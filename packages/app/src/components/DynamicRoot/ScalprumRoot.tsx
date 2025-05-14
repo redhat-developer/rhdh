@@ -12,7 +12,7 @@ import { ScalprumProvider } from '@scalprum/react-core';
 import { DynamicPluginConfig } from '../../utils/dynamicUI/extractDynamicConfig';
 import overrideBaseUrlConfigs from '../../utils/dynamicUI/overrideBaseUrlConfigs';
 import { DynamicRoot, StaticPlugins } from './DynamicRoot';
-import { DynamicRootConfig } from './DynamicRootContext';
+import { DynamicRootConfig } from '@internal/plugin-utils';
 import Loader from './Loader';
 
 export type ScalprumApiHolder = {

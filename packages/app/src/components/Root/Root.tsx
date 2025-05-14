@@ -37,7 +37,7 @@ import { makeStyles } from 'tss-react/mui';
 
 import DynamicRootContext, {
   ResolvedMenuItem,
-} from '../DynamicRoot/DynamicRootContext';
+} from '@internal/plugin-utils';
 import { ApplicationHeaders } from './ApplicationHeaders';
 import { MenuIcon } from './MenuIcon';
 import { SidebarLogo } from './SidebarLogo';

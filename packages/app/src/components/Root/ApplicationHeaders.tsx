@@ -3,18 +3,18 @@ import React, { useContext, useMemo } from 'react';
 import { ErrorBoundary } from '@backstage/core-components';
 
 import DynamicRootContext, {
-  ScalprumMountPoint,
-  ScalprumMountPointConfigBase,
-} from '../DynamicRoot/DynamicRootContext';
+  MountPoint,
+  MountPointConfigBase,
+} from '@internal/plugin-utils';
 
 type Position = 'above-main-content' | 'above-sidebar';
 
-type ApplicationHeaderMountPointConfig = ScalprumMountPointConfigBase & {
+type ApplicationHeaderMountPointConfig = MountPointConfigBase & {
   position: Position;
   layout?: React.CSSProperties;
 };
 
-type ApplicationHeaderMountPoint = ScalprumMountPoint & {
+type ApplicationHeaderMountPoint = MountPoint & {
   Component: React.ComponentType<
     React.PropsWithChildren<{
       position: Position;

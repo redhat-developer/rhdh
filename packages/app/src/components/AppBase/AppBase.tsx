@@ -22,7 +22,7 @@ import { UserSettingsPage } from '@backstage/plugin-user-settings';
 
 import getDynamicRootConfig from '../../utils/dynamicUI/getDynamicRootConfig';
 import { entityPage } from '../catalog/EntityPage';
-import DynamicRootContext from '../DynamicRoot/DynamicRootContext';
+import DynamicRootContext from '@internal/plugin-utils';
 import { LearningPaths } from '../learningPaths/LearningPathsPage';
 import { Root } from '../Root';
 import { ApplicationListener } from '../Root/ApplicationListener';

@@ -8,7 +8,7 @@ import { scaffolderPlugin } from '@backstage/plugin-scaffolder';
 
 import get from 'lodash/get';
 
-import { RouteBinding } from '../../components/DynamicRoot/DynamicRootContext';
+import { RouteBinding } from '@internal/plugin-utils';
 
 const bindAppRoutes = (
   bind: AppRouteBinder,

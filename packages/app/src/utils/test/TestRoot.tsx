@@ -9,7 +9,7 @@ import { orgPlugin } from '@backstage/plugin-org';
 import { scaffolderPlugin } from '@backstage/plugin-scaffolder';
 
 import { apis } from '../../apis';
-import DynamicRootContext from '../../components/DynamicRoot/DynamicRootContext';
+import DynamicRootContext from '@internal/plugin-utils';
 
 const TestRoot = ({ children }: PropsWithChildren<{}>) => {
   const { current } = useRef<BackstageApp>(

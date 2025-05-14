@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 
-import DynamicRootContext from '../components/DynamicRoot/DynamicRootContext';
+import DynamicRootContext from '@internal/plugin-utils';
 
 const useMountPoints = (mountPointId: string) => {
   const { mountPoints } = useContext(DynamicRootContext);
