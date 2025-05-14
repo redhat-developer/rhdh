@@ -4,11 +4,10 @@ import { isKind } from '@backstage/plugin-catalog';
 
 import { hasAnnotation, isType } from '../../components/catalog/utils';
 import {
-  DynamicModuleEntry,
   RouteBinding,
-  ScalprumMountPointConfigRaw,
-  ScalprumMountPointConfigRawIf,
-} from '../../components/DynamicRoot/DynamicRootContext';
+  MountPointConfigRaw,
+  MountPointConfigRawIf,
+} from '@internal/plugin-utils';
 import { extractMenuItems } from './extractDynamicConfigFrontend';
 
 export type DynamicRouteMenuItem =
@@ -66,7 +65,7 @@ type MountPoint = {
   mountPoint: string;
   module: string;
   importName: string;
-  config?: ScalprumMountPointConfigRaw;
+  config?: MountPointConfigRaw;
 };
 
 type AppIcon = {
@@ -143,9 +142,10 @@ type ProviderSetting = {
 
 type CustomProperties = {
   pluginModule?: string;
-  dynamicRoutes?: (DynamicModuleEntry & {
+  dynamicRoutes?: ({
     importName?: string;
     module?: string;
+    scope?: string;
     path: string;
     menuItem?: DynamicRouteMenuItem;
   })[];
@@ -385,7 +385,7 @@ function extractDynamicConfig(
  * @param conditional
  * @returns
  */
-export function configIfToCallable(conditional: ScalprumMountPointConfigRawIf) {
+export function configIfToCallable(conditional: MountPointConfigRawIf) {
   return (entity: Entity, context?: { apis: ApiHolder }) => {
     if (conditional?.allOf) {
       return conditional.allOf

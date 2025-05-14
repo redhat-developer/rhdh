@@ -3655,7 +3655,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "@backstage/catalog-model@npm:1.7.3, @backstage/catalog-model@npm:^1.7.3":
+=======
+"@backstage/catalog-model@npm:1.7.0":
+  version: 1.7.0
+  resolution: "@backstage/catalog-model@npm:1.7.0"
+  dependencies:
+    "@backstage/errors": ^1.2.4
+    "@backstage/types": ^1.1.1
+    ajv: ^8.10.0
+    lodash: ^4.17.21
+  checksum: 6ff537e9e6064d35fa4a173a1c96f94e904489494a67a136e2dd0a743f9e3f4fd8a1f7a661fe8495dfbb642aabcc8fbf1746a300ad496b6e4a5d02f4db00f914
+  languageName: node
+  linkType: hard
+
+"@backstage/catalog-model@npm:1.7.3, @backstage/catalog-model@npm:^1.4.3, @backstage/catalog-model@npm:^1.5.0, @backstage/catalog-model@npm:^1.7.0, @backstage/catalog-model@npm:^1.7.1, @backstage/catalog-model@npm:^1.7.3":
+>>>>>>> 2357c9b7 (refactor:share dynamic context package)
   version: 1.7.3
   resolution: "@backstage/catalog-model@npm:1.7.3"
   dependencies:
@@ -3674,7 +3690,11 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "@backstage/cli-node@npm:0.2.13, @backstage/cli-node@npm:^0.2.12, @backstage/cli-node@npm:^0.2.13":
+=======
+"@backstage/cli-node@npm:0.2.13, @backstage/cli-node@npm:^0.2.12, @backstage/cli-node@npm:^0.2.13, @backstage/cli-node@npm:^0.2.3, @backstage/cli-node@npm:^0.2.5, @backstage/cli-node@npm:^0.2.6, @backstage/cli-node@npm:^0.2.7, @backstage/cli-node@npm:^0.2.9":
+>>>>>>> 2357c9b7 (refactor:share dynamic context package)
   version: 0.2.13
   resolution: "@backstage/cli-node@npm:0.2.13"
   dependencies:
@@ -3687,6 +3707,158 @@ __metadata:
     semver: ^7.5.3
     zod: ^3.22.4
   checksum: d1ce09a728b181db1eae0931ffee81795cd177d32f319edcab1eee8e624820a5bf23c28a9fc70e9883522fc7ded52be232718cc18e418d9febe34ef998737c72
+  languageName: node
+  linkType: hard
+
+"@backstage/cli@npm:0.28.1":
+  version: 0.28.1
+  resolution: "@backstage/cli@npm:0.28.1"
+  dependencies:
+    "@backstage/catalog-model": ^1.7.0
+    "@backstage/cli-common": ^0.1.14
+    "@backstage/cli-node": ^0.2.9
+    "@backstage/config": ^1.2.0
+    "@backstage/config-loader": ^1.9.1
+    "@backstage/errors": ^1.2.4
+    "@backstage/eslint-plugin": ^0.1.10
+    "@backstage/integration": ^1.15.1
+    "@backstage/release-manifests": ^0.0.11
+    "@backstage/types": ^1.1.1
+    "@manypkg/get-packages": ^1.1.3
+    "@module-federation/enhanced": ^0.6.0
+    "@octokit/graphql": ^5.0.0
+    "@octokit/graphql-schema": ^13.7.0
+    "@octokit/oauth-app": ^4.2.0
+    "@octokit/request": ^6.0.0
+    "@pmmmwh/react-refresh-webpack-plugin": ^0.5.7
+    "@rollup/plugin-commonjs": ^26.0.0
+    "@rollup/plugin-json": ^6.0.0
+    "@rollup/plugin-node-resolve": ^15.0.0
+    "@rollup/plugin-yaml": ^4.0.0
+    "@spotify/eslint-config-base": ^15.0.0
+    "@spotify/eslint-config-react": ^15.0.0
+    "@spotify/eslint-config-typescript": ^15.0.0
+    "@sucrase/webpack-loader": ^2.0.0
+    "@svgr/core": 6.5.x
+    "@svgr/plugin-jsx": 6.5.x
+    "@svgr/plugin-svgo": 6.5.x
+    "@svgr/rollup": 6.5.x
+    "@svgr/webpack": 6.5.x
+    "@swc/core": ^1.3.46
+    "@swc/helpers": ^0.5.0
+    "@swc/jest": ^0.2.22
+    "@types/jest": ^29.5.11
+    "@types/webpack-env": ^1.15.2
+    "@typescript-eslint/eslint-plugin": ^6.12.0
+    "@typescript-eslint/parser": ^6.7.2
+    "@yarnpkg/lockfile": ^1.1.0
+    "@yarnpkg/parsers": ^3.0.0
+    bfj: ^8.0.0
+    buffer: ^6.0.3
+    chalk: ^4.0.0
+    chokidar: ^3.3.1
+    commander: ^12.0.0
+    cross-fetch: ^4.0.0
+    cross-spawn: ^7.0.3
+    css-loader: ^6.5.1
+    ctrlc-windows: ^2.1.0
+    esbuild: ^0.24.0
+    esbuild-loader: ^4.0.0
+    eslint: ^8.6.0
+    eslint-config-prettier: ^9.0.0
+    eslint-formatter-friendly: ^7.0.0
+    eslint-plugin-deprecation: ^2.0.0
+    eslint-plugin-import: ^2.25.4
+    eslint-plugin-jest: ^28.0.0
+    eslint-plugin-jsx-a11y: ^6.5.1
+    eslint-plugin-react: ^7.28.0
+    eslint-plugin-react-hooks: ^4.3.0
+    eslint-plugin-unused-imports: ^3.0.0
+    eslint-webpack-plugin: ^4.0.0
+    express: ^4.17.1
+    fork-ts-checker-webpack-plugin: ^9.0.0
+    fs-extra: ^11.2.0
+    git-url-parse: ^15.0.0
+    glob: ^7.1.7
+    global-agent: ^3.0.0
+    globby: ^11.1.0
+    handlebars: ^4.7.3
+    html-webpack-plugin: ^5.3.1
+    inquirer: ^8.2.0
+    jest: ^29.7.0
+    jest-cli: ^29.7.0
+    jest-css-modules: ^2.1.0
+    jest-environment-jsdom: ^29.0.2
+    jest-runtime: ^29.0.2
+    json-schema: ^0.4.0
+    lodash: ^4.17.21
+    mini-css-extract-plugin: ^2.4.2
+    minimatch: ^9.0.0
+    node-fetch: ^2.7.0
+    node-libs-browser: ^2.2.1
+    npm-packlist: ^5.0.0
+    ora: ^5.3.0
+    p-limit: ^3.1.0
+    p-queue: ^6.6.2
+    pirates: ^4.0.6
+    postcss: ^8.1.0
+    process: ^0.11.10
+    raw-loader: ^4.0.2
+    react-dev-utils: ^12.0.0-next.60
+    react-refresh: ^0.14.0
+    recursive-readdir: ^2.2.2
+    replace-in-file: ^7.1.0
+    rollup: ^4.0.0
+    rollup-plugin-dts: ^6.1.0
+    rollup-plugin-esbuild: ^6.1.1
+    rollup-plugin-postcss: ^4.0.0
+    rollup-pluginutils: ^2.8.2
+    run-script-webpack-plugin: ^0.2.0
+    semver: ^7.5.3
+    style-loader: ^3.3.1
+    sucrase: ^3.20.2
+    swc-loader: ^0.2.3
+    tar: ^6.1.12
+    terser-webpack-plugin: ^5.1.3
+    ts-morph: ^23.0.0
+    util: ^0.12.3
+    webpack: ^5.70.0
+    webpack-dev-server: ^5.0.0
+    webpack-node-externals: ^3.0.0
+    yaml: ^2.0.0
+    yargs: ^16.2.0
+    yml-loader: ^2.1.0
+    yn: ^4.0.0
+    zod: ^3.22.4
+  peerDependencies:
+    "@modyfi/vite-plugin-yaml": ^1.1.0
+    "@rspack/core": ^1.0.10
+    "@rspack/dev-server": ^1.0.9
+    "@rspack/plugin-react-refresh": ^1.0.0
+    "@vitejs/plugin-react": ^4.0.4
+    vite: ^4.4.9
+    vite-plugin-html: ^3.2.0
+    vite-plugin-node-polyfills: ^0.22.0
+  peerDependenciesMeta:
+    "@modyfi/vite-plugin-yaml":
+      optional: true
+    "@rspack/core":
+      optional: true
+    "@rspack/dev-server":
+      optional: true
+    "@rspack/plugin-react-refresh":
+      optional: true
+    "@vitejs/plugin-react":
+      optional: true
+    vite:
+      optional: true
+    vite-plugin-html:
+      optional: true
+    vite-plugin-node-polyfills:
+      optional: true
+  bin:
+    backstage-cli: bin/backstage-cli
+  checksum: 5fe0537c30b69fa1236682b76ff713442e93ee62c904419a21e7343d9fa55076d8a38af89ff2d6e3e183add84ef1e46f136e0ff0be12cc3577517a493e5c0746
   languageName: node
   linkType: hard
 
@@ -4066,7 +4238,32 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "@backstage/core-plugin-api@npm:1.10.4":
+=======
+"@backstage/core-plugin-api@npm:1.10.0":
+  version: 1.10.0
+  resolution: "@backstage/core-plugin-api@npm:1.10.0"
+  dependencies:
+    "@backstage/config": ^1.2.0
+    "@backstage/errors": ^1.2.4
+    "@backstage/types": ^1.1.1
+    "@backstage/version-bridge": ^1.0.10
+    history: ^5.0.0
+  peerDependencies:
+    "@types/react": ^16.13.1 || ^17.0.0 || ^18.0.0
+    react: ^16.13.1 || ^17.0.0 || ^18.0.0
+    react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
+    react-router-dom: 6.0.0-beta.0 || ^6.3.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 50647e0a33946a981cdb9b03c7282e761ff95b4fc33f3dcbaa08536740e8be0d555e0d8995fb66484eb5518a10583113df31965d15e2786a388d16ae54a7fba6
+  languageName: node
+  linkType: hard
+
+"@backstage/core-plugin-api@npm:1.10.4, @backstage/core-plugin-api@npm:^1.10.1, @backstage/core-plugin-api@npm:^1.10.3, @backstage/core-plugin-api@npm:^1.10.4, @backstage/core-plugin-api@npm:^1.9.3":
+>>>>>>> 2357c9b7 (refactor:share dynamic context package)
   version: 1.10.4
   resolution: "@backstage/core-plugin-api@npm:1.10.4"
   dependencies:
@@ -4312,7 +4509,68 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "@backstage/integration@npm:^1.15.0, @backstage/integration@npm:^1.16.1, @backstage/integration@npm:^1.16.2":
+=======
+"@backstage/integration-react@npm:^1.2.5":
+  version: 1.2.5
+  resolution: "@backstage/integration-react@npm:1.2.5"
+  dependencies:
+    "@backstage/config": ^1.3.2
+    "@backstage/core-plugin-api": ^1.10.5
+    "@backstage/integration": ^1.16.2
+    "@material-ui/core": ^4.12.2
+    "@material-ui/icons": ^4.9.1
+  peerDependencies:
+    "@types/react": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.3.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: a2f8635b305a614bc8be759923856ff801dd085e7791ca8ba2b1e7896d0b2df5cb1b9c0fe6d5413fe91db35b5ddea9d39261eabde42485df7e1abc1b6c6e59a0
+  languageName: node
+  linkType: hard
+
+"@backstage/integration@npm:^1.10.0, @backstage/integration@npm:^1.11.0, @backstage/integration@npm:^1.13.0, @backstage/integration@npm:^1.14.0, @backstage/integration@npm:^1.15.0, @backstage/integration@npm:^1.16.1, @backstage/integration@npm:^1.8.0":
+  version: 1.16.1
+  resolution: "@backstage/integration@npm:1.16.1"
+  dependencies:
+    "@azure/identity": ^4.0.0
+    "@azure/storage-blob": ^12.5.0
+    "@backstage/config": ^1.3.2
+    "@backstage/errors": ^1.2.7
+    "@octokit/auth-app": ^4.0.0
+    "@octokit/rest": ^19.0.3
+    cross-fetch: ^4.0.0
+    git-url-parse: ^15.0.0
+    lodash: ^4.17.21
+    luxon: ^3.0.0
+  checksum: e6c21c136550f475831c2098a63f932be2ea486a4fe07c8a196dd6bc4db87a97ca144324f36447a4a078437993d9825a9033329113b879c30c52ec68bfd2a1ff
+  languageName: node
+  linkType: hard
+
+"@backstage/integration@npm:^1.15.1":
+  version: 1.16.3
+  resolution: "@backstage/integration@npm:1.16.3"
+  dependencies:
+    "@azure/identity": ^4.0.0
+    "@azure/storage-blob": ^12.5.0
+    "@backstage/config": ^1.3.2
+    "@backstage/errors": ^1.2.7
+    "@octokit/auth-app": ^4.0.0
+    "@octokit/rest": ^19.0.3
+    cross-fetch: ^4.0.0
+    git-url-parse: ^15.0.0
+    lodash: ^4.17.21
+    luxon: ^3.0.0
+  checksum: db33dfd032c151ce22ebee51d4da3cbbefebbe4e7b1f4cccca9a6ed89c68ebe6cd37bf7c0cbaebf1aae390c0683a9e85211079247b9bffa17fdd440c46925b17
+  languageName: node
+  linkType: hard
+
+"@backstage/integration@npm:^1.16.2":
+>>>>>>> 2357c9b7 (refactor:share dynamic context package)
   version: 1.16.2
   resolution: "@backstage/integration@npm:1.16.2"
   dependencies:
@@ -6190,7 +6448,11 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "@backstage/version-bridge@npm:^1.0.11":
+=======
+"@backstage/version-bridge@npm:^1.0.10, @backstage/version-bridge@npm:^1.0.11, @backstage/version-bridge@npm:^1.0.8":
+>>>>>>> 2357c9b7 (refactor:share dynamic context package)
   version: 1.0.11
   resolution: "@backstage/version-bridge@npm:1.0.11"
   peerDependencies:
@@ -8086,6 +8348,28 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@internal/plugin-utils@1.0.0, @internal/plugin-utils@workspace:packages/plugin-utils":
+  version: 0.0.0-use.local
+  resolution: "@internal/plugin-utils@workspace:packages/plugin-utils"
+  dependencies:
+    "@backstage/catalog-model": 1.7.0
+    "@backstage/cli": 0.28.1
+    "@backstage/core-plugin-api": 1.10.0
+    "@testing-library/dom": 9.3.4
+    "@testing-library/jest-dom": 6.5.0
+    "@testing-library/react": 14.3.1
+    "@testing-library/react-hooks": 8.0.1
+    "@testing-library/user-event": 14.5.2
+    "@types/node": 18.19.50
+    "@types/react": 18.3.7
+    "@types/react-dom": 18.3.0
+    prettier: 3.3.3
+  peerDependencies:
+    react: 16.13.1 || ^17.0.0 || ^18.2.0
+    react-router-dom: 6.26.2
+  languageName: unknown
+  linkType: soft
+
 "@ioredis/commands@npm:^1.1.1":
   version: 1.2.0
   resolution: "@ioredis/commands@npm:1.2.0"
@@ -8969,6 +9253,46 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
+=======
+"@microsoft/microsoft-graph-client@npm:3.0.7":
+  version: 3.0.7
+  resolution: "@microsoft/microsoft-graph-client@npm:3.0.7"
+  dependencies:
+    "@babel/runtime": ^7.12.5
+    tslib: ^2.2.0
+  peerDependenciesMeta:
+    "@azure/identity":
+      optional: true
+    "@azure/msal-browser":
+      optional: true
+    buffer:
+      optional: true
+    stream-browserify:
+      optional: true
+  checksum: 3daee3fc4faa56e22cc0c0a9bcd3887ff0cbd53ec09c792438f0f40b8cafb8654e5d8dcc24d0fd60fda9348ca185fa6c8b50762b72f5c9212e54003d32626ece
+  languageName: node
+  linkType: hard
+
+"@microsoft/microsoft-graph-types@npm:^2.6.0":
+  version: 2.40.0
+  resolution: "@microsoft/microsoft-graph-types@npm:2.40.0"
+  checksum: 3892e910baf4fcf2d1bcee4c71683e3707818be6ff1b4b9dbc29b9e2eab942ea0b171b3023d4620213f10d93d03611e6615706a3d1af4ca44028491a0544ccaf
+  languageName: node
+  linkType: hard
+
+"@module-federation/bridge-react-webpack-plugin@npm:0.6.16":
+  version: 0.6.16
+  resolution: "@module-federation/bridge-react-webpack-plugin@npm:0.6.16"
+  dependencies:
+    "@module-federation/sdk": 0.6.16
+    "@types/semver": 7.5.8
+    semver: 7.6.3
+  checksum: 9b49f8788bc741279e80cbc7b19980aa0d75e689c5ca08f1a19879d1f921f20e23e54ffc3fdc47010b90786130266d04395f46681d15ffe89f9d57e4e7575882
+  languageName: node
+  linkType: hard
+
+>>>>>>> 2357c9b7 (refactor:share dynamic context package)
 "@module-federation/bridge-react-webpack-plugin@npm:0.8.9":
   version: 0.8.9
   resolution: "@module-federation/bridge-react-webpack-plugin@npm:0.8.9"
@@ -8977,6 +9301,20 @@ __metadata:
     "@types/semver": 7.5.8
     semver: 7.6.3
   checksum: f731e42ca14af20634d5a3b41af12f0969a4df5d48270206524fe5a79f1603235a397419c9ba0343735f5c345b1ac67f5c88172d56ed58953b20beb40bea37a0
+  languageName: node
+  linkType: hard
+
+"@module-federation/data-prefetch@npm:0.6.16":
+  version: 0.6.16
+  resolution: "@module-federation/data-prefetch@npm:0.6.16"
+  dependencies:
+    "@module-federation/runtime": 0.6.16
+    "@module-federation/sdk": 0.6.16
+    fs-extra: 9.1.0
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: cac7dc921abb1f3209e2afd7d4f21a21de525babcbd4afed69e61b2261cf7f18b6f1d9db4be005d1b60f968a03e222639e918253591c23f0be925fb84c952326
   languageName: node
   linkType: hard
 
@@ -8994,6 +9332,68 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
+=======
+"@module-federation/dts-plugin@npm:0.1.21":
+  version: 0.1.21
+  resolution: "@module-federation/dts-plugin@npm:0.1.21"
+  dependencies:
+    "@module-federation/managers": 0.1.21
+    "@module-federation/sdk": 0.1.21
+    "@module-federation/third-party-dts-extractor": 0.1.21
+    adm-zip: ^0.5.10
+    ansi-colors: ^4.1.3
+    axios: ^1.6.7
+    chalk: 3.0.0
+    fs-extra: 9.1.0
+    isomorphic-ws: 5.0.0
+    koa: 2.11.0
+    lodash.clonedeepwith: 4.5.0
+    log4js: 6.9.1
+    node-schedule: 2.1.1
+    rambda: ^9.1.0
+    ws: 8.17.0
+  peerDependencies:
+    typescript: ^4.9.0 || ^5.0.0
+    vue-tsc: ^1.0.24
+  peerDependenciesMeta:
+    vue-tsc:
+      optional: true
+  checksum: ec4cd030a25617698754cbac2da5463f8942cdd0a64bdc95f6ff5fd29fff6b88cf3db90e53e6b260cd3593893fe6ee2d6e149d0a46698eb7f9cc19a9df26193d
+  languageName: node
+  linkType: hard
+
+"@module-federation/dts-plugin@npm:0.6.16":
+  version: 0.6.16
+  resolution: "@module-federation/dts-plugin@npm:0.6.16"
+  dependencies:
+    "@module-federation/error-codes": 0.6.14
+    "@module-federation/managers": 0.6.16
+    "@module-federation/sdk": 0.6.16
+    "@module-federation/third-party-dts-extractor": 0.6.16
+    adm-zip: ^0.5.10
+    ansi-colors: ^4.1.3
+    axios: ^1.7.4
+    chalk: 3.0.0
+    fs-extra: 9.1.0
+    isomorphic-ws: 5.0.0
+    koa: 2.15.3
+    lodash.clonedeepwith: 4.5.0
+    log4js: 6.9.1
+    node-schedule: 2.1.1
+    rambda: ^9.1.0
+    ws: 8.18.0
+  peerDependencies:
+    typescript: ^4.9.0 || ^5.0.0
+    vue-tsc: ">=1.0.24"
+  peerDependenciesMeta:
+    vue-tsc:
+      optional: true
+  checksum: 6d1eae570d0234f5adfb3971c8b4b09054fc6e7bff5e06241a5a7ca699c2b22b306d74d391ccaf01ed7ef71541f87c61829342d6a65bd5234f0fcbb36a21626d
+  languageName: node
+  linkType: hard
+
+>>>>>>> 2357c9b7 (refactor:share dynamic context package)
 "@module-federation/dts-plugin@npm:0.8.9":
   version: 0.8.9
   resolution: "@module-federation/dts-plugin@npm:0.8.9"
@@ -9024,6 +9424,64 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
+=======
+"@module-federation/enhanced@npm:^0.1.19":
+  version: 0.1.21
+  resolution: "@module-federation/enhanced@npm:0.1.21"
+  dependencies:
+    "@module-federation/dts-plugin": 0.1.21
+    "@module-federation/managers": 0.1.21
+    "@module-federation/manifest": 0.1.21
+    "@module-federation/rspack": 0.1.21
+    "@module-federation/runtime-tools": 0.1.21
+    "@module-federation/sdk": 0.1.21
+    upath: 2.0.1
+  peerDependencies:
+    typescript: ^4.9.0 || ^5.0.0
+    vue-tsc: ^1.0.24
+    webpack: ^5.0.0
+  peerDependenciesMeta:
+    typescript:
+      optional: true
+    vue-tsc:
+      optional: true
+    webpack:
+      optional: true
+  checksum: bc0ff541db1066b290b3ad9ab868437dc3d0754b9d06ab263f8fb7f54e08238eae9232a482a681dd6152e4a175578d65df9f27fe181fc8fb602d7cc1ae34807d
+  languageName: node
+  linkType: hard
+
+"@module-federation/enhanced@npm:^0.6.0":
+  version: 0.6.16
+  resolution: "@module-federation/enhanced@npm:0.6.16"
+  dependencies:
+    "@module-federation/bridge-react-webpack-plugin": 0.6.16
+    "@module-federation/data-prefetch": 0.6.16
+    "@module-federation/dts-plugin": 0.6.16
+    "@module-federation/managers": 0.6.16
+    "@module-federation/manifest": 0.6.16
+    "@module-federation/rspack": 0.6.16
+    "@module-federation/runtime-tools": 0.6.16
+    "@module-federation/sdk": 0.6.16
+    btoa: ^1.2.1
+    upath: 2.0.1
+  peerDependencies:
+    typescript: ^4.9.0 || ^5.0.0
+    vue-tsc: ">=1.0.24"
+    webpack: ^5.0.0
+  peerDependenciesMeta:
+    typescript:
+      optional: true
+    vue-tsc:
+      optional: true
+    webpack:
+      optional: true
+  checksum: bb1f6566ed176e414816bfc22352f14b5ac45b1fa1655d8d403bde13145d8d0f9c54767d14b9b4fb2210eb5f406f3dd93826bcac1e2303be6bbaccb7eb78ab23
+  languageName: node
+  linkType: hard
+
+>>>>>>> 2357c9b7 (refactor:share dynamic context package)
 "@module-federation/enhanced@npm:^0.8.0":
   version: 0.8.9
   resolution: "@module-federation/enhanced@npm:0.8.9"
@@ -9055,6 +9513,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@module-federation/error-codes@npm:0.6.14":
+  version: 0.6.14
+  resolution: "@module-federation/error-codes@npm:0.6.14"
+  checksum: d487eebb8990c0ea712dc61813f54c487c0e3549cf21239db28dfa18b5c97ae79bad5134db90aa67aee74f5af5c01d115c7aa66a66a81b098dd75f40e158fcc6
+  languageName: node
+  linkType: hard
+
 "@module-federation/error-codes@npm:0.8.9":
   version: 0.8.9
   resolution: "@module-federation/error-codes@npm:0.8.9"
@@ -9071,6 +9536,31 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
+=======
+"@module-federation/managers@npm:0.1.21":
+  version: 0.1.21
+  resolution: "@module-federation/managers@npm:0.1.21"
+  dependencies:
+    "@module-federation/sdk": 0.1.21
+    find-pkg: 2.0.0
+    fs-extra: 9.1.0
+  checksum: 5f230d5795d86dfd68c404ee2b7a1264950c283a4b1c6f4ee9cc9579fabb413718dfbc1ff726b9c213f9d3223d944dd38dd9d04b700962e6398c3c3728d6323e
+  languageName: node
+  linkType: hard
+
+"@module-federation/managers@npm:0.6.16":
+  version: 0.6.16
+  resolution: "@module-federation/managers@npm:0.6.16"
+  dependencies:
+    "@module-federation/sdk": 0.6.16
+    find-pkg: 2.0.0
+    fs-extra: 9.1.0
+  checksum: 6b4e3a585aa2655134152752f2951ec1e913261510bfe714e19040da6d44a40800f7ca514d56f2ad04788d7501b886f3fcfb203900c6a25b7b8228a5459f6d33
+  languageName: node
+  linkType: hard
+
+>>>>>>> 2357c9b7 (refactor:share dynamic context package)
 "@module-federation/managers@npm:0.8.9":
   version: 0.8.9
   resolution: "@module-federation/managers@npm:0.8.9"
@@ -9082,6 +9572,35 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
+=======
+"@module-federation/manifest@npm:0.1.21":
+  version: 0.1.21
+  resolution: "@module-federation/manifest@npm:0.1.21"
+  dependencies:
+    "@module-federation/dts-plugin": 0.1.21
+    "@module-federation/managers": 0.1.21
+    "@module-federation/sdk": 0.1.21
+    chalk: 3.0.0
+    find-pkg: 2.0.0
+  checksum: cef2011875f14e853a355626ae1dbc8ae3b0714d31140e329b5dd71525782b08c2e1d6ca45276a563bb3c3b7f7c4e64a31f0698ef12606f05aa6da46e759f345
+  languageName: node
+  linkType: hard
+
+"@module-federation/manifest@npm:0.6.16":
+  version: 0.6.16
+  resolution: "@module-federation/manifest@npm:0.6.16"
+  dependencies:
+    "@module-federation/dts-plugin": 0.6.16
+    "@module-federation/managers": 0.6.16
+    "@module-federation/sdk": 0.6.16
+    chalk: 3.0.0
+    find-pkg: 2.0.0
+  checksum: fee3254347f927756fcf4d64ede32b93326f976292d7540ebb238fad5ea81c003f030a6020d042239f1f54568ed79e5eafa21e812f763d5961c6827b60be59f7
+  languageName: node
+  linkType: hard
+
+>>>>>>> 2357c9b7 (refactor:share dynamic context package)
 "@module-federation/manifest@npm:0.8.9":
   version: 0.8.9
   resolution: "@module-federation/manifest@npm:0.8.9"
@@ -9095,6 +9614,44 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
+=======
+"@module-federation/rspack@npm:0.1.21":
+  version: 0.1.21
+  resolution: "@module-federation/rspack@npm:0.1.21"
+  dependencies:
+    "@module-federation/dts-plugin": 0.1.21
+    "@module-federation/managers": 0.1.21
+    "@module-federation/manifest": 0.1.21
+    "@module-federation/runtime-tools": 0.1.21
+    "@module-federation/sdk": 0.1.21
+  checksum: 55516285e23f4ca7127afafb14af667defbe46dc3224f85d7e07edbc8937d7fac909dfebc2f9dd73120b99bbe5135372cf0fbbe282990d80e6953a60dfa4c93e
+  languageName: node
+  linkType: hard
+
+"@module-federation/rspack@npm:0.6.16":
+  version: 0.6.16
+  resolution: "@module-federation/rspack@npm:0.6.16"
+  dependencies:
+    "@module-federation/bridge-react-webpack-plugin": 0.6.16
+    "@module-federation/dts-plugin": 0.6.16
+    "@module-federation/managers": 0.6.16
+    "@module-federation/manifest": 0.6.16
+    "@module-federation/runtime-tools": 0.6.16
+    "@module-federation/sdk": 0.6.16
+  peerDependencies:
+    typescript: ^4.9.0 || ^5.0.0
+    vue-tsc: ">=1.0.24"
+  peerDependenciesMeta:
+    typescript:
+      optional: true
+    vue-tsc:
+      optional: true
+  checksum: afc98f64d3270e952ff0425ddd71b13b48644306679d3a4466d38a80c855682951a4b5c1b662fa63619ffad8400d6e7029b762aefd99e7169ee431f12c278e78
+  languageName: node
+  linkType: hard
+
+>>>>>>> 2357c9b7 (refactor:share dynamic context package)
 "@module-federation/rspack@npm:0.8.9":
   version: 0.8.9
   resolution: "@module-federation/rspack@npm:0.8.9"
@@ -9129,6 +9686,29 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
+=======
+"@module-federation/runtime-tools@npm:0.1.21":
+  version: 0.1.21
+  resolution: "@module-federation/runtime-tools@npm:0.1.21"
+  dependencies:
+    "@module-federation/runtime": 0.1.21
+    "@module-federation/webpack-bundler-runtime": 0.1.21
+  checksum: 628c0c4834093520f9c71481d587c9e18163f82e481b05b1900f04e2d5da4abb69af6d814ac5cd1951057b28d73f3adeb1cee7cd83628305b10cc7988405fbc5
+  languageName: node
+  linkType: hard
+
+"@module-federation/runtime-tools@npm:0.6.16":
+  version: 0.6.16
+  resolution: "@module-federation/runtime-tools@npm:0.6.16"
+  dependencies:
+    "@module-federation/runtime": 0.6.16
+    "@module-federation/webpack-bundler-runtime": 0.6.16
+  checksum: 53aa76f2563e978e9f610e9276e6f3f6e73ecbf19f3cc349d0762955e748c43ec08a74f248cb697eb31d8109869f05f0f8dda1d6d082436ec246393d0011ac95
+  languageName: node
+  linkType: hard
+
+>>>>>>> 2357c9b7 (refactor:share dynamic context package)
 "@module-federation/runtime-tools@npm:0.8.9":
   version: 0.8.9
   resolution: "@module-federation/runtime-tools@npm:0.8.9"
@@ -9139,6 +9719,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
+=======
+"@module-federation/runtime@npm:0.1.21":
+  version: 0.1.21
+  resolution: "@module-federation/runtime@npm:0.1.21"
+  dependencies:
+    "@module-federation/sdk": 0.1.21
+  checksum: ce4de8515b54f1cd07a3c7c4cbd35fea163294b9fb24be10827872f3ebb62cd5c289f3602efe4149d963282739f79b51947afa039ee6f36be7f66dea83d590fc
+  languageName: node
+  linkType: hard
+
+"@module-federation/runtime@npm:0.6.16":
+  version: 0.6.16
+  resolution: "@module-federation/runtime@npm:0.6.16"
+  dependencies:
+    "@module-federation/error-codes": 0.6.14
+    "@module-federation/sdk": 0.6.16
+  checksum: d247b4b8ce38f84692da6a3711cdd6d35c4de7885a4639720d4df2436900d66ba2a1b815f64064b95e6aee9fb7082e4d1c6fe1e8ccecd8ddcfaef38379153bbd
+  languageName: node
+  linkType: hard
+
+>>>>>>> 2357c9b7 (refactor:share dynamic context package)
 "@module-federation/runtime@npm:0.8.9":
   version: 0.8.9
   resolution: "@module-federation/runtime@npm:0.8.9"
@@ -9150,6 +9752,25 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
+=======
+"@module-federation/sdk@npm:0.1.21":
+  version: 0.1.21
+  resolution: "@module-federation/sdk@npm:0.1.21"
+  checksum: 6856dcfe2ef5ae939890b82010aaad911fa6c4330a05f290ae054c316c9b532d3691456a1f9e176fe05f1df2d6f2d8c7e0c842ca5648a0fd7abf270e44ed9ecb
+  languageName: node
+  linkType: hard
+
+"@module-federation/sdk@npm:0.6.16":
+  version: 0.6.16
+  resolution: "@module-federation/sdk@npm:0.6.16"
+  dependencies:
+    isomorphic-rslog: 0.0.5
+  checksum: 4495af06a83cbf69da6f6c20b0e8b934382b7b5e9a1b56a3385756476e97750beeb0f4b2671dbc64a3c2ab4a5fdb1f99aafd7562f47a4894352fff75d9499ce8
+  languageName: node
+  linkType: hard
+
+>>>>>>> 2357c9b7 (refactor:share dynamic context package)
 "@module-federation/sdk@npm:0.8.9":
   version: 0.8.9
   resolution: "@module-federation/sdk@npm:0.8.9"
@@ -9159,6 +9780,31 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
+=======
+"@module-federation/third-party-dts-extractor@npm:0.1.21":
+  version: 0.1.21
+  resolution: "@module-federation/third-party-dts-extractor@npm:0.1.21"
+  dependencies:
+    find-pkg: 2.0.0
+    fs-extra: 9.1.0
+    resolve: 1.22.8
+  checksum: e394fd7c2e6dbdf8df6937628680e7356ac897ee6f1309d7fbc38c00bcf4be9c0363f8bc1a75c29f7987a5a2f11f7855481813889b18e8b444ee9006aeb4a299
+  languageName: node
+  linkType: hard
+
+"@module-federation/third-party-dts-extractor@npm:0.6.16":
+  version: 0.6.16
+  resolution: "@module-federation/third-party-dts-extractor@npm:0.6.16"
+  dependencies:
+    find-pkg: 2.0.0
+    fs-extra: 9.1.0
+    resolve: 1.22.8
+  checksum: 2f2317d3703a084a2ff11152a376276a9462954da624a6d69ab265868fb2fedeaeeb1486721f9fff0f3c15d81e3336bf71f90fabe8d4ed4cde4c4d0b5a8ff8be
+  languageName: node
+  linkType: hard
+
+>>>>>>> 2357c9b7 (refactor:share dynamic context package)
 "@module-federation/third-party-dts-extractor@npm:0.8.9":
   version: 0.8.9
   resolution: "@module-federation/third-party-dts-extractor@npm:0.8.9"
@@ -9170,6 +9816,29 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
+=======
+"@module-federation/webpack-bundler-runtime@npm:0.1.21":
+  version: 0.1.21
+  resolution: "@module-federation/webpack-bundler-runtime@npm:0.1.21"
+  dependencies:
+    "@module-federation/runtime": 0.1.21
+    "@module-federation/sdk": 0.1.21
+  checksum: 7d96002066e63bdb503964fd5fb2798be25f4135a599d87721f4d26ebe1de1affbf447c56b082f7ee850ae7798d0ac637f6a486f58591269065e114051b466e5
+  languageName: node
+  linkType: hard
+
+"@module-federation/webpack-bundler-runtime@npm:0.6.16":
+  version: 0.6.16
+  resolution: "@module-federation/webpack-bundler-runtime@npm:0.6.16"
+  dependencies:
+    "@module-federation/runtime": 0.6.16
+    "@module-federation/sdk": 0.6.16
+  checksum: e78d5879eb1553c3dc96a93c7c962d9aa576b20f420fac8747fa1e3d61ab7e4ee51372924cedcd6483b829e2b4988a6f2daad4c6ddf2841c744ef69b9ba27680
+  languageName: node
+  linkType: hard
+
+>>>>>>> 2357c9b7 (refactor:share dynamic context package)
 "@module-federation/webpack-bundler-runtime@npm:0.8.9":
   version: 0.8.9
   resolution: "@module-federation/webpack-bundler-runtime@npm:0.8.9"
@@ -14563,6 +15232,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@testing-library/jest-dom@npm:6.5.0":
+  version: 6.5.0
+  resolution: "@testing-library/jest-dom@npm:6.5.0"
+  dependencies:
+    "@adobe/css-tools": ^4.4.0
+    aria-query: ^5.0.0
+    chalk: ^3.0.0
+    css.escape: ^1.5.1
+    dom-accessibility-api: ^0.6.3
+    lodash: ^4.17.21
+    redent: ^3.0.0
+  checksum: c2d14103ebe3358852ec527ff7512f64207a39932b2f7b6dff7e73ba91296b01a71bad9a9584b6ee010681380a906c1740af50470adc6db660e1c7585d012ebf
+  languageName: node
+  linkType: hard
+
 "@testing-library/jest-dom@npm:6.6.3":
   version: 6.6.3
   resolution: "@testing-library/jest-dom@npm:6.6.3"
@@ -14634,6 +15318,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@testing-library/user-event@npm:14.5.2":
+  version: 14.5.2
+  resolution: "@testing-library/user-event@npm:14.5.2"
+  peerDependencies:
+    "@testing-library/dom": ">=7.21.4"
+  checksum: d76937dffcf0082fbf3bb89eb2b81a31bf5448048dd61c33928c5f10e33a58e035321d39145cefd469bb5a499c68a5b4086b22f1a44e3e7c7e817dc5f6782867
+  languageName: node
+  linkType: hard
+
 "@testing-library/user-event@npm:14.6.1":
   version: 14.6.1
   resolution: "@testing-library/user-event@npm:14.6.1"
@@ -14677,6 +15370,18 @@ __metadata:
   version: 0.2.0
   resolution: "@trysound/sax@npm:0.2.0"
   checksum: 11226c39b52b391719a2a92e10183e4260d9651f86edced166da1d95f39a0a1eaa470e44d14ac685ccd6d3df7e2002433782872c0feeb260d61e80f21250e65c
+  languageName: node
+  linkType: hard
+
+"@ts-morph/common@npm:~0.24.0":
+  version: 0.24.0
+  resolution: "@ts-morph/common@npm:0.24.0"
+  dependencies:
+    fast-glob: ^3.3.2
+    minimatch: ^9.0.4
+    mkdirp: ^3.0.1
+    path-browserify: ^1.0.1
+  checksum: 793bc8a47c93ab55c6c036f94480d3b0e948661aef4bb7dbc29279b1dda2fc4fce809a88e221537867a313541842e12d1ecbd32b4769688abe1303807ec09db6
   languageName: node
   linkType: hard
 
@@ -15261,9 +15966,30 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "@types/node@npm:22.15.18":
   version: 22.15.18
   resolution: "@types/node@npm:22.15.18"
+=======
+<<<<<<< HEAD
+"@types/node@npm:22.15.17":
+  version: 22.15.17
+  resolution: "@types/node@npm:22.15.17"
+=======
+"@types/node@npm:18.19.50":
+  version: 18.19.50
+  resolution: "@types/node@npm:18.19.50"
+  dependencies:
+    undici-types: ~5.26.4
+  checksum: 73bdd2b46fb96816a1f7309e1b609f0832a29739c87df7daa729ff497160be143e02cf18486a0112e1981b092358aed3ca0716b532aff93c7e05f7dbb4f7586a
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:22.15.2":
+  version: 22.15.2
+  resolution: "@types/node@npm:22.15.2"
+>>>>>>> 2357c9b7 (refactor:share dynamic context package)
+>>>>>>> 53ed4e60 (refactor:share dynamic context package)
   dependencies:
     undici-types: ~6.21.0
   checksum: 16fb2c1f7be4156578648bfe074c856fca309ac66b9b74f9c5887ce778ce6cbd06d2883eaa397837e3628cddb02a5b0859764c5db0ea24f55f0cfbf54cca06fc
@@ -16573,7 +17299,16 @@ __metadata:
     "@emotion/react": 11.14.0
     "@emotion/styled": 11.14.0
     "@internal/plugin-dynamic-plugins-info": "*"
+<<<<<<< HEAD
     "@janus-idp/cli": 3.6.1
+=======
+<<<<<<< HEAD
+    "@janus-idp/cli": 3.6.0
+=======
+    "@internal/plugin-utils": 1.0.0
+    "@janus-idp/cli": 3.5.0
+>>>>>>> 254146c8 (refactor:share dynamic context package)
+>>>>>>> 53ed4e60 (refactor:share dynamic context package)
     "@mui/icons-material": 5.17.1
     "@mui/material": 5.17.1
     "@mui/styled-engine": 5.16.14
@@ -18354,7 +19089,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"code-block-writer@npm:^13.0.3":
+"code-block-writer@npm:^13.0.1, code-block-writer@npm:^13.0.3":
   version: 13.0.3
   resolution: "code-block-writer@npm:13.0.3"
   checksum: 8e234f0ec2db9625d5efb9f05bdae79da6559bb4d9df94a6aa79a89a7b5ae25093b70d309fc5122840c9c07995cb14b4dd3f98a30f8878e3a3372e177df79454
@@ -21287,7 +22022,29 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "eslint-plugin-jest@npm:^28.9.0":
+=======
+"eslint-plugin-jest@npm:^27.0.0":
+  version: 27.9.0
+  resolution: "eslint-plugin-jest@npm:27.9.0"
+  dependencies:
+    "@typescript-eslint/utils": ^5.10.0
+  peerDependencies:
+    "@typescript-eslint/eslint-plugin": ^5.0.0 || ^6.0.0 || ^7.0.0
+    eslint: ^7.0.0 || ^8.0.0
+    jest: "*"
+  peerDependenciesMeta:
+    "@typescript-eslint/eslint-plugin":
+      optional: true
+    jest:
+      optional: true
+  checksum: e2a4b415105408de28ad146818fcc6f4e122f6a39c6b2216ec5c24a80393f1390298b20231b0467bc5fd730f6e24b05b89e1a6a3ce651fc159aa4174ecc233d0
+  languageName: node
+  linkType: hard
+
+"eslint-plugin-jest@npm:^28.0.0, eslint-plugin-jest@npm:^28.9.0":
+>>>>>>> 2357c9b7 (refactor:share dynamic context package)
   version: 28.11.0
   resolution: "eslint-plugin-jest@npm:28.11.0"
   dependencies:
@@ -24751,6 +25508,13 @@ __metadata:
   bin:
     isogit: cli.cjs
   checksum: d1fa30ede586f6bb36a526924dafa92d67a55b331ca1c2e95fe96bbd4b614302a87c1c016a1f7ca76c44cfa80b6c0e83c9df114417a6caabe82a8472d86346c3
+  languageName: node
+  linkType: hard
+
+"isomorphic-rslog@npm:0.0.5":
+  version: 0.0.5
+  resolution: "isomorphic-rslog@npm:0.0.5"
+  checksum: ba3d8a5ca4691ae4e6ef8a50c404b94658618c87bd2ac7618946f8ea067489ee4a16a152b74afe24bcbdfe975e3b3a63e3c5149bf2a929aa781bdd7eb3f1370f
   languageName: node
   linkType: hard
 
@@ -30461,6 +31225,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"prettier@npm:3.3.3":
+  version: 3.3.3
+  resolution: "prettier@npm:3.3.3"
+  bin:
+    prettier: bin/prettier.cjs
+  checksum: bc8604354805acfdde6106852d14b045bb20827ad76a5ffc2455b71a8257f94de93f17f14e463fe844808d2ccc87248364a5691488a3304f1031326e62d9276e
+  languageName: node
+  linkType: hard
+
 "prettier@npm:3.5.3":
   version: 3.5.3
   resolution: "prettier@npm:3.5.3"
@@ -34723,6 +35496,16 @@ __metadata:
   version: 6.0.4
   resolution: "ts-mixer@npm:6.0.4"
   checksum: 36b1af526befd74345e736e9aa16f5c28876ebcea07784da14d929149fd7e6028cfd2fe9304c8efe8cb91b588443a9cc9e991df58e4c6e602326edbaae2af3ab
+  languageName: node
+  linkType: hard
+
+"ts-morph@npm:^23.0.0":
+  version: 23.0.0
+  resolution: "ts-morph@npm:23.0.0"
+  dependencies:
+    "@ts-morph/common": ~0.24.0
+    code-block-writer: ^13.0.1
+  checksum: 3282eb0f8bd4577770874736c3259b97501da9a86137160b5d68f106b7848ea7b1fbccf9e198a3d930ec40c993e9951d4bfae31e2562dac8f3de0d7bb0e23615
   languageName: node
   linkType: hard
 

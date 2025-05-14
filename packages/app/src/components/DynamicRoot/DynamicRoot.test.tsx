@@ -18,7 +18,7 @@ import { removeScalprum } from '@scalprum/core';
 import { waitFor, within } from '@testing-library/dom';
 
 import initializeRemotePlugins from '../../utils/dynamicUI/initializeRemotePlugins';
-import DynamicRootContext from './DynamicRootContext';
+import DynamicRootContext from '@internal/plugin-utils';
 
 const DynamicRoot = React.lazy(() => import('./DynamicRoot'));
 

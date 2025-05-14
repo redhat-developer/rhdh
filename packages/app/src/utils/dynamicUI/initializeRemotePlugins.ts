@@ -1,7 +1,7 @@
 import { AppsConfig, processManifest } from '@scalprum/core';
 import { ScalprumState } from '@scalprum/react-core';
 
-import { RemotePlugins } from '../../components/DynamicRoot/DynamicRootContext';
+import { RemotePlugins } from '@internal/plugin-utils';
 
 // See packages/app/src/App.tsx
 const ignoreStaticPlugins = [
