@@ -42,6 +42,7 @@
     "@emotion/react": "11.14.0",
     "@emotion/styled": "11.14.0",
     "@internal/plugin-dynamic-plugins-info": "*",
+    "@internal/plugin-utils": "1.0.0",
     "@mui/icons-material": "5.17.1",
     "@mui/material": "5.17.1",
     "@mui/styled-engine": "5.16.14",

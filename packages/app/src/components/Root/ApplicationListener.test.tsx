@@ -5,7 +5,7 @@ import { renderInTestApp } from '@backstage/test-utils';
 
 import DynamicRootContext, {
   MountPoints,
-} from '../DynamicRoot/DynamicRootContext';
+} from '@internal/plugin-utils';
 import { ApplicationListener } from './ApplicationListener';
 
 const MountPointProvider = ({
