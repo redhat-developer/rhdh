@@ -62,6 +62,7 @@ export default defineConfig({
         "**/playwright/e2e/verify-tls-config-health-check.spec.ts",
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
         "**/playwright/e2e/plugins/tekton/tekton.spec.ts",
+        "**/playwright/e2e/plugins/github-insights/*.spec.ts",
       ],
     },
     {
@@ -75,7 +76,10 @@ export default defineConfig({
     },
     {
       name: "showcase-auth-providers",
-      testMatch: ["**/playwright/e2e/authProviders/*.spec.ts"],
+      testMatch: [
+        "**/playwright/e2e/authProviders/*.spec.ts",
+        "**/playwright/e2e/plugins/github-insights/*.spec.ts",
+      ],
       testIgnore: [
         "**/playwright/e2e/authProviders/setup-environment.spec.ts",
         "**/playwright/e2e/authProviders/clear-environment.spec.ts",
@@ -110,6 +114,7 @@ export default defineConfig({
         "**/playwright/e2e/audit-log/**/*.spec.ts",
         "**/playwright/e2e/verify-tls-config-health-check.spec.ts",
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
+        "**/playwright/e2e/plugins/github-insights/*.spec.ts",
       ],
     },
     {
@@ -136,6 +141,7 @@ export default defineConfig({
         "**/playwright/e2e/plugins/topology/topology.spec.ts",
         "**/playwright/e2e/verify-tls-config-health-check.spec.ts",
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
+        "**/playwright/e2e/plugins/github-insights/*.spec.ts",
       ],
     },
     {
