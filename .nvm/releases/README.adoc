@@ -8,15 +8,18 @@ v22.13.1
 
 Or, go to https://catalog.redhat.com/software/containers/ubi9/nodejs-22/66431d1785c5c3a31edd24f1?container-tabs=packages and search for `nodejs` to get the version.
 
-As of 2025/04/10, this version is `v22.13.1`
+As of 2025/05/14, this version is `v22.13.1`; however there is a newer RPM at version `v22.15.0`.
 
 To download headers:
 
 ```
 NODE_HEADERS_VERSION=$(podman run -it --rm --entrypoint /bin/bash --user root registry.access.redhat.com/ubi9/nodejs-22 -c "node --version")
+# or some hardcoded value if there's a newer RPM
+NODE_HEADERS_VERSION=v22.15.0
+
 cd .nvm/releases/
-curl -sSLO https://nodejs.org/dist/v${NODE_HEADERS_VERSION}/node-v${NODE_HEADERS_VERSION}-headers.tar.gz
-git add node-v${NODE_HEADERS_VERSION}-headers.tar.gz
+curl -sSLO https://nodejs.org/dist/${NODE_HEADERS_VERSION}/node-${NODE_HEADERS_VERSION}-headers.tar.gz
+git add node-${NODE_HEADERS_VERSION}-headers.tar.gz
 ```
 
 Then commit the new file to the appropriate branches of this repo.
