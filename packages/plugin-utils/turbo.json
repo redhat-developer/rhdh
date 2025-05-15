@@ -1,0 +1,6 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "tsc": { "outputs": ["../../dist-types/packages/plugin-utils/**"] }
+  }
+}

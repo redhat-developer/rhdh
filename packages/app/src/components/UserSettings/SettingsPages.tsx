@@ -15,10 +15,10 @@ import {
   UserSettingsAuthProviders,
 } from '@backstage/plugin-user-settings';
 
+import { ProviderSetting } from '@internal/plugin-utils';
 import Star from '@mui/icons-material/Star';
 
 import { oidcAuthApiRef } from '../../api/AuthApiRefs';
-import { ProviderSetting } from '@internal/plugin-utils';
 import { GeneralPage } from './GeneralPage';
 
 const DynamicProviderSettingsItem = ({
