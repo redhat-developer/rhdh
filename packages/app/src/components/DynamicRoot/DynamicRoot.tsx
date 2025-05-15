@@ -10,6 +10,7 @@ import {
   BackstagePlugin,
 } from '@backstage/core-plugin-api';
 
+import { useThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 import DynamicRootContext, {
   ComponentRegistry,
   DynamicRootConfig,
@@ -20,8 +21,7 @@ import DynamicRootContext, {
   ResolvedDynamicRouteMenuItem,
   ScaffolderFieldExtension,
   TechdocsAddon,
-} from '@internal/plugin-utils';
-import { useThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
+} from '@red-hat-developer-hub/plugin-utils';
 import { AppsConfig } from '@scalprum/core';
 import { useScalprum } from '@scalprum/react-core';
 

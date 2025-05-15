@@ -14,7 +14,7 @@ import {
 } from '@backstage/core-plugin-api';
 import { renderWithEffects } from '@backstage/test-utils';
 
-import DynamicRootContext from '@internal/plugin-utils';
+import DynamicRootContext from '@red-hat-developer-hub/plugin-utils';
 import { removeScalprum } from '@scalprum/core';
 import { waitFor, within } from '@testing-library/dom';
 

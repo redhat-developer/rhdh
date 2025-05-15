@@ -2,7 +2,7 @@ import React, { ErrorInfo, useContext } from 'react';
 
 import { ErrorPanel } from '@backstage/core-components';
 
-import DynamicRootContext from '@internal/plugin-utils';
+import DynamicRootContext from '@red-hat-developer-hub/plugin-utils';
 
 class ErrorBoundary extends React.Component<
   {

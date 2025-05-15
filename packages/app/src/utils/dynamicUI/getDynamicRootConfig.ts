@@ -1,4 +1,4 @@
-import { DynamicRootConfig } from '@internal/plugin-utils';
+import { DynamicRootConfig } from '@red-hat-developer-hub/plugin-utils';
 import { getScalprum } from '@scalprum/core';
 
 function getDynamicRootConfig(): DynamicRootConfig {

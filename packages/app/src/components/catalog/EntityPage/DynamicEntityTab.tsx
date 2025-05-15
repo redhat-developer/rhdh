@@ -2,8 +2,8 @@ import { Entity } from '@backstage/catalog-model';
 import { ApiHolder } from '@backstage/core-plugin-api';
 import { EntityLayout, EntitySwitch } from '@backstage/plugin-catalog';
 
-import { DynamicRootConfig } from '@internal/plugin-utils';
 import Box from '@mui/material/Box';
+import { DynamicRootConfig } from '@red-hat-developer-hub/plugin-utils';
 
 import getDynamicRootConfig from '../../../utils/dynamicUI/getDynamicRootConfig';
 import getMountPointData from '../../../utils/dynamicUI/getMountPointData';
