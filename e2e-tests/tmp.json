@@ -1,0 +1,70 @@
+{
+    "apiVersion": "v1",
+    "kind": "Namespace",
+    "metadata": {
+        "annotations": {
+            "openshift.io/description": "",
+            "openshift.io/display-name": "",
+            "openshift.io/requester": "kube:admin",
+            "openshift.io/sa.scc.mcs": "s0:c28,c2",
+            "openshift.io/sa.scc.supplemental-groups": "1000760000/10000",
+            "openshift.io/sa.scc.uid-range": "1000760000/10000"
+        },
+        "creationTimestamp": "2025-02-20T09:07:56Z",
+        "deletionTimestamp": "2025-05-09T10:59:34Z",
+        "labels": {
+            "kubernetes.io/metadata.name": "albarbaro-ha-test-scenario",
+            "openshift-pipelines.tekton.dev/namespace-reconcile-version": "1.15.1",
+            "pod-security.kubernetes.io/audit": "privileged",
+            "pod-security.kubernetes.io/audit-version": "v1.24",
+            "pod-security.kubernetes.io/warn": "privileged",
+            "pod-security.kubernetes.io/warn-version": "v1.24"
+        },
+        "name": "albarbaro-ha-test-scenario",
+        "resourceVersion": "319800296",
+        "uid": "89c88add-431b-4a75-a516-6076a0f2558f"
+    },
+    "spec": {
+        "finalizers": []
+    },
+    "status": {
+        "conditions": [
+            {
+                "lastTransitionTime": "2025-05-09T10:59:49Z",
+                "message": "All resources successfully discovered",
+                "reason": "ResourcesDiscovered",
+                "status": "False",
+                "type": "NamespaceDeletionDiscoveryFailure"
+            },
+            {
+                "lastTransitionTime": "2025-05-09T10:59:49Z",
+                "message": "All legacy kube types successfully parsed",
+                "reason": "ParsedGroupVersions",
+                "status": "False",
+                "type": "NamespaceDeletionGroupVersionParsingFailure"
+            },
+            {
+                "lastTransitionTime": "2025-05-09T10:59:49Z",
+                "message": "All content successfully deleted, may be waiting on finalization",
+                "reason": "ContentDeleted",
+                "status": "False",
+                "type": "NamespaceDeletionContentFailure"
+            },
+            {
+                "lastTransitionTime": "2025-05-09T10:59:49Z",
+                "message": "Some resources are remaining: redisenterpriseclusters.app.redislabs.com has 1 resource instances, redisenterprisedatabases.app.redislabs.com has 1 resource instances",
+                "reason": "SomeResourcesRemain",
+                "status": "True",
+                "type": "NamespaceContentRemaining"
+            },
+            {
+                "lastTransitionTime": "2025-05-09T10:59:49Z",
+                "message": "Some content in the namespace has finalizers remaining: finalizer.redisenterprisedatabases.app.redislabs.com in 1 resource instances, reaadbfinalizer.redisenterprisecluster.app.redislabs.com in 1 resource instances, recpodfinalizer.redisenterprisecluster.app.redislabs.com in 1 resource instances, redbfinalizer.redisenterpriseclusters.app.redislabs.com in 1 resource instances, stsfinalizer.redisenterprisecluster.app.redislabs.com in 1 resource instances",
+                "reason": "SomeFinalizersRemain",
+                "status": "True",
+                "type": "NamespaceFinalizersRemaining"
+            }
+        ],
+        "phase": "Terminating"
+    }
+}
