@@ -27,6 +27,7 @@ install_rhdh_operator() {
 }
 
 handle_auth_providers() {
+  # 
 
   configure_namespace "${OPERATOR_MANAGER}"
   install_rhdh_operator "${DIR}" "${OPERATOR_MANAGER}"
