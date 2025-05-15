@@ -15,8 +15,8 @@ import {
   UserSettingsAuthProviders,
 } from '@backstage/plugin-user-settings';
 
-import { ProviderSetting } from '@internal/plugin-utils';
 import Star from '@mui/icons-material/Star';
+import { ProviderSetting } from '@red-hat-developer-hub/plugin-utils';
 
 import { oidcAuthApiRef } from '../../api/AuthApiRefs';
 import { GeneralPage } from './GeneralPage';

@@ -8086,28 +8086,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@internal/plugin-utils@1.0.0, @internal/plugin-utils@workspace:packages/plugin-utils":
-  version: 0.0.0-use.local
-  resolution: "@internal/plugin-utils@workspace:packages/plugin-utils"
-  dependencies:
-    "@backstage/catalog-model": 1.7.3
-    "@backstage/cli": 0.30.0
-    "@backstage/test-utils": 1.7.5
-    "@testing-library/dom": 9.3.4
-    "@testing-library/jest-dom": 6.6.3
-    "@testing-library/react": 14.3.1
-    "@testing-library/react-hooks": 8.0.1
-    "@types/node": 22.15.17
-    "@types/react": 18.3.21
-    "@types/react-dom": 18.3.7
-    prettier: 3.5.3
-    react: 18.3.1
-    typescript: 5.8.3
-  peerDependencies:
-    react: 16.13.1 || ^17.0.0 || ^18.2.0
-  languageName: unknown
-  linkType: soft
-
 "@ioredis/commands@npm:^1.1.1":
   version: 1.2.0
   resolution: "@ioredis/commands@npm:1.2.0"
@@ -12332,6 +12310,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@red-hat-developer-hub/plugin-utils@1.0.0, @red-hat-developer-hub/plugin-utils@workspace:packages/plugin-utils":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/plugin-utils@workspace:packages/plugin-utils"
+  dependencies:
+    "@backstage/catalog-model": 1.7.3
+    "@backstage/cli": 0.30.0
+    "@backstage/test-utils": 1.7.5
+    "@testing-library/dom": 9.3.4
+    "@testing-library/jest-dom": 6.6.3
+    "@testing-library/react": 14.3.1
+    "@testing-library/react-hooks": 8.0.1
+    "@types/node": 22.15.17
+    "@types/react": 18.3.21
+    "@types/react-dom": 18.3.7
+    prettier: 3.5.3
+    react: 18.3.1
+    typescript: 5.8.3
+  peerDependencies:
+    react: 16.13.1 || ^17.0.0 || ^18.2.0
+  languageName: unknown
+  linkType: soft
+
 "@redis/bloom@npm:1.2.0":
   version: 1.2.0
   resolution: "@redis/bloom@npm:1.2.0"
@@ -15283,36 +15283,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-"@types/node@npm:22.15.18":
-  version: 22.15.18
-  resolution: "@types/node@npm:22.15.18"
-=======
-<<<<<<< HEAD
 "@types/node@npm:22.15.17":
   version: 22.15.17
   resolution: "@types/node@npm:22.15.17"
-=======
-"@types/node@npm:18.19.50":
-  version: 18.19.50
-  resolution: "@types/node@npm:18.19.50"
   dependencies:
-    undici-types: ~5.26.4
-  checksum: 73bdd2b46fb96816a1f7309e1b609f0832a29739c87df7daa729ff497160be143e02cf18486a0112e1981b092358aed3ca0716b532aff93c7e05f7dbb4f7586a
+    undici-types: ~6.21.0
+  checksum: f83748c14c8ae3b7d1672af4009b892a5ae652c05c4b61c39e842711e232a0db37991611364aea9522fdf48290a8cc27403138bc479ef24ff0c9222319e7858b
   languageName: node
   linkType: hard
 
-"@types/node@npm:22.15.2":
-  version: 22.15.2
-  resolution: "@types/node@npm:22.15.2"
->>>>>>> 2357c9b7 (refactor:share dynamic context package)
->>>>>>> 53ed4e60 (refactor:share dynamic context package)
-=======
-"@types/node@npm:22.15.17":
-  version: 22.15.17
-  resolution: "@types/node@npm:22.15.17"
->>>>>>> 31bea7e0 (refactor:add tests, lint, prettier)
+"@types/node@npm:22.15.18":
+  version: 22.15.18
+  resolution: "@types/node@npm:22.15.18"
   dependencies:
     undici-types: ~6.21.0
   checksum: 16fb2c1f7be4156578648bfe074c856fca309ac66b9b74f9c5887ce778ce6cbd06d2883eaa397837e3628cddb02a5b0859764c5db0ea24f55f0cfbf54cca06fc
@@ -16622,25 +16604,12 @@ __metadata:
     "@emotion/react": 11.14.0
     "@emotion/styled": 11.14.0
     "@internal/plugin-dynamic-plugins-info": "*"
-<<<<<<< HEAD
-<<<<<<< HEAD
     "@janus-idp/cli": 3.6.1
-=======
-<<<<<<< HEAD
-    "@janus-idp/cli": 3.6.0
-=======
-    "@internal/plugin-utils": 1.0.0
-    "@janus-idp/cli": 3.5.0
->>>>>>> 254146c8 (refactor:share dynamic context package)
->>>>>>> 53ed4e60 (refactor:share dynamic context package)
-=======
-    "@internal/plugin-utils": 1.0.0
-    "@janus-idp/cli": 3.6.0
->>>>>>> 31bea7e0 (refactor:add tests, lint, prettier)
     "@mui/icons-material": 5.17.1
     "@mui/material": 5.17.1
     "@mui/styled-engine": 5.16.14
     "@red-hat-developer-hub/backstage-plugin-theme": 0.6.0
+    "@red-hat-developer-hub/plugin-utils": 1.0.0
     "@scalprum/core": 0.8.3
     "@scalprum/react-core": 0.9.5
     "@scalprum/react-test-utils": 0.2.6

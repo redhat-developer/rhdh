@@ -5,7 +5,7 @@ import { ErrorBoundary } from '@backstage/core-components';
 import DynamicRootContext, {
   MountPoint,
   MountPointConfigBase,
-} from '@internal/plugin-utils';
+} from '@red-hat-developer-hub/plugin-utils';
 
 type Position = 'above-main-content' | 'above-sidebar';
 

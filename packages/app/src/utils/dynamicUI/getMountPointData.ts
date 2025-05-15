@@ -1,4 +1,4 @@
-import { MountPointConfig } from '@internal/plugin-utils';
+import { MountPointConfig } from '@red-hat-developer-hub/plugin-utils';
 import { getScalprum } from '@scalprum/core';
 
 function getMountPointData<T = any, T2 = any>(
