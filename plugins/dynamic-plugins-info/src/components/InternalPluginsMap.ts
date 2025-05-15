@@ -46,6 +46,8 @@ export const InternalPluginsMap: Record<string, string> = {
     './dynamic-plugins/dist/backstage-plugin-notifications-backend-dynamic',
   'backstage-plugin-notifications-backend-module-email-dynamic':
     './dynamic-plugins/dist/backstage-plugin-notifications-backend-module-email-dynamic',
+  'backstage-plugin-notifications-backend-module-slack-dynamic':
+    './dynamic-plugins/dist/backstage-plugin-notifications-backend-module-slack-dynamic',
   'backstage-plugin-signals-backend-dynamic':
     './dynamic-plugins/dist/backstage-plugin-signals-backend-dynamic',
   'backstage-plugin-signals': './dynamic-plugins/dist/backstage-plugin-signals',
