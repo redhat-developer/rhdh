@@ -33,7 +33,7 @@
   },
   "devDependencies": {
     "@backstage/cli": "0.30.0",
-    "@janus-idp/cli": "3.5.0",
+    "@janus-idp/cli": "3.6.0",
     "typescript": "5.8.3"
   },
   "scalprum": {
