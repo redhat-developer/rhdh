@@ -37,9 +37,7 @@ handle_auth_providers() {
   export AUTH_PROVIDERS_RELEASE="rhdh-auth-providers"
   export AUTH_PROVIDERS_NAMESPACE="showcase-auth-providers"
   export LOGS_FOLDER="$(pwd)/e2e-tests/auth-providers-logs"
-  echo "Creating log folder ${LOGS_FOLDER}" 
-  mkdir -p $LOGS_FOLDER
-  ls $LOGS_FOLDER
-  run_tests "${AUTH_PROVIDERS_RELEASE}" "${AUTH_PROVIDERS_NAMESPACE}"
 
+  echo "Running tests ${AUTH_PROVIDERS_RELEASE} in ${AUTH_PROVIDERS_NAMESPACE}"
+  run_tests "${AUTH_PROVIDERS_RELEASE}" "${AUTH_PROVIDERS_NAMESPACE}"
 }
