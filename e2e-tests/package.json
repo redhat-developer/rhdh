@@ -48,7 +48,9 @@
     "js-yaml": "4.1.0",
     "node-fetch": "2.7.0",
     "octokit": "4.1.3",
-    "winston": "3.14.2"
+    "uuid": "^11.1.0",
+    "winston": "3.14.2",
+    "yaml": "^2.8.0"
   },
   "jest": {
     "testTimeout": 20000
