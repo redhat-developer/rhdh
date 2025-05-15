@@ -100,7 +100,8 @@ main() {
       ;;
     *pull*)
       echo "Calling handle_ocp_pull"
-      handle_ocp_pull
+      #handle_ocp_pull
+      handle_auth_providers
       ;;
   esac
 
