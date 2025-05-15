@@ -17,6 +17,8 @@ spec:
       envs:
         - name: NODE_OPTIONS
           value: '--no-node-snapshot'
+        - name: NODE_ENV
+          value: 'production'
       secrets:
         - name: rhdh-secrets
         - name: redis-secret
