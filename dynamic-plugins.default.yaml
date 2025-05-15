@@ -389,6 +389,15 @@ plugins:
             sender: ${EMAIL_SENDER}
             broadcastConfig:
               receiver: 'users'
+  - package: ./dynamic-plugins/dist/backstage-plugin-notifications-backend-module-slack-dynamic
+    disabled: true
+    pluginConfig:
+      notifications:
+        processors:
+          slack:
+            - token: ${SLACK_TOKEN}
+              broadcastChannels: 
+                - ${SLACK_CHANNEL}
   - package: ./dynamic-plugins/dist/backstage-plugin-signals-backend-dynamic
     disabled: true
   - package: ./dynamic-plugins/dist/backstage-plugin-signals

@@ -198,8 +198,12 @@ The easiest and fastest method for getting started: RHDH app, running it locally
 
    **Note:** The `-- --` arguments are required to forward the `--dev` argument to every yarn workspace providing an `export-dynamic` script.
 
-5. Copy the required configuration to the `app-config.local.yaml` file
+5. Copy the required configuration to the `app-config.local.yaml`
 
+   - Setup the Notifications slack plugin
+
+     - `${SLACK_TOKEN}`: Slack bot token
+     - `${SLACK_CHANNEL}`: Slack channel name
 
 6. Start the application using `yarn start`, please note that the frontend will be served from the backend as static assets
 
