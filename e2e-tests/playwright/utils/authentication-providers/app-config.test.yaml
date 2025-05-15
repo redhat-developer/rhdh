@@ -1,0 +1,88 @@
+developerHub:
+  flavor: rhdh
+app:
+  baseUrl: ${BASE_URL:-http://localhost:3000}
+  title: Red Hat Developer Hub
+organization:
+  name: ${ORGANIZATION_NAME}
+backend:
+  baseUrl: ${BASE_URL:-http://localhost:7007}
+  csp:
+    connect-src:
+      - "'self'"
+      - "http:"
+      - "https:"
+  cors:
+    origin: ${BASE_URL:-http://localhost:3000}
+    methods:
+      - GET
+      - HEAD
+      - PATCH
+      - POST
+      - PUT
+      - DELETE
+    credentials: true
+  auth:
+    keys:
+      - secret: temp
+    externalAccess:
+      - type: static
+        options:
+          token: ${STATIC_TOKEN:-localmocktoken}
+          subject: e2e-tests-ci
+  database:
+    client: better-sqlite3
+    connection: ":memory:"
+includeTransitiveGroupOwnership: true
+auth:
+  environment: development
+  session:
+    secret: superSecretSecret
+  providers:
+    microsoft:
+      development:
+        clientId: ${AUTH_PROVIDERS_AZURE_CLIENT_ID}
+        clientSecret: ${AUTH_PROVIDERS_AZURE_CLIENT_SECRET}
+        prompt: auto
+        tenantId: ${AUTH_PROVIDERS_AZURE_TENANT_ID}
+        callbackUrl: ${BASE_URL:-http://localhost:7007}/api/auth/microsoft/handler/frame
+        signIn:
+          resolvers:
+            - resolver: emailMatchingUserEntityProfileEmail
+              dangerouslyAllowSignInWithoutUserInCatalog: false
+        sessionDuration: 3days
+catalog:
+  import:
+    entityFilename: catalog-info.yaml
+  rules:
+    - allow:
+        - API
+        - Component
+        - Group
+        - Location
+        - Resource
+        - System
+        - Template
+  providers:
+    microsoftGraphOrg:
+      default:
+        target: https://graph.microsoft.com/v1.0
+        authority: https://login.microsoftonline.com
+        tenantId: ${AUTH_PROVIDERS_AZURE_TENANT_ID}
+        clientId: ${AUTH_PROVIDERS_AZURE_CLIENT_ID}
+        clientSecret: ${AUTH_PROVIDERS_AZURE_CLIENT_SECRET}
+        user:
+          filter: accountEnabled eq true and userType eq 'member' and
+            startswith(displayName,'TEST')
+        group:
+          filter: >
+            securityEnabled eq true and mailEnabled eq false and
+            startswith(displayName,'TEST_')
+        schedule:
+          frequency: PT1M
+          timeout: PT1M
+permission:
+  enabled: false
+dynamicPlugins:
+  rootDirectory: /Users/abarbaro/code/rhdh-refactor-auth-providers/dynamic-plugins-root
+signInPage: microsoft

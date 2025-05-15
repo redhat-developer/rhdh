@@ -80,21 +80,13 @@ export default defineConfig({
       name: "showcase-auth-providers",
       testMatch: ["**/playwright/e2e/authProviders/*.spec.ts"],
       testIgnore: [
-        "**/playwright/e2e/authProviders/setup-environment.spec.ts",
-        "**/playwright/e2e/authProviders/clear-environment.spec.ts",
+        "**/playwright/e2e/authProviders/github-happy-path.spec.ts",
+        "**/playwright/e2e/authProviders/basic-authentication.spec.ts",
+        "**/playwright/e2e/authProviders/github-happy-path.spec.ts",
+        "**/playwright/e2e/authProviders/github-provider.spec.ts",
         "**/playwright/e2e/verify-tls-config-health-check.spec.ts",
       ],
-      dependencies: ["showcase-auth-providers-setup-environment"],
-      teardown: "showcase-auth-providers-clear-environment",
       retries: 1,
-    },
-    {
-      name: "showcase-auth-providers-setup-environment",
-      testMatch: ["**/playwright/e2e/authProviders/setup-environment.spec.ts"],
-    },
-    {
-      name: "showcase-auth-providers-clear-environment",
-      testMatch: ["**/playwright/e2e/authProviders/clear-environment.spec.ts"],
     },
     {
       name: "showcase-k8s",

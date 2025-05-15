@@ -68,3 +68,8 @@ site
 
 # e2e test results
 junit-results.xml
+
+# auth-providers local runs files
+playwright/e2e/utils/authentication-providers/app-config.test.yaml
+playwright/e2e/utils/authentication-providers/dynamic-plugins.test.yaml
+playwright/e2e/utils/authentication-providers/rbac.test.csv
