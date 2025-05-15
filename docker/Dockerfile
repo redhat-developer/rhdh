@@ -53,8 +53,6 @@ COPY $EXTERNAL_SOURCE_NESTED/plugins/dynamic-plugins-info-backend/package.json .
 COPY $EXTERNAL_SOURCE_NESTED/packages/backend/package.json ./packages/backend/package.json
 COPY $EXTERNAL_SOURCE_NESTED/packages/app/package.json ./packages/app/package.json
 COPY $EXTERNAL_SOURCE_NESTED/package.json ./package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-plugin-notifications-backend-module-slack-dynamic/package.json ./dynamic-plugins/wrappers/backstage-plugin-notifications-backend-module-slack-dynamic/package.json
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins/wrappers/backstage-plugin-notifications-backend-module-slack-dynamic/dist-dynamic/package.json ./dynamic-plugins/wrappers/backstage-plugin-notifications-backend-module-slack-dynamic/dist-dynamic/package.json
 # END COPY package.json files
 
 # unpack headers from tarball (includes openssl headers not present in /usr/include/node) - see RHIDP-6755 for why we need this upstream
