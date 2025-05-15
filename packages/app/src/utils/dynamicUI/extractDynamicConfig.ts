@@ -6,7 +6,7 @@ import {
   MountPointConfigRaw,
   MountPointConfigRawIf,
   RouteBinding,
-} from '@internal/plugin-utils';
+} from '@red-hat-developer-hub/plugin-utils';
 
 import { hasAnnotation, isType } from '../../components/catalog/utils';
 import { extractMenuItems } from './extractDynamicConfigFrontend';

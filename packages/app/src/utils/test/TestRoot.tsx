@@ -8,7 +8,7 @@ import { catalogImportPlugin } from '@backstage/plugin-catalog-import';
 import { orgPlugin } from '@backstage/plugin-org';
 import { scaffolderPlugin } from '@backstage/plugin-scaffolder';
 
-import DynamicRootContext from '@internal/plugin-utils';
+import DynamicRootContext from '@red-hat-developer-hub/plugin-utils';
 
 import { apis } from '../../apis';
 

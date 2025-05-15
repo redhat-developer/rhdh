@@ -3,7 +3,9 @@ import { useLocation } from 'react-router-dom';
 
 import { renderInTestApp } from '@backstage/test-utils';
 
-import DynamicRootContext, { MountPoints } from '@internal/plugin-utils';
+import DynamicRootContext, {
+  MountPoints,
+} from '@red-hat-developer-hub/plugin-utils';
 
 import { ApplicationListener } from './ApplicationListener';
 

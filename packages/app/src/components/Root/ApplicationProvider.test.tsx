@@ -2,7 +2,9 @@ import * as React from 'react';
 
 import { renderInTestApp } from '@backstage/test-utils';
 
-import DynamicRootContext, { MountPoints } from '@internal/plugin-utils';
+import DynamicRootContext, {
+  MountPoints,
+} from '@red-hat-developer-hub/plugin-utils';
 
 import { ApplicationProvider } from './ApplicationProvider';
 

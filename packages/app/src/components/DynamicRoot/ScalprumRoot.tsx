@@ -6,7 +6,7 @@ import { AppConfig } from '@backstage/config';
 import { ConfigReader, defaultConfigLoader } from '@backstage/core-app-api';
 import { AnyApiFactory } from '@backstage/core-plugin-api';
 
-import { DynamicRootConfig } from '@internal/plugin-utils';
+import { DynamicRootConfig } from '@red-hat-developer-hub/plugin-utils';
 import { AppsConfig } from '@scalprum/core';
 import { ScalprumProvider } from '@scalprum/react-core';
 
