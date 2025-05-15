@@ -201,7 +201,7 @@ The easiest and fastest method for getting started: RHDH app, running it locally
 5. Copy the required configuration to the `app-config.local.yaml`
 
    - Setup the Notifications slack plugin
-
+  
      - `${SLACK_TOKEN}`: Slack bot token
      - `${SLACK_CHANNEL}`: Slack channel name
 
@@ -209,7 +209,7 @@ The easiest and fastest method for getting started: RHDH app, running it locally
 
 7. Navigate to <http://localhost:7007>
 
-8.  Alternatively, you can start application using `yarn dev` which would run the frontend using webpack, which allows for hot reloads.
+8. Alternatively, you can start application using `yarn dev` which would run the frontend using webpack, which allows for hot reloads.
 
     To use `yarn dev`, change the following in your app-config.local.yaml:
 
