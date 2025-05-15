@@ -27,12 +27,10 @@ install_rhdh_operator() {
 }
 
 handle_auth_providers() {
-  # 
-
+  
+  oc_login
   configure_namespace "${OPERATOR_MANAGER}"
   install_rhdh_operator "${DIR}" "${OPERATOR_MANAGER}"
-
-  oc_login
 
   export K8S_CLUSTER_ROUTER_BASE=$(oc get route console -n openshift-console -o=jsonpath='{.spec.host}' | sed 's/^[^.]*\.//')
 
