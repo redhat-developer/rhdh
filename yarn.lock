@@ -8086,6 +8086,31 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+<<<<<<< HEAD
+=======
+"@internal/plugin-utils@1.0.0, @internal/plugin-utils@workspace:packages/plugin-utils":
+  version: 0.0.0-use.local
+  resolution: "@internal/plugin-utils@workspace:packages/plugin-utils"
+  dependencies:
+    "@backstage/catalog-model": 1.7.3
+    "@backstage/cli": 0.30.0
+    "@backstage/test-utils": 1.7.5
+    "@testing-library/dom": 9.3.4
+    "@testing-library/jest-dom": 6.6.3
+    "@testing-library/react": 14.3.1
+    "@testing-library/react-hooks": 8.0.1
+    "@types/node": 22.15.17
+    "@types/react": 18.3.21
+    "@types/react-dom": 18.3.7
+    prettier: 3.5.3
+    react: 18.3.1
+    typescript: 5.8.3
+  peerDependencies:
+    react: 16.13.1 || ^17.0.0 || ^18.2.0
+  languageName: unknown
+  linkType: soft
+
+>>>>>>> d225a6f3 (refactor:add tests, lint, prettier)
 "@ioredis/commands@npm:^1.1.1":
   version: 1.2.0
   resolution: "@ioredis/commands@npm:1.2.0"
@@ -15261,9 +15286,42 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "@types/node@npm:22.15.22":
   version: 22.15.22
   resolution: "@types/node@npm:22.15.22"
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+"@types/node@npm:22.15.18":
+  version: 22.15.18
+  resolution: "@types/node@npm:22.15.18"
+=======
+<<<<<<< HEAD
+"@types/node@npm:22.15.17":
+  version: 22.15.17
+  resolution: "@types/node@npm:22.15.17"
+=======
+"@types/node@npm:18.19.50":
+  version: 18.19.50
+  resolution: "@types/node@npm:18.19.50"
+  dependencies:
+    undici-types: ~5.26.4
+  checksum: 73bdd2b46fb96816a1f7309e1b609f0832a29739c87df7daa729ff497160be143e02cf18486a0112e1981b092358aed3ca0716b532aff93c7e05f7dbb4f7586a
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:22.15.2":
+  version: 22.15.2
+  resolution: "@types/node@npm:22.15.2"
+>>>>>>> 2357c9b7 (refactor:share dynamic context package)
+>>>>>>> 53ed4e60 (refactor:share dynamic context package)
+=======
+"@types/node@npm:22.15.17":
+  version: 22.15.17
+  resolution: "@types/node@npm:22.15.17"
+>>>>>>> 31bea7e0 (refactor:add tests, lint, prettier)
+>>>>>>> d225a6f3 (refactor:add tests, lint, prettier)
   dependencies:
     undici-types: ~6.21.0
   checksum: 32bbe90a02fc11a3cde30ab73098b36370b2f6a8d59987e4a6435aa04333f199b18490a9e94b7ec7f591694d2e6573c8661c8e83a2c25dd75af9aea1ff3894e0
@@ -16573,7 +16631,25 @@ __metadata:
     "@emotion/react": 11.14.0
     "@emotion/styled": 11.14.0
     "@internal/plugin-dynamic-plugins-info": "*"
+<<<<<<< HEAD
     "@janus-idp/cli": 3.6.1
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+    "@janus-idp/cli": 3.6.1
+=======
+<<<<<<< HEAD
+    "@janus-idp/cli": 3.6.0
+=======
+    "@internal/plugin-utils": 1.0.0
+    "@janus-idp/cli": 3.5.0
+>>>>>>> 254146c8 (refactor:share dynamic context package)
+>>>>>>> 53ed4e60 (refactor:share dynamic context package)
+=======
+    "@internal/plugin-utils": 1.0.0
+    "@janus-idp/cli": 3.6.0
+>>>>>>> 31bea7e0 (refactor:add tests, lint, prettier)
+>>>>>>> d225a6f3 (refactor:add tests, lint, prettier)
     "@mui/icons-material": 5.17.1
     "@mui/material": 5.17.1
     "@mui/styled-engine": 5.16.14

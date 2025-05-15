@@ -1,9 +1,4 @@
-import { Entity } from "@backstage/catalog-model";
-import {
-  AnyApiFactory,
-  AppTheme,
-  BackstagePlugin,
-} from "@backstage/core-plugin-api";
+import { Entity } from '@backstage/catalog-model';
 
 export type RouteBinding = {
   bindTarget: string;
@@ -59,7 +54,7 @@ export type MountPointConfig = MountPointConfigBase & {
 };
 
 export type MountPointConfigRawIf = {
-  [key in "allOf" | "oneOf" | "anyOf"]?: (
+  [key in 'allOf' | 'oneOf' | 'anyOf']?: (
     | {
         [key: string]: string | string[];
       }
@@ -79,32 +74,12 @@ export type MountPoint = {
     | ((config: DynamicRootConfig) => React.ReactNode);
 };
 
-export type RemotePlugins = {
-  [scope: string]: {
-    [module: string]: {
-      [importName: string]:
-        | React.ComponentType<React.PropsWithChildren>
-        | ((...args: any[]) => any)
-        | BackstagePlugin<{}>
-        | {
-            element: React.ComponentType<React.PropsWithChildren>;
-            staticJSXContent:
-              | React.ReactNode
-              | ((config: DynamicRootConfig) => React.ReactNode);
-          }
-        | AnyApiFactory;
-    };
-  };
-};
-
 export type EntityTabOverrides = Record<
   string,
   { title: string; mountPoint: string; priority?: number }
 >;
 
 export type MountPoints = Record<string, MountPoint[]>;
-
-export type AppThemeProvider = Partial<AppTheme> & Omit<AppTheme, "theme">;
 
 export type ScaffolderFieldExtension = {
   scope: string;

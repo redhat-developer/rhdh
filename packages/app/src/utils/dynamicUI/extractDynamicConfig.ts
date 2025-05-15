@@ -2,12 +2,13 @@ import { Entity } from '@backstage/catalog-model';
 import { ApiHolder } from '@backstage/core-plugin-api';
 import { isKind } from '@backstage/plugin-catalog';
 
-import { hasAnnotation, isType } from '../../components/catalog/utils';
 import {
-  RouteBinding,
   MountPointConfigRaw,
   MountPointConfigRawIf,
+  RouteBinding,
 } from '@internal/plugin-utils';
+
+import { hasAnnotation, isType } from '../../components/catalog/utils';
 import { extractMenuItems } from './extractDynamicConfigFrontend';
 
 export type DynamicRouteMenuItem =
@@ -142,13 +143,13 @@ type ProviderSetting = {
 
 type CustomProperties = {
   pluginModule?: string;
-  dynamicRoutes?: ({
+  dynamicRoutes?: {
     importName?: string;
     module?: string;
     scope?: string;
     path: string;
     menuItem?: DynamicRouteMenuItem;
-  })[];
+  }[];
   menuItems?: { [key: string]: MenuItemConfig };
   routeBindings?: {
     targets: BindingTarget[];

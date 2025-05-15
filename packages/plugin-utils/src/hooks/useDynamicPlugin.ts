@@ -1,7 +1,7 @@
-import { useContext } from "react";
+import { useContext } from 'react';
 
-import { DynamicRootContext } from "../context";
-import { DynamicRootConfig } from "../types";
+import { DynamicRootContext } from '../context';
+import { DynamicRootConfig } from '../types';
 
 /** Hook to access the dynamic plugin configuration */
 export function useDynamicPluginConfig(): DynamicRootConfig {
@@ -9,7 +9,7 @@ export function useDynamicPluginConfig(): DynamicRootConfig {
 
   if (!context) {
     throw new Error(
-      "useDynamicPlugin must be used within a DynamicPluginProvider",
+      'useDynamicPlugin must be used within a DynamicPluginProvider',
     );
   }
 

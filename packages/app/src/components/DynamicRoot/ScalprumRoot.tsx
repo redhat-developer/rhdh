@@ -6,13 +6,13 @@ import { AppConfig } from '@backstage/config';
 import { ConfigReader, defaultConfigLoader } from '@backstage/core-app-api';
 import { AnyApiFactory } from '@backstage/core-plugin-api';
 
+import { DynamicRootConfig } from '@internal/plugin-utils';
 import { AppsConfig } from '@scalprum/core';
 import { ScalprumProvider } from '@scalprum/react-core';
 
 import { DynamicPluginConfig } from '../../utils/dynamicUI/extractDynamicConfig';
 import overrideBaseUrlConfigs from '../../utils/dynamicUI/overrideBaseUrlConfigs';
 import { DynamicRoot, StaticPlugins } from './DynamicRoot';
-import { DynamicRootConfig } from '@internal/plugin-utils';
 import Loader from './Loader';
 
 export type ScalprumApiHolder = {

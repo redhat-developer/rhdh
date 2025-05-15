@@ -14,11 +14,11 @@ import {
 } from '@backstage/core-plugin-api';
 import { renderWithEffects } from '@backstage/test-utils';
 
+import DynamicRootContext from '@internal/plugin-utils';
 import { removeScalprum } from '@scalprum/core';
 import { waitFor, within } from '@testing-library/dom';
 
 import initializeRemotePlugins from '../../utils/dynamicUI/initializeRemotePlugins';
-import DynamicRootContext from '@internal/plugin-utils';
 
 const DynamicRoot = React.lazy(() => import('./DynamicRoot'));
 

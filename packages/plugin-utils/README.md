@@ -57,10 +57,10 @@ The package provides typed interfaces for the dynamic plugin configuration:
 ```tsx
 import {
   DynamicRootConfig,
-  ResolvedDynamicRoute,
-  ResolvedMountPoint,
   EntityTabOverrides,
   MountPoints,
+  ResolvedDynamicRoute,
+  ResolvedMountPoint,
   ResolvedScaffolderFieldExtension,
-} from "@internal/plugin-utils";
+} from '@internal/plugin-utils';
 ```

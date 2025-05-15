@@ -1,6 +1,5 @@
-import { getScalprum } from '@scalprum/core';
-
 import { MountPointConfig } from '@internal/plugin-utils';
+import { getScalprum } from '@scalprum/core';
 
 function getMountPointData<T = any, T2 = any>(
   mountPoint: string,

@@ -23,6 +23,7 @@ import { Settings as SidebarSettings } from '@backstage/plugin-user-settings';
 
 import { policyEntityCreatePermission } from '@backstage-community/plugin-rbac-common';
 import { AdminIcon } from '@internal/plugin-dynamic-plugins-info';
+import DynamicRootContext, { ResolvedMenuItem } from '@internal/plugin-utils';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ExpandMore from '@mui/icons-material/ExpandMore';
@@ -35,9 +36,6 @@ import ListItem from '@mui/material/ListItem';
 import { SxProps } from '@mui/material/styles';
 import { makeStyles } from 'tss-react/mui';
 
-import DynamicRootContext, {
-  ResolvedMenuItem,
-} from '@internal/plugin-utils';
 import { ApplicationHeaders } from './ApplicationHeaders';
 import { MenuIcon } from './MenuIcon';
 import { SidebarLogo } from './SidebarLogo';

@@ -1,1 +1,1 @@
-export { useDynamicPluginConfig } from "./useDynamicPlugin";
+export { useDynamicPluginConfig } from './useDynamicPlugin';
