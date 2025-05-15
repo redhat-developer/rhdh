@@ -2,11 +2,11 @@ import { Entity } from '@backstage/catalog-model';
 import { ApiHolder } from '@backstage/core-plugin-api';
 import { EntityLayout, EntitySwitch } from '@backstage/plugin-catalog';
 
+import { DynamicRootConfig } from '@internal/plugin-utils';
 import Box from '@mui/material/Box';
 
 import getDynamicRootConfig from '../../../utils/dynamicUI/getDynamicRootConfig';
 import getMountPointData from '../../../utils/dynamicUI/getMountPointData';
-import { DynamicRootConfig } from '@internal/plugin-utils';
 import Grid from '../Grid';
 
 export type DynamicEntityTabProps = {

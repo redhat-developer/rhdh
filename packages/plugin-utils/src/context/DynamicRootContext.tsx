@@ -1,5 +1,6 @@
-import { createContext } from "react";
-import { ComponentRegistry } from "../types";
+import { createContext } from 'react';
+
+import { ComponentRegistry } from '../types';
 
 export const DynamicRootContext = createContext<ComponentRegistry>({
   AppProvider: () => null,

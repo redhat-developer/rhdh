@@ -1,6 +1,5 @@
-import { getScalprum } from '@scalprum/core';
-
 import { DynamicRootConfig } from '@internal/plugin-utils';
+import { getScalprum } from '@scalprum/core';
 
 function getDynamicRootConfig(): DynamicRootConfig {
   return getScalprum().api.dynamicRootConfig;
