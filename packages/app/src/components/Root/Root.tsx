@@ -1,4 +1,10 @@
-import React, { PropsWithChildren, useContext, useState } from 'react';
+import React, {
+  PropsWithChildren,
+  useContext,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 
 import {
   Sidebar,
@@ -36,7 +42,9 @@ import { ApplicationHeaders } from './ApplicationHeaders';
 import { MenuIcon } from './MenuIcon';
 import { SidebarLogo } from './SidebarLogo';
 
-const useStyles = makeStyles()({
+type StylesProps = { aboveSidebarHeaderHeight?: number };
+
+const useStyles = makeStyles<StylesProps>()((_, props: StylesProps) => ({
   /**
    * This is a workaround to remove the fix height of the Page component
    * to support the application headers (and the global header plugin)
@@ -78,7 +86,7 @@ const useStyles = makeStyles()({
     // and makes the page content part scrollable below...
     // But instead of using 100vh on the content below,
     // we use it here so that it includes the header.
-    '> div': {
+    '> div[class*="-sidebarLayout"]': {
       height: '100vh',
       display: 'flex',
       flexDirection: 'column',
@@ -99,7 +107,12 @@ const useStyles = makeStyles()({
   sidebarItem: {
     textDecorationLine: 'none',
   },
-});
+  sidebarLayout: {
+    '& div[class*="BackstageSidebar-drawer"]': {
+      top: Math.max(props.aboveSidebarHeaderHeight ?? 0, 0),
+    },
+  },
+}));
 
 // Backstage does not expose the props object, pulling it from the component argument
 type SidebarItemProps = Parameters<typeof SidebarItem>[0];
@@ -107,7 +120,7 @@ type SidebarItemProps = Parameters<typeof SidebarItem>[0];
 const SideBarItemWrapper = (props: SidebarItemProps) => {
   const {
     classes: { sidebarItem },
-  } = useStyles();
+  } = useStyles({});
   return (
     <SidebarItem
       {...props}
@@ -187,9 +200,29 @@ const ExpandableMenuList: React.FC<ExpandableMenuListProps> = ({
 };
 
 export const Root = ({ children }: PropsWithChildren<{}>) => {
+  const aboveSidebarHeaderRef = useRef<HTMLDivElement>(null);
+  const [aboveSidebarHeaderHeight, setAboveSidebarHeaderHeight] = useState(0);
+
+  useLayoutEffect(() => {
+    if (!aboveSidebarHeaderRef.current) return () => {};
+
+    const updateHeight = () => {
+      setAboveSidebarHeaderHeight(
+        aboveSidebarHeaderRef.current!.getBoundingClientRect().height,
+      );
+    };
+
+    updateHeight();
+
+    const observer = new ResizeObserver(updateHeight);
+    observer.observe(aboveSidebarHeaderRef.current);
+
+    return () => observer.disconnect();
+  }, []);
+
   const {
-    classes: { pageWithoutFixHeight },
-  } = useStyles();
+    classes: { pageWithoutFixHeight, sidebarLayout },
+  } = useStyles({ aboveSidebarHeaderHeight: aboveSidebarHeaderHeight });
 
   const { dynamicRoutes, menuItems } = useContext(DynamicRootContext);
 
@@ -355,66 +388,70 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
 
   return (
     <div className={pageWithoutFixHeight}>
-      <ApplicationHeaders position="above-sidebar" />
-      <SidebarPage>
-        <ApplicationHeaders position="above-main-content" />
-        <Sidebar>
-          {showLogo && <SidebarLogo />}
-          {showSearch ? (
-            <>
-              <SidebarGroup label="Search" icon={<SearchIcon />} to="/search">
-                <SidebarSearchModal />
-              </SidebarGroup>
+      <div id="above-sidebar-header-container" ref={aboveSidebarHeaderRef}>
+        <ApplicationHeaders position="above-sidebar" />
+      </div>
+      <Box className={sidebarLayout}>
+        <SidebarPage>
+          <ApplicationHeaders position="above-main-content" />
+          <Sidebar>
+            {showLogo && <SidebarLogo />}
+            {showSearch ? (
+              <>
+                <SidebarGroup label="Search" icon={<SearchIcon />} to="/search">
+                  <SidebarSearchModal />
+                </SidebarGroup>
+                <SidebarDivider />
+              </>
+            ) : (
+              <Box sx={{ height: '1.2rem' }} />
+            )}
+            <SidebarGroup label="Menu" icon={<MuiMenuIcon />}>
+              {/* Global nav, not org-specific */}
+              {renderMenuItems(true, false)}
+              {/* End global nav */}
               <SidebarDivider />
-            </>
-          ) : (
-            <Box sx={{ height: '1.2rem' }} />
-          )}
-          <SidebarGroup label="Menu" icon={<MuiMenuIcon />}>
-            {/* Global nav, not org-specific */}
-            {renderMenuItems(true, false)}
-            {/* End global nav */}
-            <SidebarDivider />
-            <SidebarScrollWrapper>
-              {renderMenuItems(false, false)}
-              {dynamicRoutes.map(({ scope, menuItem, path }) => {
-                if (menuItem && 'Component' in menuItem) {
-                  return (
-                    <menuItem.Component
-                      {...(menuItem.config?.props || {})}
-                      key={`${scope}/${path}`}
-                      to={path}
-                    />
-                  );
-                }
-                return null;
-              })}
-            </SidebarScrollWrapper>
-          </SidebarGroup>
-          <SidebarSpace />
-          {showAdministration && (
-            <>
-              <SidebarDivider />
-              <SidebarGroup label="Administration" icon={<AdminIcon />}>
-                {renderMenuItems(false, true)}
-              </SidebarGroup>
-            </>
-          )}
-          {showSettings && (
-            <>
-              <SidebarDivider />
-              <SidebarGroup
-                label="Settings"
-                to="/settings"
-                icon={<AccountCircleOutlinedIcon />}
-              >
-                <SidebarSettings icon={AccountCircleOutlinedIcon} />
-              </SidebarGroup>
-            </>
-          )}
-        </Sidebar>
-        {children}
-      </SidebarPage>
+              <SidebarScrollWrapper>
+                {renderMenuItems(false, false)}
+                {dynamicRoutes.map(({ scope, menuItem, path }) => {
+                  if (menuItem && 'Component' in menuItem) {
+                    return (
+                      <menuItem.Component
+                        {...(menuItem.config?.props || {})}
+                        key={`${scope}/${path}`}
+                        to={path}
+                      />
+                    );
+                  }
+                  return null;
+                })}
+              </SidebarScrollWrapper>
+            </SidebarGroup>
+            <SidebarSpace />
+            {showAdministration && (
+              <>
+                <SidebarDivider />
+                <SidebarGroup label="Administration" icon={<AdminIcon />}>
+                  {renderMenuItems(false, true)}
+                </SidebarGroup>
+              </>
+            )}
+            {showSettings && (
+              <>
+                <SidebarDivider />
+                <SidebarGroup
+                  label="Settings"
+                  to="/settings"
+                  icon={<AccountCircleOutlinedIcon />}
+                >
+                  <SidebarSettings icon={AccountCircleOutlinedIcon} />
+                </SidebarGroup>
+              </>
+            )}
+          </Sidebar>
+          {children}
+        </SidebarPage>
+      </Box>
     </div>
   );
 };
