@@ -508,23 +508,28 @@ class RHDHDeployment {
     }
 
     async createBackstageDeployment(): Promise<RHDHDeployment> {
-        if (this.isRunningLocal) {
-            const dir = resolve(currentDirName, '..', "..");
-            this.runningProcess = spawn('yarn', ['dev', '--env-mode=loose', '--', '--config', currentDirName + '/app-config.test.yaml', '--config', currentDirName + '/dynamic-plugins.test.yaml'], {
-                shell: true,
-                cwd: dir,
-                detached: true,
-                stdio: ['ignore', 'pipe', 'pipe'],
-                env: process.env
-            });
-            this.runningProcess.unref();
-            console.log(`Local development server started with PID: ${this.runningProcess.pid}`);
+        try {
+            if (this.isRunningLocal) {
+                const dir = resolve(currentDirName, '..', "..");
+                this.runningProcess = spawn('yarn', ['dev', '--env-mode=loose', '--', '--config', currentDirName + '/app-config.test.yaml', '--config', currentDirName + '/dynamic-plugins.test.yaml'], {
+                    shell: true,
+                    cwd: dir,
+                    detached: true,
+                    stdio: ['ignore', 'pipe', 'pipe'],
+                    env: process.env
+                });
+                this.runningProcess.unref();
+                console.log(`Local development server started with PID: ${this.runningProcess.pid}`);
+                return this;
+            }
+            const backstageConfig: any = await this.loadBackstageCR();
+            await this.applyCustomResource(backstageConfig);
+            await this.waitForDeploymentReady();
             return this;
+        } catch(e){
+            console.log(JSON.stringify(e))
+            throw e
         }
-        const backstageConfig: any = await this.loadBackstageCR();
-        await this.applyCustomResource(backstageConfig);
-        await this.waitForDeploymentReady();
-        return this;
     }
 
     async killRunningProcess(): Promise<void> {
