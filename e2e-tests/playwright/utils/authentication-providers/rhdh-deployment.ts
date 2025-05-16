@@ -13,8 +13,9 @@ import { GroupEntity, UserEntity } from "@backstage/catalog-model";
 
 const currentFileName = fileURLToPath(import.meta.url);
 const currentDirName = dirname(currentFileName);
-const rootDirName = resolve(currentDirName, "..", "..");
-const syncedLogRegex = /Committed \d+ (Keycloak|msgraph|github) users? and \d+ (Keycloak|msgraph|github) groups? in \d+(\.\d+)? seconds/;
+const rootDirName = resolve(currentDirName, "..", "..", "..", "..");
+console.log(rootDirName, currentDirName)
+const syncedLogRegex = /Committed \d+ (Keycloak|msgraph|GitHub) users? and \d+ (Keycloak|msgraph|GitHub) groups? in \d+(\.\d+)? seconds/;
 
 
 class RHDHDeployment {
@@ -543,10 +544,9 @@ class RHDHDeployment {
     async createBackstageDeployment(): Promise<RHDHDeployment> {
         try {
             if (this.isRunningLocal) {
-                const dir = resolve(currentDirName, '..', "..");
                 this.runningProcess = spawn('yarn', ['dev', '--env-mode=loose', '--', '--config', currentDirName + '/app-config.test.yaml', '--config', currentDirName + '/dynamic-plugins.test.yaml'], {
                     shell: true,
-                    cwd: dir,
+                    cwd: resolve(rootDirName),
                     detached: true,
                     stdio: ['ignore', 'pipe', 'pipe'],
                     env: process.env
@@ -795,12 +795,8 @@ class RHDHDeployment {
         expect(isReachable).toBe(true);
     }
 
-    // TODO: Enable Keycloak
     // TODO: Enable Github
-    // TODO: Enable Microsoft
-    // TODO: Enable Static Token
     // TODO: ENABLE RBAC 
-    // TODO: ADD HELPER TO ENABLE/DISABLE DYNAMIC PLUGIN 
     // TODO: Enable Redis 
 
     // New method to enable or disable a dynamic plugin
@@ -917,6 +913,78 @@ class RHDHDeployment {
         );
         this.setAppConfigProperty("auth.environment", "development");
         this.setAppConfigProperty("signInPage", "microsoft");
+
+        return this;
+    }
+
+    async enableGithubLoginWithIngestion(): Promise<RHDHDeployment> {
+        console.log("Enabling Github login with ingestion...");
+
+        //expect the config variable to be set
+        expect(process.env.AUTH_PROVIDERS_GH_ORG_NAME).toBeDefined();
+        expect(process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET).toBeDefined();
+        expect(process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_ID).toBeDefined();
+        expect(process.env.AUTH_PROVIDERS_GH_ORG_APP_ID).toBeDefined();
+        expect(process.env.AUTH_PROVIDERS_GH_ORG1_PRIVATE_KEY).toBeDefined();
+        expect(process.env.AUTH_PROVIDERS_GH_ORG_WEBHOOK_SECRET).toBeDefined();
+
+        // enable the catalog backend dynamic plugin
+        // and set the required configuration properties
+        this.setDynamicPluginEnabled("./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-org-dynamic", true);
+        
+        this.setAppConfigProperty("catalog.providers", {
+            "githubOrg": [
+                {
+                  "id": "github",
+                  "githubUrl": "https://github.com",
+                  "orgs": [
+                    "${AUTH_PROVIDERS_GH_ORG_NAME}"
+                  ],
+                  "schedule": {
+                    "initialDelay": {
+                      "seconds": 0
+                    },
+                    "frequency": {
+                      "minutes": 1
+                    },
+                    "timeout": {
+                      "minutes": 1
+                    }
+                  }
+                }
+            ]
+        });
+
+        // enable github integration
+        this.setAppConfigProperty("integrations", {
+            "github": [
+                {
+                "host": "github.com",
+                "apps": [
+                    {
+                    "appId": "${AUTH_PROVIDERS_GH_ORG_APP_ID}",
+                    "clientId": "${AUTH_PROVIDERS_GH_ORG_CLIENT_ID}",
+                    "clientSecret": "${AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET}",
+                    "privateKey": "${AUTH_PROVIDERS_GH_ORG1_PRIVATE_KEY}",
+                    "webhookSecret": "${AUTH_PROVIDERS_GH_ORG_WEBHOOK_SECRET}"
+                    }
+                ]
+                }
+            ]
+        });
+
+        // enable the github login provider
+        this.setAppConfigProperty("auth.providers.github", {
+            "development": {
+                "clientId": "${AUTH_PROVIDERS_GH_ORG_CLIENT_ID}",
+                "clientSecret": "${AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET}",
+                "callbackUrl": "${BASE_URL:-http://localhost:7007}/api/auth/github/handler/frame"
+            }
+        }
+        );
+
+        this.setAppConfigProperty("auth.environment", "development");
+        this.setAppConfigProperty("signInPage", "github");
 
         return this;
     }
