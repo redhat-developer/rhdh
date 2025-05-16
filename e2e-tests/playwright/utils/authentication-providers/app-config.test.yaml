@@ -1,0 +1,85 @@
+developerHub:
+  flavor: rhdh
+app:
+  baseUrl: ${BASE_URL:-http://localhost:3000}
+  title: Red Hat Developer Hub
+organization:
+  name: ${ORGANIZATION_NAME}
+backend:
+  baseUrl: ${BASE_URL:-http://localhost:7007}
+  csp:
+    connect-src:
+      - "'self'"
+      - "http:"
+      - "https:"
+  cors:
+    origin: ${BASE_URL:-http://localhost:3000}
+    methods:
+      - GET
+      - HEAD
+      - PATCH
+      - POST
+      - PUT
+      - DELETE
+    credentials: true
+  auth:
+    keys:
+      - secret: temp
+    externalAccess:
+      - type: static
+        options:
+          token: ${STATIC_TOKEN:-localmocktoken}
+          subject: e2e-tests-ci
+  database:
+    client: better-sqlite3
+    connection: ":memory:"
+includeTransitiveGroupOwnership: true
+auth:
+  environment: development
+  session:
+    secret: superSecretSecret
+  providers:
+    github:
+      development:
+        clientId: ${AUTH_PROVIDERS_GH_ORG_CLIENT_ID}
+        clientSecret: ${AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET}
+        callbackUrl: ${BASE_URL:-http://localhost:7007}/api/auth/github/handler/frame
+catalog:
+  import:
+    entityFilename: catalog-info.yaml
+  rules:
+    - allow:
+        - API
+        - Component
+        - Group
+        - Location
+        - Resource
+        - System
+        - Template
+  providers:
+    githubOrg:
+      - id: github
+        githubUrl: https://github.com
+        orgs:
+          - ${AUTH_PROVIDERS_GH_ORG_NAME}
+        schedule:
+          initialDelay:
+            seconds: 0
+          frequency:
+            minutes: 1
+          timeout:
+            minutes: 1
+permission:
+  enabled: false
+dynamicPlugins:
+  rootDirectory: /Users/abarbaro/code/rhdh-refactor-auth-providers/dynamic-plugins-root
+integrations:
+  github:
+    - host: github.com
+      apps:
+        - appId: ${AUTH_PROVIDERS_GH_ORG_APP_ID}
+          clientId: ${AUTH_PROVIDERS_GH_ORG_CLIENT_ID}
+          clientSecret: ${AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET}
+          privateKey: ${AUTH_PROVIDERS_GH_ORG1_PRIVATE_KEY}
+          webhookSecret: ${AUTH_PROVIDERS_GH_ORG_WEBHOOK_SECRET}
+signInPage: github
