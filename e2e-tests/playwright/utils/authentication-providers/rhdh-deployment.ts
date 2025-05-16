@@ -14,9 +14,7 @@ import { GroupEntity, UserEntity } from "@backstage/catalog-model";
 const currentFileName = fileURLToPath(import.meta.url);
 const currentDirName = dirname(currentFileName);
 const rootDirName = resolve(currentDirName, "..", "..", "..", "..");
-console.log(rootDirName, currentDirName)
 const syncedLogRegex = /Committed \d+ (Keycloak|msgraph|GitHub) users? and \d+ (Keycloak|msgraph|GitHub) groups? in \d+(\.\d+)? seconds/;
-
 
 class RHDHDeployment {
     instanceName: string;
