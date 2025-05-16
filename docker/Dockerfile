@@ -1,7 +1,6 @@
-# syntax=docker/dockerfile:1.14-labs
+# syntax=docker/dockerfile:1.15-labs
 
-# THIS IS USED BY Konflux builds >= 1.4
-# TODO verify this works with Cachi2 once we enable that, or switch to use ../.rhdh/docker/Dockerfile as input
+# THIS IS USED BY Konflux builds == 1.4 - 1.5; see ../.rhdh/docker/Dockerfile for >=1.6
 #
 # Copyright (c) 2023-2024 Red Hat, Inc.
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +17,7 @@
 
 # Stage 1 - Build nodejs skeleton
 # https://registry.access.redhat.com/ubi9/nodejs-22
-FROM registry.access.redhat.com/ubi9/nodejs-22:9.5-1744136606 AS skeleton
+FROM registry.access.redhat.com/ubi9/nodejs-22:9.6-1747320144 AS skeleton
 # hadolint ignore=DL3002
 USER 0
 
@@ -229,7 +228,7 @@ RUN \
 
 # Stage 5 - Build the runner image
 # https://registry.access.redhat.com/ubi9/nodejs-22-minimal
-FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:9.5-1742929466 AS runner
+FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:9.6-1747315151 AS runner
 USER 0
 
 ENV EXTERNAL_SOURCE_NESTED=.
