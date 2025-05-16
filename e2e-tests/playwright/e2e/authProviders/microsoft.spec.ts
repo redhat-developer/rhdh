@@ -102,8 +102,9 @@ test.describe('Configure Microsoft Provider', async () => {
         await graphClient.addAppRedirectUrlsAsync([`${backstageUrl}/api/auth/microsoft/handler/frame`]);
 
         // create backstage deployment and wait for it to be ready
-        (await deployment.createBackstageDeployment()).waitForDeploymentReady();
-
+        await deployment.createBackstageDeployment();
+        await deployment.waitForDeploymentReady();
+        
         // wait for rhdh first sync and portal to be reachable
         await deployment.waitForSynced();
     });
