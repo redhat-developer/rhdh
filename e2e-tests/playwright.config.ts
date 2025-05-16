@@ -87,7 +87,6 @@ export default defineConfig({
         "**/playwright/e2e/verify-tls-config-health-check.spec.ts",
         "**/playwright/e2e/authProviders/github.spec.ts",
         "**/playwright/e2e/authProviders/basic-auth.spec.ts",
-        "**/playwright/e2e/authProviders/oidc.spec.ts",
       ],
       retries: 1,
     },
