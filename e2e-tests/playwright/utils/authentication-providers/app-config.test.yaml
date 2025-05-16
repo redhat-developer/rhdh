@@ -39,18 +39,11 @@ auth:
   session:
     secret: superSecretSecret
   providers:
-    microsoft:
+    github:
       development:
-        clientId: ${AUTH_PROVIDERS_AZURE_CLIENT_ID}
-        clientSecret: ${AUTH_PROVIDERS_AZURE_CLIENT_SECRET}
-        prompt: auto
-        tenantId: ${AUTH_PROVIDERS_AZURE_TENANT_ID}
-        callbackUrl: ${BASE_URL:-http://localhost:7007}/api/auth/microsoft/handler/frame
-        signIn:
-          resolvers:
-            - resolver: emailMatchingUserEntityProfileEmail
-              dangerouslyAllowSignInWithoutUserInCatalog: false
-        sessionDuration: 3days
+        clientId: ${AUTH_PROVIDERS_GH_ORG_CLIENT_ID}
+        clientSecret: ${AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET}
+        callbackUrl: ${BASE_URL:-http://localhost:7007}/api/auth/github/handler/frame
 catalog:
   import:
     entityFilename: catalog-info.yaml
@@ -64,25 +57,29 @@ catalog:
         - System
         - Template
   providers:
-    microsoftGraphOrg:
-      default:
-        target: https://graph.microsoft.com/v1.0
-        authority: https://login.microsoftonline.com
-        tenantId: ${AUTH_PROVIDERS_AZURE_TENANT_ID}
-        clientId: ${AUTH_PROVIDERS_AZURE_CLIENT_ID}
-        clientSecret: ${AUTH_PROVIDERS_AZURE_CLIENT_SECRET}
-        user:
-          filter: accountEnabled eq true and userType eq 'member' and
-            startswith(displayName,'TEST')
-        group:
-          filter: >
-            securityEnabled eq true and mailEnabled eq false and
-            startswith(displayName,'TEST_')
+    githubOrg:
+      - id: github
+        githubUrl: https://github.com
+        orgs:
+          - ${AUTH_PROVIDERS_GH_ORG_NAME}
         schedule:
-          frequency: PT1M
-          timeout: PT1M
+          initialDelay:
+            seconds: 0
+          frequency:
+            minutes: 1
+          timeout:
+            minutes: 1
 permission:
   enabled: false
 dynamicPlugins:
   rootDirectory: /Users/abarbaro/code/rhdh-refactor-auth-providers/dynamic-plugins-root
-signInPage: microsoft
+integrations:
+  github:
+    - host: github.com
+      apps:
+        - appId: ${AUTH_PROVIDERS_GH_ORG_APP_ID}
+          clientId: ${AUTH_PROVIDERS_GH_ORG_CLIENT_ID}
+          clientSecret: ${AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET}
+          privateKey: ${AUTH_PROVIDERS_GH_ORG1_PRIVATE_KEY}
+          webhookSecret: ${AUTH_PROVIDERS_GH_ORG_WEBHOOK_SECRET}
+signInPage: github
