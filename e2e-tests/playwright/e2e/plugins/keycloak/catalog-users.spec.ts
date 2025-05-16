@@ -57,6 +57,10 @@ test.describe.skip("Test Keycloak plugin", () => {
 });
 
 test.describe("Test Keycloak plugin metrics", () => {
+  test.fixme(
+    process.env.IS_OPENSHIFT === "false",
+    "Failing on Kubernetes clusters, need to add Ingress, fix https://issues.redhat.com/browse/RHIDP-7531",
+  );
   const namespace = process.env.NAME_SPACE || "showcase-ci-nightly";
   const baseRHDHURL: string = process.env.BASE_URL;
   let kubeClient: KubeClient;
