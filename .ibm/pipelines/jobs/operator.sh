@@ -33,9 +33,13 @@ deploy_rhdh_operator() {
     ' || echo "Error: Timed out waiting for Backstage CRD creation."
 
   if [[ "${namespace}" == "showcase-op-rbac-nightly" ]]; then
-    oc apply -f "${dir}/resources/rhdh-operator/rhdh-start-rbac.yaml" -n "${namespace}"
+    rendered_yaml=$(envsubst < "${dir}/resources/rhdh-operator/rhdh-start-rbac.yaml")
+    echo -e "Applying Backstage CRD : $rendered_yaml"
+    echo "$rendered_yaml" | oc apply -f - -n "$namespace"
   else
-    oc apply -f "${dir}/resources/rhdh-operator/rhdh-start.yaml" -n "${namespace}"
+    rendered_yaml=$(envsubst < "${dir}/resources/rhdh-operator/rhdh-start.yaml")
+    echo -e "Applying Backstage CRD : $rendered_yaml"
+    echo "$rendered_yaml" | oc apply -f - -n "$namespace"
   fi
 }
 
