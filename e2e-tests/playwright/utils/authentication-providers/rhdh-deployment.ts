@@ -182,15 +182,21 @@ class RHDHDeployment {
     }
 
     async applyCustomResource(resource: any): Promise<RHDHDeployment> {
-        const customObjectsApi = this.kc.makeApiClient(k8s.CustomObjectsApi);
-        await customObjectsApi.createNamespacedCustomObject(
-            resource.apiVersion.split('/')[0],
-            resource.apiVersion.split('/')[1],
-            this.namespace,
-            resource.kind.toLowerCase() + 's',
-            resource
-        );
-        return this;
+        console.log("Applying CR.")
+        try{
+            const customObjectsApi = this.kc.makeApiClient(k8s.CustomObjectsApi);
+            await customObjectsApi.createNamespacedCustomObject(
+                resource.apiVersion.split('/')[0],
+                resource.apiVersion.split('/')[1],
+                this.namespace,
+                resource.kind.toLowerCase() + 's',
+                resource
+            );
+            return this;
+        } catch(e){
+            console.error(JSON.stringify(e))
+            throw e
+        }
     }
 
     async readYamlToJson(filePath: string): Promise<any> {
