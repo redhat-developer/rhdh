@@ -1,6 +1,5 @@
+import { DynamicRootConfig } from '@red-hat-developer-hub/plugin-utils';
 import { getScalprum } from '@scalprum/core';
-
-import { DynamicRootConfig } from '../../components/DynamicRoot/DynamicRootContext';
 
 function getDynamicRootConfig(): DynamicRootConfig {
   return getScalprum().api.dynamicRootConfig;

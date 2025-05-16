@@ -1,13 +1,4 @@
-import React, { createContext } from 'react';
-
 import { Entity } from '@backstage/catalog-model';
-import {
-  AnyApiFactory,
-  AppTheme,
-  BackstagePlugin,
-} from '@backstage/core-plugin-api';
-
-import { ScalprumComponentProps } from '@scalprum/react-core';
 
 export type RouteBinding = {
   bindTarget: string;
@@ -39,12 +30,9 @@ export type ResolvedMenuItem = {
   enabled?: boolean;
 };
 
-export type DynamicModuleEntry = Pick<
-  ScalprumComponentProps,
-  'scope' | 'module'
->;
-
-export type ResolvedDynamicRoute = DynamicModuleEntry & {
+export type ResolvedDynamicRoute = {
+  scope: string;
+  module: string;
   path: string;
   menuItem?: ResolvedDynamicRouteMenuItem;
   Component: React.ComponentType<any>;
@@ -56,16 +44,16 @@ export type ResolvedDynamicRoute = DynamicModuleEntry & {
   };
 };
 
-export type ScalprumMountPointConfigBase = {
+export type MountPointConfigBase = {
   layout?: Record<string, string>;
   props?: Record<string, any>;
 };
 
-export type ScalprumMountPointConfig = ScalprumMountPointConfigBase & {
+export type MountPointConfig = MountPointConfigBase & {
   if: (e: Entity) => boolean;
 };
 
-export type ScalprumMountPointConfigRawIf = {
+export type MountPointConfigRawIf = {
   [key in 'allOf' | 'oneOf' | 'anyOf']?: (
     | {
         [key: string]: string | string[];
@@ -74,34 +62,16 @@ export type ScalprumMountPointConfigRawIf = {
   )[];
 };
 
-export type ScalprumMountPointConfigRaw = ScalprumMountPointConfigBase & {
-  if?: ScalprumMountPointConfigRawIf;
+export type MountPointConfigRaw = MountPointConfigBase & {
+  if?: MountPointConfigRawIf;
 };
 
-export type ScalprumMountPoint = {
+export type MountPoint = {
   Component: React.ComponentType<React.PropsWithChildren>;
-  config?: ScalprumMountPointConfig;
+  config?: MountPointConfig;
   staticJSXContent?:
     | React.ReactNode
     | ((config: DynamicRootConfig) => React.ReactNode);
-};
-
-export type RemotePlugins = {
-  [scope: string]: {
-    [module: string]: {
-      [importName: string]:
-        | React.ComponentType<React.PropsWithChildren>
-        | ((...args: any[]) => any)
-        | BackstagePlugin<{}>
-        | {
-            element: React.ComponentType<React.PropsWithChildren>;
-            staticJSXContent:
-              | React.ReactNode
-              | ((config: DynamicRootConfig) => React.ReactNode);
-          }
-        | AnyApiFactory;
-    };
-  };
 };
 
 export type EntityTabOverrides = Record<
@@ -109,9 +79,7 @@ export type EntityTabOverrides = Record<
   { title: string; mountPoint: string; priority?: number }
 >;
 
-export type MountPoints = Record<string, ScalprumMountPoint[]>;
-
-export type AppThemeProvider = Partial<AppTheme> & Omit<AppTheme, 'theme'>;
+export type MountPoints = Record<string, MountPoint[]>;
 
 export type ScaffolderFieldExtension = {
   scope: string;
@@ -150,17 +118,3 @@ export type ComponentRegistry = {
   AppProvider: React.ComponentType<React.PropsWithChildren>;
   AppRouter: React.ComponentType<React.PropsWithChildren>;
 } & DynamicRootConfig;
-
-const DynamicRootContext = createContext<ComponentRegistry>({
-  AppProvider: () => null,
-  AppRouter: () => null,
-  dynamicRoutes: [],
-  entityTabOverrides: {},
-  mountPoints: {},
-  menuItems: [],
-  providerSettings: [],
-  scaffolderFieldExtensions: [],
-  techdocsAddons: [],
-});
-
-export default DynamicRootContext;

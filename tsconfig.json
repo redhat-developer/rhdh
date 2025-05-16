@@ -5,13 +5,15 @@
     "plugins/*/src",
     "plugins/*/dev",
     "plugins/*/migrations",
-    "dynamic-plugins/wrappers/*/src"
+    "dynamic-plugins/wrappers/*/src",
+    "packages/plugin-utils/__tests__",
+    "packages/plugin-utils/setupTests.ts"
   ],
   "exclude": ["node_modules"],
   "compilerOptions": {
     "outDir": "dist-types",
     "rootDir": ".",
     "skipLibCheck": true,
-    "jsx": "preserve",
+    "jsx": "preserve"
   }
 }

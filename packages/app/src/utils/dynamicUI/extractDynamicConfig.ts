@@ -2,13 +2,13 @@ import { Entity } from '@backstage/catalog-model';
 import { ApiHolder } from '@backstage/core-plugin-api';
 import { isKind } from '@backstage/plugin-catalog';
 
-import { hasAnnotation, isType } from '../../components/catalog/utils';
 import {
-  DynamicModuleEntry,
+  MountPointConfigRaw,
+  MountPointConfigRawIf,
   RouteBinding,
-  ScalprumMountPointConfigRaw,
-  ScalprumMountPointConfigRawIf,
-} from '../../components/DynamicRoot/DynamicRootContext';
+} from '@red-hat-developer-hub/plugin-utils';
+
+import { hasAnnotation, isType } from '../../components/catalog/utils';
 import { extractMenuItems } from './extractDynamicConfigFrontend';
 
 export type DynamicRouteMenuItem =
@@ -66,7 +66,7 @@ type MountPoint = {
   mountPoint: string;
   module: string;
   importName: string;
-  config?: ScalprumMountPointConfigRaw;
+  config?: MountPointConfigRaw;
 };
 
 type AppIcon = {
@@ -143,12 +143,13 @@ type ProviderSetting = {
 
 type CustomProperties = {
   pluginModule?: string;
-  dynamicRoutes?: (DynamicModuleEntry & {
+  dynamicRoutes?: {
     importName?: string;
     module?: string;
+    scope?: string;
     path: string;
     menuItem?: DynamicRouteMenuItem;
-  })[];
+  }[];
   menuItems?: { [key: string]: MenuItemConfig };
   routeBindings?: {
     targets: BindingTarget[];
@@ -385,7 +386,7 @@ function extractDynamicConfig(
  * @param conditional
  * @returns
  */
-export function configIfToCallable(conditional: ScalprumMountPointConfigRawIf) {
+export function configIfToCallable(conditional: MountPointConfigRawIf) {
   return (entity: Entity, context?: { apis: ApiHolder }) => {
     if (conditional?.allOf) {
       return conditional.allOf

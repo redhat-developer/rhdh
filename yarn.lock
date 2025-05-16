@@ -12310,6 +12310,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@red-hat-developer-hub/plugin-utils@1.0.0, @red-hat-developer-hub/plugin-utils@workspace:packages/plugin-utils":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/plugin-utils@workspace:packages/plugin-utils"
+  dependencies:
+    "@backstage/catalog-model": 1.7.3
+    "@backstage/cli": 0.30.0
+    "@backstage/test-utils": 1.7.5
+    "@testing-library/dom": 9.3.4
+    "@testing-library/jest-dom": 6.6.3
+    "@testing-library/react": 14.3.1
+    "@testing-library/react-hooks": 8.0.1
+    "@types/node": 22.15.17
+    "@types/react": 18.3.21
+    "@types/react-dom": 18.3.7
+    prettier: 3.5.3
+    react: 18.3.1
+    typescript: 5.8.3
+  peerDependencies:
+    react: 16.13.1 || ^17.0.0 || ^18.2.0
+  languageName: unknown
+  linkType: soft
+
 "@redis/bloom@npm:1.2.0":
   version: 1.2.0
   resolution: "@redis/bloom@npm:1.2.0"
@@ -16566,6 +16588,7 @@ __metadata:
     "@mui/material": 5.17.1
     "@mui/styled-engine": 5.16.14
     "@red-hat-developer-hub/backstage-plugin-theme": 0.6.0
+    "@red-hat-developer-hub/plugin-utils": 1.0.0
     "@scalprum/core": 0.8.3
     "@scalprum/react-core": 0.9.5
     "@scalprum/react-test-utils": 0.2.6
