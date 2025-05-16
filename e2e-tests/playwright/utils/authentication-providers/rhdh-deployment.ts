@@ -513,6 +513,33 @@ class RHDHDeployment {
         return backstageConfig;
     }
 
+    async ensureBackstageCRIsAvailable(timeoutMs: number = 60000): Promise<void> {
+        if (this.isRunningLocal) {
+            console.log('Skipping CRD check as isRunningLocal is true.');
+            return;
+        }
+
+        const startTime = Date.now();
+        while (Date.now() - startTime < timeoutMs) {
+            try {
+                const customObjectsApi = this.kc.makeApiClient(k8s.CustomObjectsApi);
+                await customObjectsApi.getClusterCustomObject(
+                    'apiextensions.k8s.io',
+                    'v1',
+                    'customresourcedefinitions',
+                    'backstages.rhdh.redhat.com'
+                );
+                return;
+            } catch (error) {
+                if (Date.now() - startTime >= timeoutMs) {
+                    throw new Error(`Timeout waiting for Backstage CRD to be available: ${error.message}`);
+                }
+                await new Promise(resolve => setTimeout(resolve, 5000));
+            }
+        }
+        throw new Error(`Timeout waiting for Backstage CRD to be available after ${timeoutMs}ms`);
+    }
+
     async createBackstageDeployment(): Promise<RHDHDeployment> {
         try {
             if (this.isRunningLocal) {
@@ -528,6 +555,7 @@ class RHDHDeployment {
                 console.log(`Local development server started with PID: ${this.runningProcess.pid}`);
                 return this;
             }
+            await this.ensureBackstageCRIsAvailable(60000)
             const backstageConfig: any = await this.loadBackstageCR();
             await this.applyCustomResource(backstageConfig);
             await this.waitForDeploymentReady();

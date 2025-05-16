@@ -110,7 +110,8 @@ test.describe('Configure OIDC provider (using RHBK)', async () => {
         await deployment.updateAllConfigs();
 
         // create backstage deployment and wait for it to be ready
-        (await deployment.createBackstageDeployment()).waitForDeploymentReady();
+        await deployment.createBackstageDeployment();
+        await deployment.waitForDeploymentReady();
 
         // wait for rhdh first sync and portal to be reachable
         await deployment.waitForSynced();
