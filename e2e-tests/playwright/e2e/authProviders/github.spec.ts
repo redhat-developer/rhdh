@@ -7,28 +7,10 @@ let page: Page;
 let context: BrowserContext;
 
 /* SUPORTED RESOLVERS
-OIDC:
-    ❗Changed from 1.5
-    [x] oidcSubClaimMatchingIdPUserId -> (Default, no setting specified)
-    [x] oidcSubClaimMatchingKeycloakUserId -> (same as above, but need to be set explicitely in the config)
-    [x] preferredUsernameMatchingUserEntityName (patched)
-    [x] emailLocalPartMatchingUserEntityName
-    [x] emailMatchingUserEntityProfileEmail -> email will always match, just making sure it logs in
-    [-] oidcSubClaimMatchingPingIdentityUserId -> Ping Identity not supported
-
-MICOROSFT:
-    [x] userIdMatchingUserEntityAnnotation -> (Default)
-    [x] emailMatchingUserEntityAnnotation
-    [x] emailMatchingUserEntityProfileEmail -> email will always match, just making sure it logs in
-    [-] emailLocalPartMatchingUserEntityName
-
 GITHUB:
-    [] usernameMatchingUserEntityName -> (Default)
-    [] emailMatchingUserEntityProfileEmail
+    [x] usernameMatchingUserEntityName -> (Default)
+    [x] emailMatchingUserEntityProfileEmail
     [] emailLocalPartMatchingUserEntityName
-
-LDAP:
-
 */
 
 test.describe('Configure Microsoft Provider', async () => {
@@ -130,7 +112,107 @@ test.describe('Configure Microsoft Provider', async () => {
         await common.signOut();
         await context.clearCookies();
     });
+
+    test('Login with Github emailMatchingUserEntityProfileEmail resolver', async () => {
+        //A common sign-in resolver that looks up the user using the local part of their email address as the entity name.
+        await deployment.setGithubResolver("emailMatchingUserEntityProfileEmail", false);
+        await deployment.updateAllConfigs()
+        await deployment.restartLocalDeployment();
+        await page.waitForTimeout(3000)
+        await deployment.waitForDeploymentReady();
+
+        // wait for rhdh first sync and portal to be reachable
+        await deployment.waitForSynced();
+
+        const login = await common.githubLogin(
+            "rhdhqeauthadmin",
+            process.env.AUTH_PROVIDERS_GH_USER_PASSWORD,
+            process.env.AUTH_PROVIDERS_GH_ADMIN_2FA,
+        );
+        expect(login).toBe("Login successful");
+
+        await page.goto("/settings");
+        await uiHelper.verifyHeading("RHDH QE Admin");
+        await common.signOut();
+        await context.clearCookies();
+    });
+
+    test.skip('Login with Github emailLocalPartMatchingUserEntityName resolver', async () => {
+        //A common sign-in resolver that looks up the user using the local part of their email address as the entity name.
+        await deployment.setGithubResolver("emailLocalPartMatchingUserEntityName", false);
+        await deployment.updateAllConfigs()
+        await deployment.restartLocalDeployment();
+        await page.waitForTimeout(3000)
+        await deployment.waitForDeploymentReady();
+
+        // wait for rhdh first sync and portal to be reachable
+        await deployment.waitForSynced();
+
+        const login = await common.githubLogin(
+            "rhdhqeauthadmin",
+            process.env.AUTH_PROVIDERS_GH_USER_PASSWORD,
+            process.env.AUTH_PROVIDERS_GH_ADMIN_2FA,
+        );
+        expect(login).toBe("Login successful");
+
+        await page.goto("/settings");
+        await uiHelper.verifyHeading("RHDH QE Admin");
+        await common.signOut();
+        await context.clearCookies();
+    });
+
+    test(`Set Github sessionDuration and confirm in auth cookie duration has been set`, async () => {
+        deployment.setAppConfigProperty('auth.providers.github.development.sessionDuration', '3days')
+        await deployment.updateAllConfigs()
+        await deployment.restartLocalDeployment();
+        await page.waitForTimeout(3000)
+        await deployment.waitForDeploymentReady();
+
+        // wait for rhdh first sync and portal to be reachable
+        await deployment.waitForSynced();
+
+        const login = await common.githubLogin(
+            "rhdhqeauthadmin",
+            process.env.AUTH_PROVIDERS_GH_USER_PASSWORD,
+            process.env.AUTH_PROVIDERS_GH_ADMIN_2FA,
+        );
+        expect(login).toBe("Login successful");
     
+        await page.reload();
+
+        const cookies = await context.cookies();
+        const authCookie = cookies.find(
+        (cookie) => cookie.name === "github-refresh-token",
+        );
+
+        const threeDays = 3 * 24 * 60 * 60 * 1000; // expected duration of 3 days in ms
+        const tolerance = 3 * 60 * 1000; // allow for 3 minutes tolerance
+
+        const actualDuration = authCookie.expires * 1000 - Date.now();
+
+        expect(actualDuration).toBeGreaterThan(threeDays - tolerance);
+        expect(actualDuration).toBeLessThan(threeDays + tolerance);
+
+        await page.goto("/settings");
+        await uiHelper.verifyHeading("RHDH QE Admin");
+        await common.signOut();
+        await context.clearCookies();
+    });
+    
+    test(`Ingestion of Github users and groups: verify the user entities and groups are created with the correct relationships`, async () => {
+        test.setTimeout(300 * 1000);
+        await page.waitForTimeout(5000)
+
+        expect(await deployment.checkUserIsIngestedInCatalog(["RHDH QE User 1", "RHDH QE Admin"])).toBe(true);
+        expect(await deployment.checkGroupIsIngestedInCatalog(["test_admins", "test_all", "test_users"])).toBe(true);
+        expect(await deployment.checkUserIsInGroup('rhdhqeauthadmin', 'test_admins')).toBe(true);
+        expect(await deployment.checkUserIsInGroup('rhdhqeauth1', 'test_users')).toBe(true);
+
+        expect(await deployment.checkGroupIsChildOfGroup('test_users', 'test_all')).toBe(true);
+        expect(await deployment.checkGroupIsChildOfGroup('test_admins', 'test_all')).toBe(true);
+
+        
+    });
 
     test.afterAll(async () => {
         console.log("Cleaning up...");

@@ -1039,6 +1039,14 @@ class RHDHDeployment {
         return this;
     }
 
+    async setGithubResolver(resolver: string, dangerouslyAllowSignInWithoutUserInCatalog: boolean = false): Promise<RHDHDeployment> {
+        this.setAppConfigProperty("auth.providers.github.development.signIn.resolvers", [{
+            "resolver": resolver,
+            "dangerouslyAllowSignInWithoutUserInCatalog": dangerouslyAllowSignInWithoutUserInCatalog
+        }])
+        return this;
+    }
+
     async waitForSynced(): Promise<RHDHDeployment> {
         const synced = await this.followLogs(syncedLogRegex, 120000);
         expect(synced).toBe(true);
