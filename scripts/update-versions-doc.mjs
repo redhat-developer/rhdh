@@ -23,7 +23,7 @@ const backstageJsonPath = 'backstage.json';
 const frontendPackageJsonPath = 'packages/app/package.json';
 const backendPackageJsonPath = 'packages/backend/package.json';
 
-// Frontendend and Backend packages to be documented
+// Frontend and Backend packages to be documented
 const frontendPackages = [
   '@backstage/catalog-model',
   '@backstage/config',
