@@ -121,7 +121,7 @@ pathspec==0.12.1
     #   -r requirements.in
     #   hatchling
     #   mkdocs
-plantuml-markdown @ https://github.com/mikitex70/plantuml-markdown/archive/fcf62aa930708368ec1daaad8b5b5dbe1d1b2014.zip#cachito_hash=sha256:a487c2312a53fe47a0947e8624290b2c8ea51e373140d02950531966b1db5caa
+plantuml-markdown @ https://github.com/mikitex70/plantuml-markdown/archive/fcf62aa930708368ec1daaad8b5b5dbe1d1b2014.zip
     # via
     #   -r requirements.in
     #   mkdocs-techdocs-core
@@ -206,7 +206,7 @@ wheel==0.43.0
     # via -r requirements.in
 
 # The following packages are considered to be unsafe in a requirements file:
-setuptools==70.1.1
+setuptools==78.1.1
     # via
     #   -r requirements.in
     #   setuptools-scm
