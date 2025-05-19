@@ -8,28 +8,11 @@ let page: Page;
 let context: BrowserContext;
 
 /* SUPORTED RESOLVERS
-OIDC:
-    ❗Changed from 1.5
-    [x] oidcSubClaimMatchingIdPUserId -> (Default, no setting specified)
-    [x] oidcSubClaimMatchingKeycloakUserId -> (same as above, but need to be set explicitely in the config)
-    [x] preferredUsernameMatchingUserEntityName (patched)
-    [x] emailLocalPartMatchingUserEntityName
-    [x] emailMatchingUserEntityProfileEmail -> email will always match, just making sure it logs in
-    [-] oidcSubClaimMatchingPingIdentityUserId -> Ping Identity not supported
-
 MICOROSFT:
     [x] userIdMatchingUserEntityAnnotation -> (Default)
     [x] emailMatchingUserEntityAnnotation
     [x] emailMatchingUserEntityProfileEmail -> email will always match, just making sure it logs in
     [-] emailLocalPartMatchingUserEntityName
-
-GITHUB:
-    [] usernameMatchingUserEntityName -> (Default)
-    [] emailMatchingUserEntityProfileEmail
-    [] emailLocalPartMatchingUserEntityName
-
-LDAP:
-
 */
 
 test.describe('Configure Microsoft Provider', async () => {

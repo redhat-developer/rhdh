@@ -16,20 +16,6 @@ OIDC:
     [x] emailLocalPartMatchingUserEntityName
     [x] emailMatchingUserEntityProfileEmail -> email will always match, just making sure it logs in
     [-] oidcSubClaimMatchingPingIdentityUserId -> Ping Identity not supported
-
-MICOROSFT:
-    [x] userIdMatchingUserEntityAnnotation -> (Default)
-    [x] emailMatchingUserEntityAnnotation
-    [x] emailMatchingUserEntityProfileEmail -> email will always match, just making sure it logs in
-    [-] emailLocalPartMatchingUserEntityName
-
-GITHUB:
-    [] usernameMatchingUserEntityName -> (Default)
-    [] emailMatchingUserEntityProfileEmail
-    [] emailLocalPartMatchingUserEntityName
-
-LDAP:
-
 */
 
 
