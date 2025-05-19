@@ -15,6 +15,9 @@ spec:
       mountPath: /opt/app-root/src
     dynamicPluginsConfigMapName: dynamic-plugins
     extraEnvs:
+      envs:
+        - name: NODE_ENV
+          value: 'production'
       secrets:
         - name: rhdh-secrets
     extraFiles:
