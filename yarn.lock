@@ -7987,7 +7987,7 @@ __metadata:
     "@backstage/backend-test-utils": 1.3.0
     "@backstage/cli": 0.30.0
     "@backstage/config": 1.3.2
-    "@types/express": 4.17.21
+    "@types/express": 4.17.22
     "@types/supertest": 6.0.3
     express: 4.21.2
     msw: 1.3.5
@@ -8047,7 +8047,7 @@ __metadata:
     "@backstage/plugin-auth-backend-module-guest-provider": 0.2.5
     "@backstage/plugin-permission-common": 0.8.4
     "@backstage/types": 1.2.1
-    "@types/express": 4.17.21
+    "@types/express": 4.17.22
     "@types/supertest": 6.0.3
     express: 4.21.2
     express-promise-router: 4.1.1
@@ -8072,7 +8072,7 @@ __metadata:
     "@backstage/backend-test-utils": 1.3.0
     "@backstage/cli": 0.30.0
     "@backstage/config": 1.3.2
-    "@types/express": 4.17.21
+    "@types/express": 4.17.22
     "@types/mock-fs": 4.13.4
     "@types/supertest": 6.0.3
     express: 4.21.2
@@ -8136,9 +8136,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@janus-idp/cli@npm:3.6.0":
-  version: 3.6.0
-  resolution: "@janus-idp/cli@npm:3.6.0"
+"@janus-idp/cli@npm:3.6.1":
+  version: 3.6.1
+  resolution: "@janus-idp/cli@npm:3.6.1"
   dependencies:
     "@backstage/cli-common": ^0.1.15
     "@backstage/cli-node": ^0.2.12
@@ -8194,7 +8194,7 @@ __metadata:
       optional: true
   bin:
     janus-cli: bin/janus-cli
-  checksum: 349f35100b6517ebf56fb4cab9fdcc90af79863910fd28ab90a9c39a2957b71e850d601f567dc0cbcf03e3e2e6edf74f49c4aef53a97c82a4444290b2db3b42e
+  checksum: e239e70aeaca07a45de2d3d0eafa03fb7cee83f57a5e666aaf63602fb79924d18a66ad98eb7e8ab6df47f703575d98e3aa7d798708f92f74c3d786ffbca4d635
   languageName: node
   linkType: hard
 
@@ -14951,7 +14951,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/express@npm:*, @types/express@npm:4.17.21, @types/express@npm:^4.17.13, @types/express@npm:^4.17.21, @types/express@npm:^4.17.6":
+"@types/express@npm:*, @types/express@npm:^4.17.13, @types/express@npm:^4.17.21, @types/express@npm:^4.17.6":
   version: 4.17.21
   resolution: "@types/express@npm:4.17.21"
   dependencies:
@@ -14960,6 +14960,18 @@ __metadata:
     "@types/qs": "*"
     "@types/serve-static": "*"
   checksum: fb238298630370a7392c7abdc80f495ae6c716723e114705d7e3fb67e3850b3859bbfd29391463a3fb8c0b32051847935933d99e719c0478710f8098ee7091c5
+  languageName: node
+  linkType: hard
+
+"@types/express@npm:4.17.22":
+  version: 4.17.22
+  resolution: "@types/express@npm:4.17.22"
+  dependencies:
+    "@types/body-parser": "*"
+    "@types/express-serve-static-core": ^4.17.33
+    "@types/qs": "*"
+    "@types/serve-static": "*"
+  checksum: 977b1da93765983d823c32898c74c159f30b98341f4fd9400724f18196913fe0a07fa12eaa4efdad3cc8cf31e4036e06a16a88d43e9e1f78bbbb84365026aab0
   languageName: node
   linkType: hard
 
@@ -15249,12 +15261,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:22.15.17":
-  version: 22.15.17
-  resolution: "@types/node@npm:22.15.17"
+"@types/node@npm:22.15.18":
+  version: 22.15.18
+  resolution: "@types/node@npm:22.15.18"
   dependencies:
     undici-types: ~6.21.0
-  checksum: f83748c14c8ae3b7d1672af4009b892a5ae652c05c4b61c39e842711e232a0db37991611364aea9522fdf48290a8cc27403138bc479ef24ff0c9222319e7858b
+  checksum: 16fb2c1f7be4156578648bfe074c856fca309ac66b9b74f9c5887ce778ce6cbd06d2883eaa397837e3628cddb02a5b0859764c5db0ea24f55f0cfbf54cca06fc
   languageName: node
   linkType: hard
 
@@ -16561,7 +16573,7 @@ __metadata:
     "@emotion/react": 11.14.0
     "@emotion/styled": 11.14.0
     "@internal/plugin-dynamic-plugins-info": "*"
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     "@mui/icons-material": 5.17.1
     "@mui/material": 5.17.1
     "@mui/styled-engine": 5.16.14
@@ -16574,7 +16586,7 @@ __metadata:
     "@testing-library/react": 14.3.1
     "@testing-library/react-hooks": 8.0.1
     "@testing-library/user-event": 14.6.1
-    "@types/node": 22.15.17
+    "@types/node": 22.15.18
     "@types/react": 18.3.21
     "@types/react-dom": 18.3.7
     lodash: 4.17.21
@@ -17274,7 +17286,7 @@ __metadata:
     "@opentelemetry/instrumentation-runtime-node": 0.14.0
     "@opentelemetry/sdk-metrics": 1.30.1
     "@opentelemetry/sdk-node": 0.57.2
-    "@types/express": 4.17.21
+    "@types/express": 4.17.22
     "@types/global-agent": 2.1.3
     app: "*"
     global-agent: 3.0.0

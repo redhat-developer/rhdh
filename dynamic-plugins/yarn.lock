@@ -5313,7 +5313,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/core-app-api@npm:^1.15.2, @backstage/core-app-api@npm:^1.15.5, @backstage/core-app-api@npm:^1.16.0":
+"@backstage/core-app-api@npm:^1.15.2, @backstage/core-app-api@npm:^1.15.5, @backstage/core-app-api@npm:^1.16.0, @backstage/core-app-api@npm:^1.16.1":
   version: 1.16.1
   resolution: "@backstage/core-app-api@npm:1.16.1"
   dependencies:
@@ -5379,6 +5379,27 @@ __metadata:
     "@types/react":
       optional: true
   checksum: 783ee24e7c9b7a495201049fc239de18328c6f02d192e8922d3adeb8c8e9a7bb13431f6b341a1464a885f88af4da7fbdff02f93061274597375fcfd32e54cb42
+  languageName: node
+  linkType: hard
+
+"@backstage/core-compat-api@npm:^0.4.1":
+  version: 0.4.1
+  resolution: "@backstage/core-compat-api@npm:0.4.1"
+  dependencies:
+    "@backstage/core-plugin-api": ^1.10.6
+    "@backstage/frontend-plugin-api": ^0.10.1
+    "@backstage/plugin-catalog-react": ^1.17.0
+    "@backstage/version-bridge": ^1.0.11
+    lodash: ^4.17.21
+  peerDependencies:
+    "@types/react": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.3.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 6d52a0355b7e516651a092de104192af18ec2d6b865a24721116702c19eaca973bcc9173bab026a3ca1d729f0c7ec3eb1e2b603351486f1440e3238d15ceca6a
   languageName: node
   linkType: hard
 
@@ -5539,6 +5560,60 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@backstage/core-components@npm:^0.17.1":
+  version: 0.17.1
+  resolution: "@backstage/core-components@npm:0.17.1"
+  dependencies:
+    "@backstage/config": ^1.3.2
+    "@backstage/core-plugin-api": ^1.10.6
+    "@backstage/errors": ^1.2.7
+    "@backstage/theme": ^0.6.5
+    "@backstage/version-bridge": ^1.0.11
+    "@dagrejs/dagre": ^1.1.4
+    "@date-io/core": ^1.3.13
+    "@material-table/core": ^3.1.0
+    "@material-ui/core": ^4.12.2
+    "@material-ui/icons": ^4.9.1
+    "@material-ui/lab": 4.0.0-alpha.61
+    "@react-hookz/web": ^24.0.0
+    "@testing-library/react": ^16.0.0
+    "@types/react-sparklines": ^1.7.0
+    ansi-regex: ^6.0.1
+    classnames: ^2.2.6
+    d3-selection: ^3.0.0
+    d3-shape: ^3.0.0
+    d3-zoom: ^3.0.0
+    js-yaml: ^4.1.0
+    linkify-react: 4.1.3
+    linkifyjs: 4.1.3
+    lodash: ^4.17.21
+    pluralize: ^8.0.0
+    qs: ^6.9.4
+    rc-progress: 3.5.1
+    react-helmet: 6.1.0
+    react-hook-form: ^7.12.2
+    react-idle-timer: 5.7.2
+    react-markdown: ^8.0.0
+    react-sparklines: ^1.7.0
+    react-syntax-highlighter: ^15.4.5
+    react-use: ^17.3.2
+    react-virtualized-auto-sizer: ^1.0.11
+    react-window: ^1.8.6
+    remark-gfm: ^3.0.1
+    zen-observable: ^0.10.0
+    zod: ^3.22.4
+  peerDependencies:
+    "@types/react": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.3.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 73f46610e4ab7cbfc78dcda5320ecb7d08dab2dc9d9c6ad1b294277f0871e7e36869b40537ab83eb8a8f3a061fb7a4a9fb8cef3e7534ae924449a1bb46904674
+  languageName: node
+  linkType: hard
+
 "@backstage/core-plugin-api@npm:1.10.4":
   version: 1.10.4
   resolution: "@backstage/core-plugin-api@npm:1.10.4"
@@ -5653,6 +5728,32 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@backstage/frontend-app-api@npm:^0.11.1":
+  version: 0.11.1
+  resolution: "@backstage/frontend-app-api@npm:0.11.1"
+  dependencies:
+    "@backstage/config": ^1.3.2
+    "@backstage/core-app-api": ^1.16.1
+    "@backstage/core-plugin-api": ^1.10.6
+    "@backstage/errors": ^1.2.7
+    "@backstage/frontend-defaults": ^0.2.1
+    "@backstage/frontend-plugin-api": ^0.10.1
+    "@backstage/types": ^1.2.1
+    "@backstage/version-bridge": ^1.0.11
+    lodash: ^4.17.21
+    zod: ^3.22.4
+  peerDependencies:
+    "@types/react": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.3.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 8381f70ef8c4c47b23eff338616fe6e4b73f71a8e24f98117e845b0a5b30d03b4e8b285fd167ceae089d39f5293ffd8b8771c89f10ddcd583c88ee01343d3698
+  languageName: node
+  linkType: hard
+
 "@backstage/frontend-defaults@npm:^0.1.6":
   version: 0.1.6
   resolution: "@backstage/frontend-defaults@npm:0.1.6"
@@ -5697,6 +5798,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@backstage/frontend-defaults@npm:^0.2.1":
+  version: 0.2.1
+  resolution: "@backstage/frontend-defaults@npm:0.2.1"
+  dependencies:
+    "@backstage/config": ^1.3.2
+    "@backstage/errors": ^1.2.7
+    "@backstage/frontend-app-api": ^0.11.1
+    "@backstage/frontend-plugin-api": ^0.10.1
+    "@backstage/plugin-app": ^0.1.8
+    "@react-hookz/web": ^24.0.0
+  peerDependencies:
+    "@types/react": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.3.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 7a227a93303b87ef384b9194f810f3f08d38f561059f01a6999a251c26ee1176de5dd588a147067a6788e086dab2dabd5a796a48ba527da5d6bf327ee766dc99
+  languageName: node
+  linkType: hard
+
 "@backstage/frontend-plugin-api@npm:^0.10.0":
   version: 0.10.0
   resolution: "@backstage/frontend-plugin-api@npm:0.10.0"
@@ -5718,6 +5841,30 @@ __metadata:
     "@types/react":
       optional: true
   checksum: aa56771b94033d4825aaad0007d93f99061b60d114d0cf10c54aacc5087806cf709bdc2c5d30e32bb3a49cce050dcc5068fea4d14d099f4589c2400bd2ad45a1
+  languageName: node
+  linkType: hard
+
+"@backstage/frontend-plugin-api@npm:^0.10.1":
+  version: 0.10.1
+  resolution: "@backstage/frontend-plugin-api@npm:0.10.1"
+  dependencies:
+    "@backstage/core-components": ^0.17.1
+    "@backstage/core-plugin-api": ^1.10.6
+    "@backstage/types": ^1.2.1
+    "@backstage/version-bridge": ^1.0.11
+    "@material-ui/core": ^4.12.4
+    lodash: ^4.17.21
+    zod: ^3.22.4
+    zod-to-json-schema: ^3.21.4
+  peerDependencies:
+    "@types/react": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.3.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 8870293e5c2f151f66d4f3e256de7efd53a29421a77726880d0e6f365f7321829eb962b8aea88e075560b41c847769df0e9f371a69252e3b1a0dc6a9103e9bd8
   languageName: node
   linkType: hard
 
@@ -5795,6 +5942,31 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@backstage/frontend-test-utils@npm:^0.3.1":
+  version: 0.3.1
+  resolution: "@backstage/frontend-test-utils@npm:0.3.1"
+  dependencies:
+    "@backstage/config": ^1.3.2
+    "@backstage/frontend-app-api": ^0.11.1
+    "@backstage/frontend-plugin-api": ^0.10.1
+    "@backstage/plugin-app": ^0.1.8
+    "@backstage/test-utils": ^1.7.7
+    "@backstage/types": ^1.2.1
+    "@backstage/version-bridge": ^1.0.11
+    zod: ^3.22.4
+  peerDependencies:
+    "@testing-library/react": ^16.0.0
+    "@types/react": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.3.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 34b2018c1ea86a651cba8689e4e59735f2f0a50b68ae0bee991d9c8b2c5504356de7562088729d7998eea7fab9813a329f5be244d24ac812b54523adc7a14ed2
+  languageName: node
+  linkType: hard
+
 "@backstage/integration-aws-node@npm:^0.1.12, @backstage/integration-aws-node@npm:^0.1.15, @backstage/integration-aws-node@npm:^0.1.8":
   version: 0.1.15
   resolution: "@backstage/integration-aws-node@npm:0.1.15"
@@ -5831,6 +6003,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@backstage/integration-react@npm:^1.2.6":
+  version: 1.2.6
+  resolution: "@backstage/integration-react@npm:1.2.6"
+  dependencies:
+    "@backstage/config": ^1.3.2
+    "@backstage/core-plugin-api": ^1.10.6
+    "@backstage/integration": ^1.16.3
+    "@material-ui/core": ^4.12.2
+    "@material-ui/icons": ^4.9.1
+  peerDependencies:
+    "@types/react": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.3.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 0cdf92a9d8d5e017d8dc9eef3f1e38c95ba68c3b8cfa1e8bf19b34deed83ec3552fd9ba0fcc8bd5ff832007f2826503870f52d9b31a14ef7a97ab027d6ab340d
+  languageName: node
+  linkType: hard
+
 "@backstage/integration@npm:^1.10.0, @backstage/integration@npm:^1.11.0, @backstage/integration@npm:^1.13.0, @backstage/integration@npm:^1.14.0, @backstage/integration@npm:^1.15.0, @backstage/integration@npm:^1.16.1, @backstage/integration@npm:^1.16.2, @backstage/integration@npm:^1.8.0":
   version: 1.16.2
   resolution: "@backstage/integration@npm:1.16.2"
@@ -5846,6 +6039,24 @@ __metadata:
     lodash: ^4.17.21
     luxon: ^3.0.0
   checksum: ae5b7f467431edc18797117754a4ef17e5f3db6d1fec258ea1d51d7827813083c11a9e0c67a0f32ed61ae9236f372479154cb38df95c7ba6ff9ceb5744588806
+  languageName: node
+  linkType: hard
+
+"@backstage/integration@npm:^1.16.3":
+  version: 1.16.3
+  resolution: "@backstage/integration@npm:1.16.3"
+  dependencies:
+    "@azure/identity": ^4.0.0
+    "@azure/storage-blob": ^12.5.0
+    "@backstage/config": ^1.3.2
+    "@backstage/errors": ^1.2.7
+    "@octokit/auth-app": ^4.0.0
+    "@octokit/rest": ^19.0.3
+    cross-fetch: ^4.0.0
+    git-url-parse: ^15.0.0
+    lodash: ^4.17.21
+    luxon: ^3.0.0
+  checksum: db33dfd032c151ce22ebee51d4da3cbbefebbe4e7b1f4cccca9a6ed89c68ebe6cd37bf7c0cbaebf1aae390c0683a9e85211079247b9bffa17fdd440c46925b17
   languageName: node
   linkType: hard
 
@@ -5873,6 +6084,33 @@ __metadata:
     "@types/react":
       optional: true
   checksum: 55251477a365584f176adfbfa48c1ed71568d15edfc7db3fab2d49f66f43690889c19336c5c7d513f1af41cebca60d5beef2cf591936fd90fd92ff43da28dd4f
+  languageName: node
+  linkType: hard
+
+"@backstage/plugin-app@npm:^0.1.8":
+  version: 0.1.8
+  resolution: "@backstage/plugin-app@npm:0.1.8"
+  dependencies:
+    "@backstage/core-components": ^0.17.1
+    "@backstage/core-plugin-api": ^1.10.6
+    "@backstage/frontend-plugin-api": ^0.10.1
+    "@backstage/integration-react": ^1.2.6
+    "@backstage/plugin-permission-react": ^0.4.33
+    "@backstage/theme": ^0.6.5
+    "@backstage/types": ^1.2.1
+    "@material-ui/core": ^4.9.13
+    "@material-ui/icons": ^4.9.1
+    "@material-ui/lab": ^4.0.0-alpha.61
+    react-use: ^17.2.4
+  peerDependencies:
+    "@types/react": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.3.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 2b23c9148a881564af94d9239568023fda12a5246fa6f4db2322d004d511b2092efd6cf2fb1522970c9fe1c0d9f0b2f9f846b61ef25aefef7351899c1bad3e35
   languageName: node
   linkType: hard
 
@@ -6344,6 +6582,47 @@ __metadata:
     "@types/react":
       optional: true
   checksum: 7ac3b023d53e4f4102d73cb5c29db7d6adc47432ec696b1fbc4107d1c44154ae2314ceb048d032e1174a0170251edca482710b1e7fd7ec9de5b55f18c6a3a1ea
+  languageName: node
+  linkType: hard
+
+"@backstage/plugin-catalog-react@npm:^1.17.0":
+  version: 1.17.0
+  resolution: "@backstage/plugin-catalog-react@npm:1.17.0"
+  dependencies:
+    "@backstage/catalog-client": ^1.9.1
+    "@backstage/catalog-model": ^1.7.3
+    "@backstage/core-compat-api": ^0.4.1
+    "@backstage/core-components": ^0.17.1
+    "@backstage/core-plugin-api": ^1.10.6
+    "@backstage/errors": ^1.2.7
+    "@backstage/frontend-plugin-api": ^0.10.1
+    "@backstage/frontend-test-utils": ^0.3.1
+    "@backstage/integration-react": ^1.2.6
+    "@backstage/plugin-catalog-common": ^1.1.3
+    "@backstage/plugin-permission-common": ^0.8.4
+    "@backstage/plugin-permission-react": ^0.4.33
+    "@backstage/types": ^1.2.1
+    "@backstage/version-bridge": ^1.0.11
+    "@material-ui/core": ^4.12.2
+    "@material-ui/icons": ^4.9.1
+    "@material-ui/lab": 4.0.0-alpha.61
+    "@react-hookz/web": ^24.0.0
+    classnames: ^2.2.6
+    lodash: ^4.17.21
+    material-ui-popup-state: ^1.9.3
+    qs: ^6.9.4
+    react-use: ^17.2.4
+    yaml: ^2.0.0
+    zen-observable: ^0.10.0
+  peerDependencies:
+    "@types/react": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.3.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 3724d8ca4dc0f6d9c7de706e5597c5e86cc634ff9dadeca815afc7e7e03148101150a64a22dafda8376304b6e78088286a9a91510627a41e7dcc66ee38e5e12b
   languageName: node
   linkType: hard
 
@@ -6905,6 +7184,26 @@ __metadata:
     "@types/react":
       optional: true
   checksum: aeb0d710e80722bf1c7c63b1ad18f4ff8ddd43b1e7d7c3f64eb30548a9b4eead159cbc8796d89e75905afd026feaa9831d95ccb5168abb18a9ceffcf2510388d
+  languageName: node
+  linkType: hard
+
+"@backstage/plugin-permission-react@npm:^0.4.33":
+  version: 0.4.33
+  resolution: "@backstage/plugin-permission-react@npm:0.4.33"
+  dependencies:
+    "@backstage/config": ^1.3.2
+    "@backstage/core-plugin-api": ^1.10.6
+    "@backstage/plugin-permission-common": ^0.8.4
+    swr: ^2.0.0
+  peerDependencies:
+    "@types/react": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.3.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 7b92abfb8700fe1d67b3046c7141cb56203b95b02093d763ef1587f581b97f0ed4be74dc65c0d9be5ef2a1adbfb0c73788c339318ced906d4306e458bf5208d5
   languageName: node
   linkType: hard
 
@@ -7481,6 +7780,25 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@backstage/plugin-signals-react@npm:^0.0.12":
+  version: 0.0.12
+  resolution: "@backstage/plugin-signals-react@npm:0.0.12"
+  dependencies:
+    "@backstage/core-plugin-api": ^1.10.6
+    "@backstage/types": ^1.2.1
+    "@material-ui/core": ^4.12.4
+  peerDependencies:
+    "@types/react": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.3.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 783f4a3243d9eb473f9f00939018c0a22a70f8053ad244ac0ac3abdfc917b07a459b6c728a2c72f333931ada1ce913608a521b37312e485ae7727fe9e6d75416
+  languageName: node
+  linkType: hard
+
 "@backstage/plugin-signals@npm:0.0.16":
   version: 0.0.16
   resolution: "@backstage/plugin-signals@npm:0.0.16"
@@ -7678,6 +7996,46 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@backstage/plugin-user-settings-common@npm:^0.0.1":
+  version: 0.0.1
+  resolution: "@backstage/plugin-user-settings-common@npm:0.0.1"
+  checksum: f3441e1b8891d34588a2fbf4dcddacad2d3732ca2f14128e8736ed6afb85debb63ba365bfc32a66f30e7112c1ebd7a22ee793e87feb84647c4e48f6d3bec227e
+  languageName: node
+  linkType: hard
+
+"@backstage/plugin-user-settings@npm:^0.8.19":
+  version: 0.8.21
+  resolution: "@backstage/plugin-user-settings@npm:0.8.21"
+  dependencies:
+    "@backstage/catalog-model": ^1.7.3
+    "@backstage/core-app-api": ^1.16.1
+    "@backstage/core-compat-api": ^0.4.1
+    "@backstage/core-components": ^0.17.1
+    "@backstage/core-plugin-api": ^1.10.6
+    "@backstage/errors": ^1.2.7
+    "@backstage/frontend-plugin-api": ^0.10.1
+    "@backstage/plugin-catalog-react": ^1.17.0
+    "@backstage/plugin-signals-react": ^0.0.12
+    "@backstage/plugin-user-settings-common": ^0.0.1
+    "@backstage/theme": ^0.6.5
+    "@backstage/types": ^1.2.1
+    "@material-ui/core": ^4.12.2
+    "@material-ui/icons": ^4.9.1
+    "@material-ui/lab": 4.0.0-alpha.61
+    react-use: ^17.2.4
+    zen-observable: ^0.10.0
+  peerDependencies:
+    "@types/react": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.3.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: f5b54088afa04f0d316989b1413d9fbb862a40b3a1e5f82c00e22ad5d420cf336bd3994ef3363ac05d2ee34d9d574ac8c113bbf1f0f57243eb202899923413fc
+  languageName: node
+  linkType: hard
+
 "@backstage/release-manifests@npm:^0.0.11":
   version: 0.0.11
   resolution: "@backstage/release-manifests@npm:0.0.11"
@@ -7723,6 +8081,35 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@backstage/test-utils@npm:^1.7.7":
+  version: 1.7.7
+  resolution: "@backstage/test-utils@npm:1.7.7"
+  dependencies:
+    "@backstage/config": ^1.3.2
+    "@backstage/core-app-api": ^1.16.1
+    "@backstage/core-plugin-api": ^1.10.6
+    "@backstage/plugin-permission-common": ^0.8.4
+    "@backstage/plugin-permission-react": ^0.4.33
+    "@backstage/theme": ^0.6.5
+    "@backstage/types": ^1.2.1
+    "@material-ui/core": ^4.12.2
+    "@material-ui/icons": ^4.9.1
+    cross-fetch: ^4.0.0
+    i18next: ^22.4.15
+    zen-observable: ^0.10.0
+  peerDependencies:
+    "@testing-library/react": ^16.0.0
+    "@types/react": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.3.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 2a359b933a86b8b10ac4f9c07d54070e905c8f1715ea21a563648e75b03ee0aab9b6d28e1c42d4d8fc321ead4af8cccdf93997b0c7cd2f9b26cfb6874d5b4011
+  languageName: node
+  linkType: hard
+
 "@backstage/theme@npm:^0.5.6":
   version: 0.5.7
   resolution: "@backstage/theme@npm:0.5.7"
@@ -7756,6 +8143,26 @@ __metadata:
     "@types/react":
       optional: true
   checksum: d4c4781af6a38616e12768cd65466ec0f6624d992f4048707d57ee81f395924edd52431279e8a5da17cff5a7050530256a8ce4ac1742177ca94c59d61ff9301a
+  languageName: node
+  linkType: hard
+
+"@backstage/theme@npm:^0.6.5":
+  version: 0.6.5
+  resolution: "@backstage/theme@npm:0.6.5"
+  dependencies:
+    "@emotion/react": ^11.10.5
+    "@emotion/styled": ^11.10.5
+    "@mui/material": ^5.12.2
+  peerDependencies:
+    "@material-ui/core": ^4.12.2
+    "@types/react": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.3.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: b1c3d7bad9851a20e1b503817672ab39b663c40772612c3c3835bc0b1d962032139d0979a88c43501adbedd8fff567d1d6343c3f45c0a9b08bdd1d1bc670a2fd
   languageName: node
   linkType: hard
 
@@ -9306,9 +9713,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@janus-idp/cli@npm:3.6.0":
-  version: 3.6.0
-  resolution: "@janus-idp/cli@npm:3.6.0"
+"@janus-idp/cli@npm:3.6.1":
+  version: 3.6.1
+  resolution: "@janus-idp/cli@npm:3.6.1"
   dependencies:
     "@backstage/cli-common": ^0.1.15
     "@backstage/cli-node": ^0.2.12
@@ -9364,7 +9771,7 @@ __metadata:
       optional: true
   bin:
     janus-cli: bin/janus-cli
-  checksum: 349f35100b6517ebf56fb4cab9fdcc90af79863910fd28ab90a9c39a2957b71e850d601f567dc0cbcf03e3e2e6edf74f49c4aef53a97c82a4444290b2db3b42e
+  checksum: e239e70aeaca07a45de2d3d0eafa03fb7cee83f57a5e666aaf63602fb79924d18a66ad98eb7e8ab6df47f703575d98e3aa7d798708f92f74c3d786ffbca4d635
   languageName: node
   linkType: hard
 
@@ -12527,9 +12934,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-dynamic-home-page@npm:1.3.0":
-  version: 1.3.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-dynamic-home-page@npm:1.3.0"
+"@red-hat-developer-hub/backstage-plugin-dynamic-home-page@npm:1.3.1":
+  version: 1.3.1
+  resolution: "@red-hat-developer-hub/backstage-plugin-dynamic-home-page@npm:1.3.1"
   dependencies:
     "@backstage/core-components": ^0.16.4
     "@backstage/core-plugin-api": ^1.10.4
@@ -12541,13 +12948,13 @@ __metadata:
     "@mui/material": 5.16.14
     "@mui/styles": 5.16.14
     "@scalprum/react-core": 0.9.3
-    react-grid-layout: 1.5.0
+    react-grid-layout: 1.5.1
     react-use: 17.6.0
-    tss-react: 4.9.15
+    tss-react: 4.9.16
   peerDependencies:
     react: 16.13.1 || ^17.0.0 || ^18.2.0
     react-router-dom: 6.30.0
-  checksum: 9ee7ac174b93f94b7f3f9067882d8a61158481f0cb222978ed9612a248e6e82bcd980b670a8e6cb74dea657d78549fbfefb435c68eaeb534c00096385e483fe6
+  checksum: 745803370f6b1df291eb12c5f66571f9346ec70dc65591fd14cf6b69b31c0498c590d4ef5bb768419addd52609b7187838bd81a1f7430684384d5ba474ece0ac
   languageName: node
   linkType: hard
 
@@ -12572,9 +12979,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-global-header@npm:1.5.0":
-  version: 1.5.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-global-header@npm:1.5.0"
+"@red-hat-developer-hub/backstage-plugin-global-header@npm:1.6.0":
+  version: 1.6.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-global-header@npm:1.6.0"
   dependencies:
     "@backstage/catalog-model": ^1.7.3
     "@backstage/core-components": ^0.16.4
@@ -12590,6 +12997,7 @@ __metadata:
     "@backstage/plugin-search-common": ^1.2.17
     "@backstage/plugin-search-react": ^1.8.6
     "@backstage/plugin-signals-react": ^0.0.10
+    "@backstage/plugin-user-settings": ^0.8.19
     "@backstage/theme": ^0.6.4
     "@mui/icons-material": 5.16.14
     "@mui/material": 5.16.14
@@ -12599,7 +13007,7 @@ __metadata:
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.0.0
-  checksum: ad39efee863508bac5e45b41f2d8687719cda77ac7a424a83723c858213c404312c738e595eeaf69b0bf04ad662eb58eb951f46011796b7b20df235ef3d71bb9
+  checksum: 2f86fcc5101ef5cf27ac02414d822af6d15c68d6e3f56592238ab1fafe34bbfcc5f777f42b939b40ef113e2cdcb9a43839f927a04b47a5038a04dd1039913937
   languageName: node
   linkType: hard
 
@@ -17483,7 +17891,7 @@ __metadata:
   dependencies:
     "@backstage-community/plugin-3scale-backend": 3.3.0
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -17495,7 +17903,7 @@ __metadata:
     "@backstage-community/plugin-acr": 1.12.1
     "@backstage/cli": 0.30.0
     "@backstage/core-plugin-api": 1.10.4
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     "@mui/icons-material": 5.17.1
     "@mui/material": 5.17.1
     typescript: 5.8.3
@@ -17508,7 +17916,7 @@ __metadata:
   dependencies:
     "@backstage-community/plugin-analytics-provider-segment": 1.13.0
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -17519,7 +17927,7 @@ __metadata:
   dependencies:
     "@backstage-community/plugin-azure-devops-backend": 0.12.0
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -17530,7 +17938,7 @@ __metadata:
   dependencies:
     "@backstage-community/plugin-azure-devops": 0.10.0
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -17541,7 +17949,7 @@ __metadata:
   dependencies:
     "@backstage-community/plugin-catalog-backend-module-keycloak": 3.10.0
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -17552,7 +17960,7 @@ __metadata:
   dependencies:
     "@backstage-community/plugin-catalog-backend-module-pingidentity": 0.3.0
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -17563,7 +17971,7 @@ __metadata:
   dependencies:
     "@backstage-community/plugin-catalog-backend-module-scaffolder-relation-processor": 2.3.0
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -17574,7 +17982,7 @@ __metadata:
   dependencies:
     "@backstage-community/plugin-dynatrace": 10.3.0
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -17585,7 +17993,7 @@ __metadata:
   dependencies:
     "@backstage-community/plugin-github-actions": 0.8.0
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -17596,7 +18004,7 @@ __metadata:
   dependencies:
     "@backstage-community/plugin-github-issues": 0.7.0
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -17607,7 +18015,7 @@ __metadata:
   dependencies:
     "@backstage-community/plugin-jenkins-backend": 0.12.1
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -17618,7 +18026,7 @@ __metadata:
   dependencies:
     "@backstage-community/plugin-jenkins": 0.17.0
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -17629,7 +18037,7 @@ __metadata:
   dependencies:
     "@backstage-community/plugin-jfrog-artifactory": 1.13.3
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     "@mui/material": 5.17.1
     typescript: 5.8.3
   languageName: unknown
@@ -17641,7 +18049,7 @@ __metadata:
   dependencies:
     "@backstage-community/plugin-lighthouse": 0.7.0
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     "@mui/icons-material": 5.17.1
     typescript: 5.8.3
   languageName: unknown
@@ -17653,7 +18061,7 @@ __metadata:
   dependencies:
     "@backstage-community/plugin-nexus-repository-manager": 1.13.0
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     "@mui/material": 5.17.1
     typescript: 5.8.3
   languageName: unknown
@@ -17665,7 +18073,7 @@ __metadata:
   dependencies:
     "@backstage-community/plugin-ocm-backend": 5.5.0
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -17676,7 +18084,7 @@ __metadata:
   dependencies:
     "@backstage-community/plugin-ocm": 5.4.0
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     "@mui/material": 5.17.1
     typescript: 5.8.3
   languageName: unknown
@@ -17688,7 +18096,7 @@ __metadata:
   dependencies:
     "@backstage-community/plugin-quay": 1.19.0
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     "@mui/material": 5.17.1
     typescript: 5.8.3
   languageName: unknown
@@ -17700,7 +18108,7 @@ __metadata:
   dependencies:
     "@backstage-community/plugin-rbac": 1.40.0
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     "@mui/material": 5.17.1
     typescript: 5.8.3
   languageName: unknown
@@ -17712,7 +18120,7 @@ __metadata:
   dependencies:
     "@backstage-community/plugin-redhat-argocd": 1.18.0
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     "@mui/material": 5.17.1
     typescript: 5.8.3
   languageName: unknown
@@ -17724,7 +18132,7 @@ __metadata:
   dependencies:
     "@backstage-community/plugin-scaffolder-backend-module-kubernetes": 2.6.0
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -17735,7 +18143,7 @@ __metadata:
   dependencies:
     "@backstage-community/plugin-scaffolder-backend-module-quay": 2.6.0
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -17746,7 +18154,7 @@ __metadata:
   dependencies:
     "@backstage-community/plugin-scaffolder-backend-module-regex": 2.5.0
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -17757,7 +18165,7 @@ __metadata:
   dependencies:
     "@backstage-community/plugin-scaffolder-backend-module-servicenow": 2.5.0
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -17768,7 +18176,7 @@ __metadata:
   dependencies:
     "@backstage-community/plugin-scaffolder-backend-module-sonarqube": 2.5.0
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -17779,7 +18187,7 @@ __metadata:
   dependencies:
     "@backstage-community/plugin-sonarqube-backend": 0.5.0
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -17790,7 +18198,7 @@ __metadata:
   dependencies:
     "@backstage-community/plugin-sonarqube": 0.10.0
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -17801,7 +18209,7 @@ __metadata:
   dependencies:
     "@backstage-community/plugin-tech-radar-backend": 1.3.0
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -17814,7 +18222,7 @@ __metadata:
     "@backstage-community/plugin-tech-radar-common": 1.3.0
     "@backstage/cli": 0.30.0
     "@backstage/core-plugin-api": 1.10.4
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     "@mui/icons-material": 5.17.1
     typescript: 5.8.3
   languageName: unknown
@@ -17826,7 +18234,7 @@ __metadata:
   dependencies:
     "@backstage-community/plugin-tekton": 3.22.0
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     "@mui/material": 5.17.1
     typescript: 5.8.3
   languageName: unknown
@@ -17838,7 +18246,7 @@ __metadata:
   dependencies:
     "@backstage-community/plugin-topology": 2.0.0
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     "@mui/material": 5.17.1
     typescript: 5.8.3
   languageName: unknown
@@ -17850,7 +18258,7 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.30.0
     "@backstage/plugin-catalog-backend-module-bitbucket-cloud": 0.4.5
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -17861,7 +18269,7 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.30.0
     "@backstage/plugin-catalog-backend-module-bitbucket-server": 0.3.2
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -17873,7 +18281,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@backstage/plugin-catalog-backend-module-github": 0.7.10
     "@backstage/plugin-catalog-backend-module-github-org": 0.3.7
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -17884,7 +18292,7 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.30.0
     "@backstage/plugin-catalog-backend-module-github": 0.7.10
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -17896,7 +18304,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@backstage/plugin-catalog-backend-module-gitlab": 0.6.3
     "@backstage/plugin-catalog-backend-module-gitlab-org": 0.2.6
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -17907,7 +18315,7 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.30.0
     "@backstage/plugin-catalog-backend-module-gitlab": 0.6.3
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -17918,7 +18326,7 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.30.0
     "@backstage/plugin-catalog-backend-module-ldap": 0.11.2
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -17929,7 +18337,7 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.30.0
     "@backstage/plugin-catalog-backend-module-msgraph": 0.6.7
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -17940,7 +18348,7 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.30.0
     "@backstage/plugin-kubernetes-backend": 0.19.3
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -17952,7 +18360,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@backstage/core-plugin-api": 1.10.4
     "@backstage/plugin-kubernetes": 0.12.4
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -17963,7 +18371,7 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.30.0
     "@backstage/plugin-notifications-backend-module-email": 0.3.6
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -17975,7 +18383,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@backstage/plugin-notifications-backend": 0.5.3
     "@backstage/plugin-signals-node": 0.1.17
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -17986,7 +18394,7 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.30.0
     "@backstage/plugin-notifications": 0.5.2
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     "@mui/material": 5.17.1
     typescript: 5.8.3
   languageName: unknown
@@ -17998,7 +18406,7 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.30.0
     "@backstage/plugin-scaffolder-backend-module-azure": 0.2.6
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -18009,7 +18417,7 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.30.0
     "@backstage/plugin-scaffolder-backend-module-bitbucket-cloud": 0.2.6
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -18020,7 +18428,7 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.30.0
     "@backstage/plugin-scaffolder-backend-module-bitbucket-server": 0.2.6
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -18031,7 +18439,7 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.30.0
     "@backstage/plugin-scaffolder-backend-module-gerrit": 0.2.6
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -18042,7 +18450,7 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.30.0
     "@backstage/plugin-scaffolder-backend-module-github": 0.6.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -18053,7 +18461,7 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.30.0
     "@backstage/plugin-scaffolder-backend-module-gitlab": 0.8.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -18064,7 +18472,7 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.30.0
     "@backstage/plugin-signals-backend": 0.3.1
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -18075,7 +18483,7 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.30.0
     "@backstage/plugin-signals": 0.0.16
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     "@mui/material": 5.17.1
     typescript: 5.8.3
   languageName: unknown
@@ -18089,7 +18497,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@backstage/plugin-search-backend-module-techdocs": 0.3.6
     "@backstage/plugin-techdocs-backend": 1.11.6
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -18101,7 +18509,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@backstage/plugin-techdocs-module-addons-contrib": 1.1.21
     "@backstage/plugin-techdocs-react": 1.2.14
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     "@material-ui/core": 4.12.4
     jss: 10.10.0
     react: 18.3.1
@@ -18121,7 +18529,7 @@ __metadata:
     "@backstage/plugin-search-react": 1.8.6
     "@backstage/plugin-techdocs": 1.12.3
     "@backstage/plugin-techdocs-react": 1.2.14
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     react: 18.3.1
     typescript: 5.8.3
   peerDependencies:
@@ -21431,7 +21839,7 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.30.0
     glob: 11.0.2
-    yaml: 2.7.1
+    yaml: 2.8.0
   languageName: unknown
   linkType: soft
 
@@ -25066,7 +25474,7 @@ __metadata:
     "@backstage/backend-plugin-api": 1.2.0
     "@backstage/cli": 0.30.0
     "@immobiliarelabs/backstage-plugin-gitlab-backend": 6.8.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -25077,7 +25485,7 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.30.0
     "@immobiliarelabs/backstage-plugin-gitlab": 6.8.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -30874,7 +31282,7 @@ __metadata:
   resolution: "pagerduty-backstage-plugin-backend@workspace:wrappers/pagerduty-backstage-plugin-backend-dynamic"
   dependencies:
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     "@pagerduty/backstage-plugin-backend": 0.9.2
     typescript: 5.8.3
   languageName: unknown
@@ -30885,7 +31293,7 @@ __metadata:
   resolution: "pagerduty-backstage-plugin@workspace:wrappers/pagerduty-backstage-plugin"
   dependencies:
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     "@pagerduty/backstage-plugin": 0.15.2
     typescript: 5.8.3
   languageName: unknown
@@ -30929,7 +31337,7 @@ __metadata:
   resolution: "parfuemerie-douglas-scaffolder-backend-module-azure-repositories@workspace:wrappers/parfuemerie-douglas-scaffolder-backend-module-azure-repositories-dynamic"
   dependencies:
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     "@parfuemerie-douglas/scaffolder-backend-module-azure-repositories": 0.3.0
     typescript: 5.8.3
   languageName: unknown
@@ -32638,9 +33046,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-grid-layout@npm:1.5.0":
-  version: 1.5.0
-  resolution: "react-grid-layout@npm:1.5.0"
+"react-grid-layout@npm:1.5.1":
+  version: 1.5.1
+  resolution: "react-grid-layout@npm:1.5.1"
   dependencies:
     clsx: ^2.0.0
     fast-equals: ^4.0.3
@@ -32651,7 +33059,7 @@ __metadata:
   peerDependencies:
     react: ">= 16.3.0"
     react-dom: ">= 16.3.0"
-  checksum: 74aac7226efdfbe932f9672f6cc6f24bdfe8d385875fa9279374ec87610df5363f63a558cc7d6e9eba5f2a68293054e717a91f0d04cbf835ffc099f74306c409
+  checksum: b0bf00ea99b25b815b421fc79e451b3929101b0d94cf12e902b9bbbdfe8adc2cfe4a4bd45a075e6bf9f4d7c58e32792ef94837d5ca80c96e1eb633f6897a4b83
   languageName: node
   linkType: hard
 
@@ -33074,7 +33482,7 @@ __metadata:
   resolution: "red-hat-developer-hub-backstage-plugin-bulk-import-backend@workspace:wrappers/red-hat-developer-hub-backstage-plugin-bulk-import-backend-dynamic"
   dependencies:
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     "@red-hat-developer-hub/backstage-plugin-bulk-import-backend": 6.0.0
     typescript: 5.8.3
   languageName: unknown
@@ -33085,7 +33493,7 @@ __metadata:
   resolution: "red-hat-developer-hub-backstage-plugin-bulk-import@workspace:wrappers/red-hat-developer-hub-backstage-plugin-bulk-import"
   dependencies:
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     "@mui/material": 5.17.1
     "@red-hat-developer-hub/backstage-plugin-bulk-import": 1.12.1
     typescript: 5.8.3
@@ -33097,7 +33505,7 @@ __metadata:
   resolution: "red-hat-developer-hub-backstage-plugin-catalog-backend-module-marketplace@workspace:wrappers/red-hat-developer-hub-backstage-plugin-catalog-backend-module-marketplace-dynamic"
   dependencies:
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace": 0.3.0
     typescript: 5.8.3
   languageName: unknown
@@ -33108,9 +33516,9 @@ __metadata:
   resolution: "red-hat-developer-hub-backstage-plugin-dynamic-home-page@workspace:wrappers/red-hat-developer-hub-backstage-plugin-dynamic-home-page"
   dependencies:
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     "@mui/material": 5.17.1
-    "@red-hat-developer-hub/backstage-plugin-dynamic-home-page": 1.3.0
+    "@red-hat-developer-hub/backstage-plugin-dynamic-home-page": 1.3.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -33120,7 +33528,7 @@ __metadata:
   resolution: "red-hat-developer-hub-backstage-plugin-global-floating-action-button@workspace:wrappers/red-hat-developer-hub-backstage-plugin-global-floating-action-button"
   dependencies:
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     "@mui/material": 5.17.1
     "@red-hat-developer-hub/backstage-plugin-global-floating-action-button": 1.1.4
     typescript: 5.8.3
@@ -33132,9 +33540,9 @@ __metadata:
   resolution: "red-hat-developer-hub-backstage-plugin-global-header@workspace:wrappers/red-hat-developer-hub-backstage-plugin-global-header"
   dependencies:
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     "@mui/material": 5.17.1
-    "@red-hat-developer-hub/backstage-plugin-global-header": 1.5.0
+    "@red-hat-developer-hub/backstage-plugin-global-header": 1.6.0
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -33144,7 +33552,7 @@ __metadata:
   resolution: "red-hat-developer-hub-backstage-plugin-marketplace-backend@workspace:wrappers/red-hat-developer-hub-backstage-plugin-marketplace-backend-dynamic"
   dependencies:
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     "@red-hat-developer-hub/backstage-plugin-marketplace-backend": 0.3.1
     "@red-hat-developer-hub/backstage-plugin-marketplace-common": 0.3.0
     typescript: 5.8.3
@@ -33156,7 +33564,7 @@ __metadata:
   resolution: "red-hat-developer-hub-backstage-plugin-marketplace@workspace:wrappers/red-hat-developer-hub-backstage-plugin-marketplace"
   dependencies:
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     "@mui/material": 5.17.1
     "@red-hat-developer-hub/backstage-plugin-marketplace": 0.5.7
     typescript: 5.8.3
@@ -33783,7 +34191,7 @@ __metadata:
   resolution: "roadiehq-backstage-plugin-argo-cd-backend@workspace:wrappers/roadiehq-backstage-plugin-argo-cd-backend-dynamic"
   dependencies:
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     "@roadiehq/backstage-plugin-argo-cd-backend": 4.2.0
     typescript: 5.8.3
   languageName: unknown
@@ -33794,7 +34202,7 @@ __metadata:
   resolution: "roadiehq-backstage-plugin-datadog@workspace:wrappers/roadiehq-backstage-plugin-datadog"
   dependencies:
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     "@roadiehq/backstage-plugin-datadog": 2.4.2
     typescript: 5.8.3
   languageName: unknown
@@ -33805,7 +34213,7 @@ __metadata:
   resolution: "roadiehq-backstage-plugin-github-insights@workspace:wrappers/roadiehq-backstage-plugin-github-insights"
   dependencies:
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     "@roadiehq/backstage-plugin-github-insights": 3.1.3
     typescript: 5.8.3
   languageName: unknown
@@ -33816,7 +34224,7 @@ __metadata:
   resolution: "roadiehq-backstage-plugin-github-pull-requests@workspace:wrappers/roadiehq-backstage-plugin-github-pull-requests"
   dependencies:
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     "@roadiehq/backstage-plugin-github-pull-requests": 3.2.1
     typescript: 5.8.3
   languageName: unknown
@@ -33827,7 +34235,7 @@ __metadata:
   resolution: "roadiehq-backstage-plugin-jira@workspace:wrappers/roadiehq-backstage-plugin-jira"
   dependencies:
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     "@roadiehq/backstage-plugin-jira": 2.8.2
     typescript: 5.8.3
   languageName: unknown
@@ -33838,7 +34246,7 @@ __metadata:
   resolution: "roadiehq-backstage-plugin-security-insights@workspace:wrappers/roadiehq-backstage-plugin-security-insights"
   dependencies:
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     "@roadiehq/backstage-plugin-security-insights": 3.1.2
     typescript: 5.8.3
   languageName: unknown
@@ -33849,7 +34257,7 @@ __metadata:
   resolution: "roadiehq-scaffolder-backend-argocd@workspace:wrappers/roadiehq-scaffolder-backend-argocd-dynamic"
   dependencies:
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     "@roadiehq/scaffolder-backend-argocd": 1.5.0
     typescript: 5.8.3
   languageName: unknown
@@ -33860,7 +34268,7 @@ __metadata:
   resolution: "roadiehq-scaffolder-backend-module-http-request@workspace:wrappers/roadiehq-scaffolder-backend-module-http-request-dynamic"
   dependencies:
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     "@roadiehq/scaffolder-backend-module-http-request": 5.3.0
     typescript: 5.8.3
   languageName: unknown
@@ -33871,7 +34279,7 @@ __metadata:
   resolution: "roadiehq-scaffolder-backend-module-utils@workspace:wrappers/roadiehq-scaffolder-backend-module-utils-dynamic"
   dependencies:
     "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.0
+    "@janus-idp/cli": 3.6.1
     "@roadiehq/scaffolder-backend-module-utils": 3.3.0
     typescript: 5.8.3
   languageName: unknown
@@ -36255,9 +36663,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tss-react@npm:4.9.15":
-  version: 4.9.15
-  resolution: "tss-react@npm:4.9.15"
+"tss-react@npm:4.9.16":
+  version: 4.9.16
+  resolution: "tss-react@npm:4.9.16"
   dependencies:
     "@emotion/cache": "*"
     "@emotion/serialize": "*"
@@ -36265,7 +36673,7 @@ __metadata:
   peerDependencies:
     "@emotion/react": ^11.4.1
     "@emotion/server": ^11.4.0
-    "@mui/material": ^5.0.0 || ^6.0.0
+    "@mui/material": ^5.0.0 || ^6.0.0 || ^7.0.0
     "@types/react": ^16.8.0 || ^17.0.2 || ^18.0.0 || ^19.0.0
     react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
   peerDependenciesMeta:
@@ -36273,7 +36681,7 @@ __metadata:
       optional: true
     "@mui/material":
       optional: true
-  checksum: 325641502c22cbac0a461e73cf693e64627e9ec81fc1961d02c754322217b7e1bb46d07e9a5d9255eba93dd3cf9497f486152e76512cc63c9674b9d875e8ce66
+  checksum: b3bccb651a9566e019580d5937c920bd14e17e0ba9bd76cf1ad916ec3354547b2a5c2c91e457e854fa28d03a313aecd0ccb40c7e233e286f4e82c5bee7796f8b
   languageName: node
   linkType: hard
 
@@ -38723,12 +39131,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yaml@npm:2.7.1, yaml@npm:^2.0.0, yaml@npm:^2.2.1, yaml@npm:^2.2.2, yaml@npm:^2.3.3, yaml@npm:^2.5.1, yaml@npm:^2.6.0, yaml@npm:^2.6.1, yaml@npm:^2.7.0":
-  version: 2.7.1
-  resolution: "yaml@npm:2.7.1"
+"yaml@npm:2.8.0":
+  version: 2.8.0
+  resolution: "yaml@npm:2.8.0"
   bin:
     yaml: bin.mjs
-  checksum: 385f8115ddfafdf8e599813cca8b2bf4e3f6a01b919fff5ae7da277e164df684d7dfe558b4085172094792b5a04786d3c55fa8b74abb0ee029873f031150bb80
+  checksum: 66f103ca5a2f02dac0526895cc7ae7626d91aa8c43aad6fdcff15edf68b1199be4012140b390063877913441aaa5288fdf57eca30e06268a8282dd741525e626
   languageName: node
   linkType: hard
 
@@ -38736,6 +39144,15 @@ __metadata:
   version: 1.10.2
   resolution: "yaml@npm:1.10.2"
   checksum: ce4ada136e8a78a0b08dc10b4b900936912d15de59905b2bf415b4d33c63df1d555d23acb2a41b23cf9fb5da41c256441afca3d6509de7247daa062fd2c5ea5f
+  languageName: node
+  linkType: hard
+
+"yaml@npm:^2.0.0, yaml@npm:^2.2.1, yaml@npm:^2.2.2, yaml@npm:^2.3.3, yaml@npm:^2.5.1, yaml@npm:^2.6.0, yaml@npm:^2.6.1, yaml@npm:^2.7.0":
+  version: 2.7.1
+  resolution: "yaml@npm:2.7.1"
+  bin:
+    yaml: bin.mjs
+  checksum: 385f8115ddfafdf8e599813cca8b2bf4e3f6a01b919fff5ae7da277e164df684d7dfe558b4085172094792b5a04786d3c55fa8b74abb0ee029873f031150bb80
   languageName: node
   linkType: hard
 
