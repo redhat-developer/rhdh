@@ -840,10 +840,45 @@ cluster_setup_k8s_helm() {
   # install_crunchy_postgres_k8s_operator # Works with K8s but disabled in values file
 }
 
+# Helper function to install orchestrator infra chart. Only applicable for chart versions 4.0.0 + 
+install_orchestrator_infra_chart() {
+  ORCH_INFRA_NS="orchestrator-infra"
+  configure_namespace ${ORCH_INFRA_NS}
+
+  helm repo add redhat-developer https://redhat-developer.github.io/rhdh-chart
+
+  echo "Deploying orchestrator-infra chart"
+  cd "${DIR}"
+  helm upgrade -i orch-infra -n "${ORCH_INFRA_NS}" \
+    "redhat-developer/redhat-developer-hub-orchestrator-infra"
+
+  # wait for install plan to be deployed
+  echo "Waiting for an InstallPlan to be created in namespace openshift-serverless"
+
+  while true; do
+    COUNT=$(oc get installplan -n openshift-serverless --no-headers 2>/dev/null | wc -l)
+    
+    if [[ "$COUNT" -gt 0 ]]; then
+      echo "Found $COUNT InstallPlan(s) in namespace openshift-serverless."
+      break
+    fi
+
+    echo "No InstallPlans found. Retrying in 5 seconds..."
+    sleep 5
+  done
+
+  for namespace in "openshift-serverless" "openshift-serverless-logic"; do
+    OS_PLAN=$(oc get installplan -n $namespace --sort-by=.metadata.creationTimestamp -o jsonpath='{.items[0].metadata.name}')
+    oc patch installplan $OS_PLAN -n $namespace --type merge --patch '{"spec":{"approved":true}}'
+  done
+}
+
 initiate_deployments() {
   configure_namespace ${NAME_SPACE}
 
   deploy_redis_cache "${NAME_SPACE}"
+
+  install_orchestrator_infra_chart
 
   cd "${DIR}"
   local rhdh_base_url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
@@ -854,7 +889,8 @@ initiate_deployments() {
     -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO}" \
-    --set upstream.backstage.image.tag="${TAG_NAME}"
+    --set upstream.backstage.image.tag="${TAG_NAME}" \
+    --set orchestrator.enabled=true
 
   configure_namespace "${NAME_SPACE_POSTGRES_DB}"
   configure_namespace "${NAME_SPACE_RBAC}"
@@ -869,7 +905,7 @@ initiate_deployments() {
     -f "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO}" \
-    --set upstream.backstage.image.tag="${TAG_NAME}"
+    --set upstream.backstage.image.tag="${TAG_NAME}" 
 }
 
 # install base RHDH deployment before upgrade
@@ -937,6 +973,7 @@ initiate_runtime_deployment() {
   oc apply -f "$DIR/resources/postgres-db/postgres-crt-rds.yaml" -n "${namespace}"
   oc apply -f "$DIR/resources/postgres-db/postgres-cred.yaml" -n "${namespace}"
   oc apply -f "$DIR/resources/postgres-db/dynamic-plugins-root-PVC.yaml" -n "${namespace}"
+
   helm upgrade -i "${release_name}" -n "${namespace}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "$DIR/resources/postgres-db/values-showcase-postgres.yaml" \
@@ -958,7 +995,8 @@ initiate_sanity_plugin_checks_deployment() {
     -f "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO}" \
-    --set upstream.backstage.image.tag="${TAG_NAME}"
+    --set upstream.backstage.image.tag="${TAG_NAME}" \
+    --set orchestrator.enabled=true
 }
 
 check_and_test() {
@@ -1078,3 +1116,4 @@ to_lowercase() {
     echo "${1,,}"
   fi
 }
+
