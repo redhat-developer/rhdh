@@ -10,10 +10,10 @@ let context: BrowserContext;
 GITHUB:
     [x] usernameMatchingUserEntityName -> (Default)
     [x] emailMatchingUserEntityProfileEmail
-    [] emailLocalPartMatchingUserEntityName
+    [x] emailLocalPartMatchingUserEntityName
 */
 
-test.describe('Configure Microsoft Provider', async () => {
+test.describe('Configure Github Provider', async () => {
 
     let common: Common;
     let uiHelper: UIhelper;
@@ -125,19 +125,17 @@ test.describe('Configure Microsoft Provider', async () => {
         await deployment.waitForSynced();
 
         const login = await common.githubLogin(
-            "rhdhqeauthadmin",
+            "rhdhqeauth1",
             process.env.AUTH_PROVIDERS_GH_USER_PASSWORD,
-            process.env.AUTH_PROVIDERS_GH_ADMIN_2FA,
+            process.env.AUTH_PROVIDERS_GH_USER_2FA,
         );
         expect(login).toBe("Login successful");
 
-        await page.goto("/settings");
-        await uiHelper.verifyHeading("RHDH QE Admin");
-        await common.signOut();
+        await uiHelper.verifyAlertErrorMessage(/Login failed; caused by Error: Failed to sign-in, unable to resolve user identity. Please verify that your catalog contains the expected User entities that would match your configured sign-in resolver. For non-production environments, manually provision the user or disable the user provisioning requirement by setting the `dangerouslyAllowSignInWithoutUserInCatalog` option./);
         await context.clearCookies();
     });
 
-    test.skip('Login with Github emailLocalPartMatchingUserEntityName resolver', async () => {
+    test('Login with Github emailLocalPartMatchingUserEntityName resolver', async () => {
         //A common sign-in resolver that looks up the user using the local part of their email address as the entity name.
         await deployment.setGithubResolver("emailLocalPartMatchingUserEntityName", false);
         await deployment.updateAllConfigs()
@@ -149,20 +147,21 @@ test.describe('Configure Microsoft Provider', async () => {
         await deployment.waitForSynced();
 
         const login = await common.githubLogin(
-            "rhdhqeauthadmin",
+            "rhdhqeauth1",
             process.env.AUTH_PROVIDERS_GH_USER_PASSWORD,
-            process.env.AUTH_PROVIDERS_GH_ADMIN_2FA,
+            process.env.AUTH_PROVIDERS_GH_USER_2FA,
         );
+
+        // Login failed; caused by Error: Login failed, user profile does not contain an email
+
         expect(login).toBe("Login successful");
 
-        await page.goto("/settings");
-        await uiHelper.verifyHeading("RHDH QE Admin");
-        await common.signOut();
+        await uiHelper.verifyAlertErrorMessage(/Login failed; caused by Error: Failed to sign-in, unable to resolve user identity. Please verify that your catalog contains the expected User entities that would match your configured sign-in resolver. For non-production environments, manually provision the user or disable the user provisioning requirement by setting the `dangerouslyAllowSignInWithoutUserInCatalog` option./);
         await context.clearCookies();
     });
 
     test(`Set Github sessionDuration and confirm in auth cookie duration has been set`, async () => {
-        deployment.setAppConfigProperty('auth.providers.github.development.sessionDuration', '3days')
+        deployment.setAppConfigProperty('auth.providers.github.production.sessionDuration', '3days')
         await deployment.updateAllConfigs()
         await deployment.restartLocalDeployment();
         await page.waitForTimeout(3000)

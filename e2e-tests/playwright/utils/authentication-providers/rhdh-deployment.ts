@@ -550,7 +550,7 @@ class RHDHDeployment {
                     env: process.env
                 });
                 this.runningProcess.unref();
-                console.log(`Local development server started with PID: ${this.runningProcess.pid}`);
+                console.log(`Local production server started with PID: ${this.runningProcess.pid}`);
                 return this;
             }
             await this.ensureBackstageCRIsAvailable(60000)
@@ -567,7 +567,7 @@ class RHDHDeployment {
     async killRunningProcess(): Promise<void> {
         if (this.runningProcess) {
             const killed = process.kill(-this.runningProcess.pid);
-            console.log('Local development server process killed?', killed);
+            console.log('Local production server process killed?', killed);
 
             // Wait for the process to actually terminate with a 5-second timeout
             await new Promise<void>((resolve) => {
@@ -687,7 +687,7 @@ class RHDHDeployment {
 
         let found = false;
 
-        console.log('Following logs from the local development server. Looking for string: ', searchString);
+        console.log('Following logs from the local production server. Looking for string: ', searchString);
 
         // Create a readable stream from the running process's stdout
         const logStream = new stream.PassThrough();
@@ -851,7 +851,7 @@ class RHDHDeployment {
 
         // enable the keycloak login provider
         this.setAppConfigProperty("auth.providers.oidc", {
-            "development": {
+            "production": {
                 "metadataUrl": "${RHBK_BASE_URL}/realms/${RHBK_REALM}",
                 "clientId": "${RHBK_CLIENT_ID}",
                 "clientSecret": "${RHBK_CLIENT_SECRET}",
@@ -860,7 +860,7 @@ class RHDHDeployment {
             }
         }
         );
-        this.setAppConfigProperty("auth.environment", "development");
+        this.setAppConfigProperty("auth.environment", "production");
         this.setAppConfigProperty("signInPage", "oidc");
 
         return this;
@@ -900,7 +900,7 @@ class RHDHDeployment {
 
         // enable the keycloak login provider
         this.setAppConfigProperty("auth.providers.microsoft", {
-            "development": {
+            "production": {
                 "clientId": "${AUTH_PROVIDERS_AZURE_CLIENT_ID}",
                 "clientSecret": "${AUTH_PROVIDERS_AZURE_CLIENT_SECRET}",
                 "prompt": "auto",
@@ -909,7 +909,7 @@ class RHDHDeployment {
             }
         }
         );
-        this.setAppConfigProperty("auth.environment", "development");
+        this.setAppConfigProperty("auth.environment", "production");
         this.setAppConfigProperty("signInPage", "microsoft");
 
         return this;
@@ -973,7 +973,7 @@ class RHDHDeployment {
 
         // enable the github login provider
         this.setAppConfigProperty("auth.providers.github", {
-            "development": {
+            "production": {
                 "clientId": "${AUTH_PROVIDERS_GH_ORG_CLIENT_ID}",
                 "clientSecret": "${AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET}",
                 "callbackUrl": "${BASE_URL:-http://localhost:7007}/api/auth/github/handler/frame"
@@ -981,7 +981,7 @@ class RHDHDeployment {
         }
         );
 
-        this.setAppConfigProperty("auth.environment", "development");
+        this.setAppConfigProperty("auth.environment", "production");
         this.setAppConfigProperty("signInPage", "github");
 
         return this;
@@ -1024,7 +1024,7 @@ class RHDHDeployment {
     }
 
     async setOIDCResolver(resolver: string, dangerouslyAllowSignInWithoutUserInCatalog: boolean = false): Promise<RHDHDeployment> {
-        this.setAppConfigProperty("auth.providers.oidc.development.signIn.resolvers", [{
+        this.setAppConfigProperty("auth.providers.oidc.production.signIn.resolvers", [{
             "resolver": resolver,
             "dangerouslyAllowSignInWithoutUserInCatalog": dangerouslyAllowSignInWithoutUserInCatalog
         }])
@@ -1032,7 +1032,7 @@ class RHDHDeployment {
     }
 
     async setMicrosoftResolver(resolver: string, dangerouslyAllowSignInWithoutUserInCatalog: boolean = false): Promise<RHDHDeployment> {
-        this.setAppConfigProperty("auth.providers.microsoft.development.signIn.resolvers", [{
+        this.setAppConfigProperty("auth.providers.microsoft.production.signIn.resolvers", [{
             "resolver": resolver,
             "dangerouslyAllowSignInWithoutUserInCatalog": dangerouslyAllowSignInWithoutUserInCatalog
         }])
@@ -1040,7 +1040,7 @@ class RHDHDeployment {
     }
 
     async setGithubResolver(resolver: string, dangerouslyAllowSignInWithoutUserInCatalog: boolean = false): Promise<RHDHDeployment> {
-        this.setAppConfigProperty("auth.providers.github.development.signIn.resolvers", [{
+        this.setAppConfigProperty("auth.providers.github.production.signIn.resolvers", [{
             "resolver": resolver,
             "dangerouslyAllowSignInWithoutUserInCatalog": dangerouslyAllowSignInWithoutUserInCatalog
         }])
