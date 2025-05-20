@@ -6,9 +6,8 @@ import { catalogImportPlugin } from '@backstage/plugin-catalog-import';
 import { orgPlugin } from '@backstage/plugin-org';
 import { scaffolderPlugin } from '@backstage/plugin-scaffolder';
 
+import { RouteBinding } from '@red-hat-developer-hub/plugin-utils';
 import get from 'lodash/get';
-
-import { RouteBinding } from '../../components/DynamicRoot/DynamicRootContext';
 
 const bindAppRoutes = (
   bind: AppRouteBinder,
