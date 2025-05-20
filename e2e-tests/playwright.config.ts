@@ -85,6 +85,7 @@ export default defineConfig({
         //"**/playwright/e2e/authProviders/microsoft.spec.ts",
         //"**/playwright/e2e/authProviders/oidc.spec.ts",
         //"**/playwright/e2e/authProviders/github.spec.ts",
+        "**/playwright/e2e/authProviders/ldap.spec.ts",
       ],
       retries: 1,
     },
