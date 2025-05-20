@@ -66,8 +66,8 @@ test.describe('Configure Microsoft Provider', async () => {
         await deployment.generateStaticToken();
 
         // set enviroment variables and create secret
-        deployment.addSecretData("BASE_URL", backstageUrl);
-        deployment.addSecretData("BASE_BACKEND_URL", backstageBackendUrl);
+        if(!process.env.ISRUNNINGLOCAL) deployment.addSecretData("BASE_URL", backstageUrl);
+        if(!process.env.ISRUNNINGLOCAL) deployment.addSecretData("BASE_BACKEND_URL", backstageBackendUrl);
         deployment.addSecretData("DEFAULT_USER_PASSWORD", process.env.DEFAULT_USER_PASSWORD);
         deployment.addSecretData("DEFAULT_USER_PASSWORD_2", process.env.DEFAULT_USER_PASSWORD_2);
         deployment.addSecretData("AUTH_PROVIDERS_AZURE_CLIENT_ID", process.env.AUTH_PROVIDERS_AZURE_CLIENT_ID);
@@ -201,7 +201,7 @@ test.describe('Configure Microsoft Provider', async () => {
     });
 
     test(`Set Micrisoft sessionDuration and confirm in auth cookie duration has been set`, async () => {
-        deployment.setAppConfigProperty('auth.providers.microsoft.development.sessionDuration', '3days')
+        deployment.setAppConfigProperty('auth.providers.microsoft.production.sessionDuration', '3days')
         await deployment.updateAllConfigs()
         await deployment.restartLocalDeployment();
         await page.waitForTimeout(3000)

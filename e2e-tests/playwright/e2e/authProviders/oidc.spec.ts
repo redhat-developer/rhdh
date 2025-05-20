@@ -79,8 +79,8 @@ test.describe('Configure OIDC provider (using RHBK)', async () => {
         await deployment.generateStaticToken();
 
         // set enviroment variables and create secret
-        deployment.addSecretData("BASE_URL", backstageUrl);
-        deployment.addSecretData("BASE_BACKEND_URL", backstageBackendUrl);
+        if(!process.env.ISRUNNINGLOCAL) deployment.addSecretData("BASE_URL", backstageUrl);
+        if(!process.env.ISRUNNINGLOCAL) deployment.addSecretData("BASE_BACKEND_URL", backstageBackendUrl);
         deployment.addSecretData("DEFAULT_USER_PASSWORD", process.env.DEFAULT_USER_PASSWORD);
         deployment.addSecretData("DEFAULT_USER_PASSWORD_2", process.env.DEFAULT_USER_PASSWORD_2);
         deployment.addSecretData("RHBK_BASE_URL", process.env.RHBK_BASE_URL);
@@ -195,6 +195,37 @@ test.describe('Configure OIDC provider (using RHBK)', async () => {
         await keycloakHelper.clearUserSessions("atena");
     });
 
+    test('Login with OIDC emailLocalPartMatchingUserEntityName with dangerouslyAllowSignInWithoutUserInCatalog resolver', async () => {
+        await deployment.setOIDCResolver("emailLocalPartMatchingUserEntityName", true);
+        await deployment.updateAllConfigs()
+        await deployment.restartLocalDeployment();
+        await page.waitForTimeout(3000)
+        await deployment.waitForDeploymentReady();
+
+        // wait for rhdh first sync and portal to be reachable
+        await deployment.waitForSynced();
+
+        const login = await common.keycloakLogin(
+            "zeus",
+            process.env.DEFAULT_USER_PASSWORD,
+        );
+        expect(login).toBe("Login successful");
+
+        await page.goto("/settings");
+        await uiHelper.verifyHeading("Zeus Giove");
+        await common.signOut();
+
+        const login2 = await common.keycloakLogin(
+            "atena",
+            process.env.DEFAULT_USER_PASSWORD,
+        );
+        expect(login2).toBe("Login successful");
+        await page.goto("/settings");
+        await uiHelper.verifyHeading("Atena Minerva");
+        await common.signOut();
+
+    });
+
     test('Login with OIDC preferredUsernameMatchingUserEntityName resolver', async () => {
         await deployment.setOIDCResolver("preferredUsernameMatchingUserEntityName", false);
         await deployment.updateAllConfigs()
@@ -217,7 +248,7 @@ test.describe('Configure OIDC provider (using RHBK)', async () => {
     });
 
     test(`Set sessionDuration and confirm in auth cookie duration has been set`, async () => {
-        deployment.setAppConfigProperty('auth.providers.oidc.development.sessionDuration', '3days')
+        deployment.setAppConfigProperty('auth.providers.oidc.production.sessionDuration', '3days')
         await deployment.updateAllConfigs()
         await deployment.restartLocalDeployment();
         await deployment.waitForDeploymentReady();
@@ -262,14 +293,20 @@ test.describe('Configure OIDC provider (using RHBK)', async () => {
         expect(await deployment.checkUserIsInGroup('elio', 'gods')).toBe(true);
         expect(await deployment.checkUserIsInGroup('zeus', 'gods')).toBe(true);
 
-        //expect(await deployment.checkUserIsInGroup('zeus', 'all')).toBe(true);
-        //expect(await deployment.checkUserIsInGroup('tyke', 'all')).toBe(true);
         expect(await deployment.checkGroupIsChildOfGroup('gods', 'all')).toBe(true);
         expect(await deployment.checkGroupIsChildOfGroup('goddesses', 'all')).toBe(true);
         expect(await deployment.checkGroupIsParentOfGroup('all', 'gods')).toBe(true);
         expect(await deployment.checkGroupIsParentOfGroup('all', 'goddesses')).toBe(true);
 
-        
+    });
+
+    test("Ensure Guest login is disabled when setting environment to production", async () => {    
+        await page.goto("/");
+        await uiHelper.verifyHeading("Select a sign-in method");
+        const singInMethods = await page
+          .locator("div[class^='MuiCardHeader-root']")
+          .allInnerTexts();
+        expect(singInMethods).not.toContain("Guest");
     });
 
     test.afterAll(async () => {

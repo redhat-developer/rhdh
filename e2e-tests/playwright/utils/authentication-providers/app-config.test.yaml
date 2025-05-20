@@ -35,15 +35,22 @@ backend:
     connection: ":memory:"
 includeTransitiveGroupOwnership: true
 auth:
-  environment: development
+  environment: production
   session:
     secret: superSecretSecret
   providers:
-    github:
-      development:
-        clientId: ${AUTH_PROVIDERS_GH_ORG_CLIENT_ID}
-        clientSecret: ${AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET}
-        callbackUrl: ${BASE_URL:-http://localhost:7007}/api/auth/github/handler/frame
+    oidc:
+      production:
+        metadataUrl: ${RHBK_BASE_URL}/realms/${RHBK_REALM}
+        clientId: ${RHBK_CLIENT_ID}
+        clientSecret: ${RHBK_CLIENT_SECRET}
+        prompt: auto
+        callbackUrl: ${BASE_URL:-http://localhost:7007}/api/auth/oidc/handler/frame
+        signIn:
+          resolvers:
+            - resolver: preferredUsernameMatchingUserEntityName
+              dangerouslyAllowSignInWithoutUserInCatalog: false
+        sessionDuration: 3days
 catalog:
   import:
     entityFilename: catalog-info.yaml
@@ -57,14 +64,14 @@ catalog:
         - System
         - Template
   providers:
-    githubOrg:
-      - id: github
-        githubUrl: https://github.com
-        orgs:
-          - ${AUTH_PROVIDERS_GH_ORG_NAME}
+    keycloakOrg:
+      default:
+        baseUrl: ${RHBK_BASE_URL}
+        loginRealm: ${RHBK_REALM}
+        realm: ${RHBK_REALM}
+        clientId: ${RHBK_CLIENT_ID}
+        clientSecret: ${RHBK_CLIENT_SECRET}
         schedule:
-          initialDelay:
-            seconds: 0
           frequency:
             minutes: 1
           timeout:
@@ -73,13 +80,4 @@ permission:
   enabled: false
 dynamicPlugins:
   rootDirectory: /Users/abarbaro/code/rhdh-refactor-auth-providers/dynamic-plugins-root
-integrations:
-  github:
-    - host: github.com
-      apps:
-        - appId: ${AUTH_PROVIDERS_GH_ORG_APP_ID}
-          clientId: ${AUTH_PROVIDERS_GH_ORG_CLIENT_ID}
-          clientSecret: ${AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET}
-          privateKey: ${AUTH_PROVIDERS_GH_ORG1_PRIVATE_KEY}
-          webhookSecret: ${AUTH_PROVIDERS_GH_ORG_WEBHOOK_SECRET}
-signInPage: github
+signInPage: oidc
