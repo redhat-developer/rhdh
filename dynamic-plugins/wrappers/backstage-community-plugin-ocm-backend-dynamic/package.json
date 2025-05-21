@@ -10,7 +10,7 @@
   },
   "backstage": {
     "role": "backend-plugin",
-    "supported-versions": "1.36.1",
+    "supported-versions": "1.39.0",
     "pluginId": "backstage-community-ocm-backend",
     "pluginPackages": [
       "backstage-community-plugin-ocm-backend"
