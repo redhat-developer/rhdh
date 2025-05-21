@@ -1,6 +1,6 @@
-# This file is for GKE installation only. 
+# This file is for GKE installation only.
 # It is applied by `helm upgrade` after the `values-showcase.yaml` is applied and only contains complementary differences for GKE.
-# Note, that it overwrites the whole key that is present in this file. 
+# Note, that it overwrites the whole key that is present in this file.
 #   e.g. global.dynamic.plugins key is completely overwritten by the content of this file.
 route:
   enabled: false
@@ -117,6 +117,8 @@ upstream:
             secretKeyRef:
               key: postgres-password
               name: '{{ .Release.Name }}-postgresql'
+        - name: NODE_ENV
+          value: 'production'
   volumePermissions:
     enabled: true
   service:
