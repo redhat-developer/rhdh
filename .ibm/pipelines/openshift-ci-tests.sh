@@ -61,6 +61,7 @@ done
 main() {
   echo "Log file: ${LOGFILE}"
   echo "JOB_NAME : $JOB_NAME"
+  export JOB_NAME="gke-helm"
 
   detect_ocp_and_set_env_var
 

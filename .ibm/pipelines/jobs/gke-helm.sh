@@ -16,7 +16,7 @@ handle_gke_helm() {
 
   K8S_CLUSTER_ROUTER_BASE=$GKE_INSTANCE_DOMAIN_NAME
   NAME_SPACE="showcase-k8s-ci-nightly"
-  NAME_SPACE_RBAC="showcase-rbac-k8s-ci-nightly"
+  export NAME_SPACE_RBAC="showcase-rbac-k8s-ci-nightly"
   export K8S_CLUSTER_ROUTER_BASE NAME_SPACE NAME_SPACE_RBAC
 
   gcloud_auth "${GKE_SERVICE_ACCOUNT_NAME}" "/tmp/secrets/GKE_SERVICE_ACCOUNT_KEY"

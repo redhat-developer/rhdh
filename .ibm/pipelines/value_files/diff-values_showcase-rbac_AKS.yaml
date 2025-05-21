@@ -1,6 +1,6 @@
-# This file is for AKS installation only. 
+# This file is for AKS installation only.
 # It is applied by `helm upgrade` after the `values-showcase.yaml` is applied and only contains complementary differences for AKS.
-# Note, that it overwrites the whole key that is present in this file. 
+# Note, that it overwrites the whole key that is present in this file.
 # The only exception is global.dynamic.plugins, that gets merged with the base file.
 route:
   enabled: false
@@ -117,6 +117,8 @@ upstream:
             secretKeyRef:
               key: postgres-password
               name: '{{ .Release.Name }}-postgresql'
+        - name: NODE_ENV
+          value: 'production'
       # Tolerations and affinity needed to be scheduled on a spot AKS cluster. Only `postgresql` require it.
       tolerations:
       - key: "kubernetes.azure.com/scalesetpriority"
