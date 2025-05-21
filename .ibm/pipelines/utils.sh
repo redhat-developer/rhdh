@@ -404,13 +404,13 @@ check_operator_status() {
 
 # Installs the Crunchy Postgres Operator from Openshift Marketplace using predefined parameters
 install_crunchy_postgres_ocp_operator(){
-  install_subscription crunchy-postgres-operator openshift-operators v5 crunchy-postgres-operator certified-operators openshift-marketplace
+  install_subscription postgresql openshift-operators v5 postgresql community-operators openshift-marketplace
   check_operator_status 300 "openshift-operators" "Crunchy Postgres for Kubernetes" "Succeeded"
 }
 
 # Installs the Crunchy Postgres Operator from OperatorHub.io
 install_crunchy_postgres_k8s_operator(){
-  install_subscription crunchy-postgres-operator operators v5 postgresql operatorhubio-catalog olm
+  install_subscription postgresql openshift-operators v5 postgresql community-operators openshift-marketplace
   check_operator_status 300 "operators" "Crunchy Postgres for Kubernetes" "Succeeded"
 }
 
@@ -486,8 +486,6 @@ configure_external_postgres_db() {
   local project=$1
   oc apply -f "${DIR}/resources/postgres-db/postgres.yaml" --namespace="${NAME_SPACE_POSTGRES_DB}"
   sleep 15
-  oc get secrets -n "${NAME_SPACE_POSTGRES_DB}"
-  sleep 120m
   oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.ca\.crt}' | base64 --decode > postgres-ca
   oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.tls\.crt}' | base64 --decode > postgres-tls-crt
   oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.tls\.key}' | base64 --decode > postgres-tsl-key
