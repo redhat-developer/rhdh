@@ -812,9 +812,12 @@ initiate_deployments() {
     --set upstream.backstage.image.repository="${QUAY_REPO}" \
     --set upstream.backstage.image.tag="${TAG_NAME}"
 
-  configure_namespace "${NAME_SPACE_POSTGRES_DB}"
+
+  # Enable when https://issues.redhat.com/browse/RHIDP-7604 is fixed.
+  # configure_namespace "${NAME_SPACE_POSTGRES_DB}"
   configure_namespace "${NAME_SPACE_RBAC}"
-  configure_external_postgres_db "${NAME_SPACE_RBAC}"
+  # Enable when https://issues.redhat.com/browse/RHIDP-7604 is fixed.
+  # configure_external_postgres_db "${NAME_SPACE_RBAC}"
 
   # Initiate rbac instance deployment.
   local rbac_rhdh_base_url="https://${RELEASE_NAME_RBAC}-backstage-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
