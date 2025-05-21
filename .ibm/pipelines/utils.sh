@@ -713,36 +713,68 @@ run_tests() {
 check_backstage_running() {
   local release_name=$1
   local namespace=$2
-  local url=$3
+  local base_url=$3
   local max_attempts=$4
   local wait_seconds=$5
 
-  if [ -z "${url}" ]; then
-    echo "Error: URL is not set. Please provide a valid URL."
+  if [ -z "${base_url}" ]; then
+    echo "Error: base URL is not set. Please provide a valid URL."
     return 1
   fi
 
-  echo "Checking if Backstage is up and running at ${url}"
+  local health_url="${base_url%/}/healthcheck"
+  echo "Checking if Backstage is up at ${health_url}"
+  echo "Health URL (base64): $(echo "$health_url" | base64)"
 
   for ((i = 1; i <= max_attempts; i++)); do
-    local http_status
-    http_status=$(curl --insecure -I -s -o /dev/null -w "%{http_code}" "${url}")
+    local tmp_output="/tmp/backstage_response_body.txt"
+    local headers_output="/tmp/backstage_response_headers.txt"
 
-    if [ "${http_status}" -eq 200 ]; then
-      echo "Backstage is up and running!"
-      export BASE_URL="${url}"
-      echo "######## BASE URL ########"
-      echo "${BASE_URL}"
-      return 0
-    else
-      echo "Attempt ${i} of ${max_attempts}: Backstage not yet available (HTTP Status: ${http_status})"
-      oc get pods -n "${namespace}"
-      sleep "${wait_seconds}"
-    fi
+    local http_status
+    http_status=$(curl --insecure -s -D "${headers_output}" -o "${tmp_output}" -w "%{http_code}" "${health_url}")
+
+    echo "Attempt ${i}/${max_attempts} - HTTP status: $http_status"
+
+    echo "Response headers:"
+    head -n 10 "${headers_output}"
+
+    echo "Response body (first 20 lines):"
+    head -n 20 "${tmp_output}"
+
+    case "$http_status" in
+      200)
+        echo "Backstage is healthy (responding 200 on /healthcheck)"
+        export BASE_URL="${base_url}"
+        echo "######## BASE URL ########"
+        echo "${BASE_URL}"
+        mkdir -p "${ARTIFACT_DIR}/${namespace}"
+        cp "${tmp_output}" "${ARTIFACT_DIR}/${namespace}/backstage_response_body.txt"
+        cp "${headers_output}" "${ARTIFACT_DIR}/${namespace}/backstage_response_headers.txt"
+        return 0
+        ;;
+      301|302)
+        echo "Redirect received ($http_status) — service is probably up but redirected."
+        export BASE_URL="${base_url}"
+        return 0
+        ;;
+      403)
+        echo "Forbidden (403) — service is up but protected (e.g., auth)."
+        export BASE_URL="${base_url}"
+        return 0
+        ;;
+      *)
+        echo "Backstage not ready yet (HTTP $http_status)"
+        echo "Pod status:"
+        oc get pods -n "${namespace}" --no-headers | grep "${release_name}" || true
+        ;;
+    esac
+
+    sleep "${wait_seconds}"
   done
 
-  echo "Failed to reach Backstage at ${BASE_URL} after ${max_attempts} attempts." | tee -a "/tmp/${LOGFILE}"
-  cp -a "/tmp/${LOGFILE}" "${ARTIFACT_DIR}/${namespace}/"
+  echo "Failed to reach Backstage healthcheck after ${max_attempts} attempts." | tee -a "/tmp/${LOGFILE}"
+  mkdir -p "${ARTIFACT_DIR}/${namespace}"
+  cp -a "${tmp_output}" "${headers_output}" "/tmp/${LOGFILE}" "${ARTIFACT_DIR}/${namespace}/" || true
   return 1
 }
 
@@ -896,7 +928,7 @@ initiate_deployments() {
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
   echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
   helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
-    "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" --version "${CHART_VERSION}" \
+    "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO}" \
@@ -912,7 +944,7 @@ initiate_deployments() {
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
   echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${RELEASE_NAME_RBAC}"
   helm upgrade -i "${RELEASE_NAME_RBAC}" -n "${NAME_SPACE_RBAC}" \
-    "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" --version "${CHART_VERSION}" \
+    "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO}" \
@@ -924,16 +956,16 @@ initiate_upgrade_base_deployments() {
   echo "Initiating base RHDH deployment before upgrade"
 
   configure_namespace ${NAME_SPACE}
-  
+
   deploy_redis_cache "${NAME_SPACE}"
 
   cd "${DIR}"
   local rhdh_base_url="https://${RELEASE_NAME}-backstage-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
   echo "Deploying image from base repository: ${QUAY_REPO_BASE}, TAG_NAME_BASE: ${TAG_NAME_BASE}, in NAME_SPACE: ${NAME_SPACE}"
-  
+
   helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
-    "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" --version "${CHART_VERSION_BASE}" \
+    "${HELM_CHART_URL}" --version "${CHART_VERSION_BASE}" \
     -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME_BASE}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO_BASE}" \
@@ -945,22 +977,22 @@ initiate_upgrade_deployments() {
   local namespace=$2
   local url=$3
   local max_attempts=${4:-30}    # Default to 30 if not set
-  local wait_seconds=${5:-30} 
+  local wait_seconds=${5:-30}
   local wait_upgrade="10m"
 
   # check if the base rhdh deployment is running
   if check_backstage_running "${release_name}" "${namespace}" "${url}" "${max_attempts}" "${wait_seconds}"; then
-    
+
     echo "Display pods of base RHDH deployment before upgrade for verification..."
     oc get pods -n "${namespace}"
-    
+
     echo "Initiating upgrade deployment"
     cd "${DIR}"
-    
+
     echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
-    
+
     helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
-    "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" \
+    "${HELM_CHART_URL}" \
     -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO}" \
@@ -985,7 +1017,7 @@ initiate_runtime_deployment() {
   oc apply -f "$DIR/resources/postgres-db/postgres-cred.yaml" -n "${namespace}"
   oc apply -f "$DIR/resources/postgres-db/dynamic-plugins-root-PVC.yaml" -n "${namespace}"
   helm upgrade -i "${release_name}" -n "${namespace}" \
-    "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" --version "${CHART_VERSION}" \
+    "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "$DIR/resources/postgres-db/values-showcase-postgres.yaml" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO}" \
@@ -1001,7 +1033,7 @@ initiate_sanity_plugin_checks_deployment() {
   mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE_SANITY_PLUGINS_CHECK}"
   cp -a "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" "${ARTIFACT_DIR}/${NAME_SPACE_SANITY_PLUGINS_CHECK}/" # Save the final value-file into the artifacts directory.
   helm upgrade -i "${RELEASE_NAME}" \
-    -n "${NAME_SPACE_SANITY_PLUGINS_CHECK}" "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" \
+    -n "${NAME_SPACE_SANITY_PLUGINS_CHECK}" "${HELM_CHART_URL}" \
     --version "${CHART_VERSION}" \
     -f "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
@@ -1032,7 +1064,7 @@ check_upgrade_and_test() {
   local namespace="$3"
   local url=$4
   local timeout=${5:-600} # Timeout in seconds (default: 600 seconds)
-  
+
   if check_helm_upgrade "${deployment_name}" "${namespace}" "${timeout}"; then
     check_and_test "${release_name}" "${namespace}" "${url}"
   else
@@ -1042,11 +1074,11 @@ check_upgrade_and_test() {
 
 check_helm_upgrade() {
   local deployment_name="$1"
-  local namespace="$2"       
-  local timeout="$3"      
-  
+  local namespace="$2"
+  local timeout="$3"
+
   echo "Checking rollout status for deployment: ${deployment_name} in namespace: ${namespace}..."
-  
+
   if oc rollout status "deployment/${deployment_name}" -n "${namespace}" --timeout="${timeout}s" -w; then
       echo "RHDH upgrade is complete."
       return 0

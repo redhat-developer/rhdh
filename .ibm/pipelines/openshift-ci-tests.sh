@@ -10,20 +10,23 @@ OVERALL_RESULT=0
 
 # Define a cleanup function to be executed upon script exit.
 # shellcheck disable=SC2317
-cleanup() {
-  echo "Cleaning up before exiting"
-  if [[ "${OPENSHIFT_CI}" == "true" ]]; then
-    case "$JOB_NAME" in
-      *gke*)
-        echo "Calling cleanup_gke"
-        cleanup_gke
-        ;;
-    esac
-  fi
-  rm -rf ~/tmpbin
-}
+#cleanup() {
+#  echo "Cleaning up before exiting"
+#  if [[ "${OPENSHIFT_CI}" == "true" ]]; then
+#    case "$JOB_NAME" in
+#      *gke*)
+#        echo "Calling cleanup_gke"
+#        cleanup_gke
+#        ;;
+#    esac
+#  fi
+#  rm -rf ~/tmpbin
+#}
+#
+#trap cleanup EXIT INT ERR
 
-trap cleanup EXIT INT ERR
+export K8S_CLUSTER_TOKEN=$K8S_CLUSTER_TOKEN_TEMPORARY
+export K8S_CLUSTER_URL='https://c111-e.us-east.containers.cloud.ibm.com:31018'
 
 SCRIPTS=(
   "utils.sh"
@@ -49,6 +52,16 @@ main() {
   echo "JOB_NAME : $JOB_NAME"
 
   detect_ocp_and_set_env_var
+
+  export HELM_REPO_NAME="redhat-developer-hub"
+  export HELM_IMAGE_NAME="chart"
+  export HELM_CHART_URL="oci://quay.io/rhdh/${HELM_IMAGE_NAME}"
+
+  export CHART_VERSION="1.6-91-CI"
+  export CHART_VERSION_BASE="1.6-91-CI"
+  export QUAY_REPO_BASE="quay.io/rhdh/rhdh-hub-rhel9"
+  export TAG_NAME_BASE="1.6-91"
+
 
   case "$JOB_NAME" in
     *aks-helm*)
@@ -90,6 +103,7 @@ main() {
   esac
 
 echo "Main script completed with result: ${OVERALL_RESULT}"
+sleep 1h
 exit "${OVERALL_RESULT}"
 
 }
