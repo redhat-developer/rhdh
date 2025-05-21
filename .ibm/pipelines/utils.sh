@@ -410,7 +410,7 @@ install_crunchy_postgres_ocp_operator(){
 
 # Installs the Crunchy Postgres Operator from OperatorHub.io
 install_crunchy_postgres_k8s_operator(){
-  install_subscription postgresql openshift-operators v5 postgresql community-operators openshift-marketplace
+  install_subscription postgresql operators v5 postgresql operatorhubio-catalog olm
   check_operator_status 300 "operators" "Crunchy Postgres for Kubernetes" "Succeeded"
 }
 
