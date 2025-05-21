@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.15-labs
+# syntax=docker/dockerfile:1.16-labs
 
 # THIS IS USED BY Konflux builds >= 1.6
 #
