@@ -132,18 +132,21 @@ upstream:
           origin: 'https://{{- include "janus-idp.hostname" . }}'
         database:
           connection: # configure Backstage DB connection parameters
-            host: ${POSTGRES_HOST}
-            port: ${POSTGRES_PORT}
-            user: ${POSTGRES_USER}
-            password: ${POSTGRES_PASSWORD}
-            ssl:
-              rejectUnauthorized: true,
-              ca:
-                $file: /opt/app-root/src/postgres-ca.pem
-              key:
-                $file: /opt/app-root/src/postgres-key.key
-              cert:
-                $file: /opt/app-root/src/postgres-crt.pem
+            password: ${POSTGRESQL_ADMIN_PASSWORD}
+            user: postgres
+            # Enable when https://issues.redhat.com/browse/RHIDP-7604 is fixed.
+            # host: ${POSTGRES_HOST}
+            # port: ${POSTGRES_PORT}
+            # user: ${POSTGRES_USER}
+            # password: ${POSTGRES_PASSWORD}
+            # ssl:
+            #   rejectUnauthorized: true,
+            #   ca:
+            #     $file: /opt/app-root/src/postgres-ca.pem
+            #   key:
+            #     $file: /opt/app-root/src/postgres-key.key
+            #   cert:
+            #     $file: /opt/app-root/src/postgres-crt.pem
     startupProbe:
       # This gives enough time upon container startup before the liveness and readiness probes are triggered.
       # Giving (120s = initialDelaySeconds + failureThreshold * periodSeconds) to account for the worst case scenario.
@@ -190,6 +193,12 @@ upstream:
           secretKeyRef:
             key: backend-secret
             name: '{{ include "janus-idp.backend-secret-name" $ }}'
+      # Remove when https://issues.redhat.com/browse/RHIDP-7604 is fixed.
+      - name: POSTGRESQL_ADMIN_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            key: postgres-password
+            name: '{{ .Release.Name }}-postgresql'
       # disable telemetry in CI
       - name: SEGMENT_TEST_MODE
         value: 'true'
@@ -205,15 +214,16 @@ upstream:
         mountPath: /opt/app-root/src/rbac
       - name: rbac-conditions
         mountPath: /opt/app-root/src/rbac-conditions
-      - mountPath: /opt/app-root/src/postgres-crt.pem
-        name: postgress-external-db-cluster-cert
-        subPath: tls.crt
-      - mountPath: /opt/app-root/src/postgres-ca.pem
-        name: postgress-external-db-cluster-cert
-        subPath: ca.crt
-      - mountPath: /opt/app-root/src/postgres-key.key
-        name: postgress-external-db-cluster-cert
-        subPath: tls.key
+      # Enable when https://issues.redhat.com/browse/RHIDP-7604 is fixed.
+      # - mountPath: /opt/app-root/src/postgres-crt.pem
+      #   name: postgress-external-db-cluster-cert
+      #   subPath: tls.crt
+      # - mountPath: /opt/app-root/src/postgres-ca.pem
+      #   name: postgress-external-db-cluster-cert
+      #   subPath: ca.crt
+      # - mountPath: /opt/app-root/src/postgres-key.key
+      #   name: postgress-external-db-cluster-cert
+      #   subPath: tls.key
     extraVolumes:
       # -- Ephemeral volume that will contain the dynamic plugins installed by the initContainer below at start.
       # To have more control on underlying storage, the [emptyDir](https://docs.openshift.com/container-platform/4.13/storage/understanding-ephemeral-storage.html)
@@ -234,9 +244,10 @@ upstream:
           defaultMode: 420
           optional: true
           secretName: dynamic-plugins-npmrc
-      - name: postgress-external-db-cluster-cert
-        secret:
-          secretName: postgress-external-db-cluster-cert
+      # Enable when https://issues.redhat.com/browse/RHIDP-7604 is fixed.
+      # - name: postgress-external-db-cluster-cert
+      #   secret:
+      #     secretName: postgress-external-db-cluster-cert
       - name: rbac-policy
         configMap:
           defaultMode: 420
@@ -324,8 +335,11 @@ upstream:
         filename: app-config-rhdh.yaml
     extraEnvVarsSecrets:
       - rhdh-secrets
-      - postgres-cred
+      # Enable when https://issues.redhat.com/browse/RHIDP-7604 is fixed.
+      # - postgres-cred
   postgresql:
-    enabled: false
-    auth:
-      existingSecret: postgres-cred
+    # Disable when https://issues.redhat.com/browse/RHIDP-7604 is fixed.
+    enabled: true
+    # Enable when https://issues.redhat.com/browse/RHIDP-7604 is fixed.
+    # auth:
+    #   existingSecret: postgres-cred
