@@ -404,13 +404,13 @@ check_operator_status() {
 
 # Installs the Crunchy Postgres Operator from Openshift Marketplace using predefined parameters
 install_crunchy_postgres_ocp_operator(){
-  install_subscription crunchy-postgres-operator openshift-operators v5 crunchy-postgres-operator certified-operators openshift-marketplace
+  install_subscription postgresql openshift-operators v5 postgresql community-operators openshift-marketplace
   check_operator_status 300 "openshift-operators" "Crunchy Postgres for Kubernetes" "Succeeded"
 }
 
 # Installs the Crunchy Postgres Operator from OperatorHub.io
 install_crunchy_postgres_k8s_operator(){
-  install_subscription crunchy-postgres-operator operators v5 postgresql operatorhubio-catalog olm
+  install_subscription postgresql openshift-operators v5 postgresql community-operators openshift-marketplace
   check_operator_status 300 "operators" "Crunchy Postgres for Kubernetes" "Succeeded"
 }
 
