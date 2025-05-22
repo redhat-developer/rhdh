@@ -49,13 +49,6 @@ jobs:
 
       - name: Check if build should be skipped
         run: |
-          # Check if commit message contains [skip-build]
-          COMMIT_MSG=$(git log -1 --pretty=%B)
-          if [[ "$COMMIT_MSG" == *"[skip-build]"* ]]; then
-            echo "::notice::Skipping build: Commit message contains [skip-build]"
-            exit 0
-          fi
-
           if [[ "${{ steps.check-image.outputs.relevant_changes }}" == "false" && "${{ steps.check-image.outputs.image_exists }}" == "true" ]]; then
             echo "::notice::Skipping build: Image already exists and no relevant changes detected."
             exit 0

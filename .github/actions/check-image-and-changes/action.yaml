@@ -43,6 +43,14 @@ runs:
         BASE_COMMIT=${{ github.event.pull_request.base.sha }}
         HEAD_COMMIT=${{ github.event.pull_request.head.sha }}
 
+        # Check if commit message contains [skip-build]
+        COMMIT_MSG=$(git log -1 --pretty=%B)
+        if [[ "$COMMIT_MSG" == *"[skip-build]"* ]]; then
+          echo "Commit message contains [skip-build], marking changes as not relevant"
+          echo "relevant=false" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+
         CHANGED_FILES=$(git diff --name-only "$BASE_COMMIT" "$HEAD_COMMIT")
 
         echo "Changed files:"
