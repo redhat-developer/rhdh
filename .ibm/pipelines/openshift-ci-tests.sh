@@ -27,8 +27,14 @@ OVERALL_RESULT=0
 
 export K8S_CLUSTER_TOKEN=$K8S_CLUSTER_TOKEN_TEMPORARY
 export K8S_CLUSTER_URL='https://c111-e.us-east.containers.cloud.ibm.com:31018'
-export K8S_CLUSTER_TOKEN_ENCODED=$(printf "%s" $K8S_CLUSTER_TOKEN | base64 | tr -d '\n')
+export K8S_CLUSTER_TOKEN_ENCODED=$(printf "%s" "$K8S_CLUSTER_TOKEN" | base64 | tr -d '\n')
 export K8S_SERVICE_ACCOUNT_TOKEN=$K8S_CLUSTER_TOKEN_ENCODED
+if [[ -z "$K8S_SERVICE_ACCOUNT_TOKEN" ]]; then
+  echo "The variable K8S_SERVICE_ACCOUNT_TOKEN is empty or not set."
+else
+  echo "Value of K8S_SERVICE_ACCOUNT_TOKEN: $K8S_SERVICE_ACCOUNT_TOKEN"
+fi
+
 
 SCRIPTS=(
   "utils.sh"
@@ -51,8 +57,14 @@ done
 
 export K8S_CLUSTER_TOKEN=$K8S_CLUSTER_TOKEN_TEMPORARY
 export K8S_CLUSTER_URL='https://c111-e.us-east.containers.cloud.ibm.com:31018'
-export K8S_CLUSTER_TOKEN_ENCODED=$(printf "%s" $K8S_CLUSTER_TOKEN | base64 | tr -d '\n')
+export K8S_CLUSTER_TOKEN_ENCODED=$(printf "%s" "$K8S_CLUSTER_TOKEN" | base64 | tr -d '\n')
 export K8S_SERVICE_ACCOUNT_TOKEN=$K8S_CLUSTER_TOKEN_ENCODED
+if [[ -z "$K8S_SERVICE_ACCOUNT_TOKEN" ]]; then
+  echo "The variable K8S_SERVICE_ACCOUNT_TOKEN is empty or not set."
+else
+  echo "Value of K8S_SERVICE_ACCOUNT_TOKEN: $K8S_SERVICE_ACCOUNT_TOKEN"
+fi
+
 main() {
   echo "Log file: ${LOGFILE}"
   echo "JOB_NAME : $JOB_NAME"
