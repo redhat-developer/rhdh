@@ -18,8 +18,6 @@ on:
   pull_request_target:
     paths-ignore:
       - 'docs/**'
-    branches-ignore:
-      - 'release-1.6'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number || github.event.pull_request.head.ref }}
@@ -51,6 +49,11 @@ jobs:
 
       - name: Check if build should be skipped
         run: |
+          if [[ "${{ github.event.pull_request.base.ref }}" == "release-1.6" ]]; then
+            echo "::notice::Skipping build: PR targets release-1.6 branch"
+            exit 0
+          fi
+
           if [[ "${{ steps.check-image.outputs.relevant_changes }}" == "false" && "${{ steps.check-image.outputs.image_exists }}" == "true" ]]; then
             echo "::notice::Skipping build: Image already exists and no relevant changes detected."
             exit 0
