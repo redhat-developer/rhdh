@@ -47,14 +47,11 @@ jobs:
         id: check-image
         uses: ./.github/actions/check-image-and-changes
 
-      - name: Check if build should be skipped
-        run: |
-          if [[ "${{ steps.check-image.outputs.relevant_changes }}" == "false" && "${{ steps.check-image.outputs.image_exists }}" == "true" ]]; then
-            echo "::notice::Skipping build: Image already exists and no relevant changes detected."
-            exit 0
-          fi
-
+      # Build is needed if:
+      # 1. Not explicitly skipped ([skip-build] not present) AND
+      # 2. Either has relevant changes OR image doesn't exist
       - name: Get the latest commits from base branch
+        if: steps.check-image.outputs.is_skipped == 'false' && (steps.check-image.outputs.relevant_changes == 'true' || steps.check-image.outputs.image_exists == 'false')
         run: |
           git remote add base-origin https://github.com/${{ github.repository }} || true
           git config user.name "${{ github.event.pull_request.user.login }}"
@@ -64,6 +61,7 @@ jobs:
           git merge --no-edit base-origin/${{ github.event.pull_request.base.ref }}
 
       - name: Build and Push with Buildx
+        if: steps.check-image.outputs.is_skipped == 'false' && (steps.check-image.outputs.relevant_changes == 'true' || steps.check-image.outputs.image_exists == 'false')
         uses: ./.github/actions/docker-build
         with:
           registry: ${{ env.REGISTRY }}
@@ -78,6 +76,7 @@ jobs:
           platform: linux/amd64
 
       - name: Comment the image pull link
+        if: steps.check-image.outputs.is_skipped == 'false' && (steps.check-image.outputs.relevant_changes == 'true' || steps.check-image.outputs.image_exists == 'false')
         uses: actions/github-script@v7
         with:
           script: |

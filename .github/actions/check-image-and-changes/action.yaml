@@ -8,6 +8,9 @@ outputs:
   relevant_changes:
     description: "True if changes require a build"
     value: ${{ steps.changes.outputs.relevant }}
+  is_skipped:
+    description: "True if build should be skipped (via [skip-build] tag)"
+    value: ${{ steps.changes.outputs.is_skipped }}
   short_sha:
     description: "Short SHA of the latest commit"
     value: ${{ env.SHORT_SHA }}
@@ -46,16 +49,21 @@ runs:
         # Check if commit message contains [skip-build]
         COMMIT_MSG=$(git log -1 --pretty=%B)
         if [[ "$COMMIT_MSG" == *"[skip-build]"* ]]; then
-          echo "Commit message contains [skip-build], marking changes as not relevant"
+          echo "Commit message contains [skip-build], marking as skipped"
+          echo "is_skipped=true" >> $GITHUB_OUTPUT
           echo "relevant=false" >> $GITHUB_OUTPUT
           exit 0
         fi
+
+        # Default to not skipped
+        echo "is_skipped=false" >> $GITHUB_OUTPUT
 
         CHANGED_FILES=$(git diff --name-only "$BASE_COMMIT" "$HEAD_COMMIT")
 
         echo "Changed files:"
         echo "$CHANGED_FILES"
 
+        # Check if changes are relevant for build
         if echo "$CHANGED_FILES" | grep -qvE '^(e2e-tests/|\.ibm/)'; then
           echo "Changes detected outside the e2e-tests or .ibm folders. Build required."
           echo "relevant=true" >> $GITHUB_OUTPUT
@@ -63,3 +71,13 @@ runs:
           echo "No relevant changes detected."
           echo "relevant=false" >> $GITHUB_OUTPUT
         fi
+
+    - name: Build Image
+      id: build-image
+      if: steps.check-image.outputs.is_skipped == 'false' && (steps.check-image.outputs.relevant_changes == 'true' || steps.check-image.outputs.image_exists == 'false')
+      run: |
+        IMAGE_TAG_COMMIT="pr-${{ github.event.number }}-${{ env.SHORT_SHA }}"
+        IMAGE_NAME_COMMIT="${{ env.REGISTRY }}/rhdh-community/rhdh:${IMAGE_TAG_COMMIT}"
+
+        docker build -t $IMAGE_NAME_COMMIT .
+        docker push $IMAGE_NAME_COMMIT
