@@ -18,6 +18,8 @@ on:
   pull_request_target:
     paths-ignore:
       - 'docs/**'
+    branches-ignore:
+      - 'release-1.6'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number || github.event.pull_request.head.ref }}
