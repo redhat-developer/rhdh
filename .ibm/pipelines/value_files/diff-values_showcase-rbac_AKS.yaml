@@ -6,36 +6,7 @@ route:
   enabled: false
 global:
   dynamic:
-    plugins:
-      - package: ./dynamic-plugins/dist/backstage-plugin-kubernetes-backend-dynamic
-        disabled: false
-        pluginConfig:
-          kubernetes:
-            clusterLocatorMethods:
-              - clusters:
-                  - authProvider: serviceAccount
-                    name: 'my-cluster'
-                    serviceAccountToken: ${K8S_CLUSTER_TOKEN_ENCODED}
-                    url: ${K8S_CLUSTER_API_SERVER_URL}
-                    skipTLSVerify: true
-                type: config
-            customResources:
-              # Add for tekton
-              - apiVersion: 'v1beta1'
-                group: 'tekton.dev'
-                plural: 'pipelines'
-              - apiVersion: v1beta1
-                group: tekton.dev
-                plural: pipelineruns
-              - apiVersion: v1beta1
-                group: tekton.dev
-                plural: taskruns
-              # Add for topology plugin
-              - apiVersion: 'v1'
-                group: 'networking.k8s.io'
-                plural: 'ingresses'
-            serviceLocatorMethod:
-              type: multiTenant
+    plugins: []
 upstream:
   backstage:
     appConfig:
