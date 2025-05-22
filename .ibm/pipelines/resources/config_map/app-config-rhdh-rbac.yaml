@@ -129,6 +129,7 @@ permission:
       - catalog
       - permission
       - scaffolder
+      - kubernetes
     admin:
       users:
         - name: user:default/rhdh-qe
