@@ -194,6 +194,8 @@ upstream:
       # disable telemetry in CI
       - name: SEGMENT_TEST_MODE
         value: 'true'
+      - name: NODE_ENV
+        value: 'production'
     extraVolumeMounts:
       # The initContainer below will install dynamic plugins in this volume mount.
       - name: dynamic-plugins-root

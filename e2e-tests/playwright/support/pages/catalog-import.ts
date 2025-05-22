@@ -15,23 +15,54 @@ export class CatalogImport {
     this.page = page;
     this.uiHelper = new UIhelper(page);
   }
-  async registerExistingComponent(
-    url: string,
-    clickViewComponent: boolean = true,
-  ) {
+
+  /**
+   * Fills the component URL input and clicks the "Analyze" button.
+   * Waits until the analyze button is no longer visible (processing done).
+   *
+   * @param url - The URL of the component to analyze
+   */
+  private async analyzeAndWait(url: string): Promise<void> {
     await this.page.fill(CATALOG_IMPORT_COMPONENTS.componentURL, url);
     await expect(await this.uiHelper.clickButton("Analyze")).not.toBeVisible({
       timeout: 25_000,
     });
+  }
 
-    // Wait for the visibility of either 'Refresh' or 'Import' button
-    if (await this.uiHelper.isBtnVisible("Import")) {
-      await this.uiHelper.clickButton("Import");
-      if (clickViewComponent) await this.uiHelper.clickButton("View Component");
-    } else {
+  /**
+   * Returns true if the component is already registered
+   * (i.e., "Refresh" button is visible instead of "Import").
+   *
+   * @returns boolean indicating if the component is already registered
+   */
+  async isComponentAlreadyRegistered(): Promise<boolean> {
+    return await this.uiHelper.isBtnVisible("Refresh");
+  }
+
+  /**
+   * Registers an existing component if it has not been registered yet.
+   * If already registered, clicks the "Refresh" button instead.
+   *
+   * @param url - The component URL to register
+   * @param clickViewComponent - Whether to click "View Component" after import
+   */
+  async registerExistingComponent(
+    url: string,
+    clickViewComponent: boolean = true,
+  ) {
+    await this.analyzeAndWait(url);
+    const isComponentAlreadyRegistered =
+      await this.isComponentAlreadyRegistered();
+    if (isComponentAlreadyRegistered) {
       await this.uiHelper.clickButton("Refresh");
       expect(await this.uiHelper.isBtnVisible("Register another")).toBeTruthy();
+    } else {
+      await this.uiHelper.clickButton("Import");
+      if (clickViewComponent) {
+        await this.uiHelper.clickButton("View Component");
+      }
     }
+    return isComponentAlreadyRegistered;
   }
 
   async analyzeComponent(url: string) {
@@ -88,10 +119,6 @@ export class BackstageShowcase {
 
   async clickLastPage() {
     await this.page.click(BACKSTAGE_SHOWCASE_COMPONENTS.tableLastPage);
-  }
-
-  async clickFirstPage() {
-    await this.page.click(BACKSTAGE_SHOWCASE_COMPONENTS.tableFirstPage);
   }
 
   async verifyPRRowsPerPage(rows, allPRs) {
