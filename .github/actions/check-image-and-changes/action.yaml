@@ -46,22 +46,21 @@ runs:
         BASE_COMMIT=${{ github.event.pull_request.base.sha }}
         HEAD_COMMIT=${{ github.event.pull_request.head.sha }}
 
+        # Default to not skipped
+        echo "is_skipped=false" >> $GITHUB_OUTPUT
+
+        # Get changed files
+        CHANGED_FILES=$(git diff --name-only "$BASE_COMMIT" "$HEAD_COMMIT")
+
+        echo "Changed files:"
+        echo "$CHANGED_FILES"
+
         # Check if commit message contains [skip-build]
         COMMIT_MSG=$(git log -1 --pretty=%B)
         if [[ "$COMMIT_MSG" == *"[skip-build]"* ]]; then
           echo "Commit message contains [skip-build], marking as skipped"
           echo "is_skipped=true" >> $GITHUB_OUTPUT
-          echo "relevant=false" >> $GITHUB_OUTPUT
-          exit 0
         fi
-
-        # Default to not skipped
-        echo "is_skipped=false" >> $GITHUB_OUTPUT
-
-        CHANGED_FILES=$(git diff --name-only "$BASE_COMMIT" "$HEAD_COMMIT")
-
-        echo "Changed files:"
-        echo "$CHANGED_FILES"
 
         # Check if changes are relevant for build
         if echo "$CHANGED_FILES" | grep -qvE '^(e2e-tests/|\.ibm/)'; then
