@@ -1,4 +1,5 @@
-import { test, expect } from "@playwright/test";
+import { expect } from "@playwright/test";
+import { test } from "sealights-playwright-plugin";
 import { KubeClient } from "../../utils/kube-client";
 import { LOGGER } from "../../utils/logger";
 import { Common } from "../../utils/common";

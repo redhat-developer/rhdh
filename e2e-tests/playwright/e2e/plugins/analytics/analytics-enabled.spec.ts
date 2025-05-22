@@ -1,4 +1,5 @@
-import { test, expect } from "@playwright/test";
+import { expect } from "@playwright/test";
+import { test } from "sealights-playwright-plugin";
 import { Analytics } from "../../../utils/analytics/analytics";
 import { APIHelper } from "../../../utils/api-helper";
 

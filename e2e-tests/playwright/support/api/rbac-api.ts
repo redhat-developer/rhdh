@@ -1,9 +1,4 @@
-import {
-  APIRequestContext,
-  APIResponse,
-  Page,
-  request,
-} from "@playwright/test";
+import { APIRequestContext, APIResponse, Page, request,  } from "@playwright/test";
 import playwrightConfig from "../../../playwright.config";
 import { Policy, Role } from "./rbac-api-structures";
 import { RhdhAuthApiHack } from "./rhdh-auth-api-hack";

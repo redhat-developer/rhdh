@@ -1,4 +1,5 @@
-import { Page, test } from "@playwright/test";
+import { Page } from "@playwright/test";
+import { test } from "sealights-playwright-plugin";
 import { UIhelper } from "../utils/ui-helper";
 import { Common } from "../utils/common";
 import { expect } from "@playwright/test";

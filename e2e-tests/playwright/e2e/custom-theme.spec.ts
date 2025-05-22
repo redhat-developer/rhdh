@@ -1,4 +1,5 @@
-import { test, Page, TestInfo, expect } from "@playwright/test";
+import { Page, TestInfo, expect } from "@playwright/test";
+import { test } from "sealights-playwright-plugin";
 import { Common, setupBrowser } from "../utils/common";
 import { ThemeVerifier } from "../utils/custom-theme/theme-verifier";
 import {

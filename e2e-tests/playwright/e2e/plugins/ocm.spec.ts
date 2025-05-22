@@ -1,4 +1,5 @@
-import { expect, test as base } from "@playwright/test";
+import { expect } from "@playwright/test";
+import { test as base } from "sealights-playwright-plugin";
 import { Common } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
 import { Clusters } from "../../support/pages/clusters";

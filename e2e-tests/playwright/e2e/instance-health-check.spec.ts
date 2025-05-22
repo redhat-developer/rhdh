@@ -1,4 +1,5 @@
-import { test, expect } from "@playwright/test";
+import { expect } from "@playwright/test";
+import { test } from "sealights-playwright-plugin";
 
 test("Application health check", async ({ request }) => {
   const healthCheckEndpoint = "/healthcheck";

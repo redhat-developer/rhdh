@@ -1,4 +1,4 @@
-import { test } from "@playwright/test";
+import { test } from "sealights-playwright-plugin";
 import { Common } from "../../utils/common";
 import { FabPo } from "../../support/pageObjects/global-fab-po";
 import { UIhelper } from "../../utils/ui-helper";

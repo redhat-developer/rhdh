@@ -1,6 +1,7 @@
 import { UIhelper } from "./ui-helper";
 import { authenticator } from "otplib";
-import { test, Browser, expect, Page, TestInfo } from "@playwright/test";
+import { Browser, expect, Page, TestInfo } from "@playwright/test";
+import { test } from "sealights-playwright-plugin";
 import { APIHelper } from "./api-helper";
 import { GroupEntity, UserEntity } from "@backstage/catalog-model";
 import { LOGGER } from "./logger";

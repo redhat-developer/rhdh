@@ -1,4 +1,4 @@
-import { test } from "@playwright/test";
+import { test } from "sealights-playwright-plugin";
 import * as constants from "../../utils/authenticationProviders/constants";
 import { KubeClient } from "../../utils/kube-client";
 

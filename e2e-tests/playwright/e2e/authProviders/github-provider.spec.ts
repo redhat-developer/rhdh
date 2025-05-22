@@ -1,4 +1,5 @@
-import { test, Page, expect } from "@playwright/test";
+import { Page, expect } from "@playwright/test";
+import { test } from "sealights-playwright-plugin";
 import { Common, setupBrowser } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
 import * as constants from "../../utils/authenticationProviders/constants";
