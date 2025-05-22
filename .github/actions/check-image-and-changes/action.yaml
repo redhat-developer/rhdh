@@ -71,13 +71,3 @@ runs:
           echo "No relevant changes detected."
           echo "relevant=false" >> $GITHUB_OUTPUT
         fi
-
-    - name: Build Image
-      id: build-image
-      if: steps.check-image.outputs.is_skipped == 'false' && (steps.check-image.outputs.relevant_changes == 'true' || steps.check-image.outputs.image_exists == 'false')
-      run: |
-        IMAGE_TAG_COMMIT="pr-${{ github.event.number }}-${{ env.SHORT_SHA }}"
-        IMAGE_NAME_COMMIT="${{ env.REGISTRY }}/rhdh-community/rhdh:${IMAGE_TAG_COMMIT}"
-
-        docker build -t $IMAGE_NAME_COMMIT .
-        docker push $IMAGE_NAME_COMMIT
