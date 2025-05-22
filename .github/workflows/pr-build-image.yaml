@@ -49,8 +49,10 @@ jobs:
 
       - name: Check if build should be skipped
         run: |
-          if [[ "${{ github.event.pull_request.base.ref }}" == "release-1.6" ]]; then
-            echo "::notice::Skipping build: PR targets release-1.6 branch"
+          # Check if commit message contains [skip-build]
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          if [[ "$COMMIT_MSG" == *"[skip-build]"* ]]; then
+            echo "::notice::Skipping build: Commit message contains [skip-build]"
             exit 0
           fi
 
