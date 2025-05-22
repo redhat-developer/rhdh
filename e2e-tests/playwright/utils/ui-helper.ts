@@ -678,4 +678,40 @@ export class UIhelper {
     const tooltip = this.page.getByRole("tooltip").getByText(text);
     await expect(tooltip).toBeVisible();
   }
+
+  /**
+   * Navigates to the Extensions page in Backstage
+   */
+  async navigateToExtensions() {
+    await this.openSidebarButton("Administration");
+    await this.clickLink("Extensions");
+    await this.clickTab("Installed");
+    await this.page.waitForSelector(
+      'table, [role="grid"], h2:has-text("Extensions")',
+      { timeout: 30000 },
+    );
+  }
+
+  /**
+   * Navigates to a component's Issues tab
+   * @param componentName - The name of the component to navigate to
+   * @param tabName - The name of the tab to click, defaults to "Issues"
+   */
+  async navigateToComponentIssues(
+    componentName: string,
+    tabName: string = "Issues",
+  ) {
+    await this.openSidebar("Catalog");
+    await this.selectMuiBox("Kind", "Component");
+    await this.clickByDataTestId("user-picker-all");
+
+    await Promise.all([
+      this.clickLink(componentName),
+      this.page.waitForLoadState("networkidle", { timeout: 60000 }),
+    ]);
+
+    const tab = this.page.getByRole("tab", { name: tabName });
+    await expect(tab).toBeVisible({ timeout: 30000 });
+    await tab.click();
+  }
 }
