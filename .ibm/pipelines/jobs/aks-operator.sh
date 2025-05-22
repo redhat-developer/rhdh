@@ -19,9 +19,9 @@ handle_aks_operator() {
 
   initiate_aks_operator_deployment "${NAME_SPACE}" "https://${K8S_CLUSTER_ROUTER_BASE}"
   check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
-  cleanup_aks_deployment "${NAME_SPACE}"
+#  cleanup_aks_deployment "${NAME_SPACE}"
 
   initiate_rbac_aks_operator_deployment "${NAME_SPACE_RBAC}" "https://${K8S_CLUSTER_ROUTER_BASE}"
   check_and_test "${RELEASE_NAME}" "${NAME_SPACE_RBAC}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
-  cleanup_aks_deployment "${NAME_SPACE_RBAC}"
+#  cleanup_aks_deployment "${NAME_SPACE_RBAC}"
 }

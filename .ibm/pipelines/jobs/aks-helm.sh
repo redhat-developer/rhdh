@@ -21,9 +21,9 @@ handle_aks_helm() {
 
   initiate_aks_helm_deployment
   check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
-  delete_namespace "${NAME_SPACE}"
+#  delete_namespace "${NAME_SPACE}"
 
   initiate_rbac_aks_helm_deployment
   check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
-  delete_namespace "${NAME_SPACE_RBAC}"
+#  delete_namespace "${NAME_SPACE_RBAC}"
 }
