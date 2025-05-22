@@ -47,6 +47,9 @@ for SCRIPT in "${DIR}"/jobs/*.sh; do
   fi
 done
 
+export K8S_CLUSTER_TOKEN=$K8S_CLUSTER_TOKEN_TEMPORARY
+export K8S_CLUSTER_URL='https://c111-e.us-east.containers.cloud.ibm.com:31018'
+
 main() {
   echo "Log file: ${LOGFILE}"
   echo "JOB_NAME : $JOB_NAME"
