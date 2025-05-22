@@ -1,5 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
+process.env.JOB_NAME = process.env.JOB_NAME || "";
+process.env.IS_OPENSHIFT = process.env.IS_OPENSHIFT || "";
+
 const k8sSpecificConfig = {
   use: {
     actionTimeout: 15 * 1000,
