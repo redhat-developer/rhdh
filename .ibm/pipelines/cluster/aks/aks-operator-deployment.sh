@@ -64,9 +64,6 @@ patch_and_restart() {
   local resource_name=$3
   local patch_file=$4
 
-  kubectl get statefulset -n "$namespace"
-  kubectl get statefulset -A
-
   echo "Waiting for $resource_type/$resource_name to be present..."
   kubectl wait --for=jsonpath='{.metadata.name}'="$resource_name" "$resource_type/$resource_name" -n "$namespace" --timeout=60s
   
