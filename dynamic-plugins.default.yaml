@@ -505,6 +505,7 @@ plugins:
         sidebar:
           search: false
           settings: false
+          logo: false
       dynamicPlugins:
         frontend:
           default.main-menu-items:
@@ -516,7 +517,13 @@ plugins:
               - mountPoint: application/header
                 importName: GlobalHeader
                 config:
-                  position: above-main-content # above-main-content | above-sidebar
+                  position: above-sidebar # above-main-content | above-sidebar
+              - mountPoint: global.header/component
+                importName: CompanyLogo
+                config:
+                  priority: 200
+                  props:
+                    to: '/'
               - mountPoint: global.header/component
                 importName: SearchComponent
                 config:
