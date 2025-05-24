@@ -23,9 +23,9 @@ app:
         headerColor2: 'rgb(45, 190, 50)'
         navigationIndicatorColor: 'rgb(45, 113, 190)'
 backend:
-#  baseUrl: ${RHDH_BASE_URL}
-#  cors:
-#    origin: ${RHDH_BASE_URL}
+  baseUrl: ${RHDH_BASE_URL}
+  cors:
+    origin: ${RHDH_BASE_URL}
   reading:
     allow:
       - host: 'github.com'
