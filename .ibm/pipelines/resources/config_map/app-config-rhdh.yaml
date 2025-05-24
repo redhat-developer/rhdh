@@ -69,7 +69,7 @@ auth:
   # see https://backstage.io/docs/auth/ to learn about auth providers
   environment: development
   session:
-    secret: superSecretSecret 
+    secret: superSecretSecret
   providers:
     guest:
       dangerouslyAllowOutsideDevelopment: true
@@ -109,7 +109,7 @@ proxy:
         X-Requested-With: 'XMLHttpRequest'
       changeOrigin: true
       secure: true
-    '/add-test-header': 
+    '/add-test-header':
       target: ${RHDH_BASE_URL_HTTP}/api/simple-chat
       credentials: forward
       headers:

@@ -19,7 +19,8 @@ HELM_REPO_URL="https://redhat-developer.github.io/rhdh-chart"
 K8S_CLUSTER_TOKEN_ENCODED=$(printf "%s" $K8S_CLUSTER_TOKEN | base64 | tr -d '\n')
 QUAY_REPO="${QUAY_REPO:-rhdh-community/rhdh}"
 
-RELEASE_NAME=rhdh
+#RELEASE_NAME=rhdh
+RELEASE_NAME=developer-hub
 RELEASE_NAME_RBAC=rhdh-rbac
 NAME_SPACE="${NAME_SPACE:-showcase}"
 NAME_SPACE_RBAC="${NAME_SPACE_RBAC:-showcase-rbac}"

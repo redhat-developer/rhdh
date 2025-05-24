@@ -9,8 +9,9 @@ handle_ocp_pull() {
   cluster_setup
   initiate_deployments
   deploy_test_backstage_customization_provider "${NAME_SPACE}"
-  local url="https://${RELEASE_NAME}-backstage-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
+  local url="https://$(oc get route -n "${NAME_SPACE}" -l 'app.kubernetes.io/component=backstage' -o jsonpath='{.items[0].spec.host}')"
   check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${url}"
-  local rbac_url="https://${RELEASE_NAME_RBAC}-backstage-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
+  local rbac_url="https://$(oc get route -n "${NAME_SPACE_RBAC}" -l 'app.kubernetes.io/component=backstage' -o jsonpath='{.items[0].spec.host}')"
+
   check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${rbac_url}"
 }
