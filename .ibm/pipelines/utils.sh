@@ -924,7 +924,9 @@ initiate_deployments() {
   deploy_redis_cache "${NAME_SPACE}"
 
   cd "${DIR}"
-  local rhdh_base_url="https://${RELEASE_NAME}-backstage-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
+#  local rhdh_base_url="https://${RELEASE_NAME}-backstage-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
+  local rhdh_base_url="https://rhdh-developer-hub-showcase.${K8S_CLUSTER_ROUTER_BASE}"
+
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
   echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
   helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
@@ -940,7 +942,8 @@ initiate_deployments() {
   configure_external_postgres_db "${NAME_SPACE_RBAC}"
 
   # Initiate rbac instance deployment.
-  local rbac_rhdh_base_url="https://${RELEASE_NAME_RBAC}-backstage-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
+#  local rbac_rhdh_base_url="https://${RELEASE_NAME_RBAC}-backstage-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
+  local rbac_rhdh_base_url="https://rhdh-rbac-developer-hub-showcase-rbac.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
   echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${RELEASE_NAME_RBAC}"
   helm upgrade -i "${RELEASE_NAME_RBAC}" -n "${NAME_SPACE_RBAC}" \
