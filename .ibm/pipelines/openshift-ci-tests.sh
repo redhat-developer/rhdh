@@ -10,20 +10,36 @@ OVERALL_RESULT=0
 
 # Define a cleanup function to be executed upon script exit.
 # shellcheck disable=SC2317
-cleanup() {
-  echo "Cleaning up before exiting"
-  if [[ "${OPENSHIFT_CI}" == "true" ]]; then
-    case "$JOB_NAME" in
-      *gke*)
-        echo "Calling cleanup_gke"
-        cleanup_gke
-        ;;
-    esac
-  fi
-  rm -rf ~/tmpbin
-}
+#cleanup() {
+#  echo "Cleaning up before exiting"
+#  if [[ "${OPENSHIFT_CI}" == "true" ]]; then
+#    case "$JOB_NAME" in
+#      *gke*)
+#        echo "Calling cleanup_gke"
+#        cleanup_gke
+#        ;;
+#    esac
+#  fi
+#  rm -rf ~/tmpbin
+#}
+#
+#trap cleanup EXIT INT ERR
 
-trap cleanup EXIT INT ERR
+#oc create serviceaccount tester-sa-2 -n default
+#oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:default:tester-sa-2
+
+export K8S_CLUSTER_URL='https://c111-e.us-east.containers.cloud.ibm.com:31018'
+#re_create_k8s_service_account_and_get_token
+
+export HELM_REPO_NAME="redhat-developer-hub"
+export HELM_IMAGE_NAME="chart"
+export HELM_CHART_URL="oci://quay.io/rhdh/${HELM_IMAGE_NAME}"
+
+export CHART_VERSION="1.6-91-CI"
+export CHART_VERSION_BASE="1.6-91-CI"
+
+export QUAY_REPO_BASE="quay.io/rhdh/rhdh-hub-rhel9"
+export TAG_NAME_BASE="1.6-91"
 
 SCRIPTS=(
   "utils.sh"
@@ -43,6 +59,20 @@ for SCRIPT in "${DIR}"/jobs/*.sh; do
     echo "Loaded ${SCRIPT}"
   fi
 done
+
+export K8S_CLUSTER_TOKEN=$K8S_CLUSTER_TOKEN_ROKS
+export K8S_CLUSTER_URL='https://c111-e.us-east.containers.cloud.ibm.com:31018'
+#re_create_k8s_service_account_and_get_token
+
+export HELM_REPO_NAME="redhat-developer-hub"
+export HELM_IMAGE_NAME="chart"
+export HELM_CHART_URL="oci://quay.io/rhdh/${HELM_IMAGE_NAME}"
+
+export CHART_VERSION="1.6-91-CI"
+export CHART_VERSION_BASE="1.6-91-CI"
+
+export QUAY_REPO_BASE="quay.io/rhdh/rhdh-hub-rhel9"
+export TAG_NAME_BASE="1.6-91"
 
 main() {
   echo "Log file: ${LOGFILE}"

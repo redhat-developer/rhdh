@@ -16,7 +16,8 @@ HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME="merged-values_showcase-sanity-
 HELM_IMAGE_NAME=backstage
 HELM_REPO_NAME=rhdh-chart
 HELM_REPO_URL="https://redhat-developer.github.io/rhdh-chart"
-K8S_CLUSTER_TOKEN_ENCODED=$(printf "%s" $K8S_CLUSTER_TOKEN | base64 | tr -d '\n')
+K8S_CLUSTER_TOKEN_ROKS=$(cat /tmp/secrets/K8S_CLUSTER_TOKEN_ROKS)
+K8S_CLUSTER_TOKEN_ENCODED=$(printf "%s" "$K8S_CLUSTER_TOKEN_ROKS" | base64 | tr -d '\n')
 QUAY_REPO="${QUAY_REPO:-rhdh-community/rhdh}"
 
 RELEASE_NAME=rhdh
@@ -53,8 +54,6 @@ QE_USER3_ID=$(cat /tmp/secrets/QE_USER3_ID)
 QE_USER3_PASS=$(cat /tmp/secrets/QE_USER3_PASS)
 QE_USER4_ID=$(cat /tmp/secrets/QE_USER4_ID)
 QE_USER4_PASS=$(cat /tmp/secrets/QE_USER4_PASS)
-
-K8S_CLUSTER_TOKEN_TEMPORARY=$(cat /tmp/secrets/K8S_CLUSTER_TOKEN_TEMPORARY)
 
 GITLAB_TOKEN=$(cat /tmp/secrets/GITLAB_TOKEN)
 
