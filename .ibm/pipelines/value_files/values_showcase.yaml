@@ -219,6 +219,7 @@ upstream:
     backstage.io/kubernetes-id: developer-hub
   backstage:
     appConfig:
+      baseUrl: ${RHDH_BASE_URL}
       backend:
         auth:
           dangerouslyDisableDefaultAuthPolicy: true
