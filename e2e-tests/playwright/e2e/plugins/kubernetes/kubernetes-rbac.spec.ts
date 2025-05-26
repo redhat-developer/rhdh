@@ -6,10 +6,6 @@ import { KUBERNETES_COMPONENTS } from "../../../support/pageObjects/page-obj";
 import { KubernetesPage } from "../../../support/pages/kubernetes";
 
 test.describe("Test Kubernetes Plugin", () => {
-  test.fixme(
-    process.env.IS_OPENSHIFT === "false",
-    "Failing on Kubernetes clusters, fix https://issues.redhat.com/browse/RHIDP-7628",
-  );
   let common: Common;
   let uiHelper: UIhelper;
   let catalog: Catalog;
