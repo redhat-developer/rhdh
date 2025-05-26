@@ -119,7 +119,7 @@ const useStyles = makeStyles<StylesProps>()(
         top: Math.max(aboveSidebarHeaderHeight ?? 0, 0),
       },
       '& main[class*="BackstagePage-root"]': {
-        height: `calc(100vh - ${aboveSidebarHeaderHeight! + aboveMainContentHeaderHeight!}px)`,
+        height: `calc(100vh - ${aboveSidebarHeaderHeight! + aboveMainContentHeaderHeight!}px + var(--rhdh-v1-page-inset, 0))`,
       },
     },
   }),
