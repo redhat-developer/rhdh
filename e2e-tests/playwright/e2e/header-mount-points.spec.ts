@@ -30,8 +30,8 @@ test.describe("Header mount points", () => {
     const header = page.locator("nav[id='global-header']");
     await expect(header).toBeVisible();
     expect(
-      await header.locator("button", { hasText: "Test Button" }).count(),
-    ).toBe(1);
+      await header.locator("button", { hasText: "Test Button" }),
+    ).toHaveCount(1);
   });
 
   test("Verify that additional header from a custom header plugin besides the default one is visible", async ({
