@@ -42,31 +42,29 @@ jobs:
         id: check-image
         uses: ./.github/actions/check-image-and-changes
 
-      - name: Check if build should be skipped
-        run: |
-          if [[ "${{ steps.check-image.outputs.relevant_changes }}" == "false" && "${{ steps.check-image.outputs.image_exists }}" == "true" ]]; then
-            echo "Skipping build: Image already exists and no relevant changes detected."
-            exit 0
-          fi
-
       - name: Setup Node.js
+        if: steps.check-image.outputs.is_skipped == 'false' && (steps.check-image.outputs.relevant_changes == 'true' || steps.check-image.outputs.image_exists == 'false')
         uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4
         with:
           node-version: ${{ matrix.node-version }}
           registry-url: 'https://registry.npmjs.org'
 
       - name: Setup local Turbo cache
+        if: steps.check-image.outputs.is_skipped == 'false' && (steps.check-image.outputs.relevant_changes == 'true' || steps.check-image.outputs.image_exists == 'false')
         uses: dtinth/setup-github-actions-caching-for-turbo@cc723b4600e40a6b8815b65701d8614b91e2669e # v1
 
       - name: Use app-config.example.yaml
+        if: steps.check-image.outputs.is_skipped == 'false' && (steps.check-image.outputs.relevant_changes == 'true' || steps.check-image.outputs.image_exists == 'false')
         run: rm app-config.yaml && mv app-config.example.yaml app-config.yaml
 
       - name: Install dependencies
+        if: steps.check-image.outputs.is_skipped == 'false' && (steps.check-image.outputs.relevant_changes == 'true' || steps.check-image.outputs.image_exists == 'false')
         uses: backstage/actions/yarn-install@b3c1841fd69e1658ac631afafd0fb140a2309024 # v0.6.17
         with:
           cache-prefix: ${{ runner.os }}-v${{ matrix.node-version }}
 
       - name: Build packages
+        if: steps.check-image.outputs.is_skipped == 'false' && (steps.check-image.outputs.relevant_changes == 'true' || steps.check-image.outputs.image_exists == 'false')
         run: yarn run build --continue --affected
 
   test:
@@ -85,47 +83,50 @@ jobs:
         id: check-image
         uses: ./.github/actions/check-image-and-changes
 
-      - name: Check if tests should be skipped
-        run: |
-          if [[ "${{ steps.check-image.outputs.relevant_changes }}" == "false" && "${{ steps.check-image.outputs.image_exists }}" == "true" ]]; then
-            echo "Skipping tests: No relevant changes detected."
-            exit 0
-          fi
-
       - name: Setup Node.js
+        if: steps.check-image.outputs.is_skipped == 'false' && (steps.check-image.outputs.relevant_changes == 'true' || steps.check-image.outputs.image_exists == 'false')
         uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4
         with:
           node-version: ${{ matrix.node-version }}
           registry-url: 'https://registry.npmjs.org'
 
       - name: Setup local Turbo cache
+        if: steps.check-image.outputs.is_skipped == 'false' && (steps.check-image.outputs.relevant_changes == 'true' || steps.check-image.outputs.image_exists == 'false')
         uses: dtinth/setup-github-actions-caching-for-turbo@cc723b4600e40a6b8815b65701d8614b91e2669e # v1
 
       - name: Use app-config.example.yaml
+        if: steps.check-image.outputs.is_skipped == 'false' && (steps.check-image.outputs.relevant_changes == 'true' || steps.check-image.outputs.image_exists == 'false')
         run: rm app-config.yaml && mv app-config.example.yaml app-config.yaml
 
       - name: Install dependencies
+        if: steps.check-image.outputs.is_skipped == 'false' && (steps.check-image.outputs.relevant_changes == 'true' || steps.check-image.outputs.image_exists == 'false')
         uses: backstage/actions/yarn-install@b3c1841fd69e1658ac631afafd0fb140a2309024 # v0.6.17
         with:
           cache-prefix: ${{ runner.os }}-v${{ matrix.node-version }}
 
       - name: Run prettier
+        if: steps.check-image.outputs.is_skipped == 'false' && (steps.check-image.outputs.relevant_changes == 'true' || steps.check-image.outputs.image_exists == 'false')
         run: yarn prettier:check --continue --affected
 
       - name: Run lint
+        if: steps.check-image.outputs.is_skipped == 'false' && (steps.check-image.outputs.relevant_changes == 'true' || steps.check-image.outputs.image_exists == 'false')
         run: yarn run lint:check --continue --affected
 
       - name: Run monorepo tools
+        if: steps.check-image.outputs.is_skipped == 'false' && (steps.check-image.outputs.relevant_changes == 'true' || steps.check-image.outputs.image_exists == 'false')
         run: yarn run monorepo:check
 
       - name: Regenerate dockerfiles
+        if: steps.check-image.outputs.is_skipped == 'false' && (steps.check-image.outputs.relevant_changes == 'true' || steps.check-image.outputs.image_exists == 'false')
         run: |
           yarn run build:dockerfile; if [[ $(git diff --name-only | grep Dockerfile || true) != "" ]]; then \
             echo "ERROR: Workspace is dirty! Must run 'yarn build:dockerfile' and commit changes!"; exit 1; \
           fi
 
       - name: Run tests
+        if: steps.check-image.outputs.is_skipped == 'false' && (steps.check-image.outputs.relevant_changes == 'true' || steps.check-image.outputs.image_exists == 'false')
         run: yarn run test --continue --affected
 
       - name: Verify wrappers
+        if: steps.check-image.outputs.is_skipped == 'false' && (steps.check-image.outputs.relevant_changes == 'true' || steps.check-image.outputs.image_exists == 'false')
         run: yarn workspace dynamic-plugins-utils run test:wrappers
