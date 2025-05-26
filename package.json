@@ -48,7 +48,7 @@
     "turbo": "2.5.3"
   },
   "resolutions": {
-    "@types/react": "18.3.21",
+    "@types/react": "18.3.22",
     "@types/react-dom": "18.3.7",
     "@aws-sdk/util-utf8-browser": "npm:@smithy/util-utf8@~2",
     "@kubernetes/client-node@npm:0.20.0/jsonpath-plus": "^10.3.0",
