@@ -32,113 +32,119 @@ import Box from '@mui/material/Box';
 import Collapse from '@mui/material/Collapse';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
-import { SxProps } from '@mui/material/styles';
+import { styled, SxProps } from '@mui/material/styles';
 import DynamicRootContext, {
   ResolvedMenuItem,
 } from '@red-hat-developer-hub/plugin-utils';
-import { makeStyles } from 'tss-react/mui';
 
 import { ApplicationHeaders } from './ApplicationHeaders';
 import { MenuIcon } from './MenuIcon';
 import { SidebarLogo } from './SidebarLogo';
 
-type StylesProps = {
-  aboveSidebarHeaderHeight?: number;
-  aboveMainContentHeaderHeight?: number;
-};
+/**
+ * This is a workaround to remove the fix height of the Page component
+ * to support the application headers (and the global header plugin)
+ * without having multiple scrollbars.
+ *
+ * This solves also the duplicate scrollbar issues in tech docs:
+ * https://issues.redhat.com/browse/RHIDP-4637 (Scrollbar for docs behaves weirdly if there are over a page of headings)
+ *
+ * Which was also reported and tried to fix upstream:
+ * https://github.com/backstage/backstage/issues/13717
+ * https://github.com/backstage/backstage/pull/14138
+ * https://github.com/backstage/backstage/issues/19427
+ * https://github.com/backstage/backstage/issues/22745
+ *
+ * See also
+ * https://github.com/backstage/backstage/blob/v1.35.0/packages/core-components/src/layout/Page/Page.tsx#L31-L34
+ *
+ * The following rules are based on the current DOM structure
+ *
+ * ```
+ * <body>
+ *   <div id="root">
+ *     // snackbars and toasts
+ *     <div className="pageWithoutFixHeight">
+ *       <nav />                               // Optional nav(s) if a header with position: above-sidebar is configured
+ *       <div>                                 // Backstage SidebarPage component
+ *         <nav />                             // Optional nav(s) if a header with position: above-main-content is configured
+ *         <nav aria-label="sidebar nav" />    // Sidebar content
+ *         <main />                            // Backstage Page component
+ *       </div>
+ *     </div>
+ *   </div>
+ *   // some modals and other overlays
+ * </body>
+ * ```
+ */
+const PageWithoutFixHeight = styled(Box, {
+  name: 'RHDHPageWithoutFixHeight',
+  slot: 'root',
+})(() => ({
+  // Use the complete viewport (similar to how Backstage does it) and make the
+  // page content part scrollable below. We also need to compensate for the
+  // above-sidebar position of the global header as it takes up a fixed height
+  // at the top of the page.
+  display: 'flex',
+  flexDirection: 'column',
+  height: '100vh',
 
-const useStyles = makeStyles<StylesProps>()(
-  (
-    _,
-    { aboveSidebarHeaderHeight, aboveMainContentHeaderHeight }: StylesProps,
-  ) => ({
-    /**
-     * This is a workaround to remove the fix height of the Page component
-     * to support the application headers (and the global header plugin)
-     * without having multiple scrollbars.
-     *
-     * This solves also the duplicate scrollbar issues in tech docs:
-     * https://issues.redhat.com/browse/RHIDP-4637 (Scrollbar for docs behaves weirdly if there are over a page of headings)
-     *
-     * Which was also reported and tried to fix upstream:
-     * https://github.com/backstage/backstage/issues/13717
-     * https://github.com/backstage/backstage/pull/14138
-     * https://github.com/backstage/backstage/issues/19427
-     * https://github.com/backstage/backstage/issues/22745
-     *
-     * See also
-     * https://github.com/backstage/backstage/blob/v1.35.0/packages/core-components/src/layout/Page/Page.tsx#L31-L34
-     *
-     * The following rules are based on the current DOM structure
-     *
-     * ```
-     * <body>
-     *   <div id="root">
-     *     // snackbars and toasts
-     *     <div className="pageWithoutFixHeight">
-     *       <nav />                               // Optional nav(s) if a header with position: above-sidebar is configured
-     *       <div>                                 // Backstage SidebarPage component
-     *         <nav />                             // Optional nav(s) if a header with position: above-main-content is configured
-     *         <nav aria-label="sidebar nav" />    // Sidebar content
-     *         <main />                            // Backstage Page component
-     *       </div>
-     *     </div>
-     *   </div>
-     *   // some modals and other overlays
-     * </body>
-     * ```
-     */
-    pageWithoutFixHeight: {
-      // Use 100vh for the complete viewport (similar to how Backstage does it)
-      // and makes the page content part scrollable below...
-      // But instead of using 100vh on the content below,
-      // we use it here so that it includes the header.
-      '> div[class*="-sidebarLayout"]': {
-        height: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-      },
+  // This solves the same issue for techdocs, which was reported as
+  // https://issues.redhat.com/browse/RHIDP-4637
+  '.techdocs-reader-page > main': {
+    height: 'unset',
+  },
+}));
 
-      // But we unset the Backstage default 100vh value here and use flex box
-      // to grow to the full height of the parent container.
-      '> div > main': {
-        height: 'unset',
-        flexGrow: 1,
-      },
-      // This solves the same issue for techdocs, which was reported as
-      // https://issues.redhat.com/browse/RHIDP-4637
-      '.techdocs-reader-page > main': {
-        height: 'unset',
+const SidebarLayout = styled(Box, {
+  name: 'RHDHPageWithoutFixHeight',
+  slot: 'sidebarLayout',
+  shouldForwardProp: prop =>
+    prop !== 'aboveSidebarHeaderHeight' &&
+    prop !== 'aboveMainContentHeaderHeight',
+})(
+  ({
+    aboveSidebarHeaderHeight,
+    aboveMainContentHeaderHeight,
+  }: {
+    aboveSidebarHeaderHeight?: number;
+    aboveMainContentHeaderHeight?: number;
+  }) => ({
+    // We remove Backstage's 100vh on the content, and instead rely on flexbox
+    // to take up the whole viewport.
+    display: 'flex',
+    flexGrow: 1,
+    maxHeight: `calc(100vh - ${aboveSidebarHeaderHeight ?? 0}px)`,
+
+    '& div[class*="BackstageSidebarPage"]': {
+      display: 'flex',
+      flexDirection: 'column',
+      height: 'unset',
+      flexGrow: 1,
+      // Here we override the theme so that the Backstage default page suspense
+      // takes up the whole height of the page instead of 100vh. The difference
+      // lies in the height of the global header above the sidebar.
+      '@media (min-width: 600px)': {
+        '& > [class*="MuiLinearProgress-root"]': {
+          height: 'unset',
+          flexGrow: 1,
+        },
       },
     },
-    sidebarItem: {
-      textDecorationLine: 'none',
+
+    // The height is controlled by the flexbox in the BackstageSidebarPage.
+    '& main[class*="BackstagePage-root"]': {
+      height: `calc(100vh - ${aboveSidebarHeaderHeight! + aboveMainContentHeaderHeight!}px)`,
+      flexGrow: 1,
     },
-    sidebarLayout: {
-      '& div[class*="BackstageSidebar-drawer"]': {
-        top: Math.max(aboveSidebarHeaderHeight ?? 0, 0),
-      },
-      '& main[class*="BackstagePage-root"]': {
-        height: `calc(100vh - ${aboveSidebarHeaderHeight! + aboveMainContentHeaderHeight!}px)`,
-      },
+
+    // We need to compensate for the above-sidebar position of the global header
+    // as it takes up a fixed height at the top of the page.
+    '& div[class*="BackstageSidebar-drawer"]': {
+      top: `max(0px, ${aboveSidebarHeaderHeight ?? 0}px)`,
     },
   }),
 );
-
-// Backstage does not expose the props object, pulling it from the component argument
-type SidebarItemProps = Parameters<typeof SidebarItem>[0];
-
-const SideBarItemWrapper = (props: SidebarItemProps) => {
-  const {
-    classes: { sidebarItem },
-  } = useStyles({});
-  return (
-    <SidebarItem
-      {...props}
-      className={`${sidebarItem} ${props.className ?? ''}`}
-    />
-  );
-};
 
 const renderIcon = (iconName: string) => () => <MenuIcon icon={iconName} />;
 
@@ -176,7 +182,7 @@ const getMenuItem = (menuItem: ResolvedMenuItem, isNestedMenuItem = false) => {
       />
     </Box>
   ) : (
-    <SideBarItemWrapper
+    <SidebarItem
       key={menuItem.name}
       icon={renderIcon(menuItem.icon ?? '')}
       to={menuItem.to ?? ''}
@@ -251,10 +257,6 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
     return () => observer.disconnect();
   }, []);
 
-  const {
-    classes: { pageWithoutFixHeight, sidebarLayout },
-  } = useStyles({ aboveSidebarHeaderHeight, aboveMainContentHeaderHeight });
-
   const { dynamicRoutes, menuItems } = useContext(DynamicRootContext);
 
   const configApi = useApi(configApiRef);
@@ -306,7 +308,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
           },
         }}
         renderItem={child => (
-          <SideBarItemWrapper
+          <SidebarItem
             key={child.title}
             icon={() => null}
             text={child.title}
@@ -356,14 +358,14 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
                 getMenuItem(child, true)
               ) : (
                 <>
-                  <SideBarItemWrapper
+                  <SidebarItem
                     icon={renderIcon(child.icon ?? '')}
                     text={child.title}
                     onClick={() => handleClick(child.name)}
                   >
                     {child.children!.length > 0 &&
                       renderExpandIcon(isNestedMenuOpen)}
-                  </SideBarItemWrapper>
+                  </SidebarItem>
                   {renderExpandableNestedMenuItems(child, isNestedMenuOpen)}
                 </>
               )}
@@ -399,14 +401,14 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
             <React.Fragment key={menuItem.name}>
               {menuItem.children!.length === 0 && getMenuItem(menuItem)}
               {menuItem.children!.length > 0 && (
-                <SideBarItemWrapper
+                <SidebarItem
                   key={menuItem.name}
                   icon={renderIcon(menuItem.icon ?? '')}
                   text={menuItem.title}
                   onClick={() => handleClick(menuItem.name)}
                 >
                   {menuItem.children!.length > 0 && renderExpandIcon(isOpen)}
-                </SideBarItemWrapper>
+                </SidebarItem>
               )}
               {menuItem.children!.length > 0 &&
                 renderExpandableMenuItems(menuItem, isOpen)}
@@ -418,11 +420,14 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
   };
 
   return (
-    <div className={pageWithoutFixHeight}>
+    <PageWithoutFixHeight>
       <div id="above-sidebar-header-container" ref={aboveSidebarHeaderRef}>
         <ApplicationHeaders position="above-sidebar" />
       </div>
-      <Box className={sidebarLayout}>
+      <SidebarLayout
+        aboveSidebarHeaderHeight={aboveSidebarHeaderHeight}
+        aboveMainContentHeaderHeight={aboveMainContentHeaderHeight}
+      >
         <SidebarPage>
           <div
             id="above-main-content-header-container"
@@ -487,7 +492,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
           </Sidebar>
           {children}
         </SidebarPage>
-      </Box>
-    </div>
+      </SidebarLayout>
+    </PageWithoutFixHeight>
   );
 };
