@@ -49,16 +49,22 @@ const backendPackages = [
 async function listBranchNames(repository, page = 1, collected = []) {
   const url = `https://api.github.com/repos/${repository}/branches?page=${page}`;
 
+  const headers = {
+    'Accept': 'application/vnd.github.v3+json'
+  }
+  if (process.env.GITHUB_TOKEN) {
+    headers['Authorization'] = `Bearer ${process.env.GITHUB_TOKEN}`;
+  } else {
+    console.info('WARNING: GITHUB_TOKEN is not set. Using unauthenticated requests may result in rate limiting.');
+  }
   try {
     const response = await fetch(url, {
-      headers: {
-        'Accept': 'application/vnd.github.v3+json'
-      }
+      headers: headers
     });
 
     if (!response.ok) {
       if (response.status === 404) {
-        console.log(`Repository ${repository} not found.`);
+        console.error(`Repository ${repository} not found.`);
       } else {
         console.error(`Error listing branches:`, response.statusText);
       }
@@ -159,6 +165,11 @@ async function main() {
     return bNum - aNum;
   });
 
+  // limit to 4 latest branches
+  if (releaseBranches.length > 4) {
+    releaseBranches.length = 4;
+  }
+  
   // add main branch as first in the list as we want to document version for pre-release
   releaseBranches.unshift("main")
 
