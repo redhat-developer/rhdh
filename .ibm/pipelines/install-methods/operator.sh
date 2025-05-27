@@ -46,7 +46,7 @@ install_rhdh_operator() {
 }
 
 prepare_operator() {
-  local retry_operator_installation=$1:"1"
+  local retry_operator_installation="${1:-1}"
   configure_namespace "${OPERATOR_MANAGER}"
   install_rhdh_operator "${DIR}" "${OPERATOR_MANAGER}" "$retry_operator_installation"
 }
