@@ -40,8 +40,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      # Initializes the CodeQL tools for scanning.
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Check Image and Relevant Changes
+        id: check-image
+        uses: ./.github/actions/check-image-and-changes
       - name: Initialize CodeQL
+        if: steps.check-image.outputs.is_skipped == 'false'
         uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
@@ -53,6 +59,7 @@ jobs:
       # Autobuild attempts to build any compiled languages  (C/C++, C#, Go, or Java).
       # If this step fails, then you should remove it and run the build manually (see below)
       - name: Autobuild
+        if: steps.check-image.outputs.is_skipped == 'false'
         uses: github/codeql-action/autobuild@v3
       # ℹ️ Command-line programs to run using the OS shell.
       # 📚 See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun
@@ -62,6 +69,16 @@ jobs:
       #     echo "Run, Build Application using script"
       #     ./location_of_script_within_repo/buildscript.sh
       - name: Perform CodeQL Analysis
+        if: steps.check-image.outputs.is_skipped == 'false'
         uses: github/codeql-action/analyze@v3
         with:
           category: '/language:${{matrix.language}}'
+      - name: Publish empty SARIF if skipped
+        if: steps.check-image.outputs.is_skipped == 'true'
+        run: |
+          echo '{"version":"2.1.0","runs":[]}' > empty.sarif
+      - name: Upload empty SARIF
+        if: steps.check-image.outputs.is_skipped == 'true'
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: empty.sarif
