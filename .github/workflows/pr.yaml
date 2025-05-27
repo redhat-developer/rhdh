@@ -45,8 +45,12 @@ jobs:
 
       - name: Check if build should be skipped
         run: |
+          if [[ "${{ steps.check-image.outputs.is_skipped }}" == "true" ]]; then
+            echo "::notice::Skipping build: [skip-build] tag found in commit messages."
+            exit 0
+          fi
           if [[ "${{ steps.check-image.outputs.relevant_changes }}" == "false" && "${{ steps.check-image.outputs.image_exists }}" == "true" ]]; then
-            echo "Skipping build: Image already exists and no relevant changes detected."
+            echo "::notice::Skipping build: Image already exists and no relevant changes detected."
             exit 0
           fi
 
