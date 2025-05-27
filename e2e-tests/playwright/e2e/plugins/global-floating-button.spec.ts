@@ -23,22 +23,27 @@ test.describe("Test global floating action button plugin", () => {
     await uiHelper.openSidebar("Home");
     await fabHelper.verifyFabButtonByLabel("Git");
     await fabHelper.verifyFabButtonByDataTestId("bulk-import");
-    await fabHelper.clickFabMenu();
+    await fabHelper.clickFabMenuByLabel("Git");
     await uiHelper.verifyText("Added repositories");
   });
 
-  test("Check if floating button is shown with two sub-menu actions on the Catalog Page", async () => {
+  test("Check if floating button is shown with two sub-menu actions on the Catalog Page, verify Git sub-menu", async () => {
     await uiHelper.openSidebar("Catalog");
     await fabHelper.verifyFabButtonByDataTestId("floating-button-with-submenu");
-    await fabHelper.clickFabMenu();
+    await fabHelper.clickFabMenuByTestId("floating-button-with-submenu");
     await fabHelper.verifyFabButtonByLabel("Git");
-    await fabHelper.clickFabMenu();
-    await fabHelper.verifyPopup(
-      "GitHub - redhat-developer/rhdh: The repo formerly known as janus-idp/backstage-showcase",
-    );
-    await fabHelper.switchTab();
     await fabHelper.verifyFabButtonByLabel("Quay");
-    await fabHelper.clickFabMenu();
-    await fabHelper.verifyPopup("Quay Container Registry · Quay");
+    await fabHelper.clickFabMenuByLabel("Git");
+    await fabHelper.verifyPopup("github.com/redhat-developer/rhdh");
+  });
+
+  test("Check if floating button is shown with two sub-menu actions on the Catalog Page, verify Quay sub-menu", async () => {
+    await uiHelper.openSidebar("Catalog");
+    await fabHelper.verifyFabButtonByDataTestId("floating-button-with-submenu");
+    await fabHelper.clickFabMenuByTestId("floating-button-with-submenu");
+    await fabHelper.verifyFabButtonByLabel("Git");
+    await fabHelper.verifyFabButtonByLabel("Quay");
+    await fabHelper.clickFabMenuByLabel("Quay");
+    await fabHelper.verifyPopup("quay.io");
   });
 });
