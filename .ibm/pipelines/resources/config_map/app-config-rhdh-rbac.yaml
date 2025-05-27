@@ -46,9 +46,11 @@ auth:
         clientSecret: ${KEYCLOAK_AUTH_CLIENT_SECRET}
         prompt: auto
         callbackUrl: ${RHDH_BASE_URL}/api/auth/oidc/handler/frame
+        sessionDuration: { hours: 3 }
         signIn:
           resolvers:
             - resolver: emailLocalPartMatchingUserEntityName
+  backstageTokenExpiration: { hours: 3 }
 signInPage: oidc
 proxy:
   skipInvalidProxies: true
