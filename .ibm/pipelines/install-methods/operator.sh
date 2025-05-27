@@ -22,6 +22,7 @@ install_rhdh_operator() {
     for ((i = 1; i <= max_attempts; i++)); do
       if output=$(bash -x /tmp/install-rhdh-catalog-source.sh --next --install-operator rhdh); then
         echo "${output}"
+        echo "RHDH Operator installed on attempt ${i}."
         break
       elif ((i == max_attempts)); then
         echo "$output"
@@ -35,6 +36,7 @@ install_rhdh_operator() {
     for ((i = 1; i <= max_attempts; i++)); do
       if output=$(bash -x /tmp/install-rhdh-catalog-source.sh -v "$operator_version" --install-operator rhdh); then
         echo "${output}"
+        echo "RHDH Operator installed on attempt ${i}."
         break
       elif ((i == max_attempts)); then
         echo "${output}"
