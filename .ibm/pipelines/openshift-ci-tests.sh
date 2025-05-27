@@ -46,6 +46,8 @@ for SCRIPT in "${DIR}"/jobs/*.sh; do
   fi
 done
 
+export K8S_CLUSTER_TOKEN=$K8S_CLUSTER_TOKEN_ROKS
+
 main() {
   echo "Log file: ${LOGFILE}"
   echo "JOB_NAME : $JOB_NAME"
