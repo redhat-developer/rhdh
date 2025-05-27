@@ -8,6 +8,9 @@ outputs:
   relevant_changes:
     description: "True if changes require a build"
     value: ${{ steps.changes.outputs.relevant }}
+  is_skipped:
+    description: "True if build should be skipped (via [skip-build] tag)"
+    value: ${{ steps.changes.outputs.is_skipped }}
   short_sha:
     description: "Short SHA of the latest commit"
     value: ${{ env.SHORT_SHA }}
@@ -34,6 +37,17 @@ runs:
         CHANGED_FILES=$(git diff --name-only "$BASE_COMMIT" HEAD)
         echo "Changed files:"
         echo "$CHANGED_FILES"
+
+        # Check for [skip-build] tag in commit messages
+        COMMIT_MESSAGES=$(git log --format=%B "$BASE_COMMIT"..HEAD)
+        if echo "$COMMIT_MESSAGES" | grep -q "\[skip-build\]"; then
+          echo "Found [skip-build] tag in commit messages. Build will be skipped."
+          echo "is_skipped=true" >> $GITHUB_OUTPUT
+          echo "relevant=false" >> $GITHUB_OUTPUT
+          echo "exists=true" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+        echo "is_skipped=false" >> $GITHUB_OUTPUT
 
         # Flag to track if we found any relevant changes
         RELEVANT_CHANGES=false
