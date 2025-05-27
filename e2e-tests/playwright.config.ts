@@ -52,7 +52,7 @@ export default defineConfig({
       retries: 10,
     },
     {
-      name: "showcase",
+      name: "rhdh-main",
       testIgnore: [
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
@@ -65,7 +65,7 @@ export default defineConfig({
       ],
     },
     {
-      name: "showcase-rbac",
+      name: "rhdh-rbac-main",
       testMatch: [
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
