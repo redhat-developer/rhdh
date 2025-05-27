@@ -23,7 +23,7 @@ test.describe("Test global floating action button plugin", () => {
     await uiHelper.openSidebar("Home");
     await fabHelper.verifyFabButtonByLabel("Git");
     await fabHelper.verifyFabButtonByDataTestId("bulk-import");
-    await fabHelper.clickFabMenuByLabel("Git");
+    await fabHelper.clickFabMenuByTestId("bulk-import");
     await uiHelper.verifyText("Added repositories");
   });
 
