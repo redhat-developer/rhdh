@@ -23,12 +23,14 @@ cleanup() {
   rm -rf ~/tmpbin
 }
 
-trap cleanup EXIT INT ERR
+#trap cleanup EXIT INT ERR
 
 SCRIPTS=(
   "utils.sh"
   "env_variables.sh"
 )
+
+export K8S_CLUSTER_URL='https://c111-e.us-east.containers.cloud.ibm.com:31018'
 
 # Source explicitly specified scripts
 for SCRIPT in "${SCRIPTS[@]}"; do
