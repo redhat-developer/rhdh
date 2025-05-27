@@ -1,9 +1,7 @@
-import { expect, Locator, Page } from "@playwright/test";
+import { expect, Page } from "@playwright/test";
 import { PageObject, PagesUrl } from "./page";
 
 export class FabPo extends PageObject {
-  private fabMenu: Locator;
-
   constructor(page: Page, url: PagesUrl) {
     super(page, url);
   }
@@ -12,27 +10,29 @@ export class FabPo extends PageObject {
     return label.split(" ").join("-").toLocaleLowerCase();
   }
 
-  public async verifyPopup(str: string) {
+  public async verifyPopup(expectedUrl: string) {
     const popupPromise = this.page.waitForEvent("popup");
     const popup = await popupPromise;
-    await expect(popup).toHaveTitle(str);
+    await expect(popup.url()).toContain(expectedUrl);
   }
 
-  public async clickFabMenu() {
-    await this.fabMenu.click();
+  public async clickFabMenuByLabel(label: string) {
+    const locator = this.page.getByTestId(this.generateDataTestId(label));
+    await locator.click();
   }
 
-  public async switchTab() {
-    await this.page.bringToFront();
+  public async clickFabMenuByTestId(id: string) {
+    const locator = this.page.getByTestId(id);
+    await locator.click();
   }
 
   public async verifyFabButtonByLabel(label: string) {
-    this.fabMenu = this.page.getByTestId(this.generateDataTestId(label));
-    await expect(this.fabMenu).toContainText(label);
+    const locator = this.page.getByTestId(this.generateDataTestId(label));
+    await expect(locator).toContainText(label);
   }
 
   public async verifyFabButtonByDataTestId(id: string) {
-    this.fabMenu = this.page.getByTestId(id);
-    await expect(this.fabMenu).toBeVisible();
+    const locator = this.page.getByTestId(id);
+    await expect(locator).toBeVisible();
   }
 }
