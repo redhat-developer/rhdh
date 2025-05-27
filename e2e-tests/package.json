@@ -6,8 +6,8 @@
     "node": "22"
   },
   "scripts": {
-    "showcase": "playwright test --project=showcase",
-    "showcase-rbac": "playwright test --project=showcase-rbac",
+    "rhdh-main": "playwright test --project=showcase",
+    "rhdh-rbac-main": "playwright test --project=showcase-rbac",
     "showcase-ci-nightly": "playwright test --project=showcase",
     "showcase-rbac-nightly": "playwright test --project=showcase-rbac",
     "showcase-k8s-ci-nightly": "playwright test --project=showcase-k8s",
