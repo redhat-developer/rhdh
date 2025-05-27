@@ -106,6 +106,7 @@ catalog:
         schedule:
           frequency: { minutes: 1 }
           timeout: { minutes: 1 }
+          initialDelay: { seconds: 15 }
     githubOrg:
       id: production
       githubUrl: "${GITHUB_URL}"
