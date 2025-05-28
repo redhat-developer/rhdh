@@ -55,23 +55,28 @@ jobs:
           fi
 
       - name: Setup Node.js
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: ${{ matrix.node-version }}
           registry-url: "https://registry.npmjs.org"
 
       - name: Setup local Turbo cache
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         uses: dtinth/setup-github-actions-caching-for-turbo@cc723b4600e40a6b8815b65701d8614b91e2669e # v1
 
       - name: Use app-config.example.yaml
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         run: rm app-config.yaml && mv app-config.example.yaml app-config.yaml
 
       - name: Install dependencies
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         uses: backstage/actions/yarn-install@b3c1841fd69e1658ac631afafd0fb140a2309024 # v0.6.17
         with:
           cache-prefix: ${{ runner.os }}-v${{ matrix.node-version }}
 
       - name: Build packages
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         run: yarn run build --continue --affected
 
   test:
@@ -99,29 +104,36 @@ jobs:
           fi
 
       - name: Setup Node.js
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: ${{ matrix.node-version }}
           registry-url: "https://registry.npmjs.org"
 
       - name: Setup local Turbo cache
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         uses: dtinth/setup-github-actions-caching-for-turbo@cc723b4600e40a6b8815b65701d8614b91e2669e # v1
 
       - name: Use app-config.example.yaml
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         run: rm app-config.yaml && mv app-config.example.yaml app-config.yaml
 
       - name: Install dependencies
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         uses: backstage/actions/yarn-install@b3c1841fd69e1658ac631afafd0fb140a2309024 # v0.6.17
         with:
           cache-prefix: ${{ runner.os }}-v${{ matrix.node-version }}
 
       - name: Run prettier
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         run: yarn prettier:check --continue --affected
 
       - name: Run lint
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         run: yarn run lint:check --continue --affected
 
       - name: Run monorepo tools
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         run: yarn run monorepo:check
 
       - name: Regenerate dockerfiles
@@ -131,10 +143,13 @@ jobs:
           fi
 
       - name: Run tests
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         run: yarn run test --continue --affected
 
       - name: Install dynamic plugin dependencies
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         run: cd ./dynamic-plugins && yarn install && cd ..
 
       - name: Verify dynamic plugin wrappers
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         run: cd ./dynamic-plugins && yarn test && cd ..

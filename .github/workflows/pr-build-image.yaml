@@ -56,18 +56,8 @@ jobs:
               echo "Base Tag: pr-${{ github.event.number }}"
               echo "Commit Tag: pr-${{ github.event.number }}-${{ env.SHORT_SHA }}"
 
-      - name: Check if build should be skipped
-        run: |
-          if [[ "${{ steps.check-image.outputs.is_skipped }}" == "true" ]]; then
-            echo "::notice::Skipping build: [skip-build] tag found in commit messages."
-            exit 0
-          fi
-          if [[ "${{ steps.check-image.outputs.relevant_changes }}" == "false" && "${{ steps.check-image.outputs.image_exists }}" == "true" ]]; then
-            echo "::notice::Skipping build: Image already exists and no relevant changes detected."
-            exit 0
-          fi
-
       - name: Get the latest commits from base branch
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' && (steps.check-image.outputs.relevant_changes == 'true' || steps.check-image.outputs.image_exists == 'false') }}
         run: |
           git remote add base-origin https://github.com/${{ github.repository }} || true
           git config user.name "${{ github.event.pull_request.user.login }}"
