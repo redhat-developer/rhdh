@@ -57,7 +57,7 @@ jobs:
               echo "Commit Tag: pr-${{ github.event.number }}-${{ env.SHORT_SHA }}"
 
       - name: Get the latest commits from base branch
-        if: ${{ steps.check-image.outputs.is_skipped != 'true' && (steps.check-image.outputs.relevant_changes == 'true' || steps.check-image.outputs.image_exists == 'false') }}
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         run: |
           git remote add base-origin https://github.com/${{ github.repository }} || true
           git config user.name "${{ github.event.pull_request.user.login }}"
@@ -67,7 +67,7 @@ jobs:
           git merge --no-edit base-origin/${{ github.event.pull_request.base.ref }}
 
       - name: Build and Push with Buildx
-        if: ${{ steps.check-image.outputs.is_skipped != 'true' && (steps.check-image.outputs.relevant_changes == 'true' || steps.check-image.outputs.image_exists == 'false') }}
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         uses: ./.github/actions/docker-build
         with:
           registry: ${{ env.REGISTRY }}

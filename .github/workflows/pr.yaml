@@ -43,17 +43,6 @@ jobs:
         id: check-image
         uses: ./.github/actions/check-image-and-changes
 
-      - name: Check if build should be skipped
-        run: |
-          if [[ "${{ steps.check-image.outputs.is_skipped }}" == "true" ]]; then
-            echo "::notice::Skipping build: [skip-build] tag found in commit messages."
-            exit 0
-          fi
-          if [[ "${{ steps.check-image.outputs.relevant_changes }}" == "false" && "${{ steps.check-image.outputs.image_exists }}" == "true" ]]; then
-            echo "::notice::Skipping build: Image already exists and no relevant changes detected."
-            exit 0
-          fi
-
       - name: Setup Node.js
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -96,13 +85,6 @@ jobs:
         id: check-image
         uses: ./.github/actions/check-image-and-changes
 
-      - name: Check if tests should be skipped
-        run: |
-          if [[ "${{ steps.check-image.outputs.relevant_changes }}" == "false" && "${{ steps.check-image.outputs.image_exists }}" == "true" ]]; then
-            echo "Skipping tests: No relevant changes detected."
-            exit 0
-          fi
-
       - name: Setup Node.js
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -137,6 +119,7 @@ jobs:
         run: yarn run monorepo:check
 
       - name: Regenerate dockerfiles
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         run: |
           yarn run build:dockerfile; if [[ $(git diff --name-only | grep Dockerfile || true) != "" ]]; then \
             echo "ERROR: Workspace is dirty! Must run 'yarn build:dockerfile' and commit changes!"; exit 1; \
