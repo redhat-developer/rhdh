@@ -17,7 +17,7 @@ export STATUS_TEST_FAILED # Array that indicates if test run failed. false = suc
 cleanup() {
   echo "Cleaning up before exiting"
   if [[ "${OPENSHIFT_CI}" == "true" ]]; then
-    if [ -z "${PULL_NUMBER:-}" ]; then # # Only for nightly jobs (when PULL_NUMBER is not set).
+    if [ -z "${PULL_NUMBER:-}" ]; then # Only for nightly jobs (when PULL_NUMBER is not set).
       echo "Sending a Slack alert with the results of the CI job."
       echo "Sourcing reporting.sh"
       # shellcheck source=.ibm/pipelines/reporting.sh
