@@ -9,8 +9,8 @@ outputs:
     description: "True if changes require a build"
     value: ${{ steps.changes.outputs.relevant }}
   is_skipped:
-    description: "True if build should be skipped (via [skip-build] tag)"
-    value: ${{ steps.changes.outputs.is_skipped }}
+    description: "True if build should be skipped (via [skip-build] tag OR image exists with no relevant changes)"
+    value: ${{ steps.final-decision.outputs.is_skipped }}
   short_sha:
     description: "Short SHA of the latest commit"
     value: ${{ env.SHORT_SHA }}
@@ -39,12 +39,11 @@ runs:
         echo "$CHANGED_FILES"
 
         # Check for [skip-build] tag in commit messages
+        SKIP_BUILD_TAG=false
         COMMIT_MESSAGES=$(git log --format=%B "$BASE_COMMIT"..HEAD)
         if echo "$COMMIT_MESSAGES" | grep -q "\[skip-build\]"; then
-          echo "Found [skip-build] tag in commit messages. Build will be skipped."
-          echo "is_skipped=true" >> $GITHUB_OUTPUT
-        else
-          echo "is_skipped=false" >> $GITHUB_OUTPUT
+          echo "Found [skip-build] tag in commit messages."
+          SKIP_BUILD_TAG=true
         fi
 
         # Flag to track if we found any relevant changes
@@ -70,6 +69,10 @@ runs:
           echo "Changes detected only in non-essential directories (e2e, e2e-tests, doc, docs, .ibm)."
           echo "relevant=false" >> $GITHUB_OUTPUT
         fi
+
+        # Set is_skipped flag for now (will be updated after image check)
+        echo "skip_build_tag=$SKIP_BUILD_TAG" >> $GITHUB_OUTPUT
+        echo "relevant_changes=$RELEVANT_CHANGES" >> $GITHUB_OUTPUT
 
     - name: Check if Docker image exists
       id: image-check
@@ -97,4 +100,29 @@ runs:
         else
           echo "Image does not exist (checked both $IMAGE_NAME_PR and $IMAGE_NAME_COMMIT)."
           echo "exists=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Determine final skip decision
+      id: final-decision
+      shell: bash
+      run: |
+        # Get the values from previous steps
+        SKIP_BUILD_TAG="${{ steps.changes.outputs.skip_build_tag }}"
+        RELEVANT_CHANGES="${{ steps.changes.outputs.relevant_changes }}"
+        IMAGE_EXISTS="${{ steps.image-check.outputs.exists }}"
+        
+        echo "Skip build tag: $SKIP_BUILD_TAG"
+        echo "Relevant changes: $RELEVANT_CHANGES"
+        echo "Image exists: $IMAGE_EXISTS"
+        
+        # Simplified logic: Skip if [skip-build] tag OR (image exists AND no relevant changes)
+        if [[ "$SKIP_BUILD_TAG" == "true" ]]; then
+          echo "Build will be skipped due to [skip-build] tag."
+          echo "is_skipped=true" >> $GITHUB_OUTPUT
+        elif [[ "$IMAGE_EXISTS" == "true" && "$RELEVANT_CHANGES" == "false" ]]; then
+          echo "Build will be skipped - image exists and no relevant changes detected."
+          echo "is_skipped=true" >> $GITHUB_OUTPUT
+        else
+          echo "Build will proceed - either no existing image or relevant changes detected."
+          echo "is_skipped=false" >> $GITHUB_OUTPUT
         fi
