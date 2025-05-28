@@ -11,7 +11,7 @@
   },
   "backstage": {
     "role": "frontend-plugin",
-    "supported-versions": "1.36.1",
+    "supported-versions": "1.39.0",
     "pluginId": "nexus-repository-manager",
     "pluginPackages": [
       "backstage-community-plugin-nexus-repository-manager"

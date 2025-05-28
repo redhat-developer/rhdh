@@ -10,7 +10,7 @@
   },
   "backstage": {
     "role": "backend-plugin",
-    "supported-versions": "1.36.1",
+    "supported-versions": "1.39.0",
     "pluginId": "sonarqube",
     "pluginPackages": [
       "backstage-community-plugin-sonarqube",
