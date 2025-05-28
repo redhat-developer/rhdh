@@ -10,6 +10,7 @@ get_artifacts_url() {
   else
     local part_1="${JOB_NAME##periodic-ci-redhat-developer-rhdh-main-}"
     local part_2="${REPO_OWNER}-${REPO_NAME}-${JOB_NAME##periodic-ci-redhat-developer-rhdh-main-e2e-tests-}"
+    # Override part_2 based for specific cases that do not follow the standard naming convention.
     case "$JOB_NAME" in
       *osd-gcp*)
       part_2="redhat-developer-rhdh-osd-gcp-nightly"
@@ -42,34 +43,34 @@ report_ci_slack_alert() {
   URL_CI_RESULTS=$(get_job_url)
   local notification_text
   if [[ $OVERALL_RESULT == 0 ]]; then
-    notification_text=":done-circle-check: \`${JOB_NAME}\`, <$URL_CI_RESULTS|📜logs>."
+    notification_text=":done-circle-check: \`${JOB_NAME}\`, 📜 <$URL_CI_RESULTS|logs>."
   else
-    notification_text=':failed: `'"${JOB_NAME}"'`, <'"$URL_CI_RESULTS"'|📜logs>, <!subteam^S07BMJ56R8S>.'
+    notification_text=':failed: `'"${JOB_NAME}"'`, 📜 <'"$URL_CI_RESULTS"'|logs>, <!subteam^S07BMJ56R8S>.'
     for ((i = 1; i <= ${#STATUS_DEPLOYMENT_NAMESPACE[@]}; i++)); do
       URL_ARTIFACTS[i]=$(get_artifacts_url "${STATUS_DEPLOYMENT_NAMESPACE[i]}")
       URL_PLAYWRIGHT[i]="${URL_ARTIFACTS[i]}/index.html"
       if [[ "${STATUS_FAILED_TO_DEPLOY[i]}" == "true" ]]; then
-        notification_text="${notification_text}\n• \`${STATUS_DEPLOYMENT_NAMESPACE[i]}\` ❌ failed to deploy, "
+        notification_text="${notification_text}\n• \`${STATUS_DEPLOYMENT_NAMESPACE[i]}\` :circleci-fail: failed to deploy, "
       else
         notification_text="${notification_text}\n• \`${STATUS_DEPLOYMENT_NAMESPACE[i]}\` :deployments: deployed, "
         if [[ "${STATUS_TEST_FAILED[i]}" == "true" ]]; then
-          notification_text="${notification_text}❌ test failed, "
+          notification_text="${notification_text}:circleci-fail: test failed, "
         else
-          notification_text="${notification_text}✅ test passed, "
+          notification_text="${notification_text}:circleci-pass: test passed, "
         fi
-        notification_text="${notification_text}:playwright:<${URL_PLAYWRIGHT[i]}|Playwright>, "
+        notification_text="${notification_text}:playwright: <${URL_PLAYWRIGHT[i]}|Playwright>, "
         if [[ "${URL_REPORTPORTAL[i]}" != "" ]]; then
-          notification_text="${notification_text}:reportportal:<${URL_REPORTPORTAL[i]}|ReportPortal>, "
+          notification_text="${notification_text}:reportportal: <${URL_REPORTPORTAL[i]}|ReportPortal>, "
         fi
       fi
-      notification_text="${notification_text}📦<${URL_ARTIFACTS[i]}|artifacts>."
+      notification_text="${notification_text}📦 <${URL_ARTIFACTS[i]}|artifacts>."
     done
   fi
   set +x
 
   echo "${notification_text}"
   printf "%s" "${notification_text}"
-  echo "Saving the notification text to a file, which is ten picked up by a separate CI step."
+  echo "Saving the notification text to a file, which is then picked up by a separate CI step."
   # It is important to save the file in the shared directory with the exact name.
   echo "${notification_text}" > "${SHARED_DIR}/ci-slack-alert.txt"
 
