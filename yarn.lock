@@ -15261,12 +15261,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:22.15.21":
-  version: 22.15.21
-  resolution: "@types/node@npm:22.15.21"
+"@types/node@npm:22.15.22":
+  version: 22.15.22
+  resolution: "@types/node@npm:22.15.22"
   dependencies:
     undici-types: ~6.21.0
-  checksum: 989f1ce3a99916a7298ae885210385fbcb339b07f8ef420b015d69dd68863aca68aeae07833736b300720d9394b8e1875600ce74166c24957d9907d29de0b788
+  checksum: 32bbe90a02fc11a3cde30ab73098b36370b2f6a8d59987e4a6435aa04333f199b18490a9e94b7ec7f591694d2e6573c8661c8e83a2c25dd75af9aea1ff3894e0
   languageName: node
   linkType: hard
 
@@ -15457,13 +15457,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:18.3.22":
-  version: 18.3.22
-  resolution: "@types/react@npm:18.3.22"
+"@types/react@npm:18.3.23":
+  version: 18.3.23
+  resolution: "@types/react@npm:18.3.23"
   dependencies:
     "@types/prop-types": "*"
     csstype: ^3.0.2
-  checksum: e69bdec2df18397e0ecc48e0e858ba331e56130b0b2cd1561098dcdddf04a8aa1ae0b51a294d60d0ade13bfabe5670131a3bd82bedca3b323d51de2b9cd0debd
+  checksum: d781257d42bf3c66f4bcd21e76a86cd9b6e21fbaf377fe0f840f1ff35049efa59491aa6a4dcf2b3db42af4ab085acebe185f0ae28b7c36d60be5e9094c707bdd
   languageName: node
   linkType: hard
 
@@ -16586,8 +16586,8 @@ __metadata:
     "@testing-library/react": 14.3.1
     "@testing-library/react-hooks": 8.0.1
     "@testing-library/user-event": 14.6.1
-    "@types/node": 22.15.21
-    "@types/react": 18.3.22
+    "@types/node": 22.15.22
+    "@types/react": 18.3.23
     "@types/react-dom": 18.3.7
     lodash: 4.17.21
     prettier: 3.5.3
