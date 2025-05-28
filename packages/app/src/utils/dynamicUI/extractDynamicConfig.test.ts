@@ -157,6 +157,7 @@ describe('extractDynamicConfig', () => {
       providerSettings: [],
       routeBindingTargets: [],
       apiFactories: [],
+      analyticsApiExtensions: [],
       scaffolderFieldExtensions: [],
       signInPages: [],
       techdocsAddons: [],
@@ -460,6 +461,21 @@ describe('extractDynamicConfig', () => {
       },
     ],
     [
+      'an analytics api extension',
+      {
+        analyticsApiExtensions: [{ importName: 'foo', module: 'FooRoot' }],
+      },
+      {
+        analyticsApiExtensions: [
+          {
+            importName: 'foo',
+            module: 'FooRoot',
+            scope: 'janus-idp.plugin-foo',
+          },
+        ],
+      },
+    ],
+    [
       'a scaffolder field extension',
       {
         scaffolderFieldExtensions: [{ importName: 'foo', module: 'FooRoot' }],
@@ -636,6 +652,7 @@ describe('extractDynamicConfig', () => {
       mountPoints: [],
       appIcons: [],
       apiFactories: [],
+      analyticsApiExtensions: [],
       scaffolderFieldExtensions: [],
       signInPages: [],
       techdocsAddons: [],

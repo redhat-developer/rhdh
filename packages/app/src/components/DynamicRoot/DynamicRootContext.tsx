@@ -2,9 +2,12 @@ import React, { createContext } from 'react';
 
 import { Entity } from '@backstage/catalog-model';
 import {
+  AnalyticsApi,
   AnyApiFactory,
   AppTheme,
   BackstagePlugin,
+  ConfigApi,
+  IdentityApi,
 } from '@backstage/core-plugin-api';
 
 import { ScalprumComponentProps } from '@scalprum/react-core';
@@ -99,9 +102,17 @@ export type RemotePlugins = {
               | React.ReactNode
               | ((config: DynamicRootConfig) => React.ReactNode);
           }
-        | AnyApiFactory;
+        | AnyApiFactory
+        | AnalyticsApiClass;
     };
   };
+};
+
+export type AnalyticsApiClass = {
+  fromConfig(
+    config: ConfigApi,
+    deps: { identityApi: IdentityApi },
+  ): AnalyticsApi;
 };
 
 export type EntityTabOverrides = Record<
