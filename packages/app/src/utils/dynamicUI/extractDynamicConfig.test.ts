@@ -157,6 +157,7 @@ describe('extractDynamicConfig', () => {
       providerSettings: [],
       routeBindingTargets: [],
       apiFactories: [],
+      analyticsApiExtensions: [],
       scaffolderFieldExtensions: [],
       signInPages: [],
       techdocsAddons: [],
@@ -460,6 +461,83 @@ describe('extractDynamicConfig', () => {
       },
     ],
     [
+      'an analytics api extension',
+      {
+        analyticsApiExtensions: [{ importName: 'foo', module: 'FooRoot' }],
+      },
+      {
+        analyticsApiExtensions: [
+          {
+            importName: 'foo',
+            module: 'FooRoot',
+            scope: 'janus-idp.plugin-foo',
+          },
+        ],
+      },
+    ],
+    [
+      'an analytics api extension; default module',
+      {
+        analyticsApiExtensions: [{ importName: 'foo' }],
+      },
+      {
+        analyticsApiExtensions: [
+          {
+            importName: 'foo',
+            module: 'PluginRoot',
+            scope: 'janus-idp.plugin-foo',
+          },
+        ],
+      },
+    ],
+    [
+      'an analytics api extension; default importName',
+      {
+        analyticsApiExtensions: [{ module: 'FooRoot' }],
+      },
+      {
+        analyticsApiExtensions: [
+          {
+            importName: 'default',
+            module: 'FooRoot',
+            scope: 'janus-idp.plugin-foo',
+          },
+        ],
+      },
+    ],
+    [
+      'multiple analytics api extensions',
+      {
+        analyticsApiExtensions: [
+          { importName: 'foo', module: 'FooRoot' },
+          { importName: 'bar', module: 'BarRoot' },
+        ],
+      },
+      {
+        analyticsApiExtensions: [
+          {
+            importName: 'foo',
+            module: 'FooRoot',
+            scope: 'janus-idp.plugin-foo',
+          },
+          {
+            importName: 'bar',
+            module: 'BarRoot',
+            scope: 'janus-idp.plugin-foo',
+          },
+        ],
+      },
+    ],
+    [
+      'empty analytics api extensions array',
+      {
+        analyticsApiExtensions: [],
+      },
+      {
+        analyticsApiExtensions: [],
+      },
+    ],
+    [
       'a scaffolder field extension',
       {
         scaffolderFieldExtensions: [{ importName: 'foo', module: 'FooRoot' }],
@@ -636,6 +714,7 @@ describe('extractDynamicConfig', () => {
       mountPoints: [],
       appIcons: [],
       apiFactories: [],
+      analyticsApiExtensions: [],
       scaffolderFieldExtensions: [],
       signInPages: [],
       techdocsAddons: [],
