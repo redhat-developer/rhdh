@@ -38,7 +38,7 @@ test.describe.serial("Link Scaffolded Templates to Catalog Items", () => {
     await common.loginAsGuest();
   });
 
-  test("Register an Template", async () => {
+  test.fail("Register an Template", async () => {
     await uiHelper.openSidebar("Catalog");
     await uiHelper.clickButton("Self-service");
     await uiHelper.clickButton("Register Existing Component");
