@@ -8,8 +8,8 @@ get_artifacts_url() {
   if [ -n "${PULL_NUMBER:-}" ]; then
     artifacts_complete_url="${artifacts_base_url}/pr-logs/pull/${REPO_OWNER}_${REPO_NAME}/${PULL_NUMBER}/${JOB_NAME}/${BUILD_ID}/artifacts/e2e-tests/${REPO_OWNER}-${REPO_NAME}/artifacts/${project}"
   else
-    local part_1="${JOB_NAME##periodic-ci-redhat-developer-rhdh-main-}"
-    local part_2="${REPO_OWNER}-${REPO_NAME}-${JOB_NAME##periodic-ci-redhat-developer-rhdh-main-e2e-tests-}"
+    local part_1="${JOB_NAME##periodic-ci-redhat-developer-rhdh-"${RELEASE_BRANCH_NAME}"-}"
+    local part_2="${REPO_OWNER}-${REPO_NAME}-${JOB_NAME##periodic-ci-redhat-developer-rhdh-"${RELEASE_BRANCH_NAME}"-e2e-tests-}"
     # Override part_2 based for specific cases that do not follow the standard naming convention.
     case "$JOB_NAME" in
       *osd-gcp*)
