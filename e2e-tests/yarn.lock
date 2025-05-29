@@ -750,12 +750,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:22.15.21":
-  version: 22.15.21
-  resolution: "@types/node@npm:22.15.21"
+"@types/node@npm:22.15.22":
+  version: 22.15.22
+  resolution: "@types/node@npm:22.15.22"
   dependencies:
     undici-types: ~6.21.0
-  checksum: 989f1ce3a99916a7298ae885210385fbcb339b07f8ef420b015d69dd68863aca68aeae07833736b300720d9394b8e1875600ce74166c24957d9907d29de0b788
+  checksum: 32bbe90a02fc11a3cde30ab73098b36370b2f6a8d59987e4a6435aa04333f199b18490a9e94b7ec7f591694d2e6573c8661c8e83a2c25dd75af9aea1ff3894e0
   languageName: node
   linkType: hard
 
@@ -1395,7 +1395,7 @@ __metadata:
     "@microsoft/microsoft-graph-client": 3.0.7
     "@microsoft/microsoft-graph-types": 2.40.0
     "@playwright/test": 1.52.0
-    "@types/node": 22.15.21
+    "@types/node": 22.15.22
     "@typescript-eslint/eslint-plugin": 6.21.0
     "@typescript-eslint/parser": 6.21.0
     eslint: 8.57.1

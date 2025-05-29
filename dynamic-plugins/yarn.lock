@@ -16023,13 +16023,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:18.3.22":
-  version: 18.3.22
-  resolution: "@types/react@npm:18.3.22"
+"@types/react@npm:18.3.23":
+  version: 18.3.23
+  resolution: "@types/react@npm:18.3.23"
   dependencies:
     "@types/prop-types": "*"
     csstype: ^3.0.2
-  checksum: e69bdec2df18397e0ecc48e0e858ba331e56130b0b2cd1561098dcdddf04a8aa1ae0b51a294d60d0ade13bfabe5670131a3bd82bedca3b323d51de2b9cd0debd
+  checksum: d781257d42bf3c66f4bcd21e76a86cd9b6e21fbaf377fe0f840f1ff35049efa59491aa6a4dcf2b3db42af4ab085acebe185f0ae28b7c36d60be5e9094c707bdd
   languageName: node
   linkType: hard
 
