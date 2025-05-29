@@ -672,9 +672,9 @@ run_tests() {
   echo "${project} RESULT: ${RESULT}"
   if [ "${RESULT}" -ne 0 ]; then
     OVERALL_RESULT=1
-    STATUS_TEST_FAILED[CURRENT_DEPLOYMENT]=true
+    save_status_test_failed $CURRENT_DEPLOYMENT true
   else
-    STATUS_TEST_FAILED[CURRENT_DEPLOYMENT]=false
+    save_status_test_failed $CURRENT_DEPLOYMENT false
   fi
 }
 
@@ -983,16 +983,16 @@ check_and_test() {
   local max_attempts=${4:-30}    # Default to 30 if not set
   local wait_seconds=${5:-30}    # Default to 30 if not set
   CURRENT_DEPLOYMENT=$((CURRENT_DEPLOYMENT + 1))
-  STATUS_DEPLOYMENT_NAMESPACE[CURRENT_DEPLOYMENT]=$namespace
+  save_status_deployment_namespace $CURRENT_DEPLOYMENT $namespace
   if check_backstage_running "${release_name}" "${namespace}" "${url}" "${max_attempts}" "${wait_seconds}"; then
-    STATUS_FAILED_TO_DEPLOY[CURRENT_DEPLOYMENT]=false
+    save_status_failed_to_deploy $CURRENT_DEPLOYMENT false
     echo "Display pods for verification..."
     oc get pods -n "${namespace}"
     run_tests "${release_name}" "${namespace}"
   else
     echo "Backstage is not running. Exiting..."
-    STATUS_FAILED_TO_DEPLOY[CURRENT_DEPLOYMENT]=true
-    STATUS_TEST_FAILED[CURRENT_DEPLOYMENT]=true
+    save_status_failed_to_deploy $CURRENT_DEPLOYMENT true
+    save_status_test_failed $CURRENT_DEPLOYMENT true
     OVERALL_RESULT=1
   fi
   save_all_pod_logs $namespace

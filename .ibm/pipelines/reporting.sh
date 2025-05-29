@@ -1,5 +1,26 @@
 #!/bin/bash
 
+save_status_deployment_namespace() {
+  local current_deployment=$1
+  local current_namespace=$2
+  STATUS_DEPLOYMENT_NAMESPACE["${current_deployment}"]="${current_namespace}"
+  printf "%s\n" "${STATUS_DEPLOYMENT_NAMESPACE["${current_deployment}"]}" >> "$SHARED_DIR/STATUS_DEPLOYMENT_NAMESPACE.txt"
+}
+
+save_status_failed_to_deploy() {
+  local current_deployment=$1
+  local status=$2
+  STATUS_FAILED_TO_DEPLOY["${current_deployment}"]="${status}"
+  printf "%s\n" "${STATUS_FAILED_TO_DEPLOY["${current_deployment}"]}" >> "$SHARED_DIR/STATUS_FAILED_TO_DEPLOY.txt"
+}
+
+save_status_test_failed() {
+  local current_deployment=$1
+  local status=$2
+  STATUS_TEST_FAILED["${current_deployment}"]="${status}"
+  printf "%s\n" "${STATUS_TEST_FAILED["${current_deployment}"]}" >> "$SHARED_DIR/STATUS_TEST_FAILED.txt"
+}
+
 get_artifacts_url() {
   local project="${1:-""}"
 
