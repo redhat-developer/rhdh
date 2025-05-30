@@ -659,10 +659,6 @@ run_tests() {
     cp -a "${e2e_tests_dir}/screenshots/"* "${ARTIFACT_DIR}/${project}/attachments/screenshots/"
   fi
 
-  if [ -d "${e2e_tests_dir}/auth-providers-logs" ]; then
-    cp -a "${e2e_tests_dir}/auth-providers-logs/"* "${ARTIFACT_DIR}/${project}/"
-  fi
-
   ansi2html <"/tmp/${LOGFILE}" >"/tmp/${LOGFILE}.html"
   cp -a "/tmp/${LOGFILE}.html" "${ARTIFACT_DIR}/${project}"
   cp -a "${e2e_tests_dir}/playwright-report/"* "${ARTIFACT_DIR}/${project}"
