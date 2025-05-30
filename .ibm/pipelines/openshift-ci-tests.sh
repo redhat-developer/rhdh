@@ -36,7 +36,7 @@ cleanup() {
   rm -rf ~/tmpbin
 }
 
-trap cleanup EXIT INT ERR
+# trap cleanup EXIT INT ERR
 
 SCRIPTS=(
   "utils.sh"
@@ -60,6 +60,7 @@ done
 main() {
   echo "Log file: ${LOGFILE}"
   echo "JOB_NAME : $JOB_NAME"
+  JOB_NAME="gke-helm"
 
   detect_ocp_and_set_env_var
 
