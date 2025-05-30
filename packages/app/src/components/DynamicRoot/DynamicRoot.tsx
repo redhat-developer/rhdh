@@ -2,11 +2,15 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { createApp } from '@backstage/app-defaults';
-import { BackstageApp } from '@backstage/core-app-api';
+import { BackstageApp, MultipleAnalyticsApi } from '@backstage/core-app-api';
 import {
+  analyticsApiRef,
   AnyApiFactory,
   AppComponents,
   BackstagePlugin,
+  configApiRef,
+  createApiFactory,
+  identityApiRef,
 } from '@backstage/core-plugin-api';
 
 import { useThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
@@ -25,6 +29,7 @@ import { MenuIcon } from '../Root/MenuIcon';
 import CommonIcons from './CommonIcons';
 import defaultAppComponents from './defaultAppComponents';
 import DynamicRootContext, {
+  AnalyticsApiClass,
   AppThemeProvider,
   ComponentRegistry,
   DynamicRootConfig,
@@ -80,6 +85,7 @@ export const DynamicRoot = ({
     const {
       pluginModules,
       apiFactories,
+      analyticsApiExtensions,
       appIcons,
       dynamicRoutes,
       menuItems,
@@ -115,6 +121,10 @@ export const DynamicRoot = ({
         module,
       })),
       ...apiFactories.map(({ scope, module }) => ({
+        scope,
+        module,
+      })),
+      ...analyticsApiExtensions.map(({ scope, module }) => ({
         scope,
         module,
       })),
@@ -225,6 +235,41 @@ export const DynamicRoot = ({
       },
       [],
     );
+
+    const dynamicPluginsAnalyticsApis = analyticsApiExtensions.reduce<
+      AnalyticsApiClass[]
+    >((acc, { scope, module, importName }) => {
+      const analyticsApi = allPlugins[scope]?.[module]?.[importName];
+
+      if (analyticsApi) {
+        acc.push(analyticsApi as AnalyticsApiClass);
+      } else {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `Plugin ${scope} is not configured properly: ${module}.${importName} not found, ignoring analyticsApi: ${importName}`,
+        );
+      }
+      return acc;
+    }, []);
+
+    const multipleAnalyticsApi =
+      dynamicPluginsAnalyticsApis.length > 0
+        ? [
+            createApiFactory({
+              api: analyticsApiRef,
+              deps: {
+                configApi: configApiRef,
+                identityApi: identityApiRef,
+              },
+              factory: ({ configApi, identityApi }) =>
+                MultipleAnalyticsApi.fromApis(
+                  dynamicPluginsAnalyticsApis.map(analyticsApi =>
+                    analyticsApi.fromConfig(configApi, { identityApi }),
+                  ),
+                ),
+            }),
+          ]
+        : [];
 
     const providerMountPoints = mountPoints.reduce<
       {
@@ -463,7 +508,7 @@ export const DynamicRoot = ({
           availableLanguages: ['en'],
           resources: [catalogTranslations],
         },
-        apis: [...filteredStaticApis, ...remoteApis],
+        apis: [...filteredStaticApis, ...remoteApis, ...multipleAnalyticsApi],
         bindRoutes({ bind }) {
           bindAppRoutes(bind, resolvedRouteBindingTargets, routeBindings);
         },
