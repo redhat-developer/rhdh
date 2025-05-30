@@ -24,6 +24,9 @@ install_rhdh_operator() {
         echo "${output}"
         echo "RHDH Operator installed on attempt ${i}."
         break
+      elif ((i < max_attempts)); then
+        echo "Attempt ${i} failed, retrying in 10 seconds..."
+        sleep 10
       elif ((i == max_attempts)); then
         echo "$output"
         echo "Failed install RHDH Operator after ${max_attempts} attempts."
