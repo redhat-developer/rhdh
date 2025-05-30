@@ -1,3 +1,17 @@
+# Copyright Red Hat, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 name: Build & Push e2e-runner Image to Quay.io
 
 on:
@@ -29,54 +43,148 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04]
+        os:
+          - ubuntu-24.04-arm
+          - ubuntu-24.04
     runs-on: ${{ matrix.os }}
     permissions:
       contents: read
       packages: write
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Prepare Environment Variables
+      - name: Prepare
         run: |
-          echo "PLATFORM=linux/amd64" >> $GITHUB_ENV
-
-          # create image tag from the correct branch (either from a push or a workflow_dispatch trigger)
-          if [[ "${{ inputs.branch }}" ]] && [[ "${{ inputs.branch }}"  != "NONE" ]]; then
-            echo "Switch to ${{ inputs.branch }}"
-            git checkout "${{ inputs.branch }}"
-            IMAGE_TAG="${{ inputs.branch }}"
+          if [ "${{ matrix.os }}" == "ubuntu-24.04" ]; then
+            platform="linux/amd64"
+          elif [ "${{ matrix.os }}" == "ubuntu-24.04-arm" ]; then
+            platform="linux/arm64"
           else
-            echo "Use current branch ${{ github.ref }}"
-            IMAGE_TAG=$(git rev-parse --abbrev-ref HEAD)
+            echo "Unknown platform"
+            exit 1
           fi
-          echo "Use IMAGE_TAG = $IMAGE_TAG"
-          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+
+          ref_name=${{ github.ref_name }}
+          if [ "$ref_name" == "main" ]; then
+            ref_name="next"
+          else
+            # create image tag from the correct branch (either from a push or a workflow_dispatch trigger)
+            if [[ "${{ inputs.branch }}" ]] && [[ "${{ inputs.branch }}"  != "NONE" ]]; then
+              echo "Switch to ${{ inputs.branch }}"
+              git checkout "${{ inputs.branch }}"
+              ref_name="${{ inputs.branch }}"
+            else
+              echo "Use current branch ${{ github.ref }}"
+              ref_name=$(git rev-parse --abbrev-ref HEAD)
+            fi
+          fi
+          echo "Use ref_name = $ref_name"
+          echo "REF_NAME=$ref_name" >> $GITHUB_ENV
+          echo "PLATFORM=$platform" >> $GITHUB_ENV
+          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
+          echo "PLATFORM_ARCH=${platform#*/}" >> $GITHUB_ENV
 
       - name: Get the last commit short SHA
         uses: ./.github/actions/get-sha
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to Quay.io
-        uses: docker/login-action@v3
+      - name: Build and Push with Buildx
+        uses: ./.github/actions/docker-build
+        id: build
         with:
+          file: .ibm/images/Dockerfile
           registry: ${{ env.REGISTRY }}
           username: ${{ secrets.QUAY_USERNAME }}
           password: ${{ secrets.QUAY_TOKEN }}
-
-      - name: Build and Push Image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: .ibm/images/Dockerfile
+          imageName: ${{ env.REGISTRY_IMAGE }}
+          imageTags: |
+            type=raw,value=${{ env.REF_NAME }}-${{ env.PLATFORM_ARCH }}
+            type=raw,value=${{ env.REF_NAME }}-${{ env.SHORT_SHA }}-${{ env.PLATFORM_ARCH }}
+          imageLabels: quay.expires-after=14d
           push: true
-          tags: |
-            ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:${{ env.IMAGE_TAG }}
-            ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:${{ env.IMAGE_TAG }}-${{ env.SHORT_SHA }}
-          platforms: ${{ env.PLATFORM }}
+          platform: ${{ env.PLATFORM }}
+
+      - name: Export digest
+        run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.build.outputs.digest }}"
+          touch "/tmp/digests/${digest#sha256:}"
+
+      - name: Upload digest
+        uses: actions/upload-artifact@v4
+        with:
+          name: digests-${{ env.PLATFORM_PAIR }}
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  merge:
+      runs-on: ubuntu-latest
+      needs:
+        - build-image
+      steps:
+        - name: Prepare
+          run: |
+            ref_name=${{ github.ref_name }}
+            if [ "$ref_name" == "main" ]; then
+              ref_name="next"
+            else
+              # create image tag from the correct branch (either from a push or a workflow_dispatch trigger)
+              if [[ "${{ inputs.branch }}" ]] && [[ "${{ inputs.branch }}"  != "NONE" ]]; then
+                echo "Switch to ${{ inputs.branch }}"
+                git checkout "${{ inputs.branch }}"
+                ref_name="${{ inputs.branch }}"
+              else
+                echo "Use current branch ${{ github.ref }}"
+                ref_name=$(git rev-parse --abbrev-ref HEAD)
+              fi
+            fi
+            echo "Use ref_name = $ref_name"
+            echo "REF_NAME=$ref_name" >> $GITHUB_ENV
+
+        - name: Checkout
+          uses: actions/checkout@v4
+          with:
+            fetch-depth: 0
+
+        - name: Download digests
+          uses: actions/download-artifact@v4
+          with:
+            path: /tmp/digests
+            pattern: digests-*
+            merge-multiple: true
+
+        - name: Get the last commit short SHA
+          uses: ./.github/actions/get-sha
+
+        - name: Set up Docker Buildx
+          uses: docker/setup-buildx-action@v3
+
+        - name: Docker meta
+          id: meta
+          uses: docker/metadata-action@v5
+          with:
+            images: ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}
+            tags: |
+              type=raw,value=${{ env.REF_NAME }}
+              type=raw,value=${{ env.REF_NAME }}-${{ env.SHORT_SHA }}
+
+        - name: Login to Quay.io
+          uses: docker/login-action@v3
+          with:
+            registry: ${{ env.REGISTRY }}
+            username: ${{ secrets.QUAY_USERNAME }}
+            password: ${{ secrets.QUAY_TOKEN }}
+
+        - name: Create manifest list and push
+          working-directory: /tmp/digests
+          run: |
+            docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+              $(printf '${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}@sha256:%s ' *)
+
+        - name: Inspect image
+          run: |
+            docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:${{ steps.meta.outputs.version }}
