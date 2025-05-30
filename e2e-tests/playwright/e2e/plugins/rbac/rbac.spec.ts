@@ -1,4 +1,5 @@
-import { Locator, Page, expect, test } from "@playwright/test";
+import { Locator, Page, expect } from "@playwright/test";
+import { test } from "sealights-playwright-plugin";
 import { Response, Roles } from "../../../support/pages/rbac";
 import { UI_HELPER_ELEMENTS } from "../../../support/pageObjects/global-obj";
 import {

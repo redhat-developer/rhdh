@@ -1,4 +1,4 @@
-import { test } from "@playwright/test";
+import { test } from "sealights-playwright-plugin";
 import { HomePage } from "../../support/pages/home-page";
 import { Common } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";

@@ -2,7 +2,8 @@ import { CatalogUsersPO } from "../../../support/pageObjects/catalog/catalog-use
 import Keycloak from "../../../utils/keycloak/keycloak";
 import { UIhelper } from "../../../utils/ui-helper";
 import { Common } from "../../../utils/common";
-import { test, expect } from "@playwright/test";
+import { expect } from "@playwright/test";
+import { test } from "sealights-playwright-plugin";
 import { KubeClient } from "../../../utils/kube-client";
 
 test.describe.skip("Test Keycloak plugin", () => {

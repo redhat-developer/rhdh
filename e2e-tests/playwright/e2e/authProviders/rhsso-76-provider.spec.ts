@@ -1,4 +1,5 @@
-import { test, Page, BrowserContext, expect } from "@playwright/test";
+import { Page, BrowserContext, expect } from "@playwright/test";
+import { test } from "sealights-playwright-plugin";
 import { Common, setupBrowser } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
 import UserRepresentation from "@keycloak/keycloak-admin-client/lib/defs/userRepresentation";
