@@ -21,6 +21,14 @@ save_status_test_failed() {
   printf "%s\n" "${STATUS_TEST_FAILED["${current_deployment}"]}" >> "$SHARED_DIR/STATUS_TEST_FAILED.txt"
 }
 
+save_status_url_reportportal() {
+  local current_deployment=$1
+  local url=$2
+  STATUS_URL_REPORTPORTAL["${current_deployment}"]="${url}"
+  printf "%s\n" "${STATUS_URL_REPORTPORTAL["${current_deployment}"]}" >> "$SHARED_DIR/STATUS_URL_REPORTPORTAL.txt"
+}
+
+# Align this function with the one in https://github.com/openshift/release/blob/master/ci-operator/step-registry/redhat-developer/rhdh/send/alert/redhat-developer-rhdh-send-alert-commands.sh
 get_artifacts_url() {
   local project="${1:-""}"
 
@@ -80,8 +88,8 @@ report_ci_slack_alert() {
           notification_text="${notification_text}:circleci-pass: test passed, "
         fi
         notification_text="${notification_text}:playwright: <${URL_PLAYWRIGHT[i]}|Playwright>, "
-        if [[ "${URL_REPORTPORTAL[i]}" != "" ]]; then
-          notification_text="${notification_text}:reportportal: <${URL_REPORTPORTAL[i]}|ReportPortal>, "
+        if [[ "${STATUS_URL_REPORTPORTAL[i]}" != "" ]]; then
+          notification_text="${notification_text}:reportportal: <${STATUS_URL_REPORTPORTAL[i]}|ReportPortal>, "
         fi
       fi
       notification_text="${notification_text}📦 <${URL_ARTIFACTS[i]}|artifacts>."
@@ -89,8 +97,11 @@ report_ci_slack_alert() {
   fi
   set +x
 
+  echo "Sending Slack notification with the following text:"
+  echo "==================================================="
   echo "${notification_text}"
-  printf "%s" "${notification_text}"
+  echo "==================================================="
+
   echo "Saving the notification text to a file, which is then picked up by a separate CI step."
   # It is important to save the file in the shared directory with the exact name.
   echo "${notification_text}" > "${SHARED_DIR}/ci-slack-alert.txt"

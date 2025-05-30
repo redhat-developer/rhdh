@@ -172,7 +172,7 @@ droute_send() {
         # Try to extract the ReportPortal launch URL from the request. This fails if it doesn't contain the launch URL.
         REPORTPORTAL_LAUNCH_URL=$(echo "$DATA_ROUTER_REQUEST_OUTPUT" | yq e '.targets[0].events[] | select(.component == "reportportal-connector") | .message | fromjson | .[0].launch_url' -)
         if [[ -n "$REPORTPORTAL_LAUNCH_URL" ]]; then
-          URL_REPORTPORTAL[CURRENT_DEPLOYMENT]=$REPORTPORTAL_LAUNCH_URL
+          save_status_url_reportportal $CURRENT_DEPLOYMENT $REPORTPORTAL_LAUNCH_URL
           reportportal_slack_alert $release_name $REPORTPORTAL_LAUNCH_URL
           return 0
         else
