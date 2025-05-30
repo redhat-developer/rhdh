@@ -14,7 +14,6 @@ test.describe("Change app-config at e2e test runtime", () => {
 
     const kubeUtils = new KubeClient();
     const dynamicTitle = generateDynamicTitle();
-    const uiHelper = new UIhelper(page);
     try {
       LOGGER.info(
         `Updating ConfigMap '${configMapName}' with new title: ${dynamicTitle}`,
