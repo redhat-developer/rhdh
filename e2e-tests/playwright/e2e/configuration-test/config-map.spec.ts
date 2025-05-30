@@ -4,9 +4,9 @@ import { LOGGER } from "../../utils/logger";
 import { Common } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
 
-test.describe.skip("Change app-config at e2e test runtime", () => {
+test.describe("Change app-config at e2e test runtime", () => {
   test("Verify title change after ConfigMap modification", async ({ page }) => {
-    test.setTimeout(300000); // Increasing to 5 minutes
+    test.setTimeout(900000); // Increased to 15 minutes
 
     const configMapName = "rhdh-backstage-app-config";
     const namespace = process.env.NAME_SPACE_RUNTIME || "showcase-runtime";
@@ -16,7 +16,7 @@ test.describe.skip("Change app-config at e2e test runtime", () => {
     const dynamicTitle = generateDynamicTitle();
     const uiHelper = new UIhelper(page);
     try {
-      LOGGER.info(`Updating ConfigMap '${configMapName}' with new title.`);
+      LOGGER.info(`Updating ConfigMap '${configMapName}' with new title: ${dynamicTitle}`);
       await kubeUtils.updateConfigMapTitle(
         configMapName,
         namespace,
@@ -28,6 +28,7 @@ test.describe.skip("Change app-config at e2e test runtime", () => {
       );
       await kubeUtils.restartDeployment(deploymentName, namespace);
 
+      LOGGER.info("Deployment restarted successfully. Loading page...");
       const common = new Common(page);
       await page.context().clearCookies();
       await page.context().clearPermissions();
