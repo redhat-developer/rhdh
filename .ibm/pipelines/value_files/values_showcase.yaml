@@ -87,6 +87,8 @@ global:
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-github-actions
         disabled: false
+      - package: ./dynamic-plugins/dist/roadiehq-backstage-plugin-github-insights
+        disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-quay
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-quay-dynamic
