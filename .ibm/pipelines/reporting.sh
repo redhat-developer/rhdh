@@ -95,9 +95,12 @@ report_ci_slack_alert() {
   # It is important to save the file in the shared directory with the exact name.
   echo "${notification_text}" > "${SHARED_DIR}/ci-slack-alert.txt"
 
-  curl -X POST -H 'Content-type: application/json' \
-    --data "{\"text\":\"${notification_text}\"}" \
-    "$SLACK_NIGHTLY_WEBHOOK_URL"
+  if ! curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"${notification_text}\"}" "$SLACK_NIGHTLY_WEBHOOK_URL"; then
+    echo "Error: Failed to send Slack alert!"
+    exit 1
+  else
+    echo "Slack alert sent successfully."
+  fi
 }
 
 reportportal_slack_alert() {
@@ -129,5 +132,9 @@ reportportal_slack_alert() {
       "JOB_NAME": $job_name,
       "RUN_STATUS_EMOJI": $run_status_emoji
     }' > /tmp/data_router_slack_message.json
-  curl -X POST -H 'Content-type: application/json' --data @/tmp/data_router_slack_message.json  $SLACK_DATA_ROUTER_WEBHOOK_URL
+  if ! curl -X POST -H 'Content-type: application/json' --data @/tmp/data_router_slack_message.json  $SLACK_DATA_ROUTER_WEBHOOK_URL; then
+    echo "Failed to send ReportPortal Slack alert"
+  else
+    echo "ReportPortal Slack alert sent successfully"
+  fi
 }
