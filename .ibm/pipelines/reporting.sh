@@ -1,11 +1,14 @@
 #!/bin/bash
 
+mkdir -p "$ARTIFACT_DIR/reporting"
+
 save_status_deployment_namespace() {
   local current_deployment=$1
   local current_namespace=$2
   echo "Saving STATUS_DEPLOYMENT_NAMESPACE[\"${current_deployment}\"]=${current_namespace}"
   STATUS_DEPLOYMENT_NAMESPACE["${current_deployment}"]="${current_namespace}"
   printf "%s\n" "${STATUS_DEPLOYMENT_NAMESPACE["${current_deployment}"]}" >> "$SHARED_DIR/STATUS_DEPLOYMENT_NAMESPACE.txt"
+  cp "$SHARED_DIR/STATUS_DEPLOYMENT_NAMESPACE.txt" "$ARTIFACT_DIR/reporting/STATUS_DEPLOYMENT_NAMESPACE.txt"
 }
 
 save_status_failed_to_deploy() {
@@ -14,6 +17,7 @@ save_status_failed_to_deploy() {
   echo "Saving STATUS_FAILED_TO_DEPLOY[\"${current_deployment}\"]=${status}"
   STATUS_FAILED_TO_DEPLOY["${current_deployment}"]="${status}"
   printf "%s\n" "${STATUS_FAILED_TO_DEPLOY["${current_deployment}"]}" >> "$SHARED_DIR/STATUS_FAILED_TO_DEPLOY.txt"
+  cp "$SHARED_DIR/STATUS_FAILED_TO_DEPLOY.txt" "$ARTIFACT_DIR/reporting/STATUS_FAILED_TO_DEPLOY.txt"
 }
 
 save_status_test_failed() {
@@ -22,6 +26,7 @@ save_status_test_failed() {
   echo "Saving STATUS_TEST_FAILED[\"${current_deployment}\"]=${status}"
   STATUS_TEST_FAILED["${current_deployment}"]="${status}"
   printf "%s\n" "${STATUS_TEST_FAILED["${current_deployment}"]}" >> "$SHARED_DIR/STATUS_TEST_FAILED.txt"
+  cp "$SHARED_DIR/STATUS_TEST_FAILED.txt" "$ARTIFACT_DIR/reporting/STATUS_TEST_FAILED.txt"
 }
 
 save_status_number_of_test_failed() {
@@ -30,6 +35,7 @@ save_status_number_of_test_failed() {
   echo "Saving STATUS_TEST_FAILED[\"${current_deployment}\"]=${number}"
   STATUS_TEST_FAILED["${current_deployment}"]="${number}"
   printf "%s\n" "${STATUS_NUMBER_OF_TEST_FAILED["${current_deployment}"]}" >> "$SHARED_DIR/STATUS_NUMBER_OF_TEST_FAILED.txt"
+  cp "$SHARED_DIR/STATUS_NUMBER_OF_TEST_FAILED.txt" "$ARTIFACT_DIR/reporting/STATUS_NUMBER_OF_TEST_FAILED.txt"
 }
 
 save_status_url_reportportal() {
@@ -38,6 +44,7 @@ save_status_url_reportportal() {
   echo "Saving STATUS_URL_REPORTPORTAL[\"${current_deployment}\"]"
   STATUS_URL_REPORTPORTAL["${current_deployment}"]="${url}"
   printf "%s\n" "${STATUS_URL_REPORTPORTAL["${current_deployment}"]}" >> "$SHARED_DIR/STATUS_URL_REPORTPORTAL.txt"
+  cp "$SHARED_DIR/STATUS_URL_REPORTPORTAL.txt" "$ARTIFACT_DIR/reporting/STATUS_URL_REPORTPORTAL.txt"
 }
 
 save_overall_result() {
@@ -46,6 +53,7 @@ save_overall_result() {
     OVERALL_RESULT="${result}"
     echo "Saving OVERALL_RESULT=${OVERALL_RESULT}"
     printf "%s" "${OVERALL_RESULT}" > "$SHARED_DIR/OVERALL_RESULT.txt"
+    cp "$SHARED_DIR/OVERALL_RESULT.txt" "$ARTIFACT_DIR/reporting/OVERALL_RESULT.txt"
   fi
 }
 
