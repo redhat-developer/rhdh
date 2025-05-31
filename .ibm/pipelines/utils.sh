@@ -800,7 +800,6 @@ initiate_deployments() {
   configure_namespace "${NAME_SPACE_POSTGRES_DB}"
   configure_namespace "${NAME_SPACE_RBAC}"
   configure_namespace "${NAME_SPACE_RUNTIME}"
-  clear_database
   configure_external_postgres_db "${NAME_SPACE_RBAC}"
 
   # Deploy redis cache db.
