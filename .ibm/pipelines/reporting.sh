@@ -3,6 +3,7 @@
 save_status_deployment_namespace() {
   local current_deployment=$1
   local current_namespace=$2
+  echo "Saving STATUS_DEPLOYMENT_NAMESPACE[\"${current_deployment}\"]=${current_namespace}"
   STATUS_DEPLOYMENT_NAMESPACE["${current_deployment}"]="${current_namespace}"
   printf "%s\n" "${STATUS_DEPLOYMENT_NAMESPACE["${current_deployment}"]}" >> "$SHARED_DIR/STATUS_DEPLOYMENT_NAMESPACE.txt"
 }
@@ -10,6 +11,7 @@ save_status_deployment_namespace() {
 save_status_failed_to_deploy() {
   local current_deployment=$1
   local status=$2
+  echo "Saving STATUS_FAILED_TO_DEPLOY[\"${current_deployment}\"]=${status}"
   STATUS_FAILED_TO_DEPLOY["${current_deployment}"]="${status}"
   printf "%s\n" "${STATUS_FAILED_TO_DEPLOY["${current_deployment}"]}" >> "$SHARED_DIR/STATUS_FAILED_TO_DEPLOY.txt"
 }
@@ -17,15 +19,34 @@ save_status_failed_to_deploy() {
 save_status_test_failed() {
   local current_deployment=$1
   local status=$2
+  echo "Saving STATUS_TEST_FAILED[\"${current_deployment}\"]=${status}"
   STATUS_TEST_FAILED["${current_deployment}"]="${status}"
   printf "%s\n" "${STATUS_TEST_FAILED["${current_deployment}"]}" >> "$SHARED_DIR/STATUS_TEST_FAILED.txt"
+}
+
+save_status_number_of_test_failed() {
+  local current_deployment=$1
+  local number=$2
+  echo "Saving STATUS_TEST_FAILED[\"${current_deployment}\"]=${number}"
+  STATUS_TEST_FAILED["${current_deployment}"]="${number}"
+  printf "%s\n" "${STATUS_NUMBER_OF_TEST_FAILED["${current_deployment}"]}" >> "$SHARED_DIR/STATUS_NUMBER_OF_TEST_FAILED.txt"
 }
 
 save_status_url_reportportal() {
   local current_deployment=$1
   local url=$2
+  echo "Saving STATUS_URL_REPORTPORTAL[\"${current_deployment}\"]"
   STATUS_URL_REPORTPORTAL["${current_deployment}"]="${url}"
   printf "%s\n" "${STATUS_URL_REPORTPORTAL["${current_deployment}"]}" >> "$SHARED_DIR/STATUS_URL_REPORTPORTAL.txt"
+}
+
+save_overall_result() {
+  local result=$1
+  if [[ $OVERALL_RESULT -ne 0 ]]; then
+    OVERALL_RESULT="${result}"
+    echo "Saving OVERALL_RESULT=${OVERALL_RESULT}"
+    printf "%s" "${OVERALL_RESULT}" > "$SHARED_DIR/OVERALL_RESULT.txt"
+  fi
 }
 
 # Align this function with the one in https://github.com/openshift/release/blob/master/ci-operator/step-registry/redhat-developer/rhdh/send/alert/redhat-developer-rhdh-send-alert-commands.sh
@@ -37,8 +58,9 @@ get_artifacts_url() {
   if [ -n "${PULL_NUMBER:-}" ]; then
     artifacts_complete_url="${artifacts_base_url}/pr-logs/pull/${REPO_OWNER}_${REPO_NAME}/${PULL_NUMBER}/${JOB_NAME}/${BUILD_ID}/artifacts/e2e-tests/${REPO_OWNER}-${REPO_NAME}/artifacts/${project}"
   else
-    local part_1="${JOB_NAME##periodic-ci-redhat-developer-rhdh-"${RELEASE_BRANCH_NAME}"-}"
-    local part_2="${REPO_OWNER}-${REPO_NAME}-${JOB_NAME##periodic-ci-redhat-developer-rhdh-"${RELEASE_BRANCH_NAME}"-e2e-tests-}"
+    local part_1="${JOB_NAME##periodic-ci-redhat-developer-rhdh-"${RELEASE_BRANCH_NAME}"-}" # e.g. "e2e-tests-aks-helm-nightly"
+    local suite_name="${JOB_NAME##periodic-ci-redhat-developer-rhdh-"${RELEASE_BRANCH_NAME}"-e2e-tests-}" # e.g. "aks-helm-nightly"
+    local part_2="redhat-developer-rhdh-${suite_name}" # e.g. "redhat-developer-rhdh-aks-helm-nightly"
     # Override part_2 based for specific cases that do not follow the standard naming convention.
     case "$JOB_NAME" in
       *osd-gcp*)
@@ -65,53 +87,6 @@ get_job_url() {
     job_complete_url="${job_base_url}/logs/${JOB_NAME}/${BUILD_ID}"
   fi
   echo "${job_complete_url}"
-}
-
-report_ci_slack_alert() {
-  set -x
-  URL_CI_RESULTS=$(get_job_url)
-  local notification_text
-  if [[ $OVERALL_RESULT == 0 ]]; then
-    notification_text=":done-circle-check: \`${JOB_NAME}\`, 📜 <$URL_CI_RESULTS|logs>."
-  else
-    notification_text=':failed: `'"${JOB_NAME}"'`, 📜 <'"$URL_CI_RESULTS"'|logs>, <!subteam^S07BMJ56R8S>.'
-    for ((i = 1; i <= ${#STATUS_DEPLOYMENT_NAMESPACE[@]}; i++)); do
-      URL_ARTIFACTS[i]=$(get_artifacts_url "${STATUS_DEPLOYMENT_NAMESPACE[i]}")
-      URL_PLAYWRIGHT[i]="${URL_ARTIFACTS[i]}/index.html"
-      if [[ "${STATUS_FAILED_TO_DEPLOY[i]}" == "true" ]]; then
-        notification_text="${notification_text}\n• \`${STATUS_DEPLOYMENT_NAMESPACE[i]}\` :circleci-fail: failed to deploy, "
-      else
-        notification_text="${notification_text}\n• \`${STATUS_DEPLOYMENT_NAMESPACE[i]}\` :deployments: deployed, "
-        if [[ "${STATUS_TEST_FAILED[i]}" == "true" ]]; then
-          notification_text="${notification_text}:circleci-fail: test failed, "
-        else
-          notification_text="${notification_text}:circleci-pass: test passed, "
-        fi
-        notification_text="${notification_text}:playwright: <${URL_PLAYWRIGHT[i]}|Playwright>, "
-        if [[ "${STATUS_URL_REPORTPORTAL[i]}" != "" ]]; then
-          notification_text="${notification_text}:reportportal: <${STATUS_URL_REPORTPORTAL[i]}|ReportPortal>, "
-        fi
-      fi
-      notification_text="${notification_text}📦 <${URL_ARTIFACTS[i]}|artifacts>."
-    done
-  fi
-  set +x
-
-  echo "Sending Slack notification with the following text:"
-  echo "==================================================="
-  echo "${notification_text}"
-  echo "==================================================="
-
-  echo "Saving the notification text to a file, which is then picked up by a separate CI step."
-  # It is important to save the file in the shared directory with the exact name.
-  echo "${notification_text}" > "${SHARED_DIR}/ci-slack-alert.txt"
-
-  if ! curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"${notification_text}\"}" "$SLACK_NIGHTLY_WEBHOOK_URL"; then
-    echo "Error: Failed to send Slack alert!"
-    exit 1
-  else
-    echo "Slack alert sent successfully."
-  fi
 }
 
 reportportal_slack_alert() {

@@ -671,8 +671,16 @@ run_tests() {
 
   echo "${project} RESULT: ${RESULT}"
   if [ "${RESULT}" -ne 0 ]; then
-    OVERALL_RESULT=1
+    save_overall_result 1
     save_status_test_failed $CURRENT_DEPLOYMENT true
+    if [ -f "${e2e_tests_dir}/${JUNIT_RESULTS}" ]; then
+      failed_tests=$(grep -oP 'failures="\K[0-9]+' "${e2e_tests_dir}/${JUNIT_RESULTS}" | head -n 1)
+      echo "Number of failed tests: ${failed_tests}"
+      save_status_number_of_test_failed $CURRENT_DEPLOYMENT "${failed_tests}"
+    else
+      echo "JUnit results file not found: ${e2e_tests_dir}/${JUNIT_RESULTS}"
+    fi
+
   else
     save_status_test_failed $CURRENT_DEPLOYMENT false
   fi
@@ -993,7 +1001,7 @@ check_and_test() {
     echo "Backstage is not running. Exiting..."
     save_status_failed_to_deploy $CURRENT_DEPLOYMENT true
     save_status_test_failed $CURRENT_DEPLOYMENT true
-    OVERALL_RESULT=1
+    save_overall_result 1
   fi
   save_all_pod_logs $namespace
 }
