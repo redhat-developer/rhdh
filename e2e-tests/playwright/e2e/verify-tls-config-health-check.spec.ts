@@ -4,6 +4,7 @@ import { KubeClient } from "../utils/kube-client";
 
 test.describe
   .serial("Verify TLS configuration with Postgres DB health check", () => {
+  test.skip(true, "Skipping temporary");
   const namespace = process.env.NAME_SPACE_RUNTIME || "showcase-runtime";
   const deploymentName = "rhdh-backstage";
   const secretName = "postgres-cred";

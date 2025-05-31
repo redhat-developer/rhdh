@@ -63,13 +63,18 @@ RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.
 RUN apt-get update -y && \
     apt-get install -y skopeo
 
+# Install PostgreSQL CLI (psql only)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends postgresql-client && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
 # Install umoci
-RUN curl -LO "https://github.com/opencontainers/umoci/releases/download/v0.4.7/umoci.amd64" && \ 
+RUN curl -LO "https://github.com/opencontainers/umoci/releases/download/v0.4.7/umoci.amd64" && \
     chmod +x umoci.amd64 && \
     mv umoci.amd64 /usr/local/bin/umoci
 
 # Install opm
-RUN curl -LO "https://github.com/operator-framework/operator-registry/releases/download/v1.23.0/linux-amd64-opm" && \ 
+RUN curl -LO "https://github.com/operator-framework/operator-registry/releases/download/v1.23.0/linux-amd64-opm" && \
     chmod +x linux-amd64-opm && \
     mv linux-amd64-opm /usr/local/bin/opm
 

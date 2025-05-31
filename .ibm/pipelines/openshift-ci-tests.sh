@@ -27,6 +27,7 @@ trap cleanup EXIT INT ERR
 
 SCRIPTS=(
     "env_variables.sh"
+    "clear-database.sh"
     "utils.sh"
     "jobs/aks.sh"
     "jobs/gke.sh"
