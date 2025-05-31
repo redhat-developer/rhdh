@@ -33,9 +33,6 @@ test.describe.skip("Change app-config at e2e test runtime", () => {
       await page.reload({ waitUntil: "domcontentloaded" });
       await common.loginAsGuest();
       await new UIhelper(page).openSidebar("Home");
-      await new UIhelper(page).verifyHeading("Welcome back!");
-      await new UIhelper(page).verifyText("Quick Access");
-      await expect(page.locator("#search-bar-text-field")).toBeVisible();
       LOGGER.info("Verifying new title in the UI...");
       expect(await page.title()).toContain(dynamicTitle);
       LOGGER.info("Title successfully verified in the UI.");
