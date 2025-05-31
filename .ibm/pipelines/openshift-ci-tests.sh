@@ -41,6 +41,7 @@ trap cleanup EXIT INT ERR
 SCRIPTS=(
   "utils.sh"
   "env_variables.sh"
+  "clear-database.sh"
 )
 
 # Source explicitly specified scripts
