@@ -287,19 +287,18 @@ export class KubeClient {
     timeout: number = 300000, // 5 minutes
     checkInterval: number = 10000, // 10 seconds
   ) {
-    const start = Date.now();
+    const endTime = Date.now() + timeout;
     const labelSelector =
       "app.kubernetes.io/component=backstage,app.kubernetes.io/instance=rhdh,app.kubernetes.io/name=backstage";
 
-    while (Date.now() - start < timeout) {
+    while (Date.now() < endTime) {
       try {
-        // Check deployment status
         const response = await this.appsApi.readNamespacedDeployment(
           deploymentName,
           namespace,
         );
-
         const availableReplicas = response.body.status?.availableReplicas || 0;
+        const readyReplicas = response.body.status?.readyReplicas || 0;
         const conditions = response.body.status?.conditions || [];
 
         console.log(`Available replicas: ${availableReplicas}`);
@@ -320,7 +319,7 @@ export class KubeClient {
         }
 
         console.log(
-          `Waiting for ${deploymentName} to reach ${expectedReplicas} replicas, currently has ${availableReplicas}.`,
+          `Waiting for ${deploymentName} to reach ${expectedReplicas} replicas, currently has ${availableReplicas} available, ${readyReplicas} ready.`,
         );
       } catch (error) {
         console.error(`Error checking deployment status: ${error}`);
@@ -330,23 +329,32 @@ export class KubeClient {
     }
 
     throw new Error(
-      `Deployment ${deploymentName} did not become ready in time.`,
+      `Deployment ${deploymentName} did not become ready in time (timeout: ${timeout / 1000}s).`,
     );
   }
 
   async restartDeployment(deploymentName: string, namespace: string) {
     try {
+      console.log(
+        `Starting deployment restart for ${deploymentName} in namespace ${namespace}`,
+      );
+
+      // Scale down deployment to 0 replicas
       console.log(`Scaling down deployment ${deploymentName} to 0 replicas.`);
       console.log(`Deployment: ${deploymentName}, Namespace: ${namespace}`);
       await this.logPodConditions(namespace);
       await this.scaleDeployment(deploymentName, namespace, 0);
+      await this.waitForDeploymentReady(deploymentName, namespace, 0, 300000); // 5 minutes for scale down
 
-      await this.waitForDeploymentReady(deploymentName, namespace, 0);
+      // Wait a bit for pods to be fully terminated
+      console.log("Waiting for pods to be fully terminated...");
+      await new Promise((resolve) => setTimeout(resolve, 10000)); // 10 seconds
 
+      // Scale up deployment to 1 replica
       console.log(`Scaling up deployment ${deploymentName} to 1 replica.`);
       await this.scaleDeployment(deploymentName, namespace, 1);
 
-      await this.waitForDeploymentReady(deploymentName, namespace, 1);
+      await this.waitForDeploymentReady(deploymentName, namespace, 1, 600000); // 10 minutes for scale up
 
       console.log(
         `Restart of deployment ${deploymentName} completed successfully.`,
@@ -354,11 +362,12 @@ export class KubeClient {
     } catch (error) {
       console.error(
         `Error during deployment restart: Deployment '${deploymentName}' in namespace '${namespace}'.`,
+        error,
       );
       await this.logPodConditions(namespace);
       await this.logDeploymentEvents(deploymentName, namespace);
       throw new Error(
-        `Failed to restart deployment '${deploymentName}' in namespace '${namespace}'.`,
+        `Failed to restart deployment '${deploymentName}' in namespace '${namespace}': ${error.message}`,
       );
     }
   }

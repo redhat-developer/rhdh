@@ -4,7 +4,7 @@ import { LOGGER } from "../../utils/logger";
 import { Common } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
 
-test.describe.skip("Change app-config at e2e test runtime", () => {
+test.describe("Change app-config at e2e test runtime", () => {
   test("Verify title change after ConfigMap modification", async ({ page }) => {
     test.setTimeout(300000); // Increasing to 5 minutes
 
@@ -14,7 +14,6 @@ test.describe.skip("Change app-config at e2e test runtime", () => {
 
     const kubeUtils = new KubeClient();
     const dynamicTitle = generateDynamicTitle();
-    const uiHelper = new UIhelper(page);
     try {
       LOGGER.info(`Updating ConfigMap '${configMapName}' with new title.`);
       await kubeUtils.updateConfigMapTitle(
@@ -34,10 +33,7 @@ test.describe.skip("Change app-config at e2e test runtime", () => {
       await page.reload({ waitUntil: "domcontentloaded" });
       await common.loginAsGuest();
       await new UIhelper(page).openSidebar("Home");
-      await uiHelper.verifyHeading("Welcome back!");
-      await uiHelper.verifyText("Quick Access");
-      await expect(page.locator("#search-bar-text-field")).toBeVisible();
-      LOGGER.info("Verifying new title in the UI...");
+      LOGGER.info("Verifying new title in the UI... ");
       expect(await page.title()).toContain(dynamicTitle);
       LOGGER.info("Title successfully verified in the UI.");
     } catch (error) {

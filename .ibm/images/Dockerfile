@@ -77,6 +77,11 @@ RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.
 RUN apt-get update -y && \
     apt-get install -y skopeo
 
+# Install PostgreSQL CLI (psql only)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends postgresql-client && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
 # Install umoci
 RUN curl -LO "https://github.com/opencontainers/umoci/releases/download/v0.4.7/umoci.amd64" && \
     chmod +x umoci.amd64 && \
