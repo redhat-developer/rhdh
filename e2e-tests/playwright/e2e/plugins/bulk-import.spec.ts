@@ -270,11 +270,11 @@ test.describe
     ]);
   });
 
-  test('Verify repo from "register existing component"  are displayed in bulk import Added repositories', async () => {
-    // Register Existing Component
+  test('Verify repo from "import an existing git repository"  are displayed in bulk import Added repositories', async () => {
+    // Import an existing Git repository
     await uiHelper.openSidebar("Catalog");
     await uiHelper.clickButton("Self-service");
-    await uiHelper.clickButton("Register Existing Component");
+    await uiHelper.clickButton("Import an existing Git repository");
     await catalogImport.registerExistingComponent(
       existingComponentDetails.url,
       true,
