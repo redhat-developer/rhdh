@@ -8,7 +8,7 @@ test.describe("Change app-config at e2e test runtime", () => {
   test("Verify title change after ConfigMap modification", async ({ page }) => {
     test.setTimeout(300000); // Increasing to 5 minutes
 
-    const configMapName = "rhdh-backstage-app-config";
+    const configMapName = "app-config";
     const namespace = process.env.NAME_SPACE_RUNTIME || "showcase-runtime";
     const deploymentName = "rhdh-backstage";
 
