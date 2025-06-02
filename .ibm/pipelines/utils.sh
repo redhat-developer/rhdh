@@ -845,20 +845,20 @@ cluster_setup_k8s_helm() {
 }
 
 initiate_deployments() {
-  configure_namespace ${NAME_SPACE}
+  # configure_namespace ${NAME_SPACE}
 
-  deploy_redis_cache "${NAME_SPACE}"
+  # deploy_redis_cache "${NAME_SPACE}"
 
-  cd "${DIR}"
-  local rhdh_base_url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
-  apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
-  echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
-  helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
-    "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
-    -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" \
-    --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    --set upstream.backstage.image.repository="${QUAY_REPO}" \
-    --set upstream.backstage.image.tag="${TAG_NAME}"
+  # cd "${DIR}"
+  # local rhdh_base_url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
+  # apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
+  # echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
+  # helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
+  #   "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
+  #   -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" \
+  #   --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
+  #   --set upstream.backstage.image.repository="${QUAY_REPO}" \
+  #   --set upstream.backstage.image.tag="${TAG_NAME}"
 
   configure_namespace "${NAME_SPACE_POSTGRES_DB}"
   configure_namespace "${NAME_SPACE_RBAC}"
