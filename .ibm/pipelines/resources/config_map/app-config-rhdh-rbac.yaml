@@ -124,18 +124,18 @@ argocd:
           url: temp
           token: temp
 permission:
-  enabled: true
-  rbac:
-    maxDepth: 1
-    policyFileReload: true
-    policies-csv-file: './rbac/rbac-policy.csv'
-    conditionalPoliciesFile: './rbac-conditions/conditional-policies.yaml'
-    pluginsWithPermission:
-      - catalog
-      - permission
-      - scaffolder
-      - kubernetes
-    admin:
-      users:
-        - name: user:default/rhdh-qe
+  enabled: false
+  # rbac:
+  #   maxDepth: 1
+  #   policyFileReload: true
+  #   policies-csv-file: './rbac/rbac-policy.csv'
+  #   conditionalPoliciesFile: './rbac-conditions/conditional-policies.yaml'
+  #   pluginsWithPermission:
+  #     - catalog
+  #     - permission
+  #     - scaffolder
+  #     - kubernetes
+  #   admin:
+  #     users:
+  #       - name: user:default/rhdh-qe
 includeTransitiveGroupOwnership: true
