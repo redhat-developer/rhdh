@@ -70,25 +70,25 @@ export class KubeClient {
     }
   }
 
+  // Define possible ConfigMap base names as a constant
+  private readonly appConfigNames = [
+    'app-config-rhdh',
+    'app-config',
+    'backstage-app-config',
+    'rhdh-app-config'
+  ];
+
   async findAppConfigMap(namespace: string): Promise<string> {
     try {
       const configMapsResponse = await this.listConfigMaps(namespace);
       const configMaps = configMapsResponse.body.items;
-      
-      // List of possible ConfigMap names to try
-      const possibleNames = [
-        'app-config-rhdh',
-        'app-config',
-        'backstage-app-config',
-        'rhdh-app-config'
-      ];
       
       LOGGER.info(`Found ${configMaps.length} ConfigMaps in namespace ${namespace}`);
       configMaps.forEach(cm => {
         LOGGER.info(`ConfigMap: ${cm.metadata?.name}`);
       });
       
-      for (const name of possibleNames) {
+      for (const name of this.appConfigNames) {
         const found = configMaps.find(cm => cm.metadata?.name === name);
         if (found) {
           LOGGER.info(`Found app config ConfigMap: ${name}`);
@@ -223,12 +223,10 @@ export class KubeClient {
       let dataKey: string | undefined;
       const dataKeys = Object.keys(configMap.data || {});
       
-      // Try different patterns for the data key
+      // Generate key patterns from the possible names + the actual ConfigMap name
       const keyPatterns = [
         `${actualConfigMapName}.yaml`,
-        'app-config-rhdh.yaml',
-        'app-config.yaml',
-        'backstage-app-config.yaml'
+        ...this.appConfigNames.map(name => `${name}.yaml`)
       ];
       
       for (const pattern of keyPatterns) {
