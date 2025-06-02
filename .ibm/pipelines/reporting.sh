@@ -49,12 +49,10 @@ save_status_url_reportportal() {
 
 save_overall_result() {
   local result=$1
-  if [[ $OVERALL_RESULT -ne 0 ]]; then
-    OVERALL_RESULT="${result}"
-    echo "Saving OVERALL_RESULT=${OVERALL_RESULT}"
-    printf "%s" "${OVERALL_RESULT}" > "$SHARED_DIR/OVERALL_RESULT.txt"
-    cp "$SHARED_DIR/OVERALL_RESULT.txt" "$ARTIFACT_DIR/reporting/OVERALL_RESULT.txt"
-  fi
+  OVERALL_RESULT=${result}
+  echo "Saving OVERALL_RESULT=${OVERALL_RESULT}"
+  printf "%s" "${OVERALL_RESULT}" > "$SHARED_DIR/OVERALL_RESULT.txt"
+  cp "$SHARED_DIR/OVERALL_RESULT.txt" "$ARTIFACT_DIR/reporting/OVERALL_RESULT.txt"
 }
 
 # Align this function with the one in https://github.com/openshift/release/blob/master/ci-operator/step-registry/redhat-developer/rhdh/send/alert/redhat-developer-rhdh-send-alert-commands.sh
