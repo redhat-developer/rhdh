@@ -167,7 +167,7 @@ export class KubeClient {
       }
 
       appConfigObj.app.title = newTitle;
-      configMap.data["app-config.yaml"] = yaml.dump(appConfigObj);
+      configMap.data[`${configMapName}.yaml`] = yaml.dump(appConfigObj);
 
       delete configMap.metadata.creationTimestamp;
 
