@@ -72,9 +72,6 @@ get_artifacts_url() {
       *osd-gcp*)
       part_2="redhat-developer-rhdh-osd-gcp-nightly"
       ;;
-      *auth-providers*)
-      part_2="redhat-developer-rhdh-auth-providers-nightly"
-      ;;
       *ocp-v*)
       part_2="redhat-developer-rhdh-nightly"
       ;;
