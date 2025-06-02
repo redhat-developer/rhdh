@@ -104,18 +104,24 @@ global:
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-tech-radar-backend-dynamic
         disabled: true
-      # - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
-      #   disabled: false
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
+        disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-analytics-provider-segment
         disabled: true
 
 # -- Upstream Backstage [chart configuration](https://github.com/backstage/charts/blob/main/charts/backstage/values.yaml)
 # @default -- Use Openshift compatible settings
 upstream:
-  nameOverride: developer-hub
+  nameOverride: backstage
   commonLabels:
     backstage.io/kubernetes-id: developer-hub
   backstage:
+    image:
+      pullPolicy: Always
+      # using test image from https://quay.io/repository/rhdh-community/rhdh
+      registry: quay.io
+      repository: rhdh-community/rhdh
+      tag: next
     appConfig:
       app:
         # Please update to match host in case you don't want to configure hostname via `global.clusterRouterBase` or `global.host`.
@@ -124,26 +130,20 @@ upstream:
         baseUrl: 'https://{{- include "janus-idp.hostname" . }}'
         cors:
           origin: 'https://{{- include "janus-idp.hostname" . }}'
-        # database:
-        #   connection: # configure Backstage DB connection parameters
-        #     host: ${POSTGRES_HOST}
-        #     port: ${POSTGRES_PORT}
-        #     user: ${POSTGRES_USER}
-        #     password: ${POSTGRES_PASSWORD}
-        #     ssl:
-        #       rejectUnauthorized: true,
-        #       ca:
-        #         $file: /opt/app-root/src/postgres-ca.pem
-        #       key:
-        #         $file: /opt/app-root/src/postgres-key.key
-        #       cert:
-        #         $file: /opt/app-root/src/postgres-crt.pem
-    image:
-      pullPolicy: Always
-      # using test image from https://quay.io/repository/rhdh-community/rhdh
-      registry: quay.io
-      repository: rhdh-community/rhdh
-      tag: next
+        database:
+          connection: # configure Backstage DB connection parameters
+            host: ${POSTGRES_HOST}
+            port: ${POSTGRES_PORT}
+            user: ${POSTGRES_USER}
+            password: ${POSTGRES_PASSWORD}
+            ssl:
+              rejectUnauthorized: true,
+              ca:
+                $file: /opt/app-root/src/postgres-ca.pem
+              key:
+                $file: /opt/app-root/src/postgres-key.key
+              cert:
+                $file: /opt/app-root/src/postgres-crt.pem
     startupProbe:
       # This gives enough time upon container startup before the liveness and readiness probes are triggered.
       # Giving (120s = initialDelaySeconds + failureThreshold * periodSeconds) to account for the worst case scenario.
@@ -190,11 +190,6 @@ upstream:
           secretKeyRef:
             key: backend-secret
             name: '{{ include "janus-idp.backend-secret-name" $ }}'
-      - name: POSTGRESQL_ADMIN_PASSWORD
-        valueFrom:
-          secretKeyRef:
-            key: postgres-password
-            name: '{{ .Release.Name }}-postgresql'
       # disable telemetry in CI
       - name: SEGMENT_TEST_MODE
         value: 'true'
@@ -210,15 +205,15 @@ upstream:
         mountPath: /opt/app-root/src/rbac
       - name: rbac-conditions
         mountPath: /opt/app-root/src/rbac-conditions
-      # - mountPath: /opt/app-root/src/postgres-crt.pem
-      #   name: postgress-external-db-cluster-cert
-      #   subPath: tls.crt
-      # - mountPath: /opt/app-root/src/postgres-ca.pem
-      #   name: postgress-external-db-cluster-cert
-      #   subPath: ca.crt
-      # - mountPath: /opt/app-root/src/postgres-key.key
-      #   name: postgress-external-db-cluster-cert
-      #   subPath: tls.key
+      - mountPath: /opt/app-root/src/postgres-crt.pem
+        name: postgress-external-db-cluster-cert
+        subPath: tls.crt
+      - mountPath: /opt/app-root/src/postgres-ca.pem
+        name: postgress-external-db-cluster-cert
+        subPath: ca.crt
+      - mountPath: /opt/app-root/src/postgres-key.key
+        name: postgress-external-db-cluster-cert
+        subPath: tls.key
     extraVolumes:
       # -- Ephemeral volume that will contain the dynamic plugins installed by the initContainer below at start.
       # To have more control on underlying storage, the [emptyDir](https://docs.openshift.com/container-platform/4.13/storage/understanding-ephemeral-storage.html)
@@ -239,98 +234,98 @@ upstream:
           defaultMode: 420
           optional: true
           secretName: dynamic-plugins-npmrc
-      # - name: postgress-external-db-cluster-cert
-      #   secret:
-      #     secretName: postgress-external-db-cluster-cert
+      - name: postgress-external-db-cluster-cert
+        secret:
+          secretName: postgress-external-db-cluster-cert
       - name: rbac-policy
         configMap:
           defaultMode: 420
           name: rbac-policy
       - name: rbac-conditions
         emptyDir: {}
-    initContainers:
-      - name: install-dynamic-plugins
-        # -- Image used by the initContainer to install dynamic plugins into the `dynamic-plugins-root` volume mount.
-        # It could be replaced by a custom image based on this one.
-        # @default -- `quay.io/rhdh-community/rhdh:latest`
-        image: '{{ include "backstage.image" . }}'
-        command:
-          - sh
-          - '-c'
-          - |
-            cat > /rbac-conditions/conditional-policies.yaml <<EOF
-            ---
-            result: CONDITIONAL
-            roleEntityRef: 'role:default/test2-role'
-            pluginId: catalog
-            resourceType: catalog-entity
-            permissionMapping:
-              - read
-              - update
-            conditions:
-              rule: IS_ENTITY_OWNER
-              resourceType: catalog-entity
-              params:
-                claims:
-                  - 'group:janus-qe/rhdh-qe-2-team'
-                  - \$currentUser
-            ---
-            result: CONDITIONAL
-            roleEntityRef: 'role:default/test2-role'
-            pluginId: catalog
-            resourceType: catalog-entity
-            permissionMapping:
-              - delete
-            conditions:
-              rule: IS_ENTITY_OWNER
-              resourceType: catalog-entity
-              params:
-                claims:
-                  - \$currentUser
-            ---
-            result: CONDITIONAL
-            roleEntityRef: 'role:default/transitive-owner'
-            pluginId: catalog
-            resourceType: catalog-entity
-            permissionMapping:
-              - read
-            conditions:
-              rule: IS_ENTITY_OWNER
-              resourceType: catalog-entity
-              params:
-                claims:
-                  - \$ownerRefs
-            EOF
+    # initContainers:
+    #   - name: install-dynamic-plugins
+    #     # -- Image used by the initContainer to install dynamic plugins into the `dynamic-plugins-root` volume mount.
+    #     # It could be replaced by a custom image based on this one.
+    #     # @default -- `quay.io/rhdh-community/rhdh:latest`
+    #     image: '{{ include "backstage.image" . }}'
+    #     command:
+    #       - sh
+    #       - '-c'
+    #       - |
+    #         cat > /rbac-conditions/conditional-policies.yaml <<EOF
+    #         ---
+    #         result: CONDITIONAL
+    #         roleEntityRef: 'role:default/test2-role'
+    #         pluginId: catalog
+    #         resourceType: catalog-entity
+    #         permissionMapping:
+    #           - read
+    #           - update
+    #         conditions:
+    #           rule: IS_ENTITY_OWNER
+    #           resourceType: catalog-entity
+    #           params:
+    #             claims:
+    #               - 'group:janus-qe/rhdh-qe-2-team'
+    #               - \$currentUser
+    #         ---
+    #         result: CONDITIONAL
+    #         roleEntityRef: 'role:default/test2-role'
+    #         pluginId: catalog
+    #         resourceType: catalog-entity
+    #         permissionMapping:
+    #           - delete
+    #         conditions:
+    #           rule: IS_ENTITY_OWNER
+    #           resourceType: catalog-entity
+    #           params:
+    #             claims:
+    #               - \$currentUser
+    #         ---
+    #         result: CONDITIONAL
+    #         roleEntityRef: 'role:default/transitive-owner'
+    #         pluginId: catalog
+    #         resourceType: catalog-entity
+    #         permissionMapping:
+    #           - read
+    #         conditions:
+    #           rule: IS_ENTITY_OWNER
+    #           resourceType: catalog-entity
+    #           params:
+    #             claims:
+    #               - \$ownerRefs
+    #         EOF
 
-            python install-dynamic-plugins.py /dynamic-plugins-root
-        env:
-          - name: NPM_CONFIG_USERCONFIG
-            value: /opt/app-root/src/.npmrc.dynamic-plugins
-        imagePullPolicy: Always
-        volumeMounts:
-          - mountPath: /dynamic-plugins-root
-            name: dynamic-plugins-root
-          - mountPath: /opt/app-root/src/dynamic-plugins.yaml
-            name: dynamic-plugins
-            readOnly: true
-            subPath: dynamic-plugins.yaml
-          - mountPath: /opt/app-root/src/.npmrc.dynamic-plugins
-            name: dynamic-plugins-npmrc
-            readOnly: true
-            subPath: .npmrc
-          - mountPath: /rbac
-            name: rbac-policy
-          - mountPath: /rbac-conditions
-            name: rbac-conditions
-        workingDir: /opt/app-root/src
+    #         python install-dynamic-plugins.py /dynamic-plugins-root
+    #     env:
+    #       - name: NPM_CONFIG_USERCONFIG
+    #         value: /opt/app-root/src/.npmrc.dynamic-plugins
+    #     imagePullPolicy: Always
+    #     volumeMounts:
+    #       - mountPath: /dynamic-plugins-root
+    #         name: dynamic-plugins-root
+    #       - mountPath: /opt/app-root/src/dynamic-plugins.yaml
+    #         name: dynamic-plugins
+    #         readOnly: true
+    #         subPath: dynamic-plugins.yaml
+    #       - mountPath: /opt/app-root/src/.npmrc.dynamic-plugins
+    #         name: dynamic-plugins-npmrc
+    #         readOnly: true
+    #         subPath: .npmrc
+    #       - mountPath: /rbac
+    #         name: rbac-policy
+    #       - mountPath: /rbac-conditions
+    #         name: rbac-conditions
+    #     workingDir: /opt/app-root/src
     installDir: /opt/app-root/src
     extraAppConfig:
       - configMapRef: app-config-rhdh
         filename: app-config-rhdh.yaml
     extraEnvVarsSecrets:
       - rhdh-secrets
-      # - postgres-cred
-  # postgresql:
-  #   enabled: false
-  #   auth:
-  #     existingSecret: postgres-cred
+      - postgres-cred
+  postgresql:
+    enabled: false
+    auth:
+      existingSecret: postgres-cred
