@@ -6,26 +6,27 @@ export PS4='[$(date "+%Y-%m-%d %H:%M:%S")] ' # logs timestamp for every cmd.
 # Define log file names and directories.
 LOGFILE="test-log"
 export DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-OVERALL_RESULT=0
 export CURRENT_DEPLOYMENT=0 # Counter for current deployment.
 export STATUS_DEPLOYMENT_NAMESPACE # Array that holds the namespaces of deployments.
 export STATUS_FAILED_TO_DEPLOY # Array that indicates if deployment failed. false = success, true = failure
 export STATUS_TEST_FAILED # Array that indicates if test run failed. false = success, true = failure
 
+echo "Sourcing reporting.sh"
+# shellcheck source=.ibm/pipelines/reporting.sh
+source "${DIR}/reporting.sh"
+save_overall_result 0 # Initialize overall result to 0 (success).
+export OVERALL_RESULT
+
 # Define a cleanup function to be executed upon script exit.
 # shellcheck disable=SC2317
 cleanup() {
+  if [[ $? -ne 0 ]]; then
+
+    echo "Exited with an error, setting OVERALL_RESULT to 1"
+    save_overall_result 1
+  fi
   echo "Cleaning up before exiting"
   if [[ "${OPENSHIFT_CI}" == "true" ]]; then
-    if [ -z "${PULL_NUMBER:-}" ]; then # Only for nightly jobs (when PULL_NUMBER is not set).
-      echo "Sending a Slack alert with the results of the CI job."
-      echo "Sourcing reporting.sh"
-      # shellcheck source=.ibm/pipelines/reporting.sh
-      source "${DIR}/reporting.sh"
-      echo "Calling report_ci_slack_alert"
-      report_ci_slack_alert
-    fi
-
     case "$JOB_NAME" in
       *gke*)
         echo "Calling cleanup_gke"
