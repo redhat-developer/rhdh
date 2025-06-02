@@ -104,8 +104,8 @@ global:
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-tech-radar-backend-dynamic
         disabled: true
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
-        disabled: false
+      # - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
+      #   disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-analytics-provider-segment
         disabled: true
 
