@@ -8086,34 +8086,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-"@internal/plugin-utils@1.0.0, @internal/plugin-utils@workspace:packages/plugin-utils":
-  version: 0.0.0-use.local
-  resolution: "@internal/plugin-utils@workspace:packages/plugin-utils"
-  dependencies:
-    "@backstage/catalog-model": 1.7.3
-    "@backstage/cli": 0.30.0
-    "@backstage/test-utils": 1.7.5
-    "@testing-library/dom": 9.3.4
-    "@testing-library/jest-dom": 6.6.3
-    "@testing-library/react": 14.3.1
-    "@testing-library/react-hooks": 8.0.1
-    "@types/node": 22.15.17
-    "@types/react": 18.3.21
-    "@types/react-dom": 18.3.7
-    prettier: 3.5.3
-    react: 18.3.1
-    typescript: 5.8.3
-  peerDependencies:
-    react: 16.13.1 || ^17.0.0 || ^18.2.0
-  languageName: unknown
-  linkType: soft
-
->>>>>>> d225a6f3 (refactor:add tests, lint, prettier)
-=======
->>>>>>> a9faf68d (refactor:rename lib)
 "@ioredis/commands@npm:^1.1.1":
   version: 1.2.0
   resolution: "@ioredis/commands@npm:1.2.0"
@@ -12349,8 +12321,8 @@ __metadata:
     "@testing-library/jest-dom": 6.6.3
     "@testing-library/react": 14.3.1
     "@testing-library/react-hooks": 8.0.1
-    "@types/node": 22.15.17
-    "@types/react": 18.3.21
+    "@types/node": 22.15.22
+    "@types/react": 18.3.23
     "@types/react-dom": 18.3.7
     prettier: 3.5.3
     react: 18.3.1
@@ -15311,47 +15283,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 "@types/node@npm:22.15.22":
   version: 22.15.22
   resolution: "@types/node@npm:22.15.22"
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
-"@types/node@npm:22.15.18":
-  version: 22.15.18
-  resolution: "@types/node@npm:22.15.18"
-=======
-<<<<<<< HEAD
-=======
->>>>>>> a9faf68d (refactor:rename lib)
-"@types/node@npm:22.15.17":
-  version: 22.15.17
-  resolution: "@types/node@npm:22.15.17"
-  dependencies:
-    undici-types: ~6.21.0
-  checksum: f83748c14c8ae3b7d1672af4009b892a5ae652c05c4b61c39e842711e232a0db37991611364aea9522fdf48290a8cc27403138bc479ef24ff0c9222319e7858b
-  languageName: node
-  linkType: hard
-
-<<<<<<< HEAD
-"@types/node@npm:22.15.2":
-  version: 22.15.2
-  resolution: "@types/node@npm:22.15.2"
->>>>>>> 2357c9b7 (refactor:share dynamic context package)
->>>>>>> 53ed4e60 (refactor:share dynamic context package)
-=======
-"@types/node@npm:22.15.17":
-  version: 22.15.17
-  resolution: "@types/node@npm:22.15.17"
->>>>>>> 31bea7e0 (refactor:add tests, lint, prettier)
->>>>>>> d225a6f3 (refactor:add tests, lint, prettier)
-=======
-"@types/node@npm:22.15.18":
-  version: 22.15.18
-  resolution: "@types/node@npm:22.15.18"
->>>>>>> a9faf68d (refactor:rename lib)
   dependencies:
     undici-types: ~6.21.0
   checksum: 32bbe90a02fc11a3cde30ab73098b36370b2f6a8d59987e4a6435aa04333f199b18490a9e94b7ec7f591694d2e6573c8661c8e83a2c25dd75af9aea1ff3894e0
@@ -16661,29 +16595,7 @@ __metadata:
     "@emotion/react": 11.14.0
     "@emotion/styled": 11.14.0
     "@internal/plugin-dynamic-plugins-info": "*"
-<<<<<<< HEAD
-<<<<<<< HEAD
     "@janus-idp/cli": 3.6.1
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
-    "@janus-idp/cli": 3.6.1
-=======
-<<<<<<< HEAD
-    "@janus-idp/cli": 3.6.0
-=======
-    "@internal/plugin-utils": 1.0.0
-    "@janus-idp/cli": 3.5.0
->>>>>>> 254146c8 (refactor:share dynamic context package)
->>>>>>> 53ed4e60 (refactor:share dynamic context package)
-=======
-    "@internal/plugin-utils": 1.0.0
-    "@janus-idp/cli": 3.6.0
->>>>>>> 31bea7e0 (refactor:add tests, lint, prettier)
->>>>>>> d225a6f3 (refactor:add tests, lint, prettier)
-=======
-    "@janus-idp/cli": 3.6.1
->>>>>>> a9faf68d (refactor:rename lib)
     "@mui/icons-material": 5.17.1
     "@mui/material": 5.17.1
     "@mui/styled-engine": 5.16.14
