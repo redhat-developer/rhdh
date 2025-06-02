@@ -296,8 +296,8 @@ export class KubeClient {
     deploymentName: string,
     namespace: string,
     expectedReplicas: number,
-    timeout: number = 600000, // Increased to 10 minutes
-    checkInterval: number = 15000, // Increased to 15 seconds
+    timeout: number = 300000, // 5 minutes
+    checkInterval: number = 15000, // 15 seconds
   ) {
     const start = Date.now();
     const labelSelector =
