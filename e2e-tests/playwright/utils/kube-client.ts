@@ -150,12 +150,20 @@ export class KubeClient {
       );
       const configMap = configMapResponse.body;
 
-      const appConfigYaml = configMap.data[`${configMapName}.yaml`];
+      // For app-config-rhdh ConfigMap, the data key is always "app-config-rhdh.yaml"
+      // For other ConfigMaps, use the pattern "${configMapName}.yaml"
+      const dataKey = configMapName === "app-config-rhdh" ? "app-config-rhdh.yaml" : `${configMapName}.yaml`;
+      const appConfigYaml = configMap.data[dataKey];
+      
+      if (!appConfigYaml) {
+        throw new Error(`Data key '${dataKey}' not found in ConfigMap '${configMapName}'`);
+      }
+      
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const appConfigObj = yaml.load(appConfigYaml) as any;
 
       appConfigObj.app.title = newTitle;
-      configMap.data[`${configMapName}.yaml`] = yaml.dump(appConfigObj);
+      configMap.data[dataKey] = yaml.dump(appConfigObj);
 
       delete configMap.metadata.creationTimestamp;
 
