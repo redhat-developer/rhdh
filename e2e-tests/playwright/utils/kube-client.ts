@@ -60,6 +60,58 @@ export class KubeClient {
     }
   }
 
+  async listConfigMaps(namespace: string) {
+    try {
+      LOGGER.info(`Listing configmaps in namespace ${namespace}`);
+      return await this.coreV1Api.listNamespacedConfigMap(namespace);
+    } catch (e) {
+      LOGGER.error(e.body?.message);
+      throw e;
+    }
+  }
+
+  async findAppConfigMap(namespace: string): Promise<string> {
+    try {
+      const configMapsResponse = await this.listConfigMaps(namespace);
+      const configMaps = configMapsResponse.body.items;
+      
+      // List of possible ConfigMap names to try
+      const possibleNames = [
+        'app-config-rhdh',
+        'app-config',
+        'backstage-app-config',
+        'rhdh-app-config'
+      ];
+      
+      LOGGER.info(`Found ${configMaps.length} ConfigMaps in namespace ${namespace}`);
+      configMaps.forEach(cm => {
+        LOGGER.info(`ConfigMap: ${cm.metadata?.name}`);
+      });
+      
+      for (const name of possibleNames) {
+        const found = configMaps.find(cm => cm.metadata?.name === name);
+        if (found) {
+          LOGGER.info(`Found app config ConfigMap: ${name}`);
+          return name;
+        }
+      }
+      
+      // If none of the expected names found, look for ConfigMaps containing app-config data
+      for (const cm of configMaps) {
+        if (cm.data && Object.keys(cm.data).some(key => 
+          key.includes('app-config') && key.endsWith('.yaml'))) {
+          LOGGER.info(`Found ConfigMap with app-config data: ${cm.metadata?.name}`);
+          return cm.metadata?.name || '';
+        }
+      }
+      
+      throw new Error(`No suitable app-config ConfigMap found in namespace ${namespace}`);
+    } catch (error) {
+      LOGGER.error(`Error finding app config ConfigMap: ${error}`);
+      throw error;
+    }
+  }
+
   async getNamespaceByName(name: string): Promise<k8s.V1Namespace | null> {
     try {
       LOGGER.debug(`Getting namespace ${name}.`);
@@ -144,38 +196,96 @@ export class KubeClient {
     newTitle: string,
   ) {
     try {
+      // If the provided configMapName doesn't exist, try to find the correct one dynamically
+      let actualConfigMapName = configMapName;
+      try {
+        await this.getConfigMap(configMapName, namespace);
+        LOGGER.info(`Using provided ConfigMap name: ${configMapName}`);
+      } catch (error) {
+        if (error.response?.statusCode === 404) {
+          LOGGER.info(`ConfigMap ${configMapName} not found, searching for alternatives...`);
+          actualConfigMapName = await this.findAppConfigMap(namespace);
+        } else {
+          throw error;
+        }
+      }
+      
       const configMapResponse = await this.getConfigMap(
-        configMapName,
+        actualConfigMapName,
         namespace,
       );
       const configMap = configMapResponse.body;
 
-      // For app-config-rhdh ConfigMap, the data key is always "app-config-rhdh.yaml"
-      // For other ConfigMaps, use the pattern "${configMapName}.yaml"
-      const dataKey = configMapName === "app-config-rhdh" ? "app-config-rhdh.yaml" : `${configMapName}.yaml`;
+      LOGGER.info(`Using ConfigMap: ${actualConfigMapName}`);
+      LOGGER.info(`Available data keys: ${Object.keys(configMap.data || {}).join(', ')}`);
+
+      // Find the correct data key dynamically
+      let dataKey: string | undefined;
+      const dataKeys = Object.keys(configMap.data || {});
+      
+      // Try different patterns for the data key
+      const keyPatterns = [
+        `${actualConfigMapName}.yaml`,
+        'app-config-rhdh.yaml',
+        'app-config.yaml',
+        'backstage-app-config.yaml'
+      ];
+      
+      for (const pattern of keyPatterns) {
+        if (dataKeys.includes(pattern)) {
+          dataKey = pattern;
+          break;
+        }
+      }
+      
+      // If none of the patterns match, look for any .yaml file containing app-config
+      if (!dataKey) {
+        dataKey = dataKeys.find(key => 
+          key.endsWith('.yaml') && key.includes('app-config')
+        );
+      }
+      
+      // Last resort: use any .yaml file
+      if (!dataKey) {
+        dataKey = dataKeys.find(key => key.endsWith('.yaml'));
+      }
+      
+      if (!dataKey) {
+        throw new Error(`No suitable YAML data key found in ConfigMap '${actualConfigMapName}'. Available keys: ${dataKeys.join(', ')}`);
+      }
+      
+      LOGGER.info(`Using data key: ${dataKey}`);
       const appConfigYaml = configMap.data[dataKey];
       
       if (!appConfigYaml) {
-        throw new Error(`Data key '${dataKey}' not found in ConfigMap '${configMapName}'`);
+        throw new Error(`Data key '${dataKey}' is empty in ConfigMap '${actualConfigMapName}'`);
       }
       
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const appConfigObj = yaml.load(appConfigYaml) as any;
 
+      if (!appConfigObj || !appConfigObj.app) {
+        throw new Error(`Invalid app-config structure in ConfigMap '${actualConfigMapName}'. Expected 'app' section not found.`);
+      }
+
+      LOGGER.info(`Current title: ${appConfigObj.app.title}`);
       appConfigObj.app.title = newTitle;
+      LOGGER.info(`New title: ${newTitle}`);
+      
       configMap.data[dataKey] = yaml.dump(appConfigObj);
 
       delete configMap.metadata.creationTimestamp;
+      delete configMap.metadata.resourceVersion;
 
       await this.coreV1Api.replaceNamespacedConfigMap(
-        configMapName,
+        actualConfigMapName,
         namespace,
         configMap,
       );
-      console.log("ConfigMap updated successfully.");
+      console.log(`ConfigMap '${actualConfigMapName}' updated successfully with new title: '${newTitle}'`);
     } catch (error) {
       console.error("Error updating ConfigMap:", error);
-      throw new Error("Failed to update ConfigMap");
+      throw new Error(`Failed to update ConfigMap: ${error.message}`);
     }
   }
 
