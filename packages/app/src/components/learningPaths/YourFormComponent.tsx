@@ -52,8 +52,8 @@ const YourFormComponent: React.FC = () => {
 
   // Example submit handler
   const onSubmit: SubmitHandler<IMyFormInputs> = data => {
-    console.log('Form Data Submitted:', data);
-    alert('Form submitted! Check the console for data.');
+    
+    
     // Here you would typically send data to an API or handle it further
   };
 
