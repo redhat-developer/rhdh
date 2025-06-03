@@ -3,10 +3,6 @@ import {
   createBackendModule,
 } from '@backstage/backend-plugin-api';
 import {
-  defaultAuthProviderFactories,
-  ProviderFactories,
-} from '@backstage/plugin-auth-backend';
-import {
   atlassianAuthenticator,
   atlassianSignInResolvers,
 } from '@backstage/plugin-auth-backend-module-atlassian-provider';
@@ -249,7 +245,8 @@ const authProvidersModule = createBackendModule({
         auth,
       }) {
         const providersConfig = config.getConfig('auth.providers');
-        const authFactories: ProviderFactories = {};
+        const authFactories: Record<string, AuthProviderFactory> = {};
+
         providersConfig
           .keys()
           .filter(key => key !== 'guest')
@@ -258,16 +255,19 @@ const authProvidersModule = createBackendModule({
             authFactories[providerId] = factory;
           });
 
-        const providerFactories: ProviderFactories = {
-          ...defaultAuthProviderFactories,
+        const providerFactories: Record<string, AuthProviderFactory> = {
           ...authFactories,
         };
 
         logger.info(
-          `Enabled Provider Factories : ${JSON.stringify(providerFactories)}`,
+          `Enabled Provider Factories : ${JSON.stringify(
+            Object.keys(providerFactories),
+          )}`,
         );
+
         const transitiveGroupOwnershipResolver =
           new TransitiveGroupOwnershipResolver({ discovery, config, auth });
+
         authOwnershipResolution.setAuthOwnershipResolver(
           transitiveGroupOwnershipResolver,
         );

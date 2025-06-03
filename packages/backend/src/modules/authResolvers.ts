@@ -28,7 +28,7 @@ const createOidcSubClaimResolver = (...providers: OidcProviderInfo[]) =>
         dangerouslyAllowSignInWithoutUserInCatalog: z.boolean().optional(),
       })
       .optional(),
-    create(options) {
+    create() {
       return async (
         info: SignInInfo<OAuthAuthenticatorResult<OidcAuthResult>>,
         ctx: AuthResolverContext,
@@ -56,13 +56,9 @@ const createOidcSubClaimResolver = (...providers: OidcProviderInfo[]) =>
           }
 
           try {
-            return await ctx.signInWithCatalogUser(
-              {
-                annotations: { [userIdKey]: sub },
-              },
-              sub,
-              options?.dangerouslyAllowSignInWithoutUserInCatalog,
-            );
+            return await ctx.signInWithCatalogUser({
+              annotations: { [userIdKey]: sub },
+            });
           } catch (error: any) {
             if (error?.name === 'NotFoundError') {
               continue;
@@ -132,7 +128,7 @@ export namespace rhdhSignInResolvers {
           dangerouslyAllowSignInWithoutUserInCatalog: z.boolean().optional(),
         })
         .optional(),
-      create(options) {
+      create() {
         return async (
           info: SignInInfo<OAuth2ProxyResult>,
           ctx: AuthResolverContext,
@@ -144,13 +140,9 @@ export namespace rhdhSignInResolvers {
           if (!name) {
             throw new Error('Request did not contain a user');
           }
-          return ctx.signInWithCatalogUser(
-            {
-              entityRef: { name },
-            },
-            name,
-            options?.dangerouslyAllowSignInWithoutUserInCatalog,
-          );
+          return ctx.signInWithCatalogUser({
+            entityRef: { name },
+          });
         };
       },
     });
