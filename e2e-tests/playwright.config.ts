@@ -80,7 +80,7 @@ export default defineConfig({
       name: "showcase-auth-providers",
       testMatch: ["**/playwright/e2e/authProviders/*.spec.ts"],
       testIgnore: [
-        "**/playwright/e2e/authProviders/github-happy-path.spec.ts",
+        "**/playwright/e2e/authProviders/github-happy-path.spec.ts", // temporarily disable
         "**/playwright/e2e/verify-tls-config-health-check.spec.ts",
         //"**/playwright/e2e/authProviders/microsoft.spec.ts",
         //"**/playwright/e2e/authProviders/oidc.spec.ts",
