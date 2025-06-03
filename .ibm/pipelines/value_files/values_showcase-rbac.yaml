@@ -126,11 +126,11 @@ upstream:
     appConfig:
       app:
         # Please update to match host in case you don't want to configure hostname via `global.clusterRouterBase` or `global.host`.
-        baseUrl: 'https://{{- include "janus-idp.hostname" . }}'
+        baseUrl: ${RHDH_BASE_URL}
       backend:
-        baseUrl: 'https://{{- include "janus-idp.hostname" . }}'
+        baseUrl: ${RHDH_BASE_URL}
         cors:
-          origin: 'https://{{- include "janus-idp.hostname" . }}'
+          origin: ${RHDH_BASE_URL}
         database:
           connection: # configure Backstage DB connection parameters
             host: ${POSTGRES_HOST}
