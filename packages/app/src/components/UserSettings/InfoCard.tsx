@@ -1,4 +1,4 @@
-import { useState, MouseEvent, KeyboardEvent } from 'react';
+import { KeyboardEvent, MouseEvent, useState } from 'react';
 
 import {
   InfoCard as BSInfoCard,
@@ -18,11 +18,10 @@ export const InfoCard = () => {
   const config = useApi(configApiRef);
   const buildInfo: BuildInfo | undefined = config.getOptional('buildInfo');
 
-  const [showBuildInformation, setShowBuildInformation] =
-    useState<boolean>(
-      () =>
-        localStorage.getItem('rhdh-infocard-show-build-information') === 'true',
-    );
+  const [showBuildInformation, setShowBuildInformation] = useState<boolean>(
+    () =>
+      localStorage.getItem('rhdh-infocard-show-build-information') === 'true',
+  );
 
   const toggleBuildInformation = () => {
     setShowBuildInformation(!showBuildInformation);

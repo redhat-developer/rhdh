@@ -1,4 +1,10 @@
-import { PropsWithChildren, ReactNode, createContext, useContext, useMemo } from 'react';
+import {
+  createContext,
+  PropsWithChildren,
+  ReactNode,
+  useContext,
+  useMemo,
+} from 'react';
 
 import { renderInTestApp } from '@backstage/test-utils';
 
@@ -30,13 +36,9 @@ type ContextTwoValue = {
   salute: string;
 };
 
-const TestContextOne = createContext<ContextOneValue>(
-  {} as ContextOneValue,
-);
+const TestContextOne = createContext<ContextOneValue>({} as ContextOneValue);
 
-const TestContextTwo = createContext<ContextTwoValue>(
-  {} as ContextTwoValue,
-);
+const TestContextTwo = createContext<ContextTwoValue>({} as ContextTwoValue);
 
 const TestProviderOne = ({ children }: PropsWithChildren<{}>) => {
   const value = useMemo(() => ({ name: 'Context' }), []);
