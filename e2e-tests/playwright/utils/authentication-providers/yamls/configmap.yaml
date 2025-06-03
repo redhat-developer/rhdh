@@ -10,8 +10,8 @@ backend:
   csp:
     connect-src:
       - "'self'"
-      - 'http:'
-      - 'https:'
+      - "http:"
+      - "https:"
   cors:
     origin: ${BASE_URL:-http://localhost:3000}
     methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
@@ -26,12 +26,12 @@ backend:
           subject: e2e-tests-ci
   database:
     client: better-sqlite3
-    connection: ':memory:'
+    connection: ":memory:"
 includeTransitiveGroupOwnership: true
 auth:
   environment: development
   session:
-    secret: superSecretSecret    
+    secret: superSecretSecret
 catalog:
   import:
     entityFilename: catalog-info.yaml

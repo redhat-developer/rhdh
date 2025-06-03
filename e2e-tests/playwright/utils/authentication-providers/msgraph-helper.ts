@@ -11,16 +11,15 @@ export class MSGraphClient {
   private readonly tenantId: string;
   private readonly clientSecret: string;
 
-  constructor(clientId:string, clientSecret: string, tenantId: string) {
+  constructor(clientId: string, clientSecret: string, tenantId: string) {
     if (!clientId || !tenantId || !clientSecret) {
-        console.error("Missing required credentials");
-        throw new Error("Client ID, Tenant ID, and Client Secret are required");
+      console.error("Missing required credentials");
+      throw new Error("Client ID, Tenant ID, and Client Secret are required");
     }
 
     this.clientId = clientId;
     this.tenantId = tenantId;
     this.clientSecret = clientSecret;
-    
   }
 
   private initializeGraphForAppOnlyAuth(): void {
@@ -198,10 +197,13 @@ export class MSGraphClient {
   async addUserToGroupAsync(user: User, group: Group): Promise<Group> {
     this.ensureInitialized();
     const userDirectoryObject = {
-      "@odata.id": "https://graph.microsoft.com/v1.0/users/" + user.userPrincipalName,
+      "@odata.id":
+        "https://graph.microsoft.com/v1.0/users/" + user.userPrincipalName,
     };
     try {
-      console.log(`Adding user ${user.userPrincipalName} to group ${group.displayName}`);
+      console.log(
+        `Adding user ${user.userPrincipalName} to group ${group.displayName}`,
+      );
       return await this.appClient
         ?.api("/groups/" + group.id + "/members/$ref")
         .post(userDirectoryObject);
@@ -214,7 +216,9 @@ export class MSGraphClient {
   async removeUserFromGroupAsync(user: User, group: Group): Promise<Group> {
     this.ensureInitialized();
     try {
-      console.log(`Removing user ${user.userPrincipalName} from group ${group.displayName}`);
+      console.log(
+        `Removing user ${user.userPrincipalName} from group ${group.displayName}`,
+      );
       return await this.appClient
         ?.api(`/groups/${group.id}/members/${user.id}/$ref`)
         .delete();
@@ -230,7 +234,9 @@ export class MSGraphClient {
       "@odata.id": "https://graph.microsoft.com/v1.0/groups/" + subject.id,
     };
     try {
-      console.log(`Adding group ${subject.displayName} to group ${target.displayName}`);
+      console.log(
+        `Adding group ${subject.displayName} to group ${target.displayName}`,
+      );
       return await this.appClient
         ?.api("/groups/" + target.id + "/members/$ref")
         .post(userDirectoryObject);
@@ -257,7 +263,9 @@ export class MSGraphClient {
     this.ensureInitialized();
     try {
       console.log(`Updating group ${group.displayName}`);
-      return await this.appClient?.api("/groups/" + group.id).update(updatedGroup);
+      return await this.appClient
+        ?.api("/groups/" + group.id)
+        .update(updatedGroup);
     } catch (e) {
       console.error("Failed to update group:", e);
       throw e;
@@ -267,7 +275,9 @@ export class MSGraphClient {
   async getAppRedirectUrlsAsync(): Promise<string[]> {
     this.ensureInitialized();
     try {
-      const app = await this.appClient?.api(`/applications(appId='{${this.clientId}}')`).get();
+      const app = await this.appClient
+        ?.api(`/applications(appId='{${this.clientId}}')`)
+        .get();
       return app?.web?.redirectUris || [];
     } catch (e) {
       console.error("Failed to get app redirect URLs:", e);
@@ -280,13 +290,15 @@ export class MSGraphClient {
     try {
       const currentUrls = await this.getAppRedirectUrlsAsync();
       const newUrls = [...new Set([...currentUrls, ...redirectUrls])];
-      
+
       console.log(`Adding redirect URLs to app ${this.clientId}`);
-      await this.appClient?.api(`/applications(appId='{${this.clientId}}')`).update({
-        web: {
-          redirectUris: newUrls
-        }
-      });
+      await this.appClient
+        ?.api(`/applications(appId='{${this.clientId}}')`)
+        .update({
+          web: {
+            redirectUris: newUrls,
+          },
+        });
     } catch (e) {
       console.error("Failed to add app redirect URLs:", e);
       throw e;
@@ -297,14 +309,16 @@ export class MSGraphClient {
     this.ensureInitialized();
     try {
       const currentUrls = await this.getAppRedirectUrlsAsync();
-      const newUrls = currentUrls.filter(url => !redirectUrls.includes(url));
-      
+      const newUrls = currentUrls.filter((url) => !redirectUrls.includes(url));
+
       console.log(`Removing redirect URLs from app ${this.clientId}`);
-      await this.appClient?.api(`/applications(appId='{${this.clientId}}')`).update({
-        web: {
-          redirectUris: newUrls
-        }
-      });
+      await this.appClient
+        ?.api(`/applications(appId='{${this.clientId}}')`)
+        .update({
+          web: {
+            redirectUris: newUrls,
+          },
+        });
     } catch (e) {
       console.error("Failed to remove app redirect URLs:", e);
       throw e;
@@ -315,11 +329,13 @@ export class MSGraphClient {
     this.ensureInitialized();
     try {
       console.log(`Updating redirect URLs for app ${this.clientId}`);
-      await this.appClient?.api(`/applications(appId='{${this.clientId}}')`).update({
-        web: {
-          redirectUris: redirectUrls
-        }
-      });
+      await this.appClient
+        ?.api(`/applications(appId='{${this.clientId}}')`)
+        .update({
+          web: {
+            redirectUris: redirectUrls,
+          },
+        });
     } catch (e) {
       console.error("Failed to update app redirect URLs:", e);
       throw e;

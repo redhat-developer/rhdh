@@ -1,10 +1,10 @@
 kind: Backstage
 apiVersion: rhdh.redhat.com/v1alpha2
-metadata: 
+metadata:
   name: rhdh
 spec:
   application:
-    image: 'quay.io/rhdh-community/rhdh:next'
+    image: "quay.io/rhdh-community/rhdh:next"
     appConfig:
       configMaps:
         - name: app-config-rhdh
@@ -13,7 +13,7 @@ spec:
     extraEnvs:
       envs:
         - name: NODE_OPTIONS
-          value: '--no-node-snapshot'
+          value: "--no-node-snapshot"
       secrets:
         - name: rhdh-secrets
     extraFiles:

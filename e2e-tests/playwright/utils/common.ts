@@ -364,7 +364,6 @@ export class Common {
       }
     }
   }
-
 }
 
 export async function setupBrowser(browser: Browser, testInfo: TestInfo) {

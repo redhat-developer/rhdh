@@ -7,7 +7,7 @@ import {
   CatalogImport,
 } from "../../support/pages/catalog-import";
 import { TEMPLATES } from "../../support/testData/templates";
-import RHDHDeployment from '../../utils/authentication-providers/rhdh-deployment';
+import RHDHDeployment from "../../utils/authentication-providers/rhdh-deployment";
 
 let page: Page;
 let context: BrowserContext;
@@ -20,24 +20,31 @@ test.describe("GitHub Happy path", async () => {
   let catalogImport: CatalogImport;
   let backstageShowcase: BackstageShowcase;
 
-  const component = "https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/all.yaml";
+  const component =
+    "https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/all.yaml";
 
-  const namespace = 'albarbaro-test-namespace-github-happy-path';
-  const appConfigMap = 'app-config-rhdh';
-  const rbacConfigMap = 'rbac-policy';
-  const dynamicPluginsConfigMap = 'dynamic-plugins';
-  const secretName = 'rhdh-secrets';
-  
+  const namespace = "albarbaro-test-namespace-github-happy-path";
+  const appConfigMap = "app-config-rhdh";
+  const rbacConfigMap = "rbac-policy";
+  const dynamicPluginsConfigMap = "dynamic-plugins";
+  const secretName = "rhdh-secrets";
+
   // set deployment instance
-  const deployment: RHDHDeployment = new RHDHDeployment(namespace, appConfigMap, rbacConfigMap, dynamicPluginsConfigMap, secretName);
-  deployment.instanceName = 'rhdh'
+  const deployment: RHDHDeployment = new RHDHDeployment(
+    namespace,
+    appConfigMap,
+    rbacConfigMap,
+    dynamicPluginsConfigMap,
+    secretName,
+  );
+  deployment.instanceName = "rhdh";
 
   // compute backstage baseurl
   const backstageUrl = await deployment.computeBackstageUrl();
   const backstageBackendUrl = await deployment.computeBackstageBackendUrl();
   console.log(`Backstage BaseURL is: ${backstageUrl}`);
 
-  test.use({baseURL: backstageUrl});
+  test.use({ baseURL: backstageUrl });
 
   test.beforeAll(async ({ browser }, testInfo) => {
     ({ context, page } = await setupBrowser(browser, testInfo));
@@ -45,13 +52,13 @@ test.describe("GitHub Happy path", async () => {
     common = new Common(page);
     catalogImport = new CatalogImport(page);
     backstageShowcase = new BackstageShowcase(page);
-    test.info().setTimeout(600*1000);
+    test.info().setTimeout(600 * 1000);
 
     // load default configs from yaml files
     await deployment.loadAllConfigs();
 
     // expect some expected variables
-    
+
     expect(process.env.AUTH_PROVIDERS_GH_ORG_NAME).toBeDefined();
     expect(process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET).toBeDefined();
     expect(process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_ID).toBeDefined();
@@ -68,74 +75,115 @@ test.describe("GitHub Happy path", async () => {
     // create namespace and wait for it to be active
     (await deployment.createNamespace()).waitForNamespaceActive();
 
-    // create all base configmaps 
+    // create all base configmaps
     await deployment.createAllConfigs();
 
     // generate static token
     await deployment.generateStaticToken();
 
     // set enviroment variables and create secret
-    if(!process.env.ISRUNNINGLOCAL) deployment.addSecretData("BASE_URL", backstageUrl);
-    if(!process.env.ISRUNNINGLOCAL) deployment.addSecretData("BASE_BACKEND_URL", backstageBackendUrl);
-    deployment.addSecretData("AUTH_PROVIDERS_GH_ORG_NAME", process.env.AUTH_PROVIDERS_GH_ORG_NAME);
-    deployment.addSecretData("AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET", process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET);
-    deployment.addSecretData("AUTH_PROVIDERS_GH_ORG_CLIENT_ID", process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_ID);
-    deployment.addSecretData("AUTH_PROVIDERS_GH_ORG_APP_ID", process.env.AUTH_PROVIDERS_GH_ORG_APP_ID);
-    deployment.addSecretData("AUTH_PROVIDERS_GH_ORG1_PRIVATE_KEY", process.env.AUTH_PROVIDERS_GH_ORG1_PRIVATE_KEY);
-    deployment.addSecretData("AUTH_PROVIDERS_GH_ORG_WEBHOOK_SECRET", process.env.AUTH_PROVIDERS_GH_ORG_WEBHOOK_SECRET);
+    if (!process.env.ISRUNNINGLOCAL)
+      deployment.addSecretData("BASE_URL", backstageUrl);
+    if (!process.env.ISRUNNINGLOCAL)
+      deployment.addSecretData("BASE_BACKEND_URL", backstageBackendUrl);
+    deployment.addSecretData(
+      "AUTH_PROVIDERS_GH_ORG_NAME",
+      process.env.AUTH_PROVIDERS_GH_ORG_NAME,
+    );
+    deployment.addSecretData(
+      "AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET",
+      process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET,
+    );
+    deployment.addSecretData(
+      "AUTH_PROVIDERS_GH_ORG_CLIENT_ID",
+      process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_ID,
+    );
+    deployment.addSecretData(
+      "AUTH_PROVIDERS_GH_ORG_APP_ID",
+      process.env.AUTH_PROVIDERS_GH_ORG_APP_ID,
+    );
+    deployment.addSecretData(
+      "AUTH_PROVIDERS_GH_ORG1_PRIVATE_KEY",
+      process.env.AUTH_PROVIDERS_GH_ORG1_PRIVATE_KEY,
+    );
+    deployment.addSecretData(
+      "AUTH_PROVIDERS_GH_ORG_WEBHOOK_SECRET",
+      process.env.AUTH_PROVIDERS_GH_ORG_WEBHOOK_SECRET,
+    );
 
     await deployment.createSecret();
 
     // enable keycloak login with ingestion
-    await deployment.enableGithubLoginWithIngestion()
+    await deployment.enableGithubLoginWithIngestion();
     await deployment.setGithubResolver("usernameMatchingUserEntityName", true);
 
     // enable required plugins and configs
-    deployment.setDynamicPluginEnabled("./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-github-dynamic", true);
-    deployment.setDynamicPluginEnabled("./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-dynamic", true);
-    deployment.setDynamicPluginEnabled("./dynamic-plugins/dist/backstage-community-plugin-github-issues", true);
-    deployment.setDynamicPluginEnabled("./dynamic-plugins/dist/roadiehq-backstage-plugin-github-pull-requests", true);
-    deployment.setDynamicPluginEnabled("./dynamic-plugins/dist/backstage-community-plugin-github-actions", true);
-    deployment.setDynamicPluginEnabled("./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-org-dynamic", true);
+    deployment.setDynamicPluginEnabled(
+      "./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-github-dynamic",
+      true,
+    );
+    deployment.setDynamicPluginEnabled(
+      "./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-dynamic",
+      true,
+    );
+    deployment.setDynamicPluginEnabled(
+      "./dynamic-plugins/dist/backstage-community-plugin-github-issues",
+      true,
+    );
+    deployment.setDynamicPluginEnabled(
+      "./dynamic-plugins/dist/roadiehq-backstage-plugin-github-pull-requests",
+      true,
+    );
+    deployment.setDynamicPluginEnabled(
+      "./dynamic-plugins/dist/backstage-community-plugin-github-actions",
+      true,
+    );
+    deployment.setDynamicPluginEnabled(
+      "./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-org-dynamic",
+      true,
+    );
     deployment.setAppConfigProperty("catalog.providers.github", {
-        "my-test-org": {
-          "organization": "janus-qe",
-          "catalogPath": "/catalog-info.yaml",
-          "schedule": {
-            "frequency": {
-              "minutes": 1
-            },
-            "timeout": {
-              "minutes": 1
-            },
-            "initialDelay": {
-              "seconds": 15
-            }
-          }
-        }
-    })
-    deployment.setAppConfigProperty("catalog", {
-      "import": {
-        "entityFilename": "catalog-info.yaml",
-        "pullRequestBranchName": "backstage-integration"
+      "my-test-org": {
+        organization: "janus-qe",
+        catalogPath: "/catalog-info.yaml",
+        schedule: {
+          frequency: {
+            minutes: 1,
+          },
+          timeout: {
+            minutes: 1,
+          },
+          initialDelay: {
+            seconds: 15,
+          },
+        },
       },
-      "locations": [
+    });
+    deployment.setAppConfigProperty("catalog", {
+      import: {
+        entityFilename: "catalog-info.yaml",
+        pullRequestBranchName: "backstage-integration",
+      },
+      locations: [
         {
-          "type": "url",
-          "target": "https://github.com/janus-qe/auth-providers/blob/main/location.yaml"
+          type: "url",
+          target:
+            "https://github.com/janus-qe/auth-providers/blob/main/location.yaml",
         },
         {
-          "type": "url",
-          "target": "https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/all.yaml"
+          type: "url",
+          target:
+            "https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/all.yaml",
         },
         {
-          "type": "url",
-          "target": "https://github.com/redhat-developer/red-hat-developer-hub-software-templates/blob/main/templates.yaml"
-        }
+          type: "url",
+          target:
+            "https://github.com/redhat-developer/red-hat-developer-hub-software-templates/blob/main/templates.yaml",
+        },
       ],
-      "rules": [
+      rules: [
         {
-          "allow": [
+          allow: [
             "API",
             "Component",
             "Group",
@@ -143,51 +191,47 @@ test.describe("GitHub Happy path", async () => {
             "Resource",
             "Location",
             "System",
-            "Template"
-          ]
-        }
-      ]
-    })
+            "Template",
+          ],
+        },
+      ],
+    });
     deployment.setAppConfigProperty("catalog.providers.githubOrg", [
       {
-        "id": "github",
-        "githubUrl": "https://github.com",
-        "orgs": [
-            "janus-qe"
-          ],
-          "schedule": {
-            "initialDelay": {
-              "seconds": 0
-            },
-            "frequency": {
-              "minutes": 1
-            },
-            "timeout": {
-              "minutes": 1
-            }
-          }
-        }
-      ]
-    )
+        id: "github",
+        githubUrl: "https://github.com",
+        orgs: ["janus-qe"],
+        schedule: {
+          initialDelay: {
+            seconds: 0,
+          },
+          frequency: {
+            minutes: 1,
+          },
+          timeout: {
+            minutes: 1,
+          },
+        },
+      },
+    ]);
 
     await deployment.updateAllConfigs();
 
     // create backstage deployment and wait for it to be ready
     await deployment.createBackstageDeployment();
     await deployment.waitForDeploymentReady();
-    
+
     // wait for rhdh first sync and portal to be reachable
     await deployment.waitForSynced();
   });
 
   test("Login as a Github user.", async () => {
     const login = await common.githubLogin(
-        "rhdhqeauthadmin",
-        process.env.AUTH_PROVIDERS_GH_USER_PASSWORD,
-        process.env.AUTH_PROVIDERS_GH_ADMIN_2FA,
+      "rhdhqeauthadmin",
+      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD,
+      process.env.AUTH_PROVIDERS_GH_ADMIN_2FA,
     );
     expect(login).toBe("Login successful");
-
   });
 
   test("Verify Profile is Github Account Name in the Settings page", async () => {

@@ -9,4 +9,3 @@ plugins:
     disabled: true
   - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
     disabled: true
-  

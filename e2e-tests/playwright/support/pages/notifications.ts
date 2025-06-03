@@ -11,7 +11,7 @@ export class NotificationPage {
   }
 
   async clickNotificationsNavBarItem() {
-    await this.uiHelper.openSidebar('Notifications')
+    await this.uiHelper.openSidebar("Notifications");
   }
 
   async notificationContains(text: string | RegExp, nth = 0) {
@@ -19,7 +19,7 @@ export class NotificationPage {
     // always expand the notifications table to show as many notifications as possible
     await this.page.getByRole("option", { name: "20" }).click();
     await expect(
-      this.page.getByTestId("loading-indicator").getByRole("img")
+      this.page.getByTestId("loading-indicator").getByRole("img"),
     ).toHaveCount(0);
     let row = await this.page.locator(`tr`, { hasText: text }).first();
     await expect(row).toHaveCount(1);
@@ -47,7 +47,7 @@ export class NotificationPage {
       await this.page.getByTitle("Mark all read").getByRole("button").click();
       await this.page.getByRole("button", { name: "MARK ALL" }).click();
       await expect(
-        this.page.getByTestId("loading-indicator").getByRole("img")
+        this.page.getByTestId("loading-indicator").getByRole("img"),
       ).toHaveCount(0);
       await expect(this.page.getByText("No records to display")).toBeVisible();
     }
@@ -65,10 +65,10 @@ export class NotificationPage {
     await this.page.getByLabel("Severity").click();
     await this.page.getByRole("option", { name: severity }).click();
     await expect(
-      this.page.getByRole("table").filter({ hasText: "Rows per page" })
+      this.page.getByRole("table").filter({ hasText: "Rows per page" }),
     ).toBeVisible();
     await expect(
-      this.page.getByTestId("loading-indicator").getByRole("img")
+      this.page.getByTestId("loading-indicator").getByRole("img"),
     ).toHaveCount(0);
   }
 
@@ -79,7 +79,7 @@ export class NotificationPage {
       .getByRole("button")
       .click();
     await expect(
-      this.page.getByTestId("loading-indicator").getByRole("img")
+      this.page.getByTestId("loading-indicator").getByRole("img"),
     ).toHaveCount(0);
   }
 
@@ -90,7 +90,7 @@ export class NotificationPage {
       .getByRole("button")
       .click();
     await expect(
-      this.page.getByTestId("loading-indicator").getByRole("img")
+      this.page.getByTestId("loading-indicator").getByRole("img"),
     ).toHaveCount(0);
   }
 
@@ -98,7 +98,7 @@ export class NotificationPage {
     await this.page.getByLabel("View").click();
     await this.page.getByRole("option", { name: "Saved" }).click();
     await expect(
-      this.page.getByTestId("loading-indicator").getByRole("img")
+      this.page.getByTestId("loading-indicator").getByRole("img"),
     ).toHaveCount(0);
   }
 
@@ -119,29 +119,29 @@ export class NotificationPage {
 
   async viewRead() {
     await this.page.getByLabel("View").click();
-    if (`${process.env.MILESTONE}` == '5') {
-      await this.page.getByRole('option', { name: 'Read notifications', exact: true }).click()
-    }
-    else
-    {
+    if (`${process.env.MILESTONE}` == "5") {
+      await this.page
+        .getByRole("option", { name: "Read notifications", exact: true })
+        .click();
+    } else {
       await this.page.getByRole("option", { name: "Marked as read" }).click();
     }
     await expect(
-      this.page.getByTestId("loading-indicator").getByRole("img")
+      this.page.getByTestId("loading-indicator").getByRole("img"),
     ).toHaveCount(0);
   }
 
   async viewUnRead() {
     await this.page.getByLabel("View").click();
-    if (`${process.env.MILESTONE}` == '5') {
-      await this.page.getByRole('option', { name: 'Unread notifications', exact: true }).click()
-    }
-    else
-    {
+    if (`${process.env.MILESTONE}` == "5") {
+      await this.page
+        .getByRole("option", { name: "Unread notifications", exact: true })
+        .click();
+    } else {
       await this.page.getByRole("option", { name: "New only" }).click();
-    }  
+    }
     await expect(
-      this.page.getByTestId("loading-indicator").getByRole("img")
+      this.page.getByTestId("loading-indicator").getByRole("img"),
     ).toHaveCount(0);
   }
 
@@ -149,7 +149,7 @@ export class NotificationPage {
     await this.page.getByLabel("Sort by").click();
     await this.page.getByRole("option", { name: "Oldest on top" }).click();
     await expect(
-      this.page.getByTestId("loading-indicator").getByRole("img")
+      this.page.getByTestId("loading-indicator").getByRole("img"),
     ).toHaveCount(0);
   }
 
@@ -157,7 +157,7 @@ export class NotificationPage {
     await this.page.getByLabel("Sort by").click();
     await this.page.getByRole("option", { name: "Newest on top" }).click();
     await expect(
-      this.page.getByTestId("loading-indicator").getByRole("img")
+      this.page.getByTestId("loading-indicator").getByRole("img"),
     ).toHaveCount(0);
   }
 }

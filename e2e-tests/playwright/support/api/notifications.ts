@@ -31,7 +31,9 @@ export default class RhdhNotficationsApi {
   }
 
   // Create notifiation
-  public async createNotification(notifications: Notifications): Promise<APIResponse> {
+  public async createNotification(
+    notifications: Notifications,
+  ): Promise<APIResponse> {
     return await this.myContext.post("notifications", { data: notifications });
   }
 }

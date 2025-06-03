@@ -7,7 +7,6 @@ import { RhdhAuthApiHack } from "../../../support/api/rhdh-auth-api-hack";
 import { Orchestrator } from "../../../support/pages/orchestrator";
 import { NotificationPage } from "../../../support/pages/notifications";
 
-
 test.describe("Filter critical notification tests", () => {
   let uiHelper: UIhelper;
   let common: Common;
@@ -21,17 +20,17 @@ test.describe("Filter critical notification tests", () => {
     orchestrator = new Orchestrator(page);
     notificationPage = new NotificationPage(page);
     await common.loginAsKeycloakUser();
-    apiToken = await RhdhAuthApiHack.getToken(page)
+    apiToken = await RhdhAuthApiHack.getToken(page);
   });
 
   test("Fiter notifcations by serverity - critical", async () => {
     let r = (Math.random() + 1).toString(36).substring(7);
-    let severity = "critical"
-    const notificationsApi = await RhdhNotficationsApi.build('test-token');
+    let severity = "critical";
+    const notificationsApi = await RhdhNotficationsApi.build("test-token");
     // Used boradcast here, but we should use type: entity and entityRef: ["user:<namespace>/<username>"]
     const notification: Notifications = {
       recipients: {
-        type: 'broadcast',
+        type: "broadcast",
         entityRef: [""],
       },
       payload: {
@@ -41,9 +40,11 @@ test.describe("Filter critical notification tests", () => {
         topic: `Testing UI Notification Mark all as read ${severity}-${r}`,
       },
     };
-    await notificationsApi.createNotification(notification)
-    await uiHelper.openSidebar('Notifications')
-    await notificationPage.selectSeverity('Critical')
-    await notificationPage.notificationContains(`UI Notification Mark all as read ${severity}-${r}`)
+    await notificationsApi.createNotification(notification);
+    await uiHelper.openSidebar("Notifications");
+    await notificationPage.selectSeverity("Critical");
+    await notificationPage.notificationContains(
+      `UI Notification Mark all as read ${severity}-${r}`,
+    );
   });
 });
