@@ -535,9 +535,9 @@ apply_yaml_files() {
       --namespace="${project}" \
       --dry-run=client -o yaml | oc apply -f -
 
-    # Create Pipeline run for tekton test case.
-    oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline.yaml"
-    oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline-run.yaml"
+    # # Create Pipeline run for tekton test case.
+    # oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline.yaml"
+    # oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline-run.yaml"
 
     # Create Deployment and Pipeline for Topology test.
     oc apply -f "$dir/resources/topology_test/topology-test.yaml"
