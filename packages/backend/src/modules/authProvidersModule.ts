@@ -70,7 +70,8 @@ import {
 } from '@backstage/plugin-auth-node';
 
 import { TransitiveGroupOwnershipResolver } from '../transitiveGroupOwnershipResolver';
-import { rhdhSignInResolvers } from './authResolvers';
+import { trySignInResolvers } from './resolverUtils';
+import { rhdhSignInResolvers } from './rhdhSignInResolvers';
 
 function getAuthProviderFactory(providerId: string): AuthProviderFactory {
   switch (providerId) {
@@ -183,12 +184,17 @@ function getAuthProviderFactory(providerId: string): AuthProviderFactory {
     case 'oidc':
       return createOAuthProviderFactory({
         authenticator: oidcAuthenticator,
-        signInResolver: rhdhSignInResolvers.oidcSubClaimMatchingIdPUserId(),
+        signInResolver: trySignInResolvers([
+          rhdhSignInResolvers.oidcSubClaimMatchingKeycloakUserId(),
+          rhdhSignInResolvers.oidcLdapUuidMatchingAnnotation(),
+        ]),
         signInResolverFactories: {
           oidcSubClaimMatchingKeycloakUserId:
             rhdhSignInResolvers.oidcSubClaimMatchingKeycloakUserId,
           oidcSubClaimMatchingPingIdentityUserId:
             rhdhSignInResolvers.oidcSubClaimMatchingPingIdentityUserId,
+          oidcLdapUuidMatchingAnnotation:
+            rhdhSignInResolvers.oidcLdapUuidMatchingAnnotation,
           ...oidcSignInResolvers,
           ...commonSignInResolvers,
         },
