@@ -601,6 +601,7 @@ class RHDHDeployment {
         );
         return;
       } catch (error) {
+        console.log(`Timeout waiting for Backstage CRD to be available: ${error.message}`)
         if (Date.now() - startTime >= timeoutMs) {
           throw new Error(
             `Timeout waiting for Backstage CRD to be available: ${error.message}`,
