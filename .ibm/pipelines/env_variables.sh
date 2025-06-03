@@ -63,6 +63,9 @@ QE_USER5_PASS=$(cat /tmp/secrets/QE_USER5_PASS)
 QE_USER6_ID=$(cat /tmp/secrets/QE_USER6_ID)
 QE_USER6_PASS=$(cat /tmp/secrets/QE_USER6_PASS)
 
+GITHUB_OAUTH_APP_ID=$(cat /tmp/secrets/GITHUB_OAUTH_APP_ID)
+GITHUB_OAUTH_APP_SECRET=$(cat /tmp/secrets/GITHUB_OAUTH_APP_SECRET)
+
 K8S_CLUSTER_TOKEN_TEMPORARY=$(cat /tmp/secrets/K8S_CLUSTER_TOKEN_TEMPORARY)
 
 GITLAB_TOKEN=$(cat /tmp/secrets/GITLAB_TOKEN)
