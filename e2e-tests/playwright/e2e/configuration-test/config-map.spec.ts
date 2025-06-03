@@ -1,6 +1,5 @@
 import { test, expect } from "@playwright/test";
 import { KubeClient } from "../../utils/kube-client";
-import { LOGGER } from "../../utils/logger";
 import { Common } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
 
@@ -16,15 +15,14 @@ test.describe("Change app-config at e2e test runtime", () => {
     const kubeUtils = new KubeClient();
     const dynamicTitle = generateDynamicTitle();
     try {
-      LOGGER.info(`Looking for app-config ConfigMap in namespace '${namespace}'`);
-      LOGGER.info(`Updating ConfigMap with new title: '${dynamicTitle}'`);
+      console.log(`Updating ConfigMap '${configMapName}' with new title.`);
       await kubeUtils.updateConfigMapTitle(
         configMapName,
         namespace,
         dynamicTitle,
       );
 
-      LOGGER.info(
+      console.log(
         `Restarting deployment '${deploymentName}' to apply ConfigMap changes.`,
       );
       await kubeUtils.restartDeployment(deploymentName, namespace);
@@ -35,11 +33,11 @@ test.describe("Change app-config at e2e test runtime", () => {
       await page.reload({ waitUntil: "domcontentloaded" });
       await common.loginAsGuest();
       await new UIhelper(page).openSidebar("Home");
-      LOGGER.info("Verifying new title in the UI... ");
+      console.log("Verifying new title in the UI... ");
       expect(await page.title()).toContain(dynamicTitle);
-      LOGGER.info("Title successfully verified in the UI.");
+      console.log("Title successfully verified in the UI.");
     } catch (error) {
-      LOGGER.error(
+      console.log(
         `Test failed during ConfigMap update or deployment restart:`,
         error,
       );
