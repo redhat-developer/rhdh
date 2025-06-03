@@ -148,9 +148,23 @@ export class KubeClient {
       );
       const configMap = configMapResponse.body;
 
-      const appConfigYaml = configMap.data[`${configMapName}.yaml`];
+      const appConfigYaml = configMap.data["app-config.yaml"];
+      if (!appConfigYaml) {
+        throw new Error(
+          `app-config.yaml not found in ConfigMap ${configMapName}`,
+        );
+      }
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const appConfigObj = yaml.load(appConfigYaml) as any;
+
+      if (!appConfigObj) {
+        throw new Error("Failed to parse YAML from app-config.yaml");
+      }
+
+      if (!appConfigObj.app) {
+        appConfigObj.app = {};
+      }
 
       appConfigObj.app.title = newTitle;
       configMap.data[`${configMapName}.yaml`] = yaml.dump(appConfigObj);
@@ -283,11 +297,15 @@ export class KubeClient {
     namespace: string,
     expectedReplicas: number,
     timeout: number = 300000, // 5 minutes
-    checkInterval: number = 10000, // 10 seconds
+    checkInterval: number = 15000, // 15 seconds
   ) {
     const start = Date.now();
     const labelSelector =
       "app.kubernetes.io/component=backstage,app.kubernetes.io/instance=rhdh,app.kubernetes.io/name=backstage";
+
+    console.log(
+      `Waiting for deployment ${deploymentName} to reach ${expectedReplicas} replicas (timeout: ${timeout / 1000}s)`,
+    );
 
     while (Date.now() - start < timeout) {
       try {
@@ -298,27 +316,41 @@ export class KubeClient {
         );
 
         const availableReplicas = response.body.status?.availableReplicas || 0;
-        const conditions = response.body.status?.conditions || [];
+        const readyReplicas = response.body.status?.readyReplicas || 0;
 
-        console.log(`Available replicas: ${availableReplicas}`);
         console.log(
-          "Deployment conditions:",
-          JSON.stringify(conditions, null, 2),
+          `Available replicas: ${availableReplicas}, Ready replicas: ${readyReplicas}`,
         );
 
-        // Log pod conditions using label selector
-        await this.logPodConditions(namespace, labelSelector);
+        // For zero replicas, just check available replicas
+        if (expectedReplicas === 0) {
+          if (availableReplicas === 0) {
+            console.log(
+              `Deployment ${deploymentName} is scaled down to 0 replicas.`,
+            );
+            return;
+          }
+        } else {
+          // For non-zero replicas, check both available and ready replicas
+          if (
+            availableReplicas === expectedReplicas &&
+            readyReplicas === expectedReplicas
+          ) {
+            console.log(
+              `Deployment ${deploymentName} is ready with ${availableReplicas} replicas.`,
+            );
+            return;
+          }
+        }
 
-        // Check if the expected replicas match
-        if (availableReplicas === expectedReplicas) {
-          console.log(
-            `Deployment ${deploymentName} is ready with ${availableReplicas} replicas.`,
-          );
-          return;
+        // Log pod conditions less frequently to reduce noise
+        if ((Date.now() - start) % 60000 < checkInterval) {
+          // Every minute
+          await this.logPodConditions(namespace, labelSelector);
         }
 
         console.log(
-          `Waiting for ${deploymentName} to reach ${expectedReplicas} replicas, currently has ${availableReplicas}.`,
+          `Waiting for ${deploymentName} to reach ${expectedReplicas} replicas, currently has ${availableReplicas} available, ${readyReplicas} ready.`,
         );
       } catch (error) {
         console.error(`Error checking deployment status: ${error}`);
@@ -328,23 +360,29 @@ export class KubeClient {
     }
 
     throw new Error(
-      `Deployment ${deploymentName} did not become ready in time.`,
+      `Deployment ${deploymentName} did not become ready in time (timeout: ${timeout / 1000}s).`,
     );
   }
 
   async restartDeployment(deploymentName: string, namespace: string) {
     try {
+      console.log(
+        `Starting deployment restart for ${deploymentName} in namespace ${namespace}`,
+      );
+
+      // Scale down deployment to 0 replicas
       console.log(`Scaling down deployment ${deploymentName} to 0 replicas.`);
-      console.log(`Deployment: ${deploymentName}, Namespace: ${namespace}`);
-      await this.logPodConditions(namespace);
       await this.scaleDeployment(deploymentName, namespace, 0);
+      await this.waitForDeploymentReady(deploymentName, namespace, 0, 300000); // 5 minutes for scale down
 
-      await this.waitForDeploymentReady(deploymentName, namespace, 0);
+      // Wait a bit for pods to be fully terminated
+      console.log("Waiting for pods to be fully terminated...");
+      await new Promise((resolve) => setTimeout(resolve, 10000)); // 10 seconds
 
+      // Scale up deployment to 1 replica
       console.log(`Scaling up deployment ${deploymentName} to 1 replica.`);
       await this.scaleDeployment(deploymentName, namespace, 1);
-
-      await this.waitForDeploymentReady(deploymentName, namespace, 1);
+      await this.waitForDeploymentReady(deploymentName, namespace, 1, 600000); // 10 minutes for scale up
 
       console.log(
         `Restart of deployment ${deploymentName} completed successfully.`,
@@ -352,11 +390,12 @@ export class KubeClient {
     } catch (error) {
       console.error(
         `Error during deployment restart: Deployment '${deploymentName}' in namespace '${namespace}'.`,
+        error,
       );
       await this.logPodConditions(namespace);
       await this.logDeploymentEvents(deploymentName, namespace);
       throw new Error(
-        `Failed to restart deployment '${deploymentName}' in namespace '${namespace}'.`,
+        `Failed to restart deployment '${deploymentName}' in namespace '${namespace}': ${error.message}`,
       );
     }
   }

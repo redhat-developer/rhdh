@@ -796,7 +796,11 @@ cluster_setup_operator() {
 }
 
 initiate_deployments() {
-  configure_namespace ${NAME_SPACE}
+  configure_namespace "${NAME_SPACE}"
+  configure_namespace "${NAME_SPACE_POSTGRES_DB}"
+  configure_namespace "${NAME_SPACE_RBAC}"
+  configure_namespace "${NAME_SPACE_RUNTIME}"
+  configure_external_postgres_db "${NAME_SPACE_RBAC}"
 
   # Deploy redis cache db.
   oc apply -f "$DIR/resources/redis-cache/redis-deployment.yaml" --namespace="${NAME_SPACE}"
@@ -811,10 +815,6 @@ initiate_deployments() {
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO}" \
     --set upstream.backstage.image.tag="${TAG_NAME}"
-
-  configure_namespace "${NAME_SPACE_POSTGRES_DB}"
-  configure_namespace "${NAME_SPACE_RBAC}"
-  configure_external_postgres_db "${NAME_SPACE_RBAC}"
 
   # Initiate rbac instance deployment.
   local rbac_rhdh_base_url="https://${RELEASE_NAME_RBAC}-backstage-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
@@ -831,8 +831,6 @@ initiate_deployments() {
 initiate_runtime_deployment() {
   local release_name=$1
   local namespace=$2
-  configure_namespace "${namespace}"
-  uninstall_helmchart "${namespace}" "${release_name}"
   sed -i "s|POSTGRES_USER:.*|POSTGRES_USER: $RDS_USER|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
   sed -i "s|POSTGRES_PASSWORD:.*|POSTGRES_PASSWORD: $(echo -n $RDS_PASSWORD | base64 -w 0)|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
   sed -i "s|POSTGRES_HOST:.*|POSTGRES_HOST: $(echo -n $RDS_1_HOST | base64 -w 0)|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
