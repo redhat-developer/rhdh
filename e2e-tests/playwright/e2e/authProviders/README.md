@@ -25,3 +25,9 @@ When adding new test cases, you can also run the tests locally against a local R
   - Optionally add `ISRUNNINGLOCALDEBUG=true` to see local backend logs
 - Export all the environment variables required by the configuration and tests
 - run the tests locally with `npx playwright test --project showcase-auth-providers --workers 1
+
+The following plugins are required to run these tests, make sure they are exported into the dynamic-plugins-root folder when running locally:
+  - backstage-community-plugin-catalog-backend-module-keycloak-dynamic
+  - backstage-plugin-catalog-backend-module-github-org-dynamic
+  - backstage-plugin-catalog-backend-module-msgraph-dynamic
+  - backstage-community-plugin-rbac
