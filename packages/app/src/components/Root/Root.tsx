@@ -1,4 +1,6 @@
-import React, {
+import {
+  FC,
+  Fragment,
   PropsWithChildren,
   useContext,
   useLayoutEffect,
@@ -193,7 +195,7 @@ interface ExpandableMenuListProps {
   sx?: SxProps;
 }
 
-const ExpandableMenuList: React.FC<ExpandableMenuListProps> = ({
+const ExpandableMenuList: FC<ExpandableMenuListProps> = ({
   menuItems,
   isOpen,
   renderItem,
@@ -396,7 +398,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
         {menuItemArray.map(menuItem => {
           const isOpen = openItems[menuItem.name] || false;
           return (
-            <React.Fragment key={menuItem.name}>
+            <Fragment key={menuItem.name}>
               {menuItem.children!.length === 0 && getMenuItem(menuItem)}
               {menuItem.children!.length > 0 && (
                 <SideBarItemWrapper
@@ -410,7 +412,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
               )}
               {menuItem.children!.length > 0 &&
                 renderExpandableMenuItems(menuItem, isOpen)}
-            </React.Fragment>
+            </Fragment>
           );
         })}
       </>

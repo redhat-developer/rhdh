@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState, MouseEvent, KeyboardEvent } from 'react';
 
 import {
   InfoCard as BSInfoCard,
@@ -19,7 +19,7 @@ export const InfoCard = () => {
   const buildInfo: BuildInfo | undefined = config.getOptional('buildInfo');
 
   const [showBuildInformation, setShowBuildInformation] =
-    React.useState<boolean>(
+    useState<boolean>(
       () =>
         localStorage.getItem('rhdh-infocard-show-build-information') === 'true',
     );
@@ -71,7 +71,7 @@ export const InfoCard = () => {
    * Show all build information and automatically select them
    * when the user selects the version with the mouse.
    */
-  const onMouseUp = (event: React.MouseEvent<HTMLSpanElement>) => {
+  const onMouseUp = (event: MouseEvent<HTMLSpanElement>) => {
     if (!showBuildInformation) {
       setShowBuildInformation(true);
       window.getSelection()?.selectAllChildren(event.target as Node);
@@ -83,7 +83,7 @@ export const InfoCard = () => {
    * when the user selects the version with the keyboard (tab)
    * and presses the space key or the Ctrl+C key combination.
    */
-  const onKeyDown = (event: React.KeyboardEvent<HTMLSpanElement>) => {
+  const onKeyDown = (event: KeyboardEvent<HTMLSpanElement>) => {
     if (
       event.key === ' ' ||
       (event.key === 'c' && event.ctrlKey) ||
