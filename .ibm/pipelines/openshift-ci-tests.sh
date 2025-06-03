@@ -28,11 +28,11 @@ trap cleanup EXIT INT ERR
 export HELM_REPO_NAME="redhat-developer-hub"
 export HELM_IMAGE_NAME="chart"
 export HELM_CHART_URL="oci://quay.io/rhdh/${HELM_IMAGE_NAME}"
-export CHART_VERSION="1.6-91-CI"
-export CHART_VERSION_BASE="1.6-91-CI"
+export CHART_VERSION="1.5-190-CI"
+export CHART_VERSION_BASE="1.5-190-CI"
 
 export QUAY_REPO_BASE="quay.io/rhdh/rhdh-hub-rhel9"
-export TAG_NAME_BASE="1.6-91"
+export TAG_NAME_BASE="1.5-190"
 
 SCRIPTS=(
     "env_variables.sh"
