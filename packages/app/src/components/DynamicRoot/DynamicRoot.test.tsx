@@ -1,4 +1,4 @@
-import { lazy, Suspense, Fragment, useContext } from 'react';
+import { Fragment, lazy, Suspense, useContext } from 'react';
 import * as useAsync from 'react-use/lib/useAsync';
 
 import * as appDefaults from '@backstage/app-defaults';
