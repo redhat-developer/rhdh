@@ -10,6 +10,7 @@ import { makeStyles } from 'tss-react/mui';
 import { ErrorReport } from '../../common';
 import { useLearningPathData } from '../../hooks/useLearningPathData';
 import { LearningPathLink } from '../../types/types';
+import YourFormComponent from './YourFormComponent';
 
 const useStyles = makeStyles()({
   infoCard: {
@@ -83,6 +84,7 @@ export const LearningPaths = () => {
         <Content>
           <Grid container justifyContent="center">
             <Grid item>
+              <YourFormComponent />
               <LearningPathCards />
             </Grid>
           </Grid>
