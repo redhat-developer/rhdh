@@ -338,8 +338,8 @@ upstream:
           - mountPath: /opt/app-root/src/.config/containers
             name: dynamic-plugins-registry-auth
             readOnly: true
-          - mountPath: /opt/app-root/src/.npm/_cacache
-            name: npmcacache
+          # - mountPath: /opt/app-root/src/.npm/_cacache
+          #   name: npmcacache
           - mountPath: /rbac
             name: rbac-policy
           - mountPath: /rbac-conditions
