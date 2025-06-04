@@ -70,9 +70,10 @@ test.describe("Test Keycloak plugin metrics", () => {
   });
 
   test.afterAll(async () => {
-    const metricsRoute = await kubeClient.getRoute(namespace, routerName);
-    if (metricsRoute) {
-      await kubeClient.deleteRoute(namespace, routerName);
+    if (process.env.IS_OPENSHIFT === "true") {
+      await cleanUpRouter(kubeClient, namespace, routerName);
+    } else {
+      await cleanUpIngress(kubeClient, namespace, routerName);
     }
   });
 
@@ -80,26 +81,22 @@ test.describe("Test Keycloak plugin metrics", () => {
     const host: string = new URL(baseRHDHURL).hostname;
     const domain = host.split(".").slice(1).join(".");
 
-    const metricsRoute = await kubeClient.getRoute(namespace, routerName);
-    if (!metricsRoute) {
-      const service = await kubeClient.getServiceByLabel(
+    await kubeClient.getNamespaceByName("backstage-showcase");
+
+    if (process.env.IS_OPENSHIFT === "true") {
+      await createRouteIfNotPresentAndWait(
+        kubeClient,
         namespace,
-        "app.kubernetes.io/name=backstage",
+        routerName,
+        domain,
       );
-      const rhdhServiceName = service[0].metadata.name;
-      const route = {
-        apiVersion: "route.openshift.io/v1",
-        kind: "Route",
-        metadata: { name: routerName, namespace },
-        spec: {
-          host: `${routerName}.${domain}`,
-          to: { kind: "Service", name: rhdhServiceName },
-          port: { targetPort: "http-metrics" },
-        },
-      };
-      await kubeClient.createRoute(namespace, route);
-      // Wait until the route is available.
-      await new Promise((resolve) => setTimeout(resolve, 10000));
+    } else {
+      await createIngressIfNotPresentAndWait(
+        kubeClient,
+        namespace,
+        routerName,
+        domain,
+      );
     }
 
     const metricsEndpointURL = `http://${routerName}.${domain}/metrics`;
@@ -117,6 +114,112 @@ test.describe("Test Keycloak plugin metrics", () => {
   });
 });
 
+async function createRouteIfNotPresentAndWait(
+  kubeClient: KubeClient,
+  namespace: string,
+  routerName: string,
+  domain: string,
+) {
+  const metricsRoute = await kubeClient.getRoute(namespace, routerName);
+  if (!metricsRoute) {
+    const service = await kubeClient.getServiceByLabel(
+      namespace,
+      "app.kubernetes.io/name=backstage",
+    );
+    const rhdhServiceName = service[0].metadata.name;
+    const route = {
+      apiVersion: "route.openshift.io/v1",
+      kind: "Route",
+      metadata: { name: routerName, namespace },
+      spec: {
+        host: `${routerName}.${domain}`,
+        to: { kind: "Service", name: rhdhServiceName },
+        port: { targetPort: "http-metrics" },
+      },
+    };
+    await kubeClient.createRoute(namespace, route);
+    // Wait until the route is available.
+    await new Promise((resolve) => setTimeout(resolve, 10000));
+  }
+}
+
+async function createIngressIfNotPresentAndWait(
+  kubeClient: KubeClient,
+  namespace: string,
+  ingressName: string,
+  domain: string,
+) {
+  const metricsIngress = await kubeClient.getIngress(namespace, ingressName);
+  if (!metricsIngress) {
+    const service = await kubeClient.getServiceByLabel(
+      namespace,
+      // "app.kubernetes.io/name=backstage",
+      "app.kubernetes.io/name=developer-hub",
+    );
+    const rhdhServiceName = service[0].metadata.name;
+    const ingress = {
+      apiVersion: "networking.k8s.io/v1",
+      kind: "Ingress",
+      metadata: {
+        name: ingressName,
+        namespace,
+        annotations: {
+          "nginx.ingress.kubernetes.io/rewrite-target": "/metrics",
+        },
+      },
+      spec: {
+        rules: [
+          {
+            host: `${ingressName}.${domain}`,
+            http: {
+              paths: [
+                {
+                  path: "/metrics",
+                  pathType: "Prefix",
+                  backend: {
+                    service: {
+                      name: rhdhServiceName,
+                      port: {
+                        number: 9464,
+                      },
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    };
+    await kubeClient.createIngress(namespace, ingress);
+  }
+
+  // Wait until the ingress is available.
+  await new Promise((resolve) => setTimeout(resolve, 10000));
+}
+
+async function cleanUpRouter(
+  kubeClient: KubeClient,
+  namespace: string,
+  routerName: string,
+) {
+  const metricsRoute = await kubeClient.getRoute(namespace, routerName);
+  if (metricsRoute) {
+    await kubeClient.deleteRoute(namespace, routerName);
+  }
+}
+
+async function cleanUpIngress(
+  kubeClient: KubeClient,
+  namespace: string,
+  ingressName: string,
+) {
+  const metricsIngress = await kubeClient.getIngress(namespace, ingressName);
+  if (metricsIngress) {
+    await kubeClient.deleteIngress(namespace, ingressName);
+  }
+}
+
 async function fetchMetrics(metricsEndpoitUrl: string): Promise<string[]> {
   const response = await fetch(metricsEndpoitUrl, {
     method: "GET",
@@ -127,5 +230,6 @@ async function fetchMetrics(metricsEndpoitUrl: string): Promise<string[]> {
     throw new Error("Failed to retrieve metrics from RHDH");
   const data = await response.text();
 
+  console.log(data);
   return data.split("\n");
 }
