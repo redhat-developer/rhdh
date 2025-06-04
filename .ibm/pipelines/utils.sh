@@ -673,16 +673,18 @@ run_tests() {
   if [ "${RESULT}" -ne 0 ]; then
     save_overall_result 1
     save_status_test_failed $CURRENT_DEPLOYMENT true
-    if [ -f "${e2e_tests_dir}/${JUNIT_RESULTS}" ]; then
-      failed_tests=$(grep -oP 'failures="\K[0-9]+' "${e2e_tests_dir}/${JUNIT_RESULTS}" | head -n 1)
-      echo "Number of failed tests: ${failed_tests}"
-      save_status_number_of_test_failed $CURRENT_DEPLOYMENT "${failed_tests}"
-    else
-      echo "JUnit results file not found: ${e2e_tests_dir}/${JUNIT_RESULTS}"
-    fi
-
   else
     save_status_test_failed $CURRENT_DEPLOYMENT false
+  fi
+  if [ -f "${e2e_tests_dir}/${JUNIT_RESULTS}" ]; then
+    failed_tests=$(grep -oP 'failures="\K[0-9]+' "${e2e_tests_dir}/${JUNIT_RESULTS}" | head -n 1)
+    echo "Number of failed tests: ${failed_tests}"
+    save_status_number_of_test_failed $CURRENT_DEPLOYMENT "${failed_tests}"
+  else
+    echo "JUnit results file not found: ${e2e_tests_dir}/${JUNIT_RESULTS}"
+    local failed_tests="some"
+    echo "Number of failed tests unknown, saving as $failed_tests."
+    save_status_number_of_test_failed $CURRENT_DEPLOYMENT "${failed_tests}"
   fi
 }
 
