@@ -71,10 +71,10 @@ export class KubeClient {
 
   // Define possible ConfigMap base names as a constant
   private readonly appConfigNames = [
-    'app-config-rhdh',
-    'app-config',
-    'backstage-app-config',
-    'rhdh-app-config'
+    "app-config-rhdh",
+    "app-config",
+    "backstage-app-config",
+    "rhdh-app-config",
   ];
 
   async findAppConfigMap(namespace: string): Promise<string> {
@@ -86,15 +86,15 @@ export class KubeClient {
       configMaps.forEach(cm => {
         console.log(`ConfigMap: ${cm.metadata?.name}`);
       });
-      
+
       for (const name of this.appConfigNames) {
-        const found = configMaps.find(cm => cm.metadata?.name === name);
+        const found = configMaps.find((cm) => cm.metadata?.name === name);
         if (found) {
           console.log(`Found app config ConfigMap: ${name}`);
           return name;
         }
       }
-      
+
       // If none of the expected names found, look for ConfigMaps containing app-config data
       for (const cm of configMaps) {
         if (cm.data && Object.keys(cm.data).some(key => 
@@ -103,8 +103,10 @@ export class KubeClient {
           return cm.metadata?.name || '';
         }
       }
-      
-      throw new Error(`No suitable app-config ConfigMap found in namespace ${namespace}`);
+
+      throw new Error(
+        `No suitable app-config ConfigMap found in namespace ${namespace}`,
+      );
     } catch (error) {
       console.error(`Error finding app config ConfigMap: ${error}`);
       throw error;
@@ -207,7 +209,7 @@ export class KubeClient {
           throw error;
         }
       }
-      
+
       const configMapResponse = await this.getConfigMap(
         actualConfigMapName,
         namespace,
@@ -220,48 +222,54 @@ export class KubeClient {
       // Find the correct data key dynamically
       let dataKey: string | undefined;
       const dataKeys = Object.keys(configMap.data || {});
-      
+
       // Generate key patterns from the possible names + the actual ConfigMap name
       const keyPatterns = [
         `${actualConfigMapName}.yaml`,
-        ...this.appConfigNames.map(name => `${name}.yaml`)
+        ...this.appConfigNames.map((name) => `${name}.yaml`),
       ];
-      
+
       for (const pattern of keyPatterns) {
         if (dataKeys.includes(pattern)) {
           dataKey = pattern;
           break;
         }
       }
-      
+
       // If none of the patterns match, look for any .yaml file containing app-config
       if (!dataKey) {
-        dataKey = dataKeys.find(key => 
-          key.endsWith('.yaml') && key.includes('app-config')
+        dataKey = dataKeys.find(
+          (key) => key.endsWith(".yaml") && key.includes("app-config"),
         );
       }
-      
+
       // Last resort: use any .yaml file
       if (!dataKey) {
-        dataKey = dataKeys.find(key => key.endsWith('.yaml'));
+        dataKey = dataKeys.find((key) => key.endsWith(".yaml"));
       }
-      
+
       if (!dataKey) {
-        throw new Error(`No suitable YAML data key found in ConfigMap '${actualConfigMapName}'. Available keys: ${dataKeys.join(', ')}`);
+        throw new Error(
+          `No suitable YAML data key found in ConfigMap '${actualConfigMapName}'. Available keys: ${dataKeys.join(", ")}`,
+        );
       }
       
       console.log(`Using data key: ${dataKey}`);
       const appConfigYaml = configMap.data[dataKey];
-      
+
       if (!appConfigYaml) {
-        throw new Error(`Data key '${dataKey}' is empty in ConfigMap '${actualConfigMapName}'`);
+        throw new Error(
+          `Data key '${dataKey}' is empty in ConfigMap '${actualConfigMapName}'`,
+        );
       }
-      
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const appConfigObj = yaml.load(appConfigYaml) as any;
 
       if (!appConfigObj || !appConfigObj.app) {
-        throw new Error(`Invalid app-config structure in ConfigMap '${actualConfigMapName}'. Expected 'app' section not found.`);
+        throw new Error(
+          `Invalid app-config structure in ConfigMap '${actualConfigMapName}'. Expected 'app' section not found.`,
+        );
       }
 
       console.log(`Current title: ${appConfigObj.app.title}`);
@@ -278,7 +286,9 @@ export class KubeClient {
         namespace,
         configMap,
       );
-      console.log(`ConfigMap '${actualConfigMapName}' updated successfully with new title: '${newTitle}'`);
+      console.log(
+        `ConfigMap '${actualConfigMapName}' updated successfully with new title: '${newTitle}'`,
+      );
     } catch (error) {
       console.error("Error updating ConfigMap:", error);
       throw new Error(`Failed to update ConfigMap: ${error.message}`);
@@ -580,7 +590,7 @@ export class KubeClient {
     }
   }
 
-  async getRoute(namespace, routeName) {
+  async getRoute(namespace: string, routeName: string) {
     try {
       const response = await this.k8sCustomAPI.getNamespacedCustomObject(
         "route.openshift.io",
@@ -594,6 +604,56 @@ export class KubeClient {
       if (error.statusCode === 404) {
         return null;
       }
+      throw error;
+    }
+  }
+
+  async getIngress(namespace: string, ingressName: string) {
+    try {
+      const response = await this.k8sCustomAPI.getNamespacedCustomObject(
+        "networking.k8s.io",
+        "v1",
+        namespace,
+        "ingresses",
+        ingressName,
+      );
+      return response.body;
+    } catch (error) {
+      if (error.statusCode === 404) {
+        return null;
+      }
+      throw error;
+    }
+  }
+
+  async createIngress(namespace: string, body: k8s.KubernetesObject) {
+    try {
+      const response = await this.k8sCustomAPI.createNamespacedCustomObject(
+        "networking.k8s.io",
+        "v1",
+        namespace,
+        "ingresses",
+        body,
+      );
+      return response.body;
+    } catch (error) {
+      console.error("Error creating Ingress:", error);
+      throw error;
+    }
+  }
+
+  async deleteIngress(namespace: string, name: string) {
+    try {
+      const response = await this.k8sCustomAPI.deleteNamespacedCustomObject(
+        "networking.k8s.io",
+        "v1",
+        namespace,
+        "ingresses",
+        name,
+      );
+      return response.body;
+    } catch (error) {
+      console.error("Error deleting Ingress:", error);
       throw error;
     }
   }
