@@ -190,11 +190,11 @@ upstream:
           secretKeyRef:
             key: backend-secret
             name: '{{ include "janus-idp.backend-secret-name" $ }}'
-      - name: POSTGRESQL_ADMIN_PASSWORD
-        valueFrom:
-          secretKeyRef:
-            key: postgres-password
-            name: '{{ .Release.Name }}-postgresql'
+      # - name: POSTGRESQL_ADMIN_PASSWORD
+      #   valueFrom:
+      #     secretKeyRef:
+      #       key: postgres-password
+      #       name: '{{ .Release.Name }}-postgresql'
       # disable telemetry in CI
       - name: SEGMENT_TEST_MODE
         value: 'true'
@@ -239,9 +239,14 @@ upstream:
           defaultMode: 420
           optional: true
           secretName: dynamic-plugins-npmrc
-      # - name: postgress-external-db-cluster-cert
-      #   secret:
-      #     secretName: postgress-external-db-cluster-cert
+      - name: dynamic-plugins-registry-auth
+        secret:
+          defaultMode: 416
+          optional: true
+          secretName: '{{ printf "%s-dynamic-plugins-registry-auth" .Release.Name }}'
+      - name: postgress-external-db-cluster-cert
+        secret:
+          secretName: postgress-external-db-cluster-cert
       - name: rbac-policy
         configMap:
           defaultMode: 420
@@ -318,6 +323,9 @@ upstream:
             name: dynamic-plugins-npmrc
             readOnly: true
             subPath: .npmrc
+          - mountPath: /opt/app-root/src/.config/containers
+            name: dynamic-plugins-registry-auth
+            readOnly: true
           - mountPath: /rbac
             name: rbac-policy
           - mountPath: /rbac-conditions
