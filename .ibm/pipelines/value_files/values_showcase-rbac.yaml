@@ -224,8 +224,7 @@ upstream:
       # To have more control on underlying storage, the [emptyDir](https://docs.openshift.com/container-platform/4.13/storage/understanding-ephemeral-storage.html)
       # could be changed to a [generic ephemeral volume](https://docs.openshift.com/container-platform/4.13/storage/generic-ephemeral-vols.html#generic-ephemeral-vols-procedure_generic-ephemeral-volumes).
       - name: dynamic-plugins-root
-        persistentVolumeClaim:
-          claimName: '{{ printf "%s-dynamic-plugins-root" .Release.Name }}'
+        emptyDir: {}
       # Volume that will expose the `dynamic-plugins.yaml` file from the `dynamic-plugins` config map.
       # The `dynamic-plugins` config map is created by the helm chart from the content of the `global.dynamic` field.
       - name: dynamic-plugins
@@ -261,54 +260,56 @@ upstream:
         # @default -- `quay.io/rhdh-community/rhdh:latest`
         image: '{{ include "backstage.image" . }}'
         command:
-          - sh
-          - '-c'
-          - |
-            cat > /rbac-conditions/conditional-policies.yaml <<EOF
-            ---
-            result: CONDITIONAL
-            roleEntityRef: 'role:default/test2-role'
-            pluginId: catalog
-            resourceType: catalog-entity
-            permissionMapping:
-              - read
-              - update
-            conditions:
-              rule: IS_ENTITY_OWNER
-              resourceType: catalog-entity
-              params:
-                claims:
-                  - 'group:janus-qe/rhdh-qe-2-team'
-                  - \$currentUser
-            ---
-            result: CONDITIONAL
-            roleEntityRef: 'role:default/test2-role'
-            pluginId: catalog
-            resourceType: catalog-entity
-            permissionMapping:
-              - delete
-            conditions:
-              rule: IS_ENTITY_OWNER
-              resourceType: catalog-entity
-              params:
-                claims:
-                  - \$currentUser
-            ---
-            result: CONDITIONAL
-            roleEntityRef: 'role:default/transitive-owner'
-            pluginId: catalog
-            resourceType: catalog-entity
-            permissionMapping:
-              - read
-            conditions:
-              rule: IS_ENTITY_OWNER
-              resourceType: catalog-entity
-              params:
-                claims:
-                  - \$ownerRefs
-            EOF
+          - ./install-dynamic-plugins.sh
+          - /dynamic-plugins-root
+          # - sh
+          # - '-c'
+          # - |
+          #   cat > /rbac-conditions/conditional-policies.yaml <<EOF
+          #   ---
+          #   result: CONDITIONAL
+          #   roleEntityRef: 'role:default/test2-role'
+          #   pluginId: catalog
+          #   resourceType: catalog-entity
+          #   permissionMapping:
+          #     - read
+          #     - update
+          #   conditions:
+          #     rule: IS_ENTITY_OWNER
+          #     resourceType: catalog-entity
+          #     params:
+          #       claims:
+          #         - 'group:janus-qe/rhdh-qe-2-team'
+          #         - \$currentUser
+          #   ---
+          #   result: CONDITIONAL
+          #   roleEntityRef: 'role:default/test2-role'
+          #   pluginId: catalog
+          #   resourceType: catalog-entity
+          #   permissionMapping:
+          #     - delete
+          #   conditions:
+          #     rule: IS_ENTITY_OWNER
+          #     resourceType: catalog-entity
+          #     params:
+          #       claims:
+          #         - \$currentUser
+          #   ---
+          #   result: CONDITIONAL
+          #   roleEntityRef: 'role:default/transitive-owner'
+          #   pluginId: catalog
+          #   resourceType: catalog-entity
+          #   permissionMapping:
+          #     - read
+          #   conditions:
+          #     rule: IS_ENTITY_OWNER
+          #     resourceType: catalog-entity
+          #     params:
+          #       claims:
+          #         - \$ownerRefs
+          #   EOF
 
-            ./install-dynamic-plugins.sh /dynamic-plugins-root
+          #   ./install-dynamic-plugins.sh /dynamic-plugins-root
         env:
           - name: NPM_CONFIG_USERCONFIG
             value: /opt/app-root/src/.npmrc.dynamic-plugins
