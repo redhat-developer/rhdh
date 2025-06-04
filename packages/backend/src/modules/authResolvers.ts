@@ -28,7 +28,7 @@ const createOidcSubClaimResolver = (...providers: OidcProviderInfo[]) =>
         dangerouslyAllowSignInWithoutUserInCatalog: z.boolean().optional(),
       })
       .optional(),
-    create() {
+    create(options) {
       return async (
         info: SignInInfo<OAuthAuthenticatorResult<OidcAuthResult>>,
         ctx: AuthResolverContext,
@@ -56,14 +56,19 @@ const createOidcSubClaimResolver = (...providers: OidcProviderInfo[]) =>
           }
 
           try {
-            return await ctx.signInWithCatalogUser({
-              annotations: { [userIdKey]: sub },
-            });
-          } catch (error: any) {
-            if (error?.name === 'NotFoundError') {
-              continue;
-            }
-            throw error;
+            return await ctx.signInWithCatalogUser(
+              {
+                annotations: { [userIdKey]: sub },
+              },
+              {
+                dangerousEntityRefFallback:
+                  options?.dangerouslyAllowSignInWithoutUserInCatalog
+                    ? { entityRef: sub }
+                    : undefined,
+              }
+            );
+          } catch (error) {
+            continue;
           }
         }
 
@@ -128,7 +133,7 @@ export namespace rhdhSignInResolvers {
           dangerouslyAllowSignInWithoutUserInCatalog: z.boolean().optional(),
         })
         .optional(),
-      create() {
+      create(options) {
         return async (
           info: SignInInfo<OAuth2ProxyResult>,
           ctx: AuthResolverContext,
@@ -136,13 +141,21 @@ export namespace rhdhSignInResolvers {
           const name = process.env.OAUTH_USER_HEADER
             ? info.result.getHeader(process.env.OAUTH_USER_HEADER)
             : info.result.getHeader('x-forwarded-preferred-username') ||
-              info.result.getHeader('x-forwarded-user');
+            info.result.getHeader('x-forwarded-user');
           if (!name) {
             throw new Error('Request did not contain a user');
           }
-          return ctx.signInWithCatalogUser({
-            entityRef: { name },
-          });
+          return ctx.signInWithCatalogUser(
+            {
+              entityRef: { name },
+            },
+            {
+              dangerousEntityRefFallback:
+                options?.dangerouslyAllowSignInWithoutUserInCatalog
+                  ? { entityRef: name }
+                  : undefined,
+            }
+          );
         };
       },
     });
