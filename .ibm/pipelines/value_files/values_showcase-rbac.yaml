@@ -307,7 +307,7 @@ upstream:
                   - \$ownerRefs
             EOF
 
-            python install-dynamic-plugins.py /dynamic-plugins-root
+            ./install-dynamic-plugins.sh /dynamic-plugins-root
         env:
           - name: NPM_CONFIG_USERCONFIG
             value: /opt/app-root/src/.npmrc.dynamic-plugins
