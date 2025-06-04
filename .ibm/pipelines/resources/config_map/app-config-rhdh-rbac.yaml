@@ -124,7 +124,7 @@ argocd:
           url: temp
           token: temp
 permission:
-  enabled: false
+  enabled: true
   rbac:
     maxDepth: 1
     policyFileReload: true

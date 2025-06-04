@@ -224,7 +224,14 @@ upstream:
       # To have more control on underlying storage, the [emptyDir](https://docs.openshift.com/container-platform/4.13/storage/understanding-ephemeral-storage.html)
       # could be changed to a [generic ephemeral volume](https://docs.openshift.com/container-platform/4.13/storage/generic-ephemeral-vols.html#generic-ephemeral-vols-procedure_generic-ephemeral-volumes).
       - name: dynamic-plugins-root
-        emptyDir: {}
+        ephemeral:
+        volumeClaimTemplate:
+          spec:
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 1Gi
       # Volume that will expose the `dynamic-plugins.yaml` file from the `dynamic-plugins` config map.
       # The `dynamic-plugins` config map is created by the helm chart from the content of the `global.dynamic` field.
       - name: dynamic-plugins
@@ -255,9 +262,6 @@ upstream:
         emptyDir: {}
     initContainers:
       - name: install-dynamic-plugins
-        # -- Image used by the initContainer to install dynamic plugins into the `dynamic-plugins-root` volume mount.
-        # It could be replaced by a custom image based on this one.
-        # @default -- `quay.io/rhdh-community/rhdh:latest`
         image: '{{ include "backstage.image" . }}'
         command:
           - ./install-dynamic-plugins.sh
@@ -328,6 +332,8 @@ upstream:
           - mountPath: /opt/app-root/src/.config/containers
             name: dynamic-plugins-registry-auth
             readOnly: true
+          - mountPath: /opt/app-root/src/.npm/_cacache
+            name: npmcacache
           - mountPath: /rbac
             name: rbac-policy
           - mountPath: /rbac-conditions
