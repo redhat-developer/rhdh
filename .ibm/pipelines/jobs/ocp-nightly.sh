@@ -12,7 +12,7 @@ handle_ocp_nightly() {
   cluster_setup
   clear_database
   initiate_deployments
-  deploy_test_backstage_customization_provider "${NAME_SPACE}"
+  # deploy_test_backstage_customization_provider "${NAME_SPACE}"
 
   run_standard_deployment_tests
   run_runtime_config_change_tests
