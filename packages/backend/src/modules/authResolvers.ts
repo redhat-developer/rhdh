@@ -65,7 +65,7 @@ const createOidcSubClaimResolver = (...providers: OidcProviderInfo[]) =>
                   options?.dangerouslyAllowSignInWithoutUserInCatalog
                     ? { entityRef: sub }
                     : undefined,
-              }
+              },
             );
           } catch (error) {
             continue;
@@ -141,7 +141,7 @@ export namespace rhdhSignInResolvers {
           const name = process.env.OAUTH_USER_HEADER
             ? info.result.getHeader(process.env.OAUTH_USER_HEADER)
             : info.result.getHeader('x-forwarded-preferred-username') ||
-            info.result.getHeader('x-forwarded-user');
+              info.result.getHeader('x-forwarded-user');
           if (!name) {
             throw new Error('Request did not contain a user');
           }
@@ -154,7 +154,7 @@ export namespace rhdhSignInResolvers {
                 options?.dangerouslyAllowSignInWithoutUserInCatalog
                   ? { entityRef: name }
                   : undefined,
-            }
+            },
           );
         };
       },
