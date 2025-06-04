@@ -32,8 +32,8 @@ save_status_test_failed() {
 save_status_number_of_test_failed() {
   local current_deployment=$1
   local number=$2
-  echo "Saving STATUS_TEST_FAILED[\"${current_deployment}\"]=${number}"
-  STATUS_TEST_FAILED["${current_deployment}"]="${number}"
+  echo "Saving STATUS_NUMBER_OF_TEST_FAILED[\"${current_deployment}\"]=${number}"
+  STATUS_NUMBER_OF_TEST_FAILED["${current_deployment}"]="${number}"
   printf "%s\n" "${STATUS_NUMBER_OF_TEST_FAILED["${current_deployment}"]}" >> "$SHARED_DIR/STATUS_NUMBER_OF_TEST_FAILED.txt"
   cp "$SHARED_DIR/STATUS_NUMBER_OF_TEST_FAILED.txt" "$ARTIFACT_DIR/reporting/STATUS_NUMBER_OF_TEST_FAILED.txt"
 }
