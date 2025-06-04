@@ -41,6 +41,12 @@ test.describe("Test GitHub Insights plugin functionality", () => {
     // Login as GitHub user instead of guest
     await common.loginAsGithubUser();
 
+    // Login with Keycloak after GitHub
+    await common.keycloakLogin(
+      process.env.GH_USER2_ID,
+      process.env.GH_USER2_PASS,
+    );
+
     uiHelper = new UIhelper(page);
 
     // Use the helper method for opening catalog
