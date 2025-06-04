@@ -4,7 +4,7 @@ global:
       - dynamic-plugins.default.yaml
     plugins: []
 upstream:
-  nameOverride: backstage
+  nameOverride: developer-hub
   commonLabels:
     backstage.io/kubernetes-id: developer-hub
   backstage:
