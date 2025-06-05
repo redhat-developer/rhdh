@@ -190,11 +190,6 @@ upstream:
           secretKeyRef:
             key: backend-secret
             name: '{{ include "janus-idp.backend-secret-name" $ }}'
-      # - name: POSTGRESQL_ADMIN_PASSWORD
-      #   valueFrom:
-      #     secretKeyRef:
-      #       key: postgres-password
-      #       name: '{{ .Release.Name }}-postgresql'
       # disable telemetry in CI
       - name: SEGMENT_TEST_MODE
         value: 'true'
@@ -224,14 +219,7 @@ upstream:
       # To have more control on underlying storage, the [emptyDir](https://docs.openshift.com/container-platform/4.13/storage/understanding-ephemeral-storage.html)
       # could be changed to a [generic ephemeral volume](https://docs.openshift.com/container-platform/4.13/storage/generic-ephemeral-vols.html#generic-ephemeral-vols-procedure_generic-ephemeral-volumes).
       - name: dynamic-plugins-root
-        ephemeral:
-          volumeClaimTemplate:
-            spec:
-              accessModes:
-                - ReadWriteOnce
-              resources:
-                requests:
-                  storage: 5Gi
+        emptyDir: {}
       # Volume that will expose the `dynamic-plugins.yaml` file from the `dynamic-plugins` config map.
       # The `dynamic-plugins` config map is created by the helm chart from the content of the `global.dynamic` field.
       - name: dynamic-plugins
@@ -245,7 +233,7 @@ upstream:
         secret:
           defaultMode: 420
           optional: true
-          secretName: dynamic-plugins-npmrc
+          secretName: '{{ printf "%s-dynamic-plugins-npmrc" .Release.Name }}'
       - name: dynamic-plugins-registry-auth
         secret:
           defaultMode: 416
@@ -260,62 +248,61 @@ upstream:
           name: rbac-policy
       - name: rbac-conditions
         emptyDir: {}
-      # - name: npmcacache
-      #   emptyDir: {}
     initContainers:
       - name: install-dynamic-plugins
+        # -- Image used by the initContainer to install dynamic plugins into the `dynamic-plugins-root` volume mount.
+        # It could be replaced by a custom image based on this one.
+        # @default -- `quay.io/rhdh-community/rhdh:latest`
         image: '{{ include "backstage.image" . }}'
         command:
-          - ./install-dynamic-plugins.sh
-          - /dynamic-plugins-root
-          # - sh
-          # - '-c'
-          # - |
-          #   cat > /rbac-conditions/conditional-policies.yaml <<EOF
-          #   ---
-          #   result: CONDITIONAL
-          #   roleEntityRef: 'role:default/test2-role'
-          #   pluginId: catalog
-          #   resourceType: catalog-entity
-          #   permissionMapping:
-          #     - read
-          #     - update
-          #   conditions:
-          #     rule: IS_ENTITY_OWNER
-          #     resourceType: catalog-entity
-          #     params:
-          #       claims:
-          #         - 'group:janus-qe/rhdh-qe-2-team'
-          #         - \$currentUser
-          #   ---
-          #   result: CONDITIONAL
-          #   roleEntityRef: 'role:default/test2-role'
-          #   pluginId: catalog
-          #   resourceType: catalog-entity
-          #   permissionMapping:
-          #     - delete
-          #   conditions:
-          #     rule: IS_ENTITY_OWNER
-          #     resourceType: catalog-entity
-          #     params:
-          #       claims:
-          #         - \$currentUser
-          #   ---
-          #   result: CONDITIONAL
-          #   roleEntityRef: 'role:default/transitive-owner'
-          #   pluginId: catalog
-          #   resourceType: catalog-entity
-          #   permissionMapping:
-          #     - read
-          #   conditions:
-          #     rule: IS_ENTITY_OWNER
-          #     resourceType: catalog-entity
-          #     params:
-          #       claims:
-          #         - \$ownerRefs
-          #   EOF
+          - sh
+          - '-c'
+          - |
+            cat > /rbac-conditions/conditional-policies.yaml <<EOF
+            ---
+            result: CONDITIONAL
+            roleEntityRef: 'role:default/test2-role'
+            pluginId: catalog
+            resourceType: catalog-entity
+            permissionMapping:
+              - read
+              - update
+            conditions:
+              rule: IS_ENTITY_OWNER
+              resourceType: catalog-entity
+              params:
+                claims:
+                  - 'group:janus-qe/rhdh-qe-2-team'
+                  - \$currentUser
+            ---
+            result: CONDITIONAL
+            roleEntityRef: 'role:default/test2-role'
+            pluginId: catalog
+            resourceType: catalog-entity
+            permissionMapping:
+              - delete
+            conditions:
+              rule: IS_ENTITY_OWNER
+              resourceType: catalog-entity
+              params:
+                claims:
+                  - \$currentUser
+            ---
+            result: CONDITIONAL
+            roleEntityRef: 'role:default/transitive-owner'
+            pluginId: catalog
+            resourceType: catalog-entity
+            permissionMapping:
+              - read
+            conditions:
+              rule: IS_ENTITY_OWNER
+              resourceType: catalog-entity
+              params:
+                claims:
+                  - \$ownerRefs
+            EOF
 
-          #   ./install-dynamic-plugins.sh /dynamic-plugins-root
+            ./install-dynamic-plugins.sh /dynamic-plugins-root
         env:
           - name: NPM_CONFIG_USERCONFIG
             value: /opt/app-root/src/.npmrc.dynamic-plugins
@@ -334,8 +321,6 @@ upstream:
           - mountPath: /opt/app-root/src/.config/containers
             name: dynamic-plugins-registry-auth
             readOnly: true
-          # - mountPath: /opt/app-root/src/.npm/_cacache
-          #   name: npmcacache
           - mountPath: /rbac
             name: rbac-policy
           - mountPath: /rbac-conditions
