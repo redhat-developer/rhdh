@@ -33,11 +33,11 @@ import Collapse from '@mui/material/Collapse';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import { SxProps } from '@mui/material/styles';
-import { makeStyles } from 'tss-react/mui';
-
 import DynamicRootContext, {
   ResolvedMenuItem,
-} from '../DynamicRoot/DynamicRootContext';
+} from '@red-hat-developer-hub/plugin-utils';
+import { makeStyles } from 'tss-react/mui';
+
 import { ApplicationHeaders } from './ApplicationHeaders';
 import { MenuIcon } from './MenuIcon';
 import { SidebarLogo } from './SidebarLogo';
