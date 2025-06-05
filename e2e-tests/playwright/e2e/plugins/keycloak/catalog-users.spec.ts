@@ -64,6 +64,9 @@ test.describe("Test Keycloak plugin metrics", () => {
 
   test.beforeEach(() => {
     kubeClient = new KubeClient();
+    console.log(
+      `Running test in namespace: ${namespace} with router name: ${routerName}`,
+    );
   });
 
   test.afterAll(async () => {
@@ -77,8 +80,6 @@ test.describe("Test Keycloak plugin metrics", () => {
   test("Test keycloak metrics with failure counters", async () => {
     const host: string = new URL(baseRHDHURL).hostname;
     const domain = host.split(".").slice(1).join(".");
-
-    await kubeClient.getNamespaceByName("backstage-showcase");
 
     if (process.env.IS_OPENSHIFT === "true") {
       await createRouteIfNotPresentAndWait(
