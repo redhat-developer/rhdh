@@ -112,16 +112,10 @@ global:
 # -- Upstream Backstage [chart configuration](https://github.com/backstage/charts/blob/main/charts/backstage/values.yaml)
 # @default -- Use Openshift compatible settings
 upstream:
-  nameOverride: backstage
+  nameOverride: developer-hub
   commonLabels:
     backstage.io/kubernetes-id: developer-hub
   backstage:
-    image:
-      pullPolicy: Always
-      # using test image from https://quay.io/repository/rhdh-community/rhdh
-      registry: quay.io
-      repository: rhdh-community/rhdh
-      tag: next
     appConfig:
       app:
         # Please update to match host in case you don't want to configure hostname via `global.clusterRouterBase` or `global.host`.
@@ -144,6 +138,12 @@ upstream:
                 $file: /opt/app-root/src/postgres-key.key
               cert:
                 $file: /opt/app-root/src/postgres-crt.pem
+    image:
+      pullPolicy: Always
+      # using test image from https://quay.io/repository/rhdh-community/rhdh
+      registry: quay.io
+      repository: rhdh-community/rhdh
+      tag: next
     startupProbe:
       # This gives enough time upon container startup before the liveness and readiness probes are triggered.
       # Giving (120s = initialDelaySeconds + failureThreshold * periodSeconds) to account for the worst case scenario.
@@ -225,7 +225,7 @@ upstream:
       - name: dynamic-plugins
         configMap:
           defaultMode: 420
-          name: dynamic-plugins
+          name: '{{ printf "%s-dynamic-plugins" .Release.Name }}'
           optional: true
       # Optional volume that allows exposing the `.npmrc` file (through a `dynamic-plugins-npmrc` secret)
       # to be used when running `npm pack` during the dynamic plugins installation by the initContainer.
@@ -233,7 +233,12 @@ upstream:
         secret:
           defaultMode: 420
           optional: true
-          secretName: dynamic-plugins-npmrc
+          secretName: '{{ printf "%s-dynamic-plugins-npmrc" .Release.Name }}'
+      - name: dynamic-plugins-registry-auth
+        secret:
+          defaultMode: 416
+          optional: true
+          secretName: '{{ printf "%s-dynamic-plugins-registry-auth" .Release.Name }}'
       - name: postgress-external-db-cluster-cert
         secret:
           secretName: postgress-external-db-cluster-cert
@@ -297,7 +302,7 @@ upstream:
                   - \$ownerRefs
             EOF
 
-            python install-dynamic-plugins.py /dynamic-plugins-root
+            ./install-dynamic-plugins.sh /dynamic-plugins-root
         env:
           - name: NPM_CONFIG_USERCONFIG
             value: /opt/app-root/src/.npmrc.dynamic-plugins
@@ -313,6 +318,9 @@ upstream:
             name: dynamic-plugins-npmrc
             readOnly: true
             subPath: .npmrc
+          - mountPath: /opt/app-root/src/.config/containers
+            name: dynamic-plugins-registry-auth
+            readOnly: true
           - mountPath: /rbac
             name: rbac-policy
           - mountPath: /rbac-conditions
