@@ -82,9 +82,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@azure/identity@npm:4.9.1":
-  version: 4.9.1
-  resolution: "@azure/identity@npm:4.9.1"
+"@azure/identity@npm:4.10.0":
+  version: 4.10.0
+  resolution: "@azure/identity@npm:4.10.0"
   dependencies:
     "@azure/abort-controller": ^2.0.0
     "@azure/core-auth": ^1.9.0
@@ -97,7 +97,7 @@ __metadata:
     "@azure/msal-node": ^3.5.0
     open: ^10.1.0
     tslib: ^2.2.0
-  checksum: 5b9bd08e6fee7f93203cd2fd1ecfdd1a114f1d8b204b8904dc34c0317a046d1740934b483de2cf73055cbb85fe1c4f7470625ac470932383e882d487e8356ccd
+  checksum: 3d8a0766786720a190daa693b457919b9853d9d25150446cdae08f00233560cae6b9b6992d1cd79c04a99a30b72471240a4b23587b55d440be8e263eb6b0c7e6
   languageName: node
   linkType: hard
 
@@ -1389,7 +1389,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "e2e-tests@workspace:."
   dependencies:
-    "@azure/identity": 4.9.1
+    "@azure/identity": 4.10.0
     "@keycloak/keycloak-admin-client": 25.0.6
     "@kubernetes/client-node": 0.22.3
     "@microsoft/microsoft-graph-client": 3.0.7
