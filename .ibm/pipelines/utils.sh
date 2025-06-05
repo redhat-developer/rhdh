@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# shellcheck source=.ibm/pipelines/reporting.sh
+source "${DIR}/reporting.sh"
+
 retrieve_pod_logs() {
   local pod_name=$1; local container=$2; local namespace=$3
   echo "  Retrieving logs for container: $container"
@@ -61,14 +64,8 @@ droute_send() {
     local droute_pod_name=$(oc get pods -n droute --no-headers -o custom-columns=":metadata.name" | grep ubi9-cert-rsync)
     local temp_droute=$(oc exec -n "${droute_project}" "${droute_pod_name}" -- /bin/bash -c "mktemp -d")
 
-    JOB_BASE_URL="https://prow.ci.openshift.org/view/gs/test-platform-results"
-    if [ -n "${PULL_NUMBER:-}" ]; then
-      JOB_URL="${JOB_BASE_URL}/pr-logs/pull/${REPO_OWNER}_${REPO_NAME}/${PULL_NUMBER}/${JOB_NAME}/${BUILD_ID}"
-      ARTIFACTS_URL="https://gcsweb-ci.apps.ci.l2s4.p1.openshiftapps.com/gcs/test-platform-results/pr-logs/pull/${REPO_OWNER}_${REPO_NAME}/${PULL_NUMBER}/${JOB_NAME}/${BUILD_ID}/artifacts/e2e-tests/${REPO_OWNER}-${REPO_NAME}/artifacts/${project}"
-    else
-      JOB_URL="${JOB_BASE_URL}/logs/${JOB_NAME}/${BUILD_ID}"
-      ARTIFACTS_URL="https://gcsweb-ci.apps.ci.l2s4.p1.openshiftapps.com/gcs/test-platform-results/logs/${JOB_NAME}/${BUILD_ID}/artifacts/${JOB_NAME##periodic-ci-redhat-developer-rhdh-main-}/${REPO_OWNER}-${REPO_NAME}/artifacts/${project}"
-    fi
+    ARTIFACTS_URL=$(get_artifacts_url)
+    JOB_URL=$(get_job_url)
 
     # Remove properties (only used for skipped test and invalidates the file if empty)
     sed -i '/<properties>/,/<\/properties>/d' "${ARTIFACT_DIR}/${project}/${JUNIT_RESULTS}"
@@ -175,6 +172,7 @@ droute_send() {
         # Try to extract the ReportPortal launch URL from the request. This fails if it doesn't contain the launch URL.
         REPORTPORTAL_LAUNCH_URL=$(echo "$DATA_ROUTER_REQUEST_OUTPUT" | yq e '.targets[0].events[] | select(.component == "reportportal-connector") | .message | fromjson | .[0].launch_url' -)
         if [[ -n "$REPORTPORTAL_LAUNCH_URL" ]]; then
+          save_status_url_reportportal $CURRENT_DEPLOYMENT $REPORTPORTAL_LAUNCH_URL
           reportportal_slack_alert $release_name $REPORTPORTAL_LAUNCH_URL
           return 0
         else
@@ -194,38 +192,6 @@ droute_send() {
     echo "Failed to restore the context and authenticate with the cluster. Logging in again."
     oc_login
   fi
-}
-
-reportportal_slack_alert() {
-  local release_name=$1
-  local reportportal_launch_url=$2
-
-  if [[ "$release_name" == *rbac* ]]; then
-    RUN_TYPE="rbac-nightly"
-  else
-    RUN_TYPE="nightly"
-  fi
-  if [[ ${RESULT} -eq 0 ]]; then
-    RUN_STATUS_EMOJI=":done-circle-check:"
-    RUN_STATUS="passed"
-  else
-    RUN_STATUS_EMOJI=":failed:"
-    RUN_STATUS="failed"
-  fi
-  jq -n \
-    --arg run_status "$RUN_STATUS" \
-    --arg run_type "$RUN_TYPE" \
-    --arg reportportal_launch_url "$reportportal_launch_url" \
-    --arg job_name "$JOB_NAME" \
-    --arg run_status_emoji "$RUN_STATUS_EMOJI" \
-    '{
-      "RUN_STATUS": $run_status,
-      "RUN_TYPE": $run_type,
-      "REPORTPORTAL_LAUNCH_URL": $reportportal_launch_url,
-      "JOB_NAME": $job_name,
-      "RUN_STATUS_EMOJI": $run_status_emoji
-    }' > /tmp/data_router_slack_message.json
-  curl -X POST -H 'Content-type: application/json' --data @/tmp/data_router_slack_message.json  $SLACK_DATA_ROUTER_WEBHOOK_URL
 }
 
 # Merge the base YAML value file with the differences file for Kubernetes
@@ -706,7 +672,20 @@ run_tests() {
 
   echo "${project} RESULT: ${RESULT}"
   if [ "${RESULT}" -ne 0 ]; then
-    OVERALL_RESULT=1
+    save_overall_result 1
+    save_status_test_failed $CURRENT_DEPLOYMENT true
+  else
+    save_status_test_failed $CURRENT_DEPLOYMENT false
+  fi
+  if [ -f "${e2e_tests_dir}/${JUNIT_RESULTS}" ]; then
+    failed_tests=$(grep -oP 'failures="\K[0-9]+' "${e2e_tests_dir}/${JUNIT_RESULTS}" | head -n 1)
+    echo "Number of failed tests: ${failed_tests}"
+    save_status_number_of_test_failed $CURRENT_DEPLOYMENT "${failed_tests}"
+  else
+    echo "JUnit results file not found: ${e2e_tests_dir}/${JUNIT_RESULTS}"
+    local failed_tests="some"
+    echo "Number of failed tests unknown, saving as $failed_tests."
+    save_status_number_of_test_failed $CURRENT_DEPLOYMENT "${failed_tests}"
   fi
 }
 
@@ -1015,13 +994,18 @@ check_and_test() {
   local url=$3
   local max_attempts=${4:-30}    # Default to 30 if not set
   local wait_seconds=${5:-30}    # Default to 30 if not set
+  CURRENT_DEPLOYMENT=$((CURRENT_DEPLOYMENT + 1))
+  save_status_deployment_namespace $CURRENT_DEPLOYMENT $namespace
   if check_backstage_running "${release_name}" "${namespace}" "${url}" "${max_attempts}" "${wait_seconds}"; then
+    save_status_failed_to_deploy $CURRENT_DEPLOYMENT false
     echo "Display pods for verification..."
     oc get pods -n "${namespace}"
     run_tests "${release_name}" "${namespace}"
   else
     echo "Backstage is not running. Exiting..."
-    OVERALL_RESULT=1
+    save_status_failed_to_deploy $CURRENT_DEPLOYMENT true
+    save_status_test_failed $CURRENT_DEPLOYMENT true
+    save_overall_result 1
   fi
   save_all_pod_logs $namespace
 }
