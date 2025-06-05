@@ -40,7 +40,8 @@ export class KubeClient {
       this.coreV1Api = this.kc.makeApiClient(k8s.CoreV1Api);
       this.k8sCustomAPI = this.kc.makeApiClient(k8s.CustomObjectsApi);
     } catch (e) {
-      LOGGER.info(e);
+      LOGGER.info(`==== ${e}`);
+      LOGGER.info(`==== ${e.response?.body || e}`);
       throw e;
     }
   }
