@@ -49,7 +49,7 @@ backend.add(
 
 backend.add(healthCheckPlugin);
 
-backend.add(import('@backstage/plugin-app-backend/alpha'));
+backend.add(import('@backstage/plugin-app-backend'));
 backend.add(
   import('@backstage/plugin-catalog-backend-module-scaffolder-entity-model'),
 );
@@ -57,7 +57,7 @@ backend.add(
 // See https://backstage.io/docs/features/software-catalog/configuration#subscribing-to-catalog-errors
 backend.add(import('@backstage/plugin-catalog-backend-module-logs'));
 
-backend.add(import('@backstage/plugin-catalog-backend/alpha'));
+backend.add(import('@backstage/plugin-catalog-backend'));
 
 // TODO: Probably we should now provide this as a dynamic plugin
 backend.add(import('@backstage/plugin-catalog-backend-module-openapi'));
@@ -65,7 +65,7 @@ backend.add(import('@backstage/plugin-catalog-backend-module-openapi'));
 backend.add(import('@backstage/plugin-proxy-backend'));
 
 // TODO: Check in the Scaffolder new backend plugin why the identity is not passed and the default is built instead.
-backend.add(import('@backstage/plugin-scaffolder-backend/alpha'));
+backend.add(import('@backstage/plugin-scaffolder-backend'));
 
 // search engine
 // See https://backstage.io/docs/features/search/search-engines
