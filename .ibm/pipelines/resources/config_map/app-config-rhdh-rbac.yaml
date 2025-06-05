@@ -46,11 +46,9 @@ auth:
         clientSecret: ${KEYCLOAK_AUTH_CLIENT_SECRET}
         prompt: auto
         callbackUrl: ${RHDH_BASE_URL}/api/auth/oidc/handler/frame
-        sessionDuration: { hours: 3 }
         signIn:
           resolvers:
             - resolver: emailLocalPartMatchingUserEntityName
-  backstageTokenExpiration: { hours: 3 }
 signInPage: oidc
 proxy:
   skipInvalidProxies: true
@@ -106,7 +104,6 @@ catalog:
         schedule:
           frequency: { minutes: 1 }
           timeout: { minutes: 1 }
-          initialDelay: { seconds: 15 }
     githubOrg:
       id: production
       githubUrl: "${GITHUB_URL}"
