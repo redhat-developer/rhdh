@@ -65,12 +65,16 @@ export namespace rhdhSignInResolvers {
           if (!name) {
             throw new Error('Request did not contain a user');
           }
-          return ctx.signInWithCatalogUser(
+           return ctx.signInWithCatalogUser(
             {
               entityRef: { name },
             },
-            name,
-            options?.dangerouslyAllowSignInWithoutUserInCatalog,
+            {
+              dangerousEntityRefFallback:
+                options?.dangerouslyAllowSignInWithoutUserInCatalog
+                  ? { entityRef: name }
+                  : undefined,
+            }
           );
         };
       },
@@ -112,8 +116,12 @@ export namespace rhdhSignInResolvers {
           {
             annotations: { [LDAP_UUID_ANNOTATION]: uuid },
           },
-          uuid,
-          options?.dangerouslyAllowSignInWithoutUserInCatalog,
+          {
+            dangerousEntityRefFallback:
+              options?.dangerouslyAllowSignInWithoutUserInCatalog
+                ? { entityRef: uuid }
+                : undefined,
+          },
         );
       };
     },
