@@ -4,16 +4,23 @@ import {
   AuthResolverContext,
   createSignInResolverFactory,
   OAuthAuthenticatorResult,
+  PassportProfile,
   SignInInfo,
 } from '@backstage/plugin-auth-node';
 
 import { decodeJwt } from 'jose';
+import { Octokit } from 'octokit';
 import { z } from 'zod';
 
 export type OidcProviderInfo = {
   userIdKey: string;
   providerName: string;
 };
+
+// This splits an email "joe+work@acme.com" into ["joe", "+work", "@acme.com"]
+// so that we can remove the plus addressing. May output a shorter array:
+// ["joe", "@acme.com"], if no plus addressing was found.
+const reEmail = /^([^@+]+)(\+[^@]+)?(@.*)$/;
 
 /**
  * Creates an OIDC sign-in resolver that looks up the user using a specific annotation key.
@@ -150,6 +157,103 @@ export namespace rhdhSignInResolvers {
             },
             name,
             options?.dangerouslyAllowSignInWithoutUserInCatalog,
+          );
+        };
+      },
+    });
+
+  /**
+   * A GitHub resolver that looks up the user using the user's GitHub email.
+   * It will query for the user's private email if no email is found in the auth response.
+   */
+  export const gitHubPrivateEmailMatchingUserEntityProfileEmail =
+    createSignInResolverFactory({
+      optionsSchema: z
+        .object({
+          dangerouslyAllowSignInWithoutUserInCatalog: z.boolean().optional(),
+        })
+        .optional(),
+      create(options) {
+        return async (
+          info: SignInInfo<OAuthAuthenticatorResult<PassportProfile>>,
+          ctx: AuthResolverContext,
+        ) => {
+          const { profile } = info;
+
+          if (!profile.email) {
+            // GitHub email may be private, make a request to get list of user's private emails
+            const octokit = new Octokit({
+              auth: info.result.session.accessToken,
+            });
+
+            const res = await octokit.request('GET /user/emails', {
+              headers: {
+                'X-GitHub-Api-Version': '2022-11-28',
+              },
+            });
+
+            if (res.data.length === 0) {
+              throw new Error(
+                'Failed to sign-in, unable to resolve user identity. Could not get emails in user profile.',
+              );
+            }
+
+            const usersWithVerifiedEmails = res.data.filter(
+              email => email.verified,
+            );
+            if (!usersWithVerifiedEmails) {
+              throw new Error(
+                'Failed to sign-in, unable to resolve user identity. No verified emails were found.',
+              );
+            }
+            for (const user of usersWithVerifiedEmails) {
+              try {
+                return await ctx.signInWithCatalogUser(
+                  {
+                    filter: {
+                      'spec.profile.email': user.email,
+                    },
+                  },
+                  user.email,
+                  options?.dangerouslyAllowSignInWithoutUserInCatalog,
+                );
+              } catch (error: any) {
+                // do nothing, try the next email
+              }
+            }
+          } else {
+            // Same as upstream emailMatchingUserEntityProfileEmail resolver
+            try {
+              return await ctx.signInWithCatalogUser({
+                filter: {
+                  'spec.profile.email': profile.email,
+                },
+              });
+            } catch (err: any) {
+              if (err?.name === 'NotFoundError') {
+                // Try removing the plus addressing from the email address
+                const m = profile.email.match(reEmail);
+                if (m?.length === 4) {
+                  const [_, name, _plus, domain] = m;
+                  const noPlusEmail = `${name}${domain}`;
+
+                  return ctx.signInWithCatalogUser(
+                    {
+                      filter: {
+                        'spec.profile.email': noPlusEmail,
+                      },
+                    },
+                    noPlusEmail,
+                    options?.dangerouslyAllowSignInWithoutUserInCatalog,
+                  );
+                }
+              }
+              // Email had no plus addressing or is missing in the catalog, forward failure
+              throw err;
+            }
+          }
+          throw new Error(
+            'Failed to sign-in, unable to resolve user identity. Please verify that your catalog contains the expected user entities that would match your configured sign-in resolver.',
           );
         };
       },
