@@ -138,6 +138,8 @@ function getAuthProviderFactory(providerId: string): AuthProviderFactory {
         authenticator: githubAuthenticator,
         signInResolver: githubSignInResolvers.usernameMatchingUserEntityName(),
         signInResolverFactories: {
+          gitHubPrivateEmailMatchingUserEntityProfileEmail:
+            rhdhSignInResolvers.gitHubPrivateEmailMatchingUserEntityProfileEmail,
           ...githubSignInResolvers,
           ...commonSignInResolvers,
         },
