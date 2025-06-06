@@ -551,6 +551,14 @@ apply_yaml_files() {
     else
       oc apply -f "$dir/resources/topology_test/topology-test-route.yaml"
     fi
+
+    if [[ "$JOB_NAME" == *"sealight"* ]]; then
+        # Then create the secret directly from this encoded value
+        kubectl create secret docker-registry quay-secret \
+          --docker-server=quay.io \
+          --docker-username=$RHDH_SEALIGHTS_BOT_USER \
+          --docker-password=$RHDH_SEALIGHTS_BOT_TOKEN
+    fi
 }
 
 deploy_test_backstage_customization_provider() {
@@ -625,6 +633,11 @@ run_tests() {
   e2e_tests_dir=$(pwd)
 
   yarn install --immutable > /tmp/yarn.install.log.txt 2>&1
+
+  git status
+  echo "Running Sealights Utility"
+  node node_modules/sealights-playwright-plugin/importReplaceUtility.js playwright
+  git status
 
   INSTALL_STATUS=$?
   if [ $INSTALL_STATUS -ne 0 ]; then
@@ -864,22 +877,46 @@ cluster_setup_k8s_helm() {
   add_helm_repos
 }
 
-initiate_deployments() {
+# Helper function to get common helm set parameters
+get_helm_set_params() {
+  local params=""
+  
+  # Add cluster router base
+  params+="--set global.clusterRouterBase=${K8S_CLUSTER_ROUTER_BASE} "
+  
+  # Add image repository
+  params+="--set upstream.backstage.image.repository=${QUAY_REPO} "
+  
+  # Add image tag
+  params+="--set upstream.backstage.image.tag=${TAG_NAME} "
+  
+  # Add pull secrets if sealight job
+  params+=$(if [[ "$JOB_NAME" == *"sealight"* ]]; then echo "--set upstream.backstage.image.pullSecrets[0]='quay-secret'"; fi)
+  echo "${params}"
+}
+
+# Helper function to perform helm install/upgrade
+perform_helm_install() {
+  local release_name=$1
+  local namespace=$2
+  local value_file=$3
+  
+  helm upgrade -i "${release_name}" -n "${namespace}" \
+    "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" --version "${CHART_VERSION}" \
+    -f "${DIR}/value_files/${value_file}" \
+    $(get_helm_set_params)
+}
+
+base_deployment() {
   configure_namespace ${NAME_SPACE}
-
   deploy_redis_cache "${NAME_SPACE}"
-
-  cd "${DIR}"
   local rhdh_base_url="https://${RELEASE_NAME}-backstage-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
   echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
-  helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
-    "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" --version "${CHART_VERSION}" \
-    -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" \
-    --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    --set upstream.backstage.image.repository="${QUAY_REPO}" \
-    --set upstream.backstage.image.tag="${TAG_NAME}"
+  perform_helm_install "${RELEASE_NAME}" "${NAME_SPACE}" "${HELM_CHART_VALUE_FILE_NAME}"
+}
 
+rbac_deployment() {
   configure_namespace "${NAME_SPACE_POSTGRES_DB}"
   configure_namespace "${NAME_SPACE_RBAC}"
   configure_external_postgres_db "${NAME_SPACE_RBAC}"
@@ -888,12 +925,13 @@ initiate_deployments() {
   local rbac_rhdh_base_url="https://${RELEASE_NAME_RBAC}-backstage-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
   echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${RELEASE_NAME_RBAC}"
-  helm upgrade -i "${RELEASE_NAME_RBAC}" -n "${NAME_SPACE_RBAC}" \
-    "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" --version "${CHART_VERSION}" \
-    -f "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" \
-    --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    --set upstream.backstage.image.repository="${QUAY_REPO}" \
-    --set upstream.backstage.image.tag="${TAG_NAME}"
+  perform_helm_install "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${HELM_CHART_RBAC_VALUE_FILE_NAME}"
+}
+
+initiate_deployments() {
+  cd "${DIR}"
+  base_deployment
+  rbac_deployment
 }
 
 # install base RHDH deployment before upgrade
