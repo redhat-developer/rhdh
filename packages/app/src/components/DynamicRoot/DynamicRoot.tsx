@@ -6,10 +6,22 @@ import { BackstageApp } from '@backstage/core-app-api';
 import {
   AnyApiFactory,
   AppComponents,
+  AppTheme,
   BackstagePlugin,
 } from '@backstage/core-plugin-api';
 
 import { useThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
+import DynamicRootContext, {
+  ComponentRegistry,
+  DynamicRootConfig,
+  EntityTabOverrides,
+  MountPointConfig,
+  MountPoints,
+  ResolvedDynamicRoute,
+  ResolvedDynamicRouteMenuItem,
+  ScaffolderFieldExtension,
+  TechdocsAddon,
+} from '@red-hat-developer-hub/plugin-utils';
 import { AppsConfig } from '@scalprum/core';
 import { useScalprum } from '@scalprum/react-core';
 
@@ -24,20 +36,27 @@ import { catalogTranslations } from '../catalog/translations/catalog';
 import { MenuIcon } from '../Root/MenuIcon';
 import CommonIcons from './CommonIcons';
 import defaultAppComponents from './defaultAppComponents';
-import DynamicRootContext, {
-  AppThemeProvider,
-  ComponentRegistry,
-  DynamicRootConfig,
-  EntityTabOverrides,
-  MountPoints,
-  RemotePlugins,
-  ResolvedDynamicRoute,
-  ResolvedDynamicRouteMenuItem,
-  ScaffolderFieldExtension,
-  ScalprumMountPointConfig,
-  TechdocsAddon,
-} from './DynamicRootContext';
 import Loader from './Loader';
+
+export type RemotePlugins = {
+  [scope: string]: {
+    [module: string]: {
+      [importName: string]:
+        | React.ComponentType<React.PropsWithChildren>
+        | ((...args: any[]) => any)
+        | BackstagePlugin<{}>
+        | {
+            element: React.ComponentType<React.PropsWithChildren>;
+            staticJSXContent:
+              | React.ReactNode
+              | ((config: DynamicRootConfig) => React.ReactNode);
+          }
+        | AnyApiFactory;
+    };
+  };
+};
+
+type AppThemeProvider = Partial<AppTheme> & Omit<AppTheme, 'theme'>;
 
 export type StaticPlugins = Record<
   string,
@@ -230,7 +249,7 @@ export const DynamicRoot = ({
       {
         mountPoint: string;
         Component: React.ComponentType<{}>;
-        config?: ScalprumMountPointConfig;
+        config?: MountPointConfig;
         staticJSXContent?:
           | React.ReactNode
           | ((dynamicRootConfig: DynamicRootConfig) => React.ReactNode);

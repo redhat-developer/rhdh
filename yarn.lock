@@ -12310,6 +12310,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@red-hat-developer-hub/plugin-utils@1.0.0, @red-hat-developer-hub/plugin-utils@workspace:packages/plugin-utils":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/plugin-utils@workspace:packages/plugin-utils"
+  dependencies:
+    "@backstage/catalog-model": 1.7.3
+    "@backstage/cli": 0.30.0
+    "@backstage/test-utils": 1.7.5
+    "@testing-library/dom": 9.3.4
+    "@testing-library/jest-dom": 6.6.3
+    "@testing-library/react": 14.3.1
+    "@testing-library/react-hooks": 8.0.1
+    "@types/node": 22.15.22
+    "@types/react": 18.3.23
+    "@types/react-dom": 18.3.7
+    prettier: 3.5.3
+    react: 18.3.1
+    typescript: 5.8.3
+  peerDependencies:
+    react: 16.13.1 || ^17.0.0 || ^18.2.0
+  languageName: unknown
+  linkType: soft
+
 "@redis/bloom@npm:1.2.0":
   version: 1.2.0
   resolution: "@redis/bloom@npm:1.2.0"
@@ -16578,6 +16600,7 @@ __metadata:
     "@mui/material": 5.17.1
     "@mui/styled-engine": 5.16.14
     "@red-hat-developer-hub/backstage-plugin-theme": 0.6.0
+    "@red-hat-developer-hub/plugin-utils": 1.0.0
     "@scalprum/core": 0.8.3
     "@scalprum/react-core": 0.9.5
     "@scalprum/react-test-utils": 0.2.6
@@ -34134,20 +34157,20 @@ __metadata:
   linkType: hard
 
 "tar-fs@npm:^2.0.0, tar-fs@npm:~2.1.2":
-  version: 2.1.2
-  resolution: "tar-fs@npm:2.1.2"
+  version: 2.1.3
+  resolution: "tar-fs@npm:2.1.3"
   dependencies:
     chownr: ^1.1.1
     mkdirp-classic: ^0.5.2
     pump: ^3.0.0
     tar-stream: ^2.1.4
-  checksum: 6b4fcd38a644b5cd3325f687b9f1f48cd19809b63cbc8376fe794f68361849a17120d036833b3a97de6acb1df588844476309b8c2d0bcaf53f19da2d56ac07de
+  checksum: 8dd66c20779c1fe535df5cf2ab5132705c12aba3ab95283f225a798329c5aaa8bbe92144c8e21bc9404f46a0d3ce59fc4997f5c42bafc55b6a225d4ad15aa966
   languageName: node
   linkType: hard
 
 "tar-fs@npm:^3.0.5":
-  version: 3.0.8
-  resolution: "tar-fs@npm:3.0.8"
+  version: 3.0.9
+  resolution: "tar-fs@npm:3.0.9"
   dependencies:
     bare-fs: ^4.0.1
     bare-path: ^3.0.0
@@ -34158,7 +34181,7 @@ __metadata:
       optional: true
     bare-path:
       optional: true
-  checksum: 5bebadd68e7a10cc3aa9c30b579c295e158cef7b1f42a73ee1bb1992925027aa8ef6cbcdb0d03e202e7f3850799391de30adf2585f7f240b606faa65df1a6b68
+  checksum: ec1b1d83bca3f7e66cc3273e06969ecef9da639144a71732b799884ecde978c69583aae4232162fe92aedfe051fc74a6553a99c6aadd6503e41f82de5015b4c9
   languageName: node
   linkType: hard
 
