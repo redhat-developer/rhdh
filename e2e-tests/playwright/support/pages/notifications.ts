@@ -21,7 +21,7 @@ export class NotificationPage {
     await expect(
       this.page.getByTestId("loading-indicator").getByRole("img"),
     ).toHaveCount(0);
-    let row = await this.page.locator(`tr`, { hasText: text }).first();
+    const row = await this.page.locator(`tr`, { hasText: text }).first();
     await expect(row).toHaveCount(1);
   }
 
@@ -37,7 +37,7 @@ export class NotificationPage {
       .click();
   }
   async markAllNotificationsAsRead() {
-    let markAllNotificationsAsReadIsVisible = await this.page
+    const markAllNotificationsAsReadIsVisible = await this.page
       .getByTitle("Mark all read")
       .getByRole("button")
       .isVisible();
@@ -103,17 +103,17 @@ export class NotificationPage {
   }
 
   async markLastNotificationAsRead() {
-    let row = await this.page.locator("td:nth-child(3) > div").first();
+    const row = await this.page.locator("td:nth-child(3) > div").first();
     await row.getByRole("button").nth(1).click();
   }
 
   async markNotificationAsRead(text: string) {
-    let row = await this.page.locator(`tr:has-text("${text}")`);
+    const row = await this.page.locator(`tr:has-text("${text}")`);
     await row.getByRole("button").nth(1).click();
   }
 
   async markLastNotificationAsUnRead() {
-    let row = await this.page.locator("td:nth-child(3) > div").first();
+    const row = await this.page.locator("td:nth-child(3) > div").first();
     await row.getByRole("button").nth(1).click();
   }
 

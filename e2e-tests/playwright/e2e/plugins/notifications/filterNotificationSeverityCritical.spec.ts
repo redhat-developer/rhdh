@@ -24,8 +24,8 @@ test.describe("Filter critical notification tests", () => {
   });
 
   test("Fiter notifcations by serverity - critical", async () => {
-    let r = (Math.random() + 1).toString(36).substring(7);
-    let severity = "critical";
+    const r = (Math.random() + 1).toString(36).substring(7);
+    const severity = "critical";
     const notificationsApi = await RhdhNotficationsApi.build("test-token");
     // Used boradcast here, but we should use type: entity and entityRef: ["user:<namespace>/<username>"]
     const notification: Notifications = {

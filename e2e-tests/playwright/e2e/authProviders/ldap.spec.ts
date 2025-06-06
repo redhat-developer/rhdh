@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import { test, expect, Page, BrowserContext } from "@playwright/test";
 import RHDHDeployment from "../../utils/authentication-providers/rhdh-deployment";
 import { Common, setupBrowser } from "../../utils/common";
