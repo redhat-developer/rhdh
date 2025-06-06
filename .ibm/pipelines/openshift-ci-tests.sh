@@ -54,7 +54,8 @@ main() {
       ;;
     *e2e-tests-nightly-auth-providers)
       echo "Calling handle_auth_providers"
-      handle_auth_providers
+      echo "Skipping until refactor is completed: RHIDP-7347"
+      #handle_auth_providers
       ;;
     *gke*)
       echo "Calling handle_gke"
