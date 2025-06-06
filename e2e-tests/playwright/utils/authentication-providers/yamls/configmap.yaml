@@ -1,0 +1,41 @@
+developerHub:
+  flavor: rhdh
+app:
+  baseUrl: ${BASE_URL:-http://localhost:3000}
+  title: Red Hat Developer Hub
+organization:
+  name: ${ORGANIZATION_NAME}
+backend:
+  baseUrl: ${BASE_URL:-http://localhost:7007}
+  csp:
+    connect-src:
+      - "'self'"
+      - "http:"
+      - "https:"
+  cors:
+    origin: ${BASE_URL:-http://localhost:3000}
+    methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+    credentials: true
+  auth:
+    keys:
+      - secret: temp
+    externalAccess:
+      - type: static
+        options:
+          token: ${STATIC_TOKEN:-localmocktoken}
+          subject: e2e-tests-ci
+  database:
+    client: better-sqlite3
+    connection: ":memory:"
+includeTransitiveGroupOwnership: true
+auth:
+  environment: development
+  session:
+    secret: superSecretSecret
+catalog:
+  import:
+    entityFilename: catalog-info.yaml
+  rules:
+    - allow: [API, Component, Group, Location, Resource, System, Template]
+permission:
+  enabled: false

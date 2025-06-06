@@ -1,0 +1,22 @@
+kind: Backstage
+apiVersion: rhdh.redhat.com/v1alpha2
+metadata:
+  name: rhdh
+spec:
+  application:
+    image: "quay.io/rhdh-community/rhdh:next"
+    appConfig:
+      configMaps:
+        - name: app-config-rhdh
+      mountPath: /opt/app-root/src
+    dynamicPluginsConfigMapName: dynamic-plugins
+    extraEnvs:
+      envs:
+        - name: NODE_OPTIONS
+          value: "--no-node-snapshot"
+      secrets:
+        - name: rhdh-secrets
+    extraFiles:
+      configMaps:
+        - name: rbac-policy
+      mountPath: /opt/app-root/src/rbac

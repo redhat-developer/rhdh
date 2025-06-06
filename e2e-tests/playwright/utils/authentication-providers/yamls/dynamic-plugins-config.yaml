@@ -1,0 +1,11 @@
+includes:
+  - dynamic-plugins.default.yaml
+plugins:
+  - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-keycloak-dynamic
+    disabled: true
+  - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-org-dynamic
+    disabled: true
+  - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-msgraph-dynamic
+    disabled: true
+  - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
+    disabled: true
