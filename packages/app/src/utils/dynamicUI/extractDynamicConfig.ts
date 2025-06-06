@@ -89,6 +89,12 @@ type ApiFactory = {
   importName: string;
 };
 
+type AnalyticsApiExtension = {
+  scope: string;
+  module: string;
+  importName: string;
+};
+
 type ScaffolderFieldExtension = {
   scope: string;
   module: string;
@@ -159,6 +165,7 @@ type CustomProperties = {
   mountPoints?: MountPoint[];
   appIcons?: AppIcon[];
   apiFactories?: ApiFactory[];
+  analyticsApiExtensions?: AnalyticsApiExtension[];
   providerSettings?: ProviderSetting[];
   scaffolderFieldExtensions?: ScaffolderFieldExtension[];
   signInPage: SignInPageEntry;
@@ -177,6 +184,7 @@ export type DynamicPluginConfig = {
 type DynamicConfig = {
   pluginModules: PluginModule[];
   apiFactories: ApiFactory[];
+  analyticsApiExtensions: AnalyticsApiExtension[];
   appIcons: AppIcon[];
   dynamicRoutes: DynamicRoute[];
   menuItems: MenuItem[];
@@ -202,6 +210,7 @@ function extractDynamicConfig(
   const config: DynamicConfig = {
     pluginModules: [],
     apiFactories: [],
+    analyticsApiExtensions: [],
     appIcons: [],
     dynamicRoutes: [],
     menuItems: [],
@@ -320,6 +329,18 @@ function extractDynamicConfig(
     },
     [],
   );
+  config.analyticsApiExtensions = Object.entries(frontend).reduce<
+    AnalyticsApiExtension[]
+  >((accAnalyticsApiExtensions, [scope, { analyticsApiExtensions }]) => {
+    accAnalyticsApiExtensions.push(
+      ...(analyticsApiExtensions ?? []).map(analyticsApi => ({
+        module: analyticsApi.module ?? 'PluginRoot',
+        importName: analyticsApi.importName ?? 'default',
+        scope,
+      })),
+    );
+    return accAnalyticsApiExtensions;
+  }, []);
   config.scaffolderFieldExtensions = Object.entries(frontend).reduce<
     ScaffolderFieldExtension[]
   >((accScaffolderFieldExtensions, [scope, { scaffolderFieldExtensions }]) => {
