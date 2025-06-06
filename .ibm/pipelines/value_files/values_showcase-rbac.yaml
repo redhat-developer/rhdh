@@ -112,7 +112,7 @@ global:
 # -- Upstream Backstage [chart configuration](https://github.com/backstage/charts/blob/main/charts/backstage/values.yaml)
 # @default -- Use Openshift compatible settings
 upstream:
-  nameOverride: backstage
+  nameOverride: developer-hub
   commonLabels:
     backstage.io/kubernetes-id: developer-hub
   backstage:
@@ -322,6 +322,8 @@ upstream:
     extraAppConfig:
       - configMapRef: app-config-rhdh
         filename: app-config-rhdh.yaml
+      - configMapRef: rhdh-rbac-developer-hub-app-config
+        filename: app-config.yaml
     extraEnvVarsSecrets:
       - rhdh-secrets
       - postgres-cred

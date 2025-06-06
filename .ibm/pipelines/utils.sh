@@ -864,13 +864,46 @@ cluster_setup_k8s_helm() {
   add_helm_repos
 }
 
+# Helper function to install orchestrator infra chart. Only applicable for chart versions 4.0.0 + 
+install_orchestrator_infra_chart() {
+  ORCH_INFRA_NS="orchestrator-infra"
+  configure_namespace ${ORCH_INFRA_NS}
+
+  echo "Deploying orchestrator-infra chart"
+  cd "${DIR}"
+  helm upgrade -i orch-infra -n "${ORCH_INFRA_NS}" \
+    "${HELM_REPO_NAME}/redhat-developer-hub-orchestrator-infra"
+
+  # wait for install plan to be deployed
+  echo "Waiting for an InstallPlan to be created in namespace openshift-serverless"
+
+  while true; do
+    COUNT=$(oc get installplan -n openshift-serverless --no-headers 2>/dev/null | wc -l)
+    
+    if [[ "$COUNT" -gt 0 ]]; then
+      echo "Found $COUNT InstallPlan(s) in namespace openshift-serverless."
+      break
+    fi
+
+    echo "No InstallPlans found. Retrying in 5 seconds..."
+    sleep 5
+  done
+
+  for namespace in "openshift-serverless" "openshift-serverless-logic"; do
+    OS_PLAN=$(oc get installplan -n $namespace --sort-by=.metadata.creationTimestamp -o jsonpath='{.items[0].metadata.name}')
+    oc patch installplan $OS_PLAN -n $namespace --type merge --patch '{"spec":{"approved":true}}'
+  done
+}
+
 initiate_deployments() {
   configure_namespace ${NAME_SPACE}
 
   deploy_redis_cache "${NAME_SPACE}"
 
+  install_orchestrator_infra_chart
+
   cd "${DIR}"
-  local rhdh_base_url="https://${RELEASE_NAME}-backstage-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
+  local rhdh_base_url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
   echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
   helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
@@ -878,14 +911,16 @@ initiate_deployments() {
     -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO}" \
-    --set upstream.backstage.image.tag="${TAG_NAME}"
+    --set upstream.backstage.image.tag="${TAG_NAME}" \
+    --set orchestrator.enabled=true
 
   configure_namespace "${NAME_SPACE_POSTGRES_DB}"
   configure_namespace "${NAME_SPACE_RBAC}"
   configure_external_postgres_db "${NAME_SPACE_RBAC}"
+  POSTGRES_IMAGE=$(cat "${DIR}/resources/postgres-db/postgres.yaml" | grep -m1 image | sed -E 's/^\s*image:\s*//')
 
   # Initiate rbac instance deployment.
-  local rbac_rhdh_base_url="https://${RELEASE_NAME_RBAC}-backstage-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
+  local rbac_rhdh_base_url="https://${RELEASE_NAME_RBAC}-developer-hub-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
   echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${RELEASE_NAME_RBAC}"
   helm upgrade -i "${RELEASE_NAME_RBAC}" -n "${NAME_SPACE_RBAC}" \
@@ -893,7 +928,12 @@ initiate_deployments() {
     -f "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO}" \
-    --set upstream.backstage.image.tag="${TAG_NAME}"
+    --set upstream.backstage.image.tag="${TAG_NAME}" \
+    --set orchestrator.enabled=true \
+    --set orchestrator.sonataflowPlatform.externalDBsecretRef=postgres-cred \
+    --set orchestrator.sonataflowPlatform.externalDBName=postgress-external-db \
+    --set orchestrator.sonataflowPlatform.initContainerImage="${POSTGRES_IMAGE}" \
+    --set orchestrator.sonataflowPlatform.createDBJobImage="${POSTGRES_IMAGE}"
 }
 
 # install base RHDH deployment before upgrade
@@ -904,8 +944,10 @@ initiate_upgrade_base_deployments() {
 
   deploy_redis_cache "${NAME_SPACE}"
 
+  install_orchestrator_infra_chart
+
   cd "${DIR}"
-  local rhdh_base_url="https://${RELEASE_NAME}-backstage-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
+  local rhdh_base_url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
   echo "Deploying image from base repository: ${QUAY_REPO_BASE}, TAG_NAME_BASE: ${TAG_NAME_BASE}, in NAME_SPACE: ${NAME_SPACE}"
 
@@ -914,7 +956,8 @@ initiate_upgrade_base_deployments() {
     -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME_BASE}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO_BASE}" \
-    --set upstream.backstage.image.tag="${TAG_NAME_BASE}"
+    --set upstream.backstage.image.tag="${TAG_NAME_BASE}" \
+    --set orchestrator.enabled=true
 }
 
 initiate_upgrade_deployments() {
@@ -942,6 +985,7 @@ initiate_upgrade_deployments() {
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO}" \
     --set upstream.backstage.image.tag="${TAG_NAME}" \
+    --set orchestrator.enabled=true \
     --wait --timeout=${wait_upgrade}
 
     oc get pods -n "${namespace}"
@@ -961,12 +1005,19 @@ initiate_runtime_deployment() {
   oc apply -f "$DIR/resources/postgres-db/postgres-crt-rds.yaml" -n "${namespace}"
   oc apply -f "$DIR/resources/postgres-db/postgres-cred.yaml" -n "${namespace}"
   oc apply -f "$DIR/resources/postgres-db/dynamic-plugins-root-PVC.yaml" -n "${namespace}"
+  POSTGRES_IMAGE=$(cat "${DIR}/resources/postgres-db/postgres.yaml" | grep -m1 image | sed -E 's/^\s*image:\s*//')
+
   helm upgrade -i "${release_name}" -n "${namespace}" \
     "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" --version "${CHART_VERSION}" \
     -f "$DIR/resources/postgres-db/values-showcase-postgres.yaml" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO}" \
-    --set upstream.backstage.image.tag="${TAG_NAME}"
+    --set upstream.backstage.image.tag="${TAG_NAME}" \
+    --set orchestrator.enabled=true \
+    --set orchestrator.sonataflowPlatform.externalDBsecretRef=postgres-cred \
+    --set orchestrator.sonataflowPlatform.externalDBName=postgress-external-db \
+    --set orchestrator.sonataflowPlatform.initContainerImage="${POSTGRES_IMAGE}" \
+    --set orchestrator.sonataflowPlatform.createDBJobImage="${POSTGRES_IMAGE}"
 }
 
 initiate_sanity_plugin_checks_deployment() {
@@ -983,7 +1034,8 @@ initiate_sanity_plugin_checks_deployment() {
     -f "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO}" \
-    --set upstream.backstage.image.tag="${TAG_NAME}"
+    --set upstream.backstage.image.tag="${TAG_NAME}" \
+    --set orchestrator.enabled=true
 }
 
 check_and_test() {
@@ -1103,3 +1155,4 @@ to_lowercase() {
     echo "${1,,}"
   fi
 }
+
