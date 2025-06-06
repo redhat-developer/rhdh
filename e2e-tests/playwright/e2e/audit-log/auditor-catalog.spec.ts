@@ -43,7 +43,7 @@ test.describe.serial("Audit Log check for Catalog Plugin", () => {
   test("Should fetch logs for entity-mutate event and validate log structure and values", async () => {
     // Ensure the entity exists
     await ensureEntityExists();
-    await uiHelper.clickButton("Register Existing Component");
+    await uiHelper.clickButton("Import an existing Git repository");
     // Register as existing (should trigger entity-mutate)
     await catalogImport.registerExistingComponent(template, false);
     await LogUtils.validateLogEvent(
@@ -61,7 +61,7 @@ test.describe.serial("Audit Log check for Catalog Plugin", () => {
 
   test("Should fetch logs for location-mutate event and validate log structure and values", async () => {
     await ensureEntityDoesNotExist();
-    await uiHelper.clickButton("Register Existing Component");
+    await uiHelper.clickButton("Import an existing Git repository");
     // Register as new (should trigger location-mutate)
     await catalogImport.registerExistingComponent(template, false);
     await LogUtils.validateLogEvent(
