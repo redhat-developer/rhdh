@@ -60,14 +60,15 @@ const createOidcSubClaimResolver = (...providers: OidcProviderInfo[]) =>
               {
                 annotations: { [userIdKey]: sub },
               },
-              sub,
-              options?.dangerouslyAllowSignInWithoutUserInCatalog,
+              {
+                dangerousEntityRefFallback:
+                  options?.dangerouslyAllowSignInWithoutUserInCatalog
+                    ? { entityRef: sub }
+                    : undefined,
+              },
             );
-          } catch (error: any) {
-            if (error?.name === 'NotFoundError') {
-              continue;
-            }
-            throw error;
+          } catch (error) {
+            continue;
           }
         }
 
@@ -148,8 +149,12 @@ export namespace rhdhSignInResolvers {
             {
               entityRef: { name },
             },
-            name,
-            options?.dangerouslyAllowSignInWithoutUserInCatalog,
+            {
+              dangerousEntityRefFallback:
+                options?.dangerouslyAllowSignInWithoutUserInCatalog
+                  ? { entityRef: name }
+                  : undefined,
+            },
           );
         };
       },
