@@ -2,6 +2,7 @@ import { test, expect, Page, BrowserContext } from "@playwright/test";
 import RHDHDeployment from "../../utils/authentication-providers/rhdh-deployment";
 import { Common, setupBrowser } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
+import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants"
 
 let page: Page;
 let context: BrowserContext;
@@ -75,10 +76,10 @@ test.describe("Configure Github Provider", async () => {
     await deployment.generateStaticToken();
 
     // set enviroment variables and create secret
-    if (!process.env.ISRUNNINGLOCAL)
+    if (!process.env.ISRUNNINGLOCAL){
       deployment.addSecretData("BASE_URL", backstageUrl);
-    if (!process.env.ISRUNNINGLOCAL)
       deployment.addSecretData("BASE_BACKEND_URL", backstageBackendUrl);
+    }
     deployment.addSecretData(
       "AUTH_PROVIDERS_GH_ORG_NAME",
       process.env.AUTH_PROVIDERS_GH_ORG_NAME,
@@ -160,9 +161,7 @@ test.describe("Configure Github Provider", async () => {
     );
     expect(login).toBe("Login successful");
 
-    await uiHelper.verifyAlertErrorMessage(
-      /Login failed; caused by Error: Failed to sign-in, unable to resolve user identity. Please verify that your catalog contains the expected User entities that would match your configured sign-in resolver. For non-production environments, manually provision the user or disable the user provisioning requirement by setting the `dangerouslyAllowSignInWithoutUserInCatalog` option./,
-    );
+    await uiHelper.verifyAlertErrorMessage(NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE);
     await context.clearCookies();
   });
 
