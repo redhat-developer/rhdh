@@ -9,7 +9,7 @@ import { EventStatus, LogRequest } from "./logs";
 /* ───────────────────────────────── CONSTANTS ───────────────────────────── */
 export const USER_ENTITY_REF = "user:default/rhdh-qe";
 export const PLUGIN_ACTOR_ID = "plugin:permission";
-export const ROLE_NAME = "default/rbac_admin";
+export const ROLE_NAME = "default/team_a";
 
 export const RBAC_API = {
   role: {
@@ -48,10 +48,10 @@ export function buildNotAllowedError(
 
   const verb = backendVerb[action];
   if (entityType === "role") {
-    return `NotAllowedError: Unable to ${verb} role: source does not match originating role role:${ROLE_NAME}, consider making changes to the 'CONFIGURATION'`;
+    return `NotAllowedError: Unable to ${verb} role: source does not match originating role role:${ROLE_NAME}, consider making changes to the 'CSV-FILE'`;
   }
   // policy
-  return `NotAllowedError: Unable to ${verb} policy role:${entityRef}: source does not match originating role role:${ROLE_NAME}, consider making changes to the 'CONFIGURATION'`;
+  return `NotAllowedError: Unable to ${verb} policy role:${entityRef}: source does not match originating role role:${ROLE_NAME}, consider making changes to the 'CSV-FILE'`;
 }
 
 /* ───────────────────────────────── PAYLOADS ────────────────────────────── */
