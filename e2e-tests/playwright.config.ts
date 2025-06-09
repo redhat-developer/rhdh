@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { defineConfig, devices } from "@playwright/test";
 
 process.env.JOB_NAME = process.env.JOB_NAME || "";
@@ -29,7 +30,7 @@ export default defineConfig({
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    baseURL: process.env.BASE_URL,
+    baseURL: 'https://rhdh-backstage-rhdh-main.roks-us-east-quality-a9805650830b22c3aee243e51d79565d-0000.us-east.containers.appdomain.cloud',
     ignoreHTTPSErrors: true,
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "retain-on-failure",

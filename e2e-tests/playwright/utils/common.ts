@@ -205,17 +205,11 @@ export class Common {
   }
 
   getGitHub2FAOTP(userid: string): string {
-    const secrets: { [key: string]: string | undefined } = {
-      [process.env.GH_USER_ID]: process.env.GH_2FA_SECRET,
-      [process.env.GH_USER2_ID]: process.env.GH_USER2_2FA_SECRET,
-    };
-
-    const secret = secrets[userid];
-    if (!secret) {
-      throw new Error("Invalid User ID");
+    // Use the environment variable for the 2FA secret if the user matches
+    if (userid === process.env.GH_USER_ID && process.env.GH_USER2_2FA_SECRET) {
+      return authenticator.generate(process.env.GH_USER2_2FA_SECRET);
     }
-
-    return authenticator.generate(secret);
+    throw new Error("Invalid User ID or missing 2FA secret");
   }
 
   getGoogle2FAOTP(): string {
