@@ -96,7 +96,8 @@ test("Verify all GitHub Pull Requests statistics after login", async ({ page, co
   await uiHelper.openSidebar("Catalog");
   // Step 3: Search and click 'Backstage Showcase'
   await page.fill('input[placeholder="Search"]', repoName);
-  await page.waitForTimeout(1000);
+  // Wait for the search result link to appear before clicking
+  await page.waitForSelector('a:has-text("Backstage Showcase")', { timeout: 20000 });
   await uiHelper.clickLink(repoName);
   await page.waitForLoadState("networkidle");
   console.log('[DEBUG] Navigated to Backstage Showcase entity page.');
