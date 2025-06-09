@@ -166,7 +166,7 @@ regex==2023.12.25
     # via
     #   -r requirements-build.in
     #   mkdocs-material
-requests==2.32.3
+requests==2.32.4
     # via
     #   -r requirements-build.in
     #   mkdocs-material
