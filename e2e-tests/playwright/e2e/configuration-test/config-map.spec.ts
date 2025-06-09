@@ -11,7 +11,7 @@ test.describe("Change app-config at e2e test runtime", () => {
     // Start with a common name, but let KubeClient find the actual ConfigMap
     const configMapName = "app-config-rhdh";
     const namespace = process.env.NAME_SPACE_RUNTIME || "showcase-runtime";
-    const deploymentName = "rhdh-backstage";
+    const deploymentName = "rhdh-developer-hub";
 
     const kubeUtils = new KubeClient();
     const dynamicTitle = generateDynamicTitle();
