@@ -31999,6 +31999,7 @@ __metadata:
   resolution: "root@workspace:."
   dependencies:
     "@backstage/cli": 0.32.1
+    "@backstage/frontend-test-utils": ^0.3.2
     "@ianvs/prettier-plugin-sort-imports": 4.4.2
     "@manypkg/cli": 0.24.0
     glob: 11.0.2

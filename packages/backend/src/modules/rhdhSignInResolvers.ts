@@ -65,7 +65,7 @@ export namespace rhdhSignInResolvers {
           if (!name) {
             throw new Error('Request did not contain a user');
           }
-           return ctx.signInWithCatalogUser(
+          return ctx.signInWithCatalogUser(
             {
               entityRef: { name },
             },
@@ -74,7 +74,7 @@ export namespace rhdhSignInResolvers {
                 options?.dangerouslyAllowSignInWithoutUserInCatalog
                   ? { entityRef: name }
                   : undefined,
-            }
+            },
           );
         };
       },

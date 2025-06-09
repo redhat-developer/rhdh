@@ -54,17 +54,17 @@ export const createOidcSubClaimResolver = (provider: OidcProviderInfo) =>
           );
         }
 
-           return await ctx.signInWithCatalogUser(
-              {
-                annotations: { [provider.userIdKey]: sub },
-              },
-              {
-                dangerousEntityRefFallback:
-                  options?.dangerouslyAllowSignInWithoutUserInCatalog
-                    ? { entityRef: sub }
-                    : undefined,
-              }
-            );
+        return await ctx.signInWithCatalogUser(
+          {
+            annotations: { [provider.userIdKey]: sub },
+          },
+          {
+            dangerousEntityRefFallback:
+              options?.dangerouslyAllowSignInWithoutUserInCatalog
+                ? { entityRef: sub }
+                : undefined,
+          },
+        );
       };
     },
   });
