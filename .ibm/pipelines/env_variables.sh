@@ -20,6 +20,11 @@ K8S_CLUSTER_TOKEN_ENCODED=$(printf "%s" $K8S_CLUSTER_TOKEN | base64 | tr -d '\n'
 QUAY_REPO="${QUAY_REPO:-rhdh-community/rhdh}"
 QUAY_NAMESPACE=$(cat /tmp/secrets/QUAY_NAMESPACE)
 QUAY_TOKEN=$(cat /tmp/secrets/QUAY_TOKEN)
+RHDH_SEALIGHTS_BOT_TOKEN=$(cat /tmp/secrets/RHDH_SEALIGHTS_BOT.QUAY.TOKEN)
+RHDH_SEALIGHTS_BOT_USER=$(cat /tmp/secrets/RHDH_SEALIGHTS_BOT.QUAY.USER)
+export SL_TOKEN=$(cat /tmp/secrets/SEALIGHT_TOKEN)
+export SL_BUILD_SESSION_ID="877fcebb-3ad3-4d8d-bea8-834977e24f3b"
+export SL_TEST_STAGE="e2e-tests-nightly"
 
 RELEASE_NAME=rhdh
 RELEASE_NAME_RBAC=rhdh-rbac
