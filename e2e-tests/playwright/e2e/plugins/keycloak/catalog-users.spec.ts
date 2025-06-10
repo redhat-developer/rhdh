@@ -121,7 +121,7 @@ async function createRouteIfNotPresentAndWait(
   if (!metricsRoute) {
     const service = await kubeClient.getServiceByLabel(
       namespace,
-      "app.kubernetes.io/name=backstage",
+      "backstage.io/kubernetes-id=developer-hub",
     );
     const rhdhServiceName = service[0].metadata.name;
     const route = {
@@ -150,8 +150,7 @@ async function createIngressIfNotPresentAndWait(
   if (!metricsIngress) {
     const service = await kubeClient.getServiceByLabel(
       namespace,
-      // "app.kubernetes.io/name=backstage",
-      "app.kubernetes.io/name=developer-hub",
+      "backstage.io/kubernetes-id=developer-hub",
     );
     const rhdhServiceName = service[0].metadata.name;
     const ingress = {
