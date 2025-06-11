@@ -40,7 +40,7 @@ const test = base.extend<{
 });
 
 test.describe("Test OCM plugin", () => {
-  // TODO: fix https://issues.redhat.com/browse/RHIDP-6492 and remove the skip
+  // TODO: fix https://issues.redhat.com/browse/RHIDP-7788 and remove the skip
   test.skip(() => process.env.JOB_NAME.includes("operator"));
 
   test("Navigate to Clusters and Verify OCM Clusters", async ({

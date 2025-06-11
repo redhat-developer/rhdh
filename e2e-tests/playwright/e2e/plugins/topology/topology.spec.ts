@@ -5,7 +5,9 @@ import { Catalog } from "../../../support/pages/catalog";
 import { Topology } from "../../../support/pages/topology";
 
 test.describe("Test Topology Plugin", () => {
+  // TODO: fix https://issues.redhat.com/browse/RHIDP-7788 and remove the skip
   test.skip(() => process.env.JOB_NAME.includes("operator"));
+
   let common: Common;
   let uiHelper: UIhelper;
   let catalog: Catalog;

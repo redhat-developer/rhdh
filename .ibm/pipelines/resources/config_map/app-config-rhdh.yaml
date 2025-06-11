@@ -31,6 +31,12 @@ backend:
       - host: 'github.com'
       - host: ${DH_TARGET_URL}
   auth:
+    dangerouslyDisableDefaultAuthPolicy: true
+    externalAccess:
+      - type: static
+        options:
+          token: test-token
+          subject: test-subject
     keys:
       - secret: temp
   cache:
