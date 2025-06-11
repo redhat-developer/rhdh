@@ -1,0 +1,10 @@
+auth:
+  environment: development
+  providers:
+    oidc:
+      development:
+        metadataUrl: ${KEYCLOAK_AUTH_BASE_URL}/auth/realms/${KEYCLOAK_AUTH_REALM}
+        clientId: ${KEYCLOAK_AUTH_CLIENTID}
+        clientSecret: ${KEYCLOAK_AUTH_CLIENT_SECRET}
+        dangerouslyAllowSignInWithoutUserInCatalog: true
+signInPage: oidc 
