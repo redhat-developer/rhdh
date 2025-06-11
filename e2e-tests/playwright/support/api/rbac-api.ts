@@ -74,13 +74,13 @@ export default class RhdhRbacApi {
     newPolicy: Policy[],
   ): Promise<APIResponse> {
     this.checkRoleFormat(role);
-    return await this.myContext.put(`/policies/role/${role}`, {
+    return await this.myContext.put(`policies/role/${role}`, {
       data: { oldPolicy, newPolicy },
     });
   }
   public async deletePolicy(policy: string, policies: Policy[]) {
     this.checkRoleFormat(policy);
-    return await this.myContext.delete(`/policies/role/${policy}`, {
+    return await this.myContext.delete(`policies/role/${policy}`, {
       data: policies,
     });
   }
