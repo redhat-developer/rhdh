@@ -10,7 +10,7 @@ global:
       - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-msgraph-dynamic
         disabled: true
       - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
-        disabled: true
+        disabled: false
 upstream:
   backstage:
     appConfig:
