@@ -120,15 +120,6 @@ test.describe("Configure LDAP Provider", async () => {
 
   test.afterAll(async () => {
     console.log("Cleaning up...");
-    await deployment.killRunningProcess();
-    const graphClient = new MSGraphClient(
-      process.env.AUTH_PROVIDERS_AZURE_CLIENT_ID,
-      process.env.AUTH_PROVIDERS_AZURE_CLIENT_SECRET,
-      process.env.AUTH_PROVIDERS_AZURE_TENANT_ID,
-    );
-    await graphClient.removeAppRedirectUrlsAsync([
-      `${backstageUrl}/api/auth/microsoft/handler/frame`,
-    ]);
     // TODO -> clear NSG rule
   });
 });
