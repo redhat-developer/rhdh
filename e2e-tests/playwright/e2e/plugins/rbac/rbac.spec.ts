@@ -8,13 +8,13 @@ import {
 } from "../../../support/pageObjects/page-obj";
 import { Common, setupBrowser } from "../../../utils/common";
 import { UIhelper } from "../../../utils/ui-helper";
-import fs from "fs/promises";
 import { RbacPo } from "../../../support/pageObjects/rbac-po";
 import { RhdhAuthApiHack } from "../../../support/api/rhdh-auth-api-hack";
 import RhdhRbacApi from "../../../support/api/rbac-api";
 import { RbacConstants } from "../../../data/rbac-constants";
 import { Policy } from "../../../support/api/rbac-api-structures";
 import { CatalogImport } from "../../../support/pages/catalog-import";
+import { downloadAndReadFile } from "../../../utils/helper";
 
 /*
     Note that:
@@ -230,7 +230,10 @@ test.describe.serial("Test RBAC", () => {
 
     test("Should download the user list", async ({ page }) => {
       await page.locator('a:has-text("Download User List")').click();
-      const fileContent = await downloadAndReadFile(page);
+      const fileContent = await downloadAndReadFile(
+        page,
+        'a:has-text("Download User List")',
+      );
       const lines = fileContent.trim().split("\n");
 
       const header = "userEntityRef,displayName,email,lastAuthTime";
@@ -246,25 +249,6 @@ test.describe.serial("Test RBAC", () => {
         throw new Error("Not all users info are valid");
       }
     });
-
-    async function downloadAndReadFile(
-      page: Page,
-    ): Promise<string | undefined> {
-      const [download] = await Promise.all([
-        page.waitForEvent("download"),
-        page.locator('a:has-text("Download User List")').click(),
-      ]);
-
-      const filePath = await download.path();
-
-      if (filePath) {
-        const fileContent = await fs.readFile(filePath, "utf-8");
-        return fileContent;
-      } else {
-        console.error("Download failed or path is not available");
-        return undefined;
-      }
-    }
 
     test("View details of a role", async ({ page }) => {
       const uiHelper = new UIhelper(page);
@@ -297,7 +281,6 @@ test.describe.serial("Test RBAC", () => {
     test("Create and edit a role from the roles list page", async ({
       page,
     }) => {
-      const rolesHelper = new Roles(page);
       const uiHelper = new UIhelper(page);
 
       await uiHelper.clickButton("Create");
@@ -329,11 +312,12 @@ test.describe.serial("Test RBAC", () => {
 
       const rbacPo = new RbacPo(page);
       const testUser = "Jonathon Page";
-      await rbacPo.createRole("test-role", [
-        RbacPo.rbacTestUsers.guest,
-        RbacPo.rbacTestUsers.tara,
-        RbacPo.rbacTestUsers.backstage,
-      ]);
+      await rbacPo.createRole(
+        "test-role",
+        [RbacPo.rbacTestUsers.guest, RbacPo.rbacTestUsers.tara],
+        [RbacPo.rbacTestUsers.backstage],
+        [{ permission: "catalog.entity.delete" }],
+      );
       await page.click(
         ROLES_PAGE_COMPONENTS.editRole("role:default/test-role"),
       );
@@ -365,20 +349,20 @@ test.describe.serial("Test RBAC", () => {
       await usersAndGroupsLocator.waitFor();
       await expect(usersAndGroupsLocator).toBeVisible();
 
-      await rolesHelper.deleteRole("role:default/test-role");
+      await rbacPo.deleteRole("role:default/test-role");
     });
 
     test("Edit users and groups and update policies of a role from the overview page", async ({
       page,
     }) => {
-      const rolesHelper = new Roles(page);
       const uiHelper = new UIhelper(page);
       const rbacPo = new RbacPo(page);
-      await rbacPo.createRole("test-role1", [
-        RbacPo.rbacTestUsers.guest,
-        RbacPo.rbacTestUsers.tara,
-        RbacPo.rbacTestUsers.backstage,
-      ]);
+      await rbacPo.createRole(
+        "test-role1",
+        [RbacPo.rbacTestUsers.guest, RbacPo.rbacTestUsers.tara],
+        [RbacPo.rbacTestUsers.backstage],
+        [{ permission: "catalog.entity.delete" }],
+      );
 
       await uiHelper.searchInputAriaLabel("test-role1");
 
@@ -427,17 +411,18 @@ test.describe.serial("Test RBAC", () => {
       );
       await uiHelper.verifyHeading("Permission Policies (2)");
 
-      await rolesHelper.deleteRole("role:default/test-role1");
+      await rbacPo.deleteRole("role:default/test-role1");
     });
 
     test("Create a role with a permission policy per resource type and verify that the only authorized users can access specific resources.", async ({
       page,
     }) => {
-      const rolesHelper = new Roles(page);
       const uiHelper = new UIhelper(page);
-      await new RbacPo(page).createRole(
+      const rbacPo = new RbacPo(page);
+      await rbacPo.createConditionalRole(
         "test-role1",
-        ["Guest User", "rhdh-qe", "Backstage"],
+        ["Guest User", "rhdh-qe"],
+        ["Backstage"],
         "anyOf",
       );
 
@@ -448,7 +433,7 @@ test.describe.serial("Test RBAC", () => {
         .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)
         .fill("test-role1");
       await uiHelper.verifyHeading("All roles (1)");
-      await rolesHelper.deleteRole("role:default/test-role1");
+      await rbacPo.deleteRole("role:default/test-role1");
     });
   });
 
@@ -559,7 +544,7 @@ test.describe.serial("Test RBAC", () => {
       await uiHelper.openSidebar("Catalog");
       await uiHelper.selectMuiBox("Kind", "Component");
       await uiHelper.verifyTableIsEmpty();
-      await uiHelper.clickLink({ ariaLabel: "Self-service" });
+      await uiHelper.clickButton("Self-service");
       await page.reload();
       await uiHelper.verifyText(
         "No templates found that match your filter. Learn more about",
@@ -568,13 +553,17 @@ test.describe.serial("Test RBAC", () => {
     });
 
     test("Test catalog-entity refresh is denied", async () => {
+      await page.reload();
+      await uiHelper.openSidebar("Catalog");
       expect(
         await uiHelper.isBtnVisibleByTitle("Schedule entity refresh"),
       ).toBeFalsy();
     });
 
     test("Test catalog-entity create is allowed", async () => {
-      await uiHelper.clickLink({ ariaLabel: "Self-service" });
+      await page.reload();
+      await uiHelper.openSidebar("Catalog");
+      await uiHelper.clickButton("Self-service");
       expect(await uiHelper.isLinkVisible("Register Existing Component"));
       await uiHelper.clickButton("Register Existing Component");
       const catalogImport = new CatalogImport(page);
@@ -586,20 +575,13 @@ test.describe.serial("Test RBAC", () => {
     test("Test bad PUT and PUT catalog-entity update policy", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
 
-      const oldBadPolicy = [
-        { permission: "catalog-entity", policy: "refresh", effect: "allow" },
+      const oldPolicy = [
+        { permission: "catalog-entity", policy: "read", effect: "deny" },
       ];
       const newBadPolicy = [
-        { permission: "catalog-entity", policy: "read", effect: "allow" },
+        { permission: "catalog-entity", policy: "refresh", effect: "allow" },
       ];
 
-      const oldGoodPolicy = [
-        {
-          permission: "catalog.entity.create",
-          policy: "create",
-          effect: "allow",
-        },
-      ];
       const newGoodPolicy = [
         {
           permission: "catalog.entity.refresh",
@@ -610,18 +592,18 @@ test.describe.serial("Test RBAC", () => {
 
       const badPutResponse = await rbacApi.updatePolicy(
         "default/test",
-        oldBadPolicy,
+        oldPolicy,
         newBadPolicy,
       );
 
       const goodPutResponse = await rbacApi.updatePolicy(
         "default/test",
-        oldGoodPolicy,
+        oldPolicy,
         newGoodPolicy,
       );
 
       expect(badPutResponse.ok()).toBeFalsy();
-      expect(goodPutResponse.ok());
+      expect(goodPutResponse.ok()).toBeTruthy();
     });
 
     test("DELETE catalog-entity update policy", async () => {
@@ -639,7 +621,7 @@ test.describe.serial("Test RBAC", () => {
         deletePolicies,
       );
 
-      expect(deleteResponse.ok());
+      expect(deleteResponse.ok()).toBeTruthy();
     });
 
     test.afterAll(async () => {

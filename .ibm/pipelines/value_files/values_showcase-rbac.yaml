@@ -42,6 +42,8 @@ global:
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-tekton
         disabled: false
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-topology
+        disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-kubernetes
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-kubernetes-backend-dynamic
@@ -71,10 +73,6 @@ global:
               - apiVersion: 'v1'
                 group: 'route.openshift.io'
                 plural: 'routes'
-              # Add to view topology code decorators
-              - group: 'org.eclipse.che'
-                apiVersion: 'v2'
-                plural: 'checlusters'
             serviceLocatorMethod:
               type: multiTenant
       # Enable OCM plugins.
