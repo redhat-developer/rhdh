@@ -544,7 +544,7 @@ test.describe.serial("Test RBAC", () => {
       await uiHelper.openSidebar("Catalog");
       await uiHelper.selectMuiBox("Kind", "Component");
       await uiHelper.verifyTableIsEmpty();
-      await uiHelper.clickLink({ ariaLabel: "Self-service" });
+      await uiHelper.clickButton("Self-service");
       await page.reload();
       await uiHelper.verifyText(
         "No templates found that match your filter. Learn more about",
@@ -553,13 +553,17 @@ test.describe.serial("Test RBAC", () => {
     });
 
     test("Test catalog-entity refresh is denied", async () => {
+      await page.reload();
+      await uiHelper.openSidebar("Catalog");
       expect(
         await uiHelper.isBtnVisibleByTitle("Schedule entity refresh"),
       ).toBeFalsy();
     });
 
     test("Test catalog-entity create is allowed", async () => {
-      await uiHelper.clickLink({ ariaLabel: "Self-service" });
+      await page.reload();
+      await uiHelper.openSidebar("Catalog");
+      await uiHelper.clickButton("Self-service");
       expect(await uiHelper.isLinkVisible("Register Existing Component"));
       await uiHelper.clickButton("Register Existing Component");
       const catalogImport = new CatalogImport(page);
@@ -571,20 +575,13 @@ test.describe.serial("Test RBAC", () => {
     test("Test bad PUT and PUT catalog-entity update policy", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
 
-      const oldBadPolicy = [
-        { permission: "catalog-entity", policy: "refresh", effect: "allow" },
+      const oldPolicy = [
+        { permission: "catalog-entity", policy: "read", effect: "deny" },
       ];
       const newBadPolicy = [
-        { permission: "catalog-entity", policy: "read", effect: "allow" },
+        { permission: "catalog-entity", policy: "refresh", effect: "allow" },
       ];
 
-      const oldGoodPolicy = [
-        {
-          permission: "catalog.entity.create",
-          policy: "create",
-          effect: "allow",
-        },
-      ];
       const newGoodPolicy = [
         {
           permission: "catalog.entity.refresh",
@@ -595,18 +592,18 @@ test.describe.serial("Test RBAC", () => {
 
       const badPutResponse = await rbacApi.updatePolicy(
         "default/test",
-        oldBadPolicy,
+        oldPolicy,
         newBadPolicy,
       );
 
       const goodPutResponse = await rbacApi.updatePolicy(
         "default/test",
-        oldGoodPolicy,
+        oldPolicy,
         newGoodPolicy,
       );
 
       expect(badPutResponse.ok()).toBeFalsy();
-      expect(goodPutResponse.ok());
+      expect(goodPutResponse.ok()).toBeTruthy();
     });
 
     test("DELETE catalog-entity update policy", async () => {
@@ -624,7 +621,7 @@ test.describe.serial("Test RBAC", () => {
         deletePolicies,
       );
 
-      expect(deleteResponse.ok());
+      expect(deleteResponse.ok()).toBeTruthy();
     });
 
     test.afterAll(async () => {
