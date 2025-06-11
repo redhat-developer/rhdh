@@ -73,7 +73,7 @@ main() {
       echo "Calling handle_aks_helm"
       handle_aks_operator
       ;;
-    *e2e-tests-nightly-auth-providers)
+    *e2e-tests-auth-providers-nightly)
       echo "Calling handle_auth_providers"
       handle_auth_providers
       ;;

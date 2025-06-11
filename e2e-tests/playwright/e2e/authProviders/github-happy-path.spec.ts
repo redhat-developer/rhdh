@@ -1,4 +1,4 @@
-import { test, expect, Page } from "@playwright/test";
+import { test, expect, Page, BrowserContext } from "@playwright/test";
 import { UIhelper } from "../../utils/ui-helper";
 import { Common, setupBrowser } from "../../utils/common";
 import { RESOURCES } from "../../support/testData/resources";
@@ -7,124 +7,43 @@ import {
   CatalogImport,
 } from "../../support/pages/catalog-import";
 import { TEMPLATES } from "../../support/testData/templates";
-import { HelmActions } from "../../utils/helm";
-import * as constants from "../../utils/authenticationProviders/constants";
-import { LOGGER } from "../../utils/logger";
-import { waitForNextSync } from "../../utils/helper";
 
 let page: Page;
+let context: BrowserContext;
 
-// TODO: replace skip with serial
-test.describe.serial("GitHub Happy path", () => {
-  //TODO: skipping due to RHIDP-4992
+// test suite skipped for now, until it's migrated back to the main showcase job
+test.describe("GitHub Happy path", async () => {
   let common: Common;
   let uiHelper: UIhelper;
   let catalogImport: CatalogImport;
   let backstageShowcase: BackstageShowcase;
-  const syncTime = 60;
 
   const component =
     "https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/all.yaml";
 
   test.beforeAll(async ({ browser }, testInfo) => {
-    page = (await setupBrowser(browser, testInfo)).page;
-
+    ({ context, page } = await setupBrowser(browser, testInfo));
     uiHelper = new UIhelper(page);
     common = new Common(page);
     catalogImport = new CatalogImport(page);
     backstageShowcase = new BackstageShowcase(page);
-  });
-
-  test("Setup Github authentication provider and wait for first sync", async () => {
-    test.setTimeout(300 * 1000);
-
-    LOGGER.info(`Base Url is ${process.env.BASE_URL}`);
-    LOGGER.info(
-      "Execute testcase: Setup Github authentication provider and wait for first sync",
-    );
-
-    await HelmActions.upgradeHelmChartWithWait(
-      constants.AUTH_PROVIDERS_RELEASE,
-      constants.AUTH_PROVIDERS_CHART,
-      constants.AUTH_PROVIDERS_NAMESPACE,
-      constants.AUTH_PROVIDERS_VALUES_FILE,
-      constants.CHART_VERSION,
-      constants.QUAY_REPO,
-      constants.TAG_NAME,
-      [
-        "--set upstream.backstage.appConfig.signInPage=github",
-        "--set upstream.backstage.appConfig.auth.environment=production",
-        "--set upstream.backstage.appConfig.catalog.providers.githubOrg[0].orgs[0]=janus-qe",
-        "--set upstream.backstage.appConfig.catalog.providers.microsoftGraphOrg=null",
-        "--set upstream.backstage.appConfig.catalog.providers.keycloakOrg=null",
-        "--set upstream.backstage.appConfig.auth.providers.microsoft=null",
-        "--set upstream.backstage.appConfig.auth.providers.oidc=null",
-        "--set upstream.backstage.appConfig.permission.enabled=false",
-        "--set upstream.postgresql.primary.persistence.enabled=false",
-        `--set-json global.dynamic.plugins='[
-          {
-            "package": "./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-github-dynamic",
-            "disabled": false
-          },
-          {
-            "package": "./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-dynamic",
-            "disabled": false,
-            "pluginConfig": {
-              "catalog": {
-                "providers": {
-                  "github": {
-                    "my-test-org": {
-                      "organization": "janus-qe",
-                      "catalogPath": "/catalog-info.yaml",
-                      "schedule": {
-                        "frequency": {
-                          "minutes": 1
-                        },
-                        "timeout": {
-                          "minutes": 1
-                        },
-                        "initialDelay": {
-                          "seconds": 15
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          {
-            "package": "./dynamic-plugins/dist/backstage-community-plugin-github-issues",
-            "disabled": false
-          },
-          {
-            "package": "./dynamic-plugins/dist/roadiehq-backstage-plugin-github-pull-requests",
-            "disabled": false
-          },
-          {
-            "package": "./dynamic-plugins/dist/backstage-community-plugin-github-actions",
-            "disabled": false
-          },
-          {
-            "package": "./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-org-dynamic",
-            "disabled": false
-          }
-        ]'`,
-      ],
-    );
-
-    await waitForNextSync("github", syncTime);
+    test.info().setTimeout(600 * 1000);
   });
 
   test("Login as a Github user.", async () => {
-    await common.loginAsGithubUser();
+    const login = await common.githubLogin(
+      "rhdhqeauthadmin",
+      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD,
+      process.env.AUTH_PROVIDERS_GH_ADMIN_2FA,
+    );
+    expect(login).toBe("Login successful");
   });
 
   test("Verify Profile is Github Account Name in the Settings page", async () => {
-    await uiHelper.goToSettingsPage();
+    await page.goto("/settings");
     await expect(page).toHaveURL("/settings");
-    await uiHelper.verifyHeading(process.env.GH_USER_ID);
-    await uiHelper.verifyHeading(`User Entity: ${process.env.GH_USER_ID}`);
+    await uiHelper.verifyHeading("rhdhqeauthadmin");
+    await uiHelper.verifyHeading(`User Entity: rhdhqeauthadmin`);
   });
 
   test("Register an existing component", async () => {
@@ -282,6 +201,7 @@ test.describe.serial("GitHub Happy path", () => {
   test("Sign out and verify that you return back to the Sign in page", async () => {
     await uiHelper.goToSettingsPage();
     await common.signOut();
+    context.clearCookies();
   });
 
   test.afterAll(async () => {
