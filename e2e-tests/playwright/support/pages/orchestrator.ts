@@ -43,7 +43,6 @@ export class Orchestrator {
     await this.page.waitForLoadState();
   }
 
-
   async waitForWorkflowStatus(status = "", timeout = 300000) {
     // await expect(this.page.getByText("Details")).toBeVisible();
     const statusRegex = RegExp(`Status ${status}`);
@@ -54,12 +53,12 @@ export class Orchestrator {
 
   async abortWorkflow() {
     await expect(
-      this.page.getByRole("button", { name: "Abort" })
+      this.page.getByRole("button", { name: "Abort" }),
     ).toBeEnabled();
     await this.page.getByRole("button", { name: "Abort" }).click();
     if (`${process.env.MILESTONE}` == "3") {
       await expect(
-        this.page.getByRole("heading", { name: "Abort workflow", exact: true })
+        this.page.getByRole("heading", { name: "Abort workflow", exact: true }),
       ).toBeVisible();
       await expect(
         this.page
@@ -68,7 +67,7 @@ export class Orchestrator {
             hasText:
               /^Are you sure you want to abort this workflow instance\?$/,
           })
-          .first()
+          .first(),
       ).toBeVisible();
       await this.page.getByRole("button", { name: "Ok" }).click();
     } else {
@@ -77,7 +76,7 @@ export class Orchestrator {
           .getByRole("dialog")
           .locator("div")
           .filter({ hasText: "Are you sure you want to" })
-          .nth(2)
+          .nth(2),
       ).toBeVisible();
       await this.page.getByRole("button", { name: "Abort" }).click();
     }
@@ -90,14 +89,14 @@ export class Orchestrator {
             hasText:
               /[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/,
           })
-          .first()
+          .first(),
       ).toBeVisible();
     }
   }
 
   async validateErrorPopup() {
     await expect(
-      this.page.getByRole("button", { name: "Error: Request failed with" })
+      this.page.getByRole("button", { name: "Error: Request failed with" }),
     ).toBeVisible();
     await this.page
       .getByRole("button", { name: "Error: Request failed with" })
@@ -108,7 +107,7 @@ export class Orchestrator {
 
   async validateErrorPopupDoesNotExist() {
     await expect(
-      this.page.getByRole("button", { name: "Error: Request failed with" })
+      this.page.getByRole("button", { name: "Error: Request failed with" }),
     ).toHaveCount(0);
   }
 
