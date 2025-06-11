@@ -5,6 +5,7 @@ source "$DIR"/utils.sh
 source "$DIR"/install-methods/operator.sh
 
 handle_auth_providers() {
+  echo "Running ${JOB_NAME}"
   local retry_operator_installation="${1:-1}"
   oc_login
   configure_namespace "${OPERATOR_MANAGER}"
