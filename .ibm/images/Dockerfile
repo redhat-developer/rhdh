@@ -12,6 +12,7 @@ ENV CI=1 \
     OC_VERSION="4.14.3" \
     OCM_VERSION="0.1.76" \
     GO_VERSION="1.19" \
+    MF_YQ_VERSION="v4.45.4" \
     GO_SHA256="464b6b66591f6cf055bc5df90a9750bf5fbc9d038722bb84a9d56a2bea974be6" \
     GOPATH="/go" \
     PATH="$GOPATH/bin:/usr/local/go/bin:$PATH"
@@ -58,7 +59,7 @@ RUN curl -fsSL -o /tmp/helm.tar.gz "https://get.helm.sh/helm-${HELM_VERSION}-lin
     tar -xzvf /tmp/openshift-client-linux.tar.gz -C /usr/local/bin oc kubectl && \
     curl -Lo /usr/local/bin/ocm "https://github.com/openshift-online/ocm-cli/releases/download/v${OCM_VERSION}/ocm-linux-amd64" && \
     chmod +x /usr/local/bin/ocm && \
-    curl -fsSL "https://github.com/mikefarah/yq/releases/download/v4.43.1/yq_linux_amd64.tar.gz" | tar -xz && \
+    curl -fsSL "https://github.com/mikefarah/yq/releases/download/${MF_YQ_VERSION}/yq_linux_amd64.tar.gz" | tar -xz && \
     mv yq_linux_amd64 /usr/local/bin/yq && \
     rm -rf /tmp/* /var/tmp/*
 
