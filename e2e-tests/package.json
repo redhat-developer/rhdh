@@ -18,7 +18,7 @@
     "showcase-op-rbac-nightly": "playwright test --project=showcase-operator-rbac",
     "showcase-runtime": "playwright test --project=showcase-runtime",
     "showcase-upgrade-nightly": "playwright test --project=showcase-upgrade",
-    "showcase-auth-providers": "playwright test --project=showcase-auth-providers --workers 1",
+    "showcase-auth-providers": "playwright test --project=showcase-auth-providers",
     "showcase-sanity-plugins": "playwright test --project=showcase-sanity-plugins",
     "lint:check": "eslint . --ext .js,.ts",
     "lint:fix": "eslint . --ext .js,.ts --fix",
