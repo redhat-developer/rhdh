@@ -16,9 +16,7 @@ handle_auth_providers() {
   export AUTH_PROVIDERS_RELEASE="rhdh-auth-providers"
   export AUTH_PROVIDERS_NAMESPACE="showcase-auth-providers"
   export LOGS_FOLDER="$(pwd)/e2e-tests/auth-providers-logs"
-  oc cluster-info
-  oc_login
+
   echo "Running tests ${AUTH_PROVIDERS_RELEASE} in ${AUTH_PROVIDERS_NAMESPACE}"
   run_tests "${AUTH_PROVIDERS_RELEASE}" "${AUTH_PROVIDERS_NAMESPACE}"
-  oc cluster-info
 }
