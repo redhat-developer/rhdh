@@ -6,6 +6,7 @@ source "$DIR"/install-methods/operator.sh
 
 handle_auth_providers() {
   local retry_operator_installation="${1:-1}"
+  K8S_CLUSTER_TOKEN=$(oc create token tester-sa-2 -n default --duration=7200)
   oc_login
   configure_namespace "${OPERATOR_MANAGER}"
   install_rhdh_operator "${DIR}" "${OPERATOR_MANAGER}" "$retry_operator_installation"
