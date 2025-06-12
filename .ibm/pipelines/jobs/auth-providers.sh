@@ -6,7 +6,6 @@ source "$DIR"/install-methods/operator.sh
 
 handle_auth_providers() {
   local retry_operator_installation="${1:-1}"
-  export K8S_CLUSTER_TOKEN=$(oc create token tester-sa-2 -n default --duration=7200s)
   oc_login
   configure_namespace "${OPERATOR_MANAGER}"
   install_rhdh_operator "${DIR}" "${OPERATOR_MANAGER}" "$retry_operator_installation"
@@ -17,7 +16,9 @@ handle_auth_providers() {
   export AUTH_PROVIDERS_RELEASE="rhdh-auth-providers"
   export AUTH_PROVIDERS_NAMESPACE="showcase-auth-providers"
   export LOGS_FOLDER="$(pwd)/e2e-tests/auth-providers-logs"
-
+  oc cluster-info
+  oc_login
   echo "Running tests ${AUTH_PROVIDERS_RELEASE} in ${AUTH_PROVIDERS_NAMESPACE}"
   run_tests "${AUTH_PROVIDERS_RELEASE}" "${AUTH_PROVIDERS_NAMESPACE}"
+  oc cluster-info
 }
