@@ -558,6 +558,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@octokit/openapi-webhooks-types@npm:11.0.0":
+  version: 11.0.0
+  resolution: "@octokit/openapi-webhooks-types@npm:11.0.0"
+  checksum: ab6e461c0d7a4307d931325bcb63ba86a780233757df44fd85ffa5b4683d6c675b7f7d6715210da715e5ff29823f6a31415576078c88e58a273da1b7177aa069
+  languageName: node
+  linkType: hard
+
 "@octokit/openapi-webhooks-types@npm:9.1.0":
   version: 9.1.0
   resolution: "@octokit/openapi-webhooks-types@npm:9.1.0"
@@ -667,6 +674,17 @@ __metadata:
     "@octokit/request-error": ^6.1.7
     "@octokit/webhooks-methods": ^5.1.1
   checksum: 9ce8ec2069361270c15e277cf171a5ab8ad11f13f66afdf7536ef95737bc3fd3c607bc948609956b993ed714701f828d362983f8c3cf81ae7d42bd07fcc51914
+  languageName: node
+  linkType: hard
+
+"@octokit/webhooks@npm:^13.8.3":
+  version: 13.9.0
+  resolution: "@octokit/webhooks@npm:13.9.0"
+  dependencies:
+    "@octokit/openapi-webhooks-types": 11.0.0
+    "@octokit/request-error": ^6.1.7
+    "@octokit/webhooks-methods": ^5.1.1
+  checksum: 3213f81fbaeb73e66dbf43256746d75a664cb2bac2cb8597e4bc26c0ce6d8956ccb1e45227c5a9b1e27bce8950adc942fb3e259efbeebcc67e7e1579987d30a8
   languageName: node
   linkType: hard
 
@@ -1404,7 +1422,7 @@ __metadata:
     isomorphic-fetch: 3.0.0
     js-yaml: 4.1.0
     node-fetch: 2.7.0
-    octokit: 4.1.3
+    octokit: 4.1.4
     otplib: 12.0.1
     prettier: 3.5.3
     typescript: 5.8.3
@@ -2775,9 +2793,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"octokit@npm:4.1.3":
-  version: 4.1.3
-  resolution: "octokit@npm:4.1.3"
+"octokit@npm:4.1.4":
+  version: 4.1.4
+  resolution: "octokit@npm:4.1.4"
   dependencies:
     "@octokit/app": ^15.1.6
     "@octokit/core": ^6.1.5
@@ -2789,7 +2807,8 @@ __metadata:
     "@octokit/plugin-throttling": ^10.0.0
     "@octokit/request-error": ^6.1.8
     "@octokit/types": ^14.0.0
-  checksum: 6840d9e11ac4d4d5274341da814fa0b1314f9d249e0e2478f25e9d53ae044225b0cc20a1197e40d3299808aca73614ce8fe1b242b1b67f3019af5678a9e854ac
+    "@octokit/webhooks": ^13.8.3
+  checksum: 012a0ebe06dff7f3d9561fbab00b103891ff40c6eaa38ebb5fcaf04bd6285da592af2db0b7aa193fc00225aef9b34e877d31e16c24ac5eeb01f26e6eeffebb2e
   languageName: node
   linkType: hard
 
