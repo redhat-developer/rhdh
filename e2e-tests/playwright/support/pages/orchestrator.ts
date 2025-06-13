@@ -31,6 +31,92 @@ export class Orchestrator {
     await this.page.getByRole("link", { name: "User Onboarding" }).click();
   }
 
+  async selectGreetingWorkflowItem() {
+    const workflowHeader = this.page.getByRole("heading", {
+      name: "Workflows",
+    });
+    await expect(workflowHeader).toBeVisible();
+    await expect(workflowHeader).toHaveText("Workflows");
+    await expect(Workflows.workflowsTable(this.page)).toBeVisible();
+    await this.page.getByRole("link", { name: "Greeting workflow" }).click();
+  }
+
+  async runGreetingWorkflow(language = "English", status = "Completed") {
+    const runButton = this.page.getByRole('button', { name: "Run" });
+    await expect(runButton).toBeVisible();
+    await runButton.click();
+    if (`${process.env.MILESTONE}` == "2") {
+      await this.page.locator("#root_language").click();
+      await this.page.getByRole("option", { name: language}).click();
+    } else {
+      await this.page.getByLabel("Language").click();
+      await this.page.getByRole("option", { name: "English" }).click();
+    }
+    await this.page.getByRole('button', { name: "Next"}).click();
+    await this.page.getByRole('button', { name: "Run"}).click();
+    await expect(this.page.getByText(`${status}`, { exact: true })).toBeVisible(
+      {
+        timeout: 600000,
+      }
+    );
+  }
+
+  async reRunGreetingWorkflow(language = "English", status = "Completed") {
+    if (`${process.env.MILESTONE}` >= "6") {
+      await expect(
+        this.page.getByText("Run again")
+      ).toBeVisible();
+      await this.page.getByText("Run again").click();
+    } else {
+      await expect(
+        this.page.getByRole('button', { name: "Rerun"})
+      ).toBeVisible();
+      await this.page.getByRole('button', { name: "Rerun"}).click();
+    }
+    if (`${process.env.MILESTONE}` == "2") {
+      await this.page.locator("#root_language").click();
+      await this.page.getByRole("option", { name: language}).click();
+    } else {
+      await this.page.getByLabel("Language").click();
+      await this.page.getByRole("option", { name: "English" }).click();
+    }
+    await this.page.getByRole('button', { name: "Next"}).click();
+    await this.page.getByRole('button', { name: "Run"}).click();
+    await expect(this.page.getByText(`${status}`, { exact: true })).toBeVisible(
+      {
+        timeout: 600000,
+      }
+    );
+  }
+
+  async validateWorkflowRunsDetails() {
+    await expect(this.page.getByText("Details")).toBeVisible();
+    await expect(this.page.getByText("Results")).toBeVisible();
+    if (`${process.env.MILESTONE}` == '3') {
+      await expect(this.page.getByText("Workflow definition")).toBeVisible();
+    }
+    await expect(this.page.getByText("Workflow progress")).toBeVisible();
+    let workFlowStatusRegex: RegExp
+    if (`${process.env.MILESTONE}` >= "6") {
+      workFlowStatusRegex = /^Completed$/
+    } else {
+      workFlowStatusRegex = /^Status Completed$/
+    }
+    await expect(
+      this.page
+        .locator("div")
+        .filter({ hasText: workFlowStatusRegex })
+        .first()
+    ).toBeVisible();
+    if (`${process.env.MILESTONE}` == '3') {
+      await expect(this.page.locator('[data-testid="kogito-iframe"]')).toBeVisible();
+    }
+  }
+
+  async validateWorkflowRuns() {
+
+  }
+
   async getPageUrl() {
     return this.page.url();
   }
