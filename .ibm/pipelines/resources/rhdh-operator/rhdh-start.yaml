@@ -19,6 +19,8 @@ spec:
           value: '--no-node-snapshot'
         - name: NODE_ENV
           value: 'production'
+        - name: NODE_TLS_REJECT_UNAUTHORIZED
+          value: '0'
       secrets:
         - name: rhdh-secrets
         - name: redis-secret
