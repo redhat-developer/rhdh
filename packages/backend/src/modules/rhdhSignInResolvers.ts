@@ -69,8 +69,12 @@ export namespace rhdhSignInResolvers {
             {
               entityRef: { name },
             },
-            name,
-            options?.dangerouslyAllowSignInWithoutUserInCatalog,
+            {
+              dangerousEntityRefFallback:
+                options?.dangerouslyAllowSignInWithoutUserInCatalog
+                  ? { entityRef: name }
+                  : undefined,
+            },
           );
         };
       },
@@ -112,8 +116,12 @@ export namespace rhdhSignInResolvers {
           {
             annotations: { [LDAP_UUID_ANNOTATION]: uuid },
           },
-          uuid,
-          options?.dangerouslyAllowSignInWithoutUserInCatalog,
+          {
+            dangerousEntityRefFallback:
+              options?.dangerouslyAllowSignInWithoutUserInCatalog
+                ? { entityRef: uuid }
+                : undefined,
+          },
         );
       };
     },

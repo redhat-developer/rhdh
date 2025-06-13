@@ -1,4 +1,4 @@
-import React, { PropsWithChildren, useMemo, useRef } from 'react';
+import { PropsWithChildren, useMemo, useRef } from 'react';
 
 import { createApp } from '@backstage/app-defaults';
 import { BackstageApp } from '@backstage/core-app-api';
