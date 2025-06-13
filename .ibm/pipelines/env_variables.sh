@@ -13,6 +13,9 @@ HELM_CHART_RBAC_GKE_DIFF_VALUE_FILE_NAME="diff-values_showcase-rbac_GKE.yaml"
 HELM_CHART_SANITY_PLUGINS_DIFF_VALUE_FILE_NAME="diff-values_showcase-sanity-plugins.yaml"
 HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME="merged-values_showcase-sanity-plugins.yaml"
 
+K8S_CLUSTER_TOKEN_ROKS=$(cat /tmp/secrets/K8S_CLUSTER_TOKEN_ROKS)
+K8S_CLUSTER_TOKEN_ENCODED=$(printf "%s" "$K8S_CLUSTER_TOKEN_ROKS" | base64 | tr -d '\n')
+
 HELM_CHART_URL="oci://quay.io/rhdh/chart"
 K8S_CLUSTER_TOKEN_ENCODED=$(printf "%s" $K8S_CLUSTER_TOKEN | base64 | tr -d '\n')
 QUAY_REPO="${QUAY_REPO:-rhdh-community/rhdh}"
@@ -21,8 +24,8 @@ QUAY_TOKEN=$(cat /tmp/secrets/QUAY_TOKEN)
 
 RELEASE_NAME=rhdh
 RELEASE_NAME_RBAC=rhdh-rbac
-NAME_SPACE="${NAME_SPACE:-showcase}"
-NAME_SPACE_RBAC="${NAME_SPACE_RBAC:-showcase-rbac}"
+NAME_SPACE="gustavo-rhdh"
+NAME_SPACE_RBAC="gustavo-rbac"
 NAME_SPACE_RUNTIME="${NAME_SPACE_RUNTIME:-showcase-runtime}"
 NAME_SPACE_POSTGRES_DB="${NAME_SPACE_POSTGRES_DB:-postgress-external-db}"
 NAME_SPACE_SANITY_PLUGINS_CHECK="showcase-sanity-plugins"
