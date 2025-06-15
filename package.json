@@ -7,7 +7,7 @@
   },
   "scripts": {
     "prepare": "husky install",
-    "start": "NODE_OPTIONS=--no-node-snapshot turbo run start --filter=backend",
+    "start": "turbo run build --filter=app && NODE_OPTIONS=--no-node-snapshot turbo run start --filter=backend",
     "dev": "NODE_OPTIONS=--no-node-snapshot turbo run start --filter=backend --filter=app",
     "build": "turbo run build",
     "build:dockerfile": "bash ./scripts/update-Dockerfile.sh",
