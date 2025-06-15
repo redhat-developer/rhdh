@@ -14,9 +14,6 @@ backend:
       - "'self'"
       - 'http:'
       - 'https:'
-  cors:
-    methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
-    credentials: true
   database:
     client: better-sqlite3
     connection: ':memory:'
@@ -36,6 +33,8 @@ techdocs:
 
 auth:
   environment: development
+  providers:
+    guest: {}
 
 catalog:
   import:
