@@ -1,4 +1,10 @@
-import React, { PropsWithChildren, useContext, useState } from 'react';
+import React, {
+  PropsWithChildren,
+  useContext,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 
 import {
   Sidebar,
@@ -26,95 +32,119 @@ import Box from '@mui/material/Box';
 import Collapse from '@mui/material/Collapse';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
-import { SxProps } from '@mui/material/styles';
-import { makeStyles } from 'tss-react/mui';
-
+import { styled, SxProps } from '@mui/material/styles';
 import DynamicRootContext, {
   ResolvedMenuItem,
-} from '../DynamicRoot/DynamicRootContext';
+} from '@red-hat-developer-hub/plugin-utils';
+
 import { ApplicationHeaders } from './ApplicationHeaders';
 import { MenuIcon } from './MenuIcon';
 import { SidebarLogo } from './SidebarLogo';
 
-const useStyles = makeStyles()({
-  /**
-   * This is a workaround to remove the fix height of the Page component
-   * to support the application headers (and the global header plugin)
-   * without having multiple scrollbars.
-   *
-   * This solves also the duplicate scrollbar issues in tech docs:
-   * https://issues.redhat.com/browse/RHIDP-4637 (Scrollbar for docs behaves weirdly if there are over a page of headings)
-   *
-   * Which was also reported and tried to fix upstream:
-   * https://github.com/backstage/backstage/issues/13717
-   * https://github.com/backstage/backstage/pull/14138
-   * https://github.com/backstage/backstage/issues/19427
-   * https://github.com/backstage/backstage/issues/22745
-   *
-   * See also
-   * https://github.com/backstage/backstage/blob/v1.35.0/packages/core-components/src/layout/Page/Page.tsx#L31-L34
-   *
-   * The following rules are based on the current DOM structure
-   *
-   * ```
-   * <body>
-   *   <div id="root">
-   *     // snackbars and toasts
-   *     <div className="pageWithoutFixHeight">
-   *       <nav />                               // Optional nav(s) if a header with position: above-sidebar is configured
-   *       <div>                                 // Backstage SidebarPage component
-   *         <nav />                             // Optional nav(s) if a header with position: above-main-content is configured
-   *         <nav aria-label="sidebar nav" />    // Sidebar content
-   *         <main />                            // Backstage Page component
-   *       </div>
-   *     </div>
-   *   </div>
-   *   // some modals and other overlays
-   * </body>
-   * ```
-   */
-  pageWithoutFixHeight: {
-    // Use 100vh for the complete viewport (similar to how Backstage does it)
-    // and makes the page content part scrollable below...
-    // But instead of using 100vh on the content below,
-    // we use it here so that it includes the header.
-    '> div': {
-      height: '100vh',
+/**
+ * This is a workaround to remove the fix height of the Page component
+ * to support the application headers (and the global header plugin)
+ * without having multiple scrollbars.
+ *
+ * This solves also the duplicate scrollbar issues in tech docs:
+ * https://issues.redhat.com/browse/RHIDP-4637 (Scrollbar for docs behaves weirdly if there are over a page of headings)
+ *
+ * Which was also reported and tried to fix upstream:
+ * https://github.com/backstage/backstage/issues/13717
+ * https://github.com/backstage/backstage/pull/14138
+ * https://github.com/backstage/backstage/issues/19427
+ * https://github.com/backstage/backstage/issues/22745
+ *
+ * See also
+ * https://github.com/backstage/backstage/blob/v1.35.0/packages/core-components/src/layout/Page/Page.tsx#L31-L34
+ *
+ * The following rules are based on the current DOM structure
+ *
+ * ```
+ * <body>
+ *   <div id="root">
+ *     // snackbars and toasts
+ *     <div className="pageWithoutFixHeight">
+ *       <nav />                               // Optional nav(s) if a header with position: above-sidebar is configured
+ *       <div>                                 // Backstage SidebarPage component
+ *         <nav />                             // Optional nav(s) if a header with position: above-main-content is configured
+ *         <nav aria-label="sidebar nav" />    // Sidebar content
+ *         <main />                            // Backstage Page component
+ *       </div>
+ *     </div>
+ *   </div>
+ *   // some modals and other overlays
+ * </body>
+ * ```
+ */
+const PageWithoutFixHeight = styled(Box, {
+  name: 'RHDHPageWithoutFixHeight',
+  slot: 'root',
+})(() => ({
+  // Use the complete viewport (similar to how Backstage does it) and make the
+  // page content part scrollable below. We also need to compensate for the
+  // above-sidebar position of the global header as it takes up a fixed height
+  // at the top of the page.
+  display: 'flex',
+  flexDirection: 'column',
+  height: '100vh',
+
+  // This solves the same issue for techdocs, which was reported as
+  // https://issues.redhat.com/browse/RHIDP-4637
+  '.techdocs-reader-page > main': {
+    height: 'unset',
+  },
+}));
+
+const SidebarLayout = styled(Box, {
+  name: 'RHDHPageWithoutFixHeight',
+  slot: 'sidebarLayout',
+  shouldForwardProp: prop =>
+    prop !== 'aboveSidebarHeaderHeight' &&
+    prop !== 'aboveMainContentHeaderHeight',
+})(
+  ({
+    aboveSidebarHeaderHeight,
+    aboveMainContentHeaderHeight,
+  }: {
+    aboveSidebarHeaderHeight?: number;
+    aboveMainContentHeaderHeight?: number;
+  }) => ({
+    // We remove Backstage's 100vh on the content, and instead rely on flexbox
+    // to take up the whole viewport.
+    display: 'flex',
+    flexGrow: 1,
+    maxHeight: `calc(100vh - ${aboveSidebarHeaderHeight ?? 0}px)`,
+
+    '& div[class*="BackstageSidebarPage"]': {
       display: 'flex',
       flexDirection: 'column',
-    },
-
-    // But we unset the Backstage default 100vh value here and use flex box
-    // to grow to the full height of the parent container.
-    '> div > main': {
       height: 'unset',
       flexGrow: 1,
+      // Here we override the theme so that the Backstage default page suspense
+      // takes up the whole height of the page instead of 100vh. The difference
+      // lies in the height of the global header above the sidebar.
+      '@media (min-width: 600px)': {
+        '& > [class*="MuiLinearProgress-root"]': {
+          height: 'unset',
+          flexGrow: 1,
+        },
+      },
     },
-    // This solves the same issue for techdocs, which was reported as
-    // https://issues.redhat.com/browse/RHIDP-4637
-    '.techdocs-reader-page > main': {
-      height: 'unset',
+
+    // The height is controlled by the flexbox in the BackstageSidebarPage.
+    '& main[class*="BackstagePage-root"]': {
+      height: `calc(100vh - ${aboveSidebarHeaderHeight! + aboveMainContentHeaderHeight!}px)`,
+      flexGrow: 1,
     },
-  },
-  sidebarItem: {
-    textDecorationLine: 'none',
-  },
-});
 
-// Backstage does not expose the props object, pulling it from the component argument
-type SidebarItemProps = Parameters<typeof SidebarItem>[0];
-
-const SideBarItemWrapper = (props: SidebarItemProps) => {
-  const {
-    classes: { sidebarItem },
-  } = useStyles();
-  return (
-    <SidebarItem
-      {...props}
-      className={`${sidebarItem} ${props.className ?? ''}`}
-    />
-  );
-};
+    // We need to compensate for the above-sidebar position of the global header
+    // as it takes up a fixed height at the top of the page.
+    '& div[class*="BackstageSidebar-drawer"]': {
+      top: `max(0px, ${aboveSidebarHeaderHeight ?? 0}px)`,
+    },
+  }),
+);
 
 const renderIcon = (iconName: string) => () => <MenuIcon icon={iconName} />;
 
@@ -152,7 +182,7 @@ const getMenuItem = (menuItem: ResolvedMenuItem, isNestedMenuItem = false) => {
       />
     </Box>
   ) : (
-    <SideBarItemWrapper
+    <SidebarItem
       key={menuItem.name}
       icon={renderIcon(menuItem.icon ?? '')}
       to={menuItem.to ?? ''}
@@ -187,9 +217,45 @@ const ExpandableMenuList: React.FC<ExpandableMenuListProps> = ({
 };
 
 export const Root = ({ children }: PropsWithChildren<{}>) => {
-  const {
-    classes: { pageWithoutFixHeight },
-  } = useStyles();
+  const aboveSidebarHeaderRef = useRef<HTMLDivElement>(null);
+  const [aboveSidebarHeaderHeight, setAboveSidebarHeaderHeight] = useState(0);
+  const aboveMainContentHeaderRef = useRef<HTMLDivElement>(null);
+  const [aboveMainContentHeaderHeight, setAboveMainContentHeaderHeight] =
+    useState(0);
+
+  useLayoutEffect(() => {
+    if (!aboveSidebarHeaderRef.current) return () => {};
+
+    const updateHeight = () => {
+      setAboveSidebarHeaderHeight(
+        aboveSidebarHeaderRef.current!.getBoundingClientRect().height,
+      );
+    };
+
+    updateHeight();
+
+    const observer = new ResizeObserver(updateHeight);
+    observer.observe(aboveSidebarHeaderRef.current);
+
+    return () => observer.disconnect();
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!aboveMainContentHeaderRef.current) return () => {};
+
+    const updateHeight = () => {
+      setAboveMainContentHeaderHeight(
+        aboveMainContentHeaderRef.current!.getBoundingClientRect().height,
+      );
+    };
+
+    updateHeight();
+
+    const observer = new ResizeObserver(updateHeight);
+    observer.observe(aboveMainContentHeaderRef.current);
+
+    return () => observer.disconnect();
+  }, []);
 
   const { dynamicRoutes, menuItems } = useContext(DynamicRootContext);
 
@@ -242,7 +308,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
           },
         }}
         renderItem={child => (
-          <SideBarItemWrapper
+          <SidebarItem
             key={child.title}
             icon={() => null}
             text={child.title}
@@ -292,14 +358,14 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
                 getMenuItem(child, true)
               ) : (
                 <>
-                  <SideBarItemWrapper
+                  <SidebarItem
                     icon={renderIcon(child.icon ?? '')}
                     text={child.title}
                     onClick={() => handleClick(child.name)}
                   >
                     {child.children!.length > 0 &&
                       renderExpandIcon(isNestedMenuOpen)}
-                  </SideBarItemWrapper>
+                  </SidebarItem>
                   {renderExpandableNestedMenuItems(child, isNestedMenuOpen)}
                 </>
               )}
@@ -335,14 +401,14 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
             <React.Fragment key={menuItem.name}>
               {menuItem.children!.length === 0 && getMenuItem(menuItem)}
               {menuItem.children!.length > 0 && (
-                <SideBarItemWrapper
+                <SidebarItem
                   key={menuItem.name}
                   icon={renderIcon(menuItem.icon ?? '')}
                   text={menuItem.title}
                   onClick={() => handleClick(menuItem.name)}
                 >
                   {menuItem.children!.length > 0 && renderExpandIcon(isOpen)}
-                </SideBarItemWrapper>
+                </SidebarItem>
               )}
               {menuItem.children!.length > 0 &&
                 renderExpandableMenuItems(menuItem, isOpen)}
@@ -354,67 +420,79 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
   };
 
   return (
-    <div className={pageWithoutFixHeight}>
-      <ApplicationHeaders position="above-sidebar" />
-      <SidebarPage>
-        <ApplicationHeaders position="above-main-content" />
-        <Sidebar>
-          {showLogo && <SidebarLogo />}
-          {showSearch ? (
-            <>
-              <SidebarGroup label="Search" icon={<SearchIcon />} to="/search">
-                <SidebarSearchModal />
-              </SidebarGroup>
+    <PageWithoutFixHeight>
+      <div id="above-sidebar-header-container" ref={aboveSidebarHeaderRef}>
+        <ApplicationHeaders position="above-sidebar" />
+      </div>
+      <SidebarLayout
+        aboveSidebarHeaderHeight={aboveSidebarHeaderHeight}
+        aboveMainContentHeaderHeight={aboveMainContentHeaderHeight}
+      >
+        <SidebarPage>
+          <div
+            id="above-main-content-header-container"
+            ref={aboveMainContentHeaderRef}
+          >
+            <ApplicationHeaders position="above-main-content" />
+          </div>
+          <Sidebar>
+            {showLogo && <SidebarLogo />}
+            {showSearch ? (
+              <>
+                <SidebarGroup label="Search" icon={<SearchIcon />} to="/search">
+                  <SidebarSearchModal />
+                </SidebarGroup>
+                <SidebarDivider />
+              </>
+            ) : (
+              <Box sx={{ height: '1.2rem' }} />
+            )}
+            <SidebarGroup label="Menu" icon={<MuiMenuIcon />}>
+              {/* Global nav, not org-specific */}
+              {renderMenuItems(true, false)}
+              {/* End global nav */}
               <SidebarDivider />
-            </>
-          ) : (
-            <Box sx={{ height: '1.2rem' }} />
-          )}
-          <SidebarGroup label="Menu" icon={<MuiMenuIcon />}>
-            {/* Global nav, not org-specific */}
-            {renderMenuItems(true, false)}
-            {/* End global nav */}
-            <SidebarDivider />
-            <SidebarScrollWrapper>
-              {renderMenuItems(false, false)}
-              {dynamicRoutes.map(({ scope, menuItem, path }) => {
-                if (menuItem && 'Component' in menuItem) {
-                  return (
-                    <menuItem.Component
-                      {...(menuItem.config?.props || {})}
-                      key={`${scope}/${path}`}
-                      to={path}
-                    />
-                  );
-                }
-                return null;
-              })}
-            </SidebarScrollWrapper>
-          </SidebarGroup>
-          <SidebarSpace />
-          {showAdministration && (
-            <>
-              <SidebarDivider />
-              <SidebarGroup label="Administration" icon={<AdminIcon />}>
-                {renderMenuItems(false, true)}
-              </SidebarGroup>
-            </>
-          )}
-          {showSettings && (
-            <>
-              <SidebarDivider />
-              <SidebarGroup
-                label="Settings"
-                to="/settings"
-                icon={<AccountCircleOutlinedIcon />}
-              >
-                <SidebarSettings icon={AccountCircleOutlinedIcon} />
-              </SidebarGroup>
-            </>
-          )}
-        </Sidebar>
-        {children}
-      </SidebarPage>
-    </div>
+              <SidebarScrollWrapper>
+                {renderMenuItems(false, false)}
+                {dynamicRoutes.map(({ scope, menuItem, path }) => {
+                  if (menuItem && 'Component' in menuItem) {
+                    return (
+                      <menuItem.Component
+                        {...(menuItem.config?.props || {})}
+                        key={`${scope}/${path}`}
+                        to={path}
+                      />
+                    );
+                  }
+                  return null;
+                })}
+              </SidebarScrollWrapper>
+            </SidebarGroup>
+            <SidebarSpace />
+            {showAdministration && (
+              <>
+                <SidebarDivider />
+                <SidebarGroup label="Administration" icon={<AdminIcon />}>
+                  {renderMenuItems(false, true)}
+                </SidebarGroup>
+              </>
+            )}
+            {showSettings && (
+              <>
+                <SidebarDivider />
+                <SidebarGroup
+                  label="Settings"
+                  to="/settings"
+                  icon={<AccountCircleOutlinedIcon />}
+                >
+                  <SidebarSettings icon={AccountCircleOutlinedIcon} />
+                </SidebarGroup>
+              </>
+            )}
+          </Sidebar>
+          {children}
+        </SidebarPage>
+      </SidebarLayout>
+    </PageWithoutFixHeight>
   );
 };

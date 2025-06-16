@@ -166,7 +166,7 @@ regex==2023.12.25
     # via
     #   -r requirements.in
     #   mkdocs-material
-requests==2.32.3
+requests==2.32.4
     # via
     #   -r requirements.in
     #   mkdocs-material
@@ -206,7 +206,7 @@ wheel==0.43.0
     # via -r requirements.in
 
 # The following packages are considered to be unsafe in a requirements file:
-setuptools==70.1.1
+setuptools==78.1.1
     # via
     #   -r requirements.in
     #   setuptools-scm

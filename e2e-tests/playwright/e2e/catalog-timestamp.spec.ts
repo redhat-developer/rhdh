@@ -6,6 +6,7 @@ import { UI_HELPER_ELEMENTS } from "../support/pageObjects/global-obj";
 
 let page: Page;
 test.describe("Test timestamp column on Catalog", () => {
+  test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
   let uiHelper: UIhelper;
   let common: Common;
   let catalogImport: CatalogImport;
@@ -26,17 +27,14 @@ test.describe("Test timestamp column on Catalog", () => {
   test.beforeEach(async () => {
     await uiHelper.openSidebar("Catalog");
     await uiHelper.verifyHeading("My Org Catalog");
-    await uiHelper.selectMuiBox("Kind", "Component");
-    await uiHelper.clickByDataTestId("user-picker-all");
+    await uiHelper.openCatalogSidebar("Component");
   });
 
   test("Register an existing component and verify `Created At` column and value in the Catalog Page", async () => {
     await uiHelper.clickButton("Self-service");
     await uiHelper.clickButton("Register Existing Component");
     await catalogImport.registerExistingComponent(component);
-    await uiHelper.openSidebar("Catalog");
-    await uiHelper.selectMuiBox("Kind", "Component");
-    await uiHelper.clickByDataTestId("user-picker-all");
+    await uiHelper.openCatalogSidebar("Component");
     await uiHelper.searchInputPlaceholder("timestamp-test-created");
     await uiHelper.verifyText("timestamp-test-created");
     await uiHelper.verifyColumnHeading(["Created At"], true);

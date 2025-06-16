@@ -3,9 +3,6 @@ import { UIhelper } from "../utils/ui-helper";
 import { Common } from "../utils/common";
 
 test.describe("Header mount points", () => {
-  // TODO: fix https://issues.redhat.com/browse/RHIDP-6492 and remove the skip
-  test.skip(() => process.env.JOB_NAME.includes("operator"));
-
   let common: Common;
   let uiHelper: UIhelper;
 
@@ -30,8 +27,8 @@ test.describe("Header mount points", () => {
     const header = page.locator("nav[id='global-header']");
     await expect(header).toBeVisible();
     expect(
-      await header.locator("button", { hasText: "Test Button" }).count(),
-    ).toBe(1);
+      await header.locator("button", { hasText: "Test Button" }),
+    ).toHaveCount(1);
   });
 
   test("Verify that additional header from a custom header plugin besides the default one is visible", async ({

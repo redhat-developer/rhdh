@@ -3,7 +3,7 @@
   "tasks": {
     "tsc": {
       "outputs": [
-        "../../../dist-types/dynamic-plugins/wrappers/roadiehq-backstage-plugin-security-insights/**"
+        "../../dist-types/wrappers/roadiehq-backstage-plugin-security-insights/**"
       ]
     }
   }

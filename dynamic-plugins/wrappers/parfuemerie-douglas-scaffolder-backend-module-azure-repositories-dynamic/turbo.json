@@ -3,7 +3,7 @@
   "tasks": {
     "tsc": {
       "outputs": [
-        "../../../dist-types/dynamic-plugins/wrappers/parfuemerie-douglas-scaffolder-backend-module-azure-repositories-dynamic/**"
+        "../../dist-types/wrappers/parfuemerie-douglas-scaffolder-backend-module-azure-repositories-dynamic/**"
       ]
     }
   }

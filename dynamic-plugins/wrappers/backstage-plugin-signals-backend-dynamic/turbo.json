@@ -3,7 +3,7 @@
   "tasks": {
     "tsc": {
       "outputs": [
-        "../../../dist-types/dynamic-plugins/wrappers/backstage-plugin-signals-backend-dynamic/**"
+        "../../dist-types/wrappers/backstage-plugin-signals-backend-dynamic/**"
       ]
     }
   }

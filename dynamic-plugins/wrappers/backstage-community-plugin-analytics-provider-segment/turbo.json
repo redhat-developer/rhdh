@@ -3,7 +3,7 @@
   "tasks": {
     "tsc": {
       "outputs": [
-        "../../../dist-types/dynamic-plugins/wrappers/backstage-community-plugin-analytics-provider-segment/**"
+        "../../dist-types/wrappers/backstage-community-plugin-analytics-provider-segment/**"
       ]
     }
   }

@@ -13,7 +13,7 @@ export class KubernetesPage {
 
   async verifyDeployment(text: string) {
     const deployment = this.page.locator(
-      `text=${text}Deploymentnamespace: showcase-rbac`,
+      `text=${text}Deploymentnamespace: ${process.env.NAME_SPACE_RBAC}`,
     );
     await deployment.scrollIntoViewIfNeeded();
     await expect(deployment).toBeVisible();

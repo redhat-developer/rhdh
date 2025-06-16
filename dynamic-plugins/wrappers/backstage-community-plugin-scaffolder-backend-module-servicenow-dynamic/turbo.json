@@ -1,11 +1,10 @@
 {
-    "extends": ["//"],
-    "tasks": {
-      "tsc": {
-        "outputs": [
-          "../../../dist-types/dynamic-plugins/wrappers/backstage-community-plugin-scaffolder-backend-module-servicenow-dynamic/**"
-        ]
-      }
+  "extends": ["//"],
+  "tasks": {
+    "tsc": {
+      "outputs": [
+        "../../dist-types/wrappers/backstage-community-plugin-scaffolder-backend-module-servicenow-dynamic/**"
+      ]
     }
   }
-  
+}

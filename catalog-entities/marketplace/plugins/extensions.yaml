@@ -28,8 +28,8 @@ spec:
   support: dev-preview
   lifecycle: active
 
-  categories:    
-    - Extensions
+  categories:
+    - Customization
 
   highlights: 
     - Provides a catalog of available plugins for Red Hat Developer Hub

@@ -3,7 +3,7 @@
   "include": ["src", "dev", "migrations"],
   "exclude": ["node_modules"],
   "compilerOptions": {
-    "outDir": "../../../dist-types/dynamic-plugins/wrappers/backstage-community-plugin-catalog-backend-module-keycloak-dynamic",
+    "outDir": "../../dist-types/wrappers/backstage-community-plugin-catalog-backend-module-keycloak-dynamic",
     "rootDir": "."
   }
 }

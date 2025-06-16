@@ -2,9 +2,7 @@
   "extends": ["//"],
   "tasks": {
     "tsc": {
-      "outputs": [
-        "../../../dist-types/dynamic-plugins/wrappers/backstage-plugin-kubernetes/**"
-      ]
+      "outputs": ["../../dist-types/wrappers/backstage-plugin-kubernetes/**"]
     }
   }
 }

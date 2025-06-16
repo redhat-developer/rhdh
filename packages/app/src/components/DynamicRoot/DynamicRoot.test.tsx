@@ -14,11 +14,11 @@ import {
 } from '@backstage/core-plugin-api';
 import { renderWithEffects } from '@backstage/test-utils';
 
+import DynamicRootContext from '@red-hat-developer-hub/plugin-utils';
 import { removeScalprum } from '@scalprum/core';
 import { waitFor, within } from '@testing-library/dom';
 
 import initializeRemotePlugins from '../../utils/dynamicUI/initializeRemotePlugins';
-import DynamicRootContext from './DynamicRootContext';
 
 const DynamicRoot = React.lazy(() => import('./DynamicRoot'));
 
@@ -964,6 +964,34 @@ describe.skip('DynamicRoot', () => {
 
         const resolvedApis = [...(createAppSpy.mock.calls[0][0]?.apis ?? [])];
         expect(resolvedApis.length).toEqual(0);
+      });
+    } finally {
+      createAppSpy.mockRestore();
+    }
+  });
+
+  it('should add custom AnalyticsApi extension', async () => {
+    const createAppSpy = jest.spyOn(appDefaults, 'createApp');
+    const dynamicPlugins = {
+      frontend: {
+        'foo.bar': {
+          analyticsApiExtensions: [{ importName: 'fooPluginAnalyticsApi' }],
+        },
+      },
+    };
+    await loadTestConfig(dynamicPlugins);
+    const rendered = await renderWithEffects(
+      <MockApp dynamicPlugins={dynamicPlugins} />,
+    );
+    try {
+      await waitFor(async () => {
+        expect(rendered.baseElement).toBeInTheDocument();
+        expect(rendered.getByTestId('isLoadingFinished')).toBeInTheDocument();
+        expect(createAppSpy).toHaveBeenCalled();
+
+        const resolvedApis = [...(createAppSpy.mock.calls[0][0]?.apis ?? [])];
+        expect(resolvedApis.length).toEqual(1);
+        expect(resolvedApis[0].api.id).toEqual('plugin.foo.service');
       });
     } finally {
       createAppSpy.mockRestore();

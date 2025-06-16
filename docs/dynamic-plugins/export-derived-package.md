@@ -132,7 +132,7 @@ export const DynamicEntityTechdocsContent = {
 };
 ```
 
-To include components provided by other dynamic plugins inside static JSX as element children with your dynamically imported component, you can extract them from [dynamicConfig](https://github.com/redhat-developer/rhdh/blob/main/packages/app/src/components/DynamicRoot/DynamicRootContext.tsx#L115) that is passed to the `staticJSXContent`:
+To include components provided by other dynamic plugins inside static JSX as element children with your dynamically imported component, you can extract them from dynamicConfig that is passed to the `staticJSXContent`:
 
 ```tsx
 // Used by a static plugin

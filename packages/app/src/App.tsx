@@ -1,3 +1,5 @@
+import GlobalStyles from '@mui/material/GlobalStyles';
+
 import { apis } from './apis';
 import { StaticPlugins } from './components/DynamicRoot/DynamicRoot';
 import ScalprumRoot from './components/DynamicRoot/ScalprumRoot';
@@ -64,12 +66,15 @@ const staticPlugins: StaticPlugins = {
 };
 
 const AppRoot = () => (
-  <ScalprumRoot
-    apis={apis}
-    afterInit={() => import('./components/AppBase')}
-    baseFrontendConfig={baseFrontendConfig}
-    plugins={staticPlugins}
-  />
+  <>
+    <GlobalStyles styles={{ html: { overflowY: 'hidden' } }} />
+    <ScalprumRoot
+      apis={apis}
+      afterInit={() => import('./components/AppBase')}
+      baseFrontendConfig={baseFrontendConfig}
+      plugins={staticPlugins}
+    />
+  </>
 );
 
 export default AppRoot;

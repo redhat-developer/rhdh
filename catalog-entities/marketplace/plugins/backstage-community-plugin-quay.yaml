@@ -61,4 +61,4 @@ spec:
     added: '2023-05-15'
 
   packages: # link to the name used in the associated package documents in ../packages
-    - blah-blah-blah-blah  
+    - backstage-community-plugin-quay

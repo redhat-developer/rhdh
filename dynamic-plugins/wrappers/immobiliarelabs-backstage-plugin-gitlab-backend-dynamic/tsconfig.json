@@ -3,7 +3,7 @@
   "include": ["src", "dev", "migrations"],
   "exclude": ["node_modules"],
   "compilerOptions": {
-    "outDir": "../../../dist-types/dynamic-plugins/wrappers/immobiliarelabs-backstage-plugin-gitlab-backend-dynamic",
+    "outDir": "../../dist-types/wrappers/immobiliarelabs-backstage-plugin-gitlab-backend-dynamic",
     "rootDir": "."
   }
 }

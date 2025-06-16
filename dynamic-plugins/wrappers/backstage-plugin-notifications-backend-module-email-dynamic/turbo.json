@@ -3,7 +3,7 @@
   "tasks": {
     "tsc": {
       "outputs": [
-        "../../../dist-types/dynamic-plugins/wrappers/backstage-plugin-notifications-backend-module-email-dynamic/**"
+        "../../dist-types/wrappers/backstage-plugin-notifications-backend-module-email-dynamic/**"
       ]
     }
   }

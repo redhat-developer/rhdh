@@ -28,8 +28,6 @@ export const InternalPluginsMap: Record<string, string> = {
     './dynamic-plugins/dist/backstage-community-plugin-topology',
   'roadiehq-scaffolder-backend-argocd-dynamic':
     './dynamic-plugins/dist/roadiehq-scaffolder-backend-argocd-dynamic',
-  'roadiehq-backstage-plugin-argo-cd':
-    './dynamic-plugins/dist/roadiehq-backstage-plugin-argo-cd',
   'roadiehq-backstage-plugin-argo-cd-backend-dynamic':
     './dynamic-plugins/dist/roadiehq-backstage-plugin-argo-cd-backend-dynamic',
   'backstage-plugin-scaffolder-backend-module-azure-dynamic':

@@ -1,5 +1,4 @@
 import { request, APIResponse, expect } from "@playwright/test";
-import * as authProvidersConstants from "./authenticationProviders/constants";
 import { GroupEntity, UserEntity } from "@backstage/catalog-model";
 import { GITHUB_API_ENDPOINTS } from "./api-endpoints";
 
@@ -16,6 +15,7 @@ type FetchOptions = {
 export class APIHelper {
   private static githubAPIVersion = "2022-11-28";
   private staticToken: string;
+  private baseUrl: string;
   useStaticToken = false;
 
   static async githubRequest(
@@ -164,6 +164,10 @@ export class APIHelper {
     this.staticToken = "Bearer " + token;
   }
 
+  async UseBaseUrl(url: string) {
+    this.baseUrl = url;
+  }
+
   static async APIRequestWithStaticToken(
     method: string,
     url: string,
@@ -188,7 +192,7 @@ export class APIHelper {
   }
 
   async getAllCatalogUsersFromAPI() {
-    const url = `${authProvidersConstants.AUTH_PROVIDERS_BASE_URL}/api/catalog/entities/by-query?orderField=metadata.name%2Casc&filter=kind%3Duser`;
+    const url = `${this.baseUrl}/api/catalog/entities/by-query?orderField=metadata.name%2Casc&filter=kind%3Duser`;
     const token = this.useStaticToken ? this.staticToken : "";
     const response = await APIHelper.APIRequestWithStaticToken(
       "GET",
@@ -199,7 +203,7 @@ export class APIHelper {
   }
 
   async getAllCatalogLocationsFromAPI() {
-    const url = `${authProvidersConstants.AUTH_PROVIDERS_BASE_URL}/api/catalog/entities/by-query?orderField=metadata.name%2Casc&filter=kind%3Dlocation`;
+    const url = `${this.baseUrl}/api/catalog/entities/by-query?orderField=metadata.name%2Casc&filter=kind%3Dlocation`;
     const token = this.useStaticToken ? this.staticToken : "";
     const response = await APIHelper.APIRequestWithStaticToken(
       "GET",
@@ -210,7 +214,7 @@ export class APIHelper {
   }
 
   async getAllCatalogGroupsFromAPI() {
-    const url = `${authProvidersConstants.AUTH_PROVIDERS_BASE_URL}/api/catalog/entities/by-query?orderField=metadata.name%2Casc&filter=kind%3Dgroup`;
+    const url = `${this.baseUrl}/api/catalog/entities/by-query?orderField=metadata.name%2Casc&filter=kind%3Dgroup`;
     const token = this.useStaticToken ? this.staticToken : "";
     const response = await APIHelper.APIRequestWithStaticToken(
       "GET",
@@ -221,7 +225,7 @@ export class APIHelper {
   }
 
   async getGroupEntityFromAPI(group: string) {
-    const url = `${authProvidersConstants.AUTH_PROVIDERS_BASE_URL}/api/catalog/entities/by-name/group/default/${group}`;
+    const url = `${this.baseUrl}/api/catalog/entities/by-name/group/default/${group}`;
     const token = this.useStaticToken ? this.staticToken : "";
     const response = await APIHelper.APIRequestWithStaticToken(
       "GET",
@@ -232,7 +236,7 @@ export class APIHelper {
   }
 
   async getCatalogUserFromAPI(user: string) {
-    const url = `${authProvidersConstants.AUTH_PROVIDERS_BASE_URL}/api/catalog/entities/by-name/user/default/${user}`;
+    const url = `${this.baseUrl}/api/catalog/entities/by-name/user/default/${user}`;
     const token = this.useStaticToken ? this.staticToken : "";
     const response = await APIHelper.APIRequestWithStaticToken(
       "GET",
@@ -247,7 +251,7 @@ export class APIHelper {
     if (!r.metadata || !r.metadata.uid) {
       return;
     }
-    const url = `${authProvidersConstants.AUTH_PROVIDERS_BASE_URL}/api/catalog/entities/by-uid/${r.metadata.uid}`;
+    const url = `${this.baseUrl}/api/catalog/entities/by-uid/${r.metadata.uid}`;
     const token = this.useStaticToken ? this.staticToken : "";
     const response = await APIHelper.APIRequestWithStaticToken(
       "DELETE",
@@ -258,7 +262,7 @@ export class APIHelper {
   }
 
   async getCatalogGroupFromAPI(group: string) {
-    const url = `${authProvidersConstants.AUTH_PROVIDERS_BASE_URL}/api/catalog/entities/by-name/group/default/${group}`;
+    const url = `${this.baseUrl}/api/catalog/entities/by-name/group/default/${group}`;
     const token = this.useStaticToken ? this.staticToken : "";
     const response = await APIHelper.APIRequestWithStaticToken(
       "GET",
@@ -270,7 +274,7 @@ export class APIHelper {
 
   async deleteGroupEntityFromAPI(group: string) {
     const r: GroupEntity = await this.getCatalogGroupFromAPI(group);
-    const url = `${authProvidersConstants.AUTH_PROVIDERS_BASE_URL}/api/catalog/entities/by-uid/${r.metadata.uid}`;
+    const url = `${this.baseUrl}/api/catalog/entities/by-uid/${r.metadata.uid}`;
     const token = this.useStaticToken ? this.staticToken : "";
     const response = await APIHelper.APIRequestWithStaticToken(
       "DELETE",
@@ -285,7 +289,7 @@ export class APIHelper {
     kind: string,
     token: string,
   ) {
-    const url = `${authProvidersConstants.AUTH_PROVIDERS_BASE_URL}/api/catalog/refresh`;
+    const url = `${this.baseUrl}/api/catalog/refresh`;
     const reqBody = { entityRef: `${kind}:default/${entity}` };
     const responseRefresh = await APIHelper.APIRequestWithStaticToken(
       "POST",
@@ -294,5 +298,122 @@ export class APIHelper {
       reqBody,
     );
     return responseRefresh.status();
+  }
+
+  /**
+   * Fetches the UID of an entity by its name from the Backstage catalog.
+   *
+   * @param name - The name of the entity (e.g., 'hello-world-2').
+   * @returns The UID string if found, otherwise undefined.
+   */
+  static async getEntityUidByName(name: string): Promise<string | undefined> {
+    const baseUrl = process.env.BASE_URL;
+    const url = `${baseUrl}/api/catalog/entities/by-name/template/default/${name}`;
+    const context = await request.newContext();
+    const response = await context.get(url);
+    if (response.status() !== 200) {
+      return undefined;
+    }
+    const data = await response.json();
+    return data?.metadata?.uid;
+  }
+
+  /**
+   * Deletes a location from the Backstage catalog by its UID.
+   *
+   * @param uid - The UID of the location to delete.
+   * @returns The status code of the delete operation.
+   */
+  static async deleteLocationByUid(uid: string): Promise<number> {
+    const baseUrl = process.env.BASE_URL;
+    const url = `${baseUrl}/api/catalog/locations/${uid}`;
+    const context = await request.newContext();
+    const response = await context.delete(url);
+    return response.status();
+  }
+
+  /**
+   * Fetches the UID of a Template entity by its name and namespace from the Backstage catalog.
+   *
+   * @param name - The name of the template entity (e.g., 'hello-world-2').
+   * @param namespace - The namespace of the template entity (default: 'default').
+   * @returns The UID string if found, otherwise undefined.
+   */
+  static async getTemplateEntityUidByName(
+    name: string,
+    namespace: string = "default",
+  ): Promise<string | undefined> {
+    const baseUrl = process.env.BASE_URL;
+    const url = `${baseUrl}/api/catalog/locations/by-entity/template/${namespace}/${name}`;
+    const context = await request.newContext();
+    const response = await context.get(url);
+    if (response.status() === 200) {
+      const data = await response.json();
+      return data?.metadata?.uid;
+    }
+    if (response.status() === 404) {
+      return undefined;
+    }
+    return undefined;
+  }
+
+  /**
+   * Deletes an entity location from the Backstage catalog by its ID.
+   *
+   * @param id - The ID of the entity to delete.
+   * @returns The status code of the delete operation.
+   */
+  static async deleteEntityLocationById(id: string): Promise<number> {
+    const baseUrl = process.env.BASE_URL;
+    const url = `${baseUrl}/api/catalog/locations/${id}`;
+    const context = await request.newContext();
+    const response = await context.delete(url);
+    return response.status();
+  }
+
+  /**
+   * Registers a new location in the Backstage catalog.
+   *
+   * @param target - The target URL of the location to register.
+   * @returns The status code of the registration operation.
+   */
+  static async registerLocation(target: string): Promise<number> {
+    const baseUrl = process.env.BASE_URL;
+    const url = `${baseUrl}/api/catalog/locations`;
+    const context = await request.newContext();
+    const response = await context.post(url, {
+      data: {
+        type: "url",
+        target,
+      },
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    return response.status();
+  }
+
+  /**
+   * Fetches the ID of a location from the Backstage catalog by its target URL.
+   *
+   * @param target - The target URL of the location to search for.
+   * @returns The ID string if found, otherwise undefined.
+   */
+  static async getLocationIdByTarget(
+    target: string,
+  ): Promise<string | undefined> {
+    const baseUrl = process.env.BASE_URL;
+    const url = `${baseUrl}/api/catalog/locations`;
+    const context = await request.newContext();
+    const response = await context.get(url);
+    if (response.status() !== 200) {
+      return undefined;
+    }
+    const data = await response.json();
+    // data is expected to be an array of objects with a 'data' property
+    const location = (Array.isArray(data) ? data : []).find(
+      (entry) => entry?.data?.target === target,
+    );
+    return location?.data?.id;
   }
 }

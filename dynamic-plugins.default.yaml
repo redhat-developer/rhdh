@@ -267,31 +267,6 @@ plugins:
               - name: argoInstance2
                 url: "${ARGOCD_INSTANCE2_URL}"
                 token: "${ARGOCD_AUTH_TOKEN2}"
-  - package: ./dynamic-plugins/dist/roadiehq-backstage-plugin-argo-cd
-    disabled: true
-    pluginConfig:
-      dynamicPlugins:
-        frontend:
-          roadiehq.backstage-plugin-argo-cd:
-            mountPoints:
-              - mountPoint: entity.page.overview/cards
-                importName: EntityArgoCDOverviewCard
-                config:
-                  layout:
-                    gridColumnEnd:
-                      lg: "span 8"
-                      xs: "span 12"
-                  if:
-                    allOf:
-                      - isArgocdAvailable
-              - mountPoint: entity.page.cd/cards
-                importName: EntityArgoCDHistoryCard
-                config:
-                  layout:
-                    gridColumn: "1 / -1"
-                  if:
-                    allOf:
-                      - isArgocdAvailable
   - package: ./dynamic-plugins/dist/backstage-community-plugin-redhat-argocd
     disabled: true
     pluginConfig:

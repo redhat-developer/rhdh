@@ -320,26 +320,6 @@ dynamicPlugins:
               anyOf:
                 - hasAnnotation: backstage.io/kubernetes-id
                 - hasAnnotation: backstage.io/kubernetes-namespace
-    roadiehq.backstage-plugin-argo-cd:
-      mountPoints:
-        - mountPoint: entity.page.overview/cards
-          importName: EntityArgoCDOverviewCard
-          config:
-            layout:
-              gridColumnEnd:
-                lg: "span 8"
-                xs: "span 12"
-            if:
-              allOf:
-                - isArgocdAvailable
-        - mountPoint: entity.page.cd/cards
-          importName: EntityArgoCDHistoryCard
-          config:
-            layout:
-              gridColumn: "1 / -1"
-            if:
-              allOf:
-                - isArgocdAvailable
     backstage-community.plugin-redhat-argocd:
       mountPoints:
         - mountPoint: entity.page.overview/cards

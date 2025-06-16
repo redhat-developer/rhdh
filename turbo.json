@@ -1,24 +1,23 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalEnv": [
+    "YARN_ENABLE_GLOBAL_CACHE",
+    "YARN_ENABLE_IMMUTABLE_CACHE",
+    "YARN_ENABLE_MIRROR",
+    "YARN_GLOBAL_FOLDER"
+  ],
   "globalDependencies": [
     "app-config.dynamic-plugins.yaml",
     "dynamic-plugins.default.yaml"
   ],
   "tasks": {
-    "export-dynamic": {
-      "dependsOn": ["tsc"]
-    },
-    "export-dynamic:clean": {
-      "cache": false,
-      "dependsOn": ["tsc"]
-    },
     "start": {
       "cache": false,
       "persistent": true
     },
     "build": {
       "outputs": ["dist/**"],
-      "dependsOn": ["^build", "tsc", "export-dynamic"]
+      "dependsOn": ["^build", "tsc"]
     },
     "clean": {
       "cache": false

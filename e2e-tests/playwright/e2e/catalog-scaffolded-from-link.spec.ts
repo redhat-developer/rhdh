@@ -8,6 +8,7 @@ import { GITHUB_API_ENDPOINTS } from "../utils/api-endpoints";
 let page: Page;
 
 test.describe.serial("Link Scaffolded Templates to Catalog Items", () => {
+  test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
   let uiHelper: UIhelper;
   let common: Common;
   let catalogImport: CatalogImport;
@@ -85,8 +86,8 @@ test.describe.serial("Link Scaffolded Templates to Catalog Items", () => {
   });
 
   test("Verify Scaffolded link in components Dependencies and scaffoldedFrom relation in entity Raw Yaml ", async () => {
-    await uiHelper.openSidebar("Catalog");
-    await uiHelper.clickByDataTestId("user-picker-all");
+    await uiHelper.openCatalogSidebar("Component");
+
     await uiHelper.searchInputPlaceholder("scaffoldedfromlink-\n");
     await clickOnScaffoldedFromLink();
 

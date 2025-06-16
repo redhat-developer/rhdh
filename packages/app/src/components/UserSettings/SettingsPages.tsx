@@ -16,8 +16,9 @@ import {
 } from '@backstage/plugin-user-settings';
 
 import Star from '@mui/icons-material/Star';
+import { ProviderSetting } from '@red-hat-developer-hub/plugin-utils';
 
-import { ProviderSetting } from '../DynamicRoot/DynamicRootContext';
+import { oidcAuthApiRef } from '../../api/AuthApiRefs';
 import { GeneralPage } from './GeneralPage';
 
 const DynamicProviderSettingsItem = ({
@@ -64,6 +65,14 @@ const DynamicProviderSettings = ({
   return (
     <>
       <DefaultProviderSettings configuredProviders={configuredProviders} />
+      {configuredProviders.includes('oidc') && (
+        <ProviderSettingsItem
+          title="OIDC"
+          description="Provides authentication through an OIDC Provider"
+          apiRef={oidcAuthApiRef}
+          icon={Star}
+        />
+      )}
       {providerSettings.map(({ title, description, provider }) => (
         <ErrorBoundary>
           <DynamicProviderSettingsItem

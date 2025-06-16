@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# shellcheck source=.ibm/pipelines/reporting.sh
+source "${DIR}/reporting.sh"
+
+export_chart_version() {
+  # change reference to https://raw.githubusercontent.com/redhat-developer/rhdh-chart/refs/heads/main/.rhdh/docs/installing-ci-charts.adoc after RHIDP-6668
+  export CHART_VERSION=$(echo $(curl -sS https://raw.githubusercontent.com/rhdh-bot/openshift-helm-charts/refs/heads/rhdh-1-rhel-9/installation/README.md | grep -oE '[0-9]+\.[0-9]+-[0-9]+-CI'))
+}
+
 retrieve_pod_logs() {
   local pod_name=$1; local container=$2; local namespace=$3
   echo "  Retrieving logs for container: $container"
@@ -61,19 +69,13 @@ droute_send() {
     local droute_pod_name=$(oc get pods -n droute --no-headers -o custom-columns=":metadata.name" | grep ubi9-cert-rsync)
     local temp_droute=$(oc exec -n "${droute_project}" "${droute_pod_name}" -- /bin/bash -c "mktemp -d")
 
-    JOB_BASE_URL="https://prow.ci.openshift.org/view/gs/test-platform-results"
-    if [ -n "${PULL_NUMBER:-}" ]; then
-      JOB_URL="${JOB_BASE_URL}/pr-logs/pull/${REPO_OWNER}_${REPO_NAME}/${PULL_NUMBER}/${JOB_NAME}/${BUILD_ID}"
-      ARTIFACTS_URL="https://gcsweb-ci.apps.ci.l2s4.p1.openshiftapps.com/gcs/test-platform-results/pr-logs/pull/${REPO_OWNER}_${REPO_NAME}/${PULL_NUMBER}/${JOB_NAME}/${BUILD_ID}/artifacts/e2e-tests/${REPO_OWNER}-${REPO_NAME}/artifacts/${project}"
-    else
-      JOB_URL="${JOB_BASE_URL}/logs/${JOB_NAME}/${BUILD_ID}"
-      ARTIFACTS_URL="https://gcsweb-ci.apps.ci.l2s4.p1.openshiftapps.com/gcs/test-platform-results/logs/${JOB_NAME}/${BUILD_ID}/artifacts/${JOB_NAME##periodic-ci-redhat-developer-rhdh-main-}/${REPO_OWNER}-${REPO_NAME}/artifacts/${project}"
-    fi
+    ARTIFACTS_URL=$(get_artifacts_url)
+    JOB_URL=$(get_job_url)
 
     # Remove properties (only used for skipped test and invalidates the file if empty)
-    sed -i '/<properties>/,/<\/properties>/d' "${ARTIFACT_DIR}/${project}/${JUNIT_RESULTS}"
+    sed_inplace '/<properties>/,/<\/properties>/d' "${ARTIFACT_DIR}/${project}/${JUNIT_RESULTS}"
     # Replace attachments with link to OpenShift CI storage
-    sed -iE "s#\[\[ATTACHMENT|\(.*\)\]\]#${ARTIFACTS_URL}/\1#g" "${ARTIFACT_DIR}/${project}/${JUNIT_RESULTS}"
+    sed_inplace "s#\[\[ATTACHMENT|\(.*\)\]\]#${ARTIFACTS_URL}/\1#g" "${ARTIFACT_DIR}/${project}/${JUNIT_RESULTS}"
 
     jq \
       --arg hostname "$REPORTPORTAL_HOSTNAME" \
@@ -175,6 +177,7 @@ droute_send() {
         # Try to extract the ReportPortal launch URL from the request. This fails if it doesn't contain the launch URL.
         REPORTPORTAL_LAUNCH_URL=$(echo "$DATA_ROUTER_REQUEST_OUTPUT" | yq e '.targets[0].events[] | select(.component == "reportportal-connector") | .message | fromjson | .[0].launch_url' -)
         if [[ -n "$REPORTPORTAL_LAUNCH_URL" ]]; then
+          save_status_url_reportportal $CURRENT_DEPLOYMENT $REPORTPORTAL_LAUNCH_URL
           reportportal_slack_alert $release_name $REPORTPORTAL_LAUNCH_URL
           return 0
         else
@@ -194,38 +197,6 @@ droute_send() {
     echo "Failed to restore the context and authenticate with the cluster. Logging in again."
     oc_login
   fi
-}
-
-reportportal_slack_alert() {
-  local release_name=$1
-  local reportportal_launch_url=$2
-
-  if [[ "$release_name" == *rbac* ]]; then
-    RUN_TYPE="rbac-nightly"
-  else
-    RUN_TYPE="nightly"
-  fi
-  if [[ ${RESULT} -eq 0 ]]; then
-    RUN_STATUS_EMOJI=":done-circle-check:"
-    RUN_STATUS="passed"
-  else
-    RUN_STATUS_EMOJI=":failed:"
-    RUN_STATUS="failed"
-  fi
-  jq -n \
-    --arg run_status "$RUN_STATUS" \
-    --arg run_type "$RUN_TYPE" \
-    --arg reportportal_launch_url "$reportportal_launch_url" \
-    --arg job_name "$JOB_NAME" \
-    --arg run_status_emoji "$RUN_STATUS_EMOJI" \
-    '{
-      "RUN_STATUS": $run_status,
-      "RUN_TYPE": $run_type,
-      "REPORTPORTAL_LAUNCH_URL": $reportportal_launch_url,
-      "JOB_NAME": $job_name,
-      "RUN_STATUS_EMOJI": $run_status_emoji
-    }' > /tmp/data_router_slack_message.json
-  curl -X POST -H 'Content-type: application/json' --data @/tmp/data_router_slack_message.json  $SLACK_DATA_ROUTER_WEBHOOK_URL
 }
 
 # Merge the base YAML value file with the differences file for Kubernetes
@@ -404,37 +375,14 @@ check_operator_status() {
 
 # Installs the Crunchy Postgres Operator from Openshift Marketplace using predefined parameters
 install_crunchy_postgres_ocp_operator(){
-  install_subscription crunchy-postgres-operator openshift-operators v5 crunchy-postgres-operator certified-operators openshift-marketplace
+  install_subscription postgresql openshift-operators v5 postgresql community-operators openshift-marketplace
   check_operator_status 300 "openshift-operators" "Crunchy Postgres for Kubernetes" "Succeeded"
 }
 
 # Installs the Crunchy Postgres Operator from OperatorHub.io
 install_crunchy_postgres_k8s_operator(){
-  install_subscription crunchy-postgres-operator operators v5 postgresql operatorhubio-catalog olm
+  install_subscription postgresql openshift-operators v5 postgresql community-operators openshift-marketplace
   check_operator_status 300 "operators" "Crunchy Postgres for Kubernetes" "Succeeded"
-}
-
-add_helm_repos() {
-  helm version
-
-  local repos=(
-    "bitnami=https://charts.bitnami.com/bitnami"
-    "backstage=https://backstage.github.io/charts"
-    "${HELM_REPO_NAME}=${HELM_REPO_URL}"
-  )
-
-  for repo in "${repos[@]}"; do
-    local key="${repo%%=*}"
-    local value="${repo##*=}"
-
-    if ! helm repo list | grep -q "^$key"; then
-      helm repo add "$key" "$value"
-    else
-      echo "Repository $key already exists - updating repository instead."
-    fi
-  done
-
-  helm repo update
 }
 
 uninstall_helmchart() {
@@ -486,7 +434,6 @@ configure_external_postgres_db() {
   local project=$1
   oc apply -f "${DIR}/resources/postgres-db/postgres.yaml" --namespace="${NAME_SPACE_POSTGRES_DB}"
   sleep 5
-
   oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.ca\.crt}' | base64 --decode > postgres-ca
   oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.tls\.crt}' | base64 --decode > postgres-tls-crt
   oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.tls\.key}' | base64 --decode > postgres-tsl-key
@@ -498,9 +445,9 @@ configure_external_postgres_db() {
   --dry-run=client -o yaml | oc apply -f - --namespace="${project}"
 
   POSTGRES_PASSWORD=$(oc get secret/postgress-external-db-pguser-janus-idp -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath={.data.password})
-  sed -i "s|POSTGRES_PASSWORD:.*|POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
+  sed_inplace "s|POSTGRES_PASSWORD:.*|POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
   POSTGRES_HOST=$(echo -n "postgress-external-db-primary.$NAME_SPACE_POSTGRES_DB.svc.cluster.local" | base64 | tr -d '\n')
-  sed -i "s|POSTGRES_HOST:.*|POSTGRES_HOST: ${POSTGRES_HOST}|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
+  sed_inplace "s|POSTGRES_HOST:.*|POSTGRES_HOST: ${POSTGRES_HOST}|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
   oc apply -f "${DIR}/resources/postgres-db/postgres-cred.yaml"  --namespace="${project}"
 }
 
@@ -520,7 +467,7 @@ apply_yaml_files() {
     )
 
     for file in "${files[@]}"; do
-      sed -i "s/namespace:.*/namespace: ${project}/g" "$file"
+      sed_inplace "s/namespace:.*/namespace: ${project}/g" "$file"
     done
 
     DH_TARGET_URL=$(echo -n "test-backstage-customization-provider-${project}.${K8S_CLUSTER_ROUTER_BASE}" | base64 -w 0)
@@ -581,7 +528,7 @@ apply_yaml_files() {
 
     # Create Deployment and Pipeline for Topology test.
     oc apply -f "$dir/resources/topology_test/topology-test.yaml"
-    if [[ -z "${IS_OPENSHIFT}" || "${IS_OPENSHIFT,,}" == "false" ]]; then
+    if [[ -z "${IS_OPENSHIFT}" || "$(to_lowercase "${IS_OPENSHIFT}")" == "false" ]]; then
       kubectl apply -f "$dir/resources/topology_test/topology-test-ingress.yaml"
     else
       oc apply -f "$dir/resources/topology_test/topology-test-route.yaml"
@@ -694,10 +641,6 @@ run_tests() {
     cp -a "${e2e_tests_dir}/screenshots/"* "${ARTIFACT_DIR}/${project}/attachments/screenshots/"
   fi
 
-  if [ -d "${e2e_tests_dir}/auth-providers-logs" ]; then
-    cp -a "${e2e_tests_dir}/auth-providers-logs/"* "${ARTIFACT_DIR}/${project}/"
-  fi
-
   ansi2html <"/tmp/${LOGFILE}" >"/tmp/${LOGFILE}.html"
   cp -a "/tmp/${LOGFILE}.html" "${ARTIFACT_DIR}/${project}"
   cp -a "${e2e_tests_dir}/playwright-report/"* "${ARTIFACT_DIR}/${project}"
@@ -706,7 +649,20 @@ run_tests() {
 
   echo "${project} RESULT: ${RESULT}"
   if [ "${RESULT}" -ne 0 ]; then
-    OVERALL_RESULT=1
+    save_overall_result 1
+    save_status_test_failed $CURRENT_DEPLOYMENT true
+  else
+    save_status_test_failed $CURRENT_DEPLOYMENT false
+  fi
+  if [ -f "${e2e_tests_dir}/${JUNIT_RESULTS}" ]; then
+    failed_tests=$(grep -oP 'failures="\K[0-9]+' "${e2e_tests_dir}/${JUNIT_RESULTS}" | head -n 1)
+    echo "Number of failed tests: ${failed_tests}"
+    save_status_number_of_test_failed $CURRENT_DEPLOYMENT "${failed_tests}"
+  else
+    echo "JUnit results file not found: ${e2e_tests_dir}/${JUNIT_RESULTS}"
+    local failed_tests="some"
+    echo "Number of failed tests unknown, saving as $failed_tests."
+    save_status_number_of_test_failed $CURRENT_DEPLOYMENT "${failed_tests}"
   fi
 }
 
@@ -862,7 +818,6 @@ cluster_setup() {
   install_pipelines_operator
   install_acm_ocp_operator
   install_crunchy_postgres_ocp_operator
-  add_helm_repos
 }
 
 cluster_setup_ocp_operator() {
@@ -883,7 +838,6 @@ cluster_setup_k8s_helm() {
   install_tekton_pipelines
   # install_ocm_k8s_operator
   # install_crunchy_postgres_k8s_operator # Works with K8s but disabled in values file
-  add_helm_repos
 }
 
 initiate_deployments() {
@@ -892,11 +846,11 @@ initiate_deployments() {
   deploy_redis_cache "${NAME_SPACE}"
 
   cd "${DIR}"
-  local rhdh_base_url="https://${RELEASE_NAME}-backstage-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
+  local rhdh_base_url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
   echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
   helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
-    "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" --version "${CHART_VERSION}" \
+    "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO}" \
@@ -907,11 +861,11 @@ initiate_deployments() {
   configure_external_postgres_db "${NAME_SPACE_RBAC}"
 
   # Initiate rbac instance deployment.
-  local rbac_rhdh_base_url="https://${RELEASE_NAME_RBAC}-backstage-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
+  local rbac_rhdh_base_url="https://${RELEASE_NAME_RBAC}-developer-hub-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
   echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${RELEASE_NAME_RBAC}"
   helm upgrade -i "${RELEASE_NAME_RBAC}" -n "${NAME_SPACE_RBAC}" \
-    "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" --version "${CHART_VERSION}" \
+    "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO}" \
@@ -923,16 +877,16 @@ initiate_upgrade_base_deployments() {
   echo "Initiating base RHDH deployment before upgrade"
 
   configure_namespace ${NAME_SPACE}
-  
+
   deploy_redis_cache "${NAME_SPACE}"
 
   cd "${DIR}"
-  local rhdh_base_url="https://${RELEASE_NAME}-backstage-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
+  local rhdh_base_url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
   echo "Deploying image from base repository: ${QUAY_REPO_BASE}, TAG_NAME_BASE: ${TAG_NAME_BASE}, in NAME_SPACE: ${NAME_SPACE}"
   
   helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
-    "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" --version "${CHART_VERSION_BASE}" \
+    "${HELM_CHART_URL}" --version "${CHART_VERSION_BASE}" \
     -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME_BASE}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO_BASE}" \
@@ -944,22 +898,22 @@ initiate_upgrade_deployments() {
   local namespace=$2
   local url=$3
   local max_attempts=${4:-30}    # Default to 30 if not set
-  local wait_seconds=${5:-30} 
+  local wait_seconds=${5:-30}
   local wait_upgrade="10m"
 
   # check if the base rhdh deployment is running
   if check_backstage_running "${release_name}" "${namespace}" "${url}" "${max_attempts}" "${wait_seconds}"; then
-    
+
     echo "Display pods of base RHDH deployment before upgrade for verification..."
     oc get pods -n "${namespace}"
-    
+
     echo "Initiating upgrade deployment"
     cd "${DIR}"
-    
+
     echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
     
     helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
-    "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" \
+    "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO}" \
@@ -977,14 +931,14 @@ initiate_runtime_deployment() {
   local namespace=$2
   configure_namespace "${namespace}"
   uninstall_helmchart "${namespace}" "${release_name}"
-  sed -i "s|POSTGRES_USER:.*|POSTGRES_USER: $RDS_USER|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
-  sed -i "s|POSTGRES_PASSWORD:.*|POSTGRES_PASSWORD: $(echo -n $RDS_PASSWORD | base64 -w 0)|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
-  sed -i "s|POSTGRES_HOST:.*|POSTGRES_HOST: $(echo -n $RDS_1_HOST | base64 -w 0)|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
+  sed_inplace "s|POSTGRES_USER:.*|POSTGRES_USER: $RDS_USER|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
+  sed_inplace "s|POSTGRES_PASSWORD:.*|POSTGRES_PASSWORD: $(echo -n $RDS_PASSWORD | base64 -w 0)|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
+  sed_inplace "s|POSTGRES_HOST:.*|POSTGRES_HOST: $(echo -n $RDS_1_HOST | base64 -w 0)|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
   oc apply -f "$DIR/resources/postgres-db/postgres-crt-rds.yaml" -n "${namespace}"
   oc apply -f "$DIR/resources/postgres-db/postgres-cred.yaml" -n "${namespace}"
   oc apply -f "$DIR/resources/postgres-db/dynamic-plugins-root-PVC.yaml" -n "${namespace}"
   helm upgrade -i "${release_name}" -n "${namespace}" \
-    "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" --version "${CHART_VERSION}" \
+    "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "$DIR/resources/postgres-db/values-showcase-postgres.yaml" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO}" \
@@ -999,9 +953,8 @@ initiate_sanity_plugin_checks_deployment() {
   yq_merge_value_files "overwrite" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_SANITY_PLUGINS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}"
   mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE_SANITY_PLUGINS_CHECK}"
   cp -a "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" "${ARTIFACT_DIR}/${NAME_SPACE_SANITY_PLUGINS_CHECK}/" # Save the final value-file into the artifacts directory.
-  helm upgrade -i "${RELEASE_NAME}" \
-    -n "${NAME_SPACE_SANITY_PLUGINS_CHECK}" "${HELM_REPO_NAME}/${HELM_IMAGE_NAME}" \
-    --version "${CHART_VERSION}" \
+  helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE_SANITY_PLUGINS_CHECK}" \
+    "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO}" \
@@ -1014,13 +967,18 @@ check_and_test() {
   local url=$3
   local max_attempts=${4:-30}    # Default to 30 if not set
   local wait_seconds=${5:-30}    # Default to 30 if not set
+  CURRENT_DEPLOYMENT=$((CURRENT_DEPLOYMENT + 1))
+  save_status_deployment_namespace $CURRENT_DEPLOYMENT $namespace
   if check_backstage_running "${release_name}" "${namespace}" "${url}" "${max_attempts}" "${wait_seconds}"; then
+    save_status_failed_to_deploy $CURRENT_DEPLOYMENT false
     echo "Display pods for verification..."
     oc get pods -n "${namespace}"
     run_tests "${release_name}" "${namespace}"
   else
     echo "Backstage is not running. Exiting..."
-    OVERALL_RESULT=1
+    save_status_failed_to_deploy $CURRENT_DEPLOYMENT true
+    save_status_test_failed $CURRENT_DEPLOYMENT true
+    save_overall_result 1
   fi
   save_all_pod_logs $namespace
 }
@@ -1031,7 +989,7 @@ check_upgrade_and_test() {
   local namespace="$3"
   local url=$4
   local timeout=${5:-600} # Timeout in seconds (default: 600 seconds)
-  
+
   if check_helm_upgrade "${deployment_name}" "${namespace}" "${timeout}"; then
     check_and_test "${release_name}" "${namespace}" "${url}"
   else
@@ -1041,11 +999,11 @@ check_upgrade_and_test() {
 
 check_helm_upgrade() {
   local deployment_name="$1"
-  local namespace="$2"       
-  local timeout="$3"      
-  
+  local namespace="$2"
+  local timeout="$3"
+
   echo "Checking rollout status for deployment: ${deployment_name} in namespace: ${namespace}..."
-  
+
   if oc rollout status "deployment/${deployment_name}" -n "${namespace}" --timeout="${timeout}s" -w; then
       echo "RHDH upgrade is complete."
       return 0
@@ -1097,4 +1055,26 @@ detect_ocp_and_set_env_var() {
     IS_OPENSHIFT=$(is_openshift && echo 'true' || echo 'false')
   fi
   echo IS_OPENSHIFT: "${IS_OPENSHIFT}"
+}
+
+# Helper function for cross-platform sed
+sed_inplace() {
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS
+    sed -i '' "$@"
+  else
+    # Linux
+    sed -i "$@"
+  fi
+}
+
+# Helper function for case conversion
+to_lowercase() {
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS - using tr
+    echo "$1" | tr '[:upper:]' '[:lower:]'
+  else
+    # Linux - using bash parameter expansion
+    echo "${1,,}"
+  fi
 }

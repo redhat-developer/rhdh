@@ -35,8 +35,6 @@ global:
                   - name: argoInstance1
                     url: "temp"
                     token: "temp"
-      - package: ./dynamic-plugins/dist/roadiehq-backstage-plugin-argo-cd
-        disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-redhat-argocd
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-azure-dynamic

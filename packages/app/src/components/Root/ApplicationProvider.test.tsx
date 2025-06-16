@@ -4,7 +4,8 @@ import { renderInTestApp } from '@backstage/test-utils';
 
 import DynamicRootContext, {
   MountPoints,
-} from '../DynamicRoot/DynamicRootContext';
+} from '@red-hat-developer-hub/plugin-utils';
+
 import { ApplicationProvider } from './ApplicationProvider';
 
 const MountPointProvider = ({

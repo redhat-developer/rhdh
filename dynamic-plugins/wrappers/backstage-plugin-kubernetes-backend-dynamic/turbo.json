@@ -3,7 +3,7 @@
   "tasks": {
     "tsc": {
       "outputs": [
-        "../../../dist-types/dynamic-plugins/wrappers/backstage-plugin-kubernetes-backend-dynamic/**"
+        "../../dist-types/wrappers/backstage-plugin-kubernetes-backend-dynamic/**"
       ]
     }
   }

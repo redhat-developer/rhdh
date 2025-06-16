@@ -33,7 +33,7 @@ spec:
     - Scaffolder # One category will show up on the tile view
 
   highlights:
-    - Add some highlights of the plugins features
+    - Extends Software Templates
 
   description: |
     This plugin ships as enabled by default in Red Hat Developer Hub.
