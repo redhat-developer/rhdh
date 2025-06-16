@@ -58,8 +58,12 @@ export const createOidcSubClaimResolver = (provider: OidcProviderInfo) =>
           {
             annotations: { [provider.userIdKey]: sub },
           },
-          sub,
-          options?.dangerouslyAllowSignInWithoutUserInCatalog,
+          {
+            dangerousEntityRefFallback:
+              options?.dangerouslyAllowSignInWithoutUserInCatalog
+                ? { entityRef: sub }
+                : undefined,
+          },
         );
       };
     },

@@ -1,6 +1,19 @@
-import { renderWithEffects } from '@backstage/test-utils';
+import { errorApiRef } from '@backstage/core-plugin-api';
+import {
+  TranslationApi,
+  translationApiRef,
+  TranslationSnapshot,
+} from '@backstage/core-plugin-api/alpha';
+import {
+  MockErrorApi,
+  renderWithEffects,
+  TestApiProvider,
+} from '@backstage/test-utils';
+
+import { screen } from '@testing-library/react';
 
 import { listLoadedPluginsResult } from '../../__fixtures__/listLoadedPluginsResult';
+import { dynamicPluginsInfoApiRef } from '../../api/types';
 import { InternalPluginsMap } from '../InternalPluginsMap';
 import { DynamicPluginsTable } from './DynamicPluginsTable';
 
@@ -21,19 +34,24 @@ const plugins = [
   ...listLoadedPluginsResult,
 ];
 
-jest.mock('@backstage/core-plugin-api', () => {
-  const actual = jest.requireActual('@backstage/core-plugin-api');
-  return {
-    ...actual,
-    useApi: () => {
-      return {
-        listLoadedPlugins: async () => {
-          return Promise.resolve(listLoadedPluginsResult);
-        },
-      };
+// This mock simulates the translation API.
+// It may be able to be removed when upstream provides a mock compatible with our usage.
+const translationApiMock: Partial<TranslationApi> = {
+  getTranslation: <TMessages extends { [key: string]: string }>(
+    _ref: any,
+  ): TranslationSnapshot<TMessages> =>
+    ({
+      t: (key: keyof TMessages) => key as string,
+      ready: true,
+    }) as TranslationSnapshot<TMessages>,
+
+  translation$: () => ({
+    subscribe: () => ({ unsubscribe: () => {}, closed: true }),
+    [Symbol.observable]() {
+      return this;
     },
-  };
-});
+  }),
+};
 
 describe('DynamicPluginsTable', () => {
   beforeEach(() => {
@@ -44,12 +62,29 @@ describe('DynamicPluginsTable', () => {
   });
 
   it('should display the plugins', async () => {
-    const { findByText, container } = await renderWithEffects(
-      <DynamicPluginsTable />,
+    const mockDynamicPluginApi = {
+      listLoadedPlugins: async () => listLoadedPluginsResult,
+    };
+
+    const { container } = await renderWithEffects(
+      <TestApiProvider
+        apis={[
+          [dynamicPluginsInfoApiRef, mockDynamicPluginApi],
+          [translationApiRef, translationApiMock],
+          [errorApiRef, new MockErrorApi()],
+        ]}
+      >
+        <DynamicPluginsTable />
+      </TestApiProvider>,
     );
 
-    expect(await findByText(`Plugins (${plugins.length})`)).toBeInTheDocument();
-    expect(await findByText(plugins.at(0)?.name ?? '')).toBeInTheDocument();
+    expect(
+      await screen.findByText(`Plugins (${plugins.length})`),
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByText(plugins.at(0)?.name ?? ''),
+    ).toBeInTheDocument();
+
     const nameCells = Array.from(
       container.querySelectorAll('tbody tr > td:first-child'),
     );
@@ -65,6 +100,7 @@ describe('DynamicPluginsTable', () => {
 
     const displayedPlugins = plugins.slice(0, DEFAULT_ROWS_DISPLAYED);
     expect(nameCells.length).toBe(displayedPlugins.length);
+
     for (let i = 0; i < DEFAULT_ROWS_DISPLAYED; i++) {
       expect(nameCells[i].textContent).toBe(displayedPlugins[i].name);
       try {
