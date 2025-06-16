@@ -12,6 +12,12 @@ export class NotificationPage {
 
   async clickNotificationsNavBarItem() {
     await this.uiHelper.openSidebar("Notifications");
+    await expect(
+      this.page.getByRole("table").filter({ hasText: "Rows per page" })
+    ).toBeVisible();
+    await expect(
+      this.page.getByTestId("loading-indicator").getByRole("img")
+    ).toHaveCount(0);
   }
 
   async notificationContains(text: string | RegExp) {
@@ -119,7 +125,7 @@ export class NotificationPage {
 
   async viewRead() {
     await this.page.getByLabel("View").click();
-    if (`${process.env.MILESTONE}` == "5") {
+    if (`${process.env.MILESTONE}` >= "5") {
       await this.page
         .getByRole("option", { name: "Read notifications", exact: true })
         .click();
@@ -133,7 +139,7 @@ export class NotificationPage {
 
   async viewUnRead() {
     await this.page.getByLabel("View").click();
-    if (`${process.env.MILESTONE}` == "5") {
+    if (`${process.env.MILESTONE}` >= "5") {
       await this.page
         .getByRole("option", { name: "Unread notifications", exact: true })
         .click();

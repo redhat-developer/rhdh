@@ -1,15 +1,26 @@
 import { test } from "@playwright/test";
-import { OrchestratorPages } from "../../utils/orchestrator_common/orchestratorPages";
+import { UIhelper } from "../../../utils/ui-helper";
+import { Common } from "../../../utils/common";
+import { Orchestrator } from "../../../support/pages/orchestrator";
 
-test("OCP-xxxxx: Orchestrator user on-boarding workflow execution @onboarding @parallel", async ({
-  page,
-}) => {
-  const orchestratorPages = new OrchestratorPages(page);
-  await orchestratorPages.goto();
-  await orchestratorPages.loginAsGuest();
-  await orchestratorPages.clickOrchestratorNavBarItem();
-  await orchestratorPages.selectUserOnboardingWorkflowItem();
-  await orchestratorPages.runUserOnboardingWorkflow();
-  await orchestratorPages.clickNotificationsNavBarItem();
-  await orchestratorPages.notificationContains(/Onboarding user.*completed/);
+test.describe("Orchestrator greeting workflow tests", () => {
+  let uiHelper: UIhelper;
+  let common: Common;
+  let orchestrator: Orchestrator;
+
+  test.beforeEach(async ({ page }) => {
+    uiHelper = new UIhelper(page);
+    common = new Common(page);
+    orchestrator = new Orchestrator(page);
+    await common.loginAsKeycloakUser();
+  });
+
+  test("Greeting workflow execution and workflow tab validation", async () => {
+    await uiHelper.openSidebar("Orchestrator");
+    await orchestrator.selectGreetingWorkflowItem();
+    await orchestrator.selectUserOnboardingWorkflowItem();
+    await orchestrator.runUserOnboardingWorkflow();
+    await uiHelper.openSidebar("Notifications");
+    await orchestrator.notificationContains(/Onboarding user.*completed/);
+  });
 });
