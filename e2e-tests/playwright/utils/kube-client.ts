@@ -61,10 +61,10 @@ export class KubeClient {
 
   async listConfigMaps(namespace: string) {
     try {
-      LOGGER.info(`Listing configmaps in namespace ${namespace}`);
+      console.log(`Listing configmaps in namespace ${namespace}`);
       return await this.coreV1Api.listNamespacedConfigMap(namespace);
     } catch (e) {
-      LOGGER.error(e.body?.message);
+      console.error(e.body?.message);
       throw e;
     }
   }
@@ -82,15 +82,15 @@ export class KubeClient {
       const configMapsResponse = await this.listConfigMaps(namespace);
       const configMaps = configMapsResponse.body.items;
       
-      LOGGER.info(`Found ${configMaps.length} ConfigMaps in namespace ${namespace}`);
+      console.log(`Found ${configMaps.length} ConfigMaps in namespace ${namespace}`);
       configMaps.forEach(cm => {
-        LOGGER.info(`ConfigMap: ${cm.metadata?.name}`);
+        console.log(`ConfigMap: ${cm.metadata?.name}`);
       });
       
       for (const name of this.appConfigNames) {
         const found = configMaps.find(cm => cm.metadata?.name === name);
         if (found) {
-          LOGGER.info(`Found app config ConfigMap: ${name}`);
+          console.log(`Found app config ConfigMap: ${name}`);
           return name;
         }
       }
@@ -99,14 +99,14 @@ export class KubeClient {
       for (const cm of configMaps) {
         if (cm.data && Object.keys(cm.data).some(key => 
           key.includes('app-config') && key.endsWith('.yaml'))) {
-          LOGGER.info(`Found ConfigMap with app-config data: ${cm.metadata?.name}`);
+          console.log(`Found ConfigMap with app-config data: ${cm.metadata?.name}`);
           return cm.metadata?.name || '';
         }
       }
       
       throw new Error(`No suitable app-config ConfigMap found in namespace ${namespace}`);
     } catch (error) {
-      LOGGER.error(`Error finding app config ConfigMap: ${error}`);
+      console.error(`Error finding app config ConfigMap: ${error}`);
       throw error;
     }
   }
@@ -198,10 +198,10 @@ export class KubeClient {
       let actualConfigMapName = configMapName;
       try {
         await this.getConfigMap(configMapName, namespace);
-        LOGGER.info(`Using provided ConfigMap name: ${configMapName}`);
+        console.log(`Using provided ConfigMap name: ${configMapName}`);
       } catch (error) {
         if (error.response?.statusCode === 404) {
-          LOGGER.info(`ConfigMap ${configMapName} not found, searching for alternatives...`);
+          console.log(`ConfigMap ${configMapName} not found, searching for alternatives...`);
           actualConfigMapName = await this.findAppConfigMap(namespace);
         } else {
           throw error;
@@ -214,8 +214,8 @@ export class KubeClient {
       );
       const configMap = configMapResponse.body;
 
-      LOGGER.info(`Using ConfigMap: ${actualConfigMapName}`);
-      LOGGER.info(`Available data keys: ${Object.keys(configMap.data || {}).join(', ')}`);
+      console.log(`Using ConfigMap: ${actualConfigMapName}`);
+      console.log(`Available data keys: ${Object.keys(configMap.data || {}).join(', ')}`);
 
       // Find the correct data key dynamically
       let dataKey: string | undefined;
@@ -250,7 +250,7 @@ export class KubeClient {
         throw new Error(`No suitable YAML data key found in ConfigMap '${actualConfigMapName}'. Available keys: ${dataKeys.join(', ')}`);
       }
       
-      LOGGER.info(`Using data key: ${dataKey}`);
+      console.log(`Using data key: ${dataKey}`);
       const appConfigYaml = configMap.data[dataKey];
       
       if (!appConfigYaml) {
@@ -264,9 +264,9 @@ export class KubeClient {
         throw new Error(`Invalid app-config structure in ConfigMap '${actualConfigMapName}'. Expected 'app' section not found.`);
       }
 
-      LOGGER.info(`Current title: ${appConfigObj.app.title}`);
+      console.log(`Current title: ${appConfigObj.app.title}`);
       appConfigObj.app.title = newTitle;
-      LOGGER.info(`New title: ${newTitle}`);
+      console.log(`New title: ${newTitle}`);
       
       configMap.data[dataKey] = yaml.dump(appConfigObj);
 
