@@ -1426,9 +1426,9 @@ __metadata:
     otplib: 12.0.1
     prettier: 3.5.3
     typescript: 5.8.3
-    uuid: ^11.1.0
+    uuid: 11.1.0
     winston: 3.14.2
-    yaml: ^2.8.0
+    yaml: 2.8.0
   languageName: unknown
   linkType: soft
 
@@ -3631,7 +3631,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uuid@npm:^11.1.0":
+"uuid@npm:11.1.0":
   version: 11.1.0
   resolution: "uuid@npm:11.1.0"
   bin:
@@ -3803,7 +3803,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yaml@npm:^2.8.0":
+"yaml@npm:2.8.0":
   version: 2.8.0
   resolution: "yaml@npm:2.8.0"
   bin:
