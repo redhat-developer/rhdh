@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import { Fragment, lazy, Suspense, useContext } from 'react';
 import * as useAsync from 'react-use/lib/useAsync';
 
 import * as appDefaults from '@backstage/app-defaults';
@@ -20,7 +20,7 @@ import { waitFor, within } from '@testing-library/dom';
 
 import initializeRemotePlugins from '../../utils/dynamicUI/initializeRemotePlugins';
 
-const DynamicRoot = React.lazy(() => import('./DynamicRoot'));
+const DynamicRoot = lazy(() => import('./DynamicRoot'));
 
 const InnerPage = () => {
   const app = useApp();
@@ -75,7 +75,7 @@ const MockApp = ({
 }: {
   dynamicPlugins: any; // allow tests to supply specific values for specific use cases
 }) => (
-  <React.Suspense fallback={null}>
+  <Suspense fallback={null}>
     <DynamicRoot
       apis={[]}
       afterInit={async () =>
@@ -88,7 +88,7 @@ const MockApp = ({
       dynamicPlugins={dynamicPlugins}
       scalprumConfig={{}}
     />
-  </React.Suspense>
+  </Suspense>
 );
 
 jest.mock('@scalprum/core', () => ({
@@ -159,7 +159,7 @@ describe.skip('DynamicRoot', () => {
             ...(requiredModules.some(m => m.module === 'PluginRoot')
               ? {
                   PluginRoot: {
-                    default: React.Fragment,
+                    default: Fragment,
                     fooPlugin: createPlugin({
                       id: 'fooPlugin',
                       routes: { bar: createRouteRef({ id: 'bar' }) },
@@ -177,7 +177,7 @@ describe.skip('DynamicRoot', () => {
                       deps: {},
                       factory: () => ({}),
                     }),
-                    FooComponent: React.Fragment,
+                    FooComponent: Fragment,
                     isFooConditionTrue: () => true,
                     isFooConditionFalse: () => false,
                     FooComponentWithStaticJSX: {
