@@ -3,7 +3,7 @@ import RHDHDeployment from "../../utils/authentication-providers/rhdh-deployment
 import { Common, setupBrowser } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
 import { KeycloakHelper } from "../../utils/authentication-providers/keycloak-helper";
-import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants"
+import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
 
 let page: Page;
 let context: BrowserContext;
@@ -84,7 +84,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     await deployment.generateStaticToken();
 
     // set enviroment variables and create secret
-    if (!process.env.ISRUNNINGLOCAL){
+    if (!process.env.ISRUNNINGLOCAL) {
       deployment.addSecretData("BASE_URL", backstageUrl);
       deployment.addSecretData("BASE_BACKEND_URL", backstageBackendUrl);
     }
@@ -216,7 +216,9 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     );
     expect(login2).toBe("Login successful");
 
-    await uiHelper.verifyAlertErrorMessage(NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE);
+    await uiHelper.verifyAlertErrorMessage(
+      NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE,
+    );
     await keycloakHelper.initialize();
     await keycloakHelper.clearUserSessions("atena");
   });
