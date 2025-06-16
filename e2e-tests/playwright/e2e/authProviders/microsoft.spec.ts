@@ -3,12 +3,12 @@ import RHDHDeployment from "../../utils/authentication-providers/rhdh-deployment
 import { Common, setupBrowser } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
 import { MSGraphClient } from "../../utils/authentication-providers/msgraph-helper";
-import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants"
+import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
 
 let page: Page;
 let context: BrowserContext;
 
-/* SUPORTED RESOLVERS
+/* SUPPORTED RESOLVERS
 MICOROSFT:
     [x] userIdMatchingUserEntityAnnotation -> (Default)
     [x] emailMatchingUserEntityAnnotation
@@ -72,7 +72,7 @@ test.describe("Configure Microsoft Provider", async () => {
     await deployment.generateStaticToken();
 
     // set enviroment variables and create secret
-    if (!process.env.ISRUNNINGLOCAL){
+    if (!process.env.ISRUNNINGLOCAL) {
       deployment.addSecretData("BASE_URL", backstageUrl);
       deployment.addSecretData("BASE_BACKEND_URL", backstageBackendUrl);
     }
@@ -172,7 +172,9 @@ test.describe("Configure Microsoft Provider", async () => {
       process.env.DEFAULT_USER_PASSWORD_2,
     );
     expect(login2).toBe("Login successful");
-    await uiHelper.verifyAlertErrorMessage(NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE);
+    await uiHelper.verifyAlertErrorMessage(
+      NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE,
+    );
     await context.clearCookies();
   });
 
@@ -236,7 +238,7 @@ test.describe("Configure Microsoft Provider", async () => {
     expect(login2).toBe("Login successful");
 
     await uiHelper.verifyAlertErrorMessage(
-      /Login failed; caused by Error: Failed to sign-in, unable to resolve user identity. Please verify that your catalog contains the expected User entities that would match your configured sign-in resolver. For non-production environments, manually provision the user or disable the user provisioning requirement by setting the `dangerouslyAllowSignInWithoutUserInCatalog` option./,
+      NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE,
     );
   });
 

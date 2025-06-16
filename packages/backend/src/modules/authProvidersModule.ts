@@ -185,6 +185,8 @@ function getAuthProviderFactory(providerId: string): AuthProviderFactory {
           rhdhSignInResolvers.oidcLdapUuidMatchingAnnotation(),
         ]),
         signInResolverFactories: {
+          preferredUsernameMatchingUserEntityName:
+            rhdhSignInResolvers.preferredUsernameMatchingUserEntityName,
           oidcSubClaimMatchingKeycloakUserId:
             rhdhSignInResolvers.oidcSubClaimMatchingKeycloakUserId,
           oidcSubClaimMatchingPingIdentityUserId:
