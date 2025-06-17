@@ -213,6 +213,9 @@ global:
         disabled: false
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-floating-action-button
         disabled: false
+      # Enable Security Insights plugin
+      - package: ./dynamic-plugins/dist/roadiehq-backstage-plugin-security-insights
+        disabled: false
 
 # -- Upstream Backstage [chart configuration](https://github.com/backstage/charts/blob/main/charts/backstage/values.yaml)
 upstream:
