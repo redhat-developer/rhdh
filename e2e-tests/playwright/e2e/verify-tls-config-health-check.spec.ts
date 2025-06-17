@@ -43,7 +43,8 @@ test.describe
     await common.loginAsGuest();
   });
 
-  test("Change the config to use the latest-3 postgres version", async () => {
+  //TODO: Remove the skip once the https://issues.redhat.com/browse/RHIDP-431 is fixed
+  test.skip("Change the config to use the latest-3 postgres version", async () => {
     const kubeCLient = new KubeClient();
     test.setTimeout(180000);
     const secretData = {
