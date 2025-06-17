@@ -201,10 +201,42 @@ export class Common {
     }
   }
 
-  async githubLoginPopUpModal(userid: string = process.env.GH_USER_ID) {
-    await this.logintoGithub(userid);
-    await this.checkAndReauthorizeGithubApp();
-    await this.uiHelper.waitForLoginBtnDisappear();
+  async githubLoginPopUpModal(context, username, password, otpSecret) {
+    const [githubPage] = await Promise.all([
+      context.waitForEvent('page'),
+    ]);
+    await githubPage.waitForLoadState();
+    await githubPage.waitForSelector('input[name="login"]', { timeout: 30000 });
+    await githubPage.fill('input[name="login"]', username);
+    await githubPage.fill('input[name="password"]', password);
+    await githubPage.click('button[type="submit"], input[type="submit"]');
+
+    // Handle 2FA
+    let otpSelector = null;
+    if (await githubPage.isVisible('input[name="otp"]', { timeout: 10000 }).catch(() => false)) {
+      otpSelector = 'input[name="otp"]';
+    } else if (await githubPage.isVisible('#app_totp', { timeout: 10000 }).catch(() => false)) {
+      otpSelector = '#app_totp';
+    }
+    if (otpSelector) {
+      if (githubPage.isClosed()) return;
+      try {
+        await githubPage.waitForSelector(otpSelector, { timeout: 10000 });
+      } catch (e) {
+        if (githubPage.isClosed()) return;
+        throw e;
+      }
+      if (githubPage.isClosed()) return;
+      const otp = authenticator.generate(otpSecret);
+      await githubPage.fill(otpSelector, otp);
+      if (githubPage.isClosed()) return;
+      await Promise.race([
+        githubPage.waitForEvent('close', { timeout: 20000 }),
+        githubPage.click('button[type="submit"], input[type="submit"]'),
+      ]);
+    } else {
+      await githubPage.waitForEvent('close', { timeout: 20000 });
+    }
   }
 
   getGitHub2FAOTP(userid: string): string {
