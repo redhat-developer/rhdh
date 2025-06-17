@@ -305,7 +305,7 @@ export class Common {
         const authorization = popup.locator("button.js-oauth-authorize-btn");
         if (await authorization.isVisible()) {
           authorization.click();
-          return "Login successful with app authorization";
+          return "Login successful";
         } else {
           throw e;
         }

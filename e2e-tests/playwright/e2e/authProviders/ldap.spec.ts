@@ -68,7 +68,7 @@ test.describe("Configure LDAP Provider", async () => {
     await deployment.generateStaticToken();
 
     // set enviroment variables and create secret
-    if (!process.env.ISRUNNINGLOCAL){
+    if (!process.env.ISRUNNINGLOCAL) {
       deployment.addSecretData("BASE_URL", backstageUrl);
       deployment.addSecretData("BASE_BACKEND_URL", backstageBackendUrl);
     }

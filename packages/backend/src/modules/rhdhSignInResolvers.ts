@@ -31,6 +31,42 @@ const LDAP_UUID_ANNOTATION = 'backstage.io/ldap-uuid';
  */
 export namespace rhdhSignInResolvers {
   /**
+   * A oidc resolver that looks up the user using their preferred username
+   * as the entity name
+   */
+  export const preferredUsernameMatchingUserEntityName =
+    createSignInResolverFactory({
+      optionsSchema: z
+        .object({
+          dangerouslyAllowSignInWithoutUserInCatalog: z.boolean().optional(),
+        })
+        .optional(),
+      create(options) {
+        return async (
+          info: SignInInfo<OAuthAuthenticatorResult<OidcAuthResult>>,
+          ctx,
+        ) => {
+          const userId = info.result.fullProfile.userinfo.preferred_username;
+          if (!userId) {
+            throw new Error(`OIDC user profile does not contain a username`);
+          }
+
+          return ctx.signInWithCatalogUser(
+            {
+              entityRef: { name: userId },
+            },
+            {
+              dangerousEntityRefFallback:
+                options?.dangerouslyAllowSignInWithoutUserInCatalog
+                  ? { entityRef: userId }
+                  : undefined,
+            },
+          );
+        };
+      },
+    });
+
+  /**
    * An OIDC resolver that looks up the user using their Keycloak user ID.
    */
   export const oidcSubClaimMatchingKeycloakUserId =
@@ -69,8 +105,12 @@ export namespace rhdhSignInResolvers {
             {
               entityRef: { name },
             },
-            name,
-            options?.dangerouslyAllowSignInWithoutUserInCatalog,
+            {
+              dangerousEntityRefFallback:
+                options?.dangerouslyAllowSignInWithoutUserInCatalog
+                  ? { entityRef: name }
+                  : undefined,
+            },
           );
         };
       },
@@ -112,8 +152,12 @@ export namespace rhdhSignInResolvers {
           {
             annotations: { [LDAP_UUID_ANNOTATION]: uuid },
           },
-          uuid,
-          options?.dangerouslyAllowSignInWithoutUserInCatalog,
+          {
+            dangerousEntityRefFallback:
+              options?.dangerouslyAllowSignInWithoutUserInCatalog
+                ? { entityRef: uuid }
+                : undefined,
+          },
         );
       };
     },
