@@ -269,7 +269,7 @@ dynamicPlugins:
         - mountPoint: application/listener
           importName: VisitListener
         - mountPoint: home.page/cards
-          importName: SearchBar
+          importName: OnboardingSection
           config:
             layouts:
               xl: {w: 10, h: 1, x: 1}
@@ -279,7 +279,7 @@ dynamicPlugins:
               xs: {w: 12, h: 1}
               xxs: {w: 12, h: 1}
         - mountPoint: home.page/cards
-          importName: QuickAccessCard
+          importName: EntitySection
           config:
             layouts:
               xl: {w: 7, h: 8}
@@ -289,7 +289,7 @@ dynamicPlugins:
               xs: {w: 12, h: 8}
               xxs: {w: 12, h: 8}
         - mountPoint: home.page/cards
-          importName: CatalogStarredEntitiesCard
+          importName: TemplateSection
           config:
             layouts:
               xl: {w: 5, h: 4, x: 7}
