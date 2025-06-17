@@ -14,7 +14,8 @@ test.describe
   const hostLatest2 = Buffer.from(process.env.RDS_2_HOST).toString("base64");
   const hostLatest3 = Buffer.from(process.env.RDS_3_HOST).toString("base64");
 
-  test("Verify successful DB connection and successful initialization of plugins with latest-1 postgres version", async ({
+  //TODO: Remove the skip once the https://issues.redhat.com/browse/RHIDP-431 is fixed
+  test.skip("Verify successful DB connection and successful initialization of plugins with latest-1 postgres version", async ({
     page,
   }) => {
     const common = new Common(page);
