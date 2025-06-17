@@ -5,6 +5,8 @@ import { SETTINGS_PAGE_COMPONENTS } from "../support/pageObjects/page-obj";
 import { WAIT_OBJECTS } from "../support/pageObjects/global-obj";
 import path from "path";
 import fs from "fs";
+import { APIHelper } from "./api-helper";
+// import { GroupEntity, UserEntity } from "@backstage/catalog-model";
 
 export class Common {
   page: Page;
@@ -40,8 +42,8 @@ export class Common {
   }
 
   async signOut() {
-    await this.page.click(SETTINGS_PAGE_COMPONENTS.userSettingsMenu);
-    await this.page.click(SETTINGS_PAGE_COMPONENTS.signOut);
+    await this.uiHelper.clickButton(SETTINGS_PAGE_COMPONENTS.userSettingsMenu);
+    await this.uiHelper.clickButton(SETTINGS_PAGE_COMPONENTS.signOut);
     await this.uiHelper.verifyHeading("Select a sign-in method");
   }
 
@@ -201,23 +203,90 @@ export class Common {
     }
   }
 
-  getGitHub2FAOTP(userid: string): string {
-    const secrets: { [key: string]: string | undefined } = {
-      [process.env.GH_USER_ID]: process.env.GH_2FA_SECRET,
-      [process.env.GH_USER2_ID]: process.env.GH_USER2_2FA_SECRET,
-    };
+  private async getGroupLinksByLabel(label: string): Promise<string[]> {
+    const section = this.page.locator(`p:has-text("${label}")`).first();
+    await section.waitFor({ state: "visible" });
+    return await section.locator("..").locator("a").allInnerTexts();
+  }
 
-    const secret = secrets[userid];
-    if (!secret) {
-      throw new Error("Invalid User ID");
+  async getParentGroupsDisplayed(): Promise<string[]> {
+    return await this.getGroupLinksByLabel("Parent Group");
+  }
+
+  async getChildGroupsDisplayed(): Promise<string[]> {
+    return await this.getGroupLinksByLabel("Child Groups");
+  }
+
+  async githubLoginPopUpModal(
+    context,
+    username: string,
+    password: string,
+    otpSecret: string,
+  ): Promise<void> {
+    const [githubPage] = await Promise.all([context.waitForEvent("page")]);
+    await githubPage.waitForSelector(
+      'input[name="login"], input[aria-label="Username or email address"]',
+      { timeout: 10000 },
+    );
+    await githubPage.fill(
+      'input[name="login"], input[aria-label="Username or email address"]',
+      username,
+    );
+    await githubPage.waitForSelector('input[name="password"]', {
+      timeout: 10000,
+    });
+    await githubPage.fill('input[name="password"]', password);
+    await githubPage.waitForSelector(
+      'button[type="submit"], input[type="submit"]',
+      { timeout: 10000 },
+    );
+    await githubPage.click('button[type="submit"], input[type="submit"]');
+    // OTP
+    const otpSelector = await this.findOtpSelector(githubPage);
+    if (otpSelector) {
+      if (githubPage.isClosed()) return;
+      await githubPage.waitForSelector(otpSelector, { timeout: 10000 });
+      if (githubPage.isClosed()) return;
+      const otp = authenticator.generate(otpSecret);
+      await githubPage.fill(otpSelector, otp);
+      if (githubPage.isClosed()) return;
+      await Promise.race([
+        githubPage.waitForEvent("close", { timeout: 20000 }),
+        githubPage.click('button[type="submit"], input[type="submit"]'),
+      ]);
+    } else {
+      await githubPage.waitForEvent("close", { timeout: 20000 });
     }
+  }
 
-    return authenticator.generate(secret);
+  private async findOtpSelector(page): Promise<string> {
+    const selectors = ['input[name="otp"]', "#app_totp"];
+    for (const selector of selectors) {
+      try {
+        await page
+          .locator(selector)
+          .waitFor({ state: "visible", timeout: 10000 });
+        return selector;
+      } catch (err) {
+        console.debug(`Selector ${selector} not visible yet, continuing…`);
+      }
+    }
+    throw new Error("OTP field not found on the page within 10 s");
+  }
+
+  getGitHub2FAOTP(userid: string): string {
+    switch (userid) {
+      case process.env.GH_USER_ID:
+        return authenticator.generate(process.env.GH_2FA_SECRET);
+      case process.env.GH_USER2_ID:
+        return authenticator.generate(process.env.GH_USER2_2FA_SECRET);
+      default:
+        throw new Error("Invalid User ID");
+    }
   }
 
   getGoogle2FAOTP(): string {
-    const secret = process.env.GOOGLE_2FA_SECRET;
-    return authenticator.generate(secret);
+    return authenticator.generate(process.env.GOOGLE_2FA_SECRET);
   }
 
   async keycloakLogin(username: string, password: string) {
@@ -389,6 +458,129 @@ export class Common {
       }
     }
   }
+
+  async GetParentGroupDisplayed(): Promise<string[]> {
+    await this.page.waitForSelector("p:has-text('Parent Group')");
+    const parent = await this.page
+      .locator("p:has-text('Parent Group')")
+      .locator("..");
+    const group = await parent.locator("a").allInnerTexts();
+    return group;
+  }
+
+  async GetChildGroupsDisplayed(): Promise<string[]> {
+    await this.page.waitForSelector("p:has-text('Child Groups')");
+    const parent = await this.page
+      .locator("p:has-text('Child Groups')")
+      .locator("..");
+    const groups = await parent.locator("a").allInnerTexts();
+    return groups;
+  }
+
+  async GetMembersOfGroupDisplayed(): Promise<string[]> {
+    await this.page.waitForSelector(`//div[contains(., "Members")]/..`);
+    const membersCard = this.page
+      .locator(
+        `//div[contains(@class,'MuiCardHeader-root') and descendant::text()[contains(., "Members")] ]/.. // a[@data-testid='user-link']`,
+      )
+      .allInnerTexts();
+    return membersCard;
+  }
+
+  async GoToGroupPageAndGetDisplayedData(groupDisplayName: string) {
+    await this.page.goto(
+      "/catalog?filters%5Bkind%5D=group&filters%5Buser%5D=all",
+    );
+    await expect(this.page.getByRole("heading", { level: 1 })).toHaveText(
+      "My Org Catalog",
+    );
+
+    await this.uiHelper.clickLink(groupDisplayName);
+    await this.uiHelper.verifyHeading(groupDisplayName);
+
+    const childGroups = await this.GetChildGroupsDisplayed();
+    const parentGroup = await this.GetParentGroupDisplayed();
+    const groupMembers = await this.GetMembersOfGroupDisplayed();
+    return {
+      childGroups,
+      parentGroup,
+      groupMembers,
+    };
+  }
+
+  async UnregisterUserEntityFromCatalog(user: string, apiToken: string) {
+    const api = new APIHelper();
+    api.UseStaticToken(apiToken);
+    await api.deleteUserEntityFromAPI(user);
+  }
+
+  async UnregisterGroupEntityFromCatalog(group: string, apiToken: string) {
+    const api = new APIHelper();
+    api.UseStaticToken(apiToken);
+    await api.deleteGroupEntityFromAPI(group);
+  }
+
+  async CheckGroupIsShowingInCatalog(groups: string[]) {
+    await this.page.goto(
+      "/catalog?filters%5Bkind%5D=group&filters%5Buser%5D=all",
+    );
+    await expect(this.page.getByRole("heading", { level: 1 })).toHaveText(
+      "My Org Catalog",
+    );
+    await this.uiHelper.verifyHeading("All groups");
+    await this.uiHelper.verifyCellsInTable(groups);
+  }
+
+  async CheckUserIsShowingInCatalog(users: string[]) {
+    await this.page.goto(
+      "/catalog?filters%5Bkind%5D=user&filters%5Buser%5D=all",
+    );
+    await expect(this.page.getByRole("heading", { level: 1 })).toHaveText(
+      "My Org Catalog",
+    );
+    await this.uiHelper.verifyHeading("All user");
+    await this.uiHelper.verifyCellsInTable(users);
+  }
+
+  async CheckUserIsIngestedInCatalog(users: string[], apiToken: string) {
+    const api = new APIHelper();
+    api.UseStaticToken(apiToken);
+    const response = await api.getAllCatalogUsersFromAPI();
+    console.log(`Users currently in catalog: ${JSON.stringify(response)}`);
+    const catalogUsers: CatalogEntity[] =
+      response && response.items ? response.items : [];
+    expect(catalogUsers.length).toBeGreaterThan(0);
+    const catalogUsersDisplayNames: string[] = catalogUsers
+      .filter((u) => u.spec?.profile?.displayName)
+      .map((u) => u.spec!.profile!.displayName);
+    console.log(
+      `Checking ${JSON.stringify(catalogUsersDisplayNames)} contains users ${JSON.stringify(users)}`,
+    );
+    const hasAllElems = users.every((elem) =>
+      catalogUsersDisplayNames.includes(elem),
+    );
+    return hasAllElems;
+  }
+
+  async CheckGroupIsIngestedInCatalog(groups: string[], apiToken: string) {
+    const api = new APIHelper();
+    api.UseStaticToken(apiToken);
+    const response = await api.getAllCatalogGroupsFromAPI();
+    console.log(`Groups currently in catalog: ${JSON.stringify(response)}`);
+    const catalogGroups: CatalogEntity[] =
+      response && response.items ? response.items : [];
+    expect(catalogGroups.length).toBeGreaterThan(0);
+    const catalogGroupsDisplayNames: string[] = catalogGroups
+      .filter((u) => u.spec?.profile?.displayName)
+      .map((u) => u.spec!.profile!.displayName);
+    console.log(
+      `Checking ${JSON.stringify(catalogGroupsDisplayNames)} contains groups ${JSON.stringify(groups)}`,
+    );
+    const hasAllElems = groups.every((elem) =>
+      catalogGroupsDisplayNames.includes(elem),
+    );
+    return hasAllElems;
+  }
 }
 
 export async function setupBrowser(browser: Browser, testInfo: TestInfo) {
@@ -402,4 +594,64 @@ export async function setupBrowser(browser: Browser, testInfo: TestInfo) {
   });
   const page = await context.newPage();
   return { page, context };
+}
+
+export type EntityWithDisplay = {
+  spec?: { profile?: { displayName?: string } };
+};
+
+interface CatalogEntity {
+  spec?: {
+    profile?: {
+      displayName?: string;
+    };
+  };
+}
+
+export class CatalogVerifier {
+  private api: APIHelper;
+
+  constructor(token: string) {
+    this.api = new APIHelper();
+    this.api.UseStaticToken(token);
+  }
+
+  async assertUsersInCatalog(expected: string[]): Promise<void> {
+    await this.assertEntities(
+      () => this.api.getAllCatalogUsersFromAPI(),
+      expected,
+      "users",
+    );
+  }
+
+  async assertGroupsInCatalog(expected: string[]): Promise<void> {
+    await this.assertEntities(
+      () => this.api.getAllCatalogGroupsFromAPI(),
+      expected,
+      "groups",
+    );
+  }
+
+  private async assertEntities(
+    fetch: () => Promise<{ items?: EntityWithDisplay[] }>,
+    expected: string[],
+    label: string,
+  ): Promise<void> {
+    const { items = [] } = await fetch();
+
+    expect(items.length).toBeGreaterThan(0);
+
+    const displayNames = items.flatMap(
+      (e) => e.spec?.profile?.displayName ?? [],
+    );
+
+    const catalogSet = new Set(displayNames);
+    const missing = expected.filter((name) => !catalogSet.has(name));
+
+    console.info(
+      `Catalog ${label}: [${displayNames.join(", ")}] – expecting [${expected.join(", ")}]`,
+    );
+
+    expect(missing, `Missing ${label}: ${missing.join(", ")}`).toHaveLength(0);
+  }
 }

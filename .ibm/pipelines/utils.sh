@@ -723,7 +723,7 @@ perform_helm_install() {
   local release_name=$1
   local namespace=$2
   local value_file=$3
-  
+
   helm upgrade -i "${release_name}" -n "${namespace}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "${DIR}/value_files/${value_file}" \
@@ -989,35 +989,35 @@ to_lowercase() {
 # Return the previous release version if current branch is a release branch
 get_previous_release_version() {
   local version=$1
-  
+
   # Check if version parameter is provided
   if [[ -z "$version" ]]; then
     echo "Error: Version parameter is required" >&2
     exit 1
     save_overall_result 1
   fi
-  
+
   # Validate version format (should be like "1.6")
   if [[ ! "$version" =~ ^[0-9]+\.[0-9]+$ ]]; then
     echo "Error: Version must be in format X.Y (e.g., 1.6)" >&2
     exit 1
     save_overall_result 1
   fi
-  
+
   # Extract major and minor version numbers
   local major_version=$(echo "$version" | cut -d'.' -f1)
   local minor_version=$(echo "$version" | cut -d'.' -f2)
-  
+
   # Calculate previous minor version
   local previous_minor=$((minor_version - 1))
-  
+
   # Check if previous minor version is valid (non-negative)
   if [[ $previous_minor -lt 0 ]]; then
     echo "Error: Cannot calculate previous version for $version" >&2
     exit 1
     save_overall_result 1
   fi
-  
+
   # Return the previous version
   echo "${major_version}.${previous_minor}"
 }
