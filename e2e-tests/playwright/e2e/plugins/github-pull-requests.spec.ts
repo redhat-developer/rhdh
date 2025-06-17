@@ -3,9 +3,6 @@ import { UIhelper } from "../../utils/ui-helper";
 import { Common } from "../../utils/common";
 import { authenticator } from "otplib";
 
-
-
-
 if (!process.env.GH_USER_ID || !process.env.GH_USER_PASS || !process.env.GH_2FA_SECRET) {
     throw new Error("GH_USER_ID, GH_USER_PASS, and GH_2FA_SECRET must be set in your environment or .env file.");
   }
