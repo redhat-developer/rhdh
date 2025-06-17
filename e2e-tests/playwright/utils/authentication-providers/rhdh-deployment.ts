@@ -578,6 +578,12 @@ class RHDHDeployment {
   async loadBackstageCR(): Promise<unknown> {
     const configPath = join(currentDirName, "yamls", "backstage.yaml");
     const backstageConfig = await this.readYamlToJson(configPath);
+    expect(process.env.QUAY_REPO).toBeDefined();
+    expect(process.env.TAG_NAME).toBeDefined();
+    backstageConfig.spec.application.image = `quay.io/${process.env.QUAY_REPO}:${process.env.TAG_NAME}`;
+    console.log(
+      `Setting Backstage CR image to quay.io/${process.env.QUAY_REPO}:${process.env.TAG_NAME}`,
+    );
     this.cr = backstageConfig;
     this.instanceName = backstageConfig.metadata.name.toString();
     return backstageConfig;
@@ -601,7 +607,9 @@ class RHDHDeployment {
         );
         return;
       } catch (error) {
-        console.log(`Timeout waiting for Backstage CRD to be available: ${error.message}`)
+        console.log(
+          `Timeout waiting for Backstage CRD to be available: ${error.message}`,
+        );
         if (Date.now() - startTime >= timeoutMs) {
           throw new Error(
             `Timeout waiting for Backstage CRD to be available: ${error.message}`,

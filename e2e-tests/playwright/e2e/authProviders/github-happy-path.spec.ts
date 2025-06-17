@@ -28,7 +28,6 @@ test.describe("GitHub Happy path", async () => {
     catalogImport = new CatalogImport(page);
     backstageShowcase = new BackstageShowcase(page);
     test.info().setTimeout(600 * 1000);
-
   });
 
   test("Login as a Github user.", async () => {
