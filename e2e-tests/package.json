@@ -17,7 +17,7 @@
     "showcase-operator-nightly": "playwright test --project=showcase-operator",
     "showcase-op-rbac-nightly": "playwright test --project=showcase-operator-rbac",
     "showcase-runtime": "playwright test --project=showcase-runtime",
-    "showcase-auth-providers": "playwright test --project=showcase-auth-providers --workers 1",
+    "showcase-auth-providers": "playwright test --project=showcase-auth-providers",
     "lint:check": "eslint . --ext .js,.ts",
     "lint:fix": "eslint . --ext .js,.ts --fix",
     "postinstall": "playwright install",

@@ -3,7 +3,6 @@ import { authenticator } from "otplib";
 import { test, Browser, expect, Page, TestInfo } from "@playwright/test";
 import { APIHelper } from "./api-helper";
 import { GroupEntity, UserEntity } from "@backstage/catalog-model";
-import { LOGGER } from "./logger";
 import { SETTINGS_PAGE_COMPONENTS } from "../support/pageObjects/page-obj";
 import { WAIT_OBJECTS } from "../support/pageObjects/global-obj";
 import path from "path";
@@ -451,14 +450,14 @@ export class Common {
     const api = new APIHelper();
     api.UseStaticToken(apiToken);
     const response = await api.getAllCatalogUsersFromAPI();
-    LOGGER.info(`Users currently in catalog: ${JSON.stringify(response)}`);
+    console.log(`Users currently in catalog: ${JSON.stringify(response)}`);
     const catalogUsers: UserEntity[] =
       response && response.items ? response.items : [];
     expect(catalogUsers.length).toBeGreaterThan(0);
     const catalogUsersDisplayNames: string[] = catalogUsers
       .filter((u) => u.spec.profile && u.spec.profile.displayName)
       .map((u) => u.spec.profile.displayName);
-    LOGGER.info(
+    console.log(
       `Checking ${JSON.stringify(catalogUsersDisplayNames)} contains users ${JSON.stringify(users)}`,
     );
     const hasAllElems = users.every((elem) =>
@@ -471,14 +470,14 @@ export class Common {
     const api = new APIHelper();
     api.UseStaticToken(apiToken);
     const response = await api.getAllCatalogGroupsFromAPI();
-    LOGGER.info(`Groups currently in catalog: ${JSON.stringify(response)}`);
+    console.log(`Groups currently in catalog: ${JSON.stringify(response)}`);
     const catalogGroups: GroupEntity[] =
       response && response.items ? response.items : [];
     expect(catalogGroups.length).toBeGreaterThan(0);
     const catalogGroupsDisplayNames: string[] = catalogGroups
       .filter((u) => u.spec.profile && u.spec.profile.displayName)
       .map((u) => u.spec.profile.displayName);
-    LOGGER.info(
+    console.log(
       `Checking ${JSON.stringify(catalogGroupsDisplayNames)} contains groups ${JSON.stringify(groups)}`,
     );
     const hasAllElems = groups.every((elem) =>

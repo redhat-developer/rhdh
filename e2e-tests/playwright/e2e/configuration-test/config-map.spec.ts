@@ -14,7 +14,7 @@ test.describe("Change app-config at e2e test runtime", () => {
     const kubeUtils = new KubeClient();
     const dynamicTitle = generateDynamicTitle();
     try {
-      LOGGER.info(
+      console.log(
         `Updating ConfigMap '${configMapName}' with new title: ${dynamicTitle}`,
       );
       await kubeUtils.updateConfigMapTitle(
@@ -23,21 +23,21 @@ test.describe("Change app-config at e2e test runtime", () => {
         dynamicTitle,
       );
 
-      LOGGER.info(
+      console.log(
         `Restarting deployment '${deploymentName}' to apply ConfigMap changes.`,
       );
       await kubeUtils.restartDeployment(deploymentName, namespace);
 
-      LOGGER.info("Deployment restarted successfully. Loading page...");
+      console.log("Deployment restarted successfully. Loading page...");
       const common = new Common(page);
       await page.context().clearCookies();
       await page.context().clearPermissions();
       await page.reload({ waitUntil: "domcontentloaded" });
       await common.loginAsGuest();
       await new UIhelper(page).openSidebar("Home");
-      LOGGER.info("Verifying new title in the UI...");
+      console.log("Verifying new title in the UI...");
       expect(await page.title()).toContain(dynamicTitle);
-      LOGGER.info("Title successfully verified in the UI.");
+      console.log("Title successfully verified in the UI.");
     } catch (error) {
       LOGGER.error(
         `Test failed during ConfigMap update or deployment restart:`,
