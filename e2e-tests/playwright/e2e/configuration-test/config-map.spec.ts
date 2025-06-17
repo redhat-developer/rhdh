@@ -1,6 +1,5 @@
 import { test, expect } from "@playwright/test";
 import { KubeClient } from "../../utils/kube-client";
-import { LOGGER } from "../../utils/logger";
 import { Common } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
 
@@ -39,7 +38,7 @@ test.describe("Change app-config at e2e test runtime", () => {
       expect(await page.title()).toContain(dynamicTitle);
       console.log("Title successfully verified in the UI.");
     } catch (error) {
-      LOGGER.error(
+      console.log(
         `Test failed during ConfigMap update or deployment restart:`,
         error,
       );

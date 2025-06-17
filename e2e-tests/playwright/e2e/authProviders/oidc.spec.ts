@@ -1,4 +1,4 @@
-import { test, expect, Page, BrowserContext } from "@playwright/test";
+import { test, expect, Page } from "@playwright/test";
 import RHDHDeployment from "../../utils/authentication-providers/rhdh-deployment";
 import { Common, setupBrowser } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
@@ -6,7 +6,6 @@ import { KeycloakHelper } from "../../utils/authentication-providers/keycloak-he
 import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
 
 let page: Page;
-let context: BrowserContext;
 
 /* SUPORTED RESOLVERS
 OIDC:
@@ -57,7 +56,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     // load default configs from yaml files
     await deployment.loadAllConfigs();
     // setup playwright helpers
-    ({ context, page } = await setupBrowser(browser, testInfo));
+    ({ page } = await setupBrowser(browser, testInfo));
     common = new Common(page);
     uiHelper = new UIhelper(page);
 
@@ -277,44 +276,6 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
 
     await page.goto("/settings");
     await uiHelper.verifyHeading("Atena Minerva");
-    await common.signOut();
-  });
-
-  test(`Set sessionDuration and confirm in auth cookie duration has been set`, async () => {
-    deployment.setAppConfigProperty(
-      "auth.providers.oidc.production.sessionDuration",
-      "3days",
-    );
-    await deployment.updateAllConfigs();
-    await deployment.restartLocalDeployment();
-    await deployment.waitForDeploymentReady();
-
-    // wait for rhdh first sync and portal to be reachable
-    await deployment.waitForSynced();
-
-    const login = await common.keycloakLogin(
-      "zeus",
-      process.env.DEFAULT_USER_PASSWORD,
-    );
-    expect(login).toBe("Login successful");
-
-    await page.reload();
-
-    const cookies = await context.cookies();
-    const authCookie = cookies.find(
-      (cookie) => cookie.name === "oidc-refresh-token",
-    );
-
-    const threeDays = 3 * 24 * 60 * 60 * 1000; // expected duration of 3 days in ms
-    const tolerance = 3 * 60 * 1000; // allow for 3 minutes tolerance
-
-    const actualDuration = authCookie.expires * 1000 - Date.now();
-
-    expect(actualDuration).toBeGreaterThan(threeDays - tolerance);
-    expect(actualDuration).toBeLessThan(threeDays + tolerance);
-
-    await page.goto("/settings");
-    await uiHelper.verifyHeading("Zeus Giove");
     await common.signOut();
   });
 

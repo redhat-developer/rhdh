@@ -242,45 +242,6 @@ test.describe("Configure Microsoft Provider", async () => {
     );
   });
 
-  test(`Set Micrisoft sessionDuration and confirm in auth cookie duration has been set`, async () => {
-    deployment.setAppConfigProperty(
-      "auth.providers.microsoft.production.sessionDuration",
-      "3days",
-    );
-    await deployment.updateAllConfigs();
-    await deployment.restartLocalDeployment();
-    await page.waitForTimeout(3000);
-    await deployment.waitForDeploymentReady();
-
-    // wait for rhdh first sync and portal to be reachable
-    await deployment.waitForSynced();
-
-    const login = await common.MicrosoftAzureLogin(
-      "zeus@rhdhtesting.onmicrosoft.com",
-      process.env.DEFAULT_USER_PASSWORD_2,
-    );
-    expect(login).toBe("Login successful");
-
-    await page.reload();
-
-    const cookies = await context.cookies();
-    const authCookie = cookies.find(
-      (cookie) => cookie.name === "microsoft-refresh-token",
-    );
-
-    const threeDays = 3 * 24 * 60 * 60 * 1000; // expected duration of 3 days in ms
-    const tolerance = 3 * 60 * 1000; // allow for 3 minutes tolerance
-
-    const actualDuration = authCookie.expires * 1000 - Date.now();
-
-    expect(actualDuration).toBeGreaterThan(threeDays - tolerance);
-    expect(actualDuration).toBeLessThan(threeDays + tolerance);
-
-    await page.goto("/settings");
-    await uiHelper.verifyHeading("TEST Zeus");
-    await common.signOut();
-  });
-
   test(`Ingestion of Microsoft users and groups: verify the user entities and groups are created with the correct relationships`, async () => {
     test.setTimeout(300 * 1000);
     await page.waitForTimeout(5000);

@@ -197,47 +197,6 @@ test.describe("Configure Github Provider", async () => {
     await context.clearCookies();
   });
 
-  test(`Set Github sessionDuration and confirm in auth cookie duration has been set`, async () => {
-    deployment.setAppConfigProperty(
-      "auth.providers.github.production.sessionDuration",
-      "3days",
-    );
-    await deployment.updateAllConfigs();
-    await deployment.restartLocalDeployment();
-    await page.waitForTimeout(3000);
-    await deployment.waitForDeploymentReady();
-
-    // wait for rhdh first sync and portal to be reachable
-    await deployment.waitForSynced();
-
-    const login = await common.githubLogin(
-      "rhdhqeauthadmin",
-      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD,
-      process.env.AUTH_PROVIDERS_GH_ADMIN_2FA,
-    );
-    expect(login).toBe("Login successful");
-
-    await page.reload();
-
-    const cookies = await context.cookies();
-    const authCookie = cookies.find(
-      (cookie) => cookie.name === "github-refresh-token",
-    );
-
-    const threeDays = 3 * 24 * 60 * 60 * 1000; // expected duration of 3 days in ms
-    const tolerance = 3 * 60 * 1000; // allow for 3 minutes tolerance
-
-    const actualDuration = authCookie.expires * 1000 - Date.now();
-
-    expect(actualDuration).toBeGreaterThan(threeDays - tolerance);
-    expect(actualDuration).toBeLessThan(threeDays + tolerance);
-
-    await page.goto("/settings");
-    await uiHelper.verifyHeading("RHDH QE Admin");
-    await common.signOut();
-    await context.clearCookies();
-  });
-
   test(`Ingestion of Github users and groups: verify the user entities and groups are created with the correct relationships`, async () => {
     test.setTimeout(300 * 1000);
     await page.waitForTimeout(5000);

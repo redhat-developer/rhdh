@@ -1,4 +1,4 @@
-import { test, expect, Page, BrowserContext } from "@playwright/test";
+import { test, expect, Page } from "@playwright/test";
 import { UIhelper } from "../../utils/ui-helper";
 import { Common, setupBrowser } from "../../utils/common";
 import { RESOURCES } from "../../support/testData/resources";
@@ -9,10 +9,10 @@ import {
 import { TEMPLATES } from "../../support/testData/templates";
 
 let page: Page;
-let context: BrowserContext;
 
-// test suite skipped for now, until it's migrated back to the main showcase job
-test.describe("GitHub Happy path", async () => {
+// TODO: replace skip with serial
+test.describe.serial("GitHub Happy path", () => {
+  //TODO: skipping due to RHIDP-4992
   let common: Common;
   let uiHelper: UIhelper;
   let catalogImport: CatalogImport;
@@ -22,34 +22,29 @@ test.describe("GitHub Happy path", async () => {
     "https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/all.yaml";
 
   test.beforeAll(async ({ browser }, testInfo) => {
-    ({ context, page } = await setupBrowser(browser, testInfo));
+    page = (await setupBrowser(browser, testInfo)).page;
+
     uiHelper = new UIhelper(page);
     common = new Common(page);
     catalogImport = new CatalogImport(page);
     backstageShowcase = new BackstageShowcase(page);
-    test.info().setTimeout(600 * 1000);
   });
 
   test("Login as a Github user.", async () => {
-    const login = await common.githubLogin(
-      "rhdhqeauthadmin",
-      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD,
-      process.env.AUTH_PROVIDERS_GH_ADMIN_2FA,
-    );
-    expect(login).toBe("Login successful");
+    await common.loginAsGithubUser();
   });
 
   test("Verify Profile is Github Account Name in the Settings page", async () => {
-    await page.goto("/settings");
+    await uiHelper.goToSettingsPage();
     await expect(page).toHaveURL("/settings");
-    await uiHelper.verifyHeading("rhdhqeauthadmin");
-    await uiHelper.verifyHeading(`User Entity: rhdhqeauthadmin`);
+    await uiHelper.verifyHeading(process.env.GH_USER_ID);
+    await uiHelper.verifyHeading(`User Entity: ${process.env.GH_USER_ID}`);
   });
 
   test("Register an existing component", async () => {
     await uiHelper.openSidebar("Catalog");
     await uiHelper.selectMuiBox("Kind", "Component");
-    await uiHelper.clickButton("Self-service");
+    await uiHelper.clickButton("Create");
     await uiHelper.clickButton("Register Existing Component");
     await catalogImport.registerExistingComponent(component);
   });
@@ -80,7 +75,7 @@ test.describe("GitHub Happy path", async () => {
   });
 
   test("Verify all 12 Software Templates appear in the Create page", async () => {
-    await uiHelper.clickLink({ ariaLabel: "Self-service" });
+    await uiHelper.clickLink({ ariaLabel: "Create..." });
     await uiHelper.verifyHeading("Templates");
 
     for (const template of TEMPLATES) {
@@ -90,7 +85,9 @@ test.describe("GitHub Happy path", async () => {
   });
 
   test("Click login on the login popup and verify that Overview tab renders", async () => {
-    await uiHelper.openCatalogSidebar("Component");
+    await uiHelper.openSidebar("Catalog");
+    await uiHelper.selectMuiBox("Kind", "Component");
+    await uiHelper.clickByDataTestId("user-picker-all");
     await uiHelper.clickLink("Backstage Showcase");
 
     const expectedPath = "/catalog/default/component/backstage-showcase";
@@ -166,7 +163,8 @@ test.describe("GitHub Happy path", async () => {
   });
 
   test("Verify that the 5, 10, 20 items per page option properly displays the correct number of PRs", async () => {
-    await uiHelper.openCatalogSidebar("Component");
+    await uiHelper.openSidebar("Catalog");
+    await uiHelper.clickByDataTestId("user-picker-all");
     await uiHelper.clickLink("Backstage Showcase");
     await common.clickOnGHloginPopup();
     await uiHelper.clickTab("Pull/Merge Requests");
@@ -201,7 +199,6 @@ test.describe("GitHub Happy path", async () => {
   test("Sign out and verify that you return back to the Sign in page", async () => {
     await uiHelper.goToSettingsPage();
     await common.signOut();
-    context.clearCookies();
   });
 
   test.afterAll(async () => {
