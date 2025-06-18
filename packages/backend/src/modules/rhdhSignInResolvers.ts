@@ -120,6 +120,7 @@ export namespace rhdhSignInResolvers {
     optionsSchema: z
       .object({
         dangerouslyAllowSignInWithoutUserInCatalog: z.boolean().optional(),
+        ldapUuidKey: z.string().optional(),
       })
       .optional(),
     create(options) {
@@ -127,7 +128,8 @@ export namespace rhdhSignInResolvers {
         info: SignInInfo<OAuthAuthenticatorResult<OidcAuthResult>>,
         ctx: AuthResolverContext,
       ) => {
-        const uuid = info.result.fullProfile.userinfo.ldap_uuid as string;
+        const uuidKey = options?.ldapUuidKey ?? 'ldap_uuid';
+        const uuid = info.result.fullProfile.userinfo[uuidKey] as string;
         if (!uuid) {
           throw new Error(
             `The user profile from LDAP is missing the UUID, likely due to a misconfiguration in the provider. Please contact your system administrator for assistance.`,
@@ -141,7 +143,7 @@ export namespace rhdhSignInResolvers {
           );
         }
 
-        const uuidFromIdToken = decodeJwt(idToken)?.ldap_uuid;
+        const uuidFromIdToken = decodeJwt(idToken)?.[uuidKey];
         if (uuid !== uuidFromIdToken) {
           throw new Error(
             `There was a problem verifying your identity with LDAP due to mismatching UUID. Please contact your system administrator for assistance.`,
