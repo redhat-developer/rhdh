@@ -7,10 +7,6 @@ import {
   CatalogImport,
 } from "../../support/pages/catalog-import";
 import { TEMPLATES } from "../../support/testData/templates";
-import { HelmActions } from "../../utils/helm";
-import * as constants from "../../utils/authenticationProviders/constants";
-import { LOGGER } from "../../utils/logger";
-import { waitForNextSync } from "../../utils/helper";
 
 let page: Page;
 
@@ -21,7 +17,6 @@ test.describe.serial("GitHub Happy path", () => {
   let uiHelper: UIhelper;
   let catalogImport: CatalogImport;
   let backstageShowcase: BackstageShowcase;
-  const syncTime = 60;
 
   const component =
     "https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/all.yaml";
@@ -33,87 +28,6 @@ test.describe.serial("GitHub Happy path", () => {
     common = new Common(page);
     catalogImport = new CatalogImport(page);
     backstageShowcase = new BackstageShowcase(page);
-  });
-
-  test("Setup Github authentication provider and wait for first sync", async () => {
-    test.setTimeout(300 * 1000);
-
-    LOGGER.info(`Base Url is ${process.env.BASE_URL}`);
-    LOGGER.info(
-      "Execute testcase: Setup Github authentication provider and wait for first sync",
-    );
-
-    await HelmActions.upgradeHelmChartWithWait(
-      constants.AUTH_PROVIDERS_RELEASE,
-      constants.AUTH_PROVIDERS_CHART,
-      constants.AUTH_PROVIDERS_NAMESPACE,
-      constants.AUTH_PROVIDERS_VALUES_FILE,
-      constants.CHART_VERSION,
-      constants.QUAY_REPO,
-      constants.TAG_NAME,
-      [
-        "--set upstream.backstage.appConfig.signInPage=github",
-        "--set upstream.backstage.appConfig.auth.environment=production",
-        "--set upstream.backstage.appConfig.catalog.providers.githubOrg[0].orgs[0]=janus-qe",
-        "--set upstream.backstage.appConfig.catalog.providers.microsoftGraphOrg=null",
-        "--set upstream.backstage.appConfig.catalog.providers.keycloakOrg=null",
-        "--set upstream.backstage.appConfig.auth.providers.microsoft=null",
-        "--set upstream.backstage.appConfig.auth.providers.oidc=null",
-        "--set upstream.backstage.appConfig.permission.enabled=false",
-        "--set upstream.postgresql.primary.persistence.enabled=false",
-        `--set-json global.dynamic.plugins='[
-          {
-            "package": "./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-github-dynamic",
-            "disabled": false
-          },
-          {
-            "package": "./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-dynamic",
-            "disabled": false,
-            "pluginConfig": {
-              "catalog": {
-                "providers": {
-                  "github": {
-                    "my-test-org": {
-                      "organization": "janus-qe",
-                      "catalogPath": "/catalog-info.yaml",
-                      "schedule": {
-                        "frequency": {
-                          "minutes": 1
-                        },
-                        "timeout": {
-                          "minutes": 1
-                        },
-                        "initialDelay": {
-                          "seconds": 15
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          {
-            "package": "./dynamic-plugins/dist/backstage-community-plugin-github-issues",
-            "disabled": false
-          },
-          {
-            "package": "./dynamic-plugins/dist/roadiehq-backstage-plugin-github-pull-requests",
-            "disabled": false
-          },
-          {
-            "package": "./dynamic-plugins/dist/backstage-community-plugin-github-actions",
-            "disabled": false
-          },
-          {
-            "package": "./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-org-dynamic",
-            "disabled": false
-          }
-        ]'`,
-      ],
-    );
-
-    await waitForNextSync("github", syncTime);
   });
 
   test("Login as a Github user.", async () => {
