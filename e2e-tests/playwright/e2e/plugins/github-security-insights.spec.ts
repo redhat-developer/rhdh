@@ -11,21 +11,15 @@ test("Verify GitHub Security Insights plugin after login", async ({ page, contex
   const common = new Common(page);
   const uiHelper = new UIhelper(page);
 
-  // Step 1: Login to RHDH
   await common.loginAsKeycloakUser(process.env.GH_USER_ID, process.env.GH_USER_PASS);
-  // Step 2: Navigate to Catalog
   await uiHelper.openSidebar("Catalog");
-  // Step 3: Search and click 'Backstage Showcase'
   await page.fill('input[placeholder="Search"]', repoName);
   await page.waitForSelector('a:has-text("Backstage Showcase")', { timeout: 20000 });
   await uiHelper.clickLink(repoName);
   await page.waitForLoadState("networkidle");
 
-  // Wait for Dependabot Alerts card
   await uiHelper.waitForCardWithHeader("Dependabot Alerts");
-  // Click 'Sign in' inside the Dependabot Alerts card
   await uiHelper.clickBtnInCard('Dependabot Alerts', 'Sign in', true);
-  // Wait for the login modal to appear
   const modalLoginButton = page.locator('button:has-text("Log in")');
   await modalLoginButton.waitFor({ timeout: 5000 });
   await Promise.all([
@@ -37,7 +31,6 @@ test("Verify GitHub Security Insights plugin after login", async ({ page, contex
     ),
     modalLoginButton.click(),
   ]);
-  // Wait for at least one security insight stat or text to appear before verifying all
   await uiHelper.verifyTextinCard('Dependabot Alerts', 'Critical severity');
   await uiHelper.verifyTextinCard('Dependabot Alerts', 'High severity');
   await uiHelper.verifyTextinCard('Dependabot Alerts', 'Medium severity');
