@@ -44,6 +44,7 @@
   "dependencies": {
     "@azure/arm-network": "^34.0.0",
     "@azure/identity": "4.9.1",
+    "@backstage/catalog-model": "^1.7.4",
     "@keycloak/keycloak-admin-client": "25.0.6",
     "@kubernetes/client-node": "0.22.3",
     "@microsoft/microsoft-graph-client": "3.0.7",
