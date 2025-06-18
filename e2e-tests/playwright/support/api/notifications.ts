@@ -1,7 +1,6 @@
 import {
   APIRequestContext,
   APIResponse,
-  Page,
   request,
 } from "@playwright/test";
 import playwrightConfig from "../../../playwright.config";
@@ -35,5 +34,15 @@ export default class RhdhNotficationsApi {
     notifications: Notifications,
   ): Promise<APIResponse> {
     return await this.myContext.post("notifications", { data: notifications });
+  }
+
+  // Mark all notifications as read
+  public async markAllNotificationsAsRead(): Promise<APIResponse> {
+    return await this.myContext.patch("notifications", {
+      data: {
+        ids: [],
+        read: true,
+      },
+    });
   }
 }
