@@ -5,6 +5,8 @@ import { SETTINGS_PAGE_COMPONENTS } from "../support/pageObjects/page-obj";
 import { WAIT_OBJECTS } from "../support/pageObjects/global-obj";
 import path from "path";
 import fs from "fs";
+import { APIHelper } from "./api-helper";
+import { GroupEntity, UserEntity } from "@backstage/catalog-model";
 
 export class Common {
   page: Page;
@@ -201,31 +203,37 @@ export class Common {
     }
   }
 
-  async githubLoginPopUpModal(context, username, password, otpSecret) {
+  private async getGroupLinksByLabel(label: string): Promise<string[]> {
+    const section = this.page.locator(`p:has-text("${label}")`).first();
+    await section.waitFor({ state: "visible" });
+    return await section.locator("..")
+      .locator("a")
+      .allInnerTexts();
+  }
+
+  async getParentGroupsDisplayed(): Promise<string[]> {
+    return await this.getGroupLinksByLabel("Parent Group");
+  }
+
+  async getChildGroupsDisplayed(): Promise<string[]> {
+    return await this.getGroupLinksByLabel("Child Groups");
+  }
+
+  async githubLoginPopUpModal(context, username: string, password: string, otpSecret: string): Promise<void> {
     const [githubPage] = await Promise.all([
       context.waitForEvent('page'),
     ]);
-    await githubPage.waitForLoadState();
-    await githubPage.waitForSelector('input[name="login"]', { timeout: 30000 });
-    await githubPage.fill('input[name="login"]', username);
-    await githubPage.fill('input[name="password"]', password);
+    await githubPage.waitForLoadState('domcontentloaded');
+    
+    await githubPage.getByLabel('Username or email address').fill(username);
+    await githubPage.getByLabel('Password').fill(password);
     await githubPage.click('button[type="submit"], input[type="submit"]');
 
-    // Handle 2FA
-    let otpSelector = null;
-    if (await githubPage.isVisible('input[name="otp"]', { timeout: 10000 }).catch(() => false)) {
-      otpSelector = 'input[name="otp"]';
-    } else if (await githubPage.isVisible('#app_totp', { timeout: 10000 }).catch(() => false)) {
-      otpSelector = '#app_totp';
-    }
+    const otpSelector = await this.findOtpSelector(githubPage);
+
     if (otpSelector) {
       if (githubPage.isClosed()) return;
-      try {
-        await githubPage.waitForSelector(otpSelector, { timeout: 10000 });
-      } catch (e) {
-        if (githubPage.isClosed()) return;
-        throw e;
-      }
+      await githubPage.waitForSelector(otpSelector, { timeout: 10000 });
       if (githubPage.isClosed()) return;
       const otp = authenticator.generate(otpSecret);
       await githubPage.fill(otpSelector, otp);
@@ -237,6 +245,20 @@ export class Common {
     } else {
       await githubPage.waitForEvent('close', { timeout: 20000 });
     }
+  }
+
+  private async findOtpSelector(page): Promise<string | null> {
+    const selectors = ['input[name="otp"]', '#app_totp'];
+    for (const selector of selectors) {
+      try {
+        if (await page.isVisible(selector, { timeout: 5000 })) {
+          return selector;
+        }
+      } catch {
+        // Ignore visibility timeout errors
+      }
+    }
+    return null;
   }
 
   getGitHub2FAOTP(userid: string): string {
@@ -508,14 +530,14 @@ export class Common {
     const api = new APIHelper();
     api.UseStaticToken(apiToken);
     const response = await api.getAllCatalogUsersFromAPI();
-    LOGGER.info(`Users currently in catalog: ${JSON.stringify(response)}`);
+    console.log(`Users currently in catalog: ${JSON.stringify(response)}`);
     const catalogUsers: UserEntity[] =
       response && response.items ? response.items : [];
     expect(catalogUsers.length).toBeGreaterThan(0);
     const catalogUsersDisplayNames: string[] = catalogUsers
       .filter((u) => u.spec.profile && u.spec.profile.displayName)
       .map((u) => u.spec.profile.displayName);
-    LOGGER.info(
+    console.log(
       `Checking ${JSON.stringify(catalogUsersDisplayNames)} contains users ${JSON.stringify(users)}`,
     );
     const hasAllElems = users.every((elem) =>
@@ -528,14 +550,14 @@ export class Common {
     const api = new APIHelper();
     api.UseStaticToken(apiToken);
     const response = await api.getAllCatalogGroupsFromAPI();
-    LOGGER.info(`Groups currently in catalog: ${JSON.stringify(response)}`);
+    console.log(`Groups currently in catalog: ${JSON.stringify(response)}`);
     const catalogGroups: GroupEntity[] =
       response && response.items ? response.items : [];
     expect(catalogGroups.length).toBeGreaterThan(0);
     const catalogGroupsDisplayNames: string[] = catalogGroups
       .filter((u) => u.spec.profile && u.spec.profile.displayName)
       .map((u) => u.spec.profile.displayName);
-    LOGGER.info(
+    console.log(
       `Checking ${JSON.stringify(catalogGroupsDisplayNames)} contains groups ${JSON.stringify(groups)}`,
     );
     const hasAllElems = groups.every((elem) =>
