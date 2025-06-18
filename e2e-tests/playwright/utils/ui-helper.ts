@@ -272,9 +272,9 @@ export class UIhelper {
     return await this.isElementVisible(locator);
   }
 
-  async isBtnVisible(text: string): Promise<boolean> {
-    const locator = `button:has-text("${text}")`;
-    return await this.isElementVisible(locator);
+  async isBtnVisible(text: string, timeout = 5000): Promise<boolean> {
+    const button = this.page.locator(`button:has-text("${text}")`);
+    return await button.isVisible({ timeout });
   }
 
   async isTextVisible(text: string, timeout = 10000): Promise<boolean> {
@@ -486,7 +486,7 @@ export class UIhelper {
   }
 
   getButtonSelector(label: string): string {
-    return `${UI_HELPER_ELEMENTS.MuiButtonLabel}:has-text("${label}")`;
+    return `button:has-text("${label}")`;
   }
 
   getLoginBtnSelector(): string {
@@ -772,5 +772,9 @@ export class UIhelper {
   async verifyTextInTooltip(text: string | RegExp) {
     const tooltip = this.page.getByRole("tooltip").getByText(text);
     await expect(tooltip).toBeVisible();
+  }
+
+  async isElementVisible(selector: string, timeout = 5000): Promise<boolean> {
+    return await this.page.isVisible(selector, { timeout });
   }
 }
