@@ -15,6 +15,7 @@ import { RbacConstants } from "../../../data/rbac-constants";
 import { Policy } from "../../../support/api/rbac-api-structures";
 import { CatalogImport } from "../../../support/pages/catalog-import";
 import { downloadAndReadFile } from "../../../utils/helper";
+import { guestTest } from "../../../support/fixtures/guest-login";
 
 /*
     Note that:
@@ -437,20 +438,15 @@ test.describe.serial("Test RBAC", () => {
     });
   });
 
-  test.describe("Test RBAC plugin as a guest user", () => {
-    test.beforeEach(async ({ page }) => {
-      const common = new Common(page);
-      await common.loginAsGuest();
-    });
-
-    test("Check if Administration side nav is present with no RBAC plugin", async ({
-      page,
-    }) => {
-      const uiHelper = new UIhelper(page);
-      await uiHelper.openSidebarButton("Administration");
-      const dropdownMenuLocator = page.locator(`text="RBAC"`);
-      await expect(dropdownMenuLocator).not.toBeVisible();
-    });
+  guestTest.describe("Test RBAC plugin as a guest user", () => {
+    guestTest(
+      "Check if Administration side nav is present with no RBAC plugin",
+      async ({ page, uiHelper }) => {
+        await uiHelper.openSidebarButton("Administration");
+        const dropdownMenuLocator = page.locator(`text="RBAC"`);
+        await expect(dropdownMenuLocator).not.toBeVisible();
+      },
+    );
   });
 
   test.describe.serial("Test RBAC API", () => {

@@ -1,12 +1,9 @@
-import { Page, test } from "@playwright/test";
-import { UIhelper } from "../utils/ui-helper";
-import { Common } from "../utils/common";
+import { Page } from "@playwright/test";
 import { expect } from "@playwright/test";
 import { Catalog } from "../support/pages/catalog";
+import { guestTest } from "../support/fixtures/guest-login";
 
-test.describe("TechDocs", () => {
-  let common: Common;
-  let uiHelper: UIhelper;
+guestTest.describe("TechDocs", () => {
   let catalog: Catalog;
 
   async function docsTextHighlight(page: Page) {
@@ -26,53 +23,59 @@ test.describe("TechDocs", () => {
     });
   }
 
-  test.beforeEach(async ({ page }) => {
-    uiHelper = new UIhelper(page);
-    common = new Common(page);
+  guestTest.beforeEach(async ({ page }) => {
     catalog = new Catalog(page);
-    await common.loginAsGuest();
   });
 
-  test("Verify that TechDocs is visible in sidebar", async () => {
-    await uiHelper.openSidebarButton("Favorites");
-    await uiHelper.openSidebar("Docs");
-  });
+  guestTest(
+    "Verify that TechDocs is visible in sidebar",
+    async ({ uiHelper }) => {
+      await uiHelper.openSidebarButton("Favorites");
+      await uiHelper.openSidebar("Docs");
+    },
+  );
 
-  test("Verify that TechDocs Docs page for Backstage Showcase works", async ({
-    page,
-  }) => {
-    await uiHelper.openSidebarButton("Favorites");
-    await uiHelper.openSidebar("Docs");
-    await page.getByRole("link", { name: "Backstage Showcase" }).click();
-    await uiHelper.waitForTitle("Getting Started running RHDH", 1);
-  });
+  guestTest(
+    "Verify that TechDocs Docs page for Backstage Showcase works",
+    async ({ page, uiHelper }) => {
+      await uiHelper.openSidebarButton("Favorites");
+      await uiHelper.openSidebar("Docs");
+      await page.getByRole("link", { name: "Backstage Showcase" }).click();
+      await uiHelper.waitForTitle("Getting Started running RHDH", 1);
+    },
+  );
 
-  test("Verify that TechDocs entity tab page for Backstage Showcase works", async () => {
-    await catalog.goToByName("Backstage Showcase");
-    await uiHelper.clickTab("Docs");
-    await uiHelper.waitForTitle("Getting Started running RHDH", 1);
-  });
+  guestTest(
+    "Verify that TechDocs entity tab page for Backstage Showcase works",
+    async ({ uiHelper }) => {
+      await catalog.goToByName("Backstage Showcase");
+      await uiHelper.clickTab("Docs");
+      await uiHelper.waitForTitle("Getting Started running RHDH", 1);
+    },
+  );
 
-  test("Verify that TechDocs Docs page for ReportIssue addon works", async ({
-    page,
-  }) => {
-    await uiHelper.openSidebarButton("Favorites");
-    await uiHelper.openSidebar("Docs");
-    await page.getByRole("link", { name: "Backstage Showcase" }).click();
-    await page.waitForSelector("article a");
-    await docsTextHighlight(page);
-    const link = await page.waitForSelector("text=Open new Github issue");
-    expect(await link?.isVisible()).toBeTruthy();
-  });
+  guestTest(
+    "Verify that TechDocs Docs page for ReportIssue addon works",
+    async ({ page, uiHelper }) => {
+      await uiHelper.openSidebarButton("Favorites");
+      await uiHelper.openSidebar("Docs");
+      await page.getByRole("link", { name: "Backstage Showcase" }).click();
+      await page.waitForSelector("article a");
+      await docsTextHighlight(page);
+      const link = await page.waitForSelector("text=Open new Github issue");
+      expect(await link?.isVisible()).toBeTruthy();
+    },
+  );
 
-  test("Verify that TechDocs entity tab page for ReportIssue addon works", async ({
-    page,
-  }) => {
-    await catalog.goToByName("Backstage Showcase");
-    await uiHelper.clickTab("Docs");
-    await page.waitForSelector("article a");
-    await docsTextHighlight(page);
-    const link = await page.waitForSelector("text=Open new Github issue");
-    expect(await link?.isVisible()).toBeTruthy();
-  });
+  guestTest(
+    "Verify that TechDocs entity tab page for ReportIssue addon works",
+    async ({ page, uiHelper }) => {
+      await catalog.goToByName("Backstage Showcase");
+      await uiHelper.clickTab("Docs");
+      await page.waitForSelector("article a");
+      await docsTextHighlight(page);
+      const link = await page.waitForSelector("text=Open new Github issue");
+      expect(await link?.isVisible()).toBeTruthy();
+    },
+  );
 });

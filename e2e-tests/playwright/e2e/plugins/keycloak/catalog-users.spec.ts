@@ -1,63 +1,58 @@
 import { CatalogUsersPO } from "../../../support/pageObjects/catalog/catalog-users-obj";
 import Keycloak from "../../../utils/keycloak/keycloak";
-import { UIhelper } from "../../../utils/ui-helper";
-import { Common } from "../../../utils/common";
-import { test, expect } from "@playwright/test";
+import { expect } from "@playwright/test";
 import { KubeClient } from "../../../utils/kube-client";
+import { guestTest } from "../../../support/fixtures/guest-login";
 
-test.describe.skip("Test Keycloak plugin", () => {
+guestTest.describe.skip("Test Keycloak plugin", () => {
   // Skipping this test due to https://issues.redhat.com/browse/RHIDP-6844
-  let uiHelper: UIhelper;
   let keycloak: Keycloak;
-  let common: Common;
   let token: string;
 
-  test.beforeAll(async () => {
+  guestTest.beforeAll(async () => {
     keycloak = new Keycloak();
     token = await keycloak.getAuthenticationToken();
   });
 
-  test.beforeEach(async ({ page }) => {
-    uiHelper = new UIhelper(page);
-    common = new Common(page);
-    await common.loginAsGuest();
+  guestTest.beforeEach(async ({ page }) => {
     await CatalogUsersPO.visitBaseURL(page);
   });
 
-  test("Users on keycloak should match users on backstage", async ({
-    page,
-  }) => {
-    const keycloakUsers = await keycloak.getUsers(token);
-    const backStageUsersLocator = await CatalogUsersPO.getListOfUsers(page);
-    await backStageUsersLocator.first().waitFor({ state: "visible" });
-    const backStageUsersCount = await backStageUsersLocator.count();
+  guestTest(
+    "Users on keycloak should match users on backstage",
+    async ({ page, uiHelper }) => {
+      const keycloakUsers = await keycloak.getUsers(token);
+      const backStageUsersLocator = await CatalogUsersPO.getListOfUsers(page);
+      await backStageUsersLocator.first().waitFor({ state: "visible" });
+      const backStageUsersCount = await backStageUsersLocator.count();
 
-    expect(keycloakUsers.length).toBeGreaterThan(0);
-    expect(backStageUsersCount).toBeGreaterThan(0);
+      expect(keycloakUsers.length).toBeGreaterThan(0);
+      expect(backStageUsersCount).toBeGreaterThan(0);
 
-    for (let i = 0; i < backStageUsersCount; i++) {
-      const backStageUser = backStageUsersLocator.nth(i);
-      const backStageUserText = await backStageUser.textContent();
-      const userFound = keycloakUsers.find(
-        (user) => user.username === backStageUserText,
-      );
-      expect(userFound).not.toBeNull();
-
-      if (userFound) {
-        await keycloak.checkUserDetails(
-          page,
-          userFound,
-          token,
-          uiHelper,
-          keycloak,
+      for (let i = 0; i < backStageUsersCount; i++) {
+        const backStageUser = backStageUsersLocator.nth(i);
+        const backStageUserText = await backStageUser.textContent();
+        const userFound = keycloakUsers.find(
+          (user) => user.username === backStageUserText,
         );
+        expect(userFound).not.toBeNull();
+
+        if (userFound) {
+          await keycloak.checkUserDetails(
+            page,
+            userFound,
+            token,
+            uiHelper,
+            keycloak,
+          );
+        }
       }
-    }
-  });
+    },
+  );
 });
 
-test.describe("Test Keycloak plugin metrics", () => {
-  test.fixme(
+guestTest.describe("Test Keycloak plugin metrics", () => {
+  guestTest.fixme(
     process.env.IS_OPENSHIFT === "false",
     "Failing on Kubernetes clusters, need to add Ingress, fix https://issues.redhat.com/browse/RHIDP-7531",
   );
@@ -66,18 +61,18 @@ test.describe("Test Keycloak plugin metrics", () => {
   let kubeClient: KubeClient;
   const routerName = "rhdh-metrics";
 
-  test.beforeEach(() => {
+  guestTest.beforeEach(() => {
     kubeClient = new KubeClient();
   });
 
-  test.afterAll(async () => {
+  guestTest.afterAll(async () => {
     const metricsRoute = await kubeClient.getRoute(namespace, routerName);
     if (metricsRoute) {
       await kubeClient.deleteRoute(namespace, routerName);
     }
   });
 
-  test("Test keycloak metrics with failure counters", async () => {
+  guestTest("Test keycloak metrics with failure counters", async () => {
     const host: string = new URL(baseRHDHURL).hostname;
     const domain = host.split(".").slice(1).join(".");
 

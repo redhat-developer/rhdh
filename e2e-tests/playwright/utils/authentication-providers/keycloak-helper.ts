@@ -9,6 +9,10 @@ interface KeycloakConfig {
   clientSecret: string;
 }
 
+enum GrantTypes {
+  CLIENT_CREDENTIALS = "client_credentials",
+}
+
 export class KeycloakHelper {
   private kcAdminClient: KcAdminClient;
   private config: KeycloakConfig;
@@ -26,7 +30,7 @@ export class KeycloakHelper {
       await this.kcAdminClient.auth({
         clientId: this.config.clientId,
         clientSecret: this.config.clientSecret,
-        grantType: "client_credentials",
+        grantType: GrantTypes.CLIENT_CREDENTIALS,
       });
 
       // Refresh token every 58 minutes
@@ -35,7 +39,7 @@ export class KeycloakHelper {
           await this.kcAdminClient.auth({
             clientId: this.config.clientId,
             clientSecret: this.config.clientSecret,
-            grantType: "client_credentials",
+            grantType: GrantTypes.CLIENT_CREDENTIALS,
           });
         },
         58 * 60 * 1000,
@@ -80,9 +84,7 @@ export class KeycloakHelper {
     }
   }
 
-  async findUserByUsername(
-    username: string,
-  ): Promise<UserRepresentation | undefined> {
+  async findUserByUsername(username: string): Promise<UserRepresentation> {
     try {
       const users = await this.kcAdminClient.users.find({ username });
       console.log(users);

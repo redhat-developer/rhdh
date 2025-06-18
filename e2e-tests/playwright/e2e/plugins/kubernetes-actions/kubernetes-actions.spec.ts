@@ -1,27 +1,18 @@
-import { expect, Page, test } from "@playwright/test";
-import { Common, setupBrowser } from "../../../utils/common";
-import { UIhelper } from "../../../utils/ui-helper";
+import { expect } from "@playwright/test";
 import { KubeClient } from "../../../utils/kube-client";
 import { UI_HELPER_ELEMENTS } from "../../../support/pageObjects/global-obj";
+import { guestTest } from "../../../support/fixtures/guest-login";
 
-test.describe("Test Kubernetes Actions plugin", () => {
-  let common: Common;
-  let uiHelper: UIhelper;
-  let page: Page;
+guestTest.describe("Test Kubernetes Actions plugin", () => {
   let kubeClient: KubeClient;
   let namespace: string;
 
-  test.beforeAll(async ({ browser }, testInfo) => {
-    page = (await setupBrowser(browser, testInfo)).page;
-    common = new Common(page);
-    uiHelper = new UIhelper(page);
+  guestTest.beforeAll(async ({ uiHelper }) => {
     kubeClient = new KubeClient();
-
-    await common.loginAsGuest();
     await uiHelper.clickLink({ ariaLabel: "Self-service" });
   });
 
-  test("Creates kubernetes namespace", async () => {
+  guestTest("Creates kubernetes namespace", async ({ uiHelper, page }) => {
     namespace = `test-kubernetes-actions-${Date.now()}`;
     await uiHelper.verifyHeading("Self-service");
     await uiHelper.clickBtnInCard("Create a kubernetes namespace", "Choose");
@@ -42,7 +33,7 @@ test.describe("Test Kubernetes Actions plugin", () => {
     await kubeClient.getNamespaceByName(namespace);
   });
 
-  test.afterEach(async () => {
+  guestTest.afterEach(async () => {
     await kubeClient.deleteNamespaceAndWait(namespace);
   });
 });

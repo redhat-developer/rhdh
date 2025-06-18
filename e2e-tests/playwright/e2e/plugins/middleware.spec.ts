@@ -1,11 +1,8 @@
 // https://github.com/gashcrumb/dynamic-plugins-root-http-middleware/tree/main/plugins/middleware-header-example
-import test, { expect } from "@playwright/test";
-import { Common } from "../../utils/common";
+import { expect } from "@playwright/test";
+import { guestTest } from "../../support/fixtures/guest-login";
 
-test("Check the middleware is working", async ({ page }) => {
-  const common = new Common(page);
-
-  await common.loginAsGuest();
+guestTest("Check the middleware is working", async ({ page }) => {
   await page.goto("/simple-chat", { waitUntil: "networkidle" });
   await page.getByRole("checkbox", { name: "Use Proxy" }).check();
   await page.getByRole("textbox").fill("hi");

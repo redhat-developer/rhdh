@@ -1,22 +1,10 @@
-import { test } from "@playwright/test";
-import { UIhelper } from "../../utils/ui-helper";
-import { Common, setupBrowser } from "../../utils/common";
+import { guestTest } from "../../support/fixtures/guest-login";
 
-let page;
-test.describe("Test ACR plugin", () => {
-  let uiHelper: UIhelper;
-  let common: Common;
+guestTest.describe("Test ACR plugin", () => {
   const dateRegex =
     /(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s\d{1,2},\s\d{4}/gm;
-  test.beforeAll(async ({ browser }, testInfo) => {
-    page = (await setupBrowser(browser, testInfo)).page;
 
-    uiHelper = new UIhelper(page);
-    common = new Common(page);
-    await common.loginAsGuest();
-  });
-
-  test("Verify ACR Images are visible", async () => {
+  guestTest("Verify ACR Images are visible", async ({ uiHelper }) => {
     await uiHelper.openCatalogSidebar("Component");
     await uiHelper.clickLink("acr-test-entity");
     await uiHelper.clickTab("Image Registry");

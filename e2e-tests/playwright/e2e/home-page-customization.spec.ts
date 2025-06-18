@@ -1,21 +1,14 @@
-import { test } from "@playwright/test";
-import { UIhelper } from "../utils/ui-helper";
-import { Common } from "../utils/common";
 import { HomePage } from "../support/pages/home-page";
+import { guestTest } from "../support/fixtures/guest-login";
 
-test.describe("Home page customization", () => {
-  let common: Common;
-  let uiHelper: UIhelper;
+guestTest.describe("Home page customization", () => {
   let homePage: HomePage;
 
-  test.beforeEach(async ({ page }) => {
-    uiHelper = new UIhelper(page);
-    common = new Common(page);
+  guestTest.beforeEach(async ({ page }) => {
     homePage = new HomePage(page);
-    await common.loginAsGuest();
   });
 
-  test("Verify that home page is customized", async () => {
+  guestTest("Verify that home page is customized", async ({ uiHelper }) => {
     await uiHelper.verifyTextinCard("Quick Access", "Quick Access");
     await uiHelper.verifyTextinCard(
       "Your Starred Entities",
@@ -34,13 +27,19 @@ test.describe("Home page customization", () => {
     await uiHelper.clickButton("Reroll");
   });
 
-  test("Verify that the Top Visited card in the Home page renders without an error", async () => {
-    await uiHelper.verifyTextinCard("Top Visited", "Top Visited");
-    await homePage.verifyVisitedCardContent("Top Visited");
-  });
+  guestTest(
+    "Verify that the Top Visited card in the Home page renders without an error",
+    async ({ uiHelper }) => {
+      await uiHelper.verifyTextinCard("Top Visited", "Top Visited");
+      await homePage.verifyVisitedCardContent("Top Visited");
+    },
+  );
 
-  test("Verify that the Recently Visited card in the Home page renders without an error", async () => {
-    await uiHelper.verifyTextinCard("Recently Visited", "Recently Visited");
-    await homePage.verifyVisitedCardContent("Recently Visited");
-  });
+  guestTest(
+    "Verify that the Recently Visited card in the Home page renders without an error",
+    async ({ uiHelper }) => {
+      await uiHelper.verifyTextinCard("Recently Visited", "Recently Visited");
+      await homePage.verifyVisitedCardContent("Recently Visited");
+    },
+  );
 });
