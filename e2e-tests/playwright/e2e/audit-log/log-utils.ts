@@ -160,6 +160,8 @@ export class LogUtils {
       grepCommand += ` | grep '${word}'`;
     }
 
+    console.log("Grep command to be executed:", grepCommand);
+
     let attempt = 0;
     while (attempt <= maxRetries) {
       try {
