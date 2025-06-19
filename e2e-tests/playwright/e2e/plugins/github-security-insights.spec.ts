@@ -13,15 +13,15 @@ test("Verify GitHub Security Insights plugin after login", async ({ page, contex
 
   await common.loginAsKeycloakUser(process.env.GH_USER_ID, process.env.GH_USER_PASS);
   await uiHelper.openSidebar("Catalog");
-  await page.fill('input[placeholder="Search"]', repoName);
-  await page.waitForSelector('a:has-text("Backstage Showcase")', { timeout: 20000 });
+  await uiHelper.searchInputPlaceholder(repoName);
+  await uiHelper.verifyLink(repoName);
   await uiHelper.clickLink(repoName);
-  await page.waitForLoadState("networkidle");
 
   await uiHelper.waitForCardWithHeader("Dependabot Alerts");
   await uiHelper.clickBtnInCard('Dependabot Alerts', 'Sign in', true);
-  const modalLoginButton = page.locator('button:has-text("Log in")');
-  await modalLoginButton.waitFor({ timeout: 5000 });
+  await uiHelper.isBtnVisible('Log in');
+  const selector = uiHelper.getButtonSelector('Log in');
+  const modalLoginButton = page.locator(selector);
   await Promise.all([
     common.githubLoginPopUpModal(
       context,

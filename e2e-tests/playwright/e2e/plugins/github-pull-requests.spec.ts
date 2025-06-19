@@ -25,10 +25,10 @@ test("Verify all GitHub Pull Requests statistics after login", async ({ page, co
   // Step 4: Click 'Sign in' inside the PR statistics card
   await uiHelper.clickBtnInCard('GitHub Pull Requests Statistics', 'Sign in', true);
   
-  // Wait for the login modal to appear
-  const modalLoginButton = page.locator('button:has-text("Log in")');
-  await modalLoginButton.waitFor({ timeout: 5000 });
-  
+  // Step 5: Handle GitHub login using UIhelper methods
+  await uiHelper.isBtnVisible('Log in');
+  const selector = uiHelper.getButtonSelector('Log in');
+  const modalLoginButton = page.locator(selector);
   await Promise.all([
     common.githubLoginPopUpModal(
       context,
@@ -39,7 +39,7 @@ test("Verify all GitHub Pull Requests statistics after login", async ({ page, co
     modalLoginButton.click(),
   ]);
 
-  // Wait for at least one stat to appear before verifying all
+  // Step 6: Verify statistics
   await uiHelper.verifyTextinCard('GitHub Pull Requests Statistics', 'Average Time Of PR Until Merge');
 
   // Wait for all statistics to appear in the card
