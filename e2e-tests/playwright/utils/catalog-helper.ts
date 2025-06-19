@@ -12,8 +12,8 @@ export class CatalogHelper {
 
   async goToByName(name: string): Promise<void> {
     await this.uiHelper.openSidebar("Catalog");
-    await this.page.fill('input[placeholder="Search"]', name);
-    await this.page.waitForSelector(`a:has-text("${name}")`, { timeout: 20000 });
+    await this.uiHelper.searchInputPlaceholder(name);
+    await this.uiHelper.verifyLink(name);
     await this.uiHelper.clickLink(name);
   }
 } 
