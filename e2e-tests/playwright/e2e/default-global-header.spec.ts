@@ -84,10 +84,16 @@ test.describe("Default Global Header", () => {
     request,
     page,
   }) => {
+    
+    const notificationsBadge = page
+    .locator("#global-header")
+    .getByRole("link", { name: "Notifications" });
+    
     await uiHelper.clickLink({ ariaLabel: "Notifications" });
     await uiHelper.verifyHeading("Notifications");
-
-    const response = await request.post(`${baseURL}/api/notifications`, {
+    await uiHelper.markAllNotificationsAsReadIfVisible();
+    
+    const postResponse = await request.post(`${baseURL}/api/notifications`, {
       headers: {
         "Content-Type": "application/json",
         Authorization: "Bearer test-token",
@@ -102,11 +108,9 @@ test.describe("Default Global Header", () => {
         },
       },
     });
-
-    expect(response.status()).toBe(200);
-    const notificationsBadge = page
-      .locator("#global-header")
-      .getByRole("link", { name: "Notifications" });
+    expect(postResponse.status()).toBe(200);
+  
     await expect(notificationsBadge).toHaveText("1");
   });
+  
 });
