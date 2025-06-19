@@ -5,6 +5,7 @@
 set -e
 
 KEYCLOAK_NAMESPACE=keycloak
+KEYCLOAK_OPERATOR_DISPLAY_NAME="Red Hat build of Keycloak Operator"
 CERT_HOSTNAME="" # Ex: keycloak.apps-crc.testing
 DELETE=false
 
@@ -19,25 +20,56 @@ Usage:
   $0 [OPTIONS]
 
 OPTIONS:
-  -gc,  --generate-certificates <hostname> : Generates an SSL certificate for the specified hostname. Returns a key.pem and a certificate.pem file in the ${PWD}/tls directory
+  -gc,  --generate-certs <hostname> : Generates an SSL certificate for the specified hostname. Returns a key.pem and a certificate.pem file in the ${PWD}/tls directory
   -n,   --namespace <namespace>            : The namespace the keycloak resources are installed onto. Default: keycloak
         --uninstall <options>              : Uninstall specified keycloak resources. Options:  database, keycloak, secrets, all
   -h,   --help                             : Prints this help message and exits
+
+Examples:
+$ ./deploy-keycloak.sh --generate-certs keycloak.apps.crc.test
+$ ./deploy-keycloak.sh --uninstall all 
 
 "
 }
 PWD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 echo "${PWD}"
 
+createProject() {
+  # Create Namespace and switch to it
+  if ! oc get project "${KEYCLOAK_NAMESPACE}" >/dev/null 2>&1; then
+    oc new-project ${KEYCLOAK_NAMESPACE}
+  else
+    oc project ${KEYCLOAK_NAMESPACE}
+  fi
+}
+
+installKeycloakOperator() {
+    if oc get csv -n "${KEYCLOAK_NAMESPACE}" | grep -q "${KEYCLOAK_OPERATOR_DISPLAY_NAME}"; then
+      echo "Keycloak operator has been already installed."
+    else
+      echo "Keycloak operator is not installed. Installing..."
+      oc apply -f "./keycloak-operator/redhat/operator-group.yaml"
+      oc apply -f "./keycloak-operator/redhat/operator-subscription.yaml"
+    fi
+
+    until oc get csv -n "${KEYCLOAK_NAMESPACE}" | grep -q "${KEYCLOAK_OPERATOR_DISPLAY_NAME}.*Succeeded"; do
+        echo "Waiting for the CSV to reach the 'Succeeded' phase..."
+        sleep 10
+    done
+}
+
 deployDB(){
   oc apply -f ${PWD}/database/postgres.yaml -n ${KEYCLOAK_NAMESPACE}
 }
 
 generateSSLCerts(){
-  openssl req -subj "/CN=${CERT_HOSTNAME}/O=RHDH/C=CA" -newkey rsa:2048 -nodes -keyout "${PWD}/tls/key.pem" -x509 -days 365 -out "${PWD}/tls/" certificate.pem -addext "subjectAltName = DNS:${CERT_HOSTNAME}"
+  rm -rf  "${PWD}/tls"
+  mkdir -p "${PWD}/tls"
+  openssl req -subj "/CN=${CERT_HOSTNAME}/O=RHDH/C=CA" -newkey rsa:2048 -nodes -keyout "${PWD}/tls/key.pem" -x509 -days 365 -out "${PWD}/tls/certificate.pem" -addext "subjectAltName = DNS:${CERT_HOSTNAME}"
 }
+
 deployTLSKeys(){
-  oc create secret tls example-tls-secret --cert ${PWD}/tls/certificate.pem --key ${PWD}/tls/key.pem -n ${KEYCLOAK_NAMESPACE}
+  oc create secret tls example-tls-secret --cert ${PWD}/tls/certificate.pem --key ${PWD}/tls/key.pem -n ${KEYCLOAK_NAMESPACE} || true
 }
 
 deploySecrets(){
@@ -45,10 +77,19 @@ deploySecrets(){
 }
 
 deployKeyCloak(){
+  installKeycloakOperator
   oc apply -f ${PWD}/keycloak.yaml -n ${KEYCLOAK_NAMESPACE}
+  oc patch keycloak development-keycloak --type=merge -p "{\"spec\":{\"hostname\":{\"hostname\": \"${CERT_HOSTNAME}\"}}}" -n ${KEYCLOAK_NAMESPACE}
 }
 
-deleteKeyCloak(){
+deleteKeycloakOperator() {
+  oc delete subscription rhbk-operator -n "${KEYCLOAK_NAMESPACE}"
+  oc delete csv -n "${KEYCLOAK_NAMESPACE}" "$(oc get csv -n "${KEYCLOAK_NAMESPACE}" | grep "${KEYCLOAK_OPERATOR_DISPLAY_NAME}" | awk '{print $1}')"
+  oc delete operatorgroup keycloak-operator -n ${KEYCLOAK_NAMESPACE}
+}
+
+deleteKeycloak(){
+  deleteKeycloakOperator
   oc delete keycloak development-keycloak -n ${KEYCLOAK_NAMESPACE}
 }
 
@@ -69,12 +110,14 @@ deleteAll(){
 }
 
 deployAll(){
+  createProject
   deployTLSKeys
   deploySecrets
   deployDB
   deployKeyCloak
 }
 
+DELETE=""
 while [[ "$#" -gt 0 ]]; do
     case $1 in
         --generate-certs | -gc)
@@ -96,13 +139,6 @@ while [[ "$#" -gt 0 ]]; do
     esac
     shift
 done
-
-# Create Namespace and switch to it
-oc new-project ${KEYCLOAK_NAMESPACE}
-if [ $? -ne 0 ]; then
-  # Switch to it if it already exists
-  oc project ${KEYCLOAK_NAMESPACE}
-fi
 
 case "${DELETE}" in
   "")
