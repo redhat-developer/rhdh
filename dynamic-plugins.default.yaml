@@ -1085,7 +1085,7 @@ plugins:
                 config:
                   path: marketplace
                   title: Catalog
-                  
+
   # Group: Orchestrator
   - package: "@redhat/backstage-plugin-orchestrator@1.5.1"
     disabled: false
@@ -1105,6 +1105,7 @@ plugins:
                   text: Orchestrator
                 module: OrchestratorPlugin
                 path: /orchestrator
+
   - package: "@redhat/backstage-plugin-orchestrator-backend-dynamic@1.5.1"
     disabled: true
     integrity: sha512-VIenFStdq9QvvmgmEMG8O7b2wqIebvEcqNeJ9SWZ8jen9t+efTK6D3Rde74LQ1no1QaHLx8RoxNCOuTUEF8O/g==
@@ -1112,6 +1113,7 @@ plugins:
       orchestrator:
         dataIndexService:
           url: http://sonataflow-platform-data-index-service
+
   - package: "@redhat/backstage-plugin-scaffolder-backend-module-orchestrator-dynamic@1.5.1"
     disabled: true
     integrity: sha512-bnVQjVsUZ470Vgm2kd5Lo/bVa2fF0q4GufBDc/8oTQsnP3zZJQqKFvFElBTCjY76RqkECydlvZ1UFybSzvockQ==
