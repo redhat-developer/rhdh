@@ -1,11 +1,13 @@
-import * as React from 'react';
+import type { ReactNode } from 'react';
+import { useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 
 import { renderInTestApp } from '@backstage/test-utils';
 
 import DynamicRootContext, {
   MountPoints,
-} from '../DynamicRoot/DynamicRootContext';
+} from '@red-hat-developer-hub/plugin-utils';
+
 import { ApplicationListener } from './ApplicationListener';
 
 const MountPointProvider = ({
@@ -13,9 +15,9 @@ const MountPointProvider = ({
   children,
 }: {
   mountPoints: MountPoints;
-  children: React.ReactNode;
+  children: ReactNode;
 }) => {
-  const value = React.useMemo(() => ({ mountPoints }), [mountPoints]);
+  const value = useMemo(() => ({ mountPoints }), [mountPoints]);
   return (
     <DynamicRootContext.Provider value={value as any}>
       {children}

@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 import { Route } from 'react-router-dom';
 
 import { FlatRoutes } from '@backstage/core-app-api';
@@ -20,9 +20,10 @@ import { ScaffolderFieldExtensions } from '@backstage/plugin-scaffolder-react';
 import { SearchPage as BackstageSearchPage } from '@backstage/plugin-search';
 import { UserSettingsPage } from '@backstage/plugin-user-settings';
 
+import DynamicRootContext from '@red-hat-developer-hub/plugin-utils';
+
 import getDynamicRootConfig from '../../utils/dynamicUI/getDynamicRootConfig';
 import { entityPage } from '../catalog/EntityPage';
-import DynamicRootContext from '../DynamicRoot/DynamicRootContext';
 import { LearningPaths } from '../learningPaths/LearningPathsPage';
 import { Root } from '../Root';
 import { ApplicationListener } from '../Root/ApplicationListener';

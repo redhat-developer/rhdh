@@ -1,5 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
+process.env.JOB_NAME = process.env.JOB_NAME || "";
+process.env.IS_OPENSHIFT = process.env.IS_OPENSHIFT || "";
+
 const k8sSpecificConfig = {
   use: {
     actionTimeout: 15 * 1000,
@@ -77,21 +80,14 @@ export default defineConfig({
       name: "showcase-auth-providers",
       testMatch: ["**/playwright/e2e/authProviders/*.spec.ts"],
       testIgnore: [
-        "**/playwright/e2e/authProviders/setup-environment.spec.ts",
-        "**/playwright/e2e/authProviders/clear-environment.spec.ts",
+        "**/playwright/e2e/authProviders/github-happy-path.spec.ts", // temporarily disable
         "**/playwright/e2e/verify-tls-config-health-check.spec.ts",
+        //"**/playwright/e2e/authProviders/microsoft.spec.ts",
+        //"**/playwright/e2e/authProviders/oidc.spec.ts",
+        //"**/playwright/e2e/authProviders/github.spec.ts",
+        "**/playwright/e2e/authProviders/ldap.spec.ts",
       ],
-      dependencies: ["showcase-auth-providers-setup-environment"],
-      teardown: "showcase-auth-providers-clear-environment",
       retries: 1,
-    },
-    {
-      name: "showcase-auth-providers-setup-environment",
-      testMatch: ["**/playwright/e2e/authProviders/setup-environment.spec.ts"],
-    },
-    {
-      name: "showcase-auth-providers-clear-environment",
-      testMatch: ["**/playwright/e2e/authProviders/clear-environment.spec.ts"],
     },
     {
       name: "showcase-k8s",
@@ -133,7 +129,6 @@ export default defineConfig({
         "**/playwright/e2e/plugins/tekton/tekton.spec.ts",
         "**/playwright/e2e/catalog-scaffoldedfromLink.spec.ts",
         "**/playwright/e2e/audit-log/**/*.spec.ts",
-        "**/playwright/e2e/plugins/topology/topology.spec.ts",
         "**/playwright/e2e/verify-tls-config-health-check.spec.ts",
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
       ],

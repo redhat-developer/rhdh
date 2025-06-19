@@ -16,9 +16,9 @@ import {
 } from '@backstage/plugin-user-settings';
 
 import Star from '@mui/icons-material/Star';
+import { ProviderSetting } from '@red-hat-developer-hub/plugin-utils';
 
 import { oidcAuthApiRef } from '../../api/AuthApiRefs';
-import { ProviderSetting } from '../DynamicRoot/DynamicRootContext';
 import { GeneralPage } from './GeneralPage';
 
 const DynamicProviderSettingsItem = ({

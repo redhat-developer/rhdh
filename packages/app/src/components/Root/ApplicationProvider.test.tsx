@@ -1,10 +1,17 @@
-import * as React from 'react';
+import {
+  createContext,
+  PropsWithChildren,
+  ReactNode,
+  useContext,
+  useMemo,
+} from 'react';
 
 import { renderInTestApp } from '@backstage/test-utils';
 
 import DynamicRootContext, {
   MountPoints,
-} from '../DynamicRoot/DynamicRootContext';
+} from '@red-hat-developer-hub/plugin-utils';
+
 import { ApplicationProvider } from './ApplicationProvider';
 
 const MountPointProvider = ({
@@ -12,9 +19,9 @@ const MountPointProvider = ({
   children,
 }: {
   mountPoints: MountPoints;
-  children: React.ReactNode;
+  children: ReactNode;
 }) => {
-  const value = React.useMemo(() => ({ mountPoints }), [mountPoints]);
+  const value = useMemo(() => ({ mountPoints }), [mountPoints]);
   return (
     <DynamicRootContext.Provider value={value as any}>
       {children}
@@ -30,31 +37,27 @@ type ContextTwoValue = {
   salute: string;
 };
 
-const TestContextOne = React.createContext<ContextOneValue>(
-  {} as ContextOneValue,
-);
+const TestContextOne = createContext<ContextOneValue>({} as ContextOneValue);
 
-const TestContextTwo = React.createContext<ContextTwoValue>(
-  {} as ContextTwoValue,
-);
+const TestContextTwo = createContext<ContextTwoValue>({} as ContextTwoValue);
 
-const TestProviderOne = ({ children }: React.PropsWithChildren<{}>) => {
-  const value = React.useMemo(() => ({ name: 'Context' }), []);
+const TestProviderOne = ({ children }: PropsWithChildren<{}>) => {
+  const value = useMemo(() => ({ name: 'Context' }), []);
   return (
     <TestContextOne.Provider value={value}>{children}</TestContextOne.Provider>
   );
 };
 
-const TestProviderTwo = ({ children }: React.PropsWithChildren<{}>) => {
-  const value = React.useMemo(() => ({ salute: 'Good day!' }), []);
+const TestProviderTwo = ({ children }: PropsWithChildren<{}>) => {
+  const value = useMemo(() => ({ salute: 'Good day!' }), []);
   return (
     <TestContextTwo.Provider value={value}>{children}</TestContextTwo.Provider>
   );
 };
 
 const TestComponent = () => {
-  const contextOne = React.useContext(TestContextOne);
-  const contextTwo = React.useContext(TestContextTwo);
+  const contextOne = useContext(TestContextOne);
+  const contextTwo = useContext(TestContextTwo);
   let helloString = `Hello ${contextOne.name ? contextOne.name : ''}!`;
   if (contextTwo.salute) {
     helloString = helloString.concat(contextTwo.salute);

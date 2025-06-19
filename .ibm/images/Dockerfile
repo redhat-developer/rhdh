@@ -1,6 +1,6 @@
 # Base image from Microsoft Playwright
 # Must stay pinned to a version which includes Nodejs 22
-FROM mcr.microsoft.com/playwright:v1.52.0-jammy
+FROM mcr.microsoft.com/playwright:v1.53.0-jammy
 
 # Set environment variables for the container
 ENV CI=1 \
@@ -76,6 +76,11 @@ RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.
 # Install skopeo
 RUN apt-get update -y && \
     apt-get install -y skopeo
+
+# Install PostgreSQL CLI (psql only)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends postgresql-client && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Install umoci
 RUN curl -LO "https://github.com/opencontainers/umoci/releases/download/v0.4.7/umoci.amd64" && \

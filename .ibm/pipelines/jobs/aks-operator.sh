@@ -15,7 +15,7 @@ handle_aks_operator() {
 
   cluster_setup_k8s_operator
 
-  prepare_operator
+  prepare_operator "3"
 
   initiate_aks_operator_deployment "${NAME_SPACE}" "https://${K8S_CLUSTER_ROUTER_BASE}"
   check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30

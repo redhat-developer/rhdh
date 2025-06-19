@@ -3,10 +3,6 @@ import {
   createBackendModule,
 } from '@backstage/backend-plugin-api';
 import {
-  defaultAuthProviderFactories,
-  ProviderFactories,
-} from '@backstage/plugin-auth-backend';
-import {
   atlassianAuthenticator,
   atlassianSignInResolvers,
 } from '@backstage/plugin-auth-backend-module-atlassian-provider';
@@ -70,7 +66,8 @@ import {
 } from '@backstage/plugin-auth-node';
 
 import { TransitiveGroupOwnershipResolver } from '../transitiveGroupOwnershipResolver';
-import { rhdhSignInResolvers } from './authResolvers';
+import { trySignInResolvers } from './resolverUtils';
+import { rhdhSignInResolvers } from './rhdhSignInResolvers';
 
 function getAuthProviderFactory(providerId: string): AuthProviderFactory {
   switch (providerId) {
@@ -183,12 +180,19 @@ function getAuthProviderFactory(providerId: string): AuthProviderFactory {
     case 'oidc':
       return createOAuthProviderFactory({
         authenticator: oidcAuthenticator,
-        signInResolver: rhdhSignInResolvers.oidcSubClaimMatchingIdPUserId(),
+        signInResolver: trySignInResolvers([
+          rhdhSignInResolvers.oidcSubClaimMatchingKeycloakUserId(),
+          rhdhSignInResolvers.oidcLdapUuidMatchingAnnotation(),
+        ]),
         signInResolverFactories: {
+          preferredUsernameMatchingUserEntityName:
+            rhdhSignInResolvers.preferredUsernameMatchingUserEntityName,
           oidcSubClaimMatchingKeycloakUserId:
             rhdhSignInResolvers.oidcSubClaimMatchingKeycloakUserId,
           oidcSubClaimMatchingPingIdentityUserId:
             rhdhSignInResolvers.oidcSubClaimMatchingPingIdentityUserId,
+          oidcLdapUuidMatchingAnnotation:
+            rhdhSignInResolvers.oidcLdapUuidMatchingAnnotation,
           ...oidcSignInResolvers,
           ...commonSignInResolvers,
         },
@@ -249,7 +253,7 @@ const authProvidersModule = createBackendModule({
         auth,
       }) {
         const providersConfig = config.getConfig('auth.providers');
-        const authFactories: ProviderFactories = {};
+        const authFactories: Record<string, AuthProviderFactory> = {};
         providersConfig
           .keys()
           .filter(key => key !== 'guest')
@@ -258,8 +262,7 @@ const authProvidersModule = createBackendModule({
             authFactories[providerId] = factory;
           });
 
-        const providerFactories: ProviderFactories = {
-          ...defaultAuthProviderFactories,
+        const providerFactories: Record<string, AuthProviderFactory> = {
           ...authFactories,
         };
 

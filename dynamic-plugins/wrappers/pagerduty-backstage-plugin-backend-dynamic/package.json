@@ -10,7 +10,7 @@
   },
   "backstage": {
     "role": "backend-plugin",
-    "supported-versions": "1.36.1",
+    "supported-versions": "1.39.1",
     "pluginId": "pagerduty",
     "pluginPackages": [
       "pagerduty-backstage-plugin",
@@ -47,7 +47,7 @@
     "typescript": "5.8.3"
   },
   "resolutions": {
-    "@types/react": "18.3.21",
+    "@types/react": "18.3.23",
     "@types/react-dom": "18.3.7"
   },
   "files": [
