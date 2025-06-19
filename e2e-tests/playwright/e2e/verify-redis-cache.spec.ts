@@ -1,20 +1,12 @@
-import { expect, test } from "@playwright/test";
-import { UIhelper } from "../utils/ui-helper";
-import { Common } from "../utils/common";
+import { expect } from "@playwright/test";
 import Redis from "ioredis";
 import { ChildProcessWithoutNullStreams, exec, spawn } from "child_process";
+import { guestTest } from "../support/fixtures/guest-login";
 
-test.describe("Verify Redis Cache DB", () => {
-  test.describe.configure({ mode: "serial" });
-  let common: Common;
-  let uiHelper: UIhelper;
+guestTest.describe.serial("Verify Redis Cache DB", () => {
   let portForward: ChildProcessWithoutNullStreams;
   let redis: Redis;
-  test.beforeEach(async ({ page }) => {
-    uiHelper = new UIhelper(page);
-    common = new Common(page);
-    await common.loginAsGuest();
-
+  guestTest.beforeEach(async () => {
     console.log("Starting port-forward process...");
     portForward = spawn("/bin/sh", [
       "-c",
@@ -40,45 +32,48 @@ test.describe("Verify Redis Cache DB", () => {
     });
   });
 
-  test("Open techdoc and verify the cache generated in redis db", async () => {
-    test.setTimeout(120_000);
+  guestTest(
+    "Open techdoc and verify the cache generated in redis db",
+    async ({ uiHelper }) => {
+      guestTest.setTimeout(120_000);
 
-    portForward.stdout.on("data", (data) => {
-      console.log(`Port-forward stdout: ${data.toString()}`);
-    });
+      portForward.stdout.on("data", (data) => {
+        console.log(`Port-forward stdout: ${data.toString()}`);
+      });
 
-    await uiHelper.openSidebarButton("Favorites");
-    await uiHelper.openSidebar("Docs");
-    await uiHelper.clickLink("Backstage Showcase");
+      await uiHelper.openSidebarButton("Favorites");
+      await uiHelper.openSidebar("Docs");
+      await uiHelper.clickLink("Backstage Showcase");
 
-    // ensure that the docs are generated. if redis configuration has an error, this page will hang and docs won't be generated
-    await expect(async () => {
-      await uiHelper.verifyHeading("rhdh");
-    }).toPass({
-      intervals: [3_000],
-      timeout: 60_000,
-    });
+      // ensure that the docs are generated. if redis configuration has an error, this page will hang and docs won't be generated
+      await expect(async () => {
+        await uiHelper.verifyHeading("rhdh");
+      }).toPass({
+        intervals: [3_000],
+        timeout: 60_000,
+      });
 
-    console.log("Connecting to Redis...");
-    redis = new Redis(
-      `redis://${process.env.REDIS_USERNAME}:${process.env.REDIS_PASSWORD}@localhost:6379`,
-    );
-    console.log("Verifying Redis keys...");
-    await expect(async () => {
-      const keys = (await redis.keys("*")).filter((k) =>
-        k.includes("techdocs"),
+      console.log("Connecting to Redis...");
+      redis = new Redis(
+        `redis://${process.env.REDIS_USERNAME}:${process.env.REDIS_PASSWORD}@localhost:6379`,
       );
-      expect(keys).toContainEqual(expect.stringContaining("techdocs"));
-      const key = keys[0];
-      console.log(`Verifying key format: ${key}`);
-      expect(key).toMatch(/(?:techdocs):(?:[A-Za-z0-9+/]+={0,2})$/gm);
-    }).toPass({
-      intervals: [3_000],
-      timeout: 60_000,
-    });
-  });
+      console.log("Verifying Redis keys...");
+      await expect(async () => {
+        const keys = (await redis.keys("*")).filter((k) =>
+          k.includes("techdocs"),
+        );
+        expect(keys).toContainEqual(expect.stringContaining("techdocs"));
+        const key = keys[0];
+        console.log(`Verifying key format: ${key}`);
+        expect(key).toMatch(/(?:techdocs):(?:[A-Za-z0-9+/]+={0,2})$/gm);
+      }).toPass({
+        intervals: [3_000],
+        timeout: 60_000,
+      });
+    },
+  );
 
-  test.afterEach(() => {
+  guestTest.afterEach(() => {
     if (redis?.status === "ready") {
       redis.disconnect();
     }

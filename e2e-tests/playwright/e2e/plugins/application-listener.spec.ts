@@ -1,29 +1,21 @@
-import { expect, test } from "@playwright/test";
-import { UIhelper } from "../../utils/ui-helper";
-import { Common } from "../../utils/common";
+import { expect } from "@playwright/test";
+import { guestTest } from "../../support/fixtures/guest-login";
 
-test.describe("Test ApplicationListener", () => {
-  let uiHelper: UIhelper;
+guestTest.describe("Test ApplicationListener", () => {
+  guestTest(
+    "Verify that the LocationListener logs the current location",
+    async ({ page, uiHelper }) => {
+      const logs: string[] = [];
 
-  test.beforeEach(async ({ page }) => {
-    const common = new Common(page);
-    uiHelper = new UIhelper(page);
-    await common.loginAsGuest();
-  });
+      page.on("console", (msg) => {
+        if (msg.type() === "log") {
+          logs.push(msg.text());
+        }
+      });
 
-  test("Verify that the LocationListener logs the current location", async ({
-    page,
-  }) => {
-    const logs: string[] = [];
+      await uiHelper.openSidebar("Catalog");
 
-    page.on("console", (msg) => {
-      if (msg.type() === "log") {
-        logs.push(msg.text());
-      }
-    });
-
-    await uiHelper.openSidebar("Catalog");
-
-    expect(logs.some((l) => l.includes("pathname: /catalog"))).toBeTruthy();
-  });
+      expect(logs.some((l) => l.includes("pathname: /catalog"))).toBeTruthy();
+    },
+  );
 });
