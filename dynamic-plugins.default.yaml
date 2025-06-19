@@ -1113,6 +1113,9 @@ plugins:
       orchestrator:
         dataIndexService:
           url: http://sonataflow-platform-data-index-service
+    dependencies:
+      - ref: sonataflow
+      - ref: npmrc-secret
 
   - package: "@redhat/backstage-plugin-scaffolder-backend-module-orchestrator-dynamic@1.5.1"
     disabled: true
