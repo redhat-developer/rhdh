@@ -3191,16 +3191,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-scaffolder-backend-module-annotator@npm:2.5.0":
-  version: 2.5.0
-  resolution: "@backstage-community/plugin-scaffolder-backend-module-annotator@npm:2.5.0"
+"@backstage-community/plugin-scaffolder-backend-module-annotator@npm:2.7.0":
+  version: 2.7.0
+  resolution: "@backstage-community/plugin-scaffolder-backend-module-annotator@npm:2.7.0"
   dependencies:
-    "@backstage/backend-plugin-api": ^1.2.0
-    "@backstage/plugin-scaffolder-node": ^0.7.0
+    "@backstage/backend-plugin-api": ^1.3.1
+    "@backstage/plugin-scaffolder-node": ^0.8.2
     fs-extra: ^11.2.0
     lodash: ^4.17.21
     yaml: ^2.0.0
-  checksum: a46e78d4926736902f16648c60bd45625fdf8cf503b5dd5f9bc2758f0fb06db2a5c044a24a983896377927c6bfbc75715f842171d886748429c669dd11316056
+  checksum: 1ab40d12d37cadba7cf1499fb028a784a5ec2e1d830b8257a60346e8fd2637f7cab019180d26857961f79b4cdb71ea8dc77f9b1c4bc9caa17b05642865ea43ae
   languageName: node
   linkType: hard
 
@@ -16964,7 +16964,7 @@ __metadata:
   dependencies:
     "@backstage-community/plugin-rbac-backend": 6.1.0
     "@backstage-community/plugin-rbac-node": 1.10.0
-    "@backstage-community/plugin-scaffolder-backend-module-annotator": 2.5.0
+    "@backstage-community/plugin-scaffolder-backend-module-annotator": 2.7.0
     "@backstage/backend-app-api": 1.2.3
     "@backstage/backend-defaults": 0.10.0
     "@backstage/backend-dynamic-feature-service": 0.7.0
