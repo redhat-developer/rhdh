@@ -423,16 +423,17 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
 
   return (
     <PageWithoutFixHeight>
-      <div id="above-sidebar-header-container" ref={aboveSidebarHeaderRef}>
+      <div id="rhdh-above-sidebar-header-container" ref={aboveSidebarHeaderRef}>
         <ApplicationHeaders position="above-sidebar" />
       </div>
       <SidebarLayout
+        id="rhdh-sidebar-layout"
         aboveSidebarHeaderHeight={aboveSidebarHeaderHeight}
         aboveMainContentHeaderHeight={aboveMainContentHeaderHeight}
       >
         <SidebarPage>
           <div
-            id="above-main-content-header-container"
+            id="rhdh-above-main-content-header-container"
             ref={aboveMainContentHeaderRef}
           >
             <ApplicationHeaders position="above-main-content" />
