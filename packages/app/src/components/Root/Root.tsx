@@ -79,6 +79,7 @@ import { SidebarLogo } from './SidebarLogo';
  * </body>
  * ```
  */
+// this component is copied to rhdh-plugins/global-header packages/app/src/components/Root/Root.tsx and should be kept in sync
 const PageWithoutFixHeight = styled(Box, {
   name: 'RHDHPageWithoutFixHeight',
   slot: 'root',
@@ -98,6 +99,7 @@ const PageWithoutFixHeight = styled(Box, {
   },
 }));
 
+// this component is copied to rhdh-plugins/global-header packages/app/src/components/Root/Root.tsx and should be kept in sync
 const SidebarLayout = styled(Box, {
   name: 'RHDHPageWithoutFixHeight',
   slot: 'sidebarLayout',
