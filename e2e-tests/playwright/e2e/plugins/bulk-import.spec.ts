@@ -90,7 +90,7 @@ test.describe.serial("Bulk Import plugin", () => {
     ]);
     await expect(
       await uiHelper.clickButton("Create pull requests"),
-    ).not.toBeVisible({ timeout: 10000 });
+    ).toBeDisabled({ timeout: 10000 });
   });
 
   test('Verify that the two selected repositories are listed: one with the status "Added" and another with the status "WAIT_PR_APPROVAL."', async () => {
@@ -181,11 +181,17 @@ test.describe.serial("Bulk Import plugin", () => {
     ).toHaveLength(0);
 
     await bulkimport.filterAddedRepo(newRepoDetails.repoName);
-    // verify that the status has changed to "ADDED."
-    await uiHelper.clickOnButtonInTableByUniqueText(
+
+    // Wait for page and UI to stabilize after PR merge
+    await common.waitForLoad();
+    await page.waitForTimeout(3000); // Allow time for the UI to update after PR merge
+
+    await uiHelper.clickOnButtonInTableByUniqueTextWithRetry(
       newRepoDetails.repoName,
       "Refresh",
     );
+
+    // verify that the status has changed to "ADDED."
     await uiHelper.verifyRowInTableByUniqueText(newRepoDetails.repoName, [
       "Added",
     ]);

@@ -486,6 +486,89 @@ export class UIhelper {
       .click();
   }
 
+  /**
+   * Clicks on a button within a table row with better error handling and retry logic.
+   * This method is more robust for handling timing issues and dynamic content loading.
+   * @param {string} uniqueRowText - The unique text present in one of the cells within the row.
+   * @param {string | RegExp} textOrLabel - The text of the button or the `aria-label` attribute.
+   * @param {number} timeout - Maximum time to wait for the element (default: 30000ms).
+   */
+  async clickOnButtonInTableByUniqueTextWithRetry(
+    uniqueRowText: string,
+    textOrLabel: string | RegExp,
+    timeout: number = 30000,
+  ) {
+    await expect(async () => {
+      // First, wait for the table to be loaded
+      await this.page.waitForSelector("table", { state: "visible" });
+      
+      // Debug: Log current page state
+      const tableRows = await this.page.locator("table tbody tr").count();
+      console.log(`[DEBUG] Table has ${tableRows} rows`);
+      
+      // Try different selector strategies
+      const rowSelectors = [
+        `tr:has(:text-is("${uniqueRowText}"))`,
+        `tr:has-text("${uniqueRowText}")`,
+        `tr:has(td:text("${uniqueRowText}"))`,
+      ];
+      
+      let row;
+      let foundSelector = "";
+      
+      for (const selector of rowSelectors) {
+        const potentialRow = this.page.locator(selector);
+        const count = await potentialRow.count();
+        console.log(`[DEBUG] Selector "${selector}" found ${count} elements`);
+        
+        if (count > 0) {
+          row = potentialRow.first();
+          foundSelector = selector;
+          break;
+        }
+      }
+      
+      if (!row) {
+        // Debug: List all visible table rows
+        const allRows = await this.page.locator("table tbody tr").all();
+        console.log(`[DEBUG] Available rows in table:`);
+        for (let i = 0; i < allRows.length; i++) {
+          const rowText = await allRows[i].textContent();
+          console.log(`[DEBUG] Row ${i}: "${rowText}"`);
+        }
+        throw new Error(`Could not find row with text: "${uniqueRowText}"`);
+      }
+      
+      console.log(`[DEBUG] Found row using selector: "${foundSelector}"`);
+      await row.waitFor({ state: "visible" });
+      
+      const button = row.locator(
+        `button:has-text("${textOrLabel}"), button[aria-label="${textOrLabel}"]`,
+      ).first();
+      
+      const buttonCount = await button.count();
+      if (buttonCount === 0) {
+        const rowText = await row.textContent();
+        console.log(`[DEBUG] Row content: "${rowText}"`);
+        const allButtons = await row.locator("button").all();
+        console.log(`[DEBUG] Available buttons in row:`);
+        for (let i = 0; i < allButtons.length; i++) {
+          const buttonText = await allButtons[i].textContent();
+          const ariaLabel = await allButtons[i].getAttribute("aria-label");
+          console.log(`[DEBUG] Button ${i}: text="${buttonText}", aria-label="${ariaLabel}"`);
+        }
+        throw new Error(`Could not find button with text/aria-label: "${textOrLabel}" in row: "${uniqueRowText}"`);
+      }
+      
+      await button.waitFor({ state: "visible" });
+      await button.click();
+      console.log(`[DEBUG] Successfully clicked button "${textOrLabel}" in row "${uniqueRowText}"`);
+    }).toPass({
+      intervals: [1_000, 2_000, 5_000],
+      timeout: timeout,
+    });
+  }
+
   async verifyLinkinCard(cardHeading: string, linkText: string, exact = true) {
     const link = this.page
       .locator(UI_HELPER_ELEMENTS.MuiCard(cardHeading))

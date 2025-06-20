@@ -59,60 +59,9 @@ export class KubeClient {
     }
   }
 
-  async listConfigMaps(namespace: string) {
-    try {
-      console.log(`Listing configmaps in namespace ${namespace}`);
-      return await this.coreV1Api.listNamespacedConfigMap(namespace);
-    } catch (e) {
-      console.error(e.body?.message);
-      throw e;
-    }
-  }
-
-  // Define possible ConfigMap base names as a constant
-  private readonly appConfigNames = [
-    'app-config-rhdh',
-    'app-config',
-    'backstage-app-config',
-    'rhdh-app-config'
-  ];
-
-  async findAppConfigMap(namespace: string): Promise<string> {
-    try {
-      const configMapsResponse = await this.listConfigMaps(namespace);
-      const configMaps = configMapsResponse.body.items;
-
-      console.log(`Found ${configMaps.length} ConfigMaps in namespace ${namespace}`);
-      configMaps.forEach(cm => {
-        console.log(`ConfigMap: ${cm.metadata?.name}`);
-      });
-
-      for (const name of this.appConfigNames) {
-        const found = configMaps.find(cm => cm.metadata?.name === name);
-        if (found) {
-          console.log(`Found app config ConfigMap: ${name}`);
-          return name;
-        }
-      }
-
-      // If none of the expected names found, look for ConfigMaps containing app-config data
-      for (const cm of configMaps) {
-        if (cm.data && Object.keys(cm.data).some(key =>
-          key.includes('app-config') && key.endsWith('.yaml'))) {
-          console.log(`Found ConfigMap with app-config data: ${cm.metadata?.name}`);
-          return cm.metadata?.name || '';
-        }
-      }
-
-      throw new Error(`No suitable app-config ConfigMap found in namespace ${namespace}`);
-    } catch (error) {
-      console.error(`Error finding app config ConfigMap: ${error}`);
-      throw error;
-    }
-  }
-
   async getNamespaceByName(name: string): Promise<k8s.V1Namespace | null> {
     try {
+      console.log(`Getting namespace ${name}.`);
       return (await this.coreV1Api.readNamespace(name)).body;
     } catch (e) {
       console.log(`Error getting namespace ${name}: ${e.body?.message}`);
@@ -194,94 +143,30 @@ export class KubeClient {
     newTitle: string,
   ) {
     try {
-      // If the provided configMapName doesn't exist, try to find the correct one dynamically
-      let actualConfigMapName = configMapName;
-      try {
-        await this.getConfigMap(configMapName, namespace);
-        console.log(`Using provided ConfigMap name: ${configMapName}`);
-      } catch (error) {
-        if (error.response?.statusCode === 404) {
-          console.log(`ConfigMap ${configMapName} not found, searching for alternatives...`);
-          actualConfigMapName = await this.findAppConfigMap(namespace);
-        } else {
-          throw error;
-        }
-      }
-
       const configMapResponse = await this.getConfigMap(
-        actualConfigMapName,
+        configMapName,
         namespace,
       );
       const configMap = configMapResponse.body;
 
-      console.log(`Using ConfigMap: ${actualConfigMapName}`);
-      console.log(`Available data keys: ${Object.keys(configMap.data || {}).join(', ')}`);
-
-      // Find the correct data key dynamically
-      let dataKey: string | undefined;
-      const dataKeys = Object.keys(configMap.data || {});
-
-      // Generate key patterns from the possible names + the actual ConfigMap name
-      const keyPatterns = [
-        `${actualConfigMapName}.yaml`,
-        ...this.appConfigNames.map(name => `${name}.yaml`)
-      ];
-
-      for (const pattern of keyPatterns) {
-        if (dataKeys.includes(pattern)) {
-          dataKey = pattern;
-          break;
-        }
-      }
-
-      // If none of the patterns match, look for any .yaml file containing app-config
-      if (!dataKey) {
-        dataKey = dataKeys.find(key =>
-          key.endsWith('.yaml') && key.includes('app-config')
-        );
-      }
-
-      // Last resort: use any .yaml file
-      if (!dataKey) {
-        dataKey = dataKeys.find(key => key.endsWith('.yaml'));
-      }
-
-      if (!dataKey) {
-        throw new Error(`No suitable YAML data key found in ConfigMap '${actualConfigMapName}'. Available keys: ${dataKeys.join(', ')}`);
-      }
-
-      console.log(`Using data key: ${dataKey}`);
-      const appConfigYaml = configMap.data[dataKey];
-
-      if (!appConfigYaml) {
-        throw new Error(`Data key '${dataKey}' is empty in ConfigMap '${actualConfigMapName}'`);
-      }
-
+      const appConfigYaml = configMap.data[`${configMapName}.yaml`];
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const appConfigObj = yaml.load(appConfigYaml) as any;
 
-      if (!appConfigObj || !appConfigObj.app) {
-        throw new Error(`Invalid app-config structure in ConfigMap '${actualConfigMapName}'. Expected 'app' section not found.`);
-      }
-
-      console.log(`Current title: ${appConfigObj.app.title}`);
       appConfigObj.app.title = newTitle;
-      console.log(`New title: ${newTitle}`);
-
-      configMap.data[dataKey] = yaml.dump(appConfigObj);
+      configMap.data[`${configMapName}.yaml`] = yaml.dump(appConfigObj);
 
       delete configMap.metadata.creationTimestamp;
-      delete configMap.metadata.resourceVersion;
 
       await this.coreV1Api.replaceNamespacedConfigMap(
-        actualConfigMapName,
+        configMapName,
         namespace,
         configMap,
       );
-      console.log(`ConfigMap '${actualConfigMapName}' updated successfully with new title: '${newTitle}'`);
+      console.log("ConfigMap updated successfully.");
     } catch (error) {
       console.error("Error updating ConfigMap:", error);
-      throw new Error(`Failed to update ConfigMap: ${error.message}`);
+      throw new Error("Failed to update ConfigMap");
     }
   }
 
@@ -401,18 +286,19 @@ export class KubeClient {
     timeout: number = 300000, // 5 minutes
     checkInterval: number = 10000, // 10 seconds
   ) {
-    const endTime = Date.now() + timeout;
+    const start = Date.now();
     const labelSelector =
       "app.kubernetes.io/component=backstage,app.kubernetes.io/instance=rhdh,app.kubernetes.io/name=backstage";
 
-    while (Date.now() < endTime) {
+    while (Date.now() - start < timeout) {
       try {
+        // Check deployment status
         const response = await this.appsApi.readNamespacedDeployment(
           deploymentName,
           namespace,
         );
+
         const availableReplicas = response.body.status?.availableReplicas || 0;
-        const readyReplicas = response.body.status?.readyReplicas || 0;
         const conditions = response.body.status?.conditions || [];
 
         console.log(`Available replicas: ${availableReplicas}`);
@@ -433,7 +319,7 @@ export class KubeClient {
         }
 
         console.log(
-          `Waiting for ${deploymentName} to reach ${expectedReplicas} replicas, currently has ${availableReplicas} available, ${readyReplicas} ready.`,
+          `Waiting for ${deploymentName} to reach ${expectedReplicas} replicas, currently has ${availableReplicas}.`,
         );
       } catch (error) {
         console.error(`Error checking deployment status: ${error}`);
@@ -443,32 +329,23 @@ export class KubeClient {
     }
 
     throw new Error(
-      `Deployment ${deploymentName} did not become ready in time (timeout: ${timeout / 1000}s).`,
+      `Deployment ${deploymentName} did not become ready in time.`,
     );
   }
 
   async restartDeployment(deploymentName: string, namespace: string) {
     try {
-      console.log(
-        `Starting deployment restart for ${deploymentName} in namespace ${namespace}`,
-      );
-
-      // Scale down deployment to 0 replicas
       console.log(`Scaling down deployment ${deploymentName} to 0 replicas.`);
       console.log(`Deployment: ${deploymentName}, Namespace: ${namespace}`);
       await this.logPodConditions(namespace);
       await this.scaleDeployment(deploymentName, namespace, 0);
-      await this.waitForDeploymentReady(deploymentName, namespace, 0, 300000); // 5 minutes for scale down
 
-      // Wait a bit for pods to be fully terminated
-      console.log("Waiting for pods to be fully terminated...");
-      await new Promise((resolve) => setTimeout(resolve, 10000)); // 10 seconds
+      await this.waitForDeploymentReady(deploymentName, namespace, 0);
 
-      // Scale up deployment to 1 replica
       console.log(`Scaling up deployment ${deploymentName} to 1 replica.`);
       await this.scaleDeployment(deploymentName, namespace, 1);
 
-      await this.waitForDeploymentReady(deploymentName, namespace, 1, 600000); // 10 minutes for scale up
+      await this.waitForDeploymentReady(deploymentName, namespace, 1);
 
       console.log(
         `Restart of deployment ${deploymentName} completed successfully.`,
@@ -476,12 +353,11 @@ export class KubeClient {
     } catch (error) {
       console.error(
         `Error during deployment restart: Deployment '${deploymentName}' in namespace '${namespace}'.`,
-        error,
       );
       await this.logPodConditions(namespace);
       await this.logDeploymentEvents(deploymentName, namespace);
       throw new Error(
-        `Failed to restart deployment '${deploymentName}' in namespace '${namespace}': ${error.message}`,
+        `Failed to restart deployment '${deploymentName}' in namespace '${namespace}'.`,
       );
     }
   }
