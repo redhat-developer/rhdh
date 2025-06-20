@@ -49,7 +49,7 @@ test.describe("Verify Redis Cache DB", () => {
 
     await uiHelper.openSidebarButton("Favorites");
     await uiHelper.openSidebar("Docs");
-    await uiHelper.clickLink("Backstage Showcase");
+    await uiHelper.clickLink("Red Hat Developer Hub");
 
     // ensure that the docs are generated. if redis configuration has an error, this page will hang and docs won't be generated
     await expect(async () => {
