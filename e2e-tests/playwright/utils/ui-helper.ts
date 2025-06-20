@@ -536,9 +536,11 @@ export class UIhelper {
       console.log(`[DEBUG] Found row using selector: "${foundSelector}"`);
       await row.waitFor({ state: "visible" });
 
-      const button = row.locator(
-        `button:has-text("${textOrLabel}"), button[aria-label="${textOrLabel}"]`,
-      ).first();
+      const button = row
+        .locator(
+          `button:has-text("${textOrLabel}"), button[aria-label="${textOrLabel}"]`,
+        )
+        .first();
 
       const buttonCount = await button.count();
       if (buttonCount === 0) {
@@ -549,14 +551,20 @@ export class UIhelper {
         for (let i = 0; i < allButtons.length; i++) {
           const buttonText = await allButtons[i].textContent();
           const ariaLabel = await allButtons[i].getAttribute("aria-label");
-          console.log(`[DEBUG] Button ${i}: text="${buttonText}", aria-label="${ariaLabel}"`);
+          console.log(
+            `[DEBUG] Button ${i}: text="${buttonText}", aria-label="${ariaLabel}"`,
+          );
         }
-        throw new Error(`Could not find button with text/aria-label: "${textOrLabel}" in row: "${uniqueRowText}"`);
+        throw new Error(
+          `Could not find button with text/aria-label: "${textOrLabel}" in row: "${uniqueRowText}"`,
+        );
       }
 
       await button.waitFor({ state: "visible" });
       await button.click();
-      console.log(`[DEBUG] Successfully clicked button "${textOrLabel}" in row "${uniqueRowText}"`);
+      console.log(
+        `[DEBUG] Successfully clicked button "${textOrLabel}" in row "${uniqueRowText}"`,
+      );
     }).toPass({
       intervals: [1_000, 2_000, 5_000],
       timeout: timeout,
@@ -772,14 +780,14 @@ export class UIhelper {
       block?: "start" | "center" | "end" | "nearest";
       inline?: "start" | "center" | "end" | "nearest";
       retries?: number;
-    } = {}
+    } = {},
   ) {
     const {
       timeout = 10000,
       behavior = "auto",
       block = "center",
       inline = "nearest",
-      retries = 3
+      retries = 3,
     } = options;
 
     for (let attempt = 1; attempt <= retries; attempt++) {
@@ -787,7 +795,7 @@ export class UIhelper {
         // First, ensure the element exists and is attached to the DOM
         await locator.waitFor({
           state: "attached",
-          timeout: timeout / retries
+          timeout: timeout / retries,
         });
 
         // Check if element is already visible
@@ -796,11 +804,13 @@ export class UIhelper {
           const box = await locator.boundingBox();
           if (box) {
             const viewport = this.page.viewportSize();
-            if (viewport &&
-                box.y >= 0 &&
-                box.y + box.height <= viewport.height &&
-                box.x >= 0 &&
-                box.x + box.width <= viewport.width) {
+            if (
+              viewport &&
+              box.y >= 0 &&
+              box.y + box.height <= viewport.height &&
+              box.x >= 0 &&
+              box.x + box.width <= viewport.width
+            ) {
               // Element is already fully visible, no need to scroll
               return;
             }
@@ -814,19 +824,23 @@ export class UIhelper {
           // Verify the scroll was successful
           await locator.waitFor({ state: "visible", timeout: 2000 });
           return; // Success!
-
         } catch (scrollError) {
-          console.warn(`[safeScrollIntoView] scrollIntoViewIfNeeded failed on attempt ${attempt}: ${scrollError.message}`);
+          console.warn(
+            `[safeScrollIntoView] scrollIntoViewIfNeeded failed on attempt ${attempt}: ${scrollError.message}`,
+          );
 
           // Fallback: Use JavaScript scrollIntoView
           try {
-            await locator.evaluate((element, scrollOptions) => {
-              element.scrollIntoView({
-                behavior: scrollOptions.behavior,
-                block: scrollOptions.block,
-                inline: scrollOptions.inline
-              });
-            }, { behavior, block, inline });
+            await locator.evaluate(
+              (element, scrollOptions) => {
+                element.scrollIntoView({
+                  behavior: scrollOptions.behavior,
+                  block: scrollOptions.block,
+                  inline: scrollOptions.inline,
+                });
+              },
+              { behavior, block, inline },
+            );
 
             // Small delay to allow scroll to complete
             await this.page.waitForTimeout(300);
@@ -834,23 +848,29 @@ export class UIhelper {
             // Verify the element is now visible
             await locator.waitFor({ state: "visible", timeout: 2000 });
             return; // Success!
-
           } catch (jsScrollError) {
-            console.warn(`[safeScrollIntoView] JavaScript scrollIntoView failed on attempt ${attempt}: ${jsScrollError.message}`);
+            console.warn(
+              `[safeScrollIntoView] JavaScript scrollIntoView failed on attempt ${attempt}: ${jsScrollError.message}`,
+            );
           }
         }
 
         // If we're here, both scroll methods failed
         if (attempt < retries) {
-          console.warn(`[safeScrollIntoView] Attempt ${attempt} failed, retrying...`);
+          console.warn(
+            `[safeScrollIntoView] Attempt ${attempt} failed, retrying...`,
+          );
           await this.page.waitForTimeout(1000 * attempt); // Progressive delay
         }
-
       } catch (error) {
-        console.warn(`[safeScrollIntoView] Attempt ${attempt} failed with error: ${error.message}`);
+        console.warn(
+          `[safeScrollIntoView] Attempt ${attempt} failed with error: ${error.message}`,
+        );
         if (attempt === retries) {
           // On final attempt, just log warning and continue
-          console.warn(`[safeScrollIntoView] All ${retries} attempts failed. Continuing without scroll.`);
+          console.warn(
+            `[safeScrollIntoView] All ${retries} attempts failed. Continuing without scroll.`,
+          );
           return;
         }
       }
