@@ -48,6 +48,8 @@ import { SidebarLogo } from './SidebarLogo';
  * to support the application headers (and the global header plugin)
  * without having multiple scrollbars.
  *
+ * Note that we cannot target class names directly, due to obfuscation in production builds.
+ *
  * This solves also the duplicate scrollbar issues in tech docs:
  * https://issues.redhat.com/browse/RHIDP-4637 (Scrollbar for docs behaves weirdly if there are over a page of headings)
  *
@@ -120,7 +122,8 @@ const SidebarLayout = styled(Box, {
     flexGrow: 1,
     maxHeight: `calc(100vh - ${aboveSidebarHeaderHeight ?? 0}px)`,
 
-    '& div[class*="BackstageSidebarPage"]': {
+    // BackstageSidebarPage-root
+    '& > div': {
       display: 'flex',
       flexDirection: 'column',
       height: 'unset',
@@ -136,15 +139,16 @@ const SidebarLayout = styled(Box, {
       },
     },
 
-    // The height is controlled by the flexbox in the BackstageSidebarPage.
-    '& main[class*="BackstagePage-root"]': {
+    '& main': {
+      // The height is controlled by the flexbox in the BackstageSidebarPage.
       height: `calc(100vh - ${aboveSidebarHeaderHeight! + aboveMainContentHeaderHeight!}px)`,
       flexGrow: 1,
     },
 
-    // We need to compensate for the above-sidebar position of the global header
-    // as it takes up a fixed height at the top of the page.
-    '& div[class*="BackstageSidebar-drawer"]': {
+    // BackstageSidebarPage-root > nav > BackstageSidebar-root > BackstageSidebar-drawer
+    '& > div > nav > div > div': {
+      // We need to compensate for the above-sidebar position of the global header
+      // as it takes up a fixed height at the top of the page.
       top: `max(0px, ${aboveSidebarHeaderHeight ?? 0}px)`,
     },
   }),
@@ -425,16 +429,17 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
 
   return (
     <PageWithoutFixHeight>
-      <div id="above-sidebar-header-container" ref={aboveSidebarHeaderRef}>
+      <div id="rhdh-above-sidebar-header-container" ref={aboveSidebarHeaderRef}>
         <ApplicationHeaders position="above-sidebar" />
       </div>
       <SidebarLayout
+        id="rhdh-sidebar-layout"
         aboveSidebarHeaderHeight={aboveSidebarHeaderHeight}
         aboveMainContentHeaderHeight={aboveMainContentHeaderHeight}
       >
         <SidebarPage>
           <div
-            id="above-main-content-header-container"
+            id="rhdh-above-main-content-header-container"
             ref={aboveMainContentHeaderRef}
           >
             <ApplicationHeaders position="above-main-content" />
