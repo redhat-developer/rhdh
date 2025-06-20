@@ -1,15 +1,15 @@
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: backstage-showcase
-  title: Backstage Showcase
-  description: |
-    This is the Janus Community Showcase of Backstage.io
+  name: red-hat-developer-hub
+  title: Red Hat Developer Hub
+  description: |-
+    A Red Hat supported version of Backstage, available as container image. Includes pre-built plug-ins, settings, and deployment details, to help streamline setting up a self-managed internal developer portal for new adopters
   links:
-    - title: Janus Website
-      url: https://janus-idp.io
-    - title: Janus Showcase
-      url: https://showcase.janus-idp.io/
+    - title: About RHDH
+      url: https://developers.redhat.com/rhdh
+    - title: RHDH Documentation
+      url: https://docs.redhat.com/en/documentation/red_hat_developer_hub/
     - title: Blog
       url: https://janus-idp.io/blog
     - title: Backstage Discord
@@ -24,8 +24,8 @@ metadata:
     sonarqube.org/project-key: janus-idp_backstage-showcase
 spec:
   type: website
-  system: janus-idp
-  owner: janus-authors
+  system: red-hat-developer-hub
+  owner: red-hat
   lifecycle: production
   dependsOn:
     - resource:pgdb
