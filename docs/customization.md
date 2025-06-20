@@ -8,14 +8,16 @@ Plugins can use field `developerHub.flavor` of the `app-config.yaml` to identify
 
 The sidebar uses two logos - one for the expanded sidebar and one for the collapsed sidebar.
 
-- To customize the logo for the expanded sidebar, provide a Base64 encoded image of your logo in the `app.branding.fullLogo` field of the `app-config.yaml`.
+- To customize the logo for the expanded sidebar, provide a both light and dark mode Base64 encoded images of your logo in the `app.branding.fullLogo` field of the `app-config.yaml`. You may also opt to provide a single Base64 encoded image that will be used for both light and dark modes.
 - To change the width of logo, provide your required size of logo in the `app.branding.fullLogoWidth` field of `app-config.yaml`
-- Similarly, to customize the logo for the collapsed sidebar, provide a Base64 encoded image of your logo in the `app.branding.iconLogo` field of the `app-config.yaml`:
+- Similarly, to customize the logo for the collapsed sidebar, provide either a string value of a Base64 encoded image, or both light and dark mode Base64 encoded images of your logo in the `app.branding.iconLogo` field of the `app-config.yaml`.
 
 ```yaml title="app-config.yaml"
 app:
   branding:
-    fullLogo: ${BASE64_EMBEDDED_FULL_LOGO} # SVG Example: data:image/svg+xml;base64,PD94...
+    fullLogo:
+      light: ${BASE64_EMBEDDED_FULL_LOGO_LIGHT} # SVG Example: data:image/svg+xml;base64,PD94...
+      dark: ${BASE64_EMBEDDED_FULL_LOGO} # SVG Example: data:image/svg+xml;base64,PD94...
     fullLogoWidth: ${FULL_LOGO_WIDTH} # The following units are supported: <number>, px, em, rem, <percentage>
     iconLogo: ${BASE64_EMBEDDED_ICON_LOGO} # PNG Example: data:image/png;base64,iVBO...
 ```
