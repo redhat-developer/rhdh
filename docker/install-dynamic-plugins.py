@@ -513,6 +513,9 @@ def main():
         print('\t==> Successfully installed dynamic plugin', package, flush=True)
 
     yaml.safe_dump(globalConfig, open(dynamicPluginsGlobalConfigFile, 'w'))
+    
+    finalPluginsGlobalConfigFile = os.path.join(dynamicPluginsRoot, 'dynamic-plugins.final.yaml')
+    yaml.safe_dump(allPlugins, open(finalPluginsGlobalConfigFile, 'w'))
 
     # remove plugins that have been removed from the configuration
     for hash_value in plugin_path_by_hash:
