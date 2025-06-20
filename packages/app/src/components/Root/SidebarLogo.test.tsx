@@ -23,13 +23,6 @@ jest.mock('../../hooks/useThemedConfig', () => ({
   useAppBarThemedConfig: jest.fn(),
 }));
 
-jest.mock('./LogoFull.tsx', () => () => (
-  <svg data-testid="default-full-logo" />
-));
-jest.mock('./LogoIcon.tsx', () => () => (
-  <svg data-testid="default-icon-logo" />
-));
-
 describe('SidebarLogo', () => {
   it('when sidebar is open renders the component with full logo base64 provided by config', () => {
     (useApi as any).mockReturnValue({

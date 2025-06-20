@@ -1,11 +1,13 @@
+import type { ComponentType } from 'react';
+
 import { Link, useSidebarOpenState } from '@backstage/core-components';
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
 import { makeStyles } from 'tss-react/mui';
 
 import { useAppBarThemedConfig } from '../../hooks/useThemedConfig';
-import LogoFull from './LogoFull';
-import LogoIcon from './LogoIcon';
+import { LogoFull } from './LogoFull';
+import { LogoIcon } from './LogoIcon';
 
 const useStyles = makeStyles()({
   sidebarLogo: {
@@ -15,11 +17,11 @@ const useStyles = makeStyles()({
 
 const LogoRender = ({
   base64Logo,
-  defaultLogo,
+  DefaultLogo,
   width,
 }: {
   base64Logo: string | undefined;
-  defaultLogo: React.JSX.Element;
+  DefaultLogo: ComponentType<React.ComponentProps<'svg'>>;
   width: string | number;
 }) => {
   return base64Logo ? (
@@ -30,7 +32,7 @@ const LogoRender = ({
       width={width}
     />
   ) : (
-    defaultLogo
+    <DefaultLogo width={width} />
   );
 };
 
@@ -54,13 +56,13 @@ export const SidebarLogo = () => {
         {isOpen ? (
           <LogoRender
             base64Logo={logoFullBase64URI}
-            defaultLogo={<LogoFull />}
+            DefaultLogo={LogoFull}
             width={fullLogoWidth ?? 170}
           />
         ) : (
           <LogoRender
             base64Logo={logoIconBase64URI}
-            defaultLogo={<LogoIcon />}
+            DefaultLogo={LogoIcon}
             width={28}
           />
         )}

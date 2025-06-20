@@ -11,16 +11,24 @@ type fullLogoType = NonNullable<Config['app']['branding']>['fullLogo'];
 type iconLogoType = NonNullable<Config['app']['branding']>['fullLogo'];
 
 /**
+ * Get the app bar background scheme from the theme. Defaults to 'dark' if not set.
+ */
+export const useAppBarBackgroundScheme = () => {
+  const theme = useTheme();
+
+  return (
+    (theme as ThemeConfig)?.palette?.rhdh?.general?.appBarBackgroundScheme ??
+    'dark'
+  );
+};
+
+/**
  * Gets a config value based on the value of `theme.palette.rhdh.general.appBarBackgroundScheme`.
  */
 export const useAppBarThemedConfig = (
   key: 'app.branding.fullLogo' | 'app.branding.iconLogo',
 ) => {
-  const theme = useTheme();
-
-  const appBarBackgroundScheme =
-    (theme as ThemeConfig)?.palette?.rhdh?.general?.appBarBackgroundScheme ??
-    'dark';
+  const appBarBackgroundScheme = useAppBarBackgroundScheme();
 
   const configApi = useApi(configApiRef);
 
