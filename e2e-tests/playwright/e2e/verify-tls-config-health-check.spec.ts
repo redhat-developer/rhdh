@@ -59,7 +59,7 @@ test.describe
   });
 
   //TODO: Remove the skip once the https://issues.redhat.com/browse/RHIDP-7869 is fixed
-  test("Verify successful DB connection and successful initialization of plugins with latest-3 postgres version", async ({
+  test.skip("Verify successful DB connection and successful initialization of plugins with latest-3 postgres version", async ({
     page,
   }) => {
     const common = new Common(page);
