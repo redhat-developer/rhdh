@@ -261,13 +261,7 @@ export class UIhelper {
     await elementLocator.waitFor({ state: "visible" });
     await elementLocator.waitFor({ state: "attached" });
 
-    try {
-      await elementLocator.scrollIntoViewIfNeeded();
-    } catch (error) {
-      console.warn(
-        `Warning: Could not scroll element into view. Error: ${error.message}`,
-      );
-    }
+    await this.safeScrollIntoView(elementLocator);
     await expect(elementLocator).toBeVisible();
   }
 
@@ -336,7 +330,7 @@ export class UIhelper {
         .getByText(rowText, { exact: exact })
         .first();
       await rowLocator.waitFor({ state: "visible" });
-      await rowLocator.scrollIntoViewIfNeeded();
+      await this.safeScrollIntoView(rowLocator);
       await expect(rowLocator).toBeVisible();
     }
   }
@@ -486,13 +480,104 @@ export class UIhelper {
       .click();
   }
 
+  /**
+   * Clicks on a button within a table row with better error handling and retry logic.
+   * This method is more robust for handling timing issues and dynamic content loading.
+   * @param {string} uniqueRowText - The unique text present in one of the cells within the row.
+   * @param {string | RegExp} textOrLabel - The text of the button or the `aria-label` attribute.
+   * @param {number} timeout - Maximum time to wait for the element (default: 30000ms).
+   */
+  async clickOnButtonInTableByUniqueTextWithRetry(
+    uniqueRowText: string,
+    textOrLabel: string | RegExp,
+    timeout: number = 30000,
+  ) {
+    await expect(async () => {
+      // First, wait for the table to be loaded
+      await this.page.waitForSelector("table", { state: "visible" });
+
+      // Debug: Log current page state
+      const tableRows = await this.page.locator("table tbody tr").count();
+      console.log(`[DEBUG] Table has ${tableRows} rows`);
+
+      // Try different selector strategies
+      const rowSelectors = [
+        `tr:has(:text-is("${uniqueRowText}"))`,
+        `tr:has-text("${uniqueRowText}")`,
+        `tr:has(td:text("${uniqueRowText}"))`,
+      ];
+
+      let row;
+      let foundSelector = "";
+
+      for (const selector of rowSelectors) {
+        const potentialRow = this.page.locator(selector);
+        const count = await potentialRow.count();
+        console.log(`[DEBUG] Selector "${selector}" found ${count} elements`);
+
+        if (count > 0) {
+          row = potentialRow.first();
+          foundSelector = selector;
+          break;
+        }
+      }
+
+      if (!row) {
+        // Debug: List all visible table rows
+        const allRows = await this.page.locator("table tbody tr").all();
+        console.log(`[DEBUG] Available rows in table:`);
+        for (let i = 0; i < allRows.length; i++) {
+          const rowText = await allRows[i].textContent();
+          console.log(`[DEBUG] Row ${i}: "${rowText}"`);
+        }
+        throw new Error(`Could not find row with text: "${uniqueRowText}"`);
+      }
+
+      console.log(`[DEBUG] Found row using selector: "${foundSelector}"`);
+      await row.waitFor({ state: "visible" });
+
+      const button = row
+        .locator(
+          `button:has-text("${textOrLabel}"), button[aria-label="${textOrLabel}"]`,
+        )
+        .first();
+
+      const buttonCount = await button.count();
+      if (buttonCount === 0) {
+        const rowText = await row.textContent();
+        console.log(`[DEBUG] Row content: "${rowText}"`);
+        const allButtons = await row.locator("button").all();
+        console.log(`[DEBUG] Available buttons in row:`);
+        for (let i = 0; i < allButtons.length; i++) {
+          const buttonText = await allButtons[i].textContent();
+          const ariaLabel = await allButtons[i].getAttribute("aria-label");
+          console.log(
+            `[DEBUG] Button ${i}: text="${buttonText}", aria-label="${ariaLabel}"`,
+          );
+        }
+        throw new Error(
+          `Could not find button with text/aria-label: "${textOrLabel}" in row: "${uniqueRowText}"`,
+        );
+      }
+
+      await button.waitFor({ state: "visible" });
+      await button.click();
+      console.log(
+        `[DEBUG] Successfully clicked button "${textOrLabel}" in row "${uniqueRowText}"`,
+      );
+    }).toPass({
+      intervals: [1_000, 2_000, 5_000],
+      timeout: timeout,
+    });
+  }
+
   async verifyLinkinCard(cardHeading: string, linkText: string, exact = true) {
     const link = this.page
       .locator(UI_HELPER_ELEMENTS.MuiCard(cardHeading))
       .locator("a")
       .getByText(linkText, { exact: exact })
       .first();
-    await link.scrollIntoViewIfNeeded();
+    await this.safeScrollIntoView(link);
     await expect(link).toBeVisible();
   }
 
@@ -500,7 +585,7 @@ export class UIhelper {
     const cardLocator = this.page
       .locator(UI_HELPER_ELEMENTS.MuiCardRoot(cardText))
       .first();
-    await cardLocator.scrollIntoViewIfNeeded();
+    await this.safeScrollIntoView(cardLocator);
     await cardLocator
       .getByRole("button", { name: btnText, exact: exact })
       .first()
@@ -677,5 +762,131 @@ export class UIhelper {
   async verifyTextInTooltip(text: string | RegExp) {
     const tooltip = this.page.getByRole("tooltip").getByText(text);
     await expect(tooltip).toBeVisible();
+  }
+
+  /**
+   * Safely scrolls an element into view with retry logic and error handling.
+   * This method is more robust than the native scrollIntoViewIfNeeded() and handles
+   * common failure scenarios like timing issues, missing elements, and layout problems.
+   *
+   * @param locator - The Playwright locator for the element to scroll into view
+   * @param options - Configuration options for the scroll behavior
+   */
+  async safeScrollIntoView(
+    locator: Locator,
+    options: {
+      timeout?: number;
+      behavior?: "auto" | "smooth";
+      block?: "start" | "center" | "end" | "nearest";
+      inline?: "start" | "center" | "end" | "nearest";
+      retries?: number;
+    } = {},
+  ) {
+    const {
+      timeout = 10000,
+      behavior = "auto",
+      block = "center",
+      inline = "nearest",
+      retries = 3,
+    } = options;
+
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        // First, ensure the element exists and is attached to the DOM
+        await locator.waitFor({
+          state: "attached",
+          timeout: timeout / retries,
+        });
+
+        // Check if element is already visible
+        const isVisible = await locator.isVisible();
+        if (isVisible) {
+          const box = await locator.boundingBox();
+          if (box) {
+            const viewport = this.page.viewportSize();
+            if (
+              viewport &&
+              box.y >= 0 &&
+              box.y + box.height <= viewport.height &&
+              box.x >= 0 &&
+              box.x + box.width <= viewport.width
+            ) {
+              // Element is already fully visible, no need to scroll
+              return;
+            }
+          }
+        }
+
+        // Try scrollIntoViewIfNeeded first (most reliable when it works)
+        try {
+          await locator.scrollIntoViewIfNeeded({ timeout: timeout / retries });
+
+          // Verify the scroll was successful
+          await locator.waitFor({ state: "visible", timeout: 2000 });
+          return; // Success!
+        } catch (scrollError) {
+          console.warn(
+            `[safeScrollIntoView] scrollIntoViewIfNeeded failed on attempt ${attempt}: ${scrollError.message}`,
+          );
+
+          // Fallback: Use JavaScript scrollIntoView
+          try {
+            await locator.evaluate(
+              (element, scrollOptions) => {
+                element.scrollIntoView({
+                  behavior: scrollOptions.behavior,
+                  block: scrollOptions.block,
+                  inline: scrollOptions.inline,
+                });
+              },
+              { behavior, block, inline },
+            );
+
+            // Small delay to allow scroll to complete
+            await this.page.waitForTimeout(300);
+
+            // Verify the element is now visible
+            await locator.waitFor({ state: "visible", timeout: 2000 });
+            return; // Success!
+          } catch (jsScrollError) {
+            console.warn(
+              `[safeScrollIntoView] JavaScript scrollIntoView failed on attempt ${attempt}: ${jsScrollError.message}`,
+            );
+          }
+        }
+
+        // If we're here, both scroll methods failed
+        if (attempt < retries) {
+          console.warn(
+            `[safeScrollIntoView] Attempt ${attempt} failed, retrying...`,
+          );
+          await this.page.waitForTimeout(1000 * attempt); // Progressive delay
+        }
+      } catch (error) {
+        console.warn(
+          `[safeScrollIntoView] Attempt ${attempt} failed with error: ${error.message}`,
+        );
+        if (attempt === retries) {
+          // On final attempt, just log warning and continue
+          console.warn(
+            `[safeScrollIntoView] All ${retries} attempts failed. Continuing without scroll.`,
+          );
+          return;
+        }
+      }
+    }
+  }
+
+  /**
+   * Enhanced version of verifyText that uses safe scrolling
+   */
+  async verifyTextSafe(text: string | RegExp, exact: boolean = true) {
+    const locator = this.page.getByText(text, { exact: exact }).first();
+    await locator.waitFor({ state: "attached" });
+
+    // Use safe scroll instead of direct scrollIntoViewIfNeeded
+    await this.safeScrollIntoView(locator);
+
+    await expect(locator).toBeVisible();
   }
 }
