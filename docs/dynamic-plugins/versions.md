@@ -5,12 +5,12 @@
 https://github.com/redhat-developer/rhdh/blob/main/backstage.json
 -->
 
-Based on [Backstage 1.36.1](https://backstage.io/docs/releases/v1.36.0)
+Based on [Backstage 1.39.1](https://backstage.io/docs/releases/v1.39.0)
 
 To bootstrap Backstage app that is compatible with RHDH 1.4, you can use:
 
 ```bash
-npx @backstage/create-app@0.5.25
+npx @backstage/create-app@0.6.2
 ```
 
 ### Frontend packages
@@ -18,12 +18,12 @@ npx @backstage/create-app@0.5.25
 
 | **Package**                    | **Version** |
 | ------------------------------ | ----------- |
-| `@backstage/catalog-model` | `1.7.3` |
+| `@backstage/catalog-model` | `1.7.4` |
 | `@backstage/config` | `1.3.2` |
-| `@backstage/core-app-api` | `1.15.5` |
-| `@backstage/core-components` | `0.16.4` |
-| `@backstage/core-plugin-api` | `1.10.4` |
-| `@backstage/integration-react` | `1.2.4` |
+| `@backstage/core-app-api` | `1.17.0` |
+| `@backstage/core-components` | `0.17.2` |
+| `@backstage/core-plugin-api` | `1.10.7` |
+| `@backstage/integration-react` | `1.2.7` |
 
 
 
@@ -37,14 +37,14 @@ in the `main` branch of the [RHDH repository](https://github.com/redhat-develope
 
 | **Package**                    | **Version** |
 | ------------------------------ | ----------- |
-| `@backstage/backend-app-api` | `1.2.0` |
-| `@backstage/backend-defaults` | `0.8.1` |
+| `@backstage/backend-app-api` | `1.2.3` |
+| `@backstage/backend-defaults` | `0.10.0` |
 | `@backstage/backend-dynamic-feature-service` | `0.6.0` |
-| `@backstage/backend-plugin-api` | `1.2.0` |
-| `@backstage/catalog-model` | `1.7.3` |
+| `@backstage/backend-plugin-api` | `1.3.1` |
+| `@backstage/catalog-model` | `1.7.4` |
 | `@backstage/cli-node` | `0.2.13` |
 | `@backstage/config` | `1.3.2` |
-| `@backstage/config-loader` | `1.9.6` |
+| `@backstage/config-loader` | `1.10.1` |
 
 
 
