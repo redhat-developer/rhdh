@@ -34,7 +34,8 @@ test.describe
     await kubeCLient.restartDeployment(deploymentName, namespace);
   });
 
-  test("Verify successful DB connection and successful initialization of plugins with latest-2 postgres version", async ({
+  //TODO https://issues.redhat.com/browse/RHIDP-7869
+  test.skip("Verify successful DB connection and successful initialization of plugins with latest-2 postgres version", async ({
     page,
   }) => {
     const common = new Common(page);

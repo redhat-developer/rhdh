@@ -14,6 +14,7 @@ handle_aks_operator() {
   export K8S_CLUSTER_ROUTER_BASE
 
   cluster_setup_k8s_operator
+  clear_database
 
   prepare_operator
 
