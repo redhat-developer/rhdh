@@ -9,7 +9,7 @@
   },
   "backstage": {
     "role": "backend-plugin",
-    "supported-versions": "1.39.1",
+    "supported-versions": "1.40.0",
     "pluginId": "signals",
     "pluginPackages": [
       "backstage-plugin-signals",
