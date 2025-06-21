@@ -3,6 +3,7 @@ import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
 import { makeStyles } from 'tss-react/mui';
 
+import { useAppBarThemedConfig } from '../../hooks/useThemedConfig';
 import LogoFull from './LogoFull';
 import LogoIcon from './LogoIcon';
 
@@ -36,17 +37,16 @@ const LogoRender = ({
 export const SidebarLogo = () => {
   const { classes } = useStyles();
   const { isOpen } = useSidebarOpenState();
+
   const configApi = useApi(configApiRef);
-  const logoFullBase64URI = configApi.getOptionalString(
-    'app.branding.fullLogo',
-  );
+
+  const logoFullBase64URI = useAppBarThemedConfig('app.branding.fullLogo');
+
   const fullLogoWidth = configApi
     .getOptional('app.branding.fullLogoWidth')
     ?.toString();
 
-  const logoIconBase64URI = configApi.getOptionalString(
-    'app.branding.iconLogo',
-  );
+  const logoIconBase64URI = useAppBarThemedConfig('app.branding.iconLogo');
 
   return (
     <div className={classes.sidebarLogo}>

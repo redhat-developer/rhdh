@@ -2,8 +2,8 @@ import { test, Page, TestInfo, expect } from "@playwright/test";
 import { Common, setupBrowser } from "../utils/common";
 import { ThemeVerifier } from "../utils/custom-theme/theme-verifier";
 import {
-  CUSTOM_TAB_ICON,
-  CUSTOM_BRAND_ICON,
+  CUSTOM_FAVICON,
+  CUSTOM_SIDEBAR_LOGO,
 } from "../support/testData/custom-theme";
 import { ThemeConstants } from "../data/theme-constants";
 
@@ -40,15 +40,39 @@ test.describe("CustomTheme should be applied", () => {
     }
   });
 
-  test("Verify that tab icon for Backstage can be customized", async () => {
-    expect(await page.locator("#dynamic-favicon").getAttribute("href")).toEqual(
-      CUSTOM_TAB_ICON,
-    );
+  test("Verify that the RHDH favicon can be customized", async ({ page }) => {
+    const themes = ThemeConstants.getThemes();
+
+    // favicons should always respect the system color scheme regardless of theme
+    for (const theme of themes) {
+      await themeVerifier.setTheme(theme.name);
+      await page.emulateMedia({
+        colorScheme: "light",
+      });
+
+      expect(
+        await page.locator("#dynamic-favicon").getAttribute("href"),
+      ).toEqual(CUSTOM_FAVICON.LIGHT);
+
+      await page.emulateMedia({
+        colorScheme: "dark",
+      });
+      expect(
+        await page.locator("#dynamic-favicon").getAttribute("href"),
+      ).toEqual(CUSTOM_FAVICON.DARK);
+    }
   });
 
-  test("Verify that brand icon for Backstage can be customized", async () => {
+  test("Verify that RHDH SidebarLogo can be customized", async () => {
+    await themeVerifier.setTheme("Light");
+
     expect(await page.getByTestId("home-logo").getAttribute("src")).toEqual(
-      CUSTOM_BRAND_ICON,
+      CUSTOM_SIDEBAR_LOGO.LIGHT,
+    );
+
+    await themeVerifier.setTheme("Dark");
+    expect(await page.getByTestId("home-logo").getAttribute("src")).toEqual(
+      CUSTOM_SIDEBAR_LOGO.DARK,
     );
   });
 
