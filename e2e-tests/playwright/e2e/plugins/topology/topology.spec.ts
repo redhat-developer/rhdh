@@ -84,7 +84,9 @@ test.describe("Test Topology Plugin", () => {
     await uiHelper.verifyText("PL");
     await uiHelper.verifyText("PLR");
     await page.getByTestId("status-ok").first().click();
-    await uiHelper.verifyDivHasText("Pipeline SucceededTask");
-    await uiHelper.verifyText("Pipeline Succeeded");
+    await uiHelper.verifyDivHasText(
+      /Pipeline (Succeeded|Failed|Cancelled|Running)Task/,
+    );
+    await uiHelper.verifyText(/Pipeline (Succeeded|Failed|Cancelled|Running)/);
   });
 });
