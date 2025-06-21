@@ -38,7 +38,7 @@ export async function createRouter(
     return p as BaseDynamicPlugin;
   });
   router.get('/loaded-plugins', async (req, response) => {
-    await httpAuth.credentials(req, { allow: ['user'] });
+    await httpAuth.credentials(req, { allow: ['user', 'service'] });
     response.send(dynamicPlugins);
   });
   const middleware = MiddlewareFactory.create({ logger, config });

@@ -77,6 +77,8 @@ export const InternalPluginsMap: Record<string, string> = {
     './dynamic-plugins/dist/backstage-plugin-techdocs-backend-dynamic',
   'backstage-plugin-techdocs':
     './dynamic-plugins/dist/backstage-plugin-techdocs',
+  'backstage-plugin-techdocs-module-addons-contrib':
+    './dynamic-plugins/dist/backstage-plugin-techdocs-module-addons-contrib',
   'backstage-plugin-scaffolder-backend-module-gerrit-dynamic':
     './dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-gerrit-dynamic',
   'roadiehq-scaffolder-backend-module-utils-dynamic':
