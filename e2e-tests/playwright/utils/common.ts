@@ -5,6 +5,8 @@ import { SETTINGS_PAGE_COMPONENTS } from "../support/pageObjects/page-obj";
 import { WAIT_OBJECTS } from "../support/pageObjects/global-obj";
 import path from "path";
 import fs from "fs";
+import { APIHelper } from "./api-helper";
+import { GroupEntity, UserEntity } from "@backstage/catalog-model";
 
 export class Common {
   page: Page;
@@ -201,23 +203,77 @@ export class Common {
     }
   }
 
-  getGitHub2FAOTP(userid: string): string {
-    const secrets: { [key: string]: string | undefined } = {
-      [process.env.GH_USER_ID]: process.env.GH_2FA_SECRET,
-      [process.env.GH_USER2_ID]: process.env.GH_USER2_2FA_SECRET,
-    };
+  private async getGroupLinksByLabel(label: string): Promise<string[]> {
+    const section = this.page.locator(`p:has-text("${label}")`).first();
+    await section.waitFor({ state: "visible" });
+    return await section.locator("..")
+      .locator("a")
+      .allInnerTexts();
+  }
 
-    const secret = secrets[userid];
-    if (!secret) {
-      throw new Error("Invalid User ID");
+  async getParentGroupsDisplayed(): Promise<string[]> {
+    return await this.getGroupLinksByLabel("Parent Group");
+  }
+
+  async getChildGroupsDisplayed(): Promise<string[]> {
+    return await this.getGroupLinksByLabel("Child Groups");
+  }
+
+  async githubLoginPopUpModal(context, username: string, password: string, otpSecret: string): Promise<void> {
+    const [githubPage] = await Promise.all([
+      context.waitForEvent('page'),
+    ]);
+    await githubPage.waitForLoadState('domcontentloaded');
+    
+    await githubPage.getByLabel('Username or email address').fill(username);
+    await githubPage.getByLabel('Password').fill(password);
+    await githubPage.click('button[type="submit"], input[type="submit"]');
+
+    const otpSelector = await this.findOtpSelector(githubPage);
+
+    if (otpSelector) {
+      if (githubPage.isClosed()) return;
+      await githubPage.waitForSelector(otpSelector, { timeout: 10000 });
+      if (githubPage.isClosed()) return;
+      const otp = authenticator.generate(otpSecret);
+      await githubPage.fill(otpSelector, otp);
+      if (githubPage.isClosed()) return;
+      await Promise.race([
+        githubPage.waitForEvent('close', { timeout: 20000 }),
+        githubPage.click('button[type="submit"], input[type="submit"]'),
+      ]);
+    } else {
+      await githubPage.waitForEvent('close', { timeout: 20000 });
     }
+  }
 
-    return authenticator.generate(secret);
+  private async findOtpSelector(page): Promise<string | null> {
+    const selectors = ['input[name="otp"]', '#app_totp'];
+    for (const selector of selectors) {
+      try {
+        if (await page.isVisible(selector, { timeout: 5000 })) {
+          return selector;
+        }
+      } catch {
+        // Ignore visibility timeout errors
+      }
+    }
+    return null;
+  }
+
+  getGitHub2FAOTP(userid: string): string {
+    switch (userid) {
+      case process.env.GH_USER_ID:
+        return authenticator.generate(process.env.GH_2FA_SECRET);
+      case process.env.GH_USER2_ID:
+        return authenticator.generate(process.env.GH_USER2_2FA_SECRET);
+      default:
+        throw new Error("Invalid User ID");
+    }
   }
 
   getGoogle2FAOTP(): string {
-    const secret = process.env.GOOGLE_2FA_SECRET;
-    return authenticator.generate(secret);
+    return authenticator.generate(process.env.GOOGLE_2FA_SECRET);
   }
 
   async keycloakLogin(username: string, password: string) {
@@ -376,6 +432,129 @@ export class Common {
         }
       }
     }
+  }
+
+  async GetParentGroupDisplayed(): Promise<string[]> {
+    await this.page.waitForSelector("p:has-text('Parent Group')");
+    const parent = await this.page
+      .locator("p:has-text('Parent Group')")
+      .locator("..");
+    const group = await parent.locator("a").allInnerTexts();
+    return group;
+  }
+
+  async GetChildGroupsDisplayed(): Promise<string[]> {
+    await this.page.waitForSelector("p:has-text('Child Groups')");
+    const parent = await this.page
+      .locator("p:has-text('Child Groups')")
+      .locator("..");
+    const groups = await parent.locator("a").allInnerTexts();
+    return groups;
+  }
+
+  async GetMembersOfGroupDisplayed(): Promise<string[]> {
+    await this.page.waitForSelector(`//div[contains(., "Members")]/..`);
+    const membersCard = this.page
+      .locator(
+        `//div[contains(@class,'MuiCardHeader-root') and descendant::text()[contains(., "Members")] ]/.. // a[@data-testid='user-link']`,
+      )
+      .allInnerTexts();
+    return membersCard;
+  }
+
+  async GoToGroupPageAndGetDisplayedData(groupDisplayName: string) {
+    await this.page.goto(
+      "/catalog?filters%5Bkind%5D=group&filters%5Buser%5D=all",
+    );
+    await expect(this.page.getByRole("heading", { level: 1 })).toHaveText(
+      "My Org Catalog",
+    );
+
+    await this.uiHelper.clickLink(groupDisplayName);
+    await this.uiHelper.verifyHeading(groupDisplayName);
+
+    const childGroups = await this.GetChildGroupsDisplayed();
+    const parentGroup = await this.GetParentGroupDisplayed();
+    const groupMembers = await this.GetMembersOfGroupDisplayed();
+    return {
+      childGroups,
+      parentGroup,
+      groupMembers,
+    };
+  }
+
+  async UnregisterUserEntityFromCatalog(user: string, apiToken: string) {
+    const api = new APIHelper();
+    api.UseStaticToken(apiToken);
+    await api.deleteUserEntityFromAPI(user);
+  }
+
+  async UnregisterGroupEntityFromCatalog(group: string, apiToken: string) {
+    const api = new APIHelper();
+    api.UseStaticToken(apiToken);
+    await api.deleteGroupEntityFromAPI(group);
+  }
+
+  async CheckGroupIsShowingInCatalog(groups: string[]) {
+    await this.page.goto(
+      "/catalog?filters%5Bkind%5D=group&filters%5Buser%5D=all",
+    );
+    await expect(this.page.getByRole("heading", { level: 1 })).toHaveText(
+      "My Org Catalog",
+    );
+    await this.uiHelper.verifyHeading("All groups");
+    await this.uiHelper.verifyCellsInTable(groups);
+  }
+
+  async CheckUserIsShowingInCatalog(users: string[]) {
+    await this.page.goto(
+      "/catalog?filters%5Bkind%5D=user&filters%5Buser%5D=all",
+    );
+    await expect(this.page.getByRole("heading", { level: 1 })).toHaveText(
+      "My Org Catalog",
+    );
+    await this.uiHelper.verifyHeading("All user");
+    await this.uiHelper.verifyCellsInTable(users);
+  }
+
+  async CheckUserIsIngestedInCatalog(users: string[], apiToken: string) {
+    const api = new APIHelper();
+    api.UseStaticToken(apiToken);
+    const response = await api.getAllCatalogUsersFromAPI();
+    console.log(`Users currently in catalog: ${JSON.stringify(response)}`);
+    const catalogUsers: UserEntity[] =
+      response && response.items ? response.items : [];
+    expect(catalogUsers.length).toBeGreaterThan(0);
+    const catalogUsersDisplayNames: string[] = catalogUsers
+      .filter((u) => u.spec.profile && u.spec.profile.displayName)
+      .map((u) => u.spec.profile.displayName);
+    console.log(
+      `Checking ${JSON.stringify(catalogUsersDisplayNames)} contains users ${JSON.stringify(users)}`,
+    );
+    const hasAllElems = users.every((elem) =>
+      catalogUsersDisplayNames.includes(elem),
+    );
+    return hasAllElems;
+  }
+
+  async CheckGroupIsIngestedInCatalog(groups: string[], apiToken: string) {
+    const api = new APIHelper();
+    api.UseStaticToken(apiToken);
+    const response = await api.getAllCatalogGroupsFromAPI();
+    console.log(`Groups currently in catalog: ${JSON.stringify(response)}`);
+    const catalogGroups: GroupEntity[] =
+      response && response.items ? response.items : [];
+    expect(catalogGroups.length).toBeGreaterThan(0);
+    const catalogGroupsDisplayNames: string[] = catalogGroups
+      .filter((u) => u.spec.profile && u.spec.profile.displayName)
+      .map((u) => u.spec.profile.displayName);
+    console.log(
+      `Checking ${JSON.stringify(catalogGroupsDisplayNames)} contains groups ${JSON.stringify(groups)}`,
+    );
+    const hasAllElems = groups.every((elem) =>
+      catalogGroupsDisplayNames.includes(elem),
+    );
+    return hasAllElems;
   }
 }
 
