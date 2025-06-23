@@ -262,17 +262,7 @@ export class Common {
     }
   }
 
-  async githubLogin(username: string, password: string, twofactor: string) {
-    let popup: Page;
-    this.page.once("popup", (asyncnewPage) => {
-      popup = asyncnewPage;
-    });
-
-    await this.page.goto("/");
-    await this.page.waitForSelector('p:has-text("Sign in using GitHub")');
-    await this.uiHelper.clickButton("Sign In");
-
-    // Wait for the popup to appear
+  private async handleGitHubPopupLogin(popup: Page, username: string, password: string, twofactor: string): Promise<string> {
     await expect(async () => {
       await popup.waitForLoadState("domcontentloaded");
       expect(popup).toBeTruthy();
@@ -313,6 +303,29 @@ export class Common {
     }
   }
 
+  async githubLogin(username: string, password: string, twofactor: string) {
+    await this.page.goto("/");
+    await this.page.waitForSelector('p:has-text("Sign in using GitHub")');
+
+    const [popup] = await Promise.all([
+      this.page.waitForEvent('popup'),
+      this.uiHelper.clickButton("Sign In"),
+    ]);
+
+    return this.handleGitHubPopupLogin(popup, username, password, twofactor);
+  }
+
+  async githubLoginFromSettingsPage(username: string, password: string, twofactor: string) {
+    await this.page.goto("/settings/auth-providers");
+
+    const [popup] = await Promise.all([
+      this.page.waitForEvent('popup'),
+      this.page.getByTitle('Sign in to GitHub').click(),
+      this.uiHelper.clickButton("Log in"),
+    ]);
+
+    return this.handleGitHubPopupLogin(popup, username, password, twofactor);
+  }
   async MicrosoftAzureLogin(username: string, password: string) {
     let popup: Page;
     this.page.once("popup", (asyncnewPage) => {
