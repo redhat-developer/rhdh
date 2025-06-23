@@ -61,7 +61,7 @@ test.describe("GitHub Happy path", async () => {
 
     await uiHelper.verifyComponentInCatalog("API", ["Petstore"]);
     await uiHelper.verifyComponentInCatalog("Component", [
-      "Backstage Showcase",
+      "Red Hat Developer Hub",
     ]);
 
     await uiHelper.selectMuiBox("Kind", "Resource");
@@ -91,7 +91,7 @@ test.describe("GitHub Happy path", async () => {
 
   test("Click login on the login popup and verify that Overview tab renders", async () => {
     await uiHelper.openCatalogSidebar("Component");
-    await uiHelper.clickLink("Backstage Showcase");
+    await uiHelper.clickLink("Red Hat Developer Hub");
 
     const expectedPath = "/catalog/default/component/backstage-showcase";
     // Wait for the expected path in the URL
@@ -167,7 +167,7 @@ test.describe("GitHub Happy path", async () => {
 
   test("Verify that the 5, 10, 20 items per page option properly displays the correct number of PRs", async () => {
     await uiHelper.openCatalogSidebar("Component");
-    await uiHelper.clickLink("Backstage Showcase");
+    await uiHelper.clickLink("Red Hat Developer Hub");
     await common.clickOnGHloginPopup();
     await uiHelper.clickTab("Pull/Merge Requests");
     const allPRs = await BackstageShowcase.getShowcasePRs("open");
