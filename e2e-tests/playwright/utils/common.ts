@@ -225,8 +225,10 @@ export class Common {
     ]);
     await githubPage.waitForLoadState('domcontentloaded');
     
-    await githubPage.getByLabel('Username or email address').fill(username);
-    await githubPage.getByLabel('Password').fill(password);
+    const popupHelper = new UIhelper(githubPage);
+
+    await popupHelper.fillTextInputByLabel('Username or email address', username);
+    await popupHelper.fillTextInputByLabel('Password', password);
     await githubPage.click('button[type="submit"], input[type="submit"]');
 
     const otpSelector = await this.findOtpSelector(githubPage);
