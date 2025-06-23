@@ -107,7 +107,7 @@ test.describe("Configure Github Provider", async () => {
 
     await deployment.createSecret();
 
-    // enable keycloak login with ingestion
+    // enable github login with ingestion
     await deployment.enableGithubLoginWithIngestion();
     await deployment.updateAllConfigs();
 
@@ -268,6 +268,33 @@ test.describe("Configure Github Provider", async () => {
     expect(
       await deployment.checkGroupIsChildOfGroup("test_admins", "test_all"),
     ).toBe(true);
+  });
+
+  test("Login with Github as only auth provider with disableIdentityResolution should fail", async () => {
+    deployment.setAppConfigProperty(
+      "auth.providers.github.production.disableIdentityResolution",
+      "true",
+    );
+    await deployment.updateAllConfigs();
+    await deployment.restartLocalDeployment();
+    await page.waitForTimeout(3000);
+    await deployment.waitForDeploymentReady();
+
+    // wait for rhdh first sync and portal to be reachable
+    await deployment.waitForSynced();
+
+    const login = await common.githubLogin(
+      "rhdhqeauth1",
+      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD,
+      process.env.AUTH_PROVIDERS_GH_USER_2FA,
+    );
+
+    expect(login).toBe("Login successful");
+
+    await uiHelper.verifyAlertErrorMessage(
+      /Login failed; caused by Error: The GitHub provider is not configured to support sign-in/,
+    );
+    await context.clearCookies();
   });
 
   test.afterAll(async () => {

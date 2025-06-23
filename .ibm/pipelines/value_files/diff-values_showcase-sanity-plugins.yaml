@@ -98,9 +98,9 @@ global:
                 techdocsAddons:
                   - importName: ReportIssue
       - package: ./dynamic-plugins/dist/pagerduty-backstage-plugin
-        disabled: false
+        disabled: true
       - package: ./dynamic-plugins/dist/pagerduty-backstage-plugin-backend-dynamic
-        disabled: false
+        disabled: true
         pluginConfig:
           pagerDuty:
             apiBaseUrl: 'temp'
@@ -131,7 +131,7 @@ global:
       - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-sonarqube-dynamic
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-3scale-backend-dynamic
-        disabled: false
+        disabled: true
         pluginConfig:
           catalog:
             providers:

@@ -69,162 +69,203 @@ import { TransitiveGroupOwnershipResolver } from '../transitiveGroupOwnershipRes
 import { trySignInResolvers } from './resolverUtils';
 import { rhdhSignInResolvers } from './rhdhSignInResolvers';
 
-function getAuthProviderFactory(providerId: string): AuthProviderFactory {
+function getAuthProviderFactory(
+  providerId: string,
+  disableIdentityResolution: boolean,
+): AuthProviderFactory {
+  const applySignInResolvers = (options: {
+    signInResolver: any;
+    signInResolverFactories: Record<string, any>;
+  }) => (!disableIdentityResolution ? options : {});
+
   switch (providerId) {
     case 'atlassian':
       return createOAuthProviderFactory({
         authenticator: atlassianAuthenticator,
-        signInResolver:
-          atlassianSignInResolvers.usernameMatchingUserEntityName(),
-        signInResolverFactories: {
-          ...atlassianSignInResolvers,
-          ...commonSignInResolvers,
-        },
+        ...applySignInResolvers({
+          signInResolver:
+            atlassianSignInResolvers.usernameMatchingUserEntityName(),
+          signInResolverFactories: {
+            ...atlassianSignInResolvers,
+            ...commonSignInResolvers,
+          },
+        }),
       });
-    case `auth0`:
+    case 'auth0':
       return createOAuthProviderFactory({
         authenticator: auth0Authenticator,
-        signInResolver:
-          commonSignInResolvers.emailMatchingUserEntityProfileEmail(),
-        signInResolverFactories: {
-          ...commonSignInResolvers,
-        },
+        ...applySignInResolvers({
+          signInResolver:
+            commonSignInResolvers.emailMatchingUserEntityProfileEmail(),
+          signInResolverFactories: {
+            ...commonSignInResolvers,
+          },
+        }),
       });
     case 'azure-easyauth':
       return createProxyAuthProviderFactory({
         authenticator: azureEasyAuthAuthenticator,
-        signInResolver:
-          azureEasyAuthSignInResolvers.idMatchingUserEntityAnnotation(),
-        signInResolverFactories: {
-          ...azureEasyAuthSignInResolvers,
-          ...commonSignInResolvers,
-        },
+        ...applySignInResolvers({
+          signInResolver:
+            azureEasyAuthSignInResolvers.idMatchingUserEntityAnnotation(),
+          signInResolverFactories: {
+            ...azureEasyAuthSignInResolvers,
+            ...commonSignInResolvers,
+          },
+        }),
       });
     case 'bitbucket':
       return createOAuthProviderFactory({
         authenticator: bitbucketAuthenticator,
-        signInResolver:
-          bitbucketSignInResolvers.usernameMatchingUserEntityAnnotation(),
-        signInResolverFactories: {
-          ...bitbucketSignInResolvers,
-          ...commonSignInResolvers,
-        },
+        ...applySignInResolvers({
+          signInResolver:
+            bitbucketSignInResolvers.usernameMatchingUserEntityAnnotation(),
+          signInResolverFactories: {
+            ...bitbucketSignInResolvers,
+            ...commonSignInResolvers,
+          },
+        }),
       });
     case 'bitbucketServer':
       return createOAuthProviderFactory({
         authenticator: bitbucketServerAuthenticator,
-        signInResolver:
-          bitbucketServerSignInResolvers.emailMatchingUserEntityProfileEmail(),
-        signInResolverFactories: {
-          ...bitbucketServerSignInResolvers,
-          ...commonSignInResolvers,
-        },
+        ...applySignInResolvers({
+          signInResolver:
+            bitbucketServerSignInResolvers.emailMatchingUserEntityProfileEmail(),
+          signInResolverFactories: {
+            ...bitbucketServerSignInResolvers,
+            ...commonSignInResolvers,
+          },
+        }),
       });
     case 'cfaccess':
       return createProxyAuthProviderFactory({
         authenticator: createCloudflareAccessAuthenticator(),
-        signInResolver:
-          cloudflareAccessSignInResolvers.emailMatchingUserEntityProfileEmail(),
-        signInResolverFactories: {
-          ...cloudflareAccessSignInResolvers,
-          ...commonSignInResolvers,
-        },
+        ...applySignInResolvers({
+          signInResolver:
+            cloudflareAccessSignInResolvers.emailMatchingUserEntityProfileEmail(),
+          signInResolverFactories: {
+            ...cloudflareAccessSignInResolvers,
+            ...commonSignInResolvers,
+          },
+        }),
       });
     case 'github':
       return createOAuthProviderFactory({
         authenticator: githubAuthenticator,
-        signInResolver: githubSignInResolvers.usernameMatchingUserEntityName(),
-        signInResolverFactories: {
-          ...githubSignInResolvers,
-          ...commonSignInResolvers,
-        },
+        ...applySignInResolvers({
+          signInResolver:
+            githubSignInResolvers.usernameMatchingUserEntityName(),
+          signInResolverFactories: {
+            ...githubSignInResolvers,
+            ...commonSignInResolvers,
+          },
+        }),
       });
     case 'gitlab':
       return createOAuthProviderFactory({
         authenticator: gitlabAuthenticator,
-        signInResolver: gitlabSignInResolvers.usernameMatchingUserEntityName(),
-        signInResolverFactories: {
-          ...gitlabSignInResolvers,
-          ...commonSignInResolvers,
-        },
+        ...applySignInResolvers({
+          signInResolver:
+            gitlabSignInResolvers.usernameMatchingUserEntityName(),
+          signInResolverFactories: {
+            ...gitlabSignInResolvers,
+            ...commonSignInResolvers,
+          },
+        }),
       });
     case 'google':
       return createOAuthProviderFactory({
         authenticator: googleAuthenticator,
-        signInResolver:
-          commonSignInResolvers.emailLocalPartMatchingUserEntityName(),
-        signInResolverFactories: {
-          ...commonSignInResolvers,
-        },
+        ...applySignInResolvers({
+          signInResolver:
+            commonSignInResolvers.emailLocalPartMatchingUserEntityName(),
+          signInResolverFactories: {
+            ...commonSignInResolvers,
+          },
+        }),
       });
     case 'gcp-iap':
       return createProxyAuthProviderFactory({
         authenticator: gcpIapAuthenticator,
-        signInResolver:
-          gcpIapSignInResolvers.emailMatchingUserEntityAnnotation(),
-        signInResolverFactories: {
-          ...gcpIapSignInResolvers,
-          ...commonSignInResolvers,
-        },
+        ...applySignInResolvers({
+          signInResolver:
+            gcpIapSignInResolvers.emailMatchingUserEntityAnnotation(),
+          signInResolverFactories: {
+            ...gcpIapSignInResolvers,
+            ...commonSignInResolvers,
+          },
+        }),
       });
-    case `oauth2Proxy`:
+    case 'oauth2Proxy':
       return createProxyAuthProviderFactory({
         authenticator: oauth2ProxyAuthenticator,
-        signInResolver:
-          rhdhSignInResolvers.oauth2ProxyUserHeaderMatchingUserEntityName(),
-        signInResolverFactories: {
-          ...oauth2ProxySignInResolvers,
-          ...commonSignInResolvers,
-        },
+        ...applySignInResolvers({
+          signInResolver:
+            rhdhSignInResolvers.oauth2ProxyUserHeaderMatchingUserEntityName(),
+          signInResolverFactories: {
+            ...oauth2ProxySignInResolvers,
+            ...commonSignInResolvers,
+          },
+        }),
       });
     case 'oidc':
       return createOAuthProviderFactory({
         authenticator: oidcAuthenticator,
-        signInResolver: trySignInResolvers([
-          rhdhSignInResolvers.oidcSubClaimMatchingKeycloakUserId(),
-          rhdhSignInResolvers.oidcLdapUuidMatchingAnnotation(),
-        ]),
-        signInResolverFactories: {
-          preferredUsernameMatchingUserEntityName:
-            rhdhSignInResolvers.preferredUsernameMatchingUserEntityName,
-          oidcSubClaimMatchingKeycloakUserId:
-            rhdhSignInResolvers.oidcSubClaimMatchingKeycloakUserId,
-          oidcSubClaimMatchingPingIdentityUserId:
-            rhdhSignInResolvers.oidcSubClaimMatchingPingIdentityUserId,
-          oidcLdapUuidMatchingAnnotation:
-            rhdhSignInResolvers.oidcLdapUuidMatchingAnnotation,
-          ...oidcSignInResolvers,
-          ...commonSignInResolvers,
-        },
+        ...applySignInResolvers({
+          signInResolver: trySignInResolvers([
+            rhdhSignInResolvers.oidcSubClaimMatchingKeycloakUserId(),
+            rhdhSignInResolvers.oidcLdapUuidMatchingAnnotation(),
+          ]),
+          signInResolverFactories: {
+            preferredUsernameMatchingUserEntityName:
+              rhdhSignInResolvers.preferredUsernameMatchingUserEntityName,
+            oidcSubClaimMatchingKeycloakUserId:
+              rhdhSignInResolvers.oidcSubClaimMatchingKeycloakUserId,
+            oidcSubClaimMatchingPingIdentityUserId:
+              rhdhSignInResolvers.oidcSubClaimMatchingPingIdentityUserId,
+            oidcLdapUuidMatchingAnnotation:
+              rhdhSignInResolvers.oidcLdapUuidMatchingAnnotation,
+            ...oidcSignInResolvers,
+            ...commonSignInResolvers,
+          },
+        }),
       });
     case 'okta':
       return createOAuthProviderFactory({
         authenticator: oktaAuthenticator,
-        signInResolver: oktaSignInResolvers.emailMatchingUserEntityAnnotation(),
-        signInResolverFactories: {
-          ...oktaSignInResolvers,
-          ...commonSignInResolvers,
-        },
+        ...applySignInResolvers({
+          signInResolver:
+            oktaSignInResolvers.emailMatchingUserEntityAnnotation(),
+          signInResolverFactories: {
+            ...oktaSignInResolvers,
+            ...commonSignInResolvers,
+          },
+        }),
       });
     case 'onelogin':
       return createOAuthProviderFactory({
         authenticator: oneLoginAuthenticator,
-        signInResolver:
-          oneLoginSignInResolvers.usernameMatchingUserEntityName(),
-        signInResolverFactories: {
-          ...oneLoginSignInResolvers,
-          ...commonSignInResolvers,
-        },
+        ...applySignInResolvers({
+          signInResolver:
+            oneLoginSignInResolvers.usernameMatchingUserEntityName(),
+          signInResolverFactories: {
+            ...oneLoginSignInResolvers,
+            ...commonSignInResolvers,
+          },
+        }),
       });
-    case `microsoft`:
+    case 'microsoft':
       return createOAuthProviderFactory({
         authenticator: microsoftAuthenticator,
-        signInResolver:
-          microsoftSignInResolvers.userIdMatchingUserEntityAnnotation(),
-        signInResolverFactories: {
-          ...microsoftSignInResolvers,
-          ...commonSignInResolvers,
-        },
+        ...applySignInResolvers({
+          signInResolver:
+            microsoftSignInResolvers.userIdMatchingUserEntityAnnotation(),
+          signInResolverFactories: {
+            ...microsoftSignInResolvers,
+            ...commonSignInResolvers,
+          },
+        }),
       });
     default:
       throw new Error(`No auth provider found for ${providerId}`);
@@ -254,11 +295,20 @@ const authProvidersModule = createBackendModule({
       }) {
         const providersConfig = config.getConfig('auth.providers');
         const authFactories: Record<string, AuthProviderFactory> = {};
+        const environment =
+          config.getOptionalString('auth.environment') ?? 'development';
         providersConfig
           .keys()
           .filter(key => key !== 'guest')
           .forEach(providerId => {
-            const factory = getAuthProviderFactory(providerId);
+            const disableIdentityResolution =
+              config.getOptionalBoolean(
+                `auth.providers.${providerId}.${environment}.disableIdentityResolution`,
+              ) ?? false;
+            const factory = getAuthProviderFactory(
+              providerId,
+              disableIdentityResolution,
+            );
             authFactories[providerId] = factory;
           });
 
