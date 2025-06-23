@@ -1,0 +1,1 @@
+export { default } from "@red-hat-developer-hub/backstage-plugin-adoption-insights-backend";

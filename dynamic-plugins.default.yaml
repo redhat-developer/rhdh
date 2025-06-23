@@ -1169,3 +1169,21 @@ plugins:
       orchestrator:
         dataIndexService:
           url: http://sonataflow-platform-data-index-service
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-adoption-insights
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-adoption-insights:
+            dynamicRoutes:
+              - path: /adoption-insights
+                importName: AdoptionInsightsPage
+            mountPoints:
+              - mountPoint: internal.plugins/tab
+                importName: AdoptionInsightsPage
+                config:
+                  path: adoption-insights
+                  title: Adoption insights
+          red-hat-developer-hub.backstage-plugin-analytics-module-adoption-insights:
+            analyticsApiExtensions:
+              - importName: AdoptionInsightsAnalyticsApi
