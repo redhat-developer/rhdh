@@ -3,6 +3,9 @@ name: Update versions.md in Dynamic Plugins Documentation
 on:
   workflow_dispatch:
   push:
+    branches:
+      - "main"
+      - "release-*"
     paths:
       - "backstage.json"
       - "packages/app/package.json"
