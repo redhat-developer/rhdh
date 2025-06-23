@@ -1,4 +1,4 @@
-import { test, expect, Page } from "@playwright/test";
+import { test, expect, Page, BrowserContext } from "@playwright/test";
 import { UIhelper } from "../utils/ui-helper";
 import { Common, setupBrowser } from "../utils/common";
 import { RESOURCES } from "../support/testData/resources";
@@ -9,6 +9,7 @@ import {
 import { TEMPLATES } from "../support/testData/templates";
 
 let page: Page;
+let context: BrowserContext;
 
 // test suite skipped for now, until it's migrated back to the main showcase job
 test.describe("GitHub Happy path", async () => {
@@ -21,7 +22,7 @@ test.describe("GitHub Happy path", async () => {
     "https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/all.yaml";
 
   test.beforeAll(async ({ browser }, testInfo) => {
-    ({ page } = await setupBrowser(browser, testInfo));
+    ({ page, context } = await setupBrowser(browser, testInfo));
     uiHelper = new UIhelper(page);
     common = new Common(page);
     catalogImport = new CatalogImport(page);
@@ -199,6 +200,12 @@ test.describe("GitHub Happy path", async () => {
       await resourceElement.scrollIntoViewIfNeeded();
       await expect(resourceElement).toBeVisible();
     }
+  });
+
+  test("Sign out and verify that you return back to the Sign in page", async () => {
+    await uiHelper.goToSettingsPage();
+    await common.signOut();
+    context.clearCookies();
   });
 
   test.afterAll(async () => {
