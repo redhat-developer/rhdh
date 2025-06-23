@@ -1,6 +1,10 @@
 import { createBackend } from '@backstage/backend-defaults';
 import { WinstonLogger } from '@backstage/backend-defaults/rootLogger';
-import { dynamicPluginsFeatureLoader } from '@backstage/backend-dynamic-feature-service';
+import {
+  dynamicPluginsFeatureLoader,
+  dynamicPluginsFrontendServiceRef,
+} from '@backstage/backend-dynamic-feature-service';
+import { createServiceFactory } from '@backstage/backend-plugin-api';
 import { PackageRoles } from '@backstage/cli-node';
 
 import * as path from 'path';
@@ -46,6 +50,28 @@ backend.add(
     moduleLoader: logger => new CommonJSModuleLoader(logger),
   }),
 );
+
+if (
+  (process.env.ENABLE_STANDARD_MODULE_FEDERATION || '').toLocaleLowerCase() !==
+  'true'
+) {
+  // When the `dynamicPlugins` entry exists in the configuration, the upstream dynamic plugins backend feature loader
+  // also loads the `dynamicPluginsFrontendServiceRef` service that installs an http router to serve
+  // standard Module Federation assets for every installed dynamic frontend plugin.
+  // For now in RHDH the old frontend application doesn't use standard module federation and, by default,
+  // exported RHDH dynamic frontend plugins don't contain standard module federation assets.
+  // That's why we disable (bu overriding it with a noop) this service unless stadard module federation use
+  // is explicitly requested.
+  backend.add(
+    createServiceFactory({
+      service: dynamicPluginsFrontendServiceRef,
+      deps: {},
+      factory: () => ({
+        setResolverProvider() {},
+      }),
+    }),
+  );
+}
 
 backend.add(healthCheckPlugin);
 
