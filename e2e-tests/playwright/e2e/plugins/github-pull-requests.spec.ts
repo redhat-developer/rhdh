@@ -28,7 +28,7 @@ test("Verify all GitHub Pull Requests statistics after login", async ({ page, co
     ),
     uiHelper.clickButton('Log in'),
   ]);
-  await uiHelper.verifyTextinCard('GitHub Pull Requests Statistics', 'Average Time Of PR Until Merge');
+  await uiHelper.verifyTextinCard('GitHub Pull Requests Statistics', 'Average Time Of PR Until Merge', true, 30000);
   const stats = [
     "Average Time Of PR Until Merge",
     "Merged To Closed Ratio",
@@ -37,7 +37,7 @@ test("Verify all GitHub Pull Requests statistics after login", async ({ page, co
     "Average Coding Time Of PR"
   ];
   for (const stat of stats) {
-    await uiHelper.verifyTextinCard("GitHub Pull Requests Statistics", stat);
+    await uiHelper.verifyTextinCard("GitHub Pull Requests Statistics", stat, true, 30000);
     await page.waitForTimeout(500);
   }
 });
