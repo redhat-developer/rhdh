@@ -1,6 +1,7 @@
 import { createBackend } from '@backstage/backend-defaults';
 import { WinstonLogger } from '@backstage/backend-defaults/rootLogger';
 import {
+  CommonJSModuleLoader,
   dynamicPluginsFeatureLoader,
   dynamicPluginsFrontendServiceRef,
 } from '@backstage/backend-dynamic-feature-service';
@@ -11,7 +12,6 @@ import * as path from 'path';
 
 import { configureCorporateProxyAgent } from './corporate-proxy';
 import { getDefaultServiceFactories } from './defaultServiceFactories';
-import { CommonJSModuleLoader } from './loader';
 import {
   healthCheckPlugin,
   pluginIDProviderService,
@@ -47,7 +47,45 @@ backend.add(
         'configSchema.json',
       );
     },
-    moduleLoader: logger => new CommonJSModuleLoader(logger),
+
+    moduleLoader: logger =>
+      new CommonJSModuleLoader({
+        logger,
+        // Customize dynamic plugin packager resolution to support the case
+        // of dynamic plugin wrapper packages.
+        customResolveDynamicPackage(
+          _,
+          searchedPackageName,
+          scannedPluginManifests,
+        ) {
+          for (const [realPath, pkg] of scannedPluginManifests.entries()) {
+            // A dynamic plugin wrapper package has a direct dependency to the wrapped package
+            if (
+              Object.keys(pkg.dependencies ?? {}).includes(searchedPackageName)
+            ) {
+              const searchPath = path.resolve(realPath, 'node_modules');
+              try {
+                const resolvedPath = require.resolve(
+                  `${searchedPackageName}/package.json`,
+                  {
+                    paths: [searchPath],
+                  },
+                );
+                logger.info(
+                  `Resolved '${searchedPackageName}' at ${resolvedPath}`,
+                );
+                return resolvedPath;
+              } catch (e) {
+                this.logger.error(
+                  `Error when resolving '${searchedPackageName}' with search path: '[${searchPath}]'`,
+                  e instanceof Error ? e : undefined,
+                );
+              }
+            }
+          }
+          return undefined;
+        },
+      }),
   }),
 );
 
