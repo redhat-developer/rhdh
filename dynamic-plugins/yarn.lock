@@ -3212,14 +3212,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-analytics-provider-segment@npm:1.13.0":
-  version: 1.13.0
-  resolution: "@backstage-community/plugin-analytics-provider-segment@npm:1.13.0"
+"@backstage-community/plugin-analytics-provider-segment@npm:1.16.0":
+  version: 1.16.0
+  resolution: "@backstage-community/plugin-analytics-provider-segment@npm:1.16.0"
   dependencies:
     "@backstage/config": ^1.3.2
-    "@backstage/core-components": ^0.16.4
-    "@backstage/core-plugin-api": ^1.10.4
-    "@backstage/theme": ^0.6.4
+    "@backstage/core-components": ^0.17.2
+    "@backstage/core-plugin-api": ^1.10.7
+    "@backstage/theme": ^0.6.6
     "@material-ui/core": ^4.9.13
     "@material-ui/icons": ^4.11.3
     "@material-ui/lab": 4.0.0-alpha.61
@@ -3230,7 +3230,7 @@ __metadata:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.0.0
-  checksum: 139ed6a4ccb4fa02755ac4674292dbb4cdd52621533ff0750d21f9fdd6b2807b64ed1b4809f5234191bcfc2cebf271927f86803dab49beb3b64dbdfd79d505b1
+  checksum: e3b735ab3b553edc0424093422559edffac0f776f38478c2895bc45259fe549be4dda29e9e3c4c3343a082efb1f95f1892936edf1235b8b0c8209d3c6006f678
   languageName: node
   linkType: hard
 
@@ -19503,7 +19503,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backstage-community-plugin-analytics-provider-segment@workspace:wrappers/backstage-community-plugin-analytics-provider-segment"
   dependencies:
-    "@backstage-community/plugin-analytics-provider-segment": 1.13.0
+    "@backstage-community/plugin-analytics-provider-segment": 1.16.0
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
