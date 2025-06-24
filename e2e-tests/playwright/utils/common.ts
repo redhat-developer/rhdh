@@ -249,18 +249,17 @@ export class Common {
     }
   }
 
-  private async findOtpSelector(page): Promise<string | null> {
+  private async findOtpSelector(page): Promise<string> {
     const selectors = ['input[name="otp"]', '#app_totp'];
     for (const selector of selectors) {
       try {
-        if (await page.isVisible(selector, { timeout: 5000 })) {
-          return selector;
-        }
-      } catch {
-        // Ignore visibility timeout errors
+        await page.locator(selector).waitFor({ state: 'visible', timeout: 10000 });
+        return selector;
+      } catch (err) {
+        console.debug(`Selector ${selector} not visible yet, continuing…`);
       }
     }
-    return null;
+    throw new Error('OTP field not found on the page within 10 s');
   }
 
   getGitHub2FAOTP(userid: string): string {
