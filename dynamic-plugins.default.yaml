@@ -1060,7 +1060,7 @@ plugins:
       dynamicPlugins:
         frontend:
           backstage-community.plugin-analytics-provider-segment:
-            apiFactories:
+            analyticsApiExtensions:
               - importName: SegmentAnalyticsApi
       backend:
         csp:
