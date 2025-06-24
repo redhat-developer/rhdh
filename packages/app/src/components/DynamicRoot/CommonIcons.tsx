@@ -24,6 +24,18 @@ import Star from '@mui/icons-material/Star';
 import Storefront from '@mui/icons-material/StorefrontOutlined';
 import Textsms from '@mui/icons-material/TextsmsOutlined';
 
+import developerHubIcon from '../../images/developerhub.svg';
+
+const DeveloperHubIcon = () => {
+  return (
+    <img
+      src={developerHubIcon as any}
+      alt="Developer Hub Icon"
+      style={{ height: '25px' }}
+    />
+  );
+};
+
 const CommonIcons: {
   [k: string]: React.ComponentType<{}>;
 } = {
@@ -52,6 +64,7 @@ const CommonIcons: {
   notifications: Notifications,
   manageAccounts: ManageAccounts,
   logout: Logout,
+  developerHub: DeveloperHubIcon,
 };
 
 export default CommonIcons;

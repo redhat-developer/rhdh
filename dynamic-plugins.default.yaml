@@ -535,6 +535,37 @@ plugins:
                     title: Self-service
                     icon: add
                     to: create
+                    
+              - mountPoint: global.header/component
+                importName: StarredDropdown
+                config:
+                  priority: 85
+
+              - mountPoint: global.header/component
+                importName: ApplicationLauncherDropdown
+                config:
+                  priority: 82
+
+              - mountPoint: global.header/application-launcher
+                importName: MenuItemLink
+                config:
+                  section: Documentation
+                  priority: 150
+                  props:
+                    title: Developer Hub
+                    icon: developerHub
+                    link: https://docs.redhat.com/en/documentation/red_hat_developer_hub
+
+              - mountPoint: global.header/application-launcher
+                importName: MenuItemLink
+                config:
+                  section: Developer Tools
+                  priority: 100
+                  props:
+                    title: RHDH Local
+                    icon: developerHub
+                    link: https://github.com/redhat-developer/rhdh-local
+
               - mountPoint: global.header/component
                 importName: SupportButton
                 config:
