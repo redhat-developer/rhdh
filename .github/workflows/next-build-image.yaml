@@ -20,9 +20,13 @@ on:
   schedule:
     # run at 3:18 UTC every day
     - cron: "18 3 * * *"
+
+  # in addition to building multi-arch :next images daily,
+  # also build multi-arch images for any x.y or x.y.z tag pushed to the repo
   push:
     tags:
       - '[0-9]+.[0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -42,6 +46,7 @@ jobs:
           - ubuntu-24.04-arm
           - ubuntu-24.04
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 720 # Set to 12 hours instead of default 360 = 6hrs
     permissions:
       contents: read
       packages: write
@@ -67,7 +72,13 @@ jobs:
           if [ "$ref_name" == "main" ]; then
             ref_name="next"
           fi
+          # from 1.6.1 => 1.6
+          ref_name_short="${ref_name%.*}"
+          if [[ $ref_name_short == "1" ]]; then
+            ref_name_short="${ref_name}"
+          fi
           echo "REF_NAME=$ref_name" >> $GITHUB_ENV
+          echo "REF_NAME_SHORT=${ref_name_short}" >> $GITHUB_ENV
           echo "PLATFORM=$platform" >> $GITHUB_ENV
           echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
           echo "PLATFORM_ARCH=${platform#*/}" >> $GITHUB_ENV
@@ -115,7 +126,13 @@ jobs:
             if [ "$ref_name" == "main" ]; then
               ref_name="next"
             fi
+            # from 1.6.1 => 1.6
+            ref_name_short="${ref_name%.*}"
+            if [[ $ref_name_short == "1" ]]; then
+              ref_name_short="${ref_name}"
+            fi
             echo "REF_NAME=$ref_name" >> $GITHUB_ENV
+            echo "REF_NAME_SHORT=${ref_name_short}" >> $GITHUB_ENV
 
         - name: Checkout
           uses: actions/checkout@v4
@@ -135,14 +152,27 @@ jobs:
         - name: Set up Docker Buildx
           uses: docker/setup-buildx-action@v3
 
-        - name: Docker meta
+        - name: Set container metadata (for :next build)
           id: meta
+          if: ${{ env.REF_NAME_SHORT == 'next'}}
           uses: docker/metadata-action@v5
           with:
             images: ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}
             tags: |
               type=raw,value=${{ env.REF_NAME }}
               type=raw,value=${{ env.REF_NAME }}-${{ env.SHORT_SHA }}
+
+        - name: Set container metadata (for releases)
+          id: meta
+          if: ${{ env.REF_NAME_SHORT != 'next' }}
+          uses: docker/metadata-action@v5
+          with:
+            images: ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}
+            tags: |
+              type=raw,value=${{ env.REF_NAME }}
+              type=raw,value=${{ env.REF_NAME }}-${{ env.SHORT_SHA }}
+              type=raw,value=${{ env.REF_NAME_SHORT }}
+              type=raw,value=${{ env.REF_NAME_SHORT }}-${{ env.SHORT_SHA }}
 
         - name: Login to Docker Hub
           uses: docker/login-action@v3

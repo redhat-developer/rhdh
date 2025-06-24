@@ -8,11 +8,11 @@ import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
 let page: Page;
 let context: BrowserContext;
 
-/* SUPORTED RESOLVERS
+/* SUPPORTED RESOLVERS
 OIDC:
     ❗Changed from 1.5
     [x] oidcSubClaimMatchingIdPUserId -> (Default, no setting specified)
-    [x] oidcSubClaimMatchingKeycloakUserId -> (same as above, but need to be set explicitely in the config)
+    [x] oidcSubClaimMatchingKeycloakUserId -> (same as above, but need to be set explicitly in the config)
     [x] preferredUsernameMatchingUserEntityName (patched)
     [x] emailLocalPartMatchingUserEntityName
     [x] emailMatchingUserEntityProfileEmail -> email will always match, just making sure it logs in
@@ -102,6 +102,15 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     deployment.addSecretData(
       "RHBK_CLIENT_SECRET",
       process.env.RHBK_CLIENT_SECRET,
+    );
+
+    deployment.addSecretData(
+      "AUTH_PROVIDERS_GH_ORG_CLIENT_ID",
+      process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_ID,
+    );
+    deployment.addSecretData(
+      "AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET",
+      process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET,
     );
 
     await deployment.createSecret();
@@ -363,6 +372,57 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
       .locator("div[class^='MuiCardHeader-root']")
       .allInnerTexts();
     expect(singInMethods).not.toContain("Guest");
+  });
+
+  test("Login with OIDC as primary sign in provider and GitHub auth as secondary", async () => {
+    const oidcLogin = await common.keycloakLogin(
+      "zeus",
+      process.env.DEFAULT_USER_PASSWORD,
+    );
+
+    expect(oidcLogin).toBe("Login successful");
+
+    await page.goto("/settings");
+    await uiHelper.verifyHeading("Zeus Giove");
+
+    expect(process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET).toBeDefined();
+    expect(process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_ID).toBeDefined();
+    // set up GitHub auth
+    deployment.setAppConfigProperty("auth.providers.github", {
+      production: {
+        clientId: "${AUTH_PROVIDERS_GH_ORG_CLIENT_ID}",
+        clientSecret: "${AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET}",
+        callbackUrl:
+          "${BASE_URL:-http://localhost:7007}/api/auth/github/handler/frame",
+      },
+    });
+
+    deployment.setAppConfigProperty(
+      "auth.providers.github.production.disableIdentityResolution",
+      "true",
+    );
+    await deployment.updateAllConfigs();
+    await deployment.restartLocalDeployment();
+    await page.waitForTimeout(3000);
+    await deployment.waitForDeploymentReady();
+
+    // wait for rhdh first sync and portal to be reachable
+    await deployment.waitForSynced();
+
+    const ghLogin = await common.githubLoginFromSettingsPage(
+      "rhdhqeauth1",
+      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD,
+      process.env.AUTH_PROVIDERS_GH_USER_2FA,
+    );
+    expect(ghLogin).toBe("Login successful");
+    // Sign out for GitHub
+    await page.getByTitle('Sign out from GitHub').click();
+
+    // Sign out for OIDC
+    await page.goto("/settings");
+    await uiHelper.verifyHeading("Zeus Giove");
+    await common.signOut();
+    await context.clearCookies();
   });
 
   test.afterAll(async () => {
