@@ -100,11 +100,6 @@ jobs:
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         run: rm app-config.yaml && mv app-config.example.yaml app-config.yaml
 
-      - name: Configure .npmrc for Red Hat scope
-        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
-        run: |
-          echo "@redhat:registry=https://npm.registry.redhat.com" >> ~/.npmrc # for orchestrator plugin
-
       - name: Install dependencies
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         uses: backstage/actions/yarn-install@b3c1841fd69e1658ac631afafd0fb140a2309024 # v0.6.17
