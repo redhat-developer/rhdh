@@ -42,8 +42,8 @@ export class Common {
   }
 
   async signOut() {
-    await this.page.click(SETTINGS_PAGE_COMPONENTS.userSettingsMenu);
-    await this.page.click(SETTINGS_PAGE_COMPONENTS.signOut);
+    await this.uiHelper.clickButton(SETTINGS_PAGE_COMPONENTS.userSettingsMenu);
+    await this.uiHelper.clickButton(SETTINGS_PAGE_COMPONENTS.signOut);
     await this.uiHelper.verifyHeading("Select a sign-in method");
   }
 
@@ -223,16 +223,12 @@ export class Common {
     const [githubPage] = await Promise.all([
       context.waitForEvent('page'),
     ]);
-    await githubPage.waitForLoadState('domcontentloaded');
-    
     const popupHelper = new UIhelper(githubPage);
-
     await popupHelper.fillTextInputByLabel('Username or email address', username);
     await popupHelper.fillTextInputByLabel('Password', password);
-    await githubPage.click('button[type="submit"], input[type="submit"]');
-
-    const otpSelector = await this.findOtpSelector(githubPage);
-
+    await popupHelper.clickButton('Sign in');
+    // OTP
+    const otpSelector = await this.findOtpSelector(githubPage, popupHelper);
     if (otpSelector) {
       if (githubPage.isClosed()) return;
       await githubPage.waitForSelector(otpSelector, { timeout: 10000 });
@@ -242,19 +238,20 @@ export class Common {
       if (githubPage.isClosed()) return;
       await Promise.race([
         githubPage.waitForEvent('close', { timeout: 20000 }),
-        githubPage.click('button[type="submit"], input[type="submit"]'),
+        popupHelper.clickButton('Sign in'),
       ]);
     } else {
       await githubPage.waitForEvent('close', { timeout: 20000 });
     }
   }
 
-  private async findOtpSelector(page): Promise<string> {
+  private async findOtpSelector(page, popupHelper): Promise<string> {
     const selectors = ['input[name="otp"]', '#app_totp'];
     for (const selector of selectors) {
       try {
-        await page.locator(selector).waitFor({ state: 'visible', timeout: 10000 });
-        return selector;
+        if (await popupHelper.isElementVisible(selector, 10000)) {
+          return selector;
+        }
       } catch (err) {
         console.debug(`Selector ${selector} not visible yet, continuing…`);
       }
@@ -579,4 +576,53 @@ export async function setupBrowser(browser: Browser, testInfo: TestInfo) {
   });
   const page = await context.newPage();
   return { page, context };
+}
+
+export type EntityWithDisplay = { spec?: { profile?: { displayName?: string } } };
+
+export class CatalogVerifier {
+  private api: APIHelper;
+
+  constructor(token: string) {
+    this.api = new APIHelper();
+    this.api.UseStaticToken(token);
+  }
+
+  async assertUsersInCatalog(expected: string[]): Promise<void> {
+    await this.assertEntities(
+      () => this.api.getAllCatalogUsersFromAPI(),
+      expected,
+      'users',
+    );
+  }
+
+  async assertGroupsInCatalog(expected: string[]): Promise<void> {
+    await this.assertEntities(
+      () => this.api.getAllCatalogGroupsFromAPI(),
+      expected,
+      'groups',
+    );
+  }
+
+  private async assertEntities(
+    fetch: () => Promise<{ items?: EntityWithDisplay[] }>,
+    expected: string[],
+    label: string,
+  ): Promise<void> {
+    const { items = [] } = await fetch();
+
+    expect(items.length).toBeGreaterThan(0);
+
+    const displayNames = items
+      .flatMap(e => e.spec?.profile?.displayName ?? []);
+
+    const catalogSet = new Set(displayNames);
+    const missing = expected.filter(name => !catalogSet.has(name));
+
+    console.info(
+      `Catalog ${label}: [${displayNames.join(', ')}] – expecting [${expected.join(', ')}]`,
+    );
+
+    expect(missing, `Missing ${label}: ${missing.join(', ')}`).toHaveLength(0);
+  }
 }
