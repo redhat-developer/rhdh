@@ -223,12 +223,14 @@ export class Common {
     const [githubPage] = await Promise.all([
       context.waitForEvent('page'),
     ]);
-    const popupHelper = new UIhelper(githubPage);
-    await popupHelper.fillTextInputByLabel('Username or email address', username);
-    await popupHelper.fillTextInputByLabel('Password', password);
-    await popupHelper.clickButton('Sign in');
+    await githubPage.waitForSelector('input[name="login"], input[aria-label="Username or email address"]', { timeout: 10000 });
+    await githubPage.fill('input[name="login"], input[aria-label="Username or email address"]', username);
+    await githubPage.waitForSelector('input[name="password"]', { timeout: 10000 });
+    await githubPage.fill('input[name="password"]', password);
+    await githubPage.waitForSelector('button[type="submit"], input[type="submit"]', { timeout: 10000 });
+    await githubPage.click('button[type="submit"], input[type="submit"]');
     // OTP
-    const otpSelector = await this.findOtpSelector(githubPage, popupHelper);
+    const otpSelector = await this.findOtpSelector(githubPage);
     if (otpSelector) {
       if (githubPage.isClosed()) return;
       await githubPage.waitForSelector(otpSelector, { timeout: 10000 });
@@ -238,20 +240,19 @@ export class Common {
       if (githubPage.isClosed()) return;
       await Promise.race([
         githubPage.waitForEvent('close', { timeout: 20000 }),
-        popupHelper.clickButton('Sign in'),
+        githubPage.click('button[type="submit"], input[type="submit"]'),
       ]);
     } else {
       await githubPage.waitForEvent('close', { timeout: 20000 });
     }
   }
 
-  private async findOtpSelector(page, popupHelper): Promise<string> {
+  private async findOtpSelector(page): Promise<string> {
     const selectors = ['input[name="otp"]', '#app_totp'];
     for (const selector of selectors) {
       try {
-        if (await popupHelper.isElementVisible(selector, 10000)) {
-          return selector;
-        }
+        await page.locator(selector).waitFor({ state: 'visible', timeout: 10000 });
+        return selector;
       } catch (err) {
         console.debug(`Selector ${selector} not visible yet, continuing…`);
       }
