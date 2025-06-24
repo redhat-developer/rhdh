@@ -15,11 +15,10 @@ test("Verify all GitHub Pull Requests statistics after login", async ({ page, co
 
   await common.loginAsKeycloakUser(process.env.GH_USER_ID, process.env.GH_USER_PASS);
   await catalog.goToByName(repoName);
-  await uiHelper.waitForCardWithHeader("GitHub Pull Requests Statistics");
-  await uiHelper.clickBtnInCard('GitHub Pull Requests Statistics', 'Sign in', true);
+  await uiHelper.isBtnVisible('Sign in');
+  await uiHelper.clickButton('Sign in');
   await uiHelper.isBtnVisible('Log in');
   const selector = uiHelper.getButtonSelector('Log in');
-  const modalLoginButton = page.locator(selector);
   await Promise.all([
     common.githubLoginPopUpModal(
       context,
@@ -27,7 +26,7 @@ test("Verify all GitHub Pull Requests statistics after login", async ({ page, co
       process.env.GH_USER_PASS,
       process.env.GH_2FA_SECRET
     ),
-    modalLoginButton.click(),
+    uiHelper.clickButton('Log in'),
   ]);
   await uiHelper.verifyTextinCard('GitHub Pull Requests Statistics', 'Average Time Of PR Until Merge');
   const stats = [

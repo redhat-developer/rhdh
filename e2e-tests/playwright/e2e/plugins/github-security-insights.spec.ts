@@ -17,11 +17,10 @@ test("Verify GitHub Security Insights plugin after login", async ({ page, contex
   await uiHelper.verifyLink(repoName);
   await uiHelper.clickLink(repoName);
 
-  await uiHelper.waitForCardWithHeader("Dependabot Alerts");
-  await uiHelper.clickBtnInCard('Dependabot Alerts', 'Sign in', true);
+  await uiHelper.isBtnVisible('Sign in');
+  await uiHelper.clickButton('Sign in');
   await uiHelper.isBtnVisible('Log in');
   const selector = uiHelper.getButtonSelector('Log in');
-  const modalLoginButton = page.locator(selector);
   await Promise.all([
     common.githubLoginPopUpModal(
       context,
@@ -29,7 +28,7 @@ test("Verify GitHub Security Insights plugin after login", async ({ page, contex
       process.env.GH_USER_PASS,
       process.env.GH_2FA_SECRET
     ),
-    modalLoginButton.click(),
+    uiHelper.clickButton('Log in'),
   ]);
   await uiHelper.verifyTextinCard('Dependabot Alerts', 'Critical severity');
   await uiHelper.verifyTextinCard('Dependabot Alerts', 'High severity');
