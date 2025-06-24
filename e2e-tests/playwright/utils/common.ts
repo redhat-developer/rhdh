@@ -189,8 +189,9 @@ export class Common {
 
   async clickOnGHloginPopup() {
     const isLoginRequiredVisible =
-      await this.uiHelper.isTextVisible("Login Required");
+      await this.uiHelper.isTextVisible("Sign in");
     if (isLoginRequiredVisible) {
+      await this.uiHelper.clickButton("Sign in");
       await this.uiHelper.clickButton("Log in");
       await this.checkAndReauthorizeGithubApp();
       await this.uiHelper.waitForLoginBtnDisappear();
