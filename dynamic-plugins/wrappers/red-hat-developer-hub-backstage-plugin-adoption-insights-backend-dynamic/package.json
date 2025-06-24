@@ -54,7 +54,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/redhat-developer/rhdh",
-    "directory": "dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-marketplace-backend-dynamic"
+    "directory": "dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-adoption-insights-backend-dynamic"
   },
   "maintainers": [
     "@janus-idp/maintainers-showcase"

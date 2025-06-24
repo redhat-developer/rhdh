@@ -1194,9 +1194,9 @@ plugins:
               adoption-insights:
                 parent: admin
                 icon: adoptionInsightsIcon
-  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-adoption-insights-backend
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-adoption-insights-backend-dynamic
     disabled: false
-  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-analytics-module-adoption-insights
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-analytics-module-adoption-insights-dynamic
     disabled: false
     pluginConfig:
       dynamicPlugins:

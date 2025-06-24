@@ -12,7 +12,7 @@
     "role": "frontend-plugin-module",
     "supported-versions": "1.39.1",
     "pluginId": "red-hat-developer-hub-backstage-plugin-analytics-module-adoption-insights",
-    "pluginPackage": "@redhat-developer-hub/backstage-plugin-adoption-insights"
+    "pluginPackage": "@redhat-developer-hub/backstage-plugin-analytics-module-adoption-insights"
   },
   "exports": {
     ".": "./src/index.ts",
