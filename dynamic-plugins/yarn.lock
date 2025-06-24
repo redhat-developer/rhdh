@@ -34832,6 +34832,30 @@ __metadata:
   languageName: node
   linkType: hard
 
+"red-hat-developer-hub-backstage-plugin-adoption-insights-backend@workspace:wrappers/red-hat-developer-hub-backstage-plugin-adoption-insights-backend-dynamic":
+  version: 0.0.0-use.local
+  resolution: "red-hat-developer-hub-backstage-plugin-adoption-insights-backend@workspace:wrappers/red-hat-developer-hub-backstage-plugin-adoption-insights-backend-dynamic"
+  dependencies:
+    "@backstage/cli": 0.30.0
+    "@janus-idp/cli": 3.6.1
+    "@red-hat-developer-hub/backstage-plugin-adoption-insights-backend": 0.2.0
+    "@red-hat-developer-hub/backstage-plugin-adoption-insights-common": 0.3.0
+    typescript: 5.8.3
+  languageName: unknown
+  linkType: soft
+
+"red-hat-developer-hub-backstage-plugin-adoption-insights@workspace:wrappers/red-hat-developer-hub-backstage-plugin-adoption-insights":
+  version: 0.0.0-use.local
+  resolution: "red-hat-developer-hub-backstage-plugin-adoption-insights@workspace:wrappers/red-hat-developer-hub-backstage-plugin-adoption-insights"
+  dependencies:
+    "@backstage/cli": 0.30.0
+    "@janus-idp/cli": 3.6.1
+    "@mui/material": 5.17.1
+    "@red-hat-developer-hub/backstage-plugin-adoption-insights": 0.2.0
+    typescript: 5.8.3
+  languageName: unknown
+  linkType: soft
+
 "red-hat-developer-hub-backstage-plugin-analytics-module-adoption-insights@workspace:wrappers/red-hat-developer-hub-backstage-plugin-analytics-module-adoption-insights-dynamic":
   version: 0.0.0-use.local
   resolution: "red-hat-developer-hub-backstage-plugin-analytics-module-adoption-insights@workspace:wrappers/red-hat-developer-hub-backstage-plugin-analytics-module-adoption-insights-dynamic"
@@ -34934,30 +34958,6 @@ __metadata:
     "@janus-idp/cli": 3.6.1
     "@mui/material": 5.17.1
     "@red-hat-developer-hub/backstage-plugin-marketplace": 0.7.0
-    typescript: 5.8.3
-  languageName: unknown
-  linkType: soft
-
-"redhat-developer-hub-backstage-plugin-adoption-insights-backend@workspace:wrappers/red-hat-developer-hub-backstage-plugin-adoption-insights-backend-dynamic":
-  version: 0.0.0-use.local
-  resolution: "redhat-developer-hub-backstage-plugin-adoption-insights-backend@workspace:wrappers/red-hat-developer-hub-backstage-plugin-adoption-insights-backend-dynamic"
-  dependencies:
-    "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.1
-    "@red-hat-developer-hub/backstage-plugin-adoption-insights-backend": 0.2.0
-    "@red-hat-developer-hub/backstage-plugin-adoption-insights-common": 0.3.0
-    typescript: 5.8.3
-  languageName: unknown
-  linkType: soft
-
-"redhat-developer-hub-backstage-plugin-adoption-insights@workspace:wrappers/red-hat-developer-hub-backstage-plugin-adoption-insights":
-  version: 0.0.0-use.local
-  resolution: "redhat-developer-hub-backstage-plugin-adoption-insights@workspace:wrappers/red-hat-developer-hub-backstage-plugin-adoption-insights"
-  dependencies:
-    "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.1
-    "@mui/material": 5.17.1
-    "@red-hat-developer-hub/backstage-plugin-adoption-insights": 0.2.0
     typescript: 5.8.3
   languageName: unknown
   linkType: soft

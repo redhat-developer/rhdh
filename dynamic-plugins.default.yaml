@@ -1181,15 +1181,26 @@ plugins:
       dynamicPlugins:
         frontend:
           red-hat-developer-hub.backstage-plugin-adoption-insights:
+            appIcons:
+              - name: adoptionInsightsIcon
+                importName: AdoptionInsightsIcon
             dynamicRoutes:
               - path: /adoption-insights
                 importName: AdoptionInsightsPage
-            mountPoints:
-              - mountPoint: internal.plugins/tab
-                importName: AdoptionInsightsPage
-                config:
-                  path: adoption-insights
-                  title: Adoption insights
+                menuItem:
+                  icon: adoptionInsightsIcon
+                  text: Adoption Insights
+            menuItems:
+              adoption-insights:
+                parent: admin
+                icon: adoptionInsightsIcon
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-adoption-insights-backend
+    disabled: false
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-analytics-module-adoption-insights
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
           red-hat-developer-hub.backstage-plugin-analytics-module-adoption-insights:
             analyticsApiExtensions:
               - importName: AdoptionInsightsAnalyticsApi
