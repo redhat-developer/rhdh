@@ -596,13 +596,15 @@ export class UIhelper {
     cardHeading: string,
     text: string | RegExp,
     exact = true,
+    timeout = 30000
   ) {
     const locator = this.page
       .locator(UI_HELPER_ELEMENTS.MuiCard(cardHeading))
       .getByText(text, { exact: exact })
       .first();
+    await locator.waitFor({ state: "visible", timeout });
     await locator.scrollIntoViewIfNeeded();
-    await expect(locator).toBeVisible();
+    await expect(locator).toBeVisible({ timeout });
   }
 
   async verifyTableHeadingAndRows(texts: string[]) {
