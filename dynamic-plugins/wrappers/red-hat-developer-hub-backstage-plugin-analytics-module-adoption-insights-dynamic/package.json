@@ -9,10 +9,10 @@
     "access": "public"
   },
   "backstage": {
-    "role": "backend-plugin-module",
+    "role": "frontend-plugin-module",
     "supported-versions": "1.39.1",
-    "pluginId": "catalog",
-    "pluginPackage": "@backstage/plugin-catalog-backend"
+    "pluginId": "red-hat-developer-hub-backstage-plugin-analytics-module-adoption-insights",
+    "pluginPackage": "@redhat-developer-hub/backstage-plugin-adoption-insights"
   },
   "exports": {
     ".": "./src/index.ts",
@@ -32,8 +32,14 @@
     "test": "backstage-cli package test --passWithNoTests --coverage",
     "clean": "backstage-cli package clean",
     "clean-dynamic-sources": "yarn clean && rm -Rf node_modules",
-    "export-dynamic": "janus-cli package export-dynamic-plugin --embed-package @red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights --embed-package @red-hat-developer-hub/backstage-plugin-adoption-insights-common",
+    "export-dynamic": "janus-cli package export-dynamic-plugin --embed-package @red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights",
     "export-dynamic:clean": "run export-dynamic --clean"
+  },
+  "scalprum": {
+    "name": "red-hat-developer-hub.backstage-plugin-analytics-module-adoption-insights",
+    "exposedModules": {
+      "PluginRoot": "./src/index.ts"
+    }
   },
   "dependencies": {
     "@red-hat-developer-hub/backstage-plugin-adoption-insights-common": "0.3.0",
@@ -47,7 +53,8 @@
   "files": [
     "dist",
     "dist-dynamic/*.*",
-    "dist-dynamic/dist/**"
+    "dist-dynamic/dist/**",
+    "dist-scalprum"
   ],
   "repository": {
     "type": "git",
