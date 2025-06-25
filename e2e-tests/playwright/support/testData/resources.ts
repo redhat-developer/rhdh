@@ -1,6 +1,8 @@
 export const RESOURCES = [
-  "Janus-IDP Authors",
-  "Janus-IDP",
+  // Janus-IPD are not available in the catalog anymore
+  // "Janus-IDP Authors",
+  // "Janus-IDP",
+  "Red Hat Developer Hub",
   "ArgoCD",
   "GitHub Showcase repository",
   "KeyCloak",

@@ -1,12 +1,12 @@
 import { test, expect, Page, BrowserContext } from "@playwright/test";
-import { UIhelper } from "../../utils/ui-helper";
-import { Common, setupBrowser } from "../../utils/common";
-import { RESOURCES } from "../../support/testData/resources";
+import { UIhelper } from "../utils/ui-helper";
+import { Common, setupBrowser } from "../utils/common";
+import { RESOURCES } from "../support/testData/resources";
 import {
   BackstageShowcase,
   CatalogImport,
-} from "../../support/pages/catalog-import";
-import { TEMPLATES } from "../../support/testData/templates";
+} from "../support/pages/catalog-import";
+import { TEMPLATES } from "../support/testData/templates";
 
 let page: Page;
 let context: BrowserContext;
@@ -22,7 +22,7 @@ test.describe("GitHub Happy path", async () => {
     "https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/all.yaml";
 
   test.beforeAll(async ({ browser }, testInfo) => {
-    ({ context, page } = await setupBrowser(browser, testInfo));
+    ({ page, context } = await setupBrowser(browser, testInfo));
     uiHelper = new UIhelper(page);
     common = new Common(page);
     catalogImport = new CatalogImport(page);
@@ -30,20 +30,24 @@ test.describe("GitHub Happy path", async () => {
     test.info().setTimeout(600 * 1000);
   });
 
-  test("Login as a Github user.", async () => {
-    const login = await common.githubLogin(
-      "rhdhqeauthadmin",
-      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD,
-      process.env.AUTH_PROVIDERS_GH_ADMIN_2FA,
+  test("Login as a Github user from Settings page.", async () => {
+    await common.loginAsKeycloakUser(
+      process.env.GH_USER2_ID,
+      process.env.GH_USER2_PASS,
     );
-    expect(login).toBe("Login successful");
+    const ghLogin = await common.githubLoginFromSettingsPage(
+      process.env.GH_USER2_ID,
+      process.env.GH_USER2_PASS,
+      process.env.GH_USER2_2FA_SECRET,
+    );
+    expect(ghLogin).toBe("Login successful");
   });
 
   test("Verify Profile is Github Account Name in the Settings page", async () => {
     await page.goto("/settings");
     await expect(page).toHaveURL("/settings");
-    await uiHelper.verifyHeading("rhdhqeauthadmin");
-    await uiHelper.verifyHeading(`User Entity: rhdhqeauthadmin`);
+    await uiHelper.verifyHeading(process.env.GH_USER2_ID,);
+    await uiHelper.verifyHeading(`User Entity: ${process.env.GH_USER2_ID}`);
   });
 
   test("Register an existing component", async () => {
@@ -90,20 +94,21 @@ test.describe("GitHub Happy path", async () => {
   });
 
   test("Click login on the login popup and verify that Overview tab renders", async () => {
+
     await uiHelper.openCatalogSidebar("Component");
     await uiHelper.clickLink("Red Hat Developer Hub");
 
-    const expectedPath = "/catalog/default/component/backstage-showcase";
+    const expectedPath = "/catalog/default/component/red-hat-developer-hub";
     // Wait for the expected path in the URL
     await page.waitForURL(`**${expectedPath}`, {
       waitUntil: "domcontentloaded", // Wait until the DOM is loaded
-      timeout: 10000,
+      timeout: 20000,
     });
     // Optionally, verify that the current URL contains the expected path
     await expect(page.url()).toContain(expectedPath);
 
     await common.clickOnGHloginPopup();
-    await uiHelper.verifyLink("Janus Website", { exact: false });
+    await uiHelper.verifyLink("About RHDH", { exact: false });
     await backstageShowcase.verifyPRStatisticsRendered();
     await backstageShowcase.verifyAboutCardIsDisplayed();
   });

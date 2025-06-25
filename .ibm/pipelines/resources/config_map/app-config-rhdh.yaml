@@ -83,6 +83,11 @@ auth:
       development:
         clientId: ${GOOGLE_CLIENT_ID}
         clientSecret: ${GOOGLE_CLIENT_SECRET}
+    github:
+      development:
+        clientSecret: ${GITHUB_OAUTH_APP_SECRET}
+        clientId: ${GITHUB_OAUTH_APP_ID}
+        callbackUrl: ${RHDH_BASE_URL}/api/auth/github/handler/frame
     oidc:
       development:
         metadataUrl: ${KEYCLOAK_AUTH_BASE_URL}/auth/realms/${KEYCLOAK_AUTH_REALM}

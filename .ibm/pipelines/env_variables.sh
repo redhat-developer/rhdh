@@ -146,4 +146,9 @@ REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON=$(cat /tmp/secrets/REGISTRY_
 
 IS_OPENSHIFT=""
 
+GITHUB_OAUTH_APP_ID=$(cat /tmp/secrets/GITHUB_OAUTH_APP_ID)
+GITHUB_OAUTH_APP_SECRET=$(cat /tmp/secrets/GITHUB_OAUTH_APP_SECRET)
+GITHUB_OAUTH_APP_ID_ENCODED=$(printf "%s" $GITHUB_OAUTH_APP_ID | base64 | tr -d '\n')
+GITHUB_OAUTH_APP_SECRET_ENCODED=$(printf "%s" $GITHUB_OAUTH_APP_SECRET | base64 | tr -d '\n')
+
 set +a  # Stop automatically exporting variables

@@ -82,9 +82,6 @@ export default defineConfig({
       testIgnore: [
         "**/playwright/e2e/authProviders/github-happy-path.spec.ts", // temporarily disable
         "**/playwright/e2e/verify-tls-config-health-check.spec.ts",
-        //"**/playwright/e2e/authProviders/microsoft.spec.ts",
-        //"**/playwright/e2e/authProviders/oidc.spec.ts",
-        //"**/playwright/e2e/authProviders/github.spec.ts",
         "**/playwright/e2e/authProviders/ldap.spec.ts",
       ],
       retries: 1,
@@ -106,6 +103,7 @@ export default defineConfig({
         "**/playwright/e2e/audit-log/**/*.spec.ts",
         "**/playwright/e2e/verify-tls-config-health-check.spec.ts",
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
+        "**/playwright/e2e/github-happy-path.spec.ts",
       ],
     },
     {
@@ -131,6 +129,7 @@ export default defineConfig({
         "**/playwright/e2e/audit-log/**/*.spec.ts",
         "**/playwright/e2e/verify-tls-config-health-check.spec.ts",
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
+        "**/playwright/e2e/github-happy-path.spec.ts",
       ],
     },
     {
