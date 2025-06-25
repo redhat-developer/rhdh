@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "@backstage/backend-defaults": "0.10.0",
-    "@backstage/backend-dynamic-feature-service": "0.6.0",
+    "@backstage/backend-dynamic-feature-service": "0.7.0",
     "@backstage/backend-plugin-api": "1.3.1",
     "@backstage/config": "1.3.2",
     "express": "4.21.2",
