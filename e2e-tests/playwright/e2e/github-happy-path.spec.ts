@@ -11,8 +11,6 @@ import { TEMPLATES } from "../support/testData/templates";
 let page: Page;
 let context: BrowserContext;
 
-test.use({ viewport: { width: 1280, height: 720 } });
-
 // test suite skipped for now, until it's migrated back to the main showcase job
 test.describe("GitHub Happy path", async () => {
   let common: Common;
@@ -45,14 +43,14 @@ test.describe("GitHub Happy path", async () => {
     expect(ghLogin).toBe("Login successful");
   });
 
-  test.skip("Verify Profile is Github Account Name in the Settings page", async () => {
+  test("Verify Profile is Github Account Name in the Settings page", async () => {
     await page.goto("/settings");
     await expect(page).toHaveURL("/settings");
     await uiHelper.verifyHeading(process.env.GH_USER2_ID,);
     await uiHelper.verifyHeading(`User Entity: ${process.env.GH_USER2_ID}`);
   });
 
-  test.skip("Register an existing component", async () => {
+  test("Register an existing component", async () => {
     await uiHelper.openSidebar("Catalog");
     await uiHelper.selectMuiBox("Kind", "Component");
     await uiHelper.clickButton("Self-service");
@@ -60,7 +58,7 @@ test.describe("GitHub Happy path", async () => {
     await catalogImport.registerExistingComponent(component);
   });
 
-  test.skip("Verify that the following components were ingested into the Catalog", async () => {
+  test("Verify that the following components were ingested into the Catalog", async () => {
     await uiHelper.openSidebar("Catalog");
     await uiHelper.selectMuiBox("Kind", "Group");
     await uiHelper.verifyComponentInCatalog("Group", ["Janus-IDP Authors"]);
@@ -85,7 +83,7 @@ test.describe("GitHub Happy path", async () => {
     await uiHelper.verifyRowsInTable(["rhdh-qe"]);
   });
 
-  test.skip("Verify all 12 Software Templates appear in the Create page", async () => {
+  test("Verify all 12 Software Templates appear in the Create page", async () => {
     await uiHelper.clickLink({ ariaLabel: "Self-service" });
     await uiHelper.verifyHeading("Templates");
 
