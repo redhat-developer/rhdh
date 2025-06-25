@@ -1,3 +1,4 @@
+import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import AddCircle from '@mui/icons-material/AddCircleOutline';
 import Bookmarks from '@mui/icons-material/BookmarksOutlined';
 import Business from '@mui/icons-material/BusinessOutlined';
@@ -52,6 +53,7 @@ const CommonIcons: {
   notifications: Notifications,
   manageAccounts: ManageAccounts,
   logout: Logout,
+  account: AccountCircleOutlinedIcon,
 };
 
 export default CommonIcons;
