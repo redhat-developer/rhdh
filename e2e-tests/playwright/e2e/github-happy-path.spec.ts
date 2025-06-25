@@ -1,19 +1,27 @@
 import { expect } from "@playwright/test";
 import { RESOURCES } from "../../support/testData/resources";
+import { test, expect, Page, BrowserContext } from "@playwright/test";
+import { UIhelper } from "../utils/ui-helper";
+import { Common, setupBrowser } from "../utils/common";
+import { RESOURCES } from "../support/testData/resources";
 import {
   BackstageShowcase,
   CatalogImport,
-} from "../../support/pages/catalog-import";
+} from "../support/pages/catalog-import";
+import { TEMPLATES } from "../support/testData/templates";
 import { TEMPLATES } from "../../support/testData/templates";
 import { baseTest } from "../../support/fixtures/base";
 
 type ExtendedFixtures = {
   backstageShowcase: BackstageShowcase;
+  catalogImport: CatalogImport;
 };
 
 const extendedTest = baseTest.extend<ExtendedFixtures>({
   backstageShowcase: async ({ page }, use) =>
     await use(new BackstageShowcase(page)),
+catalogImport: async ({ page }, use) =>
+    await use(new CatalogImport(page)),
 });
 
 // test suite skipped for now, until it's migrated back to the main showcase job
@@ -25,24 +33,25 @@ extendedTest.describe.serial("GitHub Happy path", async () => {
     testInfo.setTimeout(600 * 1000);
   });
 
-  extendedTest("Login as a Github user.", async ({ common }) => {
-    const login = await common.githubLogin(
-      "rhdhqeauthadmin",
-      process.env.AUTH_PROVIDERS_GH_USER_PASSWORD,
-      process.env.AUTH_PROVIDERS_GH_ADMIN_2FA,
+  test("Login as a Github user from Settings page.", async () => {
+    await common.loginAsKeycloakUser(
+      process.env.GH_USER2_ID,
+      process.env.GH_USER2_PASS,
     );
-    expect(login).toBe("Login successful");
+    const ghLogin = await common.githubLoginFromSettingsPage(
+      process.env.GH_USER2_ID,
+      process.env.GH_USER2_PASS,
+      process.env.GH_USER2_2FA_SECRET,
+    );
+    expect(ghLogin).toBe("Login successful");
   });
 
-  extendedTest(
-    "Verify Profile is Github Account Name in the Settings page",
-    async ({ uiHelper, page }) => {
-      await page.goto("/settings");
-      await expect(page).toHaveURL("/settings");
-      await uiHelper.verifyHeading("rhdhqeauthadmin");
-      await uiHelper.verifyHeading(`User Entity: rhdhqeauthadmin`);
-    },
-  );
+  extendedTest("Verify Profile is Github Account Name in the Settings page", async ({ uiHelper , page}) => {
+    await page.goto("/settings");
+    await expect(page).toHaveURL("/settings");
+    await uiHelper.verifyHeading(process.env.GH_USER2_ID,);
+    await uiHelper.verifyHeading(`User Entity: ${process.env.GH_USER2_ID}`);
+  });
 
   extendedTest("Register an existing component", async ({ uiHelper, page }) => {
     await uiHelper.openSidebar("Catalog");
@@ -59,10 +68,10 @@ extendedTest.describe.serial("GitHub Happy path", async () => {
       await uiHelper.selectMuiBox("Kind", "Group");
       await uiHelper.verifyComponentInCatalog("Group", ["Janus-IDP Authors"]);
 
-      await uiHelper.verifyComponentInCatalog("API", ["Petstore"]);
-      await uiHelper.verifyComponentInCatalog("Component", [
-        "Backstage Showcase",
-      ]);
+    await uiHelper.verifyComponentInCatalog("API", ["Petstore"]);
+    await uiHelper.verifyComponentInCatalog("Component", [
+      "Red Hat Developer Hub",
+    ]);
 
       await uiHelper.selectMuiBox("Kind", "Resource");
       await uiHelper.verifyRowsInTable([
@@ -97,23 +106,22 @@ extendedTest.describe.serial("GitHub Happy path", async () => {
     "Click login on the login popup and verify that Overview tab renders",
     async ({ uiHelper, common, page, backstageShowcase }) => {
       await uiHelper.openCatalogSidebar("Component");
-      await uiHelper.clickLink("Backstage Showcase");
+    await uiHelper.clickLink("Red Hat Developer Hub");
 
-      const expectedPath = "/catalog/default/component/backstage-showcase";
-      // Wait for the expected path in the URL
-      await page.waitForURL(`**${expectedPath}`, {
-        waitUntil: "domcontentloaded", // Wait until the DOM is loaded
-        timeout: 10000,
-      });
-      // Optionally, verify that the current URL contains the expected path
-      expect(page.url()).toContain(expectedPath);
+    const expectedPath = "/catalog/default/component/red-hat-developer-hub";
+    // Wait for the expected path in the URL
+    await page.waitForURL(`**${expectedPath}`, {
+      waitUntil: "domcontentloaded", // Wait until the DOM is loaded
+      timeout: 20000,
+    });
+    // Optionally, verify that the current URL contains the expected path
+    await expect(page.url()).toContain(expectedPath);
 
-      await common.clickOnGHloginPopup();
-      await uiHelper.verifyLink("Janus Website", { exact: false });
-      await backstageShowcase.verifyPRStatisticsRendered();
-      await backstageShowcase.verifyAboutCardIsDisplayed();
-    },
-  );
+    await common.clickOnGHloginPopup();
+    await uiHelper.verifyLink("About RHDH", { exact: false });
+    await backstageShowcase.verifyPRStatisticsRendered();
+    await backstageShowcase.verifyAboutCardIsDisplayed();
+  });
 
   extendedTest(
     "Verify that the Issues tab renders all the open github issues in the repository",
@@ -187,16 +195,15 @@ extendedTest.describe.serial("GitHub Happy path", async () => {
   extendedTest(
     "Verify that the 5, 10, 20 items per page option properly displays the correct number of PRs",
     async ({ uiHelper, common, backstageShowcase }) => {
-      await uiHelper.openCatalogSidebar("Component");
-      await uiHelper.clickLink("Backstage Showcase");
-      await common.clickOnGHloginPopup();
-      await uiHelper.clickTab("Pull/Merge Requests");
-      const allPRs = await BackstageShowcase.getShowcasePRs("open");
-      await backstageShowcase.verifyPRRowsPerPage(5, allPRs);
-      await backstageShowcase.verifyPRRowsPerPage(10, allPRs);
-      await backstageShowcase.verifyPRRowsPerPage(20, allPRs);
-    },
-  );
+    await uiHelper.openCatalogSidebar("Component");
+    await uiHelper.clickLink("Red Hat Developer Hub");
+    await common.clickOnGHloginPopup();
+    await uiHelper.clickTab("Pull/Merge Requests");
+    const allPRs = await BackstageShowcase.getShowcasePRs("open");
+    await backstageShowcase.verifyPRRowsPerPage(5, allPRs);
+    await backstageShowcase.verifyPRRowsPerPage(10, allPRs);
+    await backstageShowcase.verifyPRRowsPerPage(20, allPRs);
+  });
 
   extendedTest(
     "Verify that the CI tab renders 5 most recent github actions and verify the table properly displays the actions when page sizes are changed and filters are applied",

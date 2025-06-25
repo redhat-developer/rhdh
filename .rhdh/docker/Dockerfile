@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1.16-labs
-
 # THIS IS USED BY Konflux builds >= 1.6
 #
 # Copyright (c) 2023-2024 Red Hat, Inc.

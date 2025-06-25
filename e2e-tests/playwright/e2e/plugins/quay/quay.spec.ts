@@ -7,7 +7,7 @@ guestTest.describe("Test Quay.io plugin", () => {
 
   guestTest.beforeEach(async ({ uiHelper }) => {
     await uiHelper.openCatalogSidebar("Component");
-    await uiHelper.clickLink("Backstage Showcase");
+    await uiHelper.clickLink("Red Hat Developer Hub");
     await uiHelper.clickTab("Image Registry");
   });
 

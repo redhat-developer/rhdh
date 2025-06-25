@@ -223,6 +223,30 @@ auth:
   providers:
     # provider configs ...
 ```
+### disableIdentityResolution configuration value
+
+In scenarios where multiple authentication providers are used (e.g., Keycloak for primary sign-in and GitHub for plugin access), you can use this config to allow the auxiliary auth provider without the need to resolve or issue a user identity. By default, this option is set to false.
+
+When enabled:
+* The auxiliary auth provider can still be used for API access (e.g., GitHub plugins).
+* RHDH will not try to resolve the user signing in with an entity in the catalog. i.e. they can signin without the need to provision user/group entities for that IdP.
+* No user identity is issued on sign-in.
+
+Do not enable this setting on the primary auth provider you plan on using for sign-in and identity resolution/management (i.e. setting `signInPage` to a provider with this config enabled). When this misconfiguration is applied, you will see the following error:
+
+`Login failed; caused by Error: The <providerId> provider is not configured to support sign-in.`
+
+To enable this option:
+
+```yaml
+auth:
+  providers:
+    oidc:
+      development:
+        ...
+        disableIdentityResolution: true
+        # other provider configs ...
+```
 
 ## External authentication providers
 

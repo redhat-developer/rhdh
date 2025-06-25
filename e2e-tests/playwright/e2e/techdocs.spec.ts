@@ -35,47 +35,41 @@ guestTest.describe("TechDocs", () => {
     },
   );
 
-  guestTest(
-    "Verify that TechDocs Docs page for Backstage Showcase works",
-    async ({ page, uiHelper }) => {
-      await uiHelper.openSidebarButton("Favorites");
-      await uiHelper.openSidebar("Docs");
-      await page.getByRole("link", { name: "Backstage Showcase" }).click();
-      await uiHelper.waitForTitle("Getting Started running RHDH", 1);
-    },
-  );
+  guestTest("Verify that TechDocs Docs page for Red Hat Developer Hub works", async ({
+    page,uiHelper
+  }) => {
+    await uiHelper.openSidebarButton("Favorites");
+    await uiHelper.openSidebar("Docs");
+    await page.getByRole("link", { name: "Red Hat Developer Hub" }).click();
+    await uiHelper.waitForTitle("Getting Started running RHDH", 1);
+  });
 
-  guestTest(
-    "Verify that TechDocs entity tab page for Backstage Showcase works",
-    async ({ uiHelper }) => {
-      await catalog.goToByName("Backstage Showcase");
-      await uiHelper.clickTab("Docs");
-      await uiHelper.waitForTitle("Getting Started running RHDH", 1);
-    },
-  );
+  guestTest("Verify that TechDocs entity tab page for Red Hat Developer Hub works", async ({uiHelper}) => {
+    await catalog.goToByName("Red Hat Developer Hub");
+    await uiHelper.clickTab("Docs");
+    await uiHelper.waitForTitle("Getting Started running RHDH", 1);
+  });
 
-  guestTest(
-    "Verify that TechDocs Docs page for ReportIssue addon works",
-    async ({ page, uiHelper }) => {
-      await uiHelper.openSidebarButton("Favorites");
-      await uiHelper.openSidebar("Docs");
-      await page.getByRole("link", { name: "Backstage Showcase" }).click();
-      await page.waitForSelector("article a");
-      await docsTextHighlight(page);
-      const link = await page.waitForSelector("text=Open new Github issue");
-      expect(await link?.isVisible()).toBeTruthy();
-    },
-  );
+  guestTest("Verify that TechDocs Docs page for ReportIssue addon works", async ({
+    page, uiHelper
+  }) => {
+    await uiHelper.openSidebarButton("Favorites");
+    await uiHelper.openSidebar("Docs");
+    await page.getByRole("link", { name: "Red Hat Developer Hub" }).click();
+    await page.waitForSelector("article a");
+    await docsTextHighlight(page);
+    const link = await page.waitForSelector("text=Open new Github issue");
+    expect(await link?.isVisible()).toBeTruthy();
+  });
 
-  guestTest(
-    "Verify that TechDocs entity tab page for ReportIssue addon works",
-    async ({ page, uiHelper }) => {
-      await catalog.goToByName("Backstage Showcase");
-      await uiHelper.clickTab("Docs");
-      await page.waitForSelector("article a");
-      await docsTextHighlight(page);
-      const link = await page.waitForSelector("text=Open new Github issue");
-      expect(await link?.isVisible()).toBeTruthy();
-    },
-  );
+  guestTest("Verify that TechDocs entity tab page for ReportIssue addon works", async ({
+    page, uiHelper
+  }) => {
+    await catalog.goToByName("Red Hat Developer Hub");
+    await uiHelper.clickTab("Docs");
+    await page.waitForSelector("article a");
+    await docsTextHighlight(page);
+    const link = await page.waitForSelector("text=Open new Github issue");
+    expect(await link?.isVisible()).toBeTruthy();
+  });
 });

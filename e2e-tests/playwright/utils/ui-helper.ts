@@ -87,6 +87,101 @@ export class UIhelper {
     await element.dispatchEvent("click");
   }
 
+  /**
+   * Clicks on a div element by its title attribute.
+   *
+   * @param title - The title attribute value of the div to click on.
+   */
+  async clickDivByTitle(title: string) {
+    const divElement = this.page.locator(`div[title="${title}"]`);
+    await divElement.waitFor({ state: "visible" });
+    await divElement.click();
+  }
+
+  /**
+   * Clicks on a button element by its text content, waiting for it to be visible first.
+   *
+   * @param buttonText - The text content of the button to click on.
+   * @param options - Optional configuration for exact match, timeout, and force click.
+   */
+  async clickButtonByText(
+    buttonText: string | RegExp,
+    options: {
+      exact?: boolean;
+      timeout?: number;
+      force?: boolean;
+    } = {
+      exact: true,
+      timeout: 10000,
+      force: false,
+    },
+  ) {
+    const buttonElement = this.page
+      .getByRole("button")
+      .getByText(buttonText, { exact: options.exact });
+    
+    await buttonElement.waitFor({ 
+      state: "visible", 
+      timeout: options.timeout 
+    });
+    
+    if (options.force) {
+      await buttonElement.click({ force: true });
+    } else {
+      await buttonElement.click();
+    }
+  }
+
+  /**
+   * Conditionally clicks on "Mark all read" if visible, then clicks on "Mark All".
+   * This method handles the two-step process of marking all notifications as read.
+   */
+  async markAllNotificationsAsReadIfVisible() {
+    try {
+      // Check if "Mark all read" div is visible
+      const markAllReadDiv = this.page.locator('div[title="Mark all read"]');
+      const isVisible = await markAllReadDiv.isVisible();
+      
+      if (isVisible) {
+        // Click on "Mark all read" div first
+        await markAllReadDiv.click();
+        
+        // Then click on "Mark All" button
+        await this.clickButtonByText("Mark All", {
+          timeout: 5000
+        });
+      }
+    } catch (error) {
+      console.log("Mark all read functionality not available or already processed");
+    }
+  }
+
+  /**
+   * Clicks on an element by title only if it's visible.
+   *
+   * @param title - The title attribute value of the element to click on.
+   * @param elementType - The type of element (default: 'div').
+   * @returns Promise<boolean> - Returns true if element was clicked, false if not visible.
+   */
+  async clickByTitleIfVisible(
+    title: string, 
+    elementType: string = 'div'
+  ): Promise<boolean> {
+    try {
+      const element = this.page.locator(`${elementType}[title="${title}"]`);
+      const isVisible = await element.isVisible();
+      
+      if (isVisible) {
+        await element.click();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.log(`Element with title "${title}" not found or not clickable`);
+      return false;
+    }
+  }
+
   async verifyDivHasText(divText: string | RegExp) {
     await expect(this.page.locator(`div`).getByText(divText)).toBeVisible();
   }
