@@ -1,16 +1,14 @@
-import { expect } from "@playwright/test";
-import { RESOURCES } from "../../support/testData/resources";
-import { test, expect, Page, BrowserContext } from "@playwright/test";
-import { UIhelper } from "../utils/ui-helper";
-import { Common, setupBrowser } from "../utils/common";
-import { RESOURCES } from "../support/testData/resources";
+
+import { baseTest } from "../support/fixtures/base";
+import { expect } from "../support/fixtures/guest-login";
 import {
   BackstageShowcase,
   CatalogImport,
 } from "../support/pages/catalog-import";
+import { RESOURCES } from "../support/testData/resources";
 import { TEMPLATES } from "../support/testData/templates";
-import { TEMPLATES } from "../../support/testData/templates";
-import { baseTest } from "../../support/fixtures/base";
+
+
 
 type ExtendedFixtures = {
   backstageShowcase: BackstageShowcase;
@@ -33,7 +31,7 @@ extendedTest.describe.serial("GitHub Happy path", async () => {
     testInfo.setTimeout(600 * 1000);
   });
 
-  test("Login as a Github user from Settings page.", async () => {
+  extendedTest("Login as a Github user from Settings page.", async ({common}) => {
     await common.loginAsKeycloakUser(
       process.env.GH_USER2_ID,
       process.env.GH_USER2_PASS,
