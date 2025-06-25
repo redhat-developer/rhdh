@@ -34,7 +34,7 @@ export const SETTINGS_PAGE_COMPONENTS = {
 };
 
 export const ROLES_PAGE_COMPONENTS = {
-  editRole: (name: string) => `span[data-testid="update-role-${name}"]`,
+  editRole: (name: string) => `span[data-testid="edit-role-${name}"]`,
   deleteRole: (name: string) => `span[data-testid="delete-role-${name}"]`,
 };
 
