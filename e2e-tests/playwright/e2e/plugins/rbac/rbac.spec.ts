@@ -564,8 +564,8 @@ test.describe.serial("Test RBAC", () => {
       await page.reload();
       await uiHelper.openSidebar("Catalog");
       await uiHelper.clickButton("Self-service");
-      expect(await uiHelper.isLinkVisible("Register Existing Component"));
-      await uiHelper.clickButton("Register Existing Component");
+      expect(await uiHelper.isLinkVisible("Import an existing Git repository"));
+      await uiHelper.clickButton("Import an existing Git repository");
       const catalogImport = new CatalogImport(page);
       const component =
         "https://github.com/janus-qe/custom-catalog-entities/blob/main/timestamp-catalog-info.yaml";
