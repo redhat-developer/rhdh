@@ -306,6 +306,8 @@ upstream:
         env:
           - name: NPM_CONFIG_USERCONFIG
             value: /opt/app-root/src/.npmrc.dynamic-plugins
+          - name: MAX_ENTRY_SIZE
+            value: "30000000"
         imagePullPolicy: Always
         volumeMounts:
           - mountPath: /dynamic-plugins-root
@@ -340,7 +342,7 @@ upstream:
 
 
 orchestrator:
-  enabled: false
+  enabled: true
   serverlessLogicOperator:
     enabled: true
   serverlessOperator:
@@ -363,13 +365,13 @@ orchestrator:
     externalDBsecretRef: "postgres-cred"
 
     # -- Name for the user-configured external Database
-    externalDBName: "postgress-external-db"
+    externalDBName: "postgres"
 
     # -- Host for the user-configured external Database
-    externalDBHost: "${POSTGRES_HOST}"
+    externalDBHost: "postgress-external-db-primary.postgress-external-db.svc.cluster.local"
 
     # -- Port for the user-configured external Database
-    externalDBPort: "${POSTGRES_PORT}"
+    externalDBPort: "5432"
 
     # -- Image for the init container used by the create-db job
     initContainerImage: "registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-16.3-1"

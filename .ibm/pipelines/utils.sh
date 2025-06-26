@@ -442,6 +442,30 @@ configure_external_postgres_db() {
   POSTGRES_HOST=$(echo -n "postgress-external-db-primary.$NAME_SPACE_POSTGRES_DB.svc.cluster.local" | base64 | tr -d '\n')
   sed_inplace "s|POSTGRES_HOST:.*|POSTGRES_HOST: ${POSTGRES_HOST}|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
   oc apply -f "${DIR}/resources/postgres-db/postgres-cred.yaml"  --namespace="${project}"
+
+  cat <<EOF | oc apply -n "${NAME_SPACE_POSTGRES_DB}" -f -
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-psql-from-my-app
+  namespace: "${NAME_SPACE_POSTGRES_DB}"
+spec:
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: "${NAME_SPACE_RBAC}"
+    ports:
+    - port: 5432
+      protocol: TCP
+  podSelector:
+    matchLabels:
+      postgres-operator.crunchydata.com/role: primary
+  policyTypes:
+  - Ingress
+EOF
+
+  echo "Created Networkpolicy for postgres DB" 
 }
 
 apply_yaml_files() {
@@ -892,6 +916,8 @@ base_deployment() {
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
   echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
   perform_helm_install "${RELEASE_NAME}" "${NAME_SPACE}" "${HELM_CHART_VALUE_FILE_NAME}"
+
+  deploy_orchestrator_workflows "${NAME_SPACE}"
 }
 
 rbac_deployment() {
@@ -904,6 +930,10 @@ rbac_deployment() {
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
   echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${RELEASE_NAME_RBAC}"
   perform_helm_install "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${HELM_CHART_RBAC_VALUE_FILE_NAME}"
+
+  oc get sfp -n "${NAME_SPACE_RBAC}" -o yaml 
+
+  deploy_orchestrator_workflows "${NAME_SPACE_RBAC}"
 }
 
 initiate_deployments() {
@@ -1210,4 +1240,44 @@ get_previous_release_value_file() {
     save_overall_result 1
     exit 1
   fi
+}
+
+# Helper function to deploy workflows for orchestrator testing
+deploy_orchestrator_workflows() {
+  local namespace=$1
+
+  local WORKFLOW_REPO="https://github.com/rhdh-orchestrator-test/serverless-workflows.git"
+  local WORKFLOW_DIR="${DIR}/serverless-workflows"
+  local WORKFLOW_MANIFESTS="${WORKFLOW_DIR}/workflows/experimentals/user-onboarding/manifests/"
+
+  rm -rf "${WORKFLOW_DIR}"
+  git clone "${WORKFLOW_REPO}" "${WORKFLOW_DIR}"
+
+  if [[ "$namespace" == "${NAME_SPACE_RBAC}" ]]; then
+    local pqsl_secret_name="postgres-cred"
+    local pqsl_user_key="POSTGRES_USER"
+    local pqsl_password_key="POSTGRES_PASSWORD"
+    local pqsl_svc_name="postgress-external-db-primary"
+    local patch_namespace="${NAME_SPACE_POSTGRES_DB}"
+  else
+    local pqsl_secret_name="rhdh-postgresql-svcbind-postgres"
+    local pqsl_user_key="username"
+    local pqsl_password_key="password"
+    local pqsl_svc_name="rhdh-postgresql"
+    local patch_namespace="$namespace"
+  fi
+
+  oc apply -f "${WORKFLOW_MANIFESTS}"
+
+  helm repo add orchestrator-workflows https://rhdhorchestrator.io/serverless-workflows
+  helm install greeting orchestrator-workflows/greeting -n "$namespace"
+
+  until [[ $(oc get sf -n "$namespace" --no-headers 2>/dev/null | wc -l) -eq 2 ]]; do
+    echo "No sf resources found. Retrying in 5 seconds..."
+    sleep 5
+  done
+
+  for workflow in greeting user-onboarding; do
+    oc -n "$namespace" patch sonataflow "$workflow" --type merge -p "{\"spec\": { \"persistence\": { \"postgresql\": { \"secretRef\": {\"name\": \"$pqsl_secret_name\",\"userKey\": \"$pqsl_user_key\",\"passwordKey\": \"$pqsl_password_key\"},\"serviceRef\": {\"name\": \"$pqsl_svc_name\",\"namespace\": \"$patch_namespace\"}}}}}"
+  done
 }
