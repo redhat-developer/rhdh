@@ -73,6 +73,7 @@ COPY $EXTERNAL_SOURCE_NESTED/plugins/dynamic-plugins-info-backend/package.json .
 COPY $EXTERNAL_SOURCE_NESTED/packages/plugin-utils/package.json ./packages/plugin-utils/package.json
 COPY $EXTERNAL_SOURCE_NESTED/packages/backend/package.json ./packages/backend/package.json
 COPY $EXTERNAL_SOURCE_NESTED/packages/app/package.json ./packages/app/package.json
+COPY $EXTERNAL_SOURCE_NESTED/packages/app-next/package.json ./packages/app-next/package.json
 COPY $EXTERNAL_SOURCE_NESTED/package.json ./package.json
 # END COPY package.json files
 
