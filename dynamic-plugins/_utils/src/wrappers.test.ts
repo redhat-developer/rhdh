@@ -119,7 +119,7 @@ function validateDynamicPluginsConfig(
       const isExternalPlugin = externalDynamicPlugins?.some(
         (externalDynamicPlugin) =>
           externalDynamicPlugin.package === plugin.package,
-      );
+      ) || !plugin.package.startsWith("./");
       if (!isExternalPlugin) {
         // We want the third index ['.', 'dynamic-plugins', 'dist', 'backstage-plugin-scaffolder-backend-module-github-dynamic']
         packageNames.push(plugin.package.split("/")[3]);
