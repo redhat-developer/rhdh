@@ -24,6 +24,8 @@ import Star from '@mui/icons-material/Star';
 import Storefront from '@mui/icons-material/StorefrontOutlined';
 import Textsms from '@mui/icons-material/TextsmsOutlined';
 
+import DeveloperHub from '../CustomIcons/DeveloperHub';
+
 const CommonIcons: {
   [k: string]: React.ComponentType<{}>;
 } = {
@@ -52,6 +54,7 @@ const CommonIcons: {
   notifications: Notifications,
   manageAccounts: ManageAccounts,
   logout: Logout,
+  developerHub: DeveloperHub,
 };
 
 export default CommonIcons;

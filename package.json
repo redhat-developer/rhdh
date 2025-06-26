@@ -52,7 +52,8 @@
     "@types/react": "18.3.23",
     "@types/react-dom": "18.3.7",
     "@aws-sdk/util-utf8-browser": "npm:@smithy/util-utf8@~2",
-    "@kubernetes/client-node@npm:0.20.0/jsonpath-plus": "^10.3.0"
+    "@kubernetes/client-node@npm:0.20.0/jsonpath-plus": "^10.3.0",
+    "@backstage/backend-dynamic-feature-service@0.7.0": "patch:@backstage/backend-dynamic-feature-service@npm%3A0.7.0#./.yarn/patches/@backstage-backend-dynamic-feature-service-npm-0.7.0-d75453687b.patch"
   },
   "jest": {
     "testTimeout": 20000
