@@ -19,30 +19,42 @@ export OVERALL_RESULT
 
 # Define a cleanup function to be executed upon script exit.
 # shellcheck disable=SC2317
-cleanup() {
-  if [[ $? -ne 0 ]]; then
-
-    echo "Exited with an error, setting OVERALL_RESULT to 1"
-    save_overall_result 1
-  fi
-  echo "Cleaning up before exiting"
-  if [[ "${OPENSHIFT_CI}" == "true" ]]; then
-    case "$JOB_NAME" in
-      *gke*)
-        echo "Calling cleanup_gke"
-        cleanup_gke
-        ;;
-    esac
-  fi
-  rm -rf ~/tmpbin
-}
-
-trap cleanup EXIT INT ERR
+#cleanup() {
+#  if [[ $? -ne 0 ]]; then
+#
+#    echo "Exited with an error, setting OVERALL_RESULT to 1"
+#    save_overall_result 1
+#  fi
+#  echo "Cleaning up before exiting"
+#  if [[ "${OPENSHIFT_CI}" == "true" ]]; then
+#    case "$JOB_NAME" in
+#      *gke*)
+#        echo "Calling cleanup_gke"
+#        cleanup_gke
+#        ;;
+#    esac
+#  fi
+#  rm -rf ~/tmpbin
+#}
+#
+#trap cleanup EXIT INT ERR
 
 SCRIPTS=(
   "utils.sh"
   "env_variables.sh"
 )
+
+  export K8S_CLUSTER_URL='https://c111-e.us-east.containers.cloud.ibm.com:31018'
+
+  export HELM_REPO_NAME="redhat-developer-hub"
+  export HELM_IMAGE_NAME="chart"
+  export HELM_CHART_URL="oci://quay.io/rhdh/${HELM_IMAGE_NAME}"
+
+  export CHART_VERSION="1.6-142-CI"
+  export CHART_VERSION_BASE="1.6-142-CI"
+
+  export QUAY_REPO_BASE="quay.io/rhdh/rhdh-hub-rhel9"
+  export TAG_NAME_BASE="1.6-92"
 
 # Source explicitly specified scripts
 for SCRIPT in "${SCRIPTS[@]}"; do
@@ -57,6 +69,18 @@ for SCRIPT in "${DIR}"/jobs/*.sh; do
     echo "Loaded ${SCRIPT}"
   fi
 done
+
+export K8S_CLUSTER_URL='https://c111-e.us-east.containers.cloud.ibm.com:31018'
+
+export HELM_REPO_NAME="redhat-developer-hub"
+export HELM_IMAGE_NAME="chart"
+export HELM_CHART_URL="oci://quay.io/rhdh/${HELM_IMAGE_NAME}"
+
+export CHART_VERSION="1.6-142-CI"
+export CHART_VERSION_BASE="1.6-142-CI"
+
+export QUAY_REPO_BASE="quay.io/rhdh/rhdh-hub-rhel9"
+export TAG_NAME_BASE="1.6-92"
 
 main() {
   echo "Log file: ${LOGFILE}"
