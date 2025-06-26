@@ -153,7 +153,7 @@ jobs:
           uses: docker/setup-buildx-action@v3
 
         - name: Set container metadata (for :next build)
-          id: meta
+          id: meta-next
           if: ${{ env.REF_NAME_SHORT == 'next'}}
           uses: docker/metadata-action@v5
           with:
@@ -163,7 +163,7 @@ jobs:
               type=raw,value=${{ env.REF_NAME }}-${{ env.SHORT_SHA }}
 
         - name: Set container metadata (for releases)
-          id: meta
+          id: meta-release
           if: ${{ env.REF_NAME_SHORT != 'next' }}
           uses: docker/metadata-action@v5
           with:
