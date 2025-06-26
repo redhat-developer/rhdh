@@ -306,6 +306,8 @@ upstream:
         env:
           - name: NPM_CONFIG_USERCONFIG
             value: /opt/app-root/src/.npmrc.dynamic-plugins
+          - name: MAX_ENTRY_SIZE
+            value: "30000000"
         imagePullPolicy: Always
         volumeMounts:
           - mountPath: /dynamic-plugins-root
@@ -340,7 +342,7 @@ upstream:
 
 
 orchestrator:
-  enabled: false
+  enabled: true
   serverlessLogicOperator:
     enabled: true
   serverlessOperator:
