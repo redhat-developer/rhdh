@@ -5,6 +5,7 @@ import { useApi } from '@backstage/core-plugin-api';
 
 import { render } from '@testing-library/react';
 
+import { useAppBarThemedConfig } from '../../hooks/useThemedConfig';
 import { SidebarLogo } from './SidebarLogo';
 
 jest.mock('@backstage/core-components', () => ({
@@ -17,19 +18,17 @@ jest.mock('@backstage/core-plugin-api', () => ({
   useApi: jest.fn(),
 }));
 
-jest.mock('./LogoFull.tsx', () => () => (
-  <svg data-testid="default-full-logo" />
-));
-jest.mock('./LogoIcon.tsx', () => () => (
-  <svg data-testid="default-icon-logo" />
-));
+jest.mock('../../hooks/useThemedConfig', () => ({
+  ...jest.requireActual('../../hooks/useThemedConfig'),
+  useAppBarThemedConfig: jest.fn(),
+}));
 
 describe('SidebarLogo', () => {
   it('when sidebar is open renders the component with full logo base64 provided by config', () => {
     (useApi as any).mockReturnValue({
-      getOptionalString: jest.fn().mockReturnValue('fullLogoBase64URI'),
       getOptional: jest.fn().mockReturnValue('fullLogoWidth'),
     });
+    (useAppBarThemedConfig as any).mockReturnValue('fullLogoBase64URI');
 
     (useSidebarOpenState as any).mockReturnValue({ isOpen: true });
     const { getByTestId } = render(
@@ -45,9 +44,10 @@ describe('SidebarLogo', () => {
 
   it('when sidebar is open renders the component with default full logo if config is undefined', () => {
     (useApi as any).mockReturnValue({
-      getOptionalString: jest.fn().mockReturnValue(undefined),
       getOptional: jest.fn().mockReturnValue(undefined),
     });
+
+    (useAppBarThemedConfig as any).mockReturnValue(undefined);
 
     (useSidebarOpenState as any).mockReturnValue({ isOpen: true });
     const { getByTestId } = render(
@@ -61,9 +61,9 @@ describe('SidebarLogo', () => {
 
   it('when sidebar is closed renders the component with icon logo base64 provided by config', () => {
     (useApi as any).mockReturnValue({
-      getOptionalString: jest.fn().mockReturnValue('iconLogoBase64URI'),
       getOptional: jest.fn().mockReturnValue('fullLogoWidth'),
     });
+    (useAppBarThemedConfig as any).mockReturnValue('iconLogoBase64URI');
 
     (useSidebarOpenState as any).mockReturnValue({ isOpen: false });
     const { getByTestId } = render(
@@ -79,9 +79,10 @@ describe('SidebarLogo', () => {
 
   it('when sidebar is closed renders the component with icon logo from default if not provided with config', () => {
     (useApi as any).mockReturnValue({
-      getOptionalString: jest.fn().mockReturnValue(undefined),
       getOptional: jest.fn().mockReturnValue(undefined),
     });
+
+    (useAppBarThemedConfig as any).mockReturnValue(undefined);
 
     (useSidebarOpenState as any).mockReturnValue({ isOpen: false });
     const { getByTestId } = render(
