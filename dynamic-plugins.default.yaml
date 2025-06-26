@@ -1061,7 +1061,7 @@ plugins:
         frontend:
           backstage-community.plugin-analytics-provider-segment:
             analyticsApiExtensions:
-              - importName: SegmentAnalyticsApi
+              - importName: SegmentAnalytics
       backend:
         csp:
           script-src:
