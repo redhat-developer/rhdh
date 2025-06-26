@@ -465,8 +465,8 @@ dynamicPlugins:
               width: 1500
               height: 800
     backstage-community.plugin-analytics-provider-segment:
-      apiFactories:
-        - importName: SegmentAnalyticsApi
+      analyticsApiExtensions:
+        - importName: SegmentAnalytics
     backstage-community.plugin-rbac:
       appIcons:
         - name: rbacIcon
