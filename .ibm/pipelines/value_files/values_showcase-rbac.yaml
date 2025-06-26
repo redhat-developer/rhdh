@@ -125,7 +125,7 @@ upstream:
     appConfig:
       app:
         # Please update to match host in case you don't want to configure hostname via `global.clusterRouterBase` or `global.host`.
-        baseUrl: ${RHDH_BASE_URL
+        baseUrl: ${RHDH_BASE_URL}
       backend:
         baseUrl: ${RHDH_BASE_URL}
         cors:
