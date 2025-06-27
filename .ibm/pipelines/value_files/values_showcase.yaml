@@ -219,14 +219,7 @@ upstream:
     backstage.io/kubernetes-id: developer-hub
   backstage:
     appConfig:
-      app:
-        # Please update to match host in case you don't want to configure hostname via `global.clusterRouterBase` or `global.host`.
-#       baseUrl: 'https://{{- include "janus-idp.hostname" . }}'
-        baseUrl: ${RHDH_BASE_URL}
       backend:
-        baseUrl: ${RHDH_BASE_URL}
-        cors:
-          origin: ${RHDH_BASE_URL}
         auth:
           dangerouslyDisableDefaultAuthPolicy: true
           externalAccess:
@@ -313,7 +306,7 @@ upstream:
       - redis-secret
   ingress:
     host: '{{ .Values.global.host }}'
-  
+
 
   service:
     extraPorts:

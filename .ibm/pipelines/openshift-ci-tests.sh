@@ -44,8 +44,6 @@ SCRIPTS=(
   "env_variables.sh"
 )
 
-  export K8S_CLUSTER_URL='https://c111-e.us-east.containers.cloud.ibm.com:31018'
-
   export HELM_REPO_NAME="redhat-developer-hub"
   export HELM_IMAGE_NAME="chart"
   export HELM_CHART_URL="oci://quay.io/rhdh/${HELM_IMAGE_NAME}"
@@ -69,8 +67,6 @@ for SCRIPT in "${DIR}"/jobs/*.sh; do
     echo "Loaded ${SCRIPT}"
   fi
 done
-
-export K8S_CLUSTER_URL='https://c111-e.us-east.containers.cloud.ibm.com:31018'
 
 export HELM_REPO_NAME="redhat-developer-hub"
 export HELM_IMAGE_NAME="chart"

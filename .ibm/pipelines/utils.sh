@@ -1070,7 +1070,7 @@ force_delete_namespace() {
 }
 
 oc_login() {
-  oc login --token="${K8S_CLUSTER_TOKEN_ROKS}" --server="${K8S_CLUSTER_URL}" --insecure-skip-tls-verify=true
+  oc login --token="${K8S_CLUSTER_TOKEN}" --server="${K8S_CLUSTER_URL}" --insecure-skip-tls-verify=true
   echo "OCP version: $(oc version)"
 }
 
