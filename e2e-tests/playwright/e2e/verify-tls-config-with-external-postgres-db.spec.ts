@@ -14,7 +14,7 @@ test.describe("Verify TLS configuration with external Postgres DB", () => {
     );
     await uiHelper.verifyHeading("Welcome back!");
     await uiHelper.verifyText("Explore Your Software Catalog");
-    await page.getByLabel("Catalog").click();
+    await page.getByLabel("Catalog").first().click();
     await uiHelper.selectMuiBox("Kind", "Component");
     await expect(async () => {
       await uiHelper.clickByDataTestId("user-picker-all");
