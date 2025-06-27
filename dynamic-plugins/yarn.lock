@@ -5511,7 +5511,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/core-app-api@npm:^1.15.2, @backstage/core-app-api@npm:^1.15.5, @backstage/core-app-api@npm:^1.16.0":
+"@backstage/core-app-api@npm:^1.15.5, @backstage/core-app-api@npm:^1.16.0":
   version: 1.16.1
   resolution: "@backstage/core-app-api@npm:1.16.1"
   dependencies:
@@ -13964,18 +13964,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@roadiehq/scaffolder-backend-module-http-request@npm:5.3.0":
-  version: 5.3.0
-  resolution: "@roadiehq/scaffolder-backend-module-http-request@npm:5.3.0"
+"@roadiehq/scaffolder-backend-module-http-request@npm:5.3.3":
+  version: 5.3.3
+  resolution: "@roadiehq/scaffolder-backend-module-http-request@npm:5.3.3"
   dependencies:
-    "@backstage/backend-common": ^0.25.0
     "@backstage/backend-plugin-api": ^1.0.2
-    "@backstage/core-app-api": ^1.15.2
     "@backstage/core-plugin-api": ^1.10.1
     "@backstage/plugin-scaffolder-node": ^0.6.2
     cross-fetch: ^4.0.0
-    winston: ^3.2.1
-  checksum: 62b713fbc874c693916c551ccd7625eabeb26084b600cc094575999d3ca8f27946e3da9146b93978d84504becf3fe9de9b650b393698d8b6f25357b4b61f4078
+  checksum: d8928487c0fa2eb6e524cb7320c386220ced9fd0266809955c4318276c9e79155779db04c3a8e5dfb3f0c0770577f687424fa7f4d37c945a27f0f8a983bb0e1e
   languageName: node
   linkType: hard
 
@@ -34861,7 +34858,7 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.6.1
-    "@roadiehq/scaffolder-backend-module-http-request": 5.3.0
+    "@roadiehq/scaffolder-backend-module-http-request": 5.3.3
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
