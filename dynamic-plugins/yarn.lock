@@ -8515,7 +8515,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-user-settings@npm:^0.8.22":
+"@backstage/plugin-user-settings@npm:^0.8.19, @backstage/plugin-user-settings@npm:^0.8.22":
   version: 0.8.23
   resolution: "@backstage/plugin-user-settings@npm:0.8.23"
   dependencies:
@@ -11673,7 +11673,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/core-downloads-tracker@npm:^5.16.14, @mui/core-downloads-tracker@npm:^5.17.1":
+"@mui/core-downloads-tracker@npm:^5.17.1":
   version: 5.17.1
   resolution: "@mui/core-downloads-tracker@npm:5.17.1"
   checksum: 40a697aa031f089dde29812563320221efa1ec18840b0d0b744ba8846b558146d58910b5b4e67b7eb1942c6817ffc389b4b6b28456c762d39d250bc1e54423f7
@@ -11770,39 +11770,6 @@ __metadata:
     "@types/react":
       optional: true
   checksum: 416e43279a1db35d33f89311e6e6b5113433cd4e51bcb3f1fb90f254c632e653eb30c14e7241d64a0de73443276c8a7b0ff60250b75c2178c895b542f0a3b368
-  languageName: node
-  linkType: hard
-
-"@mui/material@npm:5.16.14":
-  version: 5.16.14
-  resolution: "@mui/material@npm:5.16.14"
-  dependencies:
-    "@babel/runtime": ^7.23.9
-    "@mui/core-downloads-tracker": ^5.16.14
-    "@mui/system": ^5.16.14
-    "@mui/types": ^7.2.15
-    "@mui/utils": ^5.16.14
-    "@popperjs/core": ^2.11.8
-    "@types/react-transition-group": ^4.4.10
-    clsx: ^2.1.0
-    csstype: ^3.1.3
-    prop-types: ^15.8.1
-    react-is: ^19.0.0
-    react-transition-group: ^4.4.5
-  peerDependencies:
-    "@emotion/react": ^11.5.0
-    "@emotion/styled": ^11.3.0
-    "@types/react": ^17.0.0 || ^18.0.0 || ^19.0.0
-    react: ^17.0.0 || ^18.0.0 || ^19.0.0
-    react-dom: ^17.0.0 || ^18.0.0 || ^19.0.0
-  peerDependenciesMeta:
-    "@emotion/react":
-      optional: true
-    "@emotion/styled":
-      optional: true
-    "@types/react":
-      optional: true
-  checksum: 0c09353099580ca4f4e214ef1251a5fb1328a5ec19b5195ec4dd628c0ae0b3fae47a8fcae39a807aac1ac8a26bf0109da07eb7eca183975f8cae583d7306de0f
   languageName: node
   linkType: hard
 
@@ -11987,7 +11954,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/system@npm:^5.16.12, @mui/system@npm:^5.16.14, @mui/system@npm:^5.16.5, @mui/system@npm:^5.17.1":
+"@mui/system@npm:^5.16.12, @mui/system@npm:^5.16.5, @mui/system@npm:^5.17.1":
   version: 5.17.1
   resolution: "@mui/system@npm:5.17.1"
   dependencies:
