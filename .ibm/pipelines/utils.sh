@@ -875,8 +875,7 @@ initiate_deployments() {
     -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO}" \
-    --set upstream.backstage.image.tag="${TAG_NAME}" \
-    --set upstream.nameOverride="${RELEASE_NAME}"
+    --set upstream.backstage.image.tag="${TAG_NAME}"
 
 
   configure_namespace "${NAME_SPACE_POSTGRES_DB}"
@@ -892,8 +891,7 @@ initiate_deployments() {
     -f "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO}" \
-    --set upstream.backstage.image.tag="${TAG_NAME}" \
-    --set upstream.nameOverride="${RELEASE_NAME}"
+    --set upstream.backstage.image.tag="${TAG_NAME}"
 }
 
 # install base RHDH deployment before upgrade
@@ -914,8 +912,7 @@ initiate_upgrade_base_deployments() {
     -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME_BASE}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO_BASE}" \
-    --set upstream.backstage.image.tag="${TAG_NAME_BASE}" \
-    --set upstream.nameOverride="${RELEASE_NAME}"
+    --set upstream.backstage.image.tag="${TAG_NAME_BASE}"
 }
 
 initiate_upgrade_deployments() {
@@ -943,8 +940,7 @@ initiate_upgrade_deployments() {
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO}" \
     --set upstream.backstage.image.tag="${TAG_NAME}" \
-    --wait --timeout=${wait_upgrade} \
-    --set upstream.nameOverride="${RELEASE_NAME}"
+    --wait --timeout=${wait_upgrade}
 
     oc get pods -n "${namespace}"
   else
@@ -968,8 +964,7 @@ initiate_runtime_deployment() {
     -f "$DIR/resources/postgres-db/values-showcase-postgres.yaml" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO}" \
-    --set upstream.backstage.image.tag="${TAG_NAME}" \
-    --set upstream.nameOverride="${RELEASE_NAME}"
+    --set upstream.backstage.image.tag="${TAG_NAME}"
 }
 
 initiate_sanity_plugin_checks_deployment() {
@@ -986,8 +981,7 @@ initiate_sanity_plugin_checks_deployment() {
     -f "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO}" \
-    --set upstream.backstage.image.tag="${TAG_NAME}" \
-    --set upstream.nameOverride="${RELEASE_NAME}"
+    --set upstream.backstage.image.tag="${TAG_NAME}"
 }
 
 check_and_test() {
