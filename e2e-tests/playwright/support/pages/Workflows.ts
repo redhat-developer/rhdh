@@ -1,4 +1,3 @@
-/* eslint-disable @backstage/no-undeclared-imports */
 import { Page } from "@playwright/test";
 
 const workflowsTable = (page: Page) =>
@@ -7,8 +6,8 @@ const workflowsTable = (page: Page) =>
     .filter({ hasText: "WorkflowsNameCategoryLast" })
     .nth(2);
 
-const Workflows = {
+const WORKFLOWS = {
   workflowsTable,
 };
 
-export default Workflows;
+export default WORKFLOWS;

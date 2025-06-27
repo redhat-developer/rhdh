@@ -14,7 +14,7 @@ export class NotificationPage {
     await this.uiHelper.openSidebar("Notifications");
   }
 
-  async notificationContains(text: string | RegExp, nth = 0) {
+  async notificationContains(text: string | RegExp) {
     await this.page.getByLabel(/.*rows/).click();
     // always expand the notifications table to show as many notifications as possible
     await this.page.getByRole("option", { name: "20" }).click();
@@ -72,7 +72,7 @@ export class NotificationPage {
     ).toHaveCount(0);
   }
 
-  async saveSelected(nth = 1) {
+  async saveSelected() {
     await this.page
       .locator("thead")
       .getByTitle("Save selected for later")

@@ -1,6 +1,6 @@
 import { expect, type Page } from "@playwright/test";
 import { UIhelper } from "../../utils/ui-helper";
-import Workflows from "./Workflows";
+import WORKFLOWS from "./Workflows";
 
 export class Orchestrator {
   private readonly page: Page;
@@ -27,7 +27,7 @@ export class Orchestrator {
     });
     await expect(workflowHeader).toBeVisible();
     await expect(workflowHeader).toHaveText("Workflows");
-    await expect(Workflows.workflowsTable(this.page)).toBeVisible();
+    await expect(WORKFLOWS.workflowsTable(this.page)).toBeVisible();
     await this.page.getByRole("link", { name: "User Onboarding" }).click();
   }
 
