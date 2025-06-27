@@ -18,6 +18,7 @@ spec:
     - ./bitbucket-server-catalog-integration.yaml
     - ./bulk-import.yaml
     - ./catalog-integrations.yaml
+    - ./contrib-techdocs-addons.yaml
     - ./datadog.yaml
     - ./dynatrace-commercial.yaml
     - ./dynatrace-community.yaml
