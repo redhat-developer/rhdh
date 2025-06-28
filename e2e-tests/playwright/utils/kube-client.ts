@@ -210,8 +210,20 @@ export class KubeClient {
   async deleteNamespaceAndWait(namespace: string) {
     const watch = new k8s.Watch(this.kc);
     try {
-      await this.coreV1Api.deleteNamespace(namespace);
-      console.log(`Namespace '${namespace}' deletion initiated.`);
+      try {
+        await this.coreV1Api.deleteNamespace(namespace);
+        console.log(`Namespace '${namespace}' deletion initiated.`);
+      } catch (err) {
+        // If namespace does not exist, log and exit early
+        if (err.statusCode === 404) {
+          console.log(
+            `Namespace '${namespace}' does not exist; skipping deletion.`,
+          );
+          return;
+        }
+        // Re-throw other errors
+        throw err;
+      }
 
       await new Promise<void>((resolve, reject) => {
         watch.watch(
@@ -228,16 +240,18 @@ export class KubeClient {
               // Namespace was already deleted or does not exist
               console.log(`Namespace '${namespace}' is already deleted.`);
               resolve();
-            } else {
+            } else if (err) {
               reject(err);
-              throw err;
             }
           },
         );
       });
     } catch (err) {
       console.log("Error deleting or waiting for namespace deletion:", err);
-      throw err;
+      // Do not throw error if namespace does not exist
+      if (err.statusCode !== 404) {
+        throw err;
+      }
     }
   }
 
