@@ -18,6 +18,7 @@ handle_aks_helm() {
   export NAME_SPACE NAME_SPACE_RBAC
 
   cluster_setup_k8s_helm
+  clear_database
 
   initiate_aks_helm_deployment
   check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30

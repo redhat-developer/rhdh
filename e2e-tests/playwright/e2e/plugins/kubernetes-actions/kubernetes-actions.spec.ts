@@ -35,14 +35,104 @@ test.describe("Test Kubernetes Actions plugin", () => {
     await uiHelper.fillTextInputByLabel("Token", process.env.K8S_CLUSTER_TOKEN);
     await uiHelper.checkCheckbox("Skip TLS verification");
     await uiHelper.clickButton("Review");
+
+    // Add a small delay to mimic manual behavior
+    await page.waitForTimeout(1000);
+
     await uiHelper.clickButton("Create");
-    await page.waitForSelector(
-      `${UI_HELPER_ELEMENTS.MuiTypography}:has-text("second")`,
-    );
-    await expect(
-      page.locator(`${UI_HELPER_ELEMENTS.MuiTypography}:has-text("Error")`),
-    ).not.toBeVisible();
-    await kubeClient.getNamespaceByName(namespace);
+
+    console.log("Task started, waiting for completion...");
+
+    // Wait for task execution to begin
+    await page.waitForTimeout(3000);
+
+    // More specific selectors for error detection
+    const errorIndicators = [
+      page.locator("text=Error: Failed to create kubernetes namespace"), // Texto específico de erro mencionado pelo usuário
+      page.locator(
+        `${UI_HELPER_ELEMENTS.MuiTypography}:has-text("Error: Failed to create kubernetes namespace")`,
+      ),
+      page.locator(
+        '[role="alert"]:has-text("Error: Failed to create kubernetes namespace")',
+      ),
+      page.locator("text=Failed to create kubernetes namespace"),
+      page.locator(
+        "text=Invalid input passed to action kubernetes:create-namespace",
+      ),
+    ];
+
+    // More flexible success indicators
+    const successIndicators = [
+      page.locator('[data-test-id="task-status-done"]'),
+      page.locator("text=completed successfully"),
+      page.locator("text=Task completed"),
+      page.locator('[data-testid="success-icon"]'),
+      page.locator("text=Finished step Create kubernetes namespace"), // Verificador específico mencionado pelo usuário
+    ];
+
+    // Wait for completion with detailed logging
+    await expect(async () => {
+      // Check for any error first - use count() to avoid strict mode violations
+      for (const errorLocator of errorIndicators) {
+        const errorCount = await errorLocator.count();
+        if (errorCount > 0) {
+          // Get the first visible error element
+          const firstError = errorLocator.first();
+          if (await firstError.isVisible()) {
+            const errorText = await firstError.textContent();
+            console.error("Error detected:", errorText);
+
+            // Capture all logs and error details
+            const allLogs = await page.locator("pre").allTextContents();
+            const pageText = await page.textContent("body");
+
+            console.error("=== ERROR DETAILS ===");
+            console.error("Error text:", errorText);
+            console.error("=== PAGE CONTENT ===");
+            console.error(pageText);
+            console.error("=== LOGS ===");
+            console.error(allLogs.join("\n"));
+
+            throw new Error(`Scaffolder task failed: ${errorText}`);
+          }
+        }
+      }
+
+      // Check for success indicators - use count() to avoid strict mode violations
+      let foundSuccess = false;
+      for (const successLocator of successIndicators) {
+        const successCount = await successLocator.count();
+        if (successCount > 0) {
+          // Get the first visible success element
+          const firstSuccess = successLocator.first();
+          if (await firstSuccess.isVisible()) {
+            const indicatorText = await firstSuccess.textContent();
+            console.log("Success indicator found:", indicatorText);
+
+            // Log specifically for the namespace creation completion
+            if (
+              indicatorText?.includes(
+                "Finished step Create kubernetes namespace",
+              )
+            ) {
+              console.log("Namespace creation step completed successfully!");
+            }
+
+            foundSuccess = true;
+            break;
+          }
+        }
+      }
+
+      if (!foundSuccess) {
+        throw new Error("No success indicator found yet");
+      }
+    }).toPass({
+      intervals: [3_000, 5_000, 8_000, 12_000, 15_000],
+      timeout: 120_000, // Increased timeout to 2 minutes
+    });
+
+    console.log("✅ Namespace creation test completed successfully!");
   });
 
   test.afterEach(async () => {

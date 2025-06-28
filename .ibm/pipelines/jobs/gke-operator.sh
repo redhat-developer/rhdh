@@ -31,6 +31,7 @@ handle_gke_operator() {
   re_create_k8s_service_account_and_get_token # Populate K8S_CLUSTER_TOKEN
 
   cluster_setup_k8s_operator
+  clear_database
 
   prepare_operator
 

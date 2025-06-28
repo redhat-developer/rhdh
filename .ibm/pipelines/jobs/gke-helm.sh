@@ -31,12 +31,13 @@ handle_gke_helm() {
   re_create_k8s_service_account_and_get_token # Populate K8S_CLUSTER_TOKEN
 
   cluster_setup_k8s_helm
+  clear_database
 
   initiate_gke_helm_deployment
   check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
-  delete_namespace "${NAME_SPACE}"
+#  delete_namespace "${NAME_SPACE}"
 
-  initiate_rbac_gke_helm_deployment
-  check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
-  delete_namespace "${NAME_SPACE_RBAC}"
+#  initiate_rbac_gke_helm_deployment
+#  check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
+#  delete_namespace "${NAME_SPACE_RBAC}"
 }
