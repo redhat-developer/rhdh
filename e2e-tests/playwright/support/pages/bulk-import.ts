@@ -18,7 +18,7 @@ export class BulkImport {
 
   async filterAddedRepo(searchText: string) {
     await this.page
-      .getByPlaceholder("Search", { exact: true })
+      .getByPlaceholder("Filter", { exact: true })
       .fill(searchText);
   }
 
