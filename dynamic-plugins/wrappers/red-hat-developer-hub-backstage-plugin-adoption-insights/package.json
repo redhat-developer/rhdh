@@ -1,6 +1,6 @@
 {
-  "name": "backstage-community-plugin-analytics-provider-segment",
-  "version": "1.16.0",
+  "name": "red-hat-developer-hub-backstage-plugin-adoption-insights",
+  "version": "0.2.0",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "license": "Apache-2.0",
@@ -12,9 +12,10 @@
   "backstage": {
     "role": "frontend-plugin",
     "supported-versions": "1.39.1",
-    "pluginId": "backstage-community-analytics-provider-segment",
+    "pluginId": "red-hat-developer-hub-backstage-plugin-adoption-insights",
     "pluginPackages": [
-      "backstage-community-plugin-analytics-provider-segment"
+      "red-hat-developer-hub-backstage-plugin-adoption-insights",
+      "red-hat-developer-hub-backstage-plugin-adoption-insights-backend"
     ]
   },
   "sideEffects": false,
@@ -28,7 +29,8 @@
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
-    "@backstage-community/plugin-analytics-provider-segment": "1.16.0"
+    "@mui/material": "5.17.1",
+    "@red-hat-developer-hub/backstage-plugin-adoption-insights": "0.2.0"
   },
   "devDependencies": {
     "@backstage/cli": "0.30.0",
@@ -36,11 +38,12 @@
     "typescript": "5.8.3"
   },
   "files": [
+    "app-config.dynamic.yaml",
     "dist",
     "dist-scalprum"
   ],
   "scalprum": {
-    "name": "backstage-community.plugin-analytics-provider-segment",
+    "name": "red-hat-developer-hub.backstage-plugin-adoption-insights",
     "exposedModules": {
       "PluginRoot": "./src/index.ts"
     }
@@ -48,7 +51,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/redhat-developer/rhdh",
-    "directory": "dynamic-plugins/wrappers/backstage-community-plugin-analytics-provider-segment"
+    "directory": "dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-adoption-insights"
   },
   "maintainers": [
     "@janus-idp/maintainers-showcase"
