@@ -7654,7 +7654,7 @@ __metadata:
     "@backstage/backend-test-utils": 1.5.0
     "@backstage/cli": 0.32.1
     "@backstage/config": 1.3.2
-    "@types/express": 4.17.22
+    "@types/express": 4.17.23
     "@types/supertest": 6.0.3
     express: 4.21.2
     msw: 1.3.5
@@ -7714,7 +7714,7 @@ __metadata:
     "@backstage/plugin-auth-backend-module-guest-provider": 0.2.8
     "@backstage/plugin-permission-common": 0.9.0
     "@backstage/types": 1.2.1
-    "@types/express": 4.17.22
+    "@types/express": 4.17.23
     "@types/supertest": 6.0.3
     express: 4.21.2
     express-promise-router: 4.1.1
@@ -7739,7 +7739,7 @@ __metadata:
     "@backstage/backend-test-utils": 1.5.0
     "@backstage/cli": 0.32.1
     "@backstage/config": 1.3.2
-    "@types/express": 4.17.22
+    "@types/express": 4.17.23
     "@types/mock-fs": 4.13.4
     "@types/supertest": 6.0.3
     express: 4.21.2
@@ -12037,7 +12037,7 @@ __metadata:
     "@testing-library/jest-dom": 6.6.3
     "@testing-library/react": 14.3.1
     "@testing-library/react-hooks": 8.0.1
-    "@types/node": 22.15.22
+    "@types/node": 22.15.33
     "@types/react": 18.3.23
     "@types/react-dom": 18.3.7
     prettier: 3.5.3
@@ -14689,7 +14689,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/express@npm:*, @types/express@npm:4.17.22, @types/express@npm:^4.17.13, @types/express@npm:^4.17.21, @types/express@npm:^4.17.6":
+"@types/express@npm:*, @types/express@npm:^4.17.13, @types/express@npm:^4.17.21, @types/express@npm:^4.17.6":
   version: 4.17.22
   resolution: "@types/express@npm:4.17.22"
   dependencies:
@@ -14698,6 +14698,18 @@ __metadata:
     "@types/qs": "*"
     "@types/serve-static": "*"
   checksum: 977b1da93765983d823c32898c74c159f30b98341f4fd9400724f18196913fe0a07fa12eaa4efdad3cc8cf31e4036e06a16a88d43e9e1f78bbbb84365026aab0
+  languageName: node
+  linkType: hard
+
+"@types/express@npm:4.17.23":
+  version: 4.17.23
+  resolution: "@types/express@npm:4.17.23"
+  dependencies:
+    "@types/body-parser": "*"
+    "@types/express-serve-static-core": ^4.17.33
+    "@types/qs": "*"
+    "@types/serve-static": "*"
+  checksum: f1a020c6ad6dc0169a3277199605d60649d463a72c920673e0f230ab1e76f2d3aa23daabd25ef8e62eda314e26b879306c58ec806e669e1e40ca37a4b73a44b0
   languageName: node
   linkType: hard
 
@@ -14978,12 +14990,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:22.15.22, @types/node@npm:>=13.7.0":
+"@types/node@npm:*, @types/node@npm:>=13.7.0":
   version: 22.15.22
   resolution: "@types/node@npm:22.15.22"
   dependencies:
     undici-types: ~6.21.0
   checksum: 32bbe90a02fc11a3cde30ab73098b36370b2f6a8d59987e4a6435aa04333f199b18490a9e94b7ec7f591694d2e6573c8661c8e83a2c25dd75af9aea1ff3894e0
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:22.15.33":
+  version: 22.15.33
+  resolution: "@types/node@npm:22.15.33"
+  dependencies:
+    undici-types: ~6.21.0
+  checksum: 5af5451a508f82b1812948b906d349c319bf8887d709ed9f60a7f265272289e7b5b60705a8750f100b33f0528a86163bc71a6651764de918103d27567cc924c5
   languageName: node
   linkType: hard
 
@@ -16290,7 +16311,7 @@ __metadata:
     "@testing-library/react": 14.3.1
     "@testing-library/react-hooks": 8.0.1
     "@testing-library/user-event": 14.6.1
-    "@types/node": 22.15.22
+    "@types/node": 22.15.33
     "@types/react": 18.3.23
     "@types/react-dom": 18.3.7
     lodash: 4.17.21
@@ -16997,7 +17018,7 @@ __metadata:
     "@opentelemetry/instrumentation-runtime-node": 0.14.0
     "@opentelemetry/sdk-metrics": 1.30.1
     "@opentelemetry/sdk-node": 0.57.2
-    "@types/express": 4.17.22
+    "@types/express": 4.17.23
     "@types/global-agent": 2.1.3
     app: "*"
     global-agent: 3.0.0
