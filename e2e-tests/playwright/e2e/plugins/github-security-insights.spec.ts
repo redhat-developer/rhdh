@@ -17,8 +17,7 @@ test("Verify GitHub Security Insights plugin after login", async ({ page, contex
   await uiHelper.verifyLink(repoName);
   await uiHelper.clickLink(repoName);
 
-  await uiHelper.isBtnVisible('Sign in');
-  await uiHelper.clickButton('Sign in');
+  await uiHelper.clickBtnInCard('Dependabot Alerts', 'Sign in', true);
   await uiHelper.isBtnVisible('Log in');
   const selector = uiHelper.getButtonSelector('Log in');
   await Promise.all([
