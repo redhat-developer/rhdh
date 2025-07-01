@@ -174,48 +174,39 @@ global:
 upstream:
   backstage:
     appConfig:
-      signInPage: oidc
-      auth:
-        environment: production
-        session:
-          secret: superSecretSecret
-        providers:
-          guest:
-            dangerouslyAllowOutsideDevelopment: true
-          microsoft:
-            development:
-              clientId: ${AUTH_PROVIDERS_AZURE_CLIENT_ID}
-              clientSecret: ${AUTH_PROVIDERS_AZURE_CLIENT_SECRET}
-              tenantId: ${AUTH_PROVIDERS_AZURE_TENANT_ID}
-              domainHint: ${AUTH_PROVIDERS_AZURE_TENANT_ID}
-            production:
-              clientId: ${AUTH_PROVIDERS_AZURE_CLIENT_ID}
-              clientSecret: ${AUTH_PROVIDERS_AZURE_CLIENT_SECRET}
-              tenantId: ${AUTH_PROVIDERS_AZURE_TENANT_ID}
-              domainHint: ${AUTH_PROVIDERS_AZURE_TENANT_ID}
-          github:
-            production:
-              clientSecret: ${AUTH_ORG_CLIENT_SECRET}
-              clientId: ${AUTH_ORG_CLIENT_ID}
-          oidc:
-            production:
-              metadataUrl: ${RHSSO76_METADATA_URL}
-              clientId: ${RHSSO76_CLIENT_ID}
-              clientSecret: ${RHSSO76_CLIENT_SECRET}
-              prompt: auto
-              callbackUrl: ${RHSSO76_CALLBACK_URL}
-              signIn:
-                resolvers:
-                  - resolver: oidcSubClaimMatchingKeycloakUserId
-      integrations:
-        github:
-          - host: github.com
-            apps:
-              - appId: ${AUTH_ORG_APP_ID}
-                clientId: ${AUTH_ORG_CLIENT_ID}
-                clientSecret: ${AUTH_ORG_CLIENT_SECRET}
-                privateKey: ${AUTH_ORG1_PRIVATE_KEY}
-                webhookSecret: ${AUTH_ORG_WEBHOOK_SECRET}
+#      signInPage: oidc
+#      auth:
+#        environment: production
+#        session:
+#          secret: superSecretSecret
+#        providers:
+#          guest:
+#            dangerouslyAllowOutsideDevelopment: true
+#          microsoft:
+#            development:
+#              clientId: ${AUTH_PROVIDERS_AZURE_CLIENT_ID}
+#              clientSecret: ${AUTH_PROVIDERS_AZURE_CLIENT_SECRET}
+#              tenantId: ${AUTH_PROVIDERS_AZURE_TENANT_ID}
+#              domainHint: ${AUTH_PROVIDERS_AZURE_TENANT_ID}
+#            production:
+#              clientId: ${AUTH_PROVIDERS_AZURE_CLIENT_ID}
+#              clientSecret: ${AUTH_PROVIDERS_AZURE_CLIENT_SECRET}
+#              tenantId: ${AUTH_PROVIDERS_AZURE_TENANT_ID}
+#              domainHint: ${AUTH_PROVIDERS_AZURE_TENANT_ID}
+#          github:
+#            production:
+#              clientSecret: ${AUTH_ORG_CLIENT_SECRET}
+#              clientId: ${AUTH_ORG_CLIENT_ID}
+#          oidc:
+#            production:
+#              metadataUrl: ${RHSSO76_METADATA_URL}
+#              clientId: ${RHSSO76_CLIENT_ID}
+#              clientSecret: ${RHSSO76_CLIENT_SECRET}
+#              prompt: auto
+#              callbackUrl: ${RHSSO76_CALLBACK_URL}
+#              signIn:
+#                resolvers:
+#                  - resolver: oidcSubClaimMatchingKeycloakUserId
       catalog:
         import:
           entityFilename: catalog-info.yaml
