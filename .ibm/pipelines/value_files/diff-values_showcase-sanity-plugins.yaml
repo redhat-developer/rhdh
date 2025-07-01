@@ -170,3 +170,81 @@ global:
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-pingidentity-dynamic
         disabled: false
+
+upstream:
+  backstage:
+    appConfig:
+      signInPage: oidc
+      auth:
+        environment: production
+        session:
+          secret: superSecretSecret
+        providers:
+          guest:
+            dangerouslyAllowOutsideDevelopment: true
+          microsoft:
+            development:
+              clientId: ${AUTH_PROVIDERS_AZURE_CLIENT_ID}
+              clientSecret: ${AUTH_PROVIDERS_AZURE_CLIENT_SECRET}
+              tenantId: ${AUTH_PROVIDERS_AZURE_TENANT_ID}
+              domainHint: ${AUTH_PROVIDERS_AZURE_TENANT_ID}
+            production:
+              clientId: ${AUTH_PROVIDERS_AZURE_CLIENT_ID}
+              clientSecret: ${AUTH_PROVIDERS_AZURE_CLIENT_SECRET}
+              tenantId: ${AUTH_PROVIDERS_AZURE_TENANT_ID}
+              domainHint: ${AUTH_PROVIDERS_AZURE_TENANT_ID}
+          github:
+            production:
+              clientSecret: ${AUTH_ORG_CLIENT_SECRET}
+              clientId: ${AUTH_ORG_CLIENT_ID}
+          oidc:
+            production:
+              metadataUrl: ${RHSSO76_METADATA_URL}
+              clientId: ${RHSSO76_CLIENT_ID}
+              clientSecret: ${RHSSO76_CLIENT_SECRET}
+              prompt: auto
+              callbackUrl: ${RHSSO76_CALLBACK_URL}
+              signIn:
+                resolvers:
+                  - resolver: oidcSubClaimMatchingKeycloakUserId
+      integrations:
+        github:
+          - host: github.com
+            apps:
+              - appId: ${AUTH_ORG_APP_ID}
+                clientId: ${AUTH_ORG_CLIENT_ID}
+                clientSecret: ${AUTH_ORG_CLIENT_SECRET}
+                privateKey: ${AUTH_ORG1_PRIVATE_KEY}
+                webhookSecret: ${AUTH_ORG_WEBHOOK_SECRET}
+      catalog:
+        import:
+          entityFilename: catalog-info.yaml
+          # pullRequestBranchName: rhdh-integration
+          pullRequestBranchName: backstage-integration
+        locations:
+          - type: url
+            target: https://github.com/janus-qe/auth-providers/blob/main/location.yaml
+          - type: url
+            target: https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/all.yaml
+          - type: url
+            target: https://github.com/redhat-developer/red-hat-developer-hub-software-templates/blob/main/templates.yaml
+        rules:
+          - allow: [API, Component, Group, User, Resource, Location, System, Template]
+        providers:
+          microsoftGraphOrg:
+            default:
+              target: https://graph.microsoft.com/v1.0
+              authority: https://login.microsoftonline.com
+              tenantId: ${AUTH_PROVIDERS_AZURE_TENANT_ID}
+              clientId: ${AUTH_PROVIDERS_AZURE_CLIENT_ID}
+              clientSecret: ${AUTH_PROVIDERS_AZURE_CLIENT_SECRET}
+              user:
+                filter: accountEnabled eq true and userType eq 'member' and startswith(displayName,'QE')
+              group:
+                filter: >
+                  securityEnabled eq true
+                  and mailEnabled eq false
+                  and startswith(displayName,'rhdh_test_group_')
+              schedule:
+                frequency: PT1M
+                timeout: PT1M
