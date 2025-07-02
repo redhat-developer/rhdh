@@ -13523,9 +13523,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-global-header@npm:1.11.2":
-  version: 1.11.2
-  resolution: "@red-hat-developer-hub/backstage-plugin-global-header@npm:1.11.2"
+"@red-hat-developer-hub/backstage-plugin-global-header@npm:1.13.0":
+  version: 1.13.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-global-header@npm:1.13.0"
   dependencies:
     "@backstage/catalog-model": ^1.7.4
     "@backstage/core-components": ^0.17.2
@@ -13551,7 +13551,7 @@ __metadata:
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.0.0
-  checksum: c8798e5b584ea94708a4090a32f9ef5d909e66fcb66ddb9872cd88aeb1a54f377bf33bae6b0d42c422313647b981789cc193b8f0c54166d986771d449d61fd48
+  checksum: 318fedfe9826b10ac73a4cea9e18f6ab24fe78132bdb3d35f74a9095a017cf1ff7360d10b0d0aff3a5eca012eee3fe85e9636f847061c3b74221db907f317f5e
   languageName: node
   linkType: hard
 
@@ -34131,7 +34131,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.6.1
     "@mui/material": 5.17.1
-    "@red-hat-developer-hub/backstage-plugin-global-header": 1.11.2
+    "@red-hat-developer-hub/backstage-plugin-global-header": 1.13.0
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
