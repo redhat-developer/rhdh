@@ -18,7 +18,7 @@ metadata:
 spec:
   packageName: "@red-hat-developer-hub/backstage-plugin-global-header"
   dynamicArtifact: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-header
-  version: 1.11.2
+  version: 1.13.0
   backstage:
     role: frontend-plugin
     supportedVersions: 1.39.1
@@ -92,6 +92,13 @@ spec:
                       title: Settings
                       link: /settings
                       icon: manageAccounts
+                - mountPoint: global.header/profile
+                  importName: MenuItemLink
+                  config:
+                    priority: 90
+                    props:
+                      title: My profile
+                      icon: account
                 - mountPoint: global.header/profile
                   importName: LogoutButton
                   config:
