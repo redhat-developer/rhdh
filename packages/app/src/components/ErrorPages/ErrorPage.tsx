@@ -31,7 +31,19 @@ export const ErrorPage = ({
   Illustration = CollaborationIllustration,
   children,
 }: ErrorPageProps) => (
-  <Grid container sx={{ flexGrow: 1 }} spacing={0}>
+  <Grid
+    container
+    sx={{
+      flexGrow: 1,
+      // When quickstart drawer is open, adjust margin
+      '.quickstart-drawer-open &': {
+        transition: 'margin-right 0.3s ease',
+        marginRight: 'var(--quickstart-drawer-width, 500px)',
+        width: 'auto',
+      },
+    }}
+    spacing={0}
+  >
     <Grid
       item
       xs={12}

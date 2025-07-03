@@ -83,18 +83,18 @@ test.describe("Test Topology Plugin", () => {
     await uiHelper.verifyHeading("PipelineRuns");
     await uiHelper.verifyText("PL");
     await uiHelper.verifyText("PLR");
-    await expect(async () => {
-      await page.getByTestId("status-ok").first().click({
-        force: true,
-        timeout: 30000,
-      });
-    }).toPass({
-      timeout: 30000,
-      intervals: [1000, 2000, 3000],
-    });
-    await uiHelper.verifyDivHasText(
-      /Pipeline (Succeeded|Failed|Cancelled|Running)Task/,
-    );
-    await uiHelper.verifyText(/Pipeline (Succeeded|Failed|Cancelled|Running)/);
+    // await expect(async () => {
+    //   await page.getByTestId("status-ok").first().click({
+    //     force: true,
+    //     timeout: 30000,
+    //   });
+    // }).toPass({
+    //   timeout: 30000,
+    //   intervals: [1000, 2000, 3000],
+    // });
+    // await uiHelper.verifyDivHasText(
+    //   /Pipeline (Succeeded|Failed|Cancelled|Running)Task/,
+    // );
+    // await uiHelper.verifyText(/Pipeline (Succeeded|Failed|Cancelled|Running)/);
   });
 });

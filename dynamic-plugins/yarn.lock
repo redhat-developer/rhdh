@@ -11967,7 +11967,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/icons-material@npm:5.17.1, @mui/icons-material@npm:^5.15.17, @mui/icons-material@npm:^5.15.19, @mui/icons-material@npm:^5.16.4, @mui/icons-material@npm:^5.16.7":
+"@mui/icons-material@npm:5.17.1, @mui/icons-material@npm:^5.15.17, @mui/icons-material@npm:^5.15.19, @mui/icons-material@npm:^5.16.4, @mui/icons-material@npm:^5.16.7, @mui/icons-material@npm:^5.17.1":
   version: 5.17.1
   resolution: "@mui/icons-material@npm:5.17.1"
   dependencies:
@@ -13907,9 +13907,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-global-floating-action-button@npm:1.2.0":
-  version: 1.2.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-global-floating-action-button@npm:1.2.0"
+"@red-hat-developer-hub/backstage-plugin-global-floating-action-button@npm:1.2.1":
+  version: 1.2.1
+  resolution: "@red-hat-developer-hub/backstage-plugin-global-floating-action-button@npm:1.2.1"
   dependencies:
     "@backstage/core-components": ^0.17.2
     "@backstage/core-plugin-api": ^1.10.7
@@ -13924,13 +13924,13 @@ __metadata:
     react: 16.13.1 || ^17.0.0 || ^18.0.0
     react-dom: 16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.0.0
-  checksum: a70650b7b414318b5e68a5ef861c43ffdfed64ec16a3c61481f690990902a8b35650a201cf24d69c66ef84ebb2db96cc1806664ac5021563276bbaab848ff233
+  checksum: 182109d8443cd7fafa30f2a0d78b7ee95fbc1045d140f07c318a5767e4530cb65b7c81dfb08f79fd864158e67d5483571304f0cb8d3732aacbf10e74c8d55af7
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-global-header@npm:1.11.2":
-  version: 1.11.2
-  resolution: "@red-hat-developer-hub/backstage-plugin-global-header@npm:1.11.2"
+"@red-hat-developer-hub/backstage-plugin-global-header@npm:1.14.0":
+  version: 1.14.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-global-header@npm:1.14.0"
   dependencies:
     "@backstage/catalog-model": ^1.7.4
     "@backstage/core-components": ^0.17.2
@@ -13956,7 +13956,7 @@ __metadata:
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.0.0
-  checksum: c8798e5b584ea94708a4090a32f9ef5d909e66fcb66ddb9872cd88aeb1a54f377bf33bae6b0d42c422313647b981789cc193b8f0c54166d986771d449d61fd48
+  checksum: 1878cbd5931824ab00e0688ee16840474e00b62a2f7b20a645133a08cf7ec7af8e8ed96805878cfd6f7af04b8ddcd29973d60607e0c5c2ac907b3c2f30156650
   languageName: node
   linkType: hard
 
@@ -14025,6 +14025,39 @@ __metadata:
     react-dom: ^17.0.0 || ^18.0.0
     react-router-dom: ^6.3.0
   checksum: 266b9566d2de51c515d34f17a3ab296f2938aecac1eb63da2c21a57861ed7e43aa68b9f6d90a41846a85850d98d4c7d98adaf9d977c96bc78818d78720ecf32f
+  languageName: node
+  linkType: hard
+
+"@red-hat-developer-hub/backstage-plugin-quickstart@npm:1.1.0":
+  version: 1.1.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-quickstart@npm:1.1.0"
+  dependencies:
+    "@backstage/core-components": ^0.17.2
+    "@backstage/core-plugin-api": ^1.10.7
+    "@backstage/theme": ^0.6.6
+    "@mui/icons-material": 5.17.1
+    "@mui/material": 5.17.1
+    "@red-hat-developer-hub/backstage-plugin-theme": ^0.9.0
+    react-use: ^17.2.4
+  peerDependencies:
+    react: ^16.13.1 || ^17.0.0 || ^18.0.0
+  checksum: 4008f34771a43e64fdef3269736095daa07fc79d98ea4a7736f202739b66a0ad47424a85313f397b8b7a49b20a271792e4f291c55b8c7bea3c2a3f354240dcd6
+  languageName: node
+  linkType: hard
+
+"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.9.0":
+  version: 0.9.1
+  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.9.1"
+  dependencies:
+    "@mui/icons-material": ^5.17.1
+  peerDependencies:
+    "@backstage/core-plugin-api": ^1.10.7
+    "@backstage/theme": ^0.6.6
+    "@material-ui/icons": ^4.11.3
+    "@mui/icons-material": ^5.17.1
+    "@mui/material": ^5.0.0
+    react: ^16.13.1 || ^17.0.0 || ^18.0.0
+  checksum: 876923b59c7f7bd6cf56218004770dd5b9c34873ca0a04f7ae9b6b9cbe33214de9f867d27702045785bd865cdc7dee23277cb58711447b5859bd1dae1d4a66db
   languageName: node
   linkType: hard
 
@@ -34523,7 +34556,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.6.1
     "@mui/material": 5.17.1
-    "@red-hat-developer-hub/backstage-plugin-global-floating-action-button": 1.2.0
+    "@red-hat-developer-hub/backstage-plugin-global-floating-action-button": 1.2.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -34535,7 +34568,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.6.1
     "@mui/material": 5.17.1
-    "@red-hat-developer-hub/backstage-plugin-global-header": 1.11.2
+    "@red-hat-developer-hub/backstage-plugin-global-header": 1.14.0
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -34560,6 +34593,18 @@ __metadata:
     "@janus-idp/cli": 3.6.1
     "@mui/material": 5.17.1
     "@red-hat-developer-hub/backstage-plugin-marketplace": 0.7.0
+    typescript: 5.8.3
+  languageName: unknown
+  linkType: soft
+
+"red-hat-developer-hub-backstage-plugin-quickstart@workspace:wrappers/red-hat-developer-hub-backstage-plugin-quickstart":
+  version: 0.0.0-use.local
+  resolution: "red-hat-developer-hub-backstage-plugin-quickstart@workspace:wrappers/red-hat-developer-hub-backstage-plugin-quickstart"
+  dependencies:
+    "@backstage/cli": 0.30.0
+    "@janus-idp/cli": 3.6.1
+    "@mui/material": 5.17.1
+    "@red-hat-developer-hub/backstage-plugin-quickstart": 1.1.0
     typescript: 5.8.3
   languageName: unknown
   linkType: soft

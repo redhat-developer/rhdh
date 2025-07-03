@@ -34,9 +34,13 @@ dynamicPlugins:
               icon: add
               to: create
         - mountPoint: global.header/component
-          importName: SupportButton
+          importName: HelpDropdown
           config:
             priority: 80
+        - mountPoint: global.header/help
+          importName: SupportButton
+          config:
+            priority: 10
         - mountPoint: global.header/component
           importName: NotificationButton
           config:
