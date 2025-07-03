@@ -765,7 +765,7 @@ install_pipelines_operator() {
   if oc get csv -n "openshift-operators" | grep -q "${DISPLAY_NAME}"; then
     echo "Red Hat OpenShift Pipelines operator is already installed."
   else
-    echo "Red Hat OpenShift Pipelines opersator is not installed. Installing..."
+    echo "Red Hat OpenShift Pipelines operator is not installed. Installing..."
     # Install the operator and wait for deployment
     install_subscription openshift-pipelines-operator openshift-operators latest openshift-pipelines-operator-rh redhat-operators openshift-marketplace
     wait_for_deployment "openshift-operators" "pipelines"
