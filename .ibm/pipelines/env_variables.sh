@@ -94,6 +94,9 @@ RDS_PASSWORD=$(cat /tmp/secrets/RDS_PASSWORD)
 RDS_1_HOST=$(cat /tmp/secrets/RDS_1_HOST)
 RDS_2_HOST=$(cat /tmp/secrets/RDS_2_HOST)
 RDS_3_HOST=$(cat /tmp/secrets/RDS_3_HOST)
+MICROSOFT_CLIENT_ID=$(cat /tmp/secrets/AUTH_PROVIDERS_AZURE_CLIENT_ID)
+MICROSOFT_CLIENT_SECRET=$(cat /tmp/secrets/AUTH_PROVIDERS_AZURE_CLIENT_SECRET)
+MICROSOFT_TENANT_ID=$(cat /tmp/secrets/AUTH_PROVIDERS_AZURE_TENANT_ID)
 
 JUNIT_RESULTS="junit-results.xml"
 DATA_ROUTER_URL=$(cat /tmp/secrets/DATA_ROUTER_URL)
