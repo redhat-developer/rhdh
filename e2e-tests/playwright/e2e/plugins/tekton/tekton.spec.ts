@@ -11,7 +11,8 @@ import { Catalog } from "../../../support/pages/catalog";
 // Pre-req: A catalog entity with the matching backstage.io/kubernetes-id: developer-hub annotation as well as the tekton.dev/cicd: "true" annotation
 //          The old janus-idp.io/tekton annotation is deprecated but still supported!
 
-test.describe("Test Tekton plugin", () => {
+//FIXME: https://issues.redhat.com/browse/RHIDP-8036
+test.describe.skip("Test Tekton plugin", () => {
   let common: Common;
   let uiHelper: UIhelper;
   let tekton: Tekton;
