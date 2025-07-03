@@ -522,17 +522,18 @@ apply_yaml_files() {
       --namespace="${project}" \
       --dry-run=client -o yaml | oc apply -f -
 
+#FIXME https://issues.redhat.com/browse/RHIDP-8036
     # Create Pipeline run for tekton test case.
-    oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline.yaml"
-    oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline-run.yaml"
+#    oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline.yaml"
+#    oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline-run.yaml"
 
     # Create Deployment and Pipeline for Topology test.
-    oc apply -f "$dir/resources/topology_test/topology-test.yaml"
-    if [[ -z "${IS_OPENSHIFT}" || "$(to_lowercase "${IS_OPENSHIFT}")" == "false" ]]; then
-      kubectl apply -f "$dir/resources/topology_test/topology-test-ingress.yaml"
-    else
-      oc apply -f "$dir/resources/topology_test/topology-test-route.yaml"
-    fi
+#    oc apply -f "$dir/resources/topology_test/topology-test.yaml"
+#    if [[ -z "${IS_OPENSHIFT}" || "$(to_lowercase "${IS_OPENSHIFT}")" == "false" ]]; then
+#      kubectl apply -f "$dir/resources/topology_test/topology-test-ingress.yaml"
+#    else
+#      oc apply -f "$dir/resources/topology_test/topology-test-route.yaml"
+#    fi
 
     # Create secret for sealight job to pull image from private quay repository.
     if [[ "$JOB_NAME" == *"sealight"* ]]; then kubectl create secret docker-registry quay-secret --docker-server=quay.io --docker-username=$RHDH_SEALIGHTS_BOT_USER --docker-password=$RHDH_SEALIGHTS_BOT_TOKEN --namespace="${project}"; fi
@@ -820,13 +821,15 @@ delete_tekton_pipelines() {
 }
 
 cluster_setup() {
-  install_pipelines_operator
+#FIXME https://issues.redhat.com/browse/RHIDP-8036
+#  install_pipelines_operator
   install_acm_ocp_operator
   install_crunchy_postgres_ocp_operator
 }
 
 cluster_setup_ocp_operator() {
-  install_pipelines_operator
+#FIXME https://issues.redhat.com/browse/RHIDP-8036
+#  install_pipelines_operator
   install_acm_ocp_operator
   install_crunchy_postgres_ocp_operator
 }
@@ -848,13 +851,13 @@ cluster_setup_k8s_helm() {
 # Helper function to get common helm set parameters
 get_image_helm_set_params() {
   local params=""
-  
+
   # Add image repository
   params+="--set upstream.backstage.image.repository=${QUAY_REPO} "
-  
+
   # Add image tag
   params+="--set upstream.backstage.image.tag=${TAG_NAME} "
-  
+
   # Add pull secrets if sealight job
   params+=$(if [[ "$JOB_NAME" == *"sealight"* ]]; then echo "--set upstream.backstage.image.pullSecrets[0]='quay-secret'"; fi)
   echo "${params}"
@@ -865,7 +868,7 @@ perform_helm_install() {
   local release_name=$1
   local namespace=$2
   local value_file=$3
-  
+
   helm upgrade -i "${release_name}" -n "${namespace}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "${DIR}/value_files/${value_file}" \
@@ -913,7 +916,7 @@ initiate_upgrade_base_deployments() {
   local rhdh_base_url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
   echo "Deploying image from base repository: ${QUAY_REPO_BASE}, TAG_NAME_BASE: ${TAG_NAME_BASE}, in NAME_SPACE: ${NAME_SPACE}"
-  
+
   helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION_BASE}" \
     -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME_BASE}" \
@@ -940,7 +943,7 @@ initiate_upgrade_deployments() {
     cd "${DIR}"
 
     echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
-    
+
     helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" \
@@ -968,7 +971,7 @@ initiate_runtime_deployment() {
   oc apply -f "$DIR/resources/postgres-db/dynamic-plugins-root-PVC.yaml" -n "${namespace}"
   # Create secret for sealight job to pull image from private quay repository.
   if [[ "$JOB_NAME" == *"sealight"* ]]; then kubectl create secret docker-registry quay-secret --docker-server=quay.io --docker-username=$RHDH_SEALIGHTS_BOT_USER --docker-password=$RHDH_SEALIGHTS_BOT_TOKEN --namespace="${namespace}"; fi
-  
+
   helm upgrade -i "${release_name}" -n "${namespace}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "$DIR/resources/postgres-db/values-showcase-postgres.yaml" \
