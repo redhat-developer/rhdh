@@ -22,6 +22,8 @@ click==8.1.7
     # via
     #   -r requirements.in
     #   mkdocs
+cmake==4.0.3
+    # via -r requirements.in
 colorama==0.4.6
     # via
     #   -r requirements.in
