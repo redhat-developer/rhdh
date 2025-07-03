@@ -166,6 +166,15 @@ global:
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-msgraph-dynamic
         disabled: false
+        pluginConfig:
+          catalog:
+            providers:
+              microsoftGraphOrg:
+                providerId:
+                  target: https://graph.microsoft.com/v1.0
+                  tenantId: temp
+                  clientId: temp
+                  clientSecret: temp
       - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-ldap-dynamic
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-pingidentity-dynamic
