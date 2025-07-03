@@ -845,6 +845,38 @@ cluster_setup_k8s_helm() {
   # install_crunchy_postgres_k8s_operator # Works with K8s but disabled in values file
 }
 
+install_orchestrator_infra_chart() {
+  ORCH_INFRA_NS="orchestrator-infra"
+  configure_namespace ${ORCH_INFRA_NS}
+
+  helm repo add redhat-developer https://redhat-developer.github.io/rhdh-chart
+
+  echo "Deploying orchestrator-infra chart"
+  cd "${DIR}"
+  helm upgrade -i orch-infra -n "${ORCH_INFRA_NS}" \
+    "redhat-developer/redhat-developer-hub-orchestrator-infra"
+
+  # wait for install plan to be deployed
+  echo "Waiting for an InstallPlan to be created in namespace openshift-serverless"
+
+  while true; do
+    COUNT=$(oc get installplan -n openshift-serverless --no-headers 2>/dev/null | wc -l)
+    
+    if [[ "$COUNT" -gt 0 ]]; then
+      echo "Found $COUNT InstallPlan(s) in namespace openshift-serverless."
+      break
+    fi
+
+    echo "No InstallPlans found. Retrying in 5 seconds..."
+    sleep 5
+  done
+
+  for namespace in "openshift-serverless" "openshift-serverless-logic"; do
+    OS_PLAN=$(oc get installplan -n $namespace --sort-by=.metadata.creationTimestamp -o jsonpath='{.items[0].metadata.name}')
+    oc patch installplan $OS_PLAN -n $namespace --type merge --patch '{"spec":{"approved":true}}'
+  done
+}
+
 # Helper function to get common helm set parameters
 get_image_helm_set_params() {
   local params=""
@@ -865,22 +897,28 @@ perform_helm_install() {
   local release_name=$1
   local namespace=$2
   local value_file=$3
+  local additional_values=$4
   
   helm upgrade -i "${release_name}" -n "${namespace}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "${DIR}/value_files/${value_file}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    $(get_image_helm_set_params)
+    $(get_image_helm_set_params) \
+    $(additional_values)
 }
 
 base_deployment() {
   configure_namespace ${NAME_SPACE}
 
   deploy_redis_cache "${NAME_SPACE}"
+
+  install_orchestrator_infra_chart
+
+  cd "${DIR}"
   local rhdh_base_url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
   echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
-  perform_helm_install "${RELEASE_NAME}" "${NAME_SPACE}" "${HELM_CHART_VALUE_FILE_NAME}"
+  perform_helm_install "${RELEASE_NAME}" "${NAME_SPACE}" "${HELM_CHART_VALUE_FILE_NAME}" "--set orchestrator.enabled=true"
 }
 
 rbac_deployment() {
@@ -988,7 +1026,8 @@ initiate_sanity_plugin_checks_deployment() {
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    $(get_image_helm_set_params)
+    $(get_image_helm_set_params)  \
+    --set orchestrator.enabled=true
 }
 
 check_and_test() {
