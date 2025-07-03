@@ -26,7 +26,7 @@ spec:
   support: tech-preview
   lifecycle: active
   partOf:
-    - roadiehq-jira
+    - jira
   appConfigExamples:
     - title: Default configuration
       content:
