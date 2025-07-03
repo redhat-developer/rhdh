@@ -26,5 +26,5 @@ spec:
   support: tech-preview
   lifecycle: active
   partOf:
-    - red-hat-developer-hub-backstage-plugin-bulk-import-backend
+    - bulk-import
   appConfigExamples: []

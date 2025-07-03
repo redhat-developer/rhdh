@@ -2,18 +2,17 @@
 apiVersion: extensions.backstage.io/v1alpha1
 kind: Plugin
 metadata:
-  name: gitlab-catalog-integration
+  name: gitlab-org-catalog-integration
   namespace: rhdh
-  title: GitLab Catalog Integration
+  title: GitLab Org Catalog Integration
   description: |
-    This plugin provides GitLab catalog integration for the Red Hat Developer Hub. Searches your
-    GitLab account and registers catalog files matching the configured path.
-    It can also import your users and groups from GitLab.
+    This plugin provides GitLab catalog integration for the Red Hat Developer Hub.
+    Searches your GitLab account and imports your users and groups from GitLab.
   annotations:
     extensions.backstage.io/pre-installed: 'true'
   links:
     - title: readme
-      url: https://github.com/backstage/backstage/blob/master/plugins/catalog-backend-module-gitlab/README.md
+      url: https://github.com/backstage/backstage/blob/master/plugins/catalog-backend-module-gitlab-org/README.md
     - title: Homepage
       url: https://red.ht/rhdh
     - title: Bugs
@@ -53,4 +52,4 @@ spec:
     for further details regarding the configuration required.
 
   packages:
-    - backstage-plugin-catalog-backend-module-gitlab
+    - backstage-plugin-catalog-backend-module-gitlab-org

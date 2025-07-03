@@ -1,0 +1,47 @@
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: redhat-backstage-plugin-orchestrator
+  namespace: rhdh
+  title: "@redhat/backstage-plugin-orchestrator"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/orchestrator/plugins/orchestrator
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/orchestrator/plugins/orchestrator
+  tags:
+    - automation
+spec:
+  packageName: "@redhat/backstage-plugin-orchestrator"
+  dynamicArtifact: "@redhat/backstage-plugin-orchestrator@1.5.1"
+  version: 1.5.1
+  backstage:
+    role: frontend-plugin
+    supportedVersions: 1.39.1
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+  partOf:
+    - orchestrator
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        dynamicPlugins:
+          frontend:
+            red-hat-developer-hub.backstage-plugin-orchestrator:
+              appIcons:
+                - importName: OrchestratorIcon
+                  module: OrchestratorPlugin
+                  name: orchestratorIcon
+              dynamicRoutes:
+                - importName: OrchestratorPage
+                  menuItem:
+                    icon: orchestratorIcon
+                    text: Orchestrator
+                  module: OrchestratorPlugin
+                  path: /orchestrator

@@ -14,7 +14,8 @@ metadata:
   annotations:
     backstage.io/source-location: url
       https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-scaffolder-backend-module-servicenow-dynamic
-  tags: []
+  tags:
+    - software-templates
 spec:
   packageName: "@backstage-community/plugin-scaffolder-backend-module-servicenow"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-servicenow-dynamic
@@ -26,7 +27,7 @@ spec:
   support: tech-preview
   lifecycle: active
   partOf:
-    - backstage-community-servicenow-scaffolder-module
+    - servicenow-scaffolder-actions
   appConfigExamples:
     - title: Default configuration
       content:

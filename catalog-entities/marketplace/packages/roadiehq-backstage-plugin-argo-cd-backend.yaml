@@ -26,7 +26,7 @@ spec:
   support: production
   lifecycle: active
   partOf:
-    - roadiehq-argo-cd
+    - roadie-argocd
   appConfigExamples:
     - title: Default configuration
       content:

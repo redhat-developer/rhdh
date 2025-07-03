@@ -26,7 +26,7 @@ spec:
   support: production
   lifecycle: active
   partOf:
-    - backstage-community-analytics-provider-segment
+    - analytics-provider-segment
   appConfigExamples:
     - title: Default configuration
       content:

@@ -26,7 +26,7 @@ spec:
   support: production
   lifecycle: active
   partOf:
-    - red-hat-developer-hub-backstage-plugin-global-header
+    - global-header
   appConfigExamples:
     - title: Default configuration
       content:
