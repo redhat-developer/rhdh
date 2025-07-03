@@ -522,17 +522,18 @@ apply_yaml_files() {
       --namespace="${project}" \
       --dry-run=client -o yaml | oc apply -f -
 
+#FIXME https://issues.redhat.com/browse/RHIDP-8036
     # Create Pipeline run for tekton test case.
 #    oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline.yaml"
 #    oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline-run.yaml"
 
     # Create Deployment and Pipeline for Topology test.
-    oc apply -f "$dir/resources/topology_test/topology-test.yaml"
-    if [[ -z "${IS_OPENSHIFT}" || "$(to_lowercase "${IS_OPENSHIFT}")" == "false" ]]; then
-      kubectl apply -f "$dir/resources/topology_test/topology-test-ingress.yaml"
-    else
-      oc apply -f "$dir/resources/topology_test/topology-test-route.yaml"
-    fi
+#    oc apply -f "$dir/resources/topology_test/topology-test.yaml"
+#    if [[ -z "${IS_OPENSHIFT}" || "$(to_lowercase "${IS_OPENSHIFT}")" == "false" ]]; then
+#      kubectl apply -f "$dir/resources/topology_test/topology-test-ingress.yaml"
+#    else
+#      oc apply -f "$dir/resources/topology_test/topology-test-route.yaml"
+#    fi
 
     # Create secret for sealight job to pull image from private quay repository.
     if [[ "$JOB_NAME" == *"sealight"* ]]; then kubectl create secret docker-registry quay-secret --docker-server=quay.io --docker-username=$RHDH_SEALIGHTS_BOT_USER --docker-password=$RHDH_SEALIGHTS_BOT_TOKEN --namespace="${project}"; fi
@@ -820,12 +821,14 @@ delete_tekton_pipelines() {
 }
 
 cluster_setup() {
+#FIXME https://issues.redhat.com/browse/RHIDP-8036
 #  install_pipelines_operator
   install_acm_ocp_operator
   install_crunchy_postgres_ocp_operator
 }
 
 cluster_setup_ocp_operator() {
+#FIXME https://issues.redhat.com/browse/RHIDP-8036
 #  install_pipelines_operator
   install_acm_ocp_operator
   install_crunchy_postgres_ocp_operator
