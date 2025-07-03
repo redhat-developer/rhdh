@@ -4,7 +4,8 @@ import { UIhelper } from "../../../utils/ui-helper";
 import { Catalog } from "../../../support/pages/catalog";
 import { Topology } from "../../../support/pages/topology";
 
-test.describe("Test Topology Plugin", () => {
+//FIXME: https://issues.redhat.com/browse/RHIDP-8036
+test.describe.skip("Test Topology Plugin", () => {
   let common: Common;
   let uiHelper: UIhelper;
   let catalog: Catalog;
