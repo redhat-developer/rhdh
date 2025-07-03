@@ -22,7 +22,9 @@ import Rule from '@mui/icons-material/RuleOutlined';
 import School from '@mui/icons-material/SchoolOutlined';
 import Star from '@mui/icons-material/Star';
 import Storefront from '@mui/icons-material/StorefrontOutlined';
+import Support from '@mui/icons-material/Support';
 import Textsms from '@mui/icons-material/TextsmsOutlined';
+import WavingHand from '@mui/icons-material/WavingHandOutlined';
 
 import DeveloperHub from '../CustomIcons/DeveloperHub';
 
@@ -50,7 +52,9 @@ const CommonIcons: {
   feedback: Textsms,
   validate: Rule,
   security: GppGood,
-  support: Help,
+  help: Help,
+  support: Support,
+  quickstart: WavingHand,
   notifications: Notifications,
   manageAccounts: ManageAccounts,
   logout: Logout,

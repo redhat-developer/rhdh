@@ -79,9 +79,9 @@ const AppBase = () => {
       <OAuthRequestDialog />
       <ConfigUpdater />
       <AppRouter>
-        <ApplicationListener />
-        <Root>
-          <ApplicationProvider>
+        <ApplicationProvider>
+          <ApplicationListener />
+          <Root>
             <FlatRoutes>
               <Route
                 path="/catalog"
@@ -143,8 +143,8 @@ const AppBase = () => {
                 },
               )}
             </FlatRoutes>
-          </ApplicationProvider>
-        </Root>
+          </Root>
+        </ApplicationProvider>
       </AppRouter>
     </AppProvider>
   );

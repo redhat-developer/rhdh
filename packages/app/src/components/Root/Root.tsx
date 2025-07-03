@@ -145,6 +145,14 @@ const SidebarLayout = styled(Box, {
       flexGrow: 1,
     },
 
+    // When quickstart drawer is open, adjust margin
+    '.quickstart-drawer-open &': {
+      "& main[class*='BackstagePage-root']": {
+        marginRight: 'calc(var(--quickstart-drawer-width, 500px) + 1.5em)',
+        transition: 'margin-right 0.3s ease',
+      },
+    },
+
     // BackstageSidebarPage-root > nav > BackstageSidebar-root > BackstageSidebar-drawer
     '& > div > nav > div > div': {
       // We need to compensate for the above-sidebar position of the global header

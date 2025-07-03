@@ -86,6 +86,42 @@ export interface Config {
        */
       administration?: boolean;
     };
+    quickstart?: Array</**
+     * @visibility frontend
+     */
+    {
+      /**
+       * The title of quickstart.
+       * @visibility frontend
+       */
+      title: string;
+      /**
+       * Optional icon for quickstart.
+       * @visibility frontend
+       */
+      icon?: string;
+      /**
+       * The description of quickstart.
+       * @visibility frontend
+       */
+      description: string;
+      /**
+       * Optional action item for quickstart.
+       * @visibility frontend
+       */
+      cta?: {
+        /**
+         * Action item text.
+         * @visibility frontend
+         */
+        text: string;
+        /**
+         * Action item link.
+         * @visibility frontend
+         */
+        link: string;
+      };
+    }>;
   };
   /** @deepVisibility frontend */
   dynamicPlugins: {
