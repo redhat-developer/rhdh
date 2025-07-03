@@ -8824,7 +8824,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-user-settings@npm:^0.8.19, @backstage/plugin-user-settings@npm:^0.8.22":
+"@backstage/plugin-user-settings@npm:^0.8.22":
   version: 0.8.23
   resolution: "@backstage/plugin-user-settings@npm:0.8.23"
   dependencies:
