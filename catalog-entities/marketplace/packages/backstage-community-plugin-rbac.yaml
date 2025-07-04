@@ -18,10 +18,10 @@ metadata:
 spec:
   packageName: "@backstage-community/plugin-rbac"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-rbac
-  version: 1.39.2
+  version: 1.42.0
   backstage:
     role: frontend-plugin
-    supportedVersions: 1.36.1
+    supportedVersions: 1.39.1
   author: Red Hat
   support: production
   lifecycle: active
