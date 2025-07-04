@@ -21,12 +21,12 @@ spec:
   version: 1.13.0
   backstage:
     role: frontend-plugin
-    supportedVersions: 1.36.1
+    supportedVersions: 1.39.1
   author: Red Hat
   support: production
   lifecycle: active
   partOf:
-    - backstage-community-analytics-provider-segment
+    - analytics-provider-segment
   appConfigExamples:
     - title: Default configuration
       content:

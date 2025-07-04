@@ -21,12 +21,12 @@ spec:
   version: 3.3.0
   backstage:
     role: backend-plugin
-    supportedVersions: 1.36.1
+    supportedVersions: 1.39.1
   author: Red Hat
   support: tech-preview
   lifecycle: active
   partOf:
-    - backstage-community-plugin-3scale-backend
+    - 3scale
   appConfigExamples:
     - title: Default configuration
       content:

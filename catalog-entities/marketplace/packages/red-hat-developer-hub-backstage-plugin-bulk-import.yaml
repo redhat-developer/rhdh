@@ -21,12 +21,12 @@ spec:
   version: 1.12.1
   backstage:
     role: frontend-plugin
-    supportedVersions: 1.36.1
+    supportedVersions: 1.39.1
   author: Red Hat
   support: tech-preview
   lifecycle: active
   partOf:
-    - red-hat-developer-hub-backstage-plugin-bulk-import
+    - bulk-import
   appConfigExamples:
     - title: Default configuration
       content:

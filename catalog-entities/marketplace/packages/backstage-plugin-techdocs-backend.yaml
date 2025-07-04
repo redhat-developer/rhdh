@@ -21,7 +21,7 @@ spec:
   version: 1.11.6
   backstage:
     role: backend-plugin
-    supportedVersions: 1.36.1
+    supportedVersions: 1.39.1
   author: Red Hat
   support: production
   lifecycle: active

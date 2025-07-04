@@ -21,10 +21,10 @@ spec:
   version: 6.0.0
   backstage:
     role: backend-plugin
-    supportedVersions: 1.36.1
+    supportedVersions: 1.39.1
   author: Red Hat
   support: tech-preview
   lifecycle: active
   partOf:
-    - red-hat-developer-hub-backstage-plugin-bulk-import-backend
+    - bulk-import
   appConfigExamples: []

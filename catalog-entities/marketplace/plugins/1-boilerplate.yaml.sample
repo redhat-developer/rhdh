@@ -24,7 +24,7 @@ metadata:
     This is the description text used for the Tile view - keep it short.
 spec:
   author: Red Hat
-  support: tech-preview  # production, tech-preview, dev-preveiw
+  support: tech-preview  # production, tech-preview, dev-preview
   lifecycle: active
   publisher: Red Hat
 
@@ -62,5 +62,6 @@ spec:
   history: # Not used yet
     added: '2023-05-15'
 
-  packages: # link to the name used in the associated package documents in ../packages
-    - blah-blah-blah-blah  
+  # all packages needed for plugin to work (plugin name will be then in the partOf of the packages)
+  packages: # link to the name used in the associated package documents in ../packages.
+    - blah-blah-blah-blah

@@ -21,12 +21,12 @@ spec:
   version: 4.2.0
   backstage:
     role: backend-plugin
-    supportedVersions: 1.36.1
+    supportedVersions: 1.39.1
   author: Red Hat
   support: production
   lifecycle: active
   partOf:
-    - roadiehq-argo-cd
+    - roadie-argocd
   appConfigExamples:
     - title: Default configuration
       content:

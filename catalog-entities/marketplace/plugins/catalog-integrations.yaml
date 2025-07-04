@@ -17,7 +17,6 @@ spec:
     systems and services to provide a more complete view of your software ecosystem. 
 
   packages:
-    - backstage-github-catalog-module
     - backstage-community-plugin-catalog-backend-module-keycloak
     - backstage-community-plugin-catalog-backend-module-pingidentity
     - backstage-community-plugin-catalog-backend-module-scaffolder-re
@@ -29,4 +28,3 @@ spec:
     - backstage-plugin-catalog-backend-module-gitlab
     - backstage-plugin-catalog-backend-module-ldap
     - backstage-plugin-catalog-backend-module-msgraph
-

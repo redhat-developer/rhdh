@@ -21,12 +21,12 @@ spec:
   version: 2.4.2
   backstage:
     role: frontend-plugin
-    supportedVersions: 1.36.1
+    supportedVersions: 1.39.1
   author: Red Hat
   support: tech-preview
   lifecycle: active
   partOf:
-    - roadiehq-datadog
+    - datadog
   appConfigExamples:
     - title: Default configuration
       content:

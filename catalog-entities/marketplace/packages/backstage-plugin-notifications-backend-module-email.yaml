@@ -21,12 +21,12 @@ spec:
   version: 0.3.6
   backstage:
     role: backend-plugin-module
-    supportedVersions: 1.36.1
+    supportedVersions: 1.39.1
   author: Red Hat
   support: tech-preview
   lifecycle: active
   partOf:
-    - backstage-email-notifications-module
+    - notifications-email
   appConfigExamples:
     - title: Default configuration
       content:
