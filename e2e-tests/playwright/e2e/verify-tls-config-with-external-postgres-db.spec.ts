@@ -13,8 +13,8 @@ test.describe("Verify TLS configuration with external Postgres DB", () => {
       process.env.GH_USER2_PASS,
     );
     await uiHelper.verifyHeading("Welcome back!");
-    await uiHelper.verifyText("Quick Access");
-    await page.getByLabel("Catalog").click();
+    await uiHelper.verifyText("Explore Your Software Catalog");
+    await page.getByLabel("Catalog").first().click();
     await uiHelper.selectMuiBox("Kind", "Component");
     await expect(async () => {
       await uiHelper.clickByDataTestId("user-picker-all");
