@@ -1144,14 +1144,12 @@ plugins:
           red-hat-developer-hub.backstage-plugin-orchestrator:
             appIcons:
               - importName: OrchestratorIcon
-                module: OrchestratorPlugin
                 name: orchestratorIcon
             dynamicRoutes:
               - importName: OrchestratorPage
                 menuItem:
                   icon: orchestratorIcon
                   text: Orchestrator
-                module: OrchestratorPlugin
                 path: /orchestrator
 
   - package: "@redhat/backstage-plugin-orchestrator-backend-dynamic@1.6.0"
