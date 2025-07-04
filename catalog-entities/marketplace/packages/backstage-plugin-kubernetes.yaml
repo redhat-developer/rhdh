@@ -18,10 +18,10 @@ metadata:
 spec:
   packageName: "@backstage/plugin-kubernetes"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-plugin-kubernetes
-  version: 0.12.4
+  version: 0.12.7
   backstage:
     role: frontend-plugin
-    supportedVersions: 1.36.1
+    supportedVersions: 1.39.1
   author: Red Hat
   support: tech-preview
   lifecycle: active
