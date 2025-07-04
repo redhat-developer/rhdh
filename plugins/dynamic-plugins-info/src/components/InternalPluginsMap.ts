@@ -57,6 +57,12 @@ export const InternalPluginsMap: Record<string, string> = {
     './dynamic-plugins/dist/backstage-community-plugin-ocm-backend-dynamic',
   'backstage-community-plugin-ocm':
     './dynamic-plugins/dist/backstage-community-plugin-ocm',
+  'red-hat-developer-hub-backstage-plugin-adoption-insights':
+    './dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-adoption-insights',
+  'red-hat-developer-hub-backstage-plugin-adoption-insights-backend-dynamic':
+    './dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-adoption-insights-backend-dynamic',
+  'red-hat-developer-hub-backstage-plugin-analytics-module-adoption-insights-dynamic':
+    './dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-analytics-module-adoption-insights-dynamic',
   'red-hat-developer-hub-backstage-plugin-bulk-import-backend-dynamic':
     './dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import-backend-dynamic',
   'red-hat-developer-hub-backstage-plugin-bulk-import':
