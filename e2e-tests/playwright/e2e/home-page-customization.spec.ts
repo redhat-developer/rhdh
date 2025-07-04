@@ -2,6 +2,7 @@ import { test } from "@playwright/test";
 import { UIhelper } from "../utils/ui-helper";
 import { Common } from "../utils/common";
 import { HomePage } from "../support/pages/home-page";
+import { runAccessibilityTests } from "../utils/accessibility";
 
 test.describe("Home page customization", () => {
   let common: Common;
@@ -15,8 +16,11 @@ test.describe("Home page customization", () => {
     await common.loginAsGuest();
   });
 
-  test("Verify that home page is customized", async () => {
+  test("Verify that home page is customized", async ({ page }, testInfo) => {
     await uiHelper.verifyTextinCard("Quick Access", "Quick Access");
+
+    await runAccessibilityTests(page, testInfo);
+
     await uiHelper.verifyTextinCard(
       "Your Starred Entities",
       "Your Starred Entities",
