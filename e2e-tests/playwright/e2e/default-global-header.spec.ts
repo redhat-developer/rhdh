@@ -9,10 +9,7 @@ test.describe("Default Global Header", () => {
   test.beforeEach(async ({ page }) => {
     uiHelper = new UIhelper(page);
     common = new Common(page);
-    await common.loginAsKeycloakUser(
-      process.env.GH_USER2_ID,
-      process.env.GH_USER2_PASS,
-    );
+    await common.loginAsGuest();
     await expect(page.locator("nav[id='global-header']")).toBeVisible();
   });
 
@@ -21,7 +18,18 @@ test.describe("Default Global Header", () => {
   }) => {
     await expect(page.locator(`input[placeholder="Search..."]`)).toBeVisible();
     await uiHelper.verifyLink({ label: "Self-service" });
-    await uiHelper.verifyLink({ label: "Support (external link)" });
+
+    const globalHeader = page.locator("nav[id='global-header']");
+    const helpDropdownButton = globalHeader
+      .locator("button[aria-label='Help']")
+      .or(
+        globalHeader.locator("button").filter({
+          has: page.locator("svg[data-testid='HelpOutlineIcon']"),
+        }),
+      )
+      .first();
+
+    await expect(helpDropdownButton).toBeVisible();
     await uiHelper.verifyLink({ label: "Notifications" });
     expect(await uiHelper.isBtnVisible("rhdh-qe-2")).toBeTruthy();
   });
@@ -36,13 +44,31 @@ test.describe("Default Global Header", () => {
     await uiHelper.verifyHeading("Self-service");
   });
 
-  test("Verify that clicking on Support button opens a new tab", async ({
+  test("Verify that clicking on Support button in HelpDropdown opens a new tab", async ({
     context,
+    page,
   }) => {
+    const globalHeader = page.locator("nav[id='global-header']");
+
+    const helpDropdownButton = globalHeader
+      .locator("button[aria-label='Help']")
+      .or(
+        globalHeader.locator("button").filter({
+          has: page.locator("svg[data-testid='HelpOutlineIcon']"),
+        }),
+      )
+      .first();
+
+    await helpDropdownButton.click();
+    await page.waitForTimeout(500);
+
+    expect(await uiHelper.isTextVisible("Support")).toBeTruthy();
+
     const [newTab] = await Promise.all([
       context.waitForEvent("page"),
-      uiHelper.clickLink({ ariaLabel: "Support (external link)" }),
+      uiHelper.clickByDataTestId("support-button"),
     ]);
+
     expect(newTab).not.toBeNull();
     await newTab.waitForLoadState();
     expect(newTab.url()).toContain(
@@ -84,15 +110,14 @@ test.describe("Default Global Header", () => {
     request,
     page,
   }) => {
-    
     const notificationsBadge = page
-    .locator("#global-header")
-    .getByRole("link", { name: "Notifications" });
-    
+      .locator("#global-header")
+      .getByRole("link", { name: "Notifications" });
+
     await uiHelper.clickLink({ ariaLabel: "Notifications" });
     await uiHelper.verifyHeading("Notifications");
     await uiHelper.markAllNotificationsAsReadIfVisible();
-    
+
     const postResponse = await request.post(`${baseURL}/api/notifications`, {
       headers: {
         "Content-Type": "application/json",
@@ -109,8 +134,7 @@ test.describe("Default Global Header", () => {
       },
     });
     expect(postResponse.status()).toBe(200);
-  
+
     await expect(notificationsBadge).toHaveText("1");
   });
-  
 });
