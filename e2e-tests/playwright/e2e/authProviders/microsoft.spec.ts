@@ -96,6 +96,18 @@ test.describe("Configure Microsoft Provider", async () => {
       "AUTH_PROVIDERS_AZURE_TENANT_ID",
       process.env.AUTH_PROVIDERS_AZURE_TENANT_ID,
     );
+    deployment.addSecretData(
+      "MICROSOFT_CLIENT_ID",
+      process.env.AUTH_PROVIDERS_AZURE_CLIENT_ID,
+    );
+    deployment.addSecretData(
+      "MICROSOFT_CLIENT_SECRET",
+      process.env.AUTH_PROVIDERS_AZURE_CLIENT_SECRET,
+    );
+    deployment.addSecretData(
+      "MICROSOFT_TENANT_ID",
+      process.env.AUTH_PROVIDERS_AZURE_TENANT_ID,
+    );
 
     await deployment.createSecret();
 
