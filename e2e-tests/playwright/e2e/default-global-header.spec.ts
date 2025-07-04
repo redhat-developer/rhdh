@@ -59,6 +59,14 @@ test.describe("Default Global Header", () => {
     await uiHelper.clickLink({ href: "/settings" });
     await uiHelper.verifyHeading("Settings");
 
+    await uiHelper.goToMyProfilePage();
+    await uiHelper.verifyTextInSelector("header > div > p", "USER");
+    await uiHelper.verifyHeading(process.env.GH_USER2_ID);
+    await uiHelper.verifyTextInSelector(
+      "a[data-testid='header-tab-0'] > span",
+      "Overview",
+    );
+
     await uiHelper.openProfileDropdown();
     await page.locator(`p`).getByText("Sign out").first().click();
     await uiHelper.verifyHeading("Select a sign-in method");
@@ -84,15 +92,14 @@ test.describe("Default Global Header", () => {
     request,
     page,
   }) => {
-    
     const notificationsBadge = page
-    .locator("#global-header")
-    .getByRole("link", { name: "Notifications" });
-    
+      .locator("#global-header")
+      .getByRole("link", { name: "Notifications" });
+
     await uiHelper.clickLink({ ariaLabel: "Notifications" });
     await uiHelper.verifyHeading("Notifications");
     await uiHelper.markAllNotificationsAsReadIfVisible();
-    
+
     const postResponse = await request.post(`${baseURL}/api/notifications`, {
       headers: {
         "Content-Type": "application/json",
@@ -109,8 +116,7 @@ test.describe("Default Global Header", () => {
       },
     });
     expect(postResponse.status()).toBe(200);
-  
+
     await expect(notificationsBadge).toHaveText("1");
   });
-  
 });
