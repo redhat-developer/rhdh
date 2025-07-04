@@ -66,8 +66,8 @@ droute_send() {
     oc whoami --show-server
     trap 'oc config use-context "$original_context"' RETURN
 
-    # Ensure that we are only grabbing the first matched pod
-    local droute_pod_name=$(oc get pods -n droute --no-headers -o custom-columns=":metadata.name" | grep ubi9-cert-rsync | awk '{print $1}' | head -n 1)
+    # Ensure that we are only grabbing the last matched pod
+    local droute_pod_name=$(oc get pods -n droute --no-headers -o custom-columns=":metadata.name" | grep ubi9-cert-rsync | awk '{print $1}' | tail -n 1)
     local temp_droute=$(oc exec -n "${droute_project}" "${droute_pod_name}" -- /bin/bash -c "mktemp -d")
 
     ARTIFACTS_URL=$(get_artifacts_url)
