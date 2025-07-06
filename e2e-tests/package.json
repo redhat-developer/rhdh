@@ -29,7 +29,7 @@
   "devDependencies": {
     "@microsoft/microsoft-graph-types": "2.40.0",
     "@playwright/test": "1.53.2",
-    "@types/node": "22.15.34",
+    "@types/node": "22.16.0",
     "@typescript-eslint/eslint-plugin": "6.21.0",
     "@typescript-eslint/parser": "6.21.0",
     "eslint": "8.57.1",
