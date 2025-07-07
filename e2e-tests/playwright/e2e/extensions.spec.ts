@@ -99,10 +99,10 @@ test.describe("Admin > Extensions > Catalog", () => {
     permissions: ["clipboard-read", "clipboard-write"],
   });
 
-  test("Verify plugin installation", async ({ page }) => {
+  test("Verify plugin configuration can be viewed", async ({ page }) => {
     await uiHelper.searchInputPlaceholder("Topology");
     await page.getByRole("heading", { name: "Topology" }).first().click();
-    await uiHelper.clickButton("Install");
+    await uiHelper.clickButton("View");
     await uiHelper.verifyHeading("Install Application Topology for Kubernetes");
     await uiHelper.verifyText(
       "- package: ./dynamic-plugins/dist/backstage-community-plugin-topology",
@@ -131,8 +131,8 @@ test.describe("Admin > Extensions > Catalog", () => {
     );
     expect(clipboardContent).not.toContain("pluginConfig:");
     expect(clipboardContent).toContain("backstage-community.plugin-topology:");
-    await uiHelper.clickButton("Cancel");
-    await expect(page.getByRole("button", { name: "Install" })).toBeVisible();
+    await uiHelper.clickButton("Back");
+    await expect(page.getByRole("button", { name: "View" })).toBeVisible();
     await uiHelper.verifyHeading("Application Topology for Kubernetes");
   });
 });

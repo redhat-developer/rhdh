@@ -66,7 +66,8 @@ droute_send() {
     oc whoami --show-server
     trap 'oc config use-context "$original_context"' RETURN
 
-    local droute_pod_name=$(oc get pods -n droute --no-headers -o custom-columns=":metadata.name" | grep ubi9-cert-rsync)
+    # Ensure that we are only grabbing the last matched pod
+    local droute_pod_name=$(oc get pods -n droute --no-headers -o custom-columns=":metadata.name" | grep ubi9-cert-rsync | awk '{print $1}' | tail -n 1)
     local temp_droute=$(oc exec -n "${droute_project}" "${droute_pod_name}" -- /bin/bash -c "mktemp -d")
 
     ARTIFACTS_URL=$(get_artifacts_url)
@@ -848,13 +849,13 @@ cluster_setup_k8s_helm() {
 # Helper function to get common helm set parameters
 get_image_helm_set_params() {
   local params=""
-  
+
   # Add image repository
   params+="--set upstream.backstage.image.repository=${QUAY_REPO} "
-  
+
   # Add image tag
   params+="--set upstream.backstage.image.tag=${TAG_NAME} "
-  
+
   # Add pull secrets if sealight job
   params+=$(if [[ "$JOB_NAME" == *"sealight"* ]]; then echo "--set upstream.backstage.image.pullSecrets[0]='quay-secret'"; fi)
   echo "${params}"
@@ -865,7 +866,7 @@ perform_helm_install() {
   local release_name=$1
   local namespace=$2
   local value_file=$3
-  
+
   helm upgrade -i "${release_name}" -n "${namespace}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "${DIR}/value_files/${value_file}" \
@@ -913,7 +914,7 @@ initiate_upgrade_base_deployments() {
   local rhdh_base_url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
   echo "Deploying image from base repository: ${QUAY_REPO_BASE}, TAG_NAME_BASE: ${TAG_NAME_BASE}, in NAME_SPACE: ${NAME_SPACE}"
-  
+
   helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION_BASE}" \
     -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME_BASE}" \
@@ -940,7 +941,7 @@ initiate_upgrade_deployments() {
     cd "${DIR}"
 
     echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
-    
+
     helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" \
@@ -968,7 +969,7 @@ initiate_runtime_deployment() {
   oc apply -f "$DIR/resources/postgres-db/dynamic-plugins-root-PVC.yaml" -n "${namespace}"
   # Create secret for sealight job to pull image from private quay repository.
   if [[ "$JOB_NAME" == *"sealight"* ]]; then kubectl create secret docker-registry quay-secret --docker-server=quay.io --docker-username=$RHDH_SEALIGHTS_BOT_USER --docker-password=$RHDH_SEALIGHTS_BOT_TOKEN --namespace="${namespace}"; fi
-  
+
   helm upgrade -i "${release_name}" -n "${namespace}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "$DIR/resources/postgres-db/values-showcase-postgres.yaml" \

@@ -218,7 +218,10 @@ argocd:
           token: temp
 permission:
   enabled: false
-
+# Marketplace plugin configuration
+extensions:
+  installation:
+    enabled: false
 buildInfo:
   title: 'RHDH Build info'
   card:
