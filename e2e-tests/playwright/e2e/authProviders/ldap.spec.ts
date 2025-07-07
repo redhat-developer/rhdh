@@ -11,7 +11,7 @@ let context: BrowserContext;
 
 /* SUPORTED RESOLVERS
 LDAP:
-    [] -> (Default)
+    [x] -> (Default)
 */
 
 test.describe("Configure LDAP Provider", async () => {
@@ -157,7 +157,7 @@ test.describe("Configure LDAP Provider", async () => {
     );
   });
 
-  test.skip("Login with LDAP oidcLdapUuidMatchingAnnotation resolver", async () => {
+  test("Login with LDAP oidcLdapUuidMatchingAnnotation resolver", async () => {
     const login = await common.keycloakLogin(
       "user1@rhdh.test",
       process.env.RHBK_LDAP_USER_PASSWORD,

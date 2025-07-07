@@ -159,7 +159,7 @@ export default defineConfig({
     },
     {
       name: "any-test",
-      testMatch: "**/playwright/e2e/authProviders/ldap.spec.ts",
+      testMatch: "**/*.spec.ts", // Allows running any test file
     },
     {
       name: "showcase-upgrade",
