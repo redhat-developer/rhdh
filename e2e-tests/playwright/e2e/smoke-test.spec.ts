@@ -1,23 +1,19 @@
-import { test } from "@playwright/test";
-import { UIhelper } from "../utils/ui-helper";
 import { HomePage } from "../support/pages/home-page";
-import { Common } from "../utils/common";
+import { guestTest } from "../support/fixtures/guest-login";
 
-test.describe("Smoke test", () => {
-  let uiHelper: UIhelper;
+guestTest.describe("Smoke test", () => {
   let homePage: HomePage;
-  let common: Common;
 
-  test.beforeEach(async ({ page }) => {
-    uiHelper = new UIhelper(page);
+  guestTest.beforeEach(async ({ page }) => {
     homePage = new HomePage(page);
-    common = new Common(page);
-    await common.loginAsGuest();
   });
 
-  test("Verify the Homepage renders with Search Bar, Quick Access and Starred Entities", async () => {
-    await uiHelper.verifyHeading("Welcome back!");
-    await uiHelper.openSidebar("Home");
-    await homePage.verifyQuickAccess("Developer Tools", "Podman Desktop");
-  });
+  guestTest(
+    "Verify the Homepage renders with Search Bar, Quick Access and Starred Entities",
+    async ({ uiHelper }) => {
+      await uiHelper.verifyHeading("Welcome back!");
+      await uiHelper.openSidebar("Home");
+      await homePage.verifyQuickAccess("Developer Tools", "Podman Desktop");
+    },
+  );
 });

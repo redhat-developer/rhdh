@@ -1,12 +1,9 @@
-import { Page, test } from "@playwright/test";
-import { UIhelper } from "../utils/ui-helper";
-import { Common } from "../utils/common";
+import { Page } from "@playwright/test";
 import { expect } from "@playwright/test";
 import { Catalog } from "../support/pages/catalog";
+import { guestTest } from "../support/fixtures/guest-login";
 
-test.describe("TechDocs", () => {
-  let common: Common;
-  let uiHelper: UIhelper;
+guestTest.describe("TechDocs", () => {
   let catalog: Catalog;
 
   async function docsTextHighlight(page: Page) {
@@ -26,20 +23,20 @@ test.describe("TechDocs", () => {
     });
   }
 
-  test.beforeEach(async ({ page }) => {
-    uiHelper = new UIhelper(page);
-    common = new Common(page);
+  guestTest.beforeEach(async ({ page }) => {
     catalog = new Catalog(page);
-    await common.loginAsGuest();
   });
 
-  test("Verify that TechDocs is visible in sidebar", async () => {
-    await uiHelper.openSidebarButton("Favorites");
-    await uiHelper.openSidebar("Docs");
-  });
+  guestTest(
+    "Verify that TechDocs is visible in sidebar",
+    async ({ uiHelper }) => {
+      await uiHelper.openSidebarButton("Favorites");
+      await uiHelper.openSidebar("Docs");
+    },
+  );
 
-  test("Verify that TechDocs Docs page for Red Hat Developer Hub works", async ({
-    page,
+  guestTest("Verify that TechDocs Docs page for Red Hat Developer Hub works", async ({
+    page,uiHelper
   }) => {
     await uiHelper.openSidebarButton("Favorites");
     await uiHelper.openSidebar("Docs");
@@ -47,14 +44,14 @@ test.describe("TechDocs", () => {
     await uiHelper.waitForTitle("Getting Started running RHDH", 1);
   });
 
-  test("Verify that TechDocs entity tab page for Red Hat Developer Hub works", async () => {
+  guestTest("Verify that TechDocs entity tab page for Red Hat Developer Hub works", async ({uiHelper}) => {
     await catalog.goToByName("Red Hat Developer Hub");
     await uiHelper.clickTab("Docs");
     await uiHelper.waitForTitle("Getting Started running RHDH", 1);
   });
 
-  test("Verify that TechDocs Docs page for ReportIssue addon works", async ({
-    page,
+  guestTest("Verify that TechDocs Docs page for ReportIssue addon works", async ({
+    page, uiHelper
   }) => {
     await uiHelper.openSidebarButton("Favorites");
     await uiHelper.openSidebar("Docs");
@@ -65,8 +62,8 @@ test.describe("TechDocs", () => {
     expect(await link?.isVisible()).toBeTruthy();
   });
 
-  test("Verify that TechDocs entity tab page for ReportIssue addon works", async ({
-    page,
+  guestTest("Verify that TechDocs entity tab page for ReportIssue addon works", async ({
+    page, uiHelper
   }) => {
     await catalog.goToByName("Red Hat Developer Hub");
     await uiHelper.clickTab("Docs");

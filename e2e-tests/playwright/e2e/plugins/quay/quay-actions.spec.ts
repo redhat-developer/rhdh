@@ -1,27 +1,18 @@
-import { Page, test } from "@playwright/test";
-import { Common, setupBrowser } from "../../../utils/common";
-import { UIhelper } from "../../../utils/ui-helper";
 import { UI_HELPER_ELEMENTS } from "../../../support/pageObjects/global-obj";
 import { QuayClient } from "../../../utils/quay/quay-client";
+import { guestTest } from "../../../support/fixtures/guest-login";
 
-test.describe("Test Quay Actions plugin", () => {
-  let common: Common;
-  let uiHelper: UIhelper;
-  let page: Page;
+guestTest.describe("Test Quay Actions plugin", () => {
   let quayClient: QuayClient;
   let repository: string;
 
-  test.beforeAll(async ({ browser }, testInfo) => {
-    page = (await setupBrowser(browser, testInfo)).page;
-    common = new Common(page);
-    uiHelper = new UIhelper(page);
+  guestTest.beforeAll(async ({ uiHelper }) => {
     quayClient = new QuayClient();
 
-    await common.loginAsGuest();
     await uiHelper.clickLink({ ariaLabel: "Self-service" });
   });
 
-  test("Creates Quay repository", async () => {
+  guestTest("Creates Quay repository", async ({ uiHelper, page }) => {
     repository = `quay-actions-create-${Date.now()}`;
     const description =
       "This is just a test repository to test the 'quay:create-repository' template action";
@@ -46,7 +37,7 @@ test.describe("Test Quay Actions plugin", () => {
     await uiHelper.clickLink("Quay repository link");
   });
 
-  test.afterEach(async () => {
+  guestTest.afterEach(async () => {
     await quayClient.deleteRepository(process.env.QUAY_NAMESPACE, repository);
   });
 });

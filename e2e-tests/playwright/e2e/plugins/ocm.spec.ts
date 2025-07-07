@@ -1,7 +1,8 @@
-import { expect, test as base } from "@playwright/test";
+import { expect } from "@playwright/test";
 import { Common } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
 import { Clusters } from "../../support/pages/clusters";
+import { guestTest } from "../../support/fixtures/guest-login";
 
 //Pre-req: Enable backstage-community-plugin-ocm-backend-dynamic and backstage-community-plugin-ocm Plugins
 //Pre-req: Install Advanced Cluster Management for Kubernetes "MultiClusterHub"
@@ -16,22 +17,11 @@ const clusterDetails = {
   ocVersion: /^\d+\.\d+\.\d+(Upgrade available)?$/,
 };
 
-const test = base.extend<{
+const test = guestTest.extend<{
   common: Common;
   uiHelper: UIhelper;
   clusters: Clusters;
 }>({
-  common: async ({ page }, use) => {
-    const common = new Common(page);
-    await common.loginAsGuest();
-    await use(common);
-  },
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  uiHelper: async ({ page, common }, use) => {
-    const uiHelper = new UIhelper(page);
-    await uiHelper.openSidebar("Clusters");
-    await use(uiHelper);
-  },
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   clusters: async ({ page, uiHelper }, use) => {
     const clusters = new Clusters(page);
