@@ -30,12 +30,12 @@ test.describe.serial("Test Adoption Insights", () => {
     
 
     test("Check UI navigation by nav bar when adoption-insights is enabled", async () => {
-      await testHelper.waitUntilApiCallSucceeds(page, '/api/adoption-insights/events');
+      await testHelper.waitUntilApiCallSucceeds(page);
       await uiHelper.openSidebarButton("Administration"); 
       await uiHelper.clickLink('Adoption Insights');
 
       await testHelper.waitForPanelApiCalls(page);
-      await testHelper.waitUntilApiCallSucceeds(page, '/api/adoption-insights/events');
+      await testHelper.waitUntilApiCallSucceeds(page);
       
       await uiHelper.verifyHeading("Adoption Insights");
       expect(page.url()).toContain("adoption-insights");
@@ -113,56 +113,43 @@ test.describe.serial("Test Adoption Insights", () => {
       }
     });
 
-    test("Populate Data for panels if empty", async () => {
-      await testHelper.populateMissingPanelData(
-        page,
-        uiHelper,
-        templatesFirstEntry,
-        catalogEntitiesFirstEntry,
-        techdocsFirstEntry
-      );
-    });
-
     // Extended user interaction flow
     test.describe("Interaction-based tracking tests", () => {
       test.beforeAll(async () => {
+        //Populate Data for panels if empty
+        await testHelper.populateMissingPanelData(
+          page,
+          uiHelper,
+          templatesFirstEntry,
+          catalogEntitiesFirstEntry,
+          techdocsFirstEntry
+        );
         // Do a search
         await page.getByPlaceholder('Search...').fill('Dummy search');
-        await testHelper.waitUntilApiCallSucceeds(page, '/api/adoption-insights/events');
+        await testHelper.waitUntilApiCallSucceeds(page);
         await expect(page.getByText('No results found')).toBeVisible();
   
         await uiHelper.clickLink("Catalog");
-        await testHelper.waitUntilApiCallSucceeds(page, '/api/adoption-insights/events');
+        await testHelper.waitUntilApiCallSucceeds(page);
 
         await uiHelper.clickLink('Adoption Insights');
         await testHelper.clickByText('Last 28 days'); 
         await testHelper.selectOption("Today");
         await testHelper.waitForPanelApiCalls(page);
       });
-
+      
       test("Visited component shows up in top catalog entities", async () => {
-        const panel = page.locator(".v5-MuiPaper-root", {
-          hasText: "Top catalog entities",
-        });
-        const entries = panel.locator("tbody").locator("tr");
-        expect(await entries.count()).toBeGreaterThan(0);
+        await testHelper.expectTopEntriesToBePresent("Top catalog entities");
       });
-
+      
       test("Visited techdoc shows up in top techdocs", async () => {
-        const panel = page.locator(".v5-MuiPaper-root", {
-          hasText: "Top 3 techdocs",
-        });
-        const entries = panel.locator("tbody").locator("tr");
-        expect(await entries.count()).toBeGreaterThan(0);
+        await testHelper.expectTopEntriesToBePresent("Top 3 techdocs");
       });
-
+      
       test("Visited templates shows in top templates", async () => {
-        const panel = page.locator(".v5-MuiPaper-root", {
-          hasText: "Top 3 templates",
-        });
-        const entries = panel.locator("tbody").locator("tr");
-        expect(await entries.count()).toBeGreaterThan(0);
+        await testHelper.expectTopEntriesToBePresent("Top 3 templates");
       });
+      
 
       test("Changes are Reflecting in panels", async () => {
         const titles = [
@@ -205,17 +192,16 @@ test.describe.serial("Test Adoption Insights", () => {
             await testHelper.clickAndVerifyText(firstEntry, headerTxt);
           }
         }
+        await page.reload();
+        await testHelper.waitUntilApiCallSucceeds(page);
+        await uiHelper.openSidebarButton("Administration");
+        await uiHelper.clickLink('Adoption Insights');
+        await testHelper.clickByText('Last 28 days'); 
+        await testHelper.selectOption("Today");
+        await testHelper.waitForPanelApiCalls(page);
+        await testHelper.waitUntilApiCallSucceeds(page);
 
         for (const title of titles) {
-          await page.reload();
-          await testHelper.waitUntilApiCallSucceeds(page, '/api/adoption-insights/events');
-          await uiHelper.openSidebarButton("Administration");
-          await uiHelper.clickLink('Adoption Insights');
-          await testHelper.clickByText('Last 28 days'); 
-          await testHelper.selectOption("Today");
-          await testHelper.waitForPanelApiCalls(page);
-          await testHelper.waitUntilApiCallSucceeds(page, '/api/adoption-insights/events');
-
           const finalViews = await state[title].firstRow.locator('td').last();
           await state[title].firstRow.waitFor({ state: "visible" });
           const finalViewsCount = await finalViews.textContent();

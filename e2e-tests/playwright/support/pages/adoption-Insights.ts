@@ -92,6 +92,12 @@ export class TestHelper {
     }
   }
 
+  async expectTopEntriesToBePresent(panelTitle: string) {
+    const panel = this.page.locator(".v5-MuiPaper-root", { hasText: panelTitle });
+    const entries = panel.locator("tbody").locator("tr");
+    expect(await entries.count()).toBeGreaterThan(0);
+  }
+
   async clickAndVerifyText(
     firstEntry: Locator,
     expectedText: string
@@ -101,23 +107,27 @@ export class TestHelper {
       firstEntry.locator('a').click(),
     ]);
       // Wait for the expected API call to succeed
-    await this.waitUntilApiCallSucceeds(newpage, '/api/adoption-insights/events');
+    await this.waitUntilApiCallSucceeds(newpage);
 
     await newpage.getByText(expectedText).first().waitFor({ state: 'visible' });
   }
 
-  async waitUntilApiCallSucceeds(page: Page, urlPart: string): Promise<void> {
+  async waitUntilApiCallSucceeds(
+    page: Page, 
+    urlPart: string = '/api/adoption-insights/events'
+  ): Promise<void> {
     const response = await page.waitForResponse(
       async (response) => {
         const urlMatches = response.url().includes(urlPart);
         const isSuccess = response.status() === 200;
         return urlMatches && isSuccess;
       },
-      { timeout: 30000 } 
+      { timeout: 30000 }
     );
-    
+  
     expect(response.status()).toBe(200);
   }
+  
   async waitUntilApiCallIsMade(page: Page, urlPart: string): Promise<void> {
     await page.waitForResponse(
       (response) => response.url().includes(urlPart),
@@ -126,21 +136,24 @@ export class TestHelper {
   }
   
   async waitForPanelApiCalls(page: Page): Promise<void> {
-    const urls = [
-      'api/adoption-insights/events?type=active_users',
-      '/api/adoption-insights/events?type=total_users',
-      'api/adoption-insights/events?type=top_templates',
-      '/api/adoption-insights/events?type=top_catalog_entities',
-      '/api/adoption-insights/events?type=top_plugins',
-      '/api/adoption-insights/events?type=top_techdocs',
-      'api/adoption-insights/events?type=top_searches'
+    const types = [
+      'active_users',
+      'total_users',
+      'top_templates',
+      'top_catalog_entities',
+      'top_plugins',
+      'top_techdocs',
+      'top_searches'
     ];
   
     await Promise.all(
-      urls.map(urlPart => this.waitUntilApiCallIsMade(page, urlPart))
+      types.map(type => this.waitUntilApiCallIsMade(
+        page,
+        `/api/adoption-insights/events?type=${type}`
+      ))
     );
   }
-  
 
+  
 }
   
