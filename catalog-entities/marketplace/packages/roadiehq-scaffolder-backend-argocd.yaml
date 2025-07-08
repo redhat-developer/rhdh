@@ -27,7 +27,7 @@ spec:
   support: tech-preview
   lifecycle: active
   partOf:
-    - roadiehq-scaffolder-module
+    - roadiehq-scaffolder-backend-argocd
   appConfigExamples:
     - title: Default configuration
       content:
