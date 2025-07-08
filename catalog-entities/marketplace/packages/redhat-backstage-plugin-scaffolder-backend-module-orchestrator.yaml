@@ -28,7 +28,7 @@ spec:
   support: tech-preview
   lifecycle: active
   partOf:
-    - orchestrator
+    - orchestrator-scaffolder-actions
   appConfigExamples:
     - title: Default configuration
       content:
