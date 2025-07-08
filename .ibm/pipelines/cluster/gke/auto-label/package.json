@@ -1,0 +1,10 @@
+{
+  "name": "gke-cluster-auto-labeler",
+  "version": "1.0.0",
+  "description": "Automatic labeling system for GKE clusters using Cloud Functions and EventArc",
+  "main": "index.js",
+  "scripts": {
+    "deploy": "./deploy-auto-labeler.sh",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
