@@ -119,12 +119,12 @@ export class UIhelper {
     const buttonElement = this.page
       .getByRole("button")
       .getByText(buttonText, { exact: options.exact });
-    
-    await buttonElement.waitFor({ 
-      state: "visible", 
-      timeout: options.timeout 
+
+    await buttonElement.waitFor({
+      state: "visible",
+      timeout: options.timeout,
     });
-    
+
     if (options.force) {
       await buttonElement.click({ force: true });
     } else {
@@ -141,18 +141,20 @@ export class UIhelper {
       // Check if "Mark all read" div is visible
       const markAllReadDiv = this.page.locator('div[title="Mark all read"]');
       const isVisible = await markAllReadDiv.isVisible();
-      
+
       if (isVisible) {
         // Click on "Mark all read" div first
         await markAllReadDiv.click();
-        
+
         // Then click on "Mark All" button
         await this.clickButtonByText("Mark All", {
-          timeout: 5000
+          timeout: 5000,
         });
       }
     } catch (error) {
-      console.log("Mark all read functionality not available or already processed");
+      console.log(
+        "Mark all read functionality not available or already processed",
+      );
     }
   }
 
@@ -164,13 +166,13 @@ export class UIhelper {
    * @returns Promise<boolean> - Returns true if element was clicked, false if not visible.
    */
   async clickByTitleIfVisible(
-    title: string, 
-    elementType: string = 'div'
+    title: string,
+    elementType: string = "div",
   ): Promise<boolean> {
     try {
       const element = this.page.locator(`${elementType}[title="${title}"]`);
       const isVisible = await element.isVisible();
-      
+
       if (isVisible) {
         await element.click();
         return true;

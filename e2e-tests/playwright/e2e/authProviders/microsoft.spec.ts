@@ -2,7 +2,7 @@ import { test, expect, Page, BrowserContext } from "@playwright/test";
 import RHDHDeployment from "../../utils/authentication-providers/rhdh-deployment";
 import { Common, setupBrowser } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
-import { MSGraphClient } from "../../utils/authentication-providers/msgraph-helper";
+import { MSClient } from "../../utils/authentication-providers/msgraph-helper";
 import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
 
 let page: Page;
@@ -116,14 +116,19 @@ test.describe("Configure Microsoft Provider", async () => {
     await deployment.updateAllConfigs();
 
     // update the Azure App Registration to include the current redirectUrl
-    const graphClient = new MSGraphClient(
+    console.log("[TEST] Configuring Microsoft Azure App Registration...");
+    const graphClient = new MSClient(
       process.env.AUTH_PROVIDERS_AZURE_CLIENT_ID,
       process.env.AUTH_PROVIDERS_AZURE_CLIENT_SECRET,
       process.env.AUTH_PROVIDERS_AZURE_TENANT_ID,
     );
-    await graphClient.addAppRedirectUrlsAsync([
-      `${backstageUrl}/api/auth/microsoft/handler/frame`,
-    ]);
+
+    const redirectUrl = `${backstageUrl}/api/auth/microsoft/handler/frame`;
+    console.log(`[TEST] Adding redirect URL: ${redirectUrl}`);
+    await graphClient.addAppRedirectUrlsAsync([redirectUrl]);
+    console.log(
+      "[TEST] Microsoft Azure App Registration configured successfully",
+    );
 
     // create backstage deployment and wait for it to be ready
     await deployment.createBackstageDeployment();
@@ -368,15 +373,28 @@ test.describe("Configure Microsoft Provider", async () => {
   });
 
   test.afterAll(async () => {
-    console.log("Cleaning up...");
+    console.log("[TEST] Starting cleanup...");
     await deployment.killRunningProcess();
-    const graphClient = new MSGraphClient(
-      process.env.AUTH_PROVIDERS_AZURE_CLIENT_ID,
-      process.env.AUTH_PROVIDERS_AZURE_CLIENT_SECRET,
-      process.env.AUTH_PROVIDERS_AZURE_TENANT_ID,
-    );
-    await graphClient.removeAppRedirectUrlsAsync([
-      `${backstageUrl}/api/auth/microsoft/handler/frame`,
-    ]);
+
+    // Clean up Azure App Registration
+    try {
+      console.log("[TEST] Cleaning up Microsoft Azure App Registration...");
+      const graphClient = new MSClient(
+        process.env.AUTH_PROVIDERS_AZURE_CLIENT_ID,
+        process.env.AUTH_PROVIDERS_AZURE_CLIENT_SECRET,
+        process.env.AUTH_PROVIDERS_AZURE_TENANT_ID,
+      );
+
+      const redirectUrl = `${backstageUrl}/api/auth/microsoft/handler/frame`;
+      console.log(`[TEST] Removing redirect URL: ${redirectUrl}`);
+      await graphClient.removeAppRedirectUrlsAsync([redirectUrl]);
+      console.log("[TEST] Microsoft Azure App Registration cleanup completed");
+    } catch (error) {
+      console.error(
+        "[TEST] Failed to cleanup Microsoft Azure App Registration:",
+        error,
+      );
+      // Don't fail the test cleanup if Azure cleanup fails
+    }
   });
 });

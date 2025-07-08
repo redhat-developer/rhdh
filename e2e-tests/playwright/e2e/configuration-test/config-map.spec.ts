@@ -6,7 +6,7 @@ import { UIhelper } from "../../utils/ui-helper";
 test.describe("Change app-config at e2e test runtime", () => {
   // operator nightly does not require this test as RDS tls test also verifies runtime change
   test.skip(() => process.env.JOB_NAME.includes("operator"));
-  
+
   test("Verify title change after ConfigMap modification", async ({ page }) => {
     test.setTimeout(300000); // Increasing to 5 minutes
 

@@ -46,7 +46,7 @@ test.describe("GitHub Happy path", async () => {
   test("Verify Profile is Github Account Name in the Settings page", async () => {
     await page.goto("/settings");
     await expect(page).toHaveURL("/settings");
-    await uiHelper.verifyHeading(process.env.GH_USER2_ID,);
+    await uiHelper.verifyHeading(process.env.GH_USER2_ID);
     await uiHelper.verifyHeading(`User Entity: ${process.env.GH_USER2_ID}`);
   });
 
@@ -94,7 +94,6 @@ test.describe("GitHub Happy path", async () => {
   });
 
   test("Click login on the login popup and verify that Overview tab renders", async () => {
-
     await uiHelper.openCatalogSidebar("Component");
     await uiHelper.clickLink("Red Hat Developer Hub");
 

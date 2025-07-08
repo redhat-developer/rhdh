@@ -82,7 +82,6 @@ export default defineConfig({
       testIgnore: [
         "**/playwright/e2e/authProviders/github-happy-path.spec.ts", // temporarily disable
         "**/playwright/e2e/verify-tls-config-health-check.spec.ts",
-        "**/playwright/e2e/authProviders/ldap.spec.ts",
       ],
       retries: 1,
     },
