@@ -91,10 +91,7 @@ test.describe("Configure LDAP Provider", async () => {
       "DEFAULT_USER_PASSWORD",
       process.env.DEFAULT_USER_PASSWORD,
     );
-    deployment.addSecretData(
-      "RHBK_LDAP_REALM",
-      process.env.RHBK_LDAP_REALM,
-    );
+    deployment.addSecretData("RHBK_LDAP_REALM", process.env.RHBK_LDAP_REALM);
     deployment.addSecretData(
       "RHBK_LDAP_CLIENT_ID",
       process.env.RHBK_LDAP_CLIENT_ID,
@@ -103,18 +100,12 @@ test.describe("Configure LDAP Provider", async () => {
       "RHBK_LDAP_CLIENT_SECRET",
       process.env.RHBK_LDAP_CLIENT_SECRET,
     );
+    deployment.addSecretData("LDAP_BIND_DN", process.env.RHBK_LDAP_USER_BIND);
     deployment.addSecretData(
-      "RHBK_LDAP_USER_BIND",
-      process.env.RHBK_LDAP_USER_BIND,
-    );
-    deployment.addSecretData(
-      "RHBK_LDAP_USER_PASSWORD",
+      "LDAP_BIND_SECRET",
       process.env.RHBK_LDAP_USER_PASSWORD,
     );
-    deployment.addSecretData(
-      "RHBK_LDAP_TARGET",
-      process.env.RHBK_LDAP_TARGET,
-    );
+    deployment.addSecretData("LDAP_TARGET_URL", process.env.RHBK_LDAP_TARGET);
     deployment.addSecretData(
       "DEFAULT_USER_PASSWORD",
       process.env.DEFAULT_USER_PASSWORD,
@@ -122,6 +113,14 @@ test.describe("Configure LDAP Provider", async () => {
     deployment.addSecretData(
       "DEFAULT_USER_PASSWORD_2",
       process.env.DEFAULT_USER_PASSWORD_2,
+    );
+    deployment.addSecretData(
+      "LDAP_GROUPS_DN",
+      "OU=Groups,OU=RHDH Local,DC=rhdh,DC=test",
+    );
+    deployment.addSecretData(
+      "LDAP_USERS_DN",
+      "OU=Users,OU=RHDH Local,DC=rhdh,DC=test",
     );
     deployment.addSecretData("RHBK_BASE_URL", process.env.RHBK_BASE_URL);
     deployment.addSecretData("RHBK_REALM", process.env.RHBK_REALM);
@@ -143,7 +142,7 @@ test.describe("Configure LDAP Provider", async () => {
     await deployment.createSecret();
 
     // enable ldap login with ingestion through RHBK
-    await deployment.enableLDAPLoginWithIngestion()
+    await deployment.enableLDAPLoginWithIngestion();
     await deployment.setOIDCResolver("oidcLdapUuidMatchingAnnotation");
     await deployment.updateAllConfigs();
 
@@ -153,22 +152,27 @@ test.describe("Configure LDAP Provider", async () => {
       process.env.AUTH_PROVIDERS_ARM_CLIENT_ID!,
       process.env.AUTH_PROVIDERS_ARM_CLIENT_SECRET!,
       process.env.AUTH_PROVIDERS_ARM_TENANT_ID!,
-      process.env.AUTH_PROVIDERS_ARM_SUBSCRIPTION_ID!
+      process.env.AUTH_PROVIDERS_ARM_SUBSCRIPTION_ID!,
     );
-    
+
     // Allow public IP in NSG for E2E testing
     try {
-      const nsgConfig = await graphClient.allowPublicIpInNSG("ldap-test", "ldap-test-nsg", "AllowE2EJobs");
+      const nsgConfig = await graphClient.allowPublicIpInNSG(
+        "ldap-test",
+        "ldap-test-nsg",
+        "AllowE2EJobs",
+      );
       console.log(`[TEST] NSG access configured successfully`);
-      console.log(`[TEST] Rule created: ${nsgConfig.ruleName} for IP: ${nsgConfig.publicIp}`);
-      
+      console.log(
+        `[TEST] Rule created: ${nsgConfig.ruleName} for IP: ${nsgConfig.publicIp}`,
+      );
+
       // Store cleanup function for afterAll
       (test as any).nsgCleanup = nsgConfig.cleanup;
     } catch (error) {
       console.error("[TEST] Failed to configure NSG access:", error);
       // Continue with test even if NSG configuration fails
     }
-    
 
     // create backstage deployment and wait for it to be ready
     await deployment.createBackstageDeployment();
@@ -214,26 +218,46 @@ test.describe("Configure LDAP Provider", async () => {
         "testGroup",
         "testSubGroup",
         "testSubSubGroup",
-        "SubAdmins"
+        "SubAdmins",
       ]),
     ).toBe(true);
-    expect(await deployment.checkUserIsInGroup("rhdh-admin", "Admins")).toBe(true);
-    expect(await deployment.checkUserIsInGroup("user1", "All_Users")).toBe(true);
-    expect(await deployment.checkUserIsInGroup("user2", "All_Users")).toBe(true);
+    expect(await deployment.checkUserIsInGroup("rhdh-admin", "Admins")).toBe(
+      true,
+    );
+    expect(await deployment.checkUserIsInGroup("user1", "All_Users")).toBe(
+      true,
+    );
+    expect(await deployment.checkUserIsInGroup("user2", "All_Users")).toBe(
+      true,
+    );
 
-    expect(await deployment.checkGroupIsChildOfGroup("testsubgroup", "testgroup")).toBe(true);
-    expect(await deployment.checkGroupIsChildOfGroup("testsubsubgroup", "testsubgroup")).toBe(true);
-    expect(await deployment.checkGroupIsParentOfGroup("testgroup", "testsubgroup")).toBe(true);
-    expect(await deployment.checkGroupIsParentOfGroup("testsubgroup", "testsubsubgroup")).toBe(true);
+    expect(
+      await deployment.checkGroupIsChildOfGroup("testsubgroup", "testgroup"),
+    ).toBe(true);
+    expect(
+      await deployment.checkGroupIsChildOfGroup(
+        "testsubsubgroup",
+        "testsubgroup",
+      ),
+    ).toBe(true);
+    expect(
+      await deployment.checkGroupIsParentOfGroup("testgroup", "testsubgroup"),
+    ).toBe(true);
+    expect(
+      await deployment.checkGroupIsParentOfGroup(
+        "testsubgroup",
+        "testsubsubgroup",
+      ),
+    ).toBe(true);
   });
 
   test.afterAll(async () => {
     console.log("[TEST] Starting cleanup...");
-    
+
     // Clean up NSG rule
     try {
       const nsgCleanup = (test as any).nsgCleanup;
-      if (nsgCleanup && typeof nsgCleanup === 'function') {
+      if (nsgCleanup && typeof nsgCleanup === "function") {
         console.log("[TEST] Cleaning up NSG rule...");
         await nsgCleanup();
         console.log("[TEST] NSG cleanup completed");

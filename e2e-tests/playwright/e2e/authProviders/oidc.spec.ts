@@ -420,7 +420,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     );
     expect(ghLogin).toBe("Login successful");
     // Sign out for GitHub
-    await page.getByTitle('Sign out from GitHub').click();
+    await page.getByTitle("Sign out from GitHub").click();
 
     // Sign out for OIDC
     await page.goto("/settings");

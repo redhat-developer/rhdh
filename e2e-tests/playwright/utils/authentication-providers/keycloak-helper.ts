@@ -89,7 +89,9 @@ export class KeycloakHelper {
     try {
       console.log(`[KEYCLOAK] Finding user by username: ${username}`);
       const users = await this.kcAdminClient.users.find({ username });
-      console.log(`[KEYCLOAK] Found ${users.length} users with username: ${username}`);
+      console.log(
+        `[KEYCLOAK] Found ${users.length} users with username: ${username}`,
+      );
       return users[0];
     } catch (error) {
       console.error(`[KEYCLOAK] Failed to find user ${username}:`, error);
@@ -140,9 +142,14 @@ export class KeycloakHelper {
     try {
       console.log(`[KEYCLOAK] Adding user ${userId} to group ${groupId}`);
       await this.kcAdminClient.users.addToGroup({ id: userId, groupId });
-      console.log(`[KEYCLOAK] User ${userId} added to group ${groupId} successfully`);
+      console.log(
+        `[KEYCLOAK] User ${userId} added to group ${groupId} successfully`,
+      );
     } catch (error) {
-      console.error(`[KEYCLOAK] Failed to add user ${userId} to group ${groupId}:`, error);
+      console.error(
+        `[KEYCLOAK] Failed to add user ${userId} to group ${groupId}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -151,7 +158,9 @@ export class KeycloakHelper {
     try {
       console.log(`[KEYCLOAK] Removing user ${userId} from group ${groupId}`);
       await this.kcAdminClient.users.delFromGroup({ id: userId, groupId });
-      console.log(`[KEYCLOAK] User ${userId} removed from group ${groupId} successfully`);
+      console.log(
+        `[KEYCLOAK] User ${userId} removed from group ${groupId} successfully`,
+      );
     } catch (error) {
       console.error(
         `[KEYCLOAK] Failed to remove user ${userId} from group ${groupId}:`,
@@ -173,7 +182,9 @@ export class KeycloakHelper {
       const sessions = await this.kcAdminClient.users.listSessions({
         id: user.id,
       });
-      console.log(`[KEYCLOAK] Found ${sessions.length} sessions for user ${username}`);
+      console.log(
+        `[KEYCLOAK] Found ${sessions.length} sessions for user ${username}`,
+      );
 
       for (const session of sessions) {
         await this.kcAdminClient.realms.removeSession({
@@ -184,7 +195,10 @@ export class KeycloakHelper {
 
       console.log(`[KEYCLOAK] All sessions cleared for user ${username}`);
     } catch (error) {
-      console.error(`[KEYCLOAK] Failed to clear sessions for user ${username}:`, error);
+      console.error(
+        `[KEYCLOAK] Failed to clear sessions for user ${username}:`,
+        error,
+      );
       throw error;
     }
   }

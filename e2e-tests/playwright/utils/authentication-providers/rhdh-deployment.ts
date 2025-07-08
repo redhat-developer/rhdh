@@ -607,7 +607,9 @@ class RHDHDeployment {
         );
         return;
       } catch (error) {
-        console.log(`Timeout waiting for Backstage CRD to be available: ${error.message}`)
+        console.log(
+          `Timeout waiting for Backstage CRD to be available: ${error.message}`,
+        );
         if (Date.now() - startTime >= timeoutMs) {
           throw new Error(
             `Timeout waiting for Backstage CRD to be available: ${error.message}`,
@@ -1004,12 +1006,14 @@ class RHDHDeployment {
     console.log("Enabling LDAP login with ingestion...");
     //expect the config variable to be set
     expect(process.env.RHBK_BASE_URL).toBeDefined();
-    expect(process.env.RHBK_LDAP_REALM).toBeDefined(); //ldap-e2e-test
-    expect(process.env.RHBK_LDAP_CLIENT_ID).toBeDefined(); //ldap-client
-    expect(process.env.RHBK_LDAP_CLIENT_SECRET).toBeDefined(); //JyCgVLm5mBkDK05xlS0yEeNGuphx5YAh
-    expect(process.env.RHBK_LDAP_USER_BIND).toBeDefined(); //CN=RHDH Admin,OU=Users,OU=RHDH Local,DC=rhdh,DC=test
-    expect(process.env.RHBK_LDAP_USER_PASSWORD).toBeDefined(); //RandomPassword!2025!
-    expect(process.env.RHBK_LDAP_TARGET).toBeDefined(); //ldap://ldap-test.rhdh.test:389
+    expect(process.env.RHBK_LDAP_REALM).toBeDefined();
+    expect(process.env.RHBK_LDAP_CLIENT_ID).toBeDefined();
+    expect(process.env.RHBK_LDAP_CLIENT_SECRET).toBeDefined();
+    expect(process.env.LDAP_BIND_DN).toBeDefined();
+    expect(process.env.LDAP_TARGET_URL).toBeDefined();
+    expect(process.env.LDAP_BIND_SECRET).toBeDefined();
+    expect(process.env.LDAP_USERS_DN).toBeDefined();
+    expect(process.env.LDAP_GROUPS_DN).toBeDefined();
 
     // enable the catalog backend dynamic plugin
     // and set the required configuration properties
@@ -1020,35 +1024,36 @@ class RHDHDeployment {
     this.setAppConfigProperty("catalog.providers", {
       ldapOrg: {
         default: {
-          target: "${RHBK_LDAP_TARGET}",
+          target: "${LDAP_TARGET_URL}",
           bind: {
-            dn: "${RHBK_LDAP_USER_BIND}",
-            secret: "${RHBK_LDAP_USER_PASSWORD}"
+            dn: "${LDAP_BIND_DN}",
+            secret: "${LDAP_BIND_SECRET}",
           },
           users: [
             {
-              dn: "OU=Users,OU=RHDH Local,DC=rhdh,DC=test",
+              dn: "${LDAP_USERS_DN}",
               options: {
                 filter: "(uid=*)",
-                scope: "sub"
-              }
-            }
+                scope: "sub",
+              },
+            },
           ],
           groups: [
             {
-              dn: "OU=Groups,OU=RHDH Local,DC=rhdh,DC=test",
+              dn: "${LDAP_GROUPS_DN}",
               options: {
-                filter: "(&(objectClass=group)(groupType:1.2.840.113556.1.4.803:=2147483648))",
-                scope: "sub"
-              }
-            }
+                filter:
+                  "(&(objectClass=group)(groupType:1.2.840.113556.1.4.803:=2147483648))", // filter only security groups
+                scope: "sub",
+              },
+            },
           ],
           schedule: {
             frequency: "PT1M",
-            timeout: "PT1M"
-          }
-        }
-      }
+            timeout: "PT1M",
+          },
+        },
+      },
     });
 
     // enable the keycloak login provider

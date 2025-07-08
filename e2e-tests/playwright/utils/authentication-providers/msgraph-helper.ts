@@ -14,7 +14,12 @@ export class MSClient {
   private readonly clientSecret: string;
   private readonly subscriptionId?: string;
 
-  constructor(clientId: string, clientSecret: string, tenantId: string, subscriptionId?: string) {
+  constructor(
+    clientId: string,
+    clientSecret: string,
+    tenantId: string,
+    subscriptionId?: string,
+  ) {
     if (!clientId || !tenantId || !clientSecret) {
       console.error("Missing required credentials");
       throw new Error("Client ID, Tenant ID, and Client Secret are required");
@@ -51,7 +56,9 @@ export class MSClient {
 
   private initializeArmNetworkClient(): void {
     if (!this.subscriptionId) {
-      throw new Error("Subscription ID is required for ARM operations. Please provide it in the constructor.");
+      throw new Error(
+        "Subscription ID is required for ARM operations. Please provide it in the constructor.",
+      );
     }
 
     if (!this.clientSecretCredential) {
@@ -65,7 +72,7 @@ export class MSClient {
     if (!this.armNetworkClient) {
       this.armNetworkClient = new NetworkManagementClient(
         this.clientSecretCredential,
-        this.subscriptionId
+        this.subscriptionId,
       );
     }
   }
@@ -322,11 +329,15 @@ export class MSClient {
   async addAppRedirectUrlsAsync(redirectUrls: string[]): Promise<void> {
     this.ensureInitialized();
     try {
-      console.log(`[AZURE] Adding ${redirectUrls.length} redirect URLs to app: ${this.clientId}`);
+      console.log(
+        `[AZURE] Adding ${redirectUrls.length} redirect URLs to app: ${this.clientId}`,
+      );
       const currentUrls = await this.getAppRedirectUrlsAsync();
       const newUrls = [...new Set([...currentUrls, ...redirectUrls])];
 
-      console.log(`[AZURE] Updating app with ${newUrls.length} total redirect URLs`);
+      console.log(
+        `[AZURE] Updating app with ${newUrls.length} total redirect URLs`,
+      );
       await this.appClient
         ?.api(`/applications(appId='{${this.clientId}}')`)
         .update({
@@ -344,11 +355,15 @@ export class MSClient {
   async removeAppRedirectUrlsAsync(redirectUrls: string[]): Promise<void> {
     this.ensureInitialized();
     try {
-      console.log(`[AZURE] Removing ${redirectUrls.length} redirect URLs from app: ${this.clientId}`);
+      console.log(
+        `[AZURE] Removing ${redirectUrls.length} redirect URLs from app: ${this.clientId}`,
+      );
       const currentUrls = await this.getAppRedirectUrlsAsync();
       const newUrls = currentUrls.filter((url) => !redirectUrls.includes(url));
 
-      console.log(`[AZURE] Updating app with ${newUrls.length} remaining redirect URLs`);
+      console.log(
+        `[AZURE] Updating app with ${newUrls.length} remaining redirect URLs`,
+      );
       await this.appClient
         ?.api(`/applications(appId='{${this.clientId}}')`)
         .update({
@@ -366,7 +381,9 @@ export class MSClient {
   async updateAppRedirectUrlsAsync(redirectUrls: string[]): Promise<void> {
     this.ensureInitialized();
     try {
-      console.log(`[AZURE] Updating redirect URLs for app: ${this.clientId} with ${redirectUrls.length} URLs`);
+      console.log(
+        `[AZURE] Updating redirect URLs for app: ${this.clientId} with ${redirectUrls.length} URLs`,
+      );
       await this.appClient
         ?.api(`/applications(appId='{${this.clientId}}')`)
         .update({
@@ -385,15 +402,27 @@ export class MSClient {
     return user.replace("@", "_");
   }
 
-  async getNetworkSecurityGroupRuleAsync(resourceGroupName: string, nsgName: string, ruleName: string): Promise<any> {
+  async getNetworkSecurityGroupRuleAsync(
+    resourceGroupName: string,
+    nsgName: string,
+    ruleName: string,
+  ): Promise<any> {
     this.ensureArmInitialized();
     try {
-      console.log(`Getting network security group rule ${ruleName} from NSG ${nsgName} in resource group ${resourceGroupName}`);
-      
-      return await this.armNetworkClient?.securityRules.get(resourceGroupName, nsgName, ruleName);
+      console.log(
+        `Getting network security group rule ${ruleName} from NSG ${nsgName} in resource group ${resourceGroupName}`,
+      );
+
+      return await this.armNetworkClient?.securityRules.get(
+        resourceGroupName,
+        nsgName,
+        ruleName,
+      );
     } catch (e) {
       if (e?.statusCode === 404) {
-        console.log(`Network security group rule ${ruleName} not found in NSG ${nsgName}`);
+        console.log(
+          `Network security group rule ${ruleName} not found in NSG ${nsgName}`,
+        );
         return null;
       }
       console.error("Failed to get network security group rule:", e);
@@ -405,14 +434,16 @@ export class MSClient {
     try {
       console.log("Fetching public IP address...");
       const response = await fetch("https://api.ipify.org?format=json");
-      
+
       if (!response.ok) {
-        throw new Error(`Failed to fetch public IP: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `Failed to fetch public IP: ${response.status} ${response.statusText}`,
+        );
       }
-      
+
       const data = await response.json();
       const publicIp = data.ip;
-      
+
       console.log(`Public IP address: ${publicIp}`);
       return publicIp;
     } catch (e) {
@@ -421,19 +452,31 @@ export class MSClient {
     }
   }
 
-  async getNetworkSecurityGroupAsync(resourceGroupName: string, nsgName: string): Promise<any> {
+  async getNetworkSecurityGroupAsync(
+    resourceGroupName: string,
+    nsgName: string,
+  ): Promise<any> {
     this.ensureArmInitialized();
     try {
-      console.log(`Getting network security group ${nsgName} from resource group ${resourceGroupName}`);
-      
-      return await this.armNetworkClient?.networkSecurityGroups.get(resourceGroupName, nsgName);
+      console.log(
+        `Getting network security group ${nsgName} from resource group ${resourceGroupName}`,
+      );
+
+      return await this.armNetworkClient?.networkSecurityGroups.get(
+        resourceGroupName,
+        nsgName,
+      );
     } catch (e) {
       console.error("Failed to get network security group:", e);
       throw e;
     }
   }
 
-  async allowPublicIpInNSG(resourceGroupName: string, nsgName: string, baseRuleName: string = "AllowE2EJobs"): Promise<{
+  async allowPublicIpInNSG(
+    resourceGroupName: string,
+    nsgName: string,
+    baseRuleName: string = "AllowE2EJobs",
+  ): Promise<{
     publicIp: string;
     ruleName: string;
     resourceGroupName: string;
@@ -441,9 +484,9 @@ export class MSClient {
     cleanup: () => Promise<void>;
   }> {
     this.ensureArmInitialized();
-    
+
     try {
-      // Step 1: Get public IP
+      // Step 1: Get public IP (for logging purposes only)
       console.log("[NSG] Getting current public IP address...");
       const publicIp = await this.getPublicIpAsync();
       console.log(`[NSG] Public IP obtained: ${publicIp}`);
@@ -455,58 +498,79 @@ export class MSClient {
       console.log(`[NSG] Generated unique rule name: ${ruleName}`);
 
       // Step 3: Verify NSG exists
-      console.log(`[NSG] Verifying NSG exists: ${nsgName} in resource group: ${resourceGroupName}`);
-      const nsg = await this.getNetworkSecurityGroupAsync(resourceGroupName, nsgName);
+      console.log(
+        `[NSG] Verifying NSG exists: ${nsgName} in resource group: ${resourceGroupName}`,
+      );
+      const nsg = await this.getNetworkSecurityGroupAsync(
+        resourceGroupName,
+        nsgName,
+      );
       console.log(`[NSG] NSG verified: ${nsg.name} (ID: ${nsg.id})`);
 
       // Step 4: Get existing rule to use as template
       console.log(`[NSG] Getting existing rule as template: ${baseRuleName}`);
-      const templateRule = await this.getNetworkSecurityGroupRuleAsync(resourceGroupName, nsgName, baseRuleName);
-      
-      if (!templateRule) {
-        throw new Error(`Template rule ${baseRuleName} not found in NSG ${nsgName}`);
-      }
-      console.log(`[NSG] Template rule found: ${templateRule.name} (Priority: ${templateRule.priority})`);
+      const templateRule = await this.getNetworkSecurityGroupRuleAsync(
+        resourceGroupName,
+        nsgName,
+        baseRuleName,
+      );
 
-      // Step 5: Create new rule with public IP
+      if (!templateRule) {
+        throw new Error(
+          `Template rule ${baseRuleName} not found in NSG ${nsgName}`,
+        );
+      }
+      console.log(
+        `[NSG] Template rule found: ${templateRule.name} (Priority: ${templateRule.priority})`,
+      );
+
+      // Step 5: Create new rule with wildcard IP (*)
       // Find an available priority to avoid conflicts
-      const existingRules = await this.armNetworkClient?.securityRules.list(resourceGroupName, nsgName);
+      const existingRules = await this.armNetworkClient?.securityRules.list(
+        resourceGroupName,
+        nsgName,
+      );
       const existingPriorities = new Set();
-      
+
       for await (const rule of existingRules || []) {
         existingPriorities.add(rule.priority);
       }
-      
+
       // Find the first available priority starting from 100
       let availablePriority = 200;
       while (existingPriorities.has(availablePriority)) {
         availablePriority++;
       }
-      
-      console.log(`[NSG] Template rule priority: ${templateRule.priority}, Using available priority: ${availablePriority}`);
-      
+
+      console.log(
+        `[NSG] Template rule priority: ${templateRule.priority}, Using available priority: ${availablePriority}`,
+      );
+
       const newRule = {
         ...templateRule,
         name: ruleName,
         priority: availablePriority,
-        sourceAddressPrefix: publicIp,
+        sourceAddressPrefix: "*", // Allow all IPs instead of specific public IP
         sourceAddressPrefixes: null, // Use single IP instead of array
-        description: `Temporary E2E test rule for IP ${publicIp} - Created at ${new Date().toISOString()}`
+        description: `Temporary E2E test rule allowing all IPs - Created at ${new Date().toISOString()}`,
       };
 
-      console.log(`[NSG] Creating new rule: ${ruleName} with IP: ${publicIp}`);
-      console.log(`[NSG] Rule details: Priority=${newRule.priority}, Protocol=${newRule.protocol}, Access=${newRule.access}`);
-      
-      const rulePoller = await this.armNetworkClient?.securityRules.beginCreateOrUpdate(
-        resourceGroupName, 
-        nsgName, 
-        ruleName, 
-        newRule
+      console.log(`[NSG] Creating new rule: ${ruleName} with wildcard IP (*)`);
+      console.log(
+        `[NSG] Rule details: Priority=${newRule.priority}, Protocol=${newRule.protocol}, Access=${newRule.access}`,
       );
-      
+
+      const rulePoller =
+        await this.armNetworkClient?.securityRules.beginCreateOrUpdate(
+          resourceGroupName,
+          nsgName,
+          ruleName,
+          newRule,
+        );
+
       console.log(`[NSG] Waiting for rule creation to complete...`);
       const createdRule = await rulePoller.pollUntilDone();
-      
+
       console.log(`[NSG] Rule created successfully: ${ruleName}`);
       console.log(`[NSG] Rule ID: ${createdRule.id}`);
 
@@ -515,25 +579,35 @@ export class MSClient {
         try {
           console.log(`[NSG] Starting cleanup for rule: ${ruleName}`);
           console.log(`[NSG] Verifying rule exists before deletion...`);
-          
-          const existingRule = await this.getNetworkSecurityGroupRuleAsync(resourceGroupName, nsgName, ruleName);
+
+          const existingRule = await this.getNetworkSecurityGroupRuleAsync(
+            resourceGroupName,
+            nsgName,
+            ruleName,
+          );
           if (!existingRule) {
-            console.log(`[NSG] Rule ${ruleName} not found during cleanup - may have been already deleted`);
+            console.log(
+              `[NSG] Rule ${ruleName} not found during cleanup - may have been already deleted`,
+            );
             return;
           }
 
           console.log(`[NSG] Deleting rule: ${ruleName}`);
-          const deletePoller = await this.armNetworkClient?.securityRules.beginDelete(resourceGroupName, nsgName, ruleName);
+          const deletePoller =
+            await this.armNetworkClient?.securityRules.beginDelete(
+              resourceGroupName,
+              nsgName,
+              ruleName,
+            );
           console.log(`[NSG] Waiting for rule deletion to complete...`);
           await deletePoller.pollUntilDone();
           console.log(`[NSG] Rule deleted successfully: ${ruleName}`);
-          
         } catch (error) {
           console.error(`[NSG] Failed to cleanup rule ${ruleName}:`, error);
           console.error(`[NSG] Cleanup error details:`, {
             message: error.message,
             statusCode: error.statusCode,
-            code: error.code
+            code: error.code,
           });
           // Don't throw - cleanup failures shouldn't break tests
         }
@@ -544,16 +618,15 @@ export class MSClient {
         ruleName,
         resourceGroupName,
         nsgName,
-        cleanup
+        cleanup,
       };
-
     } catch (error) {
       console.error(`[NSG] Failed to allow public IP in NSG:`, error);
       console.error(`[NSG] Error details:`, {
         message: error.message,
         statusCode: error.statusCode,
         code: error.code,
-        body: error.body
+        body: error.body,
       });
       throw error;
     }

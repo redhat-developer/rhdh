@@ -122,11 +122,13 @@ test.describe("Configure Microsoft Provider", async () => {
       process.env.AUTH_PROVIDERS_AZURE_CLIENT_SECRET,
       process.env.AUTH_PROVIDERS_AZURE_TENANT_ID,
     );
-    
+
     const redirectUrl = `${backstageUrl}/api/auth/microsoft/handler/frame`;
     console.log(`[TEST] Adding redirect URL: ${redirectUrl}`);
     await graphClient.addAppRedirectUrlsAsync([redirectUrl]);
-    console.log("[TEST] Microsoft Azure App Registration configured successfully");
+    console.log(
+      "[TEST] Microsoft Azure App Registration configured successfully",
+    );
 
     // create backstage deployment and wait for it to be ready
     await deployment.createBackstageDeployment();
@@ -373,7 +375,7 @@ test.describe("Configure Microsoft Provider", async () => {
   test.afterAll(async () => {
     console.log("[TEST] Starting cleanup...");
     await deployment.killRunningProcess();
-    
+
     // Clean up Azure App Registration
     try {
       console.log("[TEST] Cleaning up Microsoft Azure App Registration...");
@@ -382,13 +384,16 @@ test.describe("Configure Microsoft Provider", async () => {
         process.env.AUTH_PROVIDERS_AZURE_CLIENT_SECRET,
         process.env.AUTH_PROVIDERS_AZURE_TENANT_ID,
       );
-      
+
       const redirectUrl = `${backstageUrl}/api/auth/microsoft/handler/frame`;
       console.log(`[TEST] Removing redirect URL: ${redirectUrl}`);
       await graphClient.removeAppRedirectUrlsAsync([redirectUrl]);
       console.log("[TEST] Microsoft Azure App Registration cleanup completed");
     } catch (error) {
-      console.error("[TEST] Failed to cleanup Microsoft Azure App Registration:", error);
+      console.error(
+        "[TEST] Failed to cleanup Microsoft Azure App Registration:",
+        error,
+      );
       // Don't fail the test cleanup if Azure cleanup fails
     }
   });
