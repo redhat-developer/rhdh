@@ -142,6 +142,7 @@ backend.add(import('@backstage/plugin-search-backend-module-catalog'));
 // TODO: We should test it more deeply. The structure is not exactly the same as the old backend implementation
 backend.add(import('@backstage/plugin-events-backend'));
 
+backend.add(import('@backstage/plugin-permission-backend'));
 backend.add(import('@backstage-community/plugin-rbac-backend'));
 backend.add(
   import('@backstage-community/plugin-scaffolder-backend-module-annotator'),

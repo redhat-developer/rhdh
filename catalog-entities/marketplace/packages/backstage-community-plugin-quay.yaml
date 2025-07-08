@@ -18,10 +18,10 @@ metadata:
 spec:
   packageName: "@backstage-community/plugin-quay"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-quay
-  version: 1.19.0
+  version: 1.21.1
   backstage:
     role: frontend-plugin
-    supportedVersions: 1.36.1
+    supportedVersions: 1.39.1
   author: Red Hat
   support: production
   lifecycle: active

@@ -465,8 +465,8 @@ dynamicPlugins:
               width: 1500
               height: 800
     backstage-community.plugin-analytics-provider-segment:
-      apiFactories:
-        - importName: SegmentAnalyticsApi
+      analyticsApiExtensions:
+        - importName: SegmentAnalytics
     backstage-community.plugin-rbac:
       appIcons:
         - name: rbacIcon
@@ -494,5 +494,22 @@ dynamicPlugins:
           config:
             path: marketplace
             title: Catalog
+    red-hat-developer-hub.backstage-plugin-adoption-insights:
+      appIcons:
+        - name: adoptionInsightsIcon
+          importName: AdoptionInsightsIcon
+      dynamicRoutes:
+        - path: /adoption-insights
+          importName: AdoptionInsightsPage
+          menuItem:
+            icon: adoptionInsightsIcon
+            text: Adoption Insights
+      menuItems:
+        adoption-insights:
+          parent: admin
+          icon: adoptionInsightsIcon
+    red-hat-developer-hub.backstage-plugin-analytics-module-adoption-insights:
+      analyticsApiExtensions:
+        - importName: AdoptionInsightsAnalyticsApi
 app:
   title: Red Hat Developer Hub

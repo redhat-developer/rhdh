@@ -625,35 +625,35 @@ plugins:
               - mountPoint: application/listener
                 importName: VisitListener
               - mountPoint: home.page/cards
-                importName: SearchBar
+                importName: OnboardingSection
                 config:
                   layouts:
-                    xl: { w: 10, h: 1, x: 1 }
-                    lg: { w: 10, h: 1, x: 1 }
-                    md: { w: 10, h: 1, x: 1 }
-                    sm: { w: 10, h: 1, x: 1 }
-                    xs: { w: 12, h: 1 }
-                    xxs: { w: 12, h: 1 }
+                    xl: { w: 12, h: 5 }
+                    lg: { w: 12, h: 5 }
+                    md: { w: 12, h: 5 }
+                    sm: { w: 12, h: 5 }
+                    xs: { w: 12, h: 7 }
+                    xxs: { w: 12, h: 13 }
               - mountPoint: home.page/cards
-                importName: QuickAccessCard
+                importName: EntitySection
                 config:
                   layouts:
-                    xl: { w: 7, h: 8 }
-                    lg: { w: 7, h: 8 }
-                    md: { w: 7, h: 8 }
-                    sm: { w: 12, h: 8 }
-                    xs: { w: 12, h: 8 }
-                    xxs: { w: 12, h: 8 }
+                    xl: { w: 12, h: 6 }
+                    lg: { w: 12, h: 6 }
+                    md: { w: 12, h: 6 }
+                    sm: { w: 12, h: 6 }
+                    xs: { w: 12, h: 10 }
+                    xxs: { w: 12, h: 14.5 }
               - mountPoint: home.page/cards
-                importName: CatalogStarredEntitiesCard
+                importName: TemplateSection
                 config:
                   layouts:
-                    xl: { w: 5, h: 4, x: 7 }
-                    lg: { w: 5, h: 4, x: 7 }
-                    md: { w: 5, h: 4, x: 7 }
-                    sm: { w: 12, h: 4 }
-                    xs: { w: 12, h: 4 }
-                    xxs: { w: 12, h: 4 }
+                    xl: { w: 12, h: 5 }
+                    lg: { w: 12, h: 5 }
+                    md: { w: 12, h: 5 }
+                    sm: { w: 12, h: 5 }
+                    xs: { w: 12, h: 7.5 }
+                    xxs: { w: 12, h: 13.5 }
 
   # Techdocs
   - package: ./dynamic-plugins/dist/backstage-plugin-techdocs-backend-dynamic
@@ -1060,8 +1060,8 @@ plugins:
       dynamicPlugins:
         frontend:
           backstage-community.plugin-analytics-provider-segment:
-            apiFactories:
-              - importName: SegmentAnalyticsApi
+            analyticsApiExtensions:
+              - importName: SegmentAnalytics
       backend:
         csp:
           script-src:
@@ -1135,37 +1135,80 @@ plugins:
                   title: Catalog
 
   # Group: Orchestrator
-  - package: "@redhat/backstage-plugin-orchestrator@1.5.1"
+  - package: "@redhat/backstage-plugin-orchestrator@1.6.0"
     disabled: true
-    integrity: sha512-7VOe+XGTUzrdO/av0DNHbydOjB3Lo+XdCs6fj3JVODLP7Ypd3GXHf/nssYxG5ZYC9F1t9MNeguE2bZOB6ckqTA==
+    integrity: sha512-fOSJv2PgtD2urKwBM7p9W6gV/0UIHSf4pkZ9V/wQO0eg0Zi5Mys/CL1ba3nO9x9l84MX11UBZ2r7PPVJPrmOtw==
     pluginConfig:
       dynamicPlugins:
         frontend:
           red-hat-developer-hub.backstage-plugin-orchestrator:
             appIcons:
               - importName: OrchestratorIcon
-                module: OrchestratorPlugin
                 name: orchestratorIcon
             dynamicRoutes:
               - importName: OrchestratorPage
                 menuItem:
                   icon: orchestratorIcon
                   text: Orchestrator
-                module: OrchestratorPlugin
                 path: /orchestrator
 
-  - package: "@redhat/backstage-plugin-orchestrator-backend-dynamic@1.5.1"
+  - package: "@redhat/backstage-plugin-orchestrator-backend-dynamic@1.6.0"
     disabled: true
-    integrity: sha512-VIenFStdq9QvvmgmEMG8O7b2wqIebvEcqNeJ9SWZ8jen9t+efTK6D3Rde74LQ1no1QaHLx8RoxNCOuTUEF8O/g==
+    integrity: sha512-Kr55YbuVwEADwGef9o9wyimcgHmiwehPeAtVHa9g2RQYoSPEa6BeOlaPzB6W5Ke3M2bN/0j0XXtpLuvrlXQogA==
     pluginConfig:
       orchestrator:
         dataIndexService:
           url: http://sonataflow-platform-data-index-service
 
-  - package: "@redhat/backstage-plugin-scaffolder-backend-module-orchestrator-dynamic@1.5.1"
+  - package: "@redhat/backstage-plugin-scaffolder-backend-module-orchestrator-dynamic@1.6.0"
     disabled: true
-    integrity: sha512-bnVQjVsUZ470Vgm2kd5Lo/bVa2fF0q4GufBDc/8oTQsnP3zZJQqKFvFElBTCjY76RqkECydlvZ1UFybSzvockQ==
+    integrity: sha512-Bueeix4661fXEnfJ9y31Yw91LXJgw6hJUG7lPVdESCi9VwBCjDB9Rm8u2yPqP8sriwr0OMtKtqD+Odn3LOPyVw==
     pluginConfig:
       orchestrator:
         dataIndexService:
           url: http://sonataflow-platform-data-index-service
+
+  - package: "@redhat/backstage-plugin-orchestrator-form-widgets@1.6.0"
+    disabled: true
+    integrity: sha512-Tqn6HO21Q1TQ7TFUoRhwBVCtSBzbQYz+OaanzzIB0R24O6YtVx3wR7Chtr5TzC05Vz5GkBO1+FZid8BKpqljgA==
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets: { }
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-adoption-insights
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-adoption-insights:
+            appIcons:
+              - name: adoptionInsightsIcon
+                importName: AdoptionInsightsIcon
+            dynamicRoutes:
+              - path: /adoption-insights
+                importName: AdoptionInsightsPage
+                menuItem:
+                  icon: adoptionInsightsIcon
+                  text: Adoption Insights
+            menuItems:
+              adoption-insights:
+                parent: admin
+                icon: adoptionInsightsIcon
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-adoption-insights-backend-dynamic
+    disabled: false
+    pluginConfig:
+      app:
+        analytics:
+          adoptionInsights:
+            maxBufferSize: 20
+            flushInterval: 5000
+            debug: false
+            licensedUsers: 100
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-analytics-module-adoption-insights-dynamic
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-analytics-module-adoption-insights:
+            analyticsApiExtensions:
+              - importName: AdoptionInsightsAnalyticsApi
