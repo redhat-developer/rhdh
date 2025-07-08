@@ -1060,8 +1060,8 @@ plugins:
       dynamicPlugins:
         frontend:
           backstage-community.plugin-analytics-provider-segment:
-            apiFactories:
-              - importName: SegmentAnalyticsApi
+            analyticsApiExtensions:
+              - importName: SegmentAnalytics
       backend:
         csp:
           script-src:
@@ -1175,3 +1175,40 @@ plugins:
       dynamicPlugins:
         frontend:
           red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets: { }
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-adoption-insights
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-adoption-insights:
+            appIcons:
+              - name: adoptionInsightsIcon
+                importName: AdoptionInsightsIcon
+            dynamicRoutes:
+              - path: /adoption-insights
+                importName: AdoptionInsightsPage
+                menuItem:
+                  icon: adoptionInsightsIcon
+                  text: Adoption Insights
+            menuItems:
+              adoption-insights:
+                parent: admin
+                icon: adoptionInsightsIcon
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-adoption-insights-backend-dynamic
+    disabled: false
+    pluginConfig:
+      app:
+        analytics:
+          adoptionInsights:
+            maxBufferSize: 20
+            flushInterval: 5000
+            debug: false
+            licensedUsers: 100
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-analytics-module-adoption-insights-dynamic
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-analytics-module-adoption-insights:
+            analyticsApiExtensions:
+              - importName: AdoptionInsightsAnalyticsApi
