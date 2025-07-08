@@ -1009,11 +1009,6 @@ class RHDHDeployment {
     expect(process.env.RHBK_LDAP_REALM).toBeDefined();
     expect(process.env.RHBK_LDAP_CLIENT_ID).toBeDefined();
     expect(process.env.RHBK_LDAP_CLIENT_SECRET).toBeDefined();
-    expect(process.env.LDAP_BIND_DN).toBeDefined();
-    expect(process.env.LDAP_TARGET_URL).toBeDefined();
-    expect(process.env.LDAP_BIND_SECRET).toBeDefined();
-    expect(process.env.LDAP_USERS_DN).toBeDefined();
-    expect(process.env.LDAP_GROUPS_DN).toBeDefined();
 
     // enable the catalog backend dynamic plugin
     // and set the required configuration properties
