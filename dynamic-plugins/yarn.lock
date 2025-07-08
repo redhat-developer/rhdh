@@ -3298,13 +3298,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-catalog-backend-module-keycloak@npm:3.12.0":
-  version: 3.12.0
-  resolution: "@backstage-community/plugin-catalog-backend-module-keycloak@npm:3.12.0"
+"@backstage-community/plugin-catalog-backend-module-keycloak@npm:3.12.1":
+  version: 3.12.1
+  resolution: "@backstage-community/plugin-catalog-backend-module-keycloak@npm:3.12.1"
   dependencies:
     "@backstage/backend-plugin-api": ^1.3.1
     "@backstage/catalog-model": ^1.7.4
     "@backstage/errors": ^1.2.7
+    "@backstage/plugin-catalog-backend-module-logs": ^0.1.10
     "@backstage/plugin-catalog-node": ^1.17.0
     "@keycloak/keycloak-admin-client": 26.1.4
     "@opentelemetry/api": ^1.9.0
@@ -3313,7 +3314,7 @@ __metadata:
     p-limit: ^6.1.0
     pg-format: ^1.0.4
     uuid: ^9.0.1
-  checksum: d8c08025e610c090b7a3113fe53aa80ec93d6b9284b4c08f523c38d6c7eaff1f8040e4641bc0958684d1cc7e07810b239ff5fd46424fc9bea098e3f649cbcb55
+  checksum: 7f9f914bd7cbb91d759035ceef4809980dbbf30a3b348681576367be0a926fa09d0d3832508c2cc85caa7300292a3d75da79e2cb4e8e091ed293de30abbe737b
   languageName: node
   linkType: hard
 
@@ -6554,6 +6555,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@backstage/plugin-catalog-backend-module-logs@npm:^0.1.10":
+  version: 0.1.11
+  resolution: "@backstage/plugin-catalog-backend-module-logs@npm:0.1.11"
+  dependencies:
+    "@backstage/backend-plugin-api": ^1.4.0
+    "@backstage/plugin-catalog-backend": ^2.1.0
+    "@backstage/plugin-events-node": ^0.4.12
+  checksum: b4d586071b87bd87479f4bc75bd32b41a2486d06e0f9c8a9196cda5fa34e3a28140232f53a0768c78f439d8b050b12064f5afb608419aef104cf2dfc4c476a85
+  languageName: node
+  linkType: hard
+
 "@backstage/plugin-catalog-backend-module-msgraph@npm:0.7.0":
   version: 0.7.0
   resolution: "@backstage/plugin-catalog-backend-module-msgraph@npm:0.7.0"
@@ -6586,7 +6598,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-catalog-backend@npm:^2.0.0":
+"@backstage/plugin-catalog-backend@npm:^2.0.0, @backstage/plugin-catalog-backend@npm:^2.1.0":
   version: 2.1.0
   resolution: "@backstage/plugin-catalog-backend@npm:2.1.0"
   dependencies:
@@ -18834,7 +18846,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backstage-community-plugin-catalog-backend-module-keycloak@workspace:wrappers/backstage-community-plugin-catalog-backend-module-keycloak-dynamic"
   dependencies:
-    "@backstage-community/plugin-catalog-backend-module-keycloak": 3.12.0
+    "@backstage-community/plugin-catalog-backend-module-keycloak": 3.12.1
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.6.1
     typescript: 5.8.3

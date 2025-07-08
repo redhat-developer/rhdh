@@ -369,6 +369,19 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     );
   });
 
+  test(`Ingestion of users and groups with invalid characters: check sanitize[User/Group]NameTransformer`, async () => {
+    expect(
+      await deployment.checkUserIsIngestedInCatalog([
+        "Invalid Username",
+      ]),
+    ).toBe(true);
+    expect(
+      await deployment.checkGroupIsIngestedInCatalog([
+        "invalid@groupname",
+      ]),
+    ).toBe(true);
+  });
+
   test("Ensure Guest login is disabled when setting environment to production", async () => {
     await page.goto("/");
     await uiHelper.verifyHeading("Select a sign-in method");
