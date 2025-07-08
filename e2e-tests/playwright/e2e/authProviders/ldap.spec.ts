@@ -60,6 +60,10 @@ test.describe("Configure LDAP Provider", async () => {
     expect(process.env.RHBK_LDAP_USER_BIND).toBeDefined();
     expect(process.env.RHBK_LDAP_USER_PASSWORD).toBeDefined();
     expect(process.env.RHBK_LDAP_TARGET).toBeDefined();
+    expect(process.env.RHBK_BASE_URL).toBeDefined();
+    expect(process.env.RHBK_REALM).toBeDefined();
+    expect(process.env.RHBK_CLIENT_ID).toBeDefined();
+    expect(process.env.RHBK_CLIENT_SECRET).toBeDefined();
     expect(process.env.AUTH_PROVIDERS_ARM_CLIENT_ID).toBeDefined();
     expect(process.env.AUTH_PROVIDERS_ARM_CLIENT_SECRET).toBeDefined();
     expect(process.env.AUTH_PROVIDERS_ARM_SUBSCRIPTION_ID).toBeDefined();
@@ -110,6 +114,30 @@ test.describe("Configure LDAP Provider", async () => {
     deployment.addSecretData(
       "RHBK_LDAP_TARGET",
       process.env.RHBK_LDAP_TARGET,
+    );
+    deployment.addSecretData(
+      "DEFAULT_USER_PASSWORD",
+      process.env.DEFAULT_USER_PASSWORD,
+    );
+    deployment.addSecretData(
+      "DEFAULT_USER_PASSWORD_2",
+      process.env.DEFAULT_USER_PASSWORD_2,
+    );
+    deployment.addSecretData("RHBK_BASE_URL", process.env.RHBK_BASE_URL);
+    deployment.addSecretData("RHBK_REALM", process.env.RHBK_REALM);
+    deployment.addSecretData("RHBK_CLIENT_ID", process.env.RHBK_CLIENT_ID);
+    deployment.addSecretData(
+      "RHBK_CLIENT_SECRET",
+      process.env.RHBK_CLIENT_SECRET,
+    );
+
+    deployment.addSecretData(
+      "AUTH_PROVIDERS_GH_ORG_CLIENT_ID",
+      process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_ID,
+    );
+    deployment.addSecretData(
+      "AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET",
+      process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET,
     );
 
     await deployment.createSecret();
