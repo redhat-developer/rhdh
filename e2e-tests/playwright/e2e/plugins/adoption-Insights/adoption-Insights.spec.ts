@@ -30,7 +30,6 @@ test.describe.serial("Test Adoption Insights", () => {
     
 
     test("Check UI navigation by nav bar when adoption-insights is enabled", async () => {
-      await testHelper.waitUntilApiCallSucceeds(page);
       await uiHelper.openSidebarButton("Administration"); 
       await uiHelper.clickLink('Adoption Insights');
 
