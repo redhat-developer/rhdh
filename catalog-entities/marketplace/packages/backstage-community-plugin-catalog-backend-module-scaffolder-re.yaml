@@ -29,5 +29,5 @@ spec:
   support: tech-preview
   lifecycle: active
   partOf:
-    - backstage-community-scaffolder-relation-processor-catalog-module
+    - scaffolder-relation-processor-catalog-integration
   appConfigExamples: []

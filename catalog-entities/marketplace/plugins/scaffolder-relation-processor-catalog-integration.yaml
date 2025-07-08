@@ -51,4 +51,4 @@ spec:
     for further details regarding the configuration required.
 
   packages:
-    - backstage-plugin-catalog-backend-module-gitlab-org
+    - backstage-community-plugin-catalog-backend-module-scaffolder-re
