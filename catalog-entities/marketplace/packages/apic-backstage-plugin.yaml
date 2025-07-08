@@ -1,0 +1,27 @@
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: apic-backstage
+  namespace: apiconnect
+  title: "@apiconnect/apic-backstage"
+  links:
+    - url: https://github.com/ibm-apiconnect/backstage/blob/main/plugins/apic-backstage/README.md
+      title: Homepage
+    - title: Source Code
+      url: https://github.com/ibm-apiconnect/backstage/tree/main/plugins/apic-backstage
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/ibm-apiconnect/backstage
+  tags: []
+spec:
+  packageName: "apic-backstage"
+  dynamicArtifact: ./dynamic-plugins/dist/apic-backstage #oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/apic-backstage:pr_1233__1.0.0!apic-backstage
+  version: 1.0.0
+  backstage:
+    role: backend-plugin
+    supportedVersions: 1.35.1
+  author: IBM
+  support: production
+  lifecycle: active
+  
+  appConfigExamples: []
