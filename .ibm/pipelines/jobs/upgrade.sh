@@ -8,8 +8,16 @@ handle_ocp_helm_upgrade() {
   export NAME_SPACE_POSTGRES_DB="${NAME_SPACE}-postgres-external-db"
   export DEPLOYMENT_NAME="rhdh-backstage"
   export QUAY_REPO_BASE="rhdh/rhdh-hub-rhel9"
-  export TAG_NAME_BASE="1.5"
-  export HELM_CHART_VALUE_FILE_NAME_BASE="values_showcase_${TAG_NAME_BASE}.yaml"
+  
+  # Dynamically determine the latest release version
+  export TAG_NAME_BASE=$(get_latest_release_version)
+  if [[ $? -ne 0 ]]; then
+    echo "Failed to determine latest release version. Exiting."
+    exit 1
+  fi
+  echo "Using latest release version: ${TAG_NAME_BASE}"
+  
+  export HELM_CHART_VALUE_FILE_NAME_BASE="values_showcase_upgrade-base.yaml"
 
   oc_login
 

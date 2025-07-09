@@ -1127,3 +1127,41 @@ to_lowercase() {
     echo "${1,,}"
   fi
 }
+
+# Function to get the appropriate release version based on current branch
+get_latest_release_version() {
+  local current_branch
+  current_branch=$(git branch --show-current)
+  
+  # Get all remote release branches, filter out PR branches, extract version numbers, and sort them
+  local release_versions
+  release_versions=$(git branch -r | grep "release-" | grep -v "pr-bump" | sed 's/.*release-//' | sort -V)
+  
+  if [[ -z "$release_versions" ]]; then
+    echo "Error: No release branches found" >&2
+    return 1
+  fi
+  
+  # Check if current branch is a release branch
+  if [[ "$current_branch" =~ ^release-[0-9]+\.[0-9]+$ ]]; then
+    # Extract version from current branch
+    local current_version
+    current_version=$(echo "$current_branch" | sed 's/release-//')
+    
+    # Find the previous version (the one before current_version)
+    local previous_version
+    previous_version=$(echo "$release_versions" | grep -B1 "^${current_version}$" | grep -v "^${current_version}$" | tail -1)
+    
+    if [[ -z "$previous_version" ]]; then
+      echo "Error: No previous release version found for current version ${current_version}" >&2
+      return 1
+    fi
+    
+    echo "$previous_version"
+  else
+    # On main or any other branch, use the latest release version
+    local latest_version
+    latest_version=$(echo "$release_versions" | tail -1)
+    echo "$latest_version"
+  fi
+}
