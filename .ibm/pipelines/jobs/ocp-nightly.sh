@@ -9,7 +9,7 @@ handle_ocp_nightly() {
 
   export K8S_CLUSTER_ROUTER_BASE=$(oc get route console -n openshift-console -o=jsonpath='{.spec.host}' | sed 's/^[^.]*\.//')
 
-  cluster_setup
+  cluster_setup_ocp_helm
   clear_database
   initiate_deployments
   deploy_test_backstage_customization_provider "${NAME_SPACE}"
