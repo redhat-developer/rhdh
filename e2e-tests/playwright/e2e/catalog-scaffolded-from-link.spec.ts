@@ -4,6 +4,7 @@ import { Common, setupBrowser } from "../utils/common";
 import { CatalogImport } from "../support/pages/catalog-import";
 import { APIHelper } from "../utils/api-helper";
 import { GITHUB_API_ENDPOINTS } from "../utils/api-endpoints";
+import { runAccessibilityTests } from "../utils/accessibility";
 
 let page: Page;
 
@@ -38,8 +39,13 @@ test.describe.serial("Link Scaffolded Templates to Catalog Items", () => {
     await common.loginAsGuest();
   });
 
-  test("Register an Template", async () => {
+  // eslint-disable-next-line no-empty-pattern
+  test("Register a Template", async ({}, testInfo) => {
     await uiHelper.openSidebar("Catalog");
+    await uiHelper.verifyText("Name");
+
+    await runAccessibilityTests(page, testInfo);
+
     await uiHelper.clickButton("Self-service");
     await uiHelper.clickButton("Register Existing Component");
     await catalogImport.registerExistingComponent(template, false);

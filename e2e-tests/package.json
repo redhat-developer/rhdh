@@ -27,6 +27,7 @@
     "prettier:fix": "prettier --ignore-unknown --write ."
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
     "@microsoft/microsoft-graph-types": "2.40.0",
     "@playwright/test": "1.53.2",
     "@types/node": "22.16.0",
