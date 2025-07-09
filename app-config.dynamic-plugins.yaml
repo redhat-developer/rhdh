@@ -261,6 +261,10 @@ dynamicPlugins:
       mountPoints:
         - mountPoint: application/listener
           importName: DynamicGlobalFloatingActionButton
+    red-hat-developer-hub.backstage-plugin-quickstart:
+      mountPoints:
+        - mountPoint: application/provider
+          importName: QuickstartDrawerProvider
     red-hat-developer-hub.backstage-plugin-dynamic-home-page:
       dynamicRoutes:
         - path: /
