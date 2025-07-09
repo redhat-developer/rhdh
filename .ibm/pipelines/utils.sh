@@ -692,9 +692,8 @@ check_backstage_running() {
 
     if [ "${http_status}" -eq 200 ]; then
       echo "Backstage is up and running!"
-      export BASE_URL="${url}"
       echo "######## BASE URL ########"
-      echo "${BASE_URL}"
+      echo "${url}"
       return 0
     else
       echo "Attempt ${i} of ${max_attempts}: Backstage not yet available (HTTP Status: ${http_status})"
@@ -703,7 +702,7 @@ check_backstage_running() {
     fi
   done
 
-  echo "Failed to reach Backstage at ${BASE_URL} after ${max_attempts} attempts." | tee -a "/tmp/${LOGFILE}"
+  echo "Failed to reach Backstage at ${url} after ${max_attempts} attempts." | tee -a "/tmp/${LOGFILE}"
   cp -a "/tmp/${LOGFILE}" "${ARTIFACT_DIR}/${namespace}/"
   return 1
 }
@@ -953,7 +952,11 @@ initiate_upgrade_deployments() {
     oc get pods -n "${namespace}"
   else
     echo "Backstage is not running. Exiting..."
+    save_status_failed_to_deploy $CURRENT_DEPLOYMENT true
+    save_status_test_failed $CURRENT_DEPLOYMENT true
+    save_overall_result 1
   fi
+  save_all_pod_logs $namespace
 }
 
 initiate_runtime_deployment() {
@@ -1025,6 +1028,9 @@ check_upgrade_and_test() {
     check_and_test "${release_name}" "${namespace}" "${url}"
   else
     echo "Helm upgrade encountered an issue or timed out. Exiting..."
+    save_status_failed_to_deploy $CURRENT_DEPLOYMENT true
+    save_status_test_failed $CURRENT_DEPLOYMENT true
+    save_overall_result 1
   fi
 }
 

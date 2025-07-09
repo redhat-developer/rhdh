@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# shellcheck source=.ibm/pipelines/utils.sh
+source "$DIR"/utils.sh
+
 handle_ocp_helm_upgrade() {  
   export NAME_SPACE="showcase-upgrade-nightly"
   export NAME_SPACE_POSTGRES_DB="${NAME_SPACE}-postgres-external-db"
