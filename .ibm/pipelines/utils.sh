@@ -912,6 +912,9 @@ initiate_upgrade_base_deployments() {
 
   echo "Initiating base RHDH deployment before upgrade"
 
+  CURRENT_DEPLOYMENT=$((CURRENT_DEPLOYMENT + 1))
+  save_status_deployment_namespace $CURRENT_DEPLOYMENT "$namespace"
+
   configure_namespace "${namespace}"
 
   deploy_redis_cache "${namespace}"
@@ -1032,9 +1035,6 @@ check_upgrade_and_test() {
   local namespace="$3"
   local url=$4
   local timeout=${5:-600} # Timeout in seconds (default: 600 seconds)
-
-  CURRENT_DEPLOYMENT=$((CURRENT_DEPLOYMENT + 1))
-  save_status_deployment_namespace $CURRENT_DEPLOYMENT "$namespace"
 
   if check_helm_upgrade "${deployment_name}" "${namespace}" "${timeout}"; then
     check_and_test "${release_name}" "${namespace}" "${url}"
