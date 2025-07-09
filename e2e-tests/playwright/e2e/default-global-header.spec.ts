@@ -89,7 +89,7 @@ test.describe("Default Global Header", () => {
     await uiHelper.verifyHeading("Settings");
 
     await uiHelper.goToMyProfilePage();
-    await uiHelper.verifyTextInSelector("header > div > p", "USER");
+    await uiHelper.verifyTextInSelector("header > div > p", "user");
     await uiHelper.verifyHeading(process.env.GH_USER2_ID);
     await uiHelper.verifyTextInSelector(
       "a[data-testid='header-tab-0'] > span",
