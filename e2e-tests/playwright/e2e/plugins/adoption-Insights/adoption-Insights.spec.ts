@@ -78,11 +78,7 @@ test.describe.serial("Test Adoption Insights", () => {
     });
 
     test("Data shows in Top plugins Entity", async () => {
-      const panel = page.locator(".v5-MuiPaper-root", {
-        hasText: "Top 3 plugins",
-      });
-      const entries = panel.locator('tbody').getByRole('row');
-      expect(await entries.count()).toBeGreaterThan(0);
+      await testHelper.expectTopEntriesToBePresent("Top 3 plugins");
     });
     
     test("Rest of the panels are visible", async () => {

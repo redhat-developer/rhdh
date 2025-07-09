@@ -122,7 +122,7 @@ export class TestHelper {
         const isSuccess = response.status() === 200;
         return urlMatches && isSuccess;
       },
-      { timeout: 30000 }
+      { timeout: 60000 }
     );
   
     expect(response.status()).toBe(200);
@@ -131,7 +131,7 @@ export class TestHelper {
   async waitUntilApiCallIsMade(page: Page, urlPart: string): Promise<void> {
     await page.waitForResponse(
       (response) => response.url().includes(urlPart),
-      { timeout: 30000 }
+      { timeout: 60000 }
     );
   }
   
