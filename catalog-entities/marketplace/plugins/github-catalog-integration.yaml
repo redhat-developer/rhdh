@@ -26,7 +26,6 @@ metadata:
       url: https://backstage.io/docs/reference/plugin-catalog-backend-module-github/
   tags:
     - software-catalog
-    - software-catalog
 spec:
 
   author: Backstage Community

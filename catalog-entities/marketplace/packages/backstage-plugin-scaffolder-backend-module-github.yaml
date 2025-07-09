@@ -27,5 +27,5 @@ spec:
   support: production
   lifecycle: active
   partOf:
-    - github-actions
+    - github-scaffolder-actions
   appConfigExamples: []

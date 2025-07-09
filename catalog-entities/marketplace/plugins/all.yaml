@@ -33,7 +33,7 @@ spec:
     - ./github-scaffolder-actions.yaml
     - ./gitlab-catalog-cards.yaml
     - ./gitlab-catalog-integration.yaml
-    - ./gitlab-catalog-org-integration.yaml
+    - ./gitlab-org-catalog-integration.yaml
     - ./gitlab-scaffolder-actions.yaml
     - ./global-floating-action-button.yaml
     - ./global-header.yaml
