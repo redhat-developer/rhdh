@@ -22,10 +22,31 @@ USER 0
 # Install isolated-vm dependencies
 # hadolint ignore=DL3041
 RUN dnf install -q -y --allowerasing --nobest \
-  nodejs-devel nodejs-libs \
-  # already installed or installed as deps:
-  openssl openssl-devel ca-certificates make cmake cpp gcc gcc-c++ zlib zlib-devel brotli brotli-devel python3 nodejs-packaging && \
-  dnf update -y && dnf clean all
+  acl alternatives attr audit-libs basesystem bash binutils binutils-gold brotli brotli-devel bsdtar bzip2-libs ca-certificates containers-common coreutils-single cpp \
+  cracklib cracklib-dicts criu criu-libs crun crypto-policies crypto-policies-scripts curl-minimal cyrus-sasl-lib dbus dbus-broker dbus-common dbus-libs dejavu-sans-fonts \
+  dmidecode dnf dnf-data elfutils-debuginfod-client elfutils-default-yama-scope elfutils-libelf elfutils-libs emacs-filesystem environment-modules expat file-libs filesystem \
+  findutils fonts-filesystem fuse-common fuse-overlayfs fuse3 fuse3-libs gawk gcc gcc-c++ gdb-gdbserver gdbm-libs gettext gettext-libs git git-core git-core-doc glib2 glibc \
+  glibc-common glibc-devel glibc-headers glibc-langpack-en glibc-locale-source glibc-minimal-langpack gmp gnupg2 gnutls gobject-introspection gpgme grep groff-base gzip \
+  ima-evm-utils iproute json-c json-glib kernel-headers keyutils keyutils-libs kmod kmod-libs krb5-libs langpacks-core-en langpacks-core-font-en langpacks-en less \
+  libacl libarchive libassuan libattr libblkid libbpf libbrotli libcap libcap-ng libcbor libcom_err libcomps libcurl-minimal libdb libdnf libdnf-plugin-subscription-manager \
+  libeconf libedit libevent libfdisk libffi libfido2 libgcc libgcrypt libgomp libgpg-error libidn2 libksba libmnl libmodulemd libmount libmpc libnet libnghttp2 libnl3 \
+  libpipeline libpkgconf libpwquality librepo libreport-filesystem librhsm libseccomp libselinux libsemanage libsepol libsigsegv libslirp libsmartcols libsolv libstdc++ libstdc++-devel \
+  libtasn1 libunistring libuser libutempter libuuid libverto libxcrypt libxcrypt-compat libxcrypt-devel libxml2 libyaml libzstd lua-libs lz4-libs make man mpfr \
+  ncurses ncurses-base ncurses-libs nettle nodejs nodejs-devel nodejs-docs nodejs-full-i18n nodejs-libs nodejs-nodemon nodejs-packaging npm npth nss_wrapper-libs openldap \
+  openssh openssh-clients openssl openssl-devel openssl-fips-provider openssl-fips-provider-so openssl-libs p11-kit p11-kit-trust pam passwd pcre pcre2 pcre2-syntax \
+  perl perl-AutoLoader perl-B perl-base perl-Carp perl-Class-Struct perl-constant perl-Data-Dumper perl-Digest perl-Digest-MD5 perl-DynaLoader perl-Encode perl-Errno perl-Error \
+  perl-Exporter perl-Fcntl perl-File-Basename perl-File-Find perl-File-Path perl-File-stat perl-File-Temp perl-FileHandle perl-Getopt-Long perl-Getopt-Std perl-Git perl-HTTP-Tiny \
+  perl-interpreter perl-IO perl-IO-Socket-IP perl-IO-Socket-SSL perl-IPC-Open3 perl-lib perl-libnet perl-libs perl-MIME-Base64 perl-Mozilla-CA perl-mro perl-NDBM_File perl-Net-SSLeay \
+  perl-overload perl-overloading perl-parent perl-PathTools perl-Pod-Escapes perl-Pod-Perldoc perl-Pod-Simple perl-Pod-Usage perl-podlators perl-POSIX perl-Scalar-List-Utils perl-SelectSaver \
+  perl-Socket perl-Storable perl-subs perl-Symbol perl-Term-ANSIColor perl-Term-Cap perl-TermReadKey perl-Text-ParseWords perl-Text-Tabs+Wrap perl-Time-Local perl-URI perl-vars pkgconf \
+  pkgconf-m4 pkgconf-pkg-config popt procps-ng protobuf-c psmisc python-unversioned-command python3-chardet python3-cloud-what python3-dateutil python3-dbus python3-decorator python3-dnf \
+  python3-dnf-plugins-core python3-gobject-base python3-gobject-base-noarch python3-gpg python3-hawkey python3-iniparse python3-inotify python3-libcomps python3-libdnf python3-librepo \
+  python3-rpm python3-subscription-manager-rhsm python3-systemd python3.11 python3.11-devel python3.11-idna python3.11-pip python3.11-pip-wheel python3.11-pysocks python3.11-requests \
+  python3.11-setuptools python3.11-setuptools-wheel python3.11-urllib3 python3-subscription-manager-rhsm python3-systemd python3-urllib3 readline redhat-release rootfiles rpm rpm-build-libs \
+  rpm-libs rpm-plugin-selinux rpm-sign-libs rsync scl-utils sed selinux-policy selinux-policy-targeted setup shadow-utils skopeo slirp4netns sqlite-libs subscription-manager \
+  subscription-manager-rhsm-certificates systemd systemd-libs systemd-pam systemd-rpm-macros tar tcl tpm2-tss tzdata unzip usermode util-linux util-linux-core vim-filesystem vim-minimal \
+  virt-what which xz xz-libs yajl yum zlib zlib-devel && \
+  dnf clean all
 
 ENV EXTERNAL_SOURCE_NESTED=.
 ENV CONTAINER_SOURCE=/opt/app-root/src
@@ -189,7 +210,7 @@ WORKDIR $CONTAINER_SOURCE/
 # Install techdocs dependencies using requirements files
 # hadolint ignore=DL3013,DL3041,SC2086
 COPY "$EXTERNAL_SOURCE_NESTED"/python/ ./python
-RUN microdnf install -y python3.11 python3.11-pip python3.11-devel make cmake cpp gcc gcc-c++ skopeo 1>/dev/null 2>&1; \
+RUN microdnf install -y python3.11 python3.11-pip python3.11-devel make cpp gcc gcc-c++ skopeo 1>/dev/null 2>&1; \
   alternatives --install /usr/bin/python python /usr/bin/python3.11 1 && \
   alternatives --install /usr/bin/pip pip /usr/bin/pip3.11 1 && \
   # fix ownership for pip install folder
@@ -198,7 +219,7 @@ RUN microdnf install -y python3.11 python3.11-pip python3.11-devel make cmake cp
   pushd "$EXTERNAL_SOURCE_NESTED"/python/ >/dev/null && \
   set -e; \
   python3.11 -V; pip3.11 -V; \
-  pip install --no-cache-dir --upgrade pip setuptools pyyaml; \
+  pip install --no-cache-dir --upgrade pip setuptools pyyaml cmake; \
   pip install --no-cache-dir -r requirements.txt -r requirements-build.txt; mkdocs --version; \
   popd >/dev/null; \
   rm -fr python/; \

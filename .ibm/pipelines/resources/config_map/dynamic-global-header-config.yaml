@@ -34,9 +34,13 @@ dynamicPlugins:
               icon: add
               to: create
         - mountPoint: global.header/component
-          importName: SupportButton
+          importName: HelpDropdown
           config:
             priority: 80
+        - mountPoint: global.header/help
+          importName: SupportButton
+          config:
+            priority: 10
         - mountPoint: global.header/component
           importName: NotificationButton
           config:
@@ -57,6 +61,13 @@ dynamicPlugins:
               title: Settings
               link: /settings
               icon: manageAccounts
+        - mountPoint: global.header/profile
+          importName: MenuItemLink
+          config:
+            priority: 90
+            props:
+              title: My profile
+              icon: account
         - mountPoint: global.header/profile
           importName: LogoutButton
           config:

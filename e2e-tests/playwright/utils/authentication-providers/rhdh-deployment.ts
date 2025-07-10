@@ -15,7 +15,7 @@ const currentFileName = fileURLToPath(import.meta.url);
 const currentDirName = dirname(currentFileName);
 const rootDirName = resolve(currentDirName, "..", "..", "..", "..");
 const syncedLogRegex =
-  /Committed \d+ (Keycloak|msgraph|GitHub) users? and \d+ (Keycloak|msgraph|GitHub) groups? in \d+(\.\d+)? seconds/;
+  /Committed \d+ (Keycloak|msgraph|GitHub|LDAP) users? and \d+ (Keycloak|msgraph|GitHub|LDAP) groups? in \d+(\.\d+)? seconds/;
 
 class RHDHDeployment {
   instanceName: string;
@@ -607,7 +607,9 @@ class RHDHDeployment {
         );
         return;
       } catch (error) {
-        console.log(`Timeout waiting for Backstage CRD to be available: ${error.message}`)
+        console.log(
+          `Timeout waiting for Backstage CRD to be available: ${error.message}`,
+        );
         if (Date.now() - startTime >= timeoutMs) {
           throw new Error(
             `Timeout waiting for Backstage CRD to be available: ${error.message}`,
@@ -989,6 +991,72 @@ class RHDHDeployment {
         metadataUrl: "${RHBK_BASE_URL}/realms/${RHBK_REALM}",
         clientId: "${RHBK_CLIENT_ID}",
         clientSecret: "${RHBK_CLIENT_SECRET}",
+        prompt: "auto",
+        callbackUrl:
+          "${BASE_URL:-http://localhost:7007}/api/auth/oidc/handler/frame",
+      },
+    });
+    this.setAppConfigProperty("auth.environment", "production");
+    this.setAppConfigProperty("signInPage", "oidc");
+
+    return this;
+  }
+
+  async enableLDAPLoginWithIngestion(): Promise<RHDHDeployment> {
+    console.log("Enabling LDAP login with ingestion...");
+    //expect the config variable to be set
+    expect(process.env.RHBK_BASE_URL).toBeDefined();
+    expect(process.env.RHBK_LDAP_REALM).toBeDefined();
+    expect(process.env.RHBK_LDAP_CLIENT_ID).toBeDefined();
+    expect(process.env.RHBK_LDAP_CLIENT_SECRET).toBeDefined();
+
+    // enable the catalog backend dynamic plugin
+    // and set the required configuration properties
+    this.setDynamicPluginEnabled(
+      "./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-ldap-dynamic",
+      true,
+    );
+    this.setAppConfigProperty("catalog.providers", {
+      ldapOrg: {
+        default: {
+          target: "${LDAP_TARGET_URL}",
+          bind: {
+            dn: "${LDAP_BIND_DN}",
+            secret: "${LDAP_BIND_SECRET}",
+          },
+          users: [
+            {
+              dn: "${LDAP_USERS_DN}",
+              options: {
+                filter: "(uid=*)",
+                scope: "sub",
+              },
+            },
+          ],
+          groups: [
+            {
+              dn: "${LDAP_GROUPS_DN}",
+              options: {
+                filter:
+                  "(&(objectClass=group)(groupType:1.2.840.113556.1.4.803:=2147483648))", // filter only security groups
+                scope: "sub",
+              },
+            },
+          ],
+          schedule: {
+            frequency: "PT1M",
+            timeout: "PT1M",
+          },
+        },
+      },
+    });
+
+    // enable the keycloak login provider
+    this.setAppConfigProperty("auth.providers.oidc", {
+      production: {
+        metadataUrl: "${RHBK_BASE_URL}/realms/${RHBK_LDAP_REALM}",
+        clientId: "${RHBK_LDAP_CLIENT_ID}",
+        clientSecret: "${RHBK_LDAP_CLIENT_SECRET}",
         prompt: "auto",
         callbackUrl:
           "${BASE_URL:-http://localhost:7007}/api/auth/oidc/handler/frame",

@@ -8,14 +8,14 @@
       name="description"
       content="<%= config.getOptionalString('app.title') ?? 'Red Hat Developer Hub' %>"
     />
-    <% if (config.getOptionalString('app.branding.iconLogo')) { %>
+    <% if (config.getOptional('app.branding.iconLogo')) { %>
     <link
       rel="icon"
-      href="<%= config.getOptionalString('app.branding.iconLogo') %>"
+      href="<%= typeof config.getOptional('app.branding.iconLogo') === 'string' ? config.getOptionalString('app.branding.iconLogo') : config.getOptionalString('app.branding.iconLogo.dark') %>"
       id="dynamic-favicon"
     />
     <% } else { %>
-    <link rel="apple-touch-icon" href="<%= publicPath %>/logo192.png" />
+    <link rel="apple-touch-icon" href="<%= publicPath %>/favicon-192x192.png" />
     <link
       rel="manifest"
       href="<%= publicPath %>/manifest.json"

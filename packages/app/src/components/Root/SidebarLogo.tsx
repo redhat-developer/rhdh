@@ -1,10 +1,13 @@
+import type { ComponentType } from 'react';
+
 import { Link, useSidebarOpenState } from '@backstage/core-components';
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
 import { makeStyles } from 'tss-react/mui';
 
-import LogoFull from './LogoFull';
-import LogoIcon from './LogoIcon';
+import { useAppBarThemedConfig } from '../../hooks/useThemedConfig';
+import { LogoFull } from './LogoFull';
+import { LogoIcon } from './LogoIcon';
 
 const useStyles = makeStyles()({
   sidebarLogo: {
@@ -14,11 +17,11 @@ const useStyles = makeStyles()({
 
 const LogoRender = ({
   base64Logo,
-  defaultLogo,
+  DefaultLogo,
   width,
 }: {
   base64Logo: string | undefined;
-  defaultLogo: React.JSX.Element;
+  DefaultLogo: ComponentType<React.ComponentProps<'svg'>>;
   width: string | number;
 }) => {
   return base64Logo ? (
@@ -29,24 +32,23 @@ const LogoRender = ({
       width={width}
     />
   ) : (
-    defaultLogo
+    <DefaultLogo width={width} />
   );
 };
 
 export const SidebarLogo = () => {
   const { classes } = useStyles();
   const { isOpen } = useSidebarOpenState();
+
   const configApi = useApi(configApiRef);
-  const logoFullBase64URI = configApi.getOptionalString(
-    'app.branding.fullLogo',
-  );
+
+  const logoFullBase64URI = useAppBarThemedConfig('app.branding.fullLogo');
+
   const fullLogoWidth = configApi
     .getOptional('app.branding.fullLogoWidth')
     ?.toString();
 
-  const logoIconBase64URI = configApi.getOptionalString(
-    'app.branding.iconLogo',
-  );
+  const logoIconBase64URI = useAppBarThemedConfig('app.branding.iconLogo');
 
   return (
     <div className={classes.sidebarLogo}>
@@ -54,13 +56,13 @@ export const SidebarLogo = () => {
         {isOpen ? (
           <LogoRender
             base64Logo={logoFullBase64URI}
-            defaultLogo={<LogoFull />}
+            DefaultLogo={LogoFull}
             width={fullLogoWidth ?? 170}
           />
         ) : (
           <LogoRender
             base64Logo={logoIconBase64URI}
-            defaultLogo={<LogoIcon />}
+            DefaultLogo={LogoIcon}
             width={28}
           />
         )}

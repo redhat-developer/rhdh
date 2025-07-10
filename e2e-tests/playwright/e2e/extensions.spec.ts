@@ -2,6 +2,7 @@ import { test, expect } from "@playwright/test";
 import { Common } from "../utils/common";
 import { UIhelper } from "../utils/ui-helper";
 import { Extensions } from "../support/pages/extensions";
+import { runAccessibilityTests } from "../utils/accessibility";
 
 test.describe("Admin > Extensions > Catalog", () => {
   let extensions: Extensions;
@@ -23,8 +24,11 @@ test.describe("Admin > Extensions > Catalog", () => {
     await page.getByRole("button", { name: "Clear Search" }).click();
   });
 
-  test("Verify filters in extensions", async ({ page }) => {
+  test("Verify filters in extensions", async ({ page }, testInfo) => {
     await uiHelper.verifyHeading(/Plugins \(\d+\)/);
+
+    await runAccessibilityTests(page, testInfo);
+
     await uiHelper.clickTab("Catalog");
     await uiHelper.clickButton("CI/CD");
     await extensions.selectDropdown("Category");
@@ -99,10 +103,10 @@ test.describe("Admin > Extensions > Catalog", () => {
     permissions: ["clipboard-read", "clipboard-write"],
   });
 
-  test("Verify plugin installation", async ({ page }) => {
+  test("Verify plugin configuration can be viewed", async ({ page }) => {
     await uiHelper.searchInputPlaceholder("Topology");
     await page.getByRole("heading", { name: "Topology" }).first().click();
-    await uiHelper.clickButton("Install");
+    await uiHelper.clickButton("View");
     await uiHelper.verifyHeading("Install Application Topology for Kubernetes");
     await uiHelper.verifyText(
       "- package: ./dynamic-plugins/dist/backstage-community-plugin-topology",
@@ -131,8 +135,8 @@ test.describe("Admin > Extensions > Catalog", () => {
     );
     expect(clipboardContent).not.toContain("pluginConfig:");
     expect(clipboardContent).toContain("backstage-community.plugin-topology:");
-    await uiHelper.clickButton("Cancel");
-    await expect(page.getByRole("button", { name: "Install" })).toBeVisible();
+    await uiHelper.clickButton("Back");
+    await expect(page.getByRole("button", { name: "View" })).toBeVisible();
     await uiHelper.verifyHeading("Application Topology for Kubernetes");
   });
 });

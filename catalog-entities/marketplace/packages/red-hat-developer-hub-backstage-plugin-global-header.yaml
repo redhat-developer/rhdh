@@ -18,10 +18,10 @@ metadata:
 spec:
   packageName: "@red-hat-developer-hub/backstage-plugin-global-header"
   dynamicArtifact: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-header
-  version: 1.6.0
+  version: 1.13.0
   backstage:
     role: frontend-plugin
-    supportedVersions: 1.36.1
+    supportedVersions: 1.39.1
   author: Red Hat
   support: production
   lifecycle: active
@@ -65,9 +65,13 @@ spec:
                       icon: add
                       to: create
                 - mountPoint: global.header/component
-                  importName: SupportButton
+                  importName: HelpDropdown
                   config:
                     priority: 80
+                - mountPoint: global.header/help
+                  importName: SupportButton
+                  config:
+                    priority: 10
                 - mountPoint: global.header/component
                   importName: NotificationButton
                   config:
@@ -88,6 +92,13 @@ spec:
                       title: Settings
                       link: /settings
                       icon: manageAccounts
+                - mountPoint: global.header/profile
+                  importName: MenuItemLink
+                  config:
+                    priority: 90
+                    props:
+                      title: My profile
+                      icon: account
                 - mountPoint: global.header/profile
                   importName: LogoutButton
                   config:

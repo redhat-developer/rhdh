@@ -57,12 +57,20 @@ export const InternalPluginsMap: Record<string, string> = {
     './dynamic-plugins/dist/backstage-community-plugin-ocm-backend-dynamic',
   'backstage-community-plugin-ocm':
     './dynamic-plugins/dist/backstage-community-plugin-ocm',
+  'red-hat-developer-hub-backstage-plugin-adoption-insights':
+    './dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-adoption-insights',
+  'red-hat-developer-hub-backstage-plugin-adoption-insights-backend-dynamic':
+    './dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-adoption-insights-backend-dynamic',
+  'red-hat-developer-hub-backstage-plugin-analytics-module-adoption-insights-dynamic':
+    './dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-analytics-module-adoption-insights-dynamic',
   'red-hat-developer-hub-backstage-plugin-bulk-import-backend-dynamic':
     './dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import-backend-dynamic',
   'red-hat-developer-hub-backstage-plugin-bulk-import':
     './dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import',
   'red-hat-developer-hub-backstage-plugin-global-header':
     './dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-header',
+  'red-hat-developer-hub-backstage-plugin-quickstart':
+    './dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-quickstart',
   'red-hat-developer-hub-backstage-plugin-global-floating-action-button':
     './dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-floating-action-button',
   'red-hat-developer-hub-backstage-plugin-dynamic-home-page':
@@ -77,6 +85,8 @@ export const InternalPluginsMap: Record<string, string> = {
     './dynamic-plugins/dist/backstage-plugin-techdocs-backend-dynamic',
   'backstage-plugin-techdocs':
     './dynamic-plugins/dist/backstage-plugin-techdocs',
+  'backstage-plugin-techdocs-module-addons-contrib':
+    './dynamic-plugins/dist/backstage-plugin-techdocs-module-addons-contrib',
   'backstage-plugin-scaffolder-backend-module-gerrit-dynamic':
     './dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-gerrit-dynamic',
   'roadiehq-scaffolder-backend-module-utils-dynamic':
