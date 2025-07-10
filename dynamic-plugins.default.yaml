@@ -844,6 +844,34 @@ plugins:
                 parent: admin
                 icon: rbacIcon
 
+  - package: ./dynamic-plugins/dist/backstage-community-plugin-servicenow-backend-dynamic
+    disabled: true
+    pluginConfig:
+      servicenow:
+        instanceUrl: ${SERVICENOW_BASE_URL}
+        basicAuth:
+          username: ${SERVICENOW_USERNAME}
+          password: ${SERVICENOW_PASSWORD}
+
+  - package: ./dynamic-plugins/dist/backstage-community-plugin-servicenow
+    disabled: true
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          backstage-community.plugin-servicenow:
+            mountPoints:
+              - mountPoint: entity.page.servicenow/cards
+                importName: ServicenowPage
+                config:
+                  layout:
+                    gridColumn: 1 / -1
+                    height: 75vh
+                  # should be shown as long as it's configured OR use the condition?
+                  if:
+                    anyOf:
+                      - hasAnnotation: servicenow.com/entity-id
+                      - isKind: user
+
   - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-servicenow-dynamic
     disabled: true
     pluginConfig:
