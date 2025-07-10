@@ -23,7 +23,7 @@
 # Stage 1 - Build nodejs skeleton
 #@follow_tag(registry.access.redhat.com/ubi9/nodejs-20:1)
 # https://registry.access.redhat.com/ubi9/nodejs-20
-FROM registry.access.redhat.com/ubi9/nodejs-20:9.6-1749604222 AS build
+FROM registry.access.redhat.com/ubi9/nodejs-20:9.6-1751964045 AS build
 # hadolint ignore=DL3002
 USER 0
 
@@ -266,7 +266,7 @@ RUN "$YARN" workspaces focus --all --production && \
 # Stage 5 - Build the runner image
 #@follow_tag(registry.access.redhat.com/ubi9/nodejs-20-minimal:1)
 # https://registry.access.redhat.com/ubi9/nodejs-20-minimal
-FROM registry.access.redhat.com/ubi9/nodejs-20-minimal:9.6-1749542044 AS runner
+FROM registry.access.redhat.com/ubi9/nodejs-20-minimal:9.6-1750862880 AS runner
 USER 0
 
 # Downstream sources
