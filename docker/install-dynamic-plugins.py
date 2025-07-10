@@ -259,12 +259,12 @@ def main():
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-marketplace-backend-dynamic
     disabled: false
     pluginConfig:
-    extensions:
-      installation: 
-        enabled: true
-        saveToSingleFile:
-        file:
-          /opt/app-root/src/dynamic-plugins-root/dynamic-plugins.marketplace.yaml'''
+      extensions:
+        installation: 
+          enabled: true
+          saveToSingleFile:
+          file:
+            /opt/app-root/src/dynamic-plugins-root/dynamic-plugins.marketplace.yaml'''
             file.write(f'includes:\n  - dynamic-plugins.default.yaml\nplugins:{config}')
             file.close()
         dynamicPluginsFile = dynamicPluginsMarketplaceFile
