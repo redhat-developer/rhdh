@@ -6,7 +6,7 @@ source "$DIR"/utils.sh
 handle_ocp_helm_upgrade() {
   export NAME_SPACE="showcase-upgrade-nightly"
   export NAME_SPACE_POSTGRES_DB="${NAME_SPACE}-postgres-external-db"
-  export DEPLOYMENT_NAME="rhdh-backstage"
+  export DEPLOYMENT_NAME="${RELEASE_NAME}-developer-hub"
   export QUAY_REPO_BASE="rhdh/rhdh-hub-rhel9"
   
   # Dynamically determine the previous release version
@@ -26,6 +26,7 @@ handle_ocp_helm_upgrade() {
   export K8S_CLUSTER_ROUTER_BASE
 
   cluster_setup
+  clear_database
   local url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   initiate_upgrade_base_deployments "${RELEASE_NAME}" "${NAME_SPACE}" "${url}"
 
