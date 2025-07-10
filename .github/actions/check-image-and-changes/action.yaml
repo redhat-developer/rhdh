@@ -84,34 +84,25 @@ runs:
           echo "  - $file"
         done
         
-        # Classify files
+        # Classify files - use while loop without pipe to avoid subshell
         ALWAYS_SKIP_FILES=""
         IMAGE_DEPENDENT_FILES=""
         RELEVANT_CODE_FILES=""
         OTHER_FILES=""
         
-        echo "$CHANGED_FILES" | while read -r file; do
-          if check_always_skip_paths "$file"; then
-            ALWAYS_SKIP_FILES="$ALWAYS_SKIP_FILES $file"
-          elif check_image_dependent_paths "$file"; then
-            IMAGE_DEPENDENT_FILES="$IMAGE_DEPENDENT_FILES $file"
-          elif check_relevant_code "$file"; then
-            RELEVANT_CODE_FILES="$RELEVANT_CODE_FILES $file"
-          else
-            OTHER_FILES="$OTHER_FILES $file"
+        while IFS= read -r file; do
+          if [ -n "$file" ]; then
+            if check_always_skip_paths "$file"; then
+              ALWAYS_SKIP_FILES="$ALWAYS_SKIP_FILES $file"
+            elif check_image_dependent_paths "$file"; then
+              IMAGE_DEPENDENT_FILES="$IMAGE_DEPENDENT_FILES $file"
+            elif check_relevant_code "$file"; then
+              RELEVANT_CODE_FILES="$RELEVANT_CODE_FILES $file"
+            else
+              OTHER_FILES="$OTHER_FILES $file"
+            fi
           fi
-        done
-        
-        # Save to temporary files for later use
-        echo "$ALWAYS_SKIP_FILES" > /tmp/always_skip_files
-        echo "$IMAGE_DEPENDENT_FILES" > /tmp/image_dependent_files  
-        echo "$RELEVANT_CODE_FILES" > /tmp/relevant_code_files
-        echo "$OTHER_FILES" > /tmp/other_files
-        
-        ALWAYS_SKIP_FILES=$(cat /tmp/always_skip_files)
-        IMAGE_DEPENDENT_FILES=$(cat /tmp/image_dependent_files)
-        RELEVANT_CODE_FILES=$(cat /tmp/relevant_code_files)
-        OTHER_FILES=$(cat /tmp/other_files)
+        done <<< "$CHANGED_FILES"
         
         echo "🔍 File classification:"
         if [ -n "$ALWAYS_SKIP_FILES" ]; then
