@@ -705,6 +705,7 @@ check_backstage_running() {
   echo "Failed to reach Backstage at ${url} after ${max_attempts} attempts." | tee -a "/tmp/${LOGFILE}"
   mkdir -p "${ARTIFACT_DIR}/${namespace}"
   cp -a "/tmp/${LOGFILE}" "${ARTIFACT_DIR}/${namespace}/"
+  save_all_pod_logs "${namespace}"
   return 1
 }
 
