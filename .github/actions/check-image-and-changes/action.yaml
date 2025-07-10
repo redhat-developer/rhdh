@@ -31,18 +31,20 @@ runs:
         # Function to check if file is in always-skip paths
         check_always_skip_paths() {
           local file=$1
-          if [[ "$file" == docs/* ]] || [[ "$file" == *.md ]]; then
-            return 0  # true - always skip
-          fi
+          local patterns=("docs/*" "*.md")
+          for pattern in "${patterns[@]}"; do
+            [[ "$file" == $pattern ]] && return 0
+          done
           return 1  # false - don't skip automatically
         }
         
         # Function to check if file is in image-dependent paths
         check_image_dependent_paths() {
           local file=$1
-          if [[ "$file" == e2e/* ]] || [[ "$file" == e2e-tests/* ]] || [[ "$file" == .ibm/* ]] || [[ "$file" == .rhdh/docker/* ]]; then
-            return 0  # true - may need image
-          fi
+          local patterns=("e2e/*" "e2e-tests/*" ".ibm/*" ".rhdh/docker/*")
+          for pattern in "${patterns[@]}"; do
+            [[ "$file" == $pattern ]] && return 0
+          done
           return 1  # false - doesn't need image
         }
         
@@ -50,9 +52,10 @@ runs:
         check_relevant_code() {
           local file=$1
           # Files that affect application build
-          if [[ "$file" == packages/* ]] || [[ "$file" == plugins/* ]] || [[ "$file" == dynamic-plugins/* ]] || [[ "$file" == app-config*.yaml ]] || [[ "$file" == catalog-entities/* ]] || [[ "$file" == docker/* ]] || [[ "$file" == Dockerfile* ]] || [[ "$file" == package*.json ]] || [[ "$file" == yarn.lock ]] || [[ "$file" == tsconfig*.json ]]; then
-            return 0  # true - relevant code
-          fi
+          local patterns=("packages/*" "plugins/*" "dynamic-plugins/*" "app-config*.yaml" "catalog-entities/*" "docker/*" "Dockerfile*" "package*.json" "yarn.lock" "tsconfig*.json")
+          for pattern in "${patterns[@]}"; do
+            [[ "$file" == $pattern ]] && return 0
+          done
           return 1  # false - not relevant code
         }
         
