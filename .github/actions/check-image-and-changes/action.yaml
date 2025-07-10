@@ -26,160 +26,38 @@ runs:
       id: changes
       shell: bash
       run: |
-        echo "🔍 Checking changes and build requirements..."
-        
-        # Function to check if file is in always-skip paths
-        check_always_skip_paths() {
-          local file=$1
-          local patterns=("docs/*" "*.md")
-          for pattern in "${patterns[@]}"; do
-            [[ "$file" == $pattern ]] && return 0
-          done
-          return 1  # false - don't skip automatically
-        }
-        
-        # Function to check if file is in image-dependent paths
-        check_image_dependent_paths() {
-          local file=$1
-          local patterns=("e2e/*" "e2e-tests/*" ".ibm/*" ".rhdh/docker/*")
-          for pattern in "${patterns[@]}"; do
-            [[ "$file" == $pattern ]] && return 0
-          done
-          return 1  # false - doesn't need image
-        }
-        
-        # Function to check if file is relevant code for build
-        check_relevant_code() {
-          local file=$1
-          # Files that affect application build
-          local patterns=("packages/*" "plugins/*" "dynamic-plugins/*" "app-config*.yaml" "catalog-entities/*" "docker/*" "Dockerfile*" "package*.json" "yarn.lock" "tsconfig*.json")
-          for pattern in "${patterns[@]}"; do
-            [[ "$file" == $pattern ]] && return 0
-          done
-          return 1  # false - not relevant code
-        }
-        
-        # Search for commits with [skip-build] or [skip build] tag
-        echo "🏷️  Checking commits with [skip-build] tag..."
-        SKIP_COMMITS=$(git log --format="%H %s" origin/main..HEAD | grep -i "\[skip[- ]build\]" | wc -l)
-        
-        if [ "$SKIP_COMMITS" -gt 0 ]; then
-          echo "✅ Found $SKIP_COMMITS commits with [skip-build] tag"
-        else
-          echo "❌ No commits with [skip-build] tag found"
-        fi
+        echo "🔍 Simple check for build requirements..."
         
         # Get changed files
-        echo "📁 Getting list of changed files..."
-        CHANGED_FILES=$(git diff --name-only origin/main..HEAD)
+        CHANGED_FILES=$(git diff --name-only origin/main..HEAD || echo "")
         
         if [ -z "$CHANGED_FILES" ]; then
           echo "⚠️  No changed files found"
-          echo "SKIP_BUILD=false" >> $GITHUB_OUTPUT
+          echo "is_skipped=false" >> $GITHUB_OUTPUT
           exit 0
         fi
         
         echo "📋 Changed files:"
-        echo "$CHANGED_FILES" | while read -r file; do
-          echo "  - $file"
-        done
+        echo "$CHANGED_FILES"
         
-        # Classify files - use while loop without pipe to avoid subshell
-        ALWAYS_SKIP_FILES=""
-        IMAGE_DEPENDENT_FILES=""
-        RELEVANT_CODE_FILES=""
-        OTHER_FILES=""
-        
+        # Simple logic: if any file is in .github/actions or .github/workflows, force build
+        FORCE_BUILD=false
         while IFS= read -r file; do
           if [ -n "$file" ]; then
-            if check_always_skip_paths "$file"; then
-              ALWAYS_SKIP_FILES="$ALWAYS_SKIP_FILES $file"
-            elif check_image_dependent_paths "$file"; then
-              IMAGE_DEPENDENT_FILES="$IMAGE_DEPENDENT_FILES $file"
-            elif check_relevant_code "$file"; then
-              RELEVANT_CODE_FILES="$RELEVANT_CODE_FILES $file"
-            else
-              OTHER_FILES="$OTHER_FILES $file"
+            if [[ "$file" == .github/actions/* ]] || [[ "$file" == .github/workflows/* ]]; then
+              echo "🔥 GitHub Actions/workflows changed - forcing build"
+              FORCE_BUILD=true
+              break
             fi
           fi
         done <<< "$CHANGED_FILES"
         
-        echo "🔍 File classification:"
-        if [ -n "$ALWAYS_SKIP_FILES" ]; then
-          echo "📄 Always skip files (docs, *.md): $ALWAYS_SKIP_FILES"
-        fi
-        if [ -n "$IMAGE_DEPENDENT_FILES" ]; then
-          echo "🧪 Image-dependent files (e2e, tests): $IMAGE_DEPENDENT_FILES"
-        fi
-        if [ -n "$RELEVANT_CODE_FILES" ]; then
-          echo "💻 Relevant code files: $RELEVANT_CODE_FILES"
-        fi
-        if [ -n "$OTHER_FILES" ]; then
-          echo "📦 Other files: $OTHER_FILES"
-        fi
-        
-        # Decision logic
-        SHOULD_SKIP=false
-        
-        # If relevant code changed, never skip
-        if [ -n "$RELEVANT_CODE_FILES" ]; then
-          echo "🔥 Relevant code changed - build required"
-          SHOULD_SKIP=false
-        # If commits have [skip-build], try to skip
-        elif [ "$SKIP_COMMITS" -gt 0 ]; then
-          echo "🏷️  [skip-build] tag found - checking if safe to skip..."
-          
-          # If only always-skip files, can skip
-          if [ -z "$IMAGE_DEPENDENT_FILES" ] && [ -z "$OTHER_FILES" ]; then
-            echo "✅ Only docs/md files changed - can skip build"
-            SHOULD_SKIP=true
-          # If image-dependent files present, check if image exists
-          elif [ -n "$IMAGE_DEPENDENT_FILES" ]; then
-            echo "🧪 Image-dependent files changed - checking if image exists..."
-            
-            # Check if Docker image exists in Quay.io registry
-            PR_NUMBER="${{ github.event.number }}"
-            if [ -z "$PR_NUMBER" ]; then
-              echo "⚠️  PR number not found, forcing build"
-              SHOULD_SKIP=false
-            else
-              # Check if image exists in Quay.io registry using API
-              IMAGE_TAG="pr-$PR_NUMBER"
-              REGISTRY_URL="https://quay.io/api/v1/repository/rhdh-community/rhdh/tag/$IMAGE_TAG"
-              
-              echo "🔍 Checking if image exists in Quay.io: $IMAGE_TAG"
-              echo "🌐 Registry API URL: $REGISTRY_URL"
-              
-              # Use curl to check if tag exists in Quay.io
-              HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$REGISTRY_URL" || echo "000")
-              
-              if [ "$HTTP_STATUS" = "200" ]; then
-                echo "✅ Image found in Quay.io registry - can skip build"
-                SHOULD_SKIP=true
-              elif [ "$HTTP_STATUS" = "404" ]; then
-                echo "❌ Image not found in Quay.io registry - build required"
-                SHOULD_SKIP=false
-              else
-                echo "⚠️  Unable to verify image in registry (HTTP $HTTP_STATUS) - forcing build for safety"
-                SHOULD_SKIP=false
-              fi
-            fi
-          else
-            echo "✅ Only other files changed - can skip build"
-            SHOULD_SKIP=true
-          fi
-        else
-          echo "❌ No [skip-build] tag found - build required"
-          SHOULD_SKIP=false
-        fi
-        
-        # Final result
-        if [ "$SHOULD_SKIP" = true ]; then
-          echo "🎉 DECISION: SKIP BUILD"
-          echo "is_skipped=true" >> $GITHUB_OUTPUT
-        else
+        if [ "$FORCE_BUILD" = true ]; then
           echo "🚀 DECISION: EXECUTE BUILD"
           echo "is_skipped=false" >> $GITHUB_OUTPUT
+        else
+          echo "🎉 DECISION: SKIP BUILD"
+          echo "is_skipped=true" >> $GITHUB_OUTPUT
         fi
 
     - name: Set final skip decision
