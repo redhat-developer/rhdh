@@ -13,7 +13,7 @@ outputs:
     value: ${{ steps.final-decision.outputs.is_skipped }}
   short_sha:
     description: "Short SHA of the latest commit"
-    value: ${{ steps.get-sha.outputs.short_sha }}
+    value: ${{ env.SHORT_SHA }}
 
 runs:
   using: "composite"
