@@ -88,6 +88,14 @@ test.describe("Default Global Header", () => {
     await uiHelper.clickLink({ href: "/settings" });
     await uiHelper.verifyHeading("Settings");
 
+    await uiHelper.goToMyProfilePage();
+    await uiHelper.verifyTextInSelector("header > div > p", "user");
+    await uiHelper.verifyHeading(process.env.GH_USER2_ID);
+    await uiHelper.verifyTextInSelector(
+      "a[data-testid='header-tab-0'] > span",
+      "Overview",
+    );
+
     await uiHelper.openProfileDropdown();
     await page.locator(`p`).getByText("Sign out").first().click();
     await uiHelper.verifyHeading("Select a sign-in method");
