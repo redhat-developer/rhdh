@@ -11,7 +11,7 @@ handle_ocp_helm_upgrade() {
   
   # Dynamically determine the previous release version
   export TAG_NAME_BASE=$(get_previous_release_version)
-  if [[ $? -ne 0 ]]; then
+  if [[ -z "$TAG_NAME_BASE" ]]; then
     echo "Failed to determine latest release version. Exiting."
     save_overall_result 1
     exit 1
