@@ -55,8 +55,10 @@ test.describe.serial("Test Adoption Insights", () => {
       await datePicker.getByRole("button", { name: "Cancel" }).click();
       await expect(datePicker).not.toBeVisible();
 
-      await testHelper.selectOption("Today");
-      await testHelper.waitForPanelApiCalls(page);
+      await Promise.all([
+        testHelper.waitForPanelApiCalls(page),
+        testHelper.selectOption("Today"),
+      ]);
     });
 
     test("Active users panel shows the visitor", async () => {
@@ -129,8 +131,10 @@ test.describe.serial("Test Adoption Insights", () => {
 
         await uiHelper.clickLink('Adoption Insights');
         await testHelper.clickByText('Last 28 days'); 
-        await testHelper.selectOption("Today");
-        await testHelper.waitForPanelApiCalls(page);
+        await Promise.all([
+          testHelper.waitForPanelApiCalls(page),
+          testHelper.selectOption("Today"),
+        ]);
       });
       
       test("Visited component shows up in top catalog entities", async () => {
@@ -192,8 +196,10 @@ test.describe.serial("Test Adoption Insights", () => {
         await uiHelper.openSidebarButton("Administration");
         await uiHelper.clickLink('Adoption Insights');
         await testHelper.clickByText('Last 28 days'); 
-        await testHelper.selectOption("Today");
-        await testHelper.waitForPanelApiCalls(page);
+        await Promise.all([
+          testHelper.waitForPanelApiCalls(page),
+          testHelper.selectOption("Today"),
+        ]);
         await testHelper.waitUntilApiCallSucceeds(page);
 
         for (const title of titles) {
