@@ -263,8 +263,8 @@ def main():
         installation: 
           enabled: true
           saveToSingleFile:
-          file:
-            /opt/app-root/src/dynamic-plugins-root/dynamic-plugins.marketplace.yaml'''
+            file:
+              /opt/app-root/src/dynamic-plugins-root/dynamic-plugins.marketplace.yaml'''
             file.write(f'includes:\n  - dynamic-plugins.default.yaml\nplugins:{config}')
             file.close()
         dynamicPluginsFile = dynamicPluginsMarketplaceFile
