@@ -1129,7 +1129,9 @@ to_lowercase() {
 }
 
 # Function to get the appropriate release version based on current branch
-get_latest_release_version() {
+# Return the latest release version if current branch is not a release branch
+# Return the previous release version if current branch is a release branch
+get_previous_release_version() {
   local current_branch
   current_branch=$(git branch --show-current)
   

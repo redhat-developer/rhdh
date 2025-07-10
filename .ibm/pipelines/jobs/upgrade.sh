@@ -9,13 +9,14 @@ handle_ocp_helm_upgrade() {
   export DEPLOYMENT_NAME="rhdh-backstage"
   export QUAY_REPO_BASE="rhdh/rhdh-hub-rhel9"
   
-  # Dynamically determine the latest release version
-  export TAG_NAME_BASE=$(get_latest_release_version)
+  # Dynamically determine the previous release version
+  export TAG_NAME_BASE=$(get_previous_release_version)
   if [[ $? -ne 0 ]]; then
     echo "Failed to determine latest release version. Exiting."
+    save_overall_result 1
     exit 1
   fi
-  echo "Using latest release version: ${TAG_NAME_BASE}"
+  echo "Using previous release version: ${TAG_NAME_BASE}"
   
   export HELM_CHART_VALUE_FILE_NAME_BASE="values_showcase_upgrade-base.yaml"
 
