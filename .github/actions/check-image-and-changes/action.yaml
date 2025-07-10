@@ -143,24 +143,30 @@ runs:
           elif [ -n "$IMAGE_DEPENDENT_FILES" ]; then
             echo "🧪 Image-dependent files changed - checking if image exists..."
             
-            # Check if Docker image exists
+            # Check if Docker image exists in Quay.io registry
             PR_NUMBER="${{ github.event.number }}"
             if [ -z "$PR_NUMBER" ]; then
               echo "⚠️  PR number not found, forcing build"
               SHOULD_SKIP=false
             else
-              # Check if image exists in registry
+              # Check if image exists in Quay.io registry using API
               IMAGE_TAG="pr-$PR_NUMBER"
-              IMAGE_NAME="quay.io/rhdh/rhdh-hub:$IMAGE_TAG"
+              REGISTRY_URL="https://quay.io/api/v1/repository/rhdh-community/rhdh/tag/$IMAGE_TAG"
               
-              echo "🔍 Checking if image exists: $IMAGE_NAME"
+              echo "🔍 Checking if image exists in Quay.io: $IMAGE_TAG"
+              echo "🌐 Registry API URL: $REGISTRY_URL"
               
-              # Try to pull image (silently)
-              if docker pull "$IMAGE_NAME" >/dev/null 2>&1; then
-                echo "✅ Image found in registry - can skip build"
+              # Use curl to check if tag exists in Quay.io
+              HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$REGISTRY_URL" || echo "000")
+              
+              if [ "$HTTP_STATUS" = "200" ]; then
+                echo "✅ Image found in Quay.io registry - can skip build"
                 SHOULD_SKIP=true
+              elif [ "$HTTP_STATUS" = "404" ]; then
+                echo "❌ Image not found in Quay.io registry - build required"
+                SHOULD_SKIP=false
               else
-                echo "❌ Image not found in registry - build required"
+                echo "⚠️  Unable to verify image in registry (HTTP $HTTP_STATUS) - forcing build for safety"
                 SHOULD_SKIP=false
               fi
             fi
