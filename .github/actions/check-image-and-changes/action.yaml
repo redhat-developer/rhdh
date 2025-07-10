@@ -26,103 +26,167 @@ runs:
       id: changes
       shell: bash
       run: |
-        # Ensure that SHORT_SHA is available for subsequent steps in this context
-        echo "SHORT_SHA=${SHORT_SHA:-${{ steps.get-sha.outputs.short_sha }}}" >> $GITHUB_ENV
-
-        # Get base commit for comparison
-        BASE_COMMIT=$(git merge-base ${{ github.event.pull_request.base.sha }} HEAD)
-        echo "BASE_COMMIT=$BASE_COMMIT"
-
-        # Get list of changed files
-        CHANGED_FILES=$(git diff --name-only "$BASE_COMMIT" HEAD)
-        echo "Changed files:"
-        echo "$CHANGED_FILES"
-
-        # Check for [skip-build] tag in commit messages
-        SKIP_BUILD_TAG=false
-        COMMIT_MESSAGES=$(git log --format=%B "$BASE_COMMIT"..HEAD)
-        if echo "$COMMIT_MESSAGES" | grep -q "\[skip-build\]"; then
-          echo "Found [skip-build] tag in commit messages."
-          SKIP_BUILD_TAG=true
-        fi
-
-        # Flag to track if we found any relevant changes
-        RELEVANT_CHANGES=false
-
-        # Check each file to see if it's in a non-essential directory
-        while IFS= read -r file; do
-          if [[ -n "$file" ]]; then
-            # If file is NOT in one of the non-essential directories, mark as relevant
-            # contents of .rhdh/docker are only for downstream and we do zero testing of those python or docker files in upstream e2e
-            if ! [[ "$file" =~ ^(e2e|e2e-tests|doc|docs|\.ibm|\.rhdh/docker)/ ]]; then
-              echo "Relevant change detected: $file"
-              RELEVANT_CHANGES=true
-              break
-            fi
+        echo "🔍 Checking changes and build requirements..."
+        
+        # Function to check if file is in always-skip paths
+        check_always_skip_paths() {
+          local file=$1
+          if [[ "$file" == docs/* ]] || [[ "$file" == *.md ]]; then
+            return 0  # true - always skip
           fi
-        done <<< "$CHANGED_FILES"
-
-        if [[ "$RELEVANT_CHANGES" == "true" ]]; then
-          echo "Relevant changes detected outside of non-essential directories."
-          echo "relevant=true" >> $GITHUB_OUTPUT
-        else
-          echo "Changes detected only in non-essential directories (e2e, e2e-tests, doc, docs, .ibm)."
-          echo "relevant=false" >> $GITHUB_OUTPUT
-        fi
-
-        # Set is_skipped flag for now (will be updated after image check)
-        echo "skip_build_tag=$SKIP_BUILD_TAG" >> $GITHUB_OUTPUT
-        echo "relevant_changes=$RELEVANT_CHANGES" >> $GITHUB_OUTPUT
-
-    - name: Check if Docker image exists
-      id: image-check
-      shell: bash
-      run: |
-        # First check the PR base tag (most important for skipping builds)
-        IMAGE_TAG_PR="pr-${{ github.event.number }}"
-        IMAGE_NAME_PR="${{ env.REGISTRY }}/rhdh-community/rhdh:${IMAGE_TAG_PR}"
-
-        IMAGE_EXISTS_PR=$(curl -s "https://quay.io/api/v1/repository/rhdh-community/rhdh/tag/" | jq -r --arg tag "$IMAGE_TAG_PR" '.tags[] | select(.name == $tag) | .name')
-
-        # For safety, also check commit-specific tag
-        IMAGE_TAG_COMMIT="pr-${{ github.event.number }}-${SHORT_SHA}"
-        IMAGE_NAME_COMMIT="${{ env.REGISTRY }}/rhdh-community/rhdh:${IMAGE_TAG_COMMIT}"
-
-        IMAGE_EXISTS_COMMIT=$(curl -s "https://quay.io/api/v1/repository/rhdh-community/rhdh/tag/" | jq -r --arg tag "$IMAGE_TAG_COMMIT" '.tags[] | select(.name == $tag) | .name')
-
-        # Set image_exists to true if PR tag exists (primary) or commit tag exists (secondary)
-        if [ -n "$IMAGE_EXISTS_PR" ]; then
-          echo "Image $IMAGE_NAME_PR already exists (PR base tag)."
-          echo "exists=true" >> $GITHUB_OUTPUT
-        elif [ -n "$IMAGE_EXISTS_COMMIT" ]; then
-          echo "Image $IMAGE_NAME_COMMIT already exists."
-          echo "exists=true" >> $GITHUB_OUTPUT
-        else
-          echo "Image does not exist (checked both $IMAGE_NAME_PR and $IMAGE_NAME_COMMIT)."
-          echo "exists=false" >> $GITHUB_OUTPUT
-        fi
-
-    - name: Determine final skip decision
-      id: final-decision
-      shell: bash
-      run: |
-        # Get the values from previous steps
-        SKIP_BUILD_TAG="${{ steps.changes.outputs.skip_build_tag }}"
-        RELEVANT_CHANGES="${{ steps.changes.outputs.relevant_changes }}"
-        IMAGE_EXISTS="${{ steps.image-check.outputs.exists }}"
+          return 1  # false - don't skip automatically
+        }
         
-        echo "Skip build tag: $SKIP_BUILD_TAG"
-        echo "Relevant changes: $RELEVANT_CHANGES"
-        echo "Image exists: $IMAGE_EXISTS"
+        # Function to check if file is in image-dependent paths
+        check_image_dependent_paths() {
+          local file=$1
+          if [[ "$file" == e2e/* ]] || [[ "$file" == e2e-tests/* ]] || [[ "$file" == .ibm/* ]] || [[ "$file" == .rhdh/docker/* ]]; then
+            return 0  # true - may need image
+          fi
+          return 1  # false - doesn't need image
+        }
         
-        # Simplified logic: Skip if [skip-build] tag OR (image exists AND no relevant changes)
-        if [[ "$SKIP_BUILD_TAG" == "true" ]]; then
-          echo "Build will be skipped due to [skip-build] tag."
-          echo "is_skipped=true" >> $GITHUB_OUTPUT
-        elif [[ "$IMAGE_EXISTS" == "true" && "$RELEVANT_CHANGES" == "false" ]]; then
-          echo "Build will be skipped - image exists and no relevant changes detected."
+        # Function to check if file is relevant code for build
+        check_relevant_code() {
+          local file=$1
+          # Files that affect application build
+          if [[ "$file" == packages/* ]] || [[ "$file" == plugins/* ]] || [[ "$file" == dynamic-plugins/* ]] || [[ "$file" == app-config*.yaml ]] || [[ "$file" == catalog-entities/* ]] || [[ "$file" == docker/* ]] || [[ "$file" == Dockerfile* ]] || [[ "$file" == package*.json ]] || [[ "$file" == yarn.lock ]] || [[ "$file" == tsconfig*.json ]]; then
+            return 0  # true - relevant code
+          fi
+          return 1  # false - not relevant code
+        }
+        
+        # Search for commits with [skip-build] or [skip build] tag
+        echo "🏷️  Checking commits with [skip-build] tag..."
+        SKIP_COMMITS=$(git log --format="%H %s" origin/main..HEAD | grep -i "\[skip[- ]build\]" | wc -l)
+        
+        if [ "$SKIP_COMMITS" -gt 0 ]; then
+          echo "✅ Found $SKIP_COMMITS commits with [skip-build] tag"
+        else
+          echo "❌ No commits with [skip-build] tag found"
+        fi
+        
+        # Get changed files
+        echo "📁 Getting list of changed files..."
+        CHANGED_FILES=$(git diff --name-only origin/main..HEAD)
+        
+        if [ -z "$CHANGED_FILES" ]; then
+          echo "⚠️  No changed files found"
+          echo "SKIP_BUILD=false" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+        
+        echo "📋 Changed files:"
+        echo "$CHANGED_FILES" | while read -r file; do
+          echo "  - $file"
+        done
+        
+        # Classify files
+        ALWAYS_SKIP_FILES=""
+        IMAGE_DEPENDENT_FILES=""
+        RELEVANT_CODE_FILES=""
+        OTHER_FILES=""
+        
+        echo "$CHANGED_FILES" | while read -r file; do
+          if check_always_skip_paths "$file"; then
+            ALWAYS_SKIP_FILES="$ALWAYS_SKIP_FILES $file"
+          elif check_image_dependent_paths "$file"; then
+            IMAGE_DEPENDENT_FILES="$IMAGE_DEPENDENT_FILES $file"
+          elif check_relevant_code "$file"; then
+            RELEVANT_CODE_FILES="$RELEVANT_CODE_FILES $file"
+          else
+            OTHER_FILES="$OTHER_FILES $file"
+          fi
+        done
+        
+        # Save to temporary files for later use
+        echo "$ALWAYS_SKIP_FILES" > /tmp/always_skip_files
+        echo "$IMAGE_DEPENDENT_FILES" > /tmp/image_dependent_files  
+        echo "$RELEVANT_CODE_FILES" > /tmp/relevant_code_files
+        echo "$OTHER_FILES" > /tmp/other_files
+        
+        ALWAYS_SKIP_FILES=$(cat /tmp/always_skip_files)
+        IMAGE_DEPENDENT_FILES=$(cat /tmp/image_dependent_files)
+        RELEVANT_CODE_FILES=$(cat /tmp/relevant_code_files)
+        OTHER_FILES=$(cat /tmp/other_files)
+        
+        echo "🔍 File classification:"
+        if [ -n "$ALWAYS_SKIP_FILES" ]; then
+          echo "📄 Always skip files (docs, *.md): $ALWAYS_SKIP_FILES"
+        fi
+        if [ -n "$IMAGE_DEPENDENT_FILES" ]; then
+          echo "🧪 Image-dependent files (e2e, tests): $IMAGE_DEPENDENT_FILES"
+        fi
+        if [ -n "$RELEVANT_CODE_FILES" ]; then
+          echo "💻 Relevant code files: $RELEVANT_CODE_FILES"
+        fi
+        if [ -n "$OTHER_FILES" ]; then
+          echo "📦 Other files: $OTHER_FILES"
+        fi
+        
+        # Decision logic
+        SHOULD_SKIP=false
+        
+        # If relevant code changed, never skip
+        if [ -n "$RELEVANT_CODE_FILES" ]; then
+          echo "🔥 Relevant code changed - build required"
+          SHOULD_SKIP=false
+        # If commits have [skip-build], try to skip
+        elif [ "$SKIP_COMMITS" -gt 0 ]; then
+          echo "🏷️  [skip-build] tag found - checking if safe to skip..."
+          
+          # If only always-skip files, can skip
+          if [ -z "$IMAGE_DEPENDENT_FILES" ] && [ -z "$OTHER_FILES" ]; then
+            echo "✅ Only docs/md files changed - can skip build"
+            SHOULD_SKIP=true
+          # If image-dependent files present, check if image exists
+          elif [ -n "$IMAGE_DEPENDENT_FILES" ]; then
+            echo "🧪 Image-dependent files changed - checking if image exists..."
+            
+            # Check if Docker image exists
+            PR_NUMBER="${{ github.event.number }}"
+            if [ -z "$PR_NUMBER" ]; then
+              echo "⚠️  PR number not found, forcing build"
+              SHOULD_SKIP=false
+            else
+              # Check if image exists in registry
+              IMAGE_TAG="pr-$PR_NUMBER"
+              IMAGE_NAME="quay.io/rhdh/rhdh-hub:$IMAGE_TAG"
+              
+              echo "🔍 Checking if image exists: $IMAGE_NAME"
+              
+              # Try to pull image (silently)
+              if docker pull "$IMAGE_NAME" >/dev/null 2>&1; then
+                echo "✅ Image found in registry - can skip build"
+                SHOULD_SKIP=true
+              else
+                echo "❌ Image not found in registry - build required"
+                SHOULD_SKIP=false
+              fi
+            fi
+          else
+            echo "✅ Only other files changed - can skip build"
+            SHOULD_SKIP=true
+          fi
+        else
+          echo "❌ No [skip-build] tag found - build required"
+          SHOULD_SKIP=false
+        fi
+        
+        # Final result
+        if [ "$SHOULD_SKIP" = true ]; then
+          echo "🎉 DECISION: SKIP BUILD"
           echo "is_skipped=true" >> $GITHUB_OUTPUT
         else
-          echo "Build will proceed - either no existing image or relevant changes detected."
+          echo "🚀 DECISION: EXECUTE BUILD"
           echo "is_skipped=false" >> $GITHUB_OUTPUT
         fi
+
+    - name: Set final skip decision
+      id: set-skip-decision
+      shell: bash
+      run: |
+        echo "📊 Defining final decision based on previous analysis..."
+        
+        # Decision was already taken in the previous step
+        echo "✅ Final decision defined in the previous step"
