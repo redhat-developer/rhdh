@@ -1,0 +1,22 @@
+# Cursor Rules for RHDH Project
+
+## Code Comments and Documentation
+
+- ALL code comments MUST be written in English
+- ALL log messages MUST be in English
+- ALL documentation within code MUST be in English
+- ALL commit messages MUST be in English
+- This ensures international collaboration and accessibility
+
+## Examples:
+
+❌ BAD: # Verificar se arquivo existe
+✅ GOOD: # Check if file exists
+
+❌ BAD: echo "Processando arquivos..."
+✅ GOOD: echo "Processing files..."
+
+## Rationale:
+
+This is a fundamental rule for international open source collaboration.
+Developers from any nationality should be able to understand and contribute to the codebase.
