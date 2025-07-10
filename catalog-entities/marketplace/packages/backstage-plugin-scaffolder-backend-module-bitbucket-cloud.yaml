@@ -27,5 +27,5 @@ spec:
   support: tech-preview
   lifecycle: active
   partOf:
-    - bitbucket-cloud-catalog-integration
+    - bitbucket-cloud-scaffolder-actions
   appConfigExamples: []
