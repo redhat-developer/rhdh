@@ -3,9 +3,10 @@
 # shellcheck source=.ibm/pipelines/reporting.sh
 source "${DIR}/reporting.sh"
 
-export_chart_version() {
-  export CHART_VERSION=$(curl -sSX GET "https://quay.io/api/v1/repository/rhdh/chart/tag/?onlyActiveTags=true&filter_tag_name=like:${CHART_MAJOR_VERSION}-" -H "Content-Type: application/json" \
-  | jq '.tags[0].name' | grep -oE '[0-9]+\.[0-9]+-[0-9]+-CI')
+get_chart_version() {
+  local chart_major_version=$1
+  curl -sSX GET "https://quay.io/api/v1/repository/rhdh/chart/tag/?onlyActiveTags=true&filter_tag_name=like:${chart_major_version}-" -H "Content-Type: application/json" \
+  | jq '.tags[0].name' | grep -oE '[0-9]+\.[0-9]+-[0-9]+-CI'
 }
 
 retrieve_pod_logs() {

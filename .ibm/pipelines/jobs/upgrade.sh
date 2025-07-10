@@ -9,14 +9,22 @@ handle_ocp_helm_upgrade() {
   export DEPLOYMENT_NAME="${RELEASE_NAME}-developer-hub"
   export QUAY_REPO_BASE="rhdh/rhdh-hub-rhel9"
   
-  # Dynamically determine the previous release version
-  export TAG_NAME_BASE=$(get_previous_release_version)
-  if [[ -z "$TAG_NAME_BASE" ]]; then
+  # Dynamically determine the previous release version and chart version
+  previous_release_version=$(get_previous_release_version)
+  if [[ -z "$previous_release_version" ]]; then
     echo "Failed to determine latest release version. Exiting."
     save_overall_result 1
     exit 1
   fi
-  echo "Using previous release version: ${TAG_NAME_BASE}"
+  CHART_VERSION_BASE=$(get_chart_version "$previous_release_version")
+  if [[ -z "$CHART_VERSION_BASE" ]]; then
+    echo "Failed to determine correct chart version for $previous_release_version. Exiting."
+    save_overall_result 1
+    exit 1
+  fi
+  export CHART_VERSION_BASE
+  echo "Using previous release version: ${previous_release_version} and chart version: ${CHART_VERSION_BASE}"
+  export TAG_NAME_BASE=$previous_release_version
   
   export HELM_CHART_VALUE_FILE_NAME_BASE="values_showcase_upgrade-base.yaml"
 
@@ -26,7 +34,7 @@ handle_ocp_helm_upgrade() {
   export K8S_CLUSTER_ROUTER_BASE
 
   cluster_setup
-  clear_database
+
   local url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   initiate_upgrade_base_deployments "${RELEASE_NAME}" "${NAME_SPACE}" "${url}"
 
