@@ -35,7 +35,6 @@
   GitHub and guest will be used whenever the environment variable is set to development
 
   Oauth2Proxy will be used whenever the environment variable is set to production
-
   - note: the GitHub section will also need to be updated to ensure that the GitHub plugins work properly
 
   To enable GitHub and guest Sign in pages, add the below to the app-config
