@@ -13,7 +13,7 @@ outputs:
     value: ${{ steps.final-decision.outputs.is_skipped }}
   short_sha:
     description: "Short SHA of the latest commit"
-    value: ${{ env.SHORT_SHA }}
+    value: ${{ steps.get-sha.outputs.short_sha }}
 
 runs:
   using: "composite"
@@ -192,10 +192,18 @@ runs:
         fi
 
     - name: Set final skip decision
-      id: set-skip-decision
+      id: final-decision
       shell: bash
       run: |
         echo "📊 Defining final decision based on previous analysis..."
         
-        # Decision was already taken in the previous step
-        echo "✅ Final decision defined in the previous step"
+        # Get the decision from the previous step
+        IS_SKIPPED="${{ steps.changes.outputs.is_skipped }}"
+        
+        if [ "$IS_SKIPPED" = "true" ]; then
+          echo "🎉 FINAL DECISION: SKIP BUILD"
+          echo "is_skipped=true" >> $GITHUB_OUTPUT
+        else
+          echo "🚀 FINAL DECISION: EXECUTE BUILD"
+          echo "is_skipped=false" >> $GITHUB_OUTPUT
+        fi
