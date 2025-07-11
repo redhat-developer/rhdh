@@ -27,4 +27,5 @@ spec:
   lifecycle: active
   partOf:
     - signals
+    - signals-backend
   appConfigExamples: []
