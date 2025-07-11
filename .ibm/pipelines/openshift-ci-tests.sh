@@ -10,18 +10,18 @@ OVERALL_RESULT=0
 
 # Define a cleanup function to be executed upon script exit.
 # shellcheck disable=SC2317
-cleanup() {
-  echo "Cleaning up before exiting"
-  if [[ "${OPENSHIFT_CI}" == "true" ]]; then
-    case "$JOB_NAME" in
-      *gke*)
-        echo "Calling cleanup_gke"
-        cleanup_gke
-        ;;
-    esac
-  fi
-  rm -rf ~/tmpbin
-}
+# cleanup() {
+#   echo "Cleaning up before exiting"
+#   if [[ "${OPENSHIFT_CI}" == "true" ]]; then
+#     case "$JOB_NAME" in
+#       *gke*)
+#         echo "Calling cleanup_gke"
+#         cleanup_gke
+#         ;;
+#     esac
+#   fi
+#   rm -rf ~/tmpbin
+# }
 
 trap cleanup EXIT INT ERR
 
@@ -46,7 +46,7 @@ done
 main() {
   echo "Log file: ${LOGFILE}"
   echo "JOB_NAME : $JOB_NAME"
-
+  export TAG_NAME="1.5"
   case "$JOB_NAME" in
     *aks*)
       echo "Calling handle_aks"
