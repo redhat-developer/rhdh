@@ -27,6 +27,7 @@ OPERATOR_MANAGER='rhdh-operator'
 #CHART_VERSION="2.15.2" # Fixed version should be used for release branches.
 CHART_VERSION="1.5-193-CI" # Fixed version should be used for release branches.
 HELM_CHART_URL="oci://quay.io/rhdh/chart"
+K8S_CLUSTER_TOKEN_ROKS=$(cat /tmp/secrets/K8S_CLUSTER_TOKEN_ROKS)
 
 GITHUB_APP_APP_ID=$(cat /tmp/secrets/GITHUB_APP_3_APP_ID)
 GITHUB_APP_CLIENT_ID=$(cat /tmp/secrets/GITHUB_APP_3_CLIENT_ID)

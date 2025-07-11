@@ -811,7 +811,8 @@ initiate_deployments() {
     -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO}" \
-    --set upstream.backstage.image.tag="${TAG_NAME}"
+    --set upstream.backstage.image.tag="${TAG_NAME}" \
+    --set upstream.nameOverride="${RELEASE_NAME}"
 
   # Initiate rbac instance deployment.
 #  local rbac_rhdh_base_url="https://${RELEASE_NAME_RBAC}-backstage-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
@@ -823,7 +824,8 @@ initiate_deployments() {
     -f "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO}" \
-    --set upstream.backstage.image.tag="${TAG_NAME}"
+    --set upstream.backstage.image.tag="${TAG_NAME}" \
+    --set upstream.nameOverride="${RELEASE_NAME}"
 }
 
 initiate_runtime_deployment() {
@@ -840,7 +842,8 @@ initiate_runtime_deployment() {
     -f "$DIR/resources/postgres-db/values-showcase-postgres.yaml" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO}" \
-    --set upstream.backstage.image.tag="${TAG_NAME}"
+    --set upstream.backstage.image.tag="${TAG_NAME}" \
+    --set upstream.nameOverride="${RELEASE_NAME}"
 }
 
 check_and_test() {
