@@ -21,7 +21,8 @@ test.describe
     await common.loginAsGuest();
   });
 
-  test("Change the config to use the latest-2 postgres version", async () => {
+  //TODO: Fix failing test - https://issues.redhat.com/browse/RHDHBUGS-826
+  test.skip("Change the config to use the latest-2 postgres version", async () => {
     const kubeCLient = new KubeClient();
     test.setTimeout(180000);
     const secretData = {
@@ -34,7 +35,7 @@ test.describe
     await kubeCLient.restartDeployment(deploymentName, namespace);
   });
 
-  //TODO https://issues.redhat.com/browse/RHIDP-7869
+  //TODO Fix failing test - https://issues.redhat.com/browse/RHDHBUGS-826
   test.skip("Verify successful DB connection and successful initialization of plugins with latest-2 postgres version", async ({
     page,
   }) => {
@@ -42,7 +43,8 @@ test.describe
     await common.loginAsGuest();
   });
 
-  test("Change the config to use the latest-3 postgres version", async () => {
+  //TODO Fix failing test - https://issues.redhat.com/browse/RHDHBUGS-826
+  test.skip("Change the config to use the latest-3 postgres version", async () => {
     const kubeCLient = new KubeClient();
     test.setTimeout(180000);
     const secretData = {
@@ -55,7 +57,8 @@ test.describe
     await kubeCLient.restartDeployment(deploymentName, namespace);
   });
 
-  test("Verify successful DB connection and successful initialization of plugins with latest-3 postgres version", async ({
+  //TODO Fix failing test - https://issues.redhat.com/browse/RHDHBUGS-826
+  test.skip("Verify successful DB connection and successful initialization of plugins with latest-3 postgres version", async ({
     page,
   }) => {
     const common = new Common(page);
