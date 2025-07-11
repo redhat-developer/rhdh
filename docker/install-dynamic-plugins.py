@@ -266,7 +266,9 @@ def main():
           installation: 
             enabled: true
             saveToSingleFile:
-              file: /opt/app-root/src/dynamic-plugins-root/dynamic-plugins.marketplace.yaml'''
+              file: /opt/app-root/src/dynamic-plugins-root/dynamic-plugins.marketplace.yaml
+    - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-catalog-backend-module-marketplace-dynamic
+      disabled: false'''
             file.write(config)
             file.close()
           
