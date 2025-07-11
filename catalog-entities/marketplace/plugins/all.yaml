@@ -6,6 +6,7 @@ metadata:
 spec:
   targets:
     - ./3scale.yaml
+    - ./adoption-insights.yaml
     - ./analytics-provider-segment.yaml
     - ./ansible-plugin.yaml
     - ./argocd-scaffolder-actions.yaml

@@ -1,0 +1,37 @@
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: rhdh-backstage-plugin-analytics-module-adoption-insights
+  namespace: rhdh
+  title: "@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-analytics-module-adoption-insights-dynamic
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-analytics-module-adoption-insights-dynamic
+  tags: []
+spec:
+  packageName: "@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights"
+  dynamicArtifact: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-analytics-module-adoption-insights-dynamic
+  version: 0.2.0
+  backstage:
+    role: frontend-plugin-module
+    supportedVersions: 1.39.1
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+  partOf:
+    - adoption-insights
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        dynamicPlugins:
+          frontend:
+            red-hat-developer-hub.backstage-plugin-analytics-module-adoption-insights:
+              analyticsApiExtensions:
+                - importName: AdoptionInsightsAnalyticsApi
