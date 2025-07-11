@@ -252,6 +252,9 @@ RUN ln -s /opt/app-root/src/packages/app/dist/index.html /opt/app-root/src/packa
 # Fix for https://issues.redhat.com/browse/RHIDP-728
 RUN mkdir -p /opt/app-root/src/.npm; chown -R 1001:1001 /opt/app-root/src/.npm
 
+# Ensure orchestrator plugins can be resolved from the Red Hat NPM registry without needing a .npmrc Secret
+RUN npm config set @redhat:registry https://npm.registry.redhat.com
+
 # The fix-permissions script is important when operating in environments that dynamically use a random UID at runtime, such as OpenShift.
 # The upstream backstage image does not account for this and it causes the container to fail at runtime.
 # suppress warnings about dereferencing symlinks
