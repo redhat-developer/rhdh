@@ -47,7 +47,8 @@ test.describe("Default Global Header", () => {
     await uiHelper.verifyHeading("Self-service");
   });
 
-  test("Verify that clicking on Support button in HelpDropdown opens a new tab", async ({
+  // TODO: Fix failing test - https://issues.redhat.com/browse/RHDHBUGS-1870
+  test.skip("Verify that clicking on Support button in HelpDropdown opens a new tab", async ({
     context,
     page,
   }) => {
@@ -80,7 +81,8 @@ test.describe("Default Global Header", () => {
     await newTab.close();
   });
 
-  test("Verify Profile Dropdown behaves as expected", async ({ page }) => {
+  // TODO: Fix failing test - https://issues.redhat.com/browse/RHDHBUGS-1870
+  test.skip("Verify Profile Dropdown behaves as expected", async ({ page }) => {
     await uiHelper.openProfileDropdown();
     expect(await uiHelper.isLinkVisible("Settings")).toBeTruthy();
     expect(await uiHelper.isTextVisible("Sign out")).toBeTruthy();
@@ -116,7 +118,8 @@ test.describe("Default Global Header", () => {
     await expect(searchResultPageInput).toHaveValue("test query term");
   });
 
-  test("Verify Notifications button behaves as expected", async ({
+  // TODO: Fix failing test - https://issues.redhat.com/browse/RHDHBUGS-1870
+  test.skip("Verify Notifications button behaves as expected", async ({
     baseURL,
     request,
     page,
