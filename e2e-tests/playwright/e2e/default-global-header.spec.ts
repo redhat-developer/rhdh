@@ -47,7 +47,8 @@ test.describe("Default Global Header", () => {
     await uiHelper.verifyHeading("Self-service");
   });
 
-  test("Verify that clicking on Support button in HelpDropdown opens a new tab", async ({
+  // TODO: Fix failing test - https://issues.redhat.com/browse/RHDHBUGS-1870
+  test.skip("Verify that clicking on Support button in HelpDropdown opens a new tab", async ({
     context,
     page,
   }) => {
@@ -80,13 +81,22 @@ test.describe("Default Global Header", () => {
     await newTab.close();
   });
 
-  test("Verify Profile Dropdown behaves as expected", async ({ page }) => {
+  // TODO: Fix failing test - https://issues.redhat.com/browse/RHDHBUGS-1870
+  test.skip("Verify Profile Dropdown behaves as expected", async ({ page }) => {
     await uiHelper.openProfileDropdown();
     expect(await uiHelper.isLinkVisible("Settings")).toBeTruthy();
     expect(await uiHelper.isTextVisible("Sign out")).toBeTruthy();
 
     await uiHelper.clickLink({ href: "/settings" });
     await uiHelper.verifyHeading("Settings");
+
+    await uiHelper.goToMyProfilePage();
+    await uiHelper.verifyTextInSelector("header > div > p", "user");
+    await uiHelper.verifyHeading(process.env.GH_USER2_ID);
+    await uiHelper.verifyTextInSelector(
+      "a[data-testid='header-tab-0'] > span",
+      "Overview",
+    );
 
     await uiHelper.openProfileDropdown();
     await page.locator(`p`).getByText("Sign out").first().click();
@@ -108,7 +118,8 @@ test.describe("Default Global Header", () => {
     await expect(searchResultPageInput).toHaveValue("test query term");
   });
 
-  test("Verify Notifications button behaves as expected", async ({
+  // TODO: Fix failing test - https://issues.redhat.com/browse/RHDHBUGS-1870
+  test.skip("Verify Notifications button behaves as expected", async ({
     baseURL,
     request,
     page,

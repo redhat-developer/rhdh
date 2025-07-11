@@ -603,6 +603,13 @@ plugins:
                     link: /settings
                     icon: manageAccounts
               - mountPoint: global.header/profile
+                importName: MenuItemLink
+                config:
+                  priority: 90
+                  props:
+                    title: My profile
+                    icon: account
+              - mountPoint: global.header/profile
                 importName: LogoutButton
                 config:
                   priority: 10

@@ -219,6 +219,12 @@ export class UIhelper {
     await this.clickLink({ href: "/settings" });
   }
 
+  async goToMyProfilePage() {
+    await expect(this.page.locator("nav[id='global-header']")).toBeVisible();
+    await this.openProfileDropdown();
+    await this.clickLink("My profile");
+  }
+
   async verifyLink(
     arg: string | { label: string },
     options: {
