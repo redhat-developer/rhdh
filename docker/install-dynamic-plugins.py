@@ -256,17 +256,21 @@ def main():
         print('\n======= Generating marketplace file')
         with open(dynamicPluginsMarketplaceFile, 'w') as file:
             config = '''
-  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-marketplace-backend-dynamic
-    disabled: false
-    pluginConfig:
-      extensions:
-        installation: 
-          enabled: true
-          saveToSingleFile:
-            file:
-              /opt/app-root/src/dynamic-plugins-root/dynamic-plugins.marketplace.yaml'''
-            file.write(f'includes:\n  - dynamic-plugins.default.yaml\nplugins:{config}')
+  includes:
+    - dynamic-plugins.default.yaml
+  plugins:
+    - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-marketplace-backend-dynamic
+      disabled: false
+      pluginConfig:
+        extensions:
+          installation: 
+            enabled: true
+            saveToSingleFile:
+              file: /opt/app-root/src/dynamic-plugins-root/dynamic-plugins.marketplace.yaml'''
+            file.write(config)
             file.close()
+          
+    if os.path.isfile(dynamicPluginsMarketplaceFile):
         dynamicPluginsFile = dynamicPluginsMarketplaceFile
 
     # test if file dynamic-plugins.yaml exists
