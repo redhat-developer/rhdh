@@ -908,7 +908,6 @@ rbac_deployment() {
 
 initiate_deployments() {
   cd "${DIR}"
-  install_orchestrator_infra_chart
   base_deployment
   rbac_deployment
 }
