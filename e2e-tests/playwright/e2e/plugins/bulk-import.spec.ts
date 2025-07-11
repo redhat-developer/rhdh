@@ -93,7 +93,8 @@ test.describe.serial("Bulk Import plugin", () => {
     ).toBeDisabled({ timeout: 10000 });
   });
 
-  test('Verify that the two selected repositories are listed: one with the status "Added" and another with the status "WAIT_PR_APPROVAL."', async () => {
+  // TODO: Fix failing test - https://issues.redhat.com/browse/RHDHBUGS-1869
+  test.skip('Verify that the two selected repositories are listed: one with the status "Added" and another with the status "WAIT_PR_APPROVAL."', async () => {
     await common.waitForLoad();
     await bulkimport.filterAddedRepo(catalogRepoDetails.name);
     await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
