@@ -10,20 +10,20 @@ OVERALL_RESULT=0
 
 # Define a cleanup function to be executed upon script exit.
 # shellcheck disable=SC2317
-cleanup() {
-  echo "Cleaning up before exiting"
-  if [[ "${OPENSHIFT_CI}" == "true" ]]; then
-    case "$JOB_NAME" in
-      *gke*)
-        echo "Calling cleanup_gke"
-        cleanup_gke
-        ;;
-    esac
-  fi
-  rm -rf ~/tmpbin
-}
-
-trap cleanup EXIT INT ERR
+#cleanup() {
+#  echo "Cleaning up before exiting"
+#  if [[ "${OPENSHIFT_CI}" == "true" ]]; then
+#    case "$JOB_NAME" in
+#      *gke*)
+#        echo "Calling cleanup_gke"
+#        cleanup_gke
+#        ;;
+#    esac
+#  fi
+#  rm -rf ~/tmpbin
+#}
+#
+#trap cleanup EXIT INT ERR
 
 SCRIPTS=(
     "env_variables.sh"
@@ -36,6 +36,8 @@ SCRIPTS=(
     "jobs/periodic.sh"
     "jobs/auth-providers.sh"
 )
+
+#  https://c111-e.us-east.containers.cloud.ibm.com:31018
 
 # Source each script dynamically
 for SCRIPT in "${SCRIPTS[@]}"; do
