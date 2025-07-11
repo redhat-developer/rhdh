@@ -14,7 +14,8 @@ HELM_IMAGE_NAME=backstage
 HELM_REPO_NAME=rhdh-chart
 HELM_REPO_URL="https://redhat-developer.github.io/rhdh-chart"
 K8S_CLUSTER_TOKEN_ENCODED=$(printf "%s" $K8S_CLUSTER_TOKEN | base64 | tr -d '\n')
-QUAY_REPO="${QUAY_REPO:-rhdh-community/rhdh}"
+#QUAY_REPO="${QUAY_REPO:-rhdh-community/rhdh}"
+QUAY_REPO="rhdh/rhdh-hub-rhel9"
 
 RELEASE_NAME=rhdh
 RELEASE_NAME_RBAC=rhdh-rbac
@@ -23,7 +24,10 @@ NAME_SPACE_RBAC="${NAME_SPACE_RBAC:-showcase-rbac}"
 NAME_SPACE_RUNTIME="${NAME_SPACE_RUNTIME:-showcase-runtime}"
 NAME_SPACE_POSTGRES_DB="${NAME_SPACE_POSTGRES_DB:-postgress-external-db}"
 OPERATOR_MANAGER='rhdh-operator'
-CHART_VERSION="2.15.2" # Fixed version should be used for release branches.
+#CHART_VERSION="2.15.2" # Fixed version should be used for release branches.
+CHART_VERSION="1.5.3" # Fixed version should be used for release branches.
+HELM_CHART_URL="oci://quay.io/rhdh/chart"
+
 GITHUB_APP_APP_ID=$(cat /tmp/secrets/GITHUB_APP_3_APP_ID)
 GITHUB_APP_CLIENT_ID=$(cat /tmp/secrets/GITHUB_APP_3_CLIENT_ID)
 GITHUB_APP_PRIVATE_KEY=$(cat /tmp/secrets/GITHUB_APP_3_PRIVATE_KEY)

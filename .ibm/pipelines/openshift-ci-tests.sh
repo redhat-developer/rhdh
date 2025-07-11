@@ -47,6 +47,8 @@ main() {
   echo "Log file: ${LOGFILE}"
   echo "JOB_NAME : $JOB_NAME"
 
+  export TAG_NAME="1.5"
+
   case "$JOB_NAME" in
     *aks*)
       echo "Calling handle_aks"

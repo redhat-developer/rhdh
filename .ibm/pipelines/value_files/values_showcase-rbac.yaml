@@ -121,8 +121,8 @@ upstream:
       pullPolicy: Always
       # using test image from https://quay.io/repository/rhdh-community/rhdh
       registry: quay.io
-      repository: rhdh-community/rhdh
-      tag: next
+      repository: rhdh/rhdh-hub-rhel9
+      tag: "1.5"
     appConfig:
       app:
         # Please update to match host in case you don't want to configure hostname via `global.clusterRouterBase` or `global.host`.
@@ -222,7 +222,7 @@ upstream:
       - name: dynamic-plugins
         configMap:
           defaultMode: 420
-          name: dynamic-plugins
+          name: '{{ printf "%s-dynamic-plugins" .Release.Name }}'
           optional: true
       # Optional volume that allows exposing the `.npmrc` file (through a `dynamic-plugins-npmrc` secret)
       # to be used when running `npm pack` during the dynamic plugins installation by the initContainer.
