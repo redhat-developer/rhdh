@@ -85,3 +85,6 @@ spec:
     - ./red-hat-developer-hub-backstage-plugin-marketplace.yaml
     - ./dynatrace-backstage-plugin-dql.yaml
     - ./dynatrace-backstage-plugin-dql-backend.yaml
+    - ./rhdh-backstage-plugin-adoption-insights.yaml
+    - ./rhdh-backstage-plugin-adoption-insights-backend.yaml
+    - ./rhdh-backstage-plugin-analytics-module-adoption-insights.yaml
