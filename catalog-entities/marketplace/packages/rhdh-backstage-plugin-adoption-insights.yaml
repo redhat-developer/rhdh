@@ -1,0 +1,48 @@
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: rhdh-backstage-plugin-adoption-insights
+  namespace: rhdh
+  title: "@red-hat-developer-hub/backstage-plugin-adoption-insights"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-adoption-insights
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-adoption-insights
+  tags: []
+spec:
+  packageName: "@red-hat-developer-hub/backstage-plugin-adoption-insights"
+  dynamicArtifact: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-adoption-insights
+  version: 0.2.1
+  backstage:
+    role: frontend-plugin
+    supportedVersions: 1.39.1
+  author: Red Hat
+  support: production
+  lifecycle: active
+  partOf:
+    - adoption-insights
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        dynamicPlugins:
+          frontend:
+            red-hat-developer-hub.backstage-plugin-adoption-insights:
+              appIcons:
+                - name: adoptionInsightsIcon
+                  importName: AdoptionInsightsIcon
+              dynamicRoutes:
+                - path: /adoption-insights
+                  importName: AdoptionInsightsPage
+                  menuItem:
+                    icon: adoptionInsightsIcon
+                    text: Adoption Insights
+              menuItems:
+                adoption-insights:
+                  parent: admin
+                  icon: adoptionInsightsIcon
