@@ -11,6 +11,7 @@ import {
 
 // Pre-req : plugin-bulk-import & plugin-bulk-import-backend-dynamic
 test.describe.serial("Bulk Import plugin", () => {
+  test.fixme(); // TODO: Fix failing tests - https://issues.redhat.com/browse/RHDHBUGS-1869
   test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
   let page: Page;
   let uiHelper: UIhelper;
@@ -93,8 +94,7 @@ test.describe.serial("Bulk Import plugin", () => {
     ).toBeDisabled({ timeout: 10000 });
   });
 
-  // TODO: Fix failing test - https://issues.redhat.com/browse/RHDHBUGS-1869
-  test.skip('Verify that the two selected repositories are listed: one with the status "Added" and another with the status "WAIT_PR_APPROVAL."', async () => {
+  test('Verify that the two selected repositories are listed: one with the status "Added" and another with the status "WAIT_PR_APPROVAL."', async () => {
     await common.waitForLoad();
     await bulkimport.filterAddedRepo(catalogRepoDetails.name);
     await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
