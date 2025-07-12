@@ -247,6 +247,34 @@ def main():
     dynamicPluginsFile = 'dynamic-plugins.yaml'
     dynamicPluginsGlobalConfigFile = os.path.join(dynamicPluginsRoot, 'app-config.dynamic-plugins.yaml')
 
+    dynamicPluginsMarketplaceFileEnabled = os.getenv('MARKETPLACE_INSTALLATION_ENABLED', False)
+    dynamicPluginsMarketplaceFileName = os.getenv('MARKETPLACE_INSTALLATION_FILE', 'dynamic-plugins.marketplace.yaml')
+    dynamicPluginsMarketplaceFile = os.path.join(dynamicPluginsRoot, dynamicPluginsMarketplaceFileName)
+    print(f'\n======= Marketplace installation enabled: {dynamicPluginsMarketplaceFileEnabled}')
+    print(f"\n======= Marketplace file exists: {os.path.isfile(dynamicPluginsMarketplaceFile)}")
+    if (dynamicPluginsMarketplaceFileEnabled and not os.path.isfile(dynamicPluginsMarketplaceFile)):
+        print('\n======= Generating marketplace file')
+        with open(dynamicPluginsMarketplaceFile, 'w') as file:
+            config = '''
+  includes:
+    - dynamic-plugins.default.yaml
+  plugins:
+    - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-marketplace-backend-dynamic
+      disabled: false
+      pluginConfig:
+        extensions:
+          installation: 
+            enabled: true
+            saveToSingleFile:
+              file: /opt/app-root/src/dynamic-plugins-root/dynamic-plugins.marketplace.yaml
+    - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-catalog-backend-module-marketplace-dynamic
+      disabled: false'''
+            file.write(config)
+            file.close()
+          
+    if os.path.isfile(dynamicPluginsMarketplaceFile):
+        dynamicPluginsFile = dynamicPluginsMarketplaceFile
+
     # test if file dynamic-plugins.yaml exists
     if not os.path.isfile(dynamicPluginsFile):
         print(f"No {dynamicPluginsFile} file found. Skipping dynamic plugins installation.")
