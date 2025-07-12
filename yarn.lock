@@ -7417,9 +7417,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ianvs/prettier-plugin-sort-imports@npm:4.4.2":
-  version: 4.4.2
-  resolution: "@ianvs/prettier-plugin-sort-imports@npm:4.4.2"
+"@ianvs/prettier-plugin-sort-imports@npm:4.5.1":
+  version: 4.5.1
+  resolution: "@ianvs/prettier-plugin-sort-imports@npm:4.5.1"
   dependencies:
     "@babel/generator": ^7.26.2
     "@babel/parser": ^7.26.2
@@ -7427,12 +7427,15 @@ __metadata:
     "@babel/types": ^7.26.0
     semver: ^7.5.2
   peerDependencies:
+    "@prettier/plugin-oxc": ^0.0.4
     "@vue/compiler-sfc": 2.7.x || 3.x
     prettier: 2 || 3 || ^4.0.0-0
   peerDependenciesMeta:
+    "@prettier/plugin-oxc":
+      optional: true
     "@vue/compiler-sfc":
       optional: true
-  checksum: 28982e1e20fae94368dae4cd6fa4e5d54ca1040652c6a3b3ec2612028d3053955d82b03abcc00076b72485b4e0c839f469aa0f7ded73e95fb2c7393c23fb9f2d
+  checksum: ed613e2baec6ee5cc86bfecf3aa64d247c0c36b4838f8bb893d12c49843264296b24bb39bd8e13bb87bfc1c54c5c4efaeac8e6c15a1a7a2ee38a9f1bcb53baa7
   languageName: node
   linkType: hard
 
@@ -31922,7 +31925,7 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.32.1
     "@backstage/frontend-test-utils": ^0.3.2
-    "@ianvs/prettier-plugin-sort-imports": 4.4.2
+    "@ianvs/prettier-plugin-sort-imports": 4.5.1
     "@manypkg/cli": 0.24.0
     glob: 11.0.3
     husky: 8.0.3
