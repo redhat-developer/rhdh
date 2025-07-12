@@ -15,7 +15,8 @@ metadata:
   annotations:
     backstage.io/source-location: url
       https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic
-  tags: []
+  tags:
+    - software-templates
 spec:
   packageName: "@backstage-community/plugin-catalog-backend-module-scaffolder-rel\
     ation-processor"
@@ -28,5 +29,5 @@ spec:
   support: tech-preview
   lifecycle: active
   partOf:
-    - backstage-community-scaffolder-relation-processor-catalog-module
+    - scaffolder-relation-processor-catalog-integration
   appConfigExamples: []

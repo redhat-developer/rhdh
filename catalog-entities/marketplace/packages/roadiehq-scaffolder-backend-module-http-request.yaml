@@ -14,7 +14,8 @@ metadata:
   annotations:
     backstage.io/source-location: url
       https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/roadiehq-scaffolder-backend-module-http-request-dynamic
-  tags: []
+  tags:
+    - software-templates
 spec:
   packageName: "@roadiehq/scaffolder-backend-module-http-request"
   dynamicArtifact: ./dynamic-plugins/dist/roadiehq-scaffolder-backend-module-http-request-dynamic
@@ -26,5 +27,5 @@ spec:
   support: tech-preview
   lifecycle: active
   partOf:
-    - roadiehq-http-request-scaffolder-module
+    - http-request-scaffolder-action
   appConfigExamples: []

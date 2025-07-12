@@ -26,7 +26,7 @@ spec:
   support: production
   lifecycle: active
   partOf:
-    - red-hat-developer-hub-backstage-plugin-global-floating-action-button
+    - global-floating-action-button
   appConfigExamples:
     - title: Default configuration
       content:

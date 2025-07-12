@@ -26,5 +26,5 @@ spec:
   support: tech-preview
   lifecycle: active
   partOf:
-    - red-hat-developer-hub-marketplace-catalog-module
+    - extensions
   appConfigExamples: []

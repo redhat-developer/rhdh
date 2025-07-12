@@ -26,7 +26,7 @@ spec:
   support: tech-preview
   lifecycle: active
   partOf:
-    - immobiliarelabs-gitlab
+    - backstage-catalog-cards
   appConfigExamples:
     - title: Default configuration
       content:

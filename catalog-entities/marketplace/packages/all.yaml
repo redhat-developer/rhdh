@@ -83,6 +83,9 @@ spec:
     - ./red-hat-developer-hub-backstage-plugin-catalog-backend-module-m.yaml
     - ./red-hat-developer-hub-backstage-plugin-marketplace-backend.yaml
     - ./red-hat-developer-hub-backstage-plugin-marketplace.yaml
+    - ./redhat-backstage-plugin-orchestrator-backend.yaml
+    - ./redhat-backstage-plugin-orchestrator.yaml
+    - ./redhat-backstage-plugin-scaffolder-backend-module-orchestrator.yaml
     - ./dynatrace-backstage-plugin-dql.yaml
     - ./dynatrace-backstage-plugin-dql-backend.yaml
     - ./rhdh-backstage-plugin-adoption-insights.yaml

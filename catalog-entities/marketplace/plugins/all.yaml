@@ -28,11 +28,13 @@ spec:
     - ./github-actions.yaml
     - ./github-catalog-integration.yaml
     - ./github-insights.yaml
+    - ./github-org-catalog-integration.yaml
     - ./github-issues.yaml
     - ./github-pull-requests.yaml
     - ./github-scaffolder-actions.yaml
     - ./gitlab-catalog-cards.yaml
     - ./gitlab-catalog-integration.yaml
+    - ./gitlab-org-catalog-integration.yaml
     - ./gitlab-scaffolder-actions.yaml
     - ./global-floating-action-button.yaml
     - ./global-header.yaml
@@ -52,6 +54,7 @@ spec:
     - ./notifications.yaml
     - ./notifications-email.yaml
     - ./openshift-cluster-manager.yaml
+    - ./orchestrator-scaffolder-actions.yaml
     - ./orchestrator.yaml
     - ./pagerduty.yaml
     - ./pingidentity.yaml
@@ -62,6 +65,7 @@ spec:
     - ./roadie-argocd.yaml
     - ./roadie-scaffolder-util-actions.yaml
     - ./scaffolder-integrations.yaml
+    - ./scaffolder-relation-processor-catalog-integration.yaml
     - ./security-insights.yaml
     - ./servicenow-scaffolder-actions.yaml
     - ./signals.yaml

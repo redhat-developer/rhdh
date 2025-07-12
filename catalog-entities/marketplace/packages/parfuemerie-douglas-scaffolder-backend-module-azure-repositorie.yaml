@@ -14,7 +14,8 @@ metadata:
   annotations:
     backstage.io/source-location: url
       https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/parfuemerie-douglas-scaffolder-backend-module-azure-repositories-dynamic
-  tags: []
+  tags:
+    - software-templates
 spec:
   packageName: "@parfuemerie-douglas/scaffolder-backend-module-azure-repositories"
   dynamicArtifact: ./dynamic-plugins/dist/parfuemerie-douglas-scaffolder-backend-module-azure-repositories-dynamic
@@ -26,5 +27,5 @@ spec:
   support: tech-preview
   lifecycle: active
   partOf:
-    - parfuemerie-douglas-azure-repositories-scaffolder-module
+    - azure-repositories
   appConfigExamples: []

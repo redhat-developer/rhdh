@@ -2,18 +2,16 @@
 apiVersion: extensions.backstage.io/v1alpha1
 kind: Plugin
 metadata:
-  name: gitlab-catalog-integration
+  name: backstage-plugin-catalog-backend-module-github-org
   namespace: rhdh
-  title: GitLab Catalog Integration
+  title: GitHub Org Software Catalog Integration
   description: |
-    This plugin provides GitLab catalog integration for the Red Hat Developer Hub. Searches your
-    GitLab account and registers catalog files matching the configured path.
-    It can also import your users and groups from GitLab.
+    Provides a GitHub integration for the Software Catalog. 
+    Searches your GitHub account and imports your users and groups from GitHub.
   annotations:
     extensions.backstage.io/pre-installed: 'true'
+    extensions.backstage.io/verified-by: Red Hat
   links:
-    - title: readme
-      url: https://github.com/backstage/backstage/blob/master/plugins/catalog-backend-module-gitlab/README.md
     - title: Homepage
       url: https://red.ht/rhdh
     - title: Bugs
@@ -22,24 +20,29 @@ metadata:
       url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
     - title: Source Code
       url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/
+    - title: Backstge docs
+      url: https://backstage.io/docs/reference/plugin-catalog-backend-module-github-org/
   tags:
     - software-catalog
 spec:
 
   author: Backstage Community
-  publisher: Red Hat
-  support: tech-preview
+  support: production
   lifecycle: active
+  publisher: Red Hat
+
+  highlights:
+    - Provides a GitHub integration for the Software Catalog
+    - Ingests org data (users and groups) from GitHub.
+
   categories:
     - Software Catalog
 
-  highlights:
-    - Provides GitLab catalog integration
-
   description: |
-    This plugin provides GitLab catalog integration for the Red Hat Developer Hub. This is an
-    extension module to the plugin-catalog-backend plugin that provides group and user entities
-    by scrapping or receiving events from a GitLab instance.
+    Discovers users and groups located in [GitHub](https://github.com). The provider will search your
+    GitHub account and register catalog files matching the configured path as Location entity and via
+    following processing steps add all contained catalog entities. This can be useful as an
+    alternative to static locations or manually adding things to the catalog.
 
     ## Adding The Plugin To Red Hat Developer Hub
 
@@ -53,4 +56,4 @@ spec:
     for further details regarding the configuration required.
 
   packages:
-    - backstage-plugin-catalog-backend-module-gitlab
+    - backstage-plugin-catalog-backend-module-github-org

@@ -26,7 +26,7 @@ spec:
   support: production
   lifecycle: active
   partOf:
-    - red-hat-developer-hub-backstage-plugin-global-header
+    - global-header
   appConfigExamples:
     - title: Default configuration
       content:
@@ -34,6 +34,7 @@ spec:
           sidebar:
             search: false
             settings: false
+            logo: false
         dynamicPlugins:
           frontend:
             default.main-menu-items:
@@ -45,7 +46,13 @@ spec:
                 - mountPoint: application/header
                   importName: GlobalHeader
                   config:
-                    position: above-main-content
+                    position: above-sidebar
+                - mountPoint: global.header/component
+                  importName: CompanyLogo
+                  config:
+                    priority: 200
+                    props:
+                      to: /
                 - mountPoint: global.header/component
                   importName: SearchComponent
                   config:
@@ -64,6 +71,32 @@ spec:
                       title: Self-service
                       icon: add
                       to: create
+                - mountPoint: global.header/component
+                  importName: StarredDropdown
+                  config:
+                    priority: 85
+                - mountPoint: global.header/component
+                  importName: ApplicationLauncherDropdown
+                  config:
+                    priority: 82
+                - mountPoint: global.header/application-launcher
+                  importName: MenuItemLink
+                  config:
+                    section: Documentation
+                    priority: 150
+                    props:
+                      title: Developer Hub
+                      icon: developerHub
+                      link: https://docs.redhat.com/en/documentation/red_hat_developer_hub
+                - mountPoint: global.header/application-launcher
+                  importName: MenuItemLink
+                  config:
+                    section: Developer Tools
+                    priority: 100
+                    props:
+                      title: RHDH Local
+                      icon: developerHub
+                      link: https://github.com/redhat-developer/rhdh-local
                 - mountPoint: global.header/component
                   importName: HelpDropdown
                   config:
