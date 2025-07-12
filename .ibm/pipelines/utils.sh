@@ -3,9 +3,10 @@
 # shellcheck source=.ibm/pipelines/reporting.sh
 source "${DIR}/reporting.sh"
 
-export_chart_version() {
-  export CHART_VERSION=$(curl -sSX GET "https://quay.io/api/v1/repository/rhdh/chart/tag/?onlyActiveTags=true&filter_tag_name=like:${CHART_MAJOR_VERSION}-" -H "Content-Type: application/json" \
-  | jq '.tags[0].name' | grep -oE '[0-9]+\.[0-9]+-[0-9]+-CI')
+get_chart_version() {
+  local chart_major_version=$1
+  curl -sSX GET "https://quay.io/api/v1/repository/rhdh/chart/tag/?onlyActiveTags=true&filter_tag_name=like:${chart_major_version}-" -H "Content-Type: application/json" \
+  | jq '.tags[0].name' | grep -oE '[0-9]+\.[0-9]+-[0-9]+-CI'
 }
 
 retrieve_pod_logs() {
@@ -689,9 +690,8 @@ check_backstage_running() {
 
     if [ "${http_status}" -eq 200 ]; then
       echo "Backstage is up and running!"
-      export BASE_URL="${url}"
       echo "######## BASE URL ########"
-      echo "${BASE_URL}"
+      echo "${url}"
       return 0
     else
       echo "Attempt ${i} of ${max_attempts}: Backstage not yet available (HTTP Status: ${http_status})"
@@ -700,8 +700,10 @@ check_backstage_running() {
     fi
   done
 
-  echo "Failed to reach Backstage at ${BASE_URL} after ${max_attempts} attempts." | tee -a "/tmp/${LOGFILE}"
+  echo "Failed to reach Backstage at ${url} after ${max_attempts} attempts." | tee -a "/tmp/${LOGFILE}"
+  mkdir -p "${ARTIFACT_DIR}/${namespace}"
   cp -a "/tmp/${LOGFILE}" "${ARTIFACT_DIR}/${namespace}/"
+  save_all_pod_logs "${namespace}"
   return 1
 }
 
@@ -901,23 +903,44 @@ initiate_deployments() {
 
 # install base RHDH deployment before upgrade
 initiate_upgrade_base_deployments() {
+  local release_name=$1
+  local namespace=$2
+  local url=$3
+  local max_attempts=${4:-30}    # Default to 30 if not set
+  local wait_seconds=${5:-30}
+
   echo "Initiating base RHDH deployment before upgrade"
 
-  configure_namespace ${NAME_SPACE}
+  CURRENT_DEPLOYMENT=$((CURRENT_DEPLOYMENT + 1))
+  save_status_deployment_namespace $CURRENT_DEPLOYMENT "$namespace"
 
-  deploy_redis_cache "${NAME_SPACE}"
+  configure_namespace "${namespace}"
+
+  deploy_redis_cache "${namespace}"
 
   cd "${DIR}"
-  local rhdh_base_url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
-  apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
-  echo "Deploying image from base repository: ${QUAY_REPO_BASE}, TAG_NAME_BASE: ${TAG_NAME_BASE}, in NAME_SPACE: ${NAME_SPACE}"
 
-  helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
+  apply_yaml_files "${DIR}" "${namespace}" "${url}"
+  echo "Deploying image from base repository: ${QUAY_REPO_BASE}, TAG_NAME_BASE: ${TAG_NAME_BASE}, in NAME_SPACE: ${namespace}"
+
+  helm upgrade -i "${release_name}" -n "${namespace}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION_BASE}" \
     -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME_BASE}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO_BASE}" \
     --set upstream.backstage.image.tag="${TAG_NAME_BASE}"
+
+  # check if the base rhdh deployment is running
+  if check_backstage_running "${release_name}" "${namespace}" "${url}" "${max_attempts}" "${wait_seconds}"; then
+    echo "Display pods of base RHDH deployment before upgrade for verification..."
+    oc get pods -n "${namespace}"
+  else
+    echo "Backstage is not running. Exiting..."
+    save_status_failed_to_deploy $CURRENT_DEPLOYMENT true
+    save_status_test_failed $CURRENT_DEPLOYMENT true
+    save_overall_result 1
+    return 1
+  fi
 }
 
 initiate_upgrade_deployments() {
@@ -928,29 +951,21 @@ initiate_upgrade_deployments() {
   local wait_seconds=${5:-30}
   local wait_upgrade="10m"
 
-  # check if the base rhdh deployment is running
-  if check_backstage_running "${release_name}" "${namespace}" "${url}" "${max_attempts}" "${wait_seconds}"; then
+  echo "Initiating upgrade deployment"
+  cd "${DIR}"
 
-    echo "Display pods of base RHDH deployment before upgrade for verification..."
-    oc get pods -n "${namespace}"
+  echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
 
-    echo "Initiating upgrade deployment"
-    cd "${DIR}"
+  helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
+  "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
+  -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" \
+  --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
+  --set upstream.backstage.image.repository="${QUAY_REPO}" \
+  --set upstream.backstage.image.tag="${TAG_NAME}" \
+  --wait --timeout=${wait_upgrade}
 
-    echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
-
-    helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
-    "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
-    -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" \
-    --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    --set upstream.backstage.image.repository="${QUAY_REPO}" \
-    --set upstream.backstage.image.tag="${TAG_NAME}" \
-    --wait --timeout=${wait_upgrade}
-
-    oc get pods -n "${namespace}"
-  else
-    echo "Backstage is not running. Exiting..."
-  fi
+  oc get pods -n "${namespace}"
+  save_all_pod_logs $namespace
 }
 
 initiate_runtime_deployment() {
@@ -995,8 +1010,10 @@ check_and_test() {
   local url=$3
   local max_attempts=${4:-30}    # Default to 30 if not set
   local wait_seconds=${5:-30}    # Default to 30 if not set
+
   CURRENT_DEPLOYMENT=$((CURRENT_DEPLOYMENT + 1))
-  save_status_deployment_namespace $CURRENT_DEPLOYMENT $namespace
+  save_status_deployment_namespace $CURRENT_DEPLOYMENT "$namespace"
+
   if check_backstage_running "${release_name}" "${namespace}" "${url}" "${max_attempts}" "${wait_seconds}"; then
     save_status_failed_to_deploy $CURRENT_DEPLOYMENT false
     echo "Display pods for verification..."
@@ -1022,6 +1039,9 @@ check_upgrade_and_test() {
     check_and_test "${release_name}" "${namespace}" "${url}"
   else
     echo "Helm upgrade encountered an issue or timed out. Exiting..."
+    save_status_failed_to_deploy $CURRENT_DEPLOYMENT true
+    save_status_test_failed $CURRENT_DEPLOYMENT true
+    save_overall_result 1
   fi
 }
 
@@ -1104,5 +1124,45 @@ to_lowercase() {
   else
     # Linux - using bash parameter expansion
     echo "${1,,}"
+  fi
+}
+
+# Function to get the appropriate release version based on current branch
+# Return the latest release version if current branch is not a release branch
+# Return the previous release version if current branch is a release branch
+get_previous_release_version() {
+  local current_branch
+  current_branch=$(git branch --show-current)
+  
+  # Get all remote release branches, filter out PR branches, extract version numbers, and sort them
+  local release_versions
+  release_versions=$(git branch -r | grep "release-" | grep -v "pr-bump" | sed 's/.*release-//' | sort -V)
+  
+  if [[ -z "$release_versions" ]]; then
+    echo "Error: No release branches found" >&2
+    return 1
+  fi
+  
+  # Check if current branch is a release branch
+  if [[ "$current_branch" =~ ^release-[0-9]+\.[0-9]+$ ]]; then
+    # Extract version from current branch
+    local current_version
+    current_version=$(echo "$current_branch" | sed 's/release-//')
+    
+    # Find the previous version (the one before current_version)
+    local previous_version
+    previous_version=$(echo "$release_versions" | grep -B1 "^${current_version}$" | grep -v "^${current_version}$" | tail -1)
+    
+    if [[ -z "$previous_version" ]]; then
+      echo "Error: No previous release version found for current version ${current_version}" >&2
+      return 1
+    fi
+    
+    echo "$previous_version"
+  else
+    # On main or any other branch, use the latest release version
+    local latest_version
+    latest_version=$(echo "$release_versions" | tail -1)
+    echo "$latest_version"
   fi
 }
