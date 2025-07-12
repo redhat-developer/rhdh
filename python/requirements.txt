@@ -175,7 +175,7 @@ requests==2.32.4
     #   -r requirements.in
     #   mkdocs-material
     #   plantuml-markdown
-setuptools-scm==7.1.0
+setuptools-scm==8.3.1
     # via
     #   -r requirements.in
     #   hatch-vcs
@@ -195,9 +195,7 @@ trove-classifiers==2024.7.2
     #   -r requirements.in
     #   hatchling
 typing-extensions==4.12.2
-    # via
-    #   -r requirements.in
-    #   setuptools-scm
+    # via -r requirements.in
 urllib3==2.5.0
     # via
     #   -r requirements.in
