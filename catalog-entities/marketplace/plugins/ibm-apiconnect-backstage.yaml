@@ -1,0 +1,54 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: apic-backstage
+  namespace: apiconnect
+  title: API Connect Backstage Plugin 
+  annotations:
+    extensions.backstage.io/pre-installed: 'true' # For plugins contained in the RHDH image
+    extensions.backstage.io/verified-by: Red Hat # For verified plugins
+    #extensions.backstage.io/certified-by: Red Hat # For certified plugins
+  links:
+    - title: Homepage
+      url: https://github.com/ibm-apiconnect/backstage/blob/main/plugins/apic-backstage/README.md
+    - title: Documentation for Red Hat Developer Hub
+      url: https://www.ibm.com/docs/en/api-connect/10.0.x_cd?topic=uacbpi-enabling-api-connect-plug-in-red-hat-developer-hub
+    - title: Source Code
+      url: https://github.com/ibm-apiconnect/backstage/tree/main/plugins/apic-backstage
+  tags:
+    - apis # Used for filtering
+  description: |
+    The single page view of all APIs in an enterprise estate for quick discovery and easy navigation of API assets within Backstage.
+spec:
+  author: IBM
+  support: production #tech-preview, dev-preveiw
+  lifecycle: active
+  publisher: IBM
+
+  categories:
+    - API Management # One category will show up on the tile view
+  
+  description: |
+    The API Connect plug-in consolidates all your API Connect instances into a single location. By using the provider API, the plug-in groups data from each instance and displays it in a centralized dashboard. This grouping of data provides a clear overview of data distribution between different API Connect instances.
+     The plug-in is valid for IBM® API Connect version 10.0.8.0 and later.
+
+    ## Adding The Plugin To Red Hat Developer Hub
+
+    See the [IBM API Connect documentation](https://www.ibm.com/docs/en/api-connect/10.0.x_cd?topic=uacbpi-enabling-api-connect-plug-in-red-hat-developer-hub)
+    for further instructions on how to add, enable, configure, and remove plugins in your instance.
+
+    ## Configuring The Plugin ##
+
+    See [APIC Backstage Plugin ](https://github.com/ibm-apiconnect/backstage/blob/main/plugins/apic-backstage/README.md) for configuration details.
+
+
+
+  # Images are base 64 encoded SVGs (below is a blank square from the mockup)
+  icon: data:image/svg+xml;base64,
+    PHN2ZyB3aWR0aD0iNzAiIGhlaWdodD0iNzAiIHZpZXdCb3g9IjAgMCA3MCA3MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93
+    d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjcwIiBoZWlnaHQ9IjcwIiBmaWxsPSIjQzRDNEM0Ii8+Cjwvc3ZnPgo=
+
+
+  packages: # link to the name used in the associated package documents in ../packages
+    - apic-backstage 
