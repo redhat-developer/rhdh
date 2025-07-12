@@ -11829,7 +11829,7 @@ __metadata:
     "@testing-library/jest-dom": 6.6.3
     "@testing-library/react": 14.3.1
     "@testing-library/react-hooks": 8.0.1
-    "@types/node": 22.16.0
+    "@types/node": 22.16.3
     "@types/react": 18.3.23
     "@types/react-dom": 18.3.7
     prettier: 3.6.2
@@ -14770,12 +14770,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:22.16.0, @types/node@npm:>=13.7.0":
+"@types/node@npm:*, @types/node@npm:>=13.7.0":
   version: 22.16.0
   resolution: "@types/node@npm:22.16.0"
   dependencies:
     undici-types: ~6.21.0
   checksum: fccc24b9cfa95e165fb6a22871c812c9b021b0c686ced9b1572e1bd79ac3f8c78b36c04edfb2c96e10a8a1247c026d1dcad91c0c3e62dccf414057a37bac729d
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:22.16.3":
+  version: 22.16.3
+  resolution: "@types/node@npm:22.16.3"
+  dependencies:
+    undici-types: ~6.21.0
+  checksum: f37674ff0141380e41bde4a44776185df69757b17d94a7b05ed4c0d003b86239a3d640f1b65c9dcca5f9ba289f14fa2f3ed7ab8298b5538747d07f11da7e1bdc
   languageName: node
   linkType: hard
 
@@ -16082,7 +16091,7 @@ __metadata:
     "@testing-library/react": 14.3.1
     "@testing-library/react-hooks": 8.0.1
     "@testing-library/user-event": 14.6.1
-    "@types/node": 22.16.0
+    "@types/node": 22.16.3
     "@types/react": 18.3.23
     "@types/react-dom": 18.3.7
     lodash: 4.17.21
