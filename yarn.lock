@@ -7512,7 +7512,7 @@ __metadata:
     express-promise-router: 4.1.1
     json-2-csv: 5.5.9
     knex: 3.1.0
-    luxon: 3.6.1
+    luxon: 3.7.1
     msw: 1.3.5
     node-fetch: 2.7.0
     prettier: 3.6.2
@@ -26335,7 +26335,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"luxon@npm:3.6.1, luxon@npm:^3.0.0, luxon@npm:^3.2.1":
+"luxon@npm:3.7.1":
+  version: 3.7.1
+  resolution: "luxon@npm:3.7.1"
+  checksum: 19e5b20304f2e558b1e5e1f4f04f227419642d373f7c10ccf8f0e7d63c05828187a6aa39d70caf87d18a4834800dcbf29cf5f5d81d03c7d2471cd0b61cee97f6
+  languageName: node
+  linkType: hard
+
+"luxon@npm:^3.0.0, luxon@npm:^3.2.1":
   version: 3.6.1
   resolution: "luxon@npm:3.6.1"
   checksum: bc6c24dde90f4263f548cc5a4ea3328e9c9511bee0b2255bd319639712862f1eb14a39c1b2dcbff8a8bf6686996d28f45b8fc902994a72dd05a29cef1269a6a4
