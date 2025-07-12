@@ -37,8 +37,6 @@ SCRIPTS=(
     "jobs/auth-providers.sh"
 )
 
-#  https://c111-e.us-east.containers.cloud.ibm.com:31018
-
 # Source each script dynamically
 for SCRIPT in "${SCRIPTS[@]}"; do
     source "${DIR}/${SCRIPT}"
