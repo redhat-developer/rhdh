@@ -843,6 +843,38 @@ cluster_setup_k8s_helm() {
   # install_crunchy_postgres_k8s_operator # Works with K8s but disabled in values file
 }
 
+install_orchestrator_infra_chart() {
+  ORCH_INFRA_NS="orchestrator-infra"
+  configure_namespace ${ORCH_INFRA_NS}
+
+  helm repo add redhat-developer https://redhat-developer.github.io/rhdh-chart
+
+  echo "Deploying orchestrator-infra chart"
+  cd "${DIR}"
+  helm upgrade -i orch-infra -n "${ORCH_INFRA_NS}" \
+    "redhat-developer/redhat-developer-hub-orchestrator-infra"
+
+  # wait for install plan to be deployed
+  echo "Waiting for an InstallPlan to be created in namespace openshift-serverless"
+
+  while true; do
+    COUNT=$(oc get installplan -n openshift-serverless --no-headers 2>/dev/null | wc -l)
+    
+    if [[ "$COUNT" -gt 0 ]]; then
+      echo "Found $COUNT InstallPlan(s) in namespace openshift-serverless."
+      break
+    fi
+
+    echo "No InstallPlans found. Retrying in 5 seconds..."
+    sleep 5
+  done
+
+  for namespace in "openshift-serverless" "openshift-serverless-logic"; do
+    OS_PLAN=$(oc get installplan -n $namespace --sort-by=.metadata.creationTimestamp -o jsonpath='{.items[0].metadata.name}')
+    oc patch installplan $OS_PLAN -n $namespace --type merge --patch '{"spec":{"approved":true}}'
+  done
+}
+
 # Helper function to get common helm set parameters
 get_image_helm_set_params() {
   local params=""
@@ -895,6 +927,7 @@ rbac_deployment() {
 
 initiate_deployments() {
   cd "${DIR}"
+  install_orchestrator_infra_chart
   base_deployment
   rbac_deployment
 }
