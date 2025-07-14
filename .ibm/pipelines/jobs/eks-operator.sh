@@ -39,10 +39,12 @@ handle_eks_operator() {
   get_eks_certificate "${EKS_INSTANCE_DOMAIN_NAME}"
 
   initiate_eks_operator_deployment "${NAME_SPACE}" "https://${K8S_CLUSTER_ROUTER_BASE}"
+  mock_eks_ingress_hosts "${NAME_SPACE}" "${RELEASE_NAME}-developer-hub"
   check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
   cleanup_eks_deployment "${NAME_SPACE}"
 
   initiate_rbac_eks_operator_deployment "${NAME_SPACE_RBAC}" "https://${K8S_CLUSTER_ROUTER_BASE}"
+  mock_eks_ingress_hosts "${NAME_SPACE_RBAC}" "${RELEASE_NAME_RBAC}-developer-hub"
   check_and_test "${RELEASE_NAME}" "${NAME_SPACE_RBAC}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
   cleanup_eks_deployment "${NAME_SPACE_RBAC}"
 } 
