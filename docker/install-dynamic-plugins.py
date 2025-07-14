@@ -266,7 +266,7 @@ def main():
           installation: 
             enabled: true
             saveToSingleFile:
-              file: {os.path.join(dynamicPluginsRoot, dynamicPluginsMarketplaceFileName)}
+              file: {os.path.join('/opt/app-root/src/dynamic-plugins-root', dynamicPluginsMarketplaceFileName)}
     - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-catalog-backend-module-marketplace-dynamic
       disabled: false'''
             file.write(config)
