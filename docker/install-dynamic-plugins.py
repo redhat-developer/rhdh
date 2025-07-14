@@ -247,7 +247,7 @@ def main():
     dynamicPluginsFile = 'dynamic-plugins.yaml'
     dynamicPluginsGlobalConfigFile = os.path.join(dynamicPluginsRoot, 'app-config.dynamic-plugins.yaml')
 
-    dynamicPluginsMarketplaceFileEnabled = os.getenv('MARKETPLACE_INSTALLATION_ENABLED', False)
+    dynamicPluginsMarketplaceFileEnabled = os.getenv('MARKETPLACE_INSTALLATION_ENABLED', 'false').lower() == 'true'
     dynamicPluginsMarketplaceFileName = os.getenv('MARKETPLACE_INSTALLATION_FILE', 'dynamic-plugins.marketplace.yaml')
     dynamicPluginsMarketplaceFile = os.path.join(dynamicPluginsRoot, dynamicPluginsMarketplaceFileName)
     print(f'\n======= Marketplace installation enabled: {dynamicPluginsMarketplaceFileEnabled}')
