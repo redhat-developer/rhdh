@@ -26,7 +26,7 @@ spec:
   support: production
   lifecycle: active
   partOf:
-    - backstage-community-quay
+    - backstage-community-plugin-quay
   appConfigExamples:
     - title: Default configuration
       content:

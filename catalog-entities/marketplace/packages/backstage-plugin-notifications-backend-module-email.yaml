@@ -26,7 +26,7 @@ spec:
   support: tech-preview
   lifecycle: active
   partOf:
-    - backstage-email-notifications-module
+    - notifications-email
   appConfigExamples:
     - title: Default configuration
       content:
