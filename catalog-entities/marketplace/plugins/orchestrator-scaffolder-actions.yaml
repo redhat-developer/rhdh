@@ -191,4 +191,4 @@ spec:
     LjI0NDEuMjQzMi0uNjM5NiwwLS44ODM4bC0yLTJaIi8+PC9zdmc+
 
   packages:
-    - redhat-backstage-plugin-orchestrator
+    - redhat-backstage-plugin-scaffolder-backend-module-orchestrator
