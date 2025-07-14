@@ -25,6 +25,8 @@ spec:
   author: Red Hat
   support: production
   lifecycle: active
+  partOf:
+    contrib-techdocs-addons
   appConfigExamples:
     - title: Default configuration
       content:

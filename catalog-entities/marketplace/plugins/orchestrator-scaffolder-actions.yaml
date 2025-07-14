@@ -2,9 +2,9 @@
 apiVersion: extensions.backstage.io/v1alpha1
 kind: Plugin
 metadata:
-  name: orchestrator
+  name: orchestrator-scaffolder-actions
   namespace: rhdh
-  title: Orchestrator For Red Hat Developer Hub
+  title: Orchestrator Scaffolder Actions For Red Hat Developer Hub
   annotations:
     extensions.backstage.io/pre-installed: 'false' # For plugins contained in the RHDH image
   links:
@@ -15,11 +15,9 @@ metadata:
     - title: Source Code
       url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/
   tags:
+    - software-templates
     - automation # Used for filtering
-  description: |
-    Orchestrator brings serverless workflows into Backstage, focusing on the journey for application 
-    migration to the cloud, on boarding developers , and user-made workflows of Backstage actions 
-    or external systems.
+  description: This plugin contains a collection of actions for working with Orchestrator
 spec:
   author: Red Hat
   support: tech-preview  # production, tech-preview, dev-preveiw
@@ -27,20 +25,16 @@ spec:
   publisher: Red Hat
 
   categories:
-    - Automation # One category will show up on the tile view
+    - Scaffolder # One category will show up on the tile view
   highlights:
-    - Create infrastructure and assessment workflows
+    - Utilize scaffolder actions for Orchestrator
     - Automate workflow-related tasks
 
   description: |
-    Orchestrator brings serverless workflows into Backstage, focusing on the journey for application 
-    migration to the cloud, on boarding developers , and user-made workflows of Backstage actions 
-    or external systems.
+    This plugin contains a collection of actions for working with Orchestrator
 
-    The Orchestrator features two primary workflow categories:
-
-    * Infrastructure workflows: focus on automating infrastructure-related tasks
-    * Assessment workflows: focus on evaluating and analyzing data to suggest suitable infrastructure workflow options for subsequent execution
+    - orchestrator:workflow:run
+    - orchestrator:workflow:get_params
 
     ## Adding The Plugin To Red Hat Developer Hub
 
@@ -197,6 +191,4 @@ spec:
     LjI0NDEuMjQzMi0uNjM5NiwwLS44ODM4bC0yLTJaIi8+PC9zdmc+
 
   packages:
-    - redhat-backstage-plugin-orchestrator-backend
-    - redhat-backstage-plugin-orchestrator
-    
+    - redhat-backstage-plugin-scaffolder-backend-module-orchestrator

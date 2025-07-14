@@ -1,0 +1,36 @@
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: redhat-backstage-plugin-orchestrator-backend
+  namespace: rhdh
+  title: "@redhat/backstage-plugin-orchestrator-backend"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/orchestrator/plugins/orchestrator-backend
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/orchestrator/plugins/orchestrator-backend
+  tags:
+    - automation
+spec:
+  packageName: "@redhat/backstage-plugin-orchestrator-backend"
+  dynamicArtifact: "@redhat/backstage-plugin-orchestrator-backend-dynamic@1.5.1"
+  version: 1.5.1
+  backstage:
+    role: backend-plugin
+    supportedVersions: 1.39.1
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+  partOf:
+    - orchestrator
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        orchestrator:
+          dataIndexService:
+            url: http://sonataflow-platform-data-index-service

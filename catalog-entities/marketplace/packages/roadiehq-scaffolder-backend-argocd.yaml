@@ -14,7 +14,8 @@ metadata:
   annotations:
     backstage.io/source-location: url
       https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/roadiehq-scaffolder-backend-argocd-dynamic
-  tags: []
+  tags:
+    - software-templates
 spec:
   packageName: "@roadiehq/scaffolder-backend-argocd"
   dynamicArtifact: ./dynamic-plugins/dist/roadiehq-scaffolder-backend-argocd-dynamic
@@ -26,7 +27,7 @@ spec:
   support: tech-preview
   lifecycle: active
   partOf:
-    - roadiehq-scaffolder-module
+    - roadiehq-scaffolder-backend-argocd
   appConfigExamples:
     - title: Default configuration
       content:
