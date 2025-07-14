@@ -493,6 +493,8 @@ dynamicPlugins:
         - path: /extensions/catalog
           importName: DynamicMarketplacePluginRouter
       mountPoints:
+        - mountPoint: application/provider
+          importName: InstallationContextProvider
         - mountPoint: internal.plugins/tab
           importName: DynamicMarketplacePluginContent
           config:
