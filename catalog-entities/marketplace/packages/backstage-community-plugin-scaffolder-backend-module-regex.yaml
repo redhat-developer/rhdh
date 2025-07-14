@@ -14,7 +14,8 @@ metadata:
   annotations:
     backstage.io/source-location: url
       https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-scaffolder-backend-module-regex-dynamic
-  tags: []
+  tags:
+    - software-templates
 spec:
   packageName: "@backstage-community/plugin-scaffolder-backend-module-regex"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-regex-dynamic
@@ -26,5 +27,5 @@ spec:
   support: production
   lifecycle: active
   partOf:
-    - backstage-community-regex-scaffolder-module
+    - regex-scaffolder-actions
   appConfigExamples: []

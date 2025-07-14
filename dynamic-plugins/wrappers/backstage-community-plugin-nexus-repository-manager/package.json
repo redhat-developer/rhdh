@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@backstage-community/plugin-nexus-repository-manager": "1.14.1",
-    "@mui/material": "5.17.1"
+    "@mui/material": "5.18.0"
   },
   "devDependencies": {
     "@backstage/cli": "0.30.0",
