@@ -294,7 +294,7 @@ def main():
         print('\n======= Including dynamic plugins from', include, flush=True)
 
         if not os.path.isfile(include):
-            print(f"File {include} does not exist, skipping including dynamic packages from {include}", flush=True)
+            print(f"WARNING: File {include} does not exist, skipping including dynamic packages from {include}", flush=True)
             continue
 
         with open(include, 'r') as file:
