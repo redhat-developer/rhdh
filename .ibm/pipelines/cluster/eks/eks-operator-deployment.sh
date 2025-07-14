@@ -60,7 +60,7 @@ initiate_rbac_eks_operator_deployment() {
 apply_eks_operator_ingress() {
   local namespace=$1
   local service_name=$2
-  cat "$DIR/cluster/eks/manifest/eks-operator-ingress.yaml" | \
+  envsubst < "$DIR/cluster/eks/manifest/eks-operator-ingress.yaml" | \
     yq ".spec.rules[0].http.paths[0].backend.service.name = \"$service_name\"" - | \
     kubectl apply --namespace="${namespace}" -f -
 }
