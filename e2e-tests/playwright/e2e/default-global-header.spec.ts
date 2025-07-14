@@ -9,19 +9,12 @@ test.describe("Default Global Header", () => {
   test.beforeEach(async ({ page }) => {
     uiHelper = new UIhelper(page);
     common = new Common(page);
-    await common
-      .loginAsGuest
-      // process.env.GH_USER2_ID,
-      // process.env.GH_USER2_PASS,
-      ();
+    await common.loginAsKeycloakUser(
+      process.env.GH_USER2_ID,
+      process.env.GH_USER2_PASS,
+    );
     await expect(page.locator("nav[id='global-header']")).toBeVisible();
   });
-
-  // test("Verify Logo is rendred in global header", async ({
-  //   page,
-  // }) => {
-  //   await
-  //   });
 
   test("Verify that global header and default header components are visible", async ({
     page,
