@@ -1190,6 +1190,12 @@ plugins:
     disabled: false
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-marketplace-backend-dynamic
     disabled: false
+    pluginConfig:
+      extensions:
+        installation:
+          enabled: true
+          saveToSingleFile:
+            file: ${EXTENSIONS_PLUGIN_CONFIG}
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-marketplace
     disabled: false
     pluginConfig:
@@ -1203,6 +1209,8 @@ plugins:
               - path: /extensions/catalog
                 importName: DynamicMarketplacePluginRouter
             mountPoints:
+              - mountPoint: application/provider
+                importName: InstallationContextProvider
               - mountPoint: internal.plugins/tab
                 importName: DynamicMarketplacePluginContent
                 config:
