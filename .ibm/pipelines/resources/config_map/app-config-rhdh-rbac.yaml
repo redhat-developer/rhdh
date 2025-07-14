@@ -1,6 +1,4 @@
 app:
-  sidebar:
-    logo: true
   baseUrl: ${RHDH_BASE_URL}
   title: Red Hat Developer Hub
 backend:
