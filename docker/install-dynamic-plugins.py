@@ -255,7 +255,7 @@ def main():
     if (dynamicPluginsMarketplaceFileEnabled and not os.path.isfile(dynamicPluginsMarketplaceFile)):
         print('\n======= Generating marketplace file')
         with open(dynamicPluginsMarketplaceFile, 'w') as file:
-            config = '''
+            config = f'''
   includes:
     - dynamic-plugins.default.yaml
   plugins:
@@ -266,7 +266,7 @@ def main():
           installation: 
             enabled: true
             saveToSingleFile:
-              file: /opt/app-root/src/dynamic-plugins-root/dynamic-plugins.marketplace.yaml
+              file: {os.path.join(dynamicPluginsRoot, dynamicPluginsMarketplaceFileName)}
     - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-catalog-backend-module-marketplace-dynamic
       disabled: false'''
             file.write(config)
