@@ -62,7 +62,9 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     uiHelper = new UIhelper(page);
 
     // initialize keycloak helper
+    console.log("[TEST] Initializing Keycloak helper...");
     await keycloakHelper.initialize();
+    console.log("[TEST] Keycloak helper initialized successfully");
 
     // expect some expected variables
     expect(process.env.DEFAULT_USER_PASSWORD).toBeDefined();
@@ -117,8 +119,10 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
 
     // create initial deployment
     // enable keycloak login with ingestion
+    console.log("[TEST] Enabling OIDC login with ingestion...");
     await deployment.enableOIDCLoginWithIngestion();
     await deployment.updateAllConfigs();
+    console.log("[TEST] OIDC login with ingestion enabled successfully");
 
     // create backstage deployment and wait for it to be ready
     await deployment.createBackstageDeployment();
@@ -365,6 +369,19 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     );
   });
 
+  test(`Ingestion of users and groups with invalid characters: check sanitize[User/Group]NameTransformer`, async () => {
+    expect(
+      await deployment.checkUserIsIngestedInCatalog([
+        "Invalid Username",
+      ]),
+    ).toBe(true);
+    expect(
+      await deployment.checkGroupIsIngestedInCatalog([
+        "invalid@groupname",
+      ]),
+    ).toBe(true);
+  });
+
   test("Ensure Guest login is disabled when setting environment to production", async () => {
     await page.goto("/");
     await uiHelper.verifyHeading("Select a sign-in method");
@@ -416,7 +433,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     );
     expect(ghLogin).toBe("Login successful");
     // Sign out for GitHub
-    await page.getByTitle('Sign out from GitHub').click();
+    await page.getByTitle("Sign out from GitHub").click();
 
     // Sign out for OIDC
     await page.goto("/settings");
@@ -426,7 +443,8 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
   });
 
   test.afterAll(async () => {
-    console.log("Cleaning up...");
+    console.log("[TEST] Starting cleanup...");
     await deployment.killRunningProcess();
+    console.log("[TEST] Cleanup completed");
   });
 });

@@ -50,9 +50,7 @@ droute_send() {
   original_context=$(oc config current-context) # Save original context
   echo "Saving original context: $original_context"
   ( # Open subshell
-    if [ -n "${PULL_NUMBER:-}" ]; then
-      set +e
-    fi
+    set +e
     local droute_version="1.2.2"
     local release_name=$1
     local project=$2
@@ -112,6 +110,7 @@ droute_send() {
       echo "Attempt ${i} of ${max_attempts} to rsync test resuls to bastion pod."
       if output=$(oc rsync --progress=true --include="${metadata_output}" --include="${JUNIT_RESULTS}" --exclude="*" -n "${droute_project}" "${ARTIFACT_DIR}/${project}/" "${droute_project}/${droute_pod_name}:${temp_droute}/" 2>&1); then
         echo "$output"
+        save_status_data_router_failed "$CURRENT_DEPLOYMENT" false
         break
       elif ((i == max_attempts)); then
         echo "Failed to rsync test results after ${max_attempts} attempts."
@@ -119,7 +118,8 @@ droute_send() {
         echo "${output}"
         echo "Troubleshooting steps:"
         echo "1. Restart $droute_pod_name in $droute_project project/namespace"
-        return 1
+        save_status_data_router_failed "$CURRENT_DEPLOYMENT" true
+        return
       else
         sleep $((wait_seconds_step * i))
       fi
@@ -156,7 +156,8 @@ droute_send() {
         echo "1. Restart $droute_pod_name in $droute_project project/namespace"
         echo "2. Check the Data Router documentation: https://spaces.redhat.com/pages/viewpage.action?pageId=115488042"
         echo "3. Ask for help at Slack: #forum-dno-datarouter"
-        return 1
+        save_status_data_router_failed "$CURRENT_DEPLOYMENT" true
+        return
       else
         sleep $((wait_seconds_step * i))
       fi
@@ -166,7 +167,6 @@ droute_send() {
     if [[ "$JOB_NAME" == *periodic-* ]]; then
       local max_attempts=30
       local wait_seconds=2
-      set +e
       for ((i = 1; i <= max_attempts; i++)); do
         # Get DataRouter request information.
         DATA_ROUTER_REQUEST_OUTPUT=$(oc exec -n "${droute_project}" "${droute_pod_name}" -- /bin/bash -c "
@@ -186,12 +186,9 @@ droute_send() {
           sleep "${wait_seconds}"
         fi
       done
-      set -e
     fi
     oc exec -n "${droute_project}" "${droute_pod_name}" -- /bin/bash -c "rm -rf ${temp_droute}/*"
-    if [ -n "${PULL_NUMBER:-}" ]; then
-      set -e
-    fi
+    set -e
   ) # Close subshell
   oc config use-context "$original_context" # Restore original context
   if ! kubectl auth can-i get pods >/dev/null 2>&1; then

@@ -14,7 +14,8 @@ metadata:
   annotations:
     backstage.io/source-location: url
       https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-scaffolder-backend-module-sonarqube-dynamic
-  tags: []
+  tags:
+    - software-templates
 spec:
   packageName: "@backstage-community/plugin-scaffolder-backend-module-sonarqube"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-sonarqube-dynamic
@@ -26,5 +27,5 @@ spec:
   support: tech-preview
   lifecycle: active
   partOf:
-    - backstage-community-sonarqube-scaffolder-module
+    - sonarqube-scaffolder-actions
   appConfigExamples: []

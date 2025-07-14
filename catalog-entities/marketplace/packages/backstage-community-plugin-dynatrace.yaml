@@ -26,7 +26,7 @@ spec:
   support: tech-preview
   lifecycle: active
   partOf:
-    - dynatrace
+    - dynatrace-community
   appConfigExamples:
     - title: Default configuration
       content:

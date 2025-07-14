@@ -26,5 +26,6 @@ spec:
   support: production
   lifecycle: active
   partOf:
-    - signals
+    - signals-frontend
+    - signals-backend
   appConfigExamples: []

@@ -188,8 +188,7 @@ export class Common {
   }
 
   async clickOnGHloginPopup() {
-    const isLoginRequiredVisible =
-      await this.uiHelper.isTextVisible("Sign in");
+    const isLoginRequiredVisible = await this.uiHelper.isTextVisible("Sign in");
     if (isLoginRequiredVisible) {
       await this.uiHelper.clickButton("Sign in");
       await this.uiHelper.clickButton("Log in");
@@ -263,7 +262,12 @@ export class Common {
     }
   }
 
-  private async handleGitHubPopupLogin(popup: Page, username: string, password: string, twofactor: string): Promise<string> {
+  private async handleGitHubPopupLogin(
+    popup: Page,
+    username: string,
+    password: string,
+    twofactor: string,
+  ): Promise<string> {
     await expect(async () => {
       await popup.waitForLoadState("domcontentloaded");
       expect(popup).toBeTruthy();
@@ -309,19 +313,23 @@ export class Common {
     await this.page.waitForSelector('p:has-text("Sign in using GitHub")');
 
     const [popup] = await Promise.all([
-      this.page.waitForEvent('popup'),
+      this.page.waitForEvent("popup"),
       this.uiHelper.clickButton("Sign In"),
     ]);
 
     return this.handleGitHubPopupLogin(popup, username, password, twofactor);
   }
 
-  async githubLoginFromSettingsPage(username: string, password: string, twofactor: string) {
+  async githubLoginFromSettingsPage(
+    username: string,
+    password: string,
+    twofactor: string,
+  ) {
     await this.page.goto("/settings/auth-providers");
 
     const [popup] = await Promise.all([
-      this.page.waitForEvent('popup'),
-      this.page.getByTitle('Sign in to GitHub').click(),
+      this.page.waitForEvent("popup"),
+      this.page.getByTitle("Sign in to GitHub").click(),
       this.uiHelper.clickButton("Log in"),
     ]);
 
