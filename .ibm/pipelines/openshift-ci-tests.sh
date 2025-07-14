@@ -23,7 +23,7 @@ OVERALL_RESULT=0
 #   rm -rf ~/tmpbin
 # }
 
-trap cleanup EXIT INT ERR
+# trap cleanup EXIT INT ERR
 
 SCRIPTS=(
     "env_variables.sh"
