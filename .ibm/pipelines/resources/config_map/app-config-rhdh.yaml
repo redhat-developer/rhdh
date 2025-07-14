@@ -1,6 +1,4 @@
 app:
-  sidebar:
-    logo: true
   support:
     url: https://github.com/redhat-developer/rhdh/issues
     items:

@@ -9,12 +9,19 @@ test.describe("Default Global Header", () => {
   test.beforeEach(async ({ page }) => {
     uiHelper = new UIhelper(page);
     common = new Common(page);
-    await common.loginAsKeycloakUser(
-      process.env.GH_USER2_ID,
-      process.env.GH_USER2_PASS,
-    );
+    await common
+      .loginAsGuest
+      // process.env.GH_USER2_ID,
+      // process.env.GH_USER2_PASS,
+      ();
     await expect(page.locator("nav[id='global-header']")).toBeVisible();
   });
+
+  // test("Verify Logo is rendred in global header", async ({
+  //   page,
+  // }) => {
+  //   await
+  //   });
 
   test("Verify that global header and default header components are visible", async ({
     page,
@@ -47,8 +54,7 @@ test.describe("Default Global Header", () => {
     await uiHelper.verifyHeading("Self-service");
   });
 
-  // TODO: Fix failing test - https://issues.redhat.com/browse/RHDHBUGS-1870
-  test.skip("Verify that clicking on Support button in HelpDropdown opens a new tab", async ({
+  test("Verify that clicking on Support button in HelpDropdown opens a new tab", async ({
     context,
     page,
   }) => {
@@ -81,8 +87,7 @@ test.describe("Default Global Header", () => {
     await newTab.close();
   });
 
-  // TODO: Fix failing test - https://issues.redhat.com/browse/RHDHBUGS-1870
-  test.skip("Verify Profile Dropdown behaves as expected", async ({ page }) => {
+  test("Verify Profile Dropdown behaves as expected", async ({ page }) => {
     await uiHelper.openProfileDropdown();
     expect(await uiHelper.isLinkVisible("Settings")).toBeTruthy();
     expect(await uiHelper.isTextVisible("Sign out")).toBeTruthy();
@@ -118,8 +123,7 @@ test.describe("Default Global Header", () => {
     await expect(searchResultPageInput).toHaveValue("test query term");
   });
 
-  // TODO: Fix failing test - https://issues.redhat.com/browse/RHDHBUGS-1870
-  test.skip("Verify Notifications button behaves as expected", async ({
+  test("Verify Notifications button behaves as expected", async ({
     baseURL,
     request,
     page,
