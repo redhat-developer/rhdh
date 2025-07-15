@@ -315,3 +315,24 @@ upstream:
       - name: http-metrics
         port: 9464
         targetPort: 9464
+
+orchestrator:
+  enabled: true
+  serverlessLogicOperator:
+    enabled: true
+  serverlessOperator:
+    enabled: true
+  sonataflowPlatform:
+    monitoring:
+      enabled: true
+    eventing:
+      broker:
+        name: ""
+        namespace: ""
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "250m"
+      limits:
+        memory: "1Gi"
+        cpu: "500m"
