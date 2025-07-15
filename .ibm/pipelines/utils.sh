@@ -843,6 +843,18 @@ cluster_setup_k8s_helm() {
   # install_crunchy_postgres_k8s_operator # Works with K8s but disabled in values file
 }
 
+install_orchestrator_infra_chart() {
+  ORCH_INFRA_NS="orchestrator-infra"
+  configure_namespace ${ORCH_INFRA_NS}
+
+  echo "Deploying orchestrator-infra chart"
+  cd "${DIR}"
+  helm upgrade -i orch-infra -n "${ORCH_INFRA_NS}" \
+    "oci://quay.io/rhdh/orchestrator-infra-chart" --version "${CHART_VERSION}" \
+    --set serverlessLogicOperator.subscription.spec.installPlanApproval=Automatic \
+    --set serverlessOperator.subscription.spec.installPlanApproval=Automatic
+}
+
 # Helper function to get common helm set parameters
 get_image_helm_set_params() {
   local params=""
@@ -863,7 +875,7 @@ perform_helm_install() {
   local release_name=$1
   local namespace=$2
   local value_file=$3
-
+  
   helm upgrade -i "${release_name}" -n "${namespace}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "${DIR}/value_files/${value_file}" \
@@ -875,6 +887,10 @@ base_deployment() {
   configure_namespace ${NAME_SPACE}
 
   deploy_redis_cache "${NAME_SPACE}"
+
+  install_orchestrator_infra_chart
+
+  cd "${DIR}"
   local rhdh_base_url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
   echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
@@ -986,7 +1002,8 @@ initiate_sanity_plugin_checks_deployment() {
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    $(get_image_helm_set_params)
+    $(get_image_helm_set_params)  \
+    --set orchestrator.enabled=true
 }
 
 check_and_test() {
