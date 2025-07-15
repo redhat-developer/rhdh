@@ -883,10 +883,9 @@ plugins:
                     gridColumn: 1 / -1
                     height: 75vh
                   if:
-                    anyOf:
+                    allOf:
                       - isKind: user
-                      # how to correctly use a custom condition?
-                      # - isMyProfile
+                      - isMyProfile
 
   - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-servicenow-dynamic
     disabled: true
