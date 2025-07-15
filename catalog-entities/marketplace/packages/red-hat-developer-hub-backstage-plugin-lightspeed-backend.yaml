@@ -1,0 +1,42 @@
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: red-hat-developer-hub-backstage-plugin-lightspeed-backend
+  namespace: rhdh
+  title: "@red-hat-developer-hub/backstage-plugin-lightspeed-backend"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHDHPAI
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/lightspeed/plugins/lightspeed-backend
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/lightspeed/plugins/lightspeed-backend
+  tags: []
+spec:
+  packageName: "@red-hat-developer-hub/backstage-plugin-lightspeed-backend"
+  dynamicArtifact: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-lightspeed:next__0.5.6!red-hat-developer-hub-backstage-plugin-lightspeed-backend
+  version: 0.5.6
+  backstage:
+    role: backend-plugin
+    supportedVersions: 1.39.1
+  author: Red Hat
+  support: dev-preview
+  lifecycle: active
+  partOf:
+    - red-hat-developer-hub-backstage-plugin-lightspeed-backend
+  appConfigExamples:
+    - title: Default configuration
+      content: |
+        lightspeed: 
+          servers:
+            - id: ${LIGHTSPEED_SERVER_ID}
+              url: ${LIGHTSPEED_SERVER_URL}
+              token: ${LIGHTSPEED_SERVER_TOKEN}
+          questionValidation: true # Optional, default is true
+          servicePort: ${LIGHTSPEED_SERVICE_PORT} # Optional - Change the lightspeed service port number, default is 8080
+          prompts: # Optional – Configure custom user prompts. If left empty, the plugin will fall back to built-in defaults.
+            - title: 'Getting Started with Red Hat Developer Hub'
+              message: Can you guide me through the first steps to start using Developer Hub as a developer, like exploring the Software Catalog and adding my service?
