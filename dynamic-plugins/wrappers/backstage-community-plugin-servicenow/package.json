@@ -12,7 +12,7 @@
   "backstage": {
     "role": "frontend-plugin",
     "supported-versions": "1.39.1",
-    "pluginId": "rbac",
+    "pluginId": "servicenow",
     "pluginPackages": [
       "backstage-community-plugin-servicenow",
       "backstage-community-plugin-servicenow-backend",
