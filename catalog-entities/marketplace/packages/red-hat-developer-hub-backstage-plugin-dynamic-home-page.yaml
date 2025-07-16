@@ -26,7 +26,7 @@ spec:
   support: production
   lifecycle: active
   partOf:
-    - red-hat-developer-hub-backstage-plugin-dynamic-home-page
+    - home-page
   appConfigExamples:
     - title: Default configuration
       content:

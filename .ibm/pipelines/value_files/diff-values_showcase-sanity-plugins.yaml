@@ -165,7 +165,8 @@ global:
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-msgraph-dynamic
-        disabled: false
+        disabled: true
+        # TODO: Fix failing test and re-enable plugin - https://issues.redhat.com/browse/RHDHBUGS-1871
         pluginConfig:
           catalog:
             providers:

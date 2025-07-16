@@ -37,8 +37,8 @@
     "@backstage/core-plugin-api": "1.10.7",
     "@backstage/theme": "0.6.6",
     "@material-table/core": "3.2.5",
-    "@mui/icons-material": "5.17.1",
-    "@mui/material": "5.17.1",
+    "@mui/icons-material": "5.18.0",
+    "@mui/material": "5.18.0",
     "@scalprum/react-core": "0.9.5",
     "react-use": "17.6.0"
   },

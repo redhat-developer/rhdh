@@ -26,7 +26,7 @@ spec:
   support: tech-preview
   lifecycle: active
   partOf:
-    - backstage-community-plugin-3scale-backend
+    - 3scale
   appConfigExamples:
     - title: Default configuration
       content:

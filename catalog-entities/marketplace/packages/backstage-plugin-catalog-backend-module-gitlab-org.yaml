@@ -14,7 +14,8 @@ metadata:
   annotations:
     backstage.io/source-location: url
       https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-plugin-catalog-backend-module-gitlab-org-dynamic
-  tags: []
+  tags:
+    - software-catalog
 spec:
   packageName: "@backstage/plugin-catalog-backend-module-gitlab-org"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-gitlab-org-dynamic
@@ -26,7 +27,7 @@ spec:
   support: tech-preview
   lifecycle: active
   partOf:
-    - backstage-gitlab-org-catalog-module
+    - gitlab-org-catalog-integration
   appConfigExamples:
     - title: Default configuration
       content:
