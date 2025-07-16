@@ -125,13 +125,9 @@ export class NotificationPage {
 
   async viewRead() {
     await this.page.getByLabel("View").click();
-    if (`${process.env.MILESTONE}` >= "5") {
-      await this.page
-        .getByRole("option", { name: "Read notifications", exact: true })
-        .click();
-    } else {
-      await this.page.getByRole("option", { name: "Marked as read" }).click();
-    }
+    await this.page
+      .getByRole("option", { name: "Read notifications", exact: true })
+      .click();    
     await expect(
       this.page.getByTestId("loading-indicator").getByRole("img"),
     ).toHaveCount(0);
@@ -139,13 +135,9 @@ export class NotificationPage {
 
   async viewUnRead() {
     await this.page.getByLabel("View").click();
-    if (`${process.env.MILESTONE}` >= "5") {
-      await this.page
-        .getByRole("option", { name: "Unread notifications", exact: true })
-        .click();
-    } else {
-      await this.page.getByRole("option", { name: "New only" }).click();
-    }
+    await this.page
+      .getByRole("option", { name: "Unread notifications", exact: true })
+      .click();
     await expect(
       this.page.getByTestId("loading-indicator").getByRole("img"),
     ).toHaveCount(0);
