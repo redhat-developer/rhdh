@@ -215,7 +215,7 @@ RUN \
   find . -type f -name .npmrc -exec rm -Rf {} \; && \
   # reset npm config to the default registry and absolute path to .pem file
   npm config set registry=https://registry.npmjs.org/ && \
-  npm config set @redhat:registry https://npm.registry.redhat.com && \
+  npm config set @redhat:registry=https://npm.registry.redhat.com && \
   npm config set cafile /opt/app-root/src/registry-ca.pem
 
 # dump console logs if they have errors
