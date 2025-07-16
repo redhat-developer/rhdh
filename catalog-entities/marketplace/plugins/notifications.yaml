@@ -70,5 +70,3 @@ spec:
   packages:
     - backstage-plugin-notifications
     - backstage-plugin-notifications-backend
-
-

@@ -108,8 +108,10 @@ test.describe("Configure Github Provider", async () => {
     await deployment.createSecret();
 
     // enable github login with ingestion
+    console.log("[TEST] Enabling GitHub login with ingestion...");
     await deployment.enableGithubLoginWithIngestion();
     await deployment.updateAllConfigs();
+    console.log("[TEST] GitHub login with ingestion enabled successfully");
 
     // create backstage deployment and wait for it to be ready
     await deployment.createBackstageDeployment();
@@ -298,7 +300,8 @@ test.describe("Configure Github Provider", async () => {
   });
 
   test.afterAll(async () => {
-    console.log("Cleaning up...");
+    console.log("[TEST] Starting cleanup...");
     await deployment.killRunningProcess();
+    console.log("[TEST] Cleanup completed");
   });
 });

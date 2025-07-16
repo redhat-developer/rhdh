@@ -26,15 +26,15 @@ spec:
   support: production
   lifecycle: active
   partOf:
-    - backstage-community-analytics-provider-segment
+    - analytics-provider-segment
   appConfigExamples:
     - title: Default configuration
       content:
         dynamicPlugins:
           frontend:
             backstage-community.plugin-analytics-provider-segment:
-              apiFactories:
-                - importName: SegmentAnalyticsApi
+              analyticsApiExtensions:
+                - importName: SegmentAnalytics
         backend:
           csp:
             script-src:

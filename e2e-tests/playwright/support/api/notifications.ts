@@ -1,8 +1,4 @@
-import {
-  APIRequestContext,
-  APIResponse,
-  request,
-} from "@playwright/test";
+import { APIRequestContext, APIResponse, request } from "@playwright/test";
 import playwrightConfig from "../../../playwright.config";
 import { Notifications } from "./notifications-api-structures";
 

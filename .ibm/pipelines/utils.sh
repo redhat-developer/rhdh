@@ -4,8 +4,8 @@
 source "${DIR}/reporting.sh"
 
 export_chart_version() {
-  # change reference to https://raw.githubusercontent.com/redhat-developer/rhdh-chart/refs/heads/main/.rhdh/docs/installing-ci-charts.adoc after RHIDP-6668
-  export CHART_VERSION=$(echo $(curl -sS https://raw.githubusercontent.com/rhdh-bot/openshift-helm-charts/refs/heads/rhdh-1-rhel-9/installation/README.md | grep -oE '[0-9]+\.[0-9]+-[0-9]+-CI'))
+  export CHART_VERSION=$(curl -sSX GET "https://quay.io/api/v1/repository/rhdh/chart/tag/?onlyActiveTags=true&filter_tag_name=like:${CHART_MAJOR_VERSION}-" -H "Content-Type: application/json" \
+  | jq '.tags[0].name' | grep -oE '[0-9]+\.[0-9]+-[0-9]+-CI')
 }
 
 retrieve_pod_logs() {
@@ -50,9 +50,7 @@ droute_send() {
   original_context=$(oc config current-context) # Save original context
   echo "Saving original context: $original_context"
   ( # Open subshell
-    if [ -n "${PULL_NUMBER:-}" ]; then
-      set +e
-    fi
+    set +e
     local droute_version="1.2.2"
     local release_name=$1
     local project=$2
@@ -112,6 +110,7 @@ droute_send() {
       echo "Attempt ${i} of ${max_attempts} to rsync test resuls to bastion pod."
       if output=$(oc rsync --progress=true --include="${metadata_output}" --include="${JUNIT_RESULTS}" --exclude="*" -n "${droute_project}" "${ARTIFACT_DIR}/${project}/" "${droute_project}/${droute_pod_name}:${temp_droute}/" 2>&1); then
         echo "$output"
+        save_status_data_router_failed "$CURRENT_DEPLOYMENT" false
         break
       elif ((i == max_attempts)); then
         echo "Failed to rsync test results after ${max_attempts} attempts."
@@ -119,7 +118,8 @@ droute_send() {
         echo "${output}"
         echo "Troubleshooting steps:"
         echo "1. Restart $droute_pod_name in $droute_project project/namespace"
-        return 1
+        save_status_data_router_failed "$CURRENT_DEPLOYMENT" true
+        return
       else
         sleep $((wait_seconds_step * i))
       fi
@@ -156,7 +156,8 @@ droute_send() {
         echo "1. Restart $droute_pod_name in $droute_project project/namespace"
         echo "2. Check the Data Router documentation: https://spaces.redhat.com/pages/viewpage.action?pageId=115488042"
         echo "3. Ask for help at Slack: #forum-dno-datarouter"
-        return 1
+        save_status_data_router_failed "$CURRENT_DEPLOYMENT" true
+        return
       else
         sleep $((wait_seconds_step * i))
       fi
@@ -166,7 +167,6 @@ droute_send() {
     if [[ "$JOB_NAME" == *periodic-* ]]; then
       local max_attempts=30
       local wait_seconds=2
-      set +e
       for ((i = 1; i <= max_attempts; i++)); do
         # Get DataRouter request information.
         DATA_ROUTER_REQUEST_OUTPUT=$(oc exec -n "${droute_project}" "${droute_pod_name}" -- /bin/bash -c "
@@ -186,12 +186,9 @@ droute_send() {
           sleep "${wait_seconds}"
         fi
       done
-      set -e
     fi
     oc exec -n "${droute_project}" "${droute_pod_name}" -- /bin/bash -c "rm -rf ${temp_droute}/*"
-    if [ -n "${PULL_NUMBER:-}" ]; then
-      set -e
-    fi
+    set -e
   ) # Close subshell
   oc config use-context "$original_context" # Restore original context
   if ! kubectl auth can-i get pods >/dev/null 2>&1; then
@@ -846,6 +843,18 @@ cluster_setup_k8s_helm() {
   # install_crunchy_postgres_k8s_operator # Works with K8s but disabled in values file
 }
 
+install_orchestrator_infra_chart() {
+  ORCH_INFRA_NS="orchestrator-infra"
+  configure_namespace ${ORCH_INFRA_NS}
+
+  echo "Deploying orchestrator-infra chart"
+  cd "${DIR}"
+  helm upgrade -i orch-infra -n "${ORCH_INFRA_NS}" \
+    "oci://quay.io/rhdh/orchestrator-infra-chart" --version "${CHART_VERSION}" \
+    --set serverlessLogicOperator.subscription.spec.installPlanApproval=Automatic \
+    --set serverlessOperator.subscription.spec.installPlanApproval=Automatic
+}
+
 # Helper function to get common helm set parameters
 get_image_helm_set_params() {
   local params=""
@@ -866,7 +875,7 @@ perform_helm_install() {
   local release_name=$1
   local namespace=$2
   local value_file=$3
-
+  
   helm upgrade -i "${release_name}" -n "${namespace}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "${DIR}/value_files/${value_file}" \
@@ -878,6 +887,10 @@ base_deployment() {
   configure_namespace ${NAME_SPACE}
 
   deploy_redis_cache "${NAME_SPACE}"
+
+  install_orchestrator_infra_chart
+
+  cd "${DIR}"
   local rhdh_base_url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
   echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
@@ -989,7 +1002,8 @@ initiate_sanity_plugin_checks_deployment() {
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    $(get_image_helm_set_params)
+    $(get_image_helm_set_params)  \
+    --set orchestrator.enabled=true
 }
 
 check_and_test() {

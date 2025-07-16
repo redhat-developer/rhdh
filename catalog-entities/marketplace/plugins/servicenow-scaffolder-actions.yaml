@@ -29,7 +29,7 @@ spec:
   author: Red Hat
   support: tech-preview
   lifecycle: active
-  publisher: Red Hat  
+  publisher: Red Hat
 
   categories:
     - Scaffolder  

@@ -38,6 +38,15 @@ save_status_number_of_test_failed() {
   cp "$SHARED_DIR/STATUS_NUMBER_OF_TEST_FAILED.txt" "$ARTIFACT_DIR/reporting/STATUS_NUMBER_OF_TEST_FAILED.txt"
 }
 
+save_status_data_router_failed() {
+  local current_deployment=$1
+  local status=$2
+  echo "Saving STATUS_DATA_ROUTER_FAILED[\"${current_deployment}\"]=${status}"
+  STATUS_DATA_ROUTER_FAILED["${current_deployment}"]="${status}"
+  printf "%s\n" "${STATUS_DATA_ROUTER_FAILED["${current_deployment}"]}" >> "$SHARED_DIR/STATUS_DATA_ROUTER_FAILED.txt"
+  cp "$SHARED_DIR/STATUS_DATA_ROUTER_FAILED.txt" "$ARTIFACT_DIR/reporting/STATUS_DATA_ROUTER_FAILED.txt"
+}
+
 save_status_url_reportportal() {
   local current_deployment=$1
   local url=$2
