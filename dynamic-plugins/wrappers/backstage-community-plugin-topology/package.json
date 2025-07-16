@@ -10,7 +10,7 @@
   },
   "backstage": {
     "role": "frontend-plugin",
-    "supported-versions": "1.39.1",
+    "supported-versions": "1.41.0",
     "pluginId": "topology",
     "pluginPackages": [
       "backstage-community-plugin-topology"
