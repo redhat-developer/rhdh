@@ -6,7 +6,7 @@ metadata:
   title: "@apiconnect/apic-backstage"
   links:
     - url: https://github.com/ibm-apiconnect/backstage/blob/main/plugins/apic-backstage/README.md
-      title: Homepage
+      title: Plugin Overview (README)
     - title: Source Code
       url: https://github.com/ibm-apiconnect/backstage/tree/main/plugins/apic-backstage
   annotations:
@@ -15,7 +15,7 @@ metadata:
   tags: []
 spec:
   packageName: "apic-backstage"
-  dynamicArtifact: ./dynamic-plugins/dist/apic-backstage #oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/apic-backstage:pr_1233__1.0.0!apic-backstage
+  dynamicArtifact: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/apic-backstage:next__1.0.0!apic-backstage
   version: 1.0.0
   backstage:
     role: backend-plugin
@@ -24,4 +24,21 @@ spec:
   support: production
   lifecycle: active
   
-  appConfigExamples: []
+  appConfigExamples:
+    - title: Plugin configuration
+      content:
+        ibm:
+          schedule: '* * * * *' 
+          apic:
+            - name: apic-instance-1
+              url: ${APIC_API_URL}
+              clientId: ${APIC_CLIENT_ID}
+              clientSecret: ${APIC_SECRET}
+              username: ${PORG_USERNAME}
+              password: ${PORG_PASSWORD}
+              identityProvider: 'default-idp-2' # Default Local User Registry   
+            - name: apic-instance-2
+              url: ${APIC_API_URL}
+              clientId: ${APIC_CLIENT_ID}
+              clientSecret: ${APIC_SECRET}
+              apiKey: ${APIC_API_KEY} # OIDC Registry
