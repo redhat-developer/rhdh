@@ -194,7 +194,7 @@ typing-extensions==4.12.2
     # via
     #   -r requirements.in
     #   setuptools-scm
-urllib3==2.5.0
+urllib3==2.2.2
     # via
     #   -r requirements.in
     #   requests
