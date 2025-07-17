@@ -6,6 +6,7 @@ on:
     branches:
       - main
       - update-to-use-hermetic-builds
+      - hermetic-build-testing
     
 env:
   HERMETO_IMAGE: quay.io/konflux-ci/hermeto:latest

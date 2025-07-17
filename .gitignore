@@ -60,6 +60,7 @@ dynamic-plugins-root/*
 .webpack-cache
 .idea/
 .idea/
+hermeto-cache/
 
 # Private Keys
 *.pem
