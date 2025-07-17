@@ -145,6 +145,11 @@ RUN echo "=== YARN BUILD ==="; FAILED=0; \
 
 WORKDIR $CONTAINER_SOURCE/dynamic-plugins
 
+RUN echo "=== whoami ==="; whoami; id
+RUN echo "=== List cachi2 ==="; ls -laR /cachi2
+RUN echo "=== CHOWN cachi2 ==="; chown -R 0:0 /cachi2
+RUN echo "=== List cachi2 ==="; ls -laR /cachi2
+
 RUN echo "=== DYNAMIC PLUGIN YARN INSTALL ==="; FAILED=0; "$YARN" install --immutable; \
   for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then \
   (( FAILED = FAILED + 1 )); \
