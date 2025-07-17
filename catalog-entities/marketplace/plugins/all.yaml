@@ -76,3 +76,4 @@ spec:
     - ./techdocs.yaml
     - ./tekton.yaml
     - ./topology.yaml
+    - ./lightspeed.yaml
