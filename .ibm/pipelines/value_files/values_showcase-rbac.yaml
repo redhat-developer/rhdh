@@ -225,7 +225,7 @@ upstream:
       - name: dynamic-plugins
         configMap:
           defaultMode: 420
-          name: dynamic-plugins
+          name: '{{ printf "%s-dynamic-plugins" .Release.Name }}'
           optional: true
       # Optional volume that allows exposing the `.npmrc` file (through a `dynamic-plugins-npmrc` secret)
       # to be used when running `npm pack` during the dynamic plugins installation by the initContainer.
