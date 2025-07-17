@@ -64,7 +64,7 @@ main() {
   echo "JOB_NAME : $JOB_NAME"
 
   detect_ocp_and_set_env_var
-
+  export TAG_NAME="1.6"
   case "$JOB_NAME" in
     *aks-helm*)
       echo "Calling handle_aks_helm"
