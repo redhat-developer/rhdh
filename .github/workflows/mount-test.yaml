@@ -1,0 +1,119 @@
+name: "Test Docker Mounts"
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - update-to-use-hermetic-builds
+    
+env:
+  HERMETO_IMAGE: quay.io/konflux-ci/hermeto:latest
+  LOCAL_CACHE_DIR: ./hermeto-cache
+  LOCAL_DOCKERFILE: .rhdh/docker/Dockerfile 
+  REGISTRY: quay.io
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_TOKEN }}
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Cache Dependencies with Hermeto"
+        run: |         
+          # Build hermeto cache
+          docker run --rm -v "$PWD:/source:z" -v "$LOCAL_CACHE_DIR:/cachi2:z" -w /source "$HERMETO_IMAGE" \
+            --log-level DEBUG \
+            fetch-deps --dev-package-managers \
+            --source . \
+            --output /cachi2/output \
+            '[{"type": "rpm", "path": "."}, {"type": "yarn","path": "."}, {"type": "yarn","path": "./dynamic-plugins"}, {"type": "pip","path": "./python", "allow_binary": "false"}]'  || echo "Fetch-deps failed"
+          
+          if [ -d ./hermeto-cache/output ]; then
+            echo "=== Output directory exists, running generate-env ==="
+            
+            # Generate environment file
+            docker run --rm -v "$PWD:/source:z" -v "$LOCAL_CACHE_DIR:/cachi2:z" -w /source "$HERMETO_IMAGE" \
+                        --log-level DEBUG \
+                        generate-env --format env \
+                        --output /cachi2/cachi2.env /cachi2/output || echo "Generate-env failed"
+            
+          else
+            echo "No output directory found, skipping generate-env"
+            ls -la ./hermeto-cache/ || echo "No cache directory"
+          fi
+
+          if [ -d ./hermeto-cache/output ]; then
+            echo "=== Running inject-files ==="
+            
+            docker run --rm -v "$PWD:/source:z" -v "$PWD/hermeto-cache:/cachi2:z" -w /source "$HERMETO_IMAGE" \
+              --log-level DEBUG \
+              inject-files /cachi2/output || echo "Inject-files failed"
+
+          else
+            echo "No output directory found, skipping inject-files"
+          fi
+
+          echo LOCAL_CACHE_DIR_REALPATH=$(realpath "${{ env.LOCAL_CACHE_DIR }}") >> $GITHUB_ENV
+
+      - name: Transform Containerfile for hermetic build
+        shell: bash
+        id: transform-containerfile
+        run: |
+          set -x
+          
+          CONTAINERFILE_PATH="${{ env.LOCAL_DOCKERFILE }}"
+          
+          TRANSFORMED_CONTAINERFILE="${CONTAINERFILE_PATH}.hermeto"
+          
+          # Copy original containerfile
+          cp "$CONTAINERFILE_PATH" "$TRANSFORMED_CONTAINERFILE"
+
+          # Transform the containerfile to simulate Konflux build
+          # Configure dnf to use the cachi2 repo
+          sed -i '/RUN *\(dnf\|microdnf\) install/i RUN rm -r /etc/yum.repos.d/* && cp /cachi2/output/deps/rpm/x86_64/repos.d/hermeto.repo /etc/yum.repos.d/' "$TRANSFORMED_CONTAINERFILE"
+          
+          # Inject the cachi2 env variables to every RUN command
+          sed -i 's/^\s*RUN /RUN . \/cachi2\/cachi2.env \&\& /' "$TRANSFORMED_CONTAINERFILE"
+          
+          echo "TRANSFORMED_CONTAINERFILE=$TRANSFORMED_CONTAINERFILE" >> $GITHUB_ENV
+      
+      - name: "Verify Files"
+        run: |
+          echo "=== LOCAL_CACHE_DIR_REALPATH ==="
+          ls -laR ${{ env.LOCAL_CACHE_DIR_REALPATH }}
+
+          echo "=== TRANSFORMED_CONTAINERFILE ==="
+          cat ${{ env.TRANSFORMED_CONTAINERFILE }} || echo "No file found"
+
+      - name: "Build Docker Image"
+        uses: redhat-actions/buildah-build@7a95fa7ee0f02d552a32753e7414641a04307056 # v2.13
+        with:
+          containerfiles: ${{ env.LOCAL_DOCKERFILE }}.hermeto
+          context: .
+          platforms: linux/amd64
+          image: ${{ env.REGISTRY }}/my-test-organization/test-registry
+          tags: |
+            test
+            latest
+          extra-args: |
+            --network=none
+            --volume ${{ env.LOCAL_CACHE_DIR_REALPATH }}:/cachi2:z
+
+      - name: "Push Docker Image"
+        uses: redhat-actions/push-to-registry@5ed88d269cf581ea9ef6dd6806d01562096bee9c # v2.8
+        with:
+          image: my-test-organization/test-registry
+          tags: |
+            test
+            latest
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_TOKEN }}
