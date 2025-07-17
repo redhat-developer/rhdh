@@ -61,11 +61,24 @@ export class TestHelper {
     techdocsFirstLast: string[]
   ): Promise<void> {
     if (templatesFirstLast.length === 0) {
-      // Run a template
-      const inputText = 'reallyUniqueName';
       await page.getByRole('link', { name: 'Self-service' }).click();
-      const chooseButton = page.getByRole('button', { name: 'Choose' });
-      await chooseButton.last().click();
+      await expect(page.getByRole('main')).toContainText('Templates');
+      const panel = page.locator("article div div", {
+        hasText: "Create a tekton CI Pipeline",
+      });
+      const isPanelVisible = await panel.last().isVisible();
+      if (!isPanelVisible) {
+        const sampleTemplate = 'https://github.com/redhat-developer/red-hat-developer-hub-software-templates/blob/main/templates/github/tekton/template.yaml';
+        await page.getByRole('button', { name: 'Register Existing Component' }).click();
+        await page.getByRole('textbox', { name: 'URL' }).fill(sampleTemplate);
+        await page.getByRole('button', { name: 'Analyze' }).click();
+        await page.getByRole('button', { name: 'Import' }).click();
+        await page.getByRole('button', { name: 'Register' }).click();
+        await page.getByRole('link', { name: 'Self-service' }).click();
+      }
+      // Run a template
+      await panel.getByRole('button', { name: 'Choose' }).last().click();
+      const inputText = 'reallyUniqueName';
       await uiHelper.fillTextInputByLabel('Organization', inputText);
       await uiHelper.fillTextInputByLabel('Repository', inputText);
       await uiHelper.clickButton("Next");
@@ -87,7 +100,7 @@ export class TestHelper {
   
     if (techdocsFirstLast.length === 0) {
       // Visit docs
-      await uiHelper.clickLink('docs');
+      await page.goto('/docs');
       await uiHelper.clickLink('Red Hat Developer Hub');
     }
   }
@@ -110,6 +123,8 @@ export class TestHelper {
     await this.waitUntilApiCallSucceeds(newpage);
 
     await newpage.getByText(expectedText).first().waitFor({ state: 'visible' });
+    await newpage.waitForTimeout(5000); // wait for the flush interval to be sure
+    await newpage.close();
   }
 
   async waitUntilApiCallSucceeds(
@@ -146,12 +161,15 @@ export class TestHelper {
       'top_searches'
     ];
   
-    await Promise.all(
-      types.map(type => this.waitUntilApiCallIsMade(
-        page,
-        `/api/adoption-insights/events?type=${type}`
-      ))
-    );
+    await Promise.all([
+      ...types.map(type =>
+        this.waitUntilApiCallIsMade(
+          page,
+          `/api/adoption-insights/events?type=${type}`
+        )
+      ),
+      this.waitUntilApiCallSucceeds(page)
+    ]);
   }
 
   

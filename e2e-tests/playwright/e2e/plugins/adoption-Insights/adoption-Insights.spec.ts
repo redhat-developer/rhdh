@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
 import { Common } from "../../../utils/common";
 import { UIhelper } from "../../../utils/ui-helper"; 
-import { TestHelper } from "../../../support/pages/adoption-Insights"; 
+import { TestHelper } from "../../../support/pages/adoption-insights"; 
 
 // TODO: replace skip with serial https://issues.redhat.com/browse/RHDHBUGS-1879
-test.describe.skip("Test Adoption Insights", () => {
+test.describe.serial("Test Adoption Insights", () => {
   test.describe.serial("Test Adoption Insights plugin: load permission policies and conditions from files", () => {
     let context;
     let page;
@@ -35,7 +35,6 @@ test.describe.skip("Test Adoption Insights", () => {
       await uiHelper.clickLink('Adoption Insights');
 
       await testHelper.waitForPanelApiCalls(page);
-      await testHelper.waitUntilApiCallSucceeds(page);
       
       await uiHelper.verifyHeading("Adoption Insights");
       expect(page.url()).toContain("adoption-insights");
@@ -204,7 +203,6 @@ test.describe.skip("Test Adoption Insights", () => {
           testHelper.waitForPanelApiCalls(page),
           testHelper.selectOption("Today"),
         ]);
-        await testHelper.waitUntilApiCallSucceeds(page);
 
         for (const title of titles) {
           const finalViews = await state[title].firstRow.locator('td').last();
