@@ -100,6 +100,23 @@ def maybeMergeConfig(config, globalConfig):
     else:
         return globalConfig
 
+def mergePlugin(plugin: dict, allPlugins: dict, dynamicPluginsFile: str):
+    package = plugin['package']
+    if not isinstance(package, str):
+        raise InstallException(f"content of the \'plugins.package\' field must be a string in {dynamicPluginsFile}")
+
+    # if `package` already exists in `allPlugins`, then override its fields
+    if package not in allPlugins:
+        allPlugins[package] = plugin
+        return
+
+    # override the included plugins with fields in the main plugins list
+    print('\n======= Overriding dynamic plugin configuration', package, flush=True)
+    for key in plugin:
+        if key == 'package':
+            continue
+        allPlugins[package][key] = plugin[key]
+
 class OciDownloader:
     def __init__(self, destination: str):
         self._skopeo = shutil.which('skopeo')
@@ -308,7 +325,7 @@ def main():
             raise InstallException(f"content of the \'plugins\' field must be a list in {include}")
 
         for plugin in includePlugins:
-            allPlugins[plugin['package']] = plugin
+            mergePlugin(plugin, allPlugins, dynamicPluginsFile)
 
     if 'plugins' in content:
         plugins = content['plugins']
@@ -319,21 +336,7 @@ def main():
         raise InstallException(f"content of the \'plugins\' field must be a list in {dynamicPluginsFile}")
 
     for plugin in plugins:
-        package = plugin['package']
-        if not isinstance(package, str):
-            raise InstallException(f"content of the \'plugins.package\' field must be a string in {dynamicPluginsFile}")
-
-        # if `package` already exists in `allPlugins`, then override its fields
-        if package not in allPlugins:
-            allPlugins[package] = plugin
-            continue
-
-        # override the included plugins with fields in the main plugins list
-        print('\n======= Overriding dynamic plugin configuration', package, flush=True)
-        for key in plugin:
-            if key == 'package':
-                continue
-            allPlugins[package][key] = plugin[key]
+        mergePlugin(plugin, allPlugins, dynamicPluginsFile)
 
     # add a hash for each plugin configuration to detect changes
     for plugin in allPlugins.values():
