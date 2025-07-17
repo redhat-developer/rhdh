@@ -1,0 +1,25 @@
+name: Check Marketplace Catalog Entities
+
+on:
+  pull_request:
+    paths:
+      - 'catalog-entities/marketplace/**'
+
+jobs:
+  check-entities:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: pip install PyYAML
+
+      - name: Run script
+        run: python .github/workflows/scripts/check-marketplace-catalog-entities.py
