@@ -888,8 +888,6 @@ base_deployment() {
 
   deploy_redis_cache "${NAME_SPACE}"
 
-  install_orchestrator_infra_chart
-
   cd "${DIR}"
   local rhdh_base_url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
@@ -911,6 +909,7 @@ rbac_deployment() {
 
 initiate_deployments() {
   cd "${DIR}"
+  install_orchestrator_infra_chart
   base_deployment
   rbac_deployment
 }
