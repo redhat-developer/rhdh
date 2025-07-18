@@ -668,8 +668,8 @@ check_backstage_running() {
   local release_name=$1
   local namespace=$2
   local url=$3
-  local max_attempts=$4
-  local wait_seconds=$5
+  local max_attempts=${4:-30}
+  local wait_seconds=${5:-30}
 
   if [ -z "${url}" ]; then
     echo "Error: URL is not set. Please provide a valid URL."
@@ -679,22 +679,39 @@ check_backstage_running() {
   echo "Checking if Backstage is up and running at ${url}"
 
   for ((i = 1; i <= max_attempts; i++)); do
+    # Check for CrashLoopBackOff pods first (fail fast)
+    local crashloop_pods
+    crashloop_pods=$(kubectl get pods -n "${namespace}" --no-headers 2>/dev/null | grep "CrashLoopBackOff" || true)
+    if [[ -n "${crashloop_pods}" ]]; then
+      echo "❌ Found pods in CrashLoopBackOff state:"
+      echo "${crashloop_pods}"
+      kubectl get pods -n "${namespace}" -o wide
+      kubectl get events -n "${namespace}" --sort-by='.lastTimestamp' | tail -10
+      save_all_pod_logs "${namespace}"
+      return 1
+    fi
+    
+    # Check HTTP status
     local http_status
     http_status=$(curl --insecure -I -s -o /dev/null -w "%{http_code}" "${url}")
 
     if [ "${http_status}" -eq 200 ]; then
-      echo "Backstage is up and running!"
+      echo "✅ Backstage is up and running!"
       export BASE_URL="${url}"
       echo "BASE_URL: ${BASE_URL}"
       return 0
     else
       echo "Attempt ${i} of ${max_attempts}: Backstage not yet available (HTTP Status: ${http_status})"
       oc get pods -n "${namespace}"
-      sleep "${wait_seconds}"
+      if [[ $i -lt $max_attempts ]]; then
+        echo "Waiting ${wait_seconds} seconds before next attempt..."
+        sleep "${wait_seconds}"
+      fi
     fi
   done
 
-  echo "Failed to reach Backstage at ${BASE_URL} after ${max_attempts} attempts." | tee -a "/tmp/${LOGFILE}"
+  echo "❌ Failed to reach Backstage at ${url} after ${max_attempts} attempts."
+  oc get events -n "${namespace}" --sort-by='.lastTimestamp' | tail -10
   mkdir -p "${ARTIFACT_DIR}/${namespace}"
   cp -a "/tmp/${LOGFILE}" "${ARTIFACT_DIR}/${namespace}/"
   save_all_pod_logs "${namespace}"

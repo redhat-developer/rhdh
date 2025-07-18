@@ -61,18 +61,12 @@ upstream:
       # could be changed to a [generic ephemeral volume](https://docs.openshift.com/container-platform/4.13/storage/generic-ephemeral-vols.html#generic-ephemeral-vols-procedure_generic-ephemeral-volumes).
       - name: dynamic-plugins-root
         emptyDir: {}
-      - name: rbac-policy
-        configMap:
-          defaultMode: 420
-          name: rbac-policy
-      - name: rbac-conditions
-        emptyDir: {}
       # Volume that will expose the `dynamic-plugins.yaml` file from the `dynamic-plugins` config map.
       # The `dynamic-plugins` config map is created by the helm chart from the content of the `global.dynamic` field.
       - name: dynamic-plugins
         configMap:
           defaultMode: 420
-          name: dynamic-plugins
+          name: '{{ printf "%s-dynamic-plugins" .Release.Name }}'
           optional: true
       # Optional volume that allows exposing the `.npmrc` file (through a `dynamic-plugins-npmrc` secret)
       # to be used when running `npm pack` during the dynamic plugins installation by the initContainer.
@@ -80,7 +74,18 @@ upstream:
         secret:
           defaultMode: 420
           optional: true
-          secretName: dynamic-plugins-npmrc
+          secretName: '{{ printf "%s-dynamic-plugins-npmrc" .Release.Name }}'
+      - name: dynamic-plugins-registry-auth
+        secret:
+          defaultMode: 416
+          optional: true
+          secretName: '{{ printf "%s-dynamic-plugins-registry-auth" .Release.Name }}'
+      - name: rbac-policy
+        configMap:
+          defaultMode: 420
+          name: rbac-policy
+      - name: rbac-conditions
+        emptyDir: {}
     extraEnvVarsSecrets:
       - rhdh-secrets
     podSecurityContext:

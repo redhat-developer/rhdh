@@ -112,6 +112,11 @@ main() {
       echo "Calling handle_ocp_pull"
       handle_ocp_pull
       ;;
+    *)
+      echo "ERROR: Unknown JOB_NAME pattern: $JOB_NAME"
+      echo "No matching handler found for this job type"
+      save_overall_result 1
+      ;;
   esac
 
   echo "Main script completed with result: ${OVERALL_RESULT}"

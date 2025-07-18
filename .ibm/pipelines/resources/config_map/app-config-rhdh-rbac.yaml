@@ -31,7 +31,7 @@ integrations:
 auth:
   environment: development
   session:
-    secret: superSecretSecret 
+    secret: superSecretSecret
   providers:
     guest:
       dangerouslyAllowOutsideDevelopment: true
