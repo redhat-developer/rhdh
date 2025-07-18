@@ -945,7 +945,7 @@ initiate_upgrade_base_deployments() {
     -f "${previous_release_value_file}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO_BASE}" \
-    --set upstream.backstage.image.tag="${TAG_NAME_BASE}" --debug
+    --set upstream.backstage.image.tag="${TAG_NAME_BASE}"
 }
 
 initiate_upgrade_deployments() {
@@ -968,7 +968,7 @@ initiate_upgrade_deployments() {
   --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
   --set upstream.backstage.image.repository="${QUAY_REPO}" \
   --set upstream.backstage.image.tag="${TAG_NAME}" \
-  --wait --timeout=${wait_upgrade} --debug
+  --wait --timeout=${wait_upgrade}
 
   oc get pods -n "${namespace}"
   save_all_pod_logs $namespace
