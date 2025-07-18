@@ -4,10 +4,19 @@
 
 set -e
 
+if ! command -v yq &> /dev/null; then
+    echo "yq could not be found. Please install it to continue." >&2
+    exit 1
+fi
+
 KEYCLOAK_NAMESPACE=keycloak
 KEYCLOAK_OPERATOR_DISPLAY_NAME="Red Hat build of Keycloak Operator"
 CERT_HOSTNAME="" # Ex: keycloak.apps-crc.testing
 DELETE=false
+
+if [ -f "${PWD}/.env" ]; then
+  source "${PWD}/.env"
+fi
 
 # TODO: add method to deploy without operator for ARM systems that don't have access to the keycloak operator.
 usage() {
@@ -73,13 +82,23 @@ deployTLSKeys(){
 }
 
 deploySecrets(){
-  oc apply -f ${PWD}/auth/database-secrets.local.yaml -n ${KEYCLOAK_NAMESPACE}
+  cat ${PWD}/auth/database-secrets.yaml \
+  | yq '
+    .data.username = env(POSTGRES_USER) | 
+    .data.password = env(POSTGRES_PASSWORD)
+  ' \
+  | yq '
+    .data.username |= @base64 |
+    .data.password |= @base64
+  ' \
+  | oc apply -f - -n ${KEYCLOAK_NAMESPACE}
 }
 
 deployKeyCloak(){
   installKeycloakOperator
-  oc apply -f ${PWD}/keycloak.yaml -n ${KEYCLOAK_NAMESPACE}
-  oc patch keycloak development-keycloak --type=merge -p "{\"spec\":{\"hostname\":{\"hostname\": \"${CERT_HOSTNAME}\"}}}" -n ${KEYCLOAK_NAMESPACE}
+  cat ${PWD}/keycloak.yaml \
+  | yq ".spec.hostname.hostname = strenv(CERT_HOSTNAME)" \
+  | oc apply -f - -n ${KEYCLOAK_NAMESPACE}
 }
 
 deleteKeycloakOperator() {
@@ -106,7 +125,7 @@ deleteSecrets(){
 deleteAll(){
   deleteSecrets
   deleteDB
-  deleteKeyCloak
+  deleteKeycloak
 }
 
 deployAll(){
@@ -121,8 +140,22 @@ DELETE=""
 while [[ "$#" -gt 0 ]]; do
     case $1 in
         --generate-certs | -gc)
-            CERT_HOSTNAME="$2"
-            shift
+            # If an optional hostname is provided, use it.
+            if [[ -n "$2" ]] && ! [[ "$2" =~ ^- ]]; then
+                CERT_HOSTNAME="$2"
+                export CERT_HOSTNAME
+                shift
+            fi
+
+            # Now check if we have a hostname from any source.
+            if [[ -z "${CERT_HOSTNAME}" ]]; then
+                echo "Error: --generate-certs requires a hostname, either as an argument or in the .env file." >&2
+                exit 1
+            fi
+            echo "Host name is: ${CERT_HOSTNAME}"
+            
+            # If we have a hostname, generate the certs.
+            generateSSLCerts
             ;;
         --namespace | -n)
             KEYCLOAK_NAMESPACE="$2"
@@ -165,12 +198,5 @@ case "${DELETE}" in
     exit 1
     ;;
 esac
-
-if [[ -n "${CERT_HOSTNAME}" ]]; then
-  generateSSLCerts
-else
-  echo "Please provide a valid hostname for the SSL certificate"
-  exit 1
-fi
 
 deployAll
