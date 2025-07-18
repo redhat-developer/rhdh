@@ -20,10 +20,18 @@ spec:
             - mountPath: /data
               name: cache-volume
           env:
-            - name: POSTGRES_PASSWORD
-              value: testpassword
             - name: PGDATA
               value: /data/pgdata
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-db-secret
+                  key: username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-db-secret
+                  key: password
             - name: POSTGRES_DB
               value: keycloak
       resources:
@@ -46,5 +54,5 @@ spec:
     app: postgresql-db
   type: LoadBalancer
   ports:
-  - port: 5432
-    targetPort: 5432
+    - port: 5432
+      targetPort: 5432
