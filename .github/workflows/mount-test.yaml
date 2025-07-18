@@ -31,6 +31,7 @@ jobs:
         run: |         
           # Build hermeto cache
           docker run --rm -v "$PWD:/source:z" -v "$LOCAL_CACHE_DIR:/cachi2:z" -w /source "$HERMETO_IMAGE" \
+            --user $(id -u):$(id -g) \
             --log-level DEBUG \
             fetch-deps --dev-package-managers \
             --source . \
