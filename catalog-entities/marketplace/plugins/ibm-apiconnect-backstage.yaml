@@ -1,0 +1,51 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: apic-backstage
+  namespace: apiconnect
+  title: API Connect Backstage Plugin 
+  annotations:
+    extensions.backstage.io/pre-installed: 'false' # For plugins contained in the RHDH image
+    #extensions.backstage.io/verified-by: Red Hat # For verified plugins
+    #extensions.backstage.io/certified-by: Red Hat # For certified plugins
+  links:
+    - title: Plugin Overview (README)
+      url: https://github.com/ibm-apiconnect/backstage/blob/main/plugins/apic-backstage/README.md
+    - title: Documentation for Red Hat Developer Hub
+      url: https://www.ibm.com/docs/en/api-connect/10.0.x_cd?topic=uacbpi-enabling-api-connect-plug-in-red-hat-developer-hub
+    - title: Source Code
+      url: https://github.com/ibm-apiconnect/backstage/tree/main/plugins/apic-backstage
+  tags:
+    - apis
+    - apiconnect # Used for filtering
+  description: |
+    The single page view of all APIs in an enterprise estate for quick discovery and easy navigation of API assets within Backstage.
+spec:
+  author: IBM
+  support: production #tech-preview, dev-preveiw
+  lifecycle: active
+  publisher: IBM
+
+  categories:
+    - API Management # One category will show up on the tile view
+  
+  description: |
+    The API Connect plug-in consolidates all your API Connect instances into a single location. By using the provider API, the plug-in groups data from each instance and displays it in a centralized dashboard. This grouping of data provides a clear overview of data distribution between different API Connect instances.
+     The plug-in is valid for IBM® API Connect version 10.0.8.0 and later.
+
+    ## Adding The Plugin To Red Hat Developer Hub
+
+    See the [IBM API Connect documentation](https://www.ibm.com/docs/en/api-connect/10.0.x_cd?topic=uacbpi-enabling-api-connect-plug-in-red-hat-developer-hub)
+    for further instructions on how to add, enable, configure, and remove plugins in your instance.
+
+    ## Configuring The Plugin ##
+
+    See [APIC Backstage Plugin ](https://github.com/ibm-apiconnect/backstage/blob/main/plugins/apic-backstage/README.md) for configuration details.
+
+
+  icon: data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iTGF5ZXJfMiIgZGF0YS1uYW1lPSJMYXllciAyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB2aWV3Qm94PSIwIDAgMzIgMzIiPgogIDxkZWZzPgogICAgPHN0eWxlPgogICAgICAuY2xzLTEgewogICAgICAgIGZpbGw6IHVybCgjbGluZWFyLWdyYWRpZW50KTsKICAgICAgfQoKICAgICAgLmNscy0yIHsKICAgICAgICBtYXNrOiB1cmwoI21hc2spOwogICAgICB9CgogICAgICAuY2xzLTMgewogICAgICAgIGZpbGw6ICNmNGY0ZjQ7CiAgICAgIH0KCiAgICAgIC5jbHMtNCB7CiAgICAgICAgZmlsbDogI2ZmZjsKICAgICAgfQoKICAgICAgLmNscy01IHsKICAgICAgICBmaWxsOiB1cmwoI2xpbmVhci1ncmFkaWVudC0zKTsKICAgICAgfQoKICAgICAgLmNscy02IHsKICAgICAgICBmaWxsOiB1cmwoI2xpbmVhci1ncmFkaWVudC0yKTsKICAgICAgfQogICAgPC9zdHlsZT4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0ibGluZWFyLWdyYWRpZW50IiB4MT0iMjYuNSIgeTE9IjMwIiB4Mj0iMjYuNSIgeTI9IjgiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIuMyIgc3RvcC1jb2xvcj0iIzAwMCIvPgogICAgICA8c3RvcCBvZmZzZXQ9Ii45NSIgc3RvcC1jb2xvcj0iIzAwMCIgc3RvcC1vcGFjaXR5PSIwIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJsaW5lYXItZ3JhZGllbnQtMiIgeDE9IjY3My41IiB5MT0iNDAiIHgyPSI2NzMuNSIgeTI9IjE4IiBncmFkaWVudFRyYW5zZm9ybT0idHJhbnNsYXRlKC02NjggLTE2KSIgeGxpbms6aHJlZj0iI2xpbmVhci1ncmFkaWVudCIvPgogICAgPG1hc2sgaWQ9Im1hc2siIHg9IjEiIHk9IjIiIHdpZHRoPSIzMCIgaGVpZ2h0PSIyOCIgbWFza1VuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CiAgICAgIDxnPgogICAgICAgIDxnPgogICAgICAgICAgPHBhdGggY2xhc3M9ImNscy00IiBkPSJNMjQuNTIsMjcuMTFjNS4wMi0zLjg1LDYuODMtMTAuNjIsNC40MS0xNi40N0MyNS45OCwzLjUxLDE3Ljc3LC4xMSwxMC42NCwzLjA3bC43NywxLjg1YzYuMTEtMi41MywxMy4xNSwuMzgsMTUuNjgsNi40OSwyLjA4LDUuMDEsLjUyLDEwLjgyLTMuNzgsMTQuMTFsMS4yMiwxLjU5WiIvPgogICAgICAgICAgPHBhdGggY2xhc3M9ImNscy00IiBkPSJNMTAuNjUsMjguOTNjMy4zMSwxLjM3LDcuMTUsMS40OCwxMC43MSwwbC0uNzctMS44NWMtNi4xMSwyLjUzLTEzLjE1LS4zOC0xNS42OC02LjQ5LTIuMDgtNS4wMS0uNTItMTAuODIsMy43OC0xNC4xMWwtMS4yMi0xLjU5QzIuNDYsOC43NCwuNjQsMTUuNTEsMy4wNywyMS4zNmMxLjQ4LDMuNTcsNC4yNyw2LjIsNy41OCw3LjU3WiIvPgogICAgICAgIDwvZz4KICAgICAgICA8cmVjdCBjbGFzcz0iY2xzLTEiIHg9IjIyIiB5PSI4IiB3aWR0aD0iOSIgaGVpZ2h0PSIyMiIvPgogICAgICAgIDxyZWN0IGNsYXNzPSJjbHMtNiIgeD0iMSIgeT0iMiIgd2lkdGg9IjkiIGhlaWdodD0iMjIiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDExIDI2KSByb3RhdGUoMTgwKSIvPgogICAgICA8L2c+CiAgICA8L21hc2s+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImxpbmVhci1ncmFkaWVudC0zIiB4MT0iMCIgeTE9IjMyIiB4Mj0iMzIiIHkyPSIwIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CiAgICAgIDxzdG9wIG9mZnNldD0iLjEiIHN0b3AtY29sb3I9IiMzZGRiZDkiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIuOSIgc3RvcC1jb2xvcj0iIzQ1ODlmZiIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPGcgaWQ9IkJ1aWxkX2ljb25faGVyZSIgZGF0YS1uYW1lPSJCdWlsZCBpY29uIGhlcmUiPgogICAgPGc+CiAgICAgIDxnIGNsYXNzPSJjbHMtMiI+CiAgICAgICAgPHJlY3QgY2xhc3M9ImNscy01IiB3aWR0aD0iMzIiIGhlaWdodD0iMzIiLz4KICAgICAgPC9nPgogICAgICA8cGF0aCBjbGFzcz0iY2xzLTMiIGQ9Ik0yNSwyM2MtMS4xMiwwLTIsLjg4LTIsMnMuODgsMiwyLDIsMi0uODgsMi0yLS44OC0yLTItMloiLz4KICAgICAgPHBhdGggY2xhc3M9ImNscy0zIiBkPSJNNyw1Yy0xLjEyLDAtMiwuODgtMiwycy44OCwyLDIsMiwyLS44OCwyLTItLjg4LTItMi0yWiIvPgogICAgICA8cGF0aCBjbGFzcz0iY2xzLTMiIGQ9Ik0yMiwxMmMtMS4xNCwwLTIuMTYsLjQ4LTIuODksMS4yNWwtMy4xNi0xLjc2Yy4wMy0uMTYsLjA1LS4zMywuMDUtLjUsMC0xLjY1LTEuMzUtMy0zLTNzLTMsMS4zNS0zLDNjMCwxLjA5LC41OSwyLjA0LDEuNDcsMi41N2wtLjksNC40OGMtMS40NSwuMjEtMi41NywxLjQ1LTIuNTcsMi45NiwwLDEuNjUsMS4zNSwzLDMsM3MzLTEuMzUsMy0zYzAtLjA5LS4wMi0uMTctLjAzLS4yNWw0LjkzLTIuMjRjLjczLC45LDEuODQsMS41LDMuMDksMS41LDIuMjEsMCw0LTEuNzksNC00cy0xLjc5LTQtNC00Wm0tOS0yYy41NSwwLDEsLjQ1LDEsMXMtLjQ1LDEtMSwxLTEtLjQ1LTEtMSwuNDUtMSwxLTFabS0yLDEyYy0uNTUsMC0xLS40NS0xLTFzLjQ1LTEsMS0xYy40MSwwLC43NywuMjUsLjkyLC42MWgwYy4wNSwuMTIsLjA4LC4yNSwuMDgsLjM5LDAsLjU1LS40NSwxLTEsMVptMi4xNi0zLjA4Yy0uMTgtLjE5LS4zOS0uMzUtLjYyLS40OWwuOS00LjQ4Yy41OS0uMDksMS4xMi0uMzQsMS41NS0uNzJsMy4xNywxLjc2Yy0uMDgsLjMyLS4xNCwuNjUtLjE0LDEsMCwuMjQsLjAzLC40NiwuMDcsLjY5bC00LjkxLDIuMjNabTguODQtLjkyYy0xLjEsMC0yLS45LTItMnMuOS0yLDItMiwyLC45LDIsMi0uOSwyLTIsMloiLz4KICAgIDwvZz4KICA8L2c+Cjwvc3ZnPg==
+
+
+  packages: # link to the name used in the associated package documents in ../packages
+    - apic-backstage 
