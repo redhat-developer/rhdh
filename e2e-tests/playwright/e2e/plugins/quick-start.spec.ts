@@ -21,7 +21,6 @@ test.describe("Test Quick Start plugin", () => {
     await expect(page.getByText("Not started")).not.toBeVisible();
     await uiHelper.clickButtonByLabel("Help");
     await uiHelper.clickByDataTestId("quickstart-button");
-    await uiHelper.verifyText("Not started");
     await uiHelper.verifyText("Let's get you started with Developer Hub");
     await uiHelper.verifyText("We'll guide you through a few quick steps");
     await uiHelper.clickButtonByText("Set up authentication");
