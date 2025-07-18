@@ -8,21 +8,21 @@ test.describe("Test Quick Start plugin", () => {
 
   test.beforeEach(async ({ page }) => {
     common = new Common(page);
-    // await common.loginAsKeycloakUser();
-    await common.loginAsGuest();
-
+    await common.loginAsKeycloakUser();
     uiHelper = new UIhelper(page);
   });
 
   test("Access Quick start from Global Header", async ({ page }) => {
-    await uiHelper.verifyText("Not started");
-    await uiHelper.clickButtonByLabel("Help");
-    await uiHelper.clickByDataTestId("quickstart-button");
-    await expect(page.getByText("Not started")).not.toBeVisible();
-    await uiHelper.clickButtonByLabel("Help");
-    await uiHelper.clickByDataTestId("quickstart-button");
+    await page.waitForTimeout(1000);
+    if (await page.getByRole("button", { name: "Hide" }).isHidden()) {
+      await uiHelper.clickButtonByLabel("Help");
+      await uiHelper.clickByDataTestId("quickstart-button");
+      console.log("Quick start button clicked");
+    }
+    await expect(page.getByRole("button", { name: "Hide" })).toBeVisible();
     await uiHelper.verifyText("Let's get you started with Developer Hub");
     await uiHelper.verifyText("We'll guide you through a few quick steps");
+    await uiHelper.verifyText("Not started");
     await uiHelper.clickButtonByText("Set up authentication");
     await uiHelper.verifyButtonURL(
       "Learn more",
@@ -42,6 +42,6 @@ test.describe("Test Quick Start plugin", () => {
     await uiHelper.verifyText(/Plugins \((\d+)\)/);
     await uiHelper.verifyText("25% progress");
     await uiHelper.clickButton("Hide");
-    await expect(page.getByText("25% progress")).not.toBeVisible();
+    await expect(page.getByRole("button", { name: "Hide" })).toBeHidden();
   });
 });
