@@ -15,8 +15,10 @@ test.describe("Test Quick Start plugin", () => {
   });
 
   test("Access Quick start from Global Header", async ({ page }) => {
+    await uiHelper.verifyText("Not started");
     await uiHelper.clickButtonByLabel("Help");
     await uiHelper.clickByDataTestId("quickstart-button");
+    await expect(page.getByText("Not started")).not.toBeVisible();
     await uiHelper.clickButtonByLabel("Help");
     await uiHelper.clickByDataTestId("quickstart-button");
     await uiHelper.verifyText("Not started");
