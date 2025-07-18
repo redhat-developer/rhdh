@@ -70,9 +70,8 @@ jobs:
           ls -la ${{ env.LOCAL_CACHE_DIR_REALPATH }}
           echo "=== Current user context ==="
           id
-          $USER=$(whoami)
           echo "=== Attempting to fix ownership to runner user ==="
-          sudo chown -R ${USER}:${USER} ${{ env.LOCAL_CACHE_DIR_REALPATH }}
+          sudo chown -R runner ${{ env.LOCAL_CACHE_DIR_REALPATH }}
           echo "=== After ownership fix ==="
           ls -la ${{ env.LOCAL_CACHE_DIR_REALPATH }}
 
