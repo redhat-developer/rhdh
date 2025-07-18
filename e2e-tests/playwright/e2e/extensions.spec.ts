@@ -103,11 +103,20 @@ test.describe("Admin > Extensions > Catalog", () => {
     permissions: ["clipboard-read", "clipboard-write"],
   });
 
-  test("Verify plugin configuration can be viewed", async ({ page }) => {
+  test("Verify plugin configuration can be viewed in the production environment", async ({
+    page,
+  }) => {
+    const productionEnvAlert = page
+      .locator('div[class*="MuiAlertTitle-root"]')
+      .first();
+    productionEnvAlert.getByText(
+      "Plugin installation is disabled in the production environment.",
+      { exact: true },
+    );
     await uiHelper.searchInputPlaceholder("Topology");
     await page.getByRole("heading", { name: "Topology" }).first().click();
     await uiHelper.clickButton("View");
-    await uiHelper.verifyHeading("Install Application Topology for Kubernetes");
+    await uiHelper.verifyHeading("Application Topology for Kubernetes");
     await uiHelper.verifyText(
       "- package: ./dynamic-plugins/dist/backstage-community-plugin-topology",
     );
@@ -138,5 +147,78 @@ test.describe("Admin > Extensions > Catalog", () => {
     await uiHelper.clickButton("Back");
     await expect(page.getByRole("button", { name: "View" })).toBeVisible();
     await uiHelper.verifyHeading("Application Topology for Kubernetes");
+  });
+
+  // Enable this when the plugin is installation is enabled in the production environment
+  test.skip("Verify plugin configuration is editable and can be enabled when disabled", async ({
+    page,
+  }) => {
+    await uiHelper.searchInputPlaceholder("Topology");
+    await page.getByRole("heading", { name: "Topology" }).first().click();
+    await uiHelper.verifyHeading("Application Topology for Kubernetes");
+    await uiHelper.clickButton("Actions");
+    await uiHelper.clickByDataTestId("edit-configuration");
+    await uiHelper.verifyHeading(
+      "Edit Application Topology for Kubernetes configurations",
+    );
+    await uiHelper.verifyText(
+      "- package: ./dynamic-plugins/dist/backstage-community-plugin-topology",
+    );
+    await uiHelper.verifyText("disabled: false");
+    await uiHelper.verifyText("Apply");
+    await uiHelper.verifyHeading("Default configuration");
+    await uiHelper.clickButton("Apply");
+    await uiHelper.verifyText("pluginConfig:");
+    await uiHelper.verifyText("dynamicPlugins:");
+    await uiHelper.clickTab("About the plugin");
+    await uiHelper.verifyHeading("Configuring The Plugin");
+    await uiHelper.clickTab("Examples");
+    await uiHelper.clickByDataTestId("ContentCopyRoundedIcon");
+    await expect(page.getByRole("button", { name: "✔" })).toBeVisible();
+    await uiHelper.clickButton("Reset");
+    await expect(page.getByText("pluginConfig:")).not.toBeVisible();
+    const modifier = isMac ? "Meta" : "Control";
+    await page.keyboard.press(`${modifier}+KeyA`);
+    await page.keyboard.press(`${modifier}+KeyV`);
+    await uiHelper.verifyText("pluginConfig:");
+    await page.locator("button[class^='copy-button']").click();
+    await expect(page.getByRole("button", { name: "✔" }).nth(1)).toBeVisible();
+    const clipboardContent = await page.evaluate(() =>
+      navigator.clipboard.readText(),
+    );
+    expect(clipboardContent).not.toContain("pluginConfig:");
+    expect(clipboardContent).toContain("backstage-community.plugin-topology:");
+    await uiHelper.clickButton("Save");
+    await uiHelper.verifyHeading("Extensions");
+    let alert = page.getByRole("alert").first();
+    expect(alert).toContainText("Backend restart required");
+    expect(alert).toContainText(
+      "The Application Topology for Kubernetes plugin requires a restart of the backend system to finish installing, updating, enabling or disabling.",
+    );
+    await uiHelper.searchInputPlaceholder("Argo CD Software Template Actions");
+    await page
+      .getByRole("heading", { name: "Argo CD Software Template Actions" })
+      .first()
+      .click();
+
+    await uiHelper.clickButton("Actions");
+    await uiHelper.clickByDataTestId("enable-plugin");
+    await uiHelper.verifyHeading("Extensions");
+    alert = page.getByRole("alert").first();
+    expect(alert).toContainText("Backend restart required");
+    expect(alert).toContainText(
+      "You have 2 plugins that require a restart of your backend system to either finish installing, updating, enabling or disabling.",
+    );
+    page.getByText("View plugins", { exact: true }).click();
+    const rowLocator = page.locator(`tbody>tr`).nth(1);
+    await rowLocator.waitFor({ state: "visible" });
+    const nameCell = rowLocator.locator("th");
+    const actionCell = rowLocator.locator("td");
+    await expect(nameCell).toHaveText("Argo CD Software Template Actions");
+    await expect(actionCell).toContainText("Plugin enabled");
+    await uiHelper.verifyText(
+      "To finish the plugin modifications, restart your backend system.",
+    );
+    await uiHelper.clickButton("Close");
   });
 });
