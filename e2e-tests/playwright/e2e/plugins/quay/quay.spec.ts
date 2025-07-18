@@ -15,7 +15,7 @@ test.describe("Test Quay.io plugin", () => {
     await uiHelper.openSidebar("Catalog");
     await uiHelper.selectMuiBox("Kind", "Component");
     await uiHelper.clickByDataTestId("user-picker-all");
-    await uiHelper.clickLink("Backstage Showcase");
+    await uiHelper.clickLink("Red Hat Developer Hub");
     await uiHelper.clickTab("Image Registry");
   });
 
