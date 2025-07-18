@@ -55,10 +55,10 @@ test.describe("Audit Log check for Catalog Plugin", () => {
   test("Should fetch logs for CatalogEntityFetchByName event and validate log structure and values", async () => {
     await uiHelper.selectMuiBox("Kind", "Component");
     await uiHelper.clickByDataTestId("user-picker-all");
-    await uiHelper.clickLink("Backstage Showcase");
+    await uiHelper.clickLink("Red Hat Developer Hub");
     await validateCatalogLogEvent(
       "CatalogEntityFetchByName",
-      "Fetch attempt for entity with entityRef component:default/backstage-showcase",
+      "Fetch attempt for entity ancestor of entity component:default/red-hat-developer-hub initiated by user:development/guest",
       "GET",
       "/api/catalog/entities/by-name/component/default/backstage-showcase",
     );
@@ -67,7 +67,7 @@ test.describe("Audit Log check for Catalog Plugin", () => {
   test("Should fetch logs for CatalogEntityBatchFetch event and validate log structure and values", async () => {
     await uiHelper.selectMuiBox("Kind", "Component");
     await uiHelper.clickByDataTestId("user-picker-all");
-    await uiHelper.clickLink("Backstage Showcase");
+    await uiHelper.clickLink("Red Hat Developer Hub");
     await validateCatalogLogEvent(
       "CatalogEntityBatchFetch",
       "Batch entity fetch attempt",
@@ -79,10 +79,10 @@ test.describe("Audit Log check for Catalog Plugin", () => {
   test("Should fetch logs for CatalogEntityAncestryFetch event and validate log structure and values", async () => {
     await uiHelper.selectMuiBox("Kind", "Component");
     await uiHelper.clickByDataTestId("user-picker-all");
-    await uiHelper.clickLink("Backstage Showcase");
+    await uiHelper.clickLink("Red Hat Developer Hub");
     await validateCatalogLogEvent(
       "CatalogEntityAncestryFetch",
-      "Fetch attempt for entity ancestor of entity component:default/backstage-showcase",
+      "Fetch attempt for entity ancestor of entity component:default/red-hat-developer-hub initiated by user:development/guest",
       "GET",
       "/api/catalog/entities/by-name/component/default/backstage-showcase/ancestry",
     );
