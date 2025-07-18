@@ -3,11 +3,6 @@
 # shellcheck source=.ibm/pipelines/reporting.sh
 source "${DIR}/reporting.sh"
 
-export_chart_version() {
-  export CHART_VERSION=$(curl -sSX GET "https://quay.io/api/v1/repository/rhdh/chart/tag/?onlyActiveTags=true&filter_tag_name=like:${CHART_MAJOR_VERSION}-" -H "Content-Type: application/json" \
-  | jq '.tags[0].name' | grep -oE '[0-9]+\.[0-9]+-[0-9]+-CI')
-}
-
 retrieve_pod_logs() {
   local pod_name=$1; local container=$2; local namespace=$3
   echo "  Retrieving logs for container: $container"
@@ -690,8 +685,7 @@ check_backstage_running() {
     if [ "${http_status}" -eq 200 ]; then
       echo "Backstage is up and running!"
       export BASE_URL="${url}"
-      echo "######## BASE URL ########"
-      echo "${BASE_URL}"
+      echo "BASE_URL: ${BASE_URL}"
       return 0
     else
       echo "Attempt ${i} of ${max_attempts}: Backstage not yet available (HTTP Status: ${http_status})"
@@ -701,7 +695,9 @@ check_backstage_running() {
   done
 
   echo "Failed to reach Backstage at ${BASE_URL} after ${max_attempts} attempts." | tee -a "/tmp/${LOGFILE}"
+  mkdir -p "${ARTIFACT_DIR}/${namespace}"
   cp -a "/tmp/${LOGFILE}" "${ARTIFACT_DIR}/${namespace}/"
+  save_all_pod_logs "${namespace}"
   return 1
 }
 
@@ -817,16 +813,18 @@ delete_tekton_pipelines() {
   fi
 }
 
-cluster_setup() {
+cluster_setup_ocp_helm() {
   install_pipelines_operator
   install_acm_ocp_operator
   install_crunchy_postgres_ocp_operator
+  install_orchestrator_infra_chart
 }
 
 cluster_setup_ocp_operator() {
   install_pipelines_operator
   install_acm_ocp_operator
   install_crunchy_postgres_ocp_operator
+  install_orchestrator_infra_chart
 }
 
 cluster_setup_k8s_operator() {
@@ -851,6 +849,7 @@ install_orchestrator_infra_chart() {
   cd "${DIR}"
   helm upgrade -i orch-infra -n "${ORCH_INFRA_NS}" \
     "oci://quay.io/rhdh/orchestrator-infra-chart" --version "${CHART_VERSION}" \
+    --wait --timeout=5m \
     --set serverlessLogicOperator.subscription.spec.installPlanApproval=Automatic \
     --set serverlessOperator.subscription.spec.installPlanApproval=Automatic
 }
@@ -916,20 +915,34 @@ initiate_deployments() {
 
 # install base RHDH deployment before upgrade
 initiate_upgrade_base_deployments() {
+  local release_name=$1
+  local namespace=$2
+  local url=$3
+  local max_attempts=${4:-30}    # Default to 30 if not set
+  local wait_seconds=${5:-30}
+
   echo "Initiating base RHDH deployment before upgrade"
 
-  configure_namespace ${NAME_SPACE}
+  CURRENT_DEPLOYMENT=$((CURRENT_DEPLOYMENT + 1))
+  save_status_deployment_namespace $CURRENT_DEPLOYMENT "$namespace"
 
-  deploy_redis_cache "${NAME_SPACE}"
+  configure_namespace "${namespace}"
+
+  deploy_redis_cache "${namespace}"
 
   cd "${DIR}"
-  local rhdh_base_url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
-  apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
-  echo "Deploying image from base repository: ${QUAY_REPO_BASE}, TAG_NAME_BASE: ${TAG_NAME_BASE}, in NAME_SPACE: ${NAME_SPACE}"
 
-  helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
+  apply_yaml_files "${DIR}" "${namespace}" "${url}"
+  echo "Deploying image from base repository: ${QUAY_REPO_BASE}, TAG_NAME_BASE: ${TAG_NAME_BASE}, in NAME_SPACE: ${namespace}"
+
+  # Get dynamic value file path based on previous release version
+  local previous_release_value_file
+  previous_release_value_file=$(get_previous_release_value_file "showcase")
+  echo "Using dynamic value file: ${previous_release_value_file}"
+
+  helm upgrade -i "${release_name}" -n "${namespace}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION_BASE}" \
-    -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME_BASE}" \
+    -f "${previous_release_value_file}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO_BASE}" \
     --set upstream.backstage.image.tag="${TAG_NAME_BASE}"
@@ -943,29 +956,22 @@ initiate_upgrade_deployments() {
   local wait_seconds=${5:-30}
   local wait_upgrade="10m"
 
-  # check if the base rhdh deployment is running
-  if check_backstage_running "${release_name}" "${namespace}" "${url}" "${max_attempts}" "${wait_seconds}"; then
+  echo "Initiating upgrade deployment"
+  cd "${DIR}"
 
-    echo "Display pods of base RHDH deployment before upgrade for verification..."
-    oc get pods -n "${namespace}"
+  yq_merge_value_files "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/diff-values_showcase_upgrade.yaml" "/tmp/merged_value_file.yaml"
+  echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
 
-    echo "Initiating upgrade deployment"
-    cd "${DIR}"
+  helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
+  "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
+  -f "/tmp/merged_value_file.yaml" \
+  --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
+  --set upstream.backstage.image.repository="${QUAY_REPO}" \
+  --set upstream.backstage.image.tag="${TAG_NAME}" \
+  --wait --timeout=${wait_upgrade}
 
-    echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
-
-    helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
-    "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
-    -f "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" \
-    --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    --set upstream.backstage.image.repository="${QUAY_REPO}" \
-    --set upstream.backstage.image.tag="${TAG_NAME}" \
-    --wait --timeout=${wait_upgrade}
-
-    oc get pods -n "${namespace}"
-  else
-    echo "Backstage is not running. Exiting..."
-  fi
+  oc get pods -n "${namespace}"
+  save_all_pod_logs $namespace
 }
 
 initiate_runtime_deployment() {
@@ -1011,8 +1017,10 @@ check_and_test() {
   local url=$3
   local max_attempts=${4:-30}    # Default to 30 if not set
   local wait_seconds=${5:-30}    # Default to 30 if not set
+
   CURRENT_DEPLOYMENT=$((CURRENT_DEPLOYMENT + 1))
-  save_status_deployment_namespace $CURRENT_DEPLOYMENT $namespace
+  save_status_deployment_namespace $CURRENT_DEPLOYMENT "$namespace"
+
   if check_backstage_running "${release_name}" "${namespace}" "${url}" "${max_attempts}" "${wait_seconds}"; then
     save_status_failed_to_deploy $CURRENT_DEPLOYMENT false
     echo "Display pods for verification..."
@@ -1038,6 +1046,9 @@ check_upgrade_and_test() {
     check_and_test "${release_name}" "${namespace}" "${url}"
   else
     echo "Helm upgrade encountered an issue or timed out. Exiting..."
+    save_status_failed_to_deploy $CURRENT_DEPLOYMENT true
+    save_status_test_failed $CURRENT_DEPLOYMENT true
+    save_overall_result 1
   fi
 }
 
@@ -1120,5 +1131,84 @@ to_lowercase() {
   else
     # Linux - using bash parameter expansion
     echo "${1,,}"
+  fi
+}
+
+# Function to get the appropriate release version based on current branch
+# Return the latest release version if current branch is not a release branch
+# Return the previous release version if current branch is a release branch
+get_previous_release_version() {
+  local version=$1
+  
+  # Check if version parameter is provided
+  if [[ -z "$version" ]]; then
+    echo "Error: Version parameter is required" >&2
+    exit 1
+    save_overall_result 1
+  fi
+  
+  # Validate version format (should be like "1.6")
+  if [[ ! "$version" =~ ^[0-9]+\.[0-9]+$ ]]; then
+    echo "Error: Version must be in format X.Y (e.g., 1.6)" >&2
+    exit 1
+    save_overall_result 1
+  fi
+  
+  # Extract major and minor version numbers
+  local major_version=$(echo "$version" | cut -d'.' -f1)
+  local minor_version=$(echo "$version" | cut -d'.' -f2)
+  
+  # Calculate previous minor version
+  local previous_minor=$((minor_version - 1))
+  
+  # Check if previous minor version is valid (non-negative)
+  if [[ $previous_minor -lt 0 ]]; then
+    echo "Error: Cannot calculate previous version for $version" >&2
+    exit 1
+    save_overall_result 1
+  fi
+  
+  # Return the previous version
+  echo "${major_version}.${previous_minor}"
+}
+
+get_chart_version() {
+  local chart_major_version=$1
+  curl -sSX GET "https://quay.io/api/v1/repository/rhdh/chart/tag/?onlyActiveTags=true&filter_tag_name=like:${chart_major_version}-" -H "Content-Type: application/json" \
+  | jq '.tags[0].name' | grep -oE '[0-9]+\.[0-9]+-[0-9]+-CI'
+}
+
+# Helper function to get dynamic value file path based on previous release version
+get_previous_release_value_file() {
+  local value_file_type=${1:-"showcase"}  # Default to showcase, can be "showcase-rbac" for RBAC
+
+  # Get the previous release version
+  local previous_release_version
+  previous_release_version=$(get_previous_release_version "$CHART_MAJOR_VERSION")
+
+  if [[ -z "$previous_release_version" ]]; then
+    echo "Failed to determine previous release version." >&2
+    save_overall_result 1
+    exit 1
+  fi
+
+  echo "Using previous release version: ${previous_release_version}" >&2
+
+  # Construct the GitHub URL for the value file
+  local github_url="https://raw.githubusercontent.com/redhat-developer/rhdh/release-${previous_release_version}/.ibm/pipelines/value_files/values_${value_file_type}.yaml"
+
+  # Create a temporary file path for the downloaded value file
+  local temp_value_file="/tmp/values_${value_file_type}_${previous_release_version}.yaml"
+
+  echo "Fetching value file from: ${github_url}" >&2
+
+  # Download the value file from GitHub
+  if curl -fsSL "${github_url}" -o "${temp_value_file}"; then
+    echo "Successfully downloaded value file to: ${temp_value_file}" >&2
+    echo "${temp_value_file}"
+  else
+    echo "Failed to download value file from GitHub." >&2
+    save_overall_result 1
+    exit 1
   fi
 }
