@@ -23,7 +23,7 @@ spec:
   author: IBM
   support: production
   lifecycle: active
-    partOf:
+  partOf:
     - apic-backstage
 
   appConfigExamples:
