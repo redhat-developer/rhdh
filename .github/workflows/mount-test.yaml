@@ -31,7 +31,6 @@ jobs:
         run: |         
           # Build hermeto cache
           docker run --rm -v "$PWD:/source:z" -v "$LOCAL_CACHE_DIR:/cachi2:z" -w /source "$HERMETO_IMAGE" \
-            --user $(id -u):$(id -g) \
             --log-level DEBUG \
             fetch-deps --dev-package-managers \
             --source . \
@@ -64,6 +63,18 @@ jobs:
           fi
 
           echo LOCAL_CACHE_DIR_REALPATH=$(realpath "${{ env.LOCAL_CACHE_DIR }}") >> $GITHUB_ENV
+
+      - name: "Fix Cache Ownership for Non-Root Buildah"
+        run: |
+          echo "=== Before ownership fix ==="
+          ls -la ${{ env.LOCAL_CACHE_DIR_REALPATH }}
+          echo "=== Current user context ==="
+          id
+          $USER=$(whoami)
+          echo "=== Attempting to fix ownership to runner user ==="
+          sudo chown -R ${USER}:${USER} ${{ env.LOCAL_CACHE_DIR_REALPATH }}
+          echo "=== After ownership fix ==="
+          ls -la ${{ env.LOCAL_CACHE_DIR_REALPATH }}
 
       - name: Transform Containerfile for hermetic build
         shell: bash
@@ -107,7 +118,7 @@ jobs:
           extra-args: |
             --network=none
             --userns=host
-            --volume ${{ env.LOCAL_CACHE_DIR_REALPATH }}:/cachi2:U
+            --volume ${{ env.LOCAL_CACHE_DIR_REALPATH }}:/cachi2:z
 
       - name: "Push Docker Image"
         uses: redhat-actions/push-to-registry@5ed88d269cf581ea9ef6dd6806d01562096bee9c # v2.8
