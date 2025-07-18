@@ -3097,6 +3097,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/runtime@npm:^7.14.8":
+  version: 7.27.6
+  resolution: "@babel/runtime@npm:7.27.6"
+  checksum: 3f7b879df1823c0926bd5dbc941c62f5d60faa790c1aab9758c04799e1f04ee8d93553be9ec059d4e5882f19fe03cbe8933ee4f46212dced0f6d8205992c9c9a
+  languageName: node
+  linkType: hard
+
 "@babel/template@npm:^7.24.7, @babel/template@npm:^7.25.9, @babel/template@npm:^7.3.3":
   version: 7.25.9
   resolution: "@babel/template@npm:7.25.9"
@@ -8640,23 +8647,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@material-ui/icons@npm:4.9.1":
-  version: 4.9.1
-  resolution: "@material-ui/icons@npm:4.9.1"
-  dependencies:
-    "@babel/runtime": ^7.4.4
-  peerDependencies:
-    "@material-ui/core": ^4.0.0
-    "@types/react": ^16.8.6
-    react: ^16.8.0
-    react-dom: ^16.8.0
-  peerDependenciesMeta:
-    "@types/react":
-      optional: true
-  checksum: df856c1102902b36d18526279dc25b97f2dbba229ffe8fa5cde17b330ea3fef793f4f53d0975eda972d78bab6c0a2ef0ce853cb88ee2c6edd7e9159a4bed2e0a
-  languageName: node
-  linkType: hard
-
 "@material-ui/icons@npm:^4.9.1":
   version: 4.11.3
   resolution: "@material-ui/icons@npm:4.11.3"
@@ -9121,6 +9111,22 @@ __metadata:
   version: 5.18.0
   resolution: "@mui/core-downloads-tracker@npm:5.18.0"
   checksum: 065b46739d2bd84b880ad2f6a0a2062d60e3a296ce18ff380cad22ab5b2cb3de396755f322f4bea3a422ffffe1a9244536fc3c9623056ff3873c996e6664b1b9
+  languageName: node
+  linkType: hard
+
+"@mui/icons-material@npm:5.0.0":
+  version: 5.0.0
+  resolution: "@mui/icons-material@npm:5.0.0"
+  dependencies:
+    "@babel/runtime": ^7.14.8
+  peerDependencies:
+    "@mui/material": ^5.0.0-rc.0
+    "@types/react": ^16.8.6 || ^17.0.0
+    react: ^17.0.2
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 3a9c94d649627004c08c9a5abe43b023e672ba9855c8b5400b71aabe78bdc98ada7b2b57c564e3fc4c5b9c0e9fc027518c26a27e4bb7fe78cd5cd4c2f9e29d1f
   languageName: node
   linkType: hard
 
@@ -16554,8 +16560,8 @@ __metadata:
     "@backstage/test-utils": 1.7.8
     "@backstage/theme": 0.6.6
     "@material-ui/core": 4.12.2
-    "@material-ui/icons": 4.9.1
     "@material-ui/lab": 4.0.0-alpha.61
+    "@mui/icons-material": 5.0.0
     "@octokit/rest": 19.0.3
     "@testing-library/dom": 9.3.4
     "@testing-library/jest-dom": 6.6.3
