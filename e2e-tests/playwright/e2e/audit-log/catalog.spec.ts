@@ -58,7 +58,7 @@ test.describe("Audit Log check for Catalog Plugin", () => {
     await uiHelper.clickLink("Red Hat Developer Hub");
     await validateCatalogLogEvent(
       "CatalogEntityFetchByName",
-      "Fetch attempt for entity with entityRef component:default/backstage-showcase",
+      "Fetch attempt for entity ancestor of entity component:default/red-hat-developer-hub initiated by user:development/guest",
       "GET",
       "/api/catalog/entities/by-name/component/default/backstage-showcase",
     );
@@ -82,7 +82,7 @@ test.describe("Audit Log check for Catalog Plugin", () => {
     await uiHelper.clickLink("Red Hat Developer Hub");
     await validateCatalogLogEvent(
       "CatalogEntityAncestryFetch",
-      "Fetch attempt for entity ancestor of entity component:default/backstage-showcase",
+      "Fetch attempt for entity ancestor of entity component:default/red-hat-developer-hub initiated by user:development/guest",
       "GET",
       "/api/catalog/entities/by-name/component/default/backstage-showcase/ancestry",
     );
