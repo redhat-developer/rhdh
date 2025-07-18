@@ -106,7 +106,7 @@ jobs:
           extra-args: |
             --network=none
             --userns=host
-            --volume ${{ env.LOCAL_CACHE_DIR_REALPATH }}:/cachi2:z
+            --volume ${{ env.LOCAL_CACHE_DIR_REALPATH }}:/cachi2:zU
 
       - name: "Push Docker Image"
         uses: redhat-actions/push-to-registry@5ed88d269cf581ea9ef6dd6806d01562096bee9c # v2.8
