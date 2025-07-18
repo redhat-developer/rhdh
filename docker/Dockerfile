@@ -244,7 +244,6 @@ COPY $EXTERNAL_SOURCE_NESTED/catalog-entities/marketplace /marketplace/catalog-e
 COPY docker/install-dynamic-plugins.py docker/install-dynamic-plugins.sh ./
 RUN chmod -R a+rx ./install-dynamic-plugins.*
 
-
 # The existence of the index.html.tmpl tells Backstage to take that file and load it into memory, inject the needed appConfig (instead of writing
 # it into a random *.chunk.js file, and then serve that file from memory so that we can set the readOnlyRootFilesystem: true option for
 # the container.
