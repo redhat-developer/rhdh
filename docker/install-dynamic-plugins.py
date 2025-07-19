@@ -294,7 +294,8 @@ def main():
         print('\n======= Including dynamic plugins from', include, flush=True)
 
         if not os.path.isfile(include):
-            raise InstallException(f"File {include} does not exist")
+            print(f"WARNING: File {include} does not exist, skipping including dynamic packages from {include}", flush=True)
+            continue
 
         with open(include, 'r') as file:
             includeContent = yaml.safe_load(file)
