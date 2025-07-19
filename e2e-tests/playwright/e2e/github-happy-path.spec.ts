@@ -50,11 +50,11 @@ test.describe("GitHub Happy path", async () => {
     await uiHelper.verifyHeading(`User Entity: ${process.env.GH_USER2_ID}`);
   });
 
-  test("Register an existing component", async () => {
+  test("Import an existing Git repository", async () => {
     await uiHelper.openSidebar("Catalog");
     await uiHelper.selectMuiBox("Kind", "Component");
     await uiHelper.clickButton("Self-service");
-    await uiHelper.clickButton("Register Existing Component");
+    await uiHelper.clickButton("Import an existing Git repository");
     await catalogImport.registerExistingComponent(component);
   });
 
