@@ -27,13 +27,12 @@ metadata:
       url: https://github.com/backstage/community-plugins/tree/main/workspaces/servicenow
 
 spec:
-  support: community
-  lifecycle: beta
+  support: tech-preview
+  lifecycle: active
   author: Red Hat
   publisher: Red Hat
 
   categories:
-    - ITSM
     - Integration
 
   highlights:
@@ -56,14 +55,12 @@ spec:
     See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
     for further instructions on how to add, enable, configure, and remove plugins in your instance.
 
-    ## configuration
+    ## Configuration
 
     The plugin requires your ServiceNow instance URL and authentication details (such as Basic Auth or OAuth).
     You can optionally filter incidents by user fields like `caller_id`, `assigned_to`, or `opened_by`.
 
     For detailed setup of both frontend and backend components, refer to the [ServiceNow plugin documentation](https://github.com/backstage/community-plugins/tree/main/workspaces/servicenow).
-
-  icon: ## to be added
 
   packages:
     - backstage-community-plugin-servicenow-backend
