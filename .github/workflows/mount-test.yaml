@@ -153,8 +153,8 @@ jobs:
           platform: ${{ env.PLATFORM }}
           image: ${{ env.REGISTRY }}/my-test-organization/test-registry
           tags: |
-            type=raw,value=pr-${{ github.event.number }}-${{ env.PLATFORM_ARCH }}
-            type=raw,value=pr-${{ github.event.number }}-${{ env.SHORT_SHA }}-${{ env.PLATFORM_ARCH }}
+            pr-${{ github.event.number }}-${{ env.PLATFORM_ARCH }}
+            pr-${{ github.event.number }}-${{ env.SHORT_SHA }}-${{ env.PLATFORM_ARCH }}
           extra-args: |
             --network=none
             --userns=host
