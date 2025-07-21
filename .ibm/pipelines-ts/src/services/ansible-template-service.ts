@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { createLogger } from '../utils/logger.js';
 import { executeCommand } from '../utils/shell.js';
+import { getSecretsManager } from '../utils/secrets-manager.js';
 import { mkdirSync, existsSync } from 'fs';
 import { join } from 'path';
 
@@ -142,13 +143,27 @@ export class AnsibleTemplateService {
       enable_kubernetes_plugin: config.enable_kubernetes_plugin,
     };
 
-    // Add secrets if provided
+    // Add secrets from secrets manager
+    const secretsManager = getSecretsManager();
     if (config.secrets) {
-      extraVars.backend_secret = config.secrets.backend_secret || 'change-me-secret';
-      extraVars.postgresql_password = config.secrets.postgresql_password || 'postgres';
-      extraVars.github_client_id = config.secrets.github_client_id || '';
-      extraVars.github_client_secret = config.secrets.github_client_secret || '';
-      extraVars.k8s_cluster_token = config.secrets.k8s_cluster_token || '';
+      extraVars.backend_secret =
+        config.secrets.backend_secret ||
+        secretsManager.getSecret('BACKEND_SECRET', 'change-me-secret');
+      extraVars.postgresql_password =
+        config.secrets.postgresql_password || secretsManager.getDatabaseConfig().password;
+      extraVars.github_client_id =
+        config.secrets.github_client_id || secretsManager.getGitHubConfig().clientId;
+      extraVars.github_client_secret =
+        config.secrets.github_client_secret || secretsManager.getGitHubConfig().clientSecret;
+      extraVars.k8s_cluster_token =
+        config.secrets.k8s_cluster_token || secretsManager.getClusterConfig().token;
+    } else {
+      // Fallback to secrets manager when no config.secrets provided
+      extraVars.backend_secret = secretsManager.getSecret('BACKEND_SECRET', 'change-me-secret');
+      extraVars.postgresql_password = secretsManager.getDatabaseConfig().password;
+      extraVars.github_client_id = secretsManager.getGitHubConfig().clientId;
+      extraVars.github_client_secret = secretsManager.getGitHubConfig().clientSecret;
+      extraVars.k8s_cluster_token = secretsManager.getClusterConfig().token;
     }
 
     // Add cluster-specific variables

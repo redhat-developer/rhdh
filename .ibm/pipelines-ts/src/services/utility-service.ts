@@ -3,6 +3,7 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { getSecretsManager } from '../utils/secrets-manager.js';
 
 const execAsync = promisify(exec);
 
@@ -69,40 +70,46 @@ export class UtilityService {
   async configureAuthProviders(namespace: string, providers: AuthProviderConfig): Promise<void> {
     console.log(`🔐 Configuring authentication providers for namespace: ${namespace}`);
 
+    const secretsManager = getSecretsManager();
     const enabledProviders: string[] = [];
 
     // Create auth secrets
     if (providers.github?.enabled) {
+      const githubConfig = secretsManager.getGitHubConfig();
       await this.createSecret(namespace, 'github-auth-secret', {
-        clientId: providers.github.clientId || '',
-        clientSecret: providers.github.clientSecret || '',
+        clientId: providers.github.clientId || githubConfig.clientId,
+        clientSecret: providers.github.clientSecret || githubConfig.clientSecret,
       });
       enabledProviders.push('github');
     }
 
     if (providers.google?.enabled) {
+      // Google config can be added to secrets manager if needed
       await this.createSecret(namespace, 'google-auth-secret', {
-        clientId: providers.google.clientId || '',
-        clientSecret: providers.google.clientSecret || '',
+        clientId: providers.google.clientId || secretsManager.getSecret('GOOGLE_CLIENT_ID', ''),
+        clientSecret:
+          providers.google.clientSecret || secretsManager.getSecret('GOOGLE_CLIENT_SECRET', ''),
       });
       enabledProviders.push('google');
     }
 
     if (providers.keycloak?.enabled) {
+      const keycloakConfig = secretsManager.getKeycloakConfig();
       await this.createSecret(namespace, 'keycloak-auth-secret', {
-        baseUrl: providers.keycloak.baseUrl || '',
-        realm: providers.keycloak.realm || '',
-        clientId: providers.keycloak.clientId || '',
-        clientSecret: providers.keycloak.clientSecret || '',
+        baseUrl: providers.keycloak.baseUrl || keycloakConfig.baseUrl,
+        realm: providers.keycloak.realm || keycloakConfig.realm,
+        clientId: providers.keycloak.clientId || keycloakConfig.clientId,
+        clientSecret: providers.keycloak.clientSecret || keycloakConfig.clientSecret,
       });
       enabledProviders.push('keycloak');
     }
 
     if (providers.oidc?.enabled) {
       await this.createSecret(namespace, 'oidc-auth-secret', {
-        issuer: providers.oidc.issuer || '',
-        clientId: providers.oidc.clientId || '',
-        clientSecret: providers.oidc.clientSecret || '',
+        issuer: providers.oidc.issuer || secretsManager.getSecret('OIDC_ISSUER', ''),
+        clientId: providers.oidc.clientId || secretsManager.getSecret('OIDC_CLIENT_ID', ''),
+        clientSecret:
+          providers.oidc.clientSecret || secretsManager.getSecret('OIDC_CLIENT_SECRET', ''),
       });
       enabledProviders.push('oidc');
     }
@@ -148,10 +155,14 @@ export class UtilityService {
     // Wait for PostgreSQL to be ready
     await this.waitForDeployment(namespace, 'postgres', 300);
 
+    // Get database configuration from secrets manager
+    const secretsManager = getSecretsManager();
+    const dbConfig = secretsManager.getDatabaseConfig();
+
     // Create database credentials secret
     await this.createSecret(namespace, 'postgres-secrets', {
-      POSTGRES_USER: 'postgres',
-      POSTGRES_PASSWORD: 'admin123',
+      POSTGRES_USER: dbConfig.user,
+      POSTGRES_PASSWORD: dbConfig.password,
     });
   }
 
@@ -161,6 +172,10 @@ export class UtilityService {
   private async setupRDSDatabase(namespace: string, config: DatabaseConfig): Promise<void> {
     console.log('Setting up RDS database connection...');
 
+    // Get database configuration from secrets manager
+    const secretsManager = getSecretsManager();
+    const dbConfig = secretsManager.getDatabaseConfig();
+
     // Create RDS certificate if provided
     if (config.sslCertPath) {
       const certContent = await fs.readFile(config.sslCertPath, 'utf-8');
@@ -169,12 +184,12 @@ export class UtilityService {
       });
     }
 
-    // Create database connection secret
+    // Create database connection secret using secrets manager
     await this.createSecret(namespace, 'postgres-secrets', {
-      POSTGRES_HOST: config.host || '',
-      POSTGRES_PORT: config.port.toString(),
-      POSTGRES_USER: config.username,
-      POSTGRES_PASSWORD: config.password || '',
+      POSTGRES_HOST: dbConfig.host,
+      POSTGRES_PORT: dbConfig.port.toString(),
+      POSTGRES_USER: dbConfig.user,
+      POSTGRES_PASSWORD: dbConfig.password,
     });
 
     // Apply RDS config
@@ -192,12 +207,16 @@ export class UtilityService {
   private async setupExternalDatabase(namespace: string, config: DatabaseConfig): Promise<void> {
     console.log('Setting up external database connection...');
 
+    // Get database configuration from secrets manager
+    const secretsManager = getSecretsManager();
+    const dbConfig = secretsManager.getDatabaseConfig();
+
     await this.createSecret(namespace, 'postgres-secrets', {
-      POSTGRES_HOST: config.host || '',
-      POSTGRES_PORT: config.port.toString(),
-      POSTGRES_USER: config.username,
-      POSTGRES_PASSWORD: config.password || '',
-      POSTGRES_DATABASE: config.database,
+      POSTGRES_HOST: dbConfig.host,
+      POSTGRES_PORT: dbConfig.port.toString(),
+      POSTGRES_USER: dbConfig.user,
+      POSTGRES_PASSWORD: dbConfig.password,
+      POSTGRES_DATABASE: dbConfig.database,
     });
   }
 
@@ -208,6 +227,10 @@ export class UtilityService {
     console.log(`🧹 Clearing database for ${releaseName} in namespace: ${namespace}`);
 
     try {
+      // Get database configuration from secrets manager
+      const secretsManager = getSecretsManager();
+      const dbConfig = secretsManager.getDatabaseConfig();
+
       // Get postgres pod
       const { stdout } = await execAsync(
         `kubectl get pods -n ${namespace} -l app=postgres -o jsonpath='{.items[0].metadata.name}'`
@@ -219,9 +242,9 @@ export class UtilityService {
         return;
       }
 
-      // Clear database
+      // Clear database using secrets from secrets manager
       const clearCommand = `
-        PGPASSWORD=admin123 psql -U postgres -d backstage -c "
+        PGPASSWORD=${dbConfig.password} psql -U ${dbConfig.user} -d ${dbConfig.database} -c "
           TRUNCATE TABLE app_metadata CASCADE;
           TRUNCATE TABLE final_entities CASCADE;
           TRUNCATE TABLE refresh_state CASCADE;
