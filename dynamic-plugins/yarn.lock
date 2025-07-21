@@ -14208,7 +14208,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rjsf/utils@npm:=5.24.12":
+"@rjsf/utils@npm:5.23.2":
+  version: 5.23.2
+  resolution: "@rjsf/utils@npm:5.23.2"
+  dependencies:
+    json-schema-merge-allof: ^0.8.1
+    jsonpointer: ^5.0.1
+    lodash: ^4.17.21
+    lodash-es: ^4.17.21
+    react-is: ^18.2.0
+  peerDependencies:
+    react: ^16.14.0 || >=17
+  checksum: 16980013258bab7accaff961c533e4bb8e3326c37a84670a7667b2a10c1ca395451eb51a6cf819ccbafb1aa8838df325ff1f314b410bb186fef98856135e1a06
+  languageName: node
+  linkType: hard
+
+"@rjsf/utils@npm:^5.21.2":
   version: 5.24.12
   resolution: "@rjsf/utils@npm:5.24.12"
   dependencies:
