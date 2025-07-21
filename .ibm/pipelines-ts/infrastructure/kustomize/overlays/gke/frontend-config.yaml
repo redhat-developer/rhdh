@@ -1,0 +1,10 @@
+apiVersion: networking.gke.io/v1beta1
+kind: FrontendConfig
+metadata:
+  name: rhdh-frontend-config
+  namespace: showcase
+spec:
+  sslPolicy: rhdh-ssl-policy
+  redirectToHttps:
+    enabled: true
+    responseCodeName: MOVED_PERMANENTLY_DEFAULT 

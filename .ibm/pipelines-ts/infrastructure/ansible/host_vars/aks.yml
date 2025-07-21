@@ -1,0 +1,91 @@
+# AKS-specific variables
+
+cluster_type: "aks"
+
+# Azure Application Gateway Ingress configuration
+ingress:
+  enabled: true
+  class_name: "azure/application-gateway"
+  annotations:
+    kubernetes.io/ingress.class: "azure/application-gateway"
+    appgw.ingress.kubernetes.io/ssl-redirect: "true"
+    appgw.ingress.kubernetes.io/use-private-ip: "false"
+
+# Routes disabled for AKS (uses Ingress)
+route:
+  enabled: false
+
+# AKS-specific resource configurations
+resources:
+  spot_nodes:
+    enabled: true
+    tolerations:
+      - key: "kubernetes.azure.com/scalesetpriority"
+        operator: "Equal"
+        value: "spot"
+        effect: "NoSchedule"
+    node_selector:
+      kubernetes.azure.com/scalesetpriority: "spot"
+
+# Azure-specific environment variables
+environment_vars:
+  AZURE_ENABLED: "true"
+  CLOUD_PROVIDER: "azure"
+  AKS_ENABLED: "true"
+
+# AKS-specific plugins
+dynamic_plugins:
+  - package: "@backstage/plugin-azure-devops"
+    disabled: false
+  - package: "@backstage/plugin-kubernetes"
+    disabled: false
+  - package: "@backstage/plugin-techdocs"
+    disabled: false
+
+# Azure Container Insights
+monitoring:
+  azure_monitor_enabled: true
+  container_insights: true
+  log_analytics_workspace: "rhdh-workspace"
+
+# AKS networking
+networking:
+  load_balancer_type: "standard"
+  network_plugin: "azure"
+  network_policy: "calico"
+
+# Azure storage classes
+storage:
+  default_storage_class: "managed-premium"
+  postgresql_storage_class: "managed-premium"
+  redis_storage_class: "managed"
+
+# Azure-specific integrations
+integrations:
+  azure_devops:
+    enabled: false
+  azure_ad:
+    enabled: false
+
+# AKS cluster configuration
+cluster_config:
+  resource_group: "rhdh-rg"
+  location: "eastus"
+  node_count: 3
+  vm_size: "Standard_D2s_v3"
+
+# Redis spot node configuration
+redis_config:
+  spot_enabled: true
+  node_selector:
+    kubernetes.azure.com/scalesetpriority: "spot"
+  tolerations:
+    - key: "kubernetes.azure.com/scalesetpriority"
+      operator: "Equal"
+      value: "spot"
+      effect: "NoSchedule"
+
+# Default AKS cluster names
+cluster_names:
+  default: "aks-cluster"
+  prefix: "aks-rhdh-"

@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: showcase
+  labels:
+    name: showcase
+    app.kubernetes.io/name: backstage
+    app.kubernetes.io/part-of: rhdh 

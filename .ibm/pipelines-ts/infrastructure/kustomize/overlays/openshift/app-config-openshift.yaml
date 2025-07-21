@@ -1,0 +1,60 @@
+# OpenShift-specific app-config additions
+# This file is merged with the base app-config.yaml
+
+# Kubernetes plugin configuration for OpenShift
+kubernetes:
+  serviceLocatorMethod:
+    type: 'multiTenant'
+  clusterLocatorMethods:
+    - type: 'config'
+      clusters:
+        - url: ${K8S_CLUSTER_URL}
+          name: openshift-cluster
+          authProvider: 'serviceAccount'
+          serviceAccountToken: ${K8S_CLUSTER_TOKEN}
+          skipTLSVerify: true
+          skipMetricsLookup: true
+  customResources:
+    # OpenShift-specific resources
+    - apiVersion: 'v1'
+      group: 'route.openshift.io'
+      plural: 'routes'
+    # Tekton resources
+    - apiVersion: 'v1beta1'
+      group: 'tekton.dev'
+      plural: 'pipelines'
+    - apiVersion: v1beta1
+      group: tekton.dev
+      plural: pipelineruns
+    - apiVersion: v1beta1
+      group: tekton.dev
+      plural: taskruns
+    # ArgoCD resources
+    - apiVersion: 'v1alpha1'
+      group: 'argoproj.io'
+      plural: 'applications'
+
+# OpenShift-specific integrations
+integrations:
+  openshift:
+    - host: ${OPENSHIFT_CLUSTER_URL}
+      token: ${OPENSHIFT_CLUSTER_TOKEN}
+
+# Backend configuration for OpenShift
+backend:
+  database:
+    client: pg
+    connection:
+      host: ${POSTGRES_HOST}
+      port: ${POSTGRES_PORT}
+      user: ${POSTGRES_USER}
+      password: ${POSTGRES_PASSWORD}
+      database: ${POSTGRES_DB}
+
+# Permission framework for OpenShift
+permission:
+  enabled: true
+  rbac:
+    admin:
+      superUsers:
+        - name: user:development/guest 

@@ -1,0 +1,85 @@
+apiVersion: v2
+name: rhdh
+description: Red Hat Developer Hub - Complete Helm Chart with Dependencies
+type: application
+version: 1.5.0
+appVersion: "1.5.0"
+
+keywords:
+  - backstage
+  - developer-portal
+  - rhdh
+  - redhat
+
+home: https://github.com/janus-idp/backstage-showcase
+sources:
+  - https://github.com/janus-idp/backstage-showcase
+
+maintainers:
+  - name: Red Hat Developer Hub Team
+    email: rhdh-team@redhat.com
+
+# Dependencies - replaces manual installation scripts
+dependencies:
+  # PostgreSQL Database
+  - name: postgresql
+    version: "12.12.10"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: postgresql.enabled
+    tags:
+      - database
+
+  # Redis Cache
+  - name: redis
+    version: "18.19.4"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: redis.enabled
+    tags:
+      - cache
+
+  # RHDH Operator (if using operator deployment)
+  - name: rhdh-operator
+    version: "1.2.0"
+    repository: "https://redhat-developer.github.io/rhdh-chart"
+    condition: operator.enabled
+    tags:
+      - operator
+
+  # ArgoCD (optional)
+  - name: argo-cd
+    version: "5.51.6"
+    repository: "https://argoproj.github.io/argo-helm"
+    condition: argocd.enabled
+    tags:
+      - gitops
+
+  # Tekton Pipelines (optional)
+  - name: tekton-pipeline
+    version: "0.50.5"
+    repository: "https://storage.googleapis.com/tekton-releases/charts"
+    condition: tekton.enabled
+    tags:
+      - pipelines
+
+  # Prometheus for monitoring (optional)
+  - name: prometheus
+    version: "25.8.0"
+    repository: "https://prometheus-community.github.io/helm-charts"
+    condition: monitoring.prometheus.enabled
+    tags:
+      - monitoring
+
+  # Grafana for dashboards (optional)
+  - name: grafana
+    version: "7.3.7"
+    repository: "https://grafana.github.io/helm-charts"
+    condition: monitoring.grafana.enabled
+    tags:
+      - monitoring
+
+annotations:
+  category: Developer Tools
+  images: |
+    - name: backstage
+      image: quay.io/rhdh/rhdh-hub-rhel9:latest
+  licenses: Apache-2.0 

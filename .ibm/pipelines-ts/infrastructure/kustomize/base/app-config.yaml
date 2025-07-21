@@ -1,0 +1,48 @@
+# Base app-config.yaml for RHDH
+# This file is used by Kustomize ConfigMap generator
+# Cluster-specific configurations are applied via overlays
+
+app:
+  title: Red Hat Developer Hub
+  baseUrl: http://localhost:7007
+
+organization:
+  name: Red Hat Developer Hub
+
+backend:
+  baseUrl: http://localhost:7007
+  listen:
+    port: 7007
+    host: 0.0.0.0
+  csp:
+    connect-src: ["'self'", 'http:', 'https:']
+  cors:
+    origin: http://localhost:7007
+    methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+    credentials: true
+  database:
+    client: better-sqlite3
+    connection: ':memory:'
+
+catalog:
+  import:
+    entityFilename: catalog-info.yaml
+    pullRequestBranchName: backstage-integration
+  rules:
+    - allow: [Component, System, API, Resource, Location]
+
+scaffolder:
+  defaultAuthor:
+    name: Scaffolder
+    email: scaffolder@example.com
+
+techdocs:
+  builder: 'local'
+  generator:
+    runIn: 'local'
+  publisher:
+    type: 'local'
+
+auth:
+  environment: production
+  providers: {} 

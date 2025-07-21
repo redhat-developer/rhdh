@@ -1,0 +1,18 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: backstage
+  namespace: showcase
+  annotations:
+    haproxy.router.openshift.io/timeout: "300s"
+spec:
+  to:
+    kind: Service
+    name: backstage
+    weight: 100
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None 

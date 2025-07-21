@@ -1,0 +1,299 @@
+# RHDH Backstage Values Template
+# This template replaces all manual YAML merging with dynamic Jinja2 templating
+# Consolidates: values_showcase.yaml + diff-values_*_*.yaml + rbac variants
+
+global:
+  host: {{ router_base | default('localhost') }}
+  clusterRouterBase: {{ router_base | default('localhost') }}
+{% if dynamic_plugins_root %}
+  dynamic:
+    includes:
+      - dynamic-plugins.default.yaml
+    plugins: []
+{% endif %}
+
+# Upstream Backstage Configuration
+upstream:
+  backstage:
+    image:
+      repository: {{ quay_repo | default('quay.io/rhdh/rhdh-hub-rhel9') }}
+      tag: {{ tag_name | default('latest') }}
+      pullPolicy: Always
+    
+    # Environment-specific configuration
+    extraEnvs:
+      - name: APP_CONFIG_backend_listen_port
+        value: "7007"
+      - name: CLUSTER_TYPE
+        value: {{ cluster_type }}
+      - name: DEPLOYMENT_TIMESTAMP  
+        value: {{ ansible_date_time.iso8601 }}
+{% if cluster_type == 'aks' %}
+      - name: AZURE_ENABLED
+        value: "true"
+      - name: K8S_CLUSTER_NAME
+        value: {{ aks_cluster_name | default('aks-cluster') }}
+{% elif cluster_type == 'gke' %}
+      - name: GCP_ENABLED
+        value: "true"
+      - name: K8S_CLUSTER_NAME
+        value: {{ gke_cluster_name | default('gke-cluster') }}
+{% elif cluster_type == 'openshift' %}
+      - name: OPENSHIFT_ENABLED
+        value: "true"
+      - name: OPENSHIFT_CLUSTER_NAME
+        value: {{ openshift_cluster_name | default('openshift-cluster') }}
+{% endif %}
+
+    # Resource configuration based on instance type and cluster
+    resources:
+{% if rbac_enabled %}
+      requests:
+        memory: "1Gi"
+        cpu: "500m"
+      limits:
+        memory: "2Gi"
+        cpu: "1000m"
+{% else %}
+      requests:
+        memory: "512Mi"
+        cpu: "250m"
+      limits:
+        memory: "1Gi"
+        cpu: "500m"
+{% endif %}
+
+  # Service Configuration
+  service:
+    type: ClusterIP
+    ports:
+      backend: 7007
+
+  # Ingress Configuration (cluster-specific)
+  ingress:
+    enabled: true
+{% if cluster_type == 'openshift' %}
+    # OpenShift uses Routes instead of Ingress
+    enabled: false
+{% elif cluster_type == 'gke' %}
+    annotations:
+      ingress.gcp.kubernetes.io/pre-shared-cert: {{ gke_cert_name | default('rhdh-cert') }}
+      kubernetes.io/ingress.class: "gce"
+      kubernetes.io/ingress.global-static-ip-name: {{ gke_static_ip | default('rhdh-ip') }}
+    className: "gce"
+{% elif cluster_type == 'aks' %}
+    annotations:
+      kubernetes.io/ingress.class: "azure/application-gateway"
+      appgw.ingress.kubernetes.io/ssl-redirect: "true"
+    className: "azure/application-gateway"
+{% endif %}
+    host: {{ router_base | default('localhost') }}
+
+{% if cluster_type == 'openshift' %}
+# OpenShift Route Configuration
+route:
+  enabled: true
+  host: {{ router_base | default('') }}
+  tls:
+    enabled: true
+    termination: edge
+{% endif %}
+
+# Persistent Volume Configuration
+postgresql:
+{% if postgresql_enabled %}
+  enabled: true
+  auth:
+    existingSecret: {{ postgresql_secret_name | default('postgresql-secret') }}
+    secretKeys:
+      adminPasswordKey: postgres-password
+      userPasswordKey: password
+  primary:
+    persistence:
+      enabled: true
+      size: {{ postgresql_storage_size | default('8Gi') }}
+{% else %}
+  enabled: false
+{% endif %}
+
+# Redis Configuration
+redis:
+{% if redis_enabled %}
+  enabled: true
+  auth:
+    enabled: false
+  master:
+    persistence:
+      enabled: true
+      size: {{ redis_storage_size | default('2Gi') }}
+{% if cluster_type == 'aks' %}
+    # AKS spot node configuration
+    nodeSelector:
+      kubernetes.azure.com/scalesetpriority: spot
+    tolerations:
+      - key: kubernetes.azure.com/scalesetpriority
+        operator: Equal
+        value: spot
+        effect: NoSchedule
+{% endif %}
+{% else %}
+  enabled: false
+{% endif %}
+
+# RBAC Configuration
+{% if rbac_enabled %}
+rbac:
+  create: true
+serviceAccount:
+  create: true
+  name: {{ service_account_name | default('rhdh-service-account') }}
+
+# Permission Framework
+permission:
+  enabled: true
+  rbac:
+{% if rbac_policy_file %}
+    policies-csv-file: {{ rbac_policy_file }}
+{% endif %}
+    admin:
+      superUsers:
+{% for admin_user in rbac_admin_users | default(['user:development/guest']) %}
+        - name: {{ admin_user }}
+{% endfor %}
+
+{% endif %}
+
+# Backend Configuration
+backend:
+  baseUrl: https://{{ router_base | default('localhost') }}
+  listen:
+    port: 7007
+  csp:
+    connect-src: ["'self'", 'http:', 'https:']
+  cors:
+    origin: https://{{ router_base | default('localhost') }}
+
+# App Configuration
+app:
+  baseUrl: https://{{ router_base | default('localhost') }}
+  title: {{ app_title | default('Red Hat Developer Hub') }}
+
+# Catalog Configuration
+catalog:
+  import:
+    entityFilename: catalog-info.yaml
+    pullRequestBranchName: backstage-integration
+  rules:
+    - allow: [Component, System, API, Resource, Location]
+
+# Scaffolder Configuration
+scaffolder:
+  defaultAuthor:
+    name: {{ scaffolder_author_name | default('Scaffolder') }}
+    email: {{ scaffolder_author_email | default('scaffolder@example.com') }}
+
+# Tech Docs Configuration
+techdocs:
+  builder: 'local'
+  generator:
+    runIn: 'local'
+  publisher:
+    type: 'local'
+
+# Auth Configuration
+auth:
+  environment: {{ auth_environment | default('development') }}
+{% if github_auth_enabled %}
+  providers:
+    github:
+      development:
+        clientId: {{ github_client_id }}
+        clientSecret: {{ github_client_secret }}
+{% endif %}
+
+# Kubernetes Plugin Configuration
+{% if kubernetes_plugin_enabled %}
+kubernetes:
+  serviceLocatorMethod:
+    type: 'multiTenant'
+  clusterLocatorMethods:
+    - type: 'config'
+      clusters:
+        - url: {{ k8s_cluster_url }}
+          name: {{ k8s_cluster_name | default('local-cluster') }}
+          authProvider: 'serviceAccount'
+          serviceAccountToken: {{ k8s_cluster_token }}
+          skipTLSVerify: {{ k8s_skip_tls_verify | default(true) }}
+{% endif %}
+
+# ArgoCD Plugin Configuration  
+{% if argocd_plugin_enabled %}
+argocd:
+  username: {{ argocd_username | default('admin') }}
+  password: {{ argocd_password }}
+  appLocatorMethods:
+    - type: 'config'
+      instances:
+        - name: argoInstance1
+          url: {{ argocd_url }}
+          token: {{ argocd_token }}
+{% endif %}
+
+# Monitoring Configuration
+{% if monitoring_enabled %}
+prometheus:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+grafana:
+  enabled: true
+  dashboards:
+    enabled: true
+{% endif %}
+
+# Dynamic Plugins Configuration
+{% if dynamic_plugins %}
+dynamicPlugins:
+  default:
+    includes:
+      - dynamic-plugins.default.yaml
+  plugins:
+{% for plugin in dynamic_plugins %}
+    - package: {{ plugin.package }}
+      disabled: {{ plugin.disabled | default(false) }}
+{% if plugin.pluginConfig %}
+      pluginConfig: {{ plugin.pluginConfig | to_nice_yaml(indent=8) | indent(8) }}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+# Security Configuration
+{% if security_enabled %}
+security:
+  # Content Security Policy
+  csp:
+    connect-src: ["'self'", 'http:', 'https:', 'data:', 'blob:']
+    frame-ancestors: ["'self'"]
+  
+  # CORS Configuration
+  cors:
+    origin: 
+      - https://{{ router_base | default('localhost') }}
+{% for origin in additional_cors_origins | default([]) %}
+      - {{ origin }}
+{% endfor %}
+{% endif %}
+
+# Feature Flags
+{% if feature_flags %}
+featureFlags:
+{% for flag, enabled in feature_flags.items() %}
+  {{ flag }}: {{ enabled }}
+{% endfor %}
+{% endif %}
+
+# Custom Configuration
+{% if custom_config %}
+{{ custom_config | to_nice_yaml }}
+{% endif %} 

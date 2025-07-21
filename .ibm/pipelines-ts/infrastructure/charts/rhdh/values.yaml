@@ -1,0 +1,311 @@
+# RHDH Helm Chart Values
+# This file replaces all individual value files and provides
+# a single source of truth for RHDH configuration
+
+# Global settings
+global:
+  # Image registry and repository
+  imageRegistry: quay.io
+  imagePullSecrets: []
+  
+  # Cluster configuration
+  clusterType: openshift  # openshift, aks, gke
+  clusterRouterBase: ""
+  
+  # Storage class
+  storageClass: ""
+
+# RHDH Backstage Configuration
+backstage:
+  enabled: true
+  
+  # Image configuration
+  image:
+    registry: quay.io
+    repository: rhdh/rhdh-hub-rhel9
+    tag: latest
+    pullPolicy: Always
+    pullSecrets: []
+
+  # Service configuration
+  service:
+    type: ClusterIP
+    ports:
+      backend: 7007
+
+  # Resource configuration
+  resources:
+    limits:
+      memory: 2Gi
+      cpu: 1000m
+    requests:
+      memory: 512Mi
+      cpu: 250m
+
+  # Environment variables
+  extraEnvVars:
+    - name: APP_CONFIG_backend_listen_port
+      value: "7007"
+
+  # Volume mounts
+  extraVolumeMounts: []
+  extraVolumes: []
+
+  # Probes
+  livenessProbe:
+    enabled: true
+    httpGet:
+      path: /healthcheck
+      port: 7007
+    initialDelaySeconds: 60
+    timeoutSeconds: 10
+
+  readinessProbe:
+    enabled: true
+    httpGet:
+      path: /healthcheck
+      port: 7007
+    initialDelaySeconds: 30
+    timeoutSeconds: 10
+
+# PostgreSQL Database Configuration
+postgresql:
+  enabled: true
+  
+  # Use subchart values
+  auth:
+    postgresPassword: backstage
+    username: backstage
+    password: backstage
+    database: backstage
+  
+  primary:
+    persistence:
+      enabled: true
+      size: 8Gi
+    
+    resources:
+      limits:
+        memory: 512Mi
+        cpu: 500m
+      requests:
+        memory: 256Mi
+        cpu: 250m
+
+  # Metrics
+  metrics:
+    enabled: false
+
+# Redis Cache Configuration  
+redis:
+  enabled: true
+  
+  # Use subchart values
+  auth:
+    enabled: false
+  
+  master:
+    persistence:
+      enabled: true
+      size: 2Gi
+    
+    resources:
+      limits:
+        memory: 256Mi
+        cpu: 250m
+      requests:
+        memory: 128Mi
+        cpu: 100m
+
+  # Cluster-specific configurations
+  nodeSelector: {}
+  tolerations: []
+
+# RBAC Configuration
+rbac:
+  enabled: false
+  
+  # Service Account
+  serviceAccount:
+    create: true
+    name: rhdh-service-account
+  
+  # Cluster Role
+  clusterRole:
+    create: true
+    
+  # Admin users
+  adminUsers:
+    - "user:development/guest"
+
+# Networking Configuration
+networking:
+  # OpenShift Route
+  route:
+    enabled: false  # Enabled automatically for OpenShift
+    tls:
+      enabled: true
+      termination: edge
+  
+  # Kubernetes Ingress
+  ingress:
+    enabled: false  # Enabled automatically for AKS/GKE
+    className: ""
+    annotations: {}
+    tls:
+      enabled: true
+      secretName: backstage-tls
+
+# Security Configuration
+security:
+  # Security Context
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1001
+    fsGroup: 1001
+  
+  # Pod Security Context
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 1001
+    fsGroup: 1001
+
+# Application Configuration
+appConfig:
+  # Base URL (automatically configured based on cluster type)
+  baseUrl: ""
+  
+  # Backend configuration
+  backend:
+    baseUrl: ""
+    
+  # Authentication providers
+  auth:
+    environment: production
+    providers: {}
+  
+  # Integrations
+  integrations: {}
+  
+  # Plugins configuration
+  catalog:
+    providers: {}
+  
+  kubernetes:
+    enabled: true
+    clusters: []
+
+# Dynamic Plugins Configuration
+dynamicPlugins:
+  enabled: false
+  plugins: []
+
+# Monitoring Configuration
+monitoring:
+  # Prometheus
+  prometheus:
+    enabled: false
+    serviceMonitor:
+      enabled: true
+      interval: 30s
+  
+  # Grafana
+  grafana:
+    enabled: false
+    dashboards:
+      enabled: true
+
+# ArgoCD Integration
+argocd:
+  enabled: false
+  
+  # ArgoCD subchart configuration
+  server:
+    ingress:
+      enabled: false
+
+# Tekton Integration
+tekton:
+  enabled: false
+
+# Operator Configuration
+operator:
+  enabled: false
+
+# Cluster-specific overrides
+clusterOverrides:
+  openshift:
+    # Route configuration
+    route:
+      enabled: true
+    
+    # Security Context Constraints
+    securityContextConstraints:
+      enabled: true
+    
+    # OpenShift-specific resources
+    resources:
+      securityContext:
+        runAsUser: 1001
+        fsGroup: 1001
+  
+  aks:
+    # Ingress configuration
+    ingress:
+      enabled: true
+      className: azure-application-gateway
+      annotations:
+        kubernetes.io/ingress.class: "azure/application-gateway"
+        appgw.ingress.kubernetes.io/ssl-redirect: "true"
+    
+    # Spot nodes configuration for Redis
+    redis:
+      nodeSelector:
+        kubernetes.azure.com/scalesetpriority: spot
+      tolerations:
+        - key: kubernetes.azure.com/scalesetpriority
+          operator: Equal
+          value: spot
+          effect: NoSchedule
+  
+  gke:
+    # Ingress configuration
+    ingress:
+      enabled: true
+      className: gce
+      annotations:
+        kubernetes.io/ingress.class: "gce"
+        ingress.gcp.kubernetes.io/pre-shared-cert: "rhdh-cert"
+        kubernetes.io/ingress.global-static-ip-name: "rhdh-static-ip"
+    
+    # Workload Identity
+    serviceAccount:
+      annotations:
+        iam.gke.io/gcp-service-account: "rhdh-gsa@rhdh-qe.iam.gserviceaccount.com"
+
+# External Dependencies Configuration
+external:
+  postgresql:
+    enabled: false
+    host: ""
+    port: 5432
+    database: backstage
+    username: backstage
+    password: ""
+  
+  redis:
+    enabled: false
+    host: ""
+    port: 6379
+    password: ""
+
+# Extra resources to be created
+extraResources: []
+
+# Testing configuration
+tests:
+  enabled: true
+  image:
+    registry: quay.io
+    repository: rhdh/rhdh-hub-rhel9
+    tag: latest 

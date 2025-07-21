@@ -1,0 +1,26 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: rhdh-cluster-role
+rules:
+  # Additional OpenShift-specific permissions
+  - apiGroups: ["route.openshift.io"]
+    resources: ["routes"]
+    verbs: ["get", "list"]
+  - apiGroups: ["image.openshift.io"]
+    resources: ["imagestreams", "imagestreamtags"]
+    verbs: ["get", "list"]
+  - apiGroups: ["build.openshift.io"]
+    resources: ["builds", "buildconfigs"]
+    verbs: ["get", "list"]
+  - apiGroups: ["apps.openshift.io"]
+    resources: ["deploymentconfigs"]
+    verbs: ["get", "list"]
+  - apiGroups: ["project.openshift.io"]
+    resources: ["projects"]
+    verbs: ["get", "list"]
+  # Security Context Constraints (if needed)
+  - apiGroups: ["security.openshift.io"]
+    resources: ["securitycontextconstraints"]
+    verbs: ["use"]
+    resourceNames: ["backstage-scc"] 

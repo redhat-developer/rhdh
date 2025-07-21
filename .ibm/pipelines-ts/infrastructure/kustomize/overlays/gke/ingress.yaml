@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: backstage
+  namespace: showcase
+  annotations:
+    kubernetes.io/ingress.class: "gce"
+    ingress.gcp.kubernetes.io/pre-shared-cert: "rhdh-cert"
+    kubernetes.io/ingress.global-static-ip-name: "rhdh-static-ip"
+    ingress.gcp.kubernetes.io/frontend-config: "rhdh-frontend-config"
+    ingress.gcp.kubernetes.io/managed-certificates: "rhdh-managed-cert"
+spec:
+  ingressClassName: gce
+  rules:
+    - host: backstage.gke.rhdh-qe.com
+      http:
+        paths:
+          - path: /*
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: backstage
+                port:
+                  number: 7007 
