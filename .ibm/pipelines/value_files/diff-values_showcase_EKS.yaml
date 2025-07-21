@@ -24,12 +24,6 @@ upstream:
       podSecurityContext:
         enabled: true
         fsGroup: 3000
-      # Tolerations and affinity needed to be scheduled on a spot EKS cluster. Only `postgresql` require it.
-      tolerations:
-      - key: "kubernetes.aws.com/spot"
-        operator: "Equal"
-        value: "true"
-        effect: "NoSchedule"
   volumePermissions:
     enabled: true
   service:
@@ -44,3 +38,4 @@ upstream:
       alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
       alb.ingress.kubernetes.io/ssl-redirect: '443'
       external-dns.alpha.kubernetes.io/hostname: $EKS_INSTANCE_DOMAIN_NAME
+orchestrator: null

@@ -3843,7 +3843,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/core-components@npm:0.17.2, @backstage/core-components@npm:^0.17.2":
+"@backstage/core-components@npm:0.17.2":
   version: 0.17.2
   resolution: "@backstage/core-components@npm:0.17.2"
   dependencies:
@@ -3897,7 +3897,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/core-components@npm:^0.17.3":
+"@backstage/core-components@npm:^0.17.2, @backstage/core-components@npm:^0.17.3":
   version: 0.17.3
   resolution: "@backstage/core-components@npm:0.17.3"
   dependencies:
@@ -3951,7 +3951,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/core-plugin-api@npm:1.10.7, @backstage/core-plugin-api@npm:^1.10.7":
+"@backstage/core-plugin-api@npm:1.10.7":
   version: 1.10.7
   resolution: "@backstage/core-plugin-api@npm:1.10.7"
   dependencies:
@@ -3972,7 +3972,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/core-plugin-api@npm:^1.10.8":
+"@backstage/core-plugin-api@npm:^1.10.7, @backstage/core-plugin-api@npm:^1.10.8":
   version: 1.10.8
   resolution: "@backstage/core-plugin-api@npm:1.10.8"
   dependencies:
@@ -4111,7 +4111,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/frontend-plugin-api@npm:0.10.2, @backstage/frontend-plugin-api@npm:^0.10.2":
+"@backstage/frontend-plugin-api@npm:0.10.2":
   version: 0.10.2
   resolution: "@backstage/frontend-plugin-api@npm:0.10.2"
   dependencies:
@@ -4135,7 +4135,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/frontend-plugin-api@npm:^0.10.1, @backstage/frontend-plugin-api@npm:^0.10.3":
+"@backstage/frontend-plugin-api@npm:^0.10.1, @backstage/frontend-plugin-api@npm:^0.10.2, @backstage/frontend-plugin-api@npm:^0.10.3":
   version: 0.10.3
   resolution: "@backstage/frontend-plugin-api@npm:0.10.3"
   dependencies:
@@ -7670,9 +7670,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ianvs/prettier-plugin-sort-imports@npm:4.4.2":
-  version: 4.4.2
-  resolution: "@ianvs/prettier-plugin-sort-imports@npm:4.4.2"
+"@ianvs/prettier-plugin-sort-imports@npm:4.5.1":
+  version: 4.5.1
+  resolution: "@ianvs/prettier-plugin-sort-imports@npm:4.5.1"
   dependencies:
     "@babel/generator": ^7.26.2
     "@babel/parser": ^7.26.2
@@ -7680,12 +7680,15 @@ __metadata:
     "@babel/types": ^7.26.0
     semver: ^7.5.2
   peerDependencies:
+    "@prettier/plugin-oxc": ^0.0.4
     "@vue/compiler-sfc": 2.7.x || 3.x
     prettier: 2 || 3 || ^4.0.0-0
   peerDependenciesMeta:
+    "@prettier/plugin-oxc":
+      optional: true
     "@vue/compiler-sfc":
       optional: true
-  checksum: 28982e1e20fae94368dae4cd6fa4e5d54ca1040652c6a3b3ec2612028d3053955d82b03abcc00076b72485b4e0c839f469aa0f7ded73e95fb2c7393c23fb9f2d
+  checksum: ed613e2baec6ee5cc86bfecf3aa64d247c0c36b4838f8bb893d12c49843264296b24bb39bd8e13bb87bfc1c54c5c4efaeac8e6c15a1a7a2ee38a9f1bcb53baa7
   languageName: node
   linkType: hard
 
@@ -8586,34 +8589,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@material-ui/core@npm:4.12.2":
-  version: 4.12.2
-  resolution: "@material-ui/core@npm:4.12.2"
-  dependencies:
-    "@babel/runtime": ^7.4.4
-    "@material-ui/styles": ^4.11.4
-    "@material-ui/system": ^4.12.1
-    "@material-ui/types": 5.1.0
-    "@material-ui/utils": ^4.11.2
-    "@types/react-transition-group": ^4.2.0
-    clsx: ^1.0.4
-    hoist-non-react-statics: ^3.3.2
-    popper.js: 1.16.1-lts
-    prop-types: ^15.7.2
-    react-is: ^16.8.0 || ^17.0.0
-    react-transition-group: ^4.4.0
-  peerDependencies:
-    "@types/react": ^16.8.6 || ^17.0.0
-    react: ^16.8.0 || ^17.0.0
-    react-dom: ^16.8.0 || ^17.0.0
-  peerDependenciesMeta:
-    "@types/react":
-      optional: true
-  checksum: daecbf812657112bfd82616ffe2add6686e80b2f0f38486108123c40cccbd0bcffb972c0d816a2b9f639f988758a86d769da6a71e6306d77b71265753786b54b
-  languageName: node
-  linkType: hard
-
-"@material-ui/core@npm:^4.12.2, @material-ui/core@npm:^4.12.4, @material-ui/core@npm:^4.9.13":
+"@material-ui/core@npm:4.12.4, @material-ui/core@npm:^4.12.2, @material-ui/core@npm:^4.12.4, @material-ui/core@npm:^4.9.13":
   version: 4.12.4
   resolution: "@material-ui/core@npm:4.12.4"
   dependencies:
@@ -8640,24 +8616,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@material-ui/icons@npm:4.9.1":
-  version: 4.9.1
-  resolution: "@material-ui/icons@npm:4.9.1"
-  dependencies:
-    "@babel/runtime": ^7.4.4
-  peerDependencies:
-    "@material-ui/core": ^4.0.0
-    "@types/react": ^16.8.6
-    react: ^16.8.0
-    react-dom: ^16.8.0
-  peerDependenciesMeta:
-    "@types/react":
-      optional: true
-  checksum: df856c1102902b36d18526279dc25b97f2dbba229ffe8fa5cde17b330ea3fef793f4f53d0975eda972d78bab6c0a2ef0ce853cb88ee2c6edd7e9159a4bed2e0a
-  languageName: node
-  linkType: hard
-
-"@material-ui/icons@npm:^4.9.1":
+"@material-ui/icons@npm:4.11.3, @material-ui/icons@npm:^4.9.1":
   version: 4.11.3
   resolution: "@material-ui/icons@npm:4.11.3"
   dependencies:
@@ -8746,7 +8705,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@material-ui/system@npm:^4.12.1, @material-ui/system@npm:^4.12.2":
+"@material-ui/system@npm:^4.12.2":
   version: 4.12.2
   resolution: "@material-ui/system@npm:4.12.2"
   dependencies:
@@ -8789,7 +8748,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@material-ui/utils@npm:^4.11.2, @material-ui/utils@npm:^4.11.3":
+"@material-ui/utils@npm:^4.11.3":
   version: 4.11.3
   resolution: "@material-ui/utils@npm:4.11.3"
   dependencies:
@@ -9110,13 +9069,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/core-downloads-tracker@npm:^5.17.1":
-  version: 5.17.1
-  resolution: "@mui/core-downloads-tracker@npm:5.17.1"
-  checksum: 40a697aa031f089dde29812563320221efa1ec18840b0d0b744ba8846b558146d58910b5b4e67b7eb1942c6817ffc389b4b6b28456c762d39d250bc1e54423f7
-  languageName: node
-  linkType: hard
-
 "@mui/core-downloads-tracker@npm:^5.18.0":
   version: 5.18.0
   resolution: "@mui/core-downloads-tracker@npm:5.18.0"
@@ -9124,7 +9076,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/icons-material@npm:5.18.0":
+"@mui/icons-material@npm:5.18.0, @mui/icons-material@npm:^5.17.1":
   version: 5.18.0
   resolution: "@mui/icons-material@npm:5.18.0"
   dependencies:
@@ -9140,23 +9092,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/icons-material@npm:^5.17.1":
-  version: 5.17.1
-  resolution: "@mui/icons-material@npm:5.17.1"
-  dependencies:
-    "@babel/runtime": ^7.23.9
-  peerDependencies:
-    "@mui/material": ^5.0.0
-    "@types/react": ^17.0.0 || ^18.0.0 || ^19.0.0
-    react: ^17.0.0 || ^18.0.0 || ^19.0.0
-  peerDependenciesMeta:
-    "@types/react":
-      optional: true
-  checksum: 015149e65add85ab0c669829fabf2cfb9c0a95e33a527716f05f8bdc48247a1f0db5e4c83406d70e22600f7c8e54c339a7237e5d8223b73caa724d7b87ce2b0a
-  languageName: node
-  linkType: hard
-
-"@mui/material@npm:5.18.0":
+"@mui/material@npm:5.18.0, @mui/material@npm:^5.12.2":
   version: 5.18.0
   resolution: "@mui/material@npm:5.18.0"
   dependencies:
@@ -9186,39 +9122,6 @@ __metadata:
     "@types/react":
       optional: true
   checksum: b9d6cf638774e65924adf6f58ad50639c55050b33dc6223aa74686f733e137d173b4594b28be70e8ea3baf413a7fcd3bee40d35e3af12a42b7ba03def71ea217
-  languageName: node
-  linkType: hard
-
-"@mui/material@npm:^5.12.2":
-  version: 5.17.1
-  resolution: "@mui/material@npm:5.17.1"
-  dependencies:
-    "@babel/runtime": ^7.23.9
-    "@mui/core-downloads-tracker": ^5.17.1
-    "@mui/system": ^5.17.1
-    "@mui/types": ~7.2.15
-    "@mui/utils": ^5.17.1
-    "@popperjs/core": ^2.11.8
-    "@types/react-transition-group": ^4.4.10
-    clsx: ^2.1.0
-    csstype: ^3.1.3
-    prop-types: ^15.8.1
-    react-is: ^19.0.0
-    react-transition-group: ^4.4.5
-  peerDependencies:
-    "@emotion/react": ^11.5.0
-    "@emotion/styled": ^11.3.0
-    "@types/react": ^17.0.0 || ^18.0.0 || ^19.0.0
-    react: ^17.0.0 || ^18.0.0 || ^19.0.0
-    react-dom: ^17.0.0 || ^18.0.0 || ^19.0.0
-  peerDependenciesMeta:
-    "@emotion/react":
-      optional: true
-    "@emotion/styled":
-      optional: true
-    "@types/react":
-      optional: true
-  checksum: 26ff24f6d7ec1e429cf1dbe502046c8bcb684852bcfc32250b545c609ed38cef01985bbeec7ff294abe8b48be896cf9774e1198495b588d6c93cc56c9aecfbae
   languageName: node
   linkType: hard
 
@@ -9258,55 +9161,6 @@ __metadata:
     "@emotion/styled":
       optional: true
   checksum: ab2d260ad5eea94993bc7706b164ae4ec11bd37dd7be36b93755d18da5b7859d39ad44173adced0e111e8b1b7ef65c0e369df3f2908144237c5e78f793eebb5a
-  languageName: node
-  linkType: hard
-
-"@mui/styled-engine@npm:^5.16.14":
-  version: 5.16.14
-  resolution: "@mui/styled-engine@npm:5.16.14"
-  dependencies:
-    "@babel/runtime": ^7.23.9
-    "@emotion/cache": ^11.13.5
-    csstype: ^3.1.3
-    prop-types: ^15.8.1
-  peerDependencies:
-    "@emotion/react": ^11.4.1
-    "@emotion/styled": ^11.3.0
-    react: ^17.0.0 || ^18.0.0 || ^19.0.0
-  peerDependenciesMeta:
-    "@emotion/react":
-      optional: true
-    "@emotion/styled":
-      optional: true
-  checksum: 5868683e6dd4004b34a0ce9de8842c180f7b7618c0b8cff904771659ef2da3aae574ea10b0c5ad6ffe59db396f699773ebb99f3f9d831d8b5adc398ecc618195
-  languageName: node
-  linkType: hard
-
-"@mui/system@npm:^5.17.1":
-  version: 5.17.1
-  resolution: "@mui/system@npm:5.17.1"
-  dependencies:
-    "@babel/runtime": ^7.23.9
-    "@mui/private-theming": ^5.17.1
-    "@mui/styled-engine": ^5.16.14
-    "@mui/types": ~7.2.15
-    "@mui/utils": ^5.17.1
-    clsx: ^2.1.0
-    csstype: ^3.1.3
-    prop-types: ^15.8.1
-  peerDependencies:
-    "@emotion/react": ^11.5.0
-    "@emotion/styled": ^11.3.0
-    "@types/react": ^17.0.0 || ^18.0.0 || ^19.0.0
-    react: ^17.0.0 || ^18.0.0 || ^19.0.0
-  peerDependenciesMeta:
-    "@emotion/react":
-      optional: true
-    "@emotion/styled":
-      optional: true
-    "@types/react":
-      optional: true
-  checksum: 104f57a82c4b314aa49fb8e1d52885b415e4a65d80431f8eb94c93769ba798feabc7107abbdbc3793a99d4a71f122edf87e1874151c2c7e714677aeb0c734df4
   languageName: node
   linkType: hard
 
@@ -15233,16 +15087,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:>=13.7.0":
-  version: 22.16.0
-  resolution: "@types/node@npm:22.16.0"
-  dependencies:
-    undici-types: ~6.21.0
-  checksum: fccc24b9cfa95e165fb6a22871c812c9b021b0c686ced9b1572e1bd79ac3f8c78b36c04edfb2c96e10a8a1247c026d1dcad91c0c3e62dccf414057a37bac729d
-  languageName: node
-  linkType: hard
-
-"@types/node@npm:22.16.3":
+"@types/node@npm:*, @types/node@npm:22.16.3, @types/node@npm:>=13.7.0":
   version: 22.16.3
   resolution: "@types/node@npm:22.16.3"
   dependencies:
@@ -16553,8 +16398,8 @@ __metadata:
     "@backstage/plugin-user-settings": 0.8.22
     "@backstage/test-utils": 1.7.8
     "@backstage/theme": 0.6.6
-    "@material-ui/core": 4.12.2
-    "@material-ui/icons": 4.9.1
+    "@material-ui/core": 4.12.4
+    "@material-ui/icons": 4.11.3
     "@material-ui/lab": 4.0.0-alpha.61
     "@octokit/rest": 19.0.3
     "@testing-library/dom": 9.3.4
@@ -16565,7 +16410,7 @@ __metadata:
     "@types/react": 18.3.23
     "@types/react-dom": 18.3.7
     "@types/zen-observable": 0.8.0
-    cross-env: 7.0.0
+    cross-env: 7.0.3
     history: 5.0.0
     react: 18.3.1
     react-dom: 18.3.1
@@ -19222,15 +19067,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cross-env@npm:7.0.0":
-  version: 7.0.0
-  resolution: "cross-env@npm:7.0.0"
+"cross-env@npm:7.0.3":
+  version: 7.0.3
+  resolution: "cross-env@npm:7.0.3"
   dependencies:
     cross-spawn: ^7.0.1
   bin:
     cross-env: src/bin/cross-env.js
     cross-env-shell: src/bin/cross-env-shell.js
-  checksum: 41754a794506029930d88b66a179f0d312daea49095fb2135b21143ef0af4e2a3d9db325664de8fd6af0c02372906de17fbba7cb74a262904345eb587c56e099
+  checksum: 26f2f3ea2ab32617f57effb70d329c2070d2f5630adc800985d8b30b56e8bf7f5f439dd3a0358b79cee6f930afc23cf8e23515f17ccfb30092c6b62c6b630a79
   languageName: node
   linkType: hard
 
@@ -31190,7 +31035,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-draggable@npm:^4.0.0":
+"react-draggable@npm:^4.0.0, react-draggable@npm:^4.0.3":
   version: 4.5.0
   resolution: "react-draggable@npm:4.5.0"
   dependencies:
@@ -31200,19 +31045,6 @@ __metadata:
     react: ">= 16.3.0"
     react-dom: ">= 16.3.0"
   checksum: a5563ed8142ab77e9e68af9b5a57484358462bae76368691362419d7fb4d9fba73300b5c5d1346db6551d88743c68746dc18bc035276db1539d0ad0aff6580cc
-  languageName: node
-  linkType: hard
-
-"react-draggable@npm:^4.0.3":
-  version: 4.4.6
-  resolution: "react-draggable@npm:4.4.6"
-  dependencies:
-    clsx: ^1.1.1
-    prop-types: ^15.8.1
-  peerDependencies:
-    react: ">= 16.3.0"
-    react-dom: ">= 16.3.0"
-  checksum: 9b15aac59244873ac4561c5a2bead43a56e18d406e0a5f242bd4f9d151c074530c02b99387983104bf43417292f9cf8d063e554ed08d88792235e3fbc965f1b8
   languageName: node
   linkType: hard
 
@@ -32536,14 +32368,14 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.32.1
     "@backstage/frontend-test-utils": ^0.3.2
-    "@ianvs/prettier-plugin-sort-imports": 4.4.2
+    "@ianvs/prettier-plugin-sort-imports": 4.5.1
     "@manypkg/cli": 0.24.0
     glob: 11.0.3
     husky: 8.0.3
     lint-staged: 15.5.2
     node-gyp: 10.3.1
     sherif: 1.6.1
-    turbo: 2.5.4
+    turbo: 2.5.5
   languageName: unknown
   linkType: soft
 
@@ -35048,58 +34880,58 @@ __metadata:
   languageName: node
   linkType: hard
 
-"turbo-darwin-64@npm:2.5.4":
-  version: 2.5.4
-  resolution: "turbo-darwin-64@npm:2.5.4"
+"turbo-darwin-64@npm:2.5.5":
+  version: 2.5.5
+  resolution: "turbo-darwin-64@npm:2.5.5"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"turbo-darwin-arm64@npm:2.5.4":
-  version: 2.5.4
-  resolution: "turbo-darwin-arm64@npm:2.5.4"
+"turbo-darwin-arm64@npm:2.5.5":
+  version: 2.5.5
+  resolution: "turbo-darwin-arm64@npm:2.5.5"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"turbo-linux-64@npm:2.5.4":
-  version: 2.5.4
-  resolution: "turbo-linux-64@npm:2.5.4"
+"turbo-linux-64@npm:2.5.5":
+  version: 2.5.5
+  resolution: "turbo-linux-64@npm:2.5.5"
   conditions: os=linux & cpu=x64
   languageName: node
   linkType: hard
 
-"turbo-linux-arm64@npm:2.5.4":
-  version: 2.5.4
-  resolution: "turbo-linux-arm64@npm:2.5.4"
+"turbo-linux-arm64@npm:2.5.5":
+  version: 2.5.5
+  resolution: "turbo-linux-arm64@npm:2.5.5"
   conditions: os=linux & cpu=arm64
   languageName: node
   linkType: hard
 
-"turbo-windows-64@npm:2.5.4":
-  version: 2.5.4
-  resolution: "turbo-windows-64@npm:2.5.4"
+"turbo-windows-64@npm:2.5.5":
+  version: 2.5.5
+  resolution: "turbo-windows-64@npm:2.5.5"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"turbo-windows-arm64@npm:2.5.4":
-  version: 2.5.4
-  resolution: "turbo-windows-arm64@npm:2.5.4"
+"turbo-windows-arm64@npm:2.5.5":
+  version: 2.5.5
+  resolution: "turbo-windows-arm64@npm:2.5.5"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
 
-"turbo@npm:2.5.4":
-  version: 2.5.4
-  resolution: "turbo@npm:2.5.4"
+"turbo@npm:2.5.5":
+  version: 2.5.5
+  resolution: "turbo@npm:2.5.5"
   dependencies:
-    turbo-darwin-64: 2.5.4
-    turbo-darwin-arm64: 2.5.4
-    turbo-linux-64: 2.5.4
-    turbo-linux-arm64: 2.5.4
-    turbo-windows-64: 2.5.4
-    turbo-windows-arm64: 2.5.4
+    turbo-darwin-64: 2.5.5
+    turbo-darwin-arm64: 2.5.5
+    turbo-linux-64: 2.5.5
+    turbo-linux-arm64: 2.5.5
+    turbo-windows-64: 2.5.5
+    turbo-windows-arm64: 2.5.5
   dependenciesMeta:
     turbo-darwin-64:
       optional: true
@@ -35115,7 +34947,7 @@ __metadata:
       optional: true
   bin:
     turbo: bin/turbo
-  checksum: b0b1b5a3ad8cece743c32dbbfaf48b3e16dad1ec238afbd2259447a1d2346955bc2d2da4b650b0114ee3c92b32179a56e47c640be027ddcf5a10e6724f0e8245
+  checksum: 8da6525097ba17bb59571eb512f216362b046bbf88765ddb05fb9937a44e04eeba3bb883c55fca53a7e8a104e02366b4f6f99ef90d12078d0dc95d4659004af6
   languageName: node
   linkType: hard
 

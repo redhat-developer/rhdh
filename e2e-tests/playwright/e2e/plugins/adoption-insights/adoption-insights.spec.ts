@@ -1,10 +1,11 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Locator } from "@playwright/test";
 import { Common } from "../../../utils/common";
-import { UIhelper } from "../../../utils/ui-helper"; 
-import { TestHelper } from "../../../support/pages/adoption-Insights"; 
+import { UIhelper } from "../../../utils/ui-helper";
+import { TestHelper } from "../../../support/pages/adoption-insights";
 
 test.describe.serial("Test Adoption Insights", () => {
-  test.describe.serial("Test Adoption Insights plugin: load permission policies and conditions from files", () => {
+  test.describe
+    .serial("Test Adoption Insights plugin: load permission policies and conditions from files", () => {
     let context;
     let page;
     let testHelper: TestHelper;
@@ -27,22 +28,20 @@ test.describe.serial("Test Adoption Insights", () => {
     test.afterAll(async () => {
       await context?.close();
     });
-    
 
     test("Check UI navigation by nav bar when adoption-insights is enabled", async () => {
-      await uiHelper.openSidebarButton("Administration"); 
-      await uiHelper.clickLink('Adoption Insights');
+      await uiHelper.openSidebarButton("Administration");
+      await uiHelper.clickLink("Adoption Insights");
 
       await testHelper.waitForPanelApiCalls(page);
-      await testHelper.waitUntilApiCallSucceeds(page);
-      
+
       await uiHelper.verifyHeading("Adoption Insights");
       expect(page.url()).toContain("adoption-insights");
     });
 
     test("Select date range", async () => {
       const dateRanges = ["Today", "Last week", "Last month", "Last year"];
-      await testHelper.clickByText('Last 28 days');
+      await testHelper.clickByText("Last 28 days");
       for (const range of dateRanges) {
         await expect(page.getByRole("option", { name: range })).toBeVisible();
       }
@@ -66,8 +65,12 @@ test.describe.serial("Test Adoption Insights", () => {
         hasText: "Active users",
       });
       await expect(panel.locator(".recharts-surface")).toBeVisible();
-      await expect(panel.getByText(/^\d+ active users per hour$/)).toBeVisible();
-      await expect(panel.getByRole('button', { name: 'Export CSV' })).toBeVisible();
+      await expect(
+        panel.getByText(/^\d+ active users per hour$/),
+      ).toBeVisible();
+      await expect(
+        panel.getByRole("button", { name: "Export CSV" }),
+      ).toBeVisible();
     });
 
     test("Total number of users panel shows visitor of 100", async () => {
@@ -76,33 +79,35 @@ test.describe.serial("Test Adoption Insights", () => {
       });
       await expect(panel.locator(".recharts-surface")).toBeVisible();
       await expect(panel.getByText(/^\d+of 100$/)).toBeVisible();
-      await expect(panel.getByText(/^\d+%have logged in$/)).toBeVisible();     
+      await expect(panel.getByText(/^\d+%have logged in$/)).toBeVisible();
     });
 
     test("Data shows in Top plugins Entity", async () => {
       await testHelper.expectTopEntriesToBePresent("Top 3 plugins");
     });
-    
+
     test("Rest of the panels are visible", async () => {
-      const titles = [
-        "templates",
-        "catalog entities",
-        "techdocs",
-        "Searches",
-      ];
-    
+      const titles = ["templates", "catalog entities", "techdocs", "Searches"];
+
       for (const title of titles) {
-        const panel = page.locator(".v5-MuiPaper-root", { hasText: title }).last();
+        const panel = page
+          .locator(".v5-MuiPaper-root", { hasText: title })
+          .last();
         await expect(panel).toBeVisible();
-    
-        if (title === "catalog entities" || title === "techdocs" || title === "templates") {
+
+        if (
+          title === "catalog entities" ||
+          title === "techdocs" ||
+          title === "templates"
+        ) {
           const firstRow = await testHelper.getVisibleFirstRowText(panel);
-    
+
           if (title === "templates") templatesFirstEntry = firstRow;
-          else if (title === "catalog entities") catalogEntitiesFirstEntry = firstRow;
+          else if (title === "catalog entities")
+            catalogEntitiesFirstEntry = firstRow;
           else if (title === "techdocs") techdocsFirstEntry = firstRow;
         }
-    
+
         if (title === "Searches") {
           const count = await testHelper.getCountFromPanel(panel);
           initialSearchCount = count || 0;
@@ -119,63 +124,70 @@ test.describe.serial("Test Adoption Insights", () => {
           uiHelper,
           templatesFirstEntry,
           catalogEntitiesFirstEntry,
-          techdocsFirstEntry
+          techdocsFirstEntry,
         );
         // Do a search
-        await page.getByPlaceholder('Search...').fill('Dummy search');
+        await page.getByPlaceholder("Search...").fill("Dummy search");
         await testHelper.waitUntilApiCallSucceeds(page);
-        await expect(page.getByText('No results found')).toBeVisible();
-  
+        await expect(page.getByText("No results found")).toBeVisible();
+
         await uiHelper.clickLink("Catalog");
         await testHelper.waitUntilApiCallSucceeds(page);
 
-        await uiHelper.clickLink('Adoption Insights');
-        await testHelper.clickByText('Last 28 days'); 
+        await uiHelper.clickLink("Adoption Insights");
+        await testHelper.clickByText("Last 28 days");
         await Promise.all([
           testHelper.waitForPanelApiCalls(page),
           testHelper.selectOption("Today"),
         ]);
       });
-      
+
       test("Visited component shows up in top catalog entities", async () => {
         await testHelper.expectTopEntriesToBePresent("Top catalog entities");
       });
-      
+
       test("Visited techdoc shows up in top techdocs", async () => {
         await testHelper.expectTopEntriesToBePresent("Top 3 techdocs");
       });
-      
+
       test("Visited templates shows in top templates", async () => {
         await testHelper.expectTopEntriesToBePresent("Top 3 templates");
       });
-      
 
       test("Changes are Reflecting in panels", async () => {
-        const titles = [
-          "catalog entities",
-          "techdocs",
-        ];
+        const titles = ["catalog entities", "techdocs"];
 
         interface PanelState {
           firstRow?: any;
           initialViewsCount?: number;
         }
-      
+
         let state: Record<string, PanelState> = {
           "catalog entities": {},
-          "techdocs": {},
+          techdocs: {},
         };
 
         for (const title of titles) {
-          const panel = page.locator(".v5-MuiPaper-root", { hasText: title }).last();
-          if (title === "catalog entities" || title === "techdocs" || title === "templates") {
-            state[title].firstRow = await testHelper.getVisibleFirstRowText(panel);
-      
-            if (title === "catalog entities") catalogEntitiesFirstEntry = state[title].firstRow;
-            else if (title === "techdocs") techdocsFirstEntry = state[title].firstRow;
+          const panel = page
+            .locator(".v5-MuiPaper-root", { hasText: title })
+            .last();
+          if (
+            title === "catalog entities" ||
+            title === "techdocs" ||
+            title === "templates"
+          ) {
+            state[title].firstRow =
+              await testHelper.getVisibleFirstRowText(panel);
+
+            if (title === "catalog entities")
+              catalogEntitiesFirstEntry = state[title].firstRow;
+            else if (title === "techdocs")
+              techdocsFirstEntry = state[title].firstRow;
           }
-          const firstRow = panel.locator('table.v5-MuiTable-root tbody tr').first();
-          const firstEntry = firstRow.locator('td').first();
+          const firstRow = panel
+            .locator("table.v5-MuiTable-root tbody tr")
+            .first();
+          const firstEntry = firstRow.locator("td").first();
           state[title].firstRow = firstRow;
 
           let headerTxt: string;
@@ -183,22 +195,23 @@ test.describe.serial("Test Adoption Insights", () => {
           if (title === "techdocs") {
             headerTxt = techdocsFirstEntry[0];
             state[title].initialViewsCount = Number(techdocsFirstEntry[1]);
-            if(headerTxt === "docs") {
+            if (headerTxt === "docs") {
               headerTxt = "Documentation";
             }
             await testHelper.clickAndVerifyText(firstEntry, headerTxt);
-
           } else if (title === "catalog entities") {
             headerTxt = catalogEntitiesFirstEntry[0];
-            state[title].initialViewsCount = Number(catalogEntitiesFirstEntry[1]);
+            state[title].initialViewsCount = Number(
+              catalogEntitiesFirstEntry[1],
+            );
             await testHelper.clickAndVerifyText(firstEntry, headerTxt);
           }
         }
         await page.reload();
         await testHelper.waitUntilApiCallSucceeds(page);
         await uiHelper.openSidebarButton("Administration");
-        await uiHelper.clickLink('Adoption Insights');
-        await testHelper.clickByText('Last 28 days'); 
+        await uiHelper.clickLink("Adoption Insights");
+        await testHelper.clickByText("Last 28 days");
         await Promise.all([
           testHelper.waitForPanelApiCalls(page),
           testHelper.selectOption("Today"),
@@ -206,10 +219,12 @@ test.describe.serial("Test Adoption Insights", () => {
         await testHelper.waitUntilApiCallSucceeds(page);
 
         for (const title of titles) {
-          const finalViews = await state[title].firstRow.locator('td').last();
+          const finalViews = await state[title].firstRow.locator("td").last();
           await state[title].firstRow.waitFor({ state: "visible" });
           const finalViewsCount = await finalViews.textContent();
-          expect(Number(finalViewsCount)).toBeGreaterThan(state[title].initialViewsCount);
+          expect(Number(finalViewsCount)).toBeGreaterThan(
+            state[title].initialViewsCount,
+          );
         }
       });
 
@@ -218,11 +233,12 @@ test.describe.serial("Test Adoption Insights", () => {
           hasText: "searches",
         });
         await expect(panel.locator(".recharts-surface")).toBeVisible();
-        await expect(panel).toContainText(/An average of \d+ searches per hour were conducted during this period\./);
+        await expect(panel).toContainText(
+          /An average of \d+ searches per hour were conducted during this period\./,
+        );
         const recount = await testHelper.getCountFromPanel(panel);
         expect(recount).toBeGreaterThan(initialSearchCount);
       });
-      
     });
   });
 });
