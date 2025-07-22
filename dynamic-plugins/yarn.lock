@@ -3932,9 +3932,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-tech-radar@npm:1.7.0":
-  version: 1.7.0
-  resolution: "@backstage-community/plugin-tech-radar@npm:1.7.0"
+"@backstage-community/plugin-tech-radar@npm:1.7.1":
+  version: 1.7.1
+  resolution: "@backstage-community/plugin-tech-radar@npm:1.7.1"
   dependencies:
     "@backstage-community/plugin-tech-radar-common": ^1.6.0
     "@backstage/core-compat-api": ^0.4.2
@@ -3951,7 +3951,7 @@ __metadata:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: 6.0.0-beta.0 || ^6.3.0
-  checksum: 84bae7b9da35a5b628739501a89060d485ab3fbf12ff6563e08d0976d92c0e10362b061775552f104d2bdbc3fe95e81d2de4c9da65c016351fefb158739e77f3
+  checksum: c30e809517c25728a75f8579b53c0b35d7d84143842a401f6e1d0048197f056c9b4f8135a9c911aef96ecf9b4b0b0e3d6fffe9c4b8ee0b8ce8a6d930f516f078
   languageName: node
   linkType: hard
 
@@ -10175,9 +10175,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@immobiliarelabs/backstage-plugin-gitlab@npm:6.12.0":
-  version: 6.12.0
-  resolution: "@immobiliarelabs/backstage-plugin-gitlab@npm:6.12.0"
+"@immobiliarelabs/backstage-plugin-gitlab@npm:6.12.1":
+  version: 6.12.1
+  resolution: "@immobiliarelabs/backstage-plugin-gitlab@npm:6.12.1"
   dependencies:
     "@backstage/core-components": ^0.17.1
     "@backstage/core-plugin-api": ^1.10.6
@@ -10200,7 +10200,7 @@ __metadata:
     react-dom: ^16.13.1 || ^18.0.0
     react-router: 6.0.0-beta.0 || ^6.20.0
     react-router-dom: 6.0.0-beta.0 || ^6.20.0
-  checksum: 2692144f56ab89e1dbefd0b9bdbab56c51cb4cd1420d6b5bfb2c6002821a7cae89360999c82c90435a5389136549b86070f1abe85bff1629fc08a1c5d3f6e08d
+  checksum: cd1f2ba26d45483a1a48f044af24190e1b55e9b3495d46b5c39548f047d9bcf27a129c25fab2223a17c84763421d52837a3d5d05c16a8285565666f21113ed75
   languageName: node
   linkType: hard
 
@@ -14438,15 +14438,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@roadiehq/scaffolder-backend-module-http-request@npm:5.3.3":
-  version: 5.3.3
-  resolution: "@roadiehq/scaffolder-backend-module-http-request@npm:5.3.3"
+"@roadiehq/scaffolder-backend-module-http-request@npm:5.3.4":
+  version: 5.3.4
+  resolution: "@roadiehq/scaffolder-backend-module-http-request@npm:5.3.4"
   dependencies:
     "@backstage/backend-plugin-api": ^1.0.2
     "@backstage/core-plugin-api": ^1.10.1
     "@backstage/plugin-scaffolder-node": ^0.6.2
     cross-fetch: ^4.0.0
-  checksum: d8928487c0fa2eb6e524cb7320c386220ced9fd0266809955c4318276c9e79155779db04c3a8e5dfb3f0c0770577f687424fa7f4d37c945a27f0f8a983bb0e1e
+  checksum: 829887a34800983b6dbf94402c13f8336760991d73b988762f241016a3e52f30af36469e5bebf5ea4dfb2534efe419effd4ea910a436f5325ba7cf6c2f2a8cf2
   languageName: node
   linkType: hard
 
@@ -19212,7 +19212,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backstage-community-plugin-tech-radar@workspace:wrappers/backstage-community-plugin-tech-radar"
   dependencies:
-    "@backstage-community/plugin-tech-radar": 1.7.0
+    "@backstage-community/plugin-tech-radar": 1.7.1
     "@backstage-community/plugin-tech-radar-common": 1.6.0
     "@backstage/cli": 0.30.0
     "@backstage/core-plugin-api": 1.10.7
@@ -26493,7 +26493,7 @@ __metadata:
   resolution: "immobiliarelabs-backstage-plugin-gitlab@workspace:wrappers/immobiliarelabs-backstage-plugin-gitlab"
   dependencies:
     "@backstage/cli": 0.30.0
-    "@immobiliarelabs/backstage-plugin-gitlab": 6.12.0
+    "@immobiliarelabs/backstage-plugin-gitlab": 6.12.1
     "@janus-idp/cli": 3.6.1
     typescript: 5.8.3
   languageName: unknown
@@ -35355,7 +35355,7 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.6.1
-    "@roadiehq/scaffolder-backend-module-http-request": 5.3.3
+    "@roadiehq/scaffolder-backend-module-http-request": 5.3.4
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
