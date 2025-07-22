@@ -52,7 +52,8 @@ jobs:
           large-packages: false
           docker-images: false
           swap-storage: false
-
+      - name: "Set up QEMU"
+        uses: docker/setup-qemu-action@v3
       - name: Install qemu dependency
         run: |
           sudo apt-get update
@@ -121,7 +122,7 @@ jobs:
         shell: bash
         id: transform-containerfile
         run: |
-          set -x
+          set -ex
           
           CONTAINERFILE_PATH="${{ env.LOCAL_DOCKERFILE }}"
           
