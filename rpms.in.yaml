@@ -20,7 +20,9 @@ contentOrigin:
     # - repoid: codeready-builder-for-ubi-9-$basearch-source-rpms
     #   baseurl: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/$basearch/codeready-builder/source/SRPMS
     #   # gpgcheck: 0
-
+arches:
+  - aarch64
+  - x86_64
 moduleEnable:
   - nodejs:22
 packages:

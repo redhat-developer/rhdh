@@ -68,7 +68,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: "Cache Dependencies with Hermeto"
-        run: |         
+        run: |
+          
+          set -x
           # Build hermeto cache
           docker run --rm -v "$PWD:/source:z" -v "$LOCAL_CACHE_DIR:/cachi2:z" -w /source "$HERMETO_IMAGE" \
             --log-level DEBUG \
@@ -164,11 +166,17 @@ jobs:
       - name: Check manifest
         run: |
           set -x
-          buildah manifest inspect ${{ steps.build_image_multiplatform.outputs.image }}:${{ env.IMAGE_TAG }}
+
+          for tag in ${{ steps.build_image_multiplatform.outputs.tags }}; do
+            buildah manifest inspect ${{ steps.build_image_multiplatform.outputs.image }}:${tag}
+          done
 
       - name: Run image
         run: |
-          podman run --rm ${{ steps.build_image_multiplatform.outputs.image }}:${{ env.IMAGE_TAG }}
+          for tag in ${{ steps.build_image_multiplatform.outputs.tags }}; do
+            podman run --rm ${{ steps.build_image_multiplatform.outputs.image }}:${tag}
+          done
+
       - name: "Push Docker Image"
         id: push
         uses: redhat-actions/push-to-registry@5ed88d269cf581ea9ef6dd6806d01562096bee9c # v2.8
