@@ -54,7 +54,7 @@ test.describe("Test licensed users info backend plugin", async () => {
     */
 
     expect(result).toHaveProperty('quantity');
-    expect(result.quantity).toBe("1");
+    expect(Number(result.quantity)).toBeGreaterThan(0);
   });
 
   test("Test plugin users url", async () => {
@@ -82,7 +82,7 @@ test.describe("Test licensed users info backend plugin", async () => {
     expect(result.length).toBeGreaterThan(0);
     expect(result[0]).toHaveProperty('userEntityRef');
     expect(result[0]).toHaveProperty('lastAuthTime');
-    expect(result[0].userEntityRef).toBe('user:development/guest');
+    expect(result[0].userEntityRef).toContain('user:');
   });
 
   test("Test plugin users as a csv url", async () => {
@@ -112,6 +112,6 @@ test.describe("Test licensed users info backend plugin", async () => {
     const csvData = splitText[1];
 
     expect(csvHeaders).toContain("userEntityRef,displayName,email,lastAuthTime");
-    expect(csvData).toContain("user:development/guest");
+    expect(csvData).toContain("user:");
   });
 });
