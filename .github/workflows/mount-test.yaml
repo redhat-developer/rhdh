@@ -9,39 +9,29 @@ on:
       - hermetic-build-testing
     
 env:
+  # It seems that the hermeto image is not available for arm64, so multiplatform caching is not supported for now
   HERMETO_IMAGE: quay.io/konflux-ci/hermeto:latest
   LOCAL_CACHE_DIR: ./hermeto-cache
   LOCAL_DOCKERFILE: .rhdh/docker/Dockerfile 
   REGISTRY: quay.io
+  PLATFORM: linux/amd64 # Just a placeholder until multiplatform hermeto caching is implemented
 
 jobs:
   cache-and-build:
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - ubuntu-24.04-arm
-          - ubuntu-24.04
-    runs-on: ${{ matrix.os }}
+    # strategy:
+    #   fail-fast: false
+    #   matrix:
+    #     os:
+    #       - ubuntu-24.04-arm
+    #       - ubuntu-24.04
+    
+    # runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
       
     steps:
-      - name: Prepare
-        run: |
-          if [ "${{ matrix.os }}" == "ubuntu-24.04" ]; then
-            platform="linux/amd64"
-          elif [ "${{ matrix.os }}" == "ubuntu-24.04-arm" ]; then
-            platform="linux/arm64"
-          else
-            echo "Unknown platform"
-            exit 1
-          fi
-
-          echo "PLATFORM=$platform" >> $GITHUB_ENV
-          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
-          echo "PLATFORM_ARCH=${platform#*/}" >> $GITHUB_ENV
       - name: Free Disk Space (Ubuntu)
         uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # v1.3.1
         with:
@@ -67,11 +57,10 @@ jobs:
           password: ${{ secrets.QUAY_TOKEN }}
       - name: "Checkout"
         uses: actions/checkout@v4
-
       - name: "Cache Dependencies with Hermeto"
         run: |
           
-          set -x
+          set -ex
           # Build hermeto cache
           docker run --rm -v "$PWD:/source:z" -v "$LOCAL_CACHE_DIR:/cachi2:z" -w /source "$HERMETO_IMAGE" \
             --log-level DEBUG \
@@ -109,6 +98,7 @@ jobs:
 
       - name: "Fix Cache Ownership for Non-Root Buildah"
         run: |
+          set -ex
           echo "=== Before ownership fix ==="
           ls -la ${{ env.LOCAL_CACHE_DIR_REALPATH }}
           echo "=== Current user context ==="
@@ -123,7 +113,7 @@ jobs:
         id: transform-containerfile
         run: |
           set -ex
-          
+
           CONTAINERFILE_PATH="${{ env.LOCAL_DOCKERFILE }}"
           
           TRANSFORMED_CONTAINERFILE="${CONTAINERFILE_PATH}.hermeto"
@@ -142,6 +132,7 @@ jobs:
       
       - name: "Verify Files"
         run: |
+          set -ex
           echo "=== LOCAL_CACHE_DIR_REALPATH ==="
           ls -laR ${{ env.LOCAL_CACHE_DIR_REALPATH }}
 
@@ -162,21 +153,23 @@ jobs:
             --network=none
             --userns=host
             --volume ${{ env.LOCAL_CACHE_DIR_REALPATH }}:/cachi2:z
-      - name: Check images created
-        run: buildah images | grep '${{ env.REGISTRY }}/my-test-organization/test-registry'
-      - name: Check manifest
-        run: |
-          set -x
+      # - name: Check images created
+      #   run: buildah images | grep '${{ env.REGISTRY }}/my-test-organization/test-registry'
+      # - name: Check manifest
+      #   run: |
+      #     set -ex
 
-          for tag in ${{ steps.build_image_multiplatform.outputs.tags }}; do
-            buildah manifest inspect ${{ steps.build_image_multiplatform.outputs.image }}:${tag}
-          done
+      #     for tag in ${{ steps.build_image_multiplatform.outputs.tags }}; do
+      #       buildah manifest inspect ${{ steps.build_image_multiplatform.outputs.image }}:${tag}
+      #     done
 
-      - name: Run image
-        run: |
-          for tag in ${{ steps.build_image_multiplatform.outputs.tags }}; do
-            podman run --rm ${{ steps.build_image_multiplatform.outputs.image }}:${tag}
-          done
+      # - name: Run image
+      #   run: |
+      #     set -ex
+
+      #     for tag in ${{ steps.build_image_multiplatform.outputs.tags }}; do
+      #       podman run --rm ${{ steps.build_image_multiplatform.outputs.image }}:${tag}
+      #     done
 
       - name: "Push Docker Image"
         id: push
