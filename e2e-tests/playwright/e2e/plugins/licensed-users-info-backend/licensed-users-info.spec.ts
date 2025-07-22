@@ -1,14 +1,15 @@
 import { CatalogUsersPO } from "../../../support/pageObjects/catalog/catalog-users-obj";
 import { RhdhAuthUiHack } from "../../../support/api/rhdh-auth-hack";
 import { Common } from "../../../utils/common";
-import { test, expect } from "@playwright/test";
+import { test, expect, APIRequestContext, APIResponse, request } from "@playwright/test";
+import playwrightConfig from "../../../../playwright.config";
 
 test.describe("Test licensed users info backend plugin", async () => {
   let common: Common;
   let apiToken: string;
 
-  const baseRHDHURL: string = process.env.BASE_URL;
-  const pluginAPIURL: string = 'api/licensed-users-info';
+  const baseRHDHURL: string = playwrightConfig.use.baseURL;
+  const pluginAPIURL: string = 'api/licensed-users-info/';
 
   test.beforeEach(async ({ page }) => {
     common = new Common(page);
@@ -21,7 +22,11 @@ test.describe("Test licensed users info backend plugin", async () => {
   });
 
   test("Test plugin health check endpoint", async () => {
-    const response = await fetch(`${baseRHDHURL}/${pluginAPIURL}/health`);
+    const requestContext: APIRequestContext = await request.newContext({
+      baseURL: `${baseRHDHURL}/${pluginAPIURL}`
+    });
+
+    const response: APIResponse = await requestContext.get("health");
     const result = await response.json();
 
     /*
@@ -33,11 +38,15 @@ test.describe("Test licensed users info backend plugin", async () => {
   });
 
   test("Test plugin user quantity url", async () => {
-    const response = await fetch(`${baseRHDHURL}/${pluginAPIURL}/users/quantity`, {
-      headers: {
-        Authorization: apiToken
+    const requestContext: APIRequestContext = await request.newContext({
+      baseURL: `${baseRHDHURL}/${pluginAPIURL}`,
+      extraHTTPHeaders: {
+        Authorization: apiToken,
+        Accept: "application/json",
       }
     });
+
+    const response: APIResponse = await requestContext.get("users/quantity");
     const result = await response.json();
 
     /*
@@ -49,11 +58,15 @@ test.describe("Test licensed users info backend plugin", async () => {
   });
 
   test("Test plugin users url", async () => {
-    const response = await fetch(`${baseRHDHURL}/${pluginAPIURL}/users`, {
-      headers: {
-        Authorization: apiToken
+   const requestContext: APIRequestContext = await request.newContext({
+      baseURL: `${baseRHDHURL}/${pluginAPIURL}`,
+      extraHTTPHeaders: {
+        Authorization: apiToken,
+        Accept: "application/json",
       }
     });
+
+    const response: APIResponse = await requestContext.get("users");
     const result = await response.json();
 
     /*
@@ -73,18 +86,21 @@ test.describe("Test licensed users info backend plugin", async () => {
   });
 
   test("Test plugin users as a csv url", async () => {
-    const response = await fetch(`${baseRHDHURL}/${pluginAPIURL}/users`, {
-      headers: {
+    const requestContext: APIRequestContext = await request.newContext({
+      baseURL: `${baseRHDHURL}/${pluginAPIURL}`,
+      extraHTTPHeaders: {
         Authorization: apiToken,
         'Content-Type': 'text/csv'
       }
     });
 
+    const response: APIResponse = await requestContext.get("users");
+
     // 'content-type': 'text/csv; charset=utf-8',
-    expect(response.headers.get("content-type")).toContain('text/csv');
+    expect(response.headers()["content-type"]).toContain('text/csv');
 
     // 'content-disposition': 'attachment; filename="data.csv"',
-    expect(response.headers.get("content-disposition")).toBe("attachment; filename=\"data.csv\"");
+    expect(response.headers()["content-disposition"]).toBe("attachment; filename=\"data.csv\"");
 
     const result = await response.text();
     /*
