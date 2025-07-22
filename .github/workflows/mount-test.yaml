@@ -42,6 +42,10 @@ jobs:
           large-packages: false
           docker-images: false
           swap-storage: false
+      - name: "Prepare"
+        run: |
+          echo "SHORT_SHA=$(echo ${{ github.sha }} | cut -c 1-7)" >> $GITHUB_ENV
+
       - name: "Set up QEMU"
         uses: docker/setup-qemu-action@v3
       - name: Install qemu dependency
@@ -147,11 +151,10 @@ jobs:
           platform: ${{ env.PLATFORM }}
           image: ${{ env.REGISTRY }}/my-test-organization/test-registry
           tags: |
-            pr-${{ github.event.number }}-${{ env.PLATFORM_ARCH }}
-            pr-${{ github.event.number }}-${{ env.SHORT_SHA }}-${{ env.PLATFORM_ARCH }}
+            test-latest
+            test-${{ env.SHORT_SHA }}
           extra-args: |
             --network=none
-            --userns=host
             --volume ${{ env.LOCAL_CACHE_DIR_REALPATH }}:/cachi2:z
       # - name: Check images created
       #   run: buildah images | grep '${{ env.REGISTRY }}/my-test-organization/test-registry'
