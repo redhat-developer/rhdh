@@ -6,9 +6,11 @@ metadata:
   namespace: rhdh
   title: ServiceNow Integration for Red Hat Developer Hub
   description: |
-    The ServiceNow plugin integrates ServiceNow incidents directly into your developer portal. 
-    View, search, and filter incidents assigned to users or associated with catalog entities, 
-    enabling faster visibility and better operational awareness.
+    The ServiceNow plugin integrates ServiceNow incidents directly into Red Hat Developer Hub. 
+    It displays incidents associated with the currently logged in user, such as those where 
+    they are the caller, assignee, or reporter, as well as incidents linked to the current 
+    catalog entity. This enables faster visibility into relevant issues and improves 
+    operational awareness.
 
   annotations:
     extensions.backstage.io/pre-installed: 'false'
