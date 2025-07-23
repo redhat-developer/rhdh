@@ -52,7 +52,8 @@ test.describe("Audit Log check for Catalog Plugin", () => {
     );
   });
 
-  test("Should fetch logs for CatalogEntityFetchByName event and validate log structure and values", async () => {
+  // skipping until RHDHBUGS-1900 is fixed
+  test.skip("Should fetch logs for CatalogEntityFetchByName event and validate log structure and values", async () => {
     await uiHelper.selectMuiBox("Kind", "Component");
     await uiHelper.clickByDataTestId("user-picker-all");
     await uiHelper.clickLink("Red Hat Developer Hub");
