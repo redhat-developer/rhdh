@@ -1,7 +1,6 @@
 import { test } from "@playwright/test";
 import { Common, setupBrowser } from "../../../utils/common";
 import { UIhelper } from "../../../utils/ui-helper";
-import { UI_HELPER_ELEMENTS } from "../../../support/pageObjects/global-obj";
 import { CatalogImport } from "../../../support/pages/catalog-import";
 
 test.describe("Test SonarKube Actions plugin", () => {
@@ -21,17 +20,17 @@ test.describe("Test SonarKube Actions plugin", () => {
     catalogImport = new CatalogImport(page);
 
     await common.loginAsGuest();
-    await uiHelper.clickLink({ ariaLabel: "Create..." });
+    await page.goto("/create");
   });
 
   test("Creates kubernetes namespace", async ({ page }) => {
-    await uiHelper.clickButton("Register Existing Component");
+    await uiHelper.clickButton("Import an existing Git repository");
     await catalogImport.registerExistingComponent(template, false);
-    await page.waitForTimeout(1000);
-    await uiHelper.clickLink({ ariaLabel: "Create..." });
+
+    await uiHelper.clickLink({ ariaLabel: "Self-service" });
     await common.waitForLoad();
 
-    await uiHelper.verifyHeading("Software Templates");
+    await uiHelper.verifyHeading("Self-service");
     await uiHelper.searchInputPlaceholder("Create a SonarQube project");
     await uiHelper.verifyText("Create a SonarQube project");
 
@@ -41,35 +40,26 @@ test.describe("Test SonarKube Actions plugin", () => {
     await uiHelper.clickBtnInCard("Create a SonarQube project", "Choose");
 
     await uiHelper.waitForTitle("Create a SonarQube project", 2);
+
     await uiHelper.fillTextInputByLabel(
       "Base URL *",
-      "https://sonarqube.apps.rosa.enptw-i8tb9-tkf.l9yc.p3.openshiftapps.com",
+      "https://sonarqube.apps.rosa.me4rm-zkeon-kfk.wq6f.p3.openshiftapps.com",
     );
-    await uiHelper.fillTextInputByLabel(
-      "Token *",
-      "sqa_ae44946cb513b0e7d8500d08d654257c2bb6fdd0",
-    );
-    await uiHelper.fillTextInputByLabel("Name *", project);
-    await uiHelper.fillTextInputByLabel("Key *", projectKey);
+
+    await uiHelper.clickById("root_authParams__oneof_select");
+    await uiHelper.selectDropDownOption("Username and Password");
+
+    await uiHelper.fillTextInputByLabel("Username *", "admin");
+    await uiHelper.fillInputWithLabel("Password", "NewAdminPassword1@");
+
+    await uiHelper.fillInputWithLabel("root_name", project);
+    await uiHelper.fillInputWithLabel("root_key", projectKey);
     await uiHelper.fillTextInputByLabel("Branch", "main");
     await uiHelper.clickButton("Review");
+    await page.waitForTimeout(5000);
     await uiHelper.clickButton("Create");
+    await uiHelper.clickLinkWithNewTab(/SonarQube project URL/i);
 
-    await page.waitForSelector(
-      `${UI_HELPER_ELEMENTS.MuiTypography}:has-text("second")`,
-    );
-
-    // // Figure out how to use another browser tab with SonarQube service
-    // const context: BrowserContext = await browser.newContext();
-
-    // Open a new tab handler: force link to open in the same browser tab
-    // const [newPage] = await Promise.all([
-    //   context.waitForEvent("page"),
-    //   uiHelper.clickButton("SonarQube project URL")
-    // ]);
-
-    // // Wait for the new page with SonarQube service to load
-    // await newPage.waitForLoadState();
-    // await page.waitForTimeout(15000);
+    await uiHelper.isLinkVisible(project);
   });
 });

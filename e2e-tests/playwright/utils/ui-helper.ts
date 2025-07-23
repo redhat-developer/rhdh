@@ -40,6 +40,10 @@ export class UIhelper {
     await this.page.fill(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch, searchText);
   }
 
+  async fillInputWithLabel(label: string, input: string) {
+    await this.page.locator(`input#${label}`).fill(input);
+  }
+
   async pressTab() {
     await this.page.keyboard.press("Tab");
   }
@@ -49,6 +53,15 @@ export class UIhelper {
       name: text,
     });
     await locator.check();
+  }
+
+  async clickLinkWithNewTab(name: string | RegExp) {
+    const [newPage] = await Promise.all([
+      this.page.context().waitForEvent("page"),
+      this.page.getByRole("link", { name }).click(),
+    ]);
+
+    await newPage.waitForLoadState();
   }
 
   async clickButton(
@@ -690,6 +703,20 @@ export class UIhelper {
     const locator = this.page.locator(`#${id}`);
     await locator.waitFor({ state: "attached" });
     await locator.click();
+  }
+
+  async selectDropDownOption(optionText: string) {
+    const dropdown = this.page.getByRole("listbox");
+    await expect(dropdown).toBeVisible({ timeout: 5000 });
+
+    await this.page.waitForSelector(`li:has-text("${optionText}")`, {
+      timeout: 5000,
+    });
+
+    const optionItem = await this.page.waitForSelector(
+      `li:has-text("${optionText}")`,
+    );
+    optionItem.click();
   }
 
   async clickSpanByText(text: string) {
