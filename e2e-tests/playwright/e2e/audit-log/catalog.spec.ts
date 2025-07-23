@@ -60,7 +60,7 @@ test.describe("Audit Log check for Catalog Plugin", () => {
       "CatalogEntityFetchByName",
       "Fetch attempt for entity ancestor of entity component:default/red-hat-developer-hub initiated by user:development/guest",
       "GET",
-      "/api/catalog/entities/by-name/component/default/backstage-showcase",
+      "/api/catalog/entities/by-name/component/default/red-hat-developer-hub",
     );
   });
 
@@ -84,7 +84,7 @@ test.describe("Audit Log check for Catalog Plugin", () => {
       "CatalogEntityAncestryFetch",
       "Fetch attempt for entity ancestor of entity component:default/red-hat-developer-hub initiated by user:development/guest",
       "GET",
-      "/api/catalog/entities/by-name/component/default/backstage-showcase/ancestry",
+      "/api/catalog/entities/by-name/component/default/red-hat-developer-hub/ancestry",
     );
   });
 
