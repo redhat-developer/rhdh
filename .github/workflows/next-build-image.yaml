@@ -86,9 +86,10 @@ jobs:
       - name: Get the last commit short SHA
         uses: ./.github/actions/get-sha
 
-      - name: Build and Push with Buildx
+      - name: Build and Push with Buildx (for :next builds, 14d expiry)
         uses: ./.github/actions/docker-build
-        id: build
+        id: build-next
+        if: ${{ env.REF_NAME_SHORT == 'next' }}
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ secrets.QUAY_USERNAME }}
@@ -101,10 +102,36 @@ jobs:
           push: true
           platform: ${{ env.PLATFORM }}
 
-      - name: Export digest
+      - name: Build and Push with Buildx (for releases, 183d expiry)
+        uses: ./.github/actions/docker-build
+        id: build-release
+        if: ${{ env.REF_NAME_SHORT != 'next' }}
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_TOKEN }}
+          imageName: ${{ env.REGISTRY_IMAGE }}
+          imageTags: |
+            type=raw,value=${{ env.REF_NAME }}-${{ env.PLATFORM_ARCH }}
+            type=raw,value=${{ env.REF_NAME }}-${{ env.SHORT_SHA }}-${{ env.PLATFORM_ARCH }}
+          imageLabels: quay.expires-after=183d
+          push: true
+          platform: ${{ env.PLATFORM }}
+
+      - name: Export digest (for :next builds)
+        id: export-digest-next
+        if: ${{ env.REF_NAME_SHORT == 'next' }}
         run: |
           mkdir -p /tmp/digests
-          digest="${{ steps.build.outputs.digest }}"
+          digest="${{ steps.build-next.outputs.digest }}"
+          touch "/tmp/digests/${digest#sha256:}"
+
+      - name: Export digest (for releases)
+        id: export-digest-release
+        if: ${{ env.REF_NAME_SHORT != 'next' }}
+        run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.build-release.outputs.digest }}"
           touch "/tmp/digests/${digest#sha256:}"
 
       - name: Upload digest
@@ -152,7 +179,7 @@ jobs:
         - name: Set up Docker Buildx
           uses: docker/setup-buildx-action@v3
 
-        - name: Set container metadata (for :next builds)
+        - name: Set container metadata (for :next builds, 14d expiry)
           id: meta-next
           if: ${{ env.REF_NAME_SHORT == 'next'}}
           uses: docker/metadata-action@v5
@@ -161,8 +188,10 @@ jobs:
             tags: |
               type=raw,value=${{ env.REF_NAME }}
               type=raw,value=${{ env.REF_NAME }}-${{ env.SHORT_SHA }}
+            labels: |
+              quay.expires-after=14d
 
-        - name: Set container metadata (for releases)
+        - name: Set container metadata (for releases, 183d expiry)
           id: meta-release
           if: ${{ env.REF_NAME_SHORT != 'next' }}
           uses: docker/metadata-action@v5
@@ -174,7 +203,7 @@ jobs:
               type=raw,value=${{ env.REF_NAME_SHORT }}
               type=raw,value=${{ env.REF_NAME_SHORT }}-${{ env.SHORT_SHA }}
             labels: |
-              quay.expires-after=365d
+              quay.expires-after=183d
 
         - name: Login to Docker Hub
           uses: docker/login-action@v3
