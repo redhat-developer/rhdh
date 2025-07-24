@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { UIhelper } from "../utils/ui-helper";
 import { Common } from "../utils/common";
+import { runAccessibilityTests } from "../utils/accessibility";
 
 test.describe("Learning Paths", () => {
   let common: Common;
@@ -14,7 +15,7 @@ test.describe("Learning Paths", () => {
 
   test("Verify that links in Learning Paths for Backstage opens in a new tab", async ({
     page,
-  }) => {
+  }, testInfo) => {
     await uiHelper.openSidebarButton("References");
     await uiHelper.openSidebar("Learning Paths");
 
@@ -25,5 +26,7 @@ test.describe("Learning Paths", () => {
       await expect(learningPathCard).toBeVisible();
       expect(await learningPathCard.getAttribute("href")).not.toBe("");
     }
+
+    await runAccessibilityTests(page, testInfo);
   });
 });

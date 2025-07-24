@@ -46,15 +46,15 @@ test.describe("GitHub Happy path", async () => {
   test("Verify Profile is Github Account Name in the Settings page", async () => {
     await page.goto("/settings");
     await expect(page).toHaveURL("/settings");
-    await uiHelper.verifyHeading(process.env.GH_USER2_ID,);
+    await uiHelper.verifyHeading(process.env.GH_USER2_ID);
     await uiHelper.verifyHeading(`User Entity: ${process.env.GH_USER2_ID}`);
   });
 
-  test("Register an existing component", async () => {
+  test("Import an existing Git repository", async () => {
     await uiHelper.openSidebar("Catalog");
     await uiHelper.selectMuiBox("Kind", "Component");
     await uiHelper.clickButton("Self-service");
-    await uiHelper.clickButton("Register Existing Component");
+    await uiHelper.clickButton("Import an existing Git repository");
     await catalogImport.registerExistingComponent(component);
   });
 
@@ -94,7 +94,6 @@ test.describe("GitHub Happy path", async () => {
   });
 
   test("Click login on the login popup and verify that Overview tab renders", async () => {
-
     await uiHelper.openCatalogSidebar("Component");
     await uiHelper.clickLink("Red Hat Developer Hub");
 

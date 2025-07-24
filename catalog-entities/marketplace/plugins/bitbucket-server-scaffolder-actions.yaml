@@ -46,4 +46,4 @@ spec:
     for further details on the configuration required.
 
   packages:
-  - backstage-plugin-catalog-backend-module-bitbucket-server
+  - backstage-plugin-scaffolder-backend-module-bitbucket-server

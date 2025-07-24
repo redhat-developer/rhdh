@@ -27,7 +27,6 @@ plugins:
                 seconds: 15
               timeout:
                 minutes: 15
-
   - package: ./dynamic-plugins/dist/backstage-community-plugin-github-actions
     disabled: true
     pluginConfig:
@@ -179,7 +178,6 @@ plugins:
       catalog:
         providers:
           gitlab: {}
-
   - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-gitlab-org-dynamic
     disabled: true
     pluginConfig:
@@ -497,7 +495,8 @@ plugins:
                 menuItem:
                   icon: bulkImportIcon
                   text: Bulk import
-  # Global Header
+
+  # Group: Global Header
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-header
     disabled: false
     pluginConfig:
@@ -571,10 +570,17 @@ plugins:
                     title: RHDH Local
                     icon: developerHub
                     link: https://github.com/redhat-developer/rhdh-local
+
               - mountPoint: global.header/component
-                importName: SupportButton
+                importName: HelpDropdown
                 config:
                   priority: 80
+
+              - mountPoint: global.header/help
+                importName: SupportButton
+                config:
+                  priority: 10
+
               - mountPoint: global.header/component
                 importName: NotificationButton
                 config:
@@ -596,6 +602,13 @@ plugins:
                     link: /settings
                     icon: manageAccounts
               - mountPoint: global.header/profile
+                importName: MenuItemLink
+                config:
+                  priority: 90
+                  props:
+                    title: My profile
+                    icon: account
+              - mountPoint: global.header/profile
                 importName: LogoutButton
                 config:
                   priority: 10
@@ -611,7 +624,48 @@ plugins:
               - mountPoint: application/listener
                 importName: DynamicGlobalFloatingActionButton
 
-  # Homepage
+  # Group: Quickstart
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-quickstart
+    disabled: false
+    pluginConfig:
+      app:
+        quickstart:
+          - title: Set up authentication
+            icon: Admin
+            description: Set up secure login credentials to protect your account from unauthorized access.
+            cta:
+              text: Learn more
+              link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/authentication_in_red_hat_developer_hub/
+          - title: Configure RBAC
+            icon: Rbac
+            description: Assign roles and permissions to control who can view, create, or edit resources, ensuring secure and efficient collaboration.
+            cta:
+              text: Manage access
+              link: /rbac
+          - title: Configure Git
+            icon: Git
+            description: Connect your Git providers, such as GitHub to manage code, automate workflows, and integrate with platform features.
+            cta:
+              text: Learn more
+              link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/integrating_red_hat_developer_hub_with_github/
+          - title: Manage plugins
+            icon: Plugins
+            description: Browse and install extensions to add features, connect with external tools, and customize your experience.
+            cta:
+              text: Explore plugins
+              link: /extensions
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-quickstart:
+            mountPoints:
+              - mountPoint: application/provider
+                importName: QuickstartDrawerProvider
+              - mountPoint: global.header/help
+                importName: QuickstartButton
+                config:
+                  priority: 100
+
+  # Group: Homepage
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-dynamic-home-page
     disabled: false
     pluginConfig:
@@ -625,37 +679,37 @@ plugins:
               - mountPoint: application/listener
                 importName: VisitListener
               - mountPoint: home.page/cards
-                importName: SearchBar
+                importName: OnboardingSection
                 config:
                   layouts:
-                    xl: { w: 10, h: 1, x: 1 }
-                    lg: { w: 10, h: 1, x: 1 }
-                    md: { w: 10, h: 1, x: 1 }
-                    sm: { w: 10, h: 1, x: 1 }
-                    xs: { w: 12, h: 1 }
-                    xxs: { w: 12, h: 1 }
+                    xl: { w: 12, h: 5 }
+                    lg: { w: 12, h: 5 }
+                    md: { w: 12, h: 5 }
+                    sm: { w: 12, h: 5 }
+                    xs: { w: 12, h: 7 }
+                    xxs: { w: 12, h: 13 }
               - mountPoint: home.page/cards
-                importName: QuickAccessCard
+                importName: EntitySection
                 config:
                   layouts:
-                    xl: { w: 7, h: 8 }
-                    lg: { w: 7, h: 8 }
-                    md: { w: 7, h: 8 }
-                    sm: { w: 12, h: 8 }
-                    xs: { w: 12, h: 8 }
-                    xxs: { w: 12, h: 8 }
+                    xl: { w: 12, h: 6 }
+                    lg: { w: 12, h: 6 }
+                    md: { w: 12, h: 6 }
+                    sm: { w: 12, h: 6 }
+                    xs: { w: 12, h: 10 }
+                    xxs: { w: 12, h: 14.5 }
               - mountPoint: home.page/cards
-                importName: CatalogStarredEntitiesCard
+                importName: TemplateSection
                 config:
                   layouts:
-                    xl: { w: 5, h: 4, x: 7 }
-                    lg: { w: 5, h: 4, x: 7 }
-                    md: { w: 5, h: 4, x: 7 }
-                    sm: { w: 12, h: 4 }
-                    xs: { w: 12, h: 4 }
-                    xxs: { w: 12, h: 4 }
+                    xl: { w: 12, h: 5 }
+                    lg: { w: 12, h: 5 }
+                    md: { w: 12, h: 5 }
+                    sm: { w: 12, h: 5 }
+                    xs: { w: 12, h: 7.5 }
+                    xxs: { w: 12, h: 13.5 }
 
-  # Techdocs
+  # Group: Techdocs
   - package: ./dynamic-plugins/dist/backstage-plugin-techdocs-backend-dynamic
     disabled: false
     pluginConfig:
@@ -721,7 +775,7 @@ plugins:
             techdocsAddons:
               - importName: ReportIssue
 
-  # PagerDuty
+  # Group: PagerDuty
   - package: ./dynamic-plugins/dist/pagerduty-backstage-plugin
     disabled: true
     pluginConfig:
@@ -750,7 +804,6 @@ plugins:
           subDomain: ${PAGERDUTY_SUBDOMAIN}
 
   # Standalone plugins
-
   - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-gerrit-dynamic
     disabled: true
 
@@ -769,6 +822,7 @@ plugins:
   - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-regex-dynamic
     disabled: false
 
+  # Group: RBAC
   - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
     disabled: true
     pluginConfig:
@@ -789,6 +843,48 @@ plugins:
                 parent: admin
                 icon: rbacIcon
 
+  # Group: ServiceNow
+  - package: ./dynamic-plugins/dist/backstage-community-plugin-servicenow-backend-dynamic
+    disabled: true
+    pluginConfig:
+      servicenow:
+        instanceUrl: ${SERVICENOW_BASE_URL}
+        basicAuth:
+          username: ${SERVICENOW_USERNAME}
+          password: ${SERVICENOW_PASSWORD}
+  - package: ./dynamic-plugins/dist/backstage-community-plugin-servicenow
+    disabled: true
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          backstage-community.plugin-servicenow:
+            entityTabs:
+              - path: /servicenow
+                title: ServiceNow
+                mountPoint: entity.page.servicenow
+              - path: /my-servicenow
+                title: My ServiceNow tickets
+                mountPoint: entity.page.my-servicenow
+            mountPoints:
+              - mountPoint: entity.page.servicenow/cards
+                importName: ServicenowPage
+                config:
+                  layout:
+                    gridColumn: 1 / -1
+                    height: 75vh
+                  if:
+                    anyOf:
+                      - hasAnnotation: servicenow.com/entity-id
+              - mountPoint: entity.page.my-servicenow/cards
+                importName: ServicenowPage
+                config:
+                  layout:
+                    gridColumn: 1 / -1
+                    height: 75vh
+                  if:
+                    allOf:
+                      - isKind: user
+                      - isMyProfile
   - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-servicenow-dynamic
     disabled: true
     pluginConfig:
@@ -833,6 +929,7 @@ plugins:
                 timeout:
                   minutes: 50
 
+  # Group: BitBucket
   - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-bitbucket-cloud-dynamic
     disabled: true
   - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-bitbucket-cloud-dynamic
@@ -851,7 +948,6 @@ plugins:
                   minutes: 1
                 timeout:
                   minutes: 3
-
   - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-bitbucket-server-dynamic
     disabled: true
   - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-bitbucket-server-dynamic
@@ -1026,6 +1122,7 @@ plugins:
                     allOf:
                       - isLighthouseAvailable
 
+  # Group: TechRadar
   - package: ./dynamic-plugins/dist/backstage-community-plugin-tech-radar
     disabled: true
     pluginConfig:
@@ -1053,15 +1150,14 @@ plugins:
       techRadar:
         url: ${TECH_RADAR_DATA_URL}
 
-
   - package: ./dynamic-plugins/dist/backstage-community-plugin-analytics-provider-segment
     disabled: false
     pluginConfig:
       dynamicPlugins:
         frontend:
           backstage-community.plugin-analytics-provider-segment:
-            apiFactories:
-              - importName: SegmentAnalyticsApi
+            analyticsApiExtensions:
+              - importName: SegmentAnalytics
       backend:
         csp:
           script-src:
@@ -1102,7 +1198,27 @@ plugins:
     pluginConfig:
       catalog:
         providers:
-          ldapOrg: {}
+          ldapOrg:
+            default:
+              target: ${LDAP_TARGET_URL}
+              bind:
+                dn: ${LDAP_BIND_DN}
+                secret: ${LDAP_BIND_SECRET}
+              users:
+                - dn: ${LDAP_USERS_DN}
+                  options:
+                    filter: (uid=*)
+              groups:
+                - dn: ${LDAP_GROUPS_DN}
+                  options:
+                    filter: (cn=*)
+              schedule:
+                frequency:
+                  minutes: 60
+                initialDelay:
+                  seconds: 15
+                timeout:
+                  minutes: 15
 
   - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-pingidentity-dynamic
     disabled: true
@@ -1110,6 +1226,7 @@ plugins:
       catalog:
         providers:
           pingIdentityOrg: {}
+
   # Group: Marketplace
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-catalog-backend-module-marketplace-dynamic
     disabled: false
@@ -1135,37 +1252,82 @@ plugins:
                   title: Catalog
 
   # Group: Orchestrator
-  - package: "@redhat/backstage-plugin-orchestrator@1.5.1"
+  - package: "@redhat/backstage-plugin-orchestrator@1.6.0"
     disabled: true
-    integrity: sha512-7VOe+XGTUzrdO/av0DNHbydOjB3Lo+XdCs6fj3JVODLP7Ypd3GXHf/nssYxG5ZYC9F1t9MNeguE2bZOB6ckqTA==
+    integrity: sha512-fOSJv2PgtD2urKwBM7p9W6gV/0UIHSf4pkZ9V/wQO0eg0Zi5Mys/CL1ba3nO9x9l84MX11UBZ2r7PPVJPrmOtw==
     pluginConfig:
       dynamicPlugins:
         frontend:
           red-hat-developer-hub.backstage-plugin-orchestrator:
             appIcons:
               - importName: OrchestratorIcon
-                module: OrchestratorPlugin
                 name: orchestratorIcon
             dynamicRoutes:
               - importName: OrchestratorPage
                 menuItem:
                   icon: orchestratorIcon
                   text: Orchestrator
-                module: OrchestratorPlugin
                 path: /orchestrator
 
-  - package: "@redhat/backstage-plugin-orchestrator-backend-dynamic@1.5.1"
+  - package: "@redhat/backstage-plugin-orchestrator-backend-dynamic@1.6.0"
     disabled: true
-    integrity: sha512-VIenFStdq9QvvmgmEMG8O7b2wqIebvEcqNeJ9SWZ8jen9t+efTK6D3Rde74LQ1no1QaHLx8RoxNCOuTUEF8O/g==
+    integrity: sha512-Kr55YbuVwEADwGef9o9wyimcgHmiwehPeAtVHa9g2RQYoSPEa6BeOlaPzB6W5Ke3M2bN/0j0XXtpLuvrlXQogA==
     pluginConfig:
       orchestrator:
         dataIndexService:
           url: http://sonataflow-platform-data-index-service
 
-  - package: "@redhat/backstage-plugin-scaffolder-backend-module-orchestrator-dynamic@1.5.1"
+  - package: "@redhat/backstage-plugin-scaffolder-backend-module-orchestrator-dynamic@1.6.0"
     disabled: true
-    integrity: sha512-bnVQjVsUZ470Vgm2kd5Lo/bVa2fF0q4GufBDc/8oTQsnP3zZJQqKFvFElBTCjY76RqkECydlvZ1UFybSzvockQ==
+    integrity: sha512-Bueeix4661fXEnfJ9y31Yw91LXJgw6hJUG7lPVdESCi9VwBCjDB9Rm8u2yPqP8sriwr0OMtKtqD+Odn3LOPyVw==
     pluginConfig:
       orchestrator:
         dataIndexService:
           url: http://sonataflow-platform-data-index-service
+
+  - package: "@redhat/backstage-plugin-orchestrator-form-widgets@1.6.0"
+    disabled: true
+    integrity: sha512-Tqn6HO21Q1TQ7TFUoRhwBVCtSBzbQYz+OaanzzIB0R24O6YtVx3wR7Chtr5TzC05Vz5GkBO1+FZid8BKpqljgA==
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets: { }
+
+  # Group: Adoption Insights
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-adoption-insights
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-adoption-insights:
+            appIcons:
+              - name: adoptionInsightsIcon
+                importName: AdoptionInsightsIcon
+            dynamicRoutes:
+              - path: /adoption-insights
+                importName: AdoptionInsightsPage
+                menuItem:
+                  icon: adoptionInsightsIcon
+                  text: Adoption Insights
+            menuItems:
+              adoption-insights:
+                parent: admin
+                icon: adoptionInsightsIcon
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-adoption-insights-backend-dynamic
+    disabled: false
+    pluginConfig:
+      app:
+        analytics:
+          adoptionInsights:
+            maxBufferSize: 20
+            flushInterval: 5000
+            debug: false
+            licensedUsers: 100
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-analytics-module-adoption-insights-dynamic
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-analytics-module-adoption-insights:
+            analyticsApiExtensions:
+              - importName: AdoptionInsightsAnalyticsApi

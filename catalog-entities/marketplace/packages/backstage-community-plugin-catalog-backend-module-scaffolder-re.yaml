@@ -15,18 +15,19 @@ metadata:
   annotations:
     backstage.io/source-location: url
       https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic
-  tags: []
+  tags:
+    - software-templates
 spec:
   packageName: "@backstage-community/plugin-catalog-backend-module-scaffolder-rel\
     ation-processor"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic
-  version: 2.3.0
+  version: 2.5.0
   backstage:
     role: backend-plugin-module
-    supportedVersions: 1.36.1
+    supportedVersions: 1.39.1
   author: Red Hat
   support: tech-preview
   lifecycle: active
   partOf:
-    - backstage-community-scaffolder-relation-processor-catalog-module
+    - scaffolder-relation-processor-catalog-integration
   appConfigExamples: []

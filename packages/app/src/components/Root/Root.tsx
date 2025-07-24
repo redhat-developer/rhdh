@@ -34,7 +34,8 @@ import Box from '@mui/material/Box';
 import Collapse from '@mui/material/Collapse';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
-import { styled, SxProps } from '@mui/material/styles';
+import { styled, SxProps, Theme } from '@mui/material/styles';
+import { ThemeConfig } from '@red-hat-developer-hub/backstage-plugin-theme';
 import DynamicRootContext, {
   ResolvedMenuItem,
 } from '@red-hat-developer-hub/plugin-utils';
@@ -102,19 +103,24 @@ const PageWithoutFixHeight = styled(Box, {
 }));
 
 // this component is copied to rhdh-plugins/global-header packages/app/src/components/Root/Root.tsx and should be kept in sync
+interface SidebarLayoutProps {
+  aboveSidebarHeaderHeight?: number;
+  aboveMainContentHeaderHeight?: number;
+}
+
 const SidebarLayout = styled(Box, {
   name: 'RHDHPageWithoutFixHeight',
   slot: 'sidebarLayout',
   shouldForwardProp: prop =>
     prop !== 'aboveSidebarHeaderHeight' &&
     prop !== 'aboveMainContentHeaderHeight',
-})(
+})<SidebarLayoutProps>(
   ({
     aboveSidebarHeaderHeight,
     aboveMainContentHeaderHeight,
-  }: {
-    aboveSidebarHeaderHeight?: number;
-    aboveMainContentHeaderHeight?: number;
+    theme,
+  }: SidebarLayoutProps & {
+    theme?: Theme;
   }) => ({
     // We remove Backstage's 100vh on the content, and instead rely on flexbox
     // to take up the whole viewport.
@@ -143,6 +149,14 @@ const SidebarLayout = styled(Box, {
       // The height is controlled by the flexbox in the BackstageSidebarPage.
       height: `calc(100vh - ${aboveSidebarHeaderHeight! + aboveMainContentHeaderHeight!}px)`,
       flexGrow: 1,
+    },
+
+    // When quickstart drawer is open, adjust margin
+    '.quickstart-drawer-open &': {
+      '& main': {
+        marginRight: `calc(var(--quickstart-drawer-width, 500px) + ${(theme as ThemeConfig).palette?.rhdh?.general.pageInset})`,
+        transition: 'margin-right 0.3s ease',
+      },
     },
 
     // BackstageSidebarPage-root > nav > BackstageSidebar-root > BackstageSidebar-drawer

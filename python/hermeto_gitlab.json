@@ -1,0 +1,7 @@
+{
+  "type": "pip",
+  "path": "./distgit/containers/rhdh-hub/python",
+  "requirements_files": ["requirements.txt"],
+  "requirements_build_files": ["requirements-build.txt"],
+  "allow_binary": "false"
+}
