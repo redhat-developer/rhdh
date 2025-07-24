@@ -98,7 +98,7 @@ jobs:
       - name: Build and Push with Buildx (for :next builds, 14d expiry)
         uses: ./.github/actions/docker-build
         id: build-next
-        if: ${{ env.REF_NAME_SHORT == 'next' || env.REF_NAME_SHORT == 'next-'* }}
+        if: ${{ env.REF_NAME_SHORT == 'next' || startsWith(env.REF_NAME_SHORT,'next-') }}
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ secrets.QUAY_USERNAME }}
@@ -114,7 +114,7 @@ jobs:
       - name: Build and Push with Buildx (for releases, 183d expiry)
         uses: ./.github/actions/docker-build
         id: build-release
-        if: ${{ env.REF_NAME_SHORT != 'next' && env.REF_NAME_SHORT != 'next-'* }}
+        if: ${{ env.REF_NAME_SHORT != 'next' && !startsWith(env.REF_NAME_SHORT,'next-') }}
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ secrets.QUAY_USERNAME }}
@@ -129,7 +129,7 @@ jobs:
 
       - name: Export digest (for :next builds)
         id: export-digest-next
-        if: ${{ env.REF_NAME_SHORT == 'next' || env.REF_NAME_SHORT == 'next-'* }}
+        if: ${{ env.REF_NAME_SHORT == 'next' || startsWith(env.REF_NAME_SHORT,'next-') }}
         run: |
           mkdir -p /tmp/digests
           digest="${{ steps.build-next.outputs.digest }}"
@@ -137,7 +137,7 @@ jobs:
 
       - name: Export digest (for releases)
         id: export-digest-release
-        if: ${{ env.REF_NAME_SHORT != 'next' && env.REF_NAME_SHORT != 'next-'* }}
+        if: ${{ env.REF_NAME_SHORT != 'next' && !startsWith(env.REF_NAME_SHORT,'next-') }}
         run: |
           mkdir -p /tmp/digests
           digest="${{ steps.build-release.outputs.digest }}"
@@ -190,7 +190,7 @@ jobs:
 
         - name: Set container metadata (for :next builds, 14d expiry)
           id: meta-next
-          if: ${{ env.REF_NAME_SHORT == 'next' || env.REF_NAME_SHORT == 'next-'* }}
+          if: ${{ env.REF_NAME_SHORT == 'next' || startsWith(env.REF_NAME_SHORT,'next-') }}
           uses: docker/metadata-action@v5
           with:
             images: ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}
@@ -202,7 +202,7 @@ jobs:
 
         - name: Set container metadata (for releases, 183d expiry)
           id: meta-release
-          if: ${{ env.REF_NAME_SHORT != 'next' && env.REF_NAME_SHORT != 'next-'* }}
+          if: ${{ env.REF_NAME_SHORT != 'next' && !startsWith(env.REF_NAME_SHORT,'next-') }}
           uses: docker/metadata-action@v5
           with:
             images: ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}
@@ -229,12 +229,12 @@ jobs:
 
         - name: Inspect image (for :next builds)
           id: inspect-next
-          if: ${{ env.REF_NAME_SHORT == 'next' || env.REF_NAME_SHORT == 'next-'* }}
+          if: ${{ env.REF_NAME_SHORT == 'next' || startsWith(env.REF_NAME_SHORT,'next-') }}
           run: |
             docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:${{ steps.meta-next.outputs.version }}
 
         - name: Inspect image (for releases)
           id: inspect-release
-          if: ${{ env.REF_NAME_SHORT != 'next' && env.REF_NAME_SHORT != 'next-'* }}
+          if: ${{ env.REF_NAME_SHORT != 'next' && !startsWith(env.REF_NAME_SHORT,'next-') }}
           run: |
             docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:${{ steps.meta-release.outputs.version }}
