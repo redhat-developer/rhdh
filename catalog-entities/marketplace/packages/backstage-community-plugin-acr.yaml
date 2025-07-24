@@ -26,7 +26,7 @@ spec:
   support: tech-preview
   lifecycle: active
   partOf:
-    - acr
+    - azure-container-registry
   appConfigExamples:
     - title: Default configuration
       content:
