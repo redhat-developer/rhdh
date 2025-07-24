@@ -48,7 +48,7 @@ test.describe("Test Kubernetes Actions plugin", () => {
 
     // More specific selectors for error detection
     const errorIndicators = [
-      page.locator("text=Error: Failed to create kubernetes namespace"), // Texto específico de erro mencionado pelo usuário
+      page.locator("text=Error: Failed to create kubernetes namespace"),
       page.locator(
         `${UI_HELPER_ELEMENTS.MuiTypography}:has-text("Error: Failed to create kubernetes namespace")`,
       ),
@@ -67,7 +67,7 @@ test.describe("Test Kubernetes Actions plugin", () => {
       page.locator("text=completed successfully"),
       page.locator("text=Task completed"),
       page.locator('[data-testid="success-icon"]'),
-      page.locator("text=Finished step Create kubernetes namespace"), // Verificador específico mencionado pelo usuário
+      page.locator("text=Finished step Create kubernetes namespace"),
     ];
 
     // Wait for completion with detailed logging
