@@ -214,9 +214,9 @@ runs:
         mkdir -p ./rhdh-podman-artifacts
         
         BUILT_IMAGE="${{ steps.hermetic-build.outputs.image }}:pr-${{ github.event.number }}"
-        BUILT_IMAGE_DIGEST="${{ BUILT_IMAGE }}-${{ env.SHORT_SHA }}"
+        BUILT_IMAGE_DIGEST="$BUILT_IMAGE-${{ env.SHORT_SHA }}"
         
-        podman save ${{BUILT_IMAGE}} ${{BUILT_IMAGE_DIGEST}} -o ./rhdh-podman-artifacts/image.tar
+        podman save $BUILT_IMAGE $BUILT_IMAGE_DIGEST -o ./rhdh-podman-artifacts/image.tar
         
         # Save metadata for the push workflow (use the original tags from metadata)
         echo "${{ steps.meta.outputs.tags }}" > ./rhdh-podman-artifacts/tags.txt
