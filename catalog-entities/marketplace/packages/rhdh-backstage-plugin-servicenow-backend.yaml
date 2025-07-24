@@ -7,7 +7,7 @@ metadata:
   links:
     - url: https://red.ht/rhdh
       title: Homepage
-    - url: https://github.com/janus-idp/backstage-plugins/issues
+    - url: https://issues.redhat.com/browse/RHDHBUGS
       title: Bugs
     - title: Source Code
       url: https://github.com/backstage/community-plugins/tree/main/workspaces/servicenow/plugins/servicenow-backend
@@ -23,7 +23,7 @@ spec:
     role: backend-plugin
     supportedVersions: 1.39.1
   author: Red Hat
-  support: tech-preview
+  support: dev-preview
   lifecycle: active
   partOf:
     - servicenow

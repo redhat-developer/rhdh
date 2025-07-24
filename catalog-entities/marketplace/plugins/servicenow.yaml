@@ -22,14 +22,14 @@ metadata:
     - title: Homepage
       url: https://red.ht/rhdh
     - title: Bugs
-      url: https://issues.redhat.com/browse/RHIDP
+      url: https://issues.redhat.com/browse/RHDHBUGS
     - title: Documentation
       url: https://github.com/backstage/community-plugins/tree/main/workspaces/servicenow
     - title: Source Code
       url: https://github.com/backstage/community-plugins/tree/main/workspaces/servicenow
 
 spec:
-  support: tech-preview
+  support: dev-preview
   lifecycle: active
   author: Red Hat
   publisher: Red Hat
