@@ -23,7 +23,7 @@ test.describe.serial("Test Scaffolder Backend Module Annotator Actions", () => {
     componentPartialName: `test-scaffoldedfromlink-`,
     description: "react app using template",
     label: "some-label",
-    annotation: "some-annoation",
+    annotation: "some-annotation",
     repo: `test-scaffolded-${Date.now()}`,
     repoOwner: Buffer.from(
       process.env.GITHUB_ORG || "amFudXMtcWU=",
@@ -165,40 +165,34 @@ test.describe.serial("Test Scaffolder Backend Module Annotator Actions", () => {
     await uiHelper.verifyText("Provide some simple information");
   });
 
-  test("Verify Registered Template has templated label in entity Raw Yaml", async () => {
-    await uiHelper.openSidebar("Catalog");
-    await uiHelper.selectMuiBox("Kind", "Template");
+  test("Verify Registered Component has templated label in entity Raw Yaml", async () => {
+    await uiHelper.openCatalogSidebar("Component");
+    await uiHelper.searchInputPlaceholder(reactAppDetails.componentName);
 
-    await uiHelper.searchInputPlaceholder("Create React App Template\n");
-    await uiHelper.verifyRowInTableByUniqueText("Create React App Template", [
-      "website",
-    ]);
-    await uiHelper.clickLink("Create React App Template");
+    await uiHelper.verifyRowInTableByUniqueText(
+      `${reactAppDetails.componentName}`,
+      ["website"],
+    );
+    await uiHelper.clickLink(`${reactAppDetails.componentName}`);
 
     await catalogImport.inspectEntityAndVerifyYaml(
-      `labels:\n    custom: some-label\n`,
+      `labels:\n    custom: ${reactAppDetails.label}\n`,
     );
-
-    await uiHelper.clickLink("Launch Template");
-    await uiHelper.verifyText("Provide some simple information");
   });
 
-  test("Verify Registered Template has templated annotation in entity Raw Yaml", async () => {
-    await uiHelper.openSidebar("Catalog");
-    await uiHelper.selectMuiBox("Kind", "Template");
+  test("Verify Registered Component has templated annotation in entity Raw Yaml", async () => {
+    await uiHelper.openCatalogSidebar("Component");
+    await uiHelper.searchInputPlaceholder(reactAppDetails.componentName);
 
-    await uiHelper.searchInputPlaceholder("Create React App Template\n");
-    await uiHelper.verifyRowInTableByUniqueText("Create React App Template", [
-      "website",
-    ]);
-    await uiHelper.clickLink("Create React App Template");
+    await uiHelper.verifyRowInTableByUniqueText(
+      `${reactAppDetails.componentName}`,
+      ["website"],
+    );
+    await uiHelper.clickLink(`${reactAppDetails.componentName}`);
 
     await catalogImport.inspectEntityAndVerifyYaml(
-      `custom.io/annotation: backstage.io/some-annotation`,
+      `custom.io/annotation: ${reactAppDetails.annotation}`,
     );
-
-    await uiHelper.clickLink("Launch Template");
-    await uiHelper.verifyText("Provide some simple information");
   });
 
   test("Verify Registered Template has templated version in entity Raw Yaml", async () => {
@@ -214,9 +208,21 @@ test.describe.serial("Test Scaffolder Backend Module Annotator Actions", () => {
     await catalogImport.inspectEntityAndVerifyYaml(
       `backstage.io/template-version: 0.0.1`,
     );
+  });
 
-    await uiHelper.clickLink("Launch Template");
-    await uiHelper.verifyText("Provide some simple information");
+  test("Verify Registered Component has templated version in entity Raw Yaml", async () => {
+    await uiHelper.openCatalogSidebar("Component");
+    await uiHelper.searchInputPlaceholder(reactAppDetails.componentName);
+
+    await uiHelper.verifyRowInTableByUniqueText(
+      `${reactAppDetails.componentName}`,
+      ["website"],
+    );
+    await uiHelper.clickLink(`${reactAppDetails.componentName}`);
+
+    await catalogImport.inspectEntityAndVerifyYaml(
+      `backstage.io/template-version: 0.0.1`,
+    );
   });
 
   test.afterAll(async () => {
