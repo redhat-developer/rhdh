@@ -1,0 +1,149 @@
+name: Docker Push
+
+on:
+  workflow_run:
+    workflows:
+      - 'PR Build Image'
+    types:
+      - completed
+  workflow_call:
+    inputs:
+      buildId:
+        type: string
+        description: The build identifier for artifact naming (e.g., PR number, 'nightly', 'main')
+        required: false
+      shortSha:
+        type: string
+        description: The short SHA for artifact naming
+        required: false
+      registry:
+        type: string
+        description: The registry to push to
+        required: false
+        default: quay.io
+
+jobs:
+  docker-push:
+    name: Push Docker Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    
+    steps:
+      - name: Determine artifact name
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_run" ]; then
+            # For workflow_run, extract from the event context
+            BUILD_ID="${{ github.event.workflow_run.pull_requests[0].number || 'main' }}"
+            SHORT_SHA="${{ github.event.workflow_run.head_sha }}"
+            SHORT_SHA="${SHORT_SHA:0:7}"
+          else
+            # For workflow_call, use the inputs
+            BUILD_ID="${{ inputs.buildId || 'main' }}"
+            SHORT_SHA="${{ inputs.shortSha }}"
+          fi
+          
+          ARTIFACT_NAME="docker-image-${BUILD_ID}-${SHORT_SHA}"
+          echo "ARTIFACT_NAME=$ARTIFACT_NAME" >> $GITHUB_ENV
+          echo "Using artifact name: $ARTIFACT_NAME"
+
+      - name: Download Image Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: ./docker-artifacts
+          run-id: ${{ github.event.workflow_run.id || github.run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Load and prepare image
+        run: |
+          # Check if artifacts exist
+          if [ ! -f "./docker-artifacts/image.tar" ]; then
+            echo "Error: image.tar not found in artifacts"
+            exit 1
+          fi
+          
+          # Load the image from tar file
+          podman load -i ./docker-artifacts/image.tar
+          
+          # Read metadata
+          REGISTRY=$(cat ./docker-artifacts/registry.txt)
+          IMAGE_NAME=$(cat ./docker-artifacts/imageName.txt)
+          TAGS_NEWLINE=$(cat ./docker-artifacts/tags.txt)
+          BUILT_IMAGE=$(cat ./docker-artifacts/builtImage.txt 2>/dev/null || echo "")
+          
+          # Convert newline-separated tags to space-separated for redhat-actions/push-to-registry
+          TAGS_SPACE_SEPARATED=$(echo "$TAGS_NEWLINE" | tr '\n' ' ' | sed 's/[[:space:]]*$//')
+          
+          echo "REGISTRY=$REGISTRY" >> $GITHUB_ENV
+          echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
+          echo "TAGS_FOR_PUSH=$TAGS_SPACE_SEPARATED" >> $GITHUB_ENV
+          echo "BUILT_IMAGE=$BUILT_IMAGE" >> $GITHUB_ENV
+          
+          echo "Loaded images:"
+          podman images
+          
+          echo "Tags for push (space-separated): $TAGS_SPACE_SEPARATED"
+          
+          # Extract the image name without registry/tag for push action
+          # The push action expects just the image name, not full tags
+          if [ -n "$BUILT_IMAGE" ]; then
+            # Extract image name from the built image (remove any tag)
+            PUSH_IMAGE_NAME=$(echo "$BUILT_IMAGE" | cut -d':' -f1)
+            echo "PUSH_IMAGE_NAME=$PUSH_IMAGE_NAME" >> $GITHUB_ENV
+            echo "Push image name: $PUSH_IMAGE_NAME"
+          else
+            echo "PUSH_IMAGE_NAME=$REGISTRY/$IMAGE_NAME" >> $GITHUB_ENV
+            echo "Push image name (fallback): $REGISTRY/$IMAGE_NAME"
+          fi
+
+      - name: Push Images
+        uses: redhat-actions/push-to-registry@5ed88d269cf581ea9ef6dd6806d01562096bee9c # v2.8
+        with:
+          image: ${{ env.PUSH_IMAGE_NAME }}
+          tags: ${{ env.TAGS_FOR_PUSH }}
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_TOKEN }}
+
+      - name: Extract PR info for commenting
+        if: ${{ github.event_name == 'workflow_run' }}
+        env:
+          WORKFLOW_RUN_PR_NUMBER: ${{ github.event.workflow_run.pull_requests[0].number || '' }}
+          WORKFLOW_RUN_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          # Extract PR number and SHA from workflow_run context
+          if [ -n "$WORKFLOW_RUN_PR_NUMBER" ]; then
+            echo "PR_NUMBER=$WORKFLOW_RUN_PR_NUMBER" >> $GITHUB_ENV
+          else
+            echo "No PR number found in workflow_run context"
+          fi
+          
+          # Extract SHORT_SHA from head_sha (first 7 characters)
+          if [ -n "$WORKFLOW_RUN_HEAD_SHA" ]; then
+            SHORT_SHA="${WORKFLOW_RUN_HEAD_SHA:0:7}"
+            echo "SHORT_SHA=$SHORT_SHA" >> $GITHUB_ENV
+          else
+            echo "No head SHA found in workflow_run context"
+          fi
+
+      - name: Comment the image pull link
+        if: ${{ github.event_name == 'workflow_run' && env.PR_NUMBER }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = process.env.PR_NUMBER;
+            const shortSha = process.env.SHORT_SHA;
+            
+            if (!prNumber) {
+              console.log('No pull request number found');
+              return;
+            }
+            
+            github.rest.issues.createComment({
+              issue_number: parseInt(prNumber),
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `The image is available at:\n* [\`quay.io/rhdh-community/rhdh:pr-${prNumber}\`](https://quay.io/rhdh-community/rhdh:pr-${prNumber}) or\n* [\`quay.io/rhdh-community/rhdh:pr-${prNumber}-${shortSha}\`](https://quay.io/rhdh-community/rhdh:pr-${prNumber}-${shortSha})`
+            })

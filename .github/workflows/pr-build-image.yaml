@@ -15,7 +15,7 @@
 name: PR Build Image
 
 on:
-  pull_request_target:
+  pull_request:
     paths-ignore:
       - 'docs/**'
 
@@ -25,23 +25,19 @@ concurrency:
 
 env:
   REGISTRY: quay.io
+  # IMAGE_NAME: rhdh-community/rhdh
+  IMAGE_NAME: my-test-organization/test-registry
 
 jobs:
   build-image:
     name: Build Image
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-      pull-requests: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: ${{ github.event.pull_request.head.ref }}
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
 
       - name: Check Image and Relevant Changes
         id: check-image
@@ -65,30 +61,17 @@ jobs:
           echo "Updating PR with latest commits from ${{ github.event.pull_request.base.ref }} ..."
           git fetch base-origin ${{ github.event.pull_request.base.ref }}
           git merge --no-edit base-origin/${{ github.event.pull_request.base.ref }}
-
-      - name: Build and Push with Buildx
+      - name: Build Image (Hermetic)
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         uses: ./.github/actions/docker-build
         with:
           registry: ${{ env.REGISTRY }}
-          username: ${{ secrets.QUAY_USERNAME }}
-          password: ${{ secrets.QUAY_TOKEN }}
-          imageName: rhdh-community/rhdh
+          imageName: ${{ env.IMAGE_NAME }}
           imageTags: |
             pr-${{ github.event.number }}
             pr-${{ github.event.number }}-${{ env.SHORT_SHA }}
+          enableHermeticBuild: true
           imageLabels: quay.expires-after=14d
-          push: true
+          push: false
           platform: linux/amd64
 
-      - name: Comment the image pull link
-        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
-        uses: actions/github-script@v7
-        with:
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: 'The image is available at:\n* [`quay.io/rhdh-community/rhdh:pr-${{ github.event.number }}`](https://quay.io/rhdh-community/rhdh:pr-${{ github.event.number }}) or\n* [`quay.io/rhdh-community/rhdh:pr-${{ github.event.number }}-${{ env.SHORT_SHA }}`](https://quay.io/rhdh-community/rhdh:pr-${{ github.event.number }}-${{ env.SHORT_SHA }})'
-            })
