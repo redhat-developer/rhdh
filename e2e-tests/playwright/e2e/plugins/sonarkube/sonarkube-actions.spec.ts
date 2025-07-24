@@ -41,9 +41,12 @@ test.describe("Test SonarKube Actions plugin", () => {
 
     await uiHelper.waitForTitle("Create a SonarQube project", 2);
 
+    const baseRHDHURL: string = process.env.BASE_URL;
+    const host: string = new URL(baseRHDHURL).hostname;
+    const domain = host.split(".").slice(1).join(".");
     await uiHelper.fillTextInputByLabel(
       "Base URL *",
-      "https://sonarqube.apps.rosa.me4rm-zkeon-kfk.wq6f.p3.openshiftapps.com",
+      `https://sonarqube.${domain}`,
     );
 
     await uiHelper.clickById("root_authParams__oneof_select");
