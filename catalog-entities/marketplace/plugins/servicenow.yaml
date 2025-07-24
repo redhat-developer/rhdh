@@ -1,0 +1,69 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: servicenow
+  namespace: rhdh
+  title: ServiceNow Integration for Red Hat Developer Hub
+  description: |
+    The ServiceNow plugin integrates ServiceNow incidents directly into Red Hat Developer Hub. 
+    It displays incidents associated with the currently logged in user, such as those where 
+    they are the caller, assignee, or reporter, as well as incidents linked to the current 
+    catalog entity. This enables faster visibility into relevant issues and improves 
+    operational awareness.
+
+  annotations:
+    extensions.backstage.io/pre-installed: 'false'
+    extensions.backstage.io/verified-by: Red Hat
+  tags:
+    - itsm
+    - incident-management
+  links:
+    - title: Homepage
+      url: https://red.ht/rhdh
+    - title: Bugs
+      url: https://issues.redhat.com/browse/RHDHBUGS
+    - title: Documentation
+      url: https://github.com/backstage/community-plugins/tree/main/workspaces/servicenow
+    - title: Source Code
+      url: https://github.com/backstage/community-plugins/tree/main/workspaces/servicenow
+
+spec:
+  support: dev-preview
+  lifecycle: active
+  author: Red Hat
+  publisher: Red Hat
+
+  categories:
+    - Integration
+
+  highlights:
+    - View ServiceNow incidents for the logged-in user or associated with the current catalog entity
+    - Filter by incident state and priority
+    - Search incidents by request ID or description
+    - Sort incidents by request ID, description, created date, priority, or state
+    - Customize queries with advanced parameters
+
+  description: |
+    The ServiceNow plugin brings incident visibility from your ServiceNow instance into the 
+    Red Hat Developer Hub. It allows users to view incidents associated with the logged in user, 
+    whether they are the caller, assignee, or reporter, as well as incidents linked to the 
+    current catalog entity. This enables seamless access to operational data and helps accelerate 
+    issue resolution.
+
+
+    ## Adding The Plugin To Red Hat Developer Hub
+
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further instructions on how to add, enable, configure, and remove plugins in your instance.
+
+    ## Configuration
+
+    The plugin requires your ServiceNow instance URL and authentication details (such as Basic Auth or OAuth).
+    You can optionally filter incidents by user fields like `caller_id`, `assigned_to`, or `opened_by`.
+
+    For detailed setup of both frontend and backend components, refer to the [ServiceNow plugin documentation](https://github.com/backstage/community-plugins/tree/main/workspaces/servicenow).
+
+  packages:
+    - backstage-community-plugin-servicenow-backend
+    - backstage-community-plugin-servicenow
