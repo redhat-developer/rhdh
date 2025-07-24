@@ -634,7 +634,11 @@ install_sonar_qube() {
   helm repo add sonarqube https://SonarSource.github.io/helm-chart-sonarqube || true
   helm repo update
 
-  helm upgrade --install -n ${SONAR_QUBE_NS} sonarqube sonarqube/sonarqube --set edition=developer -f "${DIR}/resources/sonarqube/values.yaml"
+  SONARQUBE_HOST="sonarqube.${K8S_CLUSTER_ROUTER_BASE}"
+  helm upgrade --install -n ${SONAR_QUBE_NS} sonarqube sonarqube/sonarqube \
+  --set edition=developer  \
+  --set OpenShift.route.host="${SONARQUBE_HOST}" \
+  -f "${DIR}/resources/sonarqube/values.yaml"
 }
 
 ## todo implement uninstall_sonar_qube
