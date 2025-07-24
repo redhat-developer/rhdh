@@ -81,7 +81,7 @@ jobs:
 
           # for releases only
           if [[ $ref_name != "next" ]] && [[ $ref_name != "next-"* ]]; then
-            # shroten from 1.6.1 => 1.6
+            # shorten from 1.6.1 => 1.6
             ref_name_short="${ref_name%.*}"
             if [[ $ref_name_short == "1" ]]; then ref_name_short="${ref_name}"; fi
           fi
@@ -161,11 +161,17 @@ jobs:
             ref_name=${{ github.ref_name }}
             if [ "$ref_name" == "main" ]; then
               ref_name="next"
+            elif [[ "$ref_name" =~ ^release-([0-9]+)\.([0-9]+) ]]; then
+              # next-1.y
+              ref_name="next-${BASH_REMATCH[1]}.${BASH_REMATCH[2]}"
             fi
-            # from 1.6.1 => 1.6
-            ref_name_short="${ref_name%.*}"
-            if [[ $ref_name_short == "1" ]]; then
-              ref_name_short="${ref_name}"
+            ref_name_short="${ref_name}"
+
+            # for releases only
+            if [[ $ref_name != "next" ]] && [[ $ref_name != "next-"* ]]; then
+              # shorten from 1.6.1 => 1.6
+              ref_name_short="${ref_name%.*}"
+              if [[ $ref_name_short == "1" ]]; then ref_name_short="${ref_name}"; fi
             fi
             echo "REF_NAME=$ref_name" >> $GITHUB_ENV
             echo "REF_NAME_SHORT=${ref_name_short}" >> $GITHUB_ENV
