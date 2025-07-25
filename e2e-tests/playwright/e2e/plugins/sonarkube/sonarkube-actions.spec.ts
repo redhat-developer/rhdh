@@ -26,13 +26,12 @@ test.describe("Test SonarKube Actions plugin", () => {
   test("Creates Sonarkube project", async ({ page }) => {
     await uiHelper.clickButton("Import an existing Git repository");
     await catalogImport.registerExistingComponent(template, false);
-    test.setTimeout(5000);
+    // allow catalog to process entity from github
+    await uiHelper.sleep(10000);
 
-    // await uiHelper.clickLink({ ariaLabel: "Self-service" });
-    // await common.waitForLoad();
-    await uiHelper.openCatalogSidebar("Component");
-
-    // await uiHelper.verifyHeading("Self-service");
+    await uiHelper.clickLink({ ariaLabel: "Self-service" });
+    await common.waitForLoad();
+    await uiHelper.waitForTitle("Self-service");
     await uiHelper.searchInputPlaceholder("Create a SonarQube project");
     await uiHelper.verifyText("Create a SonarQube project");
 
