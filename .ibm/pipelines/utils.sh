@@ -679,18 +679,6 @@ check_backstage_running() {
   echo "Checking if Backstage is up and running at ${url}"
 
   for ((i = 1; i <= max_attempts; i++)); do
-    # Check for CrashLoopBackOff pods first (fail fast)
-    local crashloop_pods
-    crashloop_pods=$(kubectl get pods -n "${namespace}" --no-headers 2>/dev/null | grep "CrashLoopBackOff" || true)
-    if [[ -n "${crashloop_pods}" ]]; then
-      echo "❌ Found pods in CrashLoopBackOff state:"
-      echo "${crashloop_pods}"
-      kubectl get pods -n "${namespace}" -o wide
-      kubectl get events -n "${namespace}" --sort-by='.lastTimestamp' | tail -10
-      save_all_pod_logs "${namespace}"
-      return 1
-    fi
-    
     # Check HTTP status
     local http_status
     http_status=$(curl --insecure -I -s -o /dev/null -w "%{http_code}" "${url}")
@@ -703,10 +691,7 @@ check_backstage_running() {
     else
       echo "Attempt ${i} of ${max_attempts}: Backstage not yet available (HTTP Status: ${http_status})"
       oc get pods -n "${namespace}"
-      if [[ $i -lt $max_attempts ]]; then
-        echo "Waiting ${wait_seconds} seconds before next attempt..."
-        sleep "${wait_seconds}"
-      fi
+      sleep "${wait_seconds}"
     fi
   done
 
