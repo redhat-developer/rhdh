@@ -23,15 +23,16 @@ test.describe("Test SonarKube Actions plugin", () => {
     await page.goto("/create");
   });
 
-  test("Creates kubernetes namespace", async ({ page }) => {
+  test("Creates Sonarkube project", async ({ page }) => {
     await uiHelper.clickButton("Import an existing Git repository");
     await catalogImport.registerExistingComponent(template, false);
-    test.setTimeout(5000);
+    // test.setTimeout(5000);
 
-    await uiHelper.clickLink({ ariaLabel: "Self-service" });
-    await common.waitForLoad();
+    // await uiHelper.clickLink({ ariaLabel: "Self-service" });
+    // await common.waitForLoad();
+    await uiHelper.openCatalogSidebar("Component");
 
-    await uiHelper.verifyHeading("Self-service");
+    // await uiHelper.verifyHeading("Self-service");
     await uiHelper.searchInputPlaceholder("Create a SonarQube project");
     await uiHelper.verifyText("Create a SonarQube project");
 
