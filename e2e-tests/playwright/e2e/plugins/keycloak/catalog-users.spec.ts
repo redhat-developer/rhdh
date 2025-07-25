@@ -88,6 +88,13 @@ test.describe("Test Keycloak plugin metrics", () => {
         domain,
       );
     } else {
+      const pods = await kubeClient.getPodList(namespace);
+      if (pods?.body?.items) {
+        pods.body.items.forEach((pod, index) => {
+          console.log(`--- Pod ${index + 1} ---`);
+          console.log(JSON.stringify(pod, null, 2));
+        });
+      }
       await createIngressIfNotPresentAndWait(
         kubeClient,
         namespace,
