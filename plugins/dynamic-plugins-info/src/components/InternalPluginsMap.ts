@@ -155,10 +155,6 @@ export const InternalPluginsMap: Record<string, string> = {
     './dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-pingidentity-dynamic',
   'backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic':
     './dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic',
-  'backstage-community-plugin-servicenow':
-    './dynamic-plugins/dist/backstage-community-plugin-servicenow',
-  'backstage-community-plugin-servicenow-backend-dynamic':
-    './dynamic-plugins/dist/backstage-community-plugin-servicenow-backend-dynamic',
   'backstage-plugin-catalog-backend-module-gitlab-dynamic':
     './dynamic-plugins/dist/backstage-plugin-catalog-backend-module-gitlab-dynamic',
   'backstage-plugin-catalog-backend-module-gitlab-org-dynamic':
