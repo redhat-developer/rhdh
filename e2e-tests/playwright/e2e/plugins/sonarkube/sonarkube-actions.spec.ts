@@ -26,7 +26,7 @@ test.describe("Test SonarKube Actions plugin", () => {
   test("Creates Sonarkube project", async ({ page }) => {
     await uiHelper.clickButton("Import an existing Git repository");
     await catalogImport.registerExistingComponent(template, false);
-    // test.setTimeout(5000);
+    test.setTimeout(5000);
 
     // await uiHelper.clickLink({ ariaLabel: "Self-service" });
     // await common.waitForLoad();
