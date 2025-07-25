@@ -2,9 +2,6 @@ account:
   adminPassword: NewAdminPassword1@
   currentAdminPassword: admin
 
-community:
-  enabled: true
-
 OpenShift:
   enabled: true
   serviceAccount:
