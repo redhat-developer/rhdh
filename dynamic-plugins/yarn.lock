@@ -13927,9 +13927,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-dynamic-home-page@npm:1.5.2":
-  version: 1.5.2
-  resolution: "@red-hat-developer-hub/backstage-plugin-dynamic-home-page@npm:1.5.2"
+"@red-hat-developer-hub/backstage-plugin-dynamic-home-page@npm:1.5.3":
+  version: 1.5.3
+  resolution: "@red-hat-developer-hub/backstage-plugin-dynamic-home-page@npm:1.5.3"
   dependencies:
     "@backstage/catalog-client": ^1.10.0
     "@backstage/catalog-model": ^1.7.4
@@ -13951,7 +13951,7 @@ __metadata:
   peerDependencies:
     react: 16.13.1 || ^17.0.0 || ^18.2.0
     react-router-dom: 6.30.1
-  checksum: 2dbe8eb735a446d2624545e834de7ce508175bb1f7c6b37f919004cd113479dcaaa015cfd59693ad26c93fdebdbc3edead923879a726ff703a70e80713b95c7f
+  checksum: ecc928298b919e68ec28d392102280ecf166c794aefc128004788b020dcdcee09c29502787e4cf20a014ef9cd4c15d2f343c30e4bb1bd38f9c79d713fc548c0d
   languageName: node
   linkType: hard
 
@@ -34586,7 +34586,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.6.1
     "@mui/material": 5.18.0
-    "@red-hat-developer-hub/backstage-plugin-dynamic-home-page": 1.5.2
+    "@red-hat-developer-hub/backstage-plugin-dynamic-home-page": 1.5.3
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
