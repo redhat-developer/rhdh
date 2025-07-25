@@ -13927,9 +13927,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-dynamic-home-page@npm:1.5.0":
-  version: 1.5.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-dynamic-home-page@npm:1.5.0"
+"@red-hat-developer-hub/backstage-plugin-dynamic-home-page@npm:1.5.3":
+  version: 1.5.3
+  resolution: "@red-hat-developer-hub/backstage-plugin-dynamic-home-page@npm:1.5.3"
   dependencies:
     "@backstage/catalog-client": ^1.10.0
     "@backstage/catalog-model": ^1.7.4
@@ -13941,17 +13941,17 @@ __metadata:
     "@backstage/plugin-search-react": ^1.9.0
     "@backstage/plugin-user-settings": ^0.8.22
     "@backstage/theme": ^0.6.6
-    "@mui/icons-material": 5.17.1
-    "@mui/material": 5.17.1
-    "@mui/styles": 5.17.1
+    "@mui/icons-material": 5.18.0
+    "@mui/material": 5.18.0
+    "@mui/styles": 5.18.0
     "@scalprum/react-core": 0.9.5
-    react-grid-layout: 1.5.1
+    react-grid-layout: 1.5.2
     react-use: 17.6.0
-    tss-react: 4.9.18
+    tss-react: 4.9.19
   peerDependencies:
     react: 16.13.1 || ^17.0.0 || ^18.2.0
     react-router-dom: 6.30.1
-  checksum: 450cec97c8c1dc07181403144d1df79d4b6567b0a90d5d324353489af2366009e52c20b6ccbfbac1cdcaba69ede431fb8cc22ce41657faed5e4e7c29bcef885d
+  checksum: ecc928298b919e68ec28d392102280ecf166c794aefc128004788b020dcdcee09c29502787e4cf20a014ef9cd4c15d2f343c30e4bb1bd38f9c79d713fc548c0d
   languageName: node
   linkType: hard
 
@@ -33972,7 +33972,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-draggable@npm:^4.0.0, react-draggable@npm:^4.0.3, react-draggable@npm:^4.4.5":
+"react-draggable@npm:^4.0.0, react-draggable@npm:^4.0.3":
   version: 4.4.6
   resolution: "react-draggable@npm:4.4.6"
   dependencies:
@@ -33982,6 +33982,19 @@ __metadata:
     react: ">= 16.3.0"
     react-dom: ">= 16.3.0"
   checksum: 9b15aac59244873ac4561c5a2bead43a56e18d406e0a5f242bd4f9d151c074530c02b99387983104bf43417292f9cf8d063e554ed08d88792235e3fbc965f1b8
+  languageName: node
+  linkType: hard
+
+"react-draggable@npm:^4.4.6":
+  version: 4.5.0
+  resolution: "react-draggable@npm:4.5.0"
+  dependencies:
+    clsx: ^2.1.1
+    prop-types: ^15.8.1
+  peerDependencies:
+    react: ">= 16.3.0"
+    react-dom: ">= 16.3.0"
+  checksum: a5563ed8142ab77e9e68af9b5a57484358462bae76368691362419d7fb4d9fba73300b5c5d1346db6551d88743c68746dc18bc035276db1539d0ad0aff6580cc
   languageName: node
   linkType: hard
 
@@ -34035,20 +34048,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-grid-layout@npm:1.5.1":
-  version: 1.5.1
-  resolution: "react-grid-layout@npm:1.5.1"
+"react-grid-layout@npm:1.5.2":
+  version: 1.5.2
+  resolution: "react-grid-layout@npm:1.5.2"
   dependencies:
-    clsx: ^2.0.0
+    clsx: ^2.1.1
     fast-equals: ^4.0.3
     prop-types: ^15.8.1
-    react-draggable: ^4.4.5
+    react-draggable: ^4.4.6
     react-resizable: ^3.0.5
     resize-observer-polyfill: ^1.5.1
   peerDependencies:
     react: ">= 16.3.0"
     react-dom: ">= 16.3.0"
-  checksum: b0bf00ea99b25b815b421fc79e451b3929101b0d94cf12e902b9bbbdfe8adc2cfe4a4bd45a075e6bf9f4d7c58e32792ef94837d5ca80c96e1eb633f6897a4b83
+  checksum: 8beb3a64218168fe25c3f33797f5db03e58a021b4ff863b3ba2186e824a09f0c5409814d248aad3844bc8679bb7492070e82d9d7e899ee5196f3151b9c4177e3
   languageName: node
   linkType: hard
 
@@ -34573,7 +34586,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.6.1
     "@mui/material": 5.18.0
-    "@red-hat-developer-hub/backstage-plugin-dynamic-home-page": 1.5.0
+    "@red-hat-developer-hub/backstage-plugin-dynamic-home-page": 1.5.3
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -37698,9 +37711,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tss-react@npm:4.9.18":
-  version: 4.9.18
-  resolution: "tss-react@npm:4.9.18"
+"tss-react@npm:4.9.19":
+  version: 4.9.19
+  resolution: "tss-react@npm:4.9.19"
   dependencies:
     "@emotion/cache": "*"
     "@emotion/serialize": "*"
@@ -37716,7 +37729,7 @@ __metadata:
       optional: true
     "@mui/material":
       optional: true
-  checksum: 5330f06f29c19cc501afd635e888e88b393f44d57cc8e64c96b473cb728899e35fcb363aa5274ff0414fc49a2d46c73f4e8b1bd5f7ea267b5cfcf99074a689a7
+  checksum: 1e29114220d26aa3a30c05f372f61bd876a0a4eb5482b8cd16a13c9783d1ad5c33bc15cf379d467965dc98ad7c528c9165c816c26958032761dea05296e78466
   languageName: node
   linkType: hard
 
