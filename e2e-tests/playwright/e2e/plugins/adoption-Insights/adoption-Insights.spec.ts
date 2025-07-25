@@ -3,7 +3,8 @@ import { Common } from "../../../utils/common";
 import { UIhelper } from "../../../utils/ui-helper"; 
 import { TestHelper } from "../../../support/pages/adoption-Insights"; 
 
-test.describe.serial("Test Adoption Insights", () => {
+// TODO: replace skip with serial https://issues.redhat.com/browse/RHDHBUGS-1879
+test.describe.skip("Test Adoption Insights", () => {
   test.describe.serial("Test Adoption Insights plugin: load permission policies and conditions from files", () => {
     let context;
     let page;

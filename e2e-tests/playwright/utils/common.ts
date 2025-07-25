@@ -289,8 +289,10 @@ export class Common {
         }
         await popup.locator("#password").click({ timeout: 5000 });
         await popup.locator("#password").fill(password, { timeout: 5000 });
-        await popup.locator("[type='submit']").click({ timeout: 5000 });
-        const twofactorcode = authenticator.generate(twofactor);
+        await popup
+          .locator("[type='submit'][value='Sign in']:not(webauthn-status *)")
+          .first()
+          .click({ timeout: 5000 });        const twofactorcode = authenticator.generate(twofactor);
         await popup.locator("#app_totp").click({ timeout: 5000 });
         await popup.locator("#app_totp").fill(twofactorcode, { timeout: 5000 });
 
