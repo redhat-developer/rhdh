@@ -16,7 +16,7 @@ class Keycloak {
 
   constructor() {
     this.baseURL = process.env.RHSSO76_URL;
-    this.realm = process.env.KEYCLOAK_AUTH_REALM;
+    this.realm = process.env.KEYCLOAK_AUTH_REALM_DECODE;
     this.clientSecret = process.env.RHSSO76_CLIENT_SECRET;
     this.clientId = process.env.RHSSO76_CLIENT_ID;
   }
