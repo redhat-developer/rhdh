@@ -12086,7 +12086,7 @@ __metadata:
     "@testing-library/jest-dom": 6.6.3
     "@testing-library/react": 14.3.1
     "@testing-library/react-hooks": 8.0.1
-    "@types/node": 22.16.3
+    "@types/node": 22.16.5
     "@types/react": 18.3.23
     "@types/react-dom": 18.3.7
     prettier: 3.6.2
@@ -14843,12 +14843,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/jquery@npm:3.3.34":
-  version: 3.3.34
-  resolution: "@types/jquery@npm:3.3.34"
+"@types/jquery@npm:3.5.32":
+  version: 3.5.32
+  resolution: "@types/jquery@npm:3.5.32"
   dependencies:
     "@types/sizzle": "*"
-  checksum: 5ce05517135cb5696e36cf251f5f953e8a6733a73c5b43ff358a3b3d11b5768513b8be81dfa1ed3a71e0f97e7ce76fd29a91271339b6b64cfbca345840d3d7d6
+  checksum: 7fe7251bda3fc9d80417ef7c88ad963ccb591706bca2fb84ea5d9600498a8f9911c32302f28fd1910bb212c34193f38f63818757a9833b70e1f46c3a98a17625
   languageName: node
   linkType: hard
 
@@ -15036,12 +15036,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:22.16.3, @types/node@npm:>=13.7.0":
+"@types/node@npm:*, @types/node@npm:>=13.7.0":
   version: 22.16.3
   resolution: "@types/node@npm:22.16.3"
   dependencies:
     undici-types: ~6.21.0
   checksum: f37674ff0141380e41bde4a44776185df69757b17d94a7b05ed4c0d003b86239a3d640f1b65c9dcca5f9ba289f14fa2f3ed7ab8298b5538747d07f11da7e1bdc
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:22.16.5":
+  version: 22.16.5
+  resolution: "@types/node@npm:22.16.5"
+  dependencies:
+    undici-types: ~6.21.0
+  checksum: dcdfaf95bc55e512e0be5860e86974e467ef939a77381752743cd279c0c4400e317733f4a2819387ceb34e9edba45db74ef441f46b690656beb9c6408743a154
   languageName: node
   linkType: hard
 
@@ -15501,10 +15510,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/zen-observable@npm:0.8.0":
-  version: 0.8.0
-  resolution: "@types/zen-observable@npm:0.8.0"
-  checksum: fa3f1b3d82948d83f33f9fedc858e39f9c57cfd31d995a81ffc69bc0b51e16d28cad0ea9147aaddcd9809c70c2c3be88b496a3ea17c65f8b4ced59b764273b65
+"@types/zen-observable@npm:0.8.7":
+  version: 0.8.7
+  resolution: "@types/zen-observable@npm:0.8.7"
+  checksum: 6d4cdccded97f8e21b18224a70524e559abe2568863ed21ea000580aa3446c6d583253e83e8ecc0c93b4060ef3fb7f9d14739a57ee18925cc30e0e7d79713a15
   languageName: node
   linkType: hard
 
@@ -16355,10 +16364,10 @@ __metadata:
     "@testing-library/jest-dom": 6.6.3
     "@testing-library/react": 14.3.1
     "@testing-library/user-event": 14.6.1
-    "@types/jquery": 3.3.34
+    "@types/jquery": 3.5.32
     "@types/react": 18.3.23
     "@types/react-dom": 18.3.7
-    "@types/zen-observable": 0.8.0
+    "@types/zen-observable": 0.8.7
     cross-env: 7.0.3
     history: 5.0.0
     react: 18.3.1
@@ -16421,7 +16430,7 @@ __metadata:
     "@testing-library/react": 14.3.1
     "@testing-library/react-hooks": 8.0.1
     "@testing-library/user-event": 14.6.1
-    "@types/node": 22.16.3
+    "@types/node": 22.16.5
     "@types/react": 18.3.23
     "@types/react-dom": 18.3.7
     lodash: 4.17.21
