@@ -775,6 +775,21 @@ install_pipelines_operator() {
   fi
 }
 
+install_sonar_qube() {
+  SONAR_QUBE_NS="sonarqube"
+  configure_namespace ${SONAR_QUBE_NS}
+  helm repo add sonarqube https://SonarSource.github.io/helm-chart-sonarqube || true
+  helm repo update
+
+  SONARQUBE_HOST="sonarqube.${K8S_CLUSTER_ROUTER_BASE}"
+  helm upgrade --install -n ${SONAR_QUBE_NS} sonarqube sonarqube/sonarqube \
+  --set edition=developer  \
+  --set OpenShift.route.host="${SONARQUBE_HOST}" \
+  -f "${DIR}/resources/sonarqube/values.yaml"
+}
+
+## todo implement uninstall_sonar_qube
+
 # Installs the Tekton Pipelines if not already installed (alternative of OpenShift Pipelines for Kubernetes clusters)
 install_tekton_pipelines() {
   DISPLAY_NAME="tekton-pipelines-webhook"
@@ -816,6 +831,7 @@ delete_tekton_pipelines() {
 }
 
 cluster_setup_ocp_helm() {
+  install_sonar_qube
   install_pipelines_operator
   install_acm_ocp_operator
   install_crunchy_postgres_ocp_operator
