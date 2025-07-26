@@ -1,0 +1,276 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config-rhdh
+  namespace: {{ namespace }}
+  labels:
+    app.kubernetes.io/name: backstage
+    app.kubernetes.io/component: configmap
+    app.kubernetes.io/part-of: rhdh
+data:
+  app-config-rhdh.yaml: |
+    app:
+      title: {{ app_title | default('Red Hat Developer Hub') }}
+      baseUrl: https://{{ router_base | default('localhost') }}
+
+    organization:
+      name: {{ organization_name | default('Red Hat Developer Hub') }}
+
+    backend:
+      baseUrl: https://{{ router_base | default('localhost') }}
+      listen:
+        port: 7007
+        host: 0.0.0.0
+      csp:
+        connect-src: ["'self'", 'http:', 'https:']
+        frame-src:
+          - "'self'"
+          - 'https://{{ router_base | default("localhost") }}'
+      cors:
+        origin: https://{{ router_base | default('localhost') }}
+        methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+        credentials: true
+      database:
+{% if postgresql_enabled %}
+        client: pg
+        connection:
+          host: ${POSTGRES_HOST}
+          port: ${POSTGRES_PORT}
+          user: ${POSTGRES_USER}
+          password: ${POSTGRES_PASSWORD}
+          database: ${POSTGRES_DB}
+{% else %}
+        client: better-sqlite3
+        connection: ':memory:'
+{% endif %}
+
+    integrations:
+{% if github_auth_enabled %}
+      github:
+        - host: github.com
+          token: ${GITHUB_TOKEN}
+{% endif %}
+{% if gitlab_enabled %}
+      gitlab:
+        - host: {{ gitlab_host | default('gitlab.com') }}
+          token: ${GITLAB_TOKEN}
+{% endif %}
+{% if azure_devops_enabled %}
+      azure:
+        - host: dev.azure.com
+          token: ${AZURE_TOKEN}
+{% endif %}
+
+    proxy:
+{% if argocd_plugin_enabled %}
+      '/argocd/api':
+        target: {{ argocd_url }}/api/v1/
+        changeOrigin: true
+        headers:
+          Cookie: ${ARGOCD_AUTH_TOKEN}
+{% endif %}
+{% if sonarqube_enabled %}
+      '/sonarqube':
+        target: {{ sonarqube_url }}
+        allowedMethods: ['GET']
+        auth: ${SONARQUBE_TOKEN}
+{% endif %}
+{% if prometheus_enabled %}
+      '/prometheus/api':
+        target: {{ prometheus_url }}
+        headers:
+          Authorization: Bearer ${PROMETHEUS_TOKEN}
+{% endif %}
+
+    techdocs:
+      builder: 'local'
+      generator:
+        runIn: 'local'
+      publisher:
+        type: 'local'
+
+    auth:
+      environment: {{ auth_environment | default('production') }}
+{% if github_auth_enabled %}
+      providers:
+        github:
+          production:
+            clientId: ${GITHUB_CLIENT_ID}
+            clientSecret: ${GITHUB_CLIENT_SECRET}
+{% endif %}
+{% if keycloak_enabled %}
+        oidc:
+          production:
+            metadataUrl: {{ keycloak_base_url }}/realms/{{ keycloak_realm }}/.well-known/openid_configuration
+            clientId: ${KEYCLOAK_CLIENT_ID}
+            clientSecret: ${KEYCLOAK_CLIENT_SECRET}
+            prompt: auto
+{% endif %}
+
+    scaffolder:
+      defaultAuthor:
+        name: {{ scaffolder_author_name | default('Scaffolder') }}
+        email: {{ scaffolder_author_email | default('scaffolder@example.com') }}
+      defaultCommitMessage: 'Initial commit from Backstage'
+
+    catalog:
+      import:
+        entityFilename: catalog-info.yaml
+        pullRequestBranchName: backstage-integration
+      rules:
+        - allow: [Component, System, API, Resource, Location]
+      providers:
+{% if github_auth_enabled %}
+        github:
+          providerId:
+            organization: {{ github_org | default('your-org') }}
+            catalogPath: '/catalog-info.yaml'
+            filters:
+              branch: 'main'
+              repository: '.*'
+            schedule:
+              frequency: { minutes: 30 }
+              timeout: { minutes: 3 }
+{% endif %}
+
+{% if kubernetes_plugin_enabled %}
+    kubernetes:
+      serviceLocatorMethod:
+        type: 'multiTenant'
+      clusterLocatorMethods:
+        - type: 'config'
+          clusters:
+            - url: {{ k8s_cluster_url }}
+              name: {{ k8s_cluster_name | default(cluster_type + '-cluster') }}
+              authProvider: 'serviceAccount'
+              serviceAccountToken: ${K8S_CLUSTER_TOKEN}
+              skipTLSVerify: {{ k8s_skip_tls_verify | default(true) }}
+              skipMetricsLookup: true
+{% endif %}
+
+{% if argocd_plugin_enabled %}
+    argocd:
+      username: ${ARGOCD_USERNAME}
+      password: ${ARGOCD_PASSWORD}
+      appLocatorMethods:
+        - type: 'config'
+          instances:
+            - name: argoInstance1
+              url: {{ argocd_url }}
+              token: ${ARGOCD_TOKEN}
+{% endif %}
+
+{% if rbac_enabled %}
+    permission:
+      enabled: true
+      rbac:
+{% if rbac_policy_file %}
+        policies-csv-file: {{ rbac_policy_file }}
+{% endif %}
+        admin:
+          superUsers:
+{% for admin_user in rbac_admin_users | default(['user:development/guest']) %}
+            - {{ admin_user }}
+{% endfor %}
+{% endif %}
+
+{% if dynamic_plugins %}
+    dynamicPlugins:
+      frontend:
+        rhdh.theme:
+          appTheme:
+            - id: rhdh
+              title: Red Hat Developer Hub
+              variant: rhdh
+{% for plugin in dynamic_plugins %}
+        {{ plugin.package }}:
+{% if plugin.config %}
+{{ plugin.config | to_nice_yaml | indent(10, true) }}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{% if feature_flags %}
+    # Feature Flags
+{% for flag, enabled in feature_flags.items() %}
+    {{ flag }}: {{ enabled }}
+{% endfor %}
+{% endif %}
+
+{% if custom_app_config %}
+    # Custom Application Configuration
+{{ custom_app_config | to_nice_yaml | indent(4, true) }}
+{% endif %}
+
+---
+{% if dynamic_plugins %}
+# Dynamic Plugins Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dynamic-plugins-rhdh
+  namespace: {{ namespace }}
+  labels:
+    app.kubernetes.io/name: backstage
+    app.kubernetes.io/component: dynamic-plugins
+    app.kubernetes.io/part-of: rhdh
+data:
+  dynamic-plugins.yaml: |
+    includes:
+      - dynamic-plugins.default.yaml
+    plugins:
+{% for plugin in dynamic_plugins %}
+      - package: {{ plugin.package }}
+        disabled: {{ plugin.disabled | default(false) }}
+{% if plugin.integrity %}
+        integrity: {{ plugin.integrity }}
+{% endif %}
+{% if plugin.pluginConfig %}
+        pluginConfig:
+{{ plugin.pluginConfig | to_nice_yaml | indent(10, true) }}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+---
+{% if rbac_enabled and rbac_policies %}
+# RBAC Policies ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rbac-policy
+  namespace: {{ namespace }}
+  labels:
+    app.kubernetes.io/name: backstage
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: rhdh
+data:
+  rbac-policy.csv: |
+{% for policy in rbac_policies %}
+    {{ policy.role }}, {{ policy.permission }}, {{ policy.policy }}, {{ policy.effect }}
+{% endfor %}
+{% endif %}
+
+---
+{% if monitoring_enabled %}
+# Monitoring Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: monitoring-config
+  namespace: {{ namespace }}
+  labels:
+    app.kubernetes.io/name: backstage
+    app.kubernetes.io/component: monitoring
+    app.kubernetes.io/part-of: rhdh
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+    scrape_configs:
+      - job_name: 'backstage'
+        static_configs:
+          - targets: ['localhost:7007']
+        metrics_path: '/metrics'
+        scrape_interval: 30s
+{% endif %} 

@@ -1,0 +1,78 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: rhdh-gke
+  annotations:
+    description: "GKE-specific RHDH configuration with GCP Load Balancer"
+
+# Reference to base configuration
+resources:
+  - ../../base
+  - ingress.yaml
+  - frontend-config.yaml
+
+# GKE-specific labels
+commonLabels:
+  cluster-type: gke
+  deployment-method: kustomize
+  cloud-provider: gcp
+
+# GKE namespace
+namespace: showcase
+
+# Patches for GKE-specific modifications
+patchesStrategicMerge:
+  - app-config-patch.yaml
+
+# JSON patches for GCP-specific transformations
+patches:
+  # Add GCP-specific annotations to service
+  - target:
+      kind: Service
+      name: backstage
+    patch: |-
+      - op: add
+        path: /metadata/annotations
+        value:
+          cloud.google.com/neg: '{"ingress": true}'
+          beta.cloud.google.com/backend-config: '{"default": "backstage-backend-config"}'
+
+  # Add workload identity annotations to service account
+  - target:
+      kind: ServiceAccount
+      name: rhdh-service-account
+    patch: |-
+      - op: add
+        path: /metadata/annotations
+        value:
+          iam.gke.io/gcp-service-account: rhdh-gsa@rhdh-qe.iam.gserviceaccount.com
+
+# ConfigMap generators with GKE-specific config
+configMapGenerator:
+  - name: rhdh-app-config
+    behavior: merge
+    files:
+      - app-config-gke.yaml
+
+# GCP-specific image configurations
+images:
+  - name: backstage
+    newName: quay.io/rhdh/rhdh-hub-rhel9
+    newTag: latest
+
+# Replace base URLs with GKE ingress format
+replacements:
+  - source:
+      kind: Ingress
+      name: backstage
+      fieldPath: spec.rules[0].host
+    targets:
+      - select:
+          kind: ConfigMap
+          name: rhdh-app-config
+        fieldPaths:
+          - data.app-config-gke\.yaml
+        options:
+          delimiter: 'baseUrl: https://'
+          index: 1 
