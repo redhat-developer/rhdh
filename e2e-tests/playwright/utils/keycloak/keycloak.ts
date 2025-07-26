@@ -15,10 +15,10 @@ class Keycloak {
   private readonly clientSecret: string;
 
   constructor() {
-    this.baseURL = process.env.KEYCLOAK_BASE_URL;
-    this.realm = process.env.KEYCLOAK_REALM;
-    this.clientSecret = process.env.KEYCLOAK_CLIENT_SECRET;
-    this.clientId = process.env.KEYCLOAK_CLIENT_ID;
+    this.baseURL = Buffer.from(process.env.KEYCLOAK_AUTH_BASE_URL).toString("base64");
+    this.realm = Buffer.from(process.env.KEYCLOAK_AUTH_REALM).toString("base64");
+    this.clientSecret = Buffer.from(process.env.KEYCLOAK_AUTH_CLIENT_SECRET).toString("base64");
+    this.clientId = Buffer.from(process.env.KEYCLOAK_AUTH_CLIENTID).toString("base64");
   }
 
   async getAuthenticationToken(): Promise<string> {
