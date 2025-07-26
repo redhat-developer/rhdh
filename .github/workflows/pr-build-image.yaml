@@ -18,6 +18,7 @@ on:
   pull_request_target:
     paths-ignore:
       - 'docs/**'
+      - '*.md'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number || github.event.pull_request.head.ref }}
