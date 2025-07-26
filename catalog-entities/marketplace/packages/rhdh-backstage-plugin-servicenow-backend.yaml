@@ -1,0 +1,37 @@
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: backstage-community-plugin-servicenow-backend
+  namespace: rhdh
+  title: "@backstage-community/plugin-servicenow-backend"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHDHBUGS
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/backstage/community-plugins/tree/main/workspaces/servicenow/plugins/servicenow-backend
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/backstage/community-plugins/tree/main/workspaces/servicenow/plugins/servicenow-backend
+  tags: []
+spec:
+  packageName: "@backstage-community/plugin-servicenow-backend"
+  dynamicArtifact: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-servicenow-backend:bs_1.39.1__1.0.0!backstage-community-plugin-servicenow-backend
+  version: 1.0.0
+  backstage:
+    role: backend-plugin
+    supportedVersions: 1.39.1
+  author: Red Hat
+  support: dev-preview
+  lifecycle: active
+  partOf:
+    - servicenow
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        servicenow:
+          instanceUrl: ${SERVICENOW_BASE_URL}
+          basicAuth:
+            username: ${SERVICENOW_USERNAME}
+            password: ${SERVICENOW_PASSWORD}
