@@ -508,6 +508,21 @@ export class KubeClient {
     }
   }
 
+  async getPodList(namespace: string) {
+    try {
+      return await this.coreV1Api.listNamespacedPod(
+        namespace,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+      );
+    } catch (error) {
+      console.error(`Error while retrieving pod conditions`, error);
+    }
+  }
+
   async logPodConditions(namespace: string, labelSelector?: string) {
     const selector =
       labelSelector ||
@@ -602,7 +617,7 @@ export class KubeClient {
     }
   }
 
-  async getRoute(namespace, routeName) {
+  async getRoute(namespace: string, routeName: string) {
     try {
       const response = await this.k8sCustomAPI.getNamespacedCustomObject(
         "route.openshift.io",
@@ -616,6 +631,56 @@ export class KubeClient {
       if (error.statusCode === 404) {
         return null;
       }
+      throw error;
+    }
+  }
+
+  async getIngress(namespace: string, ingressName: string) {
+    try {
+      const response = await this.k8sCustomAPI.getNamespacedCustomObject(
+        "networking.k8s.io",
+        "v1",
+        namespace,
+        "ingresses",
+        ingressName,
+      );
+      return response.body;
+    } catch (error) {
+      if (error.statusCode === 404) {
+        return null;
+      }
+      throw error;
+    }
+  }
+
+  async createIngress(namespace: string, body: k8s.KubernetesObject) {
+    try {
+      const response = await this.k8sCustomAPI.createNamespacedCustomObject(
+        "networking.k8s.io",
+        "v1",
+        namespace,
+        "ingresses",
+        body,
+      );
+      return response.body;
+    } catch (error) {
+      console.error("Error creating Ingress:", error);
+      throw error;
+    }
+  }
+
+  async deleteIngress(namespace: string, name: string) {
+    try {
+      const response = await this.k8sCustomAPI.deleteNamespacedCustomObject(
+        "networking.k8s.io",
+        "v1",
+        namespace,
+        "ingresses",
+        name,
+      );
+      return response.body;
+    } catch (error) {
+      console.error("Error deleting Ingress:", error);
       throw error;
     }
   }
