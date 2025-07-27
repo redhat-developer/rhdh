@@ -23,7 +23,7 @@ class Keycloak {
 
   async getAuthenticationToken(): Promise<string> {
     const response = await fetch(
-      `${this.baseURL}/realms/${this.realm}/protocol/openid-connect/token`,
+      `${this.baseURL}/auth/realms/${this.realm}/protocol/openid-connect/token`,
       {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
