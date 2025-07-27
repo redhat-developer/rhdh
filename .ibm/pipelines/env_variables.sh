@@ -121,10 +121,10 @@ GKE_CERT_NAME=$(cat /tmp/secrets/GKE_CERT_NAME)
 GOOGLE_CLOUD_PROJECT=$(cat /tmp/secrets/GOOGLE_CLOUD_PROJECT)
 
 # EKS variables
-EKS_INSTANCE_DOMAIN_NAME=$(cat /tmp/secrets/EKS_INSTANCE_DOMAIN_NAME)
 AWS_ACCESS_KEY_ID=$(cat /tmp/secrets/AWS_ACCESS_KEY_ID)
 AWS_SECRET_ACCESS_KEY=$(cat /tmp/secrets/AWS_SECRET_ACCESS_KEY)
 AWS_DEFAULT_REGION=$(cat /tmp/secrets/AWS_DEFAULT_REGION)
+AWS_EKS_PARENT_DOMAIN=$(cat /tmp/secrets/AWS_EKS_PARENT_DOMAIN)
 
 # authentication providers variables
 

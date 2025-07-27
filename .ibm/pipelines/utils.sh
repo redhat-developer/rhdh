@@ -668,8 +668,8 @@ check_backstage_running() {
   local release_name=$1
   local namespace=$2
   local url=$3
-  local max_attempts=$4
-  local wait_seconds=$5
+  local max_attempts=${4:-30}
+  local wait_seconds=${5:-30}
 
   if [ -z "${url}" ]; then
     echo "Error: URL is not set. Please provide a valid URL."
@@ -679,11 +679,12 @@ check_backstage_running() {
   echo "Checking if Backstage is up and running at ${url}"
 
   for ((i = 1; i <= max_attempts; i++)); do
+    # Check HTTP status
     local http_status
     http_status=$(curl --insecure -I -s -o /dev/null -w "%{http_code}" "${url}")
 
     if [ "${http_status}" -eq 200 ]; then
-      echo "Backstage is up and running!"
+      echo "✅ Backstage is up and running!"
       export BASE_URL="${url}"
       echo "BASE_URL: ${BASE_URL}"
       return 0
@@ -694,7 +695,8 @@ check_backstage_running() {
     fi
   done
 
-  echo "Failed to reach Backstage at ${BASE_URL} after ${max_attempts} attempts." | tee -a "/tmp/${LOGFILE}"
+  echo "❌ Failed to reach Backstage at ${url} after ${max_attempts} attempts."
+  oc get events -n "${namespace}" --sort-by='.lastTimestamp' | tail -10
   mkdir -p "${ARTIFACT_DIR}/${namespace}"
   cp -a "/tmp/${LOGFILE}" "${ARTIFACT_DIR}/${namespace}/"
   save_all_pod_logs "${namespace}"

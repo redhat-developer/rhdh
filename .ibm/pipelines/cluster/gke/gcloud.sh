@@ -31,7 +31,8 @@ gcloud_ssl_cert_create() {
 
   # Check the return status
   if [ $? -eq 0 ]; then
-    echo "Certificate '${cert_name}' created successfully.\nThe test might fail if the certificate is not obtained from the certificate authority in time."
+    echo "Certificate '${cert_name}' created successfully."
+    echo "The test might fail if the certificate is not obtained from the certificate authority in time."
   else
     # Check if the error is due to certificate already existing
     if echo "$output" | grep -q "already exists"; then

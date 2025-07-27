@@ -18465,7 +18465,7 @@ __metadata:
     "@backstage-community/plugin-servicenow": 1.0.0
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.6.1
-    "@mui/material": 5.17.1
+    "@mui/material": 5.18.0
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -30395,8 +30395,8 @@ __metadata:
   linkType: hard
 
 "multer@npm:^2.0.0":
-  version: 2.0.1
-  resolution: "multer@npm:2.0.1"
+  version: 2.0.2
+  resolution: "multer@npm:2.0.2"
   dependencies:
     append-field: ^1.0.0
     busboy: ^1.6.0
@@ -30405,7 +30405,7 @@ __metadata:
     object-assign: ^4.1.1
     type-is: ^1.6.18
     xtend: ^4.0.2
-  checksum: bcbc523108c337cdb0a3f2610fd743a8ad0b7ce773f1970c69e9a338ba3d4389ce3a6339a6bf66b80b96a7aa82442ae505121a2eaa07f3e843b342b84ce8bc2f
+  checksum: 187f3539b3d5b7f80a289288fc21d3e4116ab9ed21ac9b9ceb25272c7344d215e9572f7e7ed01edb876afddf24661b06578f2c0fc67f36655ebb51a13ccf83dc
   languageName: node
   linkType: hard
 
