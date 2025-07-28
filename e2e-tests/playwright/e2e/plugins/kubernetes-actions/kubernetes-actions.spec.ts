@@ -21,6 +21,7 @@ test.describe.skip("Test Kubernetes Actions plugin", () => {
     await uiHelper.clickLink({ ariaLabel: "Self-service" });
   });
 
+  //TODO https://issues.redhat.com/browse/RHDHBUGS-1912
   test("Creates kubernetes namespace", async () => {
     namespace = `test-kubernetes-actions-${Date.now()}`;
     await uiHelper.verifyHeading("Self-service");
