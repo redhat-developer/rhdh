@@ -68,6 +68,48 @@ jobs:
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         run: yarn run build --continue --affected
 
+      - name: Install SealLight
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
+        run: yarn add -D slnodejs
+
+      - name: Configure SealLight
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
+        run: npx slnodejs config --token $SL_TOKEN --appname "rhdh" --branch "pr-${{ github.event.pull_request.number }}-${{ github.head_ref }}" --build "pr-${{ github.event.pull_request.number }}-${{ github.sha }}"
+
+      - name: Extract backend bundle for SealLight scan
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
+        run: tar -xzf packages/backend/dist/bundle.tar.gz -C packages/backend/dist
+
+      - name: Scan all packages with SealLight
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
+        run: |
+          # Define scan targets: workspace_path:module_id
+          scan_targets=(
+            "plugins/dynamic-plugins-info-backend:dynamic-plugins-info-backend"
+            "plugins/scalprum-backend:scalprum-backend"
+            "plugins/licensed-users-info-backend:licensed-users-info-backend"
+            "plugins/dynamic-plugins-info:dynamic-plugins-info"
+            "packages/app:app"
+            "packages/backend/dist/bundle/packages/backend/dist:backend"
+            "packages/app-next:app-next"
+            "packages/plugin-utils:plugin-utils"
+          )
+          
+          # Common scan parameters
+          common_params="--token $SL_TOKEN --buildsessionidFile ./buildsessionid --scm none --projectroot ${{ github.workspace }}"
+          
+          # Scan each target
+          for target in "${scan_targets[@]}"; do
+            workspace_path="${target%:*}"
+            module_id="${target#*:}"
+            echo "Scanning $module_id at $workspace_path"
+            npx slnodejs scan $common_params --workspacepath "${{ github.workspace }}/$workspace_path" --uniqueModuleId "$module_id"
+          done
+
+      - name: End SealLight build session
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
+        run: npx slnodejs buildend --token $SL_TOKEN --buildsessionidFile ./buildsessionid --ok
+
   test:
     name: Test with Node.js ${{ matrix.node-version }}
     runs-on: ubuntu-latest
@@ -125,9 +167,38 @@ jobs:
             echo "ERROR: Workspace is dirty! Must run 'yarn build:dockerfile' and commit changes!"; exit 1; \
           fi
 
+      - name: Install SealLight
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
+        run: yarn add -D slnodejs
+
+      - name: Configure SealLight
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
+        run: npx slnodejs config --token $SL_TOKEN --appname "rhdh" --branch "pr-${{ github.event.pull_request.number }}-${{ github.head_ref }}" --build "pr-${{ github.event.pull_request.number }}-${{ github.sha }}"
+
+      - name: Start SealLight test stage
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
+        run: npx slnodejs start --token $SL_TOKEN --labid $RHDHLABID --teststage "Unit Tests"
+
       - name: Run tests
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         run: yarn run test --continue --affected
+
+      - name: Upload JUnit XML report to SealLight
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
+        run: npx slnodejs uploadReports --token $SL_TOKEN --labid $RHDHLABID --reportFile "./jest-junit-results/junit.xml"
+
+      - name: Upload coverage reports to SealLight
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
+        run: |
+          # Upload coverage reports from all packages
+          find . -name "coverage-final.json" -path "*/coverage/*" | while read coverage_file; do
+            echo "Uploading coverage report: $coverage_file"
+            npx slnodejs nycReport --token $SL_TOKEN --labid $RHDHLABID --report "$coverage_file"
+          done
+
+      - name: End SealLight test stage
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
+        run: npx slnodejs end --token $SL_TOKEN --labid $RHDHLABID
 
       - name: Install dynamic plugin dependencies
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
