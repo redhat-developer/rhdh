@@ -6,7 +6,7 @@ metadata:
   namespace: rhdh
   title: Orchestrator For Red Hat Developer Hub
   annotations:
-    extensions.backstage.io/pre-installed: 'true' # For plugins contained in the RHDH image
+    extensions.backstage.io/pre-installed: 'false' # For plugins contained in the RHDH image
   links:
     - title: Homepage
       url: https://www.rhdhorchestrator.io/
@@ -195,3 +195,8 @@ spec:
     MjVoMy40OTFsLS45MzM0LjkzMzFjLS4yNDMyLjI0NDEtLjI0MzIuNjM5NiwwLC44ODM4LjEyMjEu
     MTIyMS4yODIyLjE4MzEuNDQyNC4xODMxcy4zMjAzLS4wNjEuNDQyNC0uMTgzMWwyLTJjLjI0MzIt
     LjI0NDEuMjQzMi0uNjM5NiwwLS44ODM4bC0yLTJaIi8+PC9zdmc+
+
+  packages:
+    - redhat-backstage-plugin-orchestrator-backend
+    - redhat-backstage-plugin-orchestrator
+    

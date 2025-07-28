@@ -1,0 +1,39 @@
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: rhdh-backstage-plugin-adoption-insights-backend
+  namespace: rhdh
+  title: "@red-hat-developer-hub/backstage-plugin-adoption-insights-backend"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-adoption-insights-backend-dynamic
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-adoption-insights-backend-dynamic
+  tags: []
+spec:
+  packageName: "@red-hat-developer-hub/backstage-plugin-adoption-insights-backend"
+  dynamicArtifact: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-adoption-insights-backend-dynamic
+  version: 0.2.1
+  backstage:
+    role: backend-plugin
+    supportedVersions: 1.39.1
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+  partOf:
+    - adoption-insights
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        app:
+          analytics:
+            adoptionInsights:
+              maxBufferSize: 20
+              flushInterval: 5000
+              debug: false
+              licensedUsers: 100

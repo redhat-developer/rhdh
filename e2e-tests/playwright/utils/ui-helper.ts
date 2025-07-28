@@ -132,6 +132,10 @@ export class UIhelper {
     }
   }
 
+  async clickButtonByLabel(label: string | RegExp) {
+    await this.page.getByRole("button", { name: label }).first().click();
+  }
+
   /**
    * Conditionally clicks on "Mark all read" if visible, then clicks on "Mark All".
    * This method handles the two-step process of marking all notifications as read.

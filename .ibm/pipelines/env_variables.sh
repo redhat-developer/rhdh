@@ -10,6 +10,8 @@ HELM_CHART_AKS_DIFF_VALUE_FILE_NAME="diff-values_showcase_AKS.yaml"
 HELM_CHART_RBAC_AKS_DIFF_VALUE_FILE_NAME="diff-values_showcase-rbac_AKS.yaml"
 HELM_CHART_GKE_DIFF_VALUE_FILE_NAME="diff-values_showcase_GKE.yaml"
 HELM_CHART_RBAC_GKE_DIFF_VALUE_FILE_NAME="diff-values_showcase-rbac_GKE.yaml"
+HELM_CHART_EKS_DIFF_VALUE_FILE_NAME="diff-values_showcase_EKS.yaml"
+HELM_CHART_RBAC_EKS_DIFF_VALUE_FILE_NAME="diff-values_showcase-rbac_EKS.yaml"
 HELM_CHART_SANITY_PLUGINS_DIFF_VALUE_FILE_NAME="diff-values_showcase-sanity-plugins.yaml"
 HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME="merged-values_showcase-sanity-plugins.yaml"
 
@@ -31,8 +33,7 @@ NAME_SPACE_RUNTIME="${NAME_SPACE_RUNTIME:-showcase-runtime}"
 NAME_SPACE_POSTGRES_DB="${NAME_SPACE_POSTGRES_DB:-postgress-external-db}"
 NAME_SPACE_SANITY_PLUGINS_CHECK="showcase-sanity-plugins"
 OPERATOR_MANAGER='rhdh-operator'
-CHART_MAJOR_VERSION=1.7
-CHART_VERSION_BASE="1.5.2"
+CHART_MAJOR_VERSION="1.7"
 GITHUB_APP_APP_ID=$(cat /tmp/secrets/GITHUB_APP_3_APP_ID)
 GITHUB_APP_CLIENT_ID=$(cat /tmp/secrets/GITHUB_APP_3_CLIENT_ID)
 GITHUB_APP_PRIVATE_KEY=$(cat /tmp/secrets/GITHUB_APP_3_PRIVATE_KEY)
@@ -111,12 +112,19 @@ REDIS_USERNAME_ENCODED=$(printf "%s" $REDIS_USERNAME | base64 | tr -d '\n')
 REDIS_PASSWORD=test123
 REDIS_PASSWORD_ENCODED=$(printf "%s" $REDIS_PASSWORD | base64 | tr -d '\n')
 
+# GKE variables
 GKE_CLUSTER_NAME=$(cat /tmp/secrets/GKE_CLUSTER_NAME)
 GKE_CLUSTER_REGION=$(cat /tmp/secrets/GKE_CLUSTER_REGION)
 GKE_INSTANCE_DOMAIN_NAME=$(cat /tmp/secrets/GKE_INSTANCE_DOMAIN_NAME)
 GKE_SERVICE_ACCOUNT_NAME=$(cat /tmp/secrets/GKE_SERVICE_ACCOUNT_NAME)
 GKE_CERT_NAME=$(cat /tmp/secrets/GKE_CERT_NAME)
 GOOGLE_CLOUD_PROJECT=$(cat /tmp/secrets/GOOGLE_CLOUD_PROJECT)
+
+# EKS variables
+AWS_ACCESS_KEY_ID=$(cat /tmp/secrets/AWS_ACCESS_KEY_ID)
+AWS_SECRET_ACCESS_KEY=$(cat /tmp/secrets/AWS_SECRET_ACCESS_KEY)
+AWS_DEFAULT_REGION=$(cat /tmp/secrets/AWS_DEFAULT_REGION)
+AWS_EKS_PARENT_DOMAIN=$(cat /tmp/secrets/AWS_EKS_PARENT_DOMAIN)
 
 # authentication providers variables
 

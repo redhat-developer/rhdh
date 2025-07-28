@@ -1,21 +1,20 @@
+import { ComponentProps } from 'react';
+
+import {
+  CopyTextButton,
+  type ErrorPage as BsErrorPage,
+} from '@backstage/core-components';
+
 import Box, { BoxProps } from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 
+import { ContactSupportButton } from './errorButtons/ContactSupportButton';
+import { GoBackButton } from './errorButtons/GoBackButton';
 import { CollaborationIllustration } from './illustrations/collaboration/collaboration';
 
-interface ErrorPageProps {
-  /** The title to display. */
-  title: React.ReactNode | string;
-  /** The message to display. */
-  message: React.ReactNode | string;
-  /** Additional actions to display below the message. */
-  actions?: React.ReactNode;
-  /** Additional content to display below the message and above the actions. */
-  children?: React.ReactNode;
-  /** The component to use for the illustration. */
-  Illustration?: React.ComponentType<BoxProps<'img'>>;
-}
+/** Private type duplicated from `@backstage/core-components` */
+export type ErrorPageProps = ComponentProps<typeof BsErrorPage>;
 
 const ErrorPageGutters = {
   xs: 3,
@@ -24,12 +23,27 @@ const ErrorPageGutters = {
   xl: 12,
 };
 
+const getIllustrationForStatus = (status?: string) => {
+  switch (status) {
+    default:
+      return CollaborationIllustration;
+  }
+};
+
+const IllustrationForStatus = ({
+  status,
+  ...props
+}: { status?: string } & BoxProps<'img'>) => {
+  const Illustration = getIllustrationForStatus(status);
+  return <Illustration {...props} />;
+};
+
 export const ErrorPage = ({
-  title,
-  message,
-  actions,
-  Illustration = CollaborationIllustration,
-  children,
+  status,
+  statusMessage,
+  additionalInfo,
+  supportUrl,
+  stack,
 }: ErrorPageProps) => (
   <Grid
     container
@@ -63,19 +77,46 @@ export const ErrorPage = ({
         }}
       >
         <Typography variant="h1" gutterBottom>
-          {title}
+          <strong>{status}</strong> {statusMessage}
         </Typography>
 
         <Typography variant="subtitle1" gutterBottom>
-          {message}
+          {additionalInfo}
         </Typography>
 
-        {children}
-        <div data-testid="error-page-actions">{actions}</div>
+        {stack && (
+          <Box
+            sx={{
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-all',
+              backgroundColor: theme => theme.palette.background.paper,
+              position: 'relative',
+              padding: 2,
+              borderRadius: 2,
+            }}
+          >
+            <Typography
+              variant="body2"
+              color="textSecondary"
+              fontFamily="monospace"
+            >
+              {stack}
+            </Typography>
+            <Box sx={{ position: 'absolute', right: 8, top: 8 }}>
+              <CopyTextButton text={stack} />
+            </Box>
+          </Box>
+        )}
+
+        <Box data-testid="error-page-actions" sx={{ display: 'flex', gap: 1 }}>
+          {status === '404' && <GoBackButton />}
+          <ContactSupportButton supportUrl={supportUrl} />
+        </Box>
       </Box>
     </Grid>
     <Grid item xs={12} md={6} sx={{ display: 'flex' }}>
-      <Illustration
+      <IllustrationForStatus
+        status={status}
         sx={{
           maxWidth: '100%',
           maxHeight: '100vh',

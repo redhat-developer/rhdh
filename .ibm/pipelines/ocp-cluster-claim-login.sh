@@ -1,7 +1,11 @@
 #!/bin/bash
 
-# Prompt the user for the prow log url
-read -p "Enter the prow log url: " input_url
+# Check if prow log URL is provided as parameter, otherwise prompt for it
+if [[ $# -eq 0 ]]; then
+    read -p "Enter the prow log url: " input_url
+else
+    input_url="$1"
+fi
 
 id=$(echo "$input_url" | awk -F'/' '{print $NF}')
 job=$(echo "$input_url" | awk -F'/' '{print $(NF-1)}')
