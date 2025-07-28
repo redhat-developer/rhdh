@@ -54,7 +54,7 @@
         "docker/Dockerfile"
       ],        
       "additionalBranchPrefix": "[skip-build] dockerfile ",        
-      "groupName": "Dockerfile images (non-major)",
+      "groupName": "Dockerfile images (non-major) [skip-build]",
       "automerge": true
     },  
     {
