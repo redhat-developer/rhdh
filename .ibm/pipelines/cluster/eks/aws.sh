@@ -446,8 +446,6 @@ generate_dynamic_domain_name() {
   echo "${domain_name}"
 }
 
-
-
 # Function to create/update DNS record in Route53
 update_route53_dns_record() {
   local domain_name=$1
