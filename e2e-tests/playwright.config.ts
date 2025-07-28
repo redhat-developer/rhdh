@@ -162,6 +162,7 @@ export default defineConfig({
     },
     {
       name: "showcase-upgrade",
+      dependencies: ["smoke-test"],
       testMatch: [
         "**/playwright/e2e/home-page-customization.spec.ts",
         "**/playwright/e2e/plugins/quick-access-and-tech-radar.spec.ts",

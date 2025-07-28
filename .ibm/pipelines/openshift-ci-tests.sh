@@ -63,7 +63,8 @@ main() {
   echo "Log file: ${LOGFILE}"
   echo "JOB_NAME : $JOB_NAME"
 
-  export_chart_version
+  CHART_VERSION=$(get_chart_version "$CHART_MAJOR_VERSION")
+  export CHART_VERSION
   detect_ocp_and_set_env_var
 
   case "$JOB_NAME" in
@@ -110,6 +111,11 @@ main() {
     *pull*)
       echo "Calling handle_ocp_pull"
       handle_ocp_pull
+      ;;
+    *)
+      echo "ERROR: Unknown JOB_NAME pattern: $JOB_NAME"
+      echo "No matching handler found for this job type"
+      save_overall_result 1
       ;;
   esac
 
