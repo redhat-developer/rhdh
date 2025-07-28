@@ -53,7 +53,7 @@
         ".rhdh/docker/Dockerfile",
         "docker/Dockerfile"
       ],        
-      "additionalBranchPrefix": "dockerfile ",        
+      "additionalBranchPrefix": "[skip-build] dockerfile ",        
       "groupName": "Dockerfile images (non-major)",
       "automerge": true
     },  
