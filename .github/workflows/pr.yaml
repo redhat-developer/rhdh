@@ -72,6 +72,14 @@ jobs:
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         run: yarn add -D slnodejs
 
+      - name: Write SeaLights token into file
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
+        run: |
+          echo "${SL_TOKEN}" > sltoken.txt
+          echo "Token last 7 chars: ...${SL_TOKEN: -7}"
+        env:
+          SL_TOKEN: '${{secrets.SL_TOKEN}}'
+
       - name: Configure SealLight
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         run: npx slnodejs config --token $SL_TOKEN --appname "rhdh" --branch "pr-${{ github.event.pull_request.number }}-${{ github.head_ref }}" --build "pr-${{ github.event.pull_request.number }}-${{ github.sha }}"
@@ -171,13 +179,21 @@ jobs:
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         run: yarn add -D slnodejs
 
+      - name: Write SeaLights token into file
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
+        run: |
+          echo "${SL_TOKEN}" > sltoken.txt
+          echo "Token last 7 chars: ...${SL_TOKEN: -7}"
+        env:
+          SL_TOKEN: '${{secrets.SL_TOKEN}}'
+
       - name: Configure SealLight
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         run: npx slnodejs config --token $SL_TOKEN --appname "rhdh" --branch "pr-${{ github.event.pull_request.number }}-${{ github.head_ref }}" --build "pr-${{ github.event.pull_request.number }}-${{ github.sha }}"
 
       - name: Start SealLight test stage
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
-        run: npx slnodejs start --token $SL_TOKEN --labid $RHDHLABID --teststage "Unit Tests"
+        run: npx slnodejs start --token $SL_TOKEN --buildsessionidFile ./buildsessionid --teststage "Unit Tests"
 
       - name: Run tests
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
@@ -185,7 +201,7 @@ jobs:
 
       - name: Upload JUnit XML report to SealLight
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
-        run: npx slnodejs uploadReports --token $SL_TOKEN --labid $RHDHLABID --reportFile "./jest-junit-results/junit.xml"
+        run: npx slnodejs uploadReports --token $SL_TOKEN --buildsessionidFile ./buildsessionid --reportFile "./jest-junit-results/junit.xml"
 
       - name: Upload coverage reports to SealLight
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
@@ -193,12 +209,12 @@ jobs:
           # Upload coverage reports from all packages
           find . -name "coverage-final.json" -path "*/coverage/*" | while read coverage_file; do
             echo "Uploading coverage report: $coverage_file"
-            npx slnodejs nycReport --token $SL_TOKEN --labid $RHDHLABID --report "$coverage_file"
+            npx slnodejs nycReport --token $SL_TOKEN --buildsessionidFile ./buildsessionid --report "$coverage_file"
           done
 
       - name: End SealLight test stage
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
-        run: npx slnodejs end --token $SL_TOKEN --labid $RHDHLABID
+        run: npx slnodejs end --token $SL_TOKEN --buildsessionidFile ./buildsessionid
 
       - name: Install dynamic plugin dependencies
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
