@@ -49,6 +49,10 @@
         "patch",
         "minor"
       ],      
+      "matchFileNames": [
+        ".rhdh/docker/Dockerfile",
+        "docker/Dockerfile"
+      ],        
       "additionalBranchPrefix": "dockerfile ",        
       "groupName": "Dockerfile images (non-major)",
       "automerge": true
