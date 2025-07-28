@@ -51,7 +51,7 @@
       ],      
       "additionalBranchPrefix": "dockerfile ",        
       "groupName": "Dockerfile images (non-major)",
-      "automerge": false
+      "automerge": true
     },  
     {
       "description": "Test Dockerfile non-major updates", 
