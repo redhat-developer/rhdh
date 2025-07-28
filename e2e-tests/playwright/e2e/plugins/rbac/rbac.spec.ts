@@ -669,7 +669,7 @@ test.describe.serial("Test RBAC", () => {
       const rbacPo = new RbacPo(page);
       await rbacPo.createRBACConditionRole(
         "test-conditional-role",
-        [process.env.QE_USER6_ID],
+        [`${process.env.QE_USER6_ID} ${process.env.QE_USER6_ID}`],
         "user:default/rhdh-qe-6",
       );
 
