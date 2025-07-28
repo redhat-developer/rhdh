@@ -5,6 +5,8 @@ import { KubeClient } from "../../../utils/kube-client";
 import { UI_HELPER_ELEMENTS } from "../../../support/pageObjects/global-obj";
 
 test.describe("Test Kubernetes Actions plugin", () => {
+  // TODO: Remove after https://issues.redhat.com/browse/RHDHBUGS-1912 is fixed
+  test.describe.configure({ retries: 5 });
   let common: Common;
   let uiHelper: UIhelper;
   let page: Page;
