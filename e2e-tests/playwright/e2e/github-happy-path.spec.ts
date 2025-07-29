@@ -80,7 +80,7 @@ test.describe("GitHub Happy path", async () => {
     await uiHelper.openSidebar("Catalog");
     await uiHelper.selectMuiBox("Kind", "User");
     await uiHelper.searchInputPlaceholder("rhdh");
-    await uiHelper.verifyRowsInTable(["rhdh-qe"]);
+    await uiHelper.verifyRowsInTable(["rhdh-qe rhdh-qe"]);
   });
 
   test("Verify all 12 Software Templates appear in the Create page", async () => {
