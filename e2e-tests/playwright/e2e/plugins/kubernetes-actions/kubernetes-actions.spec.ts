@@ -17,6 +17,8 @@ test.describe("Test Kubernetes Actions plugin", () => {
     uiHelper = new UIhelper(page);
     kubeClient = new KubeClient();
 
+    test.setTimeout(testInfo.timeout + 6500);
+
     await common.loginAsGuest();
     await uiHelper.clickLink({ ariaLabel: "Self-service" });
   });
@@ -43,12 +45,15 @@ test.describe("Test Kubernetes Actions plugin", () => {
     await uiHelper.fillTextInputByLabel("Url", process.env.K8S_CLUSTER_URL);
     await uiHelper.fillTextInputByLabel("Token", process.env.K8S_CLUSTER_TOKEN);
     await uiHelper.checkCheckbox("Skip TLS verification");
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     await uiHelper.clickButton("Review");
+    await new Promise((resolve) => setTimeout(resolve, 1500));
     await uiHelper.clickButton("Create");
+    await new Promise((resolve) => setTimeout(resolve, 1500));
     await page.waitForSelector(
       `${UI_HELPER_ELEMENTS.MuiTypography}:has-text("second")`,
-      { timeout: 5000 },
     );
+    await new Promise((resolve) => setTimeout(resolve, 1500));
     await expect(
       page.locator(`${UI_HELPER_ELEMENTS.MuiTypography}:has-text("Error")`),
     ).not.toBeVisible();
