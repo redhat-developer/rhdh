@@ -8,6 +8,9 @@ on:
     paths:
       - '.ibm/images/Dockerfile'
       - '.yarnrc.yml'
+  create:
+    branches:
+      - 'release-1.**'
   workflow_dispatch:
     inputs:
       branch:
@@ -45,7 +48,7 @@ jobs:
         run: |
           echo "PLATFORM=linux/amd64" >> $GITHUB_ENV
 
-          # create image tag from the correct branch (either from a push or a workflow_dispatch trigger)
+          # create image tag from the correct branch (either from a push, create, or a workflow_dispatch trigger)
           if [[ "${{ inputs.branch }}" ]] && [[ "${{ inputs.branch }}"  != "NONE" ]]; then
             echo "Switch to ${{ inputs.branch }}"
             git checkout "${{ inputs.branch }}"
@@ -57,13 +60,32 @@ jobs:
           echo "Use IMAGE_TAG = $IMAGE_TAG"
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
+      - name: Check if tag already exists in Quay.io (for release branches)
+        if: github.event_name == 'create' && startsWith(github.ref_name, 'release-1.')
+        run: |
+          BRANCH_NAME="${{ github.ref_name }}"
+          echo "Checking if tag $BRANCH_NAME exists in Quay.io..."
+          
+          QUAY_TAG_EXISTS=$(curl -s "https://quay.io/api/v1/repository/rhdh-community/rhdh-e2e-runner/tag/" | jq -r --arg tag "$BRANCH_NAME" '.tags[]? | select(.name == $tag) | .name' 2>/dev/null || echo "")
+          
+          if [[ -n "$QUAY_TAG_EXISTS" ]]; then
+            echo "⚠️ Release branch $BRANCH_NAME already has Quay tag, skipping build"
+            echo "SKIP_BUILD=true" >> $GITHUB_ENV
+          else
+            echo "✅ New release branch detected: $BRANCH_NAME (no Quay tag exists)"
+            echo "SKIP_BUILD=false" >> $GITHUB_ENV
+          fi
+
       - name: Get the last commit short SHA
+        if: env.SKIP_BUILD != 'true'
         uses: ./.github/actions/get-sha
 
       - name: Set up Docker Buildx
+        if: env.SKIP_BUILD != 'true'
         uses: docker/setup-buildx-action@v3
 
       - name: Login to Quay.io
+        if: env.SKIP_BUILD != 'true'
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
@@ -71,6 +93,7 @@ jobs:
           password: ${{ secrets.QUAY_TOKEN }}
 
       - name: Build and Push Image
+        if: env.SKIP_BUILD != 'true'
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -80,3 +103,11 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:${{ env.IMAGE_TAG }}
             ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:${{ env.IMAGE_TAG }}-${{ env.SHORT_SHA }}
           platforms: ${{ env.PLATFORM }}
+
+      - name: Success notification
+        if: env.SKIP_BUILD != 'true'
+        run: |
+          echo "✅ Successfully created e2e-runner image!"
+          echo "📦 Image available at:"
+          echo "   - ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:${{ env.IMAGE_TAG }}"
+          echo "   - ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:${{ env.IMAGE_TAG }}-${{ env.SHORT_SHA }}"
