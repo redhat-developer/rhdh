@@ -361,7 +361,7 @@ test.describe.serial("Test RBAC", () => {
       const uiHelper = new UIhelper(page);
       await new RbacPo(page).createRole(
         "test-role1",
-        ["Guest User", "rhdh-qe", "Backstage"],
+        ["Guest User", "rhdh-qe rhdh-qe", "Backstage"],
         "anyOf",
       );
 
