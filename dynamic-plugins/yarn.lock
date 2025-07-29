@@ -3645,9 +3645,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-rbac@npm:1.42.0":
-  version: 1.42.0
-  resolution: "@backstage-community/plugin-rbac@npm:1.42.0"
+"@backstage-community/plugin-rbac@npm:1.42.1":
+  version: 1.42.1
+  resolution: "@backstage-community/plugin-rbac@npm:1.42.1"
   dependencies:
     "@backstage-community/plugin-rbac-common": ^1.18.0
     "@backstage/catalog-model": ^1.7.4
@@ -3658,7 +3658,6 @@ __metadata:
     "@backstage/plugin-permission-common": ^0.9.0
     "@backstage/plugin-permission-react": ^0.4.34
     "@backstage/theme": ^0.6.6
-    "@janus-idp/shared-react": ^2.16.0
     "@mui/icons-material": 5.16.14
     "@mui/material": ^5.14.18
     "@mui/styles": ^6.1.7
@@ -3673,7 +3672,7 @@ __metadata:
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.0.0
-  checksum: 95891e65774a745b6ac1a8fb749961b74ce8ef4083a69c0dc920014708085de64103955456d23c6624893c90b4a946f44724982fa85d5c529986691b535f21ca
+  checksum: 2afcb58e58b96f02b455a5114e6cc00e9c68e540bf0a29c70603de9f60f79669ea14fa1305b3382e44bbf66b08f3d7955cad73e11edf6923bf51862a2f77629a
   languageName: node
   linkType: hard
 
@@ -18213,7 +18212,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backstage-community-plugin-rbac@workspace:wrappers/backstage-community-plugin-rbac"
   dependencies:
-    "@backstage-community/plugin-rbac": 1.42.0
+    "@backstage-community/plugin-rbac": 1.42.1
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.6.1
     "@mui/material": 5.18.0
