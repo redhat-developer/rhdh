@@ -58,6 +58,7 @@ test.describe("Test Keycloak plugin", () => {
 test.describe("Test Keycloak plugin metrics", () => {
   const namespace = process.env.NAME_SPACE || "showcase-ci-nightly";
   const baseRHDHURL: string = process.env.BASE_URL;
+  console.log(`strange ${baseRHDHURL}`);
   let kubeClient: KubeClient;
   const routerName = "rhdh-metrics";
 
