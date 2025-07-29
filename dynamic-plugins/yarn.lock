@@ -3783,56 +3783,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-servicenow-backend@npm:1.0.0":
-  version: 1.0.0
-  resolution: "@backstage-community/plugin-servicenow-backend@npm:1.0.0"
-  dependencies:
-    "@backstage-community/plugin-servicenow-common": ^1.0.0
-    "@backstage/backend-defaults": ^0.10.0
-    "@backstage/backend-plugin-api": ^1.3.1
-    "@backstage/config": ^1.3.2
-    "@backstage/errors": ^1.2.7
-    "@backstage/plugin-catalog-node": ^1.17.0
-    axios: ^1.9.0
-    express: ^4.17.1
-    express-promise-router: ^4.1.0
-    simple-oauth2: ^5.1.0
-  checksum: 67e6cef3502a9ef1a5e44aa20c95738dcc6c565ae98183b17f4be09545a5afd8230ec623f9ae866cb7e6e14f1c1a794b8957878617085cba924d75c31be19859
-  languageName: node
-  linkType: hard
-
-"@backstage-community/plugin-servicenow-common@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "@backstage-community/plugin-servicenow-common@npm:1.0.0"
-  checksum: 9c6dbd0e307967f53c7755dbb9269a297c2a57900409d44f9288b66fb3b16f30d7a5201948aed0f8e4529b5d720b4bf7bf025919acd67d12f79873ede38bcf44
-  languageName: node
-  linkType: hard
-
-"@backstage-community/plugin-servicenow@npm:1.0.0":
-  version: 1.0.0
-  resolution: "@backstage-community/plugin-servicenow@npm:1.0.0"
-  dependencies:
-    "@backstage-community/plugin-servicenow-common": ^1.0.0
-    "@backstage/catalog-model": ^1.7.4
-    "@backstage/core-components": ^0.17.2
-    "@backstage/core-plugin-api": ^1.10.7
-    "@backstage/plugin-catalog-react": ^1.18.0
-    "@backstage/theme": ^0.6.6
-    "@mui/icons-material": ^5.15.17
-    "@mui/lab": ^5.0.0-alpha.153
-    "@mui/material": ^5.17.1
-    "@mui/styles": 5.16.14
-    react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
-    react-router-dom: ^6.0.0
-    react-use: ^17.2.4
-  peerDependencies:
-    react: ^16.13.1 || ^17.0.0 || ^18.0.0
-    react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
-    react-router-dom: ^6.0.0
-  checksum: 956f213394f6f3703f1591a8acc2037af01a9f752304c67644ba589306b3ded029d5e1f49aef833b7ef4b2a1e259293c1db3c8e5b5cebc470e1f23c560595c95
-  languageName: node
-  linkType: hard
-
 "@backstage-community/plugin-sonarqube-backend@npm:0.9.2":
   version: 0.9.2
   resolution: "@backstage-community/plugin-sonarqube-backend@npm:0.9.2"
@@ -9343,56 +9293,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@hapi/boom@npm:^10.0.1":
-  version: 10.0.1
-  resolution: "@hapi/boom@npm:10.0.1"
-  dependencies:
-    "@hapi/hoek": ^11.0.2
-  checksum: c80f76e86386c65fb5e3f2aae489e82c318615b52c1462af913b1db3d05ebf1564336e2cd88f1ee79d66a8b6f48fa075089c617bfe93ad88e6e1a695d0cde499
-  languageName: node
-  linkType: hard
-
-"@hapi/bourne@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "@hapi/bourne@npm:3.0.0"
-  checksum: 7174cab6c33191918fcdb1953fe3169a1106e6ac79a67ef5fd08b351f0813f8f608170f2239786cbe5519e03cdfe5ab748ea1635caa06dcd5802410295514ef8
-  languageName: node
-  linkType: hard
-
-"@hapi/hoek@npm:^11.0.2, @hapi/hoek@npm:^11.0.4":
-  version: 11.0.7
-  resolution: "@hapi/hoek@npm:11.0.7"
-  checksum: 3da5546649c0fa2bb264ce4b2aea8dc13d6fbdd9179bba553c90ab8fb7bd56413d2237d60c0b97c1e747216597eeb13694a947325bfff62ae3725209ec8bb8c6
-  languageName: node
-  linkType: hard
-
-"@hapi/hoek@npm:^9.0.0, @hapi/hoek@npm:^9.3.0":
-  version: 9.3.0
-  resolution: "@hapi/hoek@npm:9.3.0"
-  checksum: 4771c7a776242c3c022b168046af4e324d116a9d2e1d60631ee64f474c6e38d1bb07092d898bf95c7bc5d334c5582798a1456321b2e53ca817d4e7c88bc25b43
-  languageName: node
-  linkType: hard
-
-"@hapi/topo@npm:^5.1.0":
-  version: 5.1.0
-  resolution: "@hapi/topo@npm:5.1.0"
-  dependencies:
-    "@hapi/hoek": ^9.0.0
-  checksum: 604dfd5dde76d5c334bd03f9001fce69c7ce529883acf92da96f4fe7e51221bf5e5110e964caca287a6a616ba027c071748ab636ff178ad750547fba611d6014
-  languageName: node
-  linkType: hard
-
-"@hapi/wreck@npm:^18.0.0":
-  version: 18.1.0
-  resolution: "@hapi/wreck@npm:18.1.0"
-  dependencies:
-    "@hapi/boom": ^10.0.1
-    "@hapi/bourne": ^3.0.0
-    "@hapi/hoek": ^11.0.2
-  checksum: 08e20e829a46fcdd1595b7181d3c0f94bc1cd2966aaf272138a6b80fa5266852295189295169903be20ef53bb35ba7b9a9080ce7e1147116ffce4db492b99bec
-  languageName: node
-  linkType: hard
-
 "@httptoolkit/httpolyglot@npm:^2.2.1":
   version: 2.2.2
   resolution: "@httptoolkit/httpolyglot@npm:2.2.2"
@@ -11256,35 +11156,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/lab@npm:^5.0.0-alpha.153":
-  version: 5.0.0-alpha.177
-  resolution: "@mui/lab@npm:5.0.0-alpha.177"
-  dependencies:
-    "@babel/runtime": ^7.23.9
-    "@mui/base": 5.0.0-beta.40-1
-    "@mui/system": ^5.18.0
-    "@mui/types": ~7.2.15
-    "@mui/utils": ^5.17.1
-    clsx: ^2.1.0
-    prop-types: ^15.8.1
-  peerDependencies:
-    "@emotion/react": ^11.5.0
-    "@emotion/styled": ^11.3.0
-    "@mui/material": ">=5.15.0"
-    "@types/react": ^17.0.0 || ^18.0.0 || ^19.0.0
-    react: ^17.0.0 || ^18.0.0 || ^19.0.0
-    react-dom: ^17.0.0 || ^18.0.0 || ^19.0.0
-  peerDependenciesMeta:
-    "@emotion/react":
-      optional: true
-    "@emotion/styled":
-      optional: true
-    "@types/react":
-      optional: true
-  checksum: 58a3983ae28993b91c1d3cca29d0dbf904b252ab7a7edc81eebd0696dc53dbdc8144d1727761cc09cd9833cf3ce2fd5e422864c2feac37161d6dc60ad88bf88a
-  languageName: node
-  linkType: hard
-
 "@mui/material@npm:5.17.1":
   version: 5.17.1
   resolution: "@mui/material@npm:5.17.1"
@@ -11318,7 +11189,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/material@npm:5.18.0, @mui/material@npm:^5.12.2, @mui/material@npm:^5.14.18, @mui/material@npm:^5.15.16, @mui/material@npm:^5.15.17, @mui/material@npm:^5.15.19, @mui/material@npm:^5.17.1":
+"@mui/material@npm:5.18.0, @mui/material@npm:^5.12.2, @mui/material@npm:^5.14.18, @mui/material@npm:^5.15.16, @mui/material@npm:^5.15.17, @mui/material@npm:^5.15.19":
   version: 5.18.0
   resolution: "@mui/material@npm:5.18.0"
   dependencies:
@@ -13433,13 +13304,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@remix-run/router@npm:1.23.0":
-  version: 1.23.0
-  resolution: "@remix-run/router@npm:1.23.0"
-  checksum: 6a403b7bc740f15185f3b68f90f98d4976fe231e819b44a0f0628783c4f31ca1072e3370c24b98488be3e4f68ecf51b20cb9463f20a5a6cf4c21929fc7721964
-  languageName: node
-  linkType: hard
-
 "@rjsf/core@npm:5.23.2, @rjsf/core@npm:^5.14.3, @rjsf/core@npm:^5.21.2":
   version: 5.23.2
   resolution: "@rjsf/core@npm:5.23.2"
@@ -14096,29 +13960,6 @@ __metadata:
   version: 1.0.3
   resolution: "@segment/isodate@npm:1.0.3"
   checksum: 31faf12e83fa6ab5ba7dfd5600dfaf8d224a00ab24f3a2d3d9ba7f4ecdc1683a55c00fc9246585361aa5cb67c6d7846e1d5497cc3bcca58c105902b79c91c34a
-  languageName: node
-  linkType: hard
-
-"@sideway/address@npm:^4.1.5":
-  version: 4.1.5
-  resolution: "@sideway/address@npm:4.1.5"
-  dependencies:
-    "@hapi/hoek": ^9.0.0
-  checksum: 3e3ea0f00b4765d86509282290368a4a5fd39a7995fdc6de42116ca19a96120858e56c2c995081def06e1c53e1f8bccc7d013f6326602bec9d56b72ee2772b9d
-  languageName: node
-  linkType: hard
-
-"@sideway/formula@npm:^3.0.1":
-  version: 3.0.1
-  resolution: "@sideway/formula@npm:3.0.1"
-  checksum: e4beeebc9dbe2ff4ef0def15cec0165e00d1612e3d7cea0bc9ce5175c3263fc2c818b679bd558957f49400ee7be9d4e5ac90487e1625b4932e15c4aa7919c57a
-  languageName: node
-  linkType: hard
-
-"@sideway/pinpoint@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "@sideway/pinpoint@npm:2.0.0"
-  checksum: 0f4491e5897fcf5bf02c46f5c359c56a314e90ba243f42f0c100437935daa2488f20482f0f77186bd6bf43345095a95d8143ecf8b1f4d876a7bc0806aba9c3d2
   languageName: node
   linkType: hard
 
@@ -17946,7 +17787,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:^1.0.0, axios@npm:^1.6.7, axios@npm:^1.7.4, axios@npm:^1.9.0":
+"axios@npm:^1.0.0, axios@npm:^1.6.7, axios@npm:^1.7.4":
   version: 1.10.0
   resolution: "axios@npm:1.10.0"
   dependencies:
@@ -18443,29 +18284,6 @@ __metadata:
     "@backstage-community/plugin-scaffolder-backend-module-sonarqube": 2.7.1
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.6.1
-    typescript: 5.8.3
-  languageName: unknown
-  linkType: soft
-
-"backstage-community-plugin-servicenow-backend@workspace:wrappers/backstage-community-plugin-servicenow-backend-dynamic":
-  version: 0.0.0-use.local
-  resolution: "backstage-community-plugin-servicenow-backend@workspace:wrappers/backstage-community-plugin-servicenow-backend-dynamic"
-  dependencies:
-    "@backstage-community/plugin-servicenow-backend": 1.0.0
-    "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.1
-    typescript: 5.8.3
-  languageName: unknown
-  linkType: soft
-
-"backstage-community-plugin-servicenow@workspace:wrappers/backstage-community-plugin-servicenow":
-  version: 0.0.0-use.local
-  resolution: "backstage-community-plugin-servicenow@workspace:wrappers/backstage-community-plugin-servicenow"
-  dependencies:
-    "@backstage-community/plugin-servicenow": 1.0.0
-    "@backstage/cli": 0.30.0
-    "@janus-idp/cli": 3.6.1
-    "@mui/material": 5.18.0
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -27302,19 +27120,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"joi@npm:^17.6.4":
-  version: 17.13.3
-  resolution: "joi@npm:17.13.3"
-  dependencies:
-    "@hapi/hoek": ^9.3.0
-    "@hapi/topo": ^5.1.0
-    "@sideway/address": ^4.1.5
-    "@sideway/formula": ^3.0.1
-    "@sideway/pinpoint": ^2.0.0
-  checksum: 66ed454fee3d8e8da1ce21657fd2c7d565d98f3e539d2c5c028767e5f38cbd6297ce54df8312d1d094e62eb38f9452ebb43da4ce87321df66cf5e3f128cbc400
-  languageName: node
-  linkType: hard
-
 "jose@npm:^4.15.9":
   version: 4.15.9
   resolution: "jose@npm:4.15.9"
@@ -33239,18 +33044,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-dom@npm:^16.13.1 || ^17.0.0 || ^18.0.0":
-  version: 18.3.1
-  resolution: "react-dom@npm:18.3.1"
-  dependencies:
-    loose-envify: ^1.1.0
-    scheduler: ^0.23.2
-  peerDependencies:
-    react: ^18.3.1
-  checksum: 298954ecd8f78288dcaece05e88b570014d8f6dce5db6f66e6ee91448debeb59dcd31561dddb354eee47e6c1bb234669459060deb238ed0213497146e555a0b9
-  languageName: node
-  linkType: hard
-
 "react-double-scrollbar@npm:0.0.15":
   version: 0.0.15
   resolution: "react-double-scrollbar@npm:0.0.15"
@@ -33529,30 +33322,6 @@ __metadata:
   peerDependencies:
     react: ">= 16.3"
   checksum: 616a10205acfaf8cc3aa0824b60f6d037eef87143d8f338cf826deb74a353db9b9baad67a65dc8535fe90840bfc3e1b8a901f9c247033ffeec2f30405ac7528e
-  languageName: node
-  linkType: hard
-
-"react-router-dom@npm:^6.0.0":
-  version: 6.30.1
-  resolution: "react-router-dom@npm:6.30.1"
-  dependencies:
-    "@remix-run/router": 1.23.0
-    react-router: 6.30.1
-  peerDependencies:
-    react: ">=16.8"
-    react-dom: ">=16.8"
-  checksum: 89949352a702c1d83d11349900b6852250499e2bc5256d594d4895449b4769e79f7179955c86fecae1f6c7e672f21d49f5b7e2fede39bbb3dd45e6de4f129ccb
-  languageName: node
-  linkType: hard
-
-"react-router@npm:6.30.1":
-  version: 6.30.1
-  resolution: "react-router@npm:6.30.1"
-  dependencies:
-    "@remix-run/router": 1.23.0
-  peerDependencies:
-    react: ">=16.8"
-  checksum: cab6c2ef3e4bc2b7d92c17f9de30d56f169ffe10a082de52a5842a335289d798aec91ff7bc39dfe7d73f6c50ae56e9e5d1597e8edfcdd80910b93383138a7525
   languageName: node
   linkType: hard
 
@@ -35008,15 +34777,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"scheduler@npm:^0.23.2":
-  version: 0.23.2
-  resolution: "scheduler@npm:0.23.2"
-  dependencies:
-    loose-envify: ^1.1.0
-  checksum: 3e82d1f419e240ef6219d794ff29c7ee415fbdc19e038f680a10c067108e06284f1847450a210b29bbaf97b9d8a97ced5f624c31c681248ac84c80d56ad5a2c4
-  languageName: node
-  linkType: hard
-
 "schema-utils@npm:2.7.0":
   version: 2.7.0
   resolution: "schema-utils@npm:2.7.0"
@@ -35445,18 +35205,6 @@ __metadata:
     once: ^1.3.1
     simple-concat: ^1.0.0
   checksum: e4132fd27cf7af230d853fa45c1b8ce900cb430dd0a3c6d3829649fe4f2b26574c803698076c4006450efb0fad2ba8c5455fbb5755d4b0a5ec42d4f12b31d27e
-  languageName: node
-  linkType: hard
-
-"simple-oauth2@npm:^5.1.0":
-  version: 5.1.0
-  resolution: "simple-oauth2@npm:5.1.0"
-  dependencies:
-    "@hapi/hoek": ^11.0.4
-    "@hapi/wreck": ^18.0.0
-    debug: ^4.3.4
-    joi: ^17.6.4
-  checksum: 65e07a92ffdfbc38fdd7db5480349b09c4c896559b6b3786a256546fe3aa6ac80086fa4f2c30d1d68ff551668147343c0a0dcc53c33fe7e5d1a7b42b4772eedc
   languageName: node
   linkType: hard
 
