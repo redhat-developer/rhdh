@@ -226,10 +226,16 @@ The easiest and fastest method for getting started: RHDH app, running it locally
 ## Optional Configuration and Plugins
 
 - Adding a Home Page
-  - Run `yarn export-dynamic` from the `dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-dynamic-home-page`
-  - Copy-paste the `dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-dynamic-home-page` folder into `dynamic-plugins-root`
+  - Run `yarn export-dynamic` from the `dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-dynamic-home-page`:
+  ```bash
+  pushd dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-dynamic-home-page && yarn export-dynamic && popd
+  ```
+  - Copy-paste the `dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-dynamic-home-page` folder into `dynamic-plugins-root`:
+  ```bash
+  cp -r dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-dynamic-home-page dynamic-plugins-root/
+  ```
   - Add the following to your `app-config.local.yaml`:
-       ```
+      ```yaml
        dynamicPlugins:
           frontend:
             red-hat-developer-hub.backstage-plugin-dynamic-home-page:
@@ -267,7 +273,7 @@ The easiest and fastest method for getting started: RHDH app, running it locally
                       sm: { w: 12, h: 4 }
                       xs: { w: 12, h: 4 }
                       xxs: { w: 12, h: 4 }
-        ```
+      ```
 
 - Enabling Authentication in Showcase
      - Refer to the [authentication documentation](./auth.md) for the available auth providers and the steps to configure them.
