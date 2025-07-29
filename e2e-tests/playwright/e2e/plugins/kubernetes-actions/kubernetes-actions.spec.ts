@@ -32,26 +32,16 @@ test.describe("Test Kubernetes Actions plugin", () => {
       await new Promise((resolve) => setTimeout(resolve, coolDownMs));
     }
   });
-  test.setTimeout(60000);
 
   test("Creates kubernetes namespace", async () => {
     namespace = `test-kubernetes-actions-${Date.now()}`;
     await uiHelper.verifyHeading("Self-service");
     await uiHelper.clickBtnInCard("Create a kubernetes namespace", "Choose");
     await uiHelper.waitForTitle("Create a kubernetes namespace", 2);
-    await new Promise((resolve) => setTimeout(resolve, 5000)); // 5s wait
-
-    await new Promise((resolve) => setTimeout(resolve, 5000)); // 5s wait
 
     await uiHelper.fillTextInputByLabel("Namespace name", namespace);
-    await new Promise((resolve) => setTimeout(resolve, 5000)); // 5s wait
-
     await uiHelper.fillTextInputByLabel("Url", process.env.K8S_CLUSTER_URL);
-    await new Promise((resolve) => setTimeout(resolve, 5000)); // 5s wait
-
     await uiHelper.fillTextInputByLabel("Token", process.env.K8S_CLUSTER_TOKEN);
-    await new Promise((resolve) => setTimeout(resolve, 5000)); // 5s wait
-
     await uiHelper.checkCheckbox("Skip TLS verification");
     await uiHelper.clickButton("Review");
     await uiHelper.clickButton("Create");
