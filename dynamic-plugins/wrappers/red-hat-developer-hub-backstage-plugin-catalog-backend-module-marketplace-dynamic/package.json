@@ -1,6 +1,6 @@
 {
   "name": "red-hat-developer-hub-backstage-plugin-catalog-backend-module-marketplace",
-  "version": "0.4.1",
+  "version": "0.4.4",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "license": "Apache-2.0",
@@ -36,7 +36,7 @@
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
-    "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace": "0.4.1"
+    "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace": "0.4.4"
   },
   "devDependencies": {
     "@backstage/cli": "0.30.0",

@@ -668,8 +668,8 @@ check_backstage_running() {
   local release_name=$1
   local namespace=$2
   local url=$3
-  local max_attempts=$4
-  local wait_seconds=$5
+  local max_attempts=${4:-30}
+  local wait_seconds=${5:-30}
 
   if [ -z "${url}" ]; then
     echo "Error: URL is not set. Please provide a valid URL."
@@ -679,11 +679,12 @@ check_backstage_running() {
   echo "Checking if Backstage is up and running at ${url}"
 
   for ((i = 1; i <= max_attempts; i++)); do
+    # Check HTTP status
     local http_status
     http_status=$(curl --insecure -I -s -o /dev/null -w "%{http_code}" "${url}")
 
     if [ "${http_status}" -eq 200 ]; then
-      echo "Backstage is up and running!"
+      echo "✅ Backstage is up and running!"
       export BASE_URL="${url}"
       echo "BASE_URL: ${BASE_URL}"
       return 0
@@ -694,7 +695,8 @@ check_backstage_running() {
     fi
   done
 
-  echo "Failed to reach Backstage at ${BASE_URL} after ${max_attempts} attempts." | tee -a "/tmp/${LOGFILE}"
+  echo "❌ Failed to reach Backstage at ${url} after ${max_attempts} attempts."
+  oc get events -n "${namespace}" --sort-by='.lastTimestamp' | tail -10
   mkdir -p "${ARTIFACT_DIR}/${namespace}"
   cp -a "/tmp/${LOGFILE}" "${ARTIFACT_DIR}/${namespace}/"
   save_all_pod_logs "${namespace}"
@@ -892,6 +894,8 @@ base_deployment() {
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
   echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
   perform_helm_install "${RELEASE_NAME}" "${NAME_SPACE}" "${HELM_CHART_VALUE_FILE_NAME}"
+
+  deploy_orchestrator_workflows "${NAME_SPACE}"
 }
 
 rbac_deployment() {
@@ -1210,4 +1214,44 @@ get_previous_release_value_file() {
     save_overall_result 1
     exit 1
   fi
+}
+
+# Helper function to deploy workflows for orchestrator testing
+deploy_orchestrator_workflows() {
+  local namespace=$1
+
+  local WORKFLOW_REPO="https://github.com/rhdh-orchestrator-test/serverless-workflows.git"
+  local WORKFLOW_DIR="${DIR}/serverless-workflows"
+  local WORKFLOW_MANIFESTS="${WORKFLOW_DIR}/workflows/experimentals/user-onboarding/manifests/"
+
+  rm -rf "${WORKFLOW_DIR}"
+  git clone "${WORKFLOW_REPO}" "${WORKFLOW_DIR}"
+
+  if [[ "$namespace" == "${NAME_SPACE_RBAC}" ]]; then
+    local pqsl_secret_name="postgres-cred"
+    local pqsl_user_key="POSTGRES_USER"
+    local pqsl_password_key="POSTGRES_PASSWORD"
+    local pqsl_svc_name="postgress-external-db-primary"
+    local patch_namespace="${NAME_SPACE_POSTGRES_DB}"
+  else
+    local pqsl_secret_name="rhdh-postgresql-svcbind-postgres"
+    local pqsl_user_key="username"
+    local pqsl_password_key="password"
+    local pqsl_svc_name="rhdh-postgresql"
+    local patch_namespace="$namespace"
+  fi
+
+  oc apply -f "${WORKFLOW_MANIFESTS}"
+
+  helm repo add orchestrator-workflows https://rhdhorchestrator.io/serverless-workflows
+  helm install greeting orchestrator-workflows/greeting -n "$namespace"
+
+  until [[ $(oc get sf -n "$namespace" --no-headers 2>/dev/null | wc -l) -eq 2 ]]; do
+    echo "No sf resources found. Retrying in 5 seconds..."
+    sleep 5
+  done
+
+  for workflow in greeting user-onboarding; do
+    oc -n "$namespace" patch sonataflow "$workflow" --type merge -p "{\"spec\": { \"persistence\": { \"postgresql\": { \"secretRef\": {\"name\": \"$pqsl_secret_name\",\"userKey\": \"$pqsl_user_key\",\"passwordKey\": \"$pqsl_password_key\"},\"serviceRef\": {\"name\": \"$pqsl_svc_name\",\"namespace\": \"$patch_namespace\"}}}}}"
+  done
 }
