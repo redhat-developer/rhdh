@@ -5,8 +5,6 @@ import { KubeClient } from "../../../utils/kube-client";
 import { UI_HELPER_ELEMENTS } from "../../../support/pageObjects/global-obj";
 
 test.describe("Test Kubernetes Actions plugin", () => {
-  // TODO: Remove after https://issues.redhat.com/browse/RHDHBUGS-1912 is fixed
-  test.describe.configure({ retries: 5 });
   let common: Common;
   let uiHelper: UIhelper;
   let page: Page;
@@ -23,7 +21,16 @@ test.describe("Test Kubernetes Actions plugin", () => {
     await uiHelper.clickLink({ ariaLabel: "Self-service" });
   });
 
-  //TODO https://issues.redhat.com/browse/RHDHBUGS-1912
+  // eslint-disable-next-line no-empty-pattern
+  test.beforeEach(async ({}, testInfo) => {
+    // Add cool-down period before retries (except on first attempt)
+    if (testInfo.retry > 0) {
+      const coolDownMs = 2000;
+      console.log(`Attempt ${testInfo.retry + 1} failed, waiting ${coolDownMs}ms before retry...`);
+      await new Promise(resolve => setTimeout(resolve, coolDownMs));
+    }
+  });
+
   test("Creates kubernetes namespace", async () => {
     namespace = `test-kubernetes-actions-${Date.now()}`;
     await uiHelper.verifyHeading("Self-service");
