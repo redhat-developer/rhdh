@@ -165,8 +165,7 @@ global:
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-msgraph-dynamic
-        disabled: true
-        # TODO: Fix failing test and re-enable plugin - https://issues.redhat.com/browse/RHDHBUGS-1871
+        disabled: false
         pluginConfig:
           catalog:
             providers:
@@ -176,7 +175,39 @@ global:
                   tenantId: temp
                   clientId: temp
                   clientSecret: temp
+                  schedule:
+                    frequency:
+                      minutes: 60
+                    initialDelay:
+                      seconds: 15
+                    timeout:
+                      minutes: 15
       - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-ldap-dynamic
         disabled: false
+        pluginConfig:
+          catalog:
+            providers:
+              ldapOrg:
+                default:
+                  target: temp
+                  bind:
+                    dn: temp
+                    secret: temp
+                  users:
+                    - dn: temp
+                      options:
+                        filter: (uid=*)
+                  groups:
+                    - dn: temp
+                      options:
+                        filter: (cn=*)
+                  schedule:
+                    frequency:
+                      minutes: 60
+                    initialDelay:
+                      seconds: 15
+                    timeout:
+                      minutes: 15
+
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-pingidentity-dynamic
         disabled: false
