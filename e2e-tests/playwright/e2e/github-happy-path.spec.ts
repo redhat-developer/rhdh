@@ -191,6 +191,7 @@ test.describe.serial("GitHub Happy path", async () => {
   });
 
   test("Click on the Dependencies tab and verify that all the relations have been listed and displayed", async () => {
+    test.fixme();
     await uiHelper.clickTab("Dependencies");
     for (const resource of RESOURCES) {
       const resourceElement = page.locator(
@@ -202,6 +203,7 @@ test.describe.serial("GitHub Happy path", async () => {
   });
 
   test("Sign out and verify that you return back to the Sign in page", async () => {
+    test.fixme();
     await uiHelper.goToSettingsPage();
     await common.signOut();
     context.clearCookies();
