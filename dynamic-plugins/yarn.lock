@@ -13184,9 +13184,25 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-marketplace@npm:0.8.5":
-  version: 0.8.5
-  resolution: "@red-hat-developer-hub/backstage-plugin-marketplace@npm:0.8.5"
+"@red-hat-developer-hub/backstage-plugin-marketplace-common@npm:^0.7.2":
+  version: 0.7.2
+  resolution: "@red-hat-developer-hub/backstage-plugin-marketplace-common@npm:0.7.2"
+  dependencies:
+    "@backstage/backend-plugin-api": ^1.3.1
+    "@backstage/catalog-client": ^1.10.0
+    "@backstage/catalog-model": ^1.7.4
+    "@backstage/errors": ^1.2.7
+    "@backstage/plugin-permission-common": ^0.9.0
+  peerDependencies:
+    "@backstage/backend-plugin-api": ^1.3.1
+    "@backstage/types": ^1.2.1
+  checksum: 4c5e8e569b5f372414e3e1aac4fd0273f14113534837996022ff81cd66bcc33ddacd43ec56645a609e1ae1b377e7632c4c9833dc3e57c825fb5bd77e4b20f751
+  languageName: node
+  linkType: hard
+
+"@red-hat-developer-hub/backstage-plugin-marketplace@npm:0.8.6":
+  version: 0.8.6
+  resolution: "@red-hat-developer-hub/backstage-plugin-marketplace@npm:0.8.6"
   dependencies:
     "@backstage/catalog-client": ^1.10.0
     "@backstage/core-components": ^0.17.2
@@ -13200,7 +13216,7 @@ __metadata:
     "@mui/icons-material": ^5.16.7
     "@mui/material": ^5.12.2
     "@mui/styles": 5.18.0
-    "@red-hat-developer-hub/backstage-plugin-marketplace-common": ^0.7.1
+    "@red-hat-developer-hub/backstage-plugin-marketplace-common": ^0.7.2
     "@scalprum/react-core": 0.9.5
     "@tanstack/react-query": ^5.60.5
     monaco-editor: ^0.52.2
@@ -13210,7 +13226,7 @@ __metadata:
     react: ^17.0.0 || ^18.0.0
     react-dom: ^17.0.0 || ^18.0.0
     react-router-dom: ^6.3.0
-  checksum: d0225bf30d70c093b0e7565728860c9ab882a149bf780695289c16ceac39984395032f5f5e6857c9a39a7545ab03595395de689d0acc7ce211d8084af1c48b86
+  checksum: 20be79813f1488e2f4a112424ef406440e5a866d99d84af6581c1762d874bf7f0992398a2d8e48ffc31a144939fd19ec0edb61d8dfb4d5ea659cfd5eacc89780
   languageName: node
   linkType: hard
 
@@ -33714,7 +33730,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.6.1
     "@mui/material": 5.18.0
-    "@red-hat-developer-hub/backstage-plugin-marketplace": 0.8.5
+    "@red-hat-developer-hub/backstage-plugin-marketplace": 0.8.6
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
