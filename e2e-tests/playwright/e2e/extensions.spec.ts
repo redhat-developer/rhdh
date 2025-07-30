@@ -137,8 +137,8 @@ test.describe("Admin > Extensions > Catalog", () => {
     await page.keyboard.press(`${modifier}+KeyA`);
     await page.keyboard.press(`${modifier}+KeyV`);
     await uiHelper.verifyText("pluginConfig:");
-    await page.locator("button[class^='copy-button']").click();
-    await expect(page.getByRole("button", { name: "✔" }).nth(1)).toBeVisible();
+    await page.locator("button[class^='copy-button']").nth(0).click();
+    await expect(page.getByRole("button", { name: "✔" }).nth(0)).toBeVisible();
     const clipboardContent = await page.evaluate(() =>
       navigator.clipboard.readText(),
     );
