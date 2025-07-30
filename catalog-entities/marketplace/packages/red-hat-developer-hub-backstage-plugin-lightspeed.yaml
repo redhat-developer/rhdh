@@ -17,7 +17,7 @@ metadata:
   tags: []
 spec:
   packageName: "@red-hat-developer-hub/backstage-plugin-lightspeed"
-  dynamicArtifact: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-lightspeed:next__0.5.7!red-hat-developer-hub-backstage-plugin-lightspeed
+  dynamicArtifact: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-lightspeed:bs_1.39.1__0.5.7!red-hat-developer-hub-backstage-plugin-lightspeed
   version: 0.5.7
   backstage:
     role: frontend-plugin
@@ -30,14 +30,10 @@ spec:
   appConfigExamples:
     - title: Default configuration
       content: |
-        lightspeed: 
-          servers:
-            - id: ${LIGHTSPEED_SERVER_ID}
-              url: ${LIGHTSPEED_SERVER_URL}
-              token: ${LIGHTSPEED_SERVER_TOKEN}
-          questionValidation: true # Optional, default is true
-          servicePort: ${LIGHTSPEED_SERVICE_PORT} # Optional - Change the lightspeed service port number, default is 8080
-          prompts: # Optional – Configure custom user prompts. If left empty, the plugin will fall back to built-in defaults.
+        lightspeed:
+          # OPTIONAL: Custom users prompts displayed to users
+          # If not provided, the plugin uses built-in default prompts
+          prompts:
             - title: 'Getting Started with Red Hat Developer Hub'
               message: Can you guide me through the first steps to start using Developer Hub as a developer, like exploring the Software Catalog and adding my service?
         dynamicPlugins:
