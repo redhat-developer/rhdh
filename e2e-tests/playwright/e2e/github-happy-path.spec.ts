@@ -11,8 +11,7 @@ import { TEMPLATES } from "../support/testData/templates";
 let page: Page;
 let context: BrowserContext;
 
-// test suite skipped for now, until it's migrated back to the main showcase job
-test.describe("GitHub Happy path", async () => {
+test.describe.serial("GitHub Happy path", async () => {
   let common: Common;
   let uiHelper: UIhelper;
   let catalogImport: CatalogImport;

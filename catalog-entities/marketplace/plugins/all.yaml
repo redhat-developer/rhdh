@@ -67,6 +67,7 @@ spec:
     - ./scaffolder-integrations.yaml
     - ./scaffolder-relation-processor-catalog-integration.yaml
     - ./security-insights.yaml
+    - ./servicenow.yaml
     - ./servicenow-scaffolder-actions.yaml
     - ./signals.yaml
     - ./signals-backend.yaml
