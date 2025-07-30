@@ -49,9 +49,13 @@
         "patch",
         "minor"
       ],      
+      "matchFileNames": [
+        ".rhdh/docker/Dockerfile",
+        "docker/Dockerfile"
+      ],        
       "additionalBranchPrefix": "dockerfile ",        
-      "groupName": "Dockerfile images (non-major)",
-      "automerge": false
+      "groupName": "Dockerfile images (non-major) [skip-build]",
+      "automerge": true
     },  
     {
       "description": "Test Dockerfile non-major updates", 

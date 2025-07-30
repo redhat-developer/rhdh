@@ -56,6 +56,8 @@ spec:
     - ./backstage-community-plugin-scaffolder-backend-module-quay.yaml
     - ./backstage-community-plugin-scaffolder-backend-module-regex.yaml
     - ./backstage-community-plugin-rbac.yaml
+    - ./backstage-community-plugin-servicenow.yaml
+    - ./backstage-community-plugin-servicenow-backend.yaml
     - ./backstage-community-plugin-scaffolder-backend-module-servicenow.yaml
     - ./backstage-community-plugin-scaffolder-backend-module-sonarqube.yaml
     - ./backstage-community-plugin-3scale-backend.yaml

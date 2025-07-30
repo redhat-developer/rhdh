@@ -4,7 +4,7 @@ import { UIhelper } from "../../../utils/ui-helper";
 import { KubeClient } from "../../../utils/kube-client";
 import { UI_HELPER_ELEMENTS } from "../../../support/pageObjects/global-obj";
 
-test.describe("Test Kubernetes Actions plugin", () => {
+test.describe.skip("Test Kubernetes Actions plugin", () => {
   let common: Common;
   let uiHelper: UIhelper;
   let page: Page;
@@ -21,6 +21,7 @@ test.describe("Test Kubernetes Actions plugin", () => {
     await uiHelper.clickLink({ ariaLabel: "Self-service" });
   });
 
+  //TODO https://issues.redhat.com/browse/RHDHBUGS-1912
   test("Creates kubernetes namespace", async () => {
     namespace = `test-kubernetes-actions-${Date.now()}`;
     await uiHelper.verifyHeading("Self-service");

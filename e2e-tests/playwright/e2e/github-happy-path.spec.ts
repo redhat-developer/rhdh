@@ -11,8 +11,7 @@ import { TEMPLATES } from "../support/testData/templates";
 let page: Page;
 let context: BrowserContext;
 
-// test suite skipped for now, until it's migrated back to the main showcase job
-test.describe("GitHub Happy path", async () => {
+test.describe.serial("GitHub Happy path", async () => {
   let common: Common;
   let uiHelper: UIhelper;
   let catalogImport: CatalogImport;
@@ -80,7 +79,7 @@ test.describe("GitHub Happy path", async () => {
     await uiHelper.openSidebar("Catalog");
     await uiHelper.selectMuiBox("Kind", "User");
     await uiHelper.searchInputPlaceholder("rhdh");
-    await uiHelper.verifyRowsInTable(["rhdh-qe"]);
+    await uiHelper.verifyRowsInTable(["rhdh-qe rhdh-qe"]);
   });
 
   test("Verify all 12 Software Templates appear in the Create page", async () => {

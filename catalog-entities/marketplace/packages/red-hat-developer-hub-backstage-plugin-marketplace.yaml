@@ -18,7 +18,7 @@ metadata:
 spec:
   packageName: "@red-hat-developer-hub/backstage-plugin-marketplace"
   dynamicArtifact: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-marketplace
-  version: 0.8.2
+  version: 0.8.5
   backstage:
     role: frontend-plugin
     supportedVersions: 1.39.1

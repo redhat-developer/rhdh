@@ -15,15 +15,27 @@ class Keycloak {
   private readonly clientSecret: string;
 
   constructor() {
-    this.baseURL = process.env.KEYCLOAK_BASE_URL;
-    this.realm = process.env.KEYCLOAK_REALM;
-    this.clientSecret = process.env.KEYCLOAK_CLIENT_SECRET;
-    this.clientId = process.env.KEYCLOAK_CLIENT_ID;
+    this.baseURL = Buffer.from(
+      process.env.KEYCLOAK_AUTH_BASE_URL,
+      "base64",
+    ).toString();
+    this.realm = Buffer.from(
+      process.env.KEYCLOAK_AUTH_REALM,
+      "base64",
+    ).toString();
+    this.clientSecret = Buffer.from(
+      process.env.KEYCLOAK_AUTH_CLIENT_SECRET,
+      "base64",
+    ).toString();
+    this.clientId = Buffer.from(
+      process.env.KEYCLOAK_AUTH_CLIENTID,
+      "base64",
+    ).toString();
   }
 
   async getAuthenticationToken(): Promise<string> {
     const response = await fetch(
-      `${this.baseURL}/realms/${this.realm}/protocol/openid-connect/token`,
+      `${this.baseURL}/auth/realms/${this.realm}/protocol/openid-connect/token`,
       {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -42,7 +54,7 @@ class Keycloak {
 
   async getUsers(authToken: string): Promise<User[]> {
     const response = await fetch(
-      `${this.baseURL}/admin/realms/${this.realm}/users`,
+      `${this.baseURL}/auth/admin/realms/${this.realm}/users`,
       {
         method: "GET",
         headers: {
@@ -51,13 +63,16 @@ class Keycloak {
       },
     );
 
-    if (response.status !== 200) throw new Error("Failed to get users");
-    return response.json() as Promise<User[]>;
+    if (response.status !== 200) {
+      const errorText = await response.text();
+      throw new Error(`Failed to get users: ${response.status} - ${errorText}`);
+    }
+    return (await response.json()) as Promise<User[]>;
   }
 
   async getGroupsOfUser(authToken: string, userId: string): Promise<Group[]> {
     const response = await fetch(
-      `${this.baseURL}/admin/realms/${this.realm}/users/${userId}/groups`,
+      `${this.baseURL}/auth/admin/realms/${this.realm}/users/${userId}/groups`,
       {
         method: "GET",
         headers: {
@@ -66,9 +81,13 @@ class Keycloak {
       },
     );
 
-    if (response.status !== 200)
-      throw new Error("Failed to get groups of user");
-    return response.json() as Promise<Group[]>;
+    if (response.status !== 200) {
+      const errorText = await response.text();
+      throw new Error(
+        `Failed to get groups of user: ${response.status} - ${errorText}`,
+      );
+    }
+    return (await response.json()) as Promise<Group[]>;
   }
 
   async checkUserDetails(
