@@ -19,6 +19,7 @@ test.describe("CustomTheme should be applied", () => {
     themeVerifier = new ThemeVerifier(page);
 
     await common.loginAsGuest();
+    await page.getByRole("button", { name: "Hide" }).click();
   });
 
   // eslint-disable-next-line no-empty-pattern
