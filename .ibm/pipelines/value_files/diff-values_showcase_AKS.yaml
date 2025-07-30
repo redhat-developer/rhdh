@@ -44,9 +44,9 @@ upstream:
     enabled: true
     className: webapprouting.kubernetes.azure.com
     host: ''
-  metrics:
-    serviceMonitor:
-      enabled: true
-      path: /metrics
-      port: http-metrics
+  service:
+    extraPorts:
+      - name: http-metrics
+        port: 9464
+        targetPort: 9464
 orchestrator: null
