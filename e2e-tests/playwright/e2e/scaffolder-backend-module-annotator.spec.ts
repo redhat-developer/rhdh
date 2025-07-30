@@ -195,21 +195,6 @@ test.describe.serial("Test Scaffolder Backend Module Annotator Actions", () => {
     );
   });
 
-  test("Verify Registered Template has templated version in entity Raw Yaml", async () => {
-    await uiHelper.openSidebar("Catalog");
-    await uiHelper.selectMuiBox("Kind", "Template");
-
-    await uiHelper.searchInputPlaceholder("Create React App Template\n");
-    await uiHelper.verifyRowInTableByUniqueText("Create React App Template", [
-      "website",
-    ]);
-    await uiHelper.clickLink("Create React App Template");
-
-    await catalogImport.inspectEntityAndVerifyYaml(
-      `backstage.io/template-version: 0.0.1`,
-    );
-  });
-
   test("Verify Registered Component has templated version in entity Raw Yaml", async () => {
     await uiHelper.openCatalogSidebar("Component");
     await uiHelper.searchInputPlaceholder(reactAppDetails.componentName);
@@ -219,6 +204,21 @@ test.describe.serial("Test Scaffolder Backend Module Annotator Actions", () => {
       ["website"],
     );
     await uiHelper.clickLink(`${reactAppDetails.componentName}`);
+
+    await catalogImport.inspectEntityAndVerifyYaml(
+      `backstage.io/template-version: 0.0.1`,
+    );
+  });
+
+  test("Verify Registered Template has templated version in entity Raw Yaml", async () => {
+    await uiHelper.openSidebar("Catalog");
+    await uiHelper.selectMuiBox("Kind", "Template");
+
+    await uiHelper.searchInputPlaceholder("Create React App Template\n");
+    await uiHelper.verifyRowInTableByUniqueText("Create React App Template", [
+      "website",
+    ]);
+    await uiHelper.clickLink("Create React App Template");
 
     await catalogImport.inspectEntityAndVerifyYaml(
       `backstage.io/template-version: 0.0.1`,
