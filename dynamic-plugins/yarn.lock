@@ -13839,9 +13839,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-bulk-import-backend@npm:6.1.3":
-  version: 6.1.3
-  resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import-backend@npm:6.1.3"
+"@red-hat-developer-hub/backstage-plugin-bulk-import-backend@npm:6.1.7":
+  version: 6.1.7
+  resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import-backend@npm:6.1.7"
   dependencies:
     "@backstage/backend-defaults": ^0.10.0
     "@backstage/backend-plugin-api": ^1.3.1
@@ -13852,7 +13852,7 @@ __metadata:
     "@backstage/plugin-permission-node": ^0.10.0
     "@octokit/auth-app": ^6.0.3
     "@octokit/rest": ^20.0.2
-    "@red-hat-developer-hub/backstage-plugin-bulk-import-common": ^1.7.1
+    "@red-hat-developer-hub/backstage-plugin-bulk-import-common": ^1.7.2
     ajv-formats: ^3.0.1
     express: ^4.17.1
     git-url-parse: ^14.0.0
@@ -13863,22 +13863,22 @@ __metadata:
     openapi-backend: ^5.10.6
   peerDependencies:
     "@janus-idp/backstage-plugin-audit-log-node": ^1.7.0
-  checksum: 12abe641518f3861ecad412b159ad8bf1ff0432d2792c287d1c4dc84f23786f8e3a7f175e6425e3349dd8c716022d5536494049e84054c4e1f5abe7f22c1251e
+  checksum: 45a735d30a1c16cf3b0d1cbafaa4e8a9b401543995623c08077d68c0a357576538e226dede719c562384f9d8897d126ef76b14056b34596183af5f6b393efebe
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-bulk-import-common@npm:^1.7.1":
-  version: 1.7.1
-  resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import-common@npm:1.7.1"
+"@red-hat-developer-hub/backstage-plugin-bulk-import-common@npm:^1.7.2":
+  version: 1.7.2
+  resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import-common@npm:1.7.2"
   peerDependencies:
     "@backstage/plugin-permission-common": ^0.9.0
-  checksum: 90e435b09288744d12128eb5b5f0a181d983f014011dd0ac9079694b407d0556f3e394ca3cb3f4c5b089e1633667ea4f1f7b5f82cca0039b7713885bc6d06714
+  checksum: 8be6516aea7c25402f9797ee4afc2ef5da6bd2f9986043a846258ab6bdbecb672ac46442cba8111cbe8e5d078ca8a0ce75ed1f5529c7e76ccda9e8d7440f2d4d
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-bulk-import@npm:1.13.3":
-  version: 1.13.3
-  resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import@npm:1.13.3"
+"@red-hat-developer-hub/backstage-plugin-bulk-import@npm:1.13.4":
+  version: 1.13.4
+  resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import@npm:1.13.4"
   dependencies:
     "@backstage/catalog-model": ^1.7.4
     "@backstage/core-components": ^0.17.2
@@ -13889,8 +13889,8 @@ __metadata:
     "@backstage/theme": ^0.6.6
     "@mui/icons-material": ^5.15.17
     "@mui/material": ^5.12.2
-    "@mui/styles": 5.17.1
-    "@red-hat-developer-hub/backstage-plugin-bulk-import-common": ^1.7.1
+    "@mui/styles": 5.18.0
+    "@red-hat-developer-hub/backstage-plugin-bulk-import-common": ^1.7.2
     "@tanstack/react-query": ^4.29.21
     formik: ^2.4.5
     js-yaml: ^4.1.0
@@ -13901,13 +13901,13 @@ __metadata:
   peerDependencies:
     react: 16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.0.0
-  checksum: 47de57ecab3948017253383c03f02d510a7aecb38eece2aec118d86c2adf4233de315ead20e49888251c39bbbae29f39f8629ed33eec2a26c4bcec616ca85775
+  checksum: 7fde711b138c23c3594678bf0f4cab35237df3c4faab8f4f78eecdd353cf97d670aae6faea8e6a5e409f8465c51682649eeb57fb20faed6441a6b3c0352942b3
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace@npm:0.4.1":
-  version: 0.4.1
-  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace@npm:0.4.1"
+"@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace@npm:0.4.4":
+  version: 0.4.4
+  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace@npm:0.4.4"
   dependencies:
     "@backstage/backend-dynamic-feature-service": 0.7.0
     "@backstage/backend-plugin-api": ^1.3.1
@@ -13917,12 +13917,12 @@ __metadata:
     "@backstage/plugin-catalog-common": ^1.1.4
     "@backstage/plugin-catalog-node": ^1.17.0
     "@backstage/types": ^1.2.1
-    "@red-hat-developer-hub/backstage-plugin-marketplace-common": ^0.7.0
+    "@red-hat-developer-hub/backstage-plugin-marketplace-common": ^0.7.1
     find-root: ^1.1.0
     glob: ^8.1.0
     js-yaml: ^4.1.0
     semver: ^7.6.3
-  checksum: ec18b479bbc2ad6aae83b5e07b68c273b8053eb863f366178214e3365d4bd68b47d37ef635ed1342797bc5ec4f9d2cb7e0f961f15e8cc26bbb4828ce4ad3a479
+  checksum: 3b9bb9cb1022b8a83e3f9dcf8d30d571b753518fa3eb81139b9aaa4421bb24fac2cea14dd8fa96c5f35e86e672133df532aecf486d81895874128166da603464
   languageName: node
   linkType: hard
 
@@ -14007,9 +14007,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-marketplace-backend@npm:0.7.1":
-  version: 0.7.1
-  resolution: "@red-hat-developer-hub/backstage-plugin-marketplace-backend@npm:0.7.1"
+"@red-hat-developer-hub/backstage-plugin-marketplace-backend@npm:0.7.3":
+  version: 0.7.3
+  resolution: "@red-hat-developer-hub/backstage-plugin-marketplace-backend@npm:0.7.3"
   dependencies:
     "@backstage/backend-defaults": ^0.10.0
     "@backstage/backend-plugin-api": ^1.3.1
@@ -14019,18 +14019,18 @@ __metadata:
     "@backstage/plugin-catalog-node": ^1.17.0
     "@backstage/plugin-permission-common": ^0.9.0
     "@backstage/plugin-permission-node": ^0.10.0
-    "@red-hat-developer-hub/backstage-plugin-marketplace-common": ^0.7.0
+    "@red-hat-developer-hub/backstage-plugin-marketplace-common": ^0.7.1
     express: ^4.17.1
     express-promise-router: ^4.1.0
     yaml: ^2.7.1
     zod: ^3.22.4
-  checksum: f092745c002d6ec0be41d3f56b83ee441a47147dbf97228fb62e17a0a31ccf5e201430fe57d5285d74ae01fb145f0731290bf021158332942bcf39e1344aa984
+  checksum: 0f4e57471d3c5bc2742ccde6fc71a3d3961631daabf7f2f9c61ee3398d3ec3b96efa89220778478437c7ea0ba2f0e7b46e57d17cb633a9847b61ce000f340d1f
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-marketplace-common@npm:0.7.0, @red-hat-developer-hub/backstage-plugin-marketplace-common@npm:^0.7.0":
-  version: 0.7.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-marketplace-common@npm:0.7.0"
+"@red-hat-developer-hub/backstage-plugin-marketplace-common@npm:0.7.1":
+  version: 0.7.1
+  resolution: "@red-hat-developer-hub/backstage-plugin-marketplace-common@npm:0.7.1"
   dependencies:
     "@backstage/backend-plugin-api": ^1.3.1
     "@backstage/catalog-client": ^1.10.0
@@ -14040,13 +14040,29 @@ __metadata:
   peerDependencies:
     "@backstage/backend-plugin-api": ^1.3.1
     "@backstage/types": ^1.2.1
-  checksum: 30c3f7965308eccceb1d80d4054149078131a40252708bc92b6721544a9b5332a2abb99bb0e8342b55eef884ccc81f06bc7e886c3441a6200db52ce662862111
+  checksum: 134abb053aee693eedf1e2bba64c7ec82477a5421995e7e31a3155b0ec95bf90946517fa1771428ab11d580e3050970df69380d7117f6c09d894d97cd97a92ba
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-marketplace@npm:0.8.2":
-  version: 0.8.2
-  resolution: "@red-hat-developer-hub/backstage-plugin-marketplace@npm:0.8.2"
+"@red-hat-developer-hub/backstage-plugin-marketplace-common@npm:^0.7.1, @red-hat-developer-hub/backstage-plugin-marketplace-common@npm:^0.7.2":
+  version: 0.7.2
+  resolution: "@red-hat-developer-hub/backstage-plugin-marketplace-common@npm:0.7.2"
+  dependencies:
+    "@backstage/backend-plugin-api": ^1.3.1
+    "@backstage/catalog-client": ^1.10.0
+    "@backstage/catalog-model": ^1.7.4
+    "@backstage/errors": ^1.2.7
+    "@backstage/plugin-permission-common": ^0.9.0
+  peerDependencies:
+    "@backstage/backend-plugin-api": ^1.3.1
+    "@backstage/types": ^1.2.1
+  checksum: 4c5e8e569b5f372414e3e1aac4fd0273f14113534837996022ff81cd66bcc33ddacd43ec56645a609e1ae1b377e7632c4c9833dc3e57c825fb5bd77e4b20f751
+  languageName: node
+  linkType: hard
+
+"@red-hat-developer-hub/backstage-plugin-marketplace@npm:0.8.6":
+  version: 0.8.6
+  resolution: "@red-hat-developer-hub/backstage-plugin-marketplace@npm:0.8.6"
   dependencies:
     "@backstage/catalog-client": ^1.10.0
     "@backstage/core-components": ^0.17.2
@@ -14060,7 +14076,7 @@ __metadata:
     "@mui/icons-material": ^5.16.7
     "@mui/material": ^5.12.2
     "@mui/styles": 5.18.0
-    "@red-hat-developer-hub/backstage-plugin-marketplace-common": ^0.7.0
+    "@red-hat-developer-hub/backstage-plugin-marketplace-common": ^0.7.2
     "@scalprum/react-core": 0.9.5
     "@tanstack/react-query": ^5.60.5
     monaco-editor: ^0.52.2
@@ -14070,7 +14086,7 @@ __metadata:
     react: ^17.0.0 || ^18.0.0
     react-dom: ^17.0.0 || ^18.0.0
     react-router-dom: ^6.3.0
-  checksum: 68842ac0347ea397389489d07ae931081ab8a88a440e3baf53983521ed36196a04df64bc39e2a400c1d797fd0ded4e190261e321048adfb9ff14e96a790c47cc
+  checksum: 20be79813f1488e2f4a112424ef406440e5a866d99d84af6581c1762d874bf7f0992398a2d8e48ffc31a144939fd19ec0edb61d8dfb4d5ea659cfd5eacc89780
   languageName: node
   linkType: hard
 
@@ -34555,7 +34571,7 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.6.1
-    "@red-hat-developer-hub/backstage-plugin-bulk-import-backend": 6.1.3
+    "@red-hat-developer-hub/backstage-plugin-bulk-import-backend": 6.1.7
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -34567,7 +34583,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.6.1
     "@mui/material": 5.18.0
-    "@red-hat-developer-hub/backstage-plugin-bulk-import": 1.13.3
+    "@red-hat-developer-hub/backstage-plugin-bulk-import": 1.13.4
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -34578,7 +34594,7 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.6.1
-    "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace": 0.4.1
+    "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace": 0.4.4
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -34625,8 +34641,8 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.6.1
-    "@red-hat-developer-hub/backstage-plugin-marketplace-backend": 0.7.1
-    "@red-hat-developer-hub/backstage-plugin-marketplace-common": 0.7.0
+    "@red-hat-developer-hub/backstage-plugin-marketplace-backend": 0.7.3
+    "@red-hat-developer-hub/backstage-plugin-marketplace-common": 0.7.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
@@ -34638,7 +34654,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.6.1
     "@mui/material": 5.18.0
-    "@red-hat-developer-hub/backstage-plugin-marketplace": 0.8.2
+    "@red-hat-developer-hub/backstage-plugin-marketplace": 0.8.6
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
