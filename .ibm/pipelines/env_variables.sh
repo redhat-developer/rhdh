@@ -15,9 +15,13 @@ HELM_CHART_RBAC_EKS_DIFF_VALUE_FILE_NAME="diff-values_showcase-rbac_EKS.yaml"
 HELM_CHART_SANITY_PLUGINS_DIFF_VALUE_FILE_NAME="diff-values_showcase-sanity-plugins.yaml"
 HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME="merged-values_showcase-sanity-plugins.yaml"
 
+CHART_VERSION="1.7-128"
+QUAY_REPO="rhdh/rhdh-hub-rhel9"
+TAG_NAME_BASE="1.7"
+
 HELM_CHART_URL="oci://quay.io/rhdh/chart"
 K8S_CLUSTER_TOKEN_ENCODED=$(printf "%s" $K8S_CLUSTER_TOKEN | base64 | tr -d '\n')
-QUAY_REPO="${QUAY_REPO:-rhdh-community/rhdh}"
+#QUAY_REPO="${QUAY_REPO:-rhdh-community/rhdh}"
 QUAY_NAMESPACE=$(cat /tmp/secrets/QUAY_NAMESPACE)
 QUAY_TOKEN=$(cat /tmp/secrets/QUAY_TOKEN)
 RHDH_SEALIGHTS_BOT_TOKEN=$(cat /tmp/secrets/RHDH_SEALIGHTS_BOT.QUAY.TOKEN)

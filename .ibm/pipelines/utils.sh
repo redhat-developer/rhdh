@@ -925,7 +925,7 @@ initiate_upgrade_base_deployments() {
   echo "Using dynamic value file: ${previous_release_value_file}"
 
   helm upgrade -i "${release_name}" -n "${namespace}" \
-    "${HELM_CHART_URL}" --version "${CHART_VERSION_BASE}" \
+    "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "${previous_release_value_file}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO_BASE}" \
@@ -1122,35 +1122,35 @@ to_lowercase() {
 # Return the previous release version if current branch is a release branch
 get_previous_release_version() {
   local version=$1
-  
+
   # Check if version parameter is provided
   if [[ -z "$version" ]]; then
     echo "Error: Version parameter is required" >&2
     exit 1
     save_overall_result 1
   fi
-  
+
   # Validate version format (should be like "1.6")
   if [[ ! "$version" =~ ^[0-9]+\.[0-9]+$ ]]; then
     echo "Error: Version must be in format X.Y (e.g., 1.6)" >&2
     exit 1
     save_overall_result 1
   fi
-  
+
   # Extract major and minor version numbers
   local major_version=$(echo "$version" | cut -d'.' -f1)
   local minor_version=$(echo "$version" | cut -d'.' -f2)
-  
+
   # Calculate previous minor version
   local previous_minor=$((minor_version - 1))
-  
+
   # Check if previous minor version is valid (non-negative)
   if [[ $previous_minor -lt 0 ]]; then
     echo "Error: Cannot calculate previous version for $version" >&2
     exit 1
     save_overall_result 1
   fi
-  
+
   # Return the previous version
   echo "${major_version}.${previous_minor}"
 }
