@@ -63,7 +63,7 @@ main() {
   echo "Log file: ${LOGFILE}"
   echo "JOB_NAME : $JOB_NAME"
 
-  export TAG_NAME="1.7-128"
+  export TAG_NAME="1.7-130"
 #  CHART_VERSION=$(get_chart_version "$CHART_MAJOR_VERSION")
 #  export CHART_VERSION
   detect_ocp_and_set_env_var

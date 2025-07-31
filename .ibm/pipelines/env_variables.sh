@@ -15,7 +15,7 @@ HELM_CHART_RBAC_EKS_DIFF_VALUE_FILE_NAME="diff-values_showcase-rbac_EKS.yaml"
 HELM_CHART_SANITY_PLUGINS_DIFF_VALUE_FILE_NAME="diff-values_showcase-sanity-plugins.yaml"
 HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME="merged-values_showcase-sanity-plugins.yaml"
 
-CHART_VERSION="1.7-128-CI"
+CHART_VERSION="1.7-130-CI"
 QUAY_REPO="rhdh/rhdh-hub-rhel9"
 TAG_NAME_BASE="1.7"
 
