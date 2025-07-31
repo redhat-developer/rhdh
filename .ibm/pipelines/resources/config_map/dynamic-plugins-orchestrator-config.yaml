@@ -1,0 +1,68 @@
+dynamicPlugins:
+  rootDirectory: dynamic-plugins-root
+  backend:
+    # Orchestrator backend plugin
+    orchestrator-backend-dynamic:
+      package: '@redhat/backstage-plugin-orchestrator-backend-dynamic@1.0.0'
+      disabled: false
+      pluginConfig:
+        orchestrator:
+          database:
+            connection:
+              host: ${ORCHESTRATOR_DB_HOST}
+              port: ${ORCHESTRATOR_DB_PORT}
+              user: ${ORCHESTRATOR_DB_USER}
+              database: ${ORCHESTRATOR_DB_NAME}
+          sonataFlowService:
+            baseUrl: 'http://sonataflow-platform-data-index-service.${SONATAFLOW_PLATFORM_NAMESPACE}.svc.cluster.local'
+            port: 80
+            autoStart: true
+            workflowsSource:
+              gitRepositoryUrl: 'https://github.com/parodos-dev/workflow-software-templates'
+              localPath: 'workflows'
+  frontend:
+    # Orchestrator frontend plugin
+    orchestrator:
+      package: '@redhat/backstage-plugin-orchestrator@1.0.0'
+      disabled: false
+      mountPoints:
+        - mountPoint: entity.page.overview/cards
+          importName: WorkflowOverviewCard
+        - mountPoint: entity.page.workflows/cards
+          importName: WorkflowsCard
+        - mountPoint: entity.tabs
+          importName: WorkflowsTab
+          config:
+            path: /workflows
+            title: Workflows
+        - mountPoint: search.page.results
+          importName: WorkflowSearchResultListItem
+        - mountPoint: nav.page
+          importName: OrchestratorPage
+          config:
+            props:
+              path: /orchestrator
+              title: Orchestrator
+    # Dynamic home page plugin (inherited from main config)
+    red-hat-developer-hub.backstage-plugin-dynamic-home-page:
+      mountPoints:
+        - mountPoint: home.page/cards
+          importName: SearchBar
+          config:
+            layouts:
+              xl:  { w: 10, h: 1, x: 1 }
+              lg:  { w: 10, h: 1, x: 1 }
+              md:  { w: 10, h: 1, x: 1 }
+              sm:  { w: 10, h: 1, x: 1 }
+              xs:  { w: 12, h: 1 }
+              xxs: { w: 12, h: 1 }
+        - mountPoint: home.page/cards
+          importName: QuickAccessCard
+          config:
+            layouts:
+              xl:  { w:  7, h: 8 }
+              lg:  { w:  7, h: 8 }
+              md:  { w:  7, h: 8 }
+              sm:  { w: 12, h: 8 }
+              xs:  { w: 12, h: 8 }
+              xxs: { w: 12, h: 8 }

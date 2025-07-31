@@ -168,5 +168,20 @@ export default defineConfig({
         "**/playwright/e2e/plugins/quick-access-and-tech-radar.spec.ts",
       ],
     },
+    {
+      name: "showcase-operator-orchestrator",
+      dependencies: ["smoke-test"],
+      timeout: 900 * 1000, // 15 minutes for infrastructure setup
+      testMatch: ["**/playwright/e2e/plugins/orchestrator/orchestrator-operator.spec.ts"],
+      use: {
+        ...k8sSpecificConfig.use,
+        actionTimeout: 30 * 1000, // 30 seconds for operator actions
+        navigationTimeout: 60 * 1000, // 1 minute for navigation
+      },
+      expect: {
+        timeout: 30 * 1000, // 30 seconds for assertions
+      },
+      retries: 1, // Allow one retry for infrastructure-related failures
+    },
   ],
 });
