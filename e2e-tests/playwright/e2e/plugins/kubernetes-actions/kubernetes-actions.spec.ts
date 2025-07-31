@@ -31,7 +31,7 @@ test.describe("Test Kubernetes Actions plugin", () => {
       console.log(
         `Attempt ${testInfo.retry + 1} failed, waiting ${coolDownMs}ms before retry...`,
       );
-      await new Promise((resolve) => setTimeout(resolve, coolDownMs));
+      await page.waitForTimeout(coolDownMs);
     }
   });
 
@@ -45,15 +45,15 @@ test.describe("Test Kubernetes Actions plugin", () => {
     await uiHelper.fillTextInputByLabel("Url", process.env.K8S_CLUSTER_URL);
     await uiHelper.fillTextInputByLabel("Token", process.env.K8S_CLUSTER_TOKEN);
     await uiHelper.checkCheckbox("Skip TLS verification");
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await page.waitForTimeout(2000);
     await uiHelper.clickButton("Review");
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    await page.waitForTimeout(1500);
     await uiHelper.clickButton("Create");
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    await page.waitForTimeout(1500);
     await page.waitForSelector(
       `${UI_HELPER_ELEMENTS.MuiTypography}:has-text("second")`,
     );
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    await page.waitForTimeout(1500);
     await expect(
       page.locator(`${UI_HELPER_ELEMENTS.MuiTypography}:has-text("Error")`),
     ).not.toBeVisible();
