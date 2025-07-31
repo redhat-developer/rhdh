@@ -49,4 +49,10 @@ upstream:
       - name: http-metrics
         port: 9464
         targetPort: 9464
+  app:
+    containerPorts:
+      - name: http
+        containerPort: 7007
+      - name: metrics
+        containerPort: 9464
 orchestrator: null
