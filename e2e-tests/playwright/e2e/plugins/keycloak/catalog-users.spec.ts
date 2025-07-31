@@ -96,6 +96,34 @@ test.describe("Test Keycloak plugin metrics", () => {
           console.log(JSON.stringify(pod, null, 2));
         });
       }
+      const ingresses = await kubeClient.getIngresses(namespace);
+
+      if (!ingresses || !Array.isArray(ingresses.items)) {
+        console.log(`No ingresses found in namespace "${namespace}".`);
+        return;
+      }
+
+      for (const ingress of ingresses.items) {
+        const name = ingress.metadata?.name ?? "<no-name>";
+        const rules = ingress.spec?.rules ?? [];
+
+        if (rules.length === 0) {
+          console.log(`Ingress "${name}" has no rules.`);
+          continue;
+        }
+
+        for (const rule of rules) {
+          const host = rule.host ?? "<no-host>";
+          const paths = rule.http?.paths ?? [];
+
+          for (const path of paths) {
+            const pathStr = path.path ?? "/";
+            const url = `http://${host}${pathStr}`;
+            console.log(`Ingress: ${name} → ${url}`);
+          }
+        }
+      }
+
       await createIngressIfNotPresentAndWait(
         kubeClient,
         namespace,

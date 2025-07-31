@@ -6,6 +6,7 @@ export class KubeClient {
   coreV1Api: k8s.CoreV1Api;
   appsApi: k8s.AppsV1Api;
   k8sCustomAPI: k8s.CustomObjectsApi;
+  k8sNetoworkApi: k8s.NetworkingV1Api;
   kc: k8s.KubeConfig;
 
   constructor() {
@@ -38,6 +39,7 @@ export class KubeClient {
       this.appsApi = this.kc.makeApiClient(k8s.AppsV1Api);
       this.coreV1Api = this.kc.makeApiClient(k8s.CoreV1Api);
       this.k8sCustomAPI = this.kc.makeApiClient(k8s.CustomObjectsApi);
+      this.k8sNetoworkApi = this.kc.makeApiClient(k8s.NetworkingV1Api);
     } catch (e) {
       console.log(e);
       throw e;
@@ -644,6 +646,20 @@ export class KubeClient {
         "ingresses",
         ingressName,
       );
+      return response.body;
+    } catch (error) {
+      if (error.statusCode === 404) {
+        return null;
+      }
+      throw error;
+    }
+  }
+
+  // todo: remove it
+  async getIngresses(namespace: string): Promise<k8s.V1IngressList> {
+    try {
+      const response =
+        await this.k8sNetoworkApi.listNamespacedIngress(namespace);
       return response.body;
     } catch (error) {
       if (error.statusCode === 404) {
