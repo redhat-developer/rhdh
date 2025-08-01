@@ -98,10 +98,16 @@ if ! oc whoami >/dev/null 2>&1; then
     exit 1
 fi
 
-# Check if the target namespace exists
+# Check if the target namespace exists, create if needed
 if ! oc get namespace "$BACKSTAGE_NS" >/dev/null 2>&1; then
-    echo "ERROR: Namespace '$BACKSTAGE_NS' does not exist"
-    exit 1
+    echo "Creating namespace '$BACKSTAGE_NS'..."
+    oc create namespace "$BACKSTAGE_NS" || {
+        echo "ERROR: Failed to create namespace '$BACKSTAGE_NS'"
+        exit 1
+    }
+    echo "✓ Namespace '$BACKSTAGE_NS' created successfully"
+else
+    echo "✓ Namespace '$BACKSTAGE_NS' already exists"
 fi
 
 echo "=== Step 1: Installing Orchestrator Infrastructure ==="
