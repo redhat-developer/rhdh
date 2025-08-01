@@ -62,7 +62,7 @@ upstream:
   #       targetPort: 9464
   metrics:
     serviceMonitor:
-      enabled: false
+      enabled: true
       path: /metrics
       port: http-metrics
   # app:
