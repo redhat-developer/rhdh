@@ -225,6 +225,56 @@ The easiest and fastest method for getting started: RHDH app, running it locally
 
 ## Optional Configuration and Plugins
 
+- Adding a Home Page
+  - Run `yarn export-dynamic` from the `dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-dynamic-home-page`:
+  ```bash
+  pushd dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-dynamic-home-page && yarn export-dynamic && popd
+  ```
+  - Copy-paste the `dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-dynamic-home-page` folder into `dynamic-plugins-root`:
+  ```bash
+  cp -r dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-dynamic-home-page dynamic-plugins-root/
+  ```
+  - Add the following to your `app-config.local.yaml`:
+      ```yaml
+       dynamicPlugins:
+          frontend:
+            red-hat-developer-hub.backstage-plugin-dynamic-home-page:
+              dynamicRoutes:
+                - path: /
+                  importName: DynamicHomePage
+              mountPoints:
+                - mountPoint: home.page/cards
+                  importName: SearchBar
+                  config:
+                    layouts:
+                      xl: { w: 10, h: 1, x: 1 }
+                      lg: { w: 10, h: 1, x: 1 }
+                      md: { w: 10, h: 1, x: 1 }
+                      sm: { w: 10, h: 1, x: 1 }
+                      xs: { w: 12, h: 1 }
+                      xxs: { w: 12, h: 1 }
+                - mountPoint: home.page/cards
+                  importName: QuickAccessCard
+                  config:
+                    layouts:
+                      xl: { w: 7, h: 8 }
+                      lg: { w: 7, h: 8 }
+                      md: { w: 7, h: 8 }
+                      sm: { w: 12, h: 8 }
+                      xs: { w: 12, h: 8 }
+                      xxs: { w: 12, h: 8 }
+                - mountPoint: home.page/cards
+                  importName: CatalogStarredEntitiesCard
+                  config:
+                    layouts:
+                      xl: { w: 5, h: 4, x: 7 }
+                      lg: { w: 5, h: 4, x: 7 }
+                      md: { w: 5, h: 4, x: 7 }
+                      sm: { w: 12, h: 4 }
+                      xs: { w: 12, h: 4 }
+                      xxs: { w: 12, h: 4 }
+      ```
+
 - Enabling Authentication in Showcase
      - Refer to the [authentication documentation](./auth.md) for the available auth providers and the steps to configure them.
 
