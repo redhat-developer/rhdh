@@ -11,9 +11,17 @@ global:
         disabled: false
 upstream:
   backstage:
-    containerPorts:
-      backend: 7007
-      metrics: 9464
+    podTemplate:
+      podSpec:
+        containers:
+          - name: backstage
+            ports:
+              - name: metrics
+                containerPort: 9464
+                protocol: TCP
+    # containerPorts:
+    #   backend: 7007
+    #   metrics: 9464
     extraEnvVarsSecrets:
       - rhdh-secrets
     podSecurityContext:
