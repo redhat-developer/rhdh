@@ -47,7 +47,7 @@ upstream:
     className: gce
   metrics:
     serviceMonitor:
-      enabled: false
+      enabled: true
       path: /metrics
       port: http-metrics
   # service:
