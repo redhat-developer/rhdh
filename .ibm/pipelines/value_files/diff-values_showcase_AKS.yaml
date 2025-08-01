@@ -11,14 +11,14 @@ global:
         disabled: false
 upstream:
   backstage:
-    podTemplate:
-      podSpec:
-        containers:
-          - name: backstage
-            ports:
-              - name: metrics
-                containerPort: 9464
-                protocol: TCP
+    # podTemplate:
+    #   podSpec:
+    #     containers:
+    #       - name: backstage
+    #         ports:
+    #           - name: metrics
+    #             containerPort: 9464
+    #             protocol: TCP
     # containerPorts:
     #   backend: 7007
     #   metrics: 9464
@@ -55,16 +55,16 @@ upstream:
     enabled: true
     className: webapprouting.kubernetes.azure.com
     host: ''
-  service:
-    extraPorts:
-      - name: http-metrics
-        port: 9464
-        targetPort: 9464
-  # metrics:
-  #   serviceMonitor:
-  #     enabled: false
-  #     path: /metrics
-  #     port: http-metrics
+  # service:
+  #   extraPorts:
+  #     - name: http-metrics
+  #       port: 9464
+  #       targetPort: 9464
+  metrics:
+    serviceMonitor:
+      enabled: false
+      path: /metrics
+      port: http-metrics
   # app:
   #   containerPorts:
   #     - name: http
