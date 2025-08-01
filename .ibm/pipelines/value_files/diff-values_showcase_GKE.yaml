@@ -11,6 +11,9 @@ global:
         disabled: false
 upstream:
   backstage:
+    containerPorts:
+      backend: 7007
+      metrics: 9464
     extraEnvVarsSecrets:
       - rhdh-secrets
     podSecurityContext:
@@ -34,16 +37,16 @@ upstream:
       ingress.gcp.kubernetes.io/pre-shared-cert: ""
       networking.gke.io/v1beta1.FrontendConfig: rhdh-gke-ingress-security-config
     className: gce
-  metrics:
-    serviceMonitor:
-      enabled: false
-      path: /metrics
-      port: http-metrics
-  # service:
-  #   extraPorts:
-  #     - name: http-metrics
-  #       port: 9464
-  #       targetPort: 9464
+  # metrics:
+  #   serviceMonitor:
+  #     enabled: false
+  #     path: /metrics
+  #     port: http-metrics
+  service:
+    extraPorts:
+      - name: http-metrics
+        port: 9464
+        targetPort: 9464
   # app:
   #   containerPorts:
   #     - name: http

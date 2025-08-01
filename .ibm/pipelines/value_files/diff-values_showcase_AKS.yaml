@@ -11,6 +11,9 @@ global:
         disabled: false
 upstream:
   backstage:
+    containerPorts:
+      backend: 7007
+      metrics: 9464
     extraEnvVarsSecrets:
       - rhdh-secrets
     podSecurityContext:
@@ -44,16 +47,16 @@ upstream:
     enabled: true
     className: webapprouting.kubernetes.azure.com
     host: ''
-  # service:
-  #   extraPorts:
-  #     - name: http-metrics
-  #       port: 9464
-  #       targetPort: 9464
-  metrics:
-    serviceMonitor:
-      enabled: false
-      path: /metrics
-      port: http-metrics
+  service:
+    extraPorts:
+      - name: http-metrics
+        port: 9464
+        targetPort: 9464
+  # metrics:
+  #   serviceMonitor:
+  #     enabled: false
+  #     path: /metrics
+  #     port: http-metrics
   # app:
   #   containerPorts:
   #     - name: http
