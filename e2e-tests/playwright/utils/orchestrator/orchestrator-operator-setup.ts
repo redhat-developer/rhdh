@@ -1,6 +1,8 @@
 import { Page, expect } from '@playwright/test';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import * as path from 'path';
+import * as fs from 'fs';
 
 const execAsync = promisify(exec);
 
@@ -234,7 +236,14 @@ export class OrchestratorOperatorSetup {
     try {
       console.log('Running orchestrator setup script with pipeline integration...');
 
-      const setupScript = '/home/ccrum/git/flightpath/rhdh/e2e-tests/scripts/setup-orchestrator-operator.sh';
+      // Use relative path resolution to find the setup script
+      const setupScript = path.resolve(__dirname, '../../../scripts/setup-orchestrator-operator.sh');
+      
+      // Verify the script exists before attempting to run it
+      if (!fs.existsSync(setupScript)) {
+        console.error(`Setup script not found at: ${setupScript}`);
+        return false;
+      }
       
       // Set environment variables for the script
       const env = {
@@ -243,8 +252,8 @@ export class OrchestratorOperatorSetup {
         BACKSTAGE_NS: this.config.backstageNamespace,
         ORCH_DB: this.config.orchestratorDatabase,
         VERSION: process.env.VERSION || 'main',
-        // Ensure pipeline integration
-        DIR: '/home/ccrum/git/flightpath/rhdh/.ibm/pipelines',
+        // Ensure pipeline integration with relative path
+        DIR: path.resolve(__dirname, '../../../../.ibm/pipelines'),
       };
 
       console.log('Using orchestrator configuration:', {
@@ -252,6 +261,11 @@ export class OrchestratorOperatorSetup {
         namespace: this.config.backstageNamespace,
         database: this.config.orchestratorDatabase,
         version: env.VERSION,
+      });
+
+      // Make script executable before running
+      await execAsync(`chmod +x ${setupScript}`).catch(() => {
+        console.log('Note: Could not make script executable (may already be executable)');
       });
 
       const { stdout, stderr } = await execAsync(
@@ -263,6 +277,7 @@ export class OrchestratorOperatorSetup {
       
       if (stderr) {
         console.log('Setup script stderr:', stderr);
+        // Don't fail on stderr alone as some commands may produce warnings
       }
 
       console.log('Orchestrator setup script completed successfully');

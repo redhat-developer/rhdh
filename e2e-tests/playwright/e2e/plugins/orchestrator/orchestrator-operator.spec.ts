@@ -3,12 +3,18 @@ import { Common } from '../../../utils/common';
 import { UIhelper } from '../../../utils/ui-helper';
 import { Orchestrator } from '../../../support/pages/orchestrator';
 import { createOrchestratorSetup, OrchestratorOperatorSetup } from '../../../utils/orchestrator/orchestrator-operator-setup';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+
+const execAsync = promisify(exec);
 
 // Test configuration - only run in operator environments with enhanced detection
 const isOperatorTest = process.env.IS_OPENSHIFT === 'true' || 
                       process.env.BACKSTAGE_NS === 'rhdh-operator' ||
                       process.env.BACKSTAGE_NS?.includes('operator') ||
-                      process.env.ORCHESTRATOR_OPERATOR_TEST === 'true';
+                      process.env.ORCHESTRATOR_OPERATOR_TEST === 'true' ||
+                      process.env.JOB_NAME?.includes('operator') ||
+                      process.env.CI === 'true'; // Allow in CI environments
 
 test.describe.configure({ mode: 'serial' });
 
@@ -20,6 +26,14 @@ test.describe('Orchestrator Plugin - Operator Deployment', () => {
 
   test.beforeAll(async ({ browser }) => {
     // Skip if not in operator environment
+    console.log('Environment check:', {
+      IS_OPENSHIFT: process.env.IS_OPENSHIFT,
+      BACKSTAGE_NS: process.env.BACKSTAGE_NS,
+      JOB_NAME: process.env.JOB_NAME,
+      CI: process.env.CI,
+      isOperatorTest
+    });
+    
     test.skip(!isOperatorTest, 'Skipping orchestrator operator tests - not in operator environment');
   });
 
@@ -29,9 +43,11 @@ test.describe('Orchestrator Plugin - Operator Deployment', () => {
     orchestrator = new Orchestrator(page);
     orchestratorSetup = createOrchestratorSetup(page);
     
-    // Verify we're in an operator environment
-    const isOperatorEnv = await orchestratorSetup.isOperatorEnvironment();
-    test.skip(!isOperatorEnv, 'Not running in operator environment');
+    // Verify we're in an operator environment, but be more lenient in CI
+    if (!process.env.CI) {
+      const isOperatorEnv = await orchestratorSetup.isOperatorEnvironment();
+      test.skip(!isOperatorEnv, 'Not running in operator environment');
+    }
   });
 
   test('Setup orchestrator infrastructure with pipeline integration', async ({ page }, testInfo) => {
@@ -102,9 +118,6 @@ test.describe('Orchestrator Plugin - Operator Deployment', () => {
     
     // Check if orchestrator-specific configmap was created
     console.log('Checking for orchestrator dynamic plugins configmap...');
-    const { exec } = require('child_process');
-    const { promisify } = require('util');
-    const execAsync = promisify(exec);
     
     try {
       const namespace = process.env.BACKSTAGE_NS || 'rhdh-operator';
