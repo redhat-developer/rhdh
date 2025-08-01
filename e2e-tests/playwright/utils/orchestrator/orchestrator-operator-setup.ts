@@ -27,7 +27,7 @@ export class OrchestratorOperatorSetup {
     this.page = page;
     this.config = {
       backstageName: process.env.BACKSTAGE_NAME || 'developer-hub',
-      backstageNamespace: process.env.BACKSTAGE_NS || 'rhdh-operator',
+      backstageNamespace: process.env.BACKSTAGE_NS || process.env.NAME_SPACE || 'showcase',
       orchestratorDatabase: process.env.ORCH_DB || 'backstage_plugin_orchestrator',
       timeout: 300000, // 5 minutes
       ...config,

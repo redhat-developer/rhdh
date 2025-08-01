@@ -10,7 +10,7 @@ echo "=== Setting up Orchestrator Plugin for RHDH Operator ==="
 # Default environment variables
 export VERSION=${VERSION:-main}
 export BACKSTAGE_NAME=${BACKSTAGE_NAME:-"developer-hub"}
-export BACKSTAGE_NS=${BACKSTAGE_NS:-"rhdh-operator"}
+export BACKSTAGE_NS=${BACKSTAGE_NS:-${NAME_SPACE:-"showcase"}}
 export ORCH_DB=${ORCH_DB:-"backstage_plugin_orchestrator"}
 
 # Source existing operator installation functions if available

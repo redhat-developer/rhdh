@@ -120,7 +120,7 @@ test.describe('Orchestrator Plugin - Operator Deployment', () => {
     console.log('Checking for orchestrator dynamic plugins configmap...');
     
     try {
-      const namespace = process.env.BACKSTAGE_NS || 'rhdh-operator';
+      const namespace = process.env.BACKSTAGE_NS || process.env.NAME_SPACE || 'showcase';
       const { stdout } = await execAsync(
         `oc get configmap dynamic-plugins-orchestrator-config -n ${namespace} || echo "not found"`
       );

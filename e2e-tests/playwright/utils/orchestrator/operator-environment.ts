@@ -17,7 +17,7 @@ export class OperatorEnvironmentValidator {
   private backstageName: string;
   private namespace: string;
 
-  constructor(backstageName: string = 'developer-hub', namespace: string = 'rhdh-operator') {
+  constructor(backstageName: string = 'developer-hub', namespace: string = process.env.BACKSTAGE_NS || process.env.NAME_SPACE || 'showcase') {
     this.backstageName = backstageName;
     this.namespace = namespace;
   }
