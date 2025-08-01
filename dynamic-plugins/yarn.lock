@@ -13230,9 +13230,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-quickstart@npm:1.1.0":
-  version: 1.1.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-quickstart@npm:1.1.0"
+"@red-hat-developer-hub/backstage-plugin-quickstart@npm:1.1.1":
+  version: 1.1.1
+  resolution: "@red-hat-developer-hub/backstage-plugin-quickstart@npm:1.1.1"
   dependencies:
     "@backstage/core-components": ^0.17.2
     "@backstage/core-plugin-api": ^1.10.7
@@ -13243,7 +13243,7 @@ __metadata:
     react-use: ^17.2.4
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 4008f34771a43e64fdef3269736095daa07fc79d98ea4a7736f202739b66a0ad47424a85313f397b8b7a49b20a271792e4f291c55b8c7bea3c2a3f354240dcd6
+  checksum: fc7b7227467c09feb765422f95e2b8b820907439ec25c561316b43342c9693113178fe00e14de164dfb4cb953211a25821dffc980b59563d3d5efac621219197
   languageName: node
   linkType: hard
 
@@ -33742,7 +33742,7 @@ __metadata:
     "@backstage/cli": 0.30.0
     "@janus-idp/cli": 3.6.1
     "@mui/material": 5.18.0
-    "@red-hat-developer-hub/backstage-plugin-quickstart": 1.1.0
+    "@red-hat-developer-hub/backstage-plugin-quickstart": 1.1.1
     typescript: 5.8.3
   languageName: unknown
   linkType: soft
