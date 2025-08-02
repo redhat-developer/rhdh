@@ -6,6 +6,7 @@ export class KubeClient {
   coreV1Api: k8s.CoreV1Api;
   appsApi: k8s.AppsV1Api;
   k8sCustomAPI: k8s.CustomObjectsApi;
+  k8sNetoworkApi: k8s.NetworkingV1Api;
   kc: k8s.KubeConfig;
 
   constructor() {
@@ -38,6 +39,7 @@ export class KubeClient {
       this.appsApi = this.kc.makeApiClient(k8s.AppsV1Api);
       this.coreV1Api = this.kc.makeApiClient(k8s.CoreV1Api);
       this.k8sCustomAPI = this.kc.makeApiClient(k8s.CustomObjectsApi);
+      this.k8sNetoworkApi = this.kc.makeApiClient(k8s.NetworkingV1Api);
     } catch (e) {
       console.log(e);
       throw e;
@@ -508,6 +510,21 @@ export class KubeClient {
     }
   }
 
+  async getPodList(namespace: string) {
+    try {
+      return await this.coreV1Api.listNamespacedPod(
+        namespace,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+      );
+    } catch (error) {
+      console.error(`Error while retrieving pod conditions`, error);
+    }
+  }
+
   async logPodConditions(namespace: string, labelSelector?: string) {
     const selector =
       labelSelector ||
@@ -602,7 +619,7 @@ export class KubeClient {
     }
   }
 
-  async getRoute(namespace, routeName) {
+  async getRoute(namespace: string, routeName: string) {
     try {
       const response = await this.k8sCustomAPI.getNamespacedCustomObject(
         "route.openshift.io",
@@ -616,6 +633,70 @@ export class KubeClient {
       if (error.statusCode === 404) {
         return null;
       }
+      throw error;
+    }
+  }
+
+  async getIngress(namespace: string, ingressName: string) {
+    try {
+      const response = await this.k8sCustomAPI.getNamespacedCustomObject(
+        "networking.k8s.io",
+        "v1",
+        namespace,
+        "ingresses",
+        ingressName,
+      );
+      return response.body;
+    } catch (error) {
+      if (error.statusCode === 404) {
+        return null;
+      }
+      throw error;
+    }
+  }
+
+  // todo: remove it
+  async getIngresses(namespace: string): Promise<k8s.V1IngressList> {
+    try {
+      const response =
+        await this.k8sNetoworkApi.listNamespacedIngress(namespace);
+      return response.body;
+    } catch (error) {
+      if (error.statusCode === 404) {
+        return null;
+      }
+      throw error;
+    }
+  }
+
+  async createIngress(namespace: string, body: k8s.KubernetesObject) {
+    try {
+      const response = await this.k8sCustomAPI.createNamespacedCustomObject(
+        "networking.k8s.io",
+        "v1",
+        namespace,
+        "ingresses",
+        body,
+      );
+      return response.body;
+    } catch (error) {
+      console.error("Error creating Ingress:", error);
+      throw error;
+    }
+  }
+
+  async deleteIngress(namespace: string, name: string) {
+    try {
+      const response = await this.k8sCustomAPI.deleteNamespacedCustomObject(
+        "networking.k8s.io",
+        "v1",
+        namespace,
+        "ingresses",
+        name,
+      );
+      return response.body;
+    } catch (error) {
+      console.error("Error deleting Ingress:", error);
       throw error;
     }
   }
