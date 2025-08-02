@@ -12,6 +12,8 @@ global:
     # an optional `pluginConfig` with plugin-specific backstage configuration, and an optional `disabled` flag to disable/enable a plugin
     # listed in `includes` files. It also includes an `integrity` field that is used to verify the plugin package [integrity](https://w3c.github.io/webappsec-subresource-integrity/#integrity-metadata-description).
     plugins:
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-sonarqube-dynamic
+        disabled: false
       - package: oci://quay.io/gashcrumb/example-root-http-middleware:latest!internal-backstage-plugin-middleware-header-example-dynamic  
         disabled: false  
         pluginConfig:  
