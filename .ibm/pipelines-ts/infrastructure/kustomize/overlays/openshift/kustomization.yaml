@@ -1,0 +1,73 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: rhdh-openshift
+  annotations:
+    description: "OpenShift-specific RHDH configuration with Routes"
+
+# Reference to base configuration
+resources:
+  - ../../base
+  - route.yaml
+  - security-context-constraints.yaml
+
+# OpenShift-specific labels
+commonLabels:
+  cluster-type: openshift
+  deployment-method: kustomize
+
+# OpenShift namespace
+namespace: showcase
+
+# Patches for OpenShift-specific modifications
+patchesStrategicMerge:
+  - cluster-role-patch.yaml
+  - app-config-patch.yaml
+
+# JSON patches for advanced transformations
+patches:
+  # Add OpenShift-specific annotations
+  - target:
+      kind: ServiceAccount
+      name: rhdh-service-account
+    patch: |-
+      - op: add
+        path: /metadata/annotations
+        value:
+          serviceaccounts.openshift.io/oauth-redirectreference.rhdh: '{"kind":"OAuthRedirectReference","apiVersion":"v1","reference":{"kind":"Route","name":"backstage"}}'
+
+  # Add security context for OpenShift
+  - target:
+      kind: Deployment
+      name: backstage
+    patch: |-
+      - op: add
+        path: /spec/template/spec/securityContext
+        value:
+          runAsNonRoot: true
+          runAsUser: 1001
+          fsGroup: 1001
+
+# ConfigMap generators with OpenShift-specific config
+configMapGenerator:
+  - name: rhdh-app-config
+    behavior: merge
+    files:
+      - app-config-openshift.yaml
+
+# Replace base URLs with OpenShift route format
+replacements:
+  - source:
+      kind: Route
+      name: backstage
+      fieldPath: spec.host
+    targets:
+      - select:
+          kind: ConfigMap
+          name: rhdh-app-config
+        fieldPaths:
+          - data.app-config-openshift\.yaml
+        options:
+          delimiter: 'baseUrl: https://'
+          index: 1 

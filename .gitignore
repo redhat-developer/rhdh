@@ -63,3 +63,33 @@ dynamic-plugins-root/*
 
 # Private Keys
 *.pem
+
+# Ansible temporary files
+*.retry
+.ansible/
+ansible.log
+/tmp/ansible-*
+
+# Helm dependencies and temporary files
+charts/*/charts/
+**/Chart.lock
+.helm/
+
+# Kustomize temporary outputs
+kustomized.yaml
+kustomization-output.yaml
+
+# Test results and reports
+test-results/
+playwright-report/
+coverage/
+
+# Deployment artifacts and temporary configs
+deploy-output/
+generated-configs/
+*.deployed.yaml
+
+# TypeScript pipeline specific
+.ibm/pipelines-ts/dist/
+.ibm/pipelines-ts/build/
+.ibm/pipelines-ts/.env.local

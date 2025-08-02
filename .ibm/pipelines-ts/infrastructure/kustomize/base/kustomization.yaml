@@ -1,0 +1,64 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: rhdh-base
+  annotations:
+    description: "Base RHDH resources - replaces manual YAML application"
+
+# Base resources that are common to all cluster types
+resources:
+  - namespace.yaml
+  - service-account.yaml
+  - cluster-role.yaml
+  - cluster-role-binding.yaml
+  - service.yaml
+
+# Common labels applied to all resources
+commonLabels:
+  app.kubernetes.io/name: backstage
+  app.kubernetes.io/part-of: rhdh
+  app.kubernetes.io/managed-by: kustomize
+
+# Namespace for all resources
+namespace: showcase
+
+# Images to be managed by Kustomize
+images:
+  - name: backstage
+    newName: quay.io/rhdh/rhdh-hub-rhel9
+    newTag: latest
+
+# ConfigMap and Secret generators
+configMapGenerator:
+  - name: rhdh-app-config
+    files:
+      - app-config.yaml
+  
+secretGenerator:
+  - name: rhdh-secrets
+    type: Opaque
+    literals:
+      - BACKEND_SECRET=change-me-secret
+
+# Resource transformations
+patchesStrategicMerge: []
+
+# JSON patches for advanced transformations
+patches: []
+
+# Generators for creating standard resources
+generators: []
+
+# Replacements for variable substitution
+replacements:
+  - source:
+      kind: ConfigMap
+      name: rhdh-app-config
+      fieldPath: data.baseUrl
+    targets:
+      - select:
+          kind: Secret
+          name: rhdh-secrets
+        fieldPaths:
+          - data.RHDH_BASE_URL 
