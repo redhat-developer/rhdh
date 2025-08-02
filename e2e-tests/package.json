@@ -19,6 +19,8 @@
     "showcase-upgrade-nightly": "playwright test --project=showcase-upgrade",
     "showcase-auth-providers": "playwright test --project=showcase-auth-providers",
     "showcase-sanity-plugins": "playwright test --project=showcase-sanity-plugins",
+    "showcase-orchestrator-operator": "playwright test --project=showcase-operator-orchestrator",
+    "showcase-orchestrator-operator-nightly": "playwright test --project=showcase-operator-orchestrator",
     "lint:check": "eslint . --ext .js,.ts",
     "lint:fix": "eslint . --ext .js,.ts --fix",
     "postinstall": "playwright install",
