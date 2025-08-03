@@ -96,8 +96,15 @@ test.describe("Test Keycloak plugin metrics", () => {
           console.log(JSON.stringify(pod, null, 2));
         });
       }
-      const ingresses = await kubeClient.getIngresses(namespace);
 
+      await createIngressIfNotPresentAndWait(
+        kubeClient,
+        namespace,
+        routerName,
+        domain,
+      );
+
+      const ingresses = await kubeClient.getIngresses(namespace);
       if (!ingresses || !Array.isArray(ingresses.items)) {
         console.log(`No ingresses found in namespace "${namespace}".`);
         return;
@@ -123,13 +130,6 @@ test.describe("Test Keycloak plugin metrics", () => {
           }
         }
       }
-
-      await createIngressIfNotPresentAndWait(
-        kubeClient,
-        namespace,
-        routerName,
-        domain,
-      );
     }
 
     const metricsEndpointURL = `http://${routerName}.${domain}/metrics`;
@@ -159,6 +159,11 @@ async function createRouteIfNotPresentAndWait(
       namespace,
       "backstage.io/kubernetes-id=developer-hub",
     );
+
+    console.log(`===== Print service start:`);
+    console.log(JSON.stringify(service, null, 2));
+    console.log(`===== Print service end:`);
+
     const rhdhServiceName = service[0].metadata.name;
     const route = {
       apiVersion: "route.openshift.io/v1",
