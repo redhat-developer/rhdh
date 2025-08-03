@@ -160,10 +160,6 @@ async function createRouteIfNotPresentAndWait(
       "backstage.io/kubernetes-id=developer-hub",
     );
 
-    console.log(`===== Print service start:`);
-    console.log(JSON.stringify(service, null, 2));
-    console.log(`===== Print service end:`);
-
     const rhdhServiceName = service[0].metadata.name;
     const route = {
       apiVersion: "route.openshift.io/v1",
@@ -193,6 +189,11 @@ async function createIngressIfNotPresentAndWait(
       namespace,
       "backstage.io/kubernetes-id=developer-hub",
     );
+
+    console.log(`===== Print service start:`);
+    console.log(JSON.stringify(service, null, 2));
+    console.log(`===== Print service end:`);
+
     const rhdhServiceName = service[0].metadata.name;
     const ingress = {
       apiVersion: "networking.k8s.io/v1",
