@@ -91,7 +91,7 @@ export class TestHelper {
       await uiHelper.fillTextInputByLabel("Image Builder", inputText);
       await uiHelper.fillTextInputByLabel("Image URL", inputText);
       await uiHelper.fillTextInputByLabel("Namespace", inputText);
-      await uiHelper.fillTextInputByLabel("Port", "8080");
+      await page.getByRole("spinbutton", { name: "Port" }).fill("8080");
       await uiHelper.clickButton("Review");
       await uiHelper.clickButton("Create");
       await page
