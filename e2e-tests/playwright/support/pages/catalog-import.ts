@@ -24,9 +24,51 @@ export class CatalogImport {
    */
   private async analyzeAndWait(url: string): Promise<void> {
     await this.page.fill(CATALOG_IMPORT_COMPONENTS.componentURL, url);
-    await expect(await this.uiHelper.clickButton("Analyze")).not.toBeVisible({
-      timeout: 25_000,
-    });
+    await this.uiHelper.clickButton("Analyze");
+
+    // Wait for processing to complete using multiple strategies
+    await Promise.race([
+      // Strategy 1: Wait for button to disappear (original expectation)
+      this.uiHelper.waitForTextDisappear("Analyze"),
+
+      // Strategy 2: Wait for button to be disabled then enabled again
+      this.waitForButtonStateChange(),
+
+      // Strategy 3: Wait for next step buttons to appear (most robust)
+      this.waitForNextStepButtons(),
+    ]);
+  }
+
+  /**
+   * Waits for the analyze button to be disabled then enabled again
+   */
+  private async waitForButtonStateChange(): Promise<void> {
+    const analyzeButton = this.page.locator('button:has-text("Analyze")');
+
+    // Wait for button to be disabled (processing started)
+    await expect(analyzeButton).toBeDisabled();
+
+    // Wait for button to be enabled again (processing completed)
+    await expect(analyzeButton).toBeEnabled({ timeout: 25_000 });
+  }
+
+  /**
+   * Waits for any of the next step buttons to appear
+   */
+  private async waitForNextStepButtons(): Promise<void> {
+    await Promise.race([
+      this.waitForButtonVisible("Import"),
+      this.waitForButtonVisible("Refresh"),
+      this.waitForButtonVisible("Register another"),
+    ]);
+  }
+
+  /**
+   * Waits for a specific button to become visible
+   */
+  private async waitForButtonVisible(buttonText: string): Promise<void> {
+    const button = this.page.locator(`button:has-text("${buttonText}")`);
+    await button.waitFor({ state: "visible", timeout: 25_000 });
   }
 
   /**
