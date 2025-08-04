@@ -38,23 +38,54 @@ spec:
 
 
   description: |
-    Red Hat Developer Lightspeed (Developer Lightspeed) is a virtual assistant powered by generative AI that offers in-depth insights into RHDH, including its wide range of capabilities. You can interact with this assistant to explore and learn more about RHDH in greater detail.
+      # Developer Lightspeed
 
-    Developer Lightspeed provides a natural language interface within the RHDH console, helping you easily find information about the product, understand its features, and get answers to your questions as they come up.
+      Red Hat Developer Lightspeed (Developer Lightspeed) is a virtual assistant powered by generative AI that offers in-depth insights into RHDH, including its wide range of capabilities. You can interact with this assistant to explore and learn more about RHDH in greater detail.
+
+      Developer Lightspeed provides a natural language interface within the RHDH console, helping you easily find information about the product, understand its features, and get answers to your questions as they come up.
+
+      Lightspeed consists of two main components:
+
+      - **Frontend Plugin** (`@red-hat-developer-hub/backstage-plugin-lightspeed`): Provides the user interface and chat experience
+      - **Backend Plugin** (`@red-hat-developer-hub/backstage-plugin-lightspeed-backend`): Handles server-side logic, LLM communication, and API endpoints
+
+      ### Key Features
+
+      - 🤖 **LLM Integration**: Connect to any LLM server with OpenAI API compatibility
+      - 🔒 **Security**: Built-in question validation to restrict topics to RHDH-related content
+      - 💬 **Conversational Interface**: Chat-based interaction with AI assistance
+      - 🎯 **Custom Prompts**: Configurable welcome and system prompts for better user experience
+      - 🔐 **Permission Framework**: Full RBAC support for access control
+      - 📊 **Session Management**: Handle user conversations and history
+
+      ## Usage
 
 
-    ## Adding The Plugin To Red Hat Developer Hub
+      ### For Administrators
+      
+      1. **LLM Server Configuration**: Configure the LLM servers with OpenAI API compatibility in the backend plugin configuration
+      2. **Configurable Prompts**: Administrators can customize the welcome prompts to guide users with specific tasks or questions and system prompts to set the context for the AI assistant
+      
+      ### For End Users
 
-    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub) 
-    for further instructions on how to add, enable, configure, and remove plugins in your instance.
+      1. **Access the Plugin**: Navigate to your RHDH application and click on the "Lightspeed" item in the navigation sidebar
+      2. **Start Chatting**: Begin asking questions about RHDH, or other development topics
+      4. **Manage Chats**: Your chat history is maintained for the session, you can start new chats, view history, and delete chats as needed.
+      
+      ### Supported Topics
 
-    ## Configuring The Plugin ##
+      When question validation is enabled (default), the plugin is optimized for:
+      - Red Hat Developer Hub (RHDH)
+      - Openshift and Kubernetes development
+      - Red Hat technologies and best practices
 
-    Plugins often need additional configuration to work correctly - particularly those that integrate with other 
-    systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
-    for further details regarding the configuration required.
 
+      ## Support
 
+      - **Documentation**: [RHDH Documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+      - **Frontend Plugin**: [Frontend README](https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/lightspeed/plugins/lightspeed/README.md)
+      - **Backend Plugin**: [Backend README](https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/lightspeed/plugins/lightspeed-backend/README.md)
+      - **Issues**: [Jira Issues](https://issues.redhat.com/browse/RHDHBUGS)
 
   # Images are base 64 encoded SVGs (below is a blank square from the mockup)
   icon: data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48c3ZnIGlkPSJ1dWlkLTQ2NzAxNDY4LTY2NDEtNDhjYi05ODdhLWFkOGFhYWE0Y2M1NyIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgMzggMzgiPjxkZWZzPjxzdHlsZT4udXVpZC0wNWM4ZjUzZC0zOTZhLTRhNzctYjYxMC00Y2FlMTYwN2IzN2Z7ZmlsbDojZTAwO30udXVpZC0wNThiNjM1ZC1iNjFjLTQ2ZjQtOTgyYS1hOTFkNmEyMjYzZWJ7ZmlsbDojZmZmO30udXVpZC0wMTY4MTg4Yy1kMGE2LTQ5NmUtYTJkOC01Y2Q2ZWUzMGRjYjJ7ZmlsbDojZTBlMGUwO308L3N0eWxlPjwvZGVmcz48cGF0aCBjbGFzcz0idXVpZC0wNThiNjM1ZC1iNjFjLTQ2ZjQtOTgyYS1hOTFkNmEyMjYzZWIiIGQ9Im0yOCwxSDEwQzUuMDI5NDQsMSwxLDUuMDI5NDQsMSwxMHYxOGMwLDQuOTcwNTcsNC4wMjk0NCw5LDksOWgxOGM0Ljk3MDU2LDAsOS00LjAyOTQzLDktOVYxMGMwLTQuOTcwNTYtNC4wMjk0NC05LTktOWgwWiIvPjxwYXRoIGNsYXNzPSJ1dWlkLTAxNjgxODhjLWQwYTYtNDk2ZS1hMmQ4LTVjZDZlZTMwZGNiMiIgZD0ibTI4LDIuMjVjNC4yNzMzMiwwLDcuNzUsMy40NzY2NCw3Ljc1LDcuNzV2MThjMCw0LjI3MzM2LTMuNDc2NjgsNy43NS03Ljc1LDcuNzVIMTBjLTQuMjczMzIsMC03Ljc1LTMuNDc2NjQtNy43NS03Ljc1VjEwYzAtNC4yNzMzNiwzLjQ3NjY4LTcuNzUsNy43NS03Ljc1aDE4bTAtMS4yNUgxMEM1LjAyOTQyLDEsMSw1LjAyOTQ0LDEsMTB2MThjMCw0Ljk3MDU3LDQuMDI5NDIsOSw5LDloMThjNC45NzA1OCwwLDktNC4wMjk0Myw5LTlWMTBjMC00Ljk3MDU2LTQuMDI5NDItOS05LTloMFoiLz48cGF0aCBjbGFzcz0idXVpZC0wNWM4ZjUzZC0zOTZhLTRhNzctYjYxMC00Y2FlMTYwN2IzN2YiIGQ9Im0yMCwxNS42MjVjLS4zNDQ3MywwLS42MjUtLjI4MDI3LS42MjUtLjYyNXYtN2MwLS4zNDQ3My4yODAyNy0uNjI1LjYyNS0uNjI1cy42MjUuMjgwMjcuNjI1LjYyNXY3YzAsLjM0NDczLS4yODAyNy42MjUtLjYyNS42MjVaIi8+PHBhdGggY2xhc3M9InV1aWQtMDVjOGY1M2QtMzk2YS00YTc3LWI2MTAtNGNhZTE2MDdiMzdmIiBkPSJtMTYsMTkuNjI1aC03Yy0uMzQ0NzMsMC0uNjI1LS4yODAyNy0uNjI1LS42MjVzLjI4MDI3LS42MjUuNjI1LS42MjVoN2MuMzQ0NzMsMCwuNjI1LjI4MDI3LjYyNS42MjVzLS4yODAyNy42MjUtLjYyNS42MjVaIi8+PHBhdGggY2xhc3M9InV1aWQtMDVjOGY1M2QtMzk2YS00YTc3LWI2MTAtNGNhZTE2MDdiMzdmIiBkPSJtMjAsMzAuNjI1Yy0uMzQ0NzMsMC0uNjI1LS4yODAyNy0uNjI1LS42MjV2LTdjMC0uMzQ0NzMuMjgwMjctLjYyNS42MjUtLjYyNXMuNjI1LjI4MDI3LjYyNS42MjV2N2MwLC4zNDQ3My0uMjgwMjcuNjI1LS42MjUuNjI1WiIvPjxwYXRoIGQ9Im0zMC41NzY1NCwxOS4yMzk0NGMuMDI3OTUtLjA2NzY5LjAzOTU1LS4xMzk0Ny4wNDI4NS0uMjExNDkuMDAwNDktLjAwOTgzLjAwNTYyLS4wMTgwNy4wMDU2Mi0uMDI3OTVzLS4wMDUxMy0uMDE4MTMtLjAwNTYyLS4wMjc5NWMtLjAwMzMtLjA3MjAyLS4wMTQ4OS0uMTQzOC0uMDQyODUtLjIxMTQ5LS4wMjAwMi0uMDQ3OTEtLjA1MzgzLS4wODY2Ny0uMDg0NDctLjEyNzc1LS4wMTgwNy0uMDI0NDgtLjAyNzU5LS4wNTMwNC0uMDQ5NjgtLjA3NTJsLTItMmMtLjI0NDE0LS4yNDQxNC0uNjQwNjItLjI0NDE0LS44ODQ3NywwLS4yNDMxNi4yNDQxNC0uMjQzMTYuNjQwNjIsMCwuODg0NzdsLjkzMzIzLjkzMjYyaC05LjQ5MDg0Yy0uMzQ0NzMsMC0uNjI1LjI4MDI3LS42MjUuNjI1cy4yODAyNy42MjUuNjI1LjYyNWg5LjQ5MDg0bC0uOTMzMjMuOTMyNjJjLS4yNDMxNi4yNDQxNC0uMjQzMTYuNjQwNjIsMCwuODg0NzcuMTIyMDcuMTIyMDcuMjgyMjMuMTgyNjIuNDQyMzguMTgyNjJzLjMyMDMxLS4wNjA1NS40NDIzOC0uMTgyNjJsMi0yYy4wMjIwOS0uMDIyMTYuMDMxNjItLjA1MDcyLjA0OTY4LS4wNzUyLjAzMDY0LS4wNDEwOC4wNjQ0NS0uMDc5ODMuMDg0NDctLjEyNzc1WiIvPjxwYXRoIGQ9Im0xNywxNi42MjVjLS4xNjAxNiwwLS4zMjAzMS0uMDYwNTUtLjQ0MjM4LS4xODI2MmwtNC00Yy0uMjQzMTYtLjI0NDE0LS4yNDMxNi0uNjQwNjIsMC0uODg0NzcuMjQ0MTQtLjI0NDE0LjY0MDYyLS4yNDQxNC44ODQ3NywwbDQsNGMuMjQzMTYuMjQ0MTQuMjQzMTYuNjQwNjIsMCwuODg0NzctLjEyMjA3LjEyMjA3LS4yODIyMy4xODI2Mi0uNDQyMzguMTgyNjJaIi8+PHBhdGggZD0ibTEzLDI2LjYyNWMtLjE2MDE2LDAtLjMyMDMxLS4wNjA1NS0uNDQyMzgtLjE4MjYyLS4yNDMxNi0uMjQ0MTQtLjI0MzE2LS42NDA2MiwwLS44ODQ3N2w0LTRjLjI0NDE0LS4yNDQxNC42NDA2Mi0uMjQ0MTQuODg0NzcsMCwuMjQzMTYuMjQ0MTQuMjQzMTYuNjQwNjIsMCwuODg0NzdsLTQsNGMtLjEyMjA3LjEyMjA3LS4yODIyMy4xODI2Mi0uNDQyMzguMTgyNjJaIi8+PHBhdGggY2xhc3M9InV1aWQtMDVjOGY1M2QtMzk2YS00YTc3LWI2MTAtNGNhZTE2MDdiMzdmIiBkPSJtMTcuNDIzODMsMTMuNjI1Yy0uMjg4MDksMC0uNTQ3ODUtLjIwMTE3LS42MTAzNS0uNDk1MTJsLS40MjQ4LTJjLS4wNzEyOS0uMzM3ODkuMTQzNTUtLjY2OTkyLjQ4MTQ1LS43NDEyMS4zMzg4Ny0uMDc1Mi42Njk5Mi4xNDM1NS43NDEyMS40ODE0NWwuNDI0OCwyYy4wNzEyOS4zMzc4OS0uMTQzNTUuNjY5OTItLjQ4MTQ1Ljc0MTIxLS4wNDM5NS4wMDk3Ny0uMDg3ODkuMDEzNjctLjEzMDg2LjAxMzY3WiIvPjxwYXRoIGNsYXNzPSJ1dWlkLTA1YzhmNTNkLTM5NmEtNGE3Ny1iNjEwLTRjYWUxNjA3YjM3ZiIgZD0ibTE0LjAwMDk4LDE3LjA0OThjLS4wNDI5NywwLS4wODY5MS0uMDAzOTEtLjEzMDg2LS4wMTM2N2wtMi0uNDI0OGMtLjMzNzg5LS4wNzEyOS0uNTUyNzMtLjQwMzMyLS40ODE0NS0uNzQxMjEuMDcyMjctLjMzNzg5LjQwMjM0LS41NTg1OS43NDEyMS0uNDgxNDVsMiwuNDI0OGMuMzM3ODkuMDcxMjkuNTUyNzMuNDAzMzIuNDgxNDUuNzQxMjEtLjA2MjUuMjkzOTUtLjMyMjI3LjQ5NTEyLS42MTAzNS40OTUxMloiLz48cGF0aCBjbGFzcz0idXVpZC0wNWM4ZjUzZC0zOTZhLTRhNzctYjYxMC00Y2FlMTYwN2IzN2YiIGQ9Im0xNy4wMDA5OCwyNy42MjVjLS4wNDI5NywwLS4wODY5MS0uMDAzOTEtLjEzMDg2LS4wMTM2Ny0uMzM3ODktLjA3MTI5LS41NTI3My0uNDAzMzItLjQ4MTQ1LS43NDEyMWwuNDI0OC0yYy4wNzIyNy0uMzM3ODkuNDAxMzctLjU1NTY2Ljc0MTIxLS40ODE0NS4zMzc4OS4wNzEyOS41NTI3My40MDMzMi40ODE0NS43NDEyMWwtLjQyNDgsMmMtLjA2MjUuMjkzOTUtLjMyMjI3LjQ5NTEyLS42MTAzNS40OTUxMloiLz48cGF0aCBjbGFzcz0idXVpZC0wNWM4ZjUzZC0zOTZhLTRhNzctYjYxMC00Y2FlMTYwN2IzN2YiIGQ9Im0xMS45OTkwMiwyMi42MjVjLS4yODgwOSwwLS41NDc4NS0uMjAxMTctLjYxMDM1LS40OTUxMi0uMDcxMjktLjMzNzg5LjE0MzU1LS42Njk5Mi40ODE0NS0uNzQxMjFsMi0uNDI0OGMuMzQwODItLjA3NjE3LjY2OTkyLjE0MzU1Ljc0MTIxLjQ4MTQ1cy0uMTQzNTUuNjY5OTItLjQ4MTQ1Ljc0MTIxbC0yLC40MjQ4Yy0uMDQzOTUuMDA5NzctLjA4Nzg5LjAxMzY3LS4xMzA4Ni4wMTM2N1oiLz48cGF0aCBkPSJtOSwxNS42Mjk4OGMtLjE2MDE2LDAtLjMyMDMxLS4wNzAzMS0uNDQwNDMtLjE5MDQzLS4wNTk1Ny0uMDU5NTctLjA5OTYxLS4xMjAxMi0uMTM5NjUtLjE5OTIyLS4wMzAyNy0uMDgwMDgtLjA0OTgtLjE2MDE2LS4wNDk4LS4yNDAyMywwLS4xNjAxNi4wNjkzNC0uMzIwMzEuMTg5NDUtLjQ0MDQzLjIzMDQ3LS4yMjk0OS42NTAzOS0uMjQwMjMuODc5ODgsMCwuMTIwMTIuMTIwMTIuMTkwNDMuMjgwMjcuMTkwNDMuNDQwNDMsMCwuMDgwMDgtLjAyMDUxLjE2MDE2LS4wNDk4LjI0MDIzLS4wMzAyNy4wNzkxLS4wODAwOC4xMzk2NS0uMTQwNjIuMTk5MjItLjEyMDEyLjEyMDEyLS4yNzkzLjE5MDQzLS40Mzk0NS4xOTA0M1oiLz48cGF0aCBkPSJtOSwyMy42Mjk4OGMtLjE2MDE2LDAtLjMyMDMxLS4wNzAzMS0uNDQwNDMtLjE5MDQzLS4xMjAxMi0uMTA5MzgtLjE4OTQ1LS4yNzkzLS4xODk0NS0uNDM5NDVzLjA2OTM0LS4zMjAzMS4xODk0NS0uNDQwNDNjLjIzMDQ3LS4yMjk0OS42NDA2Mi0uMjQwMjMuODc5ODgsMCwuMTIwMTIuMTIwMTIuMTkwNDMuMjgwMjcuMTkwNDMuNDQwNDNzLS4wNzAzMS4zMzAwOC0uMTkwNDMuNDM5NDVjLS4xMjAxMi4xMjAxMi0uMjc5My4xOTA0My0uNDM5NDUuMTkwNDNaIi8+PC9zdmc+
@@ -62,3 +93,333 @@ spec:
   packages: # link to the name used in the associated package documents in ../packages
     - red-hat-developer-hub-backstage-plugin-lightspeed
     - red-hat-developer-hub-backstage-plugin-lightspeed-backend
+
+  installation: |
+      ## Installation
+
+      ### Dynamic Plugin Installation for Red Hat Developer Hub
+
+      Add the following configuration to your dynamic plugin yaml:
+
+      ```yaml
+      includes:
+        - dynamic-plugins.default.yaml
+      plugins:
+        # Frontend plugin
+        - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-lightspeed:bs_1.39.1__0.5.7!red-hat-developer-hub-backstage-plugin-lightspeed
+          disabled: false
+          pluginConfig:
+            lightspeed:
+              # OPTIONAL: Custom users prompts displayed to users
+              # If not provided, the plugin uses built-in default prompts
+              prompts:
+                - title: 'Getting Started with Red Hat Developer Hub'
+                  message: Can you guide me through the first steps to start using Developer Hub as a developer, like exploring the Software Catalog and adding my service?
+            dynamicPlugins:
+              frontend:
+                red-hat-developer-hub.backstage-plugin-lightspeed:
+                  appIcons:
+                    - name: LightspeedIcon
+                      module: LightspeedPlugin
+                      importName: LightspeedIcon
+                  dynamicRoutes:
+                    - path: /lightspeed
+                      importName: LightspeedPage
+                      module: LightspeedPlugin
+                      menuItem:
+                        icon: LightspeedIcon
+                        text: Lightspeed
+        
+        # Backend plugin
+        - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-lightspeed-backend:bs_1.39.1__0.5.7!red-hat-developer-hub-backstage-plugin-lightspeed-backend
+          disabled: false
+          pluginConfig:
+            lightspeed:
+              # REQUIRED: Configure LLM servers with OpenAI API compatibility
+              servers:
+                - id: ${LIGHTSPEED_SERVER_ID}
+                  url: ${LIGHTSPEED_SERVER_URL}
+                  token: ${LIGHTSPEED_SERVER_TOKEN}
+              
+              # OPTIONAL: Enable/disable question validation (default: true)
+              # When enabled, restricts questions to RHDH-related topics for better security
+              questionValidation: true
+              
+              # OPTIONAL: Custom user prompts displayed to users
+              # If not provided, the plugin uses built-in default user prompts
+              # prompts:
+              #   - title: "Quick Start"
+              #     message: "How do I enable a dynamic plugin?"
+              
+              # OPTIONAL: Port for lightspeed service (default: 8080)
+              # servicePort: 8080
+              
+              # OPTIONAL: Override default RHDH system prompt
+              # systemPrompt: "You are a helpful assistant focused on Red Hat Developer Hub development."
+      ```
+      
+      ### Static Installation for Backstage application.
+
+      This section documents the static method of installing plugin packages in a Backstage application.
+      Use this approach only when you want to manually add and configure plugins.
+      Ensure you follow each step carefully to integrate the plugin correctly within your Backstage environment.
+      
+      #### 1. Install Plugin Packages
+
+      ```bash
+      # Install frontend plugin
+      yarn workspace app add @red-hat-developer-hub/backstage-plugin-lightspeed
+
+      # Install backend plugin
+      yarn add --cwd packages/backend @red-hat-developer-hub/backstage-plugin-lightspeed-backend
+      ```
+
+      #### 2. Register Backend Plugin
+
+      Add to your `packages/backend/src/index.ts`:
+
+      ```ts
+      import { createBackend } from '@backstage/backend-defaults';
+
+      const backend = createBackend();
+
+      // Add the Lightspeed backend plugin
+      backend.add(
+        import('@red-hat-developer-hub/backstage-plugin-lightspeed-backend'),
+      );
+
+      backend.start();
+      ```
+
+      #### 3. Add Frontend Components
+
+      **Add Navigation Route** in `packages/app/src/App.tsx`:
+
+      ```tsx
+      import { LightspeedPage } from '@red-hat-developer-hub/backstage-plugin-lightspeed';
+
+      // Add this route within your existing routes
+      <Route path="/lightspeed" element={<LightspeedPage />} />
+      ```
+
+      **Add Navigation Menu Item** in `packages/app/src/components/Root/Root.tsx`:
+
+      ```tsx
+      import { LightspeedIcon } from '@red-hat-developer-hub/backstage-plugin-lightspeed';
+
+      // Add this within your existing sidebar items
+      <SidebarItem
+        icon={LightspeedIcon as IconComponent}
+        to="lightspeed"
+        text="Lightspeed"
+      />
+      ```
+
+      #### 4. Configure the Plugin
+      **Configure your LLM server** in `app-config.yaml` or `app-config.local.yaml`:
+
+
+      ```yaml
+        lightspeed:
+          servers:
+            - id: openai-server
+              url: https://api.openai.com/v1
+              token: ${OPENAI_API_KEY}
+      ```
+
+      ## Configuration
+
+      ### Complete Configuration Reference
+
+      Add the following configuration to your `app-config.yaml`:
+
+      ```yaml
+      lightspeed:
+        # REQUIRED: Configure LLM servers with OpenAI API compatibility
+        servers:
+          - id: <server_id>                    # REQUIRED: Unique identifier for the server
+            url: <server_URL>                  # REQUIRED: Base URL of the LLM server (e.g., https://api.openai.com/v1)
+            token: <api_key>                   # REQUIRED: Authentication token/API key for the server
+        
+        # OPTIONAL: Enable/disable question validation (default: true)
+        # When enabled, restricts questions to RHDH-related topics for better security
+        questionValidation: true
+        
+        # OPTIONAL: Custom users prompts displayed to users
+        # If not provided, the plugin uses built-in default prompts
+        prompts:
+          - title: <prompt_title>              # REQUIRED: Display title for the prompt
+            message: <prompt_message>          # REQUIRED: The actual prompt text/question
+        
+        # OPTIONAL: Backend-only configurations
+        servicePort: 8080                      # OPTIONAL: Port for lightspeed service (default: 8080)
+        systemPrompt: <custom_system_prompt>   # OPTIONAL: Override default RHDH system prompt
+      ```
+
+      #### Configuration Fields
+
+      | Field | Type | Required | Default | Description |
+      |-------|------|----------|---------|-------------|
+      | `servers` | Array | ✅ Yes | - | Array of LLM server configurations |
+      | `servers[].id` | String | ✅ Yes | - | Unique identifier for the server |
+      | `servers[].url` | String | ✅ Yes | - | Base URL of the LLM server with OpenAI API compatibility |
+      | `servers[].token` | String | ✅ Yes | - | Authentication token or API key for accessing the server |
+      | `questionValidation` | Boolean | ❌ No | `true` | Enable/disable question validation for security |
+      | `prompts` | Array | ❌ No | Built-in prompts | Custom welcome prompts for users |
+      | `prompts[].title` | String | ✅ Yes* | - | Display title for the prompt (*required if prompts array is provided) |
+      | `prompts[].message` | String | ✅ Yes* | - | The actual prompt text/question (*required if prompts array is provided) |
+      | `servicePort` | Number | ❌ No | `8080` | Port for lightspeed backend service |
+      | `systemPrompt` | String | ❌ No | RHDH default | Custom system prompt to override default behavior |
+
+      ### Example Configurations
+
+      #### Basic Configuration (Required fields only)
+      ```yaml
+      lightspeed:
+        servers:
+          - id: openai-server
+            url: https://api.openai.com/v1
+            token: ${OPENAI_API_KEY}
+      ```
+
+      #### Local Development Configuration
+      ```yaml
+      lightspeed:
+        servers:
+          - id: 'my-llm-server'
+            url: 'http://localhost:11434/v1'
+            token: 'dummy' # dummy token
+      ```
+
+      #### Disable Question Validation
+      ```yaml
+      lightspeed:
+        questionValidation: false
+        servers:
+          - id: openai-server
+            url: https://api.openai.com/v1
+            token: ${OPENAI_API_KEY}
+      ```
+
+      #### Custom User Prompts (Welcome Prompts in Lightspeed UI)
+      ```yaml
+      lightspeed:
+        servers:
+          - id: openai-server
+            url: https://api.openai.com/v1
+            token: ${OPENAI_API_KEY}
+        prompts:
+          - title: "Get Started with RHDH"
+            message: "How can I set up a new component in Red Hat Developer Hub?"
+          - title: "Troubleshooting"
+            message: "What are common issues when deploying to OpenShift?"
+          - title: "Best Practices"
+            message: "What are the recommended practices for RHDH development?"
+      ```
+
+      #### Complete Configuration with All Options
+      ```yaml
+      lightspeed:
+        servers:
+          - id: openai-server
+            url: https://api.openai.com/v1
+            token: ${OPENAI_API_KEY}
+        questionValidation: true
+        prompts:
+          - title: "Quick Start"
+            message: "How do I enable a dynamic plugin?"
+        servicePort: 8080
+        systemPrompt: "You are a helpful assistant focused on Red Hat Developer Hub development."
+      ```
+
+      ## Permissions
+
+      The Lightspeed plugin supports the Backstage permission framework for access control.
+
+      ### RBAC Configuration
+
+      When using the [RBAC permission framework](https://github.com/backstage/community-plugins/tree/main/workspaces/rbac/plugins/rbac-backend#installation), add the following permissions to your `rbac-policy.csv` file:
+
+      ```csv
+      # Allow team_a role to read, create, and delete lightspeed chats
+      p, role:default/team_a, lightspeed.chat.read, read, allow
+      p, role:default/team_a, lightspeed.chat.create, create, allow
+      p, role:default/team_a, lightspeed.chat.delete, delete, allow
+
+      # Assign user to team_a role
+      g, user:default/<your-user-name>, role:default/team_a
+      ```
+
+      ### Permission Configuration
+
+      Configure the permission system in your application configuration:
+
+      ```yaml
+      permission:
+        enabled: true
+        rbac:
+          policies-csv-file: /some/path/rbac-policy.csv
+          policyFileReload: true
+      ```
+
+      ## Development
+
+      ### Local Development
+
+      1. **Fork and clone this repository**:
+
+          ```bash
+          git clone https://github.com/your-username/rhdh-plugins.git
+          cd rhdh-plugins/workspaces/lightspeed
+          ```
+
+      2. **Install dependencies**:
+      
+          ```bash
+          yarn install
+          ```
+
+      3. **Add configurations** in `app-config.yaml` or `app-config.local.yaml`:
+        
+          ```yaml
+          lightspeed:
+            servers:
+              - id: 'my-llm-server'
+                url: 'http://localhost:11434/v1'
+                token: 'dummy' # dummy token
+            questionValidation: true
+          ```
+
+      4. **Start the development server**:
+
+          ```bash
+          yarn dev
+          ```
+
+      5. **Access the application** at [http://localhost:3000](http://localhost:3000) and navigate to the Lightspeed page
+
+
+
+      ### Environment Variables
+
+      The following environment variables can be used in configuration:
+
+      - `LIGHTSPEED_SERVER_ID`: Server identifier
+      - `LIGHTSPEED_SERVER_URL`: LLM server URL
+      - `LIGHTSPEED_SERVER_TOKEN`: Authentication token
+      - `LIGHTSPEED_SERVICE_PORT`: Service port (default: 8080)
+      - `LIGHTSPEED_QUESTION_VALIDATION`: Enable question validation (default: true)
+
+      ### Example with Environment Variables
+
+      ```yaml
+      lightspeed:
+        servers:
+          - id: ${LIGHTSPEED_SERVER_ID}
+            url: ${LIGHTSPEED_SERVER_URL}
+            token: ${LIGHTSPEED_SERVER_TOKEN}
+        servicePort: ${LIGHTSPEED_SERVICE_PORT:-8080}
+        questionValidation: ${LIGHTSPEED_QUESTION_VALIDATION:-true}
+      ```
+
+  

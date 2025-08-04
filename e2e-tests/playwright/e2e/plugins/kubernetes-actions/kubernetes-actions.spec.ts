@@ -4,7 +4,7 @@ import { UIhelper } from "../../../utils/ui-helper";
 import { KubeClient } from "../../../utils/kube-client";
 import { UI_HELPER_ELEMENTS } from "../../../support/pageObjects/global-obj";
 
-test.describe.skip("Test Kubernetes Actions plugin", () => {
+test.describe("Test Kubernetes Actions plugin", () => {
   let common: Common;
   let uiHelper: UIhelper;
   let page: Page;
@@ -17,11 +17,24 @@ test.describe.skip("Test Kubernetes Actions plugin", () => {
     uiHelper = new UIhelper(page);
     kubeClient = new KubeClient();
 
+    test.setTimeout(testInfo.timeout + 6500);
+
     await common.loginAsGuest();
     await uiHelper.clickLink({ ariaLabel: "Self-service" });
   });
 
-  //TODO https://issues.redhat.com/browse/RHDHBUGS-1912
+  // eslint-disable-next-line no-empty-pattern
+  test.beforeEach(async ({}, testInfo) => {
+    // Add cool-down period before retries (except on first attempt)
+    if (testInfo.retry > 0) {
+      const coolDownMs = 2000;
+      console.log(
+        `Attempt ${testInfo.retry + 1} failed, waiting ${coolDownMs}ms before retry...`,
+      );
+      await page.waitForTimeout(coolDownMs);
+    }
+  });
+
   test("Creates kubernetes namespace", async () => {
     namespace = `test-kubernetes-actions-${Date.now()}`;
     await uiHelper.verifyHeading("Self-service");
@@ -32,11 +45,15 @@ test.describe.skip("Test Kubernetes Actions plugin", () => {
     await uiHelper.fillTextInputByLabel("Url", process.env.K8S_CLUSTER_URL);
     await uiHelper.fillTextInputByLabel("Token", process.env.K8S_CLUSTER_TOKEN);
     await uiHelper.checkCheckbox("Skip TLS verification");
+    await page.waitForTimeout(2000);
     await uiHelper.clickButton("Review");
+    await page.waitForTimeout(1500);
     await uiHelper.clickButton("Create");
+    await page.waitForTimeout(1500);
     await page.waitForSelector(
       `${UI_HELPER_ELEMENTS.MuiTypography}:has-text("second")`,
     );
+    await page.waitForTimeout(1500);
     await expect(
       page.locator(`${UI_HELPER_ELEMENTS.MuiTypography}:has-text("Error")`),
     ).not.toBeVisible();

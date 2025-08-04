@@ -17,8 +17,8 @@ metadata:
   tags: []
 spec:
   packageName: "@red-hat-developer-hub/backstage-plugin-lightspeed-backend"
-  dynamicArtifact: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-lightspeed:next__0.5.6!red-hat-developer-hub-backstage-plugin-lightspeed-backend
-  version: 0.5.6
+  dynamicArtifact: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-lightspeed-backend:bs_1.39.1__0.5.7!red-hat-developer-hub-backstage-plugin-lightspeed-backend
+  version: 0.5.7
   backstage:
     role: backend-plugin
     supportedVersions: 1.39.1
@@ -31,12 +31,18 @@ spec:
     - title: Default configuration
       content: |
         lightspeed: 
+          # REQUIRED: Configure LLM servers with OpenAI API compatibility
           servers:
             - id: ${LIGHTSPEED_SERVER_ID}
               url: ${LIGHTSPEED_SERVER_URL}
               token: ${LIGHTSPEED_SERVER_TOKEN}
-          questionValidation: true # Optional, default is true
-          servicePort: ${LIGHTSPEED_SERVICE_PORT} # Optional - Change the lightspeed service port number, default is 8080
-          prompts: # Optional – Configure custom user prompts. If left empty, the plugin will fall back to built-in defaults.
-            - title: 'Getting Started with Red Hat Developer Hub'
-              message: Can you guide me through the first steps to start using Developer Hub as a developer, like exploring the Software Catalog and adding my service?
+
+          # OPTIONAL: Enable/disable question validation (default: true)
+          # When enabled, restricts questions to RHDH-related topics for better security
+          questionValidation: true 
+
+          # OPTIONAL: Port for lightspeed service (default: 8080)
+          # servicePort: ${LIGHTSPEED_SERVICE_PORT}
+
+          # OPTIONAL: Override default RHDH system prompt
+          # systemPrompt: "You are a helpful assistant focused on Red Hat Developer Hub development."

@@ -11,7 +11,6 @@ import {
 
 // Pre-req : plugin-bulk-import & plugin-bulk-import-backend-dynamic
 test.describe.serial("Bulk Import plugin", () => {
-  test.fixme(); // TODO: Fix failing tests - https://issues.redhat.com/browse/RHDHBUGS-1869
   test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
   let page: Page;
   let uiHelper: UIhelper;

@@ -17,8 +17,8 @@ metadata:
   tags: []
 spec:
   packageName: "@dynatrace/backstage-plugin-dql-backend"
-  #dynamicArtifact: ./dynamic-plugins/dist/dynatrace-backstage-plugin-dql-backend
-  version: 2.1.5
+  dynamicArtifact: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/dynatrace-backstage-plugin-dql-backend:bs_1.39.1__2.2.0!dynatrace-backstage-plugin-dql-backend
+  version: 2.2.0
   backstage:
     role: backend-plugin
     supportedVersions: 1.35.1
@@ -30,4 +30,11 @@ spec:
   appConfigExamples:
     - title: Default configuration
       content:
-        dynamicPlugins:
+        dynatrace:
+          environments:
+            - name: ${DYNATRACE_NAME}
+              url: ${DYNATRACE_URL}
+              tokenUrl: ${DYNATRACE_TOKEN_URL}
+              accountUrn: ${DYNATRACE_ACCOUNT_URN}
+              clientId: ${DYNATRACE_CLIENT_ID}
+              clientSecret: ${DYNATRACE_CLIENT_SECRET}
