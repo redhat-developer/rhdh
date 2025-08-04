@@ -42,6 +42,7 @@ site
 
 # Local configuration files
 *.local.yaml
+dynamic-plugins.yaml
 
 # Sensitive credentials
 *-credentials.local.yaml
