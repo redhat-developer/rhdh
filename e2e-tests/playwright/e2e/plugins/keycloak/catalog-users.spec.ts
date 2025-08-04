@@ -195,6 +195,9 @@ async function createIngressIfNotPresentAndWait(
     console.log(`===== Print service end:`);
 
     const rhdhServiceName = service[0].metadata.name;
+    console.log(
+      `=== selected service name: ${rhdhServiceName}. Domain is ${domain}`,
+    );
     const ingress = {
       apiVersion: "networking.k8s.io/v1",
       kind: "Ingress",
