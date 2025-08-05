@@ -375,39 +375,103 @@ find_available_domain_number() {
   
   # Check existing DNS records to find used numbers
   echo "Checking existing DNS records..." >&2
+  echo "Hosted zone ID: ${hosted_zone_id}" >&2
+  echo "Looking for records containing 'eks-ci-' in domain: ${AWS_EKS_PARENT_DOMAIN}" >&2
+  
   local existing_records
   existing_records=$(aws route53 list-resource-record-sets \
     --hosted-zone-id "${hosted_zone_id}" \
-    --query "ResourceRecordSets[?starts_with(Name, 'eks-ci-') && ends_with(Name, '.${region}.${AWS_EKS_PARENT_DOMAIN}')].Name" \
-    --output text 2>/dev/null)
+    --query "ResourceRecordSets[?contains(Name, 'eks-ci-')].Name" \
+    --output json 2>/dev/null)
+  
+  echo "Raw AWS CLI output: '${existing_records}'" >&2
   
   # Extract used numbers from existing records
   local used_numbers=()
+  local seen_numbers=()
   if [[ -n "${existing_records}" ]]; then
+    # Parse JSON array and process each record
     while IFS= read -r record; do
+      # Remove quotes and trailing comma from JSON array elements
+      record=$(echo "${record}" | sed 's/^"//; s/"$//; s/,$//')
+      # More robust regex to match eks-ci-[number].[region].[parent-domain]
       if [[ "${record}" =~ eks-ci-([0-9]+)\.${region}\.${AWS_EKS_PARENT_DOMAIN} ]]; then
-        used_numbers+=("${BASH_REMATCH[1]}")
+        local number="${BASH_REMATCH[1]}"
+        # Check if we've already seen this number to avoid duplicates
+        local already_seen=false
+        for seen_num in "${seen_numbers[@]}"; do
+          if [[ "${seen_num}" == "${number}" ]]; then
+            already_seen=true
+            break
+          fi
+        done
+        if [[ "${already_seen}" == false ]]; then
+          used_numbers+=("${number}")
+          seen_numbers+=("${number}")
+          echo "Found existing record: ${record} with number: ${number}" >&2
+        fi
       fi
-    done <<< "${existing_records}"
+    done < <(echo "${existing_records}" | jq -r '.[]' 2>/dev/null || echo "${existing_records}" | grep -o '"[^"]*"' | sed 's/"//g')
+  else
+    echo "No existing records found with 'eks-ci-' pattern, will start with number 1" >&2
+  fi
+  
+  # Fallback: if no records found, try getting all records and filtering locally
+  if [[ ${#used_numbers[@]} -eq 0 ]]; then
+    echo "Trying fallback approach - getting all records and filtering locally..." >&2
+    local all_records
+    all_records=$(aws route53 list-resource-record-sets \
+      --hosted-zone-id "${hosted_zone_id}" \
+      --query "ResourceRecordSets[].Name" \
+      --output json 2>/dev/null)
+    
+    echo "All records found: '${all_records}'" >&2
+    
+    # Parse JSON array and process each record
+    while IFS= read -r record; do
+      # Remove quotes and trailing comma from JSON array elements
+      record=$(echo "${record}" | sed 's/^"//; s/"$//; s/,$//')
+      if [[ "${record}" =~ eks-ci-([0-9]+)\.${region}\.${AWS_EKS_PARENT_DOMAIN} ]]; then
+        local number="${BASH_REMATCH[1]}"
+        # Check if we've already seen this number to avoid duplicates
+        local already_seen=false
+        for seen_num in "${seen_numbers[@]}"; do
+          if [[ "${seen_num}" == "${number}" ]]; then
+            already_seen=true
+            break
+          fi
+        done
+        if [[ "${already_seen}" == false ]]; then
+          used_numbers+=("${number}")
+          seen_numbers+=("${number}")
+          echo "Found existing record (fallback): ${record} with number: ${number}" >&2
+        fi
+      fi
+    done < <(echo "${all_records}" | jq -r '.[]' 2>/dev/null || echo "${all_records}" | grep -o '"[^"]*"' | sed 's/"//g')
   fi
   
   echo "Found ${#used_numbers[@]} existing domains: ${used_numbers[*]}" >&2
   
-  # Find the lowest available number
+  # Check each potential domain to find the first one that's actually not in use
   local number=1
   for ((i = 1; i <= max_attempts; i++)); do
-    local found=false
-    for used_num in "${used_numbers[@]}"; do
-      if [[ "${used_num}" == "${number}" ]]; then
-        found=true
-        break
-      fi
-    done
+    local test_domain="eks-ci-${number}.${region}.${AWS_EKS_PARENT_DOMAIN}"
+    echo "Testing domain: ${test_domain}" >&2
     
-    if [[ "${found}" == false ]]; then
-      echo "✅ Found available number: ${number}">&2
+    # Check if this specific domain exists in Route53
+    local domain_exists
+    domain_exists=$(aws route53 list-resource-record-sets \
+      --hosted-zone-id "${hosted_zone_id}" \
+      --query "ResourceRecordSets[?Name == '${test_domain}.'].Name" \
+      --output json 2>/dev/null)
+    
+    # If the query returns an empty array or null, the domain is available
+    if [[ -z "${domain_exists}" ]] || [[ "${domain_exists}" == "[]" ]] || [[ "${domain_exists}" == "null" ]]; then
+      echo "✅ Found available domain: ${test_domain} (not found in Route53)" >&2
       echo "${number}"
       return 0
+    else
+      echo "Domain ${test_domain} exists in Route53, trying next number..." >&2
     fi
     
     ((number++))
