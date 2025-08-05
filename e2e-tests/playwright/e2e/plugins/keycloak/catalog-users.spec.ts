@@ -183,6 +183,13 @@ async function createIngressIfNotPresentAndWait(
   ingressName: string,
   domain: string,
 ) {
+  const rhdhIngress = await kubeClient.getIngress(
+    namespace,
+    "rhdh-developer-hub",
+  );
+  console.log(`===== RHDH ingress start:`);
+  console.log(JSON.stringify(rhdhIngress, null, 2));
+  console.log(`===== RHDH ingress end:`);
   const metricsIngress = await kubeClient.getIngress(namespace, ingressName);
   if (!metricsIngress) {
     const service = await kubeClient.getServiceByLabel(
@@ -204,9 +211,9 @@ async function createIngressIfNotPresentAndWait(
       metadata: {
         name: ingressName,
         namespace,
-        annotations: {
-          "nginx.ingress.kubernetes.io/rewrite-target": "/metrics",
-        },
+        // annotations: {
+        //   "nginx.ingress.kubernetes.io/rewrite-target": "/metrics",
+        // },
       },
       spec: {
         rules: [
