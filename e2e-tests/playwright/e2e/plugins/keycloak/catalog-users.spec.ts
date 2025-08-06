@@ -190,6 +190,7 @@ async function createIngressIfNotPresentAndWait(
   console.log(`===== RHDH ingress start:`);
   console.log(JSON.stringify(rhdhIngress, null, 2));
   console.log(`===== RHDH ingress end:`);
+
   const metricsIngress = await kubeClient.getIngress(namespace, ingressName);
   if (!metricsIngress) {
     const service = await kubeClient.getServiceByLabel(
@@ -240,6 +241,11 @@ async function createIngressIfNotPresentAndWait(
       },
     };
     await kubeClient.createIngress(namespace, ingress);
+
+    const metricsIngress = await kubeClient.getIngress(namespace, ingressName);
+    console.log(`===== metrics ingress start:`);
+    console.log(JSON.stringify(metricsIngress, null, 2));
+    console.log(`===== metrics ingress end:`);
   }
 
   // Wait until the ingress is available.
