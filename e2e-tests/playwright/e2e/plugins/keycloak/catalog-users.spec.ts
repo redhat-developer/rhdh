@@ -217,6 +217,7 @@ async function createIngressIfNotPresentAndWait(
         // },
       },
       spec: {
+        ingressClassName: "gce",
         rules: [
           {
             host: `${ingressName}.${domain}`,
