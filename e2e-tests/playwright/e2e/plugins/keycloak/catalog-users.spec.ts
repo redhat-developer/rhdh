@@ -242,6 +242,7 @@ async function createIngressIfNotPresentAndWait(
       },
     };
     await kubeClient.createIngress(namespace, ingress);
+    await kubeClient.waitForIngressLoadBalancer(namespace, ingressName, 15, 30);
 
     const metricsIngress = await kubeClient.getIngress(namespace, ingressName);
     console.log(`===== metrics ingress start:`);

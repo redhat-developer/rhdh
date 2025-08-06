@@ -685,6 +685,78 @@ export class KubeClient {
     }
   }
 
+  async waitForIngressLoadBalancer(
+    namespace: string,
+    ingressName: string,
+    timeoutMinutes: number = 15,
+    pollIntervalSeconds: number = 30,
+  ): Promise<k8s.KubernetesObject> {
+    const startTime = Date.now();
+    const timeoutMs = timeoutMinutes * 60 * 1000;
+    const pollIntervalMs = pollIntervalSeconds * 1000;
+
+    console.log(
+      `Starting to wait for Ingress Load Balancer for ${ingressName} in namespace ${namespace}...`,
+    );
+    console.log(
+      `Maximum wait time: ${timeoutMinutes} minutes. Poll interval: ${pollIntervalSeconds} seconds.`,
+    );
+
+    while (Date.now() - startTime < timeoutMs) {
+      try {
+        const response = await this.k8sNetoworkApi.readNamespacedIngress(
+          ingressName,
+          namespace,
+        );
+
+        const ingress = response.body as k8s.V1Ingress;
+
+        // Check if the loadBalancer.ingress field is populated
+        if (
+          ingress.status &&
+          ingress.status.loadBalancer &&
+          ingress.status.loadBalancer.ingress &&
+          ingress.status.loadBalancer.ingress.length > 0
+        ) {
+          console.log(`Ingress Load Balancer for ${ingressName} is ready!`);
+          return ingress;
+        }
+
+        console.log(
+          `Load Balancer for ${ingressName} is not yet ready. Waiting ${pollIntervalSeconds} seconds...`,
+        );
+        await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
+      } catch (error: unknown) {
+        if (
+          error instanceof k8s.HttpError &&
+          error.response &&
+          error.response.statusCode === 404
+        ) {
+          console.warn(
+            `Ingress ${ingressName} not found. It might still be creating. Waiting...`,
+          );
+        } else if (error instanceof Error) {
+          console.error(
+            `Error getting Ingress status for ${ingressName}:`,
+            error.message,
+          );
+          throw error; // Re-throw the error
+        } else {
+          console.error(
+            `An unknown error occurred while getting Ingress status for ${ingressName}.`,
+          );
+          throw new Error("An unknown error occurred.");
+        }
+        await new Promise((resolve) => setTimeout(resolve, pollIntervalMs)); // Wait before retrying
+      }
+    }
+
+    // If timeout is reached
+    throw new Error(
+      `Timeout reached (${timeoutMinutes} minutes) for Ingress Load Balancer ${ingressName}.`,
+    );
+  }
+
   async deleteIngress(namespace: string, name: string) {
     try {
       const response = await this.k8sCustomAPI.deleteNamespacedCustomObject(
