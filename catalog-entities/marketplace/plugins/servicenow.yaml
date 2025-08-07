@@ -14,7 +14,6 @@ metadata:
 
   annotations:
     extensions.backstage.io/pre-installed: 'false'
-    extensions.backstage.io/verified-by: Red Hat
   tags:
     - itsm
     - incident-management
