@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { test } from "@playwright/test";
 import { UIhelper } from "../../utils/ui-helper";
 import { Common } from "../../utils/common";
 import { CatalogHelper } from "../../utils/catalog-helper";
@@ -18,7 +18,6 @@ test("Verify all GitHub Pull Requests statistics after login", async ({ page, co
   await uiHelper.isBtnVisible('Sign in');
   await uiHelper.clickButton('Sign in');
   await uiHelper.isBtnVisible('Log in');
-  const selector = uiHelper.getButtonSelector('Log in');
   await Promise.all([
     common.githubLoginPopUpModal(
       context,
