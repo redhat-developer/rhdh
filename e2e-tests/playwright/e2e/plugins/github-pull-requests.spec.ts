@@ -3,9 +3,9 @@ import { UIhelper } from "../../utils/ui-helper";
 import { Common } from "../../utils/common";
 import { CatalogHelper } from "../../utils/catalog-helper";
 
-if (!process.env.GH_USER_ID || !process.env.GH_USER_PASS || !process.env.GH_2FA_SECRET) {
-    throw new Error("GH_USER_ID, GH_USER_PASS, and GH_2FA_SECRET must be set in your environment or .env file.");
-}
+// if (!process.env.GH_USER_ID || !process.env.GH_USER_PASS || !process.env.GH_2FA_SECRET) {
+//     throw new Error("GH_USER_ID, GH_USER_PASS, and GH_2FA_SECRET must be set in your environment or .env file.");
+// }
 
 test("Verify all GitHub Pull Requests statistics after login", async ({ page, context }) => {
   const repoName = "Backstage Showcase";
