@@ -479,11 +479,11 @@ find_available_domain_number() {
   for ((i = 1; i <= max_attempts; i++)); do
     local test_domain="eks-ci-${number}.${region}.${AWS_EKS_PARENT_DOMAIN}"
     echo "Testing domain availability" >&2
-    # Check if this specific domain exists in Route53
+    # Check if this specific domain exists in Route53 (any record type)
     local domain_exists
     domain_exists=$(aws route53 list-resource-record-sets \
       --hosted-zone-id "${hosted_zone_id}" \
-      --query "ResourceRecordSets[?Name == '${test_domain}.'].Name" \
+      --query "ResourceRecordSets[?Name == '${test_domain}.'].{Name:Name,Type:Type}" \
       --output json 2>/dev/null)
     
     # If the query returns an empty array or null, the domain is available
@@ -526,9 +526,105 @@ generate_dynamic_domain_name() {
   
   # Generate the domain name
   local domain_name="eks-ci-${number}.${region}.${AWS_EKS_PARENT_DOMAIN}"
-  echo "Generated dynamic domain name" >&2
+  local domain_prefix="eks-ci-${number}.${region}"
+  echo "Generated dynamic domain name: ${domain_prefix}" >&2
   
+  # Reserve the domain number by creating a placeholder DNS record
+  echo "Reserving domain number ${number} by creating placeholder DNS record..." >&2
+  if ! create_placeholder_dns_record "${domain_name}"; then
+    echo "Error: Failed to create placeholder DNS record for domain: ${domain_prefix}" >&2
+    return 1
+  fi
+  
+  echo "✅ Successfully reserved domain number ${number} with placeholder record" >&2
   echo "${domain_name}"
+}
+
+# Function to create a placeholder DNS record for reserving a domain number
+create_placeholder_dns_record() {
+  local domain_name=$1
+  
+  # Extract the domain prefix for logging (without parent domain)
+  local domain_prefix
+  if [[ "${domain_name}" =~ ^(eks-ci-[0-9]+\.[a-z0-9-]+)\. ]]; then
+    domain_prefix="${BASH_REMATCH[1]}"
+  else
+    domain_prefix="${domain_name}"
+  fi
+  
+  echo "Creating placeholder DNS record to reserve domain: ${domain_prefix}" >&2
+  
+  # Use global parent domain from secret
+  if [[ -z "${AWS_EKS_PARENT_DOMAIN}" ]]; then
+    echo "Error: AWS_EKS_PARENT_DOMAIN environment variable is not set" >&2
+    return 1
+  fi
+  
+  # Get the hosted zone ID for the parent domain
+  local hosted_zone_id
+  hosted_zone_id=$(aws route53 list-hosted-zones --query "HostedZones[?Name == '${AWS_EKS_PARENT_DOMAIN}.' || Name == '${AWS_EKS_PARENT_DOMAIN}'].Id" --output text 2>/dev/null)
+  
+  if [[ -z "${hosted_zone_id}" ]]; then
+    echo "Error: No hosted zone found for configured parent domain" >&2
+    return 1
+  fi
+  
+  # Remove the '/hostedzone/' prefix
+  hosted_zone_id="${hosted_zone_id#/hostedzone/}"
+  echo "Found hosted zone for configured parent domain" >&2
+  
+  # Create the change batch JSON for placeholder record
+  cat > /tmp/placeholder-dns-change.json << EOF
+{
+  "Changes": [
+    {
+      "Action": "UPSERT",
+      "ResourceRecordSet": {
+        "Name": "${domain_name}",
+        "Type": "TXT",
+        "TTL": 300,
+        "ResourceRecords": [
+          {
+            "Value": "\"reserved-by-eks-ci\""
+          }
+        ]
+      }
+    }
+  ]
+}
+EOF
+
+  # Apply the DNS change
+  echo "Applying placeholder DNS change..." >&2
+  local change_id
+  change_id=$(aws route53 change-resource-record-sets \
+    --hosted-zone-id "${hosted_zone_id}" \
+    --change-batch file:///tmp/placeholder-dns-change.json \
+    --query 'ChangeInfo.Id' \
+    --output text 2>/dev/null)
+  
+  if [[ $? -eq 0 && -n "${change_id}" ]]; then
+    echo "✅ Placeholder DNS record created successfully" >&2
+    
+    # Wait for the change to be propagated
+    echo "Waiting for placeholder DNS change to be propagated..." >&2
+    aws route53 wait resource-record-sets-changed --id "${change_id}"
+    
+    if [[ $? -eq 0 ]]; then
+      echo "✅ Placeholder DNS change has been propagated" >&2
+    else
+      echo "⚠️  Placeholder DNS change may still be propagating" >&2
+    fi
+    
+    # Clean up temporary file
+    rm -f /tmp/placeholder-dns-change.json
+    return 0
+  else
+    echo "❌ Failed to create placeholder DNS record" >&2
+    # Clean up temporary file
+    rm -f /tmp/placeholder-dns-change.json
+    return 1
+  fi
 }
 
 # Function to create/update DNS record in Route53
