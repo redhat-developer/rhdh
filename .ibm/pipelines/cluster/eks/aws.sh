@@ -137,7 +137,7 @@ configure_eks_ingress_and_dns() {
       echo "✅ DNS record updated successfully"
       
       # Verify DNS resolution
-      if verify_dns_resolution "${EKS_INSTANCE_DOMAIN_NAME}" "${ingress_address}" 20 15; then
+      if verify_dns_resolution "${EKS_INSTANCE_DOMAIN_NAME}" "${ingress_address}" 30 15; then
         echo "✅ DNS resolution verified successfully"
       else
         echo "⚠️  DNS resolution verification failed, but record was updated"
@@ -581,11 +581,11 @@ create_placeholder_dns_record() {
       "Action": "UPSERT",
       "ResourceRecordSet": {
         "Name": "${domain_name}",
-        "Type": "TXT",
+        "Type": "CNAME",
         "TTL": 300,
         "ResourceRecords": [
           {
-            "Value": "\"reserved-by-eks-ci\""
+            "Value": "localhost"
           }
         ]
       }
