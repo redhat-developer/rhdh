@@ -4,13 +4,33 @@
 # The cluster is pre-configured with required addons and load balancer.
 # KUBECONFIG is provided by the test environment.
 
+# Masking helper to avoid leaking sensitive values in logs
+mask_value() {
+  local value="$1"
+  local visible_prefix="${2:-14}"
+  local visible_suffix="${3:-0}"
+
+  # Empty or short values -> redact fully
+  if [[ -z "$value" ]]; then
+    echo "***REDACTED***"
+    return
+  fi
+
+  local length=${#value}
+  if (( length <= visible_prefix + visible_suffix + 3 )); then
+    echo "***REDACTED***"
+  else
+    echo "${value:0:visible_prefix}...${value:length-visible_suffix:visible_suffix}"
+  fi
+}
+
 # AWS configuration for deployments that need AWS services
 aws_configure() {
   if [[ -n "${AWS_ACCESS_KEY_ID}" && -n "${AWS_SECRET_ACCESS_KEY}" && -n "${AWS_DEFAULT_REGION}" ]]; then
     aws configure set aws_access_key_id "${AWS_ACCESS_KEY_ID}"
     aws configure set aws_secret_access_key "${AWS_SECRET_ACCESS_KEY}"
     aws configure set default.region "${AWS_DEFAULT_REGION}"
-    echo "AWS CLI configured for region: ${AWS_DEFAULT_REGION}"
+    echo "AWS CLI configured for default region: ${AWS_DEFAULT_REGION}"
   else
     echo "AWS credentials not provided, skipping AWS CLI configuration"
   fi
@@ -61,7 +81,7 @@ aws_eks_get_cluster_info() {
   # Get installed addons
   echo "Installed Addons:"
   kubectl get pods -A -l app.kubernetes.io/name=aws-load-balancer-controller 2>/dev/null | grep -q aws-load-balancer-controller && echo "- AWS Load Balancer Controller" || echo "- AWS Load Balancer Controller: Not found"
-  kubectl get pods -A -l app.kubernetes.io/name=aws-ebs-csi-driver 2>/dev/null | grep -q aws-ebs-csi-driver && echo "- AWS EBS CSI Driver" || echo "- AWS EBS CSI Driver: Not found"
+  kubectl get pods -A -l app.kubernetes.io/name=aws-ebs-csi-driver 2>/dev/null | grep -q ebs-csi && echo "- AWS EBS CSI Driver" || echo "- AWS EBS CSI Driver: Not found"
 }
 
 # Function to setup EKS ingress hosts configuration
@@ -84,7 +104,7 @@ configure_eks_ingress_and_dns() {
     ingress_address=$(kubectl get ingress "${ingress_name}" -n "${namespace}" -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null)
 
     if [[ -n "${ingress_address}" ]]; then
-      echo "Successfully retrieved ingress address: ${ingress_address}"
+      echo "Successfully retrieved ingress address"
       break
     else
       echo "Ingress address not available yet, waiting ${wait_seconds} seconds..."
@@ -103,7 +123,11 @@ configure_eks_ingress_and_dns() {
   
   # Update DNS record in Route53 if domain name is configured
   if [[ -n "${EKS_INSTANCE_DOMAIN_NAME}" ]]; then
-    echo "Updating DNS record for domain: ${EKS_INSTANCE_DOMAIN_NAME} -> ${ingress_address}"
+    local masked_domain
+    local masked_target
+    masked_domain=$(mask_value "${EKS_INSTANCE_DOMAIN_NAME}")
+    masked_target=$(mask_value "${ingress_address}")
+    echo "Updating DNS record for domain ${masked_domain} -> target ${masked_target}"
     
     if update_route53_dns_record "${EKS_INSTANCE_DOMAIN_NAME}" "${ingress_address}"; then
       echo "✅ DNS record updated successfully"
@@ -126,7 +150,7 @@ configure_eks_ingress_and_dns() {
 get_eks_certificate() {
   local domain_name=$1
 
-  echo "Retrieving certificate for domain: ${domain_name}"
+  echo "Retrieving certificate for configured domain"
 
   # Check if AWS CLI is available
   if ! command -v aws &> /dev/null; then
@@ -146,7 +170,7 @@ get_eks_certificate() {
   certificate_arn=$(aws acm list-certificates --query "CertificateSummaryList[].{DomainName:DomainName,Status:Status,CertificateArn:CertificateArn}" --output json | jq -r ".[] | select(.DomainName == \"${domain_name}\") | .CertificateArn")
 
   if [[ -z "${certificate_arn}" ]]; then
-    echo "No certificate found for domain: ${domain_name}"
+    echo "No existing certificate found for domain"
     echo "Creating new certificate..."
     
     # Create a new certificate
@@ -162,7 +186,7 @@ get_eks_certificate() {
       return 1
     fi
     
-    echo "✅ New certificate created successfully: ${new_certificate_arn}"
+    echo "✅ New certificate created successfully"
     certificate_arn="${new_certificate_arn}"
     
     # Get validation records that need to be created
@@ -282,7 +306,7 @@ get_eks_certificate() {
     fi
   fi
 
-  echo "Found certificate ARN: ${certificate_arn}"
+  echo "Found certificate ARN"
 
   # Get certificate details
   echo "Retrieving certificate details..."
@@ -305,13 +329,13 @@ get_eks_certificate() {
     local not_after
     not_after=$(echo "${certificate_details}" | jq -r '.Certificate.NotAfter' 2>/dev/null)
     if [[ -n "${not_after}" ]]; then
-      echo "✅ Certificate expires: ${not_after}"
+      echo "✅ Certificate expiry retrieved"
     fi
     
     local domain_names
     domain_names=$(echo "${certificate_details}" | jq -r '.Certificate.SubjectAlternativeNames[]' 2>/dev/null)
     if [[ -n "${domain_names}" ]]; then
-      echo "✅ Certificate covers domains: ${domain_names}"
+      echo "✅ Certificate SANs retrieved"
     fi
   else
     echo "⚠️  Certificate status: ${status}"
@@ -320,7 +344,7 @@ get_eks_certificate() {
 
   # Export certificate ARN as environment variable for use in other scripts
   export EKS_DOMAIN_NAME_CERTIFICATE_ARN="${certificate_arn}"
-  echo "Certificate ARN exported as EKS_DOMAIN_NAME_CERTIFICATE_ARN: ${EKS_DOMAIN_NAME_CERTIFICATE_ARN}"
+  echo "Certificate ARN exported as EKS_DOMAIN_NAME_CERTIFICATE_ARN"
 
   echo "EKS certificate retrieval completed successfully"
 }
@@ -359,33 +383,30 @@ find_available_domain_number() {
   echo "Using parent domain: ${AWS_EKS_PARENT_DOMAIN}" >&2
   
   # Get the parent domain hosted zone ID directly
-  echo "Searching for Route53 hosted zone for domain: ${AWS_EKS_PARENT_DOMAIN}" >&2
+  echo "Searching for Route53 hosted zone for configured parent domain" >&2
   
   local hosted_zone_id
   hosted_zone_id=$(aws route53 list-hosted-zones --query "HostedZones[?Name == '${AWS_EKS_PARENT_DOMAIN}.' || Name == '${AWS_EKS_PARENT_DOMAIN}'].Id" --output text 2>/dev/null)
   
   if [[ -z "${hosted_zone_id}" ]]; then
-    echo "Error: No hosted zone found for domain: ${AWS_EKS_PARENT_DOMAIN}" >&2
+    echo "Error: No hosted zone found for configured parent domain" >&2
     return 1
   fi
   
   # Remove the '/hostedzone/' prefix
   hosted_zone_id="${hosted_zone_id#/hostedzone/}"
-  echo "Found hosted zone ID: ${hosted_zone_id} for domain: ${AWS_EKS_PARENT_DOMAIN}" >&2
+  echo "Found hosted zone for configured parent domain" >&2
   
   # Check existing DNS records to find used numbers
-  echo "Checking existing DNS records..." >&2
-  echo "Hosted zone ID: ${hosted_zone_id}" >&2
-  echo "Looking for records containing 'eks-ci-' in domain: ${AWS_EKS_PARENT_DOMAIN}" >&2
+  echo "Checking existing DNS records in hosted zone..." >&2
+  echo "Looking for records containing 'eks-ci-' in configured parent domain" >&2
   
   local existing_records
   existing_records=$(aws route53 list-resource-record-sets \
     --hosted-zone-id "${hosted_zone_id}" \
     --query "ResourceRecordSets[?contains(Name, 'eks-ci-')].Name" \
     --output json 2>/dev/null)
-  
-  echo "Raw AWS CLI output: '${existing_records}'" >&2
-  
+
   # Extract used numbers from existing records
   local used_numbers=()
   local seen_numbers=()
@@ -408,7 +429,7 @@ find_available_domain_number() {
         if [[ "${already_seen}" == false ]]; then
           used_numbers+=("${number}")
           seen_numbers+=("${number}")
-          echo "Found existing record: ${record} with number: ${number}" >&2
+          echo "Detected used domain slot: ${number}" >&2
         fi
       fi
     done < <(echo "${existing_records}" | jq -r '.[]' 2>/dev/null || echo "${existing_records}" | grep -o '"[^"]*"' | sed 's/"//g')
@@ -424,9 +445,7 @@ find_available_domain_number() {
       --hosted-zone-id "${hosted_zone_id}" \
       --query "ResourceRecordSets[].Name" \
       --output json 2>/dev/null)
-    
-    echo "All records found: '${all_records}'" >&2
-    
+
     # Parse JSON array and process each record
     while IFS= read -r record; do
       # Remove quotes and trailing comma from JSON array elements
@@ -444,19 +463,19 @@ find_available_domain_number() {
         if [[ "${already_seen}" == false ]]; then
           used_numbers+=("${number}")
           seen_numbers+=("${number}")
-          echo "Found existing record (fallback): ${record} with number: ${number}" >&2
+          echo "Detected used domain slot (fallback): ${number}" >&2
         fi
       fi
     done < <(echo "${all_records}" | jq -r '.[]' 2>/dev/null || echo "${all_records}" | grep -o '"[^"]*"' | sed 's/"//g')
   fi
   
-  echo "Found ${#used_numbers[@]} existing domains: ${used_numbers[*]}" >&2
+  echo "Found ${#used_numbers[@]} existing domains" >&2
   
   # Check each potential domain to find the first one that's actually not in use
   local number=1
   for ((i = 1; i <= max_attempts; i++)); do
     local test_domain="eks-ci-${number}.${region}.${AWS_EKS_PARENT_DOMAIN}"
-    echo "Testing domain: ${test_domain}" >&2
+    echo "Testing domain availability" >&2
     # Check if this specific domain exists in Route53
     local domain_exists
     domain_exists=$(aws route53 list-resource-record-sets \
@@ -466,11 +485,11 @@ find_available_domain_number() {
     
     # If the query returns an empty array or null, the domain is available
     if [[ -z "${domain_exists}" ]] || [[ "${domain_exists}" == "[]" ]] || [[ "${domain_exists}" == "null" ]]; then
-      echo "✅ Found available domain: ${test_domain} (not found in Route53)" >&2
+      echo "✅ Found available domain (not found in Route53)" >&2
       echo "${number}"
       return 0
     else
-      echo "Domain ${test_domain} exists in Route53, trying next number..." >&2
+      echo "Domain is in use in Route53, trying next number..." >&2
     fi
     
     ((number++))
@@ -504,7 +523,7 @@ generate_dynamic_domain_name() {
   
   # Generate the domain name
   local domain_name="eks-ci-${number}.${region}.${AWS_EKS_PARENT_DOMAIN}"
-  echo "Generated domain name: ${domain_name}" >&2
+  echo "Generated dynamic domain name" >&2
   
   echo "${domain_name}"
 }
@@ -514,7 +533,11 @@ update_route53_dns_record() {
   local domain_name=$1
   local target_value=$2
   
-  echo "Updating DNS record for domain: ${domain_name} -> ${target_value}"
+  local masked_domain
+  local masked_target
+  masked_domain=$(mask_value "${domain_name}")
+  masked_target=$(mask_value "${target_value}")
+  echo "Updating DNS record for domain ${masked_domain} -> target ${masked_target}"
   
   # Use global parent domain from secret
   if [[ -z "${AWS_EKS_PARENT_DOMAIN}" ]]; then
@@ -522,20 +545,20 @@ update_route53_dns_record() {
     return 1
   fi
   
-  echo "Using parent domain: ${AWS_EKS_PARENT_DOMAIN}"
+  echo "Using configured parent domain"
   
   # Get the hosted zone ID for the parent domain
   local hosted_zone_id
   hosted_zone_id=$(aws route53 list-hosted-zones --query "HostedZones[?Name == '${AWS_EKS_PARENT_DOMAIN}.' || Name == '${AWS_EKS_PARENT_DOMAIN}'].Id" --output text 2>/dev/null)
   
   if [[ -z "${hosted_zone_id}" ]]; then
-    echo "Error: No hosted zone found for parent domain: ${AWS_EKS_PARENT_DOMAIN}"
+    echo "Error: No hosted zone found for configured parent domain"
     return 1
   fi
   
   # Remove the '/hostedzone/' prefix
   hosted_zone_id="${hosted_zone_id#/hostedzone/}"
-  echo "Found hosted zone ID: ${hosted_zone_id} for parent domain: ${AWS_EKS_PARENT_DOMAIN}"
+  echo "Found hosted zone for configured parent domain"
   
   # Create the change batch JSON
   cat > /tmp/dns-change.json << EOF
@@ -568,7 +591,7 @@ EOF
     --output text 2>/dev/null)
   
   if [[ $? -eq 0 && -n "${change_id}" ]]; then
-    echo "✅ DNS change submitted successfully. Change ID: ${change_id}"
+    echo "✅ DNS change submitted successfully"
     
     # Wait for the change to be propagated
     echo "Waiting for DNS change to be propagated..."
@@ -595,8 +618,7 @@ verify_dns_resolution() {
   local max_attempts=${3:-30}
   local wait_seconds=${4:-10}
   
-  echo "Verifying DNS resolution for domain: ${domain_name}"
-  echo "Expected target: ${expected_target}"
+  echo "Verifying DNS resolution for configured domain"
   
   for ((i = 1; i <= max_attempts; i++)); do
     echo "Checking DNS resolution (attempt ${i}/${max_attempts})..."
@@ -606,17 +628,17 @@ verify_dns_resolution() {
     resolved_target=$(nslookup "${domain_name}" 2>/dev/null | grep -A1 "Name:" | tail -1 | awk '{print $2}')
     
     if [[ -n "${resolved_target}" && "${resolved_target}" != "NXDOMAIN" ]]; then
-      echo "✅ DNS record found: ${domain_name} -> ${resolved_target}"
+      echo "✅ DNS record found"
       
       # If we have an expected target, verify it matches
       if [[ -n "${expected_target}" ]]; then
         # For CNAME records, the resolved target will be an IP address, not the hostname
         # So we just check that it's a valid IP address (contains dots and numbers)
         if [[ "${resolved_target}" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-          echo "✅ DNS record is resolving to a valid IP address (${resolved_target})"
+          echo "✅ DNS record is resolving to a valid IP address"
           return 0
         else
-          echo "⚠️  DNS record target (${resolved_target}) doesn't look like a valid IP address"
+          echo "⚠️  DNS record target doesn't look like a valid IP address"
         fi
       else
         echo "✅ DNS record is resolving"
@@ -640,7 +662,7 @@ verify_dns_resolution() {
 cleanup_eks_dns_record() {
   local domain_name=$1
   
-  echo "Cleaning up EKS DNS record for domain: ${domain_name}"
+  echo "Cleaning up EKS DNS record"
   
   # Use global parent domain from secret
   if [[ -z "${AWS_EKS_PARENT_DOMAIN}" ]]; then
@@ -648,7 +670,7 @@ cleanup_eks_dns_record() {
     return 1
   fi
   
-  echo "Using parent domain: ${AWS_EKS_PARENT_DOMAIN}"
+  echo "Using configured parent domain"
   
   # Get the hosted zone ID for the parent domain
   local hosted_zone_id
@@ -661,10 +683,10 @@ cleanup_eks_dns_record() {
   
   # Remove the '/hostedzone/' prefix
   hosted_zone_id="${hosted_zone_id#/hostedzone/}"
-  echo "Found hosted zone ID: ${hosted_zone_id} for parent domain: ${AWS_EKS_PARENT_DOMAIN}"
+  echo "Found hosted zone for configured parent domain"
   
   # Check if the DNS record exists before attempting to delete it
-  echo "Checking if DNS record exists: ${domain_name}"
+  echo "Checking if DNS record exists"
   local existing_record
   existing_record=$(aws route53 list-resource-record-sets \
     --hosted-zone-id "${hosted_zone_id}" \
@@ -672,11 +694,11 @@ cleanup_eks_dns_record() {
     --output json 2>/dev/null)
   
   if [[ -z "${existing_record}" ]] || [[ "${existing_record}" == "[]" ]] || [[ "${existing_record}" == "null" ]]; then
-    echo "✅ DNS record ${domain_name} does not exist, nothing to clean up"
+    echo "✅ DNS record does not exist, nothing to clean up"
     return 0
   fi
   
-  echo "Found existing DNS record: ${existing_record}"
+  echo "Found existing DNS record"
   
   # Extract the record details for deletion
   local record_name
@@ -694,11 +716,7 @@ cleanup_eks_dns_record() {
     return 1
   fi
   
-  echo "Record details:"
-  echo "  Name: ${record_name}"
-  echo "  Type: ${record_type}"
-  echo "  TTL: ${record_ttl}"
-  echo "  Values: ${record_values}"
+  echo "Record details retrieved (type and TTL)"
   
   # Create the change batch JSON for deletion
   cat > /tmp/dns-delete.json << EOF
@@ -742,7 +760,7 @@ EOF
     --output text 2>/dev/null)
   
   if [[ $? -eq 0 && -n "${change_id}" ]]; then
-    echo "✅ DNS record deletion submitted successfully. Change ID: ${change_id}"
+    echo "✅ DNS record deletion submitted successfully"
     
     # Wait for the change to be propagated
     echo "Waiting for DNS record deletion to be propagated..."
@@ -763,33 +781,3 @@ EOF
   
   return 0
 }
-
-# Function to cleanup EKS cluster and associated resources
-cleanup_eks_cluster() {
-  local cluster_name=$1
-  local domain_name=$2
-  
-  echo "Cleaning up EKS cluster: ${cluster_name}"
-  
-  # Cleanup DNS record if domain name is provided
-  if [[ -n "${domain_name}" ]]; then
-    echo "Cleaning up DNS record for domain: ${domain_name}"
-    if cleanup_eks_dns_record "${domain_name}"; then
-      echo "✅ DNS record cleanup completed"
-    else
-      echo "⚠️  DNS record cleanup failed, but continuing with cluster cleanup"
-    fi
-  fi
-  
-  # Additional cleanup steps can be added here
-  # For example:
-  # - Delete ingress resources
-  # - Delete load balancers
-  # - Delete persistent volumes
-  # - Delete namespaces
-  
-  echo "✅ EKS cluster cleanup completed"
-  return 0
-}
-
-
