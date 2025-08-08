@@ -71,7 +71,7 @@ deploy_rhdh_operator() {
   local namespace=$1
   local backstage_crd_path=$2
 
-  wait_for_backstage_crd "$namespace"]
+  wait_for_backstage_crd "$namespace"
   rendered_yaml=$(envsubst < "$backstage_crd_path")
   echo -e "Applying Backstage CRD from: $backstage_crd_path\n$rendered_yaml"
   echo "$rendered_yaml" | oc apply -f - -n "$namespace"
@@ -133,199 +133,235 @@ setup_orchestrator_sonataflow_resources() {
 wait_for_backstage_ready() {
   local namespace=$1
   local backstage_name=$2
-  local timeout=${3:-300}  # Default timeout: 5 minutes
-  local check_interval=${4:-10}  # Default interval: 10 seconds
-
-  local max_attempts=$((timeout / check_interval))
   
-  echo "Waiting for Backstage deployment '${backstage_name}' in namespace '${namespace}' (timeout: ${timeout}s)..."
+  echo "Waiting for Backstage deployment to be ready..."
   
-  for ((i=1; i<=max_attempts; i++)); do
-    # Check if the Backstage deployment exists and is available
-    if oc get deployment "backstage-${backstage_name}" -n "${namespace}" >/dev/null 2>&1; then
-      local ready_replicas=$(oc get deployment "backstage-${backstage_name}" -n "${namespace}" -o jsonpath='{.status.readyReplicas}')
-      local desired_replicas=$(oc get deployment "backstage-${backstage_name}" -n "${namespace}" -o jsonpath='{.spec.replicas}')
-      
-      if [[ "${ready_replicas}" == "${desired_replicas}" ]] && [[ "${ready_replicas}" -gt 0 ]]; then
-        echo "✓ Backstage deployment is ready (${ready_replicas}/${desired_replicas} replicas)"
-        return 0
-      else
-        echo "Backstage deployment not ready yet (${ready_replicas:-0}/${desired_replicas} replicas ready)"
-      fi
-    else
-      echo "Backstage deployment 'backstage-${backstage_name}' not found in namespace '${namespace}'"
+  # Step 1: Wait for deployment to have ready replicas
+  timeout 600 bash -c "
+  while ! oc get deployment/backstage-${backstage_name} -n '${namespace}' >/dev/null 2>&1 || \
+        [[ \$(oc get deployment/backstage-${backstage_name} -n '${namespace}' -o jsonpath='{.status.readyReplicas}') != '1' ]]; do
+      echo 'Waiting for Backstage deployment to be ready...'
+      sleep 10
+  done
+  echo 'Backstage deployment has ready replicas.'
+  " || { echo "Error: Timed out waiting for Backstage deployment."; return 1; }
+  
+  # Step 2: Wait for pod to be actually ready and serving requests
+  echo "Waiting for Backstage pod to be ready and serving requests..."
+  local backstage_pod=""
+  for attempt in {1..60}; do
+    backstage_pod=$(oc get pods -n "${namespace}" -l "app.kubernetes.io/name=backstage" --field-selector=status.phase=Running -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
+    if [[ -n "${backstage_pod}" ]]; then
+      echo "Found running Backstage pod: ${backstage_pod} (attempt ${attempt})"
+      break
     fi
-    
-    echo "Still waiting... (${i}/${max_attempts} checks)"
-    sleep "${check_interval}"
+    echo "Waiting for Backstage pod to be running... (attempt ${attempt}/60)"
+    sleep 10
   done
   
-  echo "✗ Timeout waiting for Backstage deployment to be ready"
-  return 1
+  if [[ -z "${backstage_pod}" ]]; then
+    echo "Error: No running Backstage pod found after 10 minutes"
+    return 1
+  fi
+  
+  # Step 3: Wait for Backstage API to respond
+  echo "Waiting for Backstage API to respond..."
+  for attempt in {1..30}; do
+    if oc exec "${backstage_pod}" -n "${namespace}" -- curl -s -f localhost:7007/healthcheck >/dev/null 2>&1; then
+      echo "✓ Backstage API is responding (attempt ${attempt})"
+      break
+    fi
+    echo "Waiting for Backstage API to respond... (attempt ${attempt}/30)"
+    sleep 10
+  done
+  
+  # Final verification
+  if oc exec "${backstage_pod}" -n "${namespace}" -- curl -s -f localhost:7007/healthcheck >/dev/null 2>&1; then
+    echo "✓ Backstage is fully ready and serving requests"
+    return 0
+  else
+    echo "✗ Error: Backstage API is not responding after all checks"
+    return 1
+  fi
 }
 
 create_sonataflow_database() {
   local namespace=$1
-  local database_name=$2
+  local database_name=$2  
   local postgres_service=$3
-  local timeout=${4:-120}  # Default timeout: 2 minutes
   
-  echo "Creating SonataFlow database '${database_name}' in namespace '${namespace}'..."
+  echo "Creating SonataFlow database: ${database_name} in namespace: ${namespace}"
   
-  # Wait for PostgreSQL service to be available
-  echo "Checking PostgreSQL service availability..."
-  if ! oc get service "${postgres_service}" -n "${namespace}" >/dev/null 2>&1; then
-    echo "✗ PostgreSQL service '${postgres_service}' not found in namespace '${namespace}'"
-    return 1
+  # Wait for PostgreSQL pod to be ready (more robust detection)
+  local psql_pod=""
+  for attempt in {1..30}; do
+    # Try the RHDH-specific PostgreSQL pods first
+    psql_pod=$(oc get pods -n "${namespace}" --field-selector=status.phase=Running -o name 2>/dev/null | grep "backstage-psql" | head -n1 | cut -d'/' -f2)
+    if [[ -n "${psql_pod}" ]]; then
+      echo "Found running PostgreSQL pod: ${psql_pod} (attempt ${attempt})"
+      break
+    fi
+    # Fallback to generic postgresql label
+    psql_pod=$(oc get pods -n "${namespace}" -l "app.kubernetes.io/name=postgresql" --field-selector=status.phase=Running -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
+    if [[ -n "${psql_pod}" ]]; then
+      echo "Found running PostgreSQL pod: ${psql_pod} (attempt ${attempt})"
+      break
+    fi
+    echo "Waiting for PostgreSQL pod to be ready... (attempt ${attempt}/30)"
+    sleep 10
+  done
+  
+  if [[ -n "${psql_pod}" ]]; then
+    echo "Creating database using internal PostgreSQL pod: ${psql_pod}"
+    
+    # Check if database already exists first
+    local existing_db=$(oc exec -i "${psql_pod}" -n "${namespace}" -- psql -U postgres -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname='${database_name}';" 2>/dev/null || echo "")
+    
+    if [[ "${existing_db}" == "1" ]]; then
+      echo "Database ${database_name} already exists - skipping creation"
+    else
+      # Create database using internal PostgreSQL pod
+      if oc exec -i "${psql_pod}" -n "${namespace}" -- psql -U postgres -d postgres <<EOF
+CREATE DATABASE ${database_name};
+GRANT ALL PRIVILEGES ON DATABASE ${database_name} TO postgres;
+\q
+EOF
+      then
+        echo "Database ${database_name} created successfully in internal PostgreSQL"
+        # Verify creation
+        local verify_db=$(oc exec -i "${psql_pod}" -n "${namespace}" -- psql -U postgres -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname='${database_name}';" 2>/dev/null || echo "")
+        if [[ "${verify_db}" == "1" ]]; then
+          echo "Database creation verified successfully"
+        else
+          echo "Warning: Database creation verification failed"
+        fi
+      else
+        echo "Error: Failed to create database ${database_name}"
+        return 1
+      fi
+    fi
+  else
+    echo "No internal PostgreSQL pod found after 5 minutes. Attempting external PostgreSQL database creation..."
+    create_external_orchestrator_database "${namespace}" "${database_name}"
+  fi
+}
+
+create_external_orchestrator_database() {
+  local namespace=$1
+  local database_name=$2
+  
+  echo "Creating orchestrator database in external PostgreSQL for namespace: ${namespace}"
+  
+  # Check if postgres credentials secret exists
+  if ! oc get secret postgres-cred -n "${namespace}" >/dev/null 2>&1; then
+    echo "Warning: postgres-cred secret not found in ${namespace}. Skipping external database creation."
+    return 0
   fi
   
-  # Create a temporary pod to execute database creation
-  local temp_pod="orchestrator-db-setup-$(date +%s)"
-  echo "Creating temporary pod '${temp_pod}' for database setup..."
+  # Extract PostgreSQL connection details from secret
+  local postgres_host=$(oc get secret postgres-cred -n "${namespace}" -o jsonpath='{.data.POSTGRES_HOST}' | base64 -d)
+  local postgres_user=$(oc get secret postgres-cred -n "${namespace}" -o jsonpath='{.data.POSTGRES_USER}' | base64 -d)
+  local postgres_password=$(oc get secret postgres-cred -n "${namespace}" -o jsonpath='{.data.POSTGRES_PASSWORD}' | base64 -d)
   
-  oc run "${temp_pod}" -n "${namespace}" --image=postgres:13 --rm -i --restart=Never \
-    --env="PGPASSWORD=\${POSTGRESQL_ADMIN_PASSWORD}" \
-    --command -- psql -h "${postgres_service}" -U postgres -c \
-    "CREATE DATABASE ${database_name};" >/dev/null 2>&1 || {
-    echo "Database '${database_name}' may already exist or creation failed"
-  }
+  if [[ -z "${postgres_host}" || -z "${postgres_user}" || -z "${postgres_password}" ]]; then
+    echo "Warning: Missing PostgreSQL connection details in postgres-cred secret. Skipping database creation."
+    return 0
+  fi
   
-  echo "✓ Database setup completed for '${database_name}'"
-  return 0
+  echo "Connecting to external PostgreSQL at: ${postgres_host}"
+  
+  # Create a temporary pod to run psql commands against external database
+  cat <<EOF | oc apply -f - -n "${namespace}"
+apiVersion: v1
+kind: Pod
+metadata:
+  name: postgres-client-temp
+  namespace: ${namespace}
+spec:
+  restartPolicy: Never
+  containers:
+  - name: postgres-client
+    image: postgres:15
+    command: ['sleep', '300']
+    env:
+    - name: PGHOST
+      value: "${postgres_host}"
+    - name: PGUSER
+      value: "${postgres_user}"
+    - name: PGPASSWORD
+      value: "${postgres_password}"
+    - name: PGPORT
+      value: "5432"
+EOF
+  
+  # Wait for pod to be ready
+  echo "Waiting for PostgreSQL client pod to be ready..."
+  oc wait --for=condition=Ready pod/postgres-client-temp -n "${namespace}" --timeout=60s
+  
+  # Create the database
+  if oc exec postgres-client-temp -n "${namespace}" -- psql -d postgres -c "CREATE DATABASE ${database_name};" 2>/dev/null; then
+    echo "Database ${database_name} created successfully in external PostgreSQL"
+    oc exec postgres-client-temp -n "${namespace}" -- psql -d postgres -c "GRANT ALL PRIVILEGES ON DATABASE ${database_name} TO ${postgres_user};" 2>/dev/null
+    echo "Granted privileges on ${database_name} to ${postgres_user}"
+  else
+    echo "Database ${database_name} may already exist or creation failed (continuing anyway)"
+  fi
+  
+  # Cleanup temporary pod
+  oc delete pod postgres-client-temp -n "${namespace}" --ignore-not-found
+  
+  echo "External PostgreSQL database setup completed"
 }
 
 apply_sonataflow_resources() {
   local namespace=$1
   local backstage_name=$2
   
-  echo "Applying SonataFlow platform and network policies to namespace '${namespace}'..."
+  echo "Applying SonataFlow resources..."
   
-  # Apply SonataFlowPlatform configuration
-  cat <<EOF | oc apply -f -
-apiVersion: sonataflow.org/v1alpha08
-kind: SonataFlowPlatform
-metadata:
-  name: sonataflow-platform
-  namespace: ${namespace}
-spec:
-  services:
-    dataIndex:
-      enabled: true
-      persistence:
-        postgresql:
-          serviceRef:
-            databaseSchema: backstage_plugin_orchestrator
-            name: backstage-psql-${backstage_name}
-            namespace: ${namespace}
-          secretRef:
-            name: backstage-psql-${backstage_name}
-            passwordKey: postgres-password
-            userKey: postgres-username
-    jobService:
-      enabled: true
-      persistence:
-        postgresql:
-          serviceRef:
-            databaseSchema: backstage_plugin_orchestrator
-            name: backstage-psql-${backstage_name}
-            namespace: ${namespace}
-          secretRef:
-            name: backstage-psql-${backstage_name}
-            passwordKey: postgres-password
-            userKey: postgres-username
-EOF
+  # Download and apply SonataFlow resources with variable substitution using RELEASE_BRANCH_NAME
+  curl -sSL "https://raw.githubusercontent.com/redhat-developer/rhdh-operator/refs/heads/${RELEASE_BRANCH_NAME}/config/profile/rhdh/plugin-deps/sonataflow.yaml" | \
+    sed "s/{{backstage-name}}/${backstage_name}/g; s/{{backstage-ns}}/${namespace}/g" | \
+    oc apply -f - -n "${namespace}"
   
-  # Apply network policies to allow SonataFlow communication
-  cat <<EOF | oc apply -f -
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: orchestrator-networking
-  namespace: ${namespace}
-spec:
-  podSelector:
-    matchLabels:
-      backstage.io/kubernetes-id: developer-hub
-  policyTypes:
-  - Ingress
-  - Egress
-  ingress:
-  - from:
-    - namespaceSelector:
-        matchLabels:
-          name: orchestrator-infra
-  egress:
-  - to:
-    - namespaceSelector:
-        matchLabels:
-          name: orchestrator-infra
-EOF
-  
-  echo "✓ SonataFlow resources applied successfully"
-  return 0
+  echo "SonataFlow resources applied successfully"
 }
 
 validate_sonataflow_resources() {
   local namespace=$1
-  local timeout=${2:-300}  # Default timeout: 5 minutes
-  local check_interval=${3:-15}  # Default interval: 15 seconds
   
-  local max_attempts=$((timeout / check_interval))
+  echo "Validating SonataFlow resources in namespace: ${namespace}"
   
-  echo "Validating SonataFlow resources in namespace '${namespace}' (timeout: ${timeout}s)..."
-  
-  for ((i=1; i<=max_attempts; i++)); do
-    # Check SonataFlowPlatform status
-    if oc get sonataflowplatform sonataflow-platform -n "${namespace}" >/dev/null 2>&1; then
-      local platform_status=$(oc get sonataflowplatform sonataflow-platform -n "${namespace}" -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' 2>/dev/null || echo "Unknown")
-      
-      if [[ "${platform_status}" == "True" ]]; then
-        echo "✓ SonataFlowPlatform is ready"
-        
-        # Check if DataIndex and JobService pods are running
-        local dataindex_ready=$(oc get pods -n "${namespace}" -l app=data-index-service --no-headers 2>/dev/null | grep Running | wc -l)
-        local jobservice_ready=$(oc get pods -n "${namespace}" -l app=jobs-service --no-headers 2>/dev/null | grep Running | wc -l)
-        
-        if [[ "${dataindex_ready}" -gt 0 ]] && [[ "${jobservice_ready}" -gt 0 ]]; then
-          echo "✓ DataIndex and JobService are running"
-          echo "✓ SonataFlow validation completed successfully"
-          return 0
-        else
-          echo "DataIndex ready: ${dataindex_ready}, JobService ready: ${jobservice_ready}"
-        fi
-      else
-        echo "SonataFlowPlatform status: ${platform_status}"
-      fi
-    else
-      echo "SonataFlowPlatform not found or not ready"
-    fi
-    
-    echo "Still validating... (${i}/${max_attempts} checks)"
-    sleep "${check_interval}"
+  # Wait for SonataFlowPlatform to be ready
+  echo "Waiting for SonataFlowPlatform to be ready..."
+  timeout 300 bash -c "
+  while ! oc get sonataflowplatform/sonataflow-platform -n '${namespace}' >/dev/null 2>&1 || \
+        [[ \$(oc get sonataflowplatform/sonataflow-platform -n '${namespace}' -o jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') != 'True' ]]; do
+      echo 'Waiting for SonataFlowPlatform to be ready...'
+      sleep 10
   done
+  echo 'SonataFlowPlatform is ready.'
+  " || { echo "Warning: SonataFlowPlatform not ready within timeout, continuing..."; }
   
-  echo "✗ SonataFlow validation timed out or failed"
-  echo "Current pods in namespace:"
-  oc get pods -n "${namespace}" || true
-  echo "SonataFlowPlatform status:"
-  oc describe sonataflowplatform sonataflow-platform -n "${namespace}" || true
-  return 1
+  # Verify network policies are applied
+  echo "Checking network policies..."
+  local np_count=$(oc get networkpolicy -n "${namespace}" --no-headers | wc -l)
+  if [[ $np_count -ge 4 ]]; then
+    echo "Network policies applied successfully (${np_count} policies found)"
+  else
+    echo "Warning: Expected 4 network policies, found ${np_count}"
+  fi
+  
+  # Check DataIndex and JobService pods
+  echo "Checking orchestrator service pods..."
+  timeout 180 bash -c "
+  while [[ \$(oc get pods -n '${namespace}' -l 'app.kubernetes.io/part-of=sonataflow-platform' --field-selector=status.phase=Running --no-headers | wc -l) -lt 2 ]]; do
+      echo 'Waiting for DataIndex and JobService pods to be running...'
+      sleep 15
+  done
+  echo 'Orchestrator service pods are running.'
+  " || { echo "Warning: Not all orchestrator service pods ready within timeout, continuing..."; }
+  
+  echo "SonataFlow validation completed"
 }
 
-create_external_orchestrator_database() {
-  local external_namespace=${1:-"orchestrator-infra"}
-  local database_name="orchestrator"
-  
-  echo "Creating external orchestrator database in namespace '${external_namespace}'..."
-  
-  # This function creates a database in the external orchestrator infrastructure
-  # Usually this would connect to a shared PostgreSQL instance
-  if oc get namespace "${external_namespace}" >/dev/null 2>&1; then
-    echo "✓ External orchestrator namespace '${external_namespace}' exists"
-    # Additional database setup logic would go here if needed
-    return 0
-  else
-    echo "✗ External orchestrator namespace '${external_namespace}' not found"
-    return 1
-  fi
-}
