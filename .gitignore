@@ -63,6 +63,3 @@ dynamic-plugins-root/*
 
 # Private Keys
 *.pem
-
-# Local LLM context
-llm/*.local.md
