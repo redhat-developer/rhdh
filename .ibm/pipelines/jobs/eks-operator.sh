@@ -33,12 +33,10 @@ handle_eks_operator() {
 
   prepare_operator "3"
 
-  get_eks_certificate "${K8S_CLUSTER_ROUTER_BASE}"
-
   EKS_INSTANCE_DOMAIN_NAME=$(generate_dynamic_domain_name)
   K8S_CLUSTER_ROUTER_BASE=$EKS_INSTANCE_DOMAIN_NAME
   export K8S_CLUSTER_ROUTER_BASE EKS_INSTANCE_DOMAIN_NAME
-  get_eks_certificate "${K8S_CLUSTER_ROUTER_BASE}"
+  get_eks_certificate "${EKS_INSTANCE_DOMAIN_NAME}"
 
   initiate_eks_operator_deployment "${NAME_SPACE}" "https://${K8S_CLUSTER_ROUTER_BASE}"
   configure_eks_ingress_and_dns "${NAME_SPACE}" "dh-ingress"
@@ -49,7 +47,7 @@ handle_eks_operator() {
   EKS_INSTANCE_DOMAIN_NAME=$(generate_dynamic_domain_name)
   K8S_CLUSTER_ROUTER_BASE=$EKS_INSTANCE_DOMAIN_NAME
   export K8S_CLUSTER_ROUTER_BASE EKS_INSTANCE_DOMAIN_NAME
-  get_eks_certificate "${K8S_CLUSTER_ROUTER_BASE}"
+  get_eks_certificate "${EKS_INSTANCE_DOMAIN_NAME}"
 
   initiate_rbac_eks_operator_deployment "${NAME_SPACE_RBAC}" "https://${K8S_CLUSTER_ROUTER_BASE}"
   configure_eks_ingress_and_dns "${NAME_SPACE_RBAC}" "dh-ingress"
