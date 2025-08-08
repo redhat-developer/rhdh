@@ -13,7 +13,8 @@ metadata:
     operational awareness.
 
   annotations:
-    extensions.backstage.io/pre-installed: 'false'
+    # temporarily set to 'true' to remove the 'custom plugin' badge, change this to 'false' when RHDHBUGS-1945 gets resolved
+    extensions.backstage.io/pre-installed: 'true'
   tags:
     - itsm
     - incident-management
