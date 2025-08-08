@@ -848,8 +848,10 @@ install_orchestrator_infra_chart() {
 
   echo "Deploying orchestrator-infra chart"
   cd "${DIR}"
-  helm upgrade -i orch-infra -n "${ORCH_INFRA_NS}" \
-    "oci://quay.io/rhdh/orchestrator-infra-chart" --version "${CHART_VERSION}" \
+  # Temp workaround for https://issues.redhat.com/browse/FLPATH-2543
+  git clone https://github.com/rhdhorchestrator/rhdh-chart.git
+  cd rhdh-chart
+  helm upgrade -i orch-infra -n "${ORCH_INFRA_NS}" charts/orchestrator-infra \
     --wait --timeout=5m \
     --set serverlessLogicOperator.subscription.spec.installPlanApproval=Automatic \
     --set serverlessOperator.subscription.spec.installPlanApproval=Automatic

@@ -1,4 +1,4 @@
-global:
+ global:
   dynamic:
     # -- Array of YAML files listing dynamic plugins to include with those listed in the `plugins` field.
     # Relative paths are resolved from the working directory of the initContainer that will install the plugins (`/opt/app-root/src`).
@@ -219,7 +219,7 @@ global:
         pluginConfig:
           orchestrator:
             dataIndexService:
-              url: http://sonataflow-platform-data-index-service.{{ .Release.Namespace }}
+              url: http://sonataflow-platform-data-index-service
       - disabled: false
         package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator:bs_1.39.1__5.0.3!red-hat-developer-hub-backstage-plugin-orchestrator
         pluginConfig:
@@ -240,7 +240,7 @@ global:
         pluginConfig:
           orchestrator:
             dataIndexService:
-              url: http://sonataflow-platform-data-index-service.{{ .Release.Namespace }}
+              url: http://sonataflow-platform-data-index-service
       - disabled: false
         package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets:bs_1.39.1__1.0.2!red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets
         pluginConfig:
