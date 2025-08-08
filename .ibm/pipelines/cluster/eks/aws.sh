@@ -457,7 +457,6 @@ find_available_domain_number() {
   for ((i = 1; i <= max_attempts; i++)); do
     local test_domain="eks-ci-${number}.${region}.${AWS_EKS_PARENT_DOMAIN}"
     echo "Testing domain: ${test_domain}" >&2
-    
     # Check if this specific domain exists in Route53
     local domain_exists
     domain_exists=$(aws route53 list-resource-record-sets \
@@ -635,6 +634,162 @@ verify_dns_resolution() {
   
   echo "❌ DNS resolution verification failed after ${max_attempts} attempts"
   return 1
+}
+
+# Function to cleanup EKS DNS records
+cleanup_eks_dns_record() {
+  local domain_name=$1
+  
+  echo "Cleaning up EKS DNS record for domain: ${domain_name}"
+  
+  # Use global parent domain from secret
+  if [[ -z "${AWS_EKS_PARENT_DOMAIN}" ]]; then
+    echo "Error: AWS_EKS_PARENT_DOMAIN environment variable is not set" >&2
+    return 1
+  fi
+  
+  echo "Using parent domain: ${AWS_EKS_PARENT_DOMAIN}"
+  
+  # Get the hosted zone ID for the parent domain
+  local hosted_zone_id
+  hosted_zone_id=$(aws route53 list-hosted-zones --query "HostedZones[?Name == '${AWS_EKS_PARENT_DOMAIN}.' || Name == '${AWS_EKS_PARENT_DOMAIN}'].Id" --output text 2>/dev/null)
+  
+  if [[ -z "${hosted_zone_id}" ]]; then
+    echo "Error: No hosted zone found for parent domain: ${AWS_EKS_PARENT_DOMAIN}" >&2
+    return 1
+  fi
+  
+  # Remove the '/hostedzone/' prefix
+  hosted_zone_id="${hosted_zone_id#/hostedzone/}"
+  echo "Found hosted zone ID: ${hosted_zone_id} for parent domain: ${AWS_EKS_PARENT_DOMAIN}"
+  
+  # Check if the DNS record exists before attempting to delete it
+  echo "Checking if DNS record exists: ${domain_name}"
+  local existing_record
+  existing_record=$(aws route53 list-resource-record-sets \
+    --hosted-zone-id "${hosted_zone_id}" \
+    --query "ResourceRecordSets[?Name == '${domain_name}.'].{Name:Name,Type:Type,TTL:TTL,ResourceRecords:ResourceRecords}" \
+    --output json 2>/dev/null)
+  
+  if [[ -z "${existing_record}" ]] || [[ "${existing_record}" == "[]" ]] || [[ "${existing_record}" == "null" ]]; then
+    echo "✅ DNS record ${domain_name} does not exist, nothing to clean up"
+    return 0
+  fi
+  
+  echo "Found existing DNS record: ${existing_record}"
+  
+  # Extract the record details for deletion
+  local record_name
+  local record_type
+  local record_ttl
+  local record_values
+  
+  record_name=$(echo "${existing_record}" | jq -r '.[0].Name' 2>/dev/null)
+  record_type=$(echo "${existing_record}" | jq -r '.[0].Type' 2>/dev/null)
+  record_ttl=$(echo "${existing_record}" | jq -r '.[0].TTL' 2>/dev/null)
+  record_values=$(echo "${existing_record}" | jq -r '.[0].ResourceRecords[].Value' 2>/dev/null)
+  
+  if [[ -z "${record_name}" ]] || [[ "${record_name}" == "null" ]]; then
+    echo "Error: Could not extract record details from existing record" >&2
+    return 1
+  fi
+  
+  echo "Record details:"
+  echo "  Name: ${record_name}"
+  echo "  Type: ${record_type}"
+  echo "  TTL: ${record_ttl}"
+  echo "  Values: ${record_values}"
+  
+  # Create the change batch JSON for deletion
+  cat > /tmp/dns-delete.json << EOF
+{
+  "Changes": [
+    {
+      "Action": "DELETE",
+      "ResourceRecordSet": {
+        "Name": "${record_name}",
+        "Type": "${record_type}",
+        "TTL": ${record_ttl},
+        "ResourceRecords": [
+EOF
+  
+  # Add the resource records
+  while IFS= read -r value; do
+    if [[ -n "${value}" ]] && [[ "${value}" != "null" ]]; then
+      echo "          {" >> /tmp/dns-delete.json
+      echo "            \"Value\": \"${value}\"" >> /tmp/dns-delete.json
+      echo "          }," >> /tmp/dns-delete.json
+    fi
+  done <<< "${record_values}"
+  
+  # Remove the trailing comma and close the JSON
+  sed -i '$ s/,$//' /tmp/dns-delete.json
+  cat >> /tmp/dns-delete.json << EOF
+        ]
+      }
+    }
+  ]
+}
+EOF
+  
+  # Apply the DNS deletion
+  echo "Deleting DNS record..."
+  local change_id
+  change_id=$(aws route53 change-resource-record-sets \
+    --hosted-zone-id "${hosted_zone_id}" \
+    --change-batch file:///tmp/dns-delete.json \
+    --query 'ChangeInfo.Id' \
+    --output text 2>/dev/null)
+  
+  if [[ $? -eq 0 && -n "${change_id}" ]]; then
+    echo "✅ DNS record deletion submitted successfully. Change ID: ${change_id}"
+    
+    # Wait for the change to be propagated
+    echo "Waiting for DNS record deletion to be propagated..."
+    aws route53 wait resource-record-sets-changed --id "${change_id}"
+    
+    if [[ $? -eq 0 ]]; then
+      echo "✅ DNS record deletion has been propagated"
+    else
+      echo "⚠️  DNS record deletion may still be propagating"
+    fi
+  else
+    echo "❌ Failed to delete DNS record"
+    return 1
+  fi
+  
+  # Clean up temporary file
+  rm -f /tmp/dns-delete.json
+  
+  return 0
+}
+
+# Function to cleanup EKS cluster and associated resources
+cleanup_eks_cluster() {
+  local cluster_name=$1
+  local domain_name=$2
+  
+  echo "Cleaning up EKS cluster: ${cluster_name}"
+  
+  # Cleanup DNS record if domain name is provided
+  if [[ -n "${domain_name}" ]]; then
+    echo "Cleaning up DNS record for domain: ${domain_name}"
+    if cleanup_eks_dns_record "${domain_name}"; then
+      echo "✅ DNS record cleanup completed"
+    else
+      echo "⚠️  DNS record cleanup failed, but continuing with cluster cleanup"
+    fi
+  fi
+  
+  # Additional cleanup steps can be added here
+  # For example:
+  # - Delete ingress resources
+  # - Delete load balancers
+  # - Delete persistent volumes
+  # - Delete namespaces
+  
+  echo "✅ EKS cluster cleanup completed"
+  return 0
 }
 
 
