@@ -26,11 +26,15 @@ mask_value() {
 
 # AWS configuration for deployments that need AWS services
 aws_configure() {
-  if [[ -n "${AWS_ACCESS_KEY_ID}" && -n "${AWS_SECRET_ACCESS_KEY}" && -n "${AWS_DEFAULT_REGION}" ]]; then
+  local cluster_region
+  if [[ -n "${AWS_ACCESS_KEY_ID}" && -n "${AWS_SECRET_ACCESS_KEY}" ]]; then
     aws configure set aws_access_key_id "${AWS_ACCESS_KEY_ID}"
     aws configure set aws_secret_access_key "${AWS_SECRET_ACCESS_KEY}"
-    aws configure set default.region "${AWS_DEFAULT_REGION}"
-    echo "AWS CLI configured for default region: ${AWS_DEFAULT_REGION}"
+    cluster_region=$(get_cluster_aws_region)
+    aws configure set default.region "${cluster_region}"
+    export AWS_DEFAULT_REGION="${cluster_region}"
+    export AWS_REGION="${cluster_region}"
+    echo "AWS CLI configured for default region: ${cluster_region}"
   else
     echo "AWS credentials not provided, skipping AWS CLI configuration"
   fi
@@ -164,10 +168,19 @@ get_eks_certificate() {
     return 1
   fi
 
+  # Get the cluster region
+  local region
+  region=$(get_cluster_aws_region)
+  if [[ $? -ne 0 ]]; then
+    echo "Error: Failed to get cluster AWS region"
+    return 1
+  fi
+  echo "Using region: ${region}"
+
   # List certificates and find the one for our domain
   echo "Searching for certificate in AWS Certificate Manager..."
   local certificate_arn
-  certificate_arn=$(aws acm list-certificates --query "CertificateSummaryList[].{DomainName:DomainName,Status:Status,CertificateArn:CertificateArn}" --output json | jq -r ".[] | select(.DomainName == \"${domain_name}\") | .CertificateArn")
+  certificate_arn=$(aws acm list-certificates --region "${region}" --query "CertificateSummaryList[].{DomainName:DomainName,Status:Status,CertificateArn:CertificateArn}" --output json | jq -r ".[] | select(.DomainName == \"${domain_name}\") | .CertificateArn")
 
   if [[ -z "${certificate_arn}" ]]; then
     echo "No existing certificate found for domain"
@@ -176,6 +189,7 @@ get_eks_certificate() {
     # Create a new certificate
     local new_certificate_arn
     new_certificate_arn=$(aws acm request-certificate \
+      --region "${region}" \
       --domain-name "${domain_name}" \
       --validation-method DNS \
       --query 'CertificateArn' \
@@ -192,7 +206,7 @@ get_eks_certificate() {
     # Get validation records that need to be created
     echo "Getting DNS validation records..."
     local validation_records
-    validation_records=$(aws acm describe-certificate --certificate-arn "${certificate_arn}" --query 'Certificate.DomainValidationOptions[0].ResourceRecord' --output json 2>/dev/null)
+    validation_records=$(aws acm describe-certificate --region "${region}" --certificate-arn "${certificate_arn}" --query 'Certificate.DomainValidationOptions[0].ResourceRecord' --output json 2>/dev/null)
     
     if [[ $? -eq 0 && "${validation_records}" != "null" && "${validation_records}" != "[]" ]]; then
       local validation_name
@@ -202,10 +216,7 @@ get_eks_certificate() {
       
       # Check if we got valid values
       if [[ -n "${validation_name}" && "${validation_name}" != "null" && -n "${validation_value}" && "${validation_value}" != "null" ]]; then
-        echo "DNS validation record needed:"
-        echo "  Name: ${validation_name}"
-        echo "  Value: ${validation_value}"
-        echo "  Type: CNAME"
+        echo "DNS validation record needed."
         
         # Create the validation DNS record
         echo "Creating DNS validation record..."
@@ -213,10 +224,6 @@ get_eks_certificate() {
           echo "✅ DNS validation record created successfully"
         else
           echo "⚠️  Failed to create DNS validation record automatically"
-          echo "You may need to manually create this DNS record:"
-          echo "  Name: ${validation_name}"
-          echo "  Value: ${validation_value}"
-          echo "  Type: CNAME"
         fi
       else
         echo "ℹ️  No valid DNS validation records found (certificate may already be validated or use different validation method)"
@@ -234,7 +241,7 @@ get_eks_certificate() {
       echo "Checking certificate status (attempt ${i}/${max_attempts})..."
       
       local cert_status
-      cert_status=$(aws acm describe-certificate --certificate-arn "${certificate_arn}" --query 'Certificate.Status' --output text 2>/dev/null)
+      cert_status=$(aws acm describe-certificate --region "${region}" --certificate-arn "${certificate_arn}" --query 'Certificate.Status' --output text 2>/dev/null)
       
       if [[ "${cert_status}" == "ISSUED" ]]; then
         echo "✅ Certificate has been issued successfully"
@@ -242,7 +249,7 @@ get_eks_certificate() {
       elif [[ "${cert_status}" == "FAILED" ]]; then
         echo "❌ Certificate validation failed"
         echo "Check the certificate details for validation errors:"
-        aws acm describe-certificate --certificate-arn "${certificate_arn}" --query 'Certificate.DomainValidationOptions[0].ValidationStatus' --output text 2>/dev/null
+        aws acm describe-certificate --region "${region}" --certificate-arn "${certificate_arn}" --query 'Certificate.DomainValidationOptions[0].ValidationStatus' --output text 2>/dev/null
         return 1
       elif [[ "${cert_status}" == "PENDING_VALIDATION" ]]; then
         echo "⏳ Certificate is pending validation (attempt ${i}/${max_attempts})"
@@ -250,8 +257,8 @@ get_eks_certificate() {
         # Check validation method and status
         local validation_method
         local validation_status
-        validation_method=$(aws acm describe-certificate --certificate-arn "${certificate_arn}" --query 'Certificate.DomainValidationOptions[0].ValidationMethod' --output text 2>/dev/null)
-        validation_status=$(aws acm describe-certificate --certificate-arn "${certificate_arn}" --query 'Certificate.DomainValidationOptions[0].ValidationStatus' --output text 2>/dev/null)
+        validation_method=$(aws acm describe-certificate --region "${region}" --certificate-arn "${certificate_arn}" --query 'Certificate.DomainValidationOptions[0].ValidationMethod' --output text 2>/dev/null)
+        validation_status=$(aws acm describe-certificate --region "${region}" --certificate-arn "${certificate_arn}" --query 'Certificate.DomainValidationOptions[0].ValidationStatus' --output text 2>/dev/null)
         
         echo "  Validation method: ${validation_method}"
         echo "  Validation status: ${validation_status}"
@@ -259,7 +266,7 @@ get_eks_certificate() {
         if [[ "${validation_method}" == "DNS" && "${validation_status}" == "PENDING_VALIDATION" ]]; then
           # Check if DNS validation records are available
           local validation_records
-          validation_records=$(aws acm describe-certificate --certificate-arn "${certificate_arn}" --query 'Certificate.DomainValidationOptions[0].ResourceRecord' --output json 2>/dev/null)
+          validation_records=$(aws acm describe-certificate --region "${region}" --certificate-arn "${certificate_arn}" --query 'Certificate.DomainValidationOptions[0].ResourceRecord' --output json 2>/dev/null)
           
           if [[ "${validation_records}" != "null" && "${validation_records}" != "[]" ]]; then
             local validation_name
@@ -268,11 +275,7 @@ get_eks_certificate() {
             validation_value=$(echo "${validation_records}" | jq -r '.Value')
             
             if [[ -n "${validation_name}" && "${validation_name}" != "null" && -n "${validation_value}" && "${validation_value}" != "null" ]]; then
-              echo "  DNS validation record needed:"
-              echo "    Name: ${validation_name}"
-              echo "    Value: ${validation_value}"
-              echo "    Type: CNAME"
-              
+              echo "  DNS validation record needed."
               # Create the validation DNS record
               echo "  Creating DNS validation record..."
               if update_route53_dns_record "${validation_name}" "${validation_value}"; then
@@ -297,7 +300,7 @@ get_eks_certificate() {
     
     # Final status check
     local final_status
-    final_status=$(aws acm describe-certificate --certificate-arn "${certificate_arn}" --query 'Certificate.Status' --output text 2>/dev/null)
+    final_status=$(aws acm describe-certificate --region "${region}" --certificate-arn "${certificate_arn}" --query 'Certificate.Status' --output text 2>/dev/null)
     
     if [[ "${final_status}" != "ISSUED" ]]; then
       echo "❌ Certificate was not issued within the expected time. Current status: ${final_status}"
@@ -311,7 +314,7 @@ get_eks_certificate() {
   # Get certificate details
   echo "Retrieving certificate details..."
   local certificate_details
-  certificate_details=$(aws acm describe-certificate --certificate-arn "${certificate_arn}" 2>/dev/null)
+  certificate_details=$(aws acm describe-certificate --region "${region}" --certificate-arn "${certificate_arn}" 2>/dev/null)
 
   if [[ $? -ne 0 ]]; then
     echo "Error: Failed to retrieve certificate details"
@@ -350,7 +353,7 @@ get_eks_certificate() {
 }
 
 # Function to get AWS region from EKS cluster
-get_aws_region() {
+get_cluster_aws_region() {
   # Get region from EKS cluster ARN
   local cluster_arn
   cluster_arn=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}' 2>/dev/null)
@@ -380,7 +383,7 @@ find_available_domain_number() {
   fi
   
   echo "Finding available domain number for region: ${region}" >&2
-  echo "Using parent domain: ${AWS_EKS_PARENT_DOMAIN}" >&2
+  echo "Using parent domain from AWS_EKS_PARENT_DOMAIN " >&2
   
   # Get the parent domain hosted zone ID directly
   echo "Searching for Route53 hosted zone for configured parent domain" >&2
@@ -505,7 +508,7 @@ generate_dynamic_domain_name() {
   
   # Get AWS region
   local region
-  region=$(get_aws_region)
+  region=$(get_cluster_aws_region)
   
   if [[ $? -ne 0 ]]; then
     echo "Error: Could not determine AWS region" >&2
