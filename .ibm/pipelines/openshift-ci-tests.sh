@@ -125,3 +125,7 @@ main() {
 }
 
 main
+
+# Sleep for 2 hours to allow for debugging/investigation
+echo "Sleeping for 2 hours before script completion..."
+sleep 7200
