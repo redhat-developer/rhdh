@@ -58,9 +58,5 @@
   ],
   "author": "Red Hat",
   "homepage": "https://red.ht/rhdh",
-  "bugs": "https://issues.redhat.com/browse/RHIDP",
-  "keywords": [
-    "support:tech-preview",
-    "lifecycle:active"
-  ]
+  "bugs": "https://issues.redhat.com/browse/RHIDP"
 }

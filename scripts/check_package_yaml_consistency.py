@@ -46,7 +46,7 @@ class PackageYamlChecker:
     def find_corresponding_yaml(self, package_name: str) -> Optional[Path]:
         """
             Find the corresponding YAML file for a package
-            Co-author: cursor
+            Assisted-by: Cursor
         """
         # First try exact match
         yaml_file = self.marketplace_dir / f"{package_name}.yaml"
@@ -157,19 +157,29 @@ class PackageYamlChecker:
     def print_report(self) -> None:
         """
         Print a detailed report of the findings
-        Co-author: cursor
+        Assisted-by: Cursor
         """
         print("=" * 80)
-        print("PACKAGE.JSON vs YAML CONSISTENCY CHECK REPORT")
+        print("PACKAGE.JSON vs marketplace catalog entity CONSISTENCY CHECK REPORT")
         print("=" * 80)
         
         ok_count = 0
         mismatch_count = 0
         no_yaml_count = 0
         dynamic_mapping_count = 0
+        backend_plugin_count = 0
+        frontend_plugin_count = 0
         
         for result in self.results:
             status = result['status']
+            package_name = result['package']
+            
+            # Count plugin types based on naming patterns
+            if '-backend' in package_name or package_name.endswith('-dynamic'):
+                backend_plugin_count += 1
+            else:
+                frontend_plugin_count += 1
+            
             if status == 'OK':
                 ok_count += 1
                 if result.get('used_dynamic_mapping', False):
@@ -184,13 +194,14 @@ class PackageYamlChecker:
         print(f"\nSUMMARY:")
         print(f"✅ Consistent packages: {ok_count}")
         print(f"❌ Inconsistent packages: {mismatch_count}")
-        print(f"⚠️  Missing YAML files: {no_yaml_count}")
-        print(f"🔄 Used -dynamic mapping: {dynamic_mapping_count}")
+        print(f"⚠️ Missing marketplace catalog entity files: {no_yaml_count}")
         print(f"📁 Total packages checked: {len(self.results)}")
+        print(f"🔧 Backend/module plugins: {backend_plugin_count}")
+        print(f"🎨 Frontend plugins: {frontend_plugin_count}")
         
-        if dynamic_mapping_count > 0:
-            print(f"\n💡 Note: {dynamic_mapping_count} packages used the -dynamic mapping")
-            print("    (backend/module plugins with -dynamic suffix in directory name)")
+        # Only show dynamic mapping note if it's not just all backend plugins
+        if dynamic_mapping_count > 0 and dynamic_mapping_count != backend_plugin_count:
+            print(f"\n💡 Note: {dynamic_mapping_count}/{backend_plugin_count} backend plugins used -dynamic mapping")
         
         if mismatch_count > 0:
             print(f"\n{'='*50}")
@@ -209,7 +220,7 @@ class PackageYamlChecker:
         
         if no_yaml_count > 0:
             print(f"\n{'='*50}")
-            print("MISSING YAML FILES:")
+            print("MISSING marketplace catalog entity FILES:")
             print(f"{'='*50}")
             
             for result in self.results:
