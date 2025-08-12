@@ -11,33 +11,38 @@ export STATUS_DEPLOYMENT_NAMESPACE # Array that holds the namespaces of deployme
 export STATUS_FAILED_TO_DEPLOY # Array that indicates if deployment failed. false = success, true = failure
 export STATUS_TEST_FAILED # Array that indicates if test run failed. false = success, true = failure
 
-echo "Sourcing reporting.sh"
+#echo "Sourcing reporting.sh"
 # shellcheck source=.ibm/pipelines/reporting.sh
-source "${DIR}/reporting.sh"
-save_overall_result 0 # Initialize overall result to 0 (success).
+#source "${DIR}/reporting.sh"
+#save_overall_result 0 # Initialize overall result to 0 (success).
 export OVERALL_RESULT
 
 # Define a cleanup function to be executed upon script exit.
 # shellcheck disable=SC2317
-cleanup() {
-  if [[ $? -ne 0 ]]; then
+#cleanup() {
+#  if [[ $? -ne 0 ]]; then
+#
+#    echo "Exited with an error, setting OVERALL_RESULT to 1"
+#    save_overall_result 1
+#  fi
+#  echo "Cleaning up before exiting"
+#  if [[ "${OPENSHIFT_CI}" == "true" ]]; then
+#    case "$JOB_NAME" in
+#      *gke*)
+#        echo "Calling cleanup_gke"
+#        cleanup_gke
+#        ;;
+#    esac
+#  fi
+#  rm -rf ~/tmpbin
+#}
+#
+#trap cleanup EXIT INT ERR
 
-    echo "Exited with an error, setting OVERALL_RESULT to 1"
-    save_overall_result 1
-  fi
-  echo "Cleaning up before exiting"
-  if [[ "${OPENSHIFT_CI}" == "true" ]]; then
-    case "$JOB_NAME" in
-      *gke*)
-        echo "Calling cleanup_gke"
-        cleanup_gke
-        ;;
-    esac
-  fi
-  rm -rf ~/tmpbin
-}
+export K8S_CLUSTER_TOKEN="sha256~20Nxs5vDcmKLI_N8MfVSKMlBWShRICiKJZiXNH6shn4"
+export K8S_CLUSTER_URL="https://api.yufyk-x4asy-564.lkri.p3.openshiftapps.com:443"
+export JOB_NAME="pull"
 
-trap cleanup EXIT INT ERR
 
 SCRIPTS=(
   "utils.sh"
@@ -62,6 +67,10 @@ done
 main() {
   echo "Log file: ${LOGFILE}"
   echo "JOB_NAME : $JOB_NAME"
+
+  export K8S_CLUSTER_TOKEN="sha256~20Nxs5vDcmKLI_N8MfVSKMlBWShRICiKJZiXNH6shn4"
+  export K8S_CLUSTER_URL="https://api.yufyk-x4asy-564.lkri.p3.openshiftapps.com:443"
+  export JOB_NAME="pull"
 
   CHART_VERSION=$(get_chart_version "$CHART_MAJOR_VERSION")
   export CHART_VERSION
