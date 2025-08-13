@@ -61,6 +61,22 @@ class PackageYamlChecker:
             if yaml_file.exists():
                 return yaml_file
         
+        # fuzzy: try prefix/suffix relations and common aliasing
+        # Assisted-by: Cursor - since the naming convention is not consistent
+        alias_name = package_name.replace('red-hat-developer-hub', 'rhdh')
+        for p in self.marketplace_dir.glob('*.yaml'):
+            stem = p.stem
+            if (
+                stem.endswith(package_name)
+                or package_name.endswith(stem)
+                or stem.startswith(package_name)
+                or package_name.startswith(stem)
+                or stem == alias_name
+                or stem.startswith(alias_name)
+                or alias_name.startswith(stem)
+            ):
+                return p
+
         return None
     
     def extract_spec_from_yaml(self, yaml_path: Path) -> Dict[str, str]:
@@ -166,28 +182,27 @@ class PackageYamlChecker:
         ok_count = 0
         mismatch_count = 0
         no_yaml_count = 0
-        dynamic_mapping_count = 0
         backend_plugin_count = 0
         frontend_plugin_count = 0
+        backends_without_dynamic: List[str] = []
         
         for result in self.results:
             status = result['status']
             package_name = result['package']
             
             # Count plugin types based on naming patterns
-            if '-backend' in package_name or package_name.endswith('-dynamic'):
+            is_backend = ('-backend' in package_name) or package_name.endswith('-dynamic')
+            if is_backend:
                 backend_plugin_count += 1
+                if not package_name.endswith('-dynamic'):
+                    backends_without_dynamic.append(package_name)
             else:
                 frontend_plugin_count += 1
             
             if status == 'OK':
                 ok_count += 1
-                if result.get('used_dynamic_mapping', False):
-                    dynamic_mapping_count += 1
             elif status == 'MISMATCH':
                 mismatch_count += 1
-                if result.get('used_dynamic_mapping', False):
-                    dynamic_mapping_count += 1
             elif status == 'NO_YAML':
                 no_yaml_count += 1
         
@@ -198,10 +213,10 @@ class PackageYamlChecker:
         print(f"📁 Total packages checked: {len(self.results)}")
         print(f"🔧 Backend/module plugins: {backend_plugin_count}")
         print(f"🎨 Frontend plugins: {frontend_plugin_count}")
-        
-        # Only show dynamic mapping note if it's not just all backend plugins
-        if dynamic_mapping_count > 0 and dynamic_mapping_count != backend_plugin_count:
-            print(f"\n💡 Note: {dynamic_mapping_count}/{backend_plugin_count} backend plugins used -dynamic mapping")
+        if backends_without_dynamic:
+            print(f"\n💡 Note: {len(backends_without_dynamic)} backend plugins without -dynamic suffix:")
+            for p in sorted(backends_without_dynamic):
+                print(f"   - {p}")
         
         if mismatch_count > 0:
             print(f"\n{'='*50}")
@@ -235,8 +250,7 @@ class PackageYamlChecker:
             
             for result in self.results:
                 if result['status'] == 'OK':
-                    mapping_note = " (used -dynamic mapping)" if result.get('used_dynamic_mapping', False) else ""
-                    print(f"✅ {result['package']}{mapping_note}")
+                    print(f"✅ {result['package']}")
                     if result['json_keywords']:
                         print(f"   Keywords: {result['json_keywords']}")
 

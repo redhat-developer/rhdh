@@ -80,6 +80,18 @@ def run_preflight_check(repo_root: Path) -> int:
     return len(problems)
 
 
+def list_safe_wrapper_dirs(repo_root: Path) -> list[str]:
+    scripts_dir = repo_root / "scripts"
+    sys.path.insert(0, str(scripts_dir))
+    from check_package_yaml_consistency import PackageYamlChecker  # type: ignore
+    checker = PackageYamlChecker(str(repo_root))
+    checker.check_consistency()
+    safe: list[str] = []
+    for r in checker.results:
+        if r.get("status") == "OK" and r.get("json_path"):
+            safe.append(str(Path(r["json_path"]).parent.relative_to(repo_root)))
+    return sorted(safe)
+
 def remove_support_lifecycle_keywords(repo_root: Path, dry_run: bool) -> int:
     """Remove support:/lifecycle: keywords across wrappers. Returns count of modified files."""
     modified = 0
@@ -127,7 +139,15 @@ def main() -> None:
     repo_root = Path(__file__).resolve().parents[1]
     parser = argparse.ArgumentParser(description="Safely remove support:/lifecycle: keywords from package.json files")
     parser.add_argument("--dry-run", action="store_true", help="Show what would be changed without making changes")
+    parser.add_argument("--yes", action="store_true", help="Apply changes (not a dry run)")
+    parser.add_argument("--list-safe", action="store_true",
+                        help="Print wrapper directories that passed preflight (OK) and exit")
     args = parser.parse_args()
+
+    if args.list_safe:
+        for d in list_safe_wrapper_dirs(repo_root):
+            print(d)
+        return
 
     problems = run_preflight_check(repo_root)
     if problems:
