@@ -29,9 +29,43 @@ spec:
   appConfigExamples:
     - title: Default configuration
       content:
+        app:
+          quickstart:
+            - title: Set up authentication
+              icon: Admin
+              description: Set up secure login credentials to protect your account from
+                unauthorized access.
+              cta:
+                text: Learn more
+                link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/authentication_in_red_hat_developer_hub/
+            - title: Configure RBAC
+              icon: Rbac
+              description: Assign roles and permissions to control who can view, create, or
+                edit resources, ensuring secure and efficient collaboration.
+              cta:
+                text: Manage access
+                link: /rbac
+            - title: Configure Git
+              icon: Git
+              description: Connect your Git providers, such as GitHub to manage code, automate
+                workflows, and integrate with platform features.
+              cta:
+                text: Learn more
+                link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/integrating_red_hat_developer_hub_with_github/
+            - title: Manage plugins
+              icon: Plugins
+              description: Browse and install extensions to add features, connect with
+                external tools, and customize your experience.
+              cta:
+                text: Explore plugins
+                link: /extensions
         dynamicPlugins:
           frontend:
             red-hat-developer-hub.backstage-plugin-quickstart:
               mountPoints:
-                - mountPoint: entity.page.quickstart/cards
-                  importName: EntityQuickstartContent
+                - mountPoint: application/provider
+                  importName: QuickstartDrawerProvider
+                - mountPoint: global.header/help
+                  importName: QuickstartButton
+                  config:
+                    priority: 100
