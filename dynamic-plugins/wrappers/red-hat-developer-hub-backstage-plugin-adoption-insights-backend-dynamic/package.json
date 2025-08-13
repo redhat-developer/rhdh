@@ -62,4 +62,9 @@
   "author": "Red Hat",
   "homepage": "https://red.ht/rhdh",
   "bugs": "https://issues.redhat.com/browse/RHIDP"
+,
+  "keywords": [
+    "support:production",
+    "lifecycle:active"
+  ]
 }
