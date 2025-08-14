@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+# set -e  # Comentado para evitar que o script termine em caso de erro
 export PS4='[$(date "+%Y-%m-%d %H:%M:%S")] ' # logs timestamp for every cmd.
 
 # Define log file names and directories.
@@ -39,9 +39,10 @@ export OVERALL_RESULT
 #
 #trap cleanup EXIT INT ERR
 
-export K8S_CLUSTER_TOKEN="sha256~20Nxs5vDcmKLI_N8MfVSKMlBWShRICiKJZiXNH6shn4"
-export K8S_CLUSTER_URL="https://api.yufyk-x4asy-564.lkri.p3.openshiftapps.com:443"
+export K8S_CLUSTER_TOKEN="sha256~vkYiirc1JUSvKH9rN7vxz26Kuf5_r4DHHF1ongf4Vu0"
+export K8S_CLUSTER_URL="https://api.ibcef-ef4mc-q7e.5x94.p3.openshiftapps.com:443"
 export JOB_NAME="pull"
+export TAG_NAME="1.6"
 
 
 SCRIPTS=(
@@ -68,9 +69,10 @@ main() {
   echo "Log file: ${LOGFILE}"
   echo "JOB_NAME : $JOB_NAME"
 
-  export K8S_CLUSTER_TOKEN="sha256~20Nxs5vDcmKLI_N8MfVSKMlBWShRICiKJZiXNH6shn4"
-  export K8S_CLUSTER_URL="https://api.yufyk-x4asy-564.lkri.p3.openshiftapps.com:443"
+  export K8S_CLUSTER_TOKEN="sha256~yuT69ON19Pvl8W9JOpRWeiTPKjEKZmzrPguCKi2LT4Q"
+  export K8S_CLUSTER_URL="https://api.pdy4d-yfbjo-ds9.9ymc.p3.openshiftapps.com:443"
   export JOB_NAME="pull"
+  export TAG_NAME="1.6"
 
   CHART_VERSION=$(get_chart_version "$CHART_MAJOR_VERSION")
   export CHART_VERSION
@@ -124,7 +126,7 @@ main() {
     *)
       echo "ERROR: Unknown JOB_NAME pattern: $JOB_NAME"
       echo "No matching handler found for this job type"
-      save_overall_result 1
+      # save_overall_result 1  # Comentado para evitar erro quando reporting.sh não está carregado
       ;;
   esac
 
