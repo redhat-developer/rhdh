@@ -6,7 +6,7 @@ import { WAIT_OBJECTS } from "../support/pageObjects/global-obj";
 import path from "path";
 import fs from "fs";
 import { APIHelper } from "./api-helper";
-import { GroupEntity, UserEntity } from "@backstage/catalog-model";
+// import { GroupEntity, UserEntity } from "@backstage/catalog-model";
 
 export class Common {
   page: Page;
@@ -206,9 +206,7 @@ export class Common {
   private async getGroupLinksByLabel(label: string): Promise<string[]> {
     const section = this.page.locator(`p:has-text("${label}")`).first();
     await section.waitFor({ state: "visible" });
-    return await section.locator("..")
-      .locator("a")
-      .allInnerTexts();
+    return await section.locator("..").locator("a").allInnerTexts();
   }
 
   async getParentGroupsDisplayed(): Promise<string[]> {
@@ -219,15 +217,29 @@ export class Common {
     return await this.getGroupLinksByLabel("Child Groups");
   }
 
-  async githubLoginPopUpModal(context, username: string, password: string, otpSecret: string): Promise<void> {
-    const [githubPage] = await Promise.all([
-      context.waitForEvent('page'),
-    ]);
-    await githubPage.waitForSelector('input[name="login"], input[aria-label="Username or email address"]', { timeout: 10000 });
-    await githubPage.fill('input[name="login"], input[aria-label="Username or email address"]', username);
-    await githubPage.waitForSelector('input[name="password"]', { timeout: 10000 });
+  async githubLoginPopUpModal(
+    context,
+    username: string,
+    password: string,
+    otpSecret: string,
+  ): Promise<void> {
+    const [githubPage] = await Promise.all([context.waitForEvent("page")]);
+    await githubPage.waitForSelector(
+      'input[name="login"], input[aria-label="Username or email address"]',
+      { timeout: 10000 },
+    );
+    await githubPage.fill(
+      'input[name="login"], input[aria-label="Username or email address"]',
+      username,
+    );
+    await githubPage.waitForSelector('input[name="password"]', {
+      timeout: 10000,
+    });
     await githubPage.fill('input[name="password"]', password);
-    await githubPage.waitForSelector('button[type="submit"], input[type="submit"]', { timeout: 10000 });
+    await githubPage.waitForSelector(
+      'button[type="submit"], input[type="submit"]',
+      { timeout: 10000 },
+    );
     await githubPage.click('button[type="submit"], input[type="submit"]');
     // OTP
     const otpSelector = await this.findOtpSelector(githubPage);
@@ -239,25 +251,27 @@ export class Common {
       await githubPage.fill(otpSelector, otp);
       if (githubPage.isClosed()) return;
       await Promise.race([
-        githubPage.waitForEvent('close', { timeout: 20000 }),
+        githubPage.waitForEvent("close", { timeout: 20000 }),
         githubPage.click('button[type="submit"], input[type="submit"]'),
       ]);
     } else {
-      await githubPage.waitForEvent('close', { timeout: 20000 });
+      await githubPage.waitForEvent("close", { timeout: 20000 });
     }
   }
 
   private async findOtpSelector(page): Promise<string> {
-    const selectors = ['input[name="otp"]', '#app_totp'];
+    const selectors = ['input[name="otp"]', "#app_totp"];
     for (const selector of selectors) {
       try {
-        await page.locator(selector).waitFor({ state: 'visible', timeout: 10000 });
+        await page
+          .locator(selector)
+          .waitFor({ state: "visible", timeout: 10000 });
         return selector;
       } catch (err) {
         console.debug(`Selector ${selector} not visible yet, continuing…`);
       }
     }
-    throw new Error('OTP field not found on the page within 10 s');
+    throw new Error("OTP field not found on the page within 10 s");
   }
 
   getGitHub2FAOTP(userid: string): string {
@@ -533,12 +547,12 @@ export class Common {
     api.UseStaticToken(apiToken);
     const response = await api.getAllCatalogUsersFromAPI();
     console.log(`Users currently in catalog: ${JSON.stringify(response)}`);
-    const catalogUsers: UserEntity[] =
+    const catalogUsers: CatalogEntity[] =
       response && response.items ? response.items : [];
     expect(catalogUsers.length).toBeGreaterThan(0);
     const catalogUsersDisplayNames: string[] = catalogUsers
-      .filter((u) => u.spec.profile && u.spec.profile.displayName)
-      .map((u) => u.spec.profile.displayName);
+      .filter((u) => u.spec?.profile?.displayName)
+      .map((u) => u.spec!.profile!.displayName);
     console.log(
       `Checking ${JSON.stringify(catalogUsersDisplayNames)} contains users ${JSON.stringify(users)}`,
     );
@@ -553,12 +567,12 @@ export class Common {
     api.UseStaticToken(apiToken);
     const response = await api.getAllCatalogGroupsFromAPI();
     console.log(`Groups currently in catalog: ${JSON.stringify(response)}`);
-    const catalogGroups: GroupEntity[] =
+    const catalogGroups: CatalogEntity[] =
       response && response.items ? response.items : [];
     expect(catalogGroups.length).toBeGreaterThan(0);
     const catalogGroupsDisplayNames: string[] = catalogGroups
-      .filter((u) => u.spec.profile && u.spec.profile.displayName)
-      .map((u) => u.spec.profile.displayName);
+      .filter((u) => u.spec?.profile?.displayName)
+      .map((u) => u.spec!.profile!.displayName);
     console.log(
       `Checking ${JSON.stringify(catalogGroupsDisplayNames)} contains groups ${JSON.stringify(groups)}`,
     );
@@ -582,7 +596,17 @@ export async function setupBrowser(browser: Browser, testInfo: TestInfo) {
   return { page, context };
 }
 
-export type EntityWithDisplay = { spec?: { profile?: { displayName?: string } } };
+export type EntityWithDisplay = {
+  spec?: { profile?: { displayName?: string } };
+};
+
+interface CatalogEntity {
+  spec?: {
+    profile?: {
+      displayName?: string;
+    };
+  };
+}
 
 export class CatalogVerifier {
   private api: APIHelper;
@@ -596,7 +620,7 @@ export class CatalogVerifier {
     await this.assertEntities(
       () => this.api.getAllCatalogUsersFromAPI(),
       expected,
-      'users',
+      "users",
     );
   }
 
@@ -604,7 +628,7 @@ export class CatalogVerifier {
     await this.assertEntities(
       () => this.api.getAllCatalogGroupsFromAPI(),
       expected,
-      'groups',
+      "groups",
     );
   }
 
@@ -617,16 +641,17 @@ export class CatalogVerifier {
 
     expect(items.length).toBeGreaterThan(0);
 
-    const displayNames = items
-      .flatMap(e => e.spec?.profile?.displayName ?? []);
-
-    const catalogSet = new Set(displayNames);
-    const missing = expected.filter(name => !catalogSet.has(name));
-
-    console.info(
-      `Catalog ${label}: [${displayNames.join(', ')}] – expecting [${expected.join(', ')}]`,
+    const displayNames = items.flatMap(
+      (e) => e.spec?.profile?.displayName ?? [],
     );
 
-    expect(missing, `Missing ${label}: ${missing.join(', ')}`).toHaveLength(0);
+    const catalogSet = new Set(displayNames);
+    const missing = expected.filter((name) => !catalogSet.has(name));
+
+    console.info(
+      `Catalog ${label}: [${displayNames.join(", ")}] – expecting [${expected.join(", ")}]`,
+    );
+
+    expect(missing, `Missing ${label}: ${missing.join(", ")}`).toHaveLength(0);
   }
 }
