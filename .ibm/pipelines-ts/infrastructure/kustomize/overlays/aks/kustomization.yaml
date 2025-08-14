@@ -1,0 +1,83 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: rhdh-aks
+  annotations:
+    description: "AKS-specific RHDH configuration with Application Gateway Ingress"
+
+# Reference to base configuration
+resources:
+  - ../../base
+  - ingress.yaml
+
+# AKS-specific labels
+commonLabels:
+  cluster-type: aks
+  deployment-method: kustomize
+  cloud-provider: azure
+
+# AKS namespace
+namespace: showcase
+
+# Patches for AKS-specific modifications
+patchesStrategicMerge:
+  - app-config-patch.yaml
+
+# JSON patches for Azure-specific transformations
+patches:
+  # Add Azure spot node configuration for Redis
+  - target:
+      kind: Deployment
+      name: redis
+    patch: |-
+      - op: add
+        path: /spec/template/spec/nodeSelector
+        value:
+          kubernetes.azure.com/scalesetpriority: spot
+      - op: add
+        path: /spec/template/spec/tolerations
+        value:
+          - key: kubernetes.azure.com/scalesetpriority
+            operator: Equal
+            value: spot
+            effect: NoSchedule
+
+  # Add Azure-specific annotations to service
+  - target:
+      kind: Service
+      name: backstage
+    patch: |-
+      - op: add
+        path: /metadata/annotations
+        value:
+          service.beta.kubernetes.io/azure-load-balancer-internal: "false"
+
+# ConfigMap generators with AKS-specific config
+configMapGenerator:
+  - name: rhdh-app-config
+    behavior: merge
+    files:
+      - app-config-aks.yaml
+
+# Azure-specific image configurations
+images:
+  - name: backstage
+    newName: quay.io/rhdh/rhdh-hub-rhel9
+    newTag: latest
+
+# Replace base URLs with AKS ingress format
+replacements:
+  - source:
+      kind: Ingress
+      name: backstage
+      fieldPath: spec.rules[0].host
+    targets:
+      - select:
+          kind: ConfigMap
+          name: rhdh-app-config
+        fieldPaths:
+          - data.app-config-aks\.yaml
+        options:
+          delimiter: 'baseUrl: https://'
+          index: 1 

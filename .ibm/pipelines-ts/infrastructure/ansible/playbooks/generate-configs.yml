@@ -1,0 +1,278 @@
+---
+# RHDH Configuration Generation Playbook
+# This playbook replaces all manual YAML merging and generates
+# cluster-specific configurations using Jinja2 templates
+
+- name: Generate RHDH configurations for deployment
+  hosts: localhost
+  gather_facts: yes
+  vars:
+    # Default values - can be overridden via CLI or inventory
+    namespace: "{{ target_namespace | default('showcase') }}"
+    cluster_type: "{{ target_cluster_type | default('openshift') }}"
+    router_base: "{{ target_router_base | default('localhost') }}"
+
+    # Output directory for generated configs
+    output_dir: "{{ ansible_output_dir | default('/tmp/rhdh-configs') }}"
+
+    # Image configuration
+    quay_repo: "{{ image_repository | default('quay.io/rhdh/rhdh-hub-rhel9') }}"
+    tag_name: "{{ image_tag | default('latest') }}"
+
+    # Instance configuration
+    rbac_enabled: "{{ enable_rbac | default(false) }}"
+
+    # Default integrations
+    github_auth_enabled: "{{ enable_github_auth | default(false) }}"
+    kubernetes_plugin_enabled: "{{ enable_kubernetes_plugin | default(true) }}"
+    postgresql_enabled: "{{ enable_postgresql | default(true) }}"
+    redis_enabled: "{{ enable_redis | default(true) }}"
+    monitoring_enabled: "{{ enable_monitoring | default(false) }}"
+
+  tasks:
+    - name: Display configuration summary
+      debug:
+        msg:
+          - "Generating RHDH configurations with the following parameters:"
+          - "Namespace: {{ namespace }}"
+          - "Cluster Type: {{ cluster_type }}"
+          - "Router Base: {{ router_base }}"
+          - "Image: {{ quay_repo }}:{{ tag_name }}"
+          - "RBAC Enabled: {{ rbac_enabled }}"
+          - "Output Directory: {{ output_dir }}"
+
+    - name: Create output directory
+      file:
+        path: "{{ output_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Create cluster-specific output directory
+      file:
+        path: "{{ output_dir }}/{{ cluster_type }}"
+        state: directory
+        mode: "0755"
+
+    # Generate Helm Values
+    - name: Generate Backstage Helm values file
+      template:
+        src: "../templates/backstage-values.j2"
+        dest: "{{ output_dir }}/{{ cluster_type }}/values.yaml"
+        mode: "0644"
+      vars:
+        # Pass all variables to template
+        router_base: "{{ router_base }}"
+        cluster_type: "{{ cluster_type }}"
+        quay_repo: "{{ quay_repo }}"
+        tag_name: "{{ tag_name }}"
+        rbac_enabled: "{{ rbac_enabled }}"
+        postgresql_enabled: "{{ postgresql_enabled }}"
+        redis_enabled: "{{ redis_enabled }}"
+        monitoring_enabled: "{{ monitoring_enabled }}"
+        github_auth_enabled: "{{ github_auth_enabled }}"
+        kubernetes_plugin_enabled: "{{ kubernetes_plugin_enabled }}"
+        # Cluster-specific configurations
+        gke_cert_name: "{{ gke_cert_name | default('rhdh-cert') }}"
+        gke_static_ip: "{{ gke_static_ip | default('rhdh-ip') }}"
+        aks_cluster_name: "{{ aks_cluster_name | default('aks-cluster') }}"
+        openshift_cluster_name: "{{ openshift_cluster_name | default('openshift-cluster') }}"
+
+    # Generate RBAC-specific values if enabled
+    - name: Generate RBAC Helm values file
+      template:
+        src: "../templates/backstage-values.j2"
+        dest: "{{ output_dir }}/{{ cluster_type }}/values-rbac.yaml"
+        mode: "0644"
+      vars:
+        router_base: "{{ router_base }}"
+        cluster_type: "{{ cluster_type }}"
+        quay_repo: "{{ quay_repo }}"
+        tag_name: "{{ tag_name }}"
+        rbac_enabled: true
+        postgresql_enabled: "{{ postgresql_enabled }}"
+        redis_enabled: "{{ redis_enabled }}"
+        monitoring_enabled: "{{ monitoring_enabled }}"
+        github_auth_enabled: "{{ github_auth_enabled }}"
+        kubernetes_plugin_enabled: "{{ kubernetes_plugin_enabled }}"
+        # RBAC-specific configurations
+        rbac_admin_users: "{{ rbac_admin_users | default(['user:development/guest']) }}"
+        rbac_policies: "{{ rbac_policies | default([]) }}"
+        service_account_name: "{{ service_account_name | default('rhdh-rbac-service-account') }}"
+      when: rbac_enabled
+
+    # Generate Secrets
+    - name: Generate RHDH secrets
+      template:
+        src: "../templates/rhdh-secrets.j2"
+        dest: "{{ output_dir }}/{{ cluster_type }}/secrets.yaml"
+        mode: "0600" # Restricted permissions for secrets
+      vars:
+        namespace: "{{ namespace }}"
+        router_base: "{{ router_base }}"
+        cluster_type: "{{ cluster_type }}"
+        postgresql_enabled: "{{ postgresql_enabled }}"
+        redis_enabled: "{{ redis_enabled }}"
+        github_auth_enabled: "{{ github_auth_enabled }}"
+        kubernetes_plugin_enabled: "{{ kubernetes_plugin_enabled }}"
+        # Secret values (should be provided via vault or encrypted vars)
+        backend_secret: "{{ backend_secret | default('change-me-secret') }}"
+        postgresql_host: "{{ postgresql_host | default('postgresql') }}"
+        postgresql_user: "{{ postgresql_user | default('backstage') }}"
+        postgresql_password: "{{ postgresql_password | default('backstage') }}"
+        postgresql_database: "{{ postgresql_database | default('backstage') }}"
+        github_client_id: "{{ github_client_id | default('') }}"
+        github_client_secret: "{{ github_client_secret | default('') }}"
+        github_token: "{{ github_token | default('') }}"
+        k8s_cluster_url: "{{ k8s_cluster_url | default('') }}"
+        k8s_cluster_token: "{{ k8s_cluster_token | default('') }}"
+
+    # Generate RBAC secrets if enabled
+    - name: Generate RBAC RHDH secrets
+      template:
+        src: "../templates/rhdh-secrets.j2"
+        dest: "{{ output_dir }}/{{ cluster_type }}/secrets-rbac.yaml"
+        mode: "0600"
+      vars:
+        namespace: "{{ namespace }}-rbac"
+        router_base: "{{ router_base }}"
+        cluster_type: "{{ cluster_type }}"
+        postgresql_enabled: "{{ postgresql_enabled }}"
+        redis_enabled: "{{ redis_enabled }}"
+        github_auth_enabled: "{{ github_auth_enabled }}"
+        kubernetes_plugin_enabled: "{{ kubernetes_plugin_enabled }}"
+        rbac_enabled: true
+        backend_secret: "{{ backend_secret | default('change-me-secret') }}"
+        postgresql_host: "{{ postgresql_host | default('postgresql') }}"
+        postgresql_user: "{{ postgresql_user | default('backstage') }}"
+        postgresql_password: "{{ postgresql_password | default('backstage') }}"
+        postgresql_database: "{{ postgresql_database | default('backstage') }}"
+        github_client_id: "{{ github_client_id | default('') }}"
+        github_client_secret: "{{ github_client_secret | default('') }}"
+        github_token: "{{ github_token | default('') }}"
+        k8s_cluster_url: "{{ k8s_cluster_url | default('') }}"
+        k8s_cluster_token: "{{ k8s_cluster_token | default('') }}"
+      when: rbac_enabled
+
+    # Generate ConfigMaps
+    - name: Generate RHDH ConfigMaps
+      template:
+        src: "../templates/rhdh-configmap.j2"
+        dest: "{{ output_dir }}/{{ cluster_type }}/configmap.yaml"
+        mode: "0644"
+      vars:
+        namespace: "{{ namespace }}"
+        router_base: "{{ router_base }}"
+        cluster_type: "{{ cluster_type }}"
+        postgresql_enabled: "{{ postgresql_enabled }}"
+        redis_enabled: "{{ redis_enabled }}"
+        github_auth_enabled: "{{ github_auth_enabled }}"
+        kubernetes_plugin_enabled: "{{ kubernetes_plugin_enabled }}"
+        rbac_enabled: "{{ rbac_enabled }}"
+        monitoring_enabled: "{{ monitoring_enabled }}"
+        # Application configuration
+        app_title: "{{ app_title | default('Red Hat Developer Hub') }}"
+        organization_name: "{{ organization_name | default('Red Hat Developer Hub') }}"
+        auth_environment: "{{ auth_environment | default('production') }}"
+        # Plugin configurations
+        dynamic_plugins: "{{ dynamic_plugins | default([]) }}"
+        feature_flags: "{{ feature_flags | default({}) }}"
+        custom_app_config: "{{ custom_app_config | default({}) }}"
+
+    # Generate RBAC ConfigMaps if enabled
+    - name: Generate RBAC RHDH ConfigMaps
+      template:
+        src: "../templates/rhdh-configmap.j2"
+        dest: "{{ output_dir }}/{{ cluster_type }}/configmap-rbac.yaml"
+        mode: "0644"
+      vars:
+        namespace: "{{ namespace }}-rbac"
+        router_base: "{{ router_base }}"
+        cluster_type: "{{ cluster_type }}"
+        postgresql_enabled: "{{ postgresql_enabled }}"
+        redis_enabled: "{{ redis_enabled }}"
+        github_auth_enabled: "{{ github_auth_enabled }}"
+        kubernetes_plugin_enabled: "{{ kubernetes_plugin_enabled }}"
+        rbac_enabled: true
+        monitoring_enabled: "{{ monitoring_enabled }}"
+        app_title: "{{ app_title | default('Red Hat Developer Hub') }} - RBAC"
+        organization_name: "{{ organization_name | default('Red Hat Developer Hub') }}"
+        auth_environment: "{{ auth_environment | default('production') }}"
+        rbac_policies: "{{ rbac_policies | default([]) }}"
+        rbac_admin_users: "{{ rbac_admin_users | default(['user:development/guest']) }}"
+        dynamic_plugins: "{{ dynamic_plugins | default([]) }}"
+        feature_flags: "{{ feature_flags | default({}) }}"
+        custom_app_config: "{{ custom_app_config | default({}) }}"
+      when: rbac_enabled
+
+    # Validate generated YAML files
+    - name: Validate generated Helm values file
+      shell: |
+        if command -v helm >/dev/null 2>&1; then
+          helm template test /dev/null -f {{ output_dir }}/{{ cluster_type }}/values.yaml --validate
+        else
+          echo "Helm not available, skipping validation"
+        fi
+      register: helm_validation
+      failed_when: false
+      changed_when: false
+
+    - name: Validate generated Kubernetes YAML files
+      shell: |
+        if command -v kubectl >/dev/null 2>&1; then
+          kubectl apply --dry-run=client -f {{ item }}
+        else
+          echo "kubectl not available, skipping validation"
+        fi
+      loop:
+        - "{{ output_dir }}/{{ cluster_type }}/secrets.yaml"
+        - "{{ output_dir }}/{{ cluster_type }}/configmap.yaml"
+      register: kubectl_validation
+      failed_when: false
+      changed_when: false
+
+    # Generate summary report
+    - name: Generate configuration summary
+      template:
+        src: "../templates/config-summary.j2"
+        dest: "{{ output_dir }}/{{ cluster_type }}/summary.json"
+        mode: "0644"
+      vars:
+        generation_timestamp: "{{ ansible_date_time.iso8601 }}"
+        generated_files:
+          - "values.yaml"
+          - "secrets.yaml"
+          - "configmap.yaml"
+        rbac_files: "{{ ['values-rbac.yaml', 'secrets-rbac.yaml', 'configmap-rbac.yaml'] if rbac_enabled else [] }}"
+        configuration:
+          namespace: "{{ namespace }}"
+          cluster_type: "{{ cluster_type }}"
+          router_base: "{{ router_base }}"
+          image: "{{ quay_repo }}:{{ tag_name }}"
+          rbac_enabled: "{{ rbac_enabled }}"
+          postgresql_enabled: "{{ postgresql_enabled }}"
+          redis_enabled: "{{ redis_enabled }}"
+          monitoring_enabled: "{{ monitoring_enabled }}"
+
+    - name: Display generation results
+      debug:
+        msg:
+          - "✅ Configuration generation completed successfully!"
+          - "📁 Output directory: {{ output_dir }}/{{ cluster_type }}"
+          - "📄 Generated files:"
+          - "   - values.yaml (Helm values)"
+          - "   - secrets.yaml (Kubernetes secrets)"
+          - "   - configmap.yaml (Kubernetes ConfigMaps)"
+          - "{{ '   - RBAC variants (values-rbac.yaml, secrets-rbac.yaml, configmap-rbac.yaml)' if rbac_enabled else '' }}"
+          - "   - summary.json (Configuration summary)"
+          - ""
+          - "🚀 Ready for deployment!"
+
+    - name: Show next steps
+      debug:
+        msg:
+          - "Next steps:"
+          - "1. Review generated configurations in {{ output_dir }}/{{ cluster_type }}/"
+          - "2. Apply secrets: kubectl apply -f {{ output_dir }}/{{ cluster_type }}/secrets.yaml"
+          - "3. Apply configmaps: kubectl apply -f {{ output_dir }}/{{ cluster_type }}/configmap.yaml"
+          - "4. Deploy with Helm: helm install rhdh -f {{ output_dir }}/{{ cluster_type }}/values.yaml"
+          - "{{ '5. Deploy RBAC instance: helm install rhdh-rbac -f ' + output_dir + '/' + cluster_type + '/values-rbac.yaml' if rbac_enabled else '' }}"

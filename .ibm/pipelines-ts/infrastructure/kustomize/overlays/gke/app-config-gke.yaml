@@ -1,0 +1,46 @@
+# GKE-specific app-config additions
+# This file is merged with the base app-config.yaml
+
+# Kubernetes plugin configuration for GKE
+kubernetes:
+  serviceLocatorMethod:
+    type: 'multiTenant'
+  clusterLocatorMethods:
+    - type: 'config'
+      clusters:
+        - url: ${K8S_CLUSTER_URL}
+          name: gke-cluster
+          authProvider: 'serviceAccount'
+          serviceAccountToken: ${K8S_CLUSTER_TOKEN}
+          skipTLSVerify: true
+          skipMetricsLookup: true
+
+# Google Cloud integrations
+integrations:
+  googleCloudBuild:
+    - projectId: ${GOOGLE_CLOUD_PROJECT}
+  
+# Backend configuration for GKE
+backend:
+  database:
+    client: pg
+    connection:
+      host: ${POSTGRES_HOST}
+      port: ${POSTGRES_PORT}
+      user: ${POSTGRES_USER}
+      password: ${POSTGRES_PASSWORD}
+      database: ${POSTGRES_DB}
+
+# GCP-specific proxy configurations
+proxy:
+  '/gcp/api':
+    target: https://cloudresourcemanager.googleapis.com/v1/
+    changeOrigin: true
+    headers:
+      Authorization: Bearer ${GOOGLE_ACCESS_TOKEN}
+
+# Monitoring configuration for GCP
+monitoring:
+  gcp:
+    enabled: true
+    project: ${GOOGLE_CLOUD_PROJECT} 

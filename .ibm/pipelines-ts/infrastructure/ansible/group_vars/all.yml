@@ -1,0 +1,130 @@
+# RHDH Global Variables
+# These variables are shared across all cluster types and can be overridden
+
+# Base configuration
+app_title: "Red Hat Developer Hub"
+organization_name: "Red Hat Developer Hub"
+auth_environment: "production"
+
+# Image configuration
+default_image_repository: "quay.io/rhdh/rhdh-hub-rhel9"
+default_image_tag: "latest"
+image_pull_policy: "Always"
+
+# Default namespaces
+default_namespace: "showcase"
+default_rbac_namespace: "showcase-rbac"
+default_postgres_namespace: "postgress-external-db"
+
+# Resource defaults
+default_resources:
+  standard:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
+  rbac:
+    requests:
+      memory: "1Gi"
+      cpu: "500m"
+    limits:
+      memory: "2Gi"
+      cpu: "1000m"
+
+# Database configuration
+postgresql_defaults:
+  enabled: true
+  storage_size: "8Gi"
+  port: "5432"
+  database: "backstage"
+  user: "backstage"
+
+# Redis configuration
+redis_defaults:
+  enabled: true
+  storage_size: "2Gi"
+  port: "6379"
+  auth_enabled: false
+
+# GitHub integration defaults
+github_defaults:
+  enabled: false
+  host: "github.com"
+  org: "your-org"
+
+# Kubernetes plugin defaults
+kubernetes_plugin_defaults:
+  enabled: true
+  skip_tls_verify: true
+  skip_metrics_lookup: true
+
+# RBAC defaults
+rbac_defaults:
+  enabled: false
+  admin_users:
+    - "user:development/guest"
+  policies: []
+
+# Monitoring defaults
+monitoring_defaults:
+  enabled: false
+  prometheus:
+    scrape_interval: "30s"
+  grafana:
+    dashboards_enabled: true
+
+# Security defaults
+security_defaults:
+  enabled: true
+  csp:
+    connect_src: ["'self'", "http:", "https:", "data:", "blob:"]
+    frame_ancestors: ["'self'"]
+  cors:
+    methods: ["GET", "HEAD", "PATCH", "POST", "PUT", "DELETE"]
+    credentials: true
+
+# Feature flags defaults
+feature_flags_defaults:
+  enable_experimental_plugins: false
+  enable_rbac_backend: false
+  enable_new_ui: false
+
+# Dynamic plugins defaults
+dynamic_plugins_defaults: []
+
+# Scaffolder defaults
+scaffolder_defaults:
+  author_name: "Scaffolder"
+  author_email: "scaffolder@example.com"
+  default_commit_message: "Initial commit from Backstage"
+
+# TechDocs defaults
+techdocs_defaults:
+  builder: "local"
+  generator_run_in: "local"
+  publisher_type: "local"
+
+# Backend defaults
+backend_defaults:
+  listen_port: 7007
+  listen_host: "0.0.0.0"
+  secret: "change-me-secret"
+
+# Service defaults
+service_defaults:
+  type: "ClusterIP"
+  backend_port: 7007
+
+# Ingress defaults
+ingress_defaults:
+  enabled: true
+  tls_enabled: true
+
+# Output configuration
+output_defaults:
+  directory: "/tmp/rhdh-configs"
+  file_permissions: "0644"
+  secret_permissions: "0600"
+  directory_permissions: "0755"

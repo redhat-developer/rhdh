@@ -1,0 +1,104 @@
+# GKE-specific variables
+
+cluster_type: "gke"
+
+# Google Cloud Load Balancer Ingress configuration
+ingress:
+  enabled: true
+  class_name: "gce"
+  annotations:
+    ingress.gcp.kubernetes.io/pre-shared-cert: "rhdh-cert"
+    kubernetes.io/ingress.class: "gce"
+    kubernetes.io/ingress.global-static-ip-name: "rhdh-ip"
+    ingress.gcp.kubernetes.io/frontend-config: "rhdh-frontend-config"
+
+# Routes disabled for GKE (uses Ingress)
+route:
+  enabled: false
+
+# GKE-specific resource configurations
+resources:
+  preemptible_nodes:
+    enabled: false # Disabled by default for stability
+
+# GCP-specific environment variables
+environment_vars:
+  GCP_ENABLED: "true"
+  CLOUD_PROVIDER: "gcp"
+  GKE_ENABLED: "true"
+
+# GKE-specific plugins
+dynamic_plugins:
+  - package: "@backstage/plugin-gcp-projects"
+    disabled: false
+  - package: "@backstage/plugin-kubernetes"
+    disabled: false
+  - package: "@backstage/plugin-techdocs"
+    disabled: false
+
+# Google Cloud Operations (Stackdriver)
+monitoring:
+  stackdriver_enabled: true
+  cloud_logging: true
+  cloud_monitoring: true
+  workload_identity: true
+
+# GKE networking
+networking:
+  vpc_native: true
+  ip_alias: true
+  network_policy: "calico"
+  private_cluster: false
+
+# GCP storage classes
+storage:
+  default_storage_class: "standard-rwo"
+  postgresql_storage_class: "ssd-rwo"
+  redis_storage_class: "standard-rwo"
+
+# GCP-specific integrations
+integrations:
+  google_cloud_build:
+    enabled: false
+  google_cloud_storage:
+    enabled: false
+
+# GKE cluster configuration
+cluster_config:
+  project_id: "rhdh-qe"
+  region: "us-central1"
+  zone: "us-central1-a"
+  node_count: 3
+  machine_type: "e2-standard-2"
+
+# Frontend Config for GKE
+frontend_config:
+  name: "rhdh-frontend-config"
+  ssl_policy: "rhdh-ssl-policy"
+  timeout: "30s"
+
+# SSL Certificate configuration
+ssl_certificate:
+  name: "rhdh-cert"
+  domains:
+    - "*.rhdh-qe.com"
+  managed: true
+
+# Static IP configuration
+static_ip:
+  name: "rhdh-ip"
+  region: "global"
+
+# GKE Autopilot settings (if using Autopilot)
+autopilot:
+  enabled: false
+
+# Workload Identity configuration
+workload_identity:
+  enabled: true
+  service_account: "rhdh-gsa@rhdh-qe.iam.gserviceaccount.com"
+
+# Default GKE cluster names
+cluster_names:
+  default: "gke-cluster"
+  prefix: "gke-rhdh-"
