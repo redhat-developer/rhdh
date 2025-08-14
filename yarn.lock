@@ -7670,9 +7670,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ianvs/prettier-plugin-sort-imports@npm:4.5.1":
-  version: 4.5.1
-  resolution: "@ianvs/prettier-plugin-sort-imports@npm:4.5.1"
+"@ianvs/prettier-plugin-sort-imports@npm:4.6.1":
+  version: 4.6.1
+  resolution: "@ianvs/prettier-plugin-sort-imports@npm:4.6.1"
   dependencies:
     "@babel/generator": ^7.26.2
     "@babel/parser": ^7.26.2
@@ -7682,13 +7682,19 @@ __metadata:
   peerDependencies:
     "@prettier/plugin-oxc": ^0.0.4
     "@vue/compiler-sfc": 2.7.x || 3.x
+    content-tag: ^4.0.0
     prettier: 2 || 3 || ^4.0.0-0
+    prettier-plugin-ember-template-tag: ^2.1.0
   peerDependenciesMeta:
     "@prettier/plugin-oxc":
       optional: true
     "@vue/compiler-sfc":
       optional: true
-  checksum: ed613e2baec6ee5cc86bfecf3aa64d247c0c36b4838f8bb893d12c49843264296b24bb39bd8e13bb87bfc1c54c5c4efaeac8e6c15a1a7a2ee38a9f1bcb53baa7
+    content-tag:
+      optional: true
+    prettier-plugin-ember-template-tag:
+      optional: true
+  checksum: 02b5a45ae31959c24c5fe95a6ebffc064d8f88a28f0a827fe6289ff39c1cf4c90e0eb229dcab667423b307d77acb793d887e4df6ef9394e22d0af79b69545954
   languageName: node
   linkType: hard
 
@@ -32319,7 +32325,7 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.32.1
     "@backstage/frontend-test-utils": ^0.3.2
-    "@ianvs/prettier-plugin-sort-imports": 4.5.1
+    "@ianvs/prettier-plugin-sort-imports": 4.6.1
     "@manypkg/cli": 0.24.0
     glob: 11.0.3
     husky: 8.0.3
