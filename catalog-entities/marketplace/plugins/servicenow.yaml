@@ -13,8 +13,7 @@ metadata:
     operational awareness.
 
   annotations:
-    # temporarily set to 'true' to remove the 'custom plugin' badge, change this to 'false' when RHDHBUGS-1945 gets resolved
-    extensions.backstage.io/pre-installed: 'true'
+    extensions.backstage.io/pre-installed: 'true' # Indicates that this plugin YAML is pre-installed, not the plugin itself
   tags:
     - itsm
     - incident-management
