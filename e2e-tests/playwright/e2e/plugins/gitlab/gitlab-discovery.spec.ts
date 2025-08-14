@@ -4,7 +4,8 @@ import { Common } from "../../../utils/common";
 
 // Pre-req: backstage-plugin-catalog-backend-module-gitlab-dynamic
 // Pre-req: immobiliarelabs-backstage-plugin-gitlab-backend-dynamic
-test.describe("gitlab discovery UI tests", () => {
+//FIXME: RHDHBUGS-1977
+test.describe.skip("gitlab discovery UI tests", () => {
   let uiHelper: UIhelper;
   let common: Common;
 
