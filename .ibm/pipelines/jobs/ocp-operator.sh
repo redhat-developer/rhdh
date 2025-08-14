@@ -18,6 +18,10 @@ initiate_operator_deployments() {
   oc apply -f /tmp/configmap-dynamic-plugins.yaml -n "${NAME_SPACE}"
   deploy_redis_cache "${NAME_SPACE}"
   deploy_rhdh_operator "${NAME_SPACE}" "${DIR}/resources/rhdh-operator/rhdh-start.yaml"
+  
+  # Setup orchestrator SonataFlow resources for standard instance
+  echo "Setting up orchestrator for standard instance..."
+  setup_orchestrator_sonataflow_resources "${NAME_SPACE}" "${RELEASE_NAME}"
 
   configure_namespace "${NAME_SPACE_RBAC}"
   create_conditional_policies_operator /tmp/conditional-policies.yaml
@@ -27,6 +31,10 @@ initiate_operator_deployments() {
   create_dynamic_plugins_config "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "/tmp/configmap-dynamic-plugins-rbac.yaml"
   oc apply -f /tmp/configmap-dynamic-plugins-rbac.yaml -n "${NAME_SPACE_RBAC}"
   deploy_rhdh_operator "${NAME_SPACE_RBAC}" "${DIR}/resources/rhdh-operator/rhdh-start-rbac.yaml"
+  
+  # Setup orchestrator SonataFlow resources for RBAC instance
+  echo "Setting up orchestrator for RBAC instance..."
+  setup_orchestrator_sonataflow_resources "${NAME_SPACE_RBAC}" "${RELEASE_NAME_RBAC}"
 }
 
 run_operator_runtime_config_change_tests() {
