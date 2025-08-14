@@ -3,7 +3,7 @@ import Keycloak from "../../../utils/keycloak/keycloak";
 import { UIhelper } from "../../../utils/ui-helper";
 import { Common } from "../../../utils/common";
 import { test, expect } from "@playwright/test";
-import { KubeClient } from "../../../utils/kube-client";
+import { ChildProcessWithoutNullStreams, spawn, exec } from "child_process";
 
 test.describe("Test Keycloak plugin", () => {
   let uiHelper: UIhelper;
@@ -56,83 +56,45 @@ test.describe("Test Keycloak plugin", () => {
 });
 
 test.describe("Test Keycloak plugin metrics", () => {
-  const namespace = process.env.NAME_SPACE || "showcase-ci-nightly";
-  const baseRHDHURL: string = process.env.BASE_URL;
-  console.log(`strange ${baseRHDHURL}`);
-  let kubeClient: KubeClient;
-  const routerName = "rhdh-metrics";
+  let portForward: ChildProcessWithoutNullStreams;
 
-  test.beforeEach(() => {
-    kubeClient = new KubeClient();
-    console.log(
-      `Running test in namespace: ${namespace} with router name: ${routerName}`,
+  test.beforeEach(async () => {
+    console.log("Starting port-forward process...");
+    portForward = spawn("/bin/sh", [
+      "-c",
+      `
+      oc login --token="${process.env.K8S_CLUSTER_TOKEN}" --server="${process.env.K8S_CLUSTER_URL}" --insecure-skip-tls-verify=true &&
+      kubectl config set-context --current --namespace="${process.env.NAME_SPACE}" &&
+      kubectl port-forward service/rhdh-developer-hub 9464:9464 --namespace="${process.env.NAME_SPACE}"
+    `,
+    ]);
+
+    console.log("Waiting for port-forward to be ready...");
+    await new Promise<void>((resolve, reject) => {
+      portForward.stdout.on("data", (data) => {
+        if (data.toString().includes("Forwarding from 127.0.0.1:9464")) {
+          resolve();
+        }
+      });
+
+      portForward.stderr.on("data", (data) => {
+        console.error(`Port forwarding failed: ${data.toString()}`);
+        reject(new Error(`Port forwarding failed: ${data.toString()}`));
+      });
+    });
+  });
+
+  test.afterEach(() => {
+    console.log("Killing port-forward process with ID:", portForward.pid);
+    portForward.kill("SIGKILL");
+    console.log("Killing remaining port-forward process.");
+    exec(
+      `ps aux | grep 'kubectl port-forward' | grep -v grep | awk '{print $2}' | xargs kill -9`,
     );
   });
 
-  test.afterAll(async () => {
-    if (process.env.IS_OPENSHIFT === "true") {
-      await cleanUpRouter(kubeClient, namespace, routerName);
-    } else {
-      await cleanUpIngress(kubeClient, namespace, routerName);
-    }
-  });
-
   test("Test keycloak metrics with failure counters", async () => {
-    const host: string = new URL(baseRHDHURL).hostname;
-    const domain = host.split(".").slice(1).join(".");
-
-    if (process.env.IS_OPENSHIFT === "true") {
-      await createRouteIfNotPresentAndWait(
-        kubeClient,
-        namespace,
-        routerName,
-        domain,
-      );
-    } else {
-      const pods = await kubeClient.getPodList(namespace);
-      if (pods?.body?.items) {
-        pods.body.items.forEach((pod, index) => {
-          console.log(`--- Pod ${index + 1} ---`);
-          console.log(JSON.stringify(pod, null, 2));
-        });
-      }
-
-      await createIngressIfNotPresentAndWait(
-        kubeClient,
-        namespace,
-        routerName,
-        domain,
-      );
-
-      const ingresses = await kubeClient.getIngresses(namespace);
-      if (!ingresses || !Array.isArray(ingresses.items)) {
-        console.log(`No ingresses found in namespace "${namespace}".`);
-        return;
-      }
-
-      for (const ingress of ingresses.items) {
-        const name = ingress.metadata?.name ?? "<no-name>";
-        const rules = ingress.spec?.rules ?? [];
-
-        if (rules.length === 0) {
-          console.log(`Ingress "${name}" has no rules.`);
-          continue;
-        }
-
-        for (const rule of rules) {
-          const host = rule.host ?? "<no-host>";
-          const paths = rule.http?.paths ?? [];
-
-          for (const path of paths) {
-            const pathStr = path.path ?? "/";
-            const url = `http://${host}${pathStr}`;
-            console.log(`Ingress: ${name} → ${url}`);
-          }
-        }
-      }
-    }
-
-    const metricsEndpointURL = `http://${routerName}.${domain}/metrics`;
+    const metricsEndpointURL = "http://localhost:9464/metrics";
     const metricLines = await fetchMetrics(metricsEndpointURL);
 
     const metricLineStartWith =
@@ -146,135 +108,6 @@ test.describe("Test Keycloak plugin metrics", () => {
     expect(isContainMetricFailureCounter).toBeTruthy();
   });
 });
-
-async function createRouteIfNotPresentAndWait(
-  kubeClient: KubeClient,
-  namespace: string,
-  routerName: string,
-  domain: string,
-) {
-  const metricsRoute = await kubeClient.getRoute(namespace, routerName);
-  if (!metricsRoute) {
-    const service = await kubeClient.getServiceByLabel(
-      namespace,
-      "backstage.io/kubernetes-id=developer-hub",
-    );
-
-    const rhdhServiceName = service[0].metadata.name;
-    const route = {
-      apiVersion: "route.openshift.io/v1",
-      kind: "Route",
-      metadata: { name: routerName, namespace },
-      spec: {
-        host: `${routerName}.${domain}`,
-        to: { kind: "Service", name: rhdhServiceName },
-        port: { targetPort: "http-metrics" },
-      },
-    };
-    await kubeClient.createRoute(namespace, route);
-    // Wait until the route is available.
-    await new Promise((resolve) => setTimeout(resolve, 10000));
-  }
-}
-
-async function createIngressIfNotPresentAndWait(
-  kubeClient: KubeClient,
-  namespace: string,
-  ingressName: string,
-  domain: string,
-) {
-  const rhdhIngress = await kubeClient.getIngress(
-    namespace,
-    "rhdh-developer-hub",
-  );
-  console.log(`===== RHDH ingress start:`);
-  console.log(JSON.stringify(rhdhIngress, null, 2));
-  console.log(`===== RHDH ingress end:`);
-
-  const metricsIngress = await kubeClient.getIngress(namespace, ingressName);
-  if (!metricsIngress) {
-    const service = await kubeClient.getServiceByLabel(
-      namespace,
-      "backstage.io/kubernetes-id=developer-hub",
-    );
-
-    console.log(`===== Print service start:`);
-    console.log(JSON.stringify(service, null, 2));
-    console.log(`===== Print service end:`);
-
-    const rhdhServiceName = service[0].metadata.name;
-    console.log(
-      `=== selected service name: ${rhdhServiceName}. Domain is ${domain}`,
-    );
-    const ingress = {
-      apiVersion: "networking.k8s.io/v1",
-      kind: "Ingress",
-      metadata: {
-        name: ingressName,
-        namespace,
-        // annotations: {
-        //   "nginx.ingress.kubernetes.io/rewrite-target": "/metrics",
-        // },
-      },
-      spec: {
-        ingressClassName: "gce",
-        rules: [
-          {
-            host: `${ingressName}.${domain}`,
-            http: {
-              paths: [
-                {
-                  path: "/metrics",
-                  pathType: "Prefix",
-                  backend: {
-                    service: {
-                      name: rhdhServiceName,
-                      port: {
-                        number: 9464,
-                      },
-                    },
-                  },
-                },
-              ],
-            },
-          },
-        ],
-      },
-    };
-    await kubeClient.createIngress(namespace, ingress);
-    await kubeClient.waitForIngressLoadBalancer(namespace, ingressName, 15, 30);
-
-    const metricsIngress = await kubeClient.getIngress(namespace, ingressName);
-    console.log(`===== metrics ingress start:`);
-    console.log(JSON.stringify(metricsIngress, null, 2));
-    console.log(`===== metrics ingress end:`);
-  }
-
-  // Wait until the ingress is available.
-  await new Promise((resolve) => setTimeout(resolve, 10000));
-}
-
-async function cleanUpRouter(
-  kubeClient: KubeClient,
-  namespace: string,
-  routerName: string,
-) {
-  const metricsRoute = await kubeClient.getRoute(namespace, routerName);
-  if (metricsRoute) {
-    await kubeClient.deleteRoute(namespace, routerName);
-  }
-}
-
-async function cleanUpIngress(
-  kubeClient: KubeClient,
-  namespace: string,
-  ingressName: string,
-) {
-  const metricsIngress = await kubeClient.getIngress(namespace, ingressName);
-  if (metricsIngress) {
-    await kubeClient.deleteIngress(namespace, ingressName);
-  }
-}
 
 async function fetchMetrics(metricsEndpoitUrl: string): Promise<string[]> {
   const response = await fetch(metricsEndpoitUrl, {
