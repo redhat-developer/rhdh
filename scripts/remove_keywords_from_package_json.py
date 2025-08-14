@@ -92,6 +92,19 @@ def list_safe_wrapper_dirs(repo_root: Path) -> list[str]:
             safe.append(str(Path(r["json_path"]).parent.relative_to(repo_root)))
     return sorted(safe)
 
+
+def format_all_wrapper_json(repo_root: Path) -> int:
+    """Re-save all wrapper package.json files with normalized formatting."""
+    formatted = 0
+    for package_json_path in find_wrapper_package_json_files(repo_root):
+        try:
+            data = load_json(package_json_path)
+        except Exception:
+            continue
+        save_json(package_json_path, data)
+        formatted += 1
+    return formatted
+
 def remove_support_lifecycle_keywords(repo_root: Path, dry_run: bool) -> int:
     """Remove support:/lifecycle: keywords across wrappers. Returns count of modified files."""
     modified = 0
@@ -142,12 +155,33 @@ def main() -> None:
     parser.add_argument("--yes", action="store_true", help="Apply changes (not a dry run)")
     parser.add_argument("--list-safe", action="store_true",
                         help="Print wrapper directories that passed preflight (OK) and exit")
+                        #added in case we want to format the package.json files without removing the keywords
+    parser.add_argument("--format-only", action="store_true",
+                        help="Re-save all wrapper package.json with normalized formatting and exit")
     args = parser.parse_args()
 
     if args.list_safe:
         for d in list_safe_wrapper_dirs(repo_root):
             print(d)
         return
+
+    if args.format_only:
+        modified = 0
+        for package_json_path in find_wrapper_package_json_files(repo_root):
+            try:
+                data = load_json(package_json_path)
+            except Exception as e:
+                print(f"Skipping {package_json_path}: failed to parse JSON ({e})")
+                continue
+            save_json(package_json_path, data)
+            modified += 1
+        print(f"\n✅ Formatting complete. Files re-saved: {modified}")
+        return
+
+    # Always normalize JSON formatting by default
+    formatted = format_all_wrapper_json(repo_root)
+    if formatted:
+        print(f"Formatted wrapper package.json files: {formatted}")
 
     problems = run_preflight_check(repo_root)
     if problems:
