@@ -44,7 +44,7 @@ def save_json(path: Path, data: dict) -> None:
         f.write("\n")
 
 
-def run_preflight_check(repo_root: Path) -> int:
+def run_preflight_check(repo_root: Path, verbose: bool = False) -> int:
     """Use the existing checker to ensure there are no mismatches or missing YAML files.
 
     Returns the number of problems found (mismatch + missing YAML).
@@ -75,7 +75,8 @@ def run_preflight_check(repo_root: Path) -> int:
         print("3. Re-run this script")
         
     else:
-        print("✅ Pre-flight check passed: no inconsistencies or missing marketplace catalog entity files found.")
+        if verbose:
+            print("✅ Pre-flight check passed: no inconsistencies or missing marketplace catalog entity files found.")
 
     return len(problems)
 
@@ -105,14 +106,15 @@ def format_all_wrapper_json(repo_root: Path) -> int:
         formatted += 1
     return formatted
 
-def remove_support_lifecycle_keywords(repo_root: Path, dry_run: bool) -> int:
+def remove_support_lifecycle_keywords(repo_root: Path, dry_run: bool, verbose: bool) -> int:
     """Remove support:/lifecycle: keywords across wrappers. Returns count of modified files."""
     modified = 0
     for package_json_path in find_wrapper_package_json_files(repo_root):
         try:
             data = load_json(package_json_path)
         except Exception as e:
-            print(f"Skipping {package_json_path}: failed to parse JSON ({e})")
+            if verbose:
+                print(f"Skipping {package_json_path}: failed to parse JSON ({e})")
             continue
 
         keywords = list(data.get("keywords", []))
@@ -130,12 +132,13 @@ def remove_support_lifecycle_keywords(repo_root: Path, dry_run: bool) -> int:
         if not removed:
             continue
 
-        print(f"\n{package_json_path}")
-        print(f"  Removed: {removed}")
-        if kept:
-            print(f"  Kept:    {kept}")
-        else:
-            print("  Kept:    [] (keywords will be removed entirely)")
+        if verbose:
+            print(f"\n{package_json_path}")
+            print(f"  Removed: {removed}")
+            if kept:
+                print(f"  Kept:    {kept}")
+            else:
+                print("  Kept:    [] (keywords will be removed entirely)")
 
         if not dry_run:
             if kept:
@@ -158,6 +161,7 @@ def main() -> None:
                         #added in case we want to format the package.json files without removing the keywords
     parser.add_argument("--format-only", action="store_true",
                         help="Re-save all wrapper package.json with normalized formatting and exit")
+    parser.add_argument("--verbose", action="store_true", help="Print detailed per-file output")
     args = parser.parse_args()
 
     if args.list_safe:
@@ -171,27 +175,29 @@ def main() -> None:
             try:
                 data = load_json(package_json_path)
             except Exception as e:
-                print(f"Skipping {package_json_path}: failed to parse JSON ({e})")
+                if args.verbose:
+                    print(f"Skipping {package_json_path}: failed to parse JSON ({e})")
                 continue
             save_json(package_json_path, data)
             modified += 1
-        print(f"\n✅ Formatting complete. Files re-saved: {modified}")
+        if args.verbose:
+            print(f"\n✅ Formatting complete. Files re-saved: {modified}")
         return
 
     # Always normalize JSON formatting by default
     formatted = format_all_wrapper_json(repo_root)
-    if formatted:
-        print(f"Formatted wrapper package.json files: {formatted}")
+    # No console noise for routine formatting
 
-    problems = run_preflight_check(repo_root)
+    problems = run_preflight_check(repo_root, verbose=args.verbose)
     if problems:
         sys.exit(1)
 
-    modified = remove_support_lifecycle_keywords(repo_root, dry_run=not args.yes)
+    modified = remove_support_lifecycle_keywords(repo_root, dry_run=not args.yes, verbose=args.verbose)
     if args.yes:
         print(f"\n✅ Done. Files modified: {modified}")
-        print(f"\n💡 Note: YAML files in catalog-entities/marketplace/packages/ are now")
-        print(f"   the single source of truth for support and lifecycle metadata.")
+        if args.verbose:
+            print(f"\n💡 Note: YAML files in catalog-entities/marketplace/packages/ are now")
+            print(f"   the single source of truth for support and lifecycle metadata.")
     else:
         print(f"\nℹ️ Dry run complete. Files that would be modified: {modified}")
 

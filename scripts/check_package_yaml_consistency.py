@@ -102,11 +102,12 @@ class PackageYamlChecker:
         """Extract package name from the directory path"""
         return package_path.parent.name
     
-    def check_consistency(self) -> None:
+    def check_consistency(self, verbose: bool = False) -> None:
         """Main method to check consistency between all package.json and YAML files"""
         package_files = self.find_package_json_files()
         
-        print(f"Found {len(package_files)} package.json files to check\n")
+        if verbose:
+            print(f"Found {len(package_files)} package.json files to check\n")
         
         for package_path in package_files:
             package_name = self.get_package_name_from_path(package_path)
@@ -170,14 +171,15 @@ class PackageYamlChecker:
                 'used_dynamic_mapping': used_dynamic_mapping
             })
     
-    def print_report(self) -> None:
+    def print_report(self, verbose: bool = False) -> None:
         """
         Print a detailed report of the findings
         Assisted-by: Cursor
         """
-        print("=" * 80)
-        print("PACKAGE.JSON vs marketplace catalog entity CONSISTENCY CHECK REPORT")
-        print("=" * 80)
+        if verbose:
+            print("=" * 80)
+            print("PACKAGE.JSON vs marketplace catalog entity CONSISTENCY CHECK REPORT")
+            print("=" * 80)
         
         ok_count = 0
         mismatch_count = 0
@@ -213,37 +215,37 @@ class PackageYamlChecker:
         print(f"📁 Total packages checked: {len(self.results)}")
         print(f"🔧 Backend/module plugins: {backend_plugin_count}")
         print(f"🎨 Frontend plugins: {frontend_plugin_count}")
-        if backends_without_dynamic:
+        if verbose and backends_without_dynamic:
             print(f"\n💡 Note: {len(backends_without_dynamic)} backend plugins without -dynamic suffix:")
             for p in sorted(backends_without_dynamic):
                 print(f"   - {p}")
         
         if mismatch_count > 0:
-            print(f"\n{'='*50}")
-            print("INCONSISTENT PACKAGES:")
-            print(f"{'='*50}")
+            if verbose:
+                print(f"\n{'='*50}")
+                print("INCONSISTENT PACKAGES:")
+                print(f"{'='*50}")
             
             for result in self.results:
                 if result['status'] == 'MISMATCH':
                     print(f"\n📦 {result['package']}")
-                    print(f"   JSON: {result['json_path']}")
-                    print(f"   YAML: {result['yaml_path']}")
-                    print(f"   JSON keywords: {result['json_keywords']}")
-                    print(f"   YAML spec: {result['yaml_spec']}")
+                    if verbose:
+                        print(f"   JSON: {result['json_path']}")
+                        print(f"   YAML: {result['yaml_path']}")
                     for issue in result['issues']:
                         print(f"   ❌ {issue}")
         
         if no_yaml_count > 0:
-            print(f"\n{'='*50}")
-            print("MISSING marketplace catalog entity FILES:")
-            print(f"{'='*50}")
+            if verbose:
+                print(f"\n{'='*50}")
+                print("MISSING marketplace catalog entity FILES:")
+                print(f"{'='*50}")
             
             for result in self.results:
                 if result['status'] == 'NO_YAML':
                     print(f"⚠️  {result['package']}")
-                    print(f"   JSON: {result['json_path']}")
         
-        if ok_count > 0:
+        if verbose and ok_count > 0:
             print(f"\n{'='*50}")
             print("CONSISTENT PACKAGES:")
             print(f"{'='*50}")
@@ -251,8 +253,6 @@ class PackageYamlChecker:
             for result in self.results:
                 if result['status'] == 'OK':
                     print(f"✅ {result['package']}")
-                    if result['json_keywords']:
-                        print(f"   Keywords: {result['json_keywords']}")
 
 
 def main():
@@ -265,9 +265,12 @@ def main():
         print("Error: Could not find dynamic-plugins directory. Make sure you're running from the correct location.")
         sys.exit(1)
     
+    parser = None
+    # add a lightweight flag without changing external callers
+    verbose = '--verbose' in sys.argv
     checker = PackageYamlChecker(str(repo_root))
-    checker.check_consistency()
-    checker.print_report()
+    checker.check_consistency(verbose=verbose)
+    checker.print_report(verbose=verbose)
     
     # Exit with error code if there are mismatches
     mismatches = [r for r in checker.results if r['status'] == 'MISMATCH']
