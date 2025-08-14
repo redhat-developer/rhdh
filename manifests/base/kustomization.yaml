@@ -1,0 +1,31 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: janus-idp
+components:
+  - ../components/postgres-db
+resources:
+  - deployment.yaml
+  - service.yaml
+  - ingress.yaml
+  - externalsecret.yaml
+  - issuer.yaml
+  - certificate.yaml
+  - keycloak
+  - obc.yaml
+  - postgres.yaml
+commonLabels:
+  app.kubernetes.io/name: backstage
+  app.kubernetes.io/instance: backstage
+images:
+  - name: backstage-showcase
+    newName: quay.io/rhdh-community/rhdh
+patchesJson6902:
+  - patch: |-
+      - op: remove
+        path: /spec/selector/app.kubernetes.io~1name
+      - op: remove
+        path: /spec/selector/app.kubernetes.io~1instance
+    target:
+      kind: Service
+      version: v1
+      name: keycloak

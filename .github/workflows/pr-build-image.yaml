@@ -1,0 +1,94 @@
+# Copyright Red Hat, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: PR Build Image
+
+on:
+  pull_request_target:
+    paths-ignore:
+      - 'docs/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.number || github.event.pull_request.head.ref }}
+  cancel-in-progress: true
+
+env:
+  REGISTRY: quay.io
+
+jobs:
+  build-image:
+    name: Build Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+
+      - name: Check Image and Relevant Changes
+        id: check-image
+        uses: ./.github/actions/check-image-and-changes
+
+      - name: Debug outputs
+        run: |
+              echo "Image exists: ${{ steps.check-image.outputs.image_exists }}"
+              echo "Relevant changes: ${{ steps.check-image.outputs.relevant_changes }}"
+              echo "SHORT_SHA: ${{ env.SHORT_SHA }}"
+              echo "PR Number: ${{ github.event.number }}"
+              echo "Base Tag: pr-${{ github.event.number }}"
+              echo "Commit Tag: pr-${{ github.event.number }}-${{ env.SHORT_SHA }}"
+
+      - name: Get the latest commits from base branch
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
+        run: |
+          git remote add base-origin https://github.com/${{ github.repository }} || true
+          git config user.name "${{ github.event.pull_request.user.login }}"
+          git config user.email "${{ github.event.pull_request.user.email }}"
+          echo "Updating PR with latest commits from ${{ github.event.pull_request.base.ref }} ..."
+          git fetch base-origin ${{ github.event.pull_request.base.ref }}
+          git merge --no-edit base-origin/${{ github.event.pull_request.base.ref }}
+
+      - name: Build and Push with Buildx
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
+        uses: ./.github/actions/docker-build
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_TOKEN }}
+          imageName: rhdh-community/rhdh
+          imageTags: |
+            pr-${{ github.event.number }}
+            pr-${{ github.event.number }}-${{ env.SHORT_SHA }}
+          imageLabels: quay.expires-after=14d
+          push: true
+          platform: linux/amd64
+
+      - name: Comment the image pull link
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: 'The image is available at:\n* [`quay.io/rhdh-community/rhdh:pr-${{ github.event.number }}`](https://quay.io/rhdh-community/rhdh:pr-${{ github.event.number }}) or\n* [`quay.io/rhdh-community/rhdh:pr-${{ github.event.number }}-${{ env.SHORT_SHA }}`](https://quay.io/rhdh-community/rhdh:pr-${{ github.event.number }}-${{ env.SHORT_SHA }})'
+            })

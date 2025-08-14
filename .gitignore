@@ -16,16 +16,13 @@ coverage
 node_modules/
 
 # Yarn 3 files
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/sdks
-!.yarn/versions
-
-# Node version directives
-.nvmrc
+**/.pnp.*
+**/.yarn/*
+!**/.yarn/patches
+!**/.yarn/plugins
+!**/.yarn/releases
+!**/.yarn/sdks
+!**/.yarn/versions
 
 # dotenv environment variables file
 .env
@@ -34,6 +31,8 @@ node_modules/
 # Build output
 dist
 dist-types
+dist-scalprum
+dist-dynamic
 
 # Temporary change files created by Vim
 *.swp
@@ -45,7 +44,22 @@ site
 *.local.yaml
 
 # Sensitive credentials
-*-credentials.yaml
+*-credentials.local.yaml
 
 # vscode database functionality support files
 *.session.sql
+
+.vscode
+.turbo
+
+# Dynamic plugins root content
+dynamic-plugins-root/*
+!dynamic-plugins-root/.gitkeep
+
+#dev caches
+.webpack-cache
+.idea/
+.idea/
+
+# Private Keys
+*.pem

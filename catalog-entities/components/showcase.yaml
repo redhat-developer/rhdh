@@ -1,0 +1,35 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: red-hat-developer-hub
+  title: Red Hat Developer Hub
+  description: |-
+    A Red Hat supported version of Backstage, available as container image. Includes pre-built plug-ins, settings, and deployment details, to help streamline setting up a self-managed internal developer portal for new adopters
+  links:
+    - title: About RHDH
+      url: https://developers.redhat.com/rhdh
+    - title: RHDH Documentation
+      url: https://docs.redhat.com/en/documentation/red_hat_developer_hub/
+    - title: Blog
+      url: https://janus-idp.io/blog
+    - title: Backstage Discord
+      url: https://discord.com/servers/backstage-687207715902193673
+  annotations:
+    argocd/app-name: 'janus-idp'
+    backstage.io/kubernetes-id: 'janus-idp'
+    github.com/project-slug: redhat-developer/rhdh
+    quay.io/repository-slug: rhdh-community/rhdh
+    backstage.io/techdocs-ref: url:https://github.com/redhat-developer/rhdh
+    backstage.io/kubernetes-namespace: janus-idp-prod
+    sonarqube.org/project-key: janus-idp_backstage-showcase
+spec:
+  type: website
+  system: red-hat-developer-hub
+  owner: red-hat
+  lifecycle: production
+  dependsOn:
+    - resource:pgdb
+    - resource:argocd
+    - resource:obc
+    - resource:keycloak
+    - resource:github

@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: ❓ Red Hat Developer Hub JIRA
+    url: https://issues.redhat.com/browse/RHIDP
+    about: Please report any showcase/RHDH issues or feature requests in JIRA - https://issues.redhat.com/browse/RHIDP
+  - name: ❓ Janus-IDP Plugins
+    url: https://issues.redhat.com/browse/RHIDP
+    about: Please report any issues with https://github.com/janus-idp/backstage-plugins in JIRA - https://issues.redhat.com/browse/RHIDP
+  - name: ❓ Backstage Community Plugins
+    url: https://github.com/backstage/community-plugins/issues
+    about: Please report any plugin issues or feature requests in https://github.com/backstage/community-plugins/issues

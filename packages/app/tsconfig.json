@@ -1,0 +1,10 @@
+{
+  "extends": "@backstage/cli/config/tsconfig.json",
+  "include": ["src"],
+  "exclude": ["node_modules"],
+  "compilerOptions": {
+    "jsx": "preserve",
+    "outDir": "../../dist-types/packages/app",
+    "rootDir": "."
+  }
+}

@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: test-daemonset
+  labels:
+    backstage.io/kubernetes-id: developer-hub
+
+spec:
+  selector:
+    matchLabels:
+      app: test
+  template:
+    metadata:
+      labels:
+        backstage.io/kubernetes-id: developer-hub
+        app: test
+    spec:
+      containers:
+        - name: test-container
+          image: busybox:latest
+          # Print test 57 times, with each print coming once every 5 seconds
+          command:
+            [
+              "sh",
+              "-c",
+              "for i in $(seq 1 10); do echo 'Iteration:' $i && date; sleep 6; done",
+            ]

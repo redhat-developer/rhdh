@@ -1,115 +1,165 @@
-/*
- * Hi!
- *
- * Note that this is an EXAMPLE Backstage backend. Please check the README.
- *
- * Happy hacking!
- */
-
-import Router from 'express-promise-router';
+import { createBackend } from '@backstage/backend-defaults';
+import { WinstonLogger } from '@backstage/backend-defaults/rootLogger';
 import {
-  createServiceBuilder,
-  loadBackendConfig,
-  getRootLogger,
-  useHotMemoize,
-  notFoundHandler,
-  CacheManager,
-  DatabaseManager,
-  SingleHostDiscovery,
-  UrlReaders,
-  ServerTokenManager,
-} from '@backstage/backend-common';
-import { TaskScheduler } from '@backstage/backend-tasks';
-import { Config } from '@backstage/config';
-import app from './plugins/app';
-import auth from './plugins/auth';
-import catalog from './plugins/catalog';
-import scaffolder from './plugins/scaffolder';
-import proxy from './plugins/proxy';
-import techdocs from './plugins/techdocs';
-import search from './plugins/search';
-import { PluginEnvironment } from './types';
-import { ServerPermissionClient } from '@backstage/plugin-permission-node';
-import { DefaultIdentityClient } from '@backstage/plugin-auth-node';
+  CommonJSModuleLoader,
+  dynamicPluginsFeatureLoader,
+  dynamicPluginsFrontendServiceRef,
+} from '@backstage/backend-dynamic-feature-service';
+import { createServiceFactory } from '@backstage/backend-plugin-api';
+import { PackageRoles } from '@backstage/cli-node';
 
-function makeCreateEnv(config: Config) {
-  const root = getRootLogger();
-  const reader = UrlReaders.default({ logger: root, config });
-  const discovery = SingleHostDiscovery.fromConfig(config);
-  const cacheManager = CacheManager.fromConfig(config);
-  const databaseManager = DatabaseManager.fromConfig(config, { logger: root });
-  const tokenManager = ServerTokenManager.noop();
-  const taskScheduler = TaskScheduler.fromConfig(config);
+import * as path from 'path';
 
-  const identity = DefaultIdentityClient.create({
-    discovery,
-  });
-  const permissions = ServerPermissionClient.fromConfig(config, {
-    discovery,
-    tokenManager,
-  });
+import { configureCorporateProxyAgent } from './corporate-proxy';
+import { getDefaultServiceFactories } from './defaultServiceFactories';
+import {
+  healthCheckPlugin,
+  pluginIDProviderService,
+  rbacDynamicPluginsProvider,
+} from './modules';
 
-  root.info(`Created UrlReader ${reader}`);
-
-  return (plugin: string): PluginEnvironment => {
-    const logger = root.child({ type: 'plugin', plugin });
-    const database = databaseManager.forPlugin(plugin);
-    const cache = cacheManager.forPlugin(plugin);
-    const scheduler = taskScheduler.forPlugin(plugin);
-    return {
-      logger,
-      database,
-      cache,
-      config,
-      reader,
-      discovery,
-      tokenManager,
-      scheduler,
-      permissions,
-      identity,
-    };
-  };
-}
-
-async function main() {
-  const config = await loadBackendConfig({
-    argv: process.argv,
-    logger: getRootLogger(),
-  });
-  const createEnv = makeCreateEnv(config);
-
-  const catalogEnv = useHotMemoize(module, () => createEnv('catalog'));
-  const scaffolderEnv = useHotMemoize(module, () => createEnv('scaffolder'));
-  const authEnv = useHotMemoize(module, () => createEnv('auth'));
-  const proxyEnv = useHotMemoize(module, () => createEnv('proxy'));
-  const techdocsEnv = useHotMemoize(module, () => createEnv('techdocs'));
-  const searchEnv = useHotMemoize(module, () => createEnv('search'));
-  const appEnv = useHotMemoize(module, () => createEnv('app'));
-
-  const apiRouter = Router();
-  apiRouter.use('/catalog', await catalog(catalogEnv));
-  apiRouter.use('/scaffolder', await scaffolder(scaffolderEnv));
-  apiRouter.use('/auth', await auth(authEnv));
-  apiRouter.use('/techdocs', await techdocs(techdocsEnv));
-  apiRouter.use('/proxy', await proxy(proxyEnv));
-  apiRouter.use('/search', await search(searchEnv));
-
-  // Add backends ABOVE this line; this 404 handler is the catch-all fallback
-  apiRouter.use(notFoundHandler());
-
-  const service = createServiceBuilder(module)
-    .loadConfig(config)
-    .addRouter('/api', apiRouter)
-    .addRouter('', await app(appEnv));
-
-  await service.start().catch(err => {
-    console.log(err);
-    process.exit(1);
-  });
-}
-
-module.hot?.accept();
-main().catch(error => {
-  console.error('Backend failed to start up', error);
-  process.exit(1);
+// Create a logger to cover logging static initialization tasks
+const staticLogger = WinstonLogger.create({
+  meta: { service: 'developer-hub-init' },
 });
+staticLogger.info('Starting Developer Hub backend');
+
+// RHIDP-2217: adds support for corporate proxy
+configureCorporateProxyAgent();
+
+const backend = createBackend();
+
+const defaultServiceFactories = getDefaultServiceFactories({
+  logger: staticLogger,
+});
+defaultServiceFactories.forEach(serviceFactory => {
+  backend.add(serviceFactory);
+});
+
+backend.add(
+  dynamicPluginsFeatureLoader({
+    schemaLocator(pluginPackage) {
+      const platform = PackageRoles.getRoleInfo(
+        pluginPackage.manifest.backstage.role,
+      ).platform;
+      return path.join(
+        platform === 'node' ? 'dist' : 'dist-scalprum',
+        'configSchema.json',
+      );
+    },
+
+    moduleLoader: logger =>
+      new CommonJSModuleLoader({
+        logger,
+        // Customize dynamic plugin packager resolution to support the case
+        // of dynamic plugin wrapper packages.
+        customResolveDynamicPackage(
+          _,
+          searchedPackageName,
+          scannedPluginManifests,
+        ) {
+          for (const [realPath, pkg] of scannedPluginManifests.entries()) {
+            // A dynamic plugin wrapper package has a direct dependency to the wrapped package
+            if (
+              Object.keys(pkg.dependencies ?? {}).includes(searchedPackageName)
+            ) {
+              const searchPath = path.resolve(realPath, 'node_modules');
+              try {
+                const resolvedPath = require.resolve(
+                  `${searchedPackageName}/package.json`,
+                  {
+                    paths: [searchPath],
+                  },
+                );
+                logger.info(
+                  `Resolved '${searchedPackageName}' at ${resolvedPath}`,
+                );
+                return resolvedPath;
+              } catch (e) {
+                this.logger.error(
+                  `Error when resolving '${searchedPackageName}' with search path: '[${searchPath}]'`,
+                  e instanceof Error ? e : undefined,
+                );
+              }
+            }
+          }
+          return undefined;
+        },
+      }),
+  }),
+);
+
+if (
+  (process.env.ENABLE_STANDARD_MODULE_FEDERATION || '').toLocaleLowerCase() !==
+  'true'
+) {
+  // When the `dynamicPlugins` entry exists in the configuration, the upstream dynamic plugins backend feature loader
+  // also loads the `dynamicPluginsFrontendServiceRef` service that installs an http router to serve
+  // standard Module Federation assets for every installed dynamic frontend plugin.
+  // For now in RHDH the old frontend application doesn't use standard module federation and, by default,
+  // exported RHDH dynamic frontend plugins don't contain standard module federation assets.
+  // That's why we disable (bu overriding it with a noop) this service unless stadard module federation use
+  // is explicitly requested.
+  backend.add(
+    createServiceFactory({
+      service: dynamicPluginsFrontendServiceRef,
+      deps: {},
+      factory: () => ({
+        setResolverProvider() {},
+      }),
+    }),
+  );
+}
+
+backend.add(healthCheckPlugin);
+
+backend.add(import('@backstage/plugin-app-backend'));
+backend.add(
+  import('@backstage/plugin-catalog-backend-module-scaffolder-entity-model'),
+);
+
+// See https://backstage.io/docs/features/software-catalog/configuration#subscribing-to-catalog-errors
+backend.add(import('@backstage/plugin-catalog-backend-module-logs'));
+
+backend.add(import('@backstage/plugin-catalog-backend'));
+
+// TODO: Probably we should now provide this as a dynamic plugin
+backend.add(import('@backstage/plugin-catalog-backend-module-openapi'));
+
+backend.add(import('@backstage/plugin-proxy-backend'));
+
+// TODO: Check in the Scaffolder new backend plugin why the identity is not passed and the default is built instead.
+backend.add(import('@backstage/plugin-scaffolder-backend'));
+
+// search engine
+// See https://backstage.io/docs/features/search/search-engines
+backend.add(import('@backstage/plugin-search-backend-module-pg'));
+
+// search collators
+backend.add(import('@backstage/plugin-search-backend'));
+backend.add(import('@backstage/plugin-search-backend-module-catalog'));
+
+// TODO: We should test it more deeply. The structure is not exactly the same as the old backend implementation
+backend.add(import('@backstage/plugin-events-backend'));
+
+backend.add(import('@backstage/plugin-permission-backend'));
+backend.add(import('@backstage-community/plugin-rbac-backend'));
+backend.add(
+  import('@backstage-community/plugin-scaffolder-backend-module-annotator'),
+);
+backend.add(pluginIDProviderService);
+backend.add(rbacDynamicPluginsProvider);
+
+backend.add(import('@backstage/plugin-auth-backend'));
+backend.add(import('@backstage/plugin-auth-backend-module-guest-provider'));
+if (process.env.ENABLE_AUTH_PROVIDER_MODULE_OVERRIDE !== 'true') {
+  backend.add(import('./modules/authProvidersModule'));
+} else {
+  staticLogger.info(`Default authentication provider module disabled`);
+}
+
+backend.add(import('@internal/plugin-dynamic-plugins-info-backend'));
+backend.add(import('@internal/plugin-scalprum-backend'));
+backend.add(import('@internal/plugin-licensed-users-info-backend'));
+
+backend.start();

@@ -1,0 +1,28 @@
+name: Check Markdown links
+
+on:
+  pull_request:
+    paths:
+      - '**.md'
+      - 'docs/**'
+
+
+jobs:
+  markdown-link-check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Check markdown links in docs
+      uses: gaurav-nelson/github-action-markdown-link-check@v1
+      with:
+        config-file: '.github/workflows/link-checker.config.json'
+        folder-path: 'docs/'
+        ignore: "https://code.visualstudio.com/docs/nodejs/nodejs-debugging"  # Ignores known false positives
+
+    - name: Check markdown files in root
+      uses: gaurav-nelson/github-action-markdown-link-check@v1
+      with:
+        config-file: '.github/workflows/link-checker.config.json'
+        # ignore subfolders we don't want to check everthing, there is a lot of files from plugins that we don't control
+        max-depth: 0

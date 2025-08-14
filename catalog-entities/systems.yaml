@@ -1,0 +1,8 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: systems
+  description: A collection of all systems
+spec:
+  targets:
+    - ./systems/janus-idp.yaml

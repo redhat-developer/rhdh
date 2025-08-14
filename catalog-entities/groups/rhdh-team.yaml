@@ -1,0 +1,11 @@
+# NOTICE: In our internal Red Hat DevHub instance this groups are automatically imported due Rover/LDAP.
+# This is duplication is for the purpose of using this groups in another test or public Backstage instance.
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: rhdh-team
+  title: RHDH team
+spec:
+  type: team
+  children: []

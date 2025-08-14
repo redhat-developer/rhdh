@@ -1,0 +1,41 @@
+app:
+  title: Red Hat Developer Hub
+  baseUrl: http://localhost:7007
+organization:
+  name: My Org
+backend:
+  baseUrl: http://localhost:7007
+  listen:
+    port: 7007
+  csp:
+    connect-src:
+      - "'self'"
+      - 'http:'
+      - 'https:'
+  cors:
+    methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+    credentials: true
+  database:
+    client: better-sqlite3
+    connection: ':memory:'
+proxy:
+  skipInvalidProxies: true
+  endpoints: {}
+lighthouse:
+  baseUrl: temp
+dynatrace:
+  baseUrl: temp
+techdocs:
+  builder: external
+auth:
+  environment: development
+catalog:
+  import:
+    entityFilename: catalog-info.yaml
+    pullRequestBranchName: backstage-integration
+  rules:
+    - allow: [Component, System, Group, Resource, Location, Template, API]
+  locations:
+    # Note: integrations.github[].apps must be correctly configured to read GitHub locations
+    - type: file
+      target: ../../catalog-entities/all.yaml

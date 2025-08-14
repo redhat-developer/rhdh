@@ -1,0 +1,29 @@
+# please keep this in sync with packages/app/src/App.tsx
+dynamicPlugins:
+  frontend:
+    internal.plugin-dynamic-plugins-info:
+      appIcons:
+        - name: pluginsInfoIcon
+          importName: PluginsInfoIcon
+        - name: adminIcon
+          importName: AdminIcon
+      dynamicRoutes:
+        - path: /extensions
+          importName: DynamicPluginsInfoPage
+          menuItem:
+            text: Extensions
+            icon: pluginsInfoIcon
+      mountPoints:
+        - mountPoint: internal.plugins/tab
+          importName: DynamicPluginsInfoContent
+          config:
+            path: installed
+            title: Installed Plugins
+      menuItems:
+        admin:
+          title: Administration
+          icon: adminIcon
+        extensions:
+          parent: admin
+          title: Extensions
+          icon: pluginsInfoIcon

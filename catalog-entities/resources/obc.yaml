@@ -1,0 +1,15 @@
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: obc
+  title: S3 Object bucket storage
+  description: Amazon Simple Storage Service used for storing our built techdocs.
+  links:
+    - url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingBucket.html
+      title: Documentation
+      icon: web
+spec:
+  type: s3-bucket
+  lifecycle: production
+  owner: janus-authors
+  system: janus-idp

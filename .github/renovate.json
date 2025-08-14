@@ -1,0 +1,372 @@
+{
+  "extends": [
+    "config:js-app",
+    ":gitSignOff",
+    ":rebaseStalePrs",
+    "group:allNonMajor",
+    "default:pinDigestsDisabled",
+    ":automergeBranch"
+  ],
+  "labels": [
+    "kind/dependency upgrade"
+  ],
+  "npm": {
+    "minimumReleaseAge": "1 day"
+  },
+  "pip_requirements": {
+    "fileMatch": [
+      "requirements.*\\.in"
+    ]
+  },
+  "major": {
+    "dependencyDashboardApproval": true
+  },
+  "packageRules": [    
+    {
+      "matchCategories": [
+        "python"
+      ],
+      "groupName": "python  ",
+      "additionalBranchPrefix": "python ",
+      "dependencyDashboardApproval": true,
+      "description": "require dashboard approval for all python dependencies due to potential conflicts"
+    },
+    {
+      "description": "disable docker digest updates",
+      "matchCategories": [
+        "docker"
+      ],
+      "digest": {
+        "enabled": false
+      }
+    },   
+    {
+      "description": "Dockerfile non-major updates", 
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchUpdateTypes": [
+        "patch",
+        "minor"
+      ],      
+      "additionalBranchPrefix": "dockerfile ",        
+      "groupName": "Dockerfile images (non-major)",
+      "automerge": false
+    },  
+    {
+      "description": "Test Dockerfile non-major updates", 
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchUpdateTypes": [
+        "patch",
+        "minor"
+      ],      
+      "matchFileNames": [
+        ".ibm/images/**"
+      ],         
+      "additionalBranchPrefix": "test-dockerfile ",        
+      "groupName": "Test dockerfile images (non-major)",
+      "automerge": false
+    },      
+    {
+      "matchDepTypes": [
+        "devDependencies"
+      ],
+      "matchUpdateTypes": [
+        "patch",
+        "minor"
+      ],
+      "matchCurrentVersion": "!/^0/",
+      "groupName": "DevDependencies (non-major)",
+      "automerge": true
+    },
+    {
+      "matchDepTypes": [
+        "devDependencies"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "groupName": "DevDependencies "
+    },
+    {
+      "description": "Patch dependency updates", 
+      "matchDepTypes": [
+        "dependencies",
+        "peerDependencies"
+      ],
+      "groupName": "Dependencies (patch)",
+      "matchUpdateTypes": [
+        "patch"
+      ]
+    },
+    {
+      "description": "Minor dependency updates", 
+      "matchDepTypes": [
+        "dependencies",
+        "peerDependencies"
+      ],
+      "groupName": "Dependencies (minor)",
+      "matchUpdateTypes": [
+        "minor"
+      ]
+    },    
+    {
+      "description": "Major dependency updates", 
+      "matchDepTypes": [
+        "dependencies",
+        "peerDependencies"
+      ],
+      "groupName": "Dependencies",
+      "matchUpdateTypes": [
+        "major"
+      ]
+    },
+    {
+      "extends": [
+        "packages:test"
+      ],
+      "matchUpdateTypes": [
+        "patch",
+        "minor"
+      ],
+      "matchCurrentVersion": "!/^0/",
+      "groupName": "Test packages (non-major)",
+      "automerge": true
+    },
+    {
+      "extends": [
+        "packages:test"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "groupName": "Test packages "
+    },
+    {
+      "extends": [
+        "packages:linters"
+      ],
+      "matchUpdateTypes": [
+        "patch",
+        "minor"
+      ],
+      "matchCurrentVersion": "!/^0/",
+      "groupName": "linters  (non-major)",
+      "automerge": true
+    },
+    {
+      "extends": [
+        "packages:linters"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "groupName": "linters"
+    },
+    {
+      "extends": [
+        "monorepo:material-ui"
+      ],
+      "matchUpdateTypes": [
+        "patch",
+        "minor"
+      ],
+      "groupName": "material-ui (non-major)",
+      "automerge": true
+    },
+    {
+      "extends": [
+        "monorepo:material-ui"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "groupName": "material-ui"
+    },
+    {
+      "extends": [
+        "monorepo:react"
+      ],
+      "matchUpdateTypes": [
+        "patch",
+        "minor"
+      ],
+      "groupName": "react (non-major)",
+      "automerge": true
+    },
+    {
+      "extends": [
+        "monorepo:react"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "groupName": "react"
+    },
+    {
+      "extends": [
+        "monorepo:emotion"
+      ],
+      "matchUpdateTypes": [
+        "patch",
+        "minor"
+      ],
+      "groupName": "emotion (non-major)",
+      "automerge": true
+    },
+    {
+      "extends": [
+        "monorepo:emotion"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "groupName": "emotion"
+    },
+    {
+      "matchUpdateTypes": [
+        "patch",
+        "minor"
+      ],
+      "groupName": "types (non-major)",
+      "matchPackageNames": [
+        "@types/{/,}**"
+      ]
+    },
+    {
+      "extends": [
+        "monorepo:opentelemetry-js"
+      ],
+      "matchUpdateTypes": [
+        "patch",
+        "minor"
+      ],  
+      "groupName": "opentelemetry-js (non-major)",
+      "automerge": false      
+    },
+    { 
+      "extends": [
+        "monorepo:opentelemetry-js"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ], 
+      "groupName": "opentelemetry-js",
+      "automerge": false      
+    },
+    {
+      "extends": [
+        "monorepo:opentelemetry-js-contrib"
+      ],
+      "matchUpdateTypes": [
+        "patch",
+        "minor"
+      ],  
+      "groupName": "opentelemetry-js-contrib (non-major)",
+      "automerge": false      
+    },
+    { 
+      "extends": [
+        "monorepo:opentelemetry-js-contrib"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ], 
+      "groupName": "opentelemetry-js-contrib",
+      "automerge": false      
+    },    
+    {
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "groupName": "types ",
+      "matchPackageNames": [
+        "@types/{/,}**"
+      ]
+    },
+    {
+      "description": "disable major and minor updates for Winston",
+      "matchPackageNames": [
+        "winston"
+      ],
+      "enabled": false,
+      "matchUpdateTypes": [
+        "major",
+        "minor"
+      ]
+    },
+    {
+      "description": "disable major and minor updates for Zod",
+      "matchPackageNames": [
+        "zod"
+      ],
+      "enabled": false,
+      "matchUpdateTypes": [
+        "major",
+        "minor"
+      ]
+    },    
+    {
+      "description": "react-router-dom: group all dependencies",
+      "matchPackageNames": [
+        "react-router-dom"
+      ],
+      "matchDepTypes": [
+        "dependencies",
+        "peerDependencies",
+        "devDependencies"
+      ],
+      "groupName": "all react-router-dom dependencies"
+    },
+    {
+      "description": "Keep yarn updates separate",
+      "matchDepNames": [
+        "yarn"
+      ],
+      "groupName": "yarn updates"
+    },    
+    {
+      "description": "ignore updates to all backstage updates and 3rd party plugins",
+      "groupName": "Backstage packages",
+      "dependencyDashboardApproval": true,
+      "enabled": false,
+      "matchPackageNames": [
+        "/^@backstage//",
+        "/^@backstage-community//",
+        "/^@immobiliarelabs//",
+        "/^@red-hat-developer-hub//",
+        "/^@roadiehq//",
+        "/^@pagerduty//",
+        "/^@internal//"
+      ]
+    },
+    {
+      "description": "patch and minor updates for the janus cli",
+      "groupName": "janus cli updates",
+      "matchPackageNames": [
+        "@janus-idp/cli"
+      ],
+      "matchDepTypes": [
+        "dependencies",
+        "peerDependencies",
+        "devDependencies"
+      ],
+      "matchUpdateTypes": [
+        "patch",
+        "minor"
+      ]      
+    }
+  ],
+  "ignorePaths": [
+    "**/dist-dynamic/**"
+  ],
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "addLabels": [
+      "kind/security"
+    ]
+  },
+  "osvVulnerabilityAlerts": true
+}

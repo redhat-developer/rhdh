@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "lib": ["es2020", "dom"],
+    "types": ["@playwright/test", "node"],
+    "esModuleInterop": true,
+    "skipLibCheck": true /* Skip type checking all .d.ts files. */,
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "noEmit": true
+  },
+  "include": ["**/*.ts"]
+}

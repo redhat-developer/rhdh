@@ -1,0 +1,503 @@
+global:
+  dynamic:
+    # -- Array of YAML files listing dynamic plugins to include with those listed in the `plugins` field.
+    # Relative paths are resolved from the working directory of the initContainer that will install the plugins (`/opt/app-root/src`).
+    includes:
+      # -- List of dynamic plugins included inside the `rhdh-community/rhdh` container image, some of which are disabled by default.
+      # This file ONLY works with the `rhdh-community/rhdh` container image.
+      - 'dynamic-plugins.default.yaml'
+
+    # -- List of dynamic plugins, possibly overriding the plugins listed in `includes` files.
+    # Every item defines the plugin `package` as a [NPM package spec](https://docs.npmjs.com/cli/v10/using-npm/package-spec),
+    # an optional `pluginConfig` with plugin-specific backstage configuration, and an optional `disabled` flag to disable/enable a plugin
+    # listed in `includes` files. It also includes an `integrity` field that is used to verify the plugin package [integrity](https://w3c.github.io/webappsec-subresource-integrity/#integrity-metadata-description).
+    plugins:
+      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import-backend-dynamic
+        disabled: false
+      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import
+        disabled: false
+        pluginConfig:
+          dynamicPlugins:
+            frontend:
+              red-hat-developer-hub.backstage-plugin-bulk-import:
+                appIcons:
+                  - name: bulkImportIcon
+                    importName: BulkImportIcon
+                dynamicRoutes:
+                  - path: /bulk-import/repositories
+                    importName: BulkImportPage
+                    menuItem:
+                      icon: bulkImportIcon
+                      text: Bulk import
+      # - package: ./dynamic-plugins/dist/backstage-plugin-kubernetes-backend-dynamic
+      #   disabled: false
+      #   pluginConfig:
+      #     kubernetes:
+      #       customResources:
+      #         - group: 'tekton.dev'
+      #           apiVersion: 'v1beta1'
+      #           plural: 'pipelines'
+      #         - group: 'tekton.dev'
+      #           apiVersion: 'v1beta1'
+      #           plural: 'pipelineruns'
+      #         - group: 'tekton.dev'
+      #           apiVersion: 'v1beta1'
+      #           plural: 'taskruns'
+      #         - group: 'route.openshift.io'
+      #           apiVersion: 'v1'
+      #           plural: 'routes'
+      #       serviceLocatorMethod:
+      #         type: 'multiTenant'
+      #       clusterLocatorMethods:
+      #         - type: 'config'
+      #           clusters:
+      #             - name: ${K8S_CLUSTER_NAME}
+      #               url: ${K8S_CLUSTER_URL}
+      #               authProvider: 'serviceAccount'
+      #               skipTLSVerify: true
+      #               serviceAccountToken: ${K8S_CLUSTER_TOKEN}
+      # - package: ./dynamic-plugins/dist/backstage-plugin-kubernetes
+      #   disabled: false
+      #   pluginConfig:
+      #     dynamicPlugins:
+      #       frontend:
+      #         backstage.plugin-kubernetes:
+      #           mountPoints:
+      #             - mountPoint: entity.page.kubernetes/cards
+      #               importName: EntityKubernetesContent
+      #               config:
+      #                 layout:
+      #                   gridColumn: "1 / -1"
+      #                 if:
+      #                   anyOf:
+      #                     - hasAnnotation: backstage.io/kubernetes-id
+      #                     - hasAnnotation: backstage.io/kubernetes-namespace
+      # - package: ./dynamic-plugins/dist/backstage-community-plugin-topology
+      #   disabled: false
+      #   pluginConfig:
+      #     dynamicPlugins:
+      #       frontend:
+      #         backstage-community.plugin-topology:
+      #           mountPoints:
+      #             - mountPoint: entity.page.topology/cards
+      #               importName: TopologyPage
+      #               config:
+      #                 layout:
+      #                   gridColumn: "1 / -1"
+      #                   height: 75vh
+      #                 if:
+      #                   anyOf:
+      #                     - hasAnnotation: backstage.io/kubernetes-id
+      #                     - hasAnnotation: backstage.io/kubernetes-namespace
+      # - package: ./dynamic-plugins/dist/backstage-community-plugin-tekton
+      #   disabled: false
+      #   pluginConfig:
+      #     dynamicPlugins:
+      #       frontend:
+      #         backstage-community.plugin-tekton:
+      #           mountPoints:
+      #             - mountPoint: entity.page.ci/cards
+      #               importName: TektonCI
+      #               config:
+      #                 layout:
+      #                   gridColumn: "1 / -1"
+      #                 if:
+      #                   allOf:
+      #                     - isTektonCIAvailable
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-quay
+        disabled: false
+        pluginConfig:
+          dynamicPlugins:
+            frontend:
+              backstage-community.plugin-quay:
+                mountPoints:
+                  - mountPoint: entity.page.image-registry/cards
+                    importName: QuayPage
+                    config:
+                      layout:
+                        gridColumn: 1 / -1
+                      if:
+                        anyOf:
+                        - isQuayAvailable
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-tech-radar
+        disabled: false
+        pluginConfig:
+          dynamicPlugins:
+            frontend:
+              backstage-community.plugin-tech-radar:
+                apiFactories:
+                  - importName: TechRadarApi
+                appIcons:
+                  - name: techRadar
+                    importName: TechRadarIcon
+                dynamicRoutes:
+                  - path: /tech-radar
+                    importName: TechRadarPage
+                    menuItem:
+                      icon: techRadar
+                      text: Tech Radar
+                    config:
+                      props:
+                        width: 1500
+                        height: 800
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
+        disabled: false
+        pluginConfig:
+          dynamicPlugins:
+            frontend:
+              backstage-community.plugin-rbac:
+                mountPoints:
+                  - mountPoint: admin.page.rbac/cards
+                    importName: RbacPage
+                    config:
+                      layout:
+                        gridColumn: "1 / -1"
+                        width: 100vw
+                      props:
+                        useHeader: false
+                dynamicRoutes:
+                  - path: /admin/rbac
+                    importName: RbacPage
+      # - package: ./dynamic-plugins/dist/backstage-community-plugin-ocm-backend-dynamic
+      #   disabled: false
+      # - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-keycloak-dynamic
+      #   disabled: false
+      #   pluginConfig:
+      #     catalog:
+      #       providers:
+      #         keycloakOrg:
+      #           default:
+      #             baseUrl: "${KEYCLOAK_BASE_URL}"
+      #             loginRealm: "${KEYCLOAK_LOGIN_REALM}"
+      #             realm: "${KEYCLOAK_REALM}"
+      #             clientId: "${KEYCLOAK_CLIENT_ID}"
+      #             clientSecret: "${KEYCLOAK_CLIENT_SECRET}"
+      #             schedule:
+      #               frequency:
+      #                 minutes: 1
+      #               initialDelay:
+      #                 seconds: 15
+      #               timeout:
+      #                 minutes: 1
+      # - package: ./dynamic-plugins/dist/backstage-community-plugin-ocm
+      #   disabled: false
+      #   pluginConfig:
+      #     dynamicPlugins:
+      #       frontend:
+      #         backstage-community.plugin-ocm:
+      #           appIcons:
+      #             - name: ocmIcon
+      #               importName: OcmIcon
+      #           dynamicRoutes:
+      #             - path: /ocm
+      #               importName: OcmPage
+      #               menuItem:
+      #                 icon: ocmIcon
+      #                 text: Clusters
+      #           mountPoints:
+      #             - mountPoint: entity.page.overview/context
+      #               importName: ClusterContextProvider
+      #             - mountPoint: entity.page.overview/cards
+      #               importName: ClusterAvailableResourceCard
+      #               config:
+      #                 layout:
+      #                   gridColumnEnd:
+      #                     lg: "span 4"
+      #                     md: "span 6"
+      #                     xs: "span 12"
+      #                 if:
+      #                   allOf:
+      #                   - isKind: resource
+      #                   - isType: kubernetes-cluster
+      #             - mountPoint: entity.page.overview/cards
+      #               importName: ClusterInfoCard
+      #               config:
+      #                 layout:
+      #                   gridColumnEnd:
+      #                     lg: "span 4"
+      #                     md: "span 6"
+      #                     xs: "span 12"
+      #                 if:
+      #                   allOf:
+      #                   - isKind: resource
+      #                   - isType: kubernetes-cluster
+  # -- Shorthand for users who do not want to specify a custom HOSTNAME. Used ONLY with the DEFAULT upstream.backstage.appConfig value and with OCP Route enabled.
+  clusterRouterBase: "apps-crc.testing"
+  # -- Custom hostname shorthand, overrides `global.clusterRouterBase`, `upstream.ingress.host`, `route.host`, and url values in `upstream.backstage.appConfig`.
+  host: ""
+  # -- Enable service authentication within Backstage instance
+  auth:
+    # -- Backend service to service authentication
+    # <br /> Ref: https://backstage.io/docs/auth/service-to-service-auth/
+    backend:
+      # -- Enable backend service to service authentication, unless configured otherwise it generates a secret value
+      enabled: true
+      # -- Instead of generating a secret value, refer to existing secret
+      existingSecret: ""
+      # -- Instead of generating a secret value, use the following value
+      value: ""
+
+# -- Upstream Backstage [chart configuration](https://github.com/backstage/charts/blob/main/charts/backstage/values.yaml)
+# @default -- Use Openshift compatible settings
+upstream:
+  nameOverride: backstage
+  backstage:
+    image:
+      registry: quay.io
+      repository: rhdh-community/rhdh
+      tag: pr-1541
+    command: []
+    # FIXME (tumido): USE POSTGRES_PASSWORD and POSTGRES_USER instead of POSTGRES_ADMIN_PASSWORD
+    # This is a hack. In {fedora,rhel}/postgresql images, regular user is forbidden
+    # from creating DBs in runtime. A single DB can be created ahead of time via
+    # POSTGRESQL_DATABASE env variable (in this case via
+    # upstream.postgresql.primary.extraEnvVars value), but this doesn't allow us to
+    # create multiple DBs. Since Backstage requires by default 5 different DBs, we
+    # can't accommodate that properly.
+    appConfig:
+      app:
+        # Please update to match host in case you don't want to configure hostname via `global.clusterRouterBase` or `global.host` if not deploying on an openshift cluster.
+        baseUrl: 'https://{{- include "janus-idp.hostname" . }}'
+      backend:
+        baseUrl: 'https://{{- include "janus-idp.hostname" . }}'
+        cors:
+          origin: 'https://{{- include "janus-idp.hostname" . }}'
+        database:
+          connection:
+            password: ${POSTGRESQL_ADMIN_PASSWORD}
+            user: postgres
+        auth:
+          externalAccess:
+            - type: legacy
+              options:
+                subject: legacy-default-config
+                secret: ${BACKEND_SECRET}
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: ["ALL"]
+      runAsNonRoot: true
+      seccompProfile:
+        type: "RuntimeDefault"
+    resources:
+      requests:
+        cpu: 250m
+        memory: 1Gi
+      limits:
+        cpu: 1000m
+        memory: 2.5Gi
+        ephemeral-storage: 5Gi
+    readinessProbe:
+      failureThreshold: 3
+      httpGet:
+        path: /healthcheck
+        port: 7007
+        scheme: HTTP
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      successThreshold: 2
+      timeoutSeconds: 2
+    livenessProbe:
+      failureThreshold: 3
+      httpGet:
+        path: /healthcheck
+        port: 7007
+        scheme: HTTP
+      initialDelaySeconds: 60
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 2
+    extraAppConfig:
+      - configMapRef: app-config-rhdh
+        filename: app-config-rhdh.yaml
+    extraEnvVarsSecrets:
+      - rhdh-secrets
+    extraEnvVars:
+      - name: BACKEND_SECRET
+        valueFrom:
+          secretKeyRef:
+            key: backend-secret
+            name: '{{ include "janus-idp.backend-secret-name" $ }}'
+      - name: POSTGRESQL_ADMIN_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            key: postgres-password
+            name: '{{- include "janus-idp.postgresql.secretName" . }}'
+      - name: NODE_TLS_REJECT_UNAUTHORIZED
+        value: '0'
+    args:
+      # This additional `app-config`` file is generated by the initContainer below, and contains the merged configuration of installed dynamic plugins.
+      - '--config'
+      - dynamic-plugins-root/app-config.dynamic-plugins.yaml
+    extraVolumeMounts:
+      # The initContainer below will install dynamic plugins in this volume mount.
+      - name: dynamic-plugins-root
+        mountPath: /opt/app-root/src/dynamic-plugins-root
+      # Audit Log data will be stored in this volume mount.
+      - name: audit-log-data
+        mountPath: /var/log/redhat-developer-hub/audit
+      - mountPath: /opt/app-root/src/rbac
+        name: rbac-policy
+    extraVolumes:
+      # -- Ephemeral volume that will contain the dynamic plugins installed by the initContainer below at start.
+      - name: dynamic-plugins-root
+        ephemeral:
+          volumeClaimTemplate:
+            spec:
+              accessModes:
+                - ReadWriteOnce
+              resources:
+                requests:
+                  # -- Size of the volume that will contain the dynamic plugins. It should be large enough to contain all the plugins.
+                  storage: 2Gi
+      - name: audit-log-data
+        persistentVolumeClaim:
+          claimName: '{{ printf "%s-audit-log" .Release.Name }}'
+      # Volume that will expose the `dynamic-plugins.yaml` file from the `dynamic-plugins` config map.
+      # The `dynamic-plugins` config map is created by the helm chart from the content of the `global.dynamic` field.
+      - name: dynamic-plugins
+        configMap:
+          defaultMode: 420
+          name: '{{ printf "%s-dynamic-plugins" .Release.Name }}'
+          optional: true
+      # Optional volume that allows exposing the `.npmrc` file (through a `dynamic-plugins-npmrc` secret)
+      # to be used when running `npm pack` during the dynamic plugins installation by the initContainer.
+      - name: dynamic-plugins-npmrc
+        secret:
+          defaultMode: 420
+          optional: true
+          secretName: dynamic-plugins-npmrc
+      - configMap:
+          defaultMode: 420
+          name: rbac-policy
+        name: rbac-policy
+      - name: npmcacache
+        emptyDir: {}
+    initContainers:
+      - name: install-dynamic-plugins
+        resources:
+          requests:
+            cpu: 250m
+            memory: 256Mi
+          limits:
+            cpu: 1000m
+            memory: 2.5Gi
+            ephemeral-storage: 5Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["ALL"]
+          runAsNonRoot: true
+          seccompProfile:
+            type: "RuntimeDefault"
+        # -- Image used by the initContainer to install dynamic plugins into the `dynamic-plugins-root` volume mount.
+        # It could be replaced by a custom image based on this one.
+        # @default -- `quay.io/rhdh-community/rhdh:latest`
+        image: '{{ include "backstage.image" . }}'
+        command:
+          - ./install-dynamic-plugins.sh
+          - /dynamic-plugins-root
+        env:
+          - name: NPM_CONFIG_USERCONFIG
+            value: /opt/app-root/src/.npmrc.dynamic-plugins
+        imagePullPolicy: Always
+        volumeMounts:
+          - mountPath: /dynamic-plugins-root
+            name: dynamic-plugins-root
+          - mountPath: /opt/app-root/src/dynamic-plugins.yaml
+            name: dynamic-plugins
+            readOnly: true
+            subPath: dynamic-plugins.yaml
+          - mountPath: /opt/app-root/src/.npmrc.dynamic-plugins
+            name: dynamic-plugins-npmrc
+            readOnly: true
+            subPath: .npmrc
+          - mountPath: /opt/app-root/src/.npm/_cacache
+            name: npmcacache
+        workingDir: /opt/app-root/src
+    installDir: /opt/app-root/src
+    podAnnotations:
+      checksum/dynamic-plugins: >-
+        {{- include "common.tplvalues.render" ( dict "value"
+        .Values.global.dynamic "context" $) | sha256sum }}
+  postgresql:
+    enabled: true
+    postgresqlDataDir: /var/lib/pgsql/data/userdata
+    image:
+      registry: quay.io
+      repository: fedora/postgresql-15
+      tag: latest
+    auth:
+      secretKeys:
+        adminPasswordKey: postgres-password
+        userPasswordKey: password
+    primary:
+      # TODO: https://issues.redhat.com/browse/RHIDP-2645
+      podSecurityContext:
+        enabled: false
+      containerSecurityContext:
+        enabled: false
+      resources:
+        requests:
+          cpu: 250m
+          memory: 256Mi
+        limits:
+          cpu: 250m
+          memory: 1024Mi
+          ephemeral-storage: 20Mi
+      persistence:
+        enabled: true
+        size: 1Gi
+        mountPath: /var/lib/pgsql/data
+      extraEnvVars:
+        - name: POSTGRESQL_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: postgres-password
+              name: '{{- include "postgresql.v1.secretName" . }}'
+  ingress:
+    host: "{{ .Values.global.host }}"
+
+# -- OpenShift Route parameters
+route:
+  # -- Route specific annotations
+  annotations: {}
+
+  # -- Enable the creation of the route resource
+  enabled: true
+
+  # -- Set the host attribute to a custom value. If not set, OpenShift will generate it, please make sure to match your baseUrl
+  host: "{{ .Values.global.host }}"
+
+  # -- Path that the router watches for, to route traffic for to the service.
+  path: "/"
+
+  # -- Wildcard policy if any for the route. Currently only 'Subdomain' or 'None' is allowed.
+  wildcardPolicy: None
+
+  # -- Route TLS parameters
+  # <br /> Ref: https://docs.openshift.com/container-platform/4.9/networking/routes/secured-routes.html
+  tls:
+    # -- Enable TLS configuration for the host defined at `route.host` parameter
+    enabled: true
+
+    # -- Specify TLS termination.
+    termination: "edge"
+
+    # -- Certificate contents
+    certificate: ""
+
+    # -- Key file contents
+    key: ""
+
+    # -- Cert authority certificate contents. Optional
+    caCertificate: ""
+
+    # -- Contents of the ca certificate of the final destination.
+    # <br /> When using reencrypt termination this file should be provided in order to have routers use it for health checks on the secure connection. If this field is not specified, the router may provide its own destination CA and perform hostname validation using the short service name (service.namespace.svc), which allows infrastructure generated certificates to automatically verify.
+    destinationCACertificate: ""
+
+    # --  Indicates the desired behavior for insecure connections to a route.
+    # <br /> While each router may make its own decisions on which ports to expose, this is normally port 80. The only valid values are None, Redirect, or empty for disabled.
+    insecureEdgeTerminationPolicy: "Redirect"
+

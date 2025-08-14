@@ -1,0 +1,18 @@
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: nexus-repo-manager3
+  title: Nexus Repo Manager 3
+  description: |
+    This is the Nexus Manager 3 API based on the OpenAPI 2.0 specification.  You can find out more about
+    Swagger at [https://swagger.io](https://swagger.io).
+  links:
+    - title: Nexus Repo Manager 3
+      url: https://help.sonatype.com/repomanager3
+spec:
+  type: openapi
+  system: janus-idp
+  owner: janus-authors
+  lifecycle: production
+  definition:
+    $openapi: https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/apis/nexus-swagger.json

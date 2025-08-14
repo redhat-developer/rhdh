@@ -1,0 +1,7 @@
+NOTE: If you rename any of the tests in this folder, or want to add new required ones, please remember to submit a PR against the link:https://github.com/openshift/release[openshift/releases] repo with the updated list of `required_status_checks` for pull requests.
+
+For example:
+
+* link:https://github.com/openshift/release/tree/master/core-services/prow/02_config/janus-idp/[core-services/prow/02_config/janus-idp/]
+* link:https://github.com/openshift/release/tree/master/core-services/prow/02_config/redhat-developer[core-services/prow/02_config/redhat-developer]
+

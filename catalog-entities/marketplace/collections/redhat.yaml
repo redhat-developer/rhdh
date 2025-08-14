@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/collections.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: PluginCollection
+metadata:
+  name: redhat
+  namespace: rhdh
+  title: Plugins build by Red Hat
+  description: ''
+  tags: []
+spec:
+  # filter based collections are not implemented yet!!!
+  type: filter-based
+  filter:
+    metadata.authors.name: Red Hat

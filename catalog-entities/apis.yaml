@@ -1,0 +1,9 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: apis
+  description: A collection of all apis
+spec:
+  targets:
+    - ./apis/petstore.yaml
+    - ./apis/nexus-repo-manager-3.yaml

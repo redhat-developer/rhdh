@@ -1,26 +1,52 @@
+developerHub:
+  flavor: rhdh
 app:
-  title: Scaffolded Backstage App
+  title: Red Hat Developer Hub
   baseUrl: http://localhost:3000
+  branding:
+    fullLogoWidth: ${FULL_LOGO_WIDTH}
+    theme:
+      light:
+        primaryColor: ${PRIMARY_LIGHT_COLOR}
+        headerColor1: ${HEADER_LIGHT_COLOR_1}
+        headerColor2: ${HEADER_LIGHT_COLOR_2}
+        navigationIndicatorColor: ${NAV_INDICATOR_LIGHT_COLOR}
+      dark:
+        primaryColor: ${PRIMARY_DARK_COLOR}
+        headerColor1: ${HEADER_DARK_COLOR_1}
+        headerColor2: ${HEADER_DARK_COLOR_2}
+        navigationIndicatorColor: ${NAV_INDICATOR_DARK_COLOR}
 
 organization:
-  name: My Company
+  name: ${ORGANIZATION_NAME}
 
 backend:
-  # Used for enabling authentication, secret is shared by all backend plugins
-  # See https://backstage.io/docs/tutorials/backend-to-backend-auth for
+  # Required for authentication. This secret is shared by all backend plugins.
+  # In development mode a temporary secret is automatically created.
+  # See https://backstage.io/docs/auth/service-to-service-auth for
   # information on the format
   # auth:
   #   keys:
-  #     - secret: ${BACKEND_SECRET}
+  #     - secret: ${BACKEND_AUTH_SECRET}
   baseUrl: http://localhost:7007
   listen:
     port: 7007
     # Uncomment the following host directive to bind to specific interfaces
     # host: 127.0.0.1
   csp:
-    connect-src: ["'self'", 'http:', 'https:']
     # Content-Security-Policy directives follow the Helmet format: https://helmetjs.github.io/#reference
     # Default Helmet Content-Security-Policy values can be removed by setting the key to false
+    connect-src:
+      - "'self'"
+      - 'http:'
+      - 'https:'
+    # Plugin: Jira
+    img-src:
+      # "'self'" and 'data' are from the backstage default but must be set since img-src is overwritten
+      - "'self'"
+      - 'data:'
+      # Allow your Jira instance for @roadiehq/backstage-plugin-jira
+      - ${JIRA_URL}
   cors:
     origin: http://localhost:3000
     methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
@@ -30,44 +56,89 @@ backend:
   database:
     client: better-sqlite3
     connection: ':memory:'
-  cache:
-    store: memory
   # workingDirectory: /tmp # Use this to configure a working directory for the scaffolder, defaults to the OS temp-dir
 
-integrations:
-  github:
-    - host: github.com
-      # This is a Personal Access Token or PAT from GitHub. You can find out how to generate this token, and more information
-      # about setting up the GitHub integration here: https://backstage.io/docs/getting-started/configuration#setting-up-a-github-integration
-      token: ${GITHUB_TOKEN}
-    ### Example for how to add your GitHub Enterprise instance using the API:
-    # - host: ghe.example.net
-    #   apiBaseUrl: https://ghe.example.net/api/v3
-    #   token: ${GHE_TOKEN}
+# proxy:
+#   endpoints:
+#     # Plugin: Quay
+#     '/quay/api':
+#       target: https://quay.io/
+#       headers:
+#         X-Requested-With: 'XMLHttpRequest'
+#         # Uncomment the following line to access a private Quay Repository using a token
+#         # Authorization: 'Bearer <YOUR TOKEN>'
+#       changeOrigin: true
+#       secure: true
 
-proxy:
-  ### Example for how to add a proxy endpoint for the frontend.
-  ### A typical reason to do this is to handle HTTPS and CORS for internal services.
-  # '/test':
-  #   target: 'https://example.com'
-  #   changeOrigin: true
+#     # Plugin: SonarQube
+#     '/sonarqube':
+#       # if not using sonarqube, assign SONARQUBE_URL to https://sonarcloud.io
+#       # target: https://sonarcloud.io/api
+#       target: ${SONARQUBE_URL}/api
+#       allowedMethods: ['GET']
+#       auth: ${SONARQUBE_TOKEN}
 
-# Reference documentation http://backstage.io/docs/features/techdocs/configuration
-# Note: After experimenting with basic setup, use CI/CD to generate docs
-# and an external cloud storage when deploying TechDocs for production use-case.
-# https://backstage.io/docs/features/techdocs/how-to-guides#how-to-migrate-from-techdocs-basic-to-recommended-deployment-approach
-techdocs:
-  builder: 'local' # Alternatives - 'external'
-  generator:
-    runIn: 'docker' # Alternatives - 'local'
-  publisher:
-    type: 'local' # Alternatives - 'googleGcs' or 'awsS3'. Read documentation for using alternatives.
+#     # Plugin: Jenkins
+#     '/jenkins/api':
+#       target: ${JENKINS_URL}
+#       headers:
+#         Authorization: ${JENKINS_TOKEN}
 
-auth:
-  # see https://backstage.io/docs/auth/ to learn about auth providers
-  providers: {}
+#     # Plugin: Jira
+#     '/jira/api':
+#       target: ${JIRA_URL}
+#       headers:
+#         Authorization: ${JIRA_TOKEN}
+#         Accept: 'application/json'
+#         Content-Type: 'application/json'
+#         X-Atlassian-Token: 'no-check'
+#         User-Agent: ${JIRA_USER_AGENT}
+
+#     # Plugin: ACR
+#     '/acr/api':
+#       target: ${ACR_URL}
+#       changeOrigin: true
+#       headers:
+#         # If you use Bearer Token for authorization, please replace the 'Basic' with 'Bearer' in the following line.
+#         Authorization: 'Bearer ${ACR_AUTH_TOKEN}'
+#       # Change to "false" in case of using self hosted artifactory instance with a self-signed certificate
+#       secure: true
+
+#     # Plugin: Jfrog Artifactory
+#     '/jfrog-artifactory/api':
+#       target: ${ARTIFACTORY_URL}
+#       headers:
+#         Authorization: Bearer ${ARTIFACTORY_TOKEN}
+#       # Change to "false" in case of using self hosted artifactory instance with a self-signed certificate
+#       secure: ${ARTIFACTORY_SECURE}
+
+#     # Plugin: PagerDuty
+#     '/pagerduty':
+#       target: https://api.pagerduty.com
+#       headers:
+#         Authorization: Token token=${PAGERDUTY_TOKEN}
+
+#     # Plugin: Dynatrace
+#     '/dynatrace':
+#       target: ${DYNATRACE_API_URL}
+#       headers:
+#         # This API access token requires entities.read and problems.read permissions
+#         # For more info on how to generate this token: https://www.dynatrace.com/support/help/dynatrace-api/basics/dynatrace-api-authentication
+#         Authorization: 'Api-Token ${DYNATRACE_ACCESS_TOKEN}'
+
+#     # Plugin: Nexus Repository Manager
+#     '/nexus-repository-manager':
+#       target: ${NEXUS_REPOSITORY_MANAGER_URL}
+#       headers:
+#         X-Requested-With: 'XMLHttpRequest'
+#         # Uncomment the following line to access a private Nexus Repository Manager using a token
+#         # Authorization: 'Bearer <NEXUS_REPOSITORY_MANAGER_TOKEN>'
+#       changeOrigin: true
+#       # Change to "false" in case of using self hosted Nexus Repository Manager instance with a self-signed certificate
+#       secure: ${NEXUS_REPOSITORY_MANAGER_SECURE}
 
 scaffolder:
+  {}
   # see https://backstage.io/docs/features/software-templates/configuration for software template options
 
 catalog:
@@ -75,30 +146,30 @@ catalog:
     entityFilename: catalog-info.yaml
     pullRequestBranchName: backstage-integration
   rules:
-    - allow: [Component, System, API, Resource, Location]
+    - allow: [Component, System, Group, Resource, Location, Template, API]
   locations:
-    # Local example data, file locations are relative to the backend process, typically `packages/backend`
-    - type: file
-      target: ../../examples/entities.yaml
+    - type: url
+      target: https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/all.yaml
 
-    # Local example template
-    - type: file
-      target: ../../examples/template/template.yaml
-      rules:
-        - allow: [Template]
+    - type: url
+      target: https://github.com/redhat-developer/red-hat-developer-hub-software-templates/blob/main/templates.yaml
 
-    # Local example organizational data
-    - type: file
-      target: ../../examples/org.yaml
-      rules:
-        - allow: [User, Group]
+# Plugin: PagerDuty
+pagerduty:
+  # uncomment the following, and provide a URL to override the default URL used for events
+  # eventsBaseUrl: <PagerDuty Event URL>
 
-    ## Uncomment these lines to add more example data
-    # - type: url
-    #   target: https://github.com/backstage/backstage/blob/master/packages/catalog-model/examples/all.yaml
+# Plugin: Lighthouse
+lighthouse:
+  baseUrl: ${LIGHTHOUSE_BASEURL}
 
-    ## Uncomment these lines to add an example org
-    # - type: url
-    #   target: https://github.com/backstage/backstage/blob/master/packages/catalog-model/examples/acme-corp.yaml
-    #   rules:
-    #     - allow: [User, Group]
+# Plugin: Dynatrace
+dynatrace:
+  baseUrl: ${DYNATRACE_URL}
+
+# Plugin: Permission
+permission:
+  enabled: ${PERMISSION_ENABLED}
+
+dynamicPlugins:
+  rootDirectory: dynamic-plugins-root

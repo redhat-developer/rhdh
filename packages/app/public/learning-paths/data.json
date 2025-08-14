@@ -1,0 +1,357 @@
+[
+  {
+    "paths": 6,
+    "minutes": 20,
+    "description": "Learn about k8s API fundamentals and the etcd operator, as well as how to use the Operator SDK with Go and Helm, review Ansible basics, and use Ansible to deploy Kubernetes modules.",
+    "label": "Building Operators on OpenShift",
+    "url": "https://developers.redhat.com/learn/openshift/operators"
+  },
+  {
+    "paths": 3,
+    "minutes": 20,
+    "description": "For the best experience in this learning path, we suggest that you complete the following learning resources in the order shown. When you click on a resource, it will open in a new tab. Keep this page open so you can easily move on to the next resource!",
+    "label": "Configure a Jupyter notebook to use GPUs for AI/ML modeling",
+    "url": "https://developers.redhat.com/learn/openshift-data-science/configure-jupyter-notebook-use-gpus-aiml-modeling"
+  },
+  {
+    "paths": 20,
+    "hours": 7,
+    "minutes": 40,
+    "description": "This hands on experience will introduce you to developing on OpenShift. Learn how to access OpenShift from the command line, deploy an existing Spring application, and scale up your application to handle increased web traffic.",
+    "label": "Deploy a Spring application on OpenShift",
+    "url": "https://developers.redhat.com/learn/openshift/deploy-spring-application-openshift"
+  },
+  {
+    "paths": 8,
+    "hours": 1,
+    "description": "Follow these step-by-step instructions to get started with OpenShift API Management, and deploy and test your first API.",
+    "label": "Deploy and manage your first API",
+    "url": "https://developers.redhat.com/learn/deploy-and-manage-your-first-api"
+  },
+  {
+    "paths": 5,
+    "hours": 1,
+    "description": "Continue your Apache Kafka journey by developing consumers and producers in Java to stream data using Red Hat OpenShift Streams for Apache Kafka.",
+    "label": "Develop consumers and producers in Java",
+    "url": "https://developers.redhat.com/learn/openshift-streams-for-apache-kafka/develop-consumers-and-producers-java"
+  },
+  {
+    "paths": 2,
+    "hours": 1,
+    "minutes": 15,
+    "description": "Get started with Camel K by learning the basics and exploring how Camel K relates to API integration, serverless and event-driven applications, and Kafka Connectors.",
+    "label": "Develop with Camel K",
+    "url": "https://developers.redhat.com/learn/camel-k"
+  },
+  {
+    "paths": 5,
+    "hours": 2,
+    "description": "Use GitOps and OpenShift Pipelines to implement Kubernetes-native CI/CD, automate and manage app deployment.\r\nDeveloped by Christian Hernandez, Natale Vinto, and Dewan Ahmed",
+    "label": "Develop with GitOps",
+    "url": "https://developers.redhat.com/learn/openshift/develop-gitops"
+  },
+  {
+    "paths": 6,
+    "hours": 1,
+    "minutes": 15,
+    "description": "Learn how to access an OpenShift cluster, manage apps with the odo command-line tool, then try image and source-based deployment techniques.",
+    "label": "Developing on OpenShift",
+    "url": "https://developers.redhat.com/learn/openshift/develop-on-openshift"
+  },
+  {
+    "paths": 10,
+    "hours": 2,
+    "minutes": 25,
+    "description": "Quarkus is a powerful technology that streamlines Java programming under OpenShift. In this learning path, you will learn:\r\n\r\n\u2022 How to create, test, and deploy Java code to OpenShift in a seamless development workflow. \r\n\u2022 How to take advantage of Live Coding to test and deploy your applications in real time as you code.\r\n\u2022 How to write fully functional, robust applications running in OpenShift without having to waste time writing a lot of redundant code.\r\n\u2022 How to use Quarkus to write data-driven applications using a variety of data sources with just a few lines of code.",
+    "label": "Developing OpenShift applications with Java and Quarkus",
+    "url": "https://developers.redhat.com/learn/openshift/developing-openshift-applications-java-and-quarkus"
+  },
+  {
+    "paths": 2,
+    "minutes": 15,
+    "description": "Learn how to create, integrate, and automate applications on the fly with Middleware portfolios that can run on-site, in the cloud, or within a container platform, like OpenShift.",
+    "label": "Developing with Middleware",
+    "url": "https://developers.redhat.com/learn/middleware"
+  },
+  {
+    "paths": 15,
+    "hours": 3,
+    "minutes": 50,
+    "description": "Learn how to implement a variety of the most common components in the PatternFly React component library.",
+    "label": "Developing with PatternFly React",
+    "url": "https://developers.redhat.com/learn/patternfly-react"
+  },
+  {
+    "paths": 9,
+    "hours": 2,
+    "minutes": 10,
+    "description": "Learn Quarkus, a Kubernetes-native Java stack tailored for GraalVM and OpenJDK HotSpot. Stand up an application with a hello endpoint, then get familiar with Hibernate ORM via Panache, a Quarkus component.",
+    "label": "Developing with Quarkus",
+    "url": "https://developers.redhat.com/learn/quarkus"
+  },
+  {
+    "paths": 7,
+    "hours": 1,
+    "minutes": 45,
+    "description": "Learn Spring, a popular Java framework used to organize third-party libraries, bootstrap embeddable runtimes, and build microservices applications.",
+    "label": "Developing with Spring",
+    "url": "https://developers.redhat.com/learn/spring-boot"
+  },
+  {
+    "paths": 9,
+    "hours": 2,
+    "description": "No one likes a bad communicator! How do you make all the information flow between apps, microservices and connected devices? Kafka and Knative have the answers.",
+    "label": "Event-driven architecture",
+    "url": "https://developers.redhat.com/devnation/event-driven-architecture"
+  },
+  {
+    "paths": 2,
+    "minutes": 15,
+    "description": "Poke around the OpenShift web console or command-line interfaces at your own speed in a free-form sandbox environment.",
+    "label": "Exploring OpenShift",
+    "url": "https://developers.redhat.com/learn/openshift/explore-openshift"
+  },
+  {
+    "paths": 13,
+    "hours": 3,
+    "minutes": 40,
+    "description": "Start with the foundations to get hands-on experience creating and deploying applications in Red Hat OpenShift in Red Hat's interactive learning environments. In this learning path, you will learn:\r\n\r\n\u2022 The basic concepts behind OpenShift\r\n\u2022 How to create and deploy applications directly into an OpenShift cluster from source as well as Linux containers\r\n\u2022 How to work with Live Coding to compile and deploy the changes immediately and automatically into OpenShift\r\n\u2022 How to create data-driven applications using a variety of OpenShift data technologies",
+    "label": "Foundations of OpenShift",
+    "url": "https://developers.redhat.com/learn/openshift/foundations-openshift"
+  },
+  {
+    "paths": 19,
+    "hours": 4,
+    "minutes": 15,
+    "description": "Everyone likes a camp romance. Argo Cd and Tekton are a match made in Kubernetes heaven. See what makes them tick!",
+    "label": "From DevOps to GitOps",
+    "url": "https://developers.redhat.com/devnation/devops-gitops"
+  },
+  {
+    "paths": 13,
+    "hours": 3,
+    "minutes": 10,
+    "description": "Learn to simplify your tasks by creating a centralized and automated process with Ansible.",
+    "label": "Get started with Ansible",
+    "url": "https://developers.redhat.com/learn/ansible"
+  },
+  {
+    "paths": 11,
+    "hours": 2,
+    "description": "Learn the basics of Red Hat Enterprise Linux, and how to leverage it with tools like Podman, Buildah, and SQL.",
+    "label": "Get started with Red Hat Enterprise Linux",
+    "url": "https://developers.redhat.com/learn/rhel"
+  },
+  {
+    "paths": 4,
+    "minutes": 45,
+    "description": "In this learning path, you will start your Jupyter notebook server and select preferences for S3 usage. You will also learn how to access and download the data you create as well as analyze it, using a variety of skills and tools.",
+    "label": "How to access, download, and analyze data for S3 usage",
+    "url": "https://developers.redhat.com/learn/openshift-data-science/how-access-s3-data-then-download-and-analyze-it"
+  },
+  {
+    "paths": 3,
+    "minutes": 30,
+    "description": "In this learning path, you will set up options for your Jupyter notebook server and select your PyTorch preferences,\u00a0 then explore the dataset you'll use to create your model. Finally, you will learn how to build, train, and run your PyTorch model.",
+    "label": "How to create a PyTorch model",
+    "url": "https://developers.redhat.com/learn/openshift-data-science/how-create-pytorch-model"
+  },
+  {
+    "paths": 3,
+    "minutes": 30,
+    "description": "In this learning path, you will set up options for your Jupyter notebook server,  then explore the MNIST dataset to refine your data. Finally, you will learn how to implement frameworks, layers, and nodes to create your TensorFlow model.",
+    "label": "How to create a TensorFlow model",
+    "url": "https://developers.redhat.com/learn/openshift-data-science/how-create-tensorflow-model"
+  },
+  {
+    "paths": 1,
+    "minutes": 20,
+    "description": "Learn how to deploy a model using S2I.",
+    "label": "How to deploy a model using S2I",
+    "url": "https://developers.redhat.com/learn/openshift-data-science/how-deploy-model-using-s2i"
+  },
+  {
+    "paths": 13,
+    "hours": 3,
+    "minutes": 10,
+    "description": "Learn how to deploy an application on a cluster using Red Hat OpenShift Service on AWS.",
+    "label": "How to deploy an application using Red Hat OpenShift Service on AWS",
+    "url": "https://developers.redhat.com/learn/openshift/how-deploy-application-using-red-hat-openshift-service-aws"
+  },
+  {
+    "paths": 3,
+    "minutes": 15,
+    "description": "Intel OpenVINO is an open source toolkit for optimizing and deploying AI inference. It allows you to perform several optimizations to speed up AI/ML jobs executed on Intel hardware, such as reducing floating point precision and combining several model layers into one. This hands-on experience will demonstrate OpenVINO with the Red Hat OpenShift Data Science managed cloud service.",
+    "label": "How to get started with Intel OpenVINO",
+    "url": "https://developers.redhat.com/learn/openshift-data-science/get-started-intel-openvino"
+  },
+  {
+    "paths": 5,
+    "hours": 1,
+    "description": "In this learning path, you will learn how to set up data science projects. You will also learn how to consistently reproduce or execute Jupyter notebooks in the data science projects and serve the developed models in the form of a web service on top of Red Hat OpenShift.",
+    "label": "How to set up and reproduce data science experiments",
+    "url": "https://developers.redhat.com/learn/openshift-data-science/how-set-and-reproduce-data-science-experiments"
+  },
+  {
+    "paths": 2,
+    "minutes": 30,
+    "description": "In this learning path, you will install OpenShift Data Science on Red Hat OpenShift Service on AWS (ROSA), a fully managed application platform for building and deploying applications.",
+    "label": "Install Red Hat OpenShift Data Science in Red Hat OpenShift Service on AWS",
+    "url": "https://developers.redhat.com/learn/openshift-data-science/install-red-hat-openshift-data-science-red-hat-openshift-service-aws"
+  },
+  {
+    "paths": 7,
+    "hours": 1,
+    "minutes": 30,
+    "description": "Learn about the fundamentals of Apache Kafka. This tutorial covers basic concepts of Kafka and its components.",
+    "label": "Kafka 101",
+    "url": "https://developers.redhat.com/learn/apache-kafka/kafka-101"
+  },
+  {
+    "paths": 20,
+    "hours": 11,
+    "minutes": 15,
+    "description": "Spend time getting to know your new friend - Kubernetes. Learn more about this open source container orchestration system and make notes on commands, tips, and tricks to bring it to life.",
+    "label": "Kubernetes and friends",
+    "url": "https://developers.redhat.com/devnation/kubernetes-and-friends"
+  },
+  {
+    "paths": 3,
+    "minutes": 5,
+    "description": "Launch and explore OpenShift API Management and its components.",
+    "label": "Launch and explore Red Hat OpenShift API Management",
+    "url": "https://developers.redhat.com/learn/launch-and-explore-red-hat-openshift-api-management"
+  },
+  {
+    "paths": 4,
+    "minutes": 45,
+    "description": "In this learning path, we use a pre-existing Jupyter Notebook project to start exploring data science. Project Jupyter offers the interactive JupyterHub and JupyterLab tools, which we'll introduce in this path.",
+    "label": "Launch Red Hat OpenShift Data Science",
+    "url": "https://developers.redhat.com/learn/openshift-data-science/launch-red-hat-openshift-data-science"
+  },
+  {
+    "paths": 4,
+    "hours": 3,
+    "minutes": 10,
+    "description": "Learn how to get started on your machine learning journey with OpenShift. You'll learn more about technologies like Jupyter notebooks, JupyterHub, Prometheus, and more.",
+    "label": "Mastering AI / ML with OpenShift",
+    "url": "https://developers.redhat.com/learn/openshift/ai-ml"
+  },
+  {
+    "paths": 2,
+    "minutes": 15,
+    "description": "The Red hat OpenShift Data Science platform offers a number of documents and learning materials explaining how to use Red Hat managed services as well as managed services and software offered by our partners. Learning materials include how-to resources, tutorials, and quick starts.",
+    "label": "Red Hat OpenShift Data Science documentation and resources",
+    "url": "https://developers.redhat.com/learn/openshift-data-science/red-hat-openshift-data-science-documentation-and-resources"
+  },
+  {
+    "paths": 9,
+    "hours": 1,
+    "description": "Learn how to secure the APIs deployed  on OpenShift API Management with OpenID Connect (OIDC) and Red Hat\u2019s single sign-on (SSO) technology.",
+    "label": "Securing APIs on Red Hat OpenShift API Management",
+    "url": "https://developers.redhat.com/learn/securing-apis-red-hat-openshift-api-management"
+  },
+  {
+    "paths": 8,
+    "minutes": 30,
+    "description": "Set up your first developer portal, and learn the basics of developer portal customization and access controls.",
+    "label": "Setting up your first developer portal",
+    "url": "https://developers.redhat.com/learn/setting-up-your-first-developer-portal"
+  },
+  {
+    "paths": 7,
+    "hours": 1,
+    "minutes": 55,
+    "description": "Get up to speed with the underlying structures that make up a container architecture. You'll strengthen your understanding of container building, tagging, organization, and orchestration, as well as get a high-level overview of OCI-compliant tools.",
+    "label": "Understanding subsystems",
+    "url": "https://developers.redhat.com/learn/subsystems"
+  },
+  {
+    "paths": 2,
+    "minutes": 15,
+    "description": "For the best experience in this learning path, we suggest that you complete the following learning resources in the order shown. When you click on a resource, it will open in a new tab. Keep this page open so you can easily move on to the next resource!",
+    "label": "Using projects in Red Hat OpenShift Data Science",
+    "url": "https://developers.redhat.com/learn/openshift-data-science/using-projects-red-hat-openshift-data-science"
+  },
+  {
+    "paths": 1,
+    "minutes": 30,
+    "level": "Beginner",
+    "type": "Ansible Learning path",
+    "description": "Learn more about the fundamental concepts of Ansible, an open source IT automation solution that automates provisioning, configuration management, application deployment, orchestration, and many other IT processes.",
+    "label": "Introduction to Ansible",
+    "url": "https://red.ht/aap-lp-ansible-basics"
+  },
+  {
+    "paths": 1,
+    "hours": 1,
+    "level": "Beginner",
+    "type": "Ansible Learning path",
+    "description": "Do a deep-dive into the features of Ansible VS Code extension, the Red Hat recommended way of creating your Ansible projects, which brings syntax-highlighting, auto-completion, linting, and generative AI to your automation creation workflows.",
+    "label": "Getting started with the Ansible VS Code extension",
+    "url": "https://red.ht/aap-lp-vscode-essentials"
+  },
+  {
+    "paths": 1,
+    "minutes": 30,
+    "level": "Beginner",
+    "type": "Ansible Learning path",
+    "description": "Learn more about YAML and how Ansible Automation Platform uses it for content. YAML offers a straightforward, human-readable way to write Ansible configurations, tasks, and playbooks.",
+    "label": "YAML Essentials for Ansible",
+    "url": "https://red.ht/aap-lp-yaml-essentials"
+  },
+  {
+    "paths": 1,
+    "hours": 1,
+    "level": "Beginner",
+    "type": "Ansible Learning path",
+    "description": "Learn how to create Ansible playbooks, the blueprints for automation tasks executed across an inventory of nodes. Playbooks tell Ansible which tasks to perform on which devices.",
+    "label": "Getting started with Ansible playbooks",
+    "url": "https://red.ht/aap-lp-getting-started-playbooks"
+  },
+  {
+    "paths": 1,
+    "hours": 1,
+    "level": "Intermediate",
+    "type": "Ansible Learning path",
+    "description": "Learn more about Ansible Content Collections. Content Collections provide a format for organizing and sharing your Ansible content, such as modules, Playbooks, and documentation.",
+    "label": "Getting started with Content Collections",
+    "url": "https://red.ht/aap-lp-getting-started-collections"
+  },
+  {
+    "paths": 1,
+    "minutes": 30,
+    "level": "Beginner",
+    "type": "Ansible Lab",
+    "description": "Install ansible-navigator and get hands-on using it.",
+    "label": "Getting started with ansible-navigator",
+    "url": "https://red.ht/aap-lab-getting-started-navigator"
+  },
+  {
+    "paths": 1,
+    "minutes": 45,
+    "level": "Beginner",
+    "type": "Ansible Lab",
+    "description": "Install ansible-builder and create a custom Execution Environment.",
+    "label": "Getting started with ansible-builder",
+    "url": "https://red.ht/aap-lab-getting-started-builder"
+  },
+  {
+    "paths": 1,
+    "hours": 1,
+    "level": "Beginner",
+    "type": "Ansible Lab",
+    "description": "Learn the basics of Ansible playbooks and automate basic infrastructure tasks.",
+    "label": "Writing your first playbook",
+    "url": "https://red.ht/aap-lab-getting-started-playbook"
+  },
+  {
+    "paths": 1,
+    "minutes": 30,
+    "level": "Beginner",
+    "type": "Ansible Lab",
+    "description": "Learn to sign Ansible Content Collections using a Private Automation Hub and install collections with ansible-galaxy CLI.",
+    "label": "Signing Ansible Content Collections with Private Automation Hub",
+    "url": "https://red.ht/aap-lab-sign-collections-with-pah"
+  }
+]

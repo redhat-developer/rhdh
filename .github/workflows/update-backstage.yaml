@@ -1,0 +1,100 @@
+# Copyright Red Hat, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Update Backstage
+
+env:
+  TURBO_SCM_BASE: ${{ github.sha }}
+
+# enforce only one release action per release branch at a time
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+on:
+  workflow_dispatch:
+    inputs:
+      release:
+        description: 'Backstage release version (e.g., 1.2.3)'
+        required: false
+      pattern:
+        description: |
+          Specify a glob pattern to select packages for upgrade (e.g., `@{backstage,backstage-community}/*`).
+          To update all Backstage-related packages, use `@{backstage,backstage-community,janus-idp,roadiehq,immobiliarelabs,pagerduty,parfuemerie-douglas}/*`.
+        required: false
+  schedule:
+    - cron: "15 3 * * WED" # Every Wednesday at 3:15 AM
+
+jobs:
+  create-pr:
+    name: Create PR
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Generate token
+        id: generate-token
+        uses: actions/create-github-app-token@d72941d797fd3113feb6b93fd0dec494b13a2547 # v1.12.0
+        with:
+          app-id: ${{ secrets.RHDH_GITHUB_APP_ID }}
+          private-key: ${{ secrets.RHDH_GITHUB_APP_PRIVATE_KEY }}
+
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          token: ${{ steps.generate-token.outputs.token }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: '.nvmrc'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        uses: backstage/actions/yarn-install@b3c1841fd69e1658ac631afafd0fb140a2309024 # v0.6.17
+        with:
+          cache-prefix: ${{ runner.os }}-v20
+
+      - name: Run versons:bump script
+        run: |
+          yarn versions:bump \
+            ${{ inputs.release && format('--release {0}', inputs.release) }} \
+            ${{ inputs.pattern && format('--pattern {0}', inputs.pattern) }}
+
+      - name: Determine PR details
+        id: pr-details
+        run: |
+          if [[ -n "${{ inputs.release }}" ]]; then
+            echo "commit_message=feat: update Backstage to ${{ inputs.release }}" >> $GITHUB_OUTPUT
+            echo "branch=dependencies/backstage-${{ inputs.release }}" >> $GITHUB_OUTPUT
+          elif [[ -n "${{ inputs.pattern }}" ]]; then
+            sanitized_branch=$(echo "${{ inputs.pattern }}" | tr -d '@{}*' | tr '/' '-' | tr ',' '.')
+            # Remove trailing hyphen if present
+            sanitized_branch=${sanitized_branch%-*}
+            echo "commit_message=feat: update Backstage plugins dependencies with pattern ${{ inputs.pattern }}" >> $GITHUB_OUTPUT
+            echo "branch=dependencies/${sanitized_branch}" >> $GITHUB_OUTPUT
+          else
+            echo "commit_message=feat: update Backstage to the latest version" >> $GITHUB_OUTPUT
+            echo "branch=dependencies/backstage-latest" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ steps.generate-token.outputs.token }}
+          commit-message: ${{ steps.pr-details.outputs.commit_message }}
+          title: ${{ steps.pr-details.outputs.commit_message }}
+          branch: ${{ steps.pr-details.outputs.branch }}
+          base: main
+          signoff: true
+          sign-commits: true

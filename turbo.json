@@ -1,0 +1,41 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalEnv": [
+    "YARN_ENABLE_GLOBAL_CACHE",
+    "YARN_ENABLE_IMMUTABLE_CACHE",
+    "YARN_ENABLE_MIRROR",
+    "YARN_GLOBAL_FOLDER"
+  ],
+  "globalDependencies": [
+    "app-config.dynamic-plugins.yaml",
+    "dynamic-plugins.default.yaml"
+  ],
+  "tasks": {
+    "start": {
+      "cache": false,
+      "persistent": true
+    },
+    "build": {
+      "outputs": ["dist/**"],
+      "dependsOn": ["^build", "tsc"]
+    },
+    "clean": {
+      "cache": false
+    },
+    "test": {
+      "outputs": ["coverage/**"]
+    },
+    "lint:check": {},
+    "lint:fix": {
+      "cache": false
+    },
+    "prettier:check": {},
+    "prettier:fix": {
+      "cache": false
+    },
+    "tsc": {
+      "outputs": ["../../dist-types/**"],
+      "dependsOn": ["^tsc"]
+    }
+  }
+}

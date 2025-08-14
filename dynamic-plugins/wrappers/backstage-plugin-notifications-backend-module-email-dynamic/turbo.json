@@ -1,0 +1,10 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "tsc": {
+      "outputs": [
+        "../../dist-types/wrappers/backstage-plugin-notifications-backend-module-email-dynamic/**"
+      ]
+    }
+  }
+}

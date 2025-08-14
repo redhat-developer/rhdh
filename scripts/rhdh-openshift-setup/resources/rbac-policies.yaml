@@ -1,0 +1,29 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: rbac-policy
+  labels:
+    backstage.io/kubernetes-id: developer-hub
+data:
+  rbac-policy.csv: |
+    p, role:default/admin, catalog-entity, read, allow
+    p, role:default/admin, catalog.entity.create, create, allow
+    p, role:default/admin, catalog-entity, update, allow
+    p, role:default/admin, catalog-entity, delete, allow
+
+    p, role:default/admin, catalog.location.read, read, allow
+    p, role:default/admin, catalog.location.create, create, allow
+    p, role:default/admin, catalog.location.delete, delete, allow
+
+    p, role:default/admin, scaffolder-action, use, allow
+    p, role:default/admin, scaffolder-template, read, allow
+    p, role:default/admin, scaffolder.task.read, read, allow
+
+    p, role:default/admin, kubernetes.proxy, use, allow
+
+    p, role:default/admin, catalog.entity.read, read, allow
+
+    p, role:default/admin, policy-entity, read, allow
+    p, role:default/admin, policy.entity.create, create, allow
+
+    g, user:development/guest, role:default/admin

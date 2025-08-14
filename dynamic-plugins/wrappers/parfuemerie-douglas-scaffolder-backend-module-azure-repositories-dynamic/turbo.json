@@ -1,0 +1,10 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "tsc": {
+      "outputs": [
+        "../../dist-types/wrappers/parfuemerie-douglas-scaffolder-backend-module-azure-repositories-dynamic/**"
+      ]
+    }
+  }
+}

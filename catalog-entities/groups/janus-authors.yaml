@@ -1,0 +1,10 @@
+---
+# https://backstage.io/docs/features/software-catalog/descriptor-format#kind-group
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: janus-authors
+  title: Janus-IDP Authors
+spec:
+  type: team
+  children: []

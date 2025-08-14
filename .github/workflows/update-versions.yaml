@@ -1,0 +1,48 @@
+name: Update versions.md in Dynamic Plugins Documentation
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "main"
+      - "release-*"
+    paths:
+      - "backstage.json"
+      - "packages/app/package.json"
+      - "packages/backend/package.json"
+
+jobs:
+  update-versions-md:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate token
+        id: generate-token
+        uses: actions/create-github-app-token@d72941d797fd3113feb6b93fd0dec494b13a2547 # v1.12.0
+        with:
+          app-id: ${{ secrets.RHDH_GITHUB_APP_ID }}
+          private-key: ${{ secrets.RHDH_GITHUB_APP_PRIVATE_KEY }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Run update-versions-doc script
+        run: node scripts/update-versions-doc.mjs docs/dynamic-plugins/versions.md
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ steps.generate-token.outputs.token }}
+          commit-message: "chore(docs): Update versions.md in dynamic plugin documentation"
+          branch: update-versions-doc-${{ github.ref_name }}
+          title: "chore(docs): [${{ github.ref_name }}] Update versions.md in dynamic plugin documentation"
+          body: "Updates Version Compatibility Matrix in dynamic plugin documentation"
+          labels: "documentation"
+          signoff: true
+          delete-branch: true

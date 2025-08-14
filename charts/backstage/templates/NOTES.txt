@@ -1,3 +1,0 @@
-Deployment of Backstage Complete!
-
-Access the frontend: {{ .Values.backstage.baseUrl }}

@@ -1,0 +1,122 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: app-config-rhdh
+  labels:
+    backstage.io/kubernetes-id: developer-hub
+data:
+  app-config-rhdh.yaml: |
+    integrations:
+      # Plugin: GitHub
+      github:
+        - host: github.com
+          apps:
+            - appId: ${GITHUB_APP_APP_ID}
+              clientId: ${GITHUB_APP_CLIENT_ID}
+              clientSecret: ${GITHUB_APP_CLIENT_SECRET}
+              webhookUrl: ${GITHUB_APP_WEBHOOK_URL}
+              webhookSecret: ${GITHUB_APP_WEBHOOK_SECRET}
+              privateKey: |
+                ${GITHUB_APP_PRIVATE_KEY}
+    auth:
+      environment: development
+      session:
+        secret: super-secret-session-secret
+      providers:
+        oidc:
+          development:
+            metadataUrl: ${OIDC_METADATA_URL}
+            clientId: ${KEYCLOAK_CLIENT_ID}
+            clientSecret: ${KEYCLOAK_CLIENT_SECRET}
+            prompt: auto # recommended to use auto
+            ## uncomment for additional configuration options
+            # callbackUrl: ${AUTH_OIDC_CALLBACK_URL}
+            # tokenEndpointAuthMethod: ${AUTH_OIDC_TOKEN_ENDPOINT_METHOD}
+            # tokenSignedResponseAlg: ${AUTH_OIDC_SIGNED_RESPONSE_ALG}
+            # scope: ${AUTH_OIDC_SCOPE}
+            signIn:
+              resolvers:
+                - resolver: preferredUsernameMatchingUserEntityName
+                  dangerouslyAllowSignInWithoutUserInCatalog: true
+        github:
+          development:
+            clientId: ${GITHUB_APP_CLIENT_ID}
+            clientSecret: ${GITHUB_APP_CLIENT_SECRET}
+            signIn:
+              resolvers:
+                - resolver: usernameMatchingUserEntityName
+                  dangerouslyAllowSignInWithoutUserInCatalog: true
+        # oauth2Proxy: {}
+        guest:
+          dangerouslyAllowOutsideDevelopment: true
+    signInPage: oidc
+
+    catalog:
+      import:
+        entityFilename: catalog-info.yaml
+        # pullRequestBranchName: rhdh-integration
+        pullRequestBranchName: backstage-integration
+      rules:
+        - allow: [Component, System, Group, Resource, Location, Template, API]
+      # locations:
+      #   - type: url
+      #     target: https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/all.yaml
+      #   - type: url
+      #     target: https://github.com/janus-idp/software-templates/blob/main/showcase-templates.yaml
+      providers:
+        ocm:
+          default:
+            name: openshift-local
+            owner: janus-authors
+            schedule: # optional; same options as in TaskScheduleDefinition
+              # supports cron, ISO duration, "human duration" as used in code
+              frequency: { minutes: 15 }
+              # supports ISO duration, "human duration" as used in code
+              timeout: { minutes: 3 }
+              initialDelay: { seconds: 15 }
+            kubernetesPluginRef: backstage-test
+    proxy:
+      endpoints:
+        /quay/api:
+          target: https://quay.io/
+          headers:
+            X-Requested-With: 'XMLHttpRequest'
+          changeOrigin: true
+          secure: true
+    kubernetes:
+      clusterLocatorMethods:
+        - clusters:
+          - authProvider: serviceAccount
+            name: ${K8S_CLUSTER_NAME}
+            serviceAccountToken: ${K8S_CLUSTER_TOKEN}
+            url: ${K8S_CLUSTER_URL}
+            skipTLSVerify: true
+          type: config
+      customResources:
+        # Add for tekton
+        - apiVersion: 'v1beta1'
+          group: 'tekton.dev'
+          plural: 'pipelines'
+        - apiVersion: v1beta1
+          group: tekton.dev
+          plural: pipelineruns
+        - apiVersion: v1beta1
+          group: tekton.dev
+          plural: taskruns
+        # Add for topology plugin
+        - apiVersion: 'v1'
+          group: 'route.openshift.io'
+          plural: 'routes'
+        # Add to view topology code decorators
+        - group: 'org.eclipse.che'
+          apiVersion: 'v2'
+          plural: 'checlusters'
+      serviceLocatorMethod:
+        type: multiTenant
+    permission:
+      enabled: true
+      rbac:
+        # policies-csv-file: ./rbac/rbac-policy.csv
+        admin:
+          superUsers:
+            - name: user:development/guest

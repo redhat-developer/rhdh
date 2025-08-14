@@ -1,0 +1,10 @@
+{
+  "ignorePatterns": [
+    { "pattern": "^http://localhost:7007" },
+    { "pattern": "^https://pkgs.devel.redhat.com" },
+    { "pattern": "^https://gitlab.cee.redhat.com" }
+  ],
+  "retryOn429": true,
+  "retry-after": "30s",
+  "retryCount": "3"
+}

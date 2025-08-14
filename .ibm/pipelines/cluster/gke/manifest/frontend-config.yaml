@@ -1,0 +1,8 @@
+apiVersion: networking.gke.io/v1beta1
+kind: FrontendConfig
+metadata:
+  name: rhdh-gke-ingress-security-config
+spec:
+  sslPolicy: gke-ingress-ssl-policy-https
+  redirectToHttps:
+    enabled: true

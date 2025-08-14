@@ -1,0 +1,9 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: hello-world-pipeline-run
+  labels:
+    backstage.io/kubernetes-id: developer-hub
+spec:
+  pipelineRef:
+    name: hello-world-pipeline

@@ -1,0 +1,373 @@
+global:
+  dynamic:
+    # -- Array of YAML files listing dynamic plugins to include with those listed in the `plugins` field.
+    # Relative paths are resolved from the working directory of the initContainer that will install the plugins (`/opt/app-root/src`).
+    includes:
+      # -- List of dynamic plugins included inside the `rhdh-community/rhdh` container image, some of which are disabled by default.
+      # This file ONLY works with the `rhdh-community/rhdh` container image.
+      - 'dynamic-plugins.default.yaml'
+
+    # -- List of dynamic plugins, possibly overriding the plugins listed in `includes` files.
+    # Every item defines the plugin `package` as a [NPM package spec](https://docs.npmjs.com/cli/v10/using-npm/package-spec),
+    # an optional `pluginConfig` with plugin-specific backstage configuration, and an optional `disabled` flag to disable/enable a plugin
+    # listed in `includes` files. It also includes an `integrity` field that is used to verify the plugin package [integrity](https://w3c.github.io/webappsec-subresource-integrity/#integrity-metadata-description).
+    plugins:
+      - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-dynamic
+        disabled: false
+        pluginConfig:
+          catalog:
+            providers:
+              github:
+                my-test-org:
+                  organization: janus-qe
+                  catalogPath: '/catalog-info.yaml'
+                  schedule:
+                    frequency:
+                      minutes: 1
+                    timeout:
+                      minutes: 1
+                    initialDelay:
+                      seconds: 15
+      - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-org-dynamic
+        disabled: false
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-github-issues
+        disabled: false
+      - package: ./dynamic-plugins/dist/roadiehq-backstage-plugin-github-pull-requests
+        disabled: false
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-github-actions
+        disabled: false
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-quay
+        disabled: false
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-keycloak-dynamic
+        disabled: false
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-tekton
+        disabled: false
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-topology
+        disabled: false
+      - package: ./dynamic-plugins/dist/backstage-plugin-kubernetes
+        disabled: false
+      - package: ./dynamic-plugins/dist/backstage-plugin-kubernetes-backend-dynamic
+        disabled: false
+        pluginConfig:
+          kubernetes:
+            clusterLocatorMethods:
+              - clusters:
+                  - authProvider: serviceAccount
+                    name: 'my-cluster'
+                    serviceAccountToken: ${K8S_CLUSTER_TOKEN_ENCODED}
+                    url: ${K8S_CLUSTER_API_SERVER_URL}
+                    skipTLSVerify: true
+                type: config
+            customResources:
+              # Add for tekton
+              - apiVersion: 'v1beta1'
+                group: 'tekton.dev'
+                plural: 'pipelines'
+              - apiVersion: v1beta1
+                group: tekton.dev
+                plural: pipelineruns
+              - apiVersion: v1beta1
+                group: tekton.dev
+                plural: taskruns
+              # Add for topology plugin
+              - apiVersion: 'v1'
+                group: 'route.openshift.io'
+                plural: 'routes'
+            serviceLocatorMethod:
+              type: multiTenant
+      # Enable OCM plugins.
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-ocm-backend-dynamic
+        disabled: false
+        pluginConfig:
+          catalog:
+            providers:
+              ocm:
+                default:
+                  name: testCluster # Can be any arbitrary name supported by kubernetes
+                  url: ${OCM_CLUSTER_URL}
+                  serviceAccountToken: ${OCM_CLUSTER_TOKEN}
+                  skipTLSVerify: true
+                  owner: janus-authors
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-ocm
+        disabled: false
+      # Enable Bulk import plugins.
+      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import-backend-dynamic
+        disabled: false
+      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import
+        disabled: false
+      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-header
+        disabled: false
+      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-dynamic-home-page
+        disabled: false
+      # Enable tech-radar plugin.
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-tech-radar
+        disabled: false
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-tech-radar-backend-dynamic
+        disabled: true
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
+        disabled: false
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-analytics-provider-segment
+        disabled: true
+      # Enable orchestrator plugins for SonataFlow workflow execution
+      - disabled: false
+        package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator-backend:bs_1.39.1__8.0.2!red-hat-developer-hub-backstage-plugin-orchestrator-backend
+        pluginConfig:
+          orchestrator:
+            dataIndexService:
+              url: http://sonataflow-platform-data-index-service.${NAME_SPACE}
+      - disabled: false
+        package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator:bs_1.39.1__5.0.3!red-hat-developer-hub-backstage-plugin-orchestrator
+        pluginConfig:
+          dynamicPlugins:
+            frontend:
+              red-hat-developer-hub.backstage-plugin-orchestrator:
+                appIcons:
+                - importName: OrchestratorIcon
+                  name: orchestratorIcon
+                dynamicRoutes:
+                - importName: OrchestratorPage
+                  menuItem:
+                    icon: orchestratorIcon
+                    text: Orchestrator
+                  path: /orchestrator
+      - disabled: false
+        package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator:bs_1.39.1__1.0.2!red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator
+        pluginConfig:
+          orchestrator:
+            dataIndexService:
+              url: http://sonataflow-platform-data-index-service.${NAME_SPACE}
+      - disabled: false
+        package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets:bs_1.39.1__1.0.2!red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets
+        pluginConfig:
+          dynamicPlugins:
+            frontend:
+              red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets: {}
+
+# -- Upstream Backstage [chart configuration](https://github.com/backstage/charts/blob/main/charts/backstage/values.yaml)
+# @default -- Use Openshift compatible settings
+upstream:
+  nameOverride: developer-hub
+  commonLabels:
+    backstage.io/kubernetes-id: developer-hub
+  backstage:
+    appConfig:
+      app:
+        # Please update to match host in case you don't want to configure hostname via `global.clusterRouterBase` or `global.host`.
+        baseUrl: 'https://{{- include "janus-idp.hostname" . }}'
+      backend:
+        baseUrl: 'https://{{- include "janus-idp.hostname" . }}'
+        cors:
+          origin: 'https://{{- include "janus-idp.hostname" . }}'
+        database:
+          connection: # configure Backstage DB connection parameters
+            host: ${POSTGRES_HOST}
+            port: ${POSTGRES_PORT}
+            user: ${POSTGRES_USER}
+            password: ${POSTGRES_PASSWORD}
+            ssl:
+              rejectUnauthorized: true,
+              ca:
+                $file: /opt/app-root/src/postgres-ca.pem
+              key:
+                $file: /opt/app-root/src/postgres-key.key
+              cert:
+                $file: /opt/app-root/src/postgres-crt.pem
+    image:
+      pullPolicy: Always
+      # using test image from https://quay.io/repository/rhdh-community/rhdh
+      registry: quay.io
+      repository: rhdh-community/rhdh
+      tag: next
+    startupProbe:
+      # This gives enough time upon container startup before the liveness and readiness probes are triggered.
+      # Giving (120s = initialDelaySeconds + failureThreshold * periodSeconds) to account for the worst case scenario.
+      httpGet:
+        path: /.backstage/health/v1/liveness
+        port: backend
+        scheme: HTTP
+      initialDelaySeconds: 30
+      timeoutSeconds: 4
+      periodSeconds: 20
+      successThreshold: 1
+      failureThreshold: 3
+    readinessProbe:
+      failureThreshold: 3
+      httpGet:
+        path: /.backstage/health/v1/readiness
+        port: backend
+        scheme: HTTP
+      # Both liveness and readiness probes won't be triggered until the startup probe is successful.
+      # The startup probe is already configured to give enough time for the application to be started.
+      # So removing the additional delay here allows the readiness probe to be checked right away after the startup probe,
+      # which helps make the application available faster to the end-user.
+      # initialDelaySeconds: 30
+      periodSeconds: 10
+      successThreshold: 2
+      timeoutSeconds: 4
+    livenessProbe:
+      failureThreshold: 3
+      httpGet:
+        path: /.backstage/health/v1/liveness
+        port: backend
+        scheme: HTTP
+      # Both liveness and readiness probes won't be triggered until the startup probe is successful.
+      # The startup probe is already configured to give enough time for the application to be started.
+      # So removing the additional delay here allows the liveness probe to be checked right away after the startup probe,
+      # which helps make the application available faster to the end-user.
+      # initialDelaySeconds: 60
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 4
+    extraEnvVars:
+      - name: BACKEND_SECRET
+        valueFrom:
+          secretKeyRef:
+            key: backend-secret
+            name: '{{ include "janus-idp.backend-secret-name" $ }}'
+      # disable telemetry in CI
+      - name: SEGMENT_TEST_MODE
+        value: 'true'
+      - name: NODE_TLS_REJECT_UNAUTHORIZED
+        value: '0'
+      - name: NODE_ENV
+        value: 'production'
+    extraVolumeMounts:
+      # The initContainer below will install dynamic plugins in this volume mount.
+      - name: dynamic-plugins-root
+        mountPath: /opt/app-root/src/dynamic-plugins-root
+      - name: rbac-policy
+        mountPath: /opt/app-root/src/rbac
+      - name: rbac-conditions
+        mountPath: /opt/app-root/src/rbac-conditions
+      - mountPath: /opt/app-root/src/postgres-crt.pem
+        name: postgress-external-db-cluster-cert
+        subPath: tls.crt
+      - mountPath: /opt/app-root/src/postgres-ca.pem
+        name: postgress-external-db-cluster-cert
+        subPath: ca.crt
+      - mountPath: /opt/app-root/src/postgres-key.key
+        name: postgress-external-db-cluster-cert
+        subPath: tls.key
+    extraVolumes:
+      # -- Ephemeral volume that will contain the dynamic plugins installed by the initContainer below at start.
+      # To have more control on underlying storage, the [emptyDir](https://docs.openshift.com/container-platform/4.13/storage/understanding-ephemeral-storage.html)
+      # could be changed to a [generic ephemeral volume](https://docs.openshift.com/container-platform/4.13/storage/generic-ephemeral-vols.html#generic-ephemeral-vols-procedure_generic-ephemeral-volumes).
+      - name: dynamic-plugins-root
+        emptyDir: {}
+      # Volume that will expose the `dynamic-plugins.yaml` file from the `dynamic-plugins` config map.
+      # The `dynamic-plugins` config map is created by the helm chart from the content of the `global.dynamic` field.
+      - name: dynamic-plugins
+        configMap:
+          defaultMode: 420
+          name: '{{ printf "%s-dynamic-plugins" .Release.Name }}'
+          optional: true
+      # Optional volume that allows exposing the `.npmrc` file (through a `dynamic-plugins-npmrc` secret)
+      # to be used when running `npm pack` during the dynamic plugins installation by the initContainer.
+      - name: dynamic-plugins-npmrc
+        secret:
+          defaultMode: 420
+          optional: true
+          secretName: '{{ printf "%s-dynamic-plugins-npmrc" .Release.Name }}'
+      - name: dynamic-plugins-registry-auth
+        secret:
+          defaultMode: 416
+          optional: true
+          secretName: '{{ printf "%s-dynamic-plugins-registry-auth" .Release.Name }}'
+      - name: postgress-external-db-cluster-cert
+        secret:
+          secretName: postgress-external-db-cluster-cert
+      - name: rbac-policy
+        configMap:
+          defaultMode: 420
+          name: rbac-policy
+      - name: rbac-conditions
+        emptyDir: {}
+    initContainers:
+      - name: install-dynamic-plugins
+        # -- Image used by the initContainer to install dynamic plugins into the `dynamic-plugins-root` volume mount.
+        # It could be replaced by a custom image based on this one.
+        # @default -- `quay.io/rhdh-community/rhdh:latest`
+        image: '{{ include "backstage.image" . }}'
+        command:
+          - sh
+          - '-c'
+          - |
+            cat > /rbac-conditions/conditional-policies.yaml <<EOF
+            ---
+            result: CONDITIONAL
+            roleEntityRef: 'role:default/test2-role'
+            pluginId: catalog
+            resourceType: catalog-entity
+            permissionMapping:
+              - read
+              - update
+            conditions:
+              rule: IS_ENTITY_OWNER
+              resourceType: catalog-entity
+              params:
+                claims:
+                  - 'group:janus-qe/rhdh-qe-2-team'
+                  - \$currentUser
+            ---
+            result: CONDITIONAL
+            roleEntityRef: 'role:default/test2-role'
+            pluginId: catalog
+            resourceType: catalog-entity
+            permissionMapping:
+              - delete
+            conditions:
+              rule: IS_ENTITY_OWNER
+              resourceType: catalog-entity
+              params:
+                claims:
+                  - \$currentUser
+            ---
+            result: CONDITIONAL
+            roleEntityRef: 'role:default/transitive-owner'
+            pluginId: catalog
+            resourceType: catalog-entity
+            permissionMapping:
+              - read
+            conditions:
+              rule: IS_ENTITY_OWNER
+              resourceType: catalog-entity
+              params:
+                claims:
+                  - \$ownerRefs
+            EOF
+
+            ./install-dynamic-plugins.sh /dynamic-plugins-root
+        env:
+          - name: NPM_CONFIG_USERCONFIG
+            value: /opt/app-root/src/.npmrc.dynamic-plugins
+        imagePullPolicy: Always
+        volumeMounts:
+          - mountPath: /dynamic-plugins-root
+            name: dynamic-plugins-root
+          - mountPath: /opt/app-root/src/dynamic-plugins.yaml
+            name: dynamic-plugins
+            readOnly: true
+            subPath: dynamic-plugins.yaml
+          - mountPath: /opt/app-root/src/.npmrc.dynamic-plugins
+            name: dynamic-plugins-npmrc
+            readOnly: true
+            subPath: .npmrc
+          - mountPath: /opt/app-root/src/.config/containers
+            name: dynamic-plugins-registry-auth
+            readOnly: true
+          - mountPath: /rbac
+            name: rbac-policy
+          - mountPath: /rbac-conditions
+            name: rbac-conditions
+        workingDir: /opt/app-root/src
+    installDir: /opt/app-root/src
+    extraAppConfig:
+      - configMapRef: app-config-rhdh
+        filename: app-config-rhdh.yaml
+    extraEnvVarsSecrets:
+      - rhdh-secrets
+      - postgres-cred
+  postgresql:
+    enabled: false
+    auth:
+      existingSecret: postgres-cred

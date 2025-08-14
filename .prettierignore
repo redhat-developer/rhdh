@@ -2,3 +2,6 @@ dist
 dist-types
 coverage
 .vscode
+*.yaml
+.yarn
+packages/app/src/build-metadata.json

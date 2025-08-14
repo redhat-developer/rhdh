@@ -1,0 +1,7 @@
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: janus-idp
+  title: Janus-IDP
+spec:
+  owner: janus-authors

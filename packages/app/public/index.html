@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -6,20 +6,21 @@
     <meta name="theme-color" content="#000000" />
     <meta
       name="description"
-      content="Backstage is an open platform for building developer portals"
+      content="<%= config.getOptionalString('app.title') ?? 'Red Hat Developer Hub' %>"
     />
-    <link rel="apple-touch-icon" href="<%= publicPath %>/logo192.png" />
-    <!--
-      manifest.json provides metadata used when your web app is installed on a
-      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
-    -->
+    <% if (config.getOptional('app.branding.iconLogo')) { %>
+    <link
+      rel="icon"
+      href="<%= typeof config.getOptional('app.branding.iconLogo') === 'string' ? config.getOptionalString('app.branding.iconLogo') : config.getOptionalString('app.branding.iconLogo.dark') %>"
+      id="dynamic-favicon"
+    />
+    <% } else { %>
+    <link rel="apple-touch-icon" href="<%= publicPath %>/favicon-192x192.png" />
     <link
       rel="manifest"
       href="<%= publicPath %>/manifest.json"
       crossorigin="use-credentials"
     />
-    <link rel="icon" href="<%= publicPath %>/favicon.ico" />
-    <link rel="shortcut icon" href="<%= publicPath %>/favicon.ico" />
     <link
       rel="apple-touch-icon"
       sizes="180x180"
@@ -42,20 +43,18 @@
       href="<%= publicPath %>/safari-pinned-tab.svg"
       color="#5bbad5"
     />
-    <title><%= config.getString('app.title') %></title>
+    <link
+      rel="icon"
+      id="dynamic-favicon"
+      href="<%= publicPath %>/favicon.ico"
+    />
+    <link rel="shortcut icon" href="<%= publicPath %>/favicon.ico" />
+    <% } %>
+
+    <title><%= config.getOptionalString('app.title') ?? 'Backstage' %></title>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
-
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
-
-      To begin the development, run `yarn start`.
-      To create a production bundle, use `yarn build`.
-    -->
   </body>
 </html>

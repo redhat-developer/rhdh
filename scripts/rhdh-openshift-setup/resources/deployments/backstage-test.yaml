@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backstage-app
+  annotations:
+    app.openshift.io/vcs-uri: "https://github.com/redhat-developer/rhdh"
+    app.openshift.io/vcs-ref: main
+  labels:
+    backstage.io/kubernetes-id: developer-hub
+    app.openshift.io/runtime: nodejs
+
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: backstage-app
+  template:
+    metadata:
+      labels:
+        app: backstage-app
+        backstage.io/kubernetes-id: developer-hub
+    spec:
+      containers:
+        - name: alpine
+          image: alpine
+          command:
+            - /bin/sh
+          args:
+            - -c
+            - "tail -f /dev/null"

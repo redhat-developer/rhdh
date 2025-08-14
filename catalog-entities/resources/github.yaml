@@ -1,0 +1,15 @@
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: github
+  title: GitHub Showcase repository
+  description: We store our deployment manifests and code for the janus showcase in this GitHub repository.
+  links:
+    - url: https://github.com/redhat-developer/rhdh
+      title: GitHub Repository
+      icon: web
+spec:
+  type: repository
+  lifecycle: production
+  owner: janus-authors
+  system: janus-idp

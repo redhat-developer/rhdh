@@ -1,7 +1,0 @@
----
-backstage:
-  baseUrl: http://backstage.localhost
-route:
-  enabled: false
-ingress:
-  enabled: true

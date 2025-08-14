@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: print-pi
+  labels:
+    backstage.io/kubernetes-id: developer-hub
+spec:
+  template:
+    metadata:
+      labels:
+        backstage.io/kubernetes-id: developer-hub
+    spec:
+      containers:
+        - name: pi
+          image: perl:5.34.0
+          # Print out the first 128 digits of PI
+          command: ["perl", "-Mbignum=bpi", "-wle", "print bpi(128)"]
+      restartPolicy: Never
+  backoffLimit: 4

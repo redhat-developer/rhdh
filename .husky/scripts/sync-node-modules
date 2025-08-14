@@ -1,0 +1,18 @@
+#!/bin/bash
+#
+# Copyright (c) 2023 Red Hat, Inc.
+# This program and the accompanying materials are made
+# available under the terms of the Eclipse Public License 2.0
+# which is available at https://www.eclipse.org/legal/epl-2.0/
+#
+# SPDX-License-Identifier: EPL-2.0
+#
+# script to perform yarn install if package.json has changed
+# triggered by post-checkout, post-merge, post-rewrite hooks
+
+#shellcheck disable=SC1083
+changed_files="$(git diff-tree -r --name-only --no-commit-id HEAD@{1} HEAD)"
+
+if [[ $changed_files == *"package.json"* ]]; then
+  eval "yarn install"
+fi

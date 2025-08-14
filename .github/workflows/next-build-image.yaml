@@ -1,0 +1,246 @@
+# Copyright Red Hat, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Build Next and Tag Image
+
+on:
+  # workflow_dispatch so that it can be triggered manually if needed
+  workflow_dispatch:
+  schedule:
+    # run at 3:18 UTC every day
+    - cron: "18 3 * * *"
+
+  # in addition to building multi-arch :next images daily,
+  # also build multi-arch images for any x.y or x.y.z tag pushed to the repo
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+'
+    branches:
+      - 'release-**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  REGISTRY: quay.io
+  REGISTRY_IMAGE: rhdh-community/rhdh
+
+jobs:
+  build-image:
+    name: Build Image
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-24.04-arm
+          - ubuntu-24.04
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 720 # Set to 12 hours instead of default 360 = 6hrs
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Prepare
+        run: |
+          if [ "${{ matrix.os }}" == "ubuntu-24.04" ]; then
+            platform="linux/amd64"
+          elif [ "${{ matrix.os }}" == "ubuntu-24.04-arm" ]; then
+            platform="linux/arm64"
+          else
+            echo "Unknown platform"
+            exit 1
+          fi
+
+          ref_name=${{ github.ref_name }}
+          if [ "$ref_name" == "main" ]; then
+            ref_name="next"
+          elif [[ "$ref_name" =~ ^release-([0-9]+)\.([0-9]+) ]]; then
+            # next-1.y
+            ref_name="next-${BASH_REMATCH[1]}.${BASH_REMATCH[2]}"
+          fi
+          ref_name_short="${ref_name}"
+
+          # for releases only
+          if [[ $ref_name != "next" ]] && [[ $ref_name != "next-"* ]]; then
+            # shorten from 1.6.1 => 1.6
+            ref_name_short="${ref_name%.*}"
+            if [[ $ref_name_short == "1" ]]; then ref_name_short="${ref_name}"; fi
+          fi
+
+          echo "REF_NAME=$ref_name" >> $GITHUB_ENV
+          echo "REF_NAME_SHORT=${ref_name_short}" >> $GITHUB_ENV
+          echo "PLATFORM=$platform" >> $GITHUB_ENV
+          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
+          echo "PLATFORM_ARCH=${platform#*/}" >> $GITHUB_ENV
+
+      - name: Get the last commit short SHA
+        uses: ./.github/actions/get-sha
+
+      - name: Build and Push with Buildx (for :next builds, 14d expiry)
+        uses: ./.github/actions/docker-build
+        id: build-next
+        if: ${{ env.REF_NAME_SHORT == 'next' || startsWith(env.REF_NAME_SHORT,'next-') }}
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_TOKEN }}
+          imageName: ${{ env.REGISTRY_IMAGE }}
+          imageTags: |
+            type=raw,value=${{ env.REF_NAME }}-${{ env.PLATFORM_ARCH }}
+            type=raw,value=${{ env.REF_NAME }}-${{ env.SHORT_SHA }}-${{ env.PLATFORM_ARCH }}
+          imageLabels: quay.expires-after=14d
+          push: true
+          platform: ${{ env.PLATFORM }}
+
+      - name: Build and Push with Buildx (for releases, 183d expiry)
+        uses: ./.github/actions/docker-build
+        id: build-release
+        if: ${{ env.REF_NAME_SHORT != 'next' && !startsWith(env.REF_NAME_SHORT,'next-') }}
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_TOKEN }}
+          imageName: ${{ env.REGISTRY_IMAGE }}
+          imageTags: |
+            type=raw,value=${{ env.REF_NAME }}-${{ env.PLATFORM_ARCH }}
+            type=raw,value=${{ env.REF_NAME }}-${{ env.SHORT_SHA }}-${{ env.PLATFORM_ARCH }}
+          imageLabels: quay.expires-after=183d
+          push: true
+          platform: ${{ env.PLATFORM }}
+
+      - name: Export digest (for :next builds)
+        id: export-digest-next
+        if: ${{ env.REF_NAME_SHORT == 'next' || startsWith(env.REF_NAME_SHORT,'next-') }}
+        run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.build-next.outputs.digest }}"
+          touch "/tmp/digests/${digest#sha256:}"
+
+      - name: Export digest (for releases)
+        id: export-digest-release
+        if: ${{ env.REF_NAME_SHORT != 'next' && !startsWith(env.REF_NAME_SHORT,'next-') }}
+        run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.build-release.outputs.digest }}"
+          touch "/tmp/digests/${digest#sha256:}"
+
+      - name: Upload digest
+        uses: actions/upload-artifact@v4
+        with:
+          name: digests-${{ env.PLATFORM_PAIR }}
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  merge:
+      runs-on: ubuntu-latest
+      needs:
+        - build-image
+      steps:
+        - name: Prepare
+          run: |
+            ref_name=${{ github.ref_name }}
+            if [ "$ref_name" == "main" ]; then
+              ref_name="next"
+            elif [[ "$ref_name" =~ ^release-([0-9]+)\.([0-9]+) ]]; then
+              # next-1.y
+              ref_name="next-${BASH_REMATCH[1]}.${BASH_REMATCH[2]}"
+            fi
+            ref_name_short="${ref_name}"
+
+            # for releases only
+            if [[ $ref_name != "next" ]] && [[ $ref_name != "next-"* ]]; then
+              # shorten from 1.6.1 => 1.6
+              ref_name_short="${ref_name%.*}"
+              if [[ $ref_name_short == "1" ]]; then ref_name_short="${ref_name}"; fi
+            fi
+            echo "REF_NAME=$ref_name" >> $GITHUB_ENV
+            echo "REF_NAME_SHORT=${ref_name_short}" >> $GITHUB_ENV
+
+        - name: Checkout
+          uses: actions/checkout@v4
+          with:
+            fetch-depth: 0
+
+        - name: Download digests
+          uses: actions/download-artifact@v4
+          with:
+            path: /tmp/digests
+            pattern: digests-*
+            merge-multiple: true
+
+        - name: Get the last commit short SHA
+          uses: ./.github/actions/get-sha
+
+        - name: Set up Docker Buildx
+          uses: docker/setup-buildx-action@v3
+
+        - name: Set container metadata (for :next builds, 14d expiry)
+          id: meta-next
+          if: ${{ env.REF_NAME_SHORT == 'next' || startsWith(env.REF_NAME_SHORT,'next-') }}
+          uses: docker/metadata-action@v5
+          with:
+            images: ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}
+            tags: |
+              type=raw,value=${{ env.REF_NAME }}
+              type=raw,value=${{ env.REF_NAME }}-${{ env.SHORT_SHA }}
+            labels: |
+              quay.expires-after=14d
+
+        - name: Set container metadata (for releases, 183d expiry)
+          id: meta-release
+          if: ${{ env.REF_NAME_SHORT != 'next' && !startsWith(env.REF_NAME_SHORT,'next-') }}
+          uses: docker/metadata-action@v5
+          with:
+            images: ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}
+            tags: |
+              type=raw,value=${{ env.REF_NAME }}
+              type=raw,value=${{ env.REF_NAME }}-${{ env.SHORT_SHA }}
+              type=raw,value=${{ env.REF_NAME_SHORT }}
+              type=raw,value=${{ env.REF_NAME_SHORT }}-${{ env.SHORT_SHA }}
+            labels: |
+              quay.expires-after=183d
+
+        - name: Login to Docker Hub
+          uses: docker/login-action@v3
+          with:
+            registry: ${{ env.REGISTRY }}
+            username: ${{ secrets.QUAY_USERNAME }}
+            password: ${{ secrets.QUAY_TOKEN }}
+
+        - name: Create manifest list and push
+          working-directory: /tmp/digests
+          run: |
+            docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+              $(printf '${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}@sha256:%s ' *)
+
+        - name: Inspect image (for :next builds)
+          id: inspect-next
+          if: ${{ env.REF_NAME_SHORT == 'next' || startsWith(env.REF_NAME_SHORT,'next-') }}
+          run: |
+            docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:${{ steps.meta-next.outputs.version }}
+
+        - name: Inspect image (for releases)
+          id: inspect-release
+          if: ${{ env.REF_NAME_SHORT != 'next' && !startsWith(env.REF_NAME_SHORT,'next-') }}
+          run: |
+            docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:${{ steps.meta-release.outputs.version }}

@@ -1,0 +1,31 @@
+# Building this repo as a container image
+
+## Multi-arch support
+
+RHDH is currently only available for amd64/x86_64. 
+
+If you want an image that runs on Mac M1 (arm64/aarch64) or another architecture, you will need to build it yourself.
+
+## Building locally
+
+Check out this repo, choose the branch or tag you want to use, then build an image:
+
+```
+podman build -f docker/Dockerfile . -t redhat-developer/rhdh:local
+```
+
+## Downstream builds
+
+Downstream dockerfile and configuration can be found here:
+
+* link:../.rhdh/docker/[.rhdh/docker]
+
+Downstream sources use the above folder to transform sources in this repo to something that can be built within the Red Hat build pipeline. 
+
+*_Red Hat VPN access required._*
+
+* https://gitlab.cee.redhat.com/rhidp/rhdh
+
+For more info on building downstream with the Red Hat build pipeline, see the docs.
+
+* https://gitlab.cee.redhat.com/rhidp/rhdh/-/blob/rhdh-1-rhel-9/docs/RHDH-FAQ.adoc?ref_type=heads

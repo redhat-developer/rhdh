@@ -1,0 +1,8 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: components
+  description: A collection of all components
+spec:
+  targets:
+    - ./components/showcase.yaml

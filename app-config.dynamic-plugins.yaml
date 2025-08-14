@@ -1,0 +1,519 @@
+## Arbitrary app-config for backwards compatible UI configuration - now with dynamic plugins
+dynamicPlugins:
+  frontend:
+    backstage-community.plugin-azure-devops:
+      mountPoints:
+        - mountPoint: entity.page.ci/cards
+          importName: EntityAzurePipelinesContent
+          config:
+            layout:
+              gridColumn: "1 / -1"
+            if:
+              allOf:
+                - isAzureDevOpsAvailable
+        - mountPoint: entity.page.pull-requests/cards
+          importName: EntityAzurePullRequestsContent
+          config:
+            layout:
+              gridColumn: "1 / -1"
+            if:
+              allOf:
+                - isAzureDevOpsAvailable
+    backstage-community.plugin-dynatrace:
+      mountPoints:
+        - mountPoint: entity.page.monitoring/cards
+          importName: DynatraceTab
+          config:
+            layout:
+              gridColumn: "1 / -1"
+            if:
+              allOf:
+                - isDynatraceAvailable
+    backstage-community.plugin-github-actions:
+      mountPoints:
+        - mountPoint: entity.page.ci/cards
+          importName: EntityGithubActionsContent
+          config:
+            layout:
+              gridColumn: "1 / -1"
+            if:
+              allOf:
+                - isGithubActionsAvailable
+    backstage-community.plugin-github-issues:
+      mountPoints:
+        - mountPoint: entity.page.issues/cards
+          importName: GithubIssuesCard
+          config:
+            layout:
+              gridColumn: "1 / -1"
+            if:
+              allOf:
+                - hasAnnotation: github.com/project-slug
+    backstage-community.plugin-jenkins:
+      mountPoints:
+        - mountPoint: entity.page.ci/cards
+          importName: EntityJenkinsContent
+          config:
+            layout:
+              gridColumn: "1 / -1"
+            if:
+              allOf:
+                - isJenkinsAvailable
+    backstage.plugin-kubernetes:
+      mountPoints:
+        - mountPoint: entity.page.kubernetes/cards
+          importName: EntityKubernetesContent
+          config:
+            layout:
+              gridColumn: "1 / -1"
+            if:
+              anyOf:
+                - hasAnnotation: backstage.io/kubernetes-id
+                - hasAnnotation: backstage.io/kubernetes-namespace
+    backstage-community.plugin-lighthouse:
+      appIcons:
+        - name: lighthouse
+          importName: LighthouseIcon
+      dynamicRoutes:
+        - path: /lighthouse
+          importName: LighthousePage
+          menuItem:
+            icon: lighthouse
+            text: Lighthouse
+      mountPoints:
+        - mountPoint: entity.page.overview/cards
+          importName: EntityLastLighthouseAuditCard
+          config:
+            layout:
+              gridColumnEnd:
+                md: "span 6"
+                xs: "span 12"
+            if:
+              allOf:
+                - isLighthouseAvailable
+    backstage.plugin-notifications:
+      dynamicRoutes:
+        - importName: NotificationsPage
+          menuItem:
+            config:
+              props:
+                titleCounterEnabled: true
+                webNotificationsEnabled: false
+            importName: NotificationsSidebarItem
+          path: /notifications
+    backstage.plugin-signals: {}
+    pagerduty.backstage-plugin:
+      mountPoints:
+        - mountPoint: entity.page.overview/cards
+          importName: EntityPagerDutyCard
+          config:
+            layout:
+              gridColumnEnd:
+                md: "span 6"
+                xs: "span 12"
+            if:
+              allOf:
+                - isPluginApplicableToEntity
+    backstage-community.plugin-sonarqube:
+      mountPoints:
+        - mountPoint: entity.page.overview/cards
+          importName: EntitySonarQubeCard
+          config:
+            layout:
+              gridColumnEnd:
+                lg: "span 4"
+                md: "span 6"
+                xs: "span 12"
+            if:
+              allOf:
+                - isSonarQubeAvailable
+    immobiliarelabs.backstage-plugin-gitlab:
+      mountPoints:
+        - mountPoint: entity.page.overview/cards
+          importName: EntityGitlabMergeRequestStatsCard
+          config:
+            layout:
+              gridColumnEnd:
+                lg: "span 4"
+                md: "span 6"
+                xs: "span 12"
+            if:
+              allOf:
+                - isGitlabAvailable
+        - mountPoint: entity.page.ci/cards
+          importName: EntityGitlabPipelinesTable
+          config:
+            layout:
+              gridColumn: "1 / -1"
+            if:
+              allOf:
+                - isGitlabAvailable
+        - mountPoint: entity.page.issues/cards
+          importName: EntityGitlabIssuesTable
+          config:
+            layout:
+              gridColumn: "1 / -1"
+            if:
+              allOf:
+                - isGitlabAvailable
+        - mountPoint: entity.page.pull-requests/cards
+          importName: EntityGitlabMergeRequestsTable
+          config:
+            layout:
+              gridColumn: "1 / -1"
+            if:
+              allOf:
+                - isGitlabAvailable
+    backstage-community.plugin-acr:
+      mountPoints:
+        - mountPoint: entity.page.image-registry/cards
+          importName: AcrPage
+          config:
+            layout:
+              gridColumn: 1 / -1
+            if:
+              anyOf:
+                - isAcrAvailable
+    backstage-community.plugin-jfrog-artifactory:
+      mountPoints:
+        - mountPoint: entity.page.image-registry/cards
+          importName: JfrogArtifactoryPage
+          config:
+            layout:
+              gridColumn: 1 / -1
+            if:
+              anyOf:
+                - isJfrogArtifactoryAvailable
+    backstage-community.plugin-nexus-repository-manager:
+      mountPoints:
+        - mountPoint: entity.page.image-registry/cards
+          importName: NexusRepositoryManagerPage
+          config:
+            layout:
+              gridColumn: 1 / -1
+            if:
+              anyOf:
+                - isNexusRepositoryManagerAvailable
+    backstage-community.plugin-ocm:
+      appIcons:
+        - name: ocmIcon
+          importName: OcmIcon
+      dynamicRoutes:
+        - path: /ocm
+          importName: OcmPage
+          menuItem:
+            icon: ocmIcon
+            text: Clusters
+      mountPoints:
+        - mountPoint: entity.page.overview/context
+          importName: ClusterContextProvider
+        - mountPoint: entity.page.overview/cards
+          importName: ClusterAvailableResourceCard
+          config:
+            layout:
+              gridColumnEnd:
+                lg: "span 4"
+                md: "span 6"
+                xs: "span 12"
+            if:
+              allOf:
+                - isKind: resource
+                - isType: kubernetes-cluster
+        - mountPoint: entity.page.overview/cards
+          importName: ClusterInfoCard
+          config:
+            layout:
+              gridColumnEnd:
+                lg: "span 4"
+                md: "span 6"
+                xs: "span 12"
+            if:
+              allOf:
+                - isKind: resource
+                - isType: kubernetes-cluster
+    backstage-community.plugin-quay:
+      mountPoints:
+        - mountPoint: entity.page.image-registry/cards
+          importName: QuayPage
+          config:
+            layout:
+              gridColumn: 1 / -1
+            if:
+              anyOf:
+                - isQuayAvailable
+    red-hat-developer-hub.backstage-plugin-bulk-import:
+      appIcons:
+        - name: bulkImportIcon
+          importName: BulkImportIcon
+      dynamicRoutes:
+        - path: /bulk-import/repositories
+          importName: BulkImportPage
+          menuItem:
+            icon: bulkImportIcon
+            text: Bulk import
+    red-hat-developer-hub.backstage-plugin-global-header:
+      mountPoints:
+        - mountPoint: application/header
+          importName: GlobalHeader
+          config:
+            position: above-main-content # above-main-content | above-sidebar
+    red-hat-developer-hub.backstage-plugin-global-floating-action-button:
+      mountPoints:
+        - mountPoint: application/listener
+          importName: DynamicGlobalFloatingActionButton
+    red-hat-developer-hub.backstage-plugin-quickstart:
+      mountPoints:
+        - mountPoint: application/provider
+          importName: QuickstartDrawerProvider
+    red-hat-developer-hub.backstage-plugin-dynamic-home-page:
+      dynamicRoutes:
+        - path: /
+          importName: DynamicHomePage
+      mountPoints:
+        - mountPoint: application/listener
+          importName: VisitListener
+        - mountPoint: home.page/cards
+          importName: SearchBar
+          config:
+            layouts:
+              xl: {w: 10, h: 1, x: 1}
+              lg: {w: 10, h: 1, x: 1}
+              md: {w: 10, h: 1, x: 1}
+              sm: {w: 10, h: 1, x: 1}
+              xs: {w: 12, h: 1}
+              xxs: {w: 12, h: 1}
+        - mountPoint: home.page/cards
+          importName: QuickAccessCard
+          config:
+            layouts:
+              xl: {w: 7, h: 8}
+              lg: {w: 7, h: 8}
+              md: {w: 7, h: 8}
+              sm: {w: 12, h: 8}
+              xs: {w: 12, h: 8}
+              xxs: {w: 12, h: 8}
+        - mountPoint: home.page/cards
+          importName: CatalogStarredEntitiesCard
+          config:
+            layouts:
+              xl: {w: 5, h: 4, x: 7}
+              lg: {w: 5, h: 4, x: 7}
+              md: {w: 5, h: 4, x: 7}
+              sm: {w: 12, h: 4}
+              xs: {w: 12, h: 4}
+              xxs: {w: 12, h: 4}
+    backstage-community.plugin-tekton:
+      mountPoints:
+        - mountPoint: entity.page.ci/cards
+          importName: TektonCI
+          config:
+            layout:
+              gridColumn: "1 / -1"
+            if:
+              allOf:
+                - isTektonCIAvailable
+    backstage-community.plugin-topology:
+      mountPoints:
+        - mountPoint: entity.page.topology/cards
+          importName: TopologyPage
+          config:
+            layout:
+              gridColumn: "1 / -1"
+              height: 75vh
+            if:
+              anyOf:
+                - hasAnnotation: backstage.io/kubernetes-id
+                - hasAnnotation: backstage.io/kubernetes-namespace
+    backstage-community.plugin-redhat-argocd:
+      mountPoints:
+        - mountPoint: entity.page.overview/cards
+          importName: ArgocdDeploymentSummary
+          config:
+            layout:
+              gridColumnEnd:
+                lg: 'span 8'
+                xs: 'span 12'
+            if:
+              allOf:
+                - isArgocdConfigured
+        - mountPoint: entity.page.cd/cards
+          importName: ArgocdDeploymentLifecycle
+          config:
+            layout:
+              gridColumn: '1 / -1'
+            if:
+              allOf:
+                - isArgocdConfigured
+    roadiehq.backstage-plugin-datadog:
+      mountPoints:
+        - mountPoint: entity.page.monitoring/cards
+          importName: EntityDatadogContent
+          config:
+            layout:
+              gridColumn: "1 / -1"
+            if:
+              allOf:
+                - isDatadogAvailable
+    roadiehq.backstage-plugin-github-insights:
+      mountPoints:
+        - mountPoint: entity.page.overview/cards
+          importName: EntityGithubInsightsComplianceCard
+          config:
+            layout:
+              gridColumnEnd:
+                lg: "span 4"
+                md: "span 6"
+                xs: "span 12"
+            if:
+              allOf:
+                - isGithubInsightsAvailable
+    roadiehq.backstage-plugin-github-pull-requests:
+      mountPoints:
+        - mountPoint: entity.page.overview/cards
+          importName: EntityGithubPullRequestsOverviewCard
+          config:
+            layout:
+              gridColumnEnd:
+                lg: "span 4"
+                md: "span 6"
+                xs: "span 12"
+            if:
+              allOf:
+                - isGithubPullRequestsAvailable
+        - mountPoint: entity.page.pull-requests/cards
+          importName: EntityGithubPullRequestsContent
+          config:
+            layout:
+              gridColumn: "1 / -1"
+            if:
+              allOf:
+                - isGithubPullRequestsAvailable
+    roadiehq.backstage-plugin-jira:
+      mountPoints:
+        - mountPoint: entity.page.issues/cards
+          importName: EntityJiraOverviewCard
+          config:
+            layout:
+              gridColumn: "1 / -1"
+            if:
+              allOf:
+                - isJiraAvailable
+    roadiehq.backstage-plugin-security-insights:
+      mountPoints:
+        - mountPoint: entity.page.overview/cards
+          importName: EntityDependabotAlertsCard
+          config:
+            layout:
+              gridColumnEnd:
+                lg: "span 4"
+                md: "span 6"
+                xs: "span 12"
+            if:
+              allOf:
+                - isSecurityInsightsAvailable
+    backstage.plugin-techdocs:
+      routeBindings:
+        targets:
+          - importName: techdocsPlugin
+        bindings:
+          - bindTarget: catalogPlugin.externalRoutes
+            bindMap:
+              viewTechDoc: techdocsPlugin.routes.docRoot
+          - bindTarget: scaffolderPlugin.externalRoutes
+            bindMap:
+              viewTechDoc: techdocsPlugin.routes.docRoot
+      dynamicRoutes:
+        - path: /docs
+          importName: TechDocsIndexPage
+          menuItem:
+            icon: docs
+            text: Docs
+        - path: /docs/:namespace/:kind/:name/*
+          importName: TechDocsReaderPage
+      mountPoints:
+        - mountPoint: entity.page.docs/cards
+          importName: EntityTechdocsContent
+          config:
+            layout:
+              gridColumn: "1 / -1"
+            if:
+              allOf:
+                - isTechDocsAvailable
+        - mountPoint: search.page.results
+          importName: TechDocsSearchResultListItem
+        - mountPoint: search.page.filters
+          importName: TechdocsSearchFilter
+        - mountPoint: search.page.types
+          importName: techdocsSearchType
+          config:
+            props:
+              name: Documentation
+              icon: docs
+    backstage.plugin-techdocs-module-addons-contrib:
+      techdocsAddons:
+        - importName: ReportIssue
+    backstage-community.plugin-tech-radar:
+      apiFactories:
+        - importName: TechRadarApi
+      appIcons:
+        - name: techRadar
+          importName: TechRadarIcon
+      dynamicRoutes:
+        - path: /tech-radar
+          importName: TechRadarPage
+          menuItem:
+            icon: techRadar
+            text: Tech Radar
+          config:
+            props:
+              width: 1500
+              height: 800
+    backstage-community.plugin-analytics-provider-segment:
+      analyticsApiExtensions:
+        - importName: SegmentAnalytics
+    backstage-community.plugin-rbac:
+      appIcons:
+        - name: rbacIcon
+          importName: RbacIcon
+      dynamicRoutes:
+        - path: /rbac
+          importName: RbacPage
+          menuItem:
+            icon: rbacIcon
+            text: RBAC
+      menuItems:
+        rbac:
+          parent: admin
+          icon: rbacIcon
+    red-hat-developer-hub.backstage-plugin-marketplace:
+      appIcons:
+        - name: marketplace
+          importName: MarketplaceIcon
+      dynamicRoutes:
+        - path: /extensions/catalog
+          importName: DynamicMarketplacePluginRouter
+      mountPoints:
+        - mountPoint: internal.plugins/tab
+          importName: DynamicMarketplacePluginContent
+          config:
+            path: marketplace
+            title: Catalog
+    red-hat-developer-hub.backstage-plugin-adoption-insights:
+      appIcons:
+        - name: adoptionInsightsIcon
+          importName: AdoptionInsightsIcon
+      dynamicRoutes:
+        - path: /adoption-insights
+          importName: AdoptionInsightsPage
+          menuItem:
+            icon: adoptionInsightsIcon
+            text: Adoption Insights
+      menuItems:
+        adoption-insights:
+          parent: admin
+          icon: adoptionInsightsIcon
+    red-hat-developer-hub.backstage-plugin-analytics-module-adoption-insights:
+      analyticsApiExtensions:
+        - importName: AdoptionInsightsAnalyticsApi
+app:
+  title: Red Hat Developer Hub

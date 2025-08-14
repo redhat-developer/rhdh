@@ -1,0 +1,10 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "tsc": {
+      "outputs": [
+        "../../dist-types/wrappers/red-hat-developer-hub-backstage-plugin-catalog-backend-module-marketplace-dynamic/**"
+      ]
+    }
+  }
+}
