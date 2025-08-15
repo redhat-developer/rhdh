@@ -829,16 +829,9 @@ cluster_setup_ocp_operator() {
   install_orchestrator_infra_chart
 }
 
-# We don't need to install full Prometheus. For testing purpose will be enough CRD. Without this CRD backstage metrics configuration fails.
-installPrometheusCRD() {
-  curl -LO https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/main/example/prometheus-operator-crd/monitoring.coreos.com_servicemonitors.yaml
-  kubectl apply -f monitoring.coreos.com_servicemonitors.yaml
-}
-
 cluster_setup_k8s_operator() {
   install_olm
   install_tekton_pipelines
-  installPrometheusCRD
   # install_ocm_k8s_operator
   # install_crunchy_postgres_k8s_operator # Works with K8s but disabled in values file
 }
@@ -846,7 +839,6 @@ cluster_setup_k8s_operator() {
 cluster_setup_k8s_helm() {
   # install_olm
   install_tekton_pipelines
-  installPrometheusCRD
   # install_ocm_k8s_operator
   # install_crunchy_postgres_k8s_operator # Works with K8s but disabled in values file
 }
