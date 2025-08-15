@@ -442,6 +442,28 @@ configure_external_postgres_db() {
   POSTGRES_HOST=$(echo -n "postgress-external-db-primary.$NAME_SPACE_POSTGRES_DB.svc.cluster.local" | base64 | tr -d '\n')
   sed_inplace "s|POSTGRES_HOST:.*|POSTGRES_HOST: ${POSTGRES_HOST}|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
   oc apply -f "${DIR}/resources/postgres-db/postgres-cred.yaml"  --namespace="${project}"
+
+  cat <<EOF | oc apply -n "${NAME_SPACE_POSTGRES_DB}" -f -
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-psql-from-my-app
+  namespace: "${NAME_SPACE_POSTGRES_DB}"
+spec:
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: "${NAME_SPACE_RBAC}"
+    ports:
+    - port: 5432
+      protocol: TCP
+  podSelector:
+    matchLabels:
+      app: psql-test
+  policyTypes:
+  - Ingress
+EOF
 }
 
 apply_yaml_files() {
@@ -853,6 +875,7 @@ install_orchestrator_infra_chart() {
     "oci://quay.io/rhdh/orchestrator-infra-chart" --version "${CHART_VERSION}" \
     --wait --timeout=5m \
     --set serverlessLogicOperator.subscription.spec.installPlanApproval=Automatic \
+    --set serverlessLogicOperator.subscription.spec.startingCSV=logic-operator-rhel8.v1.36.0 \
     --set serverlessOperator.subscription.spec.installPlanApproval=Automatic
 }
 
@@ -902,12 +925,29 @@ rbac_deployment() {
   configure_namespace "${NAME_SPACE_POSTGRES_DB}"
   configure_namespace "${NAME_SPACE_RBAC}"
   configure_external_postgres_db "${NAME_SPACE_RBAC}"
-
+  
   # Initiate rbac instance deployment.
   local rbac_rhdh_base_url="https://${RELEASE_NAME_RBAC}-developer-hub-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
   echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${RELEASE_NAME_RBAC}"
   perform_helm_install "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${HELM_CHART_RBAC_VALUE_FILE_NAME}"
+
+  # NOTE: This is a workaround to allow the sonataflow platform to connect to the external postgres db using ssl.
+  until [[ $(oc get sfp -n "${NAME_SPACE_RBAC}" --no-headers 2>/dev/null | wc -l) -eq 1 ]]; do
+    echo "No sfp resources found. Retrying in 5 seconds..."
+    sleep 5
+  done
+  oc -n "${NAME_SPACE_RBAC}" patch sfp sonataflow-platform --type=merge \
+  -p '{"spec":{"services":{"jobService":{"podTemplate":{"container":{"env":[{"name":"QUARKUS_DATASOURCE_REACTIVE_URL","value":"postgresql://postgress-external-db-primary.postgress-external-db.svc.cluster.local:5432/sonataflow?search_path=jobs-service&sslmode=require&ssl=true&trustAll=true"},{"name":"QUARKUS_DATASOURCE_REACTIVE_SSL_MODE","value":"require"},{"name":"QUARKUS_DATASOURCE_REACTIVE_TRUST_ALL","value":"true"}]}}}}}}'
+  
+  oc get deployment -n "${NAME_SPACE_RBAC}"
+  oc get pods -n "${NAME_SPACE_RBAC}"
+  oc rollout restart deployment/sonataflow-platform-jobs-service -n "${NAME_SPACE_RBAC}"
+  pod_name=$(oc -n "$NAME_SPACE_RBAC" get pods -o name | grep '^pod/sonataflow-platform-jobs-service' | head -n1)
+  oc -n "$NAME_SPACE_RBAC" wait --for=condition=Ready --timeout=240s "$pod_name"
+  oc get pods -n "${NAME_SPACE_RBAC}"
+
+  sleep 2h  
 }
 
 initiate_deployments() {
