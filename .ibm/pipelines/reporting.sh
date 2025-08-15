@@ -1,6 +1,6 @@
 #!/bin/bash
 
-mkdir -p "$ARTIFACT_DIR/reporting"
+#mkdir -p "$ARTIFACT_DIR/reporting"
 
 save_status_deployment_namespace() {
   local current_deployment=$1

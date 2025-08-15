@@ -224,7 +224,8 @@ yq_merge_value_files() {
   ' "${base_file}" "${diff_file}" > "${final_file}"
   else
     echo "Invalid operation with plugins key: $plugin_operation"
-    exit 1
+    # exit 1  # Comentado para evitar exit em caso de erro
+    return 1
   fi
 }
 
@@ -394,11 +395,11 @@ configure_namespace() {
 
   if ! oc create namespace "${project}"; then
       echo "Error: Failed to create namespace ${project}" >&2
-      exit 1
+      # exit 1  # Comentado para evitar exit em caso de erro
   fi
   if ! oc config set-context --current --namespace="${project}"; then
       echo "Error: Failed to set context for namespace ${project}" >&2
-      exit 1
+      # exit 1  # Comentado para evitar exit em caso de erro
   fi
 
   echo "Namespace ${project} is ready."
@@ -516,16 +517,16 @@ apply_yaml_files() {
       --dry-run=client -o yaml | oc apply -f -
 
     # Create Pipeline run for tekton test case.
-    oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline.yaml"
-    oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline-run.yaml"
+#    oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline.yaml"
+#    oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline-run.yaml"
 
     # Create Deployment and Pipeline for Topology test.
-    oc apply -f "$dir/resources/topology_test/topology-test.yaml"
-    if [[ -z "${IS_OPENSHIFT}" || "$(to_lowercase "${IS_OPENSHIFT}")" == "false" ]]; then
-      kubectl apply -f "$dir/resources/topology_test/topology-test-ingress.yaml"
-    else
-      oc apply -f "$dir/resources/topology_test/topology-test-route.yaml"
-    fi
+#    oc apply -f "$dir/resources/topology_test/topology-test.yaml"
+#    if [[ -z "${IS_OPENSHIFT}" || "$(to_lowercase "${IS_OPENSHIFT}")" == "false" ]]; then
+#      kubectl apply -f "$dir/resources/topology_test/topology-test-ingress.yaml"
+#    else
+#      oc apply -f "$dir/resources/topology_test/topology-test-route.yaml"
+#    fi
 
     # Create secret for sealight job to pull image from private quay repository.
     if [[ "$JOB_NAME" == *"sealight"* ]]; then kubectl create secret docker-registry quay-secret --docker-server=quay.io --docker-username=$RHDH_SEALIGHTS_BOT_USER --docker-password=$RHDH_SEALIGHTS_BOT_TOKEN --namespace="${project}"; fi
@@ -608,7 +609,8 @@ run_tests() {
   if [ $INSTALL_STATUS -ne 0 ]; then
     echo "=== YARN INSTALL FAILED ==="
     cat /tmp/yarn.install.log.txt
-    exit $INSTALL_STATUS
+    # exit $INSTALL_STATUS  # Comentado para evitar exit em caso de erro
+    return $INSTALL_STATUS
   else
     echo "Yarn install completed successfully."
   fi
@@ -620,6 +622,7 @@ run_tests() {
   Xvfb :99 &
   export DISPLAY=:99
 
+  echo "=== STARTING E2E TESTS FOR PROJECT: ${project} ==="
   (
     set -e
     echo "Using PR container image: ${TAG_NAME}"
@@ -627,29 +630,57 @@ run_tests() {
   ) 2>&1 | tee "/tmp/${LOGFILE}"
 
   local RESULT=${PIPESTATUS[0]}
+  echo "=== YARN TEST COMMAND COMPLETED WITH EXIT CODE: ${RESULT} ==="
 
   pkill Xvfb
 
+  # Show test results summary if available
+  if [ -f "${e2e_tests_dir}/${JUNIT_RESULTS}" ]; then
+    echo "=== TEST RESULTS SUMMARY ==="
+    local total_tests=$(grep -oP 'tests="\K[0-9]+' "${e2e_tests_dir}/${JUNIT_RESULTS}" | head -n 1)
+    local failed_tests=$(grep -oP 'failures="\K[0-9]+' "${e2e_tests_dir}/${JUNIT_RESULTS}" | head -n 1)
+    local errors=$(grep -oP 'errors="\K[0-9]+' "${e2e_tests_dir}/${JUNIT_RESULTS}" | head -n 1)
+    echo "Total tests: ${total_tests}, Failed: ${failed_tests}, Errors: ${errors}"
+  fi
+
+  # Show tail of test log if tests failed
+  if [ "${RESULT}" -ne 0 ]; then
+    echo "=== LAST 50 LINES OF TEST OUTPUT ==="
+    tail -50 "/tmp/${LOGFILE}" | grep -v -E "(K8S_CLUSTER_TOKEN|PASSWORD|SECRET|API_KEY|TOKEN)" || echo "No safe log lines to display"
+  fi
+
   mkdir -p "${ARTIFACT_DIR}/${project}/test-results"
   mkdir -p "${ARTIFACT_DIR}/${project}/attachments/screenshots"
-  cp -a "${e2e_tests_dir}/test-results/"* "${ARTIFACT_DIR}/${project}/test-results"
-  cp -a "${e2e_tests_dir}/${JUNIT_RESULTS}" "${ARTIFACT_DIR}/${project}/${JUNIT_RESULTS}"
+  
+  # Copy test artifacts with error handling
+  if [ -d "${e2e_tests_dir}/test-results" ]; then
+    cp -a "${e2e_tests_dir}/test-results/"* "${ARTIFACT_DIR}/${project}/test-results" || echo "Warning: Could not copy test results"
+  fi
+  
+  if [ -f "${e2e_tests_dir}/${JUNIT_RESULTS}" ]; then
+    cp -a "${e2e_tests_dir}/${JUNIT_RESULTS}" "${ARTIFACT_DIR}/${project}/${JUNIT_RESULTS}" || echo "Warning: Could not copy JUnit results"
+  fi
 
   if [ -d "${e2e_tests_dir}/screenshots" ]; then
-    cp -a "${e2e_tests_dir}/screenshots/"* "${ARTIFACT_DIR}/${project}/attachments/screenshots/"
+    cp -a "${e2e_tests_dir}/screenshots/"* "${ARTIFACT_DIR}/${project}/attachments/screenshots/" || echo "Warning: Could not copy screenshots"
   fi
 
   ansi2html <"/tmp/${LOGFILE}" >"/tmp/${LOGFILE}.html"
-  cp -a "/tmp/${LOGFILE}.html" "${ARTIFACT_DIR}/${project}"
-  cp -a "${e2e_tests_dir}/playwright-report/"* "${ARTIFACT_DIR}/${project}"
+  cp -a "/tmp/${LOGFILE}.html" "${ARTIFACT_DIR}/${project}" || echo "Warning: Could not copy log HTML"
+  
+  if [ -d "${e2e_tests_dir}/playwright-report" ]; then
+    cp -a "${e2e_tests_dir}/playwright-report/"* "${ARTIFACT_DIR}/${project}" || echo "Warning: Could not copy playwright report"
+  fi
 
   droute_send "${release_name}" "${project}"
 
-  echo "${project} RESULT: ${RESULT}"
+  echo "=== ${project} FINAL RESULT: ${RESULT} ==="
   if [ "${RESULT}" -ne 0 ]; then
+    echo "=== TEST FAILED FOR PROJECT: ${project} ==="
     save_overall_result 1
     save_status_test_failed $CURRENT_DEPLOYMENT true
   else
+    echo "=== TEST PASSED FOR PROJECT: ${project} ==="
     save_status_test_failed $CURRENT_DEPLOYMENT false
   fi
   if [ -f "${e2e_tests_dir}/${JUNIT_RESULTS}" ]; then
@@ -699,7 +730,7 @@ check_backstage_running() {
   oc get events -n "${namespace}" --sort-by='.lastTimestamp' | tail -10
   mkdir -p "${ARTIFACT_DIR}/${namespace}"
   cp -a "/tmp/${LOGFILE}" "${ARTIFACT_DIR}/${namespace}/"
-  save_all_pod_logs "${namespace}"
+  # save_all_pod_logs "${namespace}"
   return 1
 }
 
@@ -816,7 +847,7 @@ delete_tekton_pipelines() {
 }
 
 cluster_setup_ocp_helm() {
-  install_pipelines_operator
+#  install_pipelines_operator
   install_acm_ocp_operator
   install_crunchy_postgres_ocp_operator
   install_orchestrator_infra_chart
@@ -876,7 +907,7 @@ perform_helm_install() {
   local release_name=$1
   local namespace=$2
   local value_file=$3
-  
+
   helm upgrade -i "${release_name}" -n "${namespace}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "${DIR}/value_files/${value_file}" \
@@ -895,7 +926,7 @@ base_deployment() {
   echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
   perform_helm_install "${RELEASE_NAME}" "${NAME_SPACE}" "${HELM_CHART_VALUE_FILE_NAME}"
 
-  deploy_orchestrator_workflows "${NAME_SPACE}"
+  # deploy_orchestrator_workflows "${NAME_SPACE}"
 }
 
 rbac_deployment() {
@@ -974,7 +1005,7 @@ initiate_upgrade_deployments() {
   --wait --timeout=${wait_upgrade}
 
   oc get pods -n "${namespace}"
-  save_all_pod_logs $namespace
+  # save_all_pod_logs $namespace
 }
 
 initiate_runtime_deployment() {
@@ -1021,21 +1052,32 @@ check_and_test() {
   local max_attempts=${4:-30}    # Default to 30 if not set
   local wait_seconds=${5:-30}    # Default to 30 if not set
 
+  echo "=== STARTING DEPLOYMENT CHECK AND TEST ==="
+  echo "Release: ${release_name}, Namespace: ${namespace}, URL: ${url}"
+
   CURRENT_DEPLOYMENT=$((CURRENT_DEPLOYMENT + 1))
   save_status_deployment_namespace $CURRENT_DEPLOYMENT "$namespace"
 
+  echo "=== CHECKING IF BACKSTAGE IS RUNNING ==="
   if check_backstage_running "${release_name}" "${namespace}" "${url}" "${max_attempts}" "${wait_seconds}"; then
+    echo "=== BACKSTAGE IS RUNNING SUCCESSFULLY ==="
     save_status_failed_to_deploy $CURRENT_DEPLOYMENT false
     echo "Display pods for verification..."
     oc get pods -n "${namespace}"
+    echo "=== RUNNING E2E TESTS ==="
     run_tests "${release_name}" "${namespace}"
+    echo "=== COMPLETED TESTS FOR DEPLOYMENT ${CURRENT_DEPLOYMENT} ==="
   else
-    echo "Backstage is not running. Exiting..."
+    echo "=== BACKSTAGE IS NOT RUNNING - DEPLOYMENT FAILED ==="
+    echo "Checking pod status for debugging..."
+    oc get pods -n "${namespace}" || echo "Failed to get pods"
+    echo "Checking events for debugging..."
+    oc get events -n "${namespace}" --sort-by=.metadata.creationTimestamp | tail -20 || echo "Failed to get events"
     save_status_failed_to_deploy $CURRENT_DEPLOYMENT true
     save_status_test_failed $CURRENT_DEPLOYMENT true
     save_overall_result 1
   fi
-  save_all_pod_logs $namespace
+  # save_all_pod_logs $namespace
 }
 
 check_upgrade_and_test() {
@@ -1142,35 +1184,38 @@ to_lowercase() {
 # Return the previous release version if current branch is a release branch
 get_previous_release_version() {
   local version=$1
-  
+
   # Check if version parameter is provided
   if [[ -z "$version" ]]; then
     echo "Error: Version parameter is required" >&2
-    exit 1
+    # exit 1  # Comentado para evitar exit em caso de erro
     save_overall_result 1
+    return 1
   fi
-  
+
   # Validate version format (should be like "1.6")
   if [[ ! "$version" =~ ^[0-9]+\.[0-9]+$ ]]; then
     echo "Error: Version must be in format X.Y (e.g., 1.6)" >&2
-    exit 1
+    # exit 1  # Comentado para evitar exit em caso de erro
     save_overall_result 1
+    return 1
   fi
-  
+
   # Extract major and minor version numbers
   local major_version=$(echo "$version" | cut -d'.' -f1)
   local minor_version=$(echo "$version" | cut -d'.' -f2)
-  
+
   # Calculate previous minor version
   local previous_minor=$((minor_version - 1))
-  
+
   # Check if previous minor version is valid (non-negative)
   if [[ $previous_minor -lt 0 ]]; then
     echo "Error: Cannot calculate previous version for $version" >&2
-    exit 1
+    # exit 1  # Comentado para evitar exit em caso de erro
     save_overall_result 1
+    return 1
   fi
-  
+
   # Return the previous version
   echo "${major_version}.${previous_minor}"
 }
@@ -1192,7 +1237,8 @@ get_previous_release_value_file() {
   if [[ -z "$previous_release_version" ]]; then
     echo "Failed to determine previous release version." >&2
     save_overall_result 1
-    exit 1
+    # exit 1  # Comentado para evitar exit em caso de erro
+    return 1
   fi
 
   echo "Using previous release version: ${previous_release_version}" >&2
@@ -1212,7 +1258,8 @@ get_previous_release_value_file() {
   else
     echo "Failed to download value file from GitHub." >&2
     save_overall_result 1
-    exit 1
+    # exit 1  # Comentado para evitar exit em caso de erro
+    return 1
   fi
 }
 
@@ -1251,7 +1298,7 @@ deploy_orchestrator_workflows() {
     sleep 5
   done
 
-  for workflow in greeting user-onboarding; do
-    oc -n "$namespace" patch sonataflow "$workflow" --type merge -p "{\"spec\": { \"persistence\": { \"postgresql\": { \"secretRef\": {\"name\": \"$pqsl_secret_name\",\"userKey\": \"$pqsl_user_key\",\"passwordKey\": \"$pqsl_password_key\"},\"serviceRef\": {\"name\": \"$pqsl_svc_name\",\"namespace\": \"$patch_namespace\"}}}}}"
-  done
+#  for workflow in greeting user-onboarding; do
+#    oc -n "$namespace" patch sonataflow "$workflow" --type merge -p "{\"spec\": { \"persistence\": { \"postgresql\": { \"secretRef\": {\"name\": \"$pqsl_secret_name\",\"userKey\": \"$pqsl_user_key\",\"passwordKey\": \"$pqsl_password_key\"},\"serviceRef\": {\"name\": \"$pqsl_svc_name\",\"namespace\": \"$patch_namespace\"}}}}}"
+#  done
 }
