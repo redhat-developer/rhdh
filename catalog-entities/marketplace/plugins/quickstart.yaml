@@ -43,6 +43,6 @@ spec:
 
 
   packages:
-    - red-hat-developer-hub-backstage-plugin-quickstart
+    - rhdh-backstage-plugin-quickstart
 
 
