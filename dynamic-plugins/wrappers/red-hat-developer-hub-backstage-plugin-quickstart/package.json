@@ -58,7 +58,7 @@
   "homepage": "https://red.ht/rhdh",
   "bugs": "https://issues.redhat.com/browse/RHIDP",
   "keywords": [
-    "support:production",
+    "support:dev-preview",
     "lifecycle:active"
   ]
 }
