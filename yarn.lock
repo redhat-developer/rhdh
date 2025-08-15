@@ -7734,7 +7734,7 @@ __metadata:
     "@material-table/core": 3.2.5
     "@mui/icons-material": 5.18.0
     "@mui/material": 5.18.0
-    "@scalprum/react-core": 0.9.5
+    "@red-hat-developer-hub/plugin-utils": "workspace:*"
     "@testing-library/jest-dom": 6.6.4
     "@testing-library/react": 14.3.1
     "@testing-library/user-event": 14.6.1
@@ -12081,7 +12081,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/plugin-utils@1.0.0, @red-hat-developer-hub/plugin-utils@workspace:packages/plugin-utils":
+"@red-hat-developer-hub/plugin-utils@1.0.0, @red-hat-developer-hub/plugin-utils@workspace:*, @red-hat-developer-hub/plugin-utils@workspace:packages/plugin-utils":
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/plugin-utils@workspace:packages/plugin-utils"
   dependencies:
