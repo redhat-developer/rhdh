@@ -6,7 +6,7 @@ metadata:
   title: Quickstart
   description: "Guided quickstarts to help users discover and set up key features in Red Hat Developer Hub."
   annotations:
-    extensions.backstage.io/verified-by: Red Hat
+    extensions.backstage.io/pre-installed: 'true'
   tags:
     - onboarding
     - customization
