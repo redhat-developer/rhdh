@@ -119,6 +119,5 @@ async function fetchMetrics(metricsEndpoitUrl: string): Promise<string[]> {
     throw new Error("Failed to retrieve metrics from RHDH");
   const data = await response.text();
 
-  console.log(data);
   return data.split("\n");
 }

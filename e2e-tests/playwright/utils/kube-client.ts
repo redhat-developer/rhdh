@@ -506,21 +506,6 @@ export class KubeClient {
     }
   }
 
-  async getPodList(namespace: string) {
-    try {
-      return await this.coreV1Api.listNamespacedPod(
-        namespace,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-      );
-    } catch (error) {
-      console.error(`Error while retrieving pod conditions`, error);
-    }
-  }
-
   async logPodConditions(namespace: string, labelSelector?: string) {
     const selector =
       labelSelector ||
