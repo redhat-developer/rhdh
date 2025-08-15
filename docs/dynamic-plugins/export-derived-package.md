@@ -74,7 +74,7 @@ If a plugin depends on another package in the same monorepo workspace, and it do
 Example of exporting a dynamic plugin with shared and embedded packages:
 
 ```bash
-npx @janus-idp/cli@latest export-dynamic-plugin --shared-package '!/@backstage/plugin-notifications/' --embed-package @backstage/plugin-notifications-backend
+npx @janus-idp/cli@latest package export-dynamic-plugin --shared-package '!/@backstage/plugin-notifications/' --embed-package @backstage/plugin-notifications-backend
 ```
 
 In this example, the `@backstage/plugin-notifications` package is marked as a private dependency (not shared) and it will be bundled in the dynamic plugin package, even though it is in the `@backstage` scope.
