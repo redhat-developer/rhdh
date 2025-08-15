@@ -622,6 +622,7 @@ run_tests() {
   Xvfb :99 &
   export DISPLAY=:99
 
+  echo "=== STARTING E2E TESTS FOR PROJECT: ${project} ==="
   (
     set -e
     echo "Using PR container image: ${TAG_NAME}"
@@ -629,29 +630,57 @@ run_tests() {
   ) 2>&1 | tee "/tmp/${LOGFILE}"
 
   local RESULT=${PIPESTATUS[0]}
+  echo "=== YARN TEST COMMAND COMPLETED WITH EXIT CODE: ${RESULT} ==="
 
   pkill Xvfb
 
+  # Show test results summary if available
+  if [ -f "${e2e_tests_dir}/${JUNIT_RESULTS}" ]; then
+    echo "=== TEST RESULTS SUMMARY ==="
+    local total_tests=$(grep -oP 'tests="\K[0-9]+' "${e2e_tests_dir}/${JUNIT_RESULTS}" | head -n 1)
+    local failed_tests=$(grep -oP 'failures="\K[0-9]+' "${e2e_tests_dir}/${JUNIT_RESULTS}" | head -n 1)
+    local errors=$(grep -oP 'errors="\K[0-9]+' "${e2e_tests_dir}/${JUNIT_RESULTS}" | head -n 1)
+    echo "Total tests: ${total_tests}, Failed: ${failed_tests}, Errors: ${errors}"
+  fi
+
+  # Show tail of test log if tests failed
+  if [ "${RESULT}" -ne 0 ]; then
+    echo "=== LAST 50 LINES OF TEST OUTPUT ==="
+    tail -50 "/tmp/${LOGFILE}" | grep -v -E "(K8S_CLUSTER_TOKEN|PASSWORD|SECRET|API_KEY|TOKEN)" || echo "No safe log lines to display"
+  fi
+
   mkdir -p "${ARTIFACT_DIR}/${project}/test-results"
   mkdir -p "${ARTIFACT_DIR}/${project}/attachments/screenshots"
-  cp -a "${e2e_tests_dir}/test-results/"* "${ARTIFACT_DIR}/${project}/test-results"
-  cp -a "${e2e_tests_dir}/${JUNIT_RESULTS}" "${ARTIFACT_DIR}/${project}/${JUNIT_RESULTS}"
+  
+  # Copy test artifacts with error handling
+  if [ -d "${e2e_tests_dir}/test-results" ]; then
+    cp -a "${e2e_tests_dir}/test-results/"* "${ARTIFACT_DIR}/${project}/test-results" || echo "Warning: Could not copy test results"
+  fi
+  
+  if [ -f "${e2e_tests_dir}/${JUNIT_RESULTS}" ]; then
+    cp -a "${e2e_tests_dir}/${JUNIT_RESULTS}" "${ARTIFACT_DIR}/${project}/${JUNIT_RESULTS}" || echo "Warning: Could not copy JUnit results"
+  fi
 
   if [ -d "${e2e_tests_dir}/screenshots" ]; then
-    cp -a "${e2e_tests_dir}/screenshots/"* "${ARTIFACT_DIR}/${project}/attachments/screenshots/"
+    cp -a "${e2e_tests_dir}/screenshots/"* "${ARTIFACT_DIR}/${project}/attachments/screenshots/" || echo "Warning: Could not copy screenshots"
   fi
 
   ansi2html <"/tmp/${LOGFILE}" >"/tmp/${LOGFILE}.html"
-  cp -a "/tmp/${LOGFILE}.html" "${ARTIFACT_DIR}/${project}"
-  cp -a "${e2e_tests_dir}/playwright-report/"* "${ARTIFACT_DIR}/${project}"
+  cp -a "/tmp/${LOGFILE}.html" "${ARTIFACT_DIR}/${project}" || echo "Warning: Could not copy log HTML"
+  
+  if [ -d "${e2e_tests_dir}/playwright-report" ]; then
+    cp -a "${e2e_tests_dir}/playwright-report/"* "${ARTIFACT_DIR}/${project}" || echo "Warning: Could not copy playwright report"
+  fi
 
   droute_send "${release_name}" "${project}"
 
-  echo "${project} RESULT: ${RESULT}"
+  echo "=== ${project} FINAL RESULT: ${RESULT} ==="
   if [ "${RESULT}" -ne 0 ]; then
+    echo "=== TEST FAILED FOR PROJECT: ${project} ==="
     save_overall_result 1
     save_status_test_failed $CURRENT_DEPLOYMENT true
   else
+    echo "=== TEST PASSED FOR PROJECT: ${project} ==="
     save_status_test_failed $CURRENT_DEPLOYMENT false
   fi
   if [ -f "${e2e_tests_dir}/${JUNIT_RESULTS}" ]; then
@@ -1023,16 +1052,27 @@ check_and_test() {
   local max_attempts=${4:-30}    # Default to 30 if not set
   local wait_seconds=${5:-30}    # Default to 30 if not set
 
+  echo "=== STARTING DEPLOYMENT CHECK AND TEST ==="
+  echo "Release: ${release_name}, Namespace: ${namespace}, URL: ${url}"
+
   CURRENT_DEPLOYMENT=$((CURRENT_DEPLOYMENT + 1))
   save_status_deployment_namespace $CURRENT_DEPLOYMENT "$namespace"
 
+  echo "=== CHECKING IF BACKSTAGE IS RUNNING ==="
   if check_backstage_running "${release_name}" "${namespace}" "${url}" "${max_attempts}" "${wait_seconds}"; then
+    echo "=== BACKSTAGE IS RUNNING SUCCESSFULLY ==="
     save_status_failed_to_deploy $CURRENT_DEPLOYMENT false
     echo "Display pods for verification..."
     oc get pods -n "${namespace}"
+    echo "=== RUNNING E2E TESTS ==="
     run_tests "${release_name}" "${namespace}"
+    echo "=== COMPLETED TESTS FOR DEPLOYMENT ${CURRENT_DEPLOYMENT} ==="
   else
-    echo "Backstage is not running. Exiting..."
+    echo "=== BACKSTAGE IS NOT RUNNING - DEPLOYMENT FAILED ==="
+    echo "Checking pod status for debugging..."
+    oc get pods -n "${namespace}" || echo "Failed to get pods"
+    echo "Checking events for debugging..."
+    oc get events -n "${namespace}" --sort-by=.metadata.creationTimestamp | tail -20 || echo "Failed to get events"
     save_status_failed_to_deploy $CURRENT_DEPLOYMENT true
     save_status_test_failed $CURRENT_DEPLOYMENT true
     save_overall_result 1
