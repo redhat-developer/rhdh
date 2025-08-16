@@ -17,6 +17,7 @@
     "copy-dynamic-plugins": "echo \"Command moved to dynamic-plugins/package.json\"",
     "clean": "turbo run clean",
     "test": "turbo run test",
+    "test-sealights": "npx sl-jest-runner 'turbo run test' --sl-testStage='Unit Tests' --sl-tokenFile=./sltoken.txt --sl-buildSessionIdFile=./buildSessionId",
     "lint:check": "turbo run lint:check",
     "lint:fix": "turbo run lint:fix",
     "lint": "turbo run lint",
@@ -43,8 +44,10 @@
     "@manypkg/cli": "0.24.0",
     "glob": "11.0.3",
     "husky": "8.0.3",
+    "jest-junit": "^16.0.0",
     "lint-staged": "15.5.2",
     "node-gyp": "10.3.1",
+    "sealights-jest-plugin": "^3.0.4",
     "sherif": "1.6.1",
     "turbo": "2.5.5"
   },
@@ -56,7 +59,19 @@
     "@backstage/backend-dynamic-feature-service@0.7.0": "patch:@backstage/backend-dynamic-feature-service@npm%3A0.7.0#./.yarn/patches/@backstage-backend-dynamic-feature-service-npm-0.7.0-d75453687b.patch"
   },
   "jest": {
-    "testTimeout": 20000
+    "testTimeout": 20000,
+    "reporters": [
+      "default",
+      [
+        "jest-junit",
+        {
+          "outputDirectory": "./jest-junit-results",
+          "outputName": "junit.xml",
+          "suiteName": "Jest Unit Tests",
+          "includeShortConsoleOutput": true
+        }
+      ]
+    ]
   },
   "packageManager": "yarn@3.8.7"
 }
