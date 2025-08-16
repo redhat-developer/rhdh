@@ -60,7 +60,7 @@ We also welcome non code contributions in the form of bug reporting and document
 
 ## Community, Discussion, and Support
 
-[Bugs](https://issues.redhat.com/projects/RHIDP) should be filled out here on RHIDP Jira.
+[Bugs](https://issues.redhat.com/projects/RHDHBUGS) should be filled out here on RHDHBUGS Jira.
 
 ## Resources
 
