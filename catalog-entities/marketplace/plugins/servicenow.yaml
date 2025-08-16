@@ -13,8 +13,7 @@ metadata:
     operational awareness.
 
   annotations:
-    extensions.backstage.io/pre-installed: 'false'
-    extensions.backstage.io/verified-by: Red Hat
+    extensions.backstage.io/pre-installed: 'true' # Indicates that this plugin YAML is pre-installed, not the plugin itself
   tags:
     - itsm
     - incident-management
