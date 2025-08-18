@@ -22,7 +22,7 @@ spec:
     role: frontend-plugin
     supportedVersions: 1.39.1
   author: Red Hat
-  support: dev-preview
+  support: production
   lifecycle: active
   partOf:
     - quickstart
