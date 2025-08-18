@@ -65,7 +65,7 @@ jobs:
     # Use 'internal' environment if the author is in the team OR if it's an internal PR (not from a fork)
     # see list of approvers in OWNERS file
     environment:
-      ${{ (needs.check-commit-author.outputs.is_team_member == 'true' || github.event.pull_request.head.repo.full_name == github.repository) && 'internal' || 'external' }}
+      ${{ (needs.check-commit-author.outputs.is_active_member == 'true' || github.event.pull_request.head.repo.full_name == github.repository) && 'internal' || 'external' }}
     runs-on: ubuntu-latest
     needs: check-commit-author
     steps:
