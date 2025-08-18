@@ -21,7 +21,7 @@ metadata:
       url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-quickstart
 spec:
   author: Red Hat
-  support: dev-preview
+  support: production
   lifecycle: active
   publisher: Red Hat
 
