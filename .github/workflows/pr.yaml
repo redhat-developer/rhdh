@@ -36,7 +36,7 @@ jobs:
     # The job is run on the main branch to ensure that the action is not tampered with.
     runs-on: ubuntu-latest
     outputs:
-      is_active_member: ${{ steps.team-check.outputs.is_active_member }}
+      is_active_team_member: ${{ steps.team-check.outputs.is_active_member }}
     steps:   
       - name: Generate GitHub App Token
         id: app-token
@@ -65,14 +65,14 @@ jobs:
     # Use 'internal' environment if the author is in the team OR if it's an internal PR (not from a fork)
     # see list of approvers in OWNERS file
     environment:
-      ${{ (needs.check-commit-author.outputs.is_team_member == 'true' || github.event.pull_request.head.repo.full_name == github.repository) && 'internal' || 'external' }}
+      ${{ (needs.check-commit-author.outputs.is_active_team_member == 'true' || github.event.pull_request.head.repo.full_name == github.repository) && 'internal' || 'external' }}
     runs-on: ubuntu-latest
     needs: check-commit-author
     steps:
       - name: Check if internal PR
         id: check
         run: |
-          if [[ "${{ needs.check-commit-author.outputs.is_team_member }}" == "true" ]]; then
+          if [[ "${{ needs.check-commit-author.outputs.is_active_team_member }}" == "true" ]]; then
             echo "✓ Commit author is in rhdh team - using internal environment"
           elif [[ "${{ github.event.pull_request.head.repo.full_name }}" == "${{ github.repository }}" ]]; then
             echo "✓ Internal PR (not from fork) - using internal environment"
