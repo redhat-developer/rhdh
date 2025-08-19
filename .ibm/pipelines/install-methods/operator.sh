@@ -35,6 +35,10 @@ install_rhdh_operator() {
     done
   else
     local operator_version="${RELEASE_BRANCH_NAME#release-}"
+    if [[ -z "$operator_version" ]]; then
+      echo "Error: Failed to extract operator version from RELEASE_BRANCH_NAME: '$RELEASE_BRANCH_NAME'"
+      return 1
+    fi
     echo "Installing RHDH operator with '-v $operator_version' flag"
     for ((i = 1; i <= max_attempts; i++)); do
       if output=$(bash -x /tmp/install-rhdh-catalog-source.sh -v "$operator_version" --install-operator rhdh); then
