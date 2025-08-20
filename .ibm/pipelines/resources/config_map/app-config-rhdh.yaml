@@ -42,7 +42,7 @@ backend:
           token: test-token
           subject: test-subject
     keys:
-      - secret: temp
+      - secret: ${BACKEND_SECRET}
   cache:
     store: redis
     connection: redis://${REDIS_USERNAME}:${REDIS_PASSWORD}@redis:6379
