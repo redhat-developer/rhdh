@@ -51,7 +51,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@azure/arm-network@npm:^34.0.0":
+"@azure/arm-network@npm:34.0.0":
   version: 34.0.0
   resolution: "@azure/arm-network@npm:34.0.0"
   dependencies:
@@ -2287,7 +2287,7 @@ __metadata:
   resolution: "e2e-tests@workspace:."
   dependencies:
     "@axe-core/playwright": ^4.10.2
-    "@azure/arm-network": ^34.0.0
+    "@azure/arm-network": 34.0.0
     "@azure/identity": 4.9.1
     "@eslint/js": ^9.34.0
     "@keycloak/keycloak-admin-client": 25.0.6
@@ -2312,9 +2312,9 @@ __metadata:
     sealights-playwright-plugin: ^2.0.113
     typescript: ^5.9.2
     typescript-eslint: ^8.41.0
-    uuid: ^11.1.0
+    uuid: 11.1.0
     winston: 3.14.2
-    yaml: ^2.8.0
+    yaml: 2.8.0
   languageName: unknown
   linkType: soft
 
@@ -5822,21 +5822,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"uuid@npm:11.1.0":
+  version: 11.1.0
+  resolution: "uuid@npm:11.1.0"
+  bin:
+    uuid: dist/esm/bin/uuid
+  checksum: 840f19758543c4631e58a29439e51b5b669d5f34b4dd2700b6a1d15c5708c7a6e0c3e2c8c4a2eae761a3a7caa7e9884d00c86c02622ba91137bd3deade6b4b4a
+  languageName: node
+  linkType: hard
+
 "uuid@npm:3.1.0":
   version: 3.1.0
   resolution: "uuid@npm:3.1.0"
   bin:
     uuid: ./bin/uuid
   checksum: 775f96998c99018e6c4735e201a1705a2ea1b24f2ea4b431b7804cb4b32ee26c0e25bff2c3238e805c97ab121661e11817ec82f30f9f9976503bbfafbed72035
-  languageName: node
-  linkType: hard
-
-"uuid@npm:^11.1.0":
-  version: 11.1.0
-  resolution: "uuid@npm:11.1.0"
-  bin:
-    uuid: dist/esm/bin/uuid
-  checksum: 840f19758543c4631e58a29439e51b5b669d5f34b4dd2700b6a1d15c5708c7a6e0c3e2c8c4a2eae761a3a7caa7e9884d00c86c02622ba91137bd3deade6b4b4a
   languageName: node
   linkType: hard
 
@@ -6091,7 +6091,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yaml@npm:^2.8.0":
+"yaml@npm:2.8.0":
   version: 2.8.0
   resolution: "yaml@npm:2.8.0"
   bin:
