@@ -382,48 +382,20 @@ jobs:
 
         - name: Create manifest list and push
           working-directory: /tmp/digests
-          env:
-            REF_NAME: ${{ env.REF_NAME }}
-            REF_NAME_SHORT: ${{ env.REF_NAME_SHORT }}
-            SHORT_SHA: ${{ env.SHORT_SHA }}
-            EXPIRES_AFTER: ${{ env.EXPIRES_AFTER }}
           run: |
-            # Compute the intended tag list deterministically
-            base="${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}"
-            tags=""
-            if [[ "$REF_NAME_SHORT" == "next" ]] || [[ "$REF_NAME_SHORT" == next-* ]]; then
-              tags+="$base:$REF_NAME"$'\n'
-              tags+="$base:$REF_NAME-$SHORT_SHA"$'\n'
-            else
-              tags+="$base:$REF_NAME"$'\n'
-              tags+="$base:$REF_NAME-$SHORT_SHA"$'\n'
-              tags+="$base:$REF_NAME_SHORT"$'\n'
-              tags+="$base:$REF_NAME_SHORT-$SHORT_SHA"$'\n'
+            # Read tags from the metadata JSON of the step that ran
+            meta='${{ steps.meta-release.outputs.json }}'
+            if [ -z "$meta" ] || [ "$meta" = "null" ]; then
+              meta='${{ steps.meta-next.outputs.json }}'
             fi
 
-            # Dedupe and create manifests with annotations for EACH tag
-            # Build the digest list first
-            digest_refs=""
-            for digest_file in *; do
-              if [ -f "$digest_file" ]; then
-                digest_refs+="${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}@sha256:${digest_file} "
-              fi
-            done
-            
-            if [ -z "$digest_refs" ]; then
-              echo "::error::No digest files found in /tmp/digests"
-              exit 1
-            fi
-            
-            printf "%s\n" "$tags" | awk '!seen[$0]++' | while IFS= read -r tag; do
+            # Create and annotate the manifest list for EACH tag to ensure Quay applies expiry per tag
+            echo "$meta" | jq -r '.tags | unique[]' | while IFS= read -r tag; do
               [ -z "$tag" ] && continue
-              echo "Creating manifest for tag: $tag"
-              echo "Using digests: $digest_refs"
               docker buildx imagetools create \
                 --annotation "quay.expires-after=${EXPIRES_AFTER}" \
-                --annotation "org.opencontainers.image.expires=${EXPIRES_AFTER}" \
                 -t "$tag" \
-                $digest_refs
+                $(printf '${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}@sha256:%s ' *)
             done
 
         - name: Inspect image (for :next builds)
