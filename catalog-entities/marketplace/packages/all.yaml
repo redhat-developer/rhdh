@@ -93,6 +93,7 @@ spec:
     - ./rhdh-backstage-plugin-adoption-insights.yaml
     - ./rhdh-backstage-plugin-adoption-insights-backend.yaml
     - ./rhdh-backstage-plugin-analytics-module-adoption-insights.yaml
+    - ./rhdh-backstage-plugin-quickstart.yaml
     - ./red-hat-developer-hub-backstage-plugin-lightspeed.yaml
     - ./red-hat-developer-hub-backstage-plugin-lightspeed-backend.yaml
     - ./apic-backstage-plugin.yaml
