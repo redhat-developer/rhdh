@@ -1,22 +1,12 @@
 # Logging for RHDH
 
-This document covers logging configuration for Red Hat Developer Hub (RHDH).
-
-For metrics monitoring configuration, please refer to the specific deployment method documentation:
-
-- [RHDH Helm Chart Monitoring](https://github.com/redhat-developer/rhdh-chart) - For Helm-based deployments
-- [RHDH Operator Monitoring](https://github.com/janus-idp/operator) - For Operator-based deployments
-
-The RHDH provides a `/metrics` endpoint on port `9464` that provides OpenTelemetry metrics about your Backstage application. This endpoint can be used to monitor your Backstage instance using OpenTelemetry and Grafana.
+This document covers logging configuration for Red Hat Developer Hub (RHDH). Logging in RHDH is conducted using the [winston](https://github.com/winstonjs/winston) library. By default, logs of level `debug` are not logged. To enable debug logs, you will need to set the environment variable `LOG_LEVEL` to `debug` in your deployment.
 
 ## Prerequisites
 
 - Kubernetes 1.19+
 - PV provisioner support in the underlying infrastructure
 
-## Logging
-
-Logging in RHDH is conducted using the [winston](https://github.com/winstonjs/winston) library. By default, logs of level `debug` are not logged. To enable debug logs, you will need to set the environment variable `LOG_LEVEL` to `debug` in your deployment.
 
 ### Helm deployment
 
@@ -47,7 +37,7 @@ spec:
 
 ### Openshift Logging Integration
 
-[Openshift Logging](https://access.redhat.com/documentation/en-us/openshift_container_platform/4.13/html/logging/index) can be used to monitor Backstage logs. The only requirement is to correctly filter logs in Kibana. A possible filter is using the field `kubernetes.container_name` with operator `is` and value `backstage-backend`.
+[Openshift Logging](https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/logging/index) can be used to monitor Backstage logs. The only requirement is to correctly filter logs in Kibana. A possible filter is using the field `kubernetes.container_name` with operator `is` and value `backstage-backend`.
 
 ### Logging with Azure Monitor Container Insights
 
