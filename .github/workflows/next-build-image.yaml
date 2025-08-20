@@ -92,6 +92,14 @@ jobs:
           echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
           echo "PLATFORM_ARCH=${platform#*/}" >> $GITHUB_ENV
 
+          # compute expiry once and reuse
+          if [[ "$ref_name_short" == "next" ]] || [[ "$ref_name_short" == next-* ]]; then
+            expires_after="14d"
+          else
+            expires_after="183d"
+          fi
+          echo "EXPIRES_AFTER=$expires_after" >> $GITHUB_ENV
+
       - name: Get the last commit short SHA
         uses: ./.github/actions/get-sha
 
@@ -107,7 +115,7 @@ jobs:
           imageTags: |
             type=raw,value=${{ env.REF_NAME }}-${{ env.PLATFORM_ARCH }}
             type=raw,value=${{ env.REF_NAME }}-${{ env.SHORT_SHA }}-${{ env.PLATFORM_ARCH }}
-          imageLabels: quay.expires-after=14d
+          imageLabels: quay.expires-after=${{ env.EXPIRES_AFTER }}
           push: true
           platform: ${{ env.PLATFORM }}
 
@@ -123,7 +131,7 @@ jobs:
           imageTags: |
             type=raw,value=${{ env.REF_NAME }}-${{ env.PLATFORM_ARCH }}
             type=raw,value=${{ env.REF_NAME }}-${{ env.SHORT_SHA }}-${{ env.PLATFORM_ARCH }}
-          imageLabels: quay.expires-after=183d
+          imageLabels: quay.expires-after=${{ env.EXPIRES_AFTER }}
           push: true
           platform: ${{ env.PLATFORM }}
 
@@ -176,6 +184,14 @@ jobs:
             echo "REF_NAME=$ref_name" >> $GITHUB_ENV
             echo "REF_NAME_SHORT=${ref_name_short}" >> $GITHUB_ENV
 
+            # compute expiry once and reuse
+            if [[ "$ref_name_short" == "next" ]] || [[ "$ref_name_short" == next-* ]]; then
+              expires_after="14d"
+            else
+              expires_after="183d"
+            fi
+            echo "EXPIRES_AFTER=$expires_after" >> $GITHUB_ENV
+
         - name: Checkout
           uses: actions/checkout@v4
           with:
@@ -204,7 +220,7 @@ jobs:
               type=raw,value=${{ env.REF_NAME }}
               type=raw,value=${{ env.REF_NAME }}-${{ env.SHORT_SHA }}
             labels: |
-              quay.expires-after=14d
+              quay.expires-after=${{ env.EXPIRES_AFTER }}
 
         - name: Set container metadata (for releases, 183d expiry)
           id: meta-release
@@ -218,7 +234,7 @@ jobs:
               type=raw,value=${{ env.REF_NAME_SHORT }}
               type=raw,value=${{ env.REF_NAME_SHORT }}-${{ env.SHORT_SHA }}
             labels: |
-              quay.expires-after=183d
+              quay.expires-after=${{ env.EXPIRES_AFTER }}
 
         - name: Login to Docker Hub
           uses: docker/login-action@v3
@@ -230,8 +246,20 @@ jobs:
         - name: Create manifest list and push
           working-directory: /tmp/digests
           run: |
-            docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-              $(printf '${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}@sha256:%s ' *)
+            # Use tags from whichever metadata step ran
+            tags='${{ steps.meta-release.outputs.tags }}'
+            if [ -z "$tags" ]; then
+              tags='${{ steps.meta-next.outputs.tags }}'
+            fi
+
+            # Create and annotate the manifest list for EACH tag to ensure Quay applies expiry per tag
+            while IFS= read -r tag; do
+              [ -z "$tag" ] && continue
+              docker buildx imagetools create \
+                --annotation "quay.expires-after=${EXPIRES_AFTER}" \
+                -t "$tag" \
+                $(printf '${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}@sha256:%s ' *)
+            done <<< "$tags"
 
         - name: Inspect image (for :next builds)
           id: inspect-next
