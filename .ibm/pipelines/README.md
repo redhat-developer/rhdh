@@ -25,6 +25,14 @@ To access ephemeral clusters, you must:
 
 The following cluster pools are available for different OCP versions:
 
+- **RHDH-4-19-US-EAST-2**
+  - Usage: OCP v4.19 nightly jobs.  
+  - [Cluster Pool Configuration](https://github.com/openshift/release/blob/master/clusters/hosted-mgmt/hive/pools/rhdh/rhdh-ocp-4-19-0-amd64-aws-us-east-2_clusterpool.yaml).  
+
+- **RHDH-4-18-US-EAST-2**
+  - Usage: OCP v4.18 nightly jobs.  
+  - [Cluster Pool Configuration](https://github.com/openshift/release/blob/master/clusters/hosted-mgmt/hive/pools/rhdh/rhdh-ocp-4-18-0-amd64-aws-us-east-2_clusterpool.yaml).  
+
 - **RHDH-4-17-US-EAST-2**
   - Usage: PR checks on the main branch and OCP v4.17 nightly jobs.  
   - [Cluster Pool Configuration](https://github.com/openshift/release/blob/master/clusters/hosted-mgmt/hive/pools/rhdh/rhdh-ocp-4-17-0-amd64-aws-us-east-2_clusterpool.yaml).  
@@ -32,10 +40,6 @@ The following cluster pools are available for different OCP versions:
 - **RHDH-4-16-US-EAST-2**
   - Usage: OCP v4.16 nightly jobs.  
   - [Cluster Pool Configuration](https://github.com/openshift/release/blob/master/clusters/hosted-mgmt/hive/pools/rhdh/rhdh-ocp-4-16-0-amd64-aws-us-east-2_clusterpool.yaml).  
-
-- **RHDH-4-15-US-EAST-2**
-  - Usage: OCP v4.15 nightly jobs.  
-  - [Cluster Pool Configuration](https://github.com/openshift/release/blob/master/clusters/hosted-mgmt/hive/pools/rhdh/rhdh-ocp-4-15-0-amd64-aws-us-east-2_clusterpool.yaml).  
 
 ---
 
