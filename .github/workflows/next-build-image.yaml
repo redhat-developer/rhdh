@@ -101,9 +101,11 @@ jobs:
 
           # compute expiry once and reuse
           if [[ "$ref_name_short" == "next" ]] || [[ "$ref_name_short" == next-* ]]; then
-            expires_after="14d"
+            expires_after="14d"  # Short expiry for next builds
+          elif [[ "$ref_name_short" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
+            expires_after="183d" # Long expiry for official releases (1.2, 1.2.3, etc.)
           else
-            expires_after="183d"
+            expires_after="14d"  # Short expiry for feature branches and other temporary builds
           fi
           echo "EXPIRES_AFTER=$expires_after" >> $GITHUB_ENV
 
@@ -182,7 +184,9 @@ jobs:
           imageTags: |
             type=raw,value=${{ env.REF_NAME }}-${{ env.PLATFORM_ARCH }}
             type=raw,value=${{ env.REF_NAME }}-${{ env.SHORT_SHA }}-${{ env.PLATFORM_ARCH }}
-          imageLabels: quay.expires-after=${{ env.EXPIRES_AFTER }}
+          imageLabels: |
+            quay.expires-after=${{ env.EXPIRES_AFTER }}
+            org.opencontainers.image.expires=${{ env.EXPIRES_AFTER }}
           push: true
           platform: ${{ env.PLATFORM }}
 
@@ -198,7 +202,9 @@ jobs:
           imageTags: |
             type=raw,value=${{ env.REF_NAME }}-${{ env.PLATFORM_ARCH }}
             type=raw,value=${{ env.REF_NAME }}-${{ env.SHORT_SHA }}-${{ env.PLATFORM_ARCH }}
-          imageLabels: quay.expires-after=${{ env.EXPIRES_AFTER }}
+          imageLabels: |
+            quay.expires-after=${{ env.EXPIRES_AFTER }}
+            org.opencontainers.image.expires=${{ env.EXPIRES_AFTER }}
           push: true
           platform: ${{ env.PLATFORM }}
 
@@ -255,9 +261,11 @@ jobs:
 
             # compute expiry once and reuse
             if [[ "$ref_name_short" == "next" ]] || [[ "$ref_name_short" == next-* ]]; then
-              expires_after="14d"
+              expires_after="14d"  # Short expiry for next builds
+            elif [[ "$ref_name_short" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
+              expires_after="183d" # Long expiry for official releases (1.2, 1.2.3, etc.)
             else
-              expires_after="183d"
+              expires_after="14d"  # Short expiry for feature branches and other temporary builds
             fi
             echo "EXPIRES_AFTER=$expires_after" >> $GITHUB_ENV
 
@@ -348,6 +356,7 @@ jobs:
               type=raw,value=${{ env.REF_NAME }}-${{ env.SHORT_SHA }}
             labels: |
               quay.expires-after=${{ env.EXPIRES_AFTER }}
+              org.opencontainers.image.expires=${{ env.EXPIRES_AFTER }}
 
         - name: Set container metadata (for releases, 183d expiry)
           id: meta-release
@@ -362,6 +371,7 @@ jobs:
               type=raw,value=${{ env.REF_NAME_SHORT }}-${{ env.SHORT_SHA }}
             labels: |
               quay.expires-after=${{ env.EXPIRES_AFTER }}
+              org.opencontainers.image.expires=${{ env.EXPIRES_AFTER }}
 
         - name: Login to Docker Hub
           uses: docker/login-action@v3
@@ -391,13 +401,29 @@ jobs:
               tags+="$base:$REF_NAME_SHORT-$SHORT_SHA"$'\n'
             fi
 
-            # Dedupe and create manifests with annotation for EACH tag
+            # Dedupe and create manifests with annotations for EACH tag
+            # Build the digest list first
+            digest_refs=""
+            for digest_file in *; do
+              if [ -f "$digest_file" ]; then
+                digest_refs+="${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}@sha256:${digest_file} "
+              fi
+            done
+            
+            if [ -z "$digest_refs" ]; then
+              echo "::error::No digest files found in /tmp/digests"
+              exit 1
+            fi
+            
             printf "%s\n" "$tags" | awk '!seen[$0]++' | while IFS= read -r tag; do
               [ -z "$tag" ] && continue
+              echo "Creating manifest for tag: $tag"
+              echo "Using digests: $digest_refs"
               docker buildx imagetools create \
                 --annotation "quay.expires-after=${EXPIRES_AFTER}" \
+                --annotation "org.opencontainers.image.expires=${EXPIRES_AFTER}" \
                 -t "$tag" \
-                $(printf '${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}@sha256:%s ' *)
+                $digest_refs
             done
 
         - name: Inspect image (for :next builds)
