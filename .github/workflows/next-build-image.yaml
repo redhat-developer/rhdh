@@ -261,14 +261,21 @@ jobs:
         - name: Create manifest list and push
           working-directory: /tmp/digests
           run: |
-            # Read tags from the metadata JSON of the step that ran
-            meta='${{ steps.meta-release.outputs.json }}'
-            if [ -z "$meta" ] || [ "$meta" = "null" ]; then
-              meta='${{ steps.meta-next.outputs.json }}'
+            # Compute the intended tag list deterministically
+            base="${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}"
+            tags=""
+            if [[ "$REF_NAME_SHORT" == "next" ]] || [[ "$REF_NAME_SHORT" == next-* ]]; then
+              tags+="$base:$REF_NAME"$'\n'
+              tags+="$base:$REF_NAME-$SHORT_SHA"$'\n'
+            else
+              tags+="$base:$REF_NAME"$'\n'
+              tags+="$base:$REF_NAME-$SHORT_SHA"$'\n'
+              tags+="$base:$REF_NAME_SHORT"$'\n'
+              tags+="$base:$REF_NAME_SHORT-$SHORT_SHA"$'\n'
             fi
 
-            # Create and annotate the manifest list for EACH tag to ensure Quay applies expiry per tag
-            echo "$meta" | jq -r '.tags | unique[]' | while IFS= read -r tag; do
+            # Dedupe and create manifests with annotation for EACH tag
+            printf "%s\n" "$tags" | awk '!seen[$0]++' | while IFS= read -r tag; do
               [ -z "$tag" ] && continue
               docker buildx imagetools create \
                 --annotation "quay.expires-after=${EXPIRES_AFTER}" \
