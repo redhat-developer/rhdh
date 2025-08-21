@@ -294,7 +294,7 @@ wait_for_svc(){
 wait_for_endpoint(){
   local endpoint_name=$1
   local namespace=$2
-  local timeout=${3:-300}
+  local timeout=${3:-500}
 
   timeout "${timeout}" bash -c "
     echo ${endpoint_name}
