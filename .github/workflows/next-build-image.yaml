@@ -46,6 +46,8 @@ env:
 jobs:
   build-image:
     name: Build Image
+    env:
+      HAS_QUAY_AUTH: ${{ secrets.QUAY_USERNAME != '' && secrets.QUAY_TOKEN != '' }}
     strategy:
       fail-fast: false
       matrix:
@@ -110,6 +112,49 @@ jobs:
             echo "REGISTRY_IMAGE=${{ inputs.registry_image }}" >> $GITHUB_ENV
           fi
 
+      - name: Login to Quay
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_TOKEN }}
+
+      - name: "Preflight: Quay login + push permission"
+        run: |
+          set +x  # Ensure no command echoing
+          set -e  # Exit on any error
+          
+          # 1) Secrets present
+          if [ "${{ env.HAS_QUAY_AUTH }}" != "true" ]; then
+            echo "::error::Missing QUAY_USERNAME or QUAY_TOKEN secrets"
+            exit 1
+          fi
+          
+          # 2) Test push permission using docker API (safer than curl with secrets)
+          target="${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}"
+          
+          # Test by attempting to pull hello-world and tag it for permission check
+          if ! docker pull hello-world:latest >/dev/null 2>&1; then
+            echo "::error::Docker pull test failed"
+            exit 1
+          fi
+          
+          # Tag and attempt push to test permissions (safer approach)
+          test_tag="${target}:permission-test-$$"
+          docker tag hello-world:latest "${test_tag}" >/dev/null 2>&1
+          
+          if docker push "${test_tag}" >/dev/null 2>&1; then
+            echo "Push permission confirmed for ${target}"
+            # Clean up test image
+            docker rmi "${test_tag}" >/dev/null 2>&1 || true
+          else
+            echo "::error::No push permission for ${target}"
+            exit 1
+          fi
+          
+          # Clean up
+          docker rmi hello-world:latest >/dev/null 2>&1 || true
+
       - name: Get the last commit short SHA
         uses: ./.github/actions/get-sha
 
@@ -173,6 +218,8 @@ jobs:
       runs-on: ubuntu-latest
       needs:
         - build-image
+      env:
+        HAS_QUAY_AUTH: ${{ secrets.QUAY_USERNAME != '' && secrets.QUAY_TOKEN != '' }}
       steps:
         - name: Prepare
           run: |
@@ -206,6 +253,52 @@ jobs:
             if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.registry_image }}" ]; then
               echo "REGISTRY_IMAGE=${{ inputs.registry_image }}" >> $GITHUB_ENV
             fi
+
+        - name: Login to Quay (preflight)
+          uses: docker/login-action@v3
+          with:
+            registry: ${{ env.REGISTRY }}
+            username: ${{ secrets.QUAY_USERNAME }}
+            password: ${{ secrets.QUAY_TOKEN }}
+
+        - name: "Preflight: Quay login + push permission"
+          run: |
+            set +x  # Ensure no command echoing
+            set -e  # Exit on any error
+            
+            # 1) Secrets present
+            if [ "${{ env.HAS_QUAY_AUTH }}" != "true" ]; then
+              echo "::error::Missing QUAY_USERNAME or QUAY_TOKEN secrets"
+              exit 1
+            fi
+            
+            # 2) Test push permission using docker API (safer than curl with secrets)
+            target="${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}"
+            
+            # Test by attempting to pull hello-world and tag it for permission check
+            if ! docker pull hello-world:latest >/dev/null 2>&1; then
+              echo "::error::Docker pull test failed"
+              exit 1
+            fi
+            
+            # Tag and attempt push to test permissions (safer approach)
+            test_tag="${target}:permission-test-$$"
+            docker tag hello-world:latest "${test_tag}" >/dev/null 2>&1
+            
+            if docker push "${test_tag}" >/dev/null 2>&1; then
+              echo "Push permission confirmed for ${target}"
+              # Clean up test image
+              docker rmi "${test_tag}" >/dev/null 2>&1 || true
+            else
+              echo "::error::No push permission for ${target}"
+              exit 1
+            fi
+            
+            # Clean up
+            docker rmi hello-world:latest >/dev/null 2>&1 || true
+            
+            # Logout for now (will login again later with official action)
+            docker logout ${{ env.REGISTRY }} >/dev/null 2>&1 || true
 
         - name: Checkout
           uses: actions/checkout@v4
