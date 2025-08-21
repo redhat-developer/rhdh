@@ -357,21 +357,21 @@ jobs:
             # Compute the intended tag list deterministically
             base="${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}"
             tags=""
-            if [[ "$REF_NAME_SHORT" == "next" ]] || [[ "$REF_NAME_SHORT" == next-* ]]; then
-              tags+="$base:$REF_NAME"$'\n'
-              tags+="$base:$REF_NAME-$SHORT_SHA"$'\n'
+            if [[ "${{ env.REF_NAME_SHORT }}" == "next" ]] || [[ "${{ env.REF_NAME_SHORT }}" == next-* ]]; then
+              tags+="$base:${{ env.REF_NAME }}"$'\n'
+              tags+="$base:${{ env.REF_NAME }}-${{ env.SHORT_SHA }}"$'\n'
             else
-              tags+="$base:$REF_NAME"$'\n'
-              tags+="$base:$REF_NAME-$SHORT_SHA"$'\n'
-              tags+="$base:$REF_NAME_SHORT"$'\n'
-              tags+="$base:$REF_NAME_SHORT-$SHORT_SHA"$'\n'
+              tags+="$base:${{ env.REF_NAME }}"$'\n'
+              tags+="$base:${{ env.REF_NAME }}-${{ env.SHORT_SHA }}"$'\n'
+              tags+="$base:${{ env.REF_NAME_SHORT }}"$'\n'
+              tags+="$base:${{ env.REF_NAME_SHORT }}-${{ env.SHORT_SHA }}"$'\n'
             fi
 
             # Dedupe and create manifests with annotation for EACH tag
             printf "%s\n" "$tags" | awk '!seen[$0]++' | while IFS= read -r tag; do
               [ -z "$tag" ] && continue
               docker buildx imagetools create \
-                --annotation "quay.expires-after=${EXPIRES_AFTER}" \
+                --annotation "quay.expires-after=${{ env.EXPIRES_AFTER }}" \
                 -t "$tag" \
                 $(printf '${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}@sha256:%s ' *)
             done
