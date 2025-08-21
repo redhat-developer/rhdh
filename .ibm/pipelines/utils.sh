@@ -291,6 +291,21 @@ wait_for_svc(){
     " || echo "Error: Timed out waiting for $svc_name service creation."
 }
 
+wait_for_endpoint(){
+  local endpoint_name=$1
+  local namespace=$2
+  local timeout=${3:-300}
+
+  timeout "${timeout}" bash -c "
+    echo ${endpoint_name}
+    while ! kubectl get endpoints $endpoint_name -n $namespace &> /dev/null; do
+      echo \"Waiting for ${endpoint_name} endpoint to be created...\"
+      sleep 5
+    done
+    echo \"Endpoint ${endpoint_name} is created.\"
+    " || echo "Error: Timed out waiting for $endpoint_name endpoint creation."
+}
+
 # Creates an OpenShift Operator subscription
 install_subscription(){
   name=$1  # Name of the subscription
@@ -726,7 +741,7 @@ install_acm_ocp_operator(){
   oc apply -f "${DIR}/cluster/operators/acm/operator-group.yaml"
   install_subscription advanced-cluster-management open-cluster-management release-2.12 advanced-cluster-management redhat-operators openshift-marketplace
   wait_for_deployment "open-cluster-management" "multiclusterhub-operator"
-  wait_for_svc multiclusterhub-operator-webhook open-cluster-management
+  wait_for_endpoint "multiclusterhub-operator-webhook" "open-cluster-management"
   oc apply -f "${DIR}/cluster/operators/acm/multiclusterhub.yaml"
   # wait until multiclusterhub is Running.
   timeout 900 bash -c 'while true; do
@@ -743,7 +758,7 @@ install_acm_ocp_operator(){
 install_ocm_k8s_operator(){
   install_subscription my-cluster-manager operators stable cluster-manager operatorhubio-catalog olm
   wait_for_deployment "operators" "cluster-manager"
-  wait_for_svc multiclusterhub-operator-work-webhook open-cluster-management
+  wait_for_endpoint "multiclusterhub-operator-work-webhook" "open-cluster-management"
   oc apply -f "${DIR}/cluster/operators/acm/multiclusterhub.yaml"
   # wait until multiclusterhub is Running.
   timeout 600 bash -c 'while true; do
@@ -765,13 +780,7 @@ install_pipelines_operator() {
     # Install the operator and wait for deployment
     install_subscription openshift-pipelines-operator openshift-operators latest openshift-pipelines-operator-rh redhat-operators openshift-marketplace
     wait_for_deployment "openshift-operators" "pipelines"
-    timeout 300 bash -c '
-    while ! oc get svc tekton-pipelines-webhook -n openshift-pipelines &> /dev/null; do
-        echo "Waiting for tekton-pipelines-webhook service to be created..."
-        sleep 5
-    done
-    echo "Service tekton-pipelines-webhook is created."
-    ' || echo "Error: Timed out waiting for tekton-pipelines-webhook service creation."
+    wait_for_endpoint "tekton-pipelines-webhook" "openshift-pipelines"
   fi
 }
 
@@ -784,13 +793,7 @@ install_tekton_pipelines() {
     echo "Tekton Pipelines is not installed. Installing..."
     kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
     wait_for_deployment "tekton-pipelines" "${DISPLAY_NAME}"
-    timeout 300 bash -c '
-    while ! kubectl get endpoints tekton-pipelines-webhook -n tekton-pipelines &> /dev/null; do
-        echo "Waiting for tekton-pipelines-webhook endpoints to be ready..."
-        sleep 5
-    done
-    echo "Endpoints for tekton-pipelines-webhook are ready."
-    ' || echo "Error: Timed out waiting for tekton-pipelines-webhook endpoints."
+    wait_for_endpoint "tekton-pipelines-webhook" "tekton-pipelines"
   fi
 }
 
