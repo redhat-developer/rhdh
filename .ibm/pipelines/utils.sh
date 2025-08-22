@@ -34,7 +34,7 @@ save_all_pod_logs(){
   done
 
   mkdir -p "${ARTIFACT_DIR}/${namespace}/pod_logs"
-  cp -a pod_logs/* "${ARTIFACT_DIR}/${namespace}/pod_logs"
+  cp -a pod_logs/* "${ARTIFACT_DIR}/${namespace}/pod_logs" || true
   set -e
 }
 
@@ -289,6 +289,21 @@ wait_for_svc(){
     done
     echo \"Service ${svc_name} is created.\"
     " || echo "Error: Timed out waiting for $svc_name service creation."
+}
+
+wait_for_endpoint(){
+  local endpoint_name=$1
+  local namespace=$2
+  local timeout=${3:-500}
+
+  timeout "${timeout}" bash -c "
+    echo ${endpoint_name}
+    while ! kubectl get endpoints $endpoint_name -n $namespace &> /dev/null; do
+      echo \"Waiting for ${endpoint_name} endpoint to be created...\"
+      sleep 5
+    done
+    echo \"Endpoint ${endpoint_name} is created.\"
+    " || echo "Error: Timed out waiting for $endpoint_name endpoint creation."
 }
 
 # Creates an OpenShift Operator subscription
@@ -632,16 +647,14 @@ run_tests() {
 
   mkdir -p "${ARTIFACT_DIR}/${project}/test-results"
   mkdir -p "${ARTIFACT_DIR}/${project}/attachments/screenshots"
-  cp -a "${e2e_tests_dir}/test-results/"* "${ARTIFACT_DIR}/${project}/test-results"
-  cp -a "${e2e_tests_dir}/${JUNIT_RESULTS}" "${ARTIFACT_DIR}/${project}/${JUNIT_RESULTS}"
+  cp -a "${e2e_tests_dir}/test-results/"* "${ARTIFACT_DIR}/${project}/test-results" || true
+  cp -a "${e2e_tests_dir}/${JUNIT_RESULTS}" "${ARTIFACT_DIR}/${project}/${JUNIT_RESULTS}" || true
 
-  if [ -d "${e2e_tests_dir}/screenshots" ]; then
-    cp -a "${e2e_tests_dir}/screenshots/"* "${ARTIFACT_DIR}/${project}/attachments/screenshots/"
-  fi
+  cp -a "${e2e_tests_dir}/screenshots/"* "${ARTIFACT_DIR}/${project}/attachments/screenshots/" || true
 
   ansi2html <"/tmp/${LOGFILE}" >"/tmp/${LOGFILE}.html"
-  cp -a "/tmp/${LOGFILE}.html" "${ARTIFACT_DIR}/${project}"
-  cp -a "${e2e_tests_dir}/playwright-report/"* "${ARTIFACT_DIR}/${project}"
+  cp -a "/tmp/${LOGFILE}.html" "${ARTIFACT_DIR}/${project}" || true
+  cp -a "${e2e_tests_dir}/playwright-report/"* "${ARTIFACT_DIR}/${project}" || true
 
   droute_send "${release_name}" "${project}"
 
@@ -698,7 +711,7 @@ check_backstage_running() {
   echo "❌ Failed to reach Backstage at ${url} after ${max_attempts} attempts."
   oc get events -n "${namespace}" --sort-by='.lastTimestamp' | tail -10
   mkdir -p "${ARTIFACT_DIR}/${namespace}"
-  cp -a "/tmp/${LOGFILE}" "${ARTIFACT_DIR}/${namespace}/"
+  cp -a "/tmp/${LOGFILE}" "${ARTIFACT_DIR}/${namespace}/" || true
   save_all_pod_logs "${namespace}"
   return 1
 }
@@ -726,7 +739,7 @@ install_acm_ocp_operator(){
   oc apply -f "${DIR}/cluster/operators/acm/operator-group.yaml"
   install_subscription advanced-cluster-management open-cluster-management release-2.12 advanced-cluster-management redhat-operators openshift-marketplace
   wait_for_deployment "open-cluster-management" "multiclusterhub-operator"
-  wait_for_svc multiclusterhub-operator-webhook open-cluster-management
+  wait_for_endpoint "multiclusterhub-operator-webhook" "open-cluster-management"
   oc apply -f "${DIR}/cluster/operators/acm/multiclusterhub.yaml"
   # wait until multiclusterhub is Running.
   timeout 900 bash -c 'while true; do
@@ -743,7 +756,7 @@ install_acm_ocp_operator(){
 install_ocm_k8s_operator(){
   install_subscription my-cluster-manager operators stable cluster-manager operatorhubio-catalog olm
   wait_for_deployment "operators" "cluster-manager"
-  wait_for_svc multiclusterhub-operator-work-webhook open-cluster-management
+  wait_for_endpoint "multiclusterhub-operator-work-webhook" "open-cluster-management"
   oc apply -f "${DIR}/cluster/operators/acm/multiclusterhub.yaml"
   # wait until multiclusterhub is Running.
   timeout 600 bash -c 'while true; do
@@ -765,13 +778,7 @@ install_pipelines_operator() {
     # Install the operator and wait for deployment
     install_subscription openshift-pipelines-operator openshift-operators latest openshift-pipelines-operator-rh redhat-operators openshift-marketplace
     wait_for_deployment "openshift-operators" "pipelines"
-    timeout 300 bash -c '
-    while ! oc get svc tekton-pipelines-webhook -n openshift-pipelines &> /dev/null; do
-        echo "Waiting for tekton-pipelines-webhook service to be created..."
-        sleep 5
-    done
-    echo "Service tekton-pipelines-webhook is created."
-    ' || echo "Error: Timed out waiting for tekton-pipelines-webhook service creation."
+    wait_for_endpoint "tekton-pipelines-webhook" "openshift-pipelines"
   fi
 }
 
@@ -784,13 +791,7 @@ install_tekton_pipelines() {
     echo "Tekton Pipelines is not installed. Installing..."
     kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
     wait_for_deployment "tekton-pipelines" "${DISPLAY_NAME}"
-    timeout 300 bash -c '
-    while ! kubectl get endpoints tekton-pipelines-webhook -n tekton-pipelines &> /dev/null; do
-        echo "Waiting for tekton-pipelines-webhook endpoints to be ready..."
-        sleep 5
-    done
-    echo "Endpoints for tekton-pipelines-webhook are ready."
-    ' || echo "Error: Timed out waiting for tekton-pipelines-webhook endpoints."
+    wait_for_endpoint "tekton-pipelines-webhook" "tekton-pipelines"
   fi
 }
 
@@ -1005,7 +1006,7 @@ initiate_sanity_plugin_checks_deployment() {
   apply_yaml_files "${DIR}" "${NAME_SPACE_SANITY_PLUGINS_CHECK}" "${sanity_plugins_url}"
   yq_merge_value_files "overwrite" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_SANITY_PLUGINS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}"
   mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE_SANITY_PLUGINS_CHECK}"
-  cp -a "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" "${ARTIFACT_DIR}/${NAME_SPACE_SANITY_PLUGINS_CHECK}/" # Save the final value-file into the artifacts directory.
+  cp -a "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" "${ARTIFACT_DIR}/${NAME_SPACE_SANITY_PLUGINS_CHECK}/" || true # Save the final value-file into the artifacts directory.
   helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE_SANITY_PLUGINS_CHECK}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" \
