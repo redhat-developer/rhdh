@@ -1210,9 +1210,9 @@ plugins:
                   title: Catalog
 
   # Group: Orchestrator
-  - package: "@redhat/backstage-plugin-orchestrator@1.6.0"
+  - package: "@redhat/backstage-plugin-orchestrator@1.7.0"
     disabled: true
-    integrity: sha512-fOSJv2PgtD2urKwBM7p9W6gV/0UIHSf4pkZ9V/wQO0eg0Zi5Mys/CL1ba3nO9x9l84MX11UBZ2r7PPVJPrmOtw==
+    integrity: sha512-HpyV/5yBh2wBVaF93dMBzm4oggEvILX2pXao0w7iUxJeWFC31iXj4rpviBZJrH1UlyJcuXgaJ2N0oYT8wZ/c6Q==
     pluginConfig:
       dynamicPlugins:
         frontend:
@@ -1227,25 +1227,25 @@ plugins:
                   text: Orchestrator
                 path: /orchestrator
 
-  - package: "@redhat/backstage-plugin-orchestrator-backend-dynamic@1.6.0"
+  - package: "@redhat/backstage-plugin-orchestrator-backend-dynamic@1.7.0"
     disabled: true
-    integrity: sha512-Kr55YbuVwEADwGef9o9wyimcgHmiwehPeAtVHa9g2RQYoSPEa6BeOlaPzB6W5Ke3M2bN/0j0XXtpLuvrlXQogA==
+    integrity: sha512-CRqcbfTFQqqHbUUl89rz5cCK5HdKEVQ1/IqZekYjec/9hFra36y37AZm2PiwjdW7/aqnvM14TnLIjI1MU8NXZw==
     pluginConfig:
       orchestrator:
         dataIndexService:
           url: http://sonataflow-platform-data-index-service
 
-  - package: "@redhat/backstage-plugin-scaffolder-backend-module-orchestrator-dynamic@1.6.0"
+  - package: "@redhat/backstage-plugin-scaffolder-backend-module-orchestrator-dynamic@1.7.0"
     disabled: true
-    integrity: sha512-Bueeix4661fXEnfJ9y31Yw91LXJgw6hJUG7lPVdESCi9VwBCjDB9Rm8u2yPqP8sriwr0OMtKtqD+Odn3LOPyVw==
+    integrity: sha512-XeR78NJCLVCBPUWNDWiojckLOF3ASIsPTyaYbH0WB2ko8de/bgZ4QVzMo5FXK1xK6TwRgUVY4M3JRpSY7dxm6Q==
     pluginConfig:
       orchestrator:
         dataIndexService:
           url: http://sonataflow-platform-data-index-service
 
-  - package: "@redhat/backstage-plugin-orchestrator-form-widgets@1.6.0"
+  - package: "@redhat/backstage-plugin-orchestrator-form-widgets@1.7.0"
     disabled: true
-    integrity: sha512-Tqn6HO21Q1TQ7TFUoRhwBVCtSBzbQYz+OaanzzIB0R24O6YtVx3wR7Chtr5TzC05Vz5GkBO1+FZid8BKpqljgA==
+    integrity: sha512-uqzL/O2sZB74XS95rma4ZHMaWwII9JIHFHWNoRRP8LVrKC4LNiPpUr4dhnOsWG3erQeTz4jK2X7gWYo47w7zXA==
     pluginConfig:
       dynamicPlugins:
         frontend:
