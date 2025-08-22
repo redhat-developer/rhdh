@@ -199,6 +199,8 @@ These differences make `showcase-auth-providers` a specialized testing environme
 
 The RHDH CI/CD pipeline uses **OpenShift CI** with **Prow-based** automation and **ephemeral clusters** for testing.
 
+Check the readme at `.ibm/pipelines/README.md`
+
 #### Key Components
 
 1. **Ephemeral Clusters**: AWS-based clusters in `us-east-2` region
@@ -235,6 +237,21 @@ Available cluster pools for different OCP versions:
 - **Schedule**: Automated nightly runs
 - **Environments**: Multiple OCP versions, AKS, GKE
 - **Reporting**: Slack notifications to `#rhdh-e2e-test-alerts`
+
+### Test Execution Environment
+
+#### Local Development
+Tests are run directly using Playwright Test with Node.js 22 and Yarn 3.8.7 as specified in the technology stack above.
+
+#### CI/CD Pipeline Execution
+For CI/CD pipeline execution, tests run in a containerized environment using the image `.ibm/images/Dockerfile`. This image is based on `mcr.microsoft.com/playwright` and uses Ubuntu as the base operating system.
+
+**Note**: Any additional system dependencies required for testing must be installed in this Docker image to ensure CI/CD pipeline compatibility.
+
+#### Alternative Execution Methods
+**Podman Usage**: If you need to prepare the environment or run tests close to how CI/CD pipeline runs them, you can use Podman to run the `.ibm/pipelines/openshift-ci-tests.sh` script inside the Docker image.
+
+**RHEL/Fedora Systems**: On Playwright unsupported systems such as RHEL or Fedora, running tests inside the containerized environment using Podman is the recommended approach to avoid compatibility issues.
 
 ### Key CI Scripts
 
