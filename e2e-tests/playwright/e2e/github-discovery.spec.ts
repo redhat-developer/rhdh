@@ -23,7 +23,7 @@ const test = base.extend<GithubDiscoveryFixture>({
 });
 
 //TODO: skipping due to RHIDP-4992
-test.describe.skip("Github Discovery Catalog", () => {
+test.describe("Github Discovery Catalog", () => {
   test(`Discover Organization's Catalog`, async ({
     catalogPage,
     githubApi,
