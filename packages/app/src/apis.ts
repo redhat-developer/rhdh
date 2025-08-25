@@ -4,14 +4,18 @@ import {
   configApiRef,
   createApiFactory,
   discoveryApiRef,
+  errorApiRef,
+  fetchApiRef,
   identityApiRef,
   oauthRequestApiRef,
+  storageApiRef,
 } from '@backstage/core-plugin-api';
 import {
   ScmAuth,
   ScmIntegrationsApi,
   scmIntegrationsApiRef,
 } from '@backstage/integration-react';
+import { UserSettingsStorage } from '@backstage/plugin-user-settings';
 
 import {
   auth0AuthApiRef,
@@ -24,6 +28,16 @@ import {
 } from './api/LearningPathApiClient';
 
 export const apis: AnyApiFactory[] = [
+  createApiFactory({
+    api: storageApiRef,
+    deps: {
+      discoveryApi: discoveryApiRef,
+      errorApi: errorApiRef,
+      fetchApi: fetchApiRef,
+      identityApi: identityApiRef,
+    },
+    factory: deps => UserSettingsStorage.create(deps),
+  }),
   createApiFactory({
     api: scmIntegrationsApiRef,
     deps: { configApi: configApiRef },
