@@ -57,7 +57,7 @@ test.describe("Test Topology Plugin with RBAC", () => {
 
   // User is able to read from the catalog
   // User has 'kubernetes.clusters.read', 'kubernetes.resources.read', 'kubernetes.proxy' permissions
-  test.describe.skip(
+  test.describe(
     "Verify a user with permissions is able to access the Topology plugin",
     () => {
       //Skipping for now as it is failing RHIDP-7164
