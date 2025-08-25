@@ -382,21 +382,77 @@ jobs:
 
         - name: Create manifest list and push
           working-directory: /tmp/digests
+          env:
+            REF_NAME: ${{ env.REF_NAME }}
+            REF_NAME_SHORT: ${{ env.REF_NAME_SHORT }}
+            SHORT_SHA: ${{ env.SHORT_SHA }}
+            EXPIRES_AFTER: ${{ env.EXPIRES_AFTER }}
           run: |
+            # Build digest references
+            digest_refs=""
+            for digest_file in *; do
+              if [ -f "$digest_file" ]; then
+                digest_refs+="${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}@sha256:${digest_file} "
+              fi
+            done
+            
+            if [ -z "$digest_refs" ]; then
+              echo "::error::No digest files found"
+              exit 1
+            fi
+            
+            echo "Available digests: $digest_refs"
+            echo "Expires after: ${EXPIRES_AFTER}"
+            
             # Read tags from the metadata JSON of the step that ran
             meta='${{ steps.meta-release.outputs.json }}'
             if [ -z "$meta" ] || [ "$meta" = "null" ]; then
               meta='${{ steps.meta-next.outputs.json }}'
             fi
-
-            # Create and annotate the manifest list for EACH tag to ensure Quay applies expiry per tag
-            echo "$meta" | jq -r '.tags | unique[]' | while IFS= read -r tag; do
-              [ -z "$tag" ] && continue
-              docker buildx imagetools create \
-                --annotation "quay.expires-after=${EXPIRES_AFTER}" \
-                -t "$tag" \
-                $(printf '${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}@sha256:%s ' *)
-            done
+            
+            echo "Metadata JSON: $meta"
+            
+            # Extract and process tags, ensuring each gets expiry annotation
+            if [ -n "$meta" ] && [ "$meta" != "null" ]; then
+              echo "Using tags from metadata JSON..."
+              echo "$meta" | jq -r '.tags[]? // empty' | while IFS= read -r tag; do
+                [ -z "$tag" ] && continue
+                echo "Creating manifest for tag: $tag with expiry: ${EXPIRES_AFTER}"
+                
+                docker buildx imagetools create \
+                  --annotation "quay.expires-after=${EXPIRES_AFTER}" \
+                  --annotation "org.opencontainers.image.expires=${EXPIRES_AFTER}" \
+                  -t "$tag" \
+                  $digest_refs
+                  
+                echo "✓ Created tag: $tag"
+              done
+            else
+              echo "::warning::No metadata JSON available, falling back to manual tag construction"
+              
+              # Fallback: construct tags manually (same logic as before)
+              base="${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}"
+              
+              if [[ "$REF_NAME_SHORT" == "next" ]] || [[ "$REF_NAME_SHORT" == next-* ]]; then
+                tags=("$base:$REF_NAME" "$base:$REF_NAME-$SHORT_SHA")
+              else
+                tags=("$base:$REF_NAME" "$base:$REF_NAME-$SHORT_SHA" "$base:$REF_NAME_SHORT" "$base:$REF_NAME_SHORT-$SHORT_SHA")
+              fi
+              
+              for tag in "${tags[@]}"; do
+                echo "Creating manifest for tag: $tag with expiry: ${EXPIRES_AFTER}"
+                
+                docker buildx imagetools create \
+                  --annotation "quay.expires-after=${EXPIRES_AFTER}" \
+                  --annotation "org.opencontainers.image.expires=${EXPIRES_AFTER}" \
+                  -t "$tag" \
+                  $digest_refs
+                  
+                echo "✓ Created tag: $tag"
+              done
+            fi
+            
+            echo "All manifests created with expiry annotations"
 
         - name: Inspect image (for :next builds)
           id: inspect-next
