@@ -149,8 +149,7 @@ test.describe("Admin > Extensions > Catalog", () => {
     await uiHelper.verifyHeading("Application Topology for Kubernetes");
   });
 
-  // Enable this when the plugin is installation is enabled in the production environment
-  test.skip("Verify plugin configuration is editable and can be enabled when disabled", async ({
+  test("Verify plugin configuration is editable and can be enabled when disabled", async ({
     page,
   }) => {
     await uiHelper.searchInputPlaceholder("Topology");
