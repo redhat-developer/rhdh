@@ -1,0 +1,23 @@
+account:
+  adminPassword: NewAdminPassword1@
+  currentAdminPassword: admin
+
+OpenShift:
+  enabled: true
+  serviceAccount:
+    create: true
+  route:
+    enabled: true
+    host: "sonarqube.<openshift-cluster-domain>"
+    path: "/"
+    tls:
+      termination: edge
+      insecureEdgeTerminationPolicy: Redirect
+
+monitoringPasscode: "define_it"
+
+postgresql:
+  securityContext:
+    enabled: false
+  containerSecurityContext:
+    enabled: false
