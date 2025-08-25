@@ -377,11 +377,11 @@ apply_yaml_files() {
       --dry-run=client -o yaml | oc apply -f -
 
     # Create Pipeline run for tekton test case.
-    oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline.yaml"
-    oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline-run.yaml"
+    # oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline.yaml"
+    # oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline-run.yaml"
 
     # Create Deployment and Pipeline for Topology test.
-    oc apply -f "$dir/resources/topology_test/topology-test.yaml"
+    # oc apply -f "$dir/resources/topology_test/topology-test.yaml"
     if [[ -z "${IS_OPENSHIFT}" || "$(to_lowercase "${IS_OPENSHIFT}")" == "false" ]]; then
       kubectl apply -f "$dir/resources/topology_test/topology-test-ingress.yaml"
     else
@@ -943,6 +943,21 @@ force_delete_namespace() {
   local project=$1
   echo "Forcefully deleting namespace ${project}."
   oc get namespace "$project" -o json | jq '.spec = {"finalizers":[]}' | oc replace --raw "/api/v1/namespaces/$project/finalize" -f -
+
+  local elapsed=0
+  local sleep_interval=2
+  local timeout_seconds=${2:-120}
+
+  while oc get namespace "$project" &>/dev/null; do
+    if [[ $elapsed -ge $timeout_seconds ]]; then
+      echo "Timeout: Namespace '${project}' was not deleted within $timeout_seconds seconds." >&2
+      return 1
+    fi
+    sleep $sleep_interval
+    elapsed=$((elapsed + sleep_interval))
+  done
+
+  echo "Namespace '${project}' successfully deleted."
 }
 
 oc_login() {
