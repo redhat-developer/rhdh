@@ -454,6 +454,51 @@ jobs:
             
             echo "All manifests created with expiry annotations"
 
+        - name: Ensure tag expiry via Quay API
+          if: env.HAS_QUAY_AUTH == 'true'
+          env:
+            REGISTRY_IMAGE: ${{ env.REGISTRY_IMAGE }}
+            EXPIRES_AFTER: ${{ env.EXPIRES_AFTER }}
+            QUAY_TOKEN: ${{ secrets.QUAY_TOKEN }}
+            META_RELEASE_JSON: ${{ steps.meta-release.outputs.json }}
+            META_NEXT_JSON: ${{ steps.meta-next.outputs.json }}
+          run: |
+            set -euo pipefail
+            meta="${META_RELEASE_JSON}"
+            if [ -z "$meta" ] || [ "$meta" = "null" ]; then
+              meta="${META_NEXT_JSON}"
+            fi
+            if [ -z "$meta" ] || [ "$meta" = "null" ]; then
+              echo "::warning::No metadata JSON available; skipping Quay API expiry enforcement"
+              exit 0
+            fi
+
+            # Compute expiry timestamp from EXPIRES_AFTER (e.g. 14d, 183d)
+            expires="${EXPIRES_AFTER}"
+            days="${expires%d}"
+            if [[ "$expires" != *d ]] || ! [[ "$days" =~ ^[0-9]+$ ]]; then
+              echo "::warning::Unknown EXPIRES_AFTER format: $EXPIRES_AFTER; defaulting to 14d"
+              days=14
+            fi
+            expiry_ts=$(date -d "+${days} days" +%s)
+            echo "Will set expiration timestamp: ${expiry_ts}"
+
+            echo "$meta" | jq -r '.tags[]? // empty' | while IFS= read -r ref; do
+              [ -z "$ref" ] && continue
+              tag="${ref##*:}"
+              echo "Setting expiry on tag: ${tag}"
+              url="https://quay.io/api/v1/repository/${REGISTRY_IMAGE}/tag/${tag}"
+              if curl -fsSL -X PUT \
+                -H "Authorization: Bearer ${QUAY_TOKEN}" \
+                -H "Content-Type: application/json" \
+                -d "{\"expiration\": ${expiry_ts}}" \
+                "$url" >/dev/null; then
+                echo "✓ Expiry set for ${tag}"
+              else
+                echo "::warning::Failed to set expiry for ${tag} via Quay API"
+              fi
+            done
+
         - name: Inspect image (for :next builds)
           id: inspect-next
           if: ${{ env.REF_NAME_SHORT == 'next' || startsWith(env.REF_NAME_SHORT,'next-') }}
