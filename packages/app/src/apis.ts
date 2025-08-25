@@ -1,14 +1,19 @@
 import { OAuth2 } from '@backstage/core-app-api';
 import {
   AnyApiFactory,
+  bitbucketAuthApiRef,
   configApiRef,
   createApiFactory,
   discoveryApiRef,
+  githubAuthApiRef,
+  gitlabAuthApiRef,
   identityApiRef,
+  microsoftAuthApiRef,
   oauthRequestApiRef,
 } from '@backstage/core-plugin-api';
 import {
   ScmAuth,
+  scmAuthApiRef,
   ScmIntegrationsApi,
   scmIntegrationsApiRef,
 } from '@backstage/integration-react';
@@ -29,7 +34,34 @@ export const apis: AnyApiFactory[] = [
     deps: { configApi: configApiRef },
     factory: ({ configApi }) => ScmIntegrationsApi.fromConfig(configApi),
   }),
-  ScmAuth.createDefaultApiFactory(),
+  createApiFactory({
+    api: scmAuthApiRef,
+    deps: {
+      github: githubAuthApiRef,
+      gitlab: gitlabAuthApiRef,
+      azure: microsoftAuthApiRef,
+      bitbucket: bitbucketAuthApiRef,
+      configApi: configApiRef,
+    },
+    factory: ({ github, gitlab, azure, bitbucket, configApi }) => {
+      const providers = [
+        { key: 'github', ref: github, factory: ScmAuth.forGithub },
+        { key: 'gitlab', ref: gitlab, factory: ScmAuth.forGitlab },
+        { key: 'azure', ref: azure, factory: ScmAuth.forAzure },
+        { key: 'bitbucket', ref: bitbucket, factory: ScmAuth.forBitbucket },
+      ];
+
+      const scmAuths = providers.flatMap(({ key, ref, factory }) => {
+        const configs = configApi.getOptionalConfigArray(`integrations.${key}`);
+        if (!configs?.length) {
+          return [factory(ref)];
+        }
+        return configs.map(c => factory(ref, { host: c.getString('host') }));
+      });
+
+      return ScmAuth.merge(...scmAuths);
+    },
+  }),
   createApiFactory({
     api: learningPathApiRef,
     deps: {
