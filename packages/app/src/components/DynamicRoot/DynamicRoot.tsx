@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-shadow */
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { createApp } from '@backstage/app-defaults';
 import { BackstageApp, MultipleAnalyticsApi } from '@backstage/core-app-api';
@@ -16,6 +16,7 @@ import {
   IdentityApi,
   identityApiRef,
 } from '@backstage/core-plugin-api';
+import { TranslationResource } from '@backstage/core-plugin-api/alpha';
 
 import { useThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 import DynamicRootContext, {
@@ -34,6 +35,7 @@ import { useScalprum } from '@scalprum/react-core';
 
 import { catalogImportTranslations } from '../../translations/catalog-import/catalog-import';
 import { scaffolderTranslations } from '../../translations/scaffolder/scaffolder';
+import { TranslationConfig } from '../../types/types';
 import bindAppRoutes from '../../utils/dynamicUI/bindAppRoutes';
 import extractDynamicConfig, {
   configIfToCallable,
@@ -61,7 +63,8 @@ export type RemotePlugins = {
               | ((config: DynamicRootConfig) => React.ReactNode);
           }
         | AnyApiFactory
-        | AnalyticsApiClass;
+        | AnalyticsApiClass
+        | TranslationResource<string>;
     };
   };
 };
@@ -91,6 +94,7 @@ export const DynamicRoot = ({
   dynamicPlugins,
   staticPluginStore = {},
   scalprumConfig,
+  translationConfig,
 }: {
   afterInit: () => Promise<{ default: React.ComponentType }>;
   // Static APIs
@@ -98,6 +102,7 @@ export const DynamicRoot = ({
   dynamicPlugins: DynamicPluginConfig;
   staticPluginStore?: StaticPlugins;
   scalprumConfig: AppsConfig;
+  translationConfig?: TranslationConfig;
 }) => {
   const app = useRef<BackstageApp>();
   const [ChildComponent, setChildComponent] = useState<
@@ -129,6 +134,7 @@ export const DynamicRoot = ({
       techdocsAddons,
       themes: pluginThemes,
       signInPages,
+      translationResources,
     } = extractDynamicConfig(dynamicPlugins);
     const requiredModules = [
       ...pluginModules.map(({ scope, module }) => ({
@@ -171,6 +177,10 @@ export const DynamicRoot = ({
         scope,
         module,
       })),
+      ...(translationResources?.map(({ scope, module }) => ({
+        scope,
+        module,
+      })) ?? []),
     ];
 
     const staticPlugins = Object.keys(staticPluginStore).reduce(
@@ -524,6 +534,21 @@ export const DynamicRoot = ({
       )
       .find(candidate => candidate !== undefined);
 
+    const dynamicTranslationResources = translationResources?.reduce<
+      TranslationResource[]
+    >((acc, { scope, module, importName }) => {
+      const resource = allPlugins[scope]?.[module]?.[importName];
+      if (resource && (resource as TranslationResource<string>).id) {
+        acc.push(resource as TranslationResource<string>);
+      } else {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `Plugin ${scope} is not configured properly: ${module}.${importName} not found, ignoring translation resource: ${importName}`,
+        );
+      }
+      return acc;
+    }, []);
+
     if (!app.current) {
       const filteredStaticThemes = themes.filter(
         theme =>
@@ -534,13 +559,16 @@ export const DynamicRoot = ({
       const filteredStaticApis = staticApis.filter(
         api => !remoteApis.some(remoteApi => remoteApi.api.id === api.api.id),
       );
+
       app.current = createApp({
         __experimentalTranslations: {
-          availableLanguages: ['en'],
+          availableLanguages: translationConfig?.locales ?? ['en'],
+          defaultLanguage: translationConfig?.defaultLocale,
           resources: [
             catalogTranslations,
             scaffolderTranslations,
             catalogImportTranslations,
+            ...(dynamicTranslationResources ?? []),
           ],
         },
         apis: [...filteredStaticApis, ...remoteApis, ...multipleAnalyticsApi],
@@ -598,6 +626,7 @@ export const DynamicRoot = ({
     staticApis,
     staticPluginStore,
     themes,
+    translationConfig,
   ]);
 
   useEffect(() => {

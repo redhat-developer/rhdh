@@ -141,6 +141,12 @@ type SignInPageEntry = {
   importName: string;
 };
 
+type TranslationResource = {
+  scope: string;
+  module: string;
+  importName: string;
+};
+
 type ProviderSetting = {
   title: string;
   description: string;
@@ -171,6 +177,7 @@ type CustomProperties = {
   signInPage: SignInPageEntry;
   techdocsAddons?: TechdocsAddon[];
   themes?: ThemeEntry[];
+  translationResources?: TranslationResource[];
 };
 
 export type FrontendConfig = {
@@ -197,6 +204,7 @@ type DynamicConfig = {
   signInPages: SignInPageEntry[];
   techdocsAddons: TechdocsAddon[];
   themes: ThemeEntry[];
+  translationResources: TranslationResource[];
 };
 
 /**
@@ -223,6 +231,7 @@ function extractDynamicConfig(
     signInPages: [],
     techdocsAddons: [],
     themes: [],
+    translationResources: [],
   };
   config.signInPages = Object.entries(frontend).reduce<SignInPageEntry[]>(
     (pluginSet, [scope, { signInPage }]) => {
@@ -398,6 +407,21 @@ function extractDynamicConfig(
     },
     [],
   );
+
+  config.translationResources = Object.entries(frontend).reduce<
+    TranslationResource[]
+  >((accTranslationResources, [scope, { translationResources }]) => {
+    accTranslationResources.push(
+      ...(translationResources ?? []).map(resource => ({
+        ...resource,
+        module: resource.module ?? 'PluginRoot',
+        importName: resource.importName ?? 'default',
+        scope,
+      })),
+    );
+    return accTranslationResources;
+  }, []);
+
   return config;
 }
 
