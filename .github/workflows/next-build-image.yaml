@@ -411,43 +411,46 @@ jobs:
             fi
             
             echo "Metadata JSON: $meta"
-
-            # Build a unified, de-duplicated tag list (metadata + computed)
-            base="${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}"
-            tmpfile=$(mktemp)
-            # 1) Tags from metadata
-            if [ -n "$meta" ] && [ "$meta" != "null" ]; then
-              echo "$meta" | jq -r '.tags[]? // empty' >> "$tmpfile"
-            fi
-            # 2) Explicitly computed tags (ensures branch-shortsha is present)
-            if [[ "$REF_NAME_SHORT" == "next" ]] || [[ "$REF_NAME_SHORT" == next-* ]]; then
-              printf "%s\n" \
-                "$base:$REF_NAME" \
-                "$base:$REF_NAME-$SHORT_SHA" >> "$tmpfile"
-            else
-              printf "%s\n" \
-                "$base:$REF_NAME" \
-                "$base:$REF_NAME-$SHORT_SHA" \
-                "$base:$REF_NAME_SHORT" \
-                "$base:$REF_NAME_SHORT-$SHORT_SHA" >> "$tmpfile"
-            fi
-
-            echo "Final tag list to create (deduped):"
-            sort -u "$tmpfile" | tee /tmp/final_tags.txt
-
-            # Create manifests for each tag with expiry annotation
-            while IFS= read -r tag; do
-              [ -z "$tag" ] && continue
-              echo "Creating manifest for tag: $tag with expiry: ${EXPIRES_AFTER}"
-              docker buildx imagetools create \
-                --annotation "index:quay.expires-after=${EXPIRES_AFTER}" \
-                --annotation "index:org.opencontainers.image.expires=${EXPIRES_AFTER}" \
-                -t "$tag" \
-                $digest_refs
-              echo "✓ Created tag: $tag"
-            done < /tmp/final_tags.txt
             
-            rm -f "$tmpfile"
+            # Extract and process tags, ensuring each gets expiry annotation
+            if [ -n "$meta" ] && [ "$meta" != "null" ]; then
+              echo "Using tags from metadata JSON..."
+              echo "$meta" | jq -r '.tags[]? // empty' | while IFS= read -r tag; do
+                [ -z "$tag" ] && continue
+                echo "Creating manifest for tag: $tag with expiry: ${EXPIRES_AFTER}"
+                
+                docker buildx imagetools create \
+                  --annotation "quay.expires-after=${EXPIRES_AFTER}" \
+                  --annotation "org.opencontainers.image.expires=${EXPIRES_AFTER}" \
+                  -t "$tag" \
+                  $digest_refs
+                  
+                echo "✓ Created tag: $tag"
+              done
+            else
+              echo "::warning::No metadata JSON available, falling back to manual tag construction"
+              
+              # Fallback: construct tags manually (same logic as before)
+              base="${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}"
+              
+              if [[ "$REF_NAME_SHORT" == "next" ]] || [[ "$REF_NAME_SHORT" == next-* ]]; then
+                tags=("$base:$REF_NAME" "$base:$REF_NAME-$SHORT_SHA")
+              else
+                tags=("$base:$REF_NAME" "$base:$REF_NAME-$SHORT_SHA" "$base:$REF_NAME_SHORT" "$base:$REF_NAME_SHORT-$SHORT_SHA")
+              fi
+              
+              for tag in "${tags[@]}"; do
+                echo "Creating manifest for tag: $tag with expiry: ${EXPIRES_AFTER}"
+                
+                docker buildx imagetools create \
+                  --annotation "quay.expires-after=${EXPIRES_AFTER}" \
+                  --annotation "org.opencontainers.image.expires=${EXPIRES_AFTER}" \
+                  -t "$tag" \
+                  $digest_refs
+                  
+                echo "✓ Created tag: $tag"
+              done
+            fi
             
             echo "All manifests created with expiry annotations"
 
@@ -462,7 +465,13 @@ jobs:
           run: |
             set -euo pipefail
             meta="${META_RELEASE_JSON}"
-            if [ -z "$meta" ] || [ "$meta" = "null" ]; then meta="${META_NEXT_JSON}"; fi
+            if [ -z "$meta" ] || [ "$meta" = "null" ]; then
+              meta="${META_NEXT_JSON}"
+            fi
+            if [ -z "$meta" ] || [ "$meta" = "null" ]; then
+              echo "::warning::No metadata JSON available; skipping Quay API expiry enforcement"
+              exit 0
+            fi
 
             # Compute expiry timestamp from EXPIRES_AFTER (e.g. 14d, 183d)
             expires="${EXPIRES_AFTER}"
@@ -474,39 +483,21 @@ jobs:
             expiry_ts=$(date -d "+${days} days" +%s)
             echo "Will set expiration timestamp: ${expiry_ts}"
 
-            # Build unified tag list same as creation step
-            base="quay.io/${REGISTRY_IMAGE}"
-            tmpfile=$(mktemp)
-            # 1) Metadata tags
-            if [ -n "$meta" ] && [ "$meta" != "null" ]; then
-              echo "$meta" | jq -r '.tags[]? // empty' >> "$tmpfile"
-            fi
-            # 2) Add created tags from previous step (if present)
-            if [ -f /tmp/final_tags.txt ]; then
-              cat /tmp/final_tags.txt >> "$tmpfile"
-            fi
-
-            echo "Applying expiry via Quay API to tags:"
-            sort -u "$tmpfile" | tee /tmp/final_tags_api.txt
-
-            while IFS= read -r ref; do
+            echo "$meta" | jq -r '.tags[]? // empty' | while IFS= read -r ref; do
               [ -z "$ref" ] && continue
               tag="${ref##*:}"
+              echo "Setting expiry on tag: ${tag}"
               url="https://quay.io/api/v1/repository/${REGISTRY_IMAGE}/tag/${tag}"
-              echo "Setting expiry on: ${tag} -> ${url}"
-              http_code=$(curl -sS -o /tmp/quay_resp.txt -w "%{http_code}" -X PUT \
+              if curl -fsSL -X PUT \
                 -H "Authorization: Bearer ${QUAY_TOKEN}" \
                 -H "Content-Type: application/json" \
                 -d "{\"expiration\": ${expiry_ts}}" \
-                "$url") || true
-              if [ "$http_code" = "200" ] || [ "$http_code" = "201" ]; then
+                "$url" >/dev/null; then
                 echo "✓ Expiry set for ${tag}"
               else
-                echo "::warning::Failed to set expiry for ${tag} (HTTP ${http_code})"
-                sed -e 's/.*/  &/' /tmp/quay_resp.txt || true
+                echo "::warning::Failed to set expiry for ${tag} via Quay API"
               fi
-            done < /tmp/final_tags_api.txt
-            rm -f "$tmpfile" /tmp/quay_resp.txt
+            done
 
         - name: Inspect image (for :next builds)
           id: inspect-next
