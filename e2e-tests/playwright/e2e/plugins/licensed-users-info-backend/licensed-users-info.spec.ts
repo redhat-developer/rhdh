@@ -1,4 +1,5 @@
 import { CatalogUsersPO } from "../../../support/pageObjects/catalog/catalog-users-obj";
+import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { RhdhAuthUiHack } from "../../../support/api/rhdh-auth-hack";
 import { Common } from "../../../utils/common";
 import {
@@ -10,7 +11,13 @@ import {
 } from "@playwright/test";
 import playwrightConfig from "../../../../playwright.config";
 
-test.describe("Test licensed users info backend plugin", async () => {
+test.describe("Test licensed users info backend plugin", () => {
+  ReportingApi.addAttributes([
+    {
+      key: "component",
+      value: "user-management",
+    },
+  ]);
   let common: Common;
   let apiToken: string;
 

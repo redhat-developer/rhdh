@@ -1,8 +1,17 @@
 import { test, expect } from "@playwright/test";
+import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { Analytics } from "../../../utils/analytics/analytics";
 import { APIHelper } from "../../../utils/api-helper";
 
-test('Check "analytics-provider-segment" plugin is disabled', async () => {
+test.describe('Check "analytics-provider-segment" plugin is disabled', () => {
+  ReportingApi.addAttributes([
+    {
+      key: "component",
+      value: "monitoring",
+    },
+  ]);
+
+  test('Check "analytics-provider-segment" plugin is disabled', async () => {
   const analytics = new Analytics();
   const api = new APIHelper();
 

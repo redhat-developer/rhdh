@@ -1,9 +1,17 @@
 import { test } from "@playwright/test";
 import { Common } from "../utils/common";
+import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { KubeClient } from "../utils/kube-client";
 
 test.describe
   .serial("Verify TLS configuration with Postgres DB health check", () => {
+  ReportingApi.addAttributes([
+    {
+      key: "component",
+      value: "data-management",
+    },
+  ]);
+
   const namespace = process.env.NAME_SPACE_RUNTIME || "showcase-runtime";
   const job: string = process.env.JOB_NAME;
   let deploymentName = "rhdh-backstage";

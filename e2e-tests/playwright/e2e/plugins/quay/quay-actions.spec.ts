@@ -1,10 +1,17 @@
 import { Page, test } from "@playwright/test";
+import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { Common, setupBrowser } from "../../../utils/common";
 import { UIhelper } from "../../../utils/ui-helper";
 import { UI_HELPER_ELEMENTS } from "../../../support/pageObjects/global-obj";
 import { QuayClient } from "../../../utils/quay/quay-client";
 
 test.describe("Test Quay Actions plugin", () => {
+  ReportingApi.addAttributes([
+    {
+      key: "component",
+      value: "plugins",
+    },
+  ]);
   let common: Common;
   let uiHelper: UIhelper;
   let page: Page;

@@ -1,8 +1,16 @@
 import { test, expect } from "@playwright/test";
 import { UIhelper } from "../utils/ui-helper";
 import { Common } from "../utils/common";
+import { ReportingApi } from "@reportportal/agent-js-playwright";
 
 test.describe("Verify TLS configuration with external Postgres DB", () => {
+  ReportingApi.addAttributes([
+    {
+      key: "component",
+      value: "data-management",
+    },
+  ]);
+
   test("Verify successful DB connection and display of expected entities in the Home Page and Catalog", async ({
     page,
   }) => {

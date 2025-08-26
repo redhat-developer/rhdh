@@ -6,10 +6,18 @@ import {
   CUSTOM_SIDEBAR_LOGO,
 } from "../support/testData/custom-theme";
 import { ThemeConstants } from "../data/theme-constants";
+import { ReportingApi } from "@reportportal/agent-js-playwright";
 
 let page: Page;
 
 test.describe("CustomTheme should be applied", () => {
+  ReportingApi.addAttributes([
+    {
+      key: "component",
+      value: "core",
+    },
+  ]);
+
   let common: Common;
   let themeVerifier: ThemeVerifier;
 

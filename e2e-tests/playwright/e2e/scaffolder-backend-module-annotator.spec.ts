@@ -2,6 +2,7 @@ import { expect, Page, test } from "@playwright/test";
 import { UIhelper } from "../utils/ui-helper";
 import { Common, setupBrowser } from "../utils/common";
 import { CatalogImport } from "../support/pages/catalog-import";
+import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { APIHelper } from "../utils/api-helper";
 import { GITHUB_API_ENDPOINTS } from "../utils/api-endpoints";
 import { runAccessibilityTests } from "../utils/accessibility";
@@ -9,6 +10,13 @@ import { runAccessibilityTests } from "../utils/accessibility";
 let page: Page;
 
 test.describe.serial("Test Scaffolder Backend Module Annotator Actions", () => {
+  ReportingApi.addAttributes([
+    {
+      key: "component",
+      value: "core",
+    },
+  ]);
+
   test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
   let uiHelper: UIhelper;
   let common: Common;

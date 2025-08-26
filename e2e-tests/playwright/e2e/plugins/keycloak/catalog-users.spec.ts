@@ -1,4 +1,5 @@
 import { CatalogUsersPO } from "../../../support/pageObjects/catalog/catalog-users-obj";
+import { ReportingApi } from "@reportportal/agent-js-playwright";
 import Keycloak from "../../../utils/keycloak/keycloak";
 import { UIhelper } from "../../../utils/ui-helper";
 import { Common } from "../../../utils/common";
@@ -6,6 +7,12 @@ import { test, expect } from "@playwright/test";
 import { KubeClient } from "../../../utils/kube-client";
 
 test.describe("Test Keycloak plugin", () => {
+  ReportingApi.addAttributes([
+    {
+      key: "component",
+      value: "plugins",
+    },
+  ]);
   let uiHelper: UIhelper;
   let keycloak: Keycloak;
   let common: Common;

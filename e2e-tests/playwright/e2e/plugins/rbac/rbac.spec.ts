@@ -1,4 +1,5 @@
 import { Locator, Page, expect, test } from "@playwright/test";
+import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { Response, Roles } from "../../../support/pages/rbac";
 import { UI_HELPER_ELEMENTS } from "../../../support/pageObjects/global-obj";
 import {
@@ -22,6 +23,12 @@ import { downloadAndReadFile } from "../../../utils/helper";
     https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.3/html/authorization/managing-authorizations-by-using-the-web-ui#proc-rbac-ui-edit-role_title-authorization
 */
 test.describe.serial("Test RBAC", () => {
+  ReportingApi.addAttributes([
+    {
+      key: "component",
+      value: "plugins",
+    },
+  ]);
   test.describe
     .serial("Test RBAC plugin: load permission policies and conditions from files", () => {
     test.beforeEach(async ({ page }) => {

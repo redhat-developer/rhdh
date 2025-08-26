@@ -1,4 +1,5 @@
 import { test } from "@playwright/test";
+import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { UIhelper } from "../../utils/ui-helper";
 import { Common } from "../../utils/common";
 import { CatalogImport } from "../../support/pages/catalog-import";
@@ -8,6 +9,12 @@ import { CatalogImport } from "../../support/pages/catalog-import";
 // Pre-req: Enable janus-idp-backstage-plugin-quay plugin
 //TODO Re-enable when roadiehq-scaffolder-backend-module-http-request-dynamic is included in the Helm image
 test.describe("Testing scaffolder-backend-module-http-request to invoke an external request", () => {
+  ReportingApi.addAttributes([
+    {
+      key: "component",
+      value: "plugins",
+    },
+  ]);
   test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
   let uiHelper: UIhelper;
   let common: Common;

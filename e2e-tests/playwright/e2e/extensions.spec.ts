@@ -2,9 +2,17 @@ import { test, expect } from "@playwright/test";
 import { Common } from "../utils/common";
 import { UIhelper } from "../utils/ui-helper";
 import { Extensions } from "../support/pages/extensions";
+import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { runAccessibilityTests } from "../utils/accessibility";
 
 test.describe("Admin > Extensions > Catalog", () => {
+  ReportingApi.addAttributes([
+    {
+      key: "component",
+      value: "core",
+    },
+  ]);
+
   let extensions: Extensions;
   let uiHelper: UIhelper;
   const isMac = process.platform === "darwin";
