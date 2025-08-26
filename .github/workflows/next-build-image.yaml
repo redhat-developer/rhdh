@@ -17,11 +17,6 @@ name: Build Next and Tag Image
 on:
   # workflow_dispatch so that it can be triggered manually if needed
   workflow_dispatch:
-    inputs:
-      registry_image:
-        description: "Override the registry image (e.g., polasudo/testing)"
-        required: false
-        default: "polasudo/testing"
   schedule:
     # run at 3:18 UTC every day
     - cron: "18 3 * * *"
@@ -109,10 +104,13 @@ jobs:
           fi
           echo "EXPIRES_AFTER=$expires_after" >> $GITHUB_ENV
 
-          # allow overriding target image when manually dispatched
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.registry_image }}" ]; then
-            echo "REGISTRY_IMAGE=${{ inputs.registry_image }}" >> $GITHUB_ENV
+      - name: Check Quay credentials
+        run: |
+          if [ "${{ env.HAS_QUAY_AUTH }}" != "true" ]; then
+            echo "::error::Missing QUAY_USERNAME or QUAY_TOKEN secrets"
+            exit 1
           fi
+          echo "✓ Quay credentials are available"
 
       - name: Login to Quay
         uses: docker/login-action@v3
@@ -120,54 +118,6 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ secrets.QUAY_USERNAME }}
           password: ${{ secrets.QUAY_TOKEN }}
-
-      - name: "Preflight: Quay login + push permission"
-        run: |
-          set +x  # Ensure no command echoing
-          set -e  # Exit on any error
-          
-          # 1) Secrets present
-          if [ "${{ env.HAS_QUAY_AUTH }}" != "true" ]; then
-            echo "::error::Missing QUAY_USERNAME or QUAY_TOKEN secrets"
-            exit 1
-          fi
-          
-          # 2) Test push permission using docker API (safer than curl with secrets)
-          target="${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}"
-          
-          # Use GitHub run ID for unique test tag to avoid conflicts
-          test_tag="${target}:permission-test-${{ github.run_id }}-${{ github.run_attempt }}"
-          
-          # Function to cleanup test artifacts
-          cleanup() {
-            echo "Cleaning up test artifacts..."
-            docker rmi "${test_tag}" >/dev/null 2>&1 || true
-            docker rmi hello-world:latest >/dev/null 2>&1 || true
-            # Also try to delete remote test image
-            docker buildx imagetools inspect "${test_tag}" >/dev/null 2>&1 && {
-              echo "Removing remote test image ${test_tag}"
-              # Note: Remote deletion would require additional API calls
-            } || true
-          }
-          
-          # Set trap for cleanup on exit
-          trap cleanup EXIT
-          
-          # Test by attempting to pull hello-world and tag it for permission check
-          if ! docker pull hello-world:latest >/dev/null 2>&1; then
-            echo "::error::Docker pull test failed"
-            exit 1
-          fi
-          
-          # Tag and attempt push to test permissions (safer approach)
-          docker tag hello-world:latest "${test_tag}" >/dev/null 2>&1
-          
-          if docker push "${test_tag}" >/dev/null 2>&1; then
-            echo "Push permission confirmed for ${target}"
-          else
-            echo "::error::No push permission for ${target}"
-            exit 1
-          fi
 
       - name: Get the last commit short SHA
         uses: ./.github/actions/get-sha
@@ -269,63 +219,13 @@ jobs:
             fi
             echo "EXPIRES_AFTER=$expires_after" >> $GITHUB_ENV
 
-            # allow overriding target image when manually dispatched
-            if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.registry_image }}" ]; then
-              echo "REGISTRY_IMAGE=${{ inputs.registry_image }}" >> $GITHUB_ENV
-            fi
-
-        - name: Login to Quay (preflight)
-          uses: docker/login-action@v3
-          with:
-            registry: ${{ env.REGISTRY }}
-            username: ${{ secrets.QUAY_USERNAME }}
-            password: ${{ secrets.QUAY_TOKEN }}
-
-        - name: "Preflight: Quay login + push permission"
+        - name: Check Quay credentials
           run: |
-            set +x  # Ensure no command echoing
-            set -e  # Exit on any error
-            
-            # 1) Secrets present
             if [ "${{ env.HAS_QUAY_AUTH }}" != "true" ]; then
               echo "::error::Missing QUAY_USERNAME or QUAY_TOKEN secrets"
               exit 1
             fi
-            
-            # 2) Test push permission using docker API (safer than curl with secrets)
-            target="${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}"
-            
-            # Use GitHub run ID for unique test tag to avoid conflicts
-            test_tag="${target}:permission-test-${{ github.run_id }}-${{ github.run_attempt }}-merge"
-            
-            # Function to cleanup test artifacts
-            cleanup() {
-              echo "Cleaning up test artifacts..."
-              docker rmi "${test_tag}" >/dev/null 2>&1 || true
-              docker rmi hello-world:latest >/dev/null 2>&1 || true
-            }
-            
-            # Set trap for cleanup on exit
-            trap cleanup EXIT
-            
-            # Test by attempting to pull hello-world and tag it for permission check
-            if ! docker pull hello-world:latest >/dev/null 2>&1; then
-              echo "::error::Docker pull test failed"
-              exit 1
-            fi
-            
-            # Tag and attempt push to test permissions (safer approach)
-            docker tag hello-world:latest "${test_tag}" >/dev/null 2>&1
-            
-            if docker push "${test_tag}" >/dev/null 2>&1; then
-              echo "Push permission confirmed for ${target}"
-            else
-              echo "::error::No push permission for ${target}"
-              exit 1
-            fi
-            
-            # Logout for now (will login again later with official action)
-            docker logout ${{ env.REGISTRY }} >/dev/null 2>&1 || true
+            echo "✓ Quay credentials are available"
 
         - name: Checkout
           uses: actions/checkout@v4
