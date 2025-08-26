@@ -46,6 +46,25 @@ save_overall_result() {
   cp "$SHARED_DIR/OVERALL_RESULT.txt" "$ARTIFACT_DIR/reporting/OVERALL_RESULT.txt"
 }
 
+save_is_openshift() {
+  local is_openshift=$1
+  echo "Saving IS_OPENSHIFT=${is_openshift}"
+  printf "%s" "${is_openshift}" > "$SHARED_DIR/IS_OPENSHIFT.txt"
+  cp "$SHARED_DIR/IS_OPENSHIFT.txt" "$ARTIFACT_DIR/reporting/IS_OPENSHIFT.txt"
+}
+
+save_container_platform() {
+  local container_platform=$1
+  local container_platform_version=$2
+  echo "Saving CONTAINER_PLATFORM=${container_platform}"
+  echo "Saving CONTAINER_PLATFORM_VERSION=${container_platform_version}"
+  printf "%s" "${container_platform}" > "$SHARED_DIR/CONTAINER_PLATFORM.txt"
+  printf "%s" "${container_platform_version}" > "$SHARED_DIR/CONTAINER_PLATFORM_VERSION.txt"
+  cp "$SHARED_DIR/CONTAINER_PLATFORM.txt" "$ARTIFACT_DIR/reporting/CONTAINER_PLATFORM.txt"
+  cp "$SHARED_DIR/CONTAINER_PLATFORM_VERSION.txt" "$ARTIFACT_DIR/reporting/CONTAINER_PLATFORM_VERSION.txt"
+}
+
+# Align this function with the one in https://github.com/openshift/release/blob/master/ci-operator/step-registry/redhat-developer/rhdh/send/alert/redhat-developer-rhdh-send-alert-commands.sh
 get_artifacts_url() {
   local project="${1:-""}"
 
