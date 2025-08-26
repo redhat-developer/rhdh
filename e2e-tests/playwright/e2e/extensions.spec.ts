@@ -148,5 +148,4 @@ test.describe("Admin > Extensions > Catalog", () => {
     await expect(page.getByRole("button", { name: "View" })).toBeVisible();
     await uiHelper.verifyHeading("Application Topology for Kubernetes");
   });
-
 });
