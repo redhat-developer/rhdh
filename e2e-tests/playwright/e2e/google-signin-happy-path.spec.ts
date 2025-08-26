@@ -1,9 +1,17 @@
 import { test, Page } from "@playwright/test";
 import { Common } from "../utils/common";
 import { UIhelper } from "../utils/ui-helper";
+import { ReportingApi } from "@reportportal/agent-js-playwright";
 
 let page: Page;
 test.describe.skip("Google signin happy path", () => {
+  ReportingApi.addAttributes([
+    {
+      key: "component",
+      value: "authentication",
+    },
+  ]);
+
   let uiHelper: UIhelper;
   let common: Common;
   const googleUserId = process.env.GOOGLE_USER_ID;
