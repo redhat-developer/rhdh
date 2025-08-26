@@ -42,16 +42,12 @@ jobs:
   build-image:
     name: Build Image
     strategy:
-      # if one arch fails, fail the other
-      fail-fast: true
+      fail-fast: false
       matrix:
-        # custom larger runners are 8 CPU and 32 GB RAM
-        # https://github.com/organizations/redhat-developer/settings/actions/runners
-        runner_os: [ rhdh-large-runner-arm64, rhdh-large-runner-amd64]
-          # default runners
-          # - ubuntu-24.04-arm
-          # - ubuntu-24.04
-    runs-on: ${{ matrix.runner_os }}
+        os:
+          - ubuntu-24.04-arm
+          - ubuntu-24.04
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 720 # Set to 12 hours instead of default 360 = 6hrs
     permissions:
       contents: read
@@ -65,10 +61,13 @@ jobs:
 
       - name: Prepare
         run: |
-          if [ "${{ matrix.runner_os }}" == *"arm"* ]; then
+          if [ "${{ matrix.os }}" == "ubuntu-24.04" ]; then
+            platform="linux/amd64"
+          elif [ "${{ matrix.os }}" == "ubuntu-24.04-arm" ]; then
             platform="linux/arm64"
           else
-            platform="linux/amd64"
+            echo "Unknown platform"
+            exit 1
           fi
 
           ref_name=${{ github.ref_name }}
