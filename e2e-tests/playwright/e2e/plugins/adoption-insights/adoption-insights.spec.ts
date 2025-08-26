@@ -1,5 +1,5 @@
-import { test, expect } from "@playwright/test";
 import { ReportingApi } from "@reportportal/agent-js-playwright";
+import { test, expect } from "@playwright/test";
 import { Common } from "../../../utils/common";
 import { UIhelper } from "../../../utils/ui-helper";
 import { TestHelper } from "../../../support/pages/adoption-insights";
