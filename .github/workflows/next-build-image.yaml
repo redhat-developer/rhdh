@@ -42,11 +42,17 @@ jobs:
   build-image:
     name: Build Image
     strategy:
-      fail-fast: false
+      # if one arch fails, fail the other
+      fail-fast: true
       matrix:
         os:
-          - ubuntu-24.04-arm
-          - ubuntu-24.04
+          # default runners
+          # - ubuntu-24.04-arm
+          # - ubuntu-24.04
+          # custom larger runners are 8 CPU and 32 GB RAM
+          # https://github.com/organizations/redhat-developer/settings/actions/runners
+          - rhdh-large-runner-arm64
+          - rhdh-large-runner-amd64
     runs-on: ${{ matrix.os }}
     timeout-minutes: 720 # Set to 12 hours instead of default 360 = 6hrs
     permissions:
