@@ -75,7 +75,7 @@ test.describe("dynamic-plugins-info UI tests", () => {
     page,
   }) => {
     await page
-      .getByPlaceholder("Search", { exact: true })
+      .getByPlaceholder("Filter", { exact: true })
       .pressSequentially("plugin-todo\n", { delay: 300 });
 
     // Verify the Enabled and Preinstalled column values for the specific row
