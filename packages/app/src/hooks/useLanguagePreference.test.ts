@@ -131,7 +131,7 @@ describe('useLanguagePreference', () => {
 
   it('should warn on invalid persistence configuration', () => {
     const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
-    
+
     mockConfigApi.getOptionalString.mockImplementation((key: string) => {
       if (key === 'userSettings.persistence') return 'invalid-value';
       return undefined;
@@ -140,7 +140,7 @@ describe('useLanguagePreference', () => {
     renderHook(() => useLanguagePreference());
 
     expect(consoleSpy).toHaveBeenCalledWith(
-      'useLanguagePreference: Invalid userSettings.persistence value: "invalid-value". Expected "database" or "browser". Defaulting to database.'
+      'useLanguagePreference: Invalid userSettings.persistence value: "invalid-value". Expected "database" or "browser". Defaulting to database.',
     );
 
     consoleSpy.mockRestore();
@@ -150,7 +150,7 @@ describe('useLanguagePreference', () => {
     const observeMock = jest.fn(() => ({
       subscribe: jest.fn(() => ({ unsubscribe: jest.fn() })),
     }));
-    
+
     mockConfigApi.getOptionalString.mockImplementation((key: string) => {
       if (key === 'userSettings.persistence') return 'database';
       return undefined;
