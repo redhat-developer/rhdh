@@ -2,6 +2,7 @@ import { useAsync } from 'react-use';
 import useObservable from 'react-use/esm/useObservable';
 
 import {
+  configApiRef,
   identityApiRef,
   storageApiRef,
   useApi,
@@ -27,10 +28,14 @@ const mockStorageApi = {
 const mockIdentityApi = {
   getBackstageIdentity: jest.fn(),
 };
+const mockConfigApi = {
+  getOptionalString: jest.fn(),
+};
 
 // Mock hooks
 jest.mock('@backstage/core-plugin-api', () => ({
   useApi: jest.fn(),
+  configApiRef: { id: 'config' },
   identityApiRef: { id: 'identity' },
   storageApiRef: { id: 'storage' },
 }));
@@ -56,6 +61,7 @@ describe('useLanguagePreference', () => {
       if (ref === appLanguageApiRef) return mockLanguageApi;
       if (ref === storageApiRef) return mockStorageApi;
       if (ref === identityApiRef) return mockIdentityApi;
+      if (ref === configApiRef) return mockConfigApi;
       return undefined;
     });
 
@@ -68,6 +74,10 @@ describe('useLanguagePreference', () => {
 
     mockLanguageApi.getLanguage.mockReturnValue({
       language: 'en',
+    });
+    mockConfigApi.getOptionalString.mockImplementation((key: string) => {
+      if (key === 'userSettings.persistence') return 'database';
+      return undefined;
     });
     (mockStorageApi.forBucket as jest.Mock).mockImplementation(() => ({
       snapshot: jest.fn(() => ({ value: 'en' })),
@@ -105,6 +115,56 @@ describe('useLanguagePreference', () => {
 
     expect(mockStorageApi.forBucket().observe$).not.toHaveBeenCalled();
     expect(mockStorageApi.forBucket().set).not.toHaveBeenCalled();
+  });
+
+  it('should not sync when persistence is set to browser', () => {
+    mockConfigApi.getOptionalString.mockImplementation((key: string) => {
+      if (key === 'userSettings.persistence') return 'browser';
+      return undefined;
+    });
+
+    renderHook(() => useLanguagePreference());
+
+    expect(mockStorageApi.forBucket().observe$).not.toHaveBeenCalled();
+    expect(mockStorageApi.forBucket().set).not.toHaveBeenCalled();
+  });
+
+  it('should warn on invalid persistence configuration', () => {
+    const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+    
+    mockConfigApi.getOptionalString.mockImplementation((key: string) => {
+      if (key === 'userSettings.persistence') return 'invalid-value';
+      return undefined;
+    });
+
+    renderHook(() => useLanguagePreference());
+
+    expect(consoleSpy).toHaveBeenCalledWith(
+      'useLanguagePreference: Invalid userSettings.persistence value: "invalid-value". Expected "database" or "browser". Defaulting to database.'
+    );
+
+    consoleSpy.mockRestore();
+  });
+
+  it('should sync when persistence is explicitly set to database', () => {
+    const observeMock = jest.fn(() => ({
+      subscribe: jest.fn(() => ({ unsubscribe: jest.fn() })),
+    }));
+    
+    mockConfigApi.getOptionalString.mockImplementation((key: string) => {
+      if (key === 'userSettings.persistence') return 'database';
+      return undefined;
+    });
+
+    (mockStorageApi.forBucket as jest.Mock).mockImplementation(() => ({
+      snapshot: jest.fn(() => ({ value: 'en' })),
+      observe$: observeMock,
+      set: jest.fn(),
+    }));
+
+    renderHook(() => useLanguagePreference());
+
+    expect(observeMock).toHaveBeenCalled();
   });
 
   it('should not sync on first hydration after refresh', () => {
@@ -184,7 +244,7 @@ describe('useLanguagePreference', () => {
     await waitFor(
       () => {
         expect(consoleSpy).toHaveBeenCalledWith(
-          'Failed to store language in user-settings storage',
+          'useLanguagePreference: Failed to store language in user-settings storage',
           expect.any(Error),
         );
       },

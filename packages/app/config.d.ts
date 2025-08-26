@@ -267,6 +267,7 @@ export interface Config {
   };
 
   /**
+<<<<<<< HEAD
    * Internationalization (i18n) settings for the app
    * Allows configuring supported languages
    * @deepVisibility frontend
@@ -284,5 +285,12 @@ export interface Config {
      * @visibility frontend
      */
     defaultLocale?: string;
+  };
+  /**
+   * Allows you to customize user settings.
+   * @deepVisibility frontend
+   */
+  userSettings?: {
+    persistence: 'browser' | 'database';
   };
 }
