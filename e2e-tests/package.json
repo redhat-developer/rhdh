@@ -30,6 +30,7 @@
     "@axe-core/playwright": "^4.10.2",
     "@microsoft/microsoft-graph-types": "2.40.0",
     "@playwright/test": "1.54.2",
+    "@reportportal/agent-js-playwright": "^5.2.0",
     "@types/node": "22.16.3",
     "@typescript-eslint/eslint-plugin": "6.21.0",
     "@typescript-eslint/parser": "6.21.0",
