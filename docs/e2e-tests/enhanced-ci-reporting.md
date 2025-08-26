@@ -6,6 +6,8 @@ This document describes the enhanced CI reporting system that provides detailed 
 
 The enhanced CI reporting system uses the [`.ibm/pipelines/reporting.sh`](../../.ibm/pipelines/reporting.sh) script to track various aspects of test execution and deployment status. Results are stored in the `SHARED_DIR` for use by OpenShift CI steps and are formatted into Slack notifications sent to the `#rhdh-e2e-test-alerts` channel.
 
+**Note:** The `SHARED_DIR` can only contain files. No directories or nested structures are supported.
+
 ## Using reporting.sh Functions
 
 The [`.ibm/pipelines/reporting.sh`](../../.ibm/pipelines/reporting.sh) script provides several functions to signal different types of results. It uses a Bash array to store statuses for multiple deployments, indexed by `CURRENT_DEPLOYMENT` (a deployment number).
@@ -40,13 +42,6 @@ Records the number of failed tests.
 
 ```bash
 save_status_number_of_test_failed $CURRENT_DEPLOYMENT "3"
-```
-
-#### `save_status_url_reportportal(deployment, url)`
-Records the ReportPortal launch URL for test results.
-
-```bash
-save_status_url_reportportal $CURRENT_DEPLOYMENT $REPORTPORTAL_LAUNCH_URL
 ```
 
 #### `save_overall_result(result)`

@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2034
 set -a  # Automatically export all variables
 
 #ENVS and Vault Secrets
@@ -98,15 +99,8 @@ RDS_2_HOST=$(cat /tmp/secrets/RDS_2_HOST)
 RDS_3_HOST=$(cat /tmp/secrets/RDS_3_HOST)
 
 JUNIT_RESULTS="junit-results.xml"
-DATA_ROUTER_URL=$(cat /tmp/secrets/DATA_ROUTER_URL)
-DATA_ROUTER_USERNAME=$(cat /tmp/secrets/DATA_ROUTER_USERNAME)
-DATA_ROUTER_PASSWORD=$(cat /tmp/secrets/DATA_ROUTER_PASSWORD)
-DATA_ROUTER_PROJECT="main"
-DATA_ROUTER_AUTO_FINALIZATION_TRESHOLD=$(cat /tmp/secrets/DATA_ROUTER_AUTO_FINALIZATION_TRESHOLD)
-DATA_ROUTER_NEXUS_HOSTNAME=$(cat /tmp/secrets/DATA_ROUTER_NEXUS_HOSTNAME)
-REPORTPORTAL_HOSTNAME=$(cat /tmp/secrets/REPORTPORTAL_HOSTNAME)
+
 SLACK_DATA_ROUTER_WEBHOOK_URL=$(cat /tmp/secrets/SLACK_DATA_ROUTER_WEBHOOK_URL)
-SLACK_NIGHTLY_WEBHOOK_URL=$(cat /tmp/secrets/SLACK_NIGHTLY_WEBHOOK_URL)
 REDIS_USERNAME=temp
 REDIS_USERNAME_ENCODED=$(printf "%s" $REDIS_USERNAME | base64 | tr -d '\n')
 REDIS_PASSWORD=test123
@@ -127,7 +121,6 @@ AWS_DEFAULT_REGION=$(cat /tmp/secrets/AWS_DEFAULT_REGION)
 AWS_EKS_PARENT_DOMAIN=$(cat /tmp/secrets/AWS_EKS_PARENT_DOMAIN)
 
 # authentication providers variables
-
 RHBK_BASE_URL=$(cat /tmp/secrets/AUTH_PROVIDERS_RHBK_BASE_URL)
 RHBK_CLIENT_SECRET=$(cat /tmp/secrets/AUTH_PROVIDERS_RHBK_CLIENT_SECRET)
 RHBK_CLIENT_ID=$(cat /tmp/secrets/AUTH_PROVIDERS_RHBK_CLIENT_ID)

@@ -371,14 +371,10 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
 
   test(`Ingestion of users and groups with invalid characters: check sanitize[User/Group]NameTransformer`, async () => {
     expect(
-      await deployment.checkUserIsIngestedInCatalog([
-        "Invalid Username",
-      ]),
+      await deployment.checkUserIsIngestedInCatalog(["Invalid Username"]),
     ).toBe(true);
     expect(
-      await deployment.checkGroupIsIngestedInCatalog([
-        "invalid@groupname",
-      ]),
+      await deployment.checkGroupIsIngestedInCatalog(["invalid@groupname"]),
     ).toBe(true);
   });
 

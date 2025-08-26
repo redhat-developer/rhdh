@@ -45,7 +45,7 @@ RUN dnf install -q -y --allowerasing --nobest \
   python3-subscription-manager-rhsm python3-systemd python3-urllib3 readline redhat-release rootfiles rpm rpm-build-libs rpm-libs rpm-plugin-selinux rpm-sign-libs rsync scl-utils \
   sed selinux-policy selinux-policy-targeted setup shadow-utils skopeo slirp4netns sqlite-libs subscription-manager subscription-manager-rhsm-certificates systemd systemd-libs \
   systemd-pam systemd-rpm-macros tar tcl tpm2-tss tzdata unzip usermode util-linux util-linux-core vim-filesystem vim-minimal virt-what which xz xz-libs yajl yum zlib zlib-devel && \
-
+  \
   # '(micro)dnf update -y' not allowed in Konflux+Cachi2: instead use renovate or https://github.com/konflux-ci/rpm-lockfile-prototype to update the rpms.lock.yaml file
   dnf clean all
 

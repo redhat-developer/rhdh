@@ -3,7 +3,11 @@ import { ClientSecretCredential } from "@azure/identity";
 import { Client, PageCollection } from "@microsoft/microsoft-graph-client";
 import { TokenCredentialAuthenticationProvider } from "@microsoft/microsoft-graph-client/authProviders/azureTokenCredentials/index.js";
 import { User, Group } from "@microsoft/microsoft-graph-types";
-import { NetworkManagementClient } from "@azure/arm-network";
+import {
+  NetworkManagementClient,
+  NetworkSecurityGroupsGetResponse,
+  SecurityRulesGetResponse,
+} from "@azure/arm-network";
 
 export class MSClient {
   private clientSecretCredential: ClientSecretCredential | undefined;
@@ -406,7 +410,7 @@ export class MSClient {
     resourceGroupName: string,
     nsgName: string,
     ruleName: string,
-  ): Promise<any> {
+  ): Promise<SecurityRulesGetResponse | null> {
     this.ensureArmInitialized();
     try {
       console.log(
@@ -455,7 +459,7 @@ export class MSClient {
   async getNetworkSecurityGroupAsync(
     resourceGroupName: string,
     nsgName: string,
-  ): Promise<any> {
+  ): Promise<NetworkSecurityGroupsGetResponse> {
     this.ensureArmInitialized();
     try {
       console.log(

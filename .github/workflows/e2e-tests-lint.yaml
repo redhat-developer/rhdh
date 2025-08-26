@@ -1,0 +1,45 @@
+name: E2E Tests
+
+on:
+  pull_request:
+    paths:
+      - 'e2e-tests/**'
+  push:
+    branches:
+      - "main"
+      - "release-*"
+    paths:
+      - 'e2e-tests/**'
+
+jobs:
+  lint:
+    name: ESLint and Prettier
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          sparse-checkout: |
+            e2e-tests
+            .nvmrc
+            .yarnrc.yml
+            .yarn
+            yarn.lock
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Install dependencies
+        working-directory: ./e2e-tests
+        run: yarn install --mode=skip-build
+
+      - name: Run ESLint check
+        working-directory: ./e2e-tests
+        run: yarn lint:check
+
+      - name: Run Prettier check
+        working-directory: ./e2e-tests
+        run: yarn prettier:check
