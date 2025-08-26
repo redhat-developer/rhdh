@@ -5,7 +5,11 @@ import {
   dynamicPluginsFeatureLoader,
   dynamicPluginsFrontendServiceRef,
 } from '@backstage/backend-dynamic-feature-service';
-import { createServiceFactory } from '@backstage/backend-plugin-api';
+import {
+  coreServices,
+  createBackendFeatureLoader,
+  createServiceFactory,
+} from '@backstage/backend-plugin-api';
 import { PackageRoles } from '@backstage/cli-node';
 
 import * as path from 'path';
@@ -161,6 +165,28 @@ if (process.env.ENABLE_AUTH_PROVIDER_MODULE_OVERRIDE !== 'true') {
 backend.add(import('@internal/plugin-dynamic-plugins-info-backend'));
 backend.add(import('@internal/plugin-scalprum-backend'));
 backend.add(import('@internal/plugin-licensed-users-info-backend'));
-backend.add(import('@backstage/plugin-user-settings-backend'));
+
+backend.add(
+  createBackendFeatureLoader({
+    deps: {
+      config: coreServices.rootConfig,
+    },
+    async loader({ config }) {
+      const persistence =
+        config.getOptionalString('userSettings.persistence') ?? 'database'; // default to database
+
+      if (persistence !== 'database' && persistence !== 'browser') {
+        throw new Error(
+          `Invalid config value for 'userSettings.persistence': "${persistence}". Must be either "database" or "browser".`,
+        );
+      }
+      if (persistence === 'database') {
+        return [import('@backstage/plugin-user-settings-backend')];
+      }
+      // Opt-out: browser -> no backend feature
+      return [];
+    },
+  }),
+);
 
 backend.start();

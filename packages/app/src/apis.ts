@@ -1,4 +1,4 @@
-import { OAuth2 } from '@backstage/core-app-api';
+import { OAuth2, WebStorage } from '@backstage/core-app-api';
 import {
   AnyApiFactory,
   bitbucketAuthApiRef,
@@ -40,8 +40,16 @@ export const apis: AnyApiFactory[] = [
       errorApi: errorApiRef,
       fetchApi: fetchApiRef,
       identityApi: identityApiRef,
+      configApi: configApiRef,
     },
-    factory: deps => UserSettingsStorage.create(deps),
+    factory: deps => {
+      const persistence =
+        deps.configApi.getOptionalString('userSettings.persistence') ??
+        'database';
+      return persistence === 'browser'
+        ? WebStorage.create(deps)
+        : UserSettingsStorage.create(deps);
+    },
   }),
   createApiFactory({
     api: scmIntegrationsApiRef,
