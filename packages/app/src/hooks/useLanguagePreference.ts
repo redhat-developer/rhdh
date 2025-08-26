@@ -17,13 +17,13 @@ const GUEST_USER_REF = 'user:development/guest';
 /**
  * Hook that provides bidirectional synchronization of language preferences
  * between the app's language API and user storage when database persistence is enabled.
- * 
+ *
  * Features:
  * - Persists language changes to user storage (database only)
  * - Restores language preferences on page load
  * - Prevents sync for guest users
  * - Includes safeguards against sync loops and hydration issues
- * 
+ *
  * @returns The current language preference (string or undefined)
  */
 export const useLanguagePreference = (): string | undefined => {
@@ -34,15 +34,18 @@ export const useLanguagePreference = (): string | undefined => {
 
   const { value, loading } = useAsync(() => identityApi.getBackstageIdentity());
   const isGuestUser = value?.userEntityRef === GUEST_USER_REF;
-  const persistence = configApi.getOptionalString('userSettings.persistence') ?? 'database';
+  const persistence =
+    configApi.getOptionalString('userSettings.persistence') ?? 'database';
   const isDatabasePersistence = persistence === 'database';
-  
+
   // Validate persistence configuration
   if (persistence !== 'database' && persistence !== 'browser') {
     // eslint-disable-next-line no-console
-    console.warn(`useLanguagePreference: Invalid userSettings.persistence value: "${persistence}". Expected "database" or "browser". Defaulting to database.`);
+    console.warn(
+      `useLanguagePreference: Invalid userSettings.persistence value: "${persistence}". Expected "database" or "browser". Defaulting to database.`,
+    );
   }
-  
+
   const shouldSync = !loading && !isGuestUser && isDatabasePersistence;
 
   const language = useObservable(languageApi.language$(), {
@@ -77,7 +80,10 @@ export const useLanguagePreference = (): string | undefined => {
         });
     } catch (error) {
       // eslint-disable-next-line no-console
-      console.warn('useLanguagePreference: Failed to set up language storage subscription:', error);
+      console.warn(
+        'useLanguagePreference: Failed to set up language storage subscription:',
+        error,
+      );
     }
 
     return () => {
@@ -86,7 +92,10 @@ export const useLanguagePreference = (): string | undefined => {
           subscription.unsubscribe();
         } catch (error) {
           // eslint-disable-next-line no-console
-          console.warn('useLanguagePreference: Failed to unsubscribe from language storage:', error);
+          console.warn(
+            'useLanguagePreference: Failed to unsubscribe from language storage:',
+            error,
+          );
         }
       }
     };
@@ -119,7 +128,10 @@ export const useLanguagePreference = (): string | undefined => {
       .set(KEY, language)
       .catch(e => {
         // eslint-disable-next-line no-console
-        console.warn('useLanguagePreference: Failed to store language in user-settings storage', e);
+        console.warn(
+          'useLanguagePreference: Failed to store language in user-settings storage',
+          e,
+        );
       });
   }, [language, shouldSync, storageApi]);
 
