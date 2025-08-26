@@ -1,8 +1,16 @@
 import { expect, test } from "@playwright/test";
 import { UIhelper } from "../utils/ui-helper";
 import { Common } from "../utils/common";
+import { ReportingApi } from "@reportportal/agent-js-playwright";
 
 test.describe("Default Global Header", () => {
+  ReportingApi.addAttributes([
+    {
+      key: "component",
+      value: "navigation",
+    },
+  ]);
+
   let common: Common;
   let uiHelper: UIhelper;
 

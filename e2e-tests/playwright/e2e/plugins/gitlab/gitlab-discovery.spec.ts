@@ -1,4 +1,5 @@
 import { test } from "@playwright/test";
+import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { UIhelper } from "../../../utils/ui-helper";
 import { Common } from "../../../utils/common";
 
@@ -6,6 +7,12 @@ import { Common } from "../../../utils/common";
 // Pre-req: immobiliarelabs-backstage-plugin-gitlab-backend-dynamic
 //FIXME: RHDHBUGS-1977
 test.describe.skip("gitlab discovery UI tests", () => {
+  ReportingApi.addAttributes([
+    {
+      key: "component",
+      value: "plugins",
+    },
+  ]);
   let uiHelper: UIhelper;
   let common: Common;
 

@@ -1,8 +1,17 @@
 // https://github.com/gashcrumb/dynamic-plugins-root-http-middleware/tree/main/plugins/middleware-header-example
 import test, { expect } from "@playwright/test";
+import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { Common } from "../../utils/common";
 
-test("Check the middleware is working", async ({ page }) => {
+test.describe("Test middleware plugin", () => {
+  ReportingApi.addAttributes([
+    {
+      key: "component",
+      value: "plugins",
+    },
+  ]);
+
+  test("Check the middleware is working", async ({ page }) => {
   const common = new Common(page);
 
   await common.loginAsGuest();
@@ -15,4 +24,5 @@ test("Check the middleware is working", async ({ page }) => {
   const response = await responsePromise;
   const headers = await response.allHeaders();
   expect(headers["x-proxy-test-header"]);
+  });
 });

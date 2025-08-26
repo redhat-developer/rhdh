@@ -1,4 +1,5 @@
 import { expect, test as base } from "@playwright/test";
+import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { Common } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
 import { Clusters } from "../../support/pages/clusters";
@@ -40,6 +41,12 @@ const test = base.extend<{
 });
 
 test.describe("Test OCM plugin", () => {
+  ReportingApi.addAttributes([
+    {
+      key: "component",
+      value: "plugins",
+    },
+  ]);
   test("Navigate to Clusters and Verify OCM Clusters", async ({
     page,
     uiHelper,

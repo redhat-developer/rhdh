@@ -2,9 +2,17 @@ import { test } from "@playwright/test";
 import { UIhelper } from "../utils/ui-helper";
 import { Common } from "../utils/common";
 import { HomePage } from "../support/pages/home-page";
+import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { runAccessibilityTests } from "../utils/accessibility";
 
 test.describe("Home page customization", () => {
+  ReportingApi.addAttributes([
+    {
+      key: "component",
+      value: "core",
+    },
+  ]);
+
   let common: Common;
   let uiHelper: UIhelper;
   let homePage: HomePage;
