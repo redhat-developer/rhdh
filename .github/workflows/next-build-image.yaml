@@ -499,6 +499,44 @@ jobs:
               fi
             done
 
+        - name: Ensure branch-shortsha tag exists
+          working-directory: /tmp/digests
+          env:
+            REGISTRY: ${{ env.REGISTRY }}
+            REGISTRY_IMAGE: ${{ env.REGISTRY_IMAGE }}
+            REF_NAME: ${{ env.REF_NAME }}
+            SHORT_SHA: ${{ env.SHORT_SHA }}
+            EXPIRES_AFTER: ${{ env.EXPIRES_AFTER }}
+          run: |
+            set -e
+            # Ensure SHORT_SHA is present (fallback to git if missing)
+            if [ -z "${SHORT_SHA}" ]; then
+              SHORT_SHA=$(git -C "$GITHUB_WORKSPACE" rev-parse --short HEAD)
+              echo "SHORT_SHA=$SHORT_SHA" >> $GITHUB_ENV
+            fi
+            target="${REGISTRY}/${REGISTRY_IMAGE}:${REF_NAME}-${SHORT_SHA}"
+            echo "Ensuring branch-shortsha tag exists: $target"
+
+            # Build digest refs from downloaded digests
+            digest_refs=""
+            for digest_file in *; do
+              if [ -f "$digest_file" ]; then
+                digest_refs+="${REGISTRY}/${REGISTRY_IMAGE}@sha256:${digest_file} "
+              fi
+            done
+            if [ -z "$digest_refs" ]; then
+              echo "::error::No digest files found in /tmp/digests"
+              exit 1
+            fi
+
+            # Create/update the manifest tag with expiry annotation
+            docker buildx imagetools create \
+              --annotation "quay.expires-after=${EXPIRES_AFTER}" \
+              --annotation "org.opencontainers.image.expires=${EXPIRES_AFTER}" \
+              -t "$target" \
+              $digest_refs
+            echo "✓ Ensured tag: $target"
+
         - name: Inspect image (for :next builds)
           id: inspect-next
           if: ${{ env.REF_NAME_SHORT == 'next' || startsWith(env.REF_NAME_SHORT,'next-') }}
