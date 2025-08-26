@@ -45,15 +45,13 @@ jobs:
       # if one arch fails, fail the other
       fail-fast: true
       matrix:
-        os:
+        # custom larger runners are 8 CPU and 32 GB RAM
+        # https://github.com/organizations/redhat-developer/settings/actions/runners
+        runner_os: [ rhdh-large-runner-arm64, rhdh-large-runner-amd64]
           # default runners
           # - ubuntu-24.04-arm
           # - ubuntu-24.04
-          # custom larger runners are 8 CPU and 32 GB RAM
-          # https://github.com/organizations/redhat-developer/settings/actions/runners
-          - rhdh-large-runner-arm64
-          - rhdh-large-runner-amd64
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.runner_os }}
     timeout-minutes: 720 # Set to 12 hours instead of default 360 = 6hrs
     permissions:
       contents: read
@@ -67,13 +65,10 @@ jobs:
 
       - name: Prepare
         run: |
-          if [ "${{ matrix.os }}" == "ubuntu-24.04" ]; then
-            platform="linux/amd64"
-          elif [ "${{ matrix.os }}" == "ubuntu-24.04-arm" ]; then
+          if [ "${{ matrix.runner_os }}" == *"arm"* ]; then
             platform="linux/arm64"
           else
-            echo "Unknown platform"
-            exit 1
+            platform="linux/amd64"
           fi
 
           ref_name=${{ github.ref_name }}
