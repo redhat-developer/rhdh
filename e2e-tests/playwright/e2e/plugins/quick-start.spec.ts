@@ -1,8 +1,15 @@
 import { expect, test } from "@playwright/test";
+import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { Common } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
 
 test.describe("Test Quick Start plugin", () => {
+  ReportingApi.addAttributes([
+    {
+      key: "component",
+      value: "plugins",
+    },
+  ]);
   let uiHelper: UIhelper;
   let common: Common;
 

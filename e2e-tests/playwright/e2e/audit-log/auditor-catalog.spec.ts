@@ -4,6 +4,7 @@ import { UIhelper } from "../../utils/ui-helper";
 import { LogUtils } from "./log-utils";
 import { CatalogImport } from "../../support/pages/catalog-import";
 import { APIHelper } from "../../utils/api-helper";
+import { ReportingApi } from "@reportportal/agent-js-playwright";
 
 const template =
   "https://github.com/RoadieHQ/sample-service/blob/main/demo_template.yaml";
@@ -28,6 +29,13 @@ async function ensureEntityDoesNotExist() {
 }
 
 test.describe.serial("Audit Log check for Catalog Plugin", () => {
+  ReportingApi.addAttributes([
+    {
+      key: "component",
+      value: "audit-log",
+    },
+  ]);
+
   let uiHelper: UIhelper;
   let common: Common;
   let catalogImport: CatalogImport;

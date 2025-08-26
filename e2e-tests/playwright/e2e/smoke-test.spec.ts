@@ -1,8 +1,16 @@
 import { test } from "@playwright/test";
 import { UIhelper } from "../utils/ui-helper";
 import { Common } from "../utils/common";
+import { ReportingApi } from "@reportportal/agent-js-playwright";
 
 test.describe("Smoke test", () => {
+  ReportingApi.addAttributes([
+    {
+      key: "component",
+      value: "core",
+    },
+  ]);
+
   let uiHelper: UIhelper;
   let common: Common;
 

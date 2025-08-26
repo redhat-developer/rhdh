@@ -1,9 +1,16 @@
 import { test, expect } from "@playwright/test";
+import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { Common } from "../../../utils/common";
 import { UIhelper } from "../../../utils/ui-helper";
 import { TestHelper } from "../../../support/pages/adoption-insights";
 
 test.describe.serial("Test Adoption Insights", () => {
+  ReportingApi.addAttributes([
+    {
+      key: "component",
+      value: "plugins",
+    },
+  ]);
   test.describe
     .serial("Test Adoption Insights plugin: load permission policies and conditions from files", () => {
     let context;

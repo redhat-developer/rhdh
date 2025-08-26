@@ -1,10 +1,17 @@
 import { test } from "@playwright/test";
+import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { Common } from "../../utils/common";
 import { FabPo } from "../../support/pageObjects/global-fab-po";
 import { UIhelper } from "../../utils/ui-helper";
 import { PagesUrl } from "../../support/pageObjects/page";
 
 test.describe("Test global floating action button plugin", () => {
+  ReportingApi.addAttributes([
+    {
+      key: "component",
+      value: "plugins",
+    },
+  ]);
   let uiHelper: UIhelper;
   let fabHelper: FabPo;
 

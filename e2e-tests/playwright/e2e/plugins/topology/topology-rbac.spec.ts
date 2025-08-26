@@ -1,10 +1,17 @@
 import { test } from "@playwright/test";
+import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { Common } from "../../../utils/common";
 import { UIhelper } from "../../../utils/ui-helper";
 import { Catalog } from "../../../support/pages/catalog";
 import { Topology } from "../../../support/pages/topology";
 
 test.describe("Test Topology Plugin with RBAC", () => {
+  ReportingApi.addAttributes([
+    {
+      key: "component",
+      value: "plugins",
+    },
+  ]);
   let common: Common;
   let uiHelper: UIhelper;
   let catalog: Catalog;

@@ -1,4 +1,5 @@
 import { test } from "@playwright/test";
+import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { UIhelper } from "../../../utils/ui-helper";
 import { Common } from "../../../utils/common";
 import RhdhNotficationsApi from "../../../support/api/notifications";
@@ -8,6 +9,12 @@ import { RhdhAuthApiHack } from "../../../support/api/rhdh-auth-api-hack";
 import { NotificationPage } from "../../../support/pages/notifications";
 
 test.describe("Filter critical notification tests", () => {
+  ReportingApi.addAttributes([
+    {
+      key: "component",
+      value: "integration",
+    },
+  ]);
   let uiHelper: UIhelper;
   let common: Common;
   let notificationPage: NotificationPage;

@@ -1,11 +1,19 @@
 import { Page, expect, test } from "@playwright/test";
 import { UIhelper } from "../utils/ui-helper";
 import { Common, setupBrowser } from "../utils/common";
+import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { CatalogImport } from "../support/pages/catalog-import";
 import { UI_HELPER_ELEMENTS } from "../support/pageObjects/global-obj";
 
 let page: Page;
 test.describe("Test timestamp column on Catalog", () => {
+  ReportingApi.addAttributes([
+    {
+      key: "component",
+      value: "core",
+    },
+  ]);
+
   test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
   let uiHelper: UIhelper;
   let common: Common;

@@ -1,4 +1,5 @@
 import { test } from "@playwright/test";
+import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { Common, setupBrowser } from "../../../utils/common";
 import { UIhelper } from "../../../utils/ui-helper";
 import { Tekton } from "../../../utils/tekton/tekton";
@@ -12,6 +13,12 @@ import { Catalog } from "../../../support/pages/catalog";
 //          The old janus-idp.io/tekton annotation is deprecated but still supported!
 
 test.describe("Test Tekton plugin", () => {
+  ReportingApi.addAttributes([
+    {
+      key: "component",
+      value: "plugins",
+    },
+  ]);
   let common: Common;
   let uiHelper: UIhelper;
   let tekton: Tekton;

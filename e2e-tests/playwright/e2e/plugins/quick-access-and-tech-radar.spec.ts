@@ -1,4 +1,5 @@
 import { test } from "@playwright/test";
+import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { HomePage } from "../../support/pages/home-page";
 import { Common } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
@@ -7,6 +8,12 @@ import { TechRadar } from "../../support/pages/tech-radar";
 // Pre-req: Enable plugin-tech-radar and plugin-tech-radar-backend Plugin
 
 test.describe("Test Customized Quick Access and tech-radar plugin", () => {
+  ReportingApi.addAttributes([
+    {
+      key: "component",
+      value: "plugins",
+    },
+  ]);
   test.beforeEach(async ({ page }) => {
     const common = new Common(page);
     await common.loginAsGuest();

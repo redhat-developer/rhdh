@@ -13,6 +13,7 @@ import {
   httpMethod,
 } from "./rbac-test-utils";
 import RhdhRbacApi from "../../support/api/rbac-api";
+import { ReportingApi } from "@reportportal/agent-js-playwright";
 
 let common: Common;
 let rbacApi: RhdhRbacApi;
@@ -22,6 +23,13 @@ let rbacApi: RhdhRbacApi;
 /* ======================================================================== */
 
 test.describe("Auditor check for RBAC Plugin", () => {
+  ReportingApi.addAttributes([
+    {
+      key: "component",
+      value: "audit-log",
+    },
+  ]);
+
   test.fixme(
     process.env.IS_OPENSHIFT === "false",
     "Failing on Kubernetes clusters, fix https://issues.redhat.com/browse/RHIDP-7559",

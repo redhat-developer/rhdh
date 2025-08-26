@@ -7,11 +7,19 @@ import {
   CatalogImport,
 } from "../support/pages/catalog-import";
 import { TEMPLATES } from "../support/testData/templates";
+import { ReportingApi } from "@reportportal/agent-js-playwright";
 
 let page: Page;
 let context: BrowserContext;
 
 test.describe.serial("GitHub Happy path", async () => {
+  ReportingApi.addAttributes([
+    {
+      key: "component",
+      value: "core",
+    },
+  ]);
+
   let common: Common;
   let uiHelper: UIhelper;
   let catalogImport: CatalogImport;

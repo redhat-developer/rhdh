@@ -4,6 +4,7 @@ import { CATALOG_FILE, JANUS_QE_ORG } from "../utils/constants";
 import { Common } from "../utils/common";
 import { assert } from "console";
 import { Catalog } from "../support/pages/catalog";
+import { ReportingApi } from "@reportportal/agent-js-playwright";
 
 type GithubDiscoveryFixture = {
   catalogPage: Catalog;
@@ -24,6 +25,13 @@ const test = base.extend<GithubDiscoveryFixture>({
 
 //TODO: skipping due to RHIDP-4992
 test.describe.skip("Github Discovery Catalog", () => {
+  ReportingApi.addAttributes([
+    {
+      key: "component",
+      value: "api",
+    },
+  ]);
+
   test(`Discover Organization's Catalog`, async ({
     catalogPage,
     githubApi,

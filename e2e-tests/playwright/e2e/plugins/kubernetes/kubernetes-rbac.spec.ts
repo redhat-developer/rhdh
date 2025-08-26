@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { Common } from "../../../utils/common";
 import { UIhelper } from "../../../utils/ui-helper";
 import { Catalog } from "../../../support/pages/catalog";
@@ -6,6 +7,12 @@ import { KUBERNETES_COMPONENTS } from "../../../support/pageObjects/page-obj";
 import { KubernetesPage } from "../../../support/pages/kubernetes";
 
 test.describe("Test Kubernetes Plugin", () => {
+  ReportingApi.addAttributes([
+    {
+      key: "component",
+      value: "plugins",
+    },
+  ]);
   let common: Common;
   let uiHelper: UIhelper;
   let catalog: Catalog;

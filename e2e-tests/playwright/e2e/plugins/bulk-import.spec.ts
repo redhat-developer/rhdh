@@ -1,4 +1,5 @@
 import { expect, Page, test } from "@playwright/test";
+import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { UIhelper } from "../../utils/ui-helper";
 import { Common, setupBrowser } from "../../utils/common";
 import { APIHelper } from "../../utils/api-helper";
@@ -11,6 +12,12 @@ import {
 
 // Pre-req : plugin-bulk-import & plugin-bulk-import-backend-dynamic
 test.describe.serial("Bulk Import plugin", () => {
+  ReportingApi.addAttributes([
+    {
+      key: "component",
+      value: "plugins",
+    },
+  ]);
   test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
   let page: Page;
   let uiHelper: UIhelper;

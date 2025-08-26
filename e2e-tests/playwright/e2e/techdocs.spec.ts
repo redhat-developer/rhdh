@@ -1,10 +1,18 @@
 import { Page, test } from "@playwright/test";
 import { UIhelper } from "../utils/ui-helper";
 import { Common } from "../utils/common";
+import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { expect } from "@playwright/test";
 import { Catalog } from "../support/pages/catalog";
 
 test.describe("TechDocs", () => {
+  ReportingApi.addAttributes([
+    {
+      key: "component",
+      value: "core",
+    },
+  ]);
+
   let common: Common;
   let uiHelper: UIhelper;
   let catalog: Catalog;
