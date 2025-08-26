@@ -291,6 +291,10 @@ export interface Config {
    * @deepVisibility frontend
    */
   userSettings?: {
+    /**
+     * The persistence mode for user settings.
+     * @visibility frontend
+     */
     persistence: 'browser' | 'database';
   };
 }
