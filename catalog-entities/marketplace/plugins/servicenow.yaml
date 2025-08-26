@@ -28,7 +28,9 @@ metadata:
       url: https://github.com/backstage/community-plugins/tree/main/workspaces/servicenow
 
 spec:
-  support: dev-preview
+  support:
+    name: Red Hat
+    level: dev-preview
   lifecycle: active
   author: Red Hat
   publisher: Red Hat

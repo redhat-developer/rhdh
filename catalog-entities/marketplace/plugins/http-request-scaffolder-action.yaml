@@ -25,7 +25,9 @@ metadata:
 spec:
   author: Roadie
   publisher: Red Hat
-  support: tech-preview
+  support:
+    name: Roadie
+    level: tech-preview
   lifecycle: active
 
   categories:
