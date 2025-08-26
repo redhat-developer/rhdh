@@ -3,6 +3,7 @@ import RHDHDeployment from "../../utils/authentication-providers/rhdh-deployment
 import { Common, setupBrowser } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
 import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
+import { ReportingApi } from "@reportportal/agent-js-playwright";
 
 let page: Page;
 let context: BrowserContext;
@@ -15,6 +16,13 @@ GITHUB:
 */
 
 test.describe("Configure Github Provider", async () => {
+  ReportingApi.addAttributes([
+    {
+      key: "component",
+      value: "authentication",
+    },
+  ]);
+
   let common: Common;
   let uiHelper: UIhelper;
 
