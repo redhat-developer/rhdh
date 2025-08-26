@@ -1,7 +1,13 @@
 import { CatalogUsersPO } from "../../../support/pageObjects/catalog/catalog-users-obj";
 import { RhdhAuthUiHack } from "../../../support/api/rhdh-auth-hack";
 import { Common } from "../../../utils/common";
-import { test, expect, APIRequestContext, APIResponse, request } from "@playwright/test";
+import {
+  test,
+  expect,
+  APIRequestContext,
+  APIResponse,
+  request,
+} from "@playwright/test";
 import playwrightConfig from "../../../../playwright.config";
 
 test.describe("Test licensed users info backend plugin", async () => {
@@ -9,7 +15,7 @@ test.describe("Test licensed users info backend plugin", async () => {
   let apiToken: string;
 
   const baseRHDHURL: string = playwrightConfig.use.baseURL;
-  const pluginAPIURL: string = 'api/licensed-users-info/';
+  const pluginAPIURL: string = "api/licensed-users-info/";
 
   test.beforeEach(async ({ page }) => {
     common = new Common(page);
@@ -23,7 +29,7 @@ test.describe("Test licensed users info backend plugin", async () => {
 
   test("Test plugin health check endpoint", async () => {
     const requestContext: APIRequestContext = await request.newContext({
-      baseURL: `${baseRHDHURL}/${pluginAPIURL}`
+      baseURL: `${baseRHDHURL}/${pluginAPIURL}`,
     });
 
     const response: APIResponse = await requestContext.get("health");
@@ -33,7 +39,7 @@ test.describe("Test licensed users info backend plugin", async () => {
       { status: 'ok' }
     */
 
-    expect(result).toHaveProperty('status');
+    expect(result).toHaveProperty("status");
     expect(result.status).toBe("ok");
   });
 
@@ -43,7 +49,7 @@ test.describe("Test licensed users info backend plugin", async () => {
       extraHTTPHeaders: {
         Authorization: apiToken,
         Accept: "application/json",
-      }
+      },
     });
 
     const response: APIResponse = await requestContext.get("users/quantity");
@@ -53,17 +59,17 @@ test.describe("Test licensed users info backend plugin", async () => {
       { quantity: '1' }
     */
 
-    expect(result).toHaveProperty('quantity');
+    expect(result).toHaveProperty("quantity");
     expect(Number(result.quantity)).toBeGreaterThan(0);
   });
 
   test("Test plugin users url", async () => {
-   const requestContext: APIRequestContext = await request.newContext({
+    const requestContext: APIRequestContext = await request.newContext({
       baseURL: `${baseRHDHURL}/${pluginAPIURL}`,
       extraHTTPHeaders: {
         Authorization: apiToken,
         Accept: "application/json",
-      }
+      },
     });
 
     const response: APIResponse = await requestContext.get("users");
@@ -80,9 +86,9 @@ test.describe("Test licensed users info backend plugin", async () => {
 
     expect(Array.isArray(result)).toBe(true);
     expect(result.length).toBeGreaterThan(0);
-    expect(result[0]).toHaveProperty('userEntityRef');
-    expect(result[0]).toHaveProperty('lastAuthTime');
-    expect(result[0].userEntityRef).toContain('user:');
+    expect(result[0]).toHaveProperty("userEntityRef");
+    expect(result[0]).toHaveProperty("lastAuthTime");
+    expect(result[0].userEntityRef).toContain("user:");
   });
 
   test("Test plugin users as a csv url", async () => {
@@ -90,28 +96,32 @@ test.describe("Test licensed users info backend plugin", async () => {
       baseURL: `${baseRHDHURL}/${pluginAPIURL}`,
       extraHTTPHeaders: {
         Authorization: apiToken,
-        'Content-Type': 'text/csv'
-      }
+        "Content-Type": "text/csv",
+      },
     });
 
     const response: APIResponse = await requestContext.get("users");
 
     // 'content-type': 'text/csv; charset=utf-8',
-    expect(response.headers()["content-type"]).toContain('text/csv');
+    expect(response.headers()["content-type"]).toContain("text/csv");
 
     // 'content-disposition': 'attachment; filename="data.csv"',
-    expect(response.headers()["content-disposition"]).toBe("attachment; filename=\"data.csv\"");
+    expect(response.headers()["content-disposition"]).toBe(
+      'attachment; filename="data.csv"',
+    );
 
     const result = await response.text();
     /*
       userEntityRef,displayName,email,lastAuthTime
       user:development/guest,undefined,undefined,"Fri, 18 Jul 2025 12:41:47 GMT"
     */
-    const splitText = result.split('\n');
+    const splitText = result.split("\n");
     const csvHeaders = splitText[0];
     const csvData = splitText[1];
 
-    expect(csvHeaders).toContain("userEntityRef,displayName,email,lastAuthTime");
+    expect(csvHeaders).toContain(
+      "userEntityRef,displayName,email,lastAuthTime",
+    );
     expect(csvData).toContain("user:");
   });
 });
