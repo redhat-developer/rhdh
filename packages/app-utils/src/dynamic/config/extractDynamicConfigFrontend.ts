@@ -1,8 +1,21 @@
-import {
-  FrontendConfig,
-  MenuItem,
-  MenuItemConfig,
-} from './extractDynamicConfig';
+import { FrontendConfig, MenuItem, MenuItemConfig } from './types';
+
+function isStaticPath(path: string): boolean {
+  return !path.includes(':') && !path.includes('*');
+}
+
+function convertMenuItemsRecordToArray(
+  menuItemsRecord: Record<string, MenuItemConfig>,
+): MenuItem[] {
+  return Object.keys(menuItemsRecord).map(
+    key =>
+      ({
+        ...menuItemsRecord[key],
+        children: [],
+        name: key,
+      }) as MenuItem,
+  );
+}
 
 export function getNameFromPath(path: string): string {
   const trimmedPath = path.trim();
@@ -17,25 +30,8 @@ export function getNameFromPath(path: string): string {
   return cleanedPath.split('/').join('.');
 }
 
-function isStaticPath(path: string): boolean {
-  return !path.includes(':') && !path.includes('*');
-}
-
 export function compareMenuItems(a: MenuItem, b: MenuItem) {
   return (b.priority ?? 0) - (a.priority ?? 0);
-}
-
-function convertMenuItemsRecordToArray(
-  menuItemsRecord: Record<string, MenuItemConfig>,
-): MenuItem[] {
-  return Object.keys(menuItemsRecord).map(
-    key =>
-      ({
-        ...menuItemsRecord[key],
-        children: [],
-        name: key,
-      }) as MenuItem,
-  );
 }
 
 export function buildTree(menuItemsArray: MenuItem[]): MenuItem[] {

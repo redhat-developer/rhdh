@@ -6,12 +6,14 @@ import { AppConfig } from '@backstage/config';
 import { ConfigReader, defaultConfigLoader } from '@backstage/core-app-api';
 import { AnyApiFactory } from '@backstage/core-plugin-api';
 
+import {
+  DynamicPluginConfig,
+  overrideBaseUrlConfigs,
+} from '@red-hat-developer-hub/app-utils';
 import { DynamicRootConfig } from '@red-hat-developer-hub/plugin-utils';
 import { AppsConfig } from '@scalprum/core';
 import { ScalprumProvider } from '@scalprum/react-core';
 
-import { DynamicPluginConfig } from '../../utils/dynamicUI/extractDynamicConfig';
-import overrideBaseUrlConfigs from '../../utils/dynamicUI/overrideBaseUrlConfigs';
 import { DynamicRoot, StaticPlugins } from './DynamicRoot';
 import Loader from './Loader';
 
