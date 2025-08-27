@@ -7,7 +7,7 @@ backend:
     origin: ${RHDH_BASE_URL}
   auth:
     keys:
-      - secret: temp
+      - secret: ${BACKEND_SECRET}
 integrations:
   # Plugin: GitHub
   github:
@@ -102,8 +102,8 @@ catalog:
         clientId: ${KEYCLOAK_AUTH_CLIENTID}
         clientSecret: ${KEYCLOAK_AUTH_CLIENT_SECRET}
         schedule:
-          frequency: { minutes: 1 }
-          timeout: { minutes: 1 }
+          frequency: {minutes: 1}
+          timeout: {minutes: 1}
     githubOrg:
       id: production
       githubUrl: "${GITHUB_URL}"

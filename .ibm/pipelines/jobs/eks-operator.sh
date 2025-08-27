@@ -18,23 +18,6 @@ handle_eks_operator() {
   # Get cluster information
   aws_eks_get_cluster_info
 
-  # Generate dynamic domain name
-  echo "Generating dynamic domain name..."
-  local dynamic_domain
-  dynamic_domain=$(generate_dynamic_domain_name)
-  
-  if [[ $? -ne 0 ]]; then
-    echo "Error: Failed to generate dynamic domain name, using fallback"
-    export EKS_INSTANCE_DOMAIN_NAME="eks-ci-fallback.${AWS_EKS_PARENT_DOMAIN}"
-  else
-    export EKS_INSTANCE_DOMAIN_NAME="${dynamic_domain}"
-  fi
-
-  echo "Using domain name: ${EKS_INSTANCE_DOMAIN_NAME}"
-
-  K8S_CLUSTER_ROUTER_BASE=$EKS_INSTANCE_DOMAIN_NAME
-  export K8S_CLUSTER_ROUTER_BASE
-
   NAME_SPACE="showcase-k8s-ci-nightly"
   NAME_SPACE_RBAC="showcase-rbac-k8s-ci-nightly"
   export NAME_SPACE NAME_SPACE_RBAC
@@ -50,15 +33,25 @@ handle_eks_operator() {
 
   prepare_operator "3"
 
-  get_eks_certificate "${K8S_CLUSTER_ROUTER_BASE}"
+  EKS_INSTANCE_DOMAIN_NAME=$(generate_dynamic_domain_name)
+  K8S_CLUSTER_ROUTER_BASE=$EKS_INSTANCE_DOMAIN_NAME
+  export K8S_CLUSTER_ROUTER_BASE EKS_INSTANCE_DOMAIN_NAME
+  get_eks_certificate "${EKS_INSTANCE_DOMAIN_NAME}"
 
   initiate_eks_operator_deployment "${NAME_SPACE}" "https://${K8S_CLUSTER_ROUTER_BASE}"
   configure_eks_ingress_and_dns "${NAME_SPACE}" "dh-ingress"
   check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
+  cleanup_eks_dns_record "${EKS_INSTANCE_DOMAIN_NAME}"
   cleanup_eks_deployment "${NAME_SPACE}"
+
+  EKS_INSTANCE_DOMAIN_NAME=$(generate_dynamic_domain_name)
+  K8S_CLUSTER_ROUTER_BASE=$EKS_INSTANCE_DOMAIN_NAME
+  export K8S_CLUSTER_ROUTER_BASE EKS_INSTANCE_DOMAIN_NAME
+  get_eks_certificate "${EKS_INSTANCE_DOMAIN_NAME}"
 
   initiate_rbac_eks_operator_deployment "${NAME_SPACE_RBAC}" "https://${K8S_CLUSTER_ROUTER_BASE}"
   configure_eks_ingress_and_dns "${NAME_SPACE_RBAC}" "dh-ingress"
   check_and_test "${RELEASE_NAME}" "${NAME_SPACE_RBAC}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
+  cleanup_eks_dns_record "${EKS_INSTANCE_DOMAIN_NAME}"
   cleanup_eks_deployment "${NAME_SPACE_RBAC}"
 } 

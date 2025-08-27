@@ -69,13 +69,11 @@ test.describe("dynamic-plugins-info UI tests", () => {
     expect(await row.locator("td").nth(3).innerText()).toBe("Yes"); // preinstalled
   });
 
-  // TODO: Enable this test once the behavior for loading this plugin is fixed.
-  // TODO: In RHDH 1.5, this plugin incorrectly appears as disabled despite being properly imported and explicitly enabled.
-  test.skip("it should have a plugin-todo-list plugin which is Enabled but not Preinstalled", async ({
+  test("it should have a plugin-todo-list plugin which is Enabled but not Preinstalled", async ({
     page,
   }) => {
     await page
-      .getByPlaceholder("Search", { exact: true })
+      .getByPlaceholder("Filter", { exact: true })
       .pressSequentially("plugin-todo\n", { delay: 300 });
 
     // Verify the Enabled and Preinstalled column values for the specific row

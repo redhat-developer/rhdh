@@ -1,4 +1,4 @@
 {
-  "*": "prettier --ignore-unknown --write",
-  "*.{js,jsx,ts,tsx,mjs,cjs}": "eslint --ext .js,.ts --fix"
+  "*": "yarn prettier:fix",
+  "*.{js,jsx,ts,tsx,mjs,cjs}": "yarn lint:fix"
 }
