@@ -66,3 +66,7 @@ dynamic-plugins-root/*
 
 # Local Cursor rules context
 .cursor/rules/*.local.mdc
+
+# CI/Pipeline directories
+.ibm/pipelines/shared_dir/*
+.ibm/pipelines/artifact_dir/*
