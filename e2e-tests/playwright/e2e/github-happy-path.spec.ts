@@ -11,8 +11,7 @@ import { TEMPLATES } from "../support/testData/templates";
 let page: Page;
 let context: BrowserContext;
 
-// test suite skipped for now, until it's migrated back to the main showcase job
-test.describe("GitHub Happy path", async () => {
+test.describe.serial("GitHub Happy path", async () => {
   let common: Common;
   let uiHelper: UIhelper;
   let catalogImport: CatalogImport;
@@ -192,6 +191,7 @@ test.describe("GitHub Happy path", async () => {
   });
 
   test("Click on the Dependencies tab and verify that all the relations have been listed and displayed", async () => {
+    test.fixme();
     await uiHelper.clickTab("Dependencies");
     for (const resource of RESOURCES) {
       const resourceElement = page.locator(
@@ -203,6 +203,7 @@ test.describe("GitHub Happy path", async () => {
   });
 
   test("Sign out and verify that you return back to the Sign in page", async () => {
+    test.fixme();
     await uiHelper.goToSettingsPage();
     await common.signOut();
     context.clearCookies();

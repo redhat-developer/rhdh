@@ -23,7 +23,7 @@ spec:
     role: frontend-plugin-module
     supportedVersions: 1.39.1
   author: Red Hat
-  support: tech-preview
+  support: production
   lifecycle: active
   partOf:
     - adoption-insights
