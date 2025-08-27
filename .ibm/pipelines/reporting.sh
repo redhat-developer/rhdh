@@ -109,8 +109,6 @@ save_data_router_junit_results() {
 
   ARTIFACTS_URL=$(get_artifacts_url)
 
-  # Remove properties (only used for skipped test and invalidates the file if empty)
-  sed_inplace '/<properties>/,/<\/properties>/d' "${ARTIFACT_DIR}/${project}/${JUNIT_RESULTS}"
   # Replace attachments with link to OpenShift CI storage
   sed_inplace "s#\[\[ATTACHMENT|\(.*\)\]\]#${ARTIFACTS_URL}/\1#g" "${ARTIFACT_DIR}/${project}/${JUNIT_RESULTS}"
 
