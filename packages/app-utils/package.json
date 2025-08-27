@@ -1,5 +1,5 @@
 {
-  "name": "@red-hat-developer-hub/plugin-utils",
+  "name": "@red-hat-developer-hub/app-utils",
   "version": "1.0.0",
   "main": "src/index.ts",
   "types": "src/index.ts",
@@ -13,10 +13,10 @@
   "backstage": {
     "role": "common-library",
     "supported-versions": "1.0.0",
-    "pluginId": "plugin-utils",
-    "pluginPackage": "@janus-idp/plugin-utils",
+    "pluginId": "app-utils",
+    "pluginPackage": "@red-hat-developer-hub/app-utils",
     "pluginPackages": [
-      "@janus-idp/plugin-utils"
+      "@red-hat-developer-hub/app-utils"
     ]
   },
   "scripts": {
@@ -31,7 +31,16 @@
   },
   "dependencies": {
     "@backstage/catalog-model": "1.7.4",
-    "@backstage/core-plugin-api": "1.10.7"
+    "@backstage/config": "1.3.2",
+    "@backstage/core-app-api": "1.17.0",
+    "@backstage/core-plugin-api": "1.10.7",
+    "@backstage/plugin-api-docs": "0.12.7",
+    "@backstage/plugin-catalog": "1.30.0",
+    "@backstage/plugin-catalog-import": "0.13.0",
+    "@backstage/plugin-org": "0.6.39",
+    "@backstage/plugin-scaffolder": "1.31.0",
+    "@mui/material": "5.18.0",
+    "lodash": "4.17.21"
   },
   "devDependencies": {
     "@backstage/cli": "0.32.1",
