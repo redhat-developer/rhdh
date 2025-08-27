@@ -1,7 +1,6 @@
+import { RemotePlugins } from '@red-hat-developer-hub/plugin-utils';
 import { AppsConfig, processManifest } from '@scalprum/core';
 import { ScalprumState } from '@scalprum/react-core';
-
-import { RemotePlugins } from '../../components/DynamicRoot/DynamicRoot';
 
 // See packages/app/src/App.tsx
 const ignoreStaticPlugins = ['default.main-menu-items'];

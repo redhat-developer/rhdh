@@ -1,28 +1,7 @@
-import {
-  FrontendConfig,
-  MenuItem,
-  MenuItemConfig,
-} from './extractDynamicConfig';
-
-export function getNameFromPath(path: string): string {
-  const trimmedPath = path.trim();
-  const noLeadingTrailingSlashes = trimmedPath.startsWith('/')
-    ? trimmedPath.slice(1)
-    : trimmedPath;
-
-  const cleanedPath = noLeadingTrailingSlashes.endsWith('/')
-    ? noLeadingTrailingSlashes.slice(0, -1)
-    : noLeadingTrailingSlashes;
-
-  return cleanedPath.split('/').join('.');
-}
+import { FrontendConfig, MenuItem, MenuItemConfig } from './types';
 
 function isStaticPath(path: string): boolean {
   return !path.includes(':') && !path.includes('*');
-}
-
-export function compareMenuItems(a: MenuItem, b: MenuItem) {
-  return (b.priority ?? 0) - (a.priority ?? 0);
 }
 
 function convertMenuItemsRecordToArray(
@@ -38,11 +17,28 @@ function convertMenuItemsRecordToArray(
   );
 }
 
+export function getNameFromPath(path: string): string {
+  const trimmedPath = path.trim();
+  const noLeadingTrailingSlashes = trimmedPath.startsWith('/')
+    ? trimmedPath.slice(1)
+    : trimmedPath;
+
+  const cleanedPath = noLeadingTrailingSlashes.endsWith('/')
+    ? noLeadingTrailingSlashes.slice(0, -1)
+    : noLeadingTrailingSlashes;
+
+  return cleanedPath.split('/').join('.');
+}
+
+export function compareMenuItems(a: MenuItem, b: MenuItem) {
+  return (b.priority ?? 0) - (a.priority ?? 0);
+}
+
 export function buildTree(menuItemsArray: MenuItem[]): MenuItem[] {
   const itemMap: Record<string, MenuItem> = {};
 
   menuItemsArray.forEach(item => {
-    if (!itemMap[item.name]) {
+    if (itemMap[item.name] === undefined) {
       itemMap[item.name] = { ...item, children: [] };
     } else {
       itemMap[item.name] = {

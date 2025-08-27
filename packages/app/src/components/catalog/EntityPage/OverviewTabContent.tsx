@@ -26,8 +26,9 @@ import {
   EntityUserProfileCard,
 } from '@backstage/plugin-org';
 
+import { hasLinks } from '@red-hat-developer-hub/app-utils';
+
 import Grid from '../Grid';
-import { hasLinks } from '../utils';
 
 export const OverviewTabContent = () => (
   <>

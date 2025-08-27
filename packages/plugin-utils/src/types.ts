@@ -1,12 +1,51 @@
 import { Entity } from '@backstage/catalog-model';
+import {
+  AnalyticsApi,
+  AnyApiFactory,
+  AppTheme,
+  BackstagePlugin,
+  ConfigApi,
+  IdentityApi,
+} from '@backstage/core-plugin-api';
 import { TranslationRef } from '@backstage/core-plugin-api/alpha';
 
-export type RouteBinding = {
-  bindTarget: string;
-  bindMap: {
-    [target: string]: string;
+export type RemotePlugins = {
+  [scope: string]: {
+    [module: string]: {
+      [importName: string]:
+        | React.ComponentType<React.PropsWithChildren>
+        | ((...args: any[]) => any)
+        | BackstagePlugin<{}>
+        | {
+            element: React.ComponentType<React.PropsWithChildren>;
+            staticJSXContent:
+              | React.ReactNode
+              | ((config: DynamicRootConfig) => React.ReactNode);
+          }
+        | AnyApiFactory
+        | AnalyticsApiClass;
+    };
   };
 };
+
+export type AnalyticsApiClass = {
+  fromConfig(
+    config: ConfigApi,
+    deps: { identityApi: IdentityApi },
+  ): AnalyticsApi;
+};
+
+export type AppThemeProvider = Partial<AppTheme> & Omit<AppTheme, 'theme'>;
+
+export type StaticPlugins = Record<
+  string,
+  {
+    plugin: BackstagePlugin;
+    module:
+      | React.ComponentType<any>
+      | { [importName: string]: React.ComponentType<any> };
+  }
+>;
 
 export type ResolvedDynamicRouteMenuItem =
   | {
@@ -46,29 +85,13 @@ export type ResolvedDynamicRoute = {
   };
 };
 
-export type MountPointConfigBase = {
+export type MountPointConfig = {
   layout?: Record<string, string>;
+  if: (e: Entity) => boolean;
   props?: Record<string, any>;
 };
 
-export type MountPointConfig = MountPointConfigBase & {
-  if: (e: Entity) => boolean;
-};
-
-export type MountPointConfigRawIf = {
-  [key in 'allOf' | 'oneOf' | 'anyOf']?: (
-    | {
-        [key: string]: string | string[];
-      }
-    | Function
-  )[];
-};
-
-export type MountPointConfigRaw = MountPointConfigBase & {
-  if?: MountPointConfigRawIf;
-};
-
-export type MountPoint = {
+export type ResolvedMountPoint = {
   Component: React.ComponentType<React.PropsWithChildren>;
   config?: MountPointConfig;
   staticJSXContent?:
@@ -81,16 +104,16 @@ export type EntityTabOverrides = Record<
   { title: string; titleKey?: string; mountPoint: string; priority?: number }
 >;
 
-export type MountPoints = Record<string, MountPoint[]>;
+export type MountPoints = Record<string, ResolvedMountPoint[]>;
 
-export type ScaffolderFieldExtension = {
+export type ResolvedScaffolderFieldExtension = {
   scope: string;
   module: string;
   importName: string;
   Component: React.ComponentType<{}>;
 };
 
-export type TechdocsAddon = {
+export type ResolvedTechdocsAddon = {
   scope: string;
   module: string;
   importName: string;
@@ -100,7 +123,7 @@ export type TechdocsAddon = {
   };
 };
 
-export type ProviderSetting = {
+export type ResolvedProviderSetting = {
   title: string;
   description: string;
   provider: string;
@@ -111,9 +134,9 @@ export type DynamicRootConfig = {
   entityTabOverrides: EntityTabOverrides;
   mountPoints: MountPoints;
   menuItems: ResolvedMenuItem[];
-  providerSettings: ProviderSetting[];
-  scaffolderFieldExtensions: ScaffolderFieldExtension[];
-  techdocsAddons: TechdocsAddon[];
+  providerSettings: ResolvedProviderSetting[];
+  scaffolderFieldExtensions: ResolvedScaffolderFieldExtension[];
+  techdocsAddons: ResolvedTechdocsAddon[];
   translationRefs: TranslationRef[];
 };
 

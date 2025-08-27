@@ -8,10 +8,11 @@ import {
 
 import { ErrorBoundary } from '@backstage/core-components';
 
-import DynamicRootContext, {
+import {
   MountPoint,
   MountPointConfigBase,
-} from '@red-hat-developer-hub/plugin-utils';
+} from '@red-hat-developer-hub/app-utils';
+import DynamicRootContext from '@red-hat-developer-hub/plugin-utils';
 
 type Position = 'above-main-content' | 'above-sidebar';
 
@@ -35,7 +36,7 @@ export const ApplicationHeaders = ({ position }: { position: Position }) => {
 
   const appHeaderMountPoints = useMemo(() => {
     const appHeaderMP = (mountPoints['application/header'] ??
-      []) as ApplicationHeaderMountPoint[];
+      []) as unknown as ApplicationHeaderMountPoint[];
 
     return appHeaderMP.filter(({ config }) => config?.position === position);
   }, [mountPoints, position]);

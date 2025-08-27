@@ -5,7 +5,7 @@ import {
   TranslationResource,
 } from '@backstage/core-plugin-api/alpha';
 
-import { InternalTranslationResource } from '../../types/types';
+import { InternalTranslationResource } from '@red-hat-developer-hub/app-utils';
 
 const createTranslationMessagesWrapper = (
   ref: TranslationRef<string, any>,

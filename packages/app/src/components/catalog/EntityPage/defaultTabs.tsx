@@ -1,7 +1,8 @@
 import { Entity } from '@backstage/catalog-model';
 import { isKind } from '@backstage/plugin-catalog';
 
-import { isType } from '../utils';
+import { isType } from '@red-hat-developer-hub/app-utils';
+
 import { ApiTabContent } from './ApiTabContent';
 import { DefinitionTabContent } from './DefinitionTabContent';
 import { DependenciesTabContent } from './DependenciesTabContent';

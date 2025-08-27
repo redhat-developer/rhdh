@@ -10,7 +10,8 @@ import {
 } from '@backstage/core-plugin-api';
 import { appLanguageApiRef } from '@backstage/core-plugin-api/alpha';
 
-import { TranslationConfig } from '../types/types';
+import { TranslationConfig } from '@red-hat-developer-hub/app-utils';
+
 import { getDefaultLanguage } from '../utils/language/language';
 
 const BUCKET = 'userSettings';
