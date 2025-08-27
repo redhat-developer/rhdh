@@ -6,21 +6,6 @@ on:
       - 'PR Build Image (Hermetic)'
     types:
       - completed
-  workflow_call:
-    inputs:
-      buildId:
-        type: string
-        description: The build identifier for artifact naming (e.g., PR number, 'nightly', 'main')
-        required: false
-      shortSha:
-        type: string
-        description: The short SHA for artifact naming
-        required: false
-      registry:
-        type: string
-        description: The registry to push to
-        required: false
-        default: quay.io
 
 jobs:
   podman-push:
@@ -35,16 +20,11 @@ jobs:
     steps:
       - name: Determine artifact name
         run: |
-          if [ "${{ github.event_name }}" == "workflow_run" ]; then
-            # For workflow_run, extract from the event context
-            BUILD_ID="${{ github.event.workflow_run.pull_requests[0].number || 'main' }}"
-            SHORT_SHA="${{ github.event.workflow_run.head_sha }}"
-            SHORT_SHA="${SHORT_SHA:0:8}"
-          else
-            # For workflow_call, use the inputs
-            BUILD_ID="${{ inputs.buildId || 'main' }}"
-            SHORT_SHA="${{ inputs.shortSha }}"
-          fi
+          # For workflow_run, extract from the event context
+          BUILD_ID="${{ github.event.workflow_run.pull_requests[0].number || 'main' }}"
+          SHORT_SHA="${{ github.event.workflow_run.head_sha }}"
+          SHORT_SHA="${SHORT_SHA:0:8}"
+
           
           echo "SHORT_SHA=$SHORT_SHA" >> $GITHUB_ENV
           ARTIFACT_NAME="podman-image-${BUILD_ID}-${SHORT_SHA}"
@@ -99,13 +79,8 @@ jobs:
           podman load -i ./rhdh-podman-artifacts/image.tar
           
           # Read metadata
-          REGISTRY=$(cat ./rhdh-podman-artifacts/registry.txt)
-          IMAGE_NAME=$(cat ./rhdh-podman-artifacts/imageName.txt)
           TAGS_LIST=$(cat ./rhdh-podman-artifacts/tags.txt)
-          
-          echo "REGISTRY=$REGISTRY" >> $GITHUB_ENV
-          echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_OUTPUT
-          
+                    
           echo "Loaded images:"
           podman images
           
@@ -127,7 +102,6 @@ jobs:
 
       - name: Extract PR info for commenting
         id: get-pr
-        if: ${{ github.event_name == 'workflow_run' }}
         env:
           WORKFLOW_RUN_PR_NUMBER: ${{ github.event.workflow_run.pull_requests[0].number || '' }}
           WORKFLOW_RUN_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
