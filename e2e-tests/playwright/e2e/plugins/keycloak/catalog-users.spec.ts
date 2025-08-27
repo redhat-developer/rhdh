@@ -60,7 +60,7 @@ test.describe("Test Keycloak plugin metrics", () => {
   let portForward: ChildProcessWithoutNullStreams;
 
   test.beforeEach(async () => {
-    const namespace = process.env.NAME_SPACE;
+    const namespace = process.env.NAME_SPACE || "showcase-ci-nightly";
     const kubeClient = new KubeClient();
 
     console.log("Starting port-forward process...");
