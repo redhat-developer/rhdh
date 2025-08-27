@@ -113,7 +113,7 @@ save_data_router_junit_results() {
   ARTIFACTS_URL=$(get_artifacts_url "${namespace}")
 
   # Replace attachments with link to OpenShift CI storage
-  sed_inplace "s#\[\[ATTACHMENT|\(.*\)\]\]#${ARTIFACTS_URL}/\1#g" "${ARTIFACT_DIR}/${namespace}/${JUNIT_RESULTS}"
+  sed -iE "s#\[\[ATTACHMENT|\(.*\)\]\]#${ARTIFACTS_URL}/\1#g" "${ARTIFACT_DIR}/${namespace}/${JUNIT_RESULTS}"
 
   # Copy the metadata and JUnit results files to the shared directory
   cp "${ARTIFACT_DIR}/${namespace}/${JUNIT_RESULTS}" "${SHARED_DIR}/junit-results-${namespace}.xml"
