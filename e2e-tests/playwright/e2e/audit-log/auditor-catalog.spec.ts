@@ -29,16 +29,18 @@ async function ensureEntityDoesNotExist() {
 }
 
 test.describe.serial("Audit Log check for Catalog Plugin", () => {
-  ReportingApi.addAttributes([
-    {
-      key: "component",
-      value: "audit-log",
-    },
-  ]);
-
   let uiHelper: UIhelper;
   let common: Common;
   let catalogImport: CatalogImport;
+
+  test.beforeAll(async () => {
+    ReportingApi.addAttributes([
+      {
+        key: "component",
+        value: "audit-log",
+      },
+    ]);
+  });
 
   test.beforeEach(async ({ page }) => {
     uiHelper = new UIhelper(page);

@@ -6,16 +6,18 @@ import { expect } from "@playwright/test";
 import { Catalog } from "../support/pages/catalog";
 
 test.describe("TechDocs", () => {
-  ReportingApi.addAttributes([
-    {
-      key: "component",
-      value: "core",
-    },
-  ]);
-
   let common: Common;
   let uiHelper: UIhelper;
   let catalog: Catalog;
+
+  test.beforeAll(async () => {
+    ReportingApi.addAttributes([
+      {
+        key: "component",
+        value: "core",
+      },
+    ]);
+  });
 
   async function docsTextHighlight(page: Page) {
     await page.evaluate(() => {

@@ -5,14 +5,17 @@ import { Common } from "../../../utils/common";
 import { ImageRegistry } from "../../../utils/quay/quay";
 
 test.describe("Test Quay.io plugin", () => {
-  ReportingApi.addAttributes([
-    {
-      key: "component",
-      value: "plugins",
-    },
-  ]);
   const quayRepository = "rhdh-community/rhdh";
   let uiHelper: UIhelper;
+
+  test.beforeAll(async () => {
+    ReportingApi.addAttributes([
+      {
+        key: "component",
+        value: "plugins",
+      },
+    ]);
+  });
 
   test.beforeEach(async ({ page }) => {
     const common = new Common(page);

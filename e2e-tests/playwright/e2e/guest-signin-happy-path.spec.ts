@@ -5,12 +5,14 @@ import { Common } from "../utils/common";
 import { ReportingApi } from "@reportportal/agent-js-playwright";
 
 test.describe("Guest Signing Happy path", () => {
-  ReportingApi.addAttributes([
-    {
-      key: "component",
-      value: "authentication",
-    },
-  ]);
+  test.beforeAll(async () => {
+    ReportingApi.addAttributes([
+      {
+        key: "component",
+        value: "authentication",
+      },
+    ]);
+  });
 
   let uiHelper: UIhelper;
   let homePage: HomePage;

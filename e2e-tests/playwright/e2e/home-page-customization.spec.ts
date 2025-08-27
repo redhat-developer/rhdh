@@ -6,16 +6,18 @@ import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { runAccessibilityTests } from "../utils/accessibility";
 
 test.describe("Home page customization", () => {
-  ReportingApi.addAttributes([
-    {
-      key: "component",
-      value: "core",
-    },
-  ]);
-
   let common: Common;
   let uiHelper: UIhelper;
   let homePage: HomePage;
+
+  test.beforeAll(async () => {
+    ReportingApi.addAttributes([
+      {
+        key: "component",
+        value: "core",
+      },
+    ]);
+  });
 
   test.beforeEach(async ({ page }) => {
     uiHelper = new UIhelper(page);

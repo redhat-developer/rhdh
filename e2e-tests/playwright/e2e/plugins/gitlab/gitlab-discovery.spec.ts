@@ -7,14 +7,17 @@ import { Common } from "../../../utils/common";
 // Pre-req: immobiliarelabs-backstage-plugin-gitlab-backend-dynamic
 //FIXME: RHDHBUGS-1977
 test.describe.skip("gitlab discovery UI tests", () => {
-  ReportingApi.addAttributes([
-    {
-      key: "component",
-      value: "plugins",
-    },
-  ]);
   let uiHelper: UIhelper;
   let common: Common;
+
+  test.beforeAll(async () => {
+    ReportingApi.addAttributes([
+      {
+        key: "component",
+        value: "plugins",
+      },
+    ]);
+  });
 
   test.beforeEach(async ({ page }) => {
     uiHelper = new UIhelper(page);

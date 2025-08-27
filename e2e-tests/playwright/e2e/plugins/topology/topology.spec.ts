@@ -6,16 +6,19 @@ import { Catalog } from "../../../support/pages/catalog";
 import { Topology } from "../../../support/pages/topology";
 
 test.describe("Test Topology Plugin", () => {
-  ReportingApi.addAttributes([
-    {
-      key: "component",
-      value: "plugins",
-    },
-  ]);
   let common: Common;
   let uiHelper: UIhelper;
   let catalog: Catalog;
   let topology: Topology;
+
+  test.beforeAll(async () => {
+    ReportingApi.addAttributes([
+      {
+        key: "component",
+        value: "plugins",
+      },
+    ]);
+  });
 
   test.beforeEach(async ({ page }) => {
     common = new Common(page);

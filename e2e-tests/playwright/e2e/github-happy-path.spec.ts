@@ -13,13 +13,6 @@ let page: Page;
 let context: BrowserContext;
 
 test.describe.serial("GitHub Happy path", async () => {
-  ReportingApi.addAttributes([
-    {
-      key: "component",
-      value: "core",
-    },
-  ]);
-
   let common: Common;
   let uiHelper: UIhelper;
   let catalogImport: CatalogImport;
@@ -29,6 +22,13 @@ test.describe.serial("GitHub Happy path", async () => {
     "https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/all.yaml";
 
   test.beforeAll(async ({ browser }, testInfo) => {
+    ReportingApi.addAttributes([
+      {
+        key: "component",
+        value: "core",
+      },
+    ]);
+
     ({ page, context } = await setupBrowser(browser, testInfo));
     uiHelper = new UIhelper(page);
     common = new Common(page);

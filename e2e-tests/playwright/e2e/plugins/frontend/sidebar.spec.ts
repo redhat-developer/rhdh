@@ -6,16 +6,17 @@ import { Common, setupBrowser } from "../../../utils/common";
 let page: Page;
 
 test.describe("Validate Sidebar Navigation Customization", () => {
-  ReportingApi.addAttributes([
-    {
-      key: "component",
-      value: "plugins",
-    },
-  ]);
   let uiHelper: UIhelper;
   let common: Common;
 
   test.beforeAll(async ({ browser }, testInfo) => {
+    ReportingApi.addAttributes([
+      {
+        key: "component",
+        value: "plugins",
+      },
+    ]);
+
     page = (await setupBrowser(browser, testInfo)).page;
     uiHelper = new UIhelper(page);
     common = new Common(page);

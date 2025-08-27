@@ -6,14 +6,17 @@ import { UIhelper } from "../../utils/ui-helper";
 import { PagesUrl } from "../../support/pageObjects/page";
 
 test.describe("Test global floating action button plugin", () => {
-  ReportingApi.addAttributes([
-    {
-      key: "component",
-      value: "plugins",
-    },
-  ]);
   let uiHelper: UIhelper;
   let fabHelper: FabPo;
+
+  test.beforeAll(async () => {
+    ReportingApi.addAttributes([
+      {
+        key: "component",
+        value: "plugins",
+      },
+    ]);
+  });
 
   test.beforeEach(async ({ page }) => {
     const common = new Common(page);

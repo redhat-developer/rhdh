@@ -25,12 +25,14 @@ const test = base.extend<GithubDiscoveryFixture>({
 
 //TODO: skipping due to RHIDP-4992
 test.describe.skip("Github Discovery Catalog", () => {
-  ReportingApi.addAttributes([
-    {
-      key: "component",
-      value: "api",
-    },
-  ]);
+  test.beforeAll(async () => {
+    ReportingApi.addAttributes([
+      {
+        key: "component",
+        value: "api",
+      },
+    ]);
+  });
 
   test(`Discover Organization's Catalog`, async ({
     catalogPage,

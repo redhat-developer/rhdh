@@ -6,16 +6,18 @@ import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { runAccessibilityTests } from "../utils/accessibility";
 
 test.describe("Admin > Extensions > Catalog", () => {
-  ReportingApi.addAttributes([
-    {
-      key: "component",
-      value: "core",
-    },
-  ]);
-
   let extensions: Extensions;
   let uiHelper: UIhelper;
   const isMac = process.platform === "darwin";
+
+  test.beforeAll(async () => {
+    ReportingApi.addAttributes([
+      {
+        key: "component",
+        value: "core",
+      },
+    ]);
+  });
 
   test.beforeEach(async ({ page }) => {
     extensions = new Extensions(page);

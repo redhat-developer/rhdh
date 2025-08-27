@@ -16,13 +16,6 @@ LDAP:
 */
 
 test.describe("Configure LDAP Provider", async () => {
-  ReportingApi.addAttributes([
-    {
-      key: "component",
-      value: "authentication",
-    },
-  ]);
-
   let common: Common;
   let uiHelper: UIhelper;
 
@@ -50,6 +43,13 @@ test.describe("Configure LDAP Provider", async () => {
   test.use({ baseURL: backstageUrl });
 
   test.beforeAll(async ({ browser }, testInfo) => {
+    ReportingApi.addAttributes([
+      {
+        key: "component",
+        value: "authentication",
+      },
+    ]);
+
     test.info().setTimeout(600 * 1000);
     // load default configs from yaml files
     await deployment.loadAllConfigs();

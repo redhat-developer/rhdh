@@ -9,15 +9,18 @@ import { RhdhAuthApiHack } from "../../../support/api/rhdh-auth-api-hack";
 import { NotificationPage } from "../../../support/pages/notifications";
 
 test.describe("Filter critical notification tests", () => {
-  ReportingApi.addAttributes([
-    {
-      key: "component",
-      value: "integration",
-    },
-  ]);
   let uiHelper: UIhelper;
   let common: Common;
   let notificationPage: NotificationPage;
+
+  test.beforeAll(async () => {
+    ReportingApi.addAttributes([
+      {
+        key: "component",
+        value: "integration",
+      },
+    ]);
+  });
 
   test.beforeEach(async ({ page }) => {
     uiHelper = new UIhelper(page);

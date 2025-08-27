@@ -11,14 +11,18 @@ import {
 } from "@playwright/test";
 import playwrightConfig from "../../../../playwright.config";
 
-test.describe("Test licensed users info backend plugin", () => {
-  ReportingApi.addAttributes([
-    {
-      key: "component",
-      value: "user-management",
-    },
-  ]);
+test.describe("Test licensed users info backend plugin", async () => {
   let common: Common;
+
+  test.beforeAll(async () => {
+    ReportingApi.addAttributes([
+      {
+        key: "component",
+        value: "plugins",
+      },
+    ]);
+  });
+
   let apiToken: string;
 
   const baseRHDHURL: string = playwrightConfig.use.baseURL;

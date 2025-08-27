@@ -5,12 +5,15 @@ import { UIhelper } from "../../utils/ui-helper";
 import { UI_HELPER_ELEMENTS } from "../../support/pageObjects/global-obj";
 
 test.describe("Test user settings info card", () => {
-  ReportingApi.addAttributes([
-    {
-      key: "component",
-      value: "plugins",
-    },
-  ]);
+  test.beforeAll(async () => {
+    ReportingApi.addAttributes([
+      {
+        key: "component",
+        value: "plugins",
+      },
+    ]);
+  });
+
   let uiHelper: UIhelper;
 
   test.beforeEach(async ({ page }) => {

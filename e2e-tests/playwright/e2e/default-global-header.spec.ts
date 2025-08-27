@@ -4,15 +4,17 @@ import { Common } from "../utils/common";
 import { ReportingApi } from "@reportportal/agent-js-playwright";
 
 test.describe("Default Global Header", () => {
-  ReportingApi.addAttributes([
-    {
-      key: "component",
-      value: "navigation",
-    },
-  ]);
-
   let common: Common;
   let uiHelper: UIhelper;
+
+  test.beforeAll(async () => {
+    ReportingApi.addAttributes([
+      {
+        key: "component",
+        value: "navigation",
+      },
+    ]);
+  });
 
   test.beforeEach(async ({ page }) => {
     uiHelper = new UIhelper(page);

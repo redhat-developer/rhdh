@@ -4,12 +4,14 @@ import { Analytics } from "../../../utils/analytics/analytics";
 import { APIHelper } from "../../../utils/api-helper";
 
 test.describe('Check "analytics-provider-segment" plugin is enabled', () => {
-  ReportingApi.addAttributes([
-    {
-      key: "component",
-      value: "monitoring",
-    },
-  ]);
+  test.beforeAll(async () => {
+    ReportingApi.addAttributes([
+      {
+        key: "component",
+        value: "monitoring",
+      },
+    ]);
+  });
 
   test('Check "analytics-provider-segment" plugin is enabled', async () => {
     const analytics = new Analytics();

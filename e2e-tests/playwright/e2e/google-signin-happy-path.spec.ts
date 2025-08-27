@@ -5,12 +5,14 @@ import { ReportingApi } from "@reportportal/agent-js-playwright";
 
 let page: Page;
 test.describe.skip("Google signin happy path", () => {
-  ReportingApi.addAttributes([
-    {
-      key: "component",
-      value: "authentication",
-    },
-  ]);
+  test.beforeAll(async () => {
+    ReportingApi.addAttributes([
+      {
+        key: "component",
+        value: "authentication",
+      },
+    ]);
+  });
 
   let uiHelper: UIhelper;
   let common: Common;
