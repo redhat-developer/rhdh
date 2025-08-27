@@ -309,3 +309,82 @@ jobs:
           if: ${{ env.REF_NAME_SHORT != 'next' && !startsWith(env.REF_NAME_SHORT,'next-') }}
           run: |
             docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:${{ steps.meta-release.outputs.version }}
+
+        - name: Clean up per-arch images and ensure expiry on multi-arch tags
+          if: env.HAS_QUAY_AUTH == 'true'
+          env:
+            REGISTRY_IMAGE: ${{ env.REGISTRY_IMAGE }}
+            REF_NAME: ${{ env.REF_NAME }}
+            SHORT_SHA: ${{ env.SHORT_SHA }}
+            EXPIRES_AFTER: ${{ env.EXPIRES_AFTER }}
+            QUAY_TOKEN: ${{ secrets.QUAY_TOKEN }}
+          run: |
+            set -e
+            echo "Cleaning up temporary per-arch images and ensuring expiry on multi-arch tags..."
+            
+            # Sanitize REF_NAME for use in tags (replace '/' with '-')
+            SAFE_REF_TAG="${REF_NAME//\//-}"
+            
+            # Calculate expiry timestamp
+            expires="${EXPIRES_AFTER}"
+            days="${expires%d}"
+            if [[ "$expires" != *d ]] || ! [[ "$days" =~ ^[0-9]+$ ]]; then
+              echo "::warning::Unknown EXPIRES_AFTER format: $EXPIRES_AFTER; defaulting to 14d"
+              days=14
+            fi
+            expiry_ts=$(date -d "+${days} days" +%s)
+            echo "Using expiry timestamp: ${expiry_ts} ($(date -d "@$expiry_ts"))"
+            
+            # Multi-arch tags that should have expiry set
+            multi_arch_tags=(
+              "${SAFE_REF_TAG}"
+              "${SAFE_REF_TAG}-${SHORT_SHA}"
+            )
+            
+            echo "Ensuring expiry on multi-arch tags: ${multi_arch_tags[*]}"
+            for tag in "${multi_arch_tags[@]}"; do
+              echo "Setting expiry on multi-arch tag: ${tag}"
+              url="https://quay.io/api/v1/repository/${REGISTRY_IMAGE}/tag/${tag}"
+              
+              http_code=$(curl -sS -o /tmp/expiry_resp.txt -w "%{http_code}" -X PUT \
+                -H "Authorization: Bearer ${QUAY_TOKEN}" \
+                -H "Content-Type: application/json" \
+                -d "{\"expiration\": ${expiry_ts}}" \
+                "$url") || true
+                
+              if [ "$http_code" = "200" ] || [ "$http_code" = "201" ]; then
+                echo "✓ Expiry set on: ${tag}"
+              else
+                echo "::warning::Failed to set expiry on ${tag} (HTTP ${http_code})"
+                sed -e 's/.*/  &/' /tmp/expiry_resp.txt 2>/dev/null || true
+              fi
+            done
+            
+            # List of per-arch tags to delete
+            per_arch_tags=(
+              "${SAFE_REF_TAG}-amd64"
+              "${SAFE_REF_TAG}-arm64"
+              "${SAFE_REF_TAG}-${SHORT_SHA}-amd64"
+              "${SAFE_REF_TAG}-${SHORT_SHA}-arm64"
+            )
+            
+            echo "Per-arch tags to clean up: ${per_arch_tags[*]}"
+            
+            for tag in "${per_arch_tags[@]}"; do
+              echo "Deleting per-arch tag: ${tag}"
+              url="https://quay.io/api/v1/repository/${REGISTRY_IMAGE}/tag/${tag}"
+              
+              http_code=$(curl -sS -o /tmp/delete_resp.txt -w "%{http_code}" -X DELETE \
+                -H "Authorization: Bearer ${QUAY_TOKEN}" \
+                "$url") || true
+                
+              if [ "$http_code" = "204" ] || [ "$http_code" = "404" ]; then
+                echo "✓ Deleted (or already gone): ${tag}"
+              else
+                echo "::warning::Failed to delete ${tag} (HTTP ${http_code})"
+                sed -e 's/.*/  &/' /tmp/delete_resp.txt 2>/dev/null || true
+              fi
+            done
+            
+            rm -f /tmp/delete_resp.txt /tmp/expiry_resp.txt
+            echo "Cleanup and expiry enforcement completed"
