@@ -65,17 +65,19 @@ test.describe("Test Keycloak plugin metrics", () => {
 
     console.log("Starting port-forward process...");
 
-    const service = await kubeClient.getServiceByLabel(
+    const services = await kubeClient.getServiceByLabel(
       namespace,
-      "app.kubernetes.io/name=backstage",
+      "app.kubernetes.io/instance=rhdh",
     );
-    const rhdhServiceName = service[0].metadata.name;
+    const rhdhMetricsServiceName = services.find((service) =>
+      service.spec?.ports.some((p) => p.port === 9464),
+    );
     portForward = spawn("/bin/sh", [
       "-c",
       `
       oc login --token="${process.env.K8S_CLUSTER_TOKEN}" --server="${process.env.K8S_CLUSTER_URL}" --insecure-skip-tls-verify=true &&
       kubectl config set-context --current --namespace="${namespace}" &&
-      kubectl port-forward service/${rhdhServiceName} 9464:9464 --namespace="${namespace}"
+      kubectl port-forward service/${rhdhMetricsServiceName} 9464:9464 --namespace="${namespace}"
     `,
     ]);
 
