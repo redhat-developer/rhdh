@@ -1,11 +1,33 @@
 #!/bin/bash
 
-set -e
+set -o errexit
+set -o errtrace
+set -o nounset
 export PS4='[$(date "+%Y-%m-%d %H:%M:%S")] ' # logs timestamp for every cmd.
 
 # Define log file names and directories.
 LOGFILE="test-log"
 export DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Set default values for OpenShift CI variables, unless populated by CI
+# This prevents nounset errors when running locally
+# https://docs.ci.openshift.org/docs/architecture/step-registry/#available-environment-variables
+# https://docs.prow.k8s.io/docs/jobs/#job-environment-variables
+export JOB_NAME="${JOB_NAME:-unknown-job}"
+export OPENSHIFT_CI="${OPENSHIFT_CI:-false}"
+export REPO_OWNER="${REPO_OWNER:-redhat-developer}"
+export REPO_NAME="${REPO_NAME:-rhdh}"
+export PULL_NUMBER="${PULL_NUMBER:-}"
+export BUILD_ID="${BUILD_ID:-unknown-build}"
+export RELEASE_BRANCH_NAME="${RELEASE_BRANCH_NAME:-main}"
+export K8S_CLUSTER_TOKEN="${K8S_CLUSTER_TOKEN:-}"
+export K8S_CLUSTER_URL="${K8S_CLUSTER_URL:-}"
+export SHARED_DIR="${SHARED_DIR:-$DIR/shared_dir}"
+export ARTIFACT_DIR="${ARTIFACT_DIR:-$DIR/artifact_dir}"
+mkdir -p "${SHARED_DIR}"
+mkdir -p "${ARTIFACT_DIR}"
+
+# Define variables for reporting
 export CURRENT_DEPLOYMENT=0 # Counter for current deployment.
 export STATUS_DEPLOYMENT_NAMESPACE # Array that holds the namespaces of deployments.
 export STATUS_FAILED_TO_DEPLOY # Array that indicates if deployment failed. false = success, true = failure
@@ -18,7 +40,7 @@ save_overall_result 0 # Initialize overall result to 0 (success).
 export OVERALL_RESULT
 
 # Define a cleanup function to be executed upon script exit.
-# shellcheck disable=SC2317
+# shellcheck disable=SC2329
 cleanup() {
   if [[ $? -ne 0 ]]; then
 
