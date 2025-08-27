@@ -27,7 +27,6 @@ plugins:
                 seconds: 15
               timeout:
                 minutes: 15
-
   - package: ./dynamic-plugins/dist/backstage-community-plugin-github-actions
     disabled: true
     pluginConfig:
@@ -179,7 +178,6 @@ plugins:
       catalog:
         providers:
           gitlab: {}
-
   - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-gitlab-org-dynamic
     disabled: true
     pluginConfig:
@@ -497,7 +495,8 @@ plugins:
                 menuItem:
                   icon: bulkImportIcon
                   text: Bulk import
-  # Global Header
+
+  # Group: Global Header
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-header
     disabled: false
     pluginConfig:
@@ -581,7 +580,7 @@ plugins:
                 importName: SupportButton
                 config:
                   priority: 10
-              
+
               - mountPoint: global.header/component
                 importName: NotificationButton
                 config:
@@ -666,7 +665,7 @@ plugins:
                 config:
                   priority: 100
 
-  # Homepage
+  # Group: Homepage
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-dynamic-home-page
     disabled: false
     pluginConfig:
@@ -710,7 +709,7 @@ plugins:
                     xs: { w: 12, h: 7.5 }
                     xxs: { w: 12, h: 13.5 }
 
-  # Techdocs
+  # Group: Techdocs
   - package: ./dynamic-plugins/dist/backstage-plugin-techdocs-backend-dynamic
     disabled: false
     pluginConfig:
@@ -776,7 +775,7 @@ plugins:
             techdocsAddons:
               - importName: ReportIssue
 
-  # PagerDuty
+  # Group: PagerDuty
   - package: ./dynamic-plugins/dist/pagerduty-backstage-plugin
     disabled: true
     pluginConfig:
@@ -805,7 +804,6 @@ plugins:
           subDomain: ${PAGERDUTY_SUBDOMAIN}
 
   # Standalone plugins
-
   - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-gerrit-dynamic
     disabled: true
 
@@ -824,6 +822,7 @@ plugins:
   - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-regex-dynamic
     disabled: false
 
+  # Group: RBAC
   - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
     disabled: true
     pluginConfig:
@@ -888,6 +887,7 @@ plugins:
                 timeout:
                   minutes: 50
 
+  # Group: BitBucket
   - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-bitbucket-cloud-dynamic
     disabled: true
   - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-bitbucket-cloud-dynamic
@@ -906,7 +906,6 @@ plugins:
                   minutes: 1
                 timeout:
                   minutes: 3
-
   - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-bitbucket-server-dynamic
     disabled: true
   - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-bitbucket-server-dynamic
@@ -1081,6 +1080,7 @@ plugins:
                     allOf:
                       - isLighthouseAvailable
 
+  # Group: TechRadar
   - package: ./dynamic-plugins/dist/backstage-community-plugin-tech-radar
     disabled: true
     pluginConfig:
@@ -1107,7 +1107,6 @@ plugins:
     pluginConfig:
       techRadar:
         url: ${TECH_RADAR_DATA_URL}
-
 
   - package: ./dynamic-plugins/dist/backstage-community-plugin-analytics-provider-segment
     disabled: false
@@ -1185,6 +1184,7 @@ plugins:
       catalog:
         providers:
           pingIdentityOrg: {}
+
   # Group: Marketplace
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-catalog-backend-module-marketplace-dynamic
     disabled: false
@@ -1250,6 +1250,8 @@ plugins:
       dynamicPlugins:
         frontend:
           red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets: { }
+
+  # Group: Adoption Insights
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-adoption-insights
     disabled: false
     pluginConfig:

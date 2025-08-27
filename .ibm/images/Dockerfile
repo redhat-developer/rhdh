@@ -1,6 +1,6 @@
 # Base image from Microsoft Playwright
 # Must stay pinned to a version which includes Nodejs 22
-FROM mcr.microsoft.com/playwright:v1.54.1-jammy
+FROM mcr.microsoft.com/playwright:v1.54.2-jammy
 
 # Set environment variables for the container
 ENV CI=1 \
@@ -8,7 +8,7 @@ ENV CI=1 \
     _X11_NO_MITSHM=1 \
     _MITSHM=0 \
     NODE_PATH=/usr/local/lib/node_modules \
-    HELM_VERSION="v3.12.3" \
+    HELM_VERSION="v3.17.2" \
     OC_VERSION="4.14.3" \
     OCM_VERSION="0.1.76" \
     GO_VERSION="1.19" \

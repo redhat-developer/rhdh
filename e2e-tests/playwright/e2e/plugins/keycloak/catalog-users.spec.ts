@@ -5,8 +5,7 @@ import { Common } from "../../../utils/common";
 import { test, expect } from "@playwright/test";
 import { KubeClient } from "../../../utils/kube-client";
 
-test.describe.skip("Test Keycloak plugin", () => {
-  // Skipping this test due to https://issues.redhat.com/browse/RHIDP-6844
+test.describe("Test Keycloak plugin", () => {
   let uiHelper: UIhelper;
   let keycloak: Keycloak;
   let common: Common;

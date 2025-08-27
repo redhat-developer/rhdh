@@ -103,11 +103,20 @@ test.describe("Admin > Extensions > Catalog", () => {
     permissions: ["clipboard-read", "clipboard-write"],
   });
 
-  test("Verify plugin configuration can be viewed", async ({ page }) => {
+  test("Verify plugin configuration can be viewed in the production environment", async ({
+    page,
+  }) => {
+    const productionEnvAlert = page
+      .locator('div[class*="MuiAlertTitle-root"]')
+      .first();
+    productionEnvAlert.getByText(
+      "Plugin installation is disabled in the production environment.",
+      { exact: true },
+    );
     await uiHelper.searchInputPlaceholder("Topology");
     await page.getByRole("heading", { name: "Topology" }).first().click();
     await uiHelper.clickButton("View");
-    await uiHelper.verifyHeading("Install Application Topology for Kubernetes");
+    await uiHelper.verifyHeading("Application Topology for Kubernetes");
     await uiHelper.verifyText(
       "- package: ./dynamic-plugins/dist/backstage-community-plugin-topology",
     );
@@ -128,8 +137,8 @@ test.describe("Admin > Extensions > Catalog", () => {
     await page.keyboard.press(`${modifier}+KeyA`);
     await page.keyboard.press(`${modifier}+KeyV`);
     await uiHelper.verifyText("pluginConfig:");
-    await page.locator("button[class^='copy-button']").click();
-    await expect(page.getByRole("button", { name: "✔" }).nth(1)).toBeVisible();
+    await page.locator("button[class^='copy-button']").nth(0).click();
+    await expect(page.getByRole("button", { name: "✔" }).nth(0)).toBeVisible();
     const clipboardContent = await page.evaluate(() =>
       navigator.clipboard.readText(),
     );

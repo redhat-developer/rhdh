@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2034
 set -a  # Automatically export all variables
 
 #ENVS and Vault Secrets
@@ -33,8 +34,7 @@ NAME_SPACE_RUNTIME="${NAME_SPACE_RUNTIME:-showcase-runtime}"
 NAME_SPACE_POSTGRES_DB="${NAME_SPACE_POSTGRES_DB:-postgress-external-db}"
 NAME_SPACE_SANITY_PLUGINS_CHECK="showcase-sanity-plugins"
 OPERATOR_MANAGER='rhdh-operator'
-CHART_MAJOR_VERSION=1.7
-CHART_VERSION_BASE="1.5.2"
+CHART_MAJOR_VERSION="1.7"
 GITHUB_APP_APP_ID=$(cat /tmp/secrets/GITHUB_APP_3_APP_ID)
 GITHUB_APP_CLIENT_ID=$(cat /tmp/secrets/GITHUB_APP_3_CLIENT_ID)
 GITHUB_APP_PRIVATE_KEY=$(cat /tmp/secrets/GITHUB_APP_3_PRIVATE_KEY)
@@ -99,15 +99,8 @@ RDS_2_HOST=$(cat /tmp/secrets/RDS_2_HOST)
 RDS_3_HOST=$(cat /tmp/secrets/RDS_3_HOST)
 
 JUNIT_RESULTS="junit-results.xml"
-DATA_ROUTER_URL=$(cat /tmp/secrets/DATA_ROUTER_URL)
-DATA_ROUTER_USERNAME=$(cat /tmp/secrets/DATA_ROUTER_USERNAME)
-DATA_ROUTER_PASSWORD=$(cat /tmp/secrets/DATA_ROUTER_PASSWORD)
-DATA_ROUTER_PROJECT="main"
-DATA_ROUTER_AUTO_FINALIZATION_TRESHOLD=$(cat /tmp/secrets/DATA_ROUTER_AUTO_FINALIZATION_TRESHOLD)
-DATA_ROUTER_NEXUS_HOSTNAME=$(cat /tmp/secrets/DATA_ROUTER_NEXUS_HOSTNAME)
-REPORTPORTAL_HOSTNAME=$(cat /tmp/secrets/REPORTPORTAL_HOSTNAME)
+
 SLACK_DATA_ROUTER_WEBHOOK_URL=$(cat /tmp/secrets/SLACK_DATA_ROUTER_WEBHOOK_URL)
-SLACK_NIGHTLY_WEBHOOK_URL=$(cat /tmp/secrets/SLACK_NIGHTLY_WEBHOOK_URL)
 REDIS_USERNAME=temp
 REDIS_USERNAME_ENCODED=$(printf "%s" $REDIS_USERNAME | base64 | tr -d '\n')
 REDIS_PASSWORD=test123
@@ -122,13 +115,12 @@ GKE_CERT_NAME=$(cat /tmp/secrets/GKE_CERT_NAME)
 GOOGLE_CLOUD_PROJECT=$(cat /tmp/secrets/GOOGLE_CLOUD_PROJECT)
 
 # EKS variables
-EKS_INSTANCE_DOMAIN_NAME=$(cat /tmp/secrets/EKS_INSTANCE_DOMAIN_NAME)
 AWS_ACCESS_KEY_ID=$(cat /tmp/secrets/AWS_ACCESS_KEY_ID)
 AWS_SECRET_ACCESS_KEY=$(cat /tmp/secrets/AWS_SECRET_ACCESS_KEY)
 AWS_DEFAULT_REGION=$(cat /tmp/secrets/AWS_DEFAULT_REGION)
+AWS_EKS_PARENT_DOMAIN=$(cat /tmp/secrets/AWS_EKS_PARENT_DOMAIN)
 
 # authentication providers variables
-
 RHBK_BASE_URL=$(cat /tmp/secrets/AUTH_PROVIDERS_RHBK_BASE_URL)
 RHBK_CLIENT_SECRET=$(cat /tmp/secrets/AUTH_PROVIDERS_RHBK_CLIENT_SECRET)
 RHBK_CLIENT_ID=$(cat /tmp/secrets/AUTH_PROVIDERS_RHBK_CLIENT_ID)
@@ -175,5 +167,7 @@ GITHUB_OAUTH_APP_ID=$(cat /tmp/secrets/GITHUB_OAUTH_APP_ID)
 GITHUB_OAUTH_APP_SECRET=$(cat /tmp/secrets/GITHUB_OAUTH_APP_SECRET)
 GITHUB_OAUTH_APP_ID_ENCODED=$(printf "%s" $GITHUB_OAUTH_APP_ID | base64 | tr -d '\n')
 GITHUB_OAUTH_APP_SECRET_ENCODED=$(printf "%s" $GITHUB_OAUTH_APP_SECRET | base64 | tr -d '\n')
+
+BACKEND_SECRET=$(printf temp | base64 | tr -d '\n')
 
 set +a  # Stop automatically exporting variables

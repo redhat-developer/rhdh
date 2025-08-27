@@ -15,7 +15,7 @@
 
 # Stage 1 - Build nodejs skeleton
 # https://registry.access.redhat.com/ubi9/nodejs-22
-FROM registry.access.redhat.com/ubi9/nodejs-22:9.6-1752540070 AS skeleton
+FROM registry.access.redhat.com/ubi9/nodejs-22:9.6-1755075210 AS skeleton
 # hadolint ignore=DL3002
 USER 0
 
@@ -45,7 +45,7 @@ RUN dnf install -q -y --allowerasing --nobest \
   python3-subscription-manager-rhsm python3-systemd python3-urllib3 readline redhat-release rootfiles rpm rpm-build-libs rpm-libs rpm-plugin-selinux rpm-sign-libs rsync scl-utils \
   sed selinux-policy selinux-policy-targeted setup shadow-utils skopeo slirp4netns sqlite-libs subscription-manager subscription-manager-rhsm-certificates systemd systemd-libs \
   systemd-pam systemd-rpm-macros tar tcl tpm2-tss tzdata unzip usermode util-linux util-linux-core vim-filesystem vim-minimal virt-what which xz xz-libs yajl yum zlib zlib-devel && \
-
+  \
   # '(micro)dnf update -y' not allowed in Konflux+Cachi2: instead use renovate or https://github.com/konflux-ci/rpm-lockfile-prototype to update the rpms.lock.yaml file
   dnf clean all
 
@@ -202,7 +202,7 @@ RUN \
 
 # Stage 5 - Build the runner image
 # https://registry.access.redhat.com/ubi9/nodejs-22-minimal
-FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:9.6-1752501970 AS runner
+FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:9.6-1754870984 AS runner
 USER 0
 
 ENV EXTERNAL_SOURCE_NESTED=.
@@ -243,8 +243,7 @@ COPY $EXTERNAL_SOURCE_NESTED/catalog-entities/marketplace /marketplace/catalog-e
 
 # Copy script to gather dynamic plugins; copy embedded dynamic plugins to root folder; fix permissions
 COPY docker/install-dynamic-plugins.py docker/install-dynamic-plugins.sh ./
-RUN chmod -R a+r ./install-dynamic-plugins.py; \
-  chmod -R a+rx ./install-dynamic-plugins.sh
+RUN chmod -R a+rx ./install-dynamic-plugins.*
 
 # The existence of the index.html.tmpl tells Backstage to take that file and load it into memory, inject the needed appConfig (instead of writing
 # it into a random *.chunk.js file, and then serve that file from memory so that we can set the readOnlyRootFilesystem: true option for

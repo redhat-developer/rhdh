@@ -47,6 +47,6 @@ test.describe.serial("GitHub integration with Org data fetching", () => {
     await uiHelper.selectMuiBox("Kind", "User");
 
     await uiHelper.searchInputPlaceholder("r");
-    await uiHelper.verifyRowsInTable(["rhdh-qe"]);
+    await uiHelper.verifyRowsInTable(["rhdh-qe rhdh-qe"]);
   });
 });

@@ -62,11 +62,13 @@ spec:
     - ./rbac.yaml
     - ./redhat-argocd.yaml
     - ./regex-scaffolder-actions.yaml
+    - ./quickstart.yaml
     - ./roadie-argocd.yaml
     - ./roadie-scaffolder-util-actions.yaml
     - ./scaffolder-integrations.yaml
     - ./scaffolder-relation-processor-catalog-integration.yaml
     - ./security-insights.yaml
+    - ./servicenow.yaml
     - ./servicenow-scaffolder-actions.yaml
     - ./signals.yaml
     - ./signals-backend.yaml
@@ -77,3 +79,4 @@ spec:
     - ./tekton.yaml
     - ./topology.yaml
     - ./lightspeed.yaml
+    - ./ibm-apiconnect-backstage.yaml

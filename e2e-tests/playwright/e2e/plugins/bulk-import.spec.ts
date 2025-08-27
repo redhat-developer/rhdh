@@ -11,7 +11,6 @@ import {
 
 // Pre-req : plugin-bulk-import & plugin-bulk-import-backend-dynamic
 test.describe.serial("Bulk Import plugin", () => {
-  test.fixme(); // TODO: Fix failing tests - https://issues.redhat.com/browse/RHDHBUGS-1869
   test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
   let page: Page;
   let uiHelper: UIhelper;
@@ -270,11 +269,11 @@ test.describe
     ]);
   });
 
-  test('Verify repo from "register existing component"  are displayed in bulk import Added repositories', async () => {
-    // Register Existing Component
+  test('Verify repo from "import an existing git repository"  are displayed in bulk import Added repositories', async () => {
+    // Import an existing Git repository
     await uiHelper.openSidebar("Catalog");
     await uiHelper.clickButton("Self-service");
-    await uiHelper.clickButton("Register Existing Component");
+    await uiHelper.clickButton("Import an existing Git repository");
     await catalogImport.registerExistingComponent(
       existingComponentDetails.url,
       true,

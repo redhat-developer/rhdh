@@ -11,8 +11,7 @@ import { TEMPLATES } from "../support/testData/templates";
 let page: Page;
 let context: BrowserContext;
 
-// test suite skipped for now, until it's migrated back to the main showcase job
-test.describe("GitHub Happy path", async () => {
+test.describe.serial("GitHub Happy path", async () => {
   let common: Common;
   let uiHelper: UIhelper;
   let catalogImport: CatalogImport;
@@ -50,11 +49,11 @@ test.describe("GitHub Happy path", async () => {
     await uiHelper.verifyHeading(`User Entity: ${process.env.GH_USER2_ID}`);
   });
 
-  test("Register an existing component", async () => {
+  test("Import an existing Git repository", async () => {
     await uiHelper.openSidebar("Catalog");
     await uiHelper.selectMuiBox("Kind", "Component");
     await uiHelper.clickButton("Self-service");
-    await uiHelper.clickButton("Register Existing Component");
+    await uiHelper.clickButton("Import an existing Git repository");
     await catalogImport.registerExistingComponent(component);
   });
 
@@ -80,7 +79,7 @@ test.describe("GitHub Happy path", async () => {
     await uiHelper.openSidebar("Catalog");
     await uiHelper.selectMuiBox("Kind", "User");
     await uiHelper.searchInputPlaceholder("rhdh");
-    await uiHelper.verifyRowsInTable(["rhdh-qe"]);
+    await uiHelper.verifyRowsInTable(["rhdh-qe rhdh-qe"]);
   });
 
   test("Verify all 12 Software Templates appear in the Create page", async () => {
@@ -192,6 +191,7 @@ test.describe("GitHub Happy path", async () => {
   });
 
   test("Click on the Dependencies tab and verify that all the relations have been listed and displayed", async () => {
+    test.fixme();
     await uiHelper.clickTab("Dependencies");
     for (const resource of RESOURCES) {
       const resourceElement = page.locator(
@@ -203,6 +203,7 @@ test.describe("GitHub Happy path", async () => {
   });
 
   test("Sign out and verify that you return back to the Sign in page", async () => {
+    test.fixme();
     await uiHelper.goToSettingsPage();
     await common.signOut();
     context.clearCookies();

@@ -19,6 +19,7 @@ test.describe("CustomTheme should be applied", () => {
     themeVerifier = new ThemeVerifier(page);
 
     await common.loginAsGuest();
+    await page.getByRole("button", { name: "Hide" }).click();
   });
 
   // eslint-disable-next-line no-empty-pattern
@@ -46,7 +47,7 @@ test.describe("CustomTheme should be applied", () => {
     );
   });
 
-  test("Verify that RHDH SidebarLogo can be customized", async () => {
+  test("Verify that RHDH CompanyLogo can be customized", async () => {
     await themeVerifier.setTheme("Light");
 
     expect(await page.getByTestId("home-logo").getAttribute("src")).toEqual(
@@ -57,6 +58,17 @@ test.describe("CustomTheme should be applied", () => {
     expect(await page.getByTestId("home-logo").getAttribute("src")).toEqual(
       CUSTOM_SIDEBAR_LOGO.DARK,
     );
+  });
+
+  test("Verify logo link", async () => {
+    expect(
+      await page
+        .getByTestId("global-header-company-logo")
+        .locator("a")
+        .getAttribute("href"),
+    ).toEqual("/");
+    await page.getByTestId("global-header-company-logo").click();
+    await expect(page).toHaveURL("/");
   });
 
   test("Verify that title for Backstage can be customized", async () => {
