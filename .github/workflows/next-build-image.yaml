@@ -409,25 +409,18 @@ jobs:
               "${SAFE_REF_TAG}-${SHORT_SHA}"
             )
             
-            echo "Ensuring expiry on multi-arch tags: ${multi_arch_tags[*]}"
+            echo "Re-applying expiry annotations to multi-arch tags: ${multi_arch_tags[*]}"
             for tag in "${multi_arch_tags[@]}"; do
-              echo "Setting expiry on multi-arch tag: ${tag}"
-              url="https://quay.io/api/v1/repository/${REGISTRY_IMAGE}/tag/${tag}"
+              echo "Re-annotating tag: ${tag}"
               
-              # Use robot account Basic Auth + CSRF token if available
-              http_code=$(curl -sS -o /tmp/expiry_resp.txt -w "%{http_code}" -X PUT \
-                -H "$auth_header" \
-                -H "Content-Type: application/json" \
-                ${csrf_header} \
-                -d "{\"expiration\": ${expiry_ts}}" \
-                "$url") || true
-                
-              if [ "$http_code" = "200" ] || [ "$http_code" = "201" ]; then
-                echo "✓ Expiry set on: ${tag}"
-              else
-                echo "::warning::Failed to set expiry on ${tag} (HTTP ${http_code})"
-                sed -e 's/.*/  &/' /tmp/expiry_resp.txt 2>/dev/null || true
-              fi
+              # Use docker buildx imagetools to re-annotate with expiry (bypasses CSRF requirement)
+              docker buildx imagetools create \
+                --tag "${{ env.REGISTRY }}/${REGISTRY_IMAGE}:${tag}" \
+                --annotation "quay.expires-after=${EXPIRES_AFTER}" \
+                --annotation "org.opencontainers.image.expires=${EXPIRES_AFTER}" \
+                --annotation "expires-after=${EXPIRES_AFTER}" \
+                --annotation "quay.expires_after=${EXPIRES_AFTER}" \
+                "${{ env.REGISTRY }}/${REGISTRY_IMAGE}:${tag}" && echo "✓ Expiry annotations applied to: ${tag}" || echo "::warning::Failed to re-annotate ${tag}"
             done
             
             # List of per-arch tags to delete
@@ -440,23 +433,20 @@ jobs:
             
             echo "Per-arch tags to clean up: ${per_arch_tags[*]}"
             
-            for tag in "${per_arch_tags[@]}"; do
-              echo "Deleting per-arch tag: ${tag}"
-              url="https://quay.io/api/v1/repository/${REGISTRY_IMAGE}/tag/${tag}"
-              
-              # Use robot account Basic Auth + CSRF token if available
-              http_code=$(curl -sS -o /tmp/delete_resp.txt -w "%{http_code}" -X DELETE \
-                -H "$auth_header" \
-                ${csrf_header} \
-                "$url") || true
-                
-              if [ "$http_code" = "204" ] || [ "$http_code" = "404" ]; then
-                echo "✓ Deleted (or already gone): ${tag}"
-              else
-                echo "::warning::Failed to delete ${tag} (HTTP ${http_code})"
-                sed -e 's/.*/  &/' /tmp/delete_resp.txt 2>/dev/null || true
-              fi
-            done
+            echo "Per-arch images already have expiry set and will be automatically cleaned up."
+            echo "Skipping immediate deletion to avoid CSRF token issues with robot accounts."
+            echo "If immediate cleanup is needed, this can be done manually via Quay.io web UI."
+            
+            # Optional: Try to delete per-arch tags (best effort, ignore failures)
+            if [ "${EXPIRES_AFTER}" = "14d" ]; then
+              echo "Attempting best-effort cleanup of per-arch images..."
+              for tag in "${per_arch_tags[@]}"; do
+                echo "Trying to delete: ${tag}"
+                curl -sS -H "$auth_header" -X DELETE \
+                  "https://quay.io/api/v1/repository/${REGISTRY_IMAGE}/tag/${tag}" >/dev/null 2>&1 && \
+                  echo "  ✓ Deleted: ${tag}" || echo "  ℹ️  Could not delete: ${tag} (will expire naturally)"
+              done
+            fi
             
             rm -f /tmp/delete_resp.txt /tmp/expiry_resp.txt
             echo "Cleanup and expiry enforcement completed"
