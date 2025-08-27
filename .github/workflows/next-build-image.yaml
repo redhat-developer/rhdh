@@ -17,6 +17,15 @@ name: Build Next and Tag Image
 on:
   # workflow_dispatch so that it can be triggered manually if needed
   workflow_dispatch:
+    inputs:
+      registry_image:
+        description: "Target registry/repository (e.g., polasudo/testing)"
+        required: false
+        default: "polasudo/testing"
+      test_cleanup:
+        description: "Enable cleanup testing (true/false)"
+        required: false
+        default: "true"
   schedule:
     # run at 3:18 UTC every day
     - cron: "18 3 * * *"
@@ -36,7 +45,7 @@ concurrency:
 
 env:
   REGISTRY: quay.io
-  REGISTRY_IMAGE: rhdh-community/rhdh
+  REGISTRY_IMAGE: polasudo/testing
 
 jobs:
   build-image:
@@ -103,6 +112,12 @@ jobs:
             expires_after="14d"  # Short expiry for feature branches and other temporary builds
           fi
           echo "EXPIRES_AFTER=$expires_after" >> $GITHUB_ENV
+
+          # allow overriding target image when manually dispatched for testing
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.registry_image }}" ]; then
+            echo "REGISTRY_IMAGE=${{ inputs.registry_image }}" >> $GITHUB_ENV
+            echo "Using test registry: ${{ inputs.registry_image }}"
+          fi
 
       - name: Check Quay credentials
         run: |
@@ -219,6 +234,12 @@ jobs:
             fi
             echo "EXPIRES_AFTER=$expires_after" >> $GITHUB_ENV
 
+            # allow overriding target image when manually dispatched for testing
+            if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.registry_image }}" ]; then
+              echo "REGISTRY_IMAGE=${{ inputs.registry_image }}" >> $GITHUB_ENV
+              echo "Using test registry: ${{ inputs.registry_image }}"
+            fi
+
         - name: Check Quay credentials
           run: |
             if [ "${{ env.HAS_QUAY_AUTH }}" != "true" ]; then
@@ -311,7 +332,7 @@ jobs:
             docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:${{ steps.meta-release.outputs.version }}
 
         - name: Clean up per-arch images and ensure expiry on multi-arch tags
-          if: env.HAS_QUAY_AUTH == 'true'
+          if: env.HAS_QUAY_AUTH == 'true' && (github.event_name != 'workflow_dispatch' || inputs.test_cleanup == 'true')
           env:
             REGISTRY_IMAGE: ${{ env.REGISTRY_IMAGE }}
             REF_NAME: ${{ env.REF_NAME }}
