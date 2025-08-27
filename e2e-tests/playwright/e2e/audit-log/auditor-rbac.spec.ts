@@ -23,18 +23,19 @@ let rbacApi: RhdhRbacApi;
 /* ======================================================================== */
 
 test.describe("Auditor check for RBAC Plugin", () => {
-  ReportingApi.addAttributes([
-    {
-      key: "component",
-      value: "audit-log",
-    },
-  ]);
-
   test.fixme(
     process.env.IS_OPENSHIFT === "false",
     "Failing on Kubernetes clusters, fix https://issues.redhat.com/browse/RHIDP-7559",
   );
+
   test.beforeAll(async ({ browser }, testInfo) => {
+    ReportingApi.addAttributes([
+      {
+        key: "component",
+        value: "audit-log",
+      },
+    ]);
+
     await (await import("./log-utils")).LogUtils.loginToOpenShift();
     const page = (await setupBrowser(browser, testInfo)).page;
     common = new Common(page);

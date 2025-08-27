@@ -13,18 +13,19 @@ import { Catalog } from "../../../support/pages/catalog";
 //          The old janus-idp.io/tekton annotation is deprecated but still supported!
 
 test.describe("Test Tekton plugin", () => {
-  ReportingApi.addAttributes([
-    {
-      key: "component",
-      value: "plugins",
-    },
-  ]);
   let common: Common;
   let uiHelper: UIhelper;
   let tekton: Tekton;
   let catalog: Catalog;
 
   test.beforeAll(async ({ browser }, testInfo) => {
+    ReportingApi.addAttributes([
+      {
+        key: "component",
+        value: "plugins",
+      },
+    ]);
+
     const page = (await setupBrowser(browser, testInfo)).page;
     common = new Common(page);
     await common.loginAsGuest();

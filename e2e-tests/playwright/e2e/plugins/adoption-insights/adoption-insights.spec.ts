@@ -5,12 +5,15 @@ import { UIhelper } from "../../../utils/ui-helper";
 import { TestHelper } from "../../../support/pages/adoption-insights";
 
 test.describe.serial("Test Adoption Insights", () => {
-  ReportingApi.addAttributes([
-    {
-      key: "component",
-      value: "plugins",
-    },
-  ]);
+  test.beforeAll(async () => {
+    ReportingApi.addAttributes([
+      {
+        key: "component",
+        value: "plugins",
+      },
+    ]);
+  });
+
   test.describe
     .serial("Test Adoption Insights plugin: load permission policies and conditions from files", () => {
     let context;

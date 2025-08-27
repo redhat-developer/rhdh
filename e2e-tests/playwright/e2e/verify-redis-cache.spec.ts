@@ -6,12 +6,14 @@ import Redis from "ioredis";
 import { ChildProcessWithoutNullStreams, exec, spawn } from "child_process";
 
 test.describe("Verify Redis Cache DB", () => {
-  ReportingApi.addAttributes([
-    {
-      key: "component",
-      value: "core",
-    },
-  ]);
+  test.beforeAll(async () => {
+    ReportingApi.addAttributes([
+      {
+        key: "component",
+        value: "core",
+      },
+    ]);
+  });
 
   test.describe.configure({ mode: "serial" });
   let common: Common;

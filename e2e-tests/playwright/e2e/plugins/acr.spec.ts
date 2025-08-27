@@ -5,12 +5,15 @@ import { Common, setupBrowser } from "../../utils/common";
 
 let page;
 test.describe("Test ACR plugin", () => {
-  ReportingApi.addAttributes([
-    {
-      key: "component",
-      value: "plugins",
-    },
-  ]);
+  test.beforeAll(async () => {
+    ReportingApi.addAttributes([
+      {
+        key: "component",
+        value: "plugins",
+      },
+    ]);
+  });
+
   let uiHelper: UIhelper;
   let common: Common;
   const dateRegex =

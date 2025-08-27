@@ -5,12 +5,14 @@ import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { runAccessibilityTests } from "../utils/accessibility";
 
 test.describe("Learning Paths", () => {
-  ReportingApi.addAttributes([
-    {
-      key: "component",
-      value: "core",
-    },
-  ]);
+  test.beforeAll(async () => {
+    ReportingApi.addAttributes([
+      {
+        key: "component",
+        value: "core",
+      },
+    ]);
+  });
 
   let common: Common;
   let uiHelper: UIhelper;

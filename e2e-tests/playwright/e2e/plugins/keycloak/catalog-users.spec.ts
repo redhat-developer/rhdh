@@ -7,18 +7,19 @@ import { test, expect } from "@playwright/test";
 import { KubeClient } from "../../../utils/kube-client";
 
 test.describe("Test Keycloak plugin", () => {
-  ReportingApi.addAttributes([
-    {
-      key: "component",
-      value: "plugins",
-    },
-  ]);
   let uiHelper: UIhelper;
   let keycloak: Keycloak;
   let common: Common;
   let token: string;
 
   test.beforeAll(async () => {
+    ReportingApi.addAttributes([
+      {
+        key: "component",
+        value: "plugins",
+      },
+    ]);
+
     keycloak = new Keycloak();
     token = await keycloak.getAuthenticationToken();
   });

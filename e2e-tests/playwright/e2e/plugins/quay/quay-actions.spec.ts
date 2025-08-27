@@ -6,12 +6,6 @@ import { UI_HELPER_ELEMENTS } from "../../../support/pageObjects/global-obj";
 import { QuayClient } from "../../../utils/quay/quay-client";
 
 test.describe("Test Quay Actions plugin", () => {
-  ReportingApi.addAttributes([
-    {
-      key: "component",
-      value: "plugins",
-    },
-  ]);
   let common: Common;
   let uiHelper: UIhelper;
   let page: Page;
@@ -19,6 +13,13 @@ test.describe("Test Quay Actions plugin", () => {
   let repository: string;
 
   test.beforeAll(async ({ browser }, testInfo) => {
+    ReportingApi.addAttributes([
+      {
+        key: "component",
+        value: "plugins",
+      },
+    ]);
+
     page = (await setupBrowser(browser, testInfo)).page;
     common = new Common(page);
     uiHelper = new UIhelper(page);

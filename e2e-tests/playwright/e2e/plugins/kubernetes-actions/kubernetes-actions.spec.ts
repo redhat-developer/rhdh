@@ -6,12 +6,6 @@ import { KubeClient } from "../../../utils/kube-client";
 import { UI_HELPER_ELEMENTS } from "../../../support/pageObjects/global-obj";
 
 test.describe("Test Kubernetes Actions plugin", () => {
-  ReportingApi.addAttributes([
-    {
-      key: "component",
-      value: "plugins",
-    },
-  ]);
   let common: Common;
   let uiHelper: UIhelper;
   let page: Page;
@@ -19,6 +13,13 @@ test.describe("Test Kubernetes Actions plugin", () => {
   let namespace: string;
 
   test.beforeAll(async ({ browser }, testInfo) => {
+    ReportingApi.addAttributes([
+      {
+        key: "component",
+        value: "plugins",
+      },
+    ]);
+
     page = (await setupBrowser(browser, testInfo)).page;
     common = new Common(page);
     uiHelper = new UIhelper(page);
