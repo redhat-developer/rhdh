@@ -64,14 +64,18 @@ save_container_platform() {
   cp "$SHARED_DIR/CONTAINER_PLATFORM_VERSION.txt" "$ARTIFACT_DIR/reporting/CONTAINER_PLATFORM_VERSION.txt"
 }
 
-# Align this function with the one in https://github.com/openshift/release/blob/master/ci-operator/step-registry/redhat-developer/rhdh/send/alert/redhat-developer-rhdh-send-alert-commands.sh
 get_artifacts_url() {
-  local project="${1:-""}"
+  local namespace=$1
+
+  if [ -z "${namespace}" ]; then
+    echo "ERROR: namespace parameter is required but was empty" >&2
+    return 1
+  fi
 
   local artifacts_base_url="https://gcsweb-ci.apps.ci.l2s4.p1.openshiftapps.com/gcs/test-platform-results"
   local artifacts_complete_url
   if [ -n "${PULL_NUMBER:-}" ]; then
-    artifacts_complete_url="${artifacts_base_url}/pr-logs/pull/${REPO_OWNER}_${REPO_NAME}/${PULL_NUMBER}/${JOB_NAME}/${BUILD_ID}/artifacts/e2e-tests/${REPO_OWNER}-${REPO_NAME}/artifacts/${project}"
+    artifacts_complete_url="${artifacts_base_url}/pr-logs/pull/${REPO_OWNER}_${REPO_NAME}/${PULL_NUMBER}/${JOB_NAME}/${BUILD_ID}/artifacts/e2e-tests/${REPO_OWNER}-${REPO_NAME}/artifacts/${namespace}"
   else
     local part_1="${JOB_NAME##periodic-ci-redhat-developer-rhdh-"${RELEASE_BRANCH_NAME}"-}" # e.g. "e2e-tests-aks-helm-nightly"
     local suite_name="${JOB_NAME##periodic-ci-redhat-developer-rhdh-"${RELEASE_BRANCH_NAME}"-e2e-tests-}" # e.g. "aks-helm-nightly"
@@ -85,7 +89,7 @@ get_artifacts_url() {
       part_2="redhat-developer-rhdh-nightly"
       ;;
     esac
-    artifacts_complete_url="${artifacts_base_url}/logs/${JOB_NAME}/${BUILD_ID}/artifacts/${part_1}/${part_2}/artifacts/${project}"
+    artifacts_complete_url="${artifacts_base_url}/logs/${JOB_NAME}/${BUILD_ID}/artifacts/${part_1}/${part_2}/artifacts/${namespace}"
   fi
   echo "${artifacts_complete_url}"
 }
@@ -105,17 +109,17 @@ save_data_router_junit_results() {
   if [[ "${OPENSHIFT_CI}" != "true" ]]; then return 0; fi
   if [[ "${JOB_NAME}" == *rehearse* ]]; then return 0; fi
 
-  local project=$1
+  local namespace=$1
 
-  ARTIFACTS_URL=$(get_artifacts_url)
+  ARTIFACTS_URL=$(get_artifacts_url "${namespace}")
 
   # Replace attachments with link to OpenShift CI storage
-  sed_inplace "s#\[\[ATTACHMENT|\(.*\)\]\]#${ARTIFACTS_URL}/\1#g" "${ARTIFACT_DIR}/${project}/${JUNIT_RESULTS}"
+  sed_inplace "s#\[\[ATTACHMENT|\(.*\)\]\]#${ARTIFACTS_URL}/\1#g" "${ARTIFACT_DIR}/${namespace}/${JUNIT_RESULTS}"
 
   # Copy the metadata and JUnit results files to the shared directory
-  cp "${ARTIFACT_DIR}/${project}/${JUNIT_RESULTS}" "${SHARED_DIR}/junit-results-${project}.xml"
+  cp "${ARTIFACT_DIR}/${namespace}/${JUNIT_RESULTS}" "${SHARED_DIR}/junit-results-${namespace}.xml"
 
-  echo "🗃️ JUnit results for ${project} adapted to Data Router format and saved to ARTIFACT_DIR and copied to SHARED_DIR"
+  echo "🗃️ JUnit results for ${namespace} adapted to Data Router format and saved to ARTIFACT_DIR and copied to SHARED_DIR"
   echo "Shared directory contents:"
   ls -la "${SHARED_DIR}"
 }
