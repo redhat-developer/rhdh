@@ -332,6 +332,21 @@ npx playwright test --project showcase-auth-providers --workers 1
 
 ## Key Dependencies and Common Issues
 
+### System Dependencies
+
+#### macOS Requirements
+**Important**: macOS users need to use GNU `grep` and GNU `sed` instead of the built-in BSD versions to avoid compatibility issues with scripts and CI/CD pipelines.
+
+Install using Homebrew:
+```bash
+brew install grep
+brew install gnu-sed
+```
+
+**Important**: Make sure to set the GNU versions as default to ensure they are used instead of the built-in macOS versions.
+
+**Note**: The built-in macOS versions of these tools may cause issues when running scripts or tests that expect GNU-compatible behavior.
+
 ### External Services
 
 #### Required Services
