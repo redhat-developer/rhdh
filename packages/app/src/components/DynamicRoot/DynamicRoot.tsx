@@ -17,6 +17,14 @@ import {
   identityApiRef,
 } from '@backstage/core-plugin-api';
 
+import {
+  bindAppRoutes,
+  configIfToCallable,
+  DynamicPluginConfig,
+  DynamicRoute,
+  extractDynamicConfig,
+  MenuIcon,
+} from '@red-hat-developer-hub/app-utils';
 import { useThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 import DynamicRootContext, {
   ComponentRegistry,
@@ -26,23 +34,16 @@ import DynamicRootContext, {
   MountPoints,
   ResolvedDynamicRoute,
   ResolvedDynamicRouteMenuItem,
-  ScaffolderFieldExtension,
-  TechdocsAddon,
+  ResolvedScaffolderFieldExtension,
+  ResolvedTechdocsAddon,
 } from '@red-hat-developer-hub/plugin-utils';
 import { AppsConfig } from '@scalprum/core';
 import { useScalprum } from '@scalprum/react-core';
 
 import { catalogImportTranslations } from '../../translations/catalog-import/catalog-import';
 import { scaffolderTranslations } from '../../translations/scaffolder/scaffolder';
-import bindAppRoutes from '../../utils/dynamicUI/bindAppRoutes';
-import extractDynamicConfig, {
-  configIfToCallable,
-  DynamicPluginConfig,
-  DynamicRoute,
-} from '../../utils/dynamicUI/extractDynamicConfig';
 import initializeRemotePlugins from '../../utils/dynamicUI/initializeRemotePlugins';
 import { catalogTranslations } from '../catalog/translations/catalog';
-import { MenuIcon } from '../Root/MenuIcon';
 import CommonIcons from './CommonIcons';
 import defaultAppComponents from './defaultAppComponents';
 import Loader from './Loader';
@@ -440,7 +441,7 @@ export const DynamicRoot = ({
     );
 
     const scaffolderFieldExtensionComponents = scaffolderFieldExtensions.reduce<
-      ScaffolderFieldExtension[]
+      ResolvedScaffolderFieldExtension[]
     >((acc, { scope, module, importName }) => {
       const extensionComponent = allPlugins[scope]?.[module]?.[importName];
       if (extensionComponent) {
@@ -459,29 +460,28 @@ export const DynamicRoot = ({
       return acc;
     }, []);
 
-    const techdocsAddonComponents = techdocsAddons.reduce<TechdocsAddon[]>(
-      (acc, { scope, module, importName, config }) => {
-        const extensionComponent = allPlugins[scope]?.[module]?.[importName];
-        if (extensionComponent) {
-          acc.push({
-            scope,
-            module,
-            importName,
-            Component: extensionComponent as React.ComponentType<unknown>,
-            config: {
-              ...config,
-            },
-          });
-        } else {
-          // eslint-disable-next-line no-console
-          console.warn(
-            `Plugin ${scope} is not configured properly: ${module}.${importName} not found, ignoring techdocsAddon: ${importName}`,
-          );
-        }
-        return acc;
-      },
-      [],
-    );
+    const techdocsAddonComponents = techdocsAddons.reduce<
+      ResolvedTechdocsAddon[]
+    >((acc, { scope, module, importName, config }) => {
+      const extensionComponent = allPlugins[scope]?.[module]?.[importName];
+      if (extensionComponent) {
+        acc.push({
+          scope,
+          module,
+          importName,
+          Component: extensionComponent as React.ComponentType<unknown>,
+          config: {
+            ...config,
+          },
+        });
+      } else {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `Plugin ${scope} is not configured properly: ${module}.${importName} not found, ignoring techdocsAddon: ${importName}`,
+        );
+      }
+      return acc;
+    }, []);
 
     const dynamicThemeProviders = pluginThemes.reduce<AppThemeProvider[]>(
       (acc, { scope, module, importName, icon, ...rest }) => {

@@ -1,209 +1,28 @@
-import { Entity } from '@backstage/catalog-model';
-import { ApiHolder } from '@backstage/core-plugin-api';
-import { isKind } from '@backstage/plugin-catalog';
-
-import {
-  MountPointConfigRaw,
-  MountPointConfigRawIf,
-  RouteBinding,
-} from '@red-hat-developer-hub/plugin-utils';
-
-import { hasAnnotation, isType } from '../../components/catalog/utils';
 import { extractMenuItems } from './extractDynamicConfigFrontend';
-
-export type DynamicRouteMenuItem =
-  | {
-      text: string;
-      icon: string;
-      parent?: string;
-      priority?: number;
-      enabled?: boolean;
-    }
-  | {
-      module?: string;
-      importName: string;
-      config?: {
-        props?: Record<string, any>;
-      };
-    };
-
-export type MenuItemConfig = {
-  icon?: string;
-  title?: string;
-  priority?: number;
-  parent?: string;
-};
-
-export type MenuItem = {
-  name: string;
-  title: string;
-  icon: string;
-  children: MenuItem[];
-  priority?: number;
-  to?: string;
-  parent?: string;
-  enabled?: boolean;
-};
-
-export type DynamicRoute = {
-  scope: string;
-  module: string;
-  importName: string;
-  path: string;
-  menuItem?: DynamicRouteMenuItem;
-  config?: {
-    props?: Record<string, any>;
-  };
-};
-
-type PluginModule = {
-  scope: string;
-  module: string;
-};
-
-type MountPoint = {
-  scope: string;
-  mountPoint: string;
-  module: string;
-  importName: string;
-  config?: MountPointConfigRaw;
-};
-
-type AppIcon = {
-  scope: string;
-  name: string;
-  module: string;
-  importName: string;
-};
-
-type BindingTarget = {
-  scope: string;
-  name: string;
-  module: string;
-  importName: string;
-};
-
-type ApiFactory = {
-  scope: string;
-  module: string;
-  importName: string;
-};
-
-type AnalyticsApiExtension = {
-  scope: string;
-  module: string;
-  importName: string;
-};
-
-type ScaffolderFieldExtension = {
-  scope: string;
-  module: string;
-  importName: string;
-};
-
-type TechdocsAddon = {
-  scope: string;
-  module: string;
-  importName: string;
-  config?: {
-    props?: Record<string, any>;
-  };
-};
-
-type EntityTab = {
-  mountPoint: string;
-  path: string;
-  title: string;
-  pariority?: number;
-};
-
-type EntityTabEntry = {
-  scope: string;
-  mountPoint: string;
-  path: string;
-  title: string;
-  priority?: number;
-};
-
-type ThemeEntry = {
-  scope: string;
-  module: string;
-  id: string;
-  title: string;
-  variant: 'light' | 'dark';
-  icon: string;
-  importName: string;
-};
-
-type SignInPageEntry = {
-  scope: string;
-  module: string;
-  importName: string;
-};
-
-type ProviderSetting = {
-  title: string;
-  description: string;
-  provider: string;
-};
-
-type CustomProperties = {
-  pluginModule?: string;
-  dynamicRoutes?: {
-    importName?: string;
-    module?: string;
-    scope?: string;
-    path: string;
-    menuItem?: DynamicRouteMenuItem;
-  }[];
-  menuItems?: { [key: string]: MenuItemConfig };
-  routeBindings?: {
-    targets: BindingTarget[];
-    bindings: RouteBinding[];
-  };
-  entityTabs?: EntityTab[];
-  mountPoints?: MountPoint[];
-  appIcons?: AppIcon[];
-  apiFactories?: ApiFactory[];
-  analyticsApiExtensions?: AnalyticsApiExtension[];
-  providerSettings?: ProviderSetting[];
-  scaffolderFieldExtensions?: ScaffolderFieldExtension[];
-  signInPage: SignInPageEntry;
-  techdocsAddons?: TechdocsAddon[];
-  themes?: ThemeEntry[];
-};
-
-export type FrontendConfig = {
-  [key: string]: CustomProperties;
-};
-
-export type DynamicPluginConfig = {
-  frontend?: FrontendConfig;
-};
-
-type DynamicConfig = {
-  pluginModules: PluginModule[];
-  apiFactories: ApiFactory[];
-  analyticsApiExtensions: AnalyticsApiExtension[];
-  appIcons: AppIcon[];
-  dynamicRoutes: DynamicRoute[];
-  menuItems: MenuItem[];
-  entityTabs: EntityTabEntry[];
-  mountPoints: MountPoint[];
-  providerSettings: ProviderSetting[];
-  routeBindings: RouteBinding[];
-  routeBindingTargets: BindingTarget[];
-  scaffolderFieldExtensions: ScaffolderFieldExtension[];
-  signInPages: SignInPageEntry[];
-  techdocsAddons: TechdocsAddon[];
-  themes: ThemeEntry[];
-};
+import {
+  AnalyticsApiExtension,
+  ApiFactory,
+  AppIcon,
+  BindingTarget,
+  DynamicConfig,
+  DynamicPluginConfig,
+  DynamicRoute,
+  EntityTabEntry,
+  MountPoint,
+  PluginModule,
+  ProviderSetting,
+  RouteBinding,
+  ScaffolderFieldExtension,
+  SignInPageEntry,
+  TechdocsAddon,
+  ThemeEntry,
+} from './types';
 
 /**
  * Converts the dynamic plugin configuration structure to the data structure
  * required by the dynamic UI, substituting in any defaults as needed
  */
-function extractDynamicConfig(
+export function extractDynamicConfig(
   dynamicPlugins: DynamicPluginConfig = { frontend: {} },
 ) {
   const frontend = dynamicPlugins.frontend || {};
@@ -400,57 +219,3 @@ function extractDynamicConfig(
   );
   return config;
 }
-
-/**
- * Evaluate the supplied conditional map.  Used to determine the visibility of
- * tabs in the UI
- * @param conditional
- * @returns
- */
-export function configIfToCallable(conditional: MountPointConfigRawIf) {
-  return (entity: Entity, context?: { apis: ApiHolder }) => {
-    if (conditional?.allOf) {
-      return conditional.allOf
-        .map(conditionsArrayMapper)
-        .every(f => f(entity, context));
-    }
-    if (conditional?.anyOf) {
-      return conditional.anyOf
-        .map(conditionsArrayMapper)
-        .some(f => f(entity, context));
-    }
-    if (conditional?.oneOf) {
-      return (
-        conditional.oneOf
-          .map(conditionsArrayMapper)
-          .filter(f => f(entity, context)).length === 1
-      );
-    }
-    return true;
-  };
-}
-
-export function conditionsArrayMapper(
-  condition:
-    | {
-        [key: string]: string | string[];
-      }
-    | Function,
-): (entity: Entity, context?: { apis: ApiHolder }) => boolean {
-  if (typeof condition === 'function') {
-    return (entity: Entity, context?: { apis: ApiHolder }): boolean =>
-      condition(entity, context);
-  }
-  if (condition.isKind) {
-    return isKind(condition.isKind);
-  }
-  if (condition.isType) {
-    return isType(condition.isType);
-  }
-  if (condition.hasAnnotation) {
-    return hasAnnotation(condition.hasAnnotation as string);
-  }
-  return () => false;
-}
-
-export default extractDynamicConfig;
