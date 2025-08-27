@@ -363,18 +363,43 @@ jobs:
             auth_header="Authorization: Basic $(echo -n "$auth_string" | base64 -w 0)"
             echo "✓ Robot account authentication configured"
             
-            # Robot accounts typically don't need CSRF tokens, but let's try to get one anyway
-            echo "Checking if CSRF token is needed for robot account..."
+            # Get CSRF token for robot account (required for PUT/DELETE operations)
+            echo "Fetching CSRF token for robot account..."
             csrf_response=$(curl -sS -H "$auth_header" \
               "https://quay.io/api/v1/user/" 2>/dev/null || echo "{}")
             
+            echo "DEBUG: API response: $csrf_response"
+            
+            # Try multiple ways to extract CSRF token
             csrf_token=$(echo "$csrf_response" | jq -r '.csrf_token // empty' 2>/dev/null || echo "")
+            
+            if [ -z "$csrf_token" ] || [ "$csrf_token" = "null" ] || [ "$csrf_token" = "empty" ]; then
+              # Try alternative CSRF token field names
+              csrf_token=$(echo "$csrf_response" | jq -r '.csrfToken // empty' 2>/dev/null || echo "")
+            fi
+            
+            if [ -z "$csrf_token" ] || [ "$csrf_token" = "null" ] || [ "$csrf_token" = "empty" ]; then
+              # Try to get CSRF token from response headers
+              echo "Trying to get CSRF token from headers..."
+              csrf_token=$(curl -sS -I -H "$auth_header" \
+                "https://quay.io/api/v1/user/" 2>/dev/null | grep -i "x-csrf-token\|csrf-token" | cut -d: -f2 | tr -d ' \r\n' || echo "")
+              echo "DEBUG: CSRF token from headers: '$csrf_token'"
+            fi
+            
+            if [ -z "$csrf_token" ] || [ "$csrf_token" = "null" ] || [ "$csrf_token" = "empty" ]; then
+              # Try to get CSRF token from a different endpoint
+              echo "Trying alternative CSRF token endpoint..."
+              csrf_response2=$(curl -sS -H "$auth_header" \
+                "https://quay.io/api/v1/repository/${REGISTRY_IMAGE}" 2>/dev/null || echo "{}")
+              echo "DEBUG: Repository API response: $csrf_response2"
+              csrf_token=$(echo "$csrf_response2" | jq -r '.csrf_token // .csrfToken // empty' 2>/dev/null || echo "")
+            fi
             
             if [ -n "$csrf_token" ] && [ "$csrf_token" != "null" ] && [ "$csrf_token" != "empty" ]; then
               echo "✓ CSRF token obtained: ${csrf_token}"
               csrf_header="-H X-CSRFToken:${csrf_token}"
             else
-              echo "ℹ️  No CSRF token needed for robot account (this is normal)"
+              echo "::warning::Could not obtain CSRF token - API calls may fail"
               csrf_header=""
             fi
             
