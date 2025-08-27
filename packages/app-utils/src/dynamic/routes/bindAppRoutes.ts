@@ -6,10 +6,11 @@ import { catalogImportPlugin } from '@backstage/plugin-catalog-import';
 import { orgPlugin } from '@backstage/plugin-org';
 import { scaffolderPlugin } from '@backstage/plugin-scaffolder';
 
-import { RouteBinding } from '@red-hat-developer-hub/plugin-utils';
 import get from 'lodash/get';
 
-const bindAppRoutes = (
+import { RouteBinding } from '../config';
+
+export const bindAppRoutes = (
   bind: AppRouteBinder,
   routeBindingTargets: { [key: string]: BackstagePlugin<{}> },
   routeBindings: RouteBinding[],
@@ -55,5 +56,3 @@ const bindAppRoutes = (
     }
   });
 };
-
-export default bindAppRoutes;

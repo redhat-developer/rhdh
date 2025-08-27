@@ -10,10 +10,10 @@ import {
 
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
+import { MenuIcon } from '@red-hat-developer-hub/app-utils';
 import { makeStyles } from 'tss-react/mui';
 
 import getMountPointData from '../../utils/dynamicUI/getMountPointData';
-import { MenuIcon } from '../Root/MenuIcon';
 
 const useStyles = makeStyles()(theme => ({
   searchBar: {

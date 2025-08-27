@@ -1,9 +1,9 @@
-import { MenuItem } from './extractDynamicConfig';
 import {
   buildTree,
   compareMenuItems,
   getNameFromPath,
 } from './extractDynamicConfigFrontend';
+import { MenuItem } from './types';
 
 describe('getNameFromPath', () => {
   test.each([

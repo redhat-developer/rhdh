@@ -16,7 +16,7 @@ import {
 } from '@backstage/plugin-user-settings';
 
 import Star from '@mui/icons-material/Star';
-import { ProviderSetting } from '@red-hat-developer-hub/plugin-utils';
+import { ProviderSetting } from '@red-hat-developer-hub/app-utils';
 
 import { oidcAuthApiRef } from '../../api/AuthApiRefs';
 import { GeneralPage } from './GeneralPage';
