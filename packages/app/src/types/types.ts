@@ -12,8 +12,3 @@ export type BuildInfo = {
   card: { [key: string]: string };
   full?: boolean;
 };
-
-export type TranslationConfig = {
-  defaultLocale: string;
-  locales: string[];
-};
