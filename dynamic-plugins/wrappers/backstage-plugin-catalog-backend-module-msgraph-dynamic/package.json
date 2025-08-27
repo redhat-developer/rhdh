@@ -60,7 +60,7 @@
   "homepage": "https://red.ht/rhdh",
   "bugs": "https://issues.redhat.com/browse/RHIDP",
   "keywords": [
-    "support:tech-preview",
+    "support:production",
     "lifecycle:active"
   ]
 }
