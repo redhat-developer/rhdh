@@ -107,7 +107,6 @@ get_job_url() {
 
 save_data_router_junit_results() {
   if [[ "${OPENSHIFT_CI}" != "true" ]]; then return 0; fi
-  if [[ "${JOB_NAME}" == *rehearse* ]]; then return 0; fi
 
   local namespace=$1
 
