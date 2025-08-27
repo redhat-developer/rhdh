@@ -41,12 +41,15 @@ const test = base.extend<{
 });
 
 test.describe("Test OCM plugin", () => {
-  ReportingApi.addAttributes([
-    {
-      key: "component",
-      value: "plugins",
-    },
-  ]);
+  test.beforeAll(async () => {
+    ReportingApi.addAttributes([
+      {
+        key: "component",
+        value: "plugins",
+      },
+    ]);
+  });
+
   test("Navigate to Clusters and Verify OCM Clusters", async ({
     page,
     uiHelper,

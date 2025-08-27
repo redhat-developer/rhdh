@@ -11,17 +11,17 @@ import { ReportingApi } from "@reportportal/agent-js-playwright";
 let page: Page;
 
 test.describe("CustomTheme should be applied", () => {
-  ReportingApi.addAttributes([
-    {
-      key: "component",
-      value: "core",
-    },
-  ]);
-
   let common: Common;
   let themeVerifier: ThemeVerifier;
 
   test.beforeAll(async ({ browser }, testInfo) => {
+    ReportingApi.addAttributes([
+      {
+        key: "component",
+        value: "core",
+      },
+    ]);
+
     page = (await setupBrowser(browser, testInfo)).page;
     common = new Common(page);
     themeVerifier = new ThemeVerifier(page);

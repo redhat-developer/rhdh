@@ -4,12 +4,15 @@ import { UIhelper } from "../../utils/ui-helper";
 import { Common } from "../../utils/common";
 
 test.describe("Test ApplicationListener", () => {
-  ReportingApi.addAttributes([
-    {
-      key: "component",
-      value: "plugins",
-    },
-  ]);
+  test.beforeAll(async () => {
+    ReportingApi.addAttributes([
+      {
+        key: "component",
+        value: "plugins",
+      },
+    ]);
+  });
+
   let uiHelper: UIhelper;
 
   test.beforeEach(async ({ page }) => {

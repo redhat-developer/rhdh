@@ -7,16 +7,19 @@ import { KUBERNETES_COMPONENTS } from "../../../support/pageObjects/page-obj";
 import { KubernetesPage } from "../../../support/pages/kubernetes";
 
 test.describe("Test Kubernetes Plugin", () => {
-  ReportingApi.addAttributes([
-    {
-      key: "component",
-      value: "plugins",
-    },
-  ]);
   let common: Common;
   let uiHelper: UIhelper;
   let catalog: Catalog;
   let kubernetes: KubernetesPage;
+
+  test.beforeAll(async () => {
+    ReportingApi.addAttributes([
+      {
+        key: "component",
+        value: "plugins",
+      },
+    ]);
+  });
 
   test.beforeEach(async ({ page }, testInfo) => {
     if (testInfo.retry > 0) {

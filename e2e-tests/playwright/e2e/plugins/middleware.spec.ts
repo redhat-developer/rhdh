@@ -4,12 +4,14 @@ import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { Common } from "../../utils/common";
 
 test.describe("Test middleware plugin", () => {
-  ReportingApi.addAttributes([
-    {
-      key: "component",
-      value: "plugins",
-    },
-  ]);
+  test.beforeAll(async () => {
+    ReportingApi.addAttributes([
+      {
+        key: "component",
+        value: "plugins",
+      },
+    ]);
+  });
 
   test("Check the middleware is working", async ({ page }) => {
     const common = new Common(page);

@@ -10,13 +10,6 @@ import { runAccessibilityTests } from "../utils/accessibility";
 let page: Page;
 
 test.describe.serial("Test Scaffolder Backend Module Annotator Actions", () => {
-  ReportingApi.addAttributes([
-    {
-      key: "component",
-      value: "core",
-    },
-  ]);
-
   test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
   let uiHelper: UIhelper;
   let common: Common;
@@ -40,6 +33,13 @@ test.describe.serial("Test Scaffolder Backend Module Annotator Actions", () => {
   };
 
   test.beforeAll(async ({ browser }, testInfo) => {
+    ReportingApi.addAttributes([
+      {
+        key: "component",
+        value: "core",
+      },
+    ]);
+
     page = (await setupBrowser(browser, testInfo)).page;
 
     common = new Common(page);
