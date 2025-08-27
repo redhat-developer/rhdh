@@ -1,4 +1,4 @@
-import { Fragment, lazy, Suspense, useContext } from 'react';
+import { Fragment, lazy, ReactNode, Suspense, useContext } from 'react';
 import * as useAsync from 'react-use/lib/useAsync';
 
 import * as appDefaults from '@backstage/app-defaults';
@@ -182,7 +182,9 @@ describe.skip('DynamicRoot', () => {
                     isFooConditionTrue: () => true,
                     isFooConditionFalse: () => false,
                     FooComponentWithStaticJSX: {
-                      element: ({ children }) => <>{children}</>,
+                      element: ({ children }: { children?: ReactNode }) => (
+                        <>{children}</>
+                      ),
                       staticJSXContent: <div />,
                     },
                   },
