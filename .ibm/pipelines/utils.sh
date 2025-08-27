@@ -382,7 +382,7 @@ apply_yaml_files() {
 
     # Create Deployment and Pipeline for Topology test.
     oc apply -f "$dir/resources/topology_test/topology-test.yaml"
-    if [[ -z "${IS_OPENSHIFT}" || "$(to_lowercase "${IS_OPENSHIFT}")" == "false" ]]; then
+    if [[ -z "${IS_OPENSHIFT}" || "${IS_OPENSHIFT}" == "false" ]]; then
       kubectl apply -f "$dir/resources/topology_test/topology-test-ingress.yaml"
     else
       oc apply -f "$dir/resources/topology_test/topology-test-route.yaml"
@@ -1030,17 +1030,6 @@ sed_inplace() {
   else
     # Linux
     sed -i "$@"
-  fi
-}
-
-# Helper function for case conversion
-to_lowercase() {
-  if [[ "$OSTYPE" == "darwin"* ]]; then
-    # macOS - using tr
-    echo "$1" | tr '[:upper:]' '[:lower:]'
-  else
-    # Linux - using bash parameter expansion
-    echo "${1,,}"
   fi
 }
 
