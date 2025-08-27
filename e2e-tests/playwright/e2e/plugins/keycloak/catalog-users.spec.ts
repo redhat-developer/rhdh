@@ -4,6 +4,7 @@ import { UIhelper } from "../../../utils/ui-helper";
 import { Common } from "../../../utils/common";
 import { test, expect } from "@playwright/test";
 import { ChildProcessWithoutNullStreams, spawn, exec } from "child_process";
+import { KubeClient } from "../../../utils/kube-client";
 
 test.describe("Test Keycloak plugin", () => {
   let uiHelper: UIhelper;
@@ -59,13 +60,22 @@ test.describe("Test Keycloak plugin metrics", () => {
   let portForward: ChildProcessWithoutNullStreams;
 
   test.beforeEach(async () => {
+    const namespace = process.env.NAME_SPACE;
+    const kubeClient = new KubeClient();
+
     console.log("Starting port-forward process...");
+
+    const service = await kubeClient.getServiceByLabel(
+      namespace,
+      "app.kubernetes.io/name=backstage",
+    );
+    const rhdhServiceName = service[0].metadata.name;
     portForward = spawn("/bin/sh", [
       "-c",
       `
       oc login --token="${process.env.K8S_CLUSTER_TOKEN}" --server="${process.env.K8S_CLUSTER_URL}" --insecure-skip-tls-verify=true &&
-      kubectl config set-context --current --namespace="${process.env.NAME_SPACE}" &&
-      kubectl port-forward service/rhdh-developer-hub 9464:9464 --namespace="${process.env.NAME_SPACE}"
+      kubectl config set-context --current --namespace="${namespace}" &&
+      kubectl port-forward service/${rhdhServiceName} 9464:9464 --namespace="${namespace}"
     `,
     ]);
 
