@@ -1,0 +1,105 @@
+name: Update RPM Lockfile
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Run at 3AM UTC every Monday
+    - cron: '0 3 * * 1'
+  push:
+    branches:
+      - main
+    paths:
+      - 'rpms.in.yaml'
+      - '.rhdh/docker/Dockerfile'
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-lockfile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # 4.3.0
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Install rpm-lockfile-prototype
+        run: |
+          if [[ ! -x "${HOME}/.local/bin/rpm-lockfile-prototype" ]]; then 
+            echo "Installing rpm-lockfile-prototype ..."
+
+            sudo apt-get update
+            sudo apt-get install -y python3 python3-pip python3-dev build-essential
+            sudo apt-get install -y podman skopeo rpm
+            sudo apt-get install -y dnf python3-dnf
+            
+            mkdir -p "${HOME}/.local/bin/"
+            python3 -m pip install --user https://github.com/konflux-ci/rpm-lockfile-prototype/archive/refs/heads/main.zip
+            
+            # Update PATH
+            export PATH=${PATH%":${HOME}/.local/bin"}:${HOME}/.local/bin
+            echo "${HOME}/.local/bin" >> $GITHUB_PATH
+          else
+            echo "rpm-lockfile-prototype already installed"
+          fi
+
+      - name: Check if hermetic Dockerfile exists
+        run: |
+          if [ ! -f ".rhdh/docker/Dockerfile" ]; then
+            echo "Error: .rhdh/docker/Dockerfile not found!"
+            exit 1
+          fi
+
+      - name: Run rpm-lockfile-prototype
+        run: |
+          echo "Regen rpms.lock.yaml from Dockerfile + rpms.in.yaml using $(which rpm-lockfile-prototype) in [$(pwd)]"
+          "${HOME}/.local/bin/rpm-lockfile-prototype" -f .rhdh/docker/Dockerfile rpms.in.yaml
+
+      - name: Check for lockfile changes
+        id: check-lockfile-changes
+        run: |
+          if git diff --quiet rpms.lock.yaml; then
+            echo "No changes to rpms.lock.yaml detected, skipping PR creation"
+            echo "changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "Changes detected in rpms.lock.yaml"
+            echo "changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Pull Request
+        id: create-pull-request
+        if: steps.check-lockfile-changes.outputs.changes == 'true'
+        uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7.0.8
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: update rpms.lock.yaml"
+          title: "chore: update RPM lockfile"
+          body: |
+            ## Description
+            
+            This PR updates the `rpms.lock.yaml` file with the latest package versions based on current `rpms.in.yaml` configuration using `.rhdh/docker/Dockerfile` as the base container context
+            
+            This PR was automatically created by the [Update RPM Lockfile GitHub Action](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+          branch: update-rpm-lockfile
+          delete-branch: true
+          draft: false
+          sign-commits: true
+          labels: |
+            lgtm
+            approved
+          add-paths: |
+            rpms.lock.yaml
+
+      - name: Summary
+        run: |
+          if [ "${{ steps.check-lockfile-changes.outputs.changes }}" == "true" ]; then
+            echo "✅ RPM lockfile updated and created PR: ${{ steps.create-pull-request.outputs.pull-request-url }}"
+          else
+            echo "ℹ️ No changes detected in RPM lockfile"
+          fi
