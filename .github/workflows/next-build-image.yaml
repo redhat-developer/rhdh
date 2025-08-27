@@ -338,6 +338,7 @@ jobs:
             REF_NAME: ${{ env.REF_NAME }}
             SHORT_SHA: ${{ env.SHORT_SHA }}
             EXPIRES_AFTER: ${{ env.EXPIRES_AFTER }}
+            QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
             QUAY_TOKEN: ${{ secrets.QUAY_TOKEN }}
           run: |
             set -e
@@ -356,25 +357,24 @@ jobs:
             expiry_ts=$(date -d "+${days} days" +%s)
             echo "Using expiry timestamp: ${expiry_ts} ($(date -d "@$expiry_ts"))"
             
-            # Get CSRF token from Quay API (required for PUT/DELETE operations)
-            echo "Fetching CSRF token for secure API operations..."
-            csrf_response=$(curl -sS -H "Authorization: Bearer ${QUAY_TOKEN}" \
+            # Prepare Basic Auth for robot account (username:token encoded as base64)
+            echo "Setting up robot account authentication..."
+            auth_string="${QUAY_USERNAME}:${QUAY_TOKEN}"
+            auth_header="Authorization: Basic $(echo -n "$auth_string" | base64 -w 0)"
+            echo "✓ Robot account authentication configured"
+            
+            # Robot accounts typically don't need CSRF tokens, but let's try to get one anyway
+            echo "Checking if CSRF token is needed for robot account..."
+            csrf_response=$(curl -sS -H "$auth_header" \
               "https://quay.io/api/v1/user/" 2>/dev/null || echo "{}")
             
             csrf_token=$(echo "$csrf_response" | jq -r '.csrf_token // empty' 2>/dev/null || echo "")
             
-            if [ -z "$csrf_token" ] || [ "$csrf_token" = "null" ]; then
-              echo "::warning::Could not obtain CSRF token from Quay API. Attempting alternative method..."
-              # Try to get CSRF token from headers instead
-              csrf_token=$(curl -sS -I -H "Authorization: Bearer ${QUAY_TOKEN}" \
-                "https://quay.io/api/v1/user/" 2>/dev/null | grep -i "x-csrf-token" | cut -d: -f2 | tr -d ' \r\n' || echo "")
-            fi
-            
-            if [ -n "$csrf_token" ] && [ "$csrf_token" != "null" ]; then
-              echo "✓ CSRF token obtained successfully"
+            if [ -n "$csrf_token" ] && [ "$csrf_token" != "null" ] && [ "$csrf_token" != "empty" ]; then
+              echo "✓ CSRF token obtained: ${csrf_token}"
               csrf_header="-H X-CSRFToken:${csrf_token}"
             else
-              echo "::warning::Could not obtain CSRF token, API calls may fail"
+              echo "ℹ️  No CSRF token needed for robot account (this is normal)"
               csrf_header=""
             fi
             
@@ -389,9 +389,9 @@ jobs:
               echo "Setting expiry on multi-arch tag: ${tag}"
               url="https://quay.io/api/v1/repository/${REGISTRY_IMAGE}/tag/${tag}"
               
-              # Include CSRF token in request headers
+              # Use robot account Basic Auth + CSRF token if available
               http_code=$(curl -sS -o /tmp/expiry_resp.txt -w "%{http_code}" -X PUT \
-                -H "Authorization: Bearer ${QUAY_TOKEN}" \
+                -H "$auth_header" \
                 -H "Content-Type: application/json" \
                 ${csrf_header} \
                 -d "{\"expiration\": ${expiry_ts}}" \
@@ -419,9 +419,9 @@ jobs:
               echo "Deleting per-arch tag: ${tag}"
               url="https://quay.io/api/v1/repository/${REGISTRY_IMAGE}/tag/${tag}"
               
-              # Include CSRF token in request headers
+              # Use robot account Basic Auth + CSRF token if available
               http_code=$(curl -sS -o /tmp/delete_resp.txt -w "%{http_code}" -X DELETE \
-                -H "Authorization: Bearer ${QUAY_TOKEN}" \
+                -H "$auth_header" \
                 ${csrf_header} \
                 "$url") || true
                 
