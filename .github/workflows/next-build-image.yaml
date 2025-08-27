@@ -356,6 +356,28 @@ jobs:
             expiry_ts=$(date -d "+${days} days" +%s)
             echo "Using expiry timestamp: ${expiry_ts} ($(date -d "@$expiry_ts"))"
             
+            # Get CSRF token from Quay API (required for PUT/DELETE operations)
+            echo "Fetching CSRF token for secure API operations..."
+            csrf_response=$(curl -sS -H "Authorization: Bearer ${QUAY_TOKEN}" \
+              "https://quay.io/api/v1/user/" 2>/dev/null || echo "{}")
+            
+            csrf_token=$(echo "$csrf_response" | jq -r '.csrf_token // empty' 2>/dev/null || echo "")
+            
+            if [ -z "$csrf_token" ] || [ "$csrf_token" = "null" ]; then
+              echo "::warning::Could not obtain CSRF token from Quay API. Attempting alternative method..."
+              # Try to get CSRF token from headers instead
+              csrf_token=$(curl -sS -I -H "Authorization: Bearer ${QUAY_TOKEN}" \
+                "https://quay.io/api/v1/user/" 2>/dev/null | grep -i "x-csrf-token" | cut -d: -f2 | tr -d ' \r\n' || echo "")
+            fi
+            
+            if [ -n "$csrf_token" ] && [ "$csrf_token" != "null" ]; then
+              echo "✓ CSRF token obtained successfully"
+              csrf_header="-H X-CSRFToken:${csrf_token}"
+            else
+              echo "::warning::Could not obtain CSRF token, API calls may fail"
+              csrf_header=""
+            fi
+            
             # Multi-arch tags that should have expiry set
             multi_arch_tags=(
               "${SAFE_REF_TAG}"
@@ -367,9 +389,11 @@ jobs:
               echo "Setting expiry on multi-arch tag: ${tag}"
               url="https://quay.io/api/v1/repository/${REGISTRY_IMAGE}/tag/${tag}"
               
+              # Include CSRF token in request headers
               http_code=$(curl -sS -o /tmp/expiry_resp.txt -w "%{http_code}" -X PUT \
                 -H "Authorization: Bearer ${QUAY_TOKEN}" \
                 -H "Content-Type: application/json" \
+                ${csrf_header} \
                 -d "{\"expiration\": ${expiry_ts}}" \
                 "$url") || true
                 
@@ -395,8 +419,10 @@ jobs:
               echo "Deleting per-arch tag: ${tag}"
               url="https://quay.io/api/v1/repository/${REGISTRY_IMAGE}/tag/${tag}"
               
+              # Include CSRF token in request headers
               http_code=$(curl -sS -o /tmp/delete_resp.txt -w "%{http_code}" -X DELETE \
                 -H "Authorization: Bearer ${QUAY_TOKEN}" \
+                ${csrf_header} \
                 "$url") || true
                 
               if [ "$http_code" = "204" ] || [ "$http_code" = "404" ]; then
