@@ -21,7 +21,7 @@ on:
       registry_image:
         description: "Target registry/repository (e.g., polasudo/testing)"
         required: false
-        default: "polasudo/testing"
+        default: "testing-rhdh-martin/testing"
       test_cleanup:
         description: "Enable cleanup testing (true/false)"
         required: false
@@ -385,6 +385,18 @@ jobs:
             if [ -n "${QUAY_OAUTH_TOKEN}" ]; then
               echo "Using OAuth token for API-based expiry management and cleanup..."
               
+              # Set environment variables for Python script BEFORE running it
+              export MULTI_ARCH_TAGS="${multi_arch_tags[*]}"
+              export PER_ARCH_TAGS="${per_arch_tags[*]}"
+              export days="${days}"
+              
+              # Debug: Show what tags we're working with
+              echo "Debug: Multi-arch tags to manage: ${multi_arch_tags[*]}"
+              echo "Debug: Per-arch tags to delete: ${per_arch_tags[*]}"
+              
+              # Install requests if not available
+              pip install requests > /dev/null 2>&1 || echo "requests already available"
+              
               # Use Python script for API operations
               python3 << 'EOF'
             import requests
@@ -406,8 +418,11 @@ jobs:
                     if response.status_code in [200, 201, 204]:
                         print(f"✅ {tag_name}: Set {expiry_days}-day expiry")
                         return True
+                    elif response.status_code == 400:
+                        print(f"⚠️  {tag_name}: Bad request ({response.status_code}) - may already have expiry or invalid format")
+                        return False
                     else:
-                        print(f"⚠️  {tag_name}: Expiry failed ({response.status_code}) - likely already has expiry")
+                        print(f"❌ {tag_name}: Expiry failed ({response.status_code}) - {response.text}")
                         return False
                         
                 except Exception as e:
@@ -480,14 +495,6 @@ jobs:
             if __name__ == "__main__":
                 main()
             EOF
-              
-              # Set environment variables for Python script
-              export MULTI_ARCH_TAGS="${multi_arch_tags[*]}"
-              export PER_ARCH_TAGS="${per_arch_tags[*]}"
-              export days="${days}"
-              
-              # Install requests if not available
-              pip install requests > /dev/null 2>&1 || echo "requests already available"
               
             else
               echo "⚠️  No QUAY_OAUTH_TOKEN available - falling back to Docker BuildX annotations"
