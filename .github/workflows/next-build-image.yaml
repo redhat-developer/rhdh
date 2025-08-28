@@ -331,23 +331,25 @@ jobs:
           run: |
             docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:${{ steps.meta-release.outputs.version }}
 
-        - name: Clean up per-arch images and ensure expiry on multi-arch tags
+        - name: Manage expiry and cleanup per-arch images
           if: env.HAS_QUAY_AUTH == 'true' && (github.event_name != 'workflow_dispatch' || inputs.test_cleanup == 'true')
           env:
             REGISTRY_IMAGE: ${{ env.REGISTRY_IMAGE }}
             REF_NAME: ${{ env.REF_NAME }}
+            REF_NAME_SHORT: ${{ env.REF_NAME_SHORT }}
             SHORT_SHA: ${{ env.SHORT_SHA }}
             EXPIRES_AFTER: ${{ env.EXPIRES_AFTER }}
             QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
             QUAY_TOKEN: ${{ secrets.QUAY_TOKEN }}
+            QUAY_OAUTH_TOKEN: ${{ secrets.QUAY_OAUTH_TOKEN }}
           run: |
             set -e
-            echo "Cleaning up temporary per-arch images and ensuring expiry on multi-arch tags..."
+            echo "Managing image lifecycle: setting expiry and cleaning up per-arch images..."
             
             # Sanitize REF_NAME for use in tags (replace '/' with '-')
             SAFE_REF_TAG="${REF_NAME//\//-}"
             
-            # Calculate expiry timestamp
+            # Calculate expiry timestamp and days
             expires="${EXPIRES_AFTER}"
             days="${expires%d}"
             if [[ "$expires" != *d ]] || ! [[ "$days" =~ ^[0-9]+$ ]]; then
@@ -355,47 +357,23 @@ jobs:
               days=14
             fi
             expiry_ts=$(date -d "+${days} days" +%s)
-            echo "Using expiry timestamp: ${expiry_ts} ($(date -d "@$expiry_ts"))"
+            echo "Using expiry: ${days} days (timestamp: ${expiry_ts})"
             
-            # Note: Robot accounts cannot get CSRF tokens for Quay API operations
-            # Reference: https://github.com/operator-framework/operator-courier/issues/191
-            echo "ℹ️  Robot accounts cannot use Quay API for destructive operations (CSRF limitation since 2020)"
-            echo "ℹ️  Using Docker BuildX annotations instead of Quay API calls"
-            
-            # Multi-arch tags that should have expiry set
+            # Define our tags based on build type
             multi_arch_tags=(
               "${SAFE_REF_TAG}"
               "${SAFE_REF_TAG}-${SHORT_SHA}"
             )
             
-            echo "Re-applying expiry annotations to multi-arch tags: ${multi_arch_tags[*]}"
-            for tag in "${multi_arch_tags[@]}"; do
-              echo "Re-annotating tag: ${tag}"
-              
-              # Use docker buildx imagetools to re-annotate with expiry (bypasses CSRF requirement)
-              # Reference: https://github.com/operator-framework/operator-courier/issues/191
-              # Robot accounts cannot get CSRF tokens for Quay API operations since 2020
-              echo "Applying expiry via Docker annotations (robot accounts cannot use Quay API)"
-              if docker buildx imagetools create \
-                --tag "${{ env.REGISTRY }}/${REGISTRY_IMAGE}:${tag}" \
-                --annotation "quay.expires-after=${EXPIRES_AFTER}" \
-                --annotation "org.opencontainers.image.expires=${EXPIRES_AFTER}" \
-                --annotation "expires-after=${EXPIRES_AFTER}" \
-                --annotation "quay.expires_after=${EXPIRES_AFTER}" \
-                --annotation "index:quay.expires-after=${EXPIRES_AFTER}" \
-                --annotation "manifest:quay.expires-after=${EXPIRES_AFTER}" \
-                "${{ env.REGISTRY }}/${REGISTRY_IMAGE}:${tag}"; then
-                echo "✓ Expiry annotations applied to: ${tag}"
-                
-                # Verify expiry was set by checking image manifest
-                echo "Verifying expiry annotation..."
-                docker buildx imagetools inspect "${{ env.REGISTRY }}/${REGISTRY_IMAGE}:${tag}" | grep -i "expires\|expiry" || echo "⚠️  No expiry found in manifest"
-              else
-                echo "::warning::Failed to re-annotate ${tag}"
-              fi
-            done
+            # For releases, add the additional short tags
+            if [[ "${REF_NAME_SHORT}" != "next" ]] && [[ "${REF_NAME_SHORT}" != "next-"* ]]; then
+              SAFE_REF_TAG_SHORT="${REF_NAME_SHORT//\//-}"
+              multi_arch_tags+=(
+                "${SAFE_REF_TAG_SHORT}"
+                "${SAFE_REF_TAG_SHORT}-${SHORT_SHA}"
+              )
+            fi
             
-            # List of per-arch tags to delete
             per_arch_tags=(
               "${SAFE_REF_TAG}-amd64"
               "${SAFE_REF_TAG}-arm64"
@@ -403,12 +381,135 @@ jobs:
               "${SAFE_REF_TAG}-${SHORT_SHA}-arm64"
             )
             
-            echo "Per-arch tags to clean up: ${per_arch_tags[*]}"
+            # Check if OAuth token is available for API operations
+            if [ -n "${QUAY_OAUTH_TOKEN}" ]; then
+              echo "Using OAuth token for API-based expiry management and cleanup..."
+              
+              # Use Python script for API operations
+              python3 << 'EOF'
+            import requests
+            import os
+            import time
+            import sys
             
-            echo "✅ All tags processed using Docker BuildX annotations (CSRF-free approach)"
-            echo "🕐 Per-arch images have expiry set and will be automatically cleaned up in 14 days"
-            echo "ℹ️  Robot accounts cannot delete via API (Quay security limitation since 2020)"
-            echo "ℹ️  For immediate cleanup: use Quay.io web UI or wait for natural expiry"
+            def set_tag_expiry(base_url, namespace, repository, tag_name, expiry_days, oauth_token):
+                """Set expiry on a tag using the Quay API."""
+                expiry_timestamp = int(time.time()) + (expiry_days * 24 * 60 * 60)
+                
+                url = f"{base_url}/repository/{namespace}/{repository}/tag/{tag_name}"
+                headers = {"Authorization": f"Bearer {oauth_token}", "Content-Type": "application/json"}
+                payload = {"expiration": expiry_timestamp}
+                
+                try:
+                    response = requests.put(url, headers=headers, json=payload)
+                    
+                    if response.status_code in [200, 201, 204]:
+                        print(f"✅ {tag_name}: Set {expiry_days}-day expiry")
+                        return True
+                    else:
+                        print(f"⚠️  {tag_name}: Expiry failed ({response.status_code}) - likely already has expiry")
+                        return False
+                        
+                except Exception as e:
+                    print(f"❌ {tag_name}: Request failed - {e}")
+                    return False
             
-            rm -f /tmp/delete_resp.txt /tmp/expiry_resp.txt
-            echo "Cleanup and expiry enforcement completed"
+            def delete_tag(base_url, namespace, repository, tag_name, oauth_token):
+                """Delete a tag using the Quay API."""
+                url = f"{base_url}/repository/{namespace}/{repository}/tag/{tag_name}"
+                headers = {"Authorization": f"Bearer {oauth_token}"}
+                
+                try:
+                    response = requests.delete(url, headers=headers)
+                    
+                    if response.status_code == 204:
+                        print(f"✅ {tag_name}: Deleted successfully")
+                        return True
+                    elif response.status_code == 404:
+                        print(f"ℹ️  {tag_name}: Already deleted or doesn't exist")
+                        return True
+                    else:
+                        print(f"❌ {tag_name}: Delete failed ({response.status_code}) - {response.text}")
+                        return False
+                        
+                except Exception as e:
+                    print(f"❌ {tag_name}: Delete request failed - {e}")
+                    return False
+            
+            def main():
+                """Main function for expiry and cleanup."""
+                
+                # Parse repository
+                repository = os.environ['REGISTRY_IMAGE']
+                if '/' not in repository:
+                    print(f"❌ Repository must be in format 'namespace/repository', got: {repository}")
+                    sys.exit(1)
+                
+                namespace, repo_name = repository.split('/', 1)
+                base_url = "https://quay.io/api/v1"
+                oauth_token = os.environ['QUAY_OAUTH_TOKEN']
+                expiry_days = int(os.environ.get('days', '14'))
+                
+                # Get tags from environment
+                multi_arch_tags = os.environ.get('MULTI_ARCH_TAGS', '').split()
+                per_arch_tags = os.environ.get('PER_ARCH_TAGS', '').split()
+                
+                print(f"🏷️  Managing tags for {repository}")
+                print(f"   Multi-arch tags: {multi_arch_tags}")
+                print(f"   Per-arch tags to delete: {per_arch_tags}")
+                
+                # Step 1: Set expiry on multi-arch tags
+                print(f"\n📅 Setting {expiry_days}-day expiry on multi-arch tags...")
+                for tag in multi_arch_tags:
+                    if tag:  # Skip empty strings
+                        set_tag_expiry(base_url, namespace, repo_name, tag, expiry_days, oauth_token)
+                
+                # Step 2: Delete per-arch tags
+                print(f"\n🗑️  Deleting per-arch tags...")
+                deleted_count = 0
+                for tag in per_arch_tags:
+                    if tag:  # Skip empty strings
+                        if delete_tag(base_url, namespace, repo_name, tag, oauth_token):
+                            deleted_count += 1
+                
+                print(f"\n📊 Summary:")
+                print(f"   Multi-arch tags with expiry: {len([t for t in multi_arch_tags if t])}")
+                print(f"   Per-arch tags deleted: {deleted_count}/{len([t for t in per_arch_tags if t])}")
+                print(f"✅ Lifecycle management completed using OAuth API")
+            
+            if __name__ == "__main__":
+                main()
+            EOF
+              
+              # Set environment variables for Python script
+              export MULTI_ARCH_TAGS="${multi_arch_tags[*]}"
+              export PER_ARCH_TAGS="${per_arch_tags[*]}"
+              export days="${days}"
+              
+              # Install requests if not available
+              pip install requests > /dev/null 2>&1 || echo "requests already available"
+              
+            else
+              echo "⚠️  No QUAY_OAUTH_TOKEN available - falling back to Docker BuildX annotations"
+              echo "ℹ️  Robot accounts cannot delete via API (Quay security limitation since 2020)"
+              
+              # Fallback: Use Docker BuildX for expiry annotations only
+              echo "📅 Applying expiry annotations to multi-arch tags via Docker BuildX..."
+              for tag in "${multi_arch_tags[@]}"; do
+                echo "Re-annotating tag: ${tag}"
+                
+                if docker buildx imagetools create \
+                  --tag "${{ env.REGISTRY }}/${REGISTRY_IMAGE}:${tag}" \
+                  --annotation "quay.expires-after=${EXPIRES_AFTER}" \
+                  --annotation "org.opencontainers.image.expires=${EXPIRES_AFTER}" \
+                  "${{ env.REGISTRY }}/${REGISTRY_IMAGE}:${tag}"; then
+                  echo "✓ Expiry annotations applied to: ${tag}"
+                else
+                  echo "::warning::Failed to re-annotate ${tag}"
+                fi
+              done
+              
+              echo "🕐 Per-arch images will be cleaned up via expiry (no immediate deletion possible with robot accounts)"
+            fi
+            
+            echo "✅ Image lifecycle management completed"
