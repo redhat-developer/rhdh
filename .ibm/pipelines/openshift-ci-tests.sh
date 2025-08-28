@@ -5,7 +5,7 @@ set -o errtrace
 set -o nounset
 export PS4='[$(date "+%Y-%m-%d %H:%M:%S")] ' # logs timestamp for every cmd.
 
-export TAG_NAME="next"
+export JOB_TYPE="periodic"
 
 # Define log file names and directories.
 LOGFILE="test-log"
