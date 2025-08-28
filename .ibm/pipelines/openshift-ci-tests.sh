@@ -11,8 +11,6 @@ export STATUS_DEPLOYMENT_NAMESPACE # Array that holds the namespaces of deployme
 export STATUS_FAILED_TO_DEPLOY # Array that indicates if deployment failed. false = success, true = failure
 export STATUS_TEST_FAILED # Array that indicates if test run failed. false = success, true = failure
 
-export JOB_TYPE="periodic"
-
 echo "Sourcing reporting.sh"
 # shellcheck source=.ibm/pipelines/reporting.sh
 source "${DIR}/reporting.sh"
