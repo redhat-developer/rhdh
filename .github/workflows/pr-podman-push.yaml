@@ -1,4 +1,4 @@
-name: Podman Push
+name: Podman PR Push
 
 on:
   workflow_run:
