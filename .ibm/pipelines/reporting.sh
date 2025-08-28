@@ -124,8 +124,12 @@ save_data_router_junit_results() {
 
   ARTIFACTS_URL=$(get_artifacts_url "${namespace}")
 
+  cp "${ARTIFACT_DIR}/${namespace}/${JUNIT_RESULTS}" "${ARTIFACT_DIR}/${namespace}/${JUNIT_RESULTS}.original.xml"
+  # Remove properties other than rp:addAttributes from JUnit XML
+  # This uses sed to remove property tags that don't contain rp:addAttributes and their closing tags
+  sed -i -E '/<property name="[^"]*" value="[^"]*">/!b;/rp:addAttributes/!{N;d;}' "${ARTIFACT_DIR}/${namespace}/${JUNIT_RESULTS}"
   # Replace attachments with link to OpenShift CI storage
-   sed -iE "s#\[\[ATTACHMENT|\(.*\)\]\]#${ARTIFACTS_URL}/\1#g" "${ARTIFACT_DIR}/${namespace}/${JUNIT_RESULTS}"
+  sed -i -E "s#\[\[ATTACHMENT|\(.*\)\]\]#${ARTIFACTS_URL}/\1#g" "${ARTIFACT_DIR}/${namespace}/${JUNIT_RESULTS}"
 
   # Copy the metadata and JUnit results files to the shared directory
   cp "${ARTIFACT_DIR}/${namespace}/${JUNIT_RESULTS}" "${SHARED_DIR}/junit-results-${namespace}.xml"
