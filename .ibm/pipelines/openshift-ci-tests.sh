@@ -5,6 +5,8 @@ set -o errtrace
 set -o nounset
 export PS4='[$(date "+%Y-%m-%d %H:%M:%S")] ' # logs timestamp for every cmd.
 
+export TAG_NAME="next"
+
 # Define log file names and directories.
 LOGFILE="test-log"
 export DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
