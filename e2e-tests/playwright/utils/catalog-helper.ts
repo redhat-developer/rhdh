@@ -16,4 +16,4 @@ export class CatalogHelper {
     await this.uiHelper.verifyLink(name);
     await this.uiHelper.clickLink(name);
   }
-} 
+}

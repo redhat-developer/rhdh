@@ -1,0 +1,53 @@
+name: "Check Author"
+description: "Checks if the author is an active member of the specified team in the specified organization"
+
+inputs:
+  author:
+    description: "The author to check"
+    required: true
+  organization:
+    description: "The organization to check"
+    required: true
+  team:
+    description: "The team to check in the organization"
+    required: true
+  gh_token:
+    description: "GitHub token with permissions to read organization and team membership"
+    required: true
+
+outputs:
+  is_active_member:
+    description: "Whether the specified author is an active member of the specified team"
+    value: ${{ steps.check.outputs.is_active_member }}
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: Check if author is an active team member
+      id: check
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.gh_token }}
+      run: |
+        echo "Checking if ${{ inputs.author }} is an active member of ${{ inputs.team }} team in ${{ inputs.organization }}..."
+        
+        # Use the memberships endpoint to get specific membership info
+        if response=$(gh api "/orgs/${{ inputs.organization }}/teams/${{ inputs.team }}/memberships/${{ inputs.author }}" 2>/dev/null); then
+          state=$(echo "$response" | jq -r '.state')
+          
+          if [[ "$state" == "active" ]]; then
+            echo "✓ Author ${{ inputs.author }} is an active member of the ${{ inputs.team }} team"
+            echo "is_active_member=true" >> $GITHUB_OUTPUT
+          elif [[ "$state" == "pending" ]]; then
+            echo "⚠️  Author ${{ inputs.author }} has a pending invitation to the ${{ inputs.team }} team (not active)"
+            echo "is_active_member=false" >> $GITHUB_OUTPUT
+          else
+            echo "✗ Author ${{ inputs.author }} has unexpected membership state: $state"
+            echo "is_active_member=false" >> $GITHUB_OUTPUT
+          fi
+        else
+          # API call failed (user not in team)
+          echo "✗ Author ${{ inputs.author }} is not a member of the ${{ inputs.team }} team"
+          echo "is_active_member=false" >> $GITHUB_OUTPUT
+        fi

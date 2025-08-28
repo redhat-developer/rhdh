@@ -15,7 +15,7 @@ export class CatalogVerifier {
     await this.assertEntities(
       () => this.api.getAllCatalogUsersFromAPI(),
       expected,
-      'users',
+      "users",
     );
   }
 
@@ -23,7 +23,7 @@ export class CatalogVerifier {
     await this.assertEntities(
       () => this.api.getAllCatalogGroupsFromAPI(),
       expected,
-      'groups',
+      "groups",
     );
   }
 
@@ -36,16 +36,17 @@ export class CatalogVerifier {
 
     expect(items.length).toBeGreaterThan(0);
 
-    const displayNames = items
-      .flatMap(e => e.spec?.profile?.displayName ?? []);
-
-    const catalogSet = new Set(displayNames);
-    const missing = expected.filter(name => !catalogSet.has(name));
-
-    console.info(
-      `Catalog ${label}: [${displayNames.join(', ')}] – expecting [${expected.join(', ')}]`,
+    const displayNames = items.flatMap(
+      (e) => e.spec?.profile?.displayName ?? [],
     );
 
-    expect(missing, `Missing ${label}: ${missing.join(', ')}`).toHaveLength(0);
+    const catalogSet = new Set(displayNames);
+    const missing = expected.filter((name) => !catalogSet.has(name));
+
+    console.info(
+      `Catalog ${label}: [${displayNames.join(", ")}] – expecting [${expected.join(", ")}]`,
+    );
+
+    expect(missing, `Missing ${label}: ${missing.join(", ")}`).toHaveLength(0);
   }
-} 
+}

@@ -600,7 +600,7 @@ export class UIhelper {
     cardHeading: string,
     text: string | RegExp,
     exact = true,
-    timeout = 30000
+    timeout = 30000,
   ) {
     const locator = this.page
       .locator(UI_HELPER_ELEMENTS.MuiCard(cardHeading))

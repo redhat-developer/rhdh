@@ -24,7 +24,7 @@ spec:
     role: backend-plugin-module
     supportedVersions: 1.39.1
   author: Red Hat
-  support: tech-preview
+  support: production
   lifecycle: active
   partOf:
     - ldap-catalog-integration
