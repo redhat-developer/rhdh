@@ -331,6 +331,13 @@ jobs:
           run: |
             docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:${{ steps.meta-release.outputs.version }}
 
+        - name: Wait for manifest propagation
+          if: env.HAS_QUAY_AUTH == 'true' && (github.event_name != 'workflow_dispatch' || inputs.test_cleanup == 'true')
+          run: |
+            echo "Waiting 30 seconds for Quay to propagate multi-arch manifests..."
+            sleep 30
+            echo "Propagation wait completed"
+
         - name: Manage expiry and cleanup per-arch images
           if: env.HAS_QUAY_AUTH == 'true' && (github.event_name != 'workflow_dispatch' || inputs.test_cleanup == 'true')
           env:
@@ -404,30 +411,42 @@ jobs:
             import time
             import sys
             
-            def set_tag_expiry(base_url, namespace, repository, tag_name, expiry_days, oauth_token):
-                """Set expiry on a tag using the Quay API."""
+            def set_tag_expiry(base_url, namespace, repository, tag_name, expiry_days, oauth_token, max_retries=3):
+                """Set expiry on a tag using the Quay API with retry logic."""
                 expiry_timestamp = int(time.time()) + (expiry_days * 24 * 60 * 60)
                 
                 url = f"{base_url}/repository/{namespace}/{repository}/tag/{tag_name}"
                 headers = {"Authorization": f"Bearer {oauth_token}", "Content-Type": "application/json"}
                 payload = {"expiration": expiry_timestamp}
                 
-                try:
-                    response = requests.put(url, headers=headers, json=payload)
-                    
-                    if response.status_code in [200, 201, 204]:
-                        print(f"✅ {tag_name}: Set {expiry_days}-day expiry")
-                        return True
-                    elif response.status_code == 400:
-                        print(f"⚠️  {tag_name}: Bad request ({response.status_code}) - may already have expiry or invalid format")
-                        return False
-                    else:
-                        print(f"❌ {tag_name}: Expiry failed ({response.status_code}) - {response.text}")
-                        return False
+                for attempt in range(max_retries):
+                    try:
+                        response = requests.put(url, headers=headers, json=payload)
                         
-                except Exception as e:
-                    print(f"❌ {tag_name}: Request failed - {e}")
-                    return False
+                        if response.status_code in [200, 201, 204]:
+                            print(f"✅ {tag_name}: Set {expiry_days}-day expiry")
+                            return True
+                        elif response.status_code == 400:
+                            print(f"⚠️  {tag_name}: Bad request ({response.status_code}) - may already have expiry or invalid format")
+                            return False
+                        elif response.status_code == 404 and attempt < max_retries - 1:
+                            print(f"🔄 {tag_name}: Not found yet (attempt {attempt + 1}/{max_retries}), retrying in 10s...")
+                            time.sleep(10)
+                            continue
+                        else:
+                            print(f"❌ {tag_name}: Expiry failed ({response.status_code}) - {response.text}")
+                            return False
+                            
+                    except Exception as e:
+                        if attempt < max_retries - 1:
+                            print(f"🔄 {tag_name}: Request failed (attempt {attempt + 1}/{max_retries}), retrying: {e}")
+                            time.sleep(5)
+                            continue
+                        else:
+                            print(f"❌ {tag_name}: Request failed after {max_retries} attempts - {e}")
+                            return False
+                
+                return False
             
             def delete_tag(base_url, namespace, repository, tag_name, oauth_token):
                 """Delete a tag using the Quay API."""
