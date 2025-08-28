@@ -77,7 +77,7 @@ test.describe("Test Keycloak plugin metrics", () => {
       `
       oc login --token="${process.env.K8S_CLUSTER_TOKEN}" --server="${process.env.K8S_CLUSTER_URL}" --insecure-skip-tls-verify=true &&
       kubectl config set-context --current --namespace="${namespace}" &&
-      kubectl port-forward service/${rhdhMetricsServiceName} 9464:9464 --namespace="${namespace}"
+      kubectl port-forward service/${rhdhMetricsServiceName.metadata?.name} 9464:9464 --namespace="${namespace}"
     `,
     ]);
 
