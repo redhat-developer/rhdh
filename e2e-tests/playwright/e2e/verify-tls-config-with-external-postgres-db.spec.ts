@@ -1,8 +1,14 @@
 import { test, expect } from "@playwright/test";
 import { UIhelper } from "../utils/ui-helper";
 import { Common } from "../utils/common";
-
 test.describe("Verify TLS configuration with external Postgres DB", () => {
+  test.beforeAll(async () => {
+    test.info().annotations.push({
+      type: "component",
+      description: "data-management",
+    });
+  });
+
   test("Verify successful DB connection and display of expected entities in the Home Page and Catalog", async ({
     page,
   }) => {

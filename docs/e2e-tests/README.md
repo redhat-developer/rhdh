@@ -48,6 +48,16 @@ To run the tests, ensure you have:
 - An instance of the application to run the tests against
 - [Playwright browsers installed](#install-playwright-browsers)
 
+#### macOS Users
+**Important**: If you're using macOS, you need to install GNU `grep` and GNU `sed` to avoid compatibility issues with scripts and CI/CD pipelines:
+
+```bash
+brew install grep
+brew install gnu-sed
+```
+
+**Note**: Make sure to set the GNU versions as default to ensure they are used instead of the built-in macOS versions, which may cause issues when running scripts or tests that expect GNU-compatible behavior.
+
 ### Environment Variables
 
 Certain environment variables need to be set up, depending on what you intend to run. The most convenient way is to export them from the CLI or add them in your `.bash_profile` or `.zshrc`. Alternatively, they can be passed to Playwright via the `--env` flag:

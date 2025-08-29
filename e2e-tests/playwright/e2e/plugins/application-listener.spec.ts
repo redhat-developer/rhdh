@@ -3,6 +3,13 @@ import { UIhelper } from "../../utils/ui-helper";
 import { Common } from "../../utils/common";
 
 test.describe("Test ApplicationListener", () => {
+  test.beforeAll(async () => {
+    test.info().annotations.push({
+      type: "component",
+      description: "plugins",
+    });
+  });
+
   let uiHelper: UIhelper;
 
   test.beforeEach(async ({ page }) => {

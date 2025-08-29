@@ -9,6 +9,13 @@ test.describe.skip("gitlab discovery UI tests", () => {
   let uiHelper: UIhelper;
   let common: Common;
 
+  test.beforeAll(async () => {
+    test.info().annotations.push({
+      type: "component",
+      description: "plugins",
+    });
+  });
+
   test.beforeEach(async ({ page }) => {
     uiHelper = new UIhelper(page);
     common = new Common(page);

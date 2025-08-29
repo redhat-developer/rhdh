@@ -12,6 +12,11 @@ test.describe("Test Quay Actions plugin", () => {
   let repository: string;
 
   test.beforeAll(async ({ browser }, testInfo) => {
+    test.info().annotations.push({
+      type: "component",
+      description: "plugins",
+    });
+
     page = (await setupBrowser(browser, testInfo)).page;
     common = new Common(page);
     uiHelper = new UIhelper(page);
