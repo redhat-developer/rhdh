@@ -1,5 +1,4 @@
 import { expect, test } from "@playwright/test";
-import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { UIhelper } from "../../../utils/ui-helper";
 import { Common } from "../../../utils/common";
 import { ImageRegistry } from "../../../utils/quay/quay";
@@ -9,12 +8,10 @@ test.describe("Test Quay.io plugin", () => {
   let uiHelper: UIhelper;
 
   test.beforeAll(async () => {
-    ReportingApi.addAttributes([
-      {
-        key: "component",
-        value: "plugins",
-      },
-    ]);
+    test.info().annotations.push({
+      type: "component",
+      description: "plugins",
+    });
   });
 
   test.beforeEach(async ({ page }) => {

@@ -1,5 +1,4 @@
 import { test } from "@playwright/test";
-import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { Common } from "../../../utils/common";
 import { UIhelper } from "../../../utils/ui-helper";
 import { Catalog } from "../../../support/pages/catalog";
@@ -12,12 +11,10 @@ test.describe("Test Topology Plugin with RBAC", () => {
   let topology: Topology;
 
   test.beforeAll(async () => {
-    ReportingApi.addAttributes([
-      {
-        key: "component",
-        value: "plugins",
-      },
-    ]);
+    test.info().annotations.push({
+      type: "component",
+      description: "plugins",
+    });
   });
 
   test.beforeEach(async ({ page }, testInfo) => {

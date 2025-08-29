@@ -1,5 +1,4 @@
 import { test } from "@playwright/test";
-import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { HomePage } from "../../support/pages/home-page";
 import { Common } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
@@ -9,12 +8,10 @@ import { TechRadar } from "../../support/pages/tech-radar";
 
 test.describe("Test Customized Quick Access and tech-radar plugin", () => {
   test.beforeAll(async () => {
-    ReportingApi.addAttributes([
-      {
-        key: "component",
-        value: "plugins",
-      },
-    ]);
+    test.info().annotations.push({
+      type: "component",
+      description: "plugins",
+    });
   });
 
   test.beforeEach(async ({ page }) => {

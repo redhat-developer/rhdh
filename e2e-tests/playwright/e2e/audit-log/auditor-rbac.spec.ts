@@ -13,8 +13,6 @@ import {
   httpMethod,
 } from "./rbac-test-utils";
 import RhdhRbacApi from "../../support/api/rbac-api";
-import { ReportingApi } from "@reportportal/agent-js-playwright";
-
 let common: Common;
 let rbacApi: RhdhRbacApi;
 
@@ -29,12 +27,10 @@ test.describe("Auditor check for RBAC Plugin", () => {
   );
 
   test.beforeAll(async ({ browser }, testInfo) => {
-    ReportingApi.addAttributes([
-      {
-        key: "component",
-        value: "audit-log",
-      },
-    ]);
+    test.info().annotations.push({
+      type: "component",
+      description: "audit-log",
+    });
 
     await (await import("./log-utils")).LogUtils.loginToOpenShift();
     const page = (await setupBrowser(browser, testInfo)).page;

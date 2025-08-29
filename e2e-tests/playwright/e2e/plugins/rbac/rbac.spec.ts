@@ -1,5 +1,4 @@
 import { Locator, Page, expect, test } from "@playwright/test";
-import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { Response, Roles } from "../../../support/pages/rbac";
 import { UI_HELPER_ELEMENTS } from "../../../support/pageObjects/global-obj";
 import {
@@ -24,12 +23,10 @@ import { downloadAndReadFile } from "../../../utils/helper";
 */
 test.describe.serial("Test RBAC", () => {
   test.beforeAll(async () => {
-    ReportingApi.addAttributes([
-      {
-        key: "component",
-        value: "plugins",
-      },
-    ]);
+    test.info().annotations.push({
+      type: "component",
+      description: "plugins",
+    });
   });
   test.describe
     .serial("Test RBAC plugin: load permission policies and conditions from files", () => {

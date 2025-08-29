@@ -1,17 +1,14 @@
 import { expect, test } from "@playwright/test";
 import { UIhelper } from "../utils/ui-helper";
 import { Common } from "../utils/common";
-import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { runAccessibilityTests } from "../utils/accessibility";
 
 test.describe("Learning Paths", () => {
   test.beforeAll(async () => {
-    ReportingApi.addAttributes([
-      {
-        key: "component",
-        value: "core",
-      },
-    ]);
+    test.info().annotations.push({
+      type: "component",
+      description: "core",
+    });
   });
 
   let common: Common;

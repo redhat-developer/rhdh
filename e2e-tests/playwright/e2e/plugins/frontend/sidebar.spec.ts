@@ -1,5 +1,4 @@
 import { Page, test, expect } from "@playwright/test";
-import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { UIhelper } from "../../../utils/ui-helper";
 import { Common, setupBrowser } from "../../../utils/common";
 
@@ -10,12 +9,10 @@ test.describe("Validate Sidebar Navigation Customization", () => {
   let common: Common;
 
   test.beforeAll(async ({ browser }, testInfo) => {
-    ReportingApi.addAttributes([
-      {
-        key: "component",
-        value: "plugins",
-      },
-    ]);
+    test.info().annotations.push({
+      type: "component",
+      description: "plugins",
+    });
 
     page = (await setupBrowser(browser, testInfo)).page;
     uiHelper = new UIhelper(page);

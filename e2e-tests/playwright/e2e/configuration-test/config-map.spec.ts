@@ -2,16 +2,12 @@ import { test, expect } from "@playwright/test";
 import { KubeClient } from "../../utils/kube-client";
 import { Common } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
-import { ReportingApi } from "@reportportal/agent-js-playwright";
-
 test.describe("Change app-config at e2e test runtime", () => {
   test.beforeAll(async () => {
-    ReportingApi.addAttributes([
-      {
-        key: "component",
-        value: "configuration",
-      },
-    ]);
+    test.info().annotations.push({
+      type: "component",
+      description: "configuration",
+    });
   });
 
   // operator nightly does not require this test as RDS tls test also verifies runtime change

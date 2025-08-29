@@ -1,5 +1,4 @@
 import { test } from "@playwright/test";
-import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { Common, setupBrowser } from "../../../utils/common";
 import { UIhelper } from "../../../utils/ui-helper";
 import { Tekton } from "../../../utils/tekton/tekton";
@@ -19,12 +18,10 @@ test.describe("Test Tekton plugin", () => {
   let catalog: Catalog;
 
   test.beforeAll(async ({ browser }, testInfo) => {
-    ReportingApi.addAttributes([
-      {
-        key: "component",
-        value: "plugins",
-      },
-    ]);
+    test.info().annotations.push({
+      type: "component",
+      description: "plugins",
+    });
 
     const page = (await setupBrowser(browser, testInfo)).page;
     common = new Common(page);

@@ -1,16 +1,13 @@
 import { expect, test } from "@playwright/test";
-import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { UIhelper } from "../../utils/ui-helper";
 import { Common } from "../../utils/common";
 
 test.describe("Test ApplicationListener", () => {
   test.beforeAll(async () => {
-    ReportingApi.addAttributes([
-      {
-        key: "component",
-        value: "plugins",
-      },
-    ]);
+    test.info().annotations.push({
+      type: "component",
+      description: "plugins",
+    });
   });
 
   let uiHelper: UIhelper;

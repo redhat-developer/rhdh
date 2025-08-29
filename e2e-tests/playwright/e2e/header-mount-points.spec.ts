@@ -1,19 +1,15 @@
 import { expect, test } from "@playwright/test";
 import { UIhelper } from "../utils/ui-helper";
 import { Common } from "../utils/common";
-import { ReportingApi } from "@reportportal/agent-js-playwright";
-
 test.describe("Header mount points", () => {
   let common: Common;
   let uiHelper: UIhelper;
 
   test.beforeAll(async () => {
-    ReportingApi.addAttributes([
-      {
-        key: "component",
-        value: "navigation",
-      },
-    ]);
+    test.info().annotations.push({
+      type: "component",
+      description: "navigation",
+    });
   });
 
   test.beforeEach(async ({ page }) => {

@@ -1,14 +1,10 @@
 import { test, expect } from "@playwright/test";
-import { ReportingApi } from "@reportportal/agent-js-playwright";
-
 test.describe("Application health check", () => {
   test.beforeAll(async () => {
-    ReportingApi.addAttributes([
-      {
-        key: "component",
-        value: "core",
-      },
-    ]);
+    test.info().annotations.push({
+      type: "component",
+      description: "core",
+    });
   });
 
   test("Application health check", async ({ request }) => {

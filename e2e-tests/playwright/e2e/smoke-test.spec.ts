@@ -1,19 +1,15 @@
 import { test } from "@playwright/test";
 import { UIhelper } from "../utils/ui-helper";
 import { Common } from "../utils/common";
-import { ReportingApi } from "@reportportal/agent-js-playwright";
-
 test.describe("Smoke test", () => {
   let uiHelper: UIhelper;
   let common: Common;
 
   test.beforeAll(async () => {
-    ReportingApi.addAttributes([
-      {
-        key: "component",
-        value: "core",
-      },
-    ]);
+    test.info().annotations.push({
+      type: "component",
+      description: "core",
+    });
   });
 
   test.beforeEach(async ({ page }) => {

@@ -6,8 +6,6 @@ import {
   CUSTOM_SIDEBAR_LOGO,
 } from "../support/testData/custom-theme";
 import { ThemeConstants } from "../data/theme-constants";
-import { ReportingApi } from "@reportportal/agent-js-playwright";
-
 let page: Page;
 
 test.describe("CustomTheme should be applied", () => {
@@ -15,12 +13,10 @@ test.describe("CustomTheme should be applied", () => {
   let themeVerifier: ThemeVerifier;
 
   test.beforeAll(async ({ browser }, testInfo) => {
-    ReportingApi.addAttributes([
-      {
-        key: "component",
-        value: "core",
-      },
-    ]);
+    test.info().annotations.push({
+      type: "component",
+      description: "core",
+    });
 
     page = (await setupBrowser(browser, testInfo)).page;
     common = new Common(page);
