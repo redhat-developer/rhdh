@@ -27,7 +27,10 @@ spec:
     - name: Backstage Community
   publisher: Red Hat
   lifecycle: active
-  support: tech-preview
+  # support: tech-preview
+  support:
+    name: Red Hat
+    level: tech-preview
 
   description: |
     This plugin contains a collection of actions for working with Gerrit

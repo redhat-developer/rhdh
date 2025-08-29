@@ -26,7 +26,9 @@ metadata:
 spec:
 
   author: SDA SE
-  support: tech-preview  # production, tech-preview, dev-preveiw
+  support:
+    name: SDA SE
+    level: tech-preview
   lifecycle: active
   publisher: Red Hat
 
