@@ -88,6 +88,7 @@ spec:
     - ./redhat-backstage-plugin-orchestrator-backend.yaml
     - ./redhat-backstage-plugin-orchestrator.yaml
     - ./redhat-backstage-plugin-scaffolder-backend-module-orchestrator.yaml
+    - ./redhat-backstage-plugin-orchestrator-form-widgets.yaml
     - ./dynatrace-backstage-plugin-dql.yaml
     - ./dynatrace-backstage-plugin-dql-backend.yaml
     - ./rhdh-backstage-plugin-adoption-insights.yaml
