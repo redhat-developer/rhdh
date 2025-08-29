@@ -165,4 +165,5 @@ backend.add(import('@internal/plugin-licensed-users-info-backend'));
 
 backend.add(userSettingsBackend);
 
+backend.add(import('@internal/plugin-translation-backend'));
 backend.start();

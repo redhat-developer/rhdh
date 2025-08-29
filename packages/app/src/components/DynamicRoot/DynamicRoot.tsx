@@ -16,7 +16,10 @@ import {
   IdentityApi,
   identityApiRef,
 } from '@backstage/core-plugin-api';
-import { TranslationResource } from '@backstage/core-plugin-api/alpha';
+import {
+  TranslationRef,
+  TranslationResource,
+} from '@backstage/core-plugin-api/alpha';
 
 import { useThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 import DynamicRootContext, {
@@ -36,7 +39,10 @@ import { useScalprum } from '@scalprum/react-core';
 import { catalogImportTranslations } from '../../translations/catalog-import/catalog-import';
 import { coreComponentsTranslations } from '../../translations/core-components/core-components';
 import { scaffolderTranslations } from '../../translations/scaffolder/scaffolder';
-import { TranslationConfig } from '../../types/types';
+import {
+  InternalTranslationResource,
+  TranslationConfig,
+} from '../../types/types';
 import bindAppRoutes from '../../utils/dynamicUI/bindAppRoutes';
 import extractDynamicConfig, {
   configIfToCallable,
@@ -45,6 +51,10 @@ import extractDynamicConfig, {
 } from '../../utils/dynamicUI/extractDynamicConfig';
 import initializeRemotePlugins from '../../utils/dynamicUI/initializeRemotePlugins';
 import { getDefaultLanguage } from '../../utils/language/language';
+import {
+  buildJSONTranslations,
+  translationResourceGenerator,
+} from '../../utils/translations';
 import { catalogTranslations } from '../catalog/translations/catalog';
 import { MenuIcon } from '../Root/MenuIcon';
 import CommonIcons from './CommonIcons';
@@ -97,6 +107,7 @@ export const DynamicRoot = ({
   staticPluginStore = {},
   scalprumConfig,
   translationConfig,
+  baseUrl,
 }: {
   afterInit: () => Promise<{ default: React.ComponentType }>;
   // Static APIs
@@ -104,6 +115,7 @@ export const DynamicRoot = ({
   dynamicPlugins: DynamicPluginConfig;
   staticPluginStore?: StaticPlugins;
   scalprumConfig: AppsConfig;
+  baseUrl: string;
   translationConfig?: TranslationConfig;
 }) => {
   const app = useRef<BackstageApp>();
@@ -538,15 +550,40 @@ export const DynamicRoot = ({
 
     const dynamicTranslationResources = translationResources?.reduce<
       TranslationResource[]
-    >((acc, { scope, module, importName }) => {
-      const resource = allPlugins[scope]?.[module]?.[importName];
-      if (resource && (resource as TranslationResource<string>).id) {
-        acc.push(resource as TranslationResource<string>);
-      } else {
+    >((acc, { scope, module, importName, ref, jsonTranslations }) => {
+      const plugin = allPlugins[scope]?.[module];
+      const resource = plugin?.[importName] as InternalTranslationResource<any>;
+      const resourceRef = plugin?.[ref] as any as TranslationRef<string, any>;
+      if (!resource?.id) {
         // eslint-disable-next-line no-console
         console.warn(
           `Plugin ${scope} is not configured properly: ${module}.${importName} not found, ignoring translation resource: ${importName}`,
         );
+        return acc;
+      }
+      acc.push(resource);
+      const hasJsonOverrides = jsonTranslations?.length > 0;
+
+      if (hasJsonOverrides) {
+        const jsonTranslationResources = buildJSONTranslations(
+          jsonTranslations,
+          baseUrl,
+        );
+        if (!resourceRef) {
+          // eslint-disable-next-line no-console
+          console.warn(
+            `Plugin translation ref for ${scope} is not configured, ignoring JSON translation resource`,
+          );
+          return acc;
+        }
+
+        const jsonResource = translationResourceGenerator(
+          resourceRef,
+          resource,
+          jsonTranslationResources,
+        );
+
+        acc.push(jsonResource as TranslationResource<string>);
       }
       return acc;
     }, []);
@@ -604,7 +641,7 @@ export const DynamicRoot = ({
     dynamicRootConfig.scaffolderFieldExtensions =
       scaffolderFieldExtensionComponents;
     dynamicRootConfig.techdocsAddons = techdocsAddonComponents;
-
+    dynamicRootConfig.translationResources = dynamicTranslationResources;
     // make the dynamic UI configuration available to DynamicRootContext consumers
     setComponentRegistry({
       AppProvider: app.current.getProvider(),
@@ -630,6 +667,7 @@ export const DynamicRoot = ({
     staticPluginStore,
     themes,
     translationConfig,
+    baseUrl,
   ]);
 
   useEffect(() => {

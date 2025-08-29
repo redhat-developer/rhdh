@@ -30,7 +30,8 @@
     "prettier:fix": "prettier --ignore-unknown --write ."
   },
   "dependencies": {
-    "@backstage/catalog-model": "1.7.4"
+    "@backstage/catalog-model": "1.7.4",
+    "@backstage/core-plugin-api": "1.7.4"
   },
   "devDependencies": {
     "@backstage/cli": "0.32.1",
