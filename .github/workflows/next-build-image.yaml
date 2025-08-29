@@ -17,15 +17,6 @@ name: Build Next and Tag Image
 on:
   # workflow_dispatch so that it can be triggered manually if needed
   workflow_dispatch:
-    inputs:
-      registry_image:
-        description: "Target registry/repository (e.g., polasudo/testing)"
-        required: false
-        default: "testing-rhdh-martin/testing"
-      test_cleanup:
-        description: "Enable cleanup testing (true/false)"
-        required: false
-        default: "true"
   schedule:
     # run at 3:18 UTC every day
     - cron: "18 3 * * *"
@@ -113,11 +104,7 @@ jobs:
           fi
           echo "EXPIRES_AFTER=$expires_after" >> $GITHUB_ENV
 
-          # allow overriding target image when manually dispatched for testing
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.registry_image }}" ]; then
-            echo "REGISTRY_IMAGE=${{ inputs.registry_image }}" >> $GITHUB_ENV
-            echo "Using test registry: ${{ inputs.registry_image }}"
-          fi
+
 
       - name: Check Quay credentials
         run: |
@@ -234,11 +221,7 @@ jobs:
             fi
             echo "EXPIRES_AFTER=$expires_after" >> $GITHUB_ENV
 
-            # allow overriding target image when manually dispatched for testing
-            if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.registry_image }}" ]; then
-              echo "REGISTRY_IMAGE=${{ inputs.registry_image }}" >> $GITHUB_ENV
-              echo "Using test registry: ${{ inputs.registry_image }}"
-            fi
+
 
         - name: Check Quay credentials
           run: |
