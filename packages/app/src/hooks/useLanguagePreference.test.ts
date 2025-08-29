@@ -30,6 +30,7 @@ const mockIdentityApi = {
 };
 const mockConfigApi = {
   getOptionalString: jest.fn(),
+  getConfig: jest.fn(),
 };
 
 // Mock hooks
@@ -77,6 +78,15 @@ describe('useLanguagePreference', () => {
     });
     mockConfigApi.getOptionalString.mockImplementation((key: string) => {
       if (key === 'userSettings.persistence') return 'database';
+      return undefined;
+    });
+    mockConfigApi.getConfig.mockImplementation((key: string) => {
+      if (key === 'i18n') {
+        return {
+          getStringArray: jest.fn(() => ['en']),
+          getOptional: jest.fn(() => undefined),
+        };
+      }
       return undefined;
     });
     (mockStorageApi.forBucket as jest.Mock).mockImplementation(() => ({

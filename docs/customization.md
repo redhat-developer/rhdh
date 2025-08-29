@@ -209,8 +209,18 @@ i18n:
     - en
     - de
     - it
-  defaultLocale: en # Optional. Defaults to `en` if not specified.
+  defaultLocale: en # Optional. Used as fallback when browser language preferences don't match supported locales, or defaults to 'en' if not specified.
 ```
+
+### Default Language Selection Priority
+
+Default language selection follows this priority order:
+
+1. **Browser Language Priority**: The system first checks the user's browser language preferences to provide a personalized experience.
+
+2. **Configuration Priority**: If no browser language matches the supported locales, the `defaultLocale` from the `i18n` configuration is used as a fallback.
+
+3. **Fallback Priority**: If neither browser preferences nor configuration provide a match, defaults to `en`.
 
 ## Language Preferences
 

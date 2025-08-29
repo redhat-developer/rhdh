@@ -10,6 +10,9 @@ import {
 } from '@backstage/core-plugin-api';
 import { appLanguageApiRef } from '@backstage/core-plugin-api/alpha';
 
+import { TranslationConfig } from '../types/types';
+import { getDefaultLanguage } from '../utils/language/language';
+
 const BUCKET = 'userSettings';
 const KEY = 'language';
 const GUEST_USER_REF = 'user:development/guest';
@@ -36,6 +39,13 @@ export const useLanguagePreference = (): string | undefined => {
   const isGuestUser = value?.userEntityRef === GUEST_USER_REF;
   const persistence =
     configApi.getOptionalString('userSettings.persistence') ?? 'database';
+  const config = configApi.getConfig('i18n');
+
+  const translationConfig: TranslationConfig = {
+    locales: config?.getStringArray('locales') ?? ['en'],
+    defaultLocale: config?.getOptional('defaultLocale'),
+  };
+
   const isDatabasePersistence = persistence === 'database';
 
   // Validate persistence configuration
@@ -56,6 +66,8 @@ export const useLanguagePreference = (): string | undefined => {
   const hydrated = useRef(false);
   const mounted = useRef(true);
 
+  const defaultLanguage = getDefaultLanguage(translationConfig);
+
   // User settings → language api
   useEffect(() => {
     if (!shouldSync) {
@@ -69,6 +81,9 @@ export const useLanguagePreference = (): string | undefined => {
         .forBucket(BUCKET)
         .observe$<string>(KEY)
         .subscribe(stored => {
+          if (mounted.current && stored.presence === 'absent') {
+            languageApi.setLanguage(defaultLanguage);
+          }
           if (
             mounted.current &&
             stored?.value &&
@@ -99,7 +114,7 @@ export const useLanguagePreference = (): string | undefined => {
         }
       }
     };
-  }, [storageApi, shouldSync, languageApi]);
+  }, [storageApi, shouldSync, languageApi, defaultLanguage]);
 
   // Cleanup mounted flag on unmount
   useEffect(() => {
