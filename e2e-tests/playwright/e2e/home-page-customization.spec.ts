@@ -2,7 +2,6 @@ import { test } from "@playwright/test";
 import { UIhelper } from "../utils/ui-helper";
 import { Common } from "../utils/common";
 import { HomePage } from "../support/pages/home-page";
-import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { runAccessibilityTests } from "../utils/accessibility";
 
 test.describe("Home page customization", () => {
@@ -11,12 +10,10 @@ test.describe("Home page customization", () => {
   let homePage: HomePage;
 
   test.beforeAll(async () => {
-    ReportingApi.addAttributes([
-      {
-        key: "component",
-        value: "core",
-      },
-    ]);
+    test.info().annotations.push({
+      type: "component",
+      description: "core",
+    });
   });
 
   test.beforeEach(async ({ page }) => {

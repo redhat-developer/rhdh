@@ -4,8 +4,6 @@ import { Common, setupBrowser } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
 import { KeycloakHelper } from "../../utils/authentication-providers/keycloak-helper";
 import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
-import { ReportingApi } from "@reportportal/agent-js-playwright";
-
 let page: Page;
 let context: BrowserContext;
 
@@ -54,12 +52,10 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
   test.use({ baseURL: backstageUrl });
 
   test.beforeAll(async ({ browser }, testInfo) => {
-    ReportingApi.addAttributes([
-      {
-        key: "component",
-        value: "authentication",
-      },
-    ]);
+    test.info().annotations.push({
+      type: "component",
+      description: "authentication",
+    });
 
     test.info().setTimeout(600 * 1000);
     // load default configs from yaml files

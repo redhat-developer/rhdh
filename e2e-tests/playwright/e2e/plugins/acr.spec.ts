@@ -1,17 +1,14 @@
 import { test } from "@playwright/test";
-import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { UIhelper } from "../../utils/ui-helper";
 import { Common, setupBrowser } from "../../utils/common";
 
 let page;
 test.describe("Test ACR plugin", () => {
   test.beforeAll(async () => {
-    ReportingApi.addAttributes([
-      {
-        key: "component",
-        value: "plugins",
-      },
-    ]);
+    test.info().annotations.push({
+      type: "component",
+      description: "plugins",
+    });
   });
 
   let uiHelper: UIhelper;

@@ -1,5 +1,4 @@
 import { CatalogUsersPO } from "../../../support/pageObjects/catalog/catalog-users-obj";
-import { ReportingApi } from "@reportportal/agent-js-playwright";
 import Keycloak from "../../../utils/keycloak/keycloak";
 import { UIhelper } from "../../../utils/ui-helper";
 import { Common } from "../../../utils/common";
@@ -13,12 +12,10 @@ test.describe("Test Keycloak plugin", () => {
   let token: string;
 
   test.beforeAll(async () => {
-    ReportingApi.addAttributes([
-      {
-        key: "component",
-        value: "plugins",
-      },
-    ]);
+    test.info().annotations.push({
+      type: "component",
+      description: "plugins",
+    });
 
     keycloak = new Keycloak();
     token = await keycloak.getAuthenticationToken();

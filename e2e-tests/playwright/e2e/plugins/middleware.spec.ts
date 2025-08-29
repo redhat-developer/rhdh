@@ -1,16 +1,13 @@
 // https://github.com/gashcrumb/dynamic-plugins-root-http-middleware/tree/main/plugins/middleware-header-example
 import test, { expect } from "@playwright/test";
-import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { Common } from "../../utils/common";
 
 test.describe("Test middleware plugin", () => {
   test.beforeAll(async () => {
-    ReportingApi.addAttributes([
-      {
-        key: "component",
-        value: "plugins",
-      },
-    ]);
+    test.info().annotations.push({
+      type: "component",
+      description: "plugins",
+    });
   });
 
   test("Check the middleware is working", async ({ page }) => {

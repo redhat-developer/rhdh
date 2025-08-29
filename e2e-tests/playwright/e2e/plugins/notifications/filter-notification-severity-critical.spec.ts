@@ -1,5 +1,4 @@
 import { test } from "@playwright/test";
-import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { UIhelper } from "../../../utils/ui-helper";
 import { Common } from "../../../utils/common";
 import RhdhNotficationsApi from "../../../support/api/notifications";
@@ -14,12 +13,10 @@ test.describe("Filter critical notification tests", () => {
   let notificationPage: NotificationPage;
 
   test.beforeAll(async () => {
-    ReportingApi.addAttributes([
-      {
-        key: "component",
-        value: "integration",
-      },
-    ]);
+    test.info().annotations.push({
+      type: "component",
+      description: "integration",
+    });
   });
 
   test.beforeEach(async ({ page }) => {

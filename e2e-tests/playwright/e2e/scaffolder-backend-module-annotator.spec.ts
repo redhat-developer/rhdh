@@ -2,7 +2,6 @@ import { expect, Page, test } from "@playwright/test";
 import { UIhelper } from "../utils/ui-helper";
 import { Common, setupBrowser } from "../utils/common";
 import { CatalogImport } from "../support/pages/catalog-import";
-import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { APIHelper } from "../utils/api-helper";
 import { GITHUB_API_ENDPOINTS } from "../utils/api-endpoints";
 import { runAccessibilityTests } from "../utils/accessibility";
@@ -33,12 +32,10 @@ test.describe.serial("Test Scaffolder Backend Module Annotator Actions", () => {
   };
 
   test.beforeAll(async ({ browser }, testInfo) => {
-    ReportingApi.addAttributes([
-      {
-        key: "component",
-        value: "core",
-      },
-    ]);
+    test.info().annotations.push({
+      type: "component",
+      description: "core",
+    });
 
     page = (await setupBrowser(browser, testInfo)).page;
 

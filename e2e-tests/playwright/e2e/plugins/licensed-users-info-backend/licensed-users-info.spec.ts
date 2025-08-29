@@ -1,5 +1,4 @@
 import { CatalogUsersPO } from "../../../support/pageObjects/catalog/catalog-users-obj";
-import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { RhdhAuthUiHack } from "../../../support/api/rhdh-auth-hack";
 import { Common } from "../../../utils/common";
 import {
@@ -15,12 +14,10 @@ test.describe("Test licensed users info backend plugin", async () => {
   let common: Common;
 
   test.beforeAll(async () => {
-    ReportingApi.addAttributes([
-      {
-        key: "component",
-        value: "plugins",
-      },
-    ]);
+    test.info().annotations.push({
+      type: "component",
+      description: "plugins",
+    });
   });
 
   let apiToken: string;

@@ -1,5 +1,4 @@
 import { test } from "@playwright/test";
-import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { UIhelper } from "../../utils/ui-helper";
 import { Common } from "../../utils/common";
 import { CatalogImport } from "../../support/pages/catalog-import";
@@ -16,12 +15,10 @@ test.describe("Testing scaffolder-backend-module-http-request to invoke an exter
     "https://github.com/janus-qe/software-template/blob/main/test-http-request.yaml";
 
   test.beforeAll(async () => {
-    ReportingApi.addAttributes([
-      {
-        key: "component",
-        value: "plugins",
-      },
-    ]);
+    test.info().annotations.push({
+      type: "component",
+      description: "plugins",
+    });
   });
 
   test.beforeEach(async ({ page }) => {

@@ -2,16 +2,12 @@ import { test } from "@playwright/test";
 import { UIhelper } from "../utils/ui-helper";
 import { HomePage } from "../support/pages/home-page";
 import { Common } from "../utils/common";
-import { ReportingApi } from "@reportportal/agent-js-playwright";
-
 test.describe("Guest Signing Happy path", () => {
   test.beforeAll(async () => {
-    ReportingApi.addAttributes([
-      {
-        key: "component",
-        value: "authentication",
-      },
-    ]);
+    test.info().annotations.push({
+      type: "component",
+      description: "authentication",
+    });
   });
 
   let uiHelper: UIhelper;

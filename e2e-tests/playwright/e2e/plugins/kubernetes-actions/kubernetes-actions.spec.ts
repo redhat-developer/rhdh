@@ -1,5 +1,4 @@
 import { expect, Page, test } from "@playwright/test";
-import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { Common, setupBrowser } from "../../../utils/common";
 import { UIhelper } from "../../../utils/ui-helper";
 import { KubeClient } from "../../../utils/kube-client";
@@ -13,12 +12,10 @@ test.describe("Test Kubernetes Actions plugin", () => {
   let namespace: string;
 
   test.beforeAll(async ({ browser }, testInfo) => {
-    ReportingApi.addAttributes([
-      {
-        key: "component",
-        value: "plugins",
-      },
-    ]);
+    test.info().annotations.push({
+      type: "component",
+      description: "plugins",
+    });
 
     page = (await setupBrowser(browser, testInfo)).page;
     common = new Common(page);

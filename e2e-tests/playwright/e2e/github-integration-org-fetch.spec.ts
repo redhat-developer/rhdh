@@ -1,17 +1,13 @@
 import { test, Page } from "@playwright/test";
 import { UIhelper } from "../utils/ui-helper";
 import { Common, setupBrowser } from "../utils/common";
-import { ReportingApi } from "@reportportal/agent-js-playwright";
-
 let page: Page;
 test.describe.serial("GitHub integration with Org data fetching", () => {
   test.beforeAll(async () => {
-    ReportingApi.addAttributes([
-      {
-        key: "component",
-        value: "api",
-      },
-    ]);
+    test.info().annotations.push({
+      type: "component",
+      description: "api",
+    });
   });
 
   test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env

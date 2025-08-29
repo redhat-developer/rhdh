@@ -1,7 +1,6 @@
 import { Page, expect, test } from "@playwright/test";
 import { UIhelper } from "../utils/ui-helper";
 import { Common, setupBrowser } from "../utils/common";
-import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { CatalogImport } from "../support/pages/catalog-import";
 import { UI_HELPER_ELEMENTS } from "../support/pageObjects/global-obj";
 
@@ -17,12 +16,10 @@ test.describe("Test timestamp column on Catalog", () => {
     "https://github.com/janus-qe/custom-catalog-entities/blob/main/timestamp-catalog-info.yaml";
 
   test.beforeAll(async ({ browser }, testInfo) => {
-    ReportingApi.addAttributes([
-      {
-        key: "component",
-        value: "core",
-      },
-    ]);
+    test.info().annotations.push({
+      type: "component",
+      description: "core",
+    });
 
     page = (await setupBrowser(browser, testInfo)).page;
 

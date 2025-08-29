@@ -1,5 +1,4 @@
 import { test } from "@playwright/test";
-import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { UIhelper } from "../../../utils/ui-helper";
 import { Common } from "../../../utils/common";
 
@@ -11,12 +10,10 @@ test.describe.skip("gitlab discovery UI tests", () => {
   let common: Common;
 
   test.beforeAll(async () => {
-    ReportingApi.addAttributes([
-      {
-        key: "component",
-        value: "plugins",
-      },
-    ]);
+    test.info().annotations.push({
+      type: "component",
+      description: "plugins",
+    });
   });
 
   test.beforeEach(async ({ page }) => {

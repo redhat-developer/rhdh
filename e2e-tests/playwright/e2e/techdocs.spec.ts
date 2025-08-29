@@ -1,7 +1,6 @@
 import { Page, test } from "@playwright/test";
 import { UIhelper } from "../utils/ui-helper";
 import { Common } from "../utils/common";
-import { ReportingApi } from "@reportportal/agent-js-playwright";
 import { expect } from "@playwright/test";
 import { Catalog } from "../support/pages/catalog";
 
@@ -11,12 +10,10 @@ test.describe("TechDocs", () => {
   let catalog: Catalog;
 
   test.beforeAll(async () => {
-    ReportingApi.addAttributes([
-      {
-        key: "component",
-        value: "core",
-      },
-    ]);
+    test.info().annotations.push({
+      type: "component",
+      description: "core",
+    });
   });
 
   async function docsTextHighlight(page: Page) {
