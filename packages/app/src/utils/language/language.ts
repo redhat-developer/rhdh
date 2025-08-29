@@ -6,7 +6,7 @@ import { TranslationConfig } from '../../types/types';
 export const getDefaultLanguage = (
   translationConfig?: TranslationConfig,
 ): string => {
-  // First priority: try to use browser language if supported
+  // Priority 1: try to use browser language if supported
   const availableLocales = translationConfig?.locales ?? ['en'];
   const browserLanguages = navigator.languages || [navigator.language];
 
@@ -41,7 +41,7 @@ export const getDefaultLanguage = (
     }
   }
 
-  // second priority: admin configured default locale
+  // Priority 2: admin configured default locale (fallback)
   if (translationConfig?.defaultLocale) {
     return translationConfig.defaultLocale;
   }

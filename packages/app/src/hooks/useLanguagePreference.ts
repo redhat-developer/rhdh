@@ -76,23 +76,22 @@ export const useLanguagePreference = (): string | undefined => {
 
     let subscription: { unsubscribe: () => void } | null = null;
 
+    const storage = storageApi.forBucket(BUCKET);
     try {
-      subscription = storageApi
-        .forBucket(BUCKET)
-        .observe$<string>(KEY)
-        .subscribe(stored => {
-          if (mounted.current && stored.presence === 'absent') {
-            languageApi.setLanguage(defaultLanguage);
-          }
-          if (
-            mounted.current &&
-            stored?.value &&
-            stored.value !== languageApi.getLanguage().language
-          ) {
-            lastUpdateFromUserSettings.current = true;
-            languageApi.setLanguage(stored.value);
-          }
-        });
+      subscription = storage.observe$<string>(KEY).subscribe(stored => {
+        if (mounted.current && stored.presence === 'absent') {
+          languageApi.setLanguage(defaultLanguage);
+          storage.set(KEY, defaultLanguage);
+        }
+        if (
+          mounted.current &&
+          stored?.value &&
+          stored.value !== languageApi.getLanguage().language
+        ) {
+          lastUpdateFromUserSettings.current = true;
+          languageApi.setLanguage(stored.value);
+        }
+      });
     } catch (error) {
       // eslint-disable-next-line no-console
       console.warn(
