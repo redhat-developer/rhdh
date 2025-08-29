@@ -846,14 +846,18 @@ initiate_runtime_deployment() {
 }
 
 initiate_sanity_plugin_checks_deployment() {
-  configure_namespace "${NAME_SPACE_SANITY_PLUGINS_CHECK}"
-  uninstall_helmchart "${NAME_SPACE_SANITY_PLUGINS_CHECK}" "${RELEASE_NAME}"
-  deploy_redis_cache "${NAME_SPACE_SANITY_PLUGINS_CHECK}"
-  apply_yaml_files "${DIR}" "${NAME_SPACE_SANITY_PLUGINS_CHECK}" "${sanity_plugins_url}"
+  local release_name=$1
+  local name_space_sanity_plugins_check=$2
+  local sanity_plugins_url=$3
+
+  configure_namespace "${name_space_sanity_plugins_check}"
+  uninstall_helmchart "${name_space_sanity_plugins_check}" "${release_name}"
+  deploy_redis_cache "${name_space_sanity_plugins_check}"
+  apply_yaml_files "${DIR}" "${name_space_sanity_plugins_check}" "${sanity_plugins_url}"
   yq_merge_value_files "overwrite" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_SANITY_PLUGINS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}"
-  mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE_SANITY_PLUGINS_CHECK}"
-  cp -a "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" "${ARTIFACT_DIR}/${NAME_SPACE_SANITY_PLUGINS_CHECK}/" || true # Save the final value-file into the artifacts directory.
-  helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE_SANITY_PLUGINS_CHECK}" \
+  mkdir -p "${ARTIFACT_DIR}/${name_space_sanity_plugins_check}"
+  cp -a "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" "${ARTIFACT_DIR}/${name_space_sanity_plugins_check}/" || true # Save the final value-file into the artifacts directory.
+  helm upgrade -i "${release_name}" -n "${name_space_sanity_plugins_check}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
