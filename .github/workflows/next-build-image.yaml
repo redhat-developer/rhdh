@@ -45,7 +45,7 @@ concurrency:
 
 env:
   REGISTRY: quay.io
-  REGISTRY_IMAGE: polasudo/testing
+  REGISTRY_IMAGE: rhdh-community/rhdh
 
 jobs:
   build-image:
@@ -332,14 +332,14 @@ jobs:
             docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:${{ steps.meta-release.outputs.version }}
 
         - name: Wait for manifest propagation
-          if: env.HAS_QUAY_AUTH == 'true' && (github.event_name != 'workflow_dispatch' || inputs.test_cleanup == 'true')
+          if: env.HAS_QUAY_AUTH == 'true'
           run: |
-            echo "Waiting 30 seconds for Quay to propagate multi-arch manifests..."
-            sleep 30
+            echo "Waiting for Quay to propagate multi-arch manifests..."
+            sleep 15
             echo "Propagation wait completed"
 
         - name: Manage expiry and cleanup per-arch images
-          if: env.HAS_QUAY_AUTH == 'true' && (github.event_name != 'workflow_dispatch' || inputs.test_cleanup == 'true')
+          if: env.HAS_QUAY_AUTH == 'true'
           env:
             REGISTRY_IMAGE: ${{ env.REGISTRY_IMAGE }}
             REF_NAME: ${{ env.REF_NAME }}
@@ -397,10 +397,6 @@ jobs:
               export PER_ARCH_TAGS="${per_arch_tags[*]}"
               export days="${days}"
               
-              # Debug: Show what tags we're working with
-              echo "Debug: Multi-arch tags to manage: ${multi_arch_tags[*]}"
-              echo "Debug: Per-arch tags to delete: ${per_arch_tags[*]}"
-              
               # Install requests if not available
               pip install requests > /dev/null 2>&1 || echo "requests already available"
               
@@ -424,26 +420,26 @@ jobs:
                         response = requests.put(url, headers=headers, json=payload)
                         
                         if response.status_code in [200, 201, 204]:
-                            print(f"✅ {tag_name}: Set {expiry_days}-day expiry")
+                            print(f"Set {expiry_days}-day expiry on {tag_name}")
                             return True
                         elif response.status_code == 400:
-                            print(f"⚠️  {tag_name}: Bad request ({response.status_code}) - may already have expiry or invalid format")
+                            print(f"Tag {tag_name}: Bad request ({response.status_code}) - may already have expiry")
                             return False
                         elif response.status_code == 404 and attempt < max_retries - 1:
-                            print(f"🔄 {tag_name}: Not found yet (attempt {attempt + 1}/{max_retries}), retrying in 10s...")
-                            time.sleep(10)
+                            print(f"Tag {tag_name}: Not found yet (attempt {attempt + 1}/{max_retries}), retrying in 5s...")
+                            time.sleep(5)
                             continue
                         else:
-                            print(f"❌ {tag_name}: Expiry failed ({response.status_code}) - {response.text}")
+                            print(f"Tag {tag_name}: Expiry failed ({response.status_code}) - {response.text}")
                             return False
                             
                     except Exception as e:
                         if attempt < max_retries - 1:
-                            print(f"🔄 {tag_name}: Request failed (attempt {attempt + 1}/{max_retries}), retrying: {e}")
-                            time.sleep(5)
+                            print(f"Tag {tag_name}: Request failed (attempt {attempt + 1}/{max_retries}), retrying: {e}")
+                            time.sleep(3)
                             continue
                         else:
-                            print(f"❌ {tag_name}: Request failed after {max_retries} attempts - {e}")
+                            print(f"Tag {tag_name}: Request failed after {max_retries} attempts - {e}")
                             return False
                 
                 return False
@@ -457,17 +453,17 @@ jobs:
                     response = requests.delete(url, headers=headers)
                     
                     if response.status_code == 204:
-                        print(f"✅ {tag_name}: Deleted successfully")
+                        print(f"Deleted tag {tag_name}")
                         return True
                     elif response.status_code == 404:
-                        print(f"ℹ️  {tag_name}: Already deleted or doesn't exist")
+                        print(f"Tag {tag_name}: Already deleted or doesn't exist")
                         return True
                     else:
-                        print(f"❌ {tag_name}: Delete failed ({response.status_code}) - {response.text}")
+                        print(f"Tag {tag_name}: Delete failed ({response.status_code}) - {response.text}")
                         return False
                         
                 except Exception as e:
-                    print(f"❌ {tag_name}: Delete request failed - {e}")
+                    print(f"Tag {tag_name}: Delete request failed - {e}")
                     return False
             
             def main():
@@ -476,7 +472,7 @@ jobs:
                 # Parse repository
                 repository = os.environ['REGISTRY_IMAGE']
                 if '/' not in repository:
-                    print(f"❌ Repository must be in format 'namespace/repository', got: {repository}")
+                    print(f"Error: Repository must be in format 'namespace/repository', got: {repository}")
                     sys.exit(1)
                 
                 namespace, repo_name = repository.split('/', 1)
@@ -488,39 +484,39 @@ jobs:
                 multi_arch_tags = os.environ.get('MULTI_ARCH_TAGS', '').split()
                 per_arch_tags = os.environ.get('PER_ARCH_TAGS', '').split()
                 
-                print(f"🏷️  Managing tags for {repository}")
-                print(f"   Multi-arch tags: {multi_arch_tags}")
-                print(f"   Per-arch tags to delete: {per_arch_tags}")
+                print(f"Managing tags for {repository}")
+                print(f"Multi-arch tags: {multi_arch_tags}")
+                print(f"Per-arch tags to delete: {per_arch_tags}")
                 
                 # Step 1: Set expiry on multi-arch tags
-                print(f"\n📅 Setting {expiry_days}-day expiry on multi-arch tags...")
+                print(f"\nSetting {expiry_days}-day expiry on multi-arch tags...")
                 for tag in multi_arch_tags:
                     if tag:  # Skip empty strings
                         set_tag_expiry(base_url, namespace, repo_name, tag, expiry_days, oauth_token)
                 
                 # Step 2: Delete per-arch tags
-                print(f"\n🗑️  Deleting per-arch tags...")
+                print(f"\nDeleting per-arch tags...")
                 deleted_count = 0
                 for tag in per_arch_tags:
                     if tag:  # Skip empty strings
                         if delete_tag(base_url, namespace, repo_name, tag, oauth_token):
                             deleted_count += 1
                 
-                print(f"\n📊 Summary:")
-                print(f"   Multi-arch tags with expiry: {len([t for t in multi_arch_tags if t])}")
-                print(f"   Per-arch tags deleted: {deleted_count}/{len([t for t in per_arch_tags if t])}")
-                print(f"✅ Lifecycle management completed using OAuth API")
+                print(f"\nSummary:")
+                print(f"Multi-arch tags with expiry: {len([t for t in multi_arch_tags if t])}")
+                print(f"Per-arch tags deleted: {deleted_count}/{len([t for t in per_arch_tags if t])}")
+                print(f"Lifecycle management completed using OAuth API")
             
             if __name__ == "__main__":
                 main()
             EOF
               
             else
-              echo "⚠️  No QUAY_OAUTH_TOKEN available - falling back to Docker BuildX annotations"
-              echo "ℹ️  Robot accounts cannot delete via API (Quay security limitation since 2020)"
+              echo "No QUAY_OAUTH_TOKEN available - falling back to Docker BuildX annotations"
+              echo "Robot accounts cannot delete via API (Quay security limitation)"
               
               # Fallback: Use Docker BuildX for expiry annotations only
-              echo "📅 Applying expiry annotations to multi-arch tags via Docker BuildX..."
+              echo "Applying expiry annotations to multi-arch tags via Docker BuildX..."
               for tag in "${multi_arch_tags[@]}"; do
                 echo "Re-annotating tag: ${tag}"
                 
@@ -529,13 +525,13 @@ jobs:
                   --annotation "quay.expires-after=${EXPIRES_AFTER}" \
                   --annotation "org.opencontainers.image.expires=${EXPIRES_AFTER}" \
                   "${{ env.REGISTRY }}/${REGISTRY_IMAGE}:${tag}"; then
-                  echo "✓ Expiry annotations applied to: ${tag}"
+                  echo "Expiry annotations applied to: ${tag}"
                 else
                   echo "::warning::Failed to re-annotate ${tag}"
                 fi
               done
               
-              echo "🕐 Per-arch images will be cleaned up via expiry (no immediate deletion possible with robot accounts)"
+              echo "Per-arch images will be cleaned up via expiry (no immediate deletion possible with robot accounts)"
             fi
             
-            echo "✅ Image lifecycle management completed"
+            echo "Image lifecycle management completed"
