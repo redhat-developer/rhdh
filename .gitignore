@@ -63,3 +63,6 @@ dynamic-plugins-root/*
 
 # Private Keys
 *.pem
+
+# Local Cursor rules context
+.cursor/rules/*.local.mdc
