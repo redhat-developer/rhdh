@@ -162,6 +162,7 @@ describe('extractDynamicConfig', () => {
       signInPages: [],
       techdocsAddons: [],
       themes: [],
+      translationResources: [],
     });
   });
 
@@ -720,6 +721,7 @@ describe('extractDynamicConfig', () => {
       techdocsAddons: [],
       themes: [],
       providerSettings: [],
+      translationResources: [],
       ...output,
     });
   });
