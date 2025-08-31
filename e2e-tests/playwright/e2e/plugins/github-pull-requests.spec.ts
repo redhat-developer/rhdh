@@ -1,17 +1,17 @@
-import { test } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 import { UIhelper } from "../../utils/ui-helper";
 import { Common } from "../../utils/common";
 import { CatalogHelper } from "../../utils/catalog-helper";
 
-// if (!process.env.GH_USER_ID || !process.env.GH_USER_PASS || !process.env.GH_2FA_SECRET) {
-//     throw new Error("GH_USER_ID, GH_USER_PASS, and GH_2FA_SECRET must be set in your environment or .env file.");
-// }
+if (!process.env.GH_USER_ID || !process.env.GH_USER_PASS || !process.env.GH_2FA_SECRET) {
+    throw new Error("GH_USER_ID, GH_USER_PASS, and GH_2FA_SECRET must be set in your environment or .env file.");
+}
 
 test("Verify all GitHub Pull Requests statistics after login", async ({
   page,
   context,
 }) => {
-  const repoName = "Backstage Showcase";
+  const repoName = "Red Hat Developer Hub";
   const common = new Common(page);
   const uiHelper = new UIhelper(page);
   const catalog = new CatalogHelper(page);
@@ -20,7 +20,15 @@ test("Verify all GitHub Pull Requests statistics after login", async ({
     process.env.GH_USER_ID,
     process.env.GH_USER_PASS,
   );
+  
+  // Wait for the page to be fully loaded
+  await page.waitForLoadState('networkidle');
+  
   await catalog.goToByName(repoName);
+  
+  // Wait for the component page to load
+  await page.waitForTimeout(2000);
+  
   await uiHelper.isBtnVisible("Sign in");
   await uiHelper.clickButton("Sign in");
   await uiHelper.isBtnVisible("Log in");
@@ -33,6 +41,10 @@ test("Verify all GitHub Pull Requests statistics after login", async ({
     ),
     uiHelper.clickButton("Log in"),
   ]);
+  
+  // Wait for GitHub login to complete
+  await page.waitForTimeout(3000);
+  
   await uiHelper.verifyTextinCard(
     "GitHub Pull Requests Statistics",
     "Average Time Of PR Until Merge",
