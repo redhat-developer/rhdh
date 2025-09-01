@@ -24,32 +24,16 @@ echo "Sourcing reporting.sh"
 # shellcheck source=.ibm/pipelines/reporting.sh
 source "${DIR}/reporting.sh"
 save_overall_result 0 # Initialize overall result to 0 (success).
-export OVERALL_RESULT
 
 # Define a cleanup function to be executed upon script exit.
-# shellcheck disable=SC2329
-cleanup() {
-  if [[ $? -ne 0 ]]; then
-
-    echo "Exited with an error, setting OVERALL_RESULT to 1"
-    save_overall_result 1
-  fi
-  echo "Cleaning up before exiting"
-  if [[ "${OPENSHIFT_CI}" == "true" ]]; then
-    case "$JOB_NAME" in
-      *gke*)
-        echo "Calling cleanup_gke"
-        cleanup_gke
-        ;;
-    esac
-  fi
-  rm -rf ~/tmpbin
-}
-
+source "${DIR}/cleanup.sh"
 trap cleanup EXIT INT ERR
 
+echo "Sourcing utils.sh"
 # shellcheck source=.ibm/pipelines/utils.sh
 source "${DIR}/utils.sh"
+
+echo "Sourcing clear-database.sh"
 # shellcheck source=.ibm/pipelines/clear-database.sh
 source "${DIR}/clear-database.sh"
 
@@ -148,7 +132,6 @@ main() {
 
   echo "Main script completed with result: ${OVERALL_RESULT}"
   exit "${OVERALL_RESULT}"
-
 }
 
 main
