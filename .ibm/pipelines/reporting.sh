@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Variables for reporting
+export CURRENT_DEPLOYMENT=0 # Counter for current deployment.
+export STATUS_DEPLOYMENT_NAMESPACE # Array that holds the namespaces of deployments.
+export STATUS_FAILED_TO_DEPLOY # Array that indicates if deployment failed. false = success, true = failure
+export STATUS_TEST_FAILED # Array that indicates if test run failed. false = success, true = failure
+
 mkdir -p "$ARTIFACT_DIR/reporting"
 
 save_status_deployment_namespace() {
