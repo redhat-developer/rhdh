@@ -17,15 +17,6 @@ name: Build Next and Tag Image
 on:
   # workflow_dispatch so that it can be triggered manually if needed
   workflow_dispatch:
-    inputs:
-      registry_image:
-        description: "Target registry/repository (e.g., testing-rhdh-martin/testing)"
-        required: false
-        default: "testing-rhdh-martin/testing"
-      test_cleanup:
-        description: "Enable cleanup testing (true/false)"
-        required: false
-        default: "true"
   schedule:
     # run at 3:18 UTC every day
     - cron: "18 3 * * *"
@@ -45,7 +36,7 @@ concurrency:
 
 env:
   REGISTRY: quay.io
-  REGISTRY_IMAGE: ${{ inputs.registry_image || 'rhdh-community/rhdh' }}
+  REGISTRY_IMAGE: rhdh-community/rhdh
 
 jobs:
   build-image:
@@ -110,15 +101,6 @@ jobs:
             expires_after="14d"  # Short expiry for next builds, feature branches, and other temporary builds
           fi
           echo "EXPIRES_AFTER=$expires_after" >> $GITHUB_ENV
-          
-          # Debug output for testing
-          echo "=== Build Configuration ==="
-          echo "REGISTRY: ${{ env.REGISTRY }}"
-          echo "REGISTRY_IMAGE: ${{ env.REGISTRY_IMAGE }}"
-          echo "REF_NAME: $ref_name"
-          echo "REF_NAME_SHORT: $ref_name_short"
-          echo "PLATFORM: $platform"
-          echo "EXPIRES_AFTER: $expires_after"
 
       - name: Check Quay credentials
         run: |
@@ -333,7 +315,7 @@ jobs:
             echo "Propagation check completed"
 
         - name: Manage expiry and cleanup per-arch images
-          if: env.HAS_QUAY_AUTH == 'true' && (inputs.test_cleanup != 'false' || github.event_name != 'workflow_dispatch')
+          if: env.HAS_QUAY_AUTH == 'true'
           env:
             REGISTRY_IMAGE: ${{ env.REGISTRY_IMAGE }}
             REF_NAME: ${{ env.REF_NAME }}
