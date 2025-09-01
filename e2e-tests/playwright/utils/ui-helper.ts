@@ -20,6 +20,10 @@ export class UIhelper {
     return this.page.getByTestId("login-button").getByText(menuItem);
   }
 
+  async fillTextInputByLabel(label: string, text: string, exact?: boolean) {
+    await this.page.getByLabel(label, { exact }).fill(text);
+  }
+
   /**
    * Fills the search input with the provided text.
    *
@@ -34,10 +38,6 @@ export class UIhelper {
 
   async searchInputAriaLabel(searchText: string) {
     await this.page.fill(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch, searchText);
-  }
-
-  async fillInputWithLabel(label: string, input: string) {
-    await this.page.locator(`input#${label}`).fill(input);
   }
 
   async pressTab() {

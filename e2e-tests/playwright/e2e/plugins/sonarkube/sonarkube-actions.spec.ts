@@ -43,22 +43,19 @@ test.describe("Test SonarKube Actions plugin", () => {
     const baseRHDHURL: string = process.env.BASE_URL;
     const host: string = new URL(baseRHDHURL).hostname;
     const domain = host.split(".").slice(1).join(".");
-    await uiHelper.fillInputWithLabel(
-      "root_baseUrl",
-      `https://sonar.${domain}`,
-    );
+    await uiHelper.fillTextInputByLabel("Base URL", `https://sonar.${domain}`);
 
     await uiHelper.selectMuiBox(
       "root_authParams__oneof_select",
       "Username and Password",
     );
 
-    await uiHelper.fillInputWithLabel("root_authParams_username", "admin");
-    await uiHelper.fillInputWithLabel("Password", "NewAdminPassword1@");
+    await uiHelper.fillTextInputByLabel("Username *", "admin");
+    await uiHelper.fillTextInputByLabel("Password", "NewAdminPassword1@", true);
 
-    await uiHelper.fillInputWithLabel("root_name", project);
-    await uiHelper.fillInputWithLabel("root_key", projectKey);
-    await uiHelper.fillInputWithLabel("root_branch", "main");
+    await uiHelper.fillTextInputByLabel("Name *", project, true);
+    await uiHelper.fillTextInputByLabel("Key *", projectKey);
+    await uiHelper.fillTextInputByLabel("Branch", "main");
     await uiHelper.clickButton("Review");
     await uiHelper.clickButton("Create");
     await uiHelper.clickLinkWithNewTab(/SonarQube project URL/i);
