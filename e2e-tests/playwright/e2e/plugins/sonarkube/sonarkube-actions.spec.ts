@@ -48,8 +48,10 @@ test.describe("Test SonarKube Actions plugin", () => {
       `https://sonar.${domain}`,
     );
 
-    await uiHelper.clickById("root_authParams__oneof_select");
-    await uiHelper.selectDropDownOption("Username and Password");
+    await uiHelper.selectMuiBox(
+      "root_authParams__oneof_select",
+      "Username and Password",
+    );
 
     await uiHelper.fillInputWithLabel("root_authParams_username", "admin");
     await uiHelper.fillInputWithLabel("Password", "NewAdminPassword1@");

@@ -341,8 +341,10 @@ export class UIhelper {
     await navLink.click();
   }
 
-  async selectMuiBox(label: string, value: string) {
-    await this.page.click(`div[aria-label="${label}"]`);
+  async selectMuiBox(labelOrId: string, value: string) {
+    await this.page.click(
+      `div[aria-label="${labelOrId}"], div[id="${labelOrId}"]`,
+    );
     const optionSelector = `li[role="option"]:has-text("${value}")`;
     await this.page.waitForSelector(optionSelector);
     await this.page.click(optionSelector);
@@ -699,20 +701,6 @@ export class UIhelper {
     const locator = this.page.locator(`#${id}`);
     await locator.waitFor({ state: "attached" });
     await locator.click();
-  }
-
-  async selectDropDownOption(optionText: string) {
-    const dropdown = this.page.getByRole("listbox");
-    await expect(dropdown).toBeVisible({ timeout: 5000 });
-
-    await this.page.waitForSelector(`li:has-text("${optionText}")`, {
-      timeout: 5000,
-    });
-
-    const optionItem = await this.page.waitForSelector(
-      `li:has-text("${optionText}")`,
-    );
-    optionItem.click();
   }
 
   async clickSpanByText(text: string) {
