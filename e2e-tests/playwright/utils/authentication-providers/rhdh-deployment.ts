@@ -689,7 +689,7 @@ class RHDHDeployment {
         }
       } catch (error) {
         // Expected error - connection refused
-        console.log("Homepage is not accessible as expected");
+        console.log("Homepage is not accessible as expected: ", error);
       }
     } else {
       console.log("No running process to kill.");
@@ -769,7 +769,7 @@ class RHDHDeployment {
       });
 
       // Keep the function alive to allow streaming
-      // eslint-disable-next-line no-constant-condition
+
       while (Date.now() - startTime < timeoutMs && !found) {
         await new Promise((resolve) => setTimeout(resolve, 1000));
       }

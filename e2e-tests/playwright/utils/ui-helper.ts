@@ -157,7 +157,8 @@ export class UIhelper {
       }
     } catch (error) {
       console.log(
-        "Mark all read functionality not available or already processed",
+        "Mark all read functionality not available or already processed: ",
+        error,
       );
     }
   }
@@ -183,7 +184,10 @@ export class UIhelper {
       }
       return false;
     } catch (error) {
-      console.log(`Element with title "${title}" not found or not clickable`);
+      console.log(
+        `Element with title "${title}" not found or not clickable: `,
+        error,
+      );
       return false;
     }
   }
