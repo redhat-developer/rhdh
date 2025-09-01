@@ -20,10 +20,6 @@ export class UIhelper {
     return this.page.getByTestId("login-button").getByText(menuItem);
   }
 
-  async fillTextInputByLabel(label: string, text: string) {
-    await this.page.getByLabel(label).fill(text);
-  }
-
   /**
    * Fills the search input with the provided text.
    *

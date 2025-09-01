@@ -23,7 +23,7 @@ test.describe("Test SonarKube Actions plugin", () => {
     await page.goto("/create");
   });
 
-  test("Creates Sonarkube project", async ({ page }) => {
+  test("Creates Sonarkube project", async () => {
     await uiHelper.clickButton("Import an existing Git repository");
     await catalogImport.registerExistingComponent(template, false);
 
@@ -43,20 +43,20 @@ test.describe("Test SonarKube Actions plugin", () => {
     const baseRHDHURL: string = process.env.BASE_URL;
     const host: string = new URL(baseRHDHURL).hostname;
     const domain = host.split(".").slice(1).join(".");
-    await uiHelper.fillTextInputByLabel(
-      "Base URL *",
-      `https://sonarqube.${domain}`,
+    await uiHelper.fillInputWithLabel(
+      "root_baseUrl",
+      `https://sonar.${domain}`,
     );
 
     await uiHelper.clickById("root_authParams__oneof_select");
     await uiHelper.selectDropDownOption("Username and Password");
 
-    await uiHelper.fillTextInputByLabel("Username *", "admin");
+    await uiHelper.fillInputWithLabel("root_authParams_username", "admin");
     await uiHelper.fillInputWithLabel("Password", "NewAdminPassword1@");
 
     await uiHelper.fillInputWithLabel("root_name", project);
     await uiHelper.fillInputWithLabel("root_key", projectKey);
-    await uiHelper.fillTextInputByLabel("Branch", "main");
+    await uiHelper.fillInputWithLabel("root_branch", "main");
     await uiHelper.clickButton("Review");
     await uiHelper.clickButton("Create");
     await uiHelper.clickLinkWithNewTab(/SonarQube project URL/i);
