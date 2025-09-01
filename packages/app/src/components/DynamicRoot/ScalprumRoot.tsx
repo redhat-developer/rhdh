@@ -10,6 +10,7 @@ import { DynamicRootConfig } from '@red-hat-developer-hub/plugin-utils';
 import { AppsConfig } from '@scalprum/core';
 import { ScalprumProvider } from '@scalprum/react-core';
 
+import { TranslationConfig } from '../../types/types';
 import { DynamicPluginConfig } from '../../utils/dynamicUI/extractDynamicConfig';
 import overrideBaseUrlConfigs from '../../utils/dynamicUI/overrideBaseUrlConfigs';
 import { DynamicRoot, StaticPlugins } from './DynamicRoot';
@@ -36,6 +37,7 @@ const ScalprumRoot = ({
       dynamicPlugins: DynamicPluginConfig;
       baseUrl: string;
       scalprumConfig?: AppsConfig;
+      translationConfig?: TranslationConfig;
     }> => {
       const appConfig = overrideBaseUrlConfigs(await defaultConfigLoader());
       const reader = ConfigReader.fromConfigs([
@@ -44,32 +46,40 @@ const ScalprumRoot = ({
       ]);
       const baseUrl = reader.getString('backend.baseUrl');
       const dynamicPlugins = reader.get<DynamicPluginConfig>('dynamicPlugins');
+      let scalprumConfig: AppsConfig = {};
+      let translationConfig: TranslationConfig | undefined = undefined;
       try {
-        const scalprumConfig: AppsConfig = await fetch(
-          `${baseUrl}/api/scalprum/plugins`,
-        ).then(r => r.json());
-        return {
-          dynamicPlugins,
-          baseUrl,
-          scalprumConfig,
-        };
+        scalprumConfig = await fetch(`${baseUrl}/api/scalprum/plugins`).then(
+          r => r.json(),
+        );
       } catch (err) {
         // eslint-disable-next-line no-console
         console.warn(
           `Failed to fetch scalprum configuration: ${JSON.stringify(err)}`,
         );
-        return {
-          dynamicPlugins,
-          baseUrl,
-          scalprumConfig: {},
-        };
       }
+      try {
+        translationConfig = reader.get<TranslationConfig>('i18n');
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `Failed to load i18n configuration: either not provided or invalid.
+ ${JSON.stringify(err)}`,
+        );
+      }
+      return {
+        dynamicPlugins,
+        baseUrl,
+        scalprumConfig,
+        translationConfig,
+      };
     },
   );
   if (loading && !value) {
     return <Loader />;
   }
-  const { dynamicPlugins, baseUrl, scalprumConfig } = value || {};
+  const { dynamicPlugins, baseUrl, scalprumConfig, translationConfig } =
+    value || {};
   const scalprumApiHolder = {
     dynamicRootConfig: {
       dynamicRoutes: [],
@@ -105,6 +115,7 @@ const ScalprumRoot = ({
         dynamicPlugins={dynamicPlugins ?? {}}
         staticPluginStore={plugins}
         scalprumConfig={scalprumConfig ?? {}}
+        translationConfig={translationConfig}
       />
     </ScalprumProvider>
   );
