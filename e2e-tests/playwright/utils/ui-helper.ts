@@ -731,7 +731,7 @@ export class UIhelper {
       .first();
     await unregisterItem.waitFor({ state: "visible", timeout: 4000 });
     await unregisterItem.waitFor({ state: "attached", timeout: 4000 });
-    expect(unregisterItem).not.toBeDisabled();
+    await expect(unregisterItem).not.toBeDisabled();
   }
 
   async clickUnregisterButtonForDisplayedEntity() {

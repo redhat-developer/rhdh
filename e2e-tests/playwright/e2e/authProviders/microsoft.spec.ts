@@ -67,7 +67,7 @@ test.describe("Configure Microsoft Provider", async () => {
     await deployment.deleteNamespaceIfExists();
 
     // create namespace and wait for it to be active
-    (await deployment.createNamespace()).waitForNamespaceActive();
+    await (await deployment.createNamespace()).waitForNamespaceActive();
 
     // create all base configmaps
     await deployment.createAllConfigs();
@@ -77,38 +77,38 @@ test.describe("Configure Microsoft Provider", async () => {
 
     // set enviroment variables and create secret
     if (!process.env.ISRUNNINGLOCAL) {
-      deployment.addSecretData("BASE_URL", backstageUrl);
-      deployment.addSecretData("BASE_BACKEND_URL", backstageBackendUrl);
+      await deployment.addSecretData("BASE_URL", backstageUrl);
+      await deployment.addSecretData("BASE_BACKEND_URL", backstageBackendUrl);
     }
-    deployment.addSecretData(
+    await deployment.addSecretData(
       "DEFAULT_USER_PASSWORD",
       process.env.DEFAULT_USER_PASSWORD,
     );
-    deployment.addSecretData(
+    await deployment.addSecretData(
       "DEFAULT_USER_PASSWORD_2",
       process.env.DEFAULT_USER_PASSWORD_2,
     );
-    deployment.addSecretData(
+    await deployment.addSecretData(
       "AUTH_PROVIDERS_AZURE_CLIENT_ID",
       process.env.AUTH_PROVIDERS_AZURE_CLIENT_ID,
     );
-    deployment.addSecretData(
+    await deployment.addSecretData(
       "AUTH_PROVIDERS_AZURE_CLIENT_SECRET",
       process.env.AUTH_PROVIDERS_AZURE_CLIENT_SECRET,
     );
-    deployment.addSecretData(
+    await deployment.addSecretData(
       "AUTH_PROVIDERS_AZURE_TENANT_ID",
       process.env.AUTH_PROVIDERS_AZURE_TENANT_ID,
     );
-    deployment.addSecretData(
+    await deployment.addSecretData(
       "MICROSOFT_CLIENT_ID",
       process.env.AUTH_PROVIDERS_AZURE_CLIENT_ID,
     );
-    deployment.addSecretData(
+    await deployment.addSecretData(
       "MICROSOFT_CLIENT_SECRET",
       process.env.AUTH_PROVIDERS_AZURE_CLIENT_SECRET,
     );
-    deployment.addSecretData(
+    await deployment.addSecretData(
       "MICROSOFT_TENANT_ID",
       process.env.AUTH_PROVIDERS_AZURE_TENANT_ID,
     );

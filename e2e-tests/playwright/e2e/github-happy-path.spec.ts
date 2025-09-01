@@ -210,7 +210,7 @@ test.describe.serial("GitHub Happy path", async () => {
     test.fixme();
     await uiHelper.goToSettingsPage();
     await common.signOut();
-    context.clearCookies();
+    await context.clearCookies();
   });
 
   test.afterAll(async () => {

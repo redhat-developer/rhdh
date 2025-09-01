@@ -15,7 +15,7 @@ const test = base.extend<GithubDiscoveryFixture>({
     await new Common(page).loginAsGithubUser();
     const catalog = new Catalog(page);
     await catalog.go();
-    use(catalog);
+    await use(catalog);
   },
   githubApi: new GithubApi(),
   testOrganization: JANUS_QE_ORG,

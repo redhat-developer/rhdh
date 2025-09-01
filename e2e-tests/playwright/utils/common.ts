@@ -302,7 +302,7 @@ export class Common {
       } catch (e) {
         const authorization = popup.locator("button.js-oauth-authorize-btn");
         if (await authorization.isVisible()) {
-          authorization.click();
+          await authorization.click();
           return "Login successful";
         } else {
           throw e;
