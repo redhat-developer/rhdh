@@ -1,7 +1,7 @@
 import {
   HOME_PAGE_COMPONENTS,
   SEARCH_OBJECTS_COMPONENTS,
-} from "../pageObjects/page-obj";
+} from "../page-objects/page-obj";
 import { UIhelper } from "../../utils/ui-helper";
 import { Page, expect } from "@playwright/test";
 

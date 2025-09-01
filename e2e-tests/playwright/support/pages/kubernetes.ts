@@ -1,6 +1,6 @@
 import { Page, expect } from "@playwright/test";
 import { UIhelper } from "../../utils/ui-helper";
-import { KUBERNETES_COMPONENTS } from "../pageObjects/page-obj";
+import { KUBERNETES_COMPONENTS } from "../page-objects/page-obj";
 
 export class KubernetesPage {
   private page: Page;

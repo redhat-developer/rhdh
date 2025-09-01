@@ -1,14 +1,14 @@
 import { Locator, Page, expect, test } from "@playwright/test";
 import { Response, Roles } from "../../../support/pages/rbac";
-import { UI_HELPER_ELEMENTS } from "../../../support/pageObjects/global-obj";
+import { UI_HELPER_ELEMENTS } from "../../../support/page-objects/global-obj";
 import {
   SEARCH_OBJECTS_COMPONENTS,
   ROLE_OVERVIEW_COMPONENTS,
   ROLES_PAGE_COMPONENTS,
-} from "../../../support/pageObjects/page-obj";
+} from "../../../support/page-objects/page-obj";
 import { Common, setupBrowser } from "../../../utils/common";
 import { UIhelper } from "../../../utils/ui-helper";
-import { RbacPo } from "../../../support/pageObjects/rbac-po";
+import { RbacPo } from "../../../support/page-objects/rbac-po";
 import { RhdhAuthApiHack } from "../../../support/api/rhdh-auth-api-hack";
 import RhdhRbacApi from "../../../support/api/rbac-api";
 import { RbacConstants } from "../../../data/rbac-constants";

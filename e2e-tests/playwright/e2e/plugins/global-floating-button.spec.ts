@@ -1,8 +1,8 @@
 import { test } from "@playwright/test";
 import { Common } from "../../utils/common";
-import { FabPo } from "../../support/pageObjects/global-fab-po";
+import { FabPo } from "../../support/page-objects/global-fab-po";
 import { UIhelper } from "../../utils/ui-helper";
-import { PagesUrl } from "../../support/pageObjects/page";
+import { PagesUrl } from "../../support/page-objects/page";
 
 test.describe("Test global floating action button plugin", () => {
   let uiHelper: UIhelper;

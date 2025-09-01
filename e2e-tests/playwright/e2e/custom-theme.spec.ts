@@ -4,7 +4,7 @@ import { ThemeVerifier } from "../utils/custom-theme/theme-verifier";
 import {
   CUSTOM_FAVICON,
   CUSTOM_SIDEBAR_LOGO,
-} from "../support/testData/custom-theme";
+} from "../support/test-data/custom-theme";
 import { ThemeConstants } from "../data/theme-constants";
 let page: Page;
 

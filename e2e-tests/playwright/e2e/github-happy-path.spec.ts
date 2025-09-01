@@ -1,12 +1,13 @@
 import { test, expect, Page, BrowserContext } from "@playwright/test";
 import { UIhelper } from "../utils/ui-helper";
 import { Common, setupBrowser } from "../utils/common";
-import { RESOURCES } from "../support/testData/resources";
+import { RESOURCES } from "../support/test-data/resources";
 import {
   BackstageShowcase,
   CatalogImport,
 } from "../support/pages/catalog-import";
-import { TEMPLATES } from "../support/testData/templates";
+import { TEMPLATES } from "../support/test-data/templates";
+
 let page: Page;
 let context: BrowserContext;
 

@@ -7,7 +7,7 @@ import { CatalogImport } from "../../support/pages/catalog-import";
 import {
   DEFAULT_CATALOG_INFO_YAML,
   UPDATED_CATALOG_INFO_YAML,
-} from "../../support/testData/bulk-import";
+} from "../../support/test-data/bulk-import";
 
 // Pre-req : plugin-bulk-import & plugin-bulk-import-backend-dynamic
 test.describe.serial("Bulk Import plugin", () => {

@@ -1,6 +1,6 @@
 import { Page, expect, TestInfo } from "@playwright/test";
 import { UIhelper } from "../ui-helper";
-import { UI_HELPER_ELEMENTS } from "../../support/pageObjects/global-obj";
+import { UI_HELPER_ELEMENTS } from "../../support/page-objects/global-obj";
 
 export class ThemeVerifier {
   private readonly page: Page;

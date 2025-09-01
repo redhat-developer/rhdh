@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { UIhelper } from "../../utils/ui-helper";
 import { Common } from "../../utils/common";
-import { UI_HELPER_ELEMENTS } from "../../support/pageObjects/global-obj";
+import { UI_HELPER_ELEMENTS } from "../../support/page-objects/global-obj";
 
 test.describe("Test ApplicationProvider", () => {
   test.beforeAll(async () => {
