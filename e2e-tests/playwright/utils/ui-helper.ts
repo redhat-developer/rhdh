@@ -365,10 +365,6 @@ export class UIhelper {
     await this.page.waitForSelector(`text=${text}`, { state: "detached" });
   }
 
-  async sleep(timeoutMs: number) {
-    await this.page.waitForTimeout(timeoutMs);
-  }
-
   async verifyText(text: string | RegExp, exact: boolean = true) {
     await this.verifyTextInLocator("", text, exact);
   }

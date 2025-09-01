@@ -17,6 +17,9 @@ OpenShift:
 monitoringPasscode: "define_it"
 
 postgresql:
+  image:
+    repository: bitnami/postgresql
+    tag: 15.3.0
   securityContext:
     enabled: false
   containerSecurityContext:

@@ -26,8 +26,6 @@ test.describe("Test SonarKube Actions plugin", () => {
   test("Creates Sonarkube project", async ({ page }) => {
     await uiHelper.clickButton("Import an existing Git repository");
     await catalogImport.registerExistingComponent(template, false);
-    // allow catalog to process entity from github
-    await uiHelper.sleep(10000);
 
     await uiHelper.clickLink({ ariaLabel: "Self-service" });
     await common.waitForLoad();
@@ -60,7 +58,6 @@ test.describe("Test SonarKube Actions plugin", () => {
     await uiHelper.fillInputWithLabel("root_key", projectKey);
     await uiHelper.fillTextInputByLabel("Branch", "main");
     await uiHelper.clickButton("Review");
-    await page.waitForTimeout(5000);
     await uiHelper.clickButton("Create");
     await uiHelper.clickLinkWithNewTab(/SonarQube project URL/i);
 
