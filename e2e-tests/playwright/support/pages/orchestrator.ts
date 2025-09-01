@@ -1,6 +1,6 @@
 import { expect, type Page } from "@playwright/test";
 import { UIhelper } from "../../utils/ui-helper";
-import Workflows from "./Workflows";
+import Workflows from "./workflows";
 
 export class Orchestrator {
   private readonly page: Page;
