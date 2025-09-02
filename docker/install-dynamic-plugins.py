@@ -108,17 +108,23 @@ def mergePlugin(plugin: dict, allPlugins: dict, dynamicPluginsFile: str):
         raise InstallException(f"content of the \'plugins.package\' field must be a string in {dynamicPluginsFile}")
 
     if package.startswith('oci://'):
-        # Check if package is in the expected format: `oci://<registry>:<tag>!<path>`
-        oci_pattern = r'^(oci://[^:]+):([^!]+)!(.+)$'
+        # Check if package is in the expected format: 
+        # Tag format: `oci://<registry>:<tag>!<path>`
+        # SHA digest format: `oci://<registry>@sha<algo>:<digest>!<path>`
+        oci_pattern = r'^(oci://[^\s:@]+)(?::([^\s!@:]+)|@(sha\d+:[^\s!@:]+))!([^\s]+)$'
         match = re.match(oci_pattern, package)
         if not match:
-            raise InstallException(f"oci package \'{package}\' is not in the expected format \'oci://<registry>:<tag>!<path>\' in {dynamicPluginsFile}")
+            raise InstallException(f"oci package \'{package}\' is not in the expected format \'oci://<registry>:<tag>!<path>\' or \'oci://<registry>@sha<algo>:<digest>!<path>\' in {dynamicPluginsFile}")
 
-        # Strip away the <tag> from the package string, resulting in oci://<registry>:!<path>
+        # Strip away the version (tag or digest) from the package string, resulting in oci://<registry>:!<path>
         # This helps ensure keys used to identify OCI plugins are independent of the version of the plugin
         registry = match.group(1)
-        version = match.group(2)
-        path = match.group(3)
+        tag_version = match.group(2)
+        digest_version = match.group(3)
+        path = match.group(4) 
+        
+        # Use whichever version format was matched
+        version = tag_version if tag_version else digest_version
         package = f"{registry}:!{path}"
 
     # if `package` already exists in `allPlugins`, then override its fields
