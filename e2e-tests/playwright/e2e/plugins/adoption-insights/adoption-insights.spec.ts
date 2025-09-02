@@ -1,9 +1,16 @@
-import { test, expect, Locator } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 import { Common } from "../../../utils/common";
 import { UIhelper } from "../../../utils/ui-helper";
 import { TestHelper } from "../../../support/pages/adoption-insights";
 
 test.describe.serial("Test Adoption Insights", () => {
+  test.beforeAll(async () => {
+    test.info().annotations.push({
+      type: "component",
+      description: "plugins",
+    });
+  });
+
   test.describe
     .serial("Test Adoption Insights plugin: load permission policies and conditions from files", () => {
     let context;
@@ -158,11 +165,11 @@ test.describe.serial("Test Adoption Insights", () => {
         const titles = ["catalog entities", "techdocs"];
 
         interface PanelState {
-          firstRow?: any;
+          firstRow?: string[];
           initialViewsCount?: number;
         }
 
-        let state: Record<string, PanelState> = {
+        const state: Record<string, PanelState> = {
           "catalog entities": {},
           techdocs: {},
         };
@@ -219,8 +226,14 @@ test.describe.serial("Test Adoption Insights", () => {
         await testHelper.waitUntilApiCallSucceeds(page);
 
         for (const title of titles) {
-          const finalViews = await state[title].firstRow.locator("td").last();
-          await state[title].firstRow.waitFor({ state: "visible" });
+          const panel = page
+            .locator(".v5-MuiPaper-root", { hasText: title })
+            .last();
+          const firstRow = panel
+            .locator("table.v5-MuiTable-root tbody tr")
+            .first();
+          const finalViews = await firstRow.locator("td").last();
+          await firstRow.waitFor({ state: "visible" });
           const finalViewsCount = await finalViews.textContent();
           expect(Number(finalViewsCount)).toBeGreaterThan(
             state[title].initialViewsCount,

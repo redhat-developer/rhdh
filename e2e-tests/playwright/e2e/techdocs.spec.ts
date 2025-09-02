@@ -9,6 +9,13 @@ test.describe("TechDocs", () => {
   let uiHelper: UIhelper;
   let catalog: Catalog;
 
+  test.beforeAll(async () => {
+    test.info().annotations.push({
+      type: "component",
+      description: "core",
+    });
+  });
+
   async function docsTextHighlight(page: Page) {
     await page.evaluate(() => {
       const shadowRoot = document.querySelector(

@@ -238,6 +238,10 @@ export interface Config {
           icon: string;
           importName?: string;
         }[];
+        translationResources?: {
+          module?: string;
+          importName?: string;
+        }[];
       };
     };
   };
@@ -260,5 +264,25 @@ export interface Config {
     title: string;
     card: { [key: string]: string };
     full?: boolean;
+  };
+
+  /**
+   * Internationalization (i18n) settings for the app
+   * Allows configuring supported languages
+   * @deepVisibility frontend
+   */
+  i18n?: {
+    /**
+     * Allows listing the languages the app will support
+     * @visibility frontend
+     */
+    locales: string[];
+    /**
+     * Allows setting a default language for the app
+     * Will be set to `en` if not specified
+     * @default en
+     * @visibility frontend
+     */
+    defaultLocale?: string;
   };
 }

@@ -13,6 +13,11 @@ test.describe("Test Keycloak plugin", () => {
   let token: string;
 
   test.beforeAll(async () => {
+    test.info().annotations.push({
+      type: "component",
+      description: "plugins",
+    });
+
     keycloak = new Keycloak();
     token = await keycloak.getAuthenticationToken();
   });
