@@ -28,7 +28,6 @@ test.describe("Test Kubernetes Actions plugin", () => {
     await uiHelper.clickLink({ ariaLabel: "Self-service" });
   });
 
-   
   test.beforeEach(async ({}, testInfo) => {
     // Add cool-down period before retries (except on first attempt)
     if (testInfo.retry > 0) {

@@ -46,7 +46,6 @@ test.describe.serial("Test Scaffolder Backend Module Annotator Actions", () => {
     await common.loginAsGuest();
   });
 
-   
   test("Register a Template", async ({}, testInfo) => {
     await uiHelper.openSidebar("Catalog");
     await uiHelper.verifyText("Name");

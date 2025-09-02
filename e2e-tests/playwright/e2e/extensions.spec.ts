@@ -63,9 +63,7 @@ test.describe("Admin > Extensions > Catalog", () => {
     await expect(
       page.getByRole("option", { name: "Red Hat" }).getByRole("checkbox"),
     ).not.toBeChecked();
-    await expect(
-      page.getByRole("button", { name: "Red Hat" }),
-    ).toBeHidden();
+    await expect(page.getByRole("button", { name: "Red Hat" })).toBeHidden();
     await page.keyboard.press(`Escape`);
     await page.getByTestId("CancelIcon").first().click();
     await expect(page.getByLabel("Category").getByRole("combobox")).toBeEmpty();

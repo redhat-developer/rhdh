@@ -26,7 +26,6 @@ test.describe("CustomTheme should be applied", () => {
     await page.getByRole("button", { name: "Hide" }).click();
   });
 
-   
   test("Verify theme colors are applied and make screenshots", async ({}, testInfo: TestInfo) => {
     const themes = ThemeConstants.getThemes();
 
@@ -46,7 +45,8 @@ test.describe("CustomTheme should be applied", () => {
   });
 
   test("Verify that the RHDH favicon can be customized", async () => {
-    await expect(page.locator("#dynamic-favicon")).toHaveAttribute("href", 
+    await expect(page.locator("#dynamic-favicon")).toHaveAttribute(
+      "href",
       CUSTOM_FAVICON.LIGHT,
     );
   });
@@ -54,22 +54,21 @@ test.describe("CustomTheme should be applied", () => {
   test("Verify that RHDH CompanyLogo can be customized", async () => {
     await themeVerifier.setTheme("Light");
 
-    await expect(page.getByTestId("home-logo")).toHaveAttribute("src", 
+    await expect(page.getByTestId("home-logo")).toHaveAttribute(
+      "src",
       CUSTOM_SIDEBAR_LOGO.LIGHT,
     );
 
     await themeVerifier.setTheme("Dark");
-    await expect(page.getByTestId("home-logo")).toHaveAttribute("src", 
+    await expect(page.getByTestId("home-logo")).toHaveAttribute(
+      "src",
       CUSTOM_SIDEBAR_LOGO.DARK,
     );
   });
 
   test("Verify logo link", async () => {
     await expect(
-      page
-        .getByTestId("global-header-company-logo")
-        .locator("a")
-        ,
+      page.getByTestId("global-header-company-logo").locator("a"),
     ).toHaveAttribute("href", "/");
     await page.getByTestId("global-header-company-logo").click();
     await expect(page).toHaveURL("/");
