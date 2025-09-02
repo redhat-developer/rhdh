@@ -8,6 +8,13 @@ test.describe("Test global floating action button plugin", () => {
   let uiHelper: UIhelper;
   let fabHelper: FabPo;
 
+  test.beforeAll(async () => {
+    test.info().annotations.push({
+      type: "component",
+      description: "plugins",
+    });
+  });
+
   test.beforeEach(async ({ page }) => {
     const common = new Common(page);
     await common.loginAsGuest();
