@@ -10,6 +10,7 @@ Plugins are defined in the `plugins` array in the `dynamic-plugin-config.yaml` f
 - `package`: The package definition of the plugin. This can be an OCI image, `tgz` archive, npm package, or a directory path.
 - `disabled`: A boolean value that determines whether the plugin is enabled or disabled.
 - `integrity`: The integrity hash of the package. This is required for `tgz` archives and npm packages.
+- `inheritVersion`: A boolean value that determines whether the plugin (OCI package only) attempts to inherit it's version from.
 - `pluginConfig`: The configuration for the plugin. For backend plugins this is optional and can be used to pass configuration to the plugin. For frontend this is required, see [Frontend Plugin Wiring](frontend-plugin-wiring.md) for more information on how to configure bindings and routes. This is fragment o the `app-config.yaml` file. Anything that is added to this object will be merged with the main app-config.yaml file.
 
 ## Dynamic plugins included in the Showcase container image
@@ -69,6 +70,37 @@ plugins:
   - disabled: false
     package: oci://quay.io/example/image@sha256:28036abec4dffc714394e4ee433f16a59493db8017795049c831be41c02eb5dc!backstage-plugin-myplugin
 ```
+
+#### OCI Package Version Inheritance
+
+When working with OCI-packaged dynamic plugins, you may want to avoid specifying the version (tag or digest) in multiple places, especially when including plugins from other configuration files such as `dynamic-plugins.default.yaml`. Setting the `inheritVersion` field to `true` allows a plugin configuration override to inherit the plugin version from an included configuration.
+
+Note: The `package` field of the override must have matching `<image-name>` and `<plugin-name>` in `oci://<image-name>:<tag>!<plugin-name>` as the included plugin configuration.
+
+Note: The install script will throw an error if no version can be resolved (no plugin configuration without a `inheritVersion: true`)
+
+For example, if we have an included dynamic plugin file (`dynamic-plugins.example.yaml`) with `v0.0.2` of our plugin which might be updated to match the current RHDH version:
+
+```yaml
+plugins:
+  - disabled: true
+    package: oci://quay.io/example/image:v0.0.2!backstage-plugin-myplugin
+```
+
+and a default `dynamic-plugins.yaml` file with `inheritVersion` set to `true` using configurations for an older version that is still compatible:
+
+```yaml
+included:
+- dynamic-plugins.example.yaml
+plugins:
+  - disabled: false
+    package: oci://quay.io/example/image:v0.0.1!backstage-plugin-myplugin
+    inheritVersion: true
+    pluginConfig:
+      exampleName: "test"
+```
+
+Then the resolved version for the dynamic plugin would be `v0.0.2` but the overridden `pluginConfig` and `disabled: false` would still apply.
 
 ### Using a `tgz` Archive
 
