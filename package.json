@@ -20,6 +20,7 @@
     "lint:check": "turbo run lint:check",
     "lint:fix": "turbo run lint:fix",
     "lint": "turbo run lint",
+    "shellcheck": "turbo run shellcheck",
     "monorepo:check": "sherif && manypkg check",
     "monorepo:fix": "sherif --fix --no-install && manypkg fix && yarn dedupe",
     "lint-staged": "lint-staged -p 10",
@@ -33,7 +34,8 @@
   "workspaces": {
     "packages": [
       "packages/*",
-      "plugins/*"
+      "plugins/*",
+      ".ibm"
     ]
   },
   "devDependencies": {
@@ -45,6 +47,7 @@
     "husky": "8.0.3",
     "lint-staged": "15.5.2",
     "node-gyp": "10.3.1",
+    "prettier-plugin-sh": "^0.18.0",
     "sherif": "1.6.1",
     "turbo": "2.5.6"
   },
@@ -58,5 +61,8 @@
   "jest": {
     "testTimeout": 20000
   },
-  "packageManager": "yarn@3.8.7"
+  "packageManager": "yarn@3.8.7",
+  "dependencies": {
+    "shellcheck": "^4.1.0"
+  }
 }

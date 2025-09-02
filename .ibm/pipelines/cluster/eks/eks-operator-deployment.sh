@@ -52,7 +52,6 @@ initiate_rbac_eks_operator_deployment() {
   setup_image_pull_secret "${namespace}" "rh-pull-secret" "${REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON}"
 
   deploy_rhdh_operator "${namespace}" "${DIR}/resources/rhdh-operator/rhdh-start-rbac_K8s.yaml"
-  
 
   apply_eks_operator_ingress "$namespace" "backstage-$RELEASE_NAME_RBAC"
 }
@@ -60,12 +59,12 @@ initiate_rbac_eks_operator_deployment() {
 apply_eks_operator_ingress() {
   local namespace=$1
   local service_name=$2
-  envsubst < "$DIR/cluster/eks/manifest/eks-operator-ingress.yaml" | \
-    yq ".spec.rules[0].http.paths[0].backend.service.name = \"$service_name\"" - | \
-    kubectl apply --namespace="${namespace}" -f -
+  envsubst < "$DIR/cluster/eks/manifest/eks-operator-ingress.yaml" \
+    | yq ".spec.rules[0].http.paths[0].backend.service.name = \"$service_name\"" - \
+    | kubectl apply --namespace="${namespace}" -f -
 }
 
 cleanup_eks_deployment() {
   local namespace=$1
   delete_namespace "$namespace"
-} 
+}

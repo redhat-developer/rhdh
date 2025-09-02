@@ -1,0 +1,7 @@
+{
+  ".ibm/**/*.sh": [
+    "prettier --write",
+    "cd .ibm && shellcheck --severity=warning --color=always"
+  ],
+  "*.{json,md,yaml,yml}": ["prettier --write"]
+}

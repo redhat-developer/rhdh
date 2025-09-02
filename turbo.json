@@ -29,6 +29,9 @@
     "lint:fix": {
       "cache": false
     },
+    "shellcheck": {
+      "cache": false
+    },
     "prettier:check": {},
     "prettier:fix": {
       "cache": false
