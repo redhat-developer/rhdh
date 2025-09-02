@@ -2,11 +2,17 @@ import { test } from "@playwright/test";
 import { UIhelper } from "../utils/ui-helper";
 import { HomePage } from "../support/pages/home-page";
 import { Common } from "../utils/common";
-
 test.describe("Smoke test", () => {
   let uiHelper: UIhelper;
   let homePage: HomePage;
   let common: Common;
+
+  test.beforeAll(async () => {
+    test.info().annotations.push({
+      type: "component",
+      description: "core",
+    });
+  });
 
   test.beforeEach(async ({ page }) => {
     uiHelper = new UIhelper(page);

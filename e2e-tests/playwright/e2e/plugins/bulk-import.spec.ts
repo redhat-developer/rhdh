@@ -12,9 +12,18 @@ import {
 // Pre-req : plugin-bulk-import & plugin-bulk-import-backend-dynamic
 test.describe.serial("Bulk Import plugin", () => {
   test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
+
   let page: Page;
   let uiHelper: UIhelper;
   let common: Common;
+
+  test.beforeAll(async () => {
+    test.info().annotations.push({
+      type: "component",
+      description: "plugins",
+    });
+  });
+
   let bulkimport: BulkImport;
 
   const catalogRepoDetails = {

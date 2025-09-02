@@ -53,13 +53,48 @@ save_overall_result() {
   cp "$SHARED_DIR/OVERALL_RESULT.txt" "$ARTIFACT_DIR/reporting/OVERALL_RESULT.txt"
 }
 
+save_is_openshift() {
+  local is_openshift=$1
+  echo "Saving IS_OPENSHIFT=${is_openshift}"
+  printf "%s" "${is_openshift}" > "$SHARED_DIR/IS_OPENSHIFT.txt"
+  cp "$SHARED_DIR/IS_OPENSHIFT.txt" "$ARTIFACT_DIR/reporting/IS_OPENSHIFT.txt"
+}
+
+save_container_platform() {
+  local container_platform=$1
+  local container_platform_version=$2
+  echo "Saving CONTAINER_PLATFORM=${container_platform}"
+  echo "Saving CONTAINER_PLATFORM_VERSION=${container_platform_version}"
+  printf "%s" "${container_platform}" > "$SHARED_DIR/CONTAINER_PLATFORM.txt"
+  printf "%s" "${container_platform_version}" > "$SHARED_DIR/CONTAINER_PLATFORM_VERSION.txt"
+  cp "$SHARED_DIR/CONTAINER_PLATFORM.txt" "$ARTIFACT_DIR/reporting/CONTAINER_PLATFORM.txt"
+  cp "$SHARED_DIR/CONTAINER_PLATFORM_VERSION.txt" "$ARTIFACT_DIR/reporting/CONTAINER_PLATFORM_VERSION.txt"
+}
+
 get_artifacts_url() {
-  local project="${1:-""}"
+  local namespace=$1
+
+  if [ -z "${namespace}" ]; then
+    echo "ERROR: namespace parameter is required but was empty" >&2
+    return 1
+  fi
 
   local artifacts_base_url="https://gcsweb-ci.apps.ci.l2s4.p1.openshiftapps.com/gcs/test-platform-results"
   local artifacts_complete_url
   if [ -n "${PULL_NUMBER:-}" ]; then
-    artifacts_complete_url="${artifacts_base_url}/pr-logs/pull/${REPO_OWNER}_${REPO_NAME}/${PULL_NUMBER}/${JOB_NAME}/${BUILD_ID}/artifacts/e2e-tests/${REPO_OWNER}-${REPO_NAME}/artifacts/${project}"
+    local part_1="${JOB_NAME##pull-ci-redhat-developer-rhdh-main-}" # e.g. "e2e-tests-operator-nightly"
+    local suite_name="${JOB_NAME##pull-ci-redhat-developer-rhdh-main-e2e-tests-}" # e.g. "operator-nightly"
+    local part_2="redhat-developer-rhdh-${suite_name}" # e.g. "redhat-developer-rhdh-operator-nightly"
+    # Override part_2 based for specific cases that do not follow the standard naming convention.
+    case "$JOB_NAME" in
+      *osd-gcp*)
+      part_2="redhat-developer-rhdh-osd-gcp-nightly"
+      ;;
+      *ocp-v*)
+      part_2="redhat-developer-rhdh-nightly"
+      ;;
+    esac
+    artifacts_complete_url="${artifacts_base_url}/pr-logs/pull/${REPO_OWNER}_${REPO_NAME}/${PULL_NUMBER}/${JOB_NAME}/${BUILD_ID}/artifacts/${part_1}/${part_2}/artifacts/${namespace}"
   else
     local part_1="${JOB_NAME##periodic-ci-redhat-developer-rhdh-"${RELEASE_BRANCH_NAME}"-}" # e.g. "e2e-tests-aks-helm-nightly"
     local suite_name="${JOB_NAME##periodic-ci-redhat-developer-rhdh-"${RELEASE_BRANCH_NAME}"-e2e-tests-}" # e.g. "aks-helm-nightly"
@@ -73,7 +108,7 @@ get_artifacts_url() {
       part_2="redhat-developer-rhdh-nightly"
       ;;
     esac
-    artifacts_complete_url="${artifacts_base_url}/logs/${JOB_NAME}/${BUILD_ID}/artifacts/${part_1}/${part_2}/artifacts/${project}"
+    artifacts_complete_url="${artifacts_base_url}/logs/${JOB_NAME}/${BUILD_ID}/artifacts/${part_1}/${part_2}/artifacts/${namespace}"
   fi
   echo "${artifacts_complete_url}"
 }
@@ -91,21 +126,28 @@ get_job_url() {
 
 save_data_router_junit_results() {
   if [[ "${OPENSHIFT_CI}" != "true" ]]; then return 0; fi
-  if [[ "${JOB_NAME}" == *rehearse* ]]; then return 0; fi
 
-  local project=$1
+  local namespace=$1
 
-  ARTIFACTS_URL=$(get_artifacts_url)
+  ARTIFACTS_URL=$(get_artifacts_url "${namespace}")
 
-  # Remove properties (only used for skipped test and invalidates the file if empty)
-  sed_inplace '/<properties>/,/<\/properties>/d' "${ARTIFACT_DIR}/${project}/${JUNIT_RESULTS}"
+  cp "${ARTIFACT_DIR}/${namespace}/${JUNIT_RESULTS}" "${ARTIFACT_DIR}/${namespace}/${JUNIT_RESULTS}.original.xml"
+  
+  
   # Replace attachments with link to OpenShift CI storage
-  sed_inplace "s#\[\[ATTACHMENT|\(.*\)\]\]#${ARTIFACTS_URL}/\1#g" "${ARTIFACT_DIR}/${project}/${JUNIT_RESULTS}"
+  sed -i "s#\[\[ATTACHMENT|\(.*\)\]\]#${ARTIFACTS_URL}/\1#g" "${ARTIFACT_DIR}/${namespace}/${JUNIT_RESULTS}"
+
+  # Convert XML property tags from self-closing format to self-closing format
+  # This handles cases where properties have both opening and closing tags
+  # Step 1: Remove all closing property tags
+  sed -i 's#</property>##g' "${ARTIFACT_DIR}/${namespace}/${JUNIT_RESULTS}"
+  # Step 2: Convert opening property tags to self-closing format
+  sed -i 's#<property name="\([^"]*\)" value="\([^"]*\)">#<property name="\1" value="\2"/>#g' "${ARTIFACT_DIR}/${namespace}/${JUNIT_RESULTS}"
 
   # Copy the metadata and JUnit results files to the shared directory
-  cp "${ARTIFACT_DIR}/${project}/${JUNIT_RESULTS}" "${SHARED_DIR}/junit-results-${project}.xml"
+  cp "${ARTIFACT_DIR}/${namespace}/${JUNIT_RESULTS}" "${SHARED_DIR}/junit-results-${namespace}.xml"
 
-  echo "🗃️ JUnit results for ${project} adapted to Data Router format and saved to ARTIFACT_DIR and copied to SHARED_DIR"
+  echo "🗃️ JUnit results for ${namespace} adapted to Data Router format and saved to ARTIFACT_DIR and copied to SHARED_DIR"
   echo "Shared directory contents:"
   ls -la "${SHARED_DIR}"
 }

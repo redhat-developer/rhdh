@@ -4,6 +4,12 @@ import { Common } from "../../../utils/common";
 import { UI_HELPER_ELEMENTS } from "../../../support/pageObjects/global-obj";
 
 test.describe("dynamic-plugins-info UI tests", () => {
+  test.beforeAll(async () => {
+    test.info().annotations.push({
+      type: "component",
+      description: "plugins",
+    });
+  });
   let uiHelper: UIhelper;
   let common: Common;
 

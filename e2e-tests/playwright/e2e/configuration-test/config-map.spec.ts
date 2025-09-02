@@ -4,6 +4,13 @@ import { Common } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
 
 test.describe.skip("Change app-config at e2e test runtime", () => {
+  test.beforeAll(async () => {
+    test.info().annotations.push({
+      type: "component",
+      description: "configuration",
+    });
+  });
+
   test("Verify title change after ConfigMap modification", async ({ page }) => {
     test.setTimeout(300000); // Increasing to 5 minutes
 
