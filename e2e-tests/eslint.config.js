@@ -100,6 +100,12 @@ export default [
       "playwright/valid-title": "off", // Allow duplicate prefixes in test titles
       "playwright/valid-describe-callback": "off", // Allow async describe callbacks
       "playwright/valid-expect": "error", // Keep this as error to catch missing matchers
+      "playwright/no-skipped-test": [
+        "warn",
+        {
+          allowConditional: true,
+        },
+      ],
     },
   },
 ];
