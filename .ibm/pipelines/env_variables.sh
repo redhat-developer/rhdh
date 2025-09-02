@@ -2,6 +2,29 @@
 # shellcheck disable=SC2034
 set -a  # Automatically export all variables
 
+# Define log file names and directories.
+LOGFILE="test-log"
+
+# Populated by OpenShift CI or the initial CI scripts
+# Addition to JOB_NAME, TAG_NAME, SHARED_DIR, ARTIFACT_DIR
+# This prevents nounset errors when running locally
+# https://docs.ci.openshift.org/docs/architecture/step-registry/#available-environment-variables
+# https://docs.prow.k8s.io/docs/jobs/#job-environment-variables
+JOB_NAME="${JOB_NAME:-unknown-job}"
+TAG_NAME="${TAG_NAME:-}"
+OPENSHIFT_CI="${OPENSHIFT_CI:-false}"
+REPO_OWNER="${REPO_OWNER:-redhat-developer}"
+REPO_NAME="${REPO_NAME:-rhdh}"
+PULL_NUMBER="${PULL_NUMBER:-}"
+BUILD_ID="${BUILD_ID:-unknown-build}"
+RELEASE_BRANCH_NAME="${RELEASE_BRANCH_NAME:-main}"
+K8S_CLUSTER_TOKEN="${K8S_CLUSTER_TOKEN:-}"
+K8S_CLUSTER_URL="${K8S_CLUSTER_URL:-}"
+SHARED_DIR="${SHARED_DIR:-$DIR/shared_dir}"
+ARTIFACT_DIR="${ARTIFACT_DIR:-$DIR/artifact_dir}"
+mkdir -p "${SHARED_DIR}"
+mkdir -p "${ARTIFACT_DIR}"
+
 #ENVS and Vault Secrets
 HELM_CHART_VALUE_FILE_NAME="values_showcase.yaml"
 HELM_CHART_RBAC_VALUE_FILE_NAME="values_showcase-rbac.yaml"
