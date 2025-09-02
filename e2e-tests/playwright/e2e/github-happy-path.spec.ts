@@ -7,7 +7,6 @@ import {
   CatalogImport,
 } from "../support/pages/catalog-import";
 import { TEMPLATES } from "../support/testData/templates";
-
 let page: Page;
 let context: BrowserContext;
 
@@ -21,6 +20,11 @@ test.describe.serial("GitHub Happy path", async () => {
     "https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/all.yaml";
 
   test.beforeAll(async ({ browser }, testInfo) => {
+    test.info().annotations.push({
+      type: "component",
+      description: "core",
+    });
+
     ({ page, context } = await setupBrowser(browser, testInfo));
     uiHelper = new UIhelper(page);
     common = new Common(page);

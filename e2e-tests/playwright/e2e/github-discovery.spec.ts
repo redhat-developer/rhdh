@@ -4,7 +4,6 @@ import { CATALOG_FILE, JANUS_QE_ORG } from "../utils/constants";
 import { Common } from "../utils/common";
 import { assert } from "console";
 import { Catalog } from "../support/pages/catalog";
-
 type GithubDiscoveryFixture = {
   catalogPage: Catalog;
   githubApi: GithubApi;
@@ -24,6 +23,13 @@ const test = base.extend<GithubDiscoveryFixture>({
 
 //TODO: skipping due to RHIDP-4992
 test.describe.skip("Github Discovery Catalog", () => {
+  test.beforeAll(async () => {
+    test.info().annotations.push({
+      type: "component",
+      description: "api",
+    });
+  });
+
   test(`Discover Organization's Catalog`, async ({
     catalogPage,
     githubApi,
