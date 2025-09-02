@@ -8,7 +8,7 @@ handle_auth_providers() {
   local retry_operator_installation="${1:-1}"
   oc_login
   configure_namespace "${OPERATOR_MANAGER}"
-  install_rhdh_operator "${DIR}" "${OPERATOR_MANAGER}" "$retry_operator_installation"
+  install_rhdh_operator "${OPERATOR_MANAGER}" "$retry_operator_installation"
   wait_for_backstage_crd "default"
 
   K8S_CLUSTER_ROUTER_BASE=$(oc get route console -n openshift-console -o=jsonpath='{.spec.host}' | sed 's/^[^.]*\.//')

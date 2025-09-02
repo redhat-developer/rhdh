@@ -78,9 +78,9 @@ patch_and_restart_aks_spot_rbac() {
 apply_aks_operator_ingress() {
   local namespace=$1
   local service_name=$2
-  cat "$DIR/cluster/aks/manifest/aks-operator-ingress.yaml" | \
-    yq ".spec.rules[0].http.paths[0].backend.service.name = \"$service_name\"" - | \
-    kubectl apply --namespace="${namespace}" -f -
+  cat "$DIR/cluster/aks/manifest/aks-operator-ingress.yaml" \
+    | yq ".spec.rules[0].http.paths[0].backend.service.name = \"$service_name\"" - \
+    | kubectl apply --namespace="${namespace}" -f -
 }
 
 cleanup_aks_deployment() {
