@@ -22,7 +22,7 @@ test.describe("gitlab discovery UI tests", () => {
     await uiHelper.openSidebar("Catalog");
   });
 
-  // TODO: RHDHBUGS-1977
+  // TODO: https://issues.redhat.com/browse/RHDHBUGS-1977
   test.fixme(
     "GitLab integration for discovering catalog entities from GitLab",
     async () => {

@@ -29,7 +29,7 @@ test.describe("Github Discovery Catalog", () => {
     });
   });
 
-  //TODO: skipping due to RHIDP-4992
+  //TODO: https://issues.redhat.com/browse/RHIDP-4992
   test.fixme(
     `Discover Organization's Catalog`,
     async ({ catalogPage, githubApi, testOrganization }) => {
