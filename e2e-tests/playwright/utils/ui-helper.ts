@@ -259,7 +259,7 @@ export class UIhelper {
     }
 
     if (notVisibleCheck) {
-      await expect(linkLocator).not.toBeVisible();
+      await expect(linkLocator).toBeHidden();
     } else {
       await expect(linkLocator).toBeVisible();
     }
@@ -733,7 +733,7 @@ export class UIhelper {
       .first();
     await unregisterItem.waitFor({ state: "visible", timeout: 4000 });
     await unregisterItem.waitFor({ state: "attached", timeout: 4000 });
-    await expect(unregisterItem).not.toBeDisabled();
+    await expect(unregisterItem).toBeEnabled();
   }
 
   async clickUnregisterButtonForDisplayedEntity() {

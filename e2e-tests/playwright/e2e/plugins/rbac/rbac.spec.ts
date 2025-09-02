@@ -455,7 +455,7 @@ test.describe.serial("Test RBAC", () => {
       const uiHelper = new UIhelper(page);
       await uiHelper.openSidebarButton("Administration");
       const dropdownMenuLocator = page.locator(`text="RBAC"`);
-      await expect(dropdownMenuLocator).not.toBeVisible();
+      await expect(dropdownMenuLocator).toBeHidden();
     });
   });
 
@@ -476,7 +476,7 @@ test.describe.serial("Test RBAC", () => {
       apiToken = await RhdhAuthApiHack.getToken(page);
     });
 
-    // eslint-disable-next-line no-empty-pattern
+     
     test.beforeEach(async ({}, testInfo) => {
       console.log(
         `beforeEach: Attempting setup for ${testInfo.title}, retry: ${testInfo.retry}`,
@@ -657,7 +657,7 @@ test.describe.serial("Test RBAC", () => {
   });
 
   test.describe.serial("Test RBAC ownership conditional rule", () => {
-    // eslint-disable-next-line no-empty-pattern
+     
     test.beforeEach(async ({}, testInfo) => {
       testInfo.setTimeout(testInfo.timeout + 30_000); // Additional time due to repeated timeout failure in OSD env.
     });
@@ -760,7 +760,7 @@ test.describe.serial("Test RBAC", () => {
       const uiHelper = new UIhelper(page);
       await uiHelper.openSidebarButton("Administration");
       const dropdownMenuLocator = page.locator(`text="RBAC"`);
-      await expect(dropdownMenuLocator).not.toBeVisible();
+      await expect(dropdownMenuLocator).toBeHidden();
     });
   });
 });

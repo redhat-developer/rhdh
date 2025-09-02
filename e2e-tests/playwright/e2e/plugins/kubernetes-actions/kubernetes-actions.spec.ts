@@ -28,7 +28,7 @@ test.describe("Test Kubernetes Actions plugin", () => {
     await uiHelper.clickLink({ ariaLabel: "Self-service" });
   });
 
-  // eslint-disable-next-line no-empty-pattern
+   
   test.beforeEach(async ({}, testInfo) => {
     // Add cool-down period before retries (except on first attempt)
     if (testInfo.retry > 0) {
@@ -61,7 +61,7 @@ test.describe("Test Kubernetes Actions plugin", () => {
     await page.waitForTimeout(1500);
     await expect(
       page.locator(`${UI_HELPER_ELEMENTS.MuiTypography}:has-text("Error")`),
-    ).not.toBeVisible();
+    ).toBeHidden();
     await kubeClient.getNamespaceByName(namespace);
   });
 

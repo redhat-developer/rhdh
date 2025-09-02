@@ -3,6 +3,7 @@ import tseslint from "typescript-eslint";
 import checkFile from "eslint-plugin-check-file";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
+import playwright from "eslint-plugin-playwright";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -87,5 +88,16 @@ export default [
   },
   {
     ignores: ["node_modules/**", "playwright-report/**", "test-results/**"],
+  },
+  // Playwright recommended rules for test files
+  {
+    ...playwright.configs['flat/recommended'],
+    files: ['**/*.spec.ts', '**/*.test.ts', 'playwright/**/*.ts'],
+    rules: {
+      ...playwright.configs['flat/recommended'].rules,
+      // Disable rules that are too strict for this codebase
+      'playwright/expect-expect': 'off', // Allow tests without explicit assertions
+      'playwright/valid-title': 'off', // Allow duplicate prefixes in test titles
+    },
   },
 ];

@@ -54,8 +54,8 @@ test.describe("dynamic-plugins-info UI tests", () => {
     const row = page.locator(
       UI_HELPER_ELEMENTS.rowByText("backstage-community-plugin-tech-radar"),
     );
-    expect(row.locator("td").nth(2).innerText()).toBe("Yes"); // enabled
-    expect(row.locator("td").nth(3).innerText()).toBe("Yes"); // preinstalled
+    await expect(row.locator("td").nth(2)).toHaveText("Yes"); // enabled
+    await expect(row.locator("td").nth(3)).toHaveText("Yes"); // preinstalled
   });
 
   test("it should have a plugin-3scale-backend plugin which is not Enabled but Preinstalled", async ({
@@ -71,8 +71,8 @@ test.describe("dynamic-plugins-info UI tests", () => {
         "backstage-community-plugin-3scale-backend-dynamic",
       ),
     );
-    expect(await row.locator("td").nth(2).innerText()).toBe("No"); // not enabled
-    expect(await row.locator("td").nth(3).innerText()).toBe("Yes"); // preinstalled
+    await expect(row.locator("td").nth(2)).toHaveText("No"); // not enabled
+    await expect(row.locator("td").nth(3)).toHaveText("Yes"); // preinstalled
   });
 
   test("it should have a plugin-todo-list plugin which is Enabled but not Preinstalled", async ({

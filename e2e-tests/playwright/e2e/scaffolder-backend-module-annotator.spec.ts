@@ -46,7 +46,7 @@ test.describe.serial("Test Scaffolder Backend Module Annotator Actions", () => {
     await common.loginAsGuest();
   });
 
-  // eslint-disable-next-line no-empty-pattern
+   
   test("Register a Template", async ({}, testInfo) => {
     await uiHelper.openSidebar("Catalog");
     await uiHelper.verifyText("Name");

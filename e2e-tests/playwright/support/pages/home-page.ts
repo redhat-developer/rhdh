@@ -47,8 +47,8 @@ export class HomePage {
 
     await itemLocator.waitFor({ state: "visible" });
 
-    const isVisible = await itemLocator.isVisible();
-    expect(isVisible).toBeTruthy();
+    const isVisible = itemLocator;
+    await expect(isVisible).toBeVisible();
   }
 
   async verifyVisitedCardContent(section: string) {
