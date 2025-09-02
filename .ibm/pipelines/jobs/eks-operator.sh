@@ -54,4 +54,4 @@ handle_eks_operator() {
   check_and_test "${RELEASE_NAME}" "${NAME_SPACE_RBAC}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
   cleanup_eks_dns_record "${EKS_INSTANCE_DOMAIN_NAME}"
   cleanup_eks_deployment "${NAME_SPACE_RBAC}"
-} 
+}

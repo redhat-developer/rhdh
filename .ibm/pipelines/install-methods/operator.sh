@@ -4,9 +4,8 @@
 source "$DIR"/utils.sh
 
 install_rhdh_operator() {
-  local dir=$1
-  local namespace=$2
-  local max_attempts=$3
+  local namespace=$1
+  local max_attempts=$2
 
   configure_namespace "$namespace"
 
@@ -57,7 +56,7 @@ install_rhdh_operator() {
 prepare_operator() {
   local retry_operator_installation="${1:-1}"
   configure_namespace "${OPERATOR_MANAGER}"
-  install_rhdh_operator "${DIR}" "${OPERATOR_MANAGER}" "$retry_operator_installation"
+  install_rhdh_operator "${OPERATOR_MANAGER}" "$retry_operator_installation"
 }
 
 wait_for_backstage_crd() {

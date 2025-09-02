@@ -13,6 +13,7 @@ handle_gke_helm() {
   echo "Starting GKE Helm deployment"
 
   IS_OPENSHIFT=false
+  export IS_OPENSHIFT
 
   K8S_CLUSTER_ROUTER_BASE=$GKE_INSTANCE_DOMAIN_NAME
   NAME_SPACE="showcase-k8s-ci-nightly"
