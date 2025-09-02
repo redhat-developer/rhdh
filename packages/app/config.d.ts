@@ -101,6 +101,11 @@ export interface Config {
        */
       titleKey?: string;
       /**
+       * The roles associated with the quickstart.
+       * @visibility frontend
+       */
+      roles?: Array<string>;
+      /**
        * Optional icon for quickstart.
        * @visibility frontend
        */
