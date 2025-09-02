@@ -43,7 +43,8 @@ main() {
 
   CHART_VERSION=$(get_chart_version "$CHART_MAJOR_VERSION")
   export CHART_VERSION
-  detect_ocp_and_set_env_var
+  detect_ocp
+  detect_container_platform
 
   case "$JOB_NAME" in
     *aks-helm*)

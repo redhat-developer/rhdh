@@ -30,6 +30,11 @@ test.describe.serial("Link Scaffolded Templates to Catalog Items", () => {
   };
 
   test.beforeAll(async ({ browser }, testInfo) => {
+    test.info().annotations.push({
+      type: "component",
+      description: "core",
+    });
+
     page = (await setupBrowser(browser, testInfo)).page;
 
     common = new Common(page);

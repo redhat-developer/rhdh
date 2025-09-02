@@ -4,6 +4,13 @@ import { UIhelper } from "../../../utils/ui-helper";
 import { TestHelper } from "../../../support/pages/adoption-insights";
 
 test.describe.serial("Test Adoption Insights", () => {
+  test.beforeAll(async () => {
+    test.info().annotations.push({
+      type: "component",
+      description: "plugins",
+    });
+  });
+
   test.describe
     .serial("Test Adoption Insights plugin: load permission policies and conditions from files", () => {
     let context;

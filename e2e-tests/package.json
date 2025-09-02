@@ -21,7 +21,7 @@
     "showcase-sanity-plugins": "playwright test --project=showcase-sanity-plugins",
     "lint:check": "eslint . --ext .js,.ts",
     "lint:fix": "eslint . --ext .js,.ts --fix",
-    "postinstall": "playwright install",
+    "postinstall": "playwright install chromium",
     "tsc": "tsc",
     "prettier:check": "prettier --ignore-unknown --check .",
     "prettier:fix": "prettier --ignore-unknown --write ."
