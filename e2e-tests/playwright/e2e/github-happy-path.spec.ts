@@ -108,7 +108,7 @@ test.describe.serial("GitHub Happy path", async () => {
       timeout: 20000,
     });
     // Optionally, verify that the current URL contains the expected path
-    await expect(page.url()).toContain(expectedPath);
+    expect(page.url()).toContain(expectedPath);
 
     await common.clickOnGHloginPopup();
     await uiHelper.verifyLink("About RHDH", { exact: false });
