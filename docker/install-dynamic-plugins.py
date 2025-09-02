@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 import copy
 from enum import StrEnum
 import hashlib
@@ -29,6 +28,7 @@ import binascii
 import atexit
 import time
 import signal
+import re
 
 # This script is used to install dynamic plugins in the Backstage application,
 # and is available in the container image to be called at container initialization,
@@ -40,17 +40,18 @@ import signal
 # Additionally, the MAX_ENTRY_SIZE environment variable can be defined to set
 # the maximum size of a file in the archive (default: 20MB).
 #
-# The SKIP_INTEGRITY_CHECK environment variable can be defined with ("true") to skip the integrity check of remote packages
+# The SKIP_INTEGRITY_CHECK environment variable can be defined with ("true") to skip the integrity check of remote NPM packages
 #
 # It expects the `dynamic-plugins.yaml` file to be present in the current directory and
 # to contain the list of plugins to install along with their optional configuration.
 #
 # The `dynamic-plugins.yaml` file must contain:
 #   - a `plugins` list of objects with the following properties:
-#     - `package`: the NPM package to install (either a package name or a path to a local package)
-#     - `integrity`: a string containing the integrity hash of the package (optional if package is local, as integrity check is not checked for local packages)
+#     - `package`: the NPM or OCI package to install (either a package name or a path to a local package)
+#     - `integrity`: a string containing the integrity hash of the NPM package (optional if package is local, as integrity check is not checked for local packages)
 #     - `pluginConfig`: an optional plugin-specific configuration fragment
 #     - `disabled`: an optional boolean to disable the plugin (`false` by default)
+#     - `inheritVersion`: an optional boolean to inherit the OCI package version from the included config (optional, `false` by default)
 #   - an optional `includes` list of yaml files to include, each file containing a list of plugins.
 #
 # The plugins listed in the included files will be included in the main list of considered plugins
@@ -59,7 +60,7 @@ import signal
 # For each enabled plugin mentioned in the main `plugins` list and the various included files,
 # the script will:
 #   - call `npm pack` to get the package archive and extract it in the dynamic plugins root directory
-#   - if the package comes from a remote registry, verify the integrity of the package with the given integrity hash
+#   - if the package comes from a remote NPM registry, verify the integrity of the package with the given integrity hash
 #   - merge the plugin-specific configuration fragment in a global configuration file named `app-config.dynamic-plugins.yaml`
 #
 
@@ -102,18 +103,67 @@ def maybeMergeConfig(config, globalConfig):
 
 def mergePlugin(plugin: dict, allPlugins: dict, dynamicPluginsFile: str):
     package = plugin['package']
+    version = None # Used to track OCI package versions for version inference
     if not isinstance(package, str):
         raise InstallException(f"content of the \'plugins.package\' field must be a string in {dynamicPluginsFile}")
 
+    if package.startswith('oci://'):
+        # Check if package is in the expected format: `oci://<registry>:<tag>!<path>`
+        oci_pattern = r'^(oci://[^:]+):([^!]+)!(.+)$'
+        match = re.match(oci_pattern, package)
+        if not match:
+            raise InstallException(f"oci package \'{package}\' is not in the expected format \'oci://<registry>:<tag>!<path>\' in {dynamicPluginsFile}")
+
+        # Strip away the <tag> from the package string, resulting in oci://<registry>:!<path>
+        # This helps ensure keys used to identify OCI plugins are independent of the version of the plugin
+        registry = match.group(1)
+        version = match.group(2)
+        path = match.group(3)
+        package = f"{registry}:!{path}"
+
     # if `package` already exists in `allPlugins`, then override its fields
     if package not in allPlugins:
+        if package.startswith('oci://'):
+            inheritVersion = plugin.pop("inheritVersion", False)
+            if inheritVersion is True:
+                # User might layer on additional configurations that provide a version so just print a warning for now
+                print(f"WARNING: `inheritVersion` is set to True and there is currently no resolved version for {plugin['package']} in {dynamicPluginsFile}. This can be safely ignored if no errors are reported later.")
+                plugin["version"] = None
+            else:
+                plugin["version"] = version
+            
         allPlugins[package] = plugin
         return
 
     # override the included plugins with fields in the main plugins list
     print('\n======= Overriding dynamic plugin configuration', package, flush=True)
+    
+    # Handle inheritVersion logic for OCI packages (whether the key exists or not)
+    if package.startswith('oci://'):
+        inherit_version = plugin.get("inheritVersion", False)
+        if inherit_version is True:
+            # User might layer on additional configurations that provide a version so just print a warning for now
+            if version is None and allPlugins[package].get('version') is None:
+                print(f"WARNING: `inheritVersion` is set to True and there is currently no resolved version for {plugin['package']} in {dynamicPluginsFile}. This can be safely ignored if no errors are reported later.")
+        else:
+            if version is None:
+                # This exception should never happen due to regex matching above
+                raise InstallException(f"Version is not set for {plugin['package']} in {dynamicPluginsFile} and inheritVersion is not set to True")        
+            allPlugins[package]['package'] = plugin['package'] # Override package since no version inheritance        
+           
+            print(f"INFO: Overriding version for {package} from `{allPlugins[package]['version']}` to `{version}`")
+            allPlugins[package]["version"] = version
+    
     for key in plugin:
+        # Skip inheritVersion since we handled it above for OCI packages
+        if key == "inheritVersion":
+            continue
+        
+        # Skip package field update if inheritVersion is set to True, or if package is not an OCI package
         if key == 'package':
+            continue
+        # Don't allow internally managed `version` field to be overridden
+        if key == "version":
             continue
         allPlugins[package][key] = plugin[key]
 
@@ -273,9 +323,9 @@ def main():
         exit(0)
 
     globalConfig = {
-      'dynamicPlugins': {
-            'rootDirectory': 'dynamic-plugins-root'
-      }
+        'dynamicPlugins': {
+            'rootDirectory': 'dynamic-plugins-root',
+        }
     }
 
     with open(dynamicPluginsFile, 'r') as file:
@@ -294,7 +344,7 @@ def main():
     allPlugins = {}
 
     if skipIntegrityCheck:
-        print(f"SKIP_INTEGRITY_CHECK has been set to {skipIntegrityCheck}, skipping integrity check of packages")
+        print(f"SKIP_INTEGRITY_CHECK has been set to {skipIntegrityCheck}, skipping integrity check of remote NPM packages")
 
     if 'includes' in content:
         includes = content['includes']
@@ -337,12 +387,13 @@ def main():
 
     for plugin in plugins:
         mergePlugin(plugin, allPlugins, dynamicPluginsFile)
-
-    # add a hash for each plugin configuration to detect changes
+        
+    # add a hash for each plugin configuration to detect changes and check if version field is set for OCI packages
     for plugin in allPlugins.values():
         hash_dict = copy.deepcopy(plugin)
         # remove elements that shouldn't be tracked for installation detection
         hash_dict.pop('pluginConfig', None)
+        hash_dict.pop('version', None) # Don't track the internal version field used to track version inheritance
         hash = hashlib.sha256(json.dumps(hash_dict, sort_keys=True).encode('utf-8')).hexdigest()
         plugin['hash'] = hash
 
@@ -366,10 +417,12 @@ def main():
         if 'disabled' in plugin and plugin['disabled'] is True:
             print('\n======= Skipping disabled dynamic plugin', package, flush=True)
             continue
-
         # Stores the relative path of the plugin directory once downloaded
         plugin_path = ''
         if package.startswith('oci://'):
+            if plugin.get('version') is None:
+                raise InstallException(f"Version is not set for {package} in {dynamicPluginsFile}. Please ensure there is at least one plugin configurations without `inheritVersion` set to True.")
+
             # The OCI downloader
             try:
                 pull_policy = plugin.get('pullPolicy', PullPolicy.ALWAYS if ':latest!' in package else PullPolicy.IF_NOT_PRESENT)
