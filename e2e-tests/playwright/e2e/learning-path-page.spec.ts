@@ -4,6 +4,13 @@ import { Common } from "../utils/common";
 import { runAccessibilityTests } from "../utils/accessibility";
 
 test.describe("Learning Paths", () => {
+  test.beforeAll(async () => {
+    test.info().annotations.push({
+      type: "component",
+      description: "core",
+    });
+  });
+
   let common: Common;
   let uiHelper: UIhelper;
 

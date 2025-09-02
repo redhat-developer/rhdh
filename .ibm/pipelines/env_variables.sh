@@ -1,5 +1,29 @@
 #!/bin/bash
+# shellcheck disable=SC2034
 set -a  # Automatically export all variables
+
+# Define log file names and directories.
+LOGFILE="test-log"
+
+# Populated by OpenShift CI or the initial CI scripts
+# Addition to JOB_NAME, TAG_NAME, SHARED_DIR, ARTIFACT_DIR
+# This prevents nounset errors when running locally
+# https://docs.ci.openshift.org/docs/architecture/step-registry/#available-environment-variables
+# https://docs.prow.k8s.io/docs/jobs/#job-environment-variables
+JOB_NAME="${JOB_NAME:-unknown-job}"
+TAG_NAME="${TAG_NAME:-}"
+OPENSHIFT_CI="${OPENSHIFT_CI:-false}"
+REPO_OWNER="${REPO_OWNER:-redhat-developer}"
+REPO_NAME="${REPO_NAME:-rhdh}"
+PULL_NUMBER="${PULL_NUMBER:-}"
+BUILD_ID="${BUILD_ID:-unknown-build}"
+RELEASE_BRANCH_NAME="${RELEASE_BRANCH_NAME:-main}"
+K8S_CLUSTER_TOKEN="${K8S_CLUSTER_TOKEN:-}"
+K8S_CLUSTER_URL="${K8S_CLUSTER_URL:-}"
+SHARED_DIR="${SHARED_DIR:-$DIR/shared_dir}"
+ARTIFACT_DIR="${ARTIFACT_DIR:-$DIR/artifact_dir}"
+mkdir -p "${SHARED_DIR}"
+mkdir -p "${ARTIFACT_DIR}"
 
 #ENVS and Vault Secrets
 HELM_CHART_VALUE_FILE_NAME="values_showcase.yaml"
@@ -98,15 +122,8 @@ RDS_2_HOST=$(cat /tmp/secrets/RDS_2_HOST)
 RDS_3_HOST=$(cat /tmp/secrets/RDS_3_HOST)
 
 JUNIT_RESULTS="junit-results.xml"
-DATA_ROUTER_URL=$(cat /tmp/secrets/DATA_ROUTER_URL)
-DATA_ROUTER_USERNAME=$(cat /tmp/secrets/DATA_ROUTER_USERNAME)
-DATA_ROUTER_PASSWORD=$(cat /tmp/secrets/DATA_ROUTER_PASSWORD)
-DATA_ROUTER_PROJECT="main"
-DATA_ROUTER_AUTO_FINALIZATION_TRESHOLD=$(cat /tmp/secrets/DATA_ROUTER_AUTO_FINALIZATION_TRESHOLD)
-DATA_ROUTER_NEXUS_HOSTNAME=$(cat /tmp/secrets/DATA_ROUTER_NEXUS_HOSTNAME)
-REPORTPORTAL_HOSTNAME=$(cat /tmp/secrets/REPORTPORTAL_HOSTNAME)
+
 SLACK_DATA_ROUTER_WEBHOOK_URL=$(cat /tmp/secrets/SLACK_DATA_ROUTER_WEBHOOK_URL)
-SLACK_NIGHTLY_WEBHOOK_URL=$(cat /tmp/secrets/SLACK_NIGHTLY_WEBHOOK_URL)
 REDIS_USERNAME=temp
 REDIS_USERNAME_ENCODED=$(printf "%s" $REDIS_USERNAME | base64 | tr -d '\n')
 REDIS_PASSWORD=test123
@@ -127,7 +144,6 @@ AWS_DEFAULT_REGION=$(cat /tmp/secrets/AWS_DEFAULT_REGION)
 AWS_EKS_PARENT_DOMAIN=$(cat /tmp/secrets/AWS_EKS_PARENT_DOMAIN)
 
 # authentication providers variables
-
 RHBK_BASE_URL=$(cat /tmp/secrets/AUTH_PROVIDERS_RHBK_BASE_URL)
 RHBK_CLIENT_SECRET=$(cat /tmp/secrets/AUTH_PROVIDERS_RHBK_CLIENT_SECRET)
 RHBK_CLIENT_ID=$(cat /tmp/secrets/AUTH_PROVIDERS_RHBK_CLIENT_ID)
@@ -169,6 +185,8 @@ KEYCLOAK_AUTH_REALM=$(cat /tmp/secrets/KEYCLOAK_AUTH_REALM)
 REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON=$(cat /tmp/secrets/REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON)
 
 IS_OPENSHIFT=""
+CONTAINER_PLATFORM=""
+CONTAINER_PLATFORM_VERSION=""
 
 GITHUB_OAUTH_APP_ID=$(cat /tmp/secrets/GITHUB_OAUTH_APP_ID)
 GITHUB_OAUTH_APP_SECRET=$(cat /tmp/secrets/GITHUB_OAUTH_APP_SECRET)

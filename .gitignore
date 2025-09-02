@@ -63,3 +63,11 @@ dynamic-plugins-root/*
 
 # Private Keys
 *.pem
+
+# Local Cursor rules context
+.cursor/rules/*.local.mdc
+
+# CI/Pipeline local overrides
+.ibm/pipelines/shared_dir/*
+.ibm/pipelines/artifact_dir/*
+.ibm/pipelines/env_override.local.sh
