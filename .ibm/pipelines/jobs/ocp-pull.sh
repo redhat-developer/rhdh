@@ -5,7 +5,8 @@ handle_ocp_pull() {
   oc_login
   echo "OCP version: $(oc version)"
 
-  export K8S_CLUSTER_ROUTER_BASE=$(oc get route console -n openshift-console -o=jsonpath='{.spec.host}' | sed 's/^[^.]*\.//')
+  K8S_CLUSTER_ROUTER_BASE=$(oc get route console -n openshift-console -o=jsonpath='{.spec.host}' | sed 's/^[^.]*\.//')
+  export K8S_CLUSTER_ROUTER_BASE
   cluster_setup_ocp_helm
   initiate_deployments
   deploy_test_backstage_customization_provider "${NAME_SPACE}"
