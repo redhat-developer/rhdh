@@ -5,6 +5,13 @@ import Redis from "ioredis";
 import { ChildProcessWithoutNullStreams, exec, spawn } from "child_process";
 
 test.describe("Verify Redis Cache DB", () => {
+  test.beforeAll(async () => {
+    test.info().annotations.push({
+      type: "component",
+      description: "core",
+    });
+  });
+
   test.describe.configure({ mode: "serial" });
   let common: Common;
   let uiHelper: UIhelper;
