@@ -476,7 +476,6 @@ test.describe.serial("Test RBAC", () => {
       apiToken = await RhdhAuthApiHack.getToken(page);
     });
 
-     
     test.beforeEach(async ({}, testInfo) => {
       console.log(
         `beforeEach: Attempting setup for ${testInfo.title}, retry: ${testInfo.retry}`,
@@ -570,7 +569,9 @@ test.describe.serial("Test RBAC", () => {
       await page.reload();
       await uiHelper.openSidebar("Catalog");
       await uiHelper.clickButton("Self-service");
-      expect(await uiHelper.isLinkVisible("Import an existing Git repository"));
+      expect(
+        await uiHelper.isLinkVisible("Import an existing Git repository"),
+      ).toBeTruthy();
       await uiHelper.clickButton("Import an existing Git repository");
       const catalogImport = new CatalogImport(page);
       const component =
@@ -657,7 +658,6 @@ test.describe.serial("Test RBAC", () => {
   });
 
   test.describe.serial("Test RBAC ownership conditional rule", () => {
-     
     test.beforeEach(async ({}, testInfo) => {
       testInfo.setTimeout(testInfo.timeout + 30_000); // Additional time due to repeated timeout failure in OSD env.
     });
