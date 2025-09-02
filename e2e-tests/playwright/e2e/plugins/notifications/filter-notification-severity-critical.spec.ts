@@ -12,6 +12,13 @@ test.describe("Filter critical notification tests", () => {
   let common: Common;
   let notificationPage: NotificationPage;
 
+  test.beforeAll(async () => {
+    test.info().annotations.push({
+      type: "component",
+      description: "integration",
+    });
+  });
+
   test.beforeEach(async ({ page }) => {
     uiHelper = new UIhelper(page);
     common = new Common(page);

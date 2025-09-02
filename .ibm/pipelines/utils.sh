@@ -382,7 +382,7 @@ apply_yaml_files() {
 
     # Create Deployment and Pipeline for Topology test.
     oc apply -f "$dir/resources/topology_test/topology-test.yaml"
-    if [[ -z "${IS_OPENSHIFT}" || "$(to_lowercase "${IS_OPENSHIFT}")" == "false" ]]; then
+    if [[ -z "${IS_OPENSHIFT}" || "${IS_OPENSHIFT}" == "false" ]]; then
       kubectl apply -f "$dir/resources/topology_test/topology-test-ingress.yaml"
     else
       oc apply -f "$dir/resources/topology_test/topology-test-route.yaml"
@@ -958,12 +958,72 @@ is_openshift() {
   oc get routes.route.openshift.io &> /dev/null || kubectl get routes.route.openshift.io &> /dev/null
 }
 
-detect_ocp_and_set_env_var() {
+detect_ocp() {
   echo "Detecting OCP or K8s and populating IS_OPENSHIFT variable..."
   if [[ "${IS_OPENSHIFT}" == "" ]]; then
     IS_OPENSHIFT=$(is_openshift && echo 'true' || echo 'false')
   fi
+  
   echo IS_OPENSHIFT: "${IS_OPENSHIFT}"
+  save_is_openshift "${IS_OPENSHIFT}"
+}
+
+detect_container_platform() {
+  echo "Detecting container platform and populating CONTAINER_PLATFORM variable..."
+
+  # Determine platform type based on IS_OPENSHIFT variable
+  if [[ "${IS_OPENSHIFT}" == "true" ]]; then
+    case "$JOB_NAME" in
+      *osd-gcp*)
+        CONTAINER_PLATFORM="osd-gcp"
+        ;;
+      *)
+        CONTAINER_PLATFORM="ocp"
+        ;;
+    esac
+    # Get OCP version
+    if command -v oc &> /dev/null; then
+      CONTAINER_PLATFORM_VERSION=$(oc version 2>/dev/null | grep "Server Version:" | cut -d' ' -f3 | cut -d'.' -f1,2 || echo "unknown")
+    else
+      CONTAINER_PLATFORM_VERSION="unknown"
+    fi
+  else
+    # Determine Kubernetes distribution based on JOB_NAME pattern
+    case "$JOB_NAME" in
+      *aks*)
+        CONTAINER_PLATFORM="aks"
+        ;;
+      *eks*)
+        CONTAINER_PLATFORM="eks"
+        ;;
+      *gke*)
+        CONTAINER_PLATFORM="gke"
+        ;;
+      *iks*)
+        CONTAINER_PLATFORM="iks"
+        ;;
+      *)
+        CONTAINER_PLATFORM="unknown"
+        ;;
+    esac
+
+    # Get Kubernetes version
+    if command -v kubectl &> /dev/null; then
+      CONTAINER_PLATFORM_VERSION=$(kubectl version 2>/dev/null | grep "Server Version:" | cut -d' ' -f3 | sed 's/^v//' | cut -d'.' -f1,2 || echo "unknown")
+    else
+      CONTAINER_PLATFORM_VERSION="unknown"
+    fi
+  fi
+
+  echo "CONTAINER_PLATFORM: ${CONTAINER_PLATFORM}"
+  echo "CONTAINER_PLATFORM_VERSION: ${CONTAINER_PLATFORM_VERSION}"
+
+  # Export variables for use in other scripts
+  export CONTAINER_PLATFORM
+  export CONTAINER_PLATFORM_VERSION
+
+  # Save platform information for reporting
+  save_container_platform "${CONTAINER_PLATFORM}" "${CONTAINER_PLATFORM_VERSION}"
 }
 
 # Helper function for cross-platform sed
@@ -974,17 +1034,6 @@ sed_inplace() {
   else
     # Linux
     sed -i "$@"
-  fi
-}
-
-# Helper function for case conversion
-to_lowercase() {
-  if [[ "$OSTYPE" == "darwin"* ]]; then
-    # macOS - using tr
-    echo "$1" | tr '[:upper:]' '[:lower:]'
-  else
-    # Linux - using bash parameter expansion
-    echo "${1,,}"
   fi
 }
 

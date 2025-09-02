@@ -7,6 +7,7 @@ import { UI_HELPER_ELEMENTS } from "../support/pageObjects/global-obj";
 let page: Page;
 test.describe("Test timestamp column on Catalog", () => {
   test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
+
   let uiHelper: UIhelper;
   let common: Common;
   let catalogImport: CatalogImport;
@@ -15,6 +16,11 @@ test.describe("Test timestamp column on Catalog", () => {
     "https://github.com/janus-qe/custom-catalog-entities/blob/main/timestamp-catalog-info.yaml";
 
   test.beforeAll(async ({ browser }, testInfo) => {
+    test.info().annotations.push({
+      type: "component",
+      description: "core",
+    });
+
     page = (await setupBrowser(browser, testInfo)).page;
 
     common = new Common(page);
