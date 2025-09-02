@@ -13,7 +13,7 @@ export class Orchestrator {
 
   async openWorkflowAlert() {
     // This is only valid for MILESTONE 2
-    const alert = await this.page.getByRole("alert");
+    const alert = this.page.getByRole("alert");
     await alert.getByRole("button").nth(0).click();
   }
 
@@ -32,7 +32,7 @@ export class Orchestrator {
   }
 
   async getPageUrl() {
-    return await this.page.url();
+    return this.page.url();
   }
 
   async gotoUrl(url = "") {

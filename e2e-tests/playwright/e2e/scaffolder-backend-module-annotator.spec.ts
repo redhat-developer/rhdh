@@ -245,7 +245,7 @@ test.describe.serial("Test Scaffolder Backend Module Annotator Actions", () => {
     const selector =
       'a[href*="/catalog/default/component/test-scaffoldedfromlink-"]';
     await page.locator(selector).first().waitFor({ state: "visible" });
-    const link = await page.locator(selector).first();
+    const link = page.locator(selector).first();
     await expect(link).toBeVisible();
     await link.click();
   }

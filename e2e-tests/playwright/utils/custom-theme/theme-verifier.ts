@@ -17,13 +17,13 @@ export class ThemeVerifier {
   }
 
   async verifyHeaderGradient(expectedGradient: string) {
-    const header = await this.page.locator("main header");
+    const header = this.page.locator("main header");
     await expect(header).toHaveCSS("background-image", expectedGradient);
   }
 
   async verifyBorderLeftColor(expectedColor: string) {
     await this.uiHelper.openSidebar("Home");
-    const locator = await this.page.locator("a").filter({ hasText: "Home" });
+    const locator = this.page.locator("a").filter({ hasText: "Home" });
     await expect(locator).toHaveCSS(
       "border-left",
       `3px solid ${expectedColor}`,

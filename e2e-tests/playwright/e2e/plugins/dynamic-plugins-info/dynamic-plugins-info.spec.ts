@@ -51,11 +51,11 @@ test.describe("dynamic-plugins-info UI tests", () => {
     await page
       .getByPlaceholder("Filter", { exact: true })
       .pressSequentially("plugin-tech-radar\n", { delay: 300 });
-    const row = await page.locator(
+    const row = page.locator(
       UI_HELPER_ELEMENTS.rowByText("backstage-community-plugin-tech-radar"),
     );
-    expect(await row.locator("td").nth(2).innerText()).toBe("Yes"); // enabled
-    expect(await row.locator("td").nth(3).innerText()).toBe("Yes"); // preinstalled
+    expect(row.locator("td").nth(2).innerText()).toBe("Yes"); // enabled
+    expect(row.locator("td").nth(3).innerText()).toBe("Yes"); // preinstalled
   });
 
   test("it should have a plugin-3scale-backend plugin which is not Enabled but Preinstalled", async ({
@@ -66,7 +66,7 @@ test.describe("dynamic-plugins-info UI tests", () => {
       .pressSequentially("plugin-3scale-backend-dynamic\n", {
         delay: 100,
       });
-    const row = await page.locator(
+    const row = page.locator(
       UI_HELPER_ELEMENTS.rowByText(
         "backstage-community-plugin-3scale-backend-dynamic",
       ),
