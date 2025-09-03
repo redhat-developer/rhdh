@@ -377,11 +377,11 @@ apply_yaml_files() {
       --dry-run=client -o yaml | oc apply -f -
 
     # Create Pipeline run for tekton test case.
-    # oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline.yaml"
-    # oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline-run.yaml"
+    oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline.yaml"
+    oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline-run.yaml"
 
     # Create Deployment and Pipeline for Topology test.
-    # oc apply -f "$dir/resources/topology_test/topology-test.yaml"
+    oc apply -f "$dir/resources/topology_test/topology-test.yaml"
     if [[ -z "${IS_OPENSHIFT}" || "${IS_OPENSHIFT}" == "false" ]]; then
       kubectl apply -f "$dir/resources/topology_test/topology-test-ingress.yaml"
     else
