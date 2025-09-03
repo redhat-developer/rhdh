@@ -7,6 +7,6 @@ roleRef:
   kind: ClusterRole
   name: rhdh-k8s-plugin
 subjects:
-- kind: ServiceAccount
-  name: rhdh-k8s-plugin
-  namespace: showcase-operator-nightly
+  - kind: ServiceAccount
+    name: rhdh-k8s-plugin
+    namespace: showcase-operator-nightly

@@ -10,4 +10,4 @@ metadata:
   namespace: open-cluster-management
 spec:
   targetNamespaces:
-  - open-cluster-management
+    - open-cluster-management

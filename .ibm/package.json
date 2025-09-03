@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "shellcheck": "shellcheck --severity=warning --color=always **/*.sh",
-    "prettier:check": "npx prettier --check **/*.sh",
-    "prettier:fix": "npx prettier --write **/*.sh"
+    "prettier:check": "npx prettier --check **/*.{sh,md,yaml,yml}",
+    "prettier:fix": "npx prettier --write **/*.{sh,md,yaml,yml}"
   },
   "devDependencies": {
     "prettier-plugin-sh": "^0.18.0",

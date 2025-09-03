@@ -21,14 +21,14 @@ upstream:
         auth:
           externalAccess:
             - options:
-                secret: '${BACKEND_SECRET}'
+                secret: "${BACKEND_SECRET}"
                 subject: legacy-default-config
               type: legacy
         baseUrl: 'https://{{- include "janus-idp.hostname" . }}'
         cors:
           origin: 'https://{{- include "janus-idp.hostname" . }}'
         database:
-          connection:  # configure Backstage DB connection parameters
+          connection: # configure Backstage DB connection parameters
             host: ${POSTGRES_HOST}
             port: ${POSTGRES_PORT}
             user: ${POSTGRES_USER}

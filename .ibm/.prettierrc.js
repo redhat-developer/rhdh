@@ -11,7 +11,27 @@ module.exports = {
         // Shell script specific formatting options
         keepComments: true,
         indent: 2,
-        // Ensure consistent line endings
+        endOfLine: 'lf',
+      },
+    },
+    {
+      files: '*.md',
+      options: {
+        parser: 'markdown',
+        // Markdown specific formatting options
+        tabWidth: 2,
+        useTabs: false,
+        proseWrap: 'always',
+        endOfLine: 'lf',
+      },
+    },
+    {
+      files: '*.{yaml,yml}',
+      options: {
+        parser: 'yaml',
+        // YAML specific formatting options
+        tabWidth: 2,
+        useTabs: false,
         endOfLine: 'lf',
       },
     },
@@ -21,7 +41,6 @@ module.exports = {
   tabWidth: 2,
   useTabs: false,
   semi: true,
-  singleQuote: true,
   trailingComma: 'es5',
   bracketSpacing: true,
   bracketSameLine: false,

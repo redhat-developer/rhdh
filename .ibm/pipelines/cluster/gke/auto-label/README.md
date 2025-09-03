@@ -1,6 +1,8 @@
 # 🏷️ GKE Cluster Auto-Labeler
 
-This project automatically applies standardized labels to new Google Kubernetes Engine (GKE) clusters in the `rhdh-qe` GCP project. The system uses Cloud Functions triggered by EventArc to monitor cluster creation events and apply labels immediately.
+This project automatically applies standardized labels to new Google Kubernetes Engine (GKE)
+clusters in the `rhdh-qe` GCP project. The system uses Cloud Functions triggered by EventArc to
+monitor cluster creation events and apply labels immediately.
 
 ## Overview
 
