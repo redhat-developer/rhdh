@@ -48,6 +48,7 @@ test.describe("Test Keycloak plugin", () => {
       );
       expect(userFound).not.toBeNull();
 
+      // eslint-disable-next-line playwright/no-conditional-in-test
       if (userFound) {
         await keycloak.checkUserDetails(
           page,
