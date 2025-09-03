@@ -48,10 +48,10 @@ import re
 # The `dynamic-plugins.yaml` file must contain:
 #   - a `plugins` list of objects with the following properties:
 #     - `package`: the NPM or OCI package to install (either a package name or a path to a local package)
+#       - For OCI packages, the tag or digest can be omitted if the `{{inherit}}` tag is set (requires the included configuration to contain a valid tag or digest to inherit from)
 #     - `integrity`: a string containing the integrity hash of the NPM package (optional if package is local, as integrity check is not checked for local packages)
 #     - `pluginConfig`: an optional plugin-specific configuration fragment
 #     - `disabled`: an optional boolean to disable the plugin (`false` by default)
-#     - `inheritVersion`: an optional boolean to inherit the OCI package version from the included config (optional, `false` by default)
 #   - an optional `includes` list of yaml files to include, each file containing a list of plugins.
 #
 # The plugins listed in the included files will be included in the main list of considered plugins
@@ -123,6 +123,8 @@ def mergePlugin(plugin: dict, allPlugins: dict, dynamicPluginsFile: str):
         digest_version = match.group(3)
         path = match.group(4) 
         
+        # {{inherit}} tag indicates that the version should be inherited from the included configuration
+        inheritVersion = tag_version == "{{inherit}}"
         # Use whichever version format was matched
         version = tag_version if tag_version else digest_version
         package = f"{registry}:!{path}"
@@ -130,10 +132,9 @@ def mergePlugin(plugin: dict, allPlugins: dict, dynamicPluginsFile: str):
     # if `package` already exists in `allPlugins`, then override its fields
     if package not in allPlugins:
         if package.startswith('oci://'):
-            inheritVersion = plugin.pop("inheritVersion", False)
             if inheritVersion is True:
                 # User might layer on additional configurations that provide a version so just print a warning for now
-                print(f"WARNING: `inheritVersion` is set to True and there is currently no resolved version for {plugin['package']} in {dynamicPluginsFile}. This can be safely ignored if no errors are reported later.")
+                print(f"WARNING: {{{{inherit}}}} tag is set and there is currently no resolved tag or digest for {plugin['package']} in {dynamicPluginsFile}. This can be safely ignored if no errors are reported later.")
                 plugin["version"] = None
             else:
                 plugin["version"] = version
@@ -146,25 +147,20 @@ def mergePlugin(plugin: dict, allPlugins: dict, dynamicPluginsFile: str):
     
     # Handle inheritVersion logic for OCI packages (whether the key exists or not)
     if package.startswith('oci://'):
-        inherit_version = plugin.get("inheritVersion", False)
-        if inherit_version is True:
+        if inheritVersion is True:
             # User might layer on additional configurations that provide a version so just print a warning for now
             if version is None and allPlugins[package].get('version') is None:
-                print(f"WARNING: `inheritVersion` is set to True and there is currently no resolved version for {plugin['package']} in {dynamicPluginsFile}. This can be safely ignored if no errors are reported later.")
+                print(f"WARNING: {{{{inherit}}}} tag is set and there is currently no resolved tag or digest for {plugin['package']} in {dynamicPluginsFile}. This can be safely ignored if no errors are reported later.")
         else:
             if version is None:
                 # This exception should never happen due to regex matching above
-                raise InstallException(f"Version is not set for {plugin['package']} in {dynamicPluginsFile} and inheritVersion is not set to True")        
+                raise InstallException(f"Tag or Digest is invalid for {plugin['package']} in {dynamicPluginsFile}")        
             allPlugins[package]['package'] = plugin['package'] # Override package since no version inheritance        
            
             print(f"INFO: Overriding version for {package} from `{allPlugins[package]['version']}` to `{version}`")
             allPlugins[package]["version"] = version
     
     for key in plugin:
-        # Skip inheritVersion since we handled it above for OCI packages
-        if key == "inheritVersion":
-            continue
-        
         # Skip package field update if inheritVersion is set to True, or if package is not an OCI package
         if key == 'package':
             continue
@@ -427,7 +423,7 @@ def main():
         plugin_path = ''
         if package.startswith('oci://'):
             if plugin.get('version') is None:
-                raise InstallException(f"Version is not set for {package} in {dynamicPluginsFile}. Please ensure there is at least one plugin configurations without `inheritVersion` set to True.")
+                raise InstallException(f"Tag or Digest is not set for {package} in {dynamicPluginsFile}. Please ensure there is at least one plugin configurations contains a valid tag or digest.")
 
             # The OCI downloader
             try:
