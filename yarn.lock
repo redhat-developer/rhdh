@@ -33151,8 +33151,6 @@ __metadata:
     husky: 8.0.3
     lint-staged: 15.5.2
     node-gyp: 10.3.1
-    prettier-plugin-sh: ^0.18.0
-    shellcheck: ^4.1.0
     sherif: 1.6.1
     turbo: 2.5.6
   languageName: unknown
