@@ -10,7 +10,9 @@ source "$DIR"/cluster/gke/manifest.sh
 initiate_gke_helm_deployment() {
   delete_namespace "${NAME_SPACE_RBAC}"
   configure_namespace "${NAME_SPACE}"
-  deploy_redis_cache "${namespace}"
+
+  deploy_redis_cache "${NAME_SPACE}"
+
   uninstall_helmchart "${NAME_SPACE}" "${RELEASE_NAME}"
   cd "${DIR}" || exit
   local rhdh_base_url="https://${K8S_CLUSTER_ROUTER_BASE}"
