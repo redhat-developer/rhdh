@@ -972,7 +972,7 @@ force_delete_namespace() {
   local sleep_interval=2
   local timeout_seconds=${2:-120}
 
-  while oc get namespace "$project" &>/dev/null; do
+  while oc get namespace "$project" &> /dev/null; do
     if [[ $elapsed -ge $timeout_seconds ]]; then
       echo "Timeout: Namespace '${project}' was not deleted within $timeout_seconds seconds." >&2
       return 1
