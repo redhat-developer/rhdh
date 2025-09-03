@@ -72,3 +72,7 @@ dynamic-plugins-root/*
 .ibm/pipelines/shared_dir/*
 .ibm/pipelines/artifact_dir/*
 .ibm/pipelines/env_override.local.sh
+
+# i18n staged files and cache
+ui-i18n/
+.ui-i18n-cache/

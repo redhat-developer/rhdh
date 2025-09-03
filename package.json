@@ -26,6 +26,7 @@
     "prettier:check": "turbo run prettier:check",
     "prettier:fix": "turbo run prettier:fix",
     "new": "backstage-cli new --scope internal",
+    "i18n-upload": "bash scripts/upload-i18n-strings/collect-and-upload.sh",
     "repo:fix": "backstage-cli repo fix --publish",
     "versions:metadata": "node ./scripts/update-metadata.mjs",
     "versions:bump": "node ./scripts/update-backstage.mjs"
@@ -46,7 +47,8 @@
     "lint-staged": "15.5.2",
     "node-gyp": "10.3.1",
     "sherif": "1.6.1",
-    "turbo": "2.5.6"
+    "turbo": "2.5.6",
+    "typescript": "^5.9.2"
   },
   "resolutions": {
     "@types/react": "18.3.23",

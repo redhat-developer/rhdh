@@ -32848,6 +32848,7 @@ __metadata:
     node-gyp: 10.3.1
     sherif: 1.6.1
     turbo: 2.5.6
+    typescript: ^5.9.2
   languageName: unknown
   linkType: soft
 
@@ -35726,7 +35727,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:5.9.2":
+"typescript@npm:5.9.2, typescript@npm:^5.9.2":
   version: 5.9.2
   resolution: "typescript@npm:5.9.2"
   bin:
@@ -35756,7 +35757,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@5.9.2#~builtin<compat/typescript>":
+"typescript@patch:typescript@5.9.2#~builtin<compat/typescript>, typescript@patch:typescript@^5.9.2#~builtin<compat/typescript>":
   version: 5.9.2
   resolution: "typescript@patch:typescript@npm%3A5.9.2#~builtin<compat/typescript>::version=5.9.2&hash=5786d5"
   bin:
