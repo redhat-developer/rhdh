@@ -161,6 +161,7 @@ export class Common {
           .first();
         await popup.waitForTimeout(3000);
         await locator.waitFor({ state: "visible" });
+        // eslint-disable-next-line playwright/no-force-option
         await locator.click({ force: true });
         await popup.waitForTimeout(3000);
 

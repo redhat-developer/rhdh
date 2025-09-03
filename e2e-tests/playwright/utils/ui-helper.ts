@@ -65,6 +65,7 @@ export class UIhelper {
       .first();
 
     if (options?.force) {
+      // eslint-disable-next-line playwright/no-force-option
       await button.click({ force: true });
     } else {
       await button.click();
@@ -126,6 +127,7 @@ export class UIhelper {
     });
 
     if (options.force) {
+      // eslint-disable-next-line playwright/no-force-option
       await buttonElement.click({ force: true });
     } else {
       await buttonElement.click();

@@ -101,7 +101,6 @@ export default [
       "playwright/valid-describe-callback": "off", // Allow async describe callbacks
       "playwright/valid-expect": "error", // Keep this as error to catch missing matchers
       "playwright/no-wait-for-selector": "off", // Allow wait for selector
-      "playwright/no-conditional-in-test": "off", // Allow conditional in test
       "playwright/no-wait-for-timeout": "off", // Allow wait for timeout
       "playwright/no-skipped-test": [
         "warn",

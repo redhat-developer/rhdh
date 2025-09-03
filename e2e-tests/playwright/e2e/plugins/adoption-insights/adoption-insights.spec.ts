@@ -3,6 +3,8 @@ import { Common } from "../../../utils/common";
 import { UIhelper } from "../../../utils/ui-helper";
 import { TestHelper } from "../../../support/pages/adoption-insights";
 
+/* eslint-disable playwright/no-conditional-in-test */
+
 test.describe.serial("Test Adoption Insights", () => {
   test.beforeAll(async () => {
     test.info().annotations.push({

@@ -55,6 +55,7 @@ test.describe("Test Topology Plugin", () => {
     // Determine resource type and run appropriate test
     const resourceType = await getResourceType(page);
 
+    // eslint-disable-next-line playwright/no-conditional-in-test
     if (resourceType === "ingress") {
       await testIngressResources(page, uiHelper);
     } else {

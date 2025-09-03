@@ -243,6 +243,7 @@ test.describe.serial("Test RBAC", () => {
       const lines = fileContent.trim().split("\n");
 
       const header = "userEntityRef,displayName,email,lastAuthTime";
+      // eslint-disable-next-line playwright/no-conditional-in-test
       if (lines[0] !== header) {
         throw new Error("Header does not match");
       }
@@ -251,6 +252,7 @@ test.describe.serial("Test RBAC", () => {
       const allUsersValid = lines
         .slice(1)
         .every((line) => line.startsWith("user:default"));
+      // eslint-disable-next-line playwright/no-conditional-in-test
       if (!allUsersValid) {
         throw new Error("Not all users info are valid");
       }
@@ -394,7 +396,9 @@ test.describe.serial("Test RBAC", () => {
         nextButton2 = page.locator('[data-testid="nextButton-2"]');
         matchNextButton2 = await nextButton2.all();
         attempts++;
+        // eslint-disable-next-line playwright/no-conditional-in-test
       } while (matchNextButton2.length > 1 && attempts < 5);
+      // eslint-disable-next-line playwright/no-force-option
       await nextButton2.click({ force: true });
       await page.waitForTimeout(1_000);
       await uiHelper.clickButton("Save");
@@ -489,12 +493,14 @@ test.describe.serial("Test RBAC", () => {
 
       const policiesResponse = await rbacApi.getPolicies();
 
+      // eslint-disable-next-line playwright/no-conditional-in-test
       if (!rolesResponse.ok()) {
         throw Error(
           `RBAC rolesResponse API call failed with status code ${rolesResponse.status()}`,
         );
       }
 
+      // eslint-disable-next-line playwright/no-conditional-in-test
       if (!policiesResponse.ok()) {
         throw Error(
           `RBAC policiesResponse API call failed with status code ${policiesResponse.status()}`,

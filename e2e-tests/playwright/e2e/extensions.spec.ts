@@ -138,6 +138,7 @@ test.describe("Admin > Extensions > Catalog", () => {
     await expect(page.getByRole("button", { name: "✔" })).toBeVisible();
     await uiHelper.clickButton("Reset");
     await expect(page.getByText("pluginConfig:")).toBeHidden();
+    // eslint-disable-next-line playwright/no-conditional-in-test
     const modifier = isMac ? "Meta" : "Control";
     await page.keyboard.press(`${modifier}+KeyA`);
     await page.keyboard.press(`${modifier}+KeyV`);
