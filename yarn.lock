@@ -8059,6 +8059,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@internal/ibm@workspace:.ibm"
   dependencies:
+    prettier: 3.6.2
     prettier-plugin-sh: ^0.18.0
     shellcheck: ^4.1.0
   languageName: unknown
