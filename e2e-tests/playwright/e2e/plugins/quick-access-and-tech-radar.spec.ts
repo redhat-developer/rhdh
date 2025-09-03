@@ -7,6 +7,13 @@ import { TechRadar } from "../../support/pages/tech-radar";
 // Pre-req: Enable plugin-tech-radar and plugin-tech-radar-backend Plugin
 
 test.describe("Test Customized Quick Access and tech-radar plugin", () => {
+  test.beforeAll(async () => {
+    test.info().annotations.push({
+      type: "component",
+      description: "plugins",
+    });
+  });
+
   test.beforeEach(async ({ page }) => {
     const common = new Common(page);
     await common.loginAsGuest();

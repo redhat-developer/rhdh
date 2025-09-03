@@ -10,6 +10,13 @@ test.describe("Test Topology Plugin", () => {
   let catalog: Catalog;
   let topology: Topology;
 
+  test.beforeAll(async () => {
+    test.info().annotations.push({
+      type: "component",
+      description: "plugins",
+    });
+  });
+
   test.beforeEach(async ({ page }) => {
     common = new Common(page);
     uiHelper = new UIhelper(page);

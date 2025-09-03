@@ -4,7 +4,6 @@ import { Common, setupBrowser } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
 import { MSClient } from "../../utils/authentication-providers/msgraph-helper";
 import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
-
 let page: Page;
 let context: BrowserContext;
 
@@ -44,6 +43,11 @@ test.describe("Configure Microsoft Provider", async () => {
   test.use({ baseURL: backstageUrl });
 
   test.beforeAll(async ({ browser }, testInfo) => {
+    test.info().annotations.push({
+      type: "component",
+      description: "authentication",
+    });
+
     test.info().setTimeout(600 * 1000);
     // load default configs from yaml files
     await deployment.loadAllConfigs();

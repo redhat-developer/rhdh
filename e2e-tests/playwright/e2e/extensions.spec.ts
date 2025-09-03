@@ -9,6 +9,13 @@ test.describe("Admin > Extensions > Catalog", () => {
   let uiHelper: UIhelper;
   const isMac = process.platform === "darwin";
 
+  test.beforeAll(async () => {
+    test.info().annotations.push({
+      type: "component",
+      description: "core",
+    });
+  });
+
   test.beforeEach(async ({ page }) => {
     extensions = new Extensions(page);
     uiHelper = new UIhelper(page);
