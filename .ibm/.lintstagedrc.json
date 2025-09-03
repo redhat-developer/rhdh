@@ -1,4 +1,4 @@
 {
-  "**/*.sh": ["prettier --write", "shellcheck --severity=warning --color=always"],
-  "**/*.{json,md,yaml,yml}": ["prettier --write"]
+  "**/*.sh": ["shellcheck --severity=warning --color=always"],
+  "**/*.{sh,md,yaml,yml}": ["prettier --write"]
 }
