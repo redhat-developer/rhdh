@@ -187,14 +187,6 @@ jobs:
             fi
             echo "EXPIRES_AFTER=$expires_after" >> $GITHUB_ENV
 
-        - name: Check Quay credentials
-          run: |
-            if [ "${{ env.HAS_QUAY_AUTH }}" != "true" ]; then
-              echo "::error::Missing QUAY_USERNAME or QUAY_TOKEN secrets"
-              exit 1
-            fi
-            echo "✓ Quay credentials are available"
-
         - name: Checkout
           uses: actions/checkout@v4
           with:
