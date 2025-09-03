@@ -24,6 +24,9 @@ test.describe("Test middleware plugin", () => {
     await page.getByRole("textbox").press("Enter");
     const response = await responsePromise;
     const headers = await response.allHeaders();
-    expect(headers["x-proxy-test-header"]).toBeTruthy();
+    console.log("All headers:", headers);
+    console.log("Target header:", headers["x-proxy-test-header"]);
+    expect(headers["x-proxy-test-header"]);
+    expect(headers["x-proxy-test-header"]).resolves.toBeTruthy();
   });
 });
