@@ -33,8 +33,8 @@ jobs:
           node-version-file: ".nvmrc"
 
       - name: Install dependencies
-        working-directory: ./e2e-tests
-        run: yarn install --mode=skip-build
+        working-directory: .
+        run: yarn install
 
       - name: Run ShellCheck check
         working-directory: ./.ibm
