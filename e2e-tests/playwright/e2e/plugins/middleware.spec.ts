@@ -14,7 +14,7 @@ test.describe("Test middleware plugin", () => {
     const common = new Common(page);
 
     await common.loginAsGuest();
-    await page.goto("/simple-chat", { waitUntil: "domcontentloaded" });
+    await page.goto("/simple-chat", { waitUntil: "networkidle" });
     await page.getByRole("checkbox", { name: "Use Proxy" }).check();
     await page.getByRole("textbox").fill("hi");
 
@@ -27,6 +27,6 @@ test.describe("Test middleware plugin", () => {
     console.log("All headers:", headers);
     console.log("Target header:", headers["x-proxy-test-header"]);
     expect(headers["x-proxy-test-header"]);
-    expect(headers["x-proxy-test-header"]).resolves.toBeTruthy();
+    expect(headers["x-proxy-test-header"]).toBeTruthy();
   });
 });
