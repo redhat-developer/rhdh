@@ -55,6 +55,8 @@ export class CatalogImport {
       await this.isComponentAlreadyRegistered();
     if (isComponentAlreadyRegistered) {
       await this.uiHelper.clickButton("Refresh");
+      // Wait for the refresh to complete and the "Register another" button to appear
+      await this.page.waitForTimeout(2000);
       expect(await this.uiHelper.isBtnVisible("Register another")).toBeTruthy();
     } else {
       await this.uiHelper.clickButton("Import");
