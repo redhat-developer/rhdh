@@ -4,6 +4,13 @@ import { Common } from "../utils/common";
 import { runAccessibilityTests } from "../utils/accessibility";
 
 test.describe("Learning Paths", () => {
+  test.beforeAll(async () => {
+    test.info().annotations.push({
+      type: "component",
+      description: "core",
+    });
+  });
+
   let common: Common;
   let uiHelper: UIhelper;
 
@@ -24,7 +31,7 @@ test.describe("Learning Paths", () => {
         .locator(`div[class*="MuiGrid-item"]>a[target="_blank"]`)
         .nth(i);
       await expect(learningPathCard).toBeVisible();
-      expect(await learningPathCard.getAttribute("href")).not.toBe("");
+      await expect(learningPathCard).not.toHaveAttribute("href", "");
     }
 
     await runAccessibilityTests(page, testInfo);

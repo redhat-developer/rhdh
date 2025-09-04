@@ -1,8 +1,9 @@
-import { CatalogUsersPO } from "../../../support/pageObjects/catalog/catalog-users-obj";
+import { CatalogUsersPO } from "../../../support/page-objects/catalog/catalog-users-obj";
 import Keycloak from "../../../utils/keycloak/keycloak";
 import { UIhelper } from "../../../utils/ui-helper";
 import { Common } from "../../../utils/common";
 import { test, expect } from "@playwright/test";
+import { ChildProcessWithoutNullStreams, spawn, exec } from "child_process";
 import { KubeClient } from "../../../utils/kube-client";
 
 test.describe("Test Keycloak plugin", () => {
@@ -12,6 +13,11 @@ test.describe("Test Keycloak plugin", () => {
   let token: string;
 
   test.beforeAll(async () => {
+    test.info().annotations.push({
+      type: "component",
+      description: "plugins",
+    });
+
     keycloak = new Keycloak();
     token = await keycloak.getAuthenticationToken();
   });
@@ -42,6 +48,7 @@ test.describe("Test Keycloak plugin", () => {
       );
       expect(userFound).not.toBeNull();
 
+      // eslint-disable-next-line playwright/no-conditional-in-test
       if (userFound) {
         await keycloak.checkUserDetails(
           page,
@@ -56,53 +63,56 @@ test.describe("Test Keycloak plugin", () => {
 });
 
 test.describe("Test Keycloak plugin metrics", () => {
-  test.fixme(
-    process.env.IS_OPENSHIFT === "false",
-    "Failing on Kubernetes clusters, need to add Ingress, fix https://issues.redhat.com/browse/RHIDP-7531",
-  );
-  const namespace = process.env.NAME_SPACE || "showcase-ci-nightly";
-  const baseRHDHURL: string = process.env.BASE_URL;
-  let kubeClient: KubeClient;
-  const routerName = "rhdh-metrics";
+  let portForward: ChildProcessWithoutNullStreams;
 
-  test.beforeEach(() => {
-    kubeClient = new KubeClient();
+  test.beforeEach(async () => {
+    const namespace = process.env.NAME_SPACE || "showcase-ci-nightly";
+    const kubeClient = new KubeClient();
+
+    console.log("Starting port-forward process...");
+
+    const services = await kubeClient.getServiceByLabel(
+      namespace,
+      "app.kubernetes.io/instance=rhdh",
+    );
+    const rhdhMetricsServiceName = services.find((service) =>
+      service.spec?.ports.some((p) => p.port === 9464),
+    );
+    portForward = spawn("/bin/sh", [
+      "-c",
+      `
+      oc login --token="${process.env.K8S_CLUSTER_TOKEN}" --server="${process.env.K8S_CLUSTER_URL}" --insecure-skip-tls-verify=true &&
+      kubectl config set-context --current --namespace="${namespace}" &&
+      kubectl port-forward service/${rhdhMetricsServiceName.metadata?.name} 9464:9464 --namespace="${namespace}"
+    `,
+    ]);
+
+    console.log("Waiting for port-forward to be ready...");
+    await new Promise<void>((resolve, reject) => {
+      portForward.stdout.on("data", (data) => {
+        if (data.toString().includes("Forwarding from 127.0.0.1:9464")) {
+          resolve();
+        }
+      });
+
+      portForward.stderr.on("data", (data) => {
+        console.error(`Port forwarding failed: ${data.toString()}`);
+        reject(new Error(`Port forwarding failed: ${data.toString()}`));
+      });
+    });
   });
 
-  test.afterAll(async () => {
-    const metricsRoute = await kubeClient.getRoute(namespace, routerName);
-    if (metricsRoute) {
-      await kubeClient.deleteRoute(namespace, routerName);
-    }
+  test.afterEach(() => {
+    console.log("Killing port-forward process with ID:", portForward.pid);
+    portForward.kill("SIGKILL");
+    console.log("Killing remaining port-forward process.");
+    exec(
+      `ps aux | grep 'kubectl port-forward' | grep -v grep | awk '{print $2}' | xargs kill -9`,
+    );
   });
 
   test("Test keycloak metrics with failure counters", async () => {
-    const host: string = new URL(baseRHDHURL).hostname;
-    const domain = host.split(".").slice(1).join(".");
-
-    const metricsRoute = await kubeClient.getRoute(namespace, routerName);
-    if (!metricsRoute) {
-      const service = await kubeClient.getServiceByLabel(
-        namespace,
-        "app.kubernetes.io/name=backstage",
-      );
-      const rhdhServiceName = service[0].metadata.name;
-      const route = {
-        apiVersion: "route.openshift.io/v1",
-        kind: "Route",
-        metadata: { name: routerName, namespace },
-        spec: {
-          host: `${routerName}.${domain}`,
-          to: { kind: "Service", name: rhdhServiceName },
-          port: { targetPort: "http-metrics" },
-        },
-      };
-      await kubeClient.createRoute(namespace, route);
-      // Wait until the route is available.
-      await new Promise((resolve) => setTimeout(resolve, 10000));
-    }
-
-    const metricsEndpointURL = `http://${routerName}.${domain}/metrics`;
+    const metricsEndpointURL = "http://localhost:9464/metrics";
     const metricLines = await fetchMetrics(metricsEndpointURL);
 
     const metricLineStartWith =
