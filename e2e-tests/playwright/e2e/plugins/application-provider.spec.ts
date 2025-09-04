@@ -4,6 +4,13 @@ import { Common } from "../../utils/common";
 import { UI_HELPER_ELEMENTS } from "../../support/pageObjects/global-obj";
 
 test.describe("Test ApplicationProvider", () => {
+  test.beforeAll(async () => {
+    test.info().annotations.push({
+      type: "component",
+      description: "plugins",
+    });
+  });
+
   let uiHelper: UIhelper;
 
   test.beforeEach(async ({ page }) => {

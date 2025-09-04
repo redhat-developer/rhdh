@@ -6,7 +6,6 @@ import {
   CUSTOM_SIDEBAR_LOGO,
 } from "../support/testData/custom-theme";
 import { ThemeConstants } from "../data/theme-constants";
-
 let page: Page;
 
 test.describe("CustomTheme should be applied", () => {
@@ -14,6 +13,11 @@ test.describe("CustomTheme should be applied", () => {
   let themeVerifier: ThemeVerifier;
 
   test.beforeAll(async ({ browser }, testInfo) => {
+    test.info().annotations.push({
+      type: "component",
+      description: "core",
+    });
+
     page = (await setupBrowser(browser, testInfo)).page;
     common = new Common(page);
     themeVerifier = new ThemeVerifier(page);

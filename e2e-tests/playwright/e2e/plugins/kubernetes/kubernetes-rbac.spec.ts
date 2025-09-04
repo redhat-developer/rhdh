@@ -11,6 +11,13 @@ test.describe("Test Kubernetes Plugin", () => {
   let catalog: Catalog;
   let kubernetes: KubernetesPage;
 
+  test.beforeAll(async () => {
+    test.info().annotations.push({
+      type: "component",
+      description: "plugins",
+    });
+  });
+
   test.beforeEach(async ({ page }, testInfo) => {
     if (testInfo.retry > 0) {
       // progressively increase test timeout for retries
