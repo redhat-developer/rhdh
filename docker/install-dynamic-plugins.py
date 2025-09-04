@@ -163,8 +163,8 @@ def mergePlugin(plugin: dict, allPlugins: dict, dynamicPluginsFile: str, level: 
                 # This exception should never happen due to regex matching above
                 raise InstallException(f"Tag or Digest is invalid for {plugin['package']} in {dynamicPluginsFile}")        
             allPlugins[package]['package'] = plugin['package'] # Override package since no version inheritance        
-           
-            print(f"INFO: Overriding version for {package} from `{allPlugins[package]['version']}` to `{version}`")
+            if allPlugins[package]['version'] != version:
+                print(f"INFO: Overriding version for {package} from `{allPlugins[package]['version']}` to `{version}`")
             allPlugins[package]["version"] = version
     
     for key in plugin:
