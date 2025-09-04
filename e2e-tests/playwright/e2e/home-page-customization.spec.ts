@@ -9,6 +9,13 @@ test.describe("Home page customization", () => {
   let uiHelper: UIhelper;
   let homePage: HomePage;
 
+  test.beforeAll(async () => {
+    test.info().annotations.push({
+      type: "component",
+      description: "core",
+    });
+  });
+
   test.beforeEach(async ({ page }) => {
     uiHelper = new UIhelper(page);
     common = new Common(page);

@@ -6,6 +6,13 @@ test.describe("Default Global Header", () => {
   let common: Common;
   let uiHelper: UIhelper;
 
+  test.beforeAll(async () => {
+    test.info().annotations.push({
+      type: "component",
+      description: "navigation",
+    });
+  });
+
   test.beforeEach(async ({ page }) => {
     uiHelper = new UIhelper(page);
     common = new Common(page);
@@ -107,7 +114,7 @@ test.describe("Default Global Header", () => {
     await searchBar.fill("test query term");
     expect(await uiHelper.isBtnVisibleByTitle("Clear")).toBeTruthy();
     const dropdownList = page.locator(`ul[role="listbox"]`);
-    expect(await dropdownList.isVisible()).toBeTruthy();
+    await expect(dropdownList).toBeVisible();
     await searchBar.press("Enter");
     await uiHelper.verifyHeading("Search");
     const searchResultPageInput = page.locator(

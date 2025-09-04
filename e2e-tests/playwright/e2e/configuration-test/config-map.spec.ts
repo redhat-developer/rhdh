@@ -2,8 +2,14 @@ import { test, expect } from "@playwright/test";
 import { KubeClient } from "../../utils/kube-client";
 import { Common } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
-
 test.describe("Change app-config at e2e test runtime", () => {
+  test.beforeAll(async () => {
+    test.info().annotations.push({
+      type: "component",
+      description: "configuration",
+    });
+  });
+
   // operator nightly does not require this test as RDS tls test also verifies runtime change
   test.skip(() => process.env.JOB_NAME.includes("operator"));
 
@@ -12,6 +18,7 @@ test.describe("Change app-config at e2e test runtime", () => {
 
     // Start with a common name, but let KubeClient find the actual ConfigMap
     const configMapName = "app-config-rhdh";
+    // eslint-disable-next-line playwright/no-conditional-in-test
     const namespace = process.env.NAME_SPACE_RUNTIME || "showcase-runtime";
     const deploymentName = "rhdh-developer-hub";
 

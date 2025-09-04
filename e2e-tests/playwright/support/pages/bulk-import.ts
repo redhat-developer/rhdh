@@ -1,6 +1,6 @@
 import { Page, expect } from "@playwright/test";
 import { APIHelper } from "../../utils/api-helper";
-import { UI_HELPER_ELEMENTS } from "../pageObjects/global-obj";
+import { UI_HELPER_ELEMENTS } from "../page-objects/global-obj";
 
 export class BulkImport {
   private page: Page;

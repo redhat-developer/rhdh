@@ -32,6 +32,11 @@ test.describe.serial("Test Scaffolder Backend Module Annotator Actions", () => {
   };
 
   test.beforeAll(async ({ browser }, testInfo) => {
+    test.info().annotations.push({
+      type: "component",
+      description: "core",
+    });
+
     page = (await setupBrowser(browser, testInfo)).page;
 
     common = new Common(page);
@@ -41,7 +46,6 @@ test.describe.serial("Test Scaffolder Backend Module Annotator Actions", () => {
     await common.loginAsGuest();
   });
 
-  // eslint-disable-next-line no-empty-pattern
   test("Register a Template", async ({}, testInfo) => {
     await uiHelper.openSidebar("Catalog");
     await uiHelper.verifyText("Name");
@@ -240,7 +244,7 @@ test.describe.serial("Test Scaffolder Backend Module Annotator Actions", () => {
     const selector =
       'a[href*="/catalog/default/component/test-scaffoldedfromlink-"]';
     await page.locator(selector).first().waitFor({ state: "visible" });
-    const link = await page.locator(selector).first();
+    const link = page.locator(selector).first();
     await expect(link).toBeVisible();
     await link.click();
   }

@@ -196,3 +196,18 @@ buildInfo:
     RBAC: disabled
   full: true # If set to true, only the information specified in this configuration will be displayed. If set to false, the provided details will be shown along with the build versions. By default it will only display the configured information.
 ```
+
+## Customizing the Language dropdown
+
+To customize the language dropdown in the User settings page, configure the list of locales your app should support in the `app-config.yaml` file.
+
+Example configuration:
+
+```
+i18n:
+  locales: # List of supported locales. Must include `en`, otherwise the translation framework will fail to load.
+    - en
+    - de
+    - it
+  defaultLocale: en # Optional. Defaults to `en` if not specified.
+```
