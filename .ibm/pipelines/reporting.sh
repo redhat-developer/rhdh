@@ -38,24 +38,6 @@ save_status_number_of_test_failed() {
   cp "$SHARED_DIR/STATUS_NUMBER_OF_TEST_FAILED.txt" "$ARTIFACT_DIR/reporting/STATUS_NUMBER_OF_TEST_FAILED.txt"
 }
 
-save_status_data_router_failed() {
-  local current_deployment=$1
-  local status=$2
-  echo "Saving STATUS_DATA_ROUTER_FAILED[\"${current_deployment}\"]=${status}"
-  STATUS_DATA_ROUTER_FAILED["${current_deployment}"]="${status}"
-  printf "%s\n" "${STATUS_DATA_ROUTER_FAILED["${current_deployment}"]}" >> "$SHARED_DIR/STATUS_DATA_ROUTER_FAILED.txt"
-  cp "$SHARED_DIR/STATUS_DATA_ROUTER_FAILED.txt" "$ARTIFACT_DIR/reporting/STATUS_DATA_ROUTER_FAILED.txt"
-}
-
-save_status_url_reportportal() {
-  local current_deployment=$1
-  local url=$2
-  echo "Saving STATUS_URL_REPORTPORTAL[\"${current_deployment}\"]"
-  STATUS_URL_REPORTPORTAL["${current_deployment}"]="${url}"
-  printf "%s\n" "${STATUS_URL_REPORTPORTAL["${current_deployment}"]}" >> "$SHARED_DIR/STATUS_URL_REPORTPORTAL.txt"
-  cp "$SHARED_DIR/STATUS_URL_REPORTPORTAL.txt" "$ARTIFACT_DIR/reporting/STATUS_URL_REPORTPORTAL.txt"
-}
-
 save_overall_result() {
   local result=$1
   OVERALL_RESULT=${result}
@@ -64,7 +46,6 @@ save_overall_result() {
   cp "$SHARED_DIR/OVERALL_RESULT.txt" "$ARTIFACT_DIR/reporting/OVERALL_RESULT.txt"
 }
 
-# Align this function with the one in https://github.com/openshift/release/blob/master/ci-operator/step-registry/redhat-developer/rhdh/send/alert/redhat-developer-rhdh-send-alert-commands.sh
 get_artifacts_url() {
   local project="${1:-""}"
 
@@ -101,38 +82,23 @@ get_job_url() {
   echo "${job_complete_url}"
 }
 
-reportportal_slack_alert() {
-  local release_name=$1
-  local reportportal_launch_url=$2
+save_data_router_junit_results() {
+  if [[ "${OPENSHIFT_CI}" != "true" ]]; then return 0; fi
+  if [[ "${JOB_NAME}" == *rehearse* ]]; then return 0; fi
 
-  if [[ "$release_name" == *rbac* ]]; then
-    RUN_TYPE="rbac-nightly"
-  else
-    RUN_TYPE="nightly"
-  fi
-  if [[ ${RESULT} -eq 0 ]]; then
-    RUN_STATUS_EMOJI=":done-circle-check:"
-    RUN_STATUS="passed"
-  else
-    RUN_STATUS_EMOJI=":failed:"
-    RUN_STATUS="failed"
-  fi
-  jq -n \
-    --arg run_status "$RUN_STATUS" \
-    --arg run_type "$RUN_TYPE" \
-    --arg reportportal_launch_url "$reportportal_launch_url" \
-    --arg job_name "$JOB_NAME" \
-    --arg run_status_emoji "$RUN_STATUS_EMOJI" \
-    '{
-      "RUN_STATUS": $run_status,
-      "RUN_TYPE": $run_type,
-      "REPORTPORTAL_LAUNCH_URL": $reportportal_launch_url,
-      "JOB_NAME": $job_name,
-      "RUN_STATUS_EMOJI": $run_status_emoji
-    }' > /tmp/data_router_slack_message.json
-  if ! curl -X POST -H 'Content-type: application/json' --data @/tmp/data_router_slack_message.json  $SLACK_DATA_ROUTER_WEBHOOK_URL; then
-    echo "Failed to send ReportPortal Slack alert"
-  else
-    echo "ReportPortal Slack alert sent successfully"
-  fi
+  local project=$1
+
+  ARTIFACTS_URL=$(get_artifacts_url)
+
+  # Remove properties (only used for skipped test and invalidates the file if empty)
+  sed_inplace '/<properties>/,/<\/properties>/d' "${ARTIFACT_DIR}/${project}/${JUNIT_RESULTS}"
+  # Replace attachments with link to OpenShift CI storage
+  sed_inplace "s#\[\[ATTACHMENT|\(.*\)\]\]#${ARTIFACTS_URL}/\1#g" "${ARTIFACT_DIR}/${project}/${JUNIT_RESULTS}"
+
+  # Copy the metadata and JUnit results files to the shared directory
+  cp "${ARTIFACT_DIR}/${project}/${JUNIT_RESULTS}" "${SHARED_DIR}/junit-results-${project}.xml"
+
+  echo "🗃️ JUnit results for ${project} adapted to Data Router format and saved to ARTIFACT_DIR and copied to SHARED_DIR"
+  echo "Shared directory contents:"
+  ls -la "${SHARED_DIR}"
 }
