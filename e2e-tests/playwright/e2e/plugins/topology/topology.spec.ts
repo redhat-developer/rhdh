@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import { Common } from "../../../utils/common";
 import { UIhelper } from "../../../utils/ui-helper";
 import { Catalog } from "../../../support/pages/catalog";
@@ -25,6 +25,13 @@ test.describe("Test Topology Plugin", () => {
     await common.loginAsGuest();
   });
 
+  // Helper function to determine resource type
+  async function getResourceType(page: Page): Promise<"ingress" | "route"> {
+    await page.waitForLoadState();
+    const hasIngresses = await page.getByText("Ingresses").isVisible();
+    return hasIngresses ? "ingress" : "route";
+  }
+
   test("Verify pods visibility in the Topology tab", async ({
     page,
   }, testInfo) => {
@@ -44,23 +51,17 @@ test.describe("Test Topology Plugin", () => {
     await uiHelper.clickTab("Resources");
     await uiHelper.verifyHeading("Pods");
     await uiHelper.verifyHeading("Services");
-    if (await page.getByText("Ingresses").isVisible()) {
-      await uiHelper.verifyHeading("Ingresses");
-      await uiHelper.verifyText("I");
-      await expect(
-        page
-          .getByTestId("ingress-list")
-          .getByRole("link", { name: "topology-test-route" })
-          .first(),
-      ).toBeVisible();
-      await expect(page.locator("pre").first()).toBeVisible();
+
+    // Determine resource type and run appropriate test
+    const resourceType = await getResourceType(page);
+
+    // eslint-disable-next-line playwright/no-conditional-in-test
+    if (resourceType === "ingress") {
+      await testIngressResources(page, uiHelper);
     } else {
-      await uiHelper.verifyHeading("Routes");
-      await uiHelper.verifyText("RT");
-      await expect(
-        page.getByRole("link", { name: "topology-test-route" }).first(),
-      ).toBeVisible();
+      await testRouteResources(page, uiHelper);
     }
+
     await uiHelper.verifyText("Location:");
     await expect(page.getByTitle("Deployment")).toBeVisible();
     await uiHelper.verifyText("S");
@@ -105,3 +106,24 @@ test.describe("Test Topology Plugin", () => {
     // await uiHelper.verifyText(/Pipeline (Succeeded|Failed|Cancelled|Running)/);
   });
 });
+
+// Helper functions for resource-specific testing
+async function testIngressResources(page: Page, uiHelper: UIhelper) {
+  await uiHelper.verifyHeading("Ingresses");
+  await uiHelper.verifyText("I");
+  await expect(
+    page
+      .getByTestId("ingress-list")
+      .getByRole("link", { name: "topology-test-route" })
+      .first(),
+  ).toBeVisible();
+  await expect(page.locator("pre").first()).toBeVisible();
+}
+
+async function testRouteResources(page: Page, uiHelper: UIhelper) {
+  await uiHelper.verifyHeading("Routes");
+  await uiHelper.verifyText("RT");
+  await expect(
+    page.getByRole("link", { name: "topology-test-route" }).first(),
+  ).toBeVisible();
+}
