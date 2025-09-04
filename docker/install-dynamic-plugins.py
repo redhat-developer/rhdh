@@ -101,7 +101,7 @@ def maybeMergeConfig(config, globalConfig):
     else:
         return globalConfig
 
-def mergePlugin(plugin: dict, allPlugins: dict, dynamicPluginsFile: str):
+def mergePlugin(plugin: dict, allPlugins: dict, dynamicPluginsFile: str, level: int):
     package = plugin['package']
     version = None # Used to track OCI package versions for version inference
     if not isinstance(package, str):
@@ -138,13 +138,20 @@ def mergePlugin(plugin: dict, allPlugins: dict, dynamicPluginsFile: str):
                 plugin["version"] = None
             else:
                 plugin["version"] = version
-            
+        # Keep track of the level of the plugin modification to know when dupe conflicts occur in `includes` and main config files
+        plugin["last_modified_level"] = level
         allPlugins[package] = plugin
         return
 
     # override the included plugins with fields in the main plugins list
     print('\n======= Overriding dynamic plugin configuration', package, flush=True)
     
+    # Check for duplicate plugin configurations defined at the same level (level = 0 for `includes` and 1 for the main config file)
+    if allPlugins[package].get("last_modified_level") == level:
+        raise InstallException(f"Duplicate plugin configuration for {plugin['package']} found in {dynamicPluginsFile}.")
+    
+    allPlugins[package]["last_modified_level"] = level
+
     # Handle inheritVersion logic for OCI packages (whether the key exists or not)
     if package.startswith('oci://'):
         if inheritVersion is True:
@@ -377,7 +384,7 @@ def main():
             raise InstallException(f"content of the \'plugins\' field must be a list in {include}")
 
         for plugin in includePlugins:
-            mergePlugin(plugin, allPlugins, dynamicPluginsFile)
+            mergePlugin(plugin, allPlugins, dynamicPluginsFile, level=0)
 
     if 'plugins' in content:
         plugins = content['plugins']
@@ -388,7 +395,7 @@ def main():
         raise InstallException(f"content of the \'plugins\' field must be a list in {dynamicPluginsFile}")
 
     for plugin in plugins:
-        mergePlugin(plugin, allPlugins, dynamicPluginsFile)
+        mergePlugin(plugin, allPlugins, dynamicPluginsFile, level=1)
         
     # add a hash for each plugin configuration to detect changes and check if version field is set for OCI packages
     for plugin in allPlugins.values():
