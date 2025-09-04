@@ -39,7 +39,7 @@ export const useLanguagePreference = (): string | undefined => {
   const isGuestUser = value?.userEntityRef === GUEST_USER_REF;
   const persistence =
     configApi.getOptionalString('userSettings.persistence') ?? 'database';
-  const config = configApi.getConfig('i18n');
+  const config = configApi.getOptionalConfig('i18n');
 
   const translationConfig: TranslationConfig = {
     locales: config?.getStringArray('locales') ?? ['en'],

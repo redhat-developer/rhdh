@@ -30,7 +30,7 @@ const mockIdentityApi = {
 };
 const mockConfigApi = {
   getOptionalString: jest.fn(),
-  getConfig: jest.fn(),
+  getOptionalConfig: jest.fn(),
 };
 
 // Mock hooks
@@ -80,7 +80,7 @@ describe('useLanguagePreference', () => {
       if (key === 'userSettings.persistence') return 'database';
       return undefined;
     });
-    mockConfigApi.getConfig.mockImplementation((key: string) => {
+    mockConfigApi.getOptionalConfig.mockImplementation((key: string) => {
       if (key === 'i18n') {
         return {
           getStringArray: jest.fn(() => ['en']),
