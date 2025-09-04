@@ -349,7 +349,7 @@ export class KubeClient {
       console.log(`Namespace '${namespace}' deletion initiated.`);
 
       await new Promise<void>((resolve, reject) => {
-        watch.watch(
+        void watch.watch(
           `/api/v1/namespaces?watch=true&fieldSelector=metadata.name=${namespace}`,
           {},
           (type) => {

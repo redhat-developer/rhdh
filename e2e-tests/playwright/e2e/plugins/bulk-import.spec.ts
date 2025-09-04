@@ -7,7 +7,7 @@ import { CatalogImport } from "../../support/pages/catalog-import";
 import {
   DEFAULT_CATALOG_INFO_YAML,
   UPDATED_CATALOG_INFO_YAML,
-} from "../../support/testData/bulk-import";
+} from "../../support/test-data/bulk-import";
 
 // Pre-req : plugin-bulk-import & plugin-bulk-import-backend-dynamic
 test.describe.serial("Bulk Import plugin", () => {
@@ -142,7 +142,7 @@ test.describe.serial("Bulk Import plugin", () => {
       newRepoDetails.updatedComponentName,
     );
     await bulkimport.fillTextInputByNameAtt("prLabels", newRepoDetails.labels);
-    await expect(await uiHelper.clickButton("Save")).not.toBeVisible();
+    await expect(await uiHelper.clickButton("Save")).toBeHidden();
 
     const prCatalogInfoYaml = await APIHelper.getfileContentFromPR(
       newRepoDetails.owner,

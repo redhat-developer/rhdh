@@ -1,4 +1,4 @@
-import { CatalogUsersPO } from "../../../support/pageObjects/catalog/catalog-users-obj";
+import { CatalogUsersPO } from "../../../support/page-objects/catalog/catalog-users-obj";
 import { RhdhAuthUiHack } from "../../../support/api/rhdh-auth-hack";
 import { Common } from "../../../utils/common";
 import {

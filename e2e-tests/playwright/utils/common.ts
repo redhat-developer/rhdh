@@ -1,8 +1,8 @@
 import { UIhelper } from "./ui-helper";
 import { authenticator } from "otplib";
 import { test, Browser, expect, Page, TestInfo } from "@playwright/test";
-import { SETTINGS_PAGE_COMPONENTS } from "../support/pageObjects/page-obj";
-import { WAIT_OBJECTS } from "../support/pageObjects/global-obj";
+import { SETTINGS_PAGE_COMPONENTS } from "../support/page-objects/page-obj";
+import { WAIT_OBJECTS } from "../support/page-objects/global-obj";
 import path from "path";
 import fs from "fs";
 import { APIHelper } from "./api-helper";
