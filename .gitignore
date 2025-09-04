@@ -50,7 +50,8 @@ dynamic-plugins.yaml
 # vscode database functionality support files
 *.session.sql
 
-.vscode
+.vscode/*
+!.vscode/extensions.json
 .turbo
 
 # Dynamic plugins root content

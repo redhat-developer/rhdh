@@ -31,7 +31,7 @@ test.describe("Learning Paths", () => {
         .locator(`div[class*="MuiGrid-item"]>a[target="_blank"]`)
         .nth(i);
       await expect(learningPathCard).toBeVisible();
-      expect(await learningPathCard.getAttribute("href")).not.toBe("");
+      await expect(learningPathCard).not.toHaveAttribute("href", "");
     }
 
     await runAccessibilityTests(page, testInfo);

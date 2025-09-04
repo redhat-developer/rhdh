@@ -1,12 +1,13 @@
 import { test, expect, Page, BrowserContext } from "@playwright/test";
 import { UIhelper } from "../utils/ui-helper";
 import { Common, setupBrowser } from "../utils/common";
-import { RESOURCES } from "../support/testData/resources";
+import { RESOURCES } from "../support/test-data/resources";
 import {
   BackstageShowcase,
   CatalogImport,
 } from "../support/pages/catalog-import";
-import { TEMPLATES } from "../support/testData/templates";
+import { TEMPLATES } from "../support/test-data/templates";
+
 let page: Page;
 let context: BrowserContext;
 
@@ -107,7 +108,7 @@ test.describe.serial("GitHub Happy path", async () => {
       timeout: 20000,
     });
     // Optionally, verify that the current URL contains the expected path
-    await expect(page.url()).toContain(expectedPath);
+    expect(page.url()).toContain(expectedPath);
 
     await common.clickOnGHloginPopup();
     await uiHelper.verifyLink("About RHDH", { exact: false });
@@ -210,7 +211,7 @@ test.describe.serial("GitHub Happy path", async () => {
     test.fixme();
     await uiHelper.goToSettingsPage();
     await common.signOut();
-    context.clearCookies();
+    await context.clearCookies();
   });
 
   test.afterAll(async () => {
