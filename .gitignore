@@ -66,6 +66,8 @@ dynamic-plugins-root/*
 
 # Local Cursor rules context
 .cursor/rules/*.local.mdc
+# Playwright MCP server
+.playwright-mcp/*
 
 # CI/Pipeline local overrides
 .ibm/pipelines/shared_dir/*

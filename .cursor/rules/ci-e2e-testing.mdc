@@ -10,6 +10,7 @@ This document serves as a comprehensive starting point for LLMs working with the
 ## Table of Contents
 
 - [E2E Testing Framework](#e2e-testing-framework)
+- [MCP (Model Context Protocol) Tools](#mcp-model-context-protocol-tools)
 - [CI/CD Infrastructure](#cicd-infrastructure)
 - [Key Dependencies and Common Issues](#key-dependencies-and-common-issues)
 - [Documentation References](#documentation-references)
@@ -222,6 +223,30 @@ The `showcase-auth-providers` project has several significant differences from o
   - Tests verify: supported resolvers, user/group ingestion, nested groups, session token configuration
 
 These differences make `showcase-auth-providers` a specialized testing environment focused on validating authentication provider integrations rather than general RHDH functionality testing.
+
+## MCP (Model Context Protocol) Tools
+
+### Available MCP Servers
+
+#### Playwright MCP server
+- **Server Name**: `Playwright`
+- **Command**: `npx @playwright/mcp@latest`
+- **Configuration File**: `.cursor/mcp.json`
+- **Purpose**: Browser automation and E2E testing for RHDH application
+
+### Usage Guidelines
+
+#### Test Development Requirements
+- **RHDH Instance URL**: When attempting to fix or write a test, **always ask the user to provide the URL of an RHDH instance** against which the test can be executed
+- **Live Testing**: Use the provided URL to verify test functionality in a real RHDH environment
+- **Environment Validation**: Ensure the test works against actual RHDH deployments, not just local environments
+
+#### Best Practices
+- Write tests that are independent and can run in any order
+- Use descriptive test names that explain what is being tested
+- Include both positive and negative test cases
+- Use page object patterns for maintainable test code
+- **Always verify tests against live RHDH instances** using the provided URL
 
 ## CI/CD Infrastructure
 
@@ -453,4 +478,5 @@ brew install gnu-sed
 - [Dynamic Plugin Installer](docker/install-dynamic-plugins.py)
 
 This context file provides a comprehensive overview of the RHDH repository's testing infrastructure, CI/CD pipeline, and development workflows. Use this as a starting point for understanding the codebase and contributing to the project.
+
 ---
