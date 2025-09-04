@@ -234,6 +234,17 @@ These differences make `showcase-auth-providers` a specialized testing environme
 - **Configuration File**: `.cursor/mcp.json`
 - **Purpose**: Browser automation and E2E testing for RHDH application
 
+#### Kubernetes MCP server
+- **Server Name**: `kubernetes`
+- **Configuration File**: `.cursor/mcp.json`
+- **Purpose**: Kubernetes cluster interaction and resource management
+- **Use Case**: Use the kubernetes MCP server if you need to interact with the cluster, such as getting or setting values
+- **Capabilities**:
+  - Direct access to Kubernetes resources and operations
+  - Cluster management, resource inspection, and configuration changes
+  - Operations like listing pods, getting resources, creating/updating/deleting resources
+  - Debugging cluster issues and verifying deployment states
+
 ### Usage Guidelines
 
 #### Test Development Requirements
