@@ -42,7 +42,8 @@ export class Common {
   }
 
   async signOut() {
-    await this.uiHelper.clickButton(SETTINGS_PAGE_COMPONENTS.userSettingsMenu);
+    // Click the user settings menu button using the data-testid selector
+    await this.page.click(SETTINGS_PAGE_COMPONENTS.userSettingsMenu);
     await this.uiHelper.clickButton(SETTINGS_PAGE_COMPONENTS.signOut);
     await this.uiHelper.verifyHeading("Select a sign-in method");
   }
@@ -250,10 +251,40 @@ export class Common {
       const otp = authenticator.generate(otpSecret);
       await githubPage.fill(otpSelector, otp);
       if (githubPage.isClosed()) return;
-      await Promise.race([
-        githubPage.waitForEvent("close", { timeout: 20000 }),
-        githubPage.click('button[type="submit"], input[type="submit"]'),
-      ]);
+      
+      // Wait for the OTP to be processed and the submit button to be available
+      await githubPage.waitForTimeout(1000);
+      
+      // Try multiple selectors for the submit button
+      const submitSelectors = [
+        'button[type="submit"]',
+        'input[type="submit"]',
+        'button:has-text("Verify")',
+        'button:has-text("Submit")',
+        'button:has-text("Continue")'
+      ];
+      
+      let submitClicked = false;
+      for (const selector of submitSelectors) {
+        try {
+          const submitButton = githubPage.locator(selector).first();
+          if (await submitButton.isVisible({ timeout: 2000 })) {
+            await Promise.race([
+              githubPage.waitForEvent("close", { timeout: 20000 }),
+              submitButton.click(),
+            ]);
+            submitClicked = true;
+            break;
+          }
+        } catch (e) {
+          // Continue to next selector
+        }
+      }
+      
+      if (!submitClicked) {
+        // If no submit button found, just wait for the popup to close
+        await githubPage.waitForEvent("close", { timeout: 20000 });
+      }
     } else {
       await githubPage.waitForEvent("close", { timeout: 20000 });
     }
