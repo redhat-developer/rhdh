@@ -31,7 +31,7 @@
     "@eslint/js": "^9.34.0",
     "@microsoft/microsoft-graph-types": "2.40.0",
     "@playwright/test": "1.54.2",
-    "@types/node": "22.16.3",
+    "@types/node": "22.18.1",
     "@typescript-eslint/eslint-plugin": "6.21.0",
     "@typescript-eslint/parser": "6.21.0",
     "eslint": "^9.34.0",
