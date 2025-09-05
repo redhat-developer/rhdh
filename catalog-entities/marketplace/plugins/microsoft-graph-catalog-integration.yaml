@@ -27,7 +27,9 @@ metadata:
 
 spec:
   author: Backstage Community
-  support: tech-preview  # production, tech-preview, dev-preveiw
+  support:
+    name: Backstage Community
+    level: tech-preview
   lifecycle: active
   publisher: Red Hat
 

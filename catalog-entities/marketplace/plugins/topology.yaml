@@ -25,7 +25,9 @@ metadata:
       url: https://github.com/backstage/community-plugins/tree/main/workspaces/topology/plugins/topology
 
 spec:
-  support: production
+  support:
+    name: Red Hat
+    level: production
   lifecycle: active
   author: Red Hat
   publisher: Red Hat
