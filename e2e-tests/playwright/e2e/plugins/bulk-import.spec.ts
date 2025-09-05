@@ -63,20 +63,6 @@ test.describe.serial("Bulk Import plugin", () => {
     await uiHelper.clickButton("Add");
     await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
 
-    // Check if repository is already added, skip test if so
-    const statusText = await uiHelper.verifyRowInTableByUniqueTextWithOptions(
-      catalogRepoDetails.name,
-      ["Added", "Not Generated"],
-    );
-
-    // eslint-disable-next-line playwright/no-conditional-in-test
-    if (statusText?.includes("Added")) {
-      test.skip(
-        true,
-        `Repository ${catalogRepoDetails.name} is already added, skipping test`,
-      );
-    }
-
     await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
       "Not Generated",
     ]);

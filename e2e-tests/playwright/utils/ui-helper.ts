@@ -561,28 +561,6 @@ export class UIhelper {
   }
 
   /**
-   * Verifies that a table row contains one of the specified cell texts (useful for status checks)
-   * @param {string} uniqueRowText - The unique text present in one of the cells within the row
-   * @param {string[] | RegExp[]} possibleCellTexts - Array of possible cell texts to match
-   * @returns {Promise<string | null>} - Returns the matched text or null if none found
-   */
-  async verifyRowInTableByUniqueTextWithOptions(
-    uniqueRowText: string,
-    possibleCellTexts: string[] | RegExp[],
-  ): Promise<string | null> {
-    const row = this.page.locator(UI_HELPER_ELEMENTS.rowByText(uniqueRowText));
-    await row.waitFor();
-
-    for (const cellText of possibleCellTexts) {
-      const cell = row.locator("td").filter({ hasText: cellText }).first();
-      if (await cell.isVisible()) {
-        return await cell.textContent();
-      }
-    }
-    return null;
-  }
-
-  /**
    * Clicks on a link within a table row that contains a unique text and matches a link's text.
    * @param {string} uniqueRowText - The unique text present in one of the cells within the row. This is used to identify the specific row.
    * @param {string | RegExp} linkText - The text of the link, can be a string or a regular expression.
