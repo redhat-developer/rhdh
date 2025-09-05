@@ -3196,7 +3196,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/app-defaults@npm:1.6.2, @backstage/app-defaults@npm:^1.6.2":
+"@backstage/app-defaults@npm:1.6.2":
   version: 1.6.2
   resolution: "@backstage/app-defaults@npm:1.6.2"
   dependencies:
@@ -3990,33 +3990,6 @@ __metadata:
     "@types/react":
       optional: true
   checksum: c73a0fa667a80f7623881f96dd75aa3d5b7b358ac7c3570f5c5e24cb1695d9e84b1a2b7aeb4d1e5090b8418b4c0db6a883901b8daa827da5cc09613db79f896d
-  languageName: node
-  linkType: hard
-
-"@backstage/dev-utils@npm:1.1.10":
-  version: 1.1.10
-  resolution: "@backstage/dev-utils@npm:1.1.10"
-  dependencies:
-    "@backstage/app-defaults": ^1.6.2
-    "@backstage/catalog-model": ^1.7.4
-    "@backstage/core-app-api": ^1.17.0
-    "@backstage/core-components": ^0.17.2
-    "@backstage/core-plugin-api": ^1.10.7
-    "@backstage/integration-react": ^1.2.7
-    "@backstage/plugin-catalog-react": ^1.18.0
-    "@backstage/theme": ^0.6.6
-    "@material-ui/core": ^4.12.2
-    "@material-ui/icons": ^4.9.1
-    react-use: ^17.2.4
-  peerDependencies:
-    "@types/react": ^17.0.0 || ^18.0.0
-    react: ^17.0.0 || ^18.0.0
-    react-dom: ^17.0.0 || ^18.0.0
-    react-router-dom: ^6.3.0
-  peerDependenciesMeta:
-    "@types/react":
-      optional: true
-  checksum: 47c2477e543a0b113672c3b84f1d2630e00933f86c0cc6adb9413cfc04a7141afa5e169ea093a443e7bc994c01e1e1e6f5b809509638a8b68dc5ebadad2df2b2
   languageName: node
   linkType: hard
 
@@ -7698,59 +7671,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@internal/plugin-dynamic-plugins-info-backend@*, @internal/plugin-dynamic-plugins-info-backend@workspace:plugins/dynamic-plugins-info-backend":
-  version: 0.0.0-use.local
-  resolution: "@internal/plugin-dynamic-plugins-info-backend@workspace:plugins/dynamic-plugins-info-backend"
-  dependencies:
-    "@backstage/backend-defaults": 0.10.0
-    "@backstage/backend-dynamic-feature-service": 0.7.0
-    "@backstage/backend-plugin-api": 1.3.1
-    "@backstage/backend-test-utils": 1.5.0
-    "@backstage/cli": 0.32.1
-    "@backstage/config": 1.3.2
-    "@types/express": 4.17.23
-    "@types/supertest": 6.0.3
-    express: 4.21.2
-    msw: 1.3.5
-    node-fetch: 2.7.0
-    prettier: 3.6.2
-    supertest: 6.3.4
-    typescript: 5.9.2
-    winston: 3.14.2
-  languageName: unknown
-  linkType: soft
-
-"@internal/plugin-dynamic-plugins-info@*, @internal/plugin-dynamic-plugins-info@workspace:plugins/dynamic-plugins-info":
-  version: 0.0.0-use.local
-  resolution: "@internal/plugin-dynamic-plugins-info@workspace:plugins/dynamic-plugins-info"
-  dependencies:
-    "@backstage/cli": 0.32.1
-    "@backstage/core-app-api": 1.17.0
-    "@backstage/core-components": 0.17.2
-    "@backstage/core-plugin-api": 1.10.7
-    "@backstage/dev-utils": 1.1.10
-    "@backstage/test-utils": 1.7.8
-    "@backstage/theme": 0.6.6
-    "@material-table/core": 3.2.5
-    "@mui/icons-material": 5.18.0
-    "@mui/material": 5.18.0
-    "@scalprum/react-core": 0.9.5
-    "@testing-library/jest-dom": 6.6.4
-    "@testing-library/react": 14.3.1
-    "@testing-library/user-event": 14.6.1
-    glob: 11.0.3
-    msw: 1.3.5
-    prettier: 3.6.2
-    react: 18.3.1
-    react-router-dom: 6.30.1
-    react-use: 17.6.0
-    typescript: 5.9.2
-  peerDependencies:
-    react: 16.13.1 || ^17.0.0 || ^18.2.0
-    react-router-dom: 6.30.1
-  languageName: unknown
-  linkType: soft
-
 "@internal/plugin-licensed-users-info-backend@*, @internal/plugin-licensed-users-info-backend@workspace:plugins/licensed-users-info-backend":
   version: 0.0.0-use.local
   resolution: "@internal/plugin-licensed-users-info-backend@workspace:plugins/licensed-users-info-backend"
@@ -8570,7 +8490,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@material-table/core@npm:3.2.5, @material-table/core@npm:^3.1.0":
+"@material-table/core@npm:^3.1.0":
   version: 3.2.5
   resolution: "@material-table/core@npm:3.2.5"
   dependencies:
@@ -16412,7 +16332,6 @@ __metadata:
     "@backstage/theme": 0.6.6
     "@emotion/react": 11.14.0
     "@emotion/styled": 11.14.1
-    "@internal/plugin-dynamic-plugins-info": "*"
     "@janus-idp/cli": 3.6.1
     "@mui/icons-material": 5.18.0
     "@mui/material": 5.18.0
@@ -17124,7 +17043,6 @@ __metadata:
     "@backstage/plugin-search-backend": 2.0.2
     "@backstage/plugin-search-backend-module-catalog": 0.3.4
     "@backstage/plugin-search-backend-module-pg": 0.5.44
-    "@internal/plugin-dynamic-plugins-info-backend": "*"
     "@internal/plugin-licensed-users-info-backend": "*"
     "@internal/plugin-scalprum-backend": "*"
     "@janus-idp/backstage-plugin-audit-log-node": 1.7.2
