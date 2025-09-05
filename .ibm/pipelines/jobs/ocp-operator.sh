@@ -55,6 +55,8 @@ handle_ocp_operator() {
 
   cluster_setup_ocp_operator
   initiate_operator_deployments
+  echo "Waiting 2 hours for system stabilization after Backstage installation..."
+  sleep 7200  # 2 hours = 7200 seconds
   check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${url}"
   check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${rbac_url}"
 
