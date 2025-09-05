@@ -36,7 +36,7 @@ metadata:
 spec:
   type: other
   lifecycle: unknown
-  owner: user:default/rhdh-qe-1`;
+  owner: user:default/rhdh-qe-2`;
   const newRepoName = `bulk-import-${Date.now()}`;
   const newRepoDetails = {
     owner: "janus-test",
