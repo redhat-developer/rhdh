@@ -1,15 +1,18 @@
-import { OAuth2 } from '@backstage/core-app-api';
+import { OAuth2, WebStorage } from '@backstage/core-app-api';
 import {
   AnyApiFactory,
   bitbucketAuthApiRef,
   configApiRef,
   createApiFactory,
   discoveryApiRef,
+  errorApiRef,
+  fetchApiRef,
   githubAuthApiRef,
   gitlabAuthApiRef,
   identityApiRef,
   microsoftAuthApiRef,
   oauthRequestApiRef,
+  storageApiRef,
 } from '@backstage/core-plugin-api';
 import {
   ScmAuth,
@@ -17,6 +20,7 @@ import {
   ScmIntegrationsApi,
   scmIntegrationsApiRef,
 } from '@backstage/integration-react';
+import { UserSettingsStorage } from '@backstage/plugin-user-settings';
 
 import {
   auth0AuthApiRef,
@@ -29,6 +33,24 @@ import {
 } from './api/LearningPathApiClient';
 
 export const apis: AnyApiFactory[] = [
+  createApiFactory({
+    api: storageApiRef,
+    deps: {
+      discoveryApi: discoveryApiRef,
+      errorApi: errorApiRef,
+      fetchApi: fetchApiRef,
+      identityApi: identityApiRef,
+      configApi: configApiRef,
+    },
+    factory: deps => {
+      const persistence =
+        deps.configApi.getOptionalString('userSettings.persistence') ??
+        'database';
+      return persistence === 'browser'
+        ? WebStorage.create(deps)
+        : UserSettingsStorage.create(deps);
+    },
+  }),
   createApiFactory({
     api: scmIntegrationsApiRef,
     deps: { configApi: configApiRef },
