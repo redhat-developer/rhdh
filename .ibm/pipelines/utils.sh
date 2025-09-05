@@ -239,6 +239,18 @@ install_crunchy_postgres_k8s_operator(){
   check_operator_status 300 "operators" "Crunchy Postgres for Kubernetes" "Succeeded"
 }
 
+# Installs the OpenShift Serverless Logic Operator (SonataFlow) from OpenShift Marketplace
+install_serverless_logic_ocp_operator(){
+  install_subscription logic-operator-rhel8 openshift-operators alpha logic-operator-rhel8 redhat-operators openshift-marketplace
+  check_operator_status 300 "openshift-operators" "OpenShift Serverless Logic Operator" "Succeeded"
+}
+
+# Installs the OpenShift Serverless Operator (Knative) from OpenShift Marketplace
+install_serverless_ocp_operator(){
+  install_subscription serverless-operator openshift-operators stable serverless-operator redhat-operators openshift-marketplace
+  check_operator_status 300 "openshift-operators" "Red Hat OpenShift Serverless" "Succeeded"
+}
+
 uninstall_helmchart() {
   local project=$1
   local release=$2
@@ -672,6 +684,8 @@ cluster_setup_ocp_operator() {
   install_pipelines_operator
   install_acm_ocp_operator
   install_crunchy_postgres_ocp_operator
+  install_serverless_ocp_operator
+  install_serverless_logic_ocp_operator
 }
 
 cluster_setup_k8s_operator() {
