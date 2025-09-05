@@ -41,7 +41,6 @@
     "@backstage/theme": "0.6.6",
     "@emotion/react": "11.14.0",
     "@emotion/styled": "11.14.1",
-    "@internal/plugin-dynamic-plugins-info": "*",
     "@mui/icons-material": "5.18.0",
     "@mui/material": "5.18.0",
     "@mui/styled-engine": "5.18.0",

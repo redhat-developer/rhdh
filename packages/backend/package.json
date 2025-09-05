@@ -64,7 +64,6 @@
     "@backstage/plugin-search-backend": "2.0.2",
     "@backstage/plugin-search-backend-module-catalog": "0.3.4",
     "@backstage/plugin-search-backend-module-pg": "0.5.44",
-    "@internal/plugin-dynamic-plugins-info-backend": "*",
     "@internal/plugin-licensed-users-info-backend": "*",
     "@internal/plugin-scalprum-backend": "*",
     "@janus-idp/backstage-plugin-audit-log-node": "1.7.2",
