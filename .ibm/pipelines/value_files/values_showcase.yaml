@@ -214,7 +214,7 @@ global:
 
 # -- Upstream Backstage [chart configuration](https://github.com/backstage/charts/blob/main/charts/backstage/values.yaml)
 upstream:
-  nameOverride: backstage
+  nameOverride: developer-hub
   commonLabels:
     backstage.io/kubernetes-id: developer-hub
   backstage:
@@ -230,8 +230,8 @@ upstream:
     image:
       pullPolicy: Always
       registry: quay.io
-      repository: rhdh-community/rhdh
-      tag: next
+      repository: rhdh/rhdh-hub-rhel9
+      tag: "1.6"
     extraEnvVars:
       - name: BACKEND_SECRET
         valueFrom:
