@@ -7,7 +7,7 @@ import {
   TabbedLayout,
 } from '@backstage/core-components';
 
-import { useScalprum } from '@scalprum/react-core';
+import { useMountPoints } from '@red-hat-developer-hub/plugin-utils';
 
 export interface PluginTab {
   Component: React.ComponentType;
@@ -17,31 +17,17 @@ export interface PluginTab {
   };
 }
 
-export interface ScalprumState {
-  api?: {
-    dynamicRootConfig?: {
-      mountPoints?: {
-        'internal.plugins/tab': PluginTab[];
-      };
-    };
-  };
-}
-
 export const DynamicPluginsInfoPage = () => {
-  const scalprum = useScalprum<ScalprumState>();
-
-  const tabs =
-    scalprum.api?.dynamicRootConfig?.mountPoints?.['internal.plugins/tab'] ||
-    [];
-
+  // this coercion is necessary to preserve compatability with
+  // the original configuration definition
+  const tabs = useMountPoints('internal.plugins/tab') as unknown as PluginTab[];
   const FirstComponent = tabs[0]?.Component;
-
   return (
     <Page themeId="extensions">
       <Header title="Extensions" />
       {tabs.length > 1 ? (
         <TabbedLayout>
-          {tabs.map(({ Component, config }) => (
+          {tabs.map(({ Component, config }: PluginTab) => (
             <TabbedLayout.Route
               key={config.path}
               path={config.path}
