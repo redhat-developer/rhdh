@@ -27,7 +27,6 @@ export class BulkImport {
         .fill(searchText);
 
       // Wait for the filter to be applied and verify no "no-import-jobs-found" message appears
-      // Using web-first assertion to wait for the element to be hidden (not visible)
       await expect(this.page.getByTestId("no-import-jobs-found")).toBeHidden({
         timeout: 2000,
       });

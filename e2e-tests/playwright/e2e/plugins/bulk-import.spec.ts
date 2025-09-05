@@ -11,7 +11,6 @@ import {
 
 // Pre-req : plugin-bulk-import & plugin-bulk-import-backend-dynamic
 test.describe.serial("Bulk Import plugin", () => {
-  test.describe.configure({ retries: 0 });
   test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
 
   let page: Page;
@@ -63,6 +62,21 @@ test.describe.serial("Bulk Import plugin", () => {
     await uiHelper.openSidebar("Bulk import");
     await uiHelper.clickButton("Add");
     await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
+
+    // Check if repository is already added, skip test if so
+    const statusText = await uiHelper.verifyRowInTableByUniqueTextWithOptions(
+      catalogRepoDetails.name,
+      ["Added", "Not Generated"],
+    );
+
+    // eslint-disable-next-line playwright/no-conditional-in-test
+    if (statusText?.includes("Added")) {
+      test.skip(
+        true,
+        `Repository ${catalogRepoDetails.name} is already added, skipping test`,
+      );
+    }
+
     await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
       "Not Generated",
     ]);
