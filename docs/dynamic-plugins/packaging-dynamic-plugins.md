@@ -33,6 +33,19 @@ npx @janus-idp/cli@latest package package-dynamic-plugins --tag quay.io/example/
 
 The `--tag` argument is required when using this packaging method. It specifies the image name and tag. The image won't be pushed to the registry automatically; use the `podman push` or `docker push` command to push the image to the registry.
 
+> **Note:** If `podman` is **not** installed on your system, you must explicitly specify the container tool using the `--container-tool` option.
+>
+> **Available values:**
+> - `"docker"`
+> - `"podman"` (default)
+> - `"buildah"`
+>
+> Example using Docker:
+>
+> ```bash
+> npx @janus-idp/cli@latest package package-dynamic-plugins --container-tool docker --tag quay.io/example/image:v0.0.1
+> ```
+
 ## Creating a `tgz` Archive
 
 **Prerequisites:**
