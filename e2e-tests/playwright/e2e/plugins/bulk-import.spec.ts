@@ -249,10 +249,19 @@ test.describe.serial("Bulk Import plugin", () => {
   });
 
   test.afterAll(async () => {
-    await APIHelper.deleteGitHubRepo(
-      newRepoDetails.owner,
-      newRepoDetails.repoName,
-    );
+    try {
+      // Delete the GitHub repository
+      await APIHelper.deleteGitHubRepo(
+        newRepoDetails.owner,
+        newRepoDetails.repoName,
+      );
+
+      console.log(
+        `[Cleanup] Deleted GitHub repository: ${newRepoDetails.repoName}`,
+      );
+    } catch (error) {
+      console.error(`[Cleanup] Final cleanup failed: ${error.message}`);
+    }
   });
 });
 
