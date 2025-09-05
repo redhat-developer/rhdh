@@ -41,6 +41,15 @@ test.describe("Test Topology Plugin", () => {
     await uiHelper.clickTab("Topology");
     await uiHelper.verifyText("backstage-janus");
     await page.getByRole("button", { name: "Fit to Screen" }).click();
+    await page
+      .locator('[data-test-id="topology-test"]')
+      .getByTestId(/(status-error|status-ok)/)
+      .first()
+      .click();
+    await uiHelper.verifyDivHasText(
+      /Pipeline (Succeeded|Failed|Cancelled|Running)/,
+    );
+    await uiHelper.verifyDivHasText(/\d+ (Succeeded|Failed|Cancelled|Running)/);
     await topology.verifyDeployment("topology-test");
     await uiHelper.verifyButtonURL("Open URL", "topology-test-route", {
       locator: `[data-test-id="topology-test"]`,
@@ -72,9 +81,11 @@ test.describe("Test Topology Plugin", () => {
     await page.getByLabel("Pod count").click();
     await uiHelper.verifyText("1");
     await uiHelper.verifyText("Pod");
+
     // await topology.hoverOnPodStatusIndicator();
     // await uiHelper.verifyTextInTooltip("Running");
     // await uiHelper.verifyText("1Running");
+
     await uiHelper.verifyButtonURL(
       "Edit source code",
       "https://github.com/janus-idp/backstage-showcase",
@@ -91,19 +102,7 @@ test.describe("Test Topology Plugin", () => {
     await uiHelper.verifyHeading("PipelineRuns");
     await uiHelper.verifyText("PL");
     await uiHelper.verifyText("PLR");
-    // await expect(async () => {
-    //   await page.getByTestId("status-ok").first().click({
-    //     force: true,
-    //     timeout: 30000,
-    //   });
-    // }).toPass({
-    //   timeout: 30000,
-    //   intervals: [1000, 2000, 3000],
-    // });
-    // await uiHelper.verifyDivHasText(
-    //   /Pipeline (Succeeded|Failed|Cancelled|Running)Task/,
-    // );
-    // await uiHelper.verifyText(/Pipeline (Succeeded|Failed|Cancelled|Running)/);
+    await uiHelper.verifyText(/(Succeeded|Failed|Cancelled|Running)/);
   });
 });
 
