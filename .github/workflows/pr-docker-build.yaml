@@ -112,7 +112,7 @@ jobs:
         uses: ./.github/actions/docker-build
         with:
           registry: ${{ env.REGISTRY }}
-          username: ${{ vars.QUAY_USERNAME }}
+          username: ${{ secrets.QUAY_USERNAME }}
           password: ${{ secrets.QUAY_TOKEN }}
           imageName: ${{ github.repository }}
           imageTags: |
