@@ -17,21 +17,26 @@ test.describe.serial("Bulk Import plugin", () => {
   let uiHelper: UIhelper;
   let common: Common;
 
-  test.beforeAll(async () => {
-    test.info().annotations.push({
-      type: "component",
-      description: "plugins",
-    });
-  });
-
   let bulkimport: BulkImport;
 
+  const catalogRepoName = `janus-test-1-bulk-import-test-${Date.now()}`;
   const catalogRepoDetails = {
-    name: "janus-test-1-bulk-import-test",
-    url: "github.com/janus-test/janus-test-1-bulk-import-test",
+    name: catalogRepoName,
+    url: `github.com/janus-test/${catalogRepoName}`,
     org: "github.com/janus-test",
     owner: "janus-test",
   };
+
+  const catalogInfoYamlContent = `apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${catalogRepoName}
+  annotations:
+    github.com/project-slug: janus-test/${catalogRepoName}
+spec:
+  type: other
+  lifecycle: unknown
+  owner: user:default/rhdh-qe-1`;
   const newRepoName = `bulk-import-${Date.now()}`;
   const newRepoDetails = {
     owner: "janus-test",
@@ -40,12 +45,26 @@ test.describe.serial("Bulk Import plugin", () => {
     labels: `bulkimport1: test1;bulkimport2: test2`,
     repoUrl: `github.com/janus-test/${newRepoName}`,
   };
+
   test.beforeAll(async ({ browser }, testInfo) => {
+    test.info().annotations.push({
+      type: "component",
+      description: "plugins",
+    });
+
     page = (await setupBrowser(browser, testInfo)).page;
 
     uiHelper = new UIhelper(page);
     common = new Common(page);
     bulkimport = new BulkImport(page);
+
+    // Create the repository with catalog-info.yaml file dynamically
+    await APIHelper.createGitHubRepoWithFile(
+      catalogRepoDetails.owner,
+      catalogRepoDetails.name,
+      "catalog-info.yaml",
+      catalogInfoYamlContent,
+    );
 
     await bulkimport.newGitHubRepo(
       newRepoDetails.owner,
@@ -236,6 +255,12 @@ test.describe.serial("Bulk Import plugin", () => {
 
   test.afterAll(async () => {
     try {
+      // Delete the dynamically created GitHub repository with catalog-info.yaml
+      await APIHelper.deleteGitHubRepo(
+        catalogRepoDetails.owner,
+        catalogRepoDetails.name,
+      );
+
       // Delete the GitHub repository
       await APIHelper.deleteGitHubRepo(
         newRepoDetails.owner,
@@ -243,7 +268,7 @@ test.describe.serial("Bulk Import plugin", () => {
       );
 
       console.log(
-        `[Cleanup] Deleted GitHub repository: ${newRepoDetails.repoName}`,
+        `[Cleanup] Deleted GitHub repositories: ${catalogRepoDetails.name}, ${newRepoDetails.repoName}`,
       );
     } catch (error) {
       console.error(`[Cleanup] Final cleanup failed: ${error.message}`);
