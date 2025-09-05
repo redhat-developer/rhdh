@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "Playwright": {
+      "command": "npx @playwright/mcp@latest",
+      "env": {},
+      "args": []
+    },
+    "kubernetes": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "kubernetes-mcp-server@latest"
+      ]
+    }
+  }
+}
