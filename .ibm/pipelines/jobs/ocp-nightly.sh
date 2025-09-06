@@ -7,7 +7,8 @@ handle_ocp_nightly() {
 
   oc_login
 
-  export K8S_CLUSTER_ROUTER_BASE=$(oc get route console -n openshift-console -o=jsonpath='{.spec.host}' | sed 's/^[^.]*\.//')
+  K8S_CLUSTER_ROUTER_BASE=$(oc get route console -n openshift-console -o=jsonpath='{.spec.host}' | sed 's/^[^.]*\.//')
+  export K8S_CLUSTER_ROUTER_BASE
 
   cluster_setup_ocp_helm
   clear_database

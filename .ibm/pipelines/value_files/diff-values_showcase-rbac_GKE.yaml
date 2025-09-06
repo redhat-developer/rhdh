@@ -1,6 +1,6 @@
-# This file is for GKE installation only. 
+# This file is for GKE installation only.
 # It is applied by `helm upgrade` after the `values-showcase.yaml` is applied and only contains complementary differences for GKE.
-# Note, that it overwrites the whole key that is present in this file. 
+# Note, that it overwrites the whole key that is present in this file.
 #   e.g. global.dynamic.plugins key is completely overwritten by the content of this file.
 route:
   enabled: false
@@ -37,16 +37,16 @@ upstream:
         valueFrom:
           secretKeyRef:
             key: postgres-password
-            name: '{{ .Release.Name }}-postgresql'
+            name: "{{ .Release.Name }}-postgresql"
       # disable telemetry in CI
       - name: SEGMENT_TEST_MODE
-        value: 'true'
+        value: "true"
       - name: NODE_TLS_REJECT_UNAUTHORIZED
-        value: '0'
+        value: "0"
       - name: NODE_ENV
-        value: 'production'
+        value: "production"
       - name: ENABLE_CORE_ROOTHTTPROUTER_OVERRIDE
-        value: 'true'
+        value: "true"
     extraVolumeMounts:
       # The initContainer below will install dynamic plugins in this volume mount.
       - name: dynamic-plugins-root
@@ -121,14 +121,14 @@ upstream:
           valueFrom:
             secretKeyRef:
               key: postgres-password
-              name: '{{ .Release.Name }}-postgresql'
+              name: "{{ .Release.Name }}-postgresql"
   volumePermissions:
     enabled: true
   service:
     type: NodePort
   ingress:
     enabled: true
-    host: ''
+    host: ""
     annotations:
       kubernetes.io/ingress.class: gce
       kubernetes.io/ingress.global-static-ip-name: rhdh-static-ip

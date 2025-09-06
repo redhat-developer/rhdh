@@ -22,17 +22,17 @@ app:
         headerColor2: "rgb(216, 164, 98)"
         navigationIndicatorColor: "rgb(98, 216, 105)"
       dark:
-        primaryColor: '#DC6ED9'
-        headerColor1: 'rgb(190, 122, 45)'
-        headerColor2: 'rgb(45, 190, 50)'
-        navigationIndicatorColor: 'rgb(45, 113, 190)'
+        primaryColor: "#DC6ED9"
+        headerColor1: "rgb(190, 122, 45)"
+        headerColor2: "rgb(45, 190, 50)"
+        navigationIndicatorColor: "rgb(45, 113, 190)"
 backend:
   baseUrl: ${RHDH_BASE_URL}
   cors:
     origin: ${RHDH_BASE_URL}
   reading:
     allow:
-      - host: 'github.com'
+      - host: "github.com"
       - host: ${DH_TARGET_URL}
   auth:
     dangerouslyDisableDefaultAuthPolicy: true
@@ -113,25 +113,25 @@ proxy:
   # endpoints: {}
   endpoints:
     # Other Proxies
-    '/acr/api':
-      target: 'https://rhdhqetest.azurecr.io/acr/v1/'
+    "/acr/api":
+      target: "https://rhdhqetest.azurecr.io/acr/v1/"
       changeOrigin: true
       headers:
         # If you use Bearer Token for authorization, please replace the 'Basic' with 'Bearer' in the following line.
-        Authorization: '${ACR_SECRET}'
+        Authorization: "${ACR_SECRET}"
       # Change to "false" in case of using self hosted artifactory instance with a self-signed certificate
       secure: false
-    '/quay/api':
+    "/quay/api":
       target: https://quay.io/
       headers:
-        X-Requested-With: 'XMLHttpRequest'
+        X-Requested-With: "XMLHttpRequest"
       changeOrigin: true
       secure: true
-    '/add-test-header':
+    "/add-test-header":
       target: ${RHDH_BASE_URL_HTTP}/api/simple-chat
       credentials: forward
       headers:
-        'x-proxy-test-header': 'hello!'
+        "x-proxy-test-header": "hello!"
 catalog:
   import:
     entityFilename: catalog-info.yaml
@@ -183,10 +183,10 @@ catalog:
           initialDelay: { seconds: 15 }
     github:
       providerId:
-        organization: '${GITHUB_ORG}'
+        organization: "${GITHUB_ORG}"
         schedule:
-          frequency: { minutes: 30}
-          timeout: { minutes: 30}
+          frequency: { minutes: 30 }
+          timeout: { minutes: 30 }
     githubOrg:
       id: production
       githubUrl: "${GITHUB_URL}"
@@ -206,7 +206,7 @@ dynatrace:
   baseUrl: temp
 argocd:
   appLocatorMethods:
-    - type: 'config'
+    - type: "config"
       instances:
         - name: argoInstance1
           url: temp
@@ -221,9 +221,9 @@ extensions:
   installation:
     enabled: false
 buildInfo:
-  title: 'RHDH Build info'
+  title: "RHDH Build info"
   card:
-    TechDocs builder: 'local'
-    Authentication provider: 'Github'
+    TechDocs builder: "local"
+    Authentication provider: "Github"
     RBAC: disabled
   full: true
