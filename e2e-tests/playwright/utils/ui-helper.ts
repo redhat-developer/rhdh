@@ -20,8 +20,8 @@ export class UIhelper {
     return this.page.getByTestId("login-button").getByText(menuItem);
   }
 
-  async fillTextInputByLabel(label: string, text: string) {
-    await this.page.getByLabel(label).fill(text);
+  async fillTextInputByLabel(label: string, text: string, exact?: boolean) {
+    await this.page.getByLabel(label, { exact }).fill(text);
   }
 
   /**
@@ -49,6 +49,15 @@ export class UIhelper {
       name: text,
     });
     await locator.check();
+  }
+
+  async clickLinkWithNewTab(name: string | RegExp) {
+    const [newPage] = await Promise.all([
+      this.page.context().waitForEvent("page"),
+      this.page.getByRole("link", { name }).click(),
+    ]);
+
+    await newPage.waitForLoadState();
   }
 
   async clickButton(
@@ -338,8 +347,10 @@ export class UIhelper {
     await navLink.click();
   }
 
-  async selectMuiBox(label: string, value: string) {
-    await this.page.click(`div[aria-label="${label}"]`);
+  async selectMuiBox(labelOrId: string, value: string) {
+    await this.page.click(
+      `div[aria-label="${labelOrId}"], div[id="${labelOrId}"]`,
+    );
     const optionSelector = `li[role="option"]:has-text("${value}")`;
     await this.page.waitForSelector(optionSelector);
     await this.page.click(optionSelector);
