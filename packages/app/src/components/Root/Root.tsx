@@ -42,6 +42,7 @@ import DynamicRootContext, {
 
 import { ApplicationHeaders } from './ApplicationHeaders';
 import { MenuIcon } from './MenuIcon';
+import { ScrollableContainer } from './ScrollableContainer';
 import { SidebarLogo } from './SidebarLogo';
 
 /**
@@ -168,55 +169,10 @@ const SidebarLayout = styled(Box, {
       // We need to compensate for the above-sidebar position of the global header
       // as it takes up a fixed height at the top of the page.
       top: `max(0px, ${aboveSidebarHeaderHeight ?? 0}px)`,
-      width: isSidebarOpen ? '250px !important' : 'auto',
+      width: isSidebarOpen ? '260px !important' : 'auto',
     },
   }),
 );
-
-const SidebarScrollableContent = styled(Box)(({ theme }) => ({
-  flex: 1,
-  overflow: 'auto',
-  minHeight: 0,
-  position: 'relative',
-
-  // Custom scrollbar styling - hidden by default, visible on hover
-  '&::-webkit-scrollbar': {
-    width: '6px',
-    backgroundColor: 'transparent',
-  },
-  '&::-webkit-scrollbar-track': {
-    background: 'transparent',
-  },
-  '&::-webkit-scrollbar-thumb': {
-    background: 'transparent',
-    borderRadius: '3px',
-    transition: 'background-color 0.3s ease',
-  },
-  '&:hover::-webkit-scrollbar-thumb': {
-    background:
-      theme.palette.mode === 'dark'
-        ? theme.palette.grey[600]
-        : theme.palette.grey[400],
-    '&:hover': {
-      background:
-        theme.palette.mode === 'dark'
-          ? theme.palette.grey[500]
-          : theme.palette.grey[600],
-    },
-  },
-
-  // Firefox scrollbar - thin and auto-hiding
-  scrollbarWidth: 'thin',
-  scrollbarColor: 'transparent transparent',
-  '&:hover': {
-    scrollbarColor: `${
-      theme.palette.mode === 'dark'
-        ? theme.palette.grey[600]
-        : theme.palette.grey[400]
-    } transparent`,
-  },
-  scrollBehavior: 'smooth',
-}));
 
 const SidebarStickyBottom = styled(Box)(() => ({
   flexShrink: 0,
@@ -382,7 +338,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
           "& div[class*='BackstageSidebarItem-secondaryAction']": { width: 20 },
           a: {
             width: 'auto',
-            '@media (min-width: 600px)': { width: '186px' },
+            '@media (min-width: 600px)': { width: '176px' },
           },
         }}
         renderItem={child => (
@@ -428,7 +384,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
                 },
                 a: {
                   width: 'auto',
-                  '@media (min-width: 600px)': { width: '250px' },
+                  '@media (min-width: 600px)': { width: '240px' },
                 },
               }}
             >
@@ -535,7 +491,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
                 )}
               </Box>
 
-              <SidebarScrollableContent>
+              <ScrollableContainer>
                 <SidebarGroup label="Menu" icon={<MuiMenuIcon />}>
                   {/* Global nav, not org-specific */}
                   {renderMenuItems(true, false)}
@@ -556,7 +512,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
                   })}
                 </SidebarGroup>
                 <SidebarSpace />
-              </SidebarScrollableContent>
+              </ScrollableContainer>
 
               <SidebarStickyBottom>
                 {showAdministration && (
