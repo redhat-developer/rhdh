@@ -21,7 +21,7 @@ export class NotificationPage {
     await expect(
       this.page.getByTestId("loading-indicator").getByRole("img"),
     ).toHaveCount(0);
-    const row = await this.page.locator(`tr`, { hasText: text }).first();
+    const row = this.page.locator(`tr`, { hasText: text }).first();
     await expect(row).toHaveCount(1);
   }
 
@@ -103,17 +103,17 @@ export class NotificationPage {
   }
 
   async markLastNotificationAsRead() {
-    const row = await this.page.locator("td:nth-child(3) > div").first();
+    const row = this.page.locator("td:nth-child(3) > div").first();
     await row.getByRole("button").nth(1).click();
   }
 
   async markNotificationAsRead(text: string) {
-    const row = await this.page.locator(`tr:has-text("${text}")`);
+    const row = this.page.locator(`tr:has-text("${text}")`);
     await row.getByRole("button").nth(1).click();
   }
 
   async markLastNotificationAsUnRead() {
-    const row = await this.page.locator("td:nth-child(3) > div").first();
+    const row = this.page.locator("td:nth-child(3) > div").first();
     await row.getByRole("button").nth(1).click();
   }
 

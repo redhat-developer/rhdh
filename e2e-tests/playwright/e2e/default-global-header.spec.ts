@@ -114,7 +114,7 @@ test.describe("Default Global Header", () => {
     await searchBar.fill("test query term");
     expect(await uiHelper.isBtnVisibleByTitle("Clear")).toBeTruthy();
     const dropdownList = page.locator(`ul[role="listbox"]`);
-    expect(await dropdownList.isVisible()).toBeTruthy();
+    await expect(dropdownList).toBeVisible();
     await searchBar.press("Enter");
     await uiHelper.verifyHeading("Search");
     const searchResultPageInput = page.locator(

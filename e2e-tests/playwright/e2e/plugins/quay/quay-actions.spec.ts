@@ -1,7 +1,7 @@
 import { Page, test } from "@playwright/test";
 import { Common, setupBrowser } from "../../../utils/common";
 import { UIhelper } from "../../../utils/ui-helper";
-import { UI_HELPER_ELEMENTS } from "../../../support/pageObjects/global-obj";
+import { UI_HELPER_ELEMENTS } from "../../../support/page-objects/global-obj";
 import { QuayClient } from "../../../utils/quay/quay-client";
 
 test.describe("Test Quay Actions plugin", () => {

@@ -67,7 +67,7 @@ test.describe("Configure Microsoft Provider", async () => {
     await deployment.deleteNamespaceIfExists();
 
     // create namespace and wait for it to be active
-    (await deployment.createNamespace()).waitForNamespaceActive();
+    await (await deployment.createNamespace()).waitForNamespaceActive();
 
     // create all base configmaps
     await deployment.createAllConfigs();
@@ -77,38 +77,38 @@ test.describe("Configure Microsoft Provider", async () => {
 
     // set enviroment variables and create secret
     if (!process.env.ISRUNNINGLOCAL) {
-      deployment.addSecretData("BASE_URL", backstageUrl);
-      deployment.addSecretData("BASE_BACKEND_URL", backstageBackendUrl);
+      await deployment.addSecretData("BASE_URL", backstageUrl);
+      await deployment.addSecretData("BASE_BACKEND_URL", backstageBackendUrl);
     }
-    deployment.addSecretData(
+    await deployment.addSecretData(
       "DEFAULT_USER_PASSWORD",
       process.env.DEFAULT_USER_PASSWORD,
     );
-    deployment.addSecretData(
+    await deployment.addSecretData(
       "DEFAULT_USER_PASSWORD_2",
       process.env.DEFAULT_USER_PASSWORD_2,
     );
-    deployment.addSecretData(
+    await deployment.addSecretData(
       "AUTH_PROVIDERS_AZURE_CLIENT_ID",
       process.env.AUTH_PROVIDERS_AZURE_CLIENT_ID,
     );
-    deployment.addSecretData(
+    await deployment.addSecretData(
       "AUTH_PROVIDERS_AZURE_CLIENT_SECRET",
       process.env.AUTH_PROVIDERS_AZURE_CLIENT_SECRET,
     );
-    deployment.addSecretData(
+    await deployment.addSecretData(
       "AUTH_PROVIDERS_AZURE_TENANT_ID",
       process.env.AUTH_PROVIDERS_AZURE_TENANT_ID,
     );
-    deployment.addSecretData(
+    await deployment.addSecretData(
       "MICROSOFT_CLIENT_ID",
       process.env.AUTH_PROVIDERS_AZURE_CLIENT_ID,
     );
-    deployment.addSecretData(
+    await deployment.addSecretData(
       "MICROSOFT_CLIENT_SECRET",
       process.env.AUTH_PROVIDERS_AZURE_CLIENT_SECRET,
     );
-    deployment.addSecretData(
+    await deployment.addSecretData(
       "MICROSOFT_TENANT_ID",
       process.env.AUTH_PROVIDERS_AZURE_TENANT_ID,
     );
@@ -225,43 +225,45 @@ test.describe("Configure Microsoft Provider", async () => {
     await context.clearCookies();
   });
 
-  //TODO: entiny name is "name": "zeus_rhdhtesting.onmicrosoft.com", email is "email": "zeus@rhdhtesting.onmicrosoft.com"
-  //not resolving?
-  test.skip("Login with Microsoft emailLocalPartMatchingUserEntityName resolver", async () => {
-    //A common sign-in resolver that looks up the user using the local part of their email address as the entity name.
-    await deployment.setMicrosoftResolver(
-      "emailLocalPartMatchingUserEntityName",
-      false,
-    );
-    await deployment.updateAllConfigs();
-    await deployment.restartLocalDeployment();
-    await page.waitForTimeout(3000);
-    await deployment.waitForDeploymentReady();
+  //TODO: entiny name is "name": "zeus_rhdhtesting.onmicrosoft.com", email is "email": "zeus@rhdhtesting.onmicrosoft.com" not resolving?
+  test.fixme(
+    "Login with Microsoft emailLocalPartMatchingUserEntityName resolver",
+    async () => {
+      //A common sign-in resolver that looks up the user using the local part of their email address as the entity name.
+      await deployment.setMicrosoftResolver(
+        "emailLocalPartMatchingUserEntityName",
+        false,
+      );
+      await deployment.updateAllConfigs();
+      await deployment.restartLocalDeployment();
+      await page.waitForTimeout(3000);
+      await deployment.waitForDeploymentReady();
 
-    // wait for rhdh first sync and portal to be reachable
-    await deployment.waitForSynced();
+      // wait for rhdh first sync and portal to be reachable
+      await deployment.waitForSynced();
 
-    const login = await common.MicrosoftAzureLogin(
-      "zeus@rhdhtesting.onmicrosoft.com",
-      process.env.DEFAULT_USER_PASSWORD_2,
-    );
-    expect(login).toBe("Login successful");
+      const login = await common.MicrosoftAzureLogin(
+        "zeus@rhdhtesting.onmicrosoft.com",
+        process.env.DEFAULT_USER_PASSWORD_2,
+      );
+      expect(login).toBe("Login successful");
 
-    await page.goto("/settings");
-    await uiHelper.verifyHeading("TEST Zeus");
-    await common.signOut();
-    await context.clearCookies();
+      await page.goto("/settings");
+      await uiHelper.verifyHeading("TEST Zeus");
+      await common.signOut();
+      await context.clearCookies();
 
-    const login2 = await common.MicrosoftAzureLogin(
-      "tyke@rhdhtesting.onmicrosoft.com",
-      process.env.DEFAULT_USER_PASSWORD_2,
-    );
-    expect(login2).toBe("Login successful");
+      const login2 = await common.MicrosoftAzureLogin(
+        "tyke@rhdhtesting.onmicrosoft.com",
+        process.env.DEFAULT_USER_PASSWORD_2,
+      );
+      expect(login2).toBe("Login successful");
 
-    await uiHelper.verifyAlertErrorMessage(
-      NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE,
-    );
-  });
+      await uiHelper.verifyAlertErrorMessage(
+        NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE,
+      );
+    },
+  );
 
   test(`Set Micrisoft sessionDuration and confirm in auth cookie duration has been set`, async () => {
     deployment.setAppConfigProperty(

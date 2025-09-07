@@ -76,6 +76,46 @@ export class APIHelper {
     expect(response.status() === 201 || response.ok()).toBeTruthy();
   }
 
+  static async createGitHubRepoWithFile(
+    owner: string,
+    repoName: string,
+    filename: string,
+    fileContent: string,
+  ) {
+    // Create the repository
+    await APIHelper.createGitHubRepo(owner, repoName);
+
+    // Add the specified file
+    await APIHelper.createFileInRepo(
+      owner,
+      repoName,
+      filename,
+      fileContent,
+      `Add ${filename} file`,
+    );
+  }
+
+  static async createFileInRepo(
+    owner: string,
+    repoName: string,
+    filePath: string,
+    content: string,
+    commitMessage: string,
+    branch = "main",
+  ) {
+    const encodedContent = Buffer.from(content).toString("base64");
+    const response = await APIHelper.githubRequest(
+      "PUT",
+      `${GITHUB_API_ENDPOINTS.contents(owner, repoName)}/${filePath}`,
+      {
+        message: commitMessage,
+        content: encodedContent,
+        branch: branch,
+      },
+    );
+    expect(response.status() === 201 || response.ok()).toBeTruthy();
+  }
+
   static async initCommit(owner: string, repo: string, branch = "main") {
     const content = Buffer.from(
       "This is the initial commit for the repository.",

@@ -689,7 +689,7 @@ class RHDHDeployment {
         }
       } catch (error) {
         // Expected error - connection refused
-        console.log("Homepage is not accessible as expected");
+        console.log("Homepage is not accessible as expected: ", error);
       }
     } else {
       console.log("No running process to kill.");
@@ -769,7 +769,7 @@ class RHDHDeployment {
       });
 
       // Keep the function alive to allow streaming
-      // eslint-disable-next-line no-constant-condition
+
       while (Date.now() - startTime < timeoutMs && !found) {
         await new Promise((resolve) => setTimeout(resolve, 1000));
       }
@@ -1222,7 +1222,7 @@ class RHDHDeployment {
 
   async generateStaticToken(): Promise<RHDHDeployment> {
     const token = uuidv4();
-    this.addSecretData("STATIC_TOKEN", token);
+    await this.addSecretData("STATIC_TOKEN", token);
     this.staticToken = token;
     return this;
   }
@@ -1330,8 +1330,8 @@ class RHDHDeployment {
 
   async checkUserIsIngestedInCatalog(users: string[]) {
     const api = new APIHelper();
-    api.UseStaticToken(this.staticToken);
-    api.UseBaseUrl(await this.computeBackstageBackendUrl());
+    await api.UseStaticToken(this.staticToken);
+    await api.UseBaseUrl(await this.computeBackstageBackendUrl());
     const response = await api.getAllCatalogUsersFromAPI();
     const catalogUsers: UserEntity[] =
       response && response.items ? response.items : [];
@@ -1350,8 +1350,8 @@ class RHDHDeployment {
 
   async checkGroupIsIngestedInCatalog(groups: string[]) {
     const api = new APIHelper();
-    api.UseStaticToken(this.staticToken);
-    api.UseBaseUrl(await this.computeBackstageBackendUrl());
+    await api.UseStaticToken(this.staticToken);
+    await api.UseBaseUrl(await this.computeBackstageBackendUrl());
     const response = await api.getAllCatalogGroupsFromAPI();
     const catalogGroups: GroupEntity[] =
       response && response.items ? response.items : [];
@@ -1370,8 +1370,8 @@ class RHDHDeployment {
 
   async checkUserIsInGroup(user: string, group: string): Promise<boolean> {
     const api = new APIHelper();
-    api.UseStaticToken(this.staticToken);
-    api.UseBaseUrl(await this.computeBackstageBackendUrl());
+    await api.UseStaticToken(this.staticToken);
+    await api.UseBaseUrl(await this.computeBackstageBackendUrl());
     const groupEntity: GroupEntity = await api.getGroupEntityFromAPI(group);
     const members = this.parseGroupMemberFromEntity(groupEntity);
     console.log(
@@ -1385,8 +1385,8 @@ class RHDHDeployment {
     child: string,
   ): Promise<boolean> {
     const api = new APIHelper();
-    api.UseStaticToken(this.staticToken);
-    api.UseBaseUrl(await this.computeBackstageBackendUrl());
+    await api.UseStaticToken(this.staticToken);
+    await api.UseBaseUrl(await this.computeBackstageBackendUrl());
     const groupEntity: GroupEntity = await api.getGroupEntityFromAPI(parent);
     const children = this.parseGroupChildrenFromEntity(groupEntity);
     console.log(
@@ -1400,8 +1400,8 @@ class RHDHDeployment {
     parent: string,
   ): Promise<boolean> {
     const api = new APIHelper();
-    api.UseStaticToken(this.staticToken);
-    api.UseBaseUrl(await this.computeBackstageBackendUrl());
+    await api.UseStaticToken(this.staticToken);
+    await api.UseBaseUrl(await this.computeBackstageBackendUrl());
     const groupEntity: GroupEntity = await api.getGroupEntityFromAPI(child);
     const parents = this.parseGroupParentFromEntity(groupEntity);
     console.log(

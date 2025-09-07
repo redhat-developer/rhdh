@@ -71,7 +71,7 @@ test.describe("Configure Github Provider", async () => {
     await deployment.deleteNamespaceIfExists();
 
     // create namespace and wait for it to be active
-    (await deployment.createNamespace()).waitForNamespaceActive();
+    await (await deployment.createNamespace()).waitForNamespaceActive();
 
     // create all base configmaps
     await deployment.createAllConfigs();
@@ -81,30 +81,30 @@ test.describe("Configure Github Provider", async () => {
 
     // set enviroment variables and create secret
     if (!process.env.ISRUNNINGLOCAL) {
-      deployment.addSecretData("BASE_URL", backstageUrl);
-      deployment.addSecretData("BASE_BACKEND_URL", backstageBackendUrl);
+      await deployment.addSecretData("BASE_URL", backstageUrl);
+      await deployment.addSecretData("BASE_BACKEND_URL", backstageBackendUrl);
     }
-    deployment.addSecretData(
+    await deployment.addSecretData(
       "AUTH_PROVIDERS_GH_ORG_NAME",
       process.env.AUTH_PROVIDERS_GH_ORG_NAME,
     );
-    deployment.addSecretData(
+    await deployment.addSecretData(
       "AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET",
       process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET,
     );
-    deployment.addSecretData(
+    await deployment.addSecretData(
       "AUTH_PROVIDERS_GH_ORG_CLIENT_ID",
       process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_ID,
     );
-    deployment.addSecretData(
+    await deployment.addSecretData(
       "AUTH_PROVIDERS_GH_ORG_APP_ID",
       process.env.AUTH_PROVIDERS_GH_ORG_APP_ID,
     );
-    deployment.addSecretData(
+    await deployment.addSecretData(
       "AUTH_PROVIDERS_GH_ORG1_PRIVATE_KEY",
       process.env.AUTH_PROVIDERS_GH_ORG1_PRIVATE_KEY,
     );
-    deployment.addSecretData(
+    await deployment.addSecretData(
       "AUTH_PROVIDERS_GH_ORG_WEBHOOK_SECRET",
       process.env.AUTH_PROVIDERS_GH_ORG_WEBHOOK_SECRET,
     );

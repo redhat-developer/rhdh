@@ -43,6 +43,7 @@ import extractDynamicConfig, {
   DynamicRoute,
 } from '../../utils/dynamicUI/extractDynamicConfig';
 import initializeRemotePlugins from '../../utils/dynamicUI/initializeRemotePlugins';
+import { getDefaultLanguage } from '../../utils/language/language';
 import { catalogTranslations } from '../catalog/translations/catalog';
 import { MenuIcon } from '../Root/MenuIcon';
 import CommonIcons from './CommonIcons';
@@ -563,7 +564,7 @@ export const DynamicRoot = ({
       app.current = createApp({
         __experimentalTranslations: {
           availableLanguages: translationConfig?.locales ?? ['en'],
-          defaultLanguage: translationConfig?.defaultLocale,
+          defaultLanguage: getDefaultLanguage(translationConfig),
           resources: [
             catalogTranslations,
             scaffolderTranslations,

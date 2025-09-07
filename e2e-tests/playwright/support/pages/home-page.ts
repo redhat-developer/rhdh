@@ -1,7 +1,7 @@
 import {
   HOME_PAGE_COMPONENTS,
   SEARCH_OBJECTS_COMPONENTS,
-} from "../pageObjects/page-obj";
+} from "../page-objects/page-obj";
 import { UIhelper } from "../../utils/ui-helper";
 import { Page, expect } from "@playwright/test";
 
@@ -47,8 +47,8 @@ export class HomePage {
 
     await itemLocator.waitFor({ state: "visible" });
 
-    const isVisible = await itemLocator.isVisible();
-    expect(isVisible).toBeTruthy();
+    const isVisible = itemLocator;
+    await expect(isVisible).toBeVisible();
   }
 
   async verifyVisitedCardContent(section: string) {

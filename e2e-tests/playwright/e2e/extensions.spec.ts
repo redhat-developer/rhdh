@@ -63,9 +63,7 @@ test.describe("Admin > Extensions > Catalog", () => {
     await expect(
       page.getByRole("option", { name: "Red Hat" }).getByRole("checkbox"),
     ).not.toBeChecked();
-    await expect(
-      page.getByRole("button", { name: "Red Hat" }),
-    ).not.toBeVisible();
+    await expect(page.getByRole("button", { name: "Red Hat" })).toBeHidden();
     await page.keyboard.press(`Escape`);
     await page.getByTestId("CancelIcon").first().click();
     await expect(page.getByLabel("Category").getByRole("combobox")).toBeEmpty();
@@ -139,7 +137,8 @@ test.describe("Admin > Extensions > Catalog", () => {
     await uiHelper.clickByDataTestId("ContentCopyRoundedIcon");
     await expect(page.getByRole("button", { name: "✔" })).toBeVisible();
     await uiHelper.clickButton("Reset");
-    await expect(page.getByText("pluginConfig:")).not.toBeVisible();
+    await expect(page.getByText("pluginConfig:")).toBeHidden();
+    // eslint-disable-next-line playwright/no-conditional-in-test
     const modifier = isMac ? "Meta" : "Control";
     await page.keyboard.press(`${modifier}+KeyA`);
     await page.keyboard.press(`${modifier}+KeyV`);

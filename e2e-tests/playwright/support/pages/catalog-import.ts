@@ -3,7 +3,7 @@ import { UIhelper } from "../../utils/ui-helper";
 import {
   BACKSTAGE_SHOWCASE_COMPONENTS,
   CATALOG_IMPORT_COMPONENTS,
-} from "../pageObjects/page-obj";
+} from "../page-objects/page-obj";
 import { APIHelper } from "../../utils/api-helper";
 import { GITHUB_API_ENDPOINTS } from "../../utils/api-endpoints";
 

@@ -530,14 +530,16 @@ export class MSClient {
 
       // Step 5: Create new rule with wildcard IP (*)
       // Find an available priority to avoid conflicts
-      const existingRules = await this.armNetworkClient?.securityRules.list(
+      const existingRules = this.armNetworkClient?.securityRules.list(
         resourceGroupName,
         nsgName,
       );
       const existingPriorities = new Set();
 
-      for await (const rule of existingRules || []) {
-        existingPriorities.add(rule.priority);
+      if (existingRules) {
+        for await (const rule of existingRules) {
+          existingPriorities.add(rule.priority);
+        }
       }
 
       // Find the first available priority starting from 100

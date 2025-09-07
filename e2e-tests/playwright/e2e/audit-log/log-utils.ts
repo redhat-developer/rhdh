@@ -225,7 +225,7 @@ export class LogUtils {
       await LogUtils.executeCommand(command, args);
       console.log("Login successful.");
     } catch (error) {
-      console.error("Error during login");
+      console.error("Error during login: ", error);
       throw new Error(`Failed to login to OpenShift`);
     }
   }

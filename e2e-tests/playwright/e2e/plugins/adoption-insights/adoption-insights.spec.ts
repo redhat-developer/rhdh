@@ -3,6 +3,8 @@ import { Common } from "../../../utils/common";
 import { UIhelper } from "../../../utils/ui-helper";
 import { TestHelper } from "../../../support/pages/adoption-insights";
 
+/* eslint-disable playwright/no-conditional-in-test */
+
 test.describe.serial("Test Adoption Insights", () => {
   test.beforeAll(async () => {
     test.info().annotations.push({
@@ -59,7 +61,7 @@ test.describe.serial("Test Adoption Insights", () => {
       });
       await expect(datePicker).toBeVisible();
       await datePicker.getByRole("button", { name: "Cancel" }).click();
-      await expect(datePicker).not.toBeVisible();
+      await expect(datePicker).toBeHidden();
 
       await Promise.all([
         testHelper.waitForPanelApiCalls(page),
@@ -232,7 +234,7 @@ test.describe.serial("Test Adoption Insights", () => {
           const firstRow = panel
             .locator("table.v5-MuiTable-root tbody tr")
             .first();
-          const finalViews = await firstRow.locator("td").last();
+          const finalViews = firstRow.locator("td").last();
           await firstRow.waitFor({ state: "visible" });
           const finalViewsCount = await finalViews.textContent();
           expect(Number(finalViewsCount)).toBeGreaterThan(

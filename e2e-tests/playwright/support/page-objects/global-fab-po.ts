@@ -13,7 +13,7 @@ export class FabPo extends PageObject {
   public async verifyPopup(expectedUrl: string) {
     const popupPromise = this.page.waitForEvent("popup");
     const popup = await popupPromise;
-    await expect(popup.url()).toContain(expectedUrl);
+    expect(popup.url()).toContain(expectedUrl);
   }
 
   public async clickFabMenuByLabel(label: string) {

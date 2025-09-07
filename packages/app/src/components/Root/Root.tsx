@@ -40,6 +40,7 @@ import DynamicRootContext, {
   ResolvedMenuItem,
 } from '@red-hat-developer-hub/plugin-utils';
 
+import { useLanguagePreference } from '../../hooks/useLanguagePreference';
 import { ApplicationHeaders } from './ApplicationHeaders';
 import { MenuIcon } from './MenuIcon';
 import { SidebarLogo } from './SidebarLogo';
@@ -297,6 +298,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
       permission: policyEntityCreatePermission,
       resourceRef: undefined,
     });
+  useLanguagePreference();
 
   const handleClick = (itemName: string) => {
     setOpenItems(prevOpenItems => ({

@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { UIhelper } from "../../../utils/ui-helper";
 import { Common } from "../../../utils/common";
-import { UI_HELPER_ELEMENTS } from "../../../support/pageObjects/global-obj";
+import { UI_HELPER_ELEMENTS } from "../../../support/page-objects/global-obj";
 
 test.describe("dynamic-plugins-info UI tests", () => {
   test.beforeAll(async () => {
@@ -51,11 +51,11 @@ test.describe("dynamic-plugins-info UI tests", () => {
     await page
       .getByPlaceholder("Filter", { exact: true })
       .pressSequentially("plugin-tech-radar\n", { delay: 300 });
-    const row = await page.locator(
+    const row = page.locator(
       UI_HELPER_ELEMENTS.rowByText("backstage-community-plugin-tech-radar"),
     );
-    expect(await row.locator("td").nth(2).innerText()).toBe("Yes"); // enabled
-    expect(await row.locator("td").nth(3).innerText()).toBe("Yes"); // preinstalled
+    await expect(row.locator("td").nth(2)).toHaveText("Yes"); // enabled
+    await expect(row.locator("td").nth(3)).toHaveText("Yes"); // preinstalled
   });
 
   test("it should have a plugin-3scale-backend plugin which is not Enabled but Preinstalled", async ({
@@ -66,13 +66,13 @@ test.describe("dynamic-plugins-info UI tests", () => {
       .pressSequentially("plugin-3scale-backend-dynamic\n", {
         delay: 100,
       });
-    const row = await page.locator(
+    const row = page.locator(
       UI_HELPER_ELEMENTS.rowByText(
         "backstage-community-plugin-3scale-backend-dynamic",
       ),
     );
-    expect(await row.locator("td").nth(2).innerText()).toBe("No"); // not enabled
-    expect(await row.locator("td").nth(3).innerText()).toBe("Yes"); // preinstalled
+    await expect(row.locator("td").nth(2)).toHaveText("No"); // not enabled
+    await expect(row.locator("td").nth(3)).toHaveText("Yes"); // preinstalled
   });
 
   test("it should have a plugin-todo-list plugin which is Enabled but not Preinstalled", async ({

@@ -4,7 +4,7 @@ import {
   DELETE_ROLE_COMPONENTS,
   SEARCH_OBJECTS_COMPONENTS,
   ROLES_PAGE_COMPONENTS,
-} from "../pageObjects/page-obj";
+} from "./page-obj";
 import { type RoleBasedPolicy } from "@backstage-community/plugin-rbac-common";
 
 type PermissionPolicyType = "anyOf" | "not";
@@ -173,7 +173,7 @@ export class RbacPo extends PageObject {
   }
 
   private async next() {
-    this.uiHelper.clickButton("Next");
+    await this.uiHelper.clickButton("Next");
   }
 
   private async create() {
@@ -216,7 +216,7 @@ export class RbacPo extends PageObject {
   }
 
   async pluginRuleCount(number: string) {
-    expect(
+    await expect(
       this.page
         .locator('span[class*="MuiBadge-badge"]')
         .filter({ hasText: number }),
@@ -234,7 +234,7 @@ export class RbacPo extends PageObject {
     await this.uiHelper.verifyHeading("Create role");
     await this.roleName.fill(name);
     if (owner) {
-      this.roleOwner.fill(owner);
+      await this.roleOwner.fill(owner);
     }
     await this.uiHelper.clickButton("Next");
     await this.usersAndGroupsField.click();
