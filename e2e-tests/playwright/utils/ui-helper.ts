@@ -528,11 +528,21 @@ export class UIhelper {
     cellTexts: string[] | RegExp[],
   ) {
     const row = this.page.locator(UI_HELPER_ELEMENTS.rowByText(uniqueRowText));
-    await row.waitFor();
+    
+    // Wait for the row to be visible with a longer timeout
+    await row.waitFor({ state: "visible", timeout: 30000 });
+    
+    // Check if the row actually exists and is not showing "No records found"
+    const rowCount = await this.page.locator('tr:has(:text-is("No records found"))').count();
+    if (rowCount > 0) {
+      throw new Error(`Table shows "No records found" - bulk import operation may have failed. Expected row with text: ${uniqueRowText}`);
+    }
+    
     for (const cellText of cellTexts) {
+      // Use more flexible text matching and longer timeout
       await expect(
         row.locator("td").filter({ hasText: cellText }).first(),
-      ).toBeVisible();
+      ).toBeVisible({ timeout: 30000 });
     }
   }
 
@@ -566,7 +576,16 @@ export class UIhelper {
     textOrLabel: string | RegExp,
   ) {
     const row = this.page.locator(UI_HELPER_ELEMENTS.rowByText(uniqueRowText));
-    await row.waitFor();
+    
+    // Wait for the row to be visible with a longer timeout
+    await row.waitFor({ state: "visible", timeout: 30000 });
+    
+    // Check if the row actually exists and is not showing "No records found"
+    const rowCount = await this.page.locator('tr:has(:text-is("No records found"))').count();
+    if (rowCount > 0) {
+      throw new Error(`Table shows "No records found" - bulk import operation may have failed. Expected row with text: ${uniqueRowText}`);
+    }
+    
     await row
       .locator(
         `button:has-text("${textOrLabel}"), button[aria-label="${textOrLabel}"]`,
