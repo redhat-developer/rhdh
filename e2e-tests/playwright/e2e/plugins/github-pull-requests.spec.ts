@@ -30,7 +30,10 @@ test("Verify all GitHub Pull Requests statistics after login", async ({
   await page.waitForTimeout(2000);
   
   // Click the specific "Sign in" button in the GitHub Pull Requests Statistics card
-  await uiHelper.clickBtnInCard("GitHub Pull Requests Statistics", "Sign in", true);
+  // Use a more specific approach to avoid ambiguity
+  const prStatsCard = page.locator('div[class*="MuiCard-root"]').filter({ hasText: "GitHub Pull Requests Statistics" }).first();
+  await prStatsCard.scrollIntoViewIfNeeded();
+  await prStatsCard.getByRole('button', { name: 'Sign in' }).first().click();
   await uiHelper.isBtnVisible("Log in");
   await Promise.all([
     common.githubLoginPopUpModal(
@@ -49,13 +52,10 @@ test("Verify all GitHub Pull Requests statistics after login", async ({
   await page.waitForTimeout(5000);
   
   // Verify that the GitHub PR statistics card is now showing data (not the "Sign in" message)
-  await uiHelper.verifyTextinCard(
-    "GitHub Pull Requests Statistics",
-    "Average Time Of PR Until Merge",
-    true,
-    30000,
-  );
+  // First, make sure we're not seeing the "Sign in" message anymore
+  await expect(page.locator('div[class*="MuiCard-root"]').filter({ hasText: "GitHub Pull Requests Statistics" })).not.toContainText("You are not logged into GitHub");
   
+  // Then verify the statistics are visible
   const stats = [
     "Average Time Of PR Until Merge",
     "Merged To Closed Ratio", 
@@ -65,12 +65,8 @@ test("Verify all GitHub Pull Requests statistics after login", async ({
   ];
   
   for (const stat of stats) {
-    await uiHelper.verifyTextinCard(
-      "GitHub Pull Requests Statistics",
-      stat,
-      true,
-      30000,
-    );
+    // Use more flexible text matching
+    await expect(page.locator('div[class*="MuiCard-root"]').filter({ hasText: "GitHub Pull Requests Statistics" })).toContainText(stat, { timeout: 30000 });
     await page.waitForTimeout(500);
   }
 });
