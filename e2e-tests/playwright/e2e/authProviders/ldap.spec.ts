@@ -5,7 +5,6 @@ import RHDHDeployment from "../../utils/authentication-providers/rhdh-deployment
 import { Common, setupBrowser } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
 import { MSClient } from "../../utils/authentication-providers/msgraph-helper";
-
 let page: Page;
 let context: BrowserContext;
 
@@ -42,6 +41,11 @@ test.describe("Configure LDAP Provider", async () => {
   test.use({ baseURL: backstageUrl });
 
   test.beforeAll(async ({ browser }, testInfo) => {
+    test.info().annotations.push({
+      type: "component",
+      description: "authentication",
+    });
+
     test.info().setTimeout(600 * 1000);
     // load default configs from yaml files
     await deployment.loadAllConfigs();

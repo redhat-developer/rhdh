@@ -2,17 +2,28 @@
 import test, { expect } from "@playwright/test";
 import { Common } from "../../utils/common";
 
-test("Check the middleware is working", async ({ page }) => {
-  const common = new Common(page);
+test.describe("Test middleware plugin", () => {
+  test.beforeAll(async () => {
+    test.info().annotations.push({
+      type: "component",
+      description: "plugins",
+    });
+  });
 
-  await common.loginAsGuest();
-  await page.goto("/simple-chat", { waitUntil: "networkidle" });
-  await page.getByRole("checkbox", { name: "Use Proxy" }).check();
-  await page.getByRole("textbox").fill("hi");
+  test("Check the middleware is working", async ({ page }) => {
+    const common = new Common(page);
 
-  const responsePromise = page.waitForResponse("**/api/proxy/add-test-header");
-  await page.getByRole("textbox").press("Enter");
-  const response = await responsePromise;
-  const headers = await response.allHeaders();
-  expect(headers["x-proxy-test-header"]);
+    await common.loginAsGuest();
+    await page.goto("/simple-chat", { waitUntil: "networkidle" });
+    await page.getByRole("checkbox", { name: "Use Proxy" }).check();
+    await page.getByRole("textbox").fill("hi");
+
+    const responsePromise = page.waitForResponse(
+      "**/api/proxy/add-test-header",
+    );
+    await page.getByRole("textbox").press("Enter");
+    const response = await responsePromise;
+    const headers = await response.allHeaders();
+    expect(headers["x-proxy-test-header"]);
+  });
 });

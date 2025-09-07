@@ -6,6 +6,8 @@ source "$DIR"/utils.sh
 source "$DIR"/cluster/eks/eks-helm-deployment.sh
 # shellcheck source=.ibm/pipelines/cluster/eks/aws.sh
 source "$DIR"/cluster/eks/aws.sh
+# shellcheck source=.ibm/pipelines/cluster/k8s/k8s-utils.sh
+source "$DIR"/cluster/k8s/k8s-utils.sh
 
 handle_eks_helm() {
   echo "Starting EKS Helm deployment"

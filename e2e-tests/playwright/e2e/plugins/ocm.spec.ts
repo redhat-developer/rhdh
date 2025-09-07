@@ -40,6 +40,13 @@ const test = base.extend<{
 });
 
 test.describe("Test OCM plugin", () => {
+  test.beforeAll(async () => {
+    test.info().annotations.push({
+      type: "component",
+      description: "plugins",
+    });
+  });
+
   test("Navigate to Clusters and Verify OCM Clusters", async ({
     page,
     uiHelper,
