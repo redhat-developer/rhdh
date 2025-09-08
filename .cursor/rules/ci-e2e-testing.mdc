@@ -48,6 +48,36 @@ e2e-tests/
 └── playwright-report/        # Playwright reports
 ```
 
+#### Test File Requirements
+
+**Component Assignment**: Every test file (`*.spec.ts`) in the `e2e-tests` folder must have a component assigned in the `test.beforeAll` hook using the following syntax:
+
+```typescript
+test.beforeAll(async ({ }, testInfo) => {
+  testInfo.annotations.push({
+    type: "component",
+    description: "your_value",
+  });
+});
+```
+
+**Purpose**: This component annotation is used for test categorization, reporting, and CI/CD pipeline organization. It helps identify which component or feature area each test file is validating.
+
+**Examples of Component Values**:
+- `"authentication"` - for authentication provider tests
+- `"rbac"` - for role-based access control tests
+- `"plugins"` - for plugin functionality tests
+- `"configuration"` - for configuration validation tests
+- `"audit-log"` - for audit logging tests
+- `"core"` - for core functionality tests
+- `"navigation"` - for navigation and routing tests
+- `"api"` - for API endpoint and integration tests
+- `"integration"` - for external service integration tests
+- `"monitoring"` - for monitoring and observability tests
+- `"data-management"` - for data handling and management tests
+
+**Note**: The component description should be descriptive and consistent across related test files to ensure proper test organization and reporting.
+
 #### Key Test Categories
 
 1. **Smoke Tests** (`smoke-test.spec.ts`)
@@ -331,6 +361,21 @@ npx playwright test --project showcase-auth-providers --workers 1
 - **Video Recording**: Available for all tests
 
 ## Key Dependencies and Common Issues
+
+### System Dependencies
+
+#### macOS Requirements
+**Important**: macOS users need to use GNU `grep` and GNU `sed` instead of the built-in BSD versions to avoid compatibility issues with scripts and CI/CD pipelines.
+
+Install using Homebrew:
+```bash
+brew install grep
+brew install gnu-sed
+```
+
+**Important**: Make sure to set the GNU versions as default to ensure they are used instead of the built-in macOS versions.
+
+**Note**: The built-in macOS versions of these tools may cause issues when running scripts or tests that expect GNU-compatible behavior.
 
 ### External Services
 

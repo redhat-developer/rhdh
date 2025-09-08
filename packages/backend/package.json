@@ -64,6 +64,7 @@
     "@backstage/plugin-search-backend": "2.0.2",
     "@backstage/plugin-search-backend-module-catalog": "0.3.4",
     "@backstage/plugin-search-backend-module-pg": "0.5.44",
+    "@backstage/plugin-user-settings-backend": "^0.3.5",
     "@internal/plugin-dynamic-plugins-info-backend": "*",
     "@internal/plugin-licensed-users-info-backend": "*",
     "@internal/plugin-scalprum-backend": "*",

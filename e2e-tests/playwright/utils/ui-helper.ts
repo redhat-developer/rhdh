@@ -1,7 +1,7 @@
 import { expect, Locator, Page } from "@playwright/test";
-import { UI_HELPER_ELEMENTS } from "../support/pageObjects/global-obj";
+import { UI_HELPER_ELEMENTS } from "../support/page-objects/global-obj";
 import { SidebarTabs } from "./navbar";
-import { SEARCH_OBJECTS_COMPONENTS } from "../support/pageObjects/page-obj";
+import { SEARCH_OBJECTS_COMPONENTS } from "../support/page-objects/page-obj";
 
 export class UIhelper {
   private page: Page;
@@ -65,6 +65,7 @@ export class UIhelper {
       .first();
 
     if (options?.force) {
+      // eslint-disable-next-line playwright/no-force-option
       await button.click({ force: true });
     } else {
       await button.click();
@@ -126,6 +127,7 @@ export class UIhelper {
     });
 
     if (options.force) {
+      // eslint-disable-next-line playwright/no-force-option
       await buttonElement.click({ force: true });
     } else {
       await buttonElement.click();
@@ -157,7 +159,8 @@ export class UIhelper {
       }
     } catch (error) {
       console.log(
-        "Mark all read functionality not available or already processed",
+        "Mark all read functionality not available or already processed: ",
+        error,
       );
     }
   }
@@ -183,7 +186,10 @@ export class UIhelper {
       }
       return false;
     } catch (error) {
-      console.log(`Element with title "${title}" not found or not clickable`);
+      console.log(
+        `Element with title "${title}" not found or not clickable: `,
+        error,
+      );
       return false;
     }
   }
@@ -255,7 +261,7 @@ export class UIhelper {
     }
 
     if (notVisibleCheck) {
-      await expect(linkLocator).not.toBeVisible();
+      await expect(linkLocator).toBeHidden();
     } else {
       await expect(linkLocator).toBeVisible();
     }
@@ -411,7 +417,7 @@ export class UIhelper {
 
   async verifyPartialTextInSelector(selector: string, partialText: string) {
     try {
-      const elements = await this.page.locator(selector);
+      const elements = this.page.locator(selector);
       const count = await elements.count();
 
       for (let i = 0; i < count; i++) {
@@ -506,7 +512,7 @@ export class UIhelper {
   }
 
   async waitForLoginBtnDisappear() {
-    await this.page.waitForSelector(await this.getLoginBtnSelector(), {
+    await this.page.waitForSelector(this.getLoginBtnSelector(), {
       state: "detached",
     });
   }
@@ -658,7 +664,7 @@ export class UIhelper {
   }
 
   async checkCssColor(page: Page, selector: string, expectedColor: string) {
-    const elements = await page.locator(selector);
+    const elements = page.locator(selector);
     const count = await elements.count();
     const expectedRgbColor = this.toRgb(expectedColor);
 
@@ -718,38 +724,34 @@ export class UIhelper {
     await this.page.locator(`button[title="Schedule entity refresh"]`).click();
     await this.verifyAlertErrorMessage("Refresh scheduled");
 
-    const moreButton = await this.page
-      .locator("button[aria-label='more']")
-      .first();
+    const moreButton = this.page.locator("button[aria-label='more']").first();
     await moreButton.waitFor({ state: "visible", timeout: 4000 });
     await moreButton.waitFor({ state: "attached", timeout: 4000 });
     await moreButton.click();
 
-    const unregisterItem = await this.page
+    const unregisterItem = this.page
       .locator("li[role='menuitem']")
       .filter({ hasText: "Unregister entity" })
       .first();
     await unregisterItem.waitFor({ state: "visible", timeout: 4000 });
     await unregisterItem.waitFor({ state: "attached", timeout: 4000 });
-    expect(unregisterItem).not.toBeDisabled();
+    await expect(unregisterItem).toBeEnabled();
   }
 
   async clickUnregisterButtonForDisplayedEntity() {
-    const moreButton = await this.page
-      .locator("button[aria-label='more']")
-      .first();
+    const moreButton = this.page.locator("button[aria-label='more']").first();
     await moreButton.waitFor({ state: "visible" });
     await moreButton.waitFor({ state: "attached" });
     await moreButton.click();
 
-    const unregisterItem = await this.page
+    const unregisterItem = this.page
       .locator("li[role='menuitem']")
       .filter({ hasText: "Unregister entity" })
       .first();
     await unregisterItem.waitFor({ state: "visible" });
     await unregisterItem.click();
 
-    const deleteButton = await this.page.getByRole("button", {
+    const deleteButton = this.page.getByRole("button", {
       name: "Delete Entity",
     });
     await deleteButton.waitFor({ state: "visible" });

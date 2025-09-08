@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { Common } from "../../../utils/common";
 import { UIhelper } from "../../../utils/ui-helper";
 import { Catalog } from "../../../support/pages/catalog";
-import { KUBERNETES_COMPONENTS } from "../../../support/pageObjects/page-obj";
+import { KUBERNETES_COMPONENTS } from "../../../support/page-objects/page-obj";
 import { KubernetesPage } from "../../../support/pages/kubernetes";
 
 test.describe("Test Kubernetes Plugin", () => {
@@ -10,6 +10,13 @@ test.describe("Test Kubernetes Plugin", () => {
   let uiHelper: UIhelper;
   let catalog: Catalog;
   let kubernetes: KubernetesPage;
+
+  test.beforeAll(async () => {
+    test.info().annotations.push({
+      type: "component",
+      description: "plugins",
+    });
+  });
 
   test.beforeEach(async ({ page }, testInfo) => {
     if (testInfo.retry > 0) {
