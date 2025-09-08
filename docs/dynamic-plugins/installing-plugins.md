@@ -7,10 +7,9 @@ For more information, see [Installing Dynamic Plugins with the Red Hat Developer
 
 Plugins are defined in the `plugins` array in the `dynamic-plugins.yaml` file. Each plugin is defined as an object with the following properties:
 
-- `package`: The package definition of the plugin. This can be an OCI image, `tgz` archive, npm package, or a directory path. For OCI packages, the tag or digest can be omitted if the `{{inherit}}` tag is set (requires the included configuration to contain a valid tag or digest to inherit from)
+- `package`: The package definition of the plugin. This can be an OCI image, `tgz` archive, npm package, or a directory path. For OCI packages, the tag or digest can be replaced by the `{{inherit}}` tag (requires the included configuration to contain a valid tag or digest to inherit from)
 - `disabled`: A boolean value that determines whether the plugin is enabled or disabled.
 - `integrity`: The integrity hash of the package. This is required for `tgz` archives and npm packages.
-- `inheritVersion`: A boolean value that determines whether the plugin (OCI package only) attempts to inherit it's version from.
 - `pluginConfig`: The configuration for the plugin. For backend plugins this is optional and can be used to pass configuration to the plugin. For frontend plugins this is required, see [Frontend Plugin Wiring](frontend-plugin-wiring.md) for more information on how to configure bindings and routes. This is a fragment of the `app-config.yaml` file. Anything that is added to this object will be merged into a `app-config.dynamic-plugins.yaml` file whose config can be merged with the main `app-config.yaml` config when launching RHDH.
 
 Note: Duplicate plugins found across config files in the `includes` field will throw an error even if they are disabled. Similarly, duplicate plugin in the `dynamic-plugins.yaml` file will also throw the same error.
@@ -87,7 +86,7 @@ plugins:
     package: oci://quay.io/example/image:v0.0.2!backstage-plugin-myplugin
 ```
 
-and a default `dynamic-plugins.yaml` file with the `{{inherit}}` tag using configurations for an older version that is still compatible:
+and a `dynamic-plugins.yaml` file with the `{{inherit}}` tag using configurations for an older version that is still compatible:
 
 ```yaml
 included:
@@ -95,7 +94,6 @@ included:
 plugins:
   - disabled: false
     package: oci://quay.io/example/image:{{inherit}}!backstage-plugin-myplugin
-    inheritVersion: true
     pluginConfig:
       exampleName: "test"
 ```

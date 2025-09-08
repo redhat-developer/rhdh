@@ -48,7 +48,7 @@ import re
 # The `dynamic-plugins.yaml` file must contain:
 #   - a `plugins` list of objects with the following properties:
 #     - `package`: the NPM or OCI package to install (either a package name or a path to a local package)
-#       - For OCI packages, the tag or digest can be omitted if the `{{inherit}}` tag is set (requires the included configuration to contain a valid tag or digest to inherit from)
+#       - For OCI packages, the tag or digest can be replaced by the `{{inherit}}` tag (requires the included configuration to contain a valid tag or digest to inherit from)
 #     - `integrity`: a string containing the integrity hash of the NPM package (optional if package is local, as integrity check is not checked for local packages)
 #     - `pluginConfig`: an optional plugin-specific configuration fragment
 #     - `disabled`: an optional boolean to disable the plugin (`false` by default)
