@@ -21,6 +21,7 @@
   "major": {
     "dependencyDashboardApproval": true
   },
+  "reviewers": ["team:rhdh-security-new"],
   "packageRules": [    
     {
       "matchCategories": [
