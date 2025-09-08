@@ -26,6 +26,7 @@ source "${DIR}/reporting.sh"
 save_overall_result 0 # Initialize overall result to 0 (success).
 
 # Define a cleanup function to be executed upon script exit.
+# shellcheck source=.ibm/pipelines/cleanup.sh
 source "${DIR}/cleanup.sh"
 trap cleanup EXIT INT ERR
 
