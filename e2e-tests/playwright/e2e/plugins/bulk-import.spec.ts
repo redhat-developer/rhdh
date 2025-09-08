@@ -7,22 +7,36 @@ import { CatalogImport } from "../../support/pages/catalog-import";
 import {
   DEFAULT_CATALOG_INFO_YAML,
   UPDATED_CATALOG_INFO_YAML,
-} from "../../support/testData/bulk-import";
+} from "../../support/test-data/bulk-import";
 
 // Pre-req : plugin-bulk-import & plugin-bulk-import-backend-dynamic
 test.describe.serial("Bulk Import plugin", () => {
   test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
+
   let page: Page;
   let uiHelper: UIhelper;
   let common: Common;
+
   let bulkimport: BulkImport;
 
+  const catalogRepoName = `janus-test-1-bulk-import-test-${Date.now()}`;
   const catalogRepoDetails = {
-    name: "janus-test-1-bulk-import-test",
-    url: "github.com/janus-test/janus-test-1-bulk-import-test",
+    name: catalogRepoName,
+    url: `github.com/janus-test/${catalogRepoName}`,
     org: "github.com/janus-test",
     owner: "janus-test",
   };
+
+  const catalogInfoYamlContent = `apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${catalogRepoName}
+  annotations:
+    github.com/project-slug: janus-test/${catalogRepoName}
+spec:
+  type: other
+  lifecycle: unknown
+  owner: user:default/rhdh-qe-2`;
   const newRepoName = `bulk-import-${Date.now()}`;
   const newRepoDetails = {
     owner: "janus-test",
@@ -31,12 +45,26 @@ test.describe.serial("Bulk Import plugin", () => {
     labels: `bulkimport1: test1;bulkimport2: test2`,
     repoUrl: `github.com/janus-test/${newRepoName}`,
   };
+
   test.beforeAll(async ({ browser }, testInfo) => {
+    test.info().annotations.push({
+      type: "component",
+      description: "plugins",
+    });
+
     page = (await setupBrowser(browser, testInfo)).page;
 
     uiHelper = new UIhelper(page);
     common = new Common(page);
     bulkimport = new BulkImport(page);
+
+    // Create the repository with catalog-info.yaml file dynamically
+    await APIHelper.createGitHubRepoWithFile(
+      catalogRepoDetails.owner,
+      catalogRepoDetails.name,
+      "catalog-info.yaml",
+      catalogInfoYamlContent,
+    );
 
     await bulkimport.newGitHubRepo(
       newRepoDetails.owner,
@@ -53,6 +81,7 @@ test.describe.serial("Bulk Import plugin", () => {
     await uiHelper.openSidebar("Bulk import");
     await uiHelper.clickButton("Add");
     await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
+
     await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
       "Not Generated",
     ]);
@@ -133,7 +162,7 @@ test.describe.serial("Bulk Import plugin", () => {
       newRepoDetails.updatedComponentName,
     );
     await bulkimport.fillTextInputByNameAtt("prLabels", newRepoDetails.labels);
-    await expect(await uiHelper.clickButton("Save")).not.toBeVisible();
+    await expect(await uiHelper.clickButton("Save")).toBeHidden();
 
     const prCatalogInfoYaml = await APIHelper.getfileContentFromPR(
       newRepoDetails.owner,
@@ -225,10 +254,25 @@ test.describe.serial("Bulk Import plugin", () => {
   });
 
   test.afterAll(async () => {
-    await APIHelper.deleteGitHubRepo(
-      newRepoDetails.owner,
-      newRepoDetails.repoName,
-    );
+    try {
+      // Delete the dynamically created GitHub repository with catalog-info.yaml
+      await APIHelper.deleteGitHubRepo(
+        catalogRepoDetails.owner,
+        catalogRepoDetails.name,
+      );
+
+      // Delete the GitHub repository
+      await APIHelper.deleteGitHubRepo(
+        newRepoDetails.owner,
+        newRepoDetails.repoName,
+      );
+
+      console.log(
+        `[Cleanup] Deleted GitHub repositories: ${catalogRepoDetails.name}, ${newRepoDetails.repoName}`,
+      );
+    } catch (error) {
+      console.error(`[Cleanup] Final cleanup failed: ${error.message}`);
+    }
   });
 });
 

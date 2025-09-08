@@ -20,8 +20,8 @@ echo "hosted-mgmt Namespace: $namespace"
 if [[ -z "$namespace" ]]; then
     echo "Cluster claim not found. Please provide a valid prow url that uses cluster claim."
     exit 1
-elif [[ ! "$namespace" =~ ^rhdh-4-17-us-east-2 ]]; then
-    echo "Namespace must start with 'rhdh-4-17-us-east-2'."
+elif [[ ! "$namespace" =~ ^rhdh-[0-9]+-[0-9]+-us-east-2 ]]; then
+    echo "Namespace must match pattern 'rhdh-[version]-us-east-2'."
     exit 1
 fi
 

@@ -1,9 +1,16 @@
 import { test } from "@playwright/test";
 import { Common } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
-import { UI_HELPER_ELEMENTS } from "../../support/pageObjects/global-obj";
+import { UI_HELPER_ELEMENTS } from "../../support/page-objects/global-obj";
 
 test.describe("Test user settings info card", () => {
+  test.beforeAll(async () => {
+    test.info().annotations.push({
+      type: "component",
+      description: "plugins",
+    });
+  });
+
   let uiHelper: UIhelper;
 
   test.beforeEach(async ({ page }) => {
@@ -15,7 +22,7 @@ test.describe("Test user settings info card", () => {
 
   test("Check if customized build info is rendered", async ({ page }) => {
     await uiHelper.openSidebar("Home");
-    page.getByText("Guest").click();
+    await page.getByText("Guest").click();
     await page.getByRole("menuitem", { name: "Settings" }).click();
     await uiHelper.verifyTextInSelector(
       UI_HELPER_ELEMENTS.MuiCardHeader,

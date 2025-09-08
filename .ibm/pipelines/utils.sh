@@ -34,162 +34,8 @@ save_all_pod_logs(){
   done
 
   mkdir -p "${ARTIFACT_DIR}/${namespace}/pod_logs"
-  cp -a pod_logs/* "${ARTIFACT_DIR}/${namespace}/pod_logs"
+  cp -a pod_logs/* "${ARTIFACT_DIR}/${namespace}/pod_logs" || true
   set -e
-}
-
-droute_send() {
-  if [[ "${OPENSHIFT_CI}" != "true" ]]; then return 0; fi
-  if [[ "${JOB_NAME}" == *rehearse* ]]; then return 0; fi
-  local original_context
-  original_context=$(oc config current-context) # Save original context
-  echo "Saving original context: $original_context"
-  ( # Open subshell
-    set +e
-    local droute_version="1.2.2"
-    local release_name=$1
-    local project=$2
-    local droute_project="droute"
-    local metadata_output="data_router_metadata_output.json"
-
-    oc config set-credentials temp-user --token="${RHDH_PR_OS_CLUSTER_TOKEN}"
-    oc config set-cluster temp-cluster --server="${RHDH_PR_OS_CLUSTER_URL}"
-    oc config set-context temp-context --user=temp-user --cluster=temp-cluster
-    oc config use-context temp-context
-    oc whoami --show-server
-    trap 'oc config use-context "$original_context"' RETURN
-
-    # Ensure that we are only grabbing the last matched pod
-    local droute_pod_name=$(oc get pods -n droute --no-headers -o custom-columns=":metadata.name" | grep ubi9-cert-rsync | awk '{print $1}' | tail -n 1)
-    local temp_droute=$(oc exec -n "${droute_project}" "${droute_pod_name}" -- /bin/bash -c "mktemp -d")
-
-    ARTIFACTS_URL=$(get_artifacts_url)
-    JOB_URL=$(get_job_url)
-
-    # Remove properties (only used for skipped test and invalidates the file if empty)
-    sed_inplace '/<properties>/,/<\/properties>/d' "${ARTIFACT_DIR}/${project}/${JUNIT_RESULTS}"
-    # Replace attachments with link to OpenShift CI storage
-    sed_inplace "s#\[\[ATTACHMENT|\(.*\)\]\]#${ARTIFACTS_URL}/\1#g" "${ARTIFACT_DIR}/${project}/${JUNIT_RESULTS}"
-
-    jq \
-      --arg hostname "$REPORTPORTAL_HOSTNAME" \
-      --arg project "$DATA_ROUTER_PROJECT" \
-      --arg name "$JOB_NAME" \
-      --arg description "[View job run details](${JOB_URL})" \
-      --arg key1 "job_type" \
-      --arg value1 "$JOB_TYPE" \
-      --arg key2 "pr" \
-      --arg value2 "$GIT_PR_NUMBER" \
-      --arg key3 "job_name" \
-      --arg value3 "$JOB_NAME" \
-      --arg key4 "tag_name" \
-      --arg value4 "$TAG_NAME" \
-      --arg auto_finalization_treshold $DATA_ROUTER_AUTO_FINALIZATION_TRESHOLD \
-      '.targets.reportportal.config.hostname = $hostname |
-      .targets.reportportal.config.project = $project |
-      .targets.reportportal.processing.launch.name = $name |
-      .targets.reportportal.processing.launch.description = $description |
-      .targets.reportportal.processing.launch.attributes += [
-          {"key": $key1, "value": $value1},
-          {"key": $key2, "value": $value2},
-          {"key": $key3, "value": $value3},
-          {"key": $key4, "value": $value4}
-        ] |
-      .targets.reportportal.processing.tfa.auto_finalization_threshold = ($auto_finalization_treshold | tonumber)
-      ' data_router/data_router_metadata_template.json > "${ARTIFACT_DIR}/${project}/${metadata_output}"
-
-    # Send test by rsync to bastion pod.
-    local max_attempts=5
-    local wait_seconds_step=1
-    for ((i = 1; i <= max_attempts; i++)); do
-      echo "Attempt ${i} of ${max_attempts} to rsync test resuls to bastion pod."
-      if output=$(oc rsync --progress=true --include="${metadata_output}" --include="${JUNIT_RESULTS}" --exclude="*" -n "${droute_project}" "${ARTIFACT_DIR}/${project}/" "${droute_project}/${droute_pod_name}:${temp_droute}/" 2>&1); then
-        echo "$output"
-        save_status_data_router_failed "$CURRENT_DEPLOYMENT" false
-        break
-      elif ((i == max_attempts)); then
-        echo "Failed to rsync test results after ${max_attempts} attempts."
-        echo "Last rsync error details:"
-        echo "${output}"
-        echo "Troubleshooting steps:"
-        echo "1. Restart $droute_pod_name in $droute_project project/namespace"
-        save_status_data_router_failed "$CURRENT_DEPLOYMENT" true
-        return
-      else
-        sleep $((wait_seconds_step * i))
-      fi
-    done
-
-    # "Install" Data Router
-    oc exec -n "${droute_project}" "${droute_pod_name}" -- /bin/bash -c "
-      curl -fsSLk -o ${temp_droute}/droute-linux-amd64 'https://${DATA_ROUTER_NEXUS_HOSTNAME}/nexus/repository/dno-raw/droute-client/${droute_version}/droute-linux-amd64' \
-      && chmod +x ${temp_droute}/droute-linux-amd64 \
-      && ${temp_droute}/droute-linux-amd64 version"
-
-    # Send test results through DataRouter and save the request ID.
-    local max_attempts=10
-    local wait_seconds_step=1
-    for ((i = 1; i <= max_attempts; i++)); do
-      echo "Attempt ${i} of ${max_attempts} to send test results through Data Router."
-      if output=$(oc exec -n "${droute_project}" "${droute_pod_name}" -- /bin/bash -c "
-        ${temp_droute}/droute-linux-amd64 send --metadata ${temp_droute}/${metadata_output} \
-          --url '${DATA_ROUTER_URL}' \
-          --username '${DATA_ROUTER_USERNAME}' \
-          --password '${DATA_ROUTER_PASSWORD}' \
-          --results '${temp_droute}/${JUNIT_RESULTS}' \
-          --verbose" 2>&1) && \
-        DATA_ROUTER_REQUEST_ID=$(echo "$output" | grep "request:" | awk '{print $2}') &&
-        [ -n "$DATA_ROUTER_REQUEST_ID" ]; then
-        echo "Test results successfully sent through Data Router."
-        echo "Request ID: $DATA_ROUTER_REQUEST_ID"
-        break
-      elif ((i == max_attempts)); then
-        echo "Failed to send test results after ${max_attempts} attempts."
-        echo "Last Data Router error details:"
-        echo "${output}"
-        echo "Troubleshooting steps:"
-        echo "1. Restart $droute_pod_name in $droute_project project/namespace"
-        echo "2. Check the Data Router documentation: https://spaces.redhat.com/pages/viewpage.action?pageId=115488042"
-        echo "3. Ask for help at Slack: #forum-dno-datarouter"
-        save_status_data_router_failed "$CURRENT_DEPLOYMENT" true
-        return
-      else
-        sleep $((wait_seconds_step * i))
-      fi
-    done
-
-    # shellcheck disable=SC2317
-    if [[ "$JOB_NAME" == *periodic-* ]]; then
-      local max_attempts=30
-      local wait_seconds=2
-      for ((i = 1; i <= max_attempts; i++)); do
-        # Get DataRouter request information.
-        DATA_ROUTER_REQUEST_OUTPUT=$(oc exec -n "${droute_project}" "${droute_pod_name}" -- /bin/bash -c "
-          ${temp_droute}/droute-linux-amd64 request get \
-          --url ${DATA_ROUTER_URL} \
-          --username ${DATA_ROUTER_USERNAME} \
-          --password ${DATA_ROUTER_PASSWORD} \
-          ${DATA_ROUTER_REQUEST_ID}")
-        # Try to extract the ReportPortal launch URL from the request. This fails if it doesn't contain the launch URL.
-        REPORTPORTAL_LAUNCH_URL=$(echo "$DATA_ROUTER_REQUEST_OUTPUT" | yq e '.targets[0].events[] | select(.component == "reportportal-connector") | .message | fromjson | .[0].launch_url' -)
-        if [[ -n "$REPORTPORTAL_LAUNCH_URL" ]]; then
-          save_status_url_reportportal $CURRENT_DEPLOYMENT $REPORTPORTAL_LAUNCH_URL
-          reportportal_slack_alert $release_name $REPORTPORTAL_LAUNCH_URL
-          return 0
-        else
-          echo "Attempt ${i} of ${max_attempts}: ReportPortal launch URL not ready yet."
-          sleep "${wait_seconds}"
-        fi
-      done
-    fi
-    oc exec -n "${droute_project}" "${droute_pod_name}" -- /bin/bash -c "rm -rf ${temp_droute}/*"
-    set -e
-  ) # Close subshell
-  oc config use-context "$original_context" # Restore original context
-  if ! kubectl auth can-i get pods >/dev/null 2>&1; then
-    echo "Failed to restore the context and authenticate with the cluster. Logging in again."
-    oc_login
-  fi
 }
 
 # Merge the base YAML value file with the differences file for Kubernetes
@@ -289,6 +135,21 @@ wait_for_svc(){
     done
     echo \"Service ${svc_name} is created.\"
     " || echo "Error: Timed out waiting for $svc_name service creation."
+}
+
+wait_for_endpoint(){
+  local endpoint_name=$1
+  local namespace=$2
+  local timeout=${3:-500}
+
+  timeout "${timeout}" bash -c "
+    echo ${endpoint_name}
+    while ! kubectl get endpoints $endpoint_name -n $namespace &> /dev/null; do
+      echo \"Waiting for ${endpoint_name} endpoint to be created...\"
+      sleep 5
+    done
+    echo \"Endpoint ${endpoint_name} is created.\"
+    " || echo "Error: Timed out waiting for $endpoint_name endpoint creation."
 }
 
 # Creates an OpenShift Operator subscription
@@ -521,7 +382,7 @@ apply_yaml_files() {
 
     # Create Deployment and Pipeline for Topology test.
     oc apply -f "$dir/resources/topology_test/topology-test.yaml"
-    if [[ -z "${IS_OPENSHIFT}" || "$(to_lowercase "${IS_OPENSHIFT}")" == "false" ]]; then
+    if [[ -z "${IS_OPENSHIFT}" || "${IS_OPENSHIFT}" == "false" ]]; then
       kubectl apply -f "$dir/resources/topology_test/topology-test-ingress.yaml"
     else
       oc apply -f "$dir/resources/topology_test/topology-test-route.yaml"
@@ -632,18 +493,16 @@ run_tests() {
 
   mkdir -p "${ARTIFACT_DIR}/${project}/test-results"
   mkdir -p "${ARTIFACT_DIR}/${project}/attachments/screenshots"
-  cp -a "${e2e_tests_dir}/test-results/"* "${ARTIFACT_DIR}/${project}/test-results"
-  cp -a "${e2e_tests_dir}/${JUNIT_RESULTS}" "${ARTIFACT_DIR}/${project}/${JUNIT_RESULTS}"
+  cp -a "${e2e_tests_dir}/test-results/"* "${ARTIFACT_DIR}/${project}/test-results" || true
+  cp -a "${e2e_tests_dir}/${JUNIT_RESULTS}" "${ARTIFACT_DIR}/${project}/${JUNIT_RESULTS}" || true
 
-  if [ -d "${e2e_tests_dir}/screenshots" ]; then
-    cp -a "${e2e_tests_dir}/screenshots/"* "${ARTIFACT_DIR}/${project}/attachments/screenshots/"
-  fi
+  cp -a "${e2e_tests_dir}/screenshots/"* "${ARTIFACT_DIR}/${project}/attachments/screenshots/" || true
 
   ansi2html <"/tmp/${LOGFILE}" >"/tmp/${LOGFILE}.html"
-  cp -a "/tmp/${LOGFILE}.html" "${ARTIFACT_DIR}/${project}"
-  cp -a "${e2e_tests_dir}/playwright-report/"* "${ARTIFACT_DIR}/${project}"
+  cp -a "/tmp/${LOGFILE}.html" "${ARTIFACT_DIR}/${project}" || true
+  cp -a "${e2e_tests_dir}/playwright-report/"* "${ARTIFACT_DIR}/${project}" || true
 
-  droute_send "${release_name}" "${project}"
+  save_data_router_junit_results "${project}"
 
   echo "${project} RESULT: ${RESULT}"
   if [ "${RESULT}" -ne 0 ]; then
@@ -698,7 +557,7 @@ check_backstage_running() {
   echo "❌ Failed to reach Backstage at ${url} after ${max_attempts} attempts."
   oc get events -n "${namespace}" --sort-by='.lastTimestamp' | tail -10
   mkdir -p "${ARTIFACT_DIR}/${namespace}"
-  cp -a "/tmp/${LOGFILE}" "${ARTIFACT_DIR}/${namespace}/"
+  cp -a "/tmp/${LOGFILE}" "${ARTIFACT_DIR}/${namespace}/" || true
   save_all_pod_logs "${namespace}"
   return 1
 }
@@ -726,7 +585,7 @@ install_acm_ocp_operator(){
   oc apply -f "${DIR}/cluster/operators/acm/operator-group.yaml"
   install_subscription advanced-cluster-management open-cluster-management release-2.12 advanced-cluster-management redhat-operators openshift-marketplace
   wait_for_deployment "open-cluster-management" "multiclusterhub-operator"
-  wait_for_svc multiclusterhub-operator-webhook open-cluster-management
+  wait_for_endpoint "multiclusterhub-operator-webhook" "open-cluster-management"
   oc apply -f "${DIR}/cluster/operators/acm/multiclusterhub.yaml"
   # wait until multiclusterhub is Running.
   timeout 900 bash -c 'while true; do
@@ -743,7 +602,7 @@ install_acm_ocp_operator(){
 install_ocm_k8s_operator(){
   install_subscription my-cluster-manager operators stable cluster-manager operatorhubio-catalog olm
   wait_for_deployment "operators" "cluster-manager"
-  wait_for_svc multiclusterhub-operator-work-webhook open-cluster-management
+  wait_for_endpoint "multiclusterhub-operator-work-webhook" "open-cluster-management"
   oc apply -f "${DIR}/cluster/operators/acm/multiclusterhub.yaml"
   # wait until multiclusterhub is Running.
   timeout 600 bash -c 'while true; do
@@ -765,13 +624,7 @@ install_pipelines_operator() {
     # Install the operator and wait for deployment
     install_subscription openshift-pipelines-operator openshift-operators latest openshift-pipelines-operator-rh redhat-operators openshift-marketplace
     wait_for_deployment "openshift-operators" "pipelines"
-    timeout 300 bash -c '
-    while ! oc get svc tekton-pipelines-webhook -n openshift-pipelines &> /dev/null; do
-        echo "Waiting for tekton-pipelines-webhook service to be created..."
-        sleep 5
-    done
-    echo "Service tekton-pipelines-webhook is created."
-    ' || echo "Error: Timed out waiting for tekton-pipelines-webhook service creation."
+    wait_for_endpoint "tekton-pipelines-webhook" "openshift-pipelines"
   fi
 }
 
@@ -784,13 +637,7 @@ install_tekton_pipelines() {
     echo "Tekton Pipelines is not installed. Installing..."
     kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
     wait_for_deployment "tekton-pipelines" "${DISPLAY_NAME}"
-    timeout 300 bash -c '
-    while ! kubectl get endpoints tekton-pipelines-webhook -n tekton-pipelines &> /dev/null; do
-        echo "Waiting for tekton-pipelines-webhook endpoints to be ready..."
-        sleep 5
-    done
-    echo "Endpoints for tekton-pipelines-webhook are ready."
-    ' || echo "Error: Timed out waiting for tekton-pipelines-webhook endpoints."
+    wait_for_endpoint "tekton-pipelines-webhook" "tekton-pipelines"
   fi
 }
 
@@ -999,14 +846,18 @@ initiate_runtime_deployment() {
 }
 
 initiate_sanity_plugin_checks_deployment() {
-  configure_namespace "${NAME_SPACE_SANITY_PLUGINS_CHECK}"
-  uninstall_helmchart "${NAME_SPACE_SANITY_PLUGINS_CHECK}" "${RELEASE_NAME}"
-  deploy_redis_cache "${NAME_SPACE_SANITY_PLUGINS_CHECK}"
-  apply_yaml_files "${DIR}" "${NAME_SPACE_SANITY_PLUGINS_CHECK}" "${sanity_plugins_url}"
+  local release_name=$1
+  local name_space_sanity_plugins_check=$2
+  local sanity_plugins_url=$3
+
+  configure_namespace "${name_space_sanity_plugins_check}"
+  uninstall_helmchart "${name_space_sanity_plugins_check}" "${release_name}"
+  deploy_redis_cache "${name_space_sanity_plugins_check}"
+  apply_yaml_files "${DIR}" "${name_space_sanity_plugins_check}" "${sanity_plugins_url}"
   yq_merge_value_files "overwrite" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_SANITY_PLUGINS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}"
-  mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE_SANITY_PLUGINS_CHECK}"
-  cp -a "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" "${ARTIFACT_DIR}/${NAME_SPACE_SANITY_PLUGINS_CHECK}/" # Save the final value-file into the artifacts directory.
-  helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE_SANITY_PLUGINS_CHECK}" \
+  mkdir -p "${ARTIFACT_DIR}/${name_space_sanity_plugins_check}"
+  cp -a "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" "${ARTIFACT_DIR}/${name_space_sanity_plugins_check}/" || true # Save the final value-file into the artifacts directory.
+  helm upgrade -i "${release_name}" -n "${name_space_sanity_plugins_check}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
@@ -1096,6 +947,21 @@ force_delete_namespace() {
   local project=$1
   echo "Forcefully deleting namespace ${project}."
   oc get namespace "$project" -o json | jq '.spec = {"finalizers":[]}' | oc replace --raw "/api/v1/namespaces/$project/finalize" -f -
+
+  local elapsed=0
+  local sleep_interval=2
+  local timeout_seconds=${2:-120}
+
+  while oc get namespace "$project" &>/dev/null; do
+    if [[ $elapsed -ge $timeout_seconds ]]; then
+      echo "Timeout: Namespace '${project}' was not deleted within $timeout_seconds seconds." >&2
+      return 1
+    fi
+    sleep $sleep_interval
+    elapsed=$((elapsed + sleep_interval))
+  done
+
+  echo "Namespace '${project}' successfully deleted."
 }
 
 oc_login() {
@@ -1107,12 +973,72 @@ is_openshift() {
   oc get routes.route.openshift.io &> /dev/null || kubectl get routes.route.openshift.io &> /dev/null
 }
 
-detect_ocp_and_set_env_var() {
+detect_ocp() {
   echo "Detecting OCP or K8s and populating IS_OPENSHIFT variable..."
   if [[ "${IS_OPENSHIFT}" == "" ]]; then
     IS_OPENSHIFT=$(is_openshift && echo 'true' || echo 'false')
   fi
+  
   echo IS_OPENSHIFT: "${IS_OPENSHIFT}"
+  save_is_openshift "${IS_OPENSHIFT}"
+}
+
+detect_container_platform() {
+  echo "Detecting container platform and populating CONTAINER_PLATFORM variable..."
+
+  # Determine platform type based on IS_OPENSHIFT variable
+  if [[ "${IS_OPENSHIFT}" == "true" ]]; then
+    case "$JOB_NAME" in
+      *osd-gcp*)
+        CONTAINER_PLATFORM="osd-gcp"
+        ;;
+      *)
+        CONTAINER_PLATFORM="ocp"
+        ;;
+    esac
+    # Get OCP version
+    if command -v oc &> /dev/null; then
+      CONTAINER_PLATFORM_VERSION=$(oc version 2>/dev/null | grep "Server Version:" | cut -d' ' -f3 | cut -d'.' -f1,2 || echo "unknown")
+    else
+      CONTAINER_PLATFORM_VERSION="unknown"
+    fi
+  else
+    # Determine Kubernetes distribution based on JOB_NAME pattern
+    case "$JOB_NAME" in
+      *aks*)
+        CONTAINER_PLATFORM="aks"
+        ;;
+      *eks*)
+        CONTAINER_PLATFORM="eks"
+        ;;
+      *gke*)
+        CONTAINER_PLATFORM="gke"
+        ;;
+      *iks*)
+        CONTAINER_PLATFORM="iks"
+        ;;
+      *)
+        CONTAINER_PLATFORM="unknown"
+        ;;
+    esac
+
+    # Get Kubernetes version
+    if command -v kubectl &> /dev/null; then
+      CONTAINER_PLATFORM_VERSION=$(kubectl version 2>/dev/null | grep "Server Version:" | cut -d' ' -f3 | sed 's/^v//' | cut -d'.' -f1,2 || echo "unknown")
+    else
+      CONTAINER_PLATFORM_VERSION="unknown"
+    fi
+  fi
+
+  echo "CONTAINER_PLATFORM: ${CONTAINER_PLATFORM}"
+  echo "CONTAINER_PLATFORM_VERSION: ${CONTAINER_PLATFORM_VERSION}"
+
+  # Export variables for use in other scripts
+  export CONTAINER_PLATFORM
+  export CONTAINER_PLATFORM_VERSION
+
+  # Save platform information for reporting
+  save_container_platform "${CONTAINER_PLATFORM}" "${CONTAINER_PLATFORM_VERSION}"
 }
 
 # Helper function for cross-platform sed
@@ -1123,17 +1049,6 @@ sed_inplace() {
   else
     # Linux
     sed -i "$@"
-  fi
-}
-
-# Helper function for case conversion
-to_lowercase() {
-  if [[ "$OSTYPE" == "darwin"* ]]; then
-    # macOS - using tr
-    echo "$1" | tr '[:upper:]' '[:lower:]'
-  else
-    # Linux - using bash parameter expansion
-    echo "${1,,}"
   fi
 }
 

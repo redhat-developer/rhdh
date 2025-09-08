@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# Variables for reporting
+export CURRENT_DEPLOYMENT=0 # Counter for current deployment.
+export STATUS_DEPLOYMENT_NAMESPACE # Array that holds the namespaces of deployments.
+export STATUS_FAILED_TO_DEPLOY # Array that indicates if deployment failed. false = success, true = failure
+export STATUS_TEST_FAILED # Array that indicates if test run failed. false = success, true = failure
+export OVERALL_RESULT # Overall result of the test run. 0 = success, 1 = failure
+
 mkdir -p "$ARTIFACT_DIR/reporting"
 
 save_status_deployment_namespace() {
@@ -38,24 +45,6 @@ save_status_number_of_test_failed() {
   cp "$SHARED_DIR/STATUS_NUMBER_OF_TEST_FAILED.txt" "$ARTIFACT_DIR/reporting/STATUS_NUMBER_OF_TEST_FAILED.txt"
 }
 
-save_status_data_router_failed() {
-  local current_deployment=$1
-  local status=$2
-  echo "Saving STATUS_DATA_ROUTER_FAILED[\"${current_deployment}\"]=${status}"
-  STATUS_DATA_ROUTER_FAILED["${current_deployment}"]="${status}"
-  printf "%s\n" "${STATUS_DATA_ROUTER_FAILED["${current_deployment}"]}" >> "$SHARED_DIR/STATUS_DATA_ROUTER_FAILED.txt"
-  cp "$SHARED_DIR/STATUS_DATA_ROUTER_FAILED.txt" "$ARTIFACT_DIR/reporting/STATUS_DATA_ROUTER_FAILED.txt"
-}
-
-save_status_url_reportportal() {
-  local current_deployment=$1
-  local url=$2
-  echo "Saving STATUS_URL_REPORTPORTAL[\"${current_deployment}\"]"
-  STATUS_URL_REPORTPORTAL["${current_deployment}"]="${url}"
-  printf "%s\n" "${STATUS_URL_REPORTPORTAL["${current_deployment}"]}" >> "$SHARED_DIR/STATUS_URL_REPORTPORTAL.txt"
-  cp "$SHARED_DIR/STATUS_URL_REPORTPORTAL.txt" "$ARTIFACT_DIR/reporting/STATUS_URL_REPORTPORTAL.txt"
-}
-
 save_overall_result() {
   local result=$1
   OVERALL_RESULT=${result}
@@ -64,14 +53,48 @@ save_overall_result() {
   cp "$SHARED_DIR/OVERALL_RESULT.txt" "$ARTIFACT_DIR/reporting/OVERALL_RESULT.txt"
 }
 
-# Align this function with the one in https://github.com/openshift/release/blob/master/ci-operator/step-registry/redhat-developer/rhdh/send/alert/redhat-developer-rhdh-send-alert-commands.sh
+save_is_openshift() {
+  local is_openshift=$1
+  echo "Saving IS_OPENSHIFT=${is_openshift}"
+  printf "%s" "${is_openshift}" > "$SHARED_DIR/IS_OPENSHIFT.txt"
+  cp "$SHARED_DIR/IS_OPENSHIFT.txt" "$ARTIFACT_DIR/reporting/IS_OPENSHIFT.txt"
+}
+
+save_container_platform() {
+  local container_platform=$1
+  local container_platform_version=$2
+  echo "Saving CONTAINER_PLATFORM=${container_platform}"
+  echo "Saving CONTAINER_PLATFORM_VERSION=${container_platform_version}"
+  printf "%s" "${container_platform}" > "$SHARED_DIR/CONTAINER_PLATFORM.txt"
+  printf "%s" "${container_platform_version}" > "$SHARED_DIR/CONTAINER_PLATFORM_VERSION.txt"
+  cp "$SHARED_DIR/CONTAINER_PLATFORM.txt" "$ARTIFACT_DIR/reporting/CONTAINER_PLATFORM.txt"
+  cp "$SHARED_DIR/CONTAINER_PLATFORM_VERSION.txt" "$ARTIFACT_DIR/reporting/CONTAINER_PLATFORM_VERSION.txt"
+}
+
 get_artifacts_url() {
-  local project="${1:-""}"
+  local namespace=$1
+
+  if [ -z "${namespace}" ]; then
+    echo "ERROR: namespace parameter is required but was empty" >&2
+    return 1
+  fi
 
   local artifacts_base_url="https://gcsweb-ci.apps.ci.l2s4.p1.openshiftapps.com/gcs/test-platform-results"
   local artifacts_complete_url
   if [ -n "${PULL_NUMBER:-}" ]; then
-    artifacts_complete_url="${artifacts_base_url}/pr-logs/pull/${REPO_OWNER}_${REPO_NAME}/${PULL_NUMBER}/${JOB_NAME}/${BUILD_ID}/artifacts/e2e-tests/${REPO_OWNER}-${REPO_NAME}/artifacts/${project}"
+    local part_1="${JOB_NAME##pull-ci-redhat-developer-rhdh-main-}" # e.g. "e2e-tests-operator-nightly"
+    local suite_name="${JOB_NAME##pull-ci-redhat-developer-rhdh-main-e2e-tests-}" # e.g. "operator-nightly"
+    local part_2="redhat-developer-rhdh-${suite_name}" # e.g. "redhat-developer-rhdh-operator-nightly"
+    # Override part_2 based for specific cases that do not follow the standard naming convention.
+    case "$JOB_NAME" in
+      *osd-gcp*)
+      part_2="redhat-developer-rhdh-osd-gcp-nightly"
+      ;;
+      *ocp-v*)
+      part_2="redhat-developer-rhdh-nightly"
+      ;;
+    esac
+    artifacts_complete_url="${artifacts_base_url}/pr-logs/pull/${REPO_OWNER}_${REPO_NAME}/${PULL_NUMBER}/${JOB_NAME}/${BUILD_ID}/artifacts/${part_1}/${part_2}/artifacts/${namespace}"
   else
     local part_1="${JOB_NAME##periodic-ci-redhat-developer-rhdh-"${RELEASE_BRANCH_NAME}"-}" # e.g. "e2e-tests-aks-helm-nightly"
     local suite_name="${JOB_NAME##periodic-ci-redhat-developer-rhdh-"${RELEASE_BRANCH_NAME}"-e2e-tests-}" # e.g. "aks-helm-nightly"
@@ -85,7 +108,7 @@ get_artifacts_url() {
       part_2="redhat-developer-rhdh-nightly"
       ;;
     esac
-    artifacts_complete_url="${artifacts_base_url}/logs/${JOB_NAME}/${BUILD_ID}/artifacts/${part_1}/${part_2}/artifacts/${project}"
+    artifacts_complete_url="${artifacts_base_url}/logs/${JOB_NAME}/${BUILD_ID}/artifacts/${part_1}/${part_2}/artifacts/${namespace}"
   fi
   echo "${artifacts_complete_url}"
 }
@@ -101,38 +124,30 @@ get_job_url() {
   echo "${job_complete_url}"
 }
 
-reportportal_slack_alert() {
-  local release_name=$1
-  local reportportal_launch_url=$2
+save_data_router_junit_results() {
+  if [[ "${OPENSHIFT_CI}" != "true" ]]; then return 0; fi
 
-  if [[ "$release_name" == *rbac* ]]; then
-    RUN_TYPE="rbac-nightly"
-  else
-    RUN_TYPE="nightly"
-  fi
-  if [[ ${RESULT} -eq 0 ]]; then
-    RUN_STATUS_EMOJI=":done-circle-check:"
-    RUN_STATUS="passed"
-  else
-    RUN_STATUS_EMOJI=":failed:"
-    RUN_STATUS="failed"
-  fi
-  jq -n \
-    --arg run_status "$RUN_STATUS" \
-    --arg run_type "$RUN_TYPE" \
-    --arg reportportal_launch_url "$reportportal_launch_url" \
-    --arg job_name "$JOB_NAME" \
-    --arg run_status_emoji "$RUN_STATUS_EMOJI" \
-    '{
-      "RUN_STATUS": $run_status,
-      "RUN_TYPE": $run_type,
-      "REPORTPORTAL_LAUNCH_URL": $reportportal_launch_url,
-      "JOB_NAME": $job_name,
-      "RUN_STATUS_EMOJI": $run_status_emoji
-    }' > /tmp/data_router_slack_message.json
-  if ! curl -X POST -H 'Content-type: application/json' --data @/tmp/data_router_slack_message.json  $SLACK_DATA_ROUTER_WEBHOOK_URL; then
-    echo "Failed to send ReportPortal Slack alert"
-  else
-    echo "ReportPortal Slack alert sent successfully"
-  fi
+  local namespace=$1
+
+  ARTIFACTS_URL=$(get_artifacts_url "${namespace}")
+
+  cp "${ARTIFACT_DIR}/${namespace}/${JUNIT_RESULTS}" "${ARTIFACT_DIR}/${namespace}/${JUNIT_RESULTS}.original.xml"
+  
+  
+  # Replace attachments with link to OpenShift CI storage
+  sed -i "s#\[\[ATTACHMENT|\(.*\)\]\]#${ARTIFACTS_URL}/\1#g" "${ARTIFACT_DIR}/${namespace}/${JUNIT_RESULTS}"
+
+  # Convert XML property tags from self-closing format to self-closing format
+  # This handles cases where properties have both opening and closing tags
+  # Step 1: Remove all closing property tags
+  sed -i 's#</property>##g' "${ARTIFACT_DIR}/${namespace}/${JUNIT_RESULTS}"
+  # Step 2: Convert opening property tags to self-closing format
+  sed -i 's#<property name="\([^"]*\)" value="\([^"]*\)">#<property name="\1" value="\2"/>#g' "${ARTIFACT_DIR}/${namespace}/${JUNIT_RESULTS}"
+
+  # Copy the metadata and JUnit results files to the shared directory
+  cp "${ARTIFACT_DIR}/${namespace}/${JUNIT_RESULTS}" "${SHARED_DIR}/junit-results-${namespace}.xml"
+
+  echo "🗃️ JUnit results for ${namespace} adapted to Data Router format and saved to ARTIFACT_DIR and copied to SHARED_DIR"
+  echo "Shared directory contents:"
+  ls -la "${SHARED_DIR}"
 }
