@@ -13,7 +13,7 @@ on:
 
 jobs:
   lint:
-    name: ESLint and Prettier
+    name: TSC, ESLint and Prettier
     runs-on: ubuntu-latest
 
     steps:
@@ -35,6 +35,10 @@ jobs:
       - name: Install dependencies
         working-directory: ./e2e-tests
         run: yarn install --mode=skip-build
+
+      - name: Run TypeScript Compiler
+        working-directory: ./e2e-tests
+        run: yarn tsc
 
       - name: Run ESLint check
         working-directory: ./e2e-tests
