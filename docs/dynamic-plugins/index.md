@@ -54,7 +54,7 @@ Example of this process on the [todo](https://github.com/backstage/community-plu
 
     ```console
     $ cd plugins/todo-backend
-    $ npx @janus-idp/cli@latest package export-dynamic-plugin
+    $ npx @red-hat-developer-hub/cli@latest plugin export
     Building main package
       executing     yarn build ✔
     Packing main package to dist-dynamic/package.json
@@ -80,7 +80,7 @@ Example of this process on the [todo](https://github.com/backstage/community-plu
 
     ```console
     $ cd ../todo
-    $ npx @janus-idp/cli@latest package export-dynamic-plugin
+    $ npx @red-hat-developer-hub/cli@latest plugin export
     No scalprum config. Using default dynamic UI configuration:
     {
       "name": "backstage-community.plugin-todo",
@@ -107,7 +107,7 @@ Example of this process on the [todo](https://github.com/backstage/community-plu
     ```console
     $ cd ../..
     $ #we should be in workspaces/todo
-    $ npx @janus-idp/cli@latest package package-dynamic-plugins --tag quay.io/user/backstage-community-plugin-todo:v0.1.1
+    $ npx @red-hat-developer-hub/cli@latest plugin package --tag quay.io/user/backstage-community-plugin-todo:v0.1.1
       executing     podman --version ✔
     Using existing 'dist-dynamic' directory at plugins/todo
     Using existing 'dist-dynamic' directory at plugins/todo-backend
