@@ -73,10 +73,11 @@ class InstallException(Exception):
     """Exception class from which every exception in this library will derive."""
     pass
 
+# Refer to https://github.com/opencontainers/image-spec/blob/main/descriptor.md#registered-algorithms
 RECOGNIZED_ALGORITHMS = (
     'sha512',
-    'sha384',
     'sha256',
+    'blake3',
 )
 
 def merge(source, destination, prefix = ''):
@@ -108,25 +109,34 @@ def mergePlugin(plugin: dict, allPlugins: dict, dynamicPluginsFile: str, level: 
         raise InstallException(f"content of the \'plugins.package\' field must be a string in {dynamicPluginsFile}")
 
     if package.startswith('oci://'):
-        # Check if package is in the expected format: 
+        # Check if package is in one of the expected formats: 
         # Tag format: `oci://<registry>:<tag>!<path>`
         # SHA digest format: `oci://<registry>@sha<algo>:<digest>!<path>`
-        oci_pattern = r'^(oci://[^\s:@]+)(?::([^\s!@:]+)|@(sha\d+:[^\s!@:]+))!([^\s]+)$'
+        oci_pattern = (
+            r'^(oci://[^\s:@]+)'
+            r'(?:'
+                r':([^\s!@:]+)'  # tag only
+                r'|'
+                r'@((?:sha256|sha512|blake3):[^\s!@:]+)'  # digest only
+            r')'
+            r'!([^\s]+)$'
+        )
         match = re.match(oci_pattern, package)
         if not match:
-            raise InstallException(f"oci package \'{package}\' is not in the expected format \'oci://<registry>:<tag>!<path>\' or \'oci://<registry>@sha<algo>:<digest>!<path>\' in {dynamicPluginsFile}")
+            raise InstallException(f"oci package \'{package}\' is not in the expected format \'oci://<registry>:<tag>!<path>\' or \'oci://<registry>@sha<algo>:<digest>!<path>\' in {dynamicPluginsFile} where <algo> is one of {RECOGNIZED_ALGORITHMS}")
 
         # Strip away the version (tag or digest) from the package string, resulting in oci://<registry>:!<path>
         # This helps ensure keys used to identify OCI plugins are independent of the version of the plugin
         registry = match.group(1)
         tag_version = match.group(2)
         digest_version = match.group(3)
+
+        version = tag_version if tag_version else digest_version
+            
         path = match.group(4) 
         
-        # {{inherit}} tag indicates that the version should be inherited from the included configuration
-        inheritVersion = tag_version == "{{inherit}}"
-        # Use whichever version format was matched
-        version = tag_version if tag_version else digest_version
+        # {{inherit}} tag indicates that the version should be inherited from the included configuration. Must NOT have a SHA digest included.
+        inheritVersion = (tag_version == "{{inherit}}" and digest_version == None)
         package = f"{registry}:!{path}"
 
     # if `package` already exists in `allPlugins`, then override its fields
