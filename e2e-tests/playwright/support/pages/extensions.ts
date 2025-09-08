@@ -24,6 +24,6 @@ export class Extensions {
   }
 
   async clickAway() {
-    this.page.locator("#menu- div").first().click();
+    await this.page.locator("#menu- div").first().click();
   }
 }

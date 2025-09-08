@@ -44,7 +44,6 @@ test.describe.serial("Link Scaffolded Templates to Catalog Items", () => {
     await common.loginAsGuest();
   });
 
-  // eslint-disable-next-line no-empty-pattern
   test("Register a Template", async ({}, testInfo) => {
     await uiHelper.openSidebar("Catalog");
     await uiHelper.verifyText("Name");
@@ -172,7 +171,7 @@ test.describe.serial("Link Scaffolded Templates to Catalog Items", () => {
     const selector =
       'a[href*="/catalog/default/component/test-scaffoldedfromlink-"]';
     await page.locator(selector).first().waitFor({ state: "visible" });
-    const link = await page.locator(selector).first();
+    const link = page.locator(selector).first();
     await expect(link).toBeVisible();
     await link.click();
   }

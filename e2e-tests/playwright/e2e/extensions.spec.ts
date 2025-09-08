@@ -63,9 +63,7 @@ test.describe("Admin > Extensions > Catalog", () => {
     await expect(
       page.getByRole("option", { name: "Red Hat" }).getByRole("checkbox"),
     ).not.toBeChecked();
-    await expect(
-      page.getByRole("button", { name: "Red Hat" }),
-    ).not.toBeVisible();
+    await expect(page.getByRole("button", { name: "Red Hat" })).toBeHidden();
     await page.keyboard.press(`Escape`);
     await page.getByTestId("CancelIcon").first().click();
     await expect(page.getByLabel("Category").getByRole("combobox")).toBeEmpty();
@@ -139,7 +137,8 @@ test.describe("Admin > Extensions > Catalog", () => {
     await uiHelper.clickByDataTestId("ContentCopyRoundedIcon");
     await expect(page.getByRole("button", { name: "✔" })).toBeVisible();
     await uiHelper.clickButton("Reset");
-    await expect(page.getByText("pluginConfig:")).not.toBeVisible();
+    await expect(page.getByText("pluginConfig:")).toBeHidden();
+    // eslint-disable-next-line playwright/no-conditional-in-test
     const modifier = isMac ? "Meta" : "Control";
     await page.keyboard.press(`${modifier}+KeyA`);
     await page.keyboard.press(`${modifier}+KeyV`);
@@ -157,9 +156,10 @@ test.describe("Admin > Extensions > Catalog", () => {
   });
 
   // Enable this when the plugin is installation is enabled in the production environment
-  test.skip("Verify plugin configuration is editable and can be enabled when disabled", async ({
+  test("Verify plugin configuration is editable and can be enabled when disabled", async ({
     page,
   }) => {
+    test.fixme();
     await uiHelper.searchInputPlaceholder("Topology");
     await page.getByRole("heading", { name: "Topology" }).first().click();
     await uiHelper.verifyHeading("Application Topology for Kubernetes");
@@ -183,7 +183,8 @@ test.describe("Admin > Extensions > Catalog", () => {
     await uiHelper.clickByDataTestId("ContentCopyRoundedIcon");
     await expect(page.getByRole("button", { name: "✔" })).toBeVisible();
     await uiHelper.clickButton("Reset");
-    await expect(page.getByText("pluginConfig:")).not.toBeVisible();
+    await expect(page.getByText("pluginConfig:")).toBeHidden();
+    // eslint-disable-next-line playwright/no-conditional-in-test
     const modifier = isMac ? "Meta" : "Control";
     await page.keyboard.press(`${modifier}+KeyA`);
     await page.keyboard.press(`${modifier}+KeyV`);
@@ -198,8 +199,8 @@ test.describe("Admin > Extensions > Catalog", () => {
     await uiHelper.clickButton("Save");
     await uiHelper.verifyHeading("Extensions");
     let alert = page.getByRole("alert").first();
-    expect(alert).toContainText("Backend restart required");
-    expect(alert).toContainText(
+    await expect(alert).toContainText("Backend restart required");
+    await expect(alert).toContainText(
       "The Application Topology for Kubernetes plugin requires a restart of the backend system to finish installing, updating, enabling or disabling.",
     );
     await uiHelper.searchInputPlaceholder("Argo CD Software Template Actions");
@@ -212,10 +213,11 @@ test.describe("Admin > Extensions > Catalog", () => {
     await uiHelper.clickByDataTestId("enable-plugin");
     await uiHelper.verifyHeading("Extensions");
     alert = page.getByRole("alert").first();
-    expect(alert).toContainText("Backend restart required");
-    expect(alert).toContainText(
+    await expect(alert).toContainText("Backend restart required");
+    await expect(alert).toContainText(
       "You have 2 plugins that require a restart of your backend system to either finish installing, updating, enabling or disabling.",
     );
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     page.getByText("View plugins", { exact: true }).click();
     const rowLocator = page.locator(`tbody>tr`).nth(1);
     await rowLocator.waitFor({ state: "visible" });
