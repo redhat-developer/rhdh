@@ -1,4 +1,4 @@
-import { test } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 import { Common } from "../../../utils/common";
 import { UIhelper } from "../../../utils/ui-helper";
 import { Catalog } from "../../../support/pages/catalog";
@@ -70,6 +70,12 @@ test.describe("Test Topology Plugin with RBAC", () => {
       await common.loginAsKeycloakUser();
 
       await catalog.goToBackstageJanusProject();
+      
+      // Ensure the component page loaded correctly and the entity is found
+      await uiHelper.verifyHeading("backstage-janus", 20000);
+      // Ensure the "Entity not found" warning is NOT present
+      await expect(page.locator('div[role="alert"]:has-text("Warning: Entity not found")')).not.toBeVisible({ timeout: 10000 });
+      
       await uiHelper.clickTab("Topology");
     });
 

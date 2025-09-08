@@ -533,16 +533,18 @@ export class UIhelper {
     uniqueRowText: string,
     cellTexts: string[] | RegExp[],
   ) {
+    // First, check if the "No records found" message is present
+    const noRecordsRow = this.page.locator('tr:has(:text-is("No records found"))');
+    const noRecordsVisible = await noRecordsRow.isVisible();
+
+    if (noRecordsVisible) {
+      throw new Error(`Table shows "No records found" - bulk import operation may have failed. Expected row with text: ${uniqueRowText}`);
+    }
+
     const row = this.page.locator(UI_HELPER_ELEMENTS.rowByText(uniqueRowText));
     
     // Wait for the row to be visible with a longer timeout
     await row.waitFor({ state: "visible", timeout: 30000 });
-    
-    // Check if the row actually exists and is not showing "No records found"
-    const rowCount = await this.page.locator('tr:has(:text-is("No records found"))').count();
-    if (rowCount > 0) {
-      throw new Error(`Table shows "No records found" - bulk import operation may have failed. Expected row with text: ${uniqueRowText}`);
-    }
     
     for (const cellText of cellTexts) {
       // Use more flexible text matching and longer timeout
@@ -581,16 +583,18 @@ export class UIhelper {
     uniqueRowText: string,
     textOrLabel: string | RegExp,
   ) {
+    // First, check if the "No records found" message is present
+    const noRecordsRow = this.page.locator('tr:has(:text-is("No records found"))');
+    const noRecordsVisible = await noRecordsRow.isVisible();
+
+    if (noRecordsVisible) {
+      throw new Error(`Table shows "No records found" - bulk import operation may have failed. Expected row with text: ${uniqueRowText}`);
+    }
+
     const row = this.page.locator(UI_HELPER_ELEMENTS.rowByText(uniqueRowText));
     
     // Wait for the row to be visible with a longer timeout
     await row.waitFor({ state: "visible", timeout: 30000 });
-    
-    // Check if the row actually exists and is not showing "No records found"
-    const rowCount = await this.page.locator('tr:has(:text-is("No records found"))').count();
-    if (rowCount > 0) {
-      throw new Error(`Table shows "No records found" - bulk import operation may have failed. Expected row with text: ${uniqueRowText}`);
-    }
     
     await row
       .locator(

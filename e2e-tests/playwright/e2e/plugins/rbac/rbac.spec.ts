@@ -575,6 +575,11 @@ test.describe.serial("Test RBAC", () => {
       await page.reload();
       await uiHelper.openSidebar("Catalog");
       await uiHelper.clickButton("Self-service");
+      
+      // Ensure we are on the Create page and not redirected to Get Started
+      await page.waitForURL('/create', { timeout: 20000 });
+      await uiHelper.verifyHeading("Create", 20000);
+      
       expect(
         await uiHelper.isLinkVisible("Import an existing Git repository"),
       ).toBeTruthy();
