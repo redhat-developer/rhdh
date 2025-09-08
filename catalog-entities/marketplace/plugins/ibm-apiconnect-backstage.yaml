@@ -6,9 +6,8 @@ metadata:
   namespace: apiconnect
   title: API Connect Backstage Plugin 
   annotations:
-    extensions.backstage.io/pre-installed: 'false' # For plugins contained in the RHDH image
-    #extensions.backstage.io/verified-by: Red Hat # For verified plugins
-    #extensions.backstage.io/certified-by: Red Hat # For certified plugins
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself
+    extensions.backstage.io/certified-by: Red Hat # For certified plugins
   links:
     - title: Plugin Overview (README)
       url: https://github.com/ibm-apiconnect/backstage/blob/main/plugins/apic-backstage/README.md

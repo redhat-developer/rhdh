@@ -6,7 +6,7 @@ metadata:
   namespace: rhdh
   title: Orchestrator Scaffolder Actions For Red Hat Developer Hub
   annotations:
-    extensions.backstage.io/pre-installed: 'false' # For plugins contained in the RHDH image
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself
   links:
     - title: Homepage
       url: https://www.rhdhorchestrator.io/
