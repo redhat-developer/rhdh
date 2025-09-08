@@ -537,10 +537,6 @@ plugins:
               # Adding the exported translations for this plugin
               - importName: <plugin translation>
                 ref: <plugin translation ref> # Ref is required for `jsonTranslations`
-                jsonTranslations:
-                  - locale: <locale> # Ex: zh
-                    path: <path-to-the-json-file> # Ex: Documents/work/rhdh/packages/app/src/translations/jsonTranslations/npm-enJSONTranslations.json
-                  - <add-another-locale-translation-overrides>
 ```
 
 ## Provide additional Utility APIs

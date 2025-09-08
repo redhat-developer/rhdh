@@ -210,6 +210,33 @@ i18n:
     - de
     - it
   defaultLocale: en # Optional. Used as fallback when browser language preferences don't match supported locales, or defaults to 'en' if not specified.
+  overrides: # List of json translation files to override existing plugin translations or add translations for a locale
+    - <path-to>/<plugin-x>.json
+    - <path-to>/<plugin-y>.json
+
+```
+
+Example of json translation file, where the top-level key is the plugin translation id.
+
+```
+{
+  "plugin.npm.translation-ref": {
+    "en": {
+      "infoCard.title": "NPM Packet JSON {{packageName}}"
+    },
+    "de": {
+      "infoCard.title": "NPM Paket JSON {{packageName}}"
+    },
+    "zh": {
+      "infoCard.title": "NPM 包 JSON {{packageName}}"
+    }
+  },
+  "extensions": {
+    "en": {
+        "catalogPage.installationAlert": "Backend restart required JSON"
+    }
+  }
+}
 ```
 
 ### Default Language Selection Priority

@@ -242,10 +242,6 @@ export interface Config {
           module?: string;
           importName: string;
           ref?: string;
-          jsonTranslations?: {
-            locale: string;
-            path: string;
-          }[];
         }[];
       };
     };
@@ -289,6 +285,12 @@ export interface Config {
      * @visibility frontend
      */
     defaultLocale?: string;
+    /**
+     * Allows listing of paths to JSON files that contain translation overrides.
+     * These overrides let you replace or extend the default translations provided by plugins.
+     * @visibility frontend
+     */
+    overrides?: string[];
   };
   /**
    * Configuration options for your user settings.

@@ -14,10 +14,11 @@ const mergeTranslations = (
 ) => {
   const resourceWithNewTranslations: Record<string, any> = {};
   for (const res of resource.resources) {
+    // update translations for existing locale(s)
     if (jsonTranslations[res.language]) {
       resourceWithNewTranslations[res.language] = async () => {
         const overrides: { [key: string]: string } =
-          await jsonTranslations[res.language]();
+          jsonTranslations[res.language];
         const baseMessages = await res.loader();
 
         const mergedMessages = { ...baseMessages.messages, ...overrides };
@@ -38,7 +39,7 @@ const mergeTranslations = (
     if (!resourceWithNewTranslations[locale]) {
       resourceWithNewTranslations[locale] = async () => {
         const newLocaleTranslations: { [key: string]: string } =
-          await jsonTranslations[locale]();
+          jsonTranslations[locale];
 
         return {
           default: createTranslationMessages({

@@ -51,10 +51,8 @@ import extractDynamicConfig, {
 } from '../../utils/dynamicUI/extractDynamicConfig';
 import initializeRemotePlugins from '../../utils/dynamicUI/initializeRemotePlugins';
 import { getDefaultLanguage } from '../../utils/language/language';
-import {
-  buildJSONTranslations,
-  translationResourceGenerator,
-} from '../../utils/translations';
+import { translationResourceGenerator } from '../../utils/translations';
+import { fetchOverrideTranslations } from '../../utils/translations/fetchOverrideTranslations';
 import { catalogTranslations } from '../catalog/translations/catalog';
 import { MenuIcon } from '../Root/MenuIcon';
 import CommonIcons from './CommonIcons';
@@ -548,12 +546,22 @@ export const DynamicRoot = ({
       )
       .find(candidate => candidate !== undefined);
 
+    let overrideTranslations: Record<
+      string,
+      Record<string, Record<string, string>>
+    > = {};
+
+    if (translationConfig?.overrides) {
+      overrideTranslations = await fetchOverrideTranslations(baseUrl);
+    }
     const dynamicTranslationResources = translationResources?.reduce<
       TranslationResource[]
-    >((acc, { scope, module, importName, ref, jsonTranslations }) => {
+    >((acc, { scope, module, importName, ref }) => {
       const plugin = allPlugins[scope]?.[module];
       const resource = plugin?.[importName] as InternalTranslationResource<any>;
-      const resourceRef = plugin?.[ref] as any as TranslationRef<string, any>;
+      const resourceRef = ref
+        ? (plugin?.[ref] as any as TranslationRef<string, any>)
+        : null;
       if (!resource?.id) {
         // eslint-disable-next-line no-console
         console.warn(
@@ -561,29 +569,25 @@ export const DynamicRoot = ({
         );
         return acc;
       }
-      acc.push(resource);
-      const hasJsonOverrides = jsonTranslations?.length > 0;
-
+      const hasJsonOverrides = overrideTranslations[resource?.id];
       if (hasJsonOverrides) {
-        const jsonTranslationResources = buildJSONTranslations(
-          jsonTranslations,
-          baseUrl,
-        );
         if (!resourceRef) {
           // eslint-disable-next-line no-console
           console.warn(
-            `Plugin translation ref for ${scope} is not configured, ignoring JSON translation resource`,
+            `Plugin translation ref for ${scope} is not configured, ignoring JSON translation for this plugin`,
           );
-          return acc;
+          acc.push(resource);
+        } else {
+          const jsonResource = translationResourceGenerator(
+            resourceRef,
+            resource,
+            overrideTranslations[resource?.id],
+          );
+
+          acc.push(jsonResource as TranslationResource<string>);
         }
-
-        const jsonResource = translationResourceGenerator(
-          resourceRef,
-          resource,
-          jsonTranslationResources,
-        );
-
-        acc.push(jsonResource as TranslationResource<string>);
+      } else {
+        acc.push(resource);
       }
       return acc;
     }, []);

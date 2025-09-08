@@ -1,30 +1,59 @@
 import express, { Router } from "express";
 import fs from "fs";
 import path from "path";
+import { Config } from "@backstage/config";
+import { deepMergeTranslations, isValidJSONTranslation } from "../utils";
+import { LoggerService } from "@backstage/backend-plugin-api";
 
-export async function createRouter(): Promise<Router> {
-
+export async function createRouter({
+  config,
+  logger,
+}: {
+  config: Config;
+  logger: LoggerService;
+}): Promise<Router> {
+  const overridesFiles = config.getOptionalStringArray("i18n.overrides") ?? [];
   const router = Router();
   router.use(express.json());
-  router.get("/", (req, res) => {
-    const filePath = req.query.path as string;
-
+  router.get("/", (_, res) => {
+    if (!overridesFiles || overridesFiles?.length === 0) {
+      res.status(200).json({});
+      return;
+    }
     try {
-      const resolvedPath = path.resolve(filePath);
-      if (!fs.existsSync(resolvedPath)) {
-        res.status(404).json({ error: `File not found: ${resolvedPath}` });
+      const mergedTranslations: Record<string, any> = {};
+
+      for (const overridesFile of overridesFiles) {
+        const resolvedPath = path.resolve(overridesFile);
+
+        if (!fs.existsSync(resolvedPath)) {
+          logger.warn(`File not found: ${overridesFile}`);
+          continue;
+        }
+
+        const raw = fs.readFileSync(resolvedPath, "utf-8");
+        const json = JSON.parse(raw);
+        if (!isValidJSONTranslation(json)) {
+          logger.warn(`Invalid JSON translation file: ${overridesFile}`);
+          continue;
+        }
+
+        deepMergeTranslations(mergedTranslations, json);
+      }
+
+      if (Object.keys(mergedTranslations).length === 0) {
+        res.status(404).json({
+          error: "No valid translation overrides found in provided files",
+        });
         return;
       }
 
-      const raw = fs.readFileSync(resolvedPath, "utf-8");
-      const json = JSON.parse(raw);
-
-      res.json(json);
+      res.json(mergedTranslations);
     } catch (e) {
-      res.status(500).json({
-        error: `Failed to read translation file ${filePath}`,
-        details: (e as Error).message,
-      });
+      logger.warn(`Failed to process translation override files: ${e}`);
+      res
+        .status(500)
+        .json({ error: "Failed to process translation override files" });
     }
   });
 

@@ -1,17 +1,36 @@
-// createRouter.test.ts
 import request from "supertest";
 import express from "express";
 import fs from "fs";
-import path from "path";
+import { mockServices } from "@backstage/backend-test-utils";
 import { createRouter } from "./router";
 
-jest.mock("fs");
+jest.mock("fs", () => {
+  const actualFs = jest.requireActual("fs");
+  return {
+    ...actualFs,
+    existsSync: jest.fn(),
+    readFileSync: jest.fn(),
+  };
+});
 
 describe("createRouter", () => {
   let app: express.Express;
+  let mockConfig: any;
 
-  beforeAll(async () => {
-    const router = await createRouter();
+  beforeEach(async () => {
+    mockConfig = mockServices.rootConfig({
+      data: {
+        i18n: {
+          overrides: ["/tmp/en.json", "/tmp/de.json"],
+        },
+      },
+    });
+
+    const router = await createRouter({
+      logger: mockServices.logger.mock(),
+      config: mockConfig,
+    });
+
     app = express();
     app.use("/", router);
   });
@@ -20,61 +39,66 @@ describe("createRouter", () => {
     jest.resetAllMocks();
   });
 
-  it("should return 200 and JSON content when file exists", async () => {
-    const mockFilePath = "/tmp/en.json";
-    const resolvedPath = path.resolve(mockFilePath);
-
+  it("should return merged translations when multiple files exist", async () => {
     (fs.existsSync as jest.Mock).mockReturnValue(true);
-    (fs.readFileSync as jest.Mock).mockReturnValue(
-      JSON.stringify({ hello: "world" }),
-    );
 
-    const res = await request(app).get("/").query({ path: mockFilePath });
+    (fs.readFileSync as jest.Mock).mockImplementation((filePath: string) => {
+      if (filePath === "/tmp/en.json") {
+        return JSON.stringify({ plugin: { en: { hello: "world" } } });
+      }
+      if (filePath === "/tmp/de.json") {
+        return JSON.stringify({ plugin: { de: { hello: "welt" } } });
+      }
+      return "{}";
+    });
+
+    const res = await request(app).get("/");
 
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ hello: "world" });
-    expect(fs.existsSync).toHaveBeenCalledWith(resolvedPath);
-    expect(fs.readFileSync).toHaveBeenCalledWith(resolvedPath, "utf-8");
+    expect(res.body).toEqual({
+      plugin: {
+        en: { hello: "world" },
+        de: { hello: "welt" },
+      },
+    });
   });
 
-  it("should return 404 if file does not exist", async () => {
-    const mockFilePath = "/tmp/missing.json";
-
+  it("should return 404 if no valid files exist", async () => {
     (fs.existsSync as jest.Mock).mockReturnValue(false);
 
-    const res = await request(app).get("/").query({ path: mockFilePath });
+    const res = await request(app).get("/");
 
     expect(res.status).toBe(404);
-    expect(res.body).toEqual({
-      error: expect.stringContaining("File not found"),
-    });
+    expect(res.body.error).toContain(
+      "No valid translation overrides found in provided files",
+    );
   });
 
-  it("should return 500 if JSON is invalid", async () => {
-    const mockFilePath = "/tmp/bad.json";
-
+  it("should skip invalid JSON files", async () => {
     (fs.existsSync as jest.Mock).mockReturnValue(true);
-    (fs.readFileSync as jest.Mock).mockReturnValue("{ invalid json");
+    (fs.readFileSync as jest.Mock).mockReturnValue(
+      JSON.stringify({ notAPluginKey: "just a string" }),
+    );
 
-    const res = await request(app).get("/").query({ path: mockFilePath });
+    const res = await request(app).get("/");
 
-    expect(res.status).toBe(500);
-    expect(res.body.error).toContain("Failed to read translation file");
+    expect(res.status).toBe(404);
+    expect(res.body.error).toContain(
+      "No valid translation overrides found in provided files",
+    );
   });
 
-  it("should return 500 if fs.readFileSync throws an error", async () => {
-    const mockFilePath = "/tmp/error.json";
-
+  it("should return 500 if transalation json file is invalid", async () => {
     (fs.existsSync as jest.Mock).mockReturnValue(true);
     (fs.readFileSync as jest.Mock).mockImplementation(() => {
-      throw new Error("Error occured");
+      throw new Error("boom");
     });
 
-    const res = await request(app).get("/").query({ path: mockFilePath });
+    const res = await request(app).get("/");
 
     expect(res.status).toBe(500);
-    expect(res.body.error).toBe(
-      "Failed to read translation file /tmp/error.json",
+    expect(res.body.error).toContain(
+      "Failed to process translation override files",
     );
   });
 });

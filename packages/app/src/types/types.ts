@@ -18,6 +18,7 @@ export type BuildInfo = {
 export type TranslationConfig = {
   defaultLocale?: string;
   locales: string[];
+  overrides?: string[];
 };
 
 export type JSONTranslationConfig = {

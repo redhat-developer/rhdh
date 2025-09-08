@@ -1,2 +1,2 @@
-export { buildJSONTranslations } from './buildJSONTranslations';
+export { fetchOverrideTranslations } from './fetchOverrideTranslations';
 export { translationResourceGenerator } from './translationResourceGenerator';

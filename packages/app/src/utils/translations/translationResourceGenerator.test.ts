@@ -43,10 +43,10 @@ describe('translationResourceGenerator', () => {
 
   it('should merge base translations with JSON overrides', async () => {
     const jsonTranslations = {
-      en: async () => ({
+      en: {
         bye: 'See ya',
         welcome: 'Welcome',
-      }),
+      },
     };
 
     (createTranslationMessages as jest.Mock).mockImplementation(
@@ -71,7 +71,7 @@ describe('translationResourceGenerator', () => {
   });
   it('should create new translation resource for the locale not present in base resource', async () => {
     const jsonTranslations = {
-      ko: jest.fn().mockResolvedValue({ hello: 'annyeonghaseyo' }),
+      ko: { hello: 'annyeonghaseyo' },
     };
 
     (createTranslationMessages as jest.Mock).mockImplementation(

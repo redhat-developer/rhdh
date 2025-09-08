@@ -11,9 +11,11 @@ export const translationPlugin = createBackendPlugin({
     env.registerInit({
       deps: {
         http: coreServices.httpRouter,
+        config: coreServices.rootConfig,
+        logger: coreServices.logger,
       },
-      async init({ http }) {
-        http.use(await createRouter());
+      async init({ http, config, logger }) {
+        http.use(await createRouter({ config, logger }));
         http.addAuthPolicy({
           path: "/",
           allow: "unauthenticated",
