@@ -209,5 +209,46 @@ i18n:
     - en
     - de
     - it
-  defaultLocale: en # Optional. Defaults to `en` if not specified.
+  defaultLocale: en # Optional. Used as fallback when browser language preferences don't match supported locales, or defaults to 'en' if not specified.
 ```
+
+### Default Language Selection Priority
+
+Default language selection follows this priority order:
+
+1. **Browser Language Priority**: The system first checks the user's browser language preferences to provide a personalized experience.
+
+2. **Configuration Priority**: If no browser language matches the supported locales, the `defaultLocale` from the `i18n` configuration is used as a fallback.
+
+3. **Fallback Priority**: If neither browser preferences nor configuration provide a match, defaults to `en`.
+
+## Language Preferences
+
+Red Hat Developer Hub automatically saves and restores user language settings across browser sessions. This feature is enabled by default and uses database storage.
+
+### Configuration (Optional)
+
+Language preferences use database storage by default. To opt-out and use browser storage instead, add the following to your `app-config.yaml`:
+
+```yaml title="app-config.yaml"
+userSettings:
+  persistence: browser # opt-out of database storage
+```
+
+### Persistence Options
+
+- **`database`** (default): Stores language preferences in the backend database. Persists across devices and browsers. No configuration required.
+- **`browser`** (opt-out): Stores language preferences in browser local storage. Limited to single browser/device.
+
+## How It Works
+
+When users change the language in the UI:
+
+- The preference is automatically saved to storage
+- On next login/refresh, the language setting is restored
+- Guest users cannot persist language preferences
+
+## Usage
+
+1. Change language using any language selector in the UI
+2. Language setting will automatically be saved and restored

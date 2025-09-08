@@ -14,7 +14,7 @@ export class Topology {
   async hoverOnPodStatusIndicator() {
     const locator = this.page
       .locator('[data-test-id="topology-test"]')
-      .getByText("1")
+      .getByText("1Pod")
       .first();
     await locator.hover();
     await this.page.waitForTimeout(1000);
