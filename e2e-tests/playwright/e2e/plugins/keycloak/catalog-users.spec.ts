@@ -1,4 +1,4 @@
-import { CatalogUsersPO } from "../../../support/pageObjects/catalog/catalog-users-obj";
+import { CatalogUsersPO } from "../../../support/page-objects/catalog/catalog-users-obj";
 import Keycloak from "../../../utils/keycloak/keycloak";
 import { UIhelper } from "../../../utils/ui-helper";
 import { Common } from "../../../utils/common";
@@ -12,6 +12,11 @@ test.describe("Test Keycloak plugin", () => {
   let token: string;
 
   test.beforeAll(async () => {
+    test.info().annotations.push({
+      type: "component",
+      description: "plugins",
+    });
+
     keycloak = new Keycloak();
     token = await keycloak.getAuthenticationToken();
   });
@@ -42,6 +47,7 @@ test.describe("Test Keycloak plugin", () => {
       );
       expect(userFound).not.toBeNull();
 
+      // eslint-disable-next-line playwright/no-conditional-in-test
       if (userFound) {
         await keycloak.checkUserDetails(
           page,
@@ -81,6 +87,7 @@ test.describe("Test Keycloak plugin metrics", () => {
     const domain = host.split(".").slice(1).join(".");
 
     const metricsRoute = await kubeClient.getRoute(namespace, routerName);
+    // eslint-disable-next-line playwright/no-conditional-in-test
     if (!metricsRoute) {
       const service = await kubeClient.getServiceByLabel(
         namespace,
