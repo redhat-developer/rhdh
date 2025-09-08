@@ -1,0 +1,186 @@
+name: Podman PR Push
+
+on:
+  workflow_run:
+    workflows:
+      - 'PR Build Image (Hermetic)'
+    types:
+      - completed
+
+jobs:
+  podman-push:
+    name: Push Podman Image to Registry
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' }}
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    
+    steps:
+      - name: Get PR number from workflow run
+        id: get-pr-info
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_TARGET_REPO: ${{ github.repository }}
+          # If the PR is from a fork, prefix it with `<owner-login>:`, otherwise only the PR branch name is relevant:
+          PR_BRANCH: |-
+            ${{
+              (github.event.workflow_run.head_repository.owner.login != github.event.workflow_run.repository.owner.login)
+                && format('{0}:{1}', github.event.workflow_run.head_repository.owner.login, github.event.workflow_run.head_branch)
+                || github.event.workflow_run.head_branch
+            }}
+          
+        run: |
+          FULL_SHA="${{ github.event.workflow_run.head_sha }}"
+          SHORT_SHA=$(echo "$FULL_SHA" | cut -c1-8)
+          # Need to use gh cli instead of `events.workflow_run.pull_requests` because the latter doesn't work for PRs from forks
+          # Refer to https://github.com/orgs/community/discussions/25220
+          PR_NUMBER=$(gh pr view --repo "${PR_TARGET_REPO}" "${PR_BRANCH}" --json number --jq '.number')
+          
+          if [ -n "$PR_NUMBER" ]; then
+            echo "Found PR number: $PR_NUMBER"
+            echo "PR branch: $PR_BRANCH"
+            echo "Artifact Name: container-image-pr-$PR_NUMBER-$SHORT_SHA"
+
+            echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
+            echo "short-sha=$SHORT_SHA" >> $GITHUB_OUTPUT
+            echo "artifact-name=container-image-pr-$PR_NUMBER-$SHORT_SHA" >> $GITHUB_OUTPUT
+          else
+            echo "Failed to determine PR number"
+            exit 1
+          fi
+      - name: Determine artifact name
+        run: |
+          # For workflow_run, extract from the event context
+          BUILD_ID="${{ steps.get-pr-info.outputs.pr_number }}"
+          SHORT_SHA="${{ github.event.workflow_run.head_sha }}"
+          SHORT_SHA="${SHORT_SHA:0:8}"
+
+          
+          echo "SHORT_SHA=$SHORT_SHA" >> $GITHUB_ENV
+          ARTIFACT_NAME="podman-image-${BUILD_ID}-${SHORT_SHA}"
+          echo "ARTIFACT_NAME=$ARTIFACT_NAME" >> $GITHUB_ENV
+          echo "SKIP_ARTIFACT_NAME=pr-${BUILD_ID}-${SHORT_SHA}-isSkipped" >> $GITHUB_ENV
+          echo "Using artifact name: $ARTIFACT_NAME"
+          echo "Using skip artifact name: $SKIP_ARTIFACT_NAME"
+
+      - name: Download Skip Status Artifact
+        id: download-skip-status
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.SKIP_ARTIFACT_NAME }}
+          path: ./rhdh-skip-artifacts
+          run-id: ${{ github.event.workflow_run.id || github.run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: Check Skip Status
+        id: check-skip
+        run: |
+          if [ -f "./rhdh-skip-artifacts/isSkipped.txt" ]; then
+            IS_SKIPPED=$(cat ./rhdh-skip-artifacts/isSkipped.txt)
+            echo "Found skip status: $IS_SKIPPED"
+            echo "is_skipped=$IS_SKIPPED" >> $GITHUB_OUTPUT
+          else
+            echo "Skip status artifact not found, proceeding with push"
+            echo "is_skipped=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Download Image Artifacts
+        if: ${{ steps.check-skip.outputs.is_skipped != 'true' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: ./rhdh-podman-artifacts
+          run-id: ${{ github.event.workflow_run.id || github.run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Load and prepare image
+        if: ${{ steps.check-skip.outputs.is_skipped != 'true' }}
+        id: prepare
+        run: |
+          # Check if artifacts exist
+          if [ ! -f "./rhdh-podman-artifacts/image.tar" ]; then
+            echo "Error: image.tar not found in artifacts"
+            echo "This may make sense if the build was skipped"
+            exit 1
+          fi
+          
+          # Load the image from tar file (contains all tags)
+          podman load -i ./rhdh-podman-artifacts/image.tar
+          
+          # Read metadata
+          TAGS_LIST=$(cat ./rhdh-podman-artifacts/tags.txt)
+                    
+          echo "Loaded images:"
+          podman images
+          
+          echo "Full tags from metadata:"
+          echo "$TAGS_LIST"
+          
+          # Use a heredoc since TAGS_LIST contains newlines
+          echo "tags<<EOF" >> $GITHUB_OUTPUT
+          echo "$TAGS_LIST" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Push Images
+        if: ${{ steps.check-skip.outputs.is_skipped != 'true' }}
+        uses: redhat-actions/push-to-registry@5ed88d269cf581ea9ef6dd6806d01562096bee9c # v2.8
+        with:
+          tags: ${{ steps.prepare.outputs.tags }}
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_TOKEN }}
+
+      - name: Log skip status
+        if: ${{ steps.check-skip.outputs.is_skipped == 'true' }}
+        run: |
+          echo "🚫 Image Push Skipped"
+          echo "The container image push was skipped because the build was skipped"
+          echo "(either due to [skip-build] tag or no relevant changes with existing image)"
+
+      - name: Comment the image pull link
+        if: ${{ steps.check-skip.outputs.is_skipped != 'true' }}
+        uses: actions/github-script@v7
+        env:
+          PUSHED_TAGS: ${{ steps.prepare.outputs.tags }}
+          PR_NUMBER: ${{ steps.get-pr-info.outputs.pr_number }}
+        with:
+          script: |
+            const prNumber = process.env.PR_NUMBER;
+            const pushedTags = process.env.PUSHED_TAGS;
+            
+            if (!prNumber) {
+              console.log('No pull request number found');
+              return;
+            }
+            
+            if (!pushedTags) {
+              console.log('No pushed tags found');
+              return;
+            }
+            
+            const tags = pushedTags.trim().split('\n').filter(tag => tag.trim());
+            
+            if (tags.length === 0) {
+              console.log('No valid tags found');
+              return;
+            }
+            
+            console.log(`Found ${tags.length} tags:`, tags);
+            
+            const tagLinks = tags.map(fullTag => {
+              return `* [\`${fullTag}\`](https://${fullTag})`;
+            }).join('\n');
+            
+            const body = `The image is available at:\n\n${tagLinks}\n\n`;
+            
+            console.log(`Creating comment for PR ${prNumber} with body:\n ${body}`);
+
+            github.rest.issues.createComment({
+              issue_number: parseInt(prNumber),
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            })
+
