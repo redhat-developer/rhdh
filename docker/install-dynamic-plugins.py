@@ -143,9 +143,8 @@ def mergePlugin(plugin: dict, allPlugins: dict, dynamicPluginsFile: str, level: 
     if package not in allPlugins:
         if package.startswith('oci://'):
             if inheritVersion is True:
-                # User might layer on additional configurations that provide a version so just print a warning for now
-                print(f"WARNING: {{{{inherit}}}} tag is set and there is currently no resolved tag or digest for {plugin['package']} in {dynamicPluginsFile}. This can be safely ignored if no errors are reported later.")
-                plugin["version"] = None
+                # Cannot use {{inherit}} for the initial plugin configuration
+                raise InstallException(f"ERROR: {{{{inherit}}}} tag is set and there is currently no resolved tag or digest for {plugin['package']} in {dynamicPluginsFile}.")
             else:
                 plugin["version"] = version
         # Keep track of the level of the plugin modification to know when dupe conflicts occur in `includes` and main config files
@@ -165,9 +164,10 @@ def mergePlugin(plugin: dict, allPlugins: dict, dynamicPluginsFile: str, level: 
     # Handle inheritVersion logic for OCI packages (whether the key exists or not)
     if package.startswith('oci://'):
         if inheritVersion is True:
-            # User might layer on additional configurations that provide a version so just print a warning for now
+            # Cannot use {{inherit}} if there is not already a resolved tag or digest.
             if version is None and allPlugins[package].get('version') is None:
-                print(f"WARNING: {{{{inherit}}}} tag is set and there is currently no resolved tag or digest for {plugin['package']} in {dynamicPluginsFile}. This can be safely ignored if no errors are reported later.")
+                # This exception should never happen since version can't be None
+                raise InstallException(f"ERROR: {{{{inherit}}}} tag is set and there is currently no resolved tag or digest for {plugin['package']} in {dynamicPluginsFile}.")
         else:
             if version is None:
                 # This exception should never happen due to regex matching above
@@ -394,7 +394,7 @@ def main():
             raise InstallException(f"content of the \'plugins\' field must be a list in {include}")
 
         for plugin in includePlugins:
-            mergePlugin(plugin, allPlugins, dynamicPluginsFile, level=0)
+            mergePlugin(plugin, allPlugins, include, level=0)
 
     if 'plugins' in content:
         plugins = content['plugins']

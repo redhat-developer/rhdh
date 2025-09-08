@@ -89,7 +89,7 @@ plugins:
 and a `dynamic-plugins.yaml` file with the `{{inherit}}` tag using configurations for an older version that is still compatible:
 
 ```yaml
-included:
+includes:
 - dynamic-plugins.example.yaml
 plugins:
   - disabled: false
@@ -99,6 +99,8 @@ plugins:
 ```
 
 Then the resolved version for the dynamic plugin would be `v0.0.2` but the overridden `pluginConfig` and `disabled: false` would still apply.
+
+Note: An error will be thrown if you use `{{inherit}}` in the `includes` plugin configuration(s). A similar error will be thrown if `{{inherit}}` is used in `dynamic-plugins.yaml` when there is not already an existing plugin configuration in the `includes` plugin configuration(s).
 
 ### Using a `tgz` Archive
 
