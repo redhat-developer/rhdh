@@ -3,7 +3,7 @@
 
 To package a Backstage plugin as a dynamic plugin, you need access to its source code.
 
-First you need to create a derived package using the `@janus-idp/cli` and then package it into one of the supported formats.
+First you need to create a derived package using the `@red-hat-developer-hub/cli` and then package it into one of the supported formats.
 For detailed instructions on creating a derived package, see [Export Derived Dynamic Plugin Package](export-derived-package.md).
 
 There are three possible packaging formats for dynamic plugins:
@@ -23,12 +23,12 @@ The derived dynamic plugin JavaScript packages should **not** be pushed to the p
 - `podman` or `docker` installed on your system.
 - An exported derived dynamic plugin package (see: [Export Derived Dynamic Plugin Package](export-derived-package.md)).
 
-To package the plugin into an OCI image, use the `package package-dynamic-plugins` command from `@janus-idp/cli` in the plugin’s source code root directory (not in the `dist-dynamic` directory).
+To package the plugin into an OCI image, use the `plugin package` command from `@red-hat-developer-hub/cli` in the plugin’s source code root directory (not in the `dist-dynamic` directory).
 
 The command will output the correct path definition for the plugin, which can be used in the `dynamic-plugin-config.yaml` file.
 
 ```bash
-npx @janus-idp/cli@latest package package-dynamic-plugins --tag quay.io/example/image:v0.0.1
+npx @red-hat-developer-hub/cli@latest plugin package --tag quay.io/example/image:v0.0.1
 ```
 
 The `--tag` argument is required when using this packaging method. It specifies the image name and tag. The image won't be pushed to the registry automatically; use the `podman push` or `docker push` command to push the image to the registry.
@@ -97,7 +97,7 @@ cd dist-dynamic
 npm publish --registry <npm_registry_url>
 ```
 
-Alternatively, add the following to your `package.json` before running `npx @janus-idp/cli@latest package export-dynamic-plugin`:
+Alternatively, add the following to your `package.json` before running `npx @red-hat-developer-hub/cli@latest plugin export`:
 
 ```json
 {
