@@ -8161,7 +8161,7 @@ __metadata:
     "@types/supertest": 6.0.3
     express: 4.21.2
     express-promise-router: 4.1.1
-    supertest: ^6.2.4
+    supertest: 6.3.4
   languageName: unknown
   linkType: soft
 
@@ -12445,7 +12445,6 @@ __metadata:
   dependencies:
     "@backstage/catalog-model": 1.7.4
     "@backstage/cli": 0.32.1
-    "@backstage/core-plugin-api": 1.10.7
     "@backstage/test-utils": 1.7.8
     "@testing-library/dom": 9.3.4
     "@testing-library/jest-dom": 6.6.4
@@ -34415,7 +34414,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"supertest@npm:6.3.4, supertest@npm:^6.2.4":
+"supertest@npm:6.3.4":
   version: 6.3.4
   resolution: "supertest@npm:6.3.4"
   dependencies:
