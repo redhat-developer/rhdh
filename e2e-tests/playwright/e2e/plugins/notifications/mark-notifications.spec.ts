@@ -4,20 +4,17 @@ import { Common } from "../../../utils/common";
 import RhdhNotificationsApi from "../../../support/api/notifications";
 import { Notifications } from "../../../support/api/notifications-api-structures";
 import { RhdhAuthApiHack } from "../../../support/api/rhdh-auth-api-hack";
-import { Orchestrator } from "../../../support/pages/orchestrator";
 import { NotificationPage } from "../../../support/pages/notifications";
 
 test.describe("Mark notification tests", () => {
   let uiHelper: UIhelper;
   let common: Common;
-  let orchestrator: Orchestrator;
   let notificationPage: NotificationPage;
   let apiToken: string;
 
   test.beforeEach(async ({ page }) => {
     uiHelper = new UIhelper(page);
     common = new Common(page);
-    orchestrator = new Orchestrator(page);
     notificationPage = new NotificationPage(page);
     await common.loginAsKeycloakUser();
     apiToken = await RhdhAuthApiHack.getToken(page);

@@ -1,5 +1,5 @@
 import { expect, type Page } from "@playwright/test";
-import Workflows from "./Workflows";
+import Workflows from "./workflows";
 
 export class Orchestrator {
   private readonly page: Page;
@@ -64,8 +64,8 @@ export class Orchestrator {
       await expect(workflowHeader).toBeVisible();
       await expect(workflowHeader).toHaveText("Workflows");
       await expect(Workflows.workflowsTable(this.page)).toBeVisible();
-      expect(
-        await this.page.locator(`input[aria-label="Search"]`)
+      await expect(
+        this.page.locator(`input[aria-label="Search"]`)
       ).toHaveAttribute("placeholder", "Search");
       await expect(
         this.page.getByRole('columnheader', { name: "Name", exact: true})
@@ -134,9 +134,9 @@ export class Orchestrator {
     }
     await this.page.getByRole("option", { name: "All" }).click();
 
-    const column_headers = ["ID", "Workflow name", "Run Status", "Category", "Started", "Duration"]
-    for (const column_header of column_headers) { 
-      await expect(this.page.getByRole('columnheader', { name: column_header, exact: true })).toBeVisible(); 
+    const columnHeaders = ["ID", "Workflow name", "Run Status", "Category", "Started", "Duration"]
+    for (const columnHeader of columnHeaders) { 
+      await expect(this.page.getByRole('columnheader', { name: columnHeader, exact: true })).toBeVisible(); 
     }
   }
 
