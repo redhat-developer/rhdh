@@ -306,6 +306,8 @@ upstream:
         env:
           - name: NPM_CONFIG_USERCONFIG
             value: /opt/app-root/src/.npmrc.dynamic-plugins
+          - name: MAX_ENTRY_SIZE
+            value: "30000000"  
         imagePullPolicy: Always
         volumeMounts:
           - mountPath: /dynamic-plugins-root
@@ -337,3 +339,41 @@ upstream:
     enabled: false
     auth:
       existingSecret: postgres-cred
+
+orchestrator:
+  enabled: true
+  serverlessLogicOperator:
+    enabled: true
+  serverlessOperator:
+    enabled: true
+  sonataflowPlatform:
+    monitoring:
+      enabled: true
+    eventing:
+      broker:
+        name: ""
+        namespace: ""
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "250m"
+      limits:
+        memory: "1Gi"
+        cpu: "500m"
+    # -- Secret name for the user-created secret to connect an external DB
+    externalDBsecretRef: "postgres-cred"
+
+    # -- Name for the user-configured external Database
+    externalDBName: "postgres"
+
+    # -- Host for the user-configured external Database
+    externalDBHost: "postgress-external-db-primary.postgress-external-db.svc.cluster.local"
+
+    # -- Port for the user-configured external Database
+    externalDBPort: "5432"
+
+    # -- Image for the init container used by the create-db job
+    initContainerImage: "registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-16.3-1"
+
+    # -- Image for the container used by the create-db job
+    createDBJobImage: "registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-16.3-1"
