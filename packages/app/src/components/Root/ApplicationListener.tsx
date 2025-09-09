@@ -1,12 +1,12 @@
-import React, { ErrorInfo, useContext } from 'react';
+import { Component, ComponentType, ErrorInfo, useContext } from 'react';
 
 import { ErrorPanel } from '@backstage/core-components';
 
 import DynamicRootContext from '@red-hat-developer-hub/plugin-utils';
 
-class ErrorBoundary extends React.Component<
+class ErrorBoundary extends Component<
   {
-    Component: React.ComponentType<{}>;
+    Component: ComponentType<{}>;
   },
   { error: any }
 > {
