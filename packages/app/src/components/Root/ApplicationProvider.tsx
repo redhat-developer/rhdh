@@ -1,4 +1,12 @@
-import { Component, ComponentType, ErrorInfo, PropsWithChildren, ReactNode, useContext, useMemo } from 'react';
+import {
+  Component,
+  ComponentType,
+  ErrorInfo,
+  PropsWithChildren,
+  ReactNode,
+  useContext,
+  useMemo,
+} from 'react';
 
 import { ErrorPanel } from '@backstage/core-components';
 
@@ -21,21 +29,21 @@ class ErrorBoundary extends Component<
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    const { Component } = this.props;
-    const name = Component.displayName ?? Component.name ?? 'Component';
+    const { Component: Comp } = this.props;
+    const name = Comp.displayName ?? Comp.name ?? 'Component';
     // eslint-disable-next-line no-console
     console.error(`Error in application/provider ${name}: ${error.message}`, {
       error,
       errorInfo,
-      Component,
+      Component: Comp,
     });
   }
 
   render() {
-    const { Component, children } = this.props;
+    const { Component: Comp, children } = this.props;
     const { error } = this.state;
     if (error) {
-      const name = Component.displayName ?? Component.name ?? 'Component';
+      const name = Comp.displayName ?? Comp.name ?? 'Component';
       const title = `Error in application/provider ${name}: ${error.message}`;
       return (
         <>
@@ -44,13 +52,11 @@ class ErrorBoundary extends Component<
         </>
       );
     }
-    return <Component>{children}</Component>;
+    return <Comp>{children}</Comp>;
   }
 }
 
-export const ApplicationProvider = ({
-  children,
-}: PropsWithChildren<{}>) => {
+export const ApplicationProvider = ({ children }: PropsWithChildren<{}>) => {
   const { mountPoints } = useContext(DynamicRootContext);
   const providers = useMemo(
     () => mountPoints['application/provider'] ?? [],
@@ -59,12 +65,12 @@ export const ApplicationProvider = ({
   if (providers.length === 0) {
     return children;
   }
-  return providers.reduceRight((acc, { Component }, index) => {
+  return providers.reduceRight((acc, { Component: Comp }, index) => {
     return (
       <ErrorBoundary
         // eslint-disable-next-line react/no-array-index-key
         key={index}
-        Component={Component}
+        Component={Comp}
       >
         {acc}
       </ErrorBoundary>
