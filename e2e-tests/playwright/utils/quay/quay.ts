@@ -1,5 +1,5 @@
 import { Page } from "@playwright/test";
-import { UI_HELPER_ELEMENTS } from "../../support/pageObjects/global-obj";
+import { UI_HELPER_ELEMENTS } from "../../support/page-objects/global-obj";
 
 export class ImageRegistry {
   static getAllCellsIdentifier() {

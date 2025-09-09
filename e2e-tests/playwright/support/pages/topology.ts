@@ -24,7 +24,7 @@ export class Topology {
     await this.uiHelper.verifyHeading("Missing Permission");
     await this.uiHelper.verifyText("kubernetes.clusters.read");
     await this.uiHelper.verifyText("kubernetes.resources.read");
-    await expect(this.page.getByLabel("Pod")).not.toBeVisible();
+    await expect(this.page.getByLabel("Pod")).toBeHidden();
   }
 
   async verifyDeployment(name: string) {

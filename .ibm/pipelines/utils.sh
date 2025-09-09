@@ -382,7 +382,7 @@ apply_yaml_files() {
 
     # Create Deployment and Pipeline for Topology test.
     oc apply -f "$dir/resources/topology_test/topology-test.yaml"
-    if [[ -z "${IS_OPENSHIFT}" || "$(to_lowercase "${IS_OPENSHIFT}")" == "false" ]]; then
+    if [[ -z "${IS_OPENSHIFT}" || "${IS_OPENSHIFT}" == "false" ]]; then
       kubectl apply -f "$dir/resources/topology_test/topology-test-ingress.yaml"
     else
       oc apply -f "$dir/resources/topology_test/topology-test-route.yaml"
@@ -666,12 +666,14 @@ cluster_setup_ocp_helm() {
   install_pipelines_operator
   install_acm_ocp_operator
   install_crunchy_postgres_ocp_operator
+  install_orchestrator_infra_chart
 }
 
 cluster_setup_ocp_operator() {
   install_pipelines_operator
   install_acm_ocp_operator
   install_crunchy_postgres_ocp_operator
+  install_orchestrator_infra_chart
 }
 
 cluster_setup_k8s_operator() {
@@ -686,6 +688,19 @@ cluster_setup_k8s_helm() {
   install_tekton_pipelines
   # install_ocm_k8s_operator
   # install_crunchy_postgres_k8s_operator # Works with K8s but disabled in values file
+}
+
+install_orchestrator_infra_chart() {
+  ORCH_INFRA_NS="orchestrator-infra"
+  configure_namespace ${ORCH_INFRA_NS}
+
+  echo "Deploying orchestrator-infra chart"
+  cd "${DIR}"
+  helm upgrade -i orch-infra -n "${ORCH_INFRA_NS}" \
+    "oci://quay.io/rhdh/orchestrator-infra-chart" --version "${CHART_VERSION}" \
+    --wait --timeout=5m \
+    --set serverlessLogicOperator.subscription.spec.installPlanApproval=Automatic \
+    --set serverlessOperator.subscription.spec.installPlanApproval=Automatic
 }
 
 # Helper function to get common helm set parameters
@@ -724,6 +739,8 @@ base_deployment() {
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
   echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
   perform_helm_install "${RELEASE_NAME}" "${NAME_SPACE}" "${HELM_CHART_VALUE_FILE_NAME}"
+
+  deploy_orchestrator_workflows "${NAME_SPACE}"
 }
 
 rbac_deployment() {
@@ -736,6 +753,19 @@ rbac_deployment() {
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
   echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${RELEASE_NAME_RBAC}"
   perform_helm_install "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${HELM_CHART_RBAC_VALUE_FILE_NAME}"
+
+  # NOTE: This is a workaround to allow the sonataflow platform to connect to the external postgres db using ssl.
+  until [[ $(oc get jobs -n "${NAME_SPACE_RBAC}" 2>/dev/null | grep "${RELEASE_NAME_RBAC}-create-sonataflow-database" | wc -l) -eq 1 ]]; do
+    echo "Waiting for sf db creation job to be created. Retrying in 5 seconds..."
+    sleep 5
+  done
+  oc wait --for=condition=complete job/"${RELEASE_NAME_RBAC}-create-sonataflow-database" -n "${NAME_SPACE_RBAC}" --timeout=3m
+  oc -n "${NAME_SPACE_RBAC}" patch sfp sonataflow-platform --type=merge \
+  -p '{"spec":{"services":{"jobService":{"podTemplate":{"container":{"env":[{"name":"QUARKUS_DATASOURCE_REACTIVE_URL","value":"postgresql://postgress-external-db-primary.postgress-external-db.svc.cluster.local:5432/sonataflow?search_path=jobs-service&sslmode=require&ssl=true&trustAll=true"},{"name":"QUARKUS_DATASOURCE_REACTIVE_SSL_MODE","value":"require"},{"name":"QUARKUS_DATASOURCE_REACTIVE_TRUST_ALL","value":"true"}]}}}}}}'
+  oc rollout restart deployment/sonataflow-platform-jobs-service -n "${NAME_SPACE_RBAC}"
+
+  # initiate orchestrator workflows deployment
+  deploy_orchestrator_workflows "${NAME_SPACE_RBAC}"
 }
 
 initiate_deployments() {
@@ -827,18 +857,23 @@ initiate_runtime_deployment() {
 }
 
 initiate_sanity_plugin_checks_deployment() {
-  configure_namespace "${NAME_SPACE_SANITY_PLUGINS_CHECK}"
-  uninstall_helmchart "${NAME_SPACE_SANITY_PLUGINS_CHECK}" "${RELEASE_NAME}"
-  deploy_redis_cache "${NAME_SPACE_SANITY_PLUGINS_CHECK}"
-  apply_yaml_files "${DIR}" "${NAME_SPACE_SANITY_PLUGINS_CHECK}" "${sanity_plugins_url}"
+  local release_name=$1
+  local name_space_sanity_plugins_check=$2
+  local sanity_plugins_url=$3
+
+  configure_namespace "${name_space_sanity_plugins_check}"
+  uninstall_helmchart "${name_space_sanity_plugins_check}" "${release_name}"
+  deploy_redis_cache "${name_space_sanity_plugins_check}"
+  apply_yaml_files "${DIR}" "${name_space_sanity_plugins_check}" "${sanity_plugins_url}"
   yq_merge_value_files "overwrite" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_SANITY_PLUGINS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}"
-  mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE_SANITY_PLUGINS_CHECK}"
-  cp -a "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" "${ARTIFACT_DIR}/${NAME_SPACE_SANITY_PLUGINS_CHECK}/" || true # Save the final value-file into the artifacts directory.
-  helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE_SANITY_PLUGINS_CHECK}" \
+  mkdir -p "${ARTIFACT_DIR}/${name_space_sanity_plugins_check}"
+  cp -a "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" "${ARTIFACT_DIR}/${name_space_sanity_plugins_check}/" || true # Save the final value-file into the artifacts directory.
+  helm upgrade -i "${release_name}" -n "${name_space_sanity_plugins_check}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    $(get_image_helm_set_params)
+    $(get_image_helm_set_params) \
+    --set orchestrator.enabled=true
 }
 
 check_and_test() {
@@ -934,12 +969,72 @@ is_openshift() {
   oc get routes.route.openshift.io &> /dev/null || kubectl get routes.route.openshift.io &> /dev/null
 }
 
-detect_ocp_and_set_env_var() {
+detect_ocp() {
   echo "Detecting OCP or K8s and populating IS_OPENSHIFT variable..."
   if [[ "${IS_OPENSHIFT}" == "" ]]; then
     IS_OPENSHIFT=$(is_openshift && echo 'true' || echo 'false')
   fi
+  
   echo IS_OPENSHIFT: "${IS_OPENSHIFT}"
+  save_is_openshift "${IS_OPENSHIFT}"
+}
+
+detect_container_platform() {
+  echo "Detecting container platform and populating CONTAINER_PLATFORM variable..."
+
+  # Determine platform type based on IS_OPENSHIFT variable
+  if [[ "${IS_OPENSHIFT}" == "true" ]]; then
+    case "$JOB_NAME" in
+      *osd-gcp*)
+        CONTAINER_PLATFORM="osd-gcp"
+        ;;
+      *)
+        CONTAINER_PLATFORM="ocp"
+        ;;
+    esac
+    # Get OCP version
+    if command -v oc &> /dev/null; then
+      CONTAINER_PLATFORM_VERSION=$(oc version 2>/dev/null | grep "Server Version:" | cut -d' ' -f3 | cut -d'.' -f1,2 || echo "unknown")
+    else
+      CONTAINER_PLATFORM_VERSION="unknown"
+    fi
+  else
+    # Determine Kubernetes distribution based on JOB_NAME pattern
+    case "$JOB_NAME" in
+      *aks*)
+        CONTAINER_PLATFORM="aks"
+        ;;
+      *eks*)
+        CONTAINER_PLATFORM="eks"
+        ;;
+      *gke*)
+        CONTAINER_PLATFORM="gke"
+        ;;
+      *iks*)
+        CONTAINER_PLATFORM="iks"
+        ;;
+      *)
+        CONTAINER_PLATFORM="unknown"
+        ;;
+    esac
+
+    # Get Kubernetes version
+    if command -v kubectl &> /dev/null; then
+      CONTAINER_PLATFORM_VERSION=$(kubectl version 2>/dev/null | grep "Server Version:" | cut -d' ' -f3 | sed 's/^v//' | cut -d'.' -f1,2 || echo "unknown")
+    else
+      CONTAINER_PLATFORM_VERSION="unknown"
+    fi
+  fi
+
+  echo "CONTAINER_PLATFORM: ${CONTAINER_PLATFORM}"
+  echo "CONTAINER_PLATFORM_VERSION: ${CONTAINER_PLATFORM_VERSION}"
+
+  # Export variables for use in other scripts
+  export CONTAINER_PLATFORM
+  export CONTAINER_PLATFORM_VERSION
+
+  # Save platform information for reporting
+  save_container_platform "${CONTAINER_PLATFORM}" "${CONTAINER_PLATFORM_VERSION}"
 }
 
 # Helper function for cross-platform sed
@@ -950,17 +1045,6 @@ sed_inplace() {
   else
     # Linux
     sed -i "$@"
-  fi
-}
-
-# Helper function for case conversion
-to_lowercase() {
-  if [[ "$OSTYPE" == "darwin"* ]]; then
-    # macOS - using tr
-    echo "$1" | tr '[:upper:]' '[:lower:]'
-  else
-    # Linux - using bash parameter expansion
-    echo "${1,,}"
   fi
 }
 
@@ -1041,4 +1125,44 @@ get_previous_release_value_file() {
     save_overall_result 1
     exit 1
   fi
+}
+
+# Helper function to deploy workflows for orchestrator testing
+deploy_orchestrator_workflows() {
+  local namespace=$1
+
+  local WORKFLOW_REPO="https://github.com/rhdhorchestrator/serverless-workflows.git"
+  local WORKFLOW_DIR="${DIR}/serverless-workflows"
+  local WORKFLOW_MANIFESTS="${WORKFLOW_DIR}/workflows/experimentals/user-onboarding/manifests/"
+
+  rm -rf "${WORKFLOW_DIR}"
+  git clone "${WORKFLOW_REPO}" "${WORKFLOW_DIR}"
+
+  if [[ "$namespace" == "${NAME_SPACE_RBAC}" ]]; then
+    local pqsl_secret_name="postgres-cred"
+    local pqsl_user_key="POSTGRES_USER"
+    local pqsl_password_key="POSTGRES_PASSWORD"
+    local pqsl_svc_name="postgress-external-db-primary"
+    local patch_namespace="${NAME_SPACE_POSTGRES_DB}"
+  else
+    local pqsl_secret_name="rhdh-postgresql-svcbind-postgres"
+    local pqsl_user_key="username"
+    local pqsl_password_key="password"
+    local pqsl_svc_name="rhdh-postgresql"
+    local patch_namespace="$namespace"
+  fi
+
+  oc apply -f "${WORKFLOW_MANIFESTS}"
+
+  helm repo add orchestrator-workflows https://rhdhorchestrator.io/serverless-workflows
+  helm install greeting orchestrator-workflows/greeting -n "$namespace"
+
+  until [[ $(oc get sf -n "$namespace" --no-headers 2>/dev/null | wc -l) -eq 2 ]]; do
+    echo "No sf resources found. Retrying in 5 seconds..."
+    sleep 5
+  done
+
+  for workflow in greeting user-onboarding; do
+    oc -n "$namespace" patch sonataflow "$workflow" --type merge -p "{\"spec\": { \"persistence\": { \"postgresql\": { \"secretRef\": {\"name\": \"$pqsl_secret_name\",\"userKey\": \"$pqsl_user_key\",\"passwordKey\": \"$pqsl_password_key\"},\"serviceRef\": {\"name\": \"$pqsl_svc_name\",\"namespace\": \"$patch_namespace\"}}}}}"
+  done
 }

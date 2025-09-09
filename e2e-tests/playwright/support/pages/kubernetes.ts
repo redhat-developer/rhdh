@@ -1,6 +1,6 @@
 import { Page, expect } from "@playwright/test";
 import { UIhelper } from "../../utils/ui-helper";
-import { KUBERNETES_COMPONENTS } from "../pageObjects/page-obj";
+import { KUBERNETES_COMPONENTS } from "../page-objects/page-obj";
 
 export class KubernetesPage {
   private page: Page;
@@ -23,7 +23,7 @@ export class KubernetesPage {
     await this.verifyDeployment(text);
     const pods = this.page.locator(KUBERNETES_COMPONENTS.statusOk).nth(4);
     await pods.scrollIntoViewIfNeeded();
-    expect(await pods.textContent()).toBe("1 pods");
+    await expect(pods).toHaveText("1 pods");
     await pods.click();
 
     const pod = this.page.locator("h6").filter({ hasText: text }).first();
