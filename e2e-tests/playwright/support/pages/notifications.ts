@@ -13,10 +13,10 @@ export class NotificationPage {
   async clickNotificationsNavBarItem() {
     await this.uiHelper.openSidebar("Notifications");
     await expect(
-      this.page.getByRole("table").filter({ hasText: "Rows per page" })
+      this.page.getByRole("table").filter({ hasText: "Rows per page" }),
     ).toBeVisible();
     await expect(
-      this.page.getByTestId("loading-indicator").getByRole("img")
+      this.page.getByTestId("loading-indicator").getByRole("img"),
     ).toHaveCount(0);
   }
 
@@ -127,7 +127,7 @@ export class NotificationPage {
     await this.page.getByLabel("View").click();
     await this.page
       .getByRole("option", { name: "Read notifications", exact: true })
-      .click();    
+      .click();
     await expect(
       this.page.getByTestId("loading-indicator").getByRole("img"),
     ).toHaveCount(0);

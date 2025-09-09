@@ -18,13 +18,13 @@ test.describe("Mark notification tests", () => {
     notificationPage = new NotificationPage(page);
     await common.loginAsKeycloakUser();
     apiToken = await RhdhAuthApiHack.getToken(page);
-    console.log(`apiToken -> ${apiToken}`)
+    console.log(`apiToken -> ${apiToken}`);
   });
 
   test("Mark notification as read", async () => {
     const r = (Math.random() + 1).toString(36).substring(7);
     const notificationsApi = await RhdhNotificationsApi.build(apiToken);
-    const notificationTitle = `UI Notification Mark as read ${r}`
+    const notificationTitle = `UI Notification Mark as read ${r}`;
     const notification: Notifications = {
       recipients: {
         type: "broadcast",
@@ -43,14 +43,14 @@ test.describe("Mark notification tests", () => {
     await notificationPage.markNotificationAsRead(notificationTitle);
     await notificationPage.viewRead();
     await notificationPage.notificationTextExists(
-      RegExp(`${notificationTitle}.*(a few seconds ago)|(a minute ago)`)
+      RegExp(`${notificationTitle}.*(a few seconds ago)|(a minute ago)`),
     );
   });
 
   test("Mark notification as unread", async () => {
     const r = (Math.random() + 1).toString(36).substring(7);
     const notificationsApi = await RhdhNotificationsApi.build(apiToken);
-    const notificationTitle = `UI Notification Mark as unread ${r}`
+    const notificationTitle = `UI Notification Mark as unread ${r}`;
     const notification: Notifications = {
       recipients: {
         type: "broadcast",
@@ -69,19 +69,19 @@ test.describe("Mark notification tests", () => {
     await notificationPage.markNotificationAsRead(notificationTitle);
     await notificationPage.viewRead();
     await notificationPage.notificationTextExists(
-      RegExp(`${notificationTitle}.*(a few seconds ago)|(a minute ago)`)
+      RegExp(`${notificationTitle}.*(a few seconds ago)|(a minute ago)`),
     );
     await notificationPage.markLastNotificationAsUnRead();
     await notificationPage.viewUnRead();
     await notificationPage.notificationTextExists(
-      RegExp(`${notificationTitle}.*(a few seconds ago)|(a minute ago)`)
+      RegExp(`${notificationTitle}.*(a few seconds ago)|(a minute ago)`),
     );
   });
 
   test("Mark notification as saved", async () => {
     const r = (Math.random() + 1).toString(36).substring(7);
     const notificationsApi = await RhdhNotificationsApi.build(apiToken);
-    const notificationTitle = `UI Notification Mark as saved ${r}`
+    const notificationTitle = `UI Notification Mark as saved ${r}`;
     const notification: Notifications = {
       recipients: {
         type: "broadcast",
@@ -100,7 +100,7 @@ test.describe("Mark notification tests", () => {
     await notificationPage.saveSelected();
     await notificationPage.viewSaved();
     await notificationPage.notificationTextExists(
-      RegExp(`${notificationTitle}.*(a few seconds ago)|(a minute ago)`)
+      RegExp(`${notificationTitle}.*(a few seconds ago)|(a minute ago)`),
     );
   });
 });

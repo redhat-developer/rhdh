@@ -20,14 +20,14 @@ test.describe("Filter critical notification tests", () => {
     notificationPage = new NotificationPage(page);
     await common.loginAsKeycloakUser();
     apiToken = await RhdhAuthApiHack.getToken(page);
-    console.log(`apiToken -> ${apiToken}`)
+    console.log(`apiToken -> ${apiToken}`);
   });
 
   for (const severity of severities) {
     test(`Filter notifications by severity - ${severity}`, async () => {
       const r = (Math.random() + 1).toString(36).substring(7);
       const notificationsApi = await RhdhNotficationsApi.build(apiToken);
-      const notificationTitle = "UI Notification By Severity"
+      const notificationTitle = "UI Notification By Severity";
       // Used broadcast here, but we should use type: entity and entityRef: ["user:<namespace>/<username>"]
       const notification: Notifications = {
         recipients: {
