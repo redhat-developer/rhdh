@@ -1,4 +1,10 @@
-import React, { ReactNode, useMemo, useState } from 'react';
+import {
+  ComponentType,
+  PropsWithChildren,
+  ReactNode,
+  useMemo,
+  useState,
+} from 'react';
 
 import { EntityLayout } from '@backstage/plugin-catalog';
 
@@ -11,7 +17,7 @@ export const ContextMenuAwareEntityLayout = (props: {
   children?: ReactNode;
 }) => {
   const contextMenuElements =
-    getMountPointData<React.ComponentType<React.PropsWithChildren<any>>>(
+    getMountPointData<ComponentType<PropsWithChildren<any>>>(
       `entity.context.menu`,
     );
 
