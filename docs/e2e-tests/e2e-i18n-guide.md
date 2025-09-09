@@ -7,7 +7,6 @@ Our Playwright-based E2E testing framework supports internationalization (i18n) 
 ## Project Structure (Relevant to i18n)
 
 ```
-
 e2e-tests/
 ├── playwright/
 │   ├── e2e/
@@ -19,8 +18,7 @@ e2e-tests/
 │   │           ├── fr.ts             # French translations
 │   │           ├── de.ts             # German translations
 │   │           └── index.ts          # Translation loader
-
-````
+```
 
 ---
 
@@ -41,7 +39,7 @@ export const en = {
     pageTitle: "Getting Started running RHDH",
   },
 };
-````
+```
 
 ### Example: `fr.ts`
 
@@ -94,16 +92,21 @@ export const getCurrentLanguage = (): Locale => {
 export const getLocale = (lang: Locale = getCurrentLanguage()) => {
   return locales[lang] || locales.en;
 };
+
+export const getTranslations = () => {
+  const lang = getCurrentLanguage();
+  return getLocale(lang);
+};
 ```
 
 * Reads current language from `LOCALE` env var (defaults to `en`)
-* Provides `getLocale()` to fetch the correct translations
+* `getTranslations()` returns translations for the current locale in one call
 
 ---
 
-## Test File Before and After: Using i18n
+## Test File Using i18n with Simplified API
 
-### Before: Hardcoded UI Strings
+### Before (Hardcoded UI Strings)
 
 ```ts
 test("Verify that TechDocs is visible in sidebar", async () => {
@@ -121,13 +124,12 @@ test("Verify that TechDocs Docs page for Red Hat Developer Hub works", async ({ 
 
 ---
 
-### After: Using Translation Variables
+### After (Using Simplified `getTranslations()`)
 
 ```ts
-import { getLocale, getCurrentLanguage } from "../../support/techdocs/translations";
+import { getTranslations } from "../../support/translations/techdocs";
 
-const lang = getCurrentLanguage();
-const t = getLocale(lang);
+const t = getTranslations();
 
 test("Verify that TechDocs is visible in sidebar", async () => {
   await uiHelper.openSidebarButton(t.sidebar.favorites);
@@ -141,6 +143,8 @@ test("Verify that TechDocs Docs page for Red Hat Developer Hub works", async ({ 
   await uiHelper.waitForTitle(t.techdocs.pageTitle, 1);
 });
 ```
+
+---
 
 ## Running Tests in Different Languages
 
@@ -157,7 +161,7 @@ If not set, tests default to English (`en`).
 
 ## Adding a New Locale to Localization Tests
 
-To support a new language (locale) in your E2E tests, follow these simple steps:
+To support a new language (locale) in your E2E tests, follow these steps:
 
 ### 1. **Create a Translation File**
 
@@ -186,15 +190,13 @@ Ensure the structure matches the other locale files (`en.ts`, `fr.ts`, etc.).
 
 Import your new locale and add it to the `locales` object:
 
-**Modified `index.ts`:**
-
 ```ts
 import { en } from './en';
 import { fr } from './fr';
 import { de } from './de';
 import { es } from './es'; // Add this line
 
-export const locales = { en, fr, de, es }; //  And this line
+export const locales = { en, fr, de, es }; // And this line
 ```
 
 No changes are required in test files, as they dynamically load the locale using the `LOCALE` environment variable.
@@ -209,20 +211,17 @@ Use the `LOCALE` environment variable to execute tests in the new language:
 LOCALE=es npx playwright test
 ```
 
-This will make all tests load Spanish translations automatically.
-
-
 ---
 
 ## Summary
 
-| Concept           | Description                                                   |
-| ----------------- | ------------------------------------------------------------- |
-| Translation files | Language-specific key-value mappings (`en.ts`, `fr.ts`, etc.) |
-| `getLocale()`     | Fetches translations based on active locale                   |
-| `t.variable`      | Translation keys used in tests instead of hardcoded text      |
-| `LOCALE` env var  | Controls which language tests run in                          |
+| Concept             | Description                                                   |
+| ------------------- | ------------------------------------------------------------- |
+| Translation files   | Language-specific key-value mappings (`en.ts`, `fr.ts`, etc.) |
+| `getTranslations()` | Fetches translations for the active locale in one call        |
+| `t.variable`        | Translation keys used in tests instead of hardcoded text      |
+| `LOCALE` env var    | Controls which language tests run in                          |
 
 ---
 
-With this setup, your tests are multilingual-ready, allowing you to catch UI issues across locales efficiently.
+With this setup, your tests are multilingual-ready, allowing you to catch UI issues across locales efficiently and with a simplified API.
