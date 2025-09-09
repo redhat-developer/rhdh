@@ -3,7 +3,6 @@ import { UIhelper } from "../../../utils/ui-helper";
 import { Common } from "../../../utils/common";
 import RhdhNotficationsApi from "../../../support/api/notifications";
 import { Notifications } from "../../../support/api/notifications-api-structures";
-import { RhdhAuthApiHack } from "../../../support/api/rhdh-auth-api-hack";
 import { NotificationPage } from "../../../support/pages/notifications";
 
 test.describe("Filter critical notification tests", () => {
@@ -19,7 +18,7 @@ test.describe("Filter critical notification tests", () => {
     common = new Common(page);
     notificationPage = new NotificationPage(page);
     await common.loginAsKeycloakUser();
-    apiToken = await RhdhAuthApiHack.getToken(page);
+    apiToken = "test-token"
     console.log(`apiToken -> ${apiToken}`);
   });
 
