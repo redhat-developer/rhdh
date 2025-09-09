@@ -1,12 +1,12 @@
 import {
   coreServices,
   createBackendPlugin,
-} from "@backstage/backend-plugin-api";
+} from '@backstage/backend-plugin-api';
 
-import { createRouter } from "./service/router";
+import { createRouter } from './service/router';
 
 export const translationPlugin = createBackendPlugin({
-  pluginId: "translation",
+  pluginId: 'translation',
   register(env) {
     env.registerInit({
       deps: {
@@ -17,8 +17,8 @@ export const translationPlugin = createBackendPlugin({
       async init({ http, config, logger }) {
         http.use(await createRouter({ config, logger }));
         http.addAuthPolicy({
-          path: "/",
-          allow: "unauthenticated",
+          path: '/',
+          allow: 'unauthenticated',
         });
       },
     });

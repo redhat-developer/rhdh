@@ -1,17 +1,17 @@
-import { isValidJSONTranslation, deepMergeTranslations } from "./utils";
+import { deepMergeTranslations, isValidJSONTranslation } from './utils';
 
-describe("isValidJSONTranslation", () => {
-  it("should return true for a valid JSON translation object", () => {
+describe('isValidJSONTranslation', () => {
+  it('should return true for a valid JSON translation object', () => {
     const validJson = {
-      "plugin.npm.translation-ref": {
+      'plugin.npm.translation-ref': {
         en: {
-          "infoCard.title": "NPM Packet JSON {{packageName}}",
+          'infoCard.title': 'NPM Packet JSON {{packageName}}',
         },
         de: {
-          "infoCard.title": "NPM Pakettt JSON {{packageName}}",
+          'infoCard.title': 'NPM Pakettt JSON {{packageName}}',
         },
         zh: {
-          "infoCard.title": "NPM 包 JSON {{packageName}}",
+          'infoCard.title': 'NPM 包 JSON {{packageName}}',
         },
       },
     };
@@ -19,71 +19,71 @@ describe("isValidJSONTranslation", () => {
     expect(isValidJSONTranslation(validJson)).toBe(true);
   });
 
-  it("should return false for invalid JSON translation object", () => {
+  it('should return false for invalid JSON translation object', () => {
     expect(isValidJSONTranslation(null as any)).toBe(false);
-    expect(isValidJSONTranslation("string" as any)).toBe(false);
+    expect(isValidJSONTranslation('string' as any)).toBe(false);
     expect(isValidJSONTranslation(42 as any)).toBe(false);
     const invalidJson = {
-      "plugin.npm.translation-ref": "not-an-object",
+      'plugin.npm.translation-ref': 'not-an-object',
     };
     expect(isValidJSONTranslation(invalidJson)).toBe(false);
     const invalidJson2 = {
-      "plugin.npm.translation-ref": {
-        en: "not-an-object",
+      'plugin.npm.translation-ref': {
+        en: 'not-an-object',
       },
     };
     expect(isValidJSONTranslation(invalidJson2)).toBe(false);
   });
 });
 
-describe("deepMergeTranslations", () => {
-  it("should merge translations", () => {
+describe('deepMergeTranslations', () => {
+  it('should merge translations', () => {
     const target = {
-      "plugin.npm.translation-ref": {
-        en: { "infoCard.title": "NPM Packet JSON {{packageName}}" },
-        de: { "infoCard.title": "NPM Pakettt JSON {{packageName}}" },
+      'plugin.npm.translation-ref': {
+        en: { 'infoCard.title': 'NPM Packet JSON {{packageName}}' },
+        de: { 'infoCard.title': 'NPM Pakettt JSON {{packageName}}' },
       },
     };
     const source = {
-      "plugin.npm.translation-ref": {
-        fr: { "infoCard.title": "NPM Paquet JSON {{packageName}}" },
-        en: { "infoCard.description": "Description for {{packageName}}" },
+      'plugin.npm.translation-ref': {
+        fr: { 'infoCard.title': 'NPM Paquet JSON {{packageName}}' },
+        en: { 'infoCard.description': 'Description for {{packageName}}' },
       },
     };
 
     const result = deepMergeTranslations({ ...target }, source);
 
     expect(result).toEqual({
-      "plugin.npm.translation-ref": {
+      'plugin.npm.translation-ref': {
         en: {
-          "infoCard.title": "NPM Packet JSON {{packageName}}",
-          "infoCard.description": "Description for {{packageName}}",
+          'infoCard.title': 'NPM Packet JSON {{packageName}}',
+          'infoCard.description': 'Description for {{packageName}}',
         },
         de: {
-          "infoCard.title": "NPM Pakettt JSON {{packageName}}",
+          'infoCard.title': 'NPM Pakettt JSON {{packageName}}',
         },
         fr: {
-          "infoCard.title": "NPM Paquet JSON {{packageName}}",
+          'infoCard.title': 'NPM Paquet JSON {{packageName}}',
         },
       },
     });
   });
 
-  it("should handle empty source", () => {
-    const target = { hello: "world" };
+  it('should handle empty source', () => {
+    const target = { hello: 'world' };
     const source = {};
 
     const result = deepMergeTranslations({ ...target }, source);
 
-    expect(result).toEqual({ hello: "world" });
+    expect(result).toEqual({ hello: 'world' });
   });
 
-  it("should handle empty target", () => {
+  it('should handle empty target', () => {
     const target = {};
-    const source = { hello: "world" };
+    const source = { hello: 'world' };
 
     const result = deepMergeTranslations({ ...target }, source);
 
-    expect(result).toEqual({ hello: "world" });
+    expect(result).toEqual({ hello: 'world' });
   });
 });

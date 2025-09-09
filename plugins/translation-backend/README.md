@@ -7,4 +7,4 @@ This plugin provides a simple backend service in RHDH that serves translation fi
 ## Getting started
 
 Your plugin has been added to the backend app in this repository, meaning you'll be able to access it by running `yarn
-start-backend` in the root directory, and then navigating to [/api/translation](http://localhost:7007/api/translation?path=<path-to-your-JSON-file>).
+start-backend` in the root directory, and then navigating to [/api/translation](http://localhost:7007/api/translation).

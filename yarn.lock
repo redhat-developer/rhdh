@@ -8161,6 +8161,7 @@ __metadata:
     "@types/supertest": 6.0.3
     express: 4.21.2
     express-promise-router: 4.1.1
+    prettier: 3.6.2
     supertest: 6.3.4
   languageName: unknown
   linkType: soft

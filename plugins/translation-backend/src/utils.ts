@@ -1,16 +1,16 @@
 export function isValidJSONTranslation(json: Record<string, any>): boolean {
-  if (typeof json !== "object" || json === null) return false;
+  if (typeof json !== 'object' || json === null) return false;
 
   for (const [pluginRef, locales] of Object.entries(json)) {
-    if (typeof pluginRef !== "string") return false;
-    if (typeof locales !== "object" || locales === null) return false;
+    if (typeof pluginRef !== 'string') return false;
+    if (typeof locales !== 'object' || locales === null) return false;
 
     for (const [locale, messages] of Object.entries(locales)) {
-      if (typeof locale !== "string") return false;
-      if (typeof messages !== "object" || messages === null) return false;
+      if (typeof locale !== 'string') return false;
+      if (typeof messages !== 'object' || messages === null) return false;
 
       for (const [k, v] of Object.entries(messages)) {
-        if (typeof k !== "string" || typeof v !== "string") {
+        if (typeof k !== 'string' || typeof v !== 'string') {
           return false;
         }
       }
@@ -27,7 +27,7 @@ export function deepMergeTranslations(
   for (const key of Object.keys(source)) {
     if (
       source[key] &&
-      typeof source[key] === "object" &&
+      typeof source[key] === 'object' &&
       !Array.isArray(source[key])
     ) {
       target[key] = deepMergeTranslations(target[key] || {}, source[key]);

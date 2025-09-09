@@ -210,13 +210,14 @@ i18n:
     - de
     - it
   defaultLocale: en # Optional. Used as fallback when browser language preferences don't match supported locales, or defaults to 'en' if not specified.
-  overrides: # List of json translation files to override existing plugin translations or add translations for a locale
-    - <path-to>/<plugin-x>.json
-    - <path-to>/<plugin-y>.json
+  overrides: # List of JSON translation files applied in order (last file wins).  Each file may override/add translations for one or more plugins/locales
+    - <path-to>/<overrides-1>.json
+    - <path-to>/<overrides-2>.json
 
 ```
 
-Example of json translation file, where the top-level key is the plugin translation id.
+Example of JSON translation file, where the top-level key is the plugin translation reference ID (defined as translationRef in the [plugin source](https://github.com/backstage/community-plugins/blob/main/workspaces/npm/plugins/npm/src/translations/ref.ts#L23)
+)
 
 ```
 {
