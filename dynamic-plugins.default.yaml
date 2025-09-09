@@ -1205,16 +1205,13 @@ plugins:
               - name: pluginsIcon
                 importName: PluginsIcon
             dynamicRoutes:
-              - path: /marketplace
+              - path: /extensions
                 importName: DynamicMarketplacePluginRouter
                 menuItem:
                   icon: pluginsIcon
                   text: Extensions
-            mountPoints:
-              - mountPoint: application/provider
-                importName: InstallationContextProvider
             menuItems:
-              marketplace:
+              extensions:
                 parent: default.admin
 
   # Group: Orchestrator
