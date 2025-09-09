@@ -1,13 +1,13 @@
-import React, { ErrorInfo } from 'react';
+import { Component, ComponentType, ErrorInfo, PropsWithChildren, ReactNode, useContext, useMemo } from 'react';
 
 import { ErrorPanel } from '@backstage/core-components';
 
 import DynamicRootContext from '@red-hat-developer-hub/plugin-utils';
 
-class ErrorBoundary extends React.Component<
+class ErrorBoundary extends Component<
   {
-    Component: React.ComponentType<{ children?: React.ReactNode }>;
-    children: React.ReactNode;
+    Component: ComponentType<{ children?: ReactNode }>;
+    children: ReactNode;
   },
   { error: any }
 > {
@@ -50,9 +50,9 @@ class ErrorBoundary extends React.Component<
 
 export const ApplicationProvider = ({
   children,
-}: React.PropsWithChildren<{}>) => {
-  const { mountPoints } = React.useContext(DynamicRootContext);
-  const providers = React.useMemo(
+}: PropsWithChildren<{}>) => {
+  const { mountPoints } = useContext(DynamicRootContext);
+  const providers = useMemo(
     () => mountPoints['application/provider'] ?? [],
     [mountPoints],
   );
