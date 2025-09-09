@@ -13,8 +13,8 @@ e2e-tests/
 │   ├── e2e/
 │   │   └── techdocs.spec.ts          # Example test file using i18n
 │   ├── support/
-│   │   └── techdocs/
-│   │       └── translations/
+│   │   └── translations/
+│   │       └── techdocs/
 │   │           ├── en.ts             # English translations
 │   │           ├── fr.ts             # French translations
 │   │           ├── de.ts             # German translations
@@ -141,16 +141,6 @@ test("Verify that TechDocs Docs page for Red Hat Developer Hub works", async ({ 
   await uiHelper.waitForTitle(t.techdocs.pageTitle, 1);
 });
 ```
-
----
-
-## Benefits of Using i18n in Tests
-
-* Easily switch test languages by changing a single environment variable.
-* Centralized translation files improve maintainability and clarity.
-* Test code becomes cleaner, more readable, and less prone to breakage from UI text changes.
-
----
 
 ## Running Tests in Different Languages
 
