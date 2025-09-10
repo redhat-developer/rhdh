@@ -18,8 +18,7 @@ test.describe("Filter critical notification tests", () => {
     common = new Common(page);
     notificationPage = new NotificationPage(page);
     await common.loginAsKeycloakUser();
-    apiToken = "test-token"
-    console.log(`apiToken -> ${apiToken}`);
+    apiToken = "test-token";
   });
 
   for (const severity of severities) {
@@ -27,7 +26,6 @@ test.describe("Filter critical notification tests", () => {
       const r = (Math.random() + 1).toString(36).substring(7);
       const notificationsApi = await RhdhNotficationsApi.build(apiToken);
       const notificationTitle = "UI Notification By Severity";
-      // Used broadcast here, but we should use type: entity and entityRef: ["user:<namespace>/<username>"]
       const notification: Notifications = {
         recipients: {
           type: "broadcast",

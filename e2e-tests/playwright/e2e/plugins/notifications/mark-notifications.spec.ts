@@ -3,7 +3,6 @@ import { UIhelper } from "../../../utils/ui-helper";
 import { Common } from "../../../utils/common";
 import RhdhNotificationsApi from "../../../support/api/notifications";
 import { Notifications } from "../../../support/api/notifications-api-structures";
-import { RhdhAuthApiHack } from "../../../support/api/rhdh-auth-api-hack";
 import { NotificationPage } from "../../../support/pages/notifications";
 
 test.describe("Mark notification tests", () => {
@@ -17,81 +16,80 @@ test.describe("Mark notification tests", () => {
     common = new Common(page);
     notificationPage = new NotificationPage(page);
     await common.loginAsKeycloakUser();
-    apiToken = await RhdhAuthApiHack.getToken(page);
-    console.log(`apiToken -> ${apiToken}`);
+    apiToken = "test-token";
   });
 
   test("Mark notification as read", async () => {
     const r = (Math.random() + 1).toString(36).substring(7);
     const notificationsApi = await RhdhNotificationsApi.build(apiToken);
-    const notificationTitle = `UI Notification Mark as read ${r}`;
+    const notificationTitle = `UI Notification Mark as read`;
     const notification: Notifications = {
       recipients: {
         type: "broadcast",
         entityRef: [""],
       },
       payload: {
-        title: notificationTitle,
-        description: `Test ${notificationTitle}`,
-        severity: "normal",
-        topic: `Testing ${notificationTitle}`,
+        title: `${notificationTitle}-${r}`,
+        description: `Test ${notificationTitle}-${r}`,
+        severity: "Normal",
+        topic: `Testing ${notificationTitle}-${r}`,
       },
     };
     await notificationsApi.createNotification(notification);
     await uiHelper.openSidebar("Notifications");
-    await notificationPage.notificationTextExists(notificationTitle);
-    await notificationPage.markNotificationAsRead(notificationTitle);
+    await notificationPage.notificationContains(`${notificationTitle}-${r}`);
+    await notificationPage.markNotificationAsRead(`${notificationTitle}-${r}`);
     await notificationPage.viewRead();
-    await notificationPage.notificationTextExists(
-      RegExp(`${notificationTitle}.*(a few seconds ago)|(a minute ago)`),
+    await notificationPage.notificationContains(
+      RegExp(`${notificationTitle}-${r}.*(a few seconds ago)|(a minute ago)`),
     );
   });
 
   test("Mark notification as unread", async () => {
     const r = (Math.random() + 1).toString(36).substring(7);
     const notificationsApi = await RhdhNotificationsApi.build(apiToken);
-    const notificationTitle = `UI Notification Mark as unread ${r}`;
+    const notificationTitle = `UI Notification Mark as unread`;
     const notification: Notifications = {
       recipients: {
         type: "broadcast",
         entityRef: [""],
       },
       payload: {
-        title: notificationTitle,
-        description: `Test ${notificationTitle}`,
-        severity: "normal",
-        topic: `Testing ${notificationTitle}`,
+        title: `${notificationTitle}-${r}`,
+        description: `Test ${notificationTitle}-${r}`,
+        severity: "Normal",
+        topic: `Testing ${notificationTitle}-${r}`,
       },
     };
     await notificationsApi.createNotification(notification);
     await uiHelper.openSidebar("Notifications");
-    await notificationPage.notificationTextExists(notificationTitle);
-    await notificationPage.markNotificationAsRead(notificationTitle);
+    await notificationPage.notificationContains(`${notificationTitle}-${r}`);
+    await notificationPage.markNotificationAsRead(`${notificationTitle}-${r}`);
     await notificationPage.viewRead();
-    await notificationPage.notificationTextExists(
-      RegExp(`${notificationTitle}.*(a few seconds ago)|(a minute ago)`),
+    await notificationPage.notificationContains(
+      RegExp(`${notificationTitle}-${r}.*(a few seconds ago)|(a minute ago)`),
     );
     await notificationPage.markLastNotificationAsUnRead();
     await notificationPage.viewUnRead();
-    await notificationPage.notificationTextExists(
-      RegExp(`${notificationTitle}.*(a few seconds ago)|(a minute ago)`),
+    await notificationPage.notificationContains(
+      RegExp(`${notificationTitle}-${r}.*(a few seconds ago)|(a minute ago)`),
     );
   });
 
   test("Mark notification as saved", async () => {
     const r = (Math.random() + 1).toString(36).substring(7);
     const notificationsApi = await RhdhNotificationsApi.build(apiToken);
-    const notificationTitle = `UI Notification Mark as saved ${r}`;
+    const notificationTitle = `UI Notification Mark as saved`;
     const notification: Notifications = {
       recipients: {
         type: "broadcast",
         entityRef: [""],
       },
       payload: {
-        title: notificationTitle,
-        description: `Test ${notificationTitle}`,
-        severity: "normal",
-        topic: `Testing ${notificationTitle}`,
+        title: `${notificationTitle}-${r}`,
+        description: `Test ${notificationTitle}-${r}`,
+        severity: "Normal",
+        topic: `Testing ${notificationTitle}-${r}`,
       },
     };
     await notificationsApi.createNotification(notification);
@@ -99,8 +97,8 @@ test.describe("Mark notification tests", () => {
     await notificationPage.selectNotification();
     await notificationPage.saveSelected();
     await notificationPage.viewSaved();
-    await notificationPage.notificationTextExists(
-      RegExp(`${notificationTitle}.*(a few seconds ago)|(a minute ago)`),
+    await notificationPage.notificationContains(
+      RegExp(`${notificationTitle}-${r}.*(a few seconds ago)|(a minute ago)`),
     );
   });
 });
