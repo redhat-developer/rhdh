@@ -66,7 +66,7 @@ test.describe("Test Topology Plugin with RBAC", () => {
   // User has 'kubernetes.clusters.read', 'kubernetes.resources.read', 'kubernetes.proxy' permissions
   test.describe("Verify a user with permissions is able to access the Topology plugin", () => {
     //Skipping for now as it is failing RHIDP-7164
-    test.beforeEach(async () => {
+    test.beforeEach(async ({ page }) => {
       await common.loginAsKeycloakUser();
 
       await catalog.goToBackstageJanusProject();

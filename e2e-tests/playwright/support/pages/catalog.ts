@@ -20,6 +20,9 @@ export class Catalog {
 
   async goToByName(name: string) {
     await this.uiHelper.openCatalogSidebar("Component");
+    // Wait for the catalog to load and check if the entity exists
+    await this.page.waitForLoadState('networkidle');
+    await this.uiHelper.verifyLink(name);
     await this.uiHelper.clickLink(name);
   }
 
