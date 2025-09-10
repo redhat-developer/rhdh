@@ -14,14 +14,13 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Check markdown links in docs
-      uses: gaurav-nelson/github-action-markdown-link-check@v1
+      uses: tcort/github-action-markdown-link-check@v1
       with:
         config-file: '.github/workflows/link-checker.config.json'
         folder-path: 'docs/'
-        ignore: "https://code.visualstudio.com/docs/nodejs/nodejs-debugging"  # Ignores known false positives
 
     - name: Check markdown files in root
-      uses: gaurav-nelson/github-action-markdown-link-check@v1
+      uses: tcort/github-action-markdown-link-check@v1
       with:
         config-file: '.github/workflows/link-checker.config.json'
         # ignore subfolders we don't want to check everthing, there is a lot of files from plugins that we don't control
