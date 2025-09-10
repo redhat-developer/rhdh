@@ -224,4 +224,4 @@ LOCALE=es npx playwright test
 
 ---
 
-With this setup, your tests are multilingual-ready, allowing you to catch UI issues across locales efficiently and with a simplified API.
+With this setup, your tests are multilingual-ready, allowing you to catch UI issues across locales efficiently and with a simplified API. 
