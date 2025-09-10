@@ -24,7 +24,7 @@ test.describe("Header mount points", () => {
   }) => {
     const header = page.locator("nav[id='global-header']");
     await expect(header).toBeVisible();
-    uiHelper.verifyLink({ label: "test-logo" });
+    await uiHelper.verifyLink({ label: "test-logo" });
   });
 
   test("Verify that additional header button component from a custom header plugin in global header is visible", async ({
@@ -32,8 +32,8 @@ test.describe("Header mount points", () => {
   }) => {
     const header = page.locator("nav[id='global-header']");
     await expect(header).toBeVisible();
-    expect(
-      await header.locator("button", { hasText: "Test Button" }),
+    await expect(
+      header.locator("button", { hasText: "Test Button" }),
     ).toHaveCount(1);
   });
 

@@ -14,6 +14,6 @@ export type BuildInfo = {
 };
 
 export type TranslationConfig = {
-  defaultLocale: string;
+  defaultLocale?: string;
   locales: string[];
 };

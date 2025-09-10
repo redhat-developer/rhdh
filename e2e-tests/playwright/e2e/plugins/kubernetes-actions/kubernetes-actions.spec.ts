@@ -2,7 +2,7 @@ import { expect, Page, test } from "@playwright/test";
 import { Common, setupBrowser } from "../../../utils/common";
 import { UIhelper } from "../../../utils/ui-helper";
 import { KubeClient } from "../../../utils/kube-client";
-import { UI_HELPER_ELEMENTS } from "../../../support/pageObjects/global-obj";
+import { UI_HELPER_ELEMENTS } from "../../../support/page-objects/global-obj";
 
 test.describe("Test Kubernetes Actions plugin", () => {
   let common: Common;
@@ -28,7 +28,6 @@ test.describe("Test Kubernetes Actions plugin", () => {
     await uiHelper.clickLink({ ariaLabel: "Self-service" });
   });
 
-  // eslint-disable-next-line no-empty-pattern
   test.beforeEach(async ({}, testInfo) => {
     // Add cool-down period before retries (except on first attempt)
     if (testInfo.retry > 0) {
@@ -61,7 +60,7 @@ test.describe("Test Kubernetes Actions plugin", () => {
     await page.waitForTimeout(1500);
     await expect(
       page.locator(`${UI_HELPER_ELEMENTS.MuiTypography}:has-text("Error")`),
-    ).not.toBeVisible();
+    ).toBeHidden();
     await kubeClient.getNamespaceByName(namespace);
   });
 
