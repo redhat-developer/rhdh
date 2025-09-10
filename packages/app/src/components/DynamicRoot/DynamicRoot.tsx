@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { createApp } from '@backstage/app-defaults';
 import { BackstageApp, MultipleAnalyticsApi } from '@backstage/core-app-api';
+import { coreComponentsTranslationRef } from '@backstage/core-components/alpha';
 import {
   AnalyticsApi,
   analyticsApiRef,
@@ -20,6 +21,9 @@ import {
   TranslationRef,
   TranslationResource,
 } from '@backstage/core-plugin-api/alpha';
+import { catalogImportTranslationRef } from '@backstage/plugin-catalog-import/alpha';
+import { catalogTranslationRef } from '@backstage/plugin-catalog/alpha';
+import { scaffolderTranslationRef } from '@backstage/plugin-scaffolder/alpha';
 
 import { useThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 import DynamicRootContext, {
@@ -558,7 +562,7 @@ export const DynamicRoot = ({
       TranslationResource[]
     >((acc, { scope, module, importName, ref }) => {
       const plugin = allPlugins[scope]?.[module];
-      const resource = plugin?.[importName] as InternalTranslationResource<any>;
+      const resource = plugin?.[importName] as InternalTranslationResource;
       const resourceRef = ref
         ? (plugin?.[ref] as any as TranslationRef<string, any>)
         : null;
@@ -584,8 +588,32 @@ export const DynamicRoot = ({
             overrideTranslations[resource?.id],
           );
 
-          acc.push(jsonResource as TranslationResource<string>);
+          acc.push(jsonResource);
         }
+      } else {
+        acc.push(resource);
+      }
+      return acc;
+    }, []);
+
+    const staticTranslationResources = [
+      {
+        resource: coreComponentsTranslations,
+        ref: coreComponentsTranslationRef,
+      },
+      { resource: catalogTranslations, ref: catalogTranslationRef },
+      { resource: scaffolderTranslations, ref: scaffolderTranslationRef },
+      { resource: catalogImportTranslations, ref: catalogImportTranslationRef },
+    ].reduce<TranslationResource[]>((acc, { resource, ref }) => {
+      const hasJsonOverrides = overrideTranslations[resource?.id];
+      if (hasJsonOverrides) {
+        const jsonResource = translationResourceGenerator(
+          ref,
+          resource as any as InternalTranslationResource,
+          overrideTranslations[resource?.id],
+        );
+
+        acc.push(jsonResource);
       } else {
         acc.push(resource);
       }
@@ -608,10 +636,7 @@ export const DynamicRoot = ({
           availableLanguages: translationConfig?.locales ?? ['en'],
           defaultLanguage: getDefaultLanguage(translationConfig),
           resources: [
-            coreComponentsTranslations,
-            catalogTranslations,
-            scaffolderTranslations,
-            catalogImportTranslations,
+            ...staticTranslationResources,
             ...(dynamicTranslationResources ?? []),
           ],
         },
