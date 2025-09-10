@@ -109,22 +109,80 @@ def mergePlugin(plugin: dict, allPlugins: dict, dynamicPluginsFile: str, level: 
         raise InstallException(f"content of the \'plugins.package\' field must be a string in {dynamicPluginsFile}")
 
     if package.startswith('oci://'):
-        # Check if package is in one of the expected formats: 
-        # Tag format: `oci://<registry>:<tag>!<path>`
-        # SHA digest format: `oci://<registry>@sha<algo>:<digest>!<path>`
-        oci_pattern = (
-            r'^(oci://[^\s:@]+)'
-            r'(?:'
-                r':([^\s!@:]+)'  # tag only
-                r'|'
-                r'@((?:sha256|sha512|blake3):[^\s!@:]+)'  # digest only
-            r')'
-            r'!([^\s]+)$'
-        )
-        match = re.match(oci_pattern, package)
-        if not match:
-            raise InstallException(f"oci package \'{package}\' is not in the expected format \'oci://<registry>:<tag>!<path>\' or \'oci://<registry>@sha<algo>:<digest>!<path>\' in {dynamicPluginsFile} where <algo> is one of {RECOGNIZED_ALGORITHMS}")
+        return OciPackageMerger(plugin, dynamicPluginsFile, allPlugins).merge_plugin(level)
+    else:
+        return PackageMerger(plugin, dynamicPluginsFile, allPlugins).merge_plugin(level)
 
+class PackageMerger:
+    def __init__(self, plugin: dict, dynamicPluginsFile: str, allPlugins: dict):
+        self.plugin = plugin
+        self.dynamicPluginsFile = dynamicPluginsFile
+        self.allPlugins = allPlugins
+        
+    def parse_plugin_key(self, package: str) -> str:
+        """Parses the package and returns the plugin key. Must be implemented by subclasses."""
+        return package
+    
+    def add_new_plugin(self, pluginKey: str):
+        """Adds a new plugin to the allPlugins dict."""
+        self.allPlugins[pluginKey] = self.plugin
+    def override_plugin(self, pluginKey: str):
+        """Overrides an existing plugin config with a new plugin config in the allPlugins dict."""
+        for key in self.plugin:
+            if key == 'package':
+                continue
+            self.allPlugins[pluginKey][key] = self.plugin[key]
+    def merge_plugin(self, level: int):
+        pluginKey = self.plugin['package']
+        if not isinstance(pluginKey, str):
+            raise InstallException(f"content of the \'package\' field must be a string in {self.dynamicPluginsFile}")
+        pluginKey = self.parse_plugin_key(pluginKey)
+        
+        if pluginKey not in self.allPlugins:
+            print(f'\n======= Adding new dynamic plugin configuration for {pluginKey}', flush=True)
+            # Keep track of the level of the plugin modification to know when dupe conflicts occur in `includes` and main config files
+            self.plugin["last_modified_level"] = level
+            self.add_new_plugin(pluginKey)
+        else:
+            # Override the included plugins with fields in the main plugins list
+            print('\n======= Overriding dynamic plugin configuration', pluginKey, flush=True)
+            
+            # Check for duplicate plugin configurations defined at the same level (level = 0 for `includes` and 1 for the main config file)
+            if self.allPlugins[pluginKey].get("last_modified_level") == level:
+                raise InstallException(f"Duplicate plugin configuration for {self.plugin['package']} found in {self.dynamicPluginsFile}.")
+            
+            self.allPlugins[pluginKey]["last_modified_level"] = level
+            self.override_plugin(pluginKey)
+
+class OciPackageMerger(PackageMerger):
+    EXPECTED_OCI_PATTERN = (
+        r'^(oci://[^\s:@]+)'
+        r'(?:'
+            r':([^\s!@:]+)'  # tag only
+            r'|'
+            r'@((?:sha256|sha512|blake3):[^\s!@:]+)'  # digest only
+        r')'
+        r'!([^\s]+)$'
+    )
+    def __init__(self, plugin: dict, dynamicPluginsFile: str, allPlugins: dict):
+        super().__init__(plugin, dynamicPluginsFile, allPlugins)
+    def parse_plugin_key(self, package: str) -> tuple[str, str, bool]:
+        """
+        Parses and validates OCI package name format.
+        Generates a plugin key and version from the OCI package name.
+        Also checks if the {{inherit}} tag is used correctly.
+        
+        Args:
+            package: The OCI package name.
+        Returns:
+            pluginKey: plugin key generated from the OCI package name
+            version: detected tag or digest of the plugin
+            inheritVersion: boolean indicating if the `{{inherit}}` tag is used
+        """  
+        match = re.match(self.EXPECTED_OCI_PATTERN, package)
+        if not match:
+            raise InstallException(f"oci package \'{package}\' is not in the expected format \'oci://<registry>:<tag>!<path>\' or \'oci://<registry>@sha<algo>:<digest>!<path>\' in {self.dynamicPluginsFile} where <algo> is one of {RECOGNIZED_ALGORITHMS}")
+        
         # Strip away the version (tag or digest) from the package string, resulting in oci://<registry>:!<path>
         # This helps ensure keys used to identify OCI plugins are independent of the version of the plugin
         registry = match.group(1)
@@ -132,60 +190,66 @@ def mergePlugin(plugin: dict, allPlugins: dict, dynamicPluginsFile: str, level: 
         digest_version = match.group(3)
 
         version = tag_version if tag_version else digest_version
-            
+        
         path = match.group(4) 
         
         # {{inherit}} tag indicates that the version should be inherited from the included configuration. Must NOT have a SHA digest included.
         inheritVersion = (tag_version == "{{inherit}}" and digest_version == None)
-        package = f"{registry}:!{path}"
-
-    # if `package` already exists in `allPlugins`, then override its fields
-    if package not in allPlugins:
-        if package.startswith('oci://'):
-            if inheritVersion is True:
-                # Cannot use {{inherit}} for the initial plugin configuration
-                raise InstallException(f"ERROR: {{{{inherit}}}} tag is set and there is currently no resolved tag or digest for {plugin['package']} in {dynamicPluginsFile}.")
-            else:
-                plugin["version"] = version
-        # Keep track of the level of the plugin modification to know when dupe conflicts occur in `includes` and main config files
-        plugin["last_modified_level"] = level
-        allPlugins[package] = plugin
-        return
-
-    # override the included plugins with fields in the main plugins list
-    print('\n======= Overriding dynamic plugin configuration', package, flush=True)
-    
-    # Check for duplicate plugin configurations defined at the same level (level = 0 for `includes` and 1 for the main config file)
-    if allPlugins[package].get("last_modified_level") == level:
-        raise InstallException(f"Duplicate plugin configuration for {plugin['package']} found in {dynamicPluginsFile}.")
-    
-    allPlugins[package]["last_modified_level"] = level
-
-    # Handle inheritVersion logic for OCI packages (whether the key exists or not)
-    if package.startswith('oci://'):
+        pluginKey = f"{registry}:!{path}"
+        
+        return pluginKey, version, inheritVersion
+    def add_new_plugin(self, version: str, inheritVersion: bool, pluginKey: str):
+        """
+        Adds a new plugin to the allPlugins dict.
+        """
         if inheritVersion is True:
-            # Cannot use {{inherit}} if there is not already a resolved tag or digest.
-            if version is None and allPlugins[package].get('version') is None:
-                # This exception should never happen since version can't be None
-                raise InstallException(f"ERROR: {{{{inherit}}}} tag is set and there is currently no resolved tag or digest for {plugin['package']} in {dynamicPluginsFile}.")
+            # Cannot use {{inherit}} for the initial plugin configuration
+            raise InstallException(f"ERROR: {{{{inherit}}}} tag is set and there is currently no resolved tag or digest for {self.plugin['package']} in {self.dynamicPluginsFile}.")
         else:
-            if version is None:
-                # This exception should never happen due to regex matching above
-                raise InstallException(f"Tag or Digest is invalid for {plugin['package']} in {dynamicPluginsFile}")        
-            allPlugins[package]['package'] = plugin['package'] # Override package since no version inheritance        
-            if allPlugins[package]['version'] != version:
-                print(f"INFO: Overriding version for {package} from `{allPlugins[package]['version']}` to `{version}`")
-            allPlugins[package]["version"] = version
-    
-    for key in plugin:
-        # Skip package field update if inheritVersion is set to True, or if package is not an OCI package
-        if key == 'package':
-            continue
-        # Don't allow internally managed `version` field to be overridden
-        if key == "version":
-            continue
-        allPlugins[package][key] = plugin[key]
-
+            self.plugin["version"] = version
+        self.allPlugins[pluginKey] = self.plugin
+    def override_plugin(self, version: str, inheritVersion: bool, pluginKey: str):
+        """
+        Overrides an existing plugin config with a new plugin config in the allPlugins dict.
+        If `inheritVersion` is True, the version of the existing plugin config will be ignored.
+        """
+        if inheritVersion is not True:
+            self.allPlugins[pluginKey]['package'] = self.plugin['package'] # Override package since no version inheritance        
+            
+            if self.allPlugins[pluginKey]['version'] != version:
+                print(f"INFO: Overriding version for {pluginKey} from `{self.allPlugins[pluginKey]['version']}` to `{version}`")
+            
+            self.allPlugins[pluginKey]["version"] = version
+            
+        for key in self.plugin:
+            if key == 'package':
+                continue
+            if key == "version":
+                continue
+            self.allPlugins[pluginKey][key] = self.plugin[key]
+            
+    def merge_plugin(self, level: int):
+        package = self.plugin['package']
+        if not isinstance(package, str):
+            raise InstallException(f"content of the \'package\' field must be a string in {self.dynamicPluginsFile}")
+        pluginKey, version, inheritVersion = self.parse_plugin_key(package)
+        
+        # If package does not already exist, add it
+        if pluginKey not in self.allPlugins:
+            print(f'\n======= Adding new dynamic plugin configuration for version {version} of {pluginKey}', flush=True)
+            # Keep track of the level of the plugin modification to know when dupe conflicts occur in `includes` and main config files
+            self.plugin["last_modified_level"] = level
+            self.add_new_plugin(version, inheritVersion, pluginKey)
+        else:
+            # Override the included plugins with fields in the main plugins list
+            print('\n======= Overriding dynamic plugin configuration', pluginKey, flush=True)
+            
+            # Check for duplicate plugin configurations defined at the same level (level = 0 for `includes` and 1 for the main config file)
+            if self.allPlugins[pluginKey].get("last_modified_level") == level:
+                raise InstallException(f"Duplicate plugin configuration for {self.plugin['package']} found in {self.dynamicPluginsFile}.")
+        
+            self.allPlugins[pluginKey]["last_modified_level"] = level
+            self.override_plugin(version, inheritVersion, pluginKey)
 class OciDownloader:
     def __init__(self, destination: str):
         self._skopeo = shutil.which('skopeo')
