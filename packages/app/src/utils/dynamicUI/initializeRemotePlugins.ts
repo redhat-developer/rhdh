@@ -4,10 +4,7 @@ import { ScalprumState } from '@scalprum/react-core';
 import { RemotePlugins } from '../../components/DynamicRoot/DynamicRoot';
 
 // See packages/app/src/App.tsx
-const ignoreStaticPlugins = [
-  'default.main-menu-items',
-  'internal.plugin-dynamic-plugins-info',
-];
+const ignoreStaticPlugins = ['default.main-menu-items'];
 
 const initializeRemotePlugins = async (
   pluginStore: ScalprumState['pluginStore'],

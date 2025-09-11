@@ -24,7 +24,6 @@ import { SidebarSearchModal } from '@backstage/plugin-search';
 import { Settings as SidebarSettings } from '@backstage/plugin-user-settings';
 
 import { policyEntityCreatePermission } from '@backstage-community/plugin-rbac-common';
-import { AdminIcon } from '@internal/plugin-dynamic-plugins-info';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ExpandMore from '@mui/icons-material/ExpandMore';
@@ -409,8 +408,8 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
       : menuItems.filter(mi => !mi.name.startsWith('default.'));
 
     menuItemArray = isBottomMenuSection
-      ? menuItemArray.filter(mi => mi.name === 'admin')
-      : menuItemArray.filter(mi => mi.name !== 'admin');
+      ? menuItemArray.filter(mi => mi.name.includes('admin'))
+      : menuItemArray.filter(mi => !mi.name.includes('admin'));
 
     if (isBottomMenuSection && !canDisplayRBACMenuItem && !loadingPermission) {
       menuItemArray[0].children = menuItemArray[0].children?.filter(
@@ -497,8 +496,8 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
             {showAdministration && (
               <>
                 <SidebarDivider />
-                <SidebarGroup label="Administration" icon={<AdminIcon />}>
-                  {renderMenuItems(false, true)}
+                <SidebarGroup label="Administration">
+                  {renderMenuItems(true, true)}
                 </SidebarGroup>
               </>
             )}
