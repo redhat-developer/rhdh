@@ -281,7 +281,7 @@ class OciPackageMerger(PackageMerger):
         
         # If package does not already exist, add it
         if pluginKey not in self.allPlugins:
-            print(f'\n======= Adding new dynamic plugin configuration for version {version} of {pluginKey}', flush=True)
+            print(f'\n======= Adding new dynamic plugin configuration for version `{version}` of {pluginKey}', flush=True)
             # Keep track of the level of the plugin modification to know when dupe conflicts occur in `includes` and main config files
             self.plugin["last_modified_level"] = level
             self.add_new_plugin(version, inheritVersion, pluginKey)
