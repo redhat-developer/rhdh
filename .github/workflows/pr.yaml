@@ -45,7 +45,7 @@ jobs:
           app-id: ${{ secrets.RHDH_GITHUB_APP_ID }}
           private-key: ${{ secrets.RHDH_GITHUB_APP_PRIVATE_KEY }}
       - name: Checkout main branch for secure version of check-author action
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
         with:
           fetch-depth: 1
           ref: main  # Always use main branch for security-critical action
@@ -88,7 +88,7 @@ jobs:
     needs: authorize
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha }}
@@ -131,7 +131,7 @@ jobs:
     needs: authorize
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha }}

@@ -17,9 +17,23 @@ export class BulkImport {
   }
 
   async filterAddedRepo(searchText: string) {
-    await this.page
-      .getByPlaceholder("Filter", { exact: true })
-      .fill(searchText);
+    await expect(async () => {
+      // Clear any existing filter first
+      await this.page.getByPlaceholder("Filter", { exact: true }).clear();
+
+      // Fill the filter with search text
+      await this.page
+        .getByPlaceholder("Filter", { exact: true })
+        .fill(searchText);
+
+      // Wait for the filter to be applied and verify no "no-import-jobs-found" message appears
+      await expect(this.page.getByTestId("no-import-jobs-found")).toBeHidden({
+        timeout: 2000,
+      });
+    }).toPass({
+      intervals: [1_000, 2_000, 5_000],
+      timeout: 15_000,
+    });
   }
 
   async newGitHubRepo(owner: string, repoName: string) {

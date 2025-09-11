@@ -285,4 +285,15 @@ export interface Config {
      */
     defaultLocale?: string;
   };
+  /**
+   * Configuration options for your user settings.
+   * @deepVisibility frontend
+   */
+  userSettings?: {
+    /**
+     * The persistence mode for user settings.
+     * @visibility frontend
+     */
+    persistence: 'browser' | 'database';
+  };
 }

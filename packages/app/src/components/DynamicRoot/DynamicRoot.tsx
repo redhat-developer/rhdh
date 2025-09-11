@@ -34,6 +34,7 @@ import { AppsConfig } from '@scalprum/core';
 import { useScalprum } from '@scalprum/react-core';
 
 import { catalogImportTranslations } from '../../translations/catalog-import/catalog-import';
+import { coreComponentsTranslations } from '../../translations/core-components/core-components';
 import { scaffolderTranslations } from '../../translations/scaffolder/scaffolder';
 import { TranslationConfig } from '../../types/types';
 import bindAppRoutes from '../../utils/dynamicUI/bindAppRoutes';
@@ -43,6 +44,7 @@ import extractDynamicConfig, {
   DynamicRoute,
 } from '../../utils/dynamicUI/extractDynamicConfig';
 import initializeRemotePlugins from '../../utils/dynamicUI/initializeRemotePlugins';
+import { getDefaultLanguage } from '../../utils/language/language';
 import { catalogTranslations } from '../catalog/translations/catalog';
 import { MenuIcon } from '../Root/MenuIcon';
 import CommonIcons from './CommonIcons';
@@ -563,8 +565,9 @@ export const DynamicRoot = ({
       app.current = createApp({
         __experimentalTranslations: {
           availableLanguages: translationConfig?.locales ?? ['en'],
-          defaultLanguage: translationConfig?.defaultLocale,
+          defaultLanguage: getDefaultLanguage(translationConfig),
           resources: [
+            coreComponentsTranslations,
             catalogTranslations,
             scaffolderTranslations,
             catalogImportTranslations,
