@@ -25,7 +25,7 @@ spec:
     - name: Roadie
       url: https://roadie.io/
   support:
-    name: Roadie
+    name: Backstage Community
     level: production
   lifecycle: active
   publisher: Red Hat

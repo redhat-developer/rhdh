@@ -27,7 +27,7 @@ spec:
 
   author: SDA SE
   support:
-    name: SDA SE
+    name: Red Hat
     level: tech-preview
   lifecycle: active
   publisher: Red Hat

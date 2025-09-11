@@ -27,7 +27,7 @@ spec:
   
   author: Dynatrace
   support:
-    name: Dynatrace
+    name: Backstage Community
     level: production
   lifecycle: active
   publisher: Dynatrace

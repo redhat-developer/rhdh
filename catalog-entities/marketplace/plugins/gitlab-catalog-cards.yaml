@@ -22,7 +22,7 @@ spec:
   author: ImmobiliareLabs
   publisher: Red Hat
   support:
-    name: ImmobiliareLabs
+    name: Backstage Community
     level: tech-preview
   lifecycle: active
 

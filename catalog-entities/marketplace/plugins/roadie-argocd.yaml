@@ -17,7 +17,7 @@ metadata:
 spec:
   lifecycle: active
   support:
-    name: Roadie
+    name: Backstage Community
     level: production
   publisher: Red Hat
   author: Roadie

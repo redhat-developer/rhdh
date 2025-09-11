@@ -27,7 +27,7 @@ spec:
   author: Roadie
   publisher: Red Hat
   support:
-    name: Roadie
+    name: Backstage Community
     level: tech-preview
   lifecycle: active
 

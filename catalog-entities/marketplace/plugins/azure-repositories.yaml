@@ -30,7 +30,7 @@ spec:
   author: Parfümerie Douglas
   publisher: Red Hat
   support:
-    name: Parfümerie Douglas
+    name: Backstage Community
     level: tech-preview
   lifecycle: active
 
