@@ -21,7 +21,6 @@ test.describe.serial("GitHub integration with Org data fetching", () => {
     await common.loginAsKeycloakUser();
   });
 
-  // eslint-disable-next-line no-empty-pattern
   test.beforeEach(({}, testInfo) => {
     if (testInfo.retry > 0) {
       // progressively increase test timeout for retries

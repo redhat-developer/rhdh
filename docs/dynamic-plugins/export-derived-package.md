@@ -5,11 +5,11 @@ Exporting a dynamic plugin package is a process of creating a new package that c
 
 This document describes how to export a dynamic plugin package from an existing Backstage plugin.
 
-The exporting is done using the `package export-dynamic-plugin` command from the `@janus-idp/cli` package.
+The exporting is done using the `plugin export` command from the `@red-hat-developer-hub/cli` package.
 The most convenient way to run the command is to use `npx`:
 
 ```bash
-npx @janus-idp/cli@latest package export-dynamic-plugin
+npx @red-hat-developer-hub/cli@latest plugin export
 ```
 
 This command needs to be executed in the root folder of the JavaScript package (with `package.json`) of the plugin that you want to export as a dynamic plugin.
@@ -21,22 +21,9 @@ This allows packing it with `npm pack`, or publishing it to npm registry. See [P
 > [!NOTE]
 > The derived dynamic plugin JavaScript packages should **not** be pushed to the public npm registry. They should only be published to a private npm registry.
 
-This documentation uses `@latest` tag to ensure that the latest version of the `@janus-idp/cli` package is used.
-But you need to make sure that you are using the version of the `@janus-idp/cli` package that is compatible with your RHDH version.
+This documentation uses `@latest` tag to ensure that the latest version of the `@red-hat-developer-hub/cli` package is used.
+But you need to make sure that you are using the version of the `@red-hat-developer-hub/cli` package that is compatible with your RHDH version.
 You can find the compatible versions in the [Version Matrix](./versions.md).
-
-If you are developing your own plugin that is going to be used as a dynamic plugin, it might be useful to add the `export-dynamic-plugin` command to the `package.json` file as a script:
-
-```json
-{
-  "scripts": {
-    "export-dynamic": "janus-cli package package export-dynamic-plugin"
-  },
-  "devDependencies": {
-    "@janus-idp/cli": "^1.18.0"
-  }
-}
-```
 
 ## Backend plugins
 
@@ -74,7 +61,7 @@ If a plugin depends on another package in the same monorepo workspace, and it do
 Example of exporting a dynamic plugin with shared and embedded packages:
 
 ```bash
-npx @janus-idp/cli@latest export-dynamic-plugin --shared-package '!/@backstage/plugin-notifications/' --embed-package @backstage/plugin-notifications-backend
+npx @red-hat-developer-hub/cli@latest plugin export --shared-package '!/@backstage/plugin-notifications/' --embed-package @backstage/plugin-notifications-backend
 ```
 
 In this example, the `@backstage/plugin-notifications` package is marked as a private dependency (not shared) and it will be bundled in the dynamic plugin package, even though it is in the `@backstage` scope.
@@ -82,7 +69,7 @@ The `@backstage/plugin-notifications-backend` package is marked as an embedded d
 
 ## Frontend plugins
 
-Our CLI can generate the default configuration for Scalprum on the fly. For generated defaults see logs when running `npx @janus-idp/cli@latest export-dynamic`. We default to the following configuration:
+Our CLI can generate the default configuration for Scalprum on the fly. For generated defaults see logs when running `npx @red-hat-developer-hub/cli@latest plugin export`. We default to the following configuration:
 
 ```json
   ...

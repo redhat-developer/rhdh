@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { UIhelper } from "../../utils/ui-helper";
 import { Common } from "../../utils/common";
-import { UI_HELPER_ELEMENTS } from "../../support/pageObjects/global-obj";
+import { UI_HELPER_ELEMENTS } from "../../support/page-objects/global-obj";
 
 test.describe("Test ApplicationProvider", () => {
   test.beforeAll(async () => {
@@ -37,8 +37,8 @@ test.describe("Test ApplicationProvider", () => {
       .locator("button")
       .filter({ hasText: "+" });
     await contextOneIncrementButton.click();
-    expect(contextOneFirstLocator.getByText("1")).toBeVisible();
-    expect(contextOneSecondLocator.getByText("1")).toBeVisible();
+    await expect(contextOneFirstLocator.getByText("1")).toBeVisible();
+    await expect(contextOneSecondLocator.getByText("1")).toBeVisible();
 
     await uiHelper.verifyTextinCard("Context two", "Context two");
     const contextTwoFirstLocator = page
@@ -51,7 +51,7 @@ test.describe("Test ApplicationProvider", () => {
       .locator("button")
       .filter({ hasText: "+" });
     await contextTwoIncrementButton.click();
-    expect(contextTwoFirstLocator.getByText("1")).toBeVisible();
-    expect(contextTwoSecondLocator.getByText("1")).toBeVisible();
+    await expect(contextTwoFirstLocator.getByText("1")).toBeVisible();
+    await expect(contextTwoSecondLocator.getByText("1")).toBeVisible();
   });
 });
