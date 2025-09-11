@@ -570,21 +570,6 @@ RECOGNIZED_ALGORITHMS = (
     'sha256',
 )
 
-def merge(source, destination, prefix = ''):
-    for key, value in source.items():
-        if isinstance(value, dict):
-            # get node or create one
-            node = destination.setdefault(key, {})
-            merge(value, node, key + '.')
-        else:
-            # if key exists in destination trigger an error
-            if key in destination and destination[key] != value:
-                raise InstallException(f"Config key '{ prefix + key }' defined differently for 2 dynamic plugins")
-
-            destination[key] = value
-
-    return destination
-
 def get_local_package_info(package_path: str) -> dict:
     """Get package information from a local package to include in hash calculation."""
     try:
@@ -625,30 +610,6 @@ def get_local_package_info(package_path: str) -> dict:
         # If we can't read the package info, include the error in hash
         # This ensures we'll try to reinstall if there are permission issues, etc.
         return {'_error': str(e)}
-
-def maybeMergeConfig(config, globalConfig):
-    if config is not None and isinstance(config, dict):
-        print('\t==> Merging plugin-specific configuration', flush=True)
-        return merge(config, globalConfig)
-    else:
-        return globalConfig
-
-def mergePlugin(plugin: dict, allPlugins: dict, dynamicPluginsFile: str):
-    package = plugin['package']
-    if not isinstance(package, str):
-        raise InstallException(f"content of the \'plugins.package\' field must be a string in {dynamicPluginsFile}")
-
-    # if `package` already exists in `allPlugins`, then override its fields
-    if package not in allPlugins:
-        allPlugins[package] = plugin
-        return
-
-    # override the included plugins with fields in the main plugins list
-    print('\n======= Overriding dynamic plugin configuration', package, flush=True)
-    for key in plugin:
-        if key == 'package':
-            continue
-        allPlugins[package][key] = plugin[key]
 
 def verify_package_integrity(plugin: dict, archive: str, working_directory: str) -> None:
     package = plugin['package']
