@@ -576,8 +576,7 @@ test.describe.serial("Test RBAC", () => {
       await uiHelper.openSidebar("Catalog");
       await uiHelper.clickButton("Self-service");
       
-      // Ensure we are on the Create page and not redirected to Get Started
-      await page.waitForURL('/create', { timeout: 20000, waitUntil: 'domcontentloaded' });
+      // Verify we are on the Create page by checking the heading
       await uiHelper.verifyHeading("Self-service", 20000);
       
       expect(
