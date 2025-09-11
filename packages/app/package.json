@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "janus-cli package start",
-    "build": "janus-cli package build",
+    "build": "janus-cli package build && node ../../scripts/generate-index-template.mjs",
     "clean": "backstage-cli package clean",
     "test": "backstage-cli package test --passWithNoTests --coverage",
     "lint:check": "backstage-cli package lint",
