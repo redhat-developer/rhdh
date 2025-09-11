@@ -25,10 +25,6 @@ export class NotificationPage {
     await expect(row).toHaveCount(1);
   }
 
-  async notificationTextExists(text: string | RegExp) {
-    await expect(this.page.getByRole("cell", { name: text })).toHaveCount(1);
-  }
-
   async clickNotificationHeadingLink(text: string | RegExp) {
     await this.page
       .getByRole("cell", { name: text, exact: true })
