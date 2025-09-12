@@ -24,6 +24,7 @@ describe('createRouter', () => {
     mockConfig = mockServices.rootConfig({
       data: {
         i18n: {
+          locales: ['en', 'de'],
           overrides: ['/tmp/en.json', '/tmp/de.json'],
         },
       },
@@ -73,7 +74,7 @@ describe('createRouter', () => {
 
     expect(res.status).toBe(404);
     expect(res.body.error).toContain(
-      'No valid translation overrides found in provided files',
+      'No valid translation overrides found in the provided files',
     );
   });
 
@@ -87,7 +88,7 @@ describe('createRouter', () => {
 
     expect(res.status).toBe(404);
     expect(res.body.error).toContain(
-      'No valid translation overrides found in provided files',
+      'No valid translation overrides found in the provided files',
     );
   });
 
@@ -103,5 +104,73 @@ describe('createRouter', () => {
     expect(res.body.error).toContain(
       'Failed to process translation override files',
     );
+  });
+
+  it('should filter out translations not in configured locales', async () => {
+    mockConfig = mockServices.rootConfig({
+      data: {
+        i18n: {
+          overrides: ['/tmp/en.json', '/tmp/de.json'],
+          locales: ['en'],
+        },
+      },
+    });
+
+    const router = await createRouter({
+      logger: mockServices.logger.mock(),
+      config: mockConfig,
+    });
+
+    app = express();
+    app.use('/', router);
+
+    (fs.existsSync as jest.Mock).mockReturnValue(true);
+    (fs.readFileSync as jest.Mock).mockImplementation((filePath: string) => {
+      if (filePath === '/tmp/en.json') {
+        return JSON.stringify({ plugin: { en: { hello: 'world' } } });
+      }
+      if (filePath === '/tmp/de.json') {
+        return JSON.stringify({ plugin: { de: { hello: 'welt' } } });
+      }
+      return '{}';
+    });
+
+    const res = await request(app).get('/');
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      plugin: {
+        en: { hello: 'world' },
+      },
+    });
+  });
+
+  it('should return empty object if locales in the override translations are not configured in app-config', async () => {
+    mockConfig = mockServices.rootConfig({
+      data: {
+        i18n: {
+          overrides: ['/tmp/de.json'],
+          locales: ['en'],
+        },
+      },
+    });
+
+    const router = await createRouter({
+      logger: mockServices.logger.mock(),
+      config: mockConfig,
+    });
+
+    app = express();
+    app.use('/', router);
+
+    (fs.existsSync as jest.Mock).mockReturnValue(true);
+    (fs.readFileSync as jest.Mock).mockImplementation(_filePath =>
+      JSON.stringify({ plugin: { de: { hello: 'welt' } } }),
+    );
+
+    const res = await request(app).get('/');
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({});
   });
 });
