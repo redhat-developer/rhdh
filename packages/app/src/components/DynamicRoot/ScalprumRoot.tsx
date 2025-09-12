@@ -116,6 +116,7 @@ const ScalprumRoot = ({
         staticPluginStore={plugins}
         scalprumConfig={scalprumConfig ?? {}}
         translationConfig={translationConfig}
+        baseUrl={baseUrl as string}
       />
     </ScalprumProvider>
   );
