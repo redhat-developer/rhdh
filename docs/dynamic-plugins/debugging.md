@@ -25,9 +25,8 @@ Debugger listening on ws://127.0.0.1:9229/9299bb26-3c32-4781-9488-7759b8781db5
 ```
 
 * The application will be accessible from `http://localhost:7007`. You may start the front end by running the following command from the root directory: `yarn start --filter=app`. It will be available in `http://localhost:3000`
-<!-- markdown-link-check-disable -->
+<!-- markdown-link-check-disable-next-line -->
 * Attach your IDE debugger to the backend process. This step may depend on the IDE that you are using. For example, if you are using VS Code you may want to check [Node.js debugging in VS Code](https://code.visualstudio.com/docs/nodejs/nodejs-debugging)
-<!-- markdown-link-check-enable -->
 * Add Breakpoints to the files in folder `dynamic-plugins-root/${plugin-id}`. Optionally you can configure your IDE to add the source maps for the plugin so you can debug the TypeScript code directly and not the compiled JavaScript files
 
 ## Backend Dynamic Plugins Container Debug

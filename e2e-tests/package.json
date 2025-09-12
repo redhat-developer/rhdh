@@ -23,6 +23,7 @@
     "lint:fix": "eslint . --ext .js,.ts --fix",
     "postinstall": "playwright install chromium",
     "tsc": "tsc",
+    "tsc:check": "tsc -p tsconfig.json",
     "prettier:check": "prettier --ignore-unknown --check .",
     "prettier:fix": "prettier --ignore-unknown --write ."
   },
