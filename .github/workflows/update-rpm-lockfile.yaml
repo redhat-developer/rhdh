@@ -16,6 +16,8 @@ permissions:
   contents: write
   pull-requests: write
 
+env:
+  DOCKERFILE_PATH: .rhdh/docker/Dockerfile
 jobs:
   update-lockfile:
     runs-on: ubuntu-latest
@@ -25,10 +27,16 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Check if hermetic Dockerfile exists
+        run: |
+          if [ ! -f "${{ env.DOCKERFILE_PATH }}" ]; then
+            echo "Error: ${{ env.DOCKERFILE_PATH }} not found!"
+            exit 1
+          fi
       - name: Configure Git
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "rhdh-bot"
+          git config --global user.email "rhdh-bot@redhat.com"
 
       - name: Install rpm-lockfile-prototype
         run: |
@@ -49,18 +57,9 @@ jobs:
           else
             echo "rpm-lockfile-prototype already installed"
           fi
-
-      - name: Check if hermetic Dockerfile exists
-        run: |
-          if [ ! -f ".rhdh/docker/Dockerfile" ]; then
-            echo "Error: .rhdh/docker/Dockerfile not found!"
-            exit 1
-          fi
-
       - name: Run rpm-lockfile-prototype
         run: |
-          echo "Regen rpms.lock.yaml from Dockerfile + rpms.in.yaml using $(which rpm-lockfile-prototype) in [$(pwd)]"
-          "${HOME}/.local/bin/rpm-lockfile-prototype" -f .rhdh/docker/Dockerfile rpms.in.yaml
+          echo "Running '${HOME}/.local/bin/rpm-lockfile-prototype -f ${{ env.DOCKERFILE_PATH }} rpms.in.yaml' in $(pwd)"
 
       - name: Check for lockfile changes
         id: check-lockfile-changes
@@ -69,7 +68,7 @@ jobs:
             echo "No changes to rpms.lock.yaml detected, skipping PR creation"
             echo "changes=false" >> $GITHUB_OUTPUT
           else
-            echo "Changes detected in rpms.lock.yaml"
+            echo "Changes detected in rpms.lock.yaml, creating PR"
             echo "changes=true" >> $GITHUB_OUTPUT
           fi
 
@@ -84,7 +83,7 @@ jobs:
           body: |
             ## Description
             
-            This PR updates the `rpms.lock.yaml` file with the latest package versions based on current `rpms.in.yaml` configuration using `.rhdh/docker/Dockerfile` as the base container context
+            This PR updates the `rpms.lock.yaml` file with the latest package versions based on current `rpms.in.yaml` configuration using `${{ env.DOCKERFILE_PATH }}` as the base container context
             
             This PR was automatically created by the [Update RPM Lockfile GitHub Action](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
           branch: update-rpm-lockfile
@@ -102,5 +101,5 @@ jobs:
           if [ "${{ steps.check-lockfile-changes.outputs.changes }}" == "true" ]; then
             echo "✅ RPM lockfile updated and created PR: ${{ steps.create-pull-request.outputs.pull-request-url }}"
           else
-            echo "ℹ️ No changes detected in RPM lockfile"
+            echo "🚫 No changes detected in RPM lockfile"
           fi
