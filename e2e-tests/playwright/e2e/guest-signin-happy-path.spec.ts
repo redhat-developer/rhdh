@@ -27,15 +27,14 @@ test.describe("Guest Signing Happy path", () => {
     await homePage.verifyQuickAccess("Developer Tools", "Podman Desktop");
   });
 
-  test("Verify Profile is Guest in the Settings page", async () => {
-    await uiHelper.goToSettingsPage();
+  test("Verify Profile is Guest in the Settings page", async ({ page }) => {
+    await page.goto("/settings");
     await uiHelper.verifyHeading("Guest");
     await uiHelper.verifyHeading("User Entity: guest");
   });
 
-  test("Sign Out and Verify that you return to the Sign-in page", async () => {
-    await uiHelper.goToSettingsPage();
-    await uiHelper.goToSettingsPage();
+  test("Sign Out and Verify that you return to the Sign-in page", async ({ page }) => {
+    await page.goto("/settings");
     await common.signOut();
   });
 });
