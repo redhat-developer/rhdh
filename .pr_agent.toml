@@ -1,0 +1,39 @@
+[jira]
+jira_api_token = "${{ secrets.JIRA_API_TOKEN }}"
+jira_base_url = "https://issues.redhat.com"
+
+[github_app]
+# what should be launched automatically
+pr_commands = [
+    "/review",
+    "/describe --pr_description.final_update_message=false",
+    "/improve",
+]
+feedback_on_draft_pr = false
+
+[pr_reviewer] # /review #
+persistent_comment = true
+require_tests_review = false
+require_ticket_analysis_review = true
+enable_review_labels_security = true
+enable_review_labels_effort = true
+
+[pr_description] # /describe #
+enable_pr_diagram = false
+publish_labels = true
+final_update_message = true
+# without this, it can interfere with Sourcery AI
+publish_description_as_comment = true
+publish_description_as_comment_persistent = true
+add_original_user_description = false
+
+[pr_code_suggestions]
+commitable_code_suggestions = false
+
+[config]
+ignore_pr_authors = ["renovate","openshift-cherrypick-robot","rhdh-bot"]
+allow_only_specific_folders=["e2e-tests"]
+
+[rag_arguments]
+enable_rag=true
+rag_repo_list=["redhat-developer/rhdh","redhat-developer/red-hat-developers-documentation-rhdh","redhat-developer/rhdh-operator","redhat-developer/rhdh-chart"]
