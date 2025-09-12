@@ -76,8 +76,8 @@ export class Orchestrator {
     await expect(workflowHeader).toHaveText("Workflows");
     await expect(Workflows.workflowsTable(this.page)).toBeVisible();
     await expect(
-      this.page.locator(`input[aria-label="Search"]`),
-    ).toHaveAttribute("placeholder", "Search");
+      this.page.locator(`input[aria-label="Filter"]`),
+    ).toHaveAttribute("placeholder", "Filter");
     await expect(
       this.page.getByRole("columnheader", { name: "Name", exact: true }),
     ).toBeVisible();
