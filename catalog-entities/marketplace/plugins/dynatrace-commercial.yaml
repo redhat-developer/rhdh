@@ -28,7 +28,7 @@ spec:
   author: Dynatrace
   support:
     name: Dynatrace
-    level: production
+    level: ga
   lifecycle: active
   publisher: Dynatrace
 
