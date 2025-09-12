@@ -82,9 +82,6 @@ export class Orchestrator {
       this.page.getByRole("columnheader", { name: "Name", exact: true }),
     ).toBeVisible();
     await expect(
-      this.page.getByRole("columnheader", { name: "Category", exact: true }),
-    ).toBeVisible();
-    await expect(
       this.page.getByRole("columnheader", {
         name: "Workflow status",
         exact: true,
@@ -171,7 +168,6 @@ export class Orchestrator {
       "ID",
       "Workflow name",
       "Run Status",
-      "Category",
       "Started",
       "Duration",
     ];
