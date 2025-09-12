@@ -1,7 +1,7 @@
 import GlobalStyles from '@mui/material/GlobalStyles';
+import { StaticPlugins } from '@red-hat-developer-hub/plugin-utils';
 
 import { apis } from './apis';
-import { StaticPlugins } from './components/DynamicRoot/DynamicRoot';
 import ScalprumRoot from './components/DynamicRoot/ScalprumRoot';
 import { DefaultMainMenuItems } from './consts';
 

@@ -35,6 +35,7 @@ import Collapse from '@mui/material/Collapse';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import { styled, SxProps, Theme } from '@mui/material/styles';
+import { MenuIcon } from '@red-hat-developer-hub/app-utils';
 import { ThemeConfig } from '@red-hat-developer-hub/backstage-plugin-theme';
 import DynamicRootContext, {
   ResolvedMenuItem,
@@ -42,7 +43,6 @@ import DynamicRootContext, {
 
 import { useLanguagePreference } from '../../hooks/useLanguagePreference';
 import { ApplicationHeaders } from './ApplicationHeaders';
-import { MenuIcon } from './MenuIcon';
 import { SidebarLogo } from './SidebarLogo';
 
 /**

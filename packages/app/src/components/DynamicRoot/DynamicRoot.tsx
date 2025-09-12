@@ -4,31 +4,40 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { createApp } from '@backstage/app-defaults';
 import { BackstageApp, MultipleAnalyticsApi } from '@backstage/core-app-api';
 import {
-  AnalyticsApi,
   analyticsApiRef,
   AnyApiFactory,
   AppComponents,
-  AppTheme,
   BackstagePlugin,
-  ConfigApi,
   configApiRef,
   createApiFactory,
-  IdentityApi,
   identityApiRef,
 } from '@backstage/core-plugin-api';
 import { TranslationResource } from '@backstage/core-plugin-api/alpha';
 
+import {
+  bindAppRoutes,
+  configIfToCallable,
+  DynamicPluginConfig,
+  DynamicRoute,
+  extractDynamicConfig,
+  MenuIcon,
+} from '@red-hat-developer-hub/app-utils';
 import { useThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 import DynamicRootContext, {
+  AnalyticsApiClass,
+  AppThemeProvider,
   ComponentRegistry,
   DynamicRootConfig,
   EntityTabOverrides,
   MountPointConfig,
   MountPoints,
+  RemotePlugins,
   ResolvedDynamicRoute,
   ResolvedDynamicRouteMenuItem,
-  ScaffolderFieldExtension,
-  TechdocsAddon,
+  ResolvedScaffolderFieldExtension,
+  ResolvedTechdocsAddon,
+  StaticPlugins,
+  TranslationConfig,
 } from '@red-hat-developer-hub/plugin-utils';
 import { AppsConfig } from '@scalprum/core';
 import { useScalprum } from '@scalprum/react-core';
@@ -36,59 +45,12 @@ import { useScalprum } from '@scalprum/react-core';
 import { catalogImportTranslations } from '../../translations/catalog-import/catalog-import';
 import { coreComponentsTranslations } from '../../translations/core-components/core-components';
 import { scaffolderTranslations } from '../../translations/scaffolder/scaffolder';
-import { TranslationConfig } from '../../types/types';
-import bindAppRoutes from '../../utils/dynamicUI/bindAppRoutes';
-import extractDynamicConfig, {
-  configIfToCallable,
-  DynamicPluginConfig,
-  DynamicRoute,
-} from '../../utils/dynamicUI/extractDynamicConfig';
 import initializeRemotePlugins from '../../utils/dynamicUI/initializeRemotePlugins';
 import { getDefaultLanguage } from '../../utils/language/language';
 import { catalogTranslations } from '../catalog/translations/catalog';
-import { MenuIcon } from '../Root/MenuIcon';
 import CommonIcons from './CommonIcons';
 import defaultAppComponents from './defaultAppComponents';
 import Loader from './Loader';
-
-export type RemotePlugins = {
-  [scope: string]: {
-    [module: string]: {
-      [importName: string]:
-        | React.ComponentType<React.PropsWithChildren>
-        | ((...args: any[]) => any)
-        | BackstagePlugin<{}>
-        | {
-            element: React.ComponentType<React.PropsWithChildren>;
-            staticJSXContent:
-              | React.ReactNode
-              | ((config: DynamicRootConfig) => React.ReactNode);
-          }
-        | AnyApiFactory
-        | AnalyticsApiClass
-        | TranslationResource<string>;
-    };
-  };
-};
-
-type AnalyticsApiClass = {
-  fromConfig(
-    config: ConfigApi,
-    deps: { identityApi: IdentityApi },
-  ): AnalyticsApi;
-};
-
-type AppThemeProvider = Partial<AppTheme> & Omit<AppTheme, 'theme'>;
-
-export type StaticPlugins = Record<
-  string,
-  {
-    plugin: BackstagePlugin;
-    module:
-      | React.ComponentType<any>
-      | { [importName: string]: React.ComponentType<any> };
-  }
->;
 
 export const DynamicRoot = ({
   afterInit,
@@ -201,8 +163,12 @@ export const DynamicRoot = ({
     );
 
     const allScopes = Object.values(remotePlugins);
-    const allModules = allScopes.flatMap(scope => Object.values(scope));
-    const allImports = allModules.flatMap(module => Object.values(module));
+    const allModules = allScopes.flatMap(scope =>
+      Object.values(scope as Record<string, any>),
+    );
+    const allImports = allModules.flatMap(mod =>
+      Object.values(mod as Record<string, any>),
+    );
     const remoteBackstagePlugins = allImports.filter(imported => {
       if (!imported) {
         return false;
@@ -452,7 +418,7 @@ export const DynamicRoot = ({
     );
 
     const scaffolderFieldExtensionComponents = scaffolderFieldExtensions.reduce<
-      ScaffolderFieldExtension[]
+      ResolvedScaffolderFieldExtension[]
     >((acc, { scope, module, importName }) => {
       const extensionComponent = allPlugins[scope]?.[module]?.[importName];
       if (extensionComponent) {
@@ -471,29 +437,28 @@ export const DynamicRoot = ({
       return acc;
     }, []);
 
-    const techdocsAddonComponents = techdocsAddons.reduce<TechdocsAddon[]>(
-      (acc, { scope, module, importName, config }) => {
-        const extensionComponent = allPlugins[scope]?.[module]?.[importName];
-        if (extensionComponent) {
-          acc.push({
-            scope,
-            module,
-            importName,
-            Component: extensionComponent as React.ComponentType<unknown>,
-            config: {
-              ...config,
-            },
-          });
-        } else {
-          // eslint-disable-next-line no-console
-          console.warn(
-            `Plugin ${scope} is not configured properly: ${module}.${importName} not found, ignoring techdocsAddon: ${importName}`,
-          );
-        }
-        return acc;
-      },
-      [],
-    );
+    const techdocsAddonComponents = techdocsAddons.reduce<
+      ResolvedTechdocsAddon[]
+    >((acc, { scope, module, importName, config }) => {
+      const extensionComponent = allPlugins[scope]?.[module]?.[importName];
+      if (extensionComponent) {
+        acc.push({
+          scope,
+          module,
+          importName,
+          Component: extensionComponent as React.ComponentType<unknown>,
+          config: {
+            ...config,
+          },
+        });
+      } else {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `Plugin ${scope} is not configured properly: ${module}.${importName} not found, ignoring techdocsAddon: ${importName}`,
+        );
+      }
+      return acc;
+    }, []);
 
     const dynamicThemeProviders = pluginThemes.reduce<AppThemeProvider[]>(
       (acc, { scope, module, importName, icon, ...rest }) => {
@@ -540,8 +505,8 @@ export const DynamicRoot = ({
       TranslationResource[]
     >((acc, { scope, module, importName }) => {
       const resource = allPlugins[scope]?.[module]?.[importName];
-      if (resource && (resource as TranslationResource<string>).id) {
-        acc.push(resource as TranslationResource<string>);
+      if (resource && (resource as unknown as TranslationResource<string>).id) {
+        acc.push(resource as unknown as TranslationResource<string>);
       } else {
         // eslint-disable-next-line no-console
         console.warn(
