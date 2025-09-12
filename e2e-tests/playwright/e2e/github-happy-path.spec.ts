@@ -209,7 +209,7 @@ test.describe.serial("GitHub Happy path", async () => {
 
   test("Sign out and verify that you return back to the Sign in page", async () => {
     test.fixme();
-    await uiHelper.goToSettingsPage();
+    await page.goto("/settings");
     await common.signOut();
     await context.clearCookies();
   });
