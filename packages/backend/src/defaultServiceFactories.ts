@@ -1,3 +1,7 @@
+import {
+  actionsRegistryServiceFactory,
+  actionsServiceFactory,
+} from '@backstage/backend-defaults/alpha';
 import { auditorServiceFactory } from '@backstage/backend-defaults/auditor';
 import { authServiceFactory } from '@backstage/backend-defaults/auth';
 import { cacheServiceFactory } from '@backstage/backend-defaults/cache';
@@ -13,7 +17,10 @@ import { rootConfigServiceFactory } from '@backstage/backend-defaults/rootConfig
 import { rootHealthServiceFactory } from '@backstage/backend-defaults/rootHealth';
 import { rootHttpRouterServiceFactory } from '@backstage/backend-defaults/rootHttpRouter';
 import { rootLifecycleServiceFactory } from '@backstage/backend-defaults/rootLifecycle';
-import { WinstonLogger } from '@backstage/backend-defaults/rootLogger';
+import {
+  rootLoggerServiceFactory,
+  WinstonLogger,
+} from '@backstage/backend-defaults/rootLogger';
 import { schedulerServiceFactory } from '@backstage/backend-defaults/scheduler';
 import { urlReaderServiceFactory } from '@backstage/backend-defaults/urlReader';
 import { userInfoServiceFactory } from '@backstage/backend-defaults/userInfo';
@@ -41,11 +48,14 @@ export const DEFAULT_SERVICE_FACTORIES: ServiceFactory[] = [
   rootHealthServiceFactory,
   rootHttpRouterServiceFactory,
   rootLifecycleServiceFactory,
-  // rootLoggerServiceFactory,
+  rootLoggerServiceFactory,
   schedulerServiceFactory,
   userInfoServiceFactory,
   urlReaderServiceFactory,
   eventsServiceFactory,
+  // alpha services
+  actionsRegistryServiceFactory,
+  actionsServiceFactory,
 ] as const;
 
 export const getDefaultServiceFactories = ({

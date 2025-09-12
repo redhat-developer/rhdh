@@ -33,6 +33,6 @@ describe('Default service factory list comparison', () => {
     );
     expect(
       findSymmetricDifference(upstreamServiceFactoryIds, serviceFactoryIds),
-    ).toEqual(['core.rootLogger']);
+    ).toEqual([]);
   });
 });
