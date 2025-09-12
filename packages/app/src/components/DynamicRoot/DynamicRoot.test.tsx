@@ -87,6 +87,7 @@ const MockApp = ({
       }
       dynamicPlugins={dynamicPlugins}
       scalprumConfig={{}}
+      baseUrl="http://localhost:7007"
     />
   </Suspense>
 );

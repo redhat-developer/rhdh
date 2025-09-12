@@ -522,6 +522,23 @@ plugins:
               - importName: <plugin translation>
 ```
 
+Users can override default translations of a plugin with their own JSON-based translations
+
+```yaml
+# dynamic-plugins-config.yaml
+plugins:
+  - plugin: <plugin_path_or_url>
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          <package_name>: # must match the `scalprum.name` key in plugin's `package.json`
+            translationResources:
+              # Adding the exported translations for this plugin
+              - importName: <plugin translation>
+                ref: <plugin translation ref> # Ref is required for `jsonTranslations`
+```
+
 ## Provide additional Utility APIs
 
 Backstage offers a Utility API mechanism that provide ways for plugins to communicate during their entire life cycle. Utility APIs are registered as:
