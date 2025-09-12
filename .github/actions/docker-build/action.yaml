@@ -90,7 +90,7 @@ runs:
         username: ${{ inputs.username }}
         password: ${{ inputs.password }}
 
-    - name: Extract metadata (tags, labels) for Docker
+    - name: Extract metadata (tags, labels, annotations) for Docker
       id: meta
       uses: docker/metadata-action@v5
       with:
@@ -200,6 +200,7 @@ runs:
         provenance: false
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
+        annotations: ${{ steps.meta.outputs.annotations }}
         platforms: ${{ inputs.platform }}
         
     - name: "Build Docker Image (Hermetic)"
