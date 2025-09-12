@@ -92,7 +92,7 @@ test.describe("Default Global Header", () => {
     expect(await uiHelper.isLinkVisible("Settings")).toBeTruthy();
     expect(await uiHelper.isTextVisible("Sign out")).toBeTruthy();
 
-    await uiHelper.clickLink({ href: "/settings" });
+    await uiHelper.clickDropdownMenuItem("/settings");
     await uiHelper.verifyHeading("Settings");
 
     await uiHelper.goToMyProfilePage();

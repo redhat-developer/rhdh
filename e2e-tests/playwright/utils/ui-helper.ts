@@ -215,6 +215,26 @@ export class UIhelper {
     await linkLocator.click();
   }
 
+  /**
+   * Clicks on a dropdown menu item by href. This is more precise than clickLink
+   * when dealing with dropdown menus that might have duplicate hrefs elsewhere on the page.
+   * Uses Playwright best practices: semantic attributes, strict mode compliance, and visibility filtering.
+   *
+   * @param href - The href attribute of the menu item to click
+   */
+  async clickDropdownMenuItem(href: string) {
+    // Use semantic attributes (href + role) for precise targeting
+    const menuItemLocator = this.page.locator(
+      `a[href="${href}"][role="menuitem"]`,
+    );
+
+    // Filter by visibility to ensure we only target visible elements
+    await menuItemLocator
+      .filter({ visible: true })
+      .waitFor({ state: "visible" });
+    await menuItemLocator.click();
+  }
+
   async openProfileDropdown() {
     const header = this.page.locator("nav[id='global-header']");
     await expect(header).toBeVisible();
@@ -226,7 +246,7 @@ export class UIhelper {
   async goToSettingsPage() {
     await expect(this.page.locator("nav[id='global-header']")).toBeVisible();
     await this.openProfileDropdown();
-    await this.clickLink({ href: "/settings" });
+    await this.clickDropdownMenuItem("/settings");
   }
 
   async goToMyProfilePage() {
