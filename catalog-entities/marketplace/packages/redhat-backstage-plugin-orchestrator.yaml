@@ -18,13 +18,13 @@ metadata:
     - automation
 spec:
   packageName: "@redhat/backstage-plugin-orchestrator"
-  dynamicArtifact: "@redhat/backstage-plugin-orchestrator@1.5.1"
-  version: 1.5.1
+  dynamicArtifact: "@redhat/backstage-plugin-orchestrator@1.7.1"
+  version: 1.7.1
   backstage:
     role: frontend-plugin
     supportedVersions: 1.39.1
   author: Red Hat
-  support: tech-preview
+  support: production
   lifecycle: active
   partOf:
     - orchestrator
@@ -45,3 +45,16 @@ spec:
                     text: Orchestrator
                   module: OrchestratorPlugin
                   path: /orchestrator
+              entityTabs:
+                - path: /workflows
+                  title: Workflows
+                  mountPoint: entity.page.workflows
+              mountPoints:
+                - mountPoint: entity.page.workflows/cards
+                  importName: OrchestratorCatalogTab
+                  config:
+                    layout:
+                      gridColumn: '1 / -1'
+                      if:
+                        anyOf:
+                          - IsOrchestratorCatalogTabAvailable
