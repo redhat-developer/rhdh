@@ -18,7 +18,7 @@ metadata:
 spec:
   packageName: "@backstage-community/plugin-analytics-provider-segment"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-analytics-provider-segment
-  version: 1.16.0
+  version: 1.17.0
   backstage:
     role: frontend-plugin
     supportedVersions: 1.39.1
@@ -47,3 +47,5 @@ spec:
               writeKey: ${SEGMENT_WRITE_KEY}
               maskIP: true
               testMode: ${SEGMENT_TEST_MODE}
+              appVersion: ${RHDH_VERSION}
+              backstageVersion: ${BACKSTAGE_VERSION}
