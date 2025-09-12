@@ -27,7 +27,7 @@ spec:
   publisher: Red Hat
   support:
     name: Red Hat
-    level: dev-preview
+    level: tech-preview
   lifecycle: active
 
   categories:

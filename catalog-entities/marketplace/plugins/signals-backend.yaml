@@ -26,8 +26,8 @@ metadata:
 spec:
   author: Backstage Community
   support:
-    name: Backstage Community
-    level: production
+    name: Red Hat
+    level: ga
   lifecycle: active
   publisher: Red Hat
 

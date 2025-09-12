@@ -30,7 +30,7 @@ spec:
   author: Red Hat
   support:
     name: Red Hat
-    level: tech-preview
+    level: ga
   lifecycle: active
   publisher: Red Hat
 

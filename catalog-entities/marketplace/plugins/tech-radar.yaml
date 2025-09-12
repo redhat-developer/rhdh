@@ -34,7 +34,7 @@ spec:
   publisher: Red Hat
   license: Apache-2.0
   support:
-    name: Backstage Community
+    name: Red Hat
     level: tech-preview
   lifecycle: active
 

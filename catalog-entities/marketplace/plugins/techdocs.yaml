@@ -31,8 +31,8 @@ spec:
   license: Apache-2.0
   lifecycle: active
   support:
-    name: Backstage Community
-    level: production
+    name: Red Hat
+    level: ga
 
   categories:
     - Backstage Core

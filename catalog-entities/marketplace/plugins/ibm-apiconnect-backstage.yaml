@@ -23,7 +23,7 @@ metadata:
 spec:
   author: IBM
   support:
-    name: Backstage Community
+    name: IBM
     level: production
   lifecycle: active
   publisher: IBM
