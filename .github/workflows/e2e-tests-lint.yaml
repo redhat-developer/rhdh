@@ -36,6 +36,10 @@ jobs:
         working-directory: ./e2e-tests
         run: yarn install --mode=skip-build
 
+      - name: Run TypeScript Compiler check
+        working-directory: ./e2e-tests
+        run: yarn tsc:check
+
       - name: Run ESLint check
         working-directory: ./e2e-tests
         run: yarn lint:check
