@@ -32848,6 +32848,7 @@ __metadata:
     node-gyp: 10.3.1
     sherif: 1.6.1
     turbo: 2.5.6
+    typescript: 5.9.2
   languageName: unknown
   linkType: soft
 
