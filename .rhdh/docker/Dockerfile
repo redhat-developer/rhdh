@@ -136,6 +136,13 @@ RUN \
   -e "s/(\"Last Commit\": \"(.+)\")/\1, \"Build Time\": \"$now\"/" && \
   cat packages/app/src/build-metadata.json; echo
 
+# Install jq for proper JSON parsing and create environment script
+RUN dnf install -y jq && \
+  echo "export RHDH_VERSION='$(jq -r '.card["RHDH Version"]' packages/app/src/build-metadata.json)'" > /tmp/build-metadata-env.sh && \
+  echo "export BACKSTAGE_VERSION='$(jq -r '.card["Backstage Version"]' packages/app/src/build-metadata.json)'" >> /tmp/build-metadata-env.sh && \
+  echo "=== Build Metadata Environment Script ===" && \
+  cat /tmp/build-metadata-env.sh
+
 # suppress git warnings about dubious ownership in repository at '/opt/app-root/src' when building
 RUN echo "=== YARN BUILD ==="; FAILED=0; \
   git config --global --add safe.directory /opt/app-root/src; \
@@ -265,6 +272,10 @@ RUN microdnf install -y python3.11 python3.11-pip python3.11-devel make cmake cp
 # Downstream only - copy from build, not cleanup stage
 COPY --from=build --chown=1001:1001 "$CONTAINER_SOURCE"/ ./
 
+# Copy the generated environment script from the build stage into /etc/profile.d/
+# This ensures the variables are exported when a new shell starts
+COPY --from=build /tmp/build-metadata-env.sh /etc/profile.d/99-build-metadata.sh
+
 # RHIDP-4220 - make Konflux preflight and EC checks happy - [check-container] Create a directory named /licenses and include all relevant licensing
 COPY $EXTERNAL_SOURCE_NESTED/LICENSE /licenses/
 
@@ -324,6 +335,8 @@ COPY --chown=1001:1001 $EXTERNAL_SOURCE_NESTED/packages/backend/src/instrumentat
 RUN chmod a=r ./instrumentation.js
 
 ENV NODE_OPTIONS="--no-node-snapshot"
-ENTRYPOINT ["node", "--require", "./instrumentation.js", "packages/backend", "--config", "app-config.yaml", "--config", "app-config.example.yaml", "--config", "app-config.example.production.yaml"]
+
+# Use bash -l -c to ensure a login shell is invoked, which sources /etc/profile.d/
+ENTRYPOINT ["bash", "-l", "-c", "node --require ./instrumentation.js packages/backend --config app-config.yaml --config app-config.example.yaml --config app-config.example.production.yaml"]
 
 # append Brew metadata here

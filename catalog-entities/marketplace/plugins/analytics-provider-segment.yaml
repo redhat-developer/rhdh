@@ -84,6 +84,9 @@ spec:
           # highlight-start
           writeKey: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
           maskIP: true # prevents IP addresses from being sent if true
+          testMode: false # prevents data from being sent if true
+          appVersion: "1.0.0" # RHDH application version
+          backstageVersion: "1.39.1" # Backstage version
           # highlight-end
     ```
 
