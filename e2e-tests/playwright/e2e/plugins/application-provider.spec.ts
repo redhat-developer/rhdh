@@ -20,7 +20,7 @@ test.describe("Test ApplicationProvider", () => {
   });
 
   test("Verify that the TestPage is rendered", async ({ page }) => {
-    await page.goto("/application-provider-test-page");
+    await uiHelper.goToPageUrl("/application-provider-test-page");
     await uiHelper.verifyText("application/provider TestPage");
     await uiHelper.verifyText(
       "This card will work only if you register the TestProviderOne and TestProviderTwo correctly.",

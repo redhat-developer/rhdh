@@ -153,7 +153,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     );
     expect(login).toBe("Login successful");
 
-    await page.goto("/settings");
+    await uiHelper.goToPageUrl("/settings", "Settings");
     await uiHelper.verifyHeading("Zeus Giove");
     await common.signOut();
   });
@@ -178,7 +178,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     );
     expect(login).toBe("Login successful");
 
-    await page.goto("/settings");
+    await uiHelper.goToPageUrl("/settings", "Settings");
     await uiHelper.verifyHeading("Zeus Giove");
     await common.signOut();
   });
@@ -202,7 +202,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     );
     expect(login).toBe("Login successful");
 
-    await page.goto("/settings");
+    await uiHelper.goToPageUrl("/settings", "Settings");
     await uiHelper.verifyHeading("Zeus Giove");
     await common.signOut();
   });
@@ -226,7 +226,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     );
     expect(login).toBe("Login successful");
 
-    await page.goto("/settings");
+    await uiHelper.goToPageUrl("/settings", "Settings");
     await uiHelper.verifyHeading("Zeus Giove");
     await common.signOut();
 
@@ -262,7 +262,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     );
     expect(login).toBe("Login successful");
 
-    await page.goto("/settings");
+    await uiHelper.goToPageUrl("/settings", "Settings");
     await uiHelper.verifyHeading("Zeus Giove");
     await common.signOut();
 
@@ -271,7 +271,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
       process.env.DEFAULT_USER_PASSWORD,
     );
     expect(login2).toBe("Login successful");
-    await page.goto("/settings");
+    await uiHelper.goToPageUrl("/settings", "Settings");
     await uiHelper.verifyHeading("Atena Minerva");
     await common.signOut();
   });
@@ -295,7 +295,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     );
     expect(login).toBe("Login successful");
 
-    await page.goto("/settings");
+    await uiHelper.goToPageUrl("/settings", "Settings");
     await uiHelper.verifyHeading("Atena Minerva");
     await common.signOut();
   });
@@ -333,7 +333,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     expect(actualDuration).toBeGreaterThan(threeDays - tolerance);
     expect(actualDuration).toBeLessThan(threeDays + tolerance);
 
-    await page.goto("/settings");
+    await uiHelper.goToPageUrl("/settings", "Settings");
     await uiHelper.verifyHeading("Zeus Giove");
     await common.signOut();
   });
@@ -386,8 +386,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
   });
 
   test("Ensure Guest login is disabled when setting environment to production", async () => {
-    await page.goto("/");
-    await uiHelper.verifyHeading("Select a sign-in method");
+    await uiHelper.goToPageUrl("/", "Select a sign-in method");
     const singInMethods = await page
       .locator("div[class^='MuiCardHeader-root']")
       .allInnerTexts();
@@ -402,7 +401,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
 
     expect(oidcLogin).toBe("Login successful");
 
-    await page.goto("/settings");
+    await uiHelper.goToPageUrl("/settings", "Settings");
     await uiHelper.verifyHeading("Zeus Giove");
 
     expect(process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET).toBeDefined();
@@ -439,7 +438,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     await page.getByTitle("Sign out from GitHub").click();
 
     // Sign out for OIDC
-    await page.goto("/settings");
+    await uiHelper.goToPageUrl("/settings", "Settings");
     await uiHelper.verifyHeading("Zeus Giove");
     await common.signOut();
     await context.clearCookies();
