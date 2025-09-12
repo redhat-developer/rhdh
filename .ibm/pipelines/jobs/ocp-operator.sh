@@ -34,9 +34,9 @@ run_operator_runtime_config_change_tests() {
   configure_namespace "${NAME_SPACE_RUNTIME}"
   local runtime_url="https://backstage-${RELEASE_NAME}-${NAME_SPACE_RUNTIME}.${K8S_CLUSTER_ROUTER_BASE}"
   sed -i "s|POSTGRES_USER:.*|POSTGRES_USER: $RDS_USER|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
-  sed -i "s|POSTGRES_PASSWORD:.*|POSTGRES_PASSWORD: $(echo -n $RDS_PASSWORD | base64 -w 0)|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
-  sed -i "s|POSTGRES_HOST:.*|POSTGRES_HOST: $(echo -n $RDS_1_HOST | base64 -w 0)|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
-  sed -i "s|RHDH_RUNTIME_URL:.*|RHDH_RUNTIME_URL: $(echo -n $runtime_url | base64 -w 0)|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
+  sed -i "s|POSTGRES_PASSWORD:.*|POSTGRES_PASSWORD: $(echo -n "$RDS_PASSWORD" | base64 -w 0)|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
+  sed -i "s|POSTGRES_HOST:.*|POSTGRES_HOST: $(echo -n "$RDS_1_HOST" | base64 -w 0)|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
+  sed -i "s|RHDH_RUNTIME_URL:.*|RHDH_RUNTIME_URL: $(echo -n "$runtime_url" | base64 -w 0)|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
   oc apply -f "$DIR/resources/postgres-db/postgres-crt-rds.yaml" -n "${NAME_SPACE_RUNTIME}"
   oc apply -f "$DIR/resources/postgres-db/postgres-cred.yaml" -n "${NAME_SPACE_RUNTIME}"
   oc apply -f "$DIR/resources/postgres-db/dynamic-plugins-root-PVC.yaml" -n "${NAME_SPACE_RUNTIME}"
@@ -49,7 +49,8 @@ run_operator_runtime_config_change_tests() {
 handle_ocp_operator() {
   oc_login
 
-  export K8S_CLUSTER_ROUTER_BASE=$(oc get route console -n openshift-console -o=jsonpath='{.spec.host}' | sed 's/^[^.]*\.//')
+  K8S_CLUSTER_ROUTER_BASE=$(oc get route console -n openshift-console -o=jsonpath='{.spec.host}' | sed 's/^[^.]*\.//')
+  export K8S_CLUSTER_ROUTER_BASE
   local url="https://backstage-${RELEASE_NAME}-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   local rbac_url="https://backstage-${RELEASE_NAME_RBAC}-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
 

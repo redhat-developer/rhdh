@@ -14,10 +14,10 @@ spec:
     - host: $K8S_CLUSTER_ROUTER_BASE
       http:
         paths:
-        - path: /
-          pathType: Prefix
-          backend:
-            service:
-              name: $SERVICE_NAME
-              port:
-                name: http-backend
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: $SERVICE_NAME
+                port:
+                  name: http-backend
