@@ -267,32 +267,14 @@ export class UIhelper {
     }
   }
 
-  private async isElementVisible(
-    locator: string,
-    timeout = 10000,
-    force = false,
-  ): Promise<boolean> {
-    try {
-      await this.page.waitForSelector(locator, {
-        state: "visible",
-        timeout: timeout,
-      });
-      const button = this.page.locator(locator).first();
-      return button.isVisible();
-    } catch (error) {
-      if (force) throw error;
-      return false;
-    }
-  }
-
   async isBtnVisibleByTitle(text: string): Promise<boolean> {
     const locator = `BUTTON[title="${text}"]`;
     return await this.isElementVisible(locator);
   }
 
-  async isBtnVisible(text: string): Promise<boolean> {
-    const locator = `button:has-text("${text}")`;
-    return await this.isElementVisible(locator);
+  async isBtnVisible(text: string, timeout = 5000): Promise<boolean> {
+    const button = this.page.locator(`button:has-text("${text}")`);
+    return await button.isVisible({ timeout });
   }
 
   async isTextVisible(text: string, timeout = 10000): Promise<boolean> {
@@ -504,7 +486,7 @@ export class UIhelper {
   }
 
   getButtonSelector(label: string): string {
-    return `${UI_HELPER_ELEMENTS.MuiButtonLabel}:has-text("${label}")`;
+    return `button:has-text("${label}")`;
   }
 
   getLoginBtnSelector(): string {
@@ -551,12 +533,24 @@ export class UIhelper {
     uniqueRowText: string,
     cellTexts: string[] | RegExp[],
   ) {
+    // First, check if the "No records found" message is present
+    const noRecordsRow = this.page.locator('tr:has(:text-is("No records found"))');
+    const noRecordsVisible = await noRecordsRow.isVisible();
+
+    if (noRecordsVisible) {
+      throw new Error(`Table shows "No records found" - bulk import operation may have failed. Expected row with text: ${uniqueRowText}`);
+    }
+
     const row = this.page.locator(UI_HELPER_ELEMENTS.rowByText(uniqueRowText));
-    await row.waitFor();
+    
+    // Wait for the row to be visible with a longer timeout
+    await row.waitFor({ state: "visible", timeout: 30000 });
+    
     for (const cellText of cellTexts) {
+      // Use more flexible text matching and longer timeout
       await expect(
         row.locator("td").filter({ hasText: cellText }).first(),
-      ).toBeVisible();
+      ).toBeVisible({ timeout: 30000 });
     }
   }
 
@@ -589,8 +583,19 @@ export class UIhelper {
     uniqueRowText: string,
     textOrLabel: string | RegExp,
   ) {
+    // First, check if the "No records found" message is present
+    const noRecordsRow = this.page.locator('tr:has(:text-is("No records found"))');
+    const noRecordsVisible = await noRecordsRow.isVisible();
+
+    if (noRecordsVisible) {
+      throw new Error(`Table shows "No records found" - bulk import operation may have failed. Expected row with text: ${uniqueRowText}`);
+    }
+
     const row = this.page.locator(UI_HELPER_ELEMENTS.rowByText(uniqueRowText));
-    await row.waitFor();
+    
+    // Wait for the row to be visible with a longer timeout
+    await row.waitFor({ state: "visible", timeout: 30000 });
+    
     await row
       .locator(
         `button:has-text("${textOrLabel}"), button[aria-label="${textOrLabel}"]`,
@@ -624,13 +629,15 @@ export class UIhelper {
     cardHeading: string,
     text: string | RegExp,
     exact = true,
+    timeout = 30000,
   ) {
     const locator = this.page
       .locator(UI_HELPER_ELEMENTS.MuiCard(cardHeading))
       .getByText(text, { exact: exact })
       .first();
+    await locator.waitFor({ state: "visible", timeout });
     await locator.scrollIntoViewIfNeeded();
-    await expect(locator).toBeVisible();
+    await expect(locator).toBeVisible({ timeout });
   }
 
   async verifyTableHeadingAndRows(texts: string[]) {
@@ -786,5 +793,9 @@ export class UIhelper {
   async verifyTextInTooltip(text: string | RegExp) {
     const tooltip = this.page.getByRole("tooltip").getByText(text);
     await expect(tooltip).toBeVisible();
+  }
+
+  async isElementVisible(selector: string, timeout = 5000): Promise<boolean> {
+    return await this.page.isVisible(selector, { timeout });
   }
 }

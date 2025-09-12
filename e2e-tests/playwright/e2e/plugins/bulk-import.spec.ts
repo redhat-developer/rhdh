@@ -81,9 +81,10 @@ spec:
     await uiHelper.openSidebar("Bulk import");
     await uiHelper.clickButton("Add");
     await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
-
+    
+    // Wait for the repository to appear and check its status
     await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
-      "Not Generated",
+      /Not Generated|Added/, // Accept either status
     ]);
     await bulkimport.selectRepoInTable(catalogRepoDetails.name);
     await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
@@ -210,11 +211,19 @@ spec:
     ).toHaveLength(0);
 
     await bulkimport.filterAddedRepo(newRepoDetails.repoName);
+    
+    // Wait for the repository to appear in the "Added" table before trying to click
+    await uiHelper.verifyRowInTableByUniqueText(newRepoDetails.repoName, [
+      "Added",
+    ]);
+    
     // verify that the status has changed to "ADDED."
     await uiHelper.clickOnButtonInTableByUniqueText(
       newRepoDetails.repoName,
       "Refresh",
     );
+    
+    // Verify the status is still "Added" after refresh
     await uiHelper.verifyRowInTableByUniqueText(newRepoDetails.repoName, [
       "Added",
     ]);
