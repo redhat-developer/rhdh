@@ -37,3 +37,22 @@ export function deepMergeTranslations(
   }
   return target;
 }
+
+export function filterLocales(
+  allTranslations: Record<string, any>,
+  configuredLocales: string[],
+): Record<string, any> {
+  const filtered: Record<string, any> = {};
+  for (const pluginId of Object.keys(allTranslations)) {
+    for (const locale of configuredLocales) {
+      if (allTranslations[pluginId][locale]) {
+        filtered[pluginId] = {
+          ...(filtered[pluginId] ?? {}),
+          [locale]: allTranslations[pluginId][locale],
+        };
+      }
+    }
+  }
+
+  return filtered;
+}
