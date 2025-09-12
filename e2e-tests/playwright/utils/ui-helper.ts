@@ -204,7 +204,7 @@ export class UIhelper {
     if (typeof options === "string") {
       linkLocator = this.page.locator("a").filter({ hasText: options }).first();
     } else if ("href" in options) {
-      linkLocator = this.page.locator(`a[href="${options.href}"]`);
+      linkLocator = this.page.locator(`a[href="${options.href}"]`).first();
     } else {
       linkLocator = this.page
         .locator(`div[aria-label='${options.ariaLabel}'] a`)
@@ -223,10 +223,12 @@ export class UIhelper {
       .click();
   }
 
-  async goToSettingsPage() {
-    await expect(this.page.locator("nav[id='global-header']")).toBeVisible();
-    await this.openProfileDropdown();
-    await this.clickLink({ href: "/settings" });
+  async goToPageUrl(url: string, heading?: string) {
+    await this.page.goto(url);
+    await expect(this.page).toHaveURL(url);
+    if (heading) {
+      await this.verifyHeading(heading);
+    }
   }
 
   async goToMyProfilePage() {
