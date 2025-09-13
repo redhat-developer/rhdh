@@ -28,7 +28,7 @@ spec:
   publisher: Red Hat
   support:
     name: Red Hat
-    level: ga
+    level: generally-available
   lifecycle: active
   description: |
     This plugin ships as enabled by default in Red Hat Developer Hub.

@@ -24,7 +24,7 @@ spec:
   author: IBM
   support:
     name: IBM
-    level: ga
+    level: generally-available
   lifecycle: active
   publisher: IBM
 

@@ -32,7 +32,7 @@ spec:
   lifecycle: active
   support:
     name: Red Hat
-    level: ga
+    level: generally-available
 
   categories:
     - Backstage Core
