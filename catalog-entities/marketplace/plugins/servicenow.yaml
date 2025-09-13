@@ -30,7 +30,7 @@ metadata:
 spec:
   support:
     name: Red Hat
-    level: dev-preview
+    level: community-plugin
   lifecycle: active
   author: Red Hat
   publisher: Red Hat
