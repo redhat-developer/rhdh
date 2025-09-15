@@ -4,9 +4,8 @@ import { ThemeVerifier } from "../utils/custom-theme/theme-verifier";
 import {
   CUSTOM_FAVICON,
   CUSTOM_SIDEBAR_LOGO,
-} from "../support/testData/custom-theme";
+} from "../support/test-data/custom-theme";
 import { ThemeConstants } from "../data/theme-constants";
-
 let page: Page;
 
 test.describe("CustomTheme should be applied", () => {
@@ -14,6 +13,11 @@ test.describe("CustomTheme should be applied", () => {
   let themeVerifier: ThemeVerifier;
 
   test.beforeAll(async ({ browser }, testInfo) => {
+    test.info().annotations.push({
+      type: "component",
+      description: "core",
+    });
+
     page = (await setupBrowser(browser, testInfo)).page;
     common = new Common(page);
     themeVerifier = new ThemeVerifier(page);
@@ -22,7 +26,6 @@ test.describe("CustomTheme should be applied", () => {
     await page.getByRole("button", { name: "Hide" }).click();
   });
 
-  // eslint-disable-next-line no-empty-pattern
   test("Verify theme colors are applied and make screenshots", async ({}, testInfo: TestInfo) => {
     const themes = ThemeConstants.getThemes();
 
@@ -42,7 +45,8 @@ test.describe("CustomTheme should be applied", () => {
   });
 
   test("Verify that the RHDH favicon can be customized", async () => {
-    expect(await page.locator("#dynamic-favicon").getAttribute("href")).toEqual(
+    await expect(page.locator("#dynamic-favicon")).toHaveAttribute(
+      "href",
       CUSTOM_FAVICON.LIGHT,
     );
   });
@@ -50,23 +54,22 @@ test.describe("CustomTheme should be applied", () => {
   test("Verify that RHDH CompanyLogo can be customized", async () => {
     await themeVerifier.setTheme("Light");
 
-    expect(await page.getByTestId("home-logo").getAttribute("src")).toEqual(
+    await expect(page.getByTestId("home-logo")).toHaveAttribute(
+      "src",
       CUSTOM_SIDEBAR_LOGO.LIGHT,
     );
 
     await themeVerifier.setTheme("Dark");
-    expect(await page.getByTestId("home-logo").getAttribute("src")).toEqual(
+    await expect(page.getByTestId("home-logo")).toHaveAttribute(
+      "src",
       CUSTOM_SIDEBAR_LOGO.DARK,
     );
   });
 
   test("Verify logo link", async () => {
-    expect(
-      await page
-        .getByTestId("global-header-company-logo")
-        .locator("a")
-        .getAttribute("href"),
-    ).toEqual("/");
+    await expect(
+      page.getByTestId("global-header-company-logo").locator("a"),
+    ).toHaveAttribute("href", "/");
     await page.getByTestId("global-header-company-logo").click();
     await expect(page).toHaveURL("/");
   });

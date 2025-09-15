@@ -4,6 +4,13 @@ import { Common, setupBrowser } from "../../utils/common";
 
 let page;
 test.describe("Test ACR plugin", () => {
+  test.beforeAll(async () => {
+    test.info().annotations.push({
+      type: "component",
+      description: "plugins",
+    });
+  });
+
   let uiHelper: UIhelper;
   let common: Common;
   const dateRegex =

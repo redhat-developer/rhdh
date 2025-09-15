@@ -1,9 +1,16 @@
 import { test, Page } from "@playwright/test";
 import { Common } from "../utils/common";
 import { UIhelper } from "../utils/ui-helper";
-
 let page: Page;
-test.describe.skip("Google signin happy path", () => {
+
+test.describe("Google signin happy path", () => {
+  test.beforeAll(async () => {
+    test.info().annotations.push({
+      type: "component",
+      description: "authentication",
+    });
+  });
+
   let uiHelper: UIhelper;
   let common: Common;
   const googleUserId = process.env.GOOGLE_USER_ID;
@@ -25,7 +32,8 @@ test.describe.skip("Google signin happy path", () => {
     await common.loginAsGuest();
   });
 
-  test("Verify Google Sign in", async () => {
+  // TODO: https://issues.redhat.com/browse/RHDHBUGS-675
+  test.fixme("Verify Google Sign in", async () => {
     await uiHelper.goToSettingsPage();
     await uiHelper.clickTab("Authentication Providers");
     await page.getByTitle("Sign in to Google").click();

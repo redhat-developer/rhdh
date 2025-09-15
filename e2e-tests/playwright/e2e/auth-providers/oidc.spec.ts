@@ -4,7 +4,6 @@ import { Common, setupBrowser } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
 import { KeycloakHelper } from "../../utils/authentication-providers/keycloak-helper";
 import { NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE } from "../../utils/constants";
-
 let page: Page;
 let context: BrowserContext;
 
@@ -53,6 +52,11 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
   test.use({ baseURL: backstageUrl });
 
   test.beforeAll(async ({ browser }, testInfo) => {
+    test.info().annotations.push({
+      type: "component",
+      description: "authentication",
+    });
+
     test.info().setTimeout(600 * 1000);
     // load default configs from yaml files
     await deployment.loadAllConfigs();
@@ -77,7 +81,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     await deployment.deleteNamespaceIfExists();
 
     // create namespace and wait for it to be active
-    (await deployment.createNamespace()).waitForNamespaceActive();
+    await (await deployment.createNamespace()).waitForNamespaceActive();
 
     // create all base configmaps
     await deployment.createAllConfigs();
@@ -87,30 +91,33 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
 
     // set enviroment variables and create secret
     if (!process.env.ISRUNNINGLOCAL) {
-      deployment.addSecretData("BASE_URL", backstageUrl);
-      deployment.addSecretData("BASE_BACKEND_URL", backstageBackendUrl);
+      await deployment.addSecretData("BASE_URL", backstageUrl);
+      await deployment.addSecretData("BASE_BACKEND_URL", backstageBackendUrl);
     }
-    deployment.addSecretData(
+    await deployment.addSecretData(
       "DEFAULT_USER_PASSWORD",
       process.env.DEFAULT_USER_PASSWORD,
     );
-    deployment.addSecretData(
+    await deployment.addSecretData(
       "DEFAULT_USER_PASSWORD_2",
       process.env.DEFAULT_USER_PASSWORD_2,
     );
-    deployment.addSecretData("RHBK_BASE_URL", process.env.RHBK_BASE_URL);
-    deployment.addSecretData("RHBK_REALM", process.env.RHBK_REALM);
-    deployment.addSecretData("RHBK_CLIENT_ID", process.env.RHBK_CLIENT_ID);
-    deployment.addSecretData(
+    await deployment.addSecretData("RHBK_BASE_URL", process.env.RHBK_BASE_URL);
+    await deployment.addSecretData("RHBK_REALM", process.env.RHBK_REALM);
+    await deployment.addSecretData(
+      "RHBK_CLIENT_ID",
+      process.env.RHBK_CLIENT_ID,
+    );
+    await deployment.addSecretData(
       "RHBK_CLIENT_SECRET",
       process.env.RHBK_CLIENT_SECRET,
     );
 
-    deployment.addSecretData(
+    await deployment.addSecretData(
       "AUTH_PROVIDERS_GH_ORG_CLIENT_ID",
       process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_ID,
     );
-    deployment.addSecretData(
+    await deployment.addSecretData(
       "AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET",
       process.env.AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET,
     );
@@ -371,14 +378,10 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
 
   test(`Ingestion of users and groups with invalid characters: check sanitize[User/Group]NameTransformer`, async () => {
     expect(
-      await deployment.checkUserIsIngestedInCatalog([
-        "Invalid Username",
-      ]),
+      await deployment.checkUserIsIngestedInCatalog(["Invalid Username"]),
     ).toBe(true);
     expect(
-      await deployment.checkGroupIsIngestedInCatalog([
-        "invalid@groupname",
-      ]),
+      await deployment.checkGroupIsIngestedInCatalog(["invalid@groupname"]),
     ).toBe(true);
   });
 

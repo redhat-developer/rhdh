@@ -25,7 +25,7 @@ export default defineConfig({
   reporter: [
     ["html"],
     ["list"],
-    ["junit", { outputFile: "junit-results.xml" }],
+    ["junit", { outputFile: process.env.JUNIT_RESULTS || "junit-results.xml" }],
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
@@ -60,7 +60,7 @@ export default defineConfig({
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
         "**/playwright/e2e/verify-tls-config-with-external-postgres-db.spec.ts",
-        "**/playwright/e2e/authProviders/**/*.spec.ts",
+        "**/playwright/e2e/auth-providers/**/*.spec.ts",
         "**/playwright/e2e/plugins/bulk-import.spec.ts",
         "**/playwright/e2e/verify-tls-config-health-check.spec.ts",
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
@@ -78,9 +78,9 @@ export default defineConfig({
     },
     {
       name: "showcase-auth-providers",
-      testMatch: ["**/playwright/e2e/authProviders/*.spec.ts"],
+      testMatch: ["**/playwright/e2e/auth-providers/*.spec.ts"],
       testIgnore: [
-        "**/playwright/e2e/authProviders/github-happy-path.spec.ts", // temporarily disable
+        "**/playwright/e2e/auth-providers/github-happy-path.spec.ts", // temporarily disable
         "**/playwright/e2e/verify-tls-config-health-check.spec.ts",
       ],
       retries: 1,
@@ -94,10 +94,10 @@ export default defineConfig({
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
         "**/playwright/e2e/verify-tls-config-with-external-postgres-db.spec.ts",
-        "**/playwright/e2e/authProviders/**/*.spec.ts",
+        "**/playwright/e2e/auth-providers/**/*.spec.ts",
         "**/playwright/e2e/plugins/bulk-import.spec.ts",
         "**/playwright/e2e/plugins/tekton/tekton.spec.ts",
-        "**/playwright/e2e/catalog-scaffoldedfromLink.spec.ts",
+        "**/playwright/e2e/scaffolder-backend-module-annotator.spec.ts",
         "**/playwright/e2e/plugins/ocm.spec.ts",
         "**/playwright/e2e/audit-log/**/*.spec.ts",
         "**/playwright/e2e/verify-tls-config-health-check.spec.ts",
@@ -121,10 +121,10 @@ export default defineConfig({
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
         "**/playwright/e2e/verify-tls-config-with-external-postgres-db.spec.ts",
-        "**/playwright/e2e/authProviders/**/*.spec.ts",
+        "**/playwright/e2e/auth-providers/**/*.spec.ts",
         "**/playwright/e2e/plugins/bulk-import.spec.ts",
         "**/playwright/e2e/plugins/tekton/tekton.spec.ts",
-        "**/playwright/e2e/catalog-scaffoldedfromLink.spec.ts",
+        "**/playwright/e2e/scaffolder-backend-module-annotator.spec.ts",
         "**/playwright/e2e/audit-log/**/*.spec.ts",
         "**/playwright/e2e/verify-tls-config-health-check.spec.ts",
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
