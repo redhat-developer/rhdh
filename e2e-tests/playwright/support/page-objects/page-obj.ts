@@ -9,7 +9,7 @@ export const SEARCH_OBJECTS_COMPONENTS = {
 };
 
 export const CATALOG_IMPORT_COMPONENTS = {
-  componentURL: 'input[name="url"]',
+  componentURL: 'input[placeholder*="Enter the full path to your entity file"]',
 };
 
 export const KUBERNETES_COMPONENTS = {
