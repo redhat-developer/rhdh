@@ -196,3 +196,87 @@ buildInfo:
     RBAC: disabled
   full: true # If set to true, only the information specified in this configuration will be displayed. If set to false, the provided details will be shown along with the build versions. By default it will only display the configured information.
 ```
+
+## Customizing the Language dropdown
+
+To customize the language dropdown in the User settings page, configure the list of locales your app should support in the `app-config.yaml` file.
+
+Example configuration:
+
+```
+i18n:
+  locales: # List of supported locales. Must include `en`, otherwise the translation framework will fail to load.
+    - en
+    - de
+    - it
+  defaultLocale: en # Optional. Used as fallback when browser language preferences don't match supported locales, or defaults to 'en' if not specified.
+  overrides: # List of JSON translation files applied in order (last file wins).  Each file may override/add translations for one or more plugins/locales
+    - <path-to>/<overrides-1>.json
+    - <path-to>/<overrides-2>.json
+
+```
+
+Example of JSON translation file, where the top-level key is the plugin translation reference ID (defined as translationRef in the [plugin source](https://github.com/backstage/community-plugins/blob/main/workspaces/npm/plugins/npm/src/translations/ref.ts#L23)
+)
+
+```
+{
+  "plugin.npm.translation-ref": {
+    "en": {
+      "infoCard.title": "NPM Packet JSON {{packageName}}"
+    },
+    "de": {
+      "infoCard.title": "NPM Paket JSON {{packageName}}"
+    },
+    "zh": {
+      "infoCard.title": "NPM 包 JSON {{packageName}}"
+    }
+  },
+  "extensions": {
+    "en": {
+        "catalogPage.installationAlert": "Backend restart required JSON"
+    }
+  }
+}
+```
+
+### Default Language Selection Priority
+
+Default language selection follows this priority order:
+
+1. **Browser Language Priority**: The system first checks the user's browser language preferences to provide a personalized experience.
+
+2. **Configuration Priority**: If no browser language matches the supported locales, the `defaultLocale` from the `i18n` configuration is used as a fallback.
+
+3. **Fallback Priority**: If neither browser preferences nor configuration provide a match, defaults to `en`.
+
+## Language Preferences
+
+Red Hat Developer Hub automatically saves and restores user language settings across browser sessions. This feature is enabled by default and uses database storage.
+
+### Configuration (Optional)
+
+Language preferences use database storage by default. To opt-out and use browser storage instead, add the following to your `app-config.yaml`:
+
+```yaml title="app-config.yaml"
+userSettings:
+  persistence: browser # opt-out of database storage
+```
+
+### Persistence Options
+
+- **`database`** (default): Stores language preferences in the backend database. Persists across devices and browsers. No configuration required.
+- **`browser`** (opt-out): Stores language preferences in browser local storage. Limited to single browser/device.
+
+## How It Works
+
+When users change the language in the UI:
+
+- The preference is automatically saved to storage
+- On next login/refresh, the language setting is restored
+- Guest users cannot persist language preferences
+
+## Usage
+
+1. Change language using any language selector in the UI
+2. Language setting will automatically be saved and restored

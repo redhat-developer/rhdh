@@ -238,6 +238,11 @@ export interface Config {
           icon: string;
           importName?: string;
         }[];
+        translationResources?: {
+          module?: string;
+          importName: string;
+          ref?: string;
+        }[];
       };
     };
   };
@@ -260,5 +265,42 @@ export interface Config {
     title: string;
     card: { [key: string]: string };
     full?: boolean;
+  };
+
+  /**
+   * Internationalization (i18n) settings for the app
+   * Allows configuring supported languages
+   * @deepVisibility frontend
+   */
+  i18n?: {
+    /**
+     * Allows listing the languages the app will support
+     * @visibility frontend
+     */
+    locales: string[];
+    /**
+     * Allows setting a default language for the app
+     * Will be set to `en` if not specified
+     * @default en
+     * @visibility frontend
+     */
+    defaultLocale?: string;
+    /**
+     * Allows listing of paths to JSON files that contain translation overrides.
+     * These overrides let you replace or extend the default translations provided by plugins.
+     * @visibility frontend
+     */
+    overrides?: string[];
+  };
+  /**
+   * Configuration options for your user settings.
+   * @deepVisibility frontend
+   */
+  userSettings?: {
+    /**
+     * The persistence mode for user settings.
+     * @visibility frontend
+     */
+    persistence: 'browser' | 'database';
   };
 }

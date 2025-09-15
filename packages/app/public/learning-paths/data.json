@@ -152,9 +152,9 @@
   {
     "paths": 3,
     "minutes": 30,
-    "description": "In this learning path, you will set up options for your Jupyter notebook server and select your PyTorch preferences,\u00a0 then explore the dataset you'll use to create your model. Finally, you will learn how to build, train, and run your PyTorch model.",
+    "description": "Learn how to create and train PyTorch models using Red Hat OpenShift AI platform. This hands-on tutorial covers setting up PyTorch workbenches, developing machine learning models, and leveraging GPU acceleration for efficient training.",
     "label": "How to create a PyTorch model",
-    "url": "https://developers.redhat.com/learn/openshift-data-science/how-create-pytorch-model"
+    "url": "https://developers.redhat.com/articles/2024/05/02/model-training-red-hat-openshift-ai#model_training"
   },
   {
     "paths": 3,

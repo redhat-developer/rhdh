@@ -2,6 +2,8 @@
 
 # shellcheck source=.ibm/pipelines/utils.sh
 source "$DIR"/utils.sh
+# shellcheck source=.ibm/pipelines/cluster/k8s/k8s-utils.sh
+source "$DIR"/cluster/k8s/k8s-utils.sh
 
 initiate_aks_helm_deployment() {
   delete_namespace "${NAME_SPACE_RBAC}"

@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import { Common } from "../../../utils/common";
 import { UIhelper } from "../../../utils/ui-helper";
 import { Catalog } from "../../../support/pages/catalog";
@@ -10,6 +10,13 @@ test.describe("Test Topology Plugin", () => {
   let catalog: Catalog;
   let topology: Topology;
 
+  test.beforeAll(async () => {
+    test.info().annotations.push({
+      type: "component",
+      description: "plugins",
+    });
+  });
+
   test.beforeEach(async ({ page }) => {
     common = new Common(page);
     uiHelper = new UIhelper(page);
@@ -17,6 +24,13 @@ test.describe("Test Topology Plugin", () => {
     topology = new Topology(page);
     await common.loginAsGuest();
   });
+
+  // Helper function to determine resource type
+  async function getResourceType(page: Page): Promise<"ingress" | "route"> {
+    await page.waitForLoadState();
+    const hasIngresses = await page.getByText("Ingresses").isVisible();
+    return hasIngresses ? "ingress" : "route";
+  }
 
   test("Verify pods visibility in the Topology tab", async ({
     page,
@@ -27,6 +41,15 @@ test.describe("Test Topology Plugin", () => {
     await uiHelper.clickTab("Topology");
     await uiHelper.verifyText("backstage-janus");
     await page.getByRole("button", { name: "Fit to Screen" }).click();
+    await page
+      .locator('[data-test-id="topology-test"]')
+      .getByTestId(/(status-error|status-ok)/)
+      .first()
+      .click();
+    await uiHelper.verifyDivHasText(
+      /Pipeline (Succeeded|Failed|Cancelled|Running)/,
+    );
+    await uiHelper.verifyDivHasText(/\d+ (Succeeded|Failed|Cancelled|Running)/);
     await topology.verifyDeployment("topology-test");
     await uiHelper.verifyButtonURL("Open URL", "topology-test-route", {
       locator: `[data-test-id="topology-test"]`,
@@ -37,23 +60,17 @@ test.describe("Test Topology Plugin", () => {
     await uiHelper.clickTab("Resources");
     await uiHelper.verifyHeading("Pods");
     await uiHelper.verifyHeading("Services");
-    if (await page.getByText("Ingresses").isVisible()) {
-      await uiHelper.verifyHeading("Ingresses");
-      await uiHelper.verifyText("I");
-      await expect(
-        page
-          .getByTestId("ingress-list")
-          .getByRole("link", { name: "topology-test-route" })
-          .first(),
-      ).toBeVisible();
-      await expect(page.locator("pre").first()).toBeVisible();
+
+    // Determine resource type and run appropriate test
+    const resourceType = await getResourceType(page);
+
+    // eslint-disable-next-line playwright/no-conditional-in-test
+    if (resourceType === "ingress") {
+      await testIngressResources(page, uiHelper);
     } else {
-      await uiHelper.verifyHeading("Routes");
-      await uiHelper.verifyText("RT");
-      await expect(
-        page.getByRole("link", { name: "topology-test-route" }).first(),
-      ).toBeVisible();
+      await testRouteResources(page, uiHelper);
     }
+
     await uiHelper.verifyText("Location:");
     await expect(page.getByTitle("Deployment")).toBeVisible();
     await uiHelper.verifyText("S");
@@ -64,9 +81,11 @@ test.describe("Test Topology Plugin", () => {
     await page.getByLabel("Pod count").click();
     await uiHelper.verifyText("1");
     await uiHelper.verifyText("Pod");
+
     // await topology.hoverOnPodStatusIndicator();
     // await uiHelper.verifyTextInTooltip("Running");
     // await uiHelper.verifyText("1Running");
+
     await uiHelper.verifyButtonURL(
       "Edit source code",
       "https://github.com/janus-idp/backstage-showcase",
@@ -83,18 +102,27 @@ test.describe("Test Topology Plugin", () => {
     await uiHelper.verifyHeading("PipelineRuns");
     await uiHelper.verifyText("PL");
     await uiHelper.verifyText("PLR");
-    // await expect(async () => {
-    //   await page.getByTestId("status-ok").first().click({
-    //     force: true,
-    //     timeout: 30000,
-    //   });
-    // }).toPass({
-    //   timeout: 30000,
-    //   intervals: [1000, 2000, 3000],
-    // });
-    // await uiHelper.verifyDivHasText(
-    //   /Pipeline (Succeeded|Failed|Cancelled|Running)Task/,
-    // );
-    // await uiHelper.verifyText(/Pipeline (Succeeded|Failed|Cancelled|Running)/);
+    await uiHelper.verifyText(/(Succeeded|Failed|Cancelled|Running)/);
   });
 });
+
+// Helper functions for resource-specific testing
+async function testIngressResources(page: Page, uiHelper: UIhelper) {
+  await uiHelper.verifyHeading("Ingresses");
+  await uiHelper.verifyText("I");
+  await expect(
+    page
+      .getByTestId("ingress-list")
+      .getByRole("link", { name: "topology-test-route" })
+      .first(),
+  ).toBeVisible();
+  await expect(page.locator("pre").first()).toBeVisible();
+}
+
+async function testRouteResources(page: Page, uiHelper: UIhelper) {
+  await uiHelper.verifyHeading("Routes");
+  await uiHelper.verifyText("RT");
+  await expect(
+    page.getByRole("link", { name: "topology-test-route" }).first(),
+  ).toBeVisible();
+}

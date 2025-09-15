@@ -27,6 +27,7 @@ plugins:
             routeBindings: ...
             appIcons: ...
             apiFactories: ...
+            translationResources: ...
 ```
 
 ## Extend internal library of available icons
@@ -502,6 +503,41 @@ Here are the default catalog entity routes in the default order:
 | `/system`         | Diagram             | `entity.page.diagram`        | `kind: System`                       |
 
 The visibility of a tab is derived from the kind of entity that is being displayed along with the visibility guidance mentioned in "[Using mount points](#using-mount-points)".
+
+## Translation resources
+
+Users can add translation resources exported by plugin packages in the plugin's dynamic configuration
+
+```yaml
+# dynamic-plugins-config.yaml
+plugins:
+  - plugin: <plugin_path_or_url>
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          <package_name>: # same as `scalprum.name` key in plugin's `package.json`
+            translationResources:
+              # Adding the exported translations
+              - importName: <plugin translation>
+```
+
+Users can override default translations of a plugin with their own JSON-based translations
+
+```yaml
+# dynamic-plugins-config.yaml
+plugins:
+  - plugin: <plugin_path_or_url>
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          <package_name>: # must match the `scalprum.name` key in plugin's `package.json`
+            translationResources:
+              # Adding the exported translations for this plugin
+              - importName: <plugin translation>
+                ref: <plugin translation ref> # Ref is required for `jsonTranslations`
+```
 
 ## Provide additional Utility APIs
 

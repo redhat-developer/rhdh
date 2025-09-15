@@ -1,14 +1,14 @@
 import { Locator, Page, expect, test } from "@playwright/test";
 import { Response, Roles } from "../../../support/pages/rbac";
-import { UI_HELPER_ELEMENTS } from "../../../support/pageObjects/global-obj";
+import { UI_HELPER_ELEMENTS } from "../../../support/page-objects/global-obj";
 import {
   SEARCH_OBJECTS_COMPONENTS,
   ROLE_OVERVIEW_COMPONENTS,
   ROLES_PAGE_COMPONENTS,
-} from "../../../support/pageObjects/page-obj";
+} from "../../../support/page-objects/page-obj";
 import { Common, setupBrowser } from "../../../utils/common";
 import { UIhelper } from "../../../utils/ui-helper";
-import { RbacPo } from "../../../support/pageObjects/rbac-po";
+import { RbacPo } from "../../../support/page-objects/rbac-po";
 import { RhdhAuthApiHack } from "../../../support/api/rhdh-auth-api-hack";
 import RhdhRbacApi from "../../../support/api/rbac-api";
 import { RbacConstants } from "../../../data/rbac-constants";
@@ -22,6 +22,12 @@ import { downloadAndReadFile } from "../../../utils/helper";
     https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.3/html/authorization/managing-authorizations-by-using-the-web-ui#proc-rbac-ui-edit-role_title-authorization
 */
 test.describe.serial("Test RBAC", () => {
+  test.beforeAll(async () => {
+    test.info().annotations.push({
+      type: "component",
+      description: "plugins",
+    });
+  });
   test.describe
     .serial("Test RBAC plugin: load permission policies and conditions from files", () => {
     test.beforeEach(async ({ page }) => {
@@ -237,6 +243,7 @@ test.describe.serial("Test RBAC", () => {
       const lines = fileContent.trim().split("\n");
 
       const header = "userEntityRef,displayName,email,lastAuthTime";
+      // eslint-disable-next-line playwright/no-conditional-in-test
       if (lines[0] !== header) {
         throw new Error("Header does not match");
       }
@@ -245,6 +252,7 @@ test.describe.serial("Test RBAC", () => {
       const allUsersValid = lines
         .slice(1)
         .every((line) => line.startsWith("user:default"));
+      // eslint-disable-next-line playwright/no-conditional-in-test
       if (!allUsersValid) {
         throw new Error("Not all users info are valid");
       }
@@ -388,7 +396,9 @@ test.describe.serial("Test RBAC", () => {
         nextButton2 = page.locator('[data-testid="nextButton-2"]');
         matchNextButton2 = await nextButton2.all();
         attempts++;
+        // eslint-disable-next-line playwright/no-conditional-in-test
       } while (matchNextButton2.length > 1 && attempts < 5);
+      // eslint-disable-next-line playwright/no-force-option
       await nextButton2.click({ force: true });
       await page.waitForTimeout(1_000);
       await uiHelper.clickButton("Save");
@@ -449,7 +459,7 @@ test.describe.serial("Test RBAC", () => {
       const uiHelper = new UIhelper(page);
       await uiHelper.openSidebarButton("Administration");
       const dropdownMenuLocator = page.locator(`text="RBAC"`);
-      await expect(dropdownMenuLocator).not.toBeVisible();
+      await expect(dropdownMenuLocator).toBeHidden();
     });
   });
 
@@ -470,7 +480,6 @@ test.describe.serial("Test RBAC", () => {
       apiToken = await RhdhAuthApiHack.getToken(page);
     });
 
-    // eslint-disable-next-line no-empty-pattern
     test.beforeEach(async ({}, testInfo) => {
       console.log(
         `beforeEach: Attempting setup for ${testInfo.title}, retry: ${testInfo.retry}`,
@@ -484,12 +493,14 @@ test.describe.serial("Test RBAC", () => {
 
       const policiesResponse = await rbacApi.getPolicies();
 
+      // eslint-disable-next-line playwright/no-conditional-in-test
       if (!rolesResponse.ok()) {
         throw Error(
           `RBAC rolesResponse API call failed with status code ${rolesResponse.status()}`,
         );
       }
 
+      // eslint-disable-next-line playwright/no-conditional-in-test
       if (!policiesResponse.ok()) {
         throw Error(
           `RBAC policiesResponse API call failed with status code ${policiesResponse.status()}`,
@@ -564,7 +575,9 @@ test.describe.serial("Test RBAC", () => {
       await page.reload();
       await uiHelper.openSidebar("Catalog");
       await uiHelper.clickButton("Self-service");
-      expect(await uiHelper.isLinkVisible("Import an existing Git repository"));
+      expect(
+        await uiHelper.isLinkVisible("Import an existing Git repository"),
+      ).toBeTruthy();
       await uiHelper.clickButton("Import an existing Git repository");
       const catalogImport = new CatalogImport(page);
       const component =
@@ -651,7 +664,6 @@ test.describe.serial("Test RBAC", () => {
   });
 
   test.describe.serial("Test RBAC ownership conditional rule", () => {
-    // eslint-disable-next-line no-empty-pattern
     test.beforeEach(async ({}, testInfo) => {
       testInfo.setTimeout(testInfo.timeout + 30_000); // Additional time due to repeated timeout failure in OSD env.
     });
@@ -754,7 +766,7 @@ test.describe.serial("Test RBAC", () => {
       const uiHelper = new UIhelper(page);
       await uiHelper.openSidebarButton("Administration");
       const dropdownMenuLocator = page.locator(`text="RBAC"`);
-      await expect(dropdownMenuLocator).not.toBeVisible();
+      await expect(dropdownMenuLocator).toBeHidden();
     });
   });
 });

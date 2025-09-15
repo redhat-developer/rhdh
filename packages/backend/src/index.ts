@@ -17,6 +17,7 @@ import {
   pluginIDProviderService,
   rbacDynamicPluginsProvider,
 } from './modules';
+import { userSettingsBackend } from './modules/userSettings';
 
 // Create a logger to cover logging static initialization tasks
 const staticLogger = WinstonLogger.create({
@@ -160,6 +161,9 @@ if (process.env.ENABLE_AUTH_PROVIDER_MODULE_OVERRIDE !== 'true') {
 
 backend.add(import('@internal/plugin-dynamic-plugins-info-backend'));
 backend.add(import('@internal/plugin-scalprum-backend'));
+backend.add(import('@internal/plugin-translation-backend'));
 backend.add(import('@internal/plugin-licensed-users-info-backend'));
+
+backend.add(userSettingsBackend);
 
 backend.start();

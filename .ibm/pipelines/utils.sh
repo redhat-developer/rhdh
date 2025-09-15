@@ -382,7 +382,7 @@ apply_yaml_files() {
 
     # Create Deployment and Pipeline for Topology test.
     oc apply -f "$dir/resources/topology_test/topology-test.yaml"
-    if [[ -z "${IS_OPENSHIFT}" || "$(to_lowercase "${IS_OPENSHIFT}")" == "false" ]]; then
+    if [[ -z "${IS_OPENSHIFT}" || "${IS_OPENSHIFT}" == "false" ]]; then
       kubectl apply -f "$dir/resources/topology_test/topology-test-ingress.yaml"
     else
       oc apply -f "$dir/resources/topology_test/topology-test-route.yaml"
@@ -749,12 +749,25 @@ rbac_deployment() {
   configure_namespace "${NAME_SPACE_POSTGRES_DB}"
   configure_namespace "${NAME_SPACE_RBAC}"
   configure_external_postgres_db "${NAME_SPACE_RBAC}"
-
+  
   # Initiate rbac instance deployment.
   local rbac_rhdh_base_url="https://${RELEASE_NAME_RBAC}-developer-hub-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
   echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${RELEASE_NAME_RBAC}"
   perform_helm_install "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${HELM_CHART_RBAC_VALUE_FILE_NAME}"
+  
+  # NOTE: This is a workaround to allow the sonataflow platform to connect to the external postgres db using ssl.
+  until [[ $(oc get jobs -n "${NAME_SPACE_RBAC}" 2>/dev/null | grep "${RELEASE_NAME_RBAC}-create-sonataflow-database" | wc -l) -eq 1 ]]; do
+    echo "Waiting for sf db creation job to be created. Retrying in 5 seconds..."
+    sleep 5
+  done
+  oc wait --for=condition=complete job/"${RELEASE_NAME_RBAC}-create-sonataflow-database" -n "${NAME_SPACE_RBAC}" --timeout=3m
+  oc -n "${NAME_SPACE_RBAC}" patch sfp sonataflow-platform --type=merge \
+  -p '{"spec":{"services":{"jobService":{"podTemplate":{"container":{"env":[{"name":"QUARKUS_DATASOURCE_REACTIVE_URL","value":"postgresql://postgress-external-db-primary.postgress-external-db.svc.cluster.local:5432/sonataflow?search_path=jobs-service&sslmode=require&ssl=true&trustAll=true"},{"name":"QUARKUS_DATASOURCE_REACTIVE_SSL_MODE","value":"require"},{"name":"QUARKUS_DATASOURCE_REACTIVE_TRUST_ALL","value":"true"}]}}}}}}'
+  oc rollout restart deployment/sonataflow-platform-jobs-service -n "${NAME_SPACE_RBAC}"
+
+  # initiate orchestrator workflows deployment
+  deploy_orchestrator_workflows "${NAME_SPACE_RBAC}"
 }
 
 initiate_deployments() {
@@ -846,14 +859,18 @@ initiate_runtime_deployment() {
 }
 
 initiate_sanity_plugin_checks_deployment() {
-  configure_namespace "${NAME_SPACE_SANITY_PLUGINS_CHECK}"
-  uninstall_helmchart "${NAME_SPACE_SANITY_PLUGINS_CHECK}" "${RELEASE_NAME}"
-  deploy_redis_cache "${NAME_SPACE_SANITY_PLUGINS_CHECK}"
-  apply_yaml_files "${DIR}" "${NAME_SPACE_SANITY_PLUGINS_CHECK}" "${sanity_plugins_url}"
+  local release_name=$1
+  local name_space_sanity_plugins_check=$2
+  local sanity_plugins_url=$3
+
+  configure_namespace "${name_space_sanity_plugins_check}"
+  uninstall_helmchart "${name_space_sanity_plugins_check}" "${release_name}"
+  deploy_redis_cache "${name_space_sanity_plugins_check}"
+  apply_yaml_files "${DIR}" "${name_space_sanity_plugins_check}" "${sanity_plugins_url}"
   yq_merge_value_files "overwrite" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_SANITY_PLUGINS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}"
-  mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE_SANITY_PLUGINS_CHECK}"
-  cp -a "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" "${ARTIFACT_DIR}/${NAME_SPACE_SANITY_PLUGINS_CHECK}/" || true # Save the final value-file into the artifacts directory.
-  helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE_SANITY_PLUGINS_CHECK}" \
+  mkdir -p "${ARTIFACT_DIR}/${name_space_sanity_plugins_check}"
+  cp -a "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" "${ARTIFACT_DIR}/${name_space_sanity_plugins_check}/" || true # Save the final value-file into the artifacts directory.
+  helm upgrade -i "${release_name}" -n "${name_space_sanity_plugins_check}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
@@ -943,6 +960,21 @@ force_delete_namespace() {
   local project=$1
   echo "Forcefully deleting namespace ${project}."
   oc get namespace "$project" -o json | jq '.spec = {"finalizers":[]}' | oc replace --raw "/api/v1/namespaces/$project/finalize" -f -
+
+  local elapsed=0
+  local sleep_interval=2
+  local timeout_seconds=${2:-120}
+
+  while oc get namespace "$project" &>/dev/null; do
+    if [[ $elapsed -ge $timeout_seconds ]]; then
+      echo "Timeout: Namespace '${project}' was not deleted within $timeout_seconds seconds." >&2
+      return 1
+    fi
+    sleep $sleep_interval
+    elapsed=$((elapsed + sleep_interval))
+  done
+
+  echo "Namespace '${project}' successfully deleted."
 }
 
 oc_login() {
@@ -954,12 +986,72 @@ is_openshift() {
   oc get routes.route.openshift.io &> /dev/null || kubectl get routes.route.openshift.io &> /dev/null
 }
 
-detect_ocp_and_set_env_var() {
+detect_ocp() {
   echo "Detecting OCP or K8s and populating IS_OPENSHIFT variable..."
   if [[ "${IS_OPENSHIFT}" == "" ]]; then
     IS_OPENSHIFT=$(is_openshift && echo 'true' || echo 'false')
   fi
+  
   echo IS_OPENSHIFT: "${IS_OPENSHIFT}"
+  save_is_openshift "${IS_OPENSHIFT}"
+}
+
+detect_container_platform() {
+  echo "Detecting container platform and populating CONTAINER_PLATFORM variable..."
+
+  # Determine platform type based on IS_OPENSHIFT variable
+  if [[ "${IS_OPENSHIFT}" == "true" ]]; then
+    case "$JOB_NAME" in
+      *osd-gcp*)
+        CONTAINER_PLATFORM="osd-gcp"
+        ;;
+      *)
+        CONTAINER_PLATFORM="ocp"
+        ;;
+    esac
+    # Get OCP version
+    if command -v oc &> /dev/null; then
+      CONTAINER_PLATFORM_VERSION=$(oc version 2>/dev/null | grep "Server Version:" | cut -d' ' -f3 | cut -d'.' -f1,2 || echo "unknown")
+    else
+      CONTAINER_PLATFORM_VERSION="unknown"
+    fi
+  else
+    # Determine Kubernetes distribution based on JOB_NAME pattern
+    case "$JOB_NAME" in
+      *aks*)
+        CONTAINER_PLATFORM="aks"
+        ;;
+      *eks*)
+        CONTAINER_PLATFORM="eks"
+        ;;
+      *gke*)
+        CONTAINER_PLATFORM="gke"
+        ;;
+      *iks*)
+        CONTAINER_PLATFORM="iks"
+        ;;
+      *)
+        CONTAINER_PLATFORM="unknown"
+        ;;
+    esac
+
+    # Get Kubernetes version
+    if command -v kubectl &> /dev/null; then
+      CONTAINER_PLATFORM_VERSION=$(kubectl version 2>/dev/null | grep "Server Version:" | cut -d' ' -f3 | sed 's/^v//' | cut -d'.' -f1,2 || echo "unknown")
+    else
+      CONTAINER_PLATFORM_VERSION="unknown"
+    fi
+  fi
+
+  echo "CONTAINER_PLATFORM: ${CONTAINER_PLATFORM}"
+  echo "CONTAINER_PLATFORM_VERSION: ${CONTAINER_PLATFORM_VERSION}"
+
+  # Export variables for use in other scripts
+  export CONTAINER_PLATFORM
+  export CONTAINER_PLATFORM_VERSION
+
+  # Save platform information for reporting
+  save_container_platform "${CONTAINER_PLATFORM}" "${CONTAINER_PLATFORM_VERSION}"
 }
 
 # Helper function for cross-platform sed
@@ -970,17 +1062,6 @@ sed_inplace() {
   else
     # Linux
     sed -i "$@"
-  fi
-}
-
-# Helper function for case conversion
-to_lowercase() {
-  if [[ "$OSTYPE" == "darwin"* ]]; then
-    # macOS - using tr
-    echo "$1" | tr '[:upper:]' '[:lower:]'
-  else
-    # Linux - using bash parameter expansion
-    echo "${1,,}"
   fi
 }
 

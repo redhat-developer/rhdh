@@ -19,13 +19,13 @@ metadata:
     - automation
 spec:
   packageName: "@redhat/backstage-plugin-scaffolder-backend-module-orchestrator"
-  dynamicArtifact: "@redhat/backstage-plugin-scaffolder-backend-module-orchestrator-dynamic@1.5.1"
-  version: 1.5.1
+  dynamicArtifact: "@redhat/backstage-plugin-scaffolder-backend-module-orchestrator-dynamic@1.7.1"
+  version: 1.7.1
   backstage:
     role: backend-plugin-module
     supportedVersions: 1.39.1
   author: Red Hat
-  support: tech-preview
+  support: production
   lifecycle: active
   partOf:
     - orchestrator-scaffolder-actions

@@ -1,4 +1,4 @@
-import { CatalogUsersPO } from "../../../support/pageObjects/catalog/catalog-users-obj";
+import { CatalogUsersPO } from "../../../support/page-objects/catalog/catalog-users-obj";
 import { RhdhAuthUiHack } from "../../../support/api/rhdh-auth-hack";
 import { Common } from "../../../utils/common";
 import {
@@ -12,6 +12,14 @@ import playwrightConfig from "../../../../playwright.config";
 
 test.describe("Test licensed users info backend plugin", async () => {
   let common: Common;
+
+  test.beforeAll(async () => {
+    test.info().annotations.push({
+      type: "component",
+      description: "plugins",
+    });
+  });
+
   let apiToken: string;
 
   const baseRHDHURL: string = playwrightConfig.use.baseURL;
