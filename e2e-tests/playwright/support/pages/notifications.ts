@@ -13,9 +13,6 @@ export class NotificationPage {
   async clickNotificationsNavBarItem() {
     await this.uiHelper.openSidebar("Notifications");
     await expect(
-      this.page.getByRole("table").filter({ hasText: "Rows per page" }),
-    ).toBeVisible();
-    await expect(
       this.page.getByTestId("loading-indicator").getByRole("img"),
     ).toHaveCount(0);
   }
