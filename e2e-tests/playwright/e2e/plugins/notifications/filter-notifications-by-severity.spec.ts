@@ -39,7 +39,7 @@ test.describe("Filter critical notification tests", () => {
         },
       };
       await notificationsApi.createNotification(notification);
-      await uiHelper.openSidebar("Notifications");
+      await notificationPage.clickNotificationsNavBarItem();
       await notificationPage.selectSeverity(severity);
       await notificationPage.notificationContains(
         `${notificationTitle} ${severity}-${r}`,
