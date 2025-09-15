@@ -8073,7 +8073,7 @@ __metadata:
     "@mui/icons-material": 5.18.0
     "@mui/material": 5.18.0
     "@scalprum/react-core": 0.9.5
-    "@testing-library/jest-dom": 6.6.4
+    "@testing-library/jest-dom": 6.8.0
     "@testing-library/react": 14.3.1
     "@testing-library/user-event": 14.6.1
     glob: 11.0.3
@@ -8142,6 +8142,27 @@ __metadata:
     supertest: 6.3.4
     typescript: 5.9.2
     winston: 3.14.2
+  languageName: unknown
+  linkType: soft
+
+"@internal/plugin-translation-backend@*, @internal/plugin-translation-backend@workspace:plugins/translation-backend":
+  version: 0.0.0-use.local
+  resolution: "@internal/plugin-translation-backend@workspace:plugins/translation-backend"
+  dependencies:
+    "@backstage/backend-defaults": 0.10.0
+    "@backstage/backend-plugin-api": 1.3.1
+    "@backstage/backend-test-utils": 1.5.0
+    "@backstage/catalog-client": 1.10.0
+    "@backstage/cli": 0.32.1
+    "@backstage/config": 1.3.2
+    "@backstage/errors": 1.2.7
+    "@backstage/plugin-catalog-node": 1.17.0
+    "@types/express": 4.17.23
+    "@types/supertest": 6.0.3
+    express: 4.21.2
+    express-promise-router: 4.1.1
+    prettier: 3.6.2
+    supertest: 6.3.4
   languageName: unknown
   linkType: soft
 
@@ -12427,7 +12448,7 @@ __metadata:
     "@backstage/cli": 0.32.1
     "@backstage/test-utils": 1.7.8
     "@testing-library/dom": 9.3.4
-    "@testing-library/jest-dom": 6.6.4
+    "@testing-library/jest-dom": 6.8.0
     "@testing-library/react": 14.3.1
     "@testing-library/react-hooks": 8.0.1
     "@types/node": 22.16.3
@@ -14694,18 +14715,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@testing-library/jest-dom@npm:6.6.4":
-  version: 6.6.4
-  resolution: "@testing-library/jest-dom@npm:6.6.4"
+"@testing-library/jest-dom@npm:6.8.0":
+  version: 6.8.0
+  resolution: "@testing-library/jest-dom@npm:6.8.0"
   dependencies:
     "@adobe/css-tools": ^4.4.0
     aria-query: ^5.0.0
     css.escape: ^1.5.1
     dom-accessibility-api: ^0.6.3
-    lodash: ^4.17.21
     picocolors: ^1.1.1
     redent: ^3.0.0
-  checksum: 45c8be7b4a577d926210ff10a444dcc5a40132ff6865512406b76c2768d0530c0b3c4d6babccf97c63108bd8b59d1fab58fab08b02452d286be76320323d91be
+  checksum: a3cfb162b6ec6e98277187d9488234ba3e3ee25f24a86facdae092dbe54a015c845bcb81daa6de7afadcac5a5fe25becd7c7e9b67bb01ee4ccf7d67ee907adc9
   languageName: node
   linkType: hard
 
@@ -16696,7 +16716,7 @@ __metadata:
     "@material-ui/lab": 4.0.0-alpha.61
     "@octokit/rest": 19.0.13
     "@testing-library/dom": 9.3.4
-    "@testing-library/jest-dom": 6.6.4
+    "@testing-library/jest-dom": 6.8.0
     "@testing-library/react": 14.3.1
     "@testing-library/user-event": 14.6.1
     "@types/jquery": 3.3.34
@@ -16761,7 +16781,7 @@ __metadata:
     "@scalprum/react-core": 0.9.5
     "@scalprum/react-test-utils": 0.2.6
     "@testing-library/dom": 9.3.4
-    "@testing-library/jest-dom": 6.6.4
+    "@testing-library/jest-dom": 6.8.0
     "@testing-library/react": 14.3.1
     "@testing-library/react-hooks": 8.0.1
     "@testing-library/user-event": 14.6.1
@@ -17466,6 +17486,7 @@ __metadata:
     "@internal/plugin-dynamic-plugins-info-backend": "*"
     "@internal/plugin-licensed-users-info-backend": "*"
     "@internal/plugin-scalprum-backend": "*"
+    "@internal/plugin-translation-backend": "*"
     "@janus-idp/backstage-plugin-audit-log-node": 1.7.2
     "@opentelemetry/api": 1.9.0
     "@opentelemetry/auto-instrumentations-node": 0.58.1
@@ -17482,7 +17503,7 @@ __metadata:
     jose: 5.10.0
     prettier: 3.6.2
     typescript: 5.9.2
-    undici: 6.21.2
+    undici: 6.21.3
     winston: 3.14.2
     zod: 3.23.8
   languageName: unknown
@@ -35872,10 +35893,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici@npm:6.21.2":
-  version: 6.21.2
-  resolution: "undici@npm:6.21.2"
-  checksum: 4d7227910bfee0703ea5c5c9d4343bcb2a80d2ce2eb64698b6fb8cc48852e29f7c7c623126161a5073fd594c9040ae7e7ecc8e093fe6e84a9394dd2595754ec5
+"undici@npm:6.21.3":
+  version: 6.21.3
+  resolution: "undici@npm:6.21.3"
+  checksum: a2af0601deece36acbcc11ef722f36ad3c1e035d3065b9fbb36987487f7b69904046fa95c18f228a872ca45441f156fcaacd948fc920b0a97d0c1ab78ea63c04
   languageName: node
   linkType: hard
 

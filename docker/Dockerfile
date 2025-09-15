@@ -66,6 +66,7 @@ RUN chmod +x "$YARN" && ln -s "$YARN" /usr/local/bin/yarn
 FROM skeleton AS deps
 COPY $EXTERNAL_SOURCE_NESTED/yarn.lock ./
 # BEGIN COPY package.json files
+COPY $EXTERNAL_SOURCE_NESTED/plugins/translation-backend/package.json ./plugins/translation-backend/package.json
 COPY $EXTERNAL_SOURCE_NESTED/plugins/scalprum-backend/package.json ./plugins/scalprum-backend/package.json
 COPY $EXTERNAL_SOURCE_NESTED/plugins/licensed-users-info-backend/package.json ./plugins/licensed-users-info-backend/package.json
 COPY $EXTERNAL_SOURCE_NESTED/plugins/dynamic-plugins-info/package.json ./plugins/dynamic-plugins-info/package.json
@@ -93,7 +94,7 @@ RUN NODE_HEADERS_VERSION=$(node --version); echo "=== Install node headers $NODE
 # Increase timeout for yarn install
 RUN "$YARN" config set httpTimeout 600000
 
-RUN echo "=== YARN INSTALL ==="; FAILED=0; "$YARN" install --immutable; \
+RUN echo "=== YARN INSTALL ==="; FAILED=0; "$YARN" install --immutable || FAILED=1; \
   for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then \
   (( FAILED = FAILED + 1 )); \
   echo; echo $d; \
@@ -124,7 +125,7 @@ RUN \
 # suppress git warnings about dubious ownership in repository at '/opt/app-root/src' when building
 RUN echo "=== YARN BUILD ==="; FAILED=0; \
   git config --global --add safe.directory /opt/app-root/src; \
-  "$YARN" build || true; \
+  "$YARN" build || FAILED=1; \
   for d in $(find . -name yarn-install.log); do \
   (( FAILED = FAILED + 1 )); echo; echo $d; echo "======"; cat ${d}; \
   done; \
@@ -132,7 +133,7 @@ RUN echo "=== YARN BUILD ==="; FAILED=0; \
 
 WORKDIR $CONTAINER_SOURCE/dynamic-plugins
 
-RUN echo "=== DYNAMIC PLUGIN YARN INSTALL ==="; FAILED=0; "$YARN" install --immutable; \
+RUN echo "=== DYNAMIC PLUGIN YARN INSTALL ==="; FAILED=0; "$YARN" install --immutable || FAILED=1; \
   for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then \
   (( FAILED = FAILED + 1 )); \
   echo; echo $d; \
@@ -142,7 +143,7 @@ RUN echo "=== DYNAMIC PLUGIN YARN INSTALL ==="; FAILED=0; "$YARN" install --immu
   if [[ $FAILED -gt 0 ]]; then exit $FAILED; fi
 
 RUN echo "=== EXPORT DYNAMIC PLUGINS ==="; FAILED=0; \
-  "$YARN" export-dynamic || true; \
+  "$YARN" export-dynamic || FAILED=1; \
   for d in $(find . -name yarn-install.log); do \
   (( FAILED = FAILED + 1 )); echo; echo $d; echo "======"; cat ${d}; \
   done; \
