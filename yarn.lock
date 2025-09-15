@@ -8008,9 +8008,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ianvs/prettier-plugin-sort-imports@npm:4.6.2":
-  version: 4.6.2
-  resolution: "@ianvs/prettier-plugin-sort-imports@npm:4.6.2"
+"@ianvs/prettier-plugin-sort-imports@npm:4.7.0":
+  version: 4.7.0
+  resolution: "@ianvs/prettier-plugin-sort-imports@npm:4.7.0"
   dependencies:
     "@babel/generator": ^7.26.2
     "@babel/parser": ^7.26.2
@@ -8032,7 +8032,7 @@ __metadata:
       optional: true
     prettier-plugin-ember-template-tag:
       optional: true
-  checksum: c55dbf86754e3e493f4f1c25158cfebd8ba866dc1b3d9d3372c2c57cb0d5d14d1d02daa1721cf88b89b42e4f0eae54bc584f81a614050330b56fac1c45d09f23
+  checksum: 142a1ea272a42650110ba1d7d8f87c98c19c0126267bbd48e7bca0c2b6ca5a7fa057226bdb2b8404bb7c1d94e358349f69c8a5d56ce036574a5eced3eca39bcd
   languageName: node
   linkType: hard
 
@@ -32840,7 +32840,7 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.32.1
     "@backstage/frontend-test-utils": ^0.3.2
-    "@ianvs/prettier-plugin-sort-imports": 4.6.2
+    "@ianvs/prettier-plugin-sort-imports": 4.7.0
     "@manypkg/cli": 0.24.0
     glob: 11.0.3
     husky: 8.0.3
