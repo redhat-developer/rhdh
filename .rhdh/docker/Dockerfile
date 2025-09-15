@@ -66,6 +66,7 @@ RUN chmod +x "$YARN" && ln -s "$YARN" /usr/local/bin/yarn
 FROM skeleton AS deps
 COPY $EXTERNAL_SOURCE_NESTED/yarn.lock ./
 # BEGIN COPY package.json files
+COPY $EXTERNAL_SOURCE_NESTED/.ibm/package.json ./.ibm/package.json
 COPY $EXTERNAL_SOURCE_NESTED/plugins/translation-backend/package.json ./plugins/translation-backend/package.json
 COPY $EXTERNAL_SOURCE_NESTED/plugins/scalprum-backend/package.json ./plugins/scalprum-backend/package.json
 COPY $EXTERNAL_SOURCE_NESTED/plugins/licensed-users-info-backend/package.json ./plugins/licensed-users-info-backend/package.json
@@ -76,7 +77,6 @@ COPY $EXTERNAL_SOURCE_NESTED/packages/backend/package.json ./packages/backend/pa
 COPY $EXTERNAL_SOURCE_NESTED/packages/app/package.json ./packages/app/package.json
 COPY $EXTERNAL_SOURCE_NESTED/packages/app-next/package.json ./packages/app-next/package.json
 COPY $EXTERNAL_SOURCE_NESTED/package.json ./package.json
-COPY $EXTERNAL_SOURCE_NESTED/.ibm/package.json ./.ibm/package.json
 # END COPY package.json files
 
 # unpack headers from tarball (includes openssl headers not present in /usr/include/node) - see RHIDP-6755 for why we need this upstream
