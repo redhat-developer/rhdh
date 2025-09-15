@@ -1,7 +1,7 @@
 import { test } from "@playwright/test";
 import { UIhelper } from "../../../utils/ui-helper";
 import { Common } from "../../../utils/common";
-import RhdhNotficationsApi from "../../../support/api/notifications";
+import RhdhNotificationsApi from "../../../support/api/notifications";
 import { Notifications } from "../../../support/api/notifications-api-structures";
 import { NotificationPage } from "../../../support/pages/notifications";
 
@@ -24,7 +24,7 @@ test.describe("Filter critical notification tests", () => {
   for (const severity of severities) {
     test(`Filter notifications by severity - ${severity}`, async () => {
       const r = (Math.random() + 1).toString(36).substring(7);
-      const notificationsApi = await RhdhNotficationsApi.build(apiToken);
+      const notificationsApi = await RhdhNotificationsApi.build(apiToken);
       const notificationTitle = "UI Notification By Severity";
       const notification: Notifications = {
         recipients: {

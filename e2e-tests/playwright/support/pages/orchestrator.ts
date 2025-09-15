@@ -93,13 +93,12 @@ export class Orchestrator {
     await expect(workFlowRow.locator("td").nth(0)).toHaveText(
       "Greeting workflow",
     );
-    await expect(workFlowRow.locator("td").nth(1)).toHaveText("Infrastructure");
-    await expect(workFlowRow.locator("td").nth(2)).toHaveText("Available");
-    await expect(workFlowRow.locator("td").nth(3)).toHaveText(
+    await expect(workFlowRow.locator("td").nth(1)).toHaveText("Available");
+    await expect(workFlowRow.locator("td").nth(2)).toHaveText(
       /^\d{1,2}\/\d{1,2}\/\d{4}, \d{1,2}:\d{1,2}:\d{1,2} (AM|PM)$/,
     );
-    await expect(workFlowRow.locator("td").nth(4)).toHaveText("Completed");
-    await expect(workFlowRow.locator("td").nth(5)).toHaveText(
+    await expect(workFlowRow.locator("td").nth(3)).toHaveText("Completed");
+    await expect(workFlowRow.locator("td").nth(4)).toHaveText(
       "YAML based greeting workflow",
     );
     await expect(
