@@ -1,12 +1,10 @@
 import { test } from "@playwright/test";
-import { UIhelper } from "../../../utils/ui-helper";
 import { Common } from "../../../utils/common";
 import RhdhNotificationsApi from "../../../support/api/notifications";
 import { Notifications } from "../../../support/api/notifications-api-structures";
 import { NotificationPage } from "../../../support/pages/notifications";
 
 test.describe("Filter critical notification tests", () => {
-  let uiHelper: UIhelper;
   let common: Common;
   let notificationPage: NotificationPage;
   let apiToken: string;
@@ -14,7 +12,6 @@ test.describe("Filter critical notification tests", () => {
   const severities = ["Critical", "High", "Normal", "Low"];
 
   test.beforeEach(async ({ page }) => {
-    uiHelper = new UIhelper(page);
     common = new Common(page);
     notificationPage = new NotificationPage(page);
     await common.loginAsKeycloakUser();
