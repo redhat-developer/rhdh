@@ -76,6 +76,7 @@ COPY $EXTERNAL_SOURCE_NESTED/packages/backend/package.json ./packages/backend/pa
 COPY $EXTERNAL_SOURCE_NESTED/packages/app/package.json ./packages/app/package.json
 COPY $EXTERNAL_SOURCE_NESTED/packages/app-next/package.json ./packages/app-next/package.json
 COPY $EXTERNAL_SOURCE_NESTED/package.json ./package.json
+COPY $EXTERNAL_SOURCE_NESTED/.ibm/package.json ./.ibm/package.json
 # END COPY package.json files
 
 # unpack headers from tarball (includes openssl headers not present in /usr/include/node) - see RHIDP-6755 for why we need this upstream
