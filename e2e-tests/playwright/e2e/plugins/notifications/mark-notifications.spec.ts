@@ -17,7 +17,7 @@ test.describe("Mark notification tests", () => {
   });
 
   test("Mark notification as read", async () => {
-    const r = (Math.random() + 1).toString(36).substring(7);
+    const r = crypto.randomUUID();
     const notificationsApi = await RhdhNotificationsApi.build(apiToken);
     const notificationTitle = `UI Notification Mark as read`;
     const notification: Notifications = {
@@ -43,7 +43,7 @@ test.describe("Mark notification tests", () => {
   });
 
   test("Mark notification as unread", async () => {
-    const r = (Math.random() + 1).toString(36).substring(7);
+    const r = crypto.randomUUID();
     const notificationsApi = await RhdhNotificationsApi.build(apiToken);
     const notificationTitle = `UI Notification Mark as unread`;
     const notification: Notifications = {
@@ -74,7 +74,7 @@ test.describe("Mark notification tests", () => {
   });
 
   test("Mark notification as saved", async () => {
-    const r = (Math.random() + 1).toString(36).substring(7);
+    const r = crypto.randomUUID();
     const notificationsApi = await RhdhNotificationsApi.build(apiToken);
     const notificationTitle = `UI Notification Mark as saved`;
     const notification: Notifications = {

@@ -20,7 +20,7 @@ test.describe("Filter critical notification tests", () => {
 
   for (const severity of severities) {
     test(`Filter notifications by severity - ${severity}`, async () => {
-      const r = (Math.random() + 1).toString(36).substring(7);
+      const r = crypto.randomUUID();
       const notificationsApi = await RhdhNotificationsApi.build(apiToken);
       const notificationTitle = "UI Notification By Severity";
       const notification: Notifications = {
