@@ -731,11 +731,12 @@ perform_helm_install() {
   local namespace=$2
   local value_file=$3
 
+  # shellcheck disable=SC2046
   helm upgrade -i "${release_name}" -n "${namespace}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "${DIR}/value_files/${value_file}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    "$(get_image_helm_set_params)"
+    $(get_image_helm_set_params)
 }
 
 base_deployment() {
@@ -858,11 +859,12 @@ initiate_runtime_deployment() {
   # Create secret for sealight job to pull image from private quay repository.
   if [[ "$JOB_NAME" == *"sealight"* ]]; then kubectl create secret docker-registry quay-secret --docker-server=quay.io --docker-username=$RHDH_SEALIGHTS_BOT_USER --docker-password=$RHDH_SEALIGHTS_BOT_TOKEN --namespace="${namespace}"; fi
 
+  # shellcheck disable=SC2046
   helm upgrade -i "${release_name}" -n "${namespace}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "$DIR/resources/postgres-db/values-showcase-postgres.yaml" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    "$(get_image_helm_set_params)"
+    $(get_image_helm_set_params)
 }
 
 initiate_sanity_plugin_checks_deployment() {
@@ -877,11 +879,12 @@ initiate_sanity_plugin_checks_deployment() {
   yq_merge_value_files "overwrite" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_SANITY_PLUGINS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}"
   mkdir -p "${ARTIFACT_DIR}/${name_space_sanity_plugins_check}"
   cp -a "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" "${ARTIFACT_DIR}/${name_space_sanity_plugins_check}/" || true # Save the final value-file into the artifacts directory.
+  # shellcheck disable=SC2046
   helm upgrade -i "${release_name}" -n "${name_space_sanity_plugins_check}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    "$(get_image_helm_set_params)" \
+    $(get_image_helm_set_params) \
     --set orchestrator.enabled=true
 }
 
