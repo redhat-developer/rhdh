@@ -89,13 +89,12 @@ echo "    Target Languages: $TARGET_LANGS"
 : "${TMS_PROJECT_ID:?TMS_PROJECT_ID not set in i18n.config.sh or env}"
 
 # --- Staging directories ------------------------------------------------------
-# Place staging files inside the main RHDH repo for easy developer access
-RHDH_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"  # Points to rhdh repo root
-STAGING_DIR="$RHDH_ROOT/ui-i18n/$RHDH_RELEASE"
+# Place staging files inside the rhdh repository for easy developer access
+STAGING_DIR="$REPO_ROOT/ui-i18n/$RHDH_RELEASE"
 # Generate directly in staging directory (no subdirectory duplication)
 GENERATED_DIR="$STAGING_DIR"
 
-CACHE_DIR="$RHDH_ROOT/.ui-i18n-cache/$RHDH_RELEASE"
+CACHE_DIR="$REPO_ROOT/.ui-i18n-cache/$RHDH_RELEASE"
 mkdir -p "$CACHE_DIR"
 
 # --- Guards / helpers ---------------------------------------------------------
@@ -186,10 +185,9 @@ done < <(find "$repo_root" \
 echo "==> Generating JSON from TS refs"
 echo "Scanning roots:"
 echo "  RHDH_DIR=$RHDH_DIR"
-echo "  RHDH_PLUGINS_DIR=$RHDH_PLUGINS_DIR"
 echo "  COMMUNITY_PLUGINS_DIR=$COMMUNITY_PLUGINS_DIR"
+echo "Note: rhdh-plugins translations are handled by scripts in that repository"
 generate_from_ts "$RHDH_DIR" "rhdh"
-generate_from_ts "$RHDH_PLUGINS_DIR" "rhdh-plugins"
 generate_from_ts "$COMMUNITY_PLUGINS_DIR" "community-plugins"
 
 # --- Step 2: collect existing *-en.json from repos ----------------------------
@@ -213,7 +211,6 @@ copy_jsons () {
 
 echo "==> Collecting existing English catalogs"
 copy_jsons "$RHDH_DIR" "rhdh"
-copy_jsons "$RHDH_PLUGINS_DIR" "rhdh-plugins"
 copy_jsons "$COMMUNITY_PLUGINS_DIR" "community-plugins"
 
 # --- Step 3: validate JSON ----------------------------------------------------
@@ -277,7 +274,7 @@ echo "Upload summary: uploaded=$uploaded, skipped=$skipped"
 echo "✓ Upload complete. Staged files are in: $STAGING_DIR"
 
 # Optional cleanup after successful upload
-# Example: CLEAN_AFTER_UPLOAD=1 scripts/upload-i18n-strings/collect-and-upload.sh
+# Example: CLEAN_AFTER_UPLOAD=1 scripts/i18n-scripts/collect-and-upload.sh
 if [[ "${CLEAN_AFTER_UPLOAD:-0}" == "1" ]]; then
   echo "==> Cleaning up staging directory"
   rm -rf "$STAGING_DIR"

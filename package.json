@@ -26,7 +26,10 @@
     "prettier:check": "turbo run prettier:check",
     "prettier:fix": "turbo run prettier:fix",
     "new": "backstage-cli new --scope internal",
-    "i18n-upload": "bash scripts/upload-i18n-strings/collect-and-upload.sh",
+    "i18n-upload": "bash scripts/i18n-scripts/collect-and-upload.sh",
+    "i18n-upload:help": "bash scripts/i18n-scripts/collect-and-upload.sh --help",
+    "i18n-download": "bash scripts/i18n-scripts/collect-and-download.sh",
+    "i18n-download:help": "bash scripts/i18n-scripts/collect-and-download.sh --help",
     "repo:fix": "backstage-cli repo fix --publish",
     "versions:metadata": "node ./scripts/update-metadata.mjs",
     "versions:bump": "node ./scripts/update-backstage.mjs"

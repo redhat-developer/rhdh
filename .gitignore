@@ -75,4 +75,6 @@ dynamic-plugins-root/*
 
 # i18n staged files and cache
 ui-i18n/
+ui-i18n-downloads/
 .ui-i18n-cache/
+.ui-i18n-download-cache/
