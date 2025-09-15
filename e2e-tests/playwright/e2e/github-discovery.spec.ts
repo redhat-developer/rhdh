@@ -24,6 +24,7 @@ const test = base.extend<GithubDiscoveryFixture>({
 test.describe("Github Discovery Catalog", () => {
   test.beforeAll(async () => {
     test.info().annotations.push({
+      // comment
       type: "component",
       description: "api",
     });
