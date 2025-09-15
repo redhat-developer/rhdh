@@ -2,9 +2,6 @@ name: E2E Bash
 
 on:
   pull_request:
-    paths:
-      - '.ibm/**'
-  push:
     branches:
       - "main"
       - "release-*"
