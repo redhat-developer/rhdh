@@ -35,16 +35,19 @@ test("Verify GitHub Security Insights plugin after login", async ({
   const dependabotCard = page.locator('div[class*="MuiCard-root"]').filter({ hasText: "Dependabot Alerts" }).first();
   await dependabotCard.scrollIntoViewIfNeeded();
   await dependabotCard.getByRole('button', { name: 'Sign in' }).first().click();
-  await uiHelper.isBtnVisible("Log in");
-  await Promise.all([
-    common.githubLoginPopUpModal(
-      context,
-      process.env.GH_USER_ID,
-      process.env.GH_USER_PASS,
-      process.env.GH_2FA_SECRET,
-    ),
-    uiHelper.clickButton("Log in"),
-  ]);
+  
+  // Wait for the "Login Required" dialog to appear and click its "Log in" button
+  const loginRequiredDialog = page.getByRole('dialog', { name: 'Login Required' });
+  await expect(loginRequiredDialog).toBeVisible();
+  await loginRequiredDialog.getByRole('button', { name: 'Log in' }).click();
+  
+  // Now handle the GitHub popup authentication
+  await common.githubLoginPopUpModal(
+    context,
+    process.env.GH_USER_ID,
+    process.env.GH_USER_PASS,
+    process.env.GH_2FA_SECRET,
+  );
   
   // Wait for GitHub login to complete
   await page.waitForTimeout(3000);

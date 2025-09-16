@@ -44,7 +44,7 @@ export class Common {
   async signOut() {
     // Click the user settings menu button using the data-testid selector
     await this.page.click(SETTINGS_PAGE_COMPONENTS.userSettingsMenu);
-    await this.uiHelper.clickButton(SETTINGS_PAGE_COMPONENTS.signOut);
+    await this.page.getByRole('menuitem', { name: 'Sign Out' }).click();
     await this.uiHelper.verifyHeading("Select a sign-in method");
   }
 
@@ -292,12 +292,22 @@ export class Common {
   }
 
   private async findOtpSelector(page): Promise<string> {
-    const selectors = ['input[name="otp"]', "#app_totp"];
+    const selectors = [
+      'input[name="otp"]', 
+      "#app_totp",
+      'input[id*="otp"]',
+      'input[id*="2fa"]',
+      'input[name*="code"]',
+      'input[inputmode="numeric"]',
+      'input[type="text"][maxlength="6"]',
+      'input[type="text"][maxlength="8"]'
+    ];
     for (const selector of selectors) {
       try {
         await page
           .locator(selector)
-          .waitFor({ state: "visible", timeout: 10000 });
+          .waitFor({ state: "visible", timeout: 5000 });
+        console.log(`Found OTP selector: ${selector}`);
         return selector;
       } catch (err) {
         console.debug(`Selector ${selector} not visible yet, continuing…`);
