@@ -8,7 +8,9 @@ v22.16.0
 
 Or, go to https://catalog.redhat.com/software/containers/ubi9/nodejs-22/66431d1785c5c3a31edd24f1?container-tabs=packages and search for `nodejs` to get the version.
 
-As of 2025/09/16, this version is `v22.16.0`; the latest RPM is also `v22.19.0`.
+As of 2025/09/16, this version is `v22.16.0`
+
+The latest RPM is `v22.19.0`.
 
 To download headers:
 
