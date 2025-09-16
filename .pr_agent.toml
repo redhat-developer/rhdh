@@ -1,5 +1,5 @@
 [jira]
-jira_api_token = "${{ secrets.JIRA_API_TOKEN }}"
+jira_api_token = ""
 jira_base_url = "https://issues.redhat.com"
 
 [github_app]
@@ -29,6 +29,9 @@ add_original_user_description = false
 
 [pr_code_suggestions]
 commitable_code_suggestions = false
+
+[pr_test]
+enable=false
 
 [config]
 ignore_pr_authors = ["renovate","openshift-cherrypick-robot","rhdh-bot"]
