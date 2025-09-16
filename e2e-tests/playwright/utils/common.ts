@@ -192,10 +192,21 @@ export class Common {
   }
 
   async clickOnGHloginPopup() {
-    const isLoginRequiredVisible = await this.uiHelper.isTextVisible("Sign in");
+    // Check for either "Sign in" text or "Login Required" dialog
+    const isLoginRequiredVisible = await this.uiHelper.isTextVisible("Sign in") || 
+      await this.page.getByRole('dialog', { name: 'Login Required' }).isVisible();
+      
     if (isLoginRequiredVisible) {
-      await this.uiHelper.clickButton("Sign in");
-      await this.uiHelper.clickButton("Log in");
+      // Handle the "Login Required" dialog first
+      const loginRequiredDialog = this.page.getByRole('dialog', { name: 'Login Required' });
+      if (await loginRequiredDialog.isVisible()) {
+        await loginRequiredDialog.getByRole('button', { name: 'Log in' }).click();
+      } else {
+        // Fallback to original logic
+        await this.uiHelper.clickButton("Sign in");
+        await this.uiHelper.clickButton("Log in");
+      }
+      
       await this.checkAndReauthorizeGithubApp();
       await this.uiHelper.waitForLoginBtnDisappear();
     } else {
@@ -243,6 +254,7 @@ export class Common {
       { timeout: 10000 },
     );
     await githubPage.click('button[type="submit"], input[type="submit"]');
+    
     // OTP
     const otpSelector = await this.findOtpSelector(githubPage);
     if (otpSelector) {
@@ -253,7 +265,7 @@ export class Common {
       await githubPage.fill(otpSelector, otp);
       if (githubPage.isClosed()) return;
       
-      // Wait for the OTP to be processed and the submit button to be available
+      // Wait for the OTP to be processed
       await githubPage.waitForTimeout(1000);
       
       // Try multiple selectors for the submit button
@@ -270,10 +282,7 @@ export class Common {
         try {
           const submitButton = githubPage.locator(selector).first();
           if (await submitButton.isVisible({ timeout: 2000 })) {
-            await Promise.race([
-              githubPage.waitForEvent("close", { timeout: 20000 }),
-              submitButton.click(),
-            ]);
+            await submitButton.click();
             submitClicked = true;
             break;
           }
@@ -282,8 +291,25 @@ export class Common {
         }
       }
       
+      // Wait for either authorization page or popup close
       if (!submitClicked) {
-        // If no submit button found, just wait for the popup to close
+        // Check if we're on the GitHub authorization page
+        try {
+          await githubPage.waitForSelector('button:has-text("Authorize")', { timeout: 5000 });
+          await githubPage.click('button:has-text("Authorize")');
+          await githubPage.waitForEvent("close", { timeout: 20000 });
+        } catch (e) {
+          // If no authorization button, just wait for close
+          await githubPage.waitForEvent("close", { timeout: 20000 });
+        }
+      } else {
+        // After successful submit, check for authorization page
+        try {
+          await githubPage.waitForSelector('button:has-text("Authorize")', { timeout: 5000 });
+          await githubPage.click('button:has-text("Authorize")');
+        } catch (e) {
+          // Authorization page not found, continue
+        }
         await githubPage.waitForEvent("close", { timeout: 20000 });
       }
     } else {
