@@ -508,34 +508,34 @@ arches:
     name: lua-srpm-macros
     evr: 1-6.el9
     sourcerpm: lua-rpm-macros-1-6.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/m/mesa-dri-drivers-24.2.8-2.el9_6.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/m/mesa-dri-drivers-24.2.8-3.el9_6.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 9841580
-    checksum: sha256:71c02e4ca4a7956b3fd70b71ed40652b29bbb29713aa85c53e5cac3b7df14b44
+    size: 9837523
+    checksum: sha256:4baeac62f82dcd6ed1319cfa34ad1f7123a9dfdd42ba0b0c484d01fbf9f9b805
     name: mesa-dri-drivers
-    evr: 24.2.8-2.el9_6
-    sourcerpm: mesa-24.2.8-2.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/m/mesa-filesystem-24.2.8-2.el9_6.x86_64.rpm
+    evr: 24.2.8-3.el9_6
+    sourcerpm: mesa-24.2.8-3.el9_6.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/m/mesa-filesystem-24.2.8-3.el9_6.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 12749
-    checksum: sha256:c3c5def0e2ef739d29e7a74951ca1dfac0c64155c78410dfb9e54cb0dfa86a9f
+    size: 10776
+    checksum: sha256:cefd073cce1d96c2fa737da4cf255dc430ae1d8bc3793ee0cc067d2e3a4a4406
     name: mesa-filesystem
-    evr: 24.2.8-2.el9_6
-    sourcerpm: mesa-24.2.8-2.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/m/mesa-libgbm-24.2.8-2.el9_6.x86_64.rpm
+    evr: 24.2.8-3.el9_6
+    sourcerpm: mesa-24.2.8-3.el9_6.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/m/mesa-libgbm-24.2.8-3.el9_6.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 38641
-    checksum: sha256:92d455f32042db8e88f318d309a0b9ef0b287701e031895955291d9f7f1ffdb0
+    size: 36446
+    checksum: sha256:436edc5022667a01cec4bd7499f16c1fa22eea36a99ecc0902fd82115d690091
     name: mesa-libgbm
-    evr: 24.2.8-2.el9_6
-    sourcerpm: mesa-24.2.8-2.el9_6.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/m/mesa-libglapi-24.2.8-2.el9_6.x86_64.rpm
+    evr: 24.2.8-3.el9_6
+    sourcerpm: mesa-24.2.8-3.el9_6.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/m/mesa-libglapi-24.2.8-3.el9_6.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 46996
-    checksum: sha256:e89be373f7594ca1fdc18e727dc97d0c1c8555c1c7555ddccc3f0dde4c3b8c22
+    size: 45330
+    checksum: sha256:4a70de296f3bec329440c23a28b17f05d5f533d6abcf23363a4ade863e711e33
     name: mesa-libglapi
-    evr: 24.2.8-2.el9_6
-    sourcerpm: mesa-24.2.8-2.el9_6.src.rpm
+    evr: 24.2.8-3.el9_6
+    sourcerpm: mesa-24.2.8-3.el9_6.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/m/mpdecimal-2.5.1-3.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 89670
@@ -543,27 +543,55 @@ arches:
     name: mpdecimal
     evr: 2.5.1-3.el9
     sourcerpm: mpdecimal-2.5.1-3.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/n/nodejs-devel-22.16.0-2.module+el9.6.0+23339+d3c8acfa.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/n/nodejs-22.19.0-2.module+el9.6.0+23473+45664c2d.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 279151
-    checksum: sha256:02cb84ba9308080f682f0a877fbe390c5b8d1ce46521721523fc803822b69aa0
+    size: 2512451
+    checksum: sha256:31395636503a87fa9c8fc063e5c58bb4e75593852514388b3d0df7912a6c7643
+    name: nodejs
+    evr: 1:22.19.0-2.module+el9.6.0+23473+45664c2d
+    sourcerpm: nodejs-22.19.0-2.module+el9.6.0+23473+45664c2d.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/n/nodejs-devel-22.19.0-2.module+el9.6.0+23473+45664c2d.x86_64.rpm
+    repoid: ubi-9-for-x86_64-appstream-rpms
+    size: 279069
+    checksum: sha256:9e28189967982bdecf494eda8d305575644888e9e0bae286c4b5c79dab039de0
     name: nodejs-devel
-    evr: 1:22.16.0-2.module+el9.6.0+23339+d3c8acfa
-    sourcerpm: nodejs-22.16.0-2.module+el9.6.0+23339+d3c8acfa.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/n/nodejs-docs-22.16.0-2.module+el9.6.0+23339+d3c8acfa.noarch.rpm
+    evr: 1:22.19.0-2.module+el9.6.0+23473+45664c2d
+    sourcerpm: nodejs-22.19.0-2.module+el9.6.0+23473+45664c2d.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/n/nodejs-docs-22.19.0-2.module+el9.6.0+23473+45664c2d.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 9440796
-    checksum: sha256:9bac20c2c16744b7d66790f2db2a3c6d7d649b797db43849776de9b50366ee3b
+    size: 9525591
+    checksum: sha256:c3c6bc965b635b1e56597d5cc6b23c431850641e07e12e2542d34408c2db6526
     name: nodejs-docs
-    evr: 1:22.16.0-2.module+el9.6.0+23339+d3c8acfa
-    sourcerpm: nodejs-22.16.0-2.module+el9.6.0+23339+d3c8acfa.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/n/nodejs-packaging-2021.06-4.module+el9.6.0+23339+d3c8acfa.noarch.rpm
+    evr: 1:22.19.0-2.module+el9.6.0+23473+45664c2d
+    sourcerpm: nodejs-22.19.0-2.module+el9.6.0+23473+45664c2d.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/n/nodejs-full-i18n-22.19.0-2.module+el9.6.0+23473+45664c2d.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 21657
-    checksum: sha256:bac938a33902ad68364baaab95e8607cb5fd8c88b4b745fe07ab679e325a9ccf
+    size: 9019434
+    checksum: sha256:a8aba311fc4694e7f301d634dd3c757aec94f37012bc5a6cea20d8a9c1d2816b
+    name: nodejs-full-i18n
+    evr: 1:22.19.0-2.module+el9.6.0+23473+45664c2d
+    sourcerpm: nodejs-22.19.0-2.module+el9.6.0+23473+45664c2d.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/n/nodejs-libs-22.19.0-2.module+el9.6.0+23473+45664c2d.x86_64.rpm
+    repoid: ubi-9-for-x86_64-appstream-rpms
+    size: 21676197
+    checksum: sha256:9d18cca3ca4e4c9058fef1f818076fe68cef54f4c9ba9f2f5d04a83489155335
+    name: nodejs-libs
+    evr: 1:22.19.0-2.module+el9.6.0+23473+45664c2d
+    sourcerpm: nodejs-22.19.0-2.module+el9.6.0+23473+45664c2d.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/n/nodejs-packaging-2021.06-4.module+el9.6.0+23473+45664c2d.noarch.rpm
+    repoid: ubi-9-for-x86_64-appstream-rpms
+    size: 20518
+    checksum: sha256:f2048b25d0a1015b6c4f5553abb46f485a3cadca951fa2ec4098aa79ba089b0a
     name: nodejs-packaging
-    evr: 2021.06-4.module+el9.6.0+23339+d3c8acfa
-    sourcerpm: nodejs-packaging-2021.06-4.module+el9.6.0+23339+d3c8acfa.src.rpm
+    evr: 2021.06-4.module+el9.6.0+23473+45664c2d
+    sourcerpm: nodejs-packaging-2021.06-4.module+el9.6.0+23473+45664c2d.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/n/npm-10.9.3-1.22.19.0.2.module+el9.6.0+23473+45664c2d.x86_64.rpm
+    repoid: ubi-9-for-x86_64-appstream-rpms
+    size: 2724695
+    checksum: sha256:fa37c58b5563ba8fabb35323974d6500a84cc27150527e7aeb4ebe1e9f5438d9
+    name: npm
+    evr: 1:10.9.3-1.22.19.0.2.module+el9.6.0+23473+45664c2d
+    sourcerpm: nodejs-22.19.0-2.module+el9.6.0+23473+45664c2d.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/n/nspr-4.36.0-4.el9_4.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 136524
@@ -3266,27 +3294,34 @@ arches:
     name: subscription-manager-rhsm-certificates
     evr: 20220623-1.el9
     sourcerpm: subscription-manager-rhsm-certificates-20220623-1.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/systemd-252-51.el9_6.1.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/systemd-252-51.el9_6.2.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 4406105
-    checksum: sha256:f1513095807cd040f2192efbf1d152053dbd8ba266f348f0b87305c0aa3cb2f2
+    size: 4397767
+    checksum: sha256:b7acb6861d52c368eeb23afe3413f4de4ba60281598e55f931b2a4882b5ae239
     name: systemd
-    evr: 252-51.el9_6.1
-    sourcerpm: systemd-252-51.el9_6.1.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/systemd-pam-252-51.el9_6.1.x86_64.rpm
+    evr: 252-51.el9_6.2
+    sourcerpm: systemd-252-51.el9_6.2.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/systemd-libs-252-51.el9_6.2.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 289579
-    checksum: sha256:b03c085f98981e6e9754adf2765789728f871809a38657000a90915eeb6a8265
+    size: 688318
+    checksum: sha256:058fce173308bb4086c988faee69833befa4f08e0079123fb07aa95f336c8840
+    name: systemd-libs
+    evr: 252-51.el9_6.2
+    sourcerpm: systemd-252-51.el9_6.2.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/systemd-pam-252-51.el9_6.2.x86_64.rpm
+    repoid: ubi-9-for-x86_64-baseos-rpms
+    size: 285233
+    checksum: sha256:bb438d85cdf5dc7a53cf1309fa48d7be8814e9cfaec846efe8bb559720325fb7
     name: systemd-pam
-    evr: 252-51.el9_6.1
-    sourcerpm: systemd-252-51.el9_6.1.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/systemd-rpm-macros-252-51.el9_6.1.noarch.rpm
+    evr: 252-51.el9_6.2
+    sourcerpm: systemd-252-51.el9_6.2.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/systemd-rpm-macros-252-51.el9_6.2.noarch.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 72567
-    checksum: sha256:0d93329b435c0a3e8352abad07516b7715b8687e504f457e5220e24b52a88e5e
+    size: 68125
+    checksum: sha256:a9d98e4240645fa96c953218bc89dbda221e33247f2890790dead31b53adff49
     name: systemd-rpm-macros
-    evr: 252-51.el9_6.1
-    sourcerpm: systemd-252-51.el9_6.1.src.rpm
+    evr: 252-51.el9_6.2
+    sourcerpm: systemd-252-51.el9_6.2.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/t/tcl-8.6.10-7.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
     size: 1152092
@@ -3642,30 +3677,30 @@ arches:
     checksum: sha256:19fdee3aa469d583a7f48dce71513da47c5046018bc35bfbe57c818b7aae21d0
     name: lua-rpm-macros
     evr: 1-6.el9
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/m/mesa-24.2.8-2.el9_6.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/m/mesa-24.2.8-3.el9_6.src.rpm
     repoid: ubi-9-for-x86_64-appstream-source-rpms
-    size: 33250329
-    checksum: sha256:cd71dc2bf8ff9fd0466880806c904aa2667ad8a2f6952f9aa8aa490e07861f3e
+    size: 33249517
+    checksum: sha256:760b844c1e67f3828e6ab02ed567df44e276887a092ef6e7d76843927f4adb7b
     name: mesa
-    evr: 24.2.8-2.el9_6
+    evr: 24.2.8-3.el9_6
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/m/mpdecimal-2.5.1-3.el9.src.rpm
     repoid: ubi-9-for-x86_64-appstream-source-rpms
     size: 3334137
     checksum: sha256:2f5ece89d6a8d892816f386462d8be291ad83f1500b4c4b3655dcc7ed5192c0d
     name: mpdecimal
     evr: 2.5.1-3.el9
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/n/nodejs-22.16.0-2.module+el9.6.0+23339+d3c8acfa.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/n/nodejs-22.19.0-2.module+el9.6.0+23473+45664c2d.src.rpm
     repoid: ubi-9-for-x86_64-appstream-source-rpms
-    size: 95111480
-    checksum: sha256:d5ab9de629aa95489c685da937b2064053a3ed4b6e4aad4430c7647cec2271ce
+    size: 95105793
+    checksum: sha256:486d6aff867f69ff82272efe9231c2d0dec2abb2879629ff627ab3019e04f79e
     name: nodejs
-    evr: 1:22.16.0-2.module+el9.6.0+23339+d3c8acfa
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/n/nodejs-packaging-2021.06-4.module+el9.6.0+23339+d3c8acfa.src.rpm
+    evr: 1:22.19.0-2.module+el9.6.0+23473+45664c2d
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/n/nodejs-packaging-2021.06-4.module+el9.6.0+23473+45664c2d.src.rpm
     repoid: ubi-9-for-x86_64-appstream-source-rpms
-    size: 28473
-    checksum: sha256:cec9e2520f165b4948d6866a6449e841481ba77b66c1fd318f7429f0e6c0d0a2
+    size: 27355
+    checksum: sha256:f80d5764e65ddce60321160b49c179d073b24484ff9001f0a0d8640b19a6a1f6
     name: nodejs-packaging
-    evr: 2021.06-4.module+el9.6.0+23339+d3c8acfa
+    evr: 2021.06-4.module+el9.6.0+23473+45664c2d
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/n/nss-3.112.0-4.el9_4.src.rpm
     repoid: ubi-9-for-x86_64-appstream-source-rpms
     size: 81951225
@@ -5136,12 +5171,12 @@ arches:
     checksum: sha256:a814ce978afe85327fd03829047ce04181d5d3f76bad8cfe8d24adfbd9be38a2
     name: subscription-manager-rhsm-certificates
     evr: 20220623-1.el9
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/s/systemd-252-51.el9_6.1.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/s/systemd-252-51.el9_6.2.src.rpm
     repoid: ubi-9-for-x86_64-baseos-source-rpms
-    size: 43216691
-    checksum: sha256:8b77610e9eaf7817801a8d9bb70eab4999352f5367c72fca3c290465cd08f192
+    size: 43219722
+    checksum: sha256:6c70ed2f22b9db562555f5fa817669a31c685e60d758ad12529968a731c634b9
     name: systemd
-    evr: 252-51.el9_6.1
+    evr: 252-51.el9_6.2
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/t/tcl-8.6.10-7.el9.src.rpm
     repoid: ubi-9-for-x86_64-baseos-source-rpms
     size: 6000353
@@ -5203,7 +5238,7 @@ arches:
     name: zlib
     evr: 1.2.11-40.el9
   module_metadata:
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/repodata/afd34f82366b3805df5a71b757e85c0a747ad6aacd57a7b1aea875bedd33f94e-modules.yaml.gz
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/repodata/d5752f66b0c0177a0d2f094ead74488f780911408e23b3c11b5448af6fc7307c-modules.yaml.gz
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 7922
-    checksum: sha256:afd34f82366b3805df5a71b757e85c0a747ad6aacd57a7b1aea875bedd33f94e
+    size: 8387
+    checksum: sha256:d5752f66b0c0177a0d2f094ead74488f780911408e23b3c11b5448af6fc7307c
