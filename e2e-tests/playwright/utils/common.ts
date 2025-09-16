@@ -192,27 +192,30 @@ export class Common {
   }
 
   async clickOnGHloginPopup() {
-    // Check for either "Sign in" text or "Login Required" dialog
-    const isLoginRequiredVisible = await this.uiHelper.isTextVisible("Sign in") || 
-      await this.page.getByRole('dialog', { name: 'Login Required' }).isVisible();
-      
+    // Check for the "Login Required" dialog first
+    const loginRequiredDialog = this.page.getByRole('dialog', { name: 'Login Required' });
+    const isLoginRequiredVisible = await loginRequiredDialog.isVisible({ timeout: 5000 });
+    
     if (isLoginRequiredVisible) {
-      // Handle the "Login Required" dialog first
-      const loginRequiredDialog = this.page.getByRole('dialog', { name: 'Login Required' });
-      if (await loginRequiredDialog.isVisible()) {
-        await loginRequiredDialog.getByRole('button', { name: 'Log in' }).click();
-      } else {
-        // Fallback to original logic
-        await this.uiHelper.clickButton("Sign in");
-        await this.uiHelper.clickButton("Log in");
-      }
+      // Click the "Log in" button in the dialog
+      await loginRequiredDialog.getByRole('button', { name: 'Log in' }).click();
       
+      // Continue with existing login flow steps
       await this.checkAndReauthorizeGithubApp();
       await this.uiHelper.waitForLoginBtnDisappear();
     } else {
-      console.log(
-        '"Log in" button is not visible. Skipping login popup actions.',
-      );
+      // Fallback to original logic for "Sign in" button on cards
+      const isSignInVisible = await this.uiHelper.isTextVisible("Sign in");
+      if (isSignInVisible) {
+        await this.uiHelper.clickButton("Sign in");
+        await this.uiHelper.clickButton("Log in");
+        await this.checkAndReauthorizeGithubApp();
+        await this.uiHelper.waitForLoginBtnDisappear();
+      } else {
+        console.log(
+          '"Log in" button is not visible. Skipping login popup actions.',
+        );
+      }
     }
   }
 
