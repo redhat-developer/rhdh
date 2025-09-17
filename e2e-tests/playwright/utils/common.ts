@@ -1,13 +1,12 @@
 import { UIhelper } from "./ui-helper";
 import { authenticator } from "otplib";
 import { test, Browser, expect, Page, TestInfo } from "@playwright/test";
-import { APIHelper } from "./api-helper";
-import { GroupEntity, UserEntity } from "@backstage/catalog-model";
-import { LOGGER } from "./logger";
 import { SETTINGS_PAGE_COMPONENTS } from "../support/pageObjects/page-obj";
 import { WAIT_OBJECTS } from "../support/pageObjects/global-obj";
 import path from "path";
 import fs from "fs";
+import { APIHelper } from "./api-helper";
+import { GroupEntity, UserEntity } from "@backstage/catalog-model";
 
 export class Common {
   page: Page;
@@ -43,8 +42,8 @@ export class Common {
   }
 
   async signOut() {
-    await this.page.click(SETTINGS_PAGE_COMPONENTS.userSettingsMenu);
-    await this.page.click(SETTINGS_PAGE_COMPONENTS.signOut);
+    await this.uiHelper.clickButton(SETTINGS_PAGE_COMPONENTS.userSettingsMenu);
+    await this.uiHelper.clickButton(SETTINGS_PAGE_COMPONENTS.signOut);
     await this.uiHelper.verifyHeading("Select a sign-in method");
   }
 
@@ -191,9 +190,9 @@ export class Common {
   }
 
   async clickOnGHloginPopup() {
-    const isLoginRequiredVisible =
-      await this.uiHelper.isTextVisible("Login Required");
+    const isLoginRequiredVisible = await this.uiHelper.isTextVisible("Sign in");
     if (isLoginRequiredVisible) {
+      await this.uiHelper.clickButton("Sign in");
       await this.uiHelper.clickButton("Log in");
       await this.checkAndReauthorizeGithubApp();
       await this.uiHelper.waitForLoginBtnDisappear();
@@ -204,23 +203,75 @@ export class Common {
     }
   }
 
-  getGitHub2FAOTP(userid: string): string {
-    const secrets: { [key: string]: string | undefined } = {
-      [process.env.GH_USER_ID]: process.env.GH_2FA_SECRET,
-      [process.env.GH_USER2_ID]: process.env.GH_USER2_2FA_SECRET,
-    };
+  private async getGroupLinksByLabel(label: string): Promise<string[]> {
+    const section = this.page.locator(`p:has-text("${label}")`).first();
+    await section.waitFor({ state: "visible" });
+    return await section.locator("..")
+      .locator("a")
+      .allInnerTexts();
+  }
 
-    const secret = secrets[userid];
-    if (!secret) {
-      throw new Error("Invalid User ID");
+  async getParentGroupsDisplayed(): Promise<string[]> {
+    return await this.getGroupLinksByLabel("Parent Group");
+  }
+
+  async getChildGroupsDisplayed(): Promise<string[]> {
+    return await this.getGroupLinksByLabel("Child Groups");
+  }
+
+  async githubLoginPopUpModal(context, username: string, password: string, otpSecret: string): Promise<void> {
+    const [githubPage] = await Promise.all([
+      context.waitForEvent('page'),
+    ]);
+    const popupHelper = new UIhelper(githubPage);
+    await popupHelper.fillTextInputByLabel('Username or email address', username);
+    await popupHelper.fillTextInputByLabel('Password', password);
+    await popupHelper.clickButton('Sign in');
+    // OTP
+    const otpSelector = await this.findOtpSelector(githubPage, popupHelper);
+    if (otpSelector) {
+      if (githubPage.isClosed()) return;
+      await githubPage.waitForSelector(otpSelector, { timeout: 10000 });
+      if (githubPage.isClosed()) return;
+      const otp = authenticator.generate(otpSecret);
+      await githubPage.fill(otpSelector, otp);
+      if (githubPage.isClosed()) return;
+      await Promise.race([
+        githubPage.waitForEvent('close', { timeout: 20000 }),
+        popupHelper.clickButton('Sign in'),
+      ]);
+    } else {
+      await githubPage.waitForEvent('close', { timeout: 20000 });
     }
+  }
 
-    return authenticator.generate(secret);
+  private async findOtpSelector(page, popupHelper): Promise<string> {
+    const selectors = ['input[name="otp"]', '#app_totp'];
+    for (const selector of selectors) {
+      try {
+        if (await popupHelper.isElementVisible(selector, 10000)) {
+          return selector;
+        }
+      } catch (err) {
+        console.debug(`Selector ${selector} not visible yet, continuing…`);
+      }
+    }
+    throw new Error('OTP field not found on the page within 10 s');
+  }
+
+  getGitHub2FAOTP(userid: string): string {
+    switch (userid) {
+      case process.env.GH_USER_ID:
+        return authenticator.generate(process.env.GH_2FA_SECRET);
+      case process.env.GH_USER2_ID:
+        return authenticator.generate(process.env.GH_USER2_2FA_SECRET);
+      default:
+        throw new Error("Invalid User ID");
+    }
   }
 
   getGoogle2FAOTP(): string {
-    const secret = process.env.GOOGLE_2FA_SECRET;
-    return authenticator.generate(secret);
+    return authenticator.generate(process.env.GOOGLE_2FA_SECRET);
   }
 
   async keycloakLogin(username: string, password: string) {
@@ -265,17 +316,12 @@ export class Common {
     }
   }
 
-  async githubLogin(username: string, password: string, twofactor: string) {
-    let popup: Page;
-    this.page.once("popup", (asyncnewPage) => {
-      popup = asyncnewPage;
-    });
-
-    await this.page.goto("/");
-    await this.page.waitForSelector('p:has-text("Sign in using GitHub")');
-    await this.uiHelper.clickButton("Sign In");
-
-    // Wait for the popup to appear
+  private async handleGitHubPopupLogin(
+    popup: Page,
+    username: string,
+    password: string,
+    twofactor: string,
+  ): Promise<string> {
     await expect(async () => {
       await popup.waitForLoadState("domcontentloaded");
       expect(popup).toBeTruthy();
@@ -297,8 +343,10 @@ export class Common {
         }
         await popup.locator("#password").click({ timeout: 5000 });
         await popup.locator("#password").fill(password, { timeout: 5000 });
-        await popup.locator("[type='submit']").click({ timeout: 5000 });
-        const twofactorcode = authenticator.generate(twofactor);
+        await popup
+          .locator("[type='submit'][value='Sign in']:not(webauthn-status *)")
+          .first()
+          .click({ timeout: 5000 });        const twofactorcode = authenticator.generate(twofactor);
         await popup.locator("#app_totp").click({ timeout: 5000 });
         await popup.locator("#app_totp").fill(twofactorcode, { timeout: 5000 });
 
@@ -308,7 +356,7 @@ export class Common {
         const authorization = popup.locator("button.js-oauth-authorize-btn");
         if (await authorization.isVisible()) {
           authorization.click();
-          return "Login successful with app authorization";
+          return "Login successful";
         } else {
           throw e;
         }
@@ -316,6 +364,33 @@ export class Common {
     }
   }
 
+  async githubLogin(username: string, password: string, twofactor: string) {
+    await this.page.goto("/");
+    await this.page.waitForSelector('p:has-text("Sign in using GitHub")');
+
+    const [popup] = await Promise.all([
+      this.page.waitForEvent("popup"),
+      this.uiHelper.clickButton("Sign In"),
+    ]);
+
+    return this.handleGitHubPopupLogin(popup, username, password, twofactor);
+  }
+
+  async githubLoginFromSettingsPage(
+    username: string,
+    password: string,
+    twofactor: string,
+  ) {
+    await this.page.goto("/settings/auth-providers");
+
+    const [popup] = await Promise.all([
+      this.page.waitForEvent("popup"),
+      this.page.getByTitle("Sign in to GitHub").click(),
+      this.uiHelper.clickButton("Log in"),
+    ]);
+
+    return this.handleGitHubPopupLogin(popup, username, password, twofactor);
+  }
   async MicrosoftAzureLogin(username: string, password: string) {
     let popup: Page;
     this.page.once("popup", (asyncnewPage) => {
@@ -455,14 +530,14 @@ export class Common {
     const api = new APIHelper();
     api.UseStaticToken(apiToken);
     const response = await api.getAllCatalogUsersFromAPI();
-    LOGGER.info(`Users currently in catalog: ${JSON.stringify(response)}`);
+    console.log(`Users currently in catalog: ${JSON.stringify(response)}`);
     const catalogUsers: UserEntity[] =
       response && response.items ? response.items : [];
     expect(catalogUsers.length).toBeGreaterThan(0);
     const catalogUsersDisplayNames: string[] = catalogUsers
       .filter((u) => u.spec.profile && u.spec.profile.displayName)
       .map((u) => u.spec.profile.displayName);
-    LOGGER.info(
+    console.log(
       `Checking ${JSON.stringify(catalogUsersDisplayNames)} contains users ${JSON.stringify(users)}`,
     );
     const hasAllElems = users.every((elem) =>
@@ -475,14 +550,14 @@ export class Common {
     const api = new APIHelper();
     api.UseStaticToken(apiToken);
     const response = await api.getAllCatalogGroupsFromAPI();
-    LOGGER.info(`Groups currently in catalog: ${JSON.stringify(response)}`);
+    console.log(`Groups currently in catalog: ${JSON.stringify(response)}`);
     const catalogGroups: GroupEntity[] =
       response && response.items ? response.items : [];
     expect(catalogGroups.length).toBeGreaterThan(0);
     const catalogGroupsDisplayNames: string[] = catalogGroups
       .filter((u) => u.spec.profile && u.spec.profile.displayName)
       .map((u) => u.spec.profile.displayName);
-    LOGGER.info(
+    console.log(
       `Checking ${JSON.stringify(catalogGroupsDisplayNames)} contains groups ${JSON.stringify(groups)}`,
     );
     const hasAllElems = groups.every((elem) =>
@@ -503,4 +578,53 @@ export async function setupBrowser(browser: Browser, testInfo: TestInfo) {
   });
   const page = await context.newPage();
   return { page, context };
+}
+
+export type EntityWithDisplay = { spec?: { profile?: { displayName?: string } } };
+
+export class CatalogVerifier {
+  private api: APIHelper;
+
+  constructor(token: string) {
+    this.api = new APIHelper();
+    this.api.UseStaticToken(token);
+  }
+
+  async assertUsersInCatalog(expected: string[]): Promise<void> {
+    await this.assertEntities(
+      () => this.api.getAllCatalogUsersFromAPI(),
+      expected,
+      'users',
+    );
+  }
+
+  async assertGroupsInCatalog(expected: string[]): Promise<void> {
+    await this.assertEntities(
+      () => this.api.getAllCatalogGroupsFromAPI(),
+      expected,
+      'groups',
+    );
+  }
+
+  private async assertEntities(
+    fetch: () => Promise<{ items?: EntityWithDisplay[] }>,
+    expected: string[],
+    label: string,
+  ): Promise<void> {
+    const { items = [] } = await fetch();
+
+    expect(items.length).toBeGreaterThan(0);
+
+    const displayNames = items
+      .flatMap(e => e.spec?.profile?.displayName ?? []);
+
+    const catalogSet = new Set(displayNames);
+    const missing = expected.filter(name => !catalogSet.has(name));
+
+    console.info(
+      `Catalog ${label}: [${displayNames.join(', ')}] – expecting [${expected.join(', ')}]`,
+    );
+
+    expect(missing, `Missing ${label}: ${missing.join(', ')}`).toHaveLength(0);
+  }
 }
