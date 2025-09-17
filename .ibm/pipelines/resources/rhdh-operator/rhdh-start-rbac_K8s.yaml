@@ -8,7 +8,7 @@ spec:
       - "rh-pull-secret"
     route:
       enabled: false
-    image: 'quay.io/$QUAY_REPO:$TAG_NAME'
+    image: "quay.io/$QUAY_REPO:$TAG_NAME"
     appConfig:
       configMaps:
         - name: app-config-rhdh
@@ -17,11 +17,11 @@ spec:
     extraEnvs:
       envs:
         - name: SEGMENT_TEST_MODE
-          value: 'true'
+          value: "true"
         - name: NODE_TLS_REJECT_UNAUTHORIZED
-          value: '0'
+          value: "0"
         - name: NODE_ENV
-          value: 'production'
+          value: "production"
       secrets:
         - name: rhdh-secrets
     extraFiles:

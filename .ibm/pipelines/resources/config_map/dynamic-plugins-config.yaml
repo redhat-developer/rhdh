@@ -9,56 +9,56 @@ dynamicPlugins:
           importName: SearchBar
           config:
             layouts:
-              xl:  { w: 10, h: 1, x: 1 }
-              lg:  { w: 10, h: 1, x: 1 }
-              md:  { w: 10, h: 1, x: 1 }
-              sm:  { w: 10, h: 1, x: 1 }
-              xs:  { w: 12, h: 1 }
+              xl: { w: 10, h: 1, x: 1 }
+              lg: { w: 10, h: 1, x: 1 }
+              md: { w: 10, h: 1, x: 1 }
+              sm: { w: 10, h: 1, x: 1 }
+              xs: { w: 12, h: 1 }
               xxs: { w: 12, h: 1 }
         - mountPoint: home.page/cards
           importName: QuickAccessCard
           config:
             layouts:
-              xl:  { w:  7, h: 8 }
-              lg:  { w:  7, h: 8 }
-              md:  { w:  7, h: 8 }
-              sm:  { w: 12, h: 8 }
-              xs:  { w: 12, h: 8 }
+              xl: { w: 7, h: 8 }
+              lg: { w: 7, h: 8 }
+              md: { w: 7, h: 8 }
+              sm: { w: 12, h: 8 }
+              xs: { w: 12, h: 8 }
               xxs: { w: 12, h: 8 }
         - mountPoint: home.page/cards
           importName: CatalogStarredEntitiesCard
           config:
             layouts:
-              xl:  { w:  5, h: 4, x: 7 }
-              lg:  { w:  5, h: 4, x: 7 }
-              md:  { w:  5, h: 4, x: 7 }
-              sm:  { w: 12, h: 4 }
-              xs:  { w: 12, h: 4 }
+              xl: { w: 5, h: 4, x: 7 }
+              lg: { w: 5, h: 4, x: 7 }
+              md: { w: 5, h: 4, x: 7 }
+              sm: { w: 12, h: 4 }
+              xs: { w: 12, h: 4 }
               xxs: { w: 12, h: 4 }
 
         - mountPoint: home.page/cards
           importName: Headline
           config:
             layouts:
-              xl:  { w: 12, h: 1 }
-              lg:  { w: 12, h: 1 }
-              md:  { w: 12, h: 1 }
-              sm:  { w: 12, h: 1 }
-              xs:  { w: 12, h: 1 }
+              xl: { w: 12, h: 1 }
+              lg: { w: 12, h: 1 }
+              md: { w: 12, h: 1 }
+              sm: { w: 12, h: 1 }
+              xs: { w: 12, h: 1 }
               xxs: { w: 12, h: 1 }
             props:
               title: Placeholder tests
-              align: center      
+              align: center
 
         - mountPoint: home.page/cards
           importName: Placeholder
           config:
             layouts:
-              xl:  { x: 1, y: 0, w: 10, h: 1 }
-              lg:  { x: 1, y: 0, w: 10, h: 1 }
-              md:  { x: 1, y: 0, w: 10, h: 1 }
-              sm:  { x: 0, y: 0, w: 12, h: 1 }
-              xs:  { x: 0, y: 0, w: 12, h: 1 }
+              xl: { x: 1, y: 0, w: 10, h: 1 }
+              lg: { x: 1, y: 0, w: 10, h: 1 }
+              md: { x: 1, y: 0, w: 10, h: 1 }
+              sm: { x: 0, y: 0, w: 12, h: 1 }
+              xs: { x: 0, y: 0, w: 12, h: 1 }
               xxs: { x: 0, y: 0, w: 12, h: 1 }
             props:
               showBorder: true
@@ -67,11 +67,11 @@ dynamicPlugins:
           importName: Placeholder
           config:
             layouts:
-              xl:  { x: 0, y: 0, w: 7, h: 4 }
-              lg:  { x: 0, y: 0, w: 7, h: 4 }
-              md:  { x: 0, y: 0, w: 7, h: 4 }
-              sm:  { x: 0, y: 0, w: 12, h: 4 }
-              xs:  { x: 0, y: 0, w: 12, h: 4 }
+              xl: { x: 0, y: 0, w: 7, h: 4 }
+              lg: { x: 0, y: 0, w: 7, h: 4 }
+              md: { x: 0, y: 0, w: 7, h: 4 }
+              sm: { x: 0, y: 0, w: 12, h: 4 }
+              xs: { x: 0, y: 0, w: 12, h: 4 }
               xxs: { x: 0, y: 0, w: 12, h: 4 }
             props:
               showBorder: true
@@ -80,11 +80,11 @@ dynamicPlugins:
           importName: Placeholder
           config:
             layouts:
-              xl:  { x: 7, y: 0, w: 5, h: 4 }
-              lg:  { x: 7, y: 0, w: 5, h: 4 }
-              md:  { x: 7, y: 0, w: 5, h: 4 }
-              sm:  { x: 0, y: 0, w: 12, h: 4 }
-              xs:  { x: 0, y: 0, w: 12, h: 4 }
+              xl: { x: 7, y: 0, w: 5, h: 4 }
+              lg: { x: 7, y: 0, w: 5, h: 4 }
+              md: { x: 7, y: 0, w: 5, h: 4 }
+              sm: { x: 0, y: 0, w: 12, h: 4 }
+              xs: { x: 0, y: 0, w: 12, h: 4 }
               xxs: { x: 0, y: 0, w: 12, h: 4 }
             props:
               showBorder: true
@@ -93,11 +93,11 @@ dynamicPlugins:
           importName: Headline
           config:
             layouts:
-              xl:  { w: 12, h: 1 }
-              lg:  { w: 12, h: 1 }
-              md:  { w: 12, h: 1 }
-              sm:  { w: 12, h: 1 }
-              xs:  { w: 12, h: 1 }
+              xl: { w: 12, h: 1 }
+              lg: { w: 12, h: 1 }
+              md: { w: 12, h: 1 }
+              sm: { w: 12, h: 1 }
+              xs: { w: 12, h: 1 }
               xxs: { w: 12, h: 1 }
             props:
               title: Markdown tests
@@ -107,17 +107,17 @@ dynamicPlugins:
           importName: MarkdownCard
           config:
             layouts:
-              xl:  { w: 6, h: 4 }
-              lg:  { w: 6, h: 4 }
-              md:  { w: 6, h: 4 }
-              sm:  { w: 6, h: 4 }
-              xs:  { w: 6, h: 4 }
+              xl: { w: 6, h: 4 }
+              lg: { w: 6, h: 4 }
+              md: { w: 6, h: 4 }
+              sm: { w: 6, h: 4 }
+              xs: { w: 6, h: 4 }
               xxs: { w: 6, h: 4 }
             props:
               title: Company links
               content: |
                 ### RHDH
-                
+
                 * [Website](https://developers.redhat.com/rhdh/overview)
                 * [Documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub/)
                 * [GitHub Showcase](https://github.com/redhat-developer/rhdh)
@@ -126,17 +126,17 @@ dynamicPlugins:
           importName: Markdown
           config:
             layouts:
-              xl:  { w: 6, h: 4, x: 6 }
-              lg:  { w: 6, h: 4, x: 6 }
-              md:  { w: 6, h: 4, x: 6 }
-              sm:  { w: 6, h: 4, x: 6 }
-              xs:  { w: 6, h: 4, x: 6 }
+              xl: { w: 6, h: 4, x: 6 }
+              lg: { w: 6, h: 4, x: 6 }
+              md: { w: 6, h: 4, x: 6 }
+              sm: { w: 6, h: 4, x: 6 }
+              xs: { w: 6, h: 4, x: 6 }
               xxs: { w: 6, h: 4, x: 6 }
             props:
               title: Important company links
               content: |
                 ### RHDH
-                
+
                 * [Website](https://developers.redhat.com/rhdh/overview)
                 * [Documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub/)
                 * [GitHub Showcase](https://github.com/redhat-developer/rhdh)
@@ -165,7 +165,7 @@ dynamicPlugins:
               sm: { w: 6, h: 4 }
               xs: { w: 6, h: 4 }
               xxs: { w: 6, h: 4 }
-        
+
     default.main-menu-items:
       menuItems:
         default.list:
@@ -208,18 +208,18 @@ dynamicPlugins:
           enabled: false
     pataknight.backstage-plugin-rhdh-qe-theme:
       appIcons:
-      - importName: LightIcon
-        name: lightIcon
-      - importName: DarkIcon
-        name: darkIcon
+        - importName: LightIcon
+          name: lightIcon
+        - importName: DarkIcon
+          name: darkIcon
       themes:
-      - icon: lightIcon
-        id: light-dynamic
-        importName: lightThemeProvider
-        title: Light Dynamic
-        variant: light
-      - icon: darkIcon
-        id: dark-dynamic
-        importName: darkThemeProvider
-        title: Dark Dynamic
-        variant: dark
+        - icon: lightIcon
+          id: light-dynamic
+          importName: lightThemeProvider
+          title: Light Dynamic
+          variant: light
+        - icon: darkIcon
+          id: dark-dynamic
+          importName: darkThemeProvider
+          title: Dark Dynamic
+          variant: dark

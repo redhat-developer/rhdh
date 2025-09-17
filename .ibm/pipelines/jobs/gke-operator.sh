@@ -15,6 +15,7 @@ handle_gke_operator() {
   echo "Starting GKE Operator deployment"
 
   IS_OPENSHIFT=false
+  export IS_OPENSHIFT
 
   K8S_CLUSTER_ROUTER_BASE=$GKE_INSTANCE_DOMAIN_NAME
   export K8S_CLUSTER_ROUTER_BASE

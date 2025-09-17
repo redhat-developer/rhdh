@@ -4,14 +4,19 @@
 source "${DIR}/reporting.sh"
 
 retrieve_pod_logs() {
-  local pod_name=$1; local container=$2; local namespace=$3
+  local pod_name=$1
+  local container=$2
+  local namespace=$3
   echo "  Retrieving logs for container: $container"
   # Save logs for the current and previous container
   kubectl logs $pod_name -c $container -n $namespace > "pod_logs/${pod_name}_${container}.log" || { echo "  logs for container $container not found"; }
-  kubectl logs $pod_name -c $container -n $namespace --previous > "pod_logs/${pod_name}_${container}-previous.log" 2>/dev/null || { echo "  Previous logs for container $container not found"; rm -f "pod_logs/${pod_name}_${container}-previous.log"; }
+  kubectl logs $pod_name -c $container -n $namespace --previous > "pod_logs/${pod_name}_${container}-previous.log" 2> /dev/null || {
+    echo "  Previous logs for container $container not found"
+    rm -f "pod_logs/${pod_name}_${container}-previous.log"
+  }
 }
 
-save_all_pod_logs(){
+save_all_pod_logs() {
   set +e
   local namespace=$1
   rm -rf pod_logs && mkdir -p pod_logs
@@ -76,53 +81,55 @@ yq_merge_value_files() {
 
 # Waits for a Kubernetes/OpenShift deployment to become ready within a specified timeout period
 wait_for_deployment() {
-    local namespace=$1
-    local resource_name=$2
-    local timeout_minutes=${3:-5}  # Default timeout: 5 minutes
-    local check_interval=${4:-10}  # Default interval: 10 seconds
+  local namespace=$1
+  local resource_name=$2
+  local timeout_minutes=${3:-5} # Default timeout: 5 minutes
+  local check_interval=${4:-10} # Default interval: 10 seconds
 
-    # Validate required parameters
-    if [[ -z "$namespace" || -z "$resource_name" ]]; then
-        echo "Error: Missing required parameters"
-        echo "Usage: wait_for_deployment <namespace> <resource-name> [timeout_minutes] [check_interval_seconds]"
-        echo "Example: wait_for_deployment my-namespace my-deployment 5 10"
-        return 1
+  # Validate required parameters
+  if [[ -z "$namespace" || -z "$resource_name" ]]; then
+    echo "Error: Missing required parameters"
+    echo "Usage: wait_for_deployment <namespace> <resource-name> [timeout_minutes] [check_interval_seconds]"
+    echo "Example: wait_for_deployment my-namespace my-deployment 5 10"
+    return 1
+  fi
+
+  local max_attempts=$((timeout_minutes * 60 / check_interval))
+
+  echo "Waiting for resource '$resource_name' in namespace '$namespace' (timeout: ${timeout_minutes}m)..."
+
+  for ((i = 1; i <= max_attempts; i++)); do
+    # Get the first pod name matching the resource name
+    local pod_name
+    pod_name=$(oc get pods -n "$namespace" | grep "$resource_name" | awk '{print $1}' | head -n 1)
+
+    if [[ -n "$pod_name" ]]; then
+      # Check if pod's Ready condition is True
+      local is_ready
+      is_ready=$(oc get pod "$pod_name" -n "$namespace" -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}')
+      # Verify pod is both Ready and Running
+      if [[ "$is_ready" == "True" ]] \
+        && oc get pod "$pod_name" -n "$namespace" | grep -q "Running"; then
+        echo "Pod '$pod_name' is running and ready"
+        return 0
+      else
+        echo "Pod '$pod_name' is not ready (Ready: $is_ready)"
+      fi
+    else
+      echo "No pods found matching '$resource_name' in namespace '$namespace'"
     fi
 
-    local max_attempts=$((timeout_minutes * 60 / check_interval))
+    echo "Still waiting... (${i}/${max_attempts} checks)"
+    sleep "$check_interval"
+  done
 
-    echo "Waiting for resource '$resource_name' in namespace '$namespace' (timeout: ${timeout_minutes}m)..."
-
-    for ((i=1; i<=max_attempts; i++)); do
-        # Get the first pod name matching the resource name
-        local pod_name=$(oc get pods -n "$namespace" | grep "$resource_name" | awk '{print $1}' | head -n 1)
-
-        if [[ -n "$pod_name" ]]; then
-            # Check if pod's Ready condition is True
-            local is_ready=$(oc get pod "$pod_name" -n "$namespace" -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}')
-            # Verify pod is both Ready and Running
-            if [[ "$is_ready" == "True" ]] && \
-                oc get pod "$pod_name" -n "$namespace" | grep -q "Running"; then
-                echo "Pod '$pod_name' is running and ready"
-                return 0
-            else
-                echo "Pod '$pod_name' is not ready (Ready: $is_ready)"
-            fi
-        else
-            echo "No pods found matching '$resource_name' in namespace '$namespace'"
-        fi
-
-        echo "Still waiting... (${i}/${max_attempts} checks)"
-        sleep "$check_interval"
-    done
-
-    # Timeout occurred
-    echo "Timeout waiting for resource to be ready. Please check:"
-    echo "oc get pods -n $namespace | grep $resource_name"
-    return 1
+  # Timeout occurred
+  echo "Timeout waiting for resource to be ready. Please check:"
+  echo "oc get pods -n $namespace | grep $resource_name"
+  return 1
 }
 
-wait_for_svc(){
+wait_for_svc() {
   local svc_name=$1
   local namespace=$2
   local timeout=${3:-300}
@@ -137,7 +144,7 @@ wait_for_svc(){
     " || echo "Error: Timed out waiting for $svc_name service creation."
 }
 
-wait_for_endpoint(){
+wait_for_endpoint() {
   local endpoint_name=$1
   local namespace=$2
   local timeout=${3:-500}
@@ -153,12 +160,12 @@ wait_for_endpoint(){
 }
 
 # Creates an OpenShift Operator subscription
-install_subscription(){
-  name=$1  # Name of the subscription
-  namespace=$2 # Namespace to install the operator
-  channel=$3 # Channel to subscribe to
-  package=$4 # Package name of the operator
-  source_name=$5 # Name of the source catalog
+install_subscription() {
+  name=$1             # Name of the subscription
+  namespace=$2        # Namespace to install the operator
+  channel=$3          # Channel to subscribe to
+  package=$4          # Package name of the operator
+  source_name=$5      # Name of the source catalog
   source_namespace=$6 # Source namespace (typically openshift-marketplace or olm)
   # Apply the subscription manifest
   oc apply -f - << EOD
@@ -176,7 +183,7 @@ spec:
 EOD
 }
 
-create_secret_dockerconfigjson(){
+create_secret_dockerconfigjson() {
   namespace=$1
   secret_name=$2
   dockerconfigjson_value=$3
@@ -209,9 +216,9 @@ setup_image_pull_secret() {
 # Monitors the status of an operator in an OpenShift namespace.
 # It checks the ClusterServiceVersion (CSV) for a specific operator to verify if its phase matches an expected value.
 check_operator_status() {
-  local timeout=${1:-300} # Timeout in seconds (default 300)
-  local namespace=$2 # Namespace to check
-  local operator_name=$3 # Operator name
+  local timeout=${1:-300}                 # Timeout in seconds (default 300)
+  local namespace=$2                      # Namespace to check
+  local operator_name=$3                  # Operator name
   local expected_status=${4:-"Succeeded"} # Expected status phase (default Succeeded)
 
   echo "Checking the status of operator '${operator_name}' in namespace '${namespace}' with a timeout of ${timeout} seconds."
@@ -228,13 +235,13 @@ check_operator_status() {
 }
 
 # Installs the Crunchy Postgres Operator from Openshift Marketplace using predefined parameters
-install_crunchy_postgres_ocp_operator(){
+install_crunchy_postgres_ocp_operator() {
   install_subscription postgresql openshift-operators v5 postgresql community-operators openshift-marketplace
   check_operator_status 300 "openshift-operators" "Crunchy Postgres for Kubernetes" "Succeeded"
 }
 
 # Installs the Crunchy Postgres Operator from OperatorHub.io
-install_crunchy_postgres_k8s_operator(){
+install_crunchy_postgres_k8s_operator() {
   install_subscription postgresql openshift-operators v5 postgresql community-operators openshift-marketplace
   check_operator_status 300 "operators" "Crunchy Postgres for Kubernetes" "Succeeded"
 }
@@ -254,12 +261,12 @@ configure_namespace() {
   delete_namespace $project
 
   if ! oc create namespace "${project}"; then
-      echo "Error: Failed to create namespace ${project}" >&2
-      exit 1
+    echo "Error: Failed to create namespace ${project}" >&2
+    exit 1
   fi
   if ! oc config set-context --current --namespace="${project}"; then
-      echo "Error: Failed to set context for namespace ${project}" >&2
-      exit 1
+    echo "Error: Failed to set context for namespace ${project}" >&2
+    exit 1
   fi
 
   echo "Namespace ${project} is ready."
@@ -267,7 +274,7 @@ configure_namespace() {
 
 delete_namespace() {
   local project=$1
-  if oc get namespace "$project" >/dev/null 2>&1; then
+  if oc get namespace "$project" > /dev/null 2>&1; then
     echo "Namespace ${project} exists. Attempting to delete..."
 
     # Remove blocking finalizers
@@ -293,16 +300,16 @@ configure_external_postgres_db() {
   oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.tls\.key}' | base64 --decode > postgres-tsl-key
 
   oc create secret generic postgress-external-db-cluster-cert \
-  --from-file=ca.crt=postgres-ca \
-  --from-file=tls.crt=postgres-tls-crt \
-  --from-file=tls.key=postgres-tsl-key \
-  --dry-run=client -o yaml | oc apply -f - --namespace="${project}"
+    --from-file=ca.crt=postgres-ca \
+    --from-file=tls.crt=postgres-tls-crt \
+    --from-file=tls.key=postgres-tsl-key \
+    --dry-run=client -o yaml | oc apply -f - --namespace="${project}"
 
-  POSTGRES_PASSWORD=$(oc get secret/postgress-external-db-pguser-janus-idp -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath={.data.password})
+  POSTGRES_PASSWORD=$(oc get secret/postgress-external-db-pguser-janus-idp -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.password}')
   sed_inplace "s|POSTGRES_PASSWORD:.*|POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
   POSTGRES_HOST=$(echo -n "postgress-external-db-primary.$NAME_SPACE_POSTGRES_DB.svc.cluster.local" | base64 | tr -d '\n')
   sed_inplace "s|POSTGRES_HOST:.*|POSTGRES_HOST: ${POSTGRES_HOST}|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
-  oc apply -f "${DIR}/resources/postgres-db/postgres-cred.yaml"  --namespace="${project}"
+  oc apply -f "${DIR}/resources/postgres-db/postgres-cred.yaml" --namespace="${project}"
 }
 
 apply_yaml_files() {
@@ -314,82 +321,82 @@ apply_yaml_files() {
   oc config set-context --current --namespace="${project}"
 
   local files=(
-      "$dir/resources/service_account/service-account-rhdh.yaml"
-      "$dir/resources/cluster_role_binding/cluster-role-binding-k8s.yaml"
-      "$dir/resources/cluster_role/cluster-role-k8s.yaml"
-      "$dir/resources/cluster_role/cluster-role-ocm.yaml"
-    )
+    "$dir/resources/service_account/service-account-rhdh.yaml"
+    "$dir/resources/cluster_role_binding/cluster-role-binding-k8s.yaml"
+    "$dir/resources/cluster_role/cluster-role-k8s.yaml"
+    "$dir/resources/cluster_role/cluster-role-ocm.yaml"
+  )
 
-    for file in "${files[@]}"; do
-      sed_inplace "s/namespace:.*/namespace: ${project}/g" "$file"
-    done
+  for file in "${files[@]}"; do
+    sed_inplace "s/namespace:.*/namespace: ${project}/g" "$file"
+  done
 
-    DH_TARGET_URL=$(echo -n "test-backstage-customization-provider-${project}.${K8S_CLUSTER_ROUTER_BASE}" | base64 -w 0)
-    RHDH_BASE_URL=$(echo -n "$rhdh_base_url" | base64 | tr -d '\n')
-    RHDH_BASE_URL_HTTP=$(echo -n "${rhdh_base_url/https/http}" | base64 | tr -d '\n')
-    export DH_TARGET_URL RHDH_BASE_URL RHDH_BASE_URL_HTTP
+  DH_TARGET_URL=$(echo -n "test-backstage-customization-provider-${project}.${K8S_CLUSTER_ROUTER_BASE}" | base64 -w 0)
+  RHDH_BASE_URL=$(echo -n "$rhdh_base_url" | base64 | tr -d '\n')
+  RHDH_BASE_URL_HTTP=$(echo -n "${rhdh_base_url/https/http}" | base64 | tr -d '\n')
+  export DH_TARGET_URL RHDH_BASE_URL RHDH_BASE_URL_HTTP
 
-    oc apply -f "$dir/resources/service_account/service-account-rhdh.yaml" --namespace="${project}"
-    oc apply -f "$dir/auth/service-account-rhdh-secret.yaml" --namespace="${project}"
+  oc apply -f "$dir/resources/service_account/service-account-rhdh.yaml" --namespace="${project}"
+  oc apply -f "$dir/auth/service-account-rhdh-secret.yaml" --namespace="${project}"
 
-    oc apply -f "$dir/resources/cluster_role/cluster-role-k8s.yaml" --namespace="${project}"
-    oc apply -f "$dir/resources/cluster_role_binding/cluster-role-binding-k8s.yaml" --namespace="${project}"
-    oc apply -f "$dir/resources/cluster_role/cluster-role-ocm.yaml" --namespace="${project}"
-    oc apply -f "$dir/resources/cluster_role_binding/cluster-role-binding-ocm.yaml" --namespace="${project}"
+  oc apply -f "$dir/resources/cluster_role/cluster-role-k8s.yaml" --namespace="${project}"
+  oc apply -f "$dir/resources/cluster_role_binding/cluster-role-binding-k8s.yaml" --namespace="${project}"
+  oc apply -f "$dir/resources/cluster_role/cluster-role-ocm.yaml" --namespace="${project}"
+  oc apply -f "$dir/resources/cluster_role_binding/cluster-role-binding-ocm.yaml" --namespace="${project}"
 
-    OCM_CLUSTER_TOKEN=$(oc get secret rhdh-k8s-plugin-secret -n "${project}" -o=jsonpath='{.data.token}')
-    export OCM_CLUSTER_TOKEN
-    envsubst < "${DIR}/auth/secrets-rhdh-secrets.yaml" | oc apply --namespace="${project}" -f -
+  OCM_CLUSTER_TOKEN=$(oc get secret rhdh-k8s-plugin-secret -n "${project}" -o=jsonpath='{.data.token}')
+  export OCM_CLUSTER_TOKEN
+  envsubst < "${DIR}/auth/secrets-rhdh-secrets.yaml" | oc apply --namespace="${project}" -f -
 
-    # Select the configuration file based on the namespace or job
-    config_file=$(select_config_map_file)
-    # Apply the ConfigMap with the correct file
-    create_app_config_map "$config_file" "$project"
+  # Select the configuration file based on the namespace or job
+  config_file=$(select_config_map_file)
+  # Apply the ConfigMap with the correct file
+  create_app_config_map "$config_file" "$project"
 
-    oc create configmap dynamic-plugins-config \
-      --from-file="dynamic-plugins-config.yaml"="$dir/resources/config_map/dynamic-plugins-config.yaml" \
-      --namespace="${project}" \
+  oc create configmap dynamic-plugins-config \
+    --from-file="dynamic-plugins-config.yaml"="$dir/resources/config_map/dynamic-plugins-config.yaml" \
+    --namespace="${project}" \
+    --dry-run=client -o yaml | oc apply -f -
+
+  if [[ "$JOB_NAME" == *operator* ]] && [[ "${project}" == *rbac* ]]; then
+    oc create configmap rbac-policy \
+      --from-file="rbac-policy.csv"="$dir/resources/config_map/rbac-policy.csv" \
+      --from-file="conditional-policies.yaml"="/tmp/conditional-policies.yaml" \
+      --namespace="$project" \
       --dry-run=client -o yaml | oc apply -f -
-
-    if [[ "$JOB_NAME" == *operator* ]] && [[ "${project}" == *rbac* ]]; then
-      oc create configmap rbac-policy \
-        --from-file="rbac-policy.csv"="$dir/resources/config_map/rbac-policy.csv" \
-        --from-file="conditional-policies.yaml"="/tmp/conditional-policies.yaml" \
-        --namespace="$project" \
-        --dry-run=client -o yaml | oc apply -f -
-    else
-      oc create configmap rbac-policy \
-        --from-file="rbac-policy.csv"="$dir/resources/config_map/rbac-policy.csv" \
-        --namespace="$project" \
-        --dry-run=client -o yaml | oc apply -f -
-    fi
-
-    # configuration for testing global floating action button.
-    oc create configmap dynamic-global-floating-action-button-config \
-      --from-file="dynamic-global-floating-action-button-config.yaml"="$dir/resources/config_map/dynamic-global-floating-action-button-config.yaml" \
-      --namespace="${project}" \
+  else
+    oc create configmap rbac-policy \
+      --from-file="rbac-policy.csv"="$dir/resources/config_map/rbac-policy.csv" \
+      --namespace="$project" \
       --dry-run=client -o yaml | oc apply -f -
+  fi
 
-    # configuration for testing global header and header mount points.
-    oc create configmap dynamic-global-header-config \
-      --from-file="dynamic-global-header-config.yaml"="$dir/resources/config_map/dynamic-global-header-config.yaml" \
-      --namespace="${project}" \
-      --dry-run=client -o yaml | oc apply -f -
+  # configuration for testing global floating action button.
+  oc create configmap dynamic-global-floating-action-button-config \
+    --from-file="dynamic-global-floating-action-button-config.yaml"="$dir/resources/config_map/dynamic-global-floating-action-button-config.yaml" \
+    --namespace="${project}" \
+    --dry-run=client -o yaml | oc apply -f -
 
-    # Create Pipeline run for tekton test case.
-    oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline.yaml"
-    oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline-run.yaml"
+  # configuration for testing global header and header mount points.
+  oc create configmap dynamic-global-header-config \
+    --from-file="dynamic-global-header-config.yaml"="$dir/resources/config_map/dynamic-global-header-config.yaml" \
+    --namespace="${project}" \
+    --dry-run=client -o yaml | oc apply -f -
 
-    # Create Deployment and Pipeline for Topology test.
-    oc apply -f "$dir/resources/topology_test/topology-test.yaml"
-    if [[ -z "${IS_OPENSHIFT}" || "${IS_OPENSHIFT}" == "false" ]]; then
-      kubectl apply -f "$dir/resources/topology_test/topology-test-ingress.yaml"
-    else
-      oc apply -f "$dir/resources/topology_test/topology-test-route.yaml"
-    fi
+  # Create Pipeline run for tekton test case.
+  oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline.yaml"
+  oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline-run.yaml"
 
-    # Create secret for sealight job to pull image from private quay repository.
-    if [[ "$JOB_NAME" == *"sealight"* ]]; then kubectl create secret docker-registry quay-secret --docker-server=quay.io --docker-username=$RHDH_SEALIGHTS_BOT_USER --docker-password=$RHDH_SEALIGHTS_BOT_TOKEN --namespace="${project}"; fi
+  # Create Deployment and Pipeline for Topology test.
+  oc apply -f "$dir/resources/topology_test/topology-test.yaml"
+  if [[ -z "${IS_OPENSHIFT}" || "${IS_OPENSHIFT}" == "false" ]]; then
+    kubectl apply -f "$dir/resources/topology_test/topology-test-ingress.yaml"
+  else
+    oc apply -f "$dir/resources/topology_test/topology-test-route.yaml"
+  fi
+
+  # Create secret for sealight job to pull image from private quay repository.
+  if [[ "$JOB_NAME" == *"sealight"* ]]; then kubectl create secret docker-registry quay-secret --docker-server=quay.io --docker-username=$RHDH_SEALIGHTS_BOT_USER --docker-password=$RHDH_SEALIGHTS_BOT_TOKEN --namespace="${project}"; fi
 }
 
 deploy_test_backstage_customization_provider() {
@@ -397,7 +404,7 @@ deploy_test_backstage_customization_provider() {
   echo "Deploying test-backstage-customization-provider in namespace ${project}"
 
   # Check if the buildconfig already exists
-  if ! oc get buildconfig test-backstage-customization-provider -n "${project}" >/dev/null 2>&1; then
+  if ! oc get buildconfig test-backstage-customization-provider -n "${project}" > /dev/null 2>&1; then
     echo "Creating new app for test-backstage-customization-provider"
     oc new-app -S openshift/nodejs:18-minimal-ubi8
     oc new-app https://github.com/janus-qe/test-backstage-customization-provider --image-stream="openshift/nodejs:18-ubi8" --namespace="${project}"
@@ -498,7 +505,7 @@ run_tests() {
 
   cp -a "${e2e_tests_dir}/screenshots/"* "${ARTIFACT_DIR}/${project}/attachments/screenshots/" || true
 
-  ansi2html <"/tmp/${LOGFILE}" >"/tmp/${LOGFILE}.html"
+  ansi2html < "/tmp/${LOGFILE}" > "/tmp/${LOGFILE}.html"
   cp -a "/tmp/${LOGFILE}.html" "${ARTIFACT_DIR}/${project}" || true
   cp -a "${e2e_tests_dir}/playwright-report/"* "${ARTIFACT_DIR}/${project}" || true
 
@@ -581,7 +588,7 @@ uninstall_olm() {
 }
 
 # Installs the advanced-cluster-management OCP Operator
-install_acm_ocp_operator(){
+install_acm_ocp_operator() {
   oc apply -f "${DIR}/cluster/operators/acm/operator-group.yaml"
   install_subscription advanced-cluster-management open-cluster-management release-2.12 advanced-cluster-management redhat-operators openshift-marketplace
   wait_for_deployment "open-cluster-management" "multiclusterhub-operator"
@@ -599,7 +606,7 @@ install_acm_ocp_operator(){
 # TODO
 # Installs Open Cluster Management K8S Operator (alternative of advanced-cluster-management for K8S clusters)
 # TODO: Verify K8s compatibility and enable OCM tests if compatible
-install_ocm_k8s_operator(){
+install_ocm_k8s_operator() {
   install_subscription my-cluster-manager operators stable cluster-manager operatorhubio-catalog olm
   wait_for_deployment "operators" "cluster-manager"
   wait_for_endpoint "multiclusterhub-operator-work-webhook" "open-cluster-management"
@@ -642,23 +649,23 @@ install_tekton_pipelines() {
 }
 
 delete_tekton_pipelines() {
-    echo "Checking for Tekton Pipelines installation..."
-    # Check if tekton-pipelines namespace exists
-    if kubectl get namespace tekton-pipelines &> /dev/null; then
-        echo "Found Tekton Pipelines installation. Attempting to delete..."
-        # Delete the resources and ignore errors
-        kubectl delete -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml --ignore-not-found=true 2>/dev/null || true
-        # Wait for namespace deletion (with timeout)
-        echo "Waiting for Tekton Pipelines namespace to be deleted..."
-        timeout 30 bash -c '
+  echo "Checking for Tekton Pipelines installation..."
+  # Check if tekton-pipelines namespace exists
+  if kubectl get namespace tekton-pipelines &> /dev/null; then
+    echo "Found Tekton Pipelines installation. Attempting to delete..."
+    # Delete the resources and ignore errors
+    kubectl delete -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml --ignore-not-found=true 2> /dev/null || true
+    # Wait for namespace deletion (with timeout)
+    echo "Waiting for Tekton Pipelines namespace to be deleted..."
+    timeout 30 bash -c '
         while kubectl get namespace tekton-pipelines &> /dev/null; do
             echo "Waiting for tekton-pipelines namespace deletion..."
             sleep 5
         done
         echo "Tekton Pipelines deleted successfully."
         ' || echo "Warning: Timed out waiting for namespace deletion, continuing..."
-    else
-        echo "Tekton Pipelines is not installed. Nothing to delete."
+  else
+    echo "Tekton Pipelines is not installed. Nothing to delete."
   fi
 }
 
@@ -723,7 +730,8 @@ perform_helm_install() {
   local release_name=$1
   local namespace=$2
   local value_file=$3
-  
+
+  # shellcheck disable=SC2046
   helm upgrade -i "${release_name}" -n "${namespace}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "${DIR}/value_files/${value_file}" \
@@ -749,21 +757,21 @@ rbac_deployment() {
   configure_namespace "${NAME_SPACE_POSTGRES_DB}"
   configure_namespace "${NAME_SPACE_RBAC}"
   configure_external_postgres_db "${NAME_SPACE_RBAC}"
-  
+
   # Initiate rbac instance deployment.
   local rbac_rhdh_base_url="https://${RELEASE_NAME_RBAC}-developer-hub-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
   echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${RELEASE_NAME_RBAC}"
   perform_helm_install "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${HELM_CHART_RBAC_VALUE_FILE_NAME}"
-  
+
   # NOTE: This is a workaround to allow the sonataflow platform to connect to the external postgres db using ssl.
-  until [[ $(oc get jobs -n "${NAME_SPACE_RBAC}" 2>/dev/null | grep "${RELEASE_NAME_RBAC}-create-sonataflow-database" | wc -l) -eq 1 ]]; do
+  until [[ $(oc get jobs -n "${NAME_SPACE_RBAC}" 2> /dev/null | grep "${RELEASE_NAME_RBAC}-create-sonataflow-database" | wc -l) -eq 1 ]]; do
     echo "Waiting for sf db creation job to be created. Retrying in 5 seconds..."
     sleep 5
   done
   oc wait --for=condition=complete job/"${RELEASE_NAME_RBAC}-create-sonataflow-database" -n "${NAME_SPACE_RBAC}" --timeout=3m
   oc -n "${NAME_SPACE_RBAC}" patch sfp sonataflow-platform --type=merge \
-  -p '{"spec":{"services":{"jobService":{"podTemplate":{"container":{"env":[{"name":"QUARKUS_DATASOURCE_REACTIVE_URL","value":"postgresql://postgress-external-db-primary.postgress-external-db.svc.cluster.local:5432/sonataflow?search_path=jobs-service&sslmode=require&ssl=true&trustAll=true"},{"name":"QUARKUS_DATASOURCE_REACTIVE_SSL_MODE","value":"require"},{"name":"QUARKUS_DATASOURCE_REACTIVE_TRUST_ALL","value":"true"}]}}}}}}'
+    -p '{"spec":{"services":{"jobService":{"podTemplate":{"container":{"env":[{"name":"QUARKUS_DATASOURCE_REACTIVE_URL","value":"postgresql://postgress-external-db-primary.postgress-external-db.svc.cluster.local:5432/sonataflow?search_path=jobs-service&sslmode=require&ssl=true&trustAll=true"},{"name":"QUARKUS_DATASOURCE_REACTIVE_SSL_MODE","value":"require"},{"name":"QUARKUS_DATASOURCE_REACTIVE_TRUST_ALL","value":"true"}]}}}}}}'
   oc rollout restart deployment/sonataflow-platform-jobs-service -n "${NAME_SPACE_RBAC}"
 
   # initiate orchestrator workflows deployment
@@ -781,7 +789,7 @@ initiate_upgrade_base_deployments() {
   local release_name=$1
   local namespace=$2
   local url=$3
-  local max_attempts=${4:-30}    # Default to 30 if not set
+  local max_attempts=${4:-30} # Default to 30 if not set
   local wait_seconds=${5:-30}
 
   echo "Initiating base RHDH deployment before upgrade"
@@ -815,7 +823,7 @@ initiate_upgrade_deployments() {
   local release_name=$1
   local namespace=$2
   local url=$3
-  local max_attempts=${4:-30}    # Default to 30 if not set
+  local max_attempts=${4:-30} # Default to 30 if not set
   local wait_seconds=${5:-30}
   local wait_upgrade="10m"
 
@@ -826,12 +834,12 @@ initiate_upgrade_deployments() {
   echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
 
   helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
-  "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
-  -f "/tmp/merged_value_file.yaml" \
-  --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-  --set upstream.backstage.image.repository="${QUAY_REPO}" \
-  --set upstream.backstage.image.tag="${TAG_NAME}" \
-  --wait --timeout=${wait_upgrade}
+    "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
+    -f "/tmp/merged_value_file.yaml" \
+    --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
+    --set upstream.backstage.image.repository="${QUAY_REPO}" \
+    --set upstream.backstage.image.tag="${TAG_NAME}" \
+    --wait --timeout=${wait_upgrade}
 
   oc get pods -n "${namespace}"
   save_all_pod_logs $namespace
@@ -851,6 +859,7 @@ initiate_runtime_deployment() {
   # Create secret for sealight job to pull image from private quay repository.
   if [[ "$JOB_NAME" == *"sealight"* ]]; then kubectl create secret docker-registry quay-secret --docker-server=quay.io --docker-username=$RHDH_SEALIGHTS_BOT_USER --docker-password=$RHDH_SEALIGHTS_BOT_TOKEN --namespace="${namespace}"; fi
 
+  # shellcheck disable=SC2046
   helm upgrade -i "${release_name}" -n "${namespace}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "$DIR/resources/postgres-db/values-showcase-postgres.yaml" \
@@ -870,11 +879,12 @@ initiate_sanity_plugin_checks_deployment() {
   yq_merge_value_files "overwrite" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_SANITY_PLUGINS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}"
   mkdir -p "${ARTIFACT_DIR}/${name_space_sanity_plugins_check}"
   cp -a "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" "${ARTIFACT_DIR}/${name_space_sanity_plugins_check}/" || true # Save the final value-file into the artifacts directory.
+  # shellcheck disable=SC2046
   helm upgrade -i "${release_name}" -n "${name_space_sanity_plugins_check}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    $(get_image_helm_set_params)  \
+    $(get_image_helm_set_params) \
     --set orchestrator.enabled=true
 }
 
@@ -882,8 +892,8 @@ check_and_test() {
   local release_name=$1
   local namespace=$2
   local url=$3
-  local max_attempts=${4:-30}    # Default to 30 if not set
-  local wait_seconds=${5:-30}    # Default to 30 if not set
+  local max_attempts=${4:-30} # Default to 30 if not set
+  local wait_seconds=${5:-30} # Default to 30 if not set
 
   CURRENT_DEPLOYMENT=$((CURRENT_DEPLOYMENT + 1))
   save_status_deployment_namespace $CURRENT_DEPLOYMENT "$namespace"
@@ -927,11 +937,11 @@ check_helm_upgrade() {
   echo "Checking rollout status for deployment: ${deployment_name} in namespace: ${namespace}..."
 
   if oc rollout status "deployment/${deployment_name}" -n "${namespace}" --timeout="${timeout}s" -w; then
-      echo "RHDH upgrade is complete."
-      return 0
+    echo "RHDH upgrade is complete."
+    return 0
   else
-      echo "RHDH upgrade encountered an issue or timed out."
-      return 1
+    echo "RHDH upgrade encountered an issue or timed out."
+    return 1
   fi
 }
 
@@ -965,7 +975,7 @@ force_delete_namespace() {
   local sleep_interval=2
   local timeout_seconds=${2:-120}
 
-  while oc get namespace "$project" &>/dev/null; do
+  while oc get namespace "$project" &> /dev/null; do
     if [[ $elapsed -ge $timeout_seconds ]]; then
       echo "Timeout: Namespace '${project}' was not deleted within $timeout_seconds seconds." >&2
       return 1
@@ -991,7 +1001,7 @@ detect_ocp() {
   if [[ "${IS_OPENSHIFT}" == "" ]]; then
     IS_OPENSHIFT=$(is_openshift && echo 'true' || echo 'false')
   fi
-  
+
   echo IS_OPENSHIFT: "${IS_OPENSHIFT}"
   save_is_openshift "${IS_OPENSHIFT}"
 }
@@ -1011,7 +1021,7 @@ detect_container_platform() {
     esac
     # Get OCP version
     if command -v oc &> /dev/null; then
-      CONTAINER_PLATFORM_VERSION=$(oc version 2>/dev/null | grep "Server Version:" | cut -d' ' -f3 | cut -d'.' -f1,2 || echo "unknown")
+      CONTAINER_PLATFORM_VERSION=$(oc version 2> /dev/null | grep "Server Version:" | cut -d' ' -f3 | cut -d'.' -f1,2 || echo "unknown")
     else
       CONTAINER_PLATFORM_VERSION="unknown"
     fi
@@ -1037,7 +1047,7 @@ detect_container_platform() {
 
     # Get Kubernetes version
     if command -v kubectl &> /dev/null; then
-      CONTAINER_PLATFORM_VERSION=$(kubectl version 2>/dev/null | grep "Server Version:" | cut -d' ' -f3 | sed 's/^v//' | cut -d'.' -f1,2 || echo "unknown")
+      CONTAINER_PLATFORM_VERSION=$(kubectl version 2> /dev/null | grep "Server Version:" | cut -d' ' -f3 | sed 's/^v//' | cut -d'.' -f1,2 || echo "unknown")
     else
       CONTAINER_PLATFORM_VERSION="unknown"
     fi
@@ -1070,35 +1080,37 @@ sed_inplace() {
 # Return the previous release version if current branch is a release branch
 get_previous_release_version() {
   local version=$1
-  
+
   # Check if version parameter is provided
   if [[ -z "$version" ]]; then
     echo "Error: Version parameter is required" >&2
     exit 1
     save_overall_result 1
   fi
-  
+
   # Validate version format (should be like "1.6")
   if [[ ! "$version" =~ ^[0-9]+\.[0-9]+$ ]]; then
     echo "Error: Version must be in format X.Y (e.g., 1.6)" >&2
     exit 1
     save_overall_result 1
   fi
-  
+
   # Extract major and minor version numbers
-  local major_version=$(echo "$version" | cut -d'.' -f1)
-  local minor_version=$(echo "$version" | cut -d'.' -f2)
-  
+  local major_version
+  major_version=$(echo "$version" | cut -d'.' -f1)
+  local minor_version
+  minor_version=$(echo "$version" | cut -d'.' -f2)
+
   # Calculate previous minor version
   local previous_minor=$((minor_version - 1))
-  
+
   # Check if previous minor version is valid (non-negative)
   if [[ $previous_minor -lt 0 ]]; then
     echo "Error: Cannot calculate previous version for $version" >&2
     exit 1
     save_overall_result 1
   fi
-  
+
   # Return the previous version
   echo "${major_version}.${previous_minor}"
 }
@@ -1106,12 +1118,12 @@ get_previous_release_version() {
 get_chart_version() {
   local chart_major_version=$1
   curl -sSX GET "https://quay.io/api/v1/repository/rhdh/chart/tag/?onlyActiveTags=true&filter_tag_name=like:${chart_major_version}-" -H "Content-Type: application/json" \
-  | jq '.tags[0].name' | grep -oE '[0-9]+\.[0-9]+-[0-9]+-CI'
+    | jq '.tags[0].name' | grep -oE '[0-9]+\.[0-9]+-[0-9]+-CI'
 }
 
 # Helper function to get dynamic value file path based on previous release version
 get_previous_release_value_file() {
-  local value_file_type=${1:-"showcase"}  # Default to showcase, can be "showcase-rbac" for RBAC
+  local value_file_type=${1:-"showcase"} # Default to showcase, can be "showcase-rbac" for RBAC
 
   # Get the previous release version
   local previous_release_version
@@ -1174,7 +1186,7 @@ deploy_orchestrator_workflows() {
   helm repo add orchestrator-workflows https://rhdhorchestrator.io/serverless-workflows
   helm install greeting orchestrator-workflows/greeting -n "$namespace"
 
-  until [[ $(oc get sf -n "$namespace" --no-headers 2>/dev/null | wc -l) -eq 2 ]]; do
+  until [[ $(oc get sf -n "$namespace" --no-headers 2> /dev/null | wc -l) -eq 2 ]]; do
     echo "No sf resources found. Retrying in 5 seconds..."
     sleep 5
   done
