@@ -127,20 +127,23 @@ export function rowToResponse(
   userInfoRow: UserInfoRow,
   tokenExpirationSeconds: number,
 ): UserInfoResponse {
-  let tokenExpirationDate = DateTime.fromSQL(userInfoRow.exp, {
+  let tokenExpirationDate = DateTime.fromSQL(userInfoRow.updated_at, {
     zone: 'utc',
   });
 
   if (!tokenExpirationDate.isValid) {
-    tokenExpirationDate = DateTime.fromJSDate(new Date(userInfoRow.exp), {
-      zone: 'utc',
-    });
+    tokenExpirationDate = DateTime.fromJSDate(
+      new Date(userInfoRow.updated_at),
+      {
+        zone: 'utc',
+      },
+    );
   }
 
   // Validate the date
   if (!tokenExpirationDate.isValid) {
     throw new Error(
-      'Failed to parse expiration date format in userInfoRow.exp',
+      'Failed to parse expiration date format in userInfoRow.updated_at',
     );
   }
 
