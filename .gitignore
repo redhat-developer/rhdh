@@ -12,6 +12,9 @@ lerna-debug.log*
 # Coverage directory generated when running tests with coverage
 coverage
 
+# Test results directory
+jest-junit-results
+
 # Dependencies
 node_modules/
 

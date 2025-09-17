@@ -122,13 +122,100 @@ jobs:
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         run: yarn run build --continue --affected
 
+      - name: Install SealLight
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
+        run: yarn add -D slnodejs
+
+      - name: Write SeaLights token into file
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
+        run: |
+          echo "${SL_TOKEN}" > sltoken.txt
+        env:
+          SL_TOKEN: '${{secrets.SL_TOKEN}}'
+
+      - name: Configure SealLight
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
+        run: |
+          SHORT_SHA=$(echo "${{ github.event.pull_request.head.sha }}" | cut -c1-7)
+          npx slnodejs config --tokenfile ./sltoken.txt --appname "rhdh" --branch "pr-${{ github.event.pull_request.number }}-${{ github.head_ref }}" --build "pr-${{ github.event.pull_request.number }}-${SHORT_SHA}-${{ github.run_id }}-${{ github.run_attempt }}"
+
+      - name: Extract backend bundle for SealLight scan
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
+        run: tar -xzf packages/backend/dist/bundle.tar.gz -C packages/backend/dist
+
+      - name: Scan all packages with SealLight
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
+        env:
+          NODE_DEBUG: sl
+        run: |
+          # Define scan targets: workspace_path:module_id
+          scan_targets=(
+            "plugins/dynamic-plugins-info-backend:dynamic-plugins-info-backend"
+            "plugins/scalprum-backend:scalprum-backend"
+            "plugins/licensed-users-info-backend:licensed-users-info-backend"
+            "plugins/dynamic-plugins-info:dynamic-plugins-info"
+            "packages/app:app"
+            "packages/backend/dist/packages/backend/dist:backend"
+            "packages/app-next:app-next"
+            "packages/plugin-utils:plugin-utils"
+          )
+          
+          # Common scan parameters
+          common_params="--tokenfile ./sltoken.txt --buildsessionidFile ./buildSessionId --excludedpaths webpack --scm none --projectroot ${{ github.workspace }} --useModulePrefix"
+          
+          # Verify build session file exists
+          if [[ ! -f ./buildSessionId ]]; then
+            echo "Error: buildSessionId file not found. SealLight session may not be properly initialized."
+            exit 1
+          fi
+          
+          # Verify build session file exists
+          if [[ ! -f ./buildSessionId ]]; then
+            echo "Error: buildSessionId file not found. SealLight session may not be properly initialized."
+            exit 1
+          fi
+          
+          # Scan each target
+          for target in "${scan_targets[@]}"; do
+            workspace_path="${target%:*}"
+            module_id="${target#*:}"
+            full_path="${{ github.workspace }}/$workspace_path"
+            
+            echo "Scanning $module_id at $workspace_path"
+            echo "Full path: $full_path"
+            
+            # Verify the path exists
+            if [[ ! -d "$full_path" ]]; then
+              echo "Warning: Directory $full_path does not exist, skipping scan for $module_id"
+              continue
+            fi
+            
+            # Run the scan with error handling
+            if ! npx slnodejs scan $common_params --workspacepath "$full_path" --uniqueModuleId "$module_id"; then
+              echo "Error: SealLight scan failed for $module_id at $full_path"
+              echo "Continuing with other scans..."
+              continue
+            fi
+            
+            echo "Successfully scanned $module_id"
+          done
+
+      - name: End SealLight build session
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' && always() }}
+        run: |
+          if [[ -f ./buildSessionId ]]; then
+            npx slnodejs buildend --tokenfile ./sltoken.txt --buildsessionidFile ./buildSessionId --ok
+          else
+            echo "Warning: buildSessionId file not found, cannot end SealLight session"
+          fi
+
   test:
     name: Test with Node.js ${{ matrix.node-version }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: [22]
-    needs: authorize
+    needs: build
     steps:
       - name: Checkout
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
@@ -180,10 +267,23 @@ jobs:
             echo "ERROR: Workspace is dirty! Must run 'yarn build:dockerfile' and commit changes!"; exit 1; \
           fi
 
+      - name: Install SealLight
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
+        run: yarn add -D sealights-jest-plugin
+
+      - name: Write SeaLights token into file
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
+        run: |
+          echo "${SL_TOKEN}" > sltoken.txt
+        env:
+          SL_TOKEN: '${{secrets.SL_TOKEN}}'
+
       - name: Run tests
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
-        run: yarn run test --continue --affected
-
+        run: yarn run test
+        env:
+          NODE_DEBUG: sl
+          SL_LOG_LEVEL: debug
       - name: Install dynamic plugin dependencies
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         run: cd ./dynamic-plugins && yarn install && cd ..
