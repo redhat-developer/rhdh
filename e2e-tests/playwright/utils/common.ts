@@ -1,12 +1,13 @@
 import { UIhelper } from "./ui-helper";
 import { authenticator } from "otplib";
 import { test, Browser, expect, Page, TestInfo } from "@playwright/test";
+import { APIHelper } from "./api-helper";
+import { GroupEntity, UserEntity } from "@backstage/catalog-model";
+import { LOGGER } from "./logger";
 import { SETTINGS_PAGE_COMPONENTS } from "../support/pageObjects/page-obj";
 import { WAIT_OBJECTS } from "../support/pageObjects/global-obj";
 import path from "path";
 import fs from "fs";
-import { APIHelper } from "./api-helper";
-import { GroupEntity, UserEntity } from "@backstage/catalog-model";
 
 export class Common {
   page: Page;
@@ -42,8 +43,8 @@ export class Common {
   }
 
   async signOut() {
-    await this.uiHelper.clickButton(SETTINGS_PAGE_COMPONENTS.userSettingsMenu);
-    await this.uiHelper.clickButton(SETTINGS_PAGE_COMPONENTS.signOut);
+    await this.page.click(SETTINGS_PAGE_COMPONENTS.userSettingsMenu);
+    await this.page.click(SETTINGS_PAGE_COMPONENTS.signOut);
     await this.uiHelper.verifyHeading("Select a sign-in method");
   }
 
@@ -339,14 +340,17 @@ export class Common {
   }
 
   getGitHub2FAOTP(userid: string): string {
-    switch (userid) {
-      case process.env.GH_USER_ID:
-        return authenticator.generate(process.env.GH_2FA_SECRET);
-      case process.env.GH_USER2_ID:
-        return authenticator.generate(process.env.GH_USER2_2FA_SECRET);
-      default:
-        throw new Error("Invalid User ID");
+    const secrets: { [key: string]: string | undefined } = {
+      [process.env.GH_USER_ID]: process.env.GH_2FA_SECRET,
+      [process.env.GH_USER2_ID]: process.env.GH_USER2_2FA_SECRET,
+    };
+
+    const secret = secrets[userid];
+    if (!secret) {
+      throw new Error("Invalid User ID");
     }
+
+    return authenticator.generate(secret);
   }
 
   getGoogle2FAOTP(): string {
