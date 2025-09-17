@@ -5,38 +5,38 @@ global:
     includes:
       # -- List of dynamic plugins included inside the `rhdh-community/rhdh` container image, some of which are disabled by default.
       # This file ONLY works with the `rhdh-community/rhdh` container image.
-      - 'dynamic-plugins.default.yaml'
+      - "dynamic-plugins.default.yaml"
 
     # -- List of dynamic plugins, possibly overriding the plugins listed in `includes` files.
     # Every item defines the plugin `package` as a [NPM package spec](https://docs.npmjs.com/cli/v10/using-npm/package-spec),
     # an optional `pluginConfig` with plugin-specific backstage configuration, and an optional `disabled` flag to disable/enable a plugin
     # listed in `includes` files. It also includes an `integrity` field that is used to verify the plugin package [integrity](https://w3c.github.io/webappsec-subresource-integrity/#integrity-metadata-description).
     plugins:
-      - package: oci://quay.io/gashcrumb/example-root-http-middleware:latest!internal-backstage-plugin-middleware-header-example-dynamic  
-        disabled: false  
-        pluginConfig:  
-          proxy:  
-            endpoints:  
-              /add-test-header:  
+      - package: oci://quay.io/gashcrumb/example-root-http-middleware:latest!internal-backstage-plugin-middleware-header-example-dynamic
+        disabled: false
+        pluginConfig:
+          proxy:
+            endpoints:
+              /add-test-header:
                 target: http://${.Values.global.host}/api/simple-chat
-                credentials: forward  
-                headers:  
-                  x-proxy-test-header: hello!  
-      - package: oci://quay.io/gashcrumb/example-root-http-middleware:latest!internal-backstage-plugin-simple-chat  
-        disabled: false  
-        pluginConfig:  
-          dynamicPlugins:  
-            frontend:  
-              internal.backstage-plugin-simple-chat:  
-                appIcons:  
-                  - name: chatIcon  
-                    importName: ChatIcon  
-                dynamicRoutes:  
-                  - path: /simple-chat  
-                    importName: SimpleChatPage  
-                    menuItem:  
-                      text: Simple Chat  
-      - package: oci://quay.io/gashcrumb/example-root-http-middleware:latest!internal-backstage-plugin-simple-chat-backend-dynamic  
+                credentials: forward
+                headers:
+                  x-proxy-test-header: hello!
+      - package: oci://quay.io/gashcrumb/example-root-http-middleware:latest!internal-backstage-plugin-simple-chat
+        disabled: false
+        pluginConfig:
+          dynamicPlugins:
+            frontend:
+              internal.backstage-plugin-simple-chat:
+                appIcons:
+                  - name: chatIcon
+                    importName: ChatIcon
+                dynamicRoutes:
+                  - path: /simple-chat
+                    importName: SimpleChatPage
+                    menuItem:
+                      text: Simple Chat
+      - package: oci://quay.io/gashcrumb/example-root-http-middleware:latest!internal-backstage-plugin-simple-chat-backend-dynamic
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-github-dynamic
         disabled: false
@@ -48,7 +48,7 @@ global:
               github:
                 my-test-org:
                   organization: janus-qe
-                  catalogPath: '/catalog-info.yaml'
+                  catalogPath: "/catalog-info.yaml"
                   schedule:
                     frequency:
                       minutes: 1
@@ -56,8 +56,8 @@ global:
                       minutes: 1
                     initialDelay:
                       seconds: 15
-      - package: '@red-hat-developer-hub/backstage-plugin-application-provider-test@0.0.2'
-        integrity: 'sha512-N3HxvTNe/CxTDtXIsvfre3ZoFLWYfPxz/IJiKY3nzA5C0wcH4lZn+fI+mDFoTUXogt7fZWyl3mCrdwQWrOEM8A=='
+      - package: "@red-hat-developer-hub/backstage-plugin-application-provider-test@0.0.2"
+        integrity: "sha512-N3HxvTNe/CxTDtXIsvfre3ZoFLWYfPxz/IJiKY3nzA5C0wcH4lZn+fI+mDFoTUXogt7fZWyl3mCrdwQWrOEM8A=="
         pluginConfig:
           dynamicPlugins:
             frontend:
@@ -70,8 +70,8 @@ global:
                     importName: TestProviderOne
                   - mountPoint: application/provider
                     importName: TestProviderTwo
-      - package: '@red-hat-developer-hub/backstage-plugin-application-listener-test@0.0.2'
-        integrity: 'sha512-GRLbpjXE9ZyfRJr/iyp+1L2sUQL97aPc+FV/IORH63eGT32Uc0xCFBu51fGPYJFmXY49BlSh+CnVnbKNsyiOAQ=='
+      - package: "@red-hat-developer-hub/backstage-plugin-application-listener-test@0.0.2"
+        integrity: "sha512-GRLbpjXE9ZyfRJr/iyp+1L2sUQL97aPc+FV/IORH63eGT32Uc0xCFBu51fGPYJFmXY49BlSh+CnVnbKNsyiOAQ=="
         pluginConfig:
           dynamicPlugins:
             frontend:
@@ -104,15 +104,15 @@ global:
             clusterLocatorMethods:
               - clusters:
                   - authProvider: serviceAccount
-                    name: 'my-cluster'
+                    name: "my-cluster"
                     serviceAccountToken: ${K8S_CLUSTER_TOKEN_ENCODED}
                     url: ${K8S_CLUSTER_API_SERVER_URL}
                 type: config
             customResources:
               # Add for tekton
-              - apiVersion: 'v1'
-                group: 'tekton.dev'
-                plural: 'pipelines'
+              - apiVersion: "v1"
+                group: "tekton.dev"
+                plural: "pipelines"
               - apiVersion: v1
                 group: tekton.dev
                 plural: pipelineruns
@@ -120,9 +120,9 @@ global:
                 group: tekton.dev
                 plural: taskruns
               # Add for topology plugin
-              - apiVersion: 'v1'
-                group: 'route.openshift.io'
-                plural: 'routes'
+              - apiVersion: "v1"
+                group: "route.openshift.io"
+                plural: "routes"
             serviceLocatorMethod:
               type: multiTenant
       # Enable OCM plugins.
@@ -148,8 +148,8 @@ global:
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-header
         disabled: false
       # Enable an extra header test plugin
-      - package: '@red-hat-developer-hub/backstage-plugin-global-header-test@0.0.2'
-        integrity: 'sha512-Dlay4DUAC3SifSJx4dmKDeD07DITGX9ZZ2SMCgcMMc00GJVKToD3DFuPYZ7lV2C2Ve7gWDufCf5NUmqaUWf6GA=='
+      - package: "@red-hat-developer-hub/backstage-plugin-global-header-test@0.0.2"
+        integrity: "sha512-Dlay4DUAC3SifSJx4dmKDeD07DITGX9ZZ2SMCgcMMc00GJVKToD3DFuPYZ7lV2C2Ve7gWDufCf5NUmqaUWf6GA=="
         pluginConfig:
           dynamicPlugins:
             frontend:
@@ -199,10 +199,10 @@ global:
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-topology
         disabled: false
-      - package: '@pataknight/backstage-plugin-rhdh-qe-theme@0.5.5'
+      - package: "@pataknight/backstage-plugin-rhdh-qe-theme@0.5.5"
         disabled: false
         integrity: sha512-srTnFDYn3Ett6z33bX4nL2NQY8wqux8TkpgBQNsE8S73nMfsor/wAdmVgHL+xW7pxQ09DT4YTdaG3GkH+cyyNQ==
-      - package: '@backstage-community/plugin-todo@0.2.42'
+      - package: "@backstage-community/plugin-todo@0.2.42"
         disabled: false
         integrity: sha512-agmfwxHkZPy0zaXzjMKY9Us9l7J2og+z7p2lDWQBmlJ1KZRo6OBQdnlG1mTEryfEEl/bx5Ko+f1PhFj2/BmiIQ==
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-catalog-backend-module-marketplace-dynamic
@@ -244,16 +244,16 @@ upstream:
         valueFrom:
           secretKeyRef:
             key: postgres-password
-            name: '{{ .Release.Name }}-postgresql'
+            name: "{{ .Release.Name }}-postgresql"
       # disable telemetry in CI
       - name: SEGMENT_TEST_MODE
-        value: 'true'
+        value: "true"
       - name: NODE_TLS_REJECT_UNAUTHORIZED
-        value: '0'
+        value: "0"
       - name: NODE_ENV
-        value: 'production'
+        value: "production"
       - name: ENABLE_CORE_ROOTHTTPROUTER_OVERRIDE
-        value: 'true' 
+        value: "true"
     extraAppConfig:
       - configMapRef: app-config-rhdh
         filename: app-config-rhdh.yaml
@@ -307,8 +307,7 @@ upstream:
       - rhdh-secrets
       - redis-secret
   ingress:
-    host: '{{ .Values.global.host }}'
-  
+    host: "{{ .Values.global.host }}"
 
   service:
     extraPorts:

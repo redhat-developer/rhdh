@@ -23,7 +23,7 @@ if az policy definition show --name "require-tags-rhdh" --subscription "$ARM_SUB
 fi
 
 # Create the policy rules JSON file
-cat > azure-policy-rules.json <<EOF
+cat > azure-policy-rules.json << EOF
 {
   "if": {
     "anyOf": [
