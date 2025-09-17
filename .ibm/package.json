@@ -1,7 +1,10 @@
 {
-  "name": "@internal/ibm",
+  "name": ".ibm",
   "version": "1.8.0",
   "private": true,
+  "engines": {
+    "node": "22"
+  },
   "scripts": {
     "shellcheck": "shellcheck --severity=warning --color=always **/*.sh",
     "prettier:check": "npx prettier --check **/*.{sh,md,yaml,yml}",
@@ -11,5 +14,6 @@
     "prettier": "3.6.2",
     "prettier-plugin-sh": "^0.18.0",
     "shellcheck": "^4.1.0"
-  }
+  },
+  "packageManager": "yarn@3.8.7"
 }
