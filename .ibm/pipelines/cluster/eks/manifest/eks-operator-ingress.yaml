@@ -7,7 +7,7 @@ metadata:
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/certificate-arn: $EKS_DOMAIN_NAME_CERTIFICATE_ARN
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
-    alb.ingress.kubernetes.io/ssl-redirect: '443'
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
     external-dns.alpha.kubernetes.io/hostname: $EKS_INSTANCE_DOMAIN_NAME
 spec:
   ingressClassName: alb
@@ -15,10 +15,10 @@ spec:
     - host: $EKS_INSTANCE_DOMAIN_NAME
       http:
         paths:
-        - path: /
-          pathType: Prefix
-          backend:
-            service:
-              name: developer-hub-dh-ingress
-              port:
-                name: http-backend
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: developer-hub-dh-ingress
+                port:
+                  name: http-backend

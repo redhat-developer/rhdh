@@ -24,14 +24,14 @@ gcloud services enable \
   --quiet
 
 echo ">>> Creating GCS bucket (if not exists)..."
-if ! gsutil ls -b "gs://${BUCKET_NAME}" >/dev/null 2>&1; then
+if ! gsutil ls -b "gs://${BUCKET_NAME}" > /dev/null 2>&1; then
   gsutil mb -p "$PROJECT_ID" -l "$REGION" "gs://${BUCKET_NAME}"
 else
   echo "Bucket already exists."
 fi
 
 echo ">>> Creating service account (if not exists)..."
-if ! gcloud iam service-accounts describe "$SERVICE_ACCOUNT_EMAIL" --quiet >/dev/null 2>&1; then
+if ! gcloud iam service-accounts describe "$SERVICE_ACCOUNT_EMAIL" --quiet > /dev/null 2>&1; then
   gcloud iam service-accounts create "$SERVICE_ACCOUNT_NAME" \
     --description="Service Account to label clusters" \
     --display-name="Cluster Labeler" \

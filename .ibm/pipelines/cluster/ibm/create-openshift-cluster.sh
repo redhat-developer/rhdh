@@ -15,12 +15,12 @@ show_menu() {
   done
 
   read -p "Select an option [1-${#options[@]}]: " choice
-  if ! [[ "$choice" =~ ^[0-9]+$ ]] || (( choice < 1 || choice > ${#options[@]} )); then
+  if ! [[ "$choice" =~ ^[0-9]+$ ]] || ((choice < 1 || choice > ${#options[@]})); then
     echo "❌ Invalid choice"
     exit 1
   fi
 
-  echo "${options[$((choice-1))]}"
+  echo "${options[$((choice - 1))]}"
 }
 
 # Login to IBM Cloud
