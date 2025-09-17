@@ -1,4 +1,8 @@
-import { deepMergeTranslations, isValidJSONTranslation } from './utils';
+import {
+  deepMergeTranslations,
+  filterLocales,
+  isValidJSONTranslation,
+} from './utils';
 
 describe('isValidJSONTranslation', () => {
   it('should return true for a valid JSON translation object', () => {
@@ -85,5 +89,52 @@ describe('deepMergeTranslations', () => {
     const result = deepMergeTranslations({ ...target }, source);
 
     expect(result).toEqual({ hello: 'world' });
+  });
+});
+
+describe('filterLocales', () => {
+  const translations = {
+    pluginA: {
+      en: { hello: 'world' },
+      de: { hello: 'welt' },
+      fr: { hello: 'monde' },
+    },
+    pluginB: {
+      en: { bye: 'goodbye' },
+      es: { bye: 'adiós' },
+    },
+  };
+
+  it('should return override translations for only the configured locales', () => {
+    const result = filterLocales(translations, ['en', 'de']);
+    expect(result).toEqual({
+      pluginA: {
+        en: { hello: 'world' },
+        de: { hello: 'welt' },
+      },
+      pluginB: {
+        en: { bye: 'goodbye' },
+      },
+    });
+  });
+
+  it('should return empty object if no locales match', () => {
+    const result = filterLocales(translations, ['it', 'jp']);
+    expect(result).toEqual({});
+  });
+
+  it('should handle empty translations input', () => {
+    const result = filterLocales({}, ['en', 'de']);
+    expect(result).toEqual({});
+  });
+
+  it('should ignore plugins that have no matching locales', () => {
+    const input = {
+      pluginC: {
+        fr: { greeting: 'bonjour' },
+      },
+    };
+    const result = filterLocales(input, ['en']);
+    expect(result).toEqual({});
   });
 });
