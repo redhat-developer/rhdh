@@ -14,7 +14,7 @@
       "backstage-community-plugin-tech-radar",
       "backstage-community-plugin-tech-radar-backend"
     ],
-    "supported-versions": "1.39.1"
+    "supported-versions": "1.42.5"
   },
   "exports": {
     ".": "./src/index.ts",
@@ -42,7 +42,7 @@
     "@backstage-community/plugin-tech-radar-backend": "1.6.0"
   },
   "devDependencies": {
-    "@backstage/cli": "0.30.0",
+    "@backstage/cli": "^0.34.1",
     "@janus-idp/cli": "3.6.1",
     "typescript": "5.9.2"
   },

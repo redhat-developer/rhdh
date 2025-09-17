@@ -9,7 +9,7 @@
   },
   "backstage": {
     "role": "backend-plugin",
-    "supported-versions": "1.39.1",
+    "supported-versions": "1.42.5",
     "pluginId": "signals",
     "pluginPackages": [
       "backstage-plugin-signals",
@@ -38,10 +38,10 @@
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
-    "@backstage/plugin-signals-backend": "0.3.4"
+    "@backstage/plugin-signals-backend": "^0.3.7"
   },
   "devDependencies": {
-    "@backstage/cli": "0.30.0",
+    "@backstage/cli": "^0.34.1",
     "@janus-idp/cli": "3.6.1",
     "typescript": "5.9.2"
   },
