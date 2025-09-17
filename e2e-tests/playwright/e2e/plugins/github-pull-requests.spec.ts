@@ -1,0 +1,75 @@
+import { test, expect } from "@playwright/test";
+import { UIhelper } from "../../utils/ui-helper";
+import { Common } from "../../utils/common";
+import { CatalogHelper } from "../../utils/catalog-helper";
+
+if (!process.env.GH_USER_ID || !process.env.GH_USER_PASS || !process.env.GH_2FA_SECRET) {
+    throw new Error("GH_USER_ID, GH_USER_PASS, and GH_2FA_SECRET must be set in your environment or .env file.");
+}
+
+test("Verify all GitHub Pull Requests statistics after login", async ({
+  page,
+  context,
+}) => {
+  const repoName = "Red Hat Developer Hub";
+  const common = new Common(page);
+  const uiHelper = new UIhelper(page);
+  const catalog = new CatalogHelper(page);
+
+  await common.loginAsKeycloakUser(
+    process.env.GH_USER_ID,
+    process.env.GH_USER_PASS,
+  );
+  
+  // Wait for the page to be fully loaded
+  await page.waitForLoadState('networkidle');
+  
+  await catalog.goToByName(repoName);
+  
+  // Wait for the component page to load
+  await page.waitForTimeout(2000);
+  
+  // Click the specific "Sign in" button in the GitHub Pull Requests Statistics card
+  // Use a more specific approach to avoid ambiguity
+  const prStatsCard = page.locator('div[class*="MuiCard-root"]').filter({ hasText: "GitHub Pull Requests Statistics" }).first();
+  await prStatsCard.scrollIntoViewIfNeeded();
+  await prStatsCard.getByRole('button', { name: 'Sign in' }).first().click();
+  
+  // Wait for the "Login Required" dialog to appear and click its "Log in" button
+  const loginRequiredDialog = page.getByRole('dialog', { name: 'Login Required' });
+  await expect(loginRequiredDialog).toBeVisible();
+  await loginRequiredDialog.getByRole('button', { name: 'Log in' }).click();
+  
+  // Now handle the GitHub popup authentication
+  await common.githubLoginPopUpModal(
+    context,
+    process.env.GH_USER_ID,
+    process.env.GH_USER_PASS,
+    process.env.GH_2FA_SECRET,
+  );
+  
+  // Wait for GitHub login to complete
+  await page.waitForTimeout(3000);
+  
+  // Wait for the GitHub PR statistics to load after login
+  await page.waitForTimeout(5000);
+  
+  // Verify that the GitHub PR statistics card is now showing data (not the "Sign in" message)
+  // First, make sure we're not seeing the "Sign in" message anymore
+  await expect(page.locator('div[class*="MuiCard-root"]').filter({ hasText: "GitHub Pull Requests Statistics" })).not.toContainText("You are not logged into GitHub");
+  
+  // Then verify the statistics are visible
+  const stats = [
+    "Average Time Of PR Until Merge",
+    "Merged To Closed Ratio", 
+    "Average Size Of PR",
+    "Average Changed Files Of PR",
+    "Average Coding Time Of PR",
+  ];
+  
+  for (const stat of stats) {
+    // Use more flexible text matching
+    await expect(page.locator('div[class*="MuiCard-root"]').filter({ hasText: "GitHub Pull Requests Statistics" })).toContainText(stat, { timeout: 30000 });
+    await page.waitForTimeout(500);
+  }
+});

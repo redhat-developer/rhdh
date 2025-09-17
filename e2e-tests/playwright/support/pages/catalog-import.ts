@@ -23,6 +23,8 @@ export class CatalogImport {
    * @param url - The URL of the component to analyze
    */
   private async analyzeAndWait(url: string): Promise<void> {
+    // Wait for the input field to be visible before filling it
+    await this.page.waitForSelector(CATALOG_IMPORT_COMPONENTS.componentURL, { state: 'visible', timeout: 10000 });
     await this.page.fill(CATALOG_IMPORT_COMPONENTS.componentURL, url);
     await expect(await this.uiHelper.clickButton("Analyze")).not.toBeVisible({
       timeout: 25_000,
@@ -55,6 +57,8 @@ export class CatalogImport {
       await this.isComponentAlreadyRegistered();
     if (isComponentAlreadyRegistered) {
       await this.uiHelper.clickButton("Refresh");
+      // Wait for the refresh to complete and the "Register another" button to appear
+      await this.page.waitForTimeout(2000);
       expect(await this.uiHelper.isBtnVisible("Register another")).toBeTruthy();
     } else {
       await this.uiHelper.clickButton("Import");
@@ -66,6 +70,8 @@ export class CatalogImport {
   }
 
   async analyzeComponent(url: string) {
+    // Wait for the input field to be visible before filling it
+    await this.page.waitForSelector(CATALOG_IMPORT_COMPONENTS.componentURL, { state: 'visible', timeout: 10000 });
     await this.page.fill(CATALOG_IMPORT_COMPONENTS.componentURL, url);
     await this.uiHelper.clickButton("Analyze");
   }

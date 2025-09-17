@@ -571,10 +571,14 @@ test.describe.serial("Test RBAC", () => {
       ).toBeFalsy();
     });
 
-    test("Test catalog-entity create is allowed", async () => {
+    test("Test catalog-entity create is allowed", async ({ page }) => {
       await page.reload();
       await uiHelper.openSidebar("Catalog");
       await uiHelper.clickButton("Self-service");
+      
+      // Verify we are on the Create page by checking the heading
+      await uiHelper.verifyHeading("Self-service", 20000);
+      
       expect(
         await uiHelper.isLinkVisible("Import an existing Git repository"),
       ).toBeTruthy();
