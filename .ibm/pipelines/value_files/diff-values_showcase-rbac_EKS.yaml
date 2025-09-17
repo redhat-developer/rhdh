@@ -1,6 +1,6 @@
-# This file is for EKS installation only. 
+# This file is for EKS installation only.
 # It is applied by `helm upgrade` after the `values-showcase.yaml` is applied and only contains complementary differences for EKS.
-# Note, that it overwrites the whole key that is present in this file. 
+# Note, that it overwrites the whole key that is present in this file.
 # The only exception is global.dynamic.plugins, that gets merged with the base file.
 route:
   enabled: false
@@ -37,16 +37,16 @@ upstream:
         valueFrom:
           secretKeyRef:
             key: postgres-password
-            name: '{{ .Release.Name }}-postgresql'
+            name: "{{ .Release.Name }}-postgresql"
       # disable telemetry in CI
       - name: SEGMENT_TEST_MODE
-        value: 'true'
+        value: "true"
       - name: NODE_TLS_REJECT_UNAUTHORIZED
-        value: '0'
+        value: "0"
       - name: NODE_ENV
-        value: 'production'
+        value: "production"
       - name: ENABLE_CORE_ROOTHTTPROUTER_OVERRIDE
-        value: 'true'
+        value: "true"
     extraVolumeMounts:
       # The initContainer below will install dynamic plugins in this volume mount.
       - name: dynamic-plugins-root
@@ -121,7 +121,7 @@ upstream:
           valueFrom:
             secretKeyRef:
               key: postgres-password
-              name: '{{ .Release.Name }}-postgresql'
+              name: "{{ .Release.Name }}-postgresql"
   volumePermissions:
     enabled: true
   service:
@@ -134,6 +134,6 @@ upstream:
       alb.ingress.kubernetes.io/scheme: internet-facing
       alb.ingress.kubernetes.io/certificate-arn: $EKS_DOMAIN_NAME_CERTIFICATE_ARN
       alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
-      alb.ingress.kubernetes.io/ssl-redirect: '443'
+      alb.ingress.kubernetes.io/ssl-redirect: "443"
       external-dns.alpha.kubernetes.io/hostname: $EKS_INSTANCE_DOMAIN_NAME
 orchestrator: null

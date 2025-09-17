@@ -56,17 +56,17 @@ proxy:
   endpoints:
     # Other Proxies
     # customize developer hub instance
-    '/developer-hub':
+    "/developer-hub":
       target: ${DH_TARGET_URL}
       changeOrigin: true
       # Change to "false" in case of using self hosted cluster with a self-signed certificate
       secure: false
-    '/acr/api':
-      target: 'https://rhdhqetest.azurecr.io/acr/v1/'
+    "/acr/api":
+      target: "https://rhdhqetest.azurecr.io/acr/v1/"
       changeOrigin: true
       headers:
         # If you use Bearer Token for authorization, please replace the 'Basic' with 'Bearer' in the following line.
-        Authorization: '${ACR_SECRET}'
+        Authorization: "${ACR_SECRET}"
       # Change to "false" in case of using self hosted artifactory instance with a self-signed certificate
       secure: false
 catalog:
@@ -102,8 +102,8 @@ catalog:
         clientId: ${KEYCLOAK_AUTH_CLIENTID}
         clientSecret: ${KEYCLOAK_AUTH_CLIENT_SECRET}
         schedule:
-          frequency: {minutes: 1}
-          timeout: {minutes: 1}
+          frequency: { minutes: 1 }
+          timeout: { minutes: 1 }
     githubOrg:
       id: production
       githubUrl: "${GITHUB_URL}"
@@ -112,7 +112,7 @@ dynatrace:
   baseUrl: temp
 argocd:
   appLocatorMethods:
-    - type: 'config'
+    - type: "config"
       instances:
         - name: argoInstance1
           url: temp
@@ -125,8 +125,8 @@ permission:
   rbac:
     maxDepth: 1
     policyFileReload: true
-    policies-csv-file: './rbac/rbac-policy.csv'
-    conditionalPoliciesFile: './rbac-conditions/conditional-policies.yaml'
+    policies-csv-file: "./rbac/rbac-policy.csv"
+    conditionalPoliciesFile: "./rbac-conditions/conditional-policies.yaml"
     pluginsWithPermission:
       - catalog
       - permission

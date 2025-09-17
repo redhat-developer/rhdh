@@ -1,6 +1,6 @@
 #!/bin/bash
 # shellcheck disable=SC2034
-set -a  # Automatically export all variables
+set -a # Automatically export all variables
 
 # Define log file names and directories.
 LOGFILE="test-log"
@@ -195,4 +195,4 @@ GITHUB_OAUTH_APP_SECRET_ENCODED=$(printf "%s" $GITHUB_OAUTH_APP_SECRET | base64 
 
 BACKEND_SECRET=$(printf temp | base64 | tr -d '\n')
 
-set +a  # Stop automatically exporting variables
+set +a # Stop automatically exporting variables
