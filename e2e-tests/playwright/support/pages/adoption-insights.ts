@@ -65,6 +65,9 @@ export class TestHelper {
   ): Promise<void> {
     if (templatesFirstLast.length === 0) {
       await page.getByRole("link", { name: "Self-service" }).click();
+      await page
+        .getByText("Templates", { exact: true })
+        .waitFor({ state: "visible" });
       const panel = page
         .getByRole("heading", { name: "Create a tekton CI Pipeline" })
         .first();
@@ -113,6 +116,7 @@ export class TestHelper {
       // Visit docs
       await page.goto("/docs");
       await uiHelper.clickLink("Red Hat Developer Hub");
+      await uiHelper.openSidebarButton("Administration");
     }
   }
 
