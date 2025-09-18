@@ -1,6 +1,5 @@
 import { Page, expect, Locator } from "@playwright/test";
 import { UIhelper } from "../../utils/ui-helper";
-import { time } from "console";
 
 export class TestHelper {
   readonly page: Page;
@@ -66,8 +65,12 @@ export class TestHelper {
   ): Promise<void> {
     if (templatesFirstLast.length === 0) {
       await page.getByRole("link", { name: "Self-service" }).click();
-      const panel = page.getByRole('heading', { name: 'Create a tekton CI Pipeline' }).first();
-      const isPanelVisible = await panel.isVisible({timeout: 10000}).catch(() => false);
+      const panel = page
+        .getByRole("heading", { name: "Create a tekton CI Pipeline" })
+        .first();
+      const isPanelVisible = await panel
+        .isVisible({ timeout: 10000 })
+        .catch(() => false);
       if (!isPanelVisible) {
         const sampleTemplate =
           "https://github.com/redhat-developer/red-hat-developer-hub-software-templates/blob/main/templates/github/tekton/template.yaml";
@@ -81,8 +84,11 @@ export class TestHelper {
         await page.getByRole("link", { name: "Self-service" }).click();
       }
       // Run a template
-      const pipelineCard = page.getByRole('heading', { name: 'Create a tekton CI Pipeline' }).locator('..').locator('..');
-      await pipelineCard.getByRole('button', { name: 'Choose' }).click();
+      const pipelineCard = page
+        .getByRole("heading", { name: "Create a tekton CI Pipeline" })
+        .locator("..")
+        .locator("..");
+      await pipelineCard.getByRole("button", { name: "Choose" }).click();
 
       const inputText = "reallyUniqueName";
       await uiHelper.fillTextInputByLabel("Organization", inputText);
