@@ -18,6 +18,11 @@ test.describe("Test Tekton plugin", () => {
   let catalog: Catalog;
 
   test.beforeAll(async ({ browser }, testInfo) => {
+    test.info().annotations.push({
+      type: "component",
+      description: "plugins",
+    });
+
     const page = (await setupBrowser(browser, testInfo)).page;
     common = new Common(page);
     await common.loginAsGuest();

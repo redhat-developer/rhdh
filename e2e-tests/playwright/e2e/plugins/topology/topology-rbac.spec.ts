@@ -10,6 +10,13 @@ test.describe("Test Topology Plugin with RBAC", () => {
   let catalog: Catalog;
   let topology: Topology;
 
+  test.beforeAll(async () => {
+    test.info().annotations.push({
+      type: "component",
+      description: "plugins",
+    });
+  });
+
   test.beforeEach(async ({ page }, testInfo) => {
     if (testInfo.retry > 0) {
       // progressively increase test timeout for retries

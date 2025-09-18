@@ -3,6 +3,13 @@ import { UIhelper } from "../utils/ui-helper";
 import { Common } from "../utils/common";
 
 test.describe("Learning Paths", () => {
+  test.beforeAll(async () => {
+    test.info().annotations.push({
+      type: "component",
+      description: "core",
+    });
+  });
+
   let common: Common;
   let uiHelper: UIhelper;
 
