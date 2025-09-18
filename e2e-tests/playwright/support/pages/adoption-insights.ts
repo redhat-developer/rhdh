@@ -84,10 +84,7 @@ export class TestHelper {
         await page.getByRole("link", { name: "Self-service" }).click();
       }
       // Run a template
-      const pipelineCard = page
-        .getByRole("heading", { name: "Create a tekton CI Pipeline" })
-        .locator("..")
-        .locator("..");
+      const pipelineCard = panel.locator("..").locator("..");
       await pipelineCard.getByRole("button", { name: "Choose" }).click();
 
       const inputText = "reallyUniqueName";
