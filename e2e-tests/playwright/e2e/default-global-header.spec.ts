@@ -92,7 +92,7 @@ test.describe("Default Global Header", () => {
     await uiHelper.verifyLinkVisible("Settings");
     await uiHelper.verifyTextVisible("Sign out");
 
-    await uiHelper.clickLink({ href: "/settings" });
+    await page.getByRole("menuitem", { name: "Settings" }).click();
     await uiHelper.verifyHeading("Settings");
 
     await uiHelper.goToMyProfilePage();
