@@ -297,6 +297,11 @@ export class UIhelper {
     return await this.isElementVisible(locator);
   }
 
+  async isTextVisible(text: string, timeout = 10000): Promise<boolean> {
+    const locator = `:has-text("${text}")`;
+    return await this.isElementVisible(locator, timeout);
+  }
+
   async verifyTextVisible(text: string, timeout = 10000): Promise<void> {
     const locator = this.page.getByText(text);
     await expect(locator).toBeVisible({ timeout });

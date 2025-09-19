@@ -157,10 +157,10 @@ export class BackstageShowcase {
   async verifyAboutCardIsDisplayed() {
     const url =
       "https://github.com/redhat-developer/rhdh/tree/main/catalog-entities/components/";
-    const verifyLinkVisible = await this.page
+    const isLinkVisible = await this.page
       .locator(`a[href="${url}"]`)
       .isVisible();
-    if (!verifyLinkVisible) {
+    if (!isLinkVisible) {
       throw new Error("About card is not displayed");
     }
   }
