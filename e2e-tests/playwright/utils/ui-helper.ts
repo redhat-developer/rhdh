@@ -303,7 +303,7 @@ export class UIhelper {
   }
 
   async verifyLinkVisible(text: string, timeout = 10000): Promise<void> {
-    const locator = this.page.getByRole("link", { name: text });
+    const locator = this.page.locator(`a:has-text("${text}")`);
     await expect(locator).toBeVisible({ timeout });
   }
 
