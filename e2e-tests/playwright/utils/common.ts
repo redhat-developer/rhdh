@@ -65,10 +65,10 @@ export class Common {
     await this.page.fill("#app_totp", this.getGitHub2FAOTP(userid));
     test.setTimeout(130000);
     if (
-      (await this.uiHelper.isTextVisible(
+      (await this.uiHelper.verifyTextVisible(
         "The two-factor code you entered has already been used",
       )) ||
-      (await this.uiHelper.isTextVisible(
+      (await this.uiHelper.verifyTextVisible(
         "too many codes have been submitted",
         3000,
       ))
@@ -189,7 +189,8 @@ export class Common {
   }
 
   async clickOnGHloginPopup() {
-    const isLoginRequiredVisible = await this.uiHelper.isTextVisible("Sign in");
+    const isLoginRequiredVisible =
+      await this.uiHelper.verifyTextVisible("Sign in");
     if (isLoginRequiredVisible) {
       await this.uiHelper.clickButton("Sign in");
       await this.uiHelper.clickButton("Log in");

@@ -297,14 +297,14 @@ export class UIhelper {
     return await this.isElementVisible(locator);
   }
 
-  async isTextVisible(text: string, timeout = 10000): Promise<boolean> {
-    const locator = `:has-text("${text}")`;
-    return await this.isElementVisible(locator, timeout);
+  async verifyTextVisible(text: string, timeout = 10000): Promise<void> {
+    const locator = this.page.getByText(text);
+    await expect(locator).toBeVisible({ timeout });
   }
 
-  async isLinkVisible(text: string): Promise<boolean> {
-    const locator = `a:has-text("${text}")`;
-    return await this.isElementVisible(locator);
+  async verifyLinkVisible(text: string, timeout = 10000): Promise<void> {
+    const locator = this.page.getByRole("link", { name: text });
+    await expect(locator).toBeVisible({ timeout });
   }
 
   async waitForSideBarVisible() {

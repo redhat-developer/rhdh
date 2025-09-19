@@ -578,7 +578,7 @@ test.describe.serial("Test RBAC", () => {
       await uiHelper.openSidebar("Catalog");
       await uiHelper.clickButton("Self-service");
       expect(
-        await uiHelper.isLinkVisible("Import an existing Git repository"),
+        await uiHelper.verifyLinkVisible("Import an existing Git repository"),
       ).toBeTruthy();
       await uiHelper.clickButton("Import an existing Git repository");
       const catalogImport = new CatalogImport(page);
