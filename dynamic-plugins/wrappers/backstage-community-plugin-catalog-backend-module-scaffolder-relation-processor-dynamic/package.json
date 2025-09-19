@@ -32,11 +32,11 @@
     "test": "backstage-cli package test --passWithNoTests --coverage",
     "clean": "backstage-cli package clean",
     "clean-dynamic-sources": "yarn clean && rm -Rf node_modules",
-    "export-dynamic": "janus-cli package export-dynamic-plugin --embed-package @backstage-community/plugin-catalog-backend-module-scaffolder-relation-processor",
+    "export-dynamic": "janus-cli package export-dynamic-plugin --embed-package @backstage-community/plugin-catalog-backend-module-scaffolder-relation-processor @backstage/plugin-notifications-node",
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
-    "@backstage-community/plugin-catalog-backend-module-scaffolder-relation-processor": "2.5.0"
+    "@backstage-community/plugin-catalog-backend-module-scaffolder-relation-processor": "2.7.0"
   },
   "devDependencies": {
     "@backstage/cli": "^0.34.1",
