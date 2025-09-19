@@ -17,14 +17,18 @@ export class ThemeVerifier {
   }
 
   async verifyHeaderGradient(expectedGradient: string) {
-    const header = this.page.locator("main header");
+    const header = this.page.locator("main header").first();
+    await expect(header).toBeVisible();
     await expect(header).toHaveCSS("background-image", expectedGradient);
   }
 
   async verifyBorderLeftColor(expectedColor: string) {
     await this.uiHelper.openSidebar("Home");
-    const locator = this.page.locator("a").filter({ hasText: "Home" });
-    await expect(locator).toHaveCSS(
+    const homeLinkLocator = this.page
+      .getByRole("link", { name: "Home" })
+      .first();
+    await expect(homeLinkLocator).toBeVisible();
+    await expect(homeLinkLocator).toHaveCSS(
       "border-left",
       `3px solid ${expectedColor}`,
     );
