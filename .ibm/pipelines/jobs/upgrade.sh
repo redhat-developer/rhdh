@@ -35,6 +35,7 @@ handle_ocp_helm_upgrade() {
 
   local url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   initiate_upgrade_base_deployments "${RELEASE_NAME}" "${NAME_SPACE}" "${url}"
+  deploy_orchestrator_workflows "${NAME_SPACE}"
   initiate_upgrade_deployments "${RELEASE_NAME}" "${NAME_SPACE}" "${url}"
 
   check_upgrade_and_test "${DEPLOYMENT_NAME}" "${RELEASE_NAME}" "${NAME_SPACE}" "${url}"

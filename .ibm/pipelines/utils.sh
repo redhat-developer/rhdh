@@ -831,8 +831,6 @@ initiate_upgrade_base_deployments() {
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     --set upstream.backstage.image.repository="${QUAY_REPO_BASE}" \
     --set upstream.backstage.image.tag="${TAG_NAME_BASE}"
-
-  deploy_orchestrator_workflows "${namespace}"
 }
 
 initiate_upgrade_deployments() {
