@@ -539,6 +539,7 @@ plugins:
                   priority: 90
                   props:
                     title: Self-service
+                    titleKey: create.title
                     icon: add
                     to: create
               - mountPoint: global.header/component
@@ -558,6 +559,7 @@ plugins:
                   priority: 150
                   props:
                     title: Developer Hub
+                    titleKey: applicationLauncher.developerHub
                     icon: developerHub
                     link: https://docs.redhat.com/en/documentation/red_hat_developer_hub
 
@@ -568,6 +570,7 @@ plugins:
                   priority: 100
                   props:
                     title: RHDH Local
+                    titleKey: applicationLauncher.rhdhLocal
                     icon: developerHub
                     link: https://github.com/redhat-developer/rhdh-local
 
@@ -599,6 +602,7 @@ plugins:
                   priority: 100
                   props:
                     title: Settings
+                    titleKey: profile.settings
                     link: /settings
                     icon: manageAccounts
               - mountPoint: global.header/profile
@@ -607,6 +611,7 @@ plugins:
                   priority: 90
                   props:
                     title: My profile
+                    titleKey: profile.myProfile
                     icon: account
               - mountPoint: global.header/profile
                 importName: LogoutButton
