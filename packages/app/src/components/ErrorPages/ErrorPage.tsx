@@ -49,6 +49,8 @@ export const ErrorPage = ({
     container
     sx={{
       flexGrow: 1,
+      backgroundColor: theme => theme.palette.background.default,
+      borderRadius: theme => theme.shape.borderRadius,
       // When quickstart drawer is open, adjust margin
       '.quickstart-drawer-open &': {
         transition: 'margin-right 0.3s ease',
