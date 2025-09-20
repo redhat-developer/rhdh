@@ -40,7 +40,8 @@ export const InfoCard = () => {
 
   let clipboardText = title;
   const buildDetails = Object.entries(
-    buildInfo?.full === false // append build versions to the object only when buildInfo.full === false
+    buildInfo?.full === false || // make it backward compatible with previous `full` config option
+      buildInfo?.overrideBuildInfo === false
       ? { ...buildInfo?.card, ...buildMetadata?.card }
       : (buildInfo?.card ?? buildMetadata?.card),
   ).map(([key, value]) => `${key}: ${value}`);

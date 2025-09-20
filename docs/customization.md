@@ -194,7 +194,7 @@ buildInfo:
     TechDocs builder: 'local'
     Authentication provider: 'Github'
     RBAC: disabled
-  full: true # If set to true, only the information specified in this configuration will be displayed. If set to false, the provided details will be shown along with the build versions. By default it will only display the configured information.
+  overrideBuildInfo: true # If set to true, only the information specified in this configuration will be displayed. If set to false, the provided details will be shown along with the build versions. By default it will only display the configured information.
 ```
 
 ## Customizing the Language dropdown

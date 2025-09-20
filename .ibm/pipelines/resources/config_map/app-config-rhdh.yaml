@@ -226,4 +226,4 @@ buildInfo:
     TechDocs builder: "local"
     Authentication provider: "Github"
     RBAC: disabled
-  full: true
+  overrideBuildInfo: true
