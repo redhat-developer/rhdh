@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: roadiehq-backstage-plugin-argo-cd-backend
   namespace: rhdh
-  title: "@roadiehq/backstage-plugin-argo-cd-backend"
+  title: "ArgoCD"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

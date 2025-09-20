@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: backstage-community-plugin-redhat-argocd
   namespace: rhdh
-  title: "@backstage-community/plugin-redhat-argocd"
+  title: "Red Hat ArgoCD"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

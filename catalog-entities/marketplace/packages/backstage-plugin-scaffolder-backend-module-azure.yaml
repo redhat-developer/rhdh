@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: backstage-plugin-scaffolder-backend-module-azure
   namespace: rhdh
-  title: "@backstage/plugin-scaffolder-backend-module-azure"
+  title: "Scaffolder Backend Module Azure"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

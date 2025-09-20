@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: backstage-community-plugin-github-issues
   namespace: rhdh
-  title: "@backstage-community/plugin-github-issues"
+  title: "GitHub Issues"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

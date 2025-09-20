@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: roadiehq-backstage-plugin-datadog
   namespace: rhdh
-  title: "@roadiehq/backstage-plugin-datadog"
+  title: "Datadog"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

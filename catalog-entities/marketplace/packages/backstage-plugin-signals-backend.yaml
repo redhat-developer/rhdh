@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: backstage-plugin-signals-backend
   namespace: rhdh
-  title: "@backstage/plugin-signals-backend"
+  title: "Signals Backend"
   links:
     - url: https://red.ht/rhdh
       title: Homepage
