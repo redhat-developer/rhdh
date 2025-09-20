@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: backstage-community-plugin-azure-devops-backend
   namespace: rhdh
-  title: "@backstage-community/plugin-azure-devops-backend"
+  title: "Azure DevOps Backend"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

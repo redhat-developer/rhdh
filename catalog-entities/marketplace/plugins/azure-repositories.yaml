@@ -166,4 +166,4 @@ spec:
     for further details on the configuration required.
 
   packages:
-    - parfuemerie-douglas-scaffolder-backend-module-azure-repositorie
+    - parfuemerie-douglas-scaffolder-backend-module-azure-repositories

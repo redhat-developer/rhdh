@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: backstage-plugin-catalog-backend-module-ldap
   namespace: rhdh
-  title: "@backstage/plugin-catalog-backend-module-ldap"
+  title: "Catalog Backend Module LDAP"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

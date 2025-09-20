@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: backstage-community-plugin-3scale-backend
   namespace: rhdh
-  title: "@backstage-community/plugin-3scale-backend"
+  title: "3Scale"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

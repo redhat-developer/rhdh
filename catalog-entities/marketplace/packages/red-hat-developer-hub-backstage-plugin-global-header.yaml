@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: red-hat-developer-hub-backstage-plugin-global-header
   namespace: rhdh
-  title: "@red-hat-developer-hub/backstage-plugin-global-header"
+  title: "Global Header"
   links:
     - url: https://red.ht/rhdh
       title: Homepage
@@ -40,7 +40,7 @@ spec:
             default.main-menu-items:
               menuItems:
                 default.create:
-                  title: ""
+                  title: "Global Header"
             red-hat-developer-hub.backstage-plugin-global-header:
               mountPoints:
                 - mountPoint: application/header

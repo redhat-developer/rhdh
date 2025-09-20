@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: roadiehq-backstage-plugin-security-insights
   namespace: rhdh
-  title: "@roadiehq/backstage-plugin-security-insights"
+  title: "Security Insights"
   links:
     - url: https://red.ht/rhdh
       title: Homepage
