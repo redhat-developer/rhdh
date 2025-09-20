@@ -12,19 +12,28 @@ export class ThemeVerifier {
   }
 
   async setTheme(theme: "Light" | "Dark" | "Light Dynamic" | "Dark Dynamic") {
-    await this.uiHelper.goToSettingsPage();
+    await this.uiHelper.goToPageUrl("/settings", "Settings");
     await this.uiHelper.clickBtnByTitleIfNotPressed(`Select theme ${theme}`);
+    const themeButton = this.page.getByRole("button", {
+      name: theme,
+      exact: true,
+    });
+    await expect(themeButton).toHaveAttribute("aria-pressed", "true");
   }
 
   async verifyHeaderGradient(expectedGradient: string) {
-    const header = this.page.locator("main header");
+    const header = this.page.locator("main header").first();
+    await expect(header).toBeVisible();
     await expect(header).toHaveCSS("background-image", expectedGradient);
   }
 
   async verifyBorderLeftColor(expectedColor: string) {
     await this.uiHelper.openSidebar("Home");
-    const locator = this.page.locator("a").filter({ hasText: "Home" });
-    await expect(locator).toHaveCSS(
+    const homeLinkLocator = this.page
+      .getByRole("link", { name: "Home" })
+      .first();
+    await expect(homeLinkLocator).toBeVisible();
+    await expect(homeLinkLocator).toHaveCSS(
       "border-left",
       `3px solid ${expectedColor}`,
     );
@@ -47,7 +56,7 @@ export class ThemeVerifier {
       UI_HELPER_ELEMENTS.MuiButtonTextPrimary,
       colorPrimary,
     );
-    await this.uiHelper.goToSettingsPage();
+    await this.uiHelper.goToPageUrl("/settings", "Settings");
   }
 
   async takeScreenshotAndAttach(

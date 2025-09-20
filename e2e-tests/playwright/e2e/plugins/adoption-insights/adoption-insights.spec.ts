@@ -31,7 +31,7 @@ test.describe.serial("Test Adoption Insights", () => {
       uiHelper = new UIhelper(page);
       testHelper = new TestHelper(page);
       await new Common(page).loginAsKeycloakUser();
-      await page.goto("/");
+      await uiHelper.goToPageUrl("/", "Welcome back!");
     });
 
     test.afterAll(async () => {

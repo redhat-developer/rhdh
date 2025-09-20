@@ -48,8 +48,7 @@ test.describe.serial("GitHub Happy path", async () => {
   });
 
   test("Verify Profile is Github Account Name in the Settings page", async () => {
-    await page.goto("/settings");
-    await expect(page).toHaveURL("/settings");
+    await uiHelper.goToPageUrl("/settings", "Settings");
     await uiHelper.verifyHeading(process.env.GH_USER2_ID);
     await uiHelper.verifyHeading(`User Entity: ${process.env.GH_USER2_ID}`);
   });
@@ -209,7 +208,7 @@ test.describe.serial("GitHub Happy path", async () => {
 
   test("Sign out and verify that you return back to the Sign in page", async () => {
     test.fixme();
-    await uiHelper.goToSettingsPage();
+    await uiHelper.goToPageUrl("/settings", "Settings");
     await common.signOut();
     await context.clearCookies();
   });
