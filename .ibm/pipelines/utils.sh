@@ -396,7 +396,7 @@ apply_yaml_files() {
   fi
 
   # Create secret for sealight job to pull image from private quay repository.
-  if [[ "$JOB_NAME" == *"sealight"* ]]; then kubectl create secret docker-registry quay-secret --docker-server=quay.io --docker-username=$RHDH_SEALIGHTS_BOT_USER --docker-password=$RHDH_SEALIGHTS_BOT_TOKEN --namespace="${project}"; fi
+  if [[ "$JOB_NAME" == *"sealight"* || "$JOB_NAME" == *pull-*-e2e-tests* ]]; then kubectl create secret docker-registry quay-secret --docker-server=quay.io --docker-username=$RHDH_SEALIGHTS_BOT_USER --docker-password=$RHDH_SEALIGHTS_BOT_TOKEN --namespace="${project}"; fi
 }
 
 deploy_test_backstage_customization_provider() {
@@ -481,7 +481,7 @@ run_tests() {
     echo "Yarn install completed successfully."
   fi
 
-  if [[ "$JOB_NAME" == *"sealight"* ]]; then node node_modules/sealights-playwright-plugin/importReplaceUtility.js playwright; fi
+  if [[ "$JOB_NAME" == *"sealight"* || "$JOB_NAME" == *pull-*-e2e-tests* ]]; then node node_modules/sealights-playwright-plugin/importReplaceUtility.js playwright; fi
 
   yarn playwright install chromium
 
@@ -721,7 +721,7 @@ get_image_helm_set_params() {
   params+="--set upstream.backstage.image.tag=${TAG_NAME} "
 
   # Add pull secrets if sealight job
-  params+=$(if [[ "$JOB_NAME" == *"sealight"* ]]; then echo "--set upstream.backstage.image.pullSecrets[0]='quay-secret'"; fi)
+  params+=$(if [[ "$JOB_NAME" == *"sealight"* || "$JOB_NAME" == *pull-*-e2e-tests* ]]; then echo "--set upstream.backstage.image.pullSecrets[0]='quay-secret'"; fi)
   echo "${params}"
 }
 
@@ -857,7 +857,13 @@ initiate_runtime_deployment() {
   oc apply -f "$DIR/resources/postgres-db/postgres-cred.yaml" -n "${namespace}"
   oc apply -f "$DIR/resources/postgres-db/dynamic-plugins-root-PVC.yaml" -n "${namespace}"
   # Create secret for sealight job to pull image from private quay repository.
-  if [[ "$JOB_NAME" == *"sealight"* ]]; then kubectl create secret docker-registry quay-secret --docker-server=quay.io --docker-username=$RHDH_SEALIGHTS_BOT_USER --docker-password=$RHDH_SEALIGHTS_BOT_TOKEN --namespace="${namespace}"; fi
+  if [[ "$JOB_NAME" == *"sealight"* || "$JOB_NAME" == *pull-*-e2e-tests* ]]; then
+    kubectl create secret docker-registry quay-secret \
+      --docker-server=quay.io \
+      --docker-username="$RHDH_SEALIGHTS_BOT_USER" \
+      --docker-password="$RHDH_SEALIGHTS_BOT_TOKEN" \
+      --namespace="$namespace"
+  fi
 
   # shellcheck disable=SC2046
   helm upgrade -i "${release_name}" -n "${namespace}" \
