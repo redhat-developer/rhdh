@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: backstage-community-plugin-servicenow
   namespace: rhdh
-  title: "@backstage-community/plugin-servicenow"
+  title: "ServiceNow Frontend"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

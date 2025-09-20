@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: backstage-community-plugin-github-actions
   namespace: rhdh
-  title: "@backstage-community/plugin-github-actions"
+  title: "GitHub Actions"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

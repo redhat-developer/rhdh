@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: redhat-backstage-plugin-scaffolder-backend-module-orchestrator
   namespace: rhdh
-  title: "@redhat/backstage-plugin-scaffolder-backend-module-orchestrator"
+  title: "Scaffolder Backend Module Orchestrator"
   links:
     - url: https://red.ht/rhdh
       title: Homepage
