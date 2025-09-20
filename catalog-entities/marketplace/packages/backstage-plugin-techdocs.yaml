@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: backstage-plugin-techdocs
   namespace: rhdh
-  title: "@backstage/plugin-techdocs"
+  title: "TechDocs Frontend"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

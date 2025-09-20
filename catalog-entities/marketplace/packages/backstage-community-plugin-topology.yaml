@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: backstage-community-plugin-topology
   namespace: rhdh
-  title: "@backstage-community/plugin-topology"
+  title: "Topology"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

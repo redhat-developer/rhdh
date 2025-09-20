@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: backstage-community-plugin-scaffolder-backend-module-sonarqube
   namespace: rhdh
-  title: "@backstage-community/plugin-scaffolder-backend-module-sonarqube"
+  title: "Scaffolder Backend Module SonarQube"
   links:
     - url: https://red.ht/rhdh
       title: Homepage
