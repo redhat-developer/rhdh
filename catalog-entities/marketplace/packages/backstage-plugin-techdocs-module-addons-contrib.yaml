@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: backstage-plugin-techdocs-module-addons-contrib
   namespace: rhdh
-  title: "@backstage/plugin-techdocs-module-addons-contrib"
+  title: "TechDocs Add-ons Contrib"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

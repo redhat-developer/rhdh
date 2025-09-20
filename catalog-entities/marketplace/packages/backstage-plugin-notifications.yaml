@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: backstage-plugin-notifications
   namespace: rhdh
-  title: "@backstage/plugin-notifications"
+  title: "Notifications Frontend"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

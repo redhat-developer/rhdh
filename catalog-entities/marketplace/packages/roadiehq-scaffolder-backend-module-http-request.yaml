@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: roadiehq-scaffolder-backend-module-http-request
   namespace: rhdh
-  title: "@roadiehq/scaffolder-backend-module-http-request"
+  title: "Scaffolder Backend Module HTTP Request"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

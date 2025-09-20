@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: red-hat-developer-hub-backstage-plugin-global-floating-action-b
   namespace: rhdh
-  title: "@red-hat-developer-hub/backstage-plugin-global-floating-action-button"
+  title: "Global Floating Action B"
   links:
     - url: https://red.ht/rhdh
       title: Homepage
