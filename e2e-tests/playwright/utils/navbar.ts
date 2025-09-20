@@ -10,4 +10,5 @@ export type SidebarTabs =
   | "Docs"
   | "Clusters"
   | "Tech Radar"
-  | "Notifications";
+  | "Notifications"
+  | "Orchestrator";
