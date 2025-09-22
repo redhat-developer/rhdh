@@ -29,7 +29,7 @@ spec:
   author: Red Hat
   publisher: Red Hat
   support:
-    name: Red Hat
+    provider: Red Hat
     level: generally-available
   lifecycle: active
 

@@ -25,7 +25,7 @@ metadata:
 spec:
   author: Roadie
   support:
-    name: Backstage Community
+    provider: Backstage Community
     level: tech-preview
   lifecycle: active
   publisher: Red Hat

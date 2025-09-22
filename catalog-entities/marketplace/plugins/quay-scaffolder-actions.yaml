@@ -27,7 +27,7 @@ spec:
      url: https://redhat.com
 
   support:
-    name: Red Hat
+    provider: Red Hat
     level: generally-available
   lifecycle: active
   publisher: Red Hat

@@ -17,7 +17,7 @@ metadata:
 spec:
   lifecycle: active
   support:
-    name: Red Hat
+    provider: Red Hat
     level: generally-available
   publisher: Red Hat
   author: Roadie

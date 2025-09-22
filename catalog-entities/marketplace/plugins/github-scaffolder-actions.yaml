@@ -15,7 +15,7 @@ spec:
     - Scaffolder
   author: Backstage Community
   support:
-    name: Red Hat
+    provider: Red Hat
     level: generally-available
   lifecycle: active
   publisher: Red Hat

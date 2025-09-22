@@ -29,7 +29,7 @@ spec:
   lifecycle: active
   # support: tech-preview
   support:
-    name: Red Hat
+    provider: Red Hat
     level: tech-preview
 
   description: |

@@ -23,7 +23,7 @@ metadata:
 spec:
   author: IBM
   support:
-    name: IBM
+    provider: IBM
     level: generally-available
   lifecycle: active
   publisher: IBM

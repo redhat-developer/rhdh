@@ -26,7 +26,7 @@ metadata:
 
 spec:
   support:
-    name: Red Hat
+    provider: Red Hat
     level: generally-available
   lifecycle: active
   author: Red Hat

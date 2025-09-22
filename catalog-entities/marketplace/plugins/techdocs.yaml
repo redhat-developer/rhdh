@@ -31,7 +31,7 @@ spec:
   license: Apache-2.0
   lifecycle: active
   support:
-    name: Red Hat
+    provider: Red Hat
     level: generally-available
 
   categories:

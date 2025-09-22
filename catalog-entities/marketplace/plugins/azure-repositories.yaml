@@ -30,7 +30,7 @@ spec:
   author: Parfümerie Douglas
   publisher: Red Hat
   support:
-    name: Red Hat
+    provider: Red Hat
     level: tech-preview
   lifecycle: active
 
