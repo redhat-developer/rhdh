@@ -173,10 +173,6 @@ For example:
 COPY $EXTERNAL_SOURCE_NESTED/plugins/dynamic-plugins-info/package.json ./plugins/dynamic-plugins-info/package.json
 ```
 
-## Support
-
-You can reach out to us in our [community Slack channel](https://join.slack.com/t/janus-idp/shared_invite/zt-1pxtehxom-fCFtF9rRe3vFqUiFFeAkmg) if you run into any issues with setup, running, or testing the application. Members of the team and community can assist you with questions and concerns you might have. Even if you don't need help, please consider joining and being involved in our community.
-
 ## License
 
 By contributing, you agree that your contributions will be licensed under the [Apache-2.0 License](https://github.com/redhat-developer/rhdh/blob/main/LICENSE).
