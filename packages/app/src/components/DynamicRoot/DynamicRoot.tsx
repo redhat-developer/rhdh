@@ -42,6 +42,8 @@ import { useScalprum } from '@scalprum/react-core';
 
 import { catalogImportTranslations } from '../../translations/catalog-import/catalog-import';
 import { coreComponentsTranslations } from '../../translations/core-components/core-components';
+import { rhdhTranslations } from '../../translations/rhdh';
+import { rhdhTranslationRef } from '../../translations/rhdh/refs';
 import { scaffolderTranslations } from '../../translations/scaffolder/scaffolder';
 import {
   InternalTranslationResource,
@@ -604,6 +606,7 @@ export const DynamicRoot = ({
       { resource: catalogTranslations, ref: catalogTranslationRef },
       { resource: scaffolderTranslations, ref: scaffolderTranslationRef },
       { resource: catalogImportTranslations, ref: catalogImportTranslationRef },
+      { resource: rhdhTranslations, ref: rhdhTranslationRef },
     ].reduce<TranslationResource[]>((acc, { resource, ref }) => {
       const hasJsonOverrides = overrideTranslations[resource?.id];
       if (hasJsonOverrides) {

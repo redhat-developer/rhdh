@@ -41,6 +41,7 @@ import DynamicRootContext, {
 } from '@red-hat-developer-hub/plugin-utils';
 
 import { useLanguagePreference } from '../../hooks/useLanguagePreference';
+import { useTranslation } from '../../hooks/useTranslation';
 import { ApplicationHeaders } from './ApplicationHeaders';
 import { MenuIcon } from './MenuIcon';
 import { SidebarLogo } from './SidebarLogo';
@@ -191,17 +192,22 @@ const renderExpandIcon = (expand: boolean) => {
   );
 };
 
-const getMenuItem = (menuItem: ResolvedMenuItem, isNestedMenuItem = false) => {
+const getMenuItem = (
+  menuItem: ResolvedMenuItem,
+  isNestedMenuItem = false,
+  getMenuText: (item: ResolvedMenuItem) => string,
+) => {
   const menuItemStyle = {
     paddingLeft: isNestedMenuItem ? '2rem' : '',
   };
+  const translatedText = getMenuText(menuItem);
   return menuItem.name === 'default.my-group' ? (
     <Box key={menuItem.name} sx={{ '& a': menuItemStyle }}>
       <MyGroupsSidebarItem
         key={menuItem.name}
         icon={renderIcon(menuItem.icon ?? '')}
-        singularTitle={menuItem.title}
-        pluralTitle={`${menuItem.title}s`}
+        singularTitle={translatedText}
+        pluralTitle={`${translatedText}s`}
       />
     </Box>
   ) : (
@@ -209,7 +215,7 @@ const getMenuItem = (menuItem: ResolvedMenuItem, isNestedMenuItem = false) => {
       key={menuItem.name}
       icon={renderIcon(menuItem.icon ?? '')}
       to={menuItem.to ?? ''}
-      text={menuItem.title}
+      text={translatedText}
       style={menuItemStyle}
     />
   );
@@ -299,6 +305,14 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
       resourceRef: undefined,
     });
   useLanguagePreference();
+  const { t } = useTranslation();
+
+  const getMenuText = (menuItem: ResolvedMenuItem) => {
+    if (menuItem.textKey) {
+      return t(menuItem.textKey as any, {});
+    }
+    return menuItem.title;
+  };
 
   const handleClick = (itemName: string) => {
     setOpenItems(prevOpenItems => ({
@@ -335,7 +349,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
           <SidebarItem
             key={child.title}
             icon={() => null}
-            text={child.title}
+            text={getMenuText(child)}
             to={child.to ?? ''}
           />
         )}
@@ -379,12 +393,12 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
               }}
             >
               {child.children && child.children.length === 0 ? (
-                getMenuItem(child, true)
+                getMenuItem(child, true, getMenuText)
               ) : (
                 <>
                   <SidebarItem
                     icon={renderIcon(child.icon ?? '')}
-                    text={child.title}
+                    text={getMenuText(child)}
                     onClick={() => handleClick(child.name)}
                   >
                     {child.children!.length > 0 &&
@@ -423,12 +437,13 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
           const isOpen = openItems[menuItem.name] || false;
           return (
             <Fragment key={menuItem.name}>
-              {menuItem.children!.length === 0 && getMenuItem(menuItem)}
+              {menuItem.children!.length === 0 &&
+                getMenuItem(menuItem, false, getMenuText)}
               {menuItem.children!.length > 0 && (
                 <SidebarItem
                   key={menuItem.name}
                   icon={renderIcon(menuItem.icon ?? '')}
-                  text={menuItem.title}
+                  text={getMenuText(menuItem)}
                   onClick={() => handleClick(menuItem.name)}
                 >
                   {menuItem.children!.length > 0 && renderExpandIcon(isOpen)}
