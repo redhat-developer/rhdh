@@ -8,6 +8,8 @@ type ThemeInfo = {
 
 export class ThemeConstants {
   static getThemes() {
+    // TODO: https://issues.redhat.com/browse/RHDHBUGS-2076
+    // When theme constants are defined in the order Light, Dark, Light Dynamic, Dark Dynamic, tests fail.
     const light: ThemeInfo = {
       name: "Light",
       primaryColor: "#2A61A7",
@@ -16,20 +18,20 @@ export class ThemeConstants {
       navigationIndicatorColor: "rgb(98, 216, 105)",
     };
 
-    const dark: ThemeInfo = {
-      name: "Dark",
-      primaryColor: "#DC6ED9",
-      headerColor1: "rgb(190, 122, 45)",
-      headerColor2: "rgb(45, 190, 50)",
-      navigationIndicatorColor: "rgb(45, 113, 190)",
-    };
-
     const lightDynamic: ThemeInfo = {
       name: "Light Dynamic",
       primaryColor: "rgb(255, 95, 21)",
       headerColor1: "rgb(248, 248, 248)",
       headerColor2: "rgb(248, 248, 248)",
       navigationIndicatorColor: "rgb(255, 95, 21)",
+    };
+
+    const dark: ThemeInfo = {
+      name: "Dark",
+      primaryColor: "#DC6ED9",
+      headerColor1: "rgb(190, 122, 45)",
+      headerColor2: "rgb(45, 190, 50)",
+      navigationIndicatorColor: "rgb(45, 113, 190)",
     };
 
     const darkDynamic: ThemeInfo = {
