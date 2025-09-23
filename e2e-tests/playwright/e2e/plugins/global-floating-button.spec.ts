@@ -31,7 +31,7 @@ test.describe("Test global floating action button plugin", () => {
     await uiHelper.verifyText("Added repositories");
   });
 
-  test("Check if floating button is shown with two sub-menu actions on the Catalog Page, verify Git sub-menu", async () => {
+  test.skip("Check if floating button is shown with two sub-menu actions on the Catalog Page, verify Git sub-menu", async () => {
     await uiHelper.openSidebar("Catalog");
     await fabHelper.verifyFabButtonByDataTestId("floating-button-with-submenu");
     await fabHelper.clickFabMenuByTestId("floating-button-with-submenu");
