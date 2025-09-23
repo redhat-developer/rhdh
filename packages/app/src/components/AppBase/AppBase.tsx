@@ -24,6 +24,7 @@ import DynamicRootContext from '@red-hat-developer-hub/plugin-utils';
 
 import getDynamicRootConfig from '../../utils/dynamicUI/getDynamicRootConfig';
 import { entityPage } from '../catalog/EntityPage';
+import { CustomCatalogFilters } from '../catalog/filters/CustomCatalogFilters';
 import { LearningPaths } from '../learningPaths/LearningPathsPage';
 import { Root } from '../Root';
 import { ApplicationListener } from '../Root/ApplicationListener';
@@ -86,7 +87,11 @@ const AppBase = () => {
               <Route
                 path="/catalog"
                 element={
-                  <CatalogIndexPage pagination columns={myCustomColumnsFunc} />
+                  <CatalogIndexPage
+                    pagination
+                    columns={myCustomColumnsFunc}
+                    filters={<CustomCatalogFilters />}
+                  />
                 }
               />
               <Route
