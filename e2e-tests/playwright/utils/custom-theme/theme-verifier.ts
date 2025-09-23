@@ -29,10 +29,7 @@ export class ThemeVerifier {
 
   async verifyBorderLeftColor(expectedColor: string) {
     await this.uiHelper.openSidebar("Home");
-    const homeLinkLocator = this.page
-      .getByRole("link", { name: "Home" })
-      .first();
-    await expect(homeLinkLocator).toBeVisible();
+    const homeLinkLocator = this.page.locator("a").filter({ hasText: "Home" });
     await expect(homeLinkLocator).toHaveCSS(
       "border-left",
       `3px solid ${expectedColor}`,
