@@ -14,7 +14,10 @@ export class ThemeVerifier {
   async setTheme(theme: "Light" | "Dark" | "Light Dynamic" | "Dark Dynamic") {
     await this.uiHelper.goToPageUrl("/settings", "Settings");
     await this.uiHelper.clickBtnByTitleIfNotPressed(`Select theme ${theme}`);
-    const themeButton = this.page.locator(`button:has-text("${theme}")`);
+    const themeButton = this.page.getByRole("button", {
+      name: theme,
+      exact: true,
+    });
     await expect(themeButton).toHaveAttribute("aria-pressed", "true");
   }
 
