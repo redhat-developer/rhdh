@@ -65,16 +65,20 @@ export class TestHelper {
   ): Promise<void> {
     if (templatesFirstLast.length === 0) {
       await page.getByRole("link", { name: "Self-service" }).click();
-      await expect(page.getByRole("main")).toContainText("Templates");
-      const panel = page.locator("article div div", {
-        hasText: "Create a tekton CI Pipeline",
-      });
-      const isPanelVisible = await panel.last().isVisible();
+      await page
+        .getByText("Templates", { exact: true })
+        .waitFor({ state: "visible" });
+      const panel = page
+        .getByRole("heading", { name: "Create a tekton CI Pipeline" })
+        .first();
+      const isPanelVisible = await panel
+        .isVisible({ timeout: 10000 })
+        .catch(() => false);
       if (!isPanelVisible) {
         const sampleTemplate =
           "https://github.com/redhat-developer/red-hat-developer-hub-software-templates/blob/main/templates/github/tekton/template.yaml";
         await page
-          .getByRole("button", { name: "Register Existing Component" })
+          .getByRole("button", { name: "Import an existing Git repository" })
           .click();
         await page.getByRole("textbox", { name: "URL" }).fill(sampleTemplate);
         await page.getByRole("button", { name: "Analyze" }).click();
@@ -83,7 +87,9 @@ export class TestHelper {
         await page.getByRole("link", { name: "Self-service" }).click();
       }
       // Run a template
-      await panel.getByRole("button", { name: "Choose" }).last().click();
+      const pipelineCard = panel.locator("..").locator("..");
+      await pipelineCard.getByRole("button", { name: "Choose" }).click();
+
       const inputText = "reallyUniqueName";
       await uiHelper.fillTextInputByLabel("Organization", inputText);
       await uiHelper.fillTextInputByLabel("Repository", inputText);
@@ -110,6 +116,7 @@ export class TestHelper {
       // Visit docs
       await page.goto("/docs");
       await uiHelper.clickLink("Red Hat Developer Hub");
+      await uiHelper.openSidebarButton("Administration");
     }
   }
 
