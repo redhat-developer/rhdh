@@ -40,6 +40,7 @@
     "@backstage/plugin-search-react": "1.9.3",
     "@backstage/plugin-user-settings": "0.8.25",
     "@backstage/theme": "0.6.8",
+    "@backstage/ui": "0.7.0",
     "@emotion/react": "11.14.0",
     "@emotion/styled": "11.14.1",
     "@internal/plugin-dynamic-plugins-info": "*",
