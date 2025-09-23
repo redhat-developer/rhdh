@@ -10,7 +10,7 @@
   },
   "backstage": {
     "role": "backend-plugin-module",
-    "supported-versions": "1.39.1",
+    "supported-versions": "1.42.5",
     "pluginId": "catalog",
     "pluginPackage": "@backstage/plugin-catalog-backend"
   },
@@ -39,7 +39,7 @@
     "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace": "0.4.4"
   },
   "devDependencies": {
-    "@backstage/cli": "0.30.0",
+    "@backstage/cli": "^0.34.1",
     "@janus-idp/cli": "3.6.1",
     "typescript": "5.9.2"
   },

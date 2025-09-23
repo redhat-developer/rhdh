@@ -47,7 +47,7 @@
     "typescript-eslint": "^8.41.0"
   },
   "dependencies": {
-    "@azure/arm-network": "^34.0.0",
+    "@azure/arm-network": "34.0.0",
     "@azure/identity": "4.9.1",
     "@keycloak/keycloak-admin-client": "25.0.6",
     "@kubernetes/client-node": "0.22.3",
@@ -56,9 +56,9 @@
     "js-yaml": "4.1.0",
     "node-fetch": "2.7.0",
     "octokit": "4.1.4",
-    "uuid": "^11.1.0",
+    "uuid": "11.1.0",
     "winston": "3.14.2",
-    "yaml": "^2.8.0"
+    "yaml": "2.8.0"
   },
   "jest": {
     "testTimeout": 20000
