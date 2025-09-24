@@ -37,8 +37,8 @@
     ]
   },
   "devDependencies": {
-    "@backstage/cli": "0.32.1",
-    "@backstage/frontend-test-utils": "^0.3.2",
+    "@backstage/cli": "0.34.1",
+    "@backstage/frontend-test-utils": "0.3.5",
     "@ianvs/prettier-plugin-sort-imports": "4.7.0",
     "@manypkg/cli": "0.24.0",
     "glob": "11.0.3",
@@ -53,8 +53,7 @@
     "@types/react": "18.3.23",
     "@types/react-dom": "18.3.7",
     "@aws-sdk/util-utf8-browser": "npm:@smithy/util-utf8@~2",
-    "@kubernetes/client-node@npm:0.20.0/jsonpath-plus": "^10.3.0",
-    "@backstage/backend-dynamic-feature-service@0.7.0": "patch:@backstage/backend-dynamic-feature-service@npm%3A0.7.0#./.yarn/patches/@backstage-backend-dynamic-feature-service-npm-0.7.0-d75453687b.patch"
+    "@kubernetes/client-node@npm:0.20.0/jsonpath-plus": "^10.3.0"
   },
   "jest": {
     "testTimeout": 20000
