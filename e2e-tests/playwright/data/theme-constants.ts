@@ -40,8 +40,6 @@ export class ThemeConstants {
       navigationIndicatorColor: "rgb(244, 238, 169)",
     };
 
-    // TODO: https://issues.redhat.com/browse/RHDHBUGS-2076
-    // When theme constants are defined in the order Light, Dark, Light Dynamic, Dark Dynamic, tests fail.
-    return [light, lightDynamic, dark, darkDynamic];
+    return [light, dark, lightDynamic, darkDynamic];
   }
 }

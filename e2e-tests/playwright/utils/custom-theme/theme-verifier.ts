@@ -53,7 +53,6 @@ export class ThemeVerifier {
       UI_HELPER_ELEMENTS.MuiButtonTextPrimary,
       colorPrimary,
     );
-    await this.uiHelper.goToPageUrl("/settings", "Settings");
   }
 
   async takeScreenshotAndAttach(
