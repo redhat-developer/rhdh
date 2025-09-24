@@ -32,5 +32,7 @@ export default {
     apis: 'APIs',
     learningPaths: 'Rutas de Aprendizaje',
     selfService: 'Autoservicio',
+    administration: 'Administración',
+    extensions: 'Extensiones',
   },
 };

@@ -16,7 +16,6 @@
 
 export default {
   menuItem: {
-    // dynamic-plugins.default.main-menu-items
     clusters: 'Cluster',
     rbac: 'RBAC',
     bulkImport: 'Massenimport',
@@ -25,12 +24,13 @@ export default {
     techRadar: 'Tech-Radar',
     orchestrator: 'Orchestrator',
     adoptionInsights: 'Einführungseinblicke',
-    // Default main menu items from consts.ts
     home: 'Startseite',
     myGroup: 'Meine Gruppe',
     catalog: 'Katalog',
     apis: 'APIs',
     learningPaths: 'Lernpfade',
     selfService: 'Self-Service',
+    administration: 'Administration',
+    extensions: 'Erweiterungen',
   },
 };

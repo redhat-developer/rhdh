@@ -24,6 +24,8 @@ import {
 import { catalogImportTranslationRef } from '@backstage/plugin-catalog-import/alpha';
 import { catalogTranslationRef } from '@backstage/plugin-catalog/alpha';
 import { scaffolderTranslationRef } from '@backstage/plugin-scaffolder/alpha';
+import { searchTranslationRef } from '@backstage/plugin-search/alpha';
+import { userSettingsTranslationRef } from '@backstage/plugin-user-settings/alpha';
 
 import { useThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 import DynamicRootContext, {
@@ -45,6 +47,8 @@ import { coreComponentsTranslations } from '../../translations/core-components/c
 import { rhdhTranslations } from '../../translations/rhdh';
 import { rhdhTranslationRef } from '../../translations/rhdh/refs';
 import { scaffolderTranslations } from '../../translations/scaffolder/scaffolder';
+import { searchTranslations } from '../../translations/search/search';
+import { userSettingsTranslations } from '../../translations/user-settings/user-settings';
 import {
   InternalTranslationResource,
   TranslationConfig,
@@ -606,6 +610,8 @@ export const DynamicRoot = ({
       { resource: catalogTranslations, ref: catalogTranslationRef },
       { resource: scaffolderTranslations, ref: scaffolderTranslationRef },
       { resource: catalogImportTranslations, ref: catalogImportTranslationRef },
+      { resource: searchTranslations, ref: searchTranslationRef },
+      { resource: userSettingsTranslations, ref: userSettingsTranslationRef },
       { resource: rhdhTranslations, ref: rhdhTranslationRef },
     ].reduce<TranslationResource[]>((acc, { resource, ref }) => {
       const hasJsonOverrides = overrideTranslations[resource?.id];

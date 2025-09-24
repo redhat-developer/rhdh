@@ -39,6 +39,8 @@ export const rhdhMessages = {
     apis: 'APIs',
     learningPaths: 'Learning Paths',
     selfService: 'Self-service',
+    administration: 'Administration',
+    extensions: 'Extensions',
   },
 };
 
