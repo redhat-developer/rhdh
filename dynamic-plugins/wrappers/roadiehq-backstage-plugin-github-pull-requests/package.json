@@ -11,7 +11,7 @@
   },
   "backstage": {
     "role": "frontend-plugin",
-    "supported-versions": "1.39.1",
+    "supported-versions": "1.42.5",
     "pluginId": "roadiehq-github-pull-requests",
     "pluginPackages": [
       "roadiehq-backstage-plugin-github-pull-requests"
@@ -31,7 +31,7 @@
     "@roadiehq/backstage-plugin-github-pull-requests": "3.4.2"
   },
   "devDependencies": {
-    "@backstage/cli": "0.30.0",
+    "@backstage/cli": "^0.34.1",
     "@janus-idp/cli": "3.6.1",
     "typescript": "5.9.2"
   },
