@@ -87,7 +87,7 @@ test.describe("Default Global Header", () => {
     await newTab.close();
   });
 
-  test.skip("Verify Profile Dropdown behaves as expected", async ({ page }) => {
+  test("Verify Profile Dropdown behaves as expected", async ({ page }) => {
     await uiHelper.openProfileDropdown();
     await uiHelper.verifyLinkVisible("Settings");
     await uiHelper.verifyTextVisible("Sign out");
