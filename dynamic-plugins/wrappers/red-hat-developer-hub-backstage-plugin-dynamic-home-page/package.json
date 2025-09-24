@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "@mui/material": "5.18.0",
-    "@red-hat-developer-hub/backstage-plugin-dynamic-home-page": "1.5.3"
+    "@red-hat-developer-hub/backstage-plugin-dynamic-home-page": "1.7.0"
   },
   "devDependencies": {
     "@backstage/cli": "^0.34.1",
