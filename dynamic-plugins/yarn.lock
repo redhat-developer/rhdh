@@ -8102,7 +8102,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/theme@npm:^0.6.7, @backstage/theme@npm:^0.6.8":
+"@backstage/theme@npm:^0.6.8":
   version: 0.6.8
   resolution: "@backstage/theme@npm:0.6.8"
   dependencies:
@@ -11467,7 +11467,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/icons-material@npm:5.18.0, @mui/icons-material@npm:^5.15.17, @mui/icons-material@npm:^5.15.19, @mui/icons-material@npm:^5.16.4, @mui/icons-material@npm:^5.16.7, @mui/icons-material@npm:^5.17.1":
+"@mui/icons-material@npm:5.18.0, @mui/icons-material@npm:^5.15.17, @mui/icons-material@npm:^5.15.19, @mui/icons-material@npm:^5.16.4, @mui/icons-material@npm:^5.16.7":
   version: 5.18.0
   resolution: "@mui/icons-material@npm:5.18.0"
   dependencies:
@@ -13643,38 +13643,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-quickstart@npm:1.4.0":
-  version: 1.4.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-quickstart@npm:1.4.0"
+"@red-hat-developer-hub/backstage-plugin-quickstart@npm:1.5.1":
+  version: 1.5.1
+  resolution: "@red-hat-developer-hub/backstage-plugin-quickstart@npm:1.5.1"
   dependencies:
     "@backstage-community/plugin-rbac-common": ^1.19.0
-    "@backstage/core-components": ^0.17.4
+    "@backstage/core-components": ^0.17.5
     "@backstage/core-plugin-api": ^1.10.9
     "@backstage/plugin-permission-react": ^0.4.36
-    "@backstage/theme": ^0.6.7
+    "@backstage/theme": ^0.6.8
     "@mui/icons-material": 5.18.0
     "@mui/material": 5.18.0
-    "@red-hat-developer-hub/backstage-plugin-theme": ^0.9.0
     react-use: ^17.6.0
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 619537c7724affd65671fc73ed94260bf684c0492e8361d58a2cb942e532216f717328d73372bf4fe5180b82b405a5b611a33f6d005258e37eb2b475e5f8d454
-  languageName: node
-  linkType: hard
-
-"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.9.0":
-  version: 0.9.1
-  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.9.1"
-  dependencies:
-    "@mui/icons-material": ^5.17.1
-  peerDependencies:
-    "@backstage/core-plugin-api": ^1.10.7
-    "@backstage/theme": ^0.6.6
-    "@material-ui/icons": ^4.11.3
-    "@mui/icons-material": ^5.17.1
-    "@mui/material": ^5.0.0
-    react: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 876923b59c7f7bd6cf56218004770dd5b9c34873ca0a04f7ae9b6b9cbe33214de9f867d27702045785bd865cdc7dee23277cb58711447b5859bd1dae1d4a66db
+  checksum: 2f3f69236d3dfbf952259b0a675363cd921c28107ff21661f6666a99e9c6cdec615180bcfe473dd7e8259b809dbc42bea2e7f261d2a1c58a5d5586b0e8836e1c
   languageName: node
   linkType: hard
 
@@ -34519,7 +34502,7 @@ __metadata:
     "@backstage/cli": ^0.34.1
     "@janus-idp/cli": 3.6.1
     "@mui/material": 5.18.0
-    "@red-hat-developer-hub/backstage-plugin-quickstart": 1.4.0
+    "@red-hat-developer-hub/backstage-plugin-quickstart": 1.5.1
     typescript: 5.9.2
   languageName: unknown
   linkType: soft
