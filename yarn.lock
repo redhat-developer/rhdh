@@ -3461,7 +3461,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/backend-plugin-api@npm:1.4.2, @backstage/backend-plugin-api@npm:^1.3.1, @backstage/backend-plugin-api@npm:^1.4.0, @backstage/backend-plugin-api@npm:^1.4.2":
+"@backstage/backend-plugin-api@npm:1.4.2, @backstage/backend-plugin-api@npm:^1.3.1, @backstage/backend-plugin-api@npm:^1.4.2":
   version: 1.4.2
   resolution: "@backstage/backend-plugin-api@npm:1.4.2"
   dependencies:
@@ -4469,7 +4469,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-auth-node@npm:0.6.6, @backstage/plugin-auth-node@npm:^0.6.3, @backstage/plugin-auth-node@npm:^0.6.4, @backstage/plugin-auth-node@npm:^0.6.6":
+"@backstage/plugin-auth-node@npm:0.6.6, @backstage/plugin-auth-node@npm:^0.6.3, @backstage/plugin-auth-node@npm:^0.6.6":
   version: 0.6.6
   resolution: "@backstage/plugin-auth-node@npm:0.6.6"
   dependencies:
@@ -4944,7 +4944,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-permission-backend@npm:0.7.3":
+"@backstage/plugin-permission-backend@npm:0.7.3, @backstage/plugin-permission-backend@npm:^0.7.0":
   version: 0.7.3
   resolution: "@backstage/plugin-permission-backend@npm:0.7.3"
   dependencies:
@@ -4964,26 +4964,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-permission-backend@npm:^0.7.0":
-  version: 0.7.1
-  resolution: "@backstage/plugin-permission-backend@npm:0.7.1"
-  dependencies:
-    "@backstage/backend-plugin-api": ^1.4.0
-    "@backstage/config": ^1.3.2
-    "@backstage/errors": ^1.2.7
-    "@backstage/plugin-auth-node": ^0.6.4
-    "@backstage/plugin-permission-common": ^0.9.0
-    "@backstage/plugin-permission-node": ^0.10.1
-    dataloader: ^2.0.0
-    express: ^4.17.1
-    express-promise-router: ^4.1.0
-    lodash: ^4.17.21
-    yn: ^4.0.0
-    zod: ^3.22.4
-  checksum: c44d8b952752b80d75d05d309ede097ffa90220feb76dd0c87df283378b92f9531fc3ddf00e0305bc1f63761d5fb9c2029053044bc40a336cca41c00c63f56b3
-  languageName: node
-  linkType: hard
-
 "@backstage/plugin-permission-common@npm:0.9.1, @backstage/plugin-permission-common@npm:^0.9.0, @backstage/plugin-permission-common@npm:^0.9.1":
   version: 0.9.1
   resolution: "@backstage/plugin-permission-common@npm:0.9.1"
@@ -4999,7 +4979,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-permission-node@npm:^0.10.0, @backstage/plugin-permission-node@npm:^0.10.1, @backstage/plugin-permission-node@npm:^0.10.3":
+"@backstage/plugin-permission-node@npm:^0.10.0, @backstage/plugin-permission-node@npm:^0.10.3":
   version: 0.10.3
   resolution: "@backstage/plugin-permission-node@npm:0.10.3"
   dependencies:
@@ -19549,14 +19529,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"decimal.js@npm:^10.4.2, decimal.js@npm:^10.4.3":
-  version: 10.4.3
-  resolution: "decimal.js@npm:10.4.3"
-  checksum: 796404dcfa9d1dbfdc48870229d57f788b48c21c603c3f6554a1c17c10195fc1024de338b0cf9e1efe0c7c167eeb18f04548979bcc5fdfabebb7cc0ae3287bae
-  languageName: node
-  linkType: hard
-
-"decimal.js@npm:^10.5.0":
+"decimal.js@npm:^10.4.2, decimal.js@npm:^10.5.0":
   version: 10.6.0
   resolution: "decimal.js@npm:10.6.0"
   checksum: 9302b990cd6f4da1c7602200002e40e15d15660374432963421d3cd6d81cc6e27e0a488356b030fee64650947e32e78bdbea245d596dadfeeeb02e146d485999
@@ -22041,7 +22014,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"form-data@npm:^4.0.0, form-data@npm:^4.0.1, form-data@npm:^4.0.4":
+"form-data@npm:^4.0.0, form-data@npm:^4.0.4":
   version: 4.0.4
   resolution: "form-data@npm:4.0.4"
   dependencies:
@@ -25240,41 +25213,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jsdom@npm:^26.0.0":
-  version: 26.0.0
-  resolution: "jsdom@npm:26.0.0"
-  dependencies:
-    cssstyle: ^4.2.1
-    data-urls: ^5.0.0
-    decimal.js: ^10.4.3
-    form-data: ^4.0.1
-    html-encoding-sniffer: ^4.0.0
-    http-proxy-agent: ^7.0.2
-    https-proxy-agent: ^7.0.6
-    is-potential-custom-element-name: ^1.0.1
-    nwsapi: ^2.2.16
-    parse5: ^7.2.1
-    rrweb-cssom: ^0.8.0
-    saxes: ^6.0.0
-    symbol-tree: ^3.2.4
-    tough-cookie: ^5.0.0
-    w3c-xmlserializer: ^5.0.0
-    webidl-conversions: ^7.0.0
-    whatwg-encoding: ^3.1.1
-    whatwg-mimetype: ^4.0.0
-    whatwg-url: ^14.1.0
-    ws: ^8.18.0
-    xml-name-validator: ^5.0.0
-  peerDependencies:
-    canvas: ^3.0.0
-  peerDependenciesMeta:
-    canvas:
-      optional: true
-  checksum: 566993558f36450fab2839dca5a5bf7353a0558dbf8e04fccd8d97cd62b58b7cd027ebe6214a4210a27dd8df602d0a79d28976d54e7af55eb42f2c8f5a5d5fc2
-  languageName: node
-  linkType: hard
-
-"jsdom@npm:^26.1.0":
+"jsdom@npm:^26.0.0, jsdom@npm:^26.1.0":
   version: 26.1.0
   resolution: "jsdom@npm:26.1.0"
   dependencies:
@@ -34253,7 +34192,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tough-cookie@npm:^5.0.0, tough-cookie@npm:^5.1.1":
+"tough-cookie@npm:^5.1.1":
   version: 5.1.2
   resolution: "tough-cookie@npm:5.1.2"
   dependencies:
@@ -36060,7 +35999,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"whatwg-url@npm:^14.0.0, whatwg-url@npm:^14.1.0, whatwg-url@npm:^14.1.1":
+"whatwg-url@npm:^14.0.0, whatwg-url@npm:^14.1.1":
   version: 14.2.0
   resolution: "whatwg-url@npm:14.2.0"
   dependencies:
