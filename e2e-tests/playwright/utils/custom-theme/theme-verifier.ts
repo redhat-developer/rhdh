@@ -18,6 +18,10 @@ export class ThemeVerifier {
       name: theme,
       exact: true,
     });
+
+    // TODO: https://issues.redhat.com/browse/RHDHBUGS-2076 navigating back to settings page is needed until the issue is resolved
+    await this.uiHelper.goToPageUrl("/settings", "Settings");
+
     await expect(themeButton).toHaveAttribute("aria-pressed", "true");
   }
 
