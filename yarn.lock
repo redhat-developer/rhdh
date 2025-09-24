@@ -3204,7 +3204,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/app-defaults@npm:1.6.5, @backstage/app-defaults@npm:^1.6.5":
+"@backstage/app-defaults@npm:1.6.5":
   version: 1.6.5
   resolution: "@backstage/app-defaults@npm:1.6.5"
   dependencies:
@@ -19475,7 +19475,6 @@ __metadata:
     "@backstage/plugin-search-backend-module-catalog": 0.3.7
     "@backstage/plugin-search-backend-module-pg": 0.5.47
     "@backstage/plugin-user-settings-backend": 0.3.5
-    "@internal/plugin-dynamic-plugins-info-backend": "*"
     "@internal/plugin-licensed-users-info-backend": "*"
     "@internal/plugin-scalprum-backend": "*"
     "@janus-idp/backstage-plugin-audit-log-node": 1.7.2
