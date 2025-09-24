@@ -39,6 +39,6 @@ export const rhdhMessages = {
  * @public
  */
 export const rhdhTranslationRef = createTranslationRef({
-  id: 'plugin.rhdh',
+  id: 'rhdh',
   messages: rhdhMessages,
 });

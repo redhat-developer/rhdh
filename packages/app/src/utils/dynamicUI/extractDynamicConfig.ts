@@ -39,7 +39,7 @@ export type MenuItemConfig = {
 export type MenuItem = {
   name: string;
   title: string;
-  textKey?: string;
+  titleKey?: string;
   icon: string;
   children: MenuItem[];
   priority?: number;

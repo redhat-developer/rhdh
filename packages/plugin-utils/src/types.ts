@@ -23,7 +23,7 @@ export type ResolvedDynamicRouteMenuItem =
 export type ResolvedMenuItem = {
   name: string;
   title: string;
-  textKey?: string;
+  titleKey?: string;
   icon?: string;
   children?: ResolvedMenuItem[];
   to?: string;

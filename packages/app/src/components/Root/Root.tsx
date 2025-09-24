@@ -206,6 +206,8 @@ const getMenuItem = (
       <MyGroupsSidebarItem
         key={menuItem.name}
         icon={renderIcon(menuItem.icon ?? '')}
+        // Plural localization will be address in
+        // https://issues.redhat.com/browse/RHDHBUGS-2077
         singularTitle={translatedText}
         pluralTitle={`${translatedText}s`}
       />
@@ -308,8 +310,8 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
   const { t } = useTranslation();
 
   const getMenuText = (menuItem: ResolvedMenuItem) => {
-    if (menuItem.textKey) {
-      return t(menuItem.textKey as any, {});
+    if (menuItem.titleKey) {
+      return t(menuItem.titleKey as any, {});
     }
     return menuItem.title;
   };
