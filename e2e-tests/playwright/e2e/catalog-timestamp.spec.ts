@@ -49,7 +49,7 @@ test.describe("Test timestamp column on Catalog", () => {
     ]);
   });
 
-  test.skip("Toggle ‘CREATED AT’ to see if the component list can be sorted in ascending/decending order", async () => {
+  test("Toggle ‘CREATED AT’ to see if the component list can be sorted in ascending/decending order", async () => {
     const createdAtFirstRow =
       "table > tbody > tr:nth-child(1) > td:nth-child(8)";
     //Verify by default Rows are in ascending

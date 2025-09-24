@@ -77,7 +77,7 @@ test.describe("Test Topology Plugin with RBAC", () => {
       await topology.verifyDeployment("topology-test");
     });
 
-    test.skip("Verify pod logs visibility in the Topology tab", async () => {
+    test("Verify pod logs visibility in the Topology tab", async () => {
       await topology.verifyDeployment("topology-test");
       await topology.verifyPodLogs(true);
     });

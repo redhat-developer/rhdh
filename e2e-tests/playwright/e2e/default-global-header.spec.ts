@@ -72,7 +72,7 @@ test.describe("Default Global Header", () => {
     await helpDropdownButton.click();
     await page.waitForTimeout(500);
 
-    expect(await uiHelper.isTextVisible("Support")).toBeTruthy();
+    await uiHelper.verifyTextVisible("Support");
 
     const [newTab] = await Promise.all([
       context.waitForEvent("page"),
@@ -87,12 +87,12 @@ test.describe("Default Global Header", () => {
     await newTab.close();
   });
 
-  test.skip("Verify Profile Dropdown behaves as expected", async ({ page }) => {
+  test("Verify Profile Dropdown behaves as expected", async ({ page }) => {
     await uiHelper.openProfileDropdown();
-    expect(await uiHelper.isLinkVisible("Settings")).toBeTruthy();
-    expect(await uiHelper.isTextVisible("Sign out")).toBeTruthy();
+    await uiHelper.verifyLinkVisible("Settings");
+    await uiHelper.verifyTextVisible("Sign out");
 
-    await uiHelper.clickLink({ href: "/settings" });
+    await page.getByRole("menuitem", { name: "Settings" }).click();
     await uiHelper.verifyHeading("Settings");
 
     await uiHelper.goToMyProfilePage();
