@@ -23,6 +23,7 @@ import { createTranslationRef } from '@backstage/core-plugin-api/alpha';
  */
 export const rhdhMessages = {
   menuItem: {
+    // dynamic-plugins.default.main-menu-items
     clusters: 'Clusters',
     rbac: 'RBAC',
     bulkImport: 'Bulk import',
@@ -31,6 +32,13 @@ export const rhdhMessages = {
     techRadar: 'Tech Radar',
     orchestrator: 'Orchestrator',
     adoptionInsights: 'Adoption Insights',
+    // Default main menu items from consts.ts
+    home: 'Home',
+    myGroup: 'My Group',
+    catalog: 'Catalog',
+    apis: 'APIs',
+    learningPaths: 'Learning Paths',
+    selfService: 'Self-service',
   },
 };
 
