@@ -35,21 +35,52 @@ test.describe.serial("GitHub Happy path", async () => {
   });
 
   test("Login as a Github user from Settings page.", async () => {
+    // Navigate to settings page first to ensure clean state
+    await page.goto("/settings");
+    await page.waitForTimeout(1000);
+    
     await common.loginAsKeycloakUser(
       process.env.GH_USER2_ID,
       process.env.GH_USER2_PASS,
     );
+    
+    // Wait for login to complete
+    await page.waitForTimeout(2000);
+    
     const ghLogin = await common.githubLoginFromSettingsPage(
       process.env.GH_USER2_ID,
       process.env.GH_USER2_PASS,
       process.env.GH_USER2_2FA_SECRET,
     );
+    
+    // Manual assertion instead of web-first
     expect(ghLogin).toBe("Login successful");
+    
+    // Additional verification using CSS selectors
+    const loginStatusElement = page.locator('div[class*="status"], span[class*="success"]');
+    await page.waitForTimeout(500);
+    expect(await loginStatusElement.count()).toBeGreaterThan(0);
   });
 
   test("Verify Profile is Github Account Name in the Settings page", async () => {
+    // Always navigate to ensure we're on the right page
     await page.goto("/settings");
+    await page.waitForTimeout(1500);
     await expect(page).toHaveURL("/settings");
+    
+    // Wait for page to stabilize
+    await page.waitForLoadState('networkidle');
+    
+    // Use CSS selectors for more reliable element selection
+    const profileHeading = page.locator('h1, h2, h3, h4, h5, h6').filter({ hasText: process.env.GH_USER2_ID });
+    await expect(profileHeading).toBeVisible();
+    
+    // Additional verification using DOM traversal
+    const userEntityText = `User Entity: ${process.env.GH_USER2_ID}`;
+    const userEntityElement = page.locator('div, span, p').filter({ hasText: userEntityText });
+    await page.waitForTimeout(1000);
+    expect(await userEntityElement.count()).toBeGreaterThan(0);
+    
     await uiHelper.verifyHeading(process.env.GH_USER2_ID);
     await uiHelper.verifyHeading(`User Entity: ${process.env.GH_USER2_ID}`);
   });

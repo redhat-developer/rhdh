@@ -19,6 +19,20 @@ test.describe("Smoke test", () => {
   });
 
   test("Verify the Homepage renders", async () => {
-    await uiHelper.verifyHeading("Welcome back!");
+    // Wait for page to be fully loaded before proceeding
+    await page.waitForTimeout(2000);
+    
+    // Use CSS selector for more precise element targeting
+    const welcomeHeading = page.locator('h1, h2, h3').filter({ hasText: 'Welcome back!' });
+    await expect(welcomeHeading).toBeVisible();
+    
+    // Additional verification using DOM structure
+    const headingElement = page.locator('div[class*="welcome"], div[class*="home"] h1, h2, h3');
+    expect(await headingElement.count()).toBeGreaterThan(0);
+    
+    // Verify page title as well
+    await page.waitForLoadState('networkidle');
+    const pageTitle = await page.title();
+    expect(pageTitle).toBeTruthy();
   });
 });
