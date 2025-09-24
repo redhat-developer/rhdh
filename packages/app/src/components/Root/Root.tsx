@@ -18,10 +18,13 @@ import {
   SidebarSpace,
 } from '@backstage/core-components';
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
+import { useTranslationRef } from '@backstage/core-plugin-api/alpha';
 import { MyGroupsSidebarItem } from '@backstage/plugin-org';
 import { usePermission } from '@backstage/plugin-permission-react';
 import { SidebarSearchModal } from '@backstage/plugin-search';
+import { searchTranslationRef } from '@backstage/plugin-search/alpha';
 import { Settings as SidebarSettings } from '@backstage/plugin-user-settings';
+import { userSettingsTranslationRef } from '@backstage/plugin-user-settings/alpha';
 
 import { policyEntityCreatePermission } from '@backstage-community/plugin-rbac-common';
 import { AdminIcon } from '@internal/plugin-dynamic-plugins-info';
@@ -254,6 +257,9 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
   const [aboveMainContentHeaderHeight, setAboveMainContentHeaderHeight] =
     useState(0);
 
+  const { t: searchT } = useTranslationRef(searchTranslationRef);
+  const { t: userSettingsT } = useTranslationRef(userSettingsTranslationRef);
+
   useLayoutEffect(() => {
     if (!aboveSidebarHeaderRef.current) return () => {};
 
@@ -481,7 +487,11 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
             {showLogo && <SidebarLogo />}
             {showSearch ? (
               <>
-                <SidebarGroup label="Search" icon={<SearchIcon />} to="/search">
+                <SidebarGroup
+                  label={searchT('sidebarSearchModal.title')}
+                  icon={<SearchIcon />}
+                  to="/search"
+                >
                   <SidebarSearchModal />
                 </SidebarGroup>
                 <SidebarDivider />
@@ -489,7 +499,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
             ) : (
               <Box sx={{ height: '1.2rem' }} />
             )}
-            <SidebarGroup label="Menu" icon={<MuiMenuIcon />}>
+            <SidebarGroup label={t('sidebar.menu')} icon={<MuiMenuIcon />}>
               {/* Global nav, not org-specific */}
               {renderMenuItems(true, false)}
               {/* End global nav */}
@@ -514,7 +524,10 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
             {showAdministration && (
               <>
                 <SidebarDivider />
-                <SidebarGroup label="Administration" icon={<AdminIcon />}>
+                <SidebarGroup
+                  label={t('menuItem.administration')}
+                  icon={<AdminIcon />}
+                >
                   {renderMenuItems(false, true)}
                 </SidebarGroup>
               </>
@@ -523,7 +536,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
               <>
                 <SidebarDivider />
                 <SidebarGroup
-                  label="Settings"
+                  label={userSettingsT('sidebarTitle')}
                   to="/settings"
                   icon={<AccountCircleOutlinedIcon />}
                 >

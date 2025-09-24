@@ -42,6 +42,11 @@ export const rhdhMessages = {
     administration: 'Administration',
     extensions: 'Extensions',
   },
+  sidebar: {
+    menu: 'Menu',
+    home: 'Home',
+    homeLogo: 'Home logo',
+  },
 };
 
 /**

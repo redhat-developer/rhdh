@@ -33,4 +33,9 @@ export default {
     administration: 'Administration',
     extensions: 'Erweiterungen',
   },
+  sidebar: {
+    menu: 'Menü',
+    home: 'Startseite',
+    homeLogo: 'Startseite-Logo',
+  },
 };

@@ -35,4 +35,9 @@ export default {
     administration: 'Administración',
     extensions: 'Extensiones',
   },
+  sidebar: {
+    menu: 'Menú',
+    home: 'Inicio',
+    homeLogo: 'Logo de inicio',
+  },
 };
