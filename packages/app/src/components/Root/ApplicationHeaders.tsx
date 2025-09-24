@@ -1,4 +1,10 @@
-import { ComponentType, CSSProperties, PropsWithChildren, useContext, useMemo } from 'react';
+import {
+  ComponentType,
+  CSSProperties,
+  PropsWithChildren,
+  useContext,
+  useMemo,
+} from 'react';
 
 import { ErrorBoundary } from '@backstage/core-components';
 
