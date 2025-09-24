@@ -40,6 +40,7 @@ source "${DIR}/clear-database.sh"
 main() {
   echo "Log file: ${LOGFILE}"
   echo "JOB_NAME : $JOB_NAME"
+  echo "Running Smoke tests..."
 
   detect_ocp
   detect_container_platform
