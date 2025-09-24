@@ -48,98 +48,98 @@ main() {
   detect_container_platform
 
   case "$JOB_NAME" in
-    *aks-helm-nightly*)
+    *aks*helm*nightly*)
       echo "Sourcing aks-helm.sh"
       # shellcheck source=.ibm/pipelines/jobs/aks-helm.sh
       source "${DIR}/jobs/aks-helm.sh"
       echo "Calling handle_aks_helm"
       handle_aks_helm
       ;;
-    *aks-operator-nightly*)
+    *aks*operator*nightly*)
       echo "Sourcing aks-operator.sh"
       # shellcheck source=.ibm/pipelines/jobs/aks-operator.sh
       source "${DIR}/jobs/aks-operator.sh"
       echo "Calling handle_aks_operator"
       handle_aks_operator
       ;;
-    *eks-helm-nightly*)
+    *eks*helm*nightly*)
       echo "Sourcing eks-helm.sh"
       # shellcheck source=.ibm/pipelines/jobs/eks-helm.sh
       source "${DIR}/jobs/eks-helm.sh"
       echo "Calling handle_eks_helm"
       handle_eks_helm
       ;;
-    *eks-operator-nightly*)
+    *eks*operator*nightly*)
       echo "Sourcing eks-operator.sh"
       # shellcheck source=.ibm/pipelines/jobs/eks-operator.sh
       source "${DIR}/jobs/eks-operator.sh"
       echo "Calling handle_eks_operator"
       handle_eks_operator
       ;;
-    *gke-helm-nightly*)
+    *gke*helm*nightly*)
       echo "Sourcing gke-helm.sh"
       # shellcheck source=.ibm/pipelines/jobs/gke-helm.sh
       source "${DIR}/jobs/gke-helm.sh"
       echo "Calling handle_gke_helm"
       handle_gke_helm
       ;;
-    *gke-operator-nightly*)
+    *gke*operator*nightly*)
       echo "Sourcing gke-operator.sh"
       # shellcheck source=.ibm/pipelines/jobs/gke-operator.sh
       source "${DIR}/jobs/gke-operator.sh"
       echo "Calling handle_gke_operator"
       handle_gke_operator
       ;;
-    *ocp-helm-nightly*)
-      echo "Sourcing ocp-nightly.sh"
-      # shellcheck source=.ibm/pipelines/jobs/ocp-nightly.sh
-      source "${DIR}/jobs/ocp-nightly.sh"
-      echo "Calling handle_ocp_nightly"
-      handle_ocp_nightly
-      ;;
-    *ocp-operator-nightly*)
-      echo "Sourcing ocp-operator.sh"
-      # shellcheck source=.ibm/pipelines/jobs/ocp-operator.sh
-      source "${DIR}/jobs/ocp-operator.sh"
-      echo "Calling handle_ocp_operator"
-      handle_ocp_operator
-      ;;
-    *ocp-helm-auth-providers-nightly*)
+    *ocp*helm*auth-providers*nightly*)
       echo "Sourcing auth-providers.sh"
       # shellcheck source=.ibm/pipelines/jobs/auth-providers.sh
       source "${DIR}/jobs/auth-providers.sh"
       echo "Calling handle_auth_providers"
       handle_auth_providers
       ;;
-    *ocp-helm-upgrade-nightly*)
+    *ocp*helm*sealights*nightly*)
+      echo "Sourcing ocp-nightly.sh"
+      # shellcheck source=.ibm/pipelines/jobs/ocp-nightly.sh
+      source "${DIR}/jobs/ocp-nightly.sh"
+      echo "Calling handle_ocp_nightly"
+      handle_ocp_nightly
+      ;;
+    *ocp*helm*upgrade*nightly*)
       echo "Sourcing upgrade.sh"
       # shellcheck source=.ibm/pipelines/jobs/upgrade.sh
       source "${DIR}/jobs/upgrade.sh"
       echo "Calling helm upgrade"
       handle_ocp_helm_upgrade
       ;;
-    *ocp-helm-sealights-nightly*)
+    *ocp*helm*nightly*)
       echo "Sourcing ocp-nightly.sh"
       # shellcheck source=.ibm/pipelines/jobs/ocp-nightly.sh
       source "${DIR}/jobs/ocp-nightly.sh"
       echo "Calling handle_ocp_nightly"
       handle_ocp_nightly
       ;;
-    *osd-gcp-helm-nightly*)
-      echo "Sourcing ocp-nightly.sh"
-      # shellcheck source=.ibm/pipelines/jobs/ocp-nightly.sh
-      source "${DIR}/jobs/ocp-nightly.sh"
-      echo "Calling handle_ocp_nightly"
-      handle_ocp_nightly
-      ;;
-    *osd-gcp-operator-nightly*)
+    *ocp*operator*nightly*)
       echo "Sourcing ocp-operator.sh"
       # shellcheck source=.ibm/pipelines/jobs/ocp-operator.sh
       source "${DIR}/jobs/ocp-operator.sh"
       echo "Calling handle_ocp_operator"
       handle_ocp_operator
       ;;
-    *pull*ocp-helm*)
+    *osd-gcp*helm*nightly*)
+      echo "Sourcing ocp-nightly.sh"
+      # shellcheck source=.ibm/pipelines/jobs/ocp-nightly.sh
+      source "${DIR}/jobs/ocp-nightly.sh"
+      echo "Calling handle_ocp_nightly"
+      handle_ocp_nightly
+      ;;
+    *osd-gcp*operator*nightly*)
+      echo "Sourcing ocp-operator.sh"
+      # shellcheck source=.ibm/pipelines/jobs/ocp-operator.sh
+      source "${DIR}/jobs/ocp-operator.sh"
+      echo "Calling handle_ocp_operator"
+      handle_ocp_operator
+      ;;
+    *pull*ocp*helm*)
       echo "Sourcing ocp-pull.sh"
       # shellcheck source=.ibm/pipelines/jobs/ocp-pull.sh
       source "${DIR}/jobs/ocp-pull.sh"
