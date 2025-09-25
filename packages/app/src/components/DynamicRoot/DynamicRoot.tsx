@@ -44,8 +44,7 @@ import { useScalprum } from '@scalprum/react-core';
 
 import { catalogImportTranslations } from '../../translations/catalog-import/catalog-import';
 import { coreComponentsTranslations } from '../../translations/core-components/core-components';
-import { rhdhTranslations } from '../../translations/rhdh';
-import { rhdhTranslationRef } from '../../translations/rhdh/refs';
+import { rhdhTranslationRef, rhdhTranslations } from '../../translations/rhdh';
 import { scaffolderTranslations } from '../../translations/scaffolder/scaffolder';
 import { searchTranslations } from '../../translations/search/search';
 import { userSettingsTranslations } from '../../translations/user-settings/user-settings';

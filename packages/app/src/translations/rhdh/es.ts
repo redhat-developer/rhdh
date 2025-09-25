@@ -14,30 +14,36 @@
  * limitations under the License.
  */
 
-export default {
-  menuItem: {
-    // dynamic-plugins.default.main-menu-items
-    clusters: 'Clústeres',
-    rbac: 'RBAC',
-    bulkImport: 'Importación masiva',
-    docs: 'Documentación',
-    lighthouse: 'Lighthouse',
-    techRadar: 'Radar tecnológico',
-    orchestrator: 'Orquestador',
-    adoptionInsights: 'Insights de adopción',
+import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
+
+import { rhdhTranslationRef } from './ref';
+
+export default createTranslationMessages({
+  ref: rhdhTranslationRef,
+  full: true, // False means that this is a partial translation
+  messages: {
     // Default main menu items from consts.ts
-    home: 'Inicio',
-    myGroup: 'Mi Grupo',
-    catalog: 'Catálogo',
-    apis: 'APIs',
-    learningPaths: 'Rutas de Aprendizaje',
-    selfService: 'Autoservicio',
-    administration: 'Administración',
-    extensions: 'Extensiones',
+    'menuItem.home': 'Inicio',
+    'menuItem.myGroup': 'Mi Grupo',
+    'menuItem.catalog': 'Catálogo',
+    'menuItem.apis': 'APIs',
+    'menuItem.learningPaths': 'Rutas de Aprendizaje',
+    'menuItem.selfService': 'Autoservicio',
+    'menuItem.administration': 'Administración',
+    'menuItem.extensions': 'Extensiones',
+
+    // dynamic-plugins.default.main-menu-items
+    'menuItem.clusters': 'Clústeres',
+    'menuItem.rbac': 'RBAC',
+    'menuItem.bulkImport': 'Importación masiva',
+    'menuItem.docs': 'Documentación',
+    'menuItem.lighthouse': 'Lighthouse',
+    'menuItem.techRadar': 'Radar tecnológico',
+    'menuItem.orchestrator': 'Orquestador',
+    'menuItem.adoptionInsights': 'Insights de adopción',
+
+    'sidebar.menu': 'Menú',
+    'sidebar.home': 'Inicio',
+    'sidebar.homeLogo': 'Logo de inicio',
   },
-  sidebar: {
-    menu: 'Menú',
-    home: 'Inicio',
-    homeLogo: 'Logo de inicio',
-  },
-};
+});

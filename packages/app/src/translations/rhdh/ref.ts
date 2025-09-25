@@ -19,19 +19,9 @@ import { createTranslationRef } from '@backstage/core-plugin-api/alpha';
 /**
  * Messages object containing all English translations.
  * This is our single source of truth for translations.
- * @public
  */
 export const rhdhMessages = {
   menuItem: {
-    // dynamic-plugins.default.main-menu-items
-    clusters: 'Clusters',
-    rbac: 'RBAC',
-    bulkImport: 'Bulk import',
-    docs: 'Docs',
-    lighthouse: 'Lighthouse',
-    techRadar: 'Tech Radar',
-    orchestrator: 'Orchestrator',
-    adoptionInsights: 'Adoption Insights',
     // Default main menu items from consts.ts
     home: 'Home',
     myGroup: 'My Group',
@@ -41,6 +31,16 @@ export const rhdhMessages = {
     selfService: 'Self-service',
     administration: 'Administration',
     extensions: 'Extensions',
+
+    // dynamic-plugins.default.main-menu-items
+    clusters: 'Clusters',
+    rbac: 'RBAC',
+    bulkImport: 'Bulk import',
+    docs: 'Docs',
+    lighthouse: 'Lighthouse',
+    techRadar: 'Tech Radar',
+    orchestrator: 'Orchestrator',
+    adoptionInsights: 'Adoption Insights',
   },
   sidebar: {
     menu: 'Menu',

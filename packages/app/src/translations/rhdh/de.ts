@@ -14,28 +14,36 @@
  * limitations under the License.
  */
 
-export default {
-  menuItem: {
-    clusters: 'Cluster',
-    rbac: 'RBAC',
-    bulkImport: 'Massenimport',
-    docs: 'Dokumentation',
-    lighthouse: 'Lighthouse',
-    techRadar: 'Tech-Radar',
-    orchestrator: 'Orchestrator',
-    adoptionInsights: 'Einführungseinblicke',
-    home: 'Startseite',
-    myGroup: 'Meine Gruppe',
-    catalog: 'Katalog',
-    apis: 'APIs',
-    learningPaths: 'Lernpfade',
-    selfService: 'Self-Service',
-    administration: 'Administration',
-    extensions: 'Erweiterungen',
+import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
+
+import { rhdhTranslationRef } from './ref';
+
+export default createTranslationMessages({
+  ref: rhdhTranslationRef,
+  full: true, // False means that this is a partial translation
+  messages: {
+    // Default main menu items from consts.ts
+    'menuItem.home': 'Startseite',
+    'menuItem.myGroup': 'Meine Gruppe',
+    'menuItem.catalog': 'Katalog',
+    'menuItem.apis': 'APIs',
+    'menuItem.learningPaths': 'Lernpfade',
+    'menuItem.selfService': 'Self-Service',
+    'menuItem.administration': 'Administration',
+    'menuItem.extensions': 'Erweiterungen',
+
+    // dynamic-plugins.default.main-menu-items
+    'menuItem.clusters': 'Cluster',
+    'menuItem.rbac': 'RBAC',
+    'menuItem.bulkImport': 'Massenimport',
+    'menuItem.docs': 'Dokumentation',
+    'menuItem.lighthouse': 'Lighthouse',
+    'menuItem.techRadar': 'Tech-Radar',
+    'menuItem.orchestrator': 'Orchestrator',
+    'menuItem.adoptionInsights': 'Einführungseinblicke',
+
+    'sidebar.menu': 'Menü',
+    'sidebar.home': 'Startseite',
+    'sidebar.homeLogo': 'Startseite-Logo',
   },
-  sidebar: {
-    menu: 'Menü',
-    home: 'Startseite',
-    homeLogo: 'Startseite-Logo',
-  },
-};
+});

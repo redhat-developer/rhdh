@@ -16,11 +16,10 @@
 
 import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
 
-import { rhdhTranslationRef } from './refs';
+import { rhdhTranslationRef } from './ref';
 
 /**
  * Translation Resource for RHDH Application
- * @public
  */
 export const rhdhTranslations = createTranslationResource({
   ref: rhdhTranslationRef,
