@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: backstage-community-plugin-dynatrace
   namespace: rhdh
-  title: "@backstage-community/plugin-dynatrace"
+  title: "Dynatrace"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

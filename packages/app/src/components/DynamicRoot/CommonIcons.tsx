@@ -8,6 +8,7 @@ import Extension from '@mui/icons-material/ExtensionOutlined';
 import Favorite from '@mui/icons-material/Favorite';
 import FolderOpen from '@mui/icons-material/FolderOpenOutlined';
 import GppGood from '@mui/icons-material/GppGoodOutlined';
+import AdminIcon from '@mui/icons-material/GppMaybeOutlined';
 import Help from '@mui/icons-material/HelpOutline';
 import Home from '@mui/icons-material/HomeOutlined';
 import InsertChart from '@mui/icons-material/InsertChartOutlined';
@@ -61,6 +62,7 @@ const CommonIcons: {
   logout: Logout,
   developerHub: DeveloperHub,
   account: AccountCircleOutlinedIcon,
+  admin: AdminIcon,
 };
 
 export default CommonIcons;

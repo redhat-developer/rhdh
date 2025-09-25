@@ -511,6 +511,9 @@ plugins:
             menuItems:
               default.create:
                 title: ''
+              default.admin:
+                title: Administration
+                icon: admin
           red-hat-developer-hub.backstage-plugin-global-header:
             mountPoints:
               - mountPoint: application/header
@@ -1199,17 +1202,17 @@ plugins:
         frontend:
           red-hat-developer-hub.backstage-plugin-marketplace:
             appIcons:
-              - name: marketplace
-                importName: MarketplaceIcon
+              - name: pluginsIcon
+                importName: PluginsIcon
             dynamicRoutes:
-              - path: /extensions/catalog
+              - path: /extensions
                 importName: DynamicMarketplacePluginRouter
-            mountPoints:
-              - mountPoint: internal.plugins/tab
-                importName: DynamicMarketplacePluginContent
-                config:
-                  path: marketplace
-                  title: Catalog
+                menuItem:
+                  icon: pluginsIcon
+                  text: Extensions
+            menuItems:
+              extensions:
+                parent: default.admin
 
   # Group: Orchestrator
   - package: "@redhat/backstage-plugin-orchestrator@1.7.1"

@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: red-hat-developer-hub-backstage-plugin-bulk-import-backend
   namespace: rhdh
-  title: "@red-hat-developer-hub/backstage-plugin-bulk-import-backend"
+  title: "Bulk Import Backend"
   links:
     - url: https://red.ht/rhdh
       title: Homepage
