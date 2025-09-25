@@ -1,6 +1,6 @@
 {
   "name": "e2e-tests",
-  "version": "1.6.5",
+  "version": "1.6.6",
   "description": "Showcase E2E test",
   "main": "index.js",
   "type": "module",
