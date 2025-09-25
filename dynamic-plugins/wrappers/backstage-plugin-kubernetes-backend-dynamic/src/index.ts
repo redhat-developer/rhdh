@@ -1,1 +1,1 @@
-export { default } from '@backstage/plugin-kubernetes-backend/alpha';
+export { default } from '@backstage/plugin-kubernetes-backend';

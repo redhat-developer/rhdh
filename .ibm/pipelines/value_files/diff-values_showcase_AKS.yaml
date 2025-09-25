@@ -24,24 +24,24 @@ upstream:
         fsGroup: 3000
       # Tolerations and affinity needed to be scheduled on a spot AKS cluster. Only `postgresql` require it.
       tolerations:
-      - key: "kubernetes.azure.com/scalesetpriority"
-        operator: "Equal"
-        value: "spot"
-        effect: "NoSchedule"
+        - key: "kubernetes.azure.com/scalesetpriority"
+          operator: "Equal"
+          value: "spot"
+          effect: "NoSchedule"
       affinity:
         nodeAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 1
-            preference:
-              matchExpressions:
-              - key: "kubernetes.azure.com/scalesetpriority"
-                operator: In
-                values:
-                - "spot"
+            - weight: 1
+              preference:
+                matchExpressions:
+                  - key: "kubernetes.azure.com/scalesetpriority"
+                    operator: In
+                    values:
+                      - "spot"
   volumePermissions:
     enabled: true
   ingress:
     enabled: true
     className: webapprouting.kubernetes.azure.com
-    host: ''
+    host: ""
 orchestrator: null

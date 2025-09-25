@@ -6,7 +6,11 @@ import express, { Router } from 'express';
 import fs from 'fs';
 import path from 'path';
 
-import { deepMergeTranslations, isValidJSONTranslation } from '../utils';
+import {
+  deepMergeTranslations,
+  filterLocales,
+  isValidJSONTranslation,
+} from '../utils';
 
 export async function createRouter({
   config,
@@ -15,43 +19,56 @@ export async function createRouter({
   config: Config;
   logger: LoggerService;
 }): Promise<Router> {
+  let cachedTranslations: Record<string, any> | null = null;
+
   const overridesFiles = config.getOptionalStringArray('i18n.overrides') ?? [];
+  const configuredLocales = config.getOptionalStringArray('i18n.locales') ?? [
+    'en',
+  ];
+
   const router = Router();
   router.use(express.json());
   router.get('/', (_, res) => {
-    if (!overridesFiles || overridesFiles?.length === 0) {
-      res.status(200).json({});
-      return;
-    }
     try {
-      const mergedTranslations: Record<string, any> = {};
+      if (!cachedTranslations) {
+        const mergedTranslations: Record<string, any> = {};
 
-      for (const overridesFile of overridesFiles) {
-        const resolvedPath = path.resolve(overridesFile);
+        for (const overridesFile of overridesFiles) {
+          const resolvedPath = path.resolve(overridesFile);
+          if (!fs.existsSync(resolvedPath)) {
+            logger.warn(`File not found: ${overridesFile}`);
+            continue;
+          }
 
-        if (!fs.existsSync(resolvedPath)) {
-          logger.warn(`File not found: ${overridesFile}`);
-          continue;
+          const raw = fs.readFileSync(resolvedPath, 'utf-8');
+          const json = JSON.parse(raw);
+          if (!isValidJSONTranslation(json)) {
+            logger.warn(`Invalid JSON translation file: ${overridesFile}`);
+            continue;
+          }
+
+          deepMergeTranslations(mergedTranslations, json);
         }
 
-        const raw = fs.readFileSync(resolvedPath, 'utf-8');
-        const json = JSON.parse(raw);
-        if (!isValidJSONTranslation(json)) {
-          logger.warn(`Invalid JSON translation file: ${overridesFile}`);
-          continue;
+        if (Object.keys(mergedTranslations).length === 0) {
+          res.status(404).json({
+            error: 'No valid translation overrides found in the provided files',
+          });
+          return;
         }
 
-        deepMergeTranslations(mergedTranslations, json);
+        cachedTranslations = filterLocales(
+          mergedTranslations,
+          configuredLocales,
+        );
       }
 
-      if (Object.keys(mergedTranslations).length === 0) {
-        res.status(404).json({
-          error: 'No valid translation overrides found in provided files',
-        });
+      if (!cachedTranslations || Object.keys(cachedTranslations).length === 0) {
+        res.status(200).json({});
         return;
       }
 
-      res.json(mergedTranslations);
+      res.json(cachedTranslations);
     } catch (e) {
       logger.warn(`Failed to process translation override files: ${e}`);
       res

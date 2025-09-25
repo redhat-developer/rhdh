@@ -23,17 +23,11 @@ gcloud_ssl_cert_create() {
   local domain=$2
   local project=$3
 
-  # Capture both stdout and stderr
-  set +e
   local output
-  output=$(gcloud compute ssl-certificates create "${cert_name}" --domains="${domain}" --project="${project}" --global 2>&1)
-  set -e
+  output=$(gcloud compute ssl-certificates create "${cert_name}" --domains="${domain}" --project="${project}" --global 2>&1) || true
 
-  # Check the return status
-  if [ $? -eq 0 ]; then
-    echo "Certificate '${cert_name}' created successfully."
-    echo "The test might fail if the certificate is not obtained from the certificate authority in time."
-  else
+  # Check if the output contains ERROR
+  if echo "$output" | grep -q "ERROR"; then
     # Check if the error is due to certificate already existing
     if echo "$output" | grep -q "already exists"; then
       echo "Certificate '${cert_name}' already exists, continuing..."
@@ -42,6 +36,9 @@ gcloud_ssl_cert_create() {
       echo "$output"
       exit 1
     fi
+  else
+    echo "Certificate '${cert_name}' created successfully."
+    echo "The test might fail if the certificate is not obtained from the certificate authority in time."
   fi
 }
 

@@ -11,14 +11,14 @@ SERVICE_ACCOUNT_FILE="${SERVICE_ACCOUNT_FILE:-$(cat /tmp/osdsecrets/SERVICE_ACCO
 OSD_VERSION="${OSD_VERSION:-4.17.12}"
 
 if [ -n "$CLUSTER_NAME" ]; then
-    echo $CLUSTER_NAME > $WORKSPACE/cluster-info.name
+  echo $CLUSTER_NAME > $WORKSPACE/cluster-info.name
 fi
 
 if [ -f $WORKSPACE/cluster-info.name ]; then
-    CLUSTER_NAME="$(cat $WORKSPACE/cluster-info.name)"
+  CLUSTER_NAME="$(cat $WORKSPACE/cluster-info.name)"
 else
-    CLUSTER_NAME="osdgcp-$(date +%m%d)"
-    echo $CLUSTER_NAME > $WORKSPACE/cluster-info.name
+  CLUSTER_NAME="osdgcp-$(date +%m%d)"
+  echo $CLUSTER_NAME > $WORKSPACE/cluster-info.name
 fi
 
 echo "Working with cluster '$CLUSTER_NAME'"
@@ -33,22 +33,21 @@ SERVICE_ACCOUNT_FILE=$WORKSPACE/gcp_service_account_json.json
 # OSD_VERSION=${OSD_VERSION:-$(ocm list versions | tail -n1)}
 echo "creating OSD_VERSION : $OSD_VERSION"
 
-
-ocm create cluster --ccs --provider gcp --region us-west1 --service-account-file  $SERVICE_ACCOUNT_FILE --subscription-type marketplace-gcp --marketplace-gcp-terms  --version "$OSD_VERSION" "$CLUSTER_NAME"
-CLUSTER_ID=$(ocm list clusters --columns "id,name" | grep $CLUSTER_NAME| cut -d " " -f1)
+ocm create cluster --ccs --provider gcp --region us-west1 --service-account-file $SERVICE_ACCOUNT_FILE --subscription-type marketplace-gcp --marketplace-gcp-terms --version "$OSD_VERSION" "$CLUSTER_NAME"
+CLUSTER_ID=$(ocm list clusters --columns "id,name" | grep $CLUSTER_NAME | cut -d " " -f1)
 
 echo "CLUSTER_ID : $CLUSTER_ID"
 
 echo $CLUSTER_ID > $WORKSPACE/cluster-info.id
 
 if [[ -z "$CLUSTER_ID" ]]; then
-    echo "Cluster $CLUSTER_NAME not found...";
-    exit 0;
+  echo "Cluster $CLUSTER_NAME not found..."
+  exit 0
 fi
 
 while [[ -z $(ocm cluster status $CLUSTER_ID | grep "State:.*ready") ]]; do
-    echo "Waiting for cluster $CLUSTER_ID to get ready...";
-    sleep 30;
+  echo "Waiting for cluster $CLUSTER_ID to get ready..."
+  sleep 30
 done
 
 echo "Creating kubeadmin user"
@@ -68,14 +67,14 @@ export KUBECONFIG=$WORKSPACE/kubeconfig
 rm -rvf $KUBECONFIG
 CLUSTER_API_URL=$(ocm describe cluster $CLUSTER_ID --json | jq -rc '.api.url')
 for i in {1..50}; do
-    echo "Attempt $i: Logging in..."
-    if oc login "$CLUSTER_API_URL" --username "$KUBEADMIN_USER" --password "$KUBEADMIN_PASSWORD" --insecure-skip-tls-verify=true; then
-        echo "Login successful!"
-        ocm describe cluster $CLUSTER_ID > $WORKSPACE/cluster-info.yaml
-        exit 0
-    fi
-    echo "Login failed. Retrying in 30 seconds..."
-    sleep 30
+  echo "Attempt $i: Logging in..."
+  if oc login "$CLUSTER_API_URL" --username "$KUBEADMIN_USER" --password "$KUBEADMIN_PASSWORD" --insecure-skip-tls-verify=true; then
+    echo "Login successful!"
+    ocm describe cluster $CLUSTER_ID > $WORKSPACE/cluster-info.yaml
+    exit 0
+  fi
+  echo "Login failed. Retrying in 30 seconds..."
+  sleep 30
 done
 
 echo "Exceeded maximum retries. Login failed."

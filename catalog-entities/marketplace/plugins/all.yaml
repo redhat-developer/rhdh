@@ -18,7 +18,6 @@ spec:
     - ./bitbucket-cloud-catalog-integration.yaml
     - ./bitbucket-server-catalog-integration.yaml
     - ./bulk-import.yaml
-    - ./catalog-integrations.yaml
     - ./contrib-techdocs-addons.yaml
     - ./datadog.yaml
     - ./dynatrace-commercial.yaml
@@ -65,7 +64,6 @@ spec:
     - ./quickstart.yaml
     - ./roadie-argocd.yaml
     - ./roadie-scaffolder-util-actions.yaml
-    - ./scaffolder-integrations.yaml
     - ./scaffolder-relation-processor-catalog-integration.yaml
     - ./security-insights.yaml
     - ./servicenow.yaml

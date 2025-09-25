@@ -1,13 +1,13 @@
 upstream:
   postgresql:
-    enabled: false  # disable PostgreSQL instance creation
+    enabled: false # disable PostgreSQL instance creation
     auth:
       existingSecret: postgres-cred
   backstage:
     appConfig:
       backend:
         database:
-          connection:  # configure Backstage DB connection parameters
+          connection: # configure Backstage DB connection parameters
             host: ${POSTGRES_HOST}
             port: ${POSTGRES_PORT}
             user: ${POSTGRES_USER}

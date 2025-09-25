@@ -4,6 +4,14 @@ export const fetchOverrideTranslations = async (
   try {
     const res = await fetch(`${baseUrl}/api/translation`);
     if (!res.ok) {
+      let errorMessage = `/api/translation Request failed with status ${res.status}`;
+      const errorBody = await res.json();
+      if (errorBody?.error) {
+        errorMessage += `: ${errorBody.error}`;
+      }
+
+      // eslint-disable-next-line no-console
+      console.warn(errorMessage);
       return {};
     }
     return res.json();

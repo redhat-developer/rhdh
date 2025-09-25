@@ -19,7 +19,7 @@ global:
             username: "temp"
             password: "temp"
             appLocatorMethods:
-              - type: 'config'
+              - type: "config"
                 instances:
                   - name: argoInstance1
                     url: "temp"
@@ -30,7 +30,7 @@ global:
             username: "temp"
             password: "temp"
             appLocatorMethods:
-              - type: 'config'
+              - type: "config"
                 instances:
                   - name: argoInstance1
                     url: "temp"
@@ -51,9 +51,9 @@ global:
           jenkins:
             instances:
               - name: default
-                baseUrl: 'temp'
-                username: 'temp'
-                apiKey: 'temp'
+                baseUrl: "temp"
+                username: "temp"
+                apiKey: "temp"
       - package: ./dynamic-plugins/dist/backstage-community-plugin-jenkins
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-notifications
@@ -67,7 +67,7 @@ global:
             processors:
               email:
                 transportConfig:
-                sender: 'temp'
+                sender: "temp"
       - package: ./dynamic-plugins/dist/backstage-plugin-signals-backend-dynamic
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-signals
@@ -78,9 +78,9 @@ global:
           sonarqube:
             instances:
               - name: default
-                instanceKey: 'mySonarqube'
-                baseUrl: 'https://default-sonarqube.example.com'
-                apiKey: '123456789abcdef0123456789abcedf012'
+                instanceKey: "mySonarqube"
+                baseUrl: "https://default-sonarqube.example.com"
+                apiKey: "123456789abcdef0123456789abcedf012"
       - package: ./dynamic-plugins/dist/backstage-community-plugin-sonarqube
         disabled: false
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-dynamic-home-page
@@ -103,11 +103,11 @@ global:
         disabled: true
         pluginConfig:
           pagerDuty:
-            apiBaseUrl: 'temp'
+            apiBaseUrl: "temp"
             oauth:
-              clientId: 'temp'
-              clientSecret: 'temp'
-              subDomain: 'temp'
+              clientId: "temp"
+              clientSecret: "temp"
+              subDomain: "temp"
       - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-gerrit-dynamic
         disabled: false
       - package: ./dynamic-plugins/dist/roadiehq-scaffolder-backend-module-utils-dynamic
@@ -123,11 +123,11 @@ global:
         pluginConfig:
           servicenow:
             # The base url of the ServiceNow instance.
-            baseUrl: 'temp'
+            baseUrl: "temp"
             # The username to use for authentication.
-            username: 'temp'
+            username: "temp"
             # The password to use for authentication.
-            password: 'temp'
+            password: "temp"
       - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-sonarqube-dynamic
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-3scale-backend-dynamic
@@ -137,8 +137,8 @@ global:
             providers:
               threeScaleApiEntity:
                 default:
-                  baseUrl: 'temp'
-                  accessToken: 'temp'
+                  baseUrl: "temp"
+                  accessToken: "temp"
       - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-bitbucket-cloud-dynamic
         disabled: false
         pluginConfig:
@@ -147,7 +147,7 @@ global:
             providers:
               bitbucketCloud:
                 default: # identifies your ingested dataset
-                  workspace: 'temp'
+                  workspace: "temp"
       - package: ./dynamic-plugins/dist/backstage-community-plugin-dynatrace
         disabled: false
       - package: ./dynamic-plugins/dist/roadiehq-backstage-plugin-jira

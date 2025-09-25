@@ -5,7 +5,7 @@ global:
     includes:
       # -- List of dynamic plugins included inside the `rhdh-community/rhdh` container image, some of which are disabled by default.
       # This file ONLY works with the `rhdh-community/rhdh` container image.
-      - 'dynamic-plugins.default.yaml'
+      - "dynamic-plugins.default.yaml"
 
     # -- List of dynamic plugins, possibly overriding the plugins listed in `includes` files.
     # Every item defines the plugin `package` as a [NPM package spec](https://docs.npmjs.com/cli/v10/using-npm/package-spec),
@@ -20,7 +20,7 @@ global:
               github:
                 my-test-org:
                   organization: janus-qe
-                  catalogPath: '/catalog-info.yaml'
+                  catalogPath: "/catalog-info.yaml"
                   schedule:
                     frequency:
                       minutes: 1
@@ -53,16 +53,16 @@ global:
             clusterLocatorMethods:
               - clusters:
                   - authProvider: serviceAccount
-                    name: 'my-cluster'
+                    name: "my-cluster"
                     serviceAccountToken: ${K8S_CLUSTER_TOKEN_ENCODED}
                     url: ${K8S_CLUSTER_API_SERVER_URL}
                     skipTLSVerify: true
                 type: config
             customResources:
               # Add for tekton
-              - apiVersion: 'v1beta1'
-                group: 'tekton.dev'
-                plural: 'pipelines'
+              - apiVersion: "v1beta1"
+                group: "tekton.dev"
+                plural: "pipelines"
               - apiVersion: v1beta1
                 group: tekton.dev
                 plural: pipelineruns
@@ -70,9 +70,9 @@ global:
                 group: tekton.dev
                 plural: taskruns
               # Add for topology plugin
-              - apiVersion: 'v1'
-                group: 'route.openshift.io'
-                plural: 'routes'
+              - apiVersion: "v1"
+                group: "route.openshift.io"
+                plural: "routes"
             serviceLocatorMethod:
               type: multiTenant
       # Enable OCM plugins.
@@ -192,11 +192,11 @@ upstream:
             name: '{{ include "janus-idp.backend-secret-name" $ }}'
       # disable telemetry in CI
       - name: SEGMENT_TEST_MODE
-        value: 'true'
+        value: "true"
       - name: NODE_TLS_REJECT_UNAUTHORIZED
-        value: '0'
+        value: "0"
       - name: NODE_ENV
-        value: 'production'
+        value: "production"
     extraVolumeMounts:
       # The initContainer below will install dynamic plugins in this volume mount.
       - name: dynamic-plugins-root
@@ -256,7 +256,7 @@ upstream:
         image: '{{ include "backstage.image" . }}'
         command:
           - sh
-          - '-c'
+          - "-c"
           - |
             cat > /rbac-conditions/conditional-policies.yaml <<EOF
             ---
@@ -307,7 +307,7 @@ upstream:
           - name: NPM_CONFIG_USERCONFIG
             value: /opt/app-root/src/.npmrc.dynamic-plugins
           - name: MAX_ENTRY_SIZE
-            value: "30000000"  
+            value: "30000000"
         imagePullPolicy: Always
         volumeMounts:
           - mountPath: /dynamic-plugins-root

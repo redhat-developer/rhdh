@@ -7,6 +7,7 @@ The dynamic plugin support is based on the [backend plugin manager package](http
 Dynamic plugin support is based on Dynamic plugin derived packages.
 This is a special JavaScript package that is derived from an original plugin package source code.
 You can find more information about process of creating derived packages in the [Export Derived Dynamic Plugin Package](export-derived-package.md) document.
+<!-- markdown-link-check-disable-next-line -->
 The dynamic plugin derived packages shouldn't be pushed into the [public npm registry](https://www.npmjs.com), but it can be published to a private or internal npm registry.
 More details about publishing dynamic plugins is in the [Packaging Dynamic Plugins](packaging-dynamic-plugins.md) document.
 

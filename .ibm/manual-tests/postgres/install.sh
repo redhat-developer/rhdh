@@ -5,6 +5,7 @@ set -x
 
 HELM_IMAGE_NAME=backstage
 HELM_REPO_NAME=rhdh-chart
+# shellcheck disable=SC2034
 HELM_REPO_URL="https://redhat-developer.github.io/rhdh-chart"
 K8S_CLUSTER_URL=
 RELEASE_NAME=rhdh

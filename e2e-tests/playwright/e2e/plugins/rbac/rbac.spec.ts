@@ -32,14 +32,15 @@ test.describe.serial("Test RBAC", () => {
     .serial("Test RBAC plugin: load permission policies and conditions from files", () => {
     test.beforeEach(async ({ page }) => {
       await new Common(page).loginAsKeycloakUser();
-      await page.goto("/rbac");
+      const uiHelper = new UIhelper(page);
+      await uiHelper.goToPageUrl("/rbac");
     });
 
     test("Check UI navigation by nav bar when RBAC is enabled", async ({
       page,
     }) => {
-      await page.goto("/");
       const uiHelper = new UIhelper(page);
+      await uiHelper.goToPageUrl("/", "Welcome back!");
       await uiHelper.openSidebarButton("Administration");
       const dropdownMenuLocator = page.locator(`text="RBAC"`);
       await expect(dropdownMenuLocator).toBeVisible();
@@ -107,7 +108,7 @@ test.describe.serial("Test RBAC", () => {
     }) => {
       const uiHelper = new UIhelper(page);
       const testUser = "test-rhdh-qe-2";
-      await page.goto("/catalog");
+      await uiHelper.goToPageUrl("/catalog");
       await uiHelper.selectMuiBox("Kind", "Component");
 
       await uiHelper.searchInputPlaceholder(testUser);
@@ -155,7 +156,7 @@ test.describe.serial("Test RBAC", () => {
       const uiHelper = new UIhelper(page);
       // rhdh-qe-parent-team owns mock-site
       const testParentGroup = "rhdh-qe-parent-team";
-      await page.goto("/catalog");
+      await uiHelper.goToPageUrl("/catalog");
       await uiHelper.selectMuiBox("Kind", "Component");
 
       await uiHelper.searchInputPlaceholder("mock-site");
@@ -164,7 +165,7 @@ test.describe.serial("Test RBAC", () => {
 
       // rhdh-qe-child-team owns mock-child-site, check that it can see it's own groups' components
       const testChildGroup = "rhdh-qe-child-team";
-      await page.goto("/catalog");
+      await uiHelper.goToPageUrl("/catalog");
       await uiHelper.selectMuiBox("Kind", "Component");
 
       await uiHelper.searchInputPlaceholder("mock-child-site");
@@ -184,7 +185,7 @@ test.describe.serial("Test RBAC", () => {
       const uiHelper = new UIhelper(page);
       // rhdh-qe-parent-team owns mock-site
       const testParentGroup = "rhdh-qe-parent-team";
-      await page.goto("/catalog");
+      await uiHelper.goToPageUrl("/catalog");
       await uiHelper.selectMuiBox("Kind", "Component");
 
       await uiHelper.searchInputPlaceholder("mock-site");
@@ -193,7 +194,7 @@ test.describe.serial("Test RBAC", () => {
 
       // rhdh-qe-child-team owns mock-child-site
       const testChildGroup = "rhdh-qe-child-team";
-      await page.goto("/catalog");
+      await uiHelper.goToPageUrl("/catalog");
       await uiHelper.selectMuiBox("Kind", "Component");
 
       await uiHelper.searchInputPlaceholder("mock-child-site");
@@ -202,7 +203,7 @@ test.describe.serial("Test RBAC", () => {
 
       // rhdh-qe-sub-child-team owns mock-sub-child-site, check that it can see it's own groups' components
       const testSubChildGroup = "rhdh-qe-sub-child-team";
-      await page.goto("/catalog");
+      await uiHelper.goToPageUrl("/catalog");
       await uiHelper.selectMuiBox("Kind", "Component");
 
       await uiHelper.searchInputPlaceholder("mock-sub-child-site");
@@ -218,7 +219,8 @@ test.describe.serial("Test RBAC", () => {
       testInfo.setTimeout(testInfo.timeout + 30_000); // Additional time due to repeated timeout failure in OSD env.
       const common = new Common(page);
       await common.loginAsKeycloakUser();
-      await page.goto("/rbac");
+      const uiHelper = new UIhelper(page);
+      await uiHelper.goToPageUrl("/rbac");
       await common.waitForLoad();
       await new UIhelper(page).verifyHeading("RBAC", 30_000);
     });
@@ -575,9 +577,7 @@ test.describe.serial("Test RBAC", () => {
       await page.reload();
       await uiHelper.openSidebar("Catalog");
       await uiHelper.clickButton("Self-service");
-      expect(
-        await uiHelper.isLinkVisible("Import an existing Git repository"),
-      ).toBeTruthy();
+      await uiHelper.verifyLinkVisible("Import an existing Git repository");
       await uiHelper.clickButton("Import an existing Git repository");
       const catalogImport = new CatalogImport(page);
       const component =
@@ -673,11 +673,11 @@ test.describe.serial("Test RBAC", () => {
     }) => {
       const common = new Common(page);
       await common.loginAsKeycloakUser();
-      await page.goto("/rbac");
+      const uiHelper = new UIhelper(page);
+      await uiHelper.goToPageUrl("/rbac");
       await common.waitForLoad();
       await new UIhelper(page).verifyHeading("RBAC", 30_000);
 
-      const uiHelper = new UIhelper(page);
       const rbacPo = new RbacPo(page);
       await rbacPo.createRBACConditionRole(
         "test-conditional-role",
@@ -702,11 +702,11 @@ test.describe.serial("Test RBAC", () => {
         process.env.QE_USER6_ID,
         process.env.QE_USER6_PASS,
       );
-      await page.goto("/rbac");
+      const uiHelper = new UIhelper(page);
+      await uiHelper.goToPageUrl("/rbac");
       await common.waitForLoad();
       await new UIhelper(page).verifyHeading("RBAC", 30_000);
 
-      const uiHelper = new UIhelper(page);
       const rbacPo = new RbacPo(page);
       const testUser = "Jonathon Page";
       await rbacPo.createRole(
@@ -749,7 +749,8 @@ test.describe.serial("Test RBAC", () => {
     test("Ensure that the admin can revoke access", async ({ page }) => {
       const common = new Common(page);
       await common.loginAsKeycloakUser();
-      await page.goto("/rbac");
+      const uiHelper = new UIhelper(page);
+      await uiHelper.goToPageUrl("/rbac");
       await common.waitForLoad();
       await new UIhelper(page).verifyHeading("RBAC", 30_000);
 

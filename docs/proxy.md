@@ -14,6 +14,7 @@ $ GLOBAL_AGENT_ENVIRONMENT_VARIABLE_NAMESPACE='' \
   yarn start
 ```
 
+<!-- markdown-link-check-disable-next-line -->
 You can use the command below to quickly start a local corporate proxy server (based on [Squid](https://www.squid-cache.org/)):
 
 ```shell
@@ -134,6 +135,7 @@ This approach simulates a corporate proxy environment in a Kubernetes/OpenShift 
 
 1. Make sure the network plugin in your Kubernetes cluster supports network policies. [k3d](https://k3d.io) for example supports Network Policies out of the box.
 
+<!-- markdown-link-check-disable-next-line -->
 2. Create a separate proxy namespace, and deploy a [Squid](https://www.squid-cache.org/)-based proxy application there. The full URL to access the proxy server from within the cluster would be `http://squid-service.proxy.svc.cluster.local:3128`.
 
 ```shell
@@ -271,6 +273,7 @@ spec:
 
 ### OpenShift
 
+<!-- markdown-link-check-disable-next-line -->
 2. Create a separate proxy project, and deploy a [Squid](https://www.squid-cache.org/)-based proxy application there. The full URL to access the proxy server from within the cluster would be `http://squid-service.proxy.svc.cluster.local:3128`.
 
 ```shell

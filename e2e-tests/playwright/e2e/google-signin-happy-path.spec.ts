@@ -34,7 +34,7 @@ test.describe("Google signin happy path", () => {
 
   // TODO: https://issues.redhat.com/browse/RHDHBUGS-675
   test.fixme("Verify Google Sign in", async () => {
-    await uiHelper.goToSettingsPage();
+    await uiHelper.goToPageUrl("/settings", "Settings");
     await uiHelper.clickTab("Authentication Providers");
     await page.getByTitle("Sign in to Google").click();
     await uiHelper.clickButton("Log in");

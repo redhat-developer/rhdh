@@ -24,7 +24,7 @@ initiate_gke_helm_deployment() {
   cp -a "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}" "${ARTIFACT_DIR}/${NAME_SPACE}/" # Save the final value-file into the artifacts directory.
 
   setup_image_pull_secret "${NAME_SPACE}" "rh-pull-secret" "${REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON}"
-  
+
   echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
   helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
@@ -43,7 +43,7 @@ initiate_rbac_gke_helm_deployment() {
 
   cd "${DIR}" || exit
   local rbac_rhdh_base_url="https://${K8S_CLUSTER_ROUTER_BASE}"
-  apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}"  "${rbac_rhdh_base_url}"
+  apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
   apply_gke_frontend_config "${NAME_SPACE_RBAC}"
   yq_merge_value_files "merge" "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_RBAC_GKE_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_RBAC_K8S_MERGED_VALUE_FILE_NAME}"
   mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE_RBAC}"

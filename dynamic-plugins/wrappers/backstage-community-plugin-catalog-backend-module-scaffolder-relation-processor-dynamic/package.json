@@ -10,7 +10,7 @@
   },
   "backstage": {
     "role": "backend-plugin-module",
-    "supported-versions": "1.39.1",
+    "supported-versions": "1.42.5",
     "pluginId": "catalog",
     "pluginPackage": "@backstage/plugin-catalog-backend"
   },
@@ -32,14 +32,14 @@
     "test": "backstage-cli package test --passWithNoTests --coverage",
     "clean": "backstage-cli package clean",
     "clean-dynamic-sources": "yarn clean && rm -Rf node_modules",
-    "export-dynamic": "janus-cli package export-dynamic-plugin --embed-package @backstage-community/plugin-catalog-backend-module-scaffolder-relation-processor",
+    "export-dynamic": "janus-cli package export-dynamic-plugin --embed-package @backstage-community/plugin-catalog-backend-module-scaffolder-relation-processor @backstage/plugin-notifications-node",
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
-    "@backstage-community/plugin-catalog-backend-module-scaffolder-relation-processor": "2.5.0"
+    "@backstage-community/plugin-catalog-backend-module-scaffolder-relation-processor": "2.7.0"
   },
   "devDependencies": {
-    "@backstage/cli": "0.30.0",
+    "@backstage/cli": "^0.34.1",
     "@janus-idp/cli": "3.6.1",
     "typescript": "5.9.2"
   },
