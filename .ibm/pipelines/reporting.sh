@@ -75,8 +75,7 @@ get_artifacts_url() {
   local namespace=$1
 
   if [ -z "${namespace}" ]; then
-    echo "ERROR: namespace parameter is required but was empty" >&2
-    return 1
+    echo "Warning: namespace parameter is empty (this is expected only for top level artifacts directory)" >&2
   fi
 
   local artifacts_base_url="https://gcsweb-ci.apps.ci.l2s4.p1.openshiftapps.com/gcs/test-platform-results"

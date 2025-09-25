@@ -258,13 +258,27 @@ export interface Config {
   includeTransitiveGroupOwnership?: boolean;
 
   /**
-   * Allows you to customize RHDH Metadata card
+   * Allows you to customize RHDH Metadata card information
    * @deepVisibility frontend
    */
   buildInfo?: {
+    /**
+     * Allows setting a title for the build information card
+     * @visibility frontend
+     */
     title: string;
+    /**
+     * Allows setting a content for the build information card
+     * @visibility frontend
+     */
     card: { [key: string]: string };
-    full?: boolean;
+    /**
+     * Allows setting if the default build information (RHDH Version, Backstage Version, etc.) should be overridden
+     * Contents will be overridden if not set to false
+     * @default true
+     * @visibility frontend
+     */
+    overrideBuildInfo?: boolean;
   };
 
   /**

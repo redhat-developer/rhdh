@@ -590,7 +590,7 @@ uninstall_olm() {
 # Installs the advanced-cluster-management OCP Operator
 install_acm_ocp_operator() {
   oc apply -f "${DIR}/cluster/operators/acm/operator-group.yaml"
-  install_subscription advanced-cluster-management open-cluster-management release-2.12 advanced-cluster-management redhat-operators openshift-marketplace
+  install_subscription advanced-cluster-management open-cluster-management release-2.14 advanced-cluster-management redhat-operators openshift-marketplace
   wait_for_deployment "open-cluster-management" "multiclusterhub-operator"
   wait_for_endpoint "multiclusterhub-operator-webhook" "open-cluster-management"
   oc apply -f "${DIR}/cluster/operators/acm/multiclusterhub.yaml"

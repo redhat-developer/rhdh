@@ -13,6 +13,7 @@ export type BuildInfo = {
   title: string;
   card: { [key: string]: string };
   full?: boolean;
+  overrideBuildInfo?: boolean;
 };
 
 export type TranslationConfig = {
