@@ -90,7 +90,7 @@ main() {
       echo "Calling handle_gke_operator"
       handle_gke_operator
       ;;
-    *ocp*helm*auth-providers*nightly*)
+    *ocp*operator*auth-providers*nightly*)
       echo "Sourcing auth-providers.sh"
       # shellcheck source=.ibm/pipelines/jobs/auth-providers.sh
       source "${DIR}/jobs/auth-providers.sh"
