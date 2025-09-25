@@ -47,6 +47,7 @@
     "@mui/material": "5.18.0",
     "@mui/styled-engine": "5.18.0",
     "@red-hat-developer-hub/backstage-plugin-theme": "0.9.1",
+    "@red-hat-developer-hub/backstage-plugin-translations": "link:../../../rhdh-plugins/workspaces/translations/plugins/translations",
     "@red-hat-developer-hub/plugin-utils": "1.0.0",
     "@scalprum/core": "0.8.3",
     "@scalprum/react-core": "0.9.5",
@@ -72,6 +73,9 @@
     "@types/react-dom": "18.3.7",
     "prettier": "3.6.2",
     "typescript": "5.9.2"
+  },
+  "peerDependencies": {
+    "@backstage/core-plugin-api": "10.7.0"
   },
   "browserslist": {
     "production": [
