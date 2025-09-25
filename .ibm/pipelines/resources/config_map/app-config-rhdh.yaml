@@ -227,3 +227,9 @@ buildInfo:
     Authentication provider: "Github"
     RBAC: disabled
   overrideBuildInfo: true
+i18n:
+  locales:
+    - en
+    - fr
+    - de
+  defaultLocale: en
