@@ -449,6 +449,7 @@ plugins:
                 menuItem:
                   icon: ocmIcon
                   text: Clusters
+                  textKey: menuItem.clusters
             mountPoints:
               - mountPoint: entity.page.overview/context
                 importName: ClusterContextProvider
@@ -495,6 +496,7 @@ plugins:
                 menuItem:
                   icon: bulkImportIcon
                   text: Bulk import
+                  textKey: menuItem.bulkImport
 
   # Group: Global Header
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-header
@@ -757,6 +759,7 @@ plugins:
                 menuItem:
                   icon: docs
                   text: Docs
+                  textKey: menuItem.docs
               - path: /docs/:namespace/:kind/:name/*
                 importName: TechDocsReaderPage
             mountPoints:
@@ -850,6 +853,7 @@ plugins:
                 menuItem:
                   icon: rbacIcon
                   text: RBAC
+                  textKey: menuItem.rbac
             menuItems:
               rbac:
                 parent: admin
@@ -1079,7 +1083,8 @@ plugins:
                 importName: LighthousePage
                 menuItem:
                   icon: lighthouse
-                  text: Lighthouse
+                  text: menuItem.lighthouse
+                  textKey: menuItem.lighthouse
             mountPoints:
               - mountPoint: entity.page.overview/cards
                 importName: EntityLastLighthouseAuditCard
@@ -1109,7 +1114,8 @@ plugins:
                 importName: TechRadarPage
                 menuItem:
                   icon: techRadar
-                  text: Tech Radar
+                  text: menuItem.techRadar
+                  textKey: menuItem.techRadar
                 config:
                   props:
                     width: 1500
@@ -1239,6 +1245,7 @@ plugins:
                 menuItem:
                   icon: orchestratorIcon
                   text: Orchestrator
+                  textKey: menuItem.orchestrator
                 path: /orchestrator
             entityTabs:
               - path: /workflows
@@ -1293,6 +1300,7 @@ plugins:
                 menuItem:
                   icon: adoptionInsightsIcon
                   text: Adoption Insights
+                  textKey: menuItem.adoptionInsights
             menuItems:
               adoption-insights:
                 parent: admin
