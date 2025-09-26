@@ -633,28 +633,40 @@ plugins:
       app:
         quickstart:
           - title: Set up authentication
+            titleKey: steps.setupAuthentication.title
             icon: Admin
             description: Set up secure login credentials to protect your account from unauthorized access.
+            descriptionKey: steps.setupAuthentication.description
             cta:
               text: Learn more
+              textKey: steps.setupAuthentication.ctaTitle
               link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/authentication_in_red_hat_developer_hub/
           - title: Configure RBAC
+            titleKey: steps.configureRbac.title
             icon: Rbac
             description: Assign roles and permissions to control who can view, create, or edit resources, ensuring secure and efficient collaboration.
+            descriptionKey: steps.configureRbac.description
             cta:
               text: Manage access
+              textKey: steps.configureRbac.ctaTitle
               link: /rbac
           - title: Configure Git
+            titleKey: steps.configureGit.title
             icon: Git
             description: Connect your Git providers, such as GitHub to manage code, automate workflows, and integrate with platform features.
+            descriptionKey: steps.configureGit.description
             cta:
               text: Learn more
+              textKey: steps.configureGit.ctaTitle
               link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/integrating_red_hat_developer_hub_with_github/
           - title: Manage plugins
+            titleKey: steps.managePlugins.title
             icon: Plugins
             description: Browse and install extensions to add features, connect with external tools, and customize your experience.
+            descriptionKey: steps.managePlugins.description
             cta:
               text: Explore plugins
+              textKey: steps.managePlugins.ctaTitle
               link: /extensions
       dynamicPlugins:
         frontend:
