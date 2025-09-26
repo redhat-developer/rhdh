@@ -16,7 +16,9 @@ metadata:
       title: Roadie Documentation
 spec:
   lifecycle: active
-  support: production
+  support:
+    provider: Red Hat
+    level: generally-available
   publisher: Red Hat
   author: Roadie
 

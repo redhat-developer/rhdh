@@ -22,7 +22,9 @@ metadata:
     The single page view of all APIs in an enterprise estate for quick discovery and easy navigation of API assets within Backstage.
 spec:
   author: IBM
-  support: production #tech-preview, dev-preveiw
+  support:
+    provider: IBM
+    level: generally-available
   lifecycle: active
   publisher: IBM
 
