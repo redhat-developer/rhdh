@@ -586,10 +586,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ioredis/commands@npm:^1.3.0":
-  version: 1.3.0
-  resolution: "@ioredis/commands@npm:1.3.0"
-  checksum: 2e1446ada871059753e0883edfdd992a81d34fa10313978c83450246d1543962acfe852d30dbc942259ecda3ed1e84a281914bbdeb2dfcfe9e78b7cab3902127
+"@ioredis/commands@npm:1.4.0":
+  version: 1.4.0
+  resolution: "@ioredis/commands@npm:1.4.0"
+  checksum: c2fca9809f4a5508e9c23cd837fb575c0a6b04351643da08f6b66b3b72a6a89ad183dd2da216add28ea5d5b9141925a3c3e4fff74103225a59f70264da50e5f2
   languageName: node
   linkType: hard
 
@@ -1164,14 +1164,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:1.55.0":
-  version: 1.55.0
-  resolution: "@playwright/test@npm:1.55.0"
+"@playwright/test@npm:1.55.1":
+  version: 1.55.1
+  resolution: "@playwright/test@npm:1.55.1"
   dependencies:
-    playwright: 1.55.0
+    playwright: 1.55.1
   bin:
     playwright: cli.js
-  checksum: efa2e6febf1fea8dd9ba1aff45b58bc6e8604a831c21c5e5c49718f07065670ddeec5487d288cc1b044c834b40ab586035ea23c89e78991a19d2daf93fab993e
+  checksum: 8df3bd1dde94c94c172e0f727ebbeee8ba7c35d7438e3b487ab598dbef221a8bc0685546c5e10624ffd5d0caec52c79ef6f4d13187dee353d47f14e70a408bee
   languageName: node
   linkType: hard
 
@@ -2317,7 +2317,7 @@ __metadata:
     "@kubernetes/client-node": 0.22.3
     "@microsoft/microsoft-graph-client": 3.0.7
     "@microsoft/microsoft-graph-types": 2.40.0
-    "@playwright/test": 1.55.0
+    "@playwright/test": 1.55.1
     "@types/node": 22.16.3
     "@typescript-eslint/eslint-plugin": 6.21.0
     "@typescript-eslint/parser": 6.21.0
@@ -2325,14 +2325,14 @@ __metadata:
     eslint-plugin-check-file: ^3.3.0
     eslint-plugin-filenames: 1.3.2
     eslint-plugin-playwright: ^2.2.2
-    ioredis: 5.7.0
+    ioredis: 5.8.0
     isomorphic-fetch: 3.0.0
     js-yaml: 4.1.0
     node-fetch: 2.7.0
     octokit: 4.1.4
     otplib: 12.0.1
     prettier: 3.6.2
-    sealights-playwright-plugin: ^2.0.113
+    sealights-playwright-plugin: ^2.0.124
     typescript: ^5.9.2
     typescript-eslint: ^8.41.0
     uuid: 11.1.0
@@ -3391,11 +3391,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ioredis@npm:5.7.0":
-  version: 5.7.0
-  resolution: "ioredis@npm:5.7.0"
+"ioredis@npm:5.8.0":
+  version: 5.8.0
+  resolution: "ioredis@npm:5.8.0"
   dependencies:
-    "@ioredis/commands": ^1.3.0
+    "@ioredis/commands": 1.4.0
     cluster-key-slot: ^1.1.0
     debug: ^4.3.4
     denque: ^2.1.0
@@ -3404,7 +3404,7 @@ __metadata:
     redis-errors: ^1.2.0
     redis-parser: ^3.0.0
     standard-as-callback: ^2.1.0
-  checksum: fc351fc4458f5cc8371faccd5c4d49a9cdb333163a018553124e0dde5b64e683cf360c974afa278a3eff08e56bc5e6a5903f8b2906893a2cae8f801b8e8eedff
+  checksum: 3a39eb6b35be477e63bbb825e4ae2565173223ecd960f2082dc274af6bb4767d8a2cb733f4de9326e29087abe980f2e5b02c183f3a4f0f9997e951f148257441
   languageName: node
   linkType: hard
 
@@ -4867,27 +4867,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright-core@npm:1.55.0":
-  version: 1.55.0
-  resolution: "playwright-core@npm:1.55.0"
+"playwright-core@npm:1.55.1":
+  version: 1.55.1
+  resolution: "playwright-core@npm:1.55.1"
   bin:
     playwright-core: cli.js
-  checksum: 689955388fa1d46cdbc93d4957688d48c0033ccdcb852f97f9f5e8aa6482a928c885cf06b02eb5acde9426aa1222720456127a8f7793792fef3f7bdb159bd8b2
+  checksum: a2b981223fd8f5c50a4e0b6cc36a3ce40b41919d418b564561f085bcd6c8ce9df2354e687fbc76e662fddb9f2b28d0bc1f0124c085958406fcab6c6cf3b8228f
   languageName: node
   linkType: hard
 
-"playwright@npm:1.55.0":
-  version: 1.55.0
-  resolution: "playwright@npm:1.55.0"
+"playwright@npm:1.55.1":
+  version: 1.55.1
+  resolution: "playwright@npm:1.55.1"
   dependencies:
     fsevents: 2.3.2
-    playwright-core: 1.55.0
+    playwright-core: 1.55.1
   dependenciesMeta:
     fsevents:
       optional: true
   bin:
     playwright: cli.js
-  checksum: 6165c649a4923651305957d54203ee9f6c80fb5b7d237848c13a98c168c599041eefb6af493f1dbe5e793aa2e24956a1a7205cb1864a64a97f01c7c7189885b7
+  checksum: 4935122ed687cd14861d64e6fdc79613d36d45f1363e911213a338da9993525d3872d7379300471f70209e1ad68ec91c0d65f0136e6c09c0775477943aaf7fb3
   languageName: node
   linkType: hard
 
@@ -5227,12 +5227,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sealights-playwright-plugin@npm:^2.0.113":
-  version: 2.0.124
-  resolution: "sealights-playwright-plugin@npm:2.0.124"
+"sealights-playwright-plugin@npm:^2.0.124":
+  version: 2.0.127
+  resolution: "sealights-playwright-plugin@npm:2.0.127"
   dependencies:
-    slnodejs: 6.1.1086
-  checksum: 16fc23ca02741239f1eb9267869c14c8c6a1025eab3622be48640c15aaa5d9b869d95a5d70f0f54173e9740e5c5e6ce6ff5c43c6fa97c85e0d41ea61ee0cd810
+    slnodejs: 6.1.1101
+  checksum: 9a6e5dbd3a9c557152231777466efc72b97fa6fe0cd61e7ea1f70e6ddc41c89a9c7d809cab54a05096e6aca7432f27b37d26261c0ff3657a9087f8582bc6bd85
   languageName: node
   linkType: hard
 
@@ -5418,9 +5418,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"slnodejs@npm:6.1.1086":
-  version: 6.1.1086
-  resolution: "slnodejs@npm:6.1.1086"
+"slnodejs@npm:6.1.1101":
+  version: 6.1.1101
+  resolution: "slnodejs@npm:6.1.1101"
   dependencies:
     "@babel/generator": 7.18.9
     "@babel/parser": 7.18.9
@@ -5464,7 +5464,7 @@ __metadata:
     winston: 3.8.0
   bin:
     slnodejs: lib/cli.js
-  checksum: 3fc411cd15523b6078e856904729ff8872aa073d6c00229df11c0e274fcfddcb8bb27e3ed5d71dfab069a1558b82133f6d7d760afcfe92e249453674c5fdd3a4
+  checksum: 8d0eda89e921325a73fe922cb07bd2d871dd7bac02a23419d8c71bc92857d0c5c5d754e3084969d75792686033995f92edda28b354e2316d2ecd73efe5105347
   languageName: node
   linkType: hard
 
