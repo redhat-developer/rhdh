@@ -1,10 +1,10 @@
 import { UIhelper } from "./ui-helper";
 import { authenticator } from "otplib";
 import { test, Browser, expect, Page, TestInfo } from "@playwright/test";
-import { SETTINGS_PAGE_COMPONENTS } from "../support/pageObjects/page-obj";
-import { WAIT_OBJECTS } from "../support/pageObjects/global-obj";
-import path from "path";
-import fs from "fs";
+import { SETTINGS_PAGE_COMPONENTS } from "../support/page-objects/page-obj";
+import { WAIT_OBJECTS } from "../support/page-objects/global-obj";
+import * as path from "path";
+import * as fs from "fs";
 import { APIHelper } from "./api-helper";
 import { GroupEntity, UserEntity } from "@backstage/catalog-model";
 
@@ -42,8 +42,8 @@ export class Common {
   }
 
   async signOut() {
-    await this.uiHelper.clickButton(SETTINGS_PAGE_COMPONENTS.userSettingsMenu);
-    await this.uiHelper.clickButton(SETTINGS_PAGE_COMPONENTS.signOut);
+    await this.page.click(SETTINGS_PAGE_COMPONENTS.userSettingsMenu);
+    await this.page.click(SETTINGS_PAGE_COMPONENTS.signOut);
     await this.uiHelper.verifyHeading("Select a sign-in method");
   }
 
@@ -163,6 +163,7 @@ export class Common {
           .first();
         await popup.waitForTimeout(3000);
         await locator.waitFor({ state: "visible" });
+        // eslint-disable-next-line playwright/no-force-option
         await locator.click({ force: true });
         await popup.waitForTimeout(3000);
 
@@ -339,18 +340,22 @@ export class Common {
   }
 
   getGitHub2FAOTP(userid: string): string {
-    switch (userid) {
-      case process.env.GH_USER_ID:
-        return authenticator.generate(process.env.GH_2FA_SECRET);
-      case process.env.GH_USER2_ID:
-        return authenticator.generate(process.env.GH_USER2_2FA_SECRET);
-      default:
-        throw new Error("Invalid User ID");
+    const secrets: { [key: string]: string | undefined } = {
+      [process.env.GH_USER_ID]: process.env.GH_2FA_SECRET,
+      [process.env.GH_USER2_ID]: process.env.GH_USER2_2FA_SECRET,
+    };
+
+    const secret = secrets[userid];
+    if (!secret) {
+      throw new Error("Invalid User ID");
     }
+
+    return authenticator.generate(secret);
   }
 
   getGoogle2FAOTP(): string {
-    return authenticator.generate(process.env.GOOGLE_2FA_SECRET);
+    const secret = process.env.GOOGLE_2FA_SECRET;
+    return authenticator.generate(secret);
   }
 
   async keycloakLogin(username: string, password: string) {
@@ -425,7 +430,8 @@ export class Common {
         await popup
           .locator("[type='submit'][value='Sign in']:not(webauthn-status *)")
           .first()
-          .click({ timeout: 5000 });        const twofactorcode = authenticator.generate(twofactor);
+          .click({ timeout: 5000 });
+        const twofactorcode = authenticator.generate(twofactor);
         await popup.locator("#app_totp").click({ timeout: 5000 });
         await popup.locator("#app_totp").fill(twofactorcode, { timeout: 5000 });
 
@@ -434,7 +440,7 @@ export class Common {
       } catch (e) {
         const authorization = popup.locator("button.js-oauth-authorize-btn");
         if (await authorization.isVisible()) {
-          authorization.click();
+          await authorization.click();
           return "Login successful";
         } else {
           throw e;
@@ -520,129 +526,6 @@ export class Common {
         }
       }
     }
-  }
-
-  async GetParentGroupDisplayed(): Promise<string[]> {
-    await this.page.waitForSelector("p:has-text('Parent Group')");
-    const parent = await this.page
-      .locator("p:has-text('Parent Group')")
-      .locator("..");
-    const group = await parent.locator("a").allInnerTexts();
-    return group;
-  }
-
-  async GetChildGroupsDisplayed(): Promise<string[]> {
-    await this.page.waitForSelector("p:has-text('Child Groups')");
-    const parent = await this.page
-      .locator("p:has-text('Child Groups')")
-      .locator("..");
-    const groups = await parent.locator("a").allInnerTexts();
-    return groups;
-  }
-
-  async GetMembersOfGroupDisplayed(): Promise<string[]> {
-    await this.page.waitForSelector(`//div[contains(., "Members")]/..`);
-    const membersCard = this.page
-      .locator(
-        `//div[contains(@class,'MuiCardHeader-root') and descendant::text()[contains(., "Members")] ]/.. // a[@data-testid='user-link']`,
-      )
-      .allInnerTexts();
-    return membersCard;
-  }
-
-  async GoToGroupPageAndGetDisplayedData(groupDisplayName: string) {
-    await this.page.goto(
-      "/catalog?filters%5Bkind%5D=group&filters%5Buser%5D=all",
-    );
-    await expect(this.page.getByRole("heading", { level: 1 })).toHaveText(
-      "My Org Catalog",
-    );
-
-    await this.uiHelper.clickLink(groupDisplayName);
-    await this.uiHelper.verifyHeading(groupDisplayName);
-
-    const childGroups = await this.GetChildGroupsDisplayed();
-    const parentGroup = await this.GetParentGroupDisplayed();
-    const groupMembers = await this.GetMembersOfGroupDisplayed();
-    return {
-      childGroups,
-      parentGroup,
-      groupMembers,
-    };
-  }
-
-  async UnregisterUserEntityFromCatalog(user: string, apiToken: string) {
-    const api = new APIHelper();
-    api.UseStaticToken(apiToken);
-    await api.deleteUserEntityFromAPI(user);
-  }
-
-  async UnregisterGroupEntityFromCatalog(group: string, apiToken: string) {
-    const api = new APIHelper();
-    api.UseStaticToken(apiToken);
-    await api.deleteGroupEntityFromAPI(group);
-  }
-
-  async CheckGroupIsShowingInCatalog(groups: string[]) {
-    await this.page.goto(
-      "/catalog?filters%5Bkind%5D=group&filters%5Buser%5D=all",
-    );
-    await expect(this.page.getByRole("heading", { level: 1 })).toHaveText(
-      "My Org Catalog",
-    );
-    await this.uiHelper.verifyHeading("All groups");
-    await this.uiHelper.verifyCellsInTable(groups);
-  }
-
-  async CheckUserIsShowingInCatalog(users: string[]) {
-    await this.page.goto(
-      "/catalog?filters%5Bkind%5D=user&filters%5Buser%5D=all",
-    );
-    await expect(this.page.getByRole("heading", { level: 1 })).toHaveText(
-      "My Org Catalog",
-    );
-    await this.uiHelper.verifyHeading("All user");
-    await this.uiHelper.verifyCellsInTable(users);
-  }
-
-  async CheckUserIsIngestedInCatalog(users: string[], apiToken: string) {
-    const api = new APIHelper();
-    api.UseStaticToken(apiToken);
-    const response = await api.getAllCatalogUsersFromAPI();
-    console.log(`Users currently in catalog: ${JSON.stringify(response)}`);
-    const catalogUsers: UserEntity[] =
-      response && response.items ? response.items : [];
-    expect(catalogUsers.length).toBeGreaterThan(0);
-    const catalogUsersDisplayNames: string[] = catalogUsers
-      .filter((u) => u.spec.profile && u.spec.profile.displayName)
-      .map((u) => u.spec.profile.displayName);
-    console.log(
-      `Checking ${JSON.stringify(catalogUsersDisplayNames)} contains users ${JSON.stringify(users)}`,
-    );
-    const hasAllElems = users.every((elem) =>
-      catalogUsersDisplayNames.includes(elem),
-    );
-    return hasAllElems;
-  }
-
-  async CheckGroupIsIngestedInCatalog(groups: string[], apiToken: string) {
-    const api = new APIHelper();
-    api.UseStaticToken(apiToken);
-    const response = await api.getAllCatalogGroupsFromAPI();
-    console.log(`Groups currently in catalog: ${JSON.stringify(response)}`);
-    const catalogGroups: GroupEntity[] =
-      response && response.items ? response.items : [];
-    expect(catalogGroups.length).toBeGreaterThan(0);
-    const catalogGroupsDisplayNames: string[] = catalogGroups
-      .filter((u) => u.spec.profile && u.spec.profile.displayName)
-      .map((u) => u.spec.profile.displayName);
-    console.log(
-      `Checking ${JSON.stringify(catalogGroupsDisplayNames)} contains groups ${JSON.stringify(groups)}`,
-    );
-    const hasAllElems = groups.every((elem) =>
-      catalogGroupsDisplayNames.includes(elem),
-    );
-    return hasAllElems;
   }
 }
 
