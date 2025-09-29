@@ -29,6 +29,7 @@ export default createTranslationMessages({
     'menuItem.apis': 'APIs',
     'menuItem.learningPaths': 'Lernpfade',
     'menuItem.selfService': 'Self-Service',
+    'menuItem.userSettings': 'Benutzereinstellungen',
     'menuItem.administration': 'Administration',
     'menuItem.extensions': 'Erweiterungen',
 
@@ -72,5 +73,34 @@ export default createTranslationMessages({
     'signIn.providers.onelogin.message': 'Mit OneLogin anmelden',
     'signIn.providers.saml.title': 'SAML',
     'signIn.providers.saml.message': 'Mit SAML anmelden',
+
+    // App translations
+    'app.scaffolder.title': 'Self-Service',
+    'app.search.title': 'Suchen',
+    'app.search.resultType': 'Ergebnistyp',
+    'app.search.softwareCatalog': 'Software-Katalog',
+    'app.search.filters.kind': 'Art',
+    'app.search.filters.lifecycle': 'Lebenszyklus',
+    'app.search.filters.component': 'Komponente',
+    'app.search.filters.template': 'Vorlage',
+    'app.search.filters.experimental': 'experimentell',
+    'app.search.filters.production': 'produktionsreif',
+    'app.learningPaths.title': 'Lernpfade',
+    'app.learningPaths.error.title': 'Daten konnten nicht abgerufen werden.',
+    'app.learningPaths.error.unknownError': 'Unbekannter Fehler',
+    'app.entityPage.diagram.title': 'Systemdiagramm',
+    'app.userSettings.infoCard.title': 'RHDH-Metadaten',
+    'app.userSettings.infoCard.metadataCopied':
+      'Metadaten in die Zwischenablage kopiert',
+    'app.userSettings.infoCard.copyMetadata':
+      'Metadaten in die Zwischenablage kopieren',
+    'app.userSettings.infoCard.showLess': 'Weniger anzeigen',
+    'app.userSettings.infoCard.showMore': 'Mehr anzeigen',
+    'app.errors.contactSupport': 'Support kontaktieren',
+    'app.errors.goBack': 'Zurück',
+    'app.errors.notFound.message': 'Diese Seite konnten wir nicht finden',
+    'app.errors.notFound.additionalInfo':
+      'Die gesuchte Seite wurde möglicherweise entfernt, umbenannt oder ist vorübergehend nicht verfügbar.',
+    'app.table.createdAt': 'Erstellt am',
   },
 });

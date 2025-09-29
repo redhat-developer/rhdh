@@ -3,12 +3,15 @@ import { configApiRef, useApi } from '@backstage/core-plugin-api';
 import Launch from '@mui/icons-material/Launch';
 import Button from '@mui/material/Button';
 
+import { useTranslation } from '../../../hooks/useTranslation';
+
 export const ContactSupportButton = ({
   supportUrl,
 }: {
   supportUrl?: string;
 }) => {
   const configApi = useApi(configApiRef);
+  const { t } = useTranslation();
   const finalSupportUrl =
     supportUrl ??
     configApi.getOptionalString('app.support.url') ??
@@ -24,7 +27,7 @@ export const ContactSupportButton = ({
       rel="noopener noreferrer"
       endIcon={<Launch />}
     >
-      Contact support
+      {t('app.errors.contactSupport')}
     </Button>
   );
 };

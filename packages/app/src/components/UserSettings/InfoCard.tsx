@@ -12,10 +12,12 @@ import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 
 import buildMetadata from '../../build-metadata.json';
+import { useTranslation } from '../../hooks/useTranslation';
 import { BuildInfo } from '../../types/types';
 
 export const InfoCard = () => {
   const config = useApi(configApiRef);
+  const { t } = useTranslation();
   const buildInfo: BuildInfo | undefined = config.getOptional('buildInfo');
 
   const [showBuildInformation, setShowBuildInformation] = useState<boolean>(
@@ -36,7 +38,16 @@ export const InfoCard = () => {
     }
   };
 
-  const title = buildInfo?.title ?? buildMetadata.title;
+  const getTitle = () => {
+    // If titleKey is provided, use translation
+    if (buildInfo?.titleKey || buildMetadata.titleKey) {
+      return t(buildInfo?.titleKey ?? (buildMetadata.titleKey as any), {});
+    }
+    // Fall back to title or default
+    return buildInfo?.title ?? buildMetadata.title;
+  };
+
+  const title = getTitle();
 
   let clipboardText = title;
   const buildDetails = Object.entries(
@@ -105,11 +116,15 @@ export const InfoCard = () => {
           >
             <CopyTextButton
               text={clipboardText}
-              tooltipText="Metadata copied to clipboard"
-              arial-label="Copy metadata to your clipboard"
+              tooltipText={t('app.userSettings.infoCard.metadataCopied')}
+              arial-label={t('app.userSettings.infoCard.copyMetadata')}
             />
             <IconButton
-              title={showBuildInformation ? 'Show less' : 'Show more'}
+              title={
+                showBuildInformation
+                  ? t('app.userSettings.infoCard.showLess')
+                  : t('app.userSettings.infoCard.showMore')
+              }
               onClick={toggleBuildInformation}
               style={{ width: 48 }}
             >

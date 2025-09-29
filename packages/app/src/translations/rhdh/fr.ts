@@ -29,6 +29,7 @@ export default createTranslationMessages({
     'menuItem.apis': 'APIs',
     'menuItem.learningPaths': "Parcours d'apprentissage",
     'menuItem.selfService': 'Libre-service',
+    'menuItem.userSettings': 'Paramètres utilisateur',
     'menuItem.administration': 'Administration',
     'menuItem.extensions': 'Modules',
 
@@ -73,5 +74,34 @@ export default createTranslationMessages({
     'signIn.providers.onelogin.message': 'Se connecter avec OneLogin',
     'signIn.providers.saml.title': 'SAML',
     'signIn.providers.saml.message': 'Se connecter avec SAML',
+
+    // App translations
+    'app.scaffolder.title': 'Libre-service',
+    'app.search.title': 'Rechercher',
+    'app.search.resultType': 'Type de résultat',
+    'app.search.softwareCatalog': 'Catalogue de logiciels',
+    'app.search.filters.kind': 'Type',
+    'app.search.filters.lifecycle': 'Cycle de vie',
+    'app.search.filters.component': 'Composant',
+    'app.search.filters.template': 'Modèle',
+    'app.search.filters.experimental': 'expérimental',
+    'app.search.filters.production': 'production',
+    'app.learningPaths.title': "Parcours d'apprentissage",
+    'app.learningPaths.error.title': 'Impossible de récupérer les données.',
+    'app.learningPaths.error.unknownError': 'Erreur inconnue',
+    'app.entityPage.diagram.title': 'Diagramme système',
+    'app.userSettings.infoCard.title': 'Métadonnées RHDH',
+    'app.userSettings.infoCard.metadataCopied':
+      'Métadonnées copiées dans le presse-papiers',
+    'app.userSettings.infoCard.copyMetadata':
+      'Copier les métadonnées dans le presse-papiers',
+    'app.userSettings.infoCard.showLess': 'Afficher moins',
+    'app.userSettings.infoCard.showMore': 'Afficher plus',
+    'app.errors.contactSupport': 'Contacter le support',
+    'app.errors.goBack': 'Retour',
+    'app.errors.notFound.message': "Nous n'avons pas pu trouver cette page",
+    'app.errors.notFound.additionalInfo':
+      'La page que vous recherchez a peut-être été supprimée, renommée ou est temporairement indisponible.',
+    'app.table.createdAt': 'Créé le',
   },
 });

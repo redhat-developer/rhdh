@@ -29,6 +29,7 @@ export default createTranslationMessages({
     'menuItem.apis': 'API',
     'menuItem.learningPaths': 'Percorsi di Apprendimento',
     'menuItem.selfService': 'Self-service',
+    'menuItem.userSettings': 'Impostazioni utente',
     'menuItem.administration': 'Amministrazione',
     'menuItem.extensions': 'Estensioni',
 
@@ -72,5 +73,33 @@ export default createTranslationMessages({
     'signIn.providers.onelogin.message': 'Accedi con OneLogin',
     'signIn.providers.saml.title': 'SAML',
     'signIn.providers.saml.message': 'Accedi con SAML',
+
+    // App translations
+    'app.scaffolder.title': 'Self-service',
+    'app.search.title': 'Cerca',
+    'app.search.resultType': 'Tipo di risultato',
+    'app.search.softwareCatalog': 'Catalogo software',
+    'app.search.filters.kind': 'Tipo',
+    'app.search.filters.lifecycle': 'Ciclo di vita',
+    'app.search.filters.component': 'Componente',
+    'app.search.filters.template': 'Modello',
+    'app.search.filters.experimental': 'sperimentale',
+    'app.search.filters.production': 'produzione',
+    'app.learningPaths.title': 'Percorsi di apprendimento',
+    'app.learningPaths.error.title': 'Impossibile recuperare i dati.',
+    'app.learningPaths.error.unknownError': 'Errore sconosciuto',
+    'app.entityPage.diagram.title': 'Diagramma di sistema',
+    'app.userSettings.infoCard.title': 'Metadati RHDH',
+    'app.userSettings.infoCard.metadataCopied':
+      'Metadati copiati negli appunti',
+    'app.userSettings.infoCard.copyMetadata': 'Copia metadati negli appunti',
+    'app.userSettings.infoCard.showLess': 'Mostra meno',
+    'app.userSettings.infoCard.showMore': 'Mostra di più',
+    'app.errors.contactSupport': 'Contatta il supporto',
+    'app.errors.goBack': 'Indietro',
+    'app.errors.notFound.message': 'Non siamo riusciti a trovare quella pagina',
+    'app.errors.notFound.additionalInfo':
+      'La pagina che stai cercando potrebbe essere stata rimossa, rinominata o è temporaneamente non disponibile.',
+    'app.table.createdAt': 'Creato il',
   },
 });

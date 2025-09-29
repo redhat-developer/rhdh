@@ -29,6 +29,7 @@ export default createTranslationMessages({
     'menuItem.apis': 'APIs',
     'menuItem.learningPaths': 'Rutas de Aprendizaje',
     'menuItem.selfService': 'Autoservicio',
+    'menuItem.userSettings': 'Configuración de usuario',
     'menuItem.administration': 'Administración',
     'menuItem.extensions': 'Extensiones',
 
@@ -73,5 +74,34 @@ export default createTranslationMessages({
     'signIn.providers.onelogin.message': 'Iniciar sesión con OneLogin',
     'signIn.providers.saml.title': 'SAML',
     'signIn.providers.saml.message': 'Iniciar sesión con SAML',
+
+    // App translations
+    'app.scaffolder.title': 'Autoservicio',
+    'app.search.title': 'Buscar',
+    'app.search.resultType': 'Tipo de resultado',
+    'app.search.softwareCatalog': 'Catálogo de software',
+    'app.search.filters.kind': 'Tipo',
+    'app.search.filters.lifecycle': 'Ciclo de vida',
+    'app.search.filters.component': 'Componente',
+    'app.search.filters.template': 'Plantilla',
+    'app.search.filters.experimental': 'experimental',
+    'app.search.filters.production': 'producción',
+    'app.learningPaths.title': 'Rutas de aprendizaje',
+    'app.learningPaths.error.title': 'No se pudieron obtener los datos.',
+    'app.learningPaths.error.unknownError': 'Error desconocido',
+    'app.entityPage.diagram.title': 'Diagrama del sistema',
+    'app.userSettings.infoCard.title': 'Metadatos RHDH',
+    'app.userSettings.infoCard.metadataCopied':
+      'Metadatos copiados al portapapeles',
+    'app.userSettings.infoCard.copyMetadata':
+      'Copiar metadatos al portapapeles',
+    'app.userSettings.infoCard.showLess': 'Mostrar menos',
+    'app.userSettings.infoCard.showMore': 'Mostrar más',
+    'app.errors.contactSupport': 'Contactar soporte',
+    'app.errors.goBack': 'Volver',
+    'app.errors.notFound.message': 'No pudimos encontrar esa página',
+    'app.errors.notFound.additionalInfo':
+      'La página que buscas pudo haber sido eliminada, renombrada o está temporalmente no disponible.',
+    'app.table.createdAt': 'Creado el',
   },
 });
