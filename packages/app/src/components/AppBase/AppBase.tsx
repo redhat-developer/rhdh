@@ -20,7 +20,6 @@ import { ScaffolderFieldExtensions } from '@backstage/plugin-scaffolder-react';
 import { SearchPage as BackstageSearchPage } from '@backstage/plugin-search';
 import { UserSettingsPage } from '@backstage/plugin-user-settings';
 
-import { TranslationsPage } from '@red-hat-developer-hub/backstage-plugin-translations';
 import DynamicRootContext from '@red-hat-developer-hub/plugin-utils';
 
 import getDynamicRootConfig from '../../utils/dynamicUI/getDynamicRootConfig';
@@ -118,7 +117,6 @@ const AppBase = () => {
               </Route>
               <Route path="/api-docs" element={<ApiExplorerPage />} />
 
-              <Route path="/t" element={<TranslationsPage />} />
               <Route
                 path="/catalog-import"
                 element={

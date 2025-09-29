@@ -74,9 +74,6 @@
     "prettier": "3.6.2",
     "typescript": "5.9.2"
   },
-  "peerDependencies": {
-    "@backstage/core-plugin-api": "10.7.0"
-  },
   "browserslist": {
     "production": [
       ">0.2%",

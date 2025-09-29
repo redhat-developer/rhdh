@@ -7928,28 +7928,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@internal/plugin-translation-backend@*, @internal/plugin-translation-backend@workspace:plugins/translation-backend":
-  version: 0.0.0-use.local
-  resolution: "@internal/plugin-translation-backend@workspace:plugins/translation-backend"
-  dependencies:
-    "@backstage/backend-defaults": 0.12.0
-    "@backstage/backend-plugin-api": 1.4.2
-    "@backstage/backend-test-utils": 1.8.0
-    "@backstage/catalog-client": 1.11.0
-    "@backstage/cli": 0.34.1
-    "@backstage/config": 1.3.3
-    "@backstage/errors": 1.2.7
-    "@backstage/plugin-catalog-node": 1.18.0
-    "@types/express": 4.17.23
-    "@types/supertest": 6.0.3
-    express: 4.21.2
-    express-promise-router: 4.1.1
-    prettier: 3.6.2
-    supertest: 6.3.4
-    typescript: 5.9.2
-  languageName: unknown
-  linkType: soft
-
 "@iovalkey/commands@npm:^0.1.0":
   version: 0.1.0
   resolution: "@iovalkey/commands@npm:0.1.0"
@@ -16822,8 +16800,6 @@ __metadata:
     react-use: 17.6.0
     tss-react: 4.9.19
     typescript: 5.9.2
-  peerDependencies:
-    "@backstage/core-plugin-api": 10.7.0
   languageName: unknown
   linkType: soft
 
@@ -17493,7 +17469,6 @@ __metadata:
     "@internal/plugin-dynamic-plugins-info-backend": "*"
     "@internal/plugin-licensed-users-info-backend": "*"
     "@internal/plugin-scalprum-backend": "*"
-    "@internal/plugin-translation-backend": "*"
     "@janus-idp/backstage-plugin-audit-log-node": 1.7.2
     "@opentelemetry/api": 1.9.0
     "@opentelemetry/auto-instrumentations-node": 0.58.1
@@ -17514,8 +17489,6 @@ __metadata:
     undici: 6.21.3
     winston: 3.14.2
     zod: 3.23.8
-  peerDependencies:
-    "@backstage/core-plugin-api": 10.7.0
   languageName: unknown
   linkType: soft
 
