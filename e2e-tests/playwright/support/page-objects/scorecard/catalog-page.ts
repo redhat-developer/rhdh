@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Page, expect } from '@playwright/test';
+import { Page, expect } from "@playwright/test";
 
 export class CatalogPage {
   readonly page: Page;
@@ -23,16 +23,14 @@ export class CatalogPage {
   }
 
   async navigateToCatalog() {
-    const enterButton = this.page.getByRole('button', { name: 'Enter' });
+    const enterButton = this.page.getByRole("button", { name: "Enter" });
     await expect(enterButton).toBeVisible();
     await enterButton.click();
-    await this.page.getByRole('button', { name: 'Hide' }).click();
-    await this.page.getByRole('link', { name: 'Catalog' , exact: true}).click();
-    await expect(this.page.getByText('Backstage Catalog')).toBeVisible();
+    await expect(this.page.getByText("My Company Catalog")).toBeVisible();
   }
 
   async openComponent(componentName: string) {
-    const link = this.page.getByRole('link', { name: componentName });
+    const link = this.page.getByRole("link", { name: componentName });
     await expect(link).toBeVisible();
     await link.click();
   }

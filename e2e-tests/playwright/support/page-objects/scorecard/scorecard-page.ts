@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Page, expect } from '@playwright/test';
-import { waitUntilApiCallSucceeds } from '../../../utils/scorecard-utils';
+
+import { Page, expect } from "@playwright/test";
+import { waitUntilApiCallSucceeds } from "../../../utils/scorecard-utils";
 
 export class ScorecardPage {
   readonly page: Page;
@@ -23,11 +24,28 @@ export class ScorecardPage {
     this.page = page;
   }
 
+  get scorecardMetrics() {
+    return [
+      {
+        title: "GitHub open PRs",
+        description:
+          "Current count of open Pull Requests for a given GitHub repository.",
+      },
+      {
+        title: "Jira open blocking tickets",
+        description:
+          "Highlights the number of critical, blocking issues that are currently open in Jira.",
+      },
+    ];
+  }
+
   async openTab() {
-    const tab = this.page.getByText('Scorecard');
-    await expect(tab).toBeVisible();
-    await tab.click();
-    await waitUntilApiCallSucceeds(this.page);
+    const scorecardTab = this.page.getByText("Scorecard");
+    await expect(scorecardTab).toBeVisible();
+    await Promise.all([
+      waitUntilApiCallSucceeds(this.page),
+      scorecardTab.click(),
+    ]);
   }
 
   async verifyScorecardValues(expectedValues: { [key: string]: string }) {
@@ -38,23 +56,43 @@ export class ScorecardPage {
   }
 
   async expectEmptyState() {
-    await expect(this.page.getByText('No scorecards added yet')).toBeVisible();
+    await expect(this.page.getByText("No scorecards added yet")).toBeVisible();
+    await expect(this.page.getByRole("article")).toContainText(
+      "Scorecards help you monitor component health at a glance. To begin, explore our documentation for setup guidelines.",
+    );
+    await expect(
+      this.page.getByRole("link", { name: "View documentation" }),
+    ).toBeVisible();
   }
 
-  async validateScorecardAria() {
-    await expect(this.page.getByRole('article')).toMatchAriaSnapshot(`
-      - heading "Github open PRs" [level=6]
-      - paragraph: Current count of open Pull Requests for a given GitHub repository.
-      - paragraph: /error/
-      - paragraph: /warning/
-      - paragraph: /success/
+  async validateScorecardAriaFor(scorecard: {
+    title: string;
+    description: string;
+  }) {
+    const { title, description } = scorecard;
+
+    const scorecardSection = this.page
+      .locator("article")
+      .filter({ hasText: title });
+
+    await expect(scorecardSection).toMatchAriaSnapshot(`
+      - article:
+        - text: ${title}
+        - paragraph: ${description}
+        - paragraph: /Error/
+        - paragraph: /Warning/
+        - paragraph: /Success/
     `);
-    await expect(this.page.getByRole('article')).toMatchAriaSnapshot(`
-      - heading "Jira open blocking tickets" [level=6]
-      - paragraph: Highlights the number of critical, blocking issues that are currently open in Jira.
-      - paragraph: /error/
-      - paragraph: /warning/
-      - paragraph: /success/
-    `);
+  }
+
+  async isScorecardVisible(scorecardTitle: string): Promise<boolean> {
+    try {
+      await expect(
+        this.page.getByText(scorecardTitle, { exact: true }),
+      ).toBeVisible({ timeout: 10000 });
+      return true;
+    } catch {
+      return false;
+    }
   }
 }

@@ -13,8 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { expect, Page } from '@playwright/test';
-import { waitUntilApiCallSucceeds } from '../../../utils/scorecard-utils';
+import { Page } from "@playwright/test";
 
 export class ComponentImportPage {
   readonly page: Page;
@@ -24,27 +23,21 @@ export class ComponentImportPage {
   }
 
   async startComponentImport() {
-    await this.page.getByRole('button', { name: 'Create' ,exact : true}).click();
+    await this.page.getByRole("button", { name: "Create" }).click();
     await this.page
-      .getByRole('button', { name: 'Register Existing Component' })
+      .getByRole("button", { name: "Register Existing Component" })
       .click();
   }
 
   async analyzeComponent(url: string) {
-    await this.page.getByRole('textbox', { name: 'URL' }).fill(url);
-    await this.page.getByRole('button', { name: 'Analyze' }).click();
-    await this.page.getByRole('button', { name: 'Import' }).click();
+    await this.page.getByRole("textbox", { name: "URL" }).fill(url);
+    await this.page.getByRole("button", { name: "Analyze" }).click();
+    await this.page.getByRole("button", { name: "Import" }).click();
     await this.page.waitForTimeout(2000);
   }
 
   async viewImportedComponent() {
-    await this.page.getByRole('button', { name: 'View Component' }).click();
-    await this.page.getByText('Overview').waitFor();
-  }
-
-  async goToScorecardTab() {
-    await expect(this.page.getByText('Scorecard')).toBeVisible();
-    await this.page.getByText('Scorecard').click();
-    await waitUntilApiCallSucceeds(this.page);
+    await this.page.getByRole("button", { name: "View Component" }).click();
+    await this.page.getByText("Overview").waitFor();
   }
 }
