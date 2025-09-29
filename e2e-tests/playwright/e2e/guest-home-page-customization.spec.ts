@@ -65,7 +65,7 @@ test.describe.serial("Guest Home Page Customization", () => {
     await expect(
       page.getByText(/Good (morning|afternoon|evening), Guest!/),
     ).toBeVisible();
-    await page.getByRole("button", { name: "Edit" }).click();
+    await homePageCustomization.enterEditMode();
 
     await homePageCustomization.addWidget("EntitySection");
     await expect(page.getByText("Explore Your Software Catalog")).toBeVisible();
