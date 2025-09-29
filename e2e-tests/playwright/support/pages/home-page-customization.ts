@@ -5,7 +5,6 @@ export class HomePageCustomization {
   private page: Page;
   private uiHelper: UIhelper;
 
-  // Constants
   private readonly expectedCards = [
     "Good (morning|afternoon|evening), Guest!",
     "Explore Your Software Catalog",
@@ -33,13 +32,11 @@ export class HomePageCustomization {
     this.uiHelper = new UIhelper(page);
   }
 
-  // Navigation and Setup
   async verifyHomePageLoaded(): Promise<void> {
     await this.uiHelper.verifyHeading("Welcome back!");
     await expect(this.greetingText()).toBeVisible();
   }
 
-  // Card Verification Methods
   async verifyAllCardsDisplayed(): Promise<void> {
     for (const card of this.expectedCards) {
       if (card.includes("Good")) {
@@ -54,7 +51,6 @@ export class HomePageCustomization {
     await this.uiHelper.verifyText("Edit");
   }
 
-  // Edit Mode Methods
   async enterEditMode(): Promise<void> {
     await this.uiHelper.clickButton("Edit");
     await expect(this.saveButton()).toBeVisible();
@@ -65,7 +61,6 @@ export class HomePageCustomization {
     await expect(this.editButton()).toBeVisible();
   }
 
-  // Resizing Methods
   async resizeAllCards(): Promise<void> {
     const allHandles = this.resizeHandles();
     const handleCount = await allHandles.count();
@@ -160,7 +155,6 @@ export class HomePageCustomization {
     }
   }
 
-  // Deletion Methods
   async deleteAllCards(): Promise<void> {
     while (true) {
       const currentButtons = this.deleteButtons();
@@ -195,7 +189,6 @@ export class HomePageCustomization {
     }
   }
 
-  // Restore Methods
   async restoreDefaultCards(): Promise<void> {
     await this.uiHelper.clickButton("Restore defaults");
     await this.page.waitForTimeout(2000);
@@ -206,7 +199,6 @@ export class HomePageCustomization {
     await expect(this.editButton()).toBeVisible();
   }
 
-  // Add Widget Methods
   async addWidget(widgetType: string = "OnboardingSection"): Promise<void> {
     await this.uiHelper.clickButton("Add widget");
     await this.page.waitForTimeout(1000); // Wait for dialog to open

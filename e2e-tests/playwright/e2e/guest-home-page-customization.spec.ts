@@ -3,7 +3,7 @@ import { Common } from "../utils/common";
 import { HomePageCustomization } from "../support/pages/home-page-customization";
 import { runAccessibilityTests } from "../utils/accessibility";
 
-test.describe("Guest Home Page Customization", () => {
+test.describe.serial("Guest Home Page Customization", () => {
   let common: Common;
   let homePageCustomization: HomePageCustomization;
 
