@@ -7,7 +7,7 @@ if (!process.env.GH_USER_ID || !process.env.GH_USER_PASS || !process.env.GH_2FA_
 }
 
 test("Verify all GitHub Pull Requests statistics after login", async ({ page, context }) => {
-  const repoName = "Red Hat Developer Hub";
+  const repoName = "Backstage Showcase";
   const common = new Common(page);
   const uiHelper = new UIhelper(page);
 

@@ -34,7 +34,7 @@ export class Common {
 
   async waitForLoad(timeout = 120000) {
     for (const item of Object.values(WAIT_OBJECTS)) {
-      await this.page.waitForSelector(item, {
+      await this.page.waitForSelector(item as string, {
         state: "hidden",
         timeout: timeout,
       });
