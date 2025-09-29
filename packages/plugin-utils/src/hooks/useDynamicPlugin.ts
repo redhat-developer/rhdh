@@ -21,6 +21,7 @@ export function useDynamicPluginConfig(): DynamicRootConfig {
     providerSettings,
     scaffolderFieldExtensions,
     techdocsAddons,
+    translationRefs,
   } = context;
 
   return {
@@ -31,5 +32,6 @@ export function useDynamicPluginConfig(): DynamicRootConfig {
     providerSettings,
     scaffolderFieldExtensions,
     techdocsAddons,
+    translationRefs,
   };
 }

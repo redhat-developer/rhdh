@@ -45,6 +45,7 @@ const TestRoot = ({ children }: PropsWithChildren<{}>) => {
       scaffolderFieldExtensions: [],
       providerSettings: [],
       techdocsAddons: [],
+      translationRefs: [],
     }),
     [current],
   );
