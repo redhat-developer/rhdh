@@ -27,27 +27,33 @@ test.describe("Guest Home Page Customization", () => {
     await runAccessibilityTests(page, testInfo);
   });
 
-  test("Verify All Cards Can Be Resized in Edit Mode", async ({ page }, testInfo) => {
+  test("Verify All Cards Can Be Resized in Edit Mode", async ({
+    page,
+  }, testInfo) => {
     await homePageCustomization.enterEditMode();
     await homePageCustomization.resizeAllCards();
     await homePageCustomization.exitEditMode();
     await runAccessibilityTests(page, testInfo);
   });
 
-  test("Verify Cards Can Be Individually Deleted in Edit Mode", async ({ page }, testInfo) => {
+  test("Verify Cards Can Be Individually Deleted in Edit Mode", async ({
+    page,
+  }, testInfo) => {
     await homePageCustomization.enterEditMode();
     await homePageCustomization.deleteAllCards();
     await homePageCustomization.verifyCardsDeleted();
     await runAccessibilityTests(page, testInfo);
   });
 
-  test("Verify Restore Default Cards", async ({ page }, testInfo) => {    
+  test("Verify Restore Default Cards", async ({ page }, testInfo) => {
     await homePageCustomization.restoreDefaultCards();
     await homePageCustomization.verifyCardsRestored();
     await runAccessibilityTests(page, testInfo);
   });
 
-  test("Verify All Cards can be Deleted with Clear all Button", async ({ page }, testInfo) => {
+  test("Verify All Cards can be Deleted with Clear all Button", async ({
+    page,
+  }, testInfo) => {
     await homePageCustomization.enterEditMode();
     await homePageCustomization.clearAllCardsWithButton();
     await homePageCustomization.verifyCardsDeleted();
@@ -56,8 +62,10 @@ test.describe("Guest Home Page Customization", () => {
 
   test("Verify Add Widget Button Adds Cards", async ({ page }, testInfo) => {
     await homePageCustomization.addWidget("OnboardingSection");
-    await expect(page.getByText(/Good (morning|afternoon|evening), Guest!/)).toBeVisible();
-    await page.getByRole('button', { name: 'Edit' }).click();
+    await expect(
+      page.getByText(/Good (morning|afternoon|evening), Guest!/),
+    ).toBeVisible();
+    await page.getByRole("button", { name: "Edit" }).click();
 
     await homePageCustomization.addWidget("EntitySection");
     await expect(page.getByText("Explore Your Software Catalog")).toBeVisible();
