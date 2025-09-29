@@ -737,6 +737,7 @@ perform_helm_install() {
     -f "${DIR}/value_files/${value_file}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     $(get_image_helm_set_params)
+    sleep 2h
 }
 
 base_deployment() {
