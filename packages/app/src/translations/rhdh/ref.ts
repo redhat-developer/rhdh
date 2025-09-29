@@ -47,6 +47,61 @@ export const rhdhMessages = {
     home: 'Home',
     homeLogo: 'Home logo',
   },
+  signIn: {
+    page: {
+      title: 'Select a sign-in method',
+    },
+    providers: {
+      auth0: {
+        title: 'Auth0',
+        message: 'Sign in using Auth0',
+      },
+      atlassian: {
+        title: 'Atlassian',
+        message: 'Sign in using Atlassian',
+      },
+      microsoft: {
+        title: 'Microsoft',
+        message: 'Sign in using Microsoft',
+      },
+      bitbucket: {
+        title: 'Bitbucket',
+        message: 'Sign in using Bitbucket',
+      },
+      bitbucketServer: {
+        title: 'Bitbucket Server',
+        message: 'Sign in using Bitbucket Server',
+      },
+      github: {
+        title: 'GitHub',
+        message: 'Sign in using GitHub',
+      },
+      gitlab: {
+        title: 'GitLab',
+        message: 'Sign in using GitLab',
+      },
+      google: {
+        title: 'Google',
+        message: 'Sign in using Google',
+      },
+      oidc: {
+        title: 'OIDC',
+        message: 'Sign in using OIDC',
+      },
+      okta: {
+        title: 'Okta',
+        message: 'Sign in using Okta',
+      },
+      onelogin: {
+        title: 'OneLogin',
+        message: 'Sign in using OneLogin',
+      },
+      saml: {
+        title: 'SAML',
+        message: 'Sign in using SAML',
+      },
+    },
+  },
 };
 
 /**
