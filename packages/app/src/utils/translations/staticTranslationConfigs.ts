@@ -19,13 +19,14 @@ import { userSettingsTranslationRef } from '@backstage/plugin-user-settings/alph
 import {
   translationsPluginTranslationRef,
   translationsPluginTranslations,
-} from '@red-hat-developer-hub/backstage-plugin-translations';
+} from '@red-hat-developer-hub/backstage-plugin-translations/alpha';
 
 import { catalogTranslations } from '../../components/catalog/translations/catalog';
 import { catalogImportTranslations } from '../../translations/catalog-import/catalog-import';
 import { coreComponentsTranslations } from '../../translations/core-components/core-components';
+import { rhdhTranslationRef, rhdhTranslations } from '../../translations/rhdh';
 import { scaffolderTranslations } from '../../translations/scaffolder/scaffolder';
-import { userSettingTranslations } from '../../translations/user-settings/user-settings';
+import { userSettingsTranslations } from '../../translations/user-settings/user-settings';
 
 export interface StaticTranslationConfig {
   resource: TranslationResource;
@@ -41,7 +42,7 @@ export const staticTranslationConfigs: StaticTranslationConfig[] = [
     ref: coreComponentsTranslationRef,
   },
   {
-    resource: userSettingTranslations,
+    resource: userSettingsTranslations,
     ref: userSettingsTranslationRef,
   },
   {
@@ -59,6 +60,11 @@ export const staticTranslationConfigs: StaticTranslationConfig[] = [
   {
     resource: translationsPluginTranslations,
     ref: translationsPluginTranslationRef,
+  },
+
+  {
+    resource: rhdhTranslations,
+    ref: rhdhTranslationRef,
   },
   ...[
     catalogReactTranslationRef,

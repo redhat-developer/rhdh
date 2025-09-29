@@ -10,6 +10,12 @@
       "infoCard.title": "NPM 包 JSON {{packageName}}"
     }
   },
+  "catalog-import": {
+    "en": {
+      "defaultImportPage.headerTitle": "Custom header from root"
+    }
+  },
+
   "extensions": {
     "en": {
       "catalogPage.installationAlert": "Backend restart required JSON"

@@ -180,7 +180,7 @@
     }
   },
   "home": {
-    "tr": {
+    "fr": {
       "addWidgetDialog.title": "Ajouter un nouveau widget au tableau de bord",
       "customHomepageButtons.edit": "Modifier",
       "customHomepageButtons.restoreDefaults": "Restaurer les valeurs par défaut",
