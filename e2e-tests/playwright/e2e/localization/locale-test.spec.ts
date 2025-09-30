@@ -30,7 +30,10 @@ test.describe(`RHDH Localization - ${t.settings.rhdhLanguage}`, () => {
     await expect(page.getByTestId("select").locator("div")).toContainText(
       t.settings.rhdhLanguage,
     );
-    await page.getByRole("button", { name: t.settings.rhdhLanguage }).click();
+    await page
+      .getByTestId("select")
+      .getByRole("button", { name: t.settings.rhdhLanguage })
+      .click();
     await expect(page.getByRole("listbox")).toMatchAriaSnapshot(`
     - listbox:
       - option "English"
