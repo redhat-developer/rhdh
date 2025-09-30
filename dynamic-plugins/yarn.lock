@@ -6576,7 +6576,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-home-react@npm:^0.1.15, @backstage/plugin-home-react@npm:^0.1.20, @backstage/plugin-home-react@npm:^0.1.26, @backstage/plugin-home-react@npm:^0.1.27":
+"@backstage/plugin-home-react@npm:^0.1.15, @backstage/plugin-home-react@npm:^0.1.20, @backstage/plugin-home-react@npm:^0.1.27":
   version: 0.1.27
   resolution: "@backstage/plugin-home-react@npm:0.1.27"
   dependencies:
@@ -6595,6 +6595,68 @@ __metadata:
     "@types/react":
       optional: true
   checksum: 543193be76d94053230a842af2781607551214af5b78e86d58ed48a0fc440a16e965523433191ace07ec995fc6304dce734ba9f8576dae902e2669d921f6a2c5
+  languageName: node
+  linkType: hard
+
+"@backstage/plugin-home-react@npm:^0.1.29, @backstage/plugin-home-react@npm:^0.1.30":
+  version: 0.1.30
+  resolution: "@backstage/plugin-home-react@npm:0.1.30"
+  dependencies:
+    "@backstage/core-components": ^0.18.0
+    "@backstage/core-plugin-api": ^1.11.0
+    "@backstage/frontend-plugin-api": ^0.12.0
+    "@material-ui/core": ^4.12.2
+    "@material-ui/icons": ^4.9.1
+    "@rjsf/utils": 5.23.2
+  peerDependencies:
+    "@types/react": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.3.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 114d81eedf4f8dac2664bd9f2a5acdf9253388061e629f038be9e30186f622128e66f92d466bf149680fbafa313290ba836e489537060093048f8fff7bfd9a7a
+  languageName: node
+  linkType: hard
+
+"@backstage/plugin-home@npm:^0.8.11":
+  version: 0.8.12
+  resolution: "@backstage/plugin-home@npm:0.8.12"
+  dependencies:
+    "@backstage/catalog-client": ^1.12.0
+    "@backstage/catalog-model": ^1.7.5
+    "@backstage/config": ^1.3.3
+    "@backstage/core-app-api": ^1.19.0
+    "@backstage/core-compat-api": ^0.5.2
+    "@backstage/core-components": ^0.18.0
+    "@backstage/core-plugin-api": ^1.11.0
+    "@backstage/frontend-plugin-api": ^0.12.0
+    "@backstage/plugin-catalog-react": ^1.21.0
+    "@backstage/plugin-home-react": ^0.1.30
+    "@backstage/theme": ^0.6.8
+    "@material-ui/core": ^4.12.2
+    "@material-ui/icons": ^4.9.1
+    "@material-ui/lab": 4.0.0-alpha.61
+    "@rjsf/core": 5.23.2
+    "@rjsf/material-ui": 5.23.2
+    "@rjsf/utils": 5.23.2
+    "@rjsf/validator-ajv8": 5.23.2
+    lodash: ^4.17.21
+    luxon: ^3.4.3
+    react-grid-layout: 1.3.4
+    react-resizable: ^3.0.4
+    react-use: ^17.2.4
+    zod: ^3.22.4
+  peerDependencies:
+    "@types/react": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.3.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: f8c0f0777a98e0c9c9f237573af8bdab4184f47757024d2e8a08535a6fe6c82cbd2d73346f77af58d8c765dce7b74d85f0baf1d4ea662fc57b5f5cd5404098fc
   languageName: node
   linkType: hard
 
@@ -7933,6 +7995,39 @@ __metadata:
     "@types/react":
       optional: true
   checksum: 1379a2cfd921e85da291771035116b2438b0bcab8add141842e5911f91cacbb78a179bb03a68c1d6cfb86c6131ecd44c8242d2a0ee60910ca67b113c366cf271
+  languageName: node
+  linkType: hard
+
+"@backstage/plugin-user-settings@npm:^0.8.25":
+  version: 0.8.26
+  resolution: "@backstage/plugin-user-settings@npm:0.8.26"
+  dependencies:
+    "@backstage/catalog-model": ^1.7.5
+    "@backstage/core-app-api": ^1.19.0
+    "@backstage/core-compat-api": ^0.5.2
+    "@backstage/core-components": ^0.18.0
+    "@backstage/core-plugin-api": ^1.11.0
+    "@backstage/errors": ^1.2.7
+    "@backstage/frontend-plugin-api": ^0.12.0
+    "@backstage/plugin-catalog-react": ^1.21.0
+    "@backstage/plugin-signals-react": ^0.0.15
+    "@backstage/plugin-user-settings-common": ^0.0.1
+    "@backstage/theme": ^0.6.8
+    "@backstage/types": ^1.2.2
+    "@material-ui/core": ^4.12.2
+    "@material-ui/icons": ^4.9.1
+    "@material-ui/lab": 4.0.0-alpha.61
+    react-use: ^17.2.4
+    zen-observable: ^0.10.0
+  peerDependencies:
+    "@types/react": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.3.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: fb21f77793e769c1b3c028aa5576dec9f5774f4019ccf9717b29b9c883bec22965814ab06319179b404d8c5b87d9943ca69c3d8aac99b6a34ae90ecb34a74374
   languageName: node
   linkType: hard
 
@@ -13374,20 +13469,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-dynamic-home-page@npm:1.5.3":
-  version: 1.5.3
-  resolution: "@red-hat-developer-hub/backstage-plugin-dynamic-home-page@npm:1.5.3"
+"@red-hat-developer-hub/backstage-plugin-dynamic-home-page@npm:1.9.0":
+  version: 1.9.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-dynamic-home-page@npm:1.9.0"
   dependencies:
-    "@backstage/catalog-client": ^1.10.0
-    "@backstage/catalog-model": ^1.7.4
-    "@backstage/core-components": ^0.17.2
-    "@backstage/core-plugin-api": ^1.10.7
-    "@backstage/plugin-catalog-react": ^1.18.0
-    "@backstage/plugin-home": ^0.8.8
-    "@backstage/plugin-home-react": ^0.1.26
-    "@backstage/plugin-search-react": ^1.9.0
-    "@backstage/plugin-user-settings": ^0.8.22
-    "@backstage/theme": ^0.6.6
+    "@backstage/catalog-client": ^1.11.0
+    "@backstage/catalog-model": ^1.7.5
+    "@backstage/core-components": ^0.17.5
+    "@backstage/core-plugin-api": ^1.10.9
+    "@backstage/plugin-catalog-react": ^1.20.1
+    "@backstage/plugin-home": ^0.8.11
+    "@backstage/plugin-home-react": ^0.1.29
+    "@backstage/plugin-search-react": ^1.9.3
+    "@backstage/plugin-user-settings": ^0.8.25
+    "@backstage/theme": ^0.6.8
     "@mui/icons-material": 5.18.0
     "@mui/material": 5.18.0
     "@mui/styles": 5.18.0
@@ -13398,7 +13493,7 @@ __metadata:
   peerDependencies:
     react: 16.13.1 || ^17.0.0 || ^18.2.0
     react-router-dom: 6.30.1
-  checksum: ecc928298b919e68ec28d392102280ecf166c794aefc128004788b020dcdcee09c29502787e4cf20a014ef9cd4c15d2f343c30e4bb1bd38f9c79d713fc548c0d
+  checksum: 3865b44c2d160f1fb30baf58ab0c07283277e1f70e65895cdc874a4b1d8031de0a6593f4593a5e0112a5c73e4c870dd68a29927180f78f641f10d8f0cc42323b
   languageName: node
   linkType: hard
 
@@ -34352,7 +34447,7 @@ __metadata:
     "@backstage/cli": ^0.34.1
     "@janus-idp/cli": 3.6.1
     "@mui/material": 5.18.0
-    "@red-hat-developer-hub/backstage-plugin-dynamic-home-page": 1.5.3
+    "@red-hat-developer-hub/backstage-plugin-dynamic-home-page": 1.9.0
     typescript: 5.9.2
   languageName: unknown
   linkType: soft
