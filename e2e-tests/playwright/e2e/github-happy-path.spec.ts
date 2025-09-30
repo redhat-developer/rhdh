@@ -111,7 +111,8 @@ test.describe.serial("GitHub Happy path", async () => {
 
     await common.clickOnGHloginPopup();
     await uiHelper.verifyLink("About RHDH", { exact: false });
-    // FIXME
+    // TODO reenable test once the PR statistics card is fixed
+    // see https://issues.redhat.com/browse/RHDHBUGS-2091
     // await backstageShowcase.verifyPRStatisticsRendered();
     await backstageShowcase.verifyAboutCardIsDisplayed();
   });
@@ -173,6 +174,8 @@ test.describe.serial("GitHub Happy path", async () => {
     );
   });
 
+  // TODO reenable test once the PR statistics card is fixed
+  // see https://issues.redhat.com/browse/RHDHBUGS-2091
   test.skip("Verify that the 5, 10, 20 items per page option properly displays the correct number of PRs", async () => {
     await uiHelper.openCatalogSidebar("Component");
     await uiHelper.clickLink("Red Hat Developer Hub");
