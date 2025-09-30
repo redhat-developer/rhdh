@@ -547,9 +547,7 @@ export const DynamicRoot = ({
       Record<string, Record<string, string>>
     > = {};
 
-    if (translationConfig?.overrides) {
-      overrideTranslations = await fetchOverrideTranslations(baseUrl);
-    }
+    overrideTranslations = await fetchOverrideTranslations(baseUrl);
 
     // Process dynamic translation resources
     const dynamicTranslationConfigs =
