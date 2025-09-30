@@ -462,6 +462,8 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
             </Fragment>
           );
         })}
+
+        <SidebarItem to="/test" text="TEST" icon={() => null} />
       </>
     );
   };

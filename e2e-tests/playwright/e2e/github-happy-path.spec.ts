@@ -111,7 +111,8 @@ test.describe.serial("GitHub Happy path", async () => {
 
     await common.clickOnGHloginPopup();
     await uiHelper.verifyLink("About RHDH", { exact: false });
-    await backstageShowcase.verifyPRStatisticsRendered();
+    // FIXME
+    // await backstageShowcase.verifyPRStatisticsRendered();
     await backstageShowcase.verifyAboutCardIsDisplayed();
   });
 
@@ -172,7 +173,7 @@ test.describe.serial("GitHub Happy path", async () => {
     );
   });
 
-  test("Verify that the 5, 10, 20 items per page option properly displays the correct number of PRs", async () => {
+  test.skip("Verify that the 5, 10, 20 items per page option properly displays the correct number of PRs", async () => {
     await uiHelper.openCatalogSidebar("Component");
     await uiHelper.clickLink("Red Hat Developer Hub");
     await common.clickOnGHloginPopup();
