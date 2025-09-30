@@ -65,7 +65,6 @@ test.describe("Admin > Extensions > Catalog", () => {
     ).not.toBeChecked();
     await expect(page.getByRole("button", { name: "Red Hat" })).toBeHidden();
     await page.keyboard.press(`Escape`);
-    await page.getByTestId("CancelIcon").first().click();
     await expect(page.getByLabel("Category").getByRole("combobox")).toBeEmpty();
     await page.keyboard.press(`Escape`);
   });
@@ -83,7 +82,9 @@ test.describe("Admin > Extensions > Catalog", () => {
     await page.getByRole("heading", { name: "DynaTrace" }).first().click();
     await page.getByRole("button", { name: "close" }).click();
     await uiHelper.clickLink("Read more");
-    await uiHelper.verifyDivHasText(/^Certified$/);
+    await expect(
+      page.getByLabel("Stable and secured by Red Hat").getByText("Certified"),
+    ).toBeVisible();
     await uiHelper.verifyText("About");
     await uiHelper.verifyHeading("Versions");
     await uiHelper.verifyTableHeadingAndRows([
