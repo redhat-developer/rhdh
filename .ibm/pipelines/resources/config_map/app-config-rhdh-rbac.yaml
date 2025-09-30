@@ -132,6 +132,7 @@ permission:
       - permission
       - scaffolder
       - kubernetes
+      - scorecard
     admin:
       users:
         - name: user:default/rhdh-qe

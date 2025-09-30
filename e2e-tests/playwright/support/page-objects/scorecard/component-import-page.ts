@@ -14,30 +14,31 @@
  * limitations under the License.
  */
 import { Page } from "@playwright/test";
+import { UIhelper } from "../../../utils/ui-helper";
 
 export class ComponentImportPage {
   readonly page: Page;
+  private uiHelper: UIhelper;
 
   constructor(page: Page) {
     this.page = page;
+    this.uiHelper = new UIhelper(page);
   }
 
   async startComponentImport() {
-    await this.page.getByRole("button", { name: "Create" }).click();
-    await this.page
-      .getByRole("button", { name: "Register Existing Component" })
-      .click();
+    await this.uiHelper.clickButton("Self-service");
+    await this.uiHelper.clickButton("Import an existing Git repository");
   }
 
   async analyzeComponent(url: string) {
-    await this.page.getByRole("textbox", { name: "URL" }).fill(url);
-    await this.page.getByRole("button", { name: "Analyze" }).click();
-    await this.page.getByRole("button", { name: "Import" }).click();
+    await this.uiHelper.fillTextInputByLabel("URL", url);
+    await this.uiHelper.clickButton("Analyze");
+    await this.uiHelper.clickButton("Import");
     await this.page.waitForTimeout(2000);
   }
 
   async viewImportedComponent() {
-    await this.page.getByRole("button", { name: "View Component" }).click();
-    await this.page.getByText("Overview").waitFor();
+    await this.uiHelper.clickButton("View Component");
+    await this.uiHelper.verifyText("Overview");
   }
 }

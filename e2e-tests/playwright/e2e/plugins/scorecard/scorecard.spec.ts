@@ -15,11 +15,11 @@
  */
 
 import { test, expect } from "@playwright/test";
+import { Common } from "../../../utils/common";
 import { mockScorecardResponse } from "../../../utils/scorecard-utils";
 import { ComponentImportPage } from "../../../support/page-objects/scorecard/component-import-page";
-import { CatalogPage } from "../../../support/page-objects/scorecard/catalog-page";
+import { Catalog } from "../../../support/pages/catalog";
 import { ScorecardPage } from "../../../support/page-objects/scorecard/scorecard-page";
-import { setupRBAC } from "../../../utils/rbac-setup";
 import {
   CUSTOM_SCORECARD_RESPONSE,
   EMPTY_SCORECARD_RESPONSE,
@@ -27,49 +27,36 @@ import {
   INVALID_THRESHOLD_RESPONSE,
 } from "../../../utils/scorecard-response-utils";
 
-test.describe.serial("Pre-RBAC Access Tests", () => {
-  test("Display access denied message when RBAC is not configured", async ({
-    page,
-  }) => {
-    const catalogPage = new CatalogPage(page);
-    await page.goto("/");
-    await catalogPage.navigateToCatalog();
-    await catalogPage.openComponent("Red Hat Developer Hub");
-    await page.getByText("Scorecard").click();
-    await expect(page.getByText("Missing permission")).toBeVisible();
-    await expect(page.getByRole("article")).toContainText(
-      "To view Scorecard plugin, contact your administrator to give the scorecard.metric.read permission.",
-    );
-  });
-});
-
 test.describe.serial("Scorecard Plugin Tests", () => {
-  let catalogPage: CatalogPage;
+  let context;
+  let page;
+  let catalog: Catalog;
   let importPage: ComponentImportPage;
   let scorecardPage: ScorecardPage;
 
-  test.beforeAll(async ({ browser }) => {
-    const context = await browser.newContext();
-    const page = await context.newPage();
+  test.beforeAll(async ({ browser }, testInfo) => {
+    testInfo.annotations.push({
+      type: "component",
+      description: "scorecard",
+    });
 
-    await setupRBAC(page);
-
-    await context.close();
-  });
-
-  test.beforeEach(async ({ page }) => {
-    catalogPage = new CatalogPage(page);
+    context = await browser.newContext();
+    page = await context.newPage();
+    catalog = new Catalog(page);
     importPage = new ComponentImportPage(page);
     scorecardPage = new ScorecardPage(page);
+    await new Common(page).loginAsKeycloakUser();
   });
 
-  test("Import component and validate scorecard tabs for GitHub PRs and Jira tickets", async ({
-    page,
-  }) => {
+  test.afterAll(async () => {
+    await context?.close();
+  });
+
+  test("Import component and validate scorecard tabs for GitHub PRs and Jira tickets", async () => {
     await mockScorecardResponse(page, CUSTOM_SCORECARD_RESPONSE);
 
     await page.goto("/");
-    await catalogPage.navigateToCatalog();
+    await catalog.go();
     await importPage.startComponentImport();
     await importPage.analyzeComponent(
       "https://github.com/rhdh-pai-qe/backstage-catalog/blob/main/catalog-info.yaml",
@@ -87,27 +74,23 @@ test.describe.serial("Scorecard Plugin Tests", () => {
     }
   });
 
-  test("Display empty state when scorecard API returns no metrics", async ({
-    page,
-  }) => {
+  test("Display empty state when scorecard API returns no metrics", async () => {
     await mockScorecardResponse(page, EMPTY_SCORECARD_RESPONSE);
 
     await page.goto("/");
-    await catalogPage.navigateToCatalog();
-    await catalogPage.openComponent("rhdh-app");
+    await catalog.go();
+    await catalog.goToByName("rhdh-app");
     await scorecardPage.openTab();
 
     await scorecardPage.expectEmptyState();
   });
 
-  test("Displays error state for unavailable data while rendering metrics", async ({
-    page,
-  }) => {
+  test("Displays error state for unavailable data while rendering metrics", async () => {
     await mockScorecardResponse(page, UNAVAILABLE_METRIC_RESPONSE);
 
     await page.goto("/");
-    await catalogPage.navigateToCatalog();
-    await catalogPage.openComponent("rhdh-app");
+    await catalog.go();
+    await catalog.goToByName("rhdh-app");
     await scorecardPage.openTab();
 
     const jiraMetric = scorecardPage.scorecardMetrics[1];
@@ -139,14 +122,12 @@ test.describe.serial("Scorecard Plugin Tests", () => {
     await scorecardPage.validateScorecardAriaFor(jiraMetric);
   });
 
-  test("Display error state for invalid threshold config while rendering metrics", async ({
-    page,
-  }) => {
+  test("Display error state for invalid threshold config while rendering metrics", async () => {
     await mockScorecardResponse(page, INVALID_THRESHOLD_RESPONSE);
 
     await page.goto("/");
-    await catalogPage.navigateToCatalog();
-    await catalogPage.openComponent("rhdh-app");
+    await catalog.go();
+    await catalog.goToByName("rhdh-app");
     await scorecardPage.openTab();
 
     const githubMetric = scorecardPage.scorecardMetrics[0];
