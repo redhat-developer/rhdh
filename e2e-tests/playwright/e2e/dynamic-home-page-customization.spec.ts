@@ -3,7 +3,7 @@ import { Common } from "../utils/common";
 import { HomePageCustomization } from "../support/pages/home-page-customization";
 import { runAccessibilityTests } from "../utils/accessibility";
 
-test.describe.serial("Guest Home Page Customization", () => {
+test.describe.serial("Dynamic Home Page Customization", () => {
   let common: Common;
   let homePageCustomization: HomePageCustomization;
 
@@ -17,10 +17,10 @@ test.describe.serial("Guest Home Page Customization", () => {
   test.beforeEach(async ({ page }) => {
     common = new Common(page);
     homePageCustomization = new HomePageCustomization(page);
-    await common.loginAsGuest();
+    await common.loginAsKeycloakUser();
   });
 
-  test("Verify Cards Display After Guest Login", async ({ page }, testInfo) => {
+  test("Verify Cards Display After Login", async ({ page }, testInfo) => {
     await homePageCustomization.verifyHomePageLoaded();
     await homePageCustomization.verifyAllCardsDisplayed();
     await homePageCustomization.verifyEditButtonVisible();
@@ -63,7 +63,7 @@ test.describe.serial("Guest Home Page Customization", () => {
   test("Verify Add Widget Button Adds Cards", async ({ page }, testInfo) => {
     await homePageCustomization.addWidget("OnboardingSection");
     await expect(
-      page.getByText(/Good (morning|afternoon|evening), Guest!/),
+      page.getByText(/Good (morning|afternoon|evening),/),
     ).toBeVisible();
     await homePageCustomization.enterEditMode();
 
