@@ -3939,29 +3939,28 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-topology@npm:2.2.2":
-  version: 2.2.2
-  resolution: "@backstage-community/plugin-topology@npm:2.2.2"
+"@backstage-community/plugin-topology@npm:2.6.0":
+  version: 2.6.0
+  resolution: "@backstage-community/plugin-topology@npm:2.6.0"
   dependencies:
-    "@backstage/catalog-model": ^1.7.4
-    "@backstage/core-components": ^0.17.2
-    "@backstage/core-plugin-api": ^1.10.7
-    "@backstage/plugin-catalog-react": ^1.18.0
-    "@backstage/plugin-kubernetes-common": ^0.9.5
-    "@backstage/plugin-kubernetes-react": ^0.5.7
-    "@backstage/plugin-permission-common": ^0.9.0
-    "@backstage/plugin-permission-react": ^0.4.34
-    "@backstage/theme": ^0.6.6
+    "@backstage/catalog-model": ^1.7.5
+    "@backstage/core-components": ^0.17.5
+    "@backstage/core-plugin-api": ^1.10.9
+    "@backstage/plugin-catalog-react": ^1.20.1
+    "@backstage/plugin-kubernetes-common": ^0.9.6
+    "@backstage/plugin-kubernetes-react": ^0.5.10
+    "@backstage/plugin-permission-common": ^0.9.1
+    "@backstage/plugin-permission-react": ^0.4.36
+    "@backstage/theme": ^0.6.8
     "@janus-idp/shared-react": ^2.18.0
     "@kubernetes/client-node": 1.1.2
-    "@mui/icons-material": 5.16.14
-    "@mui/lab": 5.0.0-alpha.175
+    "@mui/icons-material": 5.18.0
+    "@mui/lab": 5.0.0-alpha.177
     "@mui/material": ^5.15.17
-    "@mui/styles": 5.16.14
+    "@mui/styles": 5.18.0
     "@patternfly/patternfly": ^6.1.0
     "@patternfly/react-charts": ^8.1.0
     "@patternfly/react-core": ^6.1.0
-    "@patternfly/react-styles": ^6.1.0
     "@patternfly/react-tokens": ^6.1.0
     "@patternfly/react-topology": ^6.1.0
     classnames: 2.x
@@ -3975,7 +3974,7 @@ __metadata:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.0.0
-  checksum: 2b2569ad1f016b7bf15367d05bcd05e7681da62bda0065405aeb315d69054cb66af5ebac29f84a999dc7dc8c23e83903060839fc7bc0b62ae4bbeb41eb9393aa
+  checksum: 40cc6c4ebb162fafbeca94f25bd59917cc4ebffc1ab1772e6c188ed7d85b88639ea0660ebfb3d9a71b8c4908de0d7bca7b8aac1b5572746eedd7807352685ff6
   languageName: node
   linkType: hard
 
@@ -11468,28 +11467,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/base@npm:5.0.0-beta.40-0":
-  version: 5.0.0-beta.40-0
-  resolution: "@mui/base@npm:5.0.0-beta.40-0"
-  dependencies:
-    "@babel/runtime": ^7.23.9
-    "@floating-ui/react-dom": ^2.0.8
-    "@mui/types": ^7.2.15
-    "@mui/utils": ^5.16.12
-    "@popperjs/core": ^2.11.8
-    clsx: ^2.1.0
-    prop-types: ^15.8.1
-  peerDependencies:
-    "@types/react": ^17.0.0 || ^18.0.0 || ^19.0.0
-    react: ^17.0.0 || ^18.0.0 || ^19.0.0
-    react-dom: ^17.0.0 || ^18.0.0 || ^19.0.0
-  peerDependenciesMeta:
-    "@types/react":
-      optional: true
-  checksum: e2661562fa2e213dadd6c5900bd02ef50a7af193e5205c0ef7b2c3549656672a6b670aad3020c2a0a5f7ff741f3ed854196110441fd8ed2555578e68004f91a6
-  languageName: node
-  linkType: hard
-
 "@mui/base@npm:5.0.0-beta.40-1":
   version: 5.0.0-beta.40-1
   resolution: "@mui/base@npm:5.0.0-beta.40-1"
@@ -11628,15 +11605,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/lab@npm:5.0.0-alpha.175":
-  version: 5.0.0-alpha.175
-  resolution: "@mui/lab@npm:5.0.0-alpha.175"
+"@mui/lab@npm:5.0.0-alpha.176":
+  version: 5.0.0-alpha.176
+  resolution: "@mui/lab@npm:5.0.0-alpha.176"
   dependencies:
     "@babel/runtime": ^7.23.9
-    "@mui/base": 5.0.0-beta.40-0
-    "@mui/system": ^5.16.12
-    "@mui/types": ^7.2.15
-    "@mui/utils": ^5.16.12
+    "@mui/base": 5.0.0-beta.40-1
+    "@mui/system": ^5.17.1
+    "@mui/types": ~7.2.15
+    "@mui/utils": ^5.17.1
     clsx: ^2.1.0
     prop-types: ^15.8.1
   peerDependencies:
@@ -11653,7 +11630,7 @@ __metadata:
       optional: true
     "@types/react":
       optional: true
-  checksum: 416e43279a1db35d33f89311e6e6b5113433cd4e51bcb3f1fb90f254c632e653eb30c14e7241d64a0de73443276c8a7b0ff60250b75c2178c895b542f0a3b368
+  checksum: afa6da4c4583fc201ac3e6f6ae143d1a4fd0cf8a79e1ce8d6cefe2b9fb3862fa9eae490c4a60cde12923128d70d583e9fcc3f0a1a31c9ff930fd3d1e0c8aa378
   languageName: node
   linkType: hard
 
@@ -11683,6 +11660,39 @@ __metadata:
     "@types/react":
       optional: true
   checksum: 58a3983ae28993b91c1d3cca29d0dbf904b252ab7a7edc81eebd0696dc53dbdc8144d1727761cc09cd9833cf3ce2fd5e422864c2feac37161d6dc60ad88bf88a
+  languageName: node
+  linkType: hard
+
+"@mui/material@npm:5.17.1":
+  version: 5.17.1
+  resolution: "@mui/material@npm:5.17.1"
+  dependencies:
+    "@babel/runtime": ^7.23.9
+    "@mui/core-downloads-tracker": ^5.17.1
+    "@mui/system": ^5.17.1
+    "@mui/types": ~7.2.15
+    "@mui/utils": ^5.17.1
+    "@popperjs/core": ^2.11.8
+    "@types/react-transition-group": ^4.4.10
+    clsx: ^2.1.0
+    csstype: ^3.1.3
+    prop-types: ^15.8.1
+    react-is: ^19.0.0
+    react-transition-group: ^4.4.5
+  peerDependencies:
+    "@emotion/react": ^11.5.0
+    "@emotion/styled": ^11.3.0
+    "@types/react": ^17.0.0 || ^18.0.0 || ^19.0.0
+    react: ^17.0.0 || ^18.0.0 || ^19.0.0
+    react-dom: ^17.0.0 || ^18.0.0 || ^19.0.0
+  peerDependenciesMeta:
+    "@emotion/react":
+      optional: true
+    "@emotion/styled":
+      optional: true
+    "@types/react":
+      optional: true
+  checksum: 26ff24f6d7ec1e429cf1dbe502046c8bcb684852bcfc32250b545c609ed38cef01985bbeec7ff294abe8b48be896cf9774e1198495b588d6c93cc56c9aecfbae
   languageName: node
   linkType: hard
 
@@ -11944,7 +11954,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/system@npm:^5.16.12, @mui/system@npm:^5.16.5, @mui/system@npm:^5.18.0":
+"@mui/system@npm:^5.16.5, @mui/system@npm:^5.17.1, @mui/system@npm:^5.18.0":
   version: 5.18.0
   resolution: "@mui/system@npm:5.18.0"
   dependencies:
@@ -20917,7 +20927,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backstage-community-plugin-topology@workspace:wrappers/backstage-community-plugin-topology"
   dependencies:
-    "@backstage-community/plugin-topology": 2.2.2
+    "@backstage-community/plugin-topology": 2.6.0
     "@backstage/cli": ^0.34.1
     "@janus-idp/cli": 3.6.1
     "@mui/material": 5.18.0
