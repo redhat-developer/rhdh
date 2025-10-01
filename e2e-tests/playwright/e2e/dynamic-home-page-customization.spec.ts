@@ -63,7 +63,7 @@ test.describe.serial("Dynamic Home Page Customization", () => {
   test("Verify Add Widget Button Adds Cards", async ({ page }, testInfo) => {
     await homePageCustomization.addWidget("OnboardingSection");
     await expect(
-      page.getByText(/Good (morning|afternoon|evening),/),
+      page.getByText(/Good (morning|afternoon|evening)/),
     ).toBeVisible();
     await homePageCustomization.enterEditMode();
 

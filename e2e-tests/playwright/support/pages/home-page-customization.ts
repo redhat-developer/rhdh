@@ -6,7 +6,7 @@ export class HomePageCustomization {
   private uiHelper: UIhelper;
 
   private readonly expectedCards = [
-    "Good (morning|afternoon|evening),",
+    "Good (morning|afternoon|evening)",
     "Explore Your Software Catalog",
     "Recently Visited",
     "Top Visited",
@@ -25,7 +25,7 @@ export class HomePageCustomization {
   private readonly deleteButtons = () =>
     this.page.locator('[class*="MuiGrid-root"][class*="overlayGridItem"]');
   private readonly greetingText = () =>
-    this.page.getByText(/Good (morning|afternoon|evening),/);
+    this.page.getByText(/Good (morning|afternoon|evening)/);
 
   constructor(page: Page) {
     this.page = page;
@@ -33,7 +33,7 @@ export class HomePageCustomization {
   }
 
   async verifyHomePageLoaded(): Promise<void> {
-    await this.uiHelper.verifyHeading("Welcome back,");
+    await this.uiHelper.verifyHeading("Welcome back");
     await expect(this.greetingText()).toBeVisible();
     const quickstart = this.page.getByRole("button", { name: "Hide" });
     if (await quickstart.isVisible()) {
