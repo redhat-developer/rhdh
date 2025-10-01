@@ -3939,9 +3939,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-topology@npm:2.6.0":
-  version: 2.6.0
-  resolution: "@backstage-community/plugin-topology@npm:2.6.0"
+"@backstage-community/plugin-topology@npm:2.6.1":
+  version: 2.6.1
+  resolution: "@backstage-community/plugin-topology@npm:2.6.1"
   dependencies:
     "@backstage/catalog-model": ^1.7.5
     "@backstage/core-components": ^0.17.5
@@ -3974,7 +3974,7 @@ __metadata:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.0.0
-  checksum: 40cc6c4ebb162fafbeca94f25bd59917cc4ebffc1ab1772e6c188ed7d85b88639ea0660ebfb3d9a71b8c4908de0d7bca7b8aac1b5572746eedd7807352685ff6
+  checksum: 838b8dbc34ed4267d4b83ef667b660e7af842629fb09ea44005f510c69d1644f0cb6dcbfb2a3816b787614aca2fac15e7c3c0c10fed377e63f601e13aa36dd65
   languageName: node
   linkType: hard
 
@@ -20927,7 +20927,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backstage-community-plugin-topology@workspace:wrappers/backstage-community-plugin-topology"
   dependencies:
-    "@backstage-community/plugin-topology": 2.6.0
+    "@backstage-community/plugin-topology": 2.6.1
     "@backstage/cli": ^0.34.1
     "@janus-idp/cli": 3.6.1
     "@mui/material": 5.18.0
