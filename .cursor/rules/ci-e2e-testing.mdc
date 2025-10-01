@@ -297,6 +297,22 @@ For CI/CD pipeline execution, tests run in a containerized environment using the
 - **`.ibm/pipelines/reporting.sh`**: Reporting and notifications
 - **`.ibm/pipelines/env_variables.sh`**: Environment variable management
 
+#### CI Infrastructure Package Configuration
+
+The `.ibm/package.json` file defines the CI infrastructure package configuration and development tools:
+
+**Available Scripts:**
+```bash
+# Code quality and linting
+yarn shellcheck              # Shell script linting with severity warnings
+yarn prettier:check          # Check formatting for shell, markdown, and YAML files
+yarn prettier:fix            # Fix formatting for shell, markdown, and YAML files
+```
+
+⚠️ **Important**: Before using any of these scripts, you must first run `yarn install` in the `.ibm` folder to install the required dependencies (prettier, prettier-plugin-sh, shellcheck).
+
+**Purpose**: This package provides essential tooling for maintaining code quality in the CI infrastructure, ensuring consistent formatting and shell script best practices across the pipeline scripts.
+
 #### Job Handlers
 The main script handles different job types:
 - `handle_aks_helm`: AKS Helm deployment
