@@ -29,7 +29,7 @@ metadata:
 
 spec:
   support:
-    provider: Red Hat
+    provider: Backstage Community
     level: community
   lifecycle: active
   author: Red Hat
