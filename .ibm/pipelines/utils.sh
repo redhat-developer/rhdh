@@ -590,7 +590,7 @@ uninstall_olm() {
 # Installs the advanced-cluster-management OCP Operator
 install_acm_ocp_operator() {
   oc apply -f "${DIR}/cluster/operators/acm/operator-group.yaml"
-  install_subscription advanced-cluster-management open-cluster-management release-2.12 advanced-cluster-management redhat-operators openshift-marketplace
+  install_subscription advanced-cluster-management open-cluster-management release-2.14 advanced-cluster-management redhat-operators openshift-marketplace
   wait_for_deployment "open-cluster-management" "multiclusterhub-operator"
   wait_for_endpoint "multiclusterhub-operator-webhook" "open-cluster-management"
   oc apply -f "${DIR}/cluster/operators/acm/multiclusterhub.yaml"
@@ -708,6 +708,20 @@ install_orchestrator_infra_chart() {
     --wait --timeout=5m \
     --set serverlessLogicOperator.subscription.spec.installPlanApproval=Automatic \
     --set serverlessOperator.subscription.spec.installPlanApproval=Automatic
+
+  until [ "$(oc get pods -n openshift-serverless --no-headers 2> /dev/null | wc -l)" -gt 0 ]; do
+    sleep 5
+  done
+
+  until [ "$(oc get pods -n openshift-serverless-logic --no-headers 2> /dev/null | wc -l)" -gt 0 ]; do
+    sleep 5
+  done
+
+  oc wait pod --all --for=condition=Ready --namespace=openshift-serverless --timeout=5m
+  oc wait pod --all --for=condition=Ready --namespace=openshift-serverless-logic --timeout=5m
+
+  oc get crd | grep "sonataflow" || echo "Sonataflow CRDs not found"
+  oc get crd | grep "knative" || echo "Serverless CRDs not found"
 }
 
 # Helper function to get common helm set parameters

@@ -89,6 +89,7 @@ const ScalprumRoot = ({
       scaffolderFieldExtensions: [],
       techdocsAddons: [],
       providerSettings: [],
+      translationRefs: [],
     } as DynamicRootConfig,
   };
   return (

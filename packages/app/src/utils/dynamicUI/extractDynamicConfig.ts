@@ -15,6 +15,7 @@ import { extractMenuItems } from './extractDynamicConfigFrontend';
 export type DynamicRouteMenuItem =
   | {
       text: string;
+      textKey?: string;
       icon: string;
       parent?: string;
       priority?: number;
@@ -38,6 +39,7 @@ export type MenuItemConfig = {
 export type MenuItem = {
   name: string;
   title: string;
+  titleKey?: string;
   icon: string;
   children: MenuItem[];
   priority?: number;

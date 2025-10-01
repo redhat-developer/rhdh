@@ -1,4 +1,5 @@
 import { Entity } from '@backstage/catalog-model';
+import { TranslationRef } from '@backstage/core-plugin-api/alpha';
 
 export type RouteBinding = {
   bindTarget: string;
@@ -23,6 +24,7 @@ export type ResolvedDynamicRouteMenuItem =
 export type ResolvedMenuItem = {
   name: string;
   title: string;
+  titleKey?: string;
   icon?: string;
   children?: ResolvedMenuItem[];
   to?: string;
@@ -112,6 +114,7 @@ export type DynamicRootConfig = {
   providerSettings: ProviderSetting[];
   scaffolderFieldExtensions: ScaffolderFieldExtension[];
   techdocsAddons: TechdocsAddon[];
+  translationRefs: TranslationRef[];
 };
 
 export type ComponentRegistry = {

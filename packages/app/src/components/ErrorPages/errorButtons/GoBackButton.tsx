@@ -2,8 +2,11 @@ import { useNavigate } from 'react-router-dom';
 
 import Button from '@mui/material/Button';
 
+import { useTranslation } from '../../../hooks/useTranslation';
+
 export const GoBackButton = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   return window.history.length > 2 ? (
     <Button
@@ -13,7 +16,7 @@ export const GoBackButton = () => {
         navigate(-1);
       }}
     >
-      Go back
+      {t('app.errors.goBack')}
     </Button>
   ) : null;
 };

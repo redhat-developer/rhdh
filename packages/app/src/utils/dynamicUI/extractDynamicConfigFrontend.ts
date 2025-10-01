@@ -89,6 +89,7 @@ export function extractMenuItems(frontend: FrontendConfig): MenuItem[] {
             name: itemName,
             icon: 'icon' in mi && mi.icon ? mi.icon : '',
             title: 'text' in mi && mi.text ? mi.text : '',
+            titleKey: 'textKey' in mi && mi.textKey ? mi.textKey : undefined,
             to: dr.path ?? '',
             children: [],
             enabled: 'enabled' in mi ? mi.enabled : true,
