@@ -5,7 +5,7 @@ metadata:
 rules:
   # Base for Kubernetes plugin
   - apiGroups:
-      - ''
+      - ""
     resources:
       - pods
       - pods/log

@@ -1,0 +1,35 @@
+name: E2E Bash
+
+on:
+  pull_request:
+    branches:
+      - "main"
+      - "release-*"
+    paths:
+      - '.ibm/**'
+
+jobs:
+  lint:
+    name: ShellCheck and Prettier
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Install dependencies
+        working-directory: ./.ibm
+        run: yarn install
+
+      - name: Run ShellCheck check
+        working-directory: ./.ibm
+        run: yarn shellcheck
+
+      - name: Run Prettier check
+        working-directory: ./.ibm
+        run: yarn prettier:check

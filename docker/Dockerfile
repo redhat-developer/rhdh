@@ -15,7 +15,7 @@
 
 # Stage 1 - Build nodejs skeleton
 # https://registry.access.redhat.com/ubi9/nodejs-22
-FROM registry.access.redhat.com/ubi9/nodejs-22:9.6-1757333865 AS skeleton
+FROM registry.access.redhat.com/ubi9/nodejs-22:9.6-1759119998 AS skeleton
 # hadolint ignore=DL3002
 USER 0
 
@@ -66,7 +66,6 @@ RUN chmod +x "$YARN" && ln -s "$YARN" /usr/local/bin/yarn
 FROM skeleton AS deps
 COPY $EXTERNAL_SOURCE_NESTED/yarn.lock ./
 # BEGIN COPY package.json files
-COPY $EXTERNAL_SOURCE_NESTED/plugins/translation-backend/package.json ./plugins/translation-backend/package.json
 COPY $EXTERNAL_SOURCE_NESTED/plugins/scalprum-backend/package.json ./plugins/scalprum-backend/package.json
 COPY $EXTERNAL_SOURCE_NESTED/plugins/licensed-users-info-backend/package.json ./plugins/licensed-users-info-backend/package.json
 COPY $EXTERNAL_SOURCE_NESTED/plugins/dynamic-plugins-info/package.json ./plugins/dynamic-plugins-info/package.json
@@ -94,7 +93,7 @@ RUN NODE_HEADERS_VERSION=$(node --version); echo "=== Install node headers $NODE
 # Increase timeout for yarn install
 RUN "$YARN" config set httpTimeout 600000
 
-RUN echo "=== YARN INSTALL ==="; FAILED=0; "$YARN" install --immutable; \
+RUN echo "=== YARN INSTALL ==="; FAILED=0; "$YARN" install --immutable || FAILED=1; \
   for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then \
   (( FAILED = FAILED + 1 )); \
   echo; echo $d; \
@@ -125,7 +124,7 @@ RUN \
 # suppress git warnings about dubious ownership in repository at '/opt/app-root/src' when building
 RUN echo "=== YARN BUILD ==="; FAILED=0; \
   git config --global --add safe.directory /opt/app-root/src; \
-  "$YARN" build || true; \
+  "$YARN" build || FAILED=1; \
   for d in $(find . -name yarn-install.log); do \
   (( FAILED = FAILED + 1 )); echo; echo $d; echo "======"; cat ${d}; \
   done; \
@@ -133,7 +132,7 @@ RUN echo "=== YARN BUILD ==="; FAILED=0; \
 
 WORKDIR $CONTAINER_SOURCE/dynamic-plugins
 
-RUN echo "=== DYNAMIC PLUGIN YARN INSTALL ==="; FAILED=0; "$YARN" install --immutable; \
+RUN echo "=== DYNAMIC PLUGIN YARN INSTALL ==="; FAILED=0; "$YARN" install --immutable || FAILED=1; \
   for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then \
   (( FAILED = FAILED + 1 )); \
   echo; echo $d; \
@@ -143,7 +142,7 @@ RUN echo "=== DYNAMIC PLUGIN YARN INSTALL ==="; FAILED=0; "$YARN" install --immu
   if [[ $FAILED -gt 0 ]]; then exit $FAILED; fi
 
 RUN echo "=== EXPORT DYNAMIC PLUGINS ==="; FAILED=0; \
-  "$YARN" export-dynamic || true; \
+  "$YARN" export-dynamic || FAILED=1; \
   for d in $(find . -name yarn-install.log); do \
   (( FAILED = FAILED + 1 )); echo; echo $d; echo "======"; cat ${d}; \
   done; \
@@ -203,7 +202,7 @@ RUN \
 
 # Stage 5 - Build the runner image
 # https://registry.access.redhat.com/ubi9/nodejs-22-minimal
-FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:9.6-1755749564 AS runner
+FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:9.6-1759106173 AS runner
 USER 0
 
 ENV EXTERNAL_SOURCE_NESTED=.
@@ -246,10 +245,6 @@ COPY $EXTERNAL_SOURCE_NESTED/catalog-entities/marketplace /marketplace/catalog-e
 COPY docker/install-dynamic-plugins.py docker/install-dynamic-plugins.sh ./
 RUN chmod -R a+rx ./install-dynamic-plugins.*
 
-# The existence of the index.html.tmpl tells Backstage to take that file and load it into memory, inject the needed appConfig (instead of writing
-# it into a random *.chunk.js file, and then serve that file from memory so that we can set the readOnlyRootFilesystem: true option for
-# the container.
-RUN ln -s /opt/app-root/src/packages/app/dist/index.html /opt/app-root/src/packages/app/dist/index.html.tmpl
 
 # Fix for https://issues.redhat.com/browse/RHIDP-728
 RUN mkdir -p /opt/app-root/src/.npm; chown -R 1001:1001 /opt/app-root/src/.npm

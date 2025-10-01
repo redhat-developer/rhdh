@@ -23,7 +23,9 @@ metadata:
     Red Hat Developer Lightspeed (Developer Lightspeed) is a virtual assistant powered by generative AI that offers in-depth insights into RHDH, including its wide range of capabilities. You can interact with this assistant to explore and learn more about RHDH in greater detail.
 spec:
   author: Red Hat
-  support: dev-preview
+  support:
+    provider: Red Hat
+    level: dev-preview
   lifecycle: active
   publisher: Red Hat
 
