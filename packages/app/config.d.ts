@@ -288,6 +288,11 @@ export interface Config {
      */
     title: string;
     /**
+     * Optional translation key for the title.
+     * @visibility frontend
+     */
+    titleKey?: string;
+    /**
      * Allows setting a content for the build information card
      * @visibility frontend
      */
