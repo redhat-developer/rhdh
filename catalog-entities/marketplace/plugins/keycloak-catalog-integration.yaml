@@ -28,7 +28,9 @@ metadata:
 spec:
   author: Red Hat
   publisher: Red Hat
-  support: production
+  support:
+    provider: Red Hat
+    level: generally-available
   lifecycle: active
 
   categories:

@@ -21,7 +21,9 @@ metadata:
       url: https://github.com/backstage/community-plugins/tree/main/workspaces/github-actions/plugins/github-actions
 spec:
   author: Backstage Community
-  support: tech-preview
+  support:
+    provider: Red Hat
+    level: tech-preview
   lifecycle: active
   publisher: Red Hat
   categories:

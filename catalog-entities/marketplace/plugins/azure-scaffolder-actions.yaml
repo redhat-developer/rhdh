@@ -22,7 +22,9 @@ metadata:
       url: https://github.com/backstage/backstage/tree/master/plugins/scaffolder-backend-module-azure
 spec:
   author: Backstage Community
-  support: tech-preview
+  support:
+    provider: Red Hat
+    level: tech-preview
   lifecycle: active
   publisher: Red Hat
   description: |

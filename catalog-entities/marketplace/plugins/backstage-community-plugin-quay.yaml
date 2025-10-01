@@ -24,7 +24,9 @@ metadata:
      about the containers associated with the compenents in your software catalog.
 spec:
   author: Red Hat
-  support: production
+  support:
+    provider: Red Hat
+    level: generally-available
   lifecycle: active
   publisher: Red Hat
 
