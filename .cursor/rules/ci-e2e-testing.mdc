@@ -453,4 +453,60 @@ brew install gnu-sed
 - [Dynamic Plugin Installer](docker/install-dynamic-plugins.py)
 
 This context file provides a comprehensive overview of the RHDH repository's testing infrastructure, CI/CD pipeline, and development workflows. Use this as a starting point for understanding the codebase and contributing to the project.
+
+## Test Configuration Files (Config Maps)
+
+### Overview
+
+The RHDH e2e testing infrastructure uses two main configuration files located in `.ibm/pipelines/resources/config_map/`:
+
+1. **`app-config-rhdh.yaml`** - Non-RBAC configuration
+2. **`app-config-rhdh-rbac.yaml`** - RBAC-enabled configuration
+
+### Config Map Usage Pattern
+
+The choice of config map depends on the **Playwright test project** being executed, as defined in `e2e-tests/playwright.config.ts`:
+
+#### **app-config-rhdh.yaml** (Non-RBAC Configuration)
+
+**Used for test projects that exclude RBAC testing:**
+
+- `smoke-test` - Basic smoke tests
+- `showcase` - General functionality tests (explicitly excludes RBAC tests)
+- `showcase-k8s` - Kubernetes integration tests (explicitly excludes RBAC tests)
+- `showcase-operator` - Operator-based tests (explicitly excludes RBAC tests)
+- `showcase-runtime` - Runtime environment tests
+- `showcase-sanity-plugins` - Plugin sanity tests
+- `showcase-upgrade` - Upgrade scenario tests
+- `showcase-auth-providers` - Authentication provider tests (uses special deployment process)
+
+#### **app-config-rhdh-rbac.yaml** (RBAC Configuration)
+
+**Used for test projects that include RBAC testing:**
+
+- `showcase-rbac` - RBAC-specific tests
+- `showcase-rbac-k8s` - Kubernetes + RBAC tests
+- `showcase-operator-rbac` - Operator + RBAC tests
+
+### **CRITICAL RULE: Config Map Selection**
+
+**When adding new tests:**
+
+1. **Identify the test project scope:**
+   - Will the new test/plugin be tested with RBAC? → Use `app-config-rhdh-rbac.yaml`
+   - Will the new test/plugin be tested without RBAC? → Use `app-config-rhdh.yaml`
+
+2. **Check the Playwright project configuration:**
+   - Projects that exclude RBAC tests (using `testIgnore` for RBAC patterns) → Use `app-config-rhdh.yaml`
+   - Projects that include RBAC tests (using `testMatch` for RBAC patterns) → Use `app-config-rhdh-rbac.yaml`
+
+### **Special Cases**
+
+1. **showcase-auth-providers**: Although it uses the non-RBAC config pattern, it has its own specialized deployment process with dedicated values file (`values_showcase-auth-providers.yaml`) and TypeScript-based configuration management.
+
+### **Configuration Deployment Process**
+
+The config maps are deployed as Kubernetes ConfigMaps during CI/CD pipeline execution and are mounted into the RHDH pods to provide runtime configuration. The pipeline selects the appropriate config map based on the test project being executed.
+
+## This context file provides a comprehensive overview of the RHDH repository's testing infrastructure, CI/CD pipeline, and development workflows. Use this as a starting point for understanding the codebase and contributing to the project.
 ---
