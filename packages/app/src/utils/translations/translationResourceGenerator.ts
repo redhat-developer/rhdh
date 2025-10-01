@@ -7,6 +7,20 @@ import {
 
 import { InternalTranslationResource } from '../../types/types';
 
+const createTranslationMessagesWrapper = (
+  ref: TranslationRef<string, any>,
+  messages: { [key: string]: string },
+  full: boolean = false,
+) => {
+  return {
+    default: createTranslationMessages({
+      ref,
+      full,
+      messages,
+    }),
+  };
+};
+
 const mergeTranslations = (
   resource: InternalTranslationResource<any>,
   jsonTranslations: { [key: string]: any },
@@ -21,33 +35,38 @@ const mergeTranslations = (
           jsonTranslations[res.language];
         const baseMessages = await res.loader();
 
-        const mergedMessages = { ...baseMessages.messages, ...overrides };
+        const mergedMessages = {
+          ...baseMessages.messages,
+          ...overrides,
+        } as { [key: string]: string };
 
-        return {
-          default: createTranslationMessages({
-            ref,
-            full: false,
-            messages: mergedMessages,
-          }),
-        };
+        return createTranslationMessagesWrapper(ref, mergedMessages, false);
+      };
+    } else {
+      // create translation resource for new/default locale(s) based on default resources
+      resourceWithNewTranslations[res.language] = async () => {
+        const baseMessages = await res.loader();
+        return createTranslationMessagesWrapper(
+          ref,
+          baseMessages.messages as { [key: string]: string },
+          false,
+        );
       };
     }
   }
 
-  // create translation resource for new locale(s)
+  // create translation resource for new locale(s) based on jsonTranslations passed
   for (const [locale] of Object.entries(jsonTranslations)) {
     if (!resourceWithNewTranslations[locale]) {
       resourceWithNewTranslations[locale] = async () => {
         const newLocaleTranslations: { [key: string]: string } =
           jsonTranslations[locale];
 
-        return {
-          default: createTranslationMessages({
-            ref,
-            full: false,
-            messages: newLocaleTranslations,
-          }),
-        };
+        return createTranslationMessagesWrapper(
+          ref,
+          newLocaleTranslations,
+          false,
+        );
       };
     }
   }
