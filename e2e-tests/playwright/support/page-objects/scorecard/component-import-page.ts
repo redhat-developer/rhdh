@@ -34,7 +34,7 @@ export class ComponentImportPage {
     await this.uiHelper.fillTextInputByLabel("URL", url);
     await this.uiHelper.clickButton("Analyze");
     await this.uiHelper.clickButton("Import");
-    await this.page.waitForTimeout(2000);
+    await this.page.waitForTimeout(5000);
   }
 
   async viewImportedComponent() {
