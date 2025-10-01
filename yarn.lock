@@ -8597,11 +8597,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@manypkg/cli@npm:0.24.0":
-  version: 0.24.0
-  resolution: "@manypkg/cli@npm:0.24.0"
+"@manypkg/cli@npm:0.25.1":
+  version: 0.25.1
+  resolution: "@manypkg/cli@npm:0.25.1"
   dependencies:
-    "@manypkg/get-packages": ^3.0.0
+    "@manypkg/get-packages": ^3.1.0
     detect-indent: ^7.0.1
     normalize-path: ^3.0.0
     p-limit: ^6.2.0
@@ -8614,7 +8614,7 @@ __metadata:
     validate-npm-package-name: ^6.0.0
   bin:
     manypkg: bin.js
-  checksum: 8430b9a8b0a0e8a026a9afdf48651085e2cb042fb980712480c810e2fa79154b10efb5b59d90192db91291bc5b907d0ccafc353140a0d86ff059d6ad6ae2e40e
+  checksum: 85571fc69331e958d53a4c56d60fa9cb6252bf4c3c245d74ef21cb851c95a916e676da57e565e8d5746e2f5c93746ea586679bb7f882a60e97d66a5d30105f50
   languageName: node
   linkType: hard
 
@@ -8630,12 +8630,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@manypkg/find-root@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "@manypkg/find-root@npm:3.0.0"
+"@manypkg/find-root@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "@manypkg/find-root@npm:3.1.0"
   dependencies:
-    "@manypkg/tools": ^2.0.0
-  checksum: 7ebe5d48c66ff773091b84e945776719e91ce33be479e1cd7977ee0f37edf61f29ccfb2c7c3125930e22e2cce375811ede60d75bce0f5f2228a9bc7d2b8726a5
+    "@manypkg/tools": ^2.1.0
+  checksum: ec2872ed8428f8c887524fea38deb4a0c3be43a93e9a3e4c391eae7490a8d1e1d660db0fc1c2da85f3dc232fc017c8cbdac8c34af0e5525f645312b39bc7eae3
   languageName: node
   linkType: hard
 
@@ -8653,24 +8653,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@manypkg/get-packages@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "@manypkg/get-packages@npm:3.0.0"
+"@manypkg/get-packages@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "@manypkg/get-packages@npm:3.1.0"
   dependencies:
-    "@manypkg/find-root": ^3.0.0
-    "@manypkg/tools": ^2.0.0
-  checksum: b77b0056f3b381a72a049d02165e9fbdd512683ae1b632b97794b3fc41e0e68b9013fae3a9e3477d92bdea0fb1048b796a7a118fb1decd913a8b6bbb99c0eed8
+    "@manypkg/find-root": ^3.1.0
+    "@manypkg/tools": ^2.1.0
+  checksum: 0f29e7255bd657a05bc0dfa4cf9dd30b774d2a36e87765f0ed5edccd4aefa11c0f9d37bf4b28eaf2eefad8686e5894f2760e83e11cd1d97fda2d29fb5bab2795
   languageName: node
   linkType: hard
 
-"@manypkg/tools@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "@manypkg/tools@npm:2.0.0"
+"@manypkg/tools@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "@manypkg/tools@npm:2.1.0"
   dependencies:
     jju: ^1.4.0
     js-yaml: ^4.1.0
     tinyglobby: ^0.2.13
-  checksum: 1a6498df60324afd67907d434be96770ffa54efa33896041e8c962a3198dead5fb694f85c60ae8f4e0720bf28f3b4ee92bcc345b7c419e006cadb028eb97d23b
+  checksum: 0b43196fa917705dcdb460a76e74ef5f3c25eb7611af3d4c7fe13acc75940679f3e74080cffe89e0ad7b80ea7f44c7dab5c0fc787c7c2f32bede2c6d0e048de1
   languageName: node
   linkType: hard
 
@@ -32444,7 +32444,7 @@ __metadata:
     "@backstage/cli": 0.34.1
     "@backstage/frontend-test-utils": 0.3.5
     "@ianvs/prettier-plugin-sort-imports": 4.7.0
-    "@manypkg/cli": 0.24.0
+    "@manypkg/cli": 0.25.1
     glob: 11.0.3
     husky: 8.0.3
     jsdom: ^26.1.0
