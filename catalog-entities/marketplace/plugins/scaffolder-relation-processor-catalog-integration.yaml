@@ -27,7 +27,9 @@ spec:
 
   author: Backstage Community
   publisher: Red Hat
-  support: tech-preview
+  support:
+    provider: Red Hat
+    level: tech-preview
   lifecycle: active
   categories:
     - Software Catalog

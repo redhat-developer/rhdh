@@ -116,6 +116,7 @@ const AppBase = () => {
                 scaffolderFieldExtensions
               </Route>
               <Route path="/api-docs" element={<ApiExplorerPage />} />
+
               <Route
                 path="/catalog-import"
                 element={

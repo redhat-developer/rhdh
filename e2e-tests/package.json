@@ -58,7 +58,7 @@
     "octokit": "4.1.4",
     "uuid": "11.1.0",
     "winston": "3.14.2",
-    "yaml": "2.8.0"
+    "yaml": "2.8.1"
   },
   "jest": {
     "testTimeout": 20000

@@ -25,7 +25,9 @@ spec:
 
   publisher: Red Hat
   author: Backstage Community
-  support: tech-preview
+  support:
+    provider: Red Hat
+    level: tech-preview
   lifecycle: active
 
   description: |

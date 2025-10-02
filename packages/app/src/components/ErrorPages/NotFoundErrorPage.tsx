@@ -1,12 +1,16 @@
 import type { AppComponents } from '@backstage/core-plugin-api';
 
+import { useTranslation } from '../../hooks/useTranslation';
 import { ErrorPage } from './ErrorPage';
 
-export const NotFoundErrorPage: AppComponents['NotFoundErrorPage'] = () => (
-  <ErrorPage
-    status="404"
-    statusMessage="We couldn't find that page"
-    additionalInfo="The page you are looking for might have been removed, had its name
-        changed, or is temporarily unavailable."
-  />
-);
+export const NotFoundErrorPage: AppComponents['NotFoundErrorPage'] = () => {
+  const { t } = useTranslation();
+
+  return (
+    <ErrorPage
+      status="404"
+      statusMessage={t('app.errors.notFound.message')}
+      additionalInfo={t('app.errors.notFound.additionalInfo')}
+    />
+  );
+};

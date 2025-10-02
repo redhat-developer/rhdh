@@ -24,7 +24,9 @@ metadata:
     The 3scale plugin synchronizes your 3scale content into the software catalog.
 spec:
   author: Red Hat
-  support: tech-preview
+  support:
+    provider: Red Hat
+    level: tech-preview
   lifecycle: active
   publisher: Red Hat
 

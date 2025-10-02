@@ -8,7 +8,6 @@ plugins
 !plugins/dynamic-plugins-info-backend
 !plugins/licensed-users-info-backend
 !plugins/scalprum-backend
-!plugins/translation-backend
 *.local.yaml
 coverage
 dist-types

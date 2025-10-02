@@ -3,7 +3,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { createApp } from '@backstage/app-defaults';
 import { BackstageApp, MultipleAnalyticsApi } from '@backstage/core-app-api';
-import { coreComponentsTranslationRef } from '@backstage/core-components/alpha';
 import {
   AnalyticsApi,
   analyticsApiRef,
@@ -18,16 +17,13 @@ import {
   identityApiRef,
 } from '@backstage/core-plugin-api';
 import {
-  TranslationRef,
+  appLanguageApiRef,
+  translationApiRef,
   TranslationResource,
 } from '@backstage/core-plugin-api/alpha';
-import { catalogImportTranslationRef } from '@backstage/plugin-catalog-import/alpha';
-import { catalogTranslationRef } from '@backstage/plugin-catalog/alpha';
-import { scaffolderTranslationRef } from '@backstage/plugin-scaffolder/alpha';
-import { searchTranslationRef } from '@backstage/plugin-search/alpha';
-import { userSettingsTranslationRef } from '@backstage/plugin-user-settings/alpha';
 
 import { useThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
+import { I18nextTranslationApi } from '@red-hat-developer-hub/backstage-plugin-translations';
 import DynamicRootContext, {
   ComponentRegistry,
   DynamicRootConfig,
@@ -42,16 +38,7 @@ import DynamicRootContext, {
 import { AppsConfig } from '@scalprum/core';
 import { useScalprum } from '@scalprum/react-core';
 
-import { catalogImportTranslations } from '../../translations/catalog-import/catalog-import';
-import { coreComponentsTranslations } from '../../translations/core-components/core-components';
-import { rhdhTranslationRef, rhdhTranslations } from '../../translations/rhdh';
-import { scaffolderTranslations } from '../../translations/scaffolder/scaffolder';
-import { searchTranslations } from '../../translations/search/search';
-import { userSettingsTranslations } from '../../translations/user-settings/user-settings';
-import {
-  InternalTranslationResource,
-  TranslationConfig,
-} from '../../types/types';
+import { TranslationConfig } from '../../types/types';
 import bindAppRoutes from '../../utils/dynamicUI/bindAppRoutes';
 import extractDynamicConfig, {
   configIfToCallable,
@@ -60,9 +47,9 @@ import extractDynamicConfig, {
 } from '../../utils/dynamicUI/extractDynamicConfig';
 import initializeRemotePlugins from '../../utils/dynamicUI/initializeRemotePlugins';
 import { getDefaultLanguage } from '../../utils/language/language';
-import { translationResourceGenerator } from '../../utils/translations';
 import { fetchOverrideTranslations } from '../../utils/translations/fetchOverrideTranslations';
-import { catalogTranslations } from '../catalog/translations/catalog';
+import { staticTranslationConfigs } from '../../utils/translations/staticTranslationConfigs';
+import { processAllTranslationResources } from '../../utils/translations/translationResourceProcessor';
 import { MenuIcon } from '../Root/MenuIcon';
 import CommonIcons from './CommonIcons';
 import defaultAppComponents from './defaultAppComponents';
@@ -560,73 +547,25 @@ export const DynamicRoot = ({
       Record<string, Record<string, string>>
     > = {};
 
-    if (translationConfig?.overrides) {
-      overrideTranslations = await fetchOverrideTranslations(baseUrl);
-    }
-    const dynamicTranslationResources = translationResources?.reduce<
-      TranslationResource[]
-    >((acc, { scope, module, importName, ref }) => {
-      const plugin = allPlugins[scope]?.[module];
-      const resource = plugin?.[importName] as InternalTranslationResource;
-      const resourceRef = ref
-        ? (plugin?.[ref] as any as TranslationRef<string, any>)
-        : null;
-      if (!resource?.id) {
-        // eslint-disable-next-line no-console
-        console.warn(
-          `Plugin ${scope} is not configured properly: ${module}.${importName} not found, ignoring translation resource: ${importName}`,
-        );
-        return acc;
-      }
-      const hasJsonOverrides = overrideTranslations[resource?.id];
-      if (hasJsonOverrides) {
-        if (!resourceRef) {
-          // eslint-disable-next-line no-console
-          console.warn(
-            `Plugin translation ref for ${scope} is not configured, ignoring JSON translation for this plugin`,
-          );
-          acc.push(resource);
-        } else {
-          const jsonResource = translationResourceGenerator(
-            resourceRef,
-            resource,
-            overrideTranslations[resource?.id],
-          );
+    overrideTranslations = await fetchOverrideTranslations(baseUrl);
 
-          acc.push(jsonResource);
-        }
-      } else {
-        acc.push(resource);
-      }
-      return acc;
-    }, []);
+    // Process dynamic translation resources
+    const dynamicTranslationConfigs =
+      translationResources?.map(({ scope, module, importName, ref }) => ({
+        scope,
+        module,
+        importName,
+        ref,
+      })) || [];
 
-    const staticTranslationResources = [
-      {
-        resource: coreComponentsTranslations,
-        ref: coreComponentsTranslationRef,
-      },
-      { resource: catalogTranslations, ref: catalogTranslationRef },
-      { resource: scaffolderTranslations, ref: scaffolderTranslationRef },
-      { resource: catalogImportTranslations, ref: catalogImportTranslationRef },
-      { resource: searchTranslations, ref: searchTranslationRef },
-      { resource: userSettingsTranslations, ref: userSettingsTranslationRef },
-      { resource: rhdhTranslations, ref: rhdhTranslationRef },
-    ].reduce<TranslationResource[]>((acc, { resource, ref }) => {
-      const hasJsonOverrides = overrideTranslations[resource?.id];
-      if (hasJsonOverrides) {
-        const jsonResource = translationResourceGenerator(
-          ref,
-          resource as any as InternalTranslationResource,
-          overrideTranslations[resource?.id],
-        );
-
-        acc.push(jsonResource);
-      } else {
-        acc.push(resource);
-      }
-      return acc;
-    }, []);
+    // Process static translation resources using imported configuration
+    const { allResources: allTranslationResources, allRefs: translationRefs } =
+      processAllTranslationResources(
+        dynamicTranslationConfigs,
+        staticTranslationConfigs,
+        allPlugins,
+        overrideTranslations,
+      );
 
     if (!app.current) {
       const filteredStaticThemes = themes.filter(
@@ -643,12 +582,21 @@ export const DynamicRoot = ({
         __experimentalTranslations: {
           availableLanguages: translationConfig?.locales ?? ['en'],
           defaultLanguage: getDefaultLanguage(translationConfig),
-          resources: [
-            ...staticTranslationResources,
-            ...(dynamicTranslationResources ?? []),
-          ],
         },
-        apis: [...filteredStaticApis, ...remoteApis, ...multipleAnalyticsApi],
+        apis: [
+          ...filteredStaticApis,
+          ...remoteApis,
+          ...multipleAnalyticsApi,
+          createApiFactory({
+            api: translationApiRef,
+            deps: { languageApi: appLanguageApiRef },
+            factory: ({ languageApi }) =>
+              I18nextTranslationApi.create({
+                languageApi,
+                resources: allTranslationResources,
+              }) as any,
+          }),
+        ],
         bindRoutes({ bind }) {
           bindAppRoutes(bind, resolvedRouteBindingTargets, routeBindings);
         },
@@ -678,7 +626,7 @@ export const DynamicRoot = ({
     dynamicRootConfig.scaffolderFieldExtensions =
       scaffolderFieldExtensionComponents;
     dynamicRootConfig.techdocsAddons = techdocsAddonComponents;
-    dynamicRootConfig.translationResources = dynamicTranslationResources;
+    dynamicRootConfig.translationResources = allTranslationResources;
     // make the dynamic UI configuration available to DynamicRootContext consumers
     setComponentRegistry({
       AppProvider: app.current.getProvider(),
@@ -690,6 +638,7 @@ export const DynamicRoot = ({
       providerSettings,
       scaffolderFieldExtensions: scaffolderFieldExtensionComponents,
       techdocsAddons: techdocsAddonComponents,
+      translationRefs,
     });
     afterInit().then(({ default: Component }) => {
       setChildComponent(() => Component);

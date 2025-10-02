@@ -240,6 +240,126 @@ Example of JSON translation file, where the top-level key is the plugin translat
 }
 ```
 
+## Downloading Translation Keys
+
+Users can download the complete set of translation keys from the User Settings page to customize any language or add new translations.
+
+### How to Download Translation Keys
+
+1. Navigate to User Settings page
+2. In the User Settings page, look for the "Translations" section
+3. Click the download button to get a JSON file containing all available translation keys in English (the default language)
+
+### Customizing Translations
+
+Once you have downloaded the translation keys JSON file (which contains English keys), you can:
+
+1. **Modify Existing Translations**: Edit any English value in the JSON file to override the default translation
+2. **Add Other Languages**: Add new language sections (e.g., `"de"`, `"fr"`, `"es"`) to support additional locales by translating the English keys
+3. **Add Custom Keys**: Add new translation keys for custom components or plugins
+
+### Example Translation Override File
+
+The downloaded JSON file will initially contain only English keys. You can then add other languages as needed:
+
+```json
+{
+  "rhdh": {
+    "en": {
+      "app.userSettings.infoCard.title": "Custom RHDH Metadata",
+      "menuItem.home": "Dashboard"
+    },
+    "de": {
+      "app.userSettings.infoCard.title": "Benutzerdefinierte RHDH-Metadaten",
+      "menuItem.home": "Dashboard"
+    },
+    "fr": {
+      "app.userSettings.infoCard.title": "Métadonnées RHDH personnalisées",
+      "menuItem.home": "Tableau de bord"
+    }
+  }
+}
+```
+
+### Applying Translation Overrides
+
+To apply your custom translations:
+
+#### For Local Development
+
+1. **Save the JSON file** in your project directory (e.g., `translations/custom-overrides.json`)
+2. **Update app-config.yaml** to include your override file:
+
+```yaml
+i18n:
+  locales:
+    - en
+    - de
+    - fr
+  defaultLocale: en
+  overrides:
+    - translations/custom-overrides.json
+```
+
+3. **Restart the application** for changes to take effect
+
+#### For OpenShift Environment
+
+1. **Create a ConfigMap** with your translation overrides:
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: translation-overrides
+  namespace: your-namespace
+data:
+  custom-overrides.json: |
+    {
+      "rhdh": {
+        "en": {
+          "app.userSettings.infoCard.title": "Custom RHDH Metadata"
+        },
+        "de": {
+          "app.userSettings.infoCard.title": "Benutzerdefinierte RHDH-Metadaten"
+        }
+      }
+    }
+```
+
+2. **Mount the ConfigMap** in your Backstage CR to `/src/translations/`:
+
+```yaml
+apiVersion: apps/v1
+kind: Backstage
+metadata:
+  name: rhdh
+spec:
+  application:
+    appConfig:
+      mountPath: /opt/app-root/src
+    extraFiles:
+      configMaps:
+        - mountPath: /opt/app-root/src/translations/
+          name: translation-overrides
+      mountPath: /opt/app-root/src
+```
+
+3. **Update your app-config.yaml** to reference the mounted file:
+
+```yaml
+i18n:
+  locales:
+    - en
+    - de
+    - fr
+  defaultLocale: en
+  overrides:
+    - /opt/app-root/src/translations/custom-overrides.json
+```
+
+4. **Apply the ConfigMap and deployment** for changes to take effect
+
 ### Default Language Selection Priority
 
 Default language selection follows this priority order:

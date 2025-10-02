@@ -26,7 +26,9 @@ spec:
     - Analytics
   author: Red Hat
   publisher: Red Hat
-  support: production
+  support:
+    provider: Red Hat
+    level: generally-available
   lifecycle: active
   description: |
     This plugin ships as enabled by default in Red Hat Developer Hub.

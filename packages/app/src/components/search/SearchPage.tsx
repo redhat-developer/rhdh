@@ -12,6 +12,7 @@ import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import { makeStyles } from 'tss-react/mui';
 
+import { useTranslation } from '../../hooks/useTranslation';
 import getMountPointData from '../../utils/dynamicUI/getMountPointData';
 import { MenuIcon } from '../Root/MenuIcon';
 
@@ -35,10 +36,11 @@ const useStyles = makeStyles()(theme => ({
 
 export const SearchPage = () => {
   const { classes } = useStyles();
+  const { t } = useTranslation();
 
   return (
     <Page themeId="home">
-      <Header title="Search" />
+      <Header title={t('app.search.title')} />
       <Content>
         <Grid container direction="row">
           <Grid item xs={12}>
@@ -54,12 +56,12 @@ export const SearchPage = () => {
           </Grid>
           <Grid item xs={3}>
             <SearchType.Accordion
-              name="Result Type"
+              name={t('app.search.resultType')}
               defaultValue="software-catalog"
               types={[
                 {
                   value: 'software-catalog',
-                  name: 'Software Catalog',
+                  name: t('app.search.softwareCatalog'),
                   icon: <CatalogIcon />,
                 },
                 ...getMountPointData<
@@ -82,20 +84,29 @@ export const SearchPage = () => {
             />
             <Paper className={classes.filters}>
               <SearchFilter.Select
-                label="Kind"
+                label={t('app.search.filters.kind')}
                 name="kind"
-                values={['Component', 'Template']}
+                values={[
+                  t('app.search.filters.component'),
+                  t('app.search.filters.template'),
+                ]}
               />
               <SearchFilter.Checkbox
-                label="Lifecycle"
+                label={t('app.search.filters.lifecycle')}
                 name="lifecycle"
-                values={['experimental', 'production']}
+                values={[
+                  t('app.search.filters.experimental'),
+                  t('app.search.filters.production'),
+                ]}
               />
               {...getMountPointData<React.ComponentType>(
                 'search.page.filters',
               ).map(({ Component, config }, idx) => {
                 return (
-                  <Component key={`search_filter_${idx}`} {...config.props} />
+                  <Component
+                    key={`search_filter_${config?.props?.name || idx}`}
+                    {...config.props}
+                  />
                 );
               })}
             </Paper>
@@ -113,7 +124,7 @@ export const SearchPage = () => {
                 return (
                   <ComponentWithIcon
                     {...config.props}
-                    key={`search_results_${idx}`}
+                    key={`search_results_${config?.props?.name || idx}`}
                     icon={<MenuIcon icon={config.props?.icon || ''} />}
                   />
                 );
