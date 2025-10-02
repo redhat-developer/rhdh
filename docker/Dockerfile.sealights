@@ -1,0 +1,84 @@
+FROM quay.io/rhdh-community/rhdh:pr-3413 AS sealights
+# FROM redhat-developer/rhdh:local AS sealights
+
+ARG SL_TOKEN
+ARG GH_PR_NUMBER
+ARG GH_PR_COMMIT
+ARG GH_PR_TARGET_BRANCH
+
+
+ENV SL_tokenFile=/opt/app-root/src/sltoken.txt NODE_DEBUG=sl FRONTEND_BUILD_DIR=dist SL_FRONTEND_BUILD_DIR=sl_dist SL_TOKEN=${SL_TOKEN} SL_LOG_LEVEL=debug NODE_DEBUG=sl \
+    GH_PR_NUMBER=${GH_PR_NUMBER} GH_PR_COMMIT=${GH_PR_COMMIT} GH_PR_TARGET_BRANCH=${GH_PR_TARGET_BRANCH}
+
+# RUN echo ${SL_TOKEN} > $SL_tokenFile
+
+RUN npm install -g slnodejs && npm cache clean --force
+
+USER root
+# RUN chmod +r ${SL_tokenFile}
+# RUN chown 1001 ${SL_tokenFile}
+USER 1001
+
+# Generate build session ID dynamically
+# RUN npx slnodejs config --token ${SL_TOKEN} --appname "rhdh" --branch "subhash-local-test6" --build $(date +"%y%m%d_%H%M%S")
+RUN npx slnodejs prConfig --token ${SL_TOKEN} --appname "rhdh" --pullRequestNumber ${GH_PR_NUMBER} --targetBranch ${GH_PR_TARGET_BRANCH} --latestCommit ${GH_PR_COMMIT} --repositoryUrl "https://github.com/redhat-developer/rhdh"
+
+ENV SL_BUILD_SESSION_ID_FILE=/opt/app-root/src/buildSessionId
+
+
+# Update source map relative paths to absolute paths before scanning (plugins only).
+RUN cd $CONTAINER_SOURCE && \
+    for map_file in $(find plugins -path "*/dist/*.map" -type f); do \
+        if grep -q '"sources"' "$map_file"; then \
+            plugin_base=${map_file%/dist/*}; \
+            sed -i -E "s|\"(\\.\\.?/)+([^\"]*)\"|\"$CONTAINER_SOURCE/$plugin_base/\\2\"|g" "$map_file"; \
+        fi; \
+    done
+
+# Declare the plugin list as an ENV variable
+ENV PLUGIN_LIST="dynamic-plugins-info-backend licensed-users-info-backend scalprum-backend"
+
+# Define common scan parameters
+ENV SL_SCAN_BASE="slnodejs scan --token ${SL_TOKEN} --buildsessionidFile $SL_BUILD_SESSION_ID_FILE --excludedpaths webpack --scm none --projectroot $CONTAINER_SOURCE"
+
+# Scan modules with browser instrumentation (frontend and app-next)
+RUN $SL_SCAN_BASE --workspacepath "$CONTAINER_SOURCE/packages/app/${FRONTEND_BUILD_DIR}" --uniqueModuleId frontend
+RUN $SL_SCAN_BASE --workspacepath "$CONTAINER_SOURCE/packages/app-next/dist" --uniqueModuleId app-next
+
+# Scan backend module
+RUN $SL_SCAN_BASE --workspacepath "$CONTAINER_SOURCE/packages/backend" --uniqueModuleId backend
+
+# Scan plugins using array iteration
+RUN for plugin in $PLUGIN_LIST; do \
+        $SL_SCAN_BASE --workspacepath "$CONTAINER_SOURCE/plugins/$plugin/dist" --uniqueModuleId $plugin; \
+    done
+
+RUN slnodejs buildend --buildsessionidFile $SL_BUILD_SESSION_ID_FILE --token ${SL_TOKEN} --ok
+
+# Define common instrument parameters
+ENV SL_INSTRUMENT_BASE="slnodejs instrument --token ${SL_TOKEN} --buildsessionidFile $SL_BUILD_SESSION_ID_FILE --projectroot $CONTAINER_SOURCE"
+
+# Instrument frontend
+RUN $SL_INSTRUMENT_BASE \
+    --workspacepath "$CONTAINER_SOURCE/packages/app/${FRONTEND_BUILD_DIR}" \
+    --outputpath "$CONTAINER_SOURCE/packages/app/${SL_FRONTEND_BUILD_DIR}" && \
+    rm -rf "$CONTAINER_SOURCE/packages/app/${FRONTEND_BUILD_DIR}" && \
+    mv "$CONTAINER_SOURCE/packages/app/${SL_FRONTEND_BUILD_DIR}" "$CONTAINER_SOURCE/packages/app/${FRONTEND_BUILD_DIR}"
+
+# Instrument app-next
+RUN $SL_INSTRUMENT_BASE \
+    --workspacepath "$CONTAINER_SOURCE/packages/app-next/dist" \
+    --outputpath "$CONTAINER_SOURCE/packages/app-next/sl_dist" && \
+    rm -rf "$CONTAINER_SOURCE/packages/app-next/dist" && \
+    mv "$CONTAINER_SOURCE/packages/app-next/sl_dist" "$CONTAINER_SOURCE/packages/app-next/dist"
+
+
+# RUN echo ${SL_buildSessionId} > buildSessionId
+
+ENV NODE_OPTIONS="${NODE_OPTIONS} --require /opt/app-root/src/.npm-global/lib/node_modules/slnodejs/lib/preload.js" \
+    SL_workspacepath="." \
+    SL_useinitialcolor="true" \
+    SL_buildSessionIdFile=$SL_BUILD_SESSION_ID_FILE \
+    SL_disableCoverageSummaryLogs="true" \
+    NODE_DEBUG=""
+

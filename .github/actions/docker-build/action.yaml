@@ -52,11 +52,25 @@ inputs:
     description: Path to the Dockerfile to use
     required: false
     default: 'docker/Dockerfile'
+  sealightsDockerfilePath:
+    description: Path to the Sealights Dockerfile to use
+    required: false
+    default: 'docker/Dockerfile.sealights'
+  buildSealights:
+    description: Whether to build the Sealights-enabled image
+    required: false
+    default: 'false'
+  sealightsToken:
+    description: Sealights token for instrumentation
+    required: false
 
 outputs:
   digest:
     description: The digest of the built Docker image
     value: ${{ steps.build.outputs.digest }}
+  sealights-digest:
+    description: The digest of the built Sealights Docker image
+    value: ${{ steps.build-sealights.outputs.digest }}
 
 runs:
   using: composite
@@ -99,6 +113,19 @@ runs:
           ${{ inputs.imageTags }}
         labels: |
           ${{ inputs.imageLabels }}
+
+    - name: Extract metadata (tags, labels) for Sealights Docker image
+      if: ${{ inputs.buildSealights == 'true' }}
+      id: meta-sealights
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ inputs.registry }}/${{ inputs.imageName }}
+        tags: |
+          ${{ inputs.imageTags }}
+        labels: |
+          ${{ inputs.imageLabels }}
+        flavor: |
+          suffix=-sealights
 
     # Hermetic Build Steps
     - name: Set up hermetic build variables
@@ -202,6 +229,21 @@ runs:
         labels: ${{ steps.meta.outputs.labels }}
         annotations: ${{ steps.meta.outputs.annotations }}
         platforms: ${{ inputs.platform }}
+
+    - name: Build and push Sealights Docker image (Standard)
+      if: ${{ inputs.enableHermeticBuild != 'true' && inputs.buildSealights == 'true' }}
+      uses: docker/build-push-action@v6
+      id: build-sealights
+      with:
+        context: .
+        file: ${{ inputs.sealightsDockerfilePath }}
+        push: ${{ inputs.push }}
+        provenance: false
+        tags: ${{ steps.meta-sealights.outputs.tags }}
+        labels: ${{ steps.meta-sealights.outputs.labels }}
+        platforms: ${{ inputs.platform }}
+        build-args: |
+          SLTOKEN=${{ inputs.sealightsToken }}
         
     - name: "Build Docker Image (Hermetic)"
       id: hermetic-build
