@@ -1,5 +1,5 @@
 [jira]
-jira_api_token = ""
+jira_api_token = "${{ secrets.JIRA_API_TOKEN }}"
 jira_base_url = "https://issues.redhat.com"
 
 [github_app]

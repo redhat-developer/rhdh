@@ -708,6 +708,20 @@ install_orchestrator_infra_chart() {
     --wait --timeout=5m \
     --set serverlessLogicOperator.subscription.spec.installPlanApproval=Automatic \
     --set serverlessOperator.subscription.spec.installPlanApproval=Automatic
+
+  until [ "$(oc get pods -n openshift-serverless --no-headers 2> /dev/null | wc -l)" -gt 0 ]; do
+    sleep 5
+  done
+
+  until [ "$(oc get pods -n openshift-serverless-logic --no-headers 2> /dev/null | wc -l)" -gt 0 ]; do
+    sleep 5
+  done
+
+  oc wait pod --all --for=condition=Ready --namespace=openshift-serverless --timeout=5m
+  oc wait pod --all --for=condition=Ready --namespace=openshift-serverless-logic --timeout=5m
+
+  oc get crd | grep "sonataflow" || echo "Sonataflow CRDs not found"
+  oc get crd | grep "knative" || echo "Serverless CRDs not found"
 }
 
 # Helper function to get common helm set parameters

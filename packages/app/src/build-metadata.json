@@ -1,5 +1,6 @@
 {
   "title": "RHDH Metadata",
+  "titleKey": "app.userSettings.infoCard.title",
   "card": {
     "RHDH Version": "1.8.0",
     "Backstage Version": "1.42.5",

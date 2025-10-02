@@ -23,7 +23,9 @@ metadata:
       url: https://github.com/backstage/backstage/tree/master/plugins/techdocs-module-addons-contrib
 spec:
   author: Backstage Community
-  support: production
+  support:
+    provider: Red Hat
+    level: generally-available
   lifecycle: active
   publisher: Red Hat
   categories:

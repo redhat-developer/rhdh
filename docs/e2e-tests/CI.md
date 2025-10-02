@@ -25,24 +25,21 @@ For scenarios where tests are not automatically triggered, or when you need to m
 
 2. **Triggering Tests Post-Validation:**
    - After a janus-idp member has validated the PR with `/ok-to-test`, anyone can trigger tests using the following commands:
-     - `/test`, `/test images`, `/test all` or `/test e2e-tests`
+     - `/test ?` to get a list of all available jobs
+     - `/test e2e-ocp-helm` for mandatory PR checks
+   - **Note:** Avoid using `/test all` as it may trigger unnecessary jobs and consume CI resources. Instead, use `/test ?` to see available options and trigger only the specific tests you need.
 3. **Triggering Optional Nightly Job Execution on Pull Requests:**
-     The following optional nightly jobs can be manually triggered on PRs targeting the `main` branch. These jobs help validate changes across various deployment environments by commenting the trigger command on PR.
-     ### Available Nightly Jobs on PR
-     - **Operator-Specific Test:**  
-          Runs PR tests using an operator-based deployment on an OpenShift (OCP) cluster.  
-          Trigger command: `/test e2e-tests-operator-nightly`
-     - **Azure Kubernetes Service (AKS) Test:**  
-          Runs PR tests on AKS.  
-          Trigger command: `/test e2e-tests-aks-helm-nightly`
-     - **Google Kubernetes Engine (GKE) Test:**  
-          Runs PR tests on GKE.  
-          Trigger command:  `/test e2e-tests-gke-helm-nightly`
-     - **Standard Nightly Test on OpenShift v4.17:**  
-          Runs PR tests on OCP version 4.17.  
-          Trigger command:  `/test e2e-tests-nightly`
+     The following optional nightly jobs can be manually triggered on PRs targeting the `main` branch and `release-*` branches. These jobs help validate changes across various deployment environments by commenting the trigger command on PR.
 
-These interactions are picked up by the OpenShift-CI service, which sets up a test environment on the **IBM Cloud**, specifically on an OpenShift Container Platform (OCP) cluster. The configurations and steps for setting up this environment are defined in the `openshift-ci-tests.sh` script. For more details, see the [High-Level Overview of `openshift-ci-tests.sh`](#high-level-overview-of-openshift-ci-testssh).
+     **Job Name Format:** Jobs follow the naming scheme `redhat-developer-rhdh-PLATFORM-[VERSION]-INSTALL_METHOD-[SPECIAL_TEST]-nightly` where:
+     - `PLATFORM`: The target platform (e.g., `ocp`, `aks`, `gke`)
+     - `VERSION`: The platform version (e.g., `v4-17`, `v4-18`, `v4-19`)
+     - `INSTALL_METHOD`: The deployment method (e.g., `helm`, `operator`)
+     - `SPECIAL_TEST`: Optional special test type (e.g., `auth-providers`, `upgrade`, `sealights`)
+
+     Use `/test ?` to see the complete list of available jobs for your specific branch and PR context.
+
+These interactions are picked up by the OpenShift-CI service, which sets up a test environmentr. The configurations and steps for setting up this environment are defined in the `openshift-ci-tests.sh` script. For more details, see the [High-Level Overview of `openshift-ci-tests.sh`](#high-level-overview-of-openshift-ci-testssh).
 
 ### Retrying Tests
 
@@ -55,8 +52,8 @@ If the initial automatically triggered tests fail, OpenShift-CI will add a comme
 - **Purpose:** Validate new PRs for code quality, functionality, and integration.
 - **Trigger:**
   - **Automatic:** When a PR includes code changes affecting tests (excluding doc-only changes), tests are automatically triggered.
-  - **Manual:** When `/ok-to-test` is commented by a janus-idp member for external contributors or when `/test`, `/test images`, `/test all` and `/test e2e-tests` is commented after validation.
-- **Environment:** Runs on an ephemeral OpenShift cluster on IBM Cloud.
+  - **Manual:** When `/ok-to-test` is commented by a janus-idp member for external contributors or when `/test`, `/test images`, or `/test e2e-ocp-helm` is commented after validation.
+- **Environment:** Runs on ephemeral OpenShift clusters managed by Hive. Kubernetes jobs use ephemeral EKS and AKS clusters on spot instances managed by [Mapt](https://github.com/redhat-developer/mapt). GKE uses a long-running cluster.
 - **Configurations:**
   - Tests are executed on both **RBAC** (Role-Based Access Control) and **non-RBAC** namespaces. Different sets of tests are executed for both the **non-RBAC RHDH instance** and the **RBAC RHDH instance**, each deployed in separate namespaces.
 - **Access:** In order to access the environment, you can run the bash at `.ibm/pipelines/ocp-cluster-claim-login.sh`. You will be prompted the prow url (the url from the openshift agent, which looks like https://prow.ci.openshift.org/...). Once you test calimed a cluster, this script will forward the cluster web console url along with the credentials.

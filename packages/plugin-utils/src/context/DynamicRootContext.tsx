@@ -12,4 +12,5 @@ export const DynamicRootContext = createContext<ComponentRegistry>({
   providerSettings: [],
   scaffolderFieldExtensions: [],
   techdocsAddons: [],
+  translationRefs: [],
 });

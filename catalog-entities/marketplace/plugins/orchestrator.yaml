@@ -22,7 +22,9 @@ metadata:
     or external systems.
 spec:
   author: Red Hat
-  support: tech-preview  # production, tech-preview, dev-preveiw
+  support:
+    provider: Red Hat
+    level: tech-preview
   lifecycle: active
   publisher: Red Hat
 

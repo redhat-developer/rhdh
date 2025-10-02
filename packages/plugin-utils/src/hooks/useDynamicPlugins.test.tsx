@@ -68,6 +68,7 @@ const mockContextValue: ComponentRegistry = {
       config: { props: {} },
     },
   ],
+  translationRefs: [],
 };
 
 // Test wrapper component
@@ -207,6 +208,7 @@ describe('useDynamicPluginConfig', () => {
       providerSettings: [],
       scaffolderFieldExtensions: [],
       techdocsAddons: [],
+      translationRefs: [],
     };
 
     const EmptyWrapper: React.FC<{ children: React.ReactNode }> = ({

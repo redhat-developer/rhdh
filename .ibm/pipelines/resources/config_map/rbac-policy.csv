@@ -9,7 +9,9 @@ p, role:xyz/team_a, catalog-entity, read, allow
 p, role:xyz/team_a, catalog.entity.create, create, allow
 p, role:xyz/team_a, catalog.location.create, create, allow
 p, role:xyz/team_a, catalog.location.read, read, allow
+p, role:default/team_a, scorecard.metric.read, read, allow
 
+g, user:default/rhdh-qe, role:default/team_a
 g, user:default/rhdh-qe, role:default/qe_rbac_admin
 p, role:default/qe_rbac_admin, kubernetes.proxy, use, allow
 p, role:default/qe_rbac_admin, kubernetes.resources.read, read, allow

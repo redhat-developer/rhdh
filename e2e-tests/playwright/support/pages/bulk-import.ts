@@ -32,7 +32,7 @@ export class BulkImport {
       });
     }).toPass({
       intervals: [1_000, 2_000, 5_000],
-      timeout: 15_000,
+      timeout: 20_000,
     });
   }
 

@@ -111,6 +111,11 @@ test.describe.serial("GitHub Happy path", async () => {
 
     await common.clickOnGHloginPopup();
     await uiHelper.verifyLink("About RHDH", { exact: false });
+
+    // Workaround for RHDHBUGS-2091: Change the size to 10 to avoid information not being displayed
+    await page.getByRole("button", { name: "20" }).click();
+    await page.getByRole("option", { name: "10", exact: true }).click();
+
     await backstageShowcase.verifyPRStatisticsRendered();
     await backstageShowcase.verifyAboutCardIsDisplayed();
   });

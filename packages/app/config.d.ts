@@ -96,6 +96,16 @@ export interface Config {
        */
       title: string;
       /**
+       * Optional translation key for the title.
+       * @visibility frontend
+       */
+      titleKey?: string;
+      /**
+       * The roles associated with the quickstart.
+       * @visibility frontend
+       */
+      roles?: Array<string>;
+      /**
        * Optional icon for quickstart.
        * @visibility frontend
        */
@@ -106,6 +116,11 @@ export interface Config {
        */
       description: string;
       /**
+       * Optional translation key for the description.
+       * @visibility frontend
+       */
+      descriptionKey?: string;
+      /**
        * Optional action item for quickstart.
        * @visibility frontend
        */
@@ -115,6 +130,11 @@ export interface Config {
          * @visibility frontend
          */
         text: string;
+        /**
+         * Optional translation key for the action text.
+         * @visibility frontend
+         */
+        textKey?: string;
         /**
          * Action item link.
          * @visibility frontend
@@ -267,6 +287,11 @@ export interface Config {
      * @visibility frontend
      */
     title: string;
+    /**
+     * Optional translation key for the title.
+     * @visibility frontend
+     */
+    titleKey?: string;
     /**
      * Allows setting a content for the build information card
      * @visibility frontend
