@@ -128,6 +128,48 @@ export const rhdhMessages = {
       },
     },
     entityPage: {
+      overview: {
+        title: 'Overview',
+      },
+      topology: {
+        title: 'Topology',
+      },
+      issues: {
+        title: 'Issues',
+      },
+      pullRequests: {
+        title: 'Pull/Merge Requests',
+      },
+      ci: {
+        title: 'CI',
+      },
+      cd: {
+        title: 'CD',
+      },
+      kubernetes: {
+        title: 'Kubernetes',
+      },
+      imageRegistry: {
+        title: 'Image Registry',
+      },
+      monitoring: {
+        title: 'Monitoring',
+      },
+      lighthouse: {
+        title: 'Lighthouse',
+      },
+      api: {
+        title: 'API',
+      },
+      dependencies: {
+        title: 'Dependencies',
+      },
+      docs: {
+        title: 'Docs',
+      },
+      definition: {
+        title: 'Definition',
+      },
       diagram: {
         title: 'System Diagram',
       },
