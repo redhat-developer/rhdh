@@ -759,10 +759,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@microsoft/microsoft-graph-types@npm:2.40.0":
-  version: 2.40.0
-  resolution: "@microsoft/microsoft-graph-types@npm:2.40.0"
-  checksum: 3892e910baf4fcf2d1bcee4c71683e3707818be6ff1b4b9dbc29b9e2eab942ea0b171b3023d4620213f10d93d03611e6615706a3d1af4ca44028491a0544ccaf
+"@microsoft/microsoft-graph-types@npm:2.43.0":
+  version: 2.43.0
+  resolution: "@microsoft/microsoft-graph-types@npm:2.43.0"
+  checksum: c998a6f0e2e75df59957092aaa0b4d0aac73d2f124286dd105daa92b5d71201cdeadf3bbfd8d7c8a1f219135f4f6ca68b98865bce0098d2052fee394ea2eabc4
   languageName: node
   linkType: hard
 
@@ -2316,7 +2316,7 @@ __metadata:
     "@keycloak/keycloak-admin-client": 25.0.6
     "@kubernetes/client-node": 0.22.3
     "@microsoft/microsoft-graph-client": 3.0.7
-    "@microsoft/microsoft-graph-types": 2.40.0
+    "@microsoft/microsoft-graph-types": 2.43.0
     "@playwright/test": 1.55.1
     "@types/node": 22.16.3
     "@typescript-eslint/eslint-plugin": 6.21.0
