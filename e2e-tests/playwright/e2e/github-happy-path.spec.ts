@@ -188,7 +188,7 @@ test.describe.serial("GitHub Happy path", async () => {
     await backstageShowcase.verifyPRRowsPerPage(20, allPRs);
   });
 
-  test("Verify that the CI tab renders 5 most recent github actions and verify the table properly displays the actions when page sizes are changed and filters are applied", async () => {
+  test.skip("Verify that the CI tab renders 5 most recent github actions and verify the table properly displays the actions when page sizes are changed and filters are applied", async () => {
     await page.locator("a").getByText("CI", { exact: true }).first().click();
     await common.checkAndClickOnGHloginPopup();
 

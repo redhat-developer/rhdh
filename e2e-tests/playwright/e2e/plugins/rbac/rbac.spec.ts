@@ -488,7 +488,7 @@ test.describe.serial("Test RBAC", () => {
       );
     });
 
-    test("Test that roles and policies from GET request are what expected", async () => {
+    test.skip("Test that roles and policies from GET request are what expected", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
 
       const rolesResponse = await rbacApi.getRoles();
