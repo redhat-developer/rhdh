@@ -103,30 +103,7 @@ export const rhdhMessages = {
       },
     },
   },
-  app: {
-    scaffolder: {
-      title: 'Self-service',
-    },
-    search: {
-      title: 'Search',
-      resultType: 'Result Type',
-      softwareCatalog: 'Software Catalog',
-      filters: {
-        kind: 'Kind',
-        lifecycle: 'Lifecycle',
-        component: 'Component',
-        template: 'Template',
-        experimental: 'experimental',
-        production: 'production',
-      },
-    },
-    learningPaths: {
-      title: 'Learning Paths',
-      error: {
-        title: 'Could not fetch data.',
-        unknownError: 'Unknown error',
-      },
-    },
+  catalog: {
     entityPage: {
       overview: {
         title: 'Overview',
@@ -175,6 +152,31 @@ export const rhdhMessages = {
       },
       workflows: {
         title: 'Workflows',
+      },
+    },
+  },
+  app: {
+    scaffolder: {
+      title: 'Self-service',
+    },
+    search: {
+      title: 'Search',
+      resultType: 'Result Type',
+      softwareCatalog: 'Software Catalog',
+      filters: {
+        kind: 'Kind',
+        lifecycle: 'Lifecycle',
+        component: 'Component',
+        template: 'Template',
+        experimental: 'experimental',
+        production: 'production',
+      },
+    },
+    learningPaths: {
+      title: 'Learning Paths',
+      error: {
+        title: 'Could not fetch data.',
+        unknownError: 'Unknown error',
       },
     },
     userSettings: {
