@@ -94,7 +94,7 @@ test.describe.serial("Test Adoption Insights", () => {
     });
 
     test("Data shows in Top plugins Entity", async () => {
-      await testHelper.expectTopEntriesToBePresent("Top 3 plugins");
+      await testHelper.expectTopEntriesToBePresent("plugins");
     });
 
     test("Rest of the panels are visible", async () => {
@@ -154,15 +154,15 @@ test.describe.serial("Test Adoption Insights", () => {
       });
 
       test("Visited component shows up in top catalog entities", async () => {
-        await testHelper.expectTopEntriesToBePresent("Top catalog entities");
+        await testHelper.expectTopEntriesToBePresent("catalog entities");
       });
 
       test("Visited techdoc shows up in top techdocs", async () => {
-        await testHelper.expectTopEntriesToBePresent("Top 3 techdocs");
+        await testHelper.expectTopEntriesToBePresent("techdocs");
       });
 
       test("Visited templates shows in top templates", async () => {
-        await testHelper.expectTopEntriesToBePresent("Top 3 templates");
+        await testHelper.expectTopEntriesToBePresent("templates");
       });
 
       test("Changes are Reflecting in panels", async () => {
