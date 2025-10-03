@@ -117,6 +117,7 @@ type EntityTab = {
   mountPoint: string;
   path: string;
   title: string;
+  titleKey?: string;
   pariority?: number;
 };
 
@@ -125,6 +126,7 @@ type EntityTabEntry = {
   mountPoint: string;
   path: string;
   title: string;
+  titleKey?: string;
   priority?: number;
 };
 

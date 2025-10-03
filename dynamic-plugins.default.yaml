@@ -1269,6 +1269,9 @@ plugins:
       dynamicPlugins:
         frontend:
           red-hat-developer-hub.backstage-plugin-orchestrator:
+            translationResources:
+              - importName: rhdhTranslations
+                ref: rhdhTranslationRef
             appIcons:
               - importName: OrchestratorIcon
                 name: orchestratorIcon
@@ -1282,6 +1285,7 @@ plugins:
             entityTabs:
               - path: /workflows
                 title: Workflows
+                titleKey: app.entityPage.workflows.title
                 mountPoint: entity.page.workflows
             mountPoints:
               - mountPoint: entity.page.workflows/cards

@@ -131,6 +131,9 @@ export const rhdhMessages = {
       diagram: {
         title: 'System Diagram',
       },
+      workflows: {
+        title: 'Workflows',
+      },
     },
     userSettings: {
       infoCard: {
