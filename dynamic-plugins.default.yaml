@@ -1326,7 +1326,7 @@ plugins:
             entityTabs:
               - path: /workflows
                 title: Workflows
-                titleKey: app.entityPage.workflows.title
+                titleKey: catalog.entityPage.workflows.title
                 mountPoint: entity.page.workflows
             mountPoints:
               - mountPoint: entity.page.workflows/cards
