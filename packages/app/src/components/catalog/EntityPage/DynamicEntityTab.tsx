@@ -12,6 +12,7 @@ import Grid from '../Grid';
 export type DynamicEntityTabProps = {
   path: string;
   title: string;
+  titleKey?: string;
   mountPoint: string;
   if?: (entity: Entity) => boolean;
   children?: React.ReactNode;
