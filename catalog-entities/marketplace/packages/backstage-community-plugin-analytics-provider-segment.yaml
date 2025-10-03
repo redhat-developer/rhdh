@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: backstage-community-plugin-analytics-provider-segment
   namespace: rhdh
-  title: "@backstage-community/plugin-analytics-provider-segment"
+  title: "Analytics Provider Segment"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

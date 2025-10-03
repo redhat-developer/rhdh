@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: backstage-plugin-scaffolder-backend-module-github
   namespace: rhdh
-  title: "@backstage/plugin-scaffolder-backend-module-github"
+  title: "Scaffolder Backend Module GitHub"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

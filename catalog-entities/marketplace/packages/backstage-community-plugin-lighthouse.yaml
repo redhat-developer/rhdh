@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: backstage-community-plugin-lighthouse
   namespace: rhdh
-  title: "@backstage-community/plugin-lighthouse"
+  title: "Lighthouse"
   links:
     - url: https://red.ht/rhdh
       title: Homepage
