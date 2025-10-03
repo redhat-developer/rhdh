@@ -251,7 +251,7 @@ test.describe.serial("Test Adoption Insights", () => {
         });
         await expect(panel.locator(".recharts-surface")).toBeVisible();
         await expect(panel).toContainText(
-          /An average of \d+ searches per hour were conducted during this period\./,
+          /Average search count was \d+ per \w+ for this period\./,
         );
         const recount = await testHelper.getCountFromPanel(panel);
         expect(recount).toBeGreaterThan(initialSearchCount);
