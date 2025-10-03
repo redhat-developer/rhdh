@@ -19,7 +19,7 @@ const EntityPageWithTranslation = ({
       return title;
     }
     const translatedTitle = t(titleKey as any, {});
-    if (translatedTitle !== title) {
+    if (translatedTitle !== titleKey) {
       return translatedTitle;
     }
     return title;
@@ -28,13 +28,9 @@ const EntityPageWithTranslation = ({
   return (
     <ContextMenuAwareEntityLayout>
       {mergeTabs(entityTabOverrides).map(([path, config]) => {
-        const translatedConfig = {
+        return dynamicEntityTab({
           ...config,
           title: getTranslatedTitle(config.title, config.titleKey),
-        };
-
-        return dynamicEntityTab({
-          ...translatedConfig,
           path,
           ...(tabRules[path] ? tabRules[path] : {}),
           ...(tabChildren[path] ? tabChildren[path] : {}),

@@ -1313,9 +1313,6 @@ plugins:
       dynamicPlugins:
         frontend:
           red-hat-developer-hub.backstage-plugin-orchestrator:
-            translationResources:
-              - importName: rhdhTranslations
-                ref: rhdhTranslationRef
             appIcons:
               - importName: OrchestratorIcon
                 name: orchestratorIcon
