@@ -514,6 +514,9 @@ plugins:
               default.create:
                 title: ''
           red-hat-developer-hub.backstage-plugin-global-header:
+            translationResources:
+              - importName: globalHeaderTranslations
+                ref: globalHeaderTranslationRef
             mountPoints:
               - mountPoint: application/header
                 importName: GlobalHeader
@@ -614,6 +617,7 @@ plugins:
                   props:
                     title: My profile
                     titleKey: profile.myProfile
+                    type: myProfile
                     icon: account
               - mountPoint: global.header/profile
                 importName: LogoutButton
