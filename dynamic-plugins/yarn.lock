@@ -11857,13 +11857,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/lab@npm:5.0.0-alpha.176":
-  version: 5.0.0-alpha.176
-  resolution: "@mui/lab@npm:5.0.0-alpha.176"
+"@mui/lab@npm:5.0.0-alpha.177":
+  version: 5.0.0-alpha.177
+  resolution: "@mui/lab@npm:5.0.0-alpha.177"
   dependencies:
     "@babel/runtime": ^7.23.9
     "@mui/base": 5.0.0-beta.40-1
-    "@mui/system": ^5.17.1
+    "@mui/system": ^5.18.0
     "@mui/types": ~7.2.15
     "@mui/utils": ^5.17.1
     clsx: ^2.1.0
@@ -11882,7 +11882,7 @@ __metadata:
       optional: true
     "@types/react":
       optional: true
-  checksum: afa6da4c4583fc201ac3e6f6ae143d1a4fd0cf8a79e1ce8d6cefe2b9fb3862fa9eae490c4a60cde12923128d70d583e9fcc3f0a1a31c9ff930fd3d1e0c8aa378
+  checksum: 58a3983ae28993b91c1d3cca29d0dbf904b252ab7a7edc81eebd0696dc53dbdc8144d1727761cc09cd9833cf3ce2fd5e422864c2feac37161d6dc60ad88bf88a
   languageName: node
   linkType: hard
 
@@ -13831,17 +13831,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-adoption-insights-backend@npm:0.2.2":
-  version: 0.2.2
-  resolution: "@red-hat-developer-hub/backstage-plugin-adoption-insights-backend@npm:0.2.2"
+"@red-hat-developer-hub/backstage-plugin-adoption-insights-backend@npm:0.3.0":
+  version: 0.3.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-adoption-insights-backend@npm:0.3.0"
   dependencies:
-    "@backstage/backend-defaults": ^0.10.0
-    "@backstage/backend-plugin-api": ^1.3.1
-    "@backstage/core-plugin-api": ^1.10.7
+    "@backstage/backend-defaults": ^0.12.0
+    "@backstage/backend-plugin-api": ^1.4.2
+    "@backstage/core-plugin-api": ^1.10.9
     "@backstage/errors": ^1.2.7
-    "@backstage/plugin-catalog-node": ^1.17.0
-    "@backstage/plugin-permission-common": ^0.9.0
-    "@red-hat-developer-hub/backstage-plugin-adoption-insights-common": ^0.3.0
+    "@backstage/plugin-catalog-node": ^1.18.0
+    "@backstage/plugin-permission-common": ^0.9.1
+    "@red-hat-developer-hub/backstage-plugin-adoption-insights-common": ^0.4.0
     express: ^4.17.1
     express-promise-router: ^4.1.0
     json-2-csv: ^5.5.8
@@ -13849,61 +13849,61 @@ __metadata:
     luxon: ^3.5.0
     uuid: ^11.1.0
     zod: ^3.22.4
-  checksum: 86a0d4b2279ceb671d50b9b715bf2115745dc235bb2156b4c46bad52fbc1c778f69ba6424bce131aa21c14d937dcb132d2e562b43d8161915a5cd9594d10d57a
+  checksum: 9f93ad9674f27ae44178893b27f536548fca425afd6678699e41af55535366d332ab1f7316e8102ec09968622a7c21cad2a84bc1b6c7679d0e202d08668a05a0
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-adoption-insights-common@npm:0.3.0, @red-hat-developer-hub/backstage-plugin-adoption-insights-common@npm:^0.3.0":
-  version: 0.3.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-adoption-insights-common@npm:0.3.0"
+"@red-hat-developer-hub/backstage-plugin-adoption-insights-common@npm:0.4.0, @red-hat-developer-hub/backstage-plugin-adoption-insights-common@npm:^0.4.0":
+  version: 0.4.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-adoption-insights-common@npm:0.4.0"
   peerDependencies:
-    "@backstage/plugin-permission-common": ^0.9.0
-  checksum: aaed4249eca1798ead1feecf6f1cda23be1a1169aee136dfaae8ec506dc76c2d7565a7e677e9bf57399eb643667d0d0ef39d7af543b355549e13ce6353fddcbe
+    "@backstage/plugin-permission-common": ^0.9.1
+  checksum: afb3712c3c691049945d7dfc82289e91932e3952a8088341b4a47de32490580d4fd1ed5c5e0d50f7f9cde5969280a3e8210a29b1439710208af5ff3aa0f9680f
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-adoption-insights@npm:0.2.1":
-  version: 0.2.1
-  resolution: "@red-hat-developer-hub/backstage-plugin-adoption-insights@npm:0.2.1"
+"@red-hat-developer-hub/backstage-plugin-adoption-insights@npm:0.3.1":
+  version: 0.3.1
+  resolution: "@red-hat-developer-hub/backstage-plugin-adoption-insights@npm:0.3.1"
   dependencies:
-    "@backstage/catalog-model": ^1.7.4
-    "@backstage/core-components": ^0.17.2
-    "@backstage/core-plugin-api": ^1.10.7
-    "@backstage/plugin-catalog-react": ^1.18.0
-    "@backstage/plugin-permission-react": ^0.4.34
-    "@backstage/theme": ^0.6.6
+    "@backstage/catalog-model": ^1.7.5
+    "@backstage/core-components": ^0.17.5
+    "@backstage/core-plugin-api": ^1.10.9
+    "@backstage/plugin-catalog-react": ^1.20.1
+    "@backstage/plugin-permission-react": ^0.4.36
+    "@backstage/theme": ^0.6.8
     "@material-ui/core": ^4.12.2
     "@material-ui/icons": ^4.9.1
     "@material-ui/lab": 4.0.0-alpha.61
-    "@mui/icons-material": 5.17.1
-    "@mui/lab": 5.0.0-alpha.176
-    "@mui/material": 5.17.1
+    "@mui/icons-material": 5.18.0
+    "@mui/lab": 5.0.0-alpha.177
+    "@mui/material": 5.18.0
     "@mui/x-date-pickers": 5.0.20
-    "@red-hat-developer-hub/backstage-plugin-adoption-insights-common": ^0.3.0
+    "@red-hat-developer-hub/backstage-plugin-adoption-insights-common": ^0.4.0
     date-fns: 2.30.0
-    date-fns-tz: 1.3.7
+    date-fns-tz: 1.3.8
     react-use: ^17.2.4
     recharts: ^2.15.1
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 6a180424d54ee087ad9359d3b3ce79fc0436c8ea855da71bc2cdcd89c407cca7ed005d16be8d2681ae211881e81c24f8f8b17d20fd5f83fa9809af443bf01ee8
+  checksum: b67513681af9d502bb9b4e259e32b15e7c72f01e21a9c338debb6a814b6c96d0460479ed3bc6284ae7c54981d9a05150d746ea991ebb9bc491389b78410aaaf0
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights@npm:0.2.0":
-  version: 0.2.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights@npm:0.2.0"
+"@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights@npm:0.3.0":
+  version: 0.3.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights@npm:0.3.0"
   dependencies:
-    "@backstage/core-components": ^0.17.2
-    "@backstage/core-plugin-api": ^1.10.7
-    "@backstage/theme": ^0.6.6
+    "@backstage/core-components": ^0.17.5
+    "@backstage/core-plugin-api": ^1.10.9
+    "@backstage/theme": ^0.6.8
     "@material-ui/core": ^4.9.13
     "@material-ui/icons": ^4.9.1
     "@material-ui/lab": ^4.0.0-alpha.61
     react-use: ^17.2.4
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 4a6f7420543450e7375d82ae1d536c930521fb0b460a7731c5a96ac3432071d616f672e9dabebe972dc47bdeeb4f77bc3a0bb04de16ae58148182ecca6bf2fcd
+  checksum: 212f4bac791bbf23efc56ae46ca40991afb998b2a01c579942775d81e84c7bab57e8b2fdd914975a54551afb97d8cc8eda7496eee50c1f59d22e8d11d09730b5
   languageName: node
   linkType: hard
 
@@ -22249,12 +22249,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"date-fns-tz@npm:1.3.7":
-  version: 1.3.7
-  resolution: "date-fns-tz@npm:1.3.7"
+"date-fns-tz@npm:1.3.8":
+  version: 1.3.8
+  resolution: "date-fns-tz@npm:1.3.8"
   peerDependencies:
     date-fns: ">=2.0.0"
-  checksum: b749613669223056d5e6d715114c94bec57234b676d0cea0c72ca710626c81e9ea04df6441852a5fec74b42c5f27b2f076e13697ec43da360b67806a3042a10e
+  checksum: dbf17cb88de7c7b71a9f86b815ac62ebdbf725c030e78d2421309456b5001a85284a5b6763f4af0ba660183f12e876c165e725a0723f642edb7846407db03133
   languageName: node
   linkType: hard
 
@@ -34954,8 +34954,8 @@ __metadata:
   dependencies:
     "@backstage/cli": ^0.34.1
     "@janus-idp/cli": 3.6.1
-    "@red-hat-developer-hub/backstage-plugin-adoption-insights-backend": 0.2.2
-    "@red-hat-developer-hub/backstage-plugin-adoption-insights-common": 0.3.0
+    "@red-hat-developer-hub/backstage-plugin-adoption-insights-backend": 0.3.0
+    "@red-hat-developer-hub/backstage-plugin-adoption-insights-common": 0.4.0
     typescript: 5.9.2
   languageName: unknown
   linkType: soft
@@ -34967,7 +34967,7 @@ __metadata:
     "@backstage/cli": ^0.34.1
     "@janus-idp/cli": 3.6.1
     "@mui/material": 5.18.0
-    "@red-hat-developer-hub/backstage-plugin-adoption-insights": 0.2.1
+    "@red-hat-developer-hub/backstage-plugin-adoption-insights": 0.3.1
     typescript: 5.9.2
   languageName: unknown
   linkType: soft
@@ -34978,8 +34978,8 @@ __metadata:
   dependencies:
     "@backstage/cli": ^0.34.1
     "@janus-idp/cli": 3.6.1
-    "@red-hat-developer-hub/backstage-plugin-adoption-insights-common": 0.3.0
-    "@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights": 0.2.0
+    "@red-hat-developer-hub/backstage-plugin-adoption-insights-common": 0.4.0
+    "@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights": 0.3.0
     typescript: 5.9.2
   languageName: unknown
   linkType: soft
