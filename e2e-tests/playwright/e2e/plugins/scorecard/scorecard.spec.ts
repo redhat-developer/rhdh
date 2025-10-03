@@ -55,7 +55,6 @@ test.describe.serial("Scorecard Plugin Tests", () => {
   test("Import component and validate scorecard tabs for GitHub PRs and Jira tickets", async () => {
     await mockScorecardResponse(page, CUSTOM_SCORECARD_RESPONSE);
 
-    await page.goto("/");
     await catalog.go();
     await importPage.startComponentImport();
     await importPage.analyzeComponent(
@@ -77,7 +76,6 @@ test.describe.serial("Scorecard Plugin Tests", () => {
   test("Display empty state when scorecard API returns no metrics", async () => {
     await mockScorecardResponse(page, EMPTY_SCORECARD_RESPONSE);
 
-    await page.goto("/");
     await catalog.go();
     await catalog.goToByName("rhdh-app");
     await scorecardPage.openTab();
@@ -88,7 +86,6 @@ test.describe.serial("Scorecard Plugin Tests", () => {
   test("Displays error state for unavailable data while rendering metrics", async () => {
     await mockScorecardResponse(page, UNAVAILABLE_METRIC_RESPONSE);
 
-    await page.goto("/");
     await catalog.go();
     await catalog.goToByName("rhdh-app");
     await scorecardPage.openTab();
@@ -125,7 +122,6 @@ test.describe.serial("Scorecard Plugin Tests", () => {
   test("Display error state for invalid threshold config while rendering metrics", async () => {
     await mockScorecardResponse(page, INVALID_THRESHOLD_RESPONSE);
 
-    await page.goto("/");
     await catalog.go();
     await catalog.goToByName("rhdh-app");
     await scorecardPage.openTab();

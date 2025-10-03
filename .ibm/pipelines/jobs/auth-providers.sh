@@ -2,6 +2,7 @@
 
 # shellcheck source=.ibm/pipelines/utils.sh
 source "$DIR"/utils.sh
+# shellcheck source=.ibm/pipelines/install-methods/operator.sh
 source "$DIR"/install-methods/operator.sh
 
 handle_auth_providers() {

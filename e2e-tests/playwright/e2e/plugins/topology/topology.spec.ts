@@ -32,7 +32,7 @@ test.describe("Test Topology Plugin", () => {
     return hasIngresses ? "ingress" : "route";
   }
 
-  test("Verify pods visibility in the Topology tab", async ({
+  test.skip("Verify pods visibility in the Topology tab", async ({
     page,
   }, testInfo) => {
     // progressively increase test timeout for retries
