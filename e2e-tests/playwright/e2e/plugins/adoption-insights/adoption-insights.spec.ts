@@ -75,7 +75,9 @@ test.describe.serial("Test Adoption Insights", () => {
       });
       await expect(panel.locator(".recharts-surface")).toBeVisible();
       await expect(
-        panel.getByText(/^Average peak active user count was \d\.$/),
+        panel.getByText(
+          /^Average peak active user count was \d+ per hour for this period\.$/,
+        ),
       ).toBeVisible();
       await expect(
         panel.getByRole("button", { name: "Export CSV" }),
