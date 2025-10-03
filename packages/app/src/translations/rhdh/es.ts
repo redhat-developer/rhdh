@@ -43,6 +43,8 @@ export default createTranslationMessages({
     'menuItem.orchestrator': 'Orquestador',
     'menuItem.adoptionInsights': 'Insights de adopción',
 
+    'app.entityPage.workflows.title': 'Flujos de trabajo',
+
     'sidebar.menu': 'Menú',
     'sidebar.home': 'Inicio',
     'sidebar.homeLogo': 'Logo de inicio',
