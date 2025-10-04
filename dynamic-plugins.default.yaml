@@ -271,6 +271,9 @@ plugins:
       dynamicPlugins:
         frontend:
           backstage-community.plugin-redhat-argocd:
+            translationResources:
+              - importName: argocdTranslations
+                ref: argocdTranslationRef
             mountPoints:
               - mountPoint: entity.page.overview/cards
                 importName: ArgocdDeploymentSummary
