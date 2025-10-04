@@ -1,0 +1,43 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/packages.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: backstage-community-plugin-todo-backend
+  namespace: rhdh
+  title: "@backstage-community/plugin-todo-backend"
+  links:
+    - url: https://github.com/backstage/community-plugins/blob/main/workspaces/todo/plugins/todo-backend/README.md
+      title: Plugin Overview (README)
+    - title: Source Code
+      url: https://github.com/backstage/community-plugins/tree/main/workspaces/todo/plugins/todo-backend
+  annotations:
+    backstage.io/source-location: url:https://github.com/backstage/community-plugins/tree/main/workspaces/todo
+  tags: []
+spec:
+  packageName: "@backstage-community/plugin-todo-backend"
+  dynamicArtifact: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/todo-backend:bs_1.42.3__0.13.0!todo-backend
+  version: 0.13.0
+  backstage:
+    role: backend-plugin
+    supportedVersions: 1.42.3
+  author: Backstage Community
+  support: tech-preview
+  lifecycle: active
+  partOf:
+    - todo
+  appConfigExamples:
+    - title: Basic configuration
+      content:
+        backend:
+          # The todo backend plugin automatically scans repositories
+          # with backstage.io/source-location annotations
+          # No additional configuration required for basic usage
+    - title: Custom todo tags configuration
+      content:
+        todo:
+          parser:
+            # Add custom todo tags beyond the default TODO and FIXME
+            customTags:
+              - NOTE
+              - XXX
+              - HACK
