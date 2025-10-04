@@ -1,0 +1,11 @@
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  annotations:
+    olm.providedAPIs: ""
+  name: keycloak-operator
+  namespace: keycloak
+spec:
+  upgradeStrategy: Default
+  targetNamespaces:
+    - keycloak
