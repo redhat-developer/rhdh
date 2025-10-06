@@ -6,7 +6,7 @@ metadata:
  namespace: rhdh
  title: MCP Tools
  annotations:
-   extensions.backstage.io/pre-installed: 'true' # For plugins contained in the RHDH image
+   extensions.backstage.io/pre-installed: 'false' # For plugins contained in the RHDH image
  links:
    - title: Homepage
      url: https://red.ht/rhdh
@@ -94,9 +94,9 @@ spec:
          disabled: false
       
        # MCP tools plugins
-       - package: oci://redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-software-catalog-mcp-tool:next__0.2.1!red-hat-developer-hub-backstage-plugin-software-catalog-mcp-tool
+       - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-software-catalog-mcp-tool:next__0.2.1!red-hat-developer-hub-backstage-plugin-software-catalog-mcp-tool
          disabled: false
-       - package: oci://redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-techdocs-mcp-tool:next__0.2.0!red-hat-developer-hub-backstage-plugin-techdocs-mcp-tool
+       - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-techdocs-mcp-tool:next__0.2.0!red-hat-developer-hub-backstage-plugin-techdocs-mcp-tool
          disabled: false
      ```
 
