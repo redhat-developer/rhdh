@@ -1,0 +1,37 @@
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: backstage-plugin-catalog-techdoc-url-reader-backend
+  namespace: rhdh
+  title: "@red-hat-developer-hub/backstage-plugin-catalog-techdoc-url-reader-backend"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHDHBUGS
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/ai-integrations/plugins/catalog-techdoc-url-reader-backend
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/ai-integrations/plugins/catalog-techdoc-url-reader-backend
+  tags: []
+spec:
+  packageName: "@backstage/catalog-techdoc-url-reader-backend"
+  dynamicArtifact: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-catalog-techdoc-url-reader-backend:next__0.3.0!red-hat-developer-hub-backstage-plugin-catalog-techdoc-url-reader-backend
+  version: 0.3.0
+  backstage:
+    role: backend-plugin
+    supportedVersions: 1.42.5
+  author: Backstage
+  support: dev-preview
+  lifecycle: active
+  partOf:
+    - ai-integrations
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        catalog:
+          providers:
+            modelCatalog:
+              developement:
+                baseUrl: http://localhost:9090
