@@ -488,36 +488,40 @@ test.describe.serial("Test RBAC", () => {
       );
     });
 
-    test.skip("Test that roles and policies from GET request are what expected", async () => {
-      const rbacApi = await RhdhRbacApi.build(apiToken);
+    // TODO: https://issues.redhat.com/browse/RHDHBUGS-2100
+    test.fixme(
+      "Test that roles and policies from GET request are what expected",
+      async () => {
+        const rbacApi = await RhdhRbacApi.build(apiToken);
 
-      const rolesResponse = await rbacApi.getRoles();
+        const rolesResponse = await rbacApi.getRoles();
 
-      const policiesResponse = await rbacApi.getPolicies();
+        const policiesResponse = await rbacApi.getPolicies();
 
-      // eslint-disable-next-line playwright/no-conditional-in-test
-      if (!rolesResponse.ok()) {
-        throw Error(
-          `RBAC rolesResponse API call failed with status code ${rolesResponse.status()}`,
+        // eslint-disable-next-line playwright/no-conditional-in-test
+        if (!rolesResponse.ok()) {
+          throw Error(
+            `RBAC rolesResponse API call failed with status code ${rolesResponse.status()}`,
+          );
+        }
+
+        // eslint-disable-next-line playwright/no-conditional-in-test
+        if (!policiesResponse.ok()) {
+          throw Error(
+            `RBAC policiesResponse API call failed with status code ${policiesResponse.status()}`,
+          );
+        }
+
+        await Response.checkResponse(
+          rolesResponse,
+          RbacConstants.getExpectedRoles(),
         );
-      }
-
-      // eslint-disable-next-line playwright/no-conditional-in-test
-      if (!policiesResponse.ok()) {
-        throw Error(
-          `RBAC policiesResponse API call failed with status code ${policiesResponse.status()}`,
+        await Response.checkResponse(
+          policiesResponse,
+          RbacConstants.getExpectedPolicies(),
         );
-      }
-
-      await Response.checkResponse(
-        rolesResponse,
-        RbacConstants.getExpectedRoles(),
-      );
-      await Response.checkResponse(
-        policiesResponse,
-        RbacConstants.getExpectedPolicies(),
-      );
-    });
+      },
+    );
 
     test("Create new role for rhdh-qe, change its name, and deny it from reading catalog entities", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
