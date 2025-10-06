@@ -188,35 +188,45 @@ test.describe.serial("GitHub Happy path", async () => {
     await backstageShowcase.verifyPRRowsPerPage(20, allPRs);
   });
 
-  test.skip("Verify that the CI tab renders 5 most recent github actions and verify the table properly displays the actions when page sizes are changed and filters are applied", async () => {
-    await page.locator("a").getByText("CI", { exact: true }).first().click();
-    await common.checkAndClickOnGHloginPopup();
+  // TODO: https://issues.redhat.com/browse/RHDHBUGS-2099
+  test.fixme(
+    "Verify that the CI tab renders 5 most recent github actions and verify the table properly displays the actions when page sizes are changed and filters are applied",
+    async () => {
+      await page.locator("a").getByText("CI", { exact: true }).first().click();
+      await common.checkAndClickOnGHloginPopup();
 
-    const workflowRuns = await backstageShowcase.getWorkflowRuns();
+      const workflowRuns = await backstageShowcase.getWorkflowRuns();
 
-    for (const workflowRun of workflowRuns.slice(0, 5)) {
-      await uiHelper.verifyText(workflowRun.id);
-    }
-  });
+      for (const workflowRun of workflowRuns.slice(0, 5)) {
+        await uiHelper.verifyText(workflowRun.id);
+      }
+    },
+  );
 
-  test("Click on the Dependencies tab and verify that all the relations have been listed and displayed", async () => {
-    test.fixme();
-    await uiHelper.clickTab("Dependencies");
-    for (const resource of RESOURCES) {
-      const resourceElement = page.locator(
-        `#workspace:has-text("${resource}")`,
-      );
-      await resourceElement.scrollIntoViewIfNeeded();
-      await expect(resourceElement).toBeVisible();
-    }
-  });
+  // TODO: https://issues.redhat.com/browse/RHDHBUGS-2099
+  test.fixme(
+    "Click on the Dependencies tab and verify that all the relations have been listed and displayed",
+    async () => {
+      await uiHelper.clickTab("Dependencies");
+      for (const resource of RESOURCES) {
+        const resourceElement = page.locator(
+          `#workspace:has-text("${resource}")`,
+        );
+        await resourceElement.scrollIntoViewIfNeeded();
+        await expect(resourceElement).toBeVisible();
+      }
+    },
+  );
 
-  test("Sign out and verify that you return back to the Sign in page", async () => {
-    test.fixme();
-    await uiHelper.goToPageUrl("/settings", "Settings");
-    await common.signOut();
-    await context.clearCookies();
-  });
+  // TODO: https://issues.redhat.com/browse/RHDHBUGS-2099
+  test.fixme(
+    "Sign out and verify that you return back to the Sign in page",
+    async () => {
+      await uiHelper.goToPageUrl("/settings", "Settings");
+      await common.signOut();
+      await context.clearCookies();
+    },
+  );
 
   test.afterAll(async () => {
     await page.close();
