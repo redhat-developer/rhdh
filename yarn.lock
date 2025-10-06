@@ -8009,7 +8009,7 @@ __metadata:
     "@mui/icons-material": 5.18.0
     "@mui/material": 5.18.0
     "@scalprum/react-core": 0.9.5
-    "@testing-library/jest-dom": 6.8.0
+    "@testing-library/jest-dom": 6.9.1
     "@testing-library/react": 14.3.1
     "@testing-library/user-event": 14.6.1
     glob: 11.0.3
@@ -14170,7 +14170,7 @@ __metadata:
     "@backstage/cli": 0.34.1
     "@backstage/test-utils": 1.7.11
     "@testing-library/dom": 9.3.4
-    "@testing-library/jest-dom": 6.8.0
+    "@testing-library/jest-dom": 6.9.1
     "@testing-library/react": 14.3.1
     "@testing-library/react-hooks": 8.0.1
     "@types/node": 22.16.3
@@ -14751,16 +14751,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@scalprum/react-test-utils@npm:0.2.6":
-  version: 0.2.6
-  resolution: "@scalprum/react-test-utils@npm:0.2.6"
+"@scalprum/react-test-utils@npm:0.2.7":
+  version: 0.2.7
+  resolution: "@scalprum/react-test-utils@npm:0.2.7"
   dependencies:
     "@openshift/dynamic-plugin-sdk": ^5.0.1
     "@scalprum/core": ^0.8.3
     "@scalprum/react-core": ^0.9.5
     tslib: ^2.6.2
     whatwg-fetch: ^3.6.0
-  checksum: dbd6b3cb48c6cfd7c957a6d3ce6be298e45f325928a5638506ffa14605415a7fd566e3e1703bf8ff67b656eac798a8b077c69e9ade97db5dfbad3b09720d5e4b
+  checksum: 6bfb641f589c41607e59ca440bf52c065e0cd7376f2727de146ffb05a931b77e54bd0f09a14a4993dec381b3ba2e5b9b28b57724bf30e0e25c81f51f54743fad
   languageName: node
   linkType: hard
 
@@ -16659,9 +16659,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@testing-library/jest-dom@npm:6.8.0":
-  version: 6.8.0
-  resolution: "@testing-library/jest-dom@npm:6.8.0"
+"@testing-library/jest-dom@npm:6.9.1":
+  version: 6.9.1
+  resolution: "@testing-library/jest-dom@npm:6.9.1"
   dependencies:
     "@adobe/css-tools": ^4.4.0
     aria-query: ^5.0.0
@@ -16669,7 +16669,7 @@ __metadata:
     dom-accessibility-api: ^0.6.3
     picocolors: ^1.1.1
     redent: ^3.0.0
-  checksum: a3cfb162b6ec6e98277187d9488234ba3e3ee25f24a86facdae092dbe54a015c845bcb81daa6de7afadcac5a5fe25becd7c7e9b67bb01ee4ccf7d67ee907adc9
+  checksum: 5c77126a59a1c0df5935d29569652364c56e5026982f0357f0daaeb21b75fcd9a6aeff8365bdcba719687a4359b3f8bf74bba81ccbae7635cf18ad9789e1e323
   languageName: node
   linkType: hard
 
@@ -18761,7 +18761,7 @@ __metadata:
     "@material-ui/lab": 4.0.0-alpha.61
     "@octokit/rest": 19.0.13
     "@testing-library/dom": 9.3.4
-    "@testing-library/jest-dom": 6.8.0
+    "@testing-library/jest-dom": 6.9.1
     "@testing-library/react": 14.3.1
     "@testing-library/user-event": 14.6.1
     "@types/jquery": 3.3.34
@@ -18827,9 +18827,9 @@ __metadata:
     "@red-hat-developer-hub/plugin-utils": 1.0.0
     "@scalprum/core": 0.8.3
     "@scalprum/react-core": 0.9.5
-    "@scalprum/react-test-utils": 0.2.6
+    "@scalprum/react-test-utils": 0.2.7
     "@testing-library/dom": 9.3.4
-    "@testing-library/jest-dom": 6.8.0
+    "@testing-library/jest-dom": 6.9.1
     "@testing-library/react": 14.3.1
     "@testing-library/react-hooks": 8.0.1
     "@testing-library/user-event": 14.6.1
