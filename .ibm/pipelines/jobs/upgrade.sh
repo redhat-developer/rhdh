@@ -8,7 +8,7 @@ handle_ocp_helm_upgrade() {
   export NAME_SPACE_POSTGRES_DB="${NAME_SPACE}-postgres-external-db"
   export DEPLOYMENT_NAME="${RELEASE_NAME}-developer-hub"
   export QUAY_REPO_BASE="rhdh/rhdh-hub-rhel9"
-  
+
   # Dynamically determine the previous release version and chart version
   previous_release_version=$(get_previous_release_version "$CHART_MAJOR_VERSION")
   if [[ -z "$previous_release_version" ]]; then
@@ -35,6 +35,7 @@ handle_ocp_helm_upgrade() {
 
   local url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   initiate_upgrade_base_deployments "${RELEASE_NAME}" "${NAME_SPACE}" "${url}"
+  deploy_orchestrator_workflows "${NAME_SPACE}"
   initiate_upgrade_deployments "${RELEASE_NAME}" "${NAME_SPACE}" "${url}"
 
   check_upgrade_and_test "${DEPLOYMENT_NAME}" "${RELEASE_NAME}" "${NAME_SPACE}" "${url}"

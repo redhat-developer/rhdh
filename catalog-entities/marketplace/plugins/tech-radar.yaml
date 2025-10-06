@@ -33,7 +33,9 @@ spec:
   author: Backstage Community
   publisher: Red Hat
   license: Apache-2.0
-  support: tech-preview
+  support:
+    provider: Red Hat
+    level: tech-preview
   lifecycle: active
 
   categories:

@@ -16,7 +16,9 @@ metadata:
     - url: https://issues.redhat.com/browse/RHIDP
       title: Bugs
 spec:
-  support: tech-preview
+  support:
+    provider: Red Hat
+    level: tech-preview
   lifecycle: active
   publisher: Red Hat
   author: Red Hat

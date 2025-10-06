@@ -65,7 +65,7 @@ For more information on setting up the GitLab auth provider, consult the [Backst
 
 ### OAuth2 Proxy
 
-The OAuth2 Proxy Authentication provider will require an OAuth2 Proxy server. You can consult the [official documentation](https://oauth2-proxy.github.io/oauth2-proxy/) for OAuth2 Proxy, as well as our available [blog post](https://janus-idp.io/blog/2023/01/17/enabling-keycloak-authentication-in-backstage) on the topic.
+The OAuth2 Proxy Authentication provider will require an OAuth2 Proxy server. You can consult the <!-- markdown-link-check-disable -->[official documentation](https://oauth2-proxy.github.io/oauth2-proxy/)<!-- markdown-link-check-enable --> for OAuth2 Proxy, as well as our available [blog post](https://janus-idp.io/blog/2023/01/17/enabling-keycloak-authentication-in-backstage) on the topic.
 
 - Add the OAuth2 Proxy Authentication provider details as outlined below.
 

@@ -1,0 +1,12 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "shellcheck": {
+      "cache": false
+    },
+    "prettier:check": {},
+    "prettier:fix": {
+      "cache": false
+    }
+  }
+}

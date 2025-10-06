@@ -51,7 +51,7 @@ test.describe("Admin > Extensions > Catalog", () => {
       "Package name",
       "Version",
       "Role",
-      "Supported version",
+      "Backstage compatibility version",
       "Status",
     ]);
     await uiHelper.verifyHeading("Versions");
@@ -65,14 +65,13 @@ test.describe("Admin > Extensions > Catalog", () => {
     ).not.toBeChecked();
     await expect(page.getByRole("button", { name: "Red Hat" })).toBeHidden();
     await page.keyboard.press(`Escape`);
-    await page.getByTestId("CancelIcon").first().click();
     await expect(page.getByLabel("Category").getByRole("combobox")).toBeEmpty();
     await page.keyboard.press(`Escape`);
   });
 
   test("Verify certified badge in extensions", async ({ page }) => {
     await extensions.selectDropdown("Support type");
-    await extensions.toggleOption("Certified by Red Hat");
+    await extensions.toggleOption("Certified");
     await page.keyboard.press(`Escape`);
     await uiHelper.verifyHeading("DynaTrace");
     await expect(page.getByLabel("Certified by Red Hat").first()).toBeVisible();
@@ -83,25 +82,28 @@ test.describe("Admin > Extensions > Catalog", () => {
     await page.getByRole("heading", { name: "DynaTrace" }).first().click();
     await page.getByRole("button", { name: "close" }).click();
     await uiHelper.clickLink("Read more");
-    await uiHelper.verifyDivHasText(/^Certified$/);
+    await expect(
+      page.getByLabel("Stable and secured by Red Hat").getByText("Certified"),
+    ).toBeVisible();
     await uiHelper.verifyText("About");
     await uiHelper.verifyHeading("Versions");
     await uiHelper.verifyTableHeadingAndRows([
       "Package name",
       "Version",
       "Role",
-      "Supported version",
+      "Backstage compatibility version",
       "Status",
     ]);
     await page.getByRole("button", { name: "close" }).click();
     await extensions.selectDropdown("Support type");
-    await extensions.toggleOption("Certified by Red Hat");
-    await extensions.toggleOption("Verified by Red Hat");
-    await page.keyboard.press(`Escape`);
-    await expect(page.getByLabel("Verified by Red Hat").first()).toBeVisible();
-    await expect(extensions.badge.first()).toBeVisible();
-    await extensions.badge.first().hover();
-    await uiHelper.verifyTextInTooltip("Verified by Red Hat");
+    await extensions.toggleOption("Certified");
+    // Below code will be handled as part of the task https://issues.redhat.com/browse/RHIDP-8593
+    // await extensions.toggleOption("Custom plugin");
+    // await page.keyboard.press(`Escape`);
+    // await expect(page.getByLabel("Verified by Red Hat").first()).toBeVisible();
+    // await expect(extensions.badge.first()).toBeVisible();
+    // await extensions.badge.first().hover();
+    // await uiHelper.verifyTextInTooltip("Verified by Red Hat");
   });
 
   test.use({

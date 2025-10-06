@@ -21,7 +21,9 @@ metadata:
       url: https://github.com/backstage/community-plugins/tree/main/workspaces/ocm/plugins/ocm
 spec:
   author: Red Hat
-  support: production
+  support:
+    provider: Red Hat
+    level: generally-available
   publisher: Red Hat
   lifecycle: active
 

@@ -1,6 +1,6 @@
-# This file is for AKS installation only. 
+# This file is for AKS installation only.
 # It is applied by `helm upgrade` after the `values-showcase.yaml` is applied and only contains complementary differences for AKS.
-# Note, that it overwrites the whole key that is present in this file. 
+# Note, that it overwrites the whole key that is present in this file.
 # The only exception is global.dynamic.plugins, that gets merged with the base file.
 route:
   enabled: false
@@ -37,16 +37,16 @@ upstream:
         valueFrom:
           secretKeyRef:
             key: postgres-password
-            name: '{{ .Release.Name }}-postgresql'
+            name: "{{ .Release.Name }}-postgresql"
       # disable telemetry in CI
       - name: SEGMENT_TEST_MODE
-        value: 'true'
+        value: "true"
       - name: NODE_TLS_REJECT_UNAUTHORIZED
-        value: '0'
+        value: "0"
       - name: NODE_ENV
-        value: 'production'
+        value: "production"
       - name: ENABLE_CORE_ROOTHTTPROUTER_OVERRIDE
-        value: 'true'
+        value: "true"
     extraVolumeMounts:
       # The initContainer below will install dynamic plugins in this volume mount.
       - name: dynamic-plugins-root
@@ -121,27 +121,27 @@ upstream:
           valueFrom:
             secretKeyRef:
               key: postgres-password
-              name: '{{ .Release.Name }}-postgresql'
+              name: "{{ .Release.Name }}-postgresql"
       # Tolerations and affinity needed to be scheduled on a spot AKS cluster. Only `postgresql` require it.
       tolerations:
-      - key: "kubernetes.azure.com/scalesetpriority"
-        operator: "Equal"
-        value: "spot"
-        effect: "NoSchedule"
+        - key: "kubernetes.azure.com/scalesetpriority"
+          operator: "Equal"
+          value: "spot"
+          effect: "NoSchedule"
       affinity:
         nodeAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 1
-            preference:
-              matchExpressions:
-              - key: "kubernetes.azure.com/scalesetpriority"
-                operator: In
-                values:
-                - "spot"
+            - weight: 1
+              preference:
+                matchExpressions:
+                  - key: "kubernetes.azure.com/scalesetpriority"
+                    operator: In
+                    values:
+                      - "spot"
   volumePermissions:
     enabled: true
   ingress:
     enabled: true
     className: webapprouting.kubernetes.azure.com
-    host: ''
+    host: ""
 orchestrator: null

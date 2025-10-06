@@ -1,6 +1,6 @@
 #!/bin/bash
 # shellcheck disable=SC2034
-set -a  # Automatically export all variables
+set -a # Automatically export all variables
 
 # Define log file names and directories.
 LOGFILE="test-log"
@@ -57,7 +57,7 @@ NAME_SPACE_RUNTIME="${NAME_SPACE_RUNTIME:-showcase-runtime}"
 NAME_SPACE_POSTGRES_DB="${NAME_SPACE_POSTGRES_DB:-postgress-external-db}"
 NAME_SPACE_SANITY_PLUGINS_CHECK="showcase-sanity-plugins"
 OPERATOR_MANAGER='rhdh-operator'
-CHART_MAJOR_VERSION="1.7"
+CHART_MAJOR_VERSION="1.8"
 GITHUB_APP_APP_ID=$(cat /tmp/secrets/GITHUB_APP_3_APP_ID)
 GITHUB_APP_CLIENT_ID=$(cat /tmp/secrets/GITHUB_APP_3_CLIENT_ID)
 GITHUB_APP_PRIVATE_KEY=$(cat /tmp/secrets/GITHUB_APP_3_PRIVATE_KEY)
@@ -195,4 +195,4 @@ GITHUB_OAUTH_APP_SECRET_ENCODED=$(printf "%s" $GITHUB_OAUTH_APP_SECRET | base64 
 
 BACKEND_SECRET=$(printf temp | base64 | tr -d '\n')
 
-set +a  # Stop automatically exporting variables
+set +a # Stop automatically exporting variables

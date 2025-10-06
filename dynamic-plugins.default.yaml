@@ -449,6 +449,7 @@ plugins:
                 menuItem:
                   icon: ocmIcon
                   text: Clusters
+                  textKey: menuItem.clusters
             mountPoints:
               - mountPoint: entity.page.overview/context
                 importName: ClusterContextProvider
@@ -495,6 +496,7 @@ plugins:
                 menuItem:
                   icon: bulkImportIcon
                   text: Bulk import
+                  textKey: menuItem.bulkImport
 
   # Group: Global Header
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-header
@@ -512,6 +514,9 @@ plugins:
               default.create:
                 title: ''
           red-hat-developer-hub.backstage-plugin-global-header:
+            translationResources:
+              - importName: globalHeaderTranslations
+                ref: globalHeaderTranslationRef
             mountPoints:
               - mountPoint: application/header
                 importName: GlobalHeader
@@ -539,6 +544,7 @@ plugins:
                   priority: 90
                   props:
                     title: Self-service
+                    titleKey: create.title
                     icon: add
                     to: create
               - mountPoint: global.header/component
@@ -558,6 +564,7 @@ plugins:
                   priority: 150
                   props:
                     title: Developer Hub
+                    titleKey: applicationLauncher.developerHub
                     icon: developerHub
                     link: https://docs.redhat.com/en/documentation/red_hat_developer_hub
 
@@ -568,6 +575,7 @@ plugins:
                   priority: 100
                   props:
                     title: RHDH Local
+                    titleKey: applicationLauncher.rhdhLocal
                     icon: developerHub
                     link: https://github.com/redhat-developer/rhdh-local
 
@@ -599,6 +607,7 @@ plugins:
                   priority: 100
                   props:
                     title: Settings
+                    titleKey: profile.settings
                     link: /settings
                     icon: manageAccounts
               - mountPoint: global.header/profile
@@ -607,6 +616,8 @@ plugins:
                   priority: 90
                   props:
                     title: My profile
+                    titleKey: profile.myProfile
+                    type: myProfile
                     icon: account
               - mountPoint: global.header/profile
                 importName: LogoutButton
@@ -631,29 +642,73 @@ plugins:
       app:
         quickstart:
           - title: Set up authentication
+            titleKey: steps.setupAuthentication.title
             icon: Admin
             description: Set up secure login credentials to protect your account from unauthorized access.
+            descriptionKey: steps.setupAuthentication.description
             cta:
               text: Learn more
+              textKey: steps.setupAuthentication.ctaTitle
               link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/authentication_in_red_hat_developer_hub/
           - title: Configure RBAC
+            titleKey: steps.configureRbac.title
             icon: Rbac
             description: Assign roles and permissions to control who can view, create, or edit resources, ensuring secure and efficient collaboration.
+            descriptionKey: steps.configureRbac.description
             cta:
               text: Manage access
+              textKey: steps.configureRbac.ctaTitle
               link: /rbac
           - title: Configure Git
+            titleKey: steps.configureGit.title
             icon: Git
             description: Connect your Git providers, such as GitHub to manage code, automate workflows, and integrate with platform features.
+            descriptionKey: steps.configureGit.description
             cta:
               text: Learn more
+              textKey: steps.configureGit.ctaTitle
               link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/integrating_red_hat_developer_hub_with_github/
           - title: Manage plugins
+            titleKey: steps.managePlugins.title
             icon: Plugins
             description: Browse and install extensions to add features, connect with external tools, and customize your experience.
+            descriptionKey: steps.managePlugins.description
             cta:
               text: Explore plugins
+              textKey: steps.managePlugins.ctaTitle
               link: /extensions
+          - title: Import application
+            roles:
+              - developer
+            icon: Import
+            description: Import your existing code and services into the catalog to organize and access them through your developer portal.
+            cta:
+              text: Import
+              link: /bulk-import
+          - title: Learn about the Catalog
+            roles:
+              - developer
+            icon: Catalog
+            description: Discover all software components, services, and APIs, and view their owners and documentation.
+            cta:
+              text: View Catalog
+              link: /catalog
+          - title: Explore Self-service templates
+            roles:
+              - developer
+            icon: SelfService
+            description: Use our self-service templates to quickly set up new projects, services, or documentation.
+            cta:
+              text: Explore templates
+              link: /create
+          - title: Find all Learning Paths
+            roles:
+              - developer
+            icon: Learning
+            description: Integrate tailored e-learning into your workflows with Learning Paths to accelerate onboarding, close skill gaps, and promote best practices.
+            cta:
+              text: View Learning Paths
+              link: /docs
       dynamicPlugins:
         frontend:
           red-hat-developer-hub.backstage-plugin-quickstart:
@@ -745,6 +800,7 @@ plugins:
                 menuItem:
                   icon: docs
                   text: Docs
+                  textKey: menuItem.docs
               - path: /docs/:namespace/:kind/:name/*
                 importName: TechDocsReaderPage
             mountPoints:
@@ -838,6 +894,7 @@ plugins:
                 menuItem:
                   icon: rbacIcon
                   text: RBAC
+                  textKey: menuItem.rbac
             menuItems:
               rbac:
                 parent: admin
@@ -1067,7 +1124,8 @@ plugins:
                 importName: LighthousePage
                 menuItem:
                   icon: lighthouse
-                  text: Lighthouse
+                  text: menuItem.lighthouse
+                  textKey: menuItem.lighthouse
             mountPoints:
               - mountPoint: entity.page.overview/cards
                 importName: EntityLastLighthouseAuditCard
@@ -1097,7 +1155,8 @@ plugins:
                 importName: TechRadarPage
                 menuItem:
                   icon: techRadar
-                  text: Tech Radar
+                  text: menuItem.techRadar
+                  textKey: menuItem.techRadar
                 config:
                   props:
                     width: 1500
@@ -1128,6 +1187,8 @@ plugins:
             writeKey: ${SEGMENT_WRITE_KEY}
             maskIP: true # prevents IP addresses from being sent if true
             testMode: ${SEGMENT_TEST_MODE} # prevents data from being sent if true
+            appVersion: ${RHDH_VERSION} # RHDH application version
+            backstageVersion: ${BACKSTAGE_VERSION} # Backstage version
 
   - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic
     disabled: true
@@ -1225,6 +1286,7 @@ plugins:
                 menuItem:
                   icon: orchestratorIcon
                   text: Orchestrator
+                  textKey: menuItem.orchestrator
                 path: /orchestrator
             entityTabs:
               - path: /workflows
@@ -1270,6 +1332,9 @@ plugins:
       dynamicPlugins:
         frontend:
           red-hat-developer-hub.backstage-plugin-adoption-insights:
+            translationResources:
+              - importName: adoptionInsightsTranslations
+                ref: adoptionInsightsTranslationRef
             appIcons:
               - name: adoptionInsightsIcon
                 importName: AdoptionInsightsIcon
@@ -1279,6 +1344,7 @@ plugins:
                 menuItem:
                   icon: adoptionInsightsIcon
                   text: Adoption Insights
+                  textKey: menuItem.adoptionInsights
             menuItems:
               adoption-insights:
                 parent: admin

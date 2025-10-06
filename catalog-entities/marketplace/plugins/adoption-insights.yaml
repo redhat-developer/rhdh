@@ -23,7 +23,9 @@ metadata:
       url: https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/adoption-insights/plugins/adoption-insights
 
 spec:
-  support: production
+  support:
+    provider: Red Hat
+    level: generally-available
   lifecycle: active
   author: Red Hat
   publisher: Red Hat

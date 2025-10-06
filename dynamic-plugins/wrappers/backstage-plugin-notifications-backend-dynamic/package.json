@@ -11,7 +11,7 @@
   },
   "backstage": {
     "role": "backend-plugin",
-    "supported-versions": "1.39.1",
+    "supported-versions": "1.42.5",
     "pluginId": "notifications",
     "pluginPackages": [
       "backstage-plugin-notifications",
@@ -40,11 +40,11 @@
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
-    "@backstage/plugin-notifications-backend": "0.5.6",
-    "@backstage/plugin-signals-node": "0.1.20"
+    "@backstage/plugin-notifications-backend": "^0.5.9",
+    "@backstage/plugin-signals-node": "^0.1.23"
   },
   "devDependencies": {
-    "@backstage/cli": "0.30.0",
+    "@backstage/cli": "^0.34.1",
     "@janus-idp/cli": "3.6.1",
     "typescript": "5.9.2"
   },

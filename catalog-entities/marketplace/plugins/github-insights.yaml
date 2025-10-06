@@ -24,7 +24,9 @@ spec:
   authors:
     - name: Roadie
       url: https://roadie.io/
-  support: production
+  support:
+    provider: Red Hat
+    level: tech-preview
   lifecycle: active
   publisher: Red Hat
   categories:

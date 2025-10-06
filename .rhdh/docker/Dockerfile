@@ -15,7 +15,7 @@
 
 # Stage 1 - Build nodejs skeleton
 # https://registry.access.redhat.com/ubi9/nodejs-22
-FROM registry.access.redhat.com/ubi9/nodejs-22:9.6-1757333865 AS skeleton
+FROM registry.access.redhat.com/ubi9/nodejs-22:9.6-1759119998 AS skeleton
 # hadolint ignore=DL3002
 USER 0
 
@@ -32,7 +32,7 @@ RUN dnf install -q -y --allowerasing --nobest \
   libeconf libedit libevent libfdisk libffi libfido2 libgcc libgcrypt libgomp libgpg-error libidn2 libksba libmnl libmodulemd libmount libmpc libnet libnghttp2 libnl3 \
   libpipeline libpkgconf libpwquality librepo libreport-filesystem librhsm libseccomp libselinux libsemanage libsepol libsigsegv libslirp libsmartcols libsolv libstdc++ libstdc++-devel \
   libtasn1 libunistring libuser libutempter libuuid libverto libxcrypt libxcrypt-compat libxcrypt-devel libxml2 libyaml libzstd lua-libs lz4-libs make man mpfr \
-  ncurses ncurses-base ncurses-libs nettle nodejs nodejs-devel nodejs-docs nodejs-full-i18n nodejs-libs nodejs-nodemon nodejs-packaging npm npth nss_wrapper-libs openldap \
+  ncurses ncurses-base ncurses-libs nettle npth nss_wrapper-libs openldap \
   openssh openssh-clients openssl openssl-devel openssl-fips-provider openssl-fips-provider-so openssl-libs p11-kit p11-kit-trust pam passwd pcre pcre2 pcre2-syntax \
   perl perl-AutoLoader perl-B perl-base perl-Carp perl-Class-Struct perl-constant perl-Data-Dumper perl-Digest perl-Digest-MD5 perl-DynaLoader perl-Encode perl-Errno perl-Error \
   perl-Exporter perl-Fcntl perl-File-Basename perl-File-Find perl-File-Path perl-File-stat perl-File-Temp perl-FileHandle perl-Getopt-Long perl-Getopt-Std perl-Git perl-HTTP-Tiny \
@@ -66,7 +66,6 @@ RUN chmod +x "$YARN" && ln -s "$YARN" /usr/local/bin/yarn
 FROM skeleton AS deps
 COPY $EXTERNAL_SOURCE_NESTED/yarn.lock ./
 # BEGIN COPY package.json files
-COPY $EXTERNAL_SOURCE_NESTED/plugins/translation-backend/package.json ./plugins/translation-backend/package.json
 COPY $EXTERNAL_SOURCE_NESTED/plugins/scalprum-backend/package.json ./plugins/scalprum-backend/package.json
 COPY $EXTERNAL_SOURCE_NESTED/plugins/licensed-users-info-backend/package.json ./plugins/licensed-users-info-backend/package.json
 COPY $EXTERNAL_SOURCE_NESTED/plugins/dynamic-plugins-info/package.json ./plugins/dynamic-plugins-info/package.json
@@ -231,7 +230,7 @@ RUN hadFail=0; for d in $(find /tmp -name "yarn*log*" || true) $(find /tmp/xfs-*
 
 # Stage 5 - Build the runner image
 # https://registry.access.redhat.com/ubi9/nodejs-22-minimal
-FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:9.6-1755749564 AS runner
+FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:9.6-1759106173 AS runner
 USER 0
 
 ENV EXTERNAL_SOURCE_NESTED=.
@@ -274,11 +273,6 @@ COPY $EXTERNAL_SOURCE_NESTED/catalog-entities/marketplace /marketplace/catalog-e
 # Copy script to gather dynamic plugins; copy embedded dynamic plugins to root folder; fix permissions
 COPY $EXTERNAL_SOURCE_NESTED/docker/install-dynamic-plugins.py $EXTERNAL_SOURCE_NESTED/docker/install-dynamic-plugins.sh ./
 RUN chmod -R a+rx ./install-dynamic-plugins.*
-
-# The existence of the index.html.tmpl tells Backstage to take that file and load it into memory, inject the needed appConfig (instead of writing
-# it into a random *.chunk.js file, and then serve that file from memory so that we can set the readOnlyRootFilesystem: true option for
-# the container.
-RUN ln -s /opt/app-root/src/packages/app/dist/index.html /opt/app-root/src/packages/app/dist/index.html.tmpl
 
 # Fix for https://issues.redhat.com/browse/RHIDP-728
 RUN mkdir -p /opt/app-root/src/.npm; chown -R 1001:1001 /opt/app-root/src/.npm
