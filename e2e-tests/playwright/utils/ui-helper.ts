@@ -320,7 +320,7 @@ export class UIhelper {
     const navLink = this.page
       .locator(`nav a:has-text("${navBarText}")`)
       .first();
-    await navLink.waitFor({ state: "visible" });
+    await navLink.waitFor({ state: "visible", timeout: 15_000 });
     await navLink.dispatchEvent("click");
   }
 

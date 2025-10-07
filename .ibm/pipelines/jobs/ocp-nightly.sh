@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# shellcheck source=.ibm/pipelines/utils.sh
+source "$DIR"/utils.sh
+
 handle_ocp_nightly() {
   export NAME_SPACE="showcase-ci-nightly"
   export NAME_SPACE_RBAC="showcase-rbac-nightly"

@@ -246,6 +246,18 @@ install_crunchy_postgres_k8s_operator() {
   check_operator_status 300 "operators" "Crunchy Postgres for Kubernetes" "Succeeded"
 }
 
+# Installs the OpenShift Serverless Logic Operator (SonataFlow) from OpenShift Marketplace
+install_serverless_logic_ocp_operator() {
+  install_subscription logic-operator-rhel8 openshift-operators alpha logic-operator-rhel8 redhat-operators openshift-marketplace
+  check_operator_status 300 "openshift-operators" "OpenShift Serverless Logic Operator" "Succeeded"
+}
+
+# Installs the OpenShift Serverless Operator (Knative) from OpenShift Marketplace
+install_serverless_ocp_operator() {
+  install_subscription serverless-operator openshift-operators stable serverless-operator redhat-operators openshift-marketplace
+  check_operator_status 300 "openshift-operators" "Red Hat OpenShift Serverless" "Succeeded"
+}
+
 uninstall_helmchart() {
   local project=$1
   local release=$2
@@ -680,7 +692,8 @@ cluster_setup_ocp_operator() {
   install_pipelines_operator
   install_acm_ocp_operator
   install_crunchy_postgres_ocp_operator
-  install_orchestrator_infra_chart
+  install_serverless_ocp_operator
+  install_serverless_logic_ocp_operator
 }
 
 cluster_setup_k8s_operator() {
@@ -1208,4 +1221,253 @@ deploy_orchestrator_workflows() {
   for workflow in greeting user-onboarding; do
     oc -n "$namespace" patch sonataflow "$workflow" --type merge -p "{\"spec\": { \"persistence\": { \"postgresql\": { \"secretRef\": {\"name\": \"$pqsl_secret_name\",\"userKey\": \"$pqsl_user_key\",\"passwordKey\": \"$pqsl_password_key\"},\"serviceRef\": {\"name\": \"$pqsl_svc_name\",\"namespace\": \"$patch_namespace\"}}}}}"
   done
+}
+
+# Helper function to deploy workflows for orchestrator testing
+deploy_orchestrator_workflows_operator() {
+  local namespace=$1
+
+  local WORKFLOW_REPO="https://github.com/rhdh-orchestrator-test/serverless-workflows.git"
+  local WORKFLOW_DIR="${DIR}/serverless-workflows"
+  local WORKFLOW_MANIFESTS="${WORKFLOW_DIR}/workflows/experimentals/user-onboarding/manifests/"
+
+  rm -rf "${WORKFLOW_DIR}"
+  git clone --depth=1 "${WORKFLOW_REPO}" "${WORKFLOW_DIR}"
+
+  # Wait for backstage and sonata flow pods to be ready before continuing
+  wait_for_deployment $namespace backstage-psql 15
+  wait_for_deployment $namespace backstage-rhdh 15
+  wait_for_deployment $namespace sonataflow-platform-data 20
+  wait_for_deployment $namespace sonataflow-platform-jobs-service 20
+
+  # Dynamic PostgreSQL configuration detection
+  # Dynamic discovery of PostgreSQL secret and service using patterns
+  local pqsl_secret_name
+  pqsl_secret_name=$(oc get secrets -n "$namespace" -o name | grep "backstage-psql" | grep "secret" | head -1 | sed 's/secret\///')
+  local pqsl_user_key="POSTGRES_USER"
+  local pqsl_password_key="POSTGRES_PASSWORD"
+  local pqsl_svc_name
+  pqsl_svc_name=$(oc get svc -n "$namespace" -o name | grep "backstage-psql" | grep -v "secret" | head -1 | sed 's/service\///')
+  local patch_namespace="$namespace"
+  local sonataflow_db="backstage_plugin_orchestrator"
+
+  # Validate that we found the required resources
+  if [[ -z "$pqsl_secret_name" ]]; then
+    echo "Error: No PostgreSQL secret found matching pattern 'backstage-psql.*secret' in namespace '$namespace'"
+    return 1
+  fi
+
+  if [[ -z "$pqsl_svc_name" ]]; then
+    echo "Error: No PostgreSQL service found matching pattern 'backstage-psql' in namespace '$namespace'"
+    return 1
+  fi
+
+  echo "Found PostgreSQL secret: $pqsl_secret_name"
+  echo "Found PostgreSQL service: $pqsl_svc_name"
+
+  # Apply user-onboarding workflow manifests
+  oc apply -f "${WORKFLOW_MANIFESTS}" -n "$namespace"
+
+  # Install greeting workflow via helm
+  helm repo add orchestrator-workflows https://rhdhorchestrator.io/serverless-workflows || true
+  helm upgrade --install greeting orchestrator-workflows/greeting -n "$namespace" --wait --timeout=5m --atomic
+
+  # Wait for sonataflow resources to be created (regardless of state)
+  timeout 30s bash -c "
+  until [[ \$(oc get sf -n $namespace --no-headers 2>/dev/null | wc -l) -eq 2 ]]; do
+    echo \"Waiting for 2 sf resources... Current count: \$(oc get sf -n $namespace --no-headers 2>/dev/null | wc -l)\"
+    sleep 5
+  done
+  "
+  echo "Updating user-onboarding secret with dynamic service URLs..."
+  # Update the user-onboarding secret with correct service URLs
+  local onboarding_server_url="http://user-onboarding-server:8080"
+
+  # Dynamically determine the backstage service (excluding psql)
+  local backstage_service
+  backstage_service=$(oc get svc -l app.kubernetes.io/name=backstage -n "$namespace" --no-headers=true | grep -v psql | awk '{print $1}' | head -1)
+  if [[ -z "$backstage_service" ]]; then
+    echo "Warning: No backstage service found, using fallback"
+    backstage_service="backstage-rhdh"
+  fi
+  local backstage_notifications_url="http://${backstage_service}:80"
+
+  # Get the notifications bearer token from rhdh-secrets
+  local notifications_bearer_token
+  notifications_bearer_token=$(oc get secret rhdh-secrets -n "$namespace" -o json | jq '.data.BACKEND_SECRET' -r | base64 -d)
+  if [[ -z "$notifications_bearer_token" ]]; then
+    echo "Warning: No BACKEND_SECRET found in rhdh-secrets, using empty token"
+    notifications_bearer_token=""
+  fi
+
+  # Base64 encode the URLs and token
+  local onboarding_server_url_b64
+  onboarding_server_url_b64=$(echo -n "$onboarding_server_url" | base64 -w 0)
+  local backstage_notifications_url_b64
+  backstage_notifications_url_b64=$(echo -n "$backstage_notifications_url" | base64 -w 0)
+  local notifications_bearer_token_b64
+  notifications_bearer_token_b64=$(echo -n "$notifications_bearer_token" | base64 -w 0)
+
+  # Patch the secret
+  oc patch secret user-onboarding-creds -n "$namespace" --type merge -p "{
+    \"data\": {
+      \"ONBOARDING_SERVER_URL\": \"$onboarding_server_url_b64\",
+      \"BACKSTAGE_NOTIFICATIONS_URL\": \"$backstage_notifications_url_b64\",
+      \"NOTIFICATIONS_BEARER_TOKEN\": \"$notifications_bearer_token_b64\"
+    }
+  }"
+  echo "User-onboarding secret updated successfully!"
+
+  for workflow in greeting user-onboarding; do
+    # Create PostgreSQL patch configuration
+    local postgres_patch
+    postgres_patch=$(
+      cat << EOF
+{
+  "spec": {
+    "persistence": {
+      "postgresql": {
+        "secretRef": {
+          "name": "$pqsl_secret_name",
+          "userKey": "$pqsl_user_key",
+          "passwordKey": "$pqsl_password_key"
+        },
+        "serviceRef": {
+          "name": "$pqsl_svc_name",
+          "namespace": "$patch_namespace",
+          "databaseName": "$sonataflow_db"
+        }
+      }
+    }
+  }
+}
+EOF
+    )
+
+    echo "Patching SonataFlow '$workflow' with PostgreSQL configuration..."
+    oc -n "$namespace" patch sonataflow "$workflow" --type merge -p "$postgres_patch"
+
+    echo "Restarting deployment for '$workflow'..."
+    oc rollout status deployment/"$workflow" -n "$namespace" --timeout=600s
+  done
+
+  echo "Waiting for all workflow pods to be running..."
+  wait_for_deployment $namespace greeting 5
+  wait_for_deployment $namespace user-onboarding 5
+
+  echo "All workflow pods are now running!"
+}
+
+# Helper function to wait for backstage resource to exist in namespace
+wait_for_backstage_resource() {
+  local namespace=$1
+  local max_attempts=40 # 40 attempts * 15 seconds = 10 minutes
+
+  local sleep_interval=15
+
+  echo "Waiting for backstage resource to exist in namespace: $namespace"
+
+  for ((i = 1; i <= max_attempts; i++)); do
+    if [[ $(oc get backstage -n "$namespace" -o json | jq '.items | length') -gt 0 ]]; then
+      echo "Backstage resource found in namespace: $namespace"
+      return 0
+    fi
+    echo "Attempt $i/$max_attempts: No backstage resource found, waiting ${sleep_interval}s..."
+    sleep $sleep_interval
+  done
+
+  echo "Error: No backstage resource found after 10 minutes"
+  return 1
+}
+
+# Helper function to enable orchestrator plugins by merging default and custom dynamic plugins
+enable_orchestrator_plugins_op() {
+  local namespace=$1
+
+  # Validate required parameter
+  if [[ -z "$namespace" ]]; then
+    echo "Error: Missing required namespace parameter"
+    echo "Usage: enable_orchestrator_plugins_op <namespace>"
+    return 1
+  fi
+
+  echo "Enabling orchestrator plugins in namespace: $namespace"
+
+  # Wait for backstage resource to exist
+  wait_for_backstage_resource "$namespace"
+  sleep 5
+
+  # Setup working directory
+  local work_dir="/tmp/orchestrator-plugins-merge"
+  rm -rf "$work_dir" && mkdir -p "$work_dir"
+
+  # Extract custom dynamic plugins configmap
+  echo "Extracting custom dynamic plugins configmap..."
+  if ! oc get cm dynamic-plugins -n "$namespace" -o json | jq '.data."dynamic-plugins.yaml"' -r > "$work_dir/custom-plugins.yaml"; then
+    echo "Error: Failed to extract dynamic-plugins configmap"
+    return 1
+  fi
+
+  # Find and extract default configmap
+  echo "Finding default dynamic plugins configmap..."
+  local default_cm
+  default_cm=$(oc get cm -n "$namespace" --no-headers | grep "backstage-dynamic-plugins" | awk '{print $1}' | head -1)
+
+  if [[ -z "$default_cm" ]]; then
+    echo "Error: No default configmap found matching pattern 'backstage-dynamic-plugins-'"
+    return 1
+  fi
+
+  echo "Found default configmap: $default_cm"
+  if ! oc get cm "$default_cm" -n "$namespace" -o json | jq '.data."dynamic-plugins.yaml"' -r > "$work_dir/default-plugins.yaml"; then
+    echo "Error: Failed to extract $default_cm configmap"
+    return 1
+  fi
+
+  # Extract plugins array with disabled: false and append to custom plugins
+  echo "Extracting and enabling default plugins..."
+  if ! yq eval '.plugins | map(. + {"disabled": false})' "$work_dir/default-plugins.yaml" > "$work_dir/default-plugins-array.yaml"; then
+    echo "Error: Failed to extract and modify plugins array from default file"
+    return 1
+  fi
+
+  if ! yq eval '.plugins += load("'$work_dir'/default-plugins-array.yaml")' -i "$work_dir/custom-plugins.yaml"; then
+    echo "Error: Failed to append default plugins to custom plugins"
+    return 1
+  fi
+
+  # Use the modified custom file as the final merged result
+  if ! cp "$work_dir/custom-plugins.yaml" "$work_dir/merged-plugins.yaml"; then
+    echo "Error: Failed to create merged plugins file"
+    return 1
+  fi
+
+  # Apply new configmap with merged content
+  if ! oc create configmap dynamic-plugins \
+    --from-file="dynamic-plugins.yaml=$work_dir/merged-plugins.yaml" \
+    -n "$namespace" --dry-run=client -o yaml | oc apply -f -; then
+    echo "Error: Failed to apply updated dynamic-plugins configmap"
+    return 1
+  fi
+
+  # Find and restart backstage deployment
+  echo "Finding backstage deployment..."
+  local backstage_deployment
+  backstage_deployment=$(oc get deployment -n "$namespace" --no-headers | grep "^backstage-rhdh" | awk '{print $1}' | head -1)
+
+  if [[ -z "$backstage_deployment" ]]; then
+    echo "Error: No backstage deployment found matching pattern 'backstage-rhdh*'"
+    return 1
+  fi
+
+  echo "Restarting backstage deployment: $backstage_deployment"
+  if ! oc rollout restart deployment/"$backstage_deployment" -n "$namespace"; then
+    echo "Error: Failed to restart backstage deployment"
+    return 1
+  fi
+
+  # Cleanup
+  rm -rf "$work_dir"
+
+  echo "Successfully enabled orchestrator plugins in namespace: $namespace"
 }
