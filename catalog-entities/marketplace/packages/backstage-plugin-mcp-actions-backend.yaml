@@ -35,5 +35,5 @@ spec:
             externalAccess:
               - type: static
                 options:
-                  token: ${ADMIN_TOKEN}
+                  token: ${MCP_TOKEN}
                   subject: mcp-clients
