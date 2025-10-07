@@ -4792,6 +4792,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@backstage/backend-plugin-api@npm:1.4.2":
+  version: 1.4.2
+  resolution: "@backstage/backend-plugin-api@npm:1.4.2"
+  dependencies:
+    "@backstage/cli-common": ^0.1.15
+    "@backstage/config": ^1.3.3
+    "@backstage/errors": ^1.2.7
+    "@backstage/plugin-auth-node": ^0.6.6
+    "@backstage/plugin-permission-common": ^0.9.1
+    "@backstage/plugin-permission-node": ^0.10.3
+    "@backstage/types": ^1.2.1
+    "@types/express": ^4.17.6
+    "@types/json-schema": ^7.0.6
+    "@types/luxon": ^3.0.0
+    json-schema: ^0.4.0
+    knex: ^3.0.0
+    luxon: ^3.0.0
+    zod: ^3.22.4
+  checksum: 4aa4ff08a1166f21ff3abc58036ac240b4ca1ebb61132d724119e2f98a76d53a296bb786d3abfbc70511817de7cb6eb08f5060f13b8b0254b6464ce337812f5c
+  languageName: node
+  linkType: hard
+
 "@backstage/backend-plugin-api@npm:^0.6.18, @backstage/backend-plugin-api@npm:^0.6.21":
   version: 0.6.21
   resolution: "@backstage/backend-plugin-api@npm:0.6.21"
@@ -5555,6 +5577,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@backstage/core-plugin-api@npm:1.10.9":
+  version: 1.10.9
+  resolution: "@backstage/core-plugin-api@npm:1.10.9"
+  dependencies:
+    "@backstage/config": ^1.3.3
+    "@backstage/errors": ^1.2.7
+    "@backstage/types": ^1.2.1
+    "@backstage/version-bridge": ^1.0.11
+    history: ^5.0.0
+  peerDependencies:
+    "@types/react": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.3.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 724ebbb26be3fe9f49dd54ff5fe6928af67994347d805b5576cb1142156f449168afbf160ec4142510c47590db577ef60c7e18f1d5f6040ddaf901040f292a89
+  languageName: node
+  linkType: hard
+
 "@backstage/core-plugin-api@npm:^1.10.1, @backstage/core-plugin-api@npm:^1.10.3, @backstage/core-plugin-api@npm:^1.10.4, @backstage/core-plugin-api@npm:^1.10.6, @backstage/core-plugin-api@npm:^1.10.7, @backstage/core-plugin-api@npm:^1.10.8, @backstage/core-plugin-api@npm:^1.10.9, @backstage/core-plugin-api@npm:^1.11.0, @backstage/core-plugin-api@npm:^1.9.3":
   version: 1.11.0
   resolution: "@backstage/core-plugin-api@npm:1.11.0"
@@ -5789,7 +5832,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/frontend-test-utils@npm:^0.3.6":
+"@backstage/frontend-test-utils@npm:^0.3.5, @backstage/frontend-test-utils@npm:^0.3.6":
   version: 0.3.6
   resolution: "@backstage/frontend-test-utils@npm:0.3.6"
   dependencies:
@@ -6048,7 +6091,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-catalog-backend-module-bitbucket-cloud@npm:^0.5.2":
+"@backstage/plugin-catalog-backend-module-bitbucket-cloud@npm:0.5.2":
   version: 0.5.2
   resolution: "@backstage/plugin-catalog-backend-module-bitbucket-cloud@npm:0.5.2"
   dependencies:
@@ -6066,7 +6109,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-catalog-backend-module-bitbucket-server@npm:^0.5.2":
+"@backstage/plugin-catalog-backend-module-bitbucket-server@npm:0.5.2":
   version: 0.5.2
   resolution: "@backstage/plugin-catalog-backend-module-bitbucket-server@npm:0.5.2"
   dependencies:
@@ -6084,7 +6127,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-catalog-backend-module-github-org@npm:^0.3.13":
+"@backstage/plugin-catalog-backend-module-github-org@npm:0.3.13":
   version: 0.3.13
   resolution: "@backstage/plugin-catalog-backend-module-github-org@npm:0.3.13"
   dependencies:
@@ -6097,7 +6140,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-catalog-backend-module-github@npm:^0.10.2":
+"@backstage/plugin-catalog-backend-module-github@npm:0.10.2, @backstage/plugin-catalog-backend-module-github@npm:^0.10.2":
   version: 0.10.2
   resolution: "@backstage/plugin-catalog-backend-module-github@npm:0.10.2"
   dependencies:
@@ -6122,7 +6165,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-catalog-backend-module-gitlab-org@npm:^0.2.12":
+"@backstage/plugin-catalog-backend-module-gitlab-org@npm:0.2.12":
   version: 0.2.12
   resolution: "@backstage/plugin-catalog-backend-module-gitlab-org@npm:0.2.12"
   dependencies:
@@ -6134,7 +6177,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-catalog-backend-module-gitlab@npm:^0.7.2":
+"@backstage/plugin-catalog-backend-module-gitlab@npm:0.7.2, @backstage/plugin-catalog-backend-module-gitlab@npm:^0.7.2":
   version: 0.7.2
   resolution: "@backstage/plugin-catalog-backend-module-gitlab@npm:0.7.2"
   dependencies:
@@ -6154,7 +6197,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-catalog-backend-module-ldap@npm:^0.11.8":
+"@backstage/plugin-catalog-backend-module-ldap@npm:0.11.8":
   version: 0.11.8
   resolution: "@backstage/plugin-catalog-backend-module-ldap@npm:0.11.8"
   dependencies:
@@ -6184,7 +6227,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-catalog-backend-module-msgraph@npm:^0.7.3":
+"@backstage/plugin-catalog-backend-module-msgraph@npm:0.7.3":
   version: 0.7.3
   resolution: "@backstage/plugin-catalog-backend-module-msgraph@npm:0.7.3"
   dependencies:
@@ -6358,6 +6401,47 @@ __metadata:
     lodash: ^4.17.21
     yaml: ^2.0.0
   checksum: c012b23757d679b6a029707c2ea7df9e375939cfcb9a0adf32ee0ebdde1b7176b41a93350d284b09e93095fb3f76d0230bf788bb26da04fa3cec5f2f296c30d9
+  languageName: node
+  linkType: hard
+
+"@backstage/plugin-catalog-react@npm:1.20.1":
+  version: 1.20.1
+  resolution: "@backstage/plugin-catalog-react@npm:1.20.1"
+  dependencies:
+    "@backstage/catalog-client": ^1.11.0
+    "@backstage/catalog-model": ^1.7.5
+    "@backstage/core-compat-api": ^0.5.0
+    "@backstage/core-components": ^0.17.5
+    "@backstage/core-plugin-api": ^1.10.9
+    "@backstage/errors": ^1.2.7
+    "@backstage/frontend-plugin-api": ^0.11.0
+    "@backstage/frontend-test-utils": ^0.3.5
+    "@backstage/integration-react": ^1.2.9
+    "@backstage/plugin-catalog-common": ^1.1.5
+    "@backstage/plugin-permission-common": ^0.9.1
+    "@backstage/plugin-permission-react": ^0.4.36
+    "@backstage/types": ^1.2.1
+    "@backstage/version-bridge": ^1.0.11
+    "@material-ui/core": ^4.12.2
+    "@material-ui/icons": ^4.9.1
+    "@material-ui/lab": 4.0.0-alpha.61
+    "@react-hookz/web": ^24.0.0
+    classnames: ^2.2.6
+    lodash: ^4.17.21
+    material-ui-popup-state: ^1.9.3
+    qs: ^6.9.4
+    react-use: ^17.2.4
+    yaml: ^2.0.0
+    zen-observable: ^0.10.0
+  peerDependencies:
+    "@types/react": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.3.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 875f5eb1aed72075706e25d6146dc0e4e50ef05c90fe1839143861cc25bd9f86345f530baa165bddd2c7997d6f0b4d85e7e16a05df0e3b428bd8124dcdcda1ed
   languageName: node
   linkType: hard
 
@@ -6555,7 +6639,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-kubernetes-backend@npm:^0.20.1":
+"@backstage/plugin-kubernetes-backend@npm:0.20.1":
   version: 0.20.1
   resolution: "@backstage/plugin-kubernetes-backend@npm:0.20.1"
   dependencies:
@@ -6665,7 +6749,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-kubernetes@npm:^0.12.10, @backstage/plugin-kubernetes@npm:^0.12.7":
+"@backstage/plugin-kubernetes@npm:0.12.10, @backstage/plugin-kubernetes@npm:^0.12.7":
   version: 0.12.10
   resolution: "@backstage/plugin-kubernetes@npm:0.12.10"
   dependencies:
@@ -6702,7 +6786,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-notifications-backend-module-email@npm:^0.3.12":
+"@backstage/plugin-notifications-backend-module-email@npm:0.3.12":
   version: 0.3.12
   resolution: "@backstage/plugin-notifications-backend-module-email@npm:0.3.12"
   dependencies:
@@ -6726,7 +6810,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-notifications-backend@npm:^0.5.9":
+"@backstage/plugin-notifications-backend@npm:0.5.9":
   version: 0.5.9
   resolution: "@backstage/plugin-notifications-backend@npm:0.5.9"
   dependencies:
@@ -6788,7 +6872,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-notifications@npm:^0.5.8":
+"@backstage/plugin-notifications@npm:0.5.9, @backstage/plugin-notifications@npm:^0.5.8":
   version: 0.5.9
   resolution: "@backstage/plugin-notifications@npm:0.5.9"
   dependencies:
@@ -6959,7 +7043,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-scaffolder-backend-module-azure@npm:^0.2.12, @backstage/plugin-scaffolder-backend-module-azure@npm:^0.2.6":
+"@backstage/plugin-scaffolder-backend-module-azure@npm:0.2.12, @backstage/plugin-scaffolder-backend-module-azure@npm:^0.2.6":
   version: 0.2.12
   resolution: "@backstage/plugin-scaffolder-backend-module-azure@npm:0.2.12"
   dependencies:
@@ -6974,7 +7058,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-scaffolder-backend-module-bitbucket-cloud@npm:^0.2.12, @backstage/plugin-scaffolder-backend-module-bitbucket-cloud@npm:^0.2.6":
+"@backstage/plugin-scaffolder-backend-module-bitbucket-cloud@npm:0.2.12, @backstage/plugin-scaffolder-backend-module-bitbucket-cloud@npm:^0.2.6":
   version: 0.2.12
   resolution: "@backstage/plugin-scaffolder-backend-module-bitbucket-cloud@npm:0.2.12"
   dependencies:
@@ -6992,7 +7076,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-scaffolder-backend-module-bitbucket-server@npm:^0.2.12, @backstage/plugin-scaffolder-backend-module-bitbucket-server@npm:^0.2.6":
+"@backstage/plugin-scaffolder-backend-module-bitbucket-server@npm:0.2.12, @backstage/plugin-scaffolder-backend-module-bitbucket-server@npm:^0.2.6":
   version: 0.2.12
   resolution: "@backstage/plugin-scaffolder-backend-module-bitbucket-server@npm:0.2.12"
   dependencies:
@@ -7025,7 +7109,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-scaffolder-backend-module-gerrit@npm:^0.2.12, @backstage/plugin-scaffolder-backend-module-gerrit@npm:^0.2.6":
+"@backstage/plugin-scaffolder-backend-module-gerrit@npm:0.2.12, @backstage/plugin-scaffolder-backend-module-gerrit@npm:^0.2.6":
   version: 0.2.12
   resolution: "@backstage/plugin-scaffolder-backend-module-gerrit@npm:0.2.12"
   dependencies:
@@ -7053,28 +7137,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-scaffolder-backend-module-github@npm:^0.6.0":
-  version: 0.6.0
-  resolution: "@backstage/plugin-scaffolder-backend-module-github@npm:0.6.0"
-  dependencies:
-    "@backstage/backend-common": ^0.25.0
-    "@backstage/backend-plugin-api": ^1.2.0
-    "@backstage/catalog-client": ^1.9.1
-    "@backstage/catalog-model": ^1.7.3
-    "@backstage/config": ^1.3.2
-    "@backstage/errors": ^1.2.7
-    "@backstage/integration": ^1.16.1
-    "@backstage/plugin-scaffolder-node": ^0.7.0
-    "@octokit/webhooks": ^10.9.2
-    libsodium-wrappers: ^0.7.11
-    octokit: ^3.0.0
-    octokit-plugin-create-pull-request: ^5.0.0
-    yaml: ^2.0.0
-  checksum: e7a59a7d044153e6218da16a0a24c86b4b75f23429066a0d383d0e43f950220e5a0e90971e3517e3de3e50842b999eed9eac021a518ae398e273a96deac36757
-  languageName: node
-  linkType: hard
-
-"@backstage/plugin-scaffolder-backend-module-github@npm:^0.8.2":
+"@backstage/plugin-scaffolder-backend-module-github@npm:0.8.2":
   version: 0.8.2
   resolution: "@backstage/plugin-scaffolder-backend-module-github@npm:0.8.2"
   dependencies:
@@ -7096,6 +7159,46 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@backstage/plugin-scaffolder-backend-module-github@npm:^0.6.0":
+  version: 0.6.0
+  resolution: "@backstage/plugin-scaffolder-backend-module-github@npm:0.6.0"
+  dependencies:
+    "@backstage/backend-common": ^0.25.0
+    "@backstage/backend-plugin-api": ^1.2.0
+    "@backstage/catalog-client": ^1.9.1
+    "@backstage/catalog-model": ^1.7.3
+    "@backstage/config": ^1.3.2
+    "@backstage/errors": ^1.2.7
+    "@backstage/integration": ^1.16.1
+    "@backstage/plugin-scaffolder-node": ^0.7.0
+    "@octokit/webhooks": ^10.9.2
+    libsodium-wrappers: ^0.7.11
+    octokit: ^3.0.0
+    octokit-plugin-create-pull-request: ^5.0.0
+    yaml: ^2.0.0
+  checksum: e7a59a7d044153e6218da16a0a24c86b4b75f23429066a0d383d0e43f950220e5a0e90971e3517e3de3e50842b999eed9eac021a518ae398e273a96deac36757
+  languageName: node
+  linkType: hard
+
+"@backstage/plugin-scaffolder-backend-module-gitlab@npm:0.9.4":
+  version: 0.9.4
+  resolution: "@backstage/plugin-scaffolder-backend-module-gitlab@npm:0.9.4"
+  dependencies:
+    "@backstage/backend-plugin-api": ^1.4.2
+    "@backstage/config": ^1.3.3
+    "@backstage/errors": ^1.2.7
+    "@backstage/integration": ^1.17.1
+    "@backstage/plugin-scaffolder-node": ^0.11.0
+    "@gitbeaker/requester-utils": ^41.2.0
+    "@gitbeaker/rest": ^41.2.0
+    luxon: ^3.0.0
+    winston: ^3.2.1
+    yaml: ^2.0.0
+    zod: ^3.22.4
+  checksum: 53ec6deb3da36fe1dde6a20fa47b0ec5cf5b88d420455f4c098304f523248b892168492aad346cb4365155fc9a5253c2cf2f65625de9d91cf9fc0b7179346996
+  languageName: node
+  linkType: hard
+
 "@backstage/plugin-scaffolder-backend-module-gitlab@npm:^0.8.0":
   version: 0.8.0
   resolution: "@backstage/plugin-scaffolder-backend-module-gitlab@npm:0.8.0"
@@ -7112,25 +7215,6 @@ __metadata:
     yaml: ^2.0.0
     zod: ^3.22.4
   checksum: 93a482688ed3a150e7b4f9ac0861a70099c24c2a0148ae6741a35064fdf5031ce5f63d8b55ac0cef33e111f4b9aa7238b335ed5c982263b2a0ecaf02c872529d
-  languageName: node
-  linkType: hard
-
-"@backstage/plugin-scaffolder-backend-module-gitlab@npm:^0.9.4":
-  version: 0.9.4
-  resolution: "@backstage/plugin-scaffolder-backend-module-gitlab@npm:0.9.4"
-  dependencies:
-    "@backstage/backend-plugin-api": ^1.4.2
-    "@backstage/config": ^1.3.3
-    "@backstage/errors": ^1.2.7
-    "@backstage/integration": ^1.17.1
-    "@backstage/plugin-scaffolder-node": ^0.11.0
-    "@gitbeaker/requester-utils": ^41.2.0
-    "@gitbeaker/rest": ^41.2.0
-    luxon: ^3.0.0
-    winston: ^3.2.1
-    yaml: ^2.0.0
-    zod: ^3.22.4
-  checksum: 53ec6deb3da36fe1dde6a20fa47b0ec5cf5b88d420455f4c098304f523248b892168492aad346cb4365155fc9a5253c2cf2f65625de9d91cf9fc0b7179346996
   languageName: node
   linkType: hard
 
@@ -7377,7 +7461,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-search-backend-module-techdocs@npm:^0.4.5":
+"@backstage/plugin-search-backend-module-techdocs@npm:0.4.5, @backstage/plugin-search-backend-module-techdocs@npm:^0.4.5":
   version: 0.4.5
   resolution: "@backstage/plugin-search-backend-module-techdocs@npm:0.4.5"
   dependencies:
@@ -7449,6 +7533,36 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@backstage/plugin-search-react@npm:1.9.3":
+  version: 1.9.3
+  resolution: "@backstage/plugin-search-react@npm:1.9.3"
+  dependencies:
+    "@backstage/core-components": ^0.17.5
+    "@backstage/core-plugin-api": ^1.10.9
+    "@backstage/frontend-plugin-api": ^0.11.0
+    "@backstage/plugin-search-common": ^1.2.19
+    "@backstage/theme": ^0.6.8
+    "@backstage/types": ^1.2.1
+    "@backstage/version-bridge": ^1.0.11
+    "@material-ui/core": ^4.12.2
+    "@material-ui/icons": ^4.9.1
+    "@material-ui/lab": 4.0.0-alpha.61
+    lodash: ^4.17.21
+    qs: ^6.9.4
+    react-use: ^17.3.2
+    uuid: ^11.0.2
+  peerDependencies:
+    "@types/react": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.3.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 29a601312d2106574743671a3131ead4d3cbd5edbc26ce951478e1dfe4713f395e8d89f2b0f843a854f899434ed4e8cd5ae3210b45053f320c06382bede0adb0
+  languageName: node
+  linkType: hard
+
 "@backstage/plugin-search-react@npm:^1.9.3, @backstage/plugin-search-react@npm:^1.9.4":
   version: 1.9.4
   resolution: "@backstage/plugin-search-react@npm:1.9.4"
@@ -7509,7 +7623,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-signals-backend@npm:^0.3.7":
+"@backstage/plugin-signals-backend@npm:0.3.7":
   version: 0.3.7
   resolution: "@backstage/plugin-signals-backend@npm:0.3.7"
   dependencies:
@@ -7527,6 +7641,22 @@ __metadata:
     ws: ^8.18.0
     yn: ^4.0.0
   checksum: c9694eaaba251f68c285c5cecb582afb0b611d1b6d5f5d2f8d19102cd3353669f0b398ea4e818284e7d13c56d2b07bc50900694346e74516438558bc3cb53eff
+  languageName: node
+  linkType: hard
+
+"@backstage/plugin-signals-node@npm:0.1.23":
+  version: 0.1.23
+  resolution: "@backstage/plugin-signals-node@npm:0.1.23"
+  dependencies:
+    "@backstage/backend-plugin-api": ^1.4.2
+    "@backstage/config": ^1.3.3
+    "@backstage/plugin-auth-node": ^0.6.6
+    "@backstage/plugin-events-node": ^0.4.14
+    "@backstage/types": ^1.2.1
+    express: ^4.17.1
+    uuid: ^11.0.0
+    ws: ^8.18.0
+  checksum: ddca6a7ae61798ca95507252bd620e10060be066af9fbd45bde7a8b1a1d17efb49e81a17882c27ad3f2d96710954db4d99a0a5797f2027cb7eec6f32d336363b
   languageName: node
   linkType: hard
 
@@ -7565,7 +7695,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-signals@npm:^0.0.22":
+"@backstage/plugin-signals@npm:0.0.22":
   version: 0.0.22
   resolution: "@backstage/plugin-signals@npm:0.0.22"
   dependencies:
@@ -7593,7 +7723,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-techdocs-backend@npm:^2.0.5":
+"@backstage/plugin-techdocs-backend@npm:2.0.5":
   version: 2.0.5
   resolution: "@backstage/plugin-techdocs-backend@npm:2.0.5"
   dependencies:
@@ -7628,7 +7758,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-techdocs-module-addons-contrib@npm:^1.1.27":
+"@backstage/plugin-techdocs-module-addons-contrib@npm:1.1.27":
   version: 1.1.27
   resolution: "@backstage/plugin-techdocs-module-addons-contrib@npm:1.1.27"
   dependencies:
@@ -7692,6 +7822,35 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@backstage/plugin-techdocs-react@npm:1.3.2":
+  version: 1.3.2
+  resolution: "@backstage/plugin-techdocs-react@npm:1.3.2"
+  dependencies:
+    "@backstage/catalog-model": ^1.7.5
+    "@backstage/config": ^1.3.3
+    "@backstage/core-components": ^0.17.5
+    "@backstage/core-plugin-api": ^1.10.9
+    "@backstage/frontend-plugin-api": ^0.11.0
+    "@backstage/plugin-techdocs-common": ^0.1.1
+    "@backstage/version-bridge": ^1.0.11
+    "@material-ui/core": ^4.12.2
+    "@material-ui/styles": ^4.11.0
+    jss: ~10.10.0
+    lodash: ^4.17.21
+    react-helmet: 6.1.0
+    react-use: ^17.2.4
+  peerDependencies:
+    "@types/react": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.3.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 81545bcbce892f867d3ff8f141ecbecd6f863de6776cff83d20d9f3310dd0b0518759765e60451bc804851d46a721acac38027fb725ab6e918fe66a599e9f96d
+  languageName: node
+  linkType: hard
+
 "@backstage/plugin-techdocs-react@npm:^1.3.2, @backstage/plugin-techdocs-react@npm:^1.3.3":
   version: 1.3.3
   resolution: "@backstage/plugin-techdocs-react@npm:1.3.3"
@@ -7721,7 +7880,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-techdocs@npm:^1.14.1":
+"@backstage/plugin-techdocs@npm:1.14.1":
   version: 1.14.1
   resolution: "@backstage/plugin-techdocs@npm:1.14.1"
   dependencies:
@@ -18918,7 +19077,7 @@ __metadata:
   resolution: "backstage-plugin-catalog-backend-module-bitbucket-cloud@workspace:wrappers/backstage-plugin-catalog-backend-module-bitbucket-cloud-dynamic"
   dependencies:
     "@backstage/cli": ^0.34.1
-    "@backstage/plugin-catalog-backend-module-bitbucket-cloud": ^0.5.2
+    "@backstage/plugin-catalog-backend-module-bitbucket-cloud": 0.5.2
     "@janus-idp/cli": 3.6.1
     typescript: 5.9.3
   languageName: unknown
@@ -18929,7 +19088,7 @@ __metadata:
   resolution: "backstage-plugin-catalog-backend-module-bitbucket-server@workspace:wrappers/backstage-plugin-catalog-backend-module-bitbucket-server-dynamic"
   dependencies:
     "@backstage/cli": ^0.34.1
-    "@backstage/plugin-catalog-backend-module-bitbucket-server": ^0.5.2
+    "@backstage/plugin-catalog-backend-module-bitbucket-server": 0.5.2
     "@janus-idp/cli": 3.6.1
     typescript: 5.9.3
   languageName: unknown
@@ -18940,8 +19099,8 @@ __metadata:
   resolution: "backstage-plugin-catalog-backend-module-github-org@workspace:wrappers/backstage-plugin-catalog-backend-module-github-org-dynamic"
   dependencies:
     "@backstage/cli": ^0.34.1
-    "@backstage/plugin-catalog-backend-module-github": ^0.10.2
-    "@backstage/plugin-catalog-backend-module-github-org": ^0.3.13
+    "@backstage/plugin-catalog-backend-module-github": 0.10.2
+    "@backstage/plugin-catalog-backend-module-github-org": 0.3.13
     "@janus-idp/cli": 3.6.1
     typescript: 5.9.3
   languageName: unknown
@@ -18952,7 +19111,7 @@ __metadata:
   resolution: "backstage-plugin-catalog-backend-module-github@workspace:wrappers/backstage-plugin-catalog-backend-module-github-dynamic"
   dependencies:
     "@backstage/cli": ^0.34.1
-    "@backstage/plugin-catalog-backend-module-github": ^0.10.2
+    "@backstage/plugin-catalog-backend-module-github": 0.10.2
     "@janus-idp/cli": 3.6.1
     typescript: 5.9.3
   languageName: unknown
@@ -18963,8 +19122,8 @@ __metadata:
   resolution: "backstage-plugin-catalog-backend-module-gitlab-org@workspace:wrappers/backstage-plugin-catalog-backend-module-gitlab-org-dynamic"
   dependencies:
     "@backstage/cli": ^0.34.1
-    "@backstage/plugin-catalog-backend-module-gitlab": ^0.7.2
-    "@backstage/plugin-catalog-backend-module-gitlab-org": ^0.2.12
+    "@backstage/plugin-catalog-backend-module-gitlab": 0.7.2
+    "@backstage/plugin-catalog-backend-module-gitlab-org": 0.2.12
     "@janus-idp/cli": 3.6.1
     typescript: 5.9.3
   languageName: unknown
@@ -18975,7 +19134,7 @@ __metadata:
   resolution: "backstage-plugin-catalog-backend-module-gitlab@workspace:wrappers/backstage-plugin-catalog-backend-module-gitlab-dynamic"
   dependencies:
     "@backstage/cli": ^0.34.1
-    "@backstage/plugin-catalog-backend-module-gitlab": ^0.7.2
+    "@backstage/plugin-catalog-backend-module-gitlab": 0.7.2
     "@janus-idp/cli": 3.6.1
     typescript: 5.9.3
   languageName: unknown
@@ -18986,7 +19145,7 @@ __metadata:
   resolution: "backstage-plugin-catalog-backend-module-ldap@workspace:wrappers/backstage-plugin-catalog-backend-module-ldap-dynamic"
   dependencies:
     "@backstage/cli": ^0.34.1
-    "@backstage/plugin-catalog-backend-module-ldap": ^0.11.8
+    "@backstage/plugin-catalog-backend-module-ldap": 0.11.8
     "@janus-idp/cli": 3.6.1
     typescript: 5.9.3
   languageName: unknown
@@ -18997,7 +19156,7 @@ __metadata:
   resolution: "backstage-plugin-catalog-backend-module-msgraph@workspace:wrappers/backstage-plugin-catalog-backend-module-msgraph-dynamic"
   dependencies:
     "@backstage/cli": ^0.34.1
-    "@backstage/plugin-catalog-backend-module-msgraph": ^0.7.3
+    "@backstage/plugin-catalog-backend-module-msgraph": 0.7.3
     "@janus-idp/cli": 3.6.1
     typescript: 5.9.3
   languageName: unknown
@@ -19008,7 +19167,7 @@ __metadata:
   resolution: "backstage-plugin-kubernetes-backend@workspace:wrappers/backstage-plugin-kubernetes-backend-dynamic"
   dependencies:
     "@backstage/cli": ^0.34.1
-    "@backstage/plugin-kubernetes-backend": ^0.20.1
+    "@backstage/plugin-kubernetes-backend": 0.20.1
     "@janus-idp/cli": 3.6.1
     typescript: 5.9.3
   languageName: unknown
@@ -19019,8 +19178,8 @@ __metadata:
   resolution: "backstage-plugin-kubernetes@workspace:wrappers/backstage-plugin-kubernetes"
   dependencies:
     "@backstage/cli": ^0.34.1
-    "@backstage/core-plugin-api": ^1.10.9
-    "@backstage/plugin-kubernetes": ^0.12.10
+    "@backstage/core-plugin-api": 1.10.9
+    "@backstage/plugin-kubernetes": 0.12.10
     "@janus-idp/cli": 3.6.1
     typescript: 5.9.3
   languageName: unknown
@@ -19031,7 +19190,7 @@ __metadata:
   resolution: "backstage-plugin-notifications-backend-module-email@workspace:wrappers/backstage-plugin-notifications-backend-module-email-dynamic"
   dependencies:
     "@backstage/cli": ^0.34.1
-    "@backstage/plugin-notifications-backend-module-email": ^0.3.12
+    "@backstage/plugin-notifications-backend-module-email": 0.3.12
     "@janus-idp/cli": 3.6.1
     typescript: 5.9.3
   languageName: unknown
@@ -19042,8 +19201,8 @@ __metadata:
   resolution: "backstage-plugin-notifications-backend@workspace:wrappers/backstage-plugin-notifications-backend-dynamic"
   dependencies:
     "@backstage/cli": ^0.34.1
-    "@backstage/plugin-notifications-backend": ^0.5.9
-    "@backstage/plugin-signals-node": ^0.1.23
+    "@backstage/plugin-notifications-backend": 0.5.9
+    "@backstage/plugin-signals-node": 0.1.23
     "@janus-idp/cli": 3.6.1
     typescript: 5.9.3
   languageName: unknown
@@ -19054,7 +19213,7 @@ __metadata:
   resolution: "backstage-plugin-notifications@workspace:wrappers/backstage-plugin-notifications"
   dependencies:
     "@backstage/cli": ^0.34.1
-    "@backstage/plugin-notifications": ^0.5.8
+    "@backstage/plugin-notifications": 0.5.9
     "@janus-idp/cli": 3.6.1
     "@mui/material": 5.18.0
     typescript: 5.9.3
@@ -19066,7 +19225,7 @@ __metadata:
   resolution: "backstage-plugin-scaffolder-backend-module-azure@workspace:wrappers/backstage-plugin-scaffolder-backend-module-azure-dynamic"
   dependencies:
     "@backstage/cli": ^0.34.1
-    "@backstage/plugin-scaffolder-backend-module-azure": ^0.2.12
+    "@backstage/plugin-scaffolder-backend-module-azure": 0.2.12
     "@janus-idp/cli": 3.6.1
     typescript: 5.9.3
   languageName: unknown
@@ -19077,7 +19236,7 @@ __metadata:
   resolution: "backstage-plugin-scaffolder-backend-module-bitbucket-cloud@workspace:wrappers/backstage-plugin-scaffolder-backend-module-bitbucket-cloud-dynamic"
   dependencies:
     "@backstage/cli": ^0.34.1
-    "@backstage/plugin-scaffolder-backend-module-bitbucket-cloud": ^0.2.12
+    "@backstage/plugin-scaffolder-backend-module-bitbucket-cloud": 0.2.12
     "@janus-idp/cli": 3.6.1
     typescript: 5.9.3
   languageName: unknown
@@ -19088,7 +19247,7 @@ __metadata:
   resolution: "backstage-plugin-scaffolder-backend-module-bitbucket-server@workspace:wrappers/backstage-plugin-scaffolder-backend-module-bitbucket-server-dynamic"
   dependencies:
     "@backstage/cli": ^0.34.1
-    "@backstage/plugin-scaffolder-backend-module-bitbucket-server": ^0.2.12
+    "@backstage/plugin-scaffolder-backend-module-bitbucket-server": 0.2.12
     "@janus-idp/cli": 3.6.1
     typescript: 5.9.3
   languageName: unknown
@@ -19099,7 +19258,7 @@ __metadata:
   resolution: "backstage-plugin-scaffolder-backend-module-gerrit@workspace:wrappers/backstage-plugin-scaffolder-backend-module-gerrit-dynamic"
   dependencies:
     "@backstage/cli": ^0.34.1
-    "@backstage/plugin-scaffolder-backend-module-gerrit": ^0.2.12
+    "@backstage/plugin-scaffolder-backend-module-gerrit": 0.2.12
     "@janus-idp/cli": 3.6.1
     typescript: 5.9.3
   languageName: unknown
@@ -19110,7 +19269,7 @@ __metadata:
   resolution: "backstage-plugin-scaffolder-backend-module-github@workspace:wrappers/backstage-plugin-scaffolder-backend-module-github-dynamic"
   dependencies:
     "@backstage/cli": ^0.34.1
-    "@backstage/plugin-scaffolder-backend-module-github": ^0.8.2
+    "@backstage/plugin-scaffolder-backend-module-github": 0.8.2
     "@janus-idp/cli": 3.6.1
     typescript: 5.9.3
   languageName: unknown
@@ -19121,7 +19280,7 @@ __metadata:
   resolution: "backstage-plugin-scaffolder-backend-module-gitlab@workspace:wrappers/backstage-plugin-scaffolder-backend-module-gitlab-dynamic"
   dependencies:
     "@backstage/cli": ^0.34.1
-    "@backstage/plugin-scaffolder-backend-module-gitlab": ^0.9.4
+    "@backstage/plugin-scaffolder-backend-module-gitlab": 0.9.4
     "@janus-idp/cli": 3.6.1
     typescript: 5.9.3
   languageName: unknown
@@ -19132,7 +19291,7 @@ __metadata:
   resolution: "backstage-plugin-signals-backend@workspace:wrappers/backstage-plugin-signals-backend-dynamic"
   dependencies:
     "@backstage/cli": ^0.34.1
-    "@backstage/plugin-signals-backend": ^0.3.7
+    "@backstage/plugin-signals-backend": 0.3.7
     "@janus-idp/cli": 3.6.1
     typescript: 5.9.3
   languageName: unknown
@@ -19143,7 +19302,7 @@ __metadata:
   resolution: "backstage-plugin-signals@workspace:wrappers/backstage-plugin-signals"
   dependencies:
     "@backstage/cli": ^0.34.1
-    "@backstage/plugin-signals": ^0.0.22
+    "@backstage/plugin-signals": 0.0.22
     "@janus-idp/cli": 3.6.1
     "@mui/material": 5.18.0
     typescript: 5.9.3
@@ -19154,10 +19313,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backstage-plugin-techdocs-backend@workspace:wrappers/backstage-plugin-techdocs-backend-dynamic"
   dependencies:
-    "@backstage/backend-plugin-api": ^1.4.2
+    "@backstage/backend-plugin-api": 1.4.2
     "@backstage/cli": ^0.34.1
-    "@backstage/plugin-search-backend-module-techdocs": ^0.4.5
-    "@backstage/plugin-techdocs-backend": ^2.0.5
+    "@backstage/plugin-search-backend-module-techdocs": 0.4.5
+    "@backstage/plugin-techdocs-backend": 2.0.5
     "@janus-idp/cli": 3.6.1
     typescript: 5.9.3
   languageName: unknown
@@ -19168,8 +19327,8 @@ __metadata:
   resolution: "backstage-plugin-techdocs-module-addons-contrib@workspace:wrappers/backstage-plugin-techdocs-module-addons-contrib"
   dependencies:
     "@backstage/cli": ^0.34.1
-    "@backstage/plugin-techdocs-module-addons-contrib": ^1.1.27
-    "@backstage/plugin-techdocs-react": ^1.3.2
+    "@backstage/plugin-techdocs-module-addons-contrib": 1.1.27
+    "@backstage/plugin-techdocs-react": 1.3.2
     "@janus-idp/cli": 3.6.1
     "@material-ui/core": 4.12.4
     jss: 10.10.0
@@ -19185,11 +19344,11 @@ __metadata:
   resolution: "backstage-plugin-techdocs@workspace:wrappers/backstage-plugin-techdocs"
   dependencies:
     "@backstage/cli": ^0.34.1
-    "@backstage/core-plugin-api": ^1.10.9
-    "@backstage/plugin-catalog-react": ^1.20.1
-    "@backstage/plugin-search-react": ^1.9.3
-    "@backstage/plugin-techdocs": ^1.14.1
-    "@backstage/plugin-techdocs-react": ^1.3.2
+    "@backstage/core-plugin-api": 1.10.9
+    "@backstage/plugin-catalog-react": 1.20.1
+    "@backstage/plugin-search-react": 1.9.3
+    "@backstage/plugin-techdocs": 1.14.1
+    "@backstage/plugin-techdocs-react": 1.3.2
     "@janus-idp/cli": 3.6.1
     react: 18.3.1
     typescript: 5.9.3
