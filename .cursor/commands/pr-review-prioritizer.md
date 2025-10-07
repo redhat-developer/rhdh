@@ -71,9 +71,14 @@ Total Score = (Age × 0.25) + (Size × 0.20) + (Wait Time × 0.15) + (Change Typ
 
 ### Draft PR Exclusion  
 - Skip PRs where `isDraft: true` unless specifically requested
+- Skip PRs where status is draft or WIP
+
+### Closed PR Exclusion
+- Exclude closed PRs from the list entirely
 
 ### Stale PR Handling
 - If age > 14 days: Flag for author ping, but still calculate score
+- Include stale label in status column when present
 
 ## Step 5: Output Format
 
@@ -107,12 +112,19 @@ Provide output in this format:
 
 ## 📋 All PRs by Priority
 
-| PR | Title | Priority | Score | Age | Size | Author |
-|----|-------|----------|-------|-----|------|--------|
-| #123 | Fix auth bug | 🔴 Critical | 87.5 | 3d | 45 | @user1 |
-| #124 | Add new feature | 🟡 Medium | 45.2 | 1d | 200 | @user2 |
-| #125 | Update docs | 🟢 Low | 23.1 | 5d | 20 | @user3 |
+| PR | Title | Priority | Score | Age | Size | Author | Status |
+|----|-------|----------|-------|-----|------|--------|--------|
+| [#123](https://github.com/owner/repo/pull/123/files) | Fix auth bug | 🔴 Critical | 87.5 | 3d | 45 | @user1 | Ready for review |
+| [#124](https://github.com/owner/repo/pull/124/files) | Add new feature | 🟡 Medium | 45.2 | 1d | 200 | @user2 | Needs approval |
+| [#125](https://github.com/owner/repo/pull/125/files) | Update docs | 🟢 Low | 23.1 | 5d | 20 | @user3 | Needs rebase (Stale) |
 ```
+
+### Special Rules for Status Column:
+- Include both status and staleness in the same column
+- For example: "Needs review", "Approved", "Changes requested", "Needs rebase"
+- When stale label is present, append "(Stale)" to the status
+- Exclude closed PRs from the list entirely
+- Exclude draft PRs (isDraft: true) unless specifically requested
 
 ## Notes
 
