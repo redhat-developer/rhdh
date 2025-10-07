@@ -18,10 +18,10 @@ metadata:
 spec:
   packageName: "@backstage/plugin-notifications-backend-module-email"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-plugin-notifications-backend-module-email-dynamic
-  version: 0.3.9
+  version: 0.3.12
   backstage:
     role: backend-plugin-module
-    supportedVersions: 1.39.1
+    supportedVersions: 1.42.5
   author: Red Hat
   support: tech-preview
   lifecycle: active
