@@ -252,8 +252,16 @@ test.describe.serial("Test RBAC", () => {
       const allUsersValid = lines
         .slice(1)
         .every((line) => line.startsWith("user:default"));
+      console.log(
+        `[RBAC Test] User validation result: allUsersValid=${allUsersValid}, total lines=${lines.length}`,
+      );
+
       // eslint-disable-next-line playwright/no-conditional-in-test
       if (!allUsersValid) {
+        const invalidLines = lines
+          .slice(1)
+          .filter((line) => !line.startsWith("user:default"));
+        console.error("Invalid user lines found:", invalidLines);
         throw new Error("Not all users info are valid");
       }
     });
