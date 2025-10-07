@@ -118,6 +118,7 @@ global:
                 entityTabs:
                   - path: "/scorecard"
                     title: Scorecard
+                    titleKey: catalog.entityPage.scorecard.title
                     mountPoint: entity.page.scorecard
                 mountPoints:
                   - mountPoint: entity.page.scorecard/cards
