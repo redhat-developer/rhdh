@@ -14,7 +14,7 @@ Use the following GitHub CLI commands to collect PR data:
 
 ```bash
 # Get basic PR information
-gh pr list --state open --json number,title,author,createdAt,updatedAt,additions,deletions,isDraft,labels,reviewRequests,,comments,reviews,mergeable,baseRefName
+gh pr list --state open --json number,title,author,createdAt,updatedAt,additions,deletions,isDraft,labels,reviewRequests,,comments,reviews,mergeable,baseRefName --limit 30
 
 ```
 
@@ -76,6 +76,10 @@ Total Score = (Age × 0.25) + (Size × 0.20) + (Wait Time × 0.15) + (Change Typ
 ### Closed PR Exclusion
 - Exclude closed PRs from the list entirely
 
+### Conflicting PR Exclusion
+- Exclude PRs that need rebasing AND have conflicting changes (mergeable: "CONFLICTING")
+- These PRs cannot be reviewed until conflicts are resolved
+
 ### Stale PR Handling
 - If age > 14 days: Flag for author ping, but still calculate score
 - Include stale label in status column when present
@@ -114,9 +118,9 @@ Provide output in this format:
 
 | PR | Title | Priority | Score | Age | Size | Author | Status |
 |----|-------|----------|-------|-----|------|--------|--------|
-| [#123](https://github.com/owner/repo/pull/123/files) | Fix auth bug | 🔴 Critical | 87.5 | 3d | 45 | @user1 | Ready for review |
-| [#124](https://github.com/owner/repo/pull/124/files) | Add new feature | 🟡 Medium | 45.2 | 1d | 200 | @user2 | Needs approval |
-| [#125](https://github.com/owner/repo/pull/125/files) | Update docs | 🟢 Low | 23.1 | 5d | 20 | @user3 | Needs rebase (Stale) |
+| [#123](https://github.com/owner/repo/pull/123) | Fix auth bug | 🔴 Critical | 87.5 | 3d | 45 | @user1 | Ready for review |
+| [#124](https://github.com/owner/repo/pull/124) | Add new feature | 🟡 Medium | 45.2 | 1d | 200 | @user2 | Needs approval |
+| [#125](https://github.com/owner/repo/pull/125) | Update docs | 🟢 Low | 23.1 | 5d | 20 | @user3 | Needs rebase (Stale) |
 ```
 
 ### Special Rules for Status Column:
@@ -125,6 +129,17 @@ Provide output in this format:
 - When stale label is present, append "(Stale)" to the status
 - Exclude closed PRs from the list entirely
 - Exclude draft PRs (isDraft: true) unless specifically requested
+- Exclude PRs with conflicting changes that need rebasing
+
+### Excluded PRs Section:
+- Include a section listing excluded PRs with clickable links
+- Format: `- **[#123](https://github.com/owner/repo/pull/123)**: Title - Reason for exclusion`
+- Group exclusions by reason (Conflicting/Rebase Issues, Draft PRs, etc.)
+
+### PR Table Sorting:
+- Sort PRs by score in descending order (highest score first)
+- For PRs with the same score, sort by priority in descending order (Critical > High > Medium > Low)
+- This ensures the most important PRs appear at the top of the table
 
 ## Notes
 
