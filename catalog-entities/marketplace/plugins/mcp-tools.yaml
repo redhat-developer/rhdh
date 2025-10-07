@@ -71,8 +71,8 @@ spec:
 
 
  packages: # link to the name used in the associated package documents in ../packages
-   - red-hat-developer-hub-backstage-plugin-software-catalog-mcp-tool
-   - red-hat-developer-hub-backstage-plugin-techdocs-mcp-tool
+   - red-hat-developer-hub-plugin-software-catalog-mcp-tool
+   - red-hat-developer-hub-plugin-techdocs-mcp-tool
    - backstage-plugin-mcp-actions-backend
 
  installation: |
@@ -90,7 +90,7 @@ spec:
        - dynamic-plugins.default.yaml
      plugins:
        # MCP server backend plugin
-       - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-mcp-actions-backend:pr_1401__0.1.2!backstage-plugin-mcp-actions-backend
+       - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-mcp-actions-backend:next__0.1.2!backstage-plugin-mcp-actions-backend
          disabled: false
       
        # MCP tools plugins

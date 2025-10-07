@@ -1,7 +1,7 @@
 apiVersion: extensions.backstage.io/v1alpha1
 kind: Package
 metadata:
-  name: red-hat-developer-hub-backstage-plugin-software-catalog-mcp-tool
+  name: red-hat-developer-hub-plugin-software-catalog-mcp-tool
   namespace: rhdh
   title: "@red-hat-developer-hub/backstage-plugin-software-catalog-mcp-tool"
   links:
