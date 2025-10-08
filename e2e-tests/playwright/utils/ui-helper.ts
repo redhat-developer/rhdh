@@ -527,21 +527,22 @@ export class UIhelper {
   async verifyButtonURL(
     label: string | RegExp,
     url: string | RegExp,
-    options: { locator?: string } = {
+    options: { locator?: string; exact?: boolean } = {
       locator: "",
+      exact: true,
     },
   ) {
-    const buttonUrl =
-      options.locator == ""
-        ? await this.page
-            .getByRole("button", { name: label })
-            .first()
-            .getAttribute("href")
-        : await this.page
-            .locator(options.locator)
-            .getByRole("button", { name: label })
-            .first()
-            .getAttribute("href");
+    // To verify the button URL if it is in a specific locator
+    const baseLocator =
+      !options.locator || options.locator === ""
+        ? this.page
+        : this.page.locator(options.locator);
+
+    const buttonUrl = await baseLocator
+      .getByRole("button", { name: label, exact: options.exact })
+      .first()
+      .getAttribute("href");
+
     expect(buttonUrl).toContain(url);
   }
 
