@@ -5,6 +5,8 @@ metadata:
   name: packages
 spec:
   targets:
+    - ./aws-amazon-ecs-plugin-for-backstage-backend.yaml
+    - ./aws-amazon-ecs-plugin-for-backstage.yaml
     - ./backstage-plugin-scaffolder-backend-module-github.yaml
     - ./backstage-plugin-catalog-backend-module-github.yaml
     - ./backstage-plugin-catalog-backend-module-github-org.yaml
