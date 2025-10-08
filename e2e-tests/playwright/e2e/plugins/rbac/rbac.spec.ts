@@ -282,7 +282,7 @@ test.describe.serial("Test RBAC", () => {
         Roles.getUsersAndGroupsListCellsIdentifier();
       await uiHelper.verifyCellsInTable(usersAndGroupsCellsIdentifier);
 
-      await uiHelper.verifyHeading("Permission policies (5)");
+      await uiHelper.verifyHeading("5 permissions");
       const permissionPoliciesColumnsText =
         Roles.getPermissionPoliciesListColumnsText();
       await uiHelper.verifyColumnHeading(permissionPoliciesColumnsText);
