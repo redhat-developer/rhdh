@@ -265,12 +265,10 @@ test.describe.serial("Test RBAC", () => {
           description: `All lines from user list:\n${lines.join("\n")}`,
         });
 
-        // eslint-disable-next-line playwright/no-conditional-in-test
-        if (invalidLines.length > 0) {
-          throw new Error(
-            `Invalid user lines found: ${invalidLines.join(", ")}`,
-          );
-        }
+        expect(
+          invalidLines,
+          `Invalid user lines found: ${invalidLines.join(", ")}`,
+        ).toHaveLength(0);
       });
     });
 
