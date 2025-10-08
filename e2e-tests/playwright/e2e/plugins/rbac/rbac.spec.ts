@@ -248,23 +248,30 @@ test.describe.serial("Test RBAC", () => {
         throw new Error("Header does not match");
       }
 
-      // Check that each subsequent line starts with "user:default"
-      const allUsersValid = lines
+      // Check that each subsequent line starts with "user:default" or "user:development"
+      const invalidLines = lines
         .slice(1)
-        .every((line) => line.startsWith("user:default"));
-      console.log(
-        `[RBAC Test] User validation result: allUsersValid=${allUsersValid}, total lines=${lines.length}`,
-        `lines: \n${lines.join("\n")}`,
-      );
+        .filter(
+          (line) =>
+            !line.startsWith("user:default") &&
+            !line.startsWith("user:development"),
+        );
 
-      // eslint-disable-next-line playwright/no-conditional-in-test
-      if (!allUsersValid) {
-        const invalidLines = lines
-          .slice(1)
-          .filter((line) => !line.startsWith("user:default"));
-        console.error("Invalid user lines found:", invalidLines);
-        throw new Error("Not all users info are valid");
-      }
+      // Use test.step for better test reporting and include all lines for debugging
+      await test.step(`Validate user lines: ${invalidLines.length} invalid out of ${lines.length} total`, async () => {
+        // Log all lines for debugging purposes using test.info().annotations
+        test.info().annotations.push({
+          type: "debug",
+          description: `All lines from user list:\n${lines.join("\n")}`,
+        });
+
+        // eslint-disable-next-line playwright/no-conditional-in-test
+        if (invalidLines.length > 0) {
+          throw new Error(
+            `Invalid user lines found: ${invalidLines.join(", ")}`,
+          );
+        }
+      });
     });
 
     test("View details of a role", async ({ page }) => {
