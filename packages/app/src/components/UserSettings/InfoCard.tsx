@@ -12,10 +12,12 @@ import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 
 import buildMetadata from '../../build-metadata.json';
+import { useTranslation } from '../../hooks/useTranslation';
 import { BuildInfo } from '../../types/types';
 
 export const InfoCard = () => {
   const config = useApi(configApiRef);
+  const { t } = useTranslation();
   const buildInfo: BuildInfo | undefined = config.getOptional('buildInfo');
 
   const [showBuildInformation, setShowBuildInformation] = useState<boolean>(
@@ -36,11 +38,32 @@ export const InfoCard = () => {
     }
   };
 
-  const title = buildInfo?.title ?? buildMetadata.title;
+  const getTitle = () => {
+    const defaultTitle = buildInfo?.title ?? buildMetadata?.title;
+
+    // If titleKey is provided, use translation
+    if (buildInfo?.titleKey) {
+      return t(buildInfo.titleKey as any, {
+        defaultValue: defaultTitle,
+      });
+    }
+    // If no title but titleKey in metadata, use that translation
+    if (!buildInfo?.title && buildMetadata?.titleKey) {
+      return t(buildMetadata.titleKey as any, {
+        defaultValue: buildMetadata?.title,
+      });
+    }
+
+    // Fall back to title or default
+    return defaultTitle;
+  };
+
+  const title = getTitle();
 
   let clipboardText = title;
   const buildDetails = Object.entries(
-    buildInfo?.full === false // append build versions to the object only when buildInfo.full === false
+    buildInfo?.full === false || // make it backward compatible with previous `full` config option
+      buildInfo?.overrideBuildInfo === false
       ? { ...buildInfo?.card, ...buildMetadata?.card }
       : (buildInfo?.card ?? buildMetadata?.card),
   ).map(([key, value]) => `${key}: ${value}`);
@@ -104,11 +127,15 @@ export const InfoCard = () => {
           >
             <CopyTextButton
               text={clipboardText}
-              tooltipText="Metadata copied to clipboard"
-              arial-label="Copy metadata to your clipboard"
+              tooltipText={t('app.userSettings.infoCard.metadataCopied')}
+              arial-label={t('app.userSettings.infoCard.copyMetadata')}
             />
             <IconButton
-              title={showBuildInformation ? 'Show less' : 'Show more'}
+              title={
+                showBuildInformation
+                  ? t('app.userSettings.infoCard.showLess')
+                  : t('app.userSettings.infoCard.showMore')
+              }
               onClick={toggleBuildInformation}
               style={{ width: 48 }}
             >

@@ -204,7 +204,7 @@ export class UIhelper {
     if (typeof options === "string") {
       linkLocator = this.page.locator("a").filter({ hasText: options }).first();
     } else if ("href" in options) {
-      linkLocator = this.page.locator(`a[href="${options.href}"]`);
+      linkLocator = this.page.locator(`a[href="${options.href}"]`).first();
     } else {
       linkLocator = this.page
         .locator(`div[aria-label='${options.ariaLabel}'] a`)
@@ -223,10 +223,12 @@ export class UIhelper {
       .click();
   }
 
-  async goToSettingsPage() {
-    await expect(this.page.locator("nav[id='global-header']")).toBeVisible();
-    await this.openProfileDropdown();
-    await this.clickLink({ href: "/settings" });
+  async goToPageUrl(url: string, heading?: string) {
+    await this.page.goto(url);
+    await expect(this.page).toHaveURL(url);
+    if (heading) {
+      await this.verifyHeading(heading);
+    }
   }
 
   async goToMyProfilePage() {
@@ -300,9 +302,14 @@ export class UIhelper {
     return await this.isElementVisible(locator, timeout);
   }
 
-  async isLinkVisible(text: string): Promise<boolean> {
-    const locator = `a:has-text("${text}")`;
-    return await this.isElementVisible(locator);
+  async verifyTextVisible(text: string, timeout = 10000): Promise<void> {
+    const locator = this.page.getByText(text);
+    await expect(locator).toBeVisible({ timeout });
+  }
+
+  async verifyLinkVisible(text: string, timeout = 10000): Promise<void> {
+    const locator = this.page.locator(`a:has-text("${text}")`);
+    await expect(locator).toBeVisible({ timeout });
   }
 
   async waitForSideBarVisible() {
@@ -313,7 +320,7 @@ export class UIhelper {
     const navLink = this.page
       .locator(`nav a:has-text("${navBarText}")`)
       .first();
-    await navLink.waitFor({ state: "visible" });
+    await navLink.waitFor({ state: "visible", timeout: 15_000 });
     await navLink.dispatchEvent("click");
   }
 
@@ -520,21 +527,22 @@ export class UIhelper {
   async verifyButtonURL(
     label: string | RegExp,
     url: string | RegExp,
-    options: { locator?: string } = {
+    options: { locator?: string; exact?: boolean } = {
       locator: "",
+      exact: true,
     },
   ) {
-    const buttonUrl =
-      options.locator == ""
-        ? await this.page
-            .getByRole("button", { name: label })
-            .first()
-            .getAttribute("href")
-        : await this.page
-            .locator(options.locator)
-            .getByRole("button", { name: label })
-            .first()
-            .getAttribute("href");
+    // To verify the button URL if it is in a specific locator
+    const baseLocator =
+      !options.locator || options.locator === ""
+        ? this.page
+        : this.page.locator(options.locator);
+
+    const buttonUrl = await baseLocator
+      .getByRole("button", { name: label, exact: options.exact })
+      .first()
+      .getAttribute("href");
+
     expect(buttonUrl).toContain(url);
   }
 

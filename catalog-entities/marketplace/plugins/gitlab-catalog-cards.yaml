@@ -21,7 +21,9 @@ metadata:
 spec:
   author: ImmobiliareLabs
   publisher: Red Hat
-  support: tech-preview  # production, tech-preview, dev-preveiw
+  support:
+    provider: Red Hat
+    level: tech-preview
   lifecycle: active
 
   categories:

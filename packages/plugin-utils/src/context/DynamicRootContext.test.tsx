@@ -122,6 +122,7 @@ describe('DynamicRootContext', () => {
           config: { props: {} },
         },
       ],
+      translationRefs: [],
     };
 
     const TestComponent = () => {
@@ -227,6 +228,7 @@ describe('DynamicRootContext', () => {
       providerSettings: [],
       scaffolderFieldExtensions: [],
       techdocsAddons: [],
+      translationRefs: [],
     };
 
     const TestComponent = () => {

@@ -30,7 +30,9 @@ spec:
   publisher: Red Hat
   license: Apache-2.0
   lifecycle: active
-  support: production
+  support:
+    provider: Red Hat
+    level: generally-available
 
   categories:
     - Backstage Core

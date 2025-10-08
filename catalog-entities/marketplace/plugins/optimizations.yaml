@@ -18,7 +18,9 @@ metadata:
     Optimizations brings Red Hat Insights OpenShift recommendations into Backstage with extended actions. You can view recommendations and apply them to your configured clusters.
 spec:
   author: Red Hat
-  support: tech-preview # production, tech-preview, dev-preveiw
+  support:
+    provider: Red Hat
+    level: tech-preview
   lifecycle: active
   publisher: Red Hat
 
