@@ -254,6 +254,7 @@ test.describe.serial("Test RBAC", () => {
         .every((line) => line.startsWith("user:default"));
       console.log(
         `[RBAC Test] User validation result: allUsersValid=${allUsersValid}, total lines=${lines.length}`,
+        `lines: \n${lines.join("\n")}`,
       );
 
       // eslint-disable-next-line playwright/no-conditional-in-test
