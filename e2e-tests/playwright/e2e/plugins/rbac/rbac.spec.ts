@@ -240,13 +240,16 @@ test.describe.serial("Test RBAC", () => {
         page,
         'a:has-text("Download User List")',
       );
+      await test.info().attach("user-list-file", {
+        body: fileContent,
+        contentType: "text/plain",
+      });
       const lines = fileContent.trim().split("\n");
 
       const header = "userEntityRef,displayName,email,lastAuthTime";
-      // eslint-disable-next-line playwright/no-conditional-in-test
-      if (lines[0] !== header) {
-        throw new Error("Header does not match");
-      }
+      expect(lines[0], "Header needs to match the expected header").toBe(
+        header,
+      );
 
       // Check that each subsequent line starts with "user:default" or "user:development"
       const invalidLines = lines
@@ -257,18 +260,8 @@ test.describe.serial("Test RBAC", () => {
             !line.startsWith("user:development"),
         );
 
-      // Use test.step for better test reporting and include all lines for debugging
       await test.step(`Validate user lines: ${invalidLines.length} invalid out of ${lines.length} total`, async () => {
-        // Log all lines for debugging purposes using test.info().annotations
-        test.info().annotations.push({
-          type: "debug",
-          description: `All lines from user list:\n${lines.join("\n")}`,
-        });
-
-        expect(
-          invalidLines,
-          `Invalid user lines found: ${invalidLines.join(", ")}`,
-        ).toHaveLength(0);
+        expect(invalidLines, "All users should be valid").toHaveLength(0);
       });
     });
 
