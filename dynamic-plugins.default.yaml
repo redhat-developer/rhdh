@@ -1281,8 +1281,8 @@ plugins:
           red-hat-developer-hub.backstage-plugin-marketplace:
             translationResources:
               - importName: marketplaceTranslations
-                module: Alpha
                 ref: marketplaceTranslationRef
+                module: Alpha
             appIcons:
               - name: pluginsIcon
                 importName: PluginsIcon
