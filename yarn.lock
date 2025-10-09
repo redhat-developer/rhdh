@@ -22480,18 +22480,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dynamic-plugins-info-backend@workspace:plugins/dynamic-plugins-info-backend":
-  version: 0.0.0-use.local
-  resolution: "dynamic-plugins-info-backend@workspace:plugins/dynamic-plugins-info-backend"
-  languageName: unknown
-  linkType: soft
-
-"dynamic-plugins-info@workspace:plugins/dynamic-plugins-info":
-  version: 0.0.0-use.local
-  resolution: "dynamic-plugins-info@workspace:plugins/dynamic-plugins-info"
-  languageName: unknown
-  linkType: soft
-
 "eastasianwidth@npm:^0.2.0":
   version: 0.2.0
   resolution: "eastasianwidth@npm:0.2.0"
@@ -36761,12 +36749,6 @@ __metadata:
   checksum: 726321c5eaf41b5002e17ffbd1fb7245999a073e8979085dacd47c4b4e8068ff5777142fc6726d6ca1fd2ff16921b48788b87225cbc57c72636f6efa8efbffe3
   languageName: node
   linkType: hard
-
-"translation-backend@workspace:plugins/translation-backend":
-  version: 0.0.0-use.local
-  resolution: "translation-backend@workspace:plugins/translation-backend"
-  languageName: unknown
-  linkType: soft
 
 "tree-dump@npm:^1.0.3":
   version: 1.0.3
