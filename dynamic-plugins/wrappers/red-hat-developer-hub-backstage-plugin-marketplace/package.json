@@ -5,9 +5,22 @@
   "types": "src/index.ts",
   "license": "Apache-2.0",
   "publishConfig": {
-    "access": "public",
-    "main": "dist/index.cjs.js",
-    "types": "dist/index.d.ts"
+    "access": "public"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./alpha": "./src/alpha.ts",
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "alpha": [
+        "src/alpha.ts"
+      ],
+      "package.json": [
+        "package.json"
+      ]
+    }
   },
   "backstage": {
     "role": "frontend-plugin",
@@ -45,7 +58,8 @@
   "scalprum": {
     "name": "red-hat-developer-hub.backstage-plugin-marketplace",
     "exposedModules": {
-      "PluginRoot": "./src/index.ts"
+      "PluginRoot": "./src/index.ts",
+      "Alpha": "./src/alpha.ts"
     }
   },
   "repository": {

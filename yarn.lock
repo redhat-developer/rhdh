@@ -14111,19 +14111,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-theme@npm:0.9.1":
-  version: 0.9.1
-  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.9.1"
+"@red-hat-developer-hub/backstage-plugin-theme@npm:0.10.1":
+  version: 0.10.1
+  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.10.1"
   dependencies:
     "@mui/icons-material": ^5.17.1
   peerDependencies:
-    "@backstage/core-plugin-api": ^1.10.7
-    "@backstage/theme": ^0.6.6
+    "@backstage/core-plugin-api": ^1.10.9
+    "@backstage/theme": ^0.6.8
     "@material-ui/icons": ^4.11.3
     "@mui/icons-material": ^5.17.1
     "@mui/material": ^5.0.0
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 876923b59c7f7bd6cf56218004770dd5b9c34873ca0a04f7ae9b6b9cbe33214de9f867d27702045785bd865cdc7dee23277cb58711447b5859bd1dae1d4a66db
+  checksum: 29a9aee8d29b1c96d38e771f07556885ba23cbe495f14a998b15ec0cf7b7f4adc8c8e86aaf0a6f52355dfe18998322a325376d35b9b1da6466a370dcdbe9fc7b
   languageName: node
   linkType: hard
 
@@ -18822,7 +18822,7 @@ __metadata:
     "@mui/icons-material": 5.18.0
     "@mui/material": 5.18.0
     "@mui/styled-engine": 5.18.0
-    "@red-hat-developer-hub/backstage-plugin-theme": 0.9.1
+    "@red-hat-developer-hub/backstage-plugin-theme": 0.10.1
     "@red-hat-developer-hub/backstage-plugin-translations": 0.0.2
     "@red-hat-developer-hub/plugin-utils": 1.0.0
     "@scalprum/core": 0.8.3
