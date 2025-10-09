@@ -313,7 +313,8 @@ test.describe
 
   test("Verify existing repo from app-config is displayed in bulk import Added repositories", async () => {
     // TODO: https://issues.redhat.com/browse/RHDHBUGS-2116
-    test.fixme();await uiHelper.openSidebar("Bulk import");
+    test.fixme();
+    await uiHelper.openSidebar("Bulk import");
     await common.waitForLoad();
     await bulkimport.filterAddedRepo(existingRepoFromAppConfig);
     await uiHelper.verifyRowInTableByUniqueText(existingRepoFromAppConfig, [
