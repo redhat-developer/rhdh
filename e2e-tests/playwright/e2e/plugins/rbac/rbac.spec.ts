@@ -3,7 +3,7 @@ import { Response, Roles } from "../../../support/pages/rbac";
 import { UI_HELPER_ELEMENTS } from "../../../support/page-objects/global-obj";
 import {
   SEARCH_OBJECTS_COMPONENTS,
-  ROLE_OVERVIEW_COMPONENTS,
+  ROLE_OVERVIEW_COMPONENTS_TEST_ID,
   ROLES_PAGE_COMPONENTS,
 } from "../../../support/page-objects/page-obj";
 import { Common, setupBrowser } from "../../../utils/common";
@@ -386,7 +386,9 @@ test.describe.serial("Test RBAC", () => {
       await uiHelper.verifyHeading("role:default/test-role1");
       await uiHelper.clickTab("Overview");
 
-      await page.click(ROLE_OVERVIEW_COMPONENTS.updateMembers);
+      await page
+        .getByTestId(ROLE_OVERVIEW_COMPONENTS_TEST_ID.updateMembers)
+        .click();
       await uiHelper.verifyHeading("Edit Role");
       await uiHelper.fillTextInputByLabel(
         "Select users and groups",
@@ -414,7 +416,9 @@ test.describe.serial("Test RBAC", () => {
       );
       await uiHelper.verifyHeading(rbacPo.regexpShortUsersAndGroups(1, 1));
 
-      await page.click(ROLE_OVERVIEW_COMPONENTS.updatePolicies);
+      await page
+        .getByTestId(ROLE_OVERVIEW_COMPONENTS_TEST_ID.updatePolicies)
+        .click();
       await uiHelper.verifyHeading("Edit Role");
       await rbacPo.selectPluginsCombobox.click();
       await rbacPo.selectOption("scaffolder");
