@@ -919,7 +919,7 @@ plugins:
                   textKey: menuItem.rbac
             menuItems:
               rbac:
-                parent: admin
+                parent: default.admin
                 icon: rbacIcon
 
   - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-servicenow-dynamic
@@ -1293,9 +1293,6 @@ plugins:
                   icon: pluginsIcon
                   text: Extensions
                   textKey: menuItem.extensions
-            mountPoints:
-              - mountPoint: application/provider
-                importName: InstallationContextProvider
             menuItems:
               extensions:
                 parent: default.admin
@@ -1377,7 +1374,7 @@ plugins:
                   textKey: menuItem.adoptionInsights
             menuItems:
               adoption-insights:
-                parent: admin
+                parent: default.admin
                 icon: adoptionInsightsIcon
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-adoption-insights-backend-dynamic
     disabled: false
