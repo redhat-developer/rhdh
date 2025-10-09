@@ -1,0 +1,124 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: aws-ecs
+  namespace: community
+  title: Amazon ECS
+  description: |
+    View and manage Amazon Elastic Container Service (ECS) resources directly from your Backstage catalog.
+    Monitor ECS services, tasks, and deployments with real-time status information.
+  tags:
+    - aws
+    - cloud
+    - containers
+    - ecs
+  links:
+    - url: https://github.com/awslabs/backstage-plugins-for-aws
+      title: Homepage
+    - url: https://github.com/awslabs/backstage-plugins-for-aws/issues
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/awslabs/backstage-plugins-for-aws/tree/main/plugins/ecs
+    - title: Documentation
+      url: https://github.com/awslabs/backstage-plugins-for-aws/blob/main/plugins/ecs/README.md
+spec:
+  authors:
+    - name: AWS
+      url: https://aws.amazon.com/
+
+  publisher: AWS
+  support:
+    provider: Community
+    level: community
+  lifecycle: active
+  categories:
+    - Cloud
+
+  highlights:
+    - Real-time ECS service status monitoring
+    - View ECS tasks and deployments
+    - Service-level metrics and insights
+    - Tag-based or ARN-based service discovery
+    - Integration with AWS SDK credential chain
+
+  description: |
+    The Amazon ECS plugin for Backstage enables developers to view and monitor their Amazon Elastic Container Service (ECS)
+    resources directly within the Backstage developer portal. This integration provides a unified view of your ECS services,
+    tasks, and deployments alongside your service catalog entities.
+
+    ## Key Features
+
+    * **Service Monitoring**: View real-time status of ECS services including running tasks, desired count, and deployment status
+    * **Task Information**: Access detailed information about ECS tasks, including container status and health
+    * **Flexible Discovery**: Find ECS services using either specific ARNs or tag-based queries
+    * **AWS Integration**: Seamlessly integrates with AWS SDK credential chain for authentication
+    * **Entity Annotations**: Link Backstage catalog entities to ECS services using simple annotations
+
+    ## Adding The Plugin To Red Hat Developer Hub
+
+    This plugin consists of both frontend and backend components that work together to provide ECS integration.
+
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further instructions on how to add, enable, configure, and remove plugins in your instance.
+
+    ## Configuring The Plugin
+
+    The AWS ECS plugin requires AWS credentials to be configured. The backend plugin uses the AWS SDK credential chain,
+    which supports multiple authentication methods including environment variables, IAM roles, and AWS profiles.
+
+    ### Backend Configuration
+
+    Configure AWS credentials via environment variables:
+
+    ```bash
+    AWS_REGION=us-east-1
+    AWS_ACCESS_KEY_ID=your-access-key-id
+    AWS_SECRET_ACCESS_KEY=your-secret-access-key
+    ```
+
+    For production deployments, using IAM roles for service accounts (IRSA) or EC2 instance profiles is recommended
+    for better security.
+
+    ### Entity Annotations
+
+    Add ECS service information to your catalog entities using annotations:
+
+    ```yaml
+    apiVersion: backstage.io/v1alpha1
+    kind: Component
+    metadata:
+      name: my-service
+      annotations:
+        # Option 1: Specific service ARN
+        aws.amazon.com/amazon-ecs-service-arn: arn:aws:ecs:us-east-1:123456789012:service/my-cluster/my-service
+
+        # Option 2: Tag-based discovery
+        # aws.amazon.com/amazon-ecs-service-tags: component=my-app,environment=production
+    spec:
+      type: service
+      lifecycle: production
+      owner: platform-team
+    ```
+
+    The frontend plugin will automatically display an "Amazon ECS" tab on catalog entities with these annotations,
+    showing the associated ECS service information.
+
+    ## Prerequisites
+
+    * AWS account with ECS services
+    * AWS credentials configured with appropriate IAM permissions
+    * IAM permissions required:
+      * `ecs:DescribeServices`
+      * `ecs:DescribeTasks`
+      * `ecs:ListTasks`
+      * Additional permissions may be required based on your configuration
+
+    For more detailed configuration instructions, see the [plugin documentation](https://github.com/awslabs/backstage-plugins-for-aws/blob/main/plugins/ecs/README.md).
+
+  packages:
+    - aws-amazon-ecs-plugin-for-backstage
+    - aws-amazon-ecs-plugin-for-backstage-backend
+
+  history:
+    added: '2025-10-08'
