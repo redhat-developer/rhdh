@@ -77,6 +77,7 @@ dynamicPlugins:
             priority: 90
             props:
               title: My profile
+              type: myProfile
               icon: account
         - mountPoint: global.header/profile
           importName: LogoutButton

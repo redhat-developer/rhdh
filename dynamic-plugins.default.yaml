@@ -635,6 +635,9 @@ plugins:
       dynamicPlugins:
         frontend:
           red-hat-developer-hub.backstage-plugin-global-floating-action-button:
+            translationResources:
+              - importName: globalFloatingActionButtonTranslations
+                ref: globalFloatingActionButtonTranslationRef
             mountPoints:
               - mountPoint: application/listener
                 importName: DynamicGlobalFloatingActionButton
