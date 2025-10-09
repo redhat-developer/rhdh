@@ -430,7 +430,7 @@ test.describe.serial("Test RBAC", () => {
       await uiHelper.verifyText(
         "Role role:default/test-role1 updated successfully",
       );
-      await uiHelper.verifyHeading("Permission Policies (2)");
+      await uiHelper.verifyHeading("2 permissions");
 
       await rbacPo.deleteRole("role:default/test-role1");
     });
