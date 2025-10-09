@@ -1,0 +1,26 @@
+kind: Backstage
+apiVersion: rhdh.redhat.com/v1alpha2
+metadata:
+  name: rhdh
+spec:
+  application:
+    image: "quay.io/$QUAY_REPO:$TAG_NAME"
+    appConfig:
+      configMaps:
+        - name: app-config-rhdh
+        - name: dynamic-plugins-config
+        - name: dynamic-global-floating-action-button-config
+        - name: dynamic-global-header-config
+      mountPath: /opt/app-root/src
+    dynamicPluginsConfigMapName: dynamic-plugins
+    extraEnvs:
+      envs:
+        - name: NODE_OPTIONS
+          value: "--no-node-snapshot"
+        - name: NODE_ENV
+          value: "production"
+        - name: NODE_TLS_REJECT_UNAUTHORIZED
+          value: "0"
+      secrets:
+        - name: rhdh-secrets
+        - name: redis-secret

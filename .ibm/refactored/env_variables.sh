@@ -1,0 +1,260 @@
+#!/bin/bash
+# shellcheck disable=SC2034
+set -a # Automatically export all variables
+
+# Define log file names and directories.
+LOGFILE="test-log"
+
+# Populated by OpenShift CI or the initial CI scripts
+# Addition to JOB_NAME, TAG_NAME, SHARED_DIR, ARTIFACT_DIR
+# This prevents nounset errors when running locally
+# https://docs.ci.openshift.org/docs/architecture/step-registry/#available-environment-variables
+# https://docs.prow.k8s.io/docs/jobs/#job-environment-variables
+JOB_NAME="${JOB_NAME:-unknown-job}"
+TAG_NAME="${TAG_NAME:-next}"  # Default to 'next' tag if not specified
+OPENSHIFT_CI="${OPENSHIFT_CI:-false}"
+REPO_OWNER="${REPO_OWNER:-redhat-developer}"
+REPO_NAME="${REPO_NAME:-rhdh}"
+PULL_NUMBER="${PULL_NUMBER:-}"
+BUILD_ID="${BUILD_ID:-unknown-build}"
+RELEASE_BRANCH_NAME="${RELEASE_BRANCH_NAME:-main}"
+
+# ============================================================================
+# OPENSHIFT CREDENTIALS WITH FALLBACK SYSTEM
+# ============================================================================
+
+# Function to get OpenShift server URL from active session
+get_openshift_server_fallback() {
+    if command -v oc &>/dev/null && oc whoami --show-server &>/dev/null; then
+        oc whoami --show-server 2>/dev/null
+    fi
+}
+
+# Function to get OpenShift token from active session
+get_openshift_token_fallback() {
+    if command -v oc &>/dev/null && oc whoami --show-token &>/dev/null; then
+        oc whoami --show-token 2>/dev/null
+    fi
+}
+
+# Priority: Environment variables first, then fallback to active OpenShift session
+if [[ -n "${K8S_CLUSTER_URL:-}" ]]; then
+    echo "[INFO] Using K8S_CLUSTER_URL from environment variable"
+elif [[ -n $(get_openshift_server_fallback) ]]; then
+    K8S_CLUSTER_URL=$(get_openshift_server_fallback)
+    echo "[INFO] Using OpenShift server URL from active session: ${K8S_CLUSTER_URL}"
+else
+    K8S_CLUSTER_URL=""
+fi
+
+if [[ -n "${K8S_CLUSTER_TOKEN:-}" ]]; then
+    echo "[INFO] Using K8S_CLUSTER_TOKEN from environment variable"
+elif [[ -n $(get_openshift_token_fallback) ]]; then
+    K8S_CLUSTER_TOKEN=$(get_openshift_token_fallback)
+    echo "[INFO] Using OpenShift token from active session"
+else
+    K8S_CLUSTER_TOKEN=""
+fi
+
+# Cluster router base (will be detected dynamically if not set)
+K8S_CLUSTER_ROUTER_BASE="${K8S_CLUSTER_ROUTER_BASE:-}"
+
+SHARED_DIR="${SHARED_DIR:-$DIR/shared_dir}"
+ARTIFACT_DIR="${ARTIFACT_DIR:-$DIR/artifact_dir}"
+mkdir -p "${SHARED_DIR}"
+mkdir -p "${ARTIFACT_DIR}"
+
+#ENVS and Vault Secrets
+HELM_CHART_VALUE_FILE_NAME="values_showcase.yaml"
+HELM_CHART_RBAC_VALUE_FILE_NAME="values_showcase-rbac.yaml"
+HELM_CHART_K8S_MERGED_VALUE_FILE_NAME="merged-values_showcase_K8S.yaml"
+HELM_CHART_RBAC_K8S_MERGED_VALUE_FILE_NAME="merged-values_showcase-rbac_K8S.yaml"
+HELM_CHART_AKS_DIFF_VALUE_FILE_NAME="diff-values_showcase_AKS.yaml"
+HELM_CHART_RBAC_AKS_DIFF_VALUE_FILE_NAME="diff-values_showcase-rbac_AKS.yaml"
+HELM_CHART_GKE_DIFF_VALUE_FILE_NAME="diff-values_showcase_GKE.yaml"
+HELM_CHART_RBAC_GKE_DIFF_VALUE_FILE_NAME="diff-values_showcase-rbac_GKE.yaml"
+HELM_CHART_EKS_DIFF_VALUE_FILE_NAME="diff-values_showcase_EKS.yaml"
+HELM_CHART_RBAC_EKS_DIFF_VALUE_FILE_NAME="diff-values_showcase-rbac_EKS.yaml"
+HELM_CHART_SANITY_PLUGINS_DIFF_VALUE_FILE_NAME="diff-values_showcase-sanity-plugins.yaml"
+HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME="merged-values_showcase-sanity-plugins.yaml"
+
+HELM_CHART_URL="oci://quay.io/rhdh/chart"
+K8S_CLUSTER_TOKEN_ENCODED=$(printf "%s" $K8S_CLUSTER_TOKEN | base64 | tr -d '\n')
+QUAY_REPO="${QUAY_REPO:-rhdh-community/rhdh}"
+QUAY_NAMESPACE=$(cat /tmp/secrets/QUAY_NAMESPACE 2>/dev/null || echo "")
+QUAY_TOKEN=$(cat /tmp/secrets/QUAY_TOKEN 2>/dev/null || echo "")
+RHDH_SEALIGHTS_BOT_TOKEN=$(cat /tmp/secrets/RHDH_SEALIGHTS_BOT.QUAY.TOKEN)
+RHDH_SEALIGHTS_BOT_USER=$(cat /tmp/secrets/RHDH_SEALIGHTS_BOT.QUAY.USER)
+SL_TOKEN=$(cat /tmp/secrets/SEALIGHT_TOKEN)
+SL_TEST_STAGE="e2e-tests-nightly"
+
+RELEASE_NAME=rhdh
+RELEASE_NAME_RBAC=rhdh-rbac
+NAME_SPACE="${NAME_SPACE:-showcase}"
+NAME_SPACE_RBAC="${NAME_SPACE_RBAC:-showcase-rbac}"
+NAME_SPACE_RUNTIME="${NAME_SPACE_RUNTIME:-showcase-runtime}"
+NAME_SPACE_POSTGRES_DB="${NAME_SPACE_POSTGRES_DB:-postgress-external-db}"
+NAME_SPACE_SANITY_PLUGINS_CHECK="showcase-sanity-plugins"
+OPERATOR_MANAGER='rhdh-operator'
+CHART_MAJOR_VERSION="1.7"
+
+# Chart version will be determined dynamically if not set
+CHART_VERSION="${CHART_VERSION:-}"
+
+GITHUB_APP_APP_ID=$(cat /tmp/secrets/GITHUB_APP_3_APP_ID)
+GITHUB_APP_CLIENT_ID=$(cat /tmp/secrets/GITHUB_APP_3_CLIENT_ID)
+GITHUB_APP_PRIVATE_KEY=$(cat /tmp/secrets/GITHUB_APP_3_PRIVATE_KEY)
+GITHUB_APP_CLIENT_SECRET=$(cat /tmp/secrets/GITHUB_APP_3_CLIENT_SECRET)
+GITHUB_APP_JANUS_TEST_APP_ID=OTE3NjM5
+GITHUB_APP_JANUS_TEST_CLIENT_ID=SXYyM2xpSEdtU1l6SUFEbHFIakw=
+GITHUB_APP_JANUS_TEST_PRIVATE_KEY=$(cat /tmp/secrets/GITHUB_APP_JANUS_TEST_PRIVATE_KEY)
+GITHUB_APP_JANUS_TEST_CLIENT_SECRET=$(cat /tmp/secrets/GITHUB_APP_JANUS_TEST_CLIENT_SECRET)
+GITHUB_APP_WEBHOOK_URL=aHR0cHM6Ly9zbWVlLmlvL0NrRUNLYVgwNzhyZVhobEpEVzA=
+GITHUB_APP_WEBHOOK_SECRET=$(cat /tmp/secrets/GITHUB_APP_WEBHOOK_SECRET)
+# GitHub URLs: Plain text for ConfigMaps, base64 for Secrets
+GITHUB_URL_PLAIN="https://github.com"  # Plain text
+GITHUB_ORG_PLAIN="janus-qe"  # Plain text
+GITHUB_URL=aHR0cHM6Ly9naXRodWIuY29t  # Base64 (backwards compatibility)
+GITHUB_ORG=amFudXMtcWU=  # Base64 (backwards compatibility)
+GITHUB_ORG_2=amFudXMtdGVzdA==
+GH_USER_ID=$(cat /tmp/secrets/GH_USER_ID)
+GH_USER_PASS=$(cat /tmp/secrets/GH_USER_PASS)
+GH_2FA_SECRET=$(cat /tmp/secrets/GH_2FA_SECRET)
+GH_USER2_ID=$(cat /tmp/secrets/GH_USER2_ID)
+GH_USER2_PASS=$(cat /tmp/secrets/GH_USER2_PASS)
+GH_USER2_2FA_SECRET=$(cat /tmp/secrets/GH_USER2_2FA_SECRET)
+GH_RHDH_QE_USER_TOKEN=$(cat /tmp/secrets/GH_RHDH_QE_USER_TOKEN)
+QE_USER3_ID=$(cat /tmp/secrets/QE_USER3_ID)
+QE_USER3_PASS=$(cat /tmp/secrets/QE_USER3_PASS)
+QE_USER4_ID=$(cat /tmp/secrets/QE_USER4_ID)
+QE_USER4_PASS=$(cat /tmp/secrets/QE_USER4_PASS)
+QE_USER5_ID=$(cat /tmp/secrets/QE_USER5_ID)
+QE_USER5_PASS=$(cat /tmp/secrets/QE_USER5_PASS)
+QE_USER6_ID=$(cat /tmp/secrets/QE_USER6_ID)
+QE_USER6_PASS=$(cat /tmp/secrets/QE_USER6_PASS)
+
+K8S_CLUSTER_TOKEN_TEMPORARY=$(cat /tmp/secrets/K8S_CLUSTER_TOKEN_TEMPORARY)
+
+GITLAB_TOKEN=$(cat /tmp/secrets/GITLAB_TOKEN)
+
+RHDH_PR_OS_CLUSTER_URL=$(cat /tmp/secrets/RHDH_PR_OS_CLUSTER_URL)
+RHDH_PR_OS_CLUSTER_TOKEN=$(cat /tmp/secrets/RHDH_PR_OS_CLUSTER_TOKEN)
+ENCODED_CLUSTER_NAME=$(echo "my-cluster" | base64)
+K8S_CLUSTER_API_SERVER_URL=$(printf "%s" "$K8S_CLUSTER_URL" | base64 | tr -d '\n')
+K8S_SERVICE_ACCOUNT_TOKEN=$K8S_CLUSTER_TOKEN_ENCODED
+# OCM URLs: Keep two versions - plain for ConfigMaps, base64 for Secrets
+OCM_HUB_URL="$K8S_CLUSTER_URL"  # Plain text for ConfigMaps (catalog providers)
+OCM_CLUSTER_URL=$(printf "%s" "$K8S_CLUSTER_URL" | base64 | tr -d '\n')  # Base64 for Secrets
+OCM_CLUSTER_TOKEN=$K8S_CLUSTER_TOKEN_ENCODED
+# Export additional OCM variables for dynamic plugins config
+export OCM_HUB_NAME="${K8S_CLUSTER_NAME:-testCluster}"
+export OCM_SA_TOKEN="$K8S_CLUSTER_TOKEN"
+KEYCLOAK_BASE_URL=$(cat /tmp/secrets/KEYCLOAK_BASE_URL)
+KEYCLOAK_BASE_URL_ENCODED=$(printf "%s" $KEYCLOAK_BASE_URL | base64 | tr -d '\n')
+KEYCLOAK_LOGIN_REALM="myrealm"
+KEYCLOAK_LOGIN_REALM_ENCODED=$(printf "%s" $KEYCLOAK_LOGIN_REALM | base64 | tr -d '\n')
+KEYCLOAK_REALM="myrealm"
+KEYCLOAK_REALM_ENCODED=$(printf "%s" $KEYCLOAK_REALM | base64 | tr -d '\n')
+KEYCLOAK_CLIENT_ID="myclient"
+KEYCLOAK_CLIENT_ID_ENCODED=$(printf "%s" $KEYCLOAK_CLIENT_ID | base64 | tr -d '\n')
+KEYCLOAK_CLIENT_SECRET=$(cat /tmp/secrets/KEYCLOAK_CLIENT_SECRET)
+KEYCLOAK_CLIENT_SECRET_ENCODED=$(printf "%s" $KEYCLOAK_CLIENT_SECRET | base64 | tr -d '\n')
+ACR_SECRET=$(cat /tmp/secrets/ACR_SECRET)
+GOOGLE_CLIENT_ID=$(cat /tmp/secrets/GOOGLE_CLIENT_ID)
+GOOGLE_CLIENT_SECRET=$(cat /tmp/secrets/GOOGLE_CLIENT_SECRET)
+GOOGLE_ACC_COOKIE=$(cat /tmp/secrets/GOOGLE_ACC_COOKIE)
+GOOGLE_USER_ID=$(cat /tmp/secrets/GOOGLE_USER_ID)
+GOOGLE_USER_PASS=$(cat /tmp/secrets/GOOGLE_USER_PASS)
+GOOGLE_2FA_SECRET=$(cat /tmp/secrets/GOOGLE_2FA_SECRET)
+RDS_USER='cmhkaHFl'
+RDS_PASSWORD=$(cat /tmp/secrets/RDS_PASSWORD)
+RDS_1_HOST=$(cat /tmp/secrets/RDS_1_HOST)
+RDS_2_HOST=$(cat /tmp/secrets/RDS_2_HOST)
+RDS_3_HOST=$(cat /tmp/secrets/RDS_3_HOST)
+
+JUNIT_RESULTS="junit-results.xml"
+
+SLACK_DATA_ROUTER_WEBHOOK_URL=$(cat /tmp/secrets/SLACK_DATA_ROUTER_WEBHOOK_URL)
+REDIS_USERNAME=temp
+REDIS_USERNAME_ENCODED=$(printf "%s" $REDIS_USERNAME | base64 | tr -d '\n')
+REDIS_PASSWORD=test123
+REDIS_PASSWORD_ENCODED=$(printf "%s" $REDIS_PASSWORD | base64 | tr -d '\n')
+
+# GKE variables
+GKE_CLUSTER_NAME=$(cat /tmp/secrets/GKE_CLUSTER_NAME)
+GKE_CLUSTER_REGION=$(cat /tmp/secrets/GKE_CLUSTER_REGION)
+GKE_INSTANCE_DOMAIN_NAME=$(cat /tmp/secrets/GKE_INSTANCE_DOMAIN_NAME)
+GKE_SERVICE_ACCOUNT_NAME=$(cat /tmp/secrets/GKE_SERVICE_ACCOUNT_NAME)
+GKE_CERT_NAME=$(cat /tmp/secrets/GKE_CERT_NAME)
+GOOGLE_CLOUD_PROJECT=$(cat /tmp/secrets/GOOGLE_CLOUD_PROJECT)
+
+# EKS variables
+AWS_ACCESS_KEY_ID=$(cat /tmp/secrets/AWS_ACCESS_KEY_ID)
+AWS_SECRET_ACCESS_KEY=$(cat /tmp/secrets/AWS_SECRET_ACCESS_KEY)
+AWS_DEFAULT_REGION=$(cat /tmp/secrets/AWS_DEFAULT_REGION)
+AWS_EKS_PARENT_DOMAIN=$(cat /tmp/secrets/AWS_EKS_PARENT_DOMAIN)
+
+# authentication providers variables
+RHBK_BASE_URL=$(cat /tmp/secrets/AUTH_PROVIDERS_RHBK_BASE_URL)
+RHBK_CLIENT_SECRET=$(cat /tmp/secrets/AUTH_PROVIDERS_RHBK_CLIENT_SECRET)
+RHBK_CLIENT_ID=$(cat /tmp/secrets/AUTH_PROVIDERS_RHBK_CLIENT_ID)
+RHBK_REALM=$(cat /tmp/secrets/AUTH_PROVIDERS_RHBK_REALM)
+DEFAULT_USER_PASSWORD=$(cat /tmp/secrets/AUTH_PROVIDERS_DEFAULT_USER_PASSWORD)
+DEFAULT_USER_PASSWORD_2=$(cat /tmp/secrets/AUTH_PROVIDERS_DEFAULT_USER_PASSWORD_2)
+
+AUTH_PROVIDERS_ARM_CLIENT_ID=$(cat /tmp/secrets/AUTH_PROVIDERS_ARM_CLIENT_ID)
+AUTH_PROVIDERS_ARM_CLIENT_SECRET=$(cat /tmp/secrets/AUTH_PROVIDERS_ARM_CLIENT_SECRET)
+AUTH_PROVIDERS_ARM_SUBSCRIPTION_ID=$(cat /tmp/secrets/AUTH_PROVIDERS_ARM_SUBSCRIPTION_ID)
+AUTH_PROVIDERS_ARM_TENANT_ID=$(cat /tmp/secrets/AUTH_PROVIDERS_ARM_TENANT_ID)
+RHBK_LDAP_REALM=$(cat /tmp/secrets/RHBK_LDAP_REALM)
+RHBK_LDAP_CLIENT_ID=$(cat /tmp/secrets/RHBK_LDAP_CLIENT_ID)
+RHBK_LDAP_CLIENT_SECRET=$(cat /tmp/secrets/RHBK_LDAP_CLIENT_SECRET)
+RHBK_LDAP_USER_BIND=$(cat /tmp/secrets/RHBK_LDAP_USER_BIND)
+RHBK_LDAP_USER_PASSWORD=$(cat /tmp/secrets/RHBK_LDAP_USER_PASSWORD)
+RHBK_LDAP_TARGET=$(cat /tmp/secrets/RHBK_LDAP_TARGET)
+
+AUTH_PROVIDERS_AZURE_CLIENT_ID=$(cat /tmp/secrets/AUTH_PROVIDERS_AZURE_CLIENT_ID)
+AUTH_PROVIDERS_AZURE_CLIENT_SECRET=$(cat /tmp/secrets/AUTH_PROVIDERS_AZURE_CLIENT_SECRET)
+AUTH_PROVIDERS_AZURE_TENANT_ID=$(cat /tmp/secrets/AUTH_PROVIDERS_AZURE_TENANT_ID)
+
+AUTH_PROVIDERS_GH_ORG_NAME=$(cat /tmp/secrets/AUTH_PROVIDERS_GH_ORG_NAME)
+AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET=$(cat /tmp/secrets/AUTH_PROVIDERS_GH_ORG_CLIENT_SECRET)
+AUTH_PROVIDERS_GH_ORG_CLIENT_ID=$(cat /tmp/secrets/AUTH_PROVIDERS_GH_ORG_CLIENT_ID)
+AUTH_PROVIDERS_GH_USER_PASSWORD=$(cat /tmp/secrets/AUTH_PROVIDERS_GH_USER_PASSWORD)
+AUTH_PROVIDERS_GH_USER_2FA=$(cat /tmp/secrets/AUTH_PROVIDERS_GH_USER_2FA)
+AUTH_PROVIDERS_GH_ADMIN_2FA=$(cat /tmp/secrets/AUTH_PROVIDERS_GH_ADMIN_2FA)
+AUTH_PROVIDERS_GH_ORG_APP_ID=$(cat /tmp/secrets/AUTH_PROVIDERS_GH_ORG_APP_ID)
+AUTH_PROVIDERS_GH_ORG1_PRIVATE_KEY=$(cat /tmp/secrets/AUTH_PROVIDERS_GH_ORG1_PRIVATE_KEY)
+AUTH_PROVIDERS_GH_ORG_WEBHOOK_SECRET=$(cat /tmp/secrets/AUTH_PROVIDERS_GH_ORG_WEBHOOK_SECRET)
+
+KEYCLOAK_AUTH_BASE_URL=$(cat /tmp/secrets/KEYCLOAK_AUTH_BASE_URL)
+KEYCLOAK_AUTH_CLIENTID=$(cat /tmp/secrets/KEYCLOAK_AUTH_CLIENTID)
+KEYCLOAK_AUTH_CLIENT_SECRET=$(cat /tmp/secrets/KEYCLOAK_AUTH_CLIENT_SECRET)
+KEYCLOAK_AUTH_LOGIN_REALM=$(cat /tmp/secrets/KEYCLOAK_AUTH_LOGIN_REALM)
+KEYCLOAK_AUTH_REALM=$(cat /tmp/secrets/KEYCLOAK_AUTH_REALM)
+
+# Export plain text versions for ConfigMaps (no base64)
+export KEYCLOAK_AUTH_BASE_URL_PLAIN="${KEYCLOAK_AUTH_BASE_URL}"
+export KEYCLOAK_AUTH_CLIENTID_PLAIN="${KEYCLOAK_AUTH_CLIENTID}"
+export KEYCLOAK_AUTH_CLIENT_SECRET_PLAIN="${KEYCLOAK_AUTH_CLIENT_SECRET}"
+export KEYCLOAK_AUTH_LOGIN_REALM_PLAIN="${KEYCLOAK_AUTH_LOGIN_REALM}"
+export KEYCLOAK_AUTH_REALM_PLAIN="${KEYCLOAK_AUTH_REALM}"
+
+# Export GitHub plain text versions
+export GITHUB_URL_PLAIN
+export GITHUB_ORG_PLAIN
+
+REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON=$(cat /tmp/secrets/REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON 2>/dev/null || echo "")
+
+IS_OPENSHIFT=""
+CONTAINER_PLATFORM=""
+CONTAINER_PLATFORM_VERSION=""
+
+GITHUB_OAUTH_APP_ID=$(cat /tmp/secrets/GITHUB_OAUTH_APP_ID)
+GITHUB_OAUTH_APP_SECRET=$(cat /tmp/secrets/GITHUB_OAUTH_APP_SECRET)
+GITHUB_OAUTH_APP_ID_ENCODED=$(printf "%s" $GITHUB_OAUTH_APP_ID | base64 | tr -d '\n')
+GITHUB_OAUTH_APP_SECRET_ENCODED=$(printf "%s" $GITHUB_OAUTH_APP_SECRET | base64 | tr -d '\n')
+
+BACKEND_SECRET=$(printf temp | base64 | tr -d '\n')
+
+set +a # Stop automatically exporting variables

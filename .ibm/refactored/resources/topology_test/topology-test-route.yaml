@@ -1,0 +1,14 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: topology-test-route
+  labels:
+    app: topology-test
+    backstage.io/kubernetes-id: developer-hub
+spec:
+  to:
+    kind: Service
+    name: topology-test-service
+  port:
+    targetPort: 8080
+  wildcardPolicy: None

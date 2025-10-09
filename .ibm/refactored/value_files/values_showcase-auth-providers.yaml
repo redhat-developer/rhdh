@@ -1,0 +1,257 @@
+global:
+  dynamic:
+    includes:
+      - dynamic-plugins.default.yaml
+    plugins:
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-keycloak-dynamic
+        disabled: true
+      - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-org-dynamic
+        disabled: true
+      - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-msgraph-dynamic
+        disabled: true
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
+        disabled: true
+upstream:
+  backstage:
+    appConfig:
+      signInPage: oidc
+      auth:
+        environment: production
+        session:
+          secret: superSecretSecret
+        providers:
+          guest:
+            dangerouslyAllowOutsideDevelopment: true
+          microsoft:
+            development:
+              clientId: ${AUTH_PROVIDERS_AZURE_CLIENT_ID}
+              clientSecret: ${AUTH_PROVIDERS_AZURE_CLIENT_SECRET}
+              tenantId: ${AUTH_PROVIDERS_AZURE_TENANT_ID}
+              domainHint: ${AUTH_PROVIDERS_AZURE_TENANT_ID}
+            production:
+              clientId: ${AUTH_PROVIDERS_AZURE_CLIENT_ID}
+              clientSecret: ${AUTH_PROVIDERS_AZURE_CLIENT_SECRET}
+              tenantId: ${AUTH_PROVIDERS_AZURE_TENANT_ID}
+              domainHint: ${AUTH_PROVIDERS_AZURE_TENANT_ID}
+          github:
+            production:
+              clientSecret: ${AUTH_ORG_CLIENT_SECRET}
+              clientId: ${AUTH_ORG_CLIENT_ID}
+          oidc:
+            production:
+              metadataUrl: ${RHSSO76_METADATA_URL}
+              clientId: ${RHSSO76_CLIENT_ID}
+              clientSecret: ${RHSSO76_CLIENT_SECRET}
+              prompt: auto
+              callbackUrl: ${RHSSO76_CALLBACK_URL}
+              signIn:
+                resolvers:
+                  - resolver: oidcSubClaimMatchingKeycloakUserId
+      integrations:
+        github:
+          - host: github.com
+            apps:
+              - appId: ${AUTH_ORG_APP_ID}
+                clientId: ${AUTH_ORG_CLIENT_ID}
+                clientSecret: ${AUTH_ORG_CLIENT_SECRET}
+                privateKey: ${AUTH_ORG1_PRIVATE_KEY}
+                webhookSecret: ${AUTH_ORG_WEBHOOK_SECRET}
+      catalog:
+        import:
+          entityFilename: catalog-info.yaml
+          # pullRequestBranchName: rhdh-integration
+          pullRequestBranchName: backstage-integration
+        locations:
+          - type: url
+            target: https://github.com/janus-qe/auth-providers/blob/main/location.yaml
+          - type: url
+            target: https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/all.yaml
+          - type: url
+            target: https://github.com/redhat-developer/red-hat-developer-hub-software-templates/blob/main/templates.yaml
+        rules:
+          - allow: [API, Component, Group, User, Resource, Location, System, Template]
+        providers:
+          githubOrg:
+            - id: github
+              githubUrl: https://github.com
+              orgs: ["${AUTH_PROVIDERS_GH_ORG_NAME}"]
+              schedule:
+                initialDelay: { seconds: 0 }
+                frequency: { minutes: 1 }
+                timeout: { minutes: 1 }
+          microsoftGraphOrg:
+            default:
+              target: https://graph.microsoft.com/v1.0
+              authority: https://login.microsoftonline.com
+              tenantId: ${AUTH_PROVIDERS_AZURE_TENANT_ID}
+              clientId: ${AUTH_PROVIDERS_AZURE_CLIENT_ID}
+              clientSecret: ${AUTH_PROVIDERS_AZURE_CLIENT_SECRET}
+              user:
+                filter: accountEnabled eq true and userType eq 'member' and startswith(displayName,'QE')
+              group:
+                filter: >
+                  securityEnabled eq true
+                  and mailEnabled eq false
+                  and startswith(displayName,'rhdh_test_group_')
+              schedule:
+                frequency: PT1M
+                timeout: PT1M
+          keycloakOrg:
+            default:
+              baseUrl: ${RHSSO76_URL}
+              loginRealm: ${AUTH_PROVIDERS_REALM_NAME}
+              realm: ${AUTH_PROVIDERS_REALM_NAME}
+              clientId: ${RHSSO76_CLIENT_ID}
+              clientSecret: ${RHSSO76_CLIENT_SECRET}
+              schedule:
+                frequency: { minutes: 1 }
+                timeout: { minutes: 1 }
+      permission:
+        enabled: true
+        rbac:
+          policyFileReload: true
+          policies-csv-file: "./rbac/rbac-policy.csv"
+          admin:
+            users:
+              - name: user:default/qeadmin_rhdhtesting.onmicrosoft.com
+              - name: user:default/rhsso_admin
+              - name: user:default/rhdhqeauthadmin
+      backend:
+        auth:
+          externalAccess:
+            - type: static
+              options:
+                token: ${STATIC_API_TOKEN}
+                subject: e2e-tests-ci
+    extraEnvVarsSecrets:
+      - rhdh-secrets
+    image:
+      registry: quay.io
+      repository: rhdh/rhdh-hub-rhel9
+      tag: "next"
+    readinessProbe:
+      failureThreshold: 3
+      httpGet:
+        path: /healthcheck
+        port: 7007
+        scheme: HTTP
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      successThreshold: 2
+      timeoutSeconds: 2
+    livenessProbe:
+      failureThreshold: 3
+      httpGet:
+        path: /healthcheck
+        port: 7007
+        scheme: HTTP
+      initialDelaySeconds: 60
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 2
+    extraEnvVars:
+      - name: BACKEND_SECRET
+        valueFrom:
+          secretKeyRef:
+            key: backend-secret
+            name: '{{ include "janus-idp.backend-secret-name" $ }}'
+      - name: POSTGRESQL_ADMIN_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            key: postgres-password
+            name: "{{ .Release.Name }}-postgresql"
+      # disable telemetry in CI
+      - name: SEGMENT_TEST_MODE
+        value: "true"
+      - name: NODE_OPTIONS
+        value: "--no-node-snapshot"
+    args:
+      # This additional `app-config`` file is generated by the initContainer below, and contains the merged configuration of installed dynamic plugins.
+      - "--config"
+      - dynamic-plugins-root/app-config.dynamic-plugins.yaml
+    extraVolumeMounts:
+      - mountPath: /opt/app-root/src/dynamic-plugins-root
+        name: dynamic-plugins-root
+      - name: rbac-policy
+        mountPath: /opt/app-root/src/rbac
+    extraVolumes:
+      - ephemeral:
+          volumeClaimTemplate:
+            spec:
+              accessModes:
+                - ReadWriteOnce
+              resources:
+                requests:
+                  storage: 2Gi
+        name: dynamic-plugins-root
+      - name: rbac-policy
+        configMap:
+          defaultMode: 420
+          name: rbac-policy
+      - configMap:
+          defaultMode: 420
+          name: dynamic-plugins
+          optional: true
+        name: dynamic-plugins
+      - name: dynamic-plugins-npmrc
+        secret:
+          defaultMode: 420
+          optional: true
+          secretName: dynamic-plugins-npmrc
+    initContainers:
+      - command:
+          - ./install-dynamic-plugins.sh
+          - /dynamic-plugins-root
+        env:
+          - name: NPM_CONFIG_USERCONFIG
+            value: /opt/app-root/src/.npmrc.dynamic-plugins
+        image: '{{ include "backstage.image" . }}'
+        imagePullPolicy: Always
+        name: install-dynamic-plugins
+        volumeMounts:
+          - mountPath: /dynamic-plugins-root
+            name: dynamic-plugins-root
+          - mountPath: /opt/app-root/src/dynamic-plugins.yaml
+            name: dynamic-plugins
+            readOnly: true
+            subPath: dynamic-plugins.yaml
+          - mountPath: /opt/app-root/src/.npmrc.dynamic-plugins
+            name: dynamic-plugins-npmrc
+            readOnly: true
+            subPath: .npmrc
+        workingDir: /opt/app-root/src
+    installDir: /opt/app-root/src
+    podAnnotations:
+      checksum/dynamic-plugins: >-
+        {{- include "common.tplvalues.render" ( dict "value"
+        .Values.global.dynamic "context" $) | sha256sum }}
+  postgresql:
+    enabled: true
+    postgresqlDataDir: /var/lib/pgsql/data/userdata
+    image:
+      registry: quay.io
+      repository: fedora/postgresql-15
+      tag: latest
+    auth:
+      secretKeys:
+        adminPasswordKey: postgres-password
+        userPasswordKey: password
+    primary:
+      securityContext:
+        enabled: false
+      podSecurityContext:
+        enabled: false
+      containerSecurityContext:
+        enabled: false
+      persistence:
+        enabled: false
+        size: 1Gi
+        mountPath: /var/lib/pgsql/data
+      extraEnvVars:
+        - name: POSTGRESQL_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: postgres-password
+              name: "{{ .Release.Name }}-postgresql"
+  ingress:
+    host: "{{ .Values.global.host }}"

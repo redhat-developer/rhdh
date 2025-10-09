@@ -1,0 +1,25 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: hello-world-pipeline
+  labels:
+    # this should match https://github.com/janus-qe/nationalparks-py/blob/master/catalog-info.yaml#L10
+    backstage.io/kubernetes-id: developer-hub
+spec:
+  tasks:
+    - name: echo-hello-world
+      taskSpec:
+        steps:
+          - name: echo-hello-world
+            image: ubuntu
+            script: |
+              #!/usr/bin/env bash
+              echo "Hello, World!"
+    - name: echo-bye
+      taskSpec:
+        steps:
+          - name: echo-goodbye
+            image: ubuntu
+            script: |
+              #!/usr/bin/env bash
+              echo "Good Bye!"
