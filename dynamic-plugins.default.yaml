@@ -635,6 +635,9 @@ plugins:
       dynamicPlugins:
         frontend:
           red-hat-developer-hub.backstage-plugin-global-floating-action-button:
+            translationResources:
+              - importName: globalFloatingActionButtonTranslations
+                ref: globalFloatingActionButtonTranslationRef
             mountPoints:
               - mountPoint: application/listener
                 importName: DynamicGlobalFloatingActionButton
@@ -716,6 +719,10 @@ plugins:
       dynamicPlugins:
         frontend:
           red-hat-developer-hub.backstage-plugin-quickstart:
+            translationResources:
+              - importName: quickstartTranslations
+                module: Alpha
+                ref: quickstartTranslationRef
             mountPoints:
               - mountPoint: application/provider
                 importName: QuickstartDrawerProvider
@@ -892,6 +899,10 @@ plugins:
       dynamicPlugins:
         frontend:
           backstage-community.plugin-rbac:
+            translationResources:
+              - importName: rbacTranslations
+                ref: rbacTranslationRef
+                module: Alpha
             appIcons:
               - name: rbacIcon
                 importName: RbacIcon
