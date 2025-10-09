@@ -151,7 +151,7 @@ rm /tmp/rhdh-schemas/package-temp.json /tmp/rhdh-schemas/plugin-temp.json
 
 Follow the RHDH-local testing instructions in the README:
 1. Clone `rhdh-local` repository
-2. Mount your local catalog in `docker-compose.yaml`
+2. Mount your local catalog in `compose.yaml`
 3. Set `catalog.processingInterval: { seconds: 15 }` in `app-config.yaml`
 4. Start with `docker compose up -d`
 5. Check http://localhost:7007 → Catalog → Extensions
