@@ -7,6 +7,21 @@
   "publishConfig": {
     "access": "public"
   },
+  "exports": {
+    ".": "./src/index.ts",
+    "./alpha": "./src/alpha.ts",
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "alpha": [
+        "src/alpha.ts"
+      ],
+      "package.json": [
+        "package.json"
+      ]
+    }
+  },
   "backstage": {
     "role": "frontend-plugin",
     "supported-versions": "1.42.5",
