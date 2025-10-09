@@ -156,7 +156,7 @@ main() {
   echo "Main script completed with result: ${OVERALL_RESULT}"
 
   sleep 120*60
-  
+
   exit "${OVERALL_RESULT}"
 }
 
