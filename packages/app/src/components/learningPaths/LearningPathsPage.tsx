@@ -9,6 +9,7 @@ import { makeStyles } from 'tss-react/mui';
 
 import { ErrorReport } from '../../common';
 import { useLearningPathData } from '../../hooks/useLearningPathData';
+import { useTranslation } from '../../hooks/useTranslation';
 import { LearningPathLink } from '../../types/types';
 
 const useStyles = makeStyles()({
@@ -37,6 +38,7 @@ const learningPathLengthInfo = (path: LearningPathLink) => {
 
 const LearningPathCards = () => {
   const { classes } = useStyles();
+  const { t } = useTranslation();
 
   const { data, error, isLoading } = useLearningPathData();
 
@@ -46,13 +48,19 @@ const LearningPathCards = () => {
 
   if (!data) {
     return (
-      <ErrorReport title="Could not fetch data." errorText="Unknown error" />
+      <ErrorReport
+        title={t('app.learningPaths.error.title')}
+        errorText={t('app.learningPaths.error.unknownError')}
+      />
     );
   }
 
   if (!isLoading && !data && error) {
     return (
-      <ErrorReport title="Could not fetch data." errorText={error.toString()} />
+      <ErrorReport
+        title={t('app.learningPaths.error.title')}
+        errorText={error.toString()}
+      />
     );
   }
 
@@ -76,10 +84,12 @@ const LearningPathCards = () => {
 };
 
 export const LearningPaths = () => {
+  const { t } = useTranslation();
+
   return (
     <SearchContextProvider>
       <Page themeId="learningpaths">
-        <Header title="Learning Paths" />
+        <Header title={t('app.learningPaths.title')} />
         <Content>
           <Grid container justifyContent="center">
             <Grid item>

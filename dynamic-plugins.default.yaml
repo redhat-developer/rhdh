@@ -271,6 +271,10 @@ plugins:
       dynamicPlugins:
         frontend:
           backstage-community.plugin-redhat-argocd:
+            translationResources:
+              - importName: argocdTranslations
+                module: Alpha
+                ref: argocdTranslationRef
             mountPoints:
               - mountPoint: entity.page.overview/cards
                 importName: ArgocdDeploymentSummary
@@ -514,6 +518,9 @@ plugins:
               default.create:
                 title: ''
           red-hat-developer-hub.backstage-plugin-global-header:
+            translationResources:
+              - importName: globalHeaderTranslations
+                ref: globalHeaderTranslationRef
             mountPoints:
               - mountPoint: application/header
                 importName: GlobalHeader
@@ -541,6 +548,7 @@ plugins:
                   priority: 90
                   props:
                     title: Self-service
+                    titleKey: create.title
                     icon: add
                     to: create
               - mountPoint: global.header/component
@@ -560,6 +568,7 @@ plugins:
                   priority: 150
                   props:
                     title: Developer Hub
+                    titleKey: applicationLauncher.developerHub
                     icon: developerHub
                     link: https://docs.redhat.com/en/documentation/red_hat_developer_hub
 
@@ -570,6 +579,7 @@ plugins:
                   priority: 100
                   props:
                     title: RHDH Local
+                    titleKey: applicationLauncher.rhdhLocal
                     icon: developerHub
                     link: https://github.com/redhat-developer/rhdh-local
 
@@ -601,6 +611,7 @@ plugins:
                   priority: 100
                   props:
                     title: Settings
+                    titleKey: profile.settings
                     link: /settings
                     icon: manageAccounts
               - mountPoint: global.header/profile
@@ -609,6 +620,8 @@ plugins:
                   priority: 90
                   props:
                     title: My profile
+                    titleKey: profile.myProfile
+                    type: myProfile
                     icon: account
               - mountPoint: global.header/profile
                 importName: LogoutButton
@@ -633,32 +646,80 @@ plugins:
       app:
         quickstart:
           - title: Set up authentication
+            titleKey: steps.setupAuthentication.title
             icon: Admin
             description: Set up secure login credentials to protect your account from unauthorized access.
+            descriptionKey: steps.setupAuthentication.description
             cta:
               text: Learn more
+              textKey: steps.setupAuthentication.ctaTitle
               link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/authentication_in_red_hat_developer_hub/
           - title: Configure RBAC
+            titleKey: steps.configureRbac.title
             icon: Rbac
             description: Assign roles and permissions to control who can view, create, or edit resources, ensuring secure and efficient collaboration.
+            descriptionKey: steps.configureRbac.description
             cta:
               text: Manage access
+              textKey: steps.configureRbac.ctaTitle
               link: /rbac
           - title: Configure Git
+            titleKey: steps.configureGit.title
             icon: Git
             description: Connect your Git providers, such as GitHub to manage code, automate workflows, and integrate with platform features.
+            descriptionKey: steps.configureGit.description
             cta:
               text: Learn more
+              textKey: steps.configureGit.ctaTitle
               link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/integrating_red_hat_developer_hub_with_github/
           - title: Manage plugins
+            titleKey: steps.managePlugins.title
             icon: Plugins
             description: Browse and install extensions to add features, connect with external tools, and customize your experience.
+            descriptionKey: steps.managePlugins.description
             cta:
               text: Explore plugins
+              textKey: steps.managePlugins.ctaTitle
               link: /extensions
+          - title: Import application
+            roles:
+              - developer
+            icon: Import
+            description: Import your existing code and services into the catalog to organize and access them through your developer portal.
+            cta:
+              text: Import
+              link: /bulk-import
+          - title: Learn about the Catalog
+            roles:
+              - developer
+            icon: Catalog
+            description: Discover all software components, services, and APIs, and view their owners and documentation.
+            cta:
+              text: View Catalog
+              link: /catalog
+          - title: Explore Self-service templates
+            roles:
+              - developer
+            icon: SelfService
+            description: Use our self-service templates to quickly set up new projects, services, or documentation.
+            cta:
+              text: Explore templates
+              link: /create
+          - title: Find all Learning Paths
+            roles:
+              - developer
+            icon: Learning
+            description: Integrate tailored e-learning into your workflows with Learning Paths to accelerate onboarding, close skill gaps, and promote best practices.
+            cta:
+              text: View Learning Paths
+              link: /docs
       dynamicPlugins:
         frontend:
           red-hat-developer-hub.backstage-plugin-quickstart:
+            translationResources:
+              - importName: quickstartTranslations
+                module: Alpha
+                ref: quickstartTranslationRef
             mountPoints:
               - mountPoint: application/provider
                 importName: QuickstartDrawerProvider
@@ -684,22 +745,22 @@ plugins:
                 importName: OnboardingSection
                 config:
                   layouts:
-                    xl: { w: 12, h: 5 }
-                    lg: { w: 12, h: 5 }
-                    md: { w: 12, h: 5 }
-                    sm: { w: 12, h: 5 }
-                    xs: { w: 12, h: 7 }
-                    xxs: { w: 12, h: 13 }
+                    xl: { w: 12, h: 6 }
+                    lg: { w: 12, h: 6 }
+                    md: { w: 12, h: 7 }
+                    sm: { w: 12, h: 8 }
+                    xs: { w: 12, h: 9 }
+                    xxs: { w: 12, h: 14 }
               - mountPoint: home.page/cards
                 importName: EntitySection
                 config:
                   layouts:
-                    xl: { w: 12, h: 6 }
-                    lg: { w: 12, h: 6 }
-                    md: { w: 12, h: 6 }
-                    sm: { w: 12, h: 6 }
-                    xs: { w: 12, h: 10 }
-                    xxs: { w: 12, h: 14.5 }
+                    xl: { w: 12, h: 7 }
+                    lg: { w: 12, h: 7 }
+                    md: { w: 12, h: 8 }
+                    sm: { w: 12, h: 9 }
+                    xs: { w: 12, h: 11 }
+                    xxs: { w: 12, h: 15 }
               - mountPoint: home.page/cards
                 importName: TemplateSection
                 config:
@@ -710,6 +771,9 @@ plugins:
                     sm: { w: 12, h: 5 }
                     xs: { w: 12, h: 7.5 }
                     xxs: { w: 12, h: 13.5 }
+            translationResources:
+              - importName: homepageTranslations
+                ref: homepageTranslationRef
 
   # Group: Techdocs
   - package: ./dynamic-plugins/dist/backstage-plugin-techdocs-backend-dynamic
@@ -1204,6 +1268,10 @@ plugins:
       dynamicPlugins:
         frontend:
           red-hat-developer-hub.backstage-plugin-marketplace:
+            translationResources:
+              - importName: marketplaceTranslations
+                module: Alpha
+                ref: marketplaceTranslationRef
             appIcons:
               - name: marketplace
                 importName: MarketplaceIcon
@@ -1279,6 +1347,9 @@ plugins:
       dynamicPlugins:
         frontend:
           red-hat-developer-hub.backstage-plugin-adoption-insights:
+            translationResources:
+              - importName: adoptionInsightsTranslations
+                ref: adoptionInsightsTranslationRef
             appIcons:
               - name: adoptionInsightsIcon
                 importName: AdoptionInsightsIcon

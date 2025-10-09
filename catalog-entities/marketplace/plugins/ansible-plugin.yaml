@@ -28,7 +28,9 @@ metadata:
 
 spec:
   author: Red Hat
-  support: tech-preview  # production, tech-preview, dev-preveiw
+  support:
+    provider: Red Hat
+    level: generally-available
   lifecycle: active
   publisher: Red Hat
 

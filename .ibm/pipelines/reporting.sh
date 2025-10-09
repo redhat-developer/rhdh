@@ -81,30 +81,30 @@ get_artifacts_url() {
   local artifacts_base_url="https://gcsweb-ci.apps.ci.l2s4.p1.openshiftapps.com/gcs/test-platform-results"
   local artifacts_complete_url
   if [ -n "${PULL_NUMBER:-}" ]; then
-    local part_1="${JOB_NAME##pull-ci-redhat-developer-rhdh-main-}"               # e.g. "e2e-tests-operator-nightly"
-    local suite_name="${JOB_NAME##pull-ci-redhat-developer-rhdh-main-e2e-tests-}" # e.g. "operator-nightly"
-    local part_2="redhat-developer-rhdh-${suite_name}"                            # e.g. "redhat-developer-rhdh-operator-nightly"
+    local part_1="${JOB_NAME##pull-ci-redhat-developer-rhdh-main-}"         # e.g. "e2e-ocp-operator-nightly"
+    local suite_name="${JOB_NAME##pull-ci-redhat-developer-rhdh-main-e2e-}" # e.g. "ocp-operator-nightly"
+    local part_2="redhat-developer-rhdh-${suite_name}"                      # e.g. "redhat-developer-rhdh-ocp-operator-nightly"
     # Override part_2 based for specific cases that do not follow the standard naming convention.
     case "$JOB_NAME" in
       *osd-gcp*)
-        part_2="redhat-developer-rhdh-osd-gcp-nightly"
+        part_2="redhat-developer-rhdh-osd-gcp-helm-nightly"
         ;;
-      *ocp-v*)
-        part_2="redhat-developer-rhdh-nightly"
+      *ocp-v*helm*-nightly*)
+        part_2="redhat-developer-rhdh-ocp-helm-nightly"
         ;;
     esac
     artifacts_complete_url="${artifacts_base_url}/pr-logs/pull/${REPO_OWNER}_${REPO_NAME}/${PULL_NUMBER}/${JOB_NAME}/${BUILD_ID}/artifacts/${part_1}/${part_2}/artifacts/${namespace}"
   else
-    local part_1="${JOB_NAME##periodic-ci-redhat-developer-rhdh-"${RELEASE_BRANCH_NAME}"-}"               # e.g. "e2e-tests-aks-helm-nightly"
-    local suite_name="${JOB_NAME##periodic-ci-redhat-developer-rhdh-"${RELEASE_BRANCH_NAME}"-e2e-tests-}" # e.g. "aks-helm-nightly"
-    local part_2="redhat-developer-rhdh-${suite_name}"                                                    # e.g. "redhat-developer-rhdh-aks-helm-nightly"
+    local part_1="${JOB_NAME##periodic-ci-redhat-developer-rhdh-"${RELEASE_BRANCH_NAME}"-}"         # e.g. "e2e-aks-helm-nightly"
+    local suite_name="${JOB_NAME##periodic-ci-redhat-developer-rhdh-"${RELEASE_BRANCH_NAME}"-e2e-}" # e.g. "aks-helm-nightly"
+    local part_2="redhat-developer-rhdh-${suite_name}"                                              # e.g. "redhat-developer-rhdh-aks-helm-nightly"
     # Override part_2 based for specific cases that do not follow the standard naming convention.
     case "$JOB_NAME" in
       *osd-gcp*)
-        part_2="redhat-developer-rhdh-osd-gcp-nightly"
+        part_2="redhat-developer-rhdh-osd-gcp-helm-nightly"
         ;;
-      *ocp-v*)
-        part_2="redhat-developer-rhdh-nightly"
+      *ocp-v*helm*-nightly*)
+        part_2="redhat-developer-rhdh-ocp-helm-nightly"
         ;;
     esac
     artifacts_complete_url="${artifacts_base_url}/logs/${JOB_NAME}/${BUILD_ID}/artifacts/${part_1}/${part_2}/artifacts/${namespace}"

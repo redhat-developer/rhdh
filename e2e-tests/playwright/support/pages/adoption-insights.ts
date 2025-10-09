@@ -109,6 +109,7 @@ export class TestHelper {
       // Visit a catalog entity
       await uiHelper.clickLink("Catalog");
       await uiHelper.clickLink("Red Hat Developer Hub");
+      await page.waitForTimeout(5000); // wait for the flush interval to be sure
       await expect(page.getByText("Red Hat Developer Hub")).toBeVisible();
     }
 

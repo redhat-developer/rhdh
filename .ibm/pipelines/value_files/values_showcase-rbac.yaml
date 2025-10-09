@@ -108,6 +108,39 @@ global:
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-analytics-provider-segment
         disabled: true
+      #Enable Scorecard plugin.
+      - disabled: false
+        package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard:pr_1499__0.1.0!red-hat-developer-hub-backstage-plugin-scorecard
+        pluginConfig:
+          dynamicPlugins:
+            frontend:
+              red-hat-developer-hub.backstage-plugin-scorecard:
+                entityTabs:
+                  - path: "/scorecard"
+                    title: Scorecard
+                    mountPoint: entity.page.scorecard
+                mountPoints:
+                  - mountPoint: entity.page.scorecard/cards
+                    importName: EntityScorecardContent
+                    config:
+                      layout:
+                        gridColumn: 1 / -1
+      - disabled: false
+        package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard-backend:pr_1499__0.1.0!red-hat-developer-hub-backstage-plugin-scorecard-backend
+      - disabled: false
+        package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard-backend-module-github:pr_1499__0.1.0!red-hat-developer-hub-backstage-plugin-scorecard-backend-module-github
+        pluginConfig:
+          integrations:
+            github:
+              - host: github.com
+                token: "{gh-token}"
+      - disabled: false
+        package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard-backend-module-jira:pr_1499__0.1.0!red-hat-developer-hub-backstage-plugin-scorecard-backend-module-jira
+        pluginConfig:
+          jira:
+            baseUrl: "{jira-base-url}"
+            token: "{jira-api-token}"
+            product: datacenter
 
 # -- Upstream Backstage [chart configuration](https://github.com/backstage/charts/blob/main/charts/backstage/values.yaml)
 # @default -- Use Openshift compatible settings

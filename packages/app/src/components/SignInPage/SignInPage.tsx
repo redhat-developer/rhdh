@@ -19,151 +19,161 @@ import {
 } from '@backstage/core-plugin-api';
 
 import { auth0AuthApiRef, oidcAuthApiRef, samlAuthApiRef } from '../../api';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const DEFAULT_PROVIDER = 'github';
 
 /**
+ * Creates provider configurations with translated strings
+ *
+ * t - Translation function.
+ * Map of provider configurations.
+ *
  * Key:
  * string - Provider name.
  *
  * Value:
  * SignInProviderConfig - Local sign-in provider configuration.
  * string - Proxy sign-in provider configuration.
- */
-const PROVIDERS = new Map<string, SignInProviderConfig | string>([
-  [
-    'auth0',
-    {
-      id: 'auth0-auth-provider',
-      title: 'Auth0',
-      message: 'Sign in using Auth0',
-      apiRef: auth0AuthApiRef,
-    },
-  ],
-  [
-    'atlassian',
-    {
-      id: 'atlassian-auth-provider',
-      title: 'Atlassian',
-      message: 'Sign in using Atlassian',
-      apiRef: atlassianAuthApiRef,
-    },
-  ],
-  [
-    'microsoft',
-    {
-      id: 'microsoft-auth-provider',
-      title: 'Microsoft',
-      message: 'Sign in using Microsoft',
-      apiRef: microsoftAuthApiRef,
-    },
-  ],
-  ['azure-easyauth', 'azure-easyauth'],
-  [
-    'bitbucket',
-    {
-      id: 'bitbucket-auth-provider',
-      title: 'Bitbucket',
-      message: 'Sign in using Bitbucket',
-      apiRef: bitbucketAuthApiRef,
-    },
-  ],
-  [
-    'bitbucketServer',
-    {
-      id: 'bitbucket-server-auth-provider',
-      title: 'Bitbucket Server',
-      message: 'Sign in using Bitbucket Server',
-      apiRef: bitbucketServerAuthApiRef,
-    },
-  ],
-  ['cfaccess', 'cfaccess'],
-  [
-    'github',
-    {
-      id: 'github-auth-provider',
-      title: 'GitHub',
-      message: 'Sign in using GitHub',
-      apiRef: githubAuthApiRef,
-    },
-  ],
-  [
-    'gitlab',
-    {
-      id: 'gitlab-auth-provider',
-      title: 'GitLab',
-      message: 'Sign in using GitLab',
-      apiRef: gitlabAuthApiRef,
-    },
-  ],
-  [
-    'google',
-    {
-      id: 'google-auth-provider',
-      title: 'Google',
-      message: 'Sign in using Google',
-      apiRef: googleAuthApiRef,
-    },
-  ],
-  ['gcp-iap', 'gcp-iap'],
-  [
-    'oidc',
-    {
-      id: 'oidc-auth-provider',
-      title: 'OIDC',
-      message: 'Sign in using OIDC',
-      apiRef: oidcAuthApiRef,
-    },
-  ],
-  [
-    'okta',
-    {
-      id: 'okta-auth-provider',
-      title: 'Okta',
-      message: 'Sign in using Okta',
-      apiRef: oktaAuthApiRef,
-    },
-  ],
-  ['oauth2Proxy', 'oauth2Proxy'],
-  [
-    'onelogin',
-    {
-      id: 'onelogin-auth-provider',
-      title: 'OneLogin',
-      message: 'Sign in using OneLogin',
-      apiRef: oneloginAuthApiRef,
-    },
-  ],
-  [
-    'saml',
-    {
-      id: 'saml-auth-provider',
-      title: 'SAML',
-      message: 'Sign in using SAML',
-      apiRef: samlAuthApiRef,
-    },
-  ],
-]);
+ *  */
+const createProviders = (t: (key: string, params?: any) => string) =>
+  new Map<string, SignInProviderConfig | string>([
+    [
+      'auth0',
+      {
+        id: 'auth0-auth-provider',
+        title: t('signIn.providers.auth0.title'),
+        message: t('signIn.providers.auth0.message'),
+        apiRef: auth0AuthApiRef,
+      },
+    ],
+    [
+      'atlassian',
+      {
+        id: 'atlassian-auth-provider',
+        title: t('signIn.providers.atlassian.title'),
+        message: t('signIn.providers.atlassian.message'),
+        apiRef: atlassianAuthApiRef,
+      },
+    ],
+    [
+      'microsoft',
+      {
+        id: 'microsoft-auth-provider',
+        title: t('signIn.providers.microsoft.title'),
+        message: t('signIn.providers.microsoft.message'),
+        apiRef: microsoftAuthApiRef,
+      },
+    ],
+    ['azure-easyauth', 'azure-easyauth'],
+    [
+      'bitbucket',
+      {
+        id: 'bitbucket-auth-provider',
+        title: t('signIn.providers.bitbucket.title'),
+        message: t('signIn.providers.bitbucket.message'),
+        apiRef: bitbucketAuthApiRef,
+      },
+    ],
+    [
+      'bitbucketServer',
+      {
+        id: 'bitbucket-server-auth-provider',
+        title: t('signIn.providers.bitbucketServer.title'),
+        message: t('signIn.providers.bitbucketServer.message'),
+        apiRef: bitbucketServerAuthApiRef,
+      },
+    ],
+    ['cfaccess', 'cfaccess'],
+    [
+      'github',
+      {
+        id: 'github-auth-provider',
+        title: t('signIn.providers.github.title'),
+        message: t('signIn.providers.github.message'),
+        apiRef: githubAuthApiRef,
+      },
+    ],
+    [
+      'gitlab',
+      {
+        id: 'gitlab-auth-provider',
+        title: t('signIn.providers.gitlab.title'),
+        message: t('signIn.providers.gitlab.message'),
+        apiRef: gitlabAuthApiRef,
+      },
+    ],
+    [
+      'google',
+      {
+        id: 'google-auth-provider',
+        title: t('signIn.providers.google.title'),
+        message: t('signIn.providers.google.message'),
+        apiRef: googleAuthApiRef,
+      },
+    ],
+    ['gcp-iap', 'gcp-iap'],
+    [
+      'oidc',
+      {
+        id: 'oidc-auth-provider',
+        title: t('signIn.providers.oidc.title'),
+        message: t('signIn.providers.oidc.message'),
+        apiRef: oidcAuthApiRef,
+      },
+    ],
+    [
+      'okta',
+      {
+        id: 'okta-auth-provider',
+        title: t('signIn.providers.okta.title'),
+        message: t('signIn.providers.okta.message'),
+        apiRef: oktaAuthApiRef,
+      },
+    ],
+    ['oauth2Proxy', 'oauth2Proxy'],
+    [
+      'onelogin',
+      {
+        id: 'onelogin-auth-provider',
+        title: t('signIn.providers.onelogin.title'),
+        message: t('signIn.providers.onelogin.message'),
+        apiRef: oneloginAuthApiRef,
+      },
+    ],
+    [
+      'saml',
+      {
+        id: 'saml-auth-provider',
+        title: t('signIn.providers.saml.title'),
+        message: t('signIn.providers.saml.message'),
+        apiRef: samlAuthApiRef,
+      },
+    ],
+  ]);
 
 export function SignInPage(props: SignInPageProps): React.JSX.Element {
   const configApi = useApi(configApiRef);
+  const { t } = useTranslation();
   const isDevEnv = configApi.getString('auth.environment') === 'development';
   const provider =
     configApi.getOptionalString('signInPage') ?? DEFAULT_PROVIDER;
+
+  const providers = createProviders(t);
   const providerConfig =
-    PROVIDERS.get(provider) ?? PROVIDERS.get(DEFAULT_PROVIDER)!;
+    providers.get(provider) ?? providers.get(DEFAULT_PROVIDER)!;
 
   if (typeof providerConfig === 'object') {
-    const providers = isDevEnv
+    const providerList = isDevEnv
       ? (['guest', providerConfig] satisfies ['guest', SignInProviderConfig])
       : [providerConfig];
 
     return (
       <CCSignInPage
         {...props}
-        title="Select a sign-in method"
+        title={t('signIn.page.title')}
         align="center"
-        providers={providers}
+        providers={providerList}
       />
     );
   }
