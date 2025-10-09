@@ -716,6 +716,10 @@ plugins:
       dynamicPlugins:
         frontend:
           red-hat-developer-hub.backstage-plugin-quickstart:
+            translationResources:
+              - importName: quickstartTranslations
+                module: Alpha
+                ref: quickstartTranslationRef
             mountPoints:
               - mountPoint: application/provider
                 importName: QuickstartDrawerProvider
