@@ -1,5 +1,5 @@
 import { Entity } from '@backstage/catalog-model';
-import { TranslationRef } from '@backstage/core-plugin-api';
+import { TranslationRef } from '@backstage/core-plugin-api/alpha';
 
 export type RouteBinding = {
   bindTarget: string;
