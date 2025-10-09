@@ -3687,28 +3687,28 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-redhat-argocd-common@npm:^1.6.1":
-  version: 1.6.1
-  resolution: "@backstage-community/plugin-redhat-argocd-common@npm:1.6.1"
+"@backstage-community/plugin-redhat-argocd-common@npm:^1.8.0":
+  version: 1.8.0
+  resolution: "@backstage-community/plugin-redhat-argocd-common@npm:1.8.0"
   dependencies:
-    "@backstage/plugin-permission-common": ^0.9.0
+    "@backstage/plugin-permission-common": ^0.9.1
     "@kubernetes/client-node": ^0.22.1
-  checksum: 012c05739adcc205f039735953ca7893c9a16ba6aa9767a12d86ecf9afa6a872ceb1d4fc19cae2b167ee66d214f9144ad58518702b2455087d5c43517c1936cc
+  checksum: a9cad9646a179f59f667e89d7ea28b73d5c0ebd2b4557a95414b09751e960dca87ea17865de52322c8d0b6ed9131135524f512dfb8be565ee18579ba2f38b392
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-redhat-argocd@npm:1.21.2":
-  version: 1.21.2
-  resolution: "@backstage-community/plugin-redhat-argocd@npm:1.21.2"
+"@backstage-community/plugin-redhat-argocd@npm:1.25.1":
+  version: 1.25.1
+  resolution: "@backstage-community/plugin-redhat-argocd@npm:1.25.1"
   dependencies:
-    "@backstage-community/plugin-redhat-argocd-common": ^1.6.1
-    "@backstage/catalog-model": ^1.7.4
-    "@backstage/core-components": ^0.17.2
-    "@backstage/core-plugin-api": ^1.10.7
-    "@backstage/plugin-catalog-react": ^1.18.0
-    "@backstage/plugin-kubernetes-react": ^0.5.7
-    "@backstage/plugin-permission-react": ^0.4.34
-    "@backstage/theme": ^0.6.6
+    "@backstage-community/plugin-redhat-argocd-common": ^1.8.0
+    "@backstage/catalog-model": ^1.7.5
+    "@backstage/core-components": ^0.17.5
+    "@backstage/core-plugin-api": ^1.10.9
+    "@backstage/plugin-catalog-react": ^1.20.1
+    "@backstage/plugin-kubernetes-react": ^0.5.10
+    "@backstage/plugin-permission-react": ^0.4.36
+    "@backstage/theme": ^0.6.7
     "@janus-idp/shared-react": ^2.16.0
     "@kubernetes/client-node": ^0.22.1
     "@material-ui/core": ^4.9.13
@@ -3726,7 +3726,7 @@ __metadata:
   peerDependencies:
     react: ^17.0.0 || ^18.0.0
     react-router-dom: ^6.3.0
-  checksum: f7aa957ac813d8f6782e46784a34e3d94039c2e7b2bc6c9b94869a034aeaddfb5943f0e0f7f5742111cea21815365697ce250232d49e02e93daf207ad9a615c8
+  checksum: f74802f2b10d5d5d6e05052fa1315e4dfa2f1048e5ba895f84f5e536125c7345934ee20b27567073b5b2e5ed5b9090dbd7645c9ff62581253aea797fa4c731c5
   languageName: node
   linkType: hard
 
@@ -6764,7 +6764,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-home-react@npm:^0.1.15, @backstage/plugin-home-react@npm:^0.1.20, @backstage/plugin-home-react@npm:^0.1.26, @backstage/plugin-home-react@npm:^0.1.27":
+"@backstage/plugin-home-react@npm:^0.1.15, @backstage/plugin-home-react@npm:^0.1.20":
   version: 0.1.27
   resolution: "@backstage/plugin-home-react@npm:0.1.27"
   dependencies:
@@ -6786,7 +6786,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-home-react@npm:^0.1.30":
+"@backstage/plugin-home-react@npm:^0.1.29, @backstage/plugin-home-react@npm:^0.1.30":
   version: 0.1.30
   resolution: "@backstage/plugin-home-react@npm:0.1.30"
   dependencies:
@@ -6845,46 +6845,6 @@ __metadata:
     "@types/react":
       optional: true
   checksum: f8c0f0777a98e0c9c9f237573af8bdab4184f47757024d2e8a08535a6fe6c82cbd2d73346f77af58d8c765dce7b74d85f0baf1d4ea662fc57b5f5cd5404098fc
-  languageName: node
-  linkType: hard
-
-"@backstage/plugin-home@npm:^0.8.8":
-  version: 0.8.9
-  resolution: "@backstage/plugin-home@npm:0.8.9"
-  dependencies:
-    "@backstage/catalog-client": ^1.10.1
-    "@backstage/catalog-model": ^1.7.4
-    "@backstage/config": ^1.3.2
-    "@backstage/core-app-api": ^1.17.1
-    "@backstage/core-compat-api": ^0.4.3
-    "@backstage/core-components": ^0.17.3
-    "@backstage/core-plugin-api": ^1.10.8
-    "@backstage/frontend-plugin-api": ^0.10.3
-    "@backstage/plugin-catalog-react": ^1.19.0
-    "@backstage/plugin-home-react": ^0.1.27
-    "@backstage/theme": ^0.6.6
-    "@material-ui/core": ^4.12.2
-    "@material-ui/icons": ^4.9.1
-    "@material-ui/lab": 4.0.0-alpha.61
-    "@rjsf/core": 5.23.2
-    "@rjsf/material-ui": 5.23.2
-    "@rjsf/utils": 5.23.2
-    "@rjsf/validator-ajv8": 5.23.2
-    lodash: ^4.17.21
-    luxon: ^3.4.3
-    react-grid-layout: 1.3.4
-    react-resizable: ^3.0.4
-    react-use: ^17.2.4
-    zod: ^3.22.4
-  peerDependencies:
-    "@types/react": ^17.0.0 || ^18.0.0
-    react: ^17.0.0 || ^18.0.0
-    react-dom: ^17.0.0 || ^18.0.0
-    react-router-dom: ^6.3.0
-  peerDependenciesMeta:
-    "@types/react":
-      optional: true
-  checksum: 3c6e188a5b0adcbae91de5d4bd7e7d82e132a1ea2c0d9d050d30a154c0a7fe39bb05be703fc28c0ff86aadbcc347cfdc09305ee746b40d9798045401879339d0
   languageName: node
   linkType: hard
 
@@ -8248,6 +8208,39 @@ __metadata:
     "@types/react":
       optional: true
   checksum: 1379a2cfd921e85da291771035116b2438b0bcab8add141842e5911f91cacbb78a179bb03a68c1d6cfb86c6131ecd44c8242d2a0ee60910ca67b113c366cf271
+  languageName: node
+  linkType: hard
+
+"@backstage/plugin-user-settings@npm:^0.8.25":
+  version: 0.8.26
+  resolution: "@backstage/plugin-user-settings@npm:0.8.26"
+  dependencies:
+    "@backstage/catalog-model": ^1.7.5
+    "@backstage/core-app-api": ^1.19.0
+    "@backstage/core-compat-api": ^0.5.2
+    "@backstage/core-components": ^0.18.0
+    "@backstage/core-plugin-api": ^1.11.0
+    "@backstage/errors": ^1.2.7
+    "@backstage/frontend-plugin-api": ^0.12.0
+    "@backstage/plugin-catalog-react": ^1.21.0
+    "@backstage/plugin-signals-react": ^0.0.15
+    "@backstage/plugin-user-settings-common": ^0.0.1
+    "@backstage/theme": ^0.6.8
+    "@backstage/types": ^1.2.2
+    "@material-ui/core": ^4.12.2
+    "@material-ui/icons": ^4.9.1
+    "@material-ui/lab": 4.0.0-alpha.61
+    react-use: ^17.2.4
+    zen-observable: ^0.10.0
+  peerDependencies:
+    "@types/react": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.3.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: fb21f77793e769c1b3c028aa5576dec9f5774f4019ccf9717b29b9c883bec22965814ab06319179b404d8c5b87d9943ca69c3d8aac99b6a34ae90ecb34a74374
   languageName: node
   linkType: hard
 
@@ -13994,20 +13987,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-dynamic-home-page@npm:1.5.3":
-  version: 1.5.3
-  resolution: "@red-hat-developer-hub/backstage-plugin-dynamic-home-page@npm:1.5.3"
+"@red-hat-developer-hub/backstage-plugin-dynamic-home-page@npm:1.9.1":
+  version: 1.9.1
+  resolution: "@red-hat-developer-hub/backstage-plugin-dynamic-home-page@npm:1.9.1"
   dependencies:
-    "@backstage/catalog-client": ^1.10.0
-    "@backstage/catalog-model": ^1.7.4
-    "@backstage/core-components": ^0.17.2
-    "@backstage/core-plugin-api": ^1.10.7
-    "@backstage/plugin-catalog-react": ^1.18.0
-    "@backstage/plugin-home": ^0.8.8
-    "@backstage/plugin-home-react": ^0.1.26
-    "@backstage/plugin-search-react": ^1.9.0
-    "@backstage/plugin-user-settings": ^0.8.22
-    "@backstage/theme": ^0.6.6
+    "@backstage/catalog-client": ^1.11.0
+    "@backstage/catalog-model": ^1.7.5
+    "@backstage/core-components": ^0.17.5
+    "@backstage/core-plugin-api": ^1.10.9
+    "@backstage/plugin-catalog-react": ^1.20.1
+    "@backstage/plugin-home": ^0.8.11
+    "@backstage/plugin-home-react": ^0.1.29
+    "@backstage/plugin-search-react": ^1.9.3
+    "@backstage/plugin-user-settings": ^0.8.25
+    "@backstage/theme": ^0.6.8
     "@mui/icons-material": 5.18.0
     "@mui/material": 5.18.0
     "@mui/styles": 5.18.0
@@ -14018,7 +14011,7 @@ __metadata:
   peerDependencies:
     react: 16.13.1 || ^17.0.0 || ^18.2.0
     react-router-dom: 6.30.1
-  checksum: ecc928298b919e68ec28d392102280ecf166c794aefc128004788b020dcdcee09c29502787e4cf20a014ef9cd4c15d2f343c30e4bb1bd38f9c79d713fc548c0d
+  checksum: 0dc2881f32268ce64a871ee17008bf7ff55c0039218b3fdd76c7f2cd49d5303e72042b4470b7dbbf7cd756396656d6e88dddb5cc3cd4dab612a4c962475f7a7c
   languageName: node
   linkType: hard
 
@@ -19326,7 +19319,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backstage-community-plugin-redhat-argocd@workspace:wrappers/backstage-community-plugin-redhat-argocd"
   dependencies:
-    "@backstage-community/plugin-redhat-argocd": 1.21.2
+    "@backstage-community/plugin-redhat-argocd": 1.25.1
     "@backstage/cli": ^0.34.1
     "@janus-idp/cli": 3.6.1
     "@mui/material": 5.18.0
@@ -35025,7 +35018,7 @@ __metadata:
     "@backstage/cli": ^0.34.1
     "@janus-idp/cli": 3.6.1
     "@mui/material": 5.18.0
-    "@red-hat-developer-hub/backstage-plugin-dynamic-home-page": 1.5.3
+    "@red-hat-developer-hub/backstage-plugin-dynamic-home-page": 1.9.1
     typescript: 5.9.2
   languageName: unknown
   linkType: soft
