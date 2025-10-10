@@ -443,6 +443,8 @@ test.describe.serial("Test RBAC", () => {
         ["Guest User", "rhdh-qe rhdh-qe"],
         ["Backstage"],
         "anyOf",
+        "catalog",
+        "user:default/rhdh-qe",
       );
 
       await page
