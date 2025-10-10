@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: immobiliarelabs-backstage-plugin-gitlab-backend
   namespace: rhdh
-  title: "@immobiliarelabs/backstage-plugin-gitlab-backend"
+  title: "GitLab Backend"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

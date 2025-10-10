@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: red-hat-developer-hub-backstage-plugin-lightspeed
   namespace: rhdh
-  title: "@red-hat-developer-hub/backstage-plugin-lightspeed"
+  title: "Lightspeed Frontend"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: backstage-community-plugin-scaffolder-backend-module-regex
   namespace: rhdh
-  title: "@backstage-community/plugin-scaffolder-backend-module-regex"
+  title: "Scaffolder Backend Module Regex"
   links:
     - url: https://red.ht/rhdh
       title: Homepage
