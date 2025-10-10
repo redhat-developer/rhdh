@@ -162,8 +162,8 @@ test.describe("Admin > Extensions > Catalog", () => {
     await extensions.resetSupportTypeFilter("Generally available (GA)");
   });
 
-  // Skipping below test due to the issue: https://issues.redhat.com/browse/RHDHBUGS-2104
-  test.skip("Verify custom plugin badge in extensions", async ({ page }) => {
+  // TODO: Skipping below test due to the issue: https://issues.redhat.com/browse/RHDHBUGS-2104
+  test.fixme("Verify custom plugin badge in extensions", async ({ page }) => {
     await extensions.selectDropdown("Support type");
     await extensions.toggleOption("Custom plugin");
     await page.keyboard.press(`Escape`);
@@ -238,50 +238,56 @@ test.describe("Admin > Extensions > Catalog", () => {
     permissions: ["clipboard-read", "clipboard-write"],
   });
 
-  test.skip("Verify plugin configuration can be viewed in the production environment", async ({
-    page,
-  }) => {
-    const productionEnvAlert = page
-      .locator('div[class*="MuiAlertTitle-root"]')
-      .first();
-    productionEnvAlert.getByText(
-      "Plugin installation is disabled in the production environment.",
-      { exact: true },
-    );
-    await uiHelper.searchInputPlaceholder("Topology");
-    await page.getByRole("heading", { name: "Topology" }).first().click();
-    await uiHelper.clickButton("View");
-    await uiHelper.verifyHeading("Application Topology for Kubernetes");
-    await uiHelper.verifyText(
-      "- package: ./dynamic-plugins/dist/backstage-community-plugin-topology",
-    );
-    await uiHelper.verifyText("disabled: false");
-    await uiHelper.verifyText("Apply");
-    await uiHelper.verifyHeading("Default configuration");
-    await uiHelper.clickButton("Apply");
-    await uiHelper.verifyText("pluginConfig:");
-    await uiHelper.verifyText("dynamicPlugins:");
-    await uiHelper.clickTab("About the plugin");
-    await uiHelper.verifyHeading("Configuring The Plugin");
-    await uiHelper.clickTab("Examples");
-    await uiHelper.clickByDataTestId("ContentCopyRoundedIcon");
-    await expect(page.getByRole("button", { name: "✔" })).toBeVisible();
-    await uiHelper.clickButton("Reset");
-    await expect(page.getByText("pluginConfig:")).toBeHidden();
-    // eslint-disable-next-line playwright/no-conditional-in-test
-    const modifier = isMac ? "Meta" : "Control";
-    await page.keyboard.press(`${modifier}+KeyA`);
-    await page.keyboard.press(`${modifier}+KeyV`);
-    await uiHelper.verifyText("pluginConfig:");
-    await page.locator("button[class^='copy-button']").nth(0).click();
-    await expect(page.getByRole("button", { name: "✔" }).nth(0)).toBeVisible();
-    const clipboardContent = await page.evaluate(() =>
-      navigator.clipboard.readText(),
-    );
-    expect(clipboardContent).not.toContain("pluginConfig:");
-    expect(clipboardContent).toContain("backstage-community.plugin-topology:");
-    await uiHelper.clickButton("Back");
-    await expect(page.getByRole("button", { name: "View" })).toBeVisible();
-    await uiHelper.verifyHeading("Application Topology for Kubernetes");
-  });
+  // TODO: Skipping below test due to the issue: https://issues.redhat.com/browse/RHDHBUGS-2104
+  test.fixme(
+    "Verify plugin configuration can be viewed in the production environment",
+    async ({ page }) => {
+      const productionEnvAlert = page
+        .locator('div[class*="MuiAlertTitle-root"]')
+        .first();
+      productionEnvAlert.getByText(
+        "Plugin installation is disabled in the production environment.",
+        { exact: true },
+      );
+      await uiHelper.searchInputPlaceholder("Topology");
+      await page.getByRole("heading", { name: "Topology" }).first().click();
+      await uiHelper.clickButton("View");
+      await uiHelper.verifyHeading("Application Topology for Kubernetes");
+      await uiHelper.verifyText(
+        "- package: ./dynamic-plugins/dist/backstage-community-plugin-topology",
+      );
+      await uiHelper.verifyText("disabled: false");
+      await uiHelper.verifyText("Apply");
+      await uiHelper.verifyHeading("Default configuration");
+      await uiHelper.clickButton("Apply");
+      await uiHelper.verifyText("pluginConfig:");
+      await uiHelper.verifyText("dynamicPlugins:");
+      await uiHelper.clickTab("About the plugin");
+      await uiHelper.verifyHeading("Configuring The Plugin");
+      await uiHelper.clickTab("Examples");
+      await uiHelper.clickByDataTestId("ContentCopyRoundedIcon");
+      await expect(page.getByRole("button", { name: "✔" })).toBeVisible();
+      await uiHelper.clickButton("Reset");
+      await expect(page.getByText("pluginConfig:")).toBeHidden();
+      // eslint-disable-next-line playwright/no-conditional-in-test
+      const modifier = isMac ? "Meta" : "Control";
+      await page.keyboard.press(`${modifier}+KeyA`);
+      await page.keyboard.press(`${modifier}+KeyV`);
+      await uiHelper.verifyText("pluginConfig:");
+      await page.locator("button[class^='copy-button']").nth(0).click();
+      await expect(
+        page.getByRole("button", { name: "✔" }).nth(0),
+      ).toBeVisible();
+      const clipboardContent = await page.evaluate(() =>
+        navigator.clipboard.readText(),
+      );
+      expect(clipboardContent).not.toContain("pluginConfig:");
+      expect(clipboardContent).toContain(
+        "backstage-community.plugin-topology:",
+      );
+      await uiHelper.clickButton("Back");
+      await expect(page.getByRole("button", { name: "View" })).toBeVisible();
+      await uiHelper.verifyHeading("Application Topology for Kubernetes");
+    },
+  );
 });
