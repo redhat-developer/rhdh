@@ -1,0 +1,23 @@
+kind: Backstage
+apiVersion: rhdh.redhat.com/v1alpha2
+metadata:
+  name: rhdh
+spec:
+  application:
+    image: "quay.io/$QUAY_REPO:$TAG_NAME"
+    appConfig:
+      configMaps:
+        - name: app-config-rhdh
+      mountPath: /opt/app-root/src
+    extraFiles:
+      mountPath: /opt/app-root/src
+      secrets:
+        - name: postgres-crt
+          key: postgres-crt.pem
+    extraEnvs:
+      secrets:
+        - name: postgres-cred
+    route:
+      enabled: true
+  database:
+    enableLocalDb: false

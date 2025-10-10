@@ -1,0 +1,28 @@
+#!/bin/bash
+#
+# Environment Override for Local Testing
+# Copy this file to env_override.local.sh and customize as needed
+#
+
+# Cluster configuration
+export K8S_CLUSTER_TOKEN="your-cluster-token"
+export K8S_CLUSTER_URL="https://your-cluster-url:6443"
+
+# Namespace overrides
+export NAME_SPACE="my-showcase"
+export NAME_SPACE_RBAC="my-showcase-rbac"
+
+# Image configuration
+export QUAY_REPO="rhdh-community/rhdh"
+export TAG_NAME="next"  # Use 'next' for latest CI builds, or 'latest' for stable
+
+# Feature toggles
+export DEPLOY_REDIS="true"
+export DEPLOY_ORCHESTRATOR="false"  # Set to "true" for SonataFlow/orchestrator testing (adds ~2 min + resources)
+export ENABLE_ACM="false"           # Set to "true" for OCM plugin testing (adds ~8 min + ACM operator)
+export USE_EXTERNAL_POSTGRES="true"
+
+# Debug mode
+export DEBUG="false"
+
+echo "Local environment overrides loaded"

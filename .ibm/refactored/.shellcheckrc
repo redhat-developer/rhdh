@@ -1,0 +1,20 @@
+# ShellCheck configuration for RHDH CI/CD scripts
+
+# Set shell to bash
+shell=bash
+
+# Enable all optional checks
+enable=all
+
+# Disable specific checks that are not relevant for our use case
+disable=SC2034  # Unused variables (we export many for child scripts)
+disable=SC1091  # Not following sourced files (they may not exist at lint time)
+
+# Source path for shellcheck to find files
+source-path=SCRIPTDIR
+source-path=modules
+source-path=jobs
+source-path=entrypoints
+
+# External sources that shellcheck should know about
+external-sources=true

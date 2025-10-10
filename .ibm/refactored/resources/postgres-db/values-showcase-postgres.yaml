@@ -1,0 +1,110 @@
+global:
+  dynamic:
+    includes:
+      - dynamic-plugins.default.yaml
+    plugins: []
+upstream:
+  nameOverride: developer-hub
+  commonLabels:
+    backstage.io/kubernetes-id: developer-hub
+  backstage:
+    image:
+      pullPolicy: Always
+      registry: quay.io
+      repository: rhdh-community/rhdh
+      tag: next
+    appConfig:
+      app:
+        title: Red Hat Developer Hub
+        baseUrl: 'https://{{- include "janus-idp.hostname" . }}'
+      backend:
+        auth:
+          externalAccess:
+            - options:
+                secret: "${BACKEND_SECRET}"
+                subject: legacy-default-config
+              type: legacy
+        baseUrl: 'https://{{- include "janus-idp.hostname" . }}'
+        cors:
+          origin: 'https://{{- include "janus-idp.hostname" . }}'
+        database:
+          connection: # configure Backstage DB connection parameters
+            host: ${POSTGRES_HOST}
+            port: ${POSTGRES_PORT}
+            user: ${POSTGRES_USER}
+            password: ${POSTGRES_PASSWORD}
+      auth:
+        environment: development
+        providers:
+          guest:
+            dangerouslyAllowOutsideDevelopment: true
+    extraEnvVars:
+      - name: BACKEND_SECRET
+        valueFrom:
+          secretKeyRef:
+            key: backend-secret
+            name: '{{ include "janus-idp.backend-secret-name" $ }}'
+    extraVolumeMounts:
+      - mountPath: /opt/app-root/src/dynamic-plugins-root
+        name: dynamic-plugins-root
+      - mountPath: /opt/app-root/src/postgres-crt.pem
+        name: postgres-crt # inject certificate secret to Backstage cont.
+        subPath: postgres-crt.pem
+    extraVolumes:
+      - name: dynamic-plugins-root
+        persistentVolumeClaim:
+          claimName: '{{ printf "%s-dynamic-plugins-root" .Release.Name }}'
+      - configMap:
+          defaultMode: 420
+          name: '{{ printf "%s-dynamic-plugins" .Release.Name }}'
+          optional: true
+        name: dynamic-plugins
+      - name: dynamic-plugins-npmrc
+        secret:
+          defaultMode: 420
+          optional: true
+          secretName: '{{ printf "%s-dynamic-plugins-npmrc" .Release.Name }}'
+      - name: dynamic-plugins-registry-auth
+        secret:
+          defaultMode: 416
+          optional: true
+          secretName: '{{ printf "%s-dynamic-plugins-registry-auth" .Release.Name }}'
+      - name: postgres-crt
+        secret:
+          secretName: postgres-crt
+      - emptyDir: {}
+        name: npmcacache
+    initContainers:
+      - name: install-dynamic-plugins
+        image: '{{ include "backstage.image" . }}'
+        command:
+          - ./install-dynamic-plugins.sh
+          - /dynamic-plugins-root
+        env:
+          - name: NPM_CONFIG_USERCONFIG
+            value: /opt/app-root/src/.npmrc.dynamic-plugins
+        imagePullPolicy: Always
+        volumeMounts:
+          - mountPath: /dynamic-plugins-root
+            name: dynamic-plugins-root
+          - mountPath: /opt/app-root/src/dynamic-plugins.yaml
+            name: dynamic-plugins
+            readOnly: true
+            subPath: dynamic-plugins.yaml
+          - mountPath: /opt/app-root/src/.npmrc.dynamic-plugins
+            name: dynamic-plugins-npmrc
+            readOnly: true
+            subPath: .npmrc
+          - mountPath: /opt/app-root/src/.config/containers
+            name: dynamic-plugins-registry-auth
+            readOnly: true
+          - mountPath: /opt/app-root/src/.npm/_cacache
+            name: npmcacache
+        workingDir: /opt/app-root/src
+    installDir: /opt/app-root/src
+    extraEnvVarsSecrets:
+      - postgres-cred
+  postgresql:
+    enabled: false
+    auth:
+      existingSecret: postgres-cred
