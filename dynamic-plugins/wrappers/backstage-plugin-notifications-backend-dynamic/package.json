@@ -1,6 +1,6 @@
 {
   "name": "backstage-plugin-notifications-backend",
-  "version": "0.5.6",
+  "version": "0.5.9",
   "main": "./dist/index.cjs.js",
   "types": "src/index.ts",
   "license": "Apache-2.0",
@@ -40,8 +40,8 @@
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
-    "@backstage/plugin-notifications-backend": "^0.5.9",
-    "@backstage/plugin-signals-node": "^0.1.23"
+    "@backstage/plugin-notifications-backend": "0.5.9",
+    "@backstage/plugin-signals-node": "0.1.23"
   },
   "devDependencies": {
     "@backstage/cli": "^0.34.1",
