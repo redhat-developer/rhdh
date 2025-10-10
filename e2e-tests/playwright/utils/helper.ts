@@ -1,13 +1,13 @@
-import { type Page } from "@playwright/test";
+import { type Page, type Locator } from "@playwright/test";
 import fs from "fs";
 
 export async function downloadAndReadFile(
   page: Page,
-  locator: string,
+  locator: Locator,
 ): Promise<string | undefined> {
   const [download] = await Promise.all([
     page.waitForEvent("download"),
-    page.locator(locator).click(),
+    locator.click(),
   ]);
 
   const filePath = await download.path();
