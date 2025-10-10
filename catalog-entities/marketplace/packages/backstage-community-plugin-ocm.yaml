@@ -18,10 +18,10 @@ metadata:
 spec:
   packageName: "@backstage-community/plugin-ocm"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-ocm
-  version: 5.6.0
+  version: 5.8.0
   backstage:
     role: frontend-plugin
-    supportedVersions: 1.39.1
+    supportedVersions: 1.42.5
   author: Red Hat
   support: production
   # https://issues.redhat.com/browse/RHDHPLAN-265 - OCM is deprecated in 1.8; will be removed in 1.10

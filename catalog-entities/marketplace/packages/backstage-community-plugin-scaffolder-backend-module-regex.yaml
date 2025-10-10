@@ -19,10 +19,10 @@ metadata:
 spec:
   packageName: "@backstage-community/plugin-scaffolder-backend-module-regex"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-regex-dynamic
-  version: 2.7.0
+  version: 2.8.0
   backstage:
     role: backend-plugin-module
-    supportedVersions: 1.39.1
+    supportedVersions: 1.42.5
   author: Red Hat
   support: production
   lifecycle: active
