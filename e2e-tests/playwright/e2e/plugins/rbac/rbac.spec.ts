@@ -234,12 +234,10 @@ test.describe.serial("Test RBAC", () => {
       await uiHelper.verifyCellsInTable(allCellsIdentifier);
     });
 
-    test("Should download the user list", async ({ page }) => {
-      await page.locator('a:has-text("Download User List")').click();
-      const fileContent = await downloadAndReadFile(
-        page,
-        'a:has-text("Download User List")',
-      );
+    test("Should export CSV of the user list", async ({ page }) => {
+      const exportCsvLink = page.getByRole("link", { name: "Export CSV" });
+      await exportCsvLink.click();
+      const fileContent = await downloadAndReadFile(page, exportCsvLink);
       await test.info().attach("user-list-file", {
         body: fileContent,
         contentType: "text/plain",
