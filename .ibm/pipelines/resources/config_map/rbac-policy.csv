@@ -17,7 +17,6 @@ p, role:default/qe_rbac_admin, kubernetes.proxy, use, allow
 p, role:default/qe_rbac_admin, kubernetes.resources.read, read, allow
 p, role:default/qe_rbac_admin, kubernetes.clusters.read, read, allow
 p, role:default/qe_rbac_admin, catalog.entity.create, create, allow
-p, role:default/qe_rbac_admin, catalog.entity.delete, delete, allow
 p, role:default/qe_rbac_admin, catalog.location.create, create, allow
 p, role:default/qe_rbac_admin, catalog.location.read, read, allow
 
