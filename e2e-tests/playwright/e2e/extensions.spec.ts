@@ -214,7 +214,8 @@ test.describe("Admin > Extensions > Catalog", () => {
   test("Verify community plugin badge in extensions", async ({ page }) => {
     await extensions.selectSupportTypeFilter("Community plugin");
 
-    await uiHelper.clickLink("Read more");
+    await page.locator('a[href*="servicenow"]').click();
+
     await expect(
       page
         .getByLabel("Open-source plugins, no official support")
