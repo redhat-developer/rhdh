@@ -491,6 +491,10 @@ plugins:
       dynamicPlugins:
         frontend:
           red-hat-developer-hub.backstage-plugin-bulk-import:
+            translationResources:
+              - importName: bulkImportTranslations
+                module: Alpha
+                ref: bulkImportTranslationRef
             appIcons:
               - name: bulkImportIcon
                 importName: BulkImportIcon
