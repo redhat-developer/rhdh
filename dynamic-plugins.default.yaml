@@ -899,6 +899,10 @@ plugins:
       dynamicPlugins:
         frontend:
           backstage-community.plugin-rbac:
+            translationResources:
+              - importName: rbacTranslations
+                ref: rbacTranslationRef
+                module: Alpha
             appIcons:
               - name: rbacIcon
                 importName: RbacIcon
