@@ -1,4 +1,33 @@
 {
+  "home": {
+    "fr": {
+      "addWidgetDialog.title": "Ajouter un nouveau widget au tableau de bord",
+      "customHomepageButtons.edit": "Modifier",
+      "customHomepageButtons.restoreDefaults": "Restaurer les valeurs par défaut",
+      "customHomepageButtons.clearAll": "Tout effacer",
+      "customHomepageButtons.addWidget": "Ajouter un widget",
+      "customHomepageButtons.save": "Sauvegarder",
+      "customHomepage.noWidgets": "Aucun widget ajouté. Commencez par cliquer sur le bouton « Ajouter un widget ».",
+      "widgetSettingsOverlay.editSettingsTooptip": "Modifier les paramètres",
+      "widgetSettingsOverlay.deleteWidgetTooltip": "Supprimer le widget",
+      "widgetSettingsOverlay.submitButtonTitle": "Soumettre",
+      "widgetSettingsOverlay.cancelButtonTitle": "Annuler",
+      "starredEntityListItem.removeFavoriteEntityTitle": "Supprimer l'entité des favoris",
+      "visitList.empty.title": "Il n'y a pas encore de visites à afficher.",
+      "visitList.empty.description": "Une fois que vous commencez à utiliser Backstage, vos visites apparaîtront ici sous la forme d'un lien rapide pour reprendre là où vous vous êtes arrêté.",
+      "visitList.few.title": "Plus vous visitez de pages, plus de pages apparaîtront ici.",
+      "quickStart.title": "Intégration",
+      "quickStart.description": "Démarrer avec Backstage",
+      "quickStart.learnMoreLinkTitle": "En savoir plus",
+      "starredEntities.noStarredEntitiesMessage": "Cliquez sur l’étoile à côté du nom d’une entité pour l’ajouter à cette liste !",
+      "visitedByType.action.viewMore": "Voir plus",
+      "visitedByType.action.viewLess": "Voir moins",
+      "featuredDocsCard.learnMoreTitle": "POUR EN SAVOIR PLUS",
+      "featuredDocsCard.empty.title": "Aucun document à montrer",
+      "featuredDocsCard.empty.description": "Créez votre propre document. Consultez nos informations de démarrage",
+      "featuredDocsCard.empty.learnMoreLinkTitle": "DOCUMENTS"
+    }
+  },
   "scaffolder": {
     "fr": {
       "aboutCard.launchTemplate": "Modèle de lancement",
@@ -156,7 +185,7 @@
       "templateListPage.pageTitle": "Créer un nouveau composant",
       "templateListPage.templateGroups.defaultTitle": "Modèles",
       "templateListPage.templateGroups.otherTitle": "Autres modèles",
-      "templateListPage.contentHeader.registerExistingButtonTitle": "Enregistrer un composant existant",
+      "templateListPage.contentHeader.registerExistingButtonTitle": "Importer un dépôt Git existant",
       "templateListPage.contentHeader.supportButtonTitle": "Créez de nouveaux composants logiciels à l’aide de modèles standard. Différents modèles créent différents types de composants (services, sites Web, documentation, ...).",
       "templateListPage.additionalLinksForEntity.viewTechDocsTitle": "Voir TechDocs",
       "templateWizardPage.title": "Créer un nouveau composant",
@@ -179,65 +208,59 @@
       "templateEditorToolbarTemplatesMenu.button": "Modèles"
     }
   },
-  "home": {
+  "catalog-react": {
     "fr": {
-      "addWidgetDialog.title": "Ajouter un nouveau widget au tableau de bord",
-      "customHomepageButtons.edit": "Modifier",
-      "customHomepageButtons.restoreDefaults": "Restaurer les valeurs par défaut",
-      "customHomepageButtons.clearAll": "Tout effacer",
-      "customHomepageButtons.addWidget": "Ajouter un widget",
-      "customHomepageButtons.save": "Sauvegarder",
-      "customHomepage.noWidgets": "Aucun widget ajouté. Commencez par cliquer sur le bouton « Ajouter un widget ».",
-      "widgetSettingsOverlay.editSettingsTooptip": "Modifier les paramètres",
-      "widgetSettingsOverlay.deleteWidgetTooltip": "Supprimer le widget",
-      "widgetSettingsOverlay.submitButtonTitle": "Soumettre",
-      "widgetSettingsOverlay.cancelButtonTitle": "Annuler",
-      "starredEntityListItem.removeFavoriteEntityTitle": "Supprimer l'entité des favoris",
-      "visitList.empty.title": "Il n'y a pas encore de visites à afficher.",
-      "visitList.empty.description": "Une fois que vous commencez à utiliser Backstage, vos visites apparaîtront ici sous la forme d'un lien rapide pour reprendre là où vous vous êtes arrêté.",
-      "visitList.few.title": "Plus vous visitez de pages, plus de pages apparaîtront ici.",
-      "quickStart.title": "Intégration",
-      "quickStart.description": "Démarrer avec Backstage",
-      "quickStart.learnMoreLinkTitle": "En savoir plus",
-      "starredEntities.noStarredEntitiesMessage": "Cliquez sur l’étoile à côté du nom d’une entité pour l’ajouter à cette liste !",
-      "visitedByType.action.viewMore": "Voir plus",
-      "visitedByType.action.viewLess": "Voir moins",
-      "featuredDocsCard.learnMoreTitle": "POUR EN SAVOIR PLUS",
-      "featuredDocsCard.empty.title": "Aucun document à montrer",
-      "featuredDocsCard.empty.description": "Créez votre propre document. Consultez nos informations de démarrage",
-      "featuredDocsCard.empty.learnMoreLinkTitle": "DOCUMENTS"
-    }
-  },
-  "home-react": {
-    "fr": {
-      "settingsModal.title": "Paramètres",
-      "settingsModal.closeButtonTitle": "Fermer",
-      "cardExtension.settingsButtonTitle": "Paramètres"
-    }
-  },
-  "catalog-graph": {
-    "fr": {
-      "catalogGraphCard.title": "Rapports",
-      "catalogGraphCard.deepLinkTitle": "Voir le graphique",
-      "catalogGraphPage.title": "Graphique du catalogue",
-      "catalogGraphPage.filterToggleButtonTitle": "Filtres",
-      "catalogGraphPage.supportButtonDescription": "Commencez à suivre votre composant en l'ajoutant au catalogue de logiciels.",
-      "catalogGraphPage.simplifiedSwitchLabel": "Simplifié",
-      "catalogGraphPage.mergeRelationsSwitchLabel": "Fusionner les relations",
-      "catalogGraphPage.zoomOutDescription": "Utilisez le pincement et le zoom pour vous déplacer dans le diagramme. Cliquez pour changer de nœud actif, appuyez sur Maj pour accéder à l'entité.",
-      "catalogGraphPage.curveFilter.title": "Courbe",
-      "catalogGraphPage.curveFilter.curveMonotoneX": "Monotone X",
-      "catalogGraphPage.curveFilter.curveStepBefore": "Étape avant",
-      "catalogGraphPage.directionFilter.title": "Direction",
-      "catalogGraphPage.directionFilter.leftToRight": "De gauche à droite",
-      "catalogGraphPage.directionFilter.rightToLeft": "De droite à gauche",
-      "catalogGraphPage.directionFilter.topToBottom": "De haut en bas",
-      "catalogGraphPage.directionFilter.bottomToTop": "De bas en haut",
-      "catalogGraphPage.maxDepthFilter.title": "Profondeur maximale",
-      "catalogGraphPage.maxDepthFilter.inputPlaceholder": "∞ Infini",
-      "catalogGraphPage.maxDepthFilter.clearButtonAriaLabel": "profondeur maximale dégagée",
-      "catalogGraphPage.selectedKindsFilter.title": "Types",
-      "catalogGraphPage.selectedRelationsFilter.title": "Rapports"
+      "catalogFilter.title": "Filtres",
+      "catalogFilter.buttonTitle": "Filtres",
+      "entityKindPicker.title": "Kind",
+      "entityKindPicker.errorMessage": "Échec du chargement des types d'entités",
+      "entityLifecyclePicker.title": "Cycle de vie",
+      "entityNamespacePicker.title": "Espace de noms",
+      "entityOwnerPicker.title": "Propriétaire",
+      "entityProcessingStatusPicker.title": "Statut de traitement",
+      "entityTagPicker.title": "Mots-clés",
+      "entityPeekAheadPopover.title": "Accédez à l'entité pour voir toutes les balises.",
+      "entityPeekAheadPopover.emailCardAction.title": "Courriel {{email}}",
+      "entityPeekAheadPopover.emailCardAction.subTitle": "mailto {{email}}",
+      "entityPeekAheadPopover.entityCardActionsTitle": "Afficher les détails",
+      "entitySearchBar.placeholder": "Rechercher",
+      "entityTypePicker.title": "Taper",
+      "entityTypePicker.errorMessage": "Échec du chargement des types d'entités",
+      "entityTypePicker.optionAllTitle": "tous",
+      "favoriteEntity.addToFavorites": "Ajouter aux favoris",
+      "favoriteEntity.removeFromFavorites": "Supprimer des favoris",
+      "inspectEntityDialog.title": "Inspecteur d'entité",
+      "inspectEntityDialog.closeButtonTitle": "Fermer",
+      "inspectEntityDialog.ancestryPage.title": "Ascendance",
+      "inspectEntityDialog.colocatedPage.title": "Colocalisé",
+      "inspectEntityDialog.colocatedPage.description": "Il s'agit des entités qui sont colocalisées avec cette entité - comme si elles provenaient de la même source de données (par exemple, du même fichier YAML) ou de la même origine (par exemple, l'URL initialement enregistrée).",
+      "inspectEntityDialog.colocatedPage.alertNoLocation": "L'entité n'avait aucune information de localisation.",
+      "inspectEntityDialog.colocatedPage.alertNoEntity": "Il n’y avait aucune autre entité à cet endroit.",
+      "inspectEntityDialog.jsonPage.title": "Entité au format JSON",
+      "inspectEntityDialog.jsonPage.description": "Il s'agit des données d'entité brutes telles que reçues du catalogue, au format JSON.",
+      "inspectEntityDialog.overviewPage.title": "Aperçu",
+      "inspectEntityDialog.yamlPage.title": "Entité au format YAML",
+      "inspectEntityDialog.yamlPage.description": "Il s'agit des données d'entité brutes telles que reçues du catalogue, sous forme YAML.",
+      "unregisterEntityDialog.title": "Êtes-vous sûr de vouloir désinscrire cette entité ?",
+      "unregisterEntityDialog.cancelButtonTitle": "Annuler",
+      "unregisterEntityDialog.deleteButtonTitle": "Supprimer l'entité",
+      "unregisterEntityDialog.deleteEntitySuccessMessage": "Entité supprimée {{entityName}}",
+      "unregisterEntityDialog.bootstrapState.title": "Vous ne pouvez pas désinscrire cette entité, car elle provient d'une configuration Backstage protégée (emplacement « {{location}} »). Si vous pensez qu'il s'agit d'une erreur, veuillez contacter l'intégrateur {{appTitle}}.",
+      "unregisterEntityDialog.bootstrapState.advancedDescription": "Vous avez la possibilité de supprimer l'entité elle-même du catalogue. Notez que cela ne doit être fait que si vous savez que le fichier de catalogue a été supprimé ou déplacé de son emplacement d'origine. Si ce n’est pas le cas, l’entité réapparaîtra sous peu lors du prochain cycle d’actualisation effectué par le catalogue.",
+      "unregisterEntityDialog.bootstrapState.advancedOptions": "Options avancées",
+      "unregisterEntityDialog.onlyDeleteStateTitle": "Cette entité ne semble pas provenir d'un lieu enregistré. Vous n'avez donc que la possibilité de le supprimer purement et simplement du catalogue.",
+      "unregisterEntityDialog.unregisterState.title": "Cette action désenregistrera les entités suivantes :",
+      "unregisterEntityDialog.unregisterState.subTitle": "Situé à l'emplacement suivant :",
+      "unregisterEntityDialog.unregisterState.description": "Pour annuler, réenregistrez simplement l'entité dans {{appTitle}}.",
+      "unregisterEntityDialog.unregisterState.unregisterButtonTitle": "Désenregistrer l'emplacement",
+      "unregisterEntityDialog.unregisterState.advancedOptions": "Options avancées",
+      "unregisterEntityDialog.unregisterState.advancedDescription": "Vous avez également la possibilité de supprimer l'entité elle-même du catalogue. Notez que cela ne doit être fait que si vous savez que le fichier de catalogue a été supprimé ou déplacé de son emplacement d'origine. Si ce n’est pas le cas, l’entité réapparaîtra sous peu lors du prochain cycle d’actualisation effectué par le catalogue.",
+      "unregisterEntityDialog.errorStateTitle": "Erreur interne : état inconnu",
+      "userListPicker.defaultOrgName": "Entreprise",
+      "userListPicker.personalFilter.title": "Personnel",
+      "userListPicker.personalFilter.ownedLabel": "Possédé",
+      "userListPicker.personalFilter.starredLabel": "Étoilé",
+      "userListPicker.orgFilterAllLabel": "Tous"
     }
   },
   "user-settings": {
@@ -294,59 +317,6 @@
       "appearanceCard.title": "Apparence"
     }
   },
-  "techdocs": {
-    "fr": {
-      "aboutCard.viewTechdocs": "Voir TechDocs"
-    }
-  },
-  "search": {
-    "fr": {
-      "searchModal.viewFullResults": "Voir les résultats complets",
-      "searchType.allResults": "Tous les résultats",
-      "searchType.tabs.allTitle": "Tous",
-      "searchType.accordion.allTitle": "Tous",
-      "searchType.accordion.collapse": "Effondrement",
-      "searchType.accordion.numberOfResults": "{{number}} résultats",
-      "sidebarSearchModal.title": "Rechercher"
-    }
-  },
-  "search-react": {
-    "fr": {
-      "searchBar.title": "Rechercher",
-      "searchBar.placeholder": "Rechercher dans {{org}}",
-      "searchBar.clearButtonTitle": "Clair",
-      "searchFilter.allOptionTitle": "Tous",
-      "searchPagination.limitLabel": "Résultats par page :",
-      "searchPagination.limitText": "de {{num}}",
-      "noResultsDescription": "Désolé, aucun résultat n'a été trouvé",
-      "searchResultGroup.linkTitle": "Tout voir",
-      "searchResultGroup.addFilterButtonTitle": "Ajouter un filtre",
-      "searchResultPager.previous": "Précédent",
-      "searchResultPager.next": "Suivant"
-    }
-  },
-  "scaffolder-react": {
-    "fr": {
-      "passwordWidget.content": "Ce widget n'est pas sécurisé. Veuillez utiliser [`ui:field: Secret`](https://backstage.io/docs/features/software-templates/writing-templates/#using-secrets) au lieu de `ui:widget: password`",
-      "scaffolderPageContextMenu.moreLabel": "plus",
-      "scaffolderPageContextMenu.createLabel": "Créer",
-      "scaffolderPageContextMenu.editorLabel": "Gérer les modèles",
-      "scaffolderPageContextMenu.actionsLabel": "Actions installées",
-      "scaffolderPageContextMenu.tasksLabel": "Liste des tâches",
-      "scaffolderPageContextMenu.templatingExtensionsLabel": "Extensions de modèles",
-      "stepper.backButtonText": "Arrière",
-      "stepper.createButtonText": "Créer",
-      "stepper.reviewButtonText": "Revoir",
-      "stepper.stepIndexLabel": "Étape {{index, numéro}}",
-      "stepper.nextButtonText": "Suivant",
-      "templateCategoryPicker.title": "Catégories",
-      "templateCard.noDescription": "Aucune description",
-      "templateCard.chooseButtonText": "Choisir",
-      "cardHeader.detailBtnTitle": "Afficher les détails de l'entité du modèle",
-      "templateOutputs.title": "Sortie de texte",
-      "workflow.noDescription": "Aucune description"
-    }
-  },
   "org": {
     "fr": {
       "groupProfileCard.groupNotFound": "Groupe non trouvé",
@@ -377,27 +347,25 @@
       "userProfileCard.allGroupDialog.closeButtonTitle": "Fermer"
     }
   },
-  "kubernetes": {
+  "search-react": {
     "fr": {
-      "kubernetesContentPage.permissionAlert.title": "Autorisation requise",
-      "kubernetesContentPage.permissionAlert.message": "Pour afficher les objets Kubernetes, contactez l'administrateur de votre portail pour qu'il vous accorde l'autorisation « kubernetes.clusters.read » et « kubernetes.resources.read »."
-    }
-  },
-  "kubernetes-react": {
-    "fr": {
-      "podDrawer.buttons.delete": "Supprimer le pod"
-    }
-  },
-  "kubernetes-cluster": {
-    "fr": {
-      "kubernetesClusterContentPage.permissionAlert.title": "Autorisation requise",
-      "kubernetesClusterContentPage.permissionAlert.message": "Pour afficher les objets Kubernetes, contactez l'administrateur de votre portail pour qu'il vous accorde l'autorisation « kubernetes.clusters.read »."
+      "searchBar.title": "Rechercher",
+      "searchBar.placeholder": "Rechercher dans {{org}}",
+      "searchBar.clearButtonTitle": "Clair",
+      "searchFilter.allOptionTitle": "Tous",
+      "searchPagination.limitLabel": "Résultats par page :",
+      "searchPagination.limitText": "de {{num}}",
+      "noResultsDescription": "Désolé, aucun résultat n'a été trouvé",
+      "searchResultGroup.linkTitle": "Tout voir",
+      "searchResultGroup.addFilterButtonTitle": "Ajouter un filtre",
+      "searchResultPager.previous": "Précédent",
+      "searchResultPager.next": "Suivant"
     }
   },
   "catalog": {
     "fr": {
       "indexPage.title": "Catalogue {{orgName}}",
-      "indexPage.createButtonTitle": "Créer",
+      "indexPage.createButtonTitle": "Self-service",
       "indexPage.supportButtonContent": "Toutes les entités de votre catalogue de logiciels",
       "aboutCard.title": "À propos",
       "aboutCard.refreshButtonTitle": "Actualisation de l'entité de planification",
@@ -476,68 +444,51 @@
       "systemDiagramCard.edgeLabels.dependsOn": "dépend de"
     }
   },
-  "catalog-react": {
+  "kubernetes-react": {
     "fr": {
-      "catalogFilter.title": "Filtres",
-      "catalogFilter.buttonTitle": "Filtres",
-      "entityKindPicker.title": "Gentil",
-      "entityKindPicker.errorMessage": "Échec du chargement des types d'entités",
-      "entityLifecyclePicker.title": "Cycle de vie",
-      "entityNamespacePicker.title": "Espace de noms",
-      "entityOwnerPicker.title": "Propriétaire",
-      "entityProcessingStatusPicker.title": "Statut de traitement",
-      "entityTagPicker.title": "Mots-clés",
-      "entityPeekAheadPopover.title": "Accédez à l'entité pour voir toutes les balises.",
-      "entityPeekAheadPopover.emailCardAction.title": "Courriel {{email}}",
-      "entityPeekAheadPopover.emailCardAction.subTitle": "mailto {{email}}",
-      "entityPeekAheadPopover.entityCardActionsTitle": "Afficher les détails",
-      "entitySearchBar.placeholder": "Rechercher",
-      "entityTypePicker.title": "Taper",
-      "entityTypePicker.errorMessage": "Échec du chargement des types d'entités",
-      "entityTypePicker.optionAllTitle": "tous",
-      "favoriteEntity.addToFavorites": "Ajouter aux favoris",
-      "favoriteEntity.removeFromFavorites": "Supprimer des favoris",
-      "inspectEntityDialog.title": "Inspecteur d'entité",
-      "inspectEntityDialog.closeButtonTitle": "Fermer",
-      "inspectEntityDialog.ancestryPage.title": "Ascendance",
-      "inspectEntityDialog.colocatedPage.title": "Colocalisé",
-      "inspectEntityDialog.colocatedPage.description": "Il s'agit des entités qui sont colocalisées avec cette entité - comme si elles provenaient de la même source de données (par exemple, du même fichier YAML) ou de la même origine (par exemple, l'URL initialement enregistrée).",
-      "inspectEntityDialog.colocatedPage.alertNoLocation": "L'entité n'avait aucune information de localisation.",
-      "inspectEntityDialog.colocatedPage.alertNoEntity": "Il n’y avait aucune autre entité à cet endroit.",
-      "inspectEntityDialog.jsonPage.title": "Entité au format JSON",
-      "inspectEntityDialog.jsonPage.description": "Il s'agit des données d'entité brutes telles que reçues du catalogue, au format JSON.",
-      "inspectEntityDialog.overviewPage.title": "Aperçu",
-      "inspectEntityDialog.yamlPage.title": "Entité au format YAML",
-      "inspectEntityDialog.yamlPage.description": "Il s'agit des données d'entité brutes telles que reçues du catalogue, sous forme YAML.",
-      "unregisterEntityDialog.title": "Êtes-vous sûr de vouloir désinscrire cette entité ?",
-      "unregisterEntityDialog.cancelButtonTitle": "Annuler",
-      "unregisterEntityDialog.deleteButtonTitle": "Supprimer l'entité",
-      "unregisterEntityDialog.deleteEntitySuccessMessage": "Entité supprimée {{entityName}}",
-      "unregisterEntityDialog.bootstrapState.title": "Vous ne pouvez pas désinscrire cette entité, car elle provient d'une configuration Backstage protégée (emplacement « {{location}} »). Si vous pensez qu'il s'agit d'une erreur, veuillez contacter l'intégrateur {{appTitle}}.",
-      "unregisterEntityDialog.bootstrapState.advancedDescription": "Vous avez la possibilité de supprimer l'entité elle-même du catalogue. Notez que cela ne doit être fait que si vous savez que le fichier de catalogue a été supprimé ou déplacé de son emplacement d'origine. Si ce n’est pas le cas, l’entité réapparaîtra sous peu lors du prochain cycle d’actualisation effectué par le catalogue.",
-      "unregisterEntityDialog.bootstrapState.advancedOptions": "Options avancées",
-      "unregisterEntityDialog.onlyDeleteStateTitle": "Cette entité ne semble pas provenir d'un lieu enregistré. Vous n'avez donc que la possibilité de le supprimer purement et simplement du catalogue.",
-      "unregisterEntityDialog.unregisterState.title": "Cette action désenregistrera les entités suivantes :",
-      "unregisterEntityDialog.unregisterState.subTitle": "Situé à l'emplacement suivant :",
-      "unregisterEntityDialog.unregisterState.description": "Pour annuler, réenregistrez simplement l'entité dans {{appTitle}}.",
-      "unregisterEntityDialog.unregisterState.unregisterButtonTitle": "Désenregistrer l'emplacement",
-      "unregisterEntityDialog.unregisterState.advancedOptions": "Options avancées",
-      "unregisterEntityDialog.unregisterState.advancedDescription": "Vous avez également la possibilité de supprimer l'entité elle-même du catalogue. Notez que cela ne doit être fait que si vous savez que le fichier de catalogue a été supprimé ou déplacé de son emplacement d'origine. Si ce n’est pas le cas, l’entité réapparaîtra sous peu lors du prochain cycle d’actualisation effectué par le catalogue.",
-      "unregisterEntityDialog.errorStateTitle": "Erreur interne : état inconnu",
-      "userListPicker.defaultOrgName": "Entreprise",
-      "userListPicker.personalFilter.title": "Personnel",
-      "userListPicker.personalFilter.ownedLabel": "Possédé",
-      "userListPicker.personalFilter.starredLabel": "Étoilé",
-      "userListPicker.orgFilterAllLabel": "Tous"
+      "podDrawer.buttons.delete": "Supprimer le pod"
+    }
+  },
+  "search": {
+    "fr": {
+      "searchModal.viewFullResults": "Voir les résultats complets",
+      "searchType.allResults": "Tous les résultats",
+      "searchType.tabs.allTitle": "Tous",
+      "searchType.accordion.allTitle": "Tous",
+      "searchType.accordion.collapse": "Effondrement",
+      "searchType.accordion.numberOfResults": "{{number}} résultats",
+      "sidebarSearchModal.title": "Rechercher"
+    }
+  },
+  "scaffolder-react": {
+    "fr": {
+      "passwordWidget.content": "Ce widget n'est pas sécurisé. Veuillez utiliser [`ui:field: Secret`](https://backstage.io/docs/features/software-templates/writing-templates/#using-secrets) au lieu de `ui:widget: password`",
+      "scaffolderPageContextMenu.moreLabel": "plus",
+      "scaffolderPageContextMenu.createLabel": "Créer",
+      "scaffolderPageContextMenu.editorLabel": "Gérer les modèles",
+      "scaffolderPageContextMenu.actionsLabel": "Actions installées",
+      "scaffolderPageContextMenu.tasksLabel": "Liste des tâches",
+      "scaffolderPageContextMenu.templatingExtensionsLabel": "Extensions de modèles",
+      "stepper.backButtonText": "Arrière",
+      "stepper.createButtonText": "Créer",
+      "stepper.reviewButtonText": "Revoir",
+      "stepper.stepIndexLabel": "Étape {{index, numéro}}",
+      "stepper.nextButtonText": "Suivant",
+      "templateCategoryPicker.title": "Catégories",
+      "templateCard.noDescription": "Aucune description",
+      "templateCard.chooseButtonText": "Choisir",
+      "cardHeader.detailBtnTitle": "Afficher les détails de l'entité du modèle",
+      "templateOutputs.title": "Sortie de texte",
+      "workflow.noDescription": "Aucune description"
     }
   },
   "catalog-import": {
     "fr": {
       "buttons.back": "Arrière",
-      "defaultImportPage.headerTitle": "Enregistrer un composant existant",
+      "defaultImportPage.headerTitle": "Importer un dépôt Git existant",
       "defaultImportPage.contentHeaderTitle": "Commencez à suivre votre composant dans {{appTitle}}",
       "defaultImportPage.supportTitle": "Commencez à suivre votre composant dans {{appTitle}} en l'ajoutant au catalogue de logiciels.",
-      "importInfoCard.title": "Enregistrer un composant existant",
+      "importInfoCard.title": "Importer un dépôt Git existant",
       "importInfoCard.deepLinkTitle": "En savoir plus sur le catalogue de logiciels",
       "importInfoCard.linkDescription": "Saisissez l'URL de votre référentiel de code source pour l'ajouter à {{appTitle}}.",
       "importInfoCard.fileLinkTitle": "Lien vers un fichier d'entité existant",
@@ -599,6 +550,55 @@
       "stepReviewLocation.catalog.new": "Les entités suivantes seront ajoutées au catalogue :",
       "stepReviewLocation.refresh": "Rafraîchir",
       "stepReviewLocation.import": "Importer"
+    }
+  },
+  "catalog-graph": {
+    "fr": {
+      "catalogGraphCard.title": "Rapports",
+      "catalogGraphCard.deepLinkTitle": "Voir le graphique",
+      "catalogGraphPage.title": "Graphique du catalogue",
+      "catalogGraphPage.filterToggleButtonTitle": "Filtres",
+      "catalogGraphPage.supportButtonDescription": "Commencez à suivre votre composant en l'ajoutant au catalogue de logiciels.",
+      "catalogGraphPage.simplifiedSwitchLabel": "Simplifié",
+      "catalogGraphPage.mergeRelationsSwitchLabel": "Fusionner les relations",
+      "catalogGraphPage.zoomOutDescription": "Utilisez le pincement et le zoom pour vous déplacer dans le diagramme. Cliquez pour changer de nœud actif, appuyez sur Maj pour accéder à l'entité.",
+      "catalogGraphPage.curveFilter.title": "Courbe",
+      "catalogGraphPage.curveFilter.curveMonotoneX": "Monotone X",
+      "catalogGraphPage.curveFilter.curveStepBefore": "Étape avant",
+      "catalogGraphPage.directionFilter.title": "Direction",
+      "catalogGraphPage.directionFilter.leftToRight": "De gauche à droite",
+      "catalogGraphPage.directionFilter.rightToLeft": "De droite à gauche",
+      "catalogGraphPage.directionFilter.topToBottom": "De haut en bas",
+      "catalogGraphPage.directionFilter.bottomToTop": "De bas en haut",
+      "catalogGraphPage.maxDepthFilter.title": "Profondeur maximale",
+      "catalogGraphPage.maxDepthFilter.inputPlaceholder": "∞ Infini",
+      "catalogGraphPage.maxDepthFilter.clearButtonAriaLabel": "profondeur maximale dégagée",
+      "catalogGraphPage.selectedKindsFilter.title": "Types",
+      "catalogGraphPage.selectedRelationsFilter.title": "Rapports"
+    }
+  },
+  "kubernetes-cluster": {
+    "fr": {
+      "kubernetesClusterContentPage.permissionAlert.title": "Autorisation requise",
+      "kubernetesClusterContentPage.permissionAlert.message": "Pour afficher les objets Kubernetes, contactez l'administrateur de votre portail pour qu'il vous accorde l'autorisation « kubernetes.clusters.read »."
+    }
+  },
+  "techdocs": {
+    "fr": {
+      "aboutCard.viewTechdocs": "Voir TechDocs"
+    }
+  },
+  "kubernetes": {
+    "fr": {
+      "kubernetesContentPage.permissionAlert.title": "Autorisation requise",
+      "kubernetesContentPage.permissionAlert.message": "Pour afficher les objets Kubernetes, contactez l'administrateur de votre portail pour qu'il vous accorde l'autorisation « kubernetes.clusters.read » et « kubernetes.resources.read »."
+    }
+  },
+  "home-react": {
+    "fr": {
+      "settingsModal.title": "Paramètres",
+      "settingsModal.closeButtonTitle": "Fermer",
+      "cardExtension.settingsButtonTitle": "Paramètres"
     }
   },
   "api-docs": {
@@ -685,7 +685,6 @@
       "alertDisplay.message_other": "({{ count }} messages plus récents)",
       "autoLogout.stillTherePrompt.title": "Déconnexion en raison d'inactivité",
       "autoLogout.stillTherePrompt.buttonText": "Oui! Ne me déconnectez pas",
-      "dependencyGraph.fullscreenTooltip": "Basculer en plein écran",
       "proxiedSignInPage.title": "Vous ne semblez pas être connecté. Veuillez essayer de recharger la page du navigateur."
     }
   }
