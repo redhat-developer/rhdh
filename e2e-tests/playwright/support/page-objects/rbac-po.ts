@@ -295,8 +295,9 @@ export class RbacPo extends PageObject {
     groups: string[],
     permissionPolicyType: PermissionPolicyType,
     pluginId: "catalog" | "kubernetes" | "scaffolder" = "catalog",
+    owner?: string,
   ) {
-    await this.createRoleUsers(name, users, groups);
+    await this.createRoleUsers(name, users, groups, owner);
 
     // select permissions
     await this.selectPluginsCombobox.click();
