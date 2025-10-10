@@ -442,7 +442,7 @@ test.describe.serial("Test RBAC", () => {
       const rbacPo = new RbacPo(page);
       await rbacPo.createConditionalRole(
         "test-role1",
-        ["Guest User", "rhdh-qe"],
+        ["Guest User", "rhdh-qe rhdh-qe"],
         ["Backstage"],
         "anyOf",
       );
