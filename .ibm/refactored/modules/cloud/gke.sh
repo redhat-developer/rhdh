@@ -359,7 +359,84 @@ cleanup_gke() {
     return 0
 }
 
+cleanup_gke_deployment() {
+    local namespace=$1
+    log_info "Cleaning up GKE deployment in namespace: ${namespace}"
+    delete_namespace "$namespace"
+}
+
+cleanup_gke_dns_record() {
+    local domain_name=$1
+    local zone="${GCP_DNS_ZONE:-rhdh-zone}"
+
+    log_info "Cleaning up GKE DNS record: ${domain_name}"
+
+    # Check if the DNS record exists
+    local record_exists
+    record_exists=$(gcloud dns record-sets list --zone="${zone}" --name="${domain_name}." --format="value(name)" 2>/dev/null || echo "")
+
+    if [[ -z "${record_exists}" ]]; then
+        log_success "DNS record does not exist, nothing to clean up"
+        return 0
+    fi
+
+    log_info "Found existing DNS record, deleting..."
+
+    # Get the current record data
+    local record_type
+    local record_ttl
+    local record_data
+
+    record_type=$(gcloud dns record-sets list --zone="${zone}" --name="${domain_name}." --format="value(type)" | head -n1)
+    record_ttl=$(gcloud dns record-sets list --zone="${zone}" --name="${domain_name}." --format="value(ttl)" | head -n1)
+    record_data=$(gcloud dns record-sets list --zone="${zone}" --name="${domain_name}." --format="value(rrdatas)" | head -n1)
+
+    if [[ -n "${record_type}" && -n "${record_data}" ]]; then
+        # Start a transaction
+        gcloud dns record-sets transaction start --zone="${zone}"
+
+        # Remove the record
+        gcloud dns record-sets transaction remove "${record_data}" \
+            --name="${domain_name}." \
+            --type="${record_type}" \
+            --ttl="${record_ttl:-300}" \
+            --zone="${zone}"
+
+        # Execute the transaction
+        if gcloud dns record-sets transaction execute --zone="${zone}"; then
+            log_success "DNS record deleted successfully"
+        else
+            log_error "Failed to delete DNS record"
+            # Abort transaction if it fails
+            gcloud dns record-sets transaction abort --zone="${zone}" 2>/dev/null || true
+            return 1
+        fi
+    else
+        log_warning "Could not retrieve record details for deletion"
+        return 1
+    fi
+
+    return 0
+}
+
+get_gke_certificate() {
+    local cert_name="${GKE_CERT_NAME:-rhdh-cert}"
+
+    log_info "Getting GKE certificate: ${cert_name}"
+
+    # Check if certificate exists
+    if gcloud compute ssl-certificates describe "${cert_name}" >/dev/null 2>&1; then
+        log_info "Found certificate: ${cert_name}"
+        echo "${cert_name}"
+        return 0
+    else
+        log_warning "Certificate not found: ${cert_name}"
+        return 1
+    fi
+}
+
 # Export functions
 export -f gcloud_auth gcloud_gke_get_credentials gcloud_ssl_cert_create
 export -f gke_get_cluster_info configure_gke_ingress update_gcp_dns_record
-export -f gke_create_workload_identity cleanup_gke
+export -f gke_create_workload_identity cleanup_gke cleanup_gke_deployment
+export -f cleanup_gke_dns_record get_gke_certificate

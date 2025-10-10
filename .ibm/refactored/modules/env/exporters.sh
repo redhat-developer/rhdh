@@ -60,13 +60,50 @@ export_github_vars() {
     log_debug "GitHub vars exported (URL=${GITHUB_URL_PLAIN}, ORG=${GITHUB_ORG_PLAIN})"
 }
 
+export_cloud_platform_vars() {
+    # AKS specific variables
+    if [[ -n "${AKS_CLUSTER_FQDN:-}" ]]; then
+        export AKS_CLUSTER_FQDN_PLAIN="${AKS_CLUSTER_FQDN}"
+    fi
+
+    # Enable AKS Spot instances
+    export ENABLE_AKS_SPOT="${ENABLE_AKS_SPOT:-false}"
+
+    # EKS specific variables
+    if [[ -n "${AWS_EKS_PARENT_DOMAIN:-}" ]]; then
+        export EKS_INSTANCE_DOMAIN_NAME="${AWS_EKS_PARENT_DOMAIN}"
+    fi
+
+    # GKE specific variables
+    if [[ -n "${GKE_INSTANCE_DOMAIN_NAME:-}" ]]; then
+        export GKE_INSTANCE_DOMAIN_NAME_PLAIN="${GKE_INSTANCE_DOMAIN_NAME}"
+    fi
+
+    # GKE certificate name for managed certificates
+    export GKE_CERT_NAME="${GKE_CERT_NAME:-rhdh-cert}"
+
+    log_debug "Cloud platform vars exported (AKS_SPOT=${ENABLE_AKS_SPOT}, GKE_CERT=${GKE_CERT_NAME})"
+}
+
+export_upgrade_vars() {
+    # Variables for upgrade testing
+    export ENABLE_UPGRADE_TESTS="${ENABLE_UPGRADE_TESTS:-false}"
+    export UPGRADE_FROM_VERSION="${UPGRADE_FROM_VERSION:-}"
+    export UPGRADE_TO_VERSION="${UPGRADE_TO_VERSION:-}"
+
+    log_debug "Upgrade vars exported (ENABLED=${ENABLE_UPGRADE_TESTS})"
+}
+
 export_default_providers_env() {
     export_ocm_vars
     export_keycloak_vars
     export_github_vars
+    export_cloud_platform_vars
+    export_upgrade_vars
 }
 
 # Export functions
 export -f export_ocm_vars export_keycloak_vars export_github_vars export_default_providers_env
+export -f export_cloud_platform_vars export_upgrade_vars
 
 

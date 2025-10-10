@@ -55,9 +55,9 @@ uninstall_helmchart() {
 }
 
 get_chart_version() {
-    local major_version="${1:-1.7}"
+    local major_version="${1:-1.8}"
 
-    log_debug "Fetching latest chart version for major version: ${major_version}" >&2
+    log_debug "Fetching latest chart version for major version: ${major_version}"
 
     # Get latest chart version using Quay.io API
     local version
@@ -68,8 +68,8 @@ get_chart_version() {
     
     # Fallback if API fails
     if [[ -z "${version}" ]]; then
-        log_warning "Could not fetch chart version from API, using default" >&2
-        version="1.7-156-CI"
+        log_warning "Could not fetch chart version from API, using default"
+        version="1.8-156-CI"
     fi
     
     echo "${version}"

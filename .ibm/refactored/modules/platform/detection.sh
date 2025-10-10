@@ -99,10 +99,10 @@ get_cluster_router_base() {
 
     # Ensure platform is detected if not already set
     if [[ -z "${K8S_PLATFORM:-}" ]]; then
-        detect_ocp
+        detect_platform
     fi
 
-    if [[ "${K8S_PLATFORM}" == "openshift" ]] || [[ "${IS_OPENSHIFT}" == "true" ]]; then
+    if [[ "${K8S_PLATFORM:-}" == "openshift" ]] || [[ "${IS_OPENSHIFT:-}" == "true" ]]; then
         router_base=$(oc get route console -n openshift-console \
             -o=jsonpath='{.spec.host}' 2>/dev/null | sed 's/^[^.]*\.//' || echo "")
 
@@ -116,7 +116,7 @@ get_cluster_router_base() {
         if [[ -z "${router_base}" ]]; then
             router_base="apps.example.com"
         fi
-    elif [[ "${K8S_PLATFORM}" == "aks" ]]; then
+    elif [[ "${K8S_PLATFORM:-}" == "aks" ]]; then
         # AKS: Try multiple methods
         # Method 1: Check for nginx ingress controller
         router_base=$(kubectl get svc -n app-routing-system -l app.kubernetes.io/name=nginx \
@@ -132,7 +132,7 @@ get_cluster_router_base() {
         if [[ -z "${router_base}" ]] && [[ -n "${AKS_CLUSTER_FQDN:-}" ]]; then
             router_base="${AKS_CLUSTER_FQDN}"
         fi
-    elif [[ "${K8S_PLATFORM}" == "eks" ]]; then
+    elif [[ "${K8S_PLATFORM:-}" == "eks" ]]; then
         # EKS: Get from ALB/NLB ingress or cluster endpoint
         router_base=$(kubectl get ingress -A -o json 2>/dev/null | \
             jq -r '.items[0].status.loadBalancer.ingress[0].hostname' 2>/dev/null || echo "")
@@ -147,7 +147,7 @@ get_cluster_router_base() {
         if [[ -z "${router_base}" ]] && [[ -n "${AWS_EKS_PARENT_DOMAIN:-}" ]]; then
             router_base="${AWS_EKS_PARENT_DOMAIN}"
         fi
-    elif [[ "${K8S_PLATFORM}" == "gke" ]]; then
+    elif [[ "${K8S_PLATFORM:-}" == "gke" ]]; then
         # GKE: Check for external IP from ingress or load balancer
         router_base=$(kubectl get ingress -A -o json 2>/dev/null | \
             jq -r '.items[0].status.loadBalancer.ingress[0].ip' 2>/dev/null || echo "")

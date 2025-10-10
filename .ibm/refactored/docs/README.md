@@ -42,6 +42,9 @@
 **Topics:**
 - Quick start guide
 - Available jobs (deploy, test, cleanup, nightly, etc.)
+- Upgrade flow and testing
+- Cloud provider deployments (EKS, AKS, GKE)
+- Cloud DNS/Ingress helpers
 - Makefile commands
 - Environment variables
 - Local configuration
@@ -149,7 +152,26 @@ Update documentation when:
 
 ---
 
-**Last Updated**: 2025-10-09  
-**Version**: 2.0  
+## 🆕 New Features (v1.8)
+
+### Upgrade Testing
+- **Job**: `upgrade` - Tests upgrading from previous release to current
+- **Process**: Install base → Verify → Upgrade → Test → Rollback on failure
+- **Files**: `jobs/upgrade.sh`, `value_files/diff-values_showcase_upgrade.yaml`
+
+### Cloud Provider Support
+- **AWS EKS**: DNS management via Route53, ACM certificates
+- **Azure AKS**: Spot instance support, managed ingress
+- **Google GKE**: Cloud DNS integration, SSL certificates
+
+### New Helper Functions
+- **DNS Management**: `cleanup_*_dns_record` functions for each cloud
+- **Certificate Management**: `get_*_certificate` functions
+- **Deployment Cleanup**: `cleanup_*_deployment` for full cleanup
+
+---
+
+**Last Updated**: 2025-10-10
+**Version**: 2.1
 **Maintainers**: RHDH CI/CD Team
 

@@ -379,6 +379,92 @@ JOB_NAME=deploy ./openshift-ci-tests.sh
 
 ---
 
+## 🔄 Upgrade Flow
+
+### Testing RHDH Upgrades
+
+The upgrade job tests upgrading from a previous release to the current version:
+
+```bash
+# Run upgrade test (OpenShift CI)
+JOB_NAME=upgrade ./openshift-ci-tests.sh
+
+# Direct execution
+./jobs/upgrade.sh
+```
+
+#### Upgrade Process:
+1. **Install Base Version**: Deploys previous release (e.g., 1.7.x)
+2. **Verify Base**: Runs health checks on base deployment
+3. **Perform Upgrade**: Uses Helm upgrade to current version (1.8.x)
+4. **Validate Upgrade**: Runs comprehensive tests
+5. **Rollback on Failure**: Automatic rollback if upgrade fails
+
+#### Configuration:
+- Base version auto-detected from `CHART_MAJOR_VERSION`
+- Uses diff value files: `value_files/diff-values_showcase_upgrade.yaml`
+- Supports orchestrator workflow migration
+
+---
+
+## ☁️ Cloud Provider Deployments
+
+### AWS EKS
+```bash
+# Helm deployment
+JOB_NAME=eks-helm ./openshift-ci-tests.sh
+
+# Operator deployment
+JOB_NAME=eks-operator ./openshift-ci-tests.sh
+```
+
+### Azure AKS
+```bash
+# Helm deployment
+JOB_NAME=aks-helm ./openshift-ci-tests.sh
+
+# Operator deployment
+JOB_NAME=aks-operator ./openshift-ci-tests.sh
+
+# With spot instances
+export ENABLE_AKS_SPOT=true
+JOB_NAME=aks-helm ./openshift-ci-tests.sh
+```
+
+### Google GKE
+```bash
+# Helm deployment
+JOB_NAME=gke-helm ./openshift-ci-tests.sh
+
+# Operator deployment
+JOB_NAME=gke-operator ./openshift-ci-tests.sh
+
+# With custom certificate
+export GKE_CERT_NAME="my-cert"
+JOB_NAME=gke-helm ./openshift-ci-tests.sh
+```
+
+### Cloud DNS/Ingress Helpers
+
+New helper functions for cloud providers:
+
+#### EKS
+- `cleanup_eks_dns_record` - Removes Route53 DNS records
+- `generate_dynamic_domain_name` - Creates unique subdomain
+- `get_eks_certificate` - Retrieves ACM certificate ARN
+- `cleanup_eks_deployment` - Full namespace cleanup
+
+#### AKS
+- `cleanup_aks_deployment` - Removes AKS resources
+- `apply_aks_spot_patch` - Applies spot instance tolerations
+
+#### GKE
+- `cleanup_gke_dns_record` - Removes Cloud DNS records
+- `get_gke_certificate` - Gets SSL certificate name
+- `cleanup_gke_deployment` - Full GKE cleanup
+
+---
+
 ## 📚 Documentation
 
 > **📖 Full documentation index**: See [docs/README.md](docs/README.md) for complete documentation guide

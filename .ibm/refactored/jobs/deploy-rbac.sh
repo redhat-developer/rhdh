@@ -40,11 +40,11 @@ main() {
     log_info "Cluster router base: ${K8S_CLUSTER_ROUTER_BASE}"
 
     # Get chart version
-    export CHART_VERSION=$(get_chart_version "${CHART_MAJOR_VERSION:-1.7}")
+    export CHART_VERSION=$(get_chart_version "${CHART_MAJOR_VERSION:-1.8}")
     log_info "Using chart version: ${CHART_VERSION}"
     
     # Validate chart version
-    if ! validate_chart_version "${CHART_VERSION}" "${CHART_MAJOR_VERSION:-1.7}"; then
+    if ! validate_chart_version "${CHART_VERSION}" "${CHART_MAJOR_VERSION:-1.8}"; then
         log_error "Chart version validation failed, aborting"
         exit 1
     fi

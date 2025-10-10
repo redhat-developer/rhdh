@@ -159,6 +159,122 @@ aws_eks_get_load_balancer_hostname() {
 }
 
 # ============================================================================
+# EKS DNS MANAGEMENT
+# ============================================================================
+
+generate_dynamic_domain_name() {
+    local suffix="${1:-${BUILD_ID}}"
+    local parent_domain="${AWS_EKS_PARENT_DOMAIN}"
+
+    if [[ -z "${parent_domain}" ]]; then
+        log_error "AWS_EKS_PARENT_DOMAIN is not set"
+        return 1
+    fi
+
+    # Generate subdomain: <namespace>-<suffix>.<parent_domain>
+    local domain_name="rhdh-${suffix}.${parent_domain}"
+    echo "${domain_name}"
+}
+
+cleanup_eks_dns_record() {
+    local domain_name=$1
+
+    log_info "Cleaning up EKS DNS record for ${domain_name}"
+
+    # Use global parent domain from environment
+    if [[ -z "${AWS_EKS_PARENT_DOMAIN}" ]]; then
+        log_error "AWS_EKS_PARENT_DOMAIN environment variable is not set"
+        return 1
+    fi
+
+    local parent_domain="${AWS_EKS_PARENT_DOMAIN}"
+    local hosted_zone_id
+
+    # Find hosted zone ID
+    hosted_zone_id=$(aws route53 list-hosted-zones-by-name \
+        --dns-name "${parent_domain}" \
+        --query "HostedZones[?Name=='${parent_domain}.'].Id" \
+        --output text | sed 's|/hostedzone/||')
+
+    if [[ -z "${hosted_zone_id}" ]]; then
+        log_warning "No hosted zone found for ${parent_domain}"
+        return 0
+    fi
+
+    # List and delete record sets
+    local record_sets
+    record_sets=$(aws route53 list-resource-record-sets \
+        --hosted-zone-id "${hosted_zone_id}" \
+        --query "ResourceRecordSets[?Name=='${domain_name}.' && Type=='CNAME']" \
+        --output json)
+
+    if [[ "${record_sets}" != "[]" ]]; then
+        log_info "Deleting DNS record for ${domain_name}"
+
+        # Create change batch to delete record
+        local change_batch
+        change_batch=$(echo "${record_sets}" | jq '{
+            "Changes": [
+                {
+                    "Action": "DELETE",
+                    "ResourceRecordSet": .[0]
+                }
+            ]
+        }')
+
+        aws route53 change-resource-record-sets \
+            --hosted-zone-id "${hosted_zone_id}" \
+            --change-batch "${change_batch}" >/dev/null
+
+        log_success "DNS record deleted for ${domain_name}"
+    else
+        log_info "No DNS record found for ${domain_name}"
+    fi
+}
+
+get_eks_certificate() {
+    local domain_name=$1
+
+    log_info "Setting up certificate for ${domain_name}"
+
+    # Request certificate from ACM
+    local cert_arn
+    cert_arn=$(aws acm request-certificate \
+        --domain-name "*.${domain_name}" \
+        --validation-method DNS \
+        --query CertificateArn \
+        --output text 2>/dev/null)
+
+    if [[ -n "${cert_arn}" ]]; then
+        export EKS_CERTIFICATE_ARN="${cert_arn}"
+        log_success "Certificate requested: ${cert_arn}"
+
+        # Wait for validation
+        log_info "Waiting for certificate validation..."
+        sleep 30
+    else
+        log_warning "Could not request certificate, using existing if available"
+    fi
+}
+
+cleanup_eks_deployment() {
+    local namespace="$1"
+
+    log_info "Cleaning up EKS deployment in namespace ${namespace}"
+
+    # Delete ingress resources
+    kubectl delete ingress --all -n "${namespace}" 2>/dev/null || true
+
+    # Delete services of type LoadBalancer
+    kubectl delete service -l type=LoadBalancer -n "${namespace}" 2>/dev/null || true
+
+    # Wait for resources to be cleaned up
+    sleep 10
+
+    log_success "EKS deployment cleanup completed"
+}
+
+# ============================================================================
 # EKS INGRESS CONFIGURATION
 # ============================================================================
 
@@ -554,8 +670,170 @@ EOF
     return 0
 }
 
+# Function to cleanup EKS DNS records
+cleanup_eks_dns_record() {
+    local domain_name=$1
+
+    log_info "Cleaning up EKS DNS record"
+
+    # Use global parent domain from secret
+    if [[ -z "${AWS_EKS_PARENT_DOMAIN}" ]]; then
+        log_error "AWS_EKS_PARENT_DOMAIN environment variable is not set"
+        return 1
+    fi
+
+    log_info "Using configured parent domain"
+
+    # Get the hosted zone ID for the parent domain
+    local hosted_zone_id
+    hosted_zone_id=$(aws route53 list-hosted-zones --query "HostedZones[?Name == '${AWS_EKS_PARENT_DOMAIN}.' || Name == '${AWS_EKS_PARENT_DOMAIN}'].Id" --output text 2> /dev/null)
+
+    if [[ -z "${hosted_zone_id}" ]]; then
+        log_error "No hosted zone found for parent domain: ${AWS_EKS_PARENT_DOMAIN}"
+        return 1
+    fi
+
+    # Remove the '/hostedzone/' prefix
+    hosted_zone_id="${hosted_zone_id#/hostedzone/}"
+    log_info "Found hosted zone for configured parent domain"
+
+    # Check if the DNS record exists before attempting to delete it
+    log_info "Checking if DNS record exists"
+    local existing_record
+    existing_record=$(aws route53 list-resource-record-sets \
+        --hosted-zone-id "${hosted_zone_id}" \
+        --query "ResourceRecordSets[?Name == '${domain_name}.'].{Name:Name,Type:Type,TTL:TTL,ResourceRecords:ResourceRecords}" \
+        --output json 2> /dev/null)
+
+    if [[ -z "${existing_record}" ]] || [[ "${existing_record}" == "[]" ]] || [[ "${existing_record}" == "null" ]]; then
+        log_success "DNS record does not exist, nothing to clean up"
+        return 0
+    fi
+
+    log_info "Found existing DNS record"
+
+    # Extract the record details for deletion
+    local record_name
+    local record_type
+    local record_ttl
+    local record_values
+
+    record_name=$(echo "${existing_record}" | jq -r '.[0].Name' 2> /dev/null)
+    record_type=$(echo "${existing_record}" | jq -r '.[0].Type' 2> /dev/null)
+    record_ttl=$(echo "${existing_record}" | jq -r '.[0].TTL' 2> /dev/null)
+    record_values=$(echo "${existing_record}" | jq -r '.[0].ResourceRecords[].Value' 2> /dev/null)
+
+    if [[ -z "${record_name}" ]] || [[ "${record_name}" == "null" ]]; then
+        log_error "Could not extract record details from existing record"
+        return 1
+    fi
+
+    log_info "Record details retrieved (type and TTL)"
+
+    # Create the change batch JSON for deletion
+    cat > /tmp/dns-delete.json << EOF
+{
+  "Changes": [
+    {
+      "Action": "DELETE",
+      "ResourceRecordSet": {
+        "Name": "${record_name}",
+        "Type": "${record_type}",
+        "TTL": ${record_ttl},
+        "ResourceRecords": [
+EOF
+
+    # Add the resource records
+    while IFS= read -r value; do
+        if [[ -n "${value}" ]] && [[ "${value}" != "null" ]]; then
+            echo "          {" >> /tmp/dns-delete.json
+            echo "            \"Value\": \"${value}\"" >> /tmp/dns-delete.json
+            echo "          }," >> /tmp/dns-delete.json
+        fi
+    done <<< "${record_values}"
+
+    # Remove the trailing comma and close the JSON
+    sed -i '$ s/,$//' /tmp/dns-delete.json
+    cat >> /tmp/dns-delete.json << EOF
+        ]
+      }
+    }
+  ]
+}
+EOF
+
+    # Apply the DNS deletion
+    log_info "Deleting DNS record..."
+    local change_id
+    change_id=$(aws route53 change-resource-record-sets \
+        --hosted-zone-id "${hosted_zone_id}" \
+        --change-batch file:///tmp/dns-delete.json \
+        --query 'ChangeInfo.Id' \
+        --output text 2> /dev/null)
+
+    if [[ $? -eq 0 && -n "${change_id}" ]]; then
+        log_success "DNS record deletion submitted successfully"
+
+        # Wait for the change to be propagated
+        log_info "Waiting for DNS record deletion to be propagated..."
+        aws route53 wait resource-record-sets-changed --id "${change_id}"
+
+        if [[ $? -eq 0 ]]; then
+            log_success "DNS record deletion has been propagated"
+        else
+            log_warning "DNS record deletion may still be propagating"
+        fi
+    else
+        log_error "Failed to delete DNS record"
+        return 1
+    fi
+
+    # Clean up temporary file
+    rm -f /tmp/dns-delete.json
+
+    return 0
+}
+
+cleanup_eks_deployment() {
+    local namespace=$1
+    log_info "Cleaning up EKS deployment in namespace: ${namespace}"
+    delete_namespace "$namespace"
+}
+
+generate_dynamic_domain_name() {
+    local namespace=$1
+    local base_domain="${AWS_EKS_PARENT_DOMAIN}"
+
+    # Generate a dynamic subdomain based on namespace and timestamp
+    local timestamp=$(date +%s)
+    local dynamic_domain="${namespace}-${timestamp}.${base_domain}"
+
+    echo "${dynamic_domain}"
+}
+
+get_eks_certificate() {
+    local domain="${1:-${AWS_EKS_PARENT_DOMAIN}}"
+
+    log_info "Getting EKS certificate for domain: ${domain}"
+
+    # List certificates and find the one for our domain
+    local cert_arn
+    cert_arn=$(aws acm list-certificates --region "${AWS_DEFAULT_REGION}" \
+        --query "CertificateSummaryList[?DomainName=='${domain}' || DomainName=='*.${domain}'].CertificateArn" \
+        --output text | head -n1)
+
+    if [[ -z "${cert_arn}" ]]; then
+        log_warning "No certificate found for domain: ${domain}"
+        return 1
+    fi
+
+    log_info "Found certificate: ${cert_arn}"
+    echo "${cert_arn}"
+    return 0
+}
+
 # Export functions
 export -f mask_value aws_configure get_cluster_aws_region
 export -f aws_eks_verify_cluster aws_eks_get_cluster_info aws_eks_get_load_balancer_hostname
 export -f configure_eks_ingress_and_dns update_route53_dns_record verify_dns_resolution
-export -f get_eks_certificate cleanup_eks_dns_record
+export -f get_eks_certificate cleanup_eks_dns_record generate_dynamic_domain_name cleanup_eks_deployment

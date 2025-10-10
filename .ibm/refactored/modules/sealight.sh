@@ -2,10 +2,9 @@
 #
 # Sealight Integration Module - Code coverage and quality analysis for RHDH
 #
-set -euo pipefail
 
 # Guard to prevent multiple sourcing
-if [[ -n "${_SEALIGHT_LOADED:-}}" ]]; then
+if [[ -n "${_SEALIGHT_LOADED:-}" ]]; then
     return 0
 fi
 readonly _SEALIGHT_LOADED=true
@@ -27,7 +26,7 @@ export RHDH_SEALIGHTS_BOT_TOKEN="${RHDH_SEALIGHTS_BOT_TOKEN:-}"
 # ============================================================================
 
 check_sealight_enabled() {
-    if [[ "$JOB_NAME" == *"sealight"* ]] || [[ "${ENABLE_SEALIGHT:-false}" == "true" ]]; then
+    if [[ "${ENABLE_SEALIGHT:-false}" == "true" ]]; then
         return 0
     else
         return 1

@@ -36,11 +36,11 @@ handle_ocp_nightly() {
     export K8S_CLUSTER_ROUTER_BASE=$(get_cluster_router_base)
 
     # Get chart version
-    export CHART_VERSION=$(get_chart_version "${CHART_MAJOR_VERSION:-1.7}")
+    export CHART_VERSION=$(get_chart_version "${CHART_MAJOR_VERSION:-1.8}")
     log_info "Using chart version: ${CHART_VERSION}"
     
     # Validate chart version
-    validate_chart_version "${CHART_VERSION}" "${CHART_MAJOR_VERSION:-1.7}" || {
+    validate_chart_version "${CHART_VERSION}" "${CHART_MAJOR_VERSION:-1.8}" || {
         log_error "Chart version validation failed"
         return 1
     }

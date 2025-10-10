@@ -50,6 +50,8 @@ Job Types:
   pull/pr-*           - Pull request validation
   operator            - Operator deployment
   nightly             - Nightly comprehensive tests
+  upgrade             - Test upgrade from previous version
+  auth-providers      - Test authentication providers
   aks-helm/operator   - Azure AKS deployment
   eks-helm/operator   - AWS EKS deployment
   gke-helm/operator   - Google GKE deployment
@@ -112,6 +114,9 @@ run_job() {
             ;;
         auth-providers)
             job_script="${SCRIPT_DIR}/jobs/auth-providers.sh"
+            ;;
+        *upgrade*)
+            job_script="${SCRIPT_DIR}/jobs/upgrade.sh"
             ;;
         deploy)
             job_script="${SCRIPT_DIR}/jobs/deploy-base.sh"

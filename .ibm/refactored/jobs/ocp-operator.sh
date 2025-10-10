@@ -26,7 +26,7 @@ handle_ocp_operator() {
     export K8S_CLUSTER_ROUTER_BASE=$(get_cluster_router_base)
 
     # Get chart version
-    export CHART_VERSION=$(get_chart_version "${CHART_MAJOR_VERSION:-1.7}")
+    export CHART_VERSION=$(get_chart_version "${CHART_MAJOR_VERSION:-1.8}")
     log_info "Using chart version: ${CHART_VERSION}"
 
     # Setup cluster for operator

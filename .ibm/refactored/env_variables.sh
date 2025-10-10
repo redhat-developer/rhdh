@@ -96,7 +96,7 @@ NAME_SPACE_RUNTIME="${NAME_SPACE_RUNTIME:-showcase-runtime}"
 NAME_SPACE_POSTGRES_DB="${NAME_SPACE_POSTGRES_DB:-postgress-external-db}"
 NAME_SPACE_SANITY_PLUGINS_CHECK="showcase-sanity-plugins"
 OPERATOR_MANAGER='rhdh-operator'
-CHART_MAJOR_VERSION="1.7"
+CHART_MAJOR_VERSION="1.8"
 
 # Chart version will be determined dynamically if not set
 CHART_VERSION="${CHART_VERSION:-}"

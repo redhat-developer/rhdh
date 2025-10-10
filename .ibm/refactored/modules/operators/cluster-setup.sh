@@ -66,10 +66,22 @@ cluster_setup_ocp_operator() {
 cluster_setup_k8s_operator() {
     log_info "Setting up Kubernetes cluster for Operator deployments"
 
-    # Ensure basic ingress is available on plain K8s
-    if ! resource_exists "deployment" "ingress-nginx-controller" "ingress-nginx"; then
-        install_nginx_ingress
+    # Install OLM (Operator Lifecycle Manager) if not present
+    install_olm
+
+    # Install Tekton Pipelines
+    install_tekton_pipelines
+
+    # Install OCM operator if enabled (ACM for K8s)
+    if [[ "${ENABLE_ACM:-false}" == "true" ]]; then
+        log_info "Installing OCM operator for K8s"
+        install_ocm_k8s_operator
+        # Wait for MultiClusterHub to be ready
+        wait_until_mch_ready
     fi
+
+    # Install Crunchy Postgres operator if needed (disabled by default in values)
+    # install_crunchy_postgres_k8s_operator
 
     log_success "Kubernetes operator setup completed"
 }
@@ -206,6 +218,88 @@ install_nginx_ingress() {
     log_success "NGINX Ingress Controller installed"
 }
 
+install_olm() {
+    log_info "Installing OLM (Operator Lifecycle Manager)"
+
+    # Check if OLM is already installed
+    if kubectl get namespace olm 2>/dev/null; then
+        log_info "OLM is already installed"
+        return 0
+    fi
+
+    # Install OLM
+    local olm_version="${OLM_VERSION:-v0.28.0}"
+    kubectl apply -f "https://github.com/operator-framework/operator-lifecycle-manager/releases/download/${olm_version}/crds.yaml"
+    kubectl wait --for=condition=Established --all crd --timeout=120s
+    kubectl apply -f "https://github.com/operator-framework/operator-lifecycle-manager/releases/download/${olm_version}/olm.yaml"
+
+    # Wait for OLM deployments to be ready
+    kubectl wait --for=condition=available --timeout=300s deployment/olm-operator -n olm
+    kubectl wait --for=condition=available --timeout=300s deployment/catalog-operator -n olm
+
+    log_success "OLM installed successfully"
+}
+
+install_tekton_pipelines() {
+    log_info "Installing Tekton Pipelines"
+
+    # Check if Tekton is already installed
+    if kubectl get namespace tekton-pipelines 2>/dev/null; then
+        log_info "Tekton Pipelines is already installed"
+        return 0
+    fi
+
+    # Install Tekton Pipelines
+    local tekton_version="${TEKTON_VERSION:-v0.59.0}"
+    kubectl apply -f "https://github.com/tektoncd/pipeline/releases/download/${tekton_version}/release.yaml"
+
+    # Wait for Tekton deployments to be ready
+    kubectl wait --for=condition=available --timeout=300s deployment/tekton-pipelines-controller -n tekton-pipelines
+    kubectl wait --for=condition=available --timeout=300s deployment/tekton-pipelines-webhook -n tekton-pipelines
+
+    log_success "Tekton Pipelines installed successfully"
+}
+
+install_ocm_k8s_operator() {
+    log_info "Installing OCM operator for Kubernetes"
+
+    # Check if OCM is already installed
+    if kubectl get namespace open-cluster-management 2>/dev/null; then
+        log_info "OCM operator is already installed"
+        return 0
+    fi
+
+    # Create namespace
+    kubectl create namespace open-cluster-management --dry-run=client -o yaml | kubectl apply -f -
+
+    # Install OCM using OLM
+    kubectl apply -f - <<EOF
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: open-cluster-management
+  namespace: open-cluster-management
+spec:
+  targetNamespaces:
+  - open-cluster-management
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: cluster-manager
+  namespace: open-cluster-management
+spec:
+  channel: stable
+  name: cluster-manager
+  source: operatorhubio-catalog
+  sourceNamespace: olm
+EOF
+
+    sleep 30
+    log_success "OCM operator installation initiated"
+}
+
 # Export functions
 export -f cluster_setup_ocp_helm cluster_setup_ocp_operator cluster_setup_k8s_helm cluster_setup_k8s_operator
 export -f install_acm_operator wait_until_mch_ready install_rhdh_operator install_nginx_ingress
+export -f install_olm install_tekton_pipelines install_ocm_k8s_operator

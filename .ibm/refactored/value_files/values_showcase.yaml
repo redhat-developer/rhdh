@@ -18,7 +18,7 @@ global:
           proxy:
             endpoints:
               /add-test-header:
-                target: http://redhat-developer-hub-showcase.apps.rosa.ff7y8-57y7i-2yh.3ghn.p3.openshiftapps.com/api/simple-chat
+                target: http://${.Values.global.host}/api/simple-chat
                 credentials: forward
                 headers:
                   x-proxy-test-header: hello!
@@ -81,17 +81,6 @@ global:
                     importName: LocationListener
       - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-org-dynamic
         disabled: false
-        pluginConfig:
-          catalog:
-            providers:
-              githubOrg:
-                - id: production
-                  githubUrl: ${GITHUB_URL_PLAIN}
-                  orgs: ["${GITHUB_ORG_PLAIN}"]
-                  schedule:
-                    frequency: { minutes: 60 }
-                    timeout: { minutes: 15 }
-                    initialDelay: { seconds: 15 }
       - package: ./dynamic-plugins/dist/backstage-community-plugin-github-issues
         disabled: false
       - package: ./dynamic-plugins/dist/roadiehq-backstage-plugin-github-pull-requests
@@ -104,20 +93,6 @@ global:
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-keycloak-dynamic
         disabled: false
-        pluginConfig:
-          catalog:
-            providers:
-              keycloakOrg:
-                default:
-                  baseUrl: ${KEYCLOAK_AUTH_BASE_URL}/auth
-                  loginRealm: ${KEYCLOAK_AUTH_LOGIN_REALM}
-                  realm: ${KEYCLOAK_AUTH_REALM}
-                  clientId: ${KEYCLOAK_AUTH_CLIENTID}
-                  clientSecret: ${KEYCLOAK_AUTH_CLIENT_SECRET}
-                  schedule:
-                    frequency: { minutes: 60 }
-                    timeout: { minutes: 50 }
-                    initialDelay: { seconds: 15 }
       - package: ./dynamic-plugins/dist/backstage-community-plugin-tekton
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-kubernetes
@@ -150,12 +125,21 @@ global:
                 plural: "routes"
             serviceLocatorMethod:
               type: multiTenant
-      # OCM plugins - disabled by default (requires ACM/MultiClusterHub)
-      # Enabled in nightly jobs via values_showcase_nightly.yaml
+      # Enable OCM plugins.
       - package: ./dynamic-plugins/dist/backstage-community-plugin-ocm-backend-dynamic
-        disabled: true
+        disabled: false
+        pluginConfig:
+          catalog:
+            providers:
+              ocm:
+                default:
+                  name: testCluster # Can be any arbitrary name supported by kubernetes
+                  url: ${OCM_CLUSTER_URL}
+                  serviceAccountToken: ${OCM_CLUSTER_TOKEN}
+                  skipTLSVerify: true
+                  owner: janus-authors
       - package: ./dynamic-plugins/dist/backstage-community-plugin-ocm
-        disabled: true
+        disabled: false
       # Enable bulk import plugins.
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import-backend-dynamic
         disabled: false
@@ -192,7 +176,7 @@ global:
       - package: ./dynamic-plugins/dist/backstage-community-plugin-tech-radar
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-tech-radar-backend-dynamic
-        disabled: true  # Disabled due to missing configuration
+        disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-techdocs-module-addons-contrib
         disabled: false
         pluginConfig:
@@ -210,9 +194,9 @@ global:
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic
         disabled: false
       - package: ./dynamic-plugins/dist/immobiliarelabs-backstage-plugin-gitlab-backend-dynamic
-        disabled: true  # Disabled due to missing GitLab token
+        disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-gitlab-dynamic
-        disabled: true  # Disabled due to missing GitLab token
+        disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-topology
         disabled: false
       - package: "@pataknight/backstage-plugin-rhdh-qe-theme@0.5.5"
@@ -266,14 +250,10 @@ upstream:
         value: "true"
       - name: NODE_TLS_REJECT_UNAUTHORIZED
         value: "0"
-      - name: NODE_EXTRA_CA_CERTS
-        value: "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
       - name: NODE_ENV
         value: "production"
       - name: ENABLE_CORE_ROOTHTTPROUTER_OVERRIDE
         value: "true"
-      - name: LOG_LEVEL
-        value: "${RHDH_LOG_LEVEL:-info}"
     extraAppConfig:
       - configMapRef: app-config-rhdh
         filename: app-config-rhdh.yaml
@@ -336,20 +316,22 @@ upstream:
         targetPort: 9464
 
 orchestrator:
-  # Disabled for standard deployments (deploy, deploy-rbac, pull)
-  # Enabled only in nightly jobs via values_showcase_nightly.yaml
-  enabled: false
-upstream:
-  backstage:
-    appConfig:
-      auth:
-        providers:
-          guest:
-            dangerouslyAllowOutsideDevelopment: true
-      app:
-        baseUrl: 'https://{{ .Values.global.host }}'
-      backend:
-        baseUrl: 'https://{{ .Values.global.host }}'
-        cors:
-          origin: 'https://{{ .Values.global.host }}'
-
+  enabled: true
+  serverlessLogicOperator:
+    enabled: true
+  serverlessOperator:
+    enabled: true
+  sonataflowPlatform:
+    monitoring:
+      enabled: true
+    eventing:
+      broker:
+        name: ""
+        namespace: ""
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "250m"
+      limits:
+        memory: "1Gi"
+        cpu: "500m"

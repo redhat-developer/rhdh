@@ -73,7 +73,7 @@ readonly POSTGRES_CPU_LIMIT="200m"
 readonly DEPLOYMENT_FULLNAME_OVERRIDE="redhat-developer-hub"
 
 # Helm chart configuration
-readonly HELM_CHART_DEFAULT_MAJOR="1.7"
+readonly HELM_CHART_DEFAULT_MAJOR="1.8"
 readonly HELM_REPO_UPDATE_INTERVAL=3600  # seconds
 
 # ============================================================================

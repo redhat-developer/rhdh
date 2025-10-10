@@ -12,6 +12,70 @@ readonly _AKS_LOADED=true
 
 source "$(dirname "${BASH_SOURCE[0]}")/../logging.sh"
 source "$(dirname "${BASH_SOURCE[0]}")/../retry.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/../k8s-operations.sh"
+
+# ============================================================================
+# AKS CLEANUP FUNCTIONS
+# ============================================================================
+
+cleanup_aks_deployment() {
+    local namespace="$1"
+
+    log_info "Cleaning up AKS deployment in namespace ${namespace}"
+
+    # Delete ingress resources
+    kubectl delete ingress --all -n "${namespace}" 2>/dev/null || true
+
+    # Delete services of type LoadBalancer
+    kubectl delete service -l type=LoadBalancer -n "${namespace}" 2>/dev/null || true
+
+    # Clean up any AKS specific resources
+    # Delete managed certificates if any
+    kubectl delete ManagedCertificate --all -n "${namespace}" 2>/dev/null || true
+
+    # Wait for resources to be cleaned up
+    sleep 10
+
+    # Finally delete the namespace
+    delete_namespace "${namespace}"
+
+    log_success "AKS deployment cleanup completed"
+}
+
+apply_aks_spot_patch() {
+    local namespace="$1"
+    local deployment_name="${2:-rhdh-developer-hub}"
+
+    if [[ "${ENABLE_AKS_SPOT:-false}" == "true" ]]; then
+        log_info "Applying AKS spot instance patch to ${deployment_name}"
+
+        kubectl patch deployment "${deployment_name}" -n "${namespace}" --type json -p '[
+            {
+                "op": "add",
+                "path": "/spec/template/spec/tolerations",
+                "value": [
+                    {
+                        "key": "kubernetes.azure.com/scalesetpriority",
+                        "operator": "Equal",
+                        "value": "spot",
+                        "effect": "NoSchedule"
+                    }
+                ]
+            },
+            {
+                "op": "add",
+                "path": "/spec/template/spec/nodeSelector",
+                "value": {
+                    "kubernetes.azure.com/scalesetpriority": "spot"
+                }
+            }
+        ]' 2>/dev/null || log_warning "Failed to apply spot patch"
+
+        log_success "AKS spot instance patch applied"
+    else
+        log_info "AKS spot instances not enabled (ENABLE_AKS_SPOT=${ENABLE_AKS_SPOT})"
+    fi
+}
 
 # ============================================================================
 # AZURE AUTHENTICATION
@@ -274,7 +338,13 @@ cleanup_aks() {
     return 0
 }
 
+cleanup_aks_deployment() {
+    local namespace=$1
+    log_info "Cleaning up AKS deployment in namespace: ${namespace}"
+    delete_namespace "$namespace"
+}
+
 # Export functions
 export -f az_login az_aks_start az_aks_stop az_aks_get_credentials
 export -f az_aks_approuting_enable az_aks_get_cluster_info
-export -f configure_aks_ingress cleanup_aks
+export -f configure_aks_ingress cleanup_aks cleanup_aks_deployment apply_aks_spot_patch

@@ -30,17 +30,6 @@ global:
                       seconds: 15
       - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-org-dynamic
         disabled: false
-        pluginConfig:
-          catalog:
-            providers:
-              githubOrg:
-                - id: production
-                  githubUrl: ${GITHUB_URL_PLAIN}
-                  orgs: ["${GITHUB_ORG_PLAIN}"]
-                  schedule:
-                    frequency: { minutes: 60 }
-                    timeout: { minutes: 15 }
-                    initialDelay: { seconds: 15 }
       - package: ./dynamic-plugins/dist/backstage-community-plugin-github-issues
         disabled: false
       - package: ./dynamic-plugins/dist/roadiehq-backstage-plugin-github-pull-requests
@@ -51,20 +40,6 @@ global:
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-keycloak-dynamic
         disabled: false
-        pluginConfig:
-          catalog:
-            providers:
-              keycloakOrg:
-                default:
-                  baseUrl: ${KEYCLOAK_AUTH_BASE_URL}/auth
-                  loginRealm: ${KEYCLOAK_AUTH_LOGIN_REALM}
-                  realm: ${KEYCLOAK_AUTH_REALM}
-                  clientId: ${KEYCLOAK_AUTH_CLIENTID}
-                  clientSecret: ${KEYCLOAK_AUTH_CLIENT_SECRET}
-                  schedule:
-                    frequency: { minutes: 60 }
-                    timeout: { minutes: 50 }
-                    initialDelay: { seconds: 15 }
       - package: ./dynamic-plugins/dist/backstage-community-plugin-tekton
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-topology
@@ -100,12 +75,21 @@ global:
                 plural: "routes"
             serviceLocatorMethod:
               type: multiTenant
-      # OCM plugins - disabled by default (requires ACM/MultiClusterHub)
-      # Enabled in nightly jobs via values_showcase-rbac_nightly.yaml
+      # Enable OCM plugins.
       - package: ./dynamic-plugins/dist/backstage-community-plugin-ocm-backend-dynamic
-        disabled: true
+        disabled: false
+        pluginConfig:
+          catalog:
+            providers:
+              ocm:
+                default:
+                  name: testCluster # Can be any arbitrary name supported by kubernetes
+                  url: ${OCM_CLUSTER_URL}
+                  serviceAccountToken: ${OCM_CLUSTER_TOKEN}
+                  skipTLSVerify: true
+                  owner: janus-authors
       - package: ./dynamic-plugins/dist/backstage-community-plugin-ocm
-        disabled: true
+        disabled: false
       # Enable Bulk import plugins.
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import-backend-dynamic
         disabled: false
@@ -119,11 +103,44 @@ global:
       - package: ./dynamic-plugins/dist/backstage-community-plugin-tech-radar
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-tech-radar-backend-dynamic
-        disabled: true  # Disabled due to missing configuration
+        disabled: true
       - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-analytics-provider-segment
         disabled: true
+      #Enable Scorecard plugin.
+      - disabled: false
+        package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard:pr_1499__0.1.0!red-hat-developer-hub-backstage-plugin-scorecard
+        pluginConfig:
+          dynamicPlugins:
+            frontend:
+              red-hat-developer-hub.backstage-plugin-scorecard:
+                entityTabs:
+                  - path: "/scorecard"
+                    title: Scorecard
+                    mountPoint: entity.page.scorecard
+                mountPoints:
+                  - mountPoint: entity.page.scorecard/cards
+                    importName: EntityScorecardContent
+                    config:
+                      layout:
+                        gridColumn: 1 / -1
+      - disabled: false
+        package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard-backend:pr_1499__0.1.0!red-hat-developer-hub-backstage-plugin-scorecard-backend
+      - disabled: false
+        package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard-backend-module-github:pr_1499__0.1.0!red-hat-developer-hub-backstage-plugin-scorecard-backend-module-github
+        pluginConfig:
+          integrations:
+            github:
+              - host: github.com
+                token: "{gh-token}"
+      - disabled: false
+        package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard-backend-module-jira:pr_1499__0.1.0!red-hat-developer-hub-backstage-plugin-scorecard-backend-module-jira
+        pluginConfig:
+          jira:
+            baseUrl: "{jira-base-url}"
+            token: "{jira-api-token}"
+            product: datacenter
 
 # -- Upstream Backstage [chart configuration](https://github.com/backstage/charts/blob/main/charts/backstage/values.yaml)
 # @default -- Use Openshift compatible settings
@@ -133,10 +150,6 @@ upstream:
     backstage.io/kubernetes-id: developer-hub
   backstage:
     appConfig:
-      auth:
-        providers:
-          guest:
-            dangerouslyAllowOutsideDevelopment: true
       app:
         # Please update to match host in case you don't want to configure hostname via `global.clusterRouterBase` or `global.host`.
         baseUrl: 'https://{{- include "janus-idp.hostname" . }}'
@@ -215,12 +228,8 @@ upstream:
         value: "true"
       - name: NODE_TLS_REJECT_UNAUTHORIZED
         value: "0"
-      - name: NODE_EXTRA_CA_CERTS
-        value: "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
       - name: NODE_ENV
         value: "production"
-      - name: LOG_LEVEL
-        value: "${RHDH_LOG_LEVEL:-info}"
     extraVolumeMounts:
       # The initContainer below will install dynamic plugins in this volume mount.
       - name: dynamic-plugins-root
@@ -365,6 +374,39 @@ upstream:
       existingSecret: postgres-cred
 
 orchestrator:
-  # Disabled for standard deployments (deploy, deploy-rbac, pull)
-  # Enabled only in nightly jobs via values_showcase-rbac_nightly.yaml
-  enabled: false
+  enabled: true
+  serverlessLogicOperator:
+    enabled: true
+  serverlessOperator:
+    enabled: true
+  sonataflowPlatform:
+    monitoring:
+      enabled: true
+    eventing:
+      broker:
+        name: ""
+        namespace: ""
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "250m"
+      limits:
+        memory: "1Gi"
+        cpu: "500m"
+    # -- Secret name for the user-created secret to connect an external DB
+    externalDBsecretRef: "postgres-cred"
+
+    # -- Name for the user-configured external Database
+    externalDBName: "postgres"
+
+    # -- Host for the user-configured external Database
+    externalDBHost: "postgress-external-db-primary.postgress-external-db.svc.cluster.local"
+
+    # -- Port for the user-configured external Database
+    externalDBPort: "5432"
+
+    # -- Image for the init container used by the create-db job
+    initContainerImage: "registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-16.3-1"
+
+    # -- Image for the container used by the create-db job
+    createDBJobImage: "registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-16.3-1"
