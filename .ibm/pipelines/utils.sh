@@ -809,6 +809,7 @@ initiate_deployments() {
   cd "${DIR}"
   base_deployment
   rbac_deployment
+  sleep 2h
 }
 
 # install base RHDH deployment before upgrade
@@ -1208,6 +1209,9 @@ deploy_orchestrator_workflows() {
     local patch_namespace="$namespace"
   fi
 
+  wait_for_deployment $namespace sonataflow-platform-data 15
+  wait_for_deployment $namespace sonataflow-platform-jobs-service 15
+  
   oc apply -f "${WORKFLOW_MANIFESTS}"
 
   helm repo add orchestrator-workflows https://rhdhorchestrator.io/serverless-workflows
