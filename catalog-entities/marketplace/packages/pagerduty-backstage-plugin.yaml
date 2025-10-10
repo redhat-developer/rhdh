@@ -18,10 +18,10 @@ metadata:
 spec:
   packageName: "@pagerduty/backstage-plugin"
   dynamicArtifact: ./dynamic-plugins/dist/pagerduty-backstage-plugin
-  version: 0.15.5
+  version: 0.16.0
   backstage:
     role: frontend-plugin
-    supportedVersions: 1.39.1
+    supportedVersions: 1.42.5
   author: Red Hat
   support: tech-preview
   lifecycle: active

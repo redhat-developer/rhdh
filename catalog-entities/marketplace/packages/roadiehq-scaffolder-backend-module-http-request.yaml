@@ -19,10 +19,10 @@ metadata:
 spec:
   packageName: "@roadiehq/scaffolder-backend-module-http-request"
   dynamicArtifact: ./dynamic-plugins/dist/roadiehq-scaffolder-backend-module-http-request-dynamic
-  version: 5.3.4
+  version: 5.4.2
   backstage:
     role: backend-plugin-module
-    supportedVersions: 1.39.1
+    supportedVersions: 1.42.5
   author: Red Hat
   support: tech-preview
   lifecycle: active
