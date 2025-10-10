@@ -7992,7 +7992,7 @@ __metadata:
     node-fetch: 2.7.0
     prettier: 3.6.2
     supertest: 6.3.4
-    typescript: 5.9.2
+    typescript: 5.9.3
     winston: 3.14.2
   languageName: unknown
   linkType: soft
@@ -8021,7 +8021,7 @@ __metadata:
     react: 18.3.1
     react-router-dom: 6.30.1
     react-use: 17.6.0
-    typescript: 5.9.2
+    typescript: 5.9.3
   peerDependencies:
     react: 16.13.1 || ^17.0.0 || ^18.2.0
     react-router-dom: 6.30.1
@@ -8056,7 +8056,7 @@ __metadata:
     node-fetch: 2.7.0
     prettier: 3.6.2
     supertest: 6.3.4
-    typescript: 5.9.2
+    typescript: 5.9.3
   languageName: unknown
   linkType: soft
 
@@ -8079,7 +8079,7 @@ __metadata:
     node-fetch: 2.7.0
     prettier: 3.6.2
     supertest: 6.3.4
-    typescript: 5.9.2
+    typescript: 5.9.3
     winston: 3.14.2
   languageName: unknown
   linkType: soft
@@ -14181,7 +14181,7 @@ __metadata:
     "@types/react-dom": 18.3.7
     prettier: 3.6.2
     react: 18.3.1
-    typescript: 5.9.2
+    typescript: 5.9.3
   peerDependencies:
     react: 16.13.1 || ^17.0.0 || ^18.2.0
   languageName: unknown
@@ -18846,7 +18846,7 @@ __metadata:
     react-router-dom: 6.30.1
     react-use: 17.6.0
     tss-react: 4.9.19
-    typescript: 5.9.2
+    typescript: 5.9.3
   languageName: unknown
   linkType: soft
 
@@ -19548,7 +19548,7 @@ __metadata:
     global-agent: 3.0.0
     jose: 5.10.0
     prettier: 3.6.2
-    typescript: 5.9.2
+    typescript: 5.9.3
     undici: 6.21.3
     winston: 3.14.2
     zod: 3.23.8
@@ -37559,13 +37559,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:5.9.2":
-  version: 5.9.2
-  resolution: "typescript@npm:5.9.2"
+"typescript@npm:5.9.3":
+  version: 5.9.3
+  resolution: "typescript@npm:5.9.3"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: f619cf6773cfe31409279711afd68cdf0859780006c50bc2a7a0c3227f85dea89a3b97248846326f3a17dad72ea90ec27cf61a8387772c680b2252fd02d8497b
+  checksum: 0d0ffb84f2cd072c3e164c79a2e5a1a1f4f168e84cb2882ff8967b92afe1def6c2a91f6838fb58b168428f9458c57a2ba06a6737711fdd87a256bbe83e9a217f
   languageName: node
   linkType: hard
 
@@ -37589,13 +37589,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@5.9.2#~builtin<compat/typescript>":
-  version: 5.9.2
-  resolution: "typescript@patch:typescript@npm%3A5.9.2#~builtin<compat/typescript>::version=5.9.2&hash=5786d5"
+"typescript@patch:typescript@5.9.3#~builtin<compat/typescript>":
+  version: 5.9.3
+  resolution: "typescript@patch:typescript@npm%3A5.9.3#~builtin<compat/typescript>::version=5.9.3&hash=5786d5"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: f2327af06fce458b53e02df26b880528636c333bce22e557ff6723cdd0576a2cec75daed37eeb8d330b94fef22be4f19b06d8922793ada5d322b8197efd9391e
+  checksum: a5a6dc399d3761ded54192031f11d3ad5df8001c7febe3fbbc8098efcb552cdf8f2f402b3618c56dafcd04fef63dee005f4900f608e185404caedc46480539ed
   languageName: node
   linkType: hard
 
