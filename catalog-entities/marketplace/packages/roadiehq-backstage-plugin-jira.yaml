@@ -18,10 +18,10 @@ metadata:
 spec:
   packageName: "@roadiehq/backstage-plugin-jira"
   dynamicArtifact: ./dynamic-plugins/dist/roadiehq-backstage-plugin-jira
-  version: 2.9.0
+  version: 2.13.1
   backstage:
     role: frontend-plugin
-    supportedVersions: 1.39.1
+    supportedVersions: 1.42.5
   author: Red Hat
   support: tech-preview
   lifecycle: active
