@@ -29,15 +29,9 @@ export class Extensions {
   }
 
   async clickReadMoreByPluginTitle(pluginTitle: string) {
-    await this.page
-      .getByRole("heading", { name: pluginTitle })
-      .locator("..")
-      .locator("..")
-      .locator("..")
-      .locator("..")
-      .locator("..")
-      .getByRole("link", { name: "Read more" })
-      .click();
+    const allCards = this.page.locator(".v5-MuiPaper-outlined");
+    const targetCard = allCards.filter({ hasText: pluginTitle });
+    await targetCard.getByRole("link", { name: "Read more" }).click();
   }
 
   async selectDropdown(name: string) {
