@@ -1,0 +1,86 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: todo
+  namespace: rhdh
+  title: TODO Plugin
+  annotations:
+    extensions.backstage.io/pre-installed: 'false'
+  links:
+    - title: Plugin Overview (README)
+      url: https://github.com/backstage/community-plugins/blob/main/workspaces/todo/README.md
+    - title: Frontend Plugin Documentation
+      url: https://github.com/backstage/community-plugins/blob/main/workspaces/todo/plugins/todo/README.md
+    - title: Backend Plugin Documentation
+      url: https://github.com/backstage/community-plugins/blob/main/workspaces/todo/plugins/todo-backend/README.md
+    - title: Source Code
+      url: https://github.com/backstage/community-plugins/tree/main/workspaces/todo
+  tags:
+    - code-quality
+    - development
+    - productivity
+    - source-code
+  description: |
+    Browse and track TODO comments in your source code repositories
+spec:
+  author: Backstage Community
+  support:
+    provider: Backstage Community
+    level: community
+  lifecycle: active
+  publisher: Backstage Community
+
+  categories:
+    - Code Quality
+
+  description: |
+    The TODO Plugin helps development teams track and manage TODO comments across their source code repositories.
+    It automatically scans source code and displays TODO and FIXME comments in a centralized view within Backstage.
+
+    ## Features
+
+    - **Multi-language Support**: Scans TODO comments in multiple programming languages via the Leasot parser
+    - **Entity Integration**: Displays TODO items directly on entity pages for easy access
+    - **Customizable Tags**: Supports TODO and FIXME tags by default, with the ability to add custom tags (NOTE, XXX, HACK)
+    - **Automatic Discovery**: Integrates with Backstage's software catalog to automatically scan repositories with `backstage.io/source-location` annotations
+    - **Author References**: Recognizes and displays author information from TODO comments
+
+    ## Use Cases
+
+    - Track technical debt across your codebase
+    - Monitor outstanding development tasks during code reviews
+    - Identify areas requiring follow-up work
+    - Maintain visibility of temporary workarounds and fixes
+
+    ## How It Works
+
+    The backend plugin determines which source code to scan by reading entity annotations from the catalog:
+    - First checks the `backstage.io/source-location` annotation on the entity
+    - Falls back to the `backstage.io/managed-by-location` annotation if source-location is not set
+    - Only `url` locations are supported (locally configured `file` locations won't work)
+    - Dot-files and dot-folders are automatically ignored during scanning
+
+    ## Components
+
+    This plugin consists of two packages:
+    - **Frontend Plugin** (`@backstage-community/plugin-todo`): Provides UI components to display TODO items
+    - **Backend Plugin** (`@backstage-community/plugin-todo-backend`): Scans repositories and extracts TODO comments
+
+    Both plugins must be installed together for full functionality.
+
+  mountPoints:
+    - entityTab
+    - entityCard
+
+  dependencies:
+    - backstage-community-plugin-todo-backend
+
+  assets:
+    - type: icon
+      filename: todo-logo.png
+      originUri: https://backstage.io/img/todo-logo.png
+
+  packages:
+    - backstage-community-plugin-todo
+    - backstage-community-plugin-todo-backend

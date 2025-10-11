@@ -76,6 +76,7 @@ spec:
     - ./tech-radar.yaml
     - ./techdocs.yaml
     - ./tekton.yaml
+    - ./todo.yaml
     - ./topology.yaml
     - ./lightspeed.yaml
     - ./ibm-apiconnect-backstage.yaml
