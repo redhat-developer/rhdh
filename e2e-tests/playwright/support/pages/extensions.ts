@@ -28,6 +28,18 @@ export class Extensions {
     this.uiHelper = new UIhelper(page);
   }
 
+  async clickReadMoreByPluginTitle(pluginTitle: string) {
+    await this.page
+      .getByRole("heading", { name: pluginTitle })
+      .locator("..")
+      .locator("..")
+      .locator("..")
+      .locator("..")
+      .locator("..")
+      .getByRole("link", { name: "Read more" })
+      .click();
+  }
+
   async selectDropdown(name: string) {
     await this.page
       .getByLabel(name)
