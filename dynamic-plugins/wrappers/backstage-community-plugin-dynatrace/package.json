@@ -24,7 +24,7 @@
     "lint:check": "backstage-cli package lint",
     "test": "backstage-cli package test --passWithNoTests --coverage",
     "clean": "backstage-cli package clean",
-    "export-dynamic": "janus-cli package export-dynamic-plugin --in-place",
+    "export-dynamic": "rhdh-cli plugin export",
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
@@ -32,7 +32,7 @@
   },
   "devDependencies": {
     "@backstage/cli": "^0.34.1",
-    "@janus-idp/cli": "3.6.1",
+    "@red-hat-developer-hub/cli": "^1.8.0",
     "typescript": "5.9.3"
   },
   "files": [
@@ -51,7 +51,7 @@
     "directory": "dynamic-plugins/wrappers/backstage-community-plugin-dynatrace"
   },
   "maintainers": [
-    "@janus-idp/maintainers-showcase"
+    "@redhat-developer/rhdh-team"
   ],
   "author": "Red Hat",
   "homepage": "https://red.ht/rhdh",

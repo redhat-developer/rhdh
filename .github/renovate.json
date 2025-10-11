@@ -348,10 +348,10 @@
       ]
     },
     {
-      "description": "patch and minor updates for the janus cli",
-      "groupName": "janus cli updates",
+      "description": "patch and minor updates for the rhdh-cli",
+      "groupName": "rhdh-cli updates",
       "matchPackageNames": [
-        "@janus-idp/cli"
+        "@red-hat-developer-hub/cli"
       ],
       "matchDepTypes": [
         "dependencies",

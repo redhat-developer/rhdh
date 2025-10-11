@@ -32,7 +32,7 @@
     "tsc": "tsc",
     "build": "backstage-cli package build",
     "clean": "backstage-cli package clean",
-    "export-dynamic": "janus-cli package export-dynamic-plugin --in-place",
+    "export-dynamic": "rhdh-cli plugin export",
     "lint:check": "backstage-cli package lint",
     "test": "backstage-cli package test --passWithNoTests --coverage",
     "clean-dynamic-sources": "yarn clean && rm -Rf node_modules",
@@ -44,7 +44,7 @@
   },
   "devDependencies": {
     "@backstage/cli": "^0.34.1",
-    "@janus-idp/cli": "3.6.1",
+    "@red-hat-developer-hub/cli": "^1.8.0",
     "typescript": "5.9.3"
   },
   "files": [

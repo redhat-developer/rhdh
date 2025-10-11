@@ -35,7 +35,7 @@
     "test": "backstage-cli package test --passWithNoTests --coverage",
     "clean": "backstage-cli package clean",
     "clean-dynamic-sources": "yarn clean && rm -Rf node_modules",
-    "export-dynamic": "janus-cli package export-dynamic-plugin --embed-package @pagerduty/backstage-plugin-backend",
+    "export-dynamic": "rhdh-cli plugin export --embed-package @pagerduty/backstage-plugin-backend",
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
@@ -43,7 +43,7 @@
   },
   "devDependencies": {
     "@backstage/cli": "^0.34.1",
-    "@janus-idp/cli": "3.6.1",
+    "@red-hat-developer-hub/cli": "^1.8.0",
     "typescript": "5.9.3"
   },
   "resolutions": {
@@ -61,7 +61,7 @@
     "directory": "dynamic-plugins/wrappers/pagerduty-backstage-plugin-backend-dynamic"
   },
   "maintainers": [
-    "@janus-idp/maintainers-showcase"
+    "@redhat-developer/rhdh-team"
   ],
   "author": "Red Hat",
   "homepage": "https://red.ht/rhdh",

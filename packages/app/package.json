@@ -7,8 +7,8 @@
     "role": "frontend"
   },
   "scripts": {
-    "start": "janus-cli package start",
-    "build": "janus-cli package build && node ../../scripts/generate-index-template.mjs",
+    "start": "backstage-cli package start",
+    "build": "backstage-cli package build && node ../../scripts/generate-index-template.mjs",
     "clean": "backstage-cli package clean",
     "test": "backstage-cli package test --passWithNoTests --coverage",
     "lint:check": "backstage-cli package lint",
@@ -62,7 +62,7 @@
   "devDependencies": {
     "@backstage/cli": "0.34.1",
     "@backstage/test-utils": "1.7.11",
-    "@janus-idp/cli": "3.6.1",
+    "@red-hat-developer-hub/cli": "^1.8.0",
     "@scalprum/react-test-utils": "0.2.7",
     "@testing-library/dom": "9.3.4",
     "@testing-library/jest-dom": "6.9.1",
