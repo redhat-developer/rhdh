@@ -13511,9 +13511,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-bulk-import-backend@npm:6.4.1":
-  version: 6.4.1
-  resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import-backend@npm:6.4.1"
+"@red-hat-developer-hub/backstage-plugin-bulk-import-backend@npm:6.5.0":
+  version: 6.5.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import-backend@npm:6.5.0"
   dependencies:
     "@backstage/backend-defaults": ^0.12.0
     "@backstage/backend-plugin-api": ^1.4.2
@@ -13540,7 +13540,7 @@ __metadata:
     openapi-backend: ^5.10.6
   peerDependencies:
     "@janus-idp/backstage-plugin-audit-log-node": ^1.7.0
-  checksum: 4ca95102797de7d6707e079267717ddc7d36754d6c3ced8a3f6137267a58530831bb9b03bce3be3af9bb3d052612d5c7889b75a0c9adba7938201f3157a95ed4
+  checksum: 4be8b20693ab4f949874a1109828f7fdb49d389296cc4a94e86a7dcb1073e89538bcc893b5035f2a0e2ce6b51afa4c71f58afd0eb339ca84e0ef8062a97b4b42
   languageName: node
   linkType: hard
 
@@ -13553,9 +13553,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-bulk-import@npm:1.17.2":
-  version: 1.17.2
-  resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import@npm:1.17.2"
+"@red-hat-developer-hub/backstage-plugin-bulk-import@npm:1.18.0":
+  version: 1.18.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import@npm:1.18.0"
   dependencies:
     "@backstage/catalog-model": ^1.7.5
     "@backstage/core-components": ^0.17.5
@@ -13578,7 +13578,7 @@ __metadata:
   peerDependencies:
     react: 16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.0.0
-  checksum: 2cd19365b58271c2839cf1e1c88bc8d234229ecab898ea4068e368a29f16ab86b2775ca948ac399599feac1d5a107cbbdaca0f0d01421137842499328b8e134a
+  checksum: 2ba8ad729768d9956f732458e854370c48007264d5324fc383916e5e25b2c08f61399bc2059d92bc0ee7f210bad339fe6875ba53568ea0f284d1c309598d2dbd
   languageName: node
   linkType: hard
 
@@ -34602,7 +34602,7 @@ __metadata:
   dependencies:
     "@backstage/cli": ^0.34.1
     "@janus-idp/cli": 3.6.1
-    "@red-hat-developer-hub/backstage-plugin-bulk-import-backend": 6.4.1
+    "@red-hat-developer-hub/backstage-plugin-bulk-import-backend": 6.5.0
     typescript: 5.9.3
   languageName: unknown
   linkType: soft
@@ -34614,7 +34614,7 @@ __metadata:
     "@backstage/cli": ^0.34.1
     "@janus-idp/cli": 3.6.1
     "@mui/material": 5.18.0
-    "@red-hat-developer-hub/backstage-plugin-bulk-import": 1.17.2
+    "@red-hat-developer-hub/backstage-plugin-bulk-import": 1.18.0
     typescript: 5.9.3
   languageName: unknown
   linkType: soft
