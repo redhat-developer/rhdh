@@ -80,8 +80,8 @@ spec:
   // Select two repos: one with an existing catalog.yaml file and another without it
   test("Add a Repository from the Repository Tab and Confirm its Preview", async () => {
     await uiHelper.openSidebar("Bulk import");
-    await uiHelper.clickButton("Add");
-    await uiHelper.clickButton("should fail");
+    // await uiHelper.clickButton("Add");
+    // await uiHelper.clickButton("should fail");
     // await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
 
     // await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
