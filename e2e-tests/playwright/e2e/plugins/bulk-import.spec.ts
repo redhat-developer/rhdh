@@ -81,24 +81,25 @@ spec:
   test("Add a Repository from the Repository Tab and Confirm its Preview", async () => {
     await uiHelper.openSidebar("Bulk import");
     await uiHelper.clickButton("Add");
-    await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
+    await uiHelper.clickButton("should fail");
+    // await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
 
-    await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
-      "Not Generated",
-    ]);
-    await bulkimport.selectRepoInTable(catalogRepoDetails.name);
-    await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
-      catalogRepoDetails.url,
-      "Ready Preview file",
-    ]);
+    // await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
+    //   "Not Generated",
+    // ]);
+    // await bulkimport.selectRepoInTable(catalogRepoDetails.name);
+    // await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
+    //   catalogRepoDetails.url,
+    //   "Ready Preview file",
+    // ]);
 
-    await uiHelper.clickOnLinkInTableByUniqueText(
-      catalogRepoDetails.name,
-      "Preview file",
-    );
-    await expect(await uiHelper.clickButton("Save")).not.toBeVisible({
-      timeout: 10000,
-    });
+    // await uiHelper.clickOnLinkInTableByUniqueText(
+    //   catalogRepoDetails.name,
+    //   "Preview file",
+    // );
+    // await expect(await uiHelper.clickButton("Save")).not.toBeVisible({
+    //   timeout: 10000,
+    // });
   });
 
   test("Add a Repository from the Organization Tab and Confirm its Preview", async () => {
