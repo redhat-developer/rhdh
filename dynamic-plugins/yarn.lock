@@ -34455,7 +34455,7 @@ __metadata:
     "@backstage/cli": ^0.34.1
     "@janus-idp/cli": 3.6.1
     "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace": 0.7.1
-    typescript: 5.9.2
+    typescript: 5.9.3
   languageName: unknown
   linkType: soft
 
@@ -34503,7 +34503,7 @@ __metadata:
     "@janus-idp/cli": 3.6.1
     "@red-hat-developer-hub/backstage-plugin-marketplace-backend": 0.11.0
     "@red-hat-developer-hub/backstage-plugin-marketplace-common": 0.10.0
-    typescript: 5.9.2
+    typescript: 5.9.3
   languageName: unknown
   linkType: soft
 
@@ -34515,7 +34515,7 @@ __metadata:
     "@janus-idp/cli": 3.6.1
     "@mui/material": 5.18.0
     "@red-hat-developer-hub/backstage-plugin-marketplace": 0.11.2
-    typescript: 5.9.2
+    typescript: 5.9.3
   languageName: unknown
   linkType: soft
 
