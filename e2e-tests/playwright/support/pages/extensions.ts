@@ -86,7 +86,7 @@ export class Extensions {
     includeTable?: boolean;
     includeAbout?: boolean;
   }) {
-    await this.page.getByRole("heading", { name: pluginName }).first().click();
+    await this.clickReadMoreByPluginTitle(pluginName);
     await expect(
       this.page.getByLabel(badgeLabel).getByText(badgeText),
     ).toBeVisible();
