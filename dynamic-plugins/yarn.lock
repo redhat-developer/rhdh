@@ -15313,36 +15313,40 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-bulk-import-backend@npm:6.3.0":
-  version: 6.3.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import-backend@npm:6.3.0"
+"@red-hat-developer-hub/backstage-plugin-bulk-import-backend@npm:6.5.1":
+  version: 6.5.1
+  resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import-backend@npm:6.5.1"
   dependencies:
     "@backstage/backend-defaults": ^0.12.0
     "@backstage/backend-plugin-api": ^1.4.2
+    "@backstage/catalog-model": ^1.7.5
+    "@backstage/config": ^1.3.3
     "@backstage/errors": ^1.2.7
     "@backstage/integration": ^1.17.1
     "@backstage/plugin-catalog-node": ^1.18.0
     "@backstage/plugin-permission-common": ^0.9.1
     "@backstage/plugin-permission-node": ^0.10.3
     "@gitbeaker/rest": ^43.4.0
+    "@microsoft/fetch-event-source": ^2.0.1
     "@octokit/auth-app": ^6.0.3
     "@octokit/rest": ^20.0.2
-    "@red-hat-developer-hub/backstage-plugin-bulk-import-common": ^1.9.0
+    "@red-hat-developer-hub/backstage-plugin-bulk-import-common": ^1.10.0
     ajv-formats: ^3.0.1
     express: ^4.17.1
     git-url-parse: ^14.0.0
     js-yaml: ^4.1.0
     just-kebab-case: 4.2.0
+    knex: ^3.0.0
     luxon: ^3.4.4
     node-fetch: ^2.6.7
     openapi-backend: ^5.10.6
   peerDependencies:
     "@janus-idp/backstage-plugin-audit-log-node": ^1.7.0
-  checksum: c68068dfc5560e5c76405b74fe111a3cb013d863a76eb389c170743b6d4653db53c9fcde3a47305876a8a84c98421915e1bc19ad31be56af1a8ff4f1fbe95be8
+  checksum: 25f9b52b3236571e6179b63be6b90a1f46ccc4b0a779639f563353d2ebab7c66febfb1335eb3fb6dfc64dc1e00ab36fec72554812a19380528bb168410ddbd3c
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-bulk-import-common@npm:^1.9.0":
+"@red-hat-developer-hub/backstage-plugin-bulk-import-common@npm:^1.10.0":
   version: 1.10.0
   resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import-common@npm:1.10.0"
   peerDependencies:
@@ -15351,9 +15355,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-bulk-import@npm:1.15.0":
-  version: 1.15.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import@npm:1.15.0"
+"@red-hat-developer-hub/backstage-plugin-bulk-import@npm:1.18.1":
+  version: 1.18.1
+  resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import@npm:1.18.1"
   dependencies:
     "@backstage/catalog-model": ^1.7.5
     "@backstage/core-components": ^0.17.5
@@ -15365,7 +15369,7 @@ __metadata:
     "@mui/icons-material": ^5.15.17
     "@mui/material": ^5.12.2
     "@mui/styles": 5.18.0
-    "@red-hat-developer-hub/backstage-plugin-bulk-import-common": ^1.9.0
+    "@red-hat-developer-hub/backstage-plugin-bulk-import-common": ^1.10.0
     "@tanstack/react-query": ^4.29.21
     formik: ^2.4.5
     js-yaml: ^4.1.0
@@ -15376,7 +15380,7 @@ __metadata:
   peerDependencies:
     react: 16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.0.0
-  checksum: 3f0d27b6dff89ab4971499380c7ef9c451a9bc176a00a66c44a1b839f4d0e2d89cfa17dfcd90bc33cb60045271c2d5affe72981b7eb26c89e7b31ce920e85e3c
+  checksum: e290eb2fc8bd20a0ba7215416caf81894dbaeb023939acea352d91083d141da0a4b8fec957eb800bb69e6fc7ad8f3998ca85fb787c7b717da0fe8a26972d1bfc
   languageName: node
   linkType: hard
 
@@ -36646,7 +36650,7 @@ __metadata:
   dependencies:
     "@backstage/cli": ^0.34.1
     "@janus-idp/cli": 3.6.1
-    "@red-hat-developer-hub/backstage-plugin-bulk-import-backend": 6.3.0
+    "@red-hat-developer-hub/backstage-plugin-bulk-import-backend": 6.5.1
     typescript: 5.9.3
   languageName: unknown
   linkType: soft
@@ -36658,7 +36662,7 @@ __metadata:
     "@backstage/cli": ^0.34.1
     "@janus-idp/cli": 3.6.1
     "@mui/material": 5.18.0
-    "@red-hat-developer-hub/backstage-plugin-bulk-import": 1.15.0
+    "@red-hat-developer-hub/backstage-plugin-bulk-import": 1.18.1
     typescript: 5.9.3
   languageName: unknown
   linkType: soft
