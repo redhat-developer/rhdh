@@ -28,24 +28,14 @@ Current versions for e2e-tests are defined in `e2e-tests/package.json`
 ### Test Structure and Organization
 
 #### Directory Structure
-```
+```text
 e2e-tests/
 ├── playwright/
 │   ├── e2e/                    # Main test files
-│   │   ├── authProviders/      # Authentication provider tests
-│   │   ├── plugins/           # Plugin-specific tests
-│   │   ├── configuration-test/ # Configuration tests
-│   │   ├── audit-log/         # Audit log tests
 │   │   └── *.spec.ts          # General test files
 │   ├── utils/                 # Test utilities
 │   ├── data/                  # Test data
 │   └── support/               # Test support files
-├── tests/                     # Additional test files
-├── tests-examples/           # Example tests
-├── scripts/                  # Test scripts
-├── screenshots/              # Test screenshots
-├── test-results/             # Test results
-└── playwright-report/        # Playwright reports
 ```
 
 #### Test File Requirements
@@ -84,13 +74,17 @@ test.beforeAll(async ({ }, testInfo) => {
    - Basic functionality verification
    - Health checks and core features
 
-2. **Showcase Tests** (Multiple projects)
-   - `showcase`: General functionality tests
-   - `showcase-rbac`: Role-based access control tests
-   - `showcase-k8s`: Kubernetes integration tests
-   - `showcase-operator`: Operator-based deployment tests
+2. **Showcase Tests** (defined in `playwright.config.ts`)
+   - `showcase`: General functionality tests with base deployment using Helm chart
+   - `showcase-rbac`: General functionality tests with RBAC-enabled deployment using Helm chart
+   - `showcase-k8s`: Kubernetes integration tests with base deployment
+   - `showcase-rbac-k8s`: Kubernetes integration tests with RBAC-enabled deployment
+   - `showcase-operator`: General functionality tests with base deployment using Operator
+   - `showcase-operator-rbac`: General functionality tests with RBAC-enabled deployment using Operator
    - `showcase-runtime`: Runtime environment tests
+   - `showcase-sanity-plugins`: Plugin sanity checks
    - `showcase-upgrade`: Upgrade scenario tests
+   - `any-test`: Use for debugging when you need to run a specific tests
 
 3. **Authentication Provider Tests** (`showcase-auth-providers`)
    - OIDC (Red Hat Backstage Keycloak)
@@ -122,26 +116,36 @@ test.beforeAll(async ({ }, testInfo) => {
 Available yarn scripts in `e2e-tests/package.json`:
 
 ```bash
-# Showcase tests
-yarn showcase                    # General showcase tests
-yarn showcase-rbac              # RBAC showcase tests
-yarn showcase-k8s-ci-nightly    # Kubernetes showcase tests
-yarn showcase-operator-nightly  # Operator showcase tests
-yarn showcase-runtime           # Runtime showcase tests
-yarn showcase-upgrade-nightly   # Upgrade showcase tests
+# Showcase tests - OpenShift deployments
+yarn showcase                       # General showcase tests
+yarn showcase-ci-nightly           # General showcase tests (nightly CI alias)
+yarn showcase-rbac                 # General showcase tests with RBAC
+yarn showcase-rbac-nightly         # General showcase tests with RBAC (nightly CI alias)
+
+# Showcase tests - Kubernetes deployments
+yarn showcase-k8s-ci-nightly       # Kubernetes showcase tests
+yarn showcase-rbac-k8s-ci-nightly  # Kubernetes showcase tests with RBAC
+
+# Showcase tests - Operator deployments
+yarn showcase-operator-nightly     # Operator showcase tests
+yarn showcase-operator-rbac-nightly      # Operator showcase tests with RBAC
+
+# Showcase tests - Other scenarios
+yarn showcase-runtime              # Runtime configuration tests
+yarn showcase-upgrade-nightly      # Upgrade scenario tests
 
 # Authentication provider tests
-yarn showcase-auth-providers    # Auth provider tests
+yarn showcase-auth-providers       # Auth provider tests
 
 # Plugin tests
-yarn showcase-sanity-plugins    # Plugin sanity tests
+yarn showcase-sanity-plugins       # Plugin sanity tests
 
 # Utility scripts
-yarn lint:check                 # Lint checking
-yarn lint:fix                   # Lint fixing
-yarn tsc                        # TypeScript compilation
-yarn prettier:check            # Prettier checking
-yarn prettier:fix              # Prettier fixing
+yarn lint:check                    # Lint checking
+yarn lint:fix                      # Lint fixing
+yarn tsc                           # TypeScript compilation
+yarn prettier:check                # Prettier checking
+yarn prettier:fix                  # Prettier fixing
 ```
 
 ### Environment Variables
@@ -164,18 +168,6 @@ Playwright configuration (`e2e-tests/playwright.config.ts`):
 - **Screenshots**: Only on failure
 - **Trace**: Retain on failure
 
-### Test Projects
-
-The configuration defines multiple test projects:
-- `smoke-test`: Basic smoke tests with 10 retries
-- `showcase`: General functionality tests
-- `showcase-rbac`: RBAC-specific tests
-- `showcase-auth-providers`: Authentication provider tests
-- `showcase-k8s`: Kubernetes integration tests
-- `showcase-operator`: Operator-based tests
-- `showcase-runtime`: Runtime environment tests
-- `showcase-upgrade`: Upgrade scenario tests
-
 ### Key Differences: showcase-auth-providers vs Other Showcase Projects
 
 The `showcase-auth-providers` project has several significant differences from other showcase projects, particularly in deployment and configuration:
@@ -193,7 +185,7 @@ The `showcase-auth-providers` project has several significant differences from o
 - **Other Showcase Projects**: Use Bash scripts for configuration and deployment
 - **showcase-auth-providers**: Uses TypeScript for configuration and deployment management
 - **Configuration Files**: Uses different configuration files compared to other showcase projects:
-  - `e2e-tests/playwright/e2e/authProviders/` directory structure with TypeScript test files
+  - `e2e-tests/playwright/e2e/auth-providers/` directory structure with TypeScript test files
   - Dedicated values file: `.ibm/pipelines/value_files/values_showcase-auth-providers.yaml`
   - TypeScript-based test configuration instead of Bash scripts
   - Dynamic RHDH instance management (create, update, restart, delete)
@@ -217,7 +209,7 @@ The `showcase-auth-providers` project has several significant differences from o
 #### **Test Structure and Files**
 - **Other Showcase Projects**: Standard test file patterns
 - **showcase-auth-providers**: Dedicated test structure:
-  - `e2e-tests/playwright/e2e/authProviders/` directory
+  - `e2e-tests/playwright/e2e/auth-providers/` directory
   - Individual test files: `oidc.spec.ts`, `microsoft.spec.ts`, `github.spec.ts`, `ldap.spec.ts`
   - Tests verify: supported resolvers, user/group ingestion, nested groups, session token configuration
 
@@ -327,10 +319,9 @@ The main script handles different job types:
 
 The `showcase-auth-providers` project has a unique deployment workflow that differs significantly from other showcase projects:
 
-**Job Pattern**: `*e2e-tests-auth-providers-nightly`
 **Handler**: `handle_auth_providers()` function in `.ibm/pipelines/jobs/auth-providers.sh`
 **Configuration**: Uses dedicated values file `values_showcase-auth-providers.yaml` with auth provider-specific settings
-**Test Execution**: Runs TypeScript-based tests from `e2e-tests/playwright/e2e/authProviders/` directory
+**Test Execution**: Runs TypeScript-based tests from `e2e-tests/playwright/e2e/auth-providers/` directory
 
 ### Access and Debugging
 
@@ -354,7 +345,7 @@ For cluster pool admins, use the login script:
 
 ### Debugging
 
-#### Local Development
+#### Local Debugging
 ```bash
 # Set local development flags
 export ISRUNNINGLOCAL=true
@@ -446,7 +437,7 @@ brew install gnu-sed
 ### Core Documentation
 - [E2E Testing CI Documentation](docs/e2e-tests/CI.md)
 - [Dynamic Plugins Documentation](docs/dynamic-plugins/index.md)
-- [Authentication Providers README](e2e-tests/playwright/e2e/authProviders/README.md)
+- [Authentication Providers README](e2e-tests/playwright/e2e/auth-providers/README.md)
 - [OpenShift CI Pipeline README](.ibm/pipelines/README.md)
 
 ### Configuration Files
@@ -467,8 +458,6 @@ brew install gnu-sed
 - [Test Reporting Script](.ibm/pipelines/reporting.sh)
 - [Environment Variables](.ibm/pipelines/env_variables.sh)
 - [Dynamic Plugin Installer](docker/install-dynamic-plugins.py)
-
-This context file provides a comprehensive overview of the RHDH repository's testing infrastructure, CI/CD pipeline, and development workflows. Use this as a starting point for understanding the codebase and contributing to the project.
 
 ## Test Configuration Files (Config Maps)
 
@@ -524,5 +513,4 @@ The choice of config map depends on the **Playwright test project** being execut
 
 The config maps are deployed as Kubernetes ConfigMaps during CI/CD pipeline execution and are mounted into the RHDH pods to provide runtime configuration. The pipeline selects the appropriate config map based on the test project being executed.
 
-## This context file provides a comprehensive overview of the RHDH repository's testing infrastructure, CI/CD pipeline, and development workflows. Use this as a starting point for understanding the codebase and contributing to the project.
 ---
