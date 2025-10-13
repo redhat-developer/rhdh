@@ -70,9 +70,11 @@ export class Extensions {
       await this.uiHelper.verifyHeading(heading);
     }
   }
-  
-  async waitForSearchResults(pluginName: string) {
-    await expect(this.page.locator(".v5-MuiPaper-outlined").first()).toContainText(pluginName, { timeout: 10000 });
+
+  async waitForSearchResults(searchText: string) {
+    await expect(
+      this.page.locator(".v5-MuiPaper-outlined").first(),
+    ).toContainText(searchText, { timeout: 10000 });
   }
 
   async verifyPluginDetails({
