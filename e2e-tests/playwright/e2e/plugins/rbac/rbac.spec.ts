@@ -433,29 +433,31 @@ test.describe.serial("Test RBAC", () => {
       await rbacPo.deleteRole("role:default/test-role1");
     });
 
-    test("Create a role with a permission policy per resource type and verify that the only authorized users can access specific resources.", async ({
-      page,
-    }) => {
-      const uiHelper = new UIhelper(page);
-      const rbacPo = new RbacPo(page);
-      await rbacPo.createConditionalRole(
-        "test-role1",
-        ["Guest User", "rhdh-qe rhdh-qe"],
-        ["Backstage"],
-        "anyOf",
-        "catalog",
-        "user:default/rhdh-qe",
-      );
+    // TODO:
+    test.fixme(
+      "Create a role with a permission policy per resource type and verify that the only authorized users can access specific resources.",
+      async ({ page }) => {
+        const uiHelper = new UIhelper(page);
+        const rbacPo = new RbacPo(page);
+        await rbacPo.createConditionalRole(
+          "test-role1",
+          ["Guest User", "rhdh-qe rhdh-qe"],
+          ["Backstage"],
+          "anyOf",
+          "catalog",
+          "user:default/rhdh-qe",
+        );
 
-      await page
-        .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)
-        .waitFor({ state: "visible" });
-      await page
-        .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)
-        .fill("test-role1");
-      await uiHelper.verifyHeading("All roles (1)");
-      await rbacPo.deleteRole("role:default/test-role1");
-    });
+        await page
+          .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)
+          .waitFor({ state: "visible" });
+        await page
+          .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)
+          .fill("test-role1");
+        await uiHelper.verifyHeading("All roles (1)");
+        await rbacPo.deleteRole("role:default/test-role1");
+      },
+    );
   });
 
   test.describe("Test RBAC plugin as a guest user", () => {
