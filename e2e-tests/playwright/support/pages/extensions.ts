@@ -71,6 +71,12 @@ export class Extensions {
     }
   }
 
+  async waitForSearchResults(searchText: string) {
+    await expect(
+      this.page.locator(".v5-MuiPaper-outlined").first(),
+    ).toContainText(searchText, { timeout: 10000 });
+  }
+
   async verifyPluginDetails({
     pluginName,
     badgeLabel,
@@ -129,6 +135,7 @@ export class Extensions {
 
     if (searchTerm) {
       await this.uiHelper.searchInputPlaceholder(searchTerm);
+      await this.waitForSearchResults(searchTerm);
     }
 
     if (pluginName) {
