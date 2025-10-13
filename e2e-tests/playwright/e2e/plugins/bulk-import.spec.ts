@@ -185,7 +185,7 @@ spec:
     await uiHelper.clickButton("Import");
     await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
     await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
-      "Added",
+      "Already imported",
     ]);
     await uiHelper.searchInputPlaceholder(newRepoDetails.repoName);
     await uiHelper.verifyRowInTableByUniqueText(newRepoDetails.repoName, [
