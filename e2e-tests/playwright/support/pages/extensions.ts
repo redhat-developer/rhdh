@@ -31,6 +31,8 @@ export class Extensions {
   async clickReadMoreByPluginTitle(pluginTitle: string) {
     const allCards = this.page.locator(".v5-MuiPaper-outlined");
     const targetCard = allCards.filter({ hasText: pluginTitle });
+    // Additional wait to ensure the panel stays open after any re-rendering
+    await this.page.waitForTimeout(1000);
     await targetCard.getByRole("link", { name: "Read more" }).click();
   }
 
