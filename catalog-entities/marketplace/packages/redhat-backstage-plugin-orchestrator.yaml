@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: redhat-backstage-plugin-orchestrator
   namespace: rhdh
-  title: "@redhat/backstage-plugin-orchestrator"
+  title: "Orchestrator Frontend"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

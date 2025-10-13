@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: redhat-backstage-plugin-orchestrator-form-widgets
   namespace: rhdh
-  title: "@redhat/backstage-plugin-orchestrator-form-widgets"
+  title: "Orchestrator Form Widgets"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

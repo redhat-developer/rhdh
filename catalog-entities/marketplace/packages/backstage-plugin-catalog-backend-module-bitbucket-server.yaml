@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: backstage-plugin-catalog-backend-module-bitbucket-server
   namespace: rhdh
-  title: "@backstage/plugin-catalog-backend-module-bitbucket-server"
+  title: "Catalog Backend Module Bitbucket Server"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

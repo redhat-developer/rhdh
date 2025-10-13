@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: backstage-community-plugin-scaffolder-backend-module-servicenow
   namespace: rhdh
-  title: "@backstage-community/plugin-scaffolder-backend-module-servicenow"
+  title: "Scaffolder Backend Module ServiceNow"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

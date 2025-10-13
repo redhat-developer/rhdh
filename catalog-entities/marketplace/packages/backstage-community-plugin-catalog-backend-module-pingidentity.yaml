@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: backstage-community-plugin-catalog-backend-module-pingidentity
   namespace: rhdh
-  title: "@backstage-community/plugin-catalog-backend-module-pingidentity"
+  title: "Catalog Backend Module PingIdentity"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: roadiehq-scaffolder-backend-argocd
   namespace: rhdh
-  title: "@roadiehq/scaffolder-backend-argocd"
+  title: "Scaffolder Backend ArgoCD"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

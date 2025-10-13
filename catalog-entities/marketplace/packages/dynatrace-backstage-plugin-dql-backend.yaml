@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: dynatrace-backstage-plugin-dql-backend
   namespace: dynatrace
-  title: "@dynatrace/backstage-plugin-dql-backend"
+  title: "DQL Backend"
   links:
     - url: https://www.dynatrace.com/
       title: Homepage

@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: backstage-plugin-scaffolder-backend-module-bitbucket-cloud
   namespace: rhdh
-  title: "@backstage/plugin-scaffolder-backend-module-bitbucket-cloud"
+  title: "Scaffolder Backend Module Bitbucket Cloud"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

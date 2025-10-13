@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: backstage-community-plugin-acr
   namespace: rhdh
-  title: "@backstage-community/plugin-acr"
+  title: "ACR"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: roadiehq-backstage-plugin-github-insights
   namespace: rhdh
-  title: "@roadiehq/backstage-plugin-github-insights"
+  title: "GitHub Insights"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

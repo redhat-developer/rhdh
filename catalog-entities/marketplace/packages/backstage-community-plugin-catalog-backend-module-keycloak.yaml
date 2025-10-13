@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: backstage-community-plugin-catalog-backend-module-keycloak
   namespace: rhdh
-  title: "@backstage-community/plugin-catalog-backend-module-keycloak"
+  title: "Catalog Backend Module Keycloak"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

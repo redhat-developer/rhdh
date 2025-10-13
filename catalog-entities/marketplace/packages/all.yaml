@@ -29,7 +29,7 @@ spec:
     - ./backstage-plugin-scaffolder-backend-module-azure.yaml
     - ./backstage-community-plugin-azure-devops-backend.yaml
     - ./backstage-community-plugin-azure-devops.yaml
-    - ./parfuemerie-douglas-scaffolder-backend-module-azure-repositorie.yaml
+    - ./parfuemerie-douglas-scaffolder-backend-module-azure-repositories.yaml
     - ./backstage-community-plugin-jenkins-backend.yaml
     - ./backstage-community-plugin-jenkins.yaml
     - ./backstage-plugin-notifications.yaml
@@ -80,6 +80,8 @@ spec:
     - ./backstage-community-plugin-lighthouse.yaml
     - ./backstage-community-plugin-tech-radar.yaml
     - ./backstage-community-plugin-tech-radar-backend.yaml
+    - ./backstage-community-plugin-todo-backend.yaml
+    - ./backstage-community-plugin-todo.yaml
     - ./backstage-community-plugin-analytics-provider-segment.yaml
     - ./backstage-community-plugin-catalog-backend-module-scaffolder-re.yaml
     - ./backstage-plugin-catalog-backend-module-msgraph.yaml
