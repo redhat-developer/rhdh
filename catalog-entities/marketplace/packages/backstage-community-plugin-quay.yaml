@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: backstage-community-plugin-quay
   namespace: rhdh
-  title: "@backstage-community/plugin-quay"
+  title: "Quay"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

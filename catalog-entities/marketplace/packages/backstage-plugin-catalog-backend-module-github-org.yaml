@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: backstage-plugin-catalog-backend-module-github-org
   namespace: rhdh
-  title: "@backstage/plugin-catalog-backend-module-github-org"
+  title: "Catalog Backend Module GitHub Organization"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

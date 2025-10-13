@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: backstage-community-plugin-sonarqube
   namespace: rhdh
-  title: "@backstage-community/plugin-sonarqube"
+  title: "SonarQube Frontend"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

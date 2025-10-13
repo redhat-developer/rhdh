@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: backstage-community-plugin-ocm-backend
   namespace: rhdh
-  title: "@backstage-community/plugin-ocm-backend"
+  title: "OCM Backend"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

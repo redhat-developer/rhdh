@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: backstage-plugin-kubernetes
   namespace: rhdh
-  title: "@backstage/plugin-kubernetes"
+  title: "Kubernetes Frontend"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

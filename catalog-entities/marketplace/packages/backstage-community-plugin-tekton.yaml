@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: backstage-community-plugin-tekton
   namespace: rhdh
-  title: "@backstage-community/plugin-tekton"
+  title: "Tekton"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

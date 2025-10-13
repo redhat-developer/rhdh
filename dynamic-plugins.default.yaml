@@ -517,6 +517,10 @@ plugins:
             menuItems:
               default.create:
                 title: ''
+              default.admin:
+                title: Administration
+                textKey: menuItem.administration
+                icon: admin
           red-hat-developer-hub.backstage-plugin-global-header:
             translationResources:
               - importName: globalHeaderTranslations
@@ -915,7 +919,7 @@ plugins:
                   textKey: menuItem.rbac
             menuItems:
               rbac:
-                parent: admin
+                parent: default.admin
                 icon: rbacIcon
 
   - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-servicenow-dynamic
@@ -1277,20 +1281,21 @@ plugins:
           red-hat-developer-hub.backstage-plugin-marketplace:
             translationResources:
               - importName: marketplaceTranslations
-                module: Alpha
                 ref: marketplaceTranslationRef
+                module: Alpha
             appIcons:
-              - name: marketplace
-                importName: MarketplaceIcon
+              - name: pluginsIcon
+                importName: PluginsIcon
             dynamicRoutes:
-              - path: /extensions/catalog
+              - path: /extensions
                 importName: DynamicMarketplacePluginRouter
-            mountPoints:
-              - mountPoint: internal.plugins/tab
-                importName: DynamicMarketplacePluginContent
-                config:
-                  path: marketplace
-                  title: Catalog
+                menuItem:
+                  icon: pluginsIcon
+                  text: Extensions
+                  textKey: menuItem.extensions
+            menuItems:
+              extensions:
+                parent: default.admin
 
   # Group: Orchestrator
   - package: "@redhat/backstage-plugin-orchestrator@1.7.1"
@@ -1369,7 +1374,7 @@ plugins:
                   textKey: menuItem.adoptionInsights
             menuItems:
               adoption-insights:
-                parent: admin
+                parent: default.admin
                 icon: adoptionInsightsIcon
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-adoption-insights-backend-dynamic
     disabled: false
