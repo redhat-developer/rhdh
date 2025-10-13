@@ -70,6 +70,10 @@ export class Extensions {
       await this.uiHelper.verifyHeading(heading);
     }
   }
+  
+  async waitForSearchResults(pluginName: string) {
+    await expect(this.page.locator(".v5-MuiPaper-outlined").first()).toContainText(pluginName, { timeout: 10000 });
+  }
 
   async verifyPluginDetails({
     pluginName,
@@ -129,9 +133,8 @@ export class Extensions {
 
     if (searchTerm) {
       await this.uiHelper.searchInputPlaceholder(searchTerm);
-      await expect(
-        this.page.locator('[class*="v5-MuiPaper-elevation"]'),
-      ).toContainText("Plugins (1)", { timeout: 10000 }); //.toHaveCount(1, { timeout: 10000});
+      // Wait for search results to load and filter properly
+      await this.waitForSearchResults(pluginName);
     }
 
     if (pluginName) {
