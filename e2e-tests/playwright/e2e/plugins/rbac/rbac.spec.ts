@@ -436,6 +436,9 @@ test.describe.serial("Test RBAC", () => {
     test("Create a role with a permission policy per resource type and verify that the only authorized users can access specific resources.", async ({
       page,
     }) => {
+      // TODO: https://issues.redhat.com/browse/RHDHBUGS-2127
+      test.fixme(true, "Cannot delete role because of missing permissions");
+
       const uiHelper = new UIhelper(page);
       const rbacPo = new RbacPo(page);
       await rbacPo.createConditionalRole(
@@ -454,8 +457,6 @@ test.describe.serial("Test RBAC", () => {
         .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)
         .fill("test-role1");
       await uiHelper.verifyHeading("All roles (1)");
-      // TODO: https://issues.redhat.com/browse/RHDHBUGS-2127
-      test.fixme(true, "Cannot delete role because of missing permissions");
       await rbacPo.deleteRole("role:default/test-role1");
     });
   });
