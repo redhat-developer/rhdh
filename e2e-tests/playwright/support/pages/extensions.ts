@@ -134,7 +134,7 @@ export class Extensions {
     if (searchTerm) {
       await this.uiHelper.searchInputPlaceholder(searchTerm);
       // Wait for search results to load and filter properly
-      await this.waitForSearchResults(pluginName);
+      await this.waitForSearchResults(searchTerm);
     }
 
     if (pluginName) {
