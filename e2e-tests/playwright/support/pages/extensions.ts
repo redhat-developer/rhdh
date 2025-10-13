@@ -31,8 +31,6 @@ export class Extensions {
   async clickReadMoreByPluginTitle(pluginTitle: string) {
     const allCards = this.page.locator(".v5-MuiPaper-outlined");
     const targetCard = allCards.filter({ hasText: pluginTitle });
-    // Additional wait to ensure the panel stays open after any re-rendering
-    await this.page.waitForTimeout(1000);
     await targetCard.getByRole("link", { name: "Read more" }).click();
   }
 
@@ -131,6 +129,9 @@ export class Extensions {
 
     if (searchTerm) {
       await this.uiHelper.searchInputPlaceholder(searchTerm);
+      await expect(
+        this.page.locator('[class*="v5-MuiPaper-elevation"]'),
+      ).toContainText("Plugins (1)", { timeout: 10000 }); //.toHaveCount(1, { timeout: 10000});
     }
 
     if (pluginName) {
