@@ -80,26 +80,25 @@ spec:
   // Select two repos: one with an existing catalog.yaml file and another without it
   test("Add a Repository from the Repository Tab and Confirm its Preview", async () => {
     await uiHelper.openSidebar("Bulk import");
-    // await uiHelper.clickButton("Add");
-    // await uiHelper.clickButton("should fail");
-    // await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
+    await uiHelper.clickButton("Import");
+    await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
 
-    // await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
-    //   "Not Generated",
-    // ]);
-    // await bulkimport.selectRepoInTable(catalogRepoDetails.name);
-    // await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
-    //   catalogRepoDetails.url,
-    //   "Ready Preview file",
-    // ]);
+    await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
+      "Not Generated",
+    ]);
+    await bulkimport.selectRepoInTable(catalogRepoDetails.name);
+    await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
+      catalogRepoDetails.url,
+      "Ready Preview file",
+    ]);
 
-    // await uiHelper.clickOnLinkInTableByUniqueText(
-    //   catalogRepoDetails.name,
-    //   "Preview file",
-    // );
-    // await expect(await uiHelper.clickButton("Save")).not.toBeVisible({
-    //   timeout: 10000,
-    // });
+    await uiHelper.clickOnLinkInTableByUniqueText(
+      catalogRepoDetails.name,
+      "Preview file",
+    );
+    await expect(await uiHelper.clickButton("Save")).not.toBeVisible({
+      timeout: 10000,
+    });
   });
 
   test("Add a Repository from the Organization Tab and Confirm its Preview", async () => {
@@ -119,9 +118,9 @@ spec:
       /2\/(\d+) Edit/,
       /Ready Preview files/,
     ]);
-    await expect(
-      await uiHelper.clickButton("Create pull requests"),
-    ).toBeDisabled({ timeout: 10000 });
+    await expect(await uiHelper.clickButton("Import")).toBeDisabled({
+      timeout: 10000,
+    });
   });
 
   test('Verify that the two selected repositories are listed: one with the status "Added" and another with the status "WAIT_PR_APPROVAL."', async () => {
@@ -183,7 +182,7 @@ spec:
 
   test("Verify Selected repositories shows catalog-info.yaml status as 'Added' and 'WAIT_PR_APPROVAL'", async () => {
     await uiHelper.openSidebar("Bulk import");
-    await uiHelper.clickButton("Add");
+    await uiHelper.clickButton("Import");
     await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
     await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
       "Added",
@@ -361,6 +360,6 @@ test.describe
   test("Bulk Import - Verify users without permission cannot access", async () => {
     await uiHelper.openSidebar("Bulk import");
     await uiHelper.verifyText("Permission required");
-    expect(await uiHelper.isBtnVisible("Add")).toBeFalsy();
+    expect(await uiHelper.isBtnVisible("Import")).toBeFalsy();
   });
 });
