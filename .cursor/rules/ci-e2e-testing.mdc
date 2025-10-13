@@ -150,7 +150,7 @@ yarn prettier:fix                  # Prettier fixing
 
 ### Environment Variables
 
-All the important environment variables are stored in @.ibm/pipelines/env_variables.sh
+All the important environment variables are sourced in `.ibm/pipelines/env_variables.sh`
 Most of them are populated by secrets from the Vault.
 
 ⚠️ Important Notice
@@ -392,12 +392,6 @@ brew install gnu-sed
 - **OpenShift**: Primary deployment platform
 - **Advanced Cluster Management**: For OCM plugins
 
-#### Service Configuration
-- **GitHub Token**: Required for GitHub integration
-- **Keycloak Credentials**: Stored in Vault
-- **OpenShift Access**: Cluster credentials
-- **ACM Installation**: Required for OCM plugins
-
 ### Internal Components
 
 #### Core Components
@@ -406,19 +400,12 @@ brew install gnu-sed
 - **Catalog**: Entity management
 - **Scaffolder**: Template system
 
-#### Key Dependencies
-- **Node.js 22**: Runtime environment
-- **Yarn 3.8.7**: Package manager
-- **Playwright**: Testing framework
-- **TypeScript**: Development language
-
 ### Common Issues and Solutions
 
 #### Test Failures
 1. **Environment Issues**: Verify environment variables
 2. **Authentication Problems**: Check credentials and tokens
-3. **Timing Issues**: Adjust timeouts in configuration
-4. **Resource Constraints**: Check cluster resources
+3. **Resource Constraints**: Check cluster resources
 
 #### CI Failures
 1. **Cluster Issues**: Verify cluster availability
