@@ -107,7 +107,7 @@ spec:
     await uiHelper.verifyRowInTableByUniqueText(newRepoDetails.owner, [
       new RegExp(`github.com/${newRepoDetails.owner}`),
       /1\/(\d+) Edit/,
-      /Ready Preview file/,
+      /Ready to import Preview file/,
     ]);
     await uiHelper.clickOnLinkInTableByUniqueText(newRepoDetails.owner, "Edit");
     await bulkimport.searchInOrg(newRepoDetails.repoName);
@@ -116,7 +116,7 @@ spec:
     await uiHelper.verifyRowInTableByUniqueText(newRepoDetails.owner, [
       new RegExp(`github.com/${newRepoDetails.owner}`),
       /2\/(\d+) Edit/,
-      /Ready Preview files/,
+      /Ready to import Preview files/,
     ]);
     await expect(await uiHelper.clickButton("Import")).toBeDisabled({
       timeout: 10000,
