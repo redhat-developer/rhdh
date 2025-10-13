@@ -194,6 +194,8 @@ spec:
   });
 
   test("Merge the PR on GitHub and Confirm the Status Updates to 'Added'", async () => {
+    // TODO: https://issues.redhat.com/browse/RHDHBUGS-2116
+    test.fixme();
     await uiHelper.openSidebar("Bulk import");
     // Merge PR is generated for the repository without the catalog.yaml file.
     await APIHelper.mergeGitHubPR(
