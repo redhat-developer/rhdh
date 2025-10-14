@@ -18,10 +18,6 @@ handle_eks_operator() {
   # Get cluster information
   aws_eks_get_cluster_info
 
-  NAME_SPACE="showcase-k8s-ci-nightly"
-  NAME_SPACE_RBAC="showcase-rbac-k8s-ci-nightly"
-  export NAME_SPACE NAME_SPACE_RBAC
-
   K8S_CLUSTER_URL=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')
   K8S_CLUSTER_API_SERVER_URL=$(printf "%s" "$K8S_CLUSTER_URL" | base64 | tr -d '\n')
   OCM_CLUSTER_URL=$(printf "%s" "$K8S_CLUSTER_URL" | base64 | tr -d '\n')
