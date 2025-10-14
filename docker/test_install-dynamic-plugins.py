@@ -15,9 +15,15 @@
 """
 Unit tests for install-dynamic-plugins.py
 
+This test suite covers:
+- NPMPackageMerger.parse_plugin_key() - Version stripping from NPM packages
+- OciPackageMerger.parse_plugin_key() - Parsing OCI package formats
+- NPMPackageMerger.merge_plugin() - Plugin config merging and override logic
+- OciPackageMerger.merge_plugin() - OCI plugin merging with version inheritance
+
 Installation:
     To install test dependencies:
-    $ pip install -r requirements-dev.in
+    $ pip install -r ../python/requirements-dev.txt
 
 Running tests:
     Run all tests:
@@ -284,6 +290,360 @@ class TestEdgeCases:
         assert plugin_key == 'oci://quay.io/user/plugin:!plugin'
         assert version == long_digest
         assert inherit is False
+
+
+class TestNPMPackageMergerMergePlugin:
+    """Test cases for NPMPackageMerger.merge_plugin() method."""
+    
+    def test_add_new_plugin_level_0(self):
+        """Test adding a new plugin at level 0."""
+        all_plugins = {}
+        plugin = {'package': 'test-package@1.0.0', 'disabled': False}
+        merger = NPMPackageMerger(plugin, 'test-file.yaml', all_plugins)
+        
+        merger.merge_plugin(level=0)
+        
+        # Check plugin was added
+        assert 'test-package' in all_plugins
+        assert all_plugins['test-package']['package'] == 'test-package@1.0.0'
+        assert all_plugins['test-package']['disabled'] is False
+        assert all_plugins['test-package']['last_modified_level'] == 0
+    
+    def test_override_plugin_level_0_to_1(self):
+        """Test overriding a plugin from level 0 to level 1."""
+        all_plugins = {}
+        
+        # Add plugin at level 0
+        plugin1 = {'package': 'test-package@1.0.0', 'disabled': False}
+        merger1 = NPMPackageMerger(plugin1, 'included-file.yaml', all_plugins)
+        merger1.merge_plugin(level=0)
+        
+        # Override at level 1
+        plugin2 = {'package': 'test-package@2.0.0', 'disabled': True}
+        merger2 = NPMPackageMerger(plugin2, 'main-file.yaml', all_plugins)
+        merger2.merge_plugin(level=1)
+        
+        # Check override succeeded
+        assert all_plugins['test-package']['disabled'] is True
+        assert all_plugins['test-package']['last_modified_level'] == 1
+        # Package field should be overridden
+        assert all_plugins['test-package']['package'] == 'test-package@2.0.0'
+    
+    def test_override_multiple_config_fields(self):
+        """Test overriding multiple plugin config fields."""
+        all_plugins = {}
+        
+        # Add plugin at level 0
+        plugin1 = {
+            'package': '@scope/plugin@1.0.0',
+            'disabled': False,
+            'pullPolicy': 'IfNotPresent',
+            'pluginConfig': {'key1': 'value1'}
+        }
+        merger1 = NPMPackageMerger(plugin1, 'included-file.yaml', all_plugins)
+        merger1.merge_plugin(level=0)
+        
+        # Override at level 1
+        plugin2 = {
+            'package': '@scope/plugin@2.0.0',
+            'disabled': True,
+            'pullPolicy': 'Always',
+            'pluginConfig': {'key2': 'value2'},
+            'integrity': 'sha256-abc123'
+        }
+        merger2 = NPMPackageMerger(plugin2, 'main-file.yaml', all_plugins)
+        merger2.merge_plugin(level=1)
+        
+        # Check all fields were updated except package
+        assert all_plugins['@scope/plugin']['disabled'] is True
+        assert all_plugins['@scope/plugin']['pullPolicy'] == 'Always'
+        assert all_plugins['@scope/plugin']['pluginConfig'] == {'key2': 'value2'}
+        assert all_plugins['@scope/plugin']['integrity'] == 'sha256-abc123'
+        # Package field not overridden
+        assert all_plugins['@scope/plugin']['package'] == '@scope/plugin@2.0.0'
+    
+    def test_duplicate_plugin_same_level_0_raises_error(self):
+        """Test that duplicate plugin at same level 0 raises InstallException."""
+        all_plugins = {}
+        
+        # Add plugin at level 0
+        plugin1 = {'package': 'duplicate-package@1.0.0'}
+        merger1 = NPMPackageMerger(plugin1, 'included-file.yaml', all_plugins)
+        merger1.merge_plugin(level=0)
+        
+        # Try to add same plugin again at level 0
+        plugin2 = {'package': 'duplicate-package@2.0.0'}
+        merger2 = NPMPackageMerger(plugin2, 'included-file.yaml', all_plugins)
+        
+        with pytest.raises(InstallException) as exc_info:
+            merger2.merge_plugin(level=0)
+        
+        assert 'Duplicate plugin configuration' in str(exc_info.value)
+        assert 'duplicate-package@2.0.0' in str(exc_info.value)
+    
+    def test_duplicate_plugin_same_level_1_raises_error(self):
+        """Test that duplicate plugin at same level 1 raises InstallException."""
+        all_plugins = {}
+        
+        # Add plugin at level 0
+        plugin1 = {'package': 'test-package@1.0.0'}
+        merger1 = NPMPackageMerger(plugin1, 'included-file.yaml', all_plugins)
+        merger1.merge_plugin(level=0)
+        
+        # Override at level 1
+        plugin2 = {'package': 'test-package@2.0.0'}
+        merger2 = NPMPackageMerger(plugin2, 'main-file.yaml', all_plugins)
+        merger2.merge_plugin(level=1)
+        
+        # Try to add same plugin again at level 1
+        plugin3 = {'package': 'test-package@3.0.0'}
+        merger3 = NPMPackageMerger(plugin3, 'main-file.yaml', all_plugins)
+        
+        with pytest.raises(InstallException) as exc_info:
+            merger3.merge_plugin(level=1)
+        
+        assert 'Duplicate plugin configuration' in str(exc_info.value)
+    
+    def test_invalid_package_field_type_raises_error(self):
+        """Test that non-string package field raises InstallException."""
+        all_plugins = {}
+        plugin = {'package': 123}
+        merger = NPMPackageMerger(plugin, 'test-file.yaml', all_plugins)
+        
+        with pytest.raises(InstallException) as exc_info:
+            merger.merge_plugin(level=0)
+        
+        assert 'must be a string' in str(exc_info.value)
+    
+    def test_version_stripping_in_plugin_key(self):
+        """Test that version is stripped from plugin key."""
+        all_plugins = {}
+        
+        # Add plugin with version
+        plugin1 = {'package': 'my-plugin@1.0.0'}
+        merger1 = NPMPackageMerger(plugin1, 'test-file.yaml', all_plugins)
+        merger1.merge_plugin(level=0)
+        
+        # Override with different version
+        plugin2 = {'package': 'my-plugin@2.0.0', 'disabled': True}
+        merger2 = NPMPackageMerger(plugin2, 'test-file.yaml', all_plugins)
+        merger2.merge_plugin(level=1)
+        
+        # Both should map to same key
+        assert 'my-plugin' in all_plugins
+        assert all_plugins['my-plugin']['disabled'] is True
+
+
+class TestOciPackageMergerMergePlugin:
+    """Test cases for OciPackageMerger.merge_plugin() method."""
+    
+    def test_add_new_plugin_with_tag(self):
+        """Test adding a new OCI plugin with tag."""
+        all_plugins = {}
+        plugin = {'package': 'oci://registry.io/plugin:v1.0!path'}
+        merger = OciPackageMerger(plugin, 'test-file.yaml', all_plugins)
+        
+        merger.merge_plugin(level=0)
+        
+        plugin_key = 'oci://registry.io/plugin:!path'
+        assert plugin_key in all_plugins
+        assert all_plugins[plugin_key]['package'] == 'oci://registry.io/plugin:v1.0!path'
+        assert all_plugins[plugin_key]['version'] == 'v1.0'
+        assert all_plugins[plugin_key]['last_modified_level'] == 0
+    
+    def test_add_new_plugin_with_digest(self):
+        """Test adding a new OCI plugin with digest."""
+        all_plugins = {}
+        plugin = {'package': 'oci://registry.io/plugin@sha256:abc123!path'}
+        merger = OciPackageMerger(plugin, 'test-file.yaml', all_plugins)
+        
+        merger.merge_plugin(level=0)
+        
+        plugin_key = 'oci://registry.io/plugin:!path'
+        assert plugin_key in all_plugins
+        assert all_plugins[plugin_key]['version'] == 'sha256:abc123'
+    
+    def test_override_plugin_version(self, capsys):
+        """Test overriding OCI plugin version from level 0 to 1."""
+        all_plugins = {}
+        
+        # Add plugin at level 0
+        plugin1 = {'package': 'oci://registry.io/plugin:v1.0!path'}
+        merger1 = OciPackageMerger(plugin1, 'included-file.yaml', all_plugins)
+        merger1.merge_plugin(level=0)
+        
+        # Override at level 1 with new version
+        plugin2 = {'package': 'oci://registry.io/plugin:v2.0!path'}
+        merger2 = OciPackageMerger(plugin2, 'main-file.yaml', all_plugins)
+        merger2.merge_plugin(level=1)
+        
+        # Check version was updated
+        plugin_key = 'oci://registry.io/plugin:!path'
+        assert all_plugins[plugin_key]['version'] == 'v2.0'
+        assert all_plugins[plugin_key]['package'] == 'oci://registry.io/plugin:v2.0!path'
+        assert all_plugins[plugin_key]['last_modified_level'] == 1
+        
+        # Check that override message was printed
+        captured = capsys.readouterr()
+        assert 'Overriding version' in captured.out
+        assert 'v1.0' in captured.out
+        assert 'v2.0' in captured.out
+    
+    def test_use_inherit_to_preserve_version(self):
+        """Test using {{inherit}} to preserve existing version."""
+        all_plugins = {}
+        
+        # Add plugin at level 0
+        plugin1 = {'package': 'oci://registry.io/plugin:v1.0!path'}
+        merger1 = OciPackageMerger(plugin1, 'included-file.yaml', all_plugins)
+        merger1.merge_plugin(level=0)
+        
+        # Override at level 1 with {{inherit}}
+        plugin2 = {'package': 'oci://registry.io/plugin:{{inherit}}!path', 'disabled': True}
+        merger2 = OciPackageMerger(plugin2, 'main-file.yaml', all_plugins)
+        merger2.merge_plugin(level=1)
+        
+        # Check version was preserved
+        plugin_key = 'oci://registry.io/plugin:!path'
+        assert all_plugins[plugin_key]['version'] == 'v1.0'
+        # Package field should NOT be updated when inheriting
+        assert all_plugins[plugin_key]['package'] == 'oci://registry.io/plugin:v1.0!path'
+        # But other config should be updated
+        assert all_plugins[plugin_key]['disabled'] is True
+    
+    def test_override_config_with_version_inheritance(self):
+        """Test overriding plugin config while preserving version with {{inherit}}."""
+        all_plugins = {}
+        
+        # Add plugin at level 0
+        plugin1 = {
+            'package': 'oci://registry.io/plugin:v1.0!path',
+            'pluginConfig': {'key1': 'value1'}
+        }
+        merger1 = OciPackageMerger(plugin1, 'included-file.yaml', all_plugins)
+        merger1.merge_plugin(level=0)
+        
+        # Override config at level 1 with {{inherit}}
+        plugin2 = {
+            'package': 'oci://registry.io/plugin:{{inherit}}!path',
+            'pluginConfig': {'key2': 'value2'}
+        }
+        merger2 = OciPackageMerger(plugin2, 'main-file.yaml', all_plugins)
+        merger2.merge_plugin(level=1)
+        
+        # Check version preserved and config updated
+        plugin_key = 'oci://registry.io/plugin:!path'
+        assert all_plugins[plugin_key]['version'] == 'v1.0'
+        assert all_plugins[plugin_key]['pluginConfig'] == {'key2': 'value2'}
+    
+    def test_override_config_without_version_inheritance(self):
+        """Test overriding both version and config."""
+        all_plugins = {}
+        
+        # Add plugin at level 0
+        plugin1 = {
+            'package': 'oci://registry.io/plugin:v1.0!path',
+            'pluginConfig': {'key1': 'value1'}
+        }
+        merger1 = OciPackageMerger(plugin1, 'included-file.yaml', all_plugins)
+        merger1.merge_plugin(level=0)
+        
+        # Override both at level 1
+        plugin2 = {
+            'package': 'oci://registry.io/plugin:v2.0!path',
+            'pluginConfig': {'key2': 'value2'}
+        }
+        merger2 = OciPackageMerger(plugin2, 'main-file.yaml', all_plugins)
+        merger2.merge_plugin(level=1)
+        
+        # Check both were updated
+        plugin_key = 'oci://registry.io/plugin:!path'
+        assert all_plugins[plugin_key]['version'] == 'v2.0'
+        assert all_plugins[plugin_key]['pluginConfig'] == {'key2': 'value2'}
+        assert all_plugins[plugin_key]['package'] == 'oci://registry.io/plugin:v2.0!path'
+    
+    def test_override_from_tag_to_digest(self):
+        """Test overriding from tag to digest."""
+        all_plugins = {}
+        
+        # Add plugin with tag at level 0
+        plugin1 = {'package': 'oci://registry.io/plugin:v1.0!path'}
+        merger1 = OciPackageMerger(plugin1, 'included-file.yaml', all_plugins)
+        merger1.merge_plugin(level=0)
+        
+        # Override with digest at level 1
+        plugin2 = {'package': 'oci://registry.io/plugin@sha256:abc123def456!path'}
+        merger2 = OciPackageMerger(plugin2, 'main-file.yaml', all_plugins)
+        merger2.merge_plugin(level=1)
+        
+        # Check version updated to digest format
+        plugin_key = 'oci://registry.io/plugin:!path'
+        assert all_plugins[plugin_key]['version'] == 'sha256:abc123def456'
+        assert all_plugins[plugin_key]['package'] == 'oci://registry.io/plugin@sha256:abc123def456!path'
+    
+    def test_new_plugin_with_inherit_raises_error(self):
+        """Test that using {{inherit}} on a new plugin raises InstallException."""
+        all_plugins = {}
+        plugin = {'package': 'oci://registry.io/plugin:{{inherit}}!path'}
+        merger = OciPackageMerger(plugin, 'test-file.yaml', all_plugins)
+        
+        with pytest.raises(InstallException) as exc_info:
+            merger.merge_plugin(level=0)
+        
+        assert '{{inherit}}' in str(exc_info.value)
+        assert 'no resolved tag or digest' in str(exc_info.value)
+    
+    def test_duplicate_oci_plugin_same_level_0_raises_error(self):
+        """Test that duplicate OCI plugin at same level 0 raises InstallException."""
+        all_plugins = {}
+        
+        # Add plugin at level 0
+        plugin1 = {'package': 'oci://registry.io/plugin:v1.0!path'}
+        merger1 = OciPackageMerger(plugin1, 'included-file.yaml', all_plugins)
+        merger1.merge_plugin(level=0)
+        
+        # Try to add same plugin again at level 0
+        plugin2 = {'package': 'oci://registry.io/plugin:v2.0!path'}
+        merger2 = OciPackageMerger(plugin2, 'included-file.yaml', all_plugins)
+        
+        with pytest.raises(InstallException) as exc_info:
+            merger2.merge_plugin(level=0)
+        
+        assert 'Duplicate plugin configuration' in str(exc_info.value)
+    
+    def test_duplicate_oci_plugin_same_level_1_raises_error(self):
+        """Test that duplicate OCI plugin at same level 1 raises InstallException."""
+        all_plugins = {}
+        
+        # Add plugin at level 0
+        plugin1 = {'package': 'oci://registry.io/plugin:v1.0!path'}
+        merger1 = OciPackageMerger(plugin1, 'included-file.yaml', all_plugins)
+        merger1.merge_plugin(level=0)
+        
+        # Override at level 1
+        plugin2 = {'package': 'oci://registry.io/plugin:v2.0!path'}
+        merger2 = OciPackageMerger(plugin2, 'main-file.yaml', all_plugins)
+        merger2.merge_plugin(level=1)
+        
+        # Try to add same plugin again at level 1
+        plugin3 = {'package': 'oci://registry.io/plugin:v3.0!path'}
+        merger3 = OciPackageMerger(plugin3, 'main-file.yaml', all_plugins)
+        
+        with pytest.raises(InstallException) as exc_info:
+            merger3.merge_plugin(level=1)
+        
+        assert 'Duplicate plugin configuration' in str(exc_info.value)
+    
+    def test_invalid_package_field_type_raises_error(self):
+        """Test that non-string package field raises InstallException."""
+        all_plugins = {}
+        plugin = {'package': ['not', 'a', 'string']}
+        merger = OciPackageMerger(plugin, 'test-file.yaml', all_plugins)
+        
+        with pytest.raises(InstallException) as exc_info:
+            merger.merge_plugin(level=0)
+        
+        assert 'must be a string' in str(exc_info.value)
 
 
 if __name__ == '__main__':

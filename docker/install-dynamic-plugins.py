@@ -150,8 +150,6 @@ class PackageMerger:
     def override_plugin(self, pluginKey: str):
         """Overrides an existing plugin config with a new plugin config in the allPlugins dict."""
         for key in self.plugin:
-            if key == 'package':
-                continue
             self.allPlugins[pluginKey][key] = self.plugin[key]
     def merge_plugin(self, level: int):
         pluginKey = self.plugin['package']
