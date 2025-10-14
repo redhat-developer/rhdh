@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: backstage-community-plugin-jenkins
   namespace: rhdh
-  title: "@backstage-community/plugin-jenkins"
+  title: "Jenkins Frontend"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: red-hat-developer-hub-backstage-plugin-dynamic-home-page
   namespace: rhdh
-  title: "@red-hat-developer-hub/backstage-plugin-dynamic-home-page"
+  title: "Dynamic Home Page"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

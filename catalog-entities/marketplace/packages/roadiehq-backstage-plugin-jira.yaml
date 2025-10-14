@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: roadiehq-backstage-plugin-jira
   namespace: rhdh
-  title: "@roadiehq/backstage-plugin-jira"
+  title: "Jira"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

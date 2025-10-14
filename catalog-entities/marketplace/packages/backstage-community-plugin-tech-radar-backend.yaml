@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: backstage-community-plugin-tech-radar-backend
   namespace: rhdh
-  title: "@backstage-community/plugin-tech-radar-backend"
+  title: "Tech Radar Backend"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

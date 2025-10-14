@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: pagerduty-backstage-plugin-backend
   namespace: rhdh
-  title: "@pagerduty/backstage-plugin-backend"
+  title: "PagerDuty Backend"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

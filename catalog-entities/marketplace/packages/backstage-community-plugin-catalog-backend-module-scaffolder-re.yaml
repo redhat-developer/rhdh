@@ -3,8 +3,7 @@ kind: Package
 metadata:
   name: backstage-community-plugin-catalog-backend-module-scaffolder-re
   namespace: rhdh
-  title: "@backstage-community/plugin-catalog-backend-module-scaffolder-relation-\
-    processor"
+  title: "Catalog Backend Module Scaffolder Re"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

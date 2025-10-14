@@ -5,7 +5,7 @@ metadata:
   name: openshift-cluster-manager
   namespace: rhdh
   title: OpenShift Cluster Manager
-  description: The Open Cluster Management (OCM) plugin integrates your Red Hat Developer instance with the MultiClusterHub and MultiCluster engines of OCM.
+  description: The DEPRECATED Open Cluster Management (OCM) plugin integrates your Red Hat Developer instance with the MultiClusterHub and MultiCluster engines of OCM.
   annotations:
     extensions.backstage.io/pre-installed: 'true'
     extensions.backstage.io/verified-by: Red Hat
@@ -25,13 +25,16 @@ spec:
     provider: Red Hat
     level: generally-available
   publisher: Red Hat
-  lifecycle: active
+  # https://issues.redhat.com/browse/RHDHPLAN-265 - OCM is deprecated in 1.8; will be removed in 1.10
+  lifecycle: deprecated
 
   categories:
     - Monitoring
 
   description: |
-    The Open Cluster Management (OCM) plugin integrates your Backstage instance with the `MultiClusterHub` and `MultiCluster` engines of OCM.
+    The DEPRECATED Open Cluster Management (OCM) plugin integrates your Backstage instance with the `MultiClusterHub` and `MultiCluster` engines of OCM.
+
+    This deprecated plugin will be removed in a future release. You should migrate to a replacement as soon as possible.
 
     The OCM plugin has the following capabilities:
 

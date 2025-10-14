@@ -7,6 +7,7 @@ spec:
   targets:
     - ./3scale.yaml
     - ./adoption-insights.yaml
+    - ./aws-ecs.yaml
     - ./analytics-provider-segment.yaml
     - ./ansible-plugin.yaml
     - ./argocd-scaffolder-actions.yaml
@@ -75,6 +76,8 @@ spec:
     - ./tech-radar.yaml
     - ./techdocs.yaml
     - ./tekton.yaml
+    - ./todo.yaml
     - ./topology.yaml
     - ./lightspeed.yaml
     - ./ibm-apiconnect-backstage.yaml
+    - ./ai-model-catalog.yaml

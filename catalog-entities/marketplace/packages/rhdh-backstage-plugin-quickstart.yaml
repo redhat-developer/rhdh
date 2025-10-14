@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: rhdh-backstage-plugin-quickstart
   namespace: rhdh
-  title: "@red-hat-developer-hub/backstage-plugin-quickstart"
+  title: "Quickstart"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

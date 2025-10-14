@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: roadiehq-backstage-plugin-github-pull-requests
   namespace: rhdh
-  title: "@roadiehq/backstage-plugin-github-pull-requests"
+  title: "GitHub Pull Requests"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

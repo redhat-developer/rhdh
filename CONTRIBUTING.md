@@ -170,7 +170,7 @@ When contributing a new `@internal` plugin into this repo, you must remember to 
 For example:
 
 ```dockerfile
-COPY $EXTERNAL_SOURCE_NESTED/plugins/dynamic-plugins-info/package.json ./plugins/dynamic-plugins-info/package.json
+COPY $EXTERNAL_SOURCE_NESTED/plugins/licensed-users-info-backend/package.json ./plugins/licensed-users-info-backend/package.json
 ```
 
 ## Support
