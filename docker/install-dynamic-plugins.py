@@ -125,14 +125,14 @@ def maybeMergeConfig(config, globalConfig):
 
 def mergePlugin(plugin: dict, allPlugins: dict, dynamicPluginsFile: str, level: int):
     package = plugin['package']
-    version = None # Used to track OCI package versions for version inference
     if not isinstance(package, str):
         raise InstallException(f"content of the \'plugins.package\' field must be a string in {dynamicPluginsFile}")
 
     if package.startswith('oci://'):
         return OciPackageMerger(plugin, dynamicPluginsFile, allPlugins).merge_plugin(level)
     else:
-        return PackageMerger(plugin, dynamicPluginsFile, allPlugins).merge_plugin(level)
+        # Use NPMPackageMerger for all other package types (NPM, git, local, tarball, etc.)
+        return NPMPackageMerger(plugin, dynamicPluginsFile, allPlugins).merge_plugin(level)
 
 class PackageMerger:
     def __init__(self, plugin: dict, dynamicPluginsFile: str, allPlugins: dict):
@@ -174,6 +174,131 @@ class PackageMerger:
             
             self.allPlugins[pluginKey]["last_modified_level"] = level
             self.override_plugin(pluginKey)
+
+class NPMPackageMerger(PackageMerger):
+    """Handles NPM package merging with version stripping for plugin keys."""
+    # Ref: https://docs.npmjs.com/cli/v11/using-npm/package-spec
+    # Pattern for standard NPM packages: [@scope/]package[@version|@tag|@version-range|] or [@scope/]package
+    # Pattern for standard NPM packages: [@scope/]package[@version|@tag|@version-range|] or [@scope/]package
+    NPM_PACKAGE_PATTERN = (
+        r'(@[^/]+/)?' # Optional @scope
+        r'([^@]+)'     # Package name
+        r'(?:@(.+))?'  # Optional @version, @tag, or @version-range
+        r'$'
+    )
+
+    STANDARD_NPM_PACKAGE_PATTERN = r'^' + NPM_PACKAGE_PATTERN
+
+    # Pattern for NPM aliases: alias@npm:[@scope/]package[@version|@tag]
+    NPM_ALIAS_PATTERN = r'^([^@]+)@npm:' + NPM_PACKAGE_PATTERN
+
+    GITHUB_USERNAME_PATTERN = r'([^/@]+)/([^/#]+)'  # username/repo
+
+    # Pattern for git URLs to strip out the #ref part for the plugin key
+    GIT_URL_PATTERNS = [
+        # git+https://...[#ref]
+        (
+            r'^git\+https?://[^#]+'   # git+http(s)://<repo>
+            r'(?:#(.+))?'             # Optional #ref
+            r'$'
+        ),
+        # git+ssh://...[#ref]
+        (
+            r'^git\+ssh://[^#]+'
+            r'(?:#(.+))?'
+            r'$'
+        ),
+        # git://...[#ref]
+        (
+            r'^git://[^#]+'
+            r'(?:#(.+))?'
+            r'$'
+        ),
+        # https://github.com/user/repo(.git)?[#ref]
+        (
+            r'^https://github\.com/[^/]+/[^/#]+'
+            r'(?:\.git)?'
+            r'(?:#(.+))?'
+            r'$'
+        ),
+        # git@github.com:user/repo(.git)?[#ref]
+        (
+            r'^git@github\.com:[^/]+/[^/#]+'
+            r'(?:\.git)?'
+            r'(?:#(.+))?'
+            r'$'
+        ),
+        # github:user/repo[#ref]
+        (
+            r'^github:' + GITHUB_USERNAME_PATTERN +
+            r'(?:#(.+))?' +
+            r'$'
+        ),
+        # user/repo[#ref]
+        (
+            r'^' + GITHUB_USERNAME_PATTERN +
+            r'(?:#(.+))?' +
+            r'$'
+        )
+    ]
+    
+    def __init__(self, plugin: dict, dynamicPluginsFile: str, allPlugins: dict):
+        super().__init__(plugin, dynamicPluginsFile, allPlugins)
+    
+    def parse_plugin_key(self, package: str) -> str:
+        """
+        Parses NPM package specification and returns a version-stripped plugin key.
+        
+        Handles various NPM package formats specified in https://docs.npmjs.com/cli/v11/using-npm/package-spec:
+        - Standard packages: [@scope/]package[@version] -> [@scope/]package
+        - Aliases: alias@npm:package[@version] -> alias@npm:package
+        - Git URLs: git+https://... -> git+https://... (without #ref)
+        - GitHub shorthand: user/repo#ref -> user/repo
+        - Local paths: ./path -> ./path (unchanged)
+        - Tarballs: kept as-is since there is no standard format for them
+        """
+        
+        # Local packages don't need version stripping
+        if package.startswith('./'):
+            return package
+        
+        # Tarballs are kept as-is since there is no standard format for them
+        if package.endswith('.tgz'):
+            return package
+        
+        # remove @version from NPM aliases: alias@npm:package[@version]
+        alias_match = re.match(self.NPM_ALIAS_PATTERN, package)
+        if alias_match:
+            alias_name = alias_match.group(1)
+            package_scope = alias_match.group(2) or ''
+            npm_package = alias_match.group(3)
+            print(alias_match.group(4))
+            # Recursively parse the npm package part to strip its version
+            npm_key = self._strip_npm_package_version(package_scope + npm_package)
+            return f"{alias_name}@npm:{npm_key}"
+        
+        # Check for git URLs
+        for git_pattern in self.GIT_URL_PATTERNS:
+
+            git_match = re.match(git_pattern, package)
+    
+            if git_match:
+                # Remove the #ref part if present
+                return package.split('#')[0]
+        # Handle standard NPM packages
+        return self._strip_npm_package_version(package)
+
+    def _strip_npm_package_version(self, package: str) -> str:
+        """Strip version from standard NPM package name."""
+        npm_match = re.match(self.STANDARD_NPM_PACKAGE_PATTERN, package)
+        if npm_match:
+            scope = npm_match.group(1) or ''
+            pkg_name = npm_match.group(2)
+            return f"{scope}{pkg_name}"
+        
+        # If no pattern matches, return as-is (could be tarball URL or other format)
+        return package
+
 class PluginInstaller:
     """Base class for plugin installers with common functionality."""
     
@@ -797,4 +922,5 @@ def main():
         print('\n======= Removing previously installed dynamic plugin', plugin_path_by_hash[hash_value], flush=True)
         shutil.rmtree(plugin_directory, ignore_errors=True, onerror=None)
 
-main()
+if __name__ == '__main__':
+    main()
