@@ -400,3 +400,81 @@ When users change the language in the UI:
 
 1. Change language using any language selector in the UI
 2. Language setting will automatically be saved and restored
+
+## Customizing QuickAccess card icons on the Homepage
+
+1. Add the JSON Data source
+
+The QuickAccess Cards on the Homepage supports loading data from a JSON file. This JSON file in your GitHub repository or any accessible endpoint can be hosted.
+
+2. Configure the Proxy in `app-config.yaml`
+
+To allow Homepage to fetch data from the hosted JSON file, add the following proxy configuration to your `app-config.yaml`:
+
+```
+proxy:
+    endpoints:
+        # customize your backstage instance
+        '/developer-hub':
+        target: https://raw.githubusercontent.com/ # i.e https://raw.githubusercontent.com/
+        pathRewrite:
+            '^/api/proxy/developer-hub$': <path-to-your>.json # i.e /redhat-developer/rhdh/main/packages/app/public/homepage/data.json
+        changeOrigin: true
+        secure: true
+```
+
+3. Supported Icon types
+
+| Icon Type                 | Example                          | Rendered As                                                                                                                                       |
+| ------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Backstage System Icon** | `"catalog"`                      | Uses Backstage system [icons](https://github.com/backstage/backstage/blob/master/packages/app-defaults/src/defaults/icons.tsx)                    |
+| **SVG String**            | `"<svg>...</svg>"`               | Renders inline SVG                                                                                                                                |
+| **Image URL**             | `"https://example.com/icon.png"` | Renders external image. External images might be be restricted to Content Security Policy (CSP) which can be configured in the `app-config.yaml`. |
+| **Relative Path**         | `"/homepage/icons/icon.png"`     | Loads the icon from the app’s public folder (if present)                                                                                          |
+
+**Note:**
+
+SVGs must be valid strings when stored inside JSON (use single quotes inside <svg>).
+
+Example JSON file:
+
+```
+  [
+      {
+          "title": "Community",
+          "isExpanded": true,
+          "links": [
+          {
+              "iconUrl": "https://img.icons8.com/ios/50/globe--v1.png",
+              "label": "Website",
+              "url": "https://developers.redhat.com/"
+          },
+          {
+              "iconUrl": "https://img.icons8.com/ios/50/link--v1.png",
+              "label": "Blog",
+              "url": "https://developers.redhat.com/blog"
+          },
+          {
+              "iconUrl": "github",
+              "label": "GitHub",
+              "url": "https://github.com/redhat-developer"
+          },
+          {
+              "iconUrl": "https://img.icons8.com/color/48/slack.png",
+              "label": "Slack",
+              "url": "https://join.slack.com/xyz"
+          },
+          {
+              "iconUrl": "https://img.icons8.com/color/48/youtube-squared.png",
+              "label": "Videos for developers",
+              "url": "https://developers.redhat.com/videos"
+          },
+          {
+              "iconUrl": "<svg xmlns='http://www.w3.org/2000/svg' xml:space='preserve' width='2048' height='2048' style='shape-rendering:geometricPrecision;text-rendering:geometricPrecision;image-rendering:optimizeQuality;fill-rule:evenodd;clip-rule:evenodd'><defs><style>.fil0{fill:none}.fil4{fill:#bdbdbd;fill-rule:nonzero}</style></defs><g id='Layer_x0020_1'><path class='fil0' d='M0 0h2048v2048H0z'/><path class='fil0' d='M255.999 255.999h1536v1536h-1536z'/><path class='fil0' d='M256 256h1536v1536H256z'/><g id='_342647616'><path id='_342648000' style='fill:#e53935;fill-rule:nonzero' d='m273.04 666.226 737.28-367.843 13.68-6.824 13.68 6.824 737.28 367.843 17.04 8.503v234.834L993.281 1418.52 255.999 909.563V674.729z'/><path id='_342647880' style='fill:#fff' d='M609.28 711.961h829.439V1541.4H609.28z'/><path id='_342647808' style='fill:#c62828;fill-rule:nonzero' d='m1024 1279.73 723.6-361.079 44.4-22.156v859.945H255.999V896.495l44.402 22.156z'/><path id='_342647736' class='fil4' d='M1331.2 896.285H716.716v-61.442H1331.2z'/><path id='_342647688' class='fil4' d='M1203.22 1049.88H844.698v-61.439h358.522z'/></g></g></svg>",
+              "label": "Mailing List",
+              "url": "https://groups.google.com/g/xyz"
+          },
+          ]
+      }
+  ]
+```
