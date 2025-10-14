@@ -695,7 +695,7 @@ plugins:
             description: Import your existing code and services into the catalog to organize and access them through your developer portal.
             cta:
               text: Import
-              link: /bulk-import
+              link: /bulk-import/repositories
           - title: Learn about the Catalog
             roles:
               - developer
