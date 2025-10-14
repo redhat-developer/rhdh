@@ -21,7 +21,7 @@ spec:
   version: 5.9.1
   backstage:
     role: backend-plugin
-    supportedVersions: 1.39.1
+    supportedVersions: 1.42.5
   author: Red Hat
   support: production
   # https://issues.redhat.com/browse/RHDHPLAN-265 - OCM is deprecated in 1.8; will be removed in 1.10

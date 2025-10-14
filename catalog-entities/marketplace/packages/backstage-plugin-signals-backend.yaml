@@ -18,10 +18,10 @@ metadata:
 spec:
   packageName: "@backstage/plugin-signals-backend"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-plugin-signals-backend-dynamic
-  version: 0.3.4
+  version: 0.3.7
   backstage:
     role: backend-plugin
-    supportedVersions: 1.39.1
+    supportedVersions: 1.42.5
   author: Red Hat
   support: production
   lifecycle: active

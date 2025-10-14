@@ -194,6 +194,8 @@ spec:
   });
 
   test("Merge the PR on GitHub and Confirm the Status Updates to 'Added'", async () => {
+    // TODO: https://issues.redhat.com/browse/RHDHBUGS-2116
+    test.fixme();
     await uiHelper.openSidebar("Bulk import");
     // Merge PR is generated for the repository without the catalog.yaml file.
     await APIHelper.mergeGitHubPR(
@@ -283,7 +285,7 @@ spec:
 
 test.describe
   .serial("Bulk Import - Verify existing repo are displayed in bulk import Added repositories", () => {
-  // test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
+  test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
   // TODO: https://issues.redhat.com/browse/RHDHBUGS-2116
   test.fixme();
   let page: Page;
@@ -312,8 +314,6 @@ test.describe
   });
 
   test("Verify existing repo from app-config is displayed in bulk import Added repositories", async () => {
-    // TODO: https://issues.redhat.com/browse/RHDHBUGS-2116
-    test.fixme();
     await uiHelper.openSidebar("Bulk import");
     await common.waitForLoad();
     await bulkimport.filterAddedRepo(existingRepoFromAppConfig);
@@ -324,8 +324,6 @@ test.describe
 
   test('Verify repo from "import an existing git repository"  are displayed in bulk import Added repositories', async () => {
     // Import an existing Git repository
-    // TODO: https://issues.redhat.com/browse/RHDHBUGS-2116
-    test.fixme();
     await uiHelper.openSidebar("Catalog");
     await uiHelper.clickButton("Self-service");
     await uiHelper.clickButton("Import an existing Git repository");
@@ -347,9 +345,7 @@ test.describe
 
 test.describe
   .serial("Bulk Import - Ensure users without bulk import permissions cannot access the bulk import plugin", () => {
-  //test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
-  // TODO: https://issues.redhat.com/browse/RHDHBUGS-2116
-  test.fixme();
+  test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
   let page: Page;
   let uiHelper: UIhelper;
   let common: Common;

@@ -18,10 +18,10 @@ metadata:
 spec:
   packageName: "@backstage-community/plugin-github-issues"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-github-issues
-  version: 0.10.0
+  version: 0.13.0
   backstage:
     role: frontend-plugin
-    supportedVersions: 1.39.1
+    supportedVersions: 1.42.5
   author: Red Hat
   support: tech-preview
   lifecycle: active

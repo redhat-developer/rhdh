@@ -42,7 +42,7 @@ export const DELETE_ROLE_COMPONENTS = {
   roleName: 'input[name="delete-role"]',
 };
 
-export const ROLE_OVERVIEW_COMPONENTS = {
-  updatePolicies: 'span[data-testid="update-policies"]',
-  updateMembers: 'span[data-testid="update-members"]',
+export const ROLE_OVERVIEW_COMPONENTS_TEST_ID = {
+  updatePolicies: "update-policies",
+  updateMembers: "update-members",
 };
