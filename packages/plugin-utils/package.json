@@ -16,9 +16,10 @@
     "pluginId": "plugin-utils",
     "pluginPackage": "@janus-idp/plugin-utils",
     "pluginPackages": [
-      "@janus-idp/plugin-utils"
+      "@red-hat-developer-hub/plugin-utils"
     ]
   },
+  "sideEffects": false,
   "scripts": {
     "build": "backstage-cli package build",
     "clean": "backstage-cli package clean",
@@ -30,7 +31,8 @@
     "prettier:fix": "prettier --ignore-unknown --write ."
   },
   "dependencies": {
-    "@backstage/catalog-model": "1.7.5"
+    "@backstage/catalog-model": "1.7.5",
+    "@backstage/core-plugin-api": "1.10.9"
   },
   "devDependencies": {
     "@backstage/cli": "0.34.1",
@@ -44,7 +46,7 @@
     "@types/react-dom": "18.3.7",
     "prettier": "3.6.2",
     "react": "18.3.1",
-    "typescript": "5.9.2"
+    "typescript": "5.9.3"
   },
   "browserslist": {
     "production": [

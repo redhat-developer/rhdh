@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: backstage-community-plugin-rbac
   namespace: rhdh
-  title: "@backstage-community/plugin-rbac"
+  title: "RBAC"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

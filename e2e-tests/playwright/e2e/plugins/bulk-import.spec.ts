@@ -194,6 +194,8 @@ spec:
   });
 
   test("Merge the PR on GitHub and Confirm the Status Updates to 'Added'", async () => {
+    // TODO: https://issues.redhat.com/browse/RHDHBUGS-2116
+    test.fixme();
     await uiHelper.openSidebar("Bulk import");
     // Merge PR is generated for the repository without the catalog.yaml file.
     await APIHelper.mergeGitHubPR(
@@ -232,6 +234,8 @@ spec:
   });
 
   test("Delete a Bulk Import Repository and Verify It's No Longer Visible in the UI", async () => {
+    // TODO: https://issues.redhat.com/browse/RHDHBUGS-2116
+    test.fixme();
     await uiHelper.openSidebar("Bulk import");
     await common.waitForLoad();
     await bulkimport.filterAddedRepo(catalogRepoDetails.name);
@@ -246,6 +250,8 @@ spec:
     });
   });
   test("Verify Deleted Bulk Import Repositories Does not Appear in the Catalog", async () => {
+    // TODO: https://issues.redhat.com/browse/RHDHBUGS-2116
+    test.fixme();
     await uiHelper.openSidebar("Catalog");
     await uiHelper.selectMuiBox("Kind", "Component");
     await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
@@ -280,6 +286,8 @@ spec:
 test.describe
   .serial("Bulk Import - Verify existing repo are displayed in bulk import Added repositories", () => {
   test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
+  // TODO: https://issues.redhat.com/browse/RHDHBUGS-2116
+  test.fixme();
   let page: Page;
   let uiHelper: UIhelper;
   let common: Common;

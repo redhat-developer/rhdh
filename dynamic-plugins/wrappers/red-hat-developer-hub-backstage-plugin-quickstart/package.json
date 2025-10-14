@@ -9,6 +9,21 @@
     "main": "dist/index.cjs.js",
     "types": "dist/index.d.ts"
   },
+  "exports": {
+    ".": "./src/index.ts",
+    "./alpha": "./src/alpha.ts",
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "alpha": [
+        "src/alpha.ts"
+      ],
+      "package.json": [
+        "package.json"
+      ]
+    }
+  },
   "backstage": {
     "role": "frontend-plugin",
     "supported-versions": "1.42.5",
@@ -34,7 +49,7 @@
   "devDependencies": {
     "@backstage/cli": "^0.34.1",
     "@janus-idp/cli": "3.6.1",
-    "typescript": "5.9.2"
+    "typescript": "5.9.3"
   },
   "files": [
     "dist",

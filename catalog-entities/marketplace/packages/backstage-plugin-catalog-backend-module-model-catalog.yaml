@@ -1,0 +1,37 @@
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: backstage-plugin-catalog-backend-module-model-catalog
+  namespace: rhdh
+  title: "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-model-catalog"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHDHBUGS
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/ai-integrations/plugins/catalog-backend-module-model-catalog
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/ai-integrations/plugins/catalog-backend-module-model-catalog
+  tags: []
+spec:
+  packageName: "@backstage/catalog-backend-module-model-catalog"
+  dynamicArtifact: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-catalog-backend-module-model-catalog:next__0.6.0!red-hat-developer-hub-backstage-plugin-catalog-backend-module-model-catalog
+  version: 0.6.0
+  backstage:
+    role: backend-plugin
+    supportedVersions: 1.42.5
+  author: Backstage
+  support: dev-preview
+  lifecycle: active
+  partOf:
+    - ai-integrations
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        catalog:
+          providers:
+            modelCatalog:
+              developement:
+                baseUrl: http://localhost:9090

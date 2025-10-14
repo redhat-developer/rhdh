@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: backstage-community-plugin-scaffolder-backend-module-kubernetes
   namespace: rhdh
-  title: "@backstage-community/plugin-scaffolder-backend-module-kubernetes"
+  title: "Scaffolder Backend Module Kubernetes"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

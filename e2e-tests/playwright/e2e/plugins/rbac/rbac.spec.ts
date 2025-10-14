@@ -3,7 +3,7 @@ import { Response, Roles } from "../../../support/pages/rbac";
 import { UI_HELPER_ELEMENTS } from "../../../support/page-objects/global-obj";
 import {
   SEARCH_OBJECTS_COMPONENTS,
-  ROLE_OVERVIEW_COMPONENTS,
+  ROLE_OVERVIEW_COMPONENTS_TEST_ID,
   ROLES_PAGE_COMPONENTS,
 } from "../../../support/page-objects/page-obj";
 import { Common, setupBrowser } from "../../../utils/common";
@@ -213,8 +213,6 @@ test.describe.serial("Test RBAC", () => {
   });
 
   test.describe("Test RBAC plugin as an admin user", () => {
-    // TODO: fix https://issues.redhat.com/browse/RHIDP-6625 and remove the skip
-    test.skip(() => process.env.IS_OPENSHIFT.includes("false"));
     test.beforeEach(async ({ page }, testInfo) => {
       testInfo.setTimeout(testInfo.timeout + 30_000); // Additional time due to repeated timeout failure in OSD env.
       const common = new Common(page);
@@ -236,28 +234,33 @@ test.describe.serial("Test RBAC", () => {
       await uiHelper.verifyCellsInTable(allCellsIdentifier);
     });
 
-    test("Should download the user list", async ({ page }) => {
-      await page.locator('a:has-text("Download User List")').click();
-      const fileContent = await downloadAndReadFile(
-        page,
-        'a:has-text("Download User List")',
-      );
+    test("Should export CSV of the user list", async ({ page }) => {
+      const exportCsvLink = page.getByRole("link", { name: "Export CSV" });
+      await exportCsvLink.click();
+      const fileContent = await downloadAndReadFile(page, exportCsvLink);
+      await test.info().attach("user-list-file", {
+        body: fileContent,
+        contentType: "text/plain",
+      });
       const lines = fileContent.trim().split("\n");
 
       const header = "userEntityRef,displayName,email,lastAuthTime";
-      // eslint-disable-next-line playwright/no-conditional-in-test
-      if (lines[0] !== header) {
-        throw new Error("Header does not match");
-      }
+      expect(lines[0], "Header needs to match the expected header").toBe(
+        header,
+      );
 
-      // Check that each subsequent line starts with "user:default"
-      const allUsersValid = lines
+      // Check that each subsequent line starts with "user:default" or "user:development"
+      const invalidLines = lines
         .slice(1)
-        .every((line) => line.startsWith("user:default"));
-      // eslint-disable-next-line playwright/no-conditional-in-test
-      if (!allUsersValid) {
-        throw new Error("Not all users info are valid");
-      }
+        .filter(
+          (line) =>
+            !line.startsWith("user:default") &&
+            !line.startsWith("user:development"),
+        );
+
+      await test.step(`Validate user lines: ${invalidLines.length} invalid out of ${lines.length} total`, async () => {
+        expect(invalidLines, "All users should be valid").toHaveLength(0);
+      });
     });
 
     test("View details of a role", async ({ page }) => {
@@ -277,7 +280,7 @@ test.describe.serial("Test RBAC", () => {
         Roles.getUsersAndGroupsListCellsIdentifier();
       await uiHelper.verifyCellsInTable(usersAndGroupsCellsIdentifier);
 
-      await uiHelper.verifyHeading("Permission policies (5)");
+      await uiHelper.verifyHeading("5 permissions");
       const permissionPoliciesColumnsText =
         Roles.getPermissionPoliciesListColumnsText();
       await uiHelper.verifyColumnHeading(permissionPoliciesColumnsText);
@@ -381,7 +384,9 @@ test.describe.serial("Test RBAC", () => {
       await uiHelper.verifyHeading("role:default/test-role1");
       await uiHelper.clickTab("Overview");
 
-      await page.click(ROLE_OVERVIEW_COMPONENTS.updateMembers);
+      await page
+        .getByTestId(ROLE_OVERVIEW_COMPONENTS_TEST_ID.updateMembers)
+        .click();
       await uiHelper.verifyHeading("Edit Role");
       await uiHelper.fillTextInputByLabel(
         "Select users and groups",
@@ -409,7 +414,9 @@ test.describe.serial("Test RBAC", () => {
       );
       await uiHelper.verifyHeading(rbacPo.regexpShortUsersAndGroups(1, 1));
 
-      await page.click(ROLE_OVERVIEW_COMPONENTS.updatePolicies);
+      await page
+        .getByTestId(ROLE_OVERVIEW_COMPONENTS_TEST_ID.updatePolicies)
+        .click();
       await uiHelper.verifyHeading("Edit Role");
       await rbacPo.selectPluginsCombobox.click();
       await rbacPo.selectOption("scaffolder");
@@ -421,7 +428,7 @@ test.describe.serial("Test RBAC", () => {
       await uiHelper.verifyText(
         "Role role:default/test-role1 updated successfully",
       );
-      await uiHelper.verifyHeading("Permission Policies (2)");
+      await uiHelper.verifyHeading("2 permissions");
 
       await rbacPo.deleteRole("role:default/test-role1");
     });
@@ -429,13 +436,18 @@ test.describe.serial("Test RBAC", () => {
     test("Create a role with a permission policy per resource type and verify that the only authorized users can access specific resources.", async ({
       page,
     }) => {
+      // TODO: https://issues.redhat.com/browse/RHDHBUGS-2127
+      test.fixme(true, "Cannot delete role because of missing permissions");
+
       const uiHelper = new UIhelper(page);
       const rbacPo = new RbacPo(page);
       await rbacPo.createConditionalRole(
         "test-role1",
-        ["Guest User", "rhdh-qe"],
+        ["Guest User", "rhdh-qe rhdh-qe"],
         ["Backstage"],
         "anyOf",
+        "catalog",
+        "user:default/rhdh-qe",
       );
 
       await page

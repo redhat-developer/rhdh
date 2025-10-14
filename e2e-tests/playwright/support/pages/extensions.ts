@@ -28,6 +28,12 @@ export class Extensions {
     this.uiHelper = new UIhelper(page);
   }
 
+  async clickReadMoreByPluginTitle(pluginTitle: string) {
+    const allCards = this.page.locator(".v5-MuiPaper-outlined");
+    const targetCard = allCards.filter({ hasText: pluginTitle });
+    await targetCard.getByRole("link", { name: "Read more" }).click();
+  }
+
   async selectDropdown(name: string) {
     await this.page
       .getByLabel(name)
@@ -65,6 +71,12 @@ export class Extensions {
     }
   }
 
+  async waitForSearchResults(searchText: string) {
+    await expect(
+      this.page.locator(".v5-MuiPaper-outlined").first(),
+    ).toContainText(searchText, { timeout: 10000 });
+  }
+
   async verifyPluginDetails({
     pluginName,
     badgeLabel,
@@ -80,7 +92,7 @@ export class Extensions {
     includeTable?: boolean;
     includeAbout?: boolean;
   }) {
-    await this.page.getByRole("heading", { name: pluginName }).first().click();
+    await this.clickReadMoreByPluginTitle(pluginName);
     await expect(
       this.page.getByLabel(badgeLabel).getByText(badgeText),
     ).toBeVisible();
@@ -123,6 +135,7 @@ export class Extensions {
 
     if (searchTerm) {
       await this.uiHelper.searchInputPlaceholder(searchTerm);
+      await this.waitForSearchResults(searchTerm);
     }
 
     if (pluginName) {

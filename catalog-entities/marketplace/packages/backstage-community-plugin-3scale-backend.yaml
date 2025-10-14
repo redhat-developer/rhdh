@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: backstage-community-plugin-3scale-backend
   namespace: rhdh
-  title: "@backstage-community/plugin-3scale-backend"
+  title: "3Scale"
   links:
     - url: https://red.ht/rhdh
       title: Homepage
@@ -18,10 +18,10 @@ metadata:
 spec:
   packageName: "@backstage-community/plugin-3scale-backend"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-3scale-backend-dynamic
-  version: 3.6.1
+  version: 3.8.0
   backstage:
     role: backend-plugin
-    supportedVersions: 1.39.1
+    supportedVersions: 1.42.5
   author: Red Hat
   support: tech-preview
   lifecycle: active
