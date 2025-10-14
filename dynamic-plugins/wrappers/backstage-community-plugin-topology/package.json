@@ -54,7 +54,8 @@
   "scalprum": {
     "name": "backstage-community.plugin-topology",
     "exposedModules": {
-      "PluginRoot": "./src/index.ts"
+      "PluginRoot": "./src/index.ts",
+      "Alpha": "./src/alpha.ts"
     }
   },
   "repository": {
