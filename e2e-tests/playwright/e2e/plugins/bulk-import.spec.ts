@@ -123,12 +123,12 @@ spec:
     });
   });
 
-  test('Verify that the two selected repositories are listed: one with the status "Added" and another with the status "WAIT_PR_APPROVAL."', async () => {
+  test('Verify that the two selected repositories are listed: one with the status "Already imported" and another with the status "WAIT_PR_APPROVAL."', async () => {
     await common.waitForLoad();
     await bulkimport.filterAddedRepo(catalogRepoDetails.name);
     await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
       catalogRepoDetails.url,
-      "Added",
+      "Already imported",
     ]);
     await bulkimport.filterAddedRepo(newRepoDetails.repoName);
     await uiHelper.verifyRowInTableByUniqueText(newRepoDetails.repoName, [
@@ -180,7 +180,7 @@ spec:
     expect(prCatalogInfoYaml).toEqual(expectedCatalogInfoYaml);
   });
 
-  test("Verify Selected repositories shows catalog-info.yaml status as 'Added' and 'WAIT_PR_APPROVAL'", async () => {
+  test("Verify Selected repositories shows catalog-info.yaml status as 'Already imported' and 'WAIT_PR_APPROVAL'", async () => {
     await uiHelper.openSidebar("Bulk import");
     await uiHelper.clickButton("Import");
     await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
@@ -193,7 +193,7 @@ spec:
     ]);
   });
 
-  test("Merge the PR on GitHub and Confirm the Status Updates to 'Added'", async () => {
+  test("Merge the PR on GitHub and Confirm the Status Updates to 'Already imported'", async () => {
     // TODO: https://issues.redhat.com/browse/RHDHBUGS-2116
     test.fixme();
     await uiHelper.openSidebar("Bulk import");
@@ -213,13 +213,13 @@ spec:
     ).toHaveLength(0);
 
     await bulkimport.filterAddedRepo(newRepoDetails.repoName);
-    // verify that the status has changed to "ADDED."
+    // verify that the status has changed to "Already imported."
     await uiHelper.clickOnButtonInTableByUniqueText(
       newRepoDetails.repoName,
       "Refresh",
     );
     await uiHelper.verifyRowInTableByUniqueText(newRepoDetails.repoName, [
-      "Added",
+      "Already imported",
     ]);
   });
 
@@ -318,7 +318,7 @@ test.describe
     await common.waitForLoad();
     await bulkimport.filterAddedRepo(existingRepoFromAppConfig);
     await uiHelper.verifyRowInTableByUniqueText(existingRepoFromAppConfig, [
-      "Added",
+      "Already imported",
     ]);
   });
 
@@ -338,7 +338,7 @@ test.describe
     await bulkimport.filterAddedRepo(existingComponentDetails.repoName);
     await uiHelper.verifyRowInTableByUniqueText(
       existingComponentDetails.repoName,
-      ["Added"],
+      ["Already imported"],
     );
   });
 });
