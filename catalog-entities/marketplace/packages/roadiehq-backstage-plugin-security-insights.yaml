@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: roadiehq-backstage-plugin-security-insights
   namespace: rhdh
-  title: "@roadiehq/backstage-plugin-security-insights"
+  title: "Security Insights"
   links:
     - url: https://red.ht/rhdh
       title: Homepage
@@ -18,10 +18,10 @@ metadata:
 spec:
   packageName: "@roadiehq/backstage-plugin-security-insights"
   dynamicArtifact: ./dynamic-plugins/dist/roadiehq-backstage-plugin-security-insights
-  version: 3.1.3
+  version: 3.2.0
   backstage:
     role: frontend-plugin
-    supportedVersions: 1.39.1
+    supportedVersions: 1.42.5
   author: Red Hat
   support: tech-preview
   lifecycle: active

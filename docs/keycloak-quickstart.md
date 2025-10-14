@@ -6,7 +6,7 @@ This guide will show you how to quickly start up a quick keycloak instance on Op
 
 This script allows a quick setup of a basic keycloak instance on OpenShift Container Platform (OCP) clusters for testing purposes.
 
-User should be logged into a cluster to use this script and have the [Red Hat Keycloak Operator installed on the cluster](https://docs.redhat.com/en/documentation/red_hat_build_of_keycloak/22.0/html-single/operator_guide/index#installation-).
+User should be logged into a cluster to use this script and have the [Red Hat Keycloak Operator installed on the cluster](https://docs.redhat.com/en/documentation/red_hat_build_of_keycloak/26.2/html-single/operator_guide/index#installation-).
 
 This script comes with a few example keycloak resources to be deployed onto the cluster. Please create a `scripts/keycloak-setup/auth/database-secrets.local.yaml` file with your custom database secret, and edit the other resources to fit your needs.
 

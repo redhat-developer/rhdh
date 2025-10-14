@@ -83,8 +83,8 @@ metadata:
     - apis
   # The description below is used in the Extension plugin's "Tile" view as the plugin description. Keep it to a few lines (short description)
   description: |
-    3scale provides a comprehensive API management solution, enabling organizations to secure, manage, and monetize APIs. 
-    Key features include access control, usage analytics, and policy enforcement. 
+    3scale provides a comprehensive API management solution, enabling organizations to secure, manage, and monetize APIs.
+    Key features include access control, usage analytics, and policy enforcement.
     The 3scale plugin synchronizes your 3scale content into the software catalog.
 spec: # Custom information processed by the Extensions plugin
   author: Red Hat # The Author of the plugin
@@ -94,7 +94,7 @@ spec: # Custom information processed by the Extensions plugin
 
   # The long description below is used in the Extension plugin's "Expanded Info" view as the plugin's long description. You should include information here about the the purpose of the plugin and how it integrates with RHDH. The description here uses Markdown fomat, but DON'T include images - they won't load if you do.
   description: |
-    The 3scale Backstage plugin... 
+    The 3scale Backstage plugin...
     (add further text here to really describe to the user what your plugin is for and how it integrates with RHDH's frontend/backend).
 
     * Use bullets if you need to
@@ -165,9 +165,9 @@ catalog:
 
 ```
 
-In `docker-compose.yaml` do this:
+In `compose.yaml` do this:
 
-```yaml:docker-compose.yaml
+```yaml:compose.yaml
 services:
   rhdh:
     volumes:
@@ -197,7 +197,7 @@ docker compose restart rhdh # or podman-compose restart rhdh
 ### Catalog stops loading or refreshing
 
 Sometimes you might make a mistake with a plugin yaml file. If that happens you can use commenting of lines in the `plugins/all.yaml`
-to stop certain plugins from being loaded into the catalog. You can allso search for `all.yaml` in the RHDH logs to see if you can 
+to stop certain plugins from being loaded into the catalog. You can allso search for `all.yaml` in the RHDH logs to see if you can
 find a clue as to what caused the catalog entries to stop loading. For example:
 
 ```bash
@@ -210,7 +210,7 @@ You can trace packages back to plugin entries using the VS Code "Find In Folder.
 
 1. Given the plugin ID `@backstage-community/plugin-quay` (replace with the plugin ID you need)
 1. Do a "Find in Folder..." search for the `package/` file that contains this entry.
-1. The `/packages/backstage-community-plugin-quay.yaml` contains this entry. 
+1. The `/packages/backstage-community-plugin-quay.yaml` contains this entry.
 1. Open this file and look for the `metadata.name` (`backstage-community-plugin-quay`).
 1. Now do a search in the plugins folder for the text `backstage-community-plugin-quay`.
 1. The `plugins/backstage-community-plugin-quay.yaml` contains this text.

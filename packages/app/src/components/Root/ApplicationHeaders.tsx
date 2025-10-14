@@ -1,4 +1,10 @@
-import React, { useContext, useMemo } from 'react';
+import {
+  ComponentType,
+  CSSProperties,
+  PropsWithChildren,
+  useContext,
+  useMemo,
+} from 'react';
 
 import { ErrorBoundary } from '@backstage/core-components';
 
@@ -11,14 +17,14 @@ type Position = 'above-main-content' | 'above-sidebar';
 
 type ApplicationHeaderMountPointConfig = MountPointConfigBase & {
   position: Position;
-  layout?: React.CSSProperties;
+  layout?: CSSProperties;
 };
 
 type ApplicationHeaderMountPoint = MountPoint & {
-  Component: React.ComponentType<
-    React.PropsWithChildren<{
+  Component: ComponentType<
+    PropsWithChildren<{
       position: Position;
-      layout?: React.CSSProperties;
+      layout?: CSSProperties;
     }>
   >;
   config?: ApplicationHeaderMountPointConfig;

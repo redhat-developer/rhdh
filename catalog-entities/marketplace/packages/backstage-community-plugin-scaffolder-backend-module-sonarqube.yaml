@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: backstage-community-plugin-scaffolder-backend-module-sonarqube
   namespace: rhdh
-  title: "@backstage-community/plugin-scaffolder-backend-module-sonarqube"
+  title: "Scaffolder Backend Module SonarQube"
   links:
     - url: https://red.ht/rhdh
       title: Homepage
@@ -19,10 +19,10 @@ metadata:
 spec:
   packageName: "@backstage-community/plugin-scaffolder-backend-module-sonarqube"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-sonarqube-dynamic
-  version: 2.7.1
+  version: 2.8.0
   backstage:
     role: backend-plugin-module
-    supportedVersions: 1.39.1
+    supportedVersions: 1.42.5
   author: Red Hat
   support: tech-preview
   lifecycle: active

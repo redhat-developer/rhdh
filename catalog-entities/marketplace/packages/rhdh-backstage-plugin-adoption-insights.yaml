@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: rhdh-backstage-plugin-adoption-insights
   namespace: rhdh
-  title: "@red-hat-developer-hub/backstage-plugin-adoption-insights"
+  title: "Adoption Insights Frontend"
   links:
     - url: https://red.ht/rhdh
       title: Homepage

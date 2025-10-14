@@ -1,6 +1,6 @@
 #!/bin/bash
 # Guide: https://docs.redhat.com/en/documentation/red_hat_build_of_keycloak/22.0/html-single/operator_guide/index#basic-deployment-database
-# Prerequisite: Install Keycloak Operator (https://docs.redhat.com/en/documentation/red_hat_build_of_keycloak/22.0/html-single/operator_guide/index#installation-)
+# Prerequisite: Install Keycloak Operator (https://docs.redhat.com/en/documentation/red_hat_build_of_keycloak/26.2/html-single/operator_guide/index#installation-)
 
 set -e
 
@@ -13,7 +13,7 @@ usage() {
   echo "
 This script uses the Red Hat Keycloak operator to quickly setup an instance of keycloak with TLS enabled and a persistent postgresql database on Openshift Container Platform (OCP).
 Prerequisites:
-  - Keycloak Operator needs to be installed on the cluster (https://docs.redhat.com/en/documentation/red_hat_build_of_keycloak/22.0/html-single/operator_guide/index#installation-)
+  - Keycloak Operator needs to be installed on the cluster (https://docs.redhat.com/en/documentation/red_hat_build_of_keycloak/26.2/html-single/operator_guide/index#installation-)
   - Be logged in to the cluster on the CLI
 Usage:
   $0 [OPTIONS]
