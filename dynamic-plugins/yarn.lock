@@ -6666,6 +6666,7 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "@backstage/plugin-kubernetes-react@npm:^0.5.11, @backstage/plugin-kubernetes-react@npm:^0.5.7":
   version: 0.5.11
   resolution: "@backstage/plugin-kubernetes-react@npm:0.5.11"
@@ -6703,6 +6704,8 @@ __metadata:
   languageName: node
   linkType: hard
 
+=======
+>>>>>>> 1c75dd52 (Update yarn.lock)
 "@backstage/plugin-kubernetes@npm:0.12.10":
   version: 0.12.10
   resolution: "@backstage/plugin-kubernetes@npm:0.12.10"
