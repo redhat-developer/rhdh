@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: backstage-community-plugin-topology
   namespace: rhdh
-  title: "@backstage-community/plugin-topology"
+  title: "Topology"
   links:
     - url: https://red.ht/rhdh
       title: Homepage
@@ -21,7 +21,7 @@ spec:
   version: 2.2.2
   backstage:
     role: frontend-plugin
-    supportedVersions: 1.39.1
+    supportedVersions: 1.42.5
   author: Red Hat
   support: production
   lifecycle: active

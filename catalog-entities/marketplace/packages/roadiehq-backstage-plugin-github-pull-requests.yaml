@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: roadiehq-backstage-plugin-github-pull-requests
   namespace: rhdh
-  title: "@roadiehq/backstage-plugin-github-pull-requests"
+  title: "GitHub Pull Requests"
   links:
     - url: https://red.ht/rhdh
       title: Homepage
@@ -18,10 +18,10 @@ metadata:
 spec:
   packageName: "@roadiehq/backstage-plugin-github-pull-requests"
   dynamicArtifact: ./dynamic-plugins/dist/roadiehq-backstage-plugin-github-pull-requests
-  version: 3.4.2
+  version: 3.5.2
   backstage:
     role: frontend-plugin
-    supportedVersions: 1.39.1
+    supportedVersions: 1.42.5
   author: Red Hat
   support: tech-preview
   lifecycle: active

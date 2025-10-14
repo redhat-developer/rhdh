@@ -5,6 +5,8 @@ metadata:
   name: packages
 spec:
   targets:
+    - ./aws-amazon-ecs-plugin-for-backstage-backend.yaml
+    - ./aws-amazon-ecs-plugin-for-backstage.yaml
     - ./backstage-plugin-scaffolder-backend-module-github.yaml
     - ./backstage-plugin-catalog-backend-module-github.yaml
     - ./backstage-plugin-catalog-backend-module-github-org.yaml
@@ -27,7 +29,7 @@ spec:
     - ./backstage-plugin-scaffolder-backend-module-azure.yaml
     - ./backstage-community-plugin-azure-devops-backend.yaml
     - ./backstage-community-plugin-azure-devops.yaml
-    - ./parfuemerie-douglas-scaffolder-backend-module-azure-repositorie.yaml
+    - ./parfuemerie-douglas-scaffolder-backend-module-azure-repositories.yaml
     - ./backstage-community-plugin-jenkins-backend.yaml
     - ./backstage-community-plugin-jenkins.yaml
     - ./backstage-plugin-notifications.yaml
@@ -37,6 +39,7 @@ spec:
     - ./backstage-plugin-signals.yaml
     - ./backstage-community-plugin-sonarqube-backend.yaml
     - ./backstage-community-plugin-sonarqube.yaml
+    # https://issues.redhat.com/browse/RHDHPLAN-265 - OCM is deprecated in 1.8; will be removed in 1.10
     - ./backstage-community-plugin-ocm-backend.yaml
     - ./backstage-community-plugin-ocm.yaml
     - ./red-hat-developer-hub-backstage-plugin-bulk-import-backend.yaml
@@ -77,6 +80,8 @@ spec:
     - ./backstage-community-plugin-lighthouse.yaml
     - ./backstage-community-plugin-tech-radar.yaml
     - ./backstage-community-plugin-tech-radar-backend.yaml
+    - ./backstage-community-plugin-todo-backend.yaml
+    - ./backstage-community-plugin-todo.yaml
     - ./backstage-community-plugin-analytics-provider-segment.yaml
     - ./backstage-community-plugin-catalog-backend-module-scaffolder-re.yaml
     - ./backstage-plugin-catalog-backend-module-msgraph.yaml
@@ -98,3 +103,5 @@ spec:
     - ./red-hat-developer-hub-backstage-plugin-lightspeed.yaml
     - ./red-hat-developer-hub-backstage-plugin-lightspeed-backend.yaml
     - ./apic-backstage-plugin.yaml
+    - ./backstage-plugin-catalog-backend-module-model-catalog.yaml
+    - ./backstage-plugin-catalog-techdoc-url-reader-backend.yaml

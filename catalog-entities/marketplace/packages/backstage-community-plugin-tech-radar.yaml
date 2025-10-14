@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: backstage-community-plugin-tech-radar
   namespace: rhdh
-  title: "@backstage-community/plugin-tech-radar"
+  title: "Tech Radar Frontend"
   links:
     - url: https://red.ht/rhdh
       title: Homepage
@@ -18,10 +18,10 @@ metadata:
 spec:
   packageName: "@backstage-community/plugin-tech-radar"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-tech-radar
-  version: 1.7.1
+  version: 1.11.0
   backstage:
     role: frontend-plugin
-    supportedVersions: 1.39.1
+    supportedVersions: 1.42.5
   author: Red Hat
   support: tech-preview
   lifecycle: active

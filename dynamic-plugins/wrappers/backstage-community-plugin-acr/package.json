@@ -29,14 +29,14 @@
   },
   "dependencies": {
     "@backstage-community/plugin-acr": "1.17.0",
-    "@backstage/core-plugin-api": "^1.10.9",
+    "@backstage/core-plugin-api": "1.10.9",
     "@mui/icons-material": "5.18.0",
     "@mui/material": "5.18.0"
   },
   "devDependencies": {
     "@backstage/cli": "^0.34.1",
     "@janus-idp/cli": "3.6.1",
-    "typescript": "5.9.2"
+    "typescript": "5.9.3"
   },
   "files": [
     "dist",

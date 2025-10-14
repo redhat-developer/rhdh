@@ -1,6 +1,6 @@
 {
   "name": "red-hat-developer-hub-backstage-plugin-quickstart",
-  "version": "1.6.0",
+  "version": "1.6.2",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "license": "Apache-2.0",
@@ -8,6 +8,21 @@
     "access": "public",
     "main": "dist/index.cjs.js",
     "types": "dist/index.d.ts"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./alpha": "./src/alpha.ts",
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "alpha": [
+        "src/alpha.ts"
+      ],
+      "package.json": [
+        "package.json"
+      ]
+    }
   },
   "backstage": {
     "role": "frontend-plugin",
@@ -29,12 +44,12 @@
   },
   "dependencies": {
     "@mui/material": "5.18.0",
-    "@red-hat-developer-hub/backstage-plugin-quickstart": "1.6.0"
+    "@red-hat-developer-hub/backstage-plugin-quickstart": "1.6.2"
   },
   "devDependencies": {
     "@backstage/cli": "^0.34.1",
     "@janus-idp/cli": "3.6.1",
-    "typescript": "5.9.2"
+    "typescript": "5.9.3"
   },
   "files": [
     "dist",
@@ -43,7 +58,8 @@
   "scalprum": {
     "name": "red-hat-developer-hub.backstage-plugin-quickstart",
     "exposedModules": {
-      "PluginRoot": "./src/index.ts"
+      "PluginRoot": "./src/index.ts",
+      "Alpha": "./src/alpha.ts"
     }
   },
   "repository": {

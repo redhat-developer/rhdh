@@ -214,7 +214,9 @@ test.describe("Admin > Extensions > Catalog", () => {
   test("Verify community plugin badge in extensions", async ({ page }) => {
     await extensions.selectSupportTypeFilter("Community plugin");
 
-    await uiHelper.clickLink("Read more");
+    await extensions.clickReadMoreByPluginTitle(
+      "ServiceNow Integration for Red Hat Developer Hub",
+    );
     await expect(
       page
         .getByLabel("Open-source plugins, no official support")

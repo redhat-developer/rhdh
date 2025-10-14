@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: roadiehq-backstage-plugin-argo-cd-backend
   namespace: rhdh
-  title: "@roadiehq/backstage-plugin-argo-cd-backend"
+  title: "ArgoCD"
   links:
     - url: https://red.ht/rhdh
       title: Homepage
@@ -18,10 +18,10 @@ metadata:
 spec:
   packageName: "@roadiehq/backstage-plugin-argo-cd-backend"
   dynamicArtifact: ./dynamic-plugins/dist/roadiehq-backstage-plugin-argo-cd-backend-dynamic
-  version: 4.3.1
+  version: 4.4.2
   backstage:
     role: backend-plugin
-    supportedVersions: 1.39.1
+    supportedVersions: 1.42.5
   author: Red Hat
   support: production
   lifecycle: active

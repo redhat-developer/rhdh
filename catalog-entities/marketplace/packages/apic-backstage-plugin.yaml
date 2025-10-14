@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: apic-backstage
   namespace: apiconnect
-  title: "@apiconnect/apic-backstage"
+  title: "APIC"
   links:
     - url: https://github.com/ibm-apiconnect/backstage/blob/main/plugins/apic-backstage/README.md
       title: Plugin Overview (README)

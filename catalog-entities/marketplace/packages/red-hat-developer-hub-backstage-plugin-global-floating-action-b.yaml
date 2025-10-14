@@ -3,7 +3,7 @@ kind: Package
 metadata:
   name: red-hat-developer-hub-backstage-plugin-global-floating-action-b
   namespace: rhdh
-  title: "@red-hat-developer-hub/backstage-plugin-global-floating-action-button"
+  title: "Global Floating Action B"
   links:
     - url: https://red.ht/rhdh
       title: Homepage
@@ -18,10 +18,10 @@ metadata:
 spec:
   packageName: "@red-hat-developer-hub/backstage-plugin-global-floating-action-button"
   dynamicArtifact: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-floating-action-button
-  version: 1.2.0
+  version: 1.5.0
   backstage:
     role: frontend-plugin
-    supportedVersions: 1.39.1
+    supportedVersions: 1.42.5
   author: Red Hat
   support: production
   lifecycle: active
