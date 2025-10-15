@@ -46,9 +46,12 @@ export class Topology {
       .click();
 
     if (allowed) {
+      const downloadLogsButton = this.page.getByRole("button", {
+        name: "download logs",
+      });
       const fileContent = await downloadAndReadFile(
         this.page,
-        'role=button[name="download logs"]',
+        downloadLogsButton,
       );
       expect(fileContent).not.toBeUndefined();
       expect(fileContent).not.toBe("");

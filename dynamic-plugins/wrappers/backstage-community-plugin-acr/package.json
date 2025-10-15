@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "@backstage-community/plugin-acr": "1.17.0",
-    "@backstage/core-plugin-api": "^1.10.9",
+    "@backstage/core-plugin-api": "1.10.9",
     "@mui/icons-material": "5.18.0",
     "@mui/material": "5.18.0"
   },

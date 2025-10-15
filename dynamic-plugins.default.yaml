@@ -491,6 +491,10 @@ plugins:
       dynamicPlugins:
         frontend:
           red-hat-developer-hub.backstage-plugin-bulk-import:
+            translationResources:
+              - importName: bulkImportTranslations
+                module: Alpha
+                ref: bulkImportTranslationRef
             appIcons:
               - name: bulkImportIcon
                 importName: BulkImportIcon
@@ -695,7 +699,7 @@ plugins:
             description: Import your existing code and services into the catalog to organize and access them through your developer portal.
             cta:
               text: Import
-              link: /bulk-import
+              link: /bulk-import/repositories
           - title: Learn about the Catalog
             roles:
               - developer
@@ -719,7 +723,7 @@ plugins:
             description: Integrate tailored e-learning into your workflows with Learning Paths to accelerate onboarding, close skill gaps, and promote best practices.
             cta:
               text: View Learning Paths
-              link: /docs
+              link: /learning-paths
       dynamicPlugins:
         frontend:
           red-hat-developer-hub.backstage-plugin-quickstart:

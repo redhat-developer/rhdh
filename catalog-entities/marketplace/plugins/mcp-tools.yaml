@@ -1,0 +1,228 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+ name: mcp-tools
+ namespace: rhdh
+ title: MCP Tools
+ annotations:
+   extensions.backstage.io/pre-installed: 'false' # For plugins contained in the RHDH image
+ links:
+   - title: Homepage
+     url: https://red.ht/rhdh
+   - title: Bugs
+     url: https://issues.redhat.com/browse/RHDHPAI
+   - title: Documentation for Red Hat Developer Hub
+     url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
+   - title: Source Code
+     url: https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/mcp-integrations
+ tags:
+   - mcp
+   - developer-tools
+   - ai
+   - software-catalog
+   - techdocs
+ description: |
+   Backend plugins that provide MCP tools for MCP clients and AI assistants to interact with the software catalog and techdocs
+spec:
+ author: Red Hat
+ support: dev-preview
+ lifecycle: active
+ publisher: Red Hat
+
+
+ highlights:
+   - Integrations with the software catalog and techdocs for AI assistants
+   - Provides insight into the RHDH catalog, by querying catalog entities, and retrieving metadata
+   - Learn about techdocs coverage, and retrieve techdocs for catalog entities
+
+
+ description: |
+     # MCP Tool Plugins
+
+
+     Red Hat Developer Hub provides a collection of MCP tools that can be used by AI assistants to interact with RHDH.
+
+
+     Model Context Protocol (MCP) provides a standard for connecting AI models and applications (MCP clients) to external systems, enabling them to access information and workflows on those systems. MCP servers define tools which can be called by AI applications to access this data.
+     RHDH supports running MCP tools through the mcp-actions-backend plugin available in Backstage.
+    
+     The MCP integrations in RHDH consist of two components:
+
+
+     - **Backend MCP server** (`@backstage/plugin-mcp-actions-backend`): Provides the MCP server to run the MCP tools
+     - **MCP Tool Plugins** (`@red-hat-developer/hub-backstage-plugin-software-catalog-mcp-tool` and `@red-hat-developer-hub/backstage-plugin-techdocs-mcp-tool`): Provides
+
+
+     ### Key Features
+
+
+     - **Client Integration**: Connect any compatible MCP client to RHDH to interact with the MCP tools
+     - **Integrations with the Software Catalog**: Query the software catalog to fetch catalog entities, and important metadata associated with them
+     - **Integrations with Techdocs**: Determine coverage of techdocs for catalog entities, and fetch the content of techdocs
+
+
+     ## Support
+
+
+     - **MCP Server Plugin**: [MCP Server README](https://github.com/backstage/backstage/blob/master/plugins/mcp-actions-backend/README.md)
+     - **Backend Plugin**: [Backend README](https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/mcp-integrations/README.md)
+     - **Issues**: [Jira Issues](https://issues.redhat.com/browse/RHDHBUGS)
+
+
+ packages: # link to the name used in the associated package documents in ../packages
+   - red-hat-developer-hub-plugin-software-catalog-mcp-tool
+   - red-hat-developer-hub-plugin-techdocs-mcp-tool
+   - backstage-plugin-mcp-actions-backend
+
+ installation: |
+     ## Installation
+
+
+     ### Dynamic Plugin Installation for Red Hat Developer Hub
+
+
+     Add the following configuration to your dynamic plugin yaml:
+
+
+     ```yaml
+     includes:
+       - dynamic-plugins.default.yaml
+     plugins:
+       # MCP server backend plugin
+       - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-mcp-actions-backend:bs_1.42.5__0.1.2!backstage-plugin-mcp-actions-backend
+         disabled: false
+      
+       # MCP tools plugins
+       - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-software-catalog-mcp-tool:bs_1.42.5__0.2.2!red-hat-developer-hub-backstage-plugin-software-catalog-mcp-tool
+         disabled: false
+       - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-techdocs-mcp-tool:bs_1.42.5__0.2.1!red-hat-developer-hub-backstage-plugin-techdocs-mcp-tool
+         disabled: false
+     ```
+
+
+     ## RHDH Configuration
+
+
+     ### Complete Configuration Reference
+
+
+     Register the MCP tools as a plugin source in your App Config:
+     ```yaml
+     backend:
+       actions:
+         pluginSources:
+           - software-catalog-mcp-tool
+           - techdocs-mcp-tool
+     ```
+    
+     Configure a static token for the MCP server in your App Config, where `<MCP_TOKEN>` is some value specified by you:
+
+
+     ```yaml
+     backend: 
+       auth:
+         externalAccess:
+           - type: static
+             options:
+               token: ${MCP_TOKEN}
+               subject: mcp-clients
+     ```
+
+
+     ## MCP Client Configuration
+    
+     The MCP server in RHDH provides two endpoints that can be used by MCP clients:
+    
+       - Streamable HTTP: http://<RHDH_HOST>/api/mcp-actions/v1
+       - SSE (Legacy): http://<RHDH_HOST>/api/mcp-actions/v1/sse
+
+
+     Some MCP clients will require the Streamable HTTP endpoint, while others may require the legacy SSE endpoint.
+     Consult your MCP client or AI application's documentation for how to configure MCP servers, and if a specific type of endpoint is required.
+
+
+     Below we've provided a couple sample configurations for common MCP clients
+
+
+     ### Cursor
+
+
+     1) Navigate to Cursor Settings and select MCP Tools
+     2) Select New MCP Server
+     3) Paste the following configuration, where`<RHDH_HOST>` is the hostname for your RHDH instance, and <MCP_TOKEN> is the static token configured previously.
+
+
+     ```
+     {
+       "mcpServers": {
+         "backstage-actions": {
+           "url": "http://<RHDH_HOST>/api/mcp-actions/v1",
+           "headers": {
+             "Authorization": "Bearer <MCP_TOKEN>"
+           }
+         }
+       }
+     }
+     ```
+
+
+     ### Continue
+
+
+     Add the following to your agent's yaml configuration file, where`<RHDH_HOST>` is the hostname for your RHDH instance, and <MCP_TOKEN> is the static token configured previously.
+
+
+     ```yaml
+     mcpServers:
+       - name: backstage-actions
+         type: sse
+         url: http://<RHDH_HOST>/api/mcp-actions/v1/sse
+         requestOptions:
+           headers:
+             Authorization: "Bearer <MCP_TOKEN>"
+     ```
+    
+     ## Local Development
+
+
+     1. **Fork and clone this repository**:
+
+
+         ```bash
+         git clone https://github.com/your-username/rhdh-plugins.git
+         cd rhdh-plugins/workspaces/mcp-integrations
+         ```
+
+
+     2. **Install dependencies**:
+    
+         ```bash
+         yarn install
+         ```
+
+
+     3. Set `MCP_TOKEN` to some value (at least 8 characters):
+
+
+        ```bash
+        export MCP_TOKEN=<some-value>
+        ```
+
+
+     4. **Start the development server**:
+
+
+         ```bash
+         yarn dev
+         ```
+
+
+     5. **Configure your MCP client** to point to either:
+
+
+         Streamable HTTP: http://localhost:7007/api/mcp-actions/v1
+         SSE: http://localhost:7007/api/mcp-actions/v1/sse
+
+
+         with the bearer token set to `MCP_TOKEN`.

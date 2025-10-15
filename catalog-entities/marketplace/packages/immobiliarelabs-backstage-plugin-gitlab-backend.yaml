@@ -18,10 +18,10 @@ metadata:
 spec:
   packageName: "@immobiliarelabs/backstage-plugin-gitlab-backend"
   dynamicArtifact: ./dynamic-plugins/dist/immobiliarelabs-backstage-plugin-gitlab-backend-dynamic
-  version: 6.12.0
+  version: 6.13.0
   backstage:
     role: backend-plugin
-    supportedVersions: 1.39.1
+    supportedVersions: 1.42.5
   author: Red Hat
   support: tech-preview
   lifecycle: active
