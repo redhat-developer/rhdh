@@ -225,6 +225,7 @@ plugins:
             translationResources:
               - importName: topologyTranslations
                 ref: topologyTranslationRef
+                module: Alpha
             mountPoints:
               - mountPoint: entity.page.topology/cards
                 importName: TopologyPage
