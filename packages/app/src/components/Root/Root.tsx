@@ -45,6 +45,7 @@ import DynamicRootContext, {
 import { useLanguagePreference } from '../../hooks/useLanguagePreference';
 import { useTranslation } from '../../hooks/useTranslation';
 import { ApplicationHeaders } from './ApplicationHeaders';
+import { CustomSidebarItem } from './CustomSidebarItem';
 import { MenuIcon } from './MenuIcon';
 import { SidebarLogo } from './SidebarLogo';
 
@@ -215,7 +216,7 @@ const getMenuItem = (
       />
     </Box>
   ) : (
-    <SidebarItem
+    <CustomSidebarItem
       key={menuItem.name}
       icon={renderIcon(menuItem.icon ?? '')}
       to={menuItem.to ?? ''}
@@ -353,7 +354,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
           },
         }}
         renderItem={child => (
-          <SidebarItem
+          <CustomSidebarItem
             key={child.title}
             icon={() => null}
             text={getMenuText(child)}

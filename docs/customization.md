@@ -152,6 +152,24 @@ app:
 ![Example Light Mode Sidebar Indicator](images/example-sidebar-indicator-light.png)
 ![Example Dark Mode Sidebar Indicator](images/example-sidebar-indicator-dark.png)
 
+### Customizing sidebar selected item background color
+
+To customize the background color of the selected item in the sidebar for both light mode and dark mode, provide the color in a [supported format](#customizing-the-your-showcase-colors) in the `app.branding.theme.[light or dark].sidebarSelectedBackgroundColor` field of the `app-config.yaml` file:
+
+```yaml title="app-config.yaml"
+app:
+  branding:
+    theme:
+      light:
+        sidebarSelectedBackgroundColor: "#f0f0f0"
+      dark:
+        sidebarSelectedBackgroundColor: "#333333"
+```
+
+This configuration allows you to ensure proper contrast between the selected item background, the sidebar background color, and the text color. If not specified, the system will use default colors that provide good contrast (white for light mode, dark gray for dark mode).
+
+**Note**: This color should be chosen to provide adequate contrast with the `navigationIndicatorColor` (which shows the active indicator line) for optimal accessibility.
+
 ## Customizing Support button content
 
 To customize the Support button content, provide your support team links and icons to the `app.support` field of the `app-config.yaml` file.
