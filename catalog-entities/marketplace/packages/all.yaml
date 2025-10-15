@@ -98,6 +98,8 @@ spec:
     - ./redhat-backstage-plugin-orchestrator-form-widgets.yaml
     - ./dynatrace-backstage-plugin-dql.yaml
     - ./dynatrace-backstage-plugin-dql-backend.yaml
+    - ./redhat-resource-optimization.yaml
+    - ./redhat-resource-optimization-backend.yaml
     - ./rhdh-backstage-plugin-adoption-insights.yaml
     - ./rhdh-backstage-plugin-adoption-insights-backend.yaml
     - ./rhdh-backstage-plugin-analytics-module-adoption-insights.yaml
