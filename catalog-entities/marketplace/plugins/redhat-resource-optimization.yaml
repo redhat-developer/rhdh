@@ -2,9 +2,9 @@
 apiVersion: extensions.backstage.io/v1alpha1
 kind: Plugin
 metadata:
-  name: optimizations
+  name: redhat-resource-optimization
   namespace: rhdh
-  title: RedHat Insights Optimizations For Red Hat Developer Hub
+  title: RedHat Resource Optimizations For Red Hat Developer Hub
   annotations:
     extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
   links:
@@ -15,7 +15,7 @@ metadata:
     - insights
     - cluster
   description: |
-    Optimizations brings Red Hat Insights OpenShift recommendations into Backstage with extended actions. You can view recommendations and apply them to your configured clusters.
+    Red Hat Resource Optimization brings Red Hat Insights OpenShift recommendations into Backstage with extended actions. You can view recommendations and apply them to your configured clusters.
 spec:
   author: Red Hat
   support:
@@ -31,9 +31,9 @@ spec:
     - Apply OpenShift recommendations to your configured clusters
 
   description: |
-    Optimizations brings Red Hat Insights OpenShift recommendations into Backstage with extended actions. You can view recommendations and apply them to your configured clusters.
+    Red Hat Resource Optimization brings Red Hat Insights OpenShift recommendations into Backstage with extended actions. You can view recommendations and apply them to your configured clusters.
 
-    The Optimizations features two primary functionalities:
+    The Red Hat Resource Optimization features two primary functionalities:
 
     * View and manage Red Hat Insights recommendations for OpenShift clusters
     * Apply OpenShift recommendations to your configured clusters
@@ -346,3 +346,6 @@ spec:
     IEMtMy44NDgxMjQ0NCAtMC40NTY1NjMwNiAtMi4xOTg1MDE1NCAwLjAwMzAwMTA3IDAgMCBaICIg
     ZmlsbD0iIzAwMDAwMCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTcyLjQzNzUsOTQuODY3MTg3NSki
     Lz4KPC9zdmc+Cg==
+  packages:
+    - redhat-resource-optimization
+    - redhat-resource-optimization-backend

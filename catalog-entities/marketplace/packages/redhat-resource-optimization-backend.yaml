@@ -1,0 +1,46 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/packages.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: redhat-resource-optimization-backend
+  namespace: rhdh
+  title: "Red Hat Resource Optimizations Backend"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/redhat-resource-optimization
+  annotations:
+    backstage.io/source-location: url:https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/redhat-resource-optimization
+  tags:
+    - optimization
+    - insights
+    - cluster
+spec:
+  packageName: "@red-hat-developer-hub/backstage-plugin-optimizations-backend"
+  dynamicArtifact: oci://quay.io/redhat-resource-optimization/dynamic-plugins:1.2.1!red-hat-developer-hub-plugin-redhat-resource-optimization-backend
+  version: 1.2.1
+  backstage:
+    role: backend-plugin
+    supportedVersions: 1.42.5
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+  partOf:
+    - redhat-resource-optimization
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        proxy:
+          endpoints:
+            '/cost-management/v1':
+              target: https://console.redhat.com/api/cost-management/v1
+              allowedHeaders: ['Authorization']
+              credentials: dangerously-allow-unauthenticated
+        resourceOptimization:
+          clientId: ${ROS_CLIENT_ID}
+          clientSecret: ${ROS_CLIENT_SECRET}
+          optimizationWorkflowId: 'patch-k8s-resource'
+
