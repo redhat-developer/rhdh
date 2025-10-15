@@ -1,13 +1,26 @@
 {
   "name": "red-hat-developer-hub-backstage-plugin-bulk-import",
-  "version": "1.13.4",
+  "version": "1.18.1",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "license": "Apache-2.0",
   "publishConfig": {
-    "access": "public",
-    "main": "dist/index.cjs.js",
-    "types": "dist/index.d.ts"
+    "access": "public"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./alpha": "./src/alpha.ts",
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "alpha": [
+        "src/alpha.ts"
+      ],
+      "package.json": [
+        "package.json"
+      ]
+    }
   },
   "backstage": {
     "role": "frontend-plugin",
@@ -30,7 +43,7 @@
   },
   "dependencies": {
     "@mui/material": "5.18.0",
-    "@red-hat-developer-hub/backstage-plugin-bulk-import": "1.13.4"
+    "@red-hat-developer-hub/backstage-plugin-bulk-import": "1.18.1"
   },
   "devDependencies": {
     "@backstage/cli": "^0.34.1",
@@ -44,7 +57,8 @@
   "scalprum": {
     "name": "red-hat-developer-hub.backstage-plugin-bulk-import",
     "exposedModules": {
-      "PluginRoot": "./src/index.ts"
+      "PluginRoot": "./src/index.ts",
+      "Alpha": "./src/alpha.ts"
     }
   },
   "repository": {

@@ -80,7 +80,7 @@ spec:
   // Select two repos: one with an existing catalog.yaml file and another without it
   test("Add a Repository from the Repository Tab and Confirm its Preview", async () => {
     await uiHelper.openSidebar("Bulk import");
-    await uiHelper.clickButton("Add");
+    await uiHelper.clickButton("Import");
     await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
 
     await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
@@ -89,7 +89,7 @@ spec:
     await bulkimport.selectRepoInTable(catalogRepoDetails.name);
     await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
       catalogRepoDetails.url,
-      "Ready Preview file",
+      "Ready to import Preview file",
     ]);
 
     await uiHelper.clickOnLinkInTableByUniqueText(
@@ -107,7 +107,7 @@ spec:
     await uiHelper.verifyRowInTableByUniqueText(newRepoDetails.owner, [
       new RegExp(`github.com/${newRepoDetails.owner}`),
       /1\/(\d+) Edit/,
-      /Ready Preview file/,
+      /Ready to import Preview file/,
     ]);
     await uiHelper.clickOnLinkInTableByUniqueText(newRepoDetails.owner, "Edit");
     await bulkimport.searchInOrg(newRepoDetails.repoName);
@@ -116,14 +116,14 @@ spec:
     await uiHelper.verifyRowInTableByUniqueText(newRepoDetails.owner, [
       new RegExp(`github.com/${newRepoDetails.owner}`),
       /2\/(\d+) Edit/,
-      /Ready Preview files/,
+      /Ready to import Preview files/,
     ]);
-    await expect(
-      await uiHelper.clickButton("Create pull requests"),
-    ).toBeDisabled({ timeout: 10000 });
+    await expect(await uiHelper.clickButton("Import")).toBeDisabled({
+      timeout: 10000,
+    });
   });
 
-  test('Verify that the two selected repositories are listed: one with the status "Added" and another with the status "WAIT_PR_APPROVAL."', async () => {
+  test('Verify that the two selected repositories are listed: one with the status "Already imported" and another with the status "WAIT_PR_APPROVAL."', async () => {
     await common.waitForLoad();
     await bulkimport.filterAddedRepo(catalogRepoDetails.name);
     await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
@@ -180,12 +180,12 @@ spec:
     expect(prCatalogInfoYaml).toEqual(expectedCatalogInfoYaml);
   });
 
-  test("Verify Selected repositories shows catalog-info.yaml status as 'Added' and 'WAIT_PR_APPROVAL'", async () => {
+  test("Verify Selected repositories shows catalog-info.yaml status as 'Already imported' and 'WAIT_PR_APPROVAL'", async () => {
     await uiHelper.openSidebar("Bulk import");
-    await uiHelper.clickButton("Add");
+    await uiHelper.clickButton("Import");
     await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
     await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
-      "Added",
+      "Already imported",
     ]);
     await uiHelper.searchInputPlaceholder(newRepoDetails.repoName);
     await uiHelper.verifyRowInTableByUniqueText(newRepoDetails.repoName, [
@@ -193,7 +193,7 @@ spec:
     ]);
   });
 
-  test("Merge the PR on GitHub and Confirm the Status Updates to 'Added'", async () => {
+  test("Merge the PR on GitHub and Confirm the Status Updates to 'Already imported'", async () => {
     // TODO: https://issues.redhat.com/browse/RHDHBUGS-2116
     test.fixme();
     await uiHelper.openSidebar("Bulk import");
@@ -213,13 +213,13 @@ spec:
     ).toHaveLength(0);
 
     await bulkimport.filterAddedRepo(newRepoDetails.repoName);
-    // verify that the status has changed to "ADDED."
+    // verify that the status has changed to "Already imported."
     await uiHelper.clickOnButtonInTableByUniqueText(
       newRepoDetails.repoName,
       "Refresh",
     );
     await uiHelper.verifyRowInTableByUniqueText(newRepoDetails.repoName, [
-      "Added",
+      "Already imported",
     ]);
   });
 
@@ -318,7 +318,7 @@ test.describe
     await common.waitForLoad();
     await bulkimport.filterAddedRepo(existingRepoFromAppConfig);
     await uiHelper.verifyRowInTableByUniqueText(existingRepoFromAppConfig, [
-      "Added",
+      "Already imported",
     ]);
   });
 
@@ -338,7 +338,7 @@ test.describe
     await bulkimport.filterAddedRepo(existingComponentDetails.repoName);
     await uiHelper.verifyRowInTableByUniqueText(
       existingComponentDetails.repoName,
-      ["Added"],
+      ["Already imported"],
     );
   });
 });
@@ -360,6 +360,6 @@ test.describe
   test("Bulk Import - Verify users without permission cannot access", async () => {
     await uiHelper.openSidebar("Bulk import");
     await uiHelper.verifyText("Permission required");
-    expect(await uiHelper.isBtnVisible("Add")).toBeFalsy();
+    expect(await uiHelper.isBtnVisible("Import")).toBeFalsy();
   });
 });
