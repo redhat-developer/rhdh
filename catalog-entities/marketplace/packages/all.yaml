@@ -90,6 +90,8 @@ spec:
     - ./red-hat-developer-hub-backstage-plugin-catalog-backend-module-m.yaml
     - ./red-hat-developer-hub-backstage-plugin-marketplace-backend.yaml
     - ./red-hat-developer-hub-backstage-plugin-marketplace.yaml
+    - ./red-hat-developer-hub-backstage-plugin-optimizations.yaml
+    - ./red-hat-developer-hub-backstage-plugin-optimizations-backend.yaml
     - ./redhat-backstage-plugin-orchestrator-backend.yaml
     - ./redhat-backstage-plugin-orchestrator.yaml
     - ./redhat-backstage-plugin-scaffolder-backend-module-orchestrator.yaml

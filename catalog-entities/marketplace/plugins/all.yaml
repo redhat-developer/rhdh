@@ -54,6 +54,7 @@ spec:
     - ./notifications.yaml
     - ./notifications-email.yaml
     - ./openshift-cluster-manager.yaml
+    - ./optimizations.yaml
     - ./orchestrator-scaffolder-actions.yaml
     - ./orchestrator.yaml
     - ./pagerduty.yaml
