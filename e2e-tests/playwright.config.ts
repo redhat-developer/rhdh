@@ -67,6 +67,7 @@ export default defineConfig({
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
         "**/playwright/e2e/plugins/tekton/tekton.spec.ts",
         "**/playwright/e2e/plugins/scorecard/scorecard.spec.ts",
+        "**/playwright/e2e/dynamic-home-page-customization.spec.ts",
       ],
     },
     {
@@ -86,6 +87,7 @@ export default defineConfig({
       testIgnore: [
         "**/playwright/e2e/auth-providers/github-happy-path.spec.ts", // temporarily disable
         "**/playwright/e2e/verify-tls-config-health-check.spec.ts",
+        "**/playwright/e2e/dynamic-home-page-customization.spec.ts",
       ],
       retries: 1,
     },
@@ -108,6 +110,7 @@ export default defineConfig({
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
         "**/playwright/e2e/github-happy-path.spec.ts",
         "**/playwright/e2e/plugins/scorecard/scorecard.spec.ts",
+        "**/playwright/e2e/dynamic-home-page-customization.spec.ts",
       ],
     },
     {
@@ -136,6 +139,7 @@ export default defineConfig({
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
         "**/playwright/e2e/github-happy-path.spec.ts",
         "**/playwright/e2e/plugins/scorecard/scorecard.spec.ts",
+        "**/playwright/e2e/dynamic-home-page-customization.spec.ts",
       ],
     },
     {
