@@ -18,7 +18,7 @@ metadata:
 spec:
   packageName: "@backstage-community/plugin-tekton"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-tekton
-  version: 3.26.2
+  version: 3.29.0
   backstage:
     role: frontend-plugin
     supportedVersions: 1.42.5
