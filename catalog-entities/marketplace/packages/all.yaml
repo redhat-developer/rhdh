@@ -32,6 +32,8 @@ spec:
     - ./parfuemerie-douglas-scaffolder-backend-module-azure-repositories.yaml
     - ./backstage-community-plugin-jenkins-backend.yaml
     - ./backstage-community-plugin-jenkins.yaml
+    - ./backstage-community-plugin-mcp-chat.yaml
+    - ./backstage-community-plugin-mcp-chat-backend.yaml
     - ./backstage-plugin-notifications.yaml
     - ./backstage-plugin-notifications-backend.yaml
     - ./backstage-plugin-notifications-backend-module-email.yaml
