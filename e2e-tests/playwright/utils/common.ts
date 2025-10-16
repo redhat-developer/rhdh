@@ -5,6 +5,8 @@ import { SETTINGS_PAGE_COMPONENTS } from "../support/page-objects/page-obj";
 import { WAIT_OBJECTS } from "../support/page-objects/global-obj";
 import * as path from "path";
 import * as fs from "fs";
+import { APIHelper } from "./api-helper";
+import { GroupEntity, UserEntity } from "@backstage/catalog-model";
 
 export class Common {
   page: Page;
@@ -32,7 +34,7 @@ export class Common {
 
   async waitForLoad(timeout = 120000) {
     for (const item of Object.values(WAIT_OBJECTS)) {
-      await this.page.waitForSelector(item, {
+      await this.page.waitForSelector(item as string, {
         state: "hidden",
         timeout: timeout,
       });
@@ -189,17 +191,152 @@ export class Common {
   }
 
   async clickOnGHloginPopup() {
-    const isLoginRequiredVisible = await this.uiHelper.isTextVisible("Sign in");
-    if (isLoginRequiredVisible) {
-      await this.uiHelper.clickButton("Sign in");
-      await this.uiHelper.clickButton("Log in");
-      await this.checkAndReauthorizeGithubApp();
-      await this.uiHelper.waitForLoginBtnDisappear();
-    } else {
-      console.log(
-        '"Log in" button is not visible. Skipping login popup actions.',
-      );
+    const loginRequiredDialog = this.page.getByRole('dialog', { name: 'Login Required' });
+
+    try {
+      // Wait for the dialog to be visible with a longer timeout
+      await loginRequiredDialog.waitFor({ state: 'visible', timeout: 15000 });
+      console.log('Login Required dialog is visible.');
+
+      // Wait for the "Log in" button to be visible and clickable
+      const logInButton = loginRequiredDialog.getByRole('button', { name: 'Log in' });
+      await logInButton.waitFor({ state: 'visible', timeout: 5000 });
+      await logInButton.click();
+      console.log('Clicked "Log in" button in Login Required dialog.');
+
+    } catch (dialogError) {
+      console.log('Login Required dialog not found or not visible. Checking for card "Sign in" button as fallback.');
+
+      // Fallback: try clicking the "Sign in" button on the card
+      const signInButtonOnCard = this.page.getByRole('button', { name: 'Sign in' }).first();
+      try {
+        await signInButtonOnCard.waitFor({ state: 'visible', timeout: 5000 });
+        await signInButtonOnCard.click();
+        console.log('Clicked "Sign in" button on card.');
+
+        // After clicking the card button, wait for the dialog to appear
+        await loginRequiredDialog.waitFor({ state: 'visible', timeout: 10000 });
+        const logInButton = loginRequiredDialog.getByRole('button', { name: 'Log in' });
+        await logInButton.waitFor({ state: 'visible', timeout: 5000 });
+        await logInButton.click();
+        console.log('Clicked "Log in" button in Login Required dialog after card click.');
+
+      } catch (cardError) {
+        console.log('Neither "Login Required" dialog nor card "Sign in" button found. Skipping login popup actions.');
+        return;
+      }
     }
+
+    // Continue with the rest of the login flow
+    await this.checkAndReauthorizeGithubApp();
+    await this.uiHelper.waitForLoginBtnDisappear();
+  }
+
+  private async getGroupLinksByLabel(label: string): Promise<string[]> {
+    const section = this.page.locator(`p:has-text("${label}")`).first();
+    await section.waitFor({ state: "visible" });
+    return await section.locator("..")
+      .locator("a")
+      .allInnerTexts();
+  }
+
+  async getParentGroupsDisplayed(): Promise<string[]> {
+    return await this.getGroupLinksByLabel("Parent Group");
+  }
+
+  async getChildGroupsDisplayed(): Promise<string[]> {
+    return await this.getGroupLinksByLabel("Child Groups");
+  }
+
+  async githubLoginPopUpModal(context, username: string, password: string, otpSecret: string): Promise<void> {
+    const [githubPage] = await Promise.all([
+      context.waitForEvent('page'),
+    ]);
+    await githubPage.waitForSelector(
+      'input[name="login"], input[aria-label="Username or email address"]',
+      { timeout: 10000 },
+    );
+    await githubPage.fill(
+      'input[name="login"], input[aria-label="Username or email address"]',
+      username,
+    );
+    await githubPage.waitForSelector('input[name="password"]', {
+      timeout: 10000,
+    });
+    await githubPage.fill('input[name="password"]', password);
+    await githubPage.waitForSelector(
+      'button[type="submit"], input[type="submit"]',
+      { timeout: 10000 },
+    );
+    await githubPage.click('button[type="submit"], input[type="submit"]');
+    
+    // OTP
+    const otpSelector = await this.findOtpSelector(githubPage);
+    if (otpSelector) {
+      if (githubPage.isClosed()) return;
+      await githubPage.waitForSelector(otpSelector, { timeout: 10000 });
+      if (githubPage.isClosed()) return;
+      const otp = authenticator.generate(otpSecret);
+      await githubPage.fill(otpSelector, otp);
+      if (githubPage.isClosed()) return;
+      
+      // Wait for the OTP to be processed
+      await githubPage.waitForTimeout(1000);
+      
+      // Try multiple selectors for the submit button
+      const submitSelectors = [
+        'button[type="submit"]',
+        'input[type="submit"]',
+        'button:has-text("Verify")',
+        'button:has-text("Submit")',
+        'button:has-text("Continue")'
+      ];
+      
+      let submitClicked = false;
+      for (const selector of submitSelectors) {
+        try {
+          if (await githubPage.isVisible(selector, { timeout: 2000 })) {
+            await githubPage.click(selector);
+            submitClicked = true;
+            break;
+          }
+        } catch (e) {
+          // Continue to next selector
+        }
+      }
+      
+      if (!submitClicked) {
+        // If no submit button found, wait for the page to close
+        await githubPage.waitForEvent('close', { timeout: 20000 });
+      }
+    } else {
+      // Check if we're on GitHub authorization page
+      try {
+        const authorizeButton = githubPage.locator('button:has-text("Authorize")');
+        if (await authorizeButton.isVisible({ timeout: 5000 })) {
+          await authorizeButton.click();
+          console.log('Clicked "Authorize" button on GitHub authorization page.');
+        }
+      } catch (e) {
+        console.log('No "Authorize" button found, continuing...');
+      }
+      
+      await githubPage.waitForEvent('close', { timeout: 20000 });
+    }
+  }
+
+  private async findOtpSelector(page): Promise<string> {
+    const selectors = ['input[name="otp"]', '#app_totp'];
+    for (const selector of selectors) {
+      try {
+        if (await page.isVisible(selector, { timeout: 2000 })) {
+          return selector;
+        }
+      } catch (err) {
+        console.debug(`Selector ${selector} not visible yet, continuing…`);
+      }
+    }
+    return null; // Return null instead of throwing error
   }
 
   getGitHub2FAOTP(userid: string): string {
@@ -403,4 +540,53 @@ export async function setupBrowser(browser: Browser, testInfo: TestInfo) {
   });
   const page = await context.newPage();
   return { page, context };
+}
+
+export type EntityWithDisplay = { spec?: { profile?: { displayName?: string } } };
+
+export class CatalogVerifier {
+  private api: APIHelper;
+
+  constructor(token: string) {
+    this.api = new APIHelper();
+    this.api.UseStaticToken(token);
+  }
+
+  async assertUsersInCatalog(expected: string[]): Promise<void> {
+    await this.assertEntities(
+      () => this.api.getAllCatalogUsersFromAPI(),
+      expected,
+      'users',
+    );
+  }
+
+  async assertGroupsInCatalog(expected: string[]): Promise<void> {
+    await this.assertEntities(
+      () => this.api.getAllCatalogGroupsFromAPI(),
+      expected,
+      'groups',
+    );
+  }
+
+  private async assertEntities(
+    fetch: () => Promise<{ items?: EntityWithDisplay[] }>,
+    expected: string[],
+    label: string,
+  ): Promise<void> {
+    const { items = [] } = await fetch();
+
+    expect(items.length).toBeGreaterThan(0);
+
+    const displayNames = items
+      .flatMap(e => e.spec?.profile?.displayName ?? []);
+
+    const catalogSet = new Set(displayNames);
+    const missing = expected.filter(name => !catalogSet.has(name));
+
+    console.info(
+      `Catalog ${label}: [${displayNames.join(', ')}] – expecting [${expected.join(', ')}]`,
+    );
+
+    expect(missing, `Missing ${label}: ${missing.join(', ')}`).toHaveLength(0);
+  }
 }
