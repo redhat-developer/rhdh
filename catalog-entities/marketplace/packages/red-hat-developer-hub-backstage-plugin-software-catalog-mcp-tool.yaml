@@ -1,0 +1,36 @@
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: red-hat-developer-hub-plugin-software-catalog-mcp-tool
+  namespace: rhdh
+  title: "@red-hat-developer-hub/backstage-plugin-software-catalog-mcp-tool"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHDHPAI
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/mcp-integrations/plugins/software-catalog-mcp-tool
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/mcp-integrations/plugins/software-catalog-mcp-tool
+  tags: []
+spec:
+  packageName: "@red-hat-developer-hub/backstage-plugin-software-catalog-mcp-tool"
+  dynamicArtifact: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-software-catalog-mcp-tool:bs_1.42.5__0.2.2!red-hat-developer-hub-backstage-plugin-software-catalog-mcp-tool
+  version: 0.2.1
+  backstage:
+    role: backend-plugin
+    supportedVersions: 1.42.5
+  author: Red Hat
+  support: dev-preview
+  lifecycle: active
+  partOf:
+    - mcp-tools
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        backend:
+          actions:
+            pluginSources:
+              - 'software-catalog-mcp-tool'

@@ -18,10 +18,10 @@ metadata:
 spec:
   packageName: "@backstage-community/plugin-topology"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-topology
-  version: 2.2.2
+  version: 2.7.0
   backstage:
     role: frontend-plugin
-    supportedVersions: 1.39.1
+    supportedVersions: 1.42.5
   author: Red Hat
   support: production
   lifecycle: active

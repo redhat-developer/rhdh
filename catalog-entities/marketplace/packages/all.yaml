@@ -103,5 +103,8 @@ spec:
     - ./red-hat-developer-hub-backstage-plugin-lightspeed.yaml
     - ./red-hat-developer-hub-backstage-plugin-lightspeed-backend.yaml
     - ./apic-backstage-plugin.yaml
+    - ./backstage-plugin-mcp-actions-backend.yaml
+    - ./red-hat-developer-hub-backstage-plugin-software-catalog-mcp-tool.yaml
+    - ./red-hat-developer-hub-backstage-plugin-techdocs-mcp-tool.yaml
     - ./backstage-plugin-catalog-backend-module-model-catalog.yaml
     - ./backstage-plugin-catalog-techdoc-url-reader-backend.yaml

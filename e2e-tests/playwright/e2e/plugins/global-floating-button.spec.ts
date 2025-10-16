@@ -28,7 +28,7 @@ test.describe("Test global floating action button plugin", () => {
     await fabHelper.verifyFabButtonByLabel("Git");
     await fabHelper.verifyFabButtonByDataTestId("bulk-import");
     await fabHelper.clickFabMenuByTestId("bulk-import");
-    await uiHelper.verifyText("Added repositories");
+    await uiHelper.verifyText("Imported entities");
   });
 
   test("Check if floating button is shown with two sub-menu actions on the Catalog Page, verify Git sub-menu", async () => {

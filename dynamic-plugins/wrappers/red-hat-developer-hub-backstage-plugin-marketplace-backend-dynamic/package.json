@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "@red-hat-developer-hub/backstage-plugin-marketplace-backend": "0.11.0",
-    "@red-hat-developer-hub/backstage-plugin-marketplace-common": "0.10.0"
+    "@red-hat-developer-hub/backstage-plugin-marketplace-common": "0.10.1"
   },
   "devDependencies": {
     "@backstage/cli": "^0.34.1",

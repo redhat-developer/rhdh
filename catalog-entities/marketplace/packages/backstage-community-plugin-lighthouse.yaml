@@ -18,10 +18,10 @@ metadata:
 spec:
   packageName: "@backstage-community/plugin-lighthouse"
   dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-lighthouse
-  version: 0.10.0
+  version: 0.12.0
   backstage:
     role: frontend-plugin
-    supportedVersions: 1.39.1
+    supportedVersions: 1.42.5
   author: Red Hat
   support: tech-preview
   lifecycle: active

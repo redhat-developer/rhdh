@@ -80,4 +80,5 @@ spec:
     - ./topology.yaml
     - ./lightspeed.yaml
     - ./ibm-apiconnect-backstage.yaml
+    - ./mcp-tools.yaml
     - ./ai-model-catalog.yaml
