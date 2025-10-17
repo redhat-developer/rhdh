@@ -332,7 +332,7 @@ gh release view --repo redhat-developer/rhdh --json tagName,publishedAt,name
 
 # Get plugin versions from a specific release
 gh api repos/redhat-developer/rhdh/contents/dynamic-plugins.default.yaml?ref={tag} \
-  --jq '.content' | base64 -d | yq '.plugins[] | [.package, .version] | @tsv'
+  --jq '.content' | base64 -d | yq -r '.plugins[] | [.package, .version] | @tsv'
 
 # List all plugins in marketplace
 ls -1 catalog-entities/marketplace/plugins/*.yaml | xargs -I {} basename {} .yaml
