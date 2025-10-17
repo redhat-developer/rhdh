@@ -377,7 +377,7 @@ gh api repos/redhat-developer/rhdh/contents/dynamic-plugins.default.yaml?ref=v1.
   --jq '.content' | base64 -d > /tmp/dynamic-plugins-release.yaml
 
 # Extract version mapping
-yq eval '.plugins[] | [.package, .version] | @tsv' /tmp/dynamic-plugins-release.yaml
+yq eval -r '.plugins[] | [.package, .version] | @tsv' /tmp/dynamic-plugins-release.yaml
 ```
 
 ### Dependency Analysis
