@@ -1,7 +1,7 @@
 # Extension Metadata Manager
 
 An interactive command for managing RHDH Extensions Catalog metadata. This command can add new plugins, update existing plugins, and perform bulk updates like version bumps.
-
+**Important**: Do not implement this as a standalone script. Execute steps interactively inside chat using the agent and built-in tools; do not generate shell or Node.js scripts from these instructions.
 ## Command Usage
 
 This command is interactive and will guide you through the process. You can also provide parameters upfront to skip interactive prompts.
