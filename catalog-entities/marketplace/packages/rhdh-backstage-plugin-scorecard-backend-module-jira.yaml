@@ -73,3 +73,21 @@ spec:
                   mandatoryFilter: type = Task AND resolution = Unresolved
                   # Optional: use to specify global customFilter, the entity annotation `jira/custom-filter` can replace it
                   customFilter: priority in ("Critical", "Blocker")
+    - title: Threshold configuration (optional)
+      content:
+        jira:
+          product: cloud
+          baseUrl: ${JIRA_URL}
+          token: ${JIRA_TOKEN}
+        scorecard:
+          plugins:
+            jira:
+              open_issues:
+                thresholds:
+                  rules:
+                    - key: success
+                      expression: '<50'
+                    - key: warning
+                      expression: '50-100'
+                    - key: error
+                      expression: '>100'
