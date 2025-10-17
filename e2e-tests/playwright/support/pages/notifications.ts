@@ -12,6 +12,9 @@ export class NotificationPage {
 
   async clickNotificationsNavBarItem() {
     await this.uiHelper.openSidebar("Notifications");
+    await expect(
+      this.page.getByTestId("loading-indicator").getByRole("img"),
+    ).toHaveCount(0);
   }
 
   async notificationContains(text: string | RegExp) {
@@ -23,10 +26,6 @@ export class NotificationPage {
     ).toHaveCount(0);
     const row = this.page.locator(`tr`, { hasText: text }).first();
     await expect(row).toHaveCount(1);
-  }
-
-  async notificationTextExists(text: string | RegExp) {
-    await expect(this.page.getByRole("cell", { name: text })).toHaveCount(1);
   }
 
   async clickNotificationHeadingLink(text: string | RegExp) {
@@ -119,13 +118,9 @@ export class NotificationPage {
 
   async viewRead() {
     await this.page.getByLabel("View").click();
-    if (`${process.env.MILESTONE}` == "5") {
-      await this.page
-        .getByRole("option", { name: "Read notifications", exact: true })
-        .click();
-    } else {
-      await this.page.getByRole("option", { name: "Marked as read" }).click();
-    }
+    await this.page
+      .getByRole("option", { name: "Read notifications", exact: true })
+      .click();
     await expect(
       this.page.getByTestId("loading-indicator").getByRole("img"),
     ).toHaveCount(0);
@@ -133,13 +128,9 @@ export class NotificationPage {
 
   async viewUnRead() {
     await this.page.getByLabel("View").click();
-    if (`${process.env.MILESTONE}` == "5") {
-      await this.page
-        .getByRole("option", { name: "Unread notifications", exact: true })
-        .click();
-    } else {
-      await this.page.getByRole("option", { name: "New only" }).click();
-    }
+    await this.page
+      .getByRole("option", { name: "Unread notifications", exact: true })
+      .click();
     await expect(
       this.page.getByTestId("loading-indicator").getByRole("img"),
     ).toHaveCount(0);
