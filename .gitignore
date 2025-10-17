@@ -72,3 +72,4 @@ dynamic-plugins-root/*
 .ibm/pipelines/shared_dir/*
 .ibm/pipelines/artifact_dir/*
 .ibm/pipelines/env_override.local.sh
+.ibm/refactored/env_override.local.sh

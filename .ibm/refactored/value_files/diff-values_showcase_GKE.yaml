@@ -1,0 +1,37 @@
+# This file is for GKE installation only.
+# It is applied by `helm upgrade` after the `values-showcase.yaml` is applied and only contains complementary differences for GKE.
+# Note, that it overwrites the whole key that is present in this file.
+# The only exception is global.dynamic.plugins, that gets merged with the base file.
+route:
+  enabled: false
+global:
+  dynamic:
+    plugins:
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic
+        disabled: false
+upstream:
+  backstage:
+    extraEnvVarsSecrets:
+      - rhdh-secrets
+    podSecurityContext:
+      fsGroup: 2000
+    startupProbe:
+      failureThreshold: 10 # Override the default to account for longer startup time on Kubernetes.
+  postgresql:
+    primary:
+      podSecurityContext:
+        enabled: true
+        fsGroup: 3000
+  volumePermissions:
+    enabled: true
+  service:
+    type: NodePort
+  ingress:
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: gce
+      kubernetes.io/ingress.global-static-ip-name: rhdh-static-ip
+      ingress.gcp.kubernetes.io/pre-shared-cert: ""
+      networking.gke.io/v1beta1.FrontendConfig: rhdh-gke-ingress-security-config
+    className: gce
+orchestrator: null

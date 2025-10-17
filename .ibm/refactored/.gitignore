@@ -1,0 +1,31 @@
+# Local environment overrides (contains secrets)
+env_override.local.sh
+
+# Artifact directories
+artifact_dir/
+shared_dir/
+
+# Temporary files
+*.bak
+*.tmp
+*.log
+
+# Build artifacts
+serverless-workflows/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Backup files from sed
+*.yaml.bak
+*.sh.bak
+
+

@@ -1,0 +1,213 @@
+global:
+  dynamic:
+    plugins:
+      #  sanity check https://issues.redhat.com/browse/RHIDP-5301
+      - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-gitlab-org-dynamic
+        disabled: false
+      - package: ./dynamic-plugins/dist/roadiehq-backstage-plugin-github-insights
+        disabled: false
+      - package: ./dynamic-plugins/dist/roadiehq-backstage-plugin-security-insights
+        disabled: false
+      - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-gitlab-dynamic
+        disabled: false
+      - package: ./dynamic-plugins/dist/immobiliarelabs-backstage-plugin-gitlab
+        disabled: false
+      - package: ./dynamic-plugins/dist/roadiehq-backstage-plugin-argo-cd-backend-dynamic
+        disabled: false
+        pluginConfig:
+          argocd:
+            username: "temp"
+            password: "temp"
+            appLocatorMethods:
+              - type: "config"
+                instances:
+                  - name: argoInstance1
+                    url: "temp"
+      - package: ./dynamic-plugins/dist/roadiehq-scaffolder-backend-argocd-dynamic
+        disabled: true
+        pluginConfig:
+          argocd:
+            username: "temp"
+            password: "temp"
+            appLocatorMethods:
+              - type: "config"
+                instances:
+                  - name: argoInstance1
+                    url: "temp"
+                    token: "temp"
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-redhat-argocd
+        disabled: false
+      - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-azure-dynamic
+        disabled: false
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-azure-devops-backend-dynamic
+        disabled: false
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-azure-devops
+        disabled: false
+      - package: ./dynamic-plugins/dist/parfuemerie-douglas-scaffolder-backend-module-azure-repositories-dynamic
+        disabled: false
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-jenkins-backend-dynamic
+        disabled: false
+        pluginConfig:
+          jenkins:
+            instances:
+              - name: default
+                baseUrl: "temp"
+                username: "temp"
+                apiKey: "temp"
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-jenkins
+        disabled: false
+      - package: ./dynamic-plugins/dist/backstage-plugin-notifications
+        disabled: false
+      - package: ./dynamic-plugins/dist/backstage-plugin-notifications-backend-dynamic
+        disabled: false
+      - package: ./dynamic-plugins/dist/backstage-plugin-notifications-backend-module-email-dynamic
+        disabled: false
+        pluginConfig:
+          notifications:
+            processors:
+              email:
+                transportConfig:
+                sender: "temp"
+      - package: ./dynamic-plugins/dist/backstage-plugin-signals-backend-dynamic
+        disabled: false
+      - package: ./dynamic-plugins/dist/backstage-plugin-signals
+        disabled: false
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-sonarqube-backend-dynamic
+        disabled: false
+        pluginConfig:
+          sonarqube:
+            instances:
+              - name: default
+                instanceKey: "mySonarqube"
+                baseUrl: "https://default-sonarqube.example.com"
+                apiKey: "123456789abcdef0123456789abcedf012"
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-sonarqube
+        disabled: false
+      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-dynamic-home-page
+        disabled: false
+      - package: ./dynamic-plugins/dist/backstage-plugin-techdocs-backend-dynamic
+        disabled: false
+      - package: ./dynamic-plugins/dist/backstage-plugin-techdocs
+        disabled: false
+      - package: ./dynamic-plugins/dist/backstage-plugin-techdocs-module-addons-contrib
+        disabled: false
+        pluginConfig:
+          dynamicPlugins:
+            frontend:
+              backstage.plugin-techdocs-module-addons-contrib:
+                techdocsAddons:
+                  - importName: ReportIssue
+      - package: ./dynamic-plugins/dist/pagerduty-backstage-plugin
+        disabled: true
+      - package: ./dynamic-plugins/dist/pagerduty-backstage-plugin-backend-dynamic
+        disabled: true
+        pluginConfig:
+          pagerDuty:
+            apiBaseUrl: "temp"
+            oauth:
+              clientId: "temp"
+              clientSecret: "temp"
+              subDomain: "temp"
+      - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-gerrit-dynamic
+        disabled: false
+      - package: ./dynamic-plugins/dist/roadiehq-scaffolder-backend-module-utils-dynamic
+        disabled: false
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-kubernetes-dynamic
+        disabled: false
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-quay-dynamic
+        disabled: false
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-regex-dynamic
+        disabled: false
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-servicenow-dynamic
+        disabled: false
+        pluginConfig:
+          servicenow:
+            # The base url of the ServiceNow instance.
+            baseUrl: "temp"
+            # The username to use for authentication.
+            username: "temp"
+            # The password to use for authentication.
+            password: "temp"
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-sonarqube-dynamic
+        disabled: false
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-3scale-backend-dynamic
+        disabled: true
+        pluginConfig:
+          catalog:
+            providers:
+              threeScaleApiEntity:
+                default:
+                  baseUrl: "temp"
+                  accessToken: "temp"
+      - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-bitbucket-cloud-dynamic
+        disabled: false
+        pluginConfig:
+          # https://backstage.io/docs/integrations/bitbucketCloud/discovery#configuration
+          catalog:
+            providers:
+              bitbucketCloud:
+                default: # identifies your ingested dataset
+                  workspace: "temp"
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-dynatrace
+        disabled: false
+      - package: ./dynamic-plugins/dist/roadiehq-backstage-plugin-jira
+        disabled: false
+      - package: ./dynamic-plugins/dist/roadiehq-backstage-plugin-datadog
+        disabled: false
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-nexus-repository-manager
+        disabled: false
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-jfrog-artifactory
+        disabled: false
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-lighthouse
+        disabled: false
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-analytics-provider-segment
+        disabled: false
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic
+        disabled: false
+      - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-msgraph-dynamic
+        disabled: false
+        pluginConfig:
+          catalog:
+            providers:
+              microsoftGraphOrg:
+                providerId:
+                  target: https://graph.microsoft.com/v1.0
+                  tenantId: temp
+                  clientId: temp
+                  clientSecret: temp
+                  schedule:
+                    frequency:
+                      minutes: 60
+                    initialDelay:
+                      seconds: 15
+                    timeout:
+                      minutes: 15
+      - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-ldap-dynamic
+        disabled: false
+        pluginConfig:
+          catalog:
+            providers:
+              ldapOrg:
+                default:
+                  target: temp
+                  bind:
+                    dn: temp
+                    secret: temp
+                  users:
+                    - dn: temp
+                      options:
+                        filter: (uid=*)
+                  groups:
+                    - dn: temp
+                      options:
+                        filter: (cn=*)
+                  schedule:
+                    frequency:
+                      minutes: 60
+                    initialDelay:
+                      seconds: 15
+                    timeout:
+                      minutes: 15
+
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-pingidentity-dynamic
+        disabled: false
