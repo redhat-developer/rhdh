@@ -40,6 +40,8 @@ import pytest
 import sys
 import os
 import importlib.util
+import json
+import hashlib
 
 # Add the current directory to path to import the module
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -1162,6 +1164,645 @@ class TestNpmPluginInstallerIntegration:
         installed_dir = tmp_path / plugin_path
         assert installed_dir.exists()
         assert (installed_dir / "package.json").exists()
+
+class TestOciDownloader:
+    """Test cases for OciDownloader class."""
+    
+    def test_skopeo_command_execution(self, tmp_path, mocker):
+        """Test that skopeo commands are executed correctly."""
+        # Mock shutil.which to return a fake skopeo path
+        mocker.patch('shutil.which', return_value='/usr/bin/skopeo')
+        
+        # Mock subprocess.run
+        mock_run = mocker.patch('subprocess.run')
+        mock_run.return_value.returncode = 0
+        mock_run.return_value.stdout = b'output'
+        
+        downloader = install_dynamic_plugins.OciDownloader(str(tmp_path))
+        result = downloader.skopeo(['inspect', 'docker://example.com/image:latest'])
+        
+        # Verify skopeo was called with correct arguments
+        mock_run.assert_called_once()
+        call_args = mock_run.call_args[0][0]
+        assert call_args[0] == '/usr/bin/skopeo'
+        assert call_args[1] == 'inspect'
+        assert result == b'output'
+    
+    def test_skopeo_not_found_raises_exception(self, tmp_path, mocker):
+        """Test that missing skopeo raises InstallException."""
+        mocker.patch('shutil.which', return_value=None)
+        
+        with pytest.raises(InstallException) as exc_info:
+            install_dynamic_plugins.OciDownloader(str(tmp_path))
+        
+        assert 'skopeo executable not found' in str(exc_info.value)
+    
+    def test_get_plugin_tar_caches_downloads(self, tmp_path, mocker):
+        """Test that get_plugin_tar caches downloaded images."""
+        mocker.patch('shutil.which', return_value='/usr/bin/skopeo')
+        
+        # Mock skopeo copy
+        mock_run = mocker.patch('subprocess.run')
+        mock_run.return_value.returncode = 0
+        
+        # Create fake manifest
+        manifest_data = {
+            'layers': [{'digest': 'sha256:abc123'}]
+        }
+        
+        downloader = install_dynamic_plugins.OciDownloader(str(tmp_path))
+        
+        # Mock the manifest file read
+        mocker.patch('builtins.open', mocker.mock_open(read_data=json.dumps(manifest_data)))
+        mocker.patch('os.path.join', side_effect=lambda *args: '/'.join(args))
+        
+        image = 'oci://registry.io/plugin:v1.0'
+        
+        # First call should execute skopeo
+        tar_path1 = downloader.get_plugin_tar(image)
+        
+        # Second call should return cached result
+        tar_path2 = downloader.get_plugin_tar(image)
+        
+        # Should return same path
+        assert tar_path1 == tar_path2
+        
+        # Verify image is cached
+        assert image in downloader.image_to_tarball
+    
+    def test_extract_plugin_with_valid_path(self, tmp_path, mocker):
+        """Test extracting a plugin from a tar file."""
+        import tarfile
+        import io
+        
+        mocker.patch('shutil.which', return_value='/usr/bin/skopeo')
+        
+        # Create a real test tarball with plugin files
+        plugin_path = "internal-backstage-plugin-test"
+        tarball_path = tmp_path / "test.tar.gz"
+        
+        with tarfile.open(tarball_path, "w:gz") as tar:
+            # Add plugin files
+            for filename in ["package.json", "index.js"]:
+                info = tarfile.TarInfo(name=f"{plugin_path}/{filename}")
+                content = b'{"name": "test"}' if filename.endswith('.json') else b'console.log("test");'
+                info.size = len(content)
+                tar.addfile(info, io.BytesIO(content))
+        
+        downloader = install_dynamic_plugins.OciDownloader(str(tmp_path))
+        downloader.extract_plugin(str(tarball_path), plugin_path)
+        
+        # Verify files were extracted
+        extracted_dir = tmp_path / plugin_path
+        assert extracted_dir.exists()
+        assert (extracted_dir / "package.json").exists()
+        assert (extracted_dir / "index.js").exists()
+    
+    def test_extract_plugin_rejects_oversized_files(self, tmp_path, mocker):
+        """Test that extract_plugin rejects files larger than max_entry_size."""
+        import tarfile
+        import io
+        
+        mocker.patch('shutil.which', return_value='/usr/bin/skopeo')
+        
+        plugin_path = "plugin"
+        tarball_path = tmp_path / "malicious.tar.gz"
+        
+        # Create tarball with oversized file (needs actual content matching size)
+        large_content = b"x" * 25_000_000  # 25MB, exceeds default 20MB
+        
+        with tarfile.open(tarball_path, "w:gz") as tar:
+            info = tarfile.TarInfo(name=f"{plugin_path}/huge.bin")
+            info.size = len(large_content)
+            tar.addfile(info, io.BytesIO(large_content))
+        
+        downloader = install_dynamic_plugins.OciDownloader(str(tmp_path))
+        
+        with pytest.raises(InstallException) as exc_info:
+            downloader.extract_plugin(str(tarball_path), plugin_path)
+        
+        assert 'Zip bomb' in str(exc_info.value)
+    
+    def test_download_removes_previous_installation(self, tmp_path, mocker):
+        """Test that download removes previous plugin directory."""
+        mocker.patch('shutil.which', return_value='/usr/bin/skopeo')
+        
+        # Create existing plugin directory with old content
+        plugin_path = "internal-backstage-plugin-test"
+        existing_dir = tmp_path / plugin_path
+        existing_dir.mkdir()
+        old_file = existing_dir / "old-file.txt"
+        old_file.write_text("old content")
+        old_subdir = existing_dir / "old-subdir"
+        old_subdir.mkdir()
+        (old_subdir / "old-nested.txt").write_text("old nested content")
+        
+        # Verify old content exists before
+        assert existing_dir.exists()
+        assert old_file.exists()
+        assert old_subdir.exists()
+        
+        # Mock get_plugin_tar and extract_plugin to simulate extraction
+        downloader = install_dynamic_plugins.OciDownloader(str(tmp_path))
+        mocker.patch.object(downloader, 'get_plugin_tar', return_value='/fake/tar/path')
+        
+        def mock_extract(tar_file, plugin_path):
+            # Simulate extraction by creating new files
+            plugin_dir = tmp_path / plugin_path
+            plugin_dir.mkdir(parents=True, exist_ok=True)
+            (plugin_dir / "package.json").write_text('{"name": "new-plugin"}')
+            (plugin_dir / "index.js").write_text("console.log('new');")
+        
+        mocker.patch.object(downloader, 'extract_plugin', side_effect=mock_extract)
+        
+        package = f'oci://registry.io/plugin:v1.0!{plugin_path}'
+        result = downloader.download(package)
+        
+        # Verify extraction was called
+        downloader.extract_plugin.assert_called_once()
+        assert result == plugin_path
+        
+        # Verify old content was removed
+        assert not old_file.exists(), "Old file should have been removed"
+        assert not old_subdir.exists(), "Old subdirectory should have been removed"
+        
+        # Verify new content exists
+        new_dir = tmp_path / plugin_path
+        assert new_dir.exists(), "New plugin directory should exist"
+        assert (new_dir / "package.json").exists(), "New package.json should exist"
+        assert (new_dir / "index.js").exists(), "New index.js should exist"
+        
+        # Verify old content is definitely gone
+        assert not (new_dir / "old-file.txt").exists(), "Old file should not exist in new installation"
+        assert not (new_dir / "old-subdir").exists(), "Old subdirectory should not exist in new installation"
+    
+    def test_digest_returns_image_digest(self, tmp_path, mocker):
+        """Test that digest() returns the correct digest from remote image."""
+        mocker.patch('shutil.which', return_value='/usr/bin/skopeo')
+        
+        # Mock skopeo inspect output
+        inspect_output = {
+            'Digest': 'sha256:abc123def456789'
+        }
+        
+        mock_run = mocker.patch('subprocess.run')
+        mock_run.return_value.returncode = 0
+        mock_run.return_value.stdout = json.dumps(inspect_output).encode('utf-8')
+        
+        downloader = install_dynamic_plugins.OciDownloader(str(tmp_path))
+        package = 'oci://registry.io/plugin:v1.0!path'
+        
+        digest = downloader.digest(package)
+        
+        # Should return just the hash part
+        assert digest == 'abc123def456789'
+        
+        # Verify skopeo inspect was called
+        mock_run.assert_called_once()
+        call_args = mock_run.call_args[0][0]
+        assert 'inspect' in call_args
+        assert 'docker://registry.io/plugin:v1.0' in call_args
+
+
+class TestOciPluginInstallerInstall:
+    """Test cases for OciPluginInstaller.install() method."""
+    
+    def test_install_creates_digest_file(self, tmp_path, mocker):
+        """Test that install creates a digest file for tracking."""
+        plugin_path = "test-plugin"
+        plugin = {
+            'package': f'oci://registry.io/plugin:v1.0!{plugin_path}',
+            'version': 'v1.0'
+        }
+        
+        # Mock the downloader
+        mock_downloader = mocker.MagicMock()
+        mock_downloader.download.return_value = plugin_path
+        mock_downloader.digest.return_value = 'abc123digest'
+        
+        installer = install_dynamic_plugins.OciPluginInstaller(str(tmp_path))
+        installer.downloader = mock_downloader
+        
+        # Create the plugin directory that download would create
+        plugin_dir = tmp_path / plugin_path
+        plugin_dir.mkdir()
+        
+        result = installer.install(plugin, {})
+        
+        # Verify digest file was created
+        digest_file = plugin_dir / 'dynamic-plugin-image.hash'
+        assert digest_file.exists()
+        assert digest_file.read_text() == 'abc123digest'
+        assert result == plugin_path
+    
+    def test_install_missing_version_raises_exception(self, tmp_path, mocker):
+        """Test that install raises exception when version is not set."""
+        plugin = {
+            'package': 'oci://registry.io/plugin:v1.0!path',
+            'version': None
+        }
+        
+        installer = install_dynamic_plugins.OciPluginInstaller(str(tmp_path))
+        
+        with pytest.raises(InstallException) as exc_info:
+            installer.install(plugin, {})
+        
+        assert 'Tag or Digest is not set' in str(exc_info.value)
+    
+    def test_install_cleans_up_duplicate_hashes(self, tmp_path, mocker):
+        """Test that install removes duplicate hash entries."""
+        plugin_path = "test-plugin"
+        plugin = {
+            'package': f'oci://registry.io/plugin:v1.0!{plugin_path}',
+            'version': 'v1.0',
+            'hash': 'newhash'
+        }
+        
+        plugin_path_by_hash = {
+            'oldhash': plugin_path,
+            'anotherhash': plugin_path
+        }
+        
+        # Mock the downloader
+        mock_downloader = mocker.MagicMock()
+        mock_downloader.download.return_value = plugin_path
+        mock_downloader.digest.return_value = 'digest123'
+        
+        installer = install_dynamic_plugins.OciPluginInstaller(str(tmp_path))
+        installer.downloader = mock_downloader
+        
+        # Create plugin directory
+        plugin_dir = tmp_path / plugin_path
+        plugin_dir.mkdir()
+        
+        result = installer.install(plugin, plugin_path_by_hash)
+        
+        # Verify old hashes were removed
+        assert 'oldhash' not in plugin_path_by_hash
+        assert 'anotherhash' not in plugin_path_by_hash
+        assert result == plugin_path
+    
+    def test_install_handles_download_errors(self, tmp_path, mocker):
+        """Test that install properly handles download errors."""
+        plugin = {
+            'package': 'oci://registry.io/plugin:v1.0!path',
+            'version': 'v1.0'
+        }
+        
+        # Mock downloader to raise an exception
+        mock_downloader = mocker.MagicMock()
+        mock_downloader.download.side_effect = Exception("Network error")
+        
+        installer = install_dynamic_plugins.OciPluginInstaller(str(tmp_path))
+        installer.downloader = mock_downloader
+        
+        with pytest.raises(InstallException) as exc_info:
+            installer.install(plugin, {})
+        
+        assert 'Error while installing OCI plugin' in str(exc_info.value)
+        assert 'Network error' in str(exc_info.value)
+
+
+@pytest.mark.integration
+class TestOciIntegration:
+    """Integration tests with real OCI images."""
+    
+    @pytest.mark.integration
+    @pytest.mark.slow
+    def test_download_real_oci_image(self, tmp_path):
+        """Test downloading and extracting a real OCI image."""
+        import shutil
+        
+        # Skip if skopeo not available
+        if not shutil.which('skopeo'):
+            pytest.skip("skopeo not available")
+        
+        package = 'oci://quay.io/gashcrumb/example-root-http-middleware:latest!internal-backstage-plugin-simple-chat'
+        
+        downloader = install_dynamic_plugins.OciDownloader(str(tmp_path))
+        plugin_path = downloader.download(package)
+        
+        # Verify plugin was extracted
+        plugin_dir = tmp_path / plugin_path
+        assert plugin_dir.exists()
+        assert (plugin_dir / "package.json").exists()
+        
+        # Verify we can read package.json
+        package_json = json.loads((plugin_dir / "package.json").read_text())
+        assert 'name' in package_json
+    
+    @pytest.mark.integration
+    @pytest.mark.slow
+    def test_get_digest_from_real_image(self, tmp_path):
+        """Test getting digest from a real OCI image."""
+        import shutil
+        
+        if not shutil.which('skopeo'):
+            pytest.skip("skopeo not available")
+        
+        package = 'oci://quay.io/gashcrumb/example-root-http-middleware:latest!internal-backstage-plugin-simple-chat'
+        
+        downloader = install_dynamic_plugins.OciDownloader(str(tmp_path))
+        digest = downloader.digest(package)
+        
+        # Digest should be a hex string
+        assert isinstance(digest, str)
+        assert len(digest) > 0
+    
+    @pytest.mark.integration
+    @pytest.mark.slow
+    def test_install_oci_plugin_creates_hash_file(self, tmp_path):
+        """Test full installation of OCI plugin with hash file creation."""
+        import shutil
+        
+        if not shutil.which('skopeo'):
+            pytest.skip("skopeo not available")
+        
+        plugin_path_name = 'internal-backstage-plugin-simple-chat'
+        plugin = {
+            'package': f'oci://quay.io/gashcrumb/example-root-http-middleware:latest!{plugin_path_name}',
+            'version': 'latest'
+        }
+        
+        installer = install_dynamic_plugins.OciPluginInstaller(str(tmp_path))
+        plugin_path = installer.install(plugin, {})
+        
+        # Verify installation
+        plugin_dir = tmp_path / plugin_path
+        assert plugin_dir.exists()
+        assert (plugin_dir / "package.json").exists()
+        
+        # Verify digest hash file was created
+        hash_file = plugin_dir / 'dynamic-plugin-image.hash'
+        assert hash_file.exists()
+        digest = hash_file.read_text().strip()
+        assert len(digest) > 0
+    
+    @pytest.mark.integration
+    @pytest.mark.slow
+    def test_download_multiple_plugins_from_same_image(self, tmp_path):
+        """Test downloading multiple plugins from the same OCI image."""
+        import shutil
+        
+        if not shutil.which('skopeo'):
+            pytest.skip("skopeo not available")
+        
+        # Two plugins from the same image
+        packages = [
+            'oci://quay.io/gashcrumb/example-root-http-middleware:latest!internal-backstage-plugin-simple-chat',
+            'oci://quay.io/gashcrumb/example-root-http-middleware:latest!internal-backstage-plugin-middleware-header-example-dynamic'
+        ]
+        
+        downloader = install_dynamic_plugins.OciDownloader(str(tmp_path))
+        
+        plugin_paths = []
+        for package in packages:
+            plugin_path = downloader.download(package)
+            plugin_paths.append(plugin_path)
+            
+            # Verify plugin was extracted
+            plugin_dir = tmp_path / plugin_path
+            assert plugin_dir.exists()
+            assert (plugin_dir / "package.json").exists()
+        
+        # Verify both plugins were extracted
+        assert len(plugin_paths) == 2
+        assert plugin_paths[0] != plugin_paths[1]
+    
+    @pytest.mark.integration
+    @pytest.mark.slow
+    def test_oci_plugin_with_inherit_version(self, tmp_path):
+        """Test that inherit version pattern works in plugin merge."""
+        # This tests the version inheritance at the merge level
+        all_plugins = {}
+        
+        # First add a plugin with explicit version
+        plugin1 = {
+            'package': 'oci://quay.io/gashcrumb/example-root-http-middleware:latest!internal-backstage-plugin-simple-chat-backend-dynamic'
+        }
+        merger1 = install_dynamic_plugins.OciPackageMerger(plugin1, 'test.yaml', all_plugins)
+        merger1.merge_plugin(level=0)
+        
+        # Then override with {{inherit}}
+        plugin2 = {
+            'package': 'oci://quay.io/gashcrumb/example-root-http-middleware:{{inherit}}!internal-backstage-plugin-simple-chat-backend-dynamic',
+            'disabled': False
+        }
+        merger2 = install_dynamic_plugins.OciPackageMerger(plugin2, 'test.yaml', all_plugins)
+        merger2.merge_plugin(level=1)
+        
+        # Version should be inherited from plugin1
+        plugin_key = 'oci://quay.io/gashcrumb/example-root-http-middleware:!internal-backstage-plugin-simple-chat-backend-dynamic'
+        assert plugin_key in all_plugins
+        assert all_plugins[plugin_key]['version'] == 'latest'
+        assert all_plugins[plugin_key]['disabled'] is False
+
+
+class TestGetLocalPackageInfo:
+    """Test cases for get_local_package_info() function."""
+    
+    def test_package_with_valid_package_json(self, tmp_path):
+        """Test getting info from a package with valid package.json."""
+        # Create a package directory with package.json
+        package_dir = tmp_path / "test-package"
+        package_dir.mkdir()
+        
+        package_json = {
+            "name": "test-package",
+            "version": "1.0.0",
+            "description": "A test package"
+        }
+        package_json_path = package_dir / "package.json"
+        package_json_path.write_text(json.dumps(package_json))
+        
+        # Get package info
+        info = install_dynamic_plugins.get_local_package_info(str(package_dir))
+        
+        # Verify the info contains expected fields
+        assert '_package_json' in info
+        assert info['_package_json'] == package_json
+        assert '_package_json_mtime' in info
+        assert info['_package_json_mtime'] == package_json_path.stat().st_mtime
+        # Should not have lock file mtimes
+        assert '_package-lock.json_mtime' not in info
+        assert '_yarn.lock_mtime' not in info
+    
+    def test_package_with_relative_path(self, tmp_path, monkeypatch):
+        """Test getting info from a package using relative path (./)."""
+        # Create a package directory
+        package_dir = tmp_path / "test-package"
+        package_dir.mkdir()
+        
+        package_json = {"name": "test-package", "version": "2.0.0"}
+        (package_dir / "package.json").write_text(json.dumps(package_json))
+        
+        # Change to tmp_path directory and use relative path
+        monkeypatch.chdir(tmp_path)
+        
+        # Get package info with relative path
+        info = install_dynamic_plugins.get_local_package_info('./test-package')
+        
+        # Verify the info is correct
+        assert info['_package_json'] == package_json
+        assert '_package_json_mtime' in info
+    
+    def test_package_with_package_lock_json(self, tmp_path):
+        """Test getting info from a package with package-lock.json."""
+        package_dir = tmp_path / "test-package"
+        package_dir.mkdir()
+        
+        package_json_path = package_dir / "package.json"
+        package_json_path.write_text(json.dumps({"name": "test", "version": "1.0.0"}))
+        
+        package_lock_path = package_dir / "package-lock.json"
+        package_lock_path.write_text(json.dumps({"lockfileVersion": 2}))
+        
+        # Get package info
+        info = install_dynamic_plugins.get_local_package_info(str(package_dir))
+        
+        # Verify lock file mtime is included
+        assert '_package-lock.json_mtime' in info
+        assert info['_package-lock.json_mtime'] == package_lock_path.stat().st_mtime
+        assert '_yarn.lock_mtime' not in info
+    
+    def test_package_with_yarn_lock(self, tmp_path):
+        """Test getting info from a package with yarn.lock."""
+        package_dir = tmp_path / "test-package"
+        package_dir.mkdir()
+        
+        package_json_path = package_dir / "package.json"
+        package_json_path.write_text(json.dumps({"name": "test", "version": "1.0.0"}))
+        
+        yarn_lock_path = package_dir / "yarn.lock"
+        yarn_lock_path.write_text("# yarn lockfile v1")
+        
+        # Get package info
+        info = install_dynamic_plugins.get_local_package_info(str(package_dir))
+        
+        # Verify lock file mtime is included
+        assert '_yarn.lock_mtime' in info
+        assert info['_yarn.lock_mtime'] == yarn_lock_path.stat().st_mtime
+        assert '_package-lock.json_mtime' not in info
+    
+    def test_package_with_both_lock_files(self, tmp_path):
+        """Test getting info from a package with both package-lock.json and yarn.lock."""
+        package_dir = tmp_path / "test-package"
+        package_dir.mkdir()
+        
+        package_json_path = package_dir / "package.json"
+        package_json_path.write_text(json.dumps({"name": "test", "version": "1.0.0"}))
+        
+        package_lock_path = package_dir / "package-lock.json"
+        package_lock_path.write_text(json.dumps({"lockfileVersion": 2}))
+        
+        yarn_lock_path = package_dir / "yarn.lock"
+        yarn_lock_path.write_text("# yarn lockfile v1")
+        
+        # Get package info
+        info = install_dynamic_plugins.get_local_package_info(str(package_dir))
+        
+        # Verify both lock file mtimes are included
+        assert '_package-lock.json_mtime' in info
+        assert '_yarn.lock_mtime' in info
+        assert info['_package-lock.json_mtime'] == package_lock_path.stat().st_mtime
+        assert info['_yarn.lock_mtime'] == yarn_lock_path.stat().st_mtime
+    
+    def test_directory_without_package_json(self, tmp_path):
+        """Test getting info from a directory without package.json (falls back to directory mtime)."""
+        package_dir = tmp_path / "empty-package"
+        package_dir.mkdir()
+        
+        # Get package info
+        info = install_dynamic_plugins.get_local_package_info(str(package_dir))
+        
+        # Should return directory mtime
+        assert '_directory_mtime' in info
+        assert info['_directory_mtime'] == package_dir.stat().st_mtime
+        assert '_package_json' not in info
+    
+    def test_nonexistent_path(self, tmp_path):
+        """Test getting info from a non-existent path."""
+        nonexistent_path = tmp_path / "does-not-exist"
+        
+        # Get package info
+        info = install_dynamic_plugins.get_local_package_info(str(nonexistent_path))
+        
+        # Should return _not_found flag
+        assert '_not_found' in info
+        assert info['_not_found'] is True
+    
+    def test_invalid_json_in_package_json(self, tmp_path):
+        """Test getting info when package.json contains invalid JSON."""
+        package_dir = tmp_path / "test-package"
+        package_dir.mkdir()
+        
+        # Write invalid JSON
+        package_json_path = package_dir / "package.json"
+        package_json_path.write_text("{ invalid json content }")
+        
+        # Get package info
+        info = install_dynamic_plugins.get_local_package_info(str(package_dir))
+        
+        # Should return error information
+        assert '_error' in info
+        assert 'JSONDecodeError' in info['_error'] or 'Expecting' in info['_error']
+    
+    def test_package_info_detects_changes(self, tmp_path):
+        """Test that package info changes when files are modified."""
+        package_dir = tmp_path / "test-package"
+        package_dir.mkdir()
+        
+        # Create initial package.json
+        package_json_path = package_dir / "package.json"
+        package_json_v1 = {"name": "test", "version": "1.0.0"}
+        package_json_path.write_text(json.dumps(package_json_v1))
+        
+        # Get initial info
+        info1 = install_dynamic_plugins.get_local_package_info(str(package_dir))
+        initial_mtime = info1['_package_json_mtime']
+        
+        # Wait a bit and modify the file
+        import time
+        time.sleep(0.01)
+        
+        package_json_v2 = {"name": "test", "version": "2.0.0"}
+        package_json_path.write_text(json.dumps(package_json_v2))
+        
+        # Get updated info
+        info2 = install_dynamic_plugins.get_local_package_info(str(package_dir))
+        
+        # Verify that content and mtime changed
+        assert info2['_package_json'] != info1['_package_json']
+        assert info2['_package_json']['version'] == "2.0.0"
+        assert info2['_package_json_mtime'] > initial_mtime
+    
+    def test_lock_file_mtime_detection(self, tmp_path):
+        """Test that lock file changes are detected via mtime."""
+        package_dir = tmp_path / "test-package"
+        package_dir.mkdir()
+        
+        package_json_path = package_dir / "package.json"
+        package_json_path.write_text(json.dumps({"name": "test", "version": "1.0.0"}))
+        
+        # Get info without lock file
+        info1 = install_dynamic_plugins.get_local_package_info(str(package_dir))
+        assert '_package-lock.json_mtime' not in info1
+        
+        # Add lock file
+        import time
+        time.sleep(0.01)
+        
+        package_lock_path = package_dir / "package-lock.json"
+        package_lock_path.write_text(json.dumps({"lockfileVersion": 2}))
+        
+        # Get info with lock file
+        info2 = install_dynamic_plugins.get_local_package_info(str(package_dir))
+        assert '_package-lock.json_mtime' in info2
+        
+        # Hashes should be different due to lock file addition
+        hash1 = hashlib.sha256(json.dumps(info1, sort_keys=True).encode('utf-8')).hexdigest()
+        hash2 = hashlib.sha256(json.dumps(info2, sort_keys=True).encode('utf-8')).hexdigest()
+        assert hash1 != hash2
 
 if __name__ == '__main__':
     pytest.main([__file__, '-v'])
