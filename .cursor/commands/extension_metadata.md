@@ -342,7 +342,7 @@ ls -1 catalog-entities/marketplace/plugins/*.yaml | xargs -I {} basename {} .yam
 
 ```bash
 # Find all rhdh namespace plugins
-yq eval '.metadata.namespace' catalog-entities/marketplace/plugins/*.yaml | grep -l "rhdh"
+for f in catalog-entities/marketplace/plugins/*.yaml; do yq eval -e '.metadata.namespace == "rhdh"' "$f" >/dev/null && echo "$f"; done
 
 # Find plugins by support level
 yq eval 'select(.spec.support == "tech-preview") | .metadata.name' catalog-entities/marketplace/plugins/*.yaml
