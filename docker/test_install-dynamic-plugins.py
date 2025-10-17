@@ -1006,7 +1006,7 @@ class TestNpmPluginInstallerIntegration:
     
     @pytest.mark.integration
     def test_path_traversal_protection_real_tarball(self, tmp_path):
-        """Test that extraction rejects tarballs with path traversal."""
+        """Test that extraction rejects tarballs with without package/ prefix."""
         import tarfile
         import io
         
@@ -1014,7 +1014,7 @@ class TestNpmPluginInstallerIntegration:
         tarball_path = tmp_path / "malicious.tgz"
         with tarfile.open(tarball_path, "w:gz") as tar:
             # Create a TarInfo with malicious path
-            info = tarfile.TarInfo(name="../../../etc/passwd")
+            info = tarfile.TarInfo(name="test")
             info.size = 10
             tar.addfile(info, io.BytesIO(b"malicious!"))
         
@@ -1024,6 +1024,120 @@ class TestNpmPluginInstallerIntegration:
             installer._extract_npm_package(str(tarball_path))
         
         assert 'does not start with' in str(exc_info.value)
+    
+    @pytest.mark.integration
+    def test_symlink_with_invalid_linkpath_prefix(self, tmp_path):
+        """Test that extraction rejects symlinks with linkpath not starting with 'package/'."""
+        import tarfile
+        import io
+        
+        # Create tarball with a symlink that has invalid linkpath prefix
+        tarball_path = tmp_path / "malicious.tgz"
+        with tarfile.open(tarball_path, "w:gz") as tar:
+            # First add a regular file
+            info = tarfile.TarInfo(name="package/index.js")
+            info.size = 10
+            tar.addfile(info, io.BytesIO(b"console.log"))
+            
+            # Add a symlink with linkpath not starting with 'package/'
+            link_info = tarfile.TarInfo(name="package/malicious-link")
+            link_info.type = tarfile.SYMTYPE
+            link_info.linkname = "../../../etc/passwd"  # Does not start with 'package/'
+            tar.addfile(link_info)
+        
+        installer = install_dynamic_plugins.NpmPluginInstaller(str(tmp_path))
+        
+        with pytest.raises(InstallException) as exc_info:
+            installer._extract_npm_package(str(tarball_path))
+        
+        assert 'contains a link outside of the archive' in str(exc_info.value)
+        assert 'malicious-link' in str(exc_info.value)
+    
+    @pytest.mark.integration
+    def test_symlink_resolving_outside_directory(self, tmp_path):
+        """Test that extraction rejects symlinks that resolve outside the target directory."""
+        import tarfile
+        import io
+        
+        # Create tarball with a symlink that resolves outside the extraction directory
+        tarball_path = tmp_path / "malicious.tgz"
+        with tarfile.open(tarball_path, "w:gz") as tar:
+            # Add a regular file
+            info = tarfile.TarInfo(name="package/index.js")
+            info.size = 10
+            tar.addfile(info, io.BytesIO(b"console.log"))
+            
+            # Add a symlink with proper prefix but resolves outside
+            # Using relative path traversal that starts with package/ but goes outside
+            link_info = tarfile.TarInfo(name="package/subdir/malicious-link")
+            link_info.type = tarfile.SYMTYPE
+            link_info.linkname = "package/../../../etc/passwd"  # Starts with 'package/' but resolves outside
+            tar.addfile(link_info)
+        
+        installer = install_dynamic_plugins.NpmPluginInstaller(str(tmp_path))
+        
+        with pytest.raises(InstallException) as exc_info:
+            installer._extract_npm_package(str(tarball_path))
+        
+        assert 'contains a link outside of the archive' in str(exc_info.value)
+    
+    @pytest.mark.integration
+    def test_hardlink_resolving_outside_directory(self, tmp_path):
+        """Test that extraction rejects hardlinks that resolve outside the target directory."""
+        import tarfile
+        import io
+        
+        # Create tarball with a hardlink that resolves outside the extraction directory
+        tarball_path = tmp_path / "malicious.tgz"
+        with tarfile.open(tarball_path, "w:gz") as tar:
+            # Add a regular file
+            info = tarfile.TarInfo(name="package/index.js")
+            info.size = 10
+            tar.addfile(info, io.BytesIO(b"console.log"))
+            
+            # Add a hardlink with proper prefix but resolves outside
+            link_info = tarfile.TarInfo(name="package/subdir/malicious-hardlink")
+            link_info.type = tarfile.LNKTYPE
+            link_info.linkname = "package/../../../etc/passwd"  # Starts with 'package/' but resolves outside
+            tar.addfile(link_info)
+        
+        installer = install_dynamic_plugins.NpmPluginInstaller(str(tmp_path))
+        
+        with pytest.raises(InstallException) as exc_info:
+            installer._extract_npm_package(str(tarball_path))
+        
+        assert 'contains a link outside of the archive' in str(exc_info.value)
+    
+    @pytest.mark.integration
+    def test_valid_symlink_extraction(self, tmp_path):
+        """Test that valid symlinks within the package are extracted correctly."""
+        import tarfile
+        import io
+        
+        # Create tarball with valid internal symlinks
+        tarball_path = tmp_path / "valid-package.tgz"
+        with tarfile.open(tarball_path, "w:gz") as tar:
+            # Add a regular file
+            info = tarfile.TarInfo(name="package/lib/helper.js")
+            content = b"module.exports = { helper: () => {} };"
+            info.size = len(content)
+            tar.addfile(info, io.BytesIO(content))
+            
+            # Add a valid symlink pointing to the file within package/
+            link_info = tarfile.TarInfo(name="package/index.js")
+            link_info.type = tarfile.SYMTYPE
+            link_info.linkname = "package/lib/helper.js"
+            tar.addfile(link_info)
+        
+        installer = install_dynamic_plugins.NpmPluginInstaller(str(tmp_path))
+        plugin_path = installer._extract_npm_package(str(tarball_path))
+        
+        # Verify extraction succeeded
+        extracted_dir = tmp_path / plugin_path
+        assert extracted_dir.exists()
+        assert (extracted_dir / "lib" / "helper.js").exists()
+        assert (extracted_dir / "index.js").exists()
+        assert (extracted_dir / "index.js").is_symlink()
     
     @pytest.mark.integration
     @pytest.mark.slow
