@@ -62,9 +62,6 @@ spec:
      - **Rich Markdown Chat Interface**: Beautiful, responsive chat UI with full markdown support for formatted responses
      - **Configurable Quick Prompts**: Configurable QuickStart prompts for common use cases - get started with pre-built automation tasks
 
-  dependencies:
-    - backstage-community-plugin-mcp-chat-backend
-
   packages:
     - backstage-community-plugin-mcp-chat
     - backstage-community-plugin-mcp-chat-backend
