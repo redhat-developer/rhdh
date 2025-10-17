@@ -78,7 +78,7 @@ If not provided, I'll interactively gather:
 
 ```bash
 npx --yes @red-hat-developer-hub/marketplace-cli generate \
-  --namespace rhdh \
+  --namespace {namespace} \
   -p dynamic-plugins.default.yaml \
   -o catalog-entities/marketplace/packages
 ```
