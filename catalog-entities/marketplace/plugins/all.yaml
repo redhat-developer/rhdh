@@ -49,6 +49,7 @@ spec:
     - ./kubernetes-backend.yaml
     - ./ldap-catalog-integration.yaml
     - ./lighthouse.yaml
+    - ./mcp-chat.yaml
     - ./microsoft-graph-catalog-integration.yaml
     - ./nexus-repository-manager.yaml
     - ./notifications.yaml
