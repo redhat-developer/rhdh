@@ -84,7 +84,6 @@ export default defineConfig({
     },
     {
       name: "showcase-auth-providers",
-      dependencies: ["smoke-test"],
       testMatch: ["**/playwright/e2e/auth-providers/*.spec.ts"],
       testIgnore: [
         "**/playwright/e2e/auth-providers/github-happy-path.spec.ts", // temporarily disable
