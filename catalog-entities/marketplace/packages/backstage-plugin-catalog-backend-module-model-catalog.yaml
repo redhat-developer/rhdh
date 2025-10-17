@@ -17,8 +17,8 @@ metadata:
   tags: []
 spec:
   packageName: "@backstage/catalog-backend-module-model-catalog"
-  dynamicArtifact: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-catalog-backend-module-model-catalog:next__0.6.0!red-hat-developer-hub-backstage-plugin-catalog-backend-module-model-catalog
-  version: 0.6.0
+  dynamicArtifact: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-catalog-backend-module-model-catalog:bs_1.42.5__0.7.0!red-hat-developer-hub-backstage-plugin-catalog-backend-module-model-catalog
+  version: 0.7.0
   backstage:
     role: backend-plugin
     supportedVersions: 1.42.5
