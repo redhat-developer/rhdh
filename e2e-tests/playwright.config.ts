@@ -57,6 +57,7 @@ export default defineConfig({
     },
     {
       name: "showcase",
+      dependencies: ["smoke-test"],
       testIgnore: [
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
@@ -71,6 +72,7 @@ export default defineConfig({
     },
     {
       name: "showcase-rbac",
+      dependencies: ["smoke-test"],
       testMatch: [
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
@@ -123,6 +125,7 @@ export default defineConfig({
     },
     {
       name: "showcase-operator",
+      dependencies: ["smoke-test"],
       testIgnore: [
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
@@ -140,6 +143,7 @@ export default defineConfig({
     },
     {
       name: "showcase-operator-rbac",
+      dependencies: ["smoke-test"],
       testMatch: [
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
@@ -149,6 +153,7 @@ export default defineConfig({
     },
     {
       name: "showcase-runtime",
+      dependencies: ["smoke-test"],
       testMatch: [
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
         "**/playwright/e2e/verify-tls-config-health-check.spec.ts",
@@ -157,6 +162,7 @@ export default defineConfig({
 
     {
       name: "showcase-sanity-plugins",
+      dependencies: ["smoke-test"],
       testMatch: [
         "**/playwright/e2e/catalog-timestamp.spec.ts",
         "**/playwright/e2e/plugins/frontend/sidebar.spec.ts",
