@@ -42,14 +42,14 @@ spec:
                 Accept: 'application/json'
                 Content-Type: 'application/json'
                 X-Atlassian-Token: 'no-check'
-                # Required: (For cloud use 'Basic YourCreatedToken', for datacenter use 'Bearer YourJiraToken')
+                # Required: (For cloud use 'Basic email:tokenInBase64', for datacenter use 'Bearer YourJiraToken')
                 Authorization: ${JIRA_TOKEN}
     - title: Direct cloud configuration
       content:
         jira:
           product: cloud
           baseUrl: ${JIRA_URL}
-          # Required: Use directly your Jira token (No need for adding Basic)
+          # Required: Use prepared "email:tokenInBase64" string  (No need for adding Basic)
           token: ${JIRA_TOKEN}
     - title: Direct datacenter configuration
       content:
