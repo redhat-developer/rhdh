@@ -1,0 +1,68 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: mcp-chat
+  namespace: rhdh
+  title: MCP Chat
+  annotations:
+    extensions.backstage.io/pre-installed: 'false'
+  links:
+    - title: Plugin Overview (README)
+      url: https://github.com/backstage/community-plugins/blob/main/workspaces/mcp-chat/README.md
+    - title: Source Code
+      url: https://github.com/backstage/community-plugins/tree/main/workspaces/mcp-chat
+  tags:
+    - ai
+    - chat
+    - automation
+    - mcp
+    - developer-tools
+  description: |
+    AI-powered chat interface with Model Context Protocol integration for intelligent automation and tool orchestration
+spec:
+  author: Backstage Community
+  support:
+    provider: Backstage Community
+    level: community
+  lifecycle: active
+  publisher: Backstage Community
+
+  categories:
+    - AI
+    - Developer Tools
+
+  description: |
+    The MCP Chat plugin brings conversational AI capabilities directly into your Backstage environment. It leverages the Model Context Protocol (MCP)
+    to connect with various AI providers and external tools, enabling developers to interact with their infrastructure, catalogs, and external services
+    through natural language.
+
+    ## Features
+
+    - **Multi-Provider AI Support**: Works with OpenAI, Claude, Gemini, and Ollama - choose the AI provider that best fits your needs
+    - **Multi-Server Support**: Connect multiple MCP servers simultaneously (STDIO, SSE, Streamable HTTP) for diverse tool integration
+    - **Tool Management**: Browse and dynamically enable/disable tools from connected MCP servers through an intuitive interface
+    - **Rich Chat Interface**: Beautiful, responsive chat UI with full markdown support for formatted responses
+    - **Quick Setup**: Configurable QuickStart prompts for common use cases - get started with pre-built automation tasks
+
+    ## Supported AI Providers
+
+    The following AI providers and models have been thoroughly tested:
+
+    - **OpenAI** (`gpt-4o-mini`) - Fully tested, recommended for production use
+    - **Gemini** (`gemini-2.5-flash`) - Fully tested with excellent tool calling performance, free tier available
+    - **Ollama** (`llama3.1:8b`) - Tested, works well locally (larger models like `llama3.1:30b` recommended for better results)
+    - **Claude** - Supported with tool calling capabilities
+
+     ## Highlights
+
+     - **Multi-Provider AI Support**: Works with OpenAI, Claude, Gemini, and Ollama - choose the AI provider that best fits your needs
+     - **Model Context Protocol (MCP) Integration**: Connect with various AI providers and external tools, enabling developers to interact with their infrastructure, catalogs, and external services through natural language.
+     - **Dynamic Tool Discovery and Management**: Browse and dynamically enable/disable tools from connected MCP servers through an intuitive interface
+     - **Rich Markdown Chat Interface**: Beautiful, responsive chat UI with full markdown support for formatted responses
+     - **Configurable Quick Prompts**: Configurable QuickStart prompts for common use cases - get started with pre-built automation tasks
+
+  packages:
+    - backstage-community-plugin-mcp-chat
+    - backstage-community-plugin-mcp-chat-backend
+
