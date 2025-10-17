@@ -346,3 +346,6 @@ spec:
     IEMtMy44NDgxMjQ0NCAtMC40NTY1NjMwNiAtMi4xOTg1MDE1NCAwLjAwMzAwMTA3IDAgMCBaICIg
     ZmlsbD0iIzAwMDAwMCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTcyLjQzNzUsOTQuODY3MTg3NSki
     Lz4KPC9zdmc+Cg==
+  packages:
+    - red-hat-developer-hub-backstage-plugin-optimizations
+    - red-hat-developer-hub-backstage-plugin-optimizations-backend
