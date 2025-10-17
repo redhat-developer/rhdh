@@ -14,7 +14,7 @@ import { OverviewTabContent } from './OverviewTabContent';
  */
 export const defaultTabs: Record<
   string,
-  { title: string; titleKey?: string; mountPoint: string; priority?: number }
+  Omit<DynamicEntityTabProps, 'if' | 'children' | 'path'>
 > = {
   '/': {
     title: 'Overview',
