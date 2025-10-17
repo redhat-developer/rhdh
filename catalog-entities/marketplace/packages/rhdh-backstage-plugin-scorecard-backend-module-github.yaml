@@ -48,3 +48,21 @@ spec:
           github:
             - host: ${GITHUB_HOST}
               token: ${GITHUB_TOKEN}
+    - title: Threshold configuration (optional)
+      content:
+        integrations:
+          github:
+            - host: ${GITHUB_HOST}
+              token: ${GITHUB_TOKEN}
+        scorecard:
+          plugins:
+            github:
+              open_prs:
+                thresholds:
+                  rules:
+                    - key: success
+                      expression: '<50'
+                    - key: warning
+                      expression: '50-100'
+                    - key: error
+                      expression: '>100'
