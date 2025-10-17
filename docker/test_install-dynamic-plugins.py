@@ -646,6 +646,409 @@ class TestOciPackageMergerMergePlugin:
         assert 'must be a string' in str(exc_info.value)
 
 
+class TestPluginInstallerShouldSkipInstallation:
+    """Test cases for PluginInstaller.should_skip_installation() method."""
+    
+    def test_plugin_not_installed_returns_false(self, tmp_path):
+        """Test that plugin not in hash dict returns False."""
+        plugin = {'hash': 'abc123', 'package': 'test-pkg'}
+        plugin_path_by_hash = {}  # Empty - nothing installed
+        installer = install_dynamic_plugins.NpmPluginInstaller(str(tmp_path))
+        
+        should_skip, reason = installer.should_skip_installation(plugin, plugin_path_by_hash)
+        
+        assert should_skip is False
+        assert reason == "not_installed"
+    
+    def test_plugin_installed_if_not_present_skips(self, tmp_path):
+        """Test that installed plugin with IF_NOT_PRESENT policy skips."""
+        plugin = {
+            'hash': 'abc123',
+            'package': 'test-pkg',
+            'pullPolicy': 'IfNotPresent'
+        }
+        plugin_path_by_hash = {'abc123': 'test-pkg-1.0.0'}
+        installer = install_dynamic_plugins.NpmPluginInstaller(str(tmp_path))
+        
+        should_skip, reason = installer.should_skip_installation(plugin, plugin_path_by_hash)
+        
+        assert should_skip is True
+        assert reason == "already_installed"
+    
+    def test_plugin_installed_always_policy_forces_download(self, tmp_path):
+        """Test that ALWAYS policy forces download."""
+        plugin = {
+            'hash': 'abc123',
+            'package': 'test-pkg',
+            'pullPolicy': 'Always'
+        }
+        plugin_path_by_hash = {'abc123': 'test-pkg-1.0.0'}
+        installer = install_dynamic_plugins.NpmPluginInstaller(str(tmp_path))
+        
+        should_skip, reason = installer.should_skip_installation(plugin, plugin_path_by_hash)
+        
+        assert should_skip is False
+        assert reason == "force_download"
+    
+    def test_plugin_installed_force_download_flag(self, tmp_path):
+        """Test that forceDownload flag forces download."""
+        plugin = {
+            'hash': 'abc123',
+            'package': 'test-pkg',
+            'forceDownload': True
+        }
+        plugin_path_by_hash = {'abc123': 'test-pkg-1.0.0'}
+        installer = install_dynamic_plugins.NpmPluginInstaller(str(tmp_path))
+        
+        should_skip, reason = installer.should_skip_installation(plugin, plugin_path_by_hash)
+        
+        assert should_skip is False
+        assert reason == "force_download"
+    
+    def test_default_pull_policy_if_not_present(self, tmp_path):
+        """Test that default pull policy is IF_NOT_PRESENT."""
+        plugin = {'hash': 'abc123', 'package': 'test-pkg'}  # No pullPolicy
+        plugin_path_by_hash = {'abc123': 'test-pkg-1.0.0'}
+        installer = install_dynamic_plugins.NpmPluginInstaller(str(tmp_path))
+        
+        should_skip, reason = installer.should_skip_installation(plugin, plugin_path_by_hash)
+        
+        assert should_skip is True
+        assert reason == "already_installed"
+
+
+class TestOciPluginInstallerShouldSkipInstallation:
+    """Test cases for OciPluginInstaller.should_skip_installation() method."""
+    
+    def test_plugin_not_installed_returns_false(self, tmp_path, mocker):
+        """Test that plugin not in hash dict returns False."""
+        plugin = {
+            'hash': 'abc123',
+            'package': 'oci://registry.io/plugin:latest!path'
+        }
+        plugin_path_by_hash = {}
+        
+        # Mock OciDownloader
+        mock_downloader = mocker.MagicMock()
+        installer = install_dynamic_plugins.OciPluginInstaller(str(tmp_path))
+        installer.downloader = mock_downloader
+        
+        should_skip, reason = installer.should_skip_installation(plugin, plugin_path_by_hash)
+        
+        assert should_skip is False
+        assert reason == "not_installed"
+    
+    def test_always_policy_unchanged_digest_skips(self, tmp_path, mocker):
+        """Test that ALWAYS policy with unchanged digest skips download."""
+        plugin_path = 'plugin-dir'
+        plugin = {
+            'hash': 'abc123',
+            'package': 'oci://registry.io/plugin:v1.0!path',
+            'pullPolicy': 'Always'
+        }
+        plugin_path_by_hash = {'abc123': plugin_path}
+        
+        # Create digest file with matching digest
+        digest_file = tmp_path / plugin_path / 'dynamic-plugin-image.hash'
+        digest_file.parent.mkdir(parents=True)
+        digest_file.write_text('matching_digest')
+        
+        # Mock downloader to return same digest
+        mock_downloader = mocker.MagicMock()
+        mock_downloader.digest.return_value = 'matching_digest'
+        
+        installer = install_dynamic_plugins.OciPluginInstaller(str(tmp_path))
+        installer.downloader = mock_downloader
+        
+        should_skip, reason = installer.should_skip_installation(plugin, plugin_path_by_hash)
+        
+        assert should_skip is True
+        assert reason == "digest_unchanged"
+    
+    def test_always_policy_changed_digest_forces_download(self, tmp_path, mocker):
+        """Test that ALWAYS policy with changed digest forces download."""
+        plugin_path = 'plugin-dir'
+        plugin = {
+            'hash': 'abc123',
+            'package': 'oci://registry.io/plugin:v1.0!path',
+            'pullPolicy': 'Always'
+        }
+        plugin_path_by_hash = {'abc123': plugin_path}
+        
+        # Create digest file with old digest
+        digest_file = tmp_path / plugin_path / 'dynamic-plugin-image.hash'
+        digest_file.parent.mkdir(parents=True)
+        digest_file.write_text('old_digest')
+        
+        # Mock downloader to return different digest
+        mock_downloader = mocker.MagicMock()
+        mock_downloader.digest.return_value = 'new_digest'
+        
+        installer = install_dynamic_plugins.OciPluginInstaller(str(tmp_path))
+        installer.downloader = mock_downloader
+        
+        should_skip, reason = installer.should_skip_installation(plugin, plugin_path_by_hash)
+        
+        assert should_skip is False
+        assert reason == "force_download"
+    def test_if_not_present_policy_skips(self, tmp_path, mocker):
+        """Test that IF_NOT_PRESENT policy skips."""
+        plugin_path = 'plugin-dir'
+        plugin = {
+            'hash': 'abc123',
+            'package': 'oci://registry.io/plugin:v1.0!path',
+            'pullPolicy': 'IfNotPresent'
+        }
+        plugin_path_by_hash = {'abc123': plugin_path}
+        
+        installer = install_dynamic_plugins.OciPluginInstaller(str(tmp_path))
+        should_skip, reason = installer.should_skip_installation(plugin, plugin_path_by_hash)
+        
+        assert should_skip is True
+        assert reason == "already_installed"
+
+class TestNpmPluginInstallerInstall:
+    """Test cases for NpmPluginInstaller.install() method and verify_package_integrity() (mocked)."""
+    
+    def test_missing_integrity_remote_package_raises_exception(self, tmp_path):
+        """Test that missing integrity for remote package raises exception."""
+        plugin = {'package': 'test-package@1.0.0'}  # No integrity
+        plugin_path_by_hash = {}
+        
+        installer = install_dynamic_plugins.NpmPluginInstaller(str(tmp_path), skip_integrity_check=False)
+        
+        with pytest.raises(InstallException) as exc_info:
+            installer.install(plugin, plugin_path_by_hash)
+        
+        assert 'No integrity hash provided' in str(exc_info.value)
+    
+    def test_invalid_integrity_hash_type_raises_exception(self, tmp_path, mocker):
+        """Test that invalid integrity hash type raises exception."""
+        plugin = {'package': 'test-package@1.0.0', 'integrity': 1234567890}
+
+        with pytest.raises(InstallException) as exc_info:
+            install_dynamic_plugins.verify_package_integrity(plugin, "dummy-archive.tgz", str(tmp_path))
+        assert 'must be a string' in str(exc_info.value)
+
+    def test_invalid_integrity_hash_format_raises_exception(self, tmp_path, mocker):
+        """Test that invalid integrity hash (not of form <algorithm>-<hash>) raises exception."""
+        plugin = {'package': 'test-package@1.0.0', 'integrity': 'invalidhash'}
+
+        with pytest.raises(InstallException) as exc_info:
+            install_dynamic_plugins.verify_package_integrity(plugin, "dummy-archive.tgz", str(tmp_path))
+        assert 'must be a string of the form' in str(exc_info.value)
+
+    def test_invalid_integrity_algorithm_raises_exception(self, tmp_path, mocker):
+        """Test that unrecognized integrity algorithm raises exception."""
+        plugin = {'package': 'test-package@1.0.0', 'integrity': 'invalidalgo-1234567890abcdef'}
+        
+        with pytest.raises(InstallException) as exc_info:
+            install_dynamic_plugins.verify_package_integrity(plugin, "dummy-archive.tgz", str(tmp_path))
+        assert 'is not supported' in str(exc_info.value)
+
+    def test_invalid_integrity_hash_base64_encoding_raises_exception(self, tmp_path, mocker):
+        """Test invalid base64 encoding in hash triggers exception."""
+        plugin = {'package': 'test-package@1.0.0', 'integrity': 'sha256-not@base64!'}
+        
+        with pytest.raises(InstallException) as exc_info:
+            install_dynamic_plugins.verify_package_integrity(plugin, "dummy-archive.tgz", str(tmp_path))
+        assert 'is not a valid base64 encoding' in str(exc_info.value)
+
+    def test_integrity_hash_mismatch_raises_exception(self, tmp_path, mocker):
+        """Test hash verification fails when computed hash does not match."""
+        # Valid algorithm and fake base64, but simulated mismatch
+        import base64
+        plugin = {'package': 'test-package@1.0.0', 'integrity': 'sha256-' + base64.b64encode(b'wronghash').decode()}
+
+        with pytest.raises(InstallException) as exc_info:
+            install_dynamic_plugins.verify_package_integrity(plugin, "dummy-archive.tgz", str(tmp_path))
+        assert 'does not match the provided integrity hash' in str(exc_info.value)
+    def test_skip_integrity_check_flag_works(self, tmp_path, mocker):
+        """Test that skip_integrity_check flag bypasses integrity check."""
+        plugin = {'package': 'test-package@1.0.0'}  # No integrity
+        plugin_path_by_hash = {}
+        
+        # Mock npm pack
+        mock_result = mocker.MagicMock()
+        mock_result.returncode = 0
+        mock_result.stdout = b'test-package-1.0.0.tgz'
+        mocker.patch('subprocess.run', return_value=mock_result)
+        
+        # Mock tarball extraction
+        mock_tarfile = mocker.patch('tarfile.open')
+        mock_tar = mocker.MagicMock()
+        mock_tar.getmembers.return_value = []
+        mock_tarfile.return_value.__enter__.return_value = mock_tar
+        
+        # Mock file operations
+        mocker.patch('os.path.exists', return_value=False)
+        mocker.patch('os.mkdir')
+        mocker.patch('os.remove')
+        
+        installer = install_dynamic_plugins.NpmPluginInstaller(str(tmp_path), skip_integrity_check=True)
+        plugin_path = installer.install(plugin, plugin_path_by_hash)
+        
+        assert plugin_path == 'test-package-1.0.0'
+
+@pytest.mark.integration
+class TestNpmPluginInstallerIntegration:
+    """Integration tests with real file operations."""
+    
+    @pytest.mark.integration
+    def test_verify_package_integrity_with_real_tarball(self, tmp_path):
+        """Test integrity verification with actual openssl commands."""
+        import tarfile
+        import subprocess
+        import shutil
+        
+        # Skip if openssl not available
+        if not shutil.which('openssl'):
+            pytest.skip("openssl not available")
+        
+        # Create a real test tarball
+        test_dir = tmp_path / "test-package"
+        test_dir.mkdir()
+        (test_dir / "index.js").write_text("console.log('test');")
+        
+        tarball_path = tmp_path / "test-package.tgz"
+        with tarfile.open(tarball_path, "w:gz") as tar:
+            tar.add(test_dir, arcname="package")
+        
+        # Calculate actual integrity hash using openssl
+        cat_process = subprocess.Popen(["cat", str(tarball_path)], stdout=subprocess.PIPE)
+        openssl_dgst = subprocess.Popen(
+            ["openssl", "dgst", "-sha256", "-binary"],
+            stdin=cat_process.stdout,
+            stdout=subprocess.PIPE
+        )
+        openssl_b64 = subprocess.Popen(
+            ["openssl", "base64", "-A"],
+            stdin=openssl_dgst.stdout,
+            stdout=subprocess.PIPE
+        )
+        integrity_hash, _ = openssl_b64.communicate()
+        integrity_hash = integrity_hash.decode('utf-8').strip()
+        
+        # Create plugin with real integrity
+        plugin = {
+            'package': 'test-package',
+            'integrity': f'sha256-{integrity_hash}'
+        }
+        
+        # Test verification succeeds with correct hash
+        install_dynamic_plugins.verify_package_integrity(plugin, str(tarball_path), str(tmp_path))
+        
+        # Test verification fails with wrong hash (valid base64 but wrong hash)
+        plugin_wrong = {
+            'package': 'test-package',
+            'integrity': 'sha256-YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXowMTIzNDU2'
+        }
+        
+        with pytest.raises(InstallException) as exc_info:
+            install_dynamic_plugins.verify_package_integrity(plugin_wrong, str(tarball_path), str(tmp_path))
+        
+        assert 'does not match' in str(exc_info.value)
+    
+    @pytest.mark.integration
+    def test_extract_npm_package_with_real_tarball(self, tmp_path):
+        """Test tarball extraction with real tar file."""
+        import tarfile
+        
+        # Create a realistic NPM package structure
+        package_dir = tmp_path / "source" / "package"
+        package_dir.mkdir(parents=True)
+        (package_dir / "package.json").write_text('{"name": "test", "version": "1.0.0"}')
+        (package_dir / "index.js").write_text("module.exports = {};")
+        (package_dir / "lib").mkdir()
+        (package_dir / "lib" / "helper.js").write_text("exports.helper = () => {};")
+        
+        # Create tarball following NPM format (with 'package/' prefix)
+        tarball_path = tmp_path / "test-package-1.0.0.tgz"
+        with tarfile.open(tarball_path, "w:gz") as tar:
+            tar.add(package_dir, arcname="package")
+        
+        # Test extraction
+        installer = install_dynamic_plugins.NpmPluginInstaller(str(tmp_path))
+        plugin_path = installer._extract_npm_package(str(tarball_path))
+        
+        # Verify extracted files
+        extracted_dir = tmp_path / "test-package-1.0.0"
+        assert extracted_dir.exists()
+        assert (extracted_dir / "package.json").exists()
+        assert (extracted_dir / "index.js").exists()
+        assert (extracted_dir / "lib" / "helper.js").exists()
+        
+        # Verify tarball was removed
+        assert not tarball_path.exists()
+    
+    @pytest.mark.integration
+    def test_zip_bomb_protection_real_tarball(self, tmp_path):
+        """Test that extraction rejects tarballs with oversized files."""
+        import tarfile
+        
+        # Create a tarball with a file exceeding MAX_ENTRY_SIZE
+        large_content = b"x" * 25_000_000  # 25MB (exceeds default 20MB)
+        
+        package_dir = tmp_path / "source" / "package"
+        package_dir.mkdir(parents=True)
+        (package_dir / "huge-file.bin").write_bytes(large_content)
+        
+        tarball_path = tmp_path / "malicious.tgz"
+        with tarfile.open(tarball_path, "w:gz") as tar:
+            tar.add(package_dir / "huge-file.bin", arcname="package/huge-file.bin")
+        
+        installer = install_dynamic_plugins.NpmPluginInstaller(str(tmp_path))
+        
+        with pytest.raises(InstallException) as exc_info:
+            installer._extract_npm_package(str(tarball_path))
+        
+        assert 'Zip bomb' in str(exc_info.value)
+    
+    @pytest.mark.integration
+    def test_path_traversal_protection_real_tarball(self, tmp_path):
+        """Test that extraction rejects tarballs with path traversal."""
+        import tarfile
+        import io
+        
+        # Create tarball with path traversal attempt
+        tarball_path = tmp_path / "malicious.tgz"
+        with tarfile.open(tarball_path, "w:gz") as tar:
+            # Create a TarInfo with malicious path
+            info = tarfile.TarInfo(name="../../../etc/passwd")
+            info.size = 10
+            tar.addfile(info, io.BytesIO(b"malicious!"))
+        
+        installer = install_dynamic_plugins.NpmPluginInstaller(str(tmp_path))
+        
+        with pytest.raises(InstallException) as exc_info:
+            installer._extract_npm_package(str(tarball_path))
+        
+        assert 'does not start with' in str(exc_info.value)
+    
+    @pytest.mark.integration
+    @pytest.mark.slow
+    def test_install_real_npm_package(self, tmp_path):
+        """Integration test with actual npm pack on a real package."""
+        import shutil
+        
+        # Only run if npm is available
+        if not shutil.which('npm'):
+            pytest.skip("npm not available")
+        
+        plugin = {
+            'package': 'semver@7.0.0',  # Small, stable package
+            'integrity': 'sha512-+GB6zVA9LWh6zovYQLALHwv5rb2PHGlJi3lfiqIHxR0uuwCgefcOJc59v9fv1w8GbStwxuuqqAjI9NMAOOgq1A=='
+        }
+        plugin_path_by_hash = {}
+        
+        installer = install_dynamic_plugins.NpmPluginInstaller(str(tmp_path), skip_integrity_check=False)
+        plugin_path = installer.install(plugin, plugin_path_by_hash)
+        
+        # Verify plugin was installed
+        installed_dir = tmp_path / plugin_path
+        assert installed_dir.exists()
+        assert (installed_dir / "package.json").exists()
+
 if __name__ == '__main__':
     pytest.main([__file__, '-v'])
 
