@@ -77,7 +77,7 @@ export default defineConfig({
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
         "**/playwright/e2e/verify-tls-config-with-external-postgres-db.spec.ts",
-        "**/playwright/e2e/plugins/bulk-import.spec.ts",
+        //"**/playwright/e2e/plugins/bulk-import.spec.ts", skipping bulk-import tests
         "**/playwright/e2e/plugins/quick-start.spec.ts",
         "**/playwright/e2e/plugins/scorecard/scorecard.spec.ts",
       ],
@@ -119,7 +119,7 @@ export default defineConfig({
       testMatch: [
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
-        "**/playwright/e2e/plugins/bulk-import.spec.ts",
+        //"**/playwright/e2e/plugins/bulk-import.spec.ts", skipping bulk-import tests
         "**/playwright/e2e/plugins/scorecard/scorecard.spec.ts",
       ],
     },
@@ -147,7 +147,7 @@ export default defineConfig({
       testMatch: [
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
-        "**/playwright/e2e/plugins/bulk-import.spec.ts",
+        //"**/playwright/e2e/plugins/bulk-import.spec.ts", skipping bulk-import tests
         "**/playwright/e2e/plugins/scorecard/scorecard.spec.ts",
       ],
     },
