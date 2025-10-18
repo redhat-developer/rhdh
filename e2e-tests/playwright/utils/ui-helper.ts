@@ -2,7 +2,13 @@ import { expect, Locator, Page } from "@playwright/test";
 import { UI_HELPER_ELEMENTS } from "../support/page-objects/global-obj";
 import { SidebarTabs } from "./navbar";
 import { SEARCH_OBJECTS_COMPONENTS } from "../support/page-objects/page-obj";
+import {
+  getTranslations,
+  getCurrentLanguage,
+} from "../e2e/localization/locale";
 
+const t = getTranslations();
+const lang = getCurrentLanguage();
 export class UIhelper {
   private page: Page;
 
@@ -49,6 +55,13 @@ export class UIhelper {
       name: text,
     });
     await locator.check();
+  }
+
+  async uncheckCheckbox(text: string) {
+    const locator = this.page.getByRole("checkbox", {
+      name: text,
+    });
+    await locator.uncheck();
   }
 
   async clickButton(
@@ -234,7 +247,7 @@ export class UIhelper {
   async goToMyProfilePage() {
     await expect(this.page.locator("nav[id='global-header']")).toBeVisible();
     await this.openProfileDropdown();
-    await this.clickLink("My profile");
+    await this.clickLink(t["plugin.global-header"][lang]["profile.myProfile"]);
   }
 
   async verifyLink(
@@ -302,8 +315,12 @@ export class UIhelper {
     return await this.isElementVisible(locator, timeout);
   }
 
-  async verifyTextVisible(text: string, timeout = 10000): Promise<void> {
-    const locator = this.page.getByText(text);
+  async verifyTextVisible(
+    text: string,
+    exact = false,
+    timeout = 10000,
+  ): Promise<void> {
+    const locator = this.page.getByText(text, { exact });
     await expect(locator).toBeVisible({ timeout });
   }
 

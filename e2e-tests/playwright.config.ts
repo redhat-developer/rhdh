@@ -3,6 +3,15 @@ import { defineConfig, devices } from "@playwright/test";
 process.env.JOB_NAME = process.env.JOB_NAME || "";
 process.env.IS_OPENSHIFT = process.env.IS_OPENSHIFT || "";
 
+// Set LOCALE based on which project is being run
+const args = process.argv;
+
+if (args.some((arg) => arg.includes("showcase-localization-fr"))) {
+  process.env.LOCALE = "fr";
+} else if (!process.env.LOCALE) {
+  process.env.LOCALE = "en";
+}
+
 const k8sSpecificConfig = {
   use: {
     actionTimeout: 15 * 1000,
@@ -180,6 +189,20 @@ export default defineConfig({
       testMatch: [
         "**/playwright/e2e/home-page-customization.spec.ts",
         "**/playwright/e2e/plugins/quick-access-and-tech-radar.spec.ts",
+      ],
+    },
+    {
+      name: "showcase-localization-fr",
+      use: {
+        locale: "fr",
+      },
+      testMatch: [
+        "**/playwright/e2e/extensions.spec.ts",
+        "**/playwright/e2e/default-global-header.spec.ts",
+        "**/playwright/e2e/catalog-timestamp.spec.ts",
+        "**/playwright/e2e/custom-theme.spec.ts",
+        "**/playwright/e2e/plugins/frontend/sidebar.spec.ts",
+        "**/playwright/e2e/settings.spec.ts",
       ],
     },
   ],
