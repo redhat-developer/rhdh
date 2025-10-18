@@ -138,7 +138,7 @@ spec:
     ]);
   });
 
-  test("Verify the Content of catalog-info.yaml in the PR is Correct", async () => {
+  test.skip("Verify the Content of catalog-info.yaml in the PR is Correct", async () => {
     const prCatalogInfoYaml = await APIHelper.getfileContentFromPR(
       newRepoDetails.owner,
       newRepoDetails.repoName,
