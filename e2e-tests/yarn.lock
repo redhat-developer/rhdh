@@ -174,9 +174,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@azure/identity@npm:4.9.1":
-  version: 4.9.1
-  resolution: "@azure/identity@npm:4.9.1"
+"@azure/identity@npm:4.13.0":
+  version: 4.13.0
+  resolution: "@azure/identity@npm:4.13.0"
   dependencies:
     "@azure/abort-controller": ^2.0.0
     "@azure/core-auth": ^1.9.0
@@ -189,7 +189,7 @@ __metadata:
     "@azure/msal-node": ^3.5.0
     open: ^10.1.0
     tslib: ^2.2.0
-  checksum: 5b9bd08e6fee7f93203cd2fd1ecfdd1a114f1d8b204b8904dc34c0317a046d1740934b483de2cf73055cbb85fe1c4f7470625ac470932383e882d487e8356ccd
+  checksum: c07e609919bcbb84f6212076420ea4c1907cb09e9b8cbba5e69b99d2aae3cc8d883ceafd3edd3088c60fa887e810de5b23acd658df44501579b635a792ce673b
   languageName: node
   linkType: hard
 
@@ -2318,7 +2318,7 @@ __metadata:
   dependencies:
     "@axe-core/playwright": ^4.10.2
     "@azure/arm-network": 34.0.0
-    "@azure/identity": 4.9.1
+    "@azure/identity": 4.13.0
     "@eslint/js": ^9.34.0
     "@keycloak/keycloak-admin-client": 25.0.6
     "@kubernetes/client-node": 0.22.3
