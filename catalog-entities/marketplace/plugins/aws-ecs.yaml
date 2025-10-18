@@ -5,6 +5,8 @@ metadata:
   name: aws-ecs
   namespace: community
   title: Amazon ECS
+  annotations:
+    extensions.backstage.io/pre-installed: 'true' # Plugin is automatically listed in the catalog.
   description: |
     View and manage Amazon Elastic Container Service (ECS) resources directly from your Backstage catalog.
     Monitor ECS services, tasks, and deployments with real-time status information.
