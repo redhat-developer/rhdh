@@ -240,19 +240,9 @@ Example of JSON translation file, where the top-level key is the plugin translat
 }
 ```
 
-## Downloading Translation Keys
-
-Users can download the complete set of translation keys from the User Settings page to customize any language or add new translations.
-
-### How to Download Translation Keys
-
-1. Navigate to User Settings page
-2. In the User Settings page, look for the "Translations" section
-3. Click the download button to get a JSON file containing all available translation keys in English (the default language)
-
 ### Customizing Translations
 
-Once you have downloaded the translation keys JSON file (which contains English keys), you can:
+In a translation override JSON file, you can:
 
 1. **Modify Existing Translations**: Edit any English value in the JSON file to override the default translation
 2. **Add Other Languages**: Add new language sections (e.g., `"de"`, `"fr"`, `"es"`) to support additional locales by translating the English keys
@@ -260,7 +250,7 @@ Once you have downloaded the translation keys JSON file (which contains English 
 
 ### Example Translation Override File
 
-The downloaded JSON file will initially contain only English keys. You can then add other languages as needed:
+You can add other languages as needed:
 
 ```json
 {
