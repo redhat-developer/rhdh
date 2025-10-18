@@ -35,3 +35,7 @@ p, role:default/kubernetes_reader, kubernetes.clusters.read, read, allow
 g, user:default/rhdh-qe-5, role:default/catalog_reader
 g, user:default/rhdh-qe-6, role:default/catalog_reader
 p, role:default/catalog_reader, catalog.entity.read, read, allow
+
+g, user:default/rhdh-qe, role:default/extension
+p, role:default/extension, extension-plugin, read, allow
+p, role:default/extension, extension-plugin, create, allow
