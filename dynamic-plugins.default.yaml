@@ -1066,6 +1066,9 @@ plugins:
       dynamicPlugins:
         frontend:
           backstage-community.plugin-tekton:
+            translationResources:
+              - importName: tektonTranslations
+                ref: tektonTranslationRef
             mountPoints:
               - mountPoint: entity.page.ci/cards
                 importName: TektonCI
