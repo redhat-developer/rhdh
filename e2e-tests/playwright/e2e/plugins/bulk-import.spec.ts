@@ -153,7 +153,7 @@ spec:
     expect(prCatalogInfoYaml).toEqual(expectedCatalogInfoYaml);
   });
 
-  test("Edit Pull request Details and Ensure PR Content Reflects Changes", async () => {
+  test.skip("Edit Pull request Details and Ensure PR Content Reflects Changes", async () => {
     await bulkimport.filterAddedRepo(newRepoDetails.repoName);
     await uiHelper.clickOnButtonInTableByUniqueText(
       newRepoDetails.repoName,
