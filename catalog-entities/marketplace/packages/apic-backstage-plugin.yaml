@@ -15,11 +15,11 @@ metadata:
   tags: []
 spec:
   packageName: "apic-backstage"
-  dynamicArtifact: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/apic-backstage:bs_1.39.1__1.0.0!apic-backstage
+  dynamicArtifact: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/apic-backstage:bs_1.42.5__1.0.0!apic-backstage
   version: 1.0.0
   backstage:
     role: backend-plugin
-    supportedVersions: 1.39.1
+    supportedVersions: 1.42.5
   author: IBM
   support: production
   lifecycle: active
@@ -30,7 +30,7 @@ spec:
     - title: Plugin configuration
       content:
         ibm:
-          schedule: '* * * * *' 
+          schedule: '* * * * *'
           apic:
             - name: apic-instance-1
               url: ${APIC_API_URL}
@@ -38,7 +38,7 @@ spec:
               clientSecret: ${APIC_SECRET}
               username: ${PORG_USERNAME}
               password: ${PORG_PASSWORD}
-              identityProvider: 'default-idp-2' # Default Local User Registry   
+              identityProvider: 'default-idp-2' # Default Local User Registry
             - name: apic-instance-2
               url: ${APIC_API_URL}
               clientId: ${APIC_CLIENT_ID}

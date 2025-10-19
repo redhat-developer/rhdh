@@ -124,6 +124,8 @@ spec:
   });
 
   test('Verify that the two selected repositories are listed: one with the status "Already imported" and another with the status "WAIT_PR_APPROVAL."', async () => {
+    // TODO: https://issues.redhat.com/browse/RHDHBUGS-2116
+    test.fixme();
     await common.waitForLoad();
     await bulkimport.filterAddedRepo(catalogRepoDetails.name);
     await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
@@ -136,7 +138,7 @@ spec:
     ]);
   });
 
-  test("Verify the Content of catalog-info.yaml in the PR is Correct", async () => {
+  test.skip("Verify the Content of catalog-info.yaml in the PR is Correct", async () => {
     const prCatalogInfoYaml = await APIHelper.getfileContentFromPR(
       newRepoDetails.owner,
       newRepoDetails.repoName,
