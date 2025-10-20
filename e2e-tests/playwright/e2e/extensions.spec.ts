@@ -169,8 +169,9 @@ test.describe("Admin > Extensions", () => {
       await extensions.resetSupportTypeFilter("Generally available (GA)");
     });
 
-    // Skipping below test due to the issue: https://issues.redhat.com/browse/RHDHBUGS-2104
-    test.skip("Verify custom plugin badge in extensions", async ({ page }) => {
+    test("Verify custom plugin badge in extensions", async ({ page }) => {
+      // TODO: https://issues.redhat.com/browse/RHDHBUGS-2104
+      test.fixme();
       await extensions.selectDropdown("Support type");
       await extensions.toggleOption("Custom plugin");
       await page.keyboard.press(`Escape`);
@@ -301,7 +302,9 @@ test.describe("Admin > Extensions", () => {
     });
 
     //Following test is disabled for CI as plugin installation is disabled in CI
-    test.skip("Enable plugin from catalog extension page", async ({ page }) => {
+    test("Enable plugin from catalog extension page", async ({ page }) => {
+      // TODO: https://issues.redhat.com/browse/RHDHBUGS-2146
+      test.fixme();
       await uiHelper.clickTab("Catalog");
       await extensions.clickReadMoreByPluginTitle(
         "Adoption Insights for Red Hat Developer Hub",
@@ -368,6 +371,8 @@ test.describe("Admin > Extensions", () => {
     });
 
     test("Topology package sidebar for CI", async ({ page }) => {
+      // TODO: https://issues.redhat.com/browse/RHDHBUGS-2144
+      test.fixme();
       await page.getByRole("textbox", { name: "Search" }).click();
       await page.getByRole("textbox", { name: "Search" }).fill("Topology");
       await expect(
@@ -419,9 +424,11 @@ test.describe("Admin > Extensions", () => {
     });
 
     //Following test is disabled for CI as plugin installation is disabled in CI
-    test.skip("Edit Analytics provider segment package through side menu ", async ({
+    test("Edit Analytics provider segment package through side menu ", async ({
       page,
     }) => {
+      // TODO: https://issues.redhat.com/browse/RHDHBUGS-2146
+      test.fixme();
       await page.getByRole("textbox", { name: "Search" }).click();
       await page
         .getByRole("textbox", { name: "Search" })
@@ -464,9 +471,11 @@ test.describe("Admin > Extensions", () => {
     });
 
     //Following test is disabled for CI as plugin installation is disabled in CI
-    test.skip("Edit Analytics provider segment package through action cell in the installed package row ", async ({
+    test("Edit Analytics provider segment package through action cell in the installed package row ", async ({
       page,
     }) => {
+      // TODO: https://issues.redhat.com/browse/RHDHBUGS-2146
+      test.fixme();
       await page.getByRole("textbox", { name: "Search" }).click();
       await page
         .getByRole("textbox", { name: "Search" })
@@ -488,9 +497,11 @@ test.describe("Admin > Extensions", () => {
     });
 
     //Following test is disabled for CI as plugin installation is disabled in CI
-    test.skip("Plugin enable-disable toggle in action cell in the installed package row ", async ({
+    test("Plugin enable-disable toggle in action cell in the installed package row ", async ({
       page,
     }) => {
+      // TODO: https://issues.redhat.com/browse/RHDHBUGS-2146
+      test.fixme();
       await page.getByRole("textbox", { name: "Search" }).click();
       await page
         .getByRole("textbox", { name: "Search" })
