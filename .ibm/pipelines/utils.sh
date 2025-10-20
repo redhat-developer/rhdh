@@ -919,6 +919,7 @@ initiate_deployments() {
   cd "${DIR}"
   base_deployment
   rbac_deployment
+  sleep 2h
 }
 
 # OSD-GCP specific deployment functions that merge diff files and skip orchestrator workflows
@@ -1301,12 +1302,14 @@ deploy_orchestrator_workflows() {
     local pqsl_password_key="POSTGRES_PASSWORD"
     local pqsl_svc_name="postgress-external-db-primary"
     local patch_namespace="${NAME_SPACE_POSTGRES_DB}"
+    local release_name="${RELEASE_NAME_RBAC}"
   else
     local pqsl_secret_name="rhdh-postgresql-svcbind-postgres"
     local pqsl_user_key="username"
     local pqsl_password_key="password"
     local pqsl_svc_name="rhdh-postgresql"
     local patch_namespace="$namespace"
+    local release_name="${RELEASE_NAME}"
   fi
 
   oc apply -f "${WORKFLOW_MANIFESTS}"
@@ -1319,9 +1322,54 @@ deploy_orchestrator_workflows() {
     sleep 5
   done
 
+  echo "Updating user-onboarding secret with dynamic service URLs..."
+  # Update the user-onboarding secret with correct service URLs
+  local onboarding_server_url="http://user-onboarding-server.${namespace}:8080"
+
+  # Dynamically determine the backstage service (excluding psql)
+  local backstage_service
+  backstage_service=$(oc get svc -l app.kubernetes.io/name=developer-hub -n "$namespace" --no-headers=true | grep -v psql | awk '{print $1}' | head -1)
+  if [[ -z "$backstage_service" ]]; then
+    echo "Warning: No backstage service found, using fallback"
+    backstage_service="backstage-rhdh"
+  fi
+  local backstage_notifications_url="http://${backstage_service}.${namespace}:80"
+
+  # Get the notifications bearer token from rhdh-secrets
+  local notifications_bearer_token
+  notifications_bearer_token=$(oc get secret "$release_name"-auth -n "$namespace" -o json | jq '.data."backend-secret"' -r | base64 -d)
+  if [[ -z "$notifications_bearer_token" ]]; then
+    echo "Warning: No BACKEND_SECRET found in rhdh-secrets, using empty token"
+    notifications_bearer_token=""
+  fi
+
+  # Base64 encode the URLs and token
+  local onboarding_server_url_b64
+  onboarding_server_url_b64=$(echo -n "$onboarding_server_url" | base64 -w 0)
+  local backstage_notifications_url_b64
+  backstage_notifications_url_b64=$(echo -n "$backstage_notifications_url" | base64 -w 0)
+  local notifications_bearer_token_b64
+  notifications_bearer_token_b64=$(echo -n "$notifications_bearer_token" | base64 -w 0)
+
+  # Patch the secret
+  oc patch secret user-onboarding-creds -n "$namespace" --type merge -p "{
+    \"data\": {
+      \"ONBOARDING_SERVER_URL\": \"$onboarding_server_url_b64\",
+      \"BACKSTAGE_NOTIFICATIONS_URL\": \"$backstage_notifications_url_b64\",
+      \"NOTIFICATIONS_BEARER_TOKEN\": \"$notifications_bearer_token_b64\"
+    }
+  }"
+  echo "User-onboarding secret updated successfully!"
+
   for workflow in greeting user-onboarding; do
     oc -n "$namespace" patch sonataflow "$workflow" --type merge -p "{\"spec\": { \"persistence\": { \"postgresql\": { \"secretRef\": {\"name\": \"$pqsl_secret_name\",\"userKey\": \"$pqsl_user_key\",\"passwordKey\": \"$pqsl_password_key\"},\"serviceRef\": {\"name\": \"$pqsl_svc_name\",\"namespace\": \"$patch_namespace\"}}}}}"
   done
+
+  echo "Waiting for all workflow pods to be running..."
+  wait_for_deployment $namespace greeting 5
+  wait_for_deployment $namespace user-onboarding 5
+
+  echo "All workflow pods are now running!"
 }
 
 # Helper function to deploy workflows for orchestrator testing

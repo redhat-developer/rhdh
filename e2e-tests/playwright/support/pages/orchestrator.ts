@@ -218,4 +218,33 @@ export class Orchestrator {
   async resetWorkflow() {
     await this.page.getByRole("button", { name: "Reset" }).click();
   }
+
+  async selectUserOnboardingWorkflowItem() {
+    const workflowHeader = this.page.getByRole("heading", {
+      name: "Workflows",
+    });
+    await expect(workflowHeader).toBeVisible();
+    await expect(workflowHeader).toHaveText("Workflows");
+    await expect(Workflows.workflowsTable(this.page)).toBeVisible();
+    await this.page.getByRole("link", { name: "User Onboarding" }).click();
+  }
+
+  async runUserOnboardingWorkflow(
+    userId = "user:default/guest",
+    iterationNo = "10",
+    nameOfUser = "rhdh-orchestrator-test-1",
+    recipients = ["user:default/guest"],
+    status = "Completed",
+  ) {
+    const runButton = this.page.getByRole("button", { name: "Run" });
+    await expect(runButton).toBeVisible();
+    await runButton.click();
+    await this.page.locator("#root_userId").fill(userId);
+    await this.page.locator("#root_iterationNum").fill(iterationNo);
+    await this.page.locator("#root_username").fill(nameOfUser);
+    await this.page.locator("#root_recipients_0").fill(recipients[0]);
+
+    await this.page.getByRole("button", { name: "Next" }).click();
+    await this.page.getByRole("button", { name: "Run" }).click();
+  }
 }
