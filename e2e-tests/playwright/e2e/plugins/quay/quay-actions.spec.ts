@@ -5,6 +5,10 @@ import { UI_HELPER_ELEMENTS } from "../../../support/page-objects/global-obj";
 import { QuayClient } from "../../../utils/quay/quay-client";
 
 test.describe("Test Quay Actions plugin", () => {
+  // TODO: https://issues.redhat.com/browse/RHDHBUGS-2149
+  // Re-enable after quay back from read-only: https://status.redhat.com/incidents/24r8xgknfd4z
+  test.fixme();
+
   let common: Common;
   let uiHelper: UIhelper;
   let page: Page;

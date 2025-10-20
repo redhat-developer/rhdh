@@ -3,12 +3,19 @@ import { expect, request } from "@playwright/test";
 export class Analytics {
   async getLoadedDynamicPluginsList(authHeader: { [key: string]: string }) {
     const context = await request.newContext();
-    const loadedPluginsEndpoint = "/api/extensions/loaded-plugins";
-    const response = await context.get(loadedPluginsEndpoint, {
-      headers: authHeader,
+    const loadedPluginsEndpoint = "/api/dynamic-plugins-info/loaded-plugins";
+
+    let plugins;
+    await expect(async () => {
+      const response = await context.get(loadedPluginsEndpoint, {
+        headers: authHeader,
+      });
+      expect(response.status()).toBe(200);
+      plugins = await response.json();
+    }).toPass({
+      intervals: [1_000],
+      timeout: 10_000,
     });
-    expect(response.status()).toBe(200);
-    const plugins = await response.json();
     return plugins;
   }
 

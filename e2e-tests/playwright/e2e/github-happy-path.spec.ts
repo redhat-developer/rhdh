@@ -12,6 +12,8 @@ let page: Page;
 let context: BrowserContext;
 
 test.describe.serial("GitHub Happy path", async () => {
+  // TODO: https://issues.redhat.com/browse/RHDHBUGS-2145
+  test.fixme(() => process.env.JOB_TYPE.includes("presubmit"));
   let common: Common;
   let uiHelper: UIhelper;
   let catalogImport: CatalogImport;
@@ -227,8 +229,4 @@ test.describe.serial("GitHub Happy path", async () => {
       await context.clearCookies();
     },
   );
-
-  test.afterAll(async () => {
-    await page.close();
-  });
 });

@@ -156,4 +156,11 @@ export class Extensions {
 
     await this.resetSupportTypeFilter(supportType);
   }
+
+  async verifyKeyValueRowElements(rowTitle: string, rowValue: string) {
+    const rowLocator = this.page.locator(".v5-MuiTableRow-root");
+    await expect(rowLocator.filter({ hasText: rowTitle })).toContainText(
+      rowValue,
+    );
+  }
 }
