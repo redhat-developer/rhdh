@@ -75,21 +75,6 @@ global:
                 plural: "routes"
             serviceLocatorMethod:
               type: multiTenant
-      # Enable OCM plugins.
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-ocm-backend-dynamic
-        disabled: false
-        pluginConfig:
-          catalog:
-            providers:
-              ocm:
-                default:
-                  name: testCluster # Can be any arbitrary name supported by kubernetes
-                  url: ${OCM_CLUSTER_URL}
-                  serviceAccountToken: ${OCM_CLUSTER_TOKEN}
-                  skipTLSVerify: true
-                  owner: janus-authors
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-ocm
-        disabled: false
       # Enable Bulk import plugins.
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import-backend-dynamic
         disabled: false

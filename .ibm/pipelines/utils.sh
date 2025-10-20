@@ -336,7 +336,6 @@ apply_yaml_files() {
     "$dir/resources/service_account/service-account-rhdh.yaml"
     "$dir/resources/cluster_role_binding/cluster-role-binding-k8s.yaml"
     "$dir/resources/cluster_role/cluster-role-k8s.yaml"
-    "$dir/resources/cluster_role/cluster-role-ocm.yaml"
   )
 
   for file in "${files[@]}"; do
@@ -353,11 +352,7 @@ apply_yaml_files() {
 
   oc apply -f "$dir/resources/cluster_role/cluster-role-k8s.yaml" --namespace="${project}"
   oc apply -f "$dir/resources/cluster_role_binding/cluster-role-binding-k8s.yaml" --namespace="${project}"
-  oc apply -f "$dir/resources/cluster_role/cluster-role-ocm.yaml" --namespace="${project}"
-  oc apply -f "$dir/resources/cluster_role_binding/cluster-role-binding-ocm.yaml" --namespace="${project}"
 
-  OCM_CLUSTER_TOKEN=$(oc get secret rhdh-k8s-plugin-secret -n "${project}" -o=jsonpath='{.data.token}')
-  export OCM_CLUSTER_TOKEN
   envsubst < "${DIR}/auth/secrets-rhdh-secrets.yaml" | oc apply --namespace="${project}" -f -
 
   # Select the configuration file based on the namespace or job
@@ -594,38 +589,6 @@ uninstall_olm() {
   fi
 }
 
-# Installs the advanced-cluster-management OCP Operator
-install_acm_ocp_operator() {
-  oc apply -f "${DIR}/cluster/operators/acm/operator-group.yaml"
-  install_subscription advanced-cluster-management open-cluster-management release-2.14 advanced-cluster-management redhat-operators openshift-marketplace
-  wait_for_deployment "open-cluster-management" "multiclusterhub-operator"
-  wait_for_endpoint "multiclusterhub-operator-webhook" "open-cluster-management"
-  oc apply -f "${DIR}/cluster/operators/acm/multiclusterhub.yaml"
-  # wait until multiclusterhub is Running.
-  timeout 900 bash -c 'while true; do
-    CURRENT_PHASE=$(oc get multiclusterhub multiclusterhub -n open-cluster-management -o jsonpath="{.status.phase}")
-    echo "MulticlusterHub Current Status: $CURRENT_PHASE"
-    [[ "$CURRENT_PHASE" == "Running" ]] && echo "MulticlusterHub is now in Running phase." && break
-    sleep 10
-  done' || echo "Timed out after 15 minutes"
-}
-
-# TODO
-# Installs Open Cluster Management K8S Operator (alternative of advanced-cluster-management for K8S clusters)
-# TODO: Verify K8s compatibility and enable OCM tests if compatible
-install_ocm_k8s_operator() {
-  install_subscription my-cluster-manager operators stable cluster-manager operatorhubio-catalog olm
-  wait_for_deployment "operators" "cluster-manager"
-  wait_for_endpoint "multiclusterhub-operator-work-webhook" "open-cluster-management"
-  oc apply -f "${DIR}/cluster/operators/acm/multiclusterhub.yaml"
-  # wait until multiclusterhub is Running.
-  timeout 600 bash -c 'while true; do
-    CURRENT_PHASE=$(oc get multiclusterhub multiclusterhub -n open-cluster-management -o jsonpath="{.status.phase}")
-    echo "MulticlusterHub Current Status: $CURRENT_PHASE"
-    [[ "$CURRENT_PHASE" == "Running" ]] && echo "MulticlusterHub is now in Running phase." && break
-    sleep 10
-  done' || echo "Timed out after 10 minutes"
-}
 
 # Installs the Red Hat OpenShift Pipelines operator if not already installed
 install_pipelines_operator() {
@@ -678,14 +641,12 @@ delete_tekton_pipelines() {
 
 cluster_setup_ocp_helm() {
   install_pipelines_operator
-  install_acm_ocp_operator
   install_crunchy_postgres_ocp_operator
   install_orchestrator_infra_chart
 }
 
 cluster_setup_ocp_operator() {
   install_pipelines_operator
-  install_acm_ocp_operator
   install_crunchy_postgres_ocp_operator
   install_serverless_ocp_operator
   install_serverless_logic_ocp_operator
@@ -694,14 +655,12 @@ cluster_setup_ocp_operator() {
 cluster_setup_k8s_operator() {
   install_olm
   install_tekton_pipelines
-  # install_ocm_k8s_operator
   # install_crunchy_postgres_k8s_operator # Works with K8s but disabled in values file
 }
 
 cluster_setup_k8s_helm() {
   # install_olm
   install_tekton_pipelines
-  # install_ocm_k8s_operator
   # install_crunchy_postgres_k8s_operator # Works with K8s but disabled in values file
 }
 
