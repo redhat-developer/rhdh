@@ -8,7 +8,7 @@ metadata:
   description: |
     Backend plugin to help you monitor all your service's deployments at a glance.
   annotations:
-    extensions.backstage.io/pre-installed: 'true'
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
     extensions.backstage.io/verified-by: Red Hat # The backend is GA for RHDH
   tags:
     - kubernetes

@@ -7,7 +7,7 @@ metadata:
   title: Notifications Email Processor
   description: 'Adds support for sending Red Hat Developer Hub notifications as emails to users.'
   annotations:
-    extensions.backstage.io/pre-installed: 'true'
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
   tags: []
   links:
     - title: Homepage

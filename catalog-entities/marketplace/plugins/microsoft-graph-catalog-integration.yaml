@@ -10,7 +10,7 @@ metadata:
     that can be used to ingest organization data from the Microsoft Graph API.
     This provider is useful if you want to import users and groups from Entra Id (formerly Azure Active Directory) or Office 365.
   annotations:
-    extensions.backstage.io/pre-installed: 'true'
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
   links:
     - title: readme
       url: https://github.com/backstage/backstage/blob/master/plugins/catalog-backend-module-msgraph/README.md

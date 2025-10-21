@@ -9,7 +9,7 @@ metadata:
     The SonarQube scaffolder actions plugin provides a set of actions to be used in the Backstage software template
     scaffolder. 
   annotations:
-    extensions.backstage.io/pre-installed: 'true'
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
   tags: 
     - code-quality
     - sonarqube

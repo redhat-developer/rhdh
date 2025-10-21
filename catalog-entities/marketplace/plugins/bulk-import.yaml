@@ -10,7 +10,7 @@ metadata:
     a simple to use interface that can list all the repositories in your organization and allows you to select the ones
     you want to import.
   annotations:
-    extensions.backstage.io/pre-installed: 'true'
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
   tags: 
     - software-catalog
 

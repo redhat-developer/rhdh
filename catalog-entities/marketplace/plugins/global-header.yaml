@@ -7,7 +7,7 @@ metadata:
   title: Global Header
   description: 'The Global Header feature enhances user experience by providing a consistent and customizable navigation bar across all pages.'
   annotations:
-    extensions.backstage.io/pre-installed: 'true'
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
     extensions.backstage.io/verified-by: Red Hat
   tags:
     - customization
