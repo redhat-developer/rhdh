@@ -7,7 +7,7 @@ metadata:
   title: Jira
   description: View Jira summary for your projects in Backstage.
   annotations:
-    extensions.backstage.io/pre-installed: 'true'
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
   tags:
     - planning
   links:

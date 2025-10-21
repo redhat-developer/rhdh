@@ -16,7 +16,7 @@ metadata:
     - title: Source Code
       url: https://github.com/backstage/backstage/tree/master/plugins/scaffolder-backend-module-gerrit
   annotations:
-    extensions.backstage.io/pre-installed: 'true'
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
   tags:
     - scaffolder
     - software-templates

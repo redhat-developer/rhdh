@@ -6,7 +6,7 @@ metadata:
   namespace: rhdh
   title: Plugin Title
   annotations:
-    extensions.backstage.io/pre-installed: 'true' # For plugins contained in the RHDH image
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
     extensions.backstage.io/verified-by: Red Hat # For verified plugins
     extensions.backstage.io/certified-by: Red Hat # For certified plugins
   links:

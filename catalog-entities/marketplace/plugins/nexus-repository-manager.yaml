@@ -9,7 +9,7 @@ metadata:
     The Nexus Repository Manager Plugin for Backstage enables users to view information about build artifacts 
     stored in Sonatype Nexus Repository Manager directly within the Backstage interface.
   annotations:
-    extensions.backstage.io/pre-installed: 'true'
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
   tags: 
     - cicd
   links:

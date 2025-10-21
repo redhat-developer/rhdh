@@ -1,7 +1,7 @@
 apiVersion: extensions.backstage.io/v1alpha1
 kind: Package
 metadata:
-  name: parfuemerie-douglas-scaffolder-backend-module-azure-repositories
+  name: parfuemerie-douglas-scaffolder-backend-module-azure-repositorie
   namespace: rhdh
   title: "Scaffolder Backend Module Azure Repositories"
   links:

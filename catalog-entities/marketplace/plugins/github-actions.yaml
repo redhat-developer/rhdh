@@ -7,7 +7,7 @@ metadata:
   title: GitHub Actions
   description: The GitHub Actions Plugin integrates GitHub Actions workflow data into your catalog.
   annotations:
-    extensions.backstage.io/pre-installed: 'true'
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
   tags:
     - cicd
   links:
