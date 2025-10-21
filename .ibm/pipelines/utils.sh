@@ -589,7 +589,6 @@ uninstall_olm() {
   fi
 }
 
-
 # Installs the Red Hat OpenShift Pipelines operator if not already installed
 install_pipelines_operator() {
   DISPLAY_NAME="Red Hat OpenShift Pipelines"
