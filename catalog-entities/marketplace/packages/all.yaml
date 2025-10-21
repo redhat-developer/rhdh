@@ -29,7 +29,7 @@ spec:
     - ./backstage-plugin-scaffolder-backend-module-azure.yaml
     - ./backstage-community-plugin-azure-devops-backend.yaml
     - ./backstage-community-plugin-azure-devops.yaml
-    - ./parfuemerie-douglas-scaffolder-backend-module-azure-repositories.yaml
+    - ./parfuemerie-douglas-scaffolder-backend-module-azure-repositorie.yaml
     - ./backstage-community-plugin-jenkins-backend.yaml
     - ./backstage-community-plugin-jenkins.yaml
     - ./backstage-community-plugin-mcp-chat.yaml
