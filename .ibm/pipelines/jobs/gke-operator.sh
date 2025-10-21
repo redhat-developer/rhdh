@@ -26,8 +26,7 @@ handle_gke_operator() {
 
   K8S_CLUSTER_URL=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')
   K8S_CLUSTER_API_SERVER_URL=$(printf "%s" "$K8S_CLUSTER_URL" | base64 | tr -d '\n')
-  OCM_CLUSTER_URL=$(printf "%s" "$K8S_CLUSTER_URL" | base64 | tr -d '\n')
-  export K8S_CLUSTER_URL K8S_CLUSTER_API_SERVER_URL OCM_CLUSTER_URL
+  export K8S_CLUSTER_URL K8S_CLUSTER_API_SERVER_URL
 
   re_create_k8s_service_account_and_get_token # Populate K8S_CLUSTER_TOKEN
 
