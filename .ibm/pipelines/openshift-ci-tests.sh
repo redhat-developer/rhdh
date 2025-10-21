@@ -3,7 +3,7 @@
 set -o errexit
 set -o errtrace
 set -o nounset
-export PS4='[$(date "+%Y-%m-%d %H:%M:%S")] ' # logs timestamp for every cmd.
+export PS4='[$(date "+%Y-%m-%d %H:%M:%S")] ' # only for debugging with `set -x`
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export DIR
