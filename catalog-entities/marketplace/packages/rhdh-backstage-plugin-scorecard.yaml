@@ -1,0 +1,49 @@
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: rhdh-backstage-plugin-scorecard
+  namespace: rhdh
+  title: "Scorecard"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/scorecard/plugins/scorecard
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/scorecard/plugins/scorecard
+  tags:
+    - analytics
+spec:
+  packageName: "@red-hat-developer-hub/backstage-plugin-scorecard"
+  dynamicArtifact: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard:bs_1.42.5__1.0.0!red-hat-developer-hub-backstage-plugin-scorecard
+  version: 1.0.0
+  backstage:
+    role: frontend-plugin
+    supportedVersions: 1.42.5
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+  partOf:
+    - scorecard
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        dynamicPlugins:
+          frontend:
+            red-hat-developer-hub.backstage-plugin-scorecard:
+              entityTabs:
+                - path: '/scorecard'
+                  title: Scorecard
+                  mountPoint: entity.page.scorecard
+              mountPoints:
+                - mountPoint: entity.page.scorecard/cards
+                  importName: EntityScorecardContent
+                  config:
+                    layout:
+                      gridColumn: 1 / -1
+                  if:
+                    allOf:
+                      - isKind: component
