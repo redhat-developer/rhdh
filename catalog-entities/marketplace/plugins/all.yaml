@@ -62,6 +62,7 @@ spec:
     - ./quay-scaffolder-actions.yaml
     - ./rbac.yaml
     - ./redhat-argocd.yaml
+    - ./redhat-resource-optimization.yaml
     - ./regex-scaffolder-actions.yaml
     - ./quickstart.yaml
     - ./roadie-argocd.yaml

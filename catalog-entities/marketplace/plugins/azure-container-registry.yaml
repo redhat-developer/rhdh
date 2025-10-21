@@ -7,7 +7,7 @@ metadata:
   title: Azure Container Registry
   description: 'The Azure Container Registry (ACR) plugin displays information about your container images available in the Azure Container Registry.'
   annotations:
-    extensions.backstage.io/pre-installed: 'true'
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
   links:
     - url: https://red.ht/rhdh
       title: Homepage

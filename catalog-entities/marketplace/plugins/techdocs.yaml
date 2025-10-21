@@ -10,7 +10,7 @@ metadata:
     alongside your code in your repositories where you can manage them easily.
     TechDocs generates, stores, and shares your docs with your team.
   annotations:
-    extensions.backstage.io/pre-installed: 'true'
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
     extensions.backstage.io/verified-by: Red Hat
   tags:
     - backstage-core

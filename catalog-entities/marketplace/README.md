@@ -69,7 +69,7 @@ metadata:
   namespace: rhdh # This plugin is built by us and provided in RHDH
   title: 3scale
   annotations:
-    extensions.backstage.io/pre-installed: 'true' # Not used, but would tell us if the plugin were pre-instralled
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
     extensions.backstage.io/verified-by: Red Hat # Set the verified status
     # extensions.backstage.io/certified-by: Red Hat # Set the certified status
   links: # Useful links for the plugin card when expanded

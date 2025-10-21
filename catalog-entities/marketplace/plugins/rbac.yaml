@@ -8,7 +8,7 @@ metadata:
   description: |
     The RBAC plugin offers a streamlined user interface for effectively managing permissions in your Backstage instance. 
   annotations:
-    extensions.backstage.io/pre-installed: 'true'
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
     extensions.backstage.io/verified-by: Red Hat
   links:
     - url: https://red.ht/rhdh

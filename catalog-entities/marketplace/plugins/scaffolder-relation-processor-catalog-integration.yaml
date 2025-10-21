@@ -9,7 +9,7 @@ metadata:
     This is an extension module to the catalog-backend plugin, providing an additional catalog entity processor that adds a new relation that depends on the `spec.scaffoldedFrom` field
     to link scaffolder templates and the catalog entities they generated.
   annotations:
-    extensions.backstage.io/pre-installed: 'true'
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
   links:
     - title: readme
       url: https://github.com/backstage/backstage/blob/master/plugins/catalog-backend-module-gitlab-org/README.md
