@@ -6,7 +6,7 @@ metadata:
  namespace: rhdh
  title: MCP Tools
  annotations:
-   extensions.backstage.io/pre-installed: 'false' # For plugins contained in the RHDH image
+   extensions.backstage.io/pre-installed: 'true' # Plugin is automatically listed in the catalog.
  links:
    - title: Homepage
      url: https://red.ht/rhdh

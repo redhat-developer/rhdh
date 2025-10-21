@@ -5837,61 +5837,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-auth-node@npm:0.6.0":
-  version: 0.6.0
-  resolution: "@backstage/plugin-auth-node@npm:0.6.0"
+"@backstage/plugin-auth-node@npm:0.6.6":
+  version: 0.6.6
+  resolution: "@backstage/plugin-auth-node@npm:0.6.6"
   dependencies:
-    "@backstage/backend-plugin-api": ^1.2.0
-    "@backstage/catalog-client": ^1.9.1
-    "@backstage/catalog-model": ^1.7.3
-    "@backstage/config": ^1.3.2
-    "@backstage/errors": ^1.2.7
-    "@backstage/types": ^1.2.1
-    "@types/express": ^4.17.6
-    "@types/passport": ^1.0.3
-    express: ^4.17.1
-    jose: ^5.0.0
-    lodash: ^4.17.21
-    passport: ^0.7.0
-    zod: ^3.22.4
-    zod-to-json-schema: ^3.21.4
-    zod-validation-error: ^3.4.0
-  checksum: 71990ab5af23d854ffee74480388a868ded317925c224583a233009c2dbdade5bf6de376e5a3a3d075f5c1f2cf51ba3be00c86bd6c7f980817cc7627909c228e
-  languageName: node
-  linkType: hard
-
-"@backstage/plugin-auth-node@npm:^0.6.1, @backstage/plugin-auth-node@npm:^0.6.2, @backstage/plugin-auth-node@npm:^0.6.5, @backstage/plugin-auth-node@npm:^0.6.6, @backstage/plugin-auth-node@npm:^0.6.7":
-  version: 0.6.7
-  resolution: "@backstage/plugin-auth-node@npm:0.6.7"
-  dependencies:
-    "@backstage/backend-plugin-api": ^1.4.3
-    "@backstage/catalog-client": ^1.12.0
+    "@backstage/backend-plugin-api": ^1.4.2
+    "@backstage/catalog-client": ^1.11.0
     "@backstage/catalog-model": ^1.7.5
     "@backstage/config": ^1.3.3
     "@backstage/errors": ^1.2.7
-    "@backstage/types": ^1.2.2
-    "@types/express": ^4.17.6
-    "@types/passport": ^1.0.3
-    express: ^4.17.1
-    jose: ^5.0.0
-    lodash: ^4.17.21
-    passport: ^0.7.0
-    zod: ^3.22.4
-    zod-to-json-schema: ^3.21.4
-    zod-validation-error: ^3.4.0
-  checksum: 8d4357bdd835583e75ab883b4459c34eccb2868c7887abdfc0b4a0f4ab32ef1f45c4be910e531e222bf1785bf72697393f94a352a0da4a190678bb1e32922aa0
-  languageName: node
-  linkType: hard
-
-"@backstage/plugin-auth-node@patch:@backstage/plugin-auth-node@npm%3A0.6.0#./.yarn/patches/@backstage-plugin-auth-node-npm-0.6.0-69f2f0dc3f.patch::locator=dynamic-plugins-root%40workspace%3A.":
-  version: 0.6.0
-  resolution: "@backstage/plugin-auth-node@patch:@backstage/plugin-auth-node@npm%3A0.6.0#./.yarn/patches/@backstage-plugin-auth-node-npm-0.6.0-69f2f0dc3f.patch::version=0.6.0&hash=45bb46&locator=dynamic-plugins-root%40workspace%3A."
-  dependencies:
-    "@backstage/backend-plugin-api": ^1.2.0
-    "@backstage/catalog-client": ^1.9.1
-    "@backstage/catalog-model": ^1.7.3
-    "@backstage/config": ^1.3.2
-    "@backstage/errors": ^1.2.7
     "@backstage/types": ^1.2.1
     "@types/express": ^4.17.6
     "@types/passport": ^1.0.3
@@ -5902,7 +5856,7 @@ __metadata:
     zod: ^3.22.4
     zod-to-json-schema: ^3.21.4
     zod-validation-error: ^3.4.0
-  checksum: 77ffbf96126a8c0dbacb70da872c6555f7d89f9ec010a437d11aab7fb33ebc99d61a6d73da767ec96c9eb4109e906cb19472e2d118056be43e2be8f421acba8a
+  checksum: cb3e69133b2d27bd0d10a5bd65a0a2f23caf4211de8137713d0fd398e93e808768d5e45150782b3f8c562cf0921f67ecb52e336bf3fb33bbf5b74bce03e25370
   languageName: node
   linkType: hard
 
@@ -15350,9 +15304,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-marketplace@npm:0.11.2":
-  version: 0.11.2
-  resolution: "@red-hat-developer-hub/backstage-plugin-marketplace@npm:0.11.2"
+"@red-hat-developer-hub/backstage-plugin-marketplace@npm:0.11.4":
+  version: 0.11.4
+  resolution: "@red-hat-developer-hub/backstage-plugin-marketplace@npm:0.11.4"
   dependencies:
     "@backstage/catalog-client": ^1.11.0
     "@backstage/core-components": ^0.17.5
@@ -15377,7 +15331,7 @@ __metadata:
     react: ^17.0.0 || ^18.0.0
     react-dom: ^17.0.0 || ^18.0.0
     react-router-dom: ^6.3.0
-  checksum: 4864370e97fa93e65324f606afbf234a3750d921825af7e66aeecfb277d4c7f70d6f8ed4121e0a9c0728dcf495f62c3e76aaac3a8494fae95a3cd91d0b2ad8dd
+  checksum: 3b6ef4d3f08050fd6cc877915665bf4cbe4bdd160ffa6bef45c0cd8960d270553ef878aa7508fb9c61947549546edf4d5e10cdb0b687d8e93a3c2056b799b31d
   languageName: node
   linkType: hard
 
@@ -36571,7 +36525,7 @@ __metadata:
     "@backstage/cli": ^0.34.1
     "@janus-idp/cli": 3.6.1
     "@mui/material": 5.18.0
-    "@red-hat-developer-hub/backstage-plugin-marketplace": 0.11.2
+    "@red-hat-developer-hub/backstage-plugin-marketplace": 0.11.4
     typescript: 5.9.3
   languageName: unknown
   linkType: soft

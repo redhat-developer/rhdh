@@ -32,6 +32,8 @@ spec:
     - ./parfuemerie-douglas-scaffolder-backend-module-azure-repositories.yaml
     - ./backstage-community-plugin-jenkins-backend.yaml
     - ./backstage-community-plugin-jenkins.yaml
+    - ./backstage-community-plugin-mcp-chat.yaml
+    - ./backstage-community-plugin-mcp-chat-backend.yaml
     - ./backstage-plugin-notifications.yaml
     - ./backstage-plugin-notifications-backend.yaml
     - ./backstage-plugin-notifications-backend-module-email.yaml
@@ -100,6 +102,10 @@ spec:
     - ./rhdh-backstage-plugin-adoption-insights-backend.yaml
     - ./rhdh-backstage-plugin-analytics-module-adoption-insights.yaml
     - ./rhdh-backstage-plugin-quickstart.yaml
+    - ./rhdh-backstage-plugin-scorecard-backend-module-github.yaml
+    - ./rhdh-backstage-plugin-scorecard-backend-module-jira.yaml
+    - ./rhdh-backstage-plugin-scorecard-backend.yaml
+    - ./rhdh-backstage-plugin-scorecard.yaml
     - ./red-hat-developer-hub-backstage-plugin-lightspeed.yaml
     - ./red-hat-developer-hub-backstage-plugin-lightspeed-backend.yaml
     - ./apic-backstage-plugin.yaml

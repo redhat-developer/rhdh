@@ -1,0 +1,93 @@
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: rhdh-backstage-plugin-scorecard-backend-module-jira
+  namespace: rhdh
+  title: "Scorecard Backend Module Jira"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/scorecard/plugins/scorecard-backend-module-jira
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/scorecard/plugins/scorecard-backend-module-jira
+  tags:
+    - analytics
+spec:
+  packageName: "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-jira"
+  dynamicArtifact: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard-backend-module-jira:bs_1.42.5__1.0.1!red-hat-developer-hub-backstage-plugin-scorecard-backend-module-jira
+  version: 1.0.1
+  backstage:
+    role: backend-plugin-module
+    supportedVersions: 1.42.5
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+  partOf:
+    - scorecard
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        jira:
+          product: cloud
+          proxyPath: /jira/api
+        proxy:
+          endpoints:
+            '/jira/api':
+              target: ${JIRA_URL}
+              headers:
+                Accept: 'application/json'
+                Content-Type: 'application/json'
+                X-Atlassian-Token: 'no-check'
+                # Required: (For cloud use 'Basic email:tokenInBase64', for datacenter use 'Bearer YourJiraToken')
+                Authorization: ${JIRA_TOKEN}
+    - title: Direct cloud configuration
+      content:
+        jira:
+          product: cloud
+          baseUrl: ${JIRA_URL}
+          # Required: Use prepared "email:tokenInBase64" string  (No need for adding Basic)
+          token: ${JIRA_TOKEN}
+    - title: Direct datacenter configuration
+      content:
+        jira:
+          product: datacenter
+          baseUrl: ${JIRA_URL}
+          # Required: Use directly your Jira token (No need for adding Bearer)
+          token: ${JIRA_TOKEN}
+    - title: Jira filter configuration (optional)
+      content:
+        jira:
+          product: cloud
+          baseUrl: ${JIRA_URL}
+          token: ${JIRA_TOKEN}
+        scorecard:
+          plugins:
+            jira:
+              open_issues:
+                options:
+                  # Optional: use mandatoryFilter to replace the default filter "type = Bug AND resolution = Unresolved"
+                  mandatoryFilter: type = Task AND resolution = Unresolved
+                  # Optional: use to specify global customFilter, the entity annotation `jira/custom-filter` can replace it
+                  customFilter: priority in ("Critical", "Blocker")
+    - title: Threshold configuration (optional)
+      content:
+        jira:
+          product: cloud
+          baseUrl: ${JIRA_URL}
+          token: ${JIRA_TOKEN}
+        scorecard:
+          plugins:
+            jira:
+              open_issues:
+                thresholds:
+                  rules:
+                    - key: success
+                      expression: '<50'
+                    - key: warning
+                      expression: '50-100'
+                    - key: error
+                      expression: '>100'

@@ -12,6 +12,9 @@ import {
 // Pre-req : plugin-bulk-import & plugin-bulk-import-backend-dynamic
 test.describe.serial("Bulk Import plugin", () => {
   test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
+  // TODO: https://issues.redhat.com/browse/RHDHBUGS-2116
+  test.fixme(() => process.env.JOB_TYPE.includes("presubmit")); // skip on PR checks
+  test.fixme(() => !process.env.JOB_NAME.includes("ocp")); // run only on OCP jobs to avoid GH rate limit
   test.describe.configure({ retries: process.env.CI ? 5 : 0 });
 
   let page: Page;
@@ -124,8 +127,6 @@ spec:
   });
 
   test('Verify that the two selected repositories are listed: one with the status "Already imported" and another with the status "WAIT_PR_APPROVAL."', async () => {
-    // TODO: https://issues.redhat.com/browse/RHDHBUGS-2116
-    test.fixme();
     await common.waitForLoad();
     await bulkimport.filterAddedRepo(catalogRepoDetails.name);
     await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
@@ -138,7 +139,7 @@ spec:
     ]);
   });
 
-  test.skip("Verify the Content of catalog-info.yaml in the PR is Correct", async () => {
+  test("Verify the Content of catalog-info.yaml in the PR is Correct", async () => {
     const prCatalogInfoYaml = await APIHelper.getfileContentFromPR(
       newRepoDetails.owner,
       newRepoDetails.repoName,
@@ -196,8 +197,6 @@ spec:
   });
 
   test("Merge the PR on GitHub and Confirm the Status Updates to 'Already imported'", async () => {
-    // TODO: https://issues.redhat.com/browse/RHDHBUGS-2116
-    test.fixme();
     await uiHelper.openSidebar("Bulk import");
     // Merge PR is generated for the repository without the catalog.yaml file.
     await APIHelper.mergeGitHubPR(
@@ -236,8 +235,6 @@ spec:
   });
 
   test("Delete a Bulk Import Repository and Verify It's No Longer Visible in the UI", async () => {
-    // TODO: https://issues.redhat.com/browse/RHDHBUGS-2116
-    test.fixme();
     await uiHelper.openSidebar("Bulk import");
     await common.waitForLoad();
     await bulkimport.filterAddedRepo(catalogRepoDetails.name);
@@ -252,8 +249,6 @@ spec:
     });
   });
   test("Verify Deleted Bulk Import Repositories Does not Appear in the Catalog", async () => {
-    // TODO: https://issues.redhat.com/browse/RHDHBUGS-2116
-    test.fixme();
     await uiHelper.openSidebar("Catalog");
     await uiHelper.selectMuiBox("Kind", "Component");
     await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
@@ -289,7 +284,8 @@ test.describe
   .serial("Bulk Import - Verify existing repo are displayed in bulk import Added repositories", () => {
   test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
   // TODO: https://issues.redhat.com/browse/RHDHBUGS-2116
-  test.fixme();
+  test.fixme(() => process.env.JOB_TYPE.includes("presubmit")); // skip on PR checks
+  test.fixme(() => !process.env.JOB_NAME.includes("ocp")); // run only on OCP jobs to avoid GH rate limit
   let page: Page;
   let uiHelper: UIhelper;
   let common: Common;
@@ -348,6 +344,9 @@ test.describe
 test.describe
   .serial("Bulk Import - Ensure users without bulk import permissions cannot access the bulk import plugin", () => {
   test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
+  // TODO: https://issues.redhat.com/browse/RHDHBUGS-2116
+  test.fixme(() => process.env.JOB_TYPE.includes("presubmit")); // skip on PR checks
+  test.fixme(() => !process.env.JOB_NAME.includes("ocp")); // run only on OCP jobs to avoid GH rate limit
   let page: Page;
   let uiHelper: UIhelper;
   let common: Common;
