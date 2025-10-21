@@ -21,10 +21,9 @@ let rbacApi: RhdhRbacApi;
 /* ======================================================================== */
 
 test.describe("Auditor check for RBAC Plugin", () => {
-  test.fixme(
-    process.env.IS_OPENSHIFT === "false",
-    "Failing on Kubernetes clusters, fix https://issues.redhat.com/browse/RHIDP-7559",
-  );
+  // TODO: https://issues.redhat.com/browse/RHIDP-7559
+  // Failing on Kubernetes clusters
+  test.fixme(process.env.IS_OPENSHIFT === "false");
 
   test.beforeAll(async ({ browser }, testInfo) => {
     test.info().annotations.push({
