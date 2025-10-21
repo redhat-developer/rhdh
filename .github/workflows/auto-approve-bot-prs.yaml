@@ -57,8 +57,6 @@ jobs:
             "^update-base-images-.*"              # Base image updates
             "^pr-bump-to-.*"                      # Version bump PRs (like #3176)
             "^update-rpm-lockfile$"               # RPM lockfile updates
-            "^dependencies/.*"                    # Dependency updates (Backstage, etc.)
-            "^renovate/.*"                        # Renovate PRs
             "^chore/automated-.*"                 # Other automated chore tasks
           )
           
