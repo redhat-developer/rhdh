@@ -18,62 +18,77 @@ export const defaultTabs: Record<
 > = {
   '/': {
     title: 'Overview',
+    titleKey: 'catalog.entityPage.overview.title',
     mountPoint: 'entity.page.overview',
   },
   '/topology': {
     title: 'Topology',
+    titleKey: 'catalog.entityPage.topology.title',
     mountPoint: 'entity.page.topology',
   },
   '/issues': {
     title: 'Issues',
+    titleKey: 'catalog.entityPage.issues.title',
     mountPoint: 'entity.page.issues',
   },
   '/pr': {
     title: 'Pull/Merge Requests',
+    titleKey: 'catalog.entityPage.pullRequests.title',
     mountPoint: 'entity.page.pull-requests',
   },
   '/ci': {
     title: 'CI',
+    titleKey: 'catalog.entityPage.ci.title',
     mountPoint: 'entity.page.ci',
   },
   '/cd': {
     title: 'CD',
+    titleKey: 'catalog.entityPage.cd.title',
     mountPoint: 'entity.page.cd',
   },
   '/kubernetes': {
     title: 'Kubernetes',
+    titleKey: 'catalog.entityPage.kubernetes.title',
     mountPoint: 'entity.page.kubernetes',
   },
   '/image-registry': {
     title: 'Image Registry',
+    titleKey: 'catalog.entityPage.imageRegistry.title',
     mountPoint: 'entity.page.image-registry',
   },
   '/monitoring': {
     title: 'Monitoring',
+    titleKey: 'catalog.entityPage.monitoring.title',
     mountPoint: 'entity.page.monitoring',
   },
   '/lighthouse': {
     title: 'Lighthouse',
+    titleKey: 'catalog.entityPage.lighthouse.title',
     mountPoint: 'entity.page.lighthouse',
   },
   '/api': {
     title: 'Api',
+    titleKey: 'catalog.entityPage.api.title',
     mountPoint: 'entity.page.api',
   },
   '/dependencies': {
     title: 'Dependencies',
+    titleKey: 'catalog.entityPage.dependencies.title',
     mountPoint: 'entity.page.dependencies',
   },
   '/docs': {
     title: 'Docs',
+    titleKey: 'catalog.entityPage.docs.title',
     mountPoint: 'entity.page.docs',
   },
   '/definition': {
     title: 'Definition',
+    titleKey: 'catalog.entityPage.definition.title',
     mountPoint: 'entity.page.definition',
   },
   '/system': {
     title: 'Diagram',
+    titleKey: 'catalog.entityPage.diagram.title',
     mountPoint: 'entity.page.diagram',
   },
 };

@@ -13,7 +13,7 @@ metadata:
     operational awareness.
 
   annotations:
-    extensions.backstage.io/pre-installed: 'true' # Indicates that this plugin YAML is pre-installed, not the plugin itself
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
   tags:
     - itsm
     - incident-management

@@ -1,0 +1,52 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/packages.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: backstage-community-plugin-mcp-chat-backend
+  namespace: rhdh
+  title: "@backstage-community/plugin-mcp-chat-backend"
+  links:
+    - url: https://github.com/backstage/community-plugins/blob/main/workspaces/mcp-chat/plugins/mcp-chat-backend/README.md
+      title: Plugin Overview (README)
+    - title: Source Code
+      url: https://github.com/backstage/community-plugins/tree/main/workspaces/mcp-chat/plugins/mcp-chat-backend
+  annotations:
+    backstage.io/source-location: url:https://github.com/backstage/community-plugins/tree/main/workspaces/mcp-chat/plugins/mcp-chat-backend
+  tags: []
+spec:
+  packageName: "@backstage-community/plugin-mcp-chat-backend"
+  dynamicArtifact: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-mcp-chat-backend:next__0.1.0!backstage-community-plugin-mcp-chat-backend
+  version: 0.1.0
+  backstage:
+    role: backend-plugin
+    supportedVersions: 1.42.5
+  author: Backstage Community
+  support: community
+  lifecycle: active
+  partOf:
+    - mcp-chat
+  appConfigExamples:
+    - title: Default configuration with Gemini provider
+      content:
+        mcpChat:
+          # Configure AI providers
+          providers:
+            - id: gemini
+              token: ${GEMINI_API_KEY}
+              model: gemini-2.5-flash
+          # Optional: Configure MCP servers
+          mcpServers:
+            - id: github-server
+              name: Github Server
+              url: 'https://api.githubcopilot.com/mcp'
+              headers:
+                Authorization: 'Bearer ${GITHUB_TOKEN}'
+          # Optional: Customize the system prompt
+          systemPrompt: "You are a helpful assistant. When using tools, provide a clear, readable summary of the results rather than showing raw data. Focus on answering the user's question with the information gathered."
+          # Configure quick prompts
+          quickPrompts:
+            - title: 'List all repositories'
+              description: 'List all repositories in a given organization'
+              prompt: 'List all repositories in the organization Backstage'
+              category: GitHub
+

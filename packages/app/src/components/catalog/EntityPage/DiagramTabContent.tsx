@@ -27,7 +27,7 @@ export const DiagramTabContent = () => {
           <EntityCatalogGraphCard
             variant="gridItem"
             direction={Direction.TOP_BOTTOM}
-            title={t('app.entityPage.diagram.title')}
+            title={t('catalog.entityPage.diagram.title')}
             height={700}
             relations={[
               RELATION_PART_OF,

@@ -49,6 +49,7 @@ spec:
     - ./kubernetes-backend.yaml
     - ./ldap-catalog-integration.yaml
     - ./lighthouse.yaml
+    - ./mcp-chat.yaml
     - ./microsoft-graph-catalog-integration.yaml
     - ./nexus-repository-manager.yaml
     - ./notifications.yaml
@@ -61,11 +62,13 @@ spec:
     - ./quay-scaffolder-actions.yaml
     - ./rbac.yaml
     - ./redhat-argocd.yaml
+    - ./redhat-resource-optimization.yaml
     - ./regex-scaffolder-actions.yaml
     - ./quickstart.yaml
     - ./roadie-argocd.yaml
     - ./roadie-scaffolder-util-actions.yaml
     - ./scaffolder-relation-processor-catalog-integration.yaml
+    - ./scorecard.yaml
     - ./security-insights.yaml
     - ./servicenow.yaml
     - ./servicenow-scaffolder-actions.yaml

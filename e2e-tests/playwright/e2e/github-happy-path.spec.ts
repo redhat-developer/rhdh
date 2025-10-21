@@ -227,8 +227,4 @@ test.describe.serial("GitHub Happy path", async () => {
       await context.clearCookies();
     },
   );
-
-  test.afterAll(async () => {
-    await page.close();
-  });
 });

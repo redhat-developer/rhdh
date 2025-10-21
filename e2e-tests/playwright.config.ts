@@ -57,6 +57,7 @@ export default defineConfig({
     },
     {
       name: "showcase",
+      dependencies: ["smoke-test"],
       testIgnore: [
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
@@ -66,11 +67,13 @@ export default defineConfig({
         "**/playwright/e2e/verify-tls-config-health-check.spec.ts",
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
         "**/playwright/e2e/plugins/tekton/tekton.spec.ts",
+        "**/playwright/e2e/dynamic-home-page-customization.spec.ts",
         "**/playwright/e2e/plugins/scorecard/scorecard.spec.ts",
       ],
     },
     {
       name: "showcase-rbac",
+      dependencies: ["smoke-test"],
       testMatch: [
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
@@ -86,6 +89,7 @@ export default defineConfig({
       testIgnore: [
         "**/playwright/e2e/auth-providers/github-happy-path.spec.ts", // temporarily disable
         "**/playwright/e2e/verify-tls-config-health-check.spec.ts",
+        "**/playwright/e2e/dynamic-home-page-customization.spec.ts",
       ],
       retries: 1,
     },
@@ -107,6 +111,7 @@ export default defineConfig({
         "**/playwright/e2e/verify-tls-config-health-check.spec.ts",
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
         "**/playwright/e2e/github-happy-path.spec.ts",
+        "**/playwright/e2e/dynamic-home-page-customization.spec.ts",
         "**/playwright/e2e/plugins/scorecard/scorecard.spec.ts",
       ],
     },
@@ -123,6 +128,7 @@ export default defineConfig({
     },
     {
       name: "showcase-operator",
+      dependencies: ["smoke-test"],
       testIgnore: [
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
@@ -135,11 +141,13 @@ export default defineConfig({
         "**/playwright/e2e/verify-tls-config-health-check.spec.ts",
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
         "**/playwright/e2e/github-happy-path.spec.ts",
+        "**/playwright/e2e/dynamic-home-page-customization.spec.ts",
         "**/playwright/e2e/plugins/scorecard/scorecard.spec.ts",
       ],
     },
     {
       name: "showcase-operator-rbac",
+      dependencies: ["smoke-test"],
       testMatch: [
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
@@ -149,6 +157,7 @@ export default defineConfig({
     },
     {
       name: "showcase-runtime",
+      dependencies: ["smoke-test"],
       testMatch: [
         "**/playwright/e2e/configuration-test/config-map.spec.ts",
         "**/playwright/e2e/verify-tls-config-health-check.spec.ts",
@@ -157,6 +166,7 @@ export default defineConfig({
 
     {
       name: "showcase-sanity-plugins",
+      dependencies: ["smoke-test"],
       testMatch: [
         "**/playwright/e2e/catalog-timestamp.spec.ts",
         "**/playwright/e2e/plugins/frontend/sidebar.spec.ts",

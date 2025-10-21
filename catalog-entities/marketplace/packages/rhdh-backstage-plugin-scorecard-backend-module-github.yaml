@@ -1,0 +1,68 @@
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Package
+metadata:
+  name: rhdh-backstage-plugin-scorecard-backend-module-github
+  namespace: rhdh
+  title: "Scorecard Backend Module GitHub"
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/scorecard/plugins/scorecard-backend-module-github
+  annotations:
+    backstage.io/source-location: url
+      https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/scorecard/plugins/scorecard-backend-module-github
+  tags:
+    - analytics
+spec:
+  packageName: "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-github"
+  dynamicArtifact: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard-backend-module-github:bs_1.42.5__1.0.0!red-hat-developer-hub-backstage-plugin-scorecard-backend-module-github
+  version: 1.0.0
+  backstage:
+    role: backend-plugin-module
+    supportedVersions: 1.42.5
+  author: Red Hat
+  support: tech-preview
+  lifecycle: active
+  partOf:
+    - scorecard
+  appConfigExamples:
+    - title: Default configuration
+      content:
+        integrations:
+          github:
+            - host: ${GITHUB_HOST}
+              apps:
+                - appId: ${GITHUB_APP_APP_ID}
+                  clientId: ${GITHUB_APP_CLIENT_ID}
+                  clientSecret: ${GITHUB_APP_CLIENT_SECRET}
+                  webhookUrl: ${GITHUB_APP_WEBHOOK_URL}
+                  webhookSecret: ${GITHUB_APP_WEBHOOK_SECRET}
+                  privateKey: |
+                    ${GITHUB_APP_PRIVATE_KEY}
+    - title: Token configuration
+      content:
+        integrations:
+          github:
+            - host: ${GITHUB_HOST}
+              token: ${GITHUB_TOKEN}
+    - title: Threshold configuration (optional)
+      content:
+        integrations:
+          github:
+            - host: ${GITHUB_HOST}
+              token: ${GITHUB_TOKEN}
+        scorecard:
+          plugins:
+            github:
+              open_prs:
+                thresholds:
+                  rules:
+                    - key: success
+                      expression: '<50'
+                    - key: warning
+                      expression: '50-100'
+                    - key: error
+                      expression: '>100'

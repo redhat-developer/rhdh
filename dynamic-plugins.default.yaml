@@ -1066,6 +1066,9 @@ plugins:
       dynamicPlugins:
         frontend:
           backstage-community.plugin-tekton:
+            translationResources:
+              - importName: tektonTranslations
+                ref: tektonTranslationRef
             mountPoints:
               - mountPoint: entity.page.ci/cards
                 importName: TektonCI
@@ -1326,6 +1329,7 @@ plugins:
             entityTabs:
               - path: /workflows
                 title: Workflows
+                titleKey: catalog.entityPage.workflows.title
                 mountPoint: entity.page.workflows
             mountPoints:
               - mountPoint: entity.page.workflows/cards

@@ -9,7 +9,7 @@ metadata:
     The Extensions plugin provides a catalog of available plugins for Red Hat Developer Hub. 
     This plugin is pre-installed and enabled by default in Red Hat Developer Hub.
   annotations:
-    extensions.backstage.io/pre-installed: 'true'
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
   links:
     - title: Homepage
       url: https://red.ht/rhdh
