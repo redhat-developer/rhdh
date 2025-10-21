@@ -57,37 +57,6 @@ aws_eks_get_load_balancer_hostname() {
   fi
 }
 
-# Verify EKS cluster connectivity
-aws_eks_verify_cluster() {
-  echo "Verifying EKS cluster connectivity..."
-
-  if ! kubectl cluster-info > /dev/null 2>&1; then
-    echo "Error: Cannot connect to EKS cluster. Please check KUBECONFIG."
-    return 1
-  fi
-
-  echo "Successfully connected to EKS cluster"
-  kubectl get nodes --no-headers | wc -l | xargs echo "Number of nodes:"
-}
-
-# Get EKS cluster information
-aws_eks_get_cluster_info() {
-  echo "EKS Cluster Information:"
-  echo "========================"
-
-  # Get cluster version
-  kubectl version --short 2> /dev/null | grep "Server Version" || echo "Server Version: Unable to determine"
-
-  # Get node information
-  echo "Node Information:"
-  kubectl get nodes -o custom-columns="NAME:.metadata.name,STATUS:.status.conditions[?(@.type=='Ready')].status,ROLES:.metadata.labels.node\.kubernetes\.io/role,SPOT:.metadata.labels.kubernetes\.aws\.com/spot" 2> /dev/null || echo "Unable to get node information"
-
-  # Get installed addons
-  echo "Installed Addons:"
-  kubectl get pods -A -l app.kubernetes.io/name=aws-load-balancer-controller 2> /dev/null | grep -q aws-load-balancer-controller && echo "- AWS Load Balancer Controller" || echo "- AWS Load Balancer Controller: Not found"
-  kubectl get pods -A -l app.kubernetes.io/name=aws-ebs-csi-driver 2> /dev/null | grep -q ebs-csi && echo "- AWS EBS CSI Driver" || echo "- AWS EBS CSI Driver: Not found"
-}
-
 # Function to setup EKS ingress hosts configuration
 configure_eks_ingress_and_dns() {
   local namespace=$1
