@@ -43,13 +43,17 @@ exports.labelCluster = async (event, context) => {
     const location = resource?.labels?.location || resource?.labels?.zone;
 
     if (!clusterName || !location) {
-      console.error("Unable to extract cluster name or location from event data");
+      console.error(
+        "Unable to extract cluster name or location from event data",
+      );
       console.error("Cluster name:", clusterName);
       console.error("Location:", location);
       return;
     }
 
-    console.log(`Detected new cluster creation: ${clusterName} in location ${location}`);
+    console.log(
+      `Detected new cluster creation: ${clusterName} in location ${location}`,
+    );
 
     // Define the labels to apply
     const labels = {
@@ -65,7 +69,9 @@ exports.labelCluster = async (event, context) => {
 
     // Determine if it's a zone or region
     const locationFlag =
-      location.includes("-") && location.split("-").length === 3 ? "--zone" : "--region";
+      location.includes("-") && location.split("-").length === 3
+        ? "--zone"
+        : "--region";
 
     const command = `gcloud container clusters update ${clusterName} ${locationFlag} ${location} --update-labels ${labelString}`;
 
