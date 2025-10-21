@@ -8,7 +8,7 @@ metadata:
   description: |
     Signals frontend plugin contains functionalities that help utilize the signals. It is used by the Notifications system in Backstage to send messages.
   annotations:
-    extensions.backstage.io/pre-installed: 'true'
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
   tags:
     - backstage-core
     - messaging

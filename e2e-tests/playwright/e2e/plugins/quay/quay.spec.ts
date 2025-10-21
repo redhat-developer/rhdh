@@ -44,9 +44,6 @@ test.describe("Test Quay.io plugin", () => {
   });
 
   test("Check Security Scan details", async ({ page }) => {
-    // TODO: https://issues.redhat.com/browse/RHDHBUGS-2149
-    // Re-enable after quay back from read-only: https://status.redhat.com/incidents/24r8xgknfd4z
-    test.fixme();
     const cell = await ImageRegistry.getScanCell(page);
     await expect(cell).toBeVisible();
   });

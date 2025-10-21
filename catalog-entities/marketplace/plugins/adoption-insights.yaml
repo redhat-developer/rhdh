@@ -8,7 +8,7 @@ metadata:
   description: |
     The Adoption Insights plugin enables you to visualize and analyze adoption and engagement metrics such as active users, total users, top catalog entities by views, top templates, TechDocs and plugin usage, and portal search trends within your internal developer portal.
   annotations:
-    extensions.backstage.io/pre-installed: 'true'
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
     extensions.backstage.io/verified-by: Red Hat
   tags:
     - analytics

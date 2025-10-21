@@ -10,7 +10,7 @@ metadata:
     Radar are organized into four rings: Adopt, Trial, Assess, and Hold so you can quickly separate the hotties from
     the notties!
   annotations:
-    extensions.backstage.io/pre-installed: 'true'
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
   links:
     - url: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/customizing/proc-customize-rhdh-tech-radar-page_configuring-techdocs
       title: Red Hat Developer Hub Documentation

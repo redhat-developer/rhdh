@@ -8,7 +8,7 @@ metadata:
   description: |
     Customize the home page experience of Red Hat Developer Hub for your users. Display important information, announcements, and links to resources, systems, etc.
   annotations:
-    extensions.backstage.io/pre-installed: 'true'
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
     extensions.backstage.io/verified-by: Red Hat
   tags: 
     - customization
