@@ -18,6 +18,12 @@ detect_ocp() {
         export IS_OPENSHIFT="true"
         export OCP_VERSION="${ocp_version}"
         log_info "OpenShift detected: ${ocp_version}"
+        
+        # Detect OSD-GCP if CLUSTER_TYPE or PLATFORM is set
+        if [[ "${CLUSTER_TYPE:-}" == "osd-gcp" ]] || [[ "${PLATFORM:-}" == "gcp" ]]; then
+            export CONTAINER_PLATFORM="osd-gcp"
+            log_info "Detected OpenShift Dedicated on GCP"
+        fi
     else
         export IS_OPENSHIFT="false"
         log_debug "OpenShift not detected"

@@ -12,7 +12,13 @@
 #
 
 .PHONY: help deploy deploy-rbac test cleanup pull nightly operator auth-providers
-.PHONY: deploy-aks deploy-eks deploy-gke validate-env check-tools
+.PHONY: deploy-aks deploy-eks deploy-gke deploy-osd-gcp deploy-osd-gcp-operator validate-env check-tools
+# Aliases (descriptive targets)
+.PHONY: ocp-helm ocp-helm-nightly ocp-helm-upgrade-nightly ocp-helm-sealights-nightly
+.PHONY: ocp-operator-nightly ocp-operator-auth-nightly
+.PHONY: aks-helm-nightly aks-operator-nightly eks-helm-nightly eks-operator-nightly gke-helm-nightly gke-operator-nightly
+.PHONY: osd-gcp-helm-nightly osd-gcp-operator-nightly
+.PHONY: cleanup-aks-refactored cleanup-eks-refactored
 
 # Default target
 .DEFAULT_GOAL := help
@@ -120,6 +126,63 @@ auth-providers: validate-env ## Test authentication providers
 	@bash $(ENTRYPOINTS_DIR)/auth-providers.sh
 
 # ============================================================================
+# ALIASES - DESCRIPTIVE TARGETS (backwards compatible)
+# ============================================================================
+
+# OCP - Helm
+ocp-helm:            ## [CI: e2e-ocp-helm]
+	$(MAKE) pull
+
+ocp-helm-nightly:    ## [CI: e2e-ocp-helm-nightly]
+	$(MAKE) nightly
+
+ocp-helm-upgrade-nightly: ## [CI: e2e-ocp-helm-upgrade-nightly]
+	$(MAKE) upgrade
+
+ocp-helm-sealights-nightly: ## [CI: e2e-ocp-helm-sealights-nightly]
+	$(MAKE) nightly
+
+# OCP - Operator
+ocp-operator-nightly:       ## [CI: e2e-ocp-operator-nightly]
+	$(MAKE) operator
+
+ocp-operator-auth-nightly:  ## [CI: e2e-ocp-operator-auth-providers-nightly]
+	$(MAKE) auth-providers
+
+# Cloud - AKS/EKS/GKE
+aks-helm-nightly:       ## [CI: e2e-aks-helm-nightly]
+	$(MAKE) deploy-aks
+
+aks-operator-nightly:   ## [CI: e2e-aks-operator-nightly]
+	$(MAKE) deploy-aks && $(MAKE) operator
+
+eks-helm-nightly:       ## [CI: e2e-eks-helm-nightly]
+	$(MAKE) deploy-eks
+
+eks-operator-nightly:   ## [CI: e2e-eks-operator-nightly]
+	$(MAKE) deploy-eks && $(MAKE) operator
+
+gke-helm-nightly:       ## [CI: e2e-gke-helm-nightly]
+	$(MAKE) deploy-gke
+
+gke-operator-nightly:   ## [CI: e2e-gke-operator-nightly]
+	$(MAKE) deploy-gke && $(MAKE) operator
+
+# OSD-GCP
+osd-gcp-helm-nightly:       ## [CI: e2e-osd-gcp-helm-nightly]
+	$(MAKE) deploy-osd-gcp && $(MAKE) test
+
+osd-gcp-operator-nightly:   ## [CI: e2e-osd-gcp-operator-nightly]
+	$(MAKE) deploy-osd-gcp-operator
+
+# Cleanup
+cleanup-aks-refactored:   ## [CI: cleanup-aks-refactored]
+	$(MAKE) cleanup
+
+cleanup-eks-refactored:   ## [CI: cleanup-eks-refactored]
+	$(MAKE) cleanup
+
+# ============================================================================
 # CLOUD DEPLOYMENTS
 # ============================================================================
 
@@ -134,6 +197,18 @@ deploy-eks: validate-env ## Deploy to Amazon EKS
 deploy-gke: validate-env ## Deploy to Google GKE
 	@echo "☁️  Deploying to GKE..."
 	@bash $(ENTRYPOINTS_DIR)/deploy-gke.sh
+
+# ============================================================================
+# OSD DEPLOYMENTS (OpenShift Dedicated on GCP)
+# ============================================================================
+
+deploy-osd-gcp: validate-env ## Deploy to OpenShift Dedicated on GCP (Helm)
+	@echo "☁️  Deploying to OpenShift Dedicated on GCP..."
+	@bash $(ENTRYPOINTS_DIR)/deploy-osd-gcp.sh
+
+deploy-osd-gcp-operator: validate-env ## Deploy to OSD-GCP using operator
+	@echo "☁️  Deploying to OSD-GCP with operator..."
+	@bash $(ENTRYPOINTS_DIR)/deploy-osd-gcp-operator.sh
 
 # ============================================================================
 # TESTING
