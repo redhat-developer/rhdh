@@ -1,5 +1,12 @@
 import { Page, expect, Locator } from "@playwright/test";
 import { UIhelper } from "../../utils/ui-helper";
+import {
+  getTranslations,
+  getCurrentLanguage,
+} from "../../e2e/localization/locale";
+
+const t = getTranslations();
+const lang = getCurrentLanguage();
 
 export class Extensions {
   private page: Page;
@@ -7,12 +14,12 @@ export class Extensions {
   private uiHelper: UIhelper;
 
   private commonHeadings = [
-    "Versions",
-    "Author",
-    "Tags",
-    "Category",
-    "Publisher",
-    "Support Provider",
+    t["plugin.marketplace"][lang]["metadata.versions"],
+    t["plugin.marketplace"][lang]["search.author"],
+    t["plugin.marketplace"][lang]["package.tags"],
+    t["plugin.marketplace"][lang]["metadata.category"],
+    t["plugin.marketplace"][lang]["metadata.publisher"],
+    t["plugin.marketplace"][lang]["metadata.supportProvider"],
   ];
   private tableHeaders = [
     "Package name",
@@ -31,7 +38,11 @@ export class Extensions {
   async clickReadMoreByPluginTitle(pluginTitle: string) {
     const allCards = this.page.locator(".v5-MuiPaper-outlined");
     const targetCard = allCards.filter({ hasText: pluginTitle });
-    await targetCard.getByRole("link", { name: "Read more" }).click();
+    await targetCard
+      .getByRole("link", {
+        name: t["plugin.marketplace"][lang]["common.readMore"],
+      })
+      .click();
   }
 
   async selectDropdown(name: string) {
@@ -53,13 +64,17 @@ export class Extensions {
   }
 
   async selectSupportTypeFilter(supportType: string) {
-    await this.selectDropdown("Support type");
+    await this.selectDropdown(
+      t["plugin.marketplace"][lang]["search.supportType"],
+    );
     await this.toggleOption(supportType);
     await this.page.keyboard.press("Escape");
   }
 
   async resetSupportTypeFilter(supportType: string) {
-    await this.selectDropdown("Support type");
+    await this.selectDropdown(
+      t["plugin.marketplace"][lang]["search.supportType"],
+    );
     await this.toggleOption(supportType);
     await this.page.keyboard.press("Escape");
   }
@@ -98,7 +113,9 @@ export class Extensions {
     ).toBeVisible();
 
     if (includeAbout) {
-      await this.uiHelper.verifyText("About");
+      await this.uiHelper.verifyText(
+        t["plugin.marketplace"][lang]["metadata.about"],
+      );
     }
 
     await this.verifyMultipleHeadings(headings);
@@ -107,7 +124,11 @@ export class Extensions {
       await this.uiHelper.verifyTableHeadingAndRows(this.tableHeaders);
     }
 
-    await this.page.getByRole("button", { name: "close" }).click();
+    await this.page
+      .getByRole("button", {
+        name: "close",
+      })
+      .click();
   }
 
   async verifySupportTypeBadge({
