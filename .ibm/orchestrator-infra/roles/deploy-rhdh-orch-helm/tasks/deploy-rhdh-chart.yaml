@@ -31,7 +31,7 @@
   ignore_errors: true
 
 - name: Update helm dependencies
-  environment: 
+  environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
   ansible.builtin.shell: |
     helm dependency build charts/backstage
@@ -41,7 +41,7 @@
 - name: Get cluster domain and base
   ansible.builtin.shell: |
     oc get ingress.config.openshift.io/cluster -o jsonpath='{.spec.domain}'
-  environment: 
+  environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
   register: dom_url
 
@@ -70,7 +70,7 @@
       ansible.builtin.template:
         src: values.yaml.j2
         dest: "{{ rhdh_config_dir }}/values.yaml"
-        mode: '0644'
+        mode: "0644"
 
     - name: Update RHDH + orchestrator chart with values.yaml
       kubernetes.core.helm:
@@ -82,7 +82,7 @@
         kubeconfig: "{{ kubeconfig_path }}"
         values_files:
           - "{{ rhdh_config_dir }}/values.yaml"
-    
+
     - name: Restart deployment/backstage-developer-hub
       environment:
         KUBECONFIG: "{{ kubeconfig_path }}"
@@ -103,7 +103,7 @@
       environment:
         KUBECONFIG: "{{ kubeconfig_path }}"
       ansible.builtin.shell: |
-         oc get cm backstage-dynamic-plugins -n rhdh  -o json | jq '.data."dynamic-plugins.yaml"' -r
+        oc get cm backstage-dynamic-plugins -n rhdh  -o json | jq '.data."dynamic-plugins.yaml"' -r
       register: backstage_dynamic_plugins
       retries: 12
       delay: 30
@@ -165,5 +165,5 @@
       when: verify_orchestrator_plugins|bool
       debug:
         msg: "{{ orchestrator_plugin_verification.stdout_lines }}"
-      
+
   when: deploy_specific_dynamic_plugins|bool

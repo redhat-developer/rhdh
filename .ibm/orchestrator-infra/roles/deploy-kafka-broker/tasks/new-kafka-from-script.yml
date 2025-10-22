@@ -13,14 +13,14 @@
       export WORKFLOW_NAMESPACE="{{ workflow_namespace }}"
       ./eventing-automate-install.sh
     dest: "{{ kafka_work_dir }}/run-evening-automate-install-script.sh"
-    mode: '0755'
+    mode: "0755"
 
 - name: Install Kafka with eventing automated install script
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
   ansible.builtin.shell: |
-   ./run-evening-automate-install-script.sh 2>&1 |\
-    tee eventing-automate-install.log; exit ${PIPESTATUS[0]}
+    ./run-evening-automate-install-script.sh 2>&1 |\
+     tee eventing-automate-install.log; exit ${PIPESTATUS[0]}
   args:
     chdir: "{{ kafka_work_dir }}"
   register: kafka_deploy

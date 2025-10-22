@@ -8,7 +8,7 @@
   ansible.builtin.file:
     path: "{{ ansible_user_dir }}/serverless-workflows"
     state: directory
-    mode: '0755'
+    mode: "0755"
 
 - name: Set workflow directory fact
   ansible.builtin.set_fact:

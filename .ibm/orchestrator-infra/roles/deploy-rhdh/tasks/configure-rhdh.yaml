@@ -98,13 +98,13 @@
     KUBECONFIG: "{{ kubeconfig_path }}"
   block:
     - name: Check if backstage-backend-auth-secret already exists
-      ansible.builtin.shell: |  
+      ansible.builtin.shell: |
         oc get secret backstage-backend-auth-secret -n {{ rhdh_ns }} -o jsonpath='{.metadata.name}' 2>/dev/null || echo ""
       register: existing_backend_secret
       failed_when: false
 
     - name: Capture backstage backend secret if it exists
-      ansible.builtin.shell: |  
+      ansible.builtin.shell: |
         oc get secret backstage-backend-auth-secret -n {{ rhdh_ns }} -o jsonpath='{.data.BACKEND_SECRET}'
       register: tmp_backend_secret
       failed_when: false
@@ -127,7 +127,7 @@
       when: existing_backend_secret.stdout == ''
 
     - name: Create new secret backstage-backend-auth-secret with manually identified variable values.
-      ansible.builtin.shell: |  
+      ansible.builtin.shell: |
         oc create secret generic backstage-backend-auth-secret -n {{ rhdh_ns }} --from-env-file={{ rhdh_config_dir }}/backstage-backend-auth-secret.txt
       when: existing_backend_secret.stdout == ''
 

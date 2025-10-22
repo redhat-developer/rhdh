@@ -27,7 +27,7 @@ warn() { echo -e "${YELLOW}[WARN]${NC} $*"; }
 info() { echo -e "${BLUE}[INFO]${NC} $*"; }
 
 print_help() {
-  cat <<EOF
+  cat << EOF
 Usage: $(basename "$0") [OPTIONS]
 
 Deploy Orchestrator Infrastructure without RHDH/Backstage
@@ -97,7 +97,7 @@ while [[ $# -gt 0 ]]; do
       DRY_RUN="true"
       shift
       ;;
-    -h|--help)
+    -h | --help)
       print_help
       exit 0
       ;;
@@ -112,30 +112,30 @@ done
 # Check prerequisites
 log "Checking prerequisites..."
 
-if ! command -v oc >/dev/null 2>&1; then
+if ! command -v oc > /dev/null 2>&1; then
   error "oc CLI not installed. Please install OpenShift CLI."
   exit 1
 fi
 
-if ! command -v ansible-playbook >/dev/null 2>&1; then
+if ! command -v ansible-playbook > /dev/null 2>&1; then
   error "ansible-playbook not installed. Please install Ansible."
   exit 1
 fi
 
-if ! oc whoami >/dev/null 2>&1; then
+if ! oc whoami > /dev/null 2>&1; then
   error "Not logged into OpenShift. Please run 'oc login' first."
   exit 1
 fi
 
-info "Cluster: $(oc whoami --show-console 2>/dev/null || echo "unknown")"
+info "Cluster: $(oc whoami --show-console 2> /dev/null || echo "unknown")"
 info "User: $(oc whoami)"
 
 # Check Python kubernetes library
-if ! python3 -c "import kubernetes" 2>/dev/null; then
+if ! python3 -c "import kubernetes" 2> /dev/null; then
   warn "Python kubernetes library not installed. Installing..."
-  pip3 install kubernetes --user --break-system-packages 2>/dev/null || \
-    pip3 install kubernetes --user 2>/dev/null || \
-    error "Failed to install kubernetes library. Please install manually: pip3 install kubernetes"
+  pip3 install kubernetes --user --break-system-packages 2> /dev/null \
+    || pip3 install kubernetes --user 2> /dev/null \
+    || error "Failed to install kubernetes library. Please install manually: pip3 install kubernetes"
 fi
 
 if [ "$DRY_RUN" = "true" ]; then
@@ -156,11 +156,11 @@ fi
 # Clean namespace if requested
 if [ "$CLEAN" = "true" ]; then
   log "Cleaning namespace $NAMESPACE..."
-  oc delete namespace "$NAMESPACE" --ignore-not-found --wait=false 2>/dev/null || true
-  
+  oc delete namespace "$NAMESPACE" --ignore-not-found --wait=false 2> /dev/null || true
+
   # Wait for namespace deletion
   for _ in {1..30}; do
-    if ! oc get namespace "$NAMESPACE" >/dev/null 2>&1; then
+    if ! oc get namespace "$NAMESPACE" > /dev/null 2>&1; then
       break
     fi
     echo -n "."

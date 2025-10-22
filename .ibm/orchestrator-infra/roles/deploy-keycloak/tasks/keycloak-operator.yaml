@@ -16,7 +16,7 @@
 - name: Apply keycloak operator custom resources
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
-  ansible.builtin.shell: |  
+  ansible.builtin.shell: |
     oc apply -f {{ keycloak_work_dir }}/{{ item[:-3] }}
   loop:
     - operator_group.yaml.j2

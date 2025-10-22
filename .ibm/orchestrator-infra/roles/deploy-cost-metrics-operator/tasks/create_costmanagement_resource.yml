@@ -5,4 +5,4 @@
   ansible.builtin.shell: |
     cat << EOF | oc apply -f -
     {{ lookup('template', 'costmanagement_resource.yaml.j2') }}
-    EOF 
+    EOF

@@ -33,7 +33,7 @@
       register: op_deploy
       retries: 5
       delay: 30
-      until: op_deploy is success      
+      until: op_deploy is success
 
 - name: Label gitops namespace for argo management
   environment:

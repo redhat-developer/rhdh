@@ -1,4 +1,3 @@
-
 - name: Patch backstage-developer-hub deployment to disable TLS verification
   ansible.builtin.shell: |
     oc patch deployment backstage-developer-hub -p \
@@ -8,7 +7,7 @@
     KUBECONFIG: "{{ kubeconfig_path }}"
 
 - name: Get Keycloak route
-  ansible.builtin.shell: |  
+  ansible.builtin.shell: |
     oc get routes -A -l app=keycloak -o json | jq '.items[0].spec.host' -r
   register: keycloak_route
   failed_when: keycloak_route.stdout == ''
@@ -27,7 +26,7 @@
   ansible.builtin.template:
     src: backstage-developer-hub-app-config.yaml.j2
     dest: "{{ rhdh_config_dir }}/backstage-developer-hub-app-config.yaml"
-    mode: '0644'
+    mode: "0644"
 
 - name: Apply backstage-developer-hub-app-config.yaml to cluster
   ansible.builtin.shell: |
@@ -41,7 +40,7 @@
   ansible.builtin.template:
     src: rbac-policy.csv.j2
     dest: "{{ rhdh_config_dir }}/rbac-policy.csv"
-    mode: '0644'
+    mode: "0644"
 
 # # https://stackoverflow.com/questions/51291521/kubernetes-configmap-prints-n-instead-of-a-newline
 # - name: Remove empty space before newline character of yaml files to keep configmap data formatting
@@ -54,4 +53,3 @@
   ansible.builtin.shell: |
     oc create configmap rhdh-config-rbac-policy -n {{ rhdh_ns }} --from-file="rbac-policy.csv"={{ rhdh_config_dir }}/rbac-policy.csv || \
     oc set data cm/rhdh-config-rbac-policy -n {{ rhdh_ns }} --from-file="rbac-policy.csv"={{ rhdh_config_dir }}/rbac-policy.csv
-

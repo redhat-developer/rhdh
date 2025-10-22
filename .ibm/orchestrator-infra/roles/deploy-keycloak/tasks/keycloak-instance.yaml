@@ -10,7 +10,7 @@
 - name: Apply Keycloak instance custom resources
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
-  ansible.builtin.shell: |  
+  ansible.builtin.shell: |
     oc apply -f {{ keycloak_work_dir }}/{{ item[:-3] }}
   loop:
     - keycloak.yaml.j2
@@ -23,10 +23,9 @@
   ansible.builtin.shell: |
     set -e
     oc wait keycloak sso-idp -n rhsso-operator --timeout=5m --for=jsonpath="{.status.ready}=true"
-    oc wait --for=condition=Ready pod --all -n rhsso-operator --timeout=6m  
+    oc wait --for=condition=Ready pod --all -n rhsso-operator --timeout=6m
   register: keycloak_op_deploy
   retries: 9
   delay: 30
   until: keycloak_op_deploy is success
-
 # USERS loop

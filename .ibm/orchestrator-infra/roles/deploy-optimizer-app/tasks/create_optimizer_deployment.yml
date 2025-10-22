@@ -5,7 +5,7 @@
   ansible.builtin.template:
     src: optimizer-deployment.yaml.j2
     dest: /tmp/optimizer-deployment.yaml
-    mode: '0644'
+    mode: "0644"
   register: deployment_template_result
 
 - name: Apply the rendered deployment
@@ -13,4 +13,4 @@
     KUBECONFIG: "{{ kubeconfig_path }}"
   ansible.builtin.shell: |
     oc apply -f /tmp/optimizer-deployment.yaml
-  when: deployment_template_result.changed 
+  when: deployment_template_result.changed

@@ -1,4 +1,4 @@
-- name: Deploy custom catalogsource 
+- name: Deploy custom catalogsource
   when: odf_index_image != ''
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
@@ -38,11 +38,11 @@
 
 - name: Create subscription from latest channel
   environment:
-    KUBECONFIG: "{{ kubeconfig_path }}" 
+    KUBECONFIG: "{{ kubeconfig_path }}"
   vars:
     tmp_catalog_source: "{{ 'community-operators' if odf_index_image == '' else 'odf-node-recovery-operator' }}"
   block:
-    - name: Capture channels from orchestrator operator package manifests 
+    - name: Capture channels from orchestrator operator package manifests
       ansible.builtin.shell: |
         oc get packagemanifests -l catalog={{ tmp_catalog_source }} -o json |\
         jq -r '.items[] | select(.metadata.name=="odf-node-recovery-operator") | .status.channels[].name'
@@ -52,7 +52,7 @@
       retries: 15
 
     - name: Set Orchestrator Operator channel to first channel available
-      ansible.builtin.set_fact: 
+      ansible.builtin.set_fact:
         op_channel: "{{ tmp_cs_channels['stdout_lines'] | first }}"
 
     - name: Create Operator Subscription

@@ -1,13 +1,13 @@
 - name: Enable ceph tools
   environment:
-    KUBECONFIG: "{{ kubeconfig_path }}" 
+    KUBECONFIG: "{{ kubeconfig_path }}"
   ansible.builtin.shell: |
     oc patch storagecluster ocs-storagecluster -n openshift-storage --type json --patch '[{ "op": "replace", "path": "/spec/enableCephTools", "value": true }]'
-    oc patch OCSInitialization ocsinit -n openshift-storage --type json --patch  '[{ "op": "replace", "path": "/spec/enableCephTools", "value": true }]' 
+    oc patch OCSInitialization ocsinit -n openshift-storage --type json --patch  '[{ "op": "replace", "path": "/spec/enableCephTools", "value": true }]'
 
 - name: Capture ceph tools pod
   environment:
-    KUBECONFIG: "{{ kubeconfig_path }}" 
+    KUBECONFIG: "{{ kubeconfig_path }}"
   ansible.builtin.shell: |
     oc get pods -n openshift-storage -l app=rook-ceph-tools --no-headers=true | awk '/Running/ {print $1}'
   register: ceph_tools_pod
@@ -17,7 +17,7 @@
 
 - name: Capture ceph tools pod
   environment:
-    KUBECONFIG: "{{ kubeconfig_path }}" 
+    KUBECONFIG: "{{ kubeconfig_path }}"
   ansible.builtin.shell: |
     oc exec -it -n openshift-storage {{ ceph_tools_pod.stdout_lines[0] }} -- ceph status -f json |\
      jq '.health.status' -r

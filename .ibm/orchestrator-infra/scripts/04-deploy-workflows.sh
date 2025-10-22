@@ -17,7 +17,7 @@ git clone "${WORKFLOW_REPO}" "${TEMP_DIR}/workflows"
 echo "=== Deploying User Onboarding Workflow ==="
 
 # Criar ConfigMap com o workflow definition
-cat <<'EOF' | oc apply -f -
+cat << 'EOF' | oc apply -f -
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -89,7 +89,7 @@ data:
 EOF
 
 # Criar SonataFlow CR para o workflow
-cat <<EOF | oc apply -f -
+cat << EOF | oc apply -f -
 apiVersion: sonataflow.org/v1alpha08
 kind: SonataFlow
 metadata:
@@ -131,7 +131,7 @@ EOF
 # Deploy workflow de exemplo - Infrastructure Provisioning
 echo "=== Deploying Infrastructure Provisioning Workflow ==="
 
-cat <<EOF | oc apply -f -
+cat << EOF | oc apply -f -
 apiVersion: sonataflow.org/v1alpha08
 kind: SonataFlow
 metadata:
@@ -196,7 +196,7 @@ spec:
 EOF
 
 # Criar Service Account para os workflows
-cat <<EOF | oc apply -f -
+cat << EOF | oc apply -f -
 apiVersion: v1
 kind: ServiceAccount
 metadata:

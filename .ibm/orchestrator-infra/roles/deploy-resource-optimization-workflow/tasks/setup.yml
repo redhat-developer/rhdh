@@ -3,7 +3,7 @@
   ansible.builtin.file:
     path: "{{ workflow_work_dir }}"
     state: directory
-    mode: '0755'
+    mode: "0755"
 
 - name: Find the namespace where SonataFlow services are deployed
   environment:
@@ -40,7 +40,7 @@
   failed_when: false
 
 - name: Create namespace if it doesn't exist (for non-helm managed deployments)
-  when: 
+  when:
     - not helm_managed_rhdh | bool
     - workflow_deployment_namespace != "sonataflow-infra"
     - namespace_exists.rc != 0
@@ -54,12 +54,12 @@
   ansible.builtin.debug:
     msg: "Namespace {{ workflow_deployment_namespace }} {{ 'already exists' if namespace_exists.rc == 0 else 'will be created' }}"
 
-- name: Label workflow namespace 
+- name: Label workflow namespace
   when: not helm_managed_rhdh | bool
   shell: |
-      oc label ns {{ workflow_deployment_namespace }} rhdh.redhat.com/workflow-namespace=""
+    oc label ns {{ workflow_deployment_namespace }} rhdh.redhat.com/workflow-namespace=""
   environment:
-    KUBECONFIG: "{{ kubeconfig_path }}"   
+    KUBECONFIG: "{{ kubeconfig_path }}"
 
 - name: Copy sshkeys secret from sonataflow namespace (for non-helm managed deployments)
   when: not helm_managed_rhdh | bool

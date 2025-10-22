@@ -50,23 +50,23 @@
               app.kubernetes.io/name: postgres
           spec:
             containers:
-            - name: postgresql
-              image: registry.redhat.io/rhel8/postgresql-15:latest
-              ports:
-              - containerPort: 5432
-              env:
-              - name: POSTGRESQL_DATABASE
-                value: "sonataflow"
-              - name: POSTGRESQL_USER
-                value: "sonataflow"
-              - name: POSTGRESQL_PASSWORD
-                value: "postgres"
-              volumeMounts:
-              - name: postgresql-data
-                mountPath: /var/lib/postgresql/data
+              - name: postgresql
+                image: registry.redhat.io/rhel8/postgresql-15:latest
+                ports:
+                  - containerPort: 5432
+                env:
+                  - name: POSTGRESQL_DATABASE
+                    value: "sonataflow"
+                  - name: POSTGRESQL_USER
+                    value: "sonataflow"
+                  - name: POSTGRESQL_PASSWORD
+                    value: "postgres"
+                volumeMounts:
+                  - name: postgresql-data
+                    mountPath: /var/lib/postgresql/data
             volumes:
-            - name: postgresql-data
-              emptyDir: {}
+              - name: postgresql-data
+                emptyDir: {}
 
 - name: Create PostgreSQL Service
   kubernetes.core.k8s:
@@ -81,8 +81,8 @@
           app.kubernetes.io/name: postgres
       spec:
         ports:
-        - port: 5432
-          targetPort: 5432
+          - port: 5432
+            targetPort: 5432
         selector:
           app.kubernetes.io/name: postgres
 

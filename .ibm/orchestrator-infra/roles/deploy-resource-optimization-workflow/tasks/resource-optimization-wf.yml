@@ -58,7 +58,7 @@
 
 - name: Display PostgreSQL service status
   ansible.builtin.debug:
-    msg: 
+    msg:
       - "Backstage PostgreSQL in workflow namespace ({{ workflow_deployment_namespace }}): {{ 'exists' if postgres_service_exists.rc == 0 else 'not found' }}"
       - "Backstage PostgreSQL found in namespace: {{ backstage_postgres_namespace }}"
 
@@ -180,7 +180,7 @@
 
 - name: Display OCP credentials for debugging
   ansible.builtin.debug:
-    msg: 
+    msg:
       - "OCP_URL: {{ ocp_url.stdout }}"
       - "OCP_TOKEN: {{ ocp_token.stdout[:20] }}..." # Only show first 20 chars for security
 

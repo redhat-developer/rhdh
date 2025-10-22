@@ -5,7 +5,7 @@
   ansible.builtin.template:
     src: app-config-cm.yaml.j2
     dest: /tmp/app-config-cm.yaml
-    mode: '0644'
+    mode: "0644"
   register: template_result
 
 - name: Apply the rendered configmap
@@ -13,4 +13,4 @@
     KUBECONFIG: "{{ kubeconfig_path }}"
   ansible.builtin.shell: |
     oc apply -f /tmp/app-config-cm.yaml
-  when: template_result.changed 
+  when: template_result.changed

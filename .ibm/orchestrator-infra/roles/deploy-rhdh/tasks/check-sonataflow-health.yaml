@@ -29,7 +29,7 @@
   ansible.builtin.set_fact:
     data_index_ready_replicas: "{{ data_index_deployment_check.stdout.split()[1].split('/')[0] | default('0') }}"
     data_index_desired_replicas: "{{ data_index_deployment_check.stdout.split()[1].split('/')[1] | default('1') }}"
-  when: 
+  when:
     - sonataflow_platform_check.stdout != "NOT_FOUND"
     - data_index_deployment_check.stdout != "NOT_FOUND"
 
@@ -37,14 +37,14 @@
   ansible.builtin.set_fact:
     jobs_service_ready_replicas: "{{ jobs_service_deployment_check.stdout.split()[1].split('/')[0] | default('0') }}"
     jobs_service_desired_replicas: "{{ jobs_service_deployment_check.stdout.split()[1].split('/')[1] | default('1') }}"
-  when: 
+  when:
     - sonataflow_platform_check.stdout != "NOT_FOUND"
     - jobs_service_deployment_check.stdout != "NOT_FOUND"
 
 - name: Check if data-index deployment is unhealthy
   ansible.builtin.set_fact:
     data_index_unhealthy: "{{ data_index_ready_replicas != data_index_desired_replicas }}"
-  when: 
+  when:
     - sonataflow_platform_check.stdout != "NOT_FOUND"
     - data_index_deployment_check.stdout != "NOT_FOUND"
     - data_index_ready_replicas is defined
@@ -53,7 +53,7 @@
 - name: Check if jobs-service deployment is unhealthy
   ansible.builtin.set_fact:
     jobs_service_unhealthy: "{{ jobs_service_ready_replicas != jobs_service_desired_replicas }}"
-  when: 
+  when:
     - sonataflow_platform_check.stdout != "NOT_FOUND"
     - jobs_service_deployment_check.stdout != "NOT_FOUND"
     - jobs_service_ready_replicas is defined
@@ -76,7 +76,7 @@
     oc rollout restart deployment sonataflow-platform-data-index-service -n {{ rhdh_ns }}
     oc rollout status deployment sonataflow-platform-data-index-service -n {{ rhdh_ns }} --timeout=300s
   register: data_index_restart_result
-  when: 
+  when:
     - sonataflow_platform_check.stdout != "NOT_FOUND"
     - data_index_unhealthy | default(false)
 
@@ -88,7 +88,7 @@
     oc rollout restart deployment sonataflow-platform-jobs-service -n {{ rhdh_ns }}
     oc rollout status deployment sonataflow-platform-jobs-service -n {{ rhdh_ns }} --timeout=300s
   register: jobs_service_restart_result
-  when: 
+  when:
     - sonataflow_platform_check.stdout != "NOT_FOUND"
     - jobs_service_unhealthy | default(false)
 
@@ -105,7 +105,7 @@
   ansible.builtin.shell: |
     # Wait a moment for pods to start
     sleep 10
-    
+
     # Check data-index pod logs for authentication errors
     DATA_INDEX_POD=$(oc get pods -n {{ rhdh_ns }} -l app.kubernetes.io/component=sonataflow-platform-data-index-service --no-headers | head -1 | awk '{print $1}')
     if [ ! -z "$DATA_INDEX_POD" ]; then
@@ -117,7 +117,7 @@
         echo "SUCCESS: No authentication errors found in data-index pod"
       fi
     fi
-    
+
     # Check jobs-service pod logs for authentication errors
     JOBS_POD=$(oc get pods -n {{ rhdh_ns }} -l app.kubernetes.io/component=sonataflow-platform-jobs-service --no-headers | head -1 | awk '{print $1}')
     if [ ! -z "$JOBS_POD" ]; then

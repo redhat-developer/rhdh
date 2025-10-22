@@ -9,4 +9,4 @@
   import_tasks: create_costmanagement_resource.yml
 
 - name: Label Namespaces for Cost Management
-  import_tasks: label_namespaces.yml 
+  import_tasks: label_namespaces.yml

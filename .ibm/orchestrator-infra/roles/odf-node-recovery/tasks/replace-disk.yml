@@ -18,7 +18,7 @@
         set -e 
         rm -rf {{ replace_disk }}
         virsh detach-disk {{ odf_test_worker_vm }} {{ replace_dev }} --live
-        qemu-img create -f qcow2 {{ replace_disk }} 100G        
+        qemu-img create -f qcow2 {{ replace_disk }} 100G
 
 - name: Wait for ceph to realize the disk is gone
   ansible.builtin.import_tasks: ceph-status.yml
@@ -29,4 +29,4 @@
 - name: Reattach disk
   become: true
   ansible.builtin.shell: |
-    virsh attach-disk  {{ odf_test_worker_vm }} {{ replace_disk }} {{ replace_dev }} --subdriver qcow2  
+    virsh attach-disk  {{ odf_test_worker_vm }} {{ replace_disk }} {{ replace_dev }} --subdriver qcow2

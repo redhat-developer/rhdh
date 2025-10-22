@@ -1,6 +1,6 @@
 - name: Apply node recovery
   environment:
-    KUBECONFIG: "{{ kubeconfig_path }}" 
+    KUBECONFIG: "{{ kubeconfig_path }}"
   ansible.builtin.shell: |
     cat <<EOF | oc apply -f -
     apiVersion: odf.openshift.io/v1alpha1
@@ -17,7 +17,7 @@
 
 - name: Wait for node recovery to complete
   environment:
-    KUBECONFIG: "{{ kubeconfig_path }}" 
+    KUBECONFIG: "{{ kubeconfig_path }}"
   ansible.builtin.shell: |
     oc get noderecoveries.odf.openshift.io noderecovery-test -o json | jq '.status.phase' -r
   register: node_recovery

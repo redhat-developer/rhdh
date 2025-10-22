@@ -10,6 +10,6 @@
 
 - name: Patch Installplan
   ansible.builtin.shell: |
-     oc patch installplan {{ installplan_name.stdout }} -n {{ item }} --type merge --patch '{"spec":{"approved":true}}'
+    oc patch installplan {{ installplan_name.stdout }} -n {{ item }} --type merge --patch '{"spec":{"approved":true}}'
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"

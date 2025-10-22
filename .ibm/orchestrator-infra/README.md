@@ -1,6 +1,7 @@
 # Orchestrator Infrastructure Only
 
-This project deploys the complete infrastructure needed for the Orchestrator plugin without RHDH/Backstage. It includes all the supporting services required for workflow orchestration.
+This project deploys the complete infrastructure needed for the Orchestrator plugin without
+RHDH/Backstage. It includes all the supporting services required for workflow orchestration.
 
 ## Components
 
@@ -191,7 +192,7 @@ oc logs -l app=sonataflow-platform-data-index-service -n orchestrator-infra
 ```bash
 # Check workflow status
 oc get sonataflow -n orchestrator-infra
-oc describe sonataflow <workflow-name> -n orchestrator-infra
+oc describe sonataflow orchestrator-infra < workflow-name > -n
 ```
 
 ## Uninstall
@@ -210,6 +211,7 @@ oc delete application orchestrator-infra -n openshift-gitops
 ## Support
 
 For issues or questions:
+
 - Check the logs: `oc logs -n orchestrator-infra <pod-name>`
 - Review events: `oc get events -n orchestrator-infra`
 - Consult the [Orchestrator documentation](https://github.com/parodos-dev/orchestrator-helm-chart)

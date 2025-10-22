@@ -8,7 +8,7 @@
 
 - name: Get cluster name
   environment:
-    KUBECONFIG: "{{ kubeconfig_path }}" 
+    KUBECONFIG: "{{ kubeconfig_path }}"
   ansible.builtin.shell: |
     oc cluster-info
   register: cluster_info
@@ -41,7 +41,7 @@
     query: "[?name=='{{ cluster_name }}'].status | [0]"
   ansible.builtin.set_fact:
     cluster_status: "{{ clusters_json | json_query(query) }}"
-  failed_when: cluster_status == ''  
+  failed_when: cluster_status == ''
 
 - name: Get infraenv id from assisted installer
   ansible.builtin.uri:
@@ -63,7 +63,7 @@
 
 - name: Delete node recovery if it exists
   environment:
-    KUBECONFIG: "{{ kubeconfig_path }}" 
+    KUBECONFIG: "{{ kubeconfig_path }}"
   ansible.builtin.shell: |
     oc delete noderecoveries.odf.openshift.io noderecovery-test
   ignore_errors: true

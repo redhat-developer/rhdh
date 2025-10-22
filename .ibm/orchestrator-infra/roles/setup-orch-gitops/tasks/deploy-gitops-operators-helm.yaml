@@ -15,7 +15,7 @@
     release_namespace: orchestrator-gitops
     values_files:
       - "{{ orch_gitops_work_dir }}/janus-idp-bootstrap/charts/pipelines-operator/values.yaml"
-    chart_ref:  "{{ orch_gitops_work_dir }}/janus-idp-bootstrap/charts/pipelines-operator"
+    chart_ref: "{{ orch_gitops_work_dir }}/janus-idp-bootstrap/charts/pipelines-operator"
     kubeconfig: "{{ kubeconfig_path }}"
     create_namespace: true
   register: pipeline_deploy
@@ -29,7 +29,7 @@
     release_namespace: orchestrator-gitops
     values_files:
       - "{{ orch_gitops_work_dir }}/janus-idp-bootstrap/charts/gitops-operator/values.yaml"
-    chart_ref:  "{{ orch_gitops_work_dir }}/janus-idp-bootstrap/charts/gitops-operator"
+    chart_ref: "{{ orch_gitops_work_dir }}/janus-idp-bootstrap/charts/gitops-operator"
     kubeconfig: "{{ kubeconfig_path }}"
     set_values:
       - value: namespaces={orchestrator-gitops}

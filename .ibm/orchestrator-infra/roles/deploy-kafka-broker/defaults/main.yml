@@ -7,7 +7,7 @@ kafka_install_script_dir: "{{ kafka_work_dir }}/orchestrator-go-operator/docs/ma
 # How to deploy Kafka
 # Options:
 #   new_from_script - Deploy new kafka broker instance from script
-kafka_deploy_type: 'new-from-script'
+kafka_deploy_type: "new-from-script"
 
 # Name of Kafka broker
 kafka_broker_name: kafka-broker
@@ -16,13 +16,13 @@ kafka_broker_name: kafka-broker
 kafka_broker_namespace: sonataflow-infra
 
 # Namespace containing orchestrator resource (Auto identified)
-orchestrator_namespace: ''
+orchestrator_namespace: ""
 
 # Name of orchestrator resource (Auto identified)
-orchestrator_name: ''
+orchestrator_name: ""
 
 # Milestone to deploy based on
-milestone: ''
+milestone: ""
 
 # True if using Go based Orchestrator operator
 # False assume Helm based Orchestrator operator

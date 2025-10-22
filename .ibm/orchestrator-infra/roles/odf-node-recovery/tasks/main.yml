@@ -5,9 +5,9 @@
 - name: Setup
   ansible.builtin.import_tasks: setup.yml
 
-- name: Test that node recovery can successfully enable and disable ceph tools 
+- name: Test that node recovery can successfully enable and disable ceph tools
   when: ceph_tools_test|bool
-  block: 
+  block:
     - name: Disable ceph tools
       ansible.builtin.import_tasks: disable-ceph-tools.yml
     - name: Ensure node recovery can enable/disable ceph tools itself

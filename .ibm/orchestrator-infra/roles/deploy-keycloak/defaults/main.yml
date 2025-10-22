@@ -43,12 +43,10 @@ keycloak_users:
   - catalog-user-no-workflow
 
 # Appended to keycloak users to create email address
-keycloak_email_domain: 'redhat.com'
+keycloak_email_domain: "redhat.com"
 
 # Password for all users
 keycloak_password: test
 
 # Set `true` to completely remove the keycloak operator and instance
 keycloak_delete: false
-
-

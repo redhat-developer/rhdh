@@ -14,7 +14,7 @@ echo "=== Deploying PostgreSQL for Orchestrator ==="
 oc create namespace ${NAMESPACE} --dry-run=client -o yaml | oc apply -f -
 
 # Criar Secret do PostgreSQL
-cat <<EOF | oc apply -f -
+cat << EOF | oc apply -f -
 apiVersion: v1
 kind: Secret
 metadata:
@@ -28,7 +28,7 @@ stringData:
 EOF
 
 # Criar PersistentVolumeClaim
-cat <<EOF | oc apply -f -
+cat << EOF | oc apply -f -
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -43,7 +43,7 @@ spec:
 EOF
 
 # Deploy do PostgreSQL
-cat <<EOF | oc apply -f -
+cat << EOF | oc apply -f -
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -111,7 +111,7 @@ spec:
 EOF
 
 # Criar Service
-cat <<EOF | oc apply -f -
+cat << EOF | oc apply -f -
 apiVersion: v1
 kind: Service
 metadata:
@@ -136,7 +136,7 @@ echo "=== Creating Orchestrator databases ==="
 sleep 10
 
 # Criar Job para inicializar os databases
-cat <<EOF | oc apply -f -
+cat << EOF | oc apply -f -
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -189,7 +189,7 @@ spec:
 EOF
 
 echo "=== Waiting for database initialization ==="
-oc wait job -l job-name --for=condition=Complete -n ${NAMESPACE} --timeout=60s 2>/dev/null || true
+oc wait job -l job-name --for=condition=Complete -n ${NAMESPACE} --timeout=60s 2> /dev/null || true
 
 echo "=== PostgreSQL deployment completed ==="
 echo "Connection details:"

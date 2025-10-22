@@ -38,7 +38,7 @@
       register: orch_example_cr
 
     - name: Configure sample orchestrator CR for custom inputs
-      when: 
+      when:
         - orch_go_operator|bool
         - customize_orch_cr_example|bool
       block:
@@ -50,7 +50,7 @@
         - name: Decode the YAML content
           ansible.builtin.set_fact:
             yaml_content: "{{ yaml_file.content | b64decode | from_yaml }}"
-        
+
         - name: Update rhdh name field
           ansible.builtin.set_fact:
             updated_yaml: "{{ yaml_content | combine({'spec': {'rhdh': yaml_content.spec.rhdh | combine({'name': 'backstage'}) }}, recursive=True) }}"
@@ -61,25 +61,25 @@
 
         - name: Orchestrator should not install rhdh if already deployed
           when: not orch_install_rhdh | bool
-          ansible.builtin.set_fact: 
+          ansible.builtin.set_fact:
             updated_yaml: "{{ updated_yaml | combine({'spec': {'rhdh': updated_yaml.spec.rhdh | combine({'installOperator': false}) }}, recursive=True) }}"
 
         - name: Enable tekton and gitops plugins
           when: deploy_with_gitops | bool
           block:
-            - name: Enable tekton 
+            - name: Enable tekton
               ansible.builtin.set_fact:
                 updated_yaml: "{{ updated_yaml | combine({'spec': {'tekton': updated_yaml.spec.tekton | combine({'enabled': true}) }}, recursive=True) }}"
 
             - name: Enable argocd
               ansible.builtin.set_fact:
                 updated_yaml: "{{ updated_yaml | combine({'spec': {'argocd': updated_yaml.spec.argocd | combine({'enabled': true}) }}, recursive=True) }}"
-       
+
         - name: Write the updated YAML content back to the file
           ansible.builtin.copy:
             dest: "{{ orch_deploy_work_dir }}/orchestrator.yaml"
             content: "{{ updated_yaml | to_yaml }}"
-            mode: '0644'
+            mode: "0644"
 
 - name: Generate Orchestrator CR yaml file from template
   when: not use_orch_cr_example|bool
