@@ -49,7 +49,7 @@ main() {
 
   export CHART_VERSION="1.8-157" # Fixed version should be used for release branches.
   export HELM_CHART_URL="oci://quay.io/rhdh/rhdh-hub-rhel9"
-  export TAG_NAME_BASE="1.8"
+  export TAG_NAME_BASE="1.8-157"
 
   case "$JOB_NAME" in
     *aks*helm*nightly*)
