@@ -48,7 +48,6 @@ main() {
   detect_container_platform
 
   export CHART_VERSION="1.8-157" # Fixed version should be used for release branches.
-  export CHART_VERSION_BASE="1.8-157-CI"
   export HELM_CHART_URL="oci://quay.io/rhdh/rhdh-hub-rhel9"
   export TAG_NAME_BASE="1.8"
 
