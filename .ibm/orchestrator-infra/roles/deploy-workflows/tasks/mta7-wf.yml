@@ -1,0 +1,112 @@
+- name: Set workflow version
+  vars:
+    wf_entry_var: mta-v7
+    wf_version_var: "{{ deploy_mta_7_version }}"
+  ansible.builtin.import_tasks: get-wf-version.yml
+
+- name: Deploy MTA workflow
+  kubernetes.core.helm:
+    chart_ref: orchestrator-workflows/mta-v7
+    kubeconfig: "{{ kubeconfig_path }}"
+    release_name: mta-v7
+    release_namespace: "{{ workflow_namespace }}"
+    chart_version: "{{ wf_version }}"
+
+- name: Patch location of sonataflow-server in case using separate namespace
+  shell: |
+    oc -n {{ workflow_namespace }} patch sonataflow mta-analysis-v7 --type merge -p '{"spec": { "persistence": { "postgresql": { "serviceRef": {"namespace": "sonataflow-infra"}}}}}'   
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  when: workflow_namespace != "sonataflow-infra"
+
+- name: Patch mta-analysis-v7 creds secret
+  shell: |
+    oc -n {{ workflow_namespace }} patch secret "mta-analysis-v7-creds" --type merge -p '{"data": { "NOTIFICATIONS_BEARER_TOKEN": "{{ notif_token | b64encode }}"}}'
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  register: mta_secret_patched  
+  retries: 10
+  delay: 10
+  until: mta_secret_patched.rc == 0  
+
+- name: Patch sonataflow secret info in case deployed postgres with RH catalog
+  shell: |
+    oc -n {{ workflow_namespace }} patch sonataflow mta-analysis-v7  --type merge -p '{"spec": { "persistence": { "postgresql": { "secretRef": {"userKey": "database-user","passwordKey": "database-password"}}}}}'
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  when: postgres_rh_install | bool
+
+- name: Wait for MTA hub pod to be deployed and running
+  shell: |
+    oc wait --for=condition=Ready --timeout=1s pods -l app.kubernetes.io/name=mta-hub -n openshift-mta
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  register: mta_hub_exists
+  retries: 40
+  delay: 15
+  until: mta_hub_exists.rc == 0    
+
+- name: Wait for MTA ui pod to be deployed and running
+  shell: |
+    oc wait --for=condition=Ready --timeout=5m pods -l role=mta-ui -n openshift-mta
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  register: mta_ui_exists
+  retries: 30
+  delay: 10
+  until: mta_ui_exists.rc == 0
+
+- name: Wait for MTA workflow pod to be deployed and running
+  shell: |
+    oc wait --for=condition=Ready --timeout=5m pods -l app=mta-analysis-v7 -n {{ workflow_namespace }}
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  register: mta_workflow_pod_exists
+  retries: 30
+  delay: 10
+  until: mta_workflow_pod_exists.rc == 0
+
+- name: Get MTA route
+  shell: 
+    oc -n openshift-mta get route mta -o json | jq -r ".spec.host"
+  register: mta_route
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"  
+  failed_when: mta_route.stderr != ''
+
+- name: Patch MTA configmap
+  shell: |
+    oc -n {{ workflow_namespace }} get cm mta-analysis-v7-props -o yaml |
+    sed -e 's|mta.url =.*|mta.url = ${MTA_URL:https://{{ mta_route.stdout }}}|' -e 's|quarkus.rest-client.mta_json.url =.*|quarkus.rest-client.mta_json.url = http://mta-ui.openshift-mta.svc.cluster.local:8080|'| 
+    oc apply -f -
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+
+- name: Edit 'mta-analysis-v7' Sontaflow CR
+  shell: |
+    oc -n {{ workflow_namespace }} patch sonataflow mta-analysis-v7 --type merge -p '{"spec": { "podTemplate": { "container": { "env": [{"name": "BACKSTAGE_NOTIFICATIONS_URL", "value": "http://backstage-backstage.'{{ backstage_ns }}'"}, {"name": "MTA_URL", "value": "https://'{{ mta_route.stdout }}'"}]}}}}'
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+
+- name: Wait for MTA pod to be ready
+  shell: |
+    oc wait -n {{ workflow_namespace }} pods -l "sonataflow.org/workflow-app=mta-analysis-v7" --for=condition=Ready=true --timeout=1s
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"  
+  register: mta_pod_ready
+  retries: 50
+  delay: 15
+  until: mta_pod_ready.rc == 0    
+
+- name: Wait for MTA deployment and resources to be ready
+  shell: |
+    set -e
+    oc wait --for=jsonpath='{.status.phase}=Succeeded' -n openshift-mta csv/mta-operator.v7.0.3 --timeout=1s
+    oc wait --for=condition=Ready=true pods -l "app.kubernetes.io/name=mta-ui" -n openshift-mta --timeout=1s
+    oc wait -n {{ workflow_namespace }} sonataflow/mta-analysis-v7 --for=condition=Running --timeout=1s
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  register: mta_ready
+  retries: 50
+  delay: 15
+  until: mta_ready is success  

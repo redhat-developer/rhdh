@@ -1,0 +1,9 @@
+---
+- name: Create log4j configmap for optimizer
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc create configmap log-config \
+      --from-file=log4j2.xml={{ role_path }}/templates/log4j2.xml \
+      -n "{{ optimizer_namespace }}" \
+      --dry-run=client -o yaml | oc apply -f - 

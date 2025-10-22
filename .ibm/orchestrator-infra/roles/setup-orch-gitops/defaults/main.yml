@@ -1,0 +1,44 @@
+---
+# Gitops Operators deploy method - Whether to install using Janus IDP Demo Helm charts
+# or manual steps
+# Options:
+#   `manual`: Install manually using docs (Recommended)
+#   `helm`  : Install use Demo helm charts
+orch_gitops_deploy_method: helm
+
+# Working directory for orchestrator gitops
+orch_gitops_work_dir: "{{ ansible_user_dir }}/orch-gitops"
+
+# Milestone to deploy based on
+milestone: ''
+
+# Gitops git repo
+# Default: https://github.com/rhdhorchestrator/janus-idp-bootstrap.git
+orch_gitops_repo: https://github.com/rhdhorchestrator/janus-idp-bootstrap.git
+
+# Gitops git repo branch
+# Default: main
+orch_gitops_branch: main
+
+# If True, Gitops will be uninstalled rather than installed
+orch_gitops_uninstall: False
+
+###############
+##
+## The below variables are set default empty, but have values defined in the ansible vault file here:
+##   https://gitlab.cee.redhat.com/ocp-edge-qe/flight-path-auto-tests/-/blob/main/ansible-vault-files/orchestrator-vault.yaml?ref_type=heads
+##
+###############
+
+# Docker credentials for Tekton pipeline (Quay.io and registry.redhat.io combined credentials)
+# See https://github.com/rhdhorchestrator/orchestrator-helm-chart/blob/gh-pages/gitops/README.md#installing-docker-credentials
+orch_gitops_docker_cred: ''
+
+# SSH private key for Gitops repository
+# See https://github.com/rhdhorchestrator/orchestrator-helm-chart/blob/gh-pages/gitops/README.md#define-the-ssh-credentials
+orch_gitops_ssh_priv_key: ''
+
+# Test user github token
+orch_github_token: ''
+orch_github_client_id: ''
+orch_github_client_secret: ''

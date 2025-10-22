@@ -1,0 +1,88 @@
+---
+# Patch para o ConfigMap app-config
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redhat-developer-hub-app-config
+  namespace: rhdh-ci
+data:
+  app-config-orchestrator.yaml: |
+    # Configuração do Orchestrator Plugin
+    orchestrator:
+      dataIndexService:
+        url: http://sonataflow-platform-data-index-service.orchestrator-infra.svc.cluster.local
+        swaggerUI:
+          enabled: true
+          spec:
+            servers:
+              - url: http://sonataflow-platform-data-index-service.orchestrator-infra.svc.cluster.local
+
+    # Configurações do backend
+    backend:
+      orchestrator:
+        sonataFlowService:
+          baseUrl: http://sonataflow-platform-data-index-service.orchestrator-infra.svc.cluster.local
+          port: 80
+        jobService:
+          baseUrl: http://sonataflow-platform-jobs-service.orchestrator-infra.svc.cluster.local
+          port: 80
+        dataIndexService:
+          baseUrl: http://sonataflow-platform-data-index-service.orchestrator-infra.svc.cluster.local
+          port: 80
+
+    # Configuração de catálogo para workflows
+    catalog:
+      locations:
+        - type: url
+          target: https://github.com/rhdh-orchestrator-test/serverless-workflows/blob/main/workflows/catalog-info.yaml
+          rules:
+            - allow: [Component, System, API, Resource, Location]
+
+---
+# Patch para o ConfigMap dynamic-plugins
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redhat-developer-hub-dynamic-plugins
+  namespace: rhdh-ci
+data:
+  dynamic-plugins.yaml: |
+    includes:
+      - dynamic-plugins.default.yaml
+    plugins:
+      # Orchestrator Backend Plugin
+      - package: https://npm.stage.registry.redhat.com/@redhat/backstage-plugin-orchestrator-backend-dynamic/-/backstage-plugin-orchestrator-backend-dynamic-1.7.1-rc.1.tgz
+        integrity: sha512-48fLymu9yA6ihByWzKTc/I31ao7p6UIO6ectFj3Ne3FWBmHU/8ItiYJhHR/XysH6+BbydKtfhLwLj4Itr46fJw==
+        disabled: false
+        pluginConfig:
+          orchestrator:
+            dataIndexService:
+              url: http://sonataflow-platform-data-index-service.orchestrator-infra.svc.cluster.local
+
+      # Orchestrator Frontend Plugin
+      - package: https://npm.stage.registry.redhat.com/@redhat/backstage-plugin-orchestrator/-/backstage-plugin-orchestrator-1.7.1-rc.1.tgz
+        integrity: sha512-76xxy5POOGbuae8bj/MtW/EJ1Y/iYi4FRC9V3sKg2w4m+D9YQcmLCesgaZFgl8NyBtM/N0XHR0BMCFHO+KA/YQ==
+        disabled: false
+        pluginConfig:
+          dynamicPlugins:
+            frontend:
+              redhat.plugin-orchestrator:
+                mountPoints:
+                  - mountPoint: admin.page.overview/cards
+                    importName: OrchestratorPage
+                    config:
+                      layout:
+                        gridColumn: "1 / -1"
+                      if:
+                        anyOf:
+                          - isOrchestratorAvailable: true
+
+      # Orchestrator Form Widgets Plugin
+      - package: https://npm.stage.registry.redhat.com/@redhat/backstage-plugin-orchestrator-form-widgets/-/backstage-plugin-orchestrator-form-widgets-1.7.1-rc.1.tgz
+        integrity: sha512-gGLGl0LRrjq+CW/SDsRyfvZ8+eALFlW2mamzn7K+owQS2O7InmG09EVo9SkLJ7UCY2uykyNdx9Q73gaJv6mtAA==
+        disabled: false
+
+      # Scaffolder Module for Orchestrator
+      - package: https://npm.stage.registry.redhat.com/@redhat/backstage-plugin-scaffolder-backend-module-orchestrator-dynamic/-/backstage-plugin-scaffolder-backend-module-orchestrator-dynamic-1.7.1-rc.1.tgz
+        integrity: sha512-qeOiYBn7XzT39q1w/86wSeuTPD50IJSZlBI2iSNy8k5hmqaIxZ9OWIEaT1QPgfSbeniYxmYGQZiyZWdMNXscIA==
+        disabled: false

@@ -1,0 +1,148 @@
+- name: Create required namespaces
+  ansible.builtin.shell: |
+    oc new-project {{ item }}
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  failed_when: False
+  loop:
+    # sontaflow-infra NS is labeled as part of the script - so it should exist
+    - sonataflow-infra
+    # rhdh operator NS is also labeled as part of the script, and backstage-backend-auth-secret secret is created within it
+    - "{{ rhdh_ns }}"
+    - "{{ rhdh_operator_ns }}"
+    - orchestrator
+
+- name: Run setup script latest
+  ansible.builtin.import_tasks: run-setup-script.yaml
+  when: orch_install_rhdh|bool
+
+- name: Ensure backend secret exists with correct format
+  ansible.builtin.import_tasks: ../../../../tasks/ensure-backend-secret.yaml
+  when: orch_install_rhdh|bool
+
+- name: Generate Orchestrator CR yaml file from Operator CSV example
+  when: use_orch_cr_example|bool
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  block:
+    - name: Get Orchestrator CSV name
+      ansible.builtin.shell: |
+        oc get subscriptions.operators.coreos.com orchestrator-operator -n openshift-operators -o json |\
+         jq '.status.installedCSV' -r
+      register: orch_csv_name
+
+    - name: Save Orchestrator example CR to file
+      ansible.builtin.shell: |
+        oc get csv {{ orch_csv_name.stdout }} -n openshift-operators -o json | jq '.metadata.annotations."alm-examples"' -r |\
+         jq '.[0]' | yq -P -o yaml > {{ orch_deploy_work_dir }}/orchestrator.yaml
+      register: orch_example_cr
+
+    - name: Configure sample orchestrator CR for custom inputs
+      when: 
+        - orch_go_operator|bool
+        - customize_orch_cr_example|bool
+      block:
+        - name: Read the YAML file into a variable
+          ansible.builtin.slurp:
+            src: "{{ orch_deploy_work_dir }}/orchestrator.yaml"
+          register: yaml_file
+
+        - name: Decode the YAML content
+          ansible.builtin.set_fact:
+            yaml_content: "{{ yaml_file.content | b64decode | from_yaml }}"
+        
+        - name: Update rhdh name field
+          ansible.builtin.set_fact:
+            updated_yaml: "{{ yaml_content | combine({'spec': {'rhdh': yaml_content.spec.rhdh | combine({'name': 'backstage'}) }}, recursive=True) }}"
+
+        - name: Update 'metadata.name' field to 'orchestrator'
+          ansible.builtin.set_fact:
+            updated_yaml: "{{ updated_yaml | combine({'metadata': {'name': 'orchestrator'}}) }}"
+
+        - name: Orchestrator should not install rhdh if already deployed
+          when: not orch_install_rhdh | bool
+          ansible.builtin.set_fact: 
+            updated_yaml: "{{ updated_yaml | combine({'spec': {'rhdh': updated_yaml.spec.rhdh | combine({'installOperator': false}) }}, recursive=True) }}"
+
+        - name: Enable tekton and gitops plugins
+          when: deploy_with_gitops | bool
+          block:
+            - name: Enable tekton 
+              ansible.builtin.set_fact:
+                updated_yaml: "{{ updated_yaml | combine({'spec': {'tekton': updated_yaml.spec.tekton | combine({'enabled': true}) }}, recursive=True) }}"
+
+            - name: Enable argocd
+              ansible.builtin.set_fact:
+                updated_yaml: "{{ updated_yaml | combine({'spec': {'argocd': updated_yaml.spec.argocd | combine({'enabled': true}) }}, recursive=True) }}"
+       
+        - name: Write the updated YAML content back to the file
+          ansible.builtin.copy:
+            dest: "{{ orch_deploy_work_dir }}/orchestrator.yaml"
+            content: "{{ updated_yaml | to_yaml }}"
+            mode: '0644'
+
+- name: Generate Orchestrator CR yaml file from template
+  when: not use_orch_cr_example|bool
+  ansible.builtin.template:
+    src: "orchestrator.yaml.j2"
+    dest: "{{ orch_deploy_work_dir }}/orchestrator.yaml"
+
+- name: Apply Orchestrator CR
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc project orchestrator
+    oc apply -f {{ orch_deploy_work_dir }}/orchestrator.yaml
+
+- name: Wait for Orchestrator resource to install successfully
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc get orchestrator -A -o json -o json | jq '.items[0].status.conditions[-1].reason' -r
+  register: orchestrator_resource
+  retries: 30
+  delay: 20
+  until: orchestrator_resource.stdout in ('InstallSuccessful', 'UpgradeSuccessful', 'ReconciliationCompleted')
+
+- name: Wait for Go based Orchestrator status to move to completed
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc wait orchestrator --for=jsonpath="{.status.phase}=Completed" -A --all  --timeout=10s
+  register: orchestrator_status
+  retries: 3
+  delay: 20
+  until: orchestrator_status is success
+  when: orch_go_operator|bool
+
+# Workaround for FLPATH-2409
+- name: Workaround for FLPATH-2409 - patch additional psql username/password to sonataflow-psql-postgresql
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  block:
+    - name: Get sonataflow psql secrets
+      ansible.builtin.shell: |
+        oc get secret sonataflow-psql-postgresql -n {{ workflow_namespace }} -o json
+      register: sonataflow_psql_secrets
+
+    - name: Patch additional sonataflow secrets
+      vars:
+        psql_secret_json: "{{ (sonataflow_psql_secrets.stdout | from_json)['data'] }}"
+        psql_tmp_user: "{{ psql_secret_json['database-user'] }}"
+        psql_tmp_pass: "{{ psql_secret_json['database-password'] }}"
+      ansible.builtin.shell: |
+        oc patch secret sonataflow-psql-postgresql --type=merge -p \
+         '{"data":{"postgres-username":"{{ psql_tmp_user }}", "postgres-password":"{{ psql_tmp_pass }}"}}' -n {{ workflow_namespace }}
+
+# The initial backstage deployment should complete otherwise there could be postgres migration issues
+- name: Wait for backstage deployment to complete
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    set -e
+    oc wait --for=condition=Ready pod --all -n {{ rhdh_ns }} --timeout=10m
+  register: backstage_deploy
+  retries: 10
+  delay: 30
+  until: backstage_deploy is success
+  when: milestone|int > 5

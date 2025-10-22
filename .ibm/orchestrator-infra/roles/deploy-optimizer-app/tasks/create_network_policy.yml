@@ -1,0 +1,16 @@
+---
+- name: Create network policy for optimizer to sonataflow-infra
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.template:
+    src: network-policy.yaml.j2
+    dest: /tmp/network-policy.yaml
+    mode: '0644'
+  register: network_policy_template_result
+
+- name: Apply the rendered network policy
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc apply -f /tmp/network-policy.yaml
+  when: network_policy_template_result.changed 

@@ -1,0 +1,198 @@
+---
+- name: Create RHDH namespace (if not exists)
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc adm new-project {{ rhdh_ns }}
+  ignore_errors: true
+
+- name: Create RHDH configuration directory
+  ansible.builtin.file:
+    path: "{{ rhdh_config_dir }}"
+    state: "{{ item }}"
+  loop:
+    - absent
+    - directory
+
+- name: Gather Keycloak configuration values
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  block:
+    - name: Check for Keycloak routes with app=keycloak label
+      ansible.builtin.shell: |
+        oc get routes -A -l app=keycloak -o json | \
+          jq -r '.items[0].spec.host // empty'
+      register: keycloak_route_v1
+      failed_when: false
+
+    - name: Check for Keycloak routes with app=sso-idp label (RHSSO)
+      ansible.builtin.shell: |
+        oc get routes -A -l app=sso-idp -o json | \
+          jq -r '.items[0].spec.host // empty'
+      register: keycloak_route_v2
+      failed_when: false
+
+    - name: Check for Keycloak routes in rhsso-operator namespace
+      ansible.builtin.shell: |
+        oc get routes -n rhsso-operator -o json 2>/dev/null | \
+          jq -r '.items[0].spec.host // empty' || echo ""
+      register: keycloak_route_v3
+      failed_when: false
+
+    - name: Determine Keycloak route
+      ansible.builtin.set_fact:
+        keycloak_route:
+          stdout: >-
+            {{
+              keycloak_route_v1.stdout if keycloak_route_v1.stdout != '' else
+              (keycloak_route_v2.stdout if keycloak_route_v2.stdout != '' else
+              keycloak_route_v3.stdout)
+            }}
+
+    - name: Display Keycloak route discovery results
+      ansible.builtin.debug:
+        msg: |
+          Keycloak route discovery results:
+          - app=keycloak: {{ keycloak_route_v1.stdout | default('Not found') }}
+          - app=sso-idp: {{ keycloak_route_v2.stdout | default('Not found') }}
+          - rhsso ns: {{ keycloak_route_v3.stdout | default('Not found') }}
+          - Selected route: {{ keycloak_route.stdout | default('None') }}
+
+    - name: Verify Keycloak route was found
+      ansible.builtin.fail:
+        msg: |
+          ERROR: No Keycloak route found. Keycloak authentication is enabled
+          (rhdh_keycloak_auth=true) but Keycloak does not appear to be deployed
+          on this cluster.
+
+          Please ensure Keycloak is deployed before enabling authentication,
+          or set rhdh_keycloak_auth=false to disable Keycloak authentication.
+          To deploy Keycloak, you can use the deploy-keycloak role.
+      when: keycloak_route.stdout == '' or keycloak_route.stdout == 'null'
+
+    - name: Display discovered Keycloak route
+      ansible.builtin.debug:
+        msg: "Found Keycloak route: {{ keycloak_route.stdout }}"
+
+- name: Gather values required for RHDH configuration
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  block:
+    - name: Get cluster info
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+      ansible.builtin.shell: |
+        oc cluster-info
+      register: cluster_info
+
+    - name: Extract cluster URL from cluster info
+      ansible.builtin.set_fact:
+        cluster_url: "{{ cluster_info.stdout | regex_search('api\\.(.*):[0-9]+', '\\1') | first }}"
+
+    - name: Set backstage route using dynamic cluster discovery
+      ansible.builtin.set_fact:
+        backstage_route: "{{ {'stdout': 'backstage-backstage-' + rhdh_ns + '.apps.' + cluster_url} }}"
+
+- name: Set backstage backend secret and create backstage-backend-auth-secret secret if it doesn't exist
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  block:
+    - name: Check if backstage-backend-auth-secret already exists
+      ansible.builtin.shell: |  
+        oc get secret backstage-backend-auth-secret -n {{ rhdh_ns }} -o jsonpath='{.metadata.name}' 2>/dev/null || echo ""
+      register: existing_backend_secret
+      failed_when: false
+
+    - name: Capture backstage backend secret if it exists
+      ansible.builtin.shell: |  
+        oc get secret backstage-backend-auth-secret -n {{ rhdh_ns }} -o jsonpath='{.data.BACKEND_SECRET}'
+      register: tmp_backend_secret
+      failed_when: false
+      when: existing_backend_secret.stdout != ''
+
+    - name: Generate backend secret using node crypto unless it already exists in backstage-backend-auth-secret secret
+      ansible.builtin.shell: |
+        node -p 'require("crypto").randomBytes(24).toString("base64")'
+      register: tmp_gen_secret_result
+      when: existing_backend_secret.stdout == ''
+
+    - name: Set backend secret fact
+      ansible.builtin.set_fact:
+        backstage_backend_secret: "{{ tmp_gen_secret_result.stdout if existing_backend_secret.stdout == '' else (tmp_backend_secret.stdout|b64decode) }}"
+
+    - name: Generate secrets file from template
+      ansible.builtin.template:
+        src: "backstage-backend-auth-secret.txt.j2"
+        dest: "{{ rhdh_config_dir }}/backstage-backend-auth-secret.txt"
+      when: existing_backend_secret.stdout == ''
+
+    - name: Create new secret backstage-backend-auth-secret with manually identified variable values.
+      ansible.builtin.shell: |  
+        oc create secret generic backstage-backend-auth-secret -n {{ rhdh_ns }} --from-env-file={{ rhdh_config_dir }}/backstage-backend-auth-secret.txt
+      when: existing_backend_secret.stdout == ''
+
+- name: Generate authentication configuration files from templates
+  ansible.builtin.template:
+    src: "{{ item }}"
+    dest: "{{ rhdh_config_dir }}/{{ item[:-3] }}"
+  loop:
+    - app-config-auth.yaml.j2
+    - app-config-catalog.yaml.j2
+    - app-config-rhdh.yaml.j2
+    - rbac-policy.csv.j2
+    - dynamic-plugins.yaml.j2
+
+- name: Validate npmrc registry URL (when enabled)
+  ansible.builtin.fail:
+    msg: "npmrc_registry must be a valid HTTP/HTTPS URL, got: {{ npmrc_registry }}"
+  when:
+    - rhdh_enable_npmrc_secret | bool
+    - not (npmrc_registry | regex_search('^https?://'))
+
+- name: Generate npmrc secret template (when enabled)
+  ansible.builtin.template:
+    src: dynamic-plugins-npmrc.yaml.j2
+    dest: "{{ rhdh_config_dir }}/dynamic-plugins-npmrc.yaml"
+  when: rhdh_enable_npmrc_secret | bool
+
+- name: Remove trailing spaces from yaml files for configmap formatting
+  ansible.builtin.shell: |
+    sed -i -E 's/[[:space:]]+$//g' {{ rhdh_config_dir }}/*.*
+
+- name: Create/Update ConfigMaps for Keycloak authentication
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    CONFIGFILE="{{ rhdh_config_dir }}/{{ item['configfile'] }}"
+    oc create configmap {{ item['configmap'] }} -n {{ rhdh_ns }} \
+      --from-file="{{ item['configfile'] }}"="$CONFIGFILE" || \
+    oc set data cm/{{ item['configmap'] }} -n {{ rhdh_ns }} \
+      --from-file="{{ item['configfile'] }}"="$CONFIGFILE"
+  loop:
+    - configmap: app-config-rhdh-auth
+      configfile: app-config-auth.yaml
+    - configmap: app-config-rhdh-catalog
+      configfile: app-config-catalog.yaml
+    - configmap: app-config-rhdh
+      configfile: app-config-rhdh.yaml
+    - configmap: rhdh-config-rbac-policy
+      configfile: rbac-policy.csv
+    - configmap: dynamic-plugins-rhdh
+      configfile: dynamic-plugins.yaml
+
+- name: Create npmrc secret (when enabled)
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc create secret generic dynamic-plugins-npmrc -n {{ rhdh_ns }} \
+      --from-literal=.npmrc="registry={{ npmrc_registry }}" \
+      --dry-run=client -o yaml | oc apply -f -
+  when: rhdh_enable_npmrc_secret | bool
+
+- name: Display Keycloak authentication configuration status
+  ansible.builtin.debug:
+    msg: >-
+      Keycloak authentication has been configured for RHDH.
+      ConfigMaps created: app-config-rhdh-auth, app-config-rhdh-catalog,
+      app-config-rhdh, rhdh-config-rbac-policy, dynamic-plugins-rhdh
+      {% if rhdh_enable_npmrc_secret %}Secret created: dynamic-plugins-npmrc{% endif %}

@@ -1,0 +1,43 @@
+- name: Remove previous git repo
+  ansible.builtin.file:
+    path: "{{ orch_gitops_work_dir }}/janus-idp-bootstrap"
+    state: absent
+
+- name: Git clone stable janus idp bootstreap demo repo
+  ansible.builtin.git:
+    repo: "{{ orch_gitops_repo }}"
+    dest: "{{ orch_gitops_work_dir }}/janus-idp-bootstrap"
+    version: "{{ orch_gitops_branch }}"
+
+- name: Install Tekton Janus Demo Helmcharts
+  kubernetes.core.helm:
+    release_name: orchestrator-pipelines
+    release_namespace: orchestrator-gitops
+    values_files:
+      - "{{ orch_gitops_work_dir }}/janus-idp-bootstrap/charts/pipelines-operator/values.yaml"
+    chart_ref:  "{{ orch_gitops_work_dir }}/janus-idp-bootstrap/charts/pipelines-operator"
+    kubeconfig: "{{ kubeconfig_path }}"
+    create_namespace: true
+  register: pipeline_deploy
+  retries: 2
+  delay: 60
+  until: pipeline_deploy is success
+
+- name: Install ArgoCD Janus Demo Helmcharts
+  kubernetes.core.helm:
+    release_name: orchestrator-gitops
+    release_namespace: orchestrator-gitops
+    values_files:
+      - "{{ orch_gitops_work_dir }}/janus-idp-bootstrap/charts/gitops-operator/values.yaml"
+    chart_ref:  "{{ orch_gitops_work_dir }}/janus-idp-bootstrap/charts/gitops-operator"
+    kubeconfig: "{{ kubeconfig_path }}"
+    set_values:
+      - value: namespaces={orchestrator-gitops}
+      # Work around for FLPATH-1338
+      - value: operator.channel=latest
+        value_type: string
+    create_namespace: true
+  register: gitops_deploy
+  retries: 2
+  delay: 60
+  until: gitops_deploy is success

@@ -1,0 +1,146 @@
+---
+# Main playbook for deploying Orchestrator infrastructure
+# Independent - does NOT install RHDH/Backstage
+
+- name: Deploy Orchestrator Infrastructure Only (No RHDH/Backstage)
+  hosts: localhost
+  connection: local
+  gather_facts: yes
+  vars_files:
+    - roles/deploy-rhdh/defaults/main.yml
+  vars:
+    # Override: use dedicated namespace to avoid conflicts
+    rhdh_ns: "orchestrator-infra"
+
+    # Do not install RHDH/Backstage
+    install_rhdh: false
+    skip_rhdh_deployment: true
+
+    # Install Orchestrator infrastructure
+    install_orchestrator_infra: true
+    
+    # Keycloak
+    deploy_keycloak: true
+    rhdh_keycloak_auth: true
+    
+    # GitOps (optional)
+    enable_gitops: "{{ enable_gitops | default(false) }}"
+
+    # Backend secret
+    backstage_backend_auth_secret: "orchestrator123"
+    
+  tasks:
+    - name: Display deployment configuration
+      debug:
+        msg:
+          - "Starting Orchestrator Infrastructure Deployment"
+          - "Namespace: {{ rhdh_ns }}"
+          - "Keycloak: {{ deploy_keycloak }}"
+          - "GitOps: {{ enable_gitops }}"
+
+    - name: Create namespace
+      kubernetes.core.k8s:
+        name: "{{ rhdh_ns }}"
+        api_version: v1
+        kind: Namespace
+        state: present
+
+    # Install orchestrator infrastructure
+    - name: Install Orchestrator Infrastructure
+      include_tasks: roles/deploy-rhdh/tasks/install-orchestrator-infra.yaml
+      when: install_orchestrator_infra | bool
+
+    # Deploy Keycloak
+    - name: Deploy Keycloak for authentication
+      include_role:
+        name: deploy-keycloak
+      when: deploy_keycloak | bool
+
+    # Deploy sample workflows
+    - name: Deploy Orchestrator Workflows
+      include_tasks: roles/deploy-rhdh/tasks/deploy-orchestrator-workflows.yaml
+      when: install_orchestrator_infra | bool
+      ignore_errors: yes
+
+    # GitOps setup (optional)
+    - name: Setup GitOps
+      include_role:
+        name: setup-orch-gitops
+      when: enable_gitops | bool
+
+    # Get service endpoints
+    - name: Get PostgreSQL service
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Service
+        namespace: "{{ rhdh_ns }}"
+        label_selectors:
+          - app.kubernetes.io/name=postgres
+      register: pg_service
+      ignore_errors: yes
+
+    - name: Get Data Index service
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Service
+        namespace: "{{ rhdh_ns }}"
+        label_selectors:
+          - app=sonataflow-platform-data-index-service
+      register: data_index_service
+      ignore_errors: yes
+
+    - name: Get Keycloak route
+      kubernetes.core.k8s_info:
+        api_version: route.openshift.io/v1
+        kind: Route
+        name: keycloak
+        namespace: "{{ rhdh_ns }}"
+      register: keycloak_route
+      when: deploy_keycloak | bool
+      ignore_errors: yes
+
+    - name: Get all pods status
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Pod
+        namespace: "{{ rhdh_ns }}"
+      register: namespace_pods
+
+    - name: Display deployment summary
+      debug:
+        msg:
+          - "========================================================="
+          - "✅ Orchestrator Infrastructure Deployment Complete!"
+          - "========================================================="
+          - ""
+          - "Namespace: {{ rhdh_ns }}"
+          - ""
+          - "Services deployed:"
+          - "  - PostgreSQL: {{ pg_service.resources | length }} instances"
+          - "  - SonataFlow Data Index: {{ data_index_service.resources | length }} instances"
+          - "  - Keycloak: {% if deploy_keycloak %}deployed{% else %}skipped{% endif %}"
+          - ""
+          - "Integration endpoints for RHDH/Backstage:"
+          - ""
+          - "PostgreSQL:"
+          - "  Host: postgresql.{{ rhdh_ns }}.svc.cluster.local"
+          - "  Port: 5432"
+          - "  Database: backstage_plugin_orchestrator"
+          - ""
+          - "Data Index Service:"
+          - "  URL: http://sonataflow-platform-data-index-service.{{ rhdh_ns }}.svc.cluster.local:8080"
+          - ""
+          - "{% if deploy_keycloak and keycloak_route.resources is defined and keycloak_route.resources | length > 0 %}Keycloak:{% endif %}"
+          - "{% if deploy_keycloak and keycloak_route.resources is defined and keycloak_route.resources | length > 0 %}  URL: https://{{ keycloak_route.resources[0].spec.host }}{% endif %}"
+          - "{% if deploy_keycloak and keycloak_route.resources is defined and keycloak_route.resources | length > 0 %}  Realm: orchestrator{% endif %}"
+          - ""
+          - "Pods status ({{ namespace_pods.resources | length }} total):"
+          - "  Running: {{ namespace_pods.resources | selectattr('status.phase', 'equalto', 'Running') | list | length }}"
+          - "  Pending: {{ namespace_pods.resources | selectattr('status.phase', 'equalto', 'Pending') | list | length }}"
+          - "  Other: {{ namespace_pods.resources | rejectattr('status.phase', 'in', ['Running', 'Pending']) | list | length }}"
+          - ""
+          - "Next steps:"
+          - "  1. Check pods: oc get pods -n {{ rhdh_ns }}"
+          - "  2. Configure your RHDH/Backstage instance with the endpoints above"
+          - "  3. Add Orchestrator plugins to your Backstage dynamic-plugins"
+          - "=========================================================="

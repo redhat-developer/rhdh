@@ -1,0 +1,27 @@
+- name: Delete keycloak resources
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    {{ item }}
+  ignore_errors: true
+  loop:
+    - "oc delete keycloakusers.keycloak.org --all -A"
+    - "oc delete KeycloakClients --all -A"
+    - "oc delete KeycloakRealms --all -A"
+    - "oc delete keycloak --all -A"
+    - "oc delete subscriptions.operators.coreos.com rhsso-operator -n rhsso-operator"
+    - "oc get csv -n rhsso-operator | awk '/rhsso-operator/ {print $1}' | xargs -I {} oc delete csv {} -n rhsso-operator"
+    - "oc get operator rhsso-operator.rhsso-operator -o yaml | awk '/name:/ {print $2}' | xargs -I{} oc delete crd {}"
+    - "oc delete operators.operators.coreos.com rhsso-operator.rhsso-operator"
+    - "oc delete project rhsso-operator"
+
+- name: Wait for Keycloak operator to be deleted
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc wait --for=delete pod operators.coreos.com rhsso-operator.rhsso-operator --timeout=6m
+  register: kc_op_destroy
+  retries: 3
+  delay: 30
+  until: kc_op_destroy is success
+

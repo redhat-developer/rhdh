@@ -1,0 +1,32 @@
+---
+- name: Setup prerequisites
+  ansible.builtin.import_tasks: setup.yaml
+
+- name: Prevalidate orchestrator plugins
+  ansible.builtin.import_tasks: prevalidate-plugins.yaml
+
+- name: Wait for MCP to stabilize before proceeding
+  ansible.builtin.import_tasks: mcp-stable-wait.yaml
+
+- name: Deploy Keycloak
+  ansible.builtin.include_role:
+    name: deploy-keycloak
+  when: deploy_keycloak | bool
+
+- name: Deploy RHDH
+  ansible.builtin.include_tasks: deploy-rhdh.yaml
+
+- name: Configure RHDH
+  ansible.builtin.include_tasks: configure-rhdh.yaml
+
+- name: Enable RHDH plugin caching
+  ansible.builtin.include_tasks: enable-caching.yaml
+  when: enable_rhdh_plugin_caching | bool
+
+- name: Install Orchestrator Infrastructure
+  ansible.builtin.include_tasks: install-orchestrator-infra.yaml
+  when: install_orchestrator_infra | bool
+
+- name: Deploy Orchestrator Workflows
+  ansible.builtin.include_tasks: deploy-orchestrator-workflows.yaml
+  when: install_orchestrator_infra | bool

@@ -1,0 +1,20 @@
+- name: Make keycloak user dir
+  ansible.builtin.file:
+    path: "{{ keycloak_work_dir }}/users"
+    state: directory
+
+- name: Generate keycloak user resources
+  vars:
+    kc_tmp_user: "{{ item }}"
+  ansible.builtin.template:
+    src: keycloak_user.yaml.j2
+    dest: "{{ keycloak_work_dir }}/users/keycloak_user-{{ item }}.yaml"
+  loop: "{{ keycloak_users }}"
+
+- name: Apply Keycloak user resources
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |  
+    oc apply -f .
+  args:
+    chdir: "{{ keycloak_work_dir }}//users/"

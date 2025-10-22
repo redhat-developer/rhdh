@@ -1,0 +1,123 @@
+{# Example: https://github.com/rhdhorchestrator/orchestrator-helm-operator/blob/main/config/samples/_v1alpha1_orchestrator.yaml #}
+{# Force v1alpha2 as the operator only supports this version #}
+apiVersion: rhdh.redhat.com/v1alpha2
+kind: Orchestrator
+metadata:
+  name: orchestrator
+spec:
+{% if milestone|int <= 4 %}
+  orchestrator:
+    namespace: sonataflow-infra
+    sonataflowPlatform:
+      resources:
+        limits:
+          cpu: 500m
+          memory: 1Gi
+        requests:
+          cpu: 250m
+          memory: 64Mi
+{% elif milestone|int >= 5 %}
+  platform:
+    monitoring:
+      enabled: false
+    namespace: sonataflow-infra
+    resources:
+      limits:
+        cpu: 500m
+        memory: 1Gi
+      requests:
+        cpu: 250m
+        memory: 64Mi
+{% endif %}
+  postgres:
+    authSecret:
+      name: sonataflow-psql-postgresql
+{% if postgres_installed_helm |bool %}
+      passwordKey: postgres-password
+      userKey: postgres-username
+{% else %}
+      passwordKey: database-user
+      userKey: database-password
+{% endif %}
+    database: sonataflow
+{% if milestone|int <= 4 %}    
+    serviceName: sonataflow-psql-postgresql
+    serviceNamespace: sonataflow-infra
+{% elif milestone|int >= 5 %}
+    name: sonataflow-psql-postgresql
+    namespace: sonataflow-infra
+{% endif %}
+{% if milestone|int <= 4 %} 
+  rhdhOperator:
+    subscription:
+      installPlanApproval: Automatic
+      name: rhdh
+      namespace: {{ rhdh_operator_ns }}
+      channel: {{ rhdh_channel | default('fast-1.' + milestone|string) }}   
+{% if orch_install_rhdh|bool %}
+    enableGuestProvider: true      
+    enabled: true
+    github:
+      clientId: "{{ orch_github_client_id }}"
+      clientSecret: "{{ orch_github_client_secret }}"
+      token: "{{ orch_github_token }}"
+    k8s:
+      clusterToken: ""
+      clusterUrl: ""     
+{% else %}
+    enabled: false
+{% endif %}
+{% elif milestone|int >= 5 %}
+  rhdh:
+    devMode: true
+    installOperator: {{ orch_install_rhdh|bool }}
+    name: backstage
+    namespace: {{ rhdh_ns }}
+    plugins:
+      notificationsEmail:
+        enabled: true
+        port: 25
+        replyTo: {{ notification_email_username }}
+        sender: {{ notification_email_username }}
+{% endif %}
+  serverlessOperator:
+    enabled: true
+{% if milestone|int <= 4 %}     
+    subscription:
+      channel: stable
+      installPlanApproval: Automatic
+      name: serverless-operator
+      namespace: openshift-serverless
+{% endif %}      
+  sonataFlowOperator:
+    enabled: true
+{% if milestone|int <= 4 %}    
+    subscription:
+      channel: alpha
+      installPlanApproval: Automatic
+      name: logic-operator-rhel8
+      namespace: openshift-serverless-logic
+{% endif %}
+{# Workaround for https://issues.redhat.com/browse/FLPATH-1787 #}
+{% if milestone|string == '2' %}
+      startingCSV: logic-operator-rhel8.v1.34.0
+{% endif %}
+{% if milestone|int <= 4 %} 
+  rhdhPlugins:
+    npmRegistry: {{ orch_npmrc_registry_options[orch_npmrc_registry] }}
+    # Notification plugins disabled due to compatibility issues with RHDH 1.7/1.4
+    # notificationsEmail:
+    #   enabled: false
+    #   replyTo: {{ notification_email_username }}
+    #   sender: {{ notification_email_username }}
+    #   port: 25
+  networkPolicy:
+    rhdhNamespace: {{ rhdh_ns }}
+{% endif %}      
+  tekton:
+    enabled: {{ deploy_with_gitops }}
+  argocd:
+    enabled: {{ deploy_with_gitops }}
+{% if milestone|int >= 5 %} 
+    namespace: {{ gitops_namespace }}
+{% endif %}    

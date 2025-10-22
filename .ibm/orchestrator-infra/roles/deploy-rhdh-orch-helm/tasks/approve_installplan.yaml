@@ -1,0 +1,15 @@
+- name: Get installplan name
+  ansible.builtin.shell: |
+    oc get installplan -n {{ item }} --sort-by=.metadata.creationTimestamp -o jsonpath='{.items[0].metadata.name}'
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  register: installplan_name
+  retries: 30
+  delay: 5
+  until: installplan_name.rc == 0 and installplan_name.stdout is defined and installplan_name.stdout | length > 0
+
+- name: Patch Installplan
+  ansible.builtin.shell: |
+     oc patch installplan {{ installplan_name.stdout }} -n {{ item }} --type merge --patch '{"spec":{"approved":true}}'
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"

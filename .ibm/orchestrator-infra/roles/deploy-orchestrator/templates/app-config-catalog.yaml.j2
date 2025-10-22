@@ -1,0 +1,76 @@
+{# This configuration file is the data: content of configmap app-config-rhdh-catalog #}
+{% if sw_template_use_main|bool %}
+{% set sw_template_branch = "main" %}
+{% else %}
+{% set sw_template_branch = "v1." + milestone + ".x" %}
+{% endif %}
+catalog:
+  rules:
+    - allow:
+        [
+          Component,
+          System,
+          Group,
+          Resource,
+          Location,
+          Template,
+          API,
+          User,
+          Domain,
+        ]
+  locations:
+{# Below remains main branch for any release #}
+    - type: url
+      target: https://github.com/orchestrator-test/fligh-path-config/blob/main/defaultGroup.yaml
+    - type: url
+      target: https://github.com/orchestrator-test/fligh-path-config/blob/main/defaultUser.yaml
+    - type: url
+      target: https://github.com/orchestrator-test/fligh-path-config/blob/main/rhdhOrchestratorTestUser.yaml
+    - type: url
+      target: https://github.com/orchestrator-test/fligh-path-config/blob/main/miscUsers.yaml
+    - type: url
+      target: https://github.com/orchestrator-test/fligh-path-config/blob/main/rbacUsers.yaml
+{# Only supported M3 and below #}
+{% if milestone|int <= 3 %}
+    - type: url
+      target: https://github.com/rhdhorchestrator/workflow-software-templates/blob/{{ sw_template_branch }}/scaffolder-templates/basic-workflow/template.yaml
+    - type: url
+      target: https://github.com/rhdhorchestrator/workflow-software-templates/blob/{{ sw_template_branch }}/scaffolder-templates/complex-assessment-workflow/template.yaml
+{% endif %}
+{# Only supported M4 and above #}
+{% if milestone|int >= 4 %}
+    - type: url
+      target: https://github.com/rhdhorchestrator/workflow-software-templates/blob/{{ sw_template_branch }}/entities/workflow-resources.yaml   
+    - type: url
+      target: https://github.com/rhdhorchestrator/workflow-software-templates/blob/{{ sw_template_branch }}/scaffolder-templates/github-workflows/basic-workflow/template.yaml
+    - type: url
+      target: https://github.com/rhdhorchestrator/workflow-software-templates/blob/{{ sw_template_branch }}/scaffolder-templates/github-workflows/advanced-workflow/template.yaml 
+{% endif %}
+{# Only supported M5 and above#}
+{% if milestone|int >= 5 %}
+{# Orchestrator api remains 'main' for now #}
+    - type: url
+      target: https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/orchestrator/plugins/orchestrator-common/src/generated/docs/api-doc/orchestrator-api.yaml
+    - type: url
+      target: https://github.com/rhdhorchestrator/workflow-software-templates/blob/{{ sw_template_branch }}/scaffolder-templates/gitlab-workflows/basic-workflow/template.yaml
+    - type: url
+      target: https://github.com/rhdhorchestrator/workflow-software-templates/blob/{{ sw_template_branch }}/scaffolder-templates/gitlab-workflows/advanced-workflow/template.yaml
+    - type: url
+      target: https://github.com/rhdhorchestrator/workflow-software-templates/blob/{{ sw_template_branch }}/scaffolder-templates/gitlab-workflows/convert-workflow-to-template/template.yaml
+    - type: url
+      target: https://github.com/rhdhorchestrator/workflow-software-templates/blob/{{ sw_template_branch }}/scaffolder-templates/github-workflows/convert-workflow-to-template/template.yaml
+{% endif %}
+{% if orch_keycloak_auth|bool %}
+  providers:
+    keycloakOrg:
+      default:
+        baseUrl: "https://{{ keycloak_route.stdout|default('') }}/auth"
+        loginRealm: "basic"
+        realm: "basic"
+        clientId: rhdh
+        clientSecret: rhdh
+        schedule:
+          frequency: { minutes: 1 }
+          timeout: { minutes: 1 }
+          initialDelay: { seconds: 15 }
+{% endif %}

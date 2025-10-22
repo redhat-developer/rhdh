@@ -1,0 +1,29 @@
+- name: Wait for MCP to stabilize before proceeding
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  block:
+    - name: Capture master mcp node count
+      shell: |
+          oc get mcp master -o json  | jq '.status.machineCount'
+      register: master_mcp_count
+
+    - name: Capture worker mcp node count
+      shell: |
+          oc get mcp worker -o json  | jq '.status.machineCount'
+      register: worker_mcp_count
+
+    - name: Wait for master mcp to move to updated
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+      ansible.builtin.shell: |
+        oc wait --for=condition=Updated --timeout=10m machineconfigpools master
+      when: master_mcp_count.stdout|int > 0
+      failed_when: false
+
+    - name: Wait for worker mcp to move to updated
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+      ansible.builtin.shell: |
+        oc wait --for=condition=Updated --timeout=10m machineconfigpools worker
+      when: worker_mcp_count.stdout|int > 0
+      failed_when: false      

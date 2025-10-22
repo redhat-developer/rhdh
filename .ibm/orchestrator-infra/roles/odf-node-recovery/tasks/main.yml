@@ -1,0 +1,22 @@
+- name: Install ODF node recovery operator
+  ansible.builtin.import_tasks: odf-node-recovery-operator.yml
+  when: odf_node_recovery_operator|bool
+
+- name: Setup
+  ansible.builtin.import_tasks: setup.yml
+
+- name: Test that node recovery can successfully enable and disable ceph tools 
+  when: ceph_tools_test|bool
+  block: 
+    - name: Disable ceph tools
+      ansible.builtin.import_tasks: disable-ceph-tools.yml
+    - name: Ensure node recovery can enable/disable ceph tools itself
+      ansible.builtin.import_tasks: node-recovery.yml
+
+- name: Disk replacement test
+  ansible.builtin.import_tasks: ocp-80694-disk-replace-test.yml
+  when: ocp_80694_disk_replace_test|bool
+
+- name: Perform OCP-80695 Node Replacement Test
+  ansible.builtin.import_tasks: ocp-80695-node-replace-test.yml
+  when: ocp_80695_node_replace_test|bool

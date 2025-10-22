@@ -1,0 +1,182 @@
+- name: Install helm
+  ansible.builtin.import_tasks: install-helm.yaml
+
+- name: Create work dir
+  ansible.builtin.file:
+    path: "{{ workflow_work_dir }}"
+    state: "{{ item }}"
+  loop:
+    - absent
+    - directory
+
+- name: Delete namespace if already exists
+  shell: |
+    oc delete namespace {{ workflow_namespace }}
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ignore_errors: true
+  when: workflow_namespace != "sonataflow-infra" and not helm_managed_rhdh | bool
+
+- name: Create namespace
+  when: not helm_managed_rhdh | bool
+  shell: |
+    oc create namespace {{ workflow_namespace }}
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  when: workflow_namespace != "sonataflow-infra"
+  ignore_errors: true
+
+- name: Label workflow namespace 
+  when: not helm_managed_rhdh | bool
+  shell: |
+      oc label ns {{ workflow_namespace }} rhdh.redhat.com/workflow-namespace=""
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"   
+
+- name: Copy sshkeys secret from sontaflow namespace
+  when: not helm_managed_rhdh | bool
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  shell: |
+    kubectl get secret sonataflow-psql-postgresql --namespace=sonataflow-infra -o yaml | sed 's/namespace: .*/namespace: {{ workflow_namespace }}/' | kubectl apply -f -
+
+- name: Identify backstage namespace
+  when: not helm_managed_rhdh | bool
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc get backstage -A -o json | jq '.items[].metadata.namespace' -r
+  register: backstage_ns
+  failed_when: backstage_ns.stdout == ''
+
+- name: Set up Network Policy
+  when: not helm_managed_rhdh | bool
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  shell: |
+    cat <<EOF | oc apply -f -
+    apiVersion: networking.k8s.io/v1
+    kind: NetworkPolicy
+    metadata:
+      name: allow-rhdh-to-sonataflow-and-workflows
+      # Sonataflow and Workflows are using the same namespace.
+      namespace: {{ workflow_namespace }}
+    spec:
+      podSelector: {}
+      ingress:
+        - from:
+          - namespaceSelector:
+              matchLabels:
+                # Allow RHDH namespace to communicate with workflows.
+                kubernetes.io/metadata.name: {{ backstage_ns.stdout }}
+          - namespaceSelector:
+              matchLabels:
+                  # Allow Sonataflow services to communicate with workflows.
+                kubernetes.io/metadata.name: sonataflow-infra
+          - namespaceSelector:
+              matchLabels:
+                  # Allow Sonataflow services to communicate with workflows.
+                kubernetes.io/metadata.name: knative-eventing
+          - namespaceSelector:
+              matchLabels:
+                  # Allow Sonataflow services to communicate with workflows.
+                kubernetes.io/metadata.name: knative-serving                    
+    EOF
+
+- name: Set up Network Policy in Sonataflow-Infra ns
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  when: workflow_namespace != "sonataflow-infra" and milestone|default(5)|int >= 5 and not helm_managed_rhdh | bool
+  shell: |
+    cat <<EOF | oc apply -f -
+    kind: NetworkPolicy
+    apiVersion: networking.k8s.io/v1
+    metadata:
+      name: allow-external-workflows-to-sonataflow-infra
+      namespace: sonataflow-infra
+    spec:
+      podSelector: {}
+      ingress:
+        - from:
+            - namespaceSelector:
+                matchLabels:
+                  kubernetes.io/metadata.name: {{ workflow_namespace }}
+      policyTypes:
+        - Ingress                
+    EOF
+
+# See https://github.com/rhdhorchestrator/orchestrator-helm-chart/blob/gh-pages-stable-1.x/README.md#argocd-and-workflow-namespace
+- name: Label workflow namespace so that it can be managed by argocd
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: 
+    oc label namespace {{ workflow_namespace|default('sonataflow-infra') }} 'argocd.argoproj.io/managed-by=orchestrator-gitops'
+
+- name: Add Helm repo
+  kubernetes.core.helm_repository:
+    name: orchestrator-workflows
+    repo_url: https://rhdhorchestrator.github.io/serverless-workflows-config
+    force_update: true
+
+- name: Set Kafka broker info
+  when: milestone|default(4)|int >= 4 and not helm_managed_rhdh | bool
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  block:
+    - name: Get Kafka broker
+      ansible.builtin.shell: |
+        oc get broker -A -o json | jq '.items[0]'
+      register: kafka_raw
+
+    - name: Set kafka broker facts
+      vars:
+        kafka_json: "{{ kafka_raw.stdout | from_json }}"
+      ansible.builtin.set_fact:
+        kafka_broker_name: "{{ kafka_json.metadata.name }}"
+        kafka_broker_namespace: "{{ kafka_json.metadata.namespace }}"
+
+- name: Capture ocp api url
+  when: not helm_managed_rhdh | bool
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc whoami --show-server
+  register: ocp_api_url_raw
+  failed_when: ocp_api_url_raw.stdout == ''
+
+- name: Identify backstage namespace
+  when: not helm_managed_rhdh | bool
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc get backstage -A -o json | jq '.items[].metadata.namespace' -r
+  register: backstage_ns_raw
+  failed_when: backstage_ns_raw.stdout == ''
+
+- name: Get backstage auth secret json raw
+  when: not helm_managed_rhdh | bool
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc get secret backstage-backend-auth-secret -n {{ backstage_ns_raw.stdout }} -o json | jq '.data'
+  register: backstage_auth_secret_raw
+  failed_when: backstage_auth_secret_raw.stdout == ''
+
+- name: Get sonataflow-secret details
+  when: not helm_managed_rhdh | bool
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  shell: |
+    oc -n sonataflow-infra get secret sonataflow-psql-postgresql -o yaml | yq -r .data | grep database | wc -l
+  register: postgres_or_rh
+
+- name: Set facts for workflows
+  when: not helm_managed_rhdh | bool
+  vars:
+    backstage_auth_secret: "{{ backstage_auth_secret_raw.stdout | from_json }}"
+  ansible.builtin.set_fact:
+    backstage_k8s_token: "{{ backstage_auth_secret.K8S_CLUSTER_TOKEN | b64decode}}"
+    notif_token: "{{ backstage_auth_secret.BACKEND_SECRET | b64decode}}"
+    ocp_api_url: "{{ ocp_api_url_raw.stdout }}"
+    backstage_ns: "{{ backstage_ns_raw.stdout }}"
+    postgres_rh_install: "{% if postgres_or_rh.stdout != 0 %}true{% else %}false{% endif %}"

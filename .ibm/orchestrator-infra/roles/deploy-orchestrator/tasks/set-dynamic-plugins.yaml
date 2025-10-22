@@ -1,0 +1,134 @@
+- name: Identify Orchestrator CRD default plugin values
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc get crd orchestrators.rhdh.redhat.com -o json |\
+     jq '.spec.versions[].schema.openAPIV3Schema.properties.spec.properties.rhdhPlugins.properties'
+  register: orch_crd_plugin_values_raw
+  when: milestone|int <= 4
+
+- name: Set dynamic plugin dict values based on orchestrator crd default dynamic plugin values
+  vars:
+    orch_crd_plugin_values: "{{ orch_crd_plugin_values_raw.stdout|default('{}')|from_json }}"
+  ansible.builtin.set_fact:
+    orch_plugins:
+      notifications_email:
+        integrity: "{{ orch_crd_plugin_values.notificationsEmail.properties.integrity.default | default('') }}"
+        package: "{{ orch_crd_plugin_values.notificationsEmail.properties.package.default | default('') }}"
+      notifications:
+        integrity: "{{ orch_crd_plugin_values.notifications.properties.integrity.default | default('') }}"
+        package: "{{ orch_crd_plugin_values.notifications.properties.package.default | default('') }}"
+      notifications_backend:
+        integrity: "{{ orch_crd_plugin_values.notificationsBackend.properties.integrity.default | default('') }}"
+        package: "{{ orch_crd_plugin_values.notificationsBackend.properties.package.default | default('') }}"
+      signals:
+        integrity: "{{ orch_crd_plugin_values.signals.properties.integrity.default | default('') }}"
+        package: "{{ orch_crd_plugin_values.signals.properties.package.default | default('') }}"
+      signals_backend:
+        integrity: "{{ orch_crd_plugin_values.signalsBackend.properties.integrity.default | default('') }}"
+        package: "{{ orch_crd_plugin_values.signalsBackend.properties.package.default | default('') }}"
+      orchestrator:
+        integrity: "{{ orch_crd_plugin_values.orchestrator.properties.integrity.default | default('') }}"
+        package: "{{ orch_crd_plugin_values.orchestrator.properties.package.default | default('') }}"
+      orchestrator_backend:
+        integrity: "{{ orch_crd_plugin_values.orchestratorBackend.properties.integrity.default | default('') }}"
+        package: "{{ orch_crd_plugin_values.orchestratorBackend.properties.package.default | default('') }}"
+  when: milestone|int < 4
+
+- name: Set dynamic plugin dict values based on orchestrator crd default dynamic plugin values for m4 staging
+  vars:
+    orch_crd_plugin_values: "{{ orch_crd_plugin_values_raw.stdout|default('{}')|from_json }}"
+  ansible.builtin.set_fact:
+    orch_plugins:
+      orchestrator:
+        integrity: "{{ orch_crd_plugin_values.orchestrator.properties.integrity.default }}"
+        package: "{{ orch_crd_plugin_values.scope.default }}/{{ orch_crd_plugin_values.orchestrator.properties.package.default }}"
+      orchestrator_backend:
+        integrity: "{{ orch_crd_plugin_values.orchestratorBackend.properties.integrity.default }}"
+        package: "{{ orch_crd_plugin_values.scope.default }}/{{ orch_crd_plugin_values.orchestratorBackend.properties.package.default }}"
+  when: milestone|int == 4 and deploy_operator_source != 'production'
+
+- name: Set dynamic plugin dict values based on orchestrator crd default dynamic plugin values for m4 prod
+  vars:
+    orch_crd_plugin_values: "{{ orch_crd_plugin_values_raw.stdout|default('{}')|from_json }}"
+  ansible.builtin.set_fact:
+    orch_plugins:
+      orchestrator:
+        integrity: "{{ orch_crd_plugin_values.orchestrator.properties.integrity.default }}"
+        package: "{{ orch_crd_plugin_values.orchestrator.properties.package.default }}"
+      orchestrator_backend:
+        integrity: "{{ orch_crd_plugin_values.orchestratorBackend.properties.integrity.default }}"
+        package: "{{ orch_crd_plugin_values.orchestratorBackend.properties.package.default }}"
+  when: milestone|int == 4 and deploy_operator_source == 'production'
+
+- name: Set dynamic plugin dict values based on internal code for m5 staging
+  when: milestone|int >= 5 and deploy_operator_source != 'production'
+  block:
+    - name: Get plugins values go file
+      get_url:
+        url: https://raw.githubusercontent.com/rhdhorchestrator/orchestrator-go-operator/refs/heads/main/internal/controller/rhdh/plugins.go
+        dest: "{{ orch_deploy_work_dir }}/plugins_file.go"
+        mode: 0644
+        force: true
+
+    - name: Read the Go file into a variable
+      ansible.builtin.slurp:
+        src: "{{ orch_deploy_work_dir }}/plugins_file.go"
+      register: plugins_file_content
+
+    - name: Extract package and integrity values
+      ansible.builtin.set_fact:
+        plugins_info: >
+          {%- set data = {} -%}
+          {%- for match in plugins_file_content['content'] | b64decode | regex_findall('(\w+):\s*{\s*Package:\s*\"(.*?)\",\s*Integrity:\s*\"(.*?)\"') -%}
+          {%-   set _ = data.update({match[0]: {'package': match[1], 'integrity': match[2]}}) -%}
+          {%- endfor -%}
+          {{ data }}
+
+    - name: Extract scope of plugins from Go file
+      get_url:
+        url: https://raw.githubusercontent.com/rhdhorchestrator/orchestrator-go-operator/refs/heads/main/internal/controller/rhdh/configmap_ref.go
+        dest: "{{ orch_deploy_work_dir }}/scope_file.go"
+        mode: 0644
+        force: true
+
+    - name: Read Go file
+      slurp:
+        src: "{{ orch_deploy_work_dir }}/scope_file.go"
+      register: scope_file_content
+
+    - name: Extract scope value
+      set_fact:
+        scope_value: >
+          {%- set data = {} -%}
+          {%- for match in scope_file_content['content'] | b64decode | regex_findall('Scope\s*=\s*\"(.*?)\"') -%}
+          {%-   set _ = data.update({'scope': match}) -%}
+          {%- endfor -%}
+          {{ data }}
+
+    - name: Set dynamic plugin dict values
+      ansible.builtin.set_fact:
+        orch_plugins:
+          orchestrator:
+            integrity: "{{ plugins_info.Orchestrator.integrity }}"
+            package: "{{ scope_value.scope }}/{{ plugins_info.Orchestrator.package }}"
+          orchestrator_backend:
+            integrity: "{{ plugins_info.OrchestratorBackend.integrity }}"
+            package: "{{ scope_value.scope }}/{{ plugins_info.OrchestratorBackend.package }}"
+          scaffolder_orchestrator_backend:
+            integrity: "{{ plugins_info.ScaffolderBackendOrchestrator.integrity }}"
+            package: "{{ scope_value.scope }}/{{ plugins_info.ScaffolderBackendOrchestrator.package }}"
+
+    - name: Set fact for dynamic plugins for m6 widgets
+      when: milestone|int >= 6
+      vars:
+        new_dict:
+          orchestrator_form_widgets:
+            integrity: "{{ plugins_info.OrchestratorFormWidgets.integrity }}"
+            package: "{{ scope_value.scope }}/{{ plugins_info.OrchestratorFormWidgets.package }}"
+      ansible.builtin.set_fact:
+        orch_plugins: "{{ orch_plugins | combine(new_dict) }}"
+
+- name: Dynamic Plugins from Orchestrator CRD debug output
+  debug:
+    msg: "{{ orch_plugins }}"

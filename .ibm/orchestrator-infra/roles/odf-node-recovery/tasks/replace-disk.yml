@@ -1,0 +1,32 @@
+- name: Replace disk
+  become: true
+  block:
+    - name: Capture disk and device to get replaced (assumes 2nd qcow2 in list)
+      ansible.builtin.shell: |
+        virsh domblklist {{ odf_test_worker_vm }}  | grep qcow2  | tail -n1
+      register: disk_out
+      failed_when: disk_out.stdout == ''
+
+    - name: Set device and disk facts
+      ansible.builtin.set_fact:
+        replace_dev: "{{ (disk_out.stdout | split)[0] }}"
+        replace_disk: "{{ (disk_out.stdout | split)[1] }}"
+      failed_when: '"vd" not in replace_dev'
+
+    - name: Detach and format disk
+      ansible.builtin.shell: |
+        set -e 
+        rm -rf {{ replace_disk }}
+        virsh detach-disk {{ odf_test_worker_vm }} {{ replace_dev }} --live
+        qemu-img create -f qcow2 {{ replace_disk }} 100G        
+
+- name: Wait for ceph to realize the disk is gone
+  ansible.builtin.import_tasks: ceph-status.yml
+  retries: 8
+  delay: 15
+  until: "'HEALTH_OK' not {{ ceph_status.stdout }}"
+
+- name: Reattach disk
+  become: true
+  ansible.builtin.shell: |
+    virsh attach-disk  {{ odf_test_worker_vm }} {{ replace_disk }} {{ replace_dev }} --subdriver qcow2  

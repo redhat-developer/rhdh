@@ -1,0 +1,74 @@
+- name: Remove previous git repo
+  ansible.builtin.file:
+    path: "/tmp/serverless-workflow-examples"
+    state: absent
+
+- name: Clone the serverless-workflow-examples repo
+  ansible.builtin.git:
+    repo: https://github.com/rhdhorchestrator/serverless-workflow-examples.git
+    dest: '/tmp/serverless-workflow-examples'
+    version: 'main' # always use main
+
+- name: Get NOTIFICATIONS_BEARER_TOKEN from openshift
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  shell: |
+    oc get secrets -n {{ backstage_ns }} backstage-backend-auth-secret -o yaml | yq .data.BACKEND_SECRET
+  register: notifications_bearer_token
+  changed_when: false
+
+- name: Set NOTIFICATIONS_BEARER_TOKEN fact
+  ansible.builtin.set_fact:
+    notifications_token: "{{ notifications_bearer_token.stdout }}"
+
+- name: Set Backstage notifications URL fact
+  ansible.builtin.set_fact:
+    backstage_notifications_url: "http://backstage-backstage.{{ backstage_ns }}"
+
+- name: Customize the secret manifest
+  copy:
+    content: |
+      apiVersion: v1
+      data:
+        BACKSTAGE_NOTIFICATIONS_URL: "{{ backstage_notifications_url | b64encode }}"
+        NOTIFICATIONS_BEARER_TOKEN: "{{ notifications_token }}"
+        ONBOARDING_SERVER_URL: aHR0cDovL3VzZXItb25ib2FyZGluZy1zZXJ2ZXIuc29uYXRhZmxvdy1pbmZyYTo4MDgw
+      kind: Secret
+      metadata:
+        creationTimestamp: null
+        name: user-onboarding-creds
+    dest: '/tmp/serverless-workflow-examples/user-onboarding/manifests/00-secret_user-onboarding.yaml'
+
+- name: Apply updated secret and other workflow manifests
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  shell: |
+    oc apply -f '/tmp/serverless-workflow-examples/user-onboarding/manifests/' -n {{ workflow_namespace|default('sonataflow-infra') }}
+
+- name: Wait until sonataflow resource exists
+  shell: |
+    oc get sf -n {{ workflow_namespace }} user-onboarding
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  register: sf_exists
+  retries: 5
+  delay: 30
+  until: sf_exists.rc == 0
+
+- name: Patch sonataflow secret info in case deployed postgres with RH catalog
+  shell: |
+    oc -n {{ workflow_namespace }} patch sonataflow user-onboarding --type merge -p '{"spec": { "persistence": { "postgresql": { "secretRef": {"userKey": "database-user","passwordKey": "database-password"}}}}}'
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  when: postgres_rh_install | bool
+
+- name: Wait for the user on-boarding workflow deployment to roll out
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  shell: |
+    oc rollout status deployment/user-onboarding -n {{ workflow_namespace|default('sonataflow-infra') }} --timeout 300s
+  register: rollout_status
+  retries: 5
+  delay: 30
+  until: rollout_status.rc == 0
+

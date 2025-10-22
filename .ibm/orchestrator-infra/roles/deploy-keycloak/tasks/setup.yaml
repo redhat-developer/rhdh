@@ -1,0 +1,7 @@
+- name: Create work dir
+  ansible.builtin.file:
+    path: "{{ keycloak_work_dir }}"
+    state: "{{ item }}"
+  loop:
+    - absent
+    - directory

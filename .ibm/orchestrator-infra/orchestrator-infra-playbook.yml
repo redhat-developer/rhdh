@@ -1,0 +1,339 @@
+---
+# Playbook to install only Orchestrator infrastructure
+# Uses existing roles from flight-path-auto-tests project but skips RHDH/Backstage
+
+- name: Deploy Orchestrator Infrastructure Only (No RHDH/Backstage)
+  hosts: localhost
+  connection: local
+  gather_facts: yes
+  vars:
+    # Custom namespace to avoid conflicts with RHDH
+    orchestrator_namespace: "orchestrator-infra"
+
+    # Use original project defaults but override the namespace
+    rhdh_ns: "{{ orchestrator_namespace }}"
+    
+    # Keycloak configuration
+    deploy_keycloak: true
+    rhdh_keycloak_auth: true
+    rhdh_keycloak_client_id: "orchestrator"
+    rhdh_keycloak_client_secret: "orchestrator-secret"
+    rhdh_keycloak_realm: "orchestrator"
+    
+    # PostgreSQL for Orchestrator
+    orchestrator_db_name: "backstage_plugin_orchestrator"
+
+    # Install only orchestrator infrastructure (not RHDH)
+    install_orchestrator_infra: true
+    
+    # Deploy directory
+    rhdh_deploy_dir: "/tmp/orchestrator-infra-deploy"
+    rhdh_config_dir: "{{ rhdh_deploy_dir }}/config"
+    
+    # Serverless Logic Operator
+    install_serverless_operator: true
+    
+    # GitOps (optional)
+    enable_gitops: false
+    
+    # Workflow samples
+    workflow_repo: "https://github.com/rhdh-orchestrator-test/serverless-workflows.git"
+    
+  tasks:
+    - name: Verify OpenShift connection
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Namespace
+        name: default
+      register: cluster_check
+      failed_when: false
+
+    - name: Fail if not connected to cluster
+      fail:
+        msg: "Not connected to OpenShift. Use 'oc login' first."
+      when: cluster_check.failed
+
+    - name: Create namespace for Orchestrator Infrastructure
+      kubernetes.core.k8s:
+        name: "{{ orchestrator_namespace }}"
+        api_version: v1
+        kind: Namespace
+        state: present
+
+    # Deploy Keycloak for authentication
+    - name: Deploy Keycloak
+      include_role:
+        name: ../flight-path-auto-tests-main/deploy-orchestrator/roles/deploy-keycloak
+      when: deploy_keycloak | bool
+
+    # Deploy PostgreSQL
+    - name: Deploy PostgreSQL for Orchestrator
+      block:
+        - name: Create PostgreSQL secret
+          kubernetes.core.k8s:
+            state: present
+            definition:
+              apiVersion: v1
+              kind: Secret
+              metadata:
+                name: postgresql-orchestrator-secret
+                namespace: "{{ orchestrator_namespace }}"
+              type: Opaque
+              stringData:
+                database-user: postgres
+                database-password: postgres123
+                database-name: "{{ orchestrator_db_name }}"
+
+        - name: Deploy PostgreSQL StatefulSet
+          kubernetes.core.k8s:
+            state: present
+            definition:
+              apiVersion: apps/v1
+              kind: StatefulSet
+              metadata:
+                name: postgresql-orchestrator
+                namespace: "{{ orchestrator_namespace }}"
+              spec:
+                serviceName: postgresql-orchestrator
+                replicas: 1
+                selector:
+                  matchLabels:
+                    app: postgresql-orchestrator
+                template:
+                  metadata:
+                    labels:
+                      app: postgresql-orchestrator
+                  spec:
+                    containers:
+                    - name: postgresql
+                      image: registry.redhat.io/rhel9/postgresql-15:latest
+                      env:
+                      - name: POSTGRESQL_USER
+                        valueFrom:
+                          secretKeyRef:
+                            name: postgresql-orchestrator-secret
+                            key: database-user
+                      - name: POSTGRESQL_PASSWORD
+                        valueFrom:
+                          secretKeyRef:
+                            name: postgresql-orchestrator-secret
+                            key: database-password
+                      - name: POSTGRESQL_DATABASE
+                        valueFrom:
+                          secretKeyRef:
+                            name: postgresql-orchestrator-secret
+                            key: database-name
+                      - name: POSTGRESQL_MAX_CONNECTIONS
+                        value: "200"
+                      ports:
+                      - containerPort: 5432
+                        name: postgresql
+                      volumeMounts:
+                      - name: postgresql-data
+                        mountPath: /var/lib/pgsql/data
+                volumeClaimTemplates:
+                - metadata:
+                    name: postgresql-data
+                  spec:
+                    accessModes: [ "ReadWriteOnce" ]
+                    resources:
+                      requests:
+                        storage: 5Gi
+
+        - name: Create PostgreSQL Service
+          kubernetes.core.k8s:
+            state: present
+            definition:
+              apiVersion: v1
+              kind: Service
+              metadata:
+                name: postgresql-orchestrator
+                namespace: "{{ orchestrator_namespace }}"
+              spec:
+                ports:
+                - port: 5432
+                  targetPort: 5432
+                selector:
+                  app: postgresql-orchestrator
+                type: ClusterIP
+
+        - name: Wait for PostgreSQL to be ready
+          kubernetes.core.k8s_info:
+            api_version: apps/v1
+            kind: StatefulSet
+            name: postgresql-orchestrator
+            namespace: "{{ orchestrator_namespace }}"
+            wait: true
+            wait_condition:
+              type: Ready
+              status: "True"
+            wait_timeout: 300
+
+    # Install Serverless Logic Operator
+    - name: Install Serverless Logic Operator
+      include_tasks: ../flight-path-auto-tests-main/deploy-orchestrator/roles/deploy-rhdh/tasks/install-serverless-logic-operator.yaml
+      when: install_serverless_operator | bool
+
+    # Deploy SonataFlow Platform
+    - name: Deploy SonataFlow Platform
+      block:
+        - name: Create secret for SonataFlow
+          kubernetes.core.k8s:
+            state: present
+            definition:
+              apiVersion: v1
+              kind: Secret
+              metadata:
+                name: sonataflow-psql-secret
+                namespace: "{{ orchestrator_namespace }}"
+              type: Opaque
+              stringData:
+                username: postgres
+                password: postgres123
+
+        - name: Deploy SonataFlowPlatform
+          kubernetes.core.k8s:
+            state: present
+            definition:
+              apiVersion: sonataflow.org/v1alpha08
+              kind: SonataFlowPlatform
+              metadata:
+                name: sonataflow-platform
+                namespace: "{{ orchestrator_namespace }}"
+              spec:
+                build:
+                  template:
+                    buildArgs:
+                      - name: QUARKUS_EXTENSION
+                        value: |
+                          org.kie:kie-addons-quarkus-persistence-jdbc:999-SNAPSHOT
+                          io.quarkus:quarkus-jdbc-postgresql:3.8.6
+                          io.quarkus:quarkus-agroal:3.8.6
+                  config:
+                    strategyOptions:
+                      KanikoBuildCacheEnabled: "true"
+                services:
+                  dataIndex:
+                    enabled: true
+                    persistence:
+                      postgresql:
+                        secretRef:
+                          name: sonataflow-psql-secret
+                          userKey: username
+                          passwordKey: password
+                        serviceRef:
+                          name: postgresql-orchestrator
+                          namespace: "{{ orchestrator_namespace }}"
+                          port: 5432
+                          databaseName: "{{ orchestrator_db_name }}"
+                          databaseSchema: orchestrator
+                  jobService:
+                    enabled: true
+                    persistence:
+                      postgresql:
+                        secretRef:
+                          name: sonataflow-psql-secret
+                          userKey: username
+                          passwordKey: password
+                        serviceRef:
+                          name: postgresql-orchestrator
+                          namespace: "{{ orchestrator_namespace }}"
+                          port: 5432
+                          databaseName: "{{ orchestrator_db_name }}"
+                          databaseSchema: orchestrator
+          when: install_orchestrator_infra | bool
+
+    # Deploy sample workflows
+    - name: Deploy Sample Workflows
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: sonataflow.org/v1alpha08
+          kind: SonataFlow
+          metadata:
+            name: "{{ item.name }}"
+            namespace: "{{ orchestrator_namespace }}"
+            annotations:
+              sonataflow.org/description: "{{ item.description }}"
+              sonataflow.org/version: "1.0.0"
+          spec:
+            flow:
+              id: "{{ item.name }}"
+              version: '1.0'
+              specVersion: '0.8'
+              name: "{{ item.description }}"
+              start: Start
+              states:
+                - name: Start
+                  type: inject
+                  data:
+                    message: "Starting {{ item.name }} workflow"
+                  end: true
+      loop:
+        - { name: "user-onboarding", description: "User Onboarding Workflow" }
+        - { name: "infrastructure-provisioning", description: "Infrastructure Provisioning Workflow" }
+      when: install_orchestrator_infra | bool
+
+    # GitOps configuration (optional)
+    - name: Configure GitOps
+      include_tasks: ../flight-path-auto-tests-main/deploy-orchestrator/roles/deploy-rhdh/tasks/configure-gitops.yaml
+      when: enable_gitops | bool
+
+    # Display summary
+    - name: Get PostgreSQL Service
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Service
+        name: postgresql-orchestrator
+        namespace: "{{ orchestrator_namespace }}"
+      register: pg_service
+
+    - name: Get Data Index Service
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Service
+        namespace: "{{ orchestrator_namespace }}"
+        label_selectors:
+          - app = sonataflow-platform-data-index-service
+      register: data_index_service
+
+    - name: Get Keycloak Route
+      kubernetes.core.k8s_info:
+        api_version: route.openshift.io/v1
+        kind: Route
+        name: keycloak
+        namespace: "{{ orchestrator_namespace }}"
+      register: keycloak_route
+      when: deploy_keycloak | bool
+
+    - name: Display Deployment Summary
+      debug:
+        msg:
+          - "========================================================"
+          - "Orchestrator Infrastructure Deployment Complete!"
+          - "========================================================"
+          - "Namespace: {{ orchestrator_namespace }}"
+          - ""
+          - "PostgreSQL:"
+          - "  Host: postgresql-orchestrator.{{ orchestrator_namespace }}.svc.cluster.local"
+          - "  Port: 5432"
+          - "  Database: {{ orchestrator_db_name }}"
+          - "  Username: postgres"
+          - "  Password: postgres123"
+          - ""
+          - "SonataFlow Data Index Service:"
+          - "  URL: http://sonataflow-platform-data-index-service.{{ orchestrator_namespace }}.svc.cluster.local:8080"
+          - ""
+          - "{% if deploy_keycloak %}Keycloak:"
+          - "  URL: https://{{ keycloak_route.resources[0].spec.host if keycloak_route.resources else 'pending' }}"
+          - "  Admin: admin / admin"
+          - "  Realm: {{ rhdh_keycloak_realm }}{% endif %}"
+          - ""
+          - "Integration with RHDH/Backstage:"
+          - "  Add these settings to your Backstage configuration:"
+          - "    dataIndexService:"
+          - "      url: http://sonataflow-platform-data-index-service.{{ orchestrator_namespace }}.svc.cluster.local:8080"
+          - ""
+          - "Check pods status:"
+          - "  oc get pods -n {{ orchestrator_namespace }}"
+          - "========================================================"

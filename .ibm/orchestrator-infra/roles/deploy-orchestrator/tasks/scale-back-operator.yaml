@@ -1,0 +1,34 @@
+# Workaround for bug FLPATH-1452 
+- name: Get name of Orchestrator Operator deployment
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc get deployment -n openshift-operators -l operators.coreos.com/orchestrator-operator.openshift-operators="" --no-headers  | awk '{ print $1 }'
+  register: orch_operator_deploy  
+
+- name: Scale back Orchestrator Operator in order to apply custom resources 
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc scale --replicas=0 deployment/{{ orch_operator_deploy.stdout }} -n openshift-operators
+
+- name: Ensure orchestrator operator pod has scaled back to 0 before proceeding
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc wait --for=delete pod -l app.kubernetes.io/instance=orchestrator-operator -n openshift-operators --timeout=60s    
+  register: orch_op_status
+  retries: 2
+  delay: 20
+  until: orch_op_status is success
+
+# Workaround for bug FLPATH-1452
+# Orchestrator Operator updates cronjobs which reset managed resources to defaults every 1 minute, so they 
+# must be removed as well as the operator scaled back
+- name: Remove Orchestrator cronjobs 
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    # Short pause required for operator pods to not regenerate the cronjobs
+    sleep 5
+    oc delete cronjob --all -n orchestrator

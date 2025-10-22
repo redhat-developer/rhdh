@@ -1,0 +1,32 @@
+- name: Generate keycloak instance resources
+  ansible.builtin.template:
+    src: "{{ item }}"
+    dest: "{{ keycloak_work_dir }}/{{ item[:-3] }}"
+  loop:
+    - keycloak.yaml.j2
+    - keycloak_realm.yaml.j2
+    - keycloak_client.yaml.j2
+
+- name: Apply Keycloak instance custom resources
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |  
+    oc apply -f {{ keycloak_work_dir }}/{{ item[:-3] }}
+  loop:
+    - keycloak.yaml.j2
+    - keycloak_realm.yaml.j2
+    - keycloak_client.yaml.j2
+
+- name: Wait for Keycloak instance to become ready
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    set -e
+    oc wait keycloak sso-idp -n rhsso-operator --timeout=5m --for=jsonpath="{.status.ready}=true"
+    oc wait --for=condition=Ready pod --all -n rhsso-operator --timeout=6m  
+  register: keycloak_op_deploy
+  retries: 9
+  delay: 30
+  until: keycloak_op_deploy is success
+
+# USERS loop

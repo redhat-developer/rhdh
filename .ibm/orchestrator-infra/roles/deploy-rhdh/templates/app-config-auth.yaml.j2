@@ -1,0 +1,37 @@
+{# This configuration file is the data: content of configmap app-config-rhdh-auth #}
+auth:
+  environment: development
+  dangerouslyAllowSignInWithoutUserInCatalog: true
+  providers:
+    guest:
+      dangerouslyAllowOutsideDevelopment: true
+      userEntityRef: user:default/guest
+    oidc:
+      development:
+        metadataUrl: https://{{ keycloak_route.stdout }}/auth/realms/{{ rhdh_keycloak_realm }}/.well-known/openid-configuration
+        clientId: "{{ rhdh_keycloak_client_id }}"
+        clientSecret: "{{ rhdh_keycloak_client_secret }}"
+        prompt: auto
+        signIn:
+          resolvers:
+            - resolver: preferredUsernameMatchingUserEntityName
+              dangerouslyAllowSignInWithoutUserInCatalog: true
+  session:
+    secret: "{{ rhdh_session_secret }}"
+signInPage: oidc
+permission:
+  enabled: true
+  rbac:
+    policies-csv-file: ./rbac-policy.csv
+    policyFileReload: true
+    admin:
+      superUsers:
+        - name: user:default/guest
+        - name: user:default/super-admin
+      users:
+        - name: user:default/rhdh-orchestrator-test
+    pluginsWithPermission:
+      - catalog
+      - scaffolder
+      - permission
+      - orchestrator

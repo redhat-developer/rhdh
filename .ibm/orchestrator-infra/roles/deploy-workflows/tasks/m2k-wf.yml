@@ -1,0 +1,223 @@
+- name: Set workflow version
+  vars:
+    wf_entry_var: move2kube
+    wf_version_var: "{{ deploy_m2k_version }}"
+  ansible.builtin.import_tasks: get-wf-version.yml
+
+- name: Delete move2kube instance namespace if exists
+  shell: |
+    oc delete ns move2kube
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ignore_errors: true
+
+- name: Patch knative-serving configmap/config-features
+  shell: |
+    oc patch configmap/config-features -n knative-serving --type merge -p '{"data":{"kubernetes.podspec-init-containers": "enabled", "kubernetes.podspec-securitycontext": "enabled"}}'
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+
+- name: Add adm policy
+  shell: |
+    oc -n {{ workflow_namespace }} adm policy add-scc-to-user anyuid -z default
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+
+- name: Create ssh keys secret
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    cat <<EOF | oc apply -f -
+    apiVersion: v1
+    data:
+      id_rsa.pub: {{ orch_gitops_ssh_pub_key }}
+      id_rsa: {{ orch_gitops_ssh_priv_key }}
+    kind: Secret
+    metadata:
+      name: sshkeys
+      namespace: {{ workflow_namespace }}
+    type: Opaque
+    EOF
+
+- name: Set move2kube URL fact
+  ansible.builtin.set_fact:
+    m2k_url: https://move2kube-route-move2kube.apps.{{ cluster_name }}.{{ cluster_domain }}
+
+- name: Set helm values fact m3 
+  ansible.builtin.set_fact:
+    helm_values:
+      - value: workflow.move2kubeURL={{ m2k_url }}
+      - value: instance.namespace=move2kube
+  when: milestone|int <= 3
+
+- name: Set helm values fact m4+
+  ansible.builtin.set_fact:
+    helm_values:
+      - value: workflow.move2kubeURL={{ m2k_url }}
+      - value: instance.namespace=move2kube
+      - value: brokerName={{ kafka_broker_name }}
+      - value: brokerNamespace={{ kafka_broker_namespace }}
+  when: milestone|int >= 4
+
+- name: Deploy M2K workflow using helm repo
+  kubernetes.core.helm:
+    chart_ref: orchestrator-workflows/move2kube
+    kubeconfig: "{{ kubeconfig_path }}"
+    release_name: move2kube
+    release_namespace: "{{ workflow_namespace }}"
+    chart_version: "{{ wf_version }}"
+    state: present
+    set_values: "{{ helm_values }}"
+
+- name: Add adm policy
+  shell: |
+    oc -n move2kube adm policy add-scc-to-user anyuid -z default
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+
+- name: Create ssh keys secret
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    cat <<EOF | oc apply -f -
+    apiVersion: v1
+    data:
+      id_rsa.pub: {{ orch_gitops_ssh_pub_key }}
+      id_rsa: {{ orch_gitops_ssh_priv_key }}
+    kind: Secret
+    metadata:
+      name: sshkeys
+      namespace: move2kube
+    type: Opaque
+    EOF
+
+- name: Edit m2k-creds secret
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  shell: |
+    oc -n {{ workflow_namespace }} patch secret m2k-creds --type merge -p '{"data": { "NOTIFICATIONS_BEARER_TOKEN": "'$(oc get secrets -n {{ backstage_ns }} backstage-backend-auth-secret -o yaml | yq .data.BACKEND_SECRET)'"}}'
+
+- name: Patch location of sonataflow-server in case using separate namespace
+  shell: |
+    oc -n {{ workflow_namespace }} patch sonataflow m2k --type merge -p '{"spec": { "persistence": { "postgresql": { "serviceRef": {"namespace": "sonataflow-infra"}}}}}'    
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  when: workflow_namespace != "sonataflow-infra"    
+
+- name: Patch sonataflow secret info in case deployed postgres with RH catalog
+  shell: |
+    oc -n {{ workflow_namespace }} patch sonataflow m2k  --type merge -p '{"spec": { "persistence": { "postgresql": { "secretRef": {"userKey": "database-user","passwordKey": "database-password"}}}}}'
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  when: postgres_rh_install | bool
+
+- name: Get broker URL
+  shell: |
+    oc -n {{ workflow_namespace }} get broker -o json | jq -r ".items[0].status.address.url"
+  register: broker_url
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+
+- name: Wait for m2k pod to be ready
+  shell: |
+    oc wait -n {{ workflow_namespace }} pods -l "sonataflow.org/workflow-app=m2k" --for=condition=Ready=true --timeout=1s
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  register: m2k_pods_ready
+  retries: 10
+  delay: 30
+  until: m2k_pods_ready.rc == 0  
+
+- name: Wait for move2kube pod to be ready
+  shell: |
+    oc wait -n move2kube pods -l "app=move2kube" --for=condition=Ready=true --timeout=3m
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  register: move2kube_pod_ready
+  retries: 10
+  delay: 10
+  until: move2kube_pod_ready.rc == 0
+
+- name: Re run helm to recreate ksvc
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"    
+  when: milestone|int >= 4
+  block:
+    - name: For move2kube pod to redeploy
+      ansible.builtin.shell: |
+        oc rollout restart deployment/move2kube -n {{ m2k_instance_ns }}
+  
+    - name: Wait for ksvc ksvc m2k-save-transformation-func to be ready
+      ansible.builtin.shell: |
+        oc wait -n {{ workflow_namespace }} ksvc m2k-save-transformation-func --for=condition=Ready=true --timeout=3m
+      register: ksvc_deploy
+      retries: 10
+      delay: 10
+      until: ksvc_deploy is success  
+
+    - name: Delete ksvc m2k-save-transformation-func
+      ansible.builtin.shell: |
+        oc -n  {{ workflow_namespace }} delete ksvc m2k-save-transformation-func
+
+    - name: Upgrade M2k helm to recreate ksvc m2k-save-transformation-func
+      kubernetes.core.helm:
+        chart_ref: orchestrator-workflows/move2kube
+        kubeconfig: "{{ kubeconfig_path }}"
+        release_name: move2kube
+        release_namespace: "{{ workflow_namespace }}"
+        chart_version: "{{ wf_version }}"
+        state: present
+        set_values: "{{ helm_values }}"
+
+    - name: Update m2k-creds secret again after helm upgrade clears it
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+      shell: |
+        oc -n {{ workflow_namespace }} patch secret m2k-creds --type merge -p '{"data": { "NOTIFICATIONS_BEARER_TOKEN": "'$(oc get secrets -n {{ backstage_ns }} backstage-backend-auth-secret -o yaml | yq .data.BACKEND_SECRET)'"}}'
+
+- name: Edit m2k-props configmap/config-features
+  shell: |
+    oc -n {{ workflow_namespace }} get cm m2k-props -o yaml |
+    sed -e 's|quarkus.rest-client.move2kube_yaml.url=.*|quarkus.rest-client.move2kube_yaml.url=http://move2kube-svc.move2kube.svc.cluster.local:8080|'| 
+    oc apply -f -
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+
+- name: Patch K_SINK param, M2K_ROUTE, Backstage notification URL
+  when: milestone|int <= 3
+  shell: |
+    oc -n {{ workflow_namespace }} patch sonataflow m2k --type merge -p \
+    '{"spec": { "podTemplate": { "container": { "env": [{"name": "BACKSTAGE_NOTIFICATIONS_URL", "value": "http://backstage-backstage.'{{ backstage_ns }}'"},{"name": "K_SINK", "value": "'{{ broker_url.stdout }}'"}, {"name": "MOVE2KUBE_URL", "value": "'{{ m2k_url }}'"}]}}}}'
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+
+# K_SINK not needed for 1.4+ knative integration - causes pod reconcile loop
+- name: Patch M2K_ROUTE, Backstage notification URL
+  when: milestone|int >= 4
+  shell: |
+    oc -n {{ workflow_namespace }} patch sonataflow m2k --type merge -p \
+    '{"spec": { "podTemplate": { "container": { "env": [{"name": "BACKSTAGE_NOTIFICATIONS_URL", "value": "http://backstage-backstage.'{{ backstage_ns }}'"}, {"name": "MOVE2KUBE_URL", "value": "'{{ m2k_url }}'"}]}}}}'
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+
+- name: Final check for m2k resources
+  shell: |
+    oc wait -n move2kube pods -l "app=move2kube" --for=condition=Ready=true --timeout=1s
+    oc wait -n {{ workflow_namespace }} pods -l "sonataflow.org/workflow-app=m2k" --for=condition=Ready=true --timeout=1s
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  register: m2k_deploy
+  retries: 6
+  delay: 10
+  until: m2k_deploy is success
+
+- name: Wait for ksvc ksvc m2k-save-transformation-func to be ready again
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc wait -n {{ workflow_namespace }} ksvc m2k-save-transformation-func --for=condition=Ready=true --timeout=5m
+  register: ksvc_deploy
+  retries: 10
+  delay: 20
+  until: ksvc_deploy is success
+  when: milestone|int >= 4

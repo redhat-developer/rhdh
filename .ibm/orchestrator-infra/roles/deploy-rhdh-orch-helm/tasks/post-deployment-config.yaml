@@ -1,0 +1,57 @@
+
+- name: Patch backstage-developer-hub deployment to disable TLS verification
+  ansible.builtin.shell: |
+    oc patch deployment backstage-developer-hub -p \
+     '{"spec":{"template":{"spec":{"containers":[{"name":"backstage-backend","env":[{"name":"NODE_TLS_REJECT_UNAUTHORIZED","value":"0"}]}]}}}}' \
+     -n {{ rhdh_ns }}
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+
+- name: Get Keycloak route
+  ansible.builtin.shell: |  
+    oc get routes -A -l app=keycloak -o json | jq '.items[0].spec.host' -r
+  register: keycloak_route
+  failed_when: keycloak_route.stdout == ''
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+
+- name: Capture backstage route
+  ansible.builtin.shell: |
+    oc get routes -A | grep backstage-developer-hub | awk '{print $3}'
+  register: backstage_route
+  failed_when: backstage_route.stdout == '' or backstage_route.stdout == 'null'
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+
+- name: Generate backstage-developer-hub-app-config.yaml from template
+  ansible.builtin.template:
+    src: backstage-developer-hub-app-config.yaml.j2
+    dest: "{{ rhdh_config_dir }}/backstage-developer-hub-app-config.yaml"
+    mode: '0644'
+
+- name: Apply backstage-developer-hub-app-config.yaml to cluster
+  ansible.builtin.shell: |
+    oc apply -f "{{ rhdh_config_dir }}/backstage-developer-hub-app-config.yaml"
+  args:
+    executable: /bin/bash
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+
+- name: Generate rbac-policy.csv from template
+  ansible.builtin.template:
+    src: rbac-policy.csv.j2
+    dest: "{{ rhdh_config_dir }}/rbac-policy.csv"
+    mode: '0644'
+
+# # https://stackoverflow.com/questions/51291521/kubernetes-configmap-prints-n-instead-of-a-newline
+# - name: Remove empty space before newline character of yaml files to keep configmap data formatting
+#   ansible.builtin.shell: |
+#     sed -i -E 's/[[:space:]]+$//g' {{ rhdh_config_dir }}/*.*
+
+- name: Create RBAC Configmap from CSV File
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc create configmap rhdh-config-rbac-policy -n {{ rhdh_ns }} --from-file="rbac-policy.csv"={{ rhdh_config_dir }}/rbac-policy.csv || \
+    oc set data cm/rhdh-config-rbac-policy -n {{ rhdh_ns }} --from-file="rbac-policy.csv"={{ rhdh_config_dir }}/rbac-policy.csv
+

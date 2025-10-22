@@ -1,0 +1,37 @@
+# Working directory
+odf_work_dir: "{{ ansible_user_dir }}/odf_node_recovery"
+
+kubeconfig_path: "{{ ansible_user_dir }}/clusterconfigs/auth/kubeconfig"
+
+# If index image is set, a catalogsource is created from it and node recovery 
+# operator deployed from it. Leave empty to use community-operators latest
+odf_index_image: ''
+
+# OCP node name of worker to be tested
+odf_test_worker_node: ocptest-worker-1
+
+# VM name of worker to be tested
+odf_test_worker_vm: "{{ odf_test_worker_node }}"
+
+# Path to original discovery iso - it will be overridden
+odf_discovery_iso: /var/lib/libvirt/images/discovery_image_ocp.iso
+
+# Api to assisted service (podman for these tests)
+assisted_api: http://10.9.76.15:8080/api/assisted-install/v2
+
+#####################################################################
+## 
+## Set variables below to false to skip the particular test
+##
+
+# Install ODF node recoveryoperator
+odf_node_recovery_operator: true
+
+# Run basic ceph tools enable/disable by node recovery test
+ceph_tools_test: true
+
+# Run OCP-80694 disk replacement test
+ocp_80694_disk_replace_test: true
+
+# Run OCP-80695 node replacement test
+ocp_80695_node_replace_test: true

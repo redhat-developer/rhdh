@@ -1,0 +1,17 @@
+costmetrics_namespace: costmanagement-metrics-operator
+costmetrics_operator_name: costmanagement-metrics-operator
+costmetrics_operator_channel: stable
+costmetrics_operator_source: redhat-operators
+costmetrics_operator_source_namespace: openshift-marketplace
+
+costmetrics_client_id: "clientid"
+costmetrics_client_secret: "clientsecret"
+costmetrics_secret_name: service-account-auth-secret
+
+costmetrics_cluster_name: cluster-1
+
+costmetrics_label_namespaces:
+  - rhdh
+  - sonataflow-infra
+  - rhdh-operator
+  - costmanagement-metrics-operator 

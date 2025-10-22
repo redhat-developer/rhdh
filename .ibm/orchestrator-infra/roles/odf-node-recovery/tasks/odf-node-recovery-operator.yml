@@ -1,0 +1,82 @@
+- name: Deploy custom catalogsource 
+  when: odf_index_image != ''
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  block:
+    - name: Create odf node recovery CatalogSource
+      ansible.builtin.shell: |
+        cat <<EOF | oc apply -f -
+        apiVersion: operators.coreos.com/v1alpha1
+        kind: CatalogSource
+        metadata:
+          name: odf-node-recovery-operator
+          namespace: openshift-marketplace
+        spec:
+          displayName: ODF Node Recovery Operator
+          publisher: Red Hat
+          sourceType: grpc
+          grpcPodConfig:
+            securityContextConfig: restricted
+          image: {{ odf_index_image }}
+          updateStrategy:
+            registryPoll:
+              interval: 10m
+        EOF
+
+    - name: Wait for CatalogSource and related Pod to successfully start
+      ansible.builtin.shell: |
+        set -e
+        oc wait -n openshift-marketplace catalogsource/odf-node-recovery-operator \
+        --for=jsonpath='{.status.connectionState.lastObservedState}'=READY --timeout=30s
+
+        oc wait -n openshift-marketplace pod -l olm.catalogSource=odf-node-recovery-operator \
+        --for=condition=Ready --timeout=60s
+      retries: 3
+      delay: 20
+      register: catalog_source_pod
+      until: catalog_source_pod is success
+
+- name: Create subscription from latest channel
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}" 
+  vars:
+    tmp_catalog_source: "{{ 'community-operators' if odf_index_image == '' else 'odf-node-recovery-operator' }}"
+  block:
+    - name: Capture channels from orchestrator operator package manifests 
+      ansible.builtin.shell: |
+        oc get packagemanifests -l catalog={{ tmp_catalog_source }} -o json |\
+        jq -r '.items[] | select(.metadata.name=="odf-node-recovery-operator") | .status.channels[].name'
+      register: tmp_cs_channels
+      until: tmp_cs_channels['stdout_lines'] | length > 0
+      delay: 30
+      retries: 15
+
+    - name: Set Orchestrator Operator channel to first channel available
+      ansible.builtin.set_fact: 
+        op_channel: "{{ tmp_cs_channels['stdout_lines'] | first }}"
+
+    - name: Create Operator Subscription
+      ansible.builtin.shell: |
+        cat <<EOF | oc apply -f -
+        apiVersion: operators.coreos.com/v1alpha1
+        kind: Subscription
+        metadata:
+          name: odf-node-recovery-operator
+          namespace: openshift-operators
+        spec:
+          channel: {{ op_channel }}
+          installPlanApproval: Automatic
+          name: odf-node-recovery-operator
+          source: {{ tmp_catalog_source }}
+          sourceNamespace: openshift-marketplace
+        EOF
+
+    - name: Wait for  Operator pod to start successfully
+      ansible.builtin.shell: |
+        set -e
+        oc wait -n openshift-operators pod -l control-plane=controller-manager \
+        --for=condition=Ready --timeout=60s
+      register: operator_pod
+      retries: 12
+      delay: 20
+      until: operator_pod is success

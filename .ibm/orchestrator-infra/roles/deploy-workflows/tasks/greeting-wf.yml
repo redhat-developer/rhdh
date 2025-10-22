@@ -1,0 +1,43 @@
+- name: Set workflow version
+  vars:
+    wf_entry_var: greeting
+    wf_version_var: "{{ deploy_greeting_version }}"
+  ansible.builtin.import_tasks: get-wf-version.yml
+
+- name: Deploy greeting workflow
+  kubernetes.core.helm:
+    chart_ref: orchestrator-workflows/greeting
+    kubeconfig: "{{ kubeconfig_path }}"
+    release_name: greeting
+    release_namespace: "{{ workflow_namespace }}"
+    chart_version: "{{ wf_version }}"
+
+
+- name: Patch location of sonataflow-server in case using separate namespace
+  ansible.builtin.shell: |
+    oc -n {{ workflow_namespace }} patch sonataflow greeting --type merge -p '{"spec": { "persistence": { "postgresql": { "serviceRef": {"namespace": "sonataflow-infra"}}}}}'
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  when: workflow_namespace != "sonataflow-infra" and not helm_managed_rhdh | bool
+
+- name: Patch sonataflow secret info in case deployed postgres with RH catalog
+  ansible.builtin.shell: |
+    oc -n {{ workflow_namespace }} patch sonataflow greeting --type merge -p '{"spec": { "persistence": { "postgresql": { "secretRef": {"userKey": "database-user","passwordKey": "database-password"}}}}}'
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  when: (postgres_rh_install | default(false) | bool) and not helm_managed_rhdh | bool
+
+
+- name: Patch sonataflow info when using helm managed RHDH 
+  shell: |
+    oc -n {{ workflow_namespace }} patch sonataflow greeting --type merge -p '{"spec": { "persistence": { "postgresql": { "secretRef": {"name": "backstage-postgresql-svcbind-postgres","userKey": "username","passwordKey": "password"},"serviceRef": {"name": "backstage-postgresql","namespace": "rhdh"}}}}}'
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  when: helm_managed_rhdh | bool
+
+
+- name: Wait for greeting workflow to be ready
+  shell: |
+    oc wait sonataflow greeting -n {{ workflow_namespace }} --for=condition=Running=True --timeout=5m
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"

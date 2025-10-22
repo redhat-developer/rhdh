@@ -1,0 +1,216 @@
+---
+- name: Run orchestrator infra install script
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+    VERSION: main
+  ansible.builtin.shell: |
+    curl -sSL "https://raw.githubusercontent.com/redhat-developer/rhdh-operator/refs/heads/main/config/profile/rhdh/plugin-infra/plugin-infra.sh" | bash
+  register: orch_infra_result
+  ignore_errors: yes
+
+- name: Display orchestrator infra install result
+  ansible.builtin.debug:
+    var: orch_infra_result.stdout_lines
+  when: orch_infra_result is defined
+
+- name: Create PostgreSQL Secret
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: postgresql-credentials
+        namespace: "{{ rhdh_ns }}"
+      type: Opaque
+      stringData:
+        POSTGRESQL_PASSWORD: "postgres"
+        POSTGRESQL_USER: "sonataflow"
+        PGPASSWORD: "postgres"
+
+- name: Deploy PostgreSQL database
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: postgresql
+        namespace: "{{ rhdh_ns }}"
+        labels:
+          app.kubernetes.io/name: postgres
+      spec:
+        replicas: 1
+        selector:
+          matchLabels:
+            app.kubernetes.io/name: postgres
+        template:
+          metadata:
+            labels:
+              app.kubernetes.io/name: postgres
+          spec:
+            containers:
+            - name: postgresql
+              image: registry.redhat.io/rhel8/postgresql-15:latest
+              ports:
+              - containerPort: 5432
+              env:
+              - name: POSTGRESQL_DATABASE
+                value: "sonataflow"
+              - name: POSTGRESQL_USER
+                value: "sonataflow"
+              - name: POSTGRESQL_PASSWORD
+                value: "postgres"
+              volumeMounts:
+              - name: postgresql-data
+                mountPath: /var/lib/postgresql/data
+            volumes:
+            - name: postgresql-data
+              emptyDir: {}
+
+- name: Create PostgreSQL Service
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: postgresql
+        namespace: "{{ rhdh_ns }}"
+        labels:
+          app.kubernetes.io/name: postgres
+      spec:
+        ports:
+        - port: 5432
+          targetPort: 5432
+        selector:
+          app.kubernetes.io/name: postgres
+
+- name: Wait for PostgreSQL to be ready
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Pod
+    namespace: "{{ rhdh_ns }}"
+    label_selectors:
+      - app.kubernetes.io/name=postgres
+    wait: true
+    wait_condition:
+      type: Ready
+      status: "True"
+    wait_sleep: 10
+    wait_timeout: 300
+
+- name: Create SonataFlow Platform
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: sonataflow.org/v1alpha08
+      kind: SonataFlowPlatform
+      metadata:
+        name: sonataflow-platform
+        namespace: "{{ rhdh_ns }}"
+      spec:
+        build:
+          config:
+            baseImage: registry.redhat.io/ubi8/openjdk-17:latest
+        services:
+          dataIndex:
+            enabled: true
+            persistence:
+              postgresql:
+                serviceRef:
+                  name: postgresql
+                  port: 5432
+                  databaseName: sonataflow
+                secretRef:
+                  name: postgresql-credentials
+          jobService:
+            enabled: true
+            persistence:
+              postgresql:
+                serviceRef:
+                  name: postgresql
+                  port: 5432
+                  databaseName: sonataflow
+                secretRef:
+                  name: postgresql-credentials
+
+- name: Wait for serverless operator components
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    set -e
+    oc wait -n openshift-serverless deploy/knative-openshift --for=condition=Available --timeout=5m || true
+    oc wait -n knative-eventing knativeeventing/knative-eventing --for=condition=Ready --timeout=5m || true
+    oc wait -n knative-serving knativeserving/knative-serving --for=condition=Ready --timeout=5m || true
+    oc wait -n openshift-serverless-logic deploy/logic-operator-rhel8-controller-manager --for=condition=Available --timeout=5m || true
+  register: serverless_wait
+  retries: 5
+  delay: 30
+  until: serverless_wait is success
+
+- name: Wait for SonataFlow Platform to be ready
+  ansible.builtin.shell: |
+    oc wait -n {{ rhdh_ns }} sonataflowplatform/sonataflow-platform --for=condition=Succeed --timeout=300s
+  register: sfp_wait
+  retries: 3
+  delay: 10
+  until: sfp_wait.rc == 0
+  ignore_errors: yes
+
+- name: Verify SonataFlow Platform status
+  kubernetes.core.k8s_info:
+    api_version: sonataflow.org/v1alpha08
+    kind: SonataFlowPlatform
+    name: sonataflow-platform
+    namespace: "{{ rhdh_ns }}"
+  register: sfp_status
+
+- name: Display SonataFlow Platform status
+  ansible.builtin.debug:
+    msg: "SonataFlow Platform status: {{ sfp_status.resources[0].status.conditions | default([]) }}"
+  when: sfp_status.resources is defined and sfp_status.resources | length > 0
+
+- name: Wait for Data Index deployment
+  ansible.builtin.shell: |
+    oc wait -n {{ rhdh_ns }} deploy/sonataflow-platform-data-index-service --for=condition=Available --timeout=300s
+  register: data_index_wait
+  retries: 3
+  delay: 10
+  until: data_index_wait.rc == 0
+  ignore_errors: yes
+
+- name: Wait for Jobs Service deployment
+  ansible.builtin.shell: |
+    oc wait -n {{ rhdh_ns }} deploy/sonataflow-platform-jobs-service --for=condition=Available --timeout=300s
+  register: jobs_service_wait
+  retries: 3
+  delay: 10
+  until: jobs_service_wait.rc == 0
+  ignore_errors: yes
+
+- name: Wait for all pods to be ready
+  ansible.builtin.shell: |
+    oc wait --for=condition=Ready pod --all -n {{ rhdh_ns }} --timeout=300s
+  register: pods_wait
+  retries: 3
+  delay: 10
+  until: pods_wait.rc == 0
+  ignore_errors: yes
+
+- name: Verify all deployments are available
+  kubernetes.core.k8s_info:
+    api_version: apps/v1
+    kind: Deployment
+    namespace: "{{ rhdh_ns }}"
+  register: deployments_status
+
+- name: Display deployment status
+  ansible.builtin.debug:
+    msg: "Deployment {{ item.metadata.name }}: {{ item.status.conditions | selectattr('type', 'equalto', 'Available') | map(attribute='status') | first | default('Unknown') }}"
+  with_items: "{{ deployments_status.resources }}"
+  when: deployments_status.resources is defined
+
+- name: Display final status
+  ansible.builtin.debug:
+    msg: "Orchestrator infrastructure components are ready"
