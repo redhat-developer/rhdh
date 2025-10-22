@@ -1,6 +1,6 @@
 name: Build & Push e2e-runner Image to Quay.io
 
-'on':
+on:
   push:
     branches:
       - main
