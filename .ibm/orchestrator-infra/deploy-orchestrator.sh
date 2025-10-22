@@ -159,7 +159,7 @@ if [ "$CLEAN" = "true" ]; then
   oc delete namespace "$NAMESPACE" --ignore-not-found --wait=false 2>/dev/null || true
   
   # Wait for namespace deletion
-  for i in {1..30}; do
+  for _ in {1..30}; do
     if ! oc get namespace "$NAMESPACE" >/dev/null 2>&1; then
       break
     fi

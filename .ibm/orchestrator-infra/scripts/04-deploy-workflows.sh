@@ -11,7 +11,7 @@ echo "=== Deploying Sample Workflows for Orchestrator ==="
 # Clonar repositório de workflows
 TEMP_DIR=$(mktemp -d)
 echo "Cloning workflows repository to ${TEMP_DIR}..."
-git clone ${WORKFLOW_REPO} ${TEMP_DIR}/workflows
+git clone "${WORKFLOW_REPO}" "${TEMP_DIR}/workflows"
 
 # Deploy do workflow de exemplo - User Onboarding
 echo "=== Deploying User Onboarding Workflow ==="
