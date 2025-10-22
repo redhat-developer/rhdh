@@ -20,7 +20,8 @@ test.describe("Admin > Extensions", () => {
   const supportTypeOptions = [
     "Generally available",
     "Certified",
-    "Custom plugin",
+    // TODO: Custom plugin is not on the list: https://issues.redhat.com/browse/RHDHBUGS-2153
+    // "Custom plugin",
     "Tech preview",
     "Dev preview",
     "Community plugin",
@@ -92,6 +93,8 @@ test.describe("Admin > Extensions", () => {
     });
 
     test("Verify support type filters in extensions", async ({ page }) => {
+      // TODO: https://issues.redhat.com/browse/RHDHBUGS-2146
+      test.fixme();
       await extensions.selectDropdown("Support type");
       await expect(page.getByRole("listbox")).toBeVisible();
 
