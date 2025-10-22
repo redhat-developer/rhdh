@@ -142,14 +142,14 @@ global:
             baseUrl: "{jira-base-url}"
             token: "{jira-api-token}"
             product: datacenter
-      # Enable orchestrator plugins.
-      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-orchestrator
+      # Enable orchestrator plugins
+      - package: "@redhat/backstage-plugin-orchestrator"
         disabled: false
-      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-orchestrator-backend
+      - package: "@redhat/backstage-plugin-orchestrator-backend"
         disabled: false
-      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets
+      - package: "@redhat/backstage-plugin-orchestrator-form-widgets"
         disabled: false
-      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator
+      - package: "@redhat/backstage-plugin-scaffolder-backend-module-orchestrator"
         disabled: false
 
 # -- Upstream Backstage [chart configuration](https://github.com/backstage/charts/blob/main/charts/backstage/values.yaml)

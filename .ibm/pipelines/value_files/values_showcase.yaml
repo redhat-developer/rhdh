@@ -222,7 +222,7 @@ global:
         disabled: false
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator
         disabled: false
-      # Enabled orchestrator plugins
+      # Enable orchestrator plugins
       - package: "@redhat/backstage-plugin-orchestrator"
         disabled: false
       - package: "@redhat/backstage-plugin-orchestrator-backend"
