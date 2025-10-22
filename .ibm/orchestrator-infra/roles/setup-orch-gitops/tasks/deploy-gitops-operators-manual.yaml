@@ -1,0 +1,42 @@
+# Based on Method 2 of https://github.com/masayag/orchestrator-helm-chart/blob/1b1c41a6fb03a3ebb1123be2e04f81928b58441a/gitops/README.md
+- name: Create Required Namespaces
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc create ns {{ item }}
+  loop:
+    - openshift-gitops-operator
+    - orchestrator-gitops
+    - sonataflow-infra
+  ignore_errors: true
+
+- name: Generate and Apply Operator Resources
+  vars:
+    tmp_op_resources:
+      - subscription_pipeline.yaml.j2
+      - operator_group_gitops.yaml.j2
+      - subscription_gitops.yaml.j2
+      - argocd_instance.yaml.j2
+  block:
+    - name: Generate Operator Resources
+      ansible.builtin.template:
+        src: "{{ item }}"
+        dest: "{{ orch_gitops_work_dir }}/{{ item[:-3] }}"
+      loop: "{{ tmp_op_resources }}"
+
+    - name: Apply Operator Resources
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+      ansible.builtin.shell: |
+        oc apply -f {{ orch_gitops_work_dir }}/{{ item[:-3] }}
+      loop: "{{ tmp_op_resources }}"
+      register: op_deploy
+      retries: 5
+      delay: 30
+      until: op_deploy is success      
+
+- name: Label gitops namespace for argo management
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc label ns sonataflow-infra argocd.argoproj.io/managed-by=orchestrator-gitops

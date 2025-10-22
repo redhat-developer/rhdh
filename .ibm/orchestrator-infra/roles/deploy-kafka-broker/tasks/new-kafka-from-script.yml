@@ -1,0 +1,29 @@
+- name: Create Kafka installation script
+  ansible.builtin.copy:
+    content: |
+      #!/bin/bash
+      set -e
+      cd {{ kafka_install_script_dir }}
+      export ORCHESTRATOR_NAME="{{ orchestrator_name }}"
+      export ORCHESTRATOR_NAMESPACE="{{ orchestrator_ns }}"
+      export BROKER_NAME="{{ kafka_broker_name }}"
+      export BROKER_NAMESPACE="{{ kafka_broker_namespace }}"
+      export BROKER_TYPE="Kafka"
+      export INSTALL_KAFKA_CLUSTER="true"
+      export WORKFLOW_NAMESPACE="{{ workflow_namespace }}"
+      ./eventing-automate-install.sh
+    dest: "{{ kafka_work_dir }}/run-evening-automate-install-script.sh"
+    mode: '0755'
+
+- name: Install Kafka with eventing automated install script
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+   ./run-evening-automate-install-script.sh 2>&1 |\
+    tee eventing-automate-install.log; exit ${PIPESTATUS[0]}
+  args:
+    chdir: "{{ kafka_work_dir }}"
+  register: kafka_deploy
+  retries: 3
+  delay: 10
+  until: kafka_deploy is success

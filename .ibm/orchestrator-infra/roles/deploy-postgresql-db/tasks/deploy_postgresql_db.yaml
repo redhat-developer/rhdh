@@ -1,0 +1,111 @@
+- name: Create new sonataflow-infra namespace
+  ansible.builtin.shell: |
+    oc new-project sonataflow-infra
+  register: project_result
+  failed_when: project_result.rc not in [0, 1]
+
+# See https://github.com/rhdhorchestrator/orchestrator-helm-chart/blob/gh-pages-stable-1.x/README.md#argocd-and-workflow-namespace
+- name: Label workflow namespace so that it can be managed by argocd
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: oc label namespace {{ workflow_namespace|default('sonataflow-infra') }} 'argocd.argoproj.io/managed-by=orchestrator-gitops'
+
+- name: Install postgres DB via Helm
+  when: install_via_helm |bool
+  block:
+    # Note - add capability for user to pass custom password. Sonataflow requires secret with these keys together to be able to access routes.
+    - name: Create custom secret for postgresql
+      ansible.builtin.shell: |
+        oc create secret generic sonataflow-psql-postgresql --from-literal=postgres-username=postgres \
+        --from-literal=postgres-password=postgres --namespace sonataflow-infra
+      register: secret_result
+      failed_when: secret_result.rc not in [0, 1]
+
+    - name: Get helm repo
+      kubernetes.core.helm_repository:
+        name: bitnami
+        repo_url: https://charts.bitnami.com/bitnami
+
+    - name: Install DB Chart
+      kubernetes.core.helm:
+        release_name: sonataflow-psql
+        release_namespace: sonataflow-infra
+        values_files:
+          - "{{ orch_postgresql_work_dir }}/orchestrator-helm-chart/postgresql/values.yaml"
+        chart_ref: bitnami/postgresql
+        kubeconfig: "{{ kubeconfig_path }}"
+        chart_version: 12.x.x
+
+    - name: Wait for postgres pod to start
+      ansible.builtin.shell: |
+        oc wait -n sonataflow-infra pods -l app.kubernetes.io/instance=sonataflow-psql --for=condition=Ready --timeout=5m
+      register: postgres_pod
+      retries: 3
+      delay: 60
+      until: postgres_pod is success
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+
+- name: Install postgres DB via Operator
+  when: not install_via_helm |bool
+  block:
+    - name: Git clone postgresql repo
+      ansible.builtin.git:
+        repo: https://github.com/sclorg/postgresql-container.git
+        dest: "{{ orch_postgresql_work_dir }}/postgresql-container"
+
+    - name: Install DB Chart
+      shell: |
+        oc process -f examples/postgresql-persistent-template.json \
+        -p POSTGRESQL_VERSION=15 \
+        -p POSTGRESQL_USER=postgres -p POSTGRESQL_PASSWORD=postgres \
+        -p POSTGRESQL_DATABASE=sonataflow \
+        -p VOLUME_CAPACITY=$VOLUME_CAPACITY \
+        -p DATABASE_SERVICE_NAME=sonataflow-psql-postgresql | oc apply -n sonataflow-infra -f -
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+        VOLUME_CAPACITY: "{{ postgres_volume_capacity | default('2Gi') }}"
+      args:
+        chdir: "{{ orch_postgresql_work_dir }}/postgresql-container"
+      register: apply_result
+      failed_when: apply_result.rc not in [0]
+
+    - name: Set deployment image for postgres deployment
+      ansible.builtin.shell: |
+        oc set image deployment/sonataflow-psql-postgresql -n sonataflow-infra postgresql=registry.redhat.io/rhel9/postgresql-15
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+
+    - name: Wait for postgres pod to start
+      ansible.builtin.shell: |
+        oc wait -n sonataflow-infra pods -l name=sonataflow-psql-postgresql --for=condition=Ready --timeout=5m
+      register: postgres_pod
+      retries: 3
+      delay: 60
+      until: postgres_pod is success
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+
+- name: Create Database
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    set -euo pipefail
+    POD=$(oc get -n sonataflow-infra pod -l name=sonataflow-psql-postgresql -o jsonpath='{.items[0].metadata.name}')
+    oc exec -i "$POD" -n sonataflow-infra -- bash -c "psql -U postgres -tAc \"SELECT 1 FROM pg_database WHERE datname='sonataflow';\" | grep -q 1 || psql -U postgres -d postgres -c \"CREATE DATABASE sonataflow\""
+  register: postgres_db_create
+  retries: 10
+  delay: 15
+  until: postgres_db_create is succeeded
+
+- name: Grant sonataflow all privileges to db
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    set -euo pipefail
+    POD=$(oc get -n sonataflow-infra pod -l name=sonataflow-psql-postgresql -o jsonpath='{.items[0].metadata.name}')
+    oc exec -i "$POD" -n sonataflow-infra -- psql -U postgres -d postgres -c "ALTER DATABASE sonataflow OWNER TO postgres; GRANT ALL PRIVILEGES ON DATABASE sonataflow TO postgres;"
+  register: postgres_db_priv
+  retries: 10
+  delay: 15
+  until: postgres_db_priv is succeeded

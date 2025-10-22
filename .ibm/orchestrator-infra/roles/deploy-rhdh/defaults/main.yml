@@ -1,0 +1,75 @@
+# X.Y version of RHDH operator to deploy (Uses latest z-stream)
+# Example: 1.2
+rhdh_version: ''
+
+# Name space for rhdh operator
+rhdh_ns: "rhdh-operator"
+
+# RHDH Operator version source to deploy from
+# Options: NEXT, STABLE-RC, PRODUCTION
+# NOTA: NEXT frequentemente tem problemas com imagens não disponíveis
+rhdh_operator_source: "STABLE-RC"
+
+# RHDH files directory
+rhdh_deploy_dir: "{{ ansible_user_dir }}/rhdh-deploy"
+
+# Install orchestrator infrastructure (includes plugin-infra, database, and SonataFlow platform)
+install_orchestrator_infra: true
+
+# Orchestrator configuration
+orchestrator_db_name: "backstage_plugin_orchestrator"
+
+# Set true to enable keycloak authentication with RHDH
+rhdh_keycloak_auth: true
+
+# Deploy Keycloak (defaults to true, can be disabled by setting to false)
+deploy_keycloak: true
+
+# Keycloak authentication configuration
+rhdh_keycloak_client_id: "rhdh"
+rhdh_keycloak_client_secret: "rhdh"
+rhdh_keycloak_realm: "basic"
+
+# Session secret for authentication (should be overridden in production)
+rhdh_session_secret: "{{ lookup('community.general.random_string', length=32, upper=true, lower=true, numbers=true, special=false) }}"
+
+# Backend secret for authentication (randomly generated)
+backstage_backend_auth_secret: "{{ lookup('community.general.random_string', length=8, upper=true, lower=true, numbers=true, special=false) }}"
+
+# RHDH configuration directory
+rhdh_config_dir: "{{ rhdh_deploy_dir }}/rhdh_config"
+
+# Orchestrator Dynamic Plugins Configuration
+# Default to OCI packages (no integrity needed), but can be switched to npm packages with integrity
+orchestrator_backend_plugin_package: "https://npm.stage.registry.redhat.com/@redhat/backstage-plugin-orchestrator-backend-dynamic/-/backstage-plugin-orchestrator-backend-dynamic-1.7.1-rc.1.tgz"
+orchestrator_backend_plugin_integrity: "sha512-48fLymu9yA6ihByWzKTc/I31ao7p6UIO6ectFj3Ne3FWBmHU/8ItiYJhHR/XysH6+BbydKtfhLwLj4Itr46fJw=="
+
+orchestrator_frontend_plugin_package: "https://npm.stage.registry.redhat.com/@redhat/backstage-plugin-orchestrator/-/backstage-plugin-orchestrator-1.7.1-rc.1.tgz"
+orchestrator_frontend_plugin_integrity: "sha512-76xxy5POOGbuae8bj/MtW/EJ1Y/iYi4FRC9V3sKg2w4m+D9YQcmLCesgaZFgl8NyBtM/N0XHR0BMCFHO+KA/YQ=="
+
+orchestrator_scaffolder_plugin_package: "https://npm.stage.registry.redhat.com/@redhat/backstage-plugin-scaffolder-backend-module-orchestrator-dynamic/-/backstage-plugin-scaffolder-backend-module-orchestrator-dynamic-1.7.1-rc.1.tgz"
+orchestrator_scaffolder_plugin_integrity: "sha512-qeOiYBn7XzT39q1w/86wSeuTPD50IJSZlBI2iSNy8k5hmqaIxZ9OWIEaT1QPgfSbeniYxmYGQZiyZWdMNXscIA=="
+
+orchestrator_forms_plugin_package: "https://npm.stage.registry.redhat.com/@redhat/backstage-plugin-orchestrator-form-widgets/-/backstage-plugin-orchestrator-form-widgets-1.7.1-rc.1.tgz"
+orchestrator_forms_plugin_integrity: "sha512-gGLGl0LRrjq+CW/SDsRyfvZ8+eALFlW2mamzn7K+owQS2O7InmG09EVo9SkLJ7UCY2uykyNdx9Q73gaJv6mtAA=="
+
+# Enable creation of npmrc secret for dynamic plugins (disabled by default)
+rhdh_enable_npmrc_secret: false
+
+# NPM registry URL for dynamic plugins (defaults to Red Hat stage registry)
+# WARNING: Do not include authentication tokens in this URL - this is stored as a Kubernetes secret
+# Note: npm.stage.registry.redhat.com may not be accessible in all environments
+npmrc_registry: "https://npm.stage.registry.redhat.com"
+
+# Orchestrator Workflow Configuration
+workflow_repo: "https://github.com/rhdh-orchestrator-test/serverless-workflows.git"
+workflow_manifests_subpath: "workflows/experimentals/user-onboarding/manifests/"
+
+# Note: PostgreSQL configuration is now dynamically discovered from cluster secrets
+
+# Enable RHDH dynamic plugin caching (creates persistent volume for plugin cache)
+enable_rhdh_plugin_caching: true
+
+# Resource Optimization Plugin Configuration
+enable_resource_optimization_plugin: false
+ros_plugin_version: "1.2.0-rc.2"

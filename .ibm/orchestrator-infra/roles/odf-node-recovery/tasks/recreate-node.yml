@@ -1,0 +1,129 @@
+- name: Allow cluster to add hosts
+  ansible.builtin.uri:
+    url: "{{ assisted_api }}/clusters/{{ cluster_id }}/actions/allow-add-hosts"
+    method: POST
+    headers:
+      Content-Type: "application/json"
+    return_content: true
+    status_code: 202
+  when: cluster_status != 'adding-hosts'
+
+- name: Recreate worker VM
+  become: true
+  block:
+    - name: Destroy worker VM
+      ansible.builtin.shell: |
+        virsh destroy {{ odf_test_worker_vm }}
+      ignore_errors: true
+
+    - name: Format worker VM disks
+      ansible.builtin.shell: |
+        virsh domblklist {{ odf_test_worker_vm }}  | grep vd | awk '{print $2}' | xargs -I{} qemu-img create -f qcow2 {} 100G
+
+    - name: Recreate worker node without original uuid
+      vars:
+        xml_file: /var/tmp/{{ odf_test_worker_vm }}.xml
+      ansible.builtin.shell: |
+        set -e
+        virsh dumpxml {{ odf_test_worker_vm }}  > {{ xml_file }}
+        sed '/uuid/d' {{ xml_file }} -i
+        virsh undefine {{ odf_test_worker_vm }} --nvram
+        virsh define {{ xml_file }}
+
+- name: Identify worker id from assisted installer
+  ansible.builtin.uri:
+    url: "{{ assisted_api }}/infra-envs/{{ infraenv_id }}/hosts"
+    method: GET
+    headers:
+      Content-Type: "application/json"
+    return_content: true
+    status_code: 200
+  register: api_output
+
+- name: Delete worker from assisted installer
+  vars:
+    nodes_json: "{{ api_output.content | from_json }}"
+    query: "[?requested_hostname=='{{ odf_test_worker_node }}'].id | [0]"
+    worker_id: "{{ nodes_json | json_query(query) }}"
+  ansible.builtin.uri:
+    url: "{{ assisted_api }}/infra-envs/{{ infraenv_id }}/hosts/{{ worker_id }}"
+    method: DELETE
+    headers:
+      Content-Type: "application/json"
+    status_code: 204
+  when: worker_id != ''
+
+- name: Delete node from cluster
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc delete node {{ odf_test_worker_node }}
+  ignore_errors: true
+
+- name: Start worker vm
+  become: true
+  ansible.builtin.shell: |
+    virsh start {{ odf_test_worker_vm }}
+
+- name: Wait for node status to be known
+  vars:
+    query: "[?requested_hostname=='{{ odf_test_worker_node }}'].status | [0]"
+  ansible.builtin.uri:
+    url: "{{ assisted_api }}/infra-envs/{{ infraenv_id }}/hosts"
+    method: GET
+    headers:
+      Content-Type: "application/json"
+    return_content: true
+    status_code: 200
+  register: api_output
+  retries: 12
+  delay: 15
+  until: api_output.content | from_json | json_query(query) == "known"
+
+- name: Identify new worker id from assisted installer
+  ansible.builtin.uri:
+    url: "{{ assisted_api }}/infra-envs/{{ infraenv_id }}/hosts"
+    method: GET
+    headers:
+      Content-Type: "application/json"
+    return_content: true
+    status_code: 200
+  register: api_output
+
+- name: Trigger node installation
+  vars:
+    nodes_json: "{{ api_output.content | from_json }}"
+    query: "[?requested_hostname=='{{ odf_test_worker_node }}'].id | [0]"
+    worker_id: "{{ nodes_json | json_query(query) }}"
+  ansible.builtin.uri:
+    url: "{{ assisted_api }}/infra-envs/{{ infraenv_id }}/hosts/{{ worker_id }}/actions/install"
+    method: POST
+    headers:
+      Content-Type: "application/json"
+    return_content: true
+    status_code: 202
+
+- name: Wait for node status to be added to cluster
+  vars:
+    query: "[?requested_hostname=='{{ odf_test_worker_node }}'].status | [0]"
+  ansible.builtin.uri:
+    url: "{{ assisted_api }}/infra-envs/{{ infraenv_id }}/hosts"
+    method: GET
+    headers:
+      Content-Type: "application/json"
+    return_content: true
+    status_code: 200
+  register: api_output
+  retries: 30
+  delay: 60
+  until: api_output.content | from_json | json_query(query) == "added-to-existing-cluster"
+
+- name: Wait for node to be ready
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc wait nodes {{ odf_test_worker_node }} --for=condition=Ready --timeout=30s
+  register: cmd_output
+  retries: 90
+  delay: 60
+  until: cmd_output is success

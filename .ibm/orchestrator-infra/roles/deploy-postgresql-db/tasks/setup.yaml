@@ -1,0 +1,20 @@
+- name: Install Helm
+  ansible.builtin.import_tasks: tasks/install-helm.yaml
+
+- name: Re-create work directory
+  ansible.builtin.file:
+    path: "{{ orch_postgresql_work_dir }}"
+    state: "{{ item }}"
+  loop:
+    - absent
+    - directory
+
+- name: Git clone orchestrator-helm-chart repo
+  ansible.builtin.git:
+    repo: https://github.com/rhdhorchestrator/orchestrator-helm-chart.git
+    dest: "{{ orch_postgresql_work_dir }}/orchestrator-helm-chart"
+
+- name: Set installation method set_fact
+  ansible.builtin.set_fact:
+    postgres_installed_helm: "{{ install_via_helm | bool }}"
+

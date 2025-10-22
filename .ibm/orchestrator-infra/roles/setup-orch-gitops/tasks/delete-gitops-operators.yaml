@@ -1,0 +1,67 @@
+- name: Remove gitopsservice resource
+  shell: |
+    oc delete gitopsservice cluster
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ignore_errors: yes
+
+- name: Delete ArgoCD Janus Demo Helmcharts
+  kubernetes.core.helm:
+    release_name: orchestrator-gitops
+    release_namespace: orchestrator-gitops
+    chart_ref:  "{{ orch_gitops_work_dir }}/janus-idp-bootstrap/charts/gitops-operator"
+    kubeconfig: "{{ kubeconfig_path }}"
+    release_state: absent
+  ignore_errors: True
+
+- name: Remove Tekton Janus Demo via Helmcharts
+  kubernetes.core.helm:
+    release_name: orchestrator-pipelines
+    release_namespace: orchestrator-gitops
+    chart_ref:  "{{ orch_gitops_work_dir }}/janus-idp-bootstrap/charts/pipelines-operator"
+    kubeconfig: "{{ kubeconfig_path }}"
+    release_state: absent
+  ignore_errors: True
+
+- name: Remove ArgoCD Resources
+  ansible.builtin.shell: |
+    oc delete subscription.operators -l operators.coreos.com/openshift-gitops-operator.openshift-gitops-operator  -A
+    oc get csv -n openshift-operators | awk '/gitops-operator/ {print $1}'  | xargs -I {} oc delete csv {} -n openshift-operators
+    oc delete argocd argocd -n orchestrator-gitops --timeout=3s
+    oc patch argocd/argocd -n orchestrator-gitops --type json --patch='[ { "op": "remove", "path": "/metadata/finalizers" } ]'
+    oc get crds | grep argo | awk '{print $1}'  | xargs -I{} oc delete crd {}
+    oc get crd | grep pipelines | awk '{print $1}' | xargs -I{} oc delete crd {}
+    oc delete project openshift-gitops
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ignore_errors: yes
+
+- name: Remove Tekton Operator
+  ansible.builtin.shell: |
+    oc delete subscription.operators -l operators.coreos.com/openshift-pipelines-operator-rh.openshift-operators -A  
+    oc delete crd -l operators.coreos.com/openshift-pipelines-operator-rh.openshift-operators
+    oc get csv -n openshift-operators  | awk '/pipelines-operator/ {print $1}'  | xargs -I {} oc delete csv {} -n openshift-operators
+    oc delete project openshift-pipelines
+    oc delete project orchestrator-gitops
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ignore_errors: yes
+
+- name: Remove Argo and Tekton Operators and namespaces
+  ansible.builtin.shell: |
+    oc delete operator openshift-pipelines-operator-rh.openshift-operators
+    oc delete operator openshift-gitops-operator.openshift-operators
+    oc delete namespace openshift-gitops-operator
+    oc delete namespace sonataflow-infra
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ignore_errors: yes  
+
+- name: Ensure operators are removed and do not get restored
+  ansible.builtin.shell: |
+    set -e 
+    sleep 5
+    oc wait --for=delete operator openshift-gitops-operator.openshift-operators --timeout=1m
+    oc wait --for=delete operator openshift-pipelines-operator-rh.openshift-operators --timeout=1m
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"

@@ -1,0 +1,29 @@
+---
+- name: Prevalidate Orchestrator Plugins
+  block:
+    - name: Set plugin validation facts
+      ansible.builtin.set_fact:
+        plugins_to_validate:
+          - name: "orchestrator_backend_plugin"
+            package: "{{ orchestrator_backend_plugin_package }}"
+            integrity: "{{ orchestrator_backend_plugin_integrity | default('') }}"
+          - name: "orchestrator_frontend_plugin"
+            package: "{{ orchestrator_frontend_plugin_package }}"
+            integrity: "{{ orchestrator_frontend_plugin_integrity | default('') }}"
+          - name: "orchestrator_scaffolder_plugin"
+            package: "{{ orchestrator_scaffolder_plugin_package }}"
+            integrity: "{{ orchestrator_scaffolder_plugin_integrity | default('') }}"
+          - name: "orchestrator_forms_plugin"
+            package: "{{ orchestrator_forms_plugin_package }}"
+            integrity: "{{ orchestrator_forms_plugin_integrity | default('') }}"
+
+    - name: Validate each plugin
+      ansible.builtin.include_tasks: validate-single-plugin.yaml
+      loop: "{{ plugins_to_validate }}"
+      loop_control:
+        loop_var: plugin
+
+  rescue:
+    - name: Plugin validation failed
+      ansible.builtin.fail:
+        msg: "Plugin prevalidation failed. Please check plugin configurations and network connectivity."

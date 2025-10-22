@@ -1,0 +1,138 @@
+---
+- name: Check if SonataFlow platform exists
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc get sonataflowplatform sonataflow-platform -n {{ rhdh_ns }} --no-headers 2>/dev/null || echo "NOT_FOUND"
+  register: sonataflow_platform_check
+  changed_when: false
+
+- name: Check SonataFlow data-index deployment status
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc get deployment sonataflow-platform-data-index-service -n {{ rhdh_ns }} --no-headers 2>/dev/null || echo "NOT_FOUND"
+  register: data_index_deployment_check
+  changed_when: false
+  when: sonataflow_platform_check.stdout != "NOT_FOUND"
+
+- name: Check SonataFlow jobs-service deployment status
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc get deployment sonataflow-platform-jobs-service -n {{ rhdh_ns }} --no-headers 2>/dev/null || echo "NOT_FOUND"
+  register: jobs_service_deployment_check
+  changed_when: false
+  when: sonataflow_platform_check.stdout != "NOT_FOUND"
+
+- name: Parse data-index deployment readiness
+  ansible.builtin.set_fact:
+    data_index_ready_replicas: "{{ data_index_deployment_check.stdout.split()[1].split('/')[0] | default('0') }}"
+    data_index_desired_replicas: "{{ data_index_deployment_check.stdout.split()[1].split('/')[1] | default('1') }}"
+  when: 
+    - sonataflow_platform_check.stdout != "NOT_FOUND"
+    - data_index_deployment_check.stdout != "NOT_FOUND"
+
+- name: Parse jobs-service deployment readiness
+  ansible.builtin.set_fact:
+    jobs_service_ready_replicas: "{{ jobs_service_deployment_check.stdout.split()[1].split('/')[0] | default('0') }}"
+    jobs_service_desired_replicas: "{{ jobs_service_deployment_check.stdout.split()[1].split('/')[1] | default('1') }}"
+  when: 
+    - sonataflow_platform_check.stdout != "NOT_FOUND"
+    - jobs_service_deployment_check.stdout != "NOT_FOUND"
+
+- name: Check if data-index deployment is unhealthy
+  ansible.builtin.set_fact:
+    data_index_unhealthy: "{{ data_index_ready_replicas != data_index_desired_replicas }}"
+  when: 
+    - sonataflow_platform_check.stdout != "NOT_FOUND"
+    - data_index_deployment_check.stdout != "NOT_FOUND"
+    - data_index_ready_replicas is defined
+    - data_index_desired_replicas is defined
+
+- name: Check if jobs-service deployment is unhealthy
+  ansible.builtin.set_fact:
+    jobs_service_unhealthy: "{{ jobs_service_ready_replicas != jobs_service_desired_replicas }}"
+  when: 
+    - sonataflow_platform_check.stdout != "NOT_FOUND"
+    - jobs_service_deployment_check.stdout != "NOT_FOUND"
+    - jobs_service_ready_replicas is defined
+    - jobs_service_desired_replicas is defined
+
+- name: Display SonataFlow platform status
+  ansible.builtin.debug:
+    msg:
+      - "SonataFlow Platform exists: {{ 'Yes' if sonataflow_platform_check.stdout != 'NOT_FOUND' else 'No' }}"
+      - "Data Index Status: {{ data_index_deployment_check.stdout if (sonataflow_platform_check.stdout != 'NOT_FOUND' and data_index_deployment_check.stdout != 'NOT_FOUND') else 'Not Found' }}"
+      - "Jobs Service Status: {{ jobs_service_deployment_check.stdout if (sonataflow_platform_check.stdout != 'NOT_FOUND' and jobs_service_deployment_check.stdout != 'NOT_FOUND') else 'Not Found' }}"
+      - "Data Index Healthy: {{ 'No' if (data_index_unhealthy | default(false)) else 'Yes' }}"
+      - "Jobs Service Healthy: {{ 'No' if (jobs_service_unhealthy | default(false)) else 'Yes' }}"
+
+- name: Restart unhealthy data-index deployment
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    echo "Restarting unhealthy data-index deployment..."
+    oc rollout restart deployment sonataflow-platform-data-index-service -n {{ rhdh_ns }}
+    oc rollout status deployment sonataflow-platform-data-index-service -n {{ rhdh_ns }} --timeout=300s
+  register: data_index_restart_result
+  when: 
+    - sonataflow_platform_check.stdout != "NOT_FOUND"
+    - data_index_unhealthy | default(false)
+
+- name: Restart unhealthy jobs-service deployment
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    echo "Restarting unhealthy jobs-service deployment..."
+    oc rollout restart deployment sonataflow-platform-jobs-service -n {{ rhdh_ns }}
+    oc rollout status deployment sonataflow-platform-jobs-service -n {{ rhdh_ns }} --timeout=300s
+  register: jobs_service_restart_result
+  when: 
+    - sonataflow_platform_check.stdout != "NOT_FOUND"
+    - jobs_service_unhealthy | default(false)
+
+- name: Display restart results
+  ansible.builtin.debug:
+    msg:
+      - "Data Index Restart: {{ 'Completed' if data_index_restart_result is defined and data_index_restart_result is success else 'Not Needed' }}"
+      - "Jobs Service Restart: {{ 'Completed' if jobs_service_restart_result is defined and jobs_service_restart_result is success else 'Not Needed' }}"
+  when: (data_index_restart_result is defined) or (jobs_service_restart_result is defined)
+
+- name: Verify PostgreSQL connectivity after restart
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    # Wait a moment for pods to start
+    sleep 10
+    
+    # Check data-index pod logs for authentication errors
+    DATA_INDEX_POD=$(oc get pods -n {{ rhdh_ns }} -l app.kubernetes.io/component=sonataflow-platform-data-index-service --no-headers | head -1 | awk '{print $1}')
+    if [ ! -z "$DATA_INDEX_POD" ]; then
+      echo "Checking data-index pod logs..."
+      if oc logs $DATA_INDEX_POD -n {{ rhdh_ns }} --tail=20 | grep -i "password authentication failed"; then
+        echo "ERROR: Still seeing authentication errors in data-index pod"
+        exit 1
+      else
+        echo "SUCCESS: No authentication errors found in data-index pod"
+      fi
+    fi
+    
+    # Check jobs-service pod logs for authentication errors
+    JOBS_POD=$(oc get pods -n {{ rhdh_ns }} -l app.kubernetes.io/component=sonataflow-platform-jobs-service --no-headers | head -1 | awk '{print $1}')
+    if [ ! -z "$JOBS_POD" ]; then
+      echo "Checking jobs-service pod logs..."
+      if oc logs $JOBS_POD -n {{ rhdh_ns }} --tail=20 | grep -i "password authentication failed"; then
+        echo "ERROR: Still seeing authentication errors in jobs-service pod"
+        exit 1
+      else
+        echo "SUCCESS: No authentication errors found in jobs-service pod"
+      fi
+    fi
+  register: postgres_connectivity_check
+  when: (data_index_restart_result is defined and data_index_restart_result is success) or (jobs_service_restart_result is defined and jobs_service_restart_result is success)
+
+- name: Display PostgreSQL connectivity check results
+  ansible.builtin.debug:
+    var: postgres_connectivity_check.stdout_lines
+  when: postgres_connectivity_check is defined

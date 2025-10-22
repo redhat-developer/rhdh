@@ -1,0 +1,30 @@
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakRealm
+metadata:
+  name: sso-idp
+  namespace: rhsso-operator
+  labels:
+    app: sso-idp
+spec:
+  realm:
+    id: basic
+    realm: basic
+    enabled: True
+    displayName: "Basic Realm"
+    roles:
+      realm:
+      - clientRole: false
+        composite: true
+        composites:
+          client:
+            realm-management:
+            - query-users
+            - query-clients
+            - view-users
+            - query-groups
+        containerId: backstage
+        description: Access from backstage
+        name: priv-client
+  instanceSelector:
+    matchLabels:
+      app: sso-idp

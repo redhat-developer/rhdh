@@ -1,0 +1,21 @@
+- name: Check if RHDH backstage resource is deployed
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc wait backstages.rhdh.redhat.com  --all -A --timeout=5s --for=condition=Deployed=True
+  register: rhdh_check
+  failed_when: false
+
+- name: Set RHDH installed variable 
+  ansible.builtin.set_fact:
+    orch_install_rhdh: False
+  when: rhdh_check.rc == 0
+
+- name: Debug out for RHDH install status
+  ansible.builtin.debug:  
+    msg: |
+      {% if orch_install_rhdh %}
+      RHDH is NOT pre-installed - Orchestor will deploy RHDH
+      {% else %}
+      RHDH is pre-installed - Orchestrator will not deploy RHDH
+      {% endif %}

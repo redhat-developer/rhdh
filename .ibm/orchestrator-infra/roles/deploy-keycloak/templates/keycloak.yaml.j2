@@ -1,0 +1,19 @@
+---
+apiVersion: keycloak.org/v1alpha1
+kind: Keycloak
+metadata:
+  name: sso-idp
+  namespace: rhsso-operator
+  labels:
+   app: sso-idp
+spec:
+  keycloakDeploymentSpec:
+    experimental:
+      env:
+      - name: KEYCLOAK_LOGLEVEL
+        value: DEBUG
+      - name: KC_LOG_LEVEL
+        value: DEBUG
+  instances: 1
+  externalAccess:
+    enabled: True

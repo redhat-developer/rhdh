@@ -1,0 +1,380 @@
+---
+- name: Clean up any existing patch-k8s-resource deployment
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc delete deployment patch-k8s-resource -n "{{ workflow_deployment_namespace }}" --ignore-not-found=true
+    oc delete configmap patch-k8s-resource-props -n "{{ workflow_deployment_namespace }}" --ignore-not-found=true
+    oc delete service patch-k8s-resource -n "{{ workflow_deployment_namespace }}" --ignore-not-found=true
+    oc delete route patch-k8s-resource -n "{{ workflow_deployment_namespace }}" --ignore-not-found=true
+  register: cleanup_result
+  changed_when: cleanup_result.rc == 0
+  failed_when: false
+
+- name: Display cleanup result
+  ansible.builtin.debug:
+    msg: "Cleanup result: {{ cleanup_result.stdout_lines }}"
+
+- name: Clone serverless-workflows repository
+  ansible.builtin.git:
+    repo: https://github.com/rhdhorchestrator/serverless-workflows.git
+    dest: "{{ workflow_work_dir }}/serverless-workflows"
+    force: true
+
+- name: Find backstage namespace
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc get secrets --all-namespaces -o json | jq '.items[] | select(.metadata.name == "backstage-backend-auth-secret") | .metadata.namespace' -r
+  register: backstage_namespace
+  changed_when: false
+  failed_when: backstage_namespace.stdout == ""
+
+- name: Find backstage PostgreSQL secret across all namespaces
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc get secrets --all-namespaces -o json | jq '.items[] | select(.metadata.name | contains("backstage-psql")) | .metadata.namespace' -r
+  register: backstage_postgres_namespace
+  changed_when: false
+  failed_when: backstage_postgres_namespace.stdout == ""
+
+- name: Display found backstage PostgreSQL namespace
+  ansible.builtin.debug:
+    msg: "Found backstage PostgreSQL service in namespace: {{ backstage_postgres_namespace.stdout }}"
+
+- name: Set fact for backstage PostgreSQL namespace
+  ansible.builtin.set_fact:
+    backstage_postgres_namespace: "{{ backstage_postgres_namespace.stdout }}"
+
+- name: Check if backstage PostgreSQL service exists in workflow namespace
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc get service backstage-psql-backstage -n "{{ workflow_deployment_namespace }}" --no-headers
+  register: postgres_service_exists
+  changed_when: false
+  failed_when: false
+
+- name: Display PostgreSQL service status
+  ansible.builtin.debug:
+    msg: 
+      - "Backstage PostgreSQL in workflow namespace ({{ workflow_deployment_namespace }}): {{ 'exists' if postgres_service_exists.rc == 0 else 'not found' }}"
+      - "Backstage PostgreSQL found in namespace: {{ backstage_postgres_namespace }}"
+
+- name: Find actual backstage PostgreSQL secret name
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc get secrets -n "{{ backstage_postgres_namespace }}" -o json | jq '.items[] | select(.metadata.name | contains("backstage-psql")) | .metadata.name' -r
+  register: backstage_secret_name
+  changed_when: false
+
+- name: Display found backstage secret name
+  ansible.builtin.debug:
+    msg: "Found backstage PostgreSQL secret: {{ backstage_secret_name.stdout }}"
+
+- name: Check backstage PostgreSQL secret keys
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc get secret "{{ backstage_secret_name.stdout }}" -n "{{ backstage_postgres_namespace }}" -o json | jq '.data | keys' -r
+  register: backstage_secret_keys
+  changed_when: false
+
+- name: Display backstage secret keys
+  ansible.builtin.debug:
+    msg: "Backstage PostgreSQL secret keys: {{ backstage_secret_keys.stdout_lines }}"
+
+- name: Update SonataFlow manifest secretRef name
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    sed -i '/secretRef:/,/^[[:space:]]*[a-zA-Z]/ s/name: sonataflow-psql-postgresql/name: {{ backstage_secret_name.stdout }}/g' "{{ workflow_work_dir }}/serverless-workflows/workflows/patch-k8s-resource/manifests/04-sonataflow_patch-k8s-resource.yaml"
+  register: secret_ref_update
+  changed_when: secret_ref_update.rc == 0
+
+- name: Update SonataFlow manifest serviceRef name
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    sed -i '/serviceRef:/,/^[[:space:]]*[a-zA-Z]/ s/name: sonataflow-psql-postgresql/name: backstage-psql-backstage/g' "{{ workflow_work_dir }}/serverless-workflows/workflows/patch-k8s-resource/manifests/04-sonataflow_patch-k8s-resource.yaml"
+  register: service_ref_update
+  changed_when: service_ref_update.rc == 0
+
+- name: Update SonataFlow manifest database name
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    sed -i 's/databaseName: sonataflow/databaseName: postgres/g' "{{ workflow_work_dir }}/serverless-workflows/workflows/patch-k8s-resource/manifests/04-sonataflow_patch-k8s-resource.yaml"
+  register: database_name_update
+  changed_when: database_name_update.rc == 0
+
+- name: Set fact for username key name based on actual secret keys
+  ansible.builtin.set_fact:
+    username_key: "{{ 'POSTGRES_USER' if 'POSTGRES_USER' in backstage_secret_keys.stdout else ('username' if 'username' in backstage_secret_keys.stdout else 'postgres-username') }}"
+
+- name: Set fact for password key name based on actual secret keys
+  ansible.builtin.set_fact:
+    password_key: "{{ 'POSTGRES_PASSWORD' if 'POSTGRES_PASSWORD' in backstage_secret_keys.stdout else ('password' if 'password' in backstage_secret_keys.stdout else 'postgres-password') }}"
+
+- name: Display selected key names
+  ansible.builtin.debug:
+    msg:
+      - "Using username key: {{ username_key }}"
+      - "Using password key: {{ password_key }}"
+
+- name: Update SonataFlow manifest username key
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    sed -i 's/userKey: postgres-username/userKey: {{ username_key }}/g' "{{ workflow_work_dir }}/serverless-workflows/workflows/patch-k8s-resource/manifests/04-sonataflow_patch-k8s-resource.yaml"
+  register: username_key_update
+  changed_when: username_key_update.rc == 0
+
+- name: Update SonataFlow manifest password key
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    sed -i 's/passwordKey: postgres-password/passwordKey: {{ password_key }}/g' "{{ workflow_work_dir }}/serverless-workflows/workflows/patch-k8s-resource/manifests/04-sonataflow_patch-k8s-resource.yaml"
+  register: password_key_update
+  changed_when: password_key_update.rc == 0
+
+- name: Display key update results
+  ansible.builtin.debug:
+    msg:
+      - "Username key update result: {{ username_key_update.stdout_lines }}"
+      - "Password key update result: {{ password_key_update.stdout_lines }}"
+
+- name: Switch to workflow deployment namespace
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc project {{ workflow_deployment_namespace }}
+  register: project_switch
+  changed_when: project_switch.rc == 0
+
+- name: Apply workflow manifests
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc apply -f {{ workflow_work_dir }}/serverless-workflows/workflows/patch-k8s-resource/manifests/
+  register: manifest_apply
+  changed_when: manifest_apply.rc == 0
+
+- name: Get OCP URL from backstage secret
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc get secret backstage-backend-auth-secret -n {{ backstage_namespace.stdout }} -o json | jq '.data.BACKSTAGE_ROUTE' -r | base64 -d
+  register: ocp_url
+  changed_when: false
+
+- name: Get OCP token from backstage secret
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc get secret backstage-backend-auth-secret -n {{ backstage_namespace.stdout }} -o json | jq '.data.BACKEND_SECRET' -r | base64 -d
+  register: ocp_token
+  changed_when: false
+
+- name: Display OCP credentials for debugging
+  ansible.builtin.debug:
+    msg: 
+      - "OCP_URL: {{ ocp_url.stdout }}"
+      - "OCP_TOKEN: {{ ocp_token.stdout[:20] }}..." # Only show first 20 chars for security
+
+- name: Check configmap template content
+  ansible.builtin.shell: |
+    cat {{ workflow_work_dir }}/serverless-workflows/workflows/patch-k8s-resource/manifests/01-configmap_patch-k8s-resource-props.yaml
+  register: configmap_template
+  changed_when: false
+
+- name: Display configmap template
+  ansible.builtin.debug:
+    msg: "Configmap template content: {{ configmap_template.stdout_lines }}"
+
+- name: Update configmap with OCP URL and token
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+    OCP_URL: "{{ ocp_url.stdout }}"
+    OCP_TOKEN: "{{ ocp_token.stdout }}"
+  ansible.builtin.shell: |
+    envsubst < {{ workflow_work_dir }}/serverless-workflows/workflows/patch-k8s-resource/manifests/01-configmap_patch-k8s-resource-props.yaml | oc apply -f -
+  register: configmap_update
+  changed_when: configmap_update.rc == 0
+
+- name: Display configmap update result
+  ansible.builtin.debug:
+    msg: "Configmap update result: {{ configmap_update.stdout_lines }}"
+
+- name: Restart patch-k8s-resource deployment
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc rollout restart deployment/patch-k8s-resource -n {{ workflow_deployment_namespace }}
+  register: deployment_restart
+  changed_when: deployment_restart.rc == 0
+
+# Cost Metrics Operator Installation
+- name: Clean up existing cost metrics resources
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc delete subscription.operators.coreos.com/{{ costmetrics_operator_name }} -n {{ costmetrics_namespace }} --ignore-not-found=true
+    oc delete secret {{ costmetrics_secret_name }} -n {{ costmetrics_namespace }} --ignore-not-found=true
+    # Try to delete cost management config if it exists
+    oc delete costmanagementmetricsconfigs costmanagementmetricscfg-sample-v1beta1 -n {{ costmetrics_namespace }} --ignore-not-found=true || true
+    oc delete costmanagementmetricsconfig costmanagementmetricscfg-sample-v1beta1 -n {{ costmetrics_namespace }} --ignore-not-found=true || true
+  register: costmetrics_cleanup
+  changed_when: costmetrics_cleanup.rc == 0
+
+- name: Create cost metrics operator namespace
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc create namespace {{ costmetrics_namespace }} --dry-run=client -o yaml | oc apply -f -
+  register: namespace_creation
+  changed_when: namespace_creation.rc == 0
+
+- name: Create OperatorGroup for cost metrics operator
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    cat << EOF | oc apply -f -
+    apiVersion: operators.coreos.com/v1
+    kind: OperatorGroup
+    metadata:
+      name: costmanagement-metrics-operator-group
+      namespace: {{ costmetrics_namespace }}
+    spec:
+      targetNamespaces:
+      - {{ costmetrics_namespace }}
+    EOF
+  register: operatorgroup_creation
+  changed_when: operatorgroup_creation.rc == 0
+
+- name: Install Cost Metrics Operator
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc apply -f - <<EOF
+    apiVersion: operators.coreos.com/v1alpha1
+    kind: Subscription
+    metadata:
+      name: {{ costmetrics_operator_name }}
+      namespace: {{ costmetrics_namespace }}
+    spec:
+      channel: {{ costmetrics_operator_channel }}
+      name: {{ costmetrics_operator_name }}
+      source: {{ costmetrics_operator_source }}
+      sourceNamespace: {{ costmetrics_operator_source_namespace }}
+    EOF
+  register: operator_subscription
+  changed_when: operator_subscription.rc == 0
+
+- name: Wait for Cost Metrics Operator to be ready
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc wait --for=condition=Installed --timeout=5m subscription.operators.coreos.com/{{ costmetrics_operator_name }} -n {{ costmetrics_namespace }}
+  register: operator_ready
+  changed_when: operator_ready.rc == 0
+  failed_when: false
+
+- name: Check if operator is already installed
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc get subscription.operators.coreos.com/{{ costmetrics_operator_name }} -n {{ costmetrics_namespace }} -o jsonpath='{.status.state}' 2>/dev/null || echo "NotFound"
+  register: operator_status
+  changed_when: false
+
+- name: Fail if operator installation failed
+  ansible.builtin.fail:
+    msg: "Cost Metrics Operator installation failed or timed out"
+  when: operator_ready.rc != 0 and operator_status.stdout != "AtLatestKnown"
+
+- name: Create service account secret for cost metrics
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    cat << EOF | oc apply -f -
+    apiVersion: v1
+    kind: Secret
+    metadata:
+      name: {{ costmetrics_secret_name }}
+      namespace: {{ costmetrics_namespace }}
+    type: Opaque
+    data:
+      client_id: {{ costmetrics_client_id | b64encode }}
+      client_secret: {{ costmetrics_client_secret | b64encode }}
+    EOF
+  register: costmetrics_secret
+  changed_when: costmetrics_secret.rc == 0
+
+- name: Create CostManagement Resource
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    cat << EOF | oc apply -f -
+    apiVersion: costmanagement-metrics-cfg.openshift.io/v1beta1
+    kind: CostManagementMetricsConfig
+    metadata:
+      name: costmanagementmetricscfg-sample-v1beta1
+      namespace: {{ costmetrics_namespace }}
+    spec:
+      upload:
+        ingress_path: /api/ingress/v1/upload
+        upload_cycle: 360
+        upload_toggle: true
+        validate_cert: false
+      api_url: https://console.redhat.com
+      authentication:
+        secret_name: {{ costmetrics_secret_name }}
+        token_url: https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token
+        type: service-account
+      packaging:
+        max_reports_to_store: 30
+        max_size_MB: 100
+      prometheus_config:
+        collect_previous_data: true
+        context_timeout: 120
+        disable_metrics_collection_cost_management: false
+        disable_metrics_collection_resource_optimization: false
+        service_address: https://thanos-querier.openshift-monitoring.svc:9091
+        skip_tls_verification: false
+      source:
+        check_cycle: 1
+        create_source: true
+        name: {{ costmetrics_cluster_name }}
+        sources_path: /api/sources/v1.0/
+    EOF
+  register: costmanagement_resource
+  changed_when: costmanagement_resource.rc == 0
+
+- name: Label namespaces for cost management
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    {% for namespace in costmetrics_label_namespaces %}
+    oc label namespace {{ namespace }} insights_cost_management_optimizations=true --overwrite=true || true
+    {% endfor %}
+  register: namespace_labeling
+  changed_when: namespace_labeling.rc == 0
+
+- name: Display cost metrics installation results
+  ansible.builtin.debug:
+    msg:
+      - "Cost Metrics Operator subscription: {{ operator_subscription.stdout_lines }}"
+      - "Cost Metrics secret creation: {{ costmetrics_secret.stdout_lines }}"
+      - "CostManagement resource creation: {{ costmanagement_resource.stdout_lines }}"
+      - "Namespace labeling: {{ namespace_labeling.stdout_lines }}"
+
+- name: Wait for patch-k8s-resource deployment to be ready
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc rollout status deployment/patch-k8s-resource -n {{ workflow_deployment_namespace }} --timeout=5m
+  register: deployment_status
+  changed_when: deployment_status.rc == 0

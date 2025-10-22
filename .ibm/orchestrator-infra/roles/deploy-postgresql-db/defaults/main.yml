@@ -1,0 +1,9 @@
+---
+# working directory
+orch_postgresql_work_dir: "{{ ansible_user_dir }}/postgresql"
+
+# Kubeconfig path
+kubeconfig_path: ""
+
+# installation method
+install_via_helm: false

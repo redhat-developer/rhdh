@@ -1,0 +1,233 @@
+{# This configuration file is the data: content of configmap dynamic-plugins-rhdh #}
+includes:
+- dynamic-plugins.default.yaml
+plugins:
+{% if deploy_with_gitops|bool %}
+- disabled: false
+  package: ./dynamic-plugins/dist/backstage-plugin-kubernetes-backend-dynamic
+  pluginConfig:
+    kubernetes:
+      clusterLocatorMethods:
+      - clusters:
+        - authProvider: serviceAccount
+          name: Default Cluster
+          serviceAccountToken: ${K8S_CLUSTER_TOKEN}
+          skipTLSVerify: true
+          url: ${K8S_CLUSTER_URL}
+        type: config
+      customResources:
+      - apiVersion: v1
+        group: tekton.dev
+        plural: pipelines
+      - apiVersion: v1
+        group: tekton.dev
+        plural: pipelineruns
+      - apiVersion: v1
+        group: tekton.dev
+        plural: taskruns
+      - apiVersion: v1
+        group: route.openshift.io
+        plural: routes
+      serviceLocatorMethod:
+        type: multiTenant
+- disabled: false
+  package: ./dynamic-plugins/dist/backstage-plugin-kubernetes
+- disabled: false
+{% if milestone|int >= 4 %}
+  package: ./dynamic-plugins/dist/backstage-community-plugin-tekton
+{% elif milestone|int < 4 %}
+  package: ./dynamic-plugins/dist/janus-idp-backstage-plugin-tekton
+{% endif %}    
+- disabled: false
+  package: ./dynamic-plugins/dist/backstage-community-plugin-redhat-argocd
+- disabled: false
+  package: ./dynamic-plugins/dist/roadiehq-backstage-plugin-argo-cd-backend-dynamic
+- disabled: false
+  package: ./dynamic-plugins/dist/roadiehq-scaffolder-backend-argocd-dynamic
+- disabled: false
+  package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-github-dynamic
+- disabled: false
+  package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-gitlab-dynamic    
+{% endif %}
+- disabled: false
+  integrity: {{ orch_plugins.orchestrator_backend.integrity }}
+{% if milestone|int < 4 or (milestone|int >= 4 and deploy_operator_source == 'production') %}    
+  package: '@redhat/{{ orch_plugins.orchestrator_backend.package }}'
+{% elif milestone|int >= 4 and deploy_operator_source != 'production' %}
+  package: '{{ orch_plugins.orchestrator_backend.package }}'
+{% endif %}  
+  pluginConfig:
+    orchestrator:
+      dataIndexService:
+        url: {{ sonataflow_data_index_svc.stdout }}
+- disabled: false
+  integrity: {{ orch_plugins.orchestrator.integrity }}
+{% if milestone|int < 4 %}      
+  package: '@redhat/{{ orch_plugins.orchestrator.package }}'
+{% elif milestone|int >= 4 %}
+  package: '{{ orch_plugins.orchestrator.package }}'
+{% endif %}    
+  pluginConfig:
+    dynamicPlugins:
+      frontend:
+{% if milestone|int < 4 %}      
+        janus-idp.backstage-plugin-orchestrator:
+{% elif milestone|int >= 4 %}
+        red-hat-developer-hub.backstage-plugin-orchestrator:
+{% endif %}              
+          appIcons:
+          - importName: OrchestratorIcon
+        {% if milestone|int < 6 %}  
+            module: OrchestratorPlugin
+        {% endif %}      
+            name: orchestratorIcon
+          dynamicRoutes:
+          - importName: OrchestratorPage
+            menuItem:
+              icon: orchestratorIcon
+              text: Orchestrator
+        {% if milestone|int < 6 %}        
+            module: OrchestratorPlugin
+        {% endif %}    
+            path: /orchestrator
+- disabled: false
+{% if milestone|int < 4 %}
+  integrity: {{ orch_plugins.notifications.integrity }}
+  package: '@redhat/{{ orch_plugins.notifications.package }}'
+{% elif milestone|int >= 4 %}
+  package: ./dynamic-plugins/dist/backstage-plugin-notifications
+{% endif %}
+  pluginConfig:
+    dynamicPlugins:
+      frontend:
+{% if milestone|int < 4 %}      
+        redhat.plugin-notifications:
+{% elif milestone|int >= 4 %}
+        backstage.plugin-notifications:
+{% endif %}                  
+          dynamicRoutes:
+          - importName: NotificationsPage
+            menuItem:
+              config:
+                props:
+                  titleCounterEnabled: true
+                  webNotificationsEnabled: false
+              importName: NotificationsSidebarItem
+            path: /notifications
+- disabled: false
+{% if milestone|int < 4 %}
+  integrity: {{ orch_plugins.signals.integrity }}
+  package: '@redhat/{{ orch_plugins.signals.package }}'
+{% elif milestone|int >= 4 %}
+  package: ./dynamic-plugins/dist/backstage-plugin-signals
+{% endif %}  
+  pluginConfig:
+    dynamicPlugins:
+      frontend:
+{% if milestone|int < 4 %}      
+        redhat.plugin-signals: {}
+{% elif milestone|int >= 4 %}
+        backstage.plugin-signals: {}
+{% endif %}                  
+- disabled: false
+{% if milestone|int < 4 %}
+  integrity: {{ orch_plugins.signals_backend.integrity }}
+  package: '@redhat/{{ orch_plugins.signals_backend.package }}'
+{% elif milestone|int >= 4 %}
+  package: ./dynamic-plugins/dist/backstage-plugin-signals-backend-dynamic
+{% endif %}   
+- disabled: false
+{% if milestone|int < 4 %}
+  integrity: {{ orch_plugins.notifications_backend.integrity }}
+  package: '@redhat/{{ orch_plugins.notifications_backend.package }}'
+{% elif milestone|int >= 4 %}
+  package: ./dynamic-plugins/dist/backstage-plugin-notifications-backend-dynamic
+{% endif %}  
+- disabled: false
+{% if milestone|int < 4 %}
+  package: '@redhat/{{ orch_plugins.notifications_email.package }}'
+  integrity: {{ orch_plugins.notifications_email.integrity }}
+{% elif milestone|int >= 4 %}
+  package: ./dynamic-plugins/dist/backstage-plugin-notifications-backend-module-email-dynamic
+{% endif %}   
+  pluginConfig:
+    notifications:
+      processors:
+        email:
+          transportConfig:
+            transport: smtp
+            hostname: ${NOTIFICATIONS_EMAIL_HOSTNAME}
+            port: 25
+            secure: false
+          sender: ${NOTIFICATIONS_EMAIL_USERNAME}
+          replyTo: ${NOTIFICATIONS_EMAIL_USERNAME}
+          broadcastConfig:
+            receiver: "none"
+          concurrencyLimit: 10
+          cache:
+            ttl:
+              days: 1
+{% if orch_keycloak_auth|bool %}
+- disabled: {{ (not orch_keycloak_auth)|lower }}
+{% if milestone|int < 4 %}
+  package: ./dynamic-plugins/dist/janus-idp-backstage-plugin-keycloak-backend-dynamic
+{% elif milestone|int >= 4 %}
+  package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-keycloak-dynamic
+{% endif %}
+{% endif %}  
+{% if orch_rbac_enabled|bool %}
+- disabled: false
+{% if milestone|int < 4 %}
+  package: ./dynamic-plugins/dist/janus-idp-backstage-plugin-rbac
+{% elif milestone|int >= 4 %}
+  package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
+{% endif %}  
+{% endif %}
+{% if milestone|int >= 5 %}
+- package: '{{ orch_plugins.scaffolder_orchestrator_backend.package }}'
+  disabled: false
+  integrity: '{{ orch_plugins.scaffolder_orchestrator_backend.integrity }}'
+  pluginConfig:
+    orchestrator:
+      dataIndexService:
+        url: http://sonataflow-platform-data-index-service.sonataflow-infra
+{% endif %}
+{% if milestone|int >=6 %}
+- package: '{{ orch_plugins.orchestrator_form_widgets.package }}'
+  disabled: false
+  integrity: '{{ orch_plugins.orchestrator_form_widgets.integrity }}'
+  pluginConfig:
+    dynamicPlugins:
+      frontend:
+        red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets: {}
+{% endif %}  
+{% if (enable_resource_optimization_plugin|default(false))|bool %}
+- package: oci://quay.io/redhat-resource-optimization/dynamic-plugins:{{ ros_plugin_version|default('1.2.0-rc.2') }}!red-hat-developer-hub-plugin-redhat-resource-optimization
+  disabled: false
+  pluginConfig:
+    dynamicPlugins:
+      frontend:
+        red-hat-developer-hub.plugin-redhat-resource-optimization:
+          appIcons:
+            - name: resourceOptimizationIconOutlined
+              importName: ResourceOptimizationIconOutlined
+          dynamicRoutes:
+            - path: /redhat-resource-optimization
+              importName: ResourceOptimizationPage
+              menuItem:
+                icon: resourceOptimizationIconOutlined
+                text: Optimizations
+- package: oci://quay.io/redhat-resource-optimization/dynamic-plugins:{{ ros_plugin_version|default('1.2.0-rc.2') }}!red-hat-developer-hub-plugin-redhat-resource-optimization-backend
+  disabled: false
+  pluginConfig:
+    proxy:
+      endpoints:
+        '/cost-management/v1':
+          target: https://console.redhat.com/api/cost-management/v1
+          allowedHeaders: ['Authorization']
+          credentials: dangerously-allow-unauthenticated
+    resourceOptimization:
+      clientId: ${ROS_CLIENT_ID}
+      clientSecret: ${ROS_CLIENT_SECRET}
+      optimizationWorkflowId: 'patch-k8s-resource'
+{% endif %}  

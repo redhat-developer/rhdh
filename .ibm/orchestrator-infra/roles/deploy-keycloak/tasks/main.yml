@@ -1,0 +1,41 @@
+---
+- name: Perform setup
+  ansible.builtin.import_tasks: setup.yaml
+
+- name: Check if Keycloak is already deployed
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc get keycloak sso-idp -n rhsso-operator -o jsonpath='{.status.ready}' 2>/dev/null || echo "false"
+  register: keycloak_ready_check
+  ignore_errors: true
+  changed_when: false
+
+- name: Set Keycloak deployment status fact
+  ansible.builtin.set_fact:
+    keycloak_already_deployed: "{{ keycloak_ready_check.stdout == 'true' }}"
+
+- name: Display Keycloak deployment status
+  ansible.builtin.debug:
+    msg: |
+      Keycloak deployment status check:
+      - Keycloak ready check result: {{ keycloak_ready_check.stdout }}
+      - Keycloak already deployed: {{ keycloak_already_deployed }}
+      - Keycloak delete requested: {{ keycloak_delete|bool }}
+      - Will deploy Keycloak: {{ not keycloak_delete|bool and not keycloak_already_deployed }}
+
+- name: Deploy Keycloak
+  when: not keycloak_delete|bool and not keycloak_already_deployed
+  block:
+    - name: Deploy Keycloak Operator
+      ansible.builtin.import_tasks: keycloak-operator.yaml
+
+    - name: Create Keycloak Instance
+      ansible.builtin.import_tasks: keycloak-instance.yaml
+
+    - name: Create Keycloak Users
+      ansible.builtin.include_tasks: keycloak-users.yaml
+
+- name: Destroy Keycloak
+  ansible.builtin.import_tasks: keycloak-delete.yaml
+  when: keycloak_delete|bool

@@ -1,0 +1,6 @@
+- name: Setup
+  ansible.builtin.import_tasks: setup.yml
+
+- name: Install Kafka using script
+  ansible.builtin.import_tasks: new-kafka-from-script.yml
+  when: kafka_deploy_type == 'new-from-script'

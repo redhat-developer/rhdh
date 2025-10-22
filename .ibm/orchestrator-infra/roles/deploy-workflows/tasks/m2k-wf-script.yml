@@ -1,0 +1,64 @@
+- name: Set workflow version
+  vars:
+    wf_entry_var: move2kube
+    wf_version_var: "{{ deploy_m2k_version }}"
+  ansible.builtin.import_tasks: get-wf-version.yml
+
+- name: Git clone workflow repo
+  ansible.builtin.git:
+    repo: "{{ workflow_repo }}"
+    dest: "{{ workflow_repo_dir }}"
+    force: true
+    version: "move2kube-{{ wf_version }}"
+
+- name: Write gitops ssh keys to file
+  vars:
+    ssh_keys:
+      id_rsa_pub: "{{ orch_gitops_ssh_pub_key }}"
+      id_rsa: "{{ orch_gitops_ssh_priv_key }}"
+  ansible.builtin.copy:
+    content: "{{ item.value | b64decode}}"
+    dest: /tmp/{{ item.key }}
+  with_dict: "{{ ssh_keys }}"
+
+# https://github.com/rhdhorchestrator/serverless-workflows-config/blob/main/docs/main/move2kube/README.md#automated-installation
+- name: Run m2k automated install script
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    export PRIV_ID_RSA_PATH=/tmp/id_rsa
+    export PUB_ID_RSA_PATH=/tmp/id_rsa_pub
+    export TARGET_NS={{ workflow_namespace }}
+    export BROKER_NAME={{ kafka_broker_name }}
+    export BROKER_NAMESPACE={{ kafka_broker_namespace }}
+    ./install_m2k.sh
+  args:
+    chdir: "{{ workflow_repo_dir }}/docs/main/move2kube"
+
+- name: Patch sonataflow secret info in case deployed postgres with RH catalog
+  shell: |
+    oc -n {{ workflow_namespace }} patch sonataflow m2k  --type merge -p '{"spec": { "persistence": { "postgresql": { "secretRef": {"userKey": "database-user","passwordKey": "database-password"}}}}}'
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  when: postgres_rh_install | bool
+
+- name: Check for m2k resources
+  shell: |
+    oc wait -n move2kube pods -l "app=move2kube" --for=condition=Ready=true --timeout=1s
+    oc wait -n {{ workflow_namespace }} pods -l "sonataflow.org/workflow-app=m2k" --for=condition=Ready=true --timeout=1s
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  register: m2k_deploy
+  retries: 6
+  delay: 10
+  until: m2k_deploy is success
+
+- name: Wait for ksvc ksvc m2k-save-transformation-func to be ready
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc wait -n {{ workflow_namespace }} ksvc m2k-save-transformation-func --for=condition=Ready=true --timeout=5m
+  register: ksvc_deploy
+  retries: 10
+  delay: 20
+  until: ksvc_deploy is success

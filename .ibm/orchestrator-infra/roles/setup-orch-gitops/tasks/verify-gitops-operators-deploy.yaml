@@ -1,0 +1,13 @@
+- name: Wait for successful operator deployment
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  shell: |
+    set -e
+    oc wait --for=condition=Ready pod --all -n openshift-pipelines --timeout=10m
+    oc wait --for=condition=Ready pod --all -n openshift-gitops --timeout=10m
+    oc wait --for=condition=Ready pod --all -n orchestrator-gitops --timeout=10m
+    oc wait argocd argocd -n orchestrator-gitops --timeout=5m --for=jsonpath="{.status.phase}=Available"
+  register: pod_deploy
+  retries: 20
+  delay: 30
+  until: pod_deploy is success

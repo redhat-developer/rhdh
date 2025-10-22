@@ -1,0 +1,34 @@
+- name: Create keycloak namespace
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc new-project rhsso-operator
+  ignore_errors: true
+
+- name: Generate keycloak operator resources
+  ansible.builtin.template:
+    src: "{{ item }}"
+    dest: "{{ keycloak_work_dir }}/{{ item[:-3] }}"
+  loop:
+    - operator_group.yaml.j2
+    - subscription.yaml.j2
+
+- name: Apply keycloak operator custom resources
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |  
+    oc apply -f {{ keycloak_work_dir }}/{{ item[:-3] }}
+  loop:
+    - operator_group.yaml.j2
+    - subscription.yaml.j2
+
+- name: Wait for Keycloak operator to start up
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    set -e
+    oc wait --for=condition=Ready pod -A -l name=rhsso-operator --timeout=6m
+  register: keycloak_op_deploy
+  retries: 9
+  delay: 30
+  until: keycloak_op_deploy is success

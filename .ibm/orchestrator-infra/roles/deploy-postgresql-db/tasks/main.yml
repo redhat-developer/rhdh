@@ -1,0 +1,8 @@
+---
+- name: Perform setup
+  ansible.builtin.import_tasks: tasks/setup.yaml
+
+- name: Deploy postgresql db
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"  
+  ansible.builtin.import_tasks: tasks/deploy_postgresql_db.yaml

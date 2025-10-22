@@ -1,0 +1,72 @@
+{# This configuration file is the data: content of configmap app-config-rhdh-catalog #}
+catalog:
+  import:
+    entityFilename: catalog-info.yaml
+    pullRequestBranchName: backstage-integration
+  rules:
+    - allow: [Component, System, API, Resource, Location, Template, User, Group]
+  locations:
+    - type: url
+      target: https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/orchestrator/entities/greet-with-new-component/yamlgreet_with_new_component.yaml
+    - type: url
+      target: https://github.com/janus-idp/backstage-showcase/blob/main/catalog-entities/all.yaml
+    - type: url
+      target: https://github.com/redhat-developer/red-hat-developer-hub-software-templates/blob/main/templates.yaml
+    - type: url
+      target: https://github.com/orchestrator-test/fligh-path-config/blob/main/defaultGroup.yaml
+    - type: url
+      target: https://github.com/orchestrator-test/fligh-path-config/blob/main/defaultUser.yaml
+    - type: url
+      target: https://github.com/orchestrator-test/fligh-path-config/blob/main/rhdhOrchestratorTestUser.yaml
+    - type: url
+      target: https://github.com/orchestrator-test/fligh-path-config/blob/main/miscUsers.yaml
+    - type: url
+      target: https://github.com/orchestrator-test/fligh-path-config/blob/main/rbacUsers.yaml
+    - type: url
+      target: https://github.com/testetson22/fligh-path-config/blob/main/rhdhEntities.yaml
+
+  entities:
+    - apiVersion: backstage.io/v1alpha1
+      kind: Component
+      metadata:
+        name: red-hat-developer-hub
+        description: Red Hat Developer Hub - Enterprise-ready developer portal
+        annotations:
+          github.com/project-slug: redhat-developer/red-hat-developer-hub
+          backstage.io/techdocs-ref: dir:.
+          backstage.io/source-location: url:https://github.com/redhat-developer/red-hat-developer-hub
+        tags:
+          - redhat
+          - developer-hub
+          - portal
+          - enterprise
+        links:
+          - url: https://github.com/redhat-developer/red-hat-developer-hub
+            title: GitHub Repository
+            icon: github
+          - url: https://developers.redhat.com/products/developer-hub
+            title: Product Documentation
+            icon: docs
+      spec:
+        type: website
+        lifecycle: production
+        owner: group:default/rhdh-team
+        system: red-hat-developer-hub
+        dependsOn: []
+        providesApis: []
+        consumesApis: []
+
+{% if rhdh_keycloak_auth|bool %}
+  providers:
+    keycloakOrg:
+      default:
+        baseUrl: "https://{{ keycloak_route.stdout|default('') }}/auth"
+        loginRealm: "{{ rhdh_keycloak_realm }}"
+        realm: "{{ rhdh_keycloak_realm }}"
+        clientId: "{{ rhdh_keycloak_client_id }}"
+        clientSecret: "{{ rhdh_keycloak_client_secret }}"
+        schedule:
+          frequency: { minutes: 1 }
+          timeout: { minutes: 1 }
+          initialDelay: { seconds: 15 }
+{% endif %} 

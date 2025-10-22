@@ -1,0 +1,45 @@
+---
+# Install the default chart.
+# If true, uses steps from:
+#   https://github.com/redhat-developer/rhdh-chart/blob/main/charts/backstage/README.md
+# If false, uses the custom forked chart for development:
+#   https://github.com/rhdhorchestrator/rhdh-chart/blob/main/Local-Install.md
+install_default_chart: false
+
+# RHDH chart version
+rhdh_chart_version: "HEAD"
+
+# Directory to install the charts
+rhdh_orch_work_dir: "{{ ansible_user_dir }}/rhdh_helm_dir"
+
+# namespace for deploying rhdh
+rhdh_ns: rhdh
+
+# namespace for deploying workflows is shared with rhdh by default
+workflow_namespace: "{{ rhdh_ns }}"
+
+# Parameter whether RHDH should be further configured for testing
+configure_rhdh: true
+
+# Set true to enable RBAC for Orchestrator
+orch_rbac_enabled: false
+
+orch_keycloak_auth: false
+
+rhdh_config_dir: "{{ rhdh_orch_work_dir }}/rhdh-config"
+
+# Orchestrator plugin packages
+deploy_specific_dynamic_plugins: false
+orchestrator_plugin_repo: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays"
+orchestrator_plugin_package: "red-hat-developer-hub-backstage-plugin-orchestrator:pr_1367__5.0.3!red-hat-developer-hub-backstage-plugin-orchestrator"
+orchestrator_backend_plugin_package: "red-hat-developer-hub-backstage-plugin-orchestrator-backend:pr_1367__8.0.2!red-hat-developer-hub-backstage-plugin-orchestrator-backend"
+orchestrator_form_widgets_plugin_package: "red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets:pr_1367__1.0.2!red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets"
+scaffolder_backend_module_orchestrator_plugin_package: "red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator:pr_1367__1.0.2!red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator"
+
+# Orchestrator plugin integrity
+orchestrator_plugin_integrity: ""
+orchestrator_backend_plugin_integrity: ""
+orchestrator_form_widgets_plugin_integrity: ""
+scaffolder_backend_module_orchestrator_plugin_integrity: ""
+
+verify_orchestrator_plugins: false

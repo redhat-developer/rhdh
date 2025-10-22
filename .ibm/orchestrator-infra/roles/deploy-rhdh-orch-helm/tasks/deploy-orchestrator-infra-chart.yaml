@@ -1,0 +1,32 @@
+- name: Create new orchestrator-infra namespace
+  ansible.builtin.shell: |
+    oc new-project orchestrator-infra
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  register: project_result
+  failed_when: project_result.rc not in [0, 1]
+
+- name: Install orchestrator-infra chart
+  kubernetes.core.helm:
+    release_name: orch-infra
+    release_namespace: orchestrator-infra
+    chart_ref: "{{ rhdh_orch_work_dir }}/rhdh-chart/charts/orchestrator-infra"
+    kubeconfig: "{{ kubeconfig_path }}"
+
+- name: Approve install plans
+  ansible.builtin.include_tasks: approve_installplan.yaml
+  loop:
+    - openshift-serverless
+    - openshift-serverless-logic
+
+- name: Validate installation
+  ansible.builtin.shell: |
+    set -e
+    oc wait --for=condition=Ready pod --all -n openshift-serverless-logic --timeout=5m
+    oc wait --for=condition=Ready pod --all -n openshift-serverless --timeout=5m
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  register: sonata_resources_deploy
+  retries: 20
+  delay: 60
+  until: sonata_resources_deploy is success

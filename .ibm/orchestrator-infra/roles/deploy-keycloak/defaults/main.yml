@@ -1,0 +1,54 @@
+---
+# Working directory
+keycloak_work_dir: "{{ ansible_user_dir }}/keycloak"
+
+# List of users to create for authentication
+keycloak_users:
+  - rhdh-orchestrator-test
+  - rhdh-orchestrator-test-rbac-denied
+  - rhdh-orchestrator-test-rbac-readwrite
+  - rhdh-orchestrator-test-rbac-readonly
+  - rhdh-orchestrator-test-implicit-deny
+  - super-admin
+  - rhdh-orchestrator-test-1
+  - rhdh-orchestrator-test-2
+  - rhdh-orchestrator-test-3
+  - rhdh-orchestrator-test-4
+  - rhdh-orchestrator-test-5
+  - rhdh-orchestrator-test-6
+  - rhdh-orchestrator-test-7
+  - rhdh-orchestrator-test-8
+  - rhdh-orchestrator-test-9
+  - rhdh-orchestrator-test-10
+  - rhdh-orchestrator-test-11
+  - rhdh-orchestrator-test-12
+  - rhdh-orchestrator-test-13
+  - rhdh-orchestrator-test-14
+  - rhdh-orchestrator-test-15
+  - rhdh-orchestrator-test-16
+  - rhdh-orchestrator-test-17
+  - rhdh-orchestrator-test-18
+  - rhdh-orchestrator-test-19
+  - rhdh-orchestrator-test-20
+  - greeting-wf-rbac-readwrite
+  - greeting-wf-rbac-readonly
+  - greeting-wf-rbac-denied
+  - ro-read-all
+  - ro-read-cluster
+  - ro-cluster-project
+  - workflow-user-1
+  - workflow-user-2
+  - workflow-admin
+  - catalog-user
+  - catalog-user-no-workflow
+
+# Appended to keycloak users to create email address
+keycloak_email_domain: 'redhat.com'
+
+# Password for all users
+keycloak_password: test
+
+# Set `true` to completely remove the keycloak operator and instance
+keycloak_delete: false
+
+

@@ -1,0 +1,109 @@
+apiVersion: v1
+data:
+  app-config.yaml: |
+    app:
+      baseUrl: https://{{ backstage_route.stdout }}
+    auth:
+      environment: development
+      providers:
+        guest:
+          dangerouslyAllowOutsideDevelopment: true
+        oidc:
+          development:
+            metadataUrl:  https://{{ keycloak_route.stdout }}/auth/realms/basic/.well-known/openid-configuration
+            clientId: rhdh
+            clientSecret: rhdh
+            prompt: auto
+            signIn:
+              resolvers:
+                - resolver: preferredUsernameMatchingUserEntityName
+      session:
+        secret:
+          'authsessionsecret'
+    signInPage: oidc
+{% if orch_rbac_enabled|bool %}
+    permission:
+      enabled: true
+      rbac:
+        policies-csv-file: ./rbac-policy.csv
+        policyFileReload: true
+        admin:
+          superUsers:
+            - name: user:default/guest
+            - name: user:default/super-admin
+          users:
+            - name: user:default/rhdh-orchestrator-test
+        pluginsWithPermission:
+          - catalog
+          - scaffolder
+          - permission
+          - orchestrator        
+{% endif %}
+    backend:
+      auth:
+        externalAccess:
+        - options:
+            secret: ${BACKEND_SECRET}
+            subject: legacy-default-config
+          type: legacy
+      baseUrl: https://{{ backstage_route.stdout }}
+      cors:
+        origin: https://{{ backstage_route.stdout }}
+      database:
+        connection:
+          password: ${POSTGRESQL_ADMIN_PASSWORD}
+          user: postgres
+    proxy:
+      endpoints:
+        /mytesthttpserver:
+          allowedHeaders:
+          - test-header
+          allowedMethods:
+          - GET
+          - POST
+          target: http://mytesthttpservice:80
+      reviveConsumedRequestBodies: true
+    catalog:
+      rules:
+        - allow:
+            [
+              Component,
+              System,
+              Group,
+              Resource,
+              Location,
+              Template,
+              API,
+              User,
+              Domain,
+            ]
+      locations:
+        - type: url
+          target: https://github.com/orchestrator-test/fligh-path-config/blob/main/defaultUser.yaml
+        - type: url
+          target: https://github.com/orchestrator-test/fligh-path-config/blob/main/rhdhOrchestratorTestUser.yaml
+        - type: url
+          target: https://github.com/orchestrator-test/fligh-path-config/blob/main/miscUsers.yaml
+        - type: url
+          target: https://github.com/orchestrator-test/fligh-path-config/blob/main/rbacUsers.yaml
+      providers:
+        keycloakOrg:
+          default:
+            baseUrl: "https://{{ keycloak_route.stdout|default('') }}/auth"
+            loginRealm: "basic"
+            realm: "basic"
+            clientId: rhdh
+            clientSecret: rhdh
+            schedule:
+              frequency: { minutes: 1 }
+              timeout: { minutes: 1 }
+              initialDelay: { seconds: 15 }
+kind: ConfigMap
+metadata:
+  annotations:
+    meta.helm.sh/release-name: backstage
+    meta.helm.sh/release-namespace: rhdh
+  labels:
+    app.kubernetes.io/managed-by: Helm
+  name: backstage-developer-hub-app-config
+  namespace: "{{ rhdh_ns }}"

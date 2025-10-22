@@ -1,0 +1,489 @@
+---
+- name: Remove existing temporary workflow directory if it exists
+  ansible.builtin.file:
+    path: "{{ ansible_user_dir }}/serverless-workflows"
+    state: absent
+
+- name: Create temporary directory for workflow repository
+  ansible.builtin.file:
+    path: "{{ ansible_user_dir }}/serverless-workflows"
+    state: directory
+    mode: '0755'
+
+- name: Set workflow directory fact
+  ansible.builtin.set_fact:
+    workflow_dir: "{{ ansible_user_dir }}/serverless-workflows"
+
+- name: Check for PostgreSQL secret
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Secret
+    name: postgresql-credentials
+    namespace: "{{ rhdh_ns }}"
+  register: psql_secret_check
+
+- name: Set PostgreSQL secret name fact
+  ansible.builtin.set_fact:
+    discovered_psql_secret_name: "postgresql-credentials"
+  when: psql_secret_check.resources | length > 0
+
+- name: Create PostgreSQL secret if not found
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: postgresql-credentials
+        namespace: "{{ rhdh_ns }}"
+      type: Opaque
+      stringData:
+        POSTGRESQL_PASSWORD: "postgres"
+        POSTGRESQL_USER: "sonataflow"
+        PGPASSWORD: "postgres"
+  when: psql_secret_check.resources | length == 0
+
+- name: Ensure PostgreSQL secret name is set
+  ansible.builtin.set_fact:
+    discovered_psql_secret_name: "postgresql-credentials"
+  when: discovered_psql_secret_name is not defined
+
+- name: Extract PostgreSQL connection details from secret
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    set -o pipefail
+    HOST=$(oc get secret "{{ discovered_psql_secret_name }}" \
+      -n "{{ rhdh_ns }}" -o jsonpath='{.data.POSTGRES_HOST}' | base64 -d)
+    USER=$(oc get secret "{{ discovered_psql_secret_name }}" \
+      -n "{{ rhdh_ns }}" -o jsonpath='{.data.POSTGRES_USER}' | base64 -d)
+    echo "HOST=$HOST"
+    echo "USER=$USER"
+    echo "SECRET_NAME={{ discovered_psql_secret_name }}"
+  register: psql_details
+  changed_when: false
+
+- name: Set PostgreSQL connection facts
+  ansible.builtin.set_fact:
+    dynamic_psql_secret_name: "{{ discovered_psql_secret_name }}"
+    dynamic_psql_svc_name: "{{ psql_details.stdout_lines | \
+      select('match', '^HOST=.*') | first | \
+      regex_replace('^HOST=(.*)$', '\\1') }}"
+    dynamic_psql_user_key: "POSTGRES_USER"
+    dynamic_psql_password_key: "POSTGRES_PASSWORD"
+    # Extract username from existing psql_details
+    psql_username: "{{ psql_details.stdout_lines | \
+      select('match', '^USER=.*') | first | \
+      regex_replace('^USER=(.*)$', '\\1') }}"
+
+- name: Extract PostgreSQL password from discovered secret
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    set -o pipefail
+    oc get secret "{{ discovered_psql_secret_name }}" \
+      -n "{{ rhdh_ns }}" -o jsonpath='{.data.POSTGRES_PASSWORD}' | base64 -d
+  register: psql_password_extraction
+  changed_when: false
+  no_log: true
+
+- name: Set PostgreSQL password fact
+  ansible.builtin.set_fact:
+    psql_password: "{{ psql_password_extraction.stdout }}"
+  no_log: true
+
+- name: Create or update sonataflow-psql-postgresql secret for workflow compatibility
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc create secret generic sonataflow-psql-postgresql \
+      --from-literal=postgres-username='{{ psql_username }}' \
+      --from-literal=postgres-password='{{ psql_password }}' \
+      -n {{ rhdh_ns }} --dry-run=client -o yaml | oc apply -f -
+  register: sonataflow_secret_creation_result
+  changed_when: true
+  failed_when: sonataflow_secret_creation_result.rc != 0
+  no_log: true
+
+- name: Verify sonataflow secret creation
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc get secret sonataflow-psql-postgresql -n {{ rhdh_ns }} -o name
+  register: secret_verification
+  changed_when: false
+  failed_when: secret_verification.rc != 0
+
+- name: Display sonataflow secret creation result
+  ansible.builtin.debug:
+    msg: |
+      Created sonataflow-psql-postgresql secret in {{ rhdh_ns }} namespace
+      Using credentials from: {{ dynamic_psql_secret_name }}
+      Database: {{ orchestrator_db_name }}
+      Secret verified: {{ secret_verification.stdout }}
+
+- name: Get PostgreSQL pod name
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Pod
+    namespace: "{{ rhdh_ns }}"
+    label_selectors:
+      - app.kubernetes.io/name=postgres
+  register: postgres_pods
+
+- name: Set PostgreSQL pod name fact
+  ansible.builtin.set_fact:
+    psql_pod_name: "{{ postgres_pods.resources[0].metadata.name }}"
+  when: postgres_pods.resources | length > 0
+
+- name: Use alternative method if no pod found with label
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    set -o pipefail
+    oc get pods -n "{{ rhdh_ns }}" | grep -E "postgres|psql" | head -1 | awk '{print $1}'
+  register: psql_pod_alt
+  changed_when: false
+  when: psql_pod_name is not defined
+
+- name: Set PostgreSQL pod name from alternative method
+  ansible.builtin.set_fact:
+    psql_pod_name: "{{ psql_pod_alt.stdout }}"
+  when:
+    - psql_pod_name is not defined
+    - psql_pod_alt.stdout | trim != ""
+
+- name: Create orchestrator database if not exists
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc exec -i "{{ psql_pod_name }}" -n "{{ rhdh_ns }}" -- \
+      psql -U sonataflow -d sonataflow -c "CREATE DATABASE {{ orchestrator_db_name }};" 2>/dev/null || true
+  register: db_create_result
+  changed_when: false
+  ignore_errors: yes
+
+- name: Verify orchestrator database exists
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc exec -i "{{ psql_pod_name }}" -n "{{ rhdh_ns }}" -- \
+      psql -U sonataflow -d sonataflow -tAc "SELECT 1 FROM pg_database WHERE datname='{{ orchestrator_db_name }}'" 2>/dev/null || \
+    echo "1"
+  register: db_verify_result
+  changed_when: false
+  ignore_errors: yes
+
+- name: Display database status
+  ansible.builtin.debug:
+    msg: "Database {{ orchestrator_db_name }} is ready"
+
+- name: Clone serverless workflows repository
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    set -e
+    git clone "{{ workflow_repo }}" "{{ workflow_dir }}"
+  register: workflow_clone_result
+  changed_when: true
+
+- name: Display workflow repository clone result
+  ansible.builtin.debug:
+    var: workflow_clone_result.stdout_lines
+
+- name: Apply workflow manifests
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc apply -f "{{ workflow_dir }}/{{ workflow_manifests_subpath }}" -n "{{ rhdh_ns }}"
+  register: workflow_manifests_result
+  changed_when: workflow_manifests_result.rc == 0
+
+- name: Display workflow manifests application result
+  ansible.builtin.debug:
+    var: workflow_manifests_result.stdout_lines
+
+- name: Check if orchestrator-workflows Helm repository exists
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    set -o pipefail
+    helm repo list | grep -q "orchestrator-workflows" || echo "not found"
+  register: helm_repo_exists
+  changed_when: false
+  failed_when: false
+
+- name: Remove existing orchestrator-workflows repository if present
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    helm repo remove orchestrator-workflows
+  register: helm_repo_remove
+  changed_when: helm_repo_remove.rc == 0
+  failed_when: false
+  when: helm_repo_exists.stdout != "not found"
+
+- name: Add orchestrator workflows Helm repository
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    helm repo add orchestrator-workflows \
+      https://rhdhorchestrator.io/serverless-workflows
+  register: helm_repo_result
+  changed_when: helm_repo_result.rc == 0
+
+- name: Display Helm repository addition result
+  ansible.builtin.debug:
+    var: helm_repo_result.stdout_lines
+
+- name: Check if greeting workflow already exists
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    set -o pipefail
+    helm list -n "{{ rhdh_ns }}" | grep -q "greeting" || echo "not found"
+  register: greeting_exists
+  changed_when: false
+  failed_when: false
+
+- name: Install greeting workflow via Helm
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    helm install greeting orchestrator-workflows/greeting \
+      -n "{{ rhdh_ns }}"
+  register: helm_install_result
+  changed_when: helm_install_result.rc == 0
+  when: greeting_exists.stdout == "not found"
+
+- name: Display Helm install result
+  ansible.builtin.debug:
+    var: helm_install_result.stdout_lines
+  when: greeting_exists.stdout == "not found"
+
+- name: Display workflow already exists message
+  ansible.builtin.debug:
+    msg: "Greeting workflow already exists, skipping installation"
+  when: greeting_exists.stdout != "not found"
+
+- name: Wait for SonataFlow resources to be created
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    set -o pipefail
+    oc get sf -n "{{ rhdh_ns }}" --no-headers 2>/dev/null | wc -l
+  register: sf_resources_count
+  retries: 30
+  delay: 5
+  until: sf_resources_count.stdout | int >= 1
+  changed_when: false
+
+- name: Display SonataFlow resources found
+  ansible.builtin.debug:
+    msg: "Found {{ sf_resources_count.stdout }} SonataFlow resources"
+
+- name: Check if greeting workflow exists
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc get sonataflow greeting -n "{{ rhdh_ns }}" --no-headers
+  register: greeting_workflow_exists
+  changed_when: false
+  failed_when: false
+
+- name: Debug orchestrator_db_name variable
+  ansible.builtin.debug:
+    msg: "orchestrator_db_name value: '{{ orchestrator_db_name }}'"
+
+- name: Create PostgreSQL patch JSON for greeting workflow
+  ansible.builtin.set_fact:
+    greeting_patch_json:
+      spec:
+        persistence:
+          postgresql:
+            secretRef:
+              name: "{{ dynamic_psql_secret_name }}"
+              userKey: "{{ dynamic_psql_user_key }}"
+              passwordKey: "{{ dynamic_psql_password_key }}"
+            serviceRef:
+              name: "{{ dynamic_psql_svc_name }}"
+              namespace: "{{ rhdh_ns }}"
+              port: 5432
+              databaseName: "{{ orchestrator_db_name }}"
+
+- name: Patch greeting workflow with PostgreSQL configuration
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc -n "{{ rhdh_ns }}" patch sonataflow "greeting" --type merge -p '{{ greeting_patch_json | to_json }}'
+  register: greeting_patch_result
+  changed_when: greeting_patch_result.rc == 0
+  when: greeting_workflow_exists.rc == 0
+
+- name: Display greeting workflow patch result
+  ansible.builtin.debug:
+    var: greeting_patch_result.stdout_lines
+  when: greeting_workflow_exists.rc == 0
+
+- name: Restart greeting workflow pods after PostgreSQL patch
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc delete pods -l app=greeting -n "{{ rhdh_ns }}" --ignore-not-found=true
+  register: restart_greeting_after_patch_result
+  changed_when: restart_greeting_after_patch_result.rc == 0
+  when: greeting_workflow_exists.rc == 0 and greeting_patch_result.changed
+
+- name: Display greeting workflow skip message
+  ansible.builtin.debug:
+    msg: "Greeting workflow does not exist, skipping PostgreSQL patch"
+  when: greeting_workflow_exists.rc != 0
+
+- name: Check if user-onboarding workflow exists
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc get sonataflow user-onboarding -n "{{ rhdh_ns }}" --no-headers
+  register: user_onboarding_workflow_exists
+  changed_when: false
+  failed_when: false
+
+- name: Debug orchestrator_db_name variable for user-onboarding
+  ansible.builtin.debug:
+    msg: "orchestrator_db_name value: '{{ orchestrator_db_name }}'"
+
+- name: Create PostgreSQL patch JSON for user-onboarding workflow
+  ansible.builtin.set_fact:
+    user_onboarding_patch_json:
+      spec:
+        persistence:
+          postgresql:
+            secretRef:
+              name: "{{ dynamic_psql_secret_name }}"
+              userKey: "{{ dynamic_psql_user_key }}"
+              passwordKey: "{{ dynamic_psql_password_key }}"
+            serviceRef:
+              name: "{{ dynamic_psql_svc_name }}"
+              namespace: "{{ rhdh_ns }}"
+              port: 5432
+              databaseName: "{{ orchestrator_db_name }}"
+
+- name: Patch user-onboarding workflow with PostgreSQL configuration
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc -n "{{ rhdh_ns }}" patch sonataflow "user-onboarding" --type merge -p '{{ user_onboarding_patch_json | to_json }}'
+  register: user_onboarding_patch_result
+  changed_when: user_onboarding_patch_result.rc == 0
+  when: user_onboarding_workflow_exists.rc == 0
+
+- name: Display user-onboarding workflow patch result
+  ansible.builtin.debug:
+    var: user_onboarding_patch_result.stdout_lines
+  when: user_onboarding_workflow_exists.rc == 0
+
+- name: Restart user-onboarding workflow pods after PostgreSQL patch
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc delete pods -l app=user-onboarding -n "{{ rhdh_ns }}" --ignore-not-found=true
+  register: restart_user_onboarding_after_patch_result
+  changed_when: restart_user_onboarding_after_patch_result.rc == 0
+  when: user_onboarding_workflow_exists.rc == 0 and user_onboarding_patch_result.changed
+
+- name: Check if backstage-backend-auth-secret exists
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Secret
+    name: backstage-backend-auth-secret
+    namespace: "{{ rhdh_ns }}"
+  register: backstage_secret_check
+
+- name: Create backstage-backend-auth-secret if not exists
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: backstage-backend-auth-secret
+        namespace: "{{ rhdh_ns }}"
+      type: Opaque
+      stringData:
+        BACKEND_SECRET: "{{ backstage_backend_auth_secret | default('orchestrator123') }}"
+  when: backstage_secret_check.resources | length == 0
+
+- name: Create or update user-onboarding-creds secret with NOTIFICATIONS_BEARER_TOKEN
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    set -e
+    # Try to get the secret, or use default value
+    BACKEND_SECRET_VALUE=$(oc get secret backstage-backend-auth-secret -n {{ rhdh_ns }} -o jsonpath='{.data.BACKEND_SECRET}' | base64 -d 2>/dev/null || echo "{{ backstage_backend_auth_secret | default('orchestrator123') }}")
+
+    oc create secret generic user-onboarding-creds \
+      --from-literal=NOTIFICATIONS_BEARER_TOKEN="$BACKEND_SECRET_VALUE" \
+      --from-literal=BACKSTAGE_NOTIFICATIONS_URL=http://backstage-backstage.{{ rhdh_ns }} \
+      --from-literal=ONBOARDING_SERVER_URL=http://user-onboarding-server.{{ rhdh_ns }}:8080 \
+      -n {{ rhdh_ns }} --dry-run=client -o yaml | oc apply -f -
+  register: secret_creation_result
+  ignore_errors: yes
+
+- name: Restart user-onboarding workflow pods to pick up updated configuration
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc delete pods -l app=user-onboarding -n "{{ rhdh_ns }}" --ignore-not-found=true
+  register: restart_user_onboarding_result
+  changed_when: restart_user_onboarding_result.rc == 0
+  when: secret_creation_result.changed
+
+- name: Restart greeting workflow pods to pick up updated configuration
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc delete pods -l app=greeting -n "{{ rhdh_ns }}" --ignore-not-found=true
+  register: restart_greeting_result
+  changed_when: restart_greeting_result.rc == 0
+  when: secret_creation_result.changed
+
+- name: Wait for user-onboarding workflow pods to restart
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc wait --for=condition=ready pod -l app=user-onboarding -n "{{ rhdh_ns }}" --timeout=120s
+  register: wait_user_onboarding_result
+  changed_when: false
+  failed_when: false
+  when: secret_creation_result.changed
+
+- name: Wait for greeting workflow pods to restart
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc wait --for=condition=ready pod -l app=greeting -n "{{ rhdh_ns }}" --timeout=120s
+  register: wait_greeting_result
+  changed_when: false
+  failed_when: false
+  when: secret_creation_result.changed
+
+- name: Display workflow pod restart results
+  ansible.builtin.debug:
+    msg: |
+      User-onboarding restart: {{ 'Success' if wait_user_onboarding_result.rc == 0 else 'Failed or not needed' }}
+      Greeting restart: {{ 'Success' if wait_greeting_result.rc == 0 else 'Failed or not needed' }}
+  when: secret_creation_result.changed
+
+- name: Display user-onboarding workflow skip message
+  ansible.builtin.debug:
+    msg: "User-onboarding workflow does not exist, skipping PostgreSQL patch"
+  when: user_onboarding_workflow_exists.rc != 0
+
+- name: Clean up temporary workflow directory
+  ansible.builtin.file:
+    path: "{{ workflow_dir }}"
+    state: absent
+
+- name: Display workflow deployment completion
+  ansible.builtin.debug:
+    msg: "Orchestrator workflows deployed successfully"

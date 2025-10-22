@@ -1,0 +1,32 @@
+{# This configuration file is the data: content of configmap app-config-rhdh #}
+app:
+  title: Red Hat Developer Hub
+  baseUrl: ${BACKSTAGE_ROUTE}
+backend:
+  auth:
+    externalAccess:
+      - type: static
+        options:
+          token: ${BACKEND_SECRET}
+          subject: orchestrator
+      - type: legacy
+        options:
+          secret: "${BACKEND_SECRET}"
+          subject: legacy-default-config          
+  baseUrl: ${BACKSTAGE_ROUTE}
+  csp:
+    script-src: ["'self'", "'unsafe-inline'", "'unsafe-eval'"]
+    script-src-elem: ["'self'", "'unsafe-inline'", "'unsafe-eval'"]
+    connect-src: ["'self'", 'http:', 'https:', 'data:']
+  cors:
+    origin: ${BACKSTAGE_ROUTE}
+  database:
+    client: pg
+    connection:
+      password: ${POSTGRESQL_ADMIN_PASSWORD}
+      user: ${POSTGRES_USER}
+      host: ${POSTGRES_HOST}
+      port: ${POSTGRES_PORT}
+  reading:
+    allow:
+      - host: gitlab.cee.redhat.com

@@ -1,0 +1,36 @@
+kubeconfig_path: "{{ ansible_user_dir }}/clusterconfigs/auth/kubeconfig"
+workflow_work_dir: "{{ ansible_user_dir }}/workflows"
+workflow_repo: https://github.com/rhdhorchestrator/serverless-workflows-config.git
+workflow_repo_dir: "{{ workflow_work_dir }}/serverless-workflows-config"
+workflow_helm_index: https://raw.githubusercontent.com/rhdhorchestrator/serverless-workflows-config/gh-pages/docs/index.yaml
+workflow_namespace: sonataflow-infra
+helm_managed_rhdh: true
+
+milestone: ''
+
+# Resource Optimization Workflow Configuration
+deploy_resource_optimization_workflow: false
+enable_resource_optimization_plugin: false
+ros_plugin_version: '1.2.0-rc.2'
+
+# PostgreSQL configuration
+postgres_rh_install: false
+
+# Cost Metrics Operator Configuration
+costmetrics_namespace: costmanagement-metrics-operator
+costmetrics_operator_name: costmanagement-metrics-operator
+costmetrics_operator_channel: stable
+costmetrics_operator_source: redhat-operators
+costmetrics_operator_source_namespace: openshift-marketplace
+
+costmetrics_client_id: "e989874e-279e-4291-b104-60fab5d7f9bc"
+costmetrics_client_secret: "tHihL1pyIwlGJBLgvVOjlBgPWOpeLpwI"
+costmetrics_secret_name: service-account-auth-secret
+
+costmetrics_cluster_name: cnfdb4-cost1
+
+costmetrics_label_namespaces:
+  - rhdh
+  - sonataflow-infra
+  - rhdh-operator
+  - costmanagement-metrics-operator

@@ -1,0 +1,13 @@
+---
+- name: Setup
+  ansible.builtin.include_tasks: setup.yml
+
+- name: Run post mortem collection
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.import_tasks: post-mortem.yml
+
+- name: Fail job after post-mortem collection
+  debug:
+    msg: post-mortem collected
+  failed_when: true

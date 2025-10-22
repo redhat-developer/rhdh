@@ -1,0 +1,168 @@
+---
+# Working directory for orchestrator deploy
+orch_deploy_work_dir: "{{ ansible_user_dir }}/orch-deploy"
+
+# RHDH configuration directory
+orch_rhdh_config_dir: "{{ orch_deploy_work_dir }}/rhdh_config"
+
+# Set true to enable keycloak authentication with Orchestrator
+orch_keycloak_auth: false
+
+# Milestone to deploy based on
+milestone: ''
+
+# RHDH Operator channel to use (e.g., fast-1.1, fast-1.7)
+# Note: RHDH 1.7 recommended for fixes, but may have compatibility issues with Orchestrator 1.4.0
+# Use fast-1.1 for maximum compatibility with Orchestrator 1.4.0
+rhdh_channel: 'fast-1.1'
+
+# True if using Go based Orchestrator operator
+# False assume Helm based Orchestrator operator
+orch_go_operator: "{{ true if milestone|int >= 5 else false }}"
+
+# Cluster name and domain
+cluster_name: ''
+cluster_domain: ''
+
+# Deploys with Tekton/Argocd (Gitops operators) additional configuration and parameters
+deploy_with_gitops: false
+
+# Workflow namespace
+workflow_namespace: sonataflow-infra
+
+# Gitops namespace
+gitops_namespace: orchestrator-gitops
+
+# Operator index image source
+# It can either be set to `latest` (default) which will dynamically identify the latest iib index image or
+# it can be set to a specific index image, such as `registry-proxy.engineering.redhat.com/rh-osbs/iib:755180`
+#
+# Either method will create a CatalogSource from that index image
+deploy_operator_version: latest
+
+# Operator source when looking for latest
+# Options:
+#   quay        - Looks for latest image in quay.io/orchestrator/orchestrator-operator-catalog
+#   iib         - Looks for latest iib index image
+#   production  - Install latest from redhat-operators
+deploy_operator_source: quay
+
+# Tag used for Orchestrator operator image (Set in automation)
+orch_op_tag: ''
+
+# Full index image + tag to use for orchestrator operator (Set in automation)
+orch_op_index_image: ''
+
+# Subscription channel to deploy orchestrator operator from (Set in automation)
+orch_op_channel: ''
+
+# Set true to enable RBAC for Orchestrator
+orch_rbac_enabled: false
+
+# Set to true to configure RHDH for Orchestrator
+orch_configure_rhdh: true
+
+# Orchestrator will install RHDH if `true`, otherwise Orchestrator expects RHDH to already be installed
+# Role determines this automatically
+orch_install_rhdh: true
+
+# Set the Red Hat NPM registry to use within the dynamic-plugins-npmrc secret (dynamic plugins source registry)
+# Options:
+#   stage
+#   prod
+orch_npmrc_registry: stage
+orch_npmrc_registry_options:
+  prod: https://npm.registry.redhat.com
+  stage: https://npm.stage.registry.redhat.com
+
+# Set 'true' to compare version and integration of dynamic plugins across plugin configurations. Set 'false'
+# to bypass the check.
+# Plugins are configured in the following locations:
+#   - Orchestrator CRD
+#   - Orchestrator CR
+#   - dynamic-plugins-rhdh ConfigMap
+#   - Helm values.yaml from within Orchestrator Operator Pod
+orch_validate_plugins: false
+# 'false' fails the playbook run if a mismatch is found - 'true' will show the mismatch but continue
+orch_validate_plugins_ignore_errors: false
+
+# Notification email plugin vars
+notification_email_hostname: smtp.corp.redhat.com
+notification_email_username: gharden@redhat.com
+
+# Dynamically set list of Orchestrator Plugin package names and integrities
+# It is initially derived from the Orchestrator CRD default values, but can also be overridden individually
+orch_plugins:
+  notifications_email:
+    integrity: ''
+    package: ''
+  notifications:
+    integrity: ''
+    package: ''
+  notifications_backend:
+    integrity: ''
+    package: ''
+  signals:
+    integrity: ''
+    package: ''
+  signals_backend:
+    integrity: ''
+    package: ''
+  orchestrator:
+    integrity: ''
+    package: ''
+  orchestrator_backend:
+    integrity: ''
+    package: ''
+
+# Name space for rhdh operator (Operator pod ns, not necessarily backstage)
+rhdh_operator_ns: "rhdh-operator"
+
+# Name space for backstage and related resources (not necessarily operator pod)
+# * Helm based operator (1.4 and below) defaulted to rhdh-operator ns for both operator and backstage resource
+# * Go based operator (1.5 and above) has separate ns for operator pod and backstage resources
+rhdh_ns: "{{ 'rhdh' if orch_go_operator|bool else rhdh_operator_ns }}"
+
+###############
+##
+## The below variables are set default empty, but have values defined in the ansible vault file here:
+##   https://gitlab.cee.redhat.com/ocp-edge-qe/flight-path-auto-tests/-/blob/main/ansible-vault-files/orchestrator-vault.yaml?ref_type=heads
+##
+###############
+orch_github_token: ''
+orch_github_client_id: ''
+orch_github_client_secret: ''
+orch_gitlab_host: ''
+orch_gitlab_token: ''
+###############
+
+# Set to true to deploy Sonataflow 1.35 rc build
+deploy_sf_rc_build: false
+# dictonary of SF RC images
+sf_rc_images:
+  '4.13': "registry-proxy.engineering.redhat.com/rh-osbs/iib:977416"
+  '4.14': "registry-proxy.engineering.redhat.com/rh-osbs/iib:977417"
+  '4.15': "registry-proxy.engineering.redhat.com/rh-osbs/iib:977418"
+  '4.16': "registry-proxy.engineering.redhat.com/rh-osbs/iib:977419"
+  '4.17': "registry-proxy.engineering.redhat.com/rh-osbs/iib:977420"
+  '4.18': "registry-proxy.engineering.redhat.com/rh-osbs/iib:977423"
+  '4.19': "registry-proxy.engineering.redhat.com/rh-osbs/iib:977422"
+  '4.20': "registry-proxy.engineering.redhat.com/rh-osbs/iib:977421"
+
+# Use Orchestrator CR example from Operator CSV to deploy orchestrator
+# Essentially creates Orchestrator CR from Operator hub example
+use_orch_cr_example: false
+
+# Only used if `use_orch_cr_example=true`
+# If true, will customize the sample Orchestrator CR from the orchestrator operator csv
+# If false, will not customize it and deploy as is
+customize_orch_cr_example: false
+
+# Set true to use the 'main' branch for sw templates, otherwise it will use the milestone version
+sw_template_use_main: false
+
+# RHDH and orchestrator were installed via the RHDH Helm chart
+rhdh_orch_helm_chart: false
+
+enable_resource_optimization_plugin: false
+ros_plugin_version: "1.2.0-rc.2"

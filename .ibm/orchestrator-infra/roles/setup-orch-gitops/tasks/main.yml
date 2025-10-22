@@ -1,0 +1,24 @@
+---
+- name: Perform setup
+  ansible.builtin.import_tasks: tasks/setup.yaml
+
+- name: Install Gitops Operators
+  block:
+    - name: Install ArgoCD and Tekton Operators via Demo Helmchart
+      ansible.builtin.import_tasks: deploy-gitops-operators-helm.yaml
+      when: orch_gitops_deploy_method == 'helm'
+
+    - name: Install ArgoCD and Tekton Operators via Manual Steps
+      ansible.builtin.import_tasks: deploy-gitops-operators-manual.yaml
+      when: orch_gitops_deploy_method == 'manual'
+
+    - name: Verify ArgoCD and Tekton Operator Deployments
+      ansible.builtin.import_tasks: verify-gitops-operators-deploy.yaml
+
+    - name: Create required secrets
+      ansible.builtin.import_tasks: create-secrets.yaml
+  when: not orch_gitops_uninstall|bool
+
+- name: Uninstall Gitops Operators
+  ansible.builtin.import_tasks: delete-gitops-operators.yaml
+  when: orch_gitops_uninstall|bool

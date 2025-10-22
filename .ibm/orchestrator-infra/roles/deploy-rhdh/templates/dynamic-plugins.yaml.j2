@@ -1,0 +1,110 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dynamic-plugins-rhdh
+  namespace: {{ rhdh_ns }}
+data:
+  dynamic-plugins.yaml: |
+    includes:
+    - dynamic-plugins.default.yaml
+    plugins:
+    - disabled: false
+      package: ./dynamic-plugins/dist/backstage-plugin-notifications
+    - disabled: false
+      package: ./dynamic-plugins/dist/backstage-plugin-signals
+    - disabled: false
+      package: ./dynamic-plugins/dist/backstage-plugin-notifications-backend-dynamic
+    - disabled: false
+      package: ./dynamic-plugins/dist/backstage-plugin-signals-backend-dynamic
+    - disabled: false
+{% if orchestrator_backend_plugin_integrity != "" %}
+      integrity: {{ orchestrator_backend_plugin_integrity }}
+{% endif %}
+      package: "{{ orchestrator_backend_plugin_package }}"
+      pluginConfig:
+        orchestrator:
+          dataIndexService:
+            url: http://sonataflow-platform-data-index-service
+      dependencies:
+        - ref: sonataflow          
+    - disabled: false
+{% if orchestrator_frontend_plugin_integrity != "" %}
+      integrity: {{ orchestrator_frontend_plugin_integrity }}
+{% endif %}
+      package: "{{ orchestrator_frontend_plugin_package }}"
+      pluginConfig:
+        dynamicPlugins:
+          frontend:
+            red-hat-developer-hub.backstage-plugin-orchestrator:
+              appIcons:
+              - importName: OrchestratorIcon
+                name: orchestratorIcon
+              dynamicRoutes:
+              - importName: OrchestratorPage
+                menuItem:
+                  icon: orchestratorIcon
+                  text: Orchestrator
+                path: /orchestrator
+              entityTabs:
+                - path: /workflows
+                  title: Workflows
+                  mountPoint: entity.page.workflows
+              mountPoints:
+                - mountPoint: entity.page.workflows/cards
+                  importName: OrchestratorCatalogTab
+                  config:
+                    layout:
+                      gridColumn: '1 / -1'
+                      if:
+                        anyOf:
+                          - IsOrchestratorCatalogTabAvailable
+    - disabled: false
+{% if orchestrator_scaffolder_plugin_integrity != "" %}
+      integrity: {{ orchestrator_scaffolder_plugin_integrity }}
+{% endif %}
+      package: "{{ orchestrator_scaffolder_plugin_package }}"
+      pluginConfig:
+        orchestrator:
+          dataIndexService:
+            url: http://sonataflow-platform-data-index-service
+    - disabled: false
+{% if orchestrator_forms_plugin_integrity != "" %}
+      integrity: {{ orchestrator_forms_plugin_integrity }}
+{% endif %}
+      package: "{{ orchestrator_forms_plugin_package }}"
+      pluginConfig:
+        dynamicPlugins:
+          frontend:
+            red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets: {}
+    - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
+      disabled: false
+{% if (enable_resource_optimization_plugin|default(false))|bool %}
+    - package: oci://quay.io/redhat-resource-optimization/dynamic-plugins:{{ ros_plugin_version|default('1.2.0-rc.2') }}!red-hat-developer-hub-plugin-redhat-resource-optimization
+      disabled: false
+      pluginConfig:
+        dynamicPlugins:
+          frontend:
+            red-hat-developer-hub.plugin-redhat-resource-optimization:
+              appIcons:
+                - name: resourceOptimizationIconOutlined
+                  importName: ResourceOptimizationIconOutlined
+              dynamicRoutes:
+                - path: /redhat-resource-optimization
+                  importName: ResourceOptimizationPage
+                  menuItem:
+                    icon: resourceOptimizationIconOutlined
+                    text: Optimizations
+    - package: oci://quay.io/redhat-resource-optimization/dynamic-plugins:{{ ros_plugin_version|default('1.2.0-rc.2') }}!red-hat-developer-hub-plugin-redhat-resource-optimization-backend
+      disabled: false
+      pluginConfig:
+        proxy:
+          endpoints:
+            '/cost-management/v1':
+              target: https://console.redhat.com/api/cost-management/v1
+              allowedHeaders: ['Authorization']
+              credentials: dangerously-allow-unauthenticated
+        resourceOptimization:
+          clientId: ${ROS_CLIENT_ID}
+          clientSecret: ${ROS_CLIENT_SECRET}
+          optimizationWorkflowId: 'patch-k8s-resource'
+{% endif %}

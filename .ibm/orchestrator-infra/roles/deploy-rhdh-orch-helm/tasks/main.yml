@@ -1,0 +1,13 @@
+---
+- name: Perform setup
+  ansible.builtin.import_tasks: tasks/setup.yaml
+
+- name: Deploy orchestrator infra chart
+  ansible.builtin.import_tasks: tasks/deploy-orchestrator-infra-chart.yaml
+
+- name: Deploy RHDH + Orchestrator Helm chart
+  ansible.builtin.import_tasks: tasks/deploy-rhdh-chart.yaml
+
+- name: Post-deployment configuration
+  ansible.builtin.import_tasks: tasks/post-deployment-config.yaml
+  when: orch_rbac_enabled | bool or orch_keycloak_auth | bool

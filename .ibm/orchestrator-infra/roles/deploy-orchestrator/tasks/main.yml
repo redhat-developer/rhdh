@@ -1,0 +1,42 @@
+---
+- name: Perform setup
+  ansible.builtin.import_tasks: setup.yaml
+
+- name: Wait for MCP to stabilize before proceeding
+  ansible.builtin.import_tasks: mcp-stable-wait.yaml
+
+- name: Check if RHDH deployed
+  ansible.builtin.import_tasks: check-if-rhdh-installed.yaml
+
+- name: Create postgresql db
+  ansible.builtin.include_role:
+    name: deploy-postgresql-db
+
+- name: Deploy Orchestrator Operator
+  ansible.builtin.import_tasks: deploy-operator.yaml
+
+- name: Deploy Orchestrator Resources
+  ansible.builtin.import_tasks: deploy-orchestrator.yaml
+
+- name: Configure RHDH for Orchestrator
+  ansible.builtin.import_tasks: configure-rhdh.yaml
+  when:
+    - not orch_install_rhdh|bool or orch_configure_rhdh|bool
+    - not use_orch_cr_example|bool
+
+- name: Enable RHDH caching
+  ansible.builtin.import_tasks: enable-caching.yaml
+
+# Kafka broker Script and instructions from:
+#  https://github.com/rhdhorchestrator/orchestrator-helm-operator/tree/main/docs/main/eventing-communication
+- name: Deploy Kafka broker
+  when:
+    - milestone|int >= 4
+  ansible.builtin.include_role:
+    name: deploy-kafka-broker
+
+- name: Validate Orchestrator Deployment
+  ansible.builtin.import_tasks: validate-orchestrator-deploy.yaml
+
+- name: Post deploy steps
+  ansible.builtin.import_tasks: post-deploy.yaml

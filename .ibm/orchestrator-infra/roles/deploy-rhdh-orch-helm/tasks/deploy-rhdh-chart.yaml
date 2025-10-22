@@ -1,0 +1,169 @@
+- name: Get helm bitnami repo
+  kubernetes.core.helm_repository:
+    name: bitnami
+    repo_url: https://charts.bitnami.com/bitnami
+    kubeconfig: "{{ kubeconfig_path }}"
+
+- name: Get helm backstage repo
+  kubernetes.core.helm_repository:
+    name: backstage
+    repo_url: https://backstage.github.io/charts
+    kubeconfig: "{{ kubeconfig_path }}"
+
+- name: Get helm RHDH repo
+  kubernetes.core.helm_repository:
+    name: redhat-developer
+    repo_url: https://redhat-developer.github.io/rhdh-chart
+    kubeconfig: "{{ kubeconfig_path }}"
+
+- name: Delete rhdh namespace if already exists
+  shell: |
+    oc delete namespace {{ rhdh_ns }}
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ignore_errors: true
+
+- name: Create RHDH namespace
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc new-project {{ rhdh_ns }}
+  ignore_errors: true
+
+- name: Update helm dependencies
+  environment: 
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    helm dependency build charts/backstage
+  args:
+    chdir: "{{ rhdh_orch_work_dir }}/rhdh-chart/"
+
+- name: Get cluster domain and base
+  ansible.builtin.shell: |
+    oc get ingress.config.openshift.io/cluster -o jsonpath='{.spec.domain}'
+  environment: 
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  register: dom_url
+
+- name: Install RHDH + orchestrator chart
+  kubernetes.core.helm:
+    release_name: backstage
+    release_namespace: "{{ rhdh_ns }}"
+    chart_ref: "{{ rhdh_orch_work_dir }}/rhdh-chart/charts/backstage"
+    kubeconfig: "{{ kubeconfig_path }}"
+    set_values:
+      - value: orchestrator.enabled=true
+      - value: "global.clusterRouterBase={{ dom_url.stdout }}"
+
+- name: Wait for all pods in rhdh namespace are in Running state
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc get pods -n {{ rhdh_ns }} | grep -c "Running"
+  register: rhdh_pods_running
+  retries: 30
+  delay: 30
+  until: rhdh_pods_running.stdout == "4"
+
+- block:
+    - name: Generate values.yaml from template
+      ansible.builtin.template:
+        src: values.yaml.j2
+        dest: "{{ rhdh_config_dir }}/values.yaml"
+        mode: '0644'
+
+    - name: Update RHDH + orchestrator chart with values.yaml
+      kubernetes.core.helm:
+        release_name: backstage
+        release_namespace: "{{ rhdh_ns }}"
+        reset_values: false
+        reuse_values: true
+        chart_ref: "{{ rhdh_orch_work_dir }}/rhdh-chart/charts/backstage"
+        kubeconfig: "{{ kubeconfig_path }}"
+        values_files:
+          - "{{ rhdh_config_dir }}/values.yaml"
+    
+    - name: Restart deployment/backstage-developer-hub
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+      ansible.builtin.shell: |
+        oc rollout restart deployment/backstage-developer-hub -n {{ rhdh_ns }}
+
+    - name: Wait for deployment/backstage-developer-hub to roll out
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+      shell: |
+        oc rollout status deployment/backstage-developer-hub -n {{ rhdh_ns }} --timeout 300s
+      register: rollout_status
+      retries: 5
+      delay: 30
+      until: rollout_status.rc == 0
+
+    - name: Get backstage-dynamic-plugins configMap plugins content
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+      ansible.builtin.shell: |
+         oc get cm backstage-dynamic-plugins -n rhdh  -o json | jq '.data."dynamic-plugins.yaml"' -r
+      register: backstage_dynamic_plugins
+      retries: 12
+      delay: 30
+      until: backstage_dynamic_plugins is success
+
+    - name: Report backstage-dynamic-plugins configMap plugins content
+      debug:
+        msg: "{{ backstage_dynamic_plugins.stdout }}"
+
+    - name: Capture install-dynamic-plugins logs
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+      ansible.builtin.shell: |
+        oc logs -n {{ rhdh_ns }} $(oc get pods -n {{ rhdh_ns }} --no-headers | grep backstage-developer-hub | head -1 | awk '{print $1}') -c install-dynamic-plugins
+      register: install_dynamic_plugins_logs
+      retries: 12
+      delay: 30
+      until: install_dynamic_plugins_logs is success
+
+    - name: Extract orchestrator plugin packages from values.yaml
+      ansible.builtin.shell: |
+        set -e
+        if [ -f "{{ rhdh_config_dir }}/values.yaml" ]; then
+          grep -A 50 "^orchestrator:" "{{ rhdh_config_dir }}/values.yaml" | grep "package:" | sed 's/.*package:[[:space:]]*"//' | sed 's/".*//' | sort
+        else
+          echo "ERROR: values.yaml file not found at {{ rhdh_config_dir }}/values.yaml"
+          exit 1
+        fi
+      register: values_yaml_plugins
+      retries: 3
+      delay: 10
+      until: values_yaml_plugins is success
+
+    - name: Report extracted plugins from values.yaml
+      debug:
+        msg: "{{ values_yaml_plugins.stdout_lines }}"
+
+    - name: Verify orchestrator plugins from values.yaml are installed
+      when: verify_orchestrator_plugins|bool
+      ansible.builtin.shell: |
+        set -e
+        echo "Verifying orchestrator plugins from values.yaml are installed..."
+        echo '{{ values_yaml_plugins.stdout }}' | while IFS= read -r plugin_package; do
+          if [ -n "$plugin_package" ]; then
+            if echo '{{ install_dynamic_plugins_logs.stdout }}' | grep -q "Successfully installed.*$plugin_package"; then
+              echo "Orchestrator plugin $plugin_package - Successfully installed"
+            else
+              echo "Orchestrator plugin $plugin_package - NOT found in installation logs"
+              exit 1
+            fi
+          fi
+        done
+      register: orchestrator_plugin_verification
+      retries: 3
+      delay: 10
+      until: orchestrator_plugin_verification is success
+
+    - name: Report orchestrator plugin verification results
+      when: verify_orchestrator_plugins|bool
+      debug:
+        msg: "{{ orchestrator_plugin_verification.stdout_lines }}"
+      
+  when: deploy_specific_dynamic_plugins|bool

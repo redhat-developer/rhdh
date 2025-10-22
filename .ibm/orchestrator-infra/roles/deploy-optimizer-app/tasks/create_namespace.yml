@@ -1,0 +1,6 @@
+---
+- name: Ensure optimizer namespace exists
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc create namespace "{{ optimizer_namespace }}" --dry-run=client -o yaml | oc apply -f - 

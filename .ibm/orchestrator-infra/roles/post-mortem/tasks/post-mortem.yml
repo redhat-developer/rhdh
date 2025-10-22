@@ -1,0 +1,50 @@
+- name: Get high level resource status
+  vars:
+    tmp_cmd: "oc get -A {{ item }} -o wide"
+  ansible.builtin.shell: |
+    echo -e "\n-----------------------------------------------------" &>> {{ pm_resource_file }}
+    echo "COMMAND: {{ tmp_cmd }}" &>> {{ pm_resource_file }}
+    {{ tmp_cmd }} &>> {{ pm_resource_file }}
+  loop: "{{ pm_resources }}"
+  ignore_errors: true
+
+- name: Get high level pod status
+  vars:
+    tmp_cmd: "oc get pods -n {{ item }} -o wide"
+  ansible.builtin.shell: |
+    echo -e "\n-----------------------------------------------------" &>> {{ pm_pods_file }}
+    echo "COMMAND: {{ tmp_cmd }}" &>> {{ pm_pods_file }}
+    {{ tmp_cmd }} &>> {{ pm_pods_file }}
+  loop: "{{ pm_namespaces }}"
+  ignore_errors: true
+
+- name: Capture secret,configmaps,events from namespaces
+  ansible.builtin.shell: |
+    oc adm inspect -n {{ item }} secret,configmap,events,pods,{{ pm_resources|join(',') }} --dest-dir {{ pm_dir }}
+  loop: "{{ pm_namespaces }}"
+  ignore_errors: true
+
+- name: Capture logs and other data from namespaces
+  ansible.builtin.shell: |
+    oc adm inspect ns/{{ item }} --dest-dir {{ pm_dir }}
+  loop: "{{ pm_namespaces }}"
+  ignore_errors: true
+
+- name: Archive post-mortem directory for upload
+  archive:
+    path: "{{ pm_dir }}"
+    dest: "{{ pm_dir }}.tar.gz"
+    format: tar
+
+- name: Fetch zipped files to localhost
+  fetch:
+    dest: "{{ pm_dir | basename }}.tar.gz"
+    src: "{{ pm_dir }}.tar.gz"
+    flat: true
+  ignore_errors: true
+  register: pm_fetched_tarball
+
+- name: Debug out log tar location
+  ansible.builtin.debug:
+    msg: |
+      Post-mortem tarball is located {{ pm_fetched_tarball.dest }} on hypervisor

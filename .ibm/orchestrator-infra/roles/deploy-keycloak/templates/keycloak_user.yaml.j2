@@ -1,0 +1,22 @@
+---
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakUser
+metadata:
+  name: {{ kc_tmp_user }}
+  namespace: rhsso-operator
+spec:
+  realmSelector:
+    matchLabels:
+      app: sso-idp
+  user:
+    email: {{ kc_tmp_user }}@{{ keycloak_email_domain }}
+    emailVerified: true
+    enabled: true
+    firstName: {{ kc_tmp_user }}
+    username: {{ kc_tmp_user }}
+    realmRoles:
+      - offline_access
+    credentials:
+      - value: {{ keycloak_password }}
+        temporary: false
+        type: password
