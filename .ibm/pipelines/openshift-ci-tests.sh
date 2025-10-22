@@ -47,9 +47,9 @@ main() {
   detect_ocp
   detect_container_platform
 
-  export CHART_VERSION="1.8-157" # Fixed version should be used for release branches.
-  export HELM_CHART_URL="oci://quay.io/rhdh/rhdh-hub-rhel9"
-  export TAG_NAME_BASE="1.8-157"
+  export CHART_VERSION="1.8-157-CI"
+  export HELM_CHART_URL="oci://quay.io/rhdh/chart"
+  export QUAY_REPO="rhdh/rhdh-hub-rhel9"
   export TAG_NAME="1.8-157"
 
   case "$JOB_NAME" in
