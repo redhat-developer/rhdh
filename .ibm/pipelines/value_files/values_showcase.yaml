@@ -232,8 +232,8 @@ upstream:
     image:
       pullPolicy: Always
       registry: quay.io
-      repository: rhdh-community/rhdh
-      tag: next
+      repository: rhdh/rhdh-hub-rhel9
+      tag: 1.8-157
     extraEnvVars:
       - name: BACKEND_SECRET
         valueFrom:
