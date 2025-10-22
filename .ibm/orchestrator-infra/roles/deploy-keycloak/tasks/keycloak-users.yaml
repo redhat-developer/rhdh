@@ -14,7 +14,7 @@
 - name: Apply Keycloak user resources
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
-  ansible.builtin.shell: |  
+  ansible.builtin.shell: |
     oc apply -f .
   args:
     chdir: "{{ keycloak_work_dir }}//users/"

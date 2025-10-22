@@ -3,9 +3,9 @@ odf_work_dir: "{{ ansible_user_dir }}/odf_node_recovery"
 
 kubeconfig_path: "{{ ansible_user_dir }}/clusterconfigs/auth/kubeconfig"
 
-# If index image is set, a catalogsource is created from it and node recovery 
+# If index image is set, a catalogsource is created from it and node recovery
 # operator deployed from it. Leave empty to use community-operators latest
-odf_index_image: ''
+odf_index_image: ""
 
 # OCP node name of worker to be tested
 odf_test_worker_node: ocptest-worker-1
@@ -20,7 +20,7 @@ odf_discovery_iso: /var/lib/libvirt/images/discovery_image_ocp.iso
 assisted_api: http://10.9.76.15:8080/api/assisted-install/v2
 
 #####################################################################
-## 
+##
 ## Set variables below to false to skip the particular test
 ##
 

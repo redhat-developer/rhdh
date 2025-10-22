@@ -12,7 +12,7 @@ echo "=== Installing Serverless Logic Operator ==="
 oc create namespace ${OPERATOR_NAMESPACE} --dry-run=client -o yaml | oc apply -f -
 
 # Criar Subscription do Serverless Logic Operator
-cat <<EOF | oc apply -f -
+cat << EOF | oc apply -f -
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
@@ -44,7 +44,7 @@ done
 echo "=== Creating SonataFlowPlatform for Orchestrator ==="
 
 # Criar SonataFlowPlatform no namespace do orchestrator
-cat <<EOF | oc apply -f -
+cat << EOF | oc apply -f -
 apiVersion: sonataflow.org/v1alpha08
 kind: SonataFlowPlatform
 metadata:
@@ -96,7 +96,7 @@ spec:
 EOF
 
 # Criar secret para o SonataFlow acessar o PostgreSQL
-cat <<EOF | oc apply -f -
+cat << EOF | oc apply -f -
 apiVersion: v1
 kind: Secret
 metadata:

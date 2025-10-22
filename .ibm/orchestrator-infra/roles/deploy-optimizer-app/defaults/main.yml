@@ -2,4 +2,4 @@ optimizer_namespace: optimizer
 optimizer_client_id: "vault_optimizer_client_id"
 optimizer_client_secret: "vault_optimizer_client_secret"
 optimizer_cluster_name: "cluster-1"
-# sonataflow_namespace: sonataflow-infra  # Removed - now dynamically discovered 
+# sonataflow_namespace: sonataflow-infra  # Removed - now dynamically discovered

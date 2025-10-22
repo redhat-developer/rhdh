@@ -25,12 +25,12 @@
     KUBECONFIG: "{{ kubeconfig_path }}"
   ignore_errors: true
 
-- name: Label workflow namespace 
+- name: Label workflow namespace
   when: not helm_managed_rhdh | bool
   shell: |
-      oc label ns {{ workflow_namespace }} rhdh.redhat.com/workflow-namespace=""
+    oc label ns {{ workflow_namespace }} rhdh.redhat.com/workflow-namespace=""
   environment:
-    KUBECONFIG: "{{ kubeconfig_path }}"   
+    KUBECONFIG: "{{ kubeconfig_path }}"
 
 - name: Copy sshkeys secret from sontaflow namespace
   when: not helm_managed_rhdh | bool
@@ -108,8 +108,7 @@
 - name: Label workflow namespace so that it can be managed by argocd
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
-  ansible.builtin.shell: 
-    oc label namespace {{ workflow_namespace|default('sonataflow-infra') }} 'argocd.argoproj.io/managed-by=orchestrator-gitops'
+  ansible.builtin.shell: oc label namespace {{ workflow_namespace|default('sonataflow-infra') }} 'argocd.argoproj.io/managed-by=orchestrator-gitops'
 
 - name: Add Helm repo
   kubernetes.core.helm_repository:

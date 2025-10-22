@@ -4,12 +4,12 @@
   block:
     - name: Capture master mcp node count
       shell: |
-          oc get mcp master -o json  | jq '.status.machineCount'
+        oc get mcp master -o json  | jq '.status.machineCount'
       register: master_mcp_count
 
     - name: Capture worker mcp node count
       shell: |
-          oc get mcp worker -o json  | jq '.status.machineCount'
+        oc get mcp worker -o json  | jq '.status.machineCount'
       register: worker_mcp_count
 
     - name: Wait for master mcp to move to updated
@@ -26,4 +26,4 @@
       ansible.builtin.shell: |
         oc wait --for=condition=Updated --timeout=10m machineconfigpools worker
       when: worker_mcp_count.stdout|int > 0
-      failed_when: false      
+      failed_when: false

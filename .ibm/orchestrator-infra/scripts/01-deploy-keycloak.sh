@@ -13,7 +13,7 @@ echo "=== Deploying Keycloak for Orchestrator ==="
 oc create namespace ${NAMESPACE} --dry-run=client -o yaml | oc apply -f -
 
 # Criar secret do Keycloak
-cat <<EOF | oc apply -f -
+cat << EOF | oc apply -f -
 apiVersion: v1
 kind: Secret
 metadata:
@@ -26,7 +26,7 @@ stringData:
 EOF
 
 # Deploy do Keycloak
-cat <<EOF | oc apply -f -
+cat << EOF | oc apply -f -
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -92,7 +92,7 @@ spec:
 EOF
 
 # Criar Service
-cat <<EOF | oc apply -f -
+cat << EOF | oc apply -f -
 apiVersion: v1
 kind: Service
 metadata:
@@ -112,7 +112,7 @@ spec:
 EOF
 
 # Criar Route
-cat <<EOF | oc apply -f -
+cat << EOF | oc apply -f -
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
@@ -141,7 +141,7 @@ echo "=== Configuring Orchestrator realm ==="
 sleep 10
 
 # Criar ConfigMap com a configuração do realm
-cat <<'EOF' | oc apply -f -
+cat << 'EOF' | oc apply -f -
 apiVersion: v1
 kind: ConfigMap
 metadata:

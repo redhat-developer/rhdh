@@ -185,4 +185,4 @@
     - name: Wait for operator deployment pods Ready
       ansible.builtin.shell: |
         oc rollout status deployment/orchestrator-operator -n openshift-operators --timeout=5m
-      failed_when: false  # O deployment pode ter 0 replicas se o operador está rodando via OLM
+      failed_when: false # O deployment pode ter 0 replicas se o operador está rodando via OLM

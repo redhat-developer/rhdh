@@ -25,4 +25,4 @@
       name: "{{ costmetrics_operator_name }}"
       source: "{{ costmetrics_operator_source }}"
       sourceNamespace: "{{ costmetrics_operator_source_namespace }}"
-    EOF 
+    EOF

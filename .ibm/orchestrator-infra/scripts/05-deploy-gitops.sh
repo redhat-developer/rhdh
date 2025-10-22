@@ -9,7 +9,7 @@ GITOPS_NAMESPACE="openshift-gitops"
 echo "=== Installing OpenShift GitOps Operator ==="
 
 # Instalar OpenShift GitOps Operator
-cat <<EOF | oc apply -f -
+cat << EOF | oc apply -f -
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
@@ -35,7 +35,7 @@ done
 echo "=== Configuring ArgoCD for Orchestrator ==="
 
 # Criar ArgoCD Application para o Orchestrator
-cat <<EOF | oc apply -f -
+cat << EOF | oc apply -f -
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -67,7 +67,7 @@ spec:
 EOF
 
 # Criar AppProject para o Orchestrator
-cat <<EOF | oc apply -f -
+cat << EOF | oc apply -f -
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
@@ -92,7 +92,7 @@ spec:
 EOF
 
 # Configurar RBAC para o GitOps acessar o namespace do Orchestrator
-cat <<EOF | oc apply -f -
+cat << EOF | oc apply -f -
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -112,7 +112,7 @@ subjects:
 EOF
 
 # Criar ConfigMap com repositórios de workflows
-cat <<EOF | oc apply -f -
+cat << EOF | oc apply -f -
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -144,7 +144,7 @@ echo "ArgoCD URL: https://${ARGO_ROUTE}"
 
 # Criar secret para webhook (se necessário)
 WEBHOOK_SECRET=$(openssl rand -hex 20)
-cat <<EOF | oc apply -f -
+cat << EOF | oc apply -f -
 apiVersion: v1
 kind: Secret
 metadata:

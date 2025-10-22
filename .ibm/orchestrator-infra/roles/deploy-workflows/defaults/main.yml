@@ -6,7 +6,7 @@ workflow_helm_index: https://raw.githubusercontent.com/rhdhorchestrator/serverle
 workflow_namespace: sonataflow-infra
 helm_managed_rhdh: true
 
-milestone: ''
+milestone: ""
 
 deploy_mta_7: false
 deploy_mtv_plan: false
@@ -17,11 +17,11 @@ deploy_mtv_migration: false
 deploy_user_on_boarding: false
 
 # Versions
-deploy_greeting_version: ''
-deploy_m2k_version: ''
-deploy_mta_7_version: ''
-deploy_mtv_migration_version: ''
-deploy_mtv_plan_version: ''
+deploy_greeting_version: ""
+deploy_m2k_version: ""
+deploy_mta_7_version: ""
+deploy_mtv_migration_version: ""
+deploy_mtv_plan_version: ""
 
 # m2k vars
 m2k_instance_ns: move2kube

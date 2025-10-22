@@ -12,33 +12,33 @@
 
     # Use original project defaults but override the namespace
     rhdh_ns: "{{ orchestrator_namespace }}"
-    
+
     # Keycloak configuration
     deploy_keycloak: true
     rhdh_keycloak_auth: true
     rhdh_keycloak_client_id: "orchestrator"
     rhdh_keycloak_client_secret: "orchestrator-secret"
     rhdh_keycloak_realm: "orchestrator"
-    
+
     # PostgreSQL for Orchestrator
     orchestrator_db_name: "backstage_plugin_orchestrator"
 
     # Install only orchestrator infrastructure (not RHDH)
     install_orchestrator_infra: true
-    
+
     # Deploy directory
     rhdh_deploy_dir: "/tmp/orchestrator-infra-deploy"
     rhdh_config_dir: "{{ rhdh_deploy_dir }}/config"
-    
+
     # Serverless Logic Operator
     install_serverless_operator: true
-    
+
     # GitOps (optional)
     enable_gitops: false
-    
+
     # Workflow samples
     workflow_repo: "https://github.com/rhdh-orchestrator-test/serverless-workflows.git"
-    
+
   tasks:
     - name: Verify OpenShift connection
       kubernetes.core.k8s_info:
@@ -105,40 +105,40 @@
                       app: postgresql-orchestrator
                   spec:
                     containers:
-                    - name: postgresql
-                      image: registry.redhat.io/rhel9/postgresql-15:latest
-                      env:
-                      - name: POSTGRESQL_USER
-                        valueFrom:
-                          secretKeyRef:
-                            name: postgresql-orchestrator-secret
-                            key: database-user
-                      - name: POSTGRESQL_PASSWORD
-                        valueFrom:
-                          secretKeyRef:
-                            name: postgresql-orchestrator-secret
-                            key: database-password
-                      - name: POSTGRESQL_DATABASE
-                        valueFrom:
-                          secretKeyRef:
-                            name: postgresql-orchestrator-secret
-                            key: database-name
-                      - name: POSTGRESQL_MAX_CONNECTIONS
-                        value: "200"
-                      ports:
-                      - containerPort: 5432
-                        name: postgresql
-                      volumeMounts:
-                      - name: postgresql-data
-                        mountPath: /var/lib/pgsql/data
+                      - name: postgresql
+                        image: registry.redhat.io/rhel9/postgresql-15:latest
+                        env:
+                          - name: POSTGRESQL_USER
+                            valueFrom:
+                              secretKeyRef:
+                                name: postgresql-orchestrator-secret
+                                key: database-user
+                          - name: POSTGRESQL_PASSWORD
+                            valueFrom:
+                              secretKeyRef:
+                                name: postgresql-orchestrator-secret
+                                key: database-password
+                          - name: POSTGRESQL_DATABASE
+                            valueFrom:
+                              secretKeyRef:
+                                name: postgresql-orchestrator-secret
+                                key: database-name
+                          - name: POSTGRESQL_MAX_CONNECTIONS
+                            value: "200"
+                        ports:
+                          - containerPort: 5432
+                            name: postgresql
+                        volumeMounts:
+                          - name: postgresql-data
+                            mountPath: /var/lib/pgsql/data
                 volumeClaimTemplates:
-                - metadata:
-                    name: postgresql-data
-                  spec:
-                    accessModes: [ "ReadWriteOnce" ]
-                    resources:
-                      requests:
-                        storage: 5Gi
+                  - metadata:
+                      name: postgresql-data
+                    spec:
+                      accessModes: ["ReadWriteOnce"]
+                      resources:
+                        requests:
+                          storage: 5Gi
 
         - name: Create PostgreSQL Service
           kubernetes.core.k8s:
@@ -151,8 +151,8 @@
                 namespace: "{{ orchestrator_namespace }}"
               spec:
                 ports:
-                - port: 5432
-                  targetPort: 5432
+                  - port: 5432
+                    targetPort: 5432
                 selector:
                   app: postgresql-orchestrator
                 type: ClusterIP
@@ -259,8 +259,8 @@
           spec:
             flow:
               id: "{{ item.name }}"
-              version: '1.0'
-              specVersion: '0.8'
+              version: "1.0"
+              specVersion: "0.8"
               name: "{{ item.description }}"
               start: Start
               states:
@@ -271,7 +271,10 @@
                   end: true
       loop:
         - { name: "user-onboarding", description: "User Onboarding Workflow" }
-        - { name: "infrastructure-provisioning", description: "Infrastructure Provisioning Workflow" }
+        - {
+            name: "infrastructure-provisioning",
+            description: "Infrastructure Provisioning Workflow",
+          }
       when: install_orchestrator_infra | bool
 
     # GitOps configuration (optional)

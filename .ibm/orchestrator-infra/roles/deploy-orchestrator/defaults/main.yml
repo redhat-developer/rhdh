@@ -9,20 +9,20 @@ orch_rhdh_config_dir: "{{ orch_deploy_work_dir }}/rhdh_config"
 orch_keycloak_auth: false
 
 # Milestone to deploy based on
-milestone: ''
+milestone: ""
 
 # RHDH Operator channel to use (e.g., fast-1.1, fast-1.7)
 # Note: RHDH 1.7 recommended for fixes, but may have compatibility issues with Orchestrator 1.4.0
 # Use fast-1.1 for maximum compatibility with Orchestrator 1.4.0
-rhdh_channel: 'fast-1.1'
+rhdh_channel: "fast-1.1"
 
 # True if using Go based Orchestrator operator
 # False assume Helm based Orchestrator operator
 orch_go_operator: "{{ true if milestone|int >= 5 else false }}"
 
 # Cluster name and domain
-cluster_name: ''
-cluster_domain: ''
+cluster_name: ""
+cluster_domain: ""
 
 # Deploys with Tekton/Argocd (Gitops operators) additional configuration and parameters
 deploy_with_gitops: false
@@ -48,13 +48,13 @@ deploy_operator_version: latest
 deploy_operator_source: quay
 
 # Tag used for Orchestrator operator image (Set in automation)
-orch_op_tag: ''
+orch_op_tag: ""
 
 # Full index image + tag to use for orchestrator operator (Set in automation)
-orch_op_index_image: ''
+orch_op_index_image: ""
 
 # Subscription channel to deploy orchestrator operator from (Set in automation)
-orch_op_channel: ''
+orch_op_channel: ""
 
 # Set true to enable RBAC for Orchestrator
 orch_rbac_enabled: false
@@ -94,26 +94,26 @@ notification_email_username: gharden@redhat.com
 # It is initially derived from the Orchestrator CRD default values, but can also be overridden individually
 orch_plugins:
   notifications_email:
-    integrity: ''
-    package: ''
+    integrity: ""
+    package: ""
   notifications:
-    integrity: ''
-    package: ''
+    integrity: ""
+    package: ""
   notifications_backend:
-    integrity: ''
-    package: ''
+    integrity: ""
+    package: ""
   signals:
-    integrity: ''
-    package: ''
+    integrity: ""
+    package: ""
   signals_backend:
-    integrity: ''
-    package: ''
+    integrity: ""
+    package: ""
   orchestrator:
-    integrity: ''
-    package: ''
+    integrity: ""
+    package: ""
   orchestrator_backend:
-    integrity: ''
-    package: ''
+    integrity: ""
+    package: ""
 
 # Name space for rhdh operator (Operator pod ns, not necessarily backstage)
 rhdh_operator_ns: "rhdh-operator"
@@ -129,25 +129,25 @@ rhdh_ns: "{{ 'rhdh' if orch_go_operator|bool else rhdh_operator_ns }}"
 ##   https://gitlab.cee.redhat.com/ocp-edge-qe/flight-path-auto-tests/-/blob/main/ansible-vault-files/orchestrator-vault.yaml?ref_type=heads
 ##
 ###############
-orch_github_token: ''
-orch_github_client_id: ''
-orch_github_client_secret: ''
-orch_gitlab_host: ''
-orch_gitlab_token: ''
+orch_github_token: ""
+orch_github_client_id: ""
+orch_github_client_secret: ""
+orch_gitlab_host: ""
+orch_gitlab_token: ""
 ###############
 
 # Set to true to deploy Sonataflow 1.35 rc build
 deploy_sf_rc_build: false
 # dictonary of SF RC images
 sf_rc_images:
-  '4.13': "registry-proxy.engineering.redhat.com/rh-osbs/iib:977416"
-  '4.14': "registry-proxy.engineering.redhat.com/rh-osbs/iib:977417"
-  '4.15': "registry-proxy.engineering.redhat.com/rh-osbs/iib:977418"
-  '4.16': "registry-proxy.engineering.redhat.com/rh-osbs/iib:977419"
-  '4.17': "registry-proxy.engineering.redhat.com/rh-osbs/iib:977420"
-  '4.18': "registry-proxy.engineering.redhat.com/rh-osbs/iib:977423"
-  '4.19': "registry-proxy.engineering.redhat.com/rh-osbs/iib:977422"
-  '4.20': "registry-proxy.engineering.redhat.com/rh-osbs/iib:977421"
+  "4.13": "registry-proxy.engineering.redhat.com/rh-osbs/iib:977416"
+  "4.14": "registry-proxy.engineering.redhat.com/rh-osbs/iib:977417"
+  "4.15": "registry-proxy.engineering.redhat.com/rh-osbs/iib:977418"
+  "4.16": "registry-proxy.engineering.redhat.com/rh-osbs/iib:977419"
+  "4.17": "registry-proxy.engineering.redhat.com/rh-osbs/iib:977420"
+  "4.18": "registry-proxy.engineering.redhat.com/rh-osbs/iib:977423"
+  "4.19": "registry-proxy.engineering.redhat.com/rh-osbs/iib:977422"
+  "4.20": "registry-proxy.engineering.redhat.com/rh-osbs/iib:977421"
 
 # Use Orchestrator CR example from Operator CSV to deploy orchestrator
 # Essentially creates Orchestrator CR from Operator hub example

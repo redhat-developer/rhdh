@@ -6,12 +6,12 @@ workflow_helm_index: https://raw.githubusercontent.com/rhdhorchestrator/serverle
 workflow_namespace: sonataflow-infra
 helm_managed_rhdh: true
 
-milestone: ''
+milestone: ""
 
 # Resource Optimization Workflow Configuration
 deploy_resource_optimization_workflow: false
 enable_resource_optimization_plugin: false
-ros_plugin_version: '1.2.0-rc.2'
+ros_plugin_version: "1.2.0-rc.2"
 
 # PostgreSQL configuration
 postgres_rh_install: false

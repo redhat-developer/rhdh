@@ -6,7 +6,7 @@
   register: rhdh_op_enabled
   retries: 5
   delay: 15
-  until: rhdh_op_enabled is success  
+  until: rhdh_op_enabled is success
 
 - name: Perform Plugin Version and Integrity Cross Validation
   environment:
@@ -19,32 +19,32 @@
       register: orch_csv
       retries: 3
       delay: 10
-      until: orch_csv is success  
+      until: orch_csv is success
 
     - name: Get Orchestrator CSV example plugin version and integrity values
       ansible.builtin.shell: |
-         oc get csv -n openshift-operators {{ orch_csv.stdout }} -o json |\
-          jq '.metadata.annotations."alm-examples"' -r | jq '.[].spec.rhdhPlugins'       
+        oc get csv -n openshift-operators {{ orch_csv.stdout }} -o json |\
+         jq '.metadata.annotations."alm-examples"' -r | jq '.[].spec.rhdhPlugins'
       register: orch_csv_example_plugins_raw
       retries: 3
       delay: 10
-      until: orch_csv_example_plugins_raw is success  
+      until: orch_csv_example_plugins_raw is success
 
     - name: Get dynamic-plugins-rhdh configmap plugin content
       ansible.builtin.shell: |
-         oc get configmap dynamic-plugins-rhdh -n {{ rhdh_ns }}  -o json | jq '.data."dynamic-plugins.yaml"' -r | yq -o=json | jq '.plugins'
+        oc get configmap dynamic-plugins-rhdh -n {{ rhdh_ns }}  -o json | jq '.data."dynamic-plugins.yaml"' -r | yq -o=json | jq '.plugins'
       register: dynamic_plugins_rhdh_yaml
       retries: 12
       delay: 30
       until: dynamic_plugins_rhdh_yaml is success
-              
+
     - name: Get Orchestrator CRD plugin version and integrity values
       ansible.builtin.shell: |
-        oc get crd orchestrators.rhdh.redhat.com -o json | jq '.spec.versions[].schema.openAPIV3Schema.properties.spec.properties.rhdhPlugins.properties'  
+        oc get crd orchestrators.rhdh.redhat.com -o json | jq '.spec.versions[].schema.openAPIV3Schema.properties.spec.properties.rhdhPlugins.properties'
       register: orch_crd_plugins_props_raw
       retries: 3
       delay: 10
-      until: orch_crd_plugins_props_raw is success  
+      until: orch_crd_plugins_props_raw is success
 
     - name: Get Orchestrator Operator helm values.yaml content
       ansible.builtin.shell: |
@@ -52,7 +52,7 @@
       register: orch_op_values_yaml
       retries: 3
       delay: 10
-      until: orch_op_values_yaml is success  
+      until: orch_op_values_yaml is success
 
     - name: Get Orchestrator CR resource plugin version and integrity values
       ansible.builtin.shell: |
@@ -60,7 +60,7 @@
       register: orch_cr_plugins_raw
       retries: 3
       delay: 10
-      until: orch_cr_plugins_raw is success  
+      until: orch_cr_plugins_raw is success
 
     - name: Set Orchestrator plugin facts from the various sources
       vars:
@@ -71,8 +71,8 @@
         orch_csv_example_plugins: "{{ orch_csv_example_plugins_raw.stdout | from_json }}"
       ansible.builtin.set_fact:
         orch_plugin_compare:
-         # Plugin values derived from the Orchestrator Operator CSV alm-example
-          orch_csv_example: 
+          # Plugin values derived from the Orchestrator Operator CSV alm-example
+          orch_csv_example:
             plugin_signals_backend_dynamic:
               version: "{{ (orch_csv_example_plugins.signalsBackend.package | split('@'))[1] }}"
               plugin: "{{ orch_csv_example_plugins.signalsBackend.package }}"
@@ -88,31 +88,30 @@
             backstage_plugin_orchestrator:
               version: "{{ (orch_csv_example_plugins.orchestrator.package | split('@'))[1] }}"
               plugin: "{{ orch_csv_example_plugins.orchestrator.package }}"
-              integrity: "{{ orch_csv_example_plugins.orchestrator.integrity }}"            
+              integrity: "{{ orch_csv_example_plugins.orchestrator.integrity }}"
             plugin_notifications_backend_module_email_dynamic:
               version: "{{ (orch_csv_example_plugins.notificationsEmail.package | split('@'))[1] }}"
               plugin: "{{ orch_csv_example_plugins.notificationsEmail.package }}"
-              integrity: "{{ orch_csv_example_plugins.notificationsEmail.integrity }}"               
+              integrity: "{{ orch_csv_example_plugins.notificationsEmail.integrity }}"
             plugin_notifications_backend_dynamic:
               version: "{{ (orch_csv_example_plugins.notificationsBackend.package | split('@'))[1] }}"
               plugin: "{{ orch_csv_example_plugins.notificationsBackend.package  }}"
-              integrity: "{{ orch_csv_example_plugins.notificationsBackend.integrity }}"                                            
+              integrity: "{{ orch_csv_example_plugins.notificationsBackend.integrity }}"
             plugin_notifications_dynamic:
               version: "{{ (orch_csv_example_plugins.notifications.package | split('@'))[1] }}"
               plugin: "{{ orch_csv_example_plugins.notifications.package  }}"
-              integrity: "{{ orch_csv_example_plugins.notifications.integrity }}" 
-
+              integrity: "{{ orch_csv_example_plugins.notifications.integrity }}"
 
           # Plugin values derived from the Orchestrator CR resource (not CRD)
-          orch_cr_plugins: 
+          orch_cr_plugins:
             plugin_notifications_backend_module_email_dynamic:
               version: "{{ (orch_cr_plugins.notificationsEmail.package|default('@') | split('@'))[1] }}"
-              plugin:  "{{ orch_cr_plugins.notificationsEmail.package|default('No Plugin Defined') }}"
-              integrity: "{{ orch_cr_plugins.notificationsEmail.integrity|default('') }}"                   
+              plugin: "{{ orch_cr_plugins.notificationsEmail.package|default('No Plugin Defined') }}"
+              integrity: "{{ orch_cr_plugins.notificationsEmail.integrity|default('') }}"
             backstage_plugin_orchestrator:
               version: "{{ (orch_cr_plugins.orchestrator.package|default('@') | split('@'))[1] }}"
               plugin: "{{ orch_cr_plugins.orchestrator.package|default('No Plugin Defined') }}"
-              integrity: "{{ orch_cr_plugins.orchestrator.integrity|default('') }}"             
+              integrity: "{{ orch_cr_plugins.orchestrator.integrity|default('') }}"
             plugin_signals_backend_dynamic:
               version: "{{ (orch_cr_plugins.signalsBackend.package|default('@') | split('@'))[1] }}"
               plugin: "{{ orch_cr_plugins.signalsBackend.package|default('No Plugin Defined') }}"
@@ -124,18 +123,18 @@
             backstage_plugin_orchestrator_backend_dynamic:
               version: "{{ (orch_cr_plugins.orchestratorBackend.package|default('@') | split('@'))[1] }}"
               plugin: "{{ orch_cr_plugins.orchestratorBackend.package|default('No Plugin Defined')  }}"
-              integrity: "{{ orch_cr_plugins.orchestratorBackend.integrity|default('') }}"       
+              integrity: "{{ orch_cr_plugins.orchestratorBackend.integrity|default('') }}"
             plugin_notifications_backend_dynamic:
               version: "{{ (orch_cr_plugins.notificationsBackend.package|default('@') | split('@'))[1] }}"
               plugin: "{{ orch_cr_plugins.notificationsBackend.package|default('No Plugin Defined') }}"
-              integrity: "{{ orch_cr_plugins.notificationsBackend.integrity|default('') }}"                                            
+              integrity: "{{ orch_cr_plugins.notificationsBackend.integrity|default('') }}"
             plugin_notifications_dynamic:
               version: "{{ (orch_cr_plugins.notifications.package|default('@') | split('@'))[1] }}"
               plugin: "{{ orch_cr_plugins.notifications.package|default('No Plugin Defined') }}"
               integrity: "{{ orch_cr_plugins.notifications.integrity|default('') }}"
 
           # Plugin values derived from rhdh-operator dynamic-plugins-rhdh configmap
-          cm_dynamic_plugins: 
+          cm_dynamic_plugins:
             plugin_signals_backend_dynamic:
               version: "{{ ((dynamic_plugins_rhdh_json | selectattr('package', 'contains', 'plugin-signals-backend-dynamic@'))[0].package | split('@'))[2] }}"
               plugin: "{{ (dynamic_plugins_rhdh_json | selectattr('package', 'contains', 'plugin-signals-backend-dynamic@'))[0].package }}"
@@ -154,7 +153,7 @@
               integrity: "{{ (dynamic_plugins_rhdh_json | selectattr('package', 'contains', 'backstage-plugin-orchestrator@'))[0].integrity}}"
             plugin_notifications_backend_module_email_dynamic:
               version: "{{ ((dynamic_plugins_rhdh_json | selectattr('package', 'contains', 'plugin-notifications-backend-module-email-dynamic@'))[0].package | split('@'))[2]}}"
-              plugin: "{{ (dynamic_plugins_rhdh_json | selectattr('package', 'contains', 'plugin-notifications-backend-module-email-dynamic@'))[0].package }}"              
+              plugin: "{{ (dynamic_plugins_rhdh_json | selectattr('package', 'contains', 'plugin-notifications-backend-module-email-dynamic@'))[0].package }}"
               integrity: "{{ (dynamic_plugins_rhdh_json | selectattr('package', 'contains', 'plugin-notifications-backend-module-email-dynamic@'))[0].integrity}}"
             plugin_notifications_backend_dynamic:
               version: "{{ ((dynamic_plugins_rhdh_json | selectattr('package', 'contains', 'plugin-notifications-backend-dynamic@'))[0].package | split('@'))[2]}}"
@@ -166,7 +165,7 @@
               integrity: "{{ (dynamic_plugins_rhdh_json | selectattr('package', 'contains', 'plugin-notifications-dynamic@'))[0].integrity}}"
 
           # Plugin values derived from the Orchestrator CRD (not resource)
-          orch_crd_plugins: 
+          orch_crd_plugins:
             plugin_signals_backend_dynamic:
               version: "{{ (orch_crd_plugins_props.signalsBackend.properties.package.default | split('@'))[1] }}"
               plugin: "{{ orch_crd_plugins_props.signalsBackend.properties.package.default }}"
@@ -182,22 +181,22 @@
             backstage_plugin_orchestrator:
               version: "{{ (orch_crd_plugins_props.orchestrator.properties.package.default | split('@'))[1] }}"
               plugin: "{{ orch_crd_plugins_props.orchestrator.properties.package.default }}"
-              integrity: "{{ orch_crd_plugins_props.orchestrator.properties.integrity.default }}"            
+              integrity: "{{ orch_crd_plugins_props.orchestrator.properties.integrity.default }}"
             plugin_notifications_backend_module_email_dynamic:
               version: "{{ (orch_crd_plugins_props.notificationsEmail.properties.package.default | split('@'))[1] }}"
               plugin: "{{ orch_crd_plugins_props.notificationsEmail.properties.package.default }}"
-              integrity: "{{ orch_crd_plugins_props.notificationsEmail.properties.integrity.default }}"               
+              integrity: "{{ orch_crd_plugins_props.notificationsEmail.properties.integrity.default }}"
             plugin_notifications_backend_dynamic:
               version: "{{ (orch_crd_plugins_props.notificationsBackend.properties.package.default | split('@'))[1] }}"
               plugin: "{{ orch_crd_plugins_props.notificationsBackend.properties.package.default  }}"
-              integrity: "{{ orch_crd_plugins_props.notificationsBackend.properties.integrity.default }}"                                            
+              integrity: "{{ orch_crd_plugins_props.notificationsBackend.properties.integrity.default }}"
             plugin_notifications_dynamic:
               version: "{{ (orch_crd_plugins_props.notifications.properties.package.default | split('@'))[1] }}"
               plugin: "{{ orch_crd_plugins_props.notifications.properties.package.default  }}"
-              integrity: "{{ orch_crd_plugins_props.notifications.properties.integrity.default }}" 
-          
+              integrity: "{{ orch_crd_plugins_props.notifications.properties.integrity.default }}"
+
           # Plugin values derived from the orchestrator operator helm  /opt/helm/helm-charts/orchestrator/values.yaml
-          orch_op_values_plugins: 
+          orch_op_values_plugins:
             plugin_signals_backend_dynamic:
               version: "{{ (orch_op_values.signalsBackend.package | split('@'))[1] }}"
               plugin: "{{ orch_op_values.signalsBackend.package  }}"
@@ -213,7 +212,7 @@
             backstage_plugin_orchestrator:
               version: "{{ (orch_op_values.orchestrator.package | split('@'))[1] }}"
               plugin: "{{ orch_op_values.orchestrator.package  }}"
-              integrity: "{{ orch_op_values.orchestrator.integrity }}"            
+              integrity: "{{ orch_op_values.orchestrator.integrity }}"
             plugin_notifications_backend_module_email_dynamic:
               version: "{{ (orch_op_values.notificationsEmail.package | split('@'))[1] }}"
               plugin: "{{ orch_op_values.notificationsEmail.package  }}"
@@ -221,11 +220,11 @@
             plugin_notifications_backend_dynamic:
               version: "{{ (orch_op_values.notificationsBackend.package | split('@'))[1] }}"
               plugin: "{{ orch_op_values.notificationsBackend.package }}"
-              integrity: "{{ orch_op_values.notificationsBackend.integrity }}"                                            
+              integrity: "{{ orch_op_values.notificationsBackend.integrity }}"
             plugin_notifications_dynamic:
               version: "{{ (orch_op_values.notifications.package | split('@'))[1] }}"
               plugin: "{{ orch_op_values.notifications.package  }}"
-              integrity: "{{ orch_op_values.notifications.integrity }}"                                   
+              integrity: "{{ orch_op_values.notifications.integrity }}"
 
     - name: Show debug output all version/integrity/plugins
       debug:
@@ -253,17 +252,17 @@
           - Orchestrator CRD Version: {{ orch_plugin_compare.orch_crd_plugins[item]['version'] }}, 
           - Orchestrator CRD Integrity: {{ orch_plugin_compare.orch_crd_plugins[item]['integrity'] }}, 
           - Orchestrator CRD  Plugin: {{ orch_plugin_compare.orch_crd_plugins[item]['plugin'] }}
-          
+
           - Identified by `oc get orchestrator orchestrator -n orchestrator -o json | jq '.spec.rhdhPlugins'`
           - Orchestrator CR Version: {{ orch_plugin_compare.orch_cr_plugins[item]['version'] }}, 
           - Orchestrator CR Integrity: {{ orch_plugin_compare.orch_cr_plugins[item]['integrity'] }},       
           - Orchestrator CR Plugin: {{ orch_plugin_compare.orch_cr_plugins[item]['plugin'] }}
-          
+
           - Identified by `oc get configmap dynamic-plugins-rhdh -n {{ rhdh_ns }}  -o json | jq '.data."dynamic-plugins.yaml"' -r | yq -o=json | jq '.plugins'`
           - Dynamic Plugin Configmap Version: {{ orch_plugin_compare.cm_dynamic_plugins[item]['version'] }}, 
           - Dynamic Plugin Configmap Integrity: {{ orch_plugin_compare.cm_dynamic_plugins[item]['integrity'] }},     
           - Dynamic Plugin Configmap Plugin: {{ orch_plugin_compare.cm_dynamic_plugins[item]['plugin'] }}         
-          
+
           - Identified by `oc exec -it $(oc get pods -A -l control-plane=orchestrator-operator --no-headers=true | awk '{print $2}') -n openshift-operators cat /opt/helm/helm-charts/orchestrator/values.yaml`
           - Operator Helm values.yaml Version: {{ orch_plugin_compare.orch_op_values_plugins[item]['version'] }}, 
           - Operator Helm values.yaml Integrity: {{ orch_plugin_compare.orch_op_values_plugins[item]['integrity'] }}, 
@@ -276,7 +275,7 @@
 
           - NPM Registry is {{ orch_npmrc_registry_options[orch_npmrc_registry] }}
           (Note: "Orchestrator CR" can have empty values if it was not user defined in the Orchestrator resource - this is expected and will not cause a mismatch)
- 
+
           - If the mismatch is due to an integrity mismatch, to find the correct integrity run:
               npm config set registry  {{ orch_npmrc_registry_options[orch_npmrc_registry] }}
               npm show {{ orch_plugin_compare.cm_dynamic_plugins[item]['plugin'] }}
@@ -284,15 +283,15 @@
       loop: "{{ orch_plugin_compare.orch_crd_plugins.keys()|list}}"
       ignore_errors: true
       register: plugin_assert_result
-        
+
     - name: Cleanup Assert Failure output
-      when: 
+      when:
         - plugin_assert_result['failed']|default(false)
         - item['failed']
       debug:
-        msg: 
+        msg:
           - "Failed due to mismatch: {{ item['assertion'] }}"
           - "{{ item['msg'] | split('\n') }}"
       loop: "{{ plugin_assert_result['results'] }}"
-      failed_when: plugin_assert_result['failed']    
+      failed_when: plugin_assert_result['failed']
       ignore_errors: "{{ orch_validate_plugins_ignore_errors|bool }}"

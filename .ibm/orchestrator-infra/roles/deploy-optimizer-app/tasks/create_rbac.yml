@@ -17,4 +17,4 @@
       --role=configmap-reader \
       --serviceaccount="{{ optimizer_namespace }}:default" \
       -n "{{ optimizer_namespace }}" \
-      --dry-run=client -o yaml | oc apply -f - 
+      --dry-run=client -o yaml | oc apply -f -

@@ -12,7 +12,6 @@
     release_namespace: "{{ workflow_namespace }}"
     chart_version: "{{ wf_version }}"
 
-
 - name: Patch location of sonataflow-server in case using separate namespace
   ansible.builtin.shell: |
     oc -n {{ workflow_namespace }} patch sonataflow greeting --type merge -p '{"spec": { "persistence": { "postgresql": { "serviceRef": {"namespace": "sonataflow-infra"}}}}}'
@@ -27,14 +26,12 @@
     KUBECONFIG: "{{ kubeconfig_path }}"
   when: (postgres_rh_install | default(false) | bool) and not helm_managed_rhdh | bool
 
-
-- name: Patch sonataflow info when using helm managed RHDH 
+- name: Patch sonataflow info when using helm managed RHDH
   shell: |
     oc -n {{ workflow_namespace }} patch sonataflow greeting --type merge -p '{"spec": { "persistence": { "postgresql": { "secretRef": {"name": "backstage-postgresql-svcbind-postgres","userKey": "username","passwordKey": "password"},"serviceRef": {"name": "backstage-postgresql","namespace": "rhdh"}}}}}'
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
   when: helm_managed_rhdh | bool
-
 
 - name: Wait for greeting workflow to be ready
   shell: |

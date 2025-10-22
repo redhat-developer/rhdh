@@ -31,7 +31,7 @@
       get_url:
         url: https://github.com/stedolan/jq/releases/latest/download/jq-osx-amd64
         dest: "{{ ansible_env.HOME }}/.local/bin/jq"
-        mode: '0755'
+        mode: "0755"
       delegate_to: localhost
 
 - name: Install required packages on Linux
@@ -61,7 +61,7 @@
       file:
         path: "{{ ansible_env.HOME }}/.local/bin"
         state: directory
-        mode: '0755'
+        mode: "0755"
 
     - name: download yq binary
       get_url:

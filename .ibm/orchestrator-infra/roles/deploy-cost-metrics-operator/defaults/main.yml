@@ -14,4 +14,4 @@ costmetrics_label_namespaces:
   - rhdh
   - sonataflow-infra
   - rhdh-operator
-  - costmanagement-metrics-operator 
+  - costmanagement-metrics-operator

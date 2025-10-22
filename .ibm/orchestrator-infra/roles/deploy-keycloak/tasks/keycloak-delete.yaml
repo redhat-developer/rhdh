@@ -24,4 +24,3 @@
   retries: 3
   delay: 30
   until: kc_op_destroy is success
-

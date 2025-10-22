@@ -1,6 +1,6 @@
 # X.Y version of RHDH operator to deploy (Uses latest z-stream)
 # Example: 1.2
-rhdh_version: ''
+rhdh_version: ""
 
 # Name space for rhdh operator
 rhdh_ns: "rhdh-operator"

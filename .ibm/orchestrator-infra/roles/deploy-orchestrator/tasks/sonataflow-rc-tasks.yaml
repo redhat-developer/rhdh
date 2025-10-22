@@ -1,8 +1,7 @@
 - name: Extract image name from image map
   block:
     - name: Get ocp version
-      ansible.builtin.shell:
-        oc get clusterversion version -o jsonpath='{.status.desired.version}'
+      ansible.builtin.shell: oc get clusterversion version -o jsonpath='{.status.desired.version}'
       register: clusterversion_output
       environment:
         KUBECONFIG: "{{ kubeconfig_path }}"
@@ -12,8 +11,8 @@
         openshift_version: "{{ clusterversion_output.stdout.split('.')[0] + '.' + clusterversion_output.stdout.split('.')[1]}}"
 
     - name: Get brew image
-      set_fact: 
-        image_url: "{{ sf_rc_images[openshift_version]}}"  
+      set_fact:
+        image_url: "{{ sf_rc_images[openshift_version]}}"
 
 - name: Create catalogsource for Openshift Serverless Logic
   shell: |
@@ -30,4 +29,4 @@
       publisher: Apache
     EOF
   environment:
-    KUBECONFIG: "{{ kubeconfig_path }}"        
+    KUBECONFIG: "{{ kubeconfig_path }}"

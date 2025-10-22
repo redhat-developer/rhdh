@@ -9,7 +9,7 @@
   kubernetes.core.helm:
     release_name: orchestrator-gitops
     release_namespace: orchestrator-gitops
-    chart_ref:  "{{ orch_gitops_work_dir }}/janus-idp-bootstrap/charts/gitops-operator"
+    chart_ref: "{{ orch_gitops_work_dir }}/janus-idp-bootstrap/charts/gitops-operator"
     kubeconfig: "{{ kubeconfig_path }}"
     release_state: absent
   ignore_errors: True
@@ -18,7 +18,7 @@
   kubernetes.core.helm:
     release_name: orchestrator-pipelines
     release_namespace: orchestrator-gitops
-    chart_ref:  "{{ orch_gitops_work_dir }}/janus-idp-bootstrap/charts/pipelines-operator"
+    chart_ref: "{{ orch_gitops_work_dir }}/janus-idp-bootstrap/charts/pipelines-operator"
     kubeconfig: "{{ kubeconfig_path }}"
     release_state: absent
   ignore_errors: True
@@ -55,7 +55,7 @@
     oc delete namespace sonataflow-infra
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
-  ignore_errors: yes  
+  ignore_errors: yes
 
 - name: Ensure operators are removed and do not get restored
   ansible.builtin.shell: |

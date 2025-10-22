@@ -15,6 +15,6 @@
 
 - name: Delete node recovery if it exists
   environment:
-    KUBECONFIG: "{{ kubeconfig_path }}" 
+    KUBECONFIG: "{{ kubeconfig_path }}"
   ansible.builtin.shell: |
     oc delete noderecoveries.odf.openshift.io noderecovery-test

@@ -11,4 +11,4 @@
       labels:
         insights_cost_management_optimizations: "true"
     EOF
-  loop: "{{ costmetrics_label_namespaces }}" 
+  loop: "{{ costmetrics_label_namespaces }}"

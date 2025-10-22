@@ -13,7 +13,7 @@
     backstage_js: "{{ (backstage_resource.stdout | from_json)['items'][0]['metadata'] }}"
     backstage_name: "{{ backstage_js['name'] }}"
     backstage_ns: "{{ backstage_js['namespace'] }}"
-  block: 
+  block:
     - name: Create persistent volume for caching
       environment:
         KUBECONFIG: "{{ kubeconfig_path }}"
@@ -62,4 +62,3 @@
       retries: 4
       delay: 30
       until: backstage_deployment.stderr == ""
-

@@ -9,4 +9,4 @@
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
   ansible.builtin.shell: |
-    oc label namespace "{{ sonataflow_namespace }}" name=sonataflow-infra-ns-label --overwrite 
+    oc label namespace "{{ sonataflow_namespace }}" name=sonataflow-infra-ns-label --overwrite

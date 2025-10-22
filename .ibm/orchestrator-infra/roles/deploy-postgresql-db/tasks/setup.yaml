@@ -17,4 +17,3 @@
 - name: Set installation method set_fact
   ansible.builtin.set_fact:
     postgres_installed_helm: "{{ install_via_helm | bool }}"
-

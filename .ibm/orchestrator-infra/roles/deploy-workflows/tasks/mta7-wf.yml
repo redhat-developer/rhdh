@@ -14,7 +14,7 @@
 
 - name: Patch location of sonataflow-server in case using separate namespace
   shell: |
-    oc -n {{ workflow_namespace }} patch sonataflow mta-analysis-v7 --type merge -p '{"spec": { "persistence": { "postgresql": { "serviceRef": {"namespace": "sonataflow-infra"}}}}}'   
+    oc -n {{ workflow_namespace }} patch sonataflow mta-analysis-v7 --type merge -p '{"spec": { "persistence": { "postgresql": { "serviceRef": {"namespace": "sonataflow-infra"}}}}}'
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
   when: workflow_namespace != "sonataflow-infra"
@@ -24,10 +24,10 @@
     oc -n {{ workflow_namespace }} patch secret "mta-analysis-v7-creds" --type merge -p '{"data": { "NOTIFICATIONS_BEARER_TOKEN": "{{ notif_token | b64encode }}"}}'
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
-  register: mta_secret_patched  
+  register: mta_secret_patched
   retries: 10
   delay: 10
-  until: mta_secret_patched.rc == 0  
+  until: mta_secret_patched.rc == 0
 
 - name: Patch sonataflow secret info in case deployed postgres with RH catalog
   shell: |
@@ -44,7 +44,7 @@
   register: mta_hub_exists
   retries: 40
   delay: 15
-  until: mta_hub_exists.rc == 0    
+  until: mta_hub_exists.rc == 0
 
 - name: Wait for MTA ui pod to be deployed and running
   shell: |
@@ -67,11 +67,10 @@
   until: mta_workflow_pod_exists.rc == 0
 
 - name: Get MTA route
-  shell: 
-    oc -n openshift-mta get route mta -o json | jq -r ".spec.host"
+  shell: oc -n openshift-mta get route mta -o json | jq -r ".spec.host"
   register: mta_route
   environment:
-    KUBECONFIG: "{{ kubeconfig_path }}"  
+    KUBECONFIG: "{{ kubeconfig_path }}"
   failed_when: mta_route.stderr != ''
 
 - name: Patch MTA configmap
@@ -92,11 +91,11 @@
   shell: |
     oc wait -n {{ workflow_namespace }} pods -l "sonataflow.org/workflow-app=mta-analysis-v7" --for=condition=Ready=true --timeout=1s
   environment:
-    KUBECONFIG: "{{ kubeconfig_path }}"  
+    KUBECONFIG: "{{ kubeconfig_path }}"
   register: mta_pod_ready
   retries: 50
   delay: 15
-  until: mta_pod_ready.rc == 0    
+  until: mta_pod_ready.rc == 0
 
 - name: Wait for MTA deployment and resources to be ready
   shell: |
@@ -109,4 +108,4 @@
   register: mta_ready
   retries: 50
   delay: 15
-  until: mta_ready is success  
+  until: mta_ready is success

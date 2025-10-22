@@ -6,8 +6,8 @@
 - name: Clone the serverless-workflow-examples repo
   ansible.builtin.git:
     repo: https://github.com/rhdhorchestrator/serverless-workflow-examples.git
-    dest: '/tmp/serverless-workflow-examples'
-    version: 'main' # always use main
+    dest: "/tmp/serverless-workflow-examples"
+    version: "main" # always use main
 
 - name: Get NOTIFICATIONS_BEARER_TOKEN from openshift
   environment:
@@ -37,7 +37,7 @@
       metadata:
         creationTimestamp: null
         name: user-onboarding-creds
-    dest: '/tmp/serverless-workflow-examples/user-onboarding/manifests/00-secret_user-onboarding.yaml'
+    dest: "/tmp/serverless-workflow-examples/user-onboarding/manifests/00-secret_user-onboarding.yaml"
 
 - name: Apply updated secret and other workflow manifests
   environment:
@@ -71,4 +71,3 @@
   retries: 5
   delay: 30
   until: rollout_status.rc == 0
-

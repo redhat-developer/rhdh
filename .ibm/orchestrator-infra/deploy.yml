@@ -18,17 +18,17 @@
 
     # Install Orchestrator infrastructure
     install_orchestrator_infra: true
-    
+
     # Keycloak
     deploy_keycloak: true
     rhdh_keycloak_auth: true
-    
+
     # GitOps (optional)
     enable_gitops: "{{ enable_gitops | default(false) }}"
 
     # Backend secret
     backstage_backend_auth_secret: "orchestrator123"
-    
+
   tasks:
     - name: Display deployment configuration
       debug:
