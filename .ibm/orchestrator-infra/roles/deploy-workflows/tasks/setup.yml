@@ -18,12 +18,11 @@
   when: workflow_namespace != "sonataflow-infra" and not helm_managed_rhdh | bool
 
 - name: Create namespace
-  when: not helm_managed_rhdh | bool
+  when: not helm_managed_rhdh | bool and workflow_namespace != "sonataflow-infra"
   shell: |
     oc create namespace {{ workflow_namespace }}
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
-  when: workflow_namespace != "sonataflow-infra"
   ignore_errors: true
 
 - name: Label workflow namespace 
