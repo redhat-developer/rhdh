@@ -214,14 +214,52 @@ global:
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-floating-action-button
         disabled: false
       # Enable orchestrator plugins
-      - package: "@redhat/backstage-plugin-orchestrator"
-        disabled: false
-      - package: "@redhat/backstage-plugin-orchestrator-backend"
-        disabled: false
-      - package: "@redhat/backstage-plugin-orchestrator-form-widgets"
-        disabled: false
-      - package: "@redhat/backstage-plugin-scaffolder-backend-module-orchestrator"
-        disabled: false
+      - disabled: false
+        package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator-backend:pr_1581__8.2.0!red-hat-developer-hub-backstage-plugin-orchestrator-backend"
+        pluginConfig:
+          orchestrator:
+            dataIndexService:
+              url: http://sonataflow-platform-data-index-service.{{ .Release.Namespace }}
+      - disabled: false
+        package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator:pr_1581__5.1.0!red-hat-developer-hub-backstage-plugin-orchestrator"
+        pluginConfig:
+          dynamicPlugins:
+            frontend:
+              red-hat-developer-hub.backstage-plugin-orchestrator:
+                appIcons:
+                  - name: orchestratorIcon
+                    importName: OrchestratorIcon
+                dynamicRoutes:
+                  - path: /orchestrator
+                    importName: OrchestratorPage
+                    menuItem:
+                      icon: orchestratorIcon
+                      text: Orchestrator
+                entityTabs:
+                  - path: /workflows
+                    title: Workflows
+                    mountPoint: entity.page.workflows
+                mountPoints:
+                  - mountPoint: entity.page.workflows/cards
+                    importName: OrchestratorCatalogTab
+                    config:
+                      layout:
+                        gridColumn: "1 / -1"
+                      if:
+                        anyOf:
+                          - IsOrchestratorCatalogTabAvailable
+      - disabled: false
+        package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator:pr_1581__1.1.0!red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator"
+        pluginConfig:
+          orchestrator:
+            dataIndexService:
+              url: http://sonataflow-platform-data-index-service.{{ .Release.Namespace }}
+      - disabled: false
+        package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets:pr_1581__1.1.0!red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets"
+        pluginConfig:
+          dynamicPlugins:
+            frontend:
+              red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets: {}
 
 # -- Upstream Backstage [chart configuration](https://github.com/backstage/charts/blob/main/charts/backstage/values.yaml)
 upstream:
