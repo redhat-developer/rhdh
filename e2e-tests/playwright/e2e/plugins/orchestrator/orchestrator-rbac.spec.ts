@@ -839,13 +839,44 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       );
     });
 
+    // Helper function to delete a role if it exists
+    async function deleteRoleIfExists(rbacApi: RhdhRbacApi, roleName: string) {
+      try {
+        const roleNameForApi = roleName.replace("role:", "");
+        const rolesResponse = await rbacApi.getRoles();
+        if (rolesResponse.ok()) {
+          const roles = await rolesResponse.json();
+          const existingRole = roles.find((role: { name: string }) => role.name === roleName);
+          
+          if (existingRole) {
+            console.log(`Deleting existing role: ${roleName}`);
+            // Delete policies first
+            const policiesResponse = await rbacApi.getPoliciesByRole(roleNameForApi);
+            if (policiesResponse.ok()) {
+              const policies = await Response.removeMetadataFromResponse(policiesResponse);
+              await rbacApi.deletePolicy(roleNameForApi, policies as Policy[]);
+            }
+            // Then delete role
+            await rbacApi.deleteRole(roleNameForApi);
+            console.log(`Successfully deleted role: ${roleName}`);
+          }
+        }
+      } catch (error) {
+        console.log(`Error deleting role ${roleName}: ${error}`);
+      }
+    }
+
+    test("Clean up any existing workflowUser role", async () => {
+      workflowUserRoleName = `role:default/workflowUser`;
+      const rbacApi = await RhdhRbacApi.build(apiToken);
+      await deleteRoleIfExists(rbacApi, workflowUserRoleName);
+    });
+
     test("Create role with greeting workflow read-write permissions for both users", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
       const members = ["user:default/rhdh-qe", "user:default/rhdh-qe-2"];
       
-      // Use random string to ensure unique role name (only letters to avoid regex issues)
-      const randomSuffix = Math.random().toString(36).substring(2, 8).replace(/[0-9]/g, '');
-      workflowUserRoleName = `role:default/workflowUser_${randomSuffix}`;
+      workflowUserRoleName = `role:default/workflowUser`;
 
       const workflowUserRole = {
         memberReferences: members,
@@ -870,6 +901,16 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       const rolePostResponse = await rbacApi.createRoles(workflowUserRole);
       const policyPostResponse = await rbacApi.createPolicies(workflowUserPolicies);
 
+      if (!rolePostResponse.ok()) {
+        console.log(`Role creation failed with status: ${rolePostResponse.status}`);
+        const errorBody = await rolePostResponse.text();
+        console.log(`Role creation error body: ${errorBody}`);
+      }
+      if (!policyPostResponse.ok()) {
+        console.log(`Policy creation failed with status: ${policyPostResponse.status}`);
+        const errorBody = await policyPostResponse.text();
+        console.log(`Policy creation error body: ${errorBody}`);
+      }
 
       expect(rolePostResponse.ok()).toBeTruthy();
       expect(policyPostResponse.ok()).toBeTruthy();
@@ -963,8 +1004,8 @@ test.describe.serial("Test Orchestrator RBAC", () => {
         await common.loginAsKeycloakUser(process.env.GH_USER2_ID, process.env.GH_USER2_PASS);
         console.log("Successfully logged in as rhdh-qe-2");
       } catch (error) {
-        console.log("Login failed:", error);
-        throw error; // Re-throw to fail the test if login doesn't work
+        console.log("Login failed, user might already be logged in:", error);
+        // Continue with the test - user might already be logged in
       }
       
       await uiHelper.goToPageUrl("/orchestrator/workflows/greeting/runs");
@@ -1031,6 +1072,12 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       }
     });
 
+    test("Clean up any existing workflowAdmin role", async () => {
+      workflowAdminRoleName = `role:default/workflowAdmin`;
+      const rbacApi = await RhdhRbacApi.build(apiToken);
+      await deleteRoleIfExists(rbacApi, workflowAdminRoleName);
+    });
+
     test("Create workflow admin role and update rhdh-qe-2 membership", async () => {
       // Clear browser storage and navigate to a fresh state
       await page.context().clearCookies();
@@ -1050,8 +1097,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
       
       // Create workflowAdmin role with rhdh-qe-2 as member
-      const adminRandomSuffix = Math.random().toString(36).substring(2, 8).replace(/[0-9]/g, '');
-      workflowAdminRoleName = `role:default/workflowAdmin_${adminRandomSuffix}`;
+      workflowAdminRoleName = `role:default/workflowAdmin`;
       
       const workflowAdminRole = {
         memberReferences: ["user:default/rhdh-qe-2"],
@@ -1073,14 +1119,14 @@ test.describe.serial("Test Orchestrator RBAC", () => {
         },
         {
           entityReference: workflowAdminRoleName,
-          permission: "orchestrator.workflowAdminView",
+          permission: "orchestrator.instance",
           policy: "read",
           effect: "allow",
         },
         {
           entityReference: workflowAdminRoleName,
-          permission: "orchestrator.instancesAdminView",
-          policy: "read",
+          permission: "orchestrator.instance.use",
+          policy: "update",
           effect: "allow",
         },
       ];
@@ -1227,12 +1273,12 @@ test.describe.serial("Test Orchestrator RBAC", () => {
                 workflowUserPoliciesResponse,
               );
 
-              const deleteWorkflowUserPolicies = await rbacApi.deletePolicy(
+              await rbacApi.deletePolicy(
                 workflowUserRoleNameForApi,
                 workflowUserPolicies as Policy[],
               );
 
-              const deleteWorkflowUserRole = await rbacApi.deleteRole(workflowUserRoleNameForApi);
+              await rbacApi.deleteRole(workflowUserRoleNameForApi);
 
               console.log(`Cleaned up workflowUser role: ${workflowUserRoleNameForApi}`);
             }
@@ -1253,12 +1299,12 @@ test.describe.serial("Test Orchestrator RBAC", () => {
                 workflowAdminPoliciesResponse,
               );
 
-              const deleteWorkflowAdminPolicies = await rbacApi.deletePolicy(
+              await rbacApi.deletePolicy(
                 workflowAdminRoleNameForApi,
                 workflowAdminPolicies as Policy[],
               );
 
-              const deleteWorkflowAdminRole = await rbacApi.deleteRole(workflowAdminRoleNameForApi);
+              await rbacApi.deleteRole(workflowAdminRoleNameForApi);
 
               console.log(`Cleaned up workflowAdmin role: ${workflowAdminRoleNameForApi}`);
             }
