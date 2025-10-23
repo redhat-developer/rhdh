@@ -742,8 +742,6 @@ get_image_helm_set_params() {
   # Add image tag
   params+="--set upstream.backstage.image.tag=${TAG_NAME} "
 
-  # Add pull secrets if sealight job
-  params+=$(if [[ "$JOB_NAME" == *"sealight"* ]]; then echo "--set upstream.backstage.image.pullSecrets[0]='quay-secret'"; fi)
   echo "${params}"
 }
 
