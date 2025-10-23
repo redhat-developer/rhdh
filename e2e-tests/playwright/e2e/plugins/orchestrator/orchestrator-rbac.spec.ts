@@ -278,5 +278,124 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     });
   });
 
+  test.describe.serial("Test Orchestrator RBAC: Denied Access", () => {
+    test.describe.configure({ retries: 0 });
+    let common: Common;
+    let uiHelper: UIhelper;
+    let page: Page;
+    let apiToken: string;
+
+    test.beforeAll(async ({ browser }, testInfo) => {
+      page = (await setupBrowser(browser, testInfo)).page;
+
+      uiHelper = new UIhelper(page);
+      common = new Common(page);
+
+      await common.loginAsKeycloakUser();
+      apiToken = await RhdhAuthApiHack.getToken(page);
+    });
+
+    test.beforeEach(async ({}, testInfo) => {
+      console.log(
+        `beforeEach: Attempting setup for ${testInfo.title}, retry: ${testInfo.retry}`,
+      );
+    });
+
+    test("Create role with orchestrator.workflow denied permissions", async () => {
+      const rbacApi = await RhdhRbacApi.build(apiToken);
+      const members = ["user:default/rhdh-qe"];
+
+      const orchestratorDeniedRole = {
+        memberReferences: members,
+        name: "role:default/workflowDenied",
+      };
+
+      const orchestratorDeniedPolicies = [
+        {
+          entityReference: "role:default/workflowDenied",
+          permission: "orchestrator.workflow",
+          policy: "read",
+          effect: "deny",
+        },
+        {
+          entityReference: "role:default/workflowDenied",
+          permission: "orchestrator.workflow.use",
+          policy: "update",
+          effect: "deny",
+        },
+      ];
+
+      const rolePostResponse = await rbacApi.createRoles(orchestratorDeniedRole);
+      const policyPostResponse = await rbacApi.createPolicies(orchestratorDeniedPolicies);
+
+      expect(rolePostResponse.ok()).toBeTruthy();
+      expect(policyPostResponse.ok()).toBeTruthy();
+    });
+
+    test("Verify denied role exists via API", async () => {
+      const rbacApi = await RhdhRbacApi.build(apiToken);
+      
+      const rolesResponse = await rbacApi.getRoles();
+      expect(rolesResponse.ok()).toBeTruthy();
+      
+      const roles = await rolesResponse.json();
+      const workflowRole = roles.find((role: { name: string; memberReferences: string[] }) => role.name === "role:default/workflowDenied");
+      expect(workflowRole).toBeDefined();
+      expect(workflowRole?.memberReferences).toContain("user:default/rhdh-qe");
+      
+      const policiesResponse = await rbacApi.getPoliciesByRole("default/workflowDenied");
+      expect(policiesResponse.ok()).toBeTruthy();
+      
+      const policies = await policiesResponse.json();
+      expect(policies).toHaveLength(2);
+      
+      const denyReadPolicy = policies.find((policy: { permission: string; policy: string; effect: string }) => policy.permission === "orchestrator.workflow" && policy.policy === "read");
+      const denyUpdatePolicy = policies.find((policy: { permission: string; policy: string; effect: string }) => policy.permission === "orchestrator.workflow.use" && policy.policy === "update");
+      
+      expect(denyReadPolicy).toBeDefined();
+      expect(denyUpdatePolicy).toBeDefined();
+      expect(denyReadPolicy.effect).toBe("deny");
+      expect(denyUpdatePolicy.effect).toBe("deny");
+    });
+
+    test("Test orchestrator workflow denied access - no workflows visible", async () => {
+      await page.reload();
+      await uiHelper.goToPageUrl("/orchestrator");
+      await uiHelper.verifyHeading("Workflows");
+
+      // With denied access, the workflows table should be empty or show no results
+      await uiHelper.verifyTableIsEmpty();
+      
+      // Alternatively, verify that the Greeting workflow link is not visible
+      const greetingWorkflowLink = page.getByRole("link", { name: "Greeting workflow" });
+      await expect(greetingWorkflowLink).toHaveCount(0);
+    });
+
+    test.afterAll(async () => {
+      const rbacApi = await RhdhRbacApi.build(apiToken);
+
+      try {
+        const remainingPoliciesResponse =
+          await rbacApi.getPoliciesByRole("default/workflowDenied");
+
+        const remainingPolicies = await Response.removeMetadataFromResponse(
+          remainingPoliciesResponse,
+        );
+
+        const deleteRemainingPolicies = await rbacApi.deletePolicy(
+          "default/workflowDenied",
+          remainingPolicies as Policy[],
+        );
+
+        const deleteRole = await rbacApi.deleteRole("default/workflowDenied");
+
+        expect(deleteRemainingPolicies.ok()).toBeTruthy();
+        expect(deleteRole.ok()).toBeTruthy();
+      } catch (error) {
+        console.error("Error during cleanup in afterAll:", error);
+      }
+    });
+  });
+
 
 });
