@@ -213,23 +213,7 @@ global:
         disabled: false
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-floating-action-button
         disabled: false
-      # disable existing orchestrator plugins
-      - disabled: true
-        package: "https://npm.registry.redhat.com/@redhat/backstage-plugin-orchestrator-backend-dynamic/-/backstage-plugin-orchestrator-backend-dynamic-1.7.1.tgz"
-      - disabled: true
-        package: "https://npm.registry.redhat.com/@redhat/backstage-plugin-orchestrator/-/backstage-plugin-orchestrator-1.7.1.tgz"
-      - disabled: true
-        package: "https://npm.registry.redhat.com/@redhat/backstage-plugin-orchestrator-form-widgets/-/backstage-plugin-orchestrator-form-widgets-1.7.1.tgz"
-      - disabled: true
-        package: "https://npm.registry.redhat.com/@redhat/backstage-plugin-scaffolder-backend-module-orchestrator-dynamic/-/backstage-plugin-scaffolder-backend-module-orchestrator-dynamic-1.7.1.tgz"
-      - disabled: true
-        package: "@redhat/backstage-plugin-orchestrator-backend"
-      - disabled: true
-        package: "@redhat/backstage-plugin-orchestrator-form-widgets@1.7.1"
-      - disabled: true
-        package: "@redhat/backstage-plugin-orchestrator@1.7.1"
-      - disabled: true
-        package: "@redhat/backstage-plugin-scaffolder-backend-module-orchestrator"
+      # enable orchestrator plugins
 
 # -- Upstream Backstage [chart configuration](https://github.com/backstage/charts/blob/main/charts/backstage/values.yaml)
 upstream:
@@ -333,6 +317,7 @@ upstream:
         targetPort: 9464
 
 orchestrator:
+  plugins: []
   enabled: true
   serverlessLogicOperator:
     enabled: true
