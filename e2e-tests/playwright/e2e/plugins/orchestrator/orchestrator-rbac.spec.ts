@@ -799,6 +799,38 @@ test.describe.serial("Test Orchestrator RBAC", () => {
 
       await common.loginAsKeycloakUser();
       apiToken = await RhdhAuthApiHack.getToken(page);
+      
+      // Clean up any lingering roles from previous test runs
+      const rbacApi = await RhdhRbacApi.build(apiToken);
+      try {
+        const rolesResponse = await rbacApi.getRoles();
+        if (rolesResponse.ok()) {
+          const roles = await rolesResponse.json();
+          const lingeringRoles = roles.filter((role: { name: string }) => 
+            role.name.includes('workflowUser') || role.name.includes('workflowAdmin')
+          );
+          
+          console.log(`Found ${lingeringRoles.length} lingering roles to clean up`);
+          
+          for (const role of lingeringRoles) {
+            try {
+              console.log(`Cleaning up lingering role: ${role.name}`);
+              const roleNameForApi = role.name.replace("role:", "");
+              const policiesResponse = await rbacApi.getPoliciesByRole(roleNameForApi);
+              if (policiesResponse.ok()) {
+                const policies = await Response.removeMetadataFromResponse(policiesResponse);
+                await rbacApi.deletePolicy(roleNameForApi, policies as Policy[]);
+              }
+              await rbacApi.deleteRole(roleNameForApi);
+              console.log(`Successfully cleaned up role: ${role.name}`);
+            } catch (error) {
+              console.log(`Error cleaning up lingering role ${role.name}: ${error}`);
+            }
+          }
+        }
+      } catch (error) {
+        console.log("Error during pre-test cleanup:", error);
+      }
     });
 
     test.beforeEach(async ({}, testInfo) => {
