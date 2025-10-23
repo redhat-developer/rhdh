@@ -86,7 +86,7 @@ jobs:
         with:
           token: ${{ secrets.RHDH_BOT_TOKEN }}
           commit-message: "chore: update rpms.lock.yaml"
-          title: "chore: update RPM lockfile (${{ steps.target-branch.outputs.name }}) [skip-build]"
+          title: "chore: update RPM lockfile in branch (${{ steps.target-branch.outputs.name }}) [skip-build]"
           body: |
             ## Description
             
