@@ -6,6 +6,13 @@ import {
   CUSTOM_SIDEBAR_LOGO,
 } from "../support/test-data/custom-theme";
 import { ThemeConstants } from "../data/theme-constants";
+import {
+  getTranslations,
+  getCurrentLanguage,
+} from "../e2e/localization/locale";
+
+const t = getTranslations();
+const lang = getCurrentLanguage();
 let page: Page;
 
 test.describe("CustomTheme should be applied", () => {
@@ -23,7 +30,11 @@ test.describe("CustomTheme should be applied", () => {
     themeVerifier = new ThemeVerifier(page);
 
     await common.loginAsGuest();
-    await page.getByRole("button", { name: "Hide" }).click();
+    await page
+      .getByRole("button", {
+        name: t["plugin.quickstart"][lang]["footer.hide"],
+      })
+      .click();
   });
 
   test("Verify theme colors are applied and make screenshots", async ({}, testInfo: TestInfo) => {
@@ -52,14 +63,18 @@ test.describe("CustomTheme should be applied", () => {
   });
 
   test("Verify that RHDH CompanyLogo can be customized", async () => {
-    await themeVerifier.setTheme("Light");
+    await themeVerifier.setTheme(
+      t["user-settings"][lang]["themeToggle.names.light"],
+    );
 
     await expect(page.getByTestId("home-logo")).toHaveAttribute(
       "src",
       CUSTOM_SIDEBAR_LOGO.LIGHT,
     );
 
-    await themeVerifier.setTheme("Dark");
+    await themeVerifier.setTheme(
+      t["user-settings"][lang]["themeToggle.names.dark"],
+    );
     await expect(page.getByTestId("home-logo")).toHaveAttribute(
       "src",
       CUSTOM_SIDEBAR_LOGO.DARK,

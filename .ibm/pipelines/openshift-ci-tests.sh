@@ -3,7 +3,7 @@
 set -o errexit
 set -o errtrace
 set -o nounset
-export PS4='[$(date "+%Y-%m-%d %H:%M:%S")] ' # logs timestamp for every cmd.
+export PS4='[$(date "+%Y-%m-%d %H:%M:%S")] ' # only for debugging with `set -x`
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export DIR
@@ -24,6 +24,9 @@ echo "Sourcing reporting.sh"
 # shellcheck source=.ibm/pipelines/reporting.sh
 source "${DIR}/reporting.sh"
 save_overall_result 0 # Initialize overall result to 0 (success).
+echo "Saving platform environment variables"
+save_is_openshift "${IS_OPENSHIFT}"
+save_container_platform "${CONTAINER_PLATFORM}" "${CONTAINER_PLATFORM_VERSION}"
 
 # Define a cleanup function to be executed upon script exit.
 # shellcheck source=.ibm/pipelines/cleanup.sh
@@ -44,8 +47,6 @@ main() {
 
   CHART_VERSION=$(get_chart_version "$CHART_MAJOR_VERSION")
   export CHART_VERSION
-  detect_ocp
-  detect_container_platform
 
   case "$JOB_NAME" in
     *aks*helm*nightly*)
