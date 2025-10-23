@@ -5,19 +5,6 @@ source "$DIR"/utils.sh
 # shellcheck source=.ibm/pipelines/install-methods/operator.sh
 source "$DIR"/install-methods/operator.sh
 
-gcloud_auth() {
-  local service_account_name=$1
-  local service_account_key_location=$2
-  gcloud auth activate-service-account "${service_account_name}" --key-file "${service_account_key_location}"
-}
-
-gcloud_gke_get_credentials() {
-  local cluster_name=$1
-  local cluster_region=$2
-  local project=$3
-  gcloud container clusters get-credentials "${cluster_name}" --region "${cluster_region}" --project "${project}"
-}
-
 gcloud_ssl_cert_create() {
   local cert_name=$1
   local domain=$2

@@ -1,11 +1,19 @@
+import {
+  getTranslations,
+  getCurrentLanguage,
+} from "../../e2e/localization/locale";
+
+const t = getTranslations();
+const lang = getCurrentLanguage();
+
 export const HOME_PAGE_COMPONENTS = {
   MuiAccordion: 'div[class*="MuiAccordion-root-"]',
   MuiCard: 'div[class*="MuiCard-root-"]',
 };
 
 export const SEARCH_OBJECTS_COMPONENTS = {
-  ariaLabelSearch: 'input[aria-label="Search"]',
-  placeholderSearch: 'input[placeholder="Search"]',
+  ariaLabelSearch: `input[aria-label="${t["search-react"][lang]["searchBar.title"]}"]`,
+  placeholderSearch: `input[placeholder="${t["search-react"][lang]["searchBar.title"]}"]`,
 };
 
 export const CATALOG_IMPORT_COMPONENTS = {

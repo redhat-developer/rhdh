@@ -37,7 +37,9 @@ export class Log {
   timestamp: string;
   meta?: JsonObject;
 
-  error?: string;
+  message?: string;
+  name?: string;
+  stack?: string;
 
   /**
    * Constructor for the Log class.

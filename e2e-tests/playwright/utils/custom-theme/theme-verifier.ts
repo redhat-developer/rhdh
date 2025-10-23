@@ -1,7 +1,13 @@
 import { Page, expect, TestInfo } from "@playwright/test";
 import { UIhelper } from "../ui-helper";
 import { UI_HELPER_ELEMENTS } from "../../support/page-objects/global-obj";
+import {
+  getTranslations,
+  getCurrentLanguage,
+} from "../../e2e/localization/locale";
 
+const t = getTranslations();
+const lang = getCurrentLanguage();
 export class ThemeVerifier {
   private readonly page: Page;
   private uiHelper: UIhelper;
@@ -12,7 +18,10 @@ export class ThemeVerifier {
   }
 
   async setTheme(theme: "Light" | "Dark" | "Light Dynamic" | "Dark Dynamic") {
-    await this.uiHelper.goToPageUrl("/settings", "Settings");
+    await this.uiHelper.goToPageUrl(
+      "/settings",
+      t["user-settings"][lang]["settingsLayout.title"],
+    );
     await this.uiHelper.clickBtnByTitleIfNotPressed(`Select theme ${theme}`);
     const themeButton = this.page.getByRole("button", {
       name: theme,
@@ -20,7 +29,10 @@ export class ThemeVerifier {
     });
 
     // TODO: https://issues.redhat.com/browse/RHDHBUGS-2076 navigating back to settings page is needed until the issue is resolved
-    await this.uiHelper.goToPageUrl("/settings", "Settings");
+    await this.uiHelper.goToPageUrl(
+      "/settings",
+      t["user-settings"][lang]["settingsLayout.title"],
+    );
 
     await expect(themeButton).toHaveAttribute("aria-pressed", "true");
   }

@@ -5,6 +5,13 @@ import { SETTINGS_PAGE_COMPONENTS } from "../support/page-objects/page-obj";
 import { WAIT_OBJECTS } from "../support/page-objects/global-obj";
 import * as path from "path";
 import * as fs from "fs";
+import {
+  getTranslations,
+  getCurrentLanguage,
+} from "../e2e/localization/locale";
+
+const t = getTranslations();
+const lang = getCurrentLanguage();
 
 export class Common {
   page: Page;
@@ -25,8 +32,10 @@ export class Common {
       await dialog.accept();
     });
 
-    await this.uiHelper.verifyHeading("Select a sign-in method");
-    await this.uiHelper.clickButton("Enter");
+    await this.uiHelper.verifyHeading(t["rhdh"][lang]["signIn.page.title"]);
+    await this.uiHelper.clickButton(
+      t["core-components"][lang]["signIn.guestProvider.enter"],
+    );
     await this.uiHelper.waitForSideBarVisible();
   }
 
@@ -42,7 +51,7 @@ export class Common {
   async signOut() {
     await this.page.click(SETTINGS_PAGE_COMPONENTS.userSettingsMenu);
     await this.page.click(SETTINGS_PAGE_COMPONENTS.signOut);
-    await this.uiHelper.verifyHeading("Select a sign-in method");
+    await this.uiHelper.verifyHeading(t["rhdh"][lang]["signIn.page.title"]);
   }
 
   private async logintoGithub(userid: string) {
@@ -98,7 +107,7 @@ export class Common {
   ) {
     await this.page.goto("/");
     await this.waitForLoad(240000);
-    await this.uiHelper.clickButton("Sign In");
+    await this.uiHelper.clickButton(t["core-components"][lang]["signIn.title"]);
     await this.logintoKeycloak(userid, password);
     await this.uiHelper.waitForSideBarVisible();
   }
@@ -116,14 +125,18 @@ export class Common {
       console.log(`Reusing existing authentication state for user: ${userid}`);
       await this.page.goto("/");
       await this.waitForLoad(12000);
-      await this.uiHelper.clickButton("Sign In");
+      await this.uiHelper.clickButton(
+        t["core-components"][lang]["signIn.title"],
+      );
       await this.checkAndReauthorizeGithubApp();
     } else {
       // Perform login if no session file exists, then save the state
       await this.logintoGithub(userid);
       await this.page.goto("/");
       await this.waitForLoad(240000);
-      await this.uiHelper.clickButton("Sign In");
+      await this.uiHelper.clickButton(
+        t["core-components"][lang]["signIn.title"],
+      );
       await this.checkAndReauthorizeGithubApp();
       await this.uiHelper.waitForSideBarVisible();
       await this.page.context().storageState({ path: sessionFileName });
@@ -189,10 +202,16 @@ export class Common {
   }
 
   async clickOnGHloginPopup() {
-    const isLoginRequiredVisible = await this.uiHelper.isTextVisible("Sign in");
+    const isLoginRequiredVisible = await this.uiHelper.isTextVisible(
+      t["user-settings"][lang]["providerSettingsItem.buttonTitle.signIn"],
+    );
     if (isLoginRequiredVisible) {
-      await this.uiHelper.clickButton("Sign in");
-      await this.uiHelper.clickButton("Log in");
+      await this.uiHelper.clickButton(
+        t["user-settings"][lang]["providerSettingsItem.buttonTitle.signIn"],
+      );
+      await this.uiHelper.clickButton(
+        t["core-components"][lang]["oauthRequestDialog.login"],
+      );
       await this.checkAndReauthorizeGithubApp();
       await this.uiHelper.waitForLoginBtnDisappear();
     } else {
@@ -228,8 +247,10 @@ export class Common {
     });
 
     await this.page.goto("/");
-    await this.page.waitForSelector('p:has-text("Sign in using OIDC")');
-    await this.uiHelper.clickButton("Sign In");
+    await this.page.waitForSelector(
+      `p:has-text("${t["rhdh"][lang]["signIn.providers.oidc.message"]}")`,
+    );
+    await this.uiHelper.clickButton(t["core-components"][lang]["signIn.title"]);
 
     // Wait for the popup to appear
     await expect(async () => {
@@ -314,11 +335,13 @@ export class Common {
 
   async githubLogin(username: string, password: string, twofactor: string) {
     await this.page.goto("/");
-    await this.page.waitForSelector('p:has-text("Sign in using GitHub")');
+    await this.page.waitForSelector(
+      `p:has-text("${t["rhdh"][lang]["signIn.providers.github.message"]}")`,
+    );
 
     const [popup] = await Promise.all([
       this.page.waitForEvent("popup"),
-      this.uiHelper.clickButton("Sign In"),
+      this.uiHelper.clickButton(t["core-components"][lang]["signIn.title"]),
     ]);
 
     return this.handleGitHubPopupLogin(popup, username, password, twofactor);
@@ -333,8 +356,17 @@ export class Common {
 
     const [popup] = await Promise.all([
       this.page.waitForEvent("popup"),
-      this.page.getByTitle("Sign in to GitHub").click(),
-      this.uiHelper.clickButton("Log in"),
+      this.page
+        .getByTitle(
+          t["user-settings"][lang]["providerSettingsItem.title.signIn"].replace(
+            "{{title}}",
+            "GitHub",
+          ),
+        )
+        .click(),
+      this.uiHelper.clickButton(
+        t["core-components"][lang]["oauthRequestDialog.login"],
+      ),
     ]);
 
     return this.handleGitHubPopupLogin(popup, username, password, twofactor);
@@ -346,8 +378,10 @@ export class Common {
     });
 
     await this.page.goto("/");
-    await this.page.waitForSelector('p:has-text("Sign in using Microsoft")');
-    await this.uiHelper.clickButton("Sign In");
+    await this.page.waitForSelector(
+      `p:has-text("${t["rhdh"][lang]["signIn.providers.microsoft.message"]}")`,
+    );
+    await this.uiHelper.clickButton(t["core-components"][lang]["signIn.title"]);
 
     // Wait for the popup to appear
     await expect(async () => {
