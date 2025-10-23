@@ -18,11 +18,11 @@ metadata:
     - automation
 spec:
   packageName: "@redhat/backstage-plugin-orchestrator"
-  dynamicArtifact: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator:pr_1581__5.1.0!red-hat-developer-hub-backstage-plugin-orchestrator"
-  version: 1.8.0
+  dynamicArtifact: "@redhat/backstage-plugin-orchestrator@1.7.1"
+  version: 1.7.1
   backstage:
     role: frontend-plugin
-    supportedVersions: 1.42.5
+    supportedVersions: 1.39.1
   author: Red Hat
   support: production
   lifecycle: active
