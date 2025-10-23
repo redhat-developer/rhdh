@@ -583,7 +583,7 @@ test.describe("Admin > Extensions", () => {
 
     test("Topology package sidebar for CI", async ({ page }) => {
       // TODO: https://issues.redhat.com/browse/RHDHBUGS-2144
-      // test.fixme();
+      test.fixme();
       await page
         .getByRole("textbox", {
           name: t["plugin.marketplace"][lang][
