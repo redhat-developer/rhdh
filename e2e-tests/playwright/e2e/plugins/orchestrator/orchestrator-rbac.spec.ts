@@ -811,9 +811,9 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
       const members = ["user:default/rhdh-qe", "user:default/rhdh-qe-2"];
       
-      // Use timestamp to ensure unique role name
-      const timestamp = Date.now();
-      workflowUserRoleName = `role:default/workflowUser${timestamp}`;
+      // Use random string to ensure unique role name (only letters to avoid regex issues)
+      const randomSuffix = Math.random().toString(36).substring(2, 8).replace(/[0-9]/g, '');
+      workflowUserRoleName = `role:default/workflowUser_${randomSuffix}`;
 
       const workflowUserRole = {
         memberReferences: members,
@@ -1018,8 +1018,8 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
       
       // Create workflowAdmin role with rhdh-qe-2 as member
-      const adminTimestamp = Date.now();
-      workflowAdminRoleName = `role:default/workflowAdmin${adminTimestamp}`;
+      const adminRandomSuffix = Math.random().toString(36).substring(2, 8).replace(/[0-9]/g, '');
+      workflowAdminRoleName = `role:default/workflowAdmin_${adminRandomSuffix}`;
       
       const workflowAdminRole = {
         memberReferences: ["user:default/rhdh-qe-2"],
@@ -1058,6 +1058,9 @@ test.describe.serial("Test Orchestrator RBAC", () => {
 
       expect(rolePostResponse.ok()).toBeTruthy();
       expect(policyPostResponse.ok()).toBeTruthy();
+      
+      // Wait a moment for the role changes to take effect
+      await page.waitForTimeout(2000);
       
       // Update workflowUser role to remove rhdh-qe-2
       const oldWorkflowUserRole = {
@@ -1102,17 +1105,34 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     });
 
     test("rhdh-qe-2 admin user can see rhdh-qe's workflow instance in runs list", async () => {
-      // Navigate to home page and login as rhdh-qe-2
+      // Clear browser storage and navigate to a fresh state
+      await page.context().clearCookies();
       await page.goto("/");
+      await page.waitForLoadState('networkidle');
+      
+      // Now login as rhdh-qe-2
       try {
         await common.loginAsKeycloakUser(process.env.GH_USER2_ID, process.env.GH_USER2_PASS);
+        console.log("Successfully logged in as rhdh-qe-2 (admin)");
       } catch (error) {
-        console.log("Login failed, user might already be logged in:", error);
-        // Continue with the test - user might already be logged in
+        console.log("Login failed:", error);
+        throw error; // Re-throw to fail the test if login doesn't work
       }
       
       await uiHelper.goToPageUrl("/orchestrator/workflows/greeting/runs");
       await uiHelper.verifyHeading("Greeting workflow");
+      
+      // Debug: Take a screenshot and log page content to see what's displayed
+      await page.screenshot({ path: 'debug-admin-runs-list.png' });
+      const pageContent = await page.textContent('body');
+      console.log('Page content when rhdh-qe-2 (admin) accesses runs list:', pageContent);
+      
+      // Check if we see "No records to display" (which would indicate admin permissions aren't working)
+      const noRecordsVisible = await page.getByText("No records to display").isVisible().catch(() => false);
+      if (noRecordsVisible) {
+        console.log('WARNING: rhdh-qe-2 (admin) sees "No records to display" - admin permissions might not be working!');
+        throw new Error('rhdh-qe-2 should have admin permissions and see the workflow instance, but sees "No records to display"');
+      }
       
       // With admin permissions, rhdh-qe-2 should now see the instance
       const instanceLink = page.locator(`a[href*="${workflowInstanceId}"]`);
@@ -1120,6 +1140,20 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     });
 
     test("rhdh-qe-2 admin user can directly access rhdh-qe's workflow instance URL", async () => {
+      // Clear browser storage and navigate to a fresh state
+      await page.context().clearCookies();
+      await page.goto("/");
+      await page.waitForLoadState('networkidle');
+      
+      // Now login as rhdh-qe-2
+      try {
+        await common.loginAsKeycloakUser(process.env.GH_USER2_ID, process.env.GH_USER2_PASS);
+        console.log("Successfully logged in as rhdh-qe-2 (admin)");
+      } catch (error) {
+        console.log("Login failed:", error);
+        throw error; // Re-throw to fail the test if login doesn't work
+      }
+      
       // Navigate directly to the instance URL
       await uiHelper.goToPageUrl(`/orchestrator/instances/${workflowInstanceId}`);
       
