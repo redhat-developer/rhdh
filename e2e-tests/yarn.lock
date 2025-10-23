@@ -2339,7 +2339,6 @@ __metadata:
     octokit: 4.1.4
     otplib: 12.0.1
     prettier: 3.6.2
-    sealights-playwright-plugin: ^2.0.124
     typescript: ^5.9.2
     typescript-eslint: ^8.41.0
     uuid: 11.1.0
@@ -5222,15 +5221,6 @@ __metadata:
   version: 2.1.2
   resolution: "safer-buffer@npm:2.1.2"
   checksum: cab8f25ae6f1434abee8d80023d7e72b598cf1327164ddab31003c51215526801e40b66c5e65d658a0af1e9d6478cadcb4c745f4bd6751f97d8644786c0978b0
-  languageName: node
-  linkType: hard
-
-"sealights-playwright-plugin@npm:^2.0.124":
-  version: 2.0.127
-  resolution: "sealights-playwright-plugin@npm:2.0.127"
-  dependencies:
-    slnodejs: 6.1.1101
-  checksum: 9a6e5dbd3a9c557152231777466efc72b97fa6fe0cd61e7ea1f70e6ddc41c89a9c7d809cab54a05096e6aca7432f27b37d26261c0ff3657a9087f8582bc6bd85
   languageName: node
   linkType: hard
 
