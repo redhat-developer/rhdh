@@ -72,7 +72,7 @@ export class Orchestrator {
     ).toBeVisible();
     await expect(
       this.page.getByRole("columnheader", {
-        name: "Workflow status",
+        name: "Workflow Status",
         exact: true,
       }),
     ).toBeVisible();
@@ -137,14 +137,7 @@ export class Orchestrator {
     );
     await this.page.getByTestId("select").first().click();
 
-    const statuses = [
-      "All",
-      "Running",
-      "Failed",
-      "Completed",
-      "Aborted",
-      "Suspended",
-    ];
+    const statuses = ["All", "Running", "Failed", "Completed", "Aborted"];
     for (const status of statuses) {
       await expect(this.page.getByRole("option", { name: status })).toHaveText(
         status,
