@@ -130,16 +130,17 @@ test.describe("Admin > Extensions", () => {
     });
 
     test("Verify support type filters in extensions", async ({ page }) => {
-      // TODO: https://issues.redhat.com/browse/RHDHBUGS-2146
-      test.fixme();
       await extensions.selectDropdown(
         t["plugin.marketplace"][lang]["search.supportType"],
       );
       await expect(page.getByRole("listbox")).toBeVisible();
 
-      // Verify all support type options are present
+      // Verify all support type options are present using filter for partial text matching
       for (const option of supportTypeOptions) {
-        await expect(page.getByRole("listbox")).toContainText(option);
+        const optionLocator = page
+          .getByRole("option")
+          .filter({ hasText: option });
+        await expect(optionLocator).toBeVisible();
       }
 
       await page.keyboard.press("Escape");
@@ -582,7 +583,7 @@ test.describe("Admin > Extensions", () => {
 
     test("Topology package sidebar for CI", async ({ page }) => {
       // TODO: https://issues.redhat.com/browse/RHDHBUGS-2144
-      test.fixme();
+      // test.fixme();
       await page
         .getByRole("textbox", {
           name: t["plugin.marketplace"][lang][
