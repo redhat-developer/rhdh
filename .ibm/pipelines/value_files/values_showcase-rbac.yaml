@@ -158,7 +158,7 @@ global:
       - disabled: true
         package: "@redhat/backstage-plugin-orchestrator@1.7.1"
       - disabled: true
-        package: "@redhat/backstage-plugin-scaffolder-backend-module-orchestrator"  
+        package: "@redhat/backstage-plugin-scaffolder-backend-module-orchestrator"
 
 # -- Upstream Backstage [chart configuration](https://github.com/backstage/charts/blob/main/charts/backstage/values.yaml)
 # @default -- Use Openshift compatible settings
