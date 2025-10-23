@@ -520,5 +520,134 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     });
   });
 
+  test.describe.serial("Test Orchestrator RBAC: Individual Workflow Read-Write Access", () => {
+    test.describe.configure({ retries: 0 });
+    let common: Common;
+    let uiHelper: UIhelper;
+    let page: Page;
+    let apiToken: string;
+
+    test.beforeAll(async ({ browser }, testInfo) => {
+      page = (await setupBrowser(browser, testInfo)).page;
+
+      uiHelper = new UIhelper(page);
+      common = new Common(page);
+
+      await common.loginAsKeycloakUser();
+      apiToken = await RhdhAuthApiHack.getToken(page);
+    });
+
+    test.beforeEach(async ({}, testInfo) => {
+      console.log(
+        `beforeEach: Attempting setup for ${testInfo.title}, retry: ${testInfo.retry}`,
+      );
+    });
+
+    test("Create role with greeting workflow read-write permissions", async () => {
+      const rbacApi = await RhdhRbacApi.build(apiToken);
+      const members = ["user:default/rhdh-qe"];
+
+      const greetingReadwriteRole = {
+        memberReferences: members,
+        name: "role:default/workflowGreetingReadwrite",
+      };
+
+      const greetingReadwritePolicies = [
+        {
+          entityReference: "role:default/workflowGreetingReadwrite",
+          permission: "orchestrator.workflow.greeting",
+          policy: "read",
+          effect: "allow",
+        },
+        {
+          entityReference: "role:default/workflowGreetingReadwrite",
+          permission: "orchestrator.workflow.use.greeting",
+          policy: "update",
+          effect: "allow",
+        },
+      ];
+
+      const rolePostResponse = await rbacApi.createRoles(greetingReadwriteRole);
+      const policyPostResponse = await rbacApi.createPolicies(greetingReadwritePolicies);
+
+      expect(rolePostResponse.ok()).toBeTruthy();
+      expect(policyPostResponse.ok()).toBeTruthy();
+    });
+
+    test("Verify greeting workflow read-write role exists via API", async () => {
+      const rbacApi = await RhdhRbacApi.build(apiToken);
+      
+      const rolesResponse = await rbacApi.getRoles();
+      expect(rolesResponse.ok()).toBeTruthy();
+      
+      const roles = await rolesResponse.json();
+      const workflowRole = roles.find((role: { name: string; memberReferences: string[] }) => role.name === "role:default/workflowGreetingReadwrite");
+      expect(workflowRole).toBeDefined();
+      expect(workflowRole?.memberReferences).toContain("user:default/rhdh-qe");
+      
+      const policiesResponse = await rbacApi.getPoliciesByRole("default/workflowGreetingReadwrite");
+      expect(policiesResponse.ok()).toBeTruthy();
+      
+      const policies = await policiesResponse.json();
+      expect(policies).toHaveLength(2);
+      
+      const allowReadPolicy = policies.find((policy: { permission: string; policy: string; effect: string }) => policy.permission === "orchestrator.workflow.greeting" && policy.policy === "read");
+      const allowUpdatePolicy = policies.find((policy: { permission: string; policy: string; effect: string }) => policy.permission === "orchestrator.workflow.use.greeting" && policy.policy === "update");
+      
+      expect(allowReadPolicy).toBeDefined();
+      expect(allowUpdatePolicy).toBeDefined();
+      expect(allowReadPolicy.effect).toBe("allow");
+      expect(allowUpdatePolicy.effect).toBe("allow");
+    });
+
+    test("Test individual workflow read-write access - only Greeting workflow visible and runnable", async () => {
+      await page.reload();
+      await uiHelper.goToPageUrl("/orchestrator");
+      await uiHelper.verifyHeading("Workflows");
+
+      // Verify that the Greeting workflow link IS visible (allowed)
+      const greetingWorkflowLink = page.getByRole("link", { name: "Greeting workflow" });
+      await expect(greetingWorkflowLink).toBeVisible();
+      
+      // Verify that User Onboarding workflow is NOT visible (no global permissions)
+      const userOnboardingLink = page.getByRole("link", { name: "User Onboarding" });
+      await expect(userOnboardingLink).toHaveCount(0);
+      
+      // Navigate to Greeting workflow and verify we can run it
+      await greetingWorkflowLink.click();
+      await expect(page.getByRole("heading", { name: "Greeting workflow" })).toBeVisible();
+      
+      const runButton = page.getByRole("button", { name: "Run" });
+      await expect(runButton).toBeVisible();
+      await expect(runButton).toBeEnabled();
+      await runButton.click();
+    });
+
+    test.afterAll(async () => {
+      const rbacApi = await RhdhRbacApi.build(apiToken);
+
+      try {
+        const remainingPoliciesResponse =
+          await rbacApi.getPoliciesByRole("default/workflowGreetingReadwrite");
+
+        const remainingPolicies = await Response.removeMetadataFromResponse(
+          remainingPoliciesResponse,
+        );
+
+        const deleteRemainingPolicies = await rbacApi.deletePolicy(
+          "default/workflowGreetingReadwrite",
+          remainingPolicies as Policy[],
+        );
+
+        const deleteRole = await rbacApi.deleteRole("default/workflowGreetingReadwrite");
+
+        expect(deleteRemainingPolicies.ok()).toBeTruthy();
+        expect(deleteRole.ok()).toBeTruthy();
+      } catch (error) {
+        console.error("Error during cleanup in afterAll:", error);
+      }
+    });
+  });
+
 
 });
