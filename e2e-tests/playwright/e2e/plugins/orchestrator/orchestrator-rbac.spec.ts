@@ -15,7 +15,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     });
   });
 
-  test.describe.serial("Test Orchestrator RBAC API", () => {
+  test.describe.serial("Test Orchestrator RBAC: Global Workflow Access", () => {
     test.describe.configure({ retries: 0 });
     let common: Common;
     let uiHelper: UIhelper;
@@ -38,7 +38,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       );
     });
 
-    test("Create role with orchestrator.workflow read and update permissions", async () => {
+    test("Create role with global orchestrator.workflow read and update permissions", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
       const members = ["user:default/rhdh-qe"];
 
@@ -95,7 +95,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       expect(updatePolicy.effect).toBe("allow");
     });
 
-    test("Test orchestrator workflow access is allowed", async () => {
+    test("Test global orchestrator workflow access is allowed", async () => {
       await page.reload();
       await uiHelper.goToPageUrl("/orchestrator");
       await uiHelper.verifyHeading("Workflows");
@@ -144,7 +144,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     });
   });
 
-  test.describe.serial("Test Orchestrator RBAC: Read-Only Access", () => {
+  test.describe.serial("Test Orchestrator RBAC: Global Workflow Read-Only Access", () => {
     test.describe.configure({ retries: 0 });
     let common: Common;
     let uiHelper: UIhelper;
@@ -167,7 +167,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       );
     });
 
-    test("Create role with orchestrator.workflow read-only permissions", async () => {
+    test("Create role with global orchestrator.workflow read-only permissions", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
       const members = ["user:default/rhdh-qe"];
 
@@ -224,7 +224,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       expect(denyUpdatePolicy.effect).toBe("deny");
     });
 
-    test("Test orchestrator workflow read-only access - Run button disabled", async () => {
+    test("Test global orchestrator workflow read-only access - Run button disabled", async () => {
       await page.reload();
       await uiHelper.goToPageUrl("/orchestrator");
       await uiHelper.verifyHeading("Workflows");
@@ -278,7 +278,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     });
   });
 
-  test.describe.serial("Test Orchestrator RBAC: Denied Access", () => {
+  test.describe.serial("Test Orchestrator RBAC: Global Workflow Denied Access", () => {
     test.describe.configure({ retries: 0 });
     let common: Common;
     let uiHelper: UIhelper;
@@ -301,7 +301,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       );
     });
 
-    test("Create role with orchestrator.workflow denied permissions", async () => {
+    test("Create role with global orchestrator.workflow denied permissions", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
       const members = ["user:default/rhdh-qe"];
 
@@ -358,7 +358,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       expect(denyUpdatePolicy.effect).toBe("deny");
     });
 
-    test("Test orchestrator workflow denied access - no workflows visible", async () => {
+    test("Test global orchestrator workflow denied access - no workflows visible", async () => {
       await page.reload();
       await uiHelper.goToPageUrl("/orchestrator");
       await uiHelper.verifyHeading("Workflows");
