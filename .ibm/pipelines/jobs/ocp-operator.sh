@@ -29,7 +29,7 @@ initiate_operator_deployments() {
   create_dynamic_plugins_config "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "/tmp/configmap-dynamic-plugins-rbac.yaml"
   oc apply -f /tmp/configmap-dynamic-plugins-rbac.yaml -n "${NAME_SPACE_RBAC}"
   deploy_rhdh_operator "${NAME_SPACE_RBAC}" "${DIR}/resources/rhdh-operator/rhdh-start-rbac.yaml"
-  enable_orchestrator_plugins_op "${NAME_SPACE_RBAC}"  
+  enable_orchestrator_plugins_op "${NAME_SPACE_RBAC}"
   deploy_orchestrator_workflows_operator "${NAME_SPACE_RBAC}"
 }
 
