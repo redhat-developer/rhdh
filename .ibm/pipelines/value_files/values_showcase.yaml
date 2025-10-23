@@ -254,9 +254,9 @@ global:
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator:pr_1581__1.1.0!red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator"
         disabled: false
         pluginConfig:
-        orchestrator:
-          dataIndexService:
-            url: http://sonataflow-platform-data-index-service
+          orchestrator:
+            dataIndexService:
+              url: http://sonataflow-platform-data-index-service
 
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets:pr_1581__1.1.0!red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets"
         disabled: false
