@@ -72,6 +72,13 @@ jobs:
             echo "changes=true" >> $GITHUB_OUTPUT
           fi
 
+      - name: Determine target branch
+        id: target-branch
+        run: |
+          TARGET_BRANCH="${{ github.ref_name }}"
+          echo "name=${TARGET_BRANCH}" >> $GITHUB_OUTPUT
+          echo "Target branch: ${TARGET_BRANCH}"
+
       - name: Create Pull Request
         id: create-pull-request
         if: steps.check-lockfile-changes.outputs.changes == 'true'
@@ -79,14 +86,14 @@ jobs:
         with:
           token: ${{ secrets.RHDH_BOT_TOKEN }}
           commit-message: "chore: update rpms.lock.yaml"
-          title: "chore: update RPM lockfile [skip-build]"
+          title: "chore: update RPM lockfile in branch (${{ steps.target-branch.outputs.name }}) [skip-build]"
           body: |
             ## Description
             
             This PR updates the `rpms.lock.yaml` file with the latest package versions based on current `rpms.in.yaml` configuration using `${{ env.DOCKERFILE_PATH }}` as the base container context
             
             This PR was automatically created by the [Update RPM Lockfile GitHub Action](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
-          branch: update-rpm-lockfile
+          branch: update-rpm-lockfile/${{ steps.target-branch.outputs.name }}
           delete-branch: true
           draft: false
           sign-commits: true
