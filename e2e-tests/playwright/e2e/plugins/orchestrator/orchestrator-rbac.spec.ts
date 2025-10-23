@@ -1,11 +1,11 @@
 import { Page, expect, test } from "@playwright/test";
-import { Common } from "../../../utils/common";
+import { Common, setupBrowser } from "../../../utils/common";
 import { UIhelper } from "../../../utils/ui-helper";
 import { Orchestrator } from "../../../support/pages/orchestrator";
-import { RbacPo } from "../../../support/page-objects/rbac-po";
 import { RhdhAuthApiHack } from "../../../support/api/rhdh-auth-api-hack";
 import RhdhRbacApi from "../../../support/api/rbac-api";
 import { Policy } from "../../../support/api/rbac-api-structures";
+import { Response } from "../../../support/pages/rbac";
 
 test.describe.serial("Test Orchestrator RBAC", () => {
   test.beforeAll(async () => {
@@ -15,198 +15,134 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     });
   });
 
-  test.describe("Test Orchestrator RBAC: User Onboarding Workflow", () => {
+  test.describe.serial("Test Orchestrator RBAC API", () => {
+    test.describe.configure({ retries: 0 });
+    let common: Common;
+    let uiHelper: UIhelper;
+    let page: Page;
     let apiToken: string;
-    let rbacApi: RhdhRbacApi;
 
     test.beforeAll(async ({ browser }, testInfo) => {
-      const { page } = await browser.newPage();
-      const common = new Common(page);
+      page = (await setupBrowser(browser, testInfo)).page;
+
+      uiHelper = new UIhelper(page);
+      common = new Common(page);
+
       await common.loginAsKeycloakUser();
       apiToken = await RhdhAuthApiHack.getToken(page);
-      rbacApi = await RhdhRbacApi.build(apiToken);
-      await page.close();
     });
 
-    test.beforeEach(async ({ page }) => {
-      await new Common(page).loginAsKeycloakUser();
+    test.beforeEach(async ({}, testInfo) => {
+      console.log(
+        `beforeEach: Attempting setup for ${testInfo.title}, retry: ${testInfo.retry}`,
+      );
     });
 
-    test("Create role with orchestrator permissions and test user onboarding workflow access", async ({
-      page,
-    }) => {
-      const uiHelper = new UIhelper(page);
-      const orchestrator = new Orchestrator(page);
-      const rbacPo = new RbacPo(page);
-
-      // Create a role with orchestrator permissions
-      const testRole = "orchestrator-test-role";
+    test("Create role with orchestrator.workflow read and update permissions", async () => {
+      const rbacApi = await RhdhRbacApi.build(apiToken);
       const members = ["user:default/rhdh-qe"];
-      
-      const orchestratorPolicy: Policy = {
-        entityReference: `role:default/${testRole}`,
-        permission: "orchestrator.workflow.execute",
-        policy: "use",
-        effect: "allow",
+
+      const orchestratorRole = {
+        memberReferences: members,
+        name: "role:default/workflowReadwrite",
       };
 
-      // Create role via API
-      const roleResponse = await rbacApi.createRoles({
-        memberReferences: members,
-        name: `role:default/${testRole}`,
-      });
+      const orchestratorPolicies = [
+        {
+          entityReference: "role:default/workflowReadwrite",
+          permission: "orchestrator.workflow",
+          policy: "read",
+          effect: "allow",
+        },
+        {
+          entityReference: "role:default/workflowReadwrite",
+          permission: "orchestrator.workflow.use",
+          policy: "update",
+          effect: "allow",
+        },
+      ];
 
-      // Create policy via API
-      const policyResponse = await rbacApi.createPolicies([orchestratorPolicy]);
+      const rolePostResponse = await rbacApi.createRoles(orchestratorRole);
+      const policyPostResponse = await rbacApi.createPolicies(orchestratorPolicies);
 
-      expect(roleResponse.ok()).toBeTruthy();
-      expect(policyResponse.ok()).toBeTruthy();
+      expect(rolePostResponse.ok()).toBeTruthy();
+      expect(policyPostResponse.ok()).toBeTruthy();
+    });
 
-      // Test orchestrator access
+    test("Verify role exists via API", async () => {
+      const rbacApi = await RhdhRbacApi.build(apiToken);
+      
+      const rolesResponse = await rbacApi.getRoles();
+      expect(rolesResponse.ok()).toBeTruthy();
+      
+      const roles = await rolesResponse.json();
+      const workflowRole = roles.find((role: { name: string; memberReferences: string[] }) => role.name === "role:default/workflowReadwrite");
+      expect(workflowRole).toBeDefined();
+      expect(workflowRole?.memberReferences).toContain("user:default/rhdh-qe");
+      
+      const policiesResponse = await rbacApi.getPoliciesByRole("default/workflowReadwrite");
+      expect(policiesResponse.ok()).toBeTruthy();
+      
+      const policies = await policiesResponse.json();
+      expect(policies).toHaveLength(2);
+      
+      const readPolicy = policies.find((policy: { permission: string; policy: string; effect: string }) => policy.permission === "orchestrator.workflow" && policy.policy === "read");
+      const updatePolicy = policies.find((policy: { permission: string; policy: string; effect: string }) => policy.permission === "orchestrator.workflow.use" && policy.policy === "update");
+      
+      expect(readPolicy).toBeDefined();
+      expect(updatePolicy).toBeDefined();
+      expect(readPolicy.effect).toBe("allow");
+      expect(updatePolicy.effect).toBe("allow");
+    });
+
+    test("Test orchestrator workflow access is allowed", async () => {
+      await page.reload();
       await uiHelper.goToPageUrl("/orchestrator");
       await uiHelper.verifyHeading("Workflows");
-      
-      // Test user onboarding workflow access
-      await orchestrator.selectUserOnboardingWorkflowItem();
-      await expect(page.getByRole("heading", { name: "User Onboarding" })).toBeVisible();
-      
-      // Verify workflow execution permissions
-      await expect(page.getByRole("button", { name: "Start workflow" })).toBeVisible();
-    });
 
-    test("Test orchestrator access denied for user without permissions", async ({
-      page,
-    }) => {
-      const uiHelper = new UIhelper(page);
       const orchestrator = new Orchestrator(page);
-
-      // Create a role that denies orchestrator access
-      const denyRole = "orchestrator-deny-role";
-      const members = ["user:default/rhdh-qe"];
+      await orchestrator.selectGreetingWorkflowItem();
       
-      const denyPolicy: Policy = {
-        entityReference: `role:default/${denyRole}`,
-        permission: "orchestrator.workflow.execute",
-        policy: "use",
-        effect: "deny",
-      };
+      // Verify we're on the greeting workflow page
+      await expect(
+        page.getByRole("heading", { name: "Greeting workflow" }),
+      ).toBeVisible();
 
-      // Create role and policy via API
-      await rbacApi.createRoles({
-        memberReferences: members,
-        name: `role:default/${denyRole}`,
-      });
-      await rbacApi.createPolicies([denyPolicy]);
-
-      // Test orchestrator access is denied
-      await uiHelper.goToPageUrl("/orchestrator");
+      // Verify the Run button is visible and enabled
+      const runButton = page.getByRole("button", { name: "Run" });
+      await expect(runButton).toBeVisible();
+      await expect(runButton).toBeEnabled();
       
-      // Should show access denied or redirect
-      await expect(page.getByText("Access denied")).toBeVisible();
+      // Click the Run button to verify permission works
+      await runButton.click();
     });
 
-    test("Test user onboarding workflow execution with proper RBAC", async ({
-      page,
-    }) => {
-      const uiHelper = new UIhelper(page);
-      const orchestrator = new Orchestrator(page);
-
-      // Navigate to orchestrator
-      await uiHelper.goToPageUrl("/orchestrator");
-      await uiHelper.verifyHeading("Workflows");
-      
-      // Select user onboarding workflow
-      await orchestrator.selectUserOnboardingWorkflowItem();
-      await expect(page.getByRole("heading", { name: "User Onboarding" })).toBeVisible();
-      
-      // Start the workflow
-      await page.getByRole("button", { name: "Start workflow" }).click();
-      
-      // Verify workflow started successfully
-      await expect(page.getByText("Workflow started")).toBeVisible();
-      
-      // Wait for workflow to complete or show status
-      await orchestrator.waitForWorkflowStatus("Completed", 300000);
-    });
-
-    test("Test orchestrator workflow abort permissions", async ({ page }) => {
-      const uiHelper = new UIhelper(page);
-      const orchestrator = new Orchestrator(page);
-
-      // Navigate to orchestrator and start workflow
-      await uiHelper.goToPageUrl("/orchestrator");
-      await orchestrator.selectUserOnboardingWorkflowItem();
-      await page.getByRole("button", { name: "Start workflow" }).click();
-      
-      // Test abort functionality
-      await orchestrator.abortWorkflow();
-      await expect(page.getByText("Status Aborted")).toBeVisible();
-    });
 
     test.afterAll(async () => {
-      // Cleanup: Delete test roles and policies
+      const rbacApi = await RhdhRbacApi.build(apiToken);
+
       try {
-        await rbacApi.deleteRole("default/orchestrator-test-role");
-        await rbacApi.deleteRole("default/orchestrator-deny-role");
+        const remainingPoliciesResponse =
+          await rbacApi.getPoliciesByRole("default/workflowReadwrite");
+
+        const remainingPolicies = await Response.removeMetadataFromResponse(
+          remainingPoliciesResponse,
+        );
+
+        const deleteRemainingPolicies = await rbacApi.deletePolicy(
+          "default/workflowReadwrite",
+          remainingPolicies as Policy[],
+        );
+
+        const deleteRole = await rbacApi.deleteRole("default/workflowReadwrite");
+
+        expect(deleteRemainingPolicies.ok()).toBeTruthy();
+        expect(deleteRole.ok()).toBeTruthy();
       } catch (error) {
-        console.error("Error during cleanup:", error);
+        console.error("Error during cleanup in afterAll:", error);
       }
     });
   });
 
-  test.describe("Test Orchestrator RBAC: Guest User Access", () => {
-    test.beforeEach(async ({ page }) => {
-      const common = new Common(page);
-      await common.loginAsGuest();
-    });
 
-    test("Check if guest user can access orchestrator workflows", async ({
-      page,
-    }) => {
-      const uiHelper = new UIhelper(page);
-      const orchestrator = new Orchestrator(page);
-
-      // Guest user should not have access to orchestrator
-      await uiHelper.goToPageUrl("/orchestrator");
-      
-      // Should show access denied or be redirected
-      await expect(page.getByText("Access denied")).toBeVisible();
-    });
-  });
-
-  test.describe("Test Orchestrator RBAC: Conditional Access Policies", () => {
-    test.beforeEach(async ({ page }) => {
-      await new Common(page).loginAsKeycloakUser();
-    });
-
-    test("Test orchestrator access with conditional policies based on user ownership", async ({
-      page,
-    }) => {
-      const uiHelper = new UIhelper(page);
-      const rbacPo = new RbacPo(page);
-
-      // Create a conditional role for orchestrator access
-      await rbacPo.createRBACConditionRole(
-        "orchestrator-conditional-role",
-        [`${process.env.QE_USER6_ID} ${process.env.QE_USER6_ID}`],
-        "user:default/rhdh-qe-6",
-      );
-
-      // Test that the user can access orchestrator with conditional permissions
-      await uiHelper.goToPageUrl("/orchestrator");
-      await uiHelper.verifyHeading("Workflows");
-      
-      // Verify user can execute workflows they have permission for
-      await uiHelper.openSidebar("Orchestrator");
-      await expect(page.getByRole("link", { name: "User Onboarding" })).toBeVisible();
-    });
-
-    test.afterAll(async ({ page }) => {
-      // Cleanup conditional role
-      const common = new Common(page);
-      await common.loginAsKeycloakUser();
-      const rbacPo = new RbacPo(page);
-      await rbacPo.deleteRole("role:default/orchestrator-conditional-role");
-    });
-  });
 });

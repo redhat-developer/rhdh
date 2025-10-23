@@ -31,6 +31,21 @@ export class Orchestrator {
     await this.page.getByRole("link", { name: "User Onboarding" }).click();
   }
 
+  async selectGreetingWorkflowItem() {
+    const workflowHeader = this.page.getByRole("heading", {
+      name: "Workflows",
+    });
+    await expect(workflowHeader).toBeVisible();
+    await expect(workflowHeader).toHaveText("Workflows");
+    
+    // Wait for the workflows table to be visible
+    const workflowsTable = this.page.getByRole("table");
+    await expect(workflowsTable).toBeVisible();
+    
+    // Click on the Greeting workflow link
+    await this.page.getByRole("link", { name: "Greeting workflow" }).click();
+  }
+
   async getPageUrl() {
     return this.page.url();
   }
