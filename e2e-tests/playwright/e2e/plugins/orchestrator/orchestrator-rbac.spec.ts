@@ -397,5 +397,128 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     });
   });
 
+  test.describe.serial("Test Orchestrator RBAC: Individual Workflow Denied Access", () => {
+    test.describe.configure({ retries: 0 });
+    let common: Common;
+    let uiHelper: UIhelper;
+    let page: Page;
+    let apiToken: string;
+
+    test.beforeAll(async ({ browser }, testInfo) => {
+      page = (await setupBrowser(browser, testInfo)).page;
+
+      uiHelper = new UIhelper(page);
+      common = new Common(page);
+
+      await common.loginAsKeycloakUser();
+      apiToken = await RhdhAuthApiHack.getToken(page);
+    });
+
+    test.beforeEach(async ({}, testInfo) => {
+      console.log(
+        `beforeEach: Attempting setup for ${testInfo.title}, retry: ${testInfo.retry}`,
+      );
+    });
+
+    test("Create role with greeting workflow denied permissions", async () => {
+      const rbacApi = await RhdhRbacApi.build(apiToken);
+      const members = ["user:default/rhdh-qe"];
+
+      const greetingDeniedRole = {
+        memberReferences: members,
+        name: "role:default/workflowGreetingDenied",
+      };
+
+      const greetingDeniedPolicies = [
+        {
+          entityReference: "role:default/workflowGreetingDenied",
+          permission: "orchestrator.workflow.greeting",
+          policy: "read",
+          effect: "deny",
+        },
+        {
+          entityReference: "role:default/workflowGreetingDenied",
+          permission: "orchestrator.workflow.use.greeting",
+          policy: "update",
+          effect: "deny",
+        },
+      ];
+
+      const rolePostResponse = await rbacApi.createRoles(greetingDeniedRole);
+      const policyPostResponse = await rbacApi.createPolicies(greetingDeniedPolicies);
+
+      expect(rolePostResponse.ok()).toBeTruthy();
+      expect(policyPostResponse.ok()).toBeTruthy();
+    });
+
+    test("Verify greeting workflow denied role exists via API", async () => {
+      const rbacApi = await RhdhRbacApi.build(apiToken);
+      
+      const rolesResponse = await rbacApi.getRoles();
+      expect(rolesResponse.ok()).toBeTruthy();
+      
+      const roles = await rolesResponse.json();
+      const workflowRole = roles.find((role: { name: string; memberReferences: string[] }) => role.name === "role:default/workflowGreetingDenied");
+      expect(workflowRole).toBeDefined();
+      expect(workflowRole?.memberReferences).toContain("user:default/rhdh-qe");
+      
+      const policiesResponse = await rbacApi.getPoliciesByRole("default/workflowGreetingDenied");
+      expect(policiesResponse.ok()).toBeTruthy();
+      
+      const policies = await policiesResponse.json();
+      expect(policies).toHaveLength(2);
+      
+      const denyReadPolicy = policies.find((policy: { permission: string; policy: string; effect: string }) => policy.permission === "orchestrator.workflow.greeting" && policy.policy === "read");
+      const denyUpdatePolicy = policies.find((policy: { permission: string; policy: string; effect: string }) => policy.permission === "orchestrator.workflow.use.greeting" && policy.policy === "update");
+      
+      expect(denyReadPolicy).toBeDefined();
+      expect(denyUpdatePolicy).toBeDefined();
+      expect(denyReadPolicy.effect).toBe("deny");
+      expect(denyUpdatePolicy.effect).toBe("deny");
+    });
+
+    test("Test individual workflow denied access - no workflows visible", async () => {
+      await page.reload();
+      await uiHelper.goToPageUrl("/orchestrator");
+      await uiHelper.verifyHeading("Workflows");
+
+      // Verify that the Greeting workflow link is NOT visible (denied)
+      const greetingWorkflowLink = page.getByRole("link", { name: "Greeting workflow" });
+      await expect(greetingWorkflowLink).toHaveCount(0);
+      
+      // Verify that User Onboarding workflow is also NOT visible (no global permissions)
+      const userOnboardingLink = page.getByRole("link", { name: "User Onboarding" });
+      await expect(userOnboardingLink).toHaveCount(0);
+      
+      // Verify workflows table is empty (no workflows visible due to individual deny + no global allow)
+      await uiHelper.verifyTableIsEmpty();
+    });
+
+    test.afterAll(async () => {
+      const rbacApi = await RhdhRbacApi.build(apiToken);
+
+      try {
+        const remainingPoliciesResponse =
+          await rbacApi.getPoliciesByRole("default/workflowGreetingDenied");
+
+        const remainingPolicies = await Response.removeMetadataFromResponse(
+          remainingPoliciesResponse,
+        );
+
+        const deleteRemainingPolicies = await rbacApi.deletePolicy(
+          "default/workflowGreetingDenied",
+          remainingPolicies as Policy[],
+        );
+
+        const deleteRole = await rbacApi.deleteRole("default/workflowGreetingDenied");
+
+        expect(deleteRemainingPolicies.ok()).toBeTruthy();
+        expect(deleteRole.ok()).toBeTruthy();
+      } catch (error) {
+        console.error("Error during cleanup in afterAll:", error);
+      }
+    });
+  });
+
 
 });
