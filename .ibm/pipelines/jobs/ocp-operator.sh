@@ -10,16 +10,16 @@ initiate_operator_deployments() {
 
   prepare_operator
 
-  configure_namespace "${NAME_SPACE}"
-  deploy_test_backstage_customization_provider "${NAME_SPACE}"
-  local rhdh_base_url="https://backstage-${RELEASE_NAME}-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
-  apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
-  create_dynamic_plugins_config "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "/tmp/configmap-dynamic-plugins.yaml"
-  oc apply -f /tmp/configmap-dynamic-plugins.yaml -n "${NAME_SPACE}"
-  deploy_redis_cache "${NAME_SPACE}"
-  deploy_rhdh_operator "${NAME_SPACE}" "${DIR}/resources/rhdh-operator/rhdh-start.yaml"
-  enable_orchestrator_plugins_op "${NAME_SPACE}"
-  deploy_orchestrator_workflows_operator "${NAME_SPACE}"
+  # configure_namespace "${NAME_SPACE}"
+  # deploy_test_backstage_customization_provider "${NAME_SPACE}"
+  # local rhdh_base_url="https://backstage-${RELEASE_NAME}-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
+  # apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
+  # create_dynamic_plugins_config "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "/tmp/configmap-dynamic-plugins.yaml"
+  # oc apply -f /tmp/configmap-dynamic-plugins.yaml -n "${NAME_SPACE}"
+  # deploy_redis_cache "${NAME_SPACE}"
+  # deploy_rhdh_operator "${NAME_SPACE}" "${DIR}/resources/rhdh-operator/rhdh-start.yaml"
+  # enable_orchestrator_plugins_op "${NAME_SPACE}"
+  # deploy_orchestrator_workflows_operator "${NAME_SPACE}"
 
   configure_namespace "${NAME_SPACE_RBAC}"
   create_conditional_policies_operator /tmp/conditional-policies.yaml
@@ -30,6 +30,7 @@ initiate_operator_deployments() {
   oc apply -f /tmp/configmap-dynamic-plugins-rbac.yaml -n "${NAME_SPACE_RBAC}"
   deploy_rhdh_operator "${NAME_SPACE_RBAC}" "${DIR}/resources/rhdh-operator/rhdh-start-rbac.yaml"
   enable_orchestrator_plugins_op "${NAME_SPACE_RBAC}"
+  sleep 7200
   deploy_orchestrator_workflows_operator "${NAME_SPACE_RBAC}"
 }
 
