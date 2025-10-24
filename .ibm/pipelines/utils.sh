@@ -777,7 +777,7 @@ base_deployment() {
   echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
   perform_helm_install "${RELEASE_NAME}" "${NAME_SPACE}" "${HELM_CHART_VALUE_FILE_NAME}"
 
-  deploy_orchestrator_workflows "${NAME_SPACE}"
+#  deploy_orchestrator_workflows "${NAME_SPACE}"
 }
 
 rbac_deployment() {
@@ -802,7 +802,7 @@ rbac_deployment() {
   oc rollout restart deployment/sonataflow-platform-jobs-service -n "${NAME_SPACE_RBAC}"
 
   # initiate orchestrator workflows deployment
-  deploy_orchestrator_workflows "${NAME_SPACE_RBAC}"
+#  deploy_orchestrator_workflows "${NAME_SPACE_RBAC}"
 }
 
 initiate_deployments() {
