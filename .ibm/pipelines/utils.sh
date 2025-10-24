@@ -1290,7 +1290,6 @@ EOF
   echo "All workflow pods are now running!"
 }
 
-
 # Helper function to enable orchestrator plugins by merging default and custom dynamic plugins
 enable_orchestrator_plugins_op() {
   local namespace=$1
@@ -1377,8 +1376,6 @@ enable_orchestrator_plugins_op() {
     echo "Error: Failed to restart backstage deployment"
     return 1
   fi
-
-  
 
   # Cleanup
   rm -rf "$work_dir"
