@@ -1356,6 +1356,13 @@ enable_orchestrator_plugins_op() {
     return 1
   fi
 
+  # For RBAC namespaces, disable tech-radar frontend plugin if it exists
+  # This plugin is mistakenly enabled in the RBAC values file and causes deployment issues
+  if [[ "$namespace" == *"rbac"* ]]; then
+    echo "Disabling tech-radar frontend plugin for RBAC namespace..."
+    yq eval '(.plugins[] | select(.package == "./dynamic-plugins/dist/backstage-community-plugin-tech-radar") | .disabled) = true' -i "$work_dir/custom-plugins.yaml" || true
+  fi
+
   # Use the modified custom file as the final merged result
   if ! cp "$work_dir/custom-plugins.yaml" "$work_dir/merged-plugins.yaml"; then
     echo "Error: Failed to create merged plugins file"
