@@ -14539,7 +14539,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@scalprum/react-core@npm:0.9.5, @scalprum/react-core@npm:^0.9.5":
+"@scalprum/react-core@npm:0.9.5":
   version: 0.9.5
   resolution: "@scalprum/react-core@npm:0.9.5"
   dependencies:
@@ -14553,16 +14553,30 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@scalprum/react-test-utils@npm:0.2.7":
-  version: 0.2.7
-  resolution: "@scalprum/react-test-utils@npm:0.2.7"
+"@scalprum/react-core@npm:^0.10.2":
+  version: 0.10.2
+  resolution: "@scalprum/react-core@npm:0.10.2"
   dependencies:
     "@openshift/dynamic-plugin-sdk": ^5.0.1
     "@scalprum/core": ^0.8.3
-    "@scalprum/react-core": ^0.9.5
+    lodash: ^4.17.0
+  peerDependencies:
+    react: ">=16.8.0 || >=17.0.0 || ^18.0.0"
+    react-dom: ">=16.8.0 || >=17.0.0 || ^18.0.0"
+  checksum: 42d36083e34cb9b5b47efddd90814bc39b10f5aee417f4edaf636106916ed8357306f26f42ef8c62e5fee214a47e9e0b57c3fa51caeb3599410c58a42c1481d3
+  languageName: node
+  linkType: hard
+
+"@scalprum/react-test-utils@npm:0.2.9":
+  version: 0.2.9
+  resolution: "@scalprum/react-test-utils@npm:0.2.9"
+  dependencies:
+    "@openshift/dynamic-plugin-sdk": ^5.0.1
+    "@scalprum/core": ^0.8.3
+    "@scalprum/react-core": ^0.10.2
     tslib: ^2.6.2
     whatwg-fetch: ^3.6.0
-  checksum: 6bfb641f589c41607e59ca440bf52c065e0cd7376f2727de146ffb05a931b77e54bd0f09a14a4993dec381b3ba2e5b9b28b57724bf30e0e25c81f51f54743fad
+  checksum: 177bc0bce22f9550f15186eb451fabd221424e972b6e1ced6c1432fa4de0fe8a918ca6be302fe9f407c73d48b9effa5417dcd2a91192e59619fdff78a39bd996
   languageName: node
   linkType: hard
 
@@ -18637,7 +18651,7 @@ __metadata:
     "@red-hat-developer-hub/plugin-utils": 1.0.0
     "@scalprum/core": 0.8.3
     "@scalprum/react-core": 0.9.5
-    "@scalprum/react-test-utils": 0.2.7
+    "@scalprum/react-test-utils": 0.2.9
     "@testing-library/dom": 9.3.4
     "@testing-library/jest-dom": 6.9.1
     "@testing-library/react": 14.3.1
