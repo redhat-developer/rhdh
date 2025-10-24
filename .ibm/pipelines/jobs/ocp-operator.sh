@@ -30,7 +30,7 @@ initiate_operator_deployments() {
   oc apply -f /tmp/configmap-dynamic-plugins-rbac.yaml -n "${NAME_SPACE_RBAC}"
   deploy_rhdh_operator "${NAME_SPACE_RBAC}" "${DIR}/resources/rhdh-operator/rhdh-start-rbac.yaml"
   enable_orchestrator_plugins_op "${NAME_SPACE_RBAC}"
-  sleep 7200
+  #sleep 7200
   deploy_orchestrator_workflows_operator "${NAME_SPACE_RBAC}"
 }
 
