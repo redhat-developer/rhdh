@@ -1315,7 +1315,7 @@ enable_orchestrator_plugins_op() {
   echo "Waiting for backstage deployment: $backstage_deployment in namespace: $namespace"
   # Wait for backstage deployment to be ready (15 minutes timeout)
   wait_for_deployment "$namespace" "$backstage_deployment" 15
-  sleep 5
+  # sleep 5  # Commented out for testing
 
   # Setup working directory
   local work_dir="/tmp/orchestrator-plugins-merge"
