@@ -6,10 +6,8 @@ metadata:
   namespace: rhdh
   title: Azure Repository Software Template Actions
   description: A collection of Backstage scaffolder backend modules for Azure repositories. azure:repo:clone, azure:repo:push, azure:repo:pr
-
-
   annotations:
-    extensions.backstage.io/pre-installed: 'true'
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
     github.com/project-slug: Parfuemerie-Douglas/scaffolder-backend-module-azure-repositories
   links:
     - url: https://red.ht/rhdh
@@ -166,4 +164,4 @@ spec:
     for further details on the configuration required.
 
   packages:
-    - parfuemerie-douglas-scaffolder-backend-module-azure-repositories
+    - parfuemerie-douglas-scaffolder-backend-module-azure-repositorie

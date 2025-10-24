@@ -7,7 +7,7 @@ metadata:
   title: GitHub Issues
   description: 'Based on the well-known GitHub slug annotation associated with the Entity, it renders the list of Open issues in GitHub'
   annotations:
-    extensions.backstage.io/pre-installed: 'true'
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
   tags:
     - issue-tracker
   links:

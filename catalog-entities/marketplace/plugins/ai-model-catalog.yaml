@@ -6,7 +6,7 @@ metadata:
  namespace: rhdh
  title: AI Model Catalog
  annotations:
-   extensions.backstage.io/pre-installed: 'true' # Plugin is automatically listed in the catalog.
+   extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
  links:
    - title: Homepage
      url: https://red.ht/rhdh

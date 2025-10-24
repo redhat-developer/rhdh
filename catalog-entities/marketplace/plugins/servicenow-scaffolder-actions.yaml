@@ -8,9 +8,8 @@ metadata:
   description: |
     This plugin provides Backstage template actions for ServiceNow. The actions include creating, deleting, 
     getting, updating, and retrieving records from ServiceNow.
-
   annotations:
-    extensions.backstage.io/pre-installed: 'true'
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
   links:
     - title: readme
       url: https://github.com/backstage/community-plugins/blob/main/workspaces/scaffolder-backend-module-servicenow/plugins/scaffolder-backend-module-servicenow/README.md

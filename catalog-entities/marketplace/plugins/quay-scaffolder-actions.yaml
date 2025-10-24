@@ -8,7 +8,7 @@ metadata:
   description: |
     Adds a set of actions for Quay to the Software Template system.
   annotations:
-    extensions.backstage.io/pre-installed: 'true'
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
     extensions.backstage.io/verified-by: Red Hat
   links:
     - url: https://red.ht/rhdh

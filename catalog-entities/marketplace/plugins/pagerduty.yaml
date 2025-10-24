@@ -8,7 +8,7 @@ metadata:
   description: |
     Bring the power of PagerDuty to Backstage, reduce cognitive load, improve service visibility and enforce incident management best practices.
   annotations:
-    extensions.backstage.io/pre-installed: 'true'
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
   links:
     - url: https://pagerduty.github.io/backstage-plugin-docs/index.html
       title: PagerDuty Documentation
