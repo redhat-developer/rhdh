@@ -1,0 +1,49 @@
+{# This configuration file is the data: content of configmap app-config-rhdh-auth #}
+integrations:
+  github:
+    - host: github.com
+      token: ${GITHUB_TOKEN}
+auth:
+  environment: development
+  providers:
+    github:
+      development:
+        clientId: ${GITHUB_CLIENT_ID}
+        clientSecret: ${GITHUB_CLIENT_SECRET}
+    guest:
+      dangerouslyAllowOutsideDevelopment: true
+      userEntityRef: user:default/guest
+{% if orch_keycloak_auth|bool %}
+    oidc:
+      development:
+        metadataUrl:  https://{{ keycloak_route.stdout }}/auth/realms/basic/.well-known/openid-configuration
+        clientId: rhdh
+        clientSecret: rhdh
+        prompt: auto
+        signIn:
+          resolvers:
+            - resolver: preferredUsernameMatchingUserEntityName
+  session:
+    secret:
+      'authsessionsecret'
+signInPage: oidc
+{% endif %}
+dangerouslyAllowSignInWithoutUserInCatalog: true
+{% if orch_rbac_enabled|bool %}
+permission:
+  enabled: true
+  rbac:
+    policies-csv-file: ./rbac-policy.csv
+    policyFileReload: true
+    admin:
+      superUsers:
+        - name: user:default/guest
+        - name: user:default/super-admin
+      users:
+        - name: user:default/rhdh-orchestrator-test
+    pluginsWithPermission:
+      - catalog
+      - scaffolder
+      - permission
+      - orchestrator        
+{% endif %}

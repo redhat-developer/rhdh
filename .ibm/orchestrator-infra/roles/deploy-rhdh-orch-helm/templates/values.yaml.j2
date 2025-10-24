@@ -1,0 +1,35 @@
+orchestrator:
+  plugins:
+    - package: "{{ orchestrator_plugin_repo }}/{{ orchestrator_plugin_package }}"
+      integrity: "{{ orchestrator_plugin_integrity }}"
+      pluginConfig:
+        dynamicPlugins:
+          frontend:
+            red-hat-developer-hub.backstage-plugin-orchestrator:
+              appIcons:
+                - importName: OrchestratorIcon
+                  name: orchestratorIcon
+              dynamicRoutes:
+                - importName: OrchestratorPage
+                  menuItem:
+                    icon: orchestratorIcon
+                    text: Orchestrator
+                  path: /orchestrator
+    - package: "{{ orchestrator_plugin_repo }}/{{ orchestrator_backend_plugin_package }}"
+      integrity: "{{ orchestrator_backend_plugin_integrity }}"
+      pluginConfig:
+        orchestrator:
+          dataIndexService:
+            url: http://sonataflow-platform-data-index-service.{{ rhdh_ns }}
+    - package: "{{ orchestrator_plugin_repo }}/{{ orchestrator_form_widgets_plugin_package }}"
+      integrity: "{{ orchestrator_form_widgets_plugin_integrity }}"
+      pluginConfig:
+        dynamicPlugins:
+          frontend:
+            red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets: {}
+    - package: "{{ orchestrator_plugin_repo }}/{{ scaffolder_backend_module_orchestrator_plugin_package }}"
+      integrity: "{{ scaffolder_backend_module_orchestrator_plugin_integrity }}"
+      pluginConfig:
+        orchestrator:
+          dataIndexService:
+            url: http://sonataflow-platform-data-index-service.{{ rhdh_ns }}

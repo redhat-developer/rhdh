@@ -1,0 +1,7 @@
+apiVersion: v1
+data:
+  .npmrc: {{ orch_npmrc_registry_full | b64encode }}
+kind: Secret
+metadata:
+  name: dynamic-plugins-npmrc
+  namespace: {{ rhdh_ns }}

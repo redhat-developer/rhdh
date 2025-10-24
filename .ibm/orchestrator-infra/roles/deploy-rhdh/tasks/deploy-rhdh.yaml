@@ -1,0 +1,247 @@
+---
+- name: Deploy RHDH from NEXT or STABLE-RC source
+  when: rhdh_operator_source in ["NEXT", "STABLE-RC"]
+  block:
+    - name: Ensure pre-existing setup.sh script is deleted before downloading
+      ansible.builtin.file:
+        path: /tmp/install-rhdh-catalog-source.sh
+        state: absent
+
+    - name: Download RHDH catalog install script
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/redhat-developer/rhdh-operator/main/.rhdh/scripts/install-rhdh-catalog-source.sh
+        dest: /tmp/install-rhdh-catalog-source.sh
+        mode: "0777"
+
+    - name: Run RHDH catalog install script for STABLE-RC
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+      ansible.builtin.shell: |
+        /tmp/install-rhdh-catalog-source.sh --latest --install-operator rhdh -v {{ rhdh_version }}
+      when: rhdh_operator_source == "STABLE-RC"
+
+    - name: Run RHDH catalog install script for NEXT
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+      ansible.builtin.shell: |
+        # Skip catalog script on macOS due to sed incompatibility
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+          echo "Skipping catalog script on macOS, will use direct installation"
+          exit 0
+        fi
+        /tmp/install-rhdh-catalog-source.sh --next --install-operator rhdh
+      when: rhdh_operator_source == "NEXT"
+
+    - name: Check if running on macOS and create catalog source for NEXT
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+      ansible.builtin.shell: |
+        if [[ "$OSTYPE" == "darwin"* ]] && [[ "{{ rhdh_operator_source }}" == "NEXT" ]]; then
+          # On macOS with NEXT, create catalog source directly
+          if ! oc get catalogsource rhdh-fast -n openshift-marketplace >/dev/null 2>&1; then
+            echo "Creating NEXT catalog source for macOS..."
+            cat <<EOF | oc apply -f -
+        apiVersion: operators.coreos.com/v1alpha1
+        kind: CatalogSource
+        metadata:
+          name: rhdh-fast
+          namespace: openshift-marketplace
+        spec:
+          sourceType: grpc
+          image: quay.io/rhdh/iib:next-v4.19-x86_64
+          displayName: RHDH Fast Channel
+          publisher: Red Hat
+          priority: 100
+        EOF
+          fi
+        fi
+      when: rhdh_operator_source == "NEXT"
+
+    - name: Create RHDH namespace
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+      ansible.builtin.shell: |
+        oc get ns {{ rhdh_ns }} || oc adm new-project {{ rhdh_ns }}
+
+- name: Ensure RHDH Operator Subscription exists
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    set -e
+    if ! oc get subscription rhdh -n {{ rhdh_ns }} >/dev/null 2>&1; then
+      echo "Creating RHDH Operator Subscription..."
+      
+      # Create OperatorGroup (without targetNamespaces for cluster-wide scope)
+      oc apply -f - <<'EOF_OG'
+    apiVersion: operators.coreos.com/v1
+    kind: OperatorGroup
+    metadata:
+      name: {{ rhdh_ns }}
+      namespace: {{ rhdh_ns }}
+    spec: {}
+    EOF_OG
+      
+      # Create Subscription
+      {% if rhdh_operator_source == "NEXT" %}
+      oc apply -f - <<'EOF_SUB'
+    apiVersion: operators.coreos.com/v1alpha1
+    kind: Subscription
+    metadata:
+      name: rhdh
+      namespace: {{ rhdh_ns }}
+    spec:
+      channel: fast
+      installPlanApproval: Automatic
+      name: rhdh
+      source: rhdh-fast
+      sourceNamespace: openshift-marketplace
+    EOF_SUB
+      {% else %}
+      oc apply -f - <<'EOF_SUB'
+    apiVersion: operators.coreos.com/v1alpha1
+    kind: Subscription
+    metadata:
+      name: rhdh
+      namespace: {{ rhdh_ns }}
+    spec:
+      channel: fast-1.7
+      installPlanApproval: Automatic
+      name: rhdh
+      source: redhat-operators
+      sourceNamespace: openshift-marketplace
+    EOF_SUB
+      {% endif %}
+    else
+      echo "RHDH Subscription already exists"
+    fi
+
+- name: Wait for RHDH Operator pod to start successfully
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  block:
+    - name: Verify RHDH Subscription exists
+      ansible.builtin.shell: |
+        oc get subscription.operators.coreos.com rhdh -n {{ rhdh_ns }}
+
+    - name: Wait for Subscription to report installedCSV (post-catalog)
+      ansible.builtin.shell: |
+        oc get subscription.operators.coreos.com rhdh -n {{ rhdh_ns }} -o jsonpath='{.status.installedCSV}' 2>/dev/null || true
+      register: rhdh_installed_csv
+      retries: 30
+      delay: 10
+      until: rhdh_installed_csv.stdout != ''
+
+    - name: Wait CSV condition Succeeded
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+      ansible.builtin.shell: |
+        oc get csv/{{ rhdh_installed_csv.stdout }} -n {{ rhdh_ns }} -o jsonpath='{.status.phase}'
+      register: csv_phase
+      retries: 30
+      delay: 20
+      until: csv_phase.stdout == 'Succeeded'
+
+    - name: Wait for operator deployment rollout
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+      ansible.builtin.shell: |
+        set -e
+        DEPLOY=$(oc get deployment -n {{ rhdh_ns }} -l app.kubernetes.io/name=rhdh-operator -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
+        if [ -z "$DEPLOY" ]; then
+          # fallback para deployments que contenham rhdh-operator no nome
+          DEPLOY=$(oc get deployment -n {{ rhdh_ns }} -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' | grep -m1 rhdh-operator || true)
+        fi
+        if [ -z "$DEPLOY" ]; then
+          echo "Não foi possível descobrir o deployment do operador RHDH" >&2
+          exit 1
+        fi
+        echo "Aguardando rollout do deployment $DEPLOY"
+        oc rollout status deployment/$DEPLOY -n {{ rhdh_ns }} --timeout=120s
+
+- name: Wait for Backstage CRD to be available
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc get crd backstages.rhdh.redhat.com
+  register: backstage_crd_exists
+  retries: 10
+  delay: 20
+  until: backstage_crd_exists.rc == 0
+
+- name: Create RHDH directory
+  ansible.builtin.file:
+    path: "{{ rhdh_deploy_dir }}"
+    state: "{{ item }}"
+  loop:
+    - absent
+    - directory
+
+- name: Generate backstage resource from template
+  ansible.builtin.template:
+    src: backstage.yaml.j2
+    dest: "{{ rhdh_deploy_dir }}/backstage.yaml"
+
+- name: Deploy RHDH (Default Backstage resource)
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc apply -f {{ rhdh_deploy_dir }}/backstage.yaml
+
+- name: Wait for RHDH backstage resource to install successfully
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    set -e
+    oc wait backstages.rhdh.redhat.com backstage -n {{ rhdh_ns }} --for=condition=Deployed=True --timeout=5m
+  register: rhdh_resources
+  retries: 15
+  delay: 20
+  until: rhdh_resources is success
+
+- name: Verify Backstage CR was created
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc get backstages.rhdh.redhat.com backstage -n {{ rhdh_ns }}
+  register: backstage_cr_check
+  retries: 5
+  delay: 5
+  until: backstage_cr_check.rc == 0
+
+- name: Create RHDH config directory
+  ansible.builtin.file:
+    path: "{{ rhdh_config_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Generate dynamic plugins configmap from template
+  ansible.builtin.template:
+    src: dynamic-plugins.yaml.j2
+    dest: "{{ rhdh_config_dir }}/dynamic-plugins.yaml"
+    mode: "0644"
+
+- name: Apply dynamic plugins configmap
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc apply -f {{ rhdh_config_dir }}/dynamic-plugins.yaml
+
+- name: Verify dynamic plugins configmap exists
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc get configmap dynamic-plugins-rhdh -n {{ rhdh_ns }}
+  register: dynamic_plugins_cm_check
+  retries: 5
+  delay: 10
+  until: dynamic_plugins_cm_check.rc == 0
+
+- name: Generate basic app-config ConfigMaps required by Backstage
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    for cm in app-config-rhdh-auth app-config-rhdh-catalog app-config-rhdh app-config-rhdh-auth; do
+      oc get cm $cm -n {{ rhdh_ns }} >/dev/null 2>&1 || \
+      oc create configmap $cm -n {{ rhdh_ns }} --from-literal=dummy=dummy
+    done
+  changed_when: false

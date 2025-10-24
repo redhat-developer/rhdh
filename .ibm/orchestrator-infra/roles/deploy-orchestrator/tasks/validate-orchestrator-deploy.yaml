@@ -1,0 +1,21 @@
+- name: Wait for Orchestrator related resources to be created
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    set -e
+    oc wait -n openshift-serverless deploy/knative-openshift --for=condition=Available --timeout=5m
+    oc wait -n knative-eventing knativeeventing/knative-eventing --for=condition=Ready --timeout=5m
+    oc wait -n knative-serving knativeserving/knative-serving --for=condition=Ready --timeout=5m
+    oc wait -n openshift-serverless-logic deploy/logic-operator-rhel8-controller-manager --for=condition=Available --timeout=5m
+    oc wait -n sonataflow-infra sonataflowplatform/sonataflow-platform --for=condition=Succeed --timeout=5m
+    oc wait -n sonataflow-infra deploy/sonataflow-platform-data-index-service --for=condition=Available --timeout=5m
+    oc wait -n sonataflow-infra deploy/sonataflow-platform-jobs-service --for=condition=Available --timeout=5m
+    oc wait -n {{ rhdh_ns }} deployment --all --for=condition=Available --timeout=5m
+    oc wait -n {{ rhdh_ns }} backstage --all --for=condition=Deployed=True
+    oc wait --for=condition=Ready pod --all -n {{ rhdh_operator_ns }} --timeout=10m
+    oc wait --for=condition=Ready pod --all -n {{ rhdh_ns }} --timeout=10m
+    oc wait --for=condition=Ready pod --all -n sonataflow-infra --timeout=10m
+  register: orchestrator_deploy
+  retries: 40
+  delay: 30
+  until: orchestrator_deploy is success

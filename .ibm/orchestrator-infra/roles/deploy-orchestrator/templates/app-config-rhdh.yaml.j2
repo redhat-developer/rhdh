@@ -1,0 +1,35 @@
+{# This configuration file is the data: content of configmap app-config-rhdh #}
+app:
+  title: Red Hat Developer Hub
+  baseUrl: ${BACKSTAGE_ROUTE}
+backend:
+  auth:
+    externalAccess:
+      - type: static
+        options:
+          token: ${BACKEND_SECRET}
+          subject: orchestrator
+  baseUrl: ${BACKSTAGE_ROUTE}
+  csp:
+    script-src: ["'self'", "'unsafe-inline'", "'unsafe-eval'"]
+    script-src-elem: ["'self'", "'unsafe-inline'", "'unsafe-eval'"]
+    connect-src: ["'self'", 'http:', 'https:', 'data:']
+  cors:
+    origin: ${BACKSTAGE_ROUTE}
+  database:
+    client: pg
+    connection:
+      password: ${POSTGRESQL_ADMIN_PASSWORD}
+      user: ${POSTGRES_USER}
+      host: ${POSTGRES_HOST}
+      port: ${POSTGRES_PORT}
+{% if deploy_with_gitops|bool %}
+argocd:
+  appLocatorMethods:
+  - instances:
+    - name: main
+      url: ${ARGOCD_URL}
+      username: ${ARGOCD_USERNAME}
+      password: ${ARGOCD_PASSWORD}
+    type: config
+{% endif %}
