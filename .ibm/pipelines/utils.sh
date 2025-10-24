@@ -717,7 +717,7 @@ install_orchestrator_infra_chart() {
   echo "Deploying orchestrator-infra chart"
   cd "${DIR}"
   helm upgrade -i orch-infra -n "${ORCH_INFRA_NS}" \
-    "oci://quay.io/rhdh/orchestrator-infra-chart" --version "${CHART_VERSION}" \
+    "oci://quay.io/rhdh/orchestrator-infra-chart" --version "1.8-157-CI" \
     --wait --timeout=5m \
     --set serverlessLogicOperator.subscription.spec.installPlanApproval=Automatic \
     --set serverlessOperator.subscription.spec.installPlanApproval=Automatic
