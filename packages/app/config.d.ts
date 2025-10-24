@@ -270,7 +270,7 @@ export interface Config {
    * The signInPage provider
    * @visibility frontend
    */
-  signInPage?: string;
+  signInPage?: string | string[];
   /**
    * The option to includes transient parent groups when determining user group membership
    * @visibility frontend
