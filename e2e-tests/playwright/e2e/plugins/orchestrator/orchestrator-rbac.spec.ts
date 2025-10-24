@@ -240,15 +240,16 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       // Verify the Run button is either not visible or disabled (read-only access)
       const runButton = page.getByRole("button", { name: "Run" });
       
-      // Check if button exists - it might be disabled or not visible at all
+      // For read-only access, the button should either not exist or be disabled
       const buttonCount = await runButton.count();
       
-      if (buttonCount > 0) {
-        // If button exists, it should be disabled
-        await expect(runButton).toBeDisabled();
+      // Test that either button doesn't exist OR it's disabled
+      if (buttonCount === 0) {
+        // Button doesn't exist - this is valid for read-only access
+        expect(buttonCount).toBe(0);
       } else {
-        // Button should not exist for read-only users
-        await expect(runButton).toHaveCount(0);
+        // Button exists - it should be disabled
+        await expect(runButton).toBeDisabled();
       }
     });
 
@@ -748,10 +749,14 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       
       const runButton = page.getByRole("button", { name: "Run" });
       const buttonCount = await runButton.count();
-      if (buttonCount > 0) {
-        await expect(runButton).toBeDisabled();
+      
+      // For read-only access, the button should either not exist or be disabled
+      if (buttonCount === 0) {
+        // Button doesn't exist - this is valid for read-only access
+        expect(buttonCount).toBe(0);
       } else {
-        await expect(runButton).toHaveCount(0);
+        // Button exists - it should be disabled
+        await expect(runButton).toBeDisabled();
       }
     });
 
@@ -901,19 +906,28 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       const rolePostResponse = await rbacApi.createRoles(workflowUserRole);
       const policyPostResponse = await rbacApi.createPolicies(workflowUserPolicies);
 
-      if (!rolePostResponse.ok()) {
-        console.log(`Role creation failed with status: ${rolePostResponse.status}`);
+      // Log errors if they occur for debugging
+      const roleOk = rolePostResponse.ok();
+      const policyOk = policyPostResponse.ok();
+      
+      // Log errors for debugging purposes (always log, but don't use conditionals)
+      const roleStatus = rolePostResponse.status;
+      const policyStatus = policyPostResponse.status;
+      
+      console.log(`Role creation status: ${roleStatus}`);
+      console.log(`Policy creation status: ${policyStatus}`);
+      
+      if (!roleOk) {
         const errorBody = await rolePostResponse.text();
         console.log(`Role creation error body: ${errorBody}`);
       }
-      if (!policyPostResponse.ok()) {
-        console.log(`Policy creation failed with status: ${policyPostResponse.status}`);
+      if (!policyOk) {
         const errorBody = await policyPostResponse.text();
         console.log(`Policy creation error body: ${errorBody}`);
       }
 
-      expect(rolePostResponse.ok()).toBeTruthy();
-      expect(policyPostResponse.ok()).toBeTruthy();
+      expect(roleOk).toBeTruthy();
+      expect(policyOk).toBeTruthy();
     });
 
     test("Verify workflow user role exists via API with both users", async () => {
@@ -997,7 +1011,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       // Clear browser storage and navigate to a fresh state
       await page.context().clearCookies();
       await page.goto("/");
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('load');
       
       // Now login as rhdh-qe-2
       try {
@@ -1025,15 +1039,15 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       // Debug: Check if workflowInstanceId is set
       console.log(`workflowInstanceId in direct access test: ${workflowInstanceId}`);
       
-      if (!workflowInstanceId) {
-        throw new Error('workflowInstanceId is not set - this test requires the previous test to run successfully');
-      }
+      // Ensure workflowInstanceId is available for this test
+      expect(workflowInstanceId).toBeDefined();
+      expect(workflowInstanceId).toBeTruthy();
       
       // Try to directly navigate to the instance URL
       await uiHelper.goToPageUrl(`/orchestrator/instances/${workflowInstanceId}`);
       
       // Wait for the page to load completely
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('load');
       
       // rhdh-qe-2 should NOT be able to access rhdh-qe's workflow instance
       // This enforces instance isolation - users can only see their own instances
@@ -1044,7 +1058,9 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       console.log('Page content when rhdh-qe-2 accesses workflow instance:', pageContent);
       
       // Check if the page shows "You need to enable JavaScript" (indicates page load issue)
-      if (pageContent?.includes('You need to enable JavaScript')) {
+      const hasJavaScriptMessage = pageContent?.includes('You need to enable JavaScript') || false;
+      
+      if (hasJavaScriptMessage) {
         console.log('Page shows JavaScript disabled message - this might indicate a session or loading issue');
         // This could be expected behavior - the user might be redirected or blocked
         // Let's check if we're still on the correct URL
@@ -1054,6 +1070,10 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       
       // Check if we can see the workflow instance (which would be a bug)
       const workflowInstanceVisible = await page.getByText(/Run completed at/i).isVisible().catch(() => false);
+      
+      // If workflow instance is visible, that's a bug - user should not see it
+      expect(workflowInstanceVisible).toBeFalsy();
+      
       if (workflowInstanceVisible) {
         console.log('WARNING: rhdh-qe-2 can see the workflow instance - this might be a RBAC bug!');
         throw new Error('rhdh-qe-2 should not be able to see rhdh-qe workflow instance, but they can!');
@@ -1064,12 +1084,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       await expect(page.getByRole('heading', { name: /Error: Couldn't fetch process instance/i })).toBeVisible({ timeout: 10000 });
       
       // Verify we're on the correct instance page URL (even though we can't see the content)
-      if (workflowInstanceId) {
-        expect(page.url()).toContain(workflowInstanceId);
-      } else {
-        // If workflowInstanceId is undefined, just verify we're on an instance page
-        expect(page.url()).toContain('/orchestrator/instances/');
-      }
+      expect(page.url()).toContain(workflowInstanceId);
     });
 
     test("Clean up any existing workflowAdmin role", async () => {
@@ -1086,7 +1101,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       // Clear browser storage and navigate to a fresh state
       await page.context().clearCookies();
       await page.goto("/");
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('load');
       
       // Now login as rhdh-qe to perform role/policy operations
       try {
@@ -1124,8 +1139,8 @@ test.describe.serial("Test Orchestrator RBAC", () => {
 
       // Try to create the workflowUser role (will fail if it already exists, which is fine)
       try {
-        const rolePostResponse = await rbacApi.createRoles(workflowUserRole);
-        const policyPostResponse = await rbacApi.createPolicies(workflowUserPolicies);
+        await rbacApi.createRoles(workflowUserRole);
+        await rbacApi.createPolicies(workflowUserPolicies);
         console.log("Created workflowUser role and policies for individual test run");
       } catch (error) {
         console.log("workflowUser role already exists or creation failed (expected for serial runs):", error);
@@ -1188,13 +1203,17 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       console.log(`Updating role: ${roleNameForApi}`);
       const roleUpdateResponse = await rbacApi.updateRole(roleNameForApi, oldWorkflowUserRole, updatedWorkflowUserRole);
       
-      if (!roleUpdateResponse.ok()) {
+      // Log errors if they occur for debugging
+      const roleUpdateOk = roleUpdateResponse.ok();
+      
+      // Log errors for debugging purposes
+      if (!roleUpdateOk) {
         console.log(`Role update failed with status: ${roleUpdateResponse.status}`);
         const errorBody = await roleUpdateResponse.text();
         console.log(`Role update error body: ${errorBody}`);
       }
       
-      expect(roleUpdateResponse.ok()).toBeTruthy();
+      expect(roleUpdateOk).toBeTruthy();
     });
 
     test("Verify workflow admin role exists and rhdh-qe-2 is removed from workflowUser", async () => {
@@ -1227,7 +1246,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       // Clear browser storage and navigate to a fresh state
       await page.context().clearCookies();
       await page.goto("/");
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('load');
       
       // Now login as rhdh-qe-2
       try {
@@ -1247,6 +1266,8 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       // For now, we'll skip this assertion until the admin permissions are properly configured
       
       const noRecordsVisible = await page.getByText("No records to display").isVisible().catch(() => false);
+      
+      // If admin sees no records, that indicates admin permissions aren't working
       if (noRecordsVisible) {
         console.log('WARNING: rhdh-qe-2 (admin) sees "No records to display" - admin permissions are not working correctly');
         // Skip the assertion for now - this is a known issue with admin permissions
@@ -1260,16 +1281,13 @@ test.describe.serial("Test Orchestrator RBAC", () => {
 
     test("rhdh-qe-2 admin user can directly access rhdh-qe's workflow instance URL", async () => {
       // Check if workflowInstanceId is available (required for this test)
-      if (!workflowInstanceId) {
-        console.log('WARNING: workflowInstanceId is not available - skipping admin direct access test');
-        console.log('This test requires the full serial suite to be run to capture the workflow instance ID');
-        return;
-      }
+      expect(workflowInstanceId).toBeDefined();
+      expect(workflowInstanceId).toBeTruthy();
       
       // Clear browser storage and navigate to a fresh state
       await page.context().clearCookies();
       await page.goto("/");
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('load');
       
       // Now login as rhdh-qe-2
       try {
@@ -1294,6 +1312,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       const pageContent = await page.textContent('body').catch(() => '');
       const hasUnauthorizedInContent = pageContent.includes('Unauthorized to access instance');
       
+      // If admin gets unauthorized, that indicates admin permissions aren't working
       if (hasUnauthorizedInContent) {
         console.log('WARNING: rhdh-qe-2 (admin) cannot access the instance directly - admin permissions are not working correctly');
         console.log('Page content shows unauthorized access - this is expected behavior until admin permissions are fixed');
