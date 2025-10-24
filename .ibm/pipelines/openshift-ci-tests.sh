@@ -42,8 +42,6 @@ main() {
   echo "Log file: ${LOGFILE}"
   echo "JOB_NAME : $JOB_NAME"
 
-#  CHART_VERSION=$(get_chart_version "$CHART_MAJOR_VERSION")
-#  export CHART_VERSION
   detect_ocp
   detect_container_platform
 
@@ -51,6 +49,10 @@ main() {
   export HELM_CHART_URL="oci://quay.io/rhdh/chart"
   export QUAY_REPO="rhdh/rhdh-hub-rhel9"
   export TAG_NAME="1.8-157"
+
+  # testing on ROSA
+  export K8S_CLUSTER_TOKEN=$K8S_CLUSTER_TOKEN_TEMPORARY;
+  export K8S_CLUSTER_URL="https://api.uyth7-2xi3e-c73.5gpz.p3.openshiftapps.com:443"
 
   case "$JOB_NAME" in
     *aks*helm*nightly*)
