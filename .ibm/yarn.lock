@@ -10,8 +10,8 @@ __metadata:
   resolution: ".ibm@workspace:."
   dependencies:
     prettier: 3.6.2
-    prettier-plugin-sh: ^0.18.0
-    shellcheck: ^4.1.0
+    prettier-plugin-sh: 0.18.0
+    shellcheck: 4.1.0
   languageName: unknown
   linkType: soft
 
@@ -757,7 +757,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier-plugin-sh@npm:^0.18.0":
+"prettier-plugin-sh@npm:0.18.0":
   version: 0.18.0
   resolution: "prettier-plugin-sh@npm:0.18.0"
   dependencies:
@@ -888,7 +888,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"shellcheck@npm:^4.1.0":
+"shellcheck@npm:4.1.0":
   version: 4.1.0
   resolution: "shellcheck@npm:4.1.0"
   dependencies:
