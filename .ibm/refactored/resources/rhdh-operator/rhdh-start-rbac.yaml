@@ -1,0 +1,26 @@
+kind: Backstage
+apiVersion: rhdh.redhat.com/v1alpha2
+metadata:
+  name: rhdh-rbac
+spec:
+  application:
+    image: "quay.io/$QUAY_REPO:$TAG_NAME"
+    appConfig:
+      configMaps:
+        - name: app-config-rhdh
+      mountPath: /opt/app-root/src
+    dynamicPluginsConfigMapName: dynamic-plugins
+    extraEnvs:
+      envs:
+        - name: SEGMENT_TEST_MODE
+          value: "true"
+        - name: NODE_TLS_REJECT_UNAUTHORIZED
+          value: "0"
+        - name: NODE_ENV
+          value: "production"
+      secrets:
+        - name: rhdh-secrets
+    extraFiles:
+      configMaps:
+        - name: rbac-policy
+      mountPath: /opt/app-root/src/rbac

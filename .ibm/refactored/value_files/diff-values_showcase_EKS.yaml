@@ -1,0 +1,41 @@
+# This file is for EKS installation only.
+# It is applied by `helm upgrade` after the `values-showcase.yaml` is applied and only contains complementary differences for EKS.
+# Note, that it overwrites the whole key that is present in this file.
+# The only exception is global.dynamic.plugins, that gets merged with the base file.
+# The place holders will be replaced by ENV variables by `envsubst` command`
+route:
+  enabled: false
+global:
+  host: $EKS_INSTANCE_DOMAIN_NAME
+  dynamic:
+    plugins:
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic
+        disabled: false
+upstream:
+  backstage:
+    extraEnvVarsSecrets:
+      - rhdh-secrets
+    podSecurityContext:
+      fsGroup: 3000
+    startupProbe:
+      failureThreshold: 10 # Override the default to account for longer startup time on Kubernetes.
+  postgresql:
+    primary:
+      podSecurityContext:
+        enabled: true
+        fsGroup: 3000
+  volumePermissions:
+    enabled: true
+  service:
+    # NodePort is required for the ALB to route to the Service
+    type: NodePort
+  ingress:
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: alb
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/certificate-arn: $EKS_DOMAIN_NAME_CERTIFICATE_ARN
+      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+      alb.ingress.kubernetes.io/ssl-redirect: "443"
+      external-dns.alpha.kubernetes.io/hostname: $EKS_INSTANCE_DOMAIN_NAME
+orchestrator: null
