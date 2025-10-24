@@ -37,11 +37,11 @@ export class Orchestrator {
     });
     await expect(workflowHeader).toBeVisible();
     await expect(workflowHeader).toHaveText("Workflows");
-    
+
     // Wait for the workflows table to be visible
     const workflowsTable = this.page.getByRole("table");
     await expect(workflowsTable).toBeVisible();
-    
+
     // Click on the Greeting workflow link
     await this.page.getByRole("link", { name: "Greeting workflow" }).click();
   }

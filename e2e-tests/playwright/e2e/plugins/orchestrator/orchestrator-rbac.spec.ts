@@ -63,7 +63,8 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       ];
 
       const rolePostResponse = await rbacApi.createRoles(orchestratorRole);
-      const policyPostResponse = await rbacApi.createPolicies(orchestratorPolicies);
+      const policyPostResponse =
+        await rbacApi.createPolicies(orchestratorPolicies);
 
       expect(rolePostResponse.ok()).toBeTruthy();
       expect(policyPostResponse.ok()).toBeTruthy();
@@ -71,24 +72,37 @@ test.describe.serial("Test Orchestrator RBAC", () => {
 
     test("Verify role exists via API", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
-      
+
       const rolesResponse = await rbacApi.getRoles();
       expect(rolesResponse.ok()).toBeTruthy();
-      
+
       const roles = await rolesResponse.json();
-      const workflowRole = roles.find((role: { name: string; memberReferences: string[] }) => role.name === "role:default/workflowReadwrite");
+      const workflowRole = roles.find(
+        (role: { name: string; memberReferences: string[] }) =>
+          role.name === "role:default/workflowReadwrite",
+      );
       expect(workflowRole).toBeDefined();
       expect(workflowRole?.memberReferences).toContain("user:default/rhdh-qe");
-      
-      const policiesResponse = await rbacApi.getPoliciesByRole("default/workflowReadwrite");
+
+      const policiesResponse = await rbacApi.getPoliciesByRole(
+        "default/workflowReadwrite",
+      );
       expect(policiesResponse.ok()).toBeTruthy();
-      
+
       const policies = await policiesResponse.json();
       expect(policies).toHaveLength(2);
-      
-      const readPolicy = policies.find((policy: { permission: string; policy: string; effect: string }) => policy.permission === "orchestrator.workflow" && policy.policy === "read");
-      const updatePolicy = policies.find((policy: { permission: string; policy: string; effect: string }) => policy.permission === "orchestrator.workflow.use" && policy.policy === "update");
-      
+
+      const readPolicy = policies.find(
+        (policy: { permission: string; policy: string; effect: string }) =>
+          policy.permission === "orchestrator.workflow" &&
+          policy.policy === "read",
+      );
+      const updatePolicy = policies.find(
+        (policy: { permission: string; policy: string; effect: string }) =>
+          policy.permission === "orchestrator.workflow.use" &&
+          policy.policy === "update",
+      );
+
       expect(readPolicy).toBeDefined();
       expect(updatePolicy).toBeDefined();
       expect(readPolicy.effect).toBe("allow");
@@ -102,7 +116,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
 
       const orchestrator = new Orchestrator(page);
       await orchestrator.selectGreetingWorkflowItem();
-      
+
       // Verify we're on the greeting workflow page
       await expect(
         page.getByRole("heading", { name: "Greeting workflow" }),
@@ -112,18 +126,18 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       const runButton = page.getByRole("button", { name: "Run" });
       await expect(runButton).toBeVisible();
       await expect(runButton).toBeEnabled();
-      
+
       // Click the Run button to verify permission works
       await runButton.click();
     });
-
 
     test.afterAll(async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
 
       try {
-        const remainingPoliciesResponse =
-          await rbacApi.getPoliciesByRole("default/workflowReadwrite");
+        const remainingPoliciesResponse = await rbacApi.getPoliciesByRole(
+          "default/workflowReadwrite",
+        );
 
         const remainingPolicies = await Response.removeMetadataFromResponse(
           remainingPoliciesResponse,
@@ -134,7 +148,9 @@ test.describe.serial("Test Orchestrator RBAC", () => {
           remainingPolicies as Policy[],
         );
 
-        const deleteRole = await rbacApi.deleteRole("default/workflowReadwrite");
+        const deleteRole = await rbacApi.deleteRole(
+          "default/workflowReadwrite",
+        );
 
         expect(deleteRemainingPolicies.ok()).toBeTruthy();
         expect(deleteRole.ok()).toBeTruthy();
@@ -144,7 +160,8 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     });
   });
 
-  test.describe.serial("Test Orchestrator RBAC: Global Workflow Read-Only Access", () => {
+  test.describe
+    .serial("Test Orchestrator RBAC: Global Workflow Read-Only Access", () => {
     test.describe.configure({ retries: 0 });
     let common: Common;
     let uiHelper: UIhelper;
@@ -191,8 +208,12 @@ test.describe.serial("Test Orchestrator RBAC", () => {
         },
       ];
 
-      const rolePostResponse = await rbacApi.createRoles(orchestratorReadonlyRole);
-      const policyPostResponse = await rbacApi.createPolicies(orchestratorReadonlyPolicies);
+      const rolePostResponse = await rbacApi.createRoles(
+        orchestratorReadonlyRole,
+      );
+      const policyPostResponse = await rbacApi.createPolicies(
+        orchestratorReadonlyPolicies,
+      );
 
       expect(rolePostResponse.ok()).toBeTruthy();
       expect(policyPostResponse.ok()).toBeTruthy();
@@ -200,24 +221,37 @@ test.describe.serial("Test Orchestrator RBAC", () => {
 
     test("Verify read-only role exists via API", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
-      
+
       const rolesResponse = await rbacApi.getRoles();
       expect(rolesResponse.ok()).toBeTruthy();
-      
+
       const roles = await rolesResponse.json();
-      const workflowRole = roles.find((role: { name: string; memberReferences: string[] }) => role.name === "role:default/workflowReadonly");
+      const workflowRole = roles.find(
+        (role: { name: string; memberReferences: string[] }) =>
+          role.name === "role:default/workflowReadonly",
+      );
       expect(workflowRole).toBeDefined();
       expect(workflowRole?.memberReferences).toContain("user:default/rhdh-qe");
-      
-      const policiesResponse = await rbacApi.getPoliciesByRole("default/workflowReadonly");
+
+      const policiesResponse = await rbacApi.getPoliciesByRole(
+        "default/workflowReadonly",
+      );
       expect(policiesResponse.ok()).toBeTruthy();
-      
+
       const policies = await policiesResponse.json();
       expect(policies).toHaveLength(2);
-      
-      const readPolicy = policies.find((policy: { permission: string; policy: string; effect: string }) => policy.permission === "orchestrator.workflow" && policy.policy === "read");
-      const denyUpdatePolicy = policies.find((policy: { permission: string; policy: string; effect: string }) => policy.permission === "orchestrator.workflow.use" && policy.policy === "update");
-      
+
+      const readPolicy = policies.find(
+        (policy: { permission: string; policy: string; effect: string }) =>
+          policy.permission === "orchestrator.workflow" &&
+          policy.policy === "read",
+      );
+      const denyUpdatePolicy = policies.find(
+        (policy: { permission: string; policy: string; effect: string }) =>
+          policy.permission === "orchestrator.workflow.use" &&
+          policy.policy === "update",
+      );
+
       expect(readPolicy).toBeDefined();
       expect(denyUpdatePolicy).toBeDefined();
       expect(readPolicy.effect).toBe("allow");
@@ -231,7 +265,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
 
       const orchestrator = new Orchestrator(page);
       await orchestrator.selectGreetingWorkflowItem();
-      
+
       // Verify we're on the greeting workflow page
       await expect(
         page.getByRole("heading", { name: "Greeting workflow" }),
@@ -239,10 +273,10 @@ test.describe.serial("Test Orchestrator RBAC", () => {
 
       // Verify the Run button is either not visible or disabled (read-only access)
       const runButton = page.getByRole("button", { name: "Run" });
-      
+
       // For read-only access, the button should either not exist or be disabled
       const buttonCount = await runButton.count();
-      
+
       // Test that either button doesn't exist OR it's disabled
       if (buttonCount === 0) {
         // Button doesn't exist - this is valid for read-only access
@@ -257,8 +291,9 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
 
       try {
-        const remainingPoliciesResponse =
-          await rbacApi.getPoliciesByRole("default/workflowReadonly");
+        const remainingPoliciesResponse = await rbacApi.getPoliciesByRole(
+          "default/workflowReadonly",
+        );
 
         const remainingPolicies = await Response.removeMetadataFromResponse(
           remainingPoliciesResponse,
@@ -279,7 +314,8 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     });
   });
 
-  test.describe.serial("Test Orchestrator RBAC: Global Workflow Denied Access", () => {
+  test.describe
+    .serial("Test Orchestrator RBAC: Global Workflow Denied Access", () => {
     test.describe.configure({ retries: 0 });
     let common: Common;
     let uiHelper: UIhelper;
@@ -326,8 +362,12 @@ test.describe.serial("Test Orchestrator RBAC", () => {
         },
       ];
 
-      const rolePostResponse = await rbacApi.createRoles(orchestratorDeniedRole);
-      const policyPostResponse = await rbacApi.createPolicies(orchestratorDeniedPolicies);
+      const rolePostResponse = await rbacApi.createRoles(
+        orchestratorDeniedRole,
+      );
+      const policyPostResponse = await rbacApi.createPolicies(
+        orchestratorDeniedPolicies,
+      );
 
       expect(rolePostResponse.ok()).toBeTruthy();
       expect(policyPostResponse.ok()).toBeTruthy();
@@ -335,24 +375,37 @@ test.describe.serial("Test Orchestrator RBAC", () => {
 
     test("Verify denied role exists via API", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
-      
+
       const rolesResponse = await rbacApi.getRoles();
       expect(rolesResponse.ok()).toBeTruthy();
-      
+
       const roles = await rolesResponse.json();
-      const workflowRole = roles.find((role: { name: string; memberReferences: string[] }) => role.name === "role:default/workflowDenied");
+      const workflowRole = roles.find(
+        (role: { name: string; memberReferences: string[] }) =>
+          role.name === "role:default/workflowDenied",
+      );
       expect(workflowRole).toBeDefined();
       expect(workflowRole?.memberReferences).toContain("user:default/rhdh-qe");
-      
-      const policiesResponse = await rbacApi.getPoliciesByRole("default/workflowDenied");
+
+      const policiesResponse = await rbacApi.getPoliciesByRole(
+        "default/workflowDenied",
+      );
       expect(policiesResponse.ok()).toBeTruthy();
-      
+
       const policies = await policiesResponse.json();
       expect(policies).toHaveLength(2);
-      
-      const denyReadPolicy = policies.find((policy: { permission: string; policy: string; effect: string }) => policy.permission === "orchestrator.workflow" && policy.policy === "read");
-      const denyUpdatePolicy = policies.find((policy: { permission: string; policy: string; effect: string }) => policy.permission === "orchestrator.workflow.use" && policy.policy === "update");
-      
+
+      const denyReadPolicy = policies.find(
+        (policy: { permission: string; policy: string; effect: string }) =>
+          policy.permission === "orchestrator.workflow" &&
+          policy.policy === "read",
+      );
+      const denyUpdatePolicy = policies.find(
+        (policy: { permission: string; policy: string; effect: string }) =>
+          policy.permission === "orchestrator.workflow.use" &&
+          policy.policy === "update",
+      );
+
       expect(denyReadPolicy).toBeDefined();
       expect(denyUpdatePolicy).toBeDefined();
       expect(denyReadPolicy.effect).toBe("deny");
@@ -366,9 +419,11 @@ test.describe.serial("Test Orchestrator RBAC", () => {
 
       // With denied access, the workflows table should be empty or show no results
       await uiHelper.verifyTableIsEmpty();
-      
+
       // Alternatively, verify that the Greeting workflow link is not visible
-      const greetingWorkflowLink = page.getByRole("link", { name: "Greeting workflow" });
+      const greetingWorkflowLink = page.getByRole("link", {
+        name: "Greeting workflow",
+      });
       await expect(greetingWorkflowLink).toHaveCount(0);
     });
 
@@ -376,8 +431,9 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
 
       try {
-        const remainingPoliciesResponse =
-          await rbacApi.getPoliciesByRole("default/workflowDenied");
+        const remainingPoliciesResponse = await rbacApi.getPoliciesByRole(
+          "default/workflowDenied",
+        );
 
         const remainingPolicies = await Response.removeMetadataFromResponse(
           remainingPoliciesResponse,
@@ -398,7 +454,8 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     });
   });
 
-  test.describe.serial("Test Orchestrator RBAC: Individual Workflow Denied Access", () => {
+  test.describe
+    .serial("Test Orchestrator RBAC: Individual Workflow Denied Access", () => {
     test.describe.configure({ retries: 0 });
     let common: Common;
     let uiHelper: UIhelper;
@@ -446,7 +503,9 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       ];
 
       const rolePostResponse = await rbacApi.createRoles(greetingDeniedRole);
-      const policyPostResponse = await rbacApi.createPolicies(greetingDeniedPolicies);
+      const policyPostResponse = await rbacApi.createPolicies(
+        greetingDeniedPolicies,
+      );
 
       expect(rolePostResponse.ok()).toBeTruthy();
       expect(policyPostResponse.ok()).toBeTruthy();
@@ -454,24 +513,37 @@ test.describe.serial("Test Orchestrator RBAC", () => {
 
     test("Verify greeting workflow denied role exists via API", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
-      
+
       const rolesResponse = await rbacApi.getRoles();
       expect(rolesResponse.ok()).toBeTruthy();
-      
+
       const roles = await rolesResponse.json();
-      const workflowRole = roles.find((role: { name: string; memberReferences: string[] }) => role.name === "role:default/workflowGreetingDenied");
+      const workflowRole = roles.find(
+        (role: { name: string; memberReferences: string[] }) =>
+          role.name === "role:default/workflowGreetingDenied",
+      );
       expect(workflowRole).toBeDefined();
       expect(workflowRole?.memberReferences).toContain("user:default/rhdh-qe");
-      
-      const policiesResponse = await rbacApi.getPoliciesByRole("default/workflowGreetingDenied");
+
+      const policiesResponse = await rbacApi.getPoliciesByRole(
+        "default/workflowGreetingDenied",
+      );
       expect(policiesResponse.ok()).toBeTruthy();
-      
+
       const policies = await policiesResponse.json();
       expect(policies).toHaveLength(2);
-      
-      const denyReadPolicy = policies.find((policy: { permission: string; policy: string; effect: string }) => policy.permission === "orchestrator.workflow.greeting" && policy.policy === "read");
-      const denyUpdatePolicy = policies.find((policy: { permission: string; policy: string; effect: string }) => policy.permission === "orchestrator.workflow.use.greeting" && policy.policy === "update");
-      
+
+      const denyReadPolicy = policies.find(
+        (policy: { permission: string; policy: string; effect: string }) =>
+          policy.permission === "orchestrator.workflow.greeting" &&
+          policy.policy === "read",
+      );
+      const denyUpdatePolicy = policies.find(
+        (policy: { permission: string; policy: string; effect: string }) =>
+          policy.permission === "orchestrator.workflow.use.greeting" &&
+          policy.policy === "update",
+      );
+
       expect(denyReadPolicy).toBeDefined();
       expect(denyUpdatePolicy).toBeDefined();
       expect(denyReadPolicy.effect).toBe("deny");
@@ -484,13 +556,17 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       await uiHelper.verifyHeading("Workflows");
 
       // Verify that the Greeting workflow link is NOT visible (denied)
-      const greetingWorkflowLink = page.getByRole("link", { name: "Greeting workflow" });
+      const greetingWorkflowLink = page.getByRole("link", {
+        name: "Greeting workflow",
+      });
       await expect(greetingWorkflowLink).toHaveCount(0);
-      
+
       // Verify that User Onboarding workflow is also NOT visible (no global permissions)
-      const userOnboardingLink = page.getByRole("link", { name: "User Onboarding" });
+      const userOnboardingLink = page.getByRole("link", {
+        name: "User Onboarding",
+      });
       await expect(userOnboardingLink).toHaveCount(0);
-      
+
       // Verify workflows table is empty (no workflows visible due to individual deny + no global allow)
       await uiHelper.verifyTableIsEmpty();
     });
@@ -499,8 +575,9 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
 
       try {
-        const remainingPoliciesResponse =
-          await rbacApi.getPoliciesByRole("default/workflowGreetingDenied");
+        const remainingPoliciesResponse = await rbacApi.getPoliciesByRole(
+          "default/workflowGreetingDenied",
+        );
 
         const remainingPolicies = await Response.removeMetadataFromResponse(
           remainingPoliciesResponse,
@@ -511,7 +588,9 @@ test.describe.serial("Test Orchestrator RBAC", () => {
           remainingPolicies as Policy[],
         );
 
-        const deleteRole = await rbacApi.deleteRole("default/workflowGreetingDenied");
+        const deleteRole = await rbacApi.deleteRole(
+          "default/workflowGreetingDenied",
+        );
 
         expect(deleteRemainingPolicies.ok()).toBeTruthy();
         expect(deleteRole.ok()).toBeTruthy();
@@ -521,7 +600,8 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     });
   });
 
-  test.describe.serial("Test Orchestrator RBAC: Individual Workflow Read-Write Access", () => {
+  test.describe
+    .serial("Test Orchestrator RBAC: Individual Workflow Read-Write Access", () => {
     test.describe.configure({ retries: 0 });
     let common: Common;
     let uiHelper: UIhelper;
@@ -569,7 +649,9 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       ];
 
       const rolePostResponse = await rbacApi.createRoles(greetingReadwriteRole);
-      const policyPostResponse = await rbacApi.createPolicies(greetingReadwritePolicies);
+      const policyPostResponse = await rbacApi.createPolicies(
+        greetingReadwritePolicies,
+      );
 
       expect(rolePostResponse.ok()).toBeTruthy();
       expect(policyPostResponse.ok()).toBeTruthy();
@@ -577,24 +659,37 @@ test.describe.serial("Test Orchestrator RBAC", () => {
 
     test("Verify greeting workflow read-write role exists via API", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
-      
+
       const rolesResponse = await rbacApi.getRoles();
       expect(rolesResponse.ok()).toBeTruthy();
-      
+
       const roles = await rolesResponse.json();
-      const workflowRole = roles.find((role: { name: string; memberReferences: string[] }) => role.name === "role:default/workflowGreetingReadwrite");
+      const workflowRole = roles.find(
+        (role: { name: string; memberReferences: string[] }) =>
+          role.name === "role:default/workflowGreetingReadwrite",
+      );
       expect(workflowRole).toBeDefined();
       expect(workflowRole?.memberReferences).toContain("user:default/rhdh-qe");
-      
-      const policiesResponse = await rbacApi.getPoliciesByRole("default/workflowGreetingReadwrite");
+
+      const policiesResponse = await rbacApi.getPoliciesByRole(
+        "default/workflowGreetingReadwrite",
+      );
       expect(policiesResponse.ok()).toBeTruthy();
-      
+
       const policies = await policiesResponse.json();
       expect(policies).toHaveLength(2);
-      
-      const allowReadPolicy = policies.find((policy: { permission: string; policy: string; effect: string }) => policy.permission === "orchestrator.workflow.greeting" && policy.policy === "read");
-      const allowUpdatePolicy = policies.find((policy: { permission: string; policy: string; effect: string }) => policy.permission === "orchestrator.workflow.use.greeting" && policy.policy === "update");
-      
+
+      const allowReadPolicy = policies.find(
+        (policy: { permission: string; policy: string; effect: string }) =>
+          policy.permission === "orchestrator.workflow.greeting" &&
+          policy.policy === "read",
+      );
+      const allowUpdatePolicy = policies.find(
+        (policy: { permission: string; policy: string; effect: string }) =>
+          policy.permission === "orchestrator.workflow.use.greeting" &&
+          policy.policy === "update",
+      );
+
       expect(allowReadPolicy).toBeDefined();
       expect(allowUpdatePolicy).toBeDefined();
       expect(allowReadPolicy.effect).toBe("allow");
@@ -607,17 +702,23 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       await uiHelper.verifyHeading("Workflows");
 
       // Verify that the Greeting workflow link IS visible (allowed)
-      const greetingWorkflowLink = page.getByRole("link", { name: "Greeting workflow" });
+      const greetingWorkflowLink = page.getByRole("link", {
+        name: "Greeting workflow",
+      });
       await expect(greetingWorkflowLink).toBeVisible();
-      
+
       // Verify that User Onboarding workflow is NOT visible (no global permissions)
-      const userOnboardingLink = page.getByRole("link", { name: "User Onboarding" });
+      const userOnboardingLink = page.getByRole("link", {
+        name: "User Onboarding",
+      });
       await expect(userOnboardingLink).toHaveCount(0);
-      
+
       // Navigate to Greeting workflow and verify we can run it
       await greetingWorkflowLink.click();
-      await expect(page.getByRole("heading", { name: "Greeting workflow" })).toBeVisible();
-      
+      await expect(
+        page.getByRole("heading", { name: "Greeting workflow" }),
+      ).toBeVisible();
+
       const runButton = page.getByRole("button", { name: "Run" });
       await expect(runButton).toBeVisible();
       await expect(runButton).toBeEnabled();
@@ -628,8 +729,9 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
 
       try {
-        const remainingPoliciesResponse =
-          await rbacApi.getPoliciesByRole("default/workflowGreetingReadwrite");
+        const remainingPoliciesResponse = await rbacApi.getPoliciesByRole(
+          "default/workflowGreetingReadwrite",
+        );
 
         const remainingPolicies = await Response.removeMetadataFromResponse(
           remainingPoliciesResponse,
@@ -640,7 +742,9 @@ test.describe.serial("Test Orchestrator RBAC", () => {
           remainingPolicies as Policy[],
         );
 
-        const deleteRole = await rbacApi.deleteRole("default/workflowGreetingReadwrite");
+        const deleteRole = await rbacApi.deleteRole(
+          "default/workflowGreetingReadwrite",
+        );
 
         expect(deleteRemainingPolicies.ok()).toBeTruthy();
         expect(deleteRole.ok()).toBeTruthy();
@@ -650,7 +754,8 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     });
   });
 
-  test.describe.serial("Test Orchestrator RBAC: Individual Workflow Read-Only Access", () => {
+  test.describe
+    .serial("Test Orchestrator RBAC: Individual Workflow Read-Only Access", () => {
     test.describe.configure({ retries: 0 });
     let common: Common;
     let uiHelper: UIhelper;
@@ -698,7 +803,9 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       ];
 
       const rolePostResponse = await rbacApi.createRoles(greetingReadonlyRole);
-      const policyPostResponse = await rbacApi.createPolicies(greetingReadonlyPolicies);
+      const policyPostResponse = await rbacApi.createPolicies(
+        greetingReadonlyPolicies,
+      );
 
       expect(rolePostResponse.ok()).toBeTruthy();
       expect(policyPostResponse.ok()).toBeTruthy();
@@ -706,24 +813,37 @@ test.describe.serial("Test Orchestrator RBAC", () => {
 
     test("Verify greeting workflow read-only role exists via API", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
-      
+
       const rolesResponse = await rbacApi.getRoles();
       expect(rolesResponse.ok()).toBeTruthy();
-      
+
       const roles = await rolesResponse.json();
-      const workflowRole = roles.find((role: { name: string; memberReferences: string[] }) => role.name === "role:default/workflowGreetingReadonly");
+      const workflowRole = roles.find(
+        (role: { name: string; memberReferences: string[] }) =>
+          role.name === "role:default/workflowGreetingReadonly",
+      );
       expect(workflowRole).toBeDefined();
       expect(workflowRole?.memberReferences).toContain("user:default/rhdh-qe");
-      
-      const policiesResponse = await rbacApi.getPoliciesByRole("default/workflowGreetingReadonly");
+
+      const policiesResponse = await rbacApi.getPoliciesByRole(
+        "default/workflowGreetingReadonly",
+      );
       expect(policiesResponse.ok()).toBeTruthy();
-      
+
       const policies = await policiesResponse.json();
       expect(policies).toHaveLength(2);
-      
-      const allowReadPolicy = policies.find((policy: { permission: string; policy: string; effect: string }) => policy.permission === "orchestrator.workflow.greeting" && policy.policy === "read");
-      const denyUpdatePolicy = policies.find((policy: { permission: string; policy: string; effect: string }) => policy.permission === "orchestrator.workflow.use.greeting" && policy.policy === "update");
-      
+
+      const allowReadPolicy = policies.find(
+        (policy: { permission: string; policy: string; effect: string }) =>
+          policy.permission === "orchestrator.workflow.greeting" &&
+          policy.policy === "read",
+      );
+      const denyUpdatePolicy = policies.find(
+        (policy: { permission: string; policy: string; effect: string }) =>
+          policy.permission === "orchestrator.workflow.use.greeting" &&
+          policy.policy === "update",
+      );
+
       expect(allowReadPolicy).toBeDefined();
       expect(denyUpdatePolicy).toBeDefined();
       expect(allowReadPolicy.effect).toBe("allow");
@@ -736,20 +856,26 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       await uiHelper.verifyHeading("Workflows");
 
       // Verify that the Greeting workflow link IS visible (allowed)
-      const greetingWorkflowLink = page.getByRole("link", { name: "Greeting workflow" });
+      const greetingWorkflowLink = page.getByRole("link", {
+        name: "Greeting workflow",
+      });
       await expect(greetingWorkflowLink).toBeVisible();
-      
+
       // Verify that User Onboarding workflow is NOT visible (no global permissions)
-      const userOnboardingLink = page.getByRole("link", { name: "User Onboarding" });
+      const userOnboardingLink = page.getByRole("link", {
+        name: "User Onboarding",
+      });
       await expect(userOnboardingLink).toHaveCount(0);
-      
+
       // Navigate to Greeting workflow and verify Run button is disabled/not visible
       await greetingWorkflowLink.click();
-      await expect(page.getByRole("heading", { name: "Greeting workflow" })).toBeVisible();
-      
+      await expect(
+        page.getByRole("heading", { name: "Greeting workflow" }),
+      ).toBeVisible();
+
       const runButton = page.getByRole("button", { name: "Run" });
       const buttonCount = await runButton.count();
-      
+
       // For read-only access, the button should either not exist or be disabled
       if (buttonCount === 0) {
         // Button doesn't exist - this is valid for read-only access
@@ -764,8 +890,9 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
 
       try {
-        const remainingPoliciesResponse =
-          await rbacApi.getPoliciesByRole("default/workflowGreetingReadonly");
+        const remainingPoliciesResponse = await rbacApi.getPoliciesByRole(
+          "default/workflowGreetingReadonly",
+        );
 
         const remainingPolicies = await Response.removeMetadataFromResponse(
           remainingPoliciesResponse,
@@ -776,7 +903,9 @@ test.describe.serial("Test Orchestrator RBAC", () => {
           remainingPolicies as Policy[],
         );
 
-        const deleteRole = await rbacApi.deleteRole("default/workflowGreetingReadonly");
+        const deleteRole = await rbacApi.deleteRole(
+          "default/workflowGreetingReadonly",
+        );
 
         expect(deleteRemainingPolicies.ok()).toBeTruthy();
         expect(deleteRole.ok()).toBeTruthy();
@@ -786,7 +915,8 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     });
   });
 
-  test.describe.serial("Test Orchestrator RBAC: Workflow Instance Initiator Access and Admin Override", () => {
+  test.describe
+    .serial("Test Orchestrator RBAC: Workflow Instance Initiator Access and Admin Override", () => {
     test.describe.configure({ retries: 0 });
     let common: Common;
     let uiHelper: UIhelper;
@@ -804,32 +934,43 @@ test.describe.serial("Test Orchestrator RBAC", () => {
 
       await common.loginAsKeycloakUser();
       apiToken = await RhdhAuthApiHack.getToken(page);
-      
+
       // Clean up any lingering roles from previous test runs
       const rbacApi = await RhdhRbacApi.build(apiToken);
       try {
         const rolesResponse = await rbacApi.getRoles();
         if (rolesResponse.ok()) {
           const roles = await rolesResponse.json();
-          const lingeringRoles = roles.filter((role: { name: string }) => 
-            role.name.includes('workflowUser') || role.name.includes('workflowAdmin')
+          const lingeringRoles = roles.filter(
+            (role: { name: string }) =>
+              role.name.includes("workflowUser") ||
+              role.name.includes("workflowAdmin"),
           );
-          
-          console.log(`Found ${lingeringRoles.length} lingering roles to clean up`);
-          
+
+          console.log(
+            `Found ${lingeringRoles.length} lingering roles to clean up`,
+          );
+
           for (const role of lingeringRoles) {
             try {
               console.log(`Cleaning up lingering role: ${role.name}`);
               const roleNameForApi = role.name.replace("role:", "");
-              const policiesResponse = await rbacApi.getPoliciesByRole(roleNameForApi);
+              const policiesResponse =
+                await rbacApi.getPoliciesByRole(roleNameForApi);
               if (policiesResponse.ok()) {
-                const policies = await Response.removeMetadataFromResponse(policiesResponse);
-                await rbacApi.deletePolicy(roleNameForApi, policies as Policy[]);
+                const policies =
+                  await Response.removeMetadataFromResponse(policiesResponse);
+                await rbacApi.deletePolicy(
+                  roleNameForApi,
+                  policies as Policy[],
+                );
               }
               await rbacApi.deleteRole(roleNameForApi);
               console.log(`Successfully cleaned up role: ${role.name}`);
             } catch (error) {
-              console.log(`Error cleaning up lingering role ${role.name}: ${error}`);
+              console.log(
+                `Error cleaning up lingering role ${role.name}: ${error}`,
+              );
             }
           }
         }
@@ -851,14 +992,18 @@ test.describe.serial("Test Orchestrator RBAC", () => {
         const rolesResponse = await rbacApi.getRoles();
         if (rolesResponse.ok()) {
           const roles = await rolesResponse.json();
-          const existingRole = roles.find((role: { name: string }) => role.name === roleName);
-          
+          const existingRole = roles.find(
+            (role: { name: string }) => role.name === roleName,
+          );
+
           if (existingRole) {
             console.log(`Deleting existing role: ${roleName}`);
             // Delete policies first
-            const policiesResponse = await rbacApi.getPoliciesByRole(roleNameForApi);
+            const policiesResponse =
+              await rbacApi.getPoliciesByRole(roleNameForApi);
             if (policiesResponse.ok()) {
-              const policies = await Response.removeMetadataFromResponse(policiesResponse);
+              const policies =
+                await Response.removeMetadataFromResponse(policiesResponse);
               await rbacApi.deletePolicy(roleNameForApi, policies as Policy[]);
             }
             // Then delete role
@@ -880,7 +1025,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     test("Create role with greeting workflow read-write permissions for both users", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
       const members = ["user:default/rhdh-qe", "user:default/rhdh-qe-2"];
-      
+
       workflowUserRoleName = `role:default/workflowUser`;
 
       const workflowUserRole = {
@@ -904,19 +1049,20 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       ];
 
       const rolePostResponse = await rbacApi.createRoles(workflowUserRole);
-      const policyPostResponse = await rbacApi.createPolicies(workflowUserPolicies);
+      const policyPostResponse =
+        await rbacApi.createPolicies(workflowUserPolicies);
 
       // Log errors if they occur for debugging
       const roleOk = rolePostResponse.ok();
       const policyOk = policyPostResponse.ok();
-      
+
       // Log errors for debugging purposes (always log, but don't use conditionals)
       const roleStatus = rolePostResponse.status;
       const policyStatus = policyPostResponse.status;
-      
+
       console.log(`Role creation status: ${roleStatus}`);
       console.log(`Policy creation status: ${policyStatus}`);
-      
+
       if (!roleOk) {
         const errorBody = await rolePostResponse.text();
         console.log(`Role creation error body: ${errorBody}`);
@@ -932,26 +1078,39 @@ test.describe.serial("Test Orchestrator RBAC", () => {
 
     test("Verify workflow user role exists via API with both users", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
-      
+
       const rolesResponse = await rbacApi.getRoles();
       expect(rolesResponse.ok()).toBeTruthy();
-      
+
       const roles = await rolesResponse.json();
-      const workflowRole = roles.find((role: { name: string; memberReferences: string[] }) => role.name === workflowUserRoleName);
+      const workflowRole = roles.find(
+        (role: { name: string; memberReferences: string[] }) =>
+          role.name === workflowUserRoleName,
+      );
       expect(workflowRole).toBeDefined();
       expect(workflowRole?.memberReferences).toContain("user:default/rhdh-qe");
-      expect(workflowRole?.memberReferences).toContain("user:default/rhdh-qe-2");
-      
+      expect(workflowRole?.memberReferences).toContain(
+        "user:default/rhdh-qe-2",
+      );
+
       const roleNameForApi = workflowUserRoleName.replace("role:", "");
       const policiesResponse = await rbacApi.getPoliciesByRole(roleNameForApi);
       expect(policiesResponse.ok()).toBeTruthy();
-      
+
       const policies = await policiesResponse.json();
       expect(policies).toHaveLength(2);
-      
-      const allowReadPolicy = policies.find((policy: { permission: string; policy: string; effect: string }) => policy.permission === "orchestrator.workflow.greeting" && policy.policy === "read");
-      const allowUpdatePolicy = policies.find((policy: { permission: string; policy: string; effect: string }) => policy.permission === "orchestrator.workflow.use.greeting" && policy.policy === "update");
-      
+
+      const allowReadPolicy = policies.find(
+        (policy: { permission: string; policy: string; effect: string }) =>
+          policy.permission === "orchestrator.workflow.greeting" &&
+          policy.policy === "read",
+      );
+      const allowUpdatePolicy = policies.find(
+        (policy: { permission: string; policy: string; effect: string }) =>
+          policy.permission === "orchestrator.workflow.use.greeting" &&
+          policy.policy === "update",
+      );
+
       expect(allowReadPolicy).toBeDefined();
       expect(allowUpdatePolicy).toBeDefined();
       expect(allowReadPolicy.effect).toBe("allow");
@@ -964,27 +1123,31 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       await uiHelper.verifyHeading("Workflows");
 
       // Navigate to Greeting workflow
-      const greetingWorkflowLink = page.getByRole("link", { name: "Greeting workflow" });
+      const greetingWorkflowLink = page.getByRole("link", {
+        name: "Greeting workflow",
+      });
       await expect(greetingWorkflowLink).toBeVisible();
       await greetingWorkflowLink.click();
-      await expect(page.getByRole("heading", { name: "Greeting workflow" })).toBeVisible();
-      
+      await expect(
+        page.getByRole("heading", { name: "Greeting workflow" }),
+      ).toBeVisible();
+
       // Click Run button
       const runButton = page.getByRole("button", { name: "Run" });
       await expect(runButton).toBeVisible();
       await expect(runButton).toBeEnabled();
       await runButton.click();
-      
+
       // On "Run workflow" page - click Next
       const nextButton = page.getByRole("button", { name: "Next" });
       await expect(nextButton).toBeVisible();
       await nextButton.click();
-      
+
       // Click Run to execute the workflow
       const finalRunButton = page.getByRole("button", { name: "Run" });
       await expect(finalRunButton).toBeVisible();
       await finalRunButton.click();
-      
+
       // Wait for workflow to complete and capture instance ID from URL
       await page.waitForURL(/\/orchestrator\/instances\/[a-f0-9-]+/);
       const url = page.url();
@@ -992,16 +1155,18 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       expect(match).not.toBeNull();
       workflowInstanceId = match![1];
       console.log(`Captured workflow instance ID: ${workflowInstanceId}`);
-      
+
       // Verify workflow completed successfully
-      await expect(page.getByText(/Run completed at/i)).toBeVisible({ timeout: 30000 });
+      await expect(page.getByText(/Run completed at/i)).toBeVisible({
+        timeout: 30000,
+      });
     });
 
     test("rhdh-qe user can see their workflow instance in runs list", async () => {
       await page.reload();
       await uiHelper.goToPageUrl("/orchestrator/workflows/greeting/runs");
       await uiHelper.verifyHeading("Greeting workflow");
-      
+
       // Verify the instance ID appears in the runs list (as a link or in a table)
       const instanceLink = page.locator(`a[href*="${workflowInstanceId}"]`);
       await expect(instanceLink).toBeVisible();
@@ -1011,25 +1176,28 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       // Clear browser storage and navigate to a fresh state
       await page.context().clearCookies();
       await page.goto("/");
-      await page.waitForLoadState('load');
-      
+      await page.waitForLoadState("load");
+
       // Now login as rhdh-qe-2
       try {
-        await common.loginAsKeycloakUser(process.env.GH_USER2_ID, process.env.GH_USER2_PASS);
+        await common.loginAsKeycloakUser(
+          process.env.GH_USER2_ID,
+          process.env.GH_USER2_PASS,
+        );
         console.log("Successfully logged in as rhdh-qe-2");
       } catch (error) {
         console.log("Login failed, user might already be logged in:", error);
         // Continue with the test - user might already be logged in
       }
-      
+
       await uiHelper.goToPageUrl("/orchestrator/workflows/greeting/runs");
       await uiHelper.verifyHeading("Greeting workflow");
-      
+
       // rhdh-qe-2 should NOT be able to see rhdh-qe's workflow instance in the runs list
       // This enforces complete instance isolation - users can only see their own instances
       const instanceLink = page.locator(`a[href*="${workflowInstanceId}"]`);
       await expect(instanceLink).toHaveCount(0);
-      
+
       // Verify that the table shows no records for rhdh-qe-2
       // This confirms that rhdh-qe-2 cannot see any workflow instances, including rhdh-qe's
       await expect(page.getByText("No records to display")).toBeVisible();
@@ -1037,52 +1205,73 @@ test.describe.serial("Test Orchestrator RBAC", () => {
 
     test("rhdh-qe-2 user cannot directly access rhdh-qe's workflow instance URL", async () => {
       // Debug: Check if workflowInstanceId is set
-      console.log(`workflowInstanceId in direct access test: ${workflowInstanceId}`);
-      
+      console.log(
+        `workflowInstanceId in direct access test: ${workflowInstanceId}`,
+      );
+
       // Ensure workflowInstanceId is available for this test
       expect(workflowInstanceId).toBeDefined();
       expect(workflowInstanceId).toBeTruthy();
-      
+
       // Try to directly navigate to the instance URL
-      await uiHelper.goToPageUrl(`/orchestrator/instances/${workflowInstanceId}`);
-      
+      await uiHelper.goToPageUrl(
+        `/orchestrator/instances/${workflowInstanceId}`,
+      );
+
       // Wait for the page to load completely
-      await page.waitForLoadState('load');
-      
+      await page.waitForLoadState("load");
+
       // rhdh-qe-2 should NOT be able to access rhdh-qe's workflow instance
       // This enforces instance isolation - users can only see their own instances
-      
+
       // Debug: Take a screenshot and log page content to see what's actually displayed
-      await page.screenshot({ path: 'debug-direct-access-test.png' });
-      const pageContent = await page.textContent('body');
-      console.log('Page content when rhdh-qe-2 accesses workflow instance:', pageContent);
-      
+      await page.screenshot({ path: "debug-direct-access-test.png" });
+      const pageContent = await page.textContent("body");
+      console.log(
+        "Page content when rhdh-qe-2 accesses workflow instance:",
+        pageContent,
+      );
+
       // Check if the page shows "You need to enable JavaScript" (indicates page load issue)
-      const hasJavaScriptMessage = pageContent?.includes('You need to enable JavaScript') || false;
-      
+      const hasJavaScriptMessage =
+        pageContent?.includes("You need to enable JavaScript") || false;
+
       if (hasJavaScriptMessage) {
-        console.log('Page shows JavaScript disabled message - this might indicate a session or loading issue');
+        console.log(
+          "Page shows JavaScript disabled message - this might indicate a session or loading issue",
+        );
         // This could be expected behavior - the user might be redirected or blocked
         // Let's check if we're still on the correct URL
         expect(page.url()).toContain(workflowInstanceId);
         return; // Exit the test as this might be the expected behavior
       }
-      
+
       // Check if we can see the workflow instance (which would be a bug)
-      const workflowInstanceVisible = await page.getByText(/Run completed at/i).isVisible().catch(() => false);
-      
+      const workflowInstanceVisible = await page
+        .getByText(/Run completed at/i)
+        .isVisible()
+        .catch(() => false);
+
       // If workflow instance is visible, that's a bug - user should not see it
       expect(workflowInstanceVisible).toBeFalsy();
-      
+
       if (workflowInstanceVisible) {
-        console.log('WARNING: rhdh-qe-2 can see the workflow instance - this might be a RBAC bug!');
-        throw new Error('rhdh-qe-2 should not be able to see rhdh-qe workflow instance, but they can!');
+        console.log(
+          "WARNING: rhdh-qe-2 can see the workflow instance - this might be a RBAC bug!",
+        );
+        throw new Error(
+          "rhdh-qe-2 should not be able to see rhdh-qe workflow instance, but they can!",
+        );
       }
-      
+
       // Should see an error message instead of workflow instance details
       // The error message format is "Error: Couldn't fetch process instance undefined"
-      await expect(page.getByRole('heading', { name: /Error: Couldn't fetch process instance/i })).toBeVisible({ timeout: 10000 });
-      
+      await expect(
+        page.getByRole("heading", {
+          name: /Error: Couldn't fetch process instance/i,
+        }),
+      ).toBeVisible({ timeout: 10000 });
+
       // Verify we're on the correct instance page URL (even though we can't see the content)
       expect(page.url()).toContain(workflowInstanceId);
     });
@@ -1097,12 +1286,12 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       // Set role names in case running individual tests
       workflowUserRoleName = `role:default/workflowUser`;
       workflowAdminRoleName = `role:default/workflowAdmin`;
-      
+
       // Clear browser storage and navigate to a fresh state
       await page.context().clearCookies();
       await page.goto("/");
-      await page.waitForLoadState('load');
-      
+      await page.waitForLoadState("load");
+
       // Now login as rhdh-qe to perform role/policy operations
       try {
         await common.loginAsKeycloakUser();
@@ -1112,9 +1301,9 @@ test.describe.serial("Test Orchestrator RBAC", () => {
         throw error; // Re-throw to fail the test if login doesn't work
       }
       apiToken = await RhdhAuthApiHack.getToken(page);
-      
+
       const rbacApi = await RhdhRbacApi.build(apiToken);
-      
+
       // First, create the workflowUser role if it doesn't exist (for individual test runs)
       const members = ["user:default/rhdh-qe", "user:default/rhdh-qe-2"];
       const workflowUserRole = {
@@ -1141,13 +1330,18 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       try {
         await rbacApi.createRoles(workflowUserRole);
         await rbacApi.createPolicies(workflowUserPolicies);
-        console.log("Created workflowUser role and policies for individual test run");
+        console.log(
+          "Created workflowUser role and policies for individual test run",
+        );
       } catch (error) {
-        console.log("workflowUser role already exists or creation failed (expected for serial runs):", error);
+        console.log(
+          "workflowUser role already exists or creation failed (expected for serial runs):",
+          error,
+        );
       }
-      
+
       // Create workflowAdmin role with rhdh-qe-2 as member
-      
+
       const workflowAdminRole = {
         memberReferences: ["user:default/rhdh-qe-2"],
         name: workflowAdminRoleName,
@@ -1181,14 +1375,16 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       ];
 
       const rolePostResponse = await rbacApi.createRoles(workflowAdminRole);
-      const policyPostResponse = await rbacApi.createPolicies(workflowAdminPolicies);
+      const policyPostResponse = await rbacApi.createPolicies(
+        workflowAdminPolicies,
+      );
 
       expect(rolePostResponse.ok()).toBeTruthy();
       expect(policyPostResponse.ok()).toBeTruthy();
-      
+
       // Wait a moment for the role changes to take effect
       await page.waitForTimeout(2000);
-      
+
       // Update workflowUser role to remove rhdh-qe-2
       const oldWorkflowUserRole = {
         memberReferences: ["user:default/rhdh-qe", "user:default/rhdh-qe-2"],
@@ -1198,82 +1394,107 @@ test.describe.serial("Test Orchestrator RBAC", () => {
         memberReferences: ["user:default/rhdh-qe"],
         name: workflowUserRoleName,
       };
-      
+
       const roleNameForApi = workflowUserRoleName.replace("role:", "");
       console.log(`Updating role: ${roleNameForApi}`);
-      const roleUpdateResponse = await rbacApi.updateRole(roleNameForApi, oldWorkflowUserRole, updatedWorkflowUserRole);
-      
+      const roleUpdateResponse = await rbacApi.updateRole(
+        roleNameForApi,
+        oldWorkflowUserRole,
+        updatedWorkflowUserRole,
+      );
+
       // Log errors if they occur for debugging
       const roleUpdateOk = roleUpdateResponse.ok();
-      
+
       // Log errors for debugging purposes
       if (!roleUpdateOk) {
-        console.log(`Role update failed with status: ${roleUpdateResponse.status}`);
+        console.log(
+          `Role update failed with status: ${roleUpdateResponse.status}`,
+        );
         const errorBody = await roleUpdateResponse.text();
         console.log(`Role update error body: ${errorBody}`);
       }
-      
+
       expect(roleUpdateOk).toBeTruthy();
     });
 
     test("Verify workflow admin role exists and rhdh-qe-2 is removed from workflowUser", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
-      
+
       // Verify workflowAdmin role
       const rolesResponse = await rbacApi.getRoles();
       expect(rolesResponse.ok()).toBeTruthy();
-      
+
       const roles = await rolesResponse.json();
-      const adminRole = roles.find((role: { name: string; memberReferences: string[] }) => role.name === workflowAdminRoleName);
+      const adminRole = roles.find(
+        (role: { name: string; memberReferences: string[] }) =>
+          role.name === workflowAdminRoleName,
+      );
       expect(adminRole).toBeDefined();
       expect(adminRole?.memberReferences).toContain("user:default/rhdh-qe-2");
-      
+
       const adminRoleNameForApi = workflowAdminRoleName.replace("role:", "");
-      const policiesResponse = await rbacApi.getPoliciesByRole(adminRoleNameForApi);
+      const policiesResponse =
+        await rbacApi.getPoliciesByRole(adminRoleNameForApi);
       expect(policiesResponse.ok()).toBeTruthy();
-      
+
       const policies = await policiesResponse.json();
       expect(policies).toHaveLength(4);
-      
+
       // Verify workflowUser role no longer has rhdh-qe-2
-      const workflowUserRole = roles.find((role: { name: string; memberReferences: string[] }) => role.name === workflowUserRoleName);
+      const workflowUserRole = roles.find(
+        (role: { name: string; memberReferences: string[] }) =>
+          role.name === workflowUserRoleName,
+      );
       expect(workflowUserRole).toBeDefined();
-      expect(workflowUserRole?.memberReferences).toContain("user:default/rhdh-qe");
-      expect(workflowUserRole?.memberReferences).not.toContain("user:default/rhdh-qe-2");
+      expect(workflowUserRole?.memberReferences).toContain(
+        "user:default/rhdh-qe",
+      );
+      expect(workflowUserRole?.memberReferences).not.toContain(
+        "user:default/rhdh-qe-2",
+      );
     });
 
     test("rhdh-qe-2 admin user can see rhdh-qe's workflow instance in runs list", async () => {
       // Clear browser storage and navigate to a fresh state
       await page.context().clearCookies();
       await page.goto("/");
-      await page.waitForLoadState('load');
-      
+      await page.waitForLoadState("load");
+
       // Now login as rhdh-qe-2
       try {
-        await common.loginAsKeycloakUser(process.env.GH_USER2_ID, process.env.GH_USER2_PASS);
+        await common.loginAsKeycloakUser(
+          process.env.GH_USER2_ID,
+          process.env.GH_USER2_PASS,
+        );
         console.log("Successfully logged in as rhdh-qe-2 (admin)");
       } catch (error) {
         console.log("Login failed:", error);
         throw error; // Re-throw to fail the test if login doesn't work
       }
-      
+
       await uiHelper.goToPageUrl("/orchestrator/workflows/greeting/runs");
       await uiHelper.verifyHeading("Greeting workflow");
-      
+
       // TODO: Admin permissions are not working as expected
       // The admin user should be able to see all workflow instances, but currently sees "No records to display"
       // This indicates that the orchestrator.instance and orchestrator.instance.use permissions are not functioning correctly
       // For now, we'll skip this assertion until the admin permissions are properly configured
-      
-      const noRecordsVisible = await page.getByText("No records to display").isVisible().catch(() => false);
-      
+
+      const noRecordsVisible = await page
+        .getByText("No records to display")
+        .isVisible()
+        .catch(() => false);
+
       // If admin sees no records, that indicates admin permissions aren't working
       if (noRecordsVisible) {
-        console.log('WARNING: rhdh-qe-2 (admin) sees "No records to display" - admin permissions are not working correctly');
+        console.log(
+          'WARNING: rhdh-qe-2 (admin) sees "No records to display" - admin permissions are not working correctly',
+        );
         // Skip the assertion for now - this is a known issue with admin permissions
         return;
       }
-      
+
       // With admin permissions, rhdh-qe-2 should now see the instance
       const instanceLink = page.locator(`a[href*="${workflowInstanceId}"]`);
       await expect(instanceLink).toBeVisible();
@@ -1283,46 +1504,59 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       // Check if workflowInstanceId is available (required for this test)
       expect(workflowInstanceId).toBeDefined();
       expect(workflowInstanceId).toBeTruthy();
-      
+
       // Clear browser storage and navigate to a fresh state
       await page.context().clearCookies();
       await page.goto("/");
-      await page.waitForLoadState('load');
-      
+      await page.waitForLoadState("load");
+
       // Now login as rhdh-qe-2
       try {
-        await common.loginAsKeycloakUser(process.env.GH_USER2_ID, process.env.GH_USER2_PASS);
+        await common.loginAsKeycloakUser(
+          process.env.GH_USER2_ID,
+          process.env.GH_USER2_PASS,
+        );
         console.log("Successfully logged in as rhdh-qe-2 (admin)");
       } catch (error) {
         console.log("Login failed:", error);
         throw error; // Re-throw to fail the test if login doesn't work
       }
-      
+
       // Navigate directly to the instance URL
-      await uiHelper.goToPageUrl(`/orchestrator/instances/${workflowInstanceId}`);
-      
+      await uiHelper.goToPageUrl(
+        `/orchestrator/instances/${workflowInstanceId}`,
+      );
+
       // TODO: Admin permissions are not working as expected
       // The admin user should be able to access the instance directly, but this is currently not functioning
       // For now, we'll skip this assertion until the admin permissions are properly configured
-      
+
       // Wait a moment for the page to load and check for error messages
       await page.waitForTimeout(3000);
-      
+
       // Check if we get an error message (which would indicate admin permissions aren't working)
-      const pageContent = await page.textContent('body').catch(() => '');
-      const hasUnauthorizedInContent = pageContent.includes('Unauthorized to access instance');
-      
+      const pageContent = await page.textContent("body").catch(() => "");
+      const hasUnauthorizedInContent = pageContent.includes(
+        "Unauthorized to access instance",
+      );
+
       // If admin gets unauthorized, that indicates admin permissions aren't working
       if (hasUnauthorizedInContent) {
-        console.log('WARNING: rhdh-qe-2 (admin) cannot access the instance directly - admin permissions are not working correctly');
-        console.log('Page content shows unauthorized access - this is expected behavior until admin permissions are fixed');
+        console.log(
+          "WARNING: rhdh-qe-2 (admin) cannot access the instance directly - admin permissions are not working correctly",
+        );
+        console.log(
+          "Page content shows unauthorized access - this is expected behavior until admin permissions are fixed",
+        );
         // Skip the assertion for now - this is a known issue with admin permissions
         return;
       }
-      
+
       // Should successfully load the instance page
-      await expect(page.getByText(/Run completed at/i)).toBeVisible({ timeout: 30000 });
-      
+      await expect(page.getByText(/Run completed at/i)).toBeVisible({
+        timeout: 30000,
+      });
+
       // Verify we're on the correct instance page
       expect(page.url()).toContain(workflowInstanceId);
     });
@@ -1331,10 +1565,10 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       try {
         // Navigate to home page to ensure we're in a good state
         await page.goto("/");
-        
+
         // Clear cookies to ensure clean state
         await page.context().clearCookies();
-        
+
         // Login as rhdh-qe to perform cleanup
         try {
           await common.loginAsKeycloakUser();
@@ -1343,20 +1577,24 @@ test.describe.serial("Test Orchestrator RBAC", () => {
           console.log("Login failed during cleanup, continuing:", error);
           return; // Skip cleanup if we can't login
         }
-        
+
         const rbacApi = await RhdhRbacApi.build(apiToken);
 
         // Delete workflowUser role and policies (if they exist)
         if (workflowUserRoleName) {
           try {
-            const workflowUserRoleNameForApi = workflowUserRoleName.replace("role:", "");
+            const workflowUserRoleNameForApi = workflowUserRoleName.replace(
+              "role:",
+              "",
+            );
             const workflowUserPoliciesResponse =
               await rbacApi.getPoliciesByRole(workflowUserRoleNameForApi);
 
             if (workflowUserPoliciesResponse.ok()) {
-              const workflowUserPolicies = await Response.removeMetadataFromResponse(
-                workflowUserPoliciesResponse,
-              );
+              const workflowUserPolicies =
+                await Response.removeMetadataFromResponse(
+                  workflowUserPoliciesResponse,
+                );
 
               await rbacApi.deletePolicy(
                 workflowUserRoleNameForApi,
@@ -1365,24 +1603,30 @@ test.describe.serial("Test Orchestrator RBAC", () => {
 
               await rbacApi.deleteRole(workflowUserRoleNameForApi);
 
-              console.log(`Cleaned up workflowUser role: ${workflowUserRoleNameForApi}`);
+              console.log(
+                `Cleaned up workflowUser role: ${workflowUserRoleNameForApi}`,
+              );
             }
           } catch (error) {
             console.log(`Error cleaning up workflowUser role: ${error}`);
           }
         }
-        
+
         // Delete workflowAdmin role and policies (if they exist)
         if (workflowAdminRoleName) {
           try {
-            const workflowAdminRoleNameForApi = workflowAdminRoleName.replace("role:", "");
+            const workflowAdminRoleNameForApi = workflowAdminRoleName.replace(
+              "role:",
+              "",
+            );
             const workflowAdminPoliciesResponse =
               await rbacApi.getPoliciesByRole(workflowAdminRoleNameForApi);
 
             if (workflowAdminPoliciesResponse.ok()) {
-              const workflowAdminPolicies = await Response.removeMetadataFromResponse(
-                workflowAdminPoliciesResponse,
-              );
+              const workflowAdminPolicies =
+                await Response.removeMetadataFromResponse(
+                  workflowAdminPoliciesResponse,
+                );
 
               await rbacApi.deletePolicy(
                 workflowAdminRoleNameForApi,
@@ -1391,7 +1635,9 @@ test.describe.serial("Test Orchestrator RBAC", () => {
 
               await rbacApi.deleteRole(workflowAdminRoleNameForApi);
 
-              console.log(`Cleaned up workflowAdmin role: ${workflowAdminRoleNameForApi}`);
+              console.log(
+                `Cleaned up workflowAdmin role: ${workflowAdminRoleNameForApi}`,
+              );
             }
           } catch (error) {
             console.log(`Error cleaning up workflowAdmin role: ${error}`);
@@ -1402,6 +1648,4 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       }
     });
   });
-
-
 });
