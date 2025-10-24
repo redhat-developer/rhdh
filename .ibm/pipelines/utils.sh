@@ -771,6 +771,7 @@ base_deployment() {
   perform_helm_install "${RELEASE_NAME}" "${NAME_SPACE}" "${HELM_CHART_VALUE_FILE_NAME}"
 
   deploy_orchestrator_workflows "${NAME_SPACE}"
+  sleep 2h
 }
 
 rbac_deployment() {
@@ -1140,6 +1141,45 @@ deploy_orchestrator_workflows() {
     echo "No sf resources found. Retrying in 5 seconds..."
     sleep 5
   done
+
+  echo "Updating user-onboarding secret with dynamic service URLs..."
+  # Update the user-onboarding secret with correct service URLs
+  local onboarding_server_url="http://user-onboarding-server.${namespace}:8080"
+
+  # Dynamically determine the backstage service (excluding psql)
+  local backstage_service
+  backstage_service=$(oc get svc -l app.kubernetes.io/name=developer-hub -n "$namespace" --no-headers=true | grep -v psql | awk '{print $1}' | head -1)
+  if [[ -z "$backstage_service" ]]; then
+    echo "Warning: No backstage service found, using fallback"
+    backstage_service="backstage-rhdh"
+  fi
+  local backstage_notifications_url="http://${backstage_service}.${namespace}:80"
+
+  # Get the notifications bearer token from rhdh-secrets
+  local notifications_bearer_token
+  notifications_bearer_token=$(oc get secret rhdh-secrets -n "$namespace" -o json | jq '.data.BACKEND_SECRET' -r | base64 -d)
+  if [[ -z "$notifications_bearer_token" ]]; then
+    echo "Warning: No BACKEND_SECRET found in rhdh-secrets, using empty token"
+    notifications_bearer_token=""
+  fi
+
+  # Base64 encode the URLs and token
+  local onboarding_server_url_b64
+  onboarding_server_url_b64=$(echo -n "$onboarding_server_url" | base64 -w 0)
+  local backstage_notifications_url_b64
+  backstage_notifications_url_b64=$(echo -n "$backstage_notifications_url" | base64 -w 0)
+  local notifications_bearer_token_b64
+  notifications_bearer_token_b64=$(echo -n "$notifications_bearer_token" | base64 -w 0)
+
+  # Patch the secret
+  oc patch secret user-onboarding-creds -n "$namespace" --type merge -p "{
+    \"data\": {
+      \"ONBOARDING_SERVER_URL\": \"$onboarding_server_url_b64\",
+      \"BACKSTAGE_NOTIFICATIONS_URL\": \"$backstage_notifications_url_b64\",
+      \"NOTIFICATIONS_BEARER_TOKEN\": \"$notifications_bearer_token_b64\"
+    }
+  }"
+  echo "User-onboarding secret updated successfully!"
 
   for workflow in greeting user-onboarding; do
     oc -n "$namespace" patch sonataflow "$workflow" --type merge -p "{\"spec\": { \"persistence\": { \"postgresql\": { \"secretRef\": {\"name\": \"$pqsl_secret_name\",\"userKey\": \"$pqsl_user_key\",\"passwordKey\": \"$pqsl_password_key\"},\"serviceRef\": {\"name\": \"$pqsl_svc_name\",\"namespace\": \"$patch_namespace\"}}}}}"
