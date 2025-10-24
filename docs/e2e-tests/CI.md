@@ -35,7 +35,7 @@ For scenarios where tests are not automatically triggered, or when you need to m
      - `PLATFORM`: The target platform (e.g., `ocp`, `aks`, `gke`)
      - `VERSION`: The platform version (e.g., `v4-17`, `v4-18`, `v4-19`)
      - `INSTALL_METHOD`: The deployment method (e.g., `helm`, `operator`)
-     - `SPECIAL_TEST`: Optional special test type (e.g., `auth-providers`, `upgrade`, `sealights`)
+     - `SPECIAL_TEST`: Optional special test type (e.g., `auth-providers`, `upgrade`)
 
      Use `/test ?` to see the complete list of available jobs for your specific branch and PR context.
 

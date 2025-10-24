@@ -43,7 +43,6 @@
     "ioredis": "5.8.1",
     "otplib": "12.0.1",
     "prettier": "3.6.2",
-    "sealights-playwright-plugin": "^2.0.124",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.41.0"
   },
