@@ -52,7 +52,7 @@ main() {
 
   # testing on ROSA
   export K8S_CLUSTER_TOKEN=$K8S_CLUSTER_TOKEN_TEMPORARY;
-  export K8S_CLUSTER_URL="https://api.uyth7-2xi3e-c73.5gpz.p3.openshiftapps.com:443"
+  export K8S_CLUSTER_URL="https://api.rni88-cs5xo-chj.4kgs.p3.openshiftapps.com:443"
 
   case "$JOB_NAME" in
     *aks*helm*nightly*)
