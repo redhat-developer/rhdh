@@ -1,7 +1,0 @@
-- name: Ensure post-mortem directory exits and is empty
-  ansible.builtin.file:
-    path: "{{ pm_dir }}"
-    state: "{{ item }}"
-  loop:
-    - absent
-    - directory

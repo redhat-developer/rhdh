@@ -142,6 +142,8 @@ kind: Job
 metadata:
   name: init-orchestrator-db-$(date +%s)
   namespace: ${NAMESPACE}
+  labels:
+    app: init-orchestrator-db
 spec:
   template:
     spec:
@@ -189,7 +191,7 @@ spec:
 EOF
 
 echo "=== Waiting for database initialization ==="
-oc wait job -l job-name --for=condition=Complete -n ${NAMESPACE} --timeout=60s 2> /dev/null || true
+oc wait job -l app=init-orchestrator-db --for=condition=Complete -n ${NAMESPACE} --timeout=120s 2> /dev/null || true
 
 echo "=== PostgreSQL deployment completed ==="
 echo "Connection details:"

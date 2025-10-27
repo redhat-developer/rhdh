@@ -4,14 +4,8 @@ set -e
 # Script para deploy de workflows de exemplo do Orchestrator
 
 NAMESPACE="orchestrator-infra"
-WORKFLOW_REPO="https://github.com/rhdh-orchestrator-test/serverless-workflows.git"
 
 echo "=== Deploying Sample Workflows for Orchestrator ==="
-
-# Clonar repositório de workflows
-TEMP_DIR=$(mktemp -d)
-echo "Cloning workflows repository to ${TEMP_DIR}..."
-git clone "${WORKFLOW_REPO}" "${TEMP_DIR}/workflows"
 
 # Deploy do workflow de exemplo - User Onboarding
 echo "=== Deploying User Onboarding Workflow ==="

@@ -1,4 +1,0 @@
-# ros_plugin_namespace: rhdh  # Removed - now dynamically discovered
-ros_plugin_secret_name: backstage-backend-auth-secret
-ros_client_id: "vault_ros_client_id"
-ros_client_secret: "vault_ros_client_secret"

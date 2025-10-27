@@ -1,6 +1,0 @@
-- name: Enable ceph tools
-  environment:
-    KUBECONFIG: "{{ kubeconfig_path }}"
-  ansible.builtin.shell: |
-    oc patch storagecluster ocs-storagecluster -n openshift-storage --type json --patch '[{ "op": "replace", "path": "/spec/enableCephTools", "value": true }]'
-    oc patch OCSInitialization ocsinit -n openshift-storage --type json --patch  '[{ "op": "replace", "path": "/spec/enableCephTools", "value": true }]'

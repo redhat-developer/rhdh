@@ -1,7 +1,0 @@
----
-- name: Setup
-  ansible.builtin.import_tasks: setup.yml
-
-- name: Deploy Resource Optimization workflow
-  ansible.builtin.import_tasks: resource-optimization-wf.yml
-  when: enable_resource_optimization_plugin | bool

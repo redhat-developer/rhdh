@@ -1,3 +1,0 @@
----
-- name: Patch backstage backend auth secret with ROS client id and secret
-  import_tasks: patch_ros_secret.yml
