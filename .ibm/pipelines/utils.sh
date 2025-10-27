@@ -306,7 +306,24 @@ delete_namespace() {
 configure_external_postgres_db() {
   local project=$1
   oc apply -f "${DIR}/resources/postgres-db/postgres.yaml" --namespace="${NAME_SPACE_POSTGRES_DB}"
-  sleep 5
+  
+  echo "Waiting for PostgreSQL cluster to be ready..."
+  # Wait for the PostgreSQL cluster to be created and ready
+  timeout 600 bash -c '
+    while true; do
+      POSTGRES_STATUS=$(oc get postgrescluster postgress-external-db -n '"${NAME_SPACE_POSTGRES_DB}"' -o jsonpath="{.status.conditions[?(@.type==\"PGBackRestReplicaRepoReady\")].status}" 2>/dev/null || echo "")
+      echo "PostgreSQL cluster status: $POSTGRES_STATUS"
+      if [[ "$POSTGRES_STATUS" == "True" ]]; then
+        echo "PostgreSQL cluster is ready"
+        break
+      fi
+      sleep 10
+    done
+  ' || echo "Warning: Timeout waiting for PostgreSQL cluster, continuing anyway..."
+  
+  # Additional wait for pods to be fully running
+  sleep 10
+  
   oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.ca\.crt}' | base64 --decode > postgres-ca
   oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.tls\.crt}' | base64 --decode > postgres-tls-crt
   oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.tls\.key}' | base64 --decode > postgres-tsl-key
