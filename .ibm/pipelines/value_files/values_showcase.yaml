@@ -316,11 +316,11 @@ upstream:
         targetPort: 9464
 
 orchestrator:
-  enabled: true
+  enabled: false
   serverlessLogicOperator:
-    enabled: true
+    enabled: false
   serverlessOperator:
-    enabled: true
+    enabled: false
   sonataflowPlatform:
     monitoring:
       enabled: true

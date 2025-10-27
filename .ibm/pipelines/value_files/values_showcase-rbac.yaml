@@ -375,11 +375,11 @@ upstream:
       existingSecret: postgres-cred
 
 orchestrator:
-  enabled: true
+  enabled: false
   serverlessLogicOperator:
-    enabled: true
+    enabled: false
   serverlessOperator:
-    enabled: true
+    enabled: false
   sonataflowPlatform:
     monitoring:
       enabled: true
