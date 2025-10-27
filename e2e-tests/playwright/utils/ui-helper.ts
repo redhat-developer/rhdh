@@ -97,7 +97,6 @@ export class UIhelper {
 
   async clickByDataTestId(dataTestId: string) {
     const element = this.page.getByTestId(dataTestId);
-    await element.waitFor({ state: "visible" });
     await element.dispatchEvent("click");
   }
 
@@ -108,7 +107,6 @@ export class UIhelper {
    */
   async clickDivByTitle(title: string) {
     const divElement = this.page.locator(`div[title="${title}"]`);
-    await divElement.waitFor({ state: "visible" });
     await divElement.click();
   }
 
@@ -134,16 +132,11 @@ export class UIhelper {
       .getByRole("button")
       .getByText(buttonText, { exact: options.exact });
 
-    await buttonElement.waitFor({
-      state: "visible",
-      timeout: options.timeout,
-    });
-
     if (options.force) {
       // eslint-disable-next-line playwright/no-force-option
-      await buttonElement.click({ force: true });
+      await buttonElement.click({ force: true, timeout: options.timeout });
     } else {
-      await buttonElement.click();
+      await buttonElement.click({ timeout: options.timeout });
     }
   }
 
@@ -224,7 +217,6 @@ export class UIhelper {
         .first();
     }
 
-    await linkLocator.waitFor({ state: "visible" });
     await linkLocator.click();
   }
 
@@ -337,8 +329,7 @@ export class UIhelper {
     const navLink = this.page
       .locator(`nav a:has-text("${navBarText}")`)
       .first();
-    await navLink.waitFor({ state: "visible", timeout: 15_000 });
-    await navLink.dispatchEvent("click");
+    await navLink.dispatchEvent("click", { timeout: 15_000 });
   }
 
   async openCatalogSidebar(kind: string) {
@@ -358,7 +349,6 @@ export class UIhelper {
     const navLink = this.page.locator(
       `nav button[aria-label="${navBarButtonLabel}"]`,
     );
-    await navLink.waitFor({ state: "visible" });
     await navLink.click();
   }
 
@@ -395,72 +385,15 @@ export class UIhelper {
       ? this.page.locator(locator).getByText(text, { exact }).first()
       : this.page.getByText(text, { exact }).first();
 
-    await elementLocator.waitFor({ state: "visible" });
-    await elementLocator.waitFor({ state: "attached" });
-
-    try {
-      await elementLocator.scrollIntoViewIfNeeded();
-    } catch (error) {
-      console.warn(
-        `Warning: Could not scroll element into view. Error: ${error.message}`,
-      );
-    }
     await expect(elementLocator).toBeVisible();
   }
 
   async verifyTextInSelector(selector: string, expectedText: string) {
-    const elementLocator = this.page
-      .locator(selector)
-      .getByText(expectedText, { exact: true });
-
-    try {
-      await elementLocator.waitFor({ state: "visible" });
-      const actualText = (await elementLocator.textContent()) || "No content";
-
-      if (actualText.trim() !== expectedText.trim()) {
-        console.error(
-          `Verification failed for text: Expected "${expectedText}", but got "${actualText}"`,
-        );
-        throw new Error(
-          `Expected text "${expectedText}" not found. Actual content: "${actualText}".`,
-        );
-      }
-      console.log(
-        `Text "${expectedText}" verified successfully in selector: ${selector}`,
-      );
-    } catch (error) {
-      const allTextContent = await this.page
-        .locator(selector)
-        .allTextContents();
-      console.error(
-        `Verification failed for text: Expected "${expectedText}". Selector content: ${allTextContent.join(", ")}`,
-      );
-      throw error;
-    }
+    await expect(this.page.locator(selector)).toHaveText(expectedText);
   }
 
   async verifyPartialTextInSelector(selector: string, partialText: string) {
-    try {
-      const elements = this.page.locator(selector);
-      const count = await elements.count();
-
-      for (let i = 0; i < count; i++) {
-        const textContent = await elements.nth(i).textContent();
-        if (textContent && textContent.includes(partialText)) {
-          console.log(
-            `Found partial text: ${partialText} in element: ${textContent}`,
-          );
-          return;
-        }
-      }
-
-      throw new Error(
-        `Verification failed: Partial text "${partialText}" not found in any elements matching selector "${selector}".`,
-      );
-    } catch (error) {
-      console.error(error.message);
-      throw error;
-    }
+    await expect(this.page.locator(selector)).toContainText(partialText);
   }
 
   async verifyColumnHeading(
@@ -472,8 +405,6 @@ export class UIhelper {
         .locator(`tr>th`)
         .getByText(rowText, { exact: exact })
         .first();
-      await rowLocator.waitFor({ state: "visible" });
-      await rowLocator.scrollIntoViewIfNeeded();
       await expect(rowLocator).toBeVisible();
     }
   }
@@ -484,8 +415,7 @@ export class UIhelper {
       .filter({ hasText: heading })
       .first();
 
-    await headingLocator.waitFor({ state: "visible", timeout: timeout });
-    await expect(headingLocator).toBeVisible();
+    await expect(headingLocator).toBeVisible({ timeout });
   }
 
   async verifyParagraph(paragraph: string) {
@@ -493,8 +423,7 @@ export class UIhelper {
       .locator("p")
       .filter({ hasText: paragraph })
       .first();
-    await headingLocator.waitFor({ state: "visible", timeout: 20000 });
-    await expect(headingLocator).toBeVisible();
+    await expect(headingLocator).toBeVisible({ timeout: 20000 });
   }
 
   async waitForTitle(text: string, level: number = 1) {
@@ -503,7 +432,6 @@ export class UIhelper {
 
   async clickTab(tabName: string) {
     const tabLocator = this.page.getByRole("tab", { name: tabName });
-    await tabLocator.waitFor({ state: "visible" });
     await tabLocator.click();
   }
 
@@ -577,7 +505,6 @@ export class UIhelper {
     cellTexts: string[] | RegExp[],
   ) {
     const row = this.page.locator(UI_HELPER_ELEMENTS.rowByText(uniqueRowText));
-    await row.waitFor();
     for (const cellText of cellTexts) {
       await expect(
         row.locator("td").filter({ hasText: cellText }).first(),
@@ -597,7 +524,6 @@ export class UIhelper {
     exact: boolean = true,
   ) {
     const row = this.page.locator(UI_HELPER_ELEMENTS.rowByText(uniqueRowText));
-    await row.waitFor();
     await row
       .locator("a")
       .getByText(linkText, { exact: exact })
@@ -615,7 +541,6 @@ export class UIhelper {
     textOrLabel: string | RegExp,
   ) {
     const row = this.page.locator(UI_HELPER_ELEMENTS.rowByText(uniqueRowText));
-    await row.waitFor();
     await row
       .locator(
         `button:has-text("${textOrLabel}"), button[aria-label="${textOrLabel}"]`,
@@ -713,13 +638,11 @@ export class UIhelper {
 
   async verifyAlertErrorMessage(message: string | RegExp) {
     const alert = this.page.getByRole("alert");
-    await alert.waitFor();
     await expect(alert).toHaveText(message);
   }
 
   async clickById(id: string) {
     const locator = this.page.locator(`#${id}`);
-    await locator.waitFor({ state: "attached" });
     await locator.click();
   }
 
@@ -750,37 +673,28 @@ export class UIhelper {
     await this.verifyAlertErrorMessage("Refresh scheduled");
 
     const moreButton = this.page.locator("button[aria-label='more']").first();
-    await moreButton.waitFor({ state: "visible", timeout: 4000 });
-    await moreButton.waitFor({ state: "attached", timeout: 4000 });
-    await moreButton.click();
+    await moreButton.click({ timeout: 4000 });
 
     const unregisterItem = this.page
       .locator("li[role='menuitem']")
       .filter({ hasText: "Unregister entity" })
       .first();
-    await unregisterItem.waitFor({ state: "visible", timeout: 4000 });
-    await unregisterItem.waitFor({ state: "attached", timeout: 4000 });
-    await expect(unregisterItem).toBeEnabled();
+    await expect(unregisterItem).toBeEnabled({ timeout: 6000 });
   }
 
   async clickUnregisterButtonForDisplayedEntity() {
     const moreButton = this.page.locator("button[aria-label='more']").first();
-    await moreButton.waitFor({ state: "visible" });
-    await moreButton.waitFor({ state: "attached" });
     await moreButton.click();
 
     const unregisterItem = this.page
       .locator("li[role='menuitem']")
       .filter({ hasText: "Unregister entity" })
       .first();
-    await unregisterItem.waitFor({ state: "visible" });
     await unregisterItem.click();
 
     const deleteButton = this.page.getByRole("button", {
       name: "Delete Entity",
     });
-    await deleteButton.waitFor({ state: "visible" });
-    await deleteButton.waitFor({ state: "attached" });
     await deleteButton.click();
   }
 
