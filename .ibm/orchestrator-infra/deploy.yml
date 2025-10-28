@@ -19,6 +19,8 @@
 
     # Orchestrator configuration
     orchestrator_db_name: "backstage_plugin_orchestrator"
+    workflow_repo: "https://github.com/rhdh-orchestrator-test/serverless-workflows.git"
+    workflow_manifests_subpath: "workflows/experimentals/user-onboarding/manifests/"
 
     # Keycloak
     deploy_keycloak: true
