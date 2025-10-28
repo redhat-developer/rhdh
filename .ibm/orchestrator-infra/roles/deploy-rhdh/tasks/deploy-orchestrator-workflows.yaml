@@ -463,7 +463,22 @@
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
   ansible.builtin.shell: |
-    oc wait --for=condition=ready pod -l app=user-onboarding -n "{{ rhdh_ns }}" --timeout=120s
+    set -e
+    echo "Waiting for user-onboarding pods to be created and ready..."
+    for i in {1..24}; do
+      POD_COUNT=$(oc get pods -l app=user-onboarding -n "{{ rhdh_ns }}" --no-headers 2>/dev/null | wc -l || echo "0")
+      if [ "$POD_COUNT" -gt 0 ]; then
+        echo "Found $POD_COUNT pod(s), checking readiness..."
+        if oc wait --for=condition=ready pod -l app=user-onboarding -n "{{ rhdh_ns }}" --timeout=10s 2>/dev/null; then
+          echo "Pods are ready!"
+          exit 0
+        fi
+      fi
+      echo "Waiting for pods... ($i/24)"
+      sleep 5
+    done
+    echo "WARNING: Pods not ready after 2 minutes, continuing anyway..."
+    exit 0
   register: wait_user_onboarding_result
   changed_when: false
   failed_when: false
@@ -473,7 +488,22 @@
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
   ansible.builtin.shell: |
-    oc wait --for=condition=ready pod -l app=greeting -n "{{ rhdh_ns }}" --timeout=120s
+    set -e
+    echo "Waiting for greeting pods to be created and ready..."
+    for i in {1..24}; do
+      POD_COUNT=$(oc get pods -l app=greeting -n "{{ rhdh_ns }}" --no-headers 2>/dev/null | wc -l || echo "0")
+      if [ "$POD_COUNT" -gt 0 ]; then
+        echo "Found $POD_COUNT pod(s), checking readiness..."
+        if oc wait --for=condition=ready pod -l app=greeting -n "{{ rhdh_ns }}" --timeout=10s 2>/dev/null; then
+          echo "Pods are ready!"
+          exit 0
+        fi
+      fi
+      echo "Waiting for pods... ($i/24)"
+      sleep 5
+    done
+    echo "WARNING: Pods not ready after 2 minutes, continuing anyway..."
+    exit 0
   register: wait_greeting_result
   changed_when: false
   failed_when: false
