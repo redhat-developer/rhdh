@@ -66,9 +66,7 @@
 - name: Set PostgreSQL connection facts
   ansible.builtin.set_fact:
     dynamic_psql_secret_name: "{{ discovered_psql_secret_name }}"
-    dynamic_psql_svc_name: "{{ psql_details.stdout_lines | \
-      select('match', '^HOST=.*') | first | \
-      regex_replace('^HOST=(.*)$', '\\1') }}"
+    dynamic_psql_svc_name: "postgresql"  # Fixed: use correct service name
     dynamic_psql_user_key: "POSTGRES_USER"
     dynamic_psql_password_key: "POSTGRES_PASSWORD"
     # Extract username from existing psql_details
