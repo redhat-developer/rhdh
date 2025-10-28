@@ -382,6 +382,18 @@
     var: user_onboarding_patch_result.stdout_lines
   when: user_onboarding_workflow_exists.rc == 0
 
+- name: Patch user-onboarding workflow image if custom image is specified
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc -n "{{ rhdh_ns }}" patch sonataflow "user-onboarding" --type merge -p '{"spec":{"podTemplate":{"container":{"image":"{{ user_onboarding_image }}"}}}}'
+  register: user_onboarding_image_patch_result
+  changed_when: user_onboarding_image_patch_result.rc == 0
+  when: 
+    - user_onboarding_workflow_exists.rc == 0
+    - user_onboarding_image is defined
+    - user_onboarding_image != ""
+
 - name: Restart user-onboarding workflow pods after PostgreSQL patch
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
@@ -389,7 +401,7 @@
     oc delete pods -l app=user-onboarding -n "{{ rhdh_ns }}" --ignore-not-found=true
   register: restart_user_onboarding_after_patch_result
   changed_when: restart_user_onboarding_after_patch_result.rc == 0
-  when: user_onboarding_workflow_exists.rc == 0 and user_onboarding_patch_result.changed
+  when: user_onboarding_workflow_exists.rc == 0 and (user_onboarding_patch_result.changed or user_onboarding_image_patch_result.changed | default(false))
 
 - name: Check if backstage-backend-auth-secret exists
   kubernetes.core.k8s_info:
