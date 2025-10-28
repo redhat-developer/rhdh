@@ -26,7 +26,7 @@
 
     # Backend secret
     backstage_backend_auth_secret: "orchestrator123"
-    
+
     # Kubeconfig path
     kubeconfig_path: "{{ lookup('env', 'KUBECONFIG') | default('~/.kube/config', true) }}"
 
