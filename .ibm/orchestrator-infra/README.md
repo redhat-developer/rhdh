@@ -96,7 +96,9 @@ plugins:
     pluginConfig:
       orchestrator:
         dataIndexService:
-          url: http://sonataflow-platform-data-index-service.orchestrator-infra.svc.cluster.local:8080
+          url: http://sonataflow-platform-data-index-service.orchestrator-infra/graphql
+          # Or with full URL:
+          # url: http://sonataflow-platform-data-index-service.orchestrator-infra.svc.cluster.local:80/graphql
 
   - package: "@redhat/backstage-plugin-orchestrator"
     # Frontend configuration...
