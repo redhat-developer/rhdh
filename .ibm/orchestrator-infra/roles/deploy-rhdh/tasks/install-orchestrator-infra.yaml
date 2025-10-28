@@ -24,9 +24,10 @@
       apiVersion: operators.coreos.com/v1
       kind: OperatorGroup
       metadata:
-        name: openshift-serverless-logic
+        name: global-operators
         namespace: openshift-serverless-logic
       spec: {}
+  # Note: Empty spec enables AllNamespaces mode, which is required for the Logic Operator
 
 - name: Install Red Hat OpenShift Serverless Operator
   kubernetes.core.k8s:
@@ -145,16 +146,30 @@
         echo "Found CSV: $CSV"
         PHASE=$(oc get $CSV -n openshift-serverless-logic -o jsonpath='{.status.phase}')
         echo "CSV Phase: $PHASE"
-        if [ "$PHASE" = "Succeeded" ] || [ "$PHASE" = "Failed" ]; then
-          echo "Logic Operator CSV is available (Phase: $PHASE)"
-          echo "Note: Failed phase is acceptable if CRDs are installed"
-          exit 0
+        if [ "$PHASE" = "Succeeded" ]; then
+          echo "Logic Operator CSV is Succeeded"
+          break
         fi
       fi
       echo "Waiting for CSV to be ready... ($i/60)"
       sleep 10
     done
-    echo "ERROR: Logic Operator CSV not ready after 10 minutes"
+    
+    # Wait for the controller pod to be running
+    echo "Waiting for Logic Operator controller pod..."
+    for i in {1..30}; do
+      POD=$(oc get pods -n openshift-serverless-logic -l app.kubernetes.io/name=logic-operator-rhel8 -o name 2>/dev/null | head -n 1 || true)
+      if [ ! -z "$POD" ]; then
+        echo "Found controller pod: $POD"
+        if oc wait -n openshift-serverless-logic $POD --for=condition=Ready --timeout=300s 2>/dev/null; then
+          echo "Logic Operator controller is ready!"
+          exit 0
+        fi
+      fi
+      echo "Waiting for controller pod to be ready... ($i/30)"
+      sleep 10
+    done
+    echo "ERROR: Logic Operator controller not ready"
     exit 1
   register: logic_csv_wait
   retries: 3
@@ -286,6 +301,7 @@
           dataIndex:
             enabled: true
             persistence:
+              dbMigrationStrategy: service
               postgresql:
                 serviceRef:
                   name: postgresql
@@ -296,6 +312,7 @@
           jobService:
             enabled: true
             persistence:
+              dbMigrationStrategy: service
               postgresql:
                 serviceRef:
                   name: postgresql
@@ -305,13 +322,27 @@
                   name: postgresql-credentials
 
 - name: Wait for SonataFlow Platform to be ready
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
   ansible.builtin.shell: |
-    oc wait -n {{ rhdh_ns }} sonataflowplatform/sonataflow-platform --for=condition=Succeed --timeout=300s
+    set -e
+    echo "Waiting for SonataFlow Platform..."
+    # Wait for the platform to have the Ready condition
+    for i in {1..60}; do
+      READY=$(oc get sonataflowplatform/sonataflow-platform -n {{ rhdh_ns }} -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' 2>/dev/null || echo "")
+      if [ "$READY" = "True" ]; then
+        echo "SonataFlow Platform is ready!"
+        exit 0
+      fi
+      echo "Waiting for platform to be ready... ($i/60) - Ready: $READY"
+      sleep 10
+    done
+    echo "WARNING: SonataFlow Platform not ready after 10 minutes, continuing anyway..."
+    exit 0
   register: sfp_wait
   retries: 3
   delay: 10
   until: sfp_wait.rc == 0
-  ignore_errors: yes
 
 - name: Verify SonataFlow Platform status
   kubernetes.core.k8s_info:
@@ -327,25 +358,55 @@
   when: sfp_status.resources is defined and sfp_status.resources | length > 0
 
 - name: Wait for Data Index deployment
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
   ansible.builtin.shell: |
-    oc wait -n {{ rhdh_ns }} deploy/sonataflow-platform-data-index-service --for=condition=Available --timeout=300s
+    set -e
+    echo "Waiting for Data Index Service deployment to be created..."
+    for i in {1..30}; do
+      if oc get deploy/sonataflow-platform-data-index-service -n {{ rhdh_ns }} > /dev/null 2>&1; then
+        echo "Data Index deployment found, waiting for it to be available..."
+        oc wait -n {{ rhdh_ns }} deploy/sonataflow-platform-data-index-service --for=condition=Available --timeout=300s
+        exit 0
+      fi
+      echo "Waiting for deployment to be created... ($i/30)"
+      sleep 10
+    done
+    echo "WARNING: Data Index deployment not found after 5 minutes"
+    exit 1
   register: data_index_wait
   retries: 3
   delay: 10
   until: data_index_wait.rc == 0
-  ignore_errors: yes
 
 - name: Wait for Jobs Service deployment
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
   ansible.builtin.shell: |
-    oc wait -n {{ rhdh_ns }} deploy/sonataflow-platform-jobs-service --for=condition=Available --timeout=300s
+    set -e
+    echo "Waiting for Jobs Service deployment to be created..."
+    for i in {1..30}; do
+      if oc get deploy/sonataflow-platform-jobs-service -n {{ rhdh_ns }} > /dev/null 2>&1; then
+        echo "Jobs Service deployment found, waiting for it to be available..."
+        oc wait -n {{ rhdh_ns }} deploy/sonataflow-platform-jobs-service --for=condition=Available --timeout=300s
+        exit 0
+      fi
+      echo "Waiting for deployment to be created... ($i/30)"
+      sleep 10
+    done
+    echo "WARNING: Jobs Service deployment not found after 5 minutes"
+    exit 1
   register: jobs_service_wait
   retries: 3
   delay: 10
   until: jobs_service_wait.rc == 0
-  ignore_errors: yes
 
 - name: Wait for all pods to be ready
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
   ansible.builtin.shell: |
+    set -e
+    echo "Waiting for all pods to be ready in {{ rhdh_ns }}..."
     oc wait --for=condition=Ready pod --all -n {{ rhdh_ns }} --timeout=300s
   register: pods_wait
   retries: 3
