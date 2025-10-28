@@ -1,17 +1,113 @@
 ---
-- name: Run orchestrator infra install script
+- name: Create openshift-serverless namespace
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: openshift-serverless
+
+- name: Create openshift-serverless-logic namespace
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: openshift-serverless-logic
+
+- name: Install Red Hat OpenShift Serverless Operator
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: operators.coreos.com/v1alpha1
+      kind: Subscription
+      metadata:
+        name: serverless-operator
+        namespace: openshift-serverless
+      spec:
+        channel: stable
+        name: serverless-operator
+        source: redhat-operators
+        sourceNamespace: openshift-marketplace
+        installPlanApproval: Automatic
+
+- name: Wait for OpenShift Serverless Operator
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
-    VERSION: main
   ansible.builtin.shell: |
-    curl -sSL "https://raw.githubusercontent.com/redhat-developer/rhdh-operator/refs/heads/main/config/profile/rhdh/plugin-infra/plugin-infra.sh" | bash
-  register: orch_infra_result
-  ignore_errors: yes
+    set -e
+    echo "Waiting for Serverless Operator CSV..."
+    for i in {1..30}; do
+      CSV=$(oc get csv -n openshift-serverless -o name 2>/dev/null | grep serverless-operator || true)
+      if [ ! -z "$CSV" ]; then
+        echo "Found CSV: $CSV"
+        oc wait -n openshift-serverless $CSV --for=jsonpath='{.status.phase}'=Succeeded --timeout=300s
+        break
+      fi
+      echo "Waiting for CSV to appear... ($i/30)"
+      sleep 10
+    done
+  register: serverless_csv_wait
+  retries: 3
+  delay: 20
+  until: serverless_csv_wait.rc == 0
 
-- name: Display orchestrator infra install result
-  ansible.builtin.debug:
-    var: orch_infra_result.stdout_lines
-  when: orch_infra_result is defined
+- name: Create Knative Serving namespace
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: knative-serving
+
+- name: Create Knative Eventing namespace
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: knative-eventing
+
+- name: Install Red Hat OpenShift Serverless Logic Operator
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: operators.coreos.com/v1alpha1
+      kind: Subscription
+      metadata:
+        name: logic-operator-rhel8
+        namespace: openshift-serverless-logic
+      spec:
+        channel: alpha
+        name: logic-operator-rhel8
+        source: redhat-operators
+        sourceNamespace: openshift-marketplace
+        installPlanApproval: Automatic
+
+- name: Wait for Serverless Logic Operator CSV
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    set -e
+    echo "Waiting for Logic Operator CSV..."
+    for i in {1..30}; do
+      CSV=$(oc get csv -n openshift-serverless-logic -o name 2>/dev/null | grep logic-operator-rhel8 || true)
+      if [ ! -z "$CSV" ]; then
+        echo "Found CSV: $CSV"
+        oc wait -n openshift-serverless-logic $CSV --for=jsonpath='{.status.phase}'=Succeeded --timeout=300s
+        break
+      fi
+      echo "Waiting for CSV to appear... ($i/30)"
+      sleep 10
+    done
+  register: logic_csv_wait
+  retries: 3
+  delay: 20
+  until: logic_csv_wait.rc == 0
 
 - name: Wait for serverless operator components
   environment:
