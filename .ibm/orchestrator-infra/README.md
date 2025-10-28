@@ -23,19 +23,22 @@ RHDH/Backstage. It includes all the supporting services required for workflow or
 
 ```bash
 # Make scripts executable
-chmod +x deploy.sh scripts/*.sh
+chmod +x deploy-orchestrator.sh scripts/*.sh
 
 # Deploy all components
-./deploy.sh
+./deploy-orchestrator.sh
 
 # Deploy without Keycloak
-./deploy.sh --skip-keycloak
+./deploy-orchestrator.sh --no-keycloak
 
-# Deploy without GitOps
-./deploy.sh --skip-gitops
+# Deploy with GitOps
+./deploy-orchestrator.sh --enable-gitops
 
-# Clean install (removes existing deployments)
-./deploy.sh --clean
+# Update existing deployment (don't clean namespace)
+./deploy-orchestrator.sh --no-clean
+
+# Use custom namespace
+./deploy-orchestrator.sh --namespace my-orchestrator
 ```
 
 ## Individual Component Deployment
@@ -177,6 +180,19 @@ oc get secret openshift-gitops-cluster -n openshift-gitops -o jsonpath='{.data.a
 oc exec -it postgresql-0 -n orchestrator-infra -- psql -U postgres -d backstage_plugin_orchestrator -c "\dt"
 ```
 
+### Logic Operator CSV Failed
+
+If the Logic Operator CSV shows `Failed` state but CRDs are installed, this is expected behavior.
+The operator installs CRDs successfully even when CSV shows Failed status. Verify:
+
+```bash
+# Check if CRDs are available
+oc get crd sonataflowplatforms.sonataflow.org
+
+# Check if controller is running
+oc get pods -n openshift-serverless-logic
+```
+
 ### SonataFlow Services Not Starting
 
 ```bash
@@ -185,6 +201,9 @@ oc describe sonataflowplatform sonataflow-platform -n orchestrator-infra
 
 # Check Data Index logs
 oc logs -l app=sonataflow-platform-data-index-service -n orchestrator-infra
+
+# Verify Logic Operator controller is running
+oc get pods -n openshift-serverless-logic -l app.kubernetes.io/name=logic-operator-rhel8
 ```
 
 ### Workflow Deployment Issues
