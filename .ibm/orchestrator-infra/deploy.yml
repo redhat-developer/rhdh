@@ -17,6 +17,9 @@
     # Install Orchestrator infrastructure
     install_orchestrator_infra: true
 
+    # Orchestrator configuration
+    orchestrator_db_name: "backstage_plugin_orchestrator"
+
     # Keycloak
     deploy_keycloak: true
     rhdh_keycloak_auth: true
