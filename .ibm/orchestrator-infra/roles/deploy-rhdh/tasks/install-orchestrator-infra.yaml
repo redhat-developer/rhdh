@@ -17,6 +17,19 @@
       metadata:
         name: openshift-serverless-logic
 
+- name: Create OperatorGroup for Logic Operator
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: operators.coreos.com/v1
+      kind: OperatorGroup
+      metadata:
+        name: openshift-serverless-logic
+        namespace: openshift-serverless-logic
+      spec:
+        targetNamespaces:
+          - openshift-serverless-logic
+
 - name: Install Red Hat OpenShift Serverless Operator
   kubernetes.core.k8s:
     state: present
@@ -128,32 +141,23 @@
   ansible.builtin.shell: |
     set -e
     echo "Waiting for Logic Operator CSV..."
-    for i in {1..30}; do
+    for i in {1..60}; do
       CSV=$(oc get csv -n openshift-serverless-logic -o name 2>/dev/null | grep logic-operator-rhel8 || true)
       if [ ! -z "$CSV" ]; then
         echo "Found CSV: $CSV"
         oc wait -n openshift-serverless-logic $CSV --for=jsonpath='{.status.phase}'=Succeeded --timeout=300s
-        break
+        echo "Logic Operator CSV is ready!"
+        exit 0
       fi
-      echo "Waiting for CSV to appear... ($i/30)"
+      echo "Waiting for CSV to appear... ($i/60)"
       sleep 10
     done
+    echo "ERROR: Logic Operator CSV not found after 10 minutes"
+    exit 1
   register: logic_csv_wait
   retries: 3
   delay: 20
   until: logic_csv_wait.rc == 0
-
-- name: Wait for Logic Operator deployment
-  environment:
-    KUBECONFIG: "{{ kubeconfig_path }}"
-  ansible.builtin.shell: |
-    set -e
-    echo "Waiting for Logic Operator deployment..."
-    oc wait -n openshift-serverless-logic deploy/logic-operator-rhel8-controller-manager --for=condition=Available --timeout=5m
-  register: logic_deploy_wait
-  retries: 5
-  delay: 30
-  until: logic_deploy_wait.rc == 0
 
 - name: Wait for SonataFlow CRDs to be available
   environment:
