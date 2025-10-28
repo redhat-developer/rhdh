@@ -13,6 +13,21 @@
     var: orch_infra_result.stdout_lines
   when: orch_infra_result is defined
 
+- name: Wait for serverless operator components
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    set -e
+    echo "Waiting for Serverless Logic Operator to be ready..."
+    oc wait -n openshift-serverless deploy/knative-openshift --for=condition=Available --timeout=5m || true
+    oc wait -n knative-eventing knativeeventing/knative-eventing --for=condition=Ready --timeout=5m || true
+    oc wait -n knative-serving knativeserving/knative-serving --for=condition=Ready --timeout=5m || true
+    oc wait -n openshift-serverless-logic deploy/logic-operator-rhel8-controller-manager --for=condition=Available --timeout=5m || true
+  register: serverless_wait
+  retries: 5
+  delay: 30
+  until: serverless_wait is success
+
 - name: Create PostgreSQL Secret
   kubernetes.core.k8s:
     state: present
@@ -134,20 +149,6 @@
                   databaseName: sonataflow
                 secretRef:
                   name: postgresql-credentials
-
-- name: Wait for serverless operator components
-  environment:
-    KUBECONFIG: "{{ kubeconfig_path }}"
-  ansible.builtin.shell: |
-    set -e
-    oc wait -n openshift-serverless deploy/knative-openshift --for=condition=Available --timeout=5m || true
-    oc wait -n knative-eventing knativeeventing/knative-eventing --for=condition=Ready --timeout=5m || true
-    oc wait -n knative-serving knativeserving/knative-serving --for=condition=Ready --timeout=5m || true
-    oc wait -n openshift-serverless-logic deploy/logic-operator-rhel8-controller-manager --for=condition=Available --timeout=5m || true
-  register: serverless_wait
-  retries: 5
-  delay: 30
-  until: serverless_wait is success
 
 - name: Wait for SonataFlow Platform to be ready
   ansible.builtin.shell: |
