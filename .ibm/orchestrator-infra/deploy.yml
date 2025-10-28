@@ -21,7 +21,7 @@
     orchestrator_db_name: "backstage_plugin_orchestrator"
     workflow_repo: "https://github.com/rhdh-orchestrator-test/serverless-workflows.git"
     workflow_manifests_subpath: "workflows/experimentals/user-onboarding/manifests/"
-    
+
     # Workflow images - default to latest, can be overridden if needed
     user_onboarding_image: "quay.io/orchestrator/demo-user-onboarding:latest"
 
