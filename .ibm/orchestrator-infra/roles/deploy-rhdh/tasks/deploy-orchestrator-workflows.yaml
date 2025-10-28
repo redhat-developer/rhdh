@@ -53,10 +53,12 @@
     KUBECONFIG: "{{ kubeconfig_path }}"
   ansible.builtin.shell: |
     set -o pipefail
+    # Try to get HOST (may not exist in this secret)
     HOST=$(oc get secret "{{ discovered_psql_secret_name }}" \
-      -n "{{ rhdh_ns }}" -o jsonpath='{.data.POSTGRES_HOST}' | base64 -d)
+      -n "{{ rhdh_ns }}" -o jsonpath='{.data.POSTGRES_HOST}' 2>/dev/null | base64 -d || echo "")
+    # Get USER from correct key name
     USER=$(oc get secret "{{ discovered_psql_secret_name }}" \
-      -n "{{ rhdh_ns }}" -o jsonpath='{.data.POSTGRES_USER}' | base64 -d)
+      -n "{{ rhdh_ns }}" -o jsonpath='{.data.POSTGRESQL_USER}' | base64 -d)
     echo "HOST=$HOST"
     echo "USER=$USER"
     echo "SECRET_NAME={{ discovered_psql_secret_name }}"
@@ -67,8 +69,8 @@
   ansible.builtin.set_fact:
     dynamic_psql_secret_name: "{{ discovered_psql_secret_name }}"
     dynamic_psql_svc_name: "postgresql"  # Fixed: use correct service name
-    dynamic_psql_user_key: "POSTGRES_USER"
-    dynamic_psql_password_key: "POSTGRES_PASSWORD"
+    dynamic_psql_user_key: "POSTGRESQL_USER"  # Fixed: match secret key name
+    dynamic_psql_password_key: "POSTGRESQL_PASSWORD"  # Fixed: match secret key name
     # Extract username from existing psql_details
     psql_username: "{{ psql_details.stdout_lines | \
       select('match', '^USER=.*') | first | \
