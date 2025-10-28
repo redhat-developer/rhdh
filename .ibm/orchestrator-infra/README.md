@@ -203,7 +203,7 @@ oc describe sonataflowplatform sonataflow-platform -n orchestrator-infra
 oc logs -l app=sonataflow-platform-data-index-service -n orchestrator-infra
 
 # Verify Logic Operator controller is running
-oc get pods -n openshift-serverless-logic -l app.kubernetes.io/name=logic-operator-rhel8
+oc get pods -n openshift-serverless-logic -l app.kubernetes.io/name=sonataflow-operator
 ```
 
 ### Workflow Deployment Issues

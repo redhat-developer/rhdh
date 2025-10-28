@@ -158,7 +158,7 @@
     # Wait for the controller pod to be running
     echo "Waiting for Logic Operator controller pod..."
     for i in {1..30}; do
-      POD=$(oc get pods -n openshift-serverless-logic -l app.kubernetes.io/name=logic-operator-rhel8 -o name 2>/dev/null | head -n 1 || true)
+      POD=$(oc get pods -n openshift-serverless-logic -l app.kubernetes.io/name=sonataflow-operator -o name 2>/dev/null | head -n 1 || true)
       if [ ! -z "$POD" ]; then
         echo "Found controller pod: $POD"
         if oc wait -n openshift-serverless-logic $POD --for=condition=Ready --timeout=300s 2>/dev/null; then
