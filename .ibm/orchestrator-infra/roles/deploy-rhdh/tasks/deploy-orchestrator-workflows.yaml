@@ -158,7 +158,7 @@
     KUBECONFIG: "{{ kubeconfig_path }}"
   ansible.builtin.shell: |
     oc exec -i "{{ psql_pod_name }}" -n "{{ rhdh_ns }}" -- \
-      psql -U sonataflow -d sonataflow -c "CREATE DATABASE {{ orchestrator_db_name }};" 2>/dev/null || true
+      psql -U postgres -c "CREATE DATABASE {{ orchestrator_db_name }} OWNER sonataflow;" 2>/dev/null || true
   register: db_create_result
   changed_when: false
   ignore_errors: yes
