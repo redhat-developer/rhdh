@@ -327,14 +327,14 @@
   ansible.builtin.shell: |
     set -e
     echo "Waiting for SonataFlow Platform..."
-    # Wait for the platform to have the Ready condition
+    # Wait for the platform to have the Succeed condition
     for i in {1..60}; do
-      READY=$(oc get sonataflowplatform/sonataflow-platform -n {{ rhdh_ns }} -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' 2>/dev/null || echo "")
-      if [ "$READY" = "True" ]; then
+      SUCCEED=$(oc get sonataflowplatform/sonataflow-platform -n {{ rhdh_ns }} -o jsonpath='{.status.conditions[?(@.type=="Succeed")].status}' 2>/dev/null || echo "")
+      if [ "$SUCCEED" = "True" ]; then
         echo "SonataFlow Platform is ready!"
         exit 0
       fi
-      echo "Waiting for platform to be ready... ($i/60) - Ready: $READY"
+      echo "Waiting for platform to be ready... ($i/60) - Succeed: $SUCCEED"
       sleep 10
     done
     echo "WARNING: SonataFlow Platform not ready after 10 minutes, continuing anyway..."
