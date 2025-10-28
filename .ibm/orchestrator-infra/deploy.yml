@@ -6,8 +6,6 @@
   hosts: localhost
   connection: local
   gather_facts: yes
-  vars_files:
-    - roles/deploy-rhdh/defaults/main.yml
   vars:
     # Override: use dedicated namespace to avoid conflicts
     rhdh_ns: "orchestrator-infra"
@@ -28,6 +26,9 @@
 
     # Backend secret
     backstage_backend_auth_secret: "orchestrator123"
+    
+    # Kubeconfig path
+    kubeconfig_path: "{{ lookup('env', 'KUBECONFIG') | default('~/.kube/config', true) }}"
 
   tasks:
     - name: Display deployment configuration
