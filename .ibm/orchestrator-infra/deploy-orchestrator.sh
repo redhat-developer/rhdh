@@ -156,17 +156,40 @@ fi
 # Clean namespace if requested
 if [ "$CLEAN" = "true" ]; then
   log "Cleaning namespace $NAMESPACE..."
+  
+  # Delete all SonataFlow resources first (they can block namespace deletion)
+  if oc get namespace "$NAMESPACE" > /dev/null 2>&1; then
+    log "Deleting SonataFlow resources..."
+    oc delete sonataflow --all -n "$NAMESPACE" --ignore-not-found --wait=false 2> /dev/null || true
+    oc delete sonataflowplatform --all -n "$NAMESPACE" --ignore-not-found --wait=false 2> /dev/null || true
+    sleep 5
+  fi
+  
+  # Delete namespace
   oc delete namespace "$NAMESPACE" --ignore-not-found --wait=false 2> /dev/null || true
 
-  # Wait for namespace deletion
-  for _ in {1..30}; do
+  # Wait for namespace deletion with better feedback
+  log "Waiting for namespace deletion (this may take up to 1 minute)..."
+  for i in {1..30}; do
     if ! oc get namespace "$NAMESPACE" > /dev/null 2>&1; then
+      log "Namespace deleted successfully!"
       break
     fi
-    echo -n "."
+    if [ $((i % 5)) -eq 0 ]; then
+      echo "  Still waiting... ($i/30)"
+    else
+      echo -n "."
+    fi
     sleep 2
   done
   echo ""
+  
+  # Force cleanup of stuck resources if namespace still exists
+  if oc get namespace "$NAMESPACE" > /dev/null 2>&1; then
+    warn "Namespace still exists after 60s, attempting force cleanup..."
+    oc delete pods --all -n "$NAMESPACE" --force --grace-period=0 2> /dev/null || true
+    sleep 5
+  fi
 fi
 
 # Run deployment
