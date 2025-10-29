@@ -65,10 +65,11 @@ Examples:
 Integration with RHDH/Backstage:
   After deployment, configure your Backstage instance with:
   - PostgreSQL: postgresql.\${namespace}.svc.cluster.local:5432
-  - Data Index: http://sonataflow-platform-data-index-service.\${namespace}/graphql
+  - Data Index: http://sonataflow-platform-data-index-service.\${namespace}
   
-  Note: The service uses port 80 by default. Full URL with port:
-    http://sonataflow-platform-data-index-service.\${namespace}.svc.cluster.local:80/graphql
+  Note: The Orchestrator plugin automatically appends /graphql to the URL.
+        The service uses port 80 by default. Full URL with port:
+        http://sonataflow-platform-data-index-service.\${namespace}.svc.cluster.local:80
 
 EOF
 }
@@ -232,10 +233,12 @@ if [ $RET -eq 0 ]; then
   info "Integration with RHDH/Backstage:"
   echo "  Configure your Backstage with:"
   echo "    dataIndexService:"
-  echo "      url: http://sonataflow-platform-data-index-service.$NAMESPACE/graphql"
+  echo "      url: http://sonataflow-platform-data-index-service.$NAMESPACE"
+  echo ""
+  info "Note: The Orchestrator plugin automatically appends /graphql to the URL"
   echo ""
   info "Alternative full URL (if needed):"
-  echo "      url: http://sonataflow-platform-data-index-service.$NAMESPACE.svc.cluster.local:80/graphql"
+  echo "      url: http://sonataflow-platform-data-index-service.$NAMESPACE.svc.cluster.local:80"
   echo ""
 else
   error "Deployment failed with code: $RET"

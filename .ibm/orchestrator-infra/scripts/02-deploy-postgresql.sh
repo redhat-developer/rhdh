@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# Script para deploy do PostgreSQL para o Orchestrator
+# Script to deploy PostgreSQL for Orchestrator
 
 NAMESPACE="orchestrator-infra"
 PG_USER="postgres"
@@ -10,10 +10,10 @@ PG_DATABASE="orchestrator"
 
 echo "=== Deploying PostgreSQL for Orchestrator ==="
 
-# Criar namespace se não existir
+# Create namespace if it doesn't exist
 oc create namespace ${NAMESPACE} --dry-run=client -o yaml | oc apply -f -
 
-# Criar Secret do PostgreSQL
+# Create PostgreSQL Secret
 cat << EOF | oc apply -f -
 apiVersion: v1
 kind: Secret
@@ -27,7 +27,7 @@ stringData:
   database-name: ${PG_DATABASE}
 EOF
 
-# Criar PersistentVolumeClaim
+# Create PersistentVolumeClaim
 cat << EOF | oc apply -f -
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -110,7 +110,7 @@ spec:
           claimName: postgresql-pvc
 EOF
 
-# Criar Service
+# Create Service
 cat << EOF | oc apply -f -
 apiVersion: v1
 kind: Service
@@ -131,11 +131,11 @@ EOF
 echo "=== Waiting for PostgreSQL to be ready ==="
 oc wait statefulset postgresql -n ${NAMESPACE} --for=jsonpath='{.status.readyReplicas}'=1 --timeout=300s
 
-# Criar databases para os componentes do Orchestrator
+# Create databases for Orchestrator components
 echo "=== Creating Orchestrator databases ==="
 sleep 10
 
-# Criar Job para inicializar os databases
+# Create Job to initialize the databases
 cat << EOF | oc apply -f -
 apiVersion: batch/v1
 kind: Job
@@ -171,11 +171,11 @@ spec:
           set -e
           echo "Creating Orchestrator databases..."
           
-          # Databases para o Orchestrator
+          # Databases for Orchestrator
           psql -c "CREATE DATABASE backstage_plugin_orchestrator;" || echo "Database already exists"
           psql -c "CREATE DATABASE keycloak;" || echo "Database already exists"
           
-          # Criar usuários específicos
+          # Create specific users
           psql -c "CREATE USER orchestrator WITH PASSWORD 'orchestrator123';" || echo "User already exists"
           psql -c "CREATE USER keycloak WITH PASSWORD 'keycloak';" || echo "User already exists"
           
@@ -183,7 +183,7 @@ spec:
           psql -c "GRANT ALL PRIVILEGES ON DATABASE backstage_plugin_orchestrator TO orchestrator;"
           psql -c "GRANT ALL PRIVILEGES ON DATABASE keycloak TO keycloak;"
           
-          # Criar schemas no database do orchestrator
+          # Create schemas in the orchestrator database
           psql -d backstage_plugin_orchestrator -c "CREATE SCHEMA IF NOT EXISTS orchestrator;"
           psql -d backstage_plugin_orchestrator -c "GRANT ALL ON SCHEMA orchestrator TO orchestrator;"
           

@@ -266,6 +266,8 @@
     msg: "Greeting workflow already exists, skipping installation"
   when: greeting_exists.stdout != "not found"
 
+# ConfigMaps for user-onboarding removed - workflow simplified to greeting only
+
 - name: Wait for SonataFlow resources to be created
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"

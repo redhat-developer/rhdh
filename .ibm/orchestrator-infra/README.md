@@ -46,20 +46,20 @@ chmod +x deploy-orchestrator.sh scripts/*.sh
 You can deploy components individually:
 
 ```bash
-# Deploy PostgreSQL only
-./scripts/02-deploy-postgresql.sh
-
 # Deploy Keycloak only
 ./scripts/01-deploy-keycloak.sh
+
+# Deploy PostgreSQL only
+./scripts/02-deploy-postgresql.sh
 
 # Deploy Serverless Logic Operator and SonataFlow
 ./scripts/03-deploy-serverless-operator.sh
 
-# Deploy sample workflows
-./scripts/04-deploy-workflows.sh
-
 # Configure GitOps
-./scripts/05-deploy-gitops.sh
+./scripts/04-deploy-gitops.sh
+
+# Note: Sample workflows are now automatically deployed via Ansible
+# No manual script execution needed
 ```
 
 ## Configuration
@@ -96,9 +96,11 @@ plugins:
     pluginConfig:
       orchestrator:
         dataIndexService:
-          url: http://sonataflow-platform-data-index-service.orchestrator-infra/graphql
+          url: http://sonataflow-platform-data-index-service.orchestrator-infra
+          # Note: The plugin automatically appends /graphql to the URL
+          #
           # Or with full URL:
-          # url: http://sonataflow-platform-data-index-service.orchestrator-infra.svc.cluster.local:80/graphql
+          # url: http://sonataflow-platform-data-index-service.orchestrator-infra.svc.cluster.local:80
 
   - package: "@redhat/backstage-plugin-orchestrator"
     # Frontend configuration...
@@ -150,10 +152,9 @@ oc logs -n orchestrator-infra <pod-name>
 
 ## Sample Workflows
 
-The deployment includes sample workflows:
+The deployment includes the following sample workflow:
 
-- **user-onboarding**: Demonstrates user onboarding process
-- **infrastructure-provisioning**: Shows infrastructure provisioning workflow
+- **greeting**: Demonstrates a simple greeting workflow with language selection
 
 To list deployed workflows:
 

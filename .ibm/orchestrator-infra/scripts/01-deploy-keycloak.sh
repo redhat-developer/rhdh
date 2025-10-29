@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# Script para deploy do Keycloak para autenticação
+# Script to deploy Keycloak for authentication
 
 NAMESPACE="orchestrator-infra"
 KEYCLOAK_ADMIN_USER="admin"
@@ -9,10 +9,10 @@ KEYCLOAK_ADMIN_PASSWORD="admin123"
 
 echo "=== Deploying Keycloak for Orchestrator ==="
 
-# Criar namespace se não existir
+# Create namespace if it doesn't exist
 oc create namespace ${NAMESPACE} --dry-run=client -o yaml | oc apply -f -
 
-# Criar secret do Keycloak
+# Create Keycloak secret
 cat << EOF | oc apply -f -
 apiVersion: v1
 kind: Secret
@@ -91,7 +91,7 @@ spec:
           periodSeconds: 20
 EOF
 
-# Criar Service
+# Create Service
 cat << EOF | oc apply -f -
 apiVersion: v1
 kind: Service
@@ -111,7 +111,7 @@ spec:
   type: ClusterIP
 EOF
 
-# Criar Route
+# Create Route
 cat << EOF | oc apply -f -
 apiVersion: route.openshift.io/v1
 kind: Route
@@ -140,7 +140,7 @@ echo "Admin credentials: ${KEYCLOAK_ADMIN_USER} / ${KEYCLOAK_ADMIN_PASSWORD}"
 echo "=== Configuring Orchestrator realm ==="
 sleep 10
 
-# Criar ConfigMap com a configuração do realm
+# Create ConfigMap with realm configuration
 cat << 'EOF' | oc apply -f -
 apiVersion: v1
 kind: ConfigMap

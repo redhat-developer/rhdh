@@ -1,17 +1,17 @@
 #!/bin/bash
 set -e
 
-# Script para deploy do Serverless Logic Operator e SonataFlow Platform
+# Script to deploy Serverless Logic Operator and SonataFlow Platform
 
 NAMESPACE="orchestrator-infra"
 OPERATOR_NAMESPACE="openshift-serverless-logic"
 
 echo "=== Installing Serverless Logic Operator ==="
 
-# Criar namespace do operator
+# Create operator namespace
 oc create namespace ${OPERATOR_NAMESPACE} --dry-run=client -o yaml | oc apply -f -
 
-# Criar Subscription do Serverless Logic Operator
+# Create Serverless Logic Operator Subscription
 cat << EOF | oc apply -f -
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
@@ -26,7 +26,7 @@ spec:
   installPlanApproval: Automatic
 EOF
 
-# Aguardar o operator estar pronto
+# Wait for operator to be ready
 echo "=== Waiting for Serverless Logic Operator to be ready ==="
 sleep 30
 oc wait csv -n ${OPERATOR_NAMESPACE} \
@@ -34,7 +34,7 @@ oc wait csv -n ${OPERATOR_NAMESPACE} \
   --for=jsonpath='{.status.phase}'=Succeeded \
   --timeout=300s || echo "Operator may already be ready"
 
-# Verificar se o CRD foi criado
+# Verify CRD was created
 echo "=== Verifying SonataFlowPlatform CRD ==="
 until oc get crd sonataflowplatforms.sonataflow.org > /dev/null 2>&1; do
   echo "Waiting for SonataFlowPlatform CRD..."
@@ -43,7 +43,7 @@ done
 
 echo "=== Creating SonataFlowPlatform for Orchestrator ==="
 
-# Criar SonataFlowPlatform no namespace do orchestrator
+# Create SonataFlowPlatform in orchestrator namespace
 cat << EOF | oc apply -f -
 apiVersion: sonataflow.org/v1alpha08
 kind: SonataFlowPlatform
@@ -95,7 +95,7 @@ spec:
             databaseSchema: orchestrator
 EOF
 
-# Criar secret para o SonataFlow acessar o PostgreSQL
+# Create secret for SonataFlow to access PostgreSQL
 cat << EOF | oc apply -f -
 apiVersion: v1
 kind: Secret
@@ -111,7 +111,7 @@ EOF
 echo "=== Waiting for SonataFlow services to be ready ==="
 sleep 30
 
-# Verificar se os serviços estão rodando
+# Verify services are running
 echo "Checking Data Index Service..."
 kubectl get pods -n ${NAMESPACE} -l app=sonataflow-platform-data-index-service
 

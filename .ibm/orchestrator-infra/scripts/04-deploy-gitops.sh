@@ -1,14 +1,14 @@
 #!/bin/bash
 set -e
 
-# Script para configurar GitOps (OpenShift GitOps/ArgoCD) para o Orchestrator
+# Script to configure GitOps (OpenShift GitOps/ArgoCD) for Orchestrator
 
 NAMESPACE="orchestrator-infra"
 GITOPS_NAMESPACE="openshift-gitops"
 
 echo "=== Installing OpenShift GitOps Operator ==="
 
-# Instalar OpenShift GitOps Operator
+# Install OpenShift GitOps Operator
 cat << EOF | oc apply -f -
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
@@ -26,7 +26,7 @@ EOF
 echo "=== Waiting for GitOps Operator to be ready ==="
 sleep 30
 
-# Aguardar o operator estar pronto
+# Wait for operator to be ready
 until oc get deployment/cluster -n ${GITOPS_NAMESPACE} > /dev/null 2>&1; do
   echo "Waiting for GitOps deployment..."
   sleep 10
@@ -34,7 +34,7 @@ done
 
 echo "=== Configuring ArgoCD for Orchestrator ==="
 
-# Criar ArgoCD Application para o Orchestrator
+# Create ArgoCD Application for Orchestrator
 cat << EOF | oc apply -f -
 apiVersion: argoproj.io/v1alpha1
 kind: Application
@@ -66,7 +66,7 @@ spec:
         maxDuration: 3m
 EOF
 
-# Criar AppProject para o Orchestrator
+# Create AppProject for Orchestrator
 cat << EOF | oc apply -f -
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
@@ -111,7 +111,7 @@ subjects:
     namespace: ${GITOPS_NAMESPACE}
 EOF
 
-# Criar ConfigMap com repositórios de workflows
+# Create ConfigMap with workflow repositories
 cat << EOF | oc apply -f -
 apiVersion: v1
 kind: ConfigMap
@@ -135,14 +135,14 @@ data:
         path: templates
 EOF
 
-# Configurar webhook para sincronização automática (opcional)
+# Configure webhook for automatic synchronization (optional)
 echo "=== Setting up GitOps webhooks (optional) ==="
 
-# Obter a URL do ArgoCD
+# Get ArgoCD URL
 ARGO_ROUTE=$(oc get route openshift-gitops-server -n ${GITOPS_NAMESPACE} -o jsonpath='{.spec.host}')
 echo "ArgoCD URL: https://${ARGO_ROUTE}"
 
-# Criar secret para webhook (se necessário)
+# Create secret for webhook (if needed)
 WEBHOOK_SECRET=$(openssl rand -hex 20)
 cat << EOF | oc apply -f -
 apiVersion: v1

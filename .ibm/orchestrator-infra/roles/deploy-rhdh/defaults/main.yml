@@ -7,7 +7,7 @@ rhdh_ns: "rhdh-operator"
 
 # RHDH Operator version source to deploy from
 # Options: NEXT, STABLE-RC, PRODUCTION
-# NOTA: NEXT frequentemente tem problemas com imagens não disponíveis
+# NOTE: NEXT frequently has issues with unavailable images
 rhdh_operator_source: "STABLE-RC"
 
 # RHDH files directory

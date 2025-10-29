@@ -7,7 +7,7 @@ metadata:
   namespace: rhdh-ci
 data:
   app-config-orchestrator.yaml: |
-    # Configuração do Orchestrator Plugin
+    # Orchestrator Plugin Configuration
     orchestrator:
       dataIndexService:
         url: http://sonataflow-platform-data-index-service.orchestrator-infra.svc.cluster.local
@@ -17,7 +17,7 @@ data:
             servers:
               - url: http://sonataflow-platform-data-index-service.orchestrator-infra.svc.cluster.local
 
-    # Configurações do backend
+    # Backend configuration
     backend:
       orchestrator:
         sonataFlowService:
@@ -30,7 +30,7 @@ data:
           baseUrl: http://sonataflow-platform-data-index-service.orchestrator-infra.svc.cluster.local
           port: 80
 
-    # Configuração de catálogo para workflows
+    # Catalog configuration for workflows
     catalog:
       locations:
         - type: url

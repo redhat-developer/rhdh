@@ -148,14 +148,14 @@
         set -e
         DEPLOY=$(oc get deployment -n {{ rhdh_ns }} -l app.kubernetes.io/name=rhdh-operator -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
         if [ -z "$DEPLOY" ]; then
-          # fallback para deployments que contenham rhdh-operator no nome
+          # fallback for deployments containing rhdh-operator in the name
           DEPLOY=$(oc get deployment -n {{ rhdh_ns }} -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' | grep -m1 rhdh-operator || true)
         fi
         if [ -z "$DEPLOY" ]; then
-          echo "Não foi possível descobrir o deployment do operador RHDH" >&2
+          echo "Could not discover the RHDH operator deployment" >&2
           exit 1
         fi
-        echo "Aguardando rollout do deployment $DEPLOY"
+        echo "Waiting for rollout of deployment $DEPLOY"
         oc rollout status deployment/$DEPLOY -n {{ rhdh_ns }} --timeout=120s
 
 - name: Wait for Backstage CRD to be available
