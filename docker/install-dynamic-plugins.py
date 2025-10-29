@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 import copy
 from enum import StrEnum
 import hashlib
@@ -29,6 +28,7 @@ import binascii
 import atexit
 import time
 import signal
+import re
 
 """
 Dynamic Plugin Installer for Backstage Application
@@ -47,6 +47,7 @@ Configuration:
     The `dynamic-plugins.yaml` file must contain:
     - a `plugins` list of objects with the following properties:
         - `package`: the package to install (NPM package name, local path starting with './', or OCI image starting with 'oci://')
+            - For OCI packages ONLY, the tag or digest can be replaced by the `{{inherit}}` tag (requires the included configuration to contain a valid tag or digest to inherit from)
         - `integrity`: a string containing the integrity hash of the package (required for remote NPM packages unless SKIP_INTEGRITY_CHECK is set, optional for local packages, not used for OCI packages)
         - `pluginConfig`: an optional plugin-specific configuration fragment
         - `disabled`: an optional boolean to disable the plugin (`false` by default)
@@ -93,6 +94,209 @@ class InstallException(Exception):
     """Exception class from which every exception in this library will derive."""
     pass
 
+# Refer to https://github.com/opencontainers/image-spec/blob/main/descriptor.md#registered-algorithms
+RECOGNIZED_ALGORITHMS = (
+    'sha512',
+    'sha256',
+    'blake3',
+)
+
+def merge(source, destination, prefix = ''):
+    for key, value in source.items():
+        if isinstance(value, dict):
+            # get node or create one
+            node = destination.setdefault(key, {})
+            merge(value, node, key + '.')
+        else:
+            # if key exists in destination trigger an error
+            if key in destination and destination[key] != value:
+                raise InstallException(f"Config key '{ prefix + key }' defined differently for 2 dynamic plugins")
+
+            destination[key] = value
+
+    return destination
+
+def maybeMergeConfig(config, globalConfig):
+    if config is not None and isinstance(config, dict):
+        print('\t==> Merging plugin-specific configuration', flush=True)
+        return merge(config, globalConfig)
+    else:
+        return globalConfig
+
+def mergePlugin(plugin: dict, allPlugins: dict, dynamicPluginsFile: str, level: int):
+    package = plugin['package']
+    if not isinstance(package, str):
+        raise InstallException(f"content of the \'plugins.package\' field must be a string in {dynamicPluginsFile}")
+
+    if package.startswith('oci://'):
+        return OciPackageMerger(plugin, dynamicPluginsFile, allPlugins).merge_plugin(level)
+    else:
+        # Use NPMPackageMerger for all other package types (NPM, git, local, tarball, etc.)
+        return NPMPackageMerger(plugin, dynamicPluginsFile, allPlugins).merge_plugin(level)
+
+class PackageMerger:
+    def __init__(self, plugin: dict, dynamicPluginsFile: str, allPlugins: dict):
+        self.plugin = plugin
+        self.dynamicPluginsFile = dynamicPluginsFile
+        self.allPlugins = allPlugins
+        
+    def parse_plugin_key(self, package: str) -> str:
+        """Parses the package and returns the plugin key. Must be implemented by subclasses."""
+        return package
+    
+    def add_new_plugin(self, pluginKey: str):
+        """Adds a new plugin to the allPlugins dict."""
+        self.allPlugins[pluginKey] = self.plugin
+    def override_plugin(self, pluginKey: str):
+        """Overrides an existing plugin config with a new plugin config in the allPlugins dict."""
+        for key in self.plugin:
+            self.allPlugins[pluginKey][key] = self.plugin[key]
+    def merge_plugin(self, level: int):
+        pluginKey = self.plugin['package']
+        if not isinstance(pluginKey, str):
+            raise InstallException(f"content of the \'package\' field must be a string in {self.dynamicPluginsFile}")
+        pluginKey = self.parse_plugin_key(pluginKey)
+        
+        if pluginKey not in self.allPlugins:
+            print(f'\n======= Adding new dynamic plugin configuration for {pluginKey}', flush=True)
+            # Keep track of the level of the plugin modification to know when dupe conflicts occur in `includes` and main config files
+            self.plugin["last_modified_level"] = level
+            self.add_new_plugin(pluginKey)
+        else:
+            # Override the included plugins with fields in the main plugins list
+            print('\n======= Overriding dynamic plugin configuration', pluginKey, flush=True)
+            
+            # Check for duplicate plugin configurations defined at the same level (level = 0 for `includes` and 1 for the main config file)
+            if self.allPlugins[pluginKey].get("last_modified_level") == level:
+                raise InstallException(f"Duplicate plugin configuration for {self.plugin['package']} found in {self.dynamicPluginsFile}.")
+            
+            self.allPlugins[pluginKey]["last_modified_level"] = level
+            self.override_plugin(pluginKey)
+
+class NPMPackageMerger(PackageMerger):
+    """Handles NPM package merging with version stripping for plugin keys."""
+    # Ref: https://docs.npmjs.com/cli/v11/using-npm/package-spec
+    # Pattern for standard NPM packages: [@scope/]package[@version|@tag|@version-range|] or [@scope/]package
+    # Pattern for standard NPM packages: [@scope/]package[@version|@tag|@version-range|] or [@scope/]package
+    NPM_PACKAGE_PATTERN = (
+        r'(@[^/]+/)?' # Optional @scope
+        r'([^@]+)'     # Package name
+        r'(?:@(.+))?'  # Optional @version, @tag, or @version-range
+        r'$'
+    )
+
+    STANDARD_NPM_PACKAGE_PATTERN = r'^' + NPM_PACKAGE_PATTERN
+
+    # Pattern for NPM aliases: alias@npm:[@scope/]package[@version|@tag]
+    NPM_ALIAS_PATTERN = r'^([^@]+)@npm:' + NPM_PACKAGE_PATTERN
+
+    GITHUB_USERNAME_PATTERN = r'([^/@]+)/([^/#]+)'  # username/repo
+
+    # Pattern for git URLs to strip out the #ref part for the plugin key
+    GIT_URL_PATTERNS = [
+        # git+https://...[#ref]
+        (
+            r'^git\+https?://[^#]+'   # git+http(s)://<repo>
+            r'(?:#(.+))?'             # Optional #ref
+            r'$'
+        ),
+        # git+ssh://...[#ref]
+        (
+            r'^git\+ssh://[^#]+'
+            r'(?:#(.+))?'
+            r'$'
+        ),
+        # git://...[#ref]
+        (
+            r'^git://[^#]+'
+            r'(?:#(.+))?'
+            r'$'
+        ),
+        # https://github.com/user/repo(.git)?[#ref]
+        (
+            r'^https://github\.com/[^/]+/[^/#]+'
+            r'(?:\.git)?'
+            r'(?:#(.+))?'
+            r'$'
+        ),
+        # git@github.com:user/repo(.git)?[#ref]
+        (
+            r'^git@github\.com:[^/]+/[^/#]+'
+            r'(?:\.git)?'
+            r'(?:#(.+))?'
+            r'$'
+        ),
+        # github:user/repo[#ref]
+        (
+            r'^github:' + GITHUB_USERNAME_PATTERN +
+            r'(?:#(.+))?' +
+            r'$'
+        ),
+        # user/repo[#ref]
+        (
+            r'^' + GITHUB_USERNAME_PATTERN +
+            r'(?:#(.+))?' +
+            r'$'
+        )
+    ]
+    
+    def __init__(self, plugin: dict, dynamicPluginsFile: str, allPlugins: dict):
+        super().__init__(plugin, dynamicPluginsFile, allPlugins)
+    
+    def parse_plugin_key(self, package: str) -> str:
+        """
+        Parses NPM package specification and returns a version-stripped plugin key.
+        
+        Handles various NPM package formats specified in https://docs.npmjs.com/cli/v11/using-npm/package-spec:
+        - Standard packages: [@scope/]package[@version] -> [@scope/]package
+        - Aliases: alias@npm:package[@version] -> alias@npm:package
+        - Git URLs: git+https://... -> git+https://... (without #ref)
+        - GitHub shorthand: user/repo#ref -> user/repo
+        - Local paths: ./path -> ./path (unchanged)
+        - Tarballs: kept as-is since there is no standard format for them
+        """
+        
+        # Local packages don't need version stripping
+        if package.startswith('./'):
+            return package
+        
+        # Tarballs are kept as-is since there is no standard format for them
+        if package.endswith('.tgz'):
+            return package
+        
+        # remove @version from NPM aliases: alias@npm:package[@version]
+        alias_match = re.match(self.NPM_ALIAS_PATTERN, package)
+        if alias_match:
+            alias_name = alias_match.group(1)
+            package_scope = alias_match.group(2) or ''
+            npm_package = alias_match.group(3)
+            print(alias_match.group(4))
+            # Recursively parse the npm package part to strip its version
+            npm_key = self._strip_npm_package_version(package_scope + npm_package)
+            return f"{alias_name}@npm:{npm_key}"
+        
+        # Check for git URLs
+        for git_pattern in self.GIT_URL_PATTERNS:
+
+            git_match = re.match(git_pattern, package)
+    
+            if git_match:
+                # Remove the #ref part if present
+                return package.split('#')[0]
+        # Handle standard NPM packages
+        return self._strip_npm_package_version(package)
+
+    def _strip_npm_package_version(self, package: str) -> str:
+        """Strip version from standard NPM package name."""
+        npm_match = re.match(self.STANDARD_NPM_PACKAGE_PATTERN, package)
+        if npm_match:
+            scope = npm_match.group(1) or ''
+            pkg_name = npm_match.group(2)
+            return f"{scope}{pkg_name}"
+        
+        # If no pattern matches, return as-is (could be tarball URL or other format)
+        return package
+
 class PluginInstaller:
     """Base class for plugin installers with common functionality."""
     
@@ -118,6 +322,102 @@ class PluginInstaller:
         """Install a plugin and return the plugin path. Must be implemented by subclasses."""
         raise NotImplementedError()
 
+class OciPackageMerger(PackageMerger):
+    EXPECTED_OCI_PATTERN = (
+        r'^(oci://[^\s:@]+)'
+        r'(?:'
+            r':([^\s!@:]+)'  # tag only
+            r'|'
+            r'@((?:sha256|sha512|blake3):[^\s!@:]+)'  # digest only
+        r')'
+        r'!([^\s]+)$'
+    )
+    def __init__(self, plugin: dict, dynamicPluginsFile: str, allPlugins: dict):
+        super().__init__(plugin, dynamicPluginsFile, allPlugins)
+    def parse_plugin_key(self, package: str) -> tuple[str, str, bool]:
+        """
+        Parses and validates OCI package name format.
+        Generates a plugin key and version from the OCI package name.
+        Also checks if the {{inherit}} tag is used correctly.
+        
+        Args:
+            package: The OCI package name.
+        Returns:
+            pluginKey: plugin key generated from the OCI package name
+            version: detected tag or digest of the plugin
+            inheritVersion: boolean indicating if the `{{inherit}}` tag is used
+        """  
+        match = re.match(self.EXPECTED_OCI_PATTERN, package)
+        if not match:
+            raise InstallException(f"oci package \'{package}\' is not in the expected format \'oci://<registry>:<tag>!<path>\' or \'oci://<registry>@sha<algo>:<digest>!<path>\' in {self.dynamicPluginsFile} where <algo> is one of {RECOGNIZED_ALGORITHMS}")
+        
+        # Strip away the version (tag or digest) from the package string, resulting in oci://<registry>:!<path>
+        # This helps ensure keys used to identify OCI plugins are independent of the version of the plugin
+        registry = match.group(1)
+        tag_version = match.group(2)
+        digest_version = match.group(3)
+
+        version = tag_version if tag_version else digest_version
+        
+        path = match.group(4) 
+        
+        # {{inherit}} tag indicates that the version should be inherited from the included configuration. Must NOT have a SHA digest included.
+        inheritVersion = (tag_version == "{{inherit}}" and digest_version == None)
+        pluginKey = f"{registry}:!{path}"
+        
+        return pluginKey, version, inheritVersion
+    def add_new_plugin(self, version: str, inheritVersion: bool, pluginKey: str):
+        """
+        Adds a new plugin to the allPlugins dict.
+        """
+        if inheritVersion is True:
+            # Cannot use {{inherit}} for the initial plugin configuration
+            raise InstallException(f"ERROR: {{{{inherit}}}} tag is set and there is currently no resolved tag or digest for {self.plugin['package']} in {self.dynamicPluginsFile}.")
+        else:
+            self.plugin["version"] = version
+        self.allPlugins[pluginKey] = self.plugin
+    def override_plugin(self, version: str, inheritVersion: bool, pluginKey: str):
+        """
+        Overrides an existing plugin config with a new plugin config in the allPlugins dict.
+        If `inheritVersion` is True, the version of the existing plugin config will be ignored.
+        """
+        if inheritVersion is not True:
+            self.allPlugins[pluginKey]['package'] = self.plugin['package'] # Override package since no version inheritance        
+            
+            if self.allPlugins[pluginKey]['version'] != version:
+                print(f"INFO: Overriding version for {pluginKey} from `{self.allPlugins[pluginKey]['version']}` to `{version}`")
+            
+            self.allPlugins[pluginKey]["version"] = version
+            
+        for key in self.plugin:
+            if key == 'package':
+                continue
+            if key == "version":
+                continue
+            self.allPlugins[pluginKey][key] = self.plugin[key]
+            
+    def merge_plugin(self, level: int):
+        package = self.plugin['package']
+        if not isinstance(package, str):
+            raise InstallException(f"content of the \'package\' field must be a string in {self.dynamicPluginsFile}")
+        pluginKey, version, inheritVersion = self.parse_plugin_key(package)
+        
+        # If package does not already exist, add it
+        if pluginKey not in self.allPlugins:
+            print(f'\n======= Adding new dynamic plugin configuration for version `{version}` of {pluginKey}', flush=True)
+            # Keep track of the level of the plugin modification to know when dupe conflicts occur in `includes` and main config files
+            self.plugin["last_modified_level"] = level
+            self.add_new_plugin(version, inheritVersion, pluginKey)
+        else:
+            # Override the included plugins with fields in the main plugins list
+            print('\n======= Overriding dynamic plugin configuration', pluginKey, flush=True)
+            
+            # Check for duplicate plugin configurations defined at the same level (level = 0 for `includes` and 1 for the main config file)
+            if self.allPlugins[pluginKey].get("last_modified_level") == level:
+                raise InstallException(f"Duplicate plugin configuration for {self.plugin['package']} found in {self.dynamicPluginsFile}.")
+        
+            self.allPlugins[pluginKey]["last_modified_level"] = level
+            self.override_plugin(version, inheritVersion, pluginKey)
 class OciDownloader:
     """Helper class for downloading and extracting plugins from OCI container images."""
     
@@ -235,7 +535,9 @@ class OciPluginInstaller(PluginInstaller):
     def install(self, plugin: dict, plugin_path_by_hash: dict) -> str:
         """Install an OCI plugin package."""
         package = plugin['package']
-        
+        if plugin.get('version') is None:
+            raise InstallException(f"Tag or Digest is not set for {package}. Please ensure there is at least one plugin configurations contains a valid tag or digest.")
+
         try:
             plugin_path = self.downloader.download(package)
             
@@ -391,21 +693,6 @@ RECOGNIZED_ALGORITHMS = (
     'sha256',
 )
 
-def merge(source, destination, prefix = ''):
-    for key, value in source.items():
-        if isinstance(value, dict):
-            # get node or create one
-            node = destination.setdefault(key, {})
-            merge(value, node, key + '.')
-        else:
-            # if key exists in destination trigger an error
-            if key in destination and destination[key] != value:
-                raise InstallException(f"Config key '{ prefix + key }' defined differently for 2 dynamic plugins")
-
-            destination[key] = value
-
-    return destination
-
 def get_local_package_info(package_path: str) -> dict:
     """Get package information from a local package to include in hash calculation."""
     try:
@@ -446,30 +733,6 @@ def get_local_package_info(package_path: str) -> dict:
         # If we can't read the package info, include the error in hash
         # This ensures we'll try to reinstall if there are permission issues, etc.
         return {'_error': str(e)}
-
-def maybeMergeConfig(config, globalConfig):
-    if config is not None and isinstance(config, dict):
-        print('\t==> Merging plugin-specific configuration', flush=True)
-        return merge(config, globalConfig)
-    else:
-        return globalConfig
-
-def mergePlugin(plugin: dict, allPlugins: dict, dynamicPluginsFile: str):
-    package = plugin['package']
-    if not isinstance(package, str):
-        raise InstallException(f"content of the \'plugins.package\' field must be a string in {dynamicPluginsFile}")
-
-    # if `package` already exists in `allPlugins`, then override its fields
-    if package not in allPlugins:
-        allPlugins[package] = plugin
-        return
-
-    # override the included plugins with fields in the main plugins list
-    print('\n======= Overriding dynamic plugin configuration', package, flush=True)
-    for key in plugin:
-        if key == 'package':
-            continue
-        allPlugins[package][key] = plugin[key]
 
 def verify_package_integrity(plugin: dict, archive: str, working_directory: str) -> None:
     package = plugin['package']
@@ -549,9 +812,9 @@ def main():
         exit(0)
 
     globalConfig = {
-      'dynamicPlugins': {
-            'rootDirectory': 'dynamic-plugins-root'
-      }
+        'dynamicPlugins': {
+            'rootDirectory': 'dynamic-plugins-root',
+        }
     }
 
     with open(dynamicPluginsFile, 'r') as file:
@@ -570,7 +833,7 @@ def main():
     allPlugins = {}
 
     if skipIntegrityCheck:
-        print(f"SKIP_INTEGRITY_CHECK has been set to {skipIntegrityCheck}, skipping integrity check of packages")
+        print(f"SKIP_INTEGRITY_CHECK has been set to {skipIntegrityCheck}, skipping integrity check of remote NPM packages")
 
     if 'includes' in content:
         includes = content['includes']
@@ -601,7 +864,7 @@ def main():
             raise InstallException(f"content of the \'plugins\' field must be a list in {include}")
 
         for plugin in includePlugins:
-            mergePlugin(plugin, allPlugins, dynamicPluginsFile)
+            mergePlugin(plugin, allPlugins, include, level=0)
 
     if 'plugins' in content:
         plugins = content['plugins']
@@ -612,13 +875,15 @@ def main():
         raise InstallException(f"content of the \'plugins\' field must be a list in {dynamicPluginsFile}")
 
     for plugin in plugins:
-        mergePlugin(plugin, allPlugins, dynamicPluginsFile)
-
-    # add a hash for each plugin configuration to detect changes
+        mergePlugin(plugin, allPlugins, dynamicPluginsFile, level=1)
+        
+    # add a hash for each plugin configuration to detect changes and check if version field is set for OCI packages
     for plugin in allPlugins.values():
         hash_dict = copy.deepcopy(plugin)
         # remove elements that shouldn't be tracked for installation detection
         hash_dict.pop('pluginConfig', None)
+        # Don't track the internal version field used to track version inheritance
+        hash_dict.pop('version', None)
         
         package = plugin['package']
         if package.startswith('./'):
@@ -655,4 +920,5 @@ def main():
         print('\n======= Removing previously installed dynamic plugin', plugin_path_by_hash[hash_value], flush=True)
         shutil.rmtree(plugin_directory, ignore_errors=True, onerror=None)
 
-main()
+if __name__ == '__main__':
+    main()

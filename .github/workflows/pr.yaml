@@ -161,6 +161,9 @@ jobs:
         with:
           cache-prefix: ${{ runner.os }}-v${{ matrix.node-version }}
 
+      - name: Install Python dependencies
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
+        run: pip install -r python/requirements-dev.in -r python/requirements-build.in -r python/requirements.txt
       - name: Run prettier
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         run: yarn prettier:check --continue --affected
@@ -187,6 +190,10 @@ jobs:
       - name: Change directory to dynamic-plugins
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         run: cd ./dynamic-plugins
+
+      - name: Run Python tests
+        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
+        run: pytest test_install-dynamic-plugins.py -v
 
       - name: Install dynamic plugin dependencies
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
