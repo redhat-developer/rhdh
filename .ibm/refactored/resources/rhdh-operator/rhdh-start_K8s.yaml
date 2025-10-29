@@ -1,0 +1,24 @@
+kind: Backstage
+apiVersion: rhdh.redhat.com/v1alpha3
+metadata:
+  name: rhdh
+spec:
+  application:
+    imagePullSecrets:
+      - "rh-pull-secret"
+    route:
+      enabled: false
+    image: "quay.io/$QUAY_REPO:$TAG_NAME"
+    appConfig:
+      configMaps:
+        - name: app-config-rhdh
+        - name: dynamic-plugins-config
+      mountPath: /opt/app-root/src
+    dynamicPluginsConfigMapName: dynamic-plugins
+    extraEnvs:
+      envs:
+        - name: NODE_OPTIONS
+          value: "--no-node-snapshot"
+      secrets:
+        - name: rhdh-secrets
+        - name: redis-secret
