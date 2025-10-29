@@ -50,7 +50,7 @@ main() {
   export QUAY_REPO="rhdh/rhdh-hub-rhel9"
   export TAG_NAME="1.8-157"
 
-  # testing on ROSA
+  # testing on aws with OC 4.20
   export K8S_CLUSTER_TOKEN=$K8S_CLUSTER_TOKEN_TEMPORARY;
   export K8S_CLUSTER_URL="https://api.ci-ln-w2rif4b-76ef8.aws-2.ci.openshift.org:6443"
 
