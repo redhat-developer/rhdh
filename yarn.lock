@@ -7814,7 +7814,7 @@ __metadata:
     "@backstage/backend-test-utils": 1.8.0
     "@backstage/cli": 0.34.1
     "@backstage/config": 1.3.3
-    "@types/express": 4.17.23
+    "@types/express": 4.17.24
     "@types/supertest": 6.0.3
     express: 4.21.2
     msw: 1.3.5
@@ -7843,7 +7843,7 @@ __metadata:
     "@backstage/plugin-auth-backend-module-guest-provider": 0.2.11
     "@backstage/plugin-permission-common": 0.9.1
     "@backstage/types": 1.2.1
-    "@types/express": 4.17.23
+    "@types/express": 4.17.24
     "@types/supertest": 6.0.3
     express: 4.21.2
     express-promise-router: 4.1.1
@@ -7868,7 +7868,7 @@ __metadata:
     "@backstage/backend-test-utils": 1.8.0
     "@backstage/cli": 0.34.1
     "@backstage/config": 1.3.3
-    "@types/express": 4.17.23
+    "@types/express": 4.17.24
     "@types/mock-fs": 4.13.4
     "@types/supertest": 6.0.3
     express: 4.21.2
@@ -13975,7 +13975,7 @@ __metadata:
     "@testing-library/jest-dom": 6.9.1
     "@testing-library/react": 14.3.1
     "@testing-library/react-hooks": 8.0.1
-    "@types/node": 22.18.11
+    "@types/node": 22.18.12
     "@types/react": 18.3.26
     "@types/react-dom": 18.3.7
     prettier: 3.6.2
@@ -16893,7 +16893,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/express@npm:*, @types/express@npm:4.17.23, @types/express@npm:^4.17.13, @types/express@npm:^4.17.21, @types/express@npm:^4.17.6":
+"@types/express@npm:*, @types/express@npm:^4.17.13, @types/express@npm:^4.17.21, @types/express@npm:^4.17.6":
   version: 4.17.23
   resolution: "@types/express@npm:4.17.23"
   dependencies:
@@ -16902,6 +16902,18 @@ __metadata:
     "@types/qs": "*"
     "@types/serve-static": "*"
   checksum: f1a020c6ad6dc0169a3277199605d60649d463a72c920673e0f230ab1e76f2d3aa23daabd25ef8e62eda314e26b879306c58ec806e669e1e40ca37a4b73a44b0
+  languageName: node
+  linkType: hard
+
+"@types/express@npm:4.17.24":
+  version: 4.17.24
+  resolution: "@types/express@npm:4.17.24"
+  dependencies:
+    "@types/body-parser": "*"
+    "@types/express-serve-static-core": ^4.17.33
+    "@types/qs": "*"
+    "@types/serve-static": "*"
+  checksum: d4fc77260e7f06d5822bbdb528efbf98d00e8f3c8d278c10de5c38f86026411e3911f32aea74b957096d66d9ac5a31f4c7c3748a72802267901043002754ee4a
   languageName: node
   linkType: hard
 
@@ -17193,12 +17205,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:22.18.11":
-  version: 22.18.11
-  resolution: "@types/node@npm:22.18.11"
+"@types/node@npm:22.18.12":
+  version: 22.18.12
+  resolution: "@types/node@npm:22.18.12"
   dependencies:
     undici-types: ~6.21.0
-  checksum: ba15911228dc021dd3e97f29b6205988e5455e9bd1b8117aaf9f0860b1d5b9fb200f14bd53f6aff62748a382f23bed282e8f9e7318a009e56d5e93f07726eb5c
+  checksum: f39098a09dff1df8ca4892ffcf810889b79f31f9585f7a8f27e3d047126cebc9b9fa9954b21215cc45a9793198895e81852067b019d89e03825d4f57310aa3c9
   languageName: node
   linkType: hard
 
@@ -18643,7 +18655,7 @@ __metadata:
     "@testing-library/react": 14.3.1
     "@testing-library/react-hooks": 8.0.1
     "@testing-library/user-event": 14.6.1
-    "@types/node": 22.18.11
+    "@types/node": 22.18.12
     "@types/react": 18.3.26
     "@types/react-dom": 18.3.7
     lodash: 4.17.21
@@ -19348,7 +19360,7 @@ __metadata:
     "@opentelemetry/sdk-metrics": 1.30.1
     "@opentelemetry/sdk-node": 0.57.2
     "@red-hat-developer-hub/backstage-plugin-translations-backend": 0.0.2
-    "@types/express": 4.17.23
+    "@types/express": 4.17.24
     "@types/global-agent": 2.1.3
     app: "workspace:*"
     app-next: "workspace:*"
@@ -34500,7 +34512,7 @@ __metadata:
     jsdom: ^26.1.0
     lint-staged: 15.5.2
     node-gyp: 10.3.1
-    sherif: 1.6.1
+    sherif: 1.7.0
     turbo: 2.5.8
   languageName: unknown
   linkType: soft
@@ -34987,58 +34999,58 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sherif-darwin-arm64@npm:1.6.1":
-  version: 1.6.1
-  resolution: "sherif-darwin-arm64@npm:1.6.1"
+"sherif-darwin-arm64@npm:1.7.0":
+  version: 1.7.0
+  resolution: "sherif-darwin-arm64@npm:1.7.0"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"sherif-darwin-x64@npm:1.6.1":
-  version: 1.6.1
-  resolution: "sherif-darwin-x64@npm:1.6.1"
+"sherif-darwin-x64@npm:1.7.0":
+  version: 1.7.0
+  resolution: "sherif-darwin-x64@npm:1.7.0"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"sherif-linux-arm64@npm:1.6.1":
-  version: 1.6.1
-  resolution: "sherif-linux-arm64@npm:1.6.1"
+"sherif-linux-arm64@npm:1.7.0":
+  version: 1.7.0
+  resolution: "sherif-linux-arm64@npm:1.7.0"
   conditions: os=linux & cpu=arm64
   languageName: node
   linkType: hard
 
-"sherif-linux-x64@npm:1.6.1":
-  version: 1.6.1
-  resolution: "sherif-linux-x64@npm:1.6.1"
+"sherif-linux-x64@npm:1.7.0":
+  version: 1.7.0
+  resolution: "sherif-linux-x64@npm:1.7.0"
   conditions: os=linux & cpu=x64
   languageName: node
   linkType: hard
 
-"sherif-windows-arm64@npm:1.6.1":
-  version: 1.6.1
-  resolution: "sherif-windows-arm64@npm:1.6.1"
+"sherif-windows-arm64@npm:1.7.0":
+  version: 1.7.0
+  resolution: "sherif-windows-arm64@npm:1.7.0"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
 
-"sherif-windows-x64@npm:1.6.1":
-  version: 1.6.1
-  resolution: "sherif-windows-x64@npm:1.6.1"
+"sherif-windows-x64@npm:1.7.0":
+  version: 1.7.0
+  resolution: "sherif-windows-x64@npm:1.7.0"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"sherif@npm:1.6.1":
-  version: 1.6.1
-  resolution: "sherif@npm:1.6.1"
+"sherif@npm:1.7.0":
+  version: 1.7.0
+  resolution: "sherif@npm:1.7.0"
   dependencies:
-    sherif-darwin-arm64: 1.6.1
-    sherif-darwin-x64: 1.6.1
-    sherif-linux-arm64: 1.6.1
-    sherif-linux-x64: 1.6.1
-    sherif-windows-arm64: 1.6.1
-    sherif-windows-x64: 1.6.1
+    sherif-darwin-arm64: 1.7.0
+    sherif-darwin-x64: 1.7.0
+    sherif-linux-arm64: 1.7.0
+    sherif-linux-x64: 1.7.0
+    sherif-windows-arm64: 1.7.0
+    sherif-windows-x64: 1.7.0
   dependenciesMeta:
     sherif-darwin-arm64:
       optional: true
@@ -35054,7 +35066,7 @@ __metadata:
       optional: true
   bin:
     sherif: index.js
-  checksum: 341f06ce37803699e114831f6b25e229954ac51afd4cb77bd6da0d118668f81ce729b1c22d500bb859cd2377f92b1f05307d382f00ee9830370549508b35709b
+  checksum: 7b68b8b116ab504b3023ba12143fa6df511d3b417300e88a5412aa11217630818a128d29ba329fce2484ffade58087bd3d1be1446c5ab741608eb45d6eefbad4
   languageName: node
   linkType: hard
 
