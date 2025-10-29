@@ -42,10 +42,17 @@ main() {
   echo "Log file: ${LOGFILE}"
   echo "JOB_NAME : $JOB_NAME"
 
-  CHART_VERSION=$(get_chart_version "$CHART_MAJOR_VERSION")
-  export CHART_VERSION
   detect_ocp
   detect_container_platform
+
+  export CHART_VERSION="1.8-157-CI"
+  export HELM_CHART_URL="oci://quay.io/rhdh/chart"
+  export QUAY_REPO="rhdh/rhdh-hub-rhel9"
+  export TAG_NAME="1.8-157"
+
+  # testing on aws with OC 4.20
+  export K8S_CLUSTER_TOKEN=$K8S_CLUSTER_TOKEN_TEMPORARY
+  export K8S_CLUSTER_URL="https://api.ci-ln-s0fp8xb-76ef8.aws-2.ci.openshift.org:6443"
 
   case "$JOB_NAME" in
     *aks*helm*nightly*)
