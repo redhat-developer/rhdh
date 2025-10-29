@@ -786,4 +786,42 @@ test.describe.serial("Test RBAC", () => {
       await expect(dropdownMenuLocator).toBeHidden();
     });
   });
+
+  test.describe
+    .serial("Test RBAC plugin: policyDecisionPrecedence: basic — prioritize basic before conditional", () => {
+    test("should allow read as defined in basic policy and conditional", async ({
+      page,
+    }) => {
+      const common = new Common(page);
+      const uiHelper = new UIhelper(page);
+
+      // Should allow read for user7: has static allow read via CSV and is also permitted via conditional policy
+      await common.loginAsKeycloakUser(
+        process.env.QE_USER7_ID,
+        process.env.QE_USER7_PASS,
+      );
+      await uiHelper.openSidebar("Catalog");
+      await uiHelper.selectMuiBox("Kind", "Component");
+      await uiHelper.searchInputPlaceholder("mock-component");
+      await expect(
+        page.getByRole("link", { name: "mock-component-qe-7" }),
+      ).toBeVisible();
+    });
+
+    test("should deny read as defined in basic policy, conditional policy should be disregarded", async ({
+      page,
+    }) => {
+      const common = new Common(page);
+      const uiHelper = new UIhelper(page);
+
+      // Should deny read for user8: has static deny read via CSV even though permitted by conditional policy
+      await common.loginAsKeycloakUser(
+        process.env.QE_USER8_ID,
+        process.env.QE_USER8_PASS,
+      );
+      await uiHelper.openSidebar("Catalog");
+      await uiHelper.selectMuiBox("Kind", "Component");
+      await uiHelper.verifyTableIsEmpty();
+    });
+  });
 });
