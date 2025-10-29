@@ -699,8 +699,12 @@ delete_tekton_pipelines() {
 }
 
 cluster_setup_ocp_helm() {
+  echo "=== Starting cluster_setup_ocp_helm ==="
+  echo "Installing Pipelines Operator..."
   install_pipelines_operator
+  echo "Installing Crunchy Postgres Operator..."
   install_crunchy_postgres_ocp_operator
+  echo "=== Finished cluster_setup_ocp_helm ==="
 }
 
 cluster_setup_ocp_operator() {
@@ -820,7 +824,7 @@ rbac_deployment() {
 initiate_deployments() {
   cd "${DIR}"
   base_deployment
-  rbac_deployment
+  # rbac_deployment
 }
 
 # install base RHDH deployment before upgrade
