@@ -1,0 +1,25 @@
+- name: Set fact for rhdh chart souce
+  ansible.builtin.set_fact:
+    rhdh_chart_source: "{% if install_default_chart | bool %}https://github.com/redhat-developer/rhdh-chart.git{% else %}https://github.com/rhdhorchestrator/rhdh-chart.git{% endif %}"
+
+- name: Install Helm
+  ansible.builtin.import_tasks: tasks/install-helm.yaml
+
+- name: Re-create work directory
+  ansible.builtin.file:
+    path: "{{ rhdh_orch_work_dir }}"
+    state: "{{ item }}"
+  loop:
+    - absent
+    - directory
+
+- name: Create config directory
+  ansible.builtin.file:
+    path: "{{ rhdh_config_dir }}"
+    state: "directory"
+
+- name: Git clone rhdh chart repo
+  ansible.builtin.git:
+    repo: "{{ rhdh_chart_source }}"
+    version: "{{ rhdh_chart_version }}"
+    dest: "{{ rhdh_orch_work_dir }}/rhdh-chart"

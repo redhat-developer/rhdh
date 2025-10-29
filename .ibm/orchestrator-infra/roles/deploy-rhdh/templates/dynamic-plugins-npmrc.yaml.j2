@@ -1,0 +1,9 @@
+---
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: dynamic-plugins-npmrc
+  namespace: {{ rhdh_ns }}
+data:
+  .npmrc: {{ ("registry=" + npmrc_registry) | b64encode }}

@@ -1,0 +1,22 @@
+- name: Setup
+  ansible.builtin.import_tasks: setup.yml
+
+- name: Deploy Greeting workflow
+  ansible.builtin.import_tasks: greeting-wf.yml
+  when: deploy_greeting | bool
+
+- name: Deploy MTA 7 workflow
+  ansible.builtin.import_tasks: mta7-wf.yml
+  when: deploy_mta_7 | bool
+
+- name: Deploy M2K workflow Manual Steps
+  ansible.builtin.import_tasks: m2k-wf.yml
+  when: deploy_m2k | bool
+
+- name: Deploy M2K workflow using script (M4 only)
+  ansible.builtin.import_tasks: m2k-wf-script.yml
+  when: deploy_m2k_script | bool
+
+- name: Deploy user on-boarding workflow
+  ansible.builtin.import_tasks: user-on-boarding-wf.yml
+  when: deploy_user_on_boarding | bool
