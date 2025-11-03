@@ -34512,8 +34512,8 @@ __metadata:
     jsdom: ^26.1.0
     lint-staged: 15.5.2
     node-gyp: 10.3.1
-    sherif: 1.7.0
-    turbo: 2.5.8
+    sherif: 1.8.0
+    turbo: 2.6.0
   languageName: unknown
   linkType: soft
 
@@ -34999,58 +34999,74 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sherif-darwin-arm64@npm:1.7.0":
-  version: 1.7.0
-  resolution: "sherif-darwin-arm64@npm:1.7.0"
+"sherif-darwin-arm64@npm:1.8.0":
+  version: 1.8.0
+  resolution: "sherif-darwin-arm64@npm:1.8.0"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"sherif-darwin-x64@npm:1.7.0":
-  version: 1.7.0
-  resolution: "sherif-darwin-x64@npm:1.7.0"
+"sherif-darwin-x64@npm:1.8.0":
+  version: 1.8.0
+  resolution: "sherif-darwin-x64@npm:1.8.0"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"sherif-linux-arm64@npm:1.7.0":
-  version: 1.7.0
-  resolution: "sherif-linux-arm64@npm:1.7.0"
+"sherif-linux-arm64-musl@npm:1.8.0":
+  version: 1.8.0
+  resolution: "sherif-linux-arm64-musl@npm:1.8.0"
   conditions: os=linux & cpu=arm64
   languageName: node
   linkType: hard
 
-"sherif-linux-x64@npm:1.7.0":
-  version: 1.7.0
-  resolution: "sherif-linux-x64@npm:1.7.0"
+"sherif-linux-arm64@npm:1.8.0":
+  version: 1.8.0
+  resolution: "sherif-linux-arm64@npm:1.8.0"
+  conditions: os=linux & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"sherif-linux-x64-musl@npm:1.8.0":
+  version: 1.8.0
+  resolution: "sherif-linux-x64-musl@npm:1.8.0"
   conditions: os=linux & cpu=x64
   languageName: node
   linkType: hard
 
-"sherif-windows-arm64@npm:1.7.0":
-  version: 1.7.0
-  resolution: "sherif-windows-arm64@npm:1.7.0"
+"sherif-linux-x64@npm:1.8.0":
+  version: 1.8.0
+  resolution: "sherif-linux-x64@npm:1.8.0"
+  conditions: os=linux & cpu=x64
+  languageName: node
+  linkType: hard
+
+"sherif-windows-arm64@npm:1.8.0":
+  version: 1.8.0
+  resolution: "sherif-windows-arm64@npm:1.8.0"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
 
-"sherif-windows-x64@npm:1.7.0":
-  version: 1.7.0
-  resolution: "sherif-windows-x64@npm:1.7.0"
+"sherif-windows-x64@npm:1.8.0":
+  version: 1.8.0
+  resolution: "sherif-windows-x64@npm:1.8.0"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"sherif@npm:1.7.0":
-  version: 1.7.0
-  resolution: "sherif@npm:1.7.0"
+"sherif@npm:1.8.0":
+  version: 1.8.0
+  resolution: "sherif@npm:1.8.0"
   dependencies:
-    sherif-darwin-arm64: 1.7.0
-    sherif-darwin-x64: 1.7.0
-    sherif-linux-arm64: 1.7.0
-    sherif-linux-x64: 1.7.0
-    sherif-windows-arm64: 1.7.0
-    sherif-windows-x64: 1.7.0
+    sherif-darwin-arm64: 1.8.0
+    sherif-darwin-x64: 1.8.0
+    sherif-linux-arm64: 1.8.0
+    sherif-linux-arm64-musl: 1.8.0
+    sherif-linux-x64: 1.8.0
+    sherif-linux-x64-musl: 1.8.0
+    sherif-windows-arm64: 1.8.0
+    sherif-windows-x64: 1.8.0
   dependenciesMeta:
     sherif-darwin-arm64:
       optional: true
@@ -35058,7 +35074,11 @@ __metadata:
       optional: true
     sherif-linux-arm64:
       optional: true
+    sherif-linux-arm64-musl:
+      optional: true
     sherif-linux-x64:
+      optional: true
+    sherif-linux-x64-musl:
       optional: true
     sherif-windows-arm64:
       optional: true
@@ -35066,7 +35086,7 @@ __metadata:
       optional: true
   bin:
     sherif: index.js
-  checksum: 7b68b8b116ab504b3023ba12143fa6df511d3b417300e88a5412aa11217630818a128d29ba329fce2484ffade58087bd3d1be1446c5ab741608eb45d6eefbad4
+  checksum: 99050ca4667565b17bb67ec6906bdeb672a9dd5e2ade0c534701f1317823e0f8ec75215df3c01159248300be109075f5e78e0bb4e32247ed6c498c194bee3488
   languageName: node
   linkType: hard
 
@@ -37020,58 +37040,58 @@ __metadata:
   languageName: node
   linkType: hard
 
-"turbo-darwin-64@npm:2.5.8":
-  version: 2.5.8
-  resolution: "turbo-darwin-64@npm:2.5.8"
+"turbo-darwin-64@npm:2.6.0":
+  version: 2.6.0
+  resolution: "turbo-darwin-64@npm:2.6.0"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"turbo-darwin-arm64@npm:2.5.8":
-  version: 2.5.8
-  resolution: "turbo-darwin-arm64@npm:2.5.8"
+"turbo-darwin-arm64@npm:2.6.0":
+  version: 2.6.0
+  resolution: "turbo-darwin-arm64@npm:2.6.0"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"turbo-linux-64@npm:2.5.8":
-  version: 2.5.8
-  resolution: "turbo-linux-64@npm:2.5.8"
+"turbo-linux-64@npm:2.6.0":
+  version: 2.6.0
+  resolution: "turbo-linux-64@npm:2.6.0"
   conditions: os=linux & cpu=x64
   languageName: node
   linkType: hard
 
-"turbo-linux-arm64@npm:2.5.8":
-  version: 2.5.8
-  resolution: "turbo-linux-arm64@npm:2.5.8"
+"turbo-linux-arm64@npm:2.6.0":
+  version: 2.6.0
+  resolution: "turbo-linux-arm64@npm:2.6.0"
   conditions: os=linux & cpu=arm64
   languageName: node
   linkType: hard
 
-"turbo-windows-64@npm:2.5.8":
-  version: 2.5.8
-  resolution: "turbo-windows-64@npm:2.5.8"
+"turbo-windows-64@npm:2.6.0":
+  version: 2.6.0
+  resolution: "turbo-windows-64@npm:2.6.0"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"turbo-windows-arm64@npm:2.5.8":
-  version: 2.5.8
-  resolution: "turbo-windows-arm64@npm:2.5.8"
+"turbo-windows-arm64@npm:2.6.0":
+  version: 2.6.0
+  resolution: "turbo-windows-arm64@npm:2.6.0"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
 
-"turbo@npm:2.5.8":
-  version: 2.5.8
-  resolution: "turbo@npm:2.5.8"
+"turbo@npm:2.6.0":
+  version: 2.6.0
+  resolution: "turbo@npm:2.6.0"
   dependencies:
-    turbo-darwin-64: 2.5.8
-    turbo-darwin-arm64: 2.5.8
-    turbo-linux-64: 2.5.8
-    turbo-linux-arm64: 2.5.8
-    turbo-windows-64: 2.5.8
-    turbo-windows-arm64: 2.5.8
+    turbo-darwin-64: 2.6.0
+    turbo-darwin-arm64: 2.6.0
+    turbo-linux-64: 2.6.0
+    turbo-linux-arm64: 2.6.0
+    turbo-windows-64: 2.6.0
+    turbo-windows-arm64: 2.6.0
   dependenciesMeta:
     turbo-darwin-64:
       optional: true
@@ -37087,7 +37107,7 @@ __metadata:
       optional: true
   bin:
     turbo: bin/turbo
-  checksum: f1d6d84e828f7f2d41ae7598507267c7ed8de22307507a304da8353ce4e47cf38c1c7c26e6249c1247ea7702eebd6c062b6fcf037c565b2a94417690956c8cb5
+  checksum: c77632d31be7672660ccaa755dcee977001f2aa13c3a3fa659881286ab81ed17813eb7b55f11ba0ccb35a627aeee1c39e75904df56e8955962eea219a0a55a4e
   languageName: node
   linkType: hard
 
