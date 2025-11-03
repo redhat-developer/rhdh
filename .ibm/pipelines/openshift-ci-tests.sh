@@ -45,6 +45,7 @@ main() {
   export CHART_VERSION
   detect_ocp
   detect_container_platform
+  export TAG_NAME="1.7"
 
   case "$JOB_NAME" in
     *aks*helm*nightly*)
