@@ -15,7 +15,7 @@
 
 # Stage 1 - Build nodejs skeleton
 # https://registry.access.redhat.com/ubi9/nodejs-22
-FROM registry.access.redhat.com/ubi9/nodejs-22:9.6-1757333865 AS skeleton
+FROM registry.access.redhat.com/ubi9/nodejs-22:9.6-1761625559@sha256:9d0d55a9add9d4daebe21f08f0b7dacc1ce997b1e660f46ec194a91aaef75394 AS skeleton
 # hadolint ignore=DL3002
 USER 0
 
@@ -32,7 +32,7 @@ RUN dnf install -q -y --allowerasing --nobest \
   libeconf libedit libevent libfdisk libffi libfido2 libgcc libgcrypt libgomp libgpg-error libidn2 libksba libmnl libmodulemd libmount libmpc libnet libnghttp2 libnl3 \
   libpipeline libpkgconf libpwquality librepo libreport-filesystem librhsm libseccomp libselinux libsemanage libsepol libsigsegv libslirp libsmartcols libsolv libstdc++ libstdc++-devel \
   libtasn1 libunistring libuser libutempter libuuid libverto libxcrypt libxcrypt-compat libxcrypt-devel libxml2 libyaml libzstd lua-libs lz4-libs make man mpfr \
-  ncurses ncurses-base ncurses-libs nettle nodejs nodejs-devel nodejs-docs nodejs-full-i18n nodejs-libs nodejs-nodemon nodejs-packaging npm npth nss_wrapper-libs openldap \
+  ncurses ncurses-base ncurses-libs nettle npth nss_wrapper-libs openldap \
   openssh openssh-clients openssl openssl-devel openssl-fips-provider openssl-fips-provider-so openssl-libs p11-kit p11-kit-trust pam passwd pcre pcre2 pcre2-syntax \
   perl perl-AutoLoader perl-B perl-base perl-Carp perl-Class-Struct perl-constant perl-Data-Dumper perl-Digest perl-Digest-MD5 perl-DynaLoader perl-Encode perl-Errno perl-Error \
   perl-Exporter perl-Fcntl perl-File-Basename perl-File-Find perl-File-Path perl-File-stat perl-File-Temp perl-FileHandle perl-Getopt-Long perl-Getopt-Std perl-Git perl-HTTP-Tiny \
@@ -230,7 +230,7 @@ RUN hadFail=0; for d in $(find /tmp -name "yarn*log*" || true) $(find /tmp/xfs-*
 
 # Stage 5 - Build the runner image
 # https://registry.access.redhat.com/ubi9/nodejs-22-minimal
-FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:9.6-1755749564 AS runner
+FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:9.6-1760544659@sha256:d5bcdacfef806413e124784bf023d56da6eac76d8f55d4a2d056586df8e95e25 AS runner
 USER 0
 
 ENV EXTERNAL_SOURCE_NESTED=.
