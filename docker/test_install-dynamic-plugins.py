@@ -1142,7 +1142,6 @@ class TestNpmPluginInstallerIntegration:
         assert (extracted_dir / "index.js").is_symlink()
     
     @pytest.mark.integration
-    @pytest.mark.slow
     def test_install_real_npm_package(self, tmp_path):
         """Integration test with actual npm pack on a real package."""
         import shutil
@@ -1468,7 +1467,6 @@ class TestOciIntegration:
     """Integration tests with real OCI images."""
     
     @pytest.mark.integration
-    @pytest.mark.slow
     def test_download_real_oci_image(self, tmp_path):
         """Test downloading and extracting a real OCI image."""
         import shutil
@@ -1492,7 +1490,6 @@ class TestOciIntegration:
         assert 'name' in package_json
     
     @pytest.mark.integration
-    @pytest.mark.slow
     def test_get_digest_from_real_image(self, tmp_path):
         """Test getting digest from a real OCI image."""
         import shutil
@@ -1510,7 +1507,6 @@ class TestOciIntegration:
         assert len(digest) > 0
     
     @pytest.mark.integration
-    @pytest.mark.slow
     def test_install_oci_plugin_creates_hash_file(self, tmp_path):
         """Test full installation of OCI plugin with hash file creation."""
         import shutil
@@ -1539,7 +1535,6 @@ class TestOciIntegration:
         assert len(digest) > 0
     
     @pytest.mark.integration
-    @pytest.mark.slow
     def test_download_multiple_plugins_from_same_image(self, tmp_path):
         """Test downloading multiple plugins from the same OCI image."""
         import shutil
@@ -1570,7 +1565,6 @@ class TestOciIntegration:
         assert plugin_paths[0] != plugin_paths[1]
     
     @pytest.mark.integration
-    @pytest.mark.slow
     def test_oci_plugin_with_inherit_version(self, tmp_path):
         """Test that inherit version pattern works in plugin merge."""
         # This tests the version inheritance at the merge level
