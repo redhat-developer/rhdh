@@ -11,7 +11,7 @@ LOGFILE="test-log"
 # https://docs.ci.openshift.org/docs/architecture/step-registry/#available-environment-variables
 # https://docs.prow.k8s.io/docs/jobs/#job-environment-variables
 JOB_NAME="${JOB_NAME:-unknown-job}"
-TAG_NAME="${TAG_NAME:-1.7.2}"
+TAG_NAME="${TAG_NAME:-1.7}"
 OPENSHIFT_CI="${OPENSHIFT_CI:-false}"
 REPO_OWNER="${REPO_OWNER:-redhat-developer}"
 REPO_NAME="${REPO_NAME:-rhdh}"
