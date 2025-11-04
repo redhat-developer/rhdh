@@ -27,7 +27,7 @@ save_overall_result 0 # Initialize overall result to 0 (success).
 
 # Define a cleanup function to be executed upon script exit.
 source "${DIR}/cleanup.sh"
-trap cleanup EXIT INT ERR
+# trap cleanup EXIT INT ERR
 
 echo "Sourcing utils.sh"
 # shellcheck source=.ibm/pipelines/utils.sh
@@ -46,6 +46,9 @@ main() {
   detect_ocp
   detect_container_platform
   export TAG_NAME="1.7"
+
+  export K8S_CLUSTER_TOKEN=$K8S_CLUSTER_TOKEN_TEMPORARY
+  export K8S_CLUSTER_URL='https://api.b3omh-4iamx-sic.hjmf.p3.openshiftapps.com:443'
 
   case "$JOB_NAME" in
     *aks*helm*nightly*)
