@@ -72,3 +72,8 @@ dynamic-plugins-root/*
 .ibm/pipelines/shared_dir/*
 .ibm/pipelines/artifact_dir/*
 .ibm/pipelines/env_override.local.sh
+
+# Python Caches
+**/__pycache__/
+**/.pytest_cache/
+**/.venv/
