@@ -233,7 +233,7 @@ upstream:
       pullPolicy: Always
       registry: quay.io
       repository: rhdh/rhdh-hub-rhel9
-      tag: "1.7"
+      tag: "1.7-163"
     extraEnvVars:
       - name: BACKEND_SECRET
         valueFrom:
