@@ -243,17 +243,6 @@ install_crunchy_postgres_k8s_operator(){
 install_serverless_logic_ocp_operator(){
   install_subscription logic-operator-rhel8 openshift-operators stable logic-operator-rhel8 redhat-operators openshift-marketplace
   check_operator_status 300 "openshift-operators" "OpenShift Serverless Logic Operator" "Succeeded"
-  
-  # Wait for SonataFlow APIs to be fully available before proceeding with Helm operations
-  # This prevents Helm lookup errors in CI/CD environments where there's a timing gap
-  echo "Waiting for SonataFlow APIs to be available for Helm operations..."
-  timeout 300 bash -c "
-    while ! oc api-resources | grep -q 'sonataflowplatforms.*sonataflow.org/v1alpha08'; do
-      echo 'Waiting for sonataflow.org/v1alpha08 API to be available...'
-      sleep 10
-    done
-    echo 'SonataFlow APIs are now available for Helm operations.'
-  " || echo "Warning: Timeout waiting for SonataFlow APIs. Proceeding anyway."
 }
 
 # Installs the OpenShift Serverless Operator (Knative) from OpenShift Marketplace
@@ -725,6 +714,20 @@ install_orchestrator_infra_chart() {
     --wait --timeout=5m \
     --set serverlessLogicOperator.subscription.spec.installPlanApproval=Automatic \
     --set serverlessOperator.subscription.spec.installPlanApproval=Automatic
+
+  until [ "$(oc get pods -n openshift-serverless --no-headers 2> /dev/null | wc -l)" -gt 0 ]; do
+    sleep 5
+  done
+
+  until [ "$(oc get pods -n openshift-serverless-logic --no-headers 2> /dev/null | wc -l)" -gt 0 ]; do
+    sleep 5
+  done
+
+  oc wait pod --all --for=condition=Ready --namespace=openshift-serverless --timeout=5m
+  oc wait pod --all --for=condition=Ready --namespace=openshift-serverless-logic --timeout=5m
+
+  oc get crd | grep "sonataflow" || echo "Sonataflow CRDs not found"
+  oc get crd | grep "knative" || echo "Serverless CRDs not found"
 }
 
 # Helper function to get common helm set parameters
