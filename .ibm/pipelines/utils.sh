@@ -176,6 +176,55 @@ spec:
 EOD
 }
 
+# Creates an OpenShift Operator subscription with specific version
+install_subscription_with_version(){
+  name=$1  # Name of the subscription
+  namespace=$2 # Namespace to install the operator
+  channel=$3 # Channel to subscribe to
+  package=$4 # Package name of the operator
+  source_name=$5 # Name of the source catalog
+  source_namespace=$6 # Source namespace (typically openshift-marketplace or olm)
+  starting_csv=$7 # Starting CSV (specific version)
+  # Apply the subscription manifest with specific version
+  oc apply -f - << EOD
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: $name
+  namespace: $namespace
+spec:
+  channel: $channel
+  installPlanApproval: Manual
+  name: $package
+  source: $source_name
+  sourceNamespace: $source_namespace
+  startingCSV: $starting_csv
+EOD
+}
+
+# Approves InstallPlan for operators with Manual approval
+approve_install_plan() {
+  local namespace=$1
+  local operator_name=$2
+  local timeout=${3:-300}
+  
+  echo "Waiting for InstallPlan to be created for operator: ${operator_name} in namespace: ${namespace}"
+  
+  timeout "${timeout}" bash -c "
+    while true; do
+      INSTALL_PLAN=\$(oc get installplan -n '${namespace}' -o jsonpath='{.items[?(@.spec.approved==false)].metadata.name}' | head -1)
+      if [[ -n \"\${INSTALL_PLAN}\" ]]; then
+        echo \"Found InstallPlan: \${INSTALL_PLAN}. Approving...\"
+        oc patch installplan \"\${INSTALL_PLAN}\" -n '${namespace}' --type merge -p '{\"spec\":{\"approved\":true}}'
+        echo \"InstallPlan \${INSTALL_PLAN} approved successfully.\"
+        break
+      fi
+      echo \"Waiting for InstallPlan to be created...\"
+      sleep 10
+    done
+  " || echo "Timed out after ${timeout} seconds waiting for InstallPlan creation/approval."
+}
+
 create_secret_dockerconfigjson(){
   namespace=$1
   secret_name=$2
@@ -240,8 +289,14 @@ install_crunchy_postgres_k8s_operator(){
 }
 
 # Installs the OpenShift Serverless Logic Operator (SonataFlow) from OpenShift Marketplace
+# Using stable channel with fixed version 1.35.0 to ensure compatibility with v1alpha08 API version
 install_serverless_logic_ocp_operator(){
-  install_subscription logic-operator-rhel8 openshift-operators alpha logic-operator-rhel8 redhat-operators openshift-marketplace
+  # Install with specific version that supports v1alpha08 API
+  install_subscription_with_version logic-operator-rhel8 openshift-operators stable logic-operator-rhel8 redhat-operators openshift-marketplace logic-operator-rhel8.v1.35.0
+  
+  # Approve the InstallPlan automatically
+  approve_install_plan "openshift-operators" "logic-operator-rhel8"
+  
   check_operator_status 300 "openshift-operators" "OpenShift Serverless Logic Operator" "Succeeded"
 }
 
