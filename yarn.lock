@@ -13912,9 +13912,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-theme@npm:0.10.1":
-  version: 0.10.1
-  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.10.1"
+"@red-hat-developer-hub/backstage-plugin-theme@npm:0.10.2":
+  version: 0.10.2
+  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.10.2"
   dependencies:
     "@mui/icons-material": ^5.17.1
   peerDependencies:
@@ -13924,7 +13924,7 @@ __metadata:
     "@mui/icons-material": ^5.17.1
     "@mui/material": ^5.0.0
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 29a9aee8d29b1c96d38e771f07556885ba23cbe495f14a998b15ec0cf7b7f4adc8c8e86aaf0a6f52355dfe18998322a325376d35b9b1da6466a370dcdbe9fc7b
+  checksum: 02b73685dbbb14f82d274e2cc45bb924a887d3492345101835800592f0ac752342595e5866c23661f103a7052c6b21803a5f525d22090391aa7107d3f9f607ea
   languageName: node
   linkType: hard
 
@@ -16893,19 +16893,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/express@npm:*, @types/express@npm:^4.17.13, @types/express@npm:^4.17.21, @types/express@npm:^4.17.6":
-  version: 4.17.23
-  resolution: "@types/express@npm:4.17.23"
-  dependencies:
-    "@types/body-parser": "*"
-    "@types/express-serve-static-core": ^4.17.33
-    "@types/qs": "*"
-    "@types/serve-static": "*"
-  checksum: f1a020c6ad6dc0169a3277199605d60649d463a72c920673e0f230ab1e76f2d3aa23daabd25ef8e62eda314e26b879306c58ec806e669e1e40ca37a4b73a44b0
-  languageName: node
-  linkType: hard
-
-"@types/express@npm:4.17.25":
+"@types/express@npm:*, @types/express@npm:4.17.25, @types/express@npm:^4.17.13, @types/express@npm:^4.17.21, @types/express@npm:^4.17.6":
   version: 4.17.25
   resolution: "@types/express@npm:4.17.25"
   dependencies:
@@ -17432,17 +17420,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/send@npm:*":
-  version: 0.17.4
-  resolution: "@types/send@npm:0.17.4"
-  dependencies:
-    "@types/mime": ^1
-    "@types/node": "*"
-  checksum: cf4db48251bbb03cd6452b4de6e8e09e2d75390a92fd798eca4a803df06444adc94ed050246c94c7ed46fb97be1f63607f0e1f13c3ce83d71788b3e08640e5e0
-  languageName: node
-  linkType: hard
-
-"@types/send@npm:<1":
+"@types/send@npm:*, @types/send@npm:<1":
   version: 0.17.6
   resolution: "@types/send@npm:0.17.6"
   dependencies:
@@ -17461,18 +17439,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/serve-static@npm:*, @types/serve-static@npm:^1.13.10, @types/serve-static@npm:^1.15.5":
-  version: 1.15.7
-  resolution: "@types/serve-static@npm:1.15.7"
-  dependencies:
-    "@types/http-errors": "*"
-    "@types/node": "*"
-    "@types/send": "*"
-  checksum: bbbf00dbd84719da2250a462270dc68964006e8d62f41fe3741abd94504ba3688f420a49afb2b7478921a1544d3793183ffa097c5724167da777f4e0c7f1a7d6
-  languageName: node
-  linkType: hard
-
-"@types/serve-static@npm:^1":
+"@types/serve-static@npm:^1, @types/serve-static@npm:^1.13.10, @types/serve-static@npm:^1.15.5":
   version: 1.15.10
   resolution: "@types/serve-static@npm:1.15.10"
   dependencies:
@@ -18665,7 +18632,7 @@ __metadata:
     "@mui/icons-material": 5.18.0
     "@mui/material": 5.18.0
     "@mui/styled-engine": 5.18.0
-    "@red-hat-developer-hub/backstage-plugin-theme": 0.10.1
+    "@red-hat-developer-hub/backstage-plugin-theme": 0.10.2
     "@red-hat-developer-hub/backstage-plugin-translations": 0.0.2
     "@red-hat-developer-hub/plugin-utils": 1.0.0
     "@scalprum/core": 0.8.3
