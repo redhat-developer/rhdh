@@ -306,24 +306,7 @@ delete_namespace() {
 configure_external_postgres_db() {
   local project=$1
   oc apply -f "${DIR}/resources/postgres-db/postgres.yaml" --namespace="${NAME_SPACE_POSTGRES_DB}"
-
-  echo "Waiting for PostgreSQL cluster to be ready..."
-  # Wait for the PostgreSQL cluster to be created and ready
-  timeout 600 bash -c '
-    while true; do
-      POSTGRES_STATUS=$(oc get postgrescluster postgress-external-db -n '"${NAME_SPACE_POSTGRES_DB}"' -o jsonpath="{.status.conditions[?(@.type==\"PGBackRestReplicaRepoReady\")].status}" 2>/dev/null || echo "")
-      echo "PostgreSQL cluster status: $POSTGRES_STATUS"
-      if [[ "$POSTGRES_STATUS" == "True" ]]; then
-        echo "PostgreSQL cluster is ready"
-        break
-      fi
-      sleep 10
-    done
-  ' || echo "Warning: Timeout waiting for PostgreSQL cluster, continuing anyway..."
-
-  # Additional wait for pods to be fully running
-  sleep 10
-
+  sleep 5
   oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.ca\.crt}' | base64 --decode > postgres-ca
   oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.tls\.crt}' | base64 --decode > postgres-tls-crt
   oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.tls\.key}' | base64 --decode > postgres-tsl-key
@@ -699,17 +682,18 @@ delete_tekton_pipelines() {
 }
 
 cluster_setup_ocp_helm() {
-  echo "=== Starting cluster_setup_ocp_helm ==="
-  echo "Installing Pipelines Operator..."
   install_pipelines_operator
-  echo "Installing Crunchy Postgres Operator..."
+  install_acm_ocp_operator
   install_crunchy_postgres_ocp_operator
-  echo "=== Finished cluster_setup_ocp_helm ==="
+  install_orchestrator_infra_chart
 }
 
 cluster_setup_ocp_operator() {
   install_pipelines_operator
+  install_acm_ocp_operator
   install_crunchy_postgres_ocp_operator
+  install_serverless_ocp_operator
+  install_serverless_logic_ocp_operator
 }
 
 cluster_setup_k8s_operator() {
@@ -733,7 +717,7 @@ install_orchestrator_infra_chart() {
   echo "Deploying orchestrator-infra chart"
   cd "${DIR}"
   helm upgrade -i orch-infra -n "${ORCH_INFRA_NS}" \
-    "oci://quay.io/rhdh/orchestrator-infra-chart" --version "1.8-157-CI" \
+    "oci://quay.io/rhdh/orchestrator-infra-chart" --version "1.8-164-CI" \
     --wait --timeout=5m \
     --set serverlessLogicOperator.subscription.spec.installPlanApproval=Automatic \
     --set serverlessOperator.subscription.spec.installPlanApproval=Automatic
@@ -793,7 +777,7 @@ base_deployment() {
   echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
   perform_helm_install "${RELEASE_NAME}" "${NAME_SPACE}" "${HELM_CHART_VALUE_FILE_NAME}"
 
-  #  deploy_orchestrator_workflows "${NAME_SPACE}"
+  deploy_orchestrator_workflows "${NAME_SPACE}"
 }
 
 rbac_deployment() {
@@ -808,23 +792,23 @@ rbac_deployment() {
   perform_helm_install "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${HELM_CHART_RBAC_VALUE_FILE_NAME}"
 
   # NOTE: This is a workaround to allow the sonataflow platform to connect to the external postgres db using ssl.
-  #  until [[ $(oc get jobs -n "${NAME_SPACE_RBAC}" 2> /dev/null | grep "${RELEASE_NAME_RBAC}-create-sonataflow-database" | wc -l) -eq 1 ]]; do
-  #    echo "Waiting for sf db creation job to be created. Retrying in 5 seconds..."
-  #    sleep 5
-  #  done
-  #  oc wait --for=condition=complete job/"${RELEASE_NAME_RBAC}-create-sonataflow-database" -n "${NAME_SPACE_RBAC}" --timeout=3m
-  #  oc -n "${NAME_SPACE_RBAC}" patch sfp sonataflow-platform --type=merge \
-  #    -p '{"spec":{"services":{"jobService":{"podTemplate":{"container":{"env":[{"name":"QUARKUS_DATASOURCE_REACTIVE_URL","value":"postgresql://postgress-external-db-primary.postgress-external-db.svc.cluster.local:5432/sonataflow?search_path=jobs-service&sslmode=require&ssl=true&trustAll=true"},{"name":"QUARKUS_DATASOURCE_REACTIVE_SSL_MODE","value":"require"},{"name":"QUARKUS_DATASOURCE_REACTIVE_TRUST_ALL","value":"true"}]}}}}}}'
-  #  oc rollout restart deployment/sonataflow-platform-jobs-service -n "${NAME_SPACE_RBAC}"
+  until [[ $(oc get jobs -n "${NAME_SPACE_RBAC}" 2> /dev/null | grep "${RELEASE_NAME_RBAC}-create-sonataflow-database" | wc -l) -eq 1 ]]; do
+    echo "Waiting for sf db creation job to be created. Retrying in 5 seconds..."
+    sleep 5
+  done
+  oc wait --for=condition=complete job/"${RELEASE_NAME_RBAC}-create-sonataflow-database" -n "${NAME_SPACE_RBAC}" --timeout=3m
+  oc -n "${NAME_SPACE_RBAC}" patch sfp sonataflow-platform --type=merge \
+    -p '{"spec":{"services":{"jobService":{"podTemplate":{"container":{"env":[{"name":"QUARKUS_DATASOURCE_REACTIVE_URL","value":"postgresql://postgress-external-db-primary.postgress-external-db.svc.cluster.local:5432/sonataflow?search_path=jobs-service&sslmode=require&ssl=true&trustAll=true"},{"name":"QUARKUS_DATASOURCE_REACTIVE_SSL_MODE","value":"require"},{"name":"QUARKUS_DATASOURCE_REACTIVE_TRUST_ALL","value":"true"}]}}}}}}'
+  oc rollout restart deployment/sonataflow-platform-jobs-service -n "${NAME_SPACE_RBAC}"
 
   # initiate orchestrator workflows deployment
-  #  deploy_orchestrator_workflows "${NAME_SPACE_RBAC}"
+  deploy_orchestrator_workflows "${NAME_SPACE_RBAC}"
 }
 
 initiate_deployments() {
   cd "${DIR}"
   base_deployment
-  # rbac_deployment
+  rbac_deployment
 }
 
 # install base RHDH deployment before upgrade
@@ -927,8 +911,8 @@ initiate_sanity_plugin_checks_deployment() {
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    $(get_image_helm_set_params)
-  #    --set orchestrator.enabled=true
+    $(get_image_helm_set_params) \
+    --set orchestrator.enabled=true
 }
 
 check_and_test() {

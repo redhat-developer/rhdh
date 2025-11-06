@@ -233,7 +233,7 @@ upstream:
       pullPolicy: Always
       registry: quay.io
       repository: rhdh/rhdh-hub-rhel9
-      tag: 1.8-157
+      tag: 1.8-164
     extraEnvVars:
       - name: BACKEND_SECRET
         valueFrom:
@@ -316,11 +316,11 @@ upstream:
         targetPort: 9464
 
 orchestrator:
-  enabled: false
+  enabled: true
   serverlessLogicOperator:
-    enabled: false
+    enabled: true
   serverlessOperator:
-    enabled: false
+    enabled: true
   sonataflowPlatform:
     monitoring:
       enabled: true
