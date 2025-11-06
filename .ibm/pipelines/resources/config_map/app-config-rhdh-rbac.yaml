@@ -136,4 +136,5 @@ permission:
     admin:
       users:
         - name: user:default/rhdh-qe
+    policyDecisionPrecedence: conditional # default behavior
 includeTransitiveGroupOwnership: true

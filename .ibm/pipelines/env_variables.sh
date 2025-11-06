@@ -82,6 +82,12 @@ QE_USER5_ID=$(cat /tmp/secrets/QE_USER5_ID)
 QE_USER5_PASS=$(cat /tmp/secrets/QE_USER5_PASS)
 QE_USER6_ID=$(cat /tmp/secrets/QE_USER6_ID)
 QE_USER6_PASS=$(cat /tmp/secrets/QE_USER6_PASS)
+QE_USER7_ID=$(cat /tmp/secrets/QE_USER7_ID)
+QE_USER7_PASS=$(cat /tmp/secrets/QE_USER7_PASS)
+QE_USER8_ID=$(cat /tmp/secrets/QE_USER8_ID)
+QE_USER8_PASS=$(cat /tmp/secrets/QE_USER8_PASS)
+QE_USER9_ID=$(cat /tmp/secrets/QE_USER9_ID)
+QE_USER9_PASS=$(cat /tmp/secrets/QE_USER9_PASS)
 
 K8S_CLUSTER_TOKEN_TEMPORARY=$(cat /tmp/secrets/K8S_CLUSTER_TOKEN_TEMPORARY)
 
