@@ -70,29 +70,10 @@ jobs:
           
           if [[ "$ELIGIBLE" == "true" ]]; then
             echo "eligible=true" >> $GITHUB_OUTPUT
-            echo "reason=Branch matches auto-approval pattern" >> $GITHUB_OUTPUT
           else
             echo "eligible=false" >> $GITHUB_OUTPUT
-            echo "reason=Branch name does not match any auto-approval pattern" >> $GITHUB_OUTPUT
           fi
 
-      - name: Comment on ineligible PR
-        if: steps.check-eligibility.outputs.eligible == 'false'
-        run: |
-          gh pr comment ${{ github.event.pull_request.number }} --body "**Auto-Approval Skipped**
-
-          **Reason:** ${{ steps.check-eligibility.outputs.reason }}
-
-          This PR will require manual review and approval.
-          
-          For auto-approval eligibility, PRs must:
-          - Be created by \`rhdh-bot\`
-          - Not be in draft state
-          - Use a topic branch matching the auto-approval patterns
-
-          If eligible, the workflow will automatically add \`lgtm\` and \`approved\` labels and approve the PR.
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Add required labels and approve PR
         if: steps.check-eligibility.outputs.eligible == 'true'
@@ -105,10 +86,7 @@ jobs:
             --approve \
             --body "**Auto-Approved**
 
-          This PR has been automatically approved because:
-          - Author: \`rhdh-bot\`
-          - Branch: \`${{ github.event.pull_request.head.ref }}\`
-          - ${{ steps.check-eligibility.outputs.reason }}
+          This PR has been automatically approved (rhdh-bot branch).
 
           **Labels Added:** \`lgtm\`, \`approved\`
         env:
