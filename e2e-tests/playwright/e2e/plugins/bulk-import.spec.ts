@@ -80,8 +80,9 @@ spec:
     );
   });
 
+  // TODO: https://issues.redhat.com/browse/RHDHBUGS-2230
   // Select two repos: one with an existing catalog.yaml file and another without it
-  test("Add a Repository from the Repository Tab and Confirm its Preview", async () => {
+  test.fixme("Add a Repository from the Repository Tab and Confirm its Preview", async () => {
     await uiHelper.openSidebar("Bulk import");
     await uiHelper.clickButton("Import");
     await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
@@ -311,7 +312,8 @@ test.describe
     );
   });
 
-  test("Verify existing repo from app-config is displayed in bulk import Added repositories", async () => {
+  // TODO: https://issues.redhat.com/browse/RHDHBUGS-2230
+  test.fixme("Verify existing repo from app-config is displayed in bulk import Added repositories", async () => {
     await uiHelper.openSidebar("Bulk import");
     await common.waitForLoad();
     await bulkimport.filterAddedRepo(existingRepoFromAppConfig);
