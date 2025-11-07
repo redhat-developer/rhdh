@@ -55,7 +55,6 @@ jobs:
           # Add more patterns as needed
           ELIGIBLE_PATTERNS=(
             "^update-base-images-.*"              # Base image updates
-            "^pr-bump-to-.*"                      # Version bump PRs (like #3176)
             "^update-rpm-lockfile/*"               # RPM lockfile updates
             "^chore/automated-.*"                 # Other automated chore tasks
           )
