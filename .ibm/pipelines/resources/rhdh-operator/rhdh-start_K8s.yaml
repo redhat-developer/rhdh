@@ -8,7 +8,7 @@ spec:
       - "rh-pull-secret"
     route:
       enabled: false
-    image: "quay.io/rhdh/rhdh-rhel9-operator:1-8-53"
+    image: "quay.io/rhdh/rhdh-rhel9-operator:1.8-53"
     appConfig:
       configMaps:
         - name: app-config-rhdh
