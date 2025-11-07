@@ -54,7 +54,6 @@ jobs:
           # Define branch patterns that are eligible for auto-approval
           # Add more patterns as needed
           ELIGIBLE_PATTERNS=(
-            "^update-base-images-.*"              # Base image updates
             "^chore/automated-.*"                 # Other automated chore tasks
           )
           
