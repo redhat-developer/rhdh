@@ -54,7 +54,7 @@ jobs:
           # Define branch patterns that are eligible for auto-approval
           # Add more patterns as needed
           ELIGIBLE_PATTERNS=(
-            "^chore/automated-.*"                 # Other automated chore tasks
+            "^chore/automated-.*"                 # Automated chore tasks, such as version bumps, base image bumps, or RPM lock file version bumps
           )
           
           ELIGIBLE=false
