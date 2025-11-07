@@ -4,7 +4,7 @@ metadata:
   name: rhdh
 spec:
   application:
-    image: "quay.io/$QUAY_REPO:$TAG_NAME"
+    image: "quay.io/rhdh/rhdh-rhel9-operator:1-8-53"
     appConfig:
       configMaps:
         - name: app-config-rhdh
