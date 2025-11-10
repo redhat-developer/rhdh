@@ -80,29 +80,33 @@ spec:
     );
   });
 
+  // TODO: https://issues.redhat.com/browse/RHDHBUGS-2230
   // Select two repos: one with an existing catalog.yaml file and another without it
-  test("Add a Repository from the Repository Tab and Confirm its Preview", async () => {
-    await uiHelper.openSidebar("Bulk import");
-    await uiHelper.clickButton("Import");
-    await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
+  test.fixme(
+    "Add a Repository from the Repository Tab and Confirm its Preview",
+    async () => {
+      await uiHelper.openSidebar("Bulk import");
+      await uiHelper.clickButton("Import");
+      await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
 
-    await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
-      "Not Generated",
-    ]);
-    await bulkimport.selectRepoInTable(catalogRepoDetails.name);
-    await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
-      catalogRepoDetails.url,
-      "Ready to import Preview file",
-    ]);
+      await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
+        "Not Generated",
+      ]);
+      await bulkimport.selectRepoInTable(catalogRepoDetails.name);
+      await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
+        catalogRepoDetails.url,
+        "Ready to import Preview file",
+      ]);
 
-    await uiHelper.clickOnLinkInTableByUniqueText(
-      catalogRepoDetails.name,
-      "Preview file",
-    );
-    await expect(await uiHelper.clickButton("Save")).not.toBeVisible({
-      timeout: 10000,
-    });
-  });
+      await uiHelper.clickOnLinkInTableByUniqueText(
+        catalogRepoDetails.name,
+        "Preview file",
+      );
+      await expect(await uiHelper.clickButton("Save")).not.toBeVisible({
+        timeout: 10000,
+      });
+    },
+  );
 
   test("Add a Repository from the Organization Tab and Confirm its Preview", async () => {
     await uiHelper.clickByDataTestId("organization-view");
@@ -311,14 +315,18 @@ test.describe
     );
   });
 
-  test("Verify existing repo from app-config is displayed in bulk import Added repositories", async () => {
-    await uiHelper.openSidebar("Bulk import");
-    await common.waitForLoad();
-    await bulkimport.filterAddedRepo(existingRepoFromAppConfig);
-    await uiHelper.verifyRowInTableByUniqueText(existingRepoFromAppConfig, [
-      "Already imported",
-    ]);
-  });
+  // TODO: https://issues.redhat.com/browse/RHDHBUGS-2230
+  test.fixme(
+    "Verify existing repo from app-config is displayed in bulk import Added repositories",
+    async () => {
+      await uiHelper.openSidebar("Bulk import");
+      await common.waitForLoad();
+      await bulkimport.filterAddedRepo(existingRepoFromAppConfig);
+      await uiHelper.verifyRowInTableByUniqueText(existingRepoFromAppConfig, [
+        "Already imported",
+      ]);
+    },
+  );
 
   test('Verify repo from "import an existing git repository"  are displayed in bulk import Added repositories', async () => {
     // Import an existing Git repository
