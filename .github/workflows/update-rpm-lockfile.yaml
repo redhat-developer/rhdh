@@ -38,17 +38,17 @@ jobs:
 
       - name: Install rpm-lockfile-prototype
         run: |
-          if [[ ! -x "${HOME}/.local/bin/rpm-lockfile-prototype" ]]; then 
+          if [[ ! -x "${HOME}/.local/bin/rpm-lockfile-prototype" ]]; then
             echo "Installing rpm-lockfile-prototype ..."
 
             sudo apt-get update
             sudo apt-get install -y python3 python3-pip python3-dev build-essential
             sudo apt-get install -y podman skopeo rpm
             sudo apt-get install -y dnf python3-dnf
-            
+
             mkdir -p "${HOME}/.local/bin/"
             python3 -m pip install --user https://github.com/konflux-ci/rpm-lockfile-prototype/archive/refs/heads/main.zip
-            
+
             # Update PATH
             export PATH=${PATH%":${HOME}/.local/bin"}:${HOME}/.local/bin
             echo "${HOME}/.local/bin" >> $GITHUB_PATH
@@ -58,7 +58,7 @@ jobs:
       - name: Run rpm-lockfile-prototype
         run: |
           echo "Running '${HOME}/.local/bin/rpm-lockfile-prototype -f ${{ env.DOCKERFILE_PATH }} rpms.in.yaml' in $(pwd)"
-          
+
           ${HOME}/.local/bin/rpm-lockfile-prototype -f ${{ env.DOCKERFILE_PATH }} rpms.in.yaml
 
       - name: Check for lockfile changes
@@ -89,11 +89,11 @@ jobs:
           title: "chore: update RPM lockfile in branch (${{ steps.target-branch.outputs.name }}) [skip-build]"
           body: |
             ## Description
-            
+
             This PR updates the `rpms.lock.yaml` file with the latest package versions based on current `rpms.in.yaml` configuration using `${{ env.DOCKERFILE_PATH }}` as the base container context
-            
+
             This PR was automatically created by the [Update RPM Lockfile GitHub Action](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
-          branch: update-rpm-lockfile/${{ steps.target-branch.outputs.name }}
+          branch: chore/automated-update-rpm-lockfile/${{ steps.target-branch.outputs.name }}
           delete-branch: true
           draft: false
           sign-commits: true
@@ -116,7 +116,7 @@ jobs:
               repo: context.repo.repo,
               body: body
             })
-              
+
       - name: Summary
         run: |
           if [ "${{ steps.check-lockfile-changes.outputs.changes }}" == "true" ]; then

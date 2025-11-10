@@ -18,8 +18,8 @@ metadata:
     - automation
 spec:
   packageName: "@redhat/backstage-plugin-orchestrator"
-  dynamicArtifact: "@redhat/backstage-plugin-orchestrator@1.7.1"
-  version: 1.7.1
+  dynamicArtifact: "@redhat/backstage-plugin-orchestrator@1.8.2"
+  version: 1.8.2
   backstage:
     role: frontend-plugin
     supportedVersions: 1.39.1

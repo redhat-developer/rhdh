@@ -385,6 +385,31 @@ upstream:
               params:
                 claims:
                   - \$ownerRefs
+            ---
+            result: CONDITIONAL
+            roleEntityRef: 'role:default/owned_resource_reader'
+            pluginId: catalog
+            resourceType: catalog-entity
+            permissionMapping:
+              - read
+            conditions:
+              rule: IS_ENTITY_OWNER
+              resourceType: catalog-entity
+              params:
+                claims:
+                  - \$currentUser
+            ---
+            result: CONDITIONAL
+            roleEntityRef: 'role:default/conditional_denier'
+            pluginId: catalog
+            resourceType: catalog-entity
+            permissionMapping:
+              - read
+            conditions:
+              rule: HAS_LABEL
+              resourceType: catalog-entity
+              params:
+                label: test-label
             EOF
 
             ./install-dynamic-plugins.sh /dynamic-plugins-root

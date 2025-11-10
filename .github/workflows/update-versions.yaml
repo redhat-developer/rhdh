@@ -40,7 +40,7 @@ jobs:
         with:
           token: ${{ steps.generate-token.outputs.token }}
           commit-message: "chore(docs): Update versions.md in dynamic plugin documentation"
-          branch: update-versions-doc-${{ github.ref_name }}
+          branch: chore/automated-update-versions-doc-${{ github.ref_name }}
           title: "chore(docs): [${{ github.ref_name }}] Update versions.md in dynamic plugin documentation"
           body: "Updates Version Compatibility Matrix in dynamic plugin documentation"
           labels: "documentation"

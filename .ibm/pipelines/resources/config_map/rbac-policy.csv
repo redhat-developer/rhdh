@@ -39,3 +39,17 @@ p, role:default/catalog_reader, catalog.entity.read, read, allow
 g, user:default/rhdh-qe, role:default/extension
 p, role:default/extension, extension-plugin, read, allow
 p, role:default/extension, extension-plugin, create, allow
+
+p, role:default/all_resource_reader, catalog-entity, read, allow
+p, role:default/all_resource_reader, catalog-entity, create, allow
+g, user:default/rhdh-qe-7, role:default/all_resource_reader
+
+p, role:default/all_resource_denier, catalog-entity, read, deny
+p, role:default/all_resource_denier, catalog-entity, create, allow
+g, user:default/rhdh-qe-8, role:default/all_resource_denier
+
+g, user:default/rhdh-qe-7, role:default/owned_resource_reader
+g, user:default/rhdh-qe-8, role:default/owned_resource_reader
+
+g, user:default/rhdh-qe-9, role:default/all_resource_reader
+g, user:default/rhdh-qe-9, role:default/conditional_denier
