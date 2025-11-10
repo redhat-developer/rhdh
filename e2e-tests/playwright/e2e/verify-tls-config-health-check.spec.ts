@@ -13,9 +13,9 @@ test.describe
 
   const namespace = process.env.NAME_SPACE_RUNTIME || "showcase-runtime";
   const job: string = process.env.JOB_NAME;
-  let deploymentName = "rhdh-backstage";
+  let deploymentName = process.env.RELEASE_NAME + "-developer-hub";
   if (job.includes("operator")) {
-    deploymentName = "backstage-rhdh";
+    deploymentName = "backstage-" + process.env.RELEASE_NAME;
   }
   const secretName = "postgres-cred";
   const hostLatest2 = Buffer.from(process.env.RDS_2_HOST).toString("base64");
