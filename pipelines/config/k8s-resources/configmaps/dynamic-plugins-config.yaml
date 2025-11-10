@@ -1,0 +1,225 @@
+dynamicPlugins:
+  rootDirectory: dynamic-plugins-root
+  frontend:
+    red-hat-developer-hub.backstage-plugin-dynamic-home-page:
+      mountPoints:
+        - mountPoint: application/listener
+          importName: VisitListener
+        - mountPoint: home.page/cards
+          importName: SearchBar
+          config:
+            layouts:
+              xl: { w: 10, h: 1, x: 1 }
+              lg: { w: 10, h: 1, x: 1 }
+              md: { w: 10, h: 1, x: 1 }
+              sm: { w: 10, h: 1, x: 1 }
+              xs: { w: 12, h: 1 }
+              xxs: { w: 12, h: 1 }
+        - mountPoint: home.page/cards
+          importName: QuickAccessCard
+          config:
+            layouts:
+              xl: { w: 7, h: 8 }
+              lg: { w: 7, h: 8 }
+              md: { w: 7, h: 8 }
+              sm: { w: 12, h: 8 }
+              xs: { w: 12, h: 8 }
+              xxs: { w: 12, h: 8 }
+        - mountPoint: home.page/cards
+          importName: CatalogStarredEntitiesCard
+          config:
+            layouts:
+              xl: { w: 5, h: 4, x: 7 }
+              lg: { w: 5, h: 4, x: 7 }
+              md: { w: 5, h: 4, x: 7 }
+              sm: { w: 12, h: 4 }
+              xs: { w: 12, h: 4 }
+              xxs: { w: 12, h: 4 }
+
+        - mountPoint: home.page/cards
+          importName: Headline
+          config:
+            layouts:
+              xl: { w: 12, h: 1 }
+              lg: { w: 12, h: 1 }
+              md: { w: 12, h: 1 }
+              sm: { w: 12, h: 1 }
+              xs: { w: 12, h: 1 }
+              xxs: { w: 12, h: 1 }
+            props:
+              title: Placeholder tests
+              align: center
+
+        - mountPoint: home.page/cards
+          importName: Placeholder
+          config:
+            layouts:
+              xl: { x: 1, y: 0, w: 10, h: 1 }
+              lg: { x: 1, y: 0, w: 10, h: 1 }
+              md: { x: 1, y: 0, w: 10, h: 1 }
+              sm: { x: 0, y: 0, w: 12, h: 1 }
+              xs: { x: 0, y: 0, w: 12, h: 1 }
+              xxs: { x: 0, y: 0, w: 12, h: 1 }
+            props:
+              showBorder: true
+              debugContent: Home page customization test 1
+        - mountPoint: home.page/cards
+          importName: Placeholder
+          config:
+            layouts:
+              xl: { x: 0, y: 0, w: 7, h: 4 }
+              lg: { x: 0, y: 0, w: 7, h: 4 }
+              md: { x: 0, y: 0, w: 7, h: 4 }
+              sm: { x: 0, y: 0, w: 12, h: 4 }
+              xs: { x: 0, y: 0, w: 12, h: 4 }
+              xxs: { x: 0, y: 0, w: 12, h: 4 }
+            props:
+              showBorder: true
+              debugContent: Home page customization test 2
+        - mountPoint: home.page/cards
+          importName: Placeholder
+          config:
+            layouts:
+              xl: { x: 7, y: 0, w: 5, h: 4 }
+              lg: { x: 7, y: 0, w: 5, h: 4 }
+              md: { x: 7, y: 0, w: 5, h: 4 }
+              sm: { x: 0, y: 0, w: 12, h: 4 }
+              xs: { x: 0, y: 0, w: 12, h: 4 }
+              xxs: { x: 0, y: 0, w: 12, h: 4 }
+            props:
+              showBorder: true
+              debugContent: Home page customization test 3
+        - mountPoint: home.page/cards
+          importName: Headline
+          config:
+            layouts:
+              xl: { w: 12, h: 1 }
+              lg: { w: 12, h: 1 }
+              md: { w: 12, h: 1 }
+              sm: { w: 12, h: 1 }
+              xs: { w: 12, h: 1 }
+              xxs: { w: 12, h: 1 }
+            props:
+              title: Markdown tests
+              align: center
+
+        - mountPoint: home.page/cards
+          importName: MarkdownCard
+          config:
+            layouts:
+              xl: { w: 6, h: 4 }
+              lg: { w: 6, h: 4 }
+              md: { w: 6, h: 4 }
+              sm: { w: 6, h: 4 }
+              xs: { w: 6, h: 4 }
+              xxs: { w: 6, h: 4 }
+            props:
+              title: Company links
+              content: |
+                ### RHDH
+
+                * [Website](https://developers.redhat.com/rhdh/overview)
+                * [Documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub/)
+                * [GitHub Showcase](https://github.com/redhat-developer/rhdh)
+                * [GitHub Plugins](https://github.com/janus-idp/backstage-plugins)
+        - mountPoint: home.page/cards
+          importName: Markdown
+          config:
+            layouts:
+              xl: { w: 6, h: 4, x: 6 }
+              lg: { w: 6, h: 4, x: 6 }
+              md: { w: 6, h: 4, x: 6 }
+              sm: { w: 6, h: 4, x: 6 }
+              xs: { w: 6, h: 4, x: 6 }
+              xxs: { w: 6, h: 4, x: 6 }
+            props:
+              title: Important company links
+              content: |
+                ### RHDH
+
+                * [Website](https://developers.redhat.com/rhdh/overview)
+                * [Documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub/)
+                * [GitHub Showcase](https://github.com/redhat-developer/rhdh)
+                * [GitHub Plugins](https://github.com/janus-idp/backstage-plugins)
+        - mountPoint: home.page/cards
+          importName: FeaturedDocsCard
+        - mountPoint: home.page/cards
+          importName: JokeCard
+        - mountPoint: home.page/cards
+          importName: RecentlyVisitedCard
+          config:
+            layouts:
+              xl: { w: 6, h: 4, x: 6 }
+              lg: { w: 6, h: 4, x: 6 }
+              md: { w: 6, h: 4, x: 6 }
+              sm: { w: 6, h: 4, x: 6 }
+              xs: { w: 6, h: 4, x: 6 }
+              xxs: { w: 6, h: 4, x: 6 }
+        - mountPoint: home.page/cards
+          importName: TopVisitedCard
+          config:
+            layouts:
+              xl: { w: 6, h: 4 }
+              lg: { w: 6, h: 4 }
+              md: { w: 6, h: 4 }
+              sm: { w: 6, h: 4 }
+              xs: { w: 6, h: 4 }
+              xxs: { w: 6, h: 4 }
+
+    default.main-menu-items:
+      menuItems:
+        default.list:
+          title: References
+          icon: bookmarks
+        default.apis:
+          parent: default.list
+        default.learning-path:
+          parent: default.list
+        default.test_enabled:
+          title: Test enabled
+          enabled: true
+        default.test_nested_enabled:
+          parent: default.test_enabled
+          title: Test nested enabled
+          enabled: true
+        default.test_nested_disabled:
+          parent: default.test_enabled
+          title: Test nested disabled
+          enabled: false
+        default.test_disabled:
+          title: Test disabled
+          enabled: false
+    backstage.plugin-techdocs:
+      menuItems:
+        favorites:
+          title: Favorites
+          icon: star
+          priority: 10
+        docs:
+          parent: favorites
+          priority: 1
+        test_i_enabled:
+          title: Test_i enabled
+          priority: 20
+          enabled: true
+        test_i_disabled:
+          title: Test_i disabled
+          priority: 20
+          enabled: false
+    pataknight.backstage-plugin-rhdh-qe-theme:
+      appIcons:
+        - importName: LightIcon
+          name: lightIcon
+        - importName: DarkIcon
+          name: darkIcon
+      themes:
+        - icon: lightIcon
+          id: light-dynamic
+          importName: lightThemeProvider
+          title: Light Dynamic
+          variant: light
+        - icon: darkIcon
+          id: dark-dynamic
+          importName: darkThemeProvider
+          title: Dark Dynamic
+          variant: dark
