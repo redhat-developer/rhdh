@@ -1,14 +1,20 @@
 import { test } from "@playwright/test";
-import { Common } from "../utils/common";
-import { KubeClient } from "../utils/kube-client";
+import { Common } from "../../utils/common";
+import { KubeClient } from "../../utils/kube-client";
 
 test.describe
   .serial("Verify TLS configuration with Postgres DB health check", () => {
   test.beforeAll(async () => {
-    test.info().annotations.push({
-      type: "component",
-      description: "data-management",
-    });
+    test.info().annotations.push(
+      {
+        type: "component",
+        description: "data-management",
+      },
+      {
+        type: "namespace",
+        description: process.env.NAME_SPACE_RUNTIME || "showcase-runtime",
+      },
+    );
   });
 
   const namespace = process.env.NAME_SPACE_RUNTIME || "showcase-runtime";
