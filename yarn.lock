@@ -7849,7 +7849,7 @@ __metadata:
     express-promise-router: 4.1.1
     json-2-csv: 5.5.9
     knex: 3.1.0
-    luxon: 3.6.1
+    luxon: 3.7.2
     msw: 1.3.5
     node-fetch: 2.7.0
     prettier: 3.6.2
@@ -14529,7 +14529,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@scalprum/core@npm:0.8.3, @scalprum/core@npm:^0.8.3":
+"@scalprum/core@npm:0.9.0, @scalprum/core@npm:^0.9.0":
+  version: 0.9.0
+  resolution: "@scalprum/core@npm:0.9.0"
+  dependencies:
+    "@openshift/dynamic-plugin-sdk": ^5.0.1
+    tslib: ^2.6.2
+  checksum: 302d3df87fda872c05a95d8c6b86809f46854f46af8a44b7faa0250de9a0b0ebeaccdcdc69f9767c858fcef2c34c121b3e1087d0781fa1bcd7eee98d244db72b
+  languageName: node
+  linkType: hard
+
+"@scalprum/core@npm:^0.8.3":
   version: 0.8.3
   resolution: "@scalprum/core@npm:0.8.3"
   dependencies:
@@ -14539,7 +14549,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@scalprum/react-core@npm:0.9.5, @scalprum/react-core@npm:^0.9.5":
+"@scalprum/react-core@npm:0.11.1":
+  version: 0.11.1
+  resolution: "@scalprum/react-core@npm:0.11.1"
+  dependencies:
+    "@openshift/dynamic-plugin-sdk": ^5.0.1
+    "@scalprum/core": ^0.9.0
+    lodash: ^4.17.0
+  peerDependencies:
+    react: ">=16.8.0 || >=17.0.0 || ^18.0.0"
+    react-dom: ">=16.8.0 || >=17.0.0 || ^18.0.0"
+  checksum: 2eac484690307aa80ebbaf482f7a9d6b756476bfe4da8722a4be05925c32c3fa5ac31614978cc5197598f19afdf6dbc80cc6f13e6f1b00cdb2a03f61ba6b4ed0
+  languageName: node
+  linkType: hard
+
+"@scalprum/react-core@npm:^0.9.5":
   version: 0.9.5
   resolution: "@scalprum/react-core@npm:0.9.5"
   dependencies:
@@ -18578,10 +18602,10 @@ __metadata:
     "@types/react-dom": 18.3.7
     "@types/zen-observable": 0.8.7
     cross-env: 7.0.3
-    history: 5.0.0
+    history: 5.3.0
     react: 18.3.1
     react-dom: 18.3.1
-    react-router: 6.3.0
+    react-router: 6.30.1
     react-router-dom: 6.30.1
     react-use: 17.6.0
     zen-observable: 0.10.0
@@ -18633,8 +18657,8 @@ __metadata:
     "@red-hat-developer-hub/backstage-plugin-theme": 0.10.2
     "@red-hat-developer-hub/backstage-plugin-translations": 0.0.2
     "@red-hat-developer-hub/plugin-utils": 1.0.0
-    "@scalprum/core": 0.8.3
-    "@scalprum/react-core": 0.9.5
+    "@scalprum/core": 0.9.0
+    "@scalprum/react-core": 0.11.1
     "@scalprum/react-test-utils": 0.2.7
     "@testing-library/dom": 9.3.4
     "@testing-library/jest-dom": 6.9.1
@@ -19354,7 +19378,7 @@ __metadata:
     jose: 5.10.0
     prettier: 3.6.2
     typescript: 5.9.3
-    undici: 6.21.3
+    undici: 6.22.0
     winston: 3.14.2
     zod: 3.23.8
   languageName: unknown
@@ -25380,16 +25404,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"history@npm:5.0.0":
-  version: 5.0.0
-  resolution: "history@npm:5.0.0"
-  dependencies:
-    "@babel/runtime": ^7.7.6
-  checksum: 14eab13619b4d297eeda0ae7adcf2dd8e6cec48fc9fac903b8dfb626337f8f6fc12743c286be819885c71f522daf0e9e7f814aa126ae5e1b01ab4a3d6801b5f5
-  languageName: node
-  linkType: hard
-
-"history@npm:^5.0.0, history@npm:^5.2.0":
+"history@npm:5.3.0, history@npm:^5.0.0":
   version: 5.3.0
   resolution: "history@npm:5.3.0"
   dependencies:
@@ -28740,7 +28755,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"luxon@npm:3.6.1, luxon@npm:^3.0.0, luxon@npm:^3.2.1, luxon@npm:^3.4.3, luxon@npm:^3.5.0":
+"luxon@npm:3.7.2":
+  version: 3.7.2
+  resolution: "luxon@npm:3.7.2"
+  checksum: fc115fd6a7acc2adb7df3476d20c672beb2985d2a034294282f2c31de8c07f29a15460f5a2b7dd0107797be0dab545ddbc64862662b059fb18c1931a726064f4
+  languageName: node
+  linkType: hard
+
+"luxon@npm:^3.0.0, luxon@npm:^3.2.1, luxon@npm:^3.4.3, luxon@npm:^3.5.0":
   version: 3.6.1
   resolution: "luxon@npm:3.6.1"
   checksum: bc6c24dde90f4263f548cc5a4ea3328e9c9511bee0b2255bd319639712862f1eb14a39c1b2dcbff8a8bf6686996d28f45b8fc902994a72dd05a29cef1269a6a4
@@ -33429,17 +33451,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router@npm:6.3.0":
-  version: 6.3.0
-  resolution: "react-router@npm:6.3.0"
-  dependencies:
-    history: ^5.2.0
-  peerDependencies:
-    react: ">=16.8"
-  checksum: 7be673f5e72104be01e6ab274516bdb932efd93305243170690f6560e3bd1035dd1df3d3c9ce1e0f452638a2529f43a1e77dcf0934fc8031c4783da657be13ca
-  languageName: node
-  linkType: hard
-
 "react-router@npm:6.30.1":
   version: 6.30.1
   resolution: "react-router@npm:6.30.1"
@@ -37504,10 +37515,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici@npm:6.21.3":
-  version: 6.21.3
-  resolution: "undici@npm:6.21.3"
-  checksum: a2af0601deece36acbcc11ef722f36ad3c1e035d3065b9fbb36987487f7b69904046fa95c18f228a872ca45441f156fcaacd948fc920b0a97d0c1ab78ea63c04
+"undici@npm:6.22.0":
+  version: 6.22.0
+  resolution: "undici@npm:6.22.0"
+  checksum: ec2d846cb7d360fd45c2e3848bbdadbe086c167be08dd578ed376c70afb2b977950b4c4919c18da0610c61a1ef53c079086d09390a96de2b62bc1fa16d7765f8
   languageName: node
   linkType: hard
 
