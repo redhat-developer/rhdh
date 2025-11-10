@@ -4,10 +4,16 @@ import { Common } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
 test.describe("Change app-config at e2e test runtime", () => {
   test.beforeAll(async () => {
-    test.info().annotations.push({
-      type: "component",
-      description: "configuration",
-    });
+    test.info().annotations.push(
+      {
+        type: "component",
+        description: "configuration",
+      },
+      {
+        type: "namespace",
+        description: process.env.NAME_SPACE_RUNTIME || "showcase-runtime",
+      },
+    );
   });
 
   // operator nightly does not require this test as RDS tls test also verifies runtime change
@@ -20,7 +26,9 @@ test.describe("Change app-config at e2e test runtime", () => {
     const configMapName = "app-config-rhdh";
     // eslint-disable-next-line playwright/no-conditional-in-test
     const namespace = process.env.NAME_SPACE_RUNTIME || "showcase-runtime";
-    const deploymentName = "rhdh-developer-hub";
+    const deploymentName =
+      // eslint-disable-next-line playwright/no-conditional-in-test
+      (process.env.RELEASE_NAME || "rhdh") + "-developer-hub";
 
     const kubeUtils = new KubeClient();
     const dynamicTitle = generateDynamicTitle();

@@ -1,0 +1,91 @@
+# Copyright Red Hat, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Auto-Approve Bot PRs
+
+# This workflow automatically adds labels and approves PRs that match specific criteria:
+# - Created by rhdh-bot (via RHDH GitHub App)
+# - Branch name matches specific patterns (base image updates, version bumps, etc.)
+# - Adds lgtm and approved labels if not present
+
+on:
+  pull_request:
+    types: [opened, reopened, labeled, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  auto-approve:
+    name: Auto-Approve and Label PRs
+    runs-on: ubuntu-latest
+    
+    # Only run if PR is from rhdh-bot
+    if: github.event.pull_request.user.login == 'rhdh-bot[bot]'
+    
+    steps:
+      - name: Check PR eligibility
+        id: check-eligibility
+        run: |
+          PR_BRANCH="${{ github.event.pull_request.head.ref }}"
+          PR_DRAFT="${{ github.event.pull_request.draft }}"
+          
+          # Don't auto-approve draft PRs
+          if [[ "$PR_DRAFT" == "true" ]]; then
+            echo "eligible=false" >> $GITHUB_OUTPUT
+            echo "reason=PR is in draft state" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          # Labels will be added automatically if eligible
+          
+          # Define branch patterns that are eligible for auto-approval
+          # Add more patterns as needed
+          ELIGIBLE_PATTERNS=(
+            "^chore/automated-.*"                 # Automated chore tasks, such as version bumps, base image bumps, or RPM lock file version bumps
+          )
+          
+          ELIGIBLE=false
+          for pattern in "${ELIGIBLE_PATTERNS[@]}"; do
+            if [[ "$PR_BRANCH" =~ $pattern ]]; then
+              ELIGIBLE=true
+              break
+            fi
+          done
+          
+          if [[ "$ELIGIBLE" == "true" ]]; then
+            echo "eligible=true" >> $GITHUB_OUTPUT
+          else
+            echo "eligible=false" >> $GITHUB_OUTPUT
+          fi
+
+
+      - name: Add required labels and approve PR
+        if: steps.check-eligibility.outputs.eligible == 'true'
+        run: |
+          # Add the required labels if not already present
+          gh pr edit ${{ github.event.pull_request.number }} --add-label "lgtm,approved"
+
+          # Auto-approve the PR
+          gh pr review ${{ github.event.pull_request.number }} \
+            --approve \
+            --body "**Auto-Approved**
+
+          This PR has been automatically approved (rhdh-bot branch).
+
+          **Labels Added:** \`lgtm\`, \`approved\`
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
