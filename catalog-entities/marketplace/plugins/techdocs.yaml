@@ -16,7 +16,7 @@ metadata:
     - backstage-core
     - techdocs
   links:
-    - url: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/customizing/configuring-techdocs
+    - url: https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8/html/customizing/configuring-techdocs
       title: Red Hat Developer Hub Documentation
     - url: https://backstage.io/docs/features/techdocs/
       title: Backstage Documentation
@@ -81,13 +81,13 @@ spec:
 
     ## Adding The Plugin To Red Hat Developer Hub
 
-    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8)
     for further instructions on how to add, enable, configure, and remove plugins in your instance.
 
     ## Configuring The Plugin ##
 
     Plugins often need additional configuration to work correctly - particularly those that integrate with other
-    systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8)
     for further details regarding the configuration required.
 
   icon: data:image/svg+xml;base64,

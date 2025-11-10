@@ -37,7 +37,7 @@ spec:
                 unauthorized access.
               cta:
                 text: Learn more
-                link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/authentication_in_red_hat_developer_hub/
+                link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8/html/authentication_in_red_hat_developer_hub/
             - title: Configure RBAC
               icon: Rbac
               description: Assign roles and permissions to control who can view, create, or
@@ -51,7 +51,7 @@ spec:
                 workflows, and integrate with platform features.
               cta:
                 text: Learn more
-                link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/integrating_red_hat_developer_hub_with_github/
+                link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8/html/integrating_red_hat_developer_hub_with_github/
             - title: Manage plugins
               icon: Plugins
               description: Browse and install extensions to add features, connect with

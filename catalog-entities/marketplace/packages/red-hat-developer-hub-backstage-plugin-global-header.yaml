@@ -87,7 +87,7 @@ spec:
                     props:
                       title: Developer Hub
                       icon: developerHub
-                      link: https://docs.redhat.com/en/documentation/red_hat_developer_hub
+                      link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8
                 - mountPoint: global.header/application-launcher
                   importName: MenuItemLink
                   config:

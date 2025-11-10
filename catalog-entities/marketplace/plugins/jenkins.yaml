@@ -17,7 +17,7 @@ metadata:
     - title: Bugs
       url: https://issues.redhat.com/browse/RHIDP
     - title: Documentation for Red Hat Developer Hub
-      url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
+      url: https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8
     - title: Source Code
       url: https://github.com/backstage/community-plugins/tree/main/workspaces/jenkins/plugins/jenkins
 
@@ -38,13 +38,13 @@ spec:
 
     ## Adding The Plugin To Red Hat Developer Hub
 
-    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8)
     for further instructions on how to add, enable, configure, and remove plugins in your instance.
 
     ## Configuring The Plugin ##
 
     Plugins often need additional configuration to work correctly - particularly those that integrate with other
-    systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8)
     for further details regarding the configuration required.
 
   highlights:

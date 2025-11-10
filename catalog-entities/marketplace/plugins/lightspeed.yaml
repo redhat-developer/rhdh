@@ -13,7 +13,7 @@ metadata:
     - title: Bugs
       url: https://issues.redhat.com/browse/RHDHPAI
     - title: Documentation for Red Hat Developer Hub
-      url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
+      url: https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8
     - title: Source Code
       url: https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/lightspeed/plugins
   tags:
@@ -81,7 +81,7 @@ spec:
 
       ## Support
 
-      - **Documentation**: [Red Hat Developer Hub Documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+      - **Documentation**: [Red Hat Developer Hub Documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8)
       - **Frontend Plugin**: [Frontend README](https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/lightspeed/plugins/lightspeed/README.md)
       - **Backend Plugin**: [Backend README](https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/lightspeed/plugins/lightspeed-backend/README.md)
       - **Issues**: [Jira Issues](https://issues.redhat.com/browse/RHDHBUGS)
