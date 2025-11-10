@@ -15247,9 +15247,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-marketplace-common@npm:^0.12.0":
-  version: 0.12.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-marketplace-common@npm:0.12.0"
+"@red-hat-developer-hub/backstage-plugin-marketplace-common@npm:^0.12.1":
+  version: 0.12.1
+  resolution: "@red-hat-developer-hub/backstage-plugin-marketplace-common@npm:0.12.1"
   dependencies:
     "@backstage/backend-plugin-api": ^1.4.4
     "@backstage/catalog-client": ^1.12.0
@@ -15259,13 +15259,13 @@ __metadata:
   peerDependencies:
     "@backstage/backend-plugin-api": ^1.4.4
     "@backstage/types": ^1.2.2
-  checksum: 72c0b37db8e2989d5ca659c62db9b3a69375a8b28773682a77b7ab8f7ff5007ec26c66da0a7436391a2e128456b021e743a6f3f2f984f462dd34f226af73dcbd
+  checksum: 834484dfea7a9b68f01904eb040013ed2cf6305ef10644da9458e74f24cfb79e3103b65708f7504e33bfcafc4b43709a696f2baf5d347fd32d244c1a99444763
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-marketplace@npm:0.12.0":
-  version: 0.12.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-marketplace@npm:0.12.0"
+"@red-hat-developer-hub/backstage-plugin-marketplace@npm:0.12.1":
+  version: 0.12.1
+  resolution: "@red-hat-developer-hub/backstage-plugin-marketplace@npm:0.12.1"
   dependencies:
     "@backstage/catalog-client": ^1.12.0
     "@backstage/core-components": ^0.18.2
@@ -15280,7 +15280,7 @@ __metadata:
     "@mui/icons-material": ^5.16.7
     "@mui/material": ^5.12.2
     "@mui/styles": 5.18.0
-    "@red-hat-developer-hub/backstage-plugin-marketplace-common": ^0.12.0
+    "@red-hat-developer-hub/backstage-plugin-marketplace-common": ^0.12.1
     "@scalprum/react-core": 0.9.5
     "@tanstack/react-query": ^5.60.5
     monaco-editor: ^0.53.0
@@ -15290,7 +15290,7 @@ __metadata:
     react: ^17.0.0 || ^18.0.0
     react-dom: ^17.0.0 || ^18.0.0
     react-router-dom: ^6.3.0
-  checksum: 706459cbc27c2a44cdc19b7d2cc964e1b61e88b83d55da5f2b10bfb65496cc0ccb94ce09dcbb46a9ce23f2393f8b847f8ebf7e36c8e380a1ce5a61faed330717
+  checksum: 014cf34bdf7d48a1b8dfa4790583d739e0199f321aabe40503404198189beb7f3e2e1149006f16ba284e4f2df059156152774c8b0c1f9e1d6c275528eac70aed
   languageName: node
   linkType: hard
 
@@ -36484,7 +36484,7 @@ __metadata:
     "@backstage/cli": ^0.34.1
     "@janus-idp/cli": 3.6.1
     "@mui/material": 5.18.0
-    "@red-hat-developer-hub/backstage-plugin-marketplace": 0.12.0
+    "@red-hat-developer-hub/backstage-plugin-marketplace": 0.12.1
     typescript: 5.9.3
   languageName: unknown
   linkType: soft
