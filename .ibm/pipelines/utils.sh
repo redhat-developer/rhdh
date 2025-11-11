@@ -129,6 +129,159 @@ wait_for_deployment() {
   return 1
 }
 
+# Wait for a Kubernetes job to complete with proper error handling and detailed logging
+wait_for_job_completion() {
+  local namespace=$1
+  local job_name=$2
+  local timeout_minutes=${3:-10} # Default timeout: 10 minutes
+  local check_interval=${4:-10}  # Default interval: 10 seconds
+
+  # Validate required parameters
+  if [[ -z "$namespace" || -z "$job_name" ]]; then
+    echo "Error: Missing required parameters"
+    echo "Usage: wait_for_job_completion <namespace> <job-name> [timeout_minutes] [check_interval_seconds]"
+    echo "Example: wait_for_job_completion my-namespace my-job 10 10"
+    return 1
+  fi
+
+  local max_attempts=$((timeout_minutes * 60 / check_interval))
+  
+  echo "Waiting for job '$job_name' to be created in namespace '$namespace'..."
+
+  # Phase 1: Wait for job to exist (with timeout)
+  for ((i = 1; i <= max_attempts; i++)); do
+    if oc get job "$job_name" -n "$namespace" &> /dev/null; then
+      echo "✅ Job '$job_name' found!"
+      break
+    fi
+
+    if [[ $i -eq $max_attempts ]]; then
+      echo "=========================================="
+      echo "❌ ORCHESTRATOR JOB FAILURE"
+      echo "=========================================="
+      echo "Job: $job_name"
+      echo "Namespace: $namespace"
+      echo "Reason: Job was not created within ${timeout_minutes} minutes"
+      echo "Timestamp: $(date)"
+      echo ""
+      echo "Recent events in namespace:"
+      oc get events -n "$namespace" --sort-by='.lastTimestamp' | tail -20
+      echo ""
+      echo "NOTE: Full pod logs will be saved by save_all_pod_logs() at the end of deployment"
+      echo "=========================================="
+      return 1
+    fi
+
+    echo "Job not yet created... (${i}/${max_attempts} checks)"
+    sleep "$check_interval"
+  done
+
+  # Phase 2: Wait for job to complete
+  echo "Waiting for job '$job_name' to complete (timeout: ${timeout_minutes}m)..."
+
+  for ((i = 1; i <= max_attempts; i++)); do
+    # Get job status
+    local job_status
+    job_status=$(oc get job "$job_name" -n "$namespace" -o jsonpath='{.status.conditions[?(@.type=="Complete")].status}' 2>/dev/null)
+    local job_failed
+    job_failed=$(oc get job "$job_name" -n "$namespace" -o jsonpath='{.status.conditions[?(@.type=="Failed")].status}' 2>/dev/null)
+
+    # Check if job completed successfully
+    if [[ "$job_status" == "True" ]]; then
+      echo "✅ Job '$job_name' completed successfully!"
+      return 0
+    fi
+
+    # Check if job failed
+    if [[ "$job_failed" == "True" ]]; then
+      echo "=========================================="
+      echo "❌ ORCHESTRATOR JOB FAILURE"
+      echo "=========================================="
+      echo "Job: $job_name"
+      echo "Namespace: $namespace"
+      echo "Reason: Job failed"
+      echo "Timestamp: $(date)"
+      echo ""
+      
+      local pod_name
+      pod_name=$(oc get pods -n "$namespace" -l job-name="$job_name" -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
+      
+      echo "--- Job Description ---"
+      oc describe job "$job_name" -n "$namespace"
+      echo ""
+      
+      if [[ -n "$pod_name" ]]; then
+        echo "--- Pod: $pod_name ---"
+        echo "Pod Status:"
+        oc get pod "$pod_name" -n "$namespace" -o wide
+        echo ""
+        echo "Pod Logs (last 100 lines):"
+        oc logs "$pod_name" -n "$namespace" --tail=100 || echo "Could not retrieve logs"
+        echo ""
+        echo "Pod Events:"
+        oc get events -n "$namespace" --field-selector involvedObject.name="$pod_name" | tail -20
+      else
+        echo "⚠️  Could not find pod for job '$job_name'"
+        echo "Listing all pods in namespace:"
+        oc get pods -n "$namespace"
+      fi
+      
+      echo ""
+      echo "NOTE: Full pod logs will be saved by save_all_pod_logs() at the end of deployment"
+      echo "=========================================="
+      return 1
+    fi
+
+    # Show progress
+    local active_pods succeeded_pods failed_pods
+    active_pods=$(oc get job "$job_name" -n "$namespace" -o jsonpath='{.status.active}' 2>/dev/null || echo "0")
+    succeeded_pods=$(oc get job "$job_name" -n "$namespace" -o jsonpath='{.status.succeeded}' 2>/dev/null || echo "0")
+    failed_pods=$(oc get job "$job_name" -n "$namespace" -o jsonpath='{.status.failed}' 2>/dev/null || echo "0")
+
+    echo "Job status - Active: $active_pods, Succeeded: $succeeded_pods, Failed: $failed_pods (${i}/${max_attempts} checks)"
+
+    sleep "$check_interval"
+  done
+
+  # Timeout occurred
+  echo "=========================================="
+  echo "❌ ORCHESTRATOR JOB TIMEOUT"
+  echo "=========================================="
+  echo "Job: $job_name"
+  echo "Namespace: $namespace"
+  echo "Reason: Job did not complete within ${timeout_minutes} minutes"
+  echo "Timestamp: $(date)"
+  echo ""
+  
+  local pod_name
+  pod_name=$(oc get pods -n "$namespace" -l job-name="$job_name" -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
+  
+  echo "--- Job Description ---"
+  oc describe job "$job_name" -n "$namespace"
+  echo ""
+  
+  if [[ -n "$pod_name" ]]; then
+    echo "--- Pod: $pod_name ---"
+    echo "Pod Status:"
+    oc get pod "$pod_name" -n "$namespace" -o wide
+    echo ""
+    echo "Pod Logs (last 100 lines):"
+    oc logs "$pod_name" -n "$namespace" --tail=100 || echo "Could not retrieve logs"
+    echo ""
+    echo "Pod Events:"
+    oc get events -n "$namespace" --field-selector involvedObject.name="$pod_name" | tail -20
+  else
+    echo "⚠️  Could not find pod for job '$job_name'"
+    echo "Listing all pods in namespace:"
+    oc get pods -n "$namespace"
+  fi
+  
+  echo ""
+  echo "NOTE: Full pod logs will be saved by save_all_pod_logs() at the end of deployment"
+  echo "=========================================="
+  return 1
+}
+
 wait_for_svc() {
   local svc_name=$1
   local namespace=$2
@@ -680,7 +833,13 @@ cluster_setup_ocp_helm() {
   install_pipelines_operator
   install_acm_ocp_operator
   install_crunchy_postgres_ocp_operator
-  install_orchestrator_infra_chart
+  
+  # Skip orchestrator infra installation on OSD-GCP due to infrastructure limitations
+  if [[ ! "${JOB_NAME}" =~ osd-gcp ]]; then
+    install_orchestrator_infra_chart
+  else
+    echo "Skipping orchestrator-infra installation on OSD-GCP environment"
+  fi
 }
 
 cluster_setup_ocp_operator() {
@@ -785,11 +944,11 @@ rbac_deployment() {
   perform_helm_install "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${HELM_CHART_RBAC_VALUE_FILE_NAME}"
 
   # NOTE: This is a workaround to allow the sonataflow platform to connect to the external postgres db using ssl.
-  until [[ $(oc get jobs -n "${NAME_SPACE_RBAC}" 2> /dev/null | grep "${RELEASE_NAME_RBAC}-create-sonataflow-database" | wc -l) -eq 1 ]]; do
-    echo "Waiting for sf db creation job to be created. Retrying in 5 seconds..."
-    sleep 5
-  done
-  oc wait --for=condition=complete job/"${RELEASE_NAME_RBAC}-create-sonataflow-database" -n "${NAME_SPACE_RBAC}" --timeout=3m
+  # Wait for the sonataflow database creation job to complete with robust error handling
+  if ! wait_for_job_completion "${NAME_SPACE_RBAC}" "${RELEASE_NAME_RBAC}-create-sonataflow-database" 10 10; then
+    echo "❌ Failed to create sonataflow database. Aborting RBAC deployment."
+    return 1
+  fi
   oc -n "${NAME_SPACE_RBAC}" patch sfp sonataflow-platform --type=merge \
     -p '{"spec":{"services":{"jobService":{"podTemplate":{"container":{"env":[{"name":"QUARKUS_DATASOURCE_REACTIVE_URL","value":"postgresql://postgress-external-db-primary.postgress-external-db.svc.cluster.local:5432/sonataflow?search_path=jobs-service&sslmode=require&ssl=true&trustAll=true"},{"name":"QUARKUS_DATASOURCE_REACTIVE_SSL_MODE","value":"require"},{"name":"QUARKUS_DATASOURCE_REACTIVE_TRUST_ALL","value":"true"}]}}}}}}'
   oc rollout restart deployment/sonataflow-platform-jobs-service -n "${NAME_SPACE_RBAC}"

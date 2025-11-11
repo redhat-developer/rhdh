@@ -5,3 +5,15 @@ export const SHOWCASE_REPO = `${JANUS_ORG}/backstage-showcase`;
 export const CATALOG_FILE = "catalog-info.yaml";
 export const NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE =
   /Login failed; caused by Error: Failed to sign-in, unable to resolve user identity. Please verify that your catalog contains the expected User entities that would match your configured sign-in resolver./;
+
+/**
+ * CI/CD Job name patterns used for conditional test execution
+ */
+export const JOB_PATTERNS = {
+  OSD_GCP: "osd-gcp",
+  OPERATOR: "operator",
+  PRESUBMIT: "presubmit",
+  OCP: "ocp",
+} as const;
+
+export type JobPattern = (typeof JOB_PATTERNS)[keyof typeof JOB_PATTERNS];

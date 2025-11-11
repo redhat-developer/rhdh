@@ -2,8 +2,12 @@ import { test } from "@playwright/test";
 import { UIhelper } from "../../../utils/ui-helper";
 import { Common } from "../../../utils/common";
 import { Orchestrator } from "../../../support/pages/orchestrator";
+import { shouldSkipBasedOnJob } from "../../../utils/helper";
+import { JOB_PATTERNS } from "../../../utils/constants";
 
 test.describe("Orchestrator Workflow Runs tests", () => {
+  test.skip(() => shouldSkipBasedOnJob(JOB_PATTERNS.OSD_GCP));
+
   let uiHelper: UIhelper;
   let common: Common;
   let orchestrator: Orchestrator;
