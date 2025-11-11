@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     
     # Only run if PR is from rhdh-bot
-    if: github.event.pull_request.user.login == 'rhdh-bot[bot]'
+    if: github.event.pull_request.user.login == 'rhdh-bot'
     
     steps:
       - name: Check PR eligibility
