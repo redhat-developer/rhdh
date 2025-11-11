@@ -204,7 +204,7 @@ wait_for_job_completion() {
       echo ""
       
       local pod_name
-      pod_name=$(oc get pods -n "$namespace" -l job-name="$job_name" -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
+      pod_name=$(oc get pods -n "$namespace" -l job-name="$job_name" --sort-by=.metadata.creationTimestamp -o jsonpath='{.items[-1].metadata.name}' 2>/dev/null)
       
       echo "--- Job Description ---"
       oc describe job "$job_name" -n "$namespace"
@@ -254,7 +254,7 @@ wait_for_job_completion() {
   echo ""
   
   local pod_name
-  pod_name=$(oc get pods -n "$namespace" -l job-name="$job_name" -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
+  pod_name=$(oc get pods -n "$namespace" -l job-name="$job_name" --sort-by=.metadata.creationTimestamp -o jsonpath='{.items[-1].metadata.name}' 2>/dev/null)
   
   echo "--- Job Description ---"
   oc describe job "$job_name" -n "$namespace"
