@@ -22,14 +22,14 @@ metadata:
       url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
     - title: Source Code
       url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/
-  tags: 
+  tags:
     - software-catalog
 
 spec:
   author: Backstage Community
   support:
     provider: Red Hat
-    level: tech-preview
+    level: generally-available
   lifecycle: active
   publisher: Red Hat
 
@@ -40,17 +40,17 @@ spec:
 
   description: |
     This is an extension module to the `plugin-catalog-backend` plugin, providing a `MicrosoftGraphOrgEntityProvider`
-    that can be used to ingest organization data from the Microsoft Graph API. This provider is useful if you want to 
+    that can be used to ingest organization data from the Microsoft Graph API. This provider is useful if you want to
     import users and groups from Entra Id (formerly Azure Active Directory) or Office 365.
 
     ## Adding The Plugin To Red Hat Developer Hub
 
-    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub) 
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
     for further instructions on how to add, enable, configure, and remove plugins in your instance.
 
     ## Configuring The Plugin ##
 
-    Plugins often need additional configuration to work correctly - particularly those that integrate with other 
+    Plugins often need additional configuration to work correctly - particularly those that integrate with other
     systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
     for further details regarding the configuration required.
 
