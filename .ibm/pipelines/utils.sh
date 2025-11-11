@@ -145,7 +145,7 @@ wait_for_job_completion() {
   fi
 
   local max_attempts=$((timeout_minutes * 60 / check_interval))
-  
+
   echo "Waiting for job '$job_name' to be created in namespace '$namespace'..."
 
   # Phase 1: Wait for job to exist (with timeout)
@@ -182,9 +182,9 @@ wait_for_job_completion() {
   for ((i = 1; i <= max_attempts; i++)); do
     # Get job status
     local job_status
-    job_status=$(oc get job "$job_name" -n "$namespace" -o jsonpath='{.status.conditions[?(@.type=="Complete")].status}' 2>/dev/null)
+    job_status=$(oc get job "$job_name" -n "$namespace" -o jsonpath='{.status.conditions[?(@.type=="Complete")].status}' 2> /dev/null)
     local job_failed
-    job_failed=$(oc get job "$job_name" -n "$namespace" -o jsonpath='{.status.conditions[?(@.type=="Failed")].status}' 2>/dev/null)
+    job_failed=$(oc get job "$job_name" -n "$namespace" -o jsonpath='{.status.conditions[?(@.type=="Failed")].status}' 2> /dev/null)
 
     # Check if job completed successfully
     if [[ "$job_status" == "True" ]]; then
@@ -202,14 +202,14 @@ wait_for_job_completion() {
       echo "Reason: Job failed"
       echo "Timestamp: $(date)"
       echo ""
-      
+
       local pod_name
-      pod_name=$(oc get pods -n "$namespace" -l job-name="$job_name" --sort-by=.metadata.creationTimestamp -o jsonpath='{.items[-1].metadata.name}' 2>/dev/null)
-      
+      pod_name=$(oc get pods -n "$namespace" -l job-name="$job_name" --sort-by=.metadata.creationTimestamp -o jsonpath='{.items[-1].metadata.name}' 2> /dev/null)
+
       echo "--- Job Description ---"
       oc describe job "$job_name" -n "$namespace"
       echo ""
-      
+
       if [[ -n "$pod_name" ]]; then
         echo "--- Pod: $pod_name ---"
         echo "Pod Status:"
@@ -225,7 +225,7 @@ wait_for_job_completion() {
         echo "Listing all pods in namespace:"
         oc get pods -n "$namespace"
       fi
-      
+
       echo ""
       echo "NOTE: Full pod logs will be saved by save_all_pod_logs() at the end of deployment"
       echo "=========================================="
@@ -234,9 +234,9 @@ wait_for_job_completion() {
 
     # Show progress
     local active_pods succeeded_pods failed_pods
-    active_pods=$(oc get job "$job_name" -n "$namespace" -o jsonpath='{.status.active}' 2>/dev/null || echo "0")
-    succeeded_pods=$(oc get job "$job_name" -n "$namespace" -o jsonpath='{.status.succeeded}' 2>/dev/null || echo "0")
-    failed_pods=$(oc get job "$job_name" -n "$namespace" -o jsonpath='{.status.failed}' 2>/dev/null || echo "0")
+    active_pods=$(oc get job "$job_name" -n "$namespace" -o jsonpath='{.status.active}' 2> /dev/null || echo "0")
+    succeeded_pods=$(oc get job "$job_name" -n "$namespace" -o jsonpath='{.status.succeeded}' 2> /dev/null || echo "0")
+    failed_pods=$(oc get job "$job_name" -n "$namespace" -o jsonpath='{.status.failed}' 2> /dev/null || echo "0")
 
     echo "Job status - Active: $active_pods, Succeeded: $succeeded_pods, Failed: $failed_pods (${i}/${max_attempts} checks)"
 
@@ -252,14 +252,14 @@ wait_for_job_completion() {
   echo "Reason: Job did not complete within ${timeout_minutes} minutes"
   echo "Timestamp: $(date)"
   echo ""
-  
+
   local pod_name
-  pod_name=$(oc get pods -n "$namespace" -l job-name="$job_name" --sort-by=.metadata.creationTimestamp -o jsonpath='{.items[-1].metadata.name}' 2>/dev/null)
-  
+  pod_name=$(oc get pods -n "$namespace" -l job-name="$job_name" --sort-by=.metadata.creationTimestamp -o jsonpath='{.items[-1].metadata.name}' 2> /dev/null)
+
   echo "--- Job Description ---"
   oc describe job "$job_name" -n "$namespace"
   echo ""
-  
+
   if [[ -n "$pod_name" ]]; then
     echo "--- Pod: $pod_name ---"
     echo "Pod Status:"
@@ -275,7 +275,7 @@ wait_for_job_completion() {
     echo "Listing all pods in namespace:"
     oc get pods -n "$namespace"
   fi
-  
+
   echo ""
   echo "NOTE: Full pod logs will be saved by save_all_pod_logs() at the end of deployment"
   echo "=========================================="
@@ -833,7 +833,7 @@ cluster_setup_ocp_helm() {
   install_pipelines_operator
   install_acm_ocp_operator
   install_crunchy_postgres_ocp_operator
-  
+
   # Skip orchestrator infra installation on OSD-GCP due to infrastructure limitations
   if [[ ! "${JOB_NAME}" =~ osd-gcp ]]; then
     install_orchestrator_infra_chart
