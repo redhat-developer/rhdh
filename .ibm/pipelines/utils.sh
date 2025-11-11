@@ -157,7 +157,7 @@ wait_for_job_completion() {
 
     if [[ $i -eq $max_attempts ]]; then
       echo "=========================================="
-      echo "❌ ORCHESTRATOR JOB FAILURE"
+      echo "❌ JOB FAILURE"
       echo "=========================================="
       echo "Job: $job_name"
       echo "Namespace: $namespace"
@@ -195,7 +195,7 @@ wait_for_job_completion() {
     # Check if job failed
     if [[ "$job_failed" == "True" ]]; then
       echo "=========================================="
-      echo "❌ ORCHESTRATOR JOB FAILURE"
+      echo "❌ JOB FAILURE"
       echo "=========================================="
       echo "Job: $job_name"
       echo "Namespace: $namespace"
@@ -245,7 +245,7 @@ wait_for_job_completion() {
 
   # Timeout occurred
   echo "=========================================="
-  echo "❌ ORCHESTRATOR JOB TIMEOUT"
+  echo "❌ JOB TIMEOUT"
   echo "=========================================="
   echo "Job: $job_name"
   echo "Namespace: $namespace"
