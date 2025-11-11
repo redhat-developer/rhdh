@@ -42,6 +42,7 @@ import os
 import importlib.util
 import json
 import hashlib
+import base64
 
 # Add the current directory to path to import the module
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -123,7 +124,7 @@ class TestOciPackageMergerParsePluginKey:
         return OciPackageMerger(plugin, 'test-file.yaml', {})
     
     @pytest.mark.parametrize("input_package,expected_key,expected_version,expected_inherit", [
-        # Tag-based packages
+        # Tag-based packages with explicit path
         (
             'oci://quay.io/user/plugin:v1.0!plugin-name',
             'oci://quay.io/user/plugin:!plugin-name',
@@ -187,18 +188,16 @@ class TestOciPackageMergerParsePluginKey:
         self, oci_merger, input_package, expected_key, expected_version, expected_inherit
     ):
         """Test that parse_plugin_key correctly parses valid OCI package formats."""
-        plugin_key, version, inherit_version = oci_merger.parse_plugin_key(input_package)
+        plugin_key, version, inherit_version, _ = oci_merger.parse_plugin_key(input_package)
         
         assert plugin_key == expected_key, f"Expected key {expected_key}, got {plugin_key}"
         assert version == expected_version, f"Expected version {expected_version}, got {version}"
         assert inherit_version == expected_inherit, f"Expected inherit {expected_inherit}, got {inherit_version}"
     
     @pytest.mark.parametrize("invalid_package,error_substring", [
-        # Missing ! separator
-        ('oci://registry.io/plugin:v1.0', 'not in the expected format'),
-        
         # Missing tag/digest
         ('oci://registry.io/plugin!path', 'not in the expected format'),
+        ('oci://registry.io/plugin', 'not in the expected format'),
         
         # Invalid format - no tag or digest before !
         ('oci://registry.io!path', 'not in the expected format'),
@@ -214,12 +213,14 @@ class TestOciPackageMergerParsePluginKey:
         
         # Empty tag
         ('oci://registry.io/plugin:!plugin', 'not in the expected format'),
+        ('oci://registry.io/plugin:', 'not in the expected format'),
         
         # Empty path after !
         ('oci://registry.io/plugin:v1.0!', 'not in the expected format'),
         
         # No oci:// prefix (but this should fail the regex)
         ('registry.io/plugin:v1.0!plugin', 'not in the expected format'),
+        ('registry.io/plugin:v1.0', 'not in the expected format'),
     ])
     def test_parse_plugin_key_error_cases(self, oci_merger, invalid_package, error_substring):
         """Test that parse_plugin_key raises InstallException for invalid OCI package formats."""
@@ -234,31 +235,106 @@ class TestOciPackageMergerParsePluginKey:
         # Note: The pattern allows any value after @ including special strings like {{inherit}}
         # though this would be semantically incorrect for digest format
         input_pkg = 'oci://registry.io/plugin@sha256:abc123def456789!plugin'
-        plugin_key, version, inherit = oci_merger.parse_plugin_key(input_pkg)
+        plugin_key, version, inherit, resolved_path = oci_merger.parse_plugin_key(input_pkg)
         
         assert plugin_key == 'oci://registry.io/plugin:!plugin'
         assert version == 'sha256:abc123def456789'
         assert inherit is False
+        assert resolved_path == 'plugin'
     
     def test_parse_plugin_key_strips_version_from_key(self, oci_merger):
         """Test that the plugin key does not contain version information."""
         input_pkg = 'oci://quay.io/user/plugin:v1.0.0!my-plugin'
-        plugin_key, version, _ = oci_merger.parse_plugin_key(input_pkg)
+        plugin_key, version, _, resolved_path = oci_merger.parse_plugin_key(input_pkg)
         
         # The key should not contain the version
         assert ':v1.0.0' not in plugin_key
         assert plugin_key == 'oci://quay.io/user/plugin:!my-plugin'
         # But the version should be returned separately
         assert version == 'v1.0.0'
+        assert resolved_path == 'my-plugin'
     
     def test_parse_plugin_key_with_nested_path(self, oci_merger):
         """Test parsing OCI package with nested path after !."""
         input_pkg = 'oci://registry.io/plugin:v1.0!path/to/nested/plugin'
-        plugin_key, version, inherit = oci_merger.parse_plugin_key(input_pkg)
+        plugin_key, version, inherit, resolved_path = oci_merger.parse_plugin_key(input_pkg)
         
         assert plugin_key == 'oci://registry.io/plugin:!path/to/nested/plugin'
         assert version == 'v1.0'
         assert inherit is False
+        assert resolved_path == 'path/to/nested/plugin'
+    
+    def test_parse_plugin_key_auto_detect_single_plugin(self, oci_merger, mocker):
+        """Test auto-detection with single plugin in OCI image."""
+        # Mock get_oci_plugin_paths to return single plugin
+        mock_get_paths = mocker.patch.object(install_dynamic_plugins, 'get_oci_plugin_paths')
+        mock_get_paths.return_value = ['auto-detected-plugin']
+        
+        input_pkg = 'oci://registry.io/plugin:v1.0'
+        plugin_key, version, inherit, resolved_path = oci_merger.parse_plugin_key(input_pkg)
+        
+        # Should resolve to the auto-detected plugin name
+        assert plugin_key == 'oci://registry.io/plugin:!auto-detected-plugin'
+        assert version == 'v1.0'
+        assert inherit is False
+        assert resolved_path == 'auto-detected-plugin'
+        
+        # Package should NOT be updated here (that happens in merge_plugin)
+        # The fixture has a different initial package which should remain unchanged
+        assert oci_merger.plugin['package'] == 'oci://example.com:v1.0!plugin'
+        
+        # Verify get_oci_plugin_paths was called
+        mock_get_paths.assert_called_once_with('oci://registry.io/plugin:v1.0')
+    
+    def test_parse_plugin_key_auto_detect_with_digest(self, oci_merger, mocker):
+        """Test auto-detection with digest-based reference."""
+        mock_get_paths = mocker.patch.object(install_dynamic_plugins, 'get_oci_plugin_paths')
+        mock_get_paths.return_value = ['my-plugin']
+        
+        input_pkg = 'oci://registry.io/plugin@sha256:abc123'
+        plugin_key, version, inherit, resolved_path = oci_merger.parse_plugin_key(input_pkg)
+        
+        assert plugin_key == 'oci://registry.io/plugin:!my-plugin'
+        assert version == 'sha256:abc123'
+        assert inherit is False
+        assert resolved_path == 'my-plugin'
+        
+        # Package should NOT be updated here (that happens in merge_plugin)
+        # The fixture has a different initial package which should remain unchanged
+        assert oci_merger.plugin['package'] == 'oci://example.com:v1.0!plugin'
+    
+    def test_parse_plugin_key_auto_detect_no_plugins_error(self, oci_merger, mocker):
+        """Test error when no plugins found in OCI image."""
+        mock_get_paths = mocker.patch.object(install_dynamic_plugins, 'get_oci_plugin_paths')
+        mock_get_paths.return_value = []
+        
+        with pytest.raises(InstallException) as exc_info:
+            oci_merger.parse_plugin_key('oci://registry.io/plugin:v1.0')
+        
+        assert 'No plugins found' in str(exc_info.value)
+    
+    def test_parse_plugin_key_auto_detect_multiple_plugins_error(self, oci_merger, mocker):
+        """Test error when multiple plugins found without explicit path."""
+        mock_get_paths = mocker.patch.object(install_dynamic_plugins, 'get_oci_plugin_paths')
+        mock_get_paths.return_value = ['plugin-one', 'plugin-two', 'plugin-three']
+        
+        with pytest.raises(InstallException) as exc_info:
+            oci_merger.parse_plugin_key('oci://registry.io/plugin:v1.0')
+        
+        error_msg = str(exc_info.value)
+        assert 'Multiple plugins found' in error_msg
+        assert 'plugin-one' in error_msg
+        assert 'plugin-two' in error_msg
+        assert 'plugin-three' in error_msg
+    
+    # FIXME: Currently {{inherit}} requires an explicit path since we can't inspect the registry with {{inherit}} as a tag
+    def test_parse_plugin_key_inherit_without_path_error(self, oci_merger):
+        """Test error when using {{inherit}} without explicit path."""
+        with pytest.raises(InstallException) as exc_info:
+            oci_merger.parse_plugin_key('oci://registry.io/plugin:{{inherit}}')
+        
+        assert '{{inherit}}' in str(exc_info.value)
+        assert 'explicit path' in str(exc_info.value)
 
 
 class TestEdgeCases:
@@ -287,11 +363,12 @@ class TestEdgeCases:
         
         long_digest = 'sha256:' + 'a' * 64
         input_pkg = f'oci://quay.io/user/plugin@{long_digest}!plugin'
-        plugin_key, version, inherit = merger.parse_plugin_key(input_pkg)
+        plugin_key, version, inherit, resolved_path = merger.parse_plugin_key(input_pkg)
         
         assert plugin_key == 'oci://quay.io/user/plugin:!plugin'
         assert version == long_digest
         assert inherit is False
+        assert resolved_path == 'plugin'
 
 
 class TestNPMPackageMergerMergePlugin:
@@ -464,6 +541,50 @@ class TestOciPackageMergerMergePlugin:
         plugin_key = 'oci://registry.io/plugin:!path'
         assert plugin_key in all_plugins
         assert all_plugins[plugin_key]['version'] == 'sha256:abc123'
+    
+    def test_merge_plugin_auto_detect_updates_package(self, mocker):
+        """Test that merge_plugin updates package when path is auto-detected."""
+        # Mock get_oci_plugin_paths to return single plugin
+        mock_get_paths = mocker.patch.object(install_dynamic_plugins, 'get_oci_plugin_paths')
+        mock_get_paths.return_value = ['detected-plugin']
+        
+        all_plugins = {}
+        # Package without explicit path (will be auto-detected)
+        plugin = {'package': 'oci://registry.io/plugin:v1.0'}
+        merger = OciPackageMerger(plugin, 'test-file.yaml', all_plugins)
+        
+        merger.merge_plugin(level=0)
+        
+        # Verify the package was updated with the resolved path
+        plugin_key = 'oci://registry.io/plugin:!detected-plugin'
+        assert plugin_key in all_plugins
+        assert all_plugins[plugin_key]['package'] == 'oci://registry.io/plugin:v1.0!detected-plugin'
+        assert all_plugins[plugin_key]['version'] == 'v1.0'
+        
+        # Original plugin dict should also be updated
+        assert merger.plugin['package'] == 'oci://registry.io/plugin:v1.0!detected-plugin'
+    
+    def test_merge_plugin_auto_detect_with_digest_updates_package(self, mocker):
+        """Test that merge_plugin updates package with digest when path is auto-detected."""
+        # Mock get_oci_plugin_paths to return single plugin
+        mock_get_paths = mocker.patch.object(install_dynamic_plugins, 'get_oci_plugin_paths')
+        mock_get_paths.return_value = ['my-plugin']
+        
+        all_plugins = {}
+        # Package without explicit path (will be auto-detected)
+        plugin = {'package': 'oci://registry.io/plugin@sha256:abc123'}
+        merger = OciPackageMerger(plugin, 'test-file.yaml', all_plugins)
+        
+        merger.merge_plugin(level=0)
+        
+        # Verify the package was updated with the resolved path
+        plugin_key = 'oci://registry.io/plugin:!my-plugin'
+        assert plugin_key in all_plugins
+        assert all_plugins[plugin_key]['package'] == 'oci://registry.io/plugin@sha256:abc123!my-plugin'
+        assert all_plugins[plugin_key]['version'] == 'sha256:abc123'
+        
+        # Original plugin dict should also be updated
+        assert merger.plugin['package'] == 'oci://registry.io/plugin@sha256:abc123!my-plugin'
     
     def test_override_plugin_version(self, capsys):
         """Test overriding OCI plugin version from level 0 to 1."""
@@ -1281,6 +1402,109 @@ class TestOciDownloader:
             downloader.extract_plugin(str(tarball_path), plugin_path)
         
         assert 'Zip bomb' in str(exc_info.value)
+    
+    def test_get_oci_plugin_paths_single_plugin(self, tmp_path, mocker):
+        """Test get_oci_plugin_paths with a single plugin in the image."""
+        mocker.patch('shutil.which', return_value='/usr/bin/skopeo')
+        
+        # Mock skopeo inspect --raw to return manifest with single plugin
+        mock_run = mocker.patch('subprocess.run')
+        mock_run.return_value.returncode = 0
+        
+        # Create test annotation data (raw manifest format)
+        plugins_metadata = [{
+            "backstage-plugin-events-backend-module-github": {
+                "name": "@backstage/plugin-events-backend-module-github-dynamic",
+                "version": "0.4.3"
+            }
+        }]
+        annotation_value = base64.b64encode(json.dumps(plugins_metadata).encode('utf-8')).decode('utf-8')
+        
+        manifest_output = {
+            "schemaVersion": 2,
+            "annotations": {
+                "io.backstage.dynamic-packages": annotation_value
+            }
+        }
+        mock_run.return_value.stdout = json.dumps(manifest_output).encode('utf-8')
+        
+        paths = install_dynamic_plugins.get_oci_plugin_paths('oci://registry.io/plugin:v1.0')
+        
+        assert len(paths) == 1
+        assert paths[0] == "backstage-plugin-events-backend-module-github"
+        
+        # Verify --raw flag was used
+        mock_run.assert_called()
+        call_args = mock_run.call_args[0][0]
+        assert '--raw' in call_args
+    
+    def test_get_oci_plugin_paths_multiple_plugins(self, tmp_path, mocker):
+        """Test get_oci_plugin_paths with multiple plugins in the image."""
+        mocker.patch('shutil.which', return_value='/usr/bin/skopeo')
+        
+        mock_run = mocker.patch('subprocess.run')
+        mock_run.return_value.returncode = 0
+        
+        # Create test annotation data with multiple plugins (raw manifest format)
+        plugins_metadata = [
+            {"plugin-one": {"name": "@scope/plugin-one", "version": "1.0.0"}},
+            {"plugin-two": {"name": "@scope/plugin-two", "version": "2.0.0"}}
+        ]
+        annotation_value = base64.b64encode(json.dumps(plugins_metadata).encode('utf-8')).decode('utf-8')
+        
+        manifest_output = {
+            "schemaVersion": 2,
+            "annotations": {
+                "io.backstage.dynamic-packages": annotation_value
+            }
+        }
+        mock_run.return_value.stdout = json.dumps(manifest_output).encode('utf-8')
+        
+        paths = install_dynamic_plugins.get_oci_plugin_paths('oci://registry.io/plugin:v1.0')
+        
+        assert len(paths) == 2
+        assert "plugin-one" in paths
+        assert "plugin-two" in paths
+    
+    def test_get_oci_plugin_paths_no_annotation(self, tmp_path, mocker):
+        """Test get_oci_plugin_paths when annotation is missing."""
+        mocker.patch('shutil.which', return_value='/usr/bin/skopeo')
+        
+        mock_run = mocker.patch('subprocess.run')
+        mock_run.return_value.returncode = 0
+        
+        # Raw manifest without the plugin annotation
+        manifest_output = {
+            "schemaVersion": 2,
+            "annotations": {}
+        }
+        mock_run.return_value.stdout = json.dumps(manifest_output).encode('utf-8')
+        
+        paths = install_dynamic_plugins.get_oci_plugin_paths('oci://registry.io/plugin:v1.0')
+        
+        assert len(paths) == 0
+    
+    def test_download_with_explicit_path(self, tmp_path, mocker):
+        """Test download extracts the specified plugin path."""
+        mocker.patch('shutil.which', return_value='/usr/bin/skopeo')
+        
+        downloader = install_dynamic_plugins.OciDownloader(str(tmp_path))
+        
+        mocker.patch.object(downloader, 'get_plugin_tar', return_value='/fake/tar/path')
+        
+        def mock_extract(tar_file, plugin_path):
+            plugin_dir = tmp_path / plugin_path
+            plugin_dir.mkdir(parents=True, exist_ok=True)
+            (plugin_dir / "package.json").write_text('{"name": "test"}')
+        
+        mocker.patch.object(downloader, 'extract_plugin', side_effect=mock_extract)
+        
+        # download() always expects package with path (resolved by parse_plugin_key)
+        package = 'oci://registry.io/plugin:v1.0!explicit-plugin'
+        result = downloader.download(package)
+        
+        assert result == 'explicit-plugin'
+        downloader.extract_plugin.assert_called_once_with(tar_file='/fake/tar/path', plugin_path='explicit-plugin')
     
     def test_download_removes_previous_installation(self, tmp_path, mocker):
         """Test that download removes previous plugin directory."""
