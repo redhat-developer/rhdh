@@ -60,8 +60,10 @@ cleanup() {
   log_section "Pipeline Cleanup"
 
   # Calculate duration
-  local end_time=$(date +%s)
-  local duration=$(calculate_duration ${START_TIME} ${end_time})
+  local end_time
+  end_time=$(date +%s)
+  local duration
+  duration=$(calculate_duration "${START_TIME}" "${end_time}")
   log_info "Total execution time: ${duration}"
 
   # Generate final summary if we ran any deployments
@@ -75,7 +77,7 @@ cleanup() {
     log_error "Pipeline completed with errors (exit code: ${exit_code})"
   fi
 
-  exit ${exit_code}
+  exit "${exit_code}"
 }
 
 trap cleanup EXIT
@@ -168,5 +170,5 @@ esac
 # ============================================================================
 # Exit with proper code
 # ============================================================================
-exit ${OVERALL_RESULT}
+exit "${OVERALL_RESULT}"
 

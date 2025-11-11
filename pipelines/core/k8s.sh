@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2155
 # Kubernetes/OpenShift utilities for RHDH CI/CD Pipeline
 
 # Prevent double sourcing
@@ -536,7 +537,7 @@ encode_base64_nowrap() {
     echo -n "${value}" | base64
   else
     # Linux with -w 0
-    echo -n "${value}" | base64 -w 0
+    echo -n "${value}" | base64 | tr -d '\n'
   fi
 }
 

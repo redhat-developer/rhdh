@@ -1,6 +1,8 @@
 #!/bin/bash
 # Core environment variables for RHDH CI/CD Pipeline
-# shellcheck disable=SC2034
+# shellcheck disable=SC2034,SC2155
+# SC2034: Allow unused variables (exported for child processes)
+# SC2155: Allow export with command substitution (intentional for secret loading)
 
 # Prevent double sourcing
 if [[ -n "${__CORE_ENV_SH_LOADED__:-}" ]]; then
@@ -17,9 +19,11 @@ set -a             # Automatically export all variables
 # Get the directory where the script is located
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Pipeline root is one level up from core/
-export PIPELINES_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+PIPELINES_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+export PIPELINES_ROOT
 # Project root (where pipelines/ is located)
-export PROJECT_ROOT="$(cd "${PIPELINES_ROOT}/.." && pwd)"
+PROJECT_ROOT="$(cd "${PIPELINES_ROOT}/.." && pwd)"
+export PROJECT_ROOT
 
 # ============================================================================
 # Environment Detection

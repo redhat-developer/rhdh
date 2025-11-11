@@ -3,7 +3,7 @@ apiVersion: v1
 metadata:
   name: postgres-cred
 data:
-  POSTGRES_PASSWORD: eVUqOGEuLS52WXFZfXp6ZzYydHBhO2cz
+  POSTGRES_PASSWORD: NHN5eD1wPGpxUW4uczFpVlMtKSg5KU8v
   POSTGRES_PORT: NTQzMg==
   POSTGRES_USER: amFudXMtaWRw
   POSTGRES_HOST: cG9zdGdyZXNzLWV4dGVybmFsLWRiLXByaW1hcnkucG9zdGdyZXNzLWV4dGVybmFsLWRiLnN2Yy5jbHVzdGVyLmxvY2Fs

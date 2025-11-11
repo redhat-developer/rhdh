@@ -38,8 +38,8 @@ prepare_helm_values() {
   if [[ "${INSTALL_ORCHESTRATOR_PLUGINS:-true}" != "true" ]]; then
     log_info "Removing orchestrator plugins from Helm values (INSTALL_ORCHESTRATOR_PLUGINS=false)"
     if command -v yq &>/dev/null; then
-      # delete any element in dynamicPlugins array where package contains 'orchestrator'
-      yq -i 'del(.global.dynamicPlugins."*"[] | select(.package | test("orchestrator")))' "${out_file}"
+      # delete any element in global.dynamic.plugins array where package contains 'orchestrator'
+      yq -i 'del(.global.dynamic.plugins[] | select(.package | test("orchestrator")))' "${out_file}"
     else
       log_warning "yq not found – cannot strip orchestrator plugins."
     fi
@@ -61,10 +61,10 @@ perform_helm_install() {
   log_debug "Release: ${release_name}, Namespace: ${namespace}, Values: ${value_file}"
   
   local original_values="${PIPELINES_ROOT}/config/helm-values/${value_file}"
-
+  
   if [[ ! -f "${original_values}" ]]; then
-      log_error "Values file not found: ${values_path}"
-      return 1
+    log_error "Values file not found: ${original_values}"
+    return 1
   fi
   
   # Preprocess values (strip orchestrator plugins when disabled)
@@ -123,7 +123,7 @@ apply_yaml_files() {
   done
   
   # Encode URLs for secrets
-  local dh_target_url=$(echo -n "test-backstage-customization-provider-${project}.${K8S_CLUSTER_ROUTER_BASE}" | base64 -w 0)
+  local dh_target_url=$(echo -n "test-backstage-customization-provider-${project}.${K8S_CLUSTER_ROUTER_BASE}" | base64 | tr -d '\n')
   local rhdh_base_url_encoded=$(echo -n "${rhdh_base_url}" | base64 | tr -d '\n')
   local rhdh_base_url_http=$(echo -n "${rhdh_base_url/https/http}" | base64 | tr -d '\n')
   
@@ -303,20 +303,27 @@ configure_external_postgres_db() {
   oc apply -f "${resources_dir}/postgres.yaml" --namespace="${NAME_SPACE_POSTGRES_DB}"
   sleep 5
   
-  # Extract certificates
+  # Extract certificates to a temporary directory (avoid leaving files in repo)
+  local tmpdir
+  tmpdir=$(mktemp -d)
+  log_debug "Using tmpdir ${tmpdir} for PG TLS artifacts"
+
   oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" \
-    -o jsonpath='{.data.ca\.crt}' | base64 --decode > postgres-ca
+    -o jsonpath='{.data.ca\.crt}'   | base64 --decode > "${tmpdir}/ca.crt"
   oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" \
-    -o jsonpath='{.data.tls\.crt}' | base64 --decode > postgres-tls-crt
+    -o jsonpath='{.data.tls\.crt}' | base64 --decode > "${tmpdir}/tls.crt"
   oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" \
-    -o jsonpath='{.data.tls\.key}' | base64 --decode > postgres-tsl-key
-  
-  # Create secret in target namespace
+    -o jsonpath='{.data.tls\.key}' | base64 --decode > "${tmpdir}/tls.key"
+
+  # Create / update secret in target namespace with the extracted files
   oc create secret generic postgress-external-db-cluster-cert \
-    --from-file=ca.crt=postgres-ca \
-    --from-file=tls.crt=postgres-tls-crt \
-    --from-file=tls.key=postgres-tsl-key \
+    --from-file=ca.crt="${tmpdir}/ca.crt" \
+    --from-file=tls.crt="${tmpdir}/tls.crt" \
+    --from-file=tls.key="${tmpdir}/tls.key" \
     --dry-run=client -o yaml | oc apply -f - --namespace="${project}"
+
+  # Clean up temporary directory
+  rm -rf "${tmpdir}"
   
   # Update PostgreSQL credentials
   local postgres_password=$(oc get secret/postgress-external-db-pguser-janus-idp \
