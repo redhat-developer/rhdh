@@ -46,8 +46,8 @@ interface CustomSidebarItemProps {
 }
 
 /**
- * Custom SidebarItem component that uses the configurable sidebar selected background color
- * from app-config.yaml. Falls back to default Backstage styling if not configured.
+ * Custom SidebarItem component that uses the theme's sidebar selected background color.
+ * Uses theme.palette.rhdh.general.sidebarItemSelectedBackgroundColor.
  */
 export const CustomSidebarItem: React.FC<CustomSidebarItemProps> = ({
   icon,

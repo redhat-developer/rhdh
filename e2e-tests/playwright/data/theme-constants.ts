@@ -4,7 +4,6 @@ type ThemeInfo = {
   headerColor1: string;
   headerColor2: string;
   navigationIndicatorColor: string;
-  sidebarSelectedBackgroundColor: string;
 };
 
 export class ThemeConstants {
@@ -15,7 +14,6 @@ export class ThemeConstants {
       headerColor1: "rgb(216, 98, 208)",
       headerColor2: "rgb(216, 164, 98)",
       navigationIndicatorColor: "rgb(98, 216, 105)",
-      sidebarSelectedBackgroundColor: "#f0f0f0",
     };
 
     const dark: ThemeInfo = {
@@ -24,7 +22,6 @@ export class ThemeConstants {
       headerColor1: "rgb(190, 122, 45)",
       headerColor2: "rgb(45, 190, 50)",
       navigationIndicatorColor: "rgb(45, 113, 190)",
-      sidebarSelectedBackgroundColor: "#333333",
     };
 
     const lightDynamic: ThemeInfo = {
@@ -33,7 +30,6 @@ export class ThemeConstants {
       headerColor1: "rgb(248, 248, 248)",
       headerColor2: "rgb(248, 248, 248)",
       navigationIndicatorColor: "rgb(255, 95, 21)",
-      sidebarSelectedBackgroundColor: "#ffffff",
     };
 
     const darkDynamic: ThemeInfo = {
@@ -42,7 +38,6 @@ export class ThemeConstants {
       headerColor1: "rgb(0, 0, 208)",
       headerColor2: "rgb(255, 246, 140)",
       navigationIndicatorColor: "rgb(244, 238, 169)",
-      sidebarSelectedBackgroundColor: "#424242",
     };
 
     return [light, dark, lightDynamic, darkDynamic];

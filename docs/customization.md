@@ -154,19 +154,25 @@ app:
 
 ### Customizing sidebar selected item background color
 
-To customize the background color of the selected item in the sidebar for both light mode and dark mode, provide the color in a [supported format](#customizing-the-your-showcase-colors) in the `app.branding.theme.[light or dark].sidebarSelectedBackgroundColor` field of the `app-config.yaml` file:
+To customize the background color of the selected item in the sidebar for both light mode and dark mode, provide the color in a [supported format](#customizing-the-your-showcase-colors) in the `app.branding.theme.[light or dark].palette.rhdh.general.sidebarItemSelectedBackgroundColor` field of the `app-config.yaml` file:
 
 ```yaml title="app-config.yaml"
 app:
   branding:
     theme:
       light:
-        sidebarSelectedBackgroundColor: "#f0f0f0"
+        palette:
+          rhdh:
+            general:
+              sidebarItemSelectedBackgroundColor: "#f0f0f0"
       dark:
-        sidebarSelectedBackgroundColor: "#333333"
+        palette:
+          rhdh:
+            general:
+              sidebarItemSelectedBackgroundColor: "#333333"
 ```
 
-This configuration allows you to ensure proper contrast between the selected item background, the sidebar background color, and the text color. If not specified, the system will use default colors that provide good contrast (white for light mode, dark gray for dark mode).
+This configuration allows you to ensure proper contrast between the selected item background, the sidebar background color, and the text color. If not specified, the system will use the default theme styling.
 
 **Note**: This color should be chosen to provide adequate contrast with the `navigationIndicatorColor` (which shows the active indicator line) for optimal accessibility.
 

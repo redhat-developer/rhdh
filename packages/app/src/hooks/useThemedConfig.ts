@@ -71,28 +71,14 @@ export const useSystemThemedConfig = (
 };
 
 /**
- * Gets the sidebar selected background color based on Backstage's current theme.
- * Falls back to default colors if not configured.
+ * Gets the sidebar selected background color from the theme palette.
+ * Uses theme.palette.rhdh.general.sidebarItemSelectedBackgroundColor.
  */
 export const useSidebarSelectedBackgroundColor = () => {
-  const configApi = useApi(configApiRef);
   const theme = useTheme();
 
-  // Detect theme using MUI's theme.palette.mode
-  const colorScheme = theme.palette?.mode === 'dark' ? 'dark' : 'light';
-
-  const lightColor = configApi.getOptional<string>(
-    'app.branding.theme.light.sidebarSelectedBackgroundColor',
+  return (
+    (theme as ThemeConfig)?.palette?.rhdh?.general
+      ?.sidebarItemSelectedBackgroundColor ?? ''
   );
-  const darkColor = configApi.getOptional<string>(
-    'app.branding.theme.dark.sidebarSelectedBackgroundColor',
-  );
-
-  // Default fallback colors that provide good contrast
-  const defaultLightColor = '#ffffff'; // White background for light mode
-  const defaultDarkColor = '#424242'; // Dark gray for dark mode
-
-  return colorScheme === 'light'
-    ? lightColor || defaultLightColor
-    : darkColor || defaultDarkColor;
 };
