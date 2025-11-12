@@ -1,6 +1,10 @@
 import { type Page, type Locator } from "@playwright/test";
 import fs from "fs";
-import type { JobPattern } from "./constants";
+import type {
+  JobNamePattern,
+  JobTypePattern,
+  IsOpenShiftValue,
+} from "./constants";
 
 export async function downloadAndReadFile(
   page: Page,
@@ -23,12 +27,56 @@ export async function downloadAndReadFile(
 
 /**
  * Helper function to skip tests based on JOB_NAME environment variable
- * @param jobNamePattern - Pattern to match in JOB_NAME (use JOB_PATTERNS constants)
+ * Use this to detect specific job configurations (e.g., "osd-gcp", "helm", "operator", "nightly")
+ *
+ * @param jobNamePattern - Pattern to match in JOB_NAME (use JOB_NAME_PATTERNS constants)
  * @returns boolean - true if test should be skipped
+ *
  * @example
- * import { JOB_PATTERNS } from "./constants";
- * test.skip(() => shouldSkipBasedOnJob(JOB_PATTERNS.OSD_GCP));
+ * import { JOB_NAME_PATTERNS } from "./constants";
+ * test.skip(() => skipIfJobName(JOB_NAME_PATTERNS.OSD_GCP));
+ *
+ * @see https://docs.ci.openshift.org/docs/architecture/step-registry/#available-environment-variables
  */
-export function shouldSkipBasedOnJob(jobNamePattern: JobPattern): boolean {
+export function skipIfJobName(jobNamePattern: JobNamePattern): boolean {
   return process.env.JOB_NAME?.includes(jobNamePattern) ?? false;
+}
+
+/**
+ * Helper function to skip tests based on JOB_TYPE environment variable
+ * Use this to detect job execution type (e.g., "presubmit", "periodic", "postsubmit")
+ *
+ * @param jobTypePattern - Pattern to match in JOB_TYPE (use JOB_TYPE_PATTERNS constants)
+ * @returns boolean - true if test should be skipped
+ *
+ * @example
+ * import { JOB_TYPE_PATTERNS } from "./constants";
+ * test.skip(() => skipIfJobType(JOB_TYPE_PATTERNS.PRESUBMIT));
+ *
+ * @see https://docs.prow.k8s.io/docs/jobs/#job-environment-variables
+ */
+export function skipIfJobType(jobTypePattern: JobTypePattern): boolean {
+  return process.env.JOB_TYPE?.includes(jobTypePattern) ?? false;
+}
+
+/**
+ * Helper function to skip tests based on IS_OPENSHIFT environment variable
+ * Use this to detect if running on OpenShift vs other platforms (e.g., AKS, EKS, GKE)
+ *
+ * Note: osd-gcp is OpenShift but doesn't have "ocp" in its JOB_NAME
+ *
+ * @param isOpenShiftValue - Value to match IS_OPENSHIFT against (use IS_OPENSHIFT_VALUES constants)
+ * @returns boolean - true if test should be skipped
+ *
+ * @example
+ * import { IS_OPENSHIFT_VALUES } from "./constants";
+ * // Skip if running on OpenShift
+ * test.skip(() => skipIfIsOpenShift(IS_OPENSHIFT_VALUES.TRUE));
+ * // Skip if NOT running on OpenShift
+ * test.skip(() => skipIfIsOpenShift(IS_OPENSHIFT_VALUES.FALSE));
+ *
+ * @see https://docs.ci.openshift.org/docs/architecture/step-registry/#available-environment-variables
+ */
+export function skipIfIsOpenShift(isOpenShiftValue: IsOpenShiftValue): boolean {
+  return process.env.IS_OPENSHIFT === isOpenShiftValue;
 }
