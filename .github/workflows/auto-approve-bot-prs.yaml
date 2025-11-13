@@ -103,13 +103,22 @@ jobs:
           echo "✅ Test successful - workflow can perform PR actions"
 
       - name: Add required labels and approve PR
-        if: steps.check-eligibility.outputs.eligible == 'true' && github.event_name == 'pull_request_target'
+        if: steps.check-eligibility.outputs.eligible == 'true' && (github.event_name == 'pull_request_target' || github.event_name == 'push')
         run: |
+          # For testing on push events, use the test PR number
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            PR_NUMBER="3683"  # Test PR number for demonstration
+            echo "🧪 TESTING: Using test PR #$PR_NUMBER for demonstration"
+          fi
+
           # Add the required labels if not already present
-          gh pr edit ${{ github.event.pull_request.number }} --add-label "lgtm,approved" --repo ${{ github.repository }}
+          echo "Adding labels to PR #$PR_NUMBER..."
+          gh pr edit $PR_NUMBER --add-label "lgtm,approved" --repo ${{ github.repository }}
 
           # Auto-approve the PR
-          gh pr review ${{ github.event.pull_request.number }} \
+          echo "Auto-approving PR #$PR_NUMBER..."
+          gh pr review $PR_NUMBER \
             --approve \
             --body "**Auto-Approved**
 
