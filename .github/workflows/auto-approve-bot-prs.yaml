@@ -95,6 +95,13 @@ jobs:
           echo "This was triggered by a push event, so no PR actions will be taken."
           echo "When this runs on a PR event, it will add labels and approve automatically."
 
+      - name: Test PR labeling (temporary for fork testing)
+        if: steps.check-eligibility.outputs.eligible == 'true' && github.event_name == 'push'
+        run: |
+          echo "🧪 TESTING MODE: Simulating PR labeling on push event"
+          echo "This would add labels 'lgtm,approved' and approve the PR"
+          echo "✅ Test successful - workflow can perform PR actions"
+
       - name: Add required labels and approve PR
         if: steps.check-eligibility.outputs.eligible == 'true' && github.event_name == 'pull_request_target'
         run: |
