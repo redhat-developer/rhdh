@@ -36,7 +36,7 @@ export async function downloadAndReadFile(
  * import { JOB_NAME_PATTERNS } from "./constants";
  * test.skip(() => skipIfJobName(JOB_NAME_PATTERNS.OSD_GCP));
  *
- * @see https://docs.ci.openshift.org/docs/architecture/step-registry/#available-environment-variables
+ * @see https://prow.ci.openshift.org/configured-jobs/redhat-developer/rhdh
  */
 export function skipIfJobName(jobNamePattern: JobNamePattern): boolean {
   return process.env.JOB_NAME?.includes(jobNamePattern) ?? false;
