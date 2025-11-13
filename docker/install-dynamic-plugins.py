@@ -48,6 +48,7 @@ Configuration:
     - a `plugins` list of objects with the following properties:
         - `package`: the package to install (NPM package name, local path starting with './', or OCI image starting with 'oci://')
             - For OCI packages ONLY, the tag or digest can be replaced by the `{{inherit}}` tag (requires the included configuration to contain a valid tag or digest to inherit from)
+            - When using `{{inherit}}`, the plugin path can also be omitted to inherit both version and path from a base configuration (only works if exactly one plugin from that image is defined in included files)
         - `integrity`: a string containing the integrity hash of the package (required for remote NPM packages unless SKIP_INTEGRITY_CHECK is set, optional for local packages, not used for OCI packages)
         - `pluginConfig`: an optional plugin-specific configuration fragment
         - `disabled`: an optional boolean to disable the plugin (`false` by default)
@@ -406,12 +407,10 @@ class OciPackageMerger(PackageMerger):
         # {{inherit}} tag indicates that the version should be inherited from the included configuration. Must NOT have a SHA digest included.
         inheritVersion = (tag_version == "{{inherit}}" and digest_version == None)
         
-        # FIXME:Currently {{inherit}} requires an explicit path since we can't inspect the registry with {{inherit}} as a tag
+        # If {{inherit}} without path, we'll use plugin name with registry as the plugin key
         if inheritVersion and not path:
-            raise InstallException(
-                f"Plugin package '{package}' uses {{{{inherit}}}} tag without an explicit path. "
-                f"When using {{{{inherit}}}}, you must specify the plugin path using the syntax: {registry}:{{{{inherit}}}}!<plugin-path>"
-            )
+            # Return None for resolvedPath - will be inherited during merge_plugin()
+            return registry, version, inheritVersion, None
         
         # If path is None, auto-detect from OCI manifest
         if not path:
@@ -476,8 +475,45 @@ class OciPackageMerger(PackageMerger):
             raise InstallException(f"content of the \'package\' field must be a string in {self.dynamicPluginsFile}")
         pluginKey, version, inheritVersion, resolvedPath = self.parse_plugin_key(package)
         
+        # Special case: {{inherit}} without explicit path - match on image only
+        if inheritVersion and resolvedPath is None:
+            # pluginKey is the registry (oci://registry/image) when path is omitted
+            
+            # Find plugins from same image (ignoring path component)
+            matches = [key for key in self.allPlugins.keys() 
+                      if key.startswith(f"{pluginKey}:!")]
+            
+            if len(matches) == 0:
+                raise InstallException(
+                    f"Cannot use {{{{inherit}}}} for {pluginKey}: no existing plugin configuration found. "
+                    f"Ensure a plugin from this image is defined in an included file with an explicit version."
+                )
+            
+            if len(matches) > 1:
+                full_packages = []
+                for m in matches:
+                    base_plugin = self.allPlugins[m]
+                    base_version = base_plugin.get('version', '')
+                    formatted = f"{m.split(':!')[0]}:{base_version}!{m.split(':!')[-1]}"
+                    full_packages.append(formatted)
+                paths_formatted = '\n  - '.join(full_packages)
+                raise InstallException(
+                    f"Cannot use {{{{inherit}}}} for {pluginKey}: multiple plugins from this image are defined in the included files:\n  - {paths_formatted}\n"
+                    f"Please specify which plugin configuration to inherit from using: {pluginKey}:{{{{inherit}}}}!<plugin_path>"
+                )
+            
+            # inherit both version AND path from the existing plugin configuration
+            pluginKey = matches[0]
+            base_plugin = self.allPlugins[pluginKey]
+            version = base_plugin['version']
+            resolvedPath = pluginKey.split(':!')[-1]
+            
+            registry_part = pluginKey.split(':!')[0]
+            self.plugin['package'] = f"{registry_part}:{version}!{resolvedPath}"
+            print(f'\n======= Inheriting version `{version}` and plugin path `{resolvedPath}` for {pluginKey}', flush=True)
+        
         # Update package with resolved path if it was auto-detected (package didn't originally contain !path)
-        if '!' not in package:
+        elif '!' not in package:
             self.plugin['package'] = f"{package}!{resolvedPath}"
         
         # If package does not already exist, add it
