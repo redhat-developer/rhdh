@@ -48,6 +48,7 @@ Configuration:
     - a `plugins` list of objects with the following properties:
         - `package`: the package to install (NPM package name, local path starting with './', or OCI image starting with 'oci://')
             - For OCI packages ONLY, the tag or digest can be replaced by the `{{inherit}}` tag (requires the included configuration to contain a valid tag or digest to inherit from)
+            - If the OCI image contains only a single plugin, the plugin path can be omitted and will be auto-detected from the image metadata (normally specified by !<plugin-path>)
             - When using `{{inherit}}`, the plugin path can also be omitted to inherit both version and path from a base configuration (only works if exactly one plugin from that image is defined in included files)
         - `integrity`: a string containing the integrity hash of the package (required for remote NPM packages unless SKIP_INTEGRITY_CHECK is set, optional for local packages, not used for OCI packages)
         - `pluginConfig`: an optional plugin-specific configuration fragment
@@ -420,7 +421,7 @@ class OciPackageMerger(PackageMerger):
             
             if len(plugin_paths) == 0:
                 raise InstallException(
-                    f"No plugins found in OCI image {full_image}. "
+                    f"No plugins found in OCI image {full_image}."
                     f"The image might not contain the 'io.backstage.dynamic-packages' annotation."
                     f"Please ensure this was packaged correctly using the @red-hat-developer-hub/cli plugin package command."
                 )
