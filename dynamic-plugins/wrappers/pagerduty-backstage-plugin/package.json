@@ -56,7 +56,7 @@
   ],
   "author": "Red Hat",
   "homepage": "https://red.ht/rhdh",
-  "bugs": "https://issues.redhat.com/browse/RHIDP",
+  "bugs": "https://github.com/pagerduty/backstage-plugin/issues",
   "keywords": [
     "support:tech-preview",
     "lifecycle:active"
