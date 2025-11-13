@@ -327,15 +327,15 @@ class TestOciPackageMergerParsePluginKey:
         assert 'plugin-two' in error_msg
         assert 'plugin-three' in error_msg
     
-    # FIXME: Currently {{inherit}} requires an explicit path since we can't inspect the registry with {{inherit}} as a tag
-    def test_parse_plugin_key_inherit_without_path_error(self, oci_merger):
-        """Test error when using {{inherit}} without explicit path."""
-        with pytest.raises(InstallException) as exc_info:
-            oci_merger.parse_plugin_key('oci://registry.io/plugin:{{inherit}}')
+    def test_parse_plugin_key_inherit_without_path_returns_registry(self, oci_merger):
+        """Test that {{inherit}} without explicit path returns registry as key with None for path."""
+        plugin_key, version, inherit_version, resolved_path = oci_merger.parse_plugin_key('oci://registry.io/plugin:{{inherit}}')
         
-        assert '{{inherit}}' in str(exc_info.value)
-        assert 'explicit path' in str(exc_info.value)
-
+        # Should return registry as the temporary key
+        assert plugin_key == 'oci://registry.io/plugin'
+        assert version == '{{inherit}}'
+        assert inherit_version is True
+        assert resolved_path is None  # Path will be resolved during merge_plugin()
 
 class TestEdgeCases:
     """Test edge cases and boundary conditions."""
@@ -767,6 +767,214 @@ class TestOciPackageMergerMergePlugin:
             merger.merge_plugin(level=0)
         
         assert 'must be a string' in str(exc_info.value)
+
+
+class TestOciInheritWithPathOmission:
+    """Test cases for {{inherit}} with path omission feature."""
+    
+    def test_inherit_version_and_path_from_single_base_plugin(self, capsys):
+        """Test inheriting both version and path when exactly one base plugin exists."""
+        all_plugins = {}
+        
+        # Add base plugin at level 0 with explicit version and path
+        plugin1 = {
+            'package': 'oci://registry.io/plugin:v1.0!my-plugin',
+            'disabled': False
+        }
+        
+        merger1 = OciPackageMerger(plugin1, 'base.yaml', all_plugins)
+        merger1.merge_plugin(level=0)
+        
+        # Override at level 1 using {{inherit}} without path
+        plugin2 = {
+            'package': 'oci://registry.io/plugin:{{inherit}}',
+            'disabled': True
+        }
+        merger2 = OciPackageMerger(plugin2, 'main.yaml', all_plugins)
+        merger2.merge_plugin(level=1)
+        
+        # Check that version and path were inherited
+        plugin_key = 'oci://registry.io/plugin:!my-plugin'
+        assert plugin_key in all_plugins
+        assert all_plugins[plugin_key]['version'] == 'v1.0'
+        assert all_plugins[plugin_key]['package'] == 'oci://registry.io/plugin:v1.0!my-plugin'
+        assert all_plugins[plugin_key]['disabled'] is True
+        
+        # Check that inheritance message was printed
+        captured = capsys.readouterr()
+        assert 'Inheriting version `v1.0` and plugin path `my-plugin`' in captured.out
+    
+    def test_inherit_version_and_path_with_digest(self, capsys):
+        """Test inheriting version (digest) and path from base plugin."""
+        all_plugins = {}
+        
+        # Add base plugin with digest
+        plugin1 = {'package': 'oci://registry.io/plugin@sha256:abc123!plugin-name'}
+        merger1 = OciPackageMerger(plugin1, 'base.yaml', all_plugins)
+        merger1.merge_plugin(level=0)
+        
+        # Inherit using {{inherit}} without path
+        plugin2 = {
+            'package': 'oci://registry.io/plugin:{{inherit}}',
+            'pluginConfig': {'custom': 'config'}
+        }
+        merger2 = OciPackageMerger(plugin2, 'main.yaml', all_plugins)
+        merger2.merge_plugin(level=1)
+        
+        # Check inheritance
+        plugin_key = 'oci://registry.io/plugin:!plugin-name'
+        assert all_plugins[plugin_key]['version'] == 'sha256:abc123'
+        assert all_plugins[plugin_key]['package'] == 'oci://registry.io/plugin@sha256:abc123!plugin-name'
+        assert all_plugins[plugin_key]['pluginConfig'] == {'custom': 'config'}
+    
+    def test_inherit_from_auto_detected_base_plugin(self, mocker, capsys):
+        """Test inheriting from a base plugin that had its path auto-detected."""
+        # Mock get_oci_plugin_paths to return single plugin
+        mock_get_paths = mocker.patch.object(install_dynamic_plugins, 'get_oci_plugin_paths')
+        mock_get_paths.return_value = ['auto-detected-plugin']
+        
+        all_plugins = {}
+        
+        # Add base plugin without explicit path (will auto-detect)
+        plugin1 = {'package': 'oci://registry.io/plugin:v1.0'}
+        merger1 = OciPackageMerger(plugin1, 'base.yaml', all_plugins)
+        merger1.merge_plugin(level=0)
+        
+        # Inherit both version AND the auto-detected path
+        plugin2 = {'package': 'oci://registry.io/plugin:{{inherit}}'}
+        merger2 = OciPackageMerger(plugin2, 'main.yaml', all_plugins)
+        merger2.merge_plugin(level=1)
+        
+        # Check that auto-detected path was inherited
+        plugin_key = 'oci://registry.io/plugin:!auto-detected-plugin'
+        assert plugin_key in all_plugins
+        assert all_plugins[plugin_key]['version'] == 'v1.0'
+        assert all_plugins[plugin_key]['package'] == 'oci://registry.io/plugin:v1.0!auto-detected-plugin'
+        
+        captured = capsys.readouterr()
+        assert 'Inheriting version `v1.0` and plugin path `auto-detected-plugin`' in captured.out
+    
+    def test_inherit_without_path_no_base_plugin_error(self):
+        """Test error when using {{inherit}} without path but no base plugin exists."""
+        all_plugins = {}
+        
+        # Try to use {{inherit}} without any base plugin
+        plugin = {'package': 'oci://registry.io/plugin:{{inherit}}'}
+        merger = OciPackageMerger(plugin, 'main.yaml', all_plugins)
+        
+        with pytest.raises(InstallException) as exc_info:
+            merger.merge_plugin(level=0)
+        
+        error_msg = str(exc_info.value)
+        assert '{{inherit}}' in error_msg
+        assert 'no existing plugin configuration found' in error_msg
+        assert 'oci://registry.io/plugin' in error_msg
+    
+    def test_inherit_without_path_multiple_plugins_error(self):
+        """Test error when using {{inherit}} without path with multiple base plugins from same image."""
+        all_plugins = {}
+        
+        # Add two plugins from same image at level 0
+        plugin1 = {'package': 'oci://registry.io/bundle:v1.0!plugin-a'}
+        merger1 = OciPackageMerger(plugin1, 'base.yaml', all_plugins)
+        merger1.merge_plugin(level=0)
+        
+        plugin2 = {'package': 'oci://registry.io/bundle:v1.0!plugin-b'}
+        merger2 = OciPackageMerger(plugin2, 'base.yaml', all_plugins)
+        merger2.merge_plugin(level=0)
+        
+        # Try to use {{inherit}} without specifying which plugin
+        plugin3 = {'package': 'oci://registry.io/bundle:{{inherit}}'}
+        merger3 = OciPackageMerger(plugin3, 'main.yaml', all_plugins)
+        
+        with pytest.raises(InstallException) as exc_info:
+            merger3.merge_plugin(level=1)
+        
+        error_msg = str(exc_info.value)
+        assert '{{inherit}}' in error_msg
+        assert 'multiple plugins from this image are defined' in error_msg
+        assert 'oci://registry.io/bundle:v1.0!plugin-a' in error_msg
+        assert 'oci://registry.io/bundle:v1.0!plugin-b' in error_msg
+        assert '{{inherit}}!<plugin_path>' in error_msg
+    
+    def test_inherit_without_path_works_with_explicit_path_too(self):
+        """Test that {{inherit}} with explicit path still works alongside path omission."""
+        all_plugins = {}
+        
+        # Add two plugins from same image
+        plugin1 = {'package': 'oci://registry.io/bundle:v1.0!plugin-a'}
+        merger1 = OciPackageMerger(plugin1, 'base.yaml', all_plugins)
+        merger1.merge_plugin(level=0)
+        
+        plugin2 = {'package': 'oci://registry.io/bundle:v1.0!plugin-b'}
+        merger2 = OciPackageMerger(plugin2, 'base.yaml', all_plugins)
+        merger2.merge_plugin(level=0)
+        
+        # Use {{inherit}} with explicit path for plugin-a
+        plugin3 = {
+            'package': 'oci://registry.io/bundle:{{inherit}}!plugin-a',
+            'disabled': True
+        }
+        merger3 = OciPackageMerger(plugin3, 'main.yaml', all_plugins)
+        merger3.merge_plugin(level=1)
+        
+        # Should successfully override plugin-a only
+        assert all_plugins['oci://registry.io/bundle:!plugin-a']['disabled'] is True
+        assert all_plugins['oci://registry.io/bundle:!plugin-a']['version'] == 'v1.0'
+        # plugin-b should be unchanged
+        assert 'disabled' not in all_plugins['oci://registry.io/bundle:!plugin-b']
+    
+    def test_inherit_path_omission_preserves_other_fields(self):
+        """Test that path inheritance preserves and overrides other plugin fields correctly."""
+        all_plugins = {}
+        
+        # Add base plugin with various fields
+        plugin1 = {
+            'package': 'oci://registry.io/plugin:v1.0!my-plugin',
+            'pluginConfig': {'base': 'config'},
+            'disabled': False,
+            'pullPolicy': 'IfNotPresent'
+        }
+        merger1 = OciPackageMerger(plugin1, 'base.yaml', all_plugins)
+        merger1.merge_plugin(level=0)
+        
+        # Override with {{inherit}} and new config
+        plugin2 = {
+            'package': 'oci://registry.io/plugin:{{inherit}}',
+            'pluginConfig': {'override': 'config'},
+            'disabled': True
+        }
+        merger2 = OciPackageMerger(plugin2, 'main.yaml', all_plugins)
+        merger2.merge_plugin(level=1)
+        
+        plugin_key = 'oci://registry.io/plugin:!my-plugin'
+        # Version and path inherited
+        assert all_plugins[plugin_key]['version'] == 'v1.0'
+        assert all_plugins[plugin_key]['package'] == 'oci://registry.io/plugin:v1.0!my-plugin'
+        # Fields overridden
+        assert all_plugins[plugin_key]['pluginConfig'] == {'override': 'config'}
+        assert all_plugins[plugin_key]['disabled'] is True
+        assert all_plugins[plugin_key]['pullPolicy'] == 'IfNotPresent'
+    
+    def test_inherit_path_omission_updates_package_field(self):
+        """Test that path inheritance correctly updates the plugin package field."""
+        all_plugins = {}
+        
+        # Add base plugin at level 0
+        plugin1 = {'package': 'oci://registry.io/plugin:v1.5.2!my-plugin-name'}
+        merger1 = OciPackageMerger(plugin1, 'base.yaml', all_plugins)
+        merger1.merge_plugin(level=0)
+        
+        # Inherit at level 1 - package field should be updated with inherited values
+        plugin2 = {'package': 'oci://registry.io/plugin:{{inherit}}'}
+        merger2 = OciPackageMerger(plugin2, 'main.yaml', all_plugins)
+        merger2.merge_plugin(level=1)
+        
+        plugin_key = 'oci://registry.io/plugin:!my-plugin-name'
+        # The plugin package field should now have the resolved version and path
+        assert all_plugins[plugin_key]['package'] == 'oci://registry.io/plugin:v1.5.2!my-plugin-name'
+        # The original plugin2 object should also be updated
+        assert merger2.plugin['package'] == 'oci://registry.io/plugin:v1.5.2!my-plugin-name'
 
 
 class TestPluginInstallerShouldSkipInstallation:
