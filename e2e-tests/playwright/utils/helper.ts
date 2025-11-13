@@ -63,7 +63,8 @@ export function skipIfJobType(jobTypePattern: JobTypePattern): boolean {
  * Helper function to skip tests based on IS_OPENSHIFT environment variable
  * Use this to detect if running on OpenShift vs other platforms (e.g., AKS, EKS, GKE)
  *
- * Note: osd-gcp is OpenShift but doesn't have "ocp" in its JOB_NAME
+ * Note: IS_OPENSHIFT is a custom project variable (different from OPENSHIFT_CI).
+ * It is set in the CI scripts for specific jobs (e.g., OSD-GCP is OpenShift but doesn't have "ocp" in its JOB_NAME).
  *
  * @param isOpenShiftValue - Value to match IS_OPENSHIFT against (use IS_OPENSHIFT_VALUES constants)
  * @returns boolean - true if test should be skipped
@@ -74,8 +75,6 @@ export function skipIfJobType(jobTypePattern: JobTypePattern): boolean {
  * test.skip(() => skipIfIsOpenShift(IS_OPENSHIFT_VALUES.TRUE));
  * // Skip if NOT running on OpenShift
  * test.skip(() => skipIfIsOpenShift(IS_OPENSHIFT_VALUES.FALSE));
- *
- * @see https://docs.ci.openshift.org/docs/architecture/step-registry/#available-environment-variables
  */
 export function skipIfIsOpenShift(isOpenShiftValue: IsOpenShiftValue): boolean {
   return process.env.IS_OPENSHIFT === isOpenShiftValue;

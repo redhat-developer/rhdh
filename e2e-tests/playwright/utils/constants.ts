@@ -35,7 +35,8 @@ export const JOB_TYPE_PATTERNS = {
 
 /**
  * IS_OPENSHIFT values - identifies if running on OpenShift
- * Note: This is a boolean string, not a pattern
+ * Note: IS_OPENSHIFT is a custom project variable (different from OPENSHIFT_CI).
+ * It is set in the CI scripts for specific jobs. This is a boolean string, not a pattern.
  */
 export const IS_OPENSHIFT_VALUES = {
   TRUE: "true",
