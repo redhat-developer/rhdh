@@ -606,13 +606,13 @@ arches:
     name: openblas-srpm-macros
     evr: 2-11.el9
     sourcerpm: openblas-srpm-macros-2-11.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/o/openssl-devel-3.5.1-3.el9.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/o/openssl-devel-3.5.1-4.el9_7.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 5005858
-    checksum: sha256:5f6f01beb82b6ee4179be44de3a3821dd57c33b28b35385ffa844a96355fa8cf
+    size: 4997984
+    checksum: sha256:3aeba34c9a9c3313b16166111a1dfe61a29ffaff671bb8f0be95eb0e2dede860
     name: openssl-devel
-    evr: 1:3.5.1-3.el9
-    sourcerpm: openssl-3.5.1-3.el9.src.rpm
+    evr: 1:3.5.1-4.el9_7
+    sourcerpm: openssl-3.5.1-4.el9_7.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/pango-1.48.7-3.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 313015
@@ -2930,6 +2930,20 @@ arches:
     name: openssh-clients
     evr: 8.7p1-46.el9
     sourcerpm: openssh-8.7p1-46.el9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/o/openssl-3.5.1-4.el9_7.x86_64.rpm
+    repoid: ubi-9-for-x86_64-baseos-rpms
+    size: 1554784
+    checksum: sha256:e9c30e80d09e2ef402f5380ce0fa52f9e169d638a0c1c8c7485f7a8ff2d27da0
+    name: openssl
+    evr: 1:3.5.1-4.el9_7
+    sourcerpm: openssl-3.5.1-4.el9_7.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/o/openssl-libs-3.5.1-4.el9_7.x86_64.rpm
+    repoid: ubi-9-for-x86_64-baseos-rpms
+    size: 2412696
+    checksum: sha256:8dfa0d490fb0314e24811e502aeab85fd6dd2700c58008a85b1fc8ce32c518a5
+    name: openssl-libs
+    evr: 1:3.5.1-4.el9_7
+    sourcerpm: openssl-3.5.1-4.el9_7.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/p/pam-1.5.1-26.el9_6.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
     size: 636788
@@ -4956,12 +4970,12 @@ arches:
     checksum: sha256:ec12d8e9961af4c44db364db36ff199d5317f88c505f3b6d53b1f3f8d63f7903
     name: openssh
     evr: 8.7p1-46.el9
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/o/openssl-3.5.1-3.el9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/o/openssl-3.5.1-4.el9_7.src.rpm
     repoid: ubi-9-for-x86_64-baseos-source-rpms
-    size: 53366966
-    checksum: sha256:68c2409b36474e010052c30e30c0b0607f12dea8042e08fa77835e5d5bdec761
+    size: 53366082
+    checksum: sha256:af5e55f59d701095543d09d13fc80b48266631ee14209a36fead770526eccc0d
     name: openssl
-    evr: 1:3.5.1-3.el9
+    evr: 1:3.5.1-4.el9_7
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/p/pam-1.5.1-26.el9_6.src.rpm
     repoid: ubi-9-for-x86_64-baseos-source-rpms
     size: 1130406
