@@ -16,8 +16,15 @@ export const NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE =
 /**
  * JOB_NAME patterns - identifies specific job configurations
  * Examples: "periodic-ci-redhat-developer-rhdh-main-e2e-osd-gcp-helm-nightly"
+ * @see https://prow.ci.openshift.org/configured-jobs/redhat-developer/rhdh
+ *
+ * Note: For OCP version patterns (e.g., "ocp-v4.15-*"), consider using regex matching
+ * if more flexible pattern matching is needed in the future.
  */
 export const JOB_NAME_PATTERNS = {
+  AKS: "aks",
+  EKS: "eks",
+  GKE: "gke",
   OSD_GCP: "osd-gcp",
   HELM: "helm",
   OPERATOR: "operator",
