@@ -56,7 +56,7 @@ Information on running RHDH can be found in our [Getting Started](https://github
 
 We are excited to see people wanting to contribute to our project and welcome anyone who wishes to participate. You are more than welcome to browse through our open issues and tackle anything you feel confident in working on.
 
-We also welcome non code contributions in the form of bug reporting and documentation writing. If you run across any bugs, please raise an issue here in [JIRA](https://issues.redhat.com/browse/RHIDP).
+We also welcome non code contributions in the form of bug reporting and documentation writing. If you run across any bugs, please raise an issue here in [JIRA](https://issues.redhat.com/browse/RHDHBUGS).
 
 ## Community, Discussion, and Support
 
