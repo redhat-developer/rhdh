@@ -963,6 +963,67 @@ initiate_deployments() {
   rbac_deployment
 }
 
+# OSD-GCP specific deployment functions that merge diff files and skip orchestrator workflows
+base_deployment_osd_gcp() {
+  configure_namespace ${NAME_SPACE}
+
+  deploy_redis_cache "${NAME_SPACE}"
+
+  cd "${DIR}"
+  local rhdh_base_url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
+  apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
+
+  # Merge base values with OSD-GCP diff file
+  yq_merge_value_files "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_OSD_GCP_DIFF_VALUE_FILE_NAME}" "/tmp/merged-values_showcase_OSD-GCP.yaml"
+  mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE}"
+  cp -a "/tmp/merged-values_showcase_OSD-GCP.yaml" "${ARTIFACT_DIR}/${NAME_SPACE}/" # Save the final value-file into the artifacts directory.
+
+  echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
+
+  # shellcheck disable=SC2046
+  helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
+    "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
+    -f "/tmp/merged-values_showcase_OSD-GCP.yaml" \
+    --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
+    $(get_image_helm_set_params)
+
+  # Skip orchestrator workflows deployment for OSD-GCP
+  echo "Skipping orchestrator workflows deployment on OSD-GCP environment"
+}
+
+rbac_deployment_osd_gcp() {
+  configure_namespace "${NAME_SPACE_POSTGRES_DB}"
+  configure_namespace "${NAME_SPACE_RBAC}"
+  configure_external_postgres_db "${NAME_SPACE_RBAC}"
+
+  # Initiate rbac instance deployment.
+  local rbac_rhdh_base_url="https://${RELEASE_NAME_RBAC}-developer-hub-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
+  apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
+
+  # Merge RBAC values with OSD-GCP diff file
+  yq_merge_value_files "merge" "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_RBAC_OSD_GCP_DIFF_VALUE_FILE_NAME}" "/tmp/merged-values_showcase-rbac_OSD-GCP.yaml"
+  mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE_RBAC}"
+  cp -a "/tmp/merged-values_showcase-rbac_OSD-GCP.yaml" "${ARTIFACT_DIR}/${NAME_SPACE_RBAC}/" # Save the final value-file into the artifacts directory.
+
+  echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${RELEASE_NAME_RBAC}"
+
+  # shellcheck disable=SC2046
+  helm upgrade -i "${RELEASE_NAME_RBAC}" -n "${NAME_SPACE_RBAC}" \
+    "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
+    -f "/tmp/merged-values_showcase-rbac_OSD-GCP.yaml" \
+    --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
+    $(get_image_helm_set_params)
+
+  # Skip orchestrator workflows deployment for OSD-GCP
+  echo "Skipping orchestrator workflows deployment on OSD-GCP RBAC environment"
+}
+
+initiate_deployments_osd_gcp() {
+  cd "${DIR}"
+  base_deployment_osd_gcp
+  rbac_deployment_osd_gcp
+}
+
 # install base RHDH deployment before upgrade
 initiate_upgrade_base_deployments() {
   local release_name=$1
