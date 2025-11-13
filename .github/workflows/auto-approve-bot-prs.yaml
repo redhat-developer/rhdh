@@ -22,9 +22,6 @@ name: Auto-Approve Bot PRs
 on:
   pull_request_target:
     types: [opened, reopened, labeled, ready_for_review]
-  push:
-    branches:
-      - 'fix/auto-approve-bot'  # For testing - remove before merging to production
 
 permissions:
   contents: read
@@ -36,24 +33,15 @@ jobs:
     name: Auto-Approve and Label PRs
     runs-on: ubuntu-latest
     
-    # Only run if PR is from rhdh-bot (or current user for testing), or if it's a push event (for testing)
-    if: github.event_name == 'push' || github.event.pull_request.user.login == 'rhdh-bot' || github.event.pull_request.user.login == 'polasudo'
+    # Only run if PR is from rhdh-bot
+    if: github.event.pull_request.user.login == 'rhdh-bot'
     
     steps:
       - name: Check PR eligibility
         id: check-eligibility
         run: |
-          # Handle both push and pull_request_target events
-          if [[ "${{ github.event_name }}" == "push" ]]; then
-            PR_BRANCH="${{ github.ref_name }}"
-            PR_DRAFT="false"
-          else
-            PR_BRANCH="${{ github.event.pull_request.head.ref }}"
-            PR_DRAFT="${{ github.event.pull_request.draft }}"
-          fi
-          
-          echo "Branch: $PR_BRANCH"
-          echo "Event: ${{ github.event_name }}"
+          PR_BRANCH="${{ github.event.pull_request.head.ref }}"
+          PR_DRAFT="${{ github.event.pull_request.draft }}"
           
           # Don't auto-approve draft PRs
           if [[ "$PR_DRAFT" == "true" ]]; then
@@ -67,7 +55,7 @@ jobs:
           # Define branch patterns that are eligible for auto-approval
           # Add more patterns as needed
           ELIGIBLE_PATTERNS=(
-            "^chore/automated-.*"    
+            "^chore/automated-.*"
             "^fix/auto-approve-bot$"
           )
           
@@ -86,43 +74,18 @@ jobs:
           fi
 
 
-      - name: Log result for push events
-        if: github.event_name == 'push'
-        run: |
-          echo "✅ Push event detected on branch: ${{ github.ref_name }}"
-          echo "Event name: ${{ github.event_name }}"
-          echo "Eligibility: ${{ steps.check-eligibility.outputs.eligible }}"
-          echo "This was triggered by a push event, so no PR actions will be taken."
-          echo "When this runs on a PR event, it will add labels and approve automatically."
-
-      - name: Test PR labeling (temporary for fork testing)
-        if: steps.check-eligibility.outputs.eligible == 'true' && github.event_name == 'push'
-        run: |
-          echo "🧪 TESTING MODE: Simulating PR labeling on push event"
-          echo "This would add labels 'lgtm,approved' and approve the PR"
-          echo "✅ Test successful - workflow can perform PR actions"
-
       - name: Add required labels and approve PR
-        if: steps.check-eligibility.outputs.eligible == 'true' && (github.event_name == 'pull_request_target' || github.event_name == 'push')
+        if: steps.check-eligibility.outputs.eligible == 'true'
         run: |
-          # For testing on push events, use the test PR number
-          PR_NUMBER="${{ github.event.pull_request.number }}"
-          if [[ "${{ github.event_name }}" == "push" ]]; then
-            PR_NUMBER="2"  # Test PR number in fork for demonstration
-            echo "🧪 TESTING: Using test PR #$PR_NUMBER for demonstration"
-          fi
-
           # Add the required labels if not already present
-          echo "Adding labels to PR #$PR_NUMBER..."
-          gh pr edit $PR_NUMBER --add-label "lgtm,approved" --repo ${{ github.repository }}
+          gh pr edit ${{ github.event.pull_request.number }} --add-label "lgtm,approved" --repo ${{ github.repository }}
 
           # Auto-approve the PR
-          echo "Auto-approving PR #$PR_NUMBER..."
-          gh pr review $PR_NUMBER \
+          gh pr review ${{ github.event.pull_request.number }} \
             --approve \
             --body "**Auto-Approved**
 
-          This PR has been automatically approved (rhdh-bot branch).
+          This PR has been automatically approved by the auto-approve workflow.
 
           **Labels Added:** \`lgtm\`, \`approved\`" \
             --repo ${{ github.repository }}
