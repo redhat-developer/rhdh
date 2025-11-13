@@ -20,7 +20,7 @@ name: Auto-Approve Bot PRs
 # - Adds lgtm and approved labels if not present
 
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, reopened, labeled, ready_for_review]
 
 permissions:
@@ -39,6 +39,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Check PR eligibility
         id: check-eligibility
