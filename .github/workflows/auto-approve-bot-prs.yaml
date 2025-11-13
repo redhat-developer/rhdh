@@ -58,6 +58,7 @@ jobs:
           # Add more patterns as needed
           ELIGIBLE_PATTERNS=(
             "^chore/automated-.*"                 # Automated chore tasks, such as version bumps, base image bumps, or RPM lock file version bumps
+            "^fix/auto-approve-bot$"              # TEMPORARY: For testing the workflow
           )
           
           ELIGIBLE=false
