@@ -108,7 +108,7 @@ jobs:
           # For testing on push events, use the test PR number
           PR_NUMBER="${{ github.event.pull_request.number }}"
           if [[ "${{ github.event_name }}" == "push" ]]; then
-            PR_NUMBER="3683"  # Test PR number for demonstration
+            PR_NUMBER="1"  # Test PR number in fork for demonstration
             echo "🧪 TESTING: Using test PR #$PR_NUMBER for demonstration"
           fi
 
