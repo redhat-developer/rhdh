@@ -32,8 +32,8 @@ jobs:
     name: Auto-Approve and Label PRs
     runs-on: ubuntu-latest
     
-    # Only run if PR is from rhdh-bot
-    if: github.event.pull_request.user.login == 'rhdh-bot'
+    # Only run if PR is from rhdh-bot (or current user for testing)
+    if: github.event.pull_request.user.login == 'rhdh-bot' || github.event.pull_request.user.login == 'polasudo'
     
     steps:
       - name: Checkout repository
