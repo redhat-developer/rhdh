@@ -32,16 +32,11 @@ jobs:
   auto-approve:
     name: Auto-Approve and Label PRs
     runs-on: ubuntu-latest
-
-    # TEMPORARILY DISABLED FOR TESTING - Only run if PR is from rhdh-bot (or current user for testing)
-    # if: github.event.pull_request.user.login == 'rhdh-bot' || github.event.pull_request.user.login == 'polasudo'
+    
+    # Only run if PR is from rhdh-bot (or current user for testing)
+    if: github.event.pull_request.user.login == 'rhdh-bot' || github.event.pull_request.user.login == 'polasudo'
     
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-
       - name: Check PR eligibility
         id: check-eligibility
         run: |
@@ -61,7 +56,6 @@ jobs:
           # Add more patterns as needed
           ELIGIBLE_PATTERNS=(
             "^chore/automated-.*"                 # Automated chore tasks, such as version bumps, base image bumps, or RPM lock file version bumps
-            "^fix/auto-approve-bot$"              # TEMPORARY: For testing the workflow
           )
           
           ELIGIBLE=false
@@ -82,12 +76,8 @@ jobs:
       - name: Add required labels and approve PR
         if: steps.check-eligibility.outputs.eligible == 'true'
         run: |
-          # Add the required labels if not already present using GitHub API
-          curl -X POST \
-            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Accept: application/vnd.github.v3+json" \
-            https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/labels \
-            -d '["lgtm","approved"]'
+          # Add the required labels if not already present
+          gh pr edit ${{ github.event.pull_request.number }} --add-label "lgtm,approved" --repo ${{ github.repository }}
 
           # Auto-approve the PR
           gh pr review ${{ github.event.pull_request.number }} \
@@ -96,7 +86,8 @@ jobs:
 
           This PR has been automatically approved (rhdh-bot branch).
 
-          **Labels Added:** \`lgtm\`, \`approved\`
+          **Labels Added:** \`lgtm\`, \`approved\`" \
+            --repo ${{ github.repository }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
