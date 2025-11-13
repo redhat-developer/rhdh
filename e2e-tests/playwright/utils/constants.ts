@@ -17,9 +17,6 @@ export const NO_USER_FOUND_IN_CATALOG_ERROR_MESSAGE =
  * JOB_NAME patterns - identifies specific job configurations
  * Examples: "periodic-ci-redhat-developer-rhdh-main-e2e-osd-gcp-helm-nightly"
  * @see https://prow.ci.openshift.org/configured-jobs/redhat-developer/rhdh
- *
- * Note: For OCP version patterns (e.g., "ocp-v4.15-*"), consider using regex matching
- * if more flexible pattern matching is needed in the future.
  */
 export const JOB_NAME_PATTERNS = {
   AKS: "aks",
@@ -29,6 +26,18 @@ export const JOB_NAME_PATTERNS = {
   HELM: "helm",
   OPERATOR: "operator",
   NIGHTLY: "nightly",
+} as const;
+
+/**
+ * JOB_NAME regex patterns - for flexible pattern matching (e.g., OCP versions)
+ * Use these with skipIfJobNameRegex() function
+ */
+export const JOB_NAME_REGEX_PATTERNS = {
+  /**
+   * Matches OCP version patterns like "ocp-v4.15-*", "ocp-v4.16-*", etc.
+   * Example: "periodic-ci-redhat-developer-rhdh-main-e2e-ocp-v4.15-helm-nightly"
+   */
+  OCP_VERSION: /ocp-v\d+-\d+/,
 } as const;
 
 /**
@@ -52,6 +61,8 @@ export const IS_OPENSHIFT_VALUES = {
 
 export type JobNamePattern =
   (typeof JOB_NAME_PATTERNS)[keyof typeof JOB_NAME_PATTERNS];
+export type JobNameRegexPattern =
+  (typeof JOB_NAME_REGEX_PATTERNS)[keyof typeof JOB_NAME_REGEX_PATTERNS];
 export type JobTypePattern =
   (typeof JOB_TYPE_PATTERNS)[keyof typeof JOB_TYPE_PATTERNS];
 export type IsOpenShiftValue =

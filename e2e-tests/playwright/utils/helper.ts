@@ -2,6 +2,7 @@ import { type Page, type Locator } from "@playwright/test";
 import fs from "fs";
 import type {
   JobNamePattern,
+  JobNameRegexPattern,
   JobTypePattern,
   IsOpenShiftValue,
 } from "./constants";
@@ -40,6 +41,30 @@ export async function downloadAndReadFile(
  */
 export function skipIfJobName(jobNamePattern: JobNamePattern): boolean {
   return process.env.JOB_NAME?.includes(jobNamePattern) ?? false;
+}
+
+/**
+ * Helper function to skip tests based on JOB_NAME environment variable using regex patterns
+ * Use this for flexible pattern matching (e.g., OCP version patterns like "ocp-v4.15-*")
+ *
+ * @param jobNameRegexPattern - Regex pattern to match in JOB_NAME (use JOB_NAME_REGEX_PATTERNS constants)
+ * @returns boolean - true if test should be skipped
+ *
+ * @example
+ * import { JOB_NAME_REGEX_PATTERNS } from "./constants";
+ * // Skip if running on any OCP version (e.g., ocp-v4.15-*, ocp-v4.16-*)
+ * test.skip(() => skipIfJobNameRegex(JOB_NAME_REGEX_PATTERNS.OCP_VERSION));
+ *
+ * @see https://prow.ci.openshift.org/configured-jobs/redhat-developer/rhdh
+ */
+export function skipIfJobNameRegex(
+  jobNameRegexPattern: JobNameRegexPattern,
+): boolean {
+  const jobName = process.env.JOB_NAME;
+  if (!jobName) {
+    return false;
+  }
+  return jobNameRegexPattern.test(jobName);
 }
 
 /**
