@@ -87,9 +87,11 @@ jobs:
 
 
       - name: Log result for push events
-        if: steps.check-eligibility.outputs.eligible == 'true' && github.event_name == 'push'
+        if: github.event_name == 'push'
         run: |
-          echo "✅ Branch is eligible for auto-approval!"
+          echo "✅ Push event detected on branch: ${{ github.ref_name }}"
+          echo "Event name: ${{ github.event_name }}"
+          echo "Eligibility: ${{ steps.check-eligibility.outputs.eligible }}"
           echo "This was triggered by a push event, so no PR actions will be taken."
           echo "When this runs on a PR event, it will add labels and approve automatically."
 
