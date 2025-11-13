@@ -31,7 +31,6 @@ export const JOB_NAME_PATTERNS = {
 export const JOB_TYPE_PATTERNS = {
   PRESUBMIT: "presubmit",
   PERIODIC: "periodic",
-  POSTSUBMIT: "postsubmit",
 } as const;
 
 /**
