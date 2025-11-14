@@ -652,6 +652,7 @@ class NpmPluginInstaller(PluginInstaller):
 
         tmpfiles = os.path.join(os.path.dirname(archive),'_tmpfiles')
 
+        start = time.perf_counter()
         with tarfile.open(archive, 'r:gz') as tar:
             for member in tar.getmembers():
                 if member.isreg():
@@ -693,9 +694,14 @@ class NpmPluginInstaller(PluginInstaller):
                     }
                     type_str = type_mapping.get(member.type, "unknown")
                     raise InstallException(f'NPM package archive contains a non regular file: {member.name} - {type_str}')
+        end = time.perf_counter()
+        print(f'\t==> TIME for extracting {archive} {end - start:.4f} seconds', flush=True)
 
         if os.path.exists(tmpfiles):
+           start = time.perf_counter()
            os.replace(tmpfiles, directory)
+           end = time.perf_counter()
+           print(f'\t==> TIME for moving {archive} {end - start:.4f} seconds', flush=True)
 
         print('\t==> Removing package archive', archive, flush=True)
         os.remove(archive)
