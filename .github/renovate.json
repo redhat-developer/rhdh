@@ -121,17 +121,6 @@
       ]
     },    
     {
-      "description": "Major dependency updates", 
-      "matchDepTypes": [
-        "dependencies",
-        "peerDependencies"
-      ],
-      "groupName": "Dependencies",
-      "matchUpdateTypes": [
-        "major"
-      ]
-    },
-    {
       "extends": [
         "packages:test"
       ],
@@ -142,15 +131,6 @@
       "matchCurrentVersion": "!/^0/",
       "groupName": "Test packages (non-major)",
       "automerge": true
-    },
-    {
-      "extends": [
-        "packages:test"
-      ],
-      "matchUpdateTypes": [
-        "major"
-      ],
-      "groupName": "Test packages "
     },
     {
       "extends": [
@@ -166,15 +146,6 @@
     },
     {
       "extends": [
-        "packages:linters"
-      ],
-      "matchUpdateTypes": [
-        "major"
-      ],
-      "groupName": "linters"
-    },
-    {
-      "extends": [
         "monorepo:material-ui"
       ],
       "matchUpdateTypes": [
@@ -183,15 +154,6 @@
       ],
       "groupName": "material-ui (non-major)",
       "automerge": true
-    },
-    {
-      "extends": [
-        "monorepo:material-ui"
-      ],
-      "matchUpdateTypes": [
-        "major"
-      ],
-      "groupName": "material-ui"
     },
     {
       "extends": [
@@ -206,15 +168,6 @@
     },
     {
       "extends": [
-        "monorepo:react"
-      ],
-      "matchUpdateTypes": [
-        "major"
-      ],
-      "groupName": "react"
-    },
-    {
-      "extends": [
         "monorepo:emotion"
       ],
       "matchUpdateTypes": [
@@ -223,15 +176,6 @@
       ],
       "groupName": "emotion (non-major)",
       "automerge": true
-    },
-    {
-      "extends": [
-        "monorepo:emotion"
-      ],
-      "matchUpdateTypes": [
-        "major"
-      ],
-      "groupName": "emotion"
     },
     {
       "matchUpdateTypes": [
@@ -254,13 +198,12 @@
       "automerge": false      
     },
     { 
-      "description": "opentelemetry-js: disable major and minor updates",
+      "description": "opentelemetry-js: disable minor updates",
       "enabled": false,
       "extends": [
         "monorepo:opentelemetry-js"
       ],
       "matchUpdateTypes": [
-        "major",
         "minor" 
       ], 
       "groupName": "opentelemetry-js",
@@ -277,46 +220,34 @@
       "automerge": false      
     },
     { 
-      "description": "opentelemetry-js-contrib: disable major and minor updates",
+      "description": "opentelemetry-js-contrib: disable minor updates",
       "enabled": false,      
       "extends": [
         "monorepo:opentelemetry-js-contrib"
       ],
       "matchUpdateTypes": [
-        "major",
         "minor"
       ], 
       "groupName": "opentelemetry-js-contrib",
       "automerge": false      
     },    
     {
-      "matchUpdateTypes": [
-        "major"
-      ],
-      "groupName": "types ",
-      "matchPackageNames": [
-        "@types/{/,}**"
-      ]
-    },
-    {
-      "description": "disable major and minor updates for Winston",
+      "description": "disable minor updates for Winston",
       "matchPackageNames": [
         "winston"
       ],
       "enabled": false,
       "matchUpdateTypes": [
-        "major",
         "minor"
       ]
     },
     {
-      "description": "disable major and minor updates for Zod",
+      "description": "disable minor updates for Zod",
       "matchPackageNames": [
         "zod"
       ],
       "enabled": false,
       "matchUpdateTypes": [
-        "major",
         "minor"
       ]
     },    
