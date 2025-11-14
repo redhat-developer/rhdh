@@ -12,7 +12,7 @@
     "kind/dependency upgrade"
   ],
   "npm": {
-    "minimumReleaseAge": "1 day"
+    "minimumReleaseAge": "3 day"
   },
   "pip_requirements": {
     "fileMatch": [
