@@ -1,0 +1,179 @@
+---
+- name: "Determine plugin type for {{ plugin.name }}"
+  ansible.builtin.set_fact:
+    plugin_type: >-
+      {%- if plugin.package.startswith('oci://') -%}
+        oci
+      {%- elif plugin.package.startswith('http://') or plugin.package.startswith('https://') -%}
+        http
+      {%- elif '@' in plugin.package and not plugin.package.startswith('http') -%}
+        npm
+      {%- else -%}
+        unknown
+      {%- endif -%}
+
+- name: "Display plugin validation info for {{ plugin.name }}"
+  ansible.builtin.debug:
+    msg:
+      - "Validating plugin: {{ plugin.name }}"
+      - "Package: {{ plugin.package }}"
+      - "Type detected: {{ plugin_type }}"
+      - "Integrity: {{ plugin.integrity if plugin.integrity else 'Not set' }}"
+
+- name: "Validate OCI plugin {{ plugin.name }}"
+  when: plugin_type == 'oci'
+  block:
+    - name: "Check that integrity is blank for OCI plugin {{ plugin.name }}"
+      ansible.builtin.fail:
+        msg: "OCI plugin {{ plugin.name }} should not have integrity value set. Found: {{ plugin.integrity }}"
+      when: plugin.integrity != ""
+
+    - name: "Parse OCI image reference for {{ plugin.name }}"
+      ansible.builtin.set_fact:
+        # Convert oci://registry/path:tag!name to docker://registry/path:tag
+        oci_image_ref: "{{ plugin.package | regex_replace('^oci://', 'docker://') | regex_replace('![^!]*$', '') }}"
+
+    - name: "Verify OCI image exists using skopeo for {{ plugin.name }}"
+      ansible.builtin.command:
+        cmd: "skopeo inspect {{ oci_image_ref }}"
+      register: skopeo_result
+      failed_when: false
+      changed_when: false
+
+    - name: "Fail if OCI image cannot be inspected for {{ plugin.name }}"
+      ansible.builtin.fail:
+        msg: "Failed to inspect OCI image {{ oci_image_ref }} (from {{ plugin.package }}). Error: {{ skopeo_result.stderr }}"
+      when: skopeo_result.rc != 0
+
+    - name: "OCI plugin {{ plugin.name }} validation successful"
+      ansible.builtin.debug:
+        msg: "✓ OCI plugin {{ plugin.name }} is accessible"
+
+- name: "Validate HTTP/TGZ plugin {{ plugin.name }}"
+  when: plugin_type == 'http' and not (skip_http_download_validation | default(true) | bool)
+  block:
+    - name: "Check that integrity is set for HTTP plugin {{ plugin.name }}"
+      ansible.builtin.fail:
+        msg: "HTTP plugin {{ plugin.name }} must have integrity value set"
+      when: plugin.integrity == ""
+
+    - name: "Download and verify HTTP plugin {{ plugin.name }}"
+      ansible.builtin.get_url:
+        url: "{{ plugin.package }}"
+        dest: "/tmp/{{ plugin.name }}.tgz"
+        mode: "0644"
+        timeout: 30
+      register: download_result
+
+    - name: "Calculate SHA512 integrity for {{ plugin.name }}"
+      ansible.builtin.shell:
+        cmd: "openssl dgst -sha512 -binary /tmp/{{ plugin.name }}.tgz | base64 -w 0"
+      register: sha512_result
+      changed_when: false
+
+    - name: "Set calculated integrity"
+      ansible.builtin.set_fact:
+        calculated_integrity: "sha512-{{ sha512_result.stdout }}"
+
+    - name: "Verify integrity matches for {{ plugin.name }}"
+      ansible.builtin.fail:
+        msg: |
+          Integrity mismatch for {{ plugin.name }}
+          Expected: {{ plugin.integrity }}
+          Calculated: {{ calculated_integrity }}
+      when: plugin.integrity != calculated_integrity
+
+    - name: "Clean up downloaded file for {{ plugin.name }}"
+      ansible.builtin.file:
+        path: "/tmp/{{ plugin.name }}.tgz"
+        state: absent
+
+    - name: "HTTP plugin {{ plugin.name }} validation successful"
+      ansible.builtin.debug:
+        msg: "✓ HTTP plugin {{ plugin.name }} downloaded and integrity verified"
+
+- name: "Skip HTTP download validation for {{ plugin.name }} (network restricted)"
+  when: plugin_type == 'http' and (skip_http_download_validation | default(true) | bool)
+  ansible.builtin.debug:
+    msg: "⚠️  Skipping HTTP download validation for {{ plugin.name }} due to skip_http_download_validation=true"
+
+- name: "Validate NPM plugin {{ plugin.name }}"
+  when: plugin_type == 'npm'
+  block:
+    - name: "Check that integrity is set for NPM plugin {{ plugin.name }}"
+      ansible.builtin.fail:
+        msg: "NPM plugin {{ plugin.name }} must have integrity value set"
+      when: plugin.integrity == ""
+
+    - name: "Parse NPM package name and version for {{ plugin.name }}"
+      ansible.builtin.set_fact:
+        npm_package_name: >-
+          {%- if plugin.package.startswith('@') -%}
+            {{ plugin.package.split('@')[0] + '@' + plugin.package.split('@')[1] }}
+          {%- else -%}
+            {{ plugin.package.split('@')[0] }}
+          {%- endif -%}
+        npm_package_version: >-
+          {%- if plugin.package.startswith('@') -%}
+            {{ plugin.package.split('@')[2] }}
+          {%- else -%}
+            {{ plugin.package.split('@')[1] }}
+          {%- endif -%}
+
+    - name: "Determine NPM registry for {{ plugin.name }}"
+      ansible.builtin.set_fact:
+        npm_registry: >-
+          {%- if rhdh_enable_npmrc_secret | default(false) | bool -%}
+            {{ npmrc_registry | default('https://npm.stage.registry.redhat.com') }}
+          {%- else -%}
+            https://npm.registry.redhat.com
+          {%- endif -%}
+
+    - name: "Display NPM validation info for {{ plugin.name }}"
+      ansible.builtin.debug:
+        msg:
+          - "NPM Package: {{ npm_package_name }}"
+          - "Version: {{ npm_package_version }}"
+          - "Registry: {{ npm_registry }}"
+          - "Enable npmrc secret: {{ rhdh_enable_npmrc_secret | default(false) }}"
+
+    - name: "Query NPM registry for package info {{ plugin.name }}"
+      ansible.builtin.uri:
+        url: "{{ npm_registry }}/{{ npm_package_name }}"
+        method: GET
+        return_content: true
+        timeout: 30
+        status_code: [200, 404]
+      register: npm_registry_result
+
+    - name: "Fail if NPM package not found for {{ plugin.name }}"
+      ansible.builtin.fail:
+        msg: "NPM package {{ npm_package_name }} not found in registry {{ npm_registry }}"
+      when: npm_registry_result.status != 200
+
+    - name: "Check if specific version exists for {{ plugin.name }}"
+      ansible.builtin.fail:
+        msg: "NPM package {{ npm_package_name }}@{{ npm_package_version }} not found in registry {{ npm_registry }}"
+      when: npm_package_version not in (npm_registry_result.json.versions | default({}))
+
+    - name: "Extract package integrity from registry for {{ plugin.name }}"
+      ansible.builtin.set_fact:
+        registry_integrity: "{{ npm_registry_result.json.versions[npm_package_version].dist.integrity | default('') }}"
+
+    - name: "Verify NPM integrity matches for {{ plugin.name }}"
+      ansible.builtin.fail:
+        msg: |
+          NPM integrity mismatch for {{ plugin.name }}
+          Expected: {{ plugin.integrity }}
+          Registry: {{ registry_integrity }}
+          Package: {{ npm_package_name }}@{{ npm_package_version }}
+      when: plugin.integrity != registry_integrity
+
+    - name: "NPM plugin {{ plugin.name }} validation successful"
+      ansible.builtin.debug:
+        msg: "✓ NPM plugin {{ plugin.name }} verified in registry {{ npm_registry }}"
+
+- name: "Unknown plugin type for {{ plugin.name }}"
+  when: plugin_type == 'unknown'
+  ansible.builtin.fail:
+    msg: "Cannot determine plugin type for {{ plugin.name }}: {{ plugin.package }}"

@@ -1,0 +1,27 @@
+- name: Create work dir
+  ansible.builtin.file:
+    path: "{{ kafka_work_dir }}"
+    state: "{{ item }}"
+  loop:
+    - absent
+    - directory
+
+- name: Git clone orchestrator go operator repo
+  ansible.builtin.git:
+    repo: https://github.com/rhdhorchestrator/orchestrator-go-operator.git
+    dest: "{{ kafka_work_dir }}/orchestrator-go-operator"
+    version: main
+
+- name: Get Orchestrator resource metadata
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    oc get orchestrator -A -o json | jq -r '.items[0].metadata'
+  register: orch_metadata
+
+- name: Set Orchestrator resource name and namespace vars
+  vars:
+    orch_metadata_json: "{{ orch_metadata.stdout | from_json }}"
+  ansible.builtin.set_fact:
+    orchestrator_name: "{{ orch_metadata_json.name }}"
+    orchestrator_ns: "{{ orch_metadata_json.namespace }}"
