@@ -82,12 +82,12 @@ jobs:
           # Auto-approve the PR
           gh pr review ${{ github.event.pull_request.number }} \
             --approve \
+            --repo ${{ github.repository }} \
             --body "**Auto-Approved**
 
           This PR has been automatically approved by the auto-approve workflow.
 
-          **Labels Added:** \`lgtm\`, \`approved\`" \
-            --repo ${{ github.repository }}
+          **Labels Added:** \`lgtm\`, \`approved\`"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
