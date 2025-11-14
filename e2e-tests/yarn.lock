@@ -1779,7 +1779,7 @@ __metadata:
     eslint-plugin-playwright: ^2.3.0
     ioredis: 5.8.2
     isomorphic-fetch: 3.0.0
-    js-yaml: 4.1.0
+    js-yaml: 4.1.1
     node-fetch: 2.7.0
     octokit: 4.1.4
     otplib: 12.0.1
@@ -2586,7 +2586,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-yaml@npm:4.1.0, js-yaml@npm:^4.1.0":
+"js-yaml@npm:4.1.1":
+  version: 4.1.1
+  resolution: "js-yaml@npm:4.1.1"
+  dependencies:
+    argparse: ^2.0.1
+  bin:
+    js-yaml: bin/js-yaml.js
+  checksum: ea2339c6930fe048ec31b007b3c90be2714ab3e7defcc2c27ebf30c74fd940358f29070b4345af0019ef151875bf3bc3f8644bea1bab0372652b5044813ac02d
+  languageName: node
+  linkType: hard
+
+"js-yaml@npm:^4.1.0":
   version: 4.1.0
   resolution: "js-yaml@npm:4.1.0"
   dependencies:
