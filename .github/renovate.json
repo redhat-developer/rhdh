@@ -5,7 +5,8 @@
     ":rebaseStalePrs",
     "group:allNonMajor",
     "default:pinDigestsDisabled",
-    ":automergeBranch"
+    ":automergeBranch",
+    ":disableMajorUpdates"
   ],
   "labels": [
     "kind/dependency upgrade"
@@ -18,11 +19,13 @@
       "requirements.*\\.in"
     ]
   },
-  "major": {
-    "dependencyDashboardApproval": true
-  },
-  "reviewers": ["team:rhdh-security-new"],
+  "reviewers": ["team:rhdh-security"],
   "packageRules": [    
+    {
+      "description": "exclude rpm-lockfile updates",
+      "matchFileNames": [".github/workflows/update-rpm-lockfile.yaml"],
+      "enabled": false
+    },
     {
       "matchCategories": [
         "python"
@@ -245,18 +248,20 @@
         "monorepo:opentelemetry-js"
       ],
       "matchUpdateTypes": [
-        "patch",
-        "minor"
+        "patch"
       ],  
-      "groupName": "opentelemetry-js (non-major)",
+      "groupName": "opentelemetry-js (patch)",
       "automerge": false      
     },
     { 
+      "description": "opentelemetry-js: disable major and minor updates",
+      "enabled": false,
       "extends": [
         "monorepo:opentelemetry-js"
       ],
       "matchUpdateTypes": [
-        "major"
+        "major",
+        "minor" 
       ], 
       "groupName": "opentelemetry-js",
       "automerge": false      
@@ -266,18 +271,20 @@
         "monorepo:opentelemetry-js-contrib"
       ],
       "matchUpdateTypes": [
-        "patch",
-        "minor"
+        "patch"
       ],  
-      "groupName": "opentelemetry-js-contrib (non-major)",
+      "groupName": "opentelemetry-js-contrib (patch)",
       "automerge": false      
     },
     { 
+      "description": "opentelemetry-js-contrib: disable major and minor updates",
+      "enabled": false,      
       "extends": [
         "monorepo:opentelemetry-js-contrib"
       ],
       "matchUpdateTypes": [
-        "major"
+        "major",
+        "minor"
       ], 
       "groupName": "opentelemetry-js-contrib",
       "automerge": false      
