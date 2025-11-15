@@ -32,8 +32,8 @@
       ],
       "groupName": "python  ",
       "additionalBranchPrefix": "python ",
-      "dependencyDashboardApproval": true,
-      "description": "require dashboard approval for all python dependencies due to potential conflicts"
+      "enabled": false,
+      "description": "disable python updates as these will be handled manually downstream"
     },
     {
       "description": "disable docker digest updates",
@@ -88,15 +88,6 @@
       "matchCurrentVersion": "!/^0/",
       "groupName": "DevDependencies (non-major)",
       "automerge": true
-    },
-    {
-      "matchDepTypes": [
-        "devDependencies"
-      ],
-      "matchUpdateTypes": [
-        "major"
-      ],
-      "groupName": "DevDependencies "
     },
     {
       "description": "Patch dependency updates", 
