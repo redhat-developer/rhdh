@@ -1,0 +1,139 @@
+app:
+  baseUrl: ${RHDH_BASE_URL}
+  title: Red Hat Developer Hub
+backend:
+  baseUrl: ${RHDH_BASE_URL}
+  cors:
+    origin: ${RHDH_BASE_URL}
+  auth:
+    keys:
+      - secret: ${BACKEND_SECRET}
+integrations:
+  # Plugin: GitHub
+  github:
+    - host: github.com
+      apps:
+        - appId: ${GITHUB_APP_APP_ID}
+          clientId: ${GITHUB_APP_CLIENT_ID}
+          clientSecret: ${GITHUB_APP_CLIENT_SECRET}
+          webhookUrl: ${GITHUB_APP_WEBHOOK_URL}
+          webhookSecret: ${GITHUB_APP_WEBHOOK_SECRET}
+          privateKey: |
+            ${GITHUB_APP_PRIVATE_KEY}
+  bitbucketServer:
+    - host: bitbucket.com
+      apiBaseUrl: temp
+      username: temp
+      password: temp
+  gitlab:
+    - host: gitlab.com
+      token: temp
+auth:
+  environment: development
+  session:
+    secret: superSecretSecret
+  providers:
+    guest:
+      dangerouslyAllowOutsideDevelopment: true
+    google:
+      development:
+        clientId: ${GOOGLE_CLIENT_ID}
+        clientSecret: ${GOOGLE_CLIENT_SECRET}
+    oidc:
+      development:
+        metadataUrl: ${KEYCLOAK_AUTH_BASE_URL}/auth/realms/${KEYCLOAK_AUTH_REALM}
+        clientId: ${KEYCLOAK_AUTH_CLIENTID}
+        clientSecret: ${KEYCLOAK_AUTH_CLIENT_SECRET}
+        prompt: auto
+        callbackUrl: ${RHDH_BASE_URL}/api/auth/oidc/handler/frame
+        signIn:
+          resolvers:
+            - resolver: emailLocalPartMatchingUserEntityName
+signInPage: oidc
+proxy:
+  skipInvalidProxies: true
+  # endpoints: {}
+  endpoints:
+    # Other Proxies
+    # customize developer hub instance
+    "/developer-hub":
+      target: ${DH_TARGET_URL}
+      changeOrigin: true
+      # Change to "false" in case of using self hosted cluster with a self-signed certificate
+      secure: false
+    "/acr/api":
+      target: "https://rhdhqetest.azurecr.io/acr/v1/"
+      changeOrigin: true
+      headers:
+        # If you use Bearer Token for authorization, please replace the 'Basic' with 'Bearer' in the following line.
+        Authorization: "${ACR_SECRET}"
+      # Change to "false" in case of using self hosted artifactory instance with a self-signed certificate
+      secure: false
+catalog:
+  import:
+    entityFilename: catalog-info.yaml
+    # pullRequestBranchName: rhdh-integration
+    pullRequestBranchName: backstage-integration
+  rules:
+    - allow: [API, Component, Group, Location, Resource, System, Template]
+  locations:
+    - type: url
+      target: https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/all.yaml
+    - type: url
+      target: https://github.com/redhat-developer/red-hat-developer-hub-software-templates/blob/main/templates.yaml
+    - type: url
+      target: https://github.com/janus-test/janus-test-3-bulk-import/blob/main/catalog-info.yaml
+    - type: url
+      target: https://github.com/janus-qe/rhdh-test/blob/main/user.yml
+      rules:
+        - allow: [User]
+    - type: url
+      target: https://github.com/backstage/backstage/blob/master/packages/catalog-model/examples/acme-corp.yaml
+      rules:
+        - allow: [User, Group]
+    - type: url
+      target: https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/e2e-test-resources/rbac-transitive-parent-ownership.yaml
+  providers:
+    keycloakOrg:
+      default:
+        baseUrl: ${KEYCLOAK_AUTH_BASE_URL}/auth
+        loginRealm: ${KEYCLOAK_AUTH_LOGIN_REALM}
+        realm: ${KEYCLOAK_AUTH_REALM}
+        clientId: ${KEYCLOAK_AUTH_CLIENTID}
+        clientSecret: ${KEYCLOAK_AUTH_CLIENT_SECRET}
+        schedule:
+          frequency: { minutes: 1 }
+          timeout: { minutes: 1 }
+    githubOrg:
+      id: production
+      githubUrl: "${GITHUB_URL}"
+      orgs: ["${GITHUB_ORG}", "${GITHUB_ORG_2}"]
+dynatrace:
+  baseUrl: temp
+argocd:
+  appLocatorMethods:
+    - type: "config"
+      instances:
+        - name: argoInstance1
+          url: temp
+          token: temp
+        - name: argoInstance2
+          url: temp
+          token: temp
+permission:
+  enabled: true
+  rbac:
+    maxDepth: 1
+    policyFileReload: true
+    policies-csv-file: "./rbac/rbac-policy.csv"
+    conditionalPoliciesFile: "./rbac-conditions/conditional-policies.yaml"
+    pluginsWithPermission:
+      - catalog
+      - permission
+      - scaffolder
+      - kubernetes
+      - scorecard
+    admin:
+      users:
+        - name: user:default/rhdh-qe
+includeTransitiveGroupOwnership: true

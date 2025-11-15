@@ -77,3 +77,9 @@ dynamic-plugins-root/*
 **/__pycache__/
 **/.pytest_cache/
 **/.venv/
+
+# Pipeline transient artifacts
+pipelines/artifact_dir/
+pipelines/shared_dir/
+# Relatórios gerados durante execuções locais
+pipelines/artifact_dir/reporting/
