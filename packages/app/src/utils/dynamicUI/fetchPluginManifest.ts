@@ -49,6 +49,8 @@ export function installFetchManifestHandler(): void {
     try {
       const res = await originalFetch(input, init);
       if (isManifest && res.status === 404) {
+        // eslint-disable-next-line no-console
+        console.error(`plugin-manifest.json 404 ${urlStr}`);
         return manifestResponse(urlStr);
       }
       return res;
