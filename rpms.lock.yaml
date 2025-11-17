@@ -606,10 +606,10 @@ arches:
     name: openblas-srpm-macros
     evr: 2-11.el9
     sourcerpm: openblas-srpm-macros-2-11.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/o/openssl-devel-3.5.1-4.el9_7.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/o/openssl-devel-3.5.1-4.el9_7.i686.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 4997984
-    checksum: sha256:3aeba34c9a9c3313b16166111a1dfe61a29ffaff671bb8f0be95eb0e2dede860
+    size: 4997993
+    checksum: sha256:159a7b9b220b429f5b6b194db3267113b8eb813ea5f4b9586dfbabe34b3ccffb
     name: openssl-devel
     evr: 1:3.5.1-4.el9_7
     sourcerpm: openssl-3.5.1-4.el9_7.src.rpm
@@ -2650,6 +2650,20 @@ arches:
     name: gettext-libs
     evr: 0.21-8.el9
     sourcerpm: gettext-0.21-8.el9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/g/glibc-2.34-231.el9_7.2.i686.rpm
+    repoid: ubi-9-for-x86_64-baseos-rpms
+    size: 2013916
+    checksum: sha256:9f5ec218083919523cee232eaa0130f29c72402a6cdca1b4a7858cc59a4c8bde
+    name: glibc
+    evr: 2.34-231.el9_7.2
+    sourcerpm: glibc-2.34-231.el9_7.2.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/g/glibc-gconv-extra-2.34-231.el9_7.2.i686.rpm
+    repoid: ubi-9-for-x86_64-baseos-rpms
+    size: 1775464
+    checksum: sha256:05bf1e3f5808bc132f2bb78ba10f1fdba063b6c9264375b66212539cafdb59f9
+    name: glibc-gconv-extra
+    evr: 2.34-231.el9_7.2
+    sourcerpm: glibc-2.34-231.el9_7.2.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/g/glibc-gconv-extra-2.34-231.el9_7.2.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
     size: 1759310
@@ -2804,6 +2818,13 @@ arches:
     name: libfido2
     evr: 1.13.0-2.el9
     sourcerpm: libfido2-1.13.0-2.el9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/l/libgcc-11.5.0-11.el9.i686.rpm
+    repoid: ubi-9-for-x86_64-baseos-rpms
+    size: 96320
+    checksum: sha256:7e59b67553086ae8184058e30aa968bf284b69bc6d8dd9edb609239f6be12271
+    name: libgcc
+    evr: 11.5.0-11.el9
+    sourcerpm: gcc-11.5.0-11.el9.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/l/libgomp-11.5.0-11.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
     size: 263529
@@ -2930,17 +2951,10 @@ arches:
     name: openssh-clients
     evr: 8.7p1-46.el9
     sourcerpm: openssh-8.7p1-46.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/o/openssl-3.5.1-4.el9_7.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/o/openssl-libs-3.5.1-4.el9_7.i686.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 1554784
-    checksum: sha256:e9c30e80d09e2ef402f5380ce0fa52f9e169d638a0c1c8c7485f7a8ff2d27da0
-    name: openssl
-    evr: 1:3.5.1-4.el9_7
-    sourcerpm: openssl-3.5.1-4.el9_7.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/o/openssl-libs-3.5.1-4.el9_7.x86_64.rpm
-    repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 2412696
-    checksum: sha256:8dfa0d490fb0314e24811e502aeab85fd6dd2700c58008a85b1fc8ce32c518a5
+    size: 2402768
+    checksum: sha256:e3401a11c53dd367d6653b768a13302264efeb8dbec1847a4b36795750c5cb24
     name: openssl-libs
     evr: 1:3.5.1-4.el9_7
     sourcerpm: openssl-3.5.1-4.el9_7.src.rpm
@@ -3385,6 +3399,13 @@ arches:
     name: zip
     evr: 3.0-35.el9
     sourcerpm: zip-3.0-35.el9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/z/zlib-1.2.11-40.el9.i686.rpm
+    repoid: ubi-9-for-x86_64-baseos-rpms
+    size: 98330
+    checksum: sha256:f95e2fd25a344c1df71295fc2faa4a8e8876472f1f5634d4b5b651fb00139123
+    name: zlib
+    evr: 1.2.11-40.el9
+    sourcerpm: zlib-1.2.11-40.el9.src.rpm
   source:
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/a/alsa-lib-1.2.14-1.el9.src.rpm
     repoid: ubi-9-for-x86_64-appstream-source-rpms
