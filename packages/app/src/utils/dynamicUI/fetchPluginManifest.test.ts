@@ -1,4 +1,5 @@
 // javascript
+// @ts-nocheck
 const { installFetchManifestHandler } = require('./fetchPluginManifest');
 
 describe('installFetchManifestHandler (missing manifest message)', () => {
