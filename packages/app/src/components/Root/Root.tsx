@@ -211,8 +211,7 @@ const SidebarScrollableContent = styled(Box)(({ theme }) => ({
     },
   },
 
-  // Firefox scrollbar - thin and auto-hiding
-  scrollbarWidth: 'thin',
+  // Firefox scrollbar to auto-hide it
   scrollbarColor: 'transparent transparent',
   '&:hover': {
     scrollbarColor: `${
@@ -237,7 +236,6 @@ const renderExpandIcon = (expand: boolean) => {
       fontSize="small"
       style={{
         display: 'flex',
-        marginLeft: 8,
       }}
     />
   ) : (
@@ -245,7 +243,6 @@ const renderExpandIcon = (expand: boolean) => {
       fontSize="small"
       style={{
         display: 'flex',
-        marginLeft: 8,
       }}
     />
   );
