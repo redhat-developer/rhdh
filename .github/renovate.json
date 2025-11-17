@@ -15,15 +15,19 @@
     "minimumReleaseAge": "3 day"
   },
   "pip_requirements": {
-    "fileMatch": [
-      "requirements.*\\.in"
+    "managerFilePatterns": [
+      "/requirements.*\\.in/"
     ]
   },
-  "reviewers": ["team:rhdh-security"],
-  "packageRules": [    
+  "reviewers": [
+    "team:rhdh-security"
+  ],
+  "packageRules": [
     {
       "description": "exclude rpm-lockfile updates",
-      "matchFileNames": [".github/workflows/update-rpm-lockfile.yaml"],
+      "matchFileNames": [
+        ".github/workflows/update-rpm-lockfile.yaml"
+      ],
       "enabled": false
     },
     {
@@ -43,40 +47,40 @@
       "digest": {
         "enabled": false
       }
-    },   
+    },
     {
-      "description": "Dockerfile non-major updates", 
+      "description": "Dockerfile non-major updates",
       "matchDatasources": [
         "docker"
       ],
       "matchUpdateTypes": [
         "patch",
         "minor"
-      ],      
+      ],
       "matchFileNames": [
         ".rhdh/docker/Dockerfile",
         "docker/Dockerfile"
-      ],        
-      "additionalBranchPrefix": "dockerfile ",        
+      ],
+      "additionalBranchPrefix": "dockerfile ",
       "groupName": "Dockerfile images (non-major) [skip-build]",
       "automerge": true
-    },  
+    },
     {
-      "description": "Test Dockerfile non-major updates", 
+      "description": "Test Dockerfile non-major updates",
       "matchDatasources": [
         "docker"
       ],
       "matchUpdateTypes": [
         "patch",
         "minor"
-      ],      
+      ],
       "matchFileNames": [
         ".ibm/images/**"
-      ],         
-      "additionalBranchPrefix": "test-dockerfile ",        
+      ],
+      "additionalBranchPrefix": "test-dockerfile ",
       "groupName": "Test dockerfile images (non-major)",
       "automerge": false
-    },      
+    },
     {
       "matchDepTypes": [
         "devDependencies"
@@ -90,7 +94,7 @@
       "automerge": true
     },
     {
-      "description": "Patch dependency updates", 
+      "description": "Patch dependency updates",
       "matchDepTypes": [
         "dependencies",
         "peerDependencies"
@@ -101,7 +105,7 @@
       ]
     },
     {
-      "description": "Minor dependency updates", 
+      "description": "Minor dependency updates",
       "matchDepTypes": [
         "dependencies",
         "peerDependencies"
@@ -110,7 +114,7 @@
       "matchUpdateTypes": [
         "minor"
       ]
-    },    
+    },
     {
       "extends": [
         "packages:test"
@@ -184,21 +188,21 @@
       ],
       "matchUpdateTypes": [
         "patch"
-      ],  
+      ],
       "groupName": "opentelemetry-js (patch)",
-      "automerge": false      
+      "automerge": false
     },
-    { 
+    {
       "description": "opentelemetry-js: disable minor updates",
       "enabled": false,
       "extends": [
         "monorepo:opentelemetry-js"
       ],
       "matchUpdateTypes": [
-        "minor" 
-      ], 
+        "minor"
+      ],
       "groupName": "opentelemetry-js",
-      "automerge": false      
+      "automerge": false
     },
     {
       "extends": [
@@ -206,22 +210,22 @@
       ],
       "matchUpdateTypes": [
         "patch"
-      ],  
+      ],
       "groupName": "opentelemetry-js-contrib (patch)",
-      "automerge": false      
+      "automerge": false
     },
-    { 
+    {
       "description": "opentelemetry-js-contrib: disable minor updates",
-      "enabled": false,      
+      "enabled": false,
       "extends": [
         "monorepo:opentelemetry-js-contrib"
       ],
       "matchUpdateTypes": [
         "minor"
-      ], 
+      ],
       "groupName": "opentelemetry-js-contrib",
-      "automerge": false      
-    },    
+      "automerge": false
+    },
     {
       "description": "disable minor updates for Winston",
       "matchPackageNames": [
@@ -241,7 +245,7 @@
       "matchUpdateTypes": [
         "minor"
       ]
-    },    
+    },
     {
       "description": "react-router-dom: group all dependencies",
       "matchPackageNames": [
@@ -260,7 +264,7 @@
         "yarn"
       ],
       "groupName": "yarn updates"
-    },    
+    },
     {
       "description": "ignore updates to all backstage updates and 3rd party plugins",
       "groupName": "Backstage packages",
@@ -290,7 +294,7 @@
       "matchUpdateTypes": [
         "patch",
         "minor"
-      ]      
+      ]
     },
     {
       "description": "avoid pinning @aws-sdk/util-utf8-browser ",
