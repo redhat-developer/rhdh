@@ -13,7 +13,11 @@ export function installFetchManifestHandler(): void {
       const segments = u.pathname.split('/').filter(Boolean);
       const idx = segments.lastIndexOf('plugin-manifest.json');
       if (idx > 0) return decodeURIComponent(segments[idx - 1]);
-      if (segments.length && segments[segments.length - 1].includes('plugin-manifest.json') && segments.length > 1) {
+      if (
+        segments.length &&
+        segments[segments.length - 1].includes('plugin-manifest.json') &&
+        segments.length > 1
+      ) {
         return decodeURIComponent(segments[segments.length - 2]);
       }
       return 'unknown';
