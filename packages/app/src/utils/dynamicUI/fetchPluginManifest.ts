@@ -1,4 +1,3 @@
-// typescript
 export function installFetchManifestHandler(): void {
   if (typeof window === 'undefined') return;
   const marker = '__fetchManifestHandlerInstalled';

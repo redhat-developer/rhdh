@@ -1,10 +1,10 @@
 import GlobalStyles from '@mui/material/GlobalStyles';
-import { installFetchManifestHandler } from 'plugin-utils/fetchPluginManifest';
 
 import { apis } from './apis';
 import { StaticPlugins } from './components/DynamicRoot/DynamicRoot';
 import ScalprumRoot from './components/DynamicRoot/ScalprumRoot';
 import { DefaultMainMenuItems } from './consts';
+import { installFetchManifestHandler } from './utils/dynamicUI/fetchPluginManifest';
 
 // Install the manifest fetch handler early in the browser, once.
 if (typeof window !== 'undefined') {
