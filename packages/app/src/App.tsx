@@ -4,6 +4,22 @@ import { apis } from './apis';
 import { StaticPlugins } from './components/DynamicRoot/DynamicRoot';
 import ScalprumRoot from './components/DynamicRoot/ScalprumRoot';
 import { DefaultMainMenuItems } from './consts';
+import { installFetchManifestHandler } from 'plugin-utils/fetchPluginManifest';
+
+// Install the manifest fetch handler early in the browser, once.
+if (typeof window !== 'undefined') {
+  const marker = '__fetchManifestHandlerInstalled';
+  if (!(window as any)[marker]) {
+    try {
+      installFetchManifestHandler();
+      (window as any)[marker] = true;
+    } catch (err) {
+      // avoid blocking startup if installer fails
+      // eslint-disable-next-line no-console
+      console.warn('installFetchManifestHandler failed', err);
+    }
+  }
+}
 
 // Statically integrated frontend plugins
 const { dynamicPluginsInfoPlugin, ...dynamicPluginsInfoPluginModule } =
