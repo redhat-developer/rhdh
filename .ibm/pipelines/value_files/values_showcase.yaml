@@ -198,10 +198,9 @@ global:
         disabled: false
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-floating-action-button
         disabled: false
-      # Enable orchestrator plugins
-      - package: "@redhat/backstage-plugin-orchestrator@1.8.2"
+      # Enable orchestrator plugins - Official release (Backstage 1.42.5)
+      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator:bs_1.42.5__5.1.0!red-hat-developer-hub-backstage-plugin-orchestrator"
         disabled: false
-        integrity: sha512-rnUA6iZ2JVAyASfwS4P9HeFmpqCgH6FQouzzg4s6lCPAsYUFvu6tifJ3df5lThXPUTJ2cDvvQgamU+4DiHP2jw==
         pluginConfig:
           dynamicPlugins:
             frontend:
@@ -230,25 +229,22 @@ global:
                         if:
                           anyOf:
                             - IsOrchestratorCatalogTabAvailable
-      - package: "@redhat/backstage-plugin-orchestrator-backend-dynamic@1.8.2"
+      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator-backend:bs_1.42.5__8.2.0!red-hat-developer-hub-backstage-plugin-orchestrator-backend"
         disabled: false
-        integrity: sha512-6G0YguzCM5nCDpOrIGJpLTXVMr6EBdIVqSXtsLH9RvBH25RTuFpfJ7q6eEp26DqveaiqUCfBpJ51smdjcsEzFQ==
         pluginConfig:
           orchestrator:
             dataIndexService:
               url: http://sonataflow-platform-data-index-service
 
-      - package: "@redhat/backstage-plugin-scaffolder-backend-module-orchestrator-dynamic@1.8.2"
+      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator:bs_1.42.5__1.1.0!red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator"
         disabled: false
-        integrity: sha512-N2hCn9RI/QVEoK56FAkGkSDbvfQCOIzVsJTwDX0kf//npO++2crRSJpB1Lr/m2UtYxfaXZX53p8sPcK3g8yWkQ==
         pluginConfig:
           orchestrator:
             dataIndexService:
               url: http://sonataflow-platform-data-index-service
 
-      - package: "@redhat/backstage-plugin-orchestrator-form-widgets@1.8.2"
+      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets:bs_1.42.5__1.1.0!red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets"
         disabled: false
-        integrity: sha512-Pe0dn3g+YTK3jbl36E8nt4zdyH/3w+MWgRyFWPc2B0eV4/L/aRfRC4KxcktmHPdamRGXTIaXL6cFae8TZl8Htw==
         pluginConfig:
           dynamicPlugins:
             frontend:
