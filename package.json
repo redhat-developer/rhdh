@@ -28,7 +28,10 @@
     "new": "backstage-cli new --scope internal",
     "repo:fix": "backstage-cli repo fix --publish",
     "versions:metadata": "node ./scripts/update-metadata.mjs",
-    "versions:bump": "node ./scripts/update-backstage.mjs"
+    "versions:bump": "node ./scripts/update-backstage.mjs",
+    "rulesync:generate": "rulesync generate",
+    "rulesync:import:cursor": "rulesync import --targets cursor",
+    "rulesync:import:claude": "rulesync import --targets claudecode"
   },
   "workspaces": {
     "packages": [
