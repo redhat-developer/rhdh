@@ -271,8 +271,8 @@ COPY $EXTERNAL_SOURCE_NESTED/LICENSE /licenses/
 COPY $EXTERNAL_SOURCE_NESTED/catalog-entities/marketplace /marketplace/catalog-entities/
 
 # Copy script to gather dynamic plugins; copy embedded dynamic plugins to root folder; fix permissions
-COPY $EXTERNAL_SOURCE_NESTED/docker/install-dynamic-plugins.py $EXTERNAL_SOURCE_NESTED/docker/install-dynamic-plugins.sh ./
-RUN chmod -R a+rx ./install-dynamic-plugins.*
+COPY $EXTERNAL_SOURCE_NESTED/docker/install-dynamic-plugins.py $EXTERNAL_SOURCE_NESTED/docker/install-dynamic-plugins.sh $EXTERNAL_SOURCE_NESTED/docker/cleanup-dynamic-plugins.sh ./
+RUN chmod -R a+rx ./install-dynamic-plugins.* ./cleanup-dynamic-plugins.sh
 
 # Fix for https://issues.redhat.com/browse/RHIDP-728
 RUN mkdir -p /opt/app-root/src/.npm; chown -R 1001:1001 /opt/app-root/src/.npm
