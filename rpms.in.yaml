@@ -3,6 +3,9 @@
 # to regen rpms.lock.yaml
 # Note that the repoid values are special, and must be from here:
 # https://github.com/release-engineering/rhtap-ec-policy/blob/main/data/known_rpm_repositories.yml
+arches:
+  - x86_64
+  - aarch64
 allowerasing: true
 contentOrigin:
   repos:

@@ -73,13 +73,10 @@ jobs:
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         uses: ./.github/actions/docker-build
         with:
-          registry: ${{ env.REGISTRY }}
-          imageName: ${{ env.IMAGE_NAME }}
+          imageName: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           imageTags: |
             pr-${{ github.event.number }}
             pr-${{ github.event.number }}-${{ env.SHORT_SHA }}
-          enableHermeticBuild: true
           imageLabels: quay.expires-after=14d
-          push: false
           platform: linux/amd64
           dockerfilePath: .rhdh/docker/Dockerfile

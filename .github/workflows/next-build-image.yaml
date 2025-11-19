@@ -121,28 +121,35 @@ jobs:
       - name: Get the last commit short SHA
         uses: ./.github/actions/get-sha
 
-      - name: Build and Push with Buildx
+      - name: Build with Hermetic Build
         uses: ./.github/actions/docker-build
         id: build-image
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ secrets.QUAY_USERNAME }}
-          password: ${{ secrets.QUAY_TOKEN }}
-          imageName: ${{ env.REGISTRY_IMAGE }}
+          imageName: ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}
           imageTags: |
             type=raw,value=${{ env.REF_NAME }}-${{ env.PLATFORM_ARCH }}
             type=raw,value=${{ env.REF_NAME }}-${{ env.SHORT_SHA }}-${{ env.PLATFORM_ARCH }}
           imageLabels: |
             quay.expires-after=${{ env.EXPIRES_AFTER }}
             org.opencontainers.image.expires=${{ env.EXPIRES_AFTER }}
-          push: true
           platform: ${{ env.PLATFORM }}
+          skipArtifactUpload: true
+
+      - name: Push Image to Registry
+        id: push-image
+        uses: redhat-actions/push-to-registry@5ed88d269cf581ea9ef6dd6806d01562096bee9c # v2.8
+        with:
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:${{ env.REF_NAME }}-${{ env.PLATFORM_ARCH }}
+            ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:${{ env.REF_NAME }}-${{ env.SHORT_SHA }}-${{ env.PLATFORM_ARCH }}
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_TOKEN }}
 
       - name: Export digest
         id: export-digest
         run: |
           mkdir -p /tmp/digests
-          digest="${{ steps.build-image.outputs.digest }}"
+          digest="${{ steps.push-image.outputs.digest }}"
           touch "/tmp/digests/${digest#sha256:}"
 
       - name: Upload digest
