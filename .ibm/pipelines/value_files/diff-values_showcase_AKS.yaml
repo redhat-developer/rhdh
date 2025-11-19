@@ -15,26 +15,11 @@ upstream:
       - rhdh-secrets
     podSecurityContext:
       fsGroup: 3000
-    # Enable cleanup of unnecessary files after dynamic plugins installation to save disk space
-    extraEnvVars:
-      - name: CLEANUP_DYNAMIC_PLUGINS
-        value: "true"
     # Increase emptyDir size limit for dynamic plugins to prevent "No space left on device" errors
     extraVolumes:
       - name: dynamic-plugins-root
         emptyDir:
           sizeLimit: 5Gi
-      - name: cleanup-script
-        configMap:
-          name: cleanup-dynamic-plugins-script
-          defaultMode: 0755
-    # Mount cleanup script in init container
-    initContainers:
-      - name: install-dynamic-plugins
-        volumeMounts:
-          - name: cleanup-script
-            mountPath: /opt/app-root/src/cleanup-dynamic-plugins.sh
-            subPath: cleanup-dynamic-plugins.sh
     startupProbe:
       failureThreshold: 10 # Override the default to account for longer startup time on Kubernetes.
   postgresql:

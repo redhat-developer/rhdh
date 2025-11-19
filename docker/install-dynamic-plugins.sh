@@ -16,13 +16,3 @@
 #
 
 python install-dynamic-plugins.py $1
-
-# Run cleanup to reduce disk usage (if enabled via CLEANUP_DYNAMIC_PLUGINS env var)
-if [ "${CLEANUP_DYNAMIC_PLUGINS:-false}" = "true" ]; then
-  if [ -f "./cleanup-dynamic-plugins.sh" ]; then
-    echo "======= Running dynamic plugins cleanup..."
-    ./cleanup-dynamic-plugins.sh $1
-  else
-    echo "======= WARNING: CLEANUP_DYNAMIC_PLUGINS is enabled but cleanup-dynamic-plugins.sh not found. Skipping cleanup."
-  fi
-fi
