@@ -87,8 +87,6 @@ upstream:
           name: rbac-policy
       - name: rbac-conditions
         emptyDir: {}
-    initContainers:
-      - name: install-dynamic-plugins
     extraEnvVarsSecrets:
       - rhdh-secrets
     podSecurityContext:
