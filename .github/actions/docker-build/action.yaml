@@ -35,7 +35,7 @@ inputs:
   dockerfilePath:
     description: Path to the Dockerfile to use
     required: false
-    default: 'docker/Dockerfile'
+    default: '.rhdh/docker/Dockerfile'
   skipArtifactUpload:
     description: Skip uploading the built image as a GitHub artifact
     required: false
@@ -78,10 +78,11 @@ runs:
       run: |        
         set -ex
 
-        echo "=== Creating local cache directory ==="
+        echo "::group::Creating local cache directory"
         mkdir -p ${{ env.LOCAL_CACHE_DIR }} || echo "Failed to create local cache directory"
+        echo "::endgroup::"
         
-        echo "=== Fetching dependencies with hermeto ==="
+        echo "::group::Fetching dependencies with hermeto"
         # Build hermeto cache for rpm, yarn, and pip
         podman run --rm -v "$PWD:/source:z" -v "$LOCAL_CACHE_DIR:/cachi2:z" -w /source "$HERMETO_IMAGE" \
           --log-level DEBUG \
@@ -89,15 +90,17 @@ runs:
           --source . \
           --output /cachi2/output \
           '[{"type": "rpm", "path": "."}, {"type": "yarn","path": "."}, {"type": "yarn","path": "./dynamic-plugins"}, {"type": "pip","path": "./python", "allow_binary": "false"}]'  || echo "Fetch-deps failed"
+        echo "::endgroup::"
         
         if [ -d ${{ env.LOCAL_CACHE_DIR }}/output ]; then
-          echo "=== Output directory exists, running generate-env ==="
+          echo "::group::Generating environment file"
           
           # Generate environment file
           podman run --rm -v "$PWD:/source:z" -v "$LOCAL_CACHE_DIR:/cachi2:z" -w /source "$HERMETO_IMAGE" \
                       --log-level DEBUG \
                       generate-env --format env \
                       --output /cachi2/cachi2.env /cachi2/output
+          echo "::endgroup::"
           
         else
           echo "No output directory found, skipping generate-env"
@@ -105,11 +108,12 @@ runs:
         fi
 
         if [ -d ${{ env.LOCAL_CACHE_DIR }}/output ]; then
-          echo "=== Running inject-files ==="
+          echo "::group::Injecting files"
           
           podman run --rm -v "$PWD:/source:z" -v "$LOCAL_CACHE_DIR:/cachi2:z" -w /source "$HERMETO_IMAGE" \
             --log-level DEBUG \
             inject-files /cachi2/output || echo "Inject-files failed"
+          echo "::endgroup::"
 
         else
           echo "No output directory found, skipping inject-files"
@@ -122,24 +126,25 @@ runs:
       shell: bash
       run: |
         set -ex
-        echo "=== Before ownership fix ==="
+        echo "::group::Fixing cache ownership"
         ls -l ${{ env.LOCAL_CACHE_DIR_REALPATH }}
-        echo "=== Attempting to fix ownership to runner user ==="
+
         sudo chown -R runner ${{ env.LOCAL_CACHE_DIR_REALPATH }}
-        echo "=== After ownership fix ==="
+
         ls -l ${{ env.LOCAL_CACHE_DIR_REALPATH }}
+        echo "::endgroup::"
         
     - name: Transform Containerfile for hermetic build
       shell: bash
       run: |
         set -x
         
+        echo "::group::Transforming Containerfile for hermetic build"
         CONTAINERFILE_PATH="${{ inputs.dockerfilePath }}"
-        
         TRANSFORMED_CONTAINERFILE="${CONTAINERFILE_PATH}.hermeto"
         
         # Copy original dockerfile for hermetic build modifications
-        cp "$CONTAINERFILE_PATH" "$TRANSFORMED_CONTAINERFILE"
+        cp "$CONTAINERFILE_PATH" "$TRANSFORMED_CONTAINERFILE"        
         
         # Transform the dockerfile to simulate Konflux build
         # Configure dnf to use the cachi2 repo (supports both x86_64 and aarch64)
@@ -147,6 +152,7 @@ runs:
         
         # Inject the cachi2 env variables to every RUN command
         sed -i 's/^\s*RUN /RUN . \/cachi2\/cachi2.env \&\& /' "$TRANSFORMED_CONTAINERFILE"
+        echo "::endgroup::"
         
         echo "TRANSFORMED_CONTAINERFILE=$TRANSFORMED_CONTAINERFILE" >> $GITHUB_ENV
 
@@ -167,8 +173,9 @@ runs:
       if: ${{ inputs.skipArtifactUpload != 'true' }}
       shell: bash
       run: |
+        echo "::group::Saving image and metadata for artifact"
         mkdir -p ./rhdh-podman-artifacts
-        
+
         # Extract the built image tags from the metadata
         TAGS_LIST="${{ steps.meta.outputs.tags }}"
         
@@ -180,6 +187,7 @@ runs:
         
         # Save metadata for the push workflow
         echo "$TAGS_LIST" > ./rhdh-podman-artifacts/tags.txt
+        echo "::endgroup::"
 
     - name: Upload image artifact
       if: ${{ inputs.skipArtifactUpload != 'true' }}
