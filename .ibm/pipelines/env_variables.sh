@@ -36,6 +36,8 @@ HELM_CHART_GKE_DIFF_VALUE_FILE_NAME="diff-values_showcase_GKE.yaml"
 HELM_CHART_RBAC_GKE_DIFF_VALUE_FILE_NAME="diff-values_showcase-rbac_GKE.yaml"
 HELM_CHART_EKS_DIFF_VALUE_FILE_NAME="diff-values_showcase_EKS.yaml"
 HELM_CHART_RBAC_EKS_DIFF_VALUE_FILE_NAME="diff-values_showcase-rbac_EKS.yaml"
+HELM_CHART_OSD_GCP_DIFF_VALUE_FILE_NAME="diff-values_showcase_OSD-GCP.yaml"
+HELM_CHART_RBAC_OSD_GCP_DIFF_VALUE_FILE_NAME="diff-values_showcase-rbac_OSD-GCP.yaml"
 HELM_CHART_SANITY_PLUGINS_DIFF_VALUE_FILE_NAME="diff-values_showcase-sanity-plugins.yaml"
 HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME="merged-values_showcase-sanity-plugins.yaml"
 
@@ -98,8 +100,6 @@ RHDH_PR_OS_CLUSTER_TOKEN=$(cat /tmp/secrets/RHDH_PR_OS_CLUSTER_TOKEN)
 ENCODED_CLUSTER_NAME=$(echo "my-cluster" | base64)
 K8S_CLUSTER_API_SERVER_URL=$(printf "%s" "$K8S_CLUSTER_URL" | base64 | tr -d '\n')
 K8S_SERVICE_ACCOUNT_TOKEN=$K8S_CLUSTER_TOKEN_ENCODED
-OCM_CLUSTER_URL=$(printf "%s" "$K8S_CLUSTER_URL" | base64 | tr -d '\n')
-OCM_CLUSTER_TOKEN=$K8S_CLUSTER_TOKEN_ENCODED
 KEYCLOAK_BASE_URL=$(cat /tmp/secrets/KEYCLOAK_BASE_URL)
 KEYCLOAK_BASE_URL_ENCODED=$(printf "%s" $KEYCLOAK_BASE_URL | base64 | tr -d '\n')
 KEYCLOAK_LOGIN_REALM="myrealm"

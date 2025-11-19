@@ -291,6 +291,14 @@
         "patch",
         "minor"
       ]      
+    },
+    {
+      "description": "avoid pinning @aws-sdk/util-utf8-browser ",
+      "matchPackageNames": [
+        "@aws-sdk/util-utf8-browser",
+        "@smithy/util-utf8"
+      ],
+      "rangeStrategy": "in-range-only"
     }
   ],
   "ignorePaths": [
