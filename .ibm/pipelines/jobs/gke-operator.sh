@@ -21,8 +21,6 @@ handle_gke_operator() {
   K8S_CLUSTER_API_SERVER_URL=$(printf "%s" "$K8S_CLUSTER_URL" | base64 | tr -d '\n')
   export K8S_CLUSTER_URL K8S_CLUSTER_API_SERVER_URL
 
-  re_create_k8s_service_account_and_get_token # Populate K8S_CLUSTER_TOKEN
-
   echo "Starting GKE Operator deployment"
 
   cluster_setup_k8s_operator
