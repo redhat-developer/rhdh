@@ -49,7 +49,14 @@ find "${DYNAMIC_PLUGINS_ROOT}" -type d \( \
 # Remove source maps (optional - uncomment if you want to save more space)
 # find "${DYNAMIC_PLUGINS_ROOT}" -type f -name "*.map" -delete 2>/dev/null || true
 
-# Remove TypeScript source files (keep only compiled JS)
+# Remove TypeScript source files (keep only compiled JS and .d.ts declaration files)
+# Most plugins only need compiled .js files and type definitions at runtime.
+#
+# ⚠️ WARNING: This removal assumes plugins are properly compiled and do not require
+# .ts/.tsx source files at runtime. This is standard practice for production deployments,
+# but if a plugin has non-standard behavior (JIT compilation, dynamic imports of TS files),
+# this cleanup could break functionality. All RHDH plugins follow standard compilation
+# patterns and should not be affected.
 find "${DYNAMIC_PLUGINS_ROOT}" -type f \( \
   -name "*.ts" -o \
   -name "*.tsx" \

@@ -545,10 +545,15 @@ apply_yaml_files() {
 
   # Create ConfigMap with cleanup script for dynamic plugins (only for K8s environments)
   if [[ -z "${IS_OPENSHIFT}" || "${IS_OPENSHIFT}" == "false" ]]; then
+    echo "======= Detected K8s environment (IS_OPENSHIFT=${IS_OPENSHIFT:-unset})"
+    echo "======= Creating ConfigMap for dynamic plugins cleanup script"
     kubectl create configmap cleanup-dynamic-plugins-script \
       --from-file="cleanup-dynamic-plugins.sh"="${DIR}/../../docker/cleanup-dynamic-plugins.sh" \
       --namespace="${project}" \
       --dry-run=client -o yaml | kubectl apply -f -
+  else
+    echo "======= Detected OpenShift environment (IS_OPENSHIFT=${IS_OPENSHIFT})"
+    echo "======= Skipping cleanup ConfigMap creation (not needed for OpenShift)"
   fi
 
   # Create Pipeline run for tekton test case.
