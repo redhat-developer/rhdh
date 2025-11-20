@@ -122,34 +122,6 @@ jobs:
       - name: Get the last commit short SHA
         uses: ./.github/actions/get-sha
 
-      - name: Regenerate dynamic-plugins.default.yaml from latest quay.io/rhdh/plugin-catalog-index:1.y container
-        run: |
-          unpack () {
-            local IMAGE="$1"
-            DIR="/tmp/${IMAGE//:/_}"; rm -fr "$DIR"; mkdir -p "$DIR"
-            container_id=$(podman create "quay.io/rhdh/${IMAGE}" || echo "not found")
-            if [[ $container_id == "not found" ]]; then
-              echo "::error::Container image quay.io/rhdh/${IMAGE} not found - nothing to do!"
-              exit 0
-            fi
-            podman export $container_id -o /tmp/image.tar && tar xf /tmp/image.tar -C "${DIR}/"; podman rm $container_id; rm -f /tmp/image.tar
-            echo "Unpacked $IMAGE into $DIR"
-          }
-          TAG=$(jq -r '.version' package.json) # 1.9.0
-          unpack "plugin-catalog-index:${TAG}"
-          # replace local dynamic-plugins.default.yaml file with latest from the index container image, and add a deprecation warning
-          cat << EOF > dynamic-plugins.default.yaml
-          # THIS FILE IS DEPRECATED. CONTENTS ARE GENERATED - DO NOT EDIT!
-          #
-          # File dynamic-plugins.default.yaml is now generated from default.package.yaml (this repo)
-          # and default configuration located in the overlays repo under workspaces/*/metadata/*.yaml
-          # See https://github.com/redhat-developer/rhdh-plugin-export-overlays/
-          #
-          # To fetch + unpack the latest index image for quay.io/rhdh/plugin-catalog-index:1.y.z
-          # See https://gist.github.com/nickboldt/86f78312234d84490f1186b389235a29
-          EOF
-          cat "$DIR"/dynamic-plugins.default.yaml >> dynamic-plugins.default.yaml
-
       - name: Build and Push with Buildx
         uses: ./.github/actions/docker-build
         id: build-image
@@ -222,9 +194,33 @@ jobs:
           with:
             fetch-depth: 0
 
-        - name: Calculate TAG from package.json
+        - name: Regenerate dynamic-plugins.default.yaml from latest quay.io/rhdh/plugin-catalog-index:1.y container
           run: |
-            TAG=$(jq -r '.version' package.json)
+            unpack () {
+              local IMAGE="$1"
+              DIR="/tmp/${IMAGE//:/_}"; rm -fr "$DIR"; mkdir -p "$DIR"
+              container_id=$(podman create "quay.io/rhdh/${IMAGE}" || echo "not found")
+              if [[ $container_id == "not found" ]]; then
+                echo "::error::Container image quay.io/rhdh/${IMAGE} not found - nothing to do!"
+                exit 0
+              fi
+              podman export $container_id -o /tmp/image.tar && tar xf /tmp/image.tar -C "${DIR}/"; podman rm $container_id; rm -f /tmp/image.tar
+              echo "Unpacked $IMAGE into $DIR"
+            }
+            TAG=$(jq -r '.version' package.json) # 1.9.0
+            unpack "plugin-catalog-index:${TAG}"
+            # replace local dynamic-plugins.default.yaml file with latest from the index container image, and add a deprecation warning
+            cat << EOF > dynamic-plugins.default.yaml
+            # THIS FILE IS DEPRECATED. CONTENTS ARE GENERATED - DO NOT EDIT!
+            #
+            # File dynamic-plugins.default.yaml is now generated from default.package.yaml (this repo)
+            # and default configuration located in the overlays repo under workspaces/*/metadata/*.yaml
+            # See https://github.com/redhat-developer/rhdh-plugin-export-overlays/
+            #
+            # To fetch + unpack the latest index image for quay.io/rhdh/plugin-catalog-index:1.y.z
+            # See https://gist.github.com/nickboldt/86f78312234d84490f1186b389235a29
+            EOF
+            cat "$DIR"/dynamic-plugins.default.yaml >> dynamic-plugins.default.yaml
             echo "TAG=${TAG}" >> $GITHUB_ENV
 
         - name: Generate token
@@ -244,7 +240,7 @@ jobs:
             title: "chore: [${{ github.ref_name }}] update dynamic-plugins.default.yaml from quay.io/rhdh/plugin-catalog-index:${{ env.TAG }}"
             body: |
               This PR contains updates to \`dynamic-plugins.default.yaml\` from quay.io/rhdh/plugin-catalog-index:${{ env.TAG }}.
-              
+
               **Important:** THIS FILE IS DEPRECATED. CONTENTS ARE GENERATED - DO NOT EDIT!
 
               File \`dynamic-plugins.default.yaml\` is now generated from \`default.package.yaml\` (this repo)
