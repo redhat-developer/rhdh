@@ -48,13 +48,16 @@ jobs:
           files: |
             .cursor/**
             .claude/**
+            .cursorignore
+            .rulesyncignore
 
       - name: Report out-of-sync files
         if: steps.verify-changed-files.outputs.files_changed == 'true'
+        env:
+          CHANGED_FILES: ${{ steps.verify-changed-files.outputs.changed_files }}
         run: |
           echo "❌ Generated files are out of sync with .rulesync!"
-          echo "📋 Files with differences:"
-          echo "${{ steps.verify-changed-files.outputs.changed_files }}"
+          echo "📋 Files with differences: $CHANGED_FILES"
           echo "🔧 To fix this, run:"
           echo "  - yarn rulesync:generate if you forgot to generate the files from .rulesync"
           echo "  - yarn rulesync:import:cursor if you edited .cursor files directly"
