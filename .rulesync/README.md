@@ -65,6 +65,19 @@ git commit --amend --no-edit  # Add to the same commit
 | `yarn rulesync:import:cursor` | Import changes from `.cursor` only |
 | `yarn rulesync:import:claude` | Import changes from `.claude` only |
 
+## 🤖 Continuous Integration
+
+A GitHub Actions workflow automatically validates synchronization on all PRs and pushes to main:
+
+- **Workflow**: `.github/workflows/rulesync-check.yaml`
+- **Triggers**: Changes to `.rulesync`, `.cursor`, `.claude`, or config files
+- **What it does**: Runs `yarn rulesync:generate` and checks for differences
+- **If it fails**: Run the appropriate command based on what you edited:
+  - `yarn rulesync:generate` if you forgot to generate files from `.rulesync`
+  - `yarn rulesync:import:cursor` if you edited `.cursor` files directly
+  - `yarn rulesync:import:claude` if you edited `.claude` files directly
+  - Then commit the changes
+
 ## 🎯 Best Practices
 
 1. **Edit `.rulesync` files as the source of truth**

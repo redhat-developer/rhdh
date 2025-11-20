@@ -11,6 +11,37 @@ This document provides guidelines for creating, importing, and managing AI assis
 └── README.md          # Documentation
 ```
 
+## 🤖 Automated Checks
+
+A GitHub Actions workflow (`.github/workflows/rulesync-check.yaml`) automatically validates that generated files in `.cursor` and `.claude` are in sync with `.rulesync` on:
+- All pull requests
+- Pushes to main and release branches
+
+**What it checks:**
+- Runs `yarn rulesync:generate`
+- Compares generated files with committed files
+- Fails if there are differences
+
+**If the check fails, run the appropriate command based on what you edited:**
+
+```bash
+# If you forgot to generate from .rulesync
+yarn rulesync:generate
+git add .cursor .claude
+
+# If you edited .cursor files directly
+yarn rulesync:import:cursor
+git add .rulesync
+
+# If you edited .claude files directly
+yarn rulesync:import:claude
+git add .rulesync
+
+# Then commit and push
+git commit --amend --no-edit
+git push --force-with-lease
+```
+
 ## ✨ Creating New Rules
 
 ### Step 1: Create the Rule File
