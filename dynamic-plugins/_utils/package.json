@@ -13,7 +13,7 @@
   },
   "devDependencies": {
     "@backstage/cli": "^0.34.1",
-    "glob": "11.0.3",
+    "glob": "11.1.0",
     "yaml": "2.8.1"
   }
 }
