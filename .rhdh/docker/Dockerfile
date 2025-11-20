@@ -180,7 +180,16 @@ COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins.default.yaml ./
 # Hackaround: create library symlinks to build: isolated-vm node-gyp better-sqlite cpu-features
 # TODO is this still needed? maintaining it over time will be a chore if the .so files change
 RUN echo "=== lib64 symlinks ==="; \
-  for l in libbrotlidec.so.1 libbrotlienc.so.1 libbrotlicommon.so.1 libc.so.6 ld-linux-x86-64.so.2 libcrypto.so.3 libk5crypto.so.3 libz.so.1 libssl.so.3; do \
+  ARCH=$(uname -m); \
+  if [ "$ARCH" = "x86_64" ]; then \
+    LD_LINUX="ld-linux-x86-64.so.2"; \
+  elif [ "$ARCH" = "aarch64" ]; then \
+    LD_LINUX="ld-linux-aarch64.so.1"; \
+  else \
+    echo "Unsupported architecture: $ARCH"; \
+    exit 1; \
+  fi; \
+  for l in libbrotlidec.so.1 libbrotlienc.so.1 libbrotlicommon.so.1 libc.so.6 $LD_LINUX libcrypto.so.3 libk5crypto.so.3 libz.so.1 libssl.so.3; do \
   ln -s /usr/lib64/$l /usr/lib64/${l%.*} 2>/dev/null || true; \
   ls -l /usr/lib64/${l%.*}; \
   done
