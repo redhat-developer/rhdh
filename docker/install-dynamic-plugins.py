@@ -48,6 +48,8 @@ Configuration:
     - a `plugins` list of objects with the following properties:
         - `package`: the package to install (NPM package name, local path starting with './', or OCI image starting with 'oci://')
             - For OCI packages ONLY, the tag or digest can be replaced by the `{{inherit}}` tag (requires the included configuration to contain a valid tag or digest to inherit from)
+            - If the OCI image contains only a single plugin, the plugin path can be omitted and will be auto-detected from the image metadata (normally specified by !<plugin-path>)
+            - When using `{{inherit}}`, the plugin path can also be omitted to inherit both version and path from a base configuration (only works if exactly one plugin from that image is defined in included files)
         - `integrity`: a string containing the integrity hash of the package (required for remote NPM packages unless SKIP_INTEGRITY_CHECK is set, optional for local packages, not used for OCI packages)
         - `pluginConfig`: an optional plugin-specific configuration fragment
         - `disabled`: an optional boolean to disable the plugin (`false` by default)
@@ -133,6 +135,48 @@ def mergePlugin(plugin: dict, allPlugins: dict, dynamicPluginsFile: str, level: 
     else:
         # Use NPMPackageMerger for all other package types (NPM, git, local, tarball, etc.)
         return NPMPackageMerger(plugin, dynamicPluginsFile, allPlugins).merge_plugin(level)
+
+def get_oci_plugin_paths(image: str) -> list[str]:
+    """
+    Get list of plugin paths from OCI image via manifest annotation.
+    
+    Args:
+        image: OCI image reference (e.g., 'oci://registry/path:tag')
+    
+    Returns:
+        List of plugin paths from the manifest annotation
+    """
+    skopeo_path = shutil.which('skopeo')
+    if not skopeo_path:
+        raise InstallException('skopeo executable not found in PATH')
+    
+    try:
+        image_url = image.replace('oci://', 'docker://')
+        result = subprocess.run(
+            [skopeo_path, 'inspect', '--raw', image_url],
+            check=True,
+            capture_output=True
+        )
+        
+        manifest = json.loads(result.stdout)
+        annotations = manifest.get('annotations', {})
+        annotation_value = annotations.get('io.backstage.dynamic-packages')
+        
+        if not annotation_value:
+            return []
+        
+        decoded = base64.b64decode(annotation_value).decode('utf-8')
+        plugins_metadata = json.loads(decoded)
+        
+        plugin_paths = []
+        for plugin_obj in plugins_metadata:
+            if isinstance(plugin_obj, dict):
+                plugin_paths.extend(plugin_obj.keys())
+        
+        return plugin_paths
+        
+    except Exception as e:
+        raise InstallException(f"Failed to read plugin metadata from {image}: {e}")
 
 class PackageMerger:
     def __init__(self, plugin: dict, dynamicPluginsFile: str, allPlugins: dict):
@@ -270,7 +314,6 @@ class NPMPackageMerger(PackageMerger):
             alias_name = alias_match.group(1)
             package_scope = alias_match.group(2) or ''
             npm_package = alias_match.group(3)
-            print(alias_match.group(4))
             # Recursively parse the npm package part to strip its version
             npm_key = self._strip_npm_package_version(package_scope + npm_package)
             return f"{alias_name}@npm:{npm_key}"
@@ -330,11 +373,11 @@ class OciPackageMerger(PackageMerger):
             r'|'
             r'@((?:sha256|sha512|blake3):[^\s!@:]+)'  # digest only
         r')'
-        r'!([^\s]+)$'
+        r'(?:!([^\s]+))?$'  # plugin path is optional for single plugin packages
     )
     def __init__(self, plugin: dict, dynamicPluginsFile: str, allPlugins: dict):
         super().__init__(plugin, dynamicPluginsFile, allPlugins)
-    def parse_plugin_key(self, package: str) -> tuple[str, str, bool]:
+    def parse_plugin_key(self, package: str) -> tuple[str, str, bool, str]:
         """
         Parses and validates OCI package name format.
         Generates a plugin key and version from the OCI package name.
@@ -346,10 +389,11 @@ class OciPackageMerger(PackageMerger):
             pluginKey: plugin key generated from the OCI package name
             version: detected tag or digest of the plugin
             inheritVersion: boolean indicating if the `{{inherit}}` tag is used
+            resolvedPath: the resolved plugin path (either explicit or auto-detected)
         """  
         match = re.match(self.EXPECTED_OCI_PATTERN, package)
         if not match:
-            raise InstallException(f"oci package \'{package}\' is not in the expected format \'oci://<registry>:<tag>!<path>\' or \'oci://<registry>@sha<algo>:<digest>!<path>\' in {self.dynamicPluginsFile} where <algo> is one of {RECOGNIZED_ALGORITHMS}")
+            raise InstallException(f"oci package \'{package}\' is not in the expected format \'oci://<registry>:<tag>\' or \'oci://<registry>@sha<algo>:<digest>\' (optionally followed by \'!<path>\') in {self.dynamicPluginsFile} where <algo> is one of {RECOGNIZED_ALGORITHMS}")
         
         # Strip away the version (tag or digest) from the package string, resulting in oci://<registry>:!<path>
         # This helps ensure keys used to identify OCI plugins are independent of the version of the plugin
@@ -359,13 +403,43 @@ class OciPackageMerger(PackageMerger):
 
         version = tag_version if tag_version else digest_version
         
-        path = match.group(4) 
+        path = match.group(4)
         
         # {{inherit}} tag indicates that the version should be inherited from the included configuration. Must NOT have a SHA digest included.
         inheritVersion = (tag_version == "{{inherit}}" and digest_version == None)
+        
+        # If {{inherit}} without path, we'll use plugin name with registry as the plugin key
+        if inheritVersion and not path:
+            # Return None for resolvedPath - will be inherited during merge_plugin()
+            return registry, version, inheritVersion, None
+        
+        # If path is None, auto-detect from OCI manifest
+        if not path:
+            full_image = f"{registry}:{version}" if tag_version else f"{registry}@{version}"
+            print(f"\n======= No plugin path specified for {full_image}, auto-detecting from OCI manifest", flush=True)
+            plugin_paths = get_oci_plugin_paths(full_image)
+            
+            if len(plugin_paths) == 0:
+                raise InstallException(
+                    f"No plugins found in OCI image {full_image}."
+                    f"The image might not contain the 'io.backstage.dynamic-packages' annotation."
+                    f"Please ensure this was packaged correctly using the @red-hat-developer-hub/cli plugin package command."
+                )
+            
+            if len(plugin_paths) > 1:
+                plugins_list = '\n  - '.join(plugin_paths)
+                raise InstallException(
+                    f"Multiple plugins found in OCI image {full_image}:\n  - {plugins_list}\n"
+                    f"Please specify which plugin to install using the syntax: {full_image}!<plugin-name>"
+                )
+            
+            path = plugin_paths[0]
+            print(f'\n======= Auto-resolving OCI package {full_image} to use plugin path: {path}', flush=True)
+        
+        # At this point, path always exists (either explicitly provided or auto-detected)
         pluginKey = f"{registry}:!{path}"
         
-        return pluginKey, version, inheritVersion
+        return pluginKey, version, inheritVersion, path
     def add_new_plugin(self, version: str, inheritVersion: bool, pluginKey: str):
         """
         Adds a new plugin to the allPlugins dict.
@@ -400,7 +474,48 @@ class OciPackageMerger(PackageMerger):
         package = self.plugin['package']
         if not isinstance(package, str):
             raise InstallException(f"content of the \'package\' field must be a string in {self.dynamicPluginsFile}")
-        pluginKey, version, inheritVersion = self.parse_plugin_key(package)
+        pluginKey, version, inheritVersion, resolvedPath = self.parse_plugin_key(package)
+        
+        # Special case: {{inherit}} without explicit path - match on image only
+        if inheritVersion and resolvedPath is None:
+            # pluginKey is the registry (oci://registry/image) when path is omitted
+            
+            # Find plugins from same image (ignoring path component)
+            matches = [key for key in self.allPlugins.keys() 
+                      if key.startswith(f"{pluginKey}:!")]
+            
+            if len(matches) == 0:
+                raise InstallException(
+                    f"Cannot use {{{{inherit}}}} for {pluginKey}: no existing plugin configuration found. "
+                    f"Ensure a plugin from this image is defined in an included file with an explicit version."
+                )
+            
+            if len(matches) > 1:
+                full_packages = []
+                for m in matches:
+                    base_plugin = self.allPlugins[m]
+                    base_version = base_plugin.get('version', '')
+                    formatted = f"{m.split(':!')[0]}:{base_version}!{m.split(':!')[-1]}"
+                    full_packages.append(formatted)
+                paths_formatted = '\n  - '.join(full_packages)
+                raise InstallException(
+                    f"Cannot use {{{{inherit}}}} for {pluginKey}: multiple plugins from this image are defined in the included files:\n  - {paths_formatted}\n"
+                    f"Please specify which plugin configuration to inherit from using: {pluginKey}:{{{{inherit}}}}!<plugin_path>"
+                )
+            
+            # inherit both version AND path from the existing plugin configuration
+            pluginKey = matches[0]
+            base_plugin = self.allPlugins[pluginKey]
+            version = base_plugin['version']
+            resolvedPath = pluginKey.split(':!')[-1]
+            
+            registry_part = pluginKey.split(':!')[0]
+            self.plugin['package'] = f"{registry_part}:{version}!{resolvedPath}"
+            print(f'\n======= Inheriting version `{version}` and plugin path `{resolvedPath}` for {pluginKey}', flush=True)
+        
+        # Update package with resolved path if it was auto-detected (package didn't originally contain !path)
+        elif '!' not in package:
+            self.plugin['package'] = f"{package}!{resolvedPath}"
         
         # If package does not already exist, add it
         if pluginKey not in self.allPlugins:
@@ -478,8 +593,9 @@ class OciDownloader:
             tar.extractall(os.path.abspath(self.destination), members=filesToExtract, filter='tar')
 
     def download(self, package: str) -> str:
-        # split by ! to get the path in the image
+        # At this point, package always contains ! since parse_plugin_key resolved it
         (image, plugin_path) = package.split('!')
+        
         tar_file = self.get_plugin_tar(image)
         plugin_directory = os.path.join(self.destination, plugin_path)
         if os.path.exists(plugin_directory):
@@ -489,7 +605,12 @@ class OciDownloader:
         return plugin_path
     
     def digest(self, package: str) -> str:
-        (image, _) = package.split('!')
+        # Extract image reference (before the ! if present)
+        if '!' in package:
+            (image, _) = package.split('!')
+        else:
+            image = package
+        
         image_url = image.replace('oci://', 'docker://')
         output = self.skopeo(['inspect', image_url])
         data = json.loads(output)
