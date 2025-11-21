@@ -11,11 +11,11 @@ on:
       - release-1.**
     paths:
       - 'rpms.in.yaml'
-      - '.rhdh/docker/Dockerfile'
+      - 'docker/Containerfile'
 permissions:
   contents: write
 env:
-  DOCKERFILE_PATH: .rhdh/docker/Dockerfile
+  CONTAINERFILE_PATH: docker/Containerfile
 jobs:
   update-lockfile:
     runs-on: ubuntu-latest
@@ -27,8 +27,8 @@ jobs:
 
       - name: Check if hermetic Dockerfile exists
         run: |
-          if [ ! -f "${{ env.DOCKERFILE_PATH }}" ]; then
-            echo "Error: ${{ env.DOCKERFILE_PATH }} not found!"
+          if [ ! -f "${{ env.CONTAINERFILE_PATH }}" ]; then
+            echo "Error: ${{ env.CONTAINERFILE_PATH }} not found!"
             exit 1
           fi
       - name: Configure Git
@@ -57,9 +57,9 @@ jobs:
           fi
       - name: Run rpm-lockfile-prototype
         run: |
-          echo "Running '${HOME}/.local/bin/rpm-lockfile-prototype -f ${{ env.DOCKERFILE_PATH }} rpms.in.yaml' in $(pwd)"
+          echo "Running '${HOME}/.local/bin/rpm-lockfile-prototype -f ${{ env.CONTAINERFILE_PATH }} rpms.in.yaml' in $(pwd)"
 
-          ${HOME}/.local/bin/rpm-lockfile-prototype -f ${{ env.DOCKERFILE_PATH }} rpms.in.yaml
+          ${HOME}/.local/bin/rpm-lockfile-prototype -f ${{ env.CONTAINERFILE_PATH }} rpms.in.yaml
 
       - name: Check for lockfile changes
         id: check-lockfile-changes
