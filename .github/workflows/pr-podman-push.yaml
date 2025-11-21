@@ -54,12 +54,9 @@ jobs:
           BUILD_ID="${{ steps.get-pr-info.outputs.pr_number }}"
           SHORT_SHA="${{ github.event.workflow_run.head_sha }}"
           SHORT_SHA="${SHORT_SHA:0:8}"
-          # Currently PR builds build for amd64 only
-          PLATFORM_ARCH=x86_64
-
           
           echo "SHORT_SHA=$SHORT_SHA" >> $GITHUB_ENV
-          ARTIFACT_NAME="podman-image-${BUILD_ID}-${SHORT_SHA}-${PLATFORM_ARCH}"
+          ARTIFACT_NAME="podman-image-${BUILD_ID}-${SHORT_SHA}"
           echo "ARTIFACT_NAME=$ARTIFACT_NAME" >> $GITHUB_ENV
           echo "SKIP_ARTIFACT_NAME=pr-${BUILD_ID}-${SHORT_SHA}-isSkipped" >> $GITHUB_ENV
           echo "Using artifact name: $ARTIFACT_NAME"

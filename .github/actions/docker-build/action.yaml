@@ -55,14 +55,6 @@ runs:
         docker-images: false
         swap-storage: false
 
-    - name: Set platform architecture
-      shell: bash
-      run: |
-        # Get the current platform architecture
-        PLATFORM_ARCH=$(uname -m)
-        echo "PLATFORM_ARCH=$PLATFORM_ARCH" >> $GITHUB_ENV
-        echo "Platform Architecture: $PLATFORM_ARCH"
-
     - name: Extract metadata (tags, labels, annotations) for Docker
       id: meta
       uses: docker/metadata-action@v5
@@ -206,7 +198,7 @@ runs:
       if: ${{ inputs.skipArtifactUpload != 'true' }}
       uses: actions/upload-artifact@v4
       with:
-        name: podman-image-${{ github.event.number || github.ref_name }}-${{ env.SHORT_SHA }}-${{ env.PLATFORM_ARCH }}
+        name: podman-image-${{ github.event.number || github.ref_name }}-${{ env.SHORT_SHA }}
         path: ./rhdh-podman-artifacts/
         retention-days: 1
         if-no-files-found: error
