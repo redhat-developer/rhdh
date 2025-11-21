@@ -103,7 +103,12 @@ export default [
       "playwright/no-wait-for-selector": "off", // Allow wait for selector
       "playwright/no-wait-for-timeout": "off", // Allow wait for timeout
       "playwright/prefer-native-locators": "warn",
-      "playwright/prefer-locator": "warn",
+      "playwright/no-raw-locators": [
+        "warn",
+        {
+          allowed: [],
+        },
+      ],
       "playwright/no-skipped-test": [
         "warn",
         {
