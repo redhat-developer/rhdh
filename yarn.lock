@@ -35366,7 +35366,7 @@ __metadata:
     lint-staged: 15.5.2
     node-gyp: 10.3.1
     rulesync: ^3.23.2
-    sherif: 1.8.0
+    sherif: 1.9.0
     turbo: 2.6.1
   languageName: unknown
   linkType: soft
@@ -35947,74 +35947,74 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sherif-darwin-arm64@npm:1.8.0":
-  version: 1.8.0
-  resolution: "sherif-darwin-arm64@npm:1.8.0"
+"sherif-darwin-arm64@npm:1.9.0":
+  version: 1.9.0
+  resolution: "sherif-darwin-arm64@npm:1.9.0"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"sherif-darwin-x64@npm:1.8.0":
-  version: 1.8.0
-  resolution: "sherif-darwin-x64@npm:1.8.0"
+"sherif-darwin-x64@npm:1.9.0":
+  version: 1.9.0
+  resolution: "sherif-darwin-x64@npm:1.9.0"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"sherif-linux-arm64-musl@npm:1.8.0":
-  version: 1.8.0
-  resolution: "sherif-linux-arm64-musl@npm:1.8.0"
+"sherif-linux-arm64-musl@npm:1.9.0":
+  version: 1.9.0
+  resolution: "sherif-linux-arm64-musl@npm:1.9.0"
   conditions: os=linux & cpu=arm64
   languageName: node
   linkType: hard
 
-"sherif-linux-arm64@npm:1.8.0":
-  version: 1.8.0
-  resolution: "sherif-linux-arm64@npm:1.8.0"
+"sherif-linux-arm64@npm:1.9.0":
+  version: 1.9.0
+  resolution: "sherif-linux-arm64@npm:1.9.0"
   conditions: os=linux & cpu=arm64
   languageName: node
   linkType: hard
 
-"sherif-linux-x64-musl@npm:1.8.0":
-  version: 1.8.0
-  resolution: "sherif-linux-x64-musl@npm:1.8.0"
+"sherif-linux-x64-musl@npm:1.9.0":
+  version: 1.9.0
+  resolution: "sherif-linux-x64-musl@npm:1.9.0"
   conditions: os=linux & cpu=x64
   languageName: node
   linkType: hard
 
-"sherif-linux-x64@npm:1.8.0":
-  version: 1.8.0
-  resolution: "sherif-linux-x64@npm:1.8.0"
+"sherif-linux-x64@npm:1.9.0":
+  version: 1.9.0
+  resolution: "sherif-linux-x64@npm:1.9.0"
   conditions: os=linux & cpu=x64
   languageName: node
   linkType: hard
 
-"sherif-windows-arm64@npm:1.8.0":
-  version: 1.8.0
-  resolution: "sherif-windows-arm64@npm:1.8.0"
+"sherif-windows-arm64@npm:1.9.0":
+  version: 1.9.0
+  resolution: "sherif-windows-arm64@npm:1.9.0"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
 
-"sherif-windows-x64@npm:1.8.0":
-  version: 1.8.0
-  resolution: "sherif-windows-x64@npm:1.8.0"
+"sherif-windows-x64@npm:1.9.0":
+  version: 1.9.0
+  resolution: "sherif-windows-x64@npm:1.9.0"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"sherif@npm:1.8.0":
-  version: 1.8.0
-  resolution: "sherif@npm:1.8.0"
+"sherif@npm:1.9.0":
+  version: 1.9.0
+  resolution: "sherif@npm:1.9.0"
   dependencies:
-    sherif-darwin-arm64: 1.8.0
-    sherif-darwin-x64: 1.8.0
-    sherif-linux-arm64: 1.8.0
-    sherif-linux-arm64-musl: 1.8.0
-    sherif-linux-x64: 1.8.0
-    sherif-linux-x64-musl: 1.8.0
-    sherif-windows-arm64: 1.8.0
-    sherif-windows-x64: 1.8.0
+    sherif-darwin-arm64: 1.9.0
+    sherif-darwin-x64: 1.9.0
+    sherif-linux-arm64: 1.9.0
+    sherif-linux-arm64-musl: 1.9.0
+    sherif-linux-x64: 1.9.0
+    sherif-linux-x64-musl: 1.9.0
+    sherif-windows-arm64: 1.9.0
+    sherif-windows-x64: 1.9.0
   dependenciesMeta:
     sherif-darwin-arm64:
       optional: true
@@ -36034,7 +36034,7 @@ __metadata:
       optional: true
   bin:
     sherif: index.js
-  checksum: 99050ca4667565b17bb67ec6906bdeb672a9dd5e2ade0c534701f1317823e0f8ec75215df3c01159248300be109075f5e78e0bb4e32247ed6c498c194bee3488
+  checksum: cf807c28cfbb933bd2418a31306f0f7e970589c1657208e0768d8bb706e2272fa6d8c88249ec6cb078e8c70e55d9b4083ea1ddcb435b5f80df4c182b6c0f7aff
   languageName: node
   linkType: hard
 
