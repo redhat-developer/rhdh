@@ -55,6 +55,14 @@ runs:
         docker-images: false
         swap-storage: false
 
+    - name: Set platform architecture
+      shell: bash
+      run: |
+        # Get the current platform architecture
+        PLATFORM_ARCH=$(uname -m)
+        echo "PLATFORM_ARCH=$PLATFORM_ARCH" >> $GITHUB_ENV
+        echo "Platform Architecture: $PLATFORM_ARCH"
+
     - name: Extract metadata (tags, labels, annotations) for Docker
       id: meta
       uses: docker/metadata-action@v5

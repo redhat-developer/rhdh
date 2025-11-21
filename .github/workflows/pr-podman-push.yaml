@@ -55,7 +55,7 @@ jobs:
           SHORT_SHA="${{ github.event.workflow_run.head_sha }}"
           SHORT_SHA="${SHORT_SHA:0:8}"
           # Currently PR builds build for amd64 only
-          PLATFORM_ARCH="amd64"
+          PLATFORM_ARCH=x86_64
 
           
           echo "SHORT_SHA=$SHORT_SHA" >> $GITHUB_ENV
