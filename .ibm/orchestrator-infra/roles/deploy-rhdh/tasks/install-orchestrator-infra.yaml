@@ -1,0 +1,432 @@
+---
+- name: Create openshift-serverless namespace
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: openshift-serverless
+
+- name: Create openshift-serverless-logic namespace
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: openshift-serverless-logic
+
+- name: Create OperatorGroup for Logic Operator
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: operators.coreos.com/v1
+      kind: OperatorGroup
+      metadata:
+        name: global-operators
+        namespace: openshift-serverless-logic
+      spec: {}
+  # Note: Empty spec enables AllNamespaces mode, which is required for the Logic Operator
+
+- name: Install Red Hat OpenShift Serverless Operator
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: operators.coreos.com/v1alpha1
+      kind: Subscription
+      metadata:
+        name: serverless-operator
+        namespace: openshift-serverless
+      spec:
+        channel: stable
+        name: serverless-operator
+        source: redhat-operators
+        sourceNamespace: openshift-marketplace
+        installPlanApproval: Automatic
+
+- name: Wait for OpenShift Serverless Operator
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    set -e
+    echo "Waiting for Serverless Operator CSV..."
+    for i in {1..30}; do
+      CSV=$(oc get csv -n openshift-serverless -o name 2>/dev/null | grep serverless-operator || true)
+      if [ ! -z "$CSV" ]; then
+        echo "Found CSV: $CSV"
+        oc wait -n openshift-serverless $CSV --for=jsonpath='{.status.phase}'=Succeeded --timeout=300s
+        break
+      fi
+      echo "Waiting for CSV to appear... ($i/30)"
+      sleep 10
+    done
+  register: serverless_csv_wait
+  retries: 3
+  delay: 20
+  until: serverless_csv_wait.rc == 0
+
+- name: Create Knative Serving namespace
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: knative-serving
+
+- name: Create Knative Eventing namespace
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: knative-eventing
+
+- name: Create KnativeServing instance
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: operator.knative.dev/v1beta1
+      kind: KnativeServing
+      metadata:
+        name: knative-serving
+        namespace: knative-serving
+
+- name: Create KnativeEventing instance
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: operator.knative.dev/v1beta1
+      kind: KnativeEventing
+      metadata:
+        name: knative-eventing
+        namespace: knative-eventing
+
+- name: Wait for Knative components to be ready
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    set -e
+    echo "Waiting for Knative Serving..."
+    oc wait -n knative-serving knativeserving/knative-serving --for=condition=Ready --timeout=5m || true
+    echo "Waiting for Knative Eventing..."
+    oc wait -n knative-eventing knativeeventing/knative-eventing --for=condition=Ready --timeout=5m || true
+  register: knative_wait
+  retries: 3
+  delay: 20
+  until: knative_wait.rc == 0
+
+- name: Install Red Hat OpenShift Serverless Logic Operator
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: operators.coreos.com/v1alpha1
+      kind: Subscription
+      metadata:
+        name: logic-operator-rhel8
+        namespace: openshift-serverless-logic
+      spec:
+        channel: alpha
+        name: logic-operator-rhel8
+        source: redhat-operators
+        sourceNamespace: openshift-marketplace
+        installPlanApproval: Automatic
+
+- name: Wait for Serverless Logic Operator CSV
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    set -e
+    echo "Waiting for Logic Operator CSV..."
+    for i in {1..60}; do
+      CSV=$(oc get csv -n openshift-serverless-logic -o name 2>/dev/null | grep logic-operator-rhel8 || true)
+      if [ ! -z "$CSV" ]; then
+        echo "Found CSV: $CSV"
+        PHASE=$(oc get $CSV -n openshift-serverless-logic -o jsonpath='{.status.phase}')
+        echo "CSV Phase: $PHASE"
+        if [ "$PHASE" = "Succeeded" ]; then
+          echo "Logic Operator CSV is Succeeded"
+          break
+        fi
+      fi
+      echo "Waiting for CSV to be ready... ($i/60)"
+      sleep 10
+    done
+    
+    # Wait for the controller pod to be running
+    echo "Waiting for Logic Operator controller pod..."
+    for i in {1..30}; do
+      POD=$(oc get pods -n openshift-serverless-logic -l app.kubernetes.io/name=sonataflow-operator -o name 2>/dev/null | head -n 1 || true)
+      if [ ! -z "$POD" ]; then
+        echo "Found controller pod: $POD"
+        if oc wait -n openshift-serverless-logic $POD --for=condition=Ready --timeout=300s 2>/dev/null; then
+          echo "Logic Operator controller is ready!"
+          exit 0
+        fi
+      fi
+      echo "Waiting for controller pod to be ready... ($i/30)"
+      sleep 10
+    done
+    echo "ERROR: Logic Operator controller not ready"
+    exit 1
+  register: logic_csv_wait
+  retries: 3
+  delay: 20
+  until: logic_csv_wait.rc == 0
+
+- name: Wait for SonataFlow CRDs to be available
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    set -e
+    echo "Waiting for SonataFlow CRDs..."
+    for i in {1..60}; do
+      if oc get crd sonataflowplatforms.sonataflow.org > /dev/null 2>&1; then
+        echo "SonataFlow CRDs are available!"
+        exit 0
+      fi
+      echo "Waiting for CRDs to be created... ($i/60)"
+      sleep 5
+    done
+    echo "ERROR: SonataFlow CRDs not created after 5 minutes"
+    exit 1
+  register: crd_wait
+  retries: 3
+  delay: 10
+  until: crd_wait.rc == 0
+
+- name: Create PostgreSQL Secret
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: postgresql-credentials
+        namespace: "{{ rhdh_ns }}"
+      type: Opaque
+      stringData:
+        POSTGRESQL_PASSWORD: "postgres"
+        POSTGRESQL_USER: "sonataflow"
+        PGPASSWORD: "postgres"
+
+- name: Deploy PostgreSQL database
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: postgresql
+        namespace: "{{ rhdh_ns }}"
+        labels:
+          app.kubernetes.io/name: postgres
+      spec:
+        replicas: 1
+        selector:
+          matchLabels:
+            app.kubernetes.io/name: postgres
+        template:
+          metadata:
+            labels:
+              app.kubernetes.io/name: postgres
+          spec:
+            containers:
+              - name: postgresql
+                image: registry.redhat.io/rhel8/postgresql-15:latest
+                ports:
+                  - containerPort: 5432
+                env:
+                  - name: POSTGRESQL_DATABASE
+                    value: "sonataflow"
+                  - name: POSTGRESQL_USER
+                    value: "sonataflow"
+                  - name: POSTGRESQL_PASSWORD
+                    value: "postgres"
+                volumeMounts:
+                  - name: postgresql-data
+                    mountPath: /var/lib/postgresql/data
+            volumes:
+              - name: postgresql-data
+                emptyDir: {}
+
+- name: Create PostgreSQL Service
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: postgresql
+        namespace: "{{ rhdh_ns }}"
+        labels:
+          app.kubernetes.io/name: postgres
+      spec:
+        ports:
+          - port: 5432
+            targetPort: 5432
+        selector:
+          app.kubernetes.io/name: postgres
+
+- name: Wait for PostgreSQL to be ready
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Pod
+    namespace: "{{ rhdh_ns }}"
+    label_selectors:
+      - app.kubernetes.io/name=postgres
+    wait: true
+    wait_condition:
+      type: Ready
+      status: "True"
+    wait_sleep: 10
+    wait_timeout: 300
+
+- name: Create SonataFlow Platform
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: sonataflow.org/v1alpha08
+      kind: SonataFlowPlatform
+      metadata:
+        name: sonataflow-platform
+        namespace: "{{ rhdh_ns }}"
+      spec:
+        build:
+          config:
+            baseImage: registry.redhat.io/ubi8/openjdk-17:latest
+        services:
+          dataIndex:
+            enabled: true
+            persistence:
+              dbMigrationStrategy: service
+              postgresql:
+                serviceRef:
+                  name: postgresql
+                  port: 5432
+                  databaseName: sonataflow
+                secretRef:
+                  name: postgresql-credentials
+          jobService:
+            enabled: true
+            persistence:
+              dbMigrationStrategy: service
+              postgresql:
+                serviceRef:
+                  name: postgresql
+                  port: 5432
+                  databaseName: sonataflow
+                secretRef:
+                  name: postgresql-credentials
+
+- name: Wait for SonataFlow Platform to be ready
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    set -e
+    echo "Waiting for SonataFlow Platform..."
+    # Wait for the platform to have the Succeed condition
+    for i in {1..60}; do
+      SUCCEED=$(oc get sonataflowplatform/sonataflow-platform -n {{ rhdh_ns }} -o jsonpath='{.status.conditions[?(@.type=="Succeed")].status}' 2>/dev/null || echo "")
+      if [ "$SUCCEED" = "True" ]; then
+        echo "SonataFlow Platform is ready!"
+        exit 0
+      fi
+      echo "Waiting for platform to be ready... ($i/60) - Succeed: $SUCCEED"
+      sleep 10
+    done
+    echo "WARNING: SonataFlow Platform not ready after 10 minutes, continuing anyway..."
+    exit 0
+  register: sfp_wait
+  retries: 3
+  delay: 10
+  until: sfp_wait.rc == 0
+
+- name: Verify SonataFlow Platform status
+  kubernetes.core.k8s_info:
+    api_version: sonataflow.org/v1alpha08
+    kind: SonataFlowPlatform
+    name: sonataflow-platform
+    namespace: "{{ rhdh_ns }}"
+  register: sfp_status
+
+- name: Display SonataFlow Platform status
+  ansible.builtin.debug:
+    msg: "SonataFlow Platform status: {{ sfp_status.resources[0].status.conditions | default([]) }}"
+  when: sfp_status.resources is defined and sfp_status.resources | length > 0
+
+- name: Wait for Data Index deployment
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    set -e
+    echo "Waiting for Data Index Service deployment to be created..."
+    for i in {1..30}; do
+      if oc get deploy/sonataflow-platform-data-index-service -n {{ rhdh_ns }} > /dev/null 2>&1; then
+        echo "Data Index deployment found, waiting for it to be available..."
+        oc wait -n {{ rhdh_ns }} deploy/sonataflow-platform-data-index-service --for=condition=Available --timeout=300s
+        exit 0
+      fi
+      echo "Waiting for deployment to be created... ($i/30)"
+      sleep 10
+    done
+    echo "WARNING: Data Index deployment not found after 5 minutes"
+    exit 1
+  register: data_index_wait
+  retries: 3
+  delay: 10
+  until: data_index_wait.rc == 0
+
+- name: Wait for Jobs Service deployment
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    set -e
+    echo "Waiting for Jobs Service deployment to be created..."
+    for i in {1..30}; do
+      if oc get deploy/sonataflow-platform-jobs-service -n {{ rhdh_ns }} > /dev/null 2>&1; then
+        echo "Jobs Service deployment found, waiting for it to be available..."
+        oc wait -n {{ rhdh_ns }} deploy/sonataflow-platform-jobs-service --for=condition=Available --timeout=300s
+        exit 0
+      fi
+      echo "Waiting for deployment to be created... ($i/30)"
+      sleep 10
+    done
+    echo "WARNING: Jobs Service deployment not found after 5 minutes"
+    exit 1
+  register: jobs_service_wait
+  retries: 3
+  delay: 10
+  until: jobs_service_wait.rc == 0
+
+- name: Wait for all pods to be ready
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  ansible.builtin.shell: |
+    set -e
+    echo "Waiting for all pods to be ready in {{ rhdh_ns }}..."
+    oc wait --for=condition=Ready pod --all -n {{ rhdh_ns }} --timeout=300s
+  register: pods_wait
+  retries: 3
+  delay: 10
+  until: pods_wait.rc == 0
+  ignore_errors: yes
+
+- name: Verify all deployments are available
+  kubernetes.core.k8s_info:
+    api_version: apps/v1
+    kind: Deployment
+    namespace: "{{ rhdh_ns }}"
+  register: deployments_status
+
+- name: Display deployment status
+  ansible.builtin.debug:
+    msg: "Deployment {{ item.metadata.name }}: {{ item.status.conditions | selectattr('type', 'equalto', 'Available') | map(attribute='status') | first | default('Unknown') }}"
+  with_items: "{{ deployments_status.resources }}"
+  when: deployments_status.resources is defined
+
+- name: Display final status
+  ansible.builtin.debug:
+    msg: "Orchestrator infrastructure components are ready"
