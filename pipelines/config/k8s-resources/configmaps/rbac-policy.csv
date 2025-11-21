@@ -1,0 +1,41 @@
+p, role:default/guests, catalog.entity.create, create, allow
+g, user:default/guest, role:default/guests
+p, role:default/team_a, catalog-entity, read, allow
+g, user:default/user_team_a, role:default/team_a
+g, user:xyz/user, role:xyz/team_a
+g, group:default/rhdh-qe-2-team, role:default/test2-role
+
+p, role:xyz/team_a, catalog-entity, read, allow
+p, role:xyz/team_a, catalog.entity.create, create, allow
+p, role:xyz/team_a, catalog.location.create, create, allow
+p, role:xyz/team_a, catalog.location.read, read, allow
+p, role:default/team_a, scorecard.metric.read, read, allow
+
+g, user:default/rhdh-qe, role:default/team_a
+g, user:default/rhdh-qe, role:default/qe_rbac_admin
+p, role:default/qe_rbac_admin, kubernetes.proxy, use, allow
+p, role:default/qe_rbac_admin, kubernetes.resources.read, read, allow
+p, role:default/qe_rbac_admin, kubernetes.clusters.read, read, allow
+p, role:default/qe_rbac_admin, catalog.entity.create, create, allow
+p, role:default/qe_rbac_admin, catalog.location.create, create, allow
+p, role:default/qe_rbac_admin, catalog.location.read, read, allow
+
+p, role:default/bulk_import, bulk.import, use, allow
+p, role:default/bulk_import, catalog.location.create, create, allow
+p, role:default/bulk_import, catalog.entity.create, create, allow
+g, user:default/rhdh-qe-2, role:default/bulk_import
+
+g, group:default/rhdh-qe-parent-team, role:default/transitive-owner
+g, group:default/rhdh-qe-child-team, role:default/transitive-owner
+
+g, user:default/rhdh-qe-5, role:default/kubernetes_reader
+p, role:default/kubernetes_reader, kubernetes.resources.read, read, allow
+p, role:default/kubernetes_reader, kubernetes.clusters.read, read, allow
+
+g, user:default/rhdh-qe-5, role:default/catalog_reader
+g, user:default/rhdh-qe-6, role:default/catalog_reader
+p, role:default/catalog_reader, catalog.entity.read, read, allow
+
+g, user:default/rhdh-qe, role:default/extension
+p, role:default/extension, extension-plugin, read, allow
+p, role:default/extension, extension-plugin, create, allow
