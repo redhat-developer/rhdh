@@ -125,21 +125,6 @@ global:
                 plural: "routes"
             serviceLocatorMethod:
               type: multiTenant
-      # Enable OCM plugins.
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-ocm-backend-dynamic
-        disabled: false
-        pluginConfig:
-          catalog:
-            providers:
-              ocm:
-                default:
-                  name: testCluster # Can be any arbitrary name supported by kubernetes
-                  url: ${OCM_CLUSTER_URL}
-                  serviceAccountToken: ${OCM_CLUSTER_TOKEN}
-                  skipTLSVerify: true
-                  owner: janus-authors
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-ocm
-        disabled: false
       # Enable bulk import plugins.
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import-backend-dynamic
         disabled: false
@@ -213,8 +198,8 @@ global:
         disabled: false
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-floating-action-button
         disabled: false
-      # Enable orchestrator plugins
-      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator:pr_1581__5.1.0!red-hat-developer-hub-backstage-plugin-orchestrator"
+      # Enable orchestrator plugins - Official release (Backstage 1.42.5)
+      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator:bs_1.42.5__5.1.0!red-hat-developer-hub-backstage-plugin-orchestrator"
         disabled: false
         pluginConfig:
           dynamicPlugins:
@@ -244,21 +229,21 @@ global:
                         if:
                           anyOf:
                             - IsOrchestratorCatalogTabAvailable
-      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator-backend:pr_1581__8.2.0!red-hat-developer-hub-backstage-plugin-orchestrator-backend"
+      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator-backend:bs_1.42.5__8.2.0!red-hat-developer-hub-backstage-plugin-orchestrator-backend"
         disabled: false
         pluginConfig:
           orchestrator:
             dataIndexService:
               url: http://sonataflow-platform-data-index-service
 
-      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator:pr_1581__1.1.0!red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator"
+      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator:bs_1.42.5__1.1.0!red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator"
         disabled: false
         pluginConfig:
           orchestrator:
             dataIndexService:
               url: http://sonataflow-platform-data-index-service
 
-      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets:pr_1581__1.1.0!red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets"
+      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets:bs_1.42.5__1.1.0!red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets"
         disabled: false
         pluginConfig:
           dynamicPlugins:

@@ -15,7 +15,15 @@ handle_ocp_nightly() {
 
   cluster_setup_ocp_helm
   clear_database
-  initiate_deployments
+
+  # Use OSD-GCP specific deployment for osd-gcp jobs (orchestrator disabled)
+  if [[ "${JOB_NAME}" =~ osd-gcp ]]; then
+    echo "Detected OSD-GCP job, using OSD-GCP specific deployment (orchestrator disabled)"
+    initiate_deployments_osd_gcp
+  else
+    initiate_deployments
+  fi
+
   deploy_test_backstage_customization_provider "${NAME_SPACE}"
 
   run_standard_deployment_tests

@@ -35,16 +35,6 @@ export const PLUGINS = [
     role: "backend-plugin-module",
   },
   {
-    name: "backstage-community-plugin-ocm",
-    role: "frontend-plugin",
-    platform: "web",
-  },
-  {
-    name: "backstage-community-plugin-ocm-backend-dynamic",
-    platform: "node",
-    role: "backend-plugin",
-  },
-  {
     name: "@janus-idp/backstage-plugin-quay",
     role: "frontend-plugin",
     platform: "web",

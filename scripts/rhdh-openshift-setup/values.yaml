@@ -158,8 +158,6 @@ global:
                 dynamicRoutes:
                   - path: /admin/rbac
                     importName: RbacPage
-      # - package: ./dynamic-plugins/dist/backstage-community-plugin-ocm-backend-dynamic
-      #   disabled: false
       # - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-keycloak-dynamic
       #   disabled: false
       #   pluginConfig:
@@ -179,8 +177,6 @@ global:
       #                 seconds: 15
       #               timeout:
       #                 minutes: 1
-      # - package: ./dynamic-plugins/dist/backstage-community-plugin-ocm
-      #   disabled: false
       #   pluginConfig:
       #     dynamicPlugins:
       #       frontend:
