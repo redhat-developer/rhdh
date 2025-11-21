@@ -1,0 +1,18 @@
+{
+  "targets": [
+    "cursor",
+    "claudecode"
+  ],
+  "features": [
+    "rules",
+    "ignore",
+    "commands"
+  ],
+  "baseDirs": [
+    "."
+  ],
+  "delete": true,
+  "verbose": false,
+  "global": false,
+  "simulatedCommands": false
+}

@@ -65,8 +65,11 @@ dynamic-plugins-root/*
 # Private Keys
 *.pem
 
-# Local Cursor rules context
+# Local AI Assistant rules
 .cursor/rules/*.local.mdc
+.rulesync/**/*.local.md
+.claude/**/*.local.md
+.claude/settings.local.json
 
 # CI/Pipeline local overrides
 .ibm/pipelines/shared_dir/*

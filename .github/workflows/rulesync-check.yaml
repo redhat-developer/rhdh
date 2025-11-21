@@ -1,0 +1,66 @@
+name: AI Assistant Rulesync
+
+on:
+  pull_request:
+    paths:
+      - '.rulesync/**'
+      - '.cursor/**'
+      - '.cursorignore'
+      - '.claude/**'
+      - 'rulesync.jsonc'
+      - '.rulesyncignore'
+  push:
+    branches:
+      - 'main'
+      - 'release-*'
+    paths:
+      - '.rulesync/**'
+      - '.cursor/**'
+      - '.cursorignore'
+      - '.claude/**'
+      - 'rulesync.jsonc'
+      - '.rulesyncignore'
+
+jobs:
+  rulesync:
+    name: Generate and check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Run rulesync generate
+        run: yarn rulesync:generate
+
+      - name: Verify generated files are in sync
+        uses: tj-actions/verify-changed-files@v20
+        id: verify-changed-files
+        with:
+          files: |
+            .cursor/**
+            .claude/**
+            .cursorignore
+            .rulesyncignore
+
+      - name: Report out-of-sync files
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        env:
+          CHANGED_FILES: ${{ steps.verify-changed-files.outputs.changed_files }}
+        run: |
+          echo "❌ Generated files are out of sync with .rulesync!"
+          echo "📋 Files with differences: $CHANGED_FILES"
+          echo "🔧 To fix this, run:"
+          echo "  - yarn rulesync:generate if you forgot to generate the files from .rulesync"
+          echo "  - yarn rulesync:import:cursor if you edited .cursor files directly"
+          echo "  - yarn rulesync:import:claude if you edited .claude files directly"
+          echo "  and then commit the changes"
+          exit 1
