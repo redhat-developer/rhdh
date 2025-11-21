@@ -77,3 +77,5 @@ dynamic-plugins-root/*
 **/__pycache__/
 **/.pytest_cache/
 **/.venv/
+
+hermeto-cache/

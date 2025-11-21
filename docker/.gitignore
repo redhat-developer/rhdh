@@ -1,0 +1,8 @@
+bin/
+lib/
+lib64/
+pyvenv.cfg
+# Python Caches
+**/__pycache__/
+**/.pytest_cache/
+**/.venv/

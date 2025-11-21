@@ -32,10 +32,10 @@ inputs:
     description: Path to the component directory for hermetic builds
     required: false
     default: '.'
-  dockerfilePath:
-    description: Path to the Dockerfile to use
+  containerfilePath:
+    description: Path to the Containerfile to use
     required: false
-    default: '.rhdh/docker/Dockerfile'
+    default: 'docker/Containerfile'
   skipArtifactUpload:
     description: Skip uploading the built image as a GitHub artifact
     required: false
@@ -140,11 +140,11 @@ runs:
         set -x
         
         echo "::group::Transforming Containerfile for hermetic build"
-        CONTAINERFILE_PATH="${{ inputs.dockerfilePath }}"
+        CONTAINERFILE_PATH="${{ inputs.containerfilePath }}"
         TRANSFORMED_CONTAINERFILE="${CONTAINERFILE_PATH}.hermeto"
         
         # Copy original dockerfile for hermetic build modifications
-        cp "$CONTAINERFILE_PATH" "$TRANSFORMED_CONTAINERFILE"        
+        cp "$CONTAINERFILE_PATH" "$TRANSFORMED_CONTAINERFILE"
         
         # Transform the dockerfile to simulate Konflux build
         # Configure dnf to use the cachi2 repo (supports both x86_64 and aarch64)
@@ -160,7 +160,7 @@ runs:
       id: build
       uses: redhat-actions/buildah-build@7a95fa7ee0f02d552a32753e7414641a04307056 # v2.13
       with:
-        containerfiles: ${{ inputs.dockerfilePath }}.hermeto
+        containerfiles: ${{ inputs.containerfilePath }}.hermeto
         context: .
         platform: ${{ inputs.platform }}
         tags: ${{ steps.meta.outputs.tags }}
