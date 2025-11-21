@@ -127,11 +127,16 @@ runs:
       run: |
         set -ex
         echo "::group::Fixing cache ownership"
+
+        echo "=== Before ownership fix ==="
         ls -l ${{ env.LOCAL_CACHE_DIR_REALPATH }}
 
+        echo "=== Attempting to fix ownership to runner user ==="
         sudo chown -R runner ${{ env.LOCAL_CACHE_DIR_REALPATH }}
-
+        
+        echo "=== After ownership fix ==="
         ls -l ${{ env.LOCAL_CACHE_DIR_REALPATH }}
+
         echo "::endgroup::"
         
     - name: Transform Containerfile for hermetic build
