@@ -14,18 +14,30 @@ inputs:
   gh_token:
     description: "GitHub token with permissions to read organization and team membership"
     required: true
-
+  whitelisted_authors:
+    description: "A JSON list of whitelisted authors (e.g. '[\"openshift-cherrypick-robot\"]')"
+    required: false
+    default: "[]"
 outputs:
   is_active_member:
     description: "Whether the specified author is an active member of the specified team"
-    value: ${{ steps.check.outputs.is_active_member }}
+    value: ${{ steps.whitelist-check.outputs.whitelisted || steps.team-check.outputs.is_active_member }}
 
 runs:
   using: "composite"
   steps:
 
+    - name: Check if author is whitelisted
+      id: whitelist-check
+      if: contains(fromJSON(inputs.whitelisted_authors), inputs.author)
+      shell: bash
+      run: |
+        echo "Author ${{ inputs.author }} is whitelisted"
+        echo "whitelisted=true" >> $GITHUB_OUTPUT
+
     - name: Check if author is an active team member
-      id: check
+      id: team-check
+      if: steps.whitelist-check.outputs.whitelisted != 'true'
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.gh_token }}
