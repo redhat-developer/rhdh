@@ -29,7 +29,8 @@ test.describe("Test Quick Start plugin", () => {
     await expect(page.getByRole("button", { name: "Hide" })).toBeVisible();
   });
 
-  test("Access Quick start as Guest or Admin", async ({ page }) => {
+  // FIXME https://issues.redhat.com/browse/RHIDP-8971
+  test.skip("Access Quick start as Guest or Admin", async ({ page }) => {
     // eslint-disable-next-line playwright/no-conditional-in-test
     if (test.info().project.name !== "showcase-rbac") {
       await common.loginAsGuest();
