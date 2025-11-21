@@ -28,7 +28,10 @@
     "new": "backstage-cli new --scope internal",
     "repo:fix": "backstage-cli repo fix --publish",
     "versions:metadata": "node ./scripts/update-metadata.mjs",
-    "versions:bump": "node ./scripts/update-backstage.mjs"
+    "versions:bump": "node ./scripts/update-backstage.mjs",
+    "rulesync:generate": "rulesync generate",
+    "rulesync:import:cursor": "rulesync import --targets cursor",
+    "rulesync:import:claude": "rulesync import --targets claudecode"
   },
   "workspaces": {
     "packages": [
@@ -46,6 +49,7 @@
     "jsdom": "26.1.0",
     "lint-staged": "15.5.2",
     "node-gyp": "10.3.1",
+    "rulesync": "^3.23.2",
     "sherif": "1.8.0",
     "turbo": "2.6.1"
   },

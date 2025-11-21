@@ -1,9 +1,22 @@
 ---
-alwaysApply: false
-description: AI-guided workflow for adding dynamic plugin metadata to the RHDH Extensions Catalog
-globs: catalog-entities/marketplace/**,docs/dynamic-plugins/**
+targets:
+  - '*'
+root: false
+description: >-
+  AI-guided workflow for adding dynamic plugin metadata to the RHDH Extensions
+  Catalog
+globs:
+  - catalog-entities/marketplace/**
+  - docs/dynamic-plugins/**
+cursor:
+  alwaysApply: false
+  description: >-
+    AI-guided workflow for adding dynamic plugin metadata to the RHDH Extensions
+    Catalog
+  globs:
+    - catalog-entities/marketplace/**
+    - docs/dynamic-plugins/**
 ---
-
 # RHDH Extensions Catalog - Plugin Metadata Workflow
 
 This cursor rule provides an automated workflow for adding dynamic plugin metadata to the RHDH Extensions Catalog.
