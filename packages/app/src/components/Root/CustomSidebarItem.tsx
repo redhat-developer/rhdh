@@ -10,6 +10,9 @@ import { useSidebarSelectedBackgroundColor } from '../../hooks/useThemedConfig';
 const StyledSidebarItemWrapper = styled('div')<{
   selectedBackgroundColor: string;
 }>(({ selectedBackgroundColor }) => ({
+  // Add spacing between sidebar items to prevent hover overlap
+  marginBottom: '4px',
+
   // Target the selected/active sidebar item
   '& a[aria-current="page"]': {
     backgroundColor: `${selectedBackgroundColor} !important`,
@@ -26,6 +29,10 @@ const GlobalSidebarStyles: React.FC<{ selectedBackgroundColor: string }> = ({
       /* Target built-in Backstage sidebar items like Settings and Search */
       [class*="BackstageSidebarItem-selected"] {
         background-color: ${selectedBackgroundColor} !important;
+      }
+      /* Add spacing between all sidebar items to prevent hover overlap */
+      [class*="BackstageSidebarItem-root"] {
+        margin-bottom: 4px;
       }
     `;
     document.head.appendChild(style);
