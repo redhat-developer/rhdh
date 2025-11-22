@@ -53,8 +53,7 @@ runs:
         while IFS= read -r file; do
           if [[ -n "$file" ]]; then
             # If file is NOT in one of the non-essential directories, mark as relevant
-            # contents of .rhdh/docker are only for downstream and we do zero testing of those python or docker files in upstream e2e
-            if ! [[ "$file" =~ ^(e2e|e2e-tests|doc|docs|\.ibm|\.rhdh/docker)/ ]]; then
+            if ! [[ "$file" =~ ^(e2e|e2e-tests|doc|docs|\.ibm)/ ]]; then
               echo "Relevant change detected: $file"
               RELEVANT_CHANGES=true
               break

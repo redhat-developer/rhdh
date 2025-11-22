@@ -8,19 +8,41 @@ If you want an image that runs on Mac M1 (arm64/aarch64) or another architecture
 
 ## Building locally
 
-Check out this repo, choose the branch or tag you want to use, then build an image:
+This folder contains the Containerfile used in Konflux downstream for RHDH builds.
 
+It requires hermeto to cache dependencies (rpm, pip, yarn) before the build can proceed, so that the build is reproduceable/offline/hermetically sealed.
+
+Note that some things in this repo are changed when they're synced to downstream. See link:https://gitlab.cee.redhat.com/rhidp/rhdh/-/blob/rhdh-1-rhel-9/build/ci/sync-midstream.sh[build/ci/sync-midstream.sh]. Note: RH VPN required.
+
+## How to build this Containerfile
+
+Depending on what you're trying to accomplish you have some options:
+
+1. Use the link:../scripts/local-hermeto-build.sh[local-hermeto-build.sh] script to build the image locally. 
++
+
+This script will do the following:
+
+* creates a hermeto cache folder in the `./hermeto-cache` folder
+* generates a transformed Containerfile that uses the hermeto cache (injects the cachi2 env variables to every RUN command, and configures dnf, pip and yarn to use the cachi2 repo. See link:https://github.com/hermetoproject/hermeto/blob/main/docs/usage.md#generate-environment-variables[Generating Environment Variables] for more information.)
+* builds the image using the transformed Containerfile
+
++
+```bash
+# create the hermeto cache
+./scripts/local-hermeto-build.sh cache .
+
+# build the image using the hermeto cache
+./scripts/local-hermeto-build.sh image . image:tag
 ```
-podman build -f docker/Dockerfile . -t redhat-developer/rhdh:local
-```
+2. Create a pull request in this repository to trigger a PR build in Github which will publish the image to `quay.io/rhdh-community/rhdh`. Note: this will only build AMD64 images.
+
+3. Trigger the link:../.github/workflows/next-build-image.yaml[Build Next and Tag Image] action in Github manually to perform a multi-arch build and publish the images to `quay.io/rhdh-community/rhdh`.
+
+4. Use Konflux to build a merge request against the midstream repo. See link:https://gitlab.cee.redhat.com/rhidp/rhdh/-/blob/rhdh-1-rhel-9/docs/RHDH-Konflux-user-guide.adoc#user-content-building-locally[Konflux user guide - building locally]. Note: RH VPN required.
+
 
 ## Downstream builds
-
-Downstream dockerfile and configuration can be found here:
-
-* link:../.rhdh/docker/[.rhdh/docker]
-
-Downstream sources use the above folder to transform sources in this repo to something that can be built within the Red Hat build pipeline. 
 
 *_Red Hat VPN access required._*
 
