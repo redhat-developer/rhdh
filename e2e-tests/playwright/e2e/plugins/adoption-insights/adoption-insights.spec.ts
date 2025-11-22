@@ -2,10 +2,14 @@ import { test, expect } from "@playwright/test";
 import { Common } from "../../../utils/common";
 import { UIhelper } from "../../../utils/ui-helper";
 import { TestHelper } from "../../../support/pages/adoption-insights";
+import { skipIfJobName } from "../../../utils/helper";
+import { JOB_NAME_PATTERNS } from "../../../utils/constants";
 
 /* eslint-disable playwright/no-conditional-in-test */
 
 test.describe.serial("Test Adoption Insights", () => {
+  test.skip(() => skipIfJobName(JOB_NAME_PATTERNS.GKE));
+
   test.beforeAll(async () => {
     test.info().annotations.push({
       type: "component",
