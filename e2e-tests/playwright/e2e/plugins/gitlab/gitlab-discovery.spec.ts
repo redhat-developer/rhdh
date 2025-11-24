@@ -23,16 +23,13 @@ test.describe("gitlab discovery UI tests", () => {
     await uiHelper.openSidebar("Catalog");
   });
 
-  test(
-    "GitLab integration for discovering catalog entities from GitLab",
-    async () => {
-      await uiHelper.verifyText("scaffoldedForm-test");
-      await uiHelper.clickLink("scaffoldedForm-test");
-      await uiHelper.verifyHeading("scaffoldedForm-test");
-      await uiHelper.verifyText("My Description");
-      await uiHelper.verifyText("experimental");
-      await uiHelper.verifyText("website");
-      await uiHelper.verifyLink("View Source");
-    },
-  );
+  test("GitLab integration for discovering catalog entities from GitLab", async () => {
+    await uiHelper.verifyText("scaffoldedForm-test");
+    await uiHelper.clickLink("scaffoldedForm-test");
+    await uiHelper.verifyHeading("scaffoldedForm-test");
+    await uiHelper.verifyText("My Description");
+    await uiHelper.verifyText("experimental");
+    await uiHelper.verifyText("website");
+    await uiHelper.verifyLink("View Source");
+  });
 });
