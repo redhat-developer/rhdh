@@ -1132,7 +1132,7 @@ rbac_deployment() {
       return 1
     fi
     oc -n "${NAME_SPACE_RBAC}" patch sfp sonataflow-platform --type=merge \
-      -p '{"spec":{"services":{"jobService":{"podTemplate":{"container":{"env":[{"name":"QUARKUS_DATASOURCE_REACTIVE_URL","value":"postgresql://postgress-external-db-primary.postgress-external-db.svc.cluster.local:5432/sonataflow?search_path=jobs-service&sslmode=require&ssl=true&trustAll=true"},{"name":"QUARKUS_DATASOURCE_REACTIVE_SSL_MODE","value":"require"},{"name":"QUARKUS_DATASOURCE_REACTIVE_TRUST_ALL","value":"true"}]}}}}}}'
+      -p '{"spec":{"services":{"jobService":{"podTemplate":{"container":{"env":[{"name":"QUARKUS_DATASOURCE_REACTIVE_POSTGRESQL_SSL_MODE","value":"allow"},{"name":"QUARKUS_DATASOURCE_REACTIVE_TRUST_ALL","value":"true"}]}}}}}}'
     oc rollout restart deployment/sonataflow-platform-jobs-service -n "${NAME_SPACE_RBAC}"
   fi
 
@@ -1515,9 +1515,10 @@ get_previous_release_value_file() {
 deploy_orchestrator_workflows() {
   local namespace=$1
 
-  local WORKFLOW_REPO="https://github.com/rhdh-orchestrator-test/serverless-workflows.git"
+  local WORKFLOW_REPO="https://github.com/rhdhorchestrator/serverless-workflows.git"
   local WORKFLOW_DIR="${DIR}/serverless-workflows"
-  local WORKFLOW_MANIFESTS="${WORKFLOW_DIR}/workflows/experimentals/user-onboarding/manifests/"
+  local FAILSWITCH_MANIFESTS="${WORKFLOW_DIR}/workflows/fail-switch/src/main/resources/manifests/"
+  local GREETING_MANIFESTS="${WORKFLOW_DIR}/workflows/greeting/manifests/"
 
   rm -rf "${WORKFLOW_DIR}"
   git clone "${WORKFLOW_REPO}" "${WORKFLOW_DIR}"
@@ -1536,28 +1537,35 @@ deploy_orchestrator_workflows() {
     local patch_namespace="$namespace"
   fi
 
-  oc apply -f "${WORKFLOW_MANIFESTS}"
+  oc apply -f "${FAILSWITCH_MANIFESTS}" -n "$namespace"
+  oc apply -f "${GREETING_MANIFESTS}" -n "$namespace"
 
-  helm repo add orchestrator-workflows https://rhdhorchestrator.io/serverless-workflows
-  helm install greeting orchestrator-workflows/greeting -n "$namespace"
 
   until [[ $(oc get sf -n "$namespace" --no-headers 2> /dev/null | wc -l) -eq 2 ]]; do
     echo "No sf resources found. Retrying in 5 seconds..."
     sleep 5
   done
 
-  for workflow in greeting user-onboarding; do
+  for workflow in greeting failswitch; do
     oc -n "$namespace" patch sonataflow "$workflow" --type merge -p "{\"spec\": { \"persistence\": { \"postgresql\": { \"secretRef\": {\"name\": \"$pqsl_secret_name\",\"userKey\": \"$pqsl_user_key\",\"passwordKey\": \"$pqsl_password_key\"},\"serviceRef\": {\"name\": \"$pqsl_svc_name\",\"namespace\": \"$patch_namespace\"}}}}}"
+    oc rollout status deployment/"$workflow" -n "$namespace" --timeout=600s
   done
+
+  echo "Waiting for all workflow pods to be running..."
+  wait_for_deployment $namespace greeting 5
+  wait_for_deployment $namespace failswitch 5
+
+  echo "All workflow pods are now running!"
 }
 
 # Helper function to deploy workflows for orchestrator testing
 deploy_orchestrator_workflows_operator() {
   local namespace=$1
 
-  local WORKFLOW_REPO="https://github.com/rhdh-orchestrator-test/serverless-workflows.git"
+  local WORKFLOW_REPO="https://github.com/rhdhorchestrator/serverless-workflows.git"
   local WORKFLOW_DIR="${DIR}/serverless-workflows"
-  local WORKFLOW_MANIFESTS="${WORKFLOW_DIR}/workflows/experimentals/user-onboarding/manifests/"
+  local FAILSWITCH_MANIFESTS="${WORKFLOW_DIR}/workflows/fail-switch/src/main/resources/manifests/"
+  local GREETING_MANIFESTS="${WORKFLOW_DIR}/workflows/greeting/manifests/"
 
   rm -rf "${WORKFLOW_DIR}"
   git clone --depth=1 "${WORKFLOW_REPO}" "${WORKFLOW_DIR}"
@@ -1593,12 +1601,9 @@ deploy_orchestrator_workflows_operator() {
   log::info "Found PostgreSQL secret: $pqsl_secret_name"
   log::info "Found PostgreSQL service: $pqsl_svc_name"
 
-  # Apply user-onboarding workflow manifests
-  oc apply -f "${WORKFLOW_MANIFESTS}" -n "$namespace"
-
-  # Install greeting workflow via helm
-  helm repo add orchestrator-workflows https://rhdhorchestrator.io/serverless-workflows || true
-  helm upgrade --install greeting orchestrator-workflows/greeting -n "$namespace" --wait --timeout=5m --atomic
+  # Apply workflow manifests
+  oc apply -f "${FAILSWITCH_MANIFESTS}" -n "$namespace"
+  oc apply -f "${GREETING_MANIFESTS}" -n "$namespace"
 
   # Wait for sonataflow resources to be created (regardless of state)
   timeout 30s bash -c "
@@ -1607,46 +1612,8 @@ deploy_orchestrator_workflows_operator() {
     sleep 5
   done
   "
-  log::info "Updating user-onboarding secret with dynamic service URLs..."
-  # Update the user-onboarding secret with correct service URLs
-  local onboarding_server_url="http://user-onboarding-server:8080"
 
-  # Dynamically determine the backstage service (excluding psql)
-  local backstage_service
-  backstage_service=$(oc get svc -l app.kubernetes.io/name=backstage -n "$namespace" --no-headers=true | grep -v psql | awk '{print $1}' | head -1)
-  if [[ -z "$backstage_service" ]]; then
-    log::warn "Warning: No backstage service found, using fallback"
-    backstage_service="backstage-rhdh"
-  fi
-  local backstage_notifications_url="http://${backstage_service}:80"
-
-  # Get the notifications bearer token from rhdh-secrets
-  local notifications_bearer_token
-  notifications_bearer_token=$(oc get secret rhdh-secrets -n "$namespace" -o json | jq '.data.BACKEND_SECRET' -r | base64 -d)
-  if [[ -z "$notifications_bearer_token" ]]; then
-    log::warn "Warning: No BACKEND_SECRET found in rhdh-secrets, using empty token"
-    notifications_bearer_token=""
-  fi
-
-  # Base64 encode the URLs and token
-  local onboarding_server_url_b64
-  onboarding_server_url_b64=$(echo -n "$onboarding_server_url" | base64 -w 0)
-  local backstage_notifications_url_b64
-  backstage_notifications_url_b64=$(echo -n "$backstage_notifications_url" | base64 -w 0)
-  local notifications_bearer_token_b64
-  notifications_bearer_token_b64=$(echo -n "$notifications_bearer_token" | base64 -w 0)
-
-  # Patch the secret
-  oc patch secret user-onboarding-creds -n "$namespace" --type merge -p "{
-    \"data\": {
-      \"ONBOARDING_SERVER_URL\": \"$onboarding_server_url_b64\",
-      \"BACKSTAGE_NOTIFICATIONS_URL\": \"$backstage_notifications_url_b64\",
-      \"NOTIFICATIONS_BEARER_TOKEN\": \"$notifications_bearer_token_b64\"
-    }
-  }"
-  log::success "User-onboarding secret updated successfully!"
-
-  for workflow in greeting user-onboarding; do
+  for workflow in greeting failswitch; do
     # Create PostgreSQL patch configuration
     local postgres_patch
     postgres_patch=$(
@@ -1681,9 +1648,9 @@ EOF
 
   log::info "Waiting for all workflow pods to be running..."
   wait_for_deployment $namespace greeting 5
-  wait_for_deployment $namespace user-onboarding 5
-  # TODO: are we sure that all is running?
-  log::info "All workflow pods are now running!"
+  wait_for_deployment $namespace failswitch 5
+
+  echo "All workflow pods are now running!"
 }
 
 # Helper function to wait for backstage resource to exist in namespace

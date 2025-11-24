@@ -186,16 +186,9 @@ export class Orchestrator {
     await expect(
       this.page.getByRole("button", { name: "Abort" }),
     ).toBeEnabled();
-    await this.page.getByRole("button", { name: "Abort" }).click();
-    await expect(
-      this.page
-        .getByRole("dialog")
-        .locator("div")
-        .filter({ hasText: "Are you sure you want to" })
-        .nth(2),
-    ).toBeVisible();
-    await this.page.getByRole("button", { name: "Abort" }).click();
-    await expect(this.page.getByText("Status Aborted")).toBeVisible();
+    await this.page.getByRole("button", { name: "Abort" }).click();    
+    await this.page.getByRole('dialog', { name: /Abort workflow run\?/i }).getByRole('button', { name: 'Abort' }).click();
+    await expect(this.page.getByText("Run has aborted")).toBeVisible();
   }
 
   async validateErrorPopup() {
@@ -217,5 +210,60 @@ export class Orchestrator {
 
   async resetWorkflow() {
     await this.page.getByRole("button", { name: "Reset" }).click();
+  }
+
+  async selectFailSwitchWorkflowItem() {
+    const workflowHeader = this.page.getByRole("heading", {
+      name: "Workflows",
+    });
+    await expect(workflowHeader).toBeVisible();
+    await expect(workflowHeader).toHaveText("Workflows");
+    await expect(Workflows.workflowsTable(this.page)).toBeVisible();
+    await this.page.getByRole("link", { name: "FailSwitch workflow" }).click();
+  }
+
+  async runFailSwitchWorkflow(input = "OK") {
+    const runButton = this.page.getByRole("button", { name: "Run" });
+    await expect(runButton).toBeVisible();
+    await runButton.click();
+    await this.page.getByLabel(/switch/i).click();
+    await this.page.getByRole("option", { name: input }).click();
+    await this.page.getByRole("button", { name: "Next" }).click();
+    await this.page.getByRole("button", { name: "Run" }).click();
+
+    switch (input) {
+      case "OK":
+        await this.validateWorkflowStatus("Completed");
+        break;
+      case "KO":
+        await this.validateWorkflowStatus("Failed");
+        break;
+      case "Wait":
+        await this.validateWorkflowStatus("Running");
+        break;
+    }
+  }
+
+  async validateWorkflowStatus(status = "Completed") {
+    await expect(this.page.getByText(`${status}`, { exact: true })).toBeVisible(
+      {
+        timeout: 600000,
+      },
+    );
+  }
+
+  async reRunFailSwitchWorkflow(input = "OK") {
+    await expect(this.page.getByText("Run again")).toBeVisible();
+    await this.page.getByText("Run again").click();
+    await this.page.getByLabel("switch").click();
+    await this.page.getByRole("option", { name: input }).click();
+    await this.page.getByRole("button", { name: "Next" }).click();
+    await this.page.getByRole("button", { name: "Run" }).click();
+  }
+
+  async reRunOnFailure(input = "Entire workflow") {
+    await expect(this.page.getByText("Run again")).toBeVisible();
+    await this.page.getByText("Run again").click();
+    await this.page.getByRole("option", { name: input }).click();
   }
 }
