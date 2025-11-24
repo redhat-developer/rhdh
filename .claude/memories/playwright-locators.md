@@ -5,7 +5,7 @@
 1. **`page.getByRole(role, { name })`** - Interactive elements, headings (reflects user perception)
 2. **`page.getByLabel(text)`** - Form controls with labels
 3. **`page.getByPlaceholder(text)`** - Inputs without labels
-4. **`page.getByText(text)`** - Non-interactive content only
+4. **`page.getByText(text)`** - Non-interactive content only (avoid for buttons/links - use getByRole instead)
 5. **`page.getByAltText(text)`** - Images
 6. **`page.getByTitle(text)`** - Elements with title attribute
 7. **`page.getByTestId(id)`** - Last resort when semantic locators unavailable
@@ -26,6 +26,9 @@ await page.getByRole('row')
   .getByRole('button', { name: 'Edit' })
   .click();
 
+// ❌ BAD - Using getByText for interactive elements
+await page.getByText('Submit').click(); // Use getByRole('button', { name: 'Submit' }) instead
+
 // ❌ BAD - Implementation-dependent selectors
 await page.locator('.MuiButton-label').click();
 await page.locator('div:nth-child(3)').click();
@@ -39,6 +42,27 @@ await page.locator('//*[@id="form"]/div[2]/input').fill('test');
 - ❌ `nth-child` without semantic context
 - ❌ Using `force: true` to bypass checks
 - ❌ Mixing locator strategies inconsistently
+- ❌ Using getByText for buttons or links (use getByRole instead)
+- ❌ Targeting dynamically generated text (dynamic status, timestamps)
+- ❌ Configuring custom test ID attributes (stick with `data-testid` only)
+
+## Assertions with Auto-Waiting
+
+Playwright assertions automatically wait and retry (default: 5 seconds) until conditions are met. No manual waits needed.
+
+```typescript
+// ✅ Auto-waiting assertions
+await expect(page.getByRole('button', { name: 'Submit' })).toBeVisible();
+await expect(page.getByLabel('Status')).toHaveText('Submitted');
+await expect(page.getByRole('list')).toHaveCount(5);
+
+// ❌ Unnecessary manual waiting
+await page.waitForSelector('.status'); // Don't do this, expect() waits automatically
+```
+
+**Common assertions**: `toBeVisible()`, `toBeHidden()`, `toBeEnabled()`, `toBeDisabled()`, `toBeChecked()`, `toHaveText()`, `toContainText()`, `toHaveValue()`, `toHaveCount()`, `toHaveAttribute()`
+
+**Auto-checks before actions**: Visible, Stable (not animating), Enabled, Editable, Receives Events (not obscured)
 
 ## Filtering & Chaining
 
