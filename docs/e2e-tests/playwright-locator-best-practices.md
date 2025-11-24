@@ -27,10 +27,10 @@
 | ⭐⭐⭐⭐⭐ | `getByRole()` | Buttons, links, headings, form controls | `page.getByRole('button', { name: 'Submit' })` |
 | ⭐⭐⭐⭐⭐ | `getByLabel()` | Form inputs with labels | `page.getByLabel('Username')` |
 | ⭐⭐⭐⭐ | `getByPlaceholder()` | Inputs without labels | `page.getByPlaceholder('Search...')` |
-| ⭐⭐⭐⭐ | `getByText()` | Non-interactive content | `page.getByText('Welcome')` |
+| ⭐⭐⭐⭐ | `getByText()` | Non-interactive content only (avoid for buttons/links) | `page.getByText('Welcome')` |
 | ⭐⭐⭐⭐ | `getByAltText()` | Images | `page.getByAltText('Logo')` |
 | ⭐⭐⭐ | `getByTitle()` | Elements with title | `page.getByTitle('Settings')` |
-| ⭐⭐ | `getByTestId()` | Complex components | `page.getByTestId('user-menu')` |
+| ⭐⭐ | `getByTestId()` | Complex components (uses `data-testid` only) | `page.getByTestId('user-menu')` |
 | ⭐ | `locator()` | Last resort | `page.locator('table.stable-class')` |
 
 ## Common Roles
@@ -57,6 +57,7 @@ Breaks on implementation changes when libraries update their internal class name
 // ❌ BAD
 await page.locator('.MuiButton-label').click();
 await page.locator('div[class*="MuiTableCell-root"]').text();
+await page.locator('.MuiDataGrid-row').click();
 ```
 
 ### Long XPath Chains
@@ -81,6 +82,48 @@ Bypasses Playwright's actionability checks, hiding real issues.
 ```typescript
 // ❌ BAD
 await button.click({ force: true });
+```
+
+### Using getByText for Interactive Elements
+Use `getByRole` instead for buttons and links.
+
+```typescript
+// ❌ BAD
+await page.getByText('Submit').click();
+
+// ✅ GOOD
+await page.getByRole('button', { name: 'Submit' }).click();
+```
+
+### Targeting Dynamically Generated Text
+Avoid selectors based on text that changes (timestamps, statuses).
+
+```typescript
+// ❌ BAD
+await page.getByText('Last updated: 2:45 PM').click();
+```
+
+### Configuring Custom Test ID Attributes
+Stick with Playwright's default `data-testid` attribute.
+
+```typescript
+// ❌ BAD - Don't configure custom attributes
+// playwright.config.ts
+use: { testIdAttribute: 'data-custom-id' }
+```
+
+### Selecting Without Scoping
+May match elements from wrong card or dialog.
+
+```typescript
+// ❌ BAD
+await page.getByRole('row').first().click(); // Could match row from any grid on page
+
+// ✅ GOOD
+await page.getByTestId('users-card')
+  .getByRole('row')
+  .first()
+  .click();
 ```
 
 ## ✅ Best Practices
@@ -112,6 +155,48 @@ await button.waitFor({ state: 'enabled' });
 await button.click();
 ```
 
+## Assertions with Auto-Waiting
+
+Playwright assertions automatically wait and retry (default: 5 seconds) until conditions are met. This eliminates flakiness.
+
+```typescript
+// ✅ GOOD - Auto-waiting assertions
+await expect(page.getByRole('button', { name: 'Submit' })).toBeVisible();
+await expect(page.getByLabel('Status')).toHaveText('Submitted');
+await expect(page.getByRole('list')).toHaveCount(5);
+await expect(page).toHaveURL(/.*dashboard/);
+
+// ❌ BAD - Unnecessary manual waiting
+await page.waitForSelector('.status');
+await expect(page.locator('.status')).toHaveText('Submitted');
+```
+
+### Common Auto-Waiting Assertions
+
+| Assertion | Purpose | Example |
+|-----------|---------|---------|
+| `toBeVisible()` | Element is visible | `await expect(locator).toBeVisible()` |
+| `toBeHidden()` | Element is not visible | `await expect(locator).toBeHidden()` |
+| `toBeEnabled()` | Element is enabled | `await expect(locator).toBeEnabled()` |
+| `toBeDisabled()` | Element is disabled | `await expect(locator).toBeDisabled()` |
+| `toBeChecked()` | Checkbox is checked | `await expect(locator).toBeChecked()` |
+| `toBeEditable()` | Element is editable | `await expect(locator).toBeEditable()` |
+| `toHaveText()` | Exact text match | `await expect(locator).toHaveText('Submit')` |
+| `toContainText()` | Partial text match | `await expect(locator).toContainText('Success')` |
+| `toHaveValue()` | Input has value | `await expect(locator).toHaveValue('test')` |
+| `toHaveCount()` | List has N items | `await expect(locator).toHaveCount(5)` |
+| `toHaveAttribute()` | Element has attribute | `await expect(locator).toHaveAttribute('href', '/')` |
+
+### Actionability Checks
+
+Playwright automatically performs these checks before actions:
+
+- **Visible**: Non-empty bounding box, not `visibility:hidden`
+- **Stable**: Same bounding box for 2+ animation frames
+- **Enabled**: Not disabled or in disabled fieldset
+- **Editable**: Enabled and not readonly
+- **Receives Events**: Element is the hit target (not obscured)
+
 ## Filtering and Chaining
 
 ```typescript
@@ -133,6 +218,47 @@ const newBtn = page.getByRole('button', { name: 'New' });
 const dialog = page.getByText('Confirm settings');
 await expect(newBtn.or(dialog).first()).toBeVisible();
 ```
+
+## Working with DataGrid Tables
+
+When working with MUI DataGrid or similar table components, use semantic role-based locators and avoid MUI class names.
+
+```typescript
+// ✅ GOOD - Use role-based locators for grids
+await page.getByRole('grid')
+  .getByRole('row')
+  .filter({ hasText: 'Guest User' })
+  .getByRole('button', { name: 'Edit' })
+  .click();
+
+await page.getByRole('columnheader', { name: 'Name' }).click();
+
+// ✅ GOOD - Filter rows by text content
+const userRow = page.getByRole('row').filter({ hasText: 'john@example.com' });
+await expect(userRow).toBeVisible();
+
+// ✅ GOOD - Scope within specific container to avoid conflicts
+await page.getByTestId('users-card')
+  .getByRole('grid')
+  .getByRole('row')
+  .filter({ hasText: 'Active' })
+  .click();
+
+// ❌ BAD - MUI class names (brittle, changes frequently)
+await page.locator('.MuiDataGrid-row').click();
+await page.locator('.MuiDataGrid-columnHeader').click();
+await page.locator('[class*="MuiDataGrid"]').click();
+
+// ❌ BAD - Selecting from wrong context
+await page.getByRole('row').first().click(); // Could match row from any grid on page
+```
+
+### Key Points for DataGrid Tables
+
+- **Prefer** `getByRole('grid')`, `getByRole('row')`, `getByRole('columnheader')`
+- **Never use** MUI class names like `.MuiDataGrid-*` (they change frequently and cause flakes)
+- **Use** `.filter({ hasText })` to reliably target rows
+- **Use** chaining/scoping to avoid selecting elements from outside the intended card or dialog
 
 ## Common Pain Points in RHDH Tests
 
