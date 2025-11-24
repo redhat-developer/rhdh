@@ -30,10 +30,10 @@ jobs:
                 && format('{0}:{1}', github.event.workflow_run.head_repository.owner.login, github.event.workflow_run.head_branch)
                 || github.event.workflow_run.head_branch
             }}
+          FULL_SHA: ${{ github.event.workflow_run.head_sha }}
           
         run: |
-          FULL_SHA="${{ github.event.workflow_run.head_sha }}"
-          SHORT_SHA=$(echo "$FULL_SHA" | cut -c1-8)
+          SHORT_SHA=$(echo "${{ env.FULL_SHA }}" | cut -c1-8)
           # Need to use gh cli instead of `events.workflow_run.pull_requests` because the latter doesn't work for PRs from forks
           # Refer to https://github.com/orgs/community/discussions/25220
           PR_NUMBER=$(gh pr view --repo "${PR_TARGET_REPO}" "${PR_BRANCH}" --json number --jq '.number')
@@ -49,22 +49,30 @@ jobs:
             exit 1
           fi
       - name: Determine artifact name
+        id: get-artifact-name
+        env:
+          PR_NUMBER: ${{ steps.get-pr-info.outputs.pr_number }}
+          WORKFLOW_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
           # For workflow_run, extract from the event context
-          BUILD_ID="${{ steps.get-pr-info.outputs.pr_number }}"
-          SHORT_SHA="${{ github.event.workflow_run.head_sha }}"
-          SHORT_SHA="${SHORT_SHA:0:8}"
+          SHORT_SHA=$(echo "${{ env.WORKFLOW_HEAD_SHA }}" | cut -c1-8)
           
-          echo "SHORT_SHA=$SHORT_SHA" >> $GITHUB_ENV
-          ARTIFACT_NAME="podman-image-${BUILD_ID}-${SHORT_SHA}"
-          echo "ARTIFACT_NAME=$ARTIFACT_NAME" >> $GITHUB_ENV
-          echo "SKIP_ARTIFACT_NAME=pr-${BUILD_ID}-${SHORT_SHA}-isSkipped" >> $GITHUB_ENV
+          echo "short_sha=$SHORT_SHA" >> $GITHUB_OUTPUT
+          ARTIFACT_NAME="podman-image-${{ env.PR_NUMBER }}-${SHORT_SHA}"
+          SKIP_ARTIFACT_NAME="pr-${{ env.PR_NUMBER }}-${SHORT_SHA}-isSkipped"
+
           echo "Using artifact name: $ARTIFACT_NAME"
           echo "Using skip artifact name: $SKIP_ARTIFACT_NAME"
+
+          echo "artifact_name=$ARTIFACT_NAME" >> $GITHUB_OUTPUT
+          echo "skip_artifact_name=$SKIP_ARTIFACT_NAME" >> $GITHUB_OUTPUT
+
 
       - name: Download Skip Status Artifact
         id: download-skip-status
         uses: actions/download-artifact@v4
+        env:
+          SKIP_ARTIFACT_NAME: ${{ steps.get-artifact-name.outputs.skip_artifact_name }}
         with:
           name: ${{ env.SKIP_ARTIFACT_NAME }}
           path: ./rhdh-skip-artifacts
@@ -87,6 +95,8 @@ jobs:
       - name: Download Image Artifacts
         if: ${{ steps.check-skip.outputs.is_skipped != 'true' }}
         uses: actions/download-artifact@v4
+        env:
+          ARTIFACT_NAME: ${{ steps.get-artifact-name.outputs.artifact_name }}
         with:
           name: ${{ env.ARTIFACT_NAME }}
           path: ./rhdh-podman-artifacts
@@ -124,8 +134,10 @@ jobs:
       - name: Push Images
         if: ${{ steps.check-skip.outputs.is_skipped != 'true' }}
         uses: redhat-actions/push-to-registry@5ed88d269cf581ea9ef6dd6806d01562096bee9c # v2.8
+        env:
+          PUSHED_TAGS: ${{ steps.prepare.outputs.tags }}
         with:
-          tags: ${{ steps.prepare.outputs.tags }}
+          tags: ${{ env.PUSHED_TAGS }}
           username: ${{ secrets.QUAY_USERNAME }}
           password: ${{ secrets.QUAY_TOKEN }}
 

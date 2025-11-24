@@ -141,12 +141,14 @@ runs:
         
     - name: Transform Containerfile for hermetic build
       shell: bash
+      id: transform-containerfile
+      env:
+        CONTAINERFILE_PATH: ${{ inputs.containerfilePath }}
+        TRANSFORMED_CONTAINERFILE: ${{ inputs.containerfilePath }}.hermeto
       run: |
         set -x
         
         echo "::group::Transforming Containerfile for hermetic build"
-        CONTAINERFILE_PATH="${{ inputs.containerfilePath }}"
-        TRANSFORMED_CONTAINERFILE="${CONTAINERFILE_PATH}.hermeto"
         
         # Copy original dockerfile for hermetic build modifications
         cp "$CONTAINERFILE_PATH" "$TRANSFORMED_CONTAINERFILE"
@@ -159,13 +161,13 @@ runs:
         sed -i 's/^\s*RUN /RUN . \/cachi2\/cachi2.env \&\& /' "$TRANSFORMED_CONTAINERFILE"
         echo "::endgroup::"
         
-        echo "TRANSFORMED_CONTAINERFILE=$TRANSFORMED_CONTAINERFILE" >> $GITHUB_ENV
+        echo "transformed_containerfile=$TRANSFORMED_CONTAINERFILE" >> $GITHUB_OUTPUT
 
     - name: "Build Docker Image"
       id: build
       uses: redhat-actions/buildah-build@7a95fa7ee0f02d552a32753e7414641a04307056 # v2.13
       with:
-        containerfiles: ${{ inputs.containerfilePath }}.hermeto
+        containerfiles: ${{ steps.transform-containerfile.outputs.transformed_containerfile }}
         context: .
         platform: ${{ inputs.platform }}
         tags: ${{ steps.meta.outputs.tags }}
@@ -177,12 +179,13 @@ runs:
     - name: Save image as artifact
       if: ${{ inputs.skipArtifactUpload != 'true' }}
       shell: bash
+      env:
+        TAGS_LIST: ${{ steps.meta.outputs.tags }} # Extract the built image tags from the metadata
+
       run: |
         echo "::group::Saving image and metadata for artifact"
         mkdir -p ./rhdh-podman-artifacts
 
-        # Extract the built image tags from the metadata
-        TAGS_LIST="${{ steps.meta.outputs.tags }}"
         
         # Save all the built images to tar (podman save can handle multiple tags)
         echo "Saving images with tags:"
