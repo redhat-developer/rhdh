@@ -50,7 +50,7 @@
     "lint-staged": "15.5.2",
     "node-gyp": "10.3.1",
     "rulesync": "^3.23.2",
-    "sherif": "1.8.0",
+    "sherif": "1.9.0",
     "turbo": "2.6.1"
   },
   "resolutions": {
