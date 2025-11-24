@@ -8,7 +8,7 @@
 4. **`page.getByText(text)`** - Non-interactive content only (avoid for buttons/links - use getByRole instead)
 5. **`page.getByAltText(text)`** - Images
 6. **`page.getByTitle(text)`** - Elements with title attribute
-7. **`page.getByTestId(id)`** - Last resort when semantic locators unavailable
+7. **`page.getByTestId(id)`** -  When semantic locators unavailable (uses `data-testid` attribute only)
 8. **`page.locator(selector)`** - Avoid CSS/XPath unless necessary
 
 ## Quick Examples
