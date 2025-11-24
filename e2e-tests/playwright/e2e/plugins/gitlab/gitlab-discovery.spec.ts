@@ -4,6 +4,7 @@ import { Common } from "../../../utils/common";
 
 // Pre-req: backstage-plugin-catalog-backend-module-gitlab-dynamic
 // Pre-req: immobiliarelabs-backstage-plugin-gitlab-backend-dynamic
+// Using GH_USER_ID account
 test.describe("gitlab discovery UI tests", () => {
   let uiHelper: UIhelper;
   let common: Common;
@@ -22,8 +23,7 @@ test.describe("gitlab discovery UI tests", () => {
     await uiHelper.openSidebar("Catalog");
   });
 
-  // TODO: https://issues.redhat.com/browse/RHDHBUGS-1977
-  test.fixme(
+  test(
     "GitLab integration for discovering catalog entities from GitLab",
     async () => {
       await uiHelper.verifyText("scaffoldedForm-test");
