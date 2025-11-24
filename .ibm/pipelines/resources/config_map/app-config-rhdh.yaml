@@ -201,7 +201,7 @@ catalog:
       orgs: ["${GITHUB_ORG}", "${GITHUB_ORG_2}"]
     gitlab:
       my-test-provider:
-        group: rhdhqetest
+        group: rhdh-qe-test
         host: gitlab.com
         schedule:
           frequency:
