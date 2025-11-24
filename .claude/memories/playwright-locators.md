@@ -37,7 +37,7 @@ await page.locator('//*[@id="form"]/div[2]/input').fill('test');
 
 ## Anti-Patterns
 
-- ❌ CSS class selectors (`.MuiButton-label`, `[class*="MuiTableCell"]`)
+- ❌ CSS class selectors (`.MuiButton-label`, `[class*="MuiTableCell"]`, `.MuiDataGrid-*`)
 - ❌ Long XPath chains
 - ❌ `nth-child` without semantic context
 - ❌ Using `force: true` to bypass checks
@@ -45,6 +45,7 @@ await page.locator('//*[@id="form"]/div[2]/input').fill('test');
 - ❌ Using getByText for buttons or links (use getByRole instead)
 - ❌ Targeting dynamically generated text (dynamic status, timestamps)
 - ❌ Configuring custom test ID attributes (stick with `data-testid` only)
+- ❌ Selecting elements without scoping (may match from wrong card/dialog)
 
 ## Assertions with Auto-Waiting
 
@@ -82,6 +83,36 @@ await page.getByTestId('dialog')
 const btn = page.getByRole('button', { name: 'New' });
 const dialog = page.getByText('Confirm settings');
 await expect(btn.or(dialog).first()).toBeVisible();
+```
+
+## Working with DataGrid Tables
+
+```typescript
+// ✅ GOOD - Use role-based locators for grids
+await page.getByRole('grid').getByRole('row').filter({ hasText: 'Guest User' })
+  .getByRole('button', { name: 'Edit' })
+  .click();
+
+await page.getByRole('columnheader', { name: 'Name' }).click();
+
+// ✅ GOOD - Filter rows by text content
+const userRow = page.getByRole('row').filter({ hasText: 'john@example.com' });
+await expect(userRow).toBeVisible();
+
+// ✅ GOOD - Scope within specific container to avoid conflicts
+await page.getByTestId('users-card')
+  .getByRole('grid')
+  .getByRole('row')
+  .filter({ hasText: 'Active' })
+  .click();
+
+// ❌ BAD - MUI class names (brittle, changes frequently)
+await page.locator('.MuiDataGrid-row').click();
+await page.locator('.MuiDataGrid-columnHeader').click();
+await page.locator('[class*="MuiDataGrid"]').click();
+
+// ❌ BAD - Selecting from wrong context
+await page.getByRole('row').first().click(); // Could match row from any grid on page
 ```
 
 ## Page Objects
