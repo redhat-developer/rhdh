@@ -123,6 +123,14 @@ RDS_1_HOST=$(cat /tmp/secrets/RDS_1_HOST)
 RDS_2_HOST=$(cat /tmp/secrets/RDS_2_HOST)
 RDS_3_HOST=$(cat /tmp/secrets/RDS_3_HOST)
 
+# Azure Database for PostgreSQL credentials
+AZURE_DB_USER=$(cat /tmp/secrets/AZURE_DB_USER)
+AZURE_DB_PASSWORD=$(cat /tmp/secrets/AZURE_DB_PASSWORD)
+AZURE_DB_1_HOST=$(cat /tmp/secrets/AZURE_DB_1_HOST)
+AZURE_DB_2_HOST=$(cat /tmp/secrets/AZURE_DB_2_HOST)
+AZURE_DB_3_HOST=$(cat /tmp/secrets/AZURE_DB_3_HOST)
+AZURE_DB_PORT="${AZURE_DB_PORT:-5432}"
+
 JUNIT_RESULTS="junit-results.xml"
 
 SLACK_DATA_ROUTER_WEBHOOK_URL=$(cat /tmp/secrets/SLACK_DATA_ROUTER_WEBHOOK_URL)
