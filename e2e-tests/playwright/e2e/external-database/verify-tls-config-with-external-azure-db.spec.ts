@@ -24,14 +24,13 @@ test.describe
   // Azure DB configuration from environment
   const azureUser = process.env.AZURE_DB_USER;
   const azurePassword = process.env.AZURE_DB_PASSWORD;
-  const azurePort = process.env.AZURE_DB_PORT || "5432";
 
   // Define all Azure DB configurations to test
   const azureConfigurations: AzureDbConfig[] = [
     { name: "latest-3", host: process.env.AZURE_DB_1_HOST },
-    // { name: "latest-2", host: process.env.AZURE_DB_2_HOST },
-    // { name: "latest-1", host: process.env.AZURE_DB_3_HOST },
-    // { name: "latest", host: process.env.AZURE_DB_4_HOST },
+    { name: "latest-2", host: process.env.AZURE_DB_2_HOST },
+    { name: "latest-1", host: process.env.AZURE_DB_3_HOST },
+    { name: "latest", host: process.env.AZURE_DB_4_HOST },
   ];
 
   test.beforeAll(async () => {
@@ -78,7 +77,6 @@ test.describe
         test.setTimeout(270000);
         await configurePostgresCredentials(kubeClient, namespace, {
           host: config.host,
-          port: azurePort,
           user: azureUser,
           password: azurePassword,
         });

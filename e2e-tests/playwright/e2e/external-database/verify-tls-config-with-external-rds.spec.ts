@@ -24,7 +24,6 @@ test.describe
   // RDS configuration from environment
   const rdsUser = process.env.RDS_USER;
   const rdsPassword = process.env.RDS_PASSWORD;
-  const rdsPort = process.env.AZURE_DB_PORT || "5432";
 
   // Define all RDS configurations to test
   const rdsConfigurations: RdsConfig[] = [
@@ -74,7 +73,6 @@ test.describe
         test.setTimeout(270000);
         await configurePostgresCredentials(kubeClient, namespace, {
           host: config.host,
-          port: rdsPort,
           user: rdsUser,
           password: rdsPassword,
         });
