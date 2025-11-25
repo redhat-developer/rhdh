@@ -5,7 +5,7 @@ import {
   getRdsDbCertificates,
   configurePostgresCertificate,
   configurePostgresCredentials,
-} from "./db-certificates";
+} from "../../utils/postgres-config";
 
 interface RdsConfig {
   name: string;
