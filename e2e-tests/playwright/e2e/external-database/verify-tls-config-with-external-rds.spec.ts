@@ -1,10 +1,11 @@
-import { test } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 import { Common } from "../../utils/common";
 import { KubeClient } from "../../utils/kube-client";
 import {
   readCertificateFile,
   configurePostgresCertificate,
   configurePostgresCredentials,
+  isValidHostname,
 } from "../../utils/postgres-config";
 
 interface RdsConfig {
@@ -60,18 +61,6 @@ test.describe
       );
     }
 
-    // Validate all host environment variables are populated
-    const missingHosts = rdsConfigurations
-      .filter((config) => !config.host)
-      .map((config) => config.name);
-
-    if (missingHosts.length > 0) {
-      throw new Error(
-        `Missing RDS host environment variables for: ${missingHosts.join(", ")}. ` +
-          "Ensure RDS_1_HOST, RDS_2_HOST, RDS_3_HOST, and RDS_4_HOST are set.",
-      );
-    }
-
     const kubeClient = new KubeClient();
 
     // Create/update the postgres-crt secret with RDS certificates
@@ -89,6 +78,12 @@ test.describe
       });
 
       test("Configure and restart deployment", async () => {
+        expect(
+          isValidHostname(config.host),
+          `Invalid or missing RDS host for ${config.name}: "${config.host || "undefined"}". ` +
+            "Expected a valid hostname (e.g., my-rds-instance.region.rds.amazonaws.com).",
+        ).toBe(true);
+
         const kubeClient = new KubeClient();
         test.setTimeout(270000);
         await configurePostgresCredentials(kubeClient, namespace, {
