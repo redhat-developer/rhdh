@@ -53,10 +53,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 180 # Set to 3 hours instead of default 360 = 6hrs
     permissions:
-      contents: write
+      contents: read
       packages: write
-      pull-requests: write
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -158,6 +156,9 @@ jobs:
       runs-on: ubuntu-latest
       needs:
         - build-image
+      permissions:
+        contents: write
+        pull-requests: write
       env:
         HAS_QUAY_AUTH: ${{ secrets.QUAY_USERNAME != '' && secrets.QUAY_TOKEN != '' }}
       steps:
@@ -194,13 +195,20 @@ jobs:
           with:
             fetch-depth: 0
 
+        - name: Login to Quay
+          uses: docker/login-action@v3
+          with:
+            registry: ${{ env.REGISTRY }}
+            username: ${{ secrets.QUAY_USERNAME }}
+            password: ${{ secrets.QUAY_TOKEN }}
+
         - name: Regenerate dynamic-plugins.default.yaml from latest quay.io/rhdh/plugin-catalog-index:1.y container
           run: |
             unpack () {
               local IMAGE="$1"
               DIR="/tmp/${IMAGE//:/_}"; rm -fr "$DIR"; mkdir -p "$DIR"
               container_id=$(podman create "quay.io/rhdh/${IMAGE}" || echo "not found")
-              if [[ $container_id == "not found" ]]; then
+              if [[ $? -ne 0 ]] || [[ $container_id == *"not found"* ]]; then
                 echo "::error::Container image quay.io/rhdh/${IMAGE} not found - nothing to do!"
                 exit 0
               fi
@@ -210,7 +218,7 @@ jobs:
             TAG=$(jq -r '.version' package.json) # 1.9.0
             unpack "plugin-catalog-index:${TAG}"
             # replace local dynamic-plugins.default.yaml file with latest from the index container image, and add a deprecation warning
-            cat << EOF > dynamic-plugins.default.yaml
+            cat <<-EOF > dynamic-plugins.default.yaml
             # THIS FILE IS DEPRECATED. CONTENTS ARE GENERATED - DO NOT EDIT!
             #
             # File dynamic-plugins.default.yaml is now generated from default.package.yaml (this repo)
@@ -301,7 +309,7 @@ jobs:
               quay.expires-after=${{ env.EXPIRES_AFTER }}
               org.opencontainers.image.expires=${{ env.EXPIRES_AFTER }}
 
-        - name: Login to Docker Hub
+        - name: Login to Quay
           uses: docker/login-action@v3
           with:
             registry: ${{ env.REGISTRY }}
