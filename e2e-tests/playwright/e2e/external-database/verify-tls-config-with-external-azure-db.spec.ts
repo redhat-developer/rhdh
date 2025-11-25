@@ -5,7 +5,7 @@ import {
   getAzureDbCertificates,
   configurePostgresCertificate,
   configurePostgresCredentials,
-} from "./db-certificates";
+} from "../../utils/postgres-config";
 
 interface AzureDbConfig {
   name: string;
