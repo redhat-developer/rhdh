@@ -43,7 +43,7 @@ run_runtime_config_change_tests() {
   # Deploy `showcase-runtime` to run tests that require configuration changes at runtime
   initiate_runtime_deployment "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}"
   local runtime_url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE_RUNTIME}.${K8S_CLUSTER_ROUTER_BASE}"
-  check_and_test "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${runtime_url}"
+  run_tests "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${runtime_url}"
 }
 
 run_sanity_plugins_check() {

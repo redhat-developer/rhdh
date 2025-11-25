@@ -117,7 +117,7 @@ GOOGLE_ACC_COOKIE=$(cat /tmp/secrets/GOOGLE_ACC_COOKIE)
 GOOGLE_USER_ID=$(cat /tmp/secrets/GOOGLE_USER_ID)
 GOOGLE_USER_PASS=$(cat /tmp/secrets/GOOGLE_USER_PASS)
 GOOGLE_2FA_SECRET=$(cat /tmp/secrets/GOOGLE_2FA_SECRET)
-RDS_USER='cmhkaHFl'
+RDS_USER=$(cat /tmp/secrets/RDS_USER)
 RDS_PASSWORD=$(cat /tmp/secrets/RDS_PASSWORD)
 RDS_1_HOST=$(cat /tmp/secrets/RDS_1_HOST)
 RDS_2_HOST=$(cat /tmp/secrets/RDS_2_HOST)
@@ -130,6 +130,12 @@ AZURE_DB_1_HOST=$(cat /tmp/secrets/AZURE_DB_1_HOST)
 AZURE_DB_2_HOST=$(cat /tmp/secrets/AZURE_DB_2_HOST)
 AZURE_DB_3_HOST=$(cat /tmp/secrets/AZURE_DB_3_HOST)
 AZURE_DB_PORT="${AZURE_DB_PORT:-5432}"
+# AZURE_DB_3_HOST=$(cat /tmp/secrets/AZURE_DB_3_HOST)
+# AZURE_DB_PORT="${AZURE_DB_PORT:-5432}"
+
+# Database TLS certificates (PEM format, loaded from Vault)
+# These are used by e2e tests to configure TLS connections to external databases
+RDS_DB_CERTIFICATES=$(cat /tmp/secrets/RDS_DB_CERTIFICATES)
 
 JUNIT_RESULTS="junit-results.xml"
 
