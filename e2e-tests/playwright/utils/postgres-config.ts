@@ -4,10 +4,13 @@
  * via Kubernetes secrets for testing with external PostgreSQL instances
  * (Azure Database for PostgreSQL, Amazon RDS, etc.).
  *
- * Certificates are loaded from environment variables set by CI pipeline (from Vault).
+ * Certificates are loaded from file paths set by CI pipeline (from Vault).
+ * File paths are used instead of loading content into env vars to avoid
+ * "Argument list too long" shell errors with large certificate bundles.
  * Each test file can import and apply its required configuration.
  */
 
+import { readFileSync, existsSync } from "fs";
 import { KubeClient } from "./kube-client";
 
 /**
@@ -19,19 +22,22 @@ function unescapeNewlines(value: string): string {
 }
 
 /**
- * Get Azure Database for PostgreSQL certificates from environment variable.
+ * Read certificate content from a file path.
+ * @param filePath - Path to the certificate file
+ * @returns Certificate content with escaped newlines converted, or null if file doesn't exist
  */
-export function getAzureDbCertificates(): string | null {
-  const cert = process.env.AZURE_DB_CERTIFICATES;
-  return cert ? unescapeNewlines(cert) : null;
-}
-
-/**
- * Get Amazon RDS certificates from environment variable.
- */
-export function getRdsDbCertificates(): string | null {
-  const cert = process.env.RDS_DB_CERTIFICATES;
-  return cert ? unescapeNewlines(cert) : null;
+export function readCertificateFile(
+  filePath: string | undefined,
+): string | null {
+  if (!filePath) {
+    return null;
+  }
+  if (!existsSync(filePath)) {
+    console.warn(`Certificate file not found: ${filePath}`);
+    return null;
+  }
+  const content = readFileSync(filePath, "utf-8");
+  return unescapeNewlines(content);
 }
 
 /**

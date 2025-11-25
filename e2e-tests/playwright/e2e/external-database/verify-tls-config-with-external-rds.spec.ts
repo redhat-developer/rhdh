@@ -2,7 +2,7 @@ import { test } from "@playwright/test";
 import { Common } from "../../utils/common";
 import { KubeClient } from "../../utils/kube-client";
 import {
-  getRdsDbCertificates,
+  readCertificateFile,
   configurePostgresCertificate,
   configurePostgresCredentials,
 } from "../../utils/postgres-config";
@@ -46,9 +46,11 @@ test.describe
     );
 
     // Validate certificates are available
-    const rdsCerts = getRdsDbCertificates();
+    const rdsCerts = readCertificateFile(process.env.RDS_DB_CERTIFICATES_PATH);
     if (!rdsCerts) {
-      throw new Error("RDS_DB_CERTIFICATES environment variable must be set");
+      throw new Error(
+        "RDS_DB_CERTIFICATES_PATH environment variable must be set and point to a valid certificate file",
+      );
     }
 
     // Validate required environment variables

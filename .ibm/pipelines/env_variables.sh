@@ -133,9 +133,10 @@ AZURE_DB_1_HOST=$(cat /tmp/secrets/AZURE_DB_1_HOST)
 AZURE_DB_2_HOST=$(cat /tmp/secrets/AZURE_DB_2_HOST)
 AZURE_DB_3_HOST=$(cat /tmp/secrets/AZURE_DB_3_HOST)
 AZURE_DB_4_HOST=$(cat /tmp/secrets/AZURE_DB_4_HOST)
-# Database TLS certificates (PEM format, loaded from Vault)
-RDS_DB_CERTIFICATES=$(cat /tmp/secrets/RDS_DB_CERTIFICATES)
-AZURE_DB_CERTIFICATES=$(cat /tmp/secrets/AZURE_DB_CERTIFICATES)
+# Database TLS certificates (file paths to PEM files from Vault)
+# Store paths instead of content to avoid "Argument list too long" shell errors
+RDS_DB_CERTIFICATES_PATH="/tmp/secrets/RDS_DB_CERTIFICATES"
+AZURE_DB_CERTIFICATES_PATH="/tmp/secrets/AZURE_DB_CERTIFICATES"
 
 JUNIT_RESULTS="junit-results.xml"
 
