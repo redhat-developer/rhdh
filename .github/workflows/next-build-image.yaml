@@ -51,9 +51,9 @@ jobs:
           - ubuntu-24.04-arm
           - ubuntu-24.04
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 720 # Set to 12 hours instead of default 360 = 6hrs
+    timeout-minutes: 180 # Set to 3 hours instead of default 360 = 6hrs
     permissions:
-      contents: read
+      contents: write
       packages: write
       pull-requests: write
 
@@ -222,6 +222,10 @@ jobs:
             EOF
             cat "$DIR"/dynamic-plugins.default.yaml >> dynamic-plugins.default.yaml
             echo "TAG=${TAG}" >> $GITHUB_ENV
+
+            echo "::info::Changes to dynamic-plugins.default.yaml >>"
+            git diff dynamic-plugins.default.yaml || true
+            echo "::info::Changes to dynamic-plugins.default.yaml <<"
 
         - name: Generate token
           id: generate-token
