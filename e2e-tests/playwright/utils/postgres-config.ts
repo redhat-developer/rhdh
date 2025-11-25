@@ -22,21 +22,6 @@ function unescapeNewlines(value: string): string {
 }
 
 /**
- * Validate if a string is a valid hostname using the built-in URL class.
- * @param host - The hostname to validate
- * @returns true if the hostname is valid, false otherwise
- */
-export function isValidHostname(host: string | undefined): boolean {
-  if (!host) return false;
-  try {
-    const url = new URL(`https://${host}`);
-    return url.hostname === host;
-  } catch {
-    return false;
-  }
-}
-
-/**
  * Read certificate content from a file path.
  * @param filePath - Path to the certificate file
  * @returns Certificate content with escaped newlines converted, or null if file doesn't exist

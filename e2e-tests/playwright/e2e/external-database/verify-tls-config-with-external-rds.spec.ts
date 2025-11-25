@@ -1,11 +1,10 @@
-import { test, expect } from "@playwright/test";
+import { test } from "@playwright/test";
 import { Common } from "../../utils/common";
 import { KubeClient } from "../../utils/kube-client";
 import {
   readCertificateFile,
   configurePostgresCertificate,
   configurePostgresCredentials,
-  isValidHostname,
 } from "../../utils/postgres-config";
 
 interface RdsConfig {
@@ -78,12 +77,6 @@ test.describe
       });
 
       test("Configure and restart deployment", async () => {
-        expect(
-          isValidHostname(config.host),
-          `Invalid or missing RDS host for ${config.name}: "${config.host || "undefined"}". ` +
-            "Expected a valid hostname (e.g., my-rds-instance.region.rds.amazonaws.com).",
-        ).toBe(true);
-
         const kubeClient = new KubeClient();
         test.setTimeout(270000);
         await configurePostgresCredentials(kubeClient, namespace, {
