@@ -17,12 +17,12 @@ test.describe
   }
 
   // RDS configuration from environment
-  const rdsUser = process.env.RDS_USER || "";
-  const rdsPassword = process.env.RDS_PASSWORD || "";
-  const rdsHost1 = process.env.RDS_1_HOST || "";
-  const rdsHost2 = process.env.RDS_2_HOST || "";
-  const rdsHost3 = process.env.RDS_3_HOST || "";
-  const rdsHost4 = process.env.RDS_4_HOST || "";
+  const rdsUser = process.env.RDS_USER;
+  const rdsPassword = process.env.RDS_PASSWORD;
+  const rdsHost1 = process.env.RDS_1_HOST;
+  const rdsHost2 = process.env.RDS_2_HOST;
+  const rdsHost3 = process.env.RDS_3_HOST;
+  const rdsHost4 = process.env.RDS_4_HOST;
 
   test.beforeAll(async () => {
     test.info().annotations.push(
@@ -50,7 +50,7 @@ test.describe
     await configurePostgresCertificate(kubeClient, namespace, rdsCerts);
 
     // Create/update the postgres-cred secret with RDS credentials
-    console.log("Configuring RDS credentials for latest version...");
+    console.log("Configuring RDS credentials for latest-3 version...");
     await configurePostgresCredentials(kubeClient, namespace, {
       host: rdsHost1,
       user: rdsUser,
@@ -61,23 +61,7 @@ test.describe
     await kubeClient.restartDeployment(deploymentName, namespace);
   });
 
-  test("Verify successful DB connection with RDS latest PostgreSQL version", async ({
-    page,
-  }) => {
-    const common = new Common(page);
-    await common.loginAsGuest();
-  });
-
-  test("Change the config to use the RDS latest-1 PostgreSQL version", async () => {
-    const kubeClient = new KubeClient();
-    test.setTimeout(180000);
-    await configurePostgresCredentials(kubeClient, namespace, {
-      host: rdsHost2,
-    });
-    await kubeClient.restartDeployment(deploymentName, namespace);
-  });
-
-  test("Verify successful DB connection with RDS latest-1 PostgreSQL version", async ({
+  test("Verify successful DB connection with RDS latest-3 PostgreSQL version", async ({
     page,
   }) => {
     const common = new Common(page);
@@ -86,9 +70,9 @@ test.describe
 
   test("Change the config to use the RDS latest-2 PostgreSQL version", async () => {
     const kubeClient = new KubeClient();
-    test.setTimeout(180000);
+    test.setTimeout(270000);
     await configurePostgresCredentials(kubeClient, namespace, {
-      host: rdsHost3,
+      host: rdsHost2,
     });
     await kubeClient.restartDeployment(deploymentName, namespace);
   });
@@ -100,21 +84,34 @@ test.describe
     await common.loginAsGuest();
   });
 
-  test("Change the config to use the RDS latest-3 PostgreSQL version", async () => {
-    test.skip(true, "Skip until one more RDS instance is available");
-
+  test("Change the config to use the RDS latest-1 PostgreSQL version", async () => {
     const kubeClient = new KubeClient();
-    test.setTimeout(180000);
+    test.setTimeout(270000);
+    await configurePostgresCredentials(kubeClient, namespace, {
+      host: rdsHost3,
+    });
+    await kubeClient.restartDeployment(deploymentName, namespace);
+  });
+
+  test("Verify successful DB connection with RDS latest-1 PostgreSQL version", async ({
+    page,
+  }) => {
+    const common = new Common(page);
+    await common.loginAsGuest();
+  });
+
+  test("Change the config to use the RDS latest PostgreSQL version", async () => {
+    const kubeClient = new KubeClient();
+    test.setTimeout(270000);
     await configurePostgresCredentials(kubeClient, namespace, {
       host: rdsHost4,
     });
     await kubeClient.restartDeployment(deploymentName, namespace);
   });
 
-  test("Verify successful DB connection with RDS latest-3 PostgreSQL version", async ({
+  test("Verify successful DB connection with RDS latest PostgreSQL version", async ({
     page,
   }) => {
-    test.skip(true, "Skip until one more RDS instance is available");
     const common = new Common(page);
     await common.loginAsGuest();
   });

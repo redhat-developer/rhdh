@@ -122,6 +122,7 @@ RDS_PASSWORD=$(cat /tmp/secrets/RDS_PASSWORD)
 RDS_1_HOST=$(cat /tmp/secrets/RDS_1_HOST)
 RDS_2_HOST=$(cat /tmp/secrets/RDS_2_HOST)
 RDS_3_HOST=$(cat /tmp/secrets/RDS_3_HOST)
+RDS_4_HOST=$(cat /tmp/secrets/RDS_4_HOST)
 
 # Azure Database for PostgreSQL credentials
 AZURE_DB_USER=$(cat /tmp/secrets/AZURE_DB_USER)
