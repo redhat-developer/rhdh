@@ -45,11 +45,29 @@ test.describe
       },
     );
 
-    // Skip if certificates not available
+    // Validate certificates are available
     const rdsCerts = getRdsDbCertificates();
     if (!rdsCerts) {
-      console.log("RDS_DB_CERTIFICATES not set, skipping RDS configuration");
-      return;
+      throw new Error("RDS_DB_CERTIFICATES environment variable must be set");
+    }
+
+    // Validate required environment variables
+    if (!rdsUser || !rdsPassword) {
+      throw new Error(
+        "RDS_USER and RDS_PASSWORD environment variables must be set",
+      );
+    }
+
+    // Validate all host environment variables are populated
+    const missingHosts = rdsConfigurations
+      .filter((config) => !config.host)
+      .map((config) => config.name);
+
+    if (missingHosts.length > 0) {
+      throw new Error(
+        `Missing RDS host environment variables for: ${missingHosts.join(", ")}. ` +
+          "Ensure RDS_1_HOST, RDS_2_HOST, RDS_3_HOST, and RDS_4_HOST are set.",
+      );
     }
 
     const kubeClient = new KubeClient();

@@ -45,13 +45,29 @@ test.describe
       },
     );
 
-    // Skip if certificates not available
+    // Validate certificates are available
     const azureCerts = getAzureDbCertificates();
     if (!azureCerts) {
-      console.log(
-        "AZURE_DB_CERTIFICATES not set, skipping Azure DB configuration",
+      throw new Error("AZURE_DB_CERTIFICATES environment variable must be set");
+    }
+
+    // Validate required environment variables
+    if (!azureUser || !azurePassword) {
+      throw new Error(
+        "AZURE_DB_USER and AZURE_DB_PASSWORD environment variables must be set",
       );
-      return;
+    }
+
+    // Validate all host environment variables are populated
+    const missingHosts = azureConfigurations
+      .filter((config) => !config.host)
+      .map((config) => config.name);
+
+    if (missingHosts.length > 0) {
+      throw new Error(
+        `Missing Azure DB host environment variables for: ${missingHosts.join(", ")}. ` +
+          "Ensure AZURE_DB_1_HOST, AZURE_DB_2_HOST, AZURE_DB_3_HOST, and AZURE_DB_4_HOST are set.",
+      );
     }
 
     const kubeClient = new KubeClient();
