@@ -1,10 +1,14 @@
 /**
- * Database TLS certificates for external database tests.
+ * PostgreSQL configuration utilities for external database tests.
+ * Provides functions to configure TLS certificates and database credentials
+ * via Kubernetes secrets for testing with external PostgreSQL instances
+ * (Azure Database for PostgreSQL, Amazon RDS, etc.).
+ *
  * Certificates are loaded from environment variables set by CI pipeline (from Vault).
- * Each test file can import and apply its required certificates.
+ * Each test file can import and apply its required configuration.
  */
 
-import { KubeClient } from "../../utils/kube-client";
+import { KubeClient } from "./kube-client";
 
 /**
  * Convert escaped newlines (\n) to actual newline characters.
