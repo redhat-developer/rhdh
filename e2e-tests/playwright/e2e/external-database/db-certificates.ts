@@ -84,14 +84,15 @@ export async function configurePostgresCredentials(
   credentials: {
     host: string;
     port?: string;
-    user?: string;
-    password?: string;
+    user: string;
+    password: string;
+    sslMode?: string;
   },
 ): Promise<void> {
   const data: Record<string, string> = {
     POSTGRES_HOST: Buffer.from(credentials.host).toString("base64"),
     POSTGRES_PORT: Buffer.from(credentials.port || "5432").toString("base64"),
-    PGSSLMODE: Buffer.from("require").toString("base64"),
+    PGSSLMODE: Buffer.from(credentials.sslMode || "require").toString("base64"),
     NODE_EXTRA_CA_CERTS: Buffer.from(
       "/opt/app-root/src/postgres-crt.pem",
     ).toString("base64"),

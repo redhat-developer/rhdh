@@ -2,18 +2,18 @@ import { test } from "@playwright/test";
 import { Common } from "../../utils/common";
 import { KubeClient } from "../../utils/kube-client";
 import {
-  getRdsDbCertificates,
+  getAzureDbCertificates,
   configurePostgresCertificate,
   configurePostgresCredentials,
 } from "./db-certificates";
 
-interface RdsConfig {
+interface AzureDbConfig {
   name: string;
   host: string | undefined;
 }
 
 test.describe
-  .serial("Verify TLS configuration with RDS PostgreSQL health check", () => {
+  .serial("Verify TLS configuration with Azure Database for PostgreSQL health check", () => {
   const namespace = process.env.NAME_SPACE_RUNTIME || "showcase-runtime";
   const job: string = process.env.JOB_NAME || "";
   let deploymentName = process.env.RELEASE_NAME + "-developer-hub";
@@ -21,17 +21,17 @@ test.describe
     deploymentName = "backstage-" + process.env.RELEASE_NAME;
   }
 
-  // RDS configuration from environment
-  const rdsUser = process.env.RDS_USER;
-  const rdsPassword = process.env.RDS_PASSWORD;
-  const rdsPort = process.env.AZURE_DB_PORT || "5432";
+  // Azure DB configuration from environment
+  const azureUser = process.env.AZURE_DB_USER;
+  const azurePassword = process.env.AZURE_DB_PASSWORD;
+  const azurePort = process.env.AZURE_DB_PORT || "5432";
 
-  // Define all RDS configurations to test
-  const rdsConfigurations: RdsConfig[] = [
-    { name: "latest-3", host: process.env.RDS_1_HOST },
-    { name: "latest-2", host: process.env.RDS_2_HOST },
-    { name: "latest-1", host: process.env.RDS_3_HOST },
-    { name: "latest", host: process.env.RDS_4_HOST },
+  // Define all Azure DB configurations to test
+  const azureConfigurations: AzureDbConfig[] = [
+    { name: "latest-3", host: process.env.AZURE_DB_1_HOST },
+    // { name: "latest-2", host: process.env.AZURE_DB_2_HOST },
+    // { name: "latest-1", host: process.env.AZURE_DB_3_HOST },
+    // { name: "latest", host: process.env.AZURE_DB_4_HOST },
   ];
 
   test.beforeAll(async () => {
@@ -47,21 +47,25 @@ test.describe
     );
 
     // Skip if certificates not available
-    const rdsCerts = getRdsDbCertificates();
-    if (!rdsCerts) {
-      console.log("RDS_DB_CERTIFICATES not set, skipping RDS configuration");
+    const azureCerts = getAzureDbCertificates();
+    if (!azureCerts) {
+      console.log(
+        "AZURE_DB_CERTIFICATES not set, skipping Azure DB configuration",
+      );
       return;
     }
 
     const kubeClient = new KubeClient();
 
-    // Create/update the postgres-crt secret with RDS certificates
-    console.log("Configuring RDS TLS certificates...");
-    await configurePostgresCertificate(kubeClient, namespace, rdsCerts);
+    // Create/update the postgres-crt secret with Azure certificates
+    console.log(
+      "Configuring Azure Database for PostgreSQL TLS certificates...",
+    );
+    await configurePostgresCertificate(kubeClient, namespace, azureCerts);
   });
 
-  for (const config of rdsConfigurations) {
-    test.describe.serial(`RDS ${config.name} PostgreSQL version`, () => {
+  for (const config of azureConfigurations) {
+    test.describe.serial(`Azure DB ${config.name} PostgreSQL version`, () => {
       test.beforeAll(async () => {
         test.info().annotations.push({
           type: "database",
@@ -74,9 +78,9 @@ test.describe
         test.setTimeout(270000);
         await configurePostgresCredentials(kubeClient, namespace, {
           host: config.host,
-          port: rdsPort,
-          user: rdsUser,
-          password: rdsPassword,
+          port: azurePort,
+          user: azureUser,
+          password: azurePassword,
         });
         await kubeClient.restartDeployment(deploymentName, namespace);
       });

@@ -169,12 +169,18 @@ export default defineConfig({
       ],
     },
     {
-      name: "showcase-runtime",
+      name: "showcase-runtime-db",
+      workers: 1,
       testMatch: [
         "**/playwright/e2e/external-database/verify-tls-config-with-external-rds.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-azure-db.spec.ts",
-        "**/playwright/e2e/configuration-test/config-map.spec.ts",
       ],
+    },
+    {
+      name: "showcase-runtime",
+      workers: 1,
+      dependencies: ["showcase-runtime-db"],
+      testMatch: ["**/playwright/e2e/configuration-test/config-map.spec.ts"],
     },
 
     {
