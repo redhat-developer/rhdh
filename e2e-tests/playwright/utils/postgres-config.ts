@@ -35,37 +35,6 @@ export function getRdsDbCertificates(): string | null {
 }
 
 /**
- * Create or update a Kubernetes secret
- */
-async function createOrUpdateSecret(
-  kubeClient: KubeClient,
-  secretName: string,
-  namespace: string,
-  data: Record<string, string>,
-): Promise<void> {
-  const patch = { data };
-
-  try {
-    // Try to update existing secret
-    await kubeClient.updateSecret(secretName, namespace, patch);
-    console.log(`Secret ${secretName} updated in namespace ${namespace}`);
-  } catch {
-    // Secret doesn't exist, create it
-    console.log(
-      `Secret ${secretName} not found, creating in namespace ${namespace}`,
-    );
-    const secret = {
-      apiVersion: "v1",
-      kind: "Secret",
-      metadata: { name: secretName },
-      data,
-    };
-    await kubeClient.createSecret(secret, namespace);
-    console.log(`Secret ${secretName} created in namespace ${namespace}`);
-  }
-}
-
-/**
  * Configure the postgres-crt secret with certificate content
  */
 export async function configurePostgresCertificate(
@@ -74,9 +43,13 @@ export async function configurePostgresCertificate(
   pemContent: string,
 ): Promise<void> {
   const certBase64 = Buffer.from(pemContent).toString("base64");
-  await createOrUpdateSecret(kubeClient, "postgres-crt", namespace, {
-    "postgres-crt.pem": certBase64,
-  });
+  const secret = {
+    apiVersion: "v1",
+    kind: "Secret",
+    metadata: { name: "postgres-crt" },
+    data: { "postgres-crt.pem": certBase64 },
+  };
+  await kubeClient.createOrUpdateSecret(secret, namespace);
 }
 
 /**
@@ -111,5 +84,11 @@ export async function configurePostgresCredentials(
     );
   }
 
-  await createOrUpdateSecret(kubeClient, "postgres-cred", namespace, data);
+  const secret = {
+    apiVersion: "v1",
+    kind: "Secret",
+    metadata: { name: "postgres-cred" },
+    data,
+  };
+  await kubeClient.createOrUpdateSecret(secret, namespace);
 }

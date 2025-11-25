@@ -414,6 +414,31 @@ export class KubeClient {
     }
   }
 
+  /**
+   * Create or update a Kubernetes secret (upsert pattern).
+   * Tries to update the secret first; if it doesn't exist, creates it.
+   */
+  async createOrUpdateSecret(
+    secret: k8s.V1Secret,
+    namespace: string,
+  ): Promise<void> {
+    const secretName = secret.metadata?.name;
+    const patch = { data: secret.data };
+
+    try {
+      // Try to update existing secret
+      await this.updateSecret(secretName, namespace, patch);
+      console.log(`Secret ${secretName} updated in namespace ${namespace}`);
+    } catch {
+      // Secret doesn't exist, create it
+      console.log(
+        `Secret ${secretName} not found, creating in namespace ${namespace}`,
+      );
+      await this.createSecret(secret, namespace);
+      console.log(`Secret ${secretName} created in namespace ${namespace}`);
+    }
+  }
+
   async waitForDeploymentReady(
     deploymentName: string,
     namespace: string,
