@@ -37,7 +37,7 @@ jobs:
             chore: sync OWNERS_ALIASES with GitHub teams
           branch: chore/sync-owners-aliases
           delete-branch: true
-          title: "chore: sync OWNERS_ALIASES with GitHub teams
+          title: "chore: sync OWNERS_ALIASES with GitHub teams"
           body: |
             ## Summary
             - auto-generated update to `OWNERS_ALIASES`
@@ -45,4 +45,3 @@ jobs:
             This PR was created automatically by `.github/workflows/sync-owners-aliases.yaml`.
           add-paths: |
             OWNERS_ALIASES
-
