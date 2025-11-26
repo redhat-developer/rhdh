@@ -68,10 +68,13 @@ runs:
     # Hermetic Build Steps
     - name: Set up hermetic build variables
       shell: bash
+      env:
+        COMPONENT_DIR: ${{ inputs.componentDirectory }}
+        # Note: GITHUB_WORKSPACE is available as a default env var
       run: |
         echo "HERMETO_IMAGE=quay.io/konflux-ci/hermeto:latest" >> $GITHUB_ENV
-        echo "LOCAL_CACHE_DIR=./hermeto-cache/$(basename ${{ inputs.componentDirectory }})" >> $GITHUB_ENV
-        echo "COMPONENT_ABS_DIR=${{ github.workspace }}/${{ inputs.componentDirectory }}" >> $GITHUB_ENV
+        echo "LOCAL_CACHE_DIR=./hermeto-cache/$(basename "$COMPONENT_DIR")" >> $GITHUB_ENV
+        echo "COMPONENT_ABS_DIR=${GITHUB_WORKSPACE}/${COMPONENT_DIR}" >> $GITHUB_ENV
 
     - name: Cache dependencies with hermeto
       shell: bash

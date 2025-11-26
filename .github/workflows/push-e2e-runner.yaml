@@ -43,7 +43,6 @@ jobs:
       - name: Prepare Environment Variables
         env:
           INPUT_BRANCH: ${{ inputs.branch }}
-          GITHUB_REF: ${{ github.ref }}
         run: |
           echo "PLATFORM=linux/amd64" >> $GITHUB_ENV
 

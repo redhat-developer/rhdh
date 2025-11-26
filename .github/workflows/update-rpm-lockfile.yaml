@@ -72,35 +72,21 @@ jobs:
             echo "changes=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: Determine target branch
-        id: target-branch
-        env:
-          REF_NAME: ${{ github.ref_name }}
-        run: |
-          TARGET_BRANCH="${REF_NAME}"
-          echo "name=${TARGET_BRANCH}" >> $GITHUB_OUTPUT
-          echo "Target branch: ${TARGET_BRANCH}"
-
       - name: Create Pull Request
         id: create-pull-request
         if: steps.check-lockfile-changes.outputs.changes == 'true'
-        env:
-          TARGET_BRANCH_NAME: ${{ steps.target-branch.outputs.name }}
-          SERVER_URL: ${{ github.server_url }}
-          REPO: ${{ github.repository }}
-          RUN_ID: ${{ github.run_id }}
         uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7.0.8
         with:
           token: ${{ secrets.RHDH_BOT_TOKEN }}
           commit-message: "chore: update rpms.lock.yaml [skip-build]"
-          title: "chore: update RPM lockfile in branch (${{ env.TARGET_BRANCH_NAME }}) [skip-build]"
+          title: "chore: update RPM lockfile in branch (${{ github.ref_name }}) [skip-build]"
           body: |
             ## Description
 
             This PR updates the `rpms.lock.yaml` file with the latest package versions based on current `rpms.in.yaml` configuration using `${{ env.CONTAINERFILE_PATH }}` as the base container context
 
-            This PR was automatically created by the [Update RPM Lockfile GitHub Action](${{ env.SERVER_URL }}/${{ env.REPO }}/actions/runs/${{ env.RUN_ID }}).
-          branch: chore/automated-update-rpm-lockfile/${{ env.TARGET_BRANCH_NAME }}
+            This PR was automatically created by the [Update RPM Lockfile GitHub Action](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+          branch: chore/automated-update-rpm-lockfile/${{ github.ref_name }}
           delete-branch: true
           draft: false
           sign-commits: true

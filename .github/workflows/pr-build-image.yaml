@@ -59,30 +59,27 @@ jobs:
         env:
           IMAGE_EXISTS: ${{ steps.check-image.outputs.image_exists }}
           RELEVANT_CHANGES: ${{ steps.check-image.outputs.relevant_changes }}
-          SHORT_SHA_VAR: ${{ env.SHORT_SHA }}
           PR_NUMBER: ${{ github.event.number }}
         run: |
               echo "Image exists: $IMAGE_EXISTS"
               echo "Relevant changes: $RELEVANT_CHANGES"
-              echo "SHORT_SHA: $SHORT_SHA_VAR"
+              echo "SHORT_SHA: $SHORT_SHA"
               echo "PR Number: $PR_NUMBER"
               echo "Base Tag: pr-$PR_NUMBER"
-              echo "Commit Tag: pr-$PR_NUMBER-$SHORT_SHA_VAR"
+              echo "Commit Tag: pr-$PR_NUMBER-$SHORT_SHA"
 
       - name: Get the latest commits from base branch
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         env:
-          REPO: ${{ github.repository }}
           PR_USER_LOGIN: ${{ github.event.pull_request.user.login }}
           PR_USER_EMAIL: ${{ github.event.pull_request.user.email }}
-          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
         run: |
-          git remote add base-origin https://github.com/"$REPO" || true
+          git remote add base-origin https://github.com/"$GITHUB_REPOSITORY" || true
           git config user.name "$PR_USER_LOGIN"
           git config user.email "$PR_USER_EMAIL"
-          echo "Updating PR with latest commits from $PR_BASE_REF ..."
-          git fetch base-origin "$PR_BASE_REF"
-          git merge --no-edit base-origin/"$PR_BASE_REF"
+          echo "Updating PR with latest commits from $GITHUB_BASE_REF ..."
+          git fetch base-origin "$GITHUB_BASE_REF"
+          git merge --no-edit base-origin/"$GITHUB_BASE_REF"
       - name: Build Image (Hermetic)
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         uses: ./.github/actions/docker-build

@@ -64,7 +64,7 @@ jobs:
           
           ELIGIBLE=false
           for pattern in "${ELIGIBLE_PATTERNS[@]}"; do
-            if [[ "${{ env.PR_BRANCH }}" =~ $pattern ]]; then
+            if [[ "$PR_BRANCH" =~ $pattern ]]; then
               ELIGIBLE=true
               break
             fi
@@ -82,15 +82,14 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
-          REPO: ${{ github.repository }}
         run: |
           # Add the required labels if not already present
-          gh pr edit "$PR_NUMBER" --add-label "lgtm,approved" --repo "$REPO"
+          gh pr edit "$PR_NUMBER" --add-label "lgtm,approved" --repo "$GITHUB_REPOSITORY"
 
           # Auto-approve the PR
           gh pr review "$PR_NUMBER" \
             --approve \
-            --repo "$REPO" \
+            --repo "$GITHUB_REPOSITORY" \
             --body "**Auto-Approved**
 
           This PR has been automatically approved by the auto-approve workflow.

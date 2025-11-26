@@ -28,18 +28,17 @@ runs:
       shell: bash
       env:
         PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        REPOSITORY: ${{ github.repository }}
         PR_NUMBER: ${{ github.event.number }}
       run: |
         if [[ -n "$PR_HEAD_SHA" ]]; then
           # running on a PR
           REF="$PR_HEAD_SHA"
-          REPO="${REPOSITORY}/pull/${PR_NUMBER}"
+          REPO="${GITHUB_REPOSITORY}/pull/${PR_NUMBER}"
         else
           # running on a main branch
           # todo: handle other branches than main
           REF="HEAD"
-          REPO="$REPOSITORY"
+          REPO="$GITHUB_REPOSITORY"
         fi
         SHORT_SHA=$(git rev-parse --short=8 $REF)
         echo "SHORT_SHA=$SHORT_SHA" >> $GITHUB_ENV

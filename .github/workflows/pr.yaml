@@ -75,11 +75,10 @@ jobs:
         env:
           IS_TEAM_MEMBER: ${{ needs.check-commit-author.outputs.is_active_team_member }}
           PR_REPO_FULL_NAME: ${{ github.event.pull_request.head.repo.full_name }}
-          CURRENT_REPO: ${{ github.repository }}
         run: |
           if [[ "$IS_TEAM_MEMBER" == "true" ]]; then
             echo "✓ Commit author is in rhdh team - using internal environment"
-          elif [[ "$PR_REPO_FULL_NAME" == "$CURRENT_REPO" ]]; then
+          elif [[ "$PR_REPO_FULL_NAME" == "$GITHUB_REPOSITORY" ]]; then
             echo "✓ Internal PR (not from fork) - using internal environment"
           else
             echo "✓ External PR from fork from non-rhdh team member - using external environment for security"
