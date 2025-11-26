@@ -4,6 +4,7 @@ import { Common } from "../../../utils/common";
 
 // Pre-req: backstage-plugin-catalog-backend-module-gitlab-dynamic
 // Pre-req: immobiliarelabs-backstage-plugin-gitlab-backend-dynamic
+// Using GH_USER_ID account
 test.describe("gitlab discovery UI tests", () => {
   let uiHelper: UIhelper;
   let common: Common;
@@ -22,19 +23,13 @@ test.describe("gitlab discovery UI tests", () => {
     await uiHelper.openSidebar("Catalog");
   });
 
-  // TODO: https://issues.redhat.com/browse/RHDHBUGS-1977
-  test.fixme(
-    "GitLab integration for discovering catalog entities from GitLab",
-    async () => {
-      await uiHelper.verifyText("rhdh-my-new-service");
-      await uiHelper.clickLink("rhdh-my-new-service");
-      await uiHelper.verifyHeading("rhdh-my-new-service");
-      await uiHelper.verifyText("Description of my new service");
-      await uiHelper.verifyText("java");
-      await uiHelper.verifyText("production");
-      await uiHelper.verifyLink("team-a");
-      await uiHelper.verifyLink("project-x");
-      await uiHelper.verifyLink("View Source");
-    },
-  );
+  test("GitLab integration for discovering catalog entities from GitLab", async () => {
+    await uiHelper.verifyText("scaffoldedForm-test");
+    await uiHelper.clickLink("scaffoldedForm-test");
+    await uiHelper.verifyHeading("scaffoldedForm-test");
+    await uiHelper.verifyText("My Description");
+    await uiHelper.verifyText("experimental");
+    await uiHelper.verifyText("website");
+    await uiHelper.verifyLink("View Source");
+  });
 });
