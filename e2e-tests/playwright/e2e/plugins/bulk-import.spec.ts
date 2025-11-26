@@ -13,7 +13,7 @@ import {
 test.describe.serial("Bulk Import plugin", () => {
   test.skip(() => process.env.JOB_NAME?.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
   // TODO: https://issues.redhat.com/browse/RHDHBUGS-2116
-  test.skip(() => !!process.env.PULL_NUMBER); // skip on PR checks to avoid GitHub rate limit
+  test.skip(() => process.env.JOB_TYPE === "presubmit"); // skip on PR checks (Prow presubmit jobs)
   test.skip(() => !process.env.JOB_NAME?.includes("ocp")); // run only on OCP jobs to avoid GH rate limit
   test.describe.configure({ retries: process.env.CI ? 5 : 0 });
 
