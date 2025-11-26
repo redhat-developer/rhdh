@@ -14,6 +14,20 @@ spec:
         - name: app-config-rhdh
       mountPath: /opt/app-root/src
     dynamicPluginsConfigMapName: dynamic-plugins
+    # Increase ephemeral storage limit for dynamic plugins installation
+    # This prevents "No space left on device" errors during plugin extraction
+    replicas: 1
+    podSpec:
+      initContainers:
+        - name: install-dynamic-plugins
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 2.5Gi
+              ephemeral-storage: 10Gi # Increased from default 5Gi
     extraEnvs:
       envs:
         - name: SEGMENT_TEST_MODE
