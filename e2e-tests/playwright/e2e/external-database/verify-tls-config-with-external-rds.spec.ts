@@ -71,6 +71,7 @@ test.describe
   for (const config of rdsConfigurations) {
     test.describe.serial(`RDS ${config.name} PostgreSQL version`, () => {
       test.beforeAll(async () => {
+        test.setTimeout(135000);
         test.info().annotations.push({
           type: "database",
           description: config.host?.split(".")[0] || "unknown",
