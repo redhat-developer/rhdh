@@ -8,8 +8,6 @@ source "$DIR"/install-methods/operator.sh
 initiate_operator_deployments() {
   echo "Initiating Operator-backed deployments on OCP"
 
-  prepare_operator
-
   configure_namespace "${NAME_SPACE}"
   deploy_test_backstage_customization_provider "${NAME_SPACE}"
   local rhdh_base_url="https://backstage-${RELEASE_NAME}-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
@@ -95,6 +93,8 @@ handle_ocp_operator() {
   local rbac_url="https://backstage-${RELEASE_NAME_RBAC}-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
 
   cluster_setup_ocp_operator
+
+  prepare_operator
 
   # Use OSD-GCP specific deployment for osd-gcp jobs (orchestrator disabled)
   if [[ "${JOB_NAME}" =~ osd-gcp ]]; then

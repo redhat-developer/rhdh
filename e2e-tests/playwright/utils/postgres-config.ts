@@ -148,6 +148,8 @@ export async function clearDatabase(credentials: {
     password: credentials.password,
     database: "postgres",
     ssl,
+    connectionTimeoutMillis: 30 * 1000,
+    query_timeout: 30 * 1000,
   });
 
   try {
