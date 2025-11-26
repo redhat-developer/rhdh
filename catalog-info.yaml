@@ -10,6 +10,8 @@ metadata:
     github.com/team-slug: redhat-developer/rhdh-team
     quay.io/repository-slug: rhdh-community/rhdh
     sonarqube.org/project-key: janus-idp_backstage-showcase
+    jira/project-key: RHIDP
+    jira/all-issues-jql: project in (RHDHPLAN, RHIDP, RHDHBUGS) and status != closed
   tags:
     - backstage
     - rhdh
