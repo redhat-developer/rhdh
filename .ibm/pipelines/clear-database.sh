@@ -1,8 +1,7 @@
 #!/bin/bash
 
 clear_database() {
-  POSTGRES_USER="$(echo -n "$RDS_USER" | base64 --decode)"
-  export POSTGRES_USER
+  export POSTGRES_USER=$RDS_USER
   export PGPASSWORD=$RDS_PASSWORD
   export POSTGRES_HOST=$RDS_1_HOST
 
