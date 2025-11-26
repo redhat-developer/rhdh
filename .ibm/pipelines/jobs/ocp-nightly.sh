@@ -14,7 +14,6 @@ handle_ocp_nightly() {
   export K8S_CLUSTER_ROUTER_BASE
 
   cluster_setup_ocp_helm
-  clear_database
 
   # Use OSD-GCP specific deployment for osd-gcp jobs (orchestrator disabled)
   if [[ "${JOB_NAME}" =~ osd-gcp ]]; then

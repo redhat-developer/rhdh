@@ -5,6 +5,7 @@ import {
   readCertificateFile,
   configurePostgresCertificate,
   configurePostgresCredentials,
+  clearDatabase,
 } from "../../utils/postgres-config";
 
 interface AzureDbConfig {
@@ -77,6 +78,12 @@ test.describe
         test.info().annotations.push({
           type: "database",
           description: config.host?.split(".")[0] || "unknown",
+        });
+        await clearDatabase({
+          host: config.host,
+          user: azureUser,
+          password: azurePassword,
+          certificatePath: process.env.AZURE_DB_CERTIFICATES_PATH,
         });
       });
 

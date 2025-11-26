@@ -11,6 +11,7 @@
  */
 
 import { readFileSync, existsSync } from "fs";
+import { Client } from "pg";
 import { KubeClient } from "./kube-client";
 
 /**
@@ -97,4 +98,104 @@ export async function configurePostgresCredentials(
     data,
   };
   await kubeClient.createOrUpdateSecret(secret, namespace);
+}
+
+/**
+ * Clear all non-system databases from a PostgreSQL instance.
+ * Used to clean up after external database tests.
+ *
+ * @param credentials - Database connection credentials
+ * @param credentials.host - PostgreSQL host
+ * @param credentials.port - PostgreSQL port (default: "5432")
+ * @param credentials.user - PostgreSQL user
+ * @param credentials.password - PostgreSQL password
+ * @param certificatePath - Optional path to TLS certificate file
+ */
+export async function clearDatabase(credentials: {
+  host: string;
+  port?: string;
+  user: string;
+  password: string;
+  certificatePath?: string;
+}): Promise<void> {
+  console.log("Starting database cleanup process...");
+
+  // System databases that should never be dropped (includes cloud provider managed databases)
+  const systemDatabases = [
+    "postgres",
+    "template0",
+    "template1",
+    // AWS RDS system databases
+    "rdsadmin",
+    // Azure Database for PostgreSQL system databases
+    "azure_maintenance",
+    "azure_sys",
+  ];
+
+  // Read certificate if path is provided
+  let ssl: { ca: string } | boolean = true;
+  if (credentials.certificatePath) {
+    const certContent = readCertificateFile(credentials.certificatePath);
+    if (certContent) {
+      ssl = { ca: certContent };
+    }
+  }
+
+  const client = new Client({
+    host: credentials.host,
+    port: parseInt(credentials.port || "5432"),
+    user: credentials.user,
+    password: credentials.password,
+    database: "postgres",
+    ssl,
+  });
+
+  try {
+    await client.connect();
+
+    // Get list of databases
+    const result = await client.query<{ datname: string }>(
+      "SELECT datname FROM pg_database WHERE datistemplate = false",
+    );
+
+    const databases = result.rows
+      .map((row) => row.datname)
+      .filter((db) => !systemDatabases.includes(db));
+
+    if (databases.length === 0) {
+      console.log("No databases found to drop");
+      return;
+    }
+
+    console.log(`Found databases to drop: ${databases.join(", ")}`);
+
+    for (const db of databases) {
+      console.log(`Attempting to drop database: ${db}`);
+      try {
+        // Terminate existing connections to the database
+        await client.query(
+          `SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = $1 AND pid <> pg_backend_pid()`,
+          [db],
+        );
+        // Drop the database
+        await client.query(`DROP DATABASE IF EXISTS "${db}"`);
+        console.log(`Successfully dropped database: ${db}`);
+      } catch (dropError) {
+        console.warn(
+          `Warning: Failed to drop database ${db}, but continuing with cleanup:`,
+          dropError,
+        );
+      }
+    }
+
+    console.log("Database cleanup process completed");
+  } catch (error) {
+    console.error(
+      "Failed to connect to database or retrieve database list:",
+      error,
+    );
+    throw error;
+  } finally {
+    await client.end();
+  }
 }

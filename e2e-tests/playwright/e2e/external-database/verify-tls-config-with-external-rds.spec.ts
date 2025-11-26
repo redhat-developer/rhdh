@@ -5,6 +5,7 @@ import {
   readCertificateFile,
   configurePostgresCertificate,
   configurePostgresCredentials,
+  clearDatabase,
 } from "../../utils/postgres-config";
 
 interface RdsConfig {
@@ -73,6 +74,12 @@ test.describe
         test.info().annotations.push({
           type: "database",
           description: config.host?.split(".")[0] || "unknown",
+        });
+        await clearDatabase({
+          host: config.host,
+          user: rdsUser,
+          password: rdsPassword,
+          certificatePath: process.env.RDS_DB_CERTIFICATES_PATH,
         });
       });
 
