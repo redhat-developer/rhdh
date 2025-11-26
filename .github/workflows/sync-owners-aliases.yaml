@@ -32,7 +32,7 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
         with:
-          token: ${{ env.OWNERS_GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: |
             chore: sync OWNERS_ALIASES with GitHub teams
           branch: chore/sync-owners-aliases
