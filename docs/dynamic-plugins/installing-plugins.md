@@ -38,7 +38,7 @@ Note: The plugin's default configuration typically references environment variab
 
 ## Using a Catalog Index Image for Default Plugin Configurations
 
-RHDH supports loading default plugin configurations from an OCI container image, known as a "catalog index". This feature allows you to maintain centralized plugin configurations that can be updated independently of the RHDH container image.
+RHDH supports loading default plugin configurations from an OCI container image. This feature allows you to maintain centralized plugin configurations that can be updated independently of the RHDH container image.
 
 When the `CATALOG_INDEX_IMAGE` environment variable is set, the `install-dynamic-plugins` init container will:
 
