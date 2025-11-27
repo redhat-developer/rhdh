@@ -162,6 +162,13 @@ jobs:
       env:
         HAS_QUAY_AUTH: ${{ secrets.QUAY_USERNAME != '' && secrets.QUAY_TOKEN != '' }}
       steps:
+        - name: Login to Quay
+          uses: docker/login-action@v3
+          with:
+            registry: ${{ env.REGISTRY }}
+            username: ${{ secrets.QUAY_USERNAME }}
+            password: ${{ secrets.QUAY_TOKEN }}
+
         - name: Prepare
           run: |
             ref_name=${{ github.ref_name }}
@@ -235,13 +242,6 @@ jobs:
             labels: |
               quay.expires-after=${{ env.EXPIRES_AFTER }}
               org.opencontainers.image.expires=${{ env.EXPIRES_AFTER }}
-
-        - name: Login to Quay
-          uses: docker/login-action@v3
-          with:
-            registry: ${{ env.REGISTRY }}
-            username: ${{ secrets.QUAY_USERNAME }}
-            password: ${{ secrets.QUAY_TOKEN }}
 
         - name: Create manifest list and push
           working-directory: /tmp/digests
