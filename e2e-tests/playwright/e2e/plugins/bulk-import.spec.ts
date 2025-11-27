@@ -11,10 +11,6 @@ import {
 
 // Pre-req : plugin-bulk-import & plugin-bulk-import-backend-dynamic
 test.describe.serial("Bulk Import plugin", () => {
-  // Log environment variables for debugging
-  console.log("DEBUG: JOB_NAME =", process.env.JOB_NAME);
-  console.log("DEBUG: Detected PR check:", process.env.JOB_NAME?.includes("pull-ci-"));
-
   test.skip(() => process.env.JOB_NAME?.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
   // TODO: https://issues.redhat.com/browse/RHDHBUGS-2116
   // Skip on ALL PR checks (presubmit jobs) - detect by JOB_NAME pattern
