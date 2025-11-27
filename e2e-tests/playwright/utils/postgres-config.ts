@@ -149,7 +149,7 @@ export async function clearDatabase(credentials: {
     database: "postgres",
     ssl,
     connectionTimeoutMillis: 30 * 1000,
-    query_timeout: 30 * 1000,
+    query_timeout: 120 * 1000,
   });
 
   try {
@@ -171,26 +171,57 @@ export async function clearDatabase(credentials: {
 
     console.log(`Found databases to drop: ${databases.join(", ")}`);
 
+    const succeeded: string[] = [];
+    const failed: string[] = [];
+
+    // Execute drops sequentially
     for (const db of databases) {
-      console.log(`Attempting to drop database: ${db}`);
-      try {
-        // Terminate existing connections to the database
-        await client.query(
-          `SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = $1 AND pid <> pg_backend_pid()`,
-          [db],
-        );
-        // Drop the database
-        await client.query(`DROP DATABASE IF EXISTS "${db}"`);
-        console.log(`Successfully dropped database: ${db}`);
-      } catch (dropError) {
-        console.warn(
-          `Warning: Failed to drop database ${db}, but continuing with cleanup:`,
-          dropError,
-        );
+      let success = false;
+      const maxRetries = 3;
+
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          // WITH (FORCE) atomically terminates connections and drops the database
+          await client.query(`DROP DATABASE IF EXISTS "${db}" WITH (FORCE)`);
+          success = true;
+          break;
+        } catch (error) {
+          const errorMsg =
+            error instanceof Error ? error.message : String(error);
+          const isRetryable =
+            errorMsg.includes("being accessed by other users") ||
+            errorMsg.includes("in use") ||
+            errorMsg.includes("timeout");
+
+          if (isRetryable && attempt < maxRetries) {
+            const delay = attempt * 1000; // 1s, 2s, 3s
+            console.log(
+              `Retry ${attempt}/${maxRetries} for database ${db} after ${delay}ms (${errorMsg})`,
+            );
+            await new Promise((resolve) => setTimeout(resolve, delay));
+          } else {
+            console.warn(`Warning: Failed to drop database ${db}:`, errorMsg);
+            break;
+          }
+        }
+      }
+
+      if (success) {
+        succeeded.push(db);
+      } else {
+        failed.push(db);
       }
     }
 
-    console.log("Database cleanup process completed");
+    console.log(
+      `Database cleanup completed: ${succeeded.length} dropped, ${failed.length} failed`,
+    );
+    if (succeeded.length > 0) {
+      console.log(`Successfully dropped: ${succeeded.join(", ")}`);
+    }
+    if (failed.length > 0) {
+      console.log(`Failed to drop: ${failed.join(", ")}`);
+    }
   } catch (error) {
     console.error(
       "Failed to connect to database or retrieve database list:",
