@@ -132,25 +132,51 @@ export class KubeClient {
     deploymentName: string,
     namespace: string,
     replicas: number,
+    maxRetries: number = 3,
   ) {
     const patch = { spec: { replicas: replicas } };
-    try {
-      await this.appsApi.patchNamespacedDeploymentScale(
-        deploymentName,
-        namespace,
-        patch,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        {
-          headers: { "Content-Type": "application/strategic-merge-patch+json" },
-        },
-      );
-      console.log(`Deployment scaled to ${replicas} replicas.`);
-    } catch (error) {
-      console.error("Error scaling deployment:", error);
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        await this.appsApi.patchNamespacedDeploymentScale(
+          deploymentName,
+          namespace,
+          patch,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          {
+            headers: {
+              "Content-Type": "application/strategic-merge-patch+json",
+            },
+          },
+        );
+        console.log(
+          `Deployment ${deploymentName} scaled to ${replicas} replicas.`,
+        );
+        return;
+      } catch (error) {
+        const statusCode = error.response?.statusCode || error.statusCode;
+        const isNotFound = statusCode === 404;
+        const isRetryable =
+          isNotFound || statusCode === 503 || statusCode === 429;
+
+        if (isRetryable && attempt < maxRetries) {
+          const delay = attempt * 2000; // 2s, 4s, 6s, 8s...
+          console.log(
+            `Deployment ${deploymentName} not ready (${statusCode}). Retry ${attempt}/${maxRetries} after ${delay}ms...`,
+          );
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        } else {
+          console.error(
+            `Failed to scale deployment ${deploymentName} after ${attempt} attempts:`,
+            error.body?.message || error.message,
+          );
+          throw error;
+        }
+      }
     }
   }
 
