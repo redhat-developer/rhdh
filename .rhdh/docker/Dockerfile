@@ -267,8 +267,14 @@ COPY --from=build --chown=1001:1001 "$CONTAINER_SOURCE"/ ./
 # RHIDP-4220 - make Konflux preflight and EC checks happy - [check-container] Create a directory named /licenses and include all relevant licensing
 COPY $EXTERNAL_SOURCE_NESTED/LICENSE /licenses/
 
-# RHIDP-5216/RHIDP-5215 - interim marketplace catalog entities until these data will be loaded from container images
-COPY $EXTERNAL_SOURCE_NESTED/catalog-entities/marketplace /marketplace/catalog-entities/
+# Extract marketplace catalog entities from the new index image
+FROM quay.io/rhdh/plugin-catalog-index:1.9.0 AS catalog-index
+
+# Continue with runner stage - need to reference it again after catalog-index stage
+FROM runner AS final
+
+# Copy catalog entities from the index image instead of local files
+COPY --from=catalog-index /catalog-entities/marketplace /opt/app-root/src/marketplace/catalog-entities/
 
 # Copy script to gather dynamic plugins; copy embedded dynamic plugins to root folder; fix permissions
 COPY $EXTERNAL_SOURCE_NESTED/docker/install-dynamic-plugins.py $EXTERNAL_SOURCE_NESTED/docker/install-dynamic-plugins.sh ./
