@@ -60,12 +60,13 @@ env:
 
 ```yaml
 # Example using Helm chart values
-upstream:
-  backstage:
-    extraEnvVars:
-      - name: CATALOG_INDEX_IMAGE
-        value: "quay.io/rhdh/plugin-catalog-index:1.9"
+global:
+  dynamic:
+    catalogIndex:
+      image: "quay.io/rhdh/plugin-catalog-index:1.9"
 ```
+
+The Helm chart automatically templates this value into the `CATALOG_INDEX_IMAGE` environment variable. To update the catalog index, modify this value and run `helm upgrade`.
 
 ### Catalog Index Image Structure
 
