@@ -12,19 +12,13 @@ import {
 // Pre-req : plugin-bulk-import & plugin-bulk-import-backend-dynamic
 test.describe.serial("Bulk Import plugin", () => {
   // Log environment variables for debugging
-  console.log("DEBUG: JOB_TYPE =", process.env.JOB_TYPE);
   console.log("DEBUG: JOB_NAME =", process.env.JOB_NAME);
-  console.log("DEBUG: PULL_NUMBER =", process.env.PULL_NUMBER);
+  console.log("DEBUG: Detected PR check:", process.env.JOB_NAME?.includes("pull-ci-"));
 
   test.skip(() => process.env.JOB_NAME?.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
   // TODO: https://issues.redhat.com/browse/RHDHBUGS-2116
-  // Skip on PR checks - use multiple conditions to ensure it works
-  test.skip(() => {
-    const isPresubmit = process.env.JOB_TYPE === "presubmit";
-    const hasPullNumber = !!process.env.PULL_NUMBER;
-    const isPRJob = process.env.JOB_NAME?.includes("pull-ci-");
-    return isPresubmit || hasPullNumber || isPRJob;
-  }); // skip on PR checks (Prow presubmit jobs)
+  // Skip on ALL PR checks (presubmit jobs) - detect by JOB_NAME pattern
+  test.skip(() => process.env.JOB_NAME?.includes("pull-ci-")); // skip on PR checks (job name starts with pull-ci-)
   test.skip(() => !process.env.JOB_NAME?.includes("ocp")); // run only on OCP jobs to avoid GH rate limit
   test.describe.configure({ retries: process.env.CI ? 5 : 0 });
 
