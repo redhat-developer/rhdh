@@ -46,15 +46,19 @@ jobs:
               DIR="/tmp/${IMAGE//:/_}"
               rm -fr "$DIR"; mkdir -p "$DIR"
               
+              set -x 
+
               # Use skopeo to copy to OCI format
               skopeo copy "docker://quay.io/rhdh/${IMAGE}" "oci:/tmp/oci-${IMAGE//:/_}" || \
-                echo "::error::Container image quay.io/rhdh/${IMAGE} not found - nothing to do!" && exit 0
+                { echo "::error::Container image quay.io/rhdh/${IMAGE} not found - nothing to do!"; exit 0; }
               
               # Extract all layers
               for blob in /tmp/oci-${IMAGE//:/_}/blobs/sha256/*; do
                 tar -xf "$blob" -C "$DIR/" 2>/dev/null || true
               done
               
+              set +x 
+
               # Cleanup
               rm -rf "/tmp/oci-${IMAGE//:/_}"
               
