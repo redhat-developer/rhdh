@@ -208,6 +208,8 @@ upstream:
         env:
           - name: NPM_CONFIG_USERCONFIG
             value: /opt/app-root/src/.npmrc.dynamic-plugins
+          - name: CATALOG_INDEX_IMAGE
+            value: "quay.io/rhdh/plugin-catalog-index:1.9"
         image: '{{ include "backstage.image" . }}'
         imagePullPolicy: Always
         name: install-dynamic-plugins
