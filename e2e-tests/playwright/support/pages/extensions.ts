@@ -35,7 +35,7 @@ export class Extensions {
     this.uiHelper = new UIhelper(page);
   }
 
-  async clickReadMoreByPluginTitle(pluginTitle: string) {
+  async clickReadMoreByPluginTitle(pluginTitle: string, badgeText: string) {
     const allCards = this.page.locator(".v5-MuiPaper-outlined");
     const targetCard = allCards.filter({ hasText: pluginTitle });
     await targetCard
@@ -43,6 +43,11 @@ export class Extensions {
         name: t["plugin.extensions"][lang]["common.readMore"],
       })
       .click();
+    await expect(
+      this.page.getByText(pluginTitle + "  by Red Hat" + badgeText, {
+        exact: true,
+      }),
+    ).toBeVisible();
   }
 
   async selectDropdown(name: string) {
@@ -86,7 +91,14 @@ export class Extensions {
     }
   }
 
+  async searchInputSequentially(searchText: string) {
+    await this.page
+      .getByRole("textbox", { name: "Search" })
+      .pressSequentially(searchText, { delay: 100 });
+  }
+
   async waitForSearchResults(searchText: string) {
+    await this.page.waitForLoadState("domcontentloaded");
     await expect(
       this.page.locator(".v5-MuiPaper-outlined").first(),
     ).toContainText(searchText, { timeout: 10000 });
@@ -107,7 +119,7 @@ export class Extensions {
     includeTable?: boolean;
     includeAbout?: boolean;
   }) {
-    await this.clickReadMoreByPluginTitle(pluginName);
+    await this.clickReadMoreByPluginTitle(pluginName, badgeText);
     await expect(
       this.page.getByLabel(badgeLabel).getByText(badgeText),
     ).toBeVisible();
@@ -155,7 +167,7 @@ export class Extensions {
     await this.selectSupportTypeFilter(supportType);
 
     if (searchTerm) {
-      await this.uiHelper.searchInputPlaceholder(searchTerm);
+      await this.searchInputSequentially(searchTerm);
       await this.waitForSearchResults(searchTerm);
     }
 

@@ -55,7 +55,7 @@ test.describe("Admin > Extensions", () => {
   });
 
   // FIXME https://issues.redhat.com/browse/RHIDP-8971
-  test.describe.skip("Extensions > Catalog", () => {
+  test.describe("Extensions > Catalog", () => {
     test("Verify search bar in extensions", async ({ page }) => {
       await uiHelper.searchInputAriaLabel("Dynatrace");
       await uiHelper.verifyHeading("DynaTrace");
@@ -85,11 +85,11 @@ test.describe("Admin > Extensions", () => {
       );
       await extensions.toggleOption("Red Hat");
       await page.keyboard.press(`Escape`);
-      await uiHelper.verifyHeading("Red Hat Argo CD");
+      await uiHelper.verifyHeading("Argo CD");
       await uiHelper.verifyText(
         t["plugin.extensions"][lang]["metadata.by"] + "Red Hat",
       );
-      await page.getByRole("heading", { name: "Red Hat Argo CD" }).click();
+      await page.getByRole("heading", { name: "Argo CD" }).click();
       await uiHelper.verifyTableHeadingAndRows([
         "Package name",
         "Version",
@@ -344,7 +344,7 @@ test.describe("Admin > Extensions", () => {
       await uiHelper.verifyHeading("Developer Lightspeed");
 
       await extensions.verifyPluginDetails({
-        pluginName: "Developer Lightspeed",
+        pluginName: "Red Hat Developer Lightspeed for Red Hat Developer Hub",
         badgeLabel:
           t["plugin.extensions"][lang]["badges.earlyStageExperimental"],
         badgeText: t["plugin.extensions"][lang]["badges.devPreview"],
@@ -365,6 +365,7 @@ test.describe("Admin > Extensions", () => {
 
       await extensions.clickReadMoreByPluginTitle(
         "ServiceNow Integration for Red Hat Developer Hub",
+        t["plugin.extensions"][lang]["badges.communityPlugin"],
       );
       await expect(
         page
@@ -410,7 +411,10 @@ test.describe("Admin > Extensions", () => {
       );
       await uiHelper.searchInputPlaceholder("Topology");
       await extensions.waitForSearchResults("Topology");
-      await extensions.clickReadMoreByPluginTitle("Topology");
+      await extensions.clickReadMoreByPluginTitle(
+        "Topology",
+        t["plugin.extensions"][lang]["badges.generallyAvailable"],
+      );
       await uiHelper.clickButton(t["plugin.extensions"][lang]["actions.view"]);
       await uiHelper.verifyHeading("Application Topology for Kubernetes");
       await uiHelper.verifyText(
@@ -463,6 +467,7 @@ test.describe("Admin > Extensions", () => {
       await uiHelper.clickTab(t["plugin.extensions"][lang]["menuItem.catalog"]);
       await extensions.clickReadMoreByPluginTitle(
         "Adoption Insights for Red Hat Developer Hub",
+        t["plugin.extensions"][lang]["badges.communityPlugin"],
       );
       await uiHelper.verifyHeading("Adoption Insights for Red Hat");
       await page.getByTestId("plugin-actions").click();
