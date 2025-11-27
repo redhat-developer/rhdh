@@ -75,7 +75,7 @@ test.describe
   for (const config of azureConfigurations) {
     test.describe.serial(`Azure DB ${config.name} PostgreSQL version`, () => {
       test.beforeAll(async () => {
-        test.setTimeout(135000);
+        test.setTimeout(180000);
         test.info().annotations.push({
           type: "database",
           description: config.host?.split(".")[0] || "unknown",
