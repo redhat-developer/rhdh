@@ -49,13 +49,21 @@ When the `CATALOG_INDEX_IMAGE` environment variable is set, the `install-dynamic
 
 ### Configuring the Catalog Index Image
 
-Set the `CATALOG_INDEX_IMAGE` environment variable to specify the OCI image containing your plugin catalog:
+Set the `CATALOG_INDEX_IMAGE` environment variable in the `install-dynamic-plugins` init container to specify the OCI image containing your plugin catalog:
 
 ```yaml
-# Example using Kubernetes/OpenShift deployment
-env:
-  - name: CATALOG_INDEX_IMAGE
-    value: "quay.io/rhdh/plugin-catalog-index:1.9"
+# Example using RHDH Operator (Kubernetes/OpenShift)
+apiVersion: rhdh.redhat.com/v1alpha4
+kind: Backstage
+metadata:
+  name: my-backstage
+spec:
+  application:
+    extraEnvs:
+      envs:
+        - name: CATALOG_INDEX_IMAGE
+          value: "quay.io/rhdh/plugin-catalog-index:1.9"
+          containers: ["install-dynamic-plugins"]
 ```
 
 ```yaml
