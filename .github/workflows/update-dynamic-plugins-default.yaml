@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: Regenerate dynamic-plugins.default.yaml
+name: Update dynamic-plugins.default.yaml
 
 on:
   # workflow_dispatch so that it can be triggered manually if needed
@@ -31,7 +31,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  regen:
+  update-dynamic-plugins-default:
       runs-on: ubuntu-latest
       steps:
         - name: Checkout
@@ -39,21 +39,25 @@ jobs:
           with:
             fetch-depth: 0
 
-        - name: Regenerate dynamic-plugins.default.yaml from latest quay.io/rhdh/plugin-catalog-index:1.y container
+        - name: Update dynamic-plugins.default.yaml from latest quay.io/rhdh/plugin-catalog-index:1.y container
           run: |
             unpack () {
-              set -x
               local IMAGE="$1"
-              DIR="/tmp/${IMAGE//:/_}"; rm -fr "$DIR"; mkdir -p "$DIR"
-              container_id=$(podman create "quay.io/rhdh/${IMAGE}" || echo "not found")
-              if [[ $container_id == "not found" ]]; then
-                echo "::error::Container image quay.io/rhdh/${IMAGE} not found - nothing to do!"
-                exit 0
-              fi
-              podman export $container_id -o /tmp/image.tar && \
-              tar xf /tmp/image.tar -C "${DIR}/"
-              podman rm $container_id; rm -f /tmp/image.tar
-              set +x
+              DIR="/tmp/${IMAGE//:/_}"
+              rm -fr "$DIR"; mkdir -p "$DIR"
+              
+              # Use skopeo to copy to OCI format
+              skopeo copy "docker://quay.io/rhdh/${IMAGE}" "oci:/tmp/oci-${IMAGE//:/_}" || \
+                echo "::error::Container image quay.io/rhdh/${IMAGE} not found - nothing to do!" && exit 0
+              
+              # Extract all layers
+              for blob in /tmp/oci-${IMAGE//:/_}/blobs/sha256/*; do
+                tar -xf "$blob" -C "$DIR/" 2>/dev/null || true
+              done
+              
+              # Cleanup
+              rm -rf "/tmp/oci-${IMAGE//:/_}"
+              
               echo "Unpacked $IMAGE into $DIR"
 
               # replace local dynamic-plugins.default.yaml file with latest from the index container image, and add a deprecation warning
