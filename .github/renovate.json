@@ -45,7 +45,7 @@
       }
     },   
     {
-      "description": "Dockerfile non-major updates", 
+      "description": "Disable Dockerfile non-major updates", 
       "matchDatasources": [
         "docker"
       ],
@@ -59,7 +59,7 @@
       ],        
       "additionalBranchPrefix": "dockerfile ",        
       "groupName": "Dockerfile images (non-major) [skip-build]",
-      "automerge": true
+      "enabled": false
     },  
     {
       "description": "Test Dockerfile non-major updates", 
