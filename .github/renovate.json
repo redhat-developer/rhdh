@@ -86,7 +86,7 @@
       ],
       "matchCurrentVersion": "!/^0/",
       "groupName": "DevDependencies (non-major)",
-      "automerge": true
+      "automerge": false
     },
     {
       "description": "Patch dependency updates", 
@@ -120,7 +120,7 @@
       ],
       "matchCurrentVersion": "!/^0/",
       "groupName": "Test packages (non-major)",
-      "automerge": true
+      "automerge": false
     },
     {
       "extends": [
@@ -132,7 +132,7 @@
       ],
       "matchCurrentVersion": "!/^0/",
       "groupName": "linters  (non-major)",
-      "automerge": true
+      "automerge": false
     },
     {
       "extends": [
@@ -143,7 +143,7 @@
         "minor"
       ],
       "groupName": "material-ui (non-major)",
-      "automerge": true
+      "automerge": false
     },
     {
       "extends": [
@@ -154,7 +154,7 @@
         "minor"
       ],
       "groupName": "react (non-major)",
-      "automerge": true
+      "automerge": false
     },
     {
       "extends": [
@@ -165,7 +165,7 @@
         "minor"
       ],
       "groupName": "emotion (non-major)",
-      "automerge": true
+      "automerge": false
     },
     {
       "matchUpdateTypes": [
@@ -309,5 +309,5 @@
       "kind/security"
     ]
   },
-  "osvVulnerabilityAlerts": true
+  "osvVulnerabilityAlerts": false
 }
