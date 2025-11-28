@@ -80,6 +80,7 @@ integrations:
       apiBaseUrl: temp
       username: temp
       password: temp
+  #   Using Github GH_USER_ID account
   gitlab:
     - host: gitlab.com
       token: ${GITLAB_TOKEN}
@@ -199,9 +200,10 @@ catalog:
       id: production
       githubUrl: "${GITHUB_URL}"
       orgs: ["${GITHUB_ORG}", "${GITHUB_ORG_2}"]
+    #   Using Github GH_USER_ID account
     gitlab:
       my-test-provider:
-        group: rhdhqetest
+        group: rhdh-qe-test
         host: gitlab.com
         schedule:
           frequency:

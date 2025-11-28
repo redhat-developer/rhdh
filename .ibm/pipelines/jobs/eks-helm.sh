@@ -22,12 +22,6 @@ handle_eks_helm() {
   NAME_SPACE_RBAC="showcase-rbac-k8s-ci-nightly"
   export NAME_SPACE NAME_SPACE_RBAC
 
-  K8S_CLUSTER_URL=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')
-  K8S_CLUSTER_API_SERVER_URL=$(printf "%s" "$K8S_CLUSTER_URL" | base64 | tr -d '\n')
-  export K8S_CLUSTER_URL K8S_CLUSTER_API_SERVER_URL
-
-  re_create_k8s_service_account_and_get_token
-
   cluster_setup_k8s_helm
 
   EKS_INSTANCE_DOMAIN_NAME=$(generate_dynamic_domain_name)
