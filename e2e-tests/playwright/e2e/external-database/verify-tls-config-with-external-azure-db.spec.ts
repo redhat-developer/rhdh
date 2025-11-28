@@ -8,13 +8,13 @@ import {
   clearDatabase,
 } from "../../utils/postgres-config";
 
-interface RdsConfig {
+interface AzureDbConfig {
   name: string;
   host: string | undefined;
 }
 
 test.describe
-  .serial("Verify TLS configuration with RDS PostgreSQL health check", () => {
+  .serial("Verify TLS configuration with Azure Database for PostgreSQL health check", () => {
   const namespace = process.env.NAME_SPACE_RUNTIME || "showcase-runtime";
   const job: string = process.env.JOB_NAME || "";
   let deploymentName = process.env.RELEASE_NAME + "-developer-hub";
@@ -22,16 +22,16 @@ test.describe
     deploymentName = "backstage-" + process.env.RELEASE_NAME;
   }
 
-  // RDS configuration from environment
-  const rdsUser = process.env.RDS_USER;
-  const rdsPassword = process.env.RDS_PASSWORD;
+  // Azure DB configuration from environment
+  const azureUser = process.env.AZURE_DB_USER;
+  const azurePassword = process.env.AZURE_DB_PASSWORD;
 
-  // Define all RDS configurations to test
-  const rdsConfigurations: RdsConfig[] = [
-    { name: "latest-3", host: process.env.RDS_1_HOST },
-    { name: "latest-2", host: process.env.RDS_2_HOST },
-    { name: "latest-1", host: process.env.RDS_3_HOST },
-    { name: "latest", host: process.env.RDS_4_HOST },
+  // Define all Azure DB configurations to test
+  const azureConfigurations: AzureDbConfig[] = [
+    { name: "latest-3", host: process.env.AZURE_DB_1_HOST },
+    { name: "latest-2", host: process.env.AZURE_DB_2_HOST },
+    { name: "latest-1", host: process.env.AZURE_DB_3_HOST },
+    { name: "latest", host: process.env.AZURE_DB_4_HOST },
   ];
 
   test.beforeAll(async () => {
@@ -47,40 +47,44 @@ test.describe
     );
 
     // Validate certificates are available
-    const rdsCerts = readCertificateFile(process.env.RDS_DB_CERTIFICATES_PATH);
-    if (!rdsCerts) {
+    const azureCerts = readCertificateFile(
+      process.env.AZURE_DB_CERTIFICATES_PATH,
+    );
+    if (!azureCerts) {
       throw new Error(
-        "RDS_DB_CERTIFICATES_PATH environment variable must be set and point to a valid certificate file",
+        "AZURE_DB_CERTIFICATES_PATH environment variable must be set and point to a valid certificate file",
       );
     }
 
     // Validate required environment variables
-    if (!rdsUser || !rdsPassword) {
+    if (!azureUser || !azurePassword) {
       throw new Error(
-        "RDS_USER and RDS_PASSWORD environment variables must be set",
+        "AZURE_DB_USER and AZURE_DB_PASSWORD environment variables must be set",
       );
     }
 
     const kubeClient = new KubeClient();
 
-    // Create/update the postgres-crt secret with RDS certificates
-    console.log("Configuring RDS TLS certificates...");
-    await configurePostgresCertificate(kubeClient, namespace, rdsCerts);
+    // Create/update the postgres-crt secret with Azure certificates
+    console.log(
+      "Configuring Azure Database for PostgreSQL TLS certificates...",
+    );
+    await configurePostgresCertificate(kubeClient, namespace, azureCerts);
   });
 
-  for (const config of rdsConfigurations) {
-    test.describe.serial(`RDS ${config.name} PostgreSQL version`, () => {
+  for (const config of azureConfigurations) {
+    test.describe.serial(`Azure DB ${config.name} PostgreSQL version`, () => {
       test.beforeAll(async () => {
-        test.setTimeout(135000);
+        test.setTimeout(180000);
         test.info().annotations.push({
           type: "database",
           description: config.host?.split(".")[0] || "unknown",
         });
         await clearDatabase({
           host: config.host,
-          user: rdsUser,
-          password: rdsPassword,
-          certificatePath: process.env.RDS_DB_CERTIFICATES_PATH,
+          user: azureUser,
+          password: azurePassword,
+          certificatePath: process.env.AZURE_DB_CERTIFICATES_PATH,
         });
       });
 
@@ -89,8 +93,8 @@ test.describe
         test.setTimeout(270000);
         await configurePostgresCredentials(kubeClient, namespace, {
           host: config.host,
-          user: rdsUser,
-          password: rdsPassword,
+          user: azureUser,
+          password: azurePassword,
         });
         await kubeClient.restartDeployment(deploymentName, namespace);
       });

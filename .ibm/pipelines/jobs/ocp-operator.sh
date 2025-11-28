@@ -8,8 +8,6 @@ source "$DIR"/install-methods/operator.sh
 initiate_operator_deployments() {
   echo "Initiating Operator-backed deployments on OCP"
 
-  prepare_operator
-
   configure_namespace "${NAME_SPACE}"
   deploy_test_backstage_customization_provider "${NAME_SPACE}"
   local rhdh_base_url="https://backstage-${RELEASE_NAME}-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
@@ -79,18 +77,11 @@ initiate_operator_deployments_osd_gcp() {
 run_operator_runtime_config_change_tests() {
   # Deploy `showcase-runtime` to run tests that require configuration changes at runtime
   configure_namespace "${NAME_SPACE_RUNTIME}"
-  local runtime_url="https://backstage-${RELEASE_NAME}-${NAME_SPACE_RUNTIME}.${K8S_CLUSTER_ROUTER_BASE}"
-  sed -i "s|POSTGRES_USER:.*|POSTGRES_USER: $RDS_USER|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
-  sed -i "s|POSTGRES_PASSWORD:.*|POSTGRES_PASSWORD: $(echo -n "$RDS_PASSWORD" | base64 -w 0)|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
-  sed -i "s|POSTGRES_HOST:.*|POSTGRES_HOST: $(echo -n "$RDS_1_HOST" | base64 -w 0)|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
-  sed -i "s|RHDH_RUNTIME_URL:.*|RHDH_RUNTIME_URL: $(echo -n "$runtime_url" | base64 -w 0)|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
-  oc apply -f "$DIR/resources/postgres-db/postgres-crt-rds.yaml" -n "${NAME_SPACE_RUNTIME}"
-  oc apply -f "$DIR/resources/postgres-db/postgres-cred.yaml" -n "${NAME_SPACE_RUNTIME}"
   oc apply -f "$DIR/resources/postgres-db/dynamic-plugins-root-PVC.yaml" -n "${NAME_SPACE_RUNTIME}"
   create_app_config_map "$DIR/resources/postgres-db/rds-app-config.yaml" "${NAME_SPACE_RUNTIME}"
-  local runtime_url="https://backstage-${RELEASE_NAME}-${NAME_SPACE_RUNTIME}.${K8S_CLUSTER_ROUTER_BASE}"
   deploy_rhdh_operator "${NAME_SPACE_RUNTIME}" "${DIR}/resources/rhdh-operator/rhdh-start-runtime.yaml"
-  check_and_test "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${runtime_url}"
+  local runtime_url="https://backstage-${RELEASE_NAME}-${NAME_SPACE_RUNTIME}.${K8S_CLUSTER_ROUTER_BASE}"
+  run_tests "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${runtime_url}"
 }
 
 handle_ocp_operator() {
@@ -102,6 +93,8 @@ handle_ocp_operator() {
   local rbac_url="https://backstage-${RELEASE_NAME_RBAC}-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
 
   cluster_setup_ocp_operator
+
+  prepare_operator
 
   # Use OSD-GCP specific deployment for osd-gcp jobs (orchestrator disabled)
   if [[ "${JOB_NAME}" =~ osd-gcp ]]; then

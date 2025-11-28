@@ -37,10 +37,6 @@ echo "Sourcing utils.sh"
 # shellcheck source=.ibm/pipelines/utils.sh
 source "${DIR}/utils.sh"
 
-echo "Sourcing clear-database.sh"
-# shellcheck source=.ibm/pipelines/clear-database.sh
-source "${DIR}/clear-database.sh"
-
 main() {
   echo "Log file: ${LOGFILE}"
   echo "JOB_NAME : $JOB_NAME"
