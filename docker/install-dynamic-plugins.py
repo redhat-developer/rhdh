@@ -1024,7 +1024,7 @@ def main():
     # Clean up temporary catalog index directory if it exists
     catalog_index_temp_dir = os.path.join(dynamicPluginsRoot, '.catalog-index-temp')
     if os.path.exists(catalog_index_temp_dir):
-        print(f'\n======= Cleaning up temporary catalog index directory', flush=True)
+        print('\n======= Cleaning up temporary catalog index directory', flush=True)
         shutil.rmtree(catalog_index_temp_dir, ignore_errors=True, onerror=None)
 
 if __name__ == '__main__':
