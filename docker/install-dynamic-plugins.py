@@ -609,7 +609,7 @@ class NpmPluginInstaller(PluginInstaller):
         os.mkdir(directory)
         
         print('\t==> Extracting package archive', archive, flush=True)
-        with tarfile.open(archive, 'r:*') as tar:  # noqa: S202 - Safe: extracts with filter='tar', size checks, and path validation
+        with tarfile.open(archive, 'r:*') as tar:
             for member in tar.getmembers():
                 if member.isreg():
                     if not member.name.startswith('package/'):
@@ -619,7 +619,7 @@ class NpmPluginInstaller(PluginInstaller):
                         raise InstallException(f'Zip bomb detected in {member.name}')
                     
                     member.name = member.name.removeprefix('package/')
-                    tar.extract(member, path=directory, filter='tar')
+                    tar.extract(member, path=directory, filter='data')
                     
                 elif member.isdir():
                     print('\t\tSkipping directory entry', member.name, flush=True)
@@ -635,7 +635,7 @@ class NpmPluginInstaller(PluginInstaller):
                     if not realpath.startswith(directory_realpath):
                         raise InstallException(f'NPM package archive contains a link outside of the archive: {member.name} -> {member.linkpath}')
                     
-                    tar.extract(member, path=directory, filter='tar')
+                    tar.extract(member, path=directory, filter='data')
                     
                 else:
                     type_mapping = {
@@ -814,7 +814,7 @@ def _extract_catalog_index_layers(manifest: dict, local_dir: str, catalog_index_
 
 def _extract_layer_tarball(layer_file: str, catalog_index_temp_dir: str, max_entry_size: int) -> None:
     """Extract a single layer tarball with security checks."""
-    with tarfile.open(layer_file, 'r:*') as tar:  # noqa: S202 - Safe: extracts with filter='tar', size checks, and symlink validation
+    with tarfile.open(layer_file, 'r:*') as tar:
         for member in tar.getmembers():
             # Security checks
             if member.size > max_entry_size:
@@ -825,7 +825,7 @@ def _extract_layer_tarball(layer_file: str, catalog_index_temp_dir: str, max_ent
                 if not realpath.startswith(catalog_index_temp_dir):
                     print(f"\t==> WARNING: Skipping link outside archive: {member.name}", flush=True)
                     continue
-            tar.extract(member, path=catalog_index_temp_dir, filter='tar')
+            tar.extract(member, path=catalog_index_temp_dir, filter='data')
 
 def extract_catalog_index(catalog_index_image: str, catalog_index_mount: str) -> str | None:
     """Extract the catalog index OCI image and return the path to dynamic-plugins.default.yaml if found."""
