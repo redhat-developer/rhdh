@@ -797,81 +797,73 @@ def extract_catalog_index(catalog_index_image: str, catalog_index_mount: str) ->
     if not catalog_index_image:
         print("======= No CATALOG_INDEX_IMAGE specified, skipping catalog index extraction", flush=True)
         return None
-    try:
-        print(f"\n======= Extracting catalog index from {catalog_index_image}", flush=True)
-        skopeo_path = shutil.which('skopeo')
-        if skopeo_path is None:
-            print("WARNING: skopeo executable not found in PATH, skipping catalog index extraction", flush=True)
-            return None
+    
+    print(f"\n======= Extracting catalog index from {catalog_index_image}", flush=True)
+    skopeo_path = shutil.which('skopeo')
+    if skopeo_path is None:
+        raise InstallException("CATALOG_INDEX_IMAGE is set but skopeo executable not found in PATH. Cannot extract catalog index.")
 
-        catalog_index_temp_dir = os.path.join(catalog_index_mount, '.catalog-index-temp')
-        os.makedirs(catalog_index_temp_dir, exist_ok=True)
+    catalog_index_temp_dir = os.path.join(catalog_index_mount, '.catalog-index-temp')
+    os.makedirs(catalog_index_temp_dir, exist_ok=True)
 
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            if not catalog_index_image.startswith('docker://'):
-                image_url = f'docker://{catalog_index_image}'
-            else:
-                image_url = catalog_index_image
-            print(f"\t==> Copying catalog index image to local filesystem", flush=True)
-            local_dir = os.path.join(tmp_dir, 'catalog-index-oci')
-
-            # Download the OCI image using skopeo
-            result = subprocess.run(
-                [skopeo_path, 'copy', image_url, f'dir:{local_dir}'],
-                capture_output=True,
-                text=True
-            )
-            if result.returncode != 0:
-                print(f"WARNING: Failed to download catalog index image: {result.stderr}", flush=True)
-                return None
-
-            manifest_path = os.path.join(local_dir, 'manifest.json')
-            if not os.path.isfile(manifest_path):
-                print("WARNING: manifest.json not found in catalog index image", flush=True)
-                return None
-
-            with open(manifest_path, 'r') as f:
-                manifest = json.load(f)
-
-            print(f"\t==> Extracting catalog index layers", flush=True)
-            max_entry_size = int(os.environ.get('MAX_ENTRY_SIZE', 20000000))
-
-            for layer in manifest.get('layers', []):
-                layer_digest = layer.get('digest', '')
-                if not layer_digest:
-                    continue
-
-                (_sha, filename) = layer_digest.split(':')
-                layer_file = os.path.join(local_dir, filename)
-                if not os.path.isfile(layer_file):
-                    print(f"\t==> WARNING: Layer file {filename} not found", flush=True)
-                    continue
-
-                print(f"\t==> Extracting layer {filename}", flush=True)
-                with tarfile.open(layer_file, 'r:*') as tar:
-                    for member in tar.getmembers():
-                        # Security checks
-                        if member.size > max_entry_size:
-                            print(f"\t==> WARNING: Skipping large file {member.name} in catalog index", flush=True)
-                            continue
-                        if member.islnk() or member.issym():
-                            realpath = os.path.realpath(os.path.join(catalog_index_temp_dir, *os.path.split(member.linkname)))
-                            if not realpath.startswith(catalog_index_temp_dir):
-                                print(f"\t==> WARNING: Skipping link outside archive: {member.name}", flush=True)
-                                continue
-                        tar.extract(member, path=catalog_index_temp_dir, filter='tar')
-
-        default_plugins_file = os.path.join(catalog_index_temp_dir, 'dynamic-plugins.default.yaml')
-        if os.path.isfile(default_plugins_file):
-            print(f"\t==> Successfully extracted catalog index with dynamic-plugins.default.yaml", flush=True)
-            return default_plugins_file
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        if not catalog_index_image.startswith('docker://'):
+            image_url = f'docker://{catalog_index_image}'
         else:
-            print(f"\t==> Catalog index extracted but dynamic-plugins.default.yaml not found", flush=True)
-            return None
+            image_url = catalog_index_image
+        print(f"\t==> Copying catalog index image to local filesystem", flush=True)
+        local_dir = os.path.join(tmp_dir, 'catalog-index-oci')
 
-    except Exception as e:
-        print(f"WARNING: Error extracting catalog index: {e}", flush=True)
-        return None
+        # Download the OCI image using skopeo
+        result = subprocess.run(
+            [skopeo_path, 'copy', image_url, f'dir:{local_dir}'],
+            capture_output=True,
+            text=True
+        )
+        if result.returncode != 0:
+            raise InstallException(f"Failed to download catalog index image {catalog_index_image}: {result.stderr}")
+
+        manifest_path = os.path.join(local_dir, 'manifest.json')
+        if not os.path.isfile(manifest_path):
+            raise InstallException(f"manifest.json not found in catalog index image {catalog_index_image}")
+
+        with open(manifest_path, 'r') as f:
+            manifest = json.load(f)
+
+        print(f"\t==> Extracting catalog index layers", flush=True)
+        max_entry_size = int(os.environ.get('MAX_ENTRY_SIZE', 20000000))
+
+        for layer in manifest.get('layers', []):
+            layer_digest = layer.get('digest', '')
+            if not layer_digest:
+                continue
+
+            (_sha, filename) = layer_digest.split(':')
+            layer_file = os.path.join(local_dir, filename)
+            if not os.path.isfile(layer_file):
+                print(f"\t==> WARNING: Layer file {filename} not found", flush=True)
+                continue
+
+            print(f"\t==> Extracting layer {filename}", flush=True)
+            with tarfile.open(layer_file, 'r:*') as tar:
+                for member in tar.getmembers():
+                    # Security checks
+                    if member.size > max_entry_size:
+                        print(f"\t==> WARNING: Skipping large file {member.name} in catalog index", flush=True)
+                        continue
+                    if member.islnk() or member.issym():
+                        realpath = os.path.realpath(os.path.join(catalog_index_temp_dir, *os.path.split(member.linkname)))
+                        if not realpath.startswith(catalog_index_temp_dir):
+                            print(f"\t==> WARNING: Skipping link outside archive: {member.name}", flush=True)
+                            continue
+                    tar.extract(member, path=catalog_index_temp_dir, filter='tar')
+
+    default_plugins_file = os.path.join(catalog_index_temp_dir, 'dynamic-plugins.default.yaml')
+    if os.path.isfile(default_plugins_file):
+        print(f"\t==> Successfully extracted catalog index with dynamic-plugins.default.yaml", flush=True)
+        return default_plugins_file
+    else:
+        raise InstallException(f"Catalog index image {catalog_index_image} does not contain the expected dynamic-plugins.default.yaml file")
 
 def main():
 
@@ -933,16 +925,14 @@ def main():
     if not isinstance(includes, list):
         raise InstallException(f"content of the \'includes\' field must be a list in {dynamicPluginsFile}")
 
-    # Prepend catalog index default file to includes if it was extracted
+    # Replace dynamic-plugins.default.yaml with catalog index if it was extracted
     if catalog_index_default_file and os.path.isfile(catalog_index_default_file):
-        print(f"\n======= Prepending catalog index default plugins file: {catalog_index_default_file}", flush=True)
-        includes.insert(0, catalog_index_default_file)
-
-        # Remove the embedded default file from includes to avoid duplicates
         embedded_default = 'dynamic-plugins.default.yaml'
         if embedded_default in includes:
-            print(f"\t==> Removing embedded default file from includes (replaced by catalog index)", flush=True)
-            includes.remove(embedded_default)
+            print(f"\n======= Replacing {embedded_default} with catalog index: {catalog_index_default_file}", flush=True)
+            # Replace the embedded default file with the catalog index at the same position
+            index = includes.index(embedded_default)
+            includes[index] = catalog_index_default_file
 
     for include in includes:
         if not isinstance(include, str):

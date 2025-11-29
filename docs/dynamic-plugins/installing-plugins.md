@@ -45,7 +45,7 @@ When the `CATALOG_INDEX_IMAGE` environment variable is set, the `install-dynamic
 1. Download and extract the specified OCI image
 2. Look for a `dynamic-plugins.default.yaml` file within the image
 3. Use this file as the primary source for default plugin configurations
-4. Automatically override the embedded `dynamic-plugins.default.yaml` file if present
+4. Replace the embedded `dynamic-plugins.default.yaml` if it's present in the `includes` list
 
 ### Configuring the Catalog Index Image
 
@@ -68,13 +68,23 @@ spec:
 
 ```yaml
 # Example using Helm chart values
-global:
-  dynamic:
-    catalogIndex:
-      image: "quay.io/rhdh/plugin-catalog-index:1.9"
+# Note: Until native support is added to the Helm chart, you need to customize the
+# install-dynamic-plugins init container definition to add the CATALOG_INDEX_IMAGE env var.
+
+# In your custom values.yaml, add the CATALOG_INDEX_IMAGE environment variable:
+
+upstream:
+  backstage:
+    initContainers:
+      - name: install-dynamic-plugins
+        # ... other configuration from the chart ...
+        env:
+          - name: CATALOG_INDEX_IMAGE
+            value: "quay.io/rhdh/plugin-catalog-index:1.9"
+          # ... other environment variables ...
 ```
 
-The Helm chart automatically templates this value into the `CATALOG_INDEX_IMAGE` environment variable. To update the catalog index, modify this value and run `helm upgrade`.
+To update the catalog index, modify the `CATALOG_INDEX_IMAGE` value in your custom values file and run `helm upgrade`.
 
 ### Catalog Index Image Structure
 
