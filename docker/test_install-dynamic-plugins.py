@@ -71,6 +71,31 @@ def create_test_tarball(tarball_path, mode='w:gz'):  # noqa: S202
     """
     return tarfile.open(tarball_path, mode)  # noqa: S202
 
+def create_mock_skopeo_copy(manifest_path, layer_tarball, mock_result):
+    """
+    Helper function to create mock subprocess.run for skopeo copy operations.
+    
+    Args:
+        manifest_path: Path to manifest.json file to copy
+        layer_tarball: Path to layer tarball file to copy  
+        mock_result: Mock result object to return
+    
+    Returns:
+        A function that can be used as side_effect for subprocess.run mock
+    """
+    def mock_subprocess_run(cmd, **kwargs):
+        if 'copy' in cmd:
+            dest_arg = [arg for arg in cmd if arg.startswith('dir:')]
+            if dest_arg:
+                dest_dir = dest_arg[0].replace('dir:', '')
+                os.makedirs(dest_dir, exist_ok=True)
+                import shutil as sh
+                sh.copy(str(manifest_path), dest_dir)
+                sh.copy(str(layer_tarball), dest_dir)
+        return mock_result
+    
+    return mock_subprocess_run
+
 
 class TestNPMPackageMergerParsePluginKey:
     """Test cases for NPMPackageMerger.parse_plugin_key() method."""
@@ -1923,23 +1948,11 @@ class TestExtractCatalogIndex:
         # Mock subprocess.run to simulate successful skopeo copy
         mock_result = mocker.Mock()
         mock_result.returncode = 0
-
-        def mock_subprocess_run(cmd, **kwargs):
-            # When skopeo copy is called, set up the OCI directory structure
-            if 'copy' in cmd:
-                # Extract the destination directory from the command
-                dest_arg = [arg for arg in cmd if arg.startswith('dir:')]
-                if dest_arg:
-                    dest_dir = dest_arg[0].replace('dir:', '')
-                    os.makedirs(dest_dir, exist_ok=True)
-
-                    # Copy mock OCI image files to destination
-                    import shutil as sh
-                    sh.copy(mock_oci_image['manifest_path'], dest_dir)
-                    sh.copy(mock_oci_image['layer_tarball'], dest_dir)
-
-            return mock_result
-
+        mock_subprocess_run = create_mock_skopeo_copy(
+            mock_oci_image['manifest_path'],
+            mock_oci_image['layer_tarball'],
+            mock_result
+        )
         mocker.patch('subprocess.run', side_effect=mock_subprocess_run)
 
         result = install_dynamic_plugins.extract_catalog_index(
@@ -1992,18 +2005,7 @@ class TestExtractCatalogIndex:
 
         mock_result = mocker.Mock()
         mock_result.returncode = 0
-
-        def mock_subprocess_run(cmd, **kwargs):
-            if 'copy' in cmd:
-                dest_arg = [arg for arg in cmd if arg.startswith('dir:')]
-                if dest_arg:
-                    dest_dir = dest_arg[0].replace('dir:', '')
-                    os.makedirs(dest_dir, exist_ok=True)
-                    import shutil as sh
-                    sh.copy(str(manifest_path), dest_dir)
-                    sh.copy(str(layer_tarball), dest_dir)
-            return mock_result
-
+        mock_subprocess_run = create_mock_skopeo_copy(manifest_path, layer_tarball, mock_result)
         mocker.patch('subprocess.run', side_effect=mock_subprocess_run)
 
         with pytest.raises(install_dynamic_plugins.InstallException, match="does not contain the expected dynamic-plugins.default.yaml file"):
@@ -2061,18 +2063,7 @@ class TestExtractCatalogIndex:
 
         mock_result = mocker.Mock()
         mock_result.returncode = 0
-
-        def mock_subprocess_run(cmd, **kwargs):
-            if 'copy' in cmd:
-                dest_arg = [arg for arg in cmd if arg.startswith('dir:')]
-                if dest_arg:
-                    dest_dir = dest_arg[0].replace('dir:', '')
-                    os.makedirs(dest_dir, exist_ok=True)
-                    import shutil as sh
-                    sh.copy(str(manifest_path), dest_dir)
-                    sh.copy(str(layer_tarball), dest_dir)
-            return mock_result
-
+        mock_subprocess_run = create_mock_skopeo_copy(manifest_path, layer_tarball, mock_result)
         mocker.patch('subprocess.run', side_effect=mock_subprocess_run)
 
         result = install_dynamic_plugins.extract_catalog_index(
