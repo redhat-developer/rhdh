@@ -1860,17 +1860,17 @@ class TestExtractCatalogIndex:
         assert result is None
 
     def test_extract_catalog_index_skopeo_not_found(self, tmp_path, mocker):
-        """Test that function returns None when skopeo is not available."""
+        """Test that function raises InstallException when skopeo is not available."""
         mocker.patch('shutil.which', return_value=None)
 
-        result = install_dynamic_plugins.extract_catalog_index(
-            "quay.io/test/image:latest",
-            str(tmp_path)
-        )
-        assert result is None
+        with pytest.raises(install_dynamic_plugins.InstallException, match="skopeo executable not found in PATH"):
+            install_dynamic_plugins.extract_catalog_index(
+                "quay.io/test/image:latest",
+                str(tmp_path)
+            )
 
     def test_extract_catalog_index_skopeo_copy_fails(self, tmp_path, mocker):
-        """Test that function returns None when skopeo copy fails."""
+        """Test that function raises InstallException when skopeo copy fails."""
         mocker.patch('shutil.which', return_value='/usr/bin/skopeo')
 
         # Mock subprocess.run to simulate skopeo failure
@@ -1879,14 +1879,14 @@ class TestExtractCatalogIndex:
         mock_result.stderr = "Error: image not found"
         mocker.patch('subprocess.run', return_value=mock_result)
 
-        result = install_dynamic_plugins.extract_catalog_index(
-            "quay.io/test/image:latest",
-            str(tmp_path)
-        )
-        assert result is None
+        with pytest.raises(install_dynamic_plugins.InstallException, match="Failed to download catalog index image"):
+            install_dynamic_plugins.extract_catalog_index(
+                "quay.io/test/image:latest",
+                str(tmp_path)
+            )
 
     def test_extract_catalog_index_no_manifest(self, tmp_path, mocker):
-        """Test that function returns None when manifest.json is not found."""
+        """Test that function raises InstallException when manifest.json is not found."""
         mocker.patch('shutil.which', return_value='/usr/bin/skopeo')
 
         # Mock subprocess.run to simulate successful skopeo copy
@@ -1894,11 +1894,11 @@ class TestExtractCatalogIndex:
         mock_result.returncode = 0
         mocker.patch('subprocess.run', return_value=mock_result)
 
-        result = install_dynamic_plugins.extract_catalog_index(
-            "quay.io/test/image:latest",
-            str(tmp_path)
-        )
-        assert result is None
+        with pytest.raises(install_dynamic_plugins.InstallException, match="manifest.json not found in catalog index image"):
+            install_dynamic_plugins.extract_catalog_index(
+                "quay.io/test/image:latest",
+                str(tmp_path)
+            )
 
     def test_extract_catalog_index_success(self, tmp_path, mocker, mock_oci_image):
         """Test successful extraction of catalog index with dynamic-plugins.default.yaml."""
@@ -1993,12 +1993,11 @@ class TestExtractCatalogIndex:
 
         mocker.patch('subprocess.run', side_effect=mock_subprocess_run)
 
-        result = install_dynamic_plugins.extract_catalog_index(
-            "quay.io/test/empty-index:latest",
-            str(catalog_mount)
-        )
-
-        assert result is None
+        with pytest.raises(install_dynamic_plugins.InstallException, match="does not contain the expected dynamic-plugins.default.yaml file"):
+            install_dynamic_plugins.extract_catalog_index(
+                "quay.io/test/empty-index:latest",
+                str(catalog_mount)
+            )
 
     def test_extract_catalog_index_large_file_skipped(self, tmp_path, mocker, monkeypatch):
         """Test that files larger than MAX_ENTRY_SIZE are skipped during extraction."""
@@ -2078,18 +2077,17 @@ class TestExtractCatalogIndex:
         assert not large_file_path.exists()
 
     def test_extract_catalog_index_exception_handling(self, tmp_path, mocker):
-        """Test that exceptions during extraction are caught and return None."""
+        """Test that unexpected exceptions during extraction propagate."""
         mocker.patch('shutil.which', return_value='/usr/bin/skopeo')
 
         # Mock subprocess.run to raise an exception
         mocker.patch('subprocess.run', side_effect=Exception("Unexpected error"))
 
-        result = install_dynamic_plugins.extract_catalog_index(
-            "quay.io/test/image:latest",
-            str(tmp_path)
-        )
-
-        assert result is None
+        with pytest.raises(Exception, match="Unexpected error"):
+            install_dynamic_plugins.extract_catalog_index(
+                "quay.io/test/image:latest",
+                str(tmp_path)
+            )
 
 if __name__ == '__main__':
     pytest.main([__file__, '-v'])
