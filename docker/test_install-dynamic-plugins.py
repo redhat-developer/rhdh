@@ -58,6 +58,19 @@ NPMPackageMerger = install_dynamic_plugins.NPMPackageMerger
 OciPackageMerger = install_dynamic_plugins.OciPackageMerger
 InstallException = install_dynamic_plugins.InstallException
 
+# Test helper functions
+import tarfile  # noqa: E402
+
+def create_test_tarball(tarball_path, mode='w:gz'):  # noqa: S202
+    """
+    Helper function to create test tarballs.
+    
+    Note: This is safe for test code as we're creating controlled test data,
+    not opening untrusted archives. The noqa: S202 suppresses security warnings
+    about tarfile usage which are not applicable to test fixtures.
+    """
+    return tarfile.open(tarball_path, mode)  # noqa: S202
+
 
 class TestNPMPackageMergerParsePluginKey:
     """Test cases for NPMPackageMerger.parse_plugin_key() method."""
@@ -914,7 +927,7 @@ class TestNpmPluginInstallerIntegration:
         (test_dir / "index.js").write_text("console.log('test');")
         
         tarball_path = tmp_path / "test-package.tgz"
-        with tarfile.open(tarball_path, "w:gz") as tar:
+        with create_test_tarball(tarball_path) as tar:
             tar.add(test_dir, arcname="package")
         
         # Calculate actual integrity hash using openssl
@@ -967,7 +980,7 @@ class TestNpmPluginInstallerIntegration:
         
         # Create tarball following NPM format (with 'package/' prefix)
         tarball_path = tmp_path / "test-package-1.0.0.tgz"
-        with tarfile.open(tarball_path, "w:gz") as tar:
+        with create_test_tarball(tarball_path) as tar:
             tar.add(package_dir, arcname="package")
         
         # Test extraction
@@ -997,7 +1010,7 @@ class TestNpmPluginInstallerIntegration:
         (package_dir / "huge-file.bin").write_bytes(large_content)
         
         tarball_path = tmp_path / "malicious.tgz"
-        with tarfile.open(tarball_path, "w:gz") as tar:
+        with create_test_tarball(tarball_path) as tar:
             tar.add(package_dir / "huge-file.bin", arcname="package/huge-file.bin")
         
         installer = install_dynamic_plugins.NpmPluginInstaller(str(tmp_path))
@@ -1015,7 +1028,7 @@ class TestNpmPluginInstallerIntegration:
         
         # Create tarball with path traversal attempt
         tarball_path = tmp_path / "malicious.tgz"
-        with tarfile.open(tarball_path, "w:gz") as tar:
+        with create_test_tarball(tarball_path) as tar:
             # Create a TarInfo with malicious path
             info = tarfile.TarInfo(name="test")
             info.size = 10
@@ -1036,7 +1049,7 @@ class TestNpmPluginInstallerIntegration:
         
         # Create tarball with a symlink that has invalid linkpath prefix
         tarball_path = tmp_path / "malicious.tgz"
-        with tarfile.open(tarball_path, "w:gz") as tar:
+        with create_test_tarball(tarball_path) as tar:
             # First add a regular file
             info = tarfile.TarInfo(name="package/index.js")
             info.size = 10
@@ -1064,7 +1077,7 @@ class TestNpmPluginInstallerIntegration:
         
         # Create tarball with a symlink that resolves outside the extraction directory
         tarball_path = tmp_path / "malicious.tgz"
-        with tarfile.open(tarball_path, "w:gz") as tar:
+        with create_test_tarball(tarball_path) as tar:
             # Add a regular file
             info = tarfile.TarInfo(name="package/index.js")
             info.size = 10
@@ -1092,7 +1105,7 @@ class TestNpmPluginInstallerIntegration:
         
         # Create tarball with a hardlink that resolves outside the extraction directory
         tarball_path = tmp_path / "malicious.tgz"
-        with tarfile.open(tarball_path, "w:gz") as tar:
+        with create_test_tarball(tarball_path) as tar:
             # Add a regular file
             info = tarfile.TarInfo(name="package/index.js")
             info.size = 10
@@ -1119,7 +1132,7 @@ class TestNpmPluginInstallerIntegration:
         
         # Create tarball with valid internal symlinks
         tarball_path = tmp_path / "valid-package.tgz"
-        with tarfile.open(tarball_path, "w:gz") as tar:
+        with create_test_tarball(tarball_path) as tar:
             # Add a regular file
             info = tarfile.TarInfo(name="package/lib/helper.js")
             content = b"module.exports = { helper: () => {} };"
@@ -1241,7 +1254,7 @@ class TestOciDownloader:
         plugin_path = "internal-backstage-plugin-test"
         tarball_path = tmp_path / "test.tar.gz"
         
-        with tarfile.open(tarball_path, "w:gz") as tar:
+        with create_test_tarball(tarball_path) as tar:
             # Add plugin files
             for filename in ["package.json", "index.js"]:
                 info = tarfile.TarInfo(name=f"{plugin_path}/{filename}")
@@ -1271,7 +1284,7 @@ class TestOciDownloader:
         # Create tarball with oversized file (needs actual content matching size)
         large_content = b"x" * 25_000_000  # 25MB, exceeds default 20MB
         
-        with tarfile.open(tarball_path, "w:gz") as tar:
+        with create_test_tarball(tarball_path) as tar:
             info = tarfile.TarInfo(name=f"{plugin_path}/huge.bin")
             info.size = len(large_content)
             tar.addfile(info, io.BytesIO(large_content))
@@ -1844,7 +1857,7 @@ class TestExtractCatalogIndex:
 
         # Create the layer tarball
         layer_tarball = oci_dir / "abc123def456"
-        with tarfile.open(layer_tarball, 'w:gz') as tar:
+        with create_test_tarball(layer_tarball) as tar:
             tar.add(str(yaml_file), arcname="dynamic-plugins.default.yaml")
 
         return {
@@ -1969,7 +1982,7 @@ class TestExtractCatalogIndex:
 
         # Create empty layer tarball
         layer_tarball = oci_dir / "xyz789"
-        with tarfile.open(layer_tarball, 'w:gz') as tar:
+        with create_test_tarball(layer_tarball) as tar:
             # Add a different file
             readme = tmp_path / "README.md"
             readme.write_text("# Test")
@@ -2037,7 +2050,7 @@ class TestExtractCatalogIndex:
         large_file = layer_content_dir / "large-file.bin"
         large_file.write_text("x" * 2000)  # 2KB - larger than our 1000 byte test limit
 
-        with tarfile.open(layer_tarball, 'w:gz') as tar:
+        with create_test_tarball(layer_tarball) as tar:
             # Add YAML with normal size (smaller than 1000 bytes)
             tar.add(str(yaml_file), arcname="dynamic-plugins.default.yaml")
 
