@@ -34,6 +34,7 @@
     "@microsoft/microsoft-graph-types": "2.43.1",
     "@playwright/test": "1.56.1",
     "@types/node": "22.19.1",
+    "@types/pg": "8.15.6",
     "@typescript-eslint/eslint-plugin": "8.47.0",
     "@typescript-eslint/parser": "8.47.0",
     "eslint": "9.39.1",
@@ -56,6 +57,7 @@
     "js-yaml": "4.1.1",
     "node-fetch": "2.7.0",
     "octokit": "4.1.4",
+    "pg": "8.16.3",
     "uuid": "11.1.0",
     "winston": "3.14.2",
     "yaml": "2.8.1"

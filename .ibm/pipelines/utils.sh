@@ -623,6 +623,12 @@ prepare_operator_app_config() {
 run_tests() {
   local release_name=$1
   local project=$2
+  local url="${3:-}"
+
+  BASE_URL="${url}"
+  export BASE_URL
+  echo "BASE_URL: ${BASE_URL}"
+
   cd "${DIR}/../../e2e-tests"
   local e2e_tests_dir
   e2e_tests_dir=$(pwd)
@@ -706,8 +712,6 @@ check_backstage_running() {
 
     if [ "${http_status}" -eq 200 ]; then
       echo "✅ Backstage is up and running!"
-      export BASE_URL="${url}"
-      echo "BASE_URL: ${BASE_URL}"
       return 0
     else
       echo "Attempt ${i} of ${max_attempts}: Backstage not yet available (HTTP Status: ${http_status})"
@@ -1048,11 +1052,7 @@ initiate_runtime_deployment() {
   local namespace=$2
   configure_namespace "${namespace}"
   uninstall_helmchart "${namespace}" "${release_name}"
-  sed_inplace "s|POSTGRES_USER:.*|POSTGRES_USER: $RDS_USER|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
-  sed_inplace "s|POSTGRES_PASSWORD:.*|POSTGRES_PASSWORD: $(echo -n $RDS_PASSWORD | base64 -w 0)|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
-  sed_inplace "s|POSTGRES_HOST:.*|POSTGRES_HOST: $(echo -n $RDS_1_HOST | base64 -w 0)|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
-  oc apply -f "$DIR/resources/postgres-db/postgres-crt-rds.yaml" -n "${namespace}"
-  oc apply -f "$DIR/resources/postgres-db/postgres-cred.yaml" -n "${namespace}"
+
   oc apply -f "$DIR/resources/postgres-db/dynamic-plugins-root-PVC.yaml" -n "${namespace}"
 
   # shellcheck disable=SC2046
@@ -1098,7 +1098,7 @@ check_and_test() {
     save_status_failed_to_deploy $CURRENT_DEPLOYMENT false
     echo "Display pods for verification..."
     oc get pods -n "${namespace}"
-    run_tests "${release_name}" "${namespace}"
+    run_tests "${release_name}" "${namespace}" "${url}"
   else
     echo "Backstage is not running. Exiting..."
     save_status_failed_to_deploy $CURRENT_DEPLOYMENT true
