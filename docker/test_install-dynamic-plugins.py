@@ -69,7 +69,7 @@ def create_test_tarball(tarball_path, mode='w:gz'):  # noqa: S202
     not opening untrusted archives. The noqa: S202 suppresses security warnings
     about tarfile usage which are not applicable to test fixtures.
     """
-    return tarfile.open(tarball_path, mode)  # noqa: S202
+    return tarfile.open(tarball_path, mode)  # NOSONAR
 
 def create_mock_skopeo_copy(manifest_path, layer_tarball, mock_result):
     """
