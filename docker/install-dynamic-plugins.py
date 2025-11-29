@@ -419,6 +419,8 @@ class OciPackageMerger(PackageMerger):
         
             self.allPlugins[pluginKey]["last_modified_level"] = level
             self.override_plugin(version, inheritVersion, pluginKey)
+DOCKER_PROTOCOL_PREFIX = 'docker://'
+
 class OciDownloader:
     """Helper class for downloading and extracting plugins from OCI container images."""
     
@@ -446,7 +448,7 @@ class OciDownloader:
             image_digest = hashlib.sha256(image.encode('utf-8'), usedforsecurity=False).hexdigest()
             local_dir = os.path.join(self.tmp_dir, image_digest)
             # replace oci:// prefix with docker://
-            image_url = image.replace('oci://', 'docker://')
+            image_url = image.replace('oci://', DOCKER_PROTOCOL_PREFIX)
             self.skopeo(['copy', image_url, f'dir:{local_dir}'])
             manifest_path = os.path.join(local_dir, 'manifest.json')
             manifest = json.load(open(manifest_path))
@@ -491,7 +493,7 @@ class OciDownloader:
     
     def digest(self, package: str) -> str:
         (image, _) = package.split('!')
-        image_url = image.replace('oci://', 'docker://')
+        image_url = image.replace('oci://', DOCKER_PROTOCOL_PREFIX)
         output = self.skopeo(['inspect', image_url])
         data = json.loads(output)
         # OCI artifact digest field is defined as "hash method" ":" "hash"
@@ -792,7 +794,40 @@ def wait_for_lock_release(lock_file_path):
      time.sleep(1)
    print("======= Lock released.")
 
-def extract_catalog_index(catalog_index_image: str, catalog_index_mount: str) -> str:
+def _extract_catalog_index_layers(manifest: dict, local_dir: str, catalog_index_temp_dir: str) -> None:
+    """Extract layers from the catalog index OCI image."""
+    max_entry_size = int(os.environ.get('MAX_ENTRY_SIZE', 20000000))
+    
+    for layer in manifest.get('layers', []):
+        layer_digest = layer.get('digest', '')
+        if not layer_digest:
+            continue
+
+        (_sha, filename) = layer_digest.split(':')
+        layer_file = os.path.join(local_dir, filename)
+        if not os.path.isfile(layer_file):
+            print(f"\t==> WARNING: Layer file {filename} not found", flush=True)
+            continue
+
+        print(f"\t==> Extracting layer {filename}", flush=True)
+        _extract_layer_tarball(layer_file, catalog_index_temp_dir, max_entry_size)
+
+def _extract_layer_tarball(layer_file: str, catalog_index_temp_dir: str, max_entry_size: int) -> None:
+    """Extract a single layer tarball with security checks."""
+    with tarfile.open(layer_file, 'r:*') as tar:
+        for member in tar.getmembers():
+            # Security checks
+            if member.size > max_entry_size:
+                print(f"\t==> WARNING: Skipping large file {member.name} in catalog index", flush=True)
+                continue
+            if member.islnk() or member.issym():
+                realpath = os.path.realpath(os.path.join(catalog_index_temp_dir, *os.path.split(member.linkname)))
+                if not realpath.startswith(catalog_index_temp_dir):
+                    print(f"\t==> WARNING: Skipping link outside archive: {member.name}", flush=True)
+                    continue
+            tar.extract(member, path=catalog_index_temp_dir, filter='tar')
+
+def extract_catalog_index(catalog_index_image: str, catalog_index_mount: str) -> str | None:
     """Extract the catalog index OCI image and return the path to dynamic-plugins.default.yaml if found."""
     if not catalog_index_image:
         print("======= No CATALOG_INDEX_IMAGE specified, skipping catalog index extraction", flush=True)
@@ -807,11 +842,11 @@ def extract_catalog_index(catalog_index_image: str, catalog_index_mount: str) ->
     os.makedirs(catalog_index_temp_dir, exist_ok=True)
 
     with tempfile.TemporaryDirectory() as tmp_dir:
-        if not catalog_index_image.startswith('docker://'):
-            image_url = f'docker://{catalog_index_image}'
+        if not catalog_index_image.startswith(DOCKER_PROTOCOL_PREFIX):
+            image_url = f'{DOCKER_PROTOCOL_PREFIX}{catalog_index_image}'
         else:
             image_url = catalog_index_image
-        print(f"\t==> Copying catalog index image to local filesystem", flush=True)
+        print("\t==> Copying catalog index image to local filesystem", flush=True)
         local_dir = os.path.join(tmp_dir, 'catalog-index-oci')
 
         # Download the OCI image using skopeo
@@ -830,37 +865,12 @@ def extract_catalog_index(catalog_index_image: str, catalog_index_mount: str) ->
         with open(manifest_path, 'r') as f:
             manifest = json.load(f)
 
-        print(f"\t==> Extracting catalog index layers", flush=True)
-        max_entry_size = int(os.environ.get('MAX_ENTRY_SIZE', 20000000))
-
-        for layer in manifest.get('layers', []):
-            layer_digest = layer.get('digest', '')
-            if not layer_digest:
-                continue
-
-            (_sha, filename) = layer_digest.split(':')
-            layer_file = os.path.join(local_dir, filename)
-            if not os.path.isfile(layer_file):
-                print(f"\t==> WARNING: Layer file {filename} not found", flush=True)
-                continue
-
-            print(f"\t==> Extracting layer {filename}", flush=True)
-            with tarfile.open(layer_file, 'r:*') as tar:
-                for member in tar.getmembers():
-                    # Security checks
-                    if member.size > max_entry_size:
-                        print(f"\t==> WARNING: Skipping large file {member.name} in catalog index", flush=True)
-                        continue
-                    if member.islnk() or member.issym():
-                        realpath = os.path.realpath(os.path.join(catalog_index_temp_dir, *os.path.split(member.linkname)))
-                        if not realpath.startswith(catalog_index_temp_dir):
-                            print(f"\t==> WARNING: Skipping link outside archive: {member.name}", flush=True)
-                            continue
-                    tar.extract(member, path=catalog_index_temp_dir, filter='tar')
+        print("\t==> Extracting catalog index layers", flush=True)
+        _extract_catalog_index_layers(manifest, local_dir, catalog_index_temp_dir)
 
     default_plugins_file = os.path.join(catalog_index_temp_dir, 'dynamic-plugins.default.yaml')
     if os.path.isfile(default_plugins_file):
-        print(f"\t==> Successfully extracted catalog index with dynamic-plugins.default.yaml", flush=True)
+        print("\t==> Successfully extracted catalog index with dynamic-plugins.default.yaml", flush=True)
         return default_plugins_file
     else:
         raise InstallException(f"Catalog index image {catalog_index_image} does not contain the expected dynamic-plugins.default.yaml file")
