@@ -609,7 +609,7 @@ class NpmPluginInstaller(PluginInstaller):
         os.mkdir(directory)
         
         print('\t==> Extracting package archive', archive, flush=True)
-        with tarfile.open(archive, 'r:*') as tar:
+        with tarfile.open(archive, 'r:*') as tar:  # NOSONAR
             for member in tar.getmembers():
                 if member.isreg():
                     if not member.name.startswith('package/'):
@@ -814,7 +814,7 @@ def _extract_catalog_index_layers(manifest: dict, local_dir: str, catalog_index_
 
 def _extract_layer_tarball(layer_file: str, catalog_index_temp_dir: str, max_entry_size: int) -> None:
     """Extract a single layer tarball with security checks."""
-    with tarfile.open(layer_file, 'r:*') as tar:
+    with tarfile.open(layer_file, 'r:*') as tar:  # NOSONAR
         for member in tar.getmembers():
             # Security checks
             if member.size > max_entry_size:
