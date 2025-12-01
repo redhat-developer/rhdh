@@ -795,6 +795,14 @@ def wait_for_lock_release(lock_file_path):
      time.sleep(1)
    print("======= Lock released.")
 
+# Clean up temporary catalog index directory
+def cleanup_catalog_index_temp_dir(dynamicPluginsRoot):
+   """Clean up temporary catalog index directory."""
+   catalog_index_temp_dir = os.path.join(dynamicPluginsRoot, '.catalog-index-temp')
+   if os.path.exists(catalog_index_temp_dir):
+       print('\n======= Cleaning up temporary catalog index directory', flush=True)
+       shutil.rmtree(catalog_index_temp_dir, ignore_errors=True, onerror=None)
+
 def _extract_catalog_index_layers(manifest: dict, local_dir: str, catalog_index_temp_dir: str) -> None:
     """Extract layers from the catalog index OCI image."""
     max_entry_size = int(os.environ.get('MAX_ENTRY_SIZE', 20000000))
@@ -876,6 +884,7 @@ def main():
 
     lock_file_path = os.path.join(dynamicPluginsRoot, 'install-dynamic-plugins.lock')
     atexit.register(remove_lock, lock_file_path)
+    atexit.register(cleanup_catalog_index_temp_dir, dynamicPluginsRoot)
     signal.signal(signal.SIGTERM, lambda signum, frame: sys.exit(0))
     create_lock(lock_file_path)
 
@@ -931,7 +940,7 @@ def main():
         raise InstallException(f"content of the \'includes\' field must be a list in {dynamicPluginsFile}")
 
     # Replace dynamic-plugins.default.yaml with catalog index if it was extracted
-    if catalog_index_default_file and os.path.isfile(catalog_index_default_file):
+    if catalog_index_image:
         embedded_default = 'dynamic-plugins.default.yaml'
         if embedded_default in includes:
             print(f"\n======= Replacing {embedded_default} with catalog index: {catalog_index_default_file}", flush=True)
@@ -1015,12 +1024,6 @@ def main():
         plugin_directory = os.path.join(dynamicPluginsRoot, plugin_path_by_hash[hash_value])
         print('\n======= Removing previously installed dynamic plugin', plugin_path_by_hash[hash_value], flush=True)
         shutil.rmtree(plugin_directory, ignore_errors=True, onerror=None)
-
-    # Clean up temporary catalog index directory if it exists
-    catalog_index_temp_dir = os.path.join(dynamicPluginsRoot, '.catalog-index-temp')
-    if os.path.exists(catalog_index_temp_dir):
-        print('\n======= Cleaning up temporary catalog index directory', flush=True)
-        shutil.rmtree(catalog_index_temp_dir, ignore_errors=True, onerror=None)
 
 if __name__ == '__main__':
     main()
