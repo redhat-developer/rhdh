@@ -796,9 +796,9 @@ def wait_for_lock_release(lock_file_path):
    print("======= Lock released.")
 
 # Clean up temporary catalog index directory
-def cleanup_catalog_index_temp_dir(dynamicPluginsRoot):
+def cleanup_catalog_index_temp_dir(dynamic_plugins_root):
    """Clean up temporary catalog index directory."""
-   catalog_index_temp_dir = os.path.join(dynamicPluginsRoot, '.catalog-index-temp')
+   catalog_index_temp_dir = os.path.join(dynamic_plugins_root, '.catalog-index-temp')
    if os.path.exists(catalog_index_temp_dir):
        print('\n======= Cleaning up temporary catalog index directory', flush=True)
        shutil.rmtree(catalog_index_temp_dir, ignore_errors=True, onerror=None)
