@@ -19,9 +19,6 @@ test.skip(isPrJob, "Skipping Bulk Import tests on PR (presubmit) jobs");
 // Pre-req : plugin-bulk-import & plugin-bulk-import-backend-dynamic
 test.describe.serial("Bulk Import plugin", () => {
   test.skip(() => process.env.JOB_NAME?.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
-  // TODO: https://issues.redhat.com/browse/RHDHBUGS-2116
-  // Skip on ALL PR checks (presubmit jobs) - detect by JOB_NAME pattern
-  test.skip(() => process.env.JOB_NAME?.includes("pull-ci-")); // skip on PR checks (job name starts with pull-ci-)
   test.skip(() => !process.env.JOB_NAME?.includes("ocp")); // run only on OCP jobs to avoid GH rate limit
   test.describe.configure({ retries: process.env.CI ? 5 : 0 });
 
