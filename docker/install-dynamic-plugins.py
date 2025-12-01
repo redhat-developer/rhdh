@@ -828,12 +828,8 @@ def _extract_layer_tarball(layer_file: str, catalog_index_temp_dir: str, max_ent
                     continue
             tar.extract(member, path=catalog_index_temp_dir, filter='data')
 
-def extract_catalog_index(catalog_index_image: str, catalog_index_mount: str) -> str | None:
+def extract_catalog_index(catalog_index_image: str, catalog_index_mount: str) -> str:
     """Extract the catalog index OCI image and return the path to dynamic-plugins.default.yaml if found."""
-    if not catalog_index_image:
-        print("======= No CATALOG_INDEX_IMAGE specified, skipping catalog index extraction", flush=True)
-        return None
-    
     print(f"\n======= Extracting catalog index from {catalog_index_image}", flush=True)
     skopeo_path = shutil.which('skopeo')
     if skopeo_path is None:
