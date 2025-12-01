@@ -57,7 +57,7 @@ jobs:
       packages: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           fetch-depth: 0
 
@@ -111,7 +111,7 @@ jobs:
           echo "✓ Quay credentials are available"
 
       - name: Login to Quay
-        uses: docker/login-action@v3
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ secrets.QUAY_USERNAME }}
@@ -145,7 +145,7 @@ jobs:
           touch "/tmp/digests/${digest#sha256:}"
 
       - name: Upload digest
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: digests-${{ env.PLATFORM_PAIR }}
           path: /tmp/digests/*
@@ -163,7 +163,7 @@ jobs:
         HAS_QUAY_AUTH: ${{ secrets.QUAY_USERNAME != '' && secrets.QUAY_TOKEN != '' }}
       steps:
         - name: Login to Quay
-          uses: docker/login-action@v3
+          uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
           with:
             registry: ${{ env.REGISTRY }}
             username: ${{ secrets.QUAY_USERNAME }}
@@ -198,12 +198,12 @@ jobs:
             echo "EXPIRES_AFTER=$expires_after" >> $GITHUB_ENV
 
         - name: Checkout
-          uses: actions/checkout@v4
+          uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
           with:
             fetch-depth: 0
 
         - name: Download digests
-          uses: actions/download-artifact@v4
+          uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
           with:
             path: /tmp/digests
             pattern: digests-*
@@ -213,12 +213,12 @@ jobs:
           uses: ./.github/actions/get-sha
 
         - name: Set up Docker Buildx
-          uses: docker/setup-buildx-action@v3
+          uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3
 
         - name: Set container metadata (for :next builds, 14d expiry)
           id: meta-next
           if: ${{ env.REF_NAME_SHORT == 'next' || startsWith(env.REF_NAME_SHORT,'next-') }}
-          uses: docker/metadata-action@v5
+          uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
           with:
             images: ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}
             tags: |
@@ -231,7 +231,7 @@ jobs:
         - name: Set container metadata (for releases, 183d expiry)
           id: meta-release
           if: ${{ env.REF_NAME_SHORT != 'next' && !startsWith(env.REF_NAME_SHORT,'next-') }}
-          uses: docker/metadata-action@v5
+          uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
           with:
             images: ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}
             tags: |

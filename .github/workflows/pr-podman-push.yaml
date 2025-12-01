@@ -67,7 +67,7 @@ jobs:
 
       - name: Download Skip Status Artifact
         id: download-skip-status
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: ${{ env.SKIP_ARTIFACT_NAME }}
           path: ./rhdh-skip-artifacts
@@ -89,7 +89,7 @@ jobs:
 
       - name: Download Image Artifacts
         if: ${{ steps.check-skip.outputs.is_skipped != 'true' }}
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: ${{ env.ARTIFACT_NAME }}
           path: ./rhdh-podman-artifacts
@@ -141,7 +141,7 @@ jobs:
 
       - name: Comment the image pull link
         if: ${{ steps.check-skip.outputs.is_skipped != 'true' }}
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         env:
           PUSHED_TAGS: ${{ steps.prepare.outputs.tags }}
           PR_NUMBER: ${{ steps.get-pr-info.outputs.pr_number }}

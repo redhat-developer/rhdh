@@ -230,7 +230,7 @@ RUN hadFail=0; for d in $(find /tmp -name "yarn*log*" || true) $(find /tmp/xfs-*
 
 # Stage 5 - Build the runner image
 # https://registry.access.redhat.com/ubi9/nodejs-22-minimal
-FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:9.7-1763382208 AS runner
+FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:9.7-1763382208@sha256:7b824fefe00326138ca13e68267629d6efc85717eb3d2ee97ad7e2f11cfbcdea AS runner
 USER 0
 
 ENV EXTERNAL_SOURCE_NESTED=.
