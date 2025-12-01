@@ -376,12 +376,12 @@ These standards apply to all code in this repository...
 
 ## ❓ Troubleshooting
 
-### Problem: Rules not loading in Cursor
+### Problem: Rules not loading in AI Assistant (Cursor, Claude Code, ...)
 
 **Solution:**
 1. Check frontmatter is valid YAML
 2. Run `yarn rulesync:generate`
-3. Restart Cursor
+3. Restart the AI Assistant
 
 ### Problem: Import doesn't work
 
