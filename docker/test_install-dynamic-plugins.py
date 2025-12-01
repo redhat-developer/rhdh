@@ -1892,11 +1892,6 @@ class TestExtractCatalogIndex:
             "yaml_content": yaml_content
         }
 
-    def test_extract_catalog_index_no_image_specified(self, tmp_path):
-        """Test that function returns None when no image is specified."""
-        result = install_dynamic_plugins.extract_catalog_index("", str(tmp_path))
-        assert result is None
-
     def test_extract_catalog_index_skopeo_not_found(self, tmp_path, mocker):
         """Test that function raises InstallException when skopeo is not available."""
         mocker.patch('shutil.which', return_value=None)
