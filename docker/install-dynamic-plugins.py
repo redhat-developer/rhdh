@@ -102,6 +102,8 @@ RECOGNIZED_ALGORITHMS = (
     'blake3',
 )
 
+DOCKER_PROTOCOL_PREFIX = 'docker://'
+
 def merge(source, destination, prefix = ''):
     for key, value in source.items():
         if isinstance(value, dict):
@@ -419,7 +421,6 @@ class OciPackageMerger(PackageMerger):
         
             self.allPlugins[pluginKey]["last_modified_level"] = level
             self.override_plugin(version, inheritVersion, pluginKey)
-DOCKER_PROTOCOL_PREFIX = 'docker://'
 
 class OciDownloader:
     """Helper class for downloading and extracting plugins from OCI container images."""
@@ -842,10 +843,9 @@ def extract_catalog_index(catalog_index_image: str, catalog_index_mount: str) ->
     os.makedirs(catalog_index_temp_dir, exist_ok=True)
 
     with tempfile.TemporaryDirectory() as tmp_dir:
-        if not catalog_index_image.startswith(DOCKER_PROTOCOL_PREFIX):
-            image_url = f'{DOCKER_PROTOCOL_PREFIX}{catalog_index_image}'
-        else:
-            image_url = catalog_index_image
+        image_url = catalog_index_image
+        if not image_url.startswith(DOCKER_PROTOCOL_PREFIX):
+            image_url = f'{DOCKER_PROTOCOL_PREFIX}{image_url}'
         print("\t==> Copying catalog index image to local filesystem", flush=True)
         local_dir = os.path.join(tmp_dir, 'catalog-index-oci')
 
