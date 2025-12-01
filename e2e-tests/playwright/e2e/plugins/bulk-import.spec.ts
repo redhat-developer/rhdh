@@ -9,9 +9,18 @@ import {
   UPDATED_CATALOG_INFO_YAML,
 } from "../../support/test-data/bulk-import";
 
+const isPrJob =
+  process.env.JOB_NAME?.startsWith("pull-ci-") ||
+  process.env.JOB_TYPE === "presubmit" ||
+  Boolean(process.env.PULL_NUMBER);
+
+test.skip(isPrJob, "Skipping Bulk Import tests on PR (presubmit) jobs");
+
 // Pre-req : plugin-bulk-import & plugin-bulk-import-backend-dynamic
 test.describe.serial("Bulk Import plugin", () => {
-  test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
+  test.skip(() => process.env.JOB_NAME?.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
+  test.skip(() => !process.env.JOB_NAME?.includes("ocp")); // run only on OCP jobs to avoid GH rate limit
+  test.describe.configure({ retries: process.env.CI ? 5 : 0 });
 
   let page: Page;
   let uiHelper: UIhelper;
@@ -278,7 +287,7 @@ spec:
 
 test.describe
   .serial("Bulk Import - Verify existing repo are displayed in bulk import Added repositories", () => {
-  test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
+  test.skip(() => process.env.JOB_NAME?.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
   let page: Page;
   let uiHelper: UIhelper;
   let common: Common;
@@ -336,7 +345,7 @@ test.describe
 
 test.describe
   .serial("Bulk Import - Ensure users without bulk import permissions cannot access the bulk import plugin", () => {
-  test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
+  test.skip(() => process.env.JOB_NAME?.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
   let page: Page;
   let uiHelper: UIhelper;
   let common: Common;
