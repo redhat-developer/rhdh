@@ -869,11 +869,10 @@ def extract_catalog_index(catalog_index_image: str, catalog_index_mount: str) ->
         _extract_catalog_index_layers(manifest, local_dir, catalog_index_temp_dir)
 
     default_plugins_file = os.path.join(catalog_index_temp_dir, 'dynamic-plugins.default.yaml')
-    if os.path.isfile(default_plugins_file):
-        print("\t==> Successfully extracted catalog index with dynamic-plugins.default.yaml", flush=True)
-        return default_plugins_file
-    else:
+    if not os.path.isfile(default_plugins_file):
         raise InstallException(f"Catalog index image {catalog_index_image} does not contain the expected dynamic-plugins.default.yaml file")
+    print("\t==> Successfully extracted catalog index with dynamic-plugins.default.yaml", flush=True)
+    return default_plugins_file
 
 def main():
 
