@@ -41,9 +41,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@azure/arm-network@npm:34.1.0":
-  version: 34.1.0
-  resolution: "@azure/arm-network@npm:34.1.0"
+"@azure/arm-network@npm:34.2.0":
+  version: 34.2.0
+  resolution: "@azure/arm-network@npm:34.2.0"
   dependencies:
     "@azure/abort-controller": ^2.1.2
     "@azure/core-auth": ^1.9.0
@@ -52,7 +52,7 @@ __metadata:
     "@azure/core-paging": ^1.6.2
     "@azure/core-rest-pipeline": ^1.19.1
     tslib: ^2.8.1
-  checksum: dff92d319fb639860d05a7c186a0f0f306019f4850c6d64830512ad5af73bab33d70e873ed940543a954942573ab03e35944f73bada673daa2eb8fb2e8713091
+  checksum: d26082a052f3b0f97b488efc75e70f5d44fd0f0c48b2753a5baef6f1f388c674f472710154c9100bd1b3ea0507ec9691100fd991f0111c7ba3535c392d9d0254
   languageName: node
   linkType: hard
 
@@ -1647,7 +1647,7 @@ __metadata:
   resolution: "e2e-tests@workspace:."
   dependencies:
     "@axe-core/playwright": 4.11.0
-    "@azure/arm-network": 34.1.0
+    "@azure/arm-network": 34.2.0
     "@azure/identity": 4.13.0
     "@eslint/js": 9.39.1
     "@keycloak/keycloak-admin-client": 25.0.6
