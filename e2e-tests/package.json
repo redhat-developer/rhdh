@@ -48,7 +48,7 @@
     "typescript-eslint": "8.47.0"
   },
   "dependencies": {
-    "@azure/arm-network": "34.1.0",
+    "@azure/arm-network": "34.2.0",
     "@azure/identity": "4.13.0",
     "@keycloak/keycloak-admin-client": "25.0.6",
     "@kubernetes/client-node": "0.22.3",
