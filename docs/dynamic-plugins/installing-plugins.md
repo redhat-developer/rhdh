@@ -36,6 +36,71 @@ While the plugin's default configuration comes from the `dynamic-plugins.default
 
 Note: The plugin's default configuration typically references environment variables, and it is essential to ensure that these variables are set in the Helm chart values or the Operator configuration.
 
+## Using a Catalog Index Image for Default Plugin Configurations
+
+RHDH supports loading default plugin configurations from an OCI container image. This feature allows you to maintain centralized plugin configurations that can be updated independently of the RHDH container image.
+
+When the `CATALOG_INDEX_IMAGE` environment variable is set, the `install-dynamic-plugins` init container will:
+
+1. Download and extract the specified OCI image
+2. Look for a `dynamic-plugins.default.yaml` file within the image
+3. Use this file as the primary source for default plugin configurations
+4. Replace the embedded `dynamic-plugins.default.yaml` if it's present in the `includes` list
+
+### Configuring the Catalog Index Image
+
+Set the `CATALOG_INDEX_IMAGE` environment variable in the `install-dynamic-plugins` init container to specify the OCI image containing your plugin catalog:
+
+```yaml
+# Example using RHDH Operator (Kubernetes/OpenShift)
+apiVersion: rhdh.redhat.com/v1alpha4
+kind: Backstage
+metadata:
+  name: my-backstage
+spec:
+  application:
+    extraEnvs:
+      envs:
+        - name: CATALOG_INDEX_IMAGE
+          value: "quay.io/rhdh/plugin-catalog-index:1.9"
+          containers: ["install-dynamic-plugins"]
+```
+
+```yaml
+# Example using Helm chart values
+# Note: Until native support is added to the Helm chart, you need to customize the
+# install-dynamic-plugins init container definition to add the CATALOG_INDEX_IMAGE env var.
+
+# In your custom values.yaml, add the CATALOG_INDEX_IMAGE environment variable:
+
+upstream:
+  backstage:
+    initContainers:
+      - name: install-dynamic-plugins
+        # ... other configuration from the chart ...
+        env:
+          - name: CATALOG_INDEX_IMAGE
+            value: "quay.io/rhdh/plugin-catalog-index:1.9"
+          # ... other environment variables ...
+```
+
+To update the catalog index, modify the `CATALOG_INDEX_IMAGE` value in your custom values file and run `helm upgrade`.
+
+### Catalog Index Image Structure
+
+The catalog index OCI image should contain a `dynamic-plugins.default.yaml` file at the root level with the same structure as the embedded default configuration file:
+
+```yaml
+# Contents of dynamic-plugins.default.yaml in the OCI image
+plugins:
+  - package: '@backstage/plugin-catalog'
+    disabled: true
+    pluginConfig:
+      # ... plugin configuration
+  - package: oci://quay.io/example/plugin:v1.0!my-plugin
+    disabled: true
+```
+
 ## Installing External Dynamic Plugins
 
 RHDH supports external dynamic plugins, which are plugins not included in the core RHDH distribution. These plugins can be installed or uninstalled without rebuilding the RHDH application; only a restart is required to apply the changes.
