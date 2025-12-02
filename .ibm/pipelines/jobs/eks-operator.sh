@@ -18,9 +18,8 @@ handle_eks_operator() {
   # Get cluster information
   aws_eks_get_cluster_info
 
-  NAME_SPACE="showcase-k8s-ci-nightly"
-  NAME_SPACE_RBAC="showcase-rbac-k8s-ci-nightly"
-  export NAME_SPACE NAME_SPACE_RBAC
+  export NAME_SPACE="${NAME_SPACE:-showcase-k8s-ci-nightly}"
+  export NAME_SPACE_RBAC="${NAME_SPACE_RBAC:-showcase-rbac-k8s-ci-nightly}"
 
   cluster_setup_k8s_operator
 
