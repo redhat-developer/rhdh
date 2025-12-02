@@ -51,8 +51,8 @@ export const ErrorPage = ({
       flexGrow: 1,
       backgroundColor: theme => theme.palette.background.default,
       borderRadius: theme => theme.shape.borderRadius,
-      // When quickstart drawer is open, adjust margin
-      '.quickstart-drawer-open &': {
+      // When quickstart drawer is open, adjust the content size
+      'body.quickstart-drawer-open #rhdh-sidebar-layout&': {
         transition: 'margin-right 0.3s ease',
         marginRight: 'var(--quickstart-drawer-width, 500px)',
         width: 'auto',

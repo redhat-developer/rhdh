@@ -8,6 +8,8 @@ source "$DIR"/cluster/gke/gcloud.sh
 source "$DIR"/cluster/gke/gke-helm-deployment.sh
 
 handle_gke_helm() {
+  export NAME_SPACE="${NAME_SPACE:-showcase-k8s-ci-nightly}"
+  export NAME_SPACE_RBAC="${NAME_SPACE_RBAC:-showcase-rbac-k8s-ci-nightly}"
 
   echo "Creating GKE SSL certificate..."
   gcloud_ssl_cert_create "$GKE_CERT_NAME" "$GKE_INSTANCE_DOMAIN_NAME" "$GOOGLE_CLOUD_PROJECT"

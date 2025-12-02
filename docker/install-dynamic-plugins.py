@@ -40,6 +40,7 @@ It expects, as the only argument, the path to the root directory where the dynam
 Environment Variables:
     MAX_ENTRY_SIZE: Maximum size of a file in the archive (default: 20MB)
     SKIP_INTEGRITY_CHECK: Set to "true" to skip integrity check of remote packages
+    CATALOG_INDEX_IMAGE: OCI image reference for the plugin catalog index (e.g., quay.io/rhdh/plugin-catalog-index:1.9)
 
 Configuration:
     The script expects the `dynamic-plugins.yaml` file to be present in the current directory and to contain the list of plugins to install along with their optional configuration.
@@ -100,6 +101,8 @@ RECOGNIZED_ALGORITHMS = (
     'sha256',
     'blake3',
 )
+
+DOCKER_PROTOCOL_PREFIX = 'docker://'
 
 def merge(source, destination, prefix = ''):
     for key, value in source.items():
@@ -418,6 +421,7 @@ class OciPackageMerger(PackageMerger):
         
             self.allPlugins[pluginKey]["last_modified_level"] = level
             self.override_plugin(version, inheritVersion, pluginKey)
+
 class OciDownloader:
     """Helper class for downloading and extracting plugins from OCI container images."""
     
@@ -445,7 +449,7 @@ class OciDownloader:
             image_digest = hashlib.sha256(image.encode('utf-8'), usedforsecurity=False).hexdigest()
             local_dir = os.path.join(self.tmp_dir, image_digest)
             # replace oci:// prefix with docker://
-            image_url = image.replace('oci://', 'docker://')
+            image_url = image.replace('oci://', DOCKER_PROTOCOL_PREFIX)
             self.skopeo(['copy', image_url, f'dir:{local_dir}'])
             manifest_path = os.path.join(local_dir, 'manifest.json')
             manifest = json.load(open(manifest_path))
@@ -458,7 +462,7 @@ class OciDownloader:
         return self.image_to_tarball[image]
 
     def extract_plugin(self, tar_file: str, plugin_path: str) -> None:
-        with tarfile.open(tar_file, 'r:gz') as tar: # NOSONAR
+        with tarfile.open(tar_file, 'r:*') as tar: # NOSONAR
             # extract only the files in specified directory
             filesToExtract = []
             for member in tar.getmembers():
@@ -490,7 +494,7 @@ class OciDownloader:
     
     def digest(self, package: str) -> str:
         (image, _) = package.split('!')
-        image_url = image.replace('oci://', 'docker://')
+        image_url = image.replace('oci://', DOCKER_PROTOCOL_PREFIX)
         output = self.skopeo(['inspect', image_url])
         data = json.loads(output)
         # OCI artifact digest field is defined as "hash method" ":" "hash"
@@ -542,7 +546,9 @@ class OciPluginInstaller(PluginInstaller):
             plugin_path = self.downloader.download(package)
             
             # Save digest for future comparison
-            digest_file_path = os.path.join(self.destination, plugin_path, 'dynamic-plugin-image.hash')
+            plugin_directory = os.path.join(self.destination, plugin_path)
+            os.makedirs(plugin_directory, exist_ok=True)  # Ensure directory exists
+            digest_file_path = os.path.join(plugin_directory, 'dynamic-plugin-image.hash')
             with open(digest_file_path, 'w') as f:
                 f.write(self.downloader.digest(package))
                 
@@ -604,7 +610,7 @@ class NpmPluginInstaller(PluginInstaller):
         os.mkdir(directory)
         
         print('\t==> Extracting package archive', archive, flush=True)
-        with tarfile.open(archive, 'r:gz') as tar:
+        with tarfile.open(archive, 'r:*') as tar:  # NOSONAR
             for member in tar.getmembers():
                 if member.isreg():
                     if not member.name.startswith('package/'):
@@ -614,7 +620,7 @@ class NpmPluginInstaller(PluginInstaller):
                         raise InstallException(f'Zip bomb detected in {member.name}')
                     
                     member.name = member.name.removeprefix('package/')
-                    tar.extract(member, path=directory, filter='tar')
+                    tar.extract(member, path=directory, filter='data')
                     
                 elif member.isdir():
                     print('\t\tSkipping directory entry', member.name, flush=True)
@@ -630,7 +636,7 @@ class NpmPluginInstaller(PluginInstaller):
                     if not realpath.startswith(directory_realpath):
                         raise InstallException(f'NPM package archive contains a link outside of the archive: {member.name} -> {member.linkpath}')
                     
-                    tar.extract(member, path=directory, filter='tar')
+                    tar.extract(member, path=directory, filter='data')
                     
                 else:
                     type_mapping = {
@@ -789,14 +795,104 @@ def wait_for_lock_release(lock_file_path):
      time.sleep(1)
    print("======= Lock released.")
 
+# Clean up temporary catalog index directory
+def cleanup_catalog_index_temp_dir(dynamic_plugins_root):
+   """Clean up temporary catalog index directory."""
+   catalog_index_temp_dir = os.path.join(dynamic_plugins_root, '.catalog-index-temp')
+   if os.path.exists(catalog_index_temp_dir):
+       print('\n======= Cleaning up temporary catalog index directory', flush=True)
+       shutil.rmtree(catalog_index_temp_dir, ignore_errors=True, onerror=None)
+
+def _extract_catalog_index_layers(manifest: dict, local_dir: str, catalog_index_temp_dir: str) -> None:
+    """Extract layers from the catalog index OCI image."""
+    max_entry_size = int(os.environ.get('MAX_ENTRY_SIZE', 20000000))
+    
+    for layer in manifest.get('layers', []):
+        layer_digest = layer.get('digest', '')
+        if not layer_digest:
+            continue
+
+        (_sha, filename) = layer_digest.split(':')
+        layer_file = os.path.join(local_dir, filename)
+        if not os.path.isfile(layer_file):
+            print(f"\t==> WARNING: Layer file {filename} not found", flush=True)
+            continue
+
+        print(f"\t==> Extracting layer {filename}", flush=True)
+        _extract_layer_tarball(layer_file, catalog_index_temp_dir, max_entry_size)
+
+def _extract_layer_tarball(layer_file: str, catalog_index_temp_dir: str, max_entry_size: int) -> None:
+    """Extract a single layer tarball with security checks."""
+    with tarfile.open(layer_file, 'r:*') as tar:  # NOSONAR
+        for member in tar.getmembers():
+            # Security checks
+            if member.size > max_entry_size:
+                print(f"\t==> WARNING: Skipping large file {member.name} in catalog index", flush=True)
+                continue
+            if member.islnk() or member.issym():
+                realpath = os.path.realpath(os.path.join(catalog_index_temp_dir, *os.path.split(member.linkname)))
+                if not realpath.startswith(catalog_index_temp_dir):
+                    print(f"\t==> WARNING: Skipping link outside archive: {member.name}", flush=True)
+                    continue
+            tar.extract(member, path=catalog_index_temp_dir, filter='data')
+
+def extract_catalog_index(catalog_index_image: str, catalog_index_mount: str) -> str:
+    """Extract the catalog index OCI image and return the path to dynamic-plugins.default.yaml if found."""
+    print(f"\n======= Extracting catalog index from {catalog_index_image}", flush=True)
+    skopeo_path = shutil.which('skopeo')
+    if skopeo_path is None:
+        raise InstallException("CATALOG_INDEX_IMAGE is set but skopeo executable not found in PATH. Cannot extract catalog index.")
+
+    catalog_index_temp_dir = os.path.join(catalog_index_mount, '.catalog-index-temp')
+    os.makedirs(catalog_index_temp_dir, exist_ok=True)
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        image_url = catalog_index_image
+        if not image_url.startswith(DOCKER_PROTOCOL_PREFIX):
+            image_url = f'{DOCKER_PROTOCOL_PREFIX}{image_url}'
+        print("\t==> Copying catalog index image to local filesystem", flush=True)
+        local_dir = os.path.join(tmp_dir, 'catalog-index-oci')
+
+        # Download the OCI image using skopeo
+        result = subprocess.run(
+            [skopeo_path, 'copy', image_url, f'dir:{local_dir}'],
+            capture_output=True,
+            text=True
+        )
+        if result.returncode != 0:
+            raise InstallException(f"Failed to download catalog index image {catalog_index_image}: {result.stderr}")
+
+        manifest_path = os.path.join(local_dir, 'manifest.json')
+        if not os.path.isfile(manifest_path):
+            raise InstallException(f"manifest.json not found in catalog index image {catalog_index_image}")
+
+        with open(manifest_path, 'r') as f:
+            manifest = json.load(f)
+
+        print("\t==> Extracting catalog index layers", flush=True)
+        _extract_catalog_index_layers(manifest, local_dir, catalog_index_temp_dir)
+
+    default_plugins_file = os.path.join(catalog_index_temp_dir, 'dynamic-plugins.default.yaml')
+    if not os.path.isfile(default_plugins_file):
+        raise InstallException(f"Catalog index image {catalog_index_image} does not contain the expected dynamic-plugins.default.yaml file")
+    print("\t==> Successfully extracted catalog index with dynamic-plugins.default.yaml", flush=True)
+    return default_plugins_file
+
 def main():
 
     dynamicPluginsRoot = sys.argv[1]
 
     lock_file_path = os.path.join(dynamicPluginsRoot, 'install-dynamic-plugins.lock')
     atexit.register(remove_lock, lock_file_path)
+    atexit.register(cleanup_catalog_index_temp_dir, dynamicPluginsRoot)
     signal.signal(signal.SIGTERM, lambda signum, frame: sys.exit(0))
     create_lock(lock_file_path)
+
+    # Extract catalog index if CATALOG_INDEX_IMAGE is set
+    catalog_index_image = os.environ.get("CATALOG_INDEX_IMAGE", "")
+    catalog_index_default_file = None
+    if catalog_index_image:
+        catalog_index_default_file = extract_catalog_index(catalog_index_image, dynamicPluginsRoot)
 
     skipIntegrityCheck = os.environ.get("SKIP_INTEGRITY_CHECK", "").lower() == "true"
 
@@ -842,6 +938,15 @@ def main():
 
     if not isinstance(includes, list):
         raise InstallException(f"content of the \'includes\' field must be a list in {dynamicPluginsFile}")
+
+    # Replace dynamic-plugins.default.yaml with catalog index if it was extracted
+    if catalog_index_image:
+        embedded_default = 'dynamic-plugins.default.yaml'
+        if embedded_default in includes:
+            print(f"\n======= Replacing {embedded_default} with catalog index: {catalog_index_default_file}", flush=True)
+            # Replace the embedded default file with the catalog index at the same position
+            index = includes.index(embedded_default)
+            includes[index] = catalog_index_default_file
 
     for include in includes:
         if not isinstance(include, str):
