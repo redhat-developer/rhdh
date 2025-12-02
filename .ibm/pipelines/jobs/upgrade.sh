@@ -4,10 +4,10 @@
 source "$DIR"/utils.sh
 
 handle_ocp_helm_upgrade() {
-  export NAME_SPACE="showcase-upgrade-nightly"
-  export NAME_SPACE_POSTGRES_DB="${NAME_SPACE}-postgres-external-db"
-  export DEPLOYMENT_NAME="${RELEASE_NAME}-developer-hub"
-  export QUAY_REPO_BASE="rhdh/rhdh-hub-rhel9"
+  export NAME_SPACE="${NAME_SPACE:-showcase-upgrade-nightly}"
+  export NAME_SPACE_POSTGRES_DB="${NAME_SPACE_POSTGRES_DB:-${NAME_SPACE}-postgres-external-db}"
+  export DEPLOYMENT_NAME="${DEPLOYMENT_NAME:-${RELEASE_NAME}-developer-hub}"
+  export QUAY_REPO_BASE="${QUAY_REPO_BASE:-rhdh/rhdh-hub-rhel9}"
 
   # Dynamically determine the previous release version and chart version
   previous_release_version=$(get_previous_release_version "$CHART_MAJOR_VERSION")
