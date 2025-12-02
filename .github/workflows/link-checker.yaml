@@ -11,16 +11,16 @@ jobs:
   markdown-link-check:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2
 
     - name: Check markdown links in docs
-      uses: tcort/github-action-markdown-link-check@v1
+      uses: tcort/github-action-markdown-link-check@e7c7a18363c842693fadde5d41a3bd3573a7a225 # v1
       with:
         config-file: '.github/workflows/link-checker.config.json'
         folder-path: 'docs/'
 
     - name: Check markdown files in root
-      uses: tcort/github-action-markdown-link-check@v1
+      uses: tcort/github-action-markdown-link-check@e7c7a18363c842693fadde5d41a3bd3573a7a225 # v1
       with:
         config-file: '.github/workflows/link-checker.config.json'
         # ignore subfolders we don't want to check everthing, there is a lot of files from plugins that we don't control

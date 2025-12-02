@@ -400,7 +400,7 @@ test.describe.serial("Test RBAC", () => {
       let attempts = 0;
       do {
         await page.waitForTimeout(500);
-        nextButton2 = page.locator('[data-testid="nextButton-2"]');
+        nextButton2 = page.getByTestId("nextButton-2");
         matchNextButton2 = await nextButton2.all();
         attempts++;
         // eslint-disable-next-line playwright/no-conditional-in-test

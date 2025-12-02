@@ -1,10 +1,10 @@
 {
   "extends": [
+    "config:best-practices",
     "config:js-app",
     ":gitSignOff",
     ":rebaseStalePrs",
     "group:allNonMajor",
-    "default:pinDigestsDisabled",
     ":automergeBranch",
     ":disableMajorUpdates"
   ],

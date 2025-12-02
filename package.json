@@ -49,7 +49,7 @@
     "jsdom": "26.1.0",
     "lint-staged": "15.5.2",
     "node-gyp": "10.3.1",
-    "rulesync": "^3.23.2",
+    "rulesync": "3.23.2",
     "sherif": "1.9.0",
     "turbo": "2.6.1"
   },

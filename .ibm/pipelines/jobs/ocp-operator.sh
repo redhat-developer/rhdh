@@ -85,6 +85,10 @@ run_operator_runtime_config_change_tests() {
 }
 
 handle_ocp_operator() {
+  export NAME_SPACE="${NAME_SPACE:-showcase}"
+  export NAME_SPACE_RBAC="${NAME_SPACE_RBAC:-showcase-rbac}"
+  export NAME_SPACE_RUNTIME="${NAME_SPACE_RUNTIME:-showcase-runtime}"
+
   oc_login
 
   K8S_CLUSTER_ROUTER_BASE=$(oc get route console -n openshift-console -o=jsonpath='{.spec.host}' | sed 's/^[^.]*\.//')
