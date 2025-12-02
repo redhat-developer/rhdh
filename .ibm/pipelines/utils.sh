@@ -627,6 +627,10 @@ run_tests() {
   local project=$2
   local url="${3:-}"
 
+  CURRENT_DEPLOYMENT=$((CURRENT_DEPLOYMENT + 1))
+  save_status_deployment_namespace $CURRENT_DEPLOYMENT "$project"
+  save_status_failed_to_deploy $CURRENT_DEPLOYMENT false
+
   BASE_URL="${url}"
   export BASE_URL
   echo "BASE_URL: ${BASE_URL}"
@@ -1094,16 +1098,14 @@ check_and_test() {
   local max_attempts=${4:-30} # Default to 30 if not set
   local wait_seconds=${5:-30} # Default to 30 if not set
 
-  CURRENT_DEPLOYMENT=$((CURRENT_DEPLOYMENT + 1))
-  save_status_deployment_namespace $CURRENT_DEPLOYMENT "$namespace"
-
   if check_backstage_running "${release_name}" "${namespace}" "${url}" "${max_attempts}" "${wait_seconds}"; then
-    save_status_failed_to_deploy $CURRENT_DEPLOYMENT false
     echo "Display pods for verification..."
     oc get pods -n "${namespace}"
     run_tests "${release_name}" "${namespace}" "${url}"
   else
     echo "Backstage is not running. Exiting..."
+    CURRENT_DEPLOYMENT=$((CURRENT_DEPLOYMENT + 1))
+    save_status_deployment_namespace $CURRENT_DEPLOYMENT "$namespace"
     save_status_failed_to_deploy $CURRENT_DEPLOYMENT true
     save_status_test_failed $CURRENT_DEPLOYMENT true
     save_overall_result 1
@@ -1122,6 +1124,8 @@ check_upgrade_and_test() {
     check_and_test "${release_name}" "${namespace}" "${url}"
   else
     echo "Helm upgrade encountered an issue or timed out. Exiting..."
+    CURRENT_DEPLOYMENT=$((CURRENT_DEPLOYMENT + 1))
+    save_status_deployment_namespace $CURRENT_DEPLOYMENT "$namespace"
     save_status_failed_to_deploy $CURRENT_DEPLOYMENT true
     save_status_test_failed $CURRENT_DEPLOYMENT true
     save_overall_result 1
