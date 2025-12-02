@@ -20,6 +20,7 @@ This test suite covers:
 - OciPackageMerger.parse_plugin_key() - Parsing OCI package formats
 - NPMPackageMerger.merge_plugin() - Plugin config merging and override logic
 - OciPackageMerger.merge_plugin() - OCI plugin merging with version inheritance
+- extract_catalog_index() - Extracting plugin catalog index from OCI images
 
 Installation:
     To install test dependencies:
@@ -56,6 +57,44 @@ spec.loader.exec_module(install_dynamic_plugins)
 NPMPackageMerger = install_dynamic_plugins.NPMPackageMerger
 OciPackageMerger = install_dynamic_plugins.OciPackageMerger
 InstallException = install_dynamic_plugins.InstallException
+
+# Test helper functions
+import tarfile  # noqa: E402
+
+def create_test_tarball(tarball_path, mode='w:gz'):  # noqa: S202
+    """
+    Helper function to create test tarballs.
+    
+    Note: This is safe for test code as we're creating controlled test data,
+    not opening untrusted archives. The noqa: S202 suppresses security warnings
+    about tarfile usage which are not applicable to test fixtures.
+    """
+    return tarfile.open(tarball_path, mode)  # NOSONAR
+
+def create_mock_skopeo_copy(manifest_path, layer_tarball, mock_result):
+    """
+    Helper function to create mock subprocess.run for skopeo copy operations.
+    
+    Args:
+        manifest_path: Path to manifest.json file to copy
+        layer_tarball: Path to layer tarball file to copy  
+        mock_result: Mock result object to return
+    
+    Returns:
+        A function that can be used as side_effect for subprocess.run mock
+    """
+    def mock_subprocess_run(cmd, **kwargs):
+        if 'copy' in cmd:
+            dest_arg = [arg for arg in cmd if arg.startswith('dir:')]
+            if dest_arg:
+                dest_dir = dest_arg[0].replace('dir:', '')
+                os.makedirs(dest_dir, exist_ok=True)
+                import shutil as sh
+                sh.copy(str(manifest_path), dest_dir)
+                sh.copy(str(layer_tarball), dest_dir)
+        return mock_result
+    
+    return mock_subprocess_run
 
 
 class TestNPMPackageMergerParsePluginKey:
@@ -913,7 +952,7 @@ class TestNpmPluginInstallerIntegration:
         (test_dir / "index.js").write_text("console.log('test');")
         
         tarball_path = tmp_path / "test-package.tgz"
-        with tarfile.open(tarball_path, "w:gz") as tar:
+        with create_test_tarball(tarball_path) as tar:
             tar.add(test_dir, arcname="package")
         
         # Calculate actual integrity hash using openssl
@@ -966,7 +1005,7 @@ class TestNpmPluginInstallerIntegration:
         
         # Create tarball following NPM format (with 'package/' prefix)
         tarball_path = tmp_path / "test-package-1.0.0.tgz"
-        with tarfile.open(tarball_path, "w:gz") as tar:
+        with create_test_tarball(tarball_path) as tar:
             tar.add(package_dir, arcname="package")
         
         # Test extraction
@@ -996,7 +1035,7 @@ class TestNpmPluginInstallerIntegration:
         (package_dir / "huge-file.bin").write_bytes(large_content)
         
         tarball_path = tmp_path / "malicious.tgz"
-        with tarfile.open(tarball_path, "w:gz") as tar:
+        with create_test_tarball(tarball_path) as tar:
             tar.add(package_dir / "huge-file.bin", arcname="package/huge-file.bin")
         
         installer = install_dynamic_plugins.NpmPluginInstaller(str(tmp_path))
@@ -1014,7 +1053,7 @@ class TestNpmPluginInstallerIntegration:
         
         # Create tarball with path traversal attempt
         tarball_path = tmp_path / "malicious.tgz"
-        with tarfile.open(tarball_path, "w:gz") as tar:
+        with create_test_tarball(tarball_path) as tar:
             # Create a TarInfo with malicious path
             info = tarfile.TarInfo(name="test")
             info.size = 10
@@ -1035,7 +1074,7 @@ class TestNpmPluginInstallerIntegration:
         
         # Create tarball with a symlink that has invalid linkpath prefix
         tarball_path = tmp_path / "malicious.tgz"
-        with tarfile.open(tarball_path, "w:gz") as tar:
+        with create_test_tarball(tarball_path) as tar:
             # First add a regular file
             info = tarfile.TarInfo(name="package/index.js")
             info.size = 10
@@ -1063,7 +1102,7 @@ class TestNpmPluginInstallerIntegration:
         
         # Create tarball with a symlink that resolves outside the extraction directory
         tarball_path = tmp_path / "malicious.tgz"
-        with tarfile.open(tarball_path, "w:gz") as tar:
+        with create_test_tarball(tarball_path) as tar:
             # Add a regular file
             info = tarfile.TarInfo(name="package/index.js")
             info.size = 10
@@ -1091,7 +1130,7 @@ class TestNpmPluginInstallerIntegration:
         
         # Create tarball with a hardlink that resolves outside the extraction directory
         tarball_path = tmp_path / "malicious.tgz"
-        with tarfile.open(tarball_path, "w:gz") as tar:
+        with create_test_tarball(tarball_path) as tar:
             # Add a regular file
             info = tarfile.TarInfo(name="package/index.js")
             info.size = 10
@@ -1118,7 +1157,7 @@ class TestNpmPluginInstallerIntegration:
         
         # Create tarball with valid internal symlinks
         tarball_path = tmp_path / "valid-package.tgz"
-        with tarfile.open(tarball_path, "w:gz") as tar:
+        with create_test_tarball(tarball_path) as tar:
             # Add a regular file
             info = tarfile.TarInfo(name="package/lib/helper.js")
             content = b"module.exports = { helper: () => {} };"
@@ -1240,7 +1279,7 @@ class TestOciDownloader:
         plugin_path = "internal-backstage-plugin-test"
         tarball_path = tmp_path / "test.tar.gz"
         
-        with tarfile.open(tarball_path, "w:gz") as tar:
+        with create_test_tarball(tarball_path) as tar:
             # Add plugin files
             for filename in ["package.json", "index.js"]:
                 info = tarfile.TarInfo(name=f"{plugin_path}/{filename}")
@@ -1270,7 +1309,7 @@ class TestOciDownloader:
         # Create tarball with oversized file (needs actual content matching size)
         large_content = b"x" * 25_000_000  # 25MB, exceeds default 20MB
         
-        with tarfile.open(tarball_path, "w:gz") as tar:
+        with create_test_tarball(tarball_path) as tar:
             info = tarfile.TarInfo(name=f"{plugin_path}/huge.bin")
             info.size = len(large_content)
             tar.addfile(info, io.BytesIO(large_content))
@@ -1797,6 +1836,257 @@ class TestGetLocalPackageInfo:
         hash1 = hashlib.sha256(json.dumps(info1, sort_keys=True).encode('utf-8')).hexdigest()
         hash2 = hashlib.sha256(json.dumps(info2, sort_keys=True).encode('utf-8')).hexdigest()
         assert hash1 != hash2
+
+class TestExtractCatalogIndex:
+    """Test cases for extract_catalog_index() function."""
+
+    @pytest.fixture
+    def mock_oci_image(self, tmp_path):
+        """Create a mock OCI image structure with manifest and layer."""
+        import tarfile
+
+        # Create a temporary directory for the OCI image
+        oci_dir = tmp_path / "oci-image"
+        oci_dir.mkdir()
+
+        # Create manifest.json
+        manifest = {
+            "schemaVersion": 2,
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "config": {
+                "mediaType": "application/vnd.oci.image.config.v1+json",
+                "digest": "sha256:test123",
+                "size": 100
+            },
+            "layers": [
+                {
+                    "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+                    "digest": "sha256:abc123def456",
+                    "size": 1000
+                }
+            ]
+        }
+        manifest_path = oci_dir / "manifest.json"
+        manifest_path.write_text(json.dumps(manifest))
+
+        # Create a layer tarball with dynamic-plugins.default.yaml
+        layer_content_dir = tmp_path / "layer-content"
+        layer_content_dir.mkdir()
+
+        yaml_file = layer_content_dir / "dynamic-plugins.default.yaml"
+        yaml_content = """plugins:
+  - package: '@backstage/plugin-catalog'
+    integrity: sha512-test
+"""
+        yaml_file.write_text(yaml_content)
+
+        # Create the layer tarball
+        layer_tarball = oci_dir / "abc123def456"
+        with create_test_tarball(layer_tarball) as tar:
+            tar.add(str(yaml_file), arcname="dynamic-plugins.default.yaml")
+
+        return {
+            "oci_dir": str(oci_dir),
+            "manifest_path": str(manifest_path),
+            "layer_tarball": str(layer_tarball),
+            "yaml_content": yaml_content
+        }
+
+    def test_extract_catalog_index_skopeo_not_found(self, tmp_path, mocker):
+        """Test that function raises InstallException when skopeo is not available."""
+        mocker.patch('shutil.which', return_value=None)
+
+        with pytest.raises(install_dynamic_plugins.InstallException, match="skopeo executable not found in PATH"):
+            install_dynamic_plugins.extract_catalog_index(
+                "quay.io/test/image:latest",
+                str(tmp_path)
+            )
+
+    def test_extract_catalog_index_skopeo_copy_fails(self, tmp_path, mocker):
+        """Test that function raises InstallException when skopeo copy fails."""
+        mocker.patch('shutil.which', return_value='/usr/bin/skopeo')
+
+        # Mock subprocess.run to simulate skopeo failure
+        mock_result = mocker.Mock()
+        mock_result.returncode = 1
+        mock_result.stderr = "Error: image not found"
+        mocker.patch('subprocess.run', return_value=mock_result)
+
+        with pytest.raises(install_dynamic_plugins.InstallException, match="Failed to download catalog index image"):
+            install_dynamic_plugins.extract_catalog_index(
+                "quay.io/test/image:latest",
+                str(tmp_path)
+            )
+
+    def test_extract_catalog_index_no_manifest(self, tmp_path, mocker):
+        """Test that function raises InstallException when manifest.json is not found."""
+        mocker.patch('shutil.which', return_value='/usr/bin/skopeo')
+
+        # Mock subprocess.run to simulate successful skopeo copy
+        mock_result = mocker.Mock()
+        mock_result.returncode = 0
+        mocker.patch('subprocess.run', return_value=mock_result)
+
+        with pytest.raises(install_dynamic_plugins.InstallException, match="manifest.json not found in catalog index image"):
+            install_dynamic_plugins.extract_catalog_index(
+                "quay.io/test/image:latest",
+                str(tmp_path)
+            )
+
+    def test_extract_catalog_index_success(self, tmp_path, mocker, mock_oci_image):
+        """Test successful extraction of catalog index with dynamic-plugins.default.yaml."""
+        catalog_mount = tmp_path / "catalog-mount"
+        catalog_mount.mkdir()
+
+        mocker.patch('shutil.which', return_value='/usr/bin/skopeo')
+
+        # Mock subprocess.run to simulate successful skopeo copy
+        mock_result = mocker.Mock()
+        mock_result.returncode = 0
+        mock_subprocess_run = create_mock_skopeo_copy(
+            mock_oci_image['manifest_path'],
+            mock_oci_image['layer_tarball'],
+            mock_result
+        )
+        mocker.patch('subprocess.run', side_effect=mock_subprocess_run)
+
+        result = install_dynamic_plugins.extract_catalog_index(
+            "quay.io/test/catalog-index:1.9",
+            str(catalog_mount)
+        )
+
+        # Verify the function returned a path
+        assert result is not None
+        assert result.endswith('dynamic-plugins.default.yaml')
+
+        # Verify the file exists and contains expected content
+        assert os.path.isfile(result)
+        with open(result, 'r') as f:
+            content = f.read()
+            assert '@backstage/plugin-catalog' in content
+
+    def test_extract_catalog_index_no_yaml_file(self, tmp_path, mocker):
+        """Test that function returns None when dynamic-plugins.default.yaml is not found in the image."""
+        import tarfile
+
+        catalog_mount = tmp_path / "catalog-mount"
+        catalog_mount.mkdir()
+
+        # Create OCI structure without the YAML file
+        oci_dir = tmp_path / "oci-no-yaml"
+        oci_dir.mkdir()
+
+        manifest = {
+            "schemaVersion": 2,
+            "layers": [
+                {
+                    "digest": "sha256:xyz789",
+                    "size": 500
+                }
+            ]
+        }
+        manifest_path = oci_dir / "manifest.json"
+        manifest_path.write_text(json.dumps(manifest))
+
+        # Create empty layer tarball
+        layer_tarball = oci_dir / "xyz789"
+        with create_test_tarball(layer_tarball) as tar:
+            # Add a different file
+            readme = tmp_path / "README.md"
+            readme.write_text("# Test")
+            tar.add(str(readme), arcname="README.md")
+
+        mocker.patch('shutil.which', return_value='/usr/bin/skopeo')
+
+        mock_result = mocker.Mock()
+        mock_result.returncode = 0
+        mock_subprocess_run = create_mock_skopeo_copy(manifest_path, layer_tarball, mock_result)
+        mocker.patch('subprocess.run', side_effect=mock_subprocess_run)
+
+        with pytest.raises(install_dynamic_plugins.InstallException, match="does not contain the expected dynamic-plugins.default.yaml file"):
+            install_dynamic_plugins.extract_catalog_index(
+                "quay.io/test/empty-index:latest",
+                str(catalog_mount)
+            )
+
+    def test_extract_catalog_index_large_file_skipped(self, tmp_path, mocker, monkeypatch):
+        """Test that files larger than MAX_ENTRY_SIZE are skipped during extraction."""
+        import tarfile
+
+        catalog_mount = tmp_path / "catalog-mount"
+        catalog_mount.mkdir()
+
+        # Set a very small MAX_ENTRY_SIZE for testing
+        monkeypatch.setenv('MAX_ENTRY_SIZE', '1000')
+
+        # Create OCI structure with a "large" file (larger than our test threshold)
+        oci_dir = tmp_path / "oci-large-file"
+        oci_dir.mkdir()
+
+        manifest = {
+            "schemaVersion": 2,
+            "layers": [
+                {
+                    "digest": "sha256:large123",
+                    "size": 10000
+                }
+            ]
+        }
+        manifest_path = oci_dir / "manifest.json"
+        manifest_path.write_text(json.dumps(manifest))
+
+        # Create layer with files
+        layer_tarball = oci_dir / "large123"
+        layer_content_dir = tmp_path / "large-content"
+        layer_content_dir.mkdir()
+
+        yaml_file = layer_content_dir / "dynamic-plugins.default.yaml"
+        yaml_file.write_text("plugins: []")
+
+        # Create a "large" file that's bigger than our test threshold of 1000 bytes
+        large_file = layer_content_dir / "large-file.bin"
+        large_file.write_text("x" * 2000)  # 2KB - larger than our 1000 byte test limit
+
+        with create_test_tarball(layer_tarball) as tar:
+            # Add YAML with normal size (smaller than 1000 bytes)
+            tar.add(str(yaml_file), arcname="dynamic-plugins.default.yaml")
+
+            # Add "large" file (2KB, which exceeds our 1000 byte test limit)
+            tar.add(str(large_file), arcname="large-file.bin")
+
+        mocker.patch('shutil.which', return_value='/usr/bin/skopeo')
+
+        mock_result = mocker.Mock()
+        mock_result.returncode = 0
+        mock_subprocess_run = create_mock_skopeo_copy(manifest_path, layer_tarball, mock_result)
+        mocker.patch('subprocess.run', side_effect=mock_subprocess_run)
+
+        result = install_dynamic_plugins.extract_catalog_index(
+            "quay.io/test/large-file-index:latest",
+            str(catalog_mount)
+        )
+
+        # Should still succeed and find the YAML file
+        assert result is not None
+        assert os.path.isfile(result)
+
+        # Verify large file was not extracted
+        catalog_temp_dir = catalog_mount / ".catalog-index-temp"
+        large_file_path = catalog_temp_dir / "large-file.bin"
+        assert not large_file_path.exists()
+
+    def test_extract_catalog_index_exception_handling(self, tmp_path, mocker):
+        """Test that unexpected exceptions during extraction propagate."""
+        mocker.patch('shutil.which', return_value='/usr/bin/skopeo')
+
+        # Mock subprocess.run to raise an exception
+        mocker.patch('subprocess.run', side_effect=Exception("Unexpected error"))
+
+        with pytest.raises(Exception, match="Unexpected error"):
+            install_dynamic_plugins.extract_catalog_index(
+                "quay.io/test/image:latest",
+                str(tmp_path)
+            )
 
 if __name__ == '__main__':
     pytest.main([__file__, '-v'])
