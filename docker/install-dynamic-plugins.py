@@ -191,34 +191,34 @@ class PackageMerger:
         """Parses the package and returns the plugin key. Must be implemented by subclasses."""
         return package
     
-    def add_new_plugin(self, pluginKey: str):
+    def add_new_plugin(self, plugin_key: str):
         """Adds a new plugin to the allPlugins dict."""
-        self.allPlugins[pluginKey] = self.plugin
-    def override_plugin(self, pluginKey: str):
+        self.allPlugins[plugin_key] = self.plugin
+    def override_plugin(self, plugin_key: str):
         """Overrides an existing plugin config with a new plugin config in the allPlugins dict."""
         for key in self.plugin:
-            self.allPlugins[pluginKey][key] = self.plugin[key]
+            self.allPlugins[plugin_key][key] = self.plugin[key]
     def merge_plugin(self, level: int):
-        pluginKey = self.plugin['package']
-        if not isinstance(pluginKey, str):
+        plugin_key = self.plugin['package']
+        if not isinstance(plugin_key, str):
             raise InstallException(f"content of the \'package\' field must be a string in {self.dynamicPluginsFile}")
-        pluginKey = self.parse_plugin_key(pluginKey)
+        plugin_key = self.parse_plugin_key(plugin_key)
         
-        if pluginKey not in self.allPlugins:
-            print(f'\n======= Adding new dynamic plugin configuration for {pluginKey}', flush=True)
+        if plugin_key not in self.allPlugins:
+            print(f'\n======= Adding new dynamic plugin configuration for {plugin_key}', flush=True)
             # Keep track of the level of the plugin modification to know when dupe conflicts occur in `includes` and main config files
             self.plugin["last_modified_level"] = level
-            self.add_new_plugin(pluginKey)
+            self.add_new_plugin(plugin_key)
         else:
             # Override the included plugins with fields in the main plugins list
-            print('\n======= Overriding dynamic plugin configuration', pluginKey, flush=True)
+            print('\n======= Overriding dynamic plugin configuration', plugin_key, flush=True)
             
             # Check for duplicate plugin configurations defined at the same level (level = 0 for `includes` and 1 for the main config file)
-            if self.allPlugins[pluginKey].get("last_modified_level") == level:
+            if self.allPlugins[plugin_key].get("last_modified_level") == level:
                 raise InstallException(f"Duplicate plugin configuration for {self.plugin['package']} found in {self.dynamicPluginsFile}.")
             
-            self.allPlugins[pluginKey]["last_modified_level"] = level
-            self.override_plugin(pluginKey)
+            self.allPlugins[plugin_key]["last_modified_level"] = level
+            self.override_plugin(plugin_key)
 
 class NPMPackageMerger(PackageMerger):
     """Handles NPM package merging with version stripping for plugin keys."""
@@ -389,10 +389,10 @@ class OciPackageMerger(PackageMerger):
         Args:
             package: The OCI package name.
         Returns:
-            pluginKey: plugin key generated from the OCI package name
+            plugin_key: plugin key generated from the OCI package name
             version: detected tag or digest of the plugin
-            inheritVersion: boolean indicating if the `{{inherit}}` tag is used
-            resolvedPath: the resolved plugin path (either explicit or auto-detected)
+            inherit_version: boolean indicating if the `{{inherit}}` tag is used
+            resolved_path: the resolved plugin path (either explicit or auto-detected)
         """  
         match = re.match(self.EXPECTED_OCI_PATTERN, package)
         if not match:
@@ -409,12 +409,12 @@ class OciPackageMerger(PackageMerger):
         path = match.group(4)
         
         # {{inherit}} tag indicates that the version should be inherited from the included configuration. Must NOT have a SHA digest included.
-        inheritVersion = (tag_version == "{{inherit}}" and digest_version == None)
+        inherit_version = (tag_version == "{{inherit}}" and digest_version == None)
         
         # If {{inherit}} without path, we'll use plugin name with registry as the plugin key
-        if inheritVersion and not path:
-            # Return None for resolvedPath - will be inherited during merge_plugin()
-            return registry, version, inheritVersion, None
+        if inherit_version and not path:
+            # Return None for resolved_path - will be inherited during merge_plugin()
+            return registry, version, inherit_version, None
         
         # If path is None, auto-detect from OCI manifest
         if not path:
@@ -440,56 +440,56 @@ class OciPackageMerger(PackageMerger):
             print(f'\n======= Auto-resolving OCI package {full_image} to use plugin path: {path}', flush=True)
         
         # At this point, path always exists (either explicitly provided or auto-detected)
-        pluginKey = f"{registry}:!{path}"
+        plugin_key = f"{registry}:!{path}"
         
-        return pluginKey, version, inheritVersion, path
-    def add_new_plugin(self, version: str, inheritVersion: bool, pluginKey: str):
+        return plugin_key, version, inherit_version, path
+    def add_new_plugin(self, version: str, inherit_version: bool, plugin_key: str):
         """
         Adds a new plugin to the allPlugins dict.
         """
-        if inheritVersion is True:
+        if inherit_version is True:
             # Cannot use {{inherit}} for the initial plugin configuration
             raise InstallException(f"ERROR: {{{{inherit}}}} tag is set and there is currently no resolved tag or digest for {self.plugin['package']} in {self.dynamicPluginsFile}.")
         else:
             self.plugin["version"] = version
-        self.allPlugins[pluginKey] = self.plugin
-    def override_plugin(self, version: str, inheritVersion: bool, pluginKey: str):
+        self.allPlugins[plugin_key] = self.plugin
+    def override_plugin(self, version: str, inherit_version: bool, plugin_key: str):
         """
         Overrides an existing plugin config with a new plugin config in the allPlugins dict.
-        If `inheritVersion` is True, the version of the existing plugin config will be ignored.
+        If `inherit_version` is True, the version of the existing plugin config will be ignored.
         """
-        if inheritVersion is not True:
-            self.allPlugins[pluginKey]['package'] = self.plugin['package'] # Override package since no version inheritance        
+        if inherit_version is not True:
+            self.allPlugins[plugin_key]['package'] = self.plugin['package'] # Override package since no version inheritance        
             
-            if self.allPlugins[pluginKey]['version'] != version:
-                print(f"INFO: Overriding version for {pluginKey} from `{self.allPlugins[pluginKey]['version']}` to `{version}`")
+            if self.allPlugins[plugin_key]['version'] != version:
+                print(f"INFO: Overriding version for {plugin_key} from `{self.allPlugins[plugin_key]['version']}` to `{version}`")
             
-            self.allPlugins[pluginKey]["version"] = version
+            self.allPlugins[plugin_key]["version"] = version
             
         for key in self.plugin:
             if key == 'package':
                 continue
             if key == "version":
                 continue
-            self.allPlugins[pluginKey][key] = self.plugin[key]
+            self.allPlugins[plugin_key][key] = self.plugin[key]
             
     def merge_plugin(self, level: int):
         package = self.plugin['package']
         if not isinstance(package, str):
             raise InstallException(f"content of the \'package\' field must be a string in {self.dynamicPluginsFile}")
-        pluginKey, version, inheritVersion, resolvedPath = self.parse_plugin_key(package)
+        plugin_key, version, inherit_version, resolved_path = self.parse_plugin_key(package)
         
         # Special case: {{inherit}} without explicit path - match on image only
-        if inheritVersion and resolvedPath is None:
-            # pluginKey is the registry (oci://registry/image) when path is omitted
+        if inherit_version and resolved_path is None:
+            # plugin_key is the registry (oci://registry/image) when path is omitted
             
             # Find plugins from same image (ignoring path component)
             matches = [key for key in self.allPlugins.keys() 
-                      if key.startswith(f"{pluginKey}:!")]
+                      if key.startswith(f"{plugin_key}:!")]
             
             if len(matches) == 0:
                 raise InstallException(
-                    f"Cannot use {{{{inherit}}}} for {pluginKey}: no existing plugin configuration found. "
+                    f"Cannot use {{{{inherit}}}} for {plugin_key}: no existing plugin configuration found. "
                     f"Ensure a plugin from this image is defined in an included file with an explicit version."
                 )
             
@@ -502,40 +502,40 @@ class OciPackageMerger(PackageMerger):
                     full_packages.append(formatted)
                 paths_formatted = '\n  - '.join(full_packages)
                 raise InstallException(
-                    f"Cannot use {{{{inherit}}}} for {pluginKey}: multiple plugins from this image are defined in the included files:\n  - {paths_formatted}\n"
-                    f"Please specify which plugin configuration to inherit from using: {pluginKey}:{{{{inherit}}}}!<plugin_path>"
+                    f"Cannot use {{{{inherit}}}} for {plugin_key}: multiple plugins from this image are defined in the included files:\n  - {paths_formatted}\n"
+                    f"Please specify which plugin configuration to inherit from using: {plugin_key}:{{{{inherit}}}}!<plugin_path>"
                 )
             
             # inherit both version AND path from the existing plugin configuration
-            pluginKey = matches[0]
-            base_plugin = self.allPlugins[pluginKey]
+            plugin_key = matches[0]
+            base_plugin = self.allPlugins[plugin_key]
             version = base_plugin['version']
-            resolvedPath = pluginKey.split(':!')[-1]
+            resolved_path = plugin_key.split(':!')[-1]
             
-            registry_part = pluginKey.split(':!')[0]
-            self.plugin['package'] = f"{registry_part}:{version}!{resolvedPath}"
-            print(f'\n======= Inheriting version `{version}` and plugin path `{resolvedPath}` for {pluginKey}', flush=True)
+            registry_part = plugin_key.split(':!')[0]
+            self.plugin['package'] = f"{registry_part}:{version}!{resolved_path}"
+            print(f'\n======= Inheriting version `{version}` and plugin path `{resolved_path}` for {plugin_key}', flush=True)
         
         # Update package with resolved path if it was auto-detected (package didn't originally contain !path)
         elif '!' not in package:
-            self.plugin['package'] = f"{package}!{resolvedPath}"
+            self.plugin['package'] = f"{package}!{resolved_path}"
         
         # If package does not already exist, add it
-        if pluginKey not in self.allPlugins:
-            print(f'\n======= Adding new dynamic plugin configuration for version `{version}` of {pluginKey}', flush=True)
+        if plugin_key not in self.allPlugins:
+            print(f'\n======= Adding new dynamic plugin configuration for version `{version}` of {plugin_key}', flush=True)
             # Keep track of the level of the plugin modification to know when dupe conflicts occur in `includes` and main config files
             self.plugin["last_modified_level"] = level
-            self.add_new_plugin(version, inheritVersion, pluginKey)
+            self.add_new_plugin(version, inherit_version, plugin_key)
         else:
             # Override the included plugins with fields in the main plugins list
-            print('\n======= Overriding dynamic plugin configuration', pluginKey, flush=True)
+            print('\n======= Overriding dynamic plugin configuration', plugin_key, flush=True)
             
             # Check for duplicate plugin configurations defined at the same level (level = 0 for `includes` and 1 for the main config file)
-            if self.allPlugins[pluginKey].get("last_modified_level") == level:
+            if self.allPlugins[plugin_key].get("last_modified_level") == level:
                 raise InstallException(f"Duplicate plugin configuration for {self.plugin['package']} found in {self.dynamicPluginsFile}.")
         
-            self.allPlugins[pluginKey]["last_modified_level"] = level
-            self.override_plugin(version, inheritVersion, pluginKey)
+            self.allPlugins[plugin_key]["last_modified_level"] = level
+            self.override_plugin(version, inherit_version, plugin_key)
 
 class OciDownloader:
     """Helper class for downloading and extracting plugins from OCI container images."""
