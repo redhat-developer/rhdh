@@ -1,0 +1,13 @@
+diff --git a/dist/components/CustomHomepage/CustomHomepageGrid.esm.js b/dist/components/CustomHomepage/CustomHomepageGrid.esm.js
+index b642db90916437d7fbecebb2df4b7ec5debf5390..6c8c3eb68e2c6dbc70332d42966d06a2dd70db53 100644
+--- a/dist/components/CustomHomepage/CustomHomepageGrid.esm.js
++++ b/dist/components/CustomHomepage/CustomHomepageGrid.esm.js
+@@ -202,7 +202,7 @@ const CustomHomepageGrid = (props) => {
+     }
+   };
+   const clearLayout = () => {
+-    setWidgets(widgets.filter((w) => !w.deletable));
++    setWidgets(widgets.filter((w) => w.deletable == false));
+   };
+   const changeEditMode = (mode) => {
+     setEditMode(mode);
