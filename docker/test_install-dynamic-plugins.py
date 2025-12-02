@@ -1021,7 +1021,7 @@ class TestPluginInstallerShouldSkipInstallation:
     
     def test_plugin_not_installed_returns_false(self, tmp_path):
         """Test that plugin not in hash dict returns False."""
-        plugin = {'hash': 'abc123', 'package': 'test-pkg'}
+        plugin = {'plugin_hash': 'abc123', 'package': 'test-pkg'}
         plugin_path_by_hash = {}  # Empty - nothing installed
         installer = install_dynamic_plugins.NpmPluginInstaller(str(tmp_path))
         
@@ -1033,7 +1033,7 @@ class TestPluginInstallerShouldSkipInstallation:
     def test_plugin_installed_if_not_present_skips(self, tmp_path):
         """Test that installed plugin with IF_NOT_PRESENT policy skips."""
         plugin = {
-            'hash': 'abc123',
+            'plugin_hash': 'abc123',
             'package': 'test-pkg',
             'pullPolicy': 'IfNotPresent'
         }
@@ -1048,7 +1048,7 @@ class TestPluginInstallerShouldSkipInstallation:
     def test_plugin_installed_always_policy_forces_download(self, tmp_path):
         """Test that ALWAYS policy forces download."""
         plugin = {
-            'hash': 'abc123',
+            'plugin_hash': 'abc123',
             'package': 'test-pkg',
             'pullPolicy': 'Always'
         }
@@ -1063,7 +1063,7 @@ class TestPluginInstallerShouldSkipInstallation:
     def test_plugin_installed_force_download_flag(self, tmp_path):
         """Test that forceDownload flag forces download."""
         plugin = {
-            'hash': 'abc123',
+            'plugin_hash': 'abc123',
             'package': 'test-pkg',
             'forceDownload': True
         }
@@ -1077,7 +1077,7 @@ class TestPluginInstallerShouldSkipInstallation:
     
     def test_default_pull_policy_if_not_present(self, tmp_path):
         """Test that default pull policy is IF_NOT_PRESENT."""
-        plugin = {'hash': 'abc123', 'package': 'test-pkg'}  # No pullPolicy
+        plugin = {'plugin_hash': 'abc123', 'package': 'test-pkg'}  # No pullPolicy
         plugin_path_by_hash = {'abc123': 'test-pkg-1.0.0'}
         installer = install_dynamic_plugins.NpmPluginInstaller(str(tmp_path))
         
@@ -1093,7 +1093,7 @@ class TestOciPluginInstallerShouldSkipInstallation:
     def test_plugin_not_installed_returns_false(self, tmp_path, mocker):
         """Test that plugin not in hash dict returns False."""
         plugin = {
-            'hash': 'abc123',
+            'plugin_hash': 'abc123',
             'package': 'oci://registry.io/plugin:latest!path'
         }
         plugin_path_by_hash = {}
@@ -1112,7 +1112,7 @@ class TestOciPluginInstallerShouldSkipInstallation:
         """Test that ALWAYS policy with unchanged digest skips download."""
         plugin_path = 'plugin-dir'
         plugin = {
-            'hash': 'abc123',
+            'plugin_hash': 'abc123',
             'package': 'oci://registry.io/plugin:v1.0!path',
             'pullPolicy': 'Always'
         }
@@ -1139,7 +1139,7 @@ class TestOciPluginInstallerShouldSkipInstallation:
         """Test that ALWAYS policy with changed digest forces download."""
         plugin_path = 'plugin-dir'
         plugin = {
-            'hash': 'abc123',
+            'plugin_hash': 'abc123',
             'package': 'oci://registry.io/plugin:v1.0!path',
             'pullPolicy': 'Always'
         }
@@ -1165,7 +1165,7 @@ class TestOciPluginInstallerShouldSkipInstallation:
         """Test that IF_NOT_PRESENT policy skips."""
         plugin_path = 'plugin-dir'
         plugin = {
-            'hash': 'abc123',
+            'plugin_hash': 'abc123',
             'package': 'oci://registry.io/plugin:v1.0!path',
             'pullPolicy': 'IfNotPresent'
         }
@@ -1197,7 +1197,7 @@ class TestNpmPluginInstallerInstall:
         plugin = {'package': 'test-package@1.0.0', 'integrity': 1234567890}
 
         with pytest.raises(InstallException) as exc_info:
-            install_dynamic_plugins.verify_package_integrity(plugin, "dummy-archive.tgz", str(tmp_path))
+            install_dynamic_plugins.verify_package_integrity(plugin, "dummy-archive.tgz")
         assert 'must be a string' in str(exc_info.value)
 
     def test_invalid_integrity_hash_format_raises_exception(self, tmp_path, mocker):
@@ -1205,7 +1205,7 @@ class TestNpmPluginInstallerInstall:
         plugin = {'package': 'test-package@1.0.0', 'integrity': 'invalidhash'}
 
         with pytest.raises(InstallException) as exc_info:
-            install_dynamic_plugins.verify_package_integrity(plugin, "dummy-archive.tgz", str(tmp_path))
+            install_dynamic_plugins.verify_package_integrity(plugin, "dummy-archive.tgz")
         assert 'must be a string of the form' in str(exc_info.value)
 
     def test_invalid_integrity_algorithm_raises_exception(self, tmp_path, mocker):
@@ -1213,7 +1213,7 @@ class TestNpmPluginInstallerInstall:
         plugin = {'package': 'test-package@1.0.0', 'integrity': 'invalidalgo-1234567890abcdef'}
         
         with pytest.raises(InstallException) as exc_info:
-            install_dynamic_plugins.verify_package_integrity(plugin, "dummy-archive.tgz", str(tmp_path))
+            install_dynamic_plugins.verify_package_integrity(plugin, "dummy-archive.tgz")
         assert 'is not supported' in str(exc_info.value)
 
     def test_invalid_integrity_hash_base64_encoding_raises_exception(self, tmp_path, mocker):
@@ -1221,7 +1221,7 @@ class TestNpmPluginInstallerInstall:
         plugin = {'package': 'test-package@1.0.0', 'integrity': 'sha256-not@base64!'}
         
         with pytest.raises(InstallException) as exc_info:
-            install_dynamic_plugins.verify_package_integrity(plugin, "dummy-archive.tgz", str(tmp_path))
+            install_dynamic_plugins.verify_package_integrity(plugin, "dummy-archive.tgz")
         assert 'is not a valid base64 encoding' in str(exc_info.value)
 
     def test_integrity_hash_mismatch_raises_exception(self, tmp_path, mocker):
@@ -1231,7 +1231,7 @@ class TestNpmPluginInstallerInstall:
         plugin = {'package': 'test-package@1.0.0', 'integrity': 'sha256-' + base64.b64encode(b'wronghash').decode()}
 
         with pytest.raises(InstallException) as exc_info:
-            install_dynamic_plugins.verify_package_integrity(plugin, "dummy-archive.tgz", str(tmp_path))
+            install_dynamic_plugins.verify_package_integrity(plugin, "dummy-archive.tgz")
         assert 'does not match the provided integrity hash' in str(exc_info.value)
     def test_skip_integrity_check_flag_works(self, tmp_path, mocker):
         """Test that skip_integrity_check flag bypasses integrity check."""
@@ -1306,7 +1306,7 @@ class TestNpmPluginInstallerIntegration:
         }
         
         # Test verification succeeds with correct hash
-        install_dynamic_plugins.verify_package_integrity(plugin, str(tarball_path), str(tmp_path))
+        install_dynamic_plugins.verify_package_integrity(plugin, str(tarball_path))
         
         # Test verification fails with wrong hash (valid base64 but wrong hash)
         plugin_wrong = {
@@ -1315,7 +1315,7 @@ class TestNpmPluginInstallerIntegration:
         }
         
         with pytest.raises(InstallException) as exc_info:
-            install_dynamic_plugins.verify_package_integrity(plugin_wrong, str(tarball_path), str(tmp_path))
+            install_dynamic_plugins.verify_package_integrity(plugin_wrong, str(tarball_path))
         
         assert 'does not match' in str(exc_info.value)
     
@@ -1885,7 +1885,7 @@ class TestOciPluginInstallerInstall:
         plugin = {
             'package': f'oci://registry.io/plugin:v1.0!{plugin_path}',
             'version': 'v1.0',
-            'hash': 'newhash'
+            'plugin_hash': 'newhash'
         }
         
         plugin_path_by_hash = {
