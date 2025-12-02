@@ -1,6 +1,10 @@
 #!/bin/bash
 
 handle_ocp_pull() {
+  export NAME_SPACE="${NAME_SPACE:-showcase}"
+  export NAME_SPACE_RBAC="${NAME_SPACE_RBAC:-showcase-rbac}"
+  export NAME_SPACE_POSTGRES_DB="${NAME_SPACE_POSTGRES_DB:-postgress-external-db}"
+
   echo "Configuring namespace: ${NAME_SPACE}"
   oc_login
   echo "OCP version: $(oc version)"

@@ -2,7 +2,7 @@
  * @type {import('lint-staged').Configuration}
  */
 module.exports = {
-  ".{cursor,claude,rulesync}/**/*.{mdc,md,json}}": (filenames) => {
+  ".{cursor,claude,rulesync}/**/*.{mdc,md,json}": (filenames) => {
     const hasRulesync = filenames.some((f) => f.includes(".rulesync/"));
     const changedDirs = ["cursor", "claude"].filter((dir) =>
       filenames.some((f) => f.includes(`.${dir}/`))

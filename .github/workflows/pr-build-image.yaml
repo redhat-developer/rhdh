@@ -31,7 +31,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           fetch-depth: 0
 
@@ -45,7 +45,7 @@ jobs:
           echo "${{ steps.check-image.outputs.is_skipped }}" > ./rhdh-skip-artifacts/isSkipped.txt
 
       - name: Upload isSkipped status
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: pr-${{ github.event.number }}-${{ env.SHORT_SHA }}-isSkipped
           path: ./rhdh-skip-artifacts/isSkipped.txt
