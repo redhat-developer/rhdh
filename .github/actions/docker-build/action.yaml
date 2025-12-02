@@ -70,7 +70,6 @@ runs:
       shell: bash
       env:
         COMPONENT_DIR: ${{ inputs.componentDirectory }}
-        # Note: GITHUB_WORKSPACE is available as a default env var
       run: |
         echo "HERMETO_IMAGE=quay.io/konflux-ci/hermeto:latest" >> $GITHUB_ENV
         echo "LOCAL_CACHE_DIR=./hermeto-cache/$(basename "$COMPONENT_DIR")" >> $GITHUB_ENV
