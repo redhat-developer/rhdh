@@ -7,8 +7,8 @@
  * - GITHUB_TOKEN: token with at least read:org scope (optional for public teams)
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const repoRoot = process.cwd();
 const OWNERS_ALIASES_FILE = 'OWNERS_ALIASES';
@@ -113,7 +113,9 @@ async function main() {
   console.log(`Updated ${path.relative(repoRoot, outputPath)}`);
 }
 
-main().catch(error => {
+try {
+  await main();
+} catch (error) {
   console.error(error);
   process.exit(1);
-});
+}
