@@ -66,7 +66,7 @@ logging::icon_for_level() {
   case "${level}" in
     DEBUG) printf '🐞' ;;
     INFO) printf 'ℹ️' ;;
-    WARN | WARNING) printf '⚠️ ' ;;
+    WARN | WARNING) printf '⚠️' ;;
     ERROR | ERR) printf '❌' ;;
     SUCCESS) printf '✅' ;;
     SECTION) printf '▪️ ' ;;
