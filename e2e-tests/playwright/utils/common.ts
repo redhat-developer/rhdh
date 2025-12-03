@@ -408,9 +408,7 @@ export class Common {
 
     try {
       await popup.locator("[name=loginfmt]").click();
-      await popup
-        .locator("[name=loginfmt]")
-        .fill(username, { timeout: 5000 });
+      await popup.locator("[name=loginfmt]").fill(username, { timeout: 5000 });
       await popup
         .locator('[type=submit]:has-text("Next")')
         .click({ timeout: 5000 });
