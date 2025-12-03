@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 # Prevent sourcing multiple times in the same shell.
 if [[ -n "${RHDH_LOGGING_LIB_SOURCED:-}" ]]; then
@@ -6,8 +6,14 @@ if [[ -n "${RHDH_LOGGING_LIB_SOURCED:-}" ]]; then
 fi
 readonly RHDH_LOGGING_LIB_SOURCED=1
 
+# Auto-detect TTY and disable colors if not in interactive terminal
+if [[ -t 1 ]] && [[ "${TERM:-}" != "dumb" ]]; then
+  : "${LOG_NO_COLOR:=false}"
+else
+  : "${LOG_NO_COLOR:=true}"
+fi
+
 : "${LOG_LEVEL:=INFO}"
-: "${LOG_NO_COLOR:=false}"
 
 logging::timestamp() {
   date -u '+%Y-%m-%dT%H:%M:%SZ'
