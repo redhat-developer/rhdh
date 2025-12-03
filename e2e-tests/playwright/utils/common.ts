@@ -261,13 +261,12 @@ export class Common {
       timeout: 20 * 1000,
     });
 
-    // Check if login form appears or popup closes (already logged in)
-    const loginFormVisible = popup.locator("#username").waitFor({ state: "visible", timeout: 5000 }).then(() => "needs-login");
-    const popupClosed = popup.waitForEvent("close", { timeout: 5000 }).then(() => "already-logged-in");
-    const result = await Promise.race([loginFormVisible, popupClosed]).catch(() => "needs-login");
-
-    if (result === "already-logged-in") {
+    // Check if popup closes automatically (already logged in)
+    try {
+      await popup.waitForEvent("close", { timeout: 5000 });
       return "Already logged in";
+    } catch {
+      // Popup didn't close, proceed with login
     }
 
     try {
@@ -302,13 +301,12 @@ export class Common {
       timeout: 20 * 1000,
     });
 
-    // Check if login form appears or popup closes (already logged in)
-    const loginFormVisible = popup.locator("#login_field").waitFor({ state: "visible", timeout: 5000 }).then(() => "needs-login");
-    const popupClosed = popup.waitForEvent("close", { timeout: 5000 }).then(() => "already-logged-in");
-    const result = await Promise.race([loginFormVisible, popupClosed]).catch(() => "needs-login");
-
-    if (result === "already-logged-in") {
+    // Check if popup closes automatically (already logged in)
+    try {
+      await popup.waitForEvent("close", { timeout: 5000 });
       return "Already logged in";
+    } catch {
+      // Popup didn't close, proceed with login
     }
 
     try {
@@ -400,13 +398,12 @@ export class Common {
       timeout: 20 * 1000,
     });
 
-    // Check if login form appears or popup closes (already logged in)
-    const loginFormVisible = popup.locator("[name=loginfmt]").waitFor({ state: "visible", timeout: 5000 }).then(() => "needs-login");
-    const popupClosed = popup.waitForEvent("close", { timeout: 5000 }).then(() => "already-logged-in");
-    const result = await Promise.race([loginFormVisible, popupClosed]).catch(() => "needs-login");
-
-    if (result === "already-logged-in") {
+    // Check if popup closes automatically (already logged in)
+    try {
+      await popup.waitForEvent("close", { timeout: 5000 });
       return "Already logged in";
+    } catch {
+      // Popup didn't close, proceed with login
     }
 
     try {
