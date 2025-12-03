@@ -69,7 +69,7 @@ logging::icon_for_level() {
     WARN | WARNING) printf '⚠️' ;;
     ERROR | ERR) printf '❌' ;;
     SUCCESS) printf '✅' ;;
-    SECTION) printf '▪️ ' ;;
+    SECTION) printf '▪️' ;;
     *) printf '-' ;;
   esac
 }
