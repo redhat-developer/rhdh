@@ -34,7 +34,7 @@ handle_eks_operator() {
 
   initiate_eks_operator_deployment "${NAME_SPACE}" "https://${K8S_CLUSTER_ROUTER_BASE}"
   configure_eks_ingress_and_dns "${NAME_SPACE}" "dh-ingress"
-  check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
+  check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "showcase-k8s" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
   cleanup_eks_dns_record "${EKS_INSTANCE_DOMAIN_NAME}"
   cleanup_eks_deployment "${NAME_SPACE}"
 
@@ -45,7 +45,7 @@ handle_eks_operator() {
 
   initiate_rbac_eks_operator_deployment "${NAME_SPACE_RBAC}" "https://${K8S_CLUSTER_ROUTER_BASE}"
   configure_eks_ingress_and_dns "${NAME_SPACE_RBAC}" "dh-ingress"
-  check_and_test "${RELEASE_NAME}" "${NAME_SPACE_RBAC}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
+  check_and_test "${RELEASE_NAME}" "${NAME_SPACE_RBAC}" "showcase-rbac-k8s" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
   cleanup_eks_dns_record "${EKS_INSTANCE_DOMAIN_NAME}"
   cleanup_eks_deployment "${NAME_SPACE_RBAC}"
 }

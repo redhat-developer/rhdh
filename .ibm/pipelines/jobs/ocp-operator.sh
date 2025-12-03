@@ -83,7 +83,7 @@ run_operator_runtime_config_change_tests() {
   create_app_config_map "$DIR/resources/postgres-db/rds-app-config.yaml" "${NAME_SPACE_RUNTIME}"
   deploy_rhdh_operator "${NAME_SPACE_RUNTIME}" "${DIR}/resources/rhdh-operator/rhdh-start-runtime.yaml"
   local runtime_url="https://backstage-${RELEASE_NAME}-${NAME_SPACE_RUNTIME}.${K8S_CLUSTER_ROUTER_BASE}"
-  run_tests "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${runtime_url}"
+  run_tests "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "showcase-runtime" "${runtime_url}"
 }
 
 handle_ocp_operator() {
@@ -110,8 +110,8 @@ handle_ocp_operator() {
     initiate_operator_deployments
   fi
 
-  check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${url}"
-  check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${rbac_url}"
+  check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "showcase-operator" "${url}"
+  check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "showcase-operator-rbac" "${rbac_url}"
 
   run_operator_runtime_config_change_tests
 }
