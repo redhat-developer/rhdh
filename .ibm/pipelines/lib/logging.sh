@@ -87,7 +87,7 @@ logging::emit_line() {
   timestamp="$(logging::timestamp)"
   color="$(logging::color_for_level "${level}")"
   reset="$(logging::reset_code)"
-  printf '%s[%s] %s %s%s\n' "${color}" "${timestamp}" "${icon}" "${line}" "${reset}"
+  printf '%s[%s] %s %s%s\n' "${color}" "${timestamp}" "${icon}" "${line}" "${reset}" >&2
 }
 
 logging::emit() {
@@ -137,5 +137,5 @@ logging::hr() {
   local color reset
   color="$(logging::color_for_level "SECTION")"
   reset="$(logging::reset_code)"
-  printf '%s%s%s\n' "${color}" "--------------------------------------------------------------------------------" "${reset}"
+  printf '%s%s%s\n' "${color}" "--------------------------------------------------------------------------------" "${reset}" >&2
 }
