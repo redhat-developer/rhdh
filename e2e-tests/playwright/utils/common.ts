@@ -301,7 +301,7 @@ export class Common {
       timeout: 20 * 1000,
     });
 
-    // Check if popup closes automatically (already logged in)
+    // Check if popup closes automatically
     try {
       await popup.waitForEvent("close", { timeout: 5000 });
       return "Already logged in";
