@@ -40,5 +40,5 @@ handle_ocp_helm_upgrade() {
   deploy_orchestrator_workflows "${NAME_SPACE}"
   initiate_upgrade_deployments "${RELEASE_NAME}" "${NAME_SPACE}" "${url}"
 
-  check_upgrade_and_test "${DEPLOYMENT_NAME}" "${RELEASE_NAME}" "${NAME_SPACE}" "${url}"
+  check_upgrade_and_test "${DEPLOYMENT_NAME}" "${RELEASE_NAME}" "${NAME_SPACE}" "showcase-upgrade" "${url}"
 }
