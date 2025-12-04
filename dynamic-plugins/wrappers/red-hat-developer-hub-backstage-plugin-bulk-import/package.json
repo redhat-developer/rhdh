@@ -24,7 +24,7 @@
   },
   "backstage": {
     "role": "frontend-plugin",
-    "supported-versions": "1.42.5",
+    "supported-versions": "1.45.3",
     "pluginId": "red-hat-developer-hub-backstage-plugin-bulk-import",
     "pluginPackages": [
       "red-hat-developer-hub-backstage-plugin-bulk-import",
@@ -46,7 +46,7 @@
     "@red-hat-developer-hub/backstage-plugin-bulk-import": "1.18.1"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.34.1",
+    "@backstage/cli": "0.34.5",
     "@janus-idp/cli": "3.6.1",
     "typescript": "5.9.3"
   },
