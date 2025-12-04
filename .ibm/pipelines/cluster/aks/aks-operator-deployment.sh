@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# shellcheck source=.ibm/pipelines/lib/log.sh
+source "$DIR"/lib/log.sh
 # shellcheck source=.ibm/pipelines/utils.sh
 source "$DIR"/utils.sh
 # shellcheck source=.ibm/pipelines/install-methods/operator.sh
@@ -11,14 +13,14 @@ initiate_aks_operator_deployment() {
   local namespace=$1
   local rhdh_base_url=$2
 
-  echo "Initiating Operator-backed non-RBAC deployment on AKS"
+  log::info "Initiating Operator-backed non-RBAC deployment on AKS"
 
   configure_namespace "${namespace}"
   deploy_redis_cache "${namespace}"
   # deploy_test_backstage_customization_provider "${namespace}" # Doesn't work on K8s
   apply_yaml_files "${DIR}" "${namespace}" "${rhdh_base_url}"
 
-  echo "Creating and applying ConfigMap for dynamic plugins"
+  log::info "Creating and applying ConfigMap for dynamic plugins"
   yq_merge_value_files "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_AKS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}"
   create_dynamic_plugins_config "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}" "/tmp/configmap-dynamic-plugins.yaml"
   mkdir -p "${ARTIFACT_DIR}/${namespace}"
@@ -37,7 +39,7 @@ initiate_rbac_aks_operator_deployment() {
   local namespace=$1
   local rhdh_base_url=$2
 
-  echo "Initiating Operator-backed RBAC deployment on AKS"
+  log::info "Initiating Operator-backed RBAC deployment on AKS"
 
   configure_namespace "${namespace}"
   # deploy_test_backstage_customization_provider "${namespace}" # Doesn't work on K8s
@@ -45,7 +47,7 @@ initiate_rbac_aks_operator_deployment() {
   prepare_operator_app_config "${DIR}/resources/config_map/app-config-rhdh-rbac.yaml"
   apply_yaml_files "${DIR}" "${namespace}" "${rhdh_base_url}"
 
-  echo "Creating and applying ConfigMap for dynamic plugins"
+  log::info "Creating and applying ConfigMap for dynamic plugins"
   yq_merge_value_files "merge" "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_RBAC_AKS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}"
   create_dynamic_plugins_config "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}" "/tmp/configmap-dynamic-plugins-rbac.yaml"
   mkdir -p "${ARTIFACT_DIR}/${namespace}"

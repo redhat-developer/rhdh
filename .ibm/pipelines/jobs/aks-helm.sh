@@ -1,12 +1,14 @@
 #!/bin/bash
 
+# shellcheck source=.ibm/pipelines/lib/log.sh
+source "$DIR"/lib/log.sh
 # shellcheck source=.ibm/pipelines/utils.sh
 source "$DIR"/utils.sh
 # shellcheck source=.ibm/pipelines/cluster/aks/aks-helm-deployment.sh
 source "$DIR"/cluster/aks/aks-helm-deployment.sh
 
 handle_aks_helm() {
-  echo "Starting AKS Helm deployment"
+  log::info "Starting AKS Helm deployment"
 
   export NAME_SPACE="${NAME_SPACE:-showcase-k8s-ci-nightly}"
   export NAME_SPACE_RBAC="${NAME_SPACE_RBAC:-showcase-rbac-k8s-ci-nightly}"

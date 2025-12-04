@@ -2,18 +2,18 @@
 
 # shellcheck source=.ibm/pipelines/reporting.sh
 source "${DIR}/reporting.sh"
-# shellcheck source=.ibm/pipelines/lib/logging.sh
-source "${DIR}/lib/logging.sh"
+# shellcheck source=.ibm/pipelines/lib/log.sh
+source "${DIR}/lib/log.sh"
 
 retrieve_pod_logs() {
   local pod_name=$1
   local container=$2
   local namespace=$3
-  echo "  Retrieving logs for container: $container"
+  log::debug "Retrieving logs for container: $container"
   # Save logs for the current and previous container
-  kubectl logs $pod_name -c $container -n $namespace > "pod_logs/${pod_name}_${container}.log" || { echo "  logs for container $container not found"; }
+  kubectl logs $pod_name -c $container -n $namespace > "pod_logs/${pod_name}_${container}.log" || { log::warn "logs for container $container not found"; }
   kubectl logs $pod_name -c $container -n $namespace --previous > "pod_logs/${pod_name}_${container}-previous.log" 2> /dev/null || {
-    echo "  Previous logs for container $container not found"
+    log::debug "Previous logs for container $container not found"
     rm -f "pod_logs/${pod_name}_${container}-previous.log"
   }
 }
@@ -26,7 +26,7 @@ save_all_pod_logs() {
   # Get all pod names in the namespace
   pod_names=$(kubectl get pods -n $namespace -o jsonpath='{.items[*].metadata.name}')
   for pod_name in $pod_names; do
-    echo "Retrieving logs for pod: $pod_name in namespace $namespace"
+    log::debug "Retrieving logs for pod: $pod_name in namespace $namespace"
 
     init_containers=$(kubectl get pod $pod_name -n $namespace -o jsonpath='{.spec.initContainers[*].name}')
     # Loop through each init container and retrieve logs
@@ -76,7 +76,7 @@ yq_merge_value_files() {
     select(fileIndex == 0) * select(fileIndex == 1)
   ' "${base_file}" "${diff_file}" > "${final_file}"
   else
-    echo "Invalid operation with plugins key: $plugin_operation"
+    log::error "Invalid operation with plugins key: $plugin_operation"
     exit 1
   fi
 }
@@ -90,15 +90,15 @@ wait_for_deployment() {
 
   # Validate required parameters
   if [[ -z "$namespace" || -z "$resource_name" ]]; then
-    echo "Error: Missing required parameters"
-    echo "Usage: wait_for_deployment <namespace> <resource-name> [timeout_minutes] [check_interval_seconds]"
-    echo "Example: wait_for_deployment my-namespace my-deployment 5 10"
+    log::error "Missing required parameters"
+    log::info "Usage: wait_for_deployment <namespace> <resource-name> [timeout_minutes] [check_interval_seconds]"
+    log::info "Example: wait_for_deployment my-namespace my-deployment 5 10"
     return 1
   fi
 
   local max_attempts=$((timeout_minutes * 60 / check_interval))
 
-  echo "Waiting for resource '$resource_name' in namespace '$namespace' (timeout: ${timeout_minutes}m)..."
+  log::info "Waiting for resource '$resource_name' in namespace '$namespace' (timeout: ${timeout_minutes}m)..."
 
   for ((i = 1; i <= max_attempts; i++)); do
     # Get the first pod name matching the resource name
@@ -112,22 +112,22 @@ wait_for_deployment() {
       # Verify pod is both Ready and Running
       if [[ "$is_ready" == "True" ]] \
         && oc get pod "$pod_name" -n "$namespace" | grep -q "Running"; then
-        echo "Pod '$pod_name' is running and ready"
+        log::success "Pod '$pod_name' is running and ready"
         return 0
       else
-        echo "Pod '$pod_name' is not ready (Ready: $is_ready)"
+        log::debug "Pod '$pod_name' is not ready (Ready: $is_ready)"
       fi
     else
-      echo "No pods found matching '$resource_name' in namespace '$namespace'"
+      log::warn "No pods found matching '$resource_name' in namespace '$namespace'"
     fi
 
-    echo "Still waiting... (${i}/${max_attempts} checks)"
+    log::debug "Still waiting... (${i}/${max_attempts} checks)"
     sleep "$check_interval"
   done
 
   # Timeout occurred
-  echo "Timeout waiting for resource to be ready. Please check:"
-  echo "oc get pods -n $namespace | grep $resource_name"
+  log::error "Timeout waiting for resource to be ready. Please check:"
+  log::info "oc get pods -n $namespace | grep $resource_name"
   return 1
 }
 
@@ -140,46 +140,46 @@ wait_for_job_completion() {
 
   # Validate required parameters
   if [[ -z "$namespace" || -z "$job_name" ]]; then
-    echo "Error: Missing required parameters"
-    echo "Usage: wait_for_job_completion <namespace> <job-name> [timeout_minutes] [check_interval_seconds]"
-    echo "Example: wait_for_job_completion my-namespace my-job 10 10"
+    log::error "Missing required parameters"
+    log::info "Usage: wait_for_job_completion <namespace> <job-name> [timeout_minutes] [check_interval_seconds]"
+    log::info "Example: wait_for_job_completion my-namespace my-job 10 10"
     return 1
   fi
 
   local max_attempts=$((timeout_minutes * 60 / check_interval))
 
-  echo "Waiting for job '$job_name' to be created in namespace '$namespace'..."
+  log::info "Waiting for job '$job_name' to be created in namespace '$namespace'..."
 
   # Phase 1: Wait for job to exist (with timeout)
   for ((i = 1; i <= max_attempts; i++)); do
     if oc get job "$job_name" -n "$namespace" &> /dev/null; then
-      echo "✅ Job '$job_name' found!"
+      log::success "Job '$job_name' found!"
       break
     fi
 
     if [[ $i -eq $max_attempts ]]; then
-      echo "=========================================="
-      echo "❌ JOB FAILURE"
-      echo "=========================================="
-      echo "Job: $job_name"
-      echo "Namespace: $namespace"
-      echo "Reason: Job was not created within ${timeout_minutes} minutes"
-      echo "Timestamp: $(date)"
-      echo ""
-      echo "Recent events in namespace:"
+      log::hr
+      log::error "JOB FAILURE"
+      log::hr
+      log::info "Job: $job_name"
+      log::info "Namespace: $namespace"
+      log::error "Reason: Job was not created within ${timeout_minutes} minutes"
+      log::info "Timestamp: $(date)"
+      log::info ""
+      log::info "Recent events in namespace:"
       oc get events -n "$namespace" --sort-by='.lastTimestamp' | tail -20
-      echo ""
-      echo "NOTE: Full pod logs will be saved by save_all_pod_logs() at the end of deployment"
-      echo "=========================================="
+      log::info ""
+      log::info "NOTE: Full pod logs will be saved by save_all_pod_logs() at the end of deployment"
+      log::hr
       return 1
     fi
 
-    echo "Job not yet created... (${i}/${max_attempts} checks)"
+    log::debug "Job not yet created... (${i}/${max_attempts} checks)"
     sleep "$check_interval"
   done
 
   # Phase 2: Wait for job to complete
-  echo "Waiting for job '$job_name' to complete (timeout: ${timeout_minutes}m)..."
+  log::info "Waiting for job '$job_name' to complete (timeout: ${timeout_minutes}m)..."
 
   for ((i = 1; i <= max_attempts; i++)); do
     # Get job status
@@ -190,7 +190,7 @@ wait_for_job_completion() {
 
     # Check if job completed successfully
     if [[ "$job_status" == "True" ]]; then
-      echo "✅ Job '$job_name' completed successfully!"
+      log::success "Job '$job_name' completed successfully!"
       return 0
     fi
 
@@ -342,7 +342,7 @@ create_secret_dockerconfigjson() {
   namespace=$1
   secret_name=$2
   dockerconfigjson_value=$3
-  echo "Creating dockerconfigjson secret $secret_name in namespace $namespace"
+  log::info "Creating dockerconfigjson secret $secret_name in namespace $namespace"
   kubectl apply -n "$namespace" -f - << EOD
 apiVersion: v1
 kind: Secret
@@ -356,14 +356,14 @@ EOD
 add_image_pull_secret_to_namespace_default_serviceaccount() {
   namespace=$1
   secret_name=$2
-  echo "Adding image pull secret $secret_name to default service account"
+  log::info "Adding image pull secret $secret_name to default service account"
   kubectl -n "${namespace}" patch serviceaccount default -p "{\"imagePullSecrets\": [{\"name\": \"${secret_name}\"}]}"
 }
 setup_image_pull_secret() {
   local namespace=$1
   local secret_name=$2
   local dockerconfigjson_value=$3
-  echo "Creating $secret_name secret in $namespace namespace"
+  log::info "Creating $secret_name secret in $namespace namespace"
   create_secret_dockerconfigjson "$namespace" "$secret_name" "$dockerconfigjson_value"
   add_image_pull_secret_to_namespace_default_serviceaccount "$namespace" "$secret_name"
 }
@@ -483,7 +483,7 @@ apply_yaml_files() {
   local dir=$1
   local project=$2
   local rhdh_base_url=$3
-  echo "Applying YAML files to namespace ${project}"
+  log::info "Applying YAML files to namespace ${project}"
 
   oc config set-context --current --namespace="${project}"
 
@@ -560,18 +560,18 @@ apply_yaml_files() {
 
 deploy_test_backstage_customization_provider() {
   local project=$1
-  echo "Deploying test-backstage-customization-provider in namespace ${project}"
+  log::info "Deploying test-backstage-customization-provider in namespace ${project}"
 
   # Check if the buildconfig already exists
   if ! oc get buildconfig test-backstage-customization-provider -n "${project}" > /dev/null 2>&1; then
-    echo "Creating new app for test-backstage-customization-provider"
+    log::info "Creating new app for test-backstage-customization-provider"
     oc new-app -S openshift/nodejs:18-minimal-ubi8
     oc new-app https://github.com/janus-qe/test-backstage-customization-provider --image-stream="openshift/nodejs:18-ubi8" --namespace="${project}"
   else
-    echo "BuildConfig for test-backstage-customization-provider already exists in ${project}. Skipping new-app creation."
+    log::warn "BuildConfig for test-backstage-customization-provider already exists in ${project}. Skipping new-app creation."
   fi
 
-  echo "Exposing service for test-backstage-customization-provider"
+  log::info "Exposing service for test-backstage-customization-provider"
   oc expose svc/test-backstage-customization-provider --namespace="${project}"
 }
 
@@ -832,7 +832,7 @@ install_orchestrator_infra_chart() {
   ORCH_INFRA_NS="orchestrator-infra"
   configure_namespace ${ORCH_INFRA_NS}
 
-  echo "Deploying orchestrator-infra chart"
+  log::info "Deploying orchestrator-infra chart"
   cd "${DIR}"
   helm upgrade -i orch-infra -n "${ORCH_INFRA_NS}" \
     "oci://quay.io/rhdh/orchestrator-infra-chart" --version "${CHART_VERSION}" \
@@ -890,7 +890,7 @@ base_deployment() {
   cd "${DIR}"
   local rhdh_base_url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
-  echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
+  log::info "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
   perform_helm_install "${RELEASE_NAME}" "${NAME_SPACE}" "${HELM_CHART_VALUE_FILE_NAME}"
 
   deploy_orchestrator_workflows "${NAME_SPACE}"
@@ -904,7 +904,7 @@ rbac_deployment() {
   # Initiate rbac instance deployment.
   local rbac_rhdh_base_url="https://${RELEASE_NAME_RBAC}-developer-hub-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
-  echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${RELEASE_NAME_RBAC}"
+  log::info "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${RELEASE_NAME_RBAC}"
   perform_helm_install "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${HELM_CHART_RBAC_VALUE_FILE_NAME}"
 
   # NOTE: This is a workaround to allow the sonataflow platform to connect to the external postgres db using ssl.
@@ -942,7 +942,7 @@ base_deployment_osd_gcp() {
   mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE}"
   cp -a "/tmp/merged-values_showcase_OSD-GCP.yaml" "${ARTIFACT_DIR}/${NAME_SPACE}/" # Save the final value-file into the artifacts directory.
 
-  echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
+  log::info "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
 
   # shellcheck disable=SC2046
   helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
@@ -952,7 +952,7 @@ base_deployment_osd_gcp() {
     $(get_image_helm_set_params)
 
   # Skip orchestrator workflows deployment for OSD-GCP
-  echo "Skipping orchestrator workflows deployment on OSD-GCP environment"
+  log::warn "Skipping orchestrator workflows deployment on OSD-GCP environment"
 }
 
 rbac_deployment_osd_gcp() {
@@ -969,7 +969,7 @@ rbac_deployment_osd_gcp() {
   mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE_RBAC}"
   cp -a "/tmp/merged-values_showcase-rbac_OSD-GCP.yaml" "${ARTIFACT_DIR}/${NAME_SPACE_RBAC}/" # Save the final value-file into the artifacts directory.
 
-  echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${RELEASE_NAME_RBAC}"
+  log::info "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${RELEASE_NAME_RBAC}"
 
   # shellcheck disable=SC2046
   helm upgrade -i "${RELEASE_NAME_RBAC}" -n "${NAME_SPACE_RBAC}" \
@@ -979,7 +979,7 @@ rbac_deployment_osd_gcp() {
     $(get_image_helm_set_params)
 
   # Skip orchestrator workflows deployment for OSD-GCP
-  echo "Skipping orchestrator workflows deployment on OSD-GCP RBAC environment"
+  log::warn "Skipping orchestrator workflows deployment on OSD-GCP RBAC environment"
 }
 
 initiate_deployments_osd_gcp() {
@@ -996,7 +996,7 @@ initiate_upgrade_base_deployments() {
   local max_attempts=${4:-30} # Default to 30 if not set
   local wait_seconds=${5:-30}
 
-  echo "Initiating base RHDH deployment before upgrade"
+  log::info "Initiating base RHDH deployment before upgrade"
 
   CURRENT_DEPLOYMENT=$((CURRENT_DEPLOYMENT + 1))
   save_status_deployment_namespace $CURRENT_DEPLOYMENT "$namespace"
@@ -1008,7 +1008,7 @@ initiate_upgrade_base_deployments() {
   cd "${DIR}"
 
   apply_yaml_files "${DIR}" "${namespace}" "${url}"
-  echo "Deploying image from base repository: ${QUAY_REPO_BASE}, TAG_NAME_BASE: ${TAG_NAME_BASE}, in NAME_SPACE: ${namespace}"
+  log::info "Deploying image from base repository: ${QUAY_REPO_BASE}, TAG_NAME_BASE: ${TAG_NAME_BASE}, in NAME_SPACE: ${namespace}"
 
   # Get dynamic value file path based on previous release version
   local previous_release_value_file
@@ -1031,11 +1031,11 @@ initiate_upgrade_deployments() {
   local wait_seconds=${5:-30}
   local wait_upgrade="10m"
 
-  echo "Initiating upgrade deployment"
+  log::info "Initiating upgrade deployment"
   cd "${DIR}"
 
   yq_merge_value_files "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/diff-values_showcase_upgrade.yaml" "/tmp/merged_value_file.yaml"
-  echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
+  log::info "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
 
   helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \

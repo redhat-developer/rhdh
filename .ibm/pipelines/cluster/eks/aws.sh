@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# shellcheck source=.ibm/pipelines/lib/log.sh
+source "$DIR"/lib/log.sh
+
 # These functions provide AWS utilities for EKS deployments.
 # The cluster is pre-configured with required addons and load balancer.
 # KUBECONFIG is provided by the test environment.
@@ -34,9 +37,9 @@ aws_configure() {
     aws configure set default.region "${cluster_region}"
     export AWS_DEFAULT_REGION="${cluster_region}"
     export AWS_REGION="${cluster_region}"
-    echo "AWS CLI configured for default region: ${cluster_region}"
+    log::info "AWS CLI configured for default region: ${cluster_region}"
   else
-    echo "AWS credentials not provided, skipping AWS CLI configuration"
+    log::warn "AWS credentials not provided, skipping AWS CLI configuration"
   fi
 }
 
@@ -62,37 +65,37 @@ configure_eks_ingress_and_dns() {
   local namespace=$1
   local ingress_name=$2
 
-  echo "Setting up EKS ingress hosts configuration..."
+  log::info "Setting up EKS ingress hosts configuration..."
 
   # Wait for ingress to be available
-  echo "Waiting for ingress ${ingress_name} to be available in namespace ${namespace}..."
+  log::debug "Waiting for ingress ${ingress_name} to be available in namespace ${namespace}..."
   local max_attempts=30
   local wait_seconds=10
   local ingress_address=""
 
   for ((i = 1; i <= max_attempts; i++)); do
-    echo "Attempt ${i} of ${max_attempts} to get ingress address..."
+    log::debug "Attempt ${i} of ${max_attempts} to get ingress address..."
 
     # Get the ingress address dynamically
     ingress_address=$(kubectl get ingress "${ingress_name}" -n "${namespace}" -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2> /dev/null)
 
     if [[ -n "${ingress_address}" ]]; then
-      echo "Successfully retrieved ingress address"
+      log::success "Successfully retrieved ingress address"
       break
     else
-      echo "Ingress address not available yet, waiting ${wait_seconds} seconds..."
+      log::debug "Ingress address not available yet, waiting ${wait_seconds} seconds..."
       sleep "${wait_seconds}"
     fi
   done
 
   if [[ -z "${ingress_address}" ]]; then
-    echo "Error: Failed to get ingress address after ${max_attempts} attempts"
+    log::error "Failed to get ingress address after ${max_attempts} attempts"
     return 1
   fi
 
   export EKS_INGRESS_HOSTNAME="${ingress_address}"
 
-  echo "EKS ingress hosts configuration completed successfully"
+  log::success "EKS ingress hosts configuration completed successfully"
 
   # Update DNS record in Route53 if domain name is configured
   if [[ -n "${EKS_INSTANCE_DOMAIN_NAME}" ]]; then
@@ -100,22 +103,22 @@ configure_eks_ingress_and_dns() {
     local masked_target
     masked_domain=$(mask_value "${EKS_INSTANCE_DOMAIN_NAME}")
     masked_target=$(mask_value "${ingress_address}")
-    echo "Updating DNS record for domain ${masked_domain} -> target ${masked_target}"
+    log::info "Updating DNS record for domain ${masked_domain} -> target ${masked_target}"
 
     if update_route53_dns_record "${EKS_INSTANCE_DOMAIN_NAME}" "${ingress_address}"; then
-      echo "✅ DNS record updated successfully"
+      log::success "DNS record updated successfully"
 
       # Verify DNS resolution
       if verify_dns_resolution "${EKS_INSTANCE_DOMAIN_NAME}" "${ingress_address}" 30 15; then
-        echo "✅ DNS resolution verified successfully"
+        log::success "DNS resolution verified successfully"
       else
-        echo "⚠️  DNS resolution verification failed, but record was updated"
+        log::warn "DNS resolution verification failed, but record was updated"
       fi
     else
-      echo "⚠️  Failed to update DNS record, but ingress is still functional"
+      log::warn "Failed to update DNS record, but ingress is still functional"
     fi
   else
-    echo "No domain name configured, skipping DNS update"
+    log::debug "No domain name configured, skipping DNS update"
   fi
 }
 
@@ -123,17 +126,17 @@ configure_eks_ingress_and_dns() {
 get_eks_certificate() {
   local domain_name=$1
 
-  echo "Retrieving certificate for configured domain"
+  log::info "Retrieving certificate for configured domain"
 
   # Check if AWS CLI is available
   if ! command -v aws &> /dev/null; then
-    echo "Error: AWS CLI is not installed or not in PATH"
+    log::error "AWS CLI is not installed or not in PATH"
     return 1
   fi
 
   # Check if AWS credentials are configured
   if ! aws sts get-caller-identity &> /dev/null; then
-    echo "Error: AWS credentials are not configured or invalid"
+    log::error "AWS credentials are not configured or invalid"
     return 1
   fi
 

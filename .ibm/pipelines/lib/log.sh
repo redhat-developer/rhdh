@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Prevent sourcing multiple times in the same shell.
-if [[ -n "${RHDH_LOGGING_LIB_SOURCED:-}" ]]; then
+if [[ -n "${RHDH_LOG_LIB_SOURCED:-}" ]]; then
   return 0
 fi
-readonly RHDH_LOGGING_LIB_SOURCED=1
+readonly RHDH_LOG_LIB_SOURCED=1
 
 # Auto-detect TTY and disable colors if not in interactive terminal
 if [[ -t 1 ]] && [[ "${TERM:-}" != "dumb" ]]; then
@@ -15,12 +15,13 @@ fi
 
 : "${LOG_LEVEL:=INFO}"
 
-logging::timestamp() {
+log::timestamp() {
   date -u '+%Y-%m-%dT%H:%M:%SZ'
 }
 
-logging::level_value() {
-  local level="${1^^}"
+log::level_value() {
+  local level
+  level="$(echo "$1" | tr '[:lower:]' '[:upper:]')"
   case "${level}" in
     DEBUG) echo 0 ;;
     INFO) echo 1 ;;
@@ -30,12 +31,15 @@ logging::level_value() {
   esac
 }
 
-logging::should_log() {
-  local requested_level="${1^^}"
-  [[ "$(logging::level_value "${requested_level}")" -ge "$(logging::level_value "${LOG_LEVEL^^}")" ]]
+log::should_log() {
+  local requested_level
+  local config_level
+  requested_level="$(echo "$1" | tr '[:lower:]' '[:upper:]')"
+  config_level="$(echo "${LOG_LEVEL}" | tr '[:lower:]' '[:upper:]')"
+  [[ "$(log::level_value "${requested_level}")" -ge "$(log::level_value "${config_level}")" ]]
 }
 
-logging::reset_code() {
+log::reset_code() {
   if [[ "${LOG_NO_COLOR}" == "true" ]]; then
     printf ''
   else
@@ -43,13 +47,14 @@ logging::reset_code() {
   fi
 }
 
-logging::color_for_level() {
+log::color_for_level() {
   if [[ "${LOG_NO_COLOR}" == "true" ]]; then
     printf ''
     return 0
   fi
 
-  local level="${1^^}"
+  local level
+  level="$(echo "$1" | tr '[:lower:]' '[:upper:]')"
   case "${level}" in
     DEBUG) printf '\033[36m' ;;          # cyan
     INFO) printf '\033[34m' ;;           # blue
@@ -61,40 +66,41 @@ logging::color_for_level() {
   esac
 }
 
-logging::icon_for_level() {
-  local level="${1^^}"
+log::icon_for_level() {
+  local level
+  level="$(echo "$1" | tr '[:lower:]' '[:upper:]')"
   case "${level}" in
     DEBUG) printf '🐞' ;;
-    INFO) printf 'ℹ️' ;;
-    WARN | WARNING) printf '⚠️' ;;
+    INFO) printf 'ℹ' ;;
+    WARN | WARNING) printf '⚠' ;;
     ERROR | ERR) printf '❌' ;;
-    SUCCESS) printf '✅' ;;
-    SECTION) printf '▪️' ;;
+    SUCCESS) printf '✓' ;;
+    SECTION) printf ' ' ;;
     *) printf '-' ;;
   esac
 }
 
-logging::emit_line() {
+log::emit_line() {
   local level="$1"
   local icon="$2"
   local line="$3"
   local color reset timestamp
 
-  if ! logging::should_log "${level}"; then
+  if ! log::should_log "${level}"; then
     return 0
   fi
 
-  timestamp="$(logging::timestamp)"
-  color="$(logging::color_for_level "${level}")"
-  reset="$(logging::reset_code)"
+  timestamp="$(log::timestamp)"
+  color="$(log::color_for_level "${level}")"
+  reset="$(log::reset_code)"
   printf '%s[%s] %s %s%s\n' "${color}" "${timestamp}" "${icon}" "${line}" "${reset}" >&2
 }
 
-logging::emit() {
+log::emit() {
   local level="$1"
   shift
   local icon
-  icon="$(logging::icon_for_level "${level}")"
+  icon="$(log::icon_for_level "${level}")"
   local message="${*:-}"
 
   if [[ -z "${message}" ]]; then
@@ -102,40 +108,40 @@ logging::emit() {
   fi
 
   while IFS= read -r line; do
-    logging::emit_line "${level}" "${icon}" "${line}"
+    log::emit_line "${level}" "${icon}" "${line}"
   done <<< "${message}"
 }
 
-logging::debug() {
-  logging::emit "DEBUG" "$@"
+log::debug() {
+  log::emit "DEBUG" "$@"
 }
 
-logging::info() {
-  logging::emit "INFO" "$@"
+log::info() {
+  log::emit "INFO" "$@"
 }
 
-logging::warn() {
-  logging::emit "WARN" "$@"
+log::warn() {
+  log::emit "WARN" "$@"
 }
 
-logging::error() {
-  logging::emit "ERROR" "$@"
+log::error() {
+  log::emit "ERROR" "$@"
 }
 
-logging::success() {
-  logging::emit "SUCCESS" "$@"
+log::success() {
+  log::emit "SUCCESS" "$@"
 }
 
-logging::section() {
+log::section() {
   local title="$*"
-  logging::hr
-  logging::emit "SECTION" "${title}"
-  logging::hr
+  log::hr
+  log::emit "SECTION" "${title}"
+  log::hr
 }
 
-logging::hr() {
+log::hr() {
   local color reset
-  color="$(logging::color_for_level "SECTION")"
-  reset="$(logging::reset_code)"
+  color="$(log::color_for_level "SECTION")"
+  reset="$(log::reset_code)"
   printf '%s%s%s\n' "${color}" "--------------------------------------------------------------------------------" "${reset}" >&2
 }

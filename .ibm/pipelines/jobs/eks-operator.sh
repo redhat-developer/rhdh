@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# shellcheck source=.ibm/pipelines/lib/log.sh
+source "$DIR"/lib/log.sh
 # shellcheck source=.ibm/pipelines/install-methods/operator.sh
 source "$DIR"/install-methods/operator.sh
 # shellcheck source=.ibm/pipelines/cluster/eks/eks-operator-deployment.sh
@@ -10,7 +12,7 @@ source "$DIR"/cluster/k8s/k8s-utils.sh
 source "$DIR"/cluster/eks/aws.sh
 
 handle_eks_operator() {
-  echo "Starting EKS Operator deployment"
+  log::info "Starting EKS Operator deployment"
 
   # Verify EKS cluster connectivity
   aws_eks_verify_cluster

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# shellcheck source=.ibm/pipelines/lib/log.sh
+source "$DIR"/lib/log.sh
 # shellcheck source=.ibm/pipelines/utils.sh
 source "$DIR"/utils.sh
 
@@ -12,18 +14,18 @@ handle_ocp_helm_upgrade() {
   # Dynamically determine the previous release version and chart version
   previous_release_version=$(get_previous_release_version "$CHART_MAJOR_VERSION")
   if [[ -z "$previous_release_version" ]]; then
-    echo "Failed to determine latest release version. Exiting."
+    log::error "Failed to determine latest release version. Exiting."
     save_overall_result 1
     exit 1
   fi
   CHART_VERSION_BASE=$(get_chart_version "$previous_release_version")
   if [[ -z "$CHART_VERSION_BASE" ]]; then
-    echo "Failed to determine correct chart version for $previous_release_version. Exiting."
+    log::error "Failed to determine correct chart version for $previous_release_version. Exiting."
     save_overall_result 1
     exit 1
   fi
   export CHART_VERSION_BASE
-  echo "Using previous release version: ${previous_release_version} and chart version: ${CHART_VERSION_BASE}"
+  log::info "Using previous release version: ${previous_release_version} and chart version: ${CHART_VERSION_BASE}"
   export TAG_NAME_BASE=$previous_release_version
 
   oc_login

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# shellcheck source=.ibm/pipelines/lib/log.sh
+source "$DIR"/lib/log.sh
 # shellcheck source=.ibm/pipelines/utils.sh
 source "$DIR"/utils.sh
 
@@ -17,7 +19,7 @@ handle_ocp_nightly() {
 
   # Use OSD-GCP specific deployment for osd-gcp jobs (orchestrator disabled)
   if [[ "${JOB_NAME}" =~ osd-gcp ]]; then
-    echo "Detected OSD-GCP job, using OSD-GCP specific deployment (orchestrator disabled)"
+    log::info "Detected OSD-GCP job, using OSD-GCP specific deployment (orchestrator disabled)"
     initiate_deployments_osd_gcp
   else
     initiate_deployments

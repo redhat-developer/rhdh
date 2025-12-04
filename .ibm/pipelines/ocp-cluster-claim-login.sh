@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# shellcheck source=.ibm/pipelines/lib/log.sh
+source "$(dirname "${BASH_SOURCE[0]}")"/lib/log.sh
+
 # Check if prow log URL is provided as parameter, otherwise prompt for it
 if [[ $# -eq 0 ]]; then
   read -p "Enter the prow log url: " input_url
@@ -14,14 +17,14 @@ build_log_url="https://prow.ci.openshift.org/log?container=test&id=${id}&job=${j
 namespace=$(curl -s $build_log_url | grep "The claimed cluster" | sed -E 's/.*The claimed cluster ([^.]+)\ is ready after.*/\1/')
 
 # Output the constructed URL
-echo "Prow build log URL: $build_log_url"
-echo "hosted-mgmt Namespace: $namespace"
+log::info "Prow build log URL: $build_log_url"
+log::info "hosted-mgmt Namespace: $namespace"
 
 if [[ -z "$namespace" ]]; then
-  echo "Cluster claim not found. Please provide a valid prow url that uses cluster claim."
+  log::error "Cluster claim not found. Please provide a valid prow url that uses cluster claim."
   exit 1
 elif [[ ! "$namespace" =~ ^rhdh-[0-9]+-[0-9]+-us-east-2 ]]; then
-  echo "Namespace must match pattern 'rhdh-[version]-us-east-2'."
+  log::error "Namespace must match pattern 'rhdh-[version]-us-east-2'."
   exit 1
 fi
 
@@ -29,16 +32,16 @@ fi
 oc login --web https://api.hosted-mgmt.ci.devcluster.openshift.com:6443
 
 if ! oc get namespace "$namespace" > /dev/null 2>&1; then
-  echo "Namespace ${namespace} is expired or deleted, exiting..."
+  log::error "Namespace ${namespace} is expired or deleted, exiting..."
   exit 1
 fi
 
 # Try to retrieve secrets from the namespace
 namespace_secrets=$(oc get secrets -n "$namespace" 2>&1)
 if echo "$namespace_secrets" | grep -q "Forbidden"; then
-  echo "Error: You do not have access to the namespace '$namespace'."
-  echo "check if you are member of 'rhdh-pool-admins' group at: https://rover.redhat.com/groups/search?q=rhdh-pool-admins"
-  echo "Please reach out to the rhdh-qe team for assistance."
+  log::error "You do not have access to the namespace '$namespace'."
+  log::info "check if you are member of 'rhdh-pool-admins' group at: https://rover.redhat.com/groups/search?q=rhdh-pool-admins"
+  log::info "Please reach out to the rhdh-qe team for assistance."
   exit 1
 fi
 
@@ -60,11 +63,11 @@ if [[ "$open_console" == "y" || "$open_console" == "Y" ]]; then
 
   console_url="https://console-openshift-console.apps.${namespace}.rhdh-qe.devcluster.openshift.com/dashboards"
 
-  echo "Opening web console at $console_url..."
-  echo "Use bellow user and password to login into web console:"
-  echo "Username: kubeadmin"
-  echo "Password: $password"
-  echo "Password copied to clipboard"
+  log::info "Opening web console at $console_url..."
+  log::info "Use bellow user and password to login into web console:"
+  log::info "Username: kubeadmin"
+  log::info "Password: $password"
+  log::success "Password copied to clipboard"
   echo $password | pbcopy
   sleep 3
 
@@ -74,9 +77,9 @@ if [[ "$open_console" == "y" || "$open_console" == "Y" ]]; then
   elif command -v open &> /dev/null; then
     open "$console_url" # For macOS
   else
-    echo "Unable to detect a browser. Please open the following URL manually:"
-    echo "$console_url"
+    log::warn "Unable to detect a browser. Please open the following URL manually:"
+    log::info "$console_url"
   fi
 else
-  echo "Web console not opened."
+  log::info "Web console not opened."
 fi
