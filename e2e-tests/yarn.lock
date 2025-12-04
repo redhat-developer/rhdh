@@ -1675,7 +1675,7 @@ __metadata:
     typescript-eslint: 8.47.0
     uuid: 11.1.0
     winston: 3.14.2
-    yaml: 2.8.1
+    yaml: 2.8.2
   languageName: unknown
   linkType: soft
 
@@ -4136,12 +4136,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yaml@npm:2.8.1":
-  version: 2.8.1
-  resolution: "yaml@npm:2.8.1"
+"yaml@npm:2.8.2":
+  version: 2.8.2
+  resolution: "yaml@npm:2.8.2"
   bin:
     yaml: bin.mjs
-  checksum: 35b46150d48bc1da2fd5b1521a48a4fa36d68deaabe496f3c3fa9646d5796b6b974f3930a02c4b5aee6c85c860d7d7f79009416724465e835f40b87898c36de4
+  checksum: 5ffd9f23bc7a450129cbd49dcf91418988f154ede10c83fd28ab293661ac2783c05da19a28d76a22cbd77828eae25d4bd7453f9a9fe2d287d085d72db46fd105
   languageName: node
   linkType: hard
 
