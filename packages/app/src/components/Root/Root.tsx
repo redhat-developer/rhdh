@@ -251,21 +251,20 @@ const renderExpandIcon = (expand: boolean) => {
 const getMenuItem = (
   menuItem: ResolvedMenuItem,
   isNestedMenuItem = false,
-  getMenuText: (item: ResolvedMenuItem) => string,
+  getMenuText: (item: ResolvedMenuItem, count?: number) => string,
 ) => {
   const menuItemStyle = {
     paddingLeft: isNestedMenuItem ? '2rem' : '',
   };
   const translatedText = getMenuText(menuItem);
+  const pluralTranslatedText = getMenuText(menuItem, 2);
   return menuItem.name === 'default.my-group' ? (
     <Box key={menuItem.name} sx={{ '& a': menuItemStyle }}>
       <MyGroupsSidebarItem
         key={menuItem.name}
         icon={renderIcon(menuItem.icon ?? '')}
-        // Plural localization will be address in
-        // https://issues.redhat.com/browse/RHDHBUGS-2077
         singularTitle={translatedText}
-        pluralTitle={`${translatedText}s`}
+        pluralTitle={pluralTranslatedText}
       />
     </Box>
   ) : (
@@ -369,9 +368,9 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
   useLanguagePreference();
   const { t } = useTranslation();
 
-  const getMenuText = (menuItem: ResolvedMenuItem) => {
+  const getMenuText = (menuItem: ResolvedMenuItem, count?: number) => {
     if (menuItem.titleKey) {
-      return t(menuItem.titleKey as any, {});
+      return t(menuItem.titleKey as any, { count: count ?? 1 } as any);
     }
     return menuItem.title;
   };

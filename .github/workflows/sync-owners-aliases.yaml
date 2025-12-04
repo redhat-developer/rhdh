@@ -1,0 +1,47 @@
+name: Sync OWNERS_ALIASES
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  generate:
+    name: Generate OWNERS_ALIASES
+    runs-on: ubuntu-latest
+    env:
+      # This token is used to fetch the members of the GitHub teams
+      # It is a Personal Access Token with the `read:org` scope
+      OWNERS_GITHUB_TOKEN: ${{ secrets.OWNERS_GITHUB_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Generate OWNERS_ALIASES from GitHub Teams
+        run: node scripts/generate-owners-aliases.js
+        env:
+          GITHUB_TOKEN: ${{ env.OWNERS_GITHUB_TOKEN }}
+      - name: Configure Git
+        run: |
+            git config --global user.name "rhdh-bot"
+            git config --global user.email "rhdh-bot@redhat.com"
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@84ae59a2cdc2258d6fa0732dd66352dddae2a412 # v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: |
+            chore: sync OWNERS_ALIASES with GitHub teams
+          branch: chore/sync-owners-aliases
+          delete-branch: true
+          title: "chore: sync OWNERS_ALIASES with GitHub teams"
+          body: |
+            ## Summary
+            - auto-generated update to `OWNERS_ALIASES`
+
+            This PR was created automatically by `.github/workflows/sync-owners-aliases.yaml`.
+          add-paths: |
+            OWNERS_ALIASES

@@ -24,7 +24,8 @@ export const rhdhMessages = {
   menuItem: {
     // Default main menu items from consts.ts
     home: 'Home',
-    myGroup: 'My Group',
+    myGroup_one: 'My Group',
+    myGroup_other: 'My Groups',
     catalog: 'Catalog',
     apis: 'APIs',
     learningPaths: 'Learning Paths',

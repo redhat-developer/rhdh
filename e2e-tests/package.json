@@ -32,7 +32,7 @@
     "@axe-core/playwright": "4.11.0",
     "@eslint/js": "9.39.1",
     "@microsoft/microsoft-graph-types": "2.43.1",
-    "@playwright/test": "1.56.1",
+    "@playwright/test": "1.57.0",
     "@types/node": "22.19.1",
     "@types/pg": "8.15.6",
     "@typescript-eslint/eslint-plugin": "8.47.0",
@@ -48,7 +48,7 @@
     "typescript-eslint": "8.47.0"
   },
   "dependencies": {
-    "@azure/arm-network": "34.1.0",
+    "@azure/arm-network": "34.2.0",
     "@azure/identity": "4.13.0",
     "@keycloak/keycloak-admin-client": "25.0.6",
     "@kubernetes/client-node": "0.22.3",
