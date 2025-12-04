@@ -123,28 +123,44 @@ test.beforeAll(async ({ }, testInfo) => {
    - Audit logging functionality
    - Compliance verification
 
-### Test Execution Scripts
+### Test Execution
 
-Available yarn scripts in `e2e-tests/package.json`:
+#### CI/CD Pipeline Execution
+
+In the CI/CD pipeline, tests are executed directly using Playwright's `--project` flag via the `run_tests()` function in `.ibm/pipelines/utils.sh`:
 
 ```bash
-# Showcase tests - OpenShift deployments
+npx playwright test --project="${playwright_project}"
+```
+
+The namespace and Playwright project are decoupled, allowing flexible reuse. The `check_and_test()` and `run_tests()` functions accept an explicit `playwright_project` argument:
+
+```bash
+# Function signatures:
+check_and_test "${RELEASE_NAME}" "${NAMESPACE}" "${PLAYWRIGHT_PROJECT}" "${URL}" [max_attempts] [wait_seconds]
+run_tests "${RELEASE_NAME}" "${NAMESPACE}" "${PLAYWRIGHT_PROJECT}" "${URL}"
+```
+
+#### Local Development Scripts
+
+Available yarn scripts in `e2e-tests/package.json` for local development:
+
+```bash
+# Showcase tests - OpenShift deployments (Helm)
 yarn showcase                       # General showcase tests
-yarn showcase-ci-nightly           # General showcase tests (nightly CI alias)
 yarn showcase-rbac                 # General showcase tests with RBAC
-yarn showcase-rbac-nightly         # General showcase tests with RBAC (nightly CI alias)
 
 # Showcase tests - Kubernetes deployments
-yarn showcase-k8s-ci-nightly       # Kubernetes showcase tests
-yarn showcase-rbac-k8s-ci-nightly  # Kubernetes showcase tests with RBAC
+yarn showcase-k8s                  # Kubernetes showcase tests
+yarn showcase-rbac-k8s             # Kubernetes showcase tests with RBAC
 
 # Showcase tests - Operator deployments
-yarn showcase-operator-nightly     # Operator showcase tests
-yarn showcase-operator-rbac-nightly      # Operator showcase tests with RBAC
+yarn showcase-operator             # Operator showcase tests
+yarn showcase-operator-rbac        # Operator showcase tests with RBAC
 
 # Showcase tests - Other scenarios
 yarn showcase-runtime              # Runtime configuration tests
-yarn showcase-upgrade-nightly      # Upgrade scenario tests
+yarn showcase-upgrade              # Upgrade scenario tests
 
 # Authentication provider tests
 yarn showcase-auth-providers       # Auth provider tests
@@ -159,6 +175,8 @@ yarn tsc                           # TypeScript compilation
 yarn prettier:check                # Prettier checking
 yarn prettier:fix                  # Prettier fixing
 ```
+
+**Note**: The CI pipeline no longer uses yarn script aliases. Instead, it runs Playwright directly with `npx playwright test --project=<project-name>`. This decouples the namespace from the test project name, enabling more flexible namespace and test project reuse.
 
 ### Environment Variables
 
