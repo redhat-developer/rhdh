@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Generate OWNERS_ALIASES from GitHub Teams
-        run: node scripts/generate-owners-aliases.js
+        run: node scripts/generate-owners-aliases.mjs
         env:
           GITHUB_TOKEN: ${{ env.OWNERS_GITHUB_TOKEN }}
       - name: Configure Git
