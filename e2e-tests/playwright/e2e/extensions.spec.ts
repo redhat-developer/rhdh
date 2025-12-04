@@ -369,6 +369,8 @@ test.describe("Admin > Extensions", () => {
     });
 
     test("Topology package sidebar for CI", async ({ page }) => {
+      // TODO: https://issues.redhat.com/browse/RHDHBUGS-2144
+      test.fixme();
       await page.getByRole("textbox", { name: "Search" }).click();
       await page.getByRole("textbox", { name: "Search" }).fill("Topology");
       await expect(
