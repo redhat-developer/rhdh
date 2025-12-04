@@ -388,6 +388,94 @@ dynamicPlugins:
             if:
               allOf:
                 - isGithubPullRequestsAvailable
+        - mountPoint: home.page/cards
+          importName: HomePageYourOpenPullRequestsCard
+          config:
+            id: github-assigned-issues
+            title: "GitHub: Assigned Issues"
+            description: Issues assigned to the logged in user
+            cardLayout:
+              width:
+                minColumns: 4
+                maxColumns: 12
+                defaultColumns: 12
+              height:
+                minRows: 2
+                maxRows: 12
+                defaultRows: 4
+            props:
+              title: "GitHub: Assigned Issues"
+              query: is:issue state:open archived:false assignee:@me
+        - mountPoint: home.page/cards
+          importName: HomePageYourOpenPullRequestsCard
+          config:
+            id: github-assigned-pull-requests
+            title: "GitHub: Assigned Pull Requests"
+            description: Pull Requests assigned to the logged in user
+            cardLayout:
+              width:
+                minColumns: 4
+                maxColumns: 12
+                defaultColumns: 12
+              height:
+                minRows: 2
+                maxRows: 12
+                defaultRows: 4
+            props:
+              title: "GitHub: Assigned Pull Requests"
+              query: is:pr state:open archived:false assignee:@me
+        - mountPoint: home.page/cards
+          importName: HomePageYourOpenPullRequestsCard
+          config:
+            id: github-open-issues
+            title: "GitHub: Open Issues"
+            description: Issues opened by the logged in user
+            cardLayout:
+              width:
+                minColumns: 4
+                maxColumns: 12
+                defaultColumns: 12
+              height:
+                minRows: 2
+                maxRows: 12
+                defaultRows: 4
+            props:
+              title: "GitHub: Open Issues"
+              query: is:issue state:open archived:false author:@me
+        - mountPoint: home.page/cards
+          importName: HomePageYourOpenPullRequestsCard
+          config:
+            id: github-open-pull-requests
+            title: "GitHub: Open Pull Requests"
+            description: Pull Requests opened by the logged in user
+            cardLayout:
+              width:
+                minColumns: 4
+                maxColumns: 12
+                defaultColumns: 12
+              height:
+                minRows: 2
+                maxRows: 12
+                defaultRows: 4
+            props:
+              title: "GitHub: Open Pull Requests"
+        - mountPoint: home.page/cards
+          importName: HomePageRequestedReviewsCard
+          config:
+            id: github-requested-reviews
+            title: "GitHub: Requested Reviews"
+            description: Pull Requests that waiting for a code review of the logged in user
+            cardLayout:
+              width:
+                minColumns: 4
+                maxColumns: 12
+                defaultColumns: 12
+              height:
+                minRows: 2
+                maxRows: 12
+                defaultRows: 4
+            props:
+              title: "GitHub: Requested Reviews"
     roadiehq.backstage-plugin-jira:
       mountPoints:
         - mountPoint: entity.page.issues/cards

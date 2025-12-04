@@ -24,7 +24,8 @@ export default createTranslationMessages({
   messages: {
     // Default main menu items from consts.ts
     'menuItem.home': 'Home',
-    'menuItem.myGroup': 'Il Mio Gruppo',
+    'menuItem.myGroup_one': 'Il Mio Gruppo',
+    'menuItem.myGroup_other': 'I Miei Gruppi',
     'menuItem.catalog': 'Catalogo',
     'menuItem.apis': 'API',
     'menuItem.learningPaths': 'Percorsi di Apprendimento',

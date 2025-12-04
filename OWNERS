@@ -1,24 +1,34 @@
-approvers:
- - 04kash
- - albarbaro
- - alizard0
- - christoph-jerolimov
- - davidfestal
- - debsmita1
- - divyanshiGupta
- - Fortune-Ndlovu
- - gashcrumb 
- - gustavolira
- - invincibleJai
- - JessicaJHee  
- - josephca
- - kadel
- - kim-tsao
- - nickboldt
- - PatAKnight
- - rm3l
- - schultzp2020
- - subhashkhileri
- - Zaperex
+# # OWNERS and OWNERS_ALIASES automation
+#
+# This repository relies on [Prow](https://docs.prow.k8s.io/docs/) `OWNERS` files for code review automation. Prow only supports individual GitHub usernames inside `OWNERS`, so we mirror GitHub team membership into `OWNERS_ALIASES` via automation.
+#
+# ## Files
+#
+# - `OWNERS` references alias names (for example, `rhdh-cope`).
+# - `scripts/generate-owners-aliases.js` contains the `TEAMS` list of GitHub team slugs to mirror (each slug is used as the alias name).
+# - `OWNERS_ALIASES` is generated automatically and must not be edited by hand.
+#
+# ## Workflow
+#
+# The workflow defined in `.github/workflows/sync-owners-aliases.yaml` relies on `scripts/generate-owners-aliases.js` (and its `TEAMS` constant) to pull GitHub team membership and regenerate `OWNERS_ALIASES`:
+#
+# 1. runs weekly (Monday 06:00 UTC) and can be triggered manually,
+# 2. fetches the members of each configured GitHub team using the provided token,
+# 3. regenerates `OWNERS_ALIASES`, and
+# 4. opens a pull request with the changes (via `peter-evans/create-pull-request`).
+#
+# To allow the workflow to read private team membership, configure a repository secret named `OWNERS_GITHUB_TOKEN` that contains a Personal Access Token with the `read:org` scope. If the secret is not provided, the workflow falls back to the default `GITHUB_TOKEN`, which only works when the teams are public.
+#
+# ## Adding a new team
+#
+# 1. Add the GitHub team slug to the `TEAMS` array inside `scripts/generate-owners-aliases.js`.
+# 2. Update `OWNERS` to reference the new alias wherever needed.
+# 3. Run the "Sync OWNERS aliases" workflow manually (Actions → Sync OWNERS aliases → Run workflow). The resulting pull request will update `OWNERS_ALIASES`.
+#
+# ***The generated aliases remain alphabetically sorted to reduce merge conflicts.*** 
 
-reviewers:
+
+approvers:
+ - rhdh-cope
+ - rhdh-security
+ - rhdh-administrators

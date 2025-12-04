@@ -261,25 +261,28 @@ export class Common {
       timeout: 20 * 1000,
     });
 
-    if (popup.url().startsWith(process.env.BASE_URL)) {
-      // an active rhsso session is already logged in and the popup will automatically close
+    // Check if popup closes automatically (already logged in)
+    try {
+      await popup.waitForEvent("close", { timeout: 5000 });
       return "Already logged in";
-    } else {
-      try {
-        await popup.locator("#username").click();
-        await popup.locator("#username").fill(username);
-        await popup.locator("#password").fill(password);
-        await popup.locator("[name=login]").click({ timeout: 5000 });
-        await popup.waitForEvent("close", { timeout: 2000 });
-        return "Login successful";
-      } catch (e) {
-        const usernameError = popup.locator("id=input-error");
-        if (await usernameError.isVisible()) {
-          await popup.close();
-          return "User does not exist";
-        } else {
-          throw e;
-        }
+    } catch {
+      // Popup didn't close, proceed with login
+    }
+
+    try {
+      await popup.locator("#username").click();
+      await popup.locator("#username").fill(username);
+      await popup.locator("#password").fill(password);
+      await popup.locator("[name=login]").click({ timeout: 5000 });
+      await popup.waitForEvent("close", { timeout: 2000 });
+      return "Login successful";
+    } catch (e) {
+      const usernameError = popup.locator("id=input-error");
+      if (await usernameError.isVisible()) {
+        await popup.close();
+        return "User does not exist";
+      } else {
+        throw e;
       }
     }
   }
@@ -298,37 +301,40 @@ export class Common {
       timeout: 20 * 1000,
     });
 
-    if (popup.url().startsWith(process.env.BASE_URL)) {
-      // an active rhsso session is already logged in and the popup will automatically close
+    // Check if popup closes automatically
+    try {
+      await popup.waitForEvent("close", { timeout: 5000 });
       return "Already logged in";
-    } else {
-      try {
-        await popup.locator("#login_field").click({ timeout: 5000 });
-        await popup.locator("#login_field").fill(username, { timeout: 5000 });
-        const cookieLocator = popup.locator("#wcpConsentBannerCtrl");
-        if (await cookieLocator.isVisible()) {
-          await popup.click('button:has-text("Reject")', { timeout: 5000 });
-        }
-        await popup.locator("#password").click({ timeout: 5000 });
-        await popup.locator("#password").fill(password, { timeout: 5000 });
-        await popup
-          .locator("[type='submit'][value='Sign in']:not(webauthn-status *)")
-          .first()
-          .click({ timeout: 5000 });
-        const twofactorcode = authenticator.generate(twofactor);
-        await popup.locator("#app_totp").click({ timeout: 5000 });
-        await popup.locator("#app_totp").fill(twofactorcode, { timeout: 5000 });
+    } catch {
+      // Popup didn't close, proceed with login
+    }
 
-        await popup.waitForEvent("close", { timeout: 20000 });
+    try {
+      await popup.locator("#login_field").click({ timeout: 5000 });
+      await popup.locator("#login_field").fill(username, { timeout: 5000 });
+      const cookieLocator = popup.locator("#wcpConsentBannerCtrl");
+      if (await cookieLocator.isVisible()) {
+        await popup.click('button:has-text("Reject")', { timeout: 5000 });
+      }
+      await popup.locator("#password").click({ timeout: 5000 });
+      await popup.locator("#password").fill(password, { timeout: 5000 });
+      await popup
+        .locator("[type='submit'][value='Sign in']:not(webauthn-status *)")
+        .first()
+        .click({ timeout: 5000 });
+      const twofactorcode = authenticator.generate(twofactor);
+      await popup.locator("#app_totp").click({ timeout: 5000 });
+      await popup.locator("#app_totp").fill(twofactorcode, { timeout: 5000 });
+
+      await popup.waitForEvent("close", { timeout: 20000 });
+      return "Login successful";
+    } catch (e) {
+      const authorization = popup.locator("button.js-oauth-authorize-btn");
+      if (await authorization.isVisible()) {
+        await authorization.click();
         return "Login successful";
-      } catch (e) {
-        const authorization = popup.locator("button.js-oauth-authorize-btn");
-        if (await authorization.isVisible()) {
-          await authorization.click();
-          return "Login successful";
-        } else {
-          throw e;
-        }
+      } else {
+        throw e;
       }
     }
   }
@@ -392,35 +398,36 @@ export class Common {
       timeout: 20 * 1000,
     });
 
-    if (popup.url().startsWith(process.env.BASE_URL)) {
-      // an active microsoft session is already logged in and the popup will automatically close
+    // Check if popup closes automatically (already logged in)
+    try {
+      await popup.waitForEvent("close", { timeout: 5000 });
       return "Already logged in";
-    } else {
-      try {
-        await popup.locator("[name=loginfmt]").click();
-        await popup
-          .locator("[name=loginfmt]")
-          .fill(username, { timeout: 5000 });
-        await popup
-          .locator('[type=submit]:has-text("Next")')
-          .click({ timeout: 5000 });
+    } catch {
+      // Popup didn't close, proceed with login
+    }
 
-        await popup.locator("[name=passwd]").click();
-        await popup.locator("[name=passwd]").fill(password, { timeout: 5000 });
-        await popup
-          .locator('[type=submit]:has-text("Sign in")')
-          .click({ timeout: 5000 });
-        await popup
-          .locator('[type=button]:has-text("No")')
-          .click({ timeout: 15000 });
-        return "Login successful";
-      } catch (e) {
-        const usernameError = popup.locator("id=usernameError");
-        if (await usernameError.isVisible()) {
-          return "User does not exist";
-        } else {
-          throw e;
-        }
+    try {
+      await popup.locator("[name=loginfmt]").click();
+      await popup.locator("[name=loginfmt]").fill(username, { timeout: 5000 });
+      await popup
+        .locator('[type=submit]:has-text("Next")')
+        .click({ timeout: 5000 });
+
+      await popup.locator("[name=passwd]").click();
+      await popup.locator("[name=passwd]").fill(password, { timeout: 5000 });
+      await popup
+        .locator('[type=submit]:has-text("Sign in")')
+        .click({ timeout: 5000 });
+      await popup
+        .locator('[type=button]:has-text("No")')
+        .click({ timeout: 15000 });
+      return "Login successful";
+    } catch (e) {
+      const usernameError = popup.locator("id=usernameError");
+      if (await usernameError.isVisible()) {
+        return "User does not exist";
+      } else {
+        throw e;
       }
     }
   }

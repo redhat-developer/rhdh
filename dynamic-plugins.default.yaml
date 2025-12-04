@@ -173,6 +173,17 @@ plugins:
           - mountPoint: home.page/cards
             importName: OnboardingSection
             config:
+              id: rhdh-onboarding-section
+              title: Red Hat Developer Hub - Onboarding
+              cardLayout:
+                width:
+                  minColumns: 4
+                  maxColumns: 12
+                  defaultColumns: 12
+                height:
+                  minRows: 2
+                  maxRows: 12
+                  defaultRows: 4
               layouts:
                 xl:
                   w: 12
@@ -195,6 +206,17 @@ plugins:
           - mountPoint: home.page/cards
             importName: EntitySection
             config:
+              id: rhdh-entity-section
+              title: Red Hat Developer Hub - Software Catalog
+              cardLayout:
+                width:
+                  minColumns: 4
+                  maxColumns: 12
+                  defaultColumns: 12
+                height:
+                  minRows: 2
+                  maxRows: 12
+                  defaultRows: 4
               layouts:
                 xl:
                   w: 12
@@ -217,6 +239,17 @@ plugins:
           - mountPoint: home.page/cards
             importName: TemplateSection
             config:
+              id: rhdh-template-section
+              title: Red Hat Developer Hub - Explore templates
+              cardLayout:
+                width:
+                  minColumns: 4
+                  maxColumns: 12
+                  defaultColumns: 12
+                height:
+                  minRows: 2
+                  maxRows: 12
+                  defaultRows: 4
               layouts:
                 xl:
                   w: 12
@@ -236,6 +269,50 @@ plugins:
                 xxs:
                   w: 12
                   h: 13.5
+          - mountPoint: home.page/cards
+            importName: QuickAccessCard
+            config:
+              id: quickaccess-card
+              title: Quick Access Card
+          - mountPoint: home.page/cards
+            importName: SearchBar
+            config:
+              id: searchbar
+              title: Search
+              cardLayout:
+                width:
+                  minColumns: 4
+                  maxColumns: 12
+                  defaultColumns: 12
+                height:
+                  minRows: 1
+                  maxRows: 2
+                  defaultRows: 2
+          - mountPoint: home.page/cards
+            importName: CatalogStarredEntitiesCard
+            config:
+              id: catalog-starred-entities-card
+              title: Starred catalog entities
+          - mountPoint: home.page/cards
+            importName: RecentlyVisitedCard
+            config:
+              id: recently-visited-card
+              title: Recently visited
+          - mountPoint: home.page/cards
+            importName: TopVisitedCard
+            config:
+              id: top-visited-card
+              title: Top visited
+          - mountPoint: home.page/cards
+            importName: FeaturedDocsCard
+            config:
+              id: featured-docs-card
+              title: Featured docs
+          - mountPoint: home.page/cards
+            importName: JokeCard
+            config:
+              id: joke-card
+              title: Random joke
           translationResources:
           - importName: homepageTranslations
             ref: homepageTranslationRef
@@ -1240,6 +1317,10 @@ plugins:
         subDomain: ${PAGERDUTY_SUBDOMAIN}
 - package: ./dynamic-plugins/dist/parfuemerie-douglas-scaffolder-backend-module-azure-repositories-dynamic
   disabled: true
+- package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-bulk-import:1.9.0--1.18.1!red-hat-developer-hub-backstage-plugin-bulk-import
+  # new approach using oci images: to switch to the new approach, remove
+  # these comments + the next two lines, but keep the pluginConfig details.
+  disabled: true
 - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import
   disabled: true
   pluginConfig:
@@ -1336,6 +1417,94 @@ plugins:
               if:
                 allOf:
                 - isGithubPullRequestsAvailable
+          - mountPoint: home.page/cards
+            importName: HomePageYourOpenPullRequestsCard
+            config:
+              id: github-assigned-issues
+              title: 'GitHub: Assigned Issues'
+              description: Issues assigned to the logged in user
+              cardLayout:
+                width:
+                  minColumns: 4
+                  maxColumns: 12
+                  defaultColumns: 12
+                height:
+                  minRows: 2
+                  maxRows: 12
+                  defaultRows: 4
+              props:
+                title: 'GitHub: Assigned Issues'
+                query: is:issue state:open archived:false assignee:@me
+          - mountPoint: home.page/cards
+            importName: HomePageYourOpenPullRequestsCard
+            config:
+              id: github-assigned-pull-requests
+              title: 'GitHub: Assigned Pull Requests'
+              description: Pull Requests assigned to the logged in user
+              cardLayout:
+                width:
+                  minColumns: 4
+                  maxColumns: 12
+                  defaultColumns: 12
+                height:
+                  minRows: 2
+                  maxRows: 12
+                  defaultRows: 4
+              props:
+                title: 'GitHub: Assigned Pull Requests'
+                query: is:pr state:open archived:false assignee:@me
+          - mountPoint: home.page/cards
+            importName: HomePageYourOpenPullRequestsCard
+            config:
+              id: github-open-issues
+              title: 'GitHub: Open Issues'
+              description: Issues opened by the logged in user
+              cardLayout:
+                width:
+                  minColumns: 4
+                  maxColumns: 12
+                  defaultColumns: 12
+                height:
+                  minRows: 2
+                  maxRows: 12
+                  defaultRows: 4
+              props:
+                title: 'GitHub: Open Issues'
+                query: is:issue state:open archived:false author:@me
+          - mountPoint: home.page/cards
+            importName: HomePageYourOpenPullRequestsCard
+            config:
+              id: github-open-pull-requests
+              title: 'GitHub: Open Pull Requests'
+              description: Pull Requests opened by the logged in user
+              cardLayout:
+                width:
+                  minColumns: 4
+                  maxColumns: 12
+                  defaultColumns: 12
+                height:
+                  minRows: 2
+                  maxRows: 12
+                  defaultRows: 4
+              props:
+                title: 'GitHub: Open Pull Requests'
+          - mountPoint: home.page/cards
+            importName: HomePageRequestedReviewsCard
+            config:
+              id: github-requested-reviews
+              title: 'GitHub: Requested Reviews'
+              description: Pull Requests that waiting for a code review of the logged in user
+              cardLayout:
+                width:
+                  minColumns: 4
+                  maxColumns: 12
+                  defaultColumns: 12
+                height:
+                  minRows: 2
+                  maxRows: 12
+                  defaultRows: 4
+              props:
+                title: 'GitHub: Requested Reviews'
 - package: ./dynamic-plugins/dist/roadiehq-backstage-plugin-jira
   disabled: true
   pluginConfig:

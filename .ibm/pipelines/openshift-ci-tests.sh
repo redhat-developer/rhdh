@@ -38,112 +38,112 @@ echo "Sourcing utils.sh"
 source "${DIR}/utils.sh"
 
 main() {
-  echo "Log file: ${LOGFILE}"
-  echo "JOB_NAME : $JOB_NAME"
+  logging::info "Log file: ${LOGFILE}"
+  logging::info "JOB_NAME : $JOB_NAME"
 
   CHART_VERSION=$(get_chart_version "$CHART_MAJOR_VERSION")
   export CHART_VERSION
 
   case "$JOB_NAME" in
     *aks*helm*nightly*)
-      echo "Sourcing aks-helm.sh"
+      logging::info "Sourcing aks-helm.sh"
       # shellcheck source=.ibm/pipelines/jobs/aks-helm.sh
       source "${DIR}/jobs/aks-helm.sh"
-      echo "Calling handle_aks_helm"
+      logging::info "Calling handle_aks_helm"
       handle_aks_helm
       ;;
     *aks*operator*nightly*)
-      echo "Sourcing aks-operator.sh"
+      logging::info "Sourcing aks-operator.sh"
       # shellcheck source=.ibm/pipelines/jobs/aks-operator.sh
       source "${DIR}/jobs/aks-operator.sh"
-      echo "Calling handle_aks_operator"
+      logging::info "Calling handle_aks_operator"
       handle_aks_operator
       ;;
     *eks*helm*nightly*)
-      echo "Sourcing eks-helm.sh"
+      logging::info "Sourcing eks-helm.sh"
       # shellcheck source=.ibm/pipelines/jobs/eks-helm.sh
       source "${DIR}/jobs/eks-helm.sh"
-      echo "Calling handle_eks_helm"
+      logging::info "Calling handle_eks_helm"
       handle_eks_helm
       ;;
     *eks*operator*nightly*)
-      echo "Sourcing eks-operator.sh"
+      logging::info "Sourcing eks-operator.sh"
       # shellcheck source=.ibm/pipelines/jobs/eks-operator.sh
       source "${DIR}/jobs/eks-operator.sh"
-      echo "Calling handle_eks_operator"
+      logging::info "Calling handle_eks_operator"
       handle_eks_operator
       ;;
     *gke*helm*nightly*)
-      echo "Sourcing gke-helm.sh"
+      logging::info "Sourcing gke-helm.sh"
       # shellcheck source=.ibm/pipelines/jobs/gke-helm.sh
       source "${DIR}/jobs/gke-helm.sh"
-      echo "Calling handle_gke_helm"
+      logging::info "Calling handle_gke_helm"
       handle_gke_helm
       ;;
     *gke*operator*nightly*)
-      echo "Sourcing gke-operator.sh"
+      logging::info "Sourcing gke-operator.sh"
       # shellcheck source=.ibm/pipelines/jobs/gke-operator.sh
       source "${DIR}/jobs/gke-operator.sh"
-      echo "Calling handle_gke_operator"
+      logging::info "Calling handle_gke_operator"
       handle_gke_operator
       ;;
     *ocp*operator*auth-providers*nightly*)
-      echo "Sourcing auth-providers.sh"
+      logging::info "Sourcing auth-providers.sh"
       # shellcheck source=.ibm/pipelines/jobs/auth-providers.sh
       source "${DIR}/jobs/auth-providers.sh"
-      echo "Calling handle_auth_providers"
+      logging::info "Calling handle_auth_providers"
       handle_auth_providers
       ;;
     *ocp*helm*upgrade*nightly*)
-      echo "Sourcing upgrade.sh"
+      logging::info "Sourcing upgrade.sh"
       # shellcheck source=.ibm/pipelines/jobs/upgrade.sh
       source "${DIR}/jobs/upgrade.sh"
-      echo "Calling helm upgrade"
+      logging::info "Calling helm upgrade"
       handle_ocp_helm_upgrade
       ;;
     *ocp*helm*nightly*)
-      echo "Sourcing ocp-nightly.sh"
+      logging::info "Sourcing ocp-nightly.sh"
       # shellcheck source=.ibm/pipelines/jobs/ocp-nightly.sh
       source "${DIR}/jobs/ocp-nightly.sh"
-      echo "Calling handle_ocp_nightly"
+      logging::info "Calling handle_ocp_nightly"
       handle_ocp_nightly
       ;;
     *ocp*operator*nightly*)
-      echo "Sourcing ocp-operator.sh"
+      logging::info "Sourcing ocp-operator.sh"
       # shellcheck source=.ibm/pipelines/jobs/ocp-operator.sh
       source "${DIR}/jobs/ocp-operator.sh"
-      echo "Calling handle_ocp_operator"
+      logging::info "Calling handle_ocp_operator"
       handle_ocp_operator
       ;;
     *osd-gcp*helm*nightly*)
-      echo "Sourcing ocp-nightly.sh"
+      logging::info "Sourcing ocp-nightly.sh"
       # shellcheck source=.ibm/pipelines/jobs/ocp-nightly.sh
       source "${DIR}/jobs/ocp-nightly.sh"
-      echo "Calling handle_ocp_nightly"
+      logging::info "Calling handle_ocp_nightly"
       handle_ocp_nightly
       ;;
     *osd-gcp*operator*nightly*)
-      echo "Sourcing ocp-operator.sh"
+      logging::info "Sourcing ocp-operator.sh"
       # shellcheck source=.ibm/pipelines/jobs/ocp-operator.sh
       source "${DIR}/jobs/ocp-operator.sh"
-      echo "Calling handle_ocp_operator"
+      logging::info "Calling handle_ocp_operator"
       handle_ocp_operator
       ;;
     *pull*ocp*helm*)
-      echo "Sourcing ocp-pull.sh"
+      logging::info "Sourcing ocp-pull.sh"
       # shellcheck source=.ibm/pipelines/jobs/ocp-pull.sh
       source "${DIR}/jobs/ocp-pull.sh"
-      echo "Calling handle_ocp_pull"
+      logging::info "Calling handle_ocp_pull"
       handle_ocp_pull
       ;;
     *)
-      echo "ERROR: Unknown JOB_NAME pattern: $JOB_NAME"
-      echo "No matching handler found for this job type"
+      logging::error "Unknown JOB_NAME pattern: $JOB_NAME"
+      logging::warn "No matching handler found for this job type"
       save_overall_result 1
       ;;
   esac
 
-  echo "Main script completed with result: ${OVERALL_RESULT}"
+  logging::info "Main script completed with result: ${OVERALL_RESULT}"
   exit "${OVERALL_RESULT}"
 }
 
