@@ -1,6 +1,7 @@
 import {
   actionsRegistryServiceFactory,
   actionsServiceFactory,
+  instanceMetadataServiceFactory,
 } from '@backstage/backend-defaults/alpha';
 import { auditorServiceFactory } from '@backstage/backend-defaults/auditor';
 import { authServiceFactory } from '@backstage/backend-defaults/auth';
@@ -56,6 +57,8 @@ export const DEFAULT_SERVICE_FACTORIES: ServiceFactory[] = [
   // alpha services
   actionsRegistryServiceFactory,
   actionsServiceFactory,
+  // TODO: Remove when upstream Backstage removes this deprecated service factory
+  instanceMetadataServiceFactory,
 ] as const;
 
 export const getDefaultServiceFactories = ({
