@@ -2,6 +2,8 @@
 
 There are several different methods for running the RHDH app today. We currently have support for running the application locally, using a helm chart to deploy to a cluster, and manifests for deployment using ArgoCD.
 
+<!-- Test change for e2e validation -->
+
 ## Telemetry collection
 
 The telemetry data collection feature is used to enhance your experience with the application.
