@@ -628,11 +628,6 @@ run_tests() {
   local playwright_project=$3
   local url="${4:-}"
 
-  if ! grep -q "name: \"${playwright_project}\"" "${DIR}/../../e2e-tests/playwright.config.ts" 2> /dev/null; then
-    log::warn "Playwright project '${playwright_project}' may not exist in config"
-    return 1
-  fi
-
   CURRENT_DEPLOYMENT=$((CURRENT_DEPLOYMENT + 1))
   save_status_deployment_namespace $CURRENT_DEPLOYMENT "$namespace"
   save_status_failed_to_deploy $CURRENT_DEPLOYMENT false
