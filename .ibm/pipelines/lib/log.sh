@@ -145,3 +145,55 @@ log::hr() {
   reset="$(log::reset_code)"
   printf '%s%s%s\n' "${color}" "--------------------------------------------------------------------------------" "${reset}" >&2
 }
+
+# ============================================================================
+# STDOUT variants for special cases (e.g., reporting.sh for Slack integration)
+# ============================================================================
+
+log::emit_line_stdout() {
+  local level="$1"
+  local icon="$2"
+  local line="$3"
+  local color reset timestamp
+
+  if ! log::should_log "${level}"; then
+    return 0
+  fi
+
+  timestamp="$(log::timestamp)"
+  color="$(log::color_for_level "${level}")"
+  reset="$(log::reset_code)"
+  printf '%s[%s] %s %s%s\n' "${color}" "${timestamp}" "${icon}" "${line}" "${reset}"
+}
+
+log::emit_stdout() {
+  local level="$1"
+  shift
+  local icon
+  icon="$(log::icon_for_level "${level}")"
+  local message="${*:-}"
+
+  if [[ -z "${message}" ]]; then
+    return 0
+  fi
+
+  while IFS= read -r line; do
+    log::emit_line_stdout "${level}" "${icon}" "${line}"
+  done <<< "${message}"
+}
+
+log::debug_stdout() {
+  log::emit_stdout "DEBUG" "$@"
+}
+
+log::info_stdout() {
+  log::emit_stdout "INFO" "$@"
+}
+
+log::warn_stdout() {
+  log::emit_stdout "WARN" "$@"
+}
+
+log::success_stdout() {
+  log::emit_stdout "SUCCESS" "$@"
+}
