@@ -7,8 +7,8 @@
  * - GITHUB_TOKEN: token with at least read:org scope (optional for public teams)
  */
 
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 
 const repoRoot = process.cwd();
 const OWNERS_ALIASES_FILE = "OWNERS_ALIASES";
@@ -27,9 +27,10 @@ const TEAMS = [
 const authToken = process.env.GITHUB_TOKEN || "";
 
 if (!authToken) {
-  console.warn(
+  console.error(
     "No GitHub token provided. Requests may be rate-limited or fail for private teams.",
   );
+  process.exit(1);
 }
 
 const headers = {
