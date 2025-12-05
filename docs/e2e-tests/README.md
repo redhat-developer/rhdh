@@ -89,14 +89,32 @@ The Playwright command line supports many options; see them [here](https://playw
 npx playwright test e2e-tests/playwright/e2e/your-test-file.spec.ts
 ```
 
-Our project contains multiple test suites for different environments and configurations. Some useful scripts to run the tests:
+Our project contains multiple test suites for different environments and configurations. Run tests using the Playwright project names defined in [`projects.json`](../../e2e-tests/playwright/projects.json):
 
 ```bash
-yarn showcase                       # Runs the showcase test suite
-yarn showcase-rbac                  # Runs the showcase RBAC test suite
-yarn showcase-1-2-x                 # Runs the showcase 1.2.x test suite
-yarn showcase-rbac-1-2-x            # Runs the showcase RBAC 1.2.x test suite
+# Source the project variables (from repo root)
+source .ibm/pipelines/playwright-projects.sh
+
+# Run tests using the project variables
+npx playwright test --project="$PW_PROJECT_SHOWCASE"           # General showcase tests
+npx playwright test --project="$PW_PROJECT_SHOWCASE_RBAC"      # RBAC tests
+npx playwright test --project="$PW_PROJECT_SHOWCASE_K8S"       # Kubernetes tests
+npx playwright test --project="$PW_PROJECT_SHOWCASE_OPERATOR"  # Operator tests
+
+# Or use the project names directly
+npx playwright test --project=showcase
+npx playwright test --project=showcase-rbac
 ```
+
+### Playwright Project Names
+
+All Playwright project names are defined in [`e2e-tests/playwright/projects.json`](../../e2e-tests/playwright/projects.json). This is the single source of truth for project names used in:
+
+- `playwright.config.ts` (via TypeScript import)
+- CI/CD pipeline scripts (via `$PW_PROJECT_*` environment variables)
+- yarn scripts in `package.json`
+
+See the [CI documentation](CI.md#playwright-project-names-single-source-of-truth) for more details.
 
 ## Setting Up Backstage Configuration During the Pipeline
 

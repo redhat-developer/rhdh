@@ -158,6 +158,22 @@ The OpenShift CI definitions for PR checks and nightly runs, as well as executio
 
 Detailed steps on how the tests and reports are managed can be found in the `run_tests()` function within the `utils.sh` script. The CI pipeline executes tests directly using Playwright's `--project` flag (e.g., `npx playwright test --project=showcase`) rather than yarn script aliases. The `check_and_test()` and `run_tests()` functions accept an explicit Playwright project argument, decoupling the namespace from the test project name for more flexible reuse.
 
+### Playwright Project Names (Single Source of Truth)
+
+All Playwright project names are defined in a single JSON file: [`e2e-tests/playwright/projects.json`](../../e2e-tests/playwright/projects.json). This file serves as the single source of truth for:
+
+- **TypeScript** (`playwright.config.ts`): Imports via `e2e-tests/playwright/projects.ts`
+- **CI/CD Scripts**: Loaded via `.ibm/pipelines/playwright-projects.sh` as `$PW_PROJECT_*` environment variables
+
+When adding or modifying Playwright projects, update `projects.json` first. The project names are automatically available as:
+
+| JSON Key | Shell Variable | Value |
+|----------|----------------|-------|
+| `SHOWCASE` | `$PW_PROJECT_SHOWCASE` | `showcase` |
+| `SHOWCASE_RBAC` | `$PW_PROJECT_SHOWCASE_RBAC` | `showcase-rbac` |
+| `SHOWCASE_K8S` | `$PW_PROJECT_SHOWCASE_K8S` | `showcase-k8s` |
+| ... | ... | ... |
+
 When the test run is complete, the status will be reported under your PR checks.
 
 > **Important:** The environment in which the PR tests are executed is shared and ephemeral. All PR tests queue for the same environment, which is destroyed and recreated for each PR. Test outputs (screenshots, recordings, walkthroughs, etc.) are stored for a retention period of **6 months** and can be accessed by checking the **Details -> Artifacts** of the test check on the PR.

@@ -69,7 +69,7 @@ test.beforeAll(async ({ }, testInfo) => {
    - Basic functionality verification
    - Health checks and core features
 
-2. **Showcase Tests** (defined in `playwright.config.ts`)
+2. **Showcase Tests** (defined in `e2e-tests/playwright/projects.json`)
    - `showcase`: General functionality tests with base deployment using Helm chart
    - `showcase-rbac`: General functionality tests with RBAC-enabled deployment using Helm chart
    - `showcase-k8s`: Kubernetes integration tests with base deployment
@@ -80,6 +80,10 @@ test.beforeAll(async ({ }, testInfo) => {
    - `showcase-sanity-plugins`: Plugin sanity checks
    - `showcase-upgrade`: Upgrade scenario tests
    - `any-test`: Use for debugging when you need to run a specific tests
+
+   **Note**: All project names are defined in `e2e-tests/playwright/projects.json` as the single source of truth. This file is consumed by:
+   - `playwright.config.ts` via TypeScript import (`e2e-tests/playwright/projects.ts`)
+   - CI/CD scripts via `.ibm/pipelines/playwright-projects.sh` (exports as `$PW_PROJECT_*` variables)
 
 3. **Authentication Provider Tests** (`showcase-auth-providers`)
    - OIDC (Red Hat Backstage Keycloak)
@@ -301,6 +305,7 @@ For CI/CD pipeline execution, tests run in a containerized environment using the
 - **`.ibm/pipelines/utils.sh`**: Utility functions
 - **`.ibm/pipelines/reporting.sh`**: Reporting and notifications
 - **`.ibm/pipelines/env_variables.sh`**: Environment variable management
+- **`.ibm/pipelines/playwright-projects.sh`**: Loads Playwright project names from `projects.json` as `$PW_PROJECT_*` variables
 
 #### CI Infrastructure Package Configuration
 
@@ -441,6 +446,7 @@ brew install gnu-sed
 - [OpenShift CI Pipeline README](.ibm/pipelines/README.md)
 
 ### Configuration Files
+- [Playwright Project Names (Single Source of Truth)](e2e-tests/playwright/projects.json)
 - [Playwright Configuration](e2e-tests/playwright.config.ts)
 - [Package Configuration](e2e-tests/package.json)
 - [Dynamic Plugins Config](dynamic-plugins/package.json)
