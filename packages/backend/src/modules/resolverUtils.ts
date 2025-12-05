@@ -22,12 +22,14 @@ export type OidcProviderInfo = {
  * @param providerName - The name of the identity provider to report in error message if the `sub` claim is missing.
  */
 export const createOidcSubClaimResolver = (provider: OidcProviderInfo) =>
-  createSignInResolverFactory({
-    optionsSchema: z
-      .object({
-        dangerouslyAllowSignInWithoutUserInCatalog: z.boolean().optional(),
-      })
-      .optional(),
+  createSignInResolverFactory<
+    OAuthAuthenticatorResult<OidcAuthResult>,
+    { dangerouslyAllowSignInWithoutUserInCatalog?: boolean } | undefined,
+    { dangerouslyAllowSignInWithoutUserInCatalog?: boolean } | undefined
+  >({
+    optionsSchema: z.object({
+      dangerouslyAllowSignInWithoutUserInCatalog: z.boolean().optional(),
+    }).optional() as any,
     create(options) {
       return async (
         info: SignInInfo<OAuthAuthenticatorResult<OidcAuthResult>>,
