@@ -10,7 +10,7 @@
  * - package.json scripts for local development
  */
 
-import projectsJson from "./projects.json";
+import projectsJson from "./projects.json" with { type: "json" };
 
 export const PW_PROJECT = projectsJson as {
   readonly SMOKE_TEST: string;
