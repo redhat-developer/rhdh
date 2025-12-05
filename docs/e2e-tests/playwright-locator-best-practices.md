@@ -374,20 +374,20 @@ await expect(page.getByRole('columnheader', { name: 'Type' })).toBeVisible();
 
 ```bash
 # Generate locators automatically
-npx playwright codegen http://localhost:7007
+yarn playwright codegen http://localhost:7007
 
 # With authentication
-npx playwright codegen --load-storage=auth.json http://localhost:7007
+yarn playwright codegen --load-storage=auth.json http://localhost:7007
 ```
 
 ### Debug Mode
 
 ```bash
 # Debug all tests
-npx playwright test --debug
+yarn playwright test --debug
 
 # Debug specific test
-npx playwright test rbac.spec.ts --debug
+yarn playwright test rbac.spec.ts --debug
 ```
 
 ### Pause in Test
