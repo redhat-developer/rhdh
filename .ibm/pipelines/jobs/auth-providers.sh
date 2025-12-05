@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# shellcheck source=.ibm/pipelines/lib/log.sh
+source "$DIR"/lib/log.sh
 # shellcheck source=.ibm/pipelines/utils.sh
 source "$DIR"/utils.sh
 # shellcheck source=.ibm/pipelines/install-methods/operator.sh
@@ -20,6 +22,6 @@ handle_auth_providers() {
   LOGS_FOLDER="$(pwd)/e2e-tests/auth-providers-logs"
   export LOGS_FOLDER
 
-  echo "Running tests ${AUTH_PROVIDERS_RELEASE} in ${AUTH_PROVIDERS_NAMESPACE}"
+  log::info "Running tests ${AUTH_PROVIDERS_RELEASE} in ${AUTH_PROVIDERS_NAMESPACE}"
   run_tests "${AUTH_PROVIDERS_RELEASE}" "${AUTH_PROVIDERS_NAMESPACE}"
 }

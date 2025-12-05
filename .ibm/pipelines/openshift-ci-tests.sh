@@ -8,23 +8,27 @@ export PS4='[$(date "+%Y-%m-%d %H:%M:%S")] ' # only for debugging with `set -x`
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export DIR
 
+# Source logging library first before any log calls
+# shellcheck source=.ibm/pipelines/lib/log.sh
+source "${DIR}/lib/log.sh"
+
 export OPENSHIFT_CI="${OPENSHIFT_CI:-false}"
 if [[ -z "${OPENSHIFT_CI}" || "${OPENSHIFT_CI}" == "false" ]]; then
   # NOTE: Use this file to override the environment variables for the local testing.
-  echo "Sourcing env_override.local.sh"
+  log::debug "Sourcing env_override.local.sh"
   # shellcheck source=.ibm/pipelines/env_override.local.sh
   source "${DIR}/env_override.local.sh"
 fi
 
-echo "Sourcing env_variables.sh"
+log::debug "Sourcing env_variables.sh"
 # shellcheck source=.ibm/pipelines/env_variables.sh
 source "${DIR}/env_variables.sh"
 
-echo "Sourcing reporting.sh"
+log::debug "Sourcing reporting.sh"
 # shellcheck source=.ibm/pipelines/reporting.sh
 source "${DIR}/reporting.sh"
 save_overall_result 0 # Initialize overall result to 0 (success).
-echo "Saving platform environment variables"
+log::debug "Saving platform environment variables"
 save_is_openshift "${IS_OPENSHIFT}"
 save_container_platform "${CONTAINER_PLATFORM}" "${CONTAINER_PLATFORM_VERSION}"
 
@@ -33,117 +37,117 @@ save_container_platform "${CONTAINER_PLATFORM}" "${CONTAINER_PLATFORM_VERSION}"
 source "${DIR}/cleanup.sh"
 trap cleanup EXIT INT ERR
 
-echo "Sourcing utils.sh"
+log::debug "Sourcing utils.sh"
 # shellcheck source=.ibm/pipelines/utils.sh
 source "${DIR}/utils.sh"
 
 main() {
-  echo "Log file: ${LOGFILE}"
-  echo "JOB_NAME : $JOB_NAME"
+  log::info "Log file: ${LOGFILE}"
+  log::info "JOB_NAME : $JOB_NAME"
 
   CHART_VERSION=$(get_chart_version "$CHART_MAJOR_VERSION")
   export CHART_VERSION
 
   case "$JOB_NAME" in
     *aks*helm*nightly*)
-      echo "Sourcing aks-helm.sh"
+      log::info "Sourcing aks-helm.sh"
       # shellcheck source=.ibm/pipelines/jobs/aks-helm.sh
       source "${DIR}/jobs/aks-helm.sh"
-      echo "Calling handle_aks_helm"
+      log::info "Calling handle_aks_helm"
       handle_aks_helm
       ;;
     *aks*operator*nightly*)
-      echo "Sourcing aks-operator.sh"
+      log::info "Sourcing aks-operator.sh"
       # shellcheck source=.ibm/pipelines/jobs/aks-operator.sh
       source "${DIR}/jobs/aks-operator.sh"
-      echo "Calling handle_aks_operator"
+      log::info "Calling handle_aks_operator"
       handle_aks_operator
       ;;
     *eks*helm*nightly*)
-      echo "Sourcing eks-helm.sh"
+      log::info "Sourcing eks-helm.sh"
       # shellcheck source=.ibm/pipelines/jobs/eks-helm.sh
       source "${DIR}/jobs/eks-helm.sh"
-      echo "Calling handle_eks_helm"
+      log::info "Calling handle_eks_helm"
       handle_eks_helm
       ;;
     *eks*operator*nightly*)
-      echo "Sourcing eks-operator.sh"
+      log::info "Sourcing eks-operator.sh"
       # shellcheck source=.ibm/pipelines/jobs/eks-operator.sh
       source "${DIR}/jobs/eks-operator.sh"
-      echo "Calling handle_eks_operator"
+      log::info "Calling handle_eks_operator"
       handle_eks_operator
       ;;
     *gke*helm*nightly*)
-      echo "Sourcing gke-helm.sh"
+      log::info "Sourcing gke-helm.sh"
       # shellcheck source=.ibm/pipelines/jobs/gke-helm.sh
       source "${DIR}/jobs/gke-helm.sh"
-      echo "Calling handle_gke_helm"
+      log::info "Calling handle_gke_helm"
       handle_gke_helm
       ;;
     *gke*operator*nightly*)
-      echo "Sourcing gke-operator.sh"
+      log::info "Sourcing gke-operator.sh"
       # shellcheck source=.ibm/pipelines/jobs/gke-operator.sh
       source "${DIR}/jobs/gke-operator.sh"
-      echo "Calling handle_gke_operator"
+      log::info "Calling handle_gke_operator"
       handle_gke_operator
       ;;
     *ocp*operator*auth-providers*nightly*)
-      echo "Sourcing auth-providers.sh"
+      log::info "Sourcing auth-providers.sh"
       # shellcheck source=.ibm/pipelines/jobs/auth-providers.sh
       source "${DIR}/jobs/auth-providers.sh"
-      echo "Calling handle_auth_providers"
+      log::info "Calling handle_auth_providers"
       handle_auth_providers
       ;;
     *ocp*helm*upgrade*nightly*)
-      echo "Sourcing upgrade.sh"
+      log::info "Sourcing upgrade.sh"
       # shellcheck source=.ibm/pipelines/jobs/upgrade.sh
       source "${DIR}/jobs/upgrade.sh"
-      echo "Calling helm upgrade"
+      log::info "Calling helm upgrade"
       handle_ocp_helm_upgrade
       ;;
     *ocp*helm*nightly*)
-      echo "Sourcing ocp-nightly.sh"
+      log::info "Sourcing ocp-nightly.sh"
       # shellcheck source=.ibm/pipelines/jobs/ocp-nightly.sh
       source "${DIR}/jobs/ocp-nightly.sh"
-      echo "Calling handle_ocp_nightly"
+      log::info "Calling handle_ocp_nightly"
       handle_ocp_nightly
       ;;
     *ocp*operator*nightly*)
-      echo "Sourcing ocp-operator.sh"
+      log::info "Sourcing ocp-operator.sh"
       # shellcheck source=.ibm/pipelines/jobs/ocp-operator.sh
       source "${DIR}/jobs/ocp-operator.sh"
-      echo "Calling handle_ocp_operator"
+      log::info "Calling handle_ocp_operator"
       handle_ocp_operator
       ;;
     *osd-gcp*helm*nightly*)
-      echo "Sourcing ocp-nightly.sh"
+      log::info "Sourcing ocp-nightly.sh"
       # shellcheck source=.ibm/pipelines/jobs/ocp-nightly.sh
       source "${DIR}/jobs/ocp-nightly.sh"
-      echo "Calling handle_ocp_nightly"
+      log::info "Calling handle_ocp_nightly"
       handle_ocp_nightly
       ;;
     *osd-gcp*operator*nightly*)
-      echo "Sourcing ocp-operator.sh"
+      log::info "Sourcing ocp-operator.sh"
       # shellcheck source=.ibm/pipelines/jobs/ocp-operator.sh
       source "${DIR}/jobs/ocp-operator.sh"
-      echo "Calling handle_ocp_operator"
+      log::info "Calling handle_ocp_operator"
       handle_ocp_operator
       ;;
     *pull*ocp*helm*)
-      echo "Sourcing ocp-pull.sh"
+      log::info "Sourcing ocp-pull.sh"
       # shellcheck source=.ibm/pipelines/jobs/ocp-pull.sh
       source "${DIR}/jobs/ocp-pull.sh"
-      echo "Calling handle_ocp_pull"
+      log::info "Calling handle_ocp_pull"
       handle_ocp_pull
       ;;
     *)
-      echo "ERROR: Unknown JOB_NAME pattern: $JOB_NAME"
-      echo "No matching handler found for this job type"
+      log::error "Unknown JOB_NAME pattern: $JOB_NAME"
+      log::warn "No matching handler found for this job type"
       save_overall_result 1
       ;;
   esac
 
-  echo "Main script completed with result: ${OVERALL_RESULT}"
+  log::info "Main script completed with result: ${OVERALL_RESULT}"
   exit "${OVERALL_RESULT}"
 }
 

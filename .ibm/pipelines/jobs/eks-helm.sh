@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# shellcheck source=.ibm/pipelines/lib/log.sh
+source "$DIR"/lib/log.sh
 # shellcheck source=.ibm/pipelines/utils.sh
 source "$DIR"/utils.sh
 # shellcheck source=.ibm/pipelines/cluster/eks/eks-helm-deployment.sh
@@ -10,7 +12,7 @@ source "$DIR"/cluster/eks/aws.sh
 source "$DIR"/cluster/k8s/k8s-utils.sh
 
 handle_eks_helm() {
-  echo "Starting EKS Helm deployment"
+  log::info "Starting EKS Helm deployment"
 
   # Verify EKS cluster connectivity
   aws_eks_verify_cluster

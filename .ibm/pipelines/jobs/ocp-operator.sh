@@ -1,12 +1,14 @@
 #!/bin/bash
 
+# shellcheck source=.ibm/pipelines/lib/log.sh
+source "$DIR"/lib/log.sh
 # shellcheck source=.ibm/pipelines/utils.sh
 source "$DIR"/utils.sh
 # shellcheck source=.ibm/pipelines/install-methods/operator.sh
 source "$DIR"/install-methods/operator.sh
 
 initiate_operator_deployments() {
-  echo "Initiating Operator-backed deployments on OCP"
+  log::info "Initiating Operator-backed deployments on OCP"
 
   configure_namespace "${NAME_SPACE}"
   deploy_test_backstage_customization_provider "${NAME_SPACE}"
@@ -33,7 +35,7 @@ initiate_operator_deployments() {
 
 # OSD-GCP specific operator deployment that skips orchestrator workflows
 initiate_operator_deployments_osd_gcp() {
-  echo "Initiating Operator-backed deployments on OSD-GCP (orchestrator disabled)"
+  log::info "Initiating Operator-backed deployments on OSD-GCP (orchestrator disabled)"
 
   prepare_operator
 
@@ -53,7 +55,7 @@ initiate_operator_deployments_osd_gcp() {
   deploy_rhdh_operator "${NAME_SPACE}" "${DIR}/resources/rhdh-operator/rhdh-start.yaml"
 
   # Skip orchestrator plugins and workflows for OSD-GCP
-  echo "Skipping orchestrator plugins and workflows deployment on OSD-GCP environment"
+  log::warn "Skipping orchestrator plugins and workflows deployment on OSD-GCP environment"
 
   configure_namespace "${NAME_SPACE_RBAC}"
   create_conditional_policies_operator /tmp/conditional-policies.yaml
@@ -71,7 +73,7 @@ initiate_operator_deployments_osd_gcp() {
   deploy_rhdh_operator "${NAME_SPACE_RBAC}" "${DIR}/resources/rhdh-operator/rhdh-start-rbac.yaml"
 
   # Skip orchestrator plugins and workflows for OSD-GCP RBAC
-  echo "Skipping orchestrator plugins and workflows deployment on OSD-GCP RBAC environment"
+  log::warn "Skipping orchestrator plugins and workflows deployment on OSD-GCP RBAC environment"
 }
 
 run_operator_runtime_config_change_tests() {
@@ -102,7 +104,7 @@ handle_ocp_operator() {
 
   # Use OSD-GCP specific deployment for osd-gcp jobs (orchestrator disabled)
   if [[ "${JOB_NAME}" =~ osd-gcp ]]; then
-    echo "Detected OSD-GCP operator job, using OSD-GCP specific deployment (orchestrator disabled)"
+    log::info "Detected OSD-GCP operator job, using OSD-GCP specific deployment (orchestrator disabled)"
     initiate_operator_deployments_osd_gcp
   else
     initiate_operator_deployments

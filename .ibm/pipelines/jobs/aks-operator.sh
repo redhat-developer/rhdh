@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# shellcheck source=.ibm/pipelines/lib/log.sh
+source "$DIR"/lib/log.sh
 # shellcheck source=.ibm/pipelines/install-methods/operator.sh
 source "$DIR"/install-methods/operator.sh
 # shellcheck source=.ibm/pipelines/cluster/aks/aks-operator-deployment.sh
@@ -8,7 +10,7 @@ source "$DIR"/cluster/aks/aks-operator-deployment.sh
 source "$DIR"/cluster/k8s/k8s-utils.sh
 
 handle_aks_operator() {
-  echo "Starting AKS Operator deployment"
+  log::info "Starting AKS Operator deployment"
 
   export NAME_SPACE="${NAME_SPACE:-showcase-k8s-ci-nightly}"
   export NAME_SPACE_RBAC="${NAME_SPACE_RBAC:-showcase-rbac-k8s-ci-nightly}"

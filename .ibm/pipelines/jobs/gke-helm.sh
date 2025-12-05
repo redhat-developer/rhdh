@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# shellcheck source=.ibm/pipelines/lib/log.sh
+source "$DIR"/lib/log.sh
 # shellcheck source=.ibm/pipelines/utils.sh
 source "$DIR"/utils.sh
 # shellcheck source=.ibm/pipelines/cluster/gke/gcloud.sh
@@ -11,7 +13,7 @@ handle_gke_helm() {
   export NAME_SPACE="${NAME_SPACE:-showcase-k8s-ci-nightly}"
   export NAME_SPACE_RBAC="${NAME_SPACE_RBAC:-showcase-rbac-k8s-ci-nightly}"
 
-  echo "Creating GKE SSL certificate..."
+  log::info "Creating GKE SSL certificate..."
   gcloud_ssl_cert_create "$GKE_CERT_NAME" "$GKE_INSTANCE_DOMAIN_NAME" "$GOOGLE_CLOUD_PROJECT"
 
   K8S_CLUSTER_ROUTER_BASE=$GKE_INSTANCE_DOMAIN_NAME
@@ -21,7 +23,7 @@ handle_gke_helm() {
   K8S_CLUSTER_API_SERVER_URL=$(printf "%s" "$K8S_CLUSTER_URL" | base64 | tr -d '\n')
   export K8S_CLUSTER_URL K8S_CLUSTER_API_SERVER_URL
 
-  echo "Starting GKE Helm deployment"
+  log::info "Starting GKE Helm deployment"
 
   cluster_setup_k8s_helm
 
