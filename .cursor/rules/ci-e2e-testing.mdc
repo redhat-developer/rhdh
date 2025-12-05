@@ -123,7 +123,7 @@ test.beforeAll(async ({ }, testInfo) => {
 In the CI/CD pipeline, tests are executed directly using Playwright's `--project` flag via the `run_tests()` function in `.ibm/pipelines/utils.sh`:
 
 ```bash
-npx playwright test --project="${playwright_project}"
+yarn playwright test --project="${playwright_project}"
 ```
 
 The namespace and Playwright project are decoupled, allowing flexible reuse. The `check_and_test()` and `run_tests()` functions accept an explicit `playwright_project` argument:
@@ -169,7 +169,7 @@ yarn prettier:check                # Prettier checking
 yarn prettier:fix                  # Prettier fixing
 ```
 
-**Note**: The CI pipeline no longer uses yarn script aliases. Instead, it runs Playwright directly with `npx playwright test --project=<project-name>`. This decouples the namespace from the test project name, enabling more flexible namespace and test project reuse.
+**Note**: The CI pipeline no longer uses yarn script aliases. Instead, it runs Playwright directly with `yarn playwright test --project=<project-name>`. This decouples the namespace from the test project name, enabling more flexible namespace and test project reuse.
 
 ### Environment Variables
 
@@ -376,7 +376,7 @@ export ISRUNNINGLOCAL=true
 export ISRUNNINGLOCALDEBUG=true
 
 # Run tests locally
-npx playwright test --project showcase-auth-providers --workers 1
+yarn playwright test --project showcase-auth-providers --workers 1
 ```
 
 #### CI Debugging
@@ -386,8 +386,8 @@ npx playwright test --project showcase-auth-providers --workers 1
 4. **Test Failures**: Review test reports and screenshots
 
 #### Common Debugging Tools
-- **Playwright Inspector**: `npx playwright test --debug`
-- **Trace Viewer**: `npx playwright show-trace`
+- **Playwright Inspector**: `yarn playwright test --debug`
+- **Trace Viewer**: `yarn playwright show-trace`
 - **Screenshots**: Automatic on failure
 - **Video Recording**: Available for all tests
 

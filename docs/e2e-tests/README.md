@@ -64,7 +64,7 @@ Certain environment variables need to be set up, depending on what you intend to
 
 ```bash
 # BASE_URL (The URL to the main page of the application) is mandatory to run all the E2E tests.
-VAR_NAME=variable_value npx playwright test
+VAR_NAME=variable_value yarn playwright test
 ```
 
 The currently supported environment variables are:
@@ -86,7 +86,7 @@ The currently supported environment variables are:
 The Playwright command line supports many options; see them [here](https://playwright.dev/docs/test-cli). Flags like `--ui` or `--headed` are very useful when debugging. You can also specify a specific test to run:
 
 ```bash
-npx playwright test e2e-tests/playwright/e2e/your-test-file.spec.ts
+yarn playwright test e2e-tests/playwright/e2e/your-test-file.spec.ts
 ```
 
 Our project contains multiple test suites for different environments and configurations. Run tests using the Playwright project names defined in [`projects.json`](../../e2e-tests/playwright/projects.json):
@@ -96,14 +96,14 @@ Our project contains multiple test suites for different environments and configu
 source .ibm/pipelines/playwright-projects.sh
 
 # Run tests using the project variables
-npx playwright test --project="$PW_PROJECT_SHOWCASE"           # General showcase tests
-npx playwright test --project="$PW_PROJECT_SHOWCASE_RBAC"      # RBAC tests
-npx playwright test --project="$PW_PROJECT_SHOWCASE_K8S"       # Kubernetes tests
-npx playwright test --project="$PW_PROJECT_SHOWCASE_OPERATOR"  # Operator tests
+yarn playwright test --project="$PW_PROJECT_SHOWCASE"           # General showcase tests
+yarn playwright test --project="$PW_PROJECT_SHOWCASE_RBAC"      # RBAC tests
+yarn playwright test --project="$PW_PROJECT_SHOWCASE_K8S"       # Kubernetes tests
+yarn playwright test --project="$PW_PROJECT_SHOWCASE_OPERATOR"  # Operator tests
 
 # Or use the project names directly
-npx playwright test --project=showcase
-npx playwright test --project=showcase-rbac
+yarn playwright test --project=showcase
+yarn playwright test --project=showcase-rbac
 ```
 
 ### Playwright Project Names

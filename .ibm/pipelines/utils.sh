@@ -661,7 +661,7 @@ run_tests() {
     set -e
     echo "Using PR container image: ${TAG_NAME}"
     # Run Playwright directly with --project flag instead of using yarn script aliases
-    npx playwright test --project="${playwright_project}"
+    yarn playwright test --project="${playwright_project}"
   ) 2>&1 | tee "/tmp/${LOGFILE}"
 
   local RESULT=${PIPESTATUS[0]}
