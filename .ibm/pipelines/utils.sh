@@ -629,7 +629,7 @@ run_tests() {
   local url="${4:-}"
 
   if ! grep -q "name: \"${playwright_project}\"" "${DIR}/../../e2e-tests/playwright.config.ts" 2> /dev/null; then
-    logging::warn "Playwright project '${playwright_project}' may not exist in config"
+    log::warn "Playwright project '${playwright_project}' may not exist in config"
     return 1
   fi
 
