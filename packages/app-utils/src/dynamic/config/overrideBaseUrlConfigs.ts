@@ -8,7 +8,7 @@ function createLocalBaseUrl(fullUrl: string): string {
   return url.toString().replace(/\/$/, '');
 }
 
-function overrideBaseUrlConfigs(inputConfigs: AppConfig[]): AppConfig[] {
+export function overrideBaseUrlConfigs(inputConfigs: AppConfig[]): AppConfig[] {
   const urlConfigReader = ConfigReader.fromConfigs(inputConfigs);
 
   // In tests we may not have `app.baseUrl` or `backend.baseUrl`, to keep them optional
@@ -56,5 +56,3 @@ function overrideBaseUrlConfigs(inputConfigs: AppConfig[]): AppConfig[] {
 
   return configs;
 }
-
-export default overrideBaseUrlConfigs;
