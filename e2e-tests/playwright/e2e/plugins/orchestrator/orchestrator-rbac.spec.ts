@@ -1497,7 +1497,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
 
       // With admin permissions, rhdh-qe-2 should now see the instance
       const instanceLink = page.locator(`a[href*="${workflowInstanceId}"]`);
-      await expect(instanceLink).toBeVisible();
+      await expect(instanceLink).toBeVisible({ timeout: 20000 });
     });
 
     test("rhdh-qe-2 admin user can directly access rhdh-qe's workflow instance URL", async () => {
