@@ -63,13 +63,13 @@ prepare_operator() {
 
 wait_for_backstage_crd() {
   local namespace=$1
+  log::debug "Waiting for Backstage CRD to be created in namespace: ${namespace}"
   timeout 300 bash -c "
   while ! oc get crd/backstages.rhdh.redhat.com -n '${namespace}' >/dev/null 2>&1; do
-      log::debug 'Waiting for Backstage CRD to be created...'
+      echo 'Waiting for Backstage CRD to be created...'
       sleep 20
   done
-  log::info 'Backstage CRD is created.'
-  " || log::error "Timed out waiting for Backstage CRD creation."
+  " && log::info "Backstage CRD is created in namespace: ${namespace}" || log::error "Timed out waiting for Backstage CRD creation."
 }
 
 deploy_rhdh_operator() {
