@@ -127,8 +127,8 @@ spec:
 ```
 
 See these docs for more info:
-* https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.4/html-single/configuring_dynamic_plugins/index#installing-ansible-plug-ins-for-red-hat-developer-hub or
-* https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.4/html-single/configuring/configuring-the-deployment#configuring-the-deployment
+* https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8/html-single/configuring_dynamic_plugins/index#installing-ansible-plug-ins-for-red-hat-developer-hub or
+* https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8/html/configuring_red_hat_developer_hub/configuring-the-deployment
 
 
 ### Customizing Telemetry Destination
