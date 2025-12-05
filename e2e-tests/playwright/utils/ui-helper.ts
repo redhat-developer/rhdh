@@ -223,6 +223,14 @@ export class UIhelper {
       .click();
   }
 
+  async goToPageUrl(url: string, heading?: string) {
+    await this.page.goto(url);
+    await expect(this.page).toHaveURL(url);
+    if (heading) {
+      await this.verifyHeading(heading);
+    }
+  }
+
   async goToSettingsPage() {
     await expect(this.page.locator("nav[id='global-header']")).toBeVisible();
     await this.openProfileDropdown();
