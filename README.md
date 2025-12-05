@@ -11,6 +11,8 @@ Red Hat Developer Hub is an enterprise-grade Internal Developer Portal based on 
 
 RHDH includes the ArgoCD, GitHub Issues, Keycloak, Kubernetes, OCM, Tekton, and Topology plugin. Each of these plugins have been hand picked or created by Red Hat and the Backstage Community.
 
+<!-- Test change for e2e validation -->
+
 ## Features
 
 Today, we have several plugins integrated into RHDH as a way to demonstrate the versatility of Backstage. Some of these integrations are plugins that we have built while others are ones that we see as must haves in most Backstage instances.
