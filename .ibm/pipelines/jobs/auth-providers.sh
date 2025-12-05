@@ -6,6 +6,8 @@ source "$DIR"/lib/log.sh
 source "$DIR"/utils.sh
 # shellcheck source=.ibm/pipelines/install-methods/operator.sh
 source "$DIR"/install-methods/operator.sh
+# shellcheck source=.ibm/pipelines/playwright-projects.sh
+source "$DIR"/playwright-projects.sh
 
 handle_auth_providers() {
   local retry_operator_installation="${1:-1}"
