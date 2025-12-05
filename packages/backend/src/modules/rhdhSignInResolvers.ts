@@ -35,12 +35,14 @@ export namespace rhdhSignInResolvers {
    * as the entity name
    */
   export const preferredUsernameMatchingUserEntityName =
-    createSignInResolverFactory({
-      optionsSchema: z
-        .object({
-          dangerouslyAllowSignInWithoutUserInCatalog: z.boolean().optional(),
-        })
-        .optional(),
+    createSignInResolverFactory<
+      OAuthAuthenticatorResult<OidcAuthResult>,
+      { dangerouslyAllowSignInWithoutUserInCatalog?: boolean } | undefined,
+      { dangerouslyAllowSignInWithoutUserInCatalog?: boolean } | undefined
+    >({
+      optionsSchema: z.object({
+        dangerouslyAllowSignInWithoutUserInCatalog: z.boolean().optional(),
+      }).optional() as any,
       create(options) {
         return async (
           info: SignInInfo<OAuthAuthenticatorResult<OidcAuthResult>>,
@@ -83,12 +85,14 @@ export namespace rhdhSignInResolvers {
    * 'x-forwarded-preferred-username' or 'x-forwarded-user'.
    */
   export const oauth2ProxyUserHeaderMatchingUserEntityName =
-    createSignInResolverFactory({
-      optionsSchema: z
-        .object({
-          dangerouslyAllowSignInWithoutUserInCatalog: z.boolean().optional(),
-        })
-        .optional(),
+    createSignInResolverFactory<
+      OAuth2ProxyResult,
+      { dangerouslyAllowSignInWithoutUserInCatalog?: boolean } | undefined,
+      { dangerouslyAllowSignInWithoutUserInCatalog?: boolean } | undefined
+    >({
+      optionsSchema: z.object({
+        dangerouslyAllowSignInWithoutUserInCatalog: z.boolean().optional(),
+      }).optional() as any,
       create(options) {
         return async (
           info: SignInInfo<OAuth2ProxyResult>,
@@ -116,13 +120,15 @@ export namespace rhdhSignInResolvers {
       },
     });
 
-  export const oidcLdapUuidMatchingAnnotation = createSignInResolverFactory({
-    optionsSchema: z
-      .object({
-        dangerouslyAllowSignInWithoutUserInCatalog: z.boolean().optional(),
-        ldapUuidKey: z.string().optional(),
-      })
-      .optional(),
+  export const oidcLdapUuidMatchingAnnotation = createSignInResolverFactory<
+    OAuthAuthenticatorResult<OidcAuthResult>,
+    { dangerouslyAllowSignInWithoutUserInCatalog?: boolean; ldapUuidKey?: string } | undefined,
+    { dangerouslyAllowSignInWithoutUserInCatalog?: boolean; ldapUuidKey?: string } | undefined
+  >({
+    optionsSchema: z.object({
+      dangerouslyAllowSignInWithoutUserInCatalog: z.boolean().optional(),
+      ldapUuidKey: z.string().optional(),
+    }).optional() as any,
     create(options) {
       return async (
         info: SignInInfo<OAuthAuthenticatorResult<OidcAuthResult>>,
