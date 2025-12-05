@@ -10,8 +10,8 @@ yarn-error.log*
 lerna-debug.log*
 
 # Coverage directory generated when running tests with coverage
-coverage
-
+**/coverage
+**/.coverage
 # Dependencies
 node_modules/
 

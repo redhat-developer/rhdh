@@ -49,6 +49,8 @@ Configuration:
     - a `plugins` list of objects with the following properties:
         - `package`: the package to install (NPM package name, local path starting with './', or OCI image starting with 'oci://')
             - For OCI packages ONLY, the tag or digest can be replaced by the `{{inherit}}` tag (requires the included configuration to contain a valid tag or digest to inherit from)
+            - If the OCI image contains only a single plugin, the plugin path can be omitted and will be auto-detected from the image metadata (normally specified by !<plugin-path>)
+            - When using `{{inherit}}`, the plugin path can also be omitted to inherit both version and path from a base configuration (only works if exactly one plugin from that image is defined in included files)
         - `integrity`: a string containing the integrity hash of the package (required for remote NPM packages unless SKIP_INTEGRITY_CHECK is set, optional for local packages, not used for OCI packages)
         - `pluginConfig`: an optional plugin-specific configuration fragment
         - `disabled`: an optional boolean to disable the plugin (`false` by default)
@@ -103,6 +105,7 @@ RECOGNIZED_ALGORITHMS = (
 )
 
 DOCKER_PROTOCOL_PREFIX = 'docker://'
+OCI_PROTOCOL_PREFIX = 'oci://'
 
 def merge(source, destination, prefix = ''):
     for key, value in source.items():
@@ -119,62 +122,104 @@ def merge(source, destination, prefix = ''):
 
     return destination
 
-def maybeMergeConfig(config, globalConfig):
+def maybe_merge_config(config, global_config):
     if config is not None and isinstance(config, dict):
         print('\t==> Merging plugin-specific configuration', flush=True)
-        return merge(config, globalConfig)
+        return merge(config, global_config)
     else:
-        return globalConfig
+        return global_config
 
-def mergePlugin(plugin: dict, allPlugins: dict, dynamicPluginsFile: str, level: int):
+def merge_plugin(plugin: dict, all_plugins: dict, dynamic_plugins_file: str, level: int):
     package = plugin['package']
     if not isinstance(package, str):
-        raise InstallException(f"content of the \'plugins.package\' field must be a string in {dynamicPluginsFile}")
+        raise InstallException(f"content of the \'plugins.package\' field must be a string in {dynamic_plugins_file}")
 
-    if package.startswith('oci://'):
-        return OciPackageMerger(plugin, dynamicPluginsFile, allPlugins).merge_plugin(level)
+    if package.startswith(OCI_PROTOCOL_PREFIX):
+        return OciPackageMerger(plugin, dynamic_plugins_file, all_plugins).merge_plugin(level)
     else:
         # Use NPMPackageMerger for all other package types (NPM, git, local, tarball, etc.)
-        return NPMPackageMerger(plugin, dynamicPluginsFile, allPlugins).merge_plugin(level)
+        return NPMPackageMerger(plugin, dynamic_plugins_file, all_plugins).merge_plugin(level)
+
+def get_oci_plugin_paths(image: str) -> list[str]:
+    """
+    Get list of plugin paths from OCI image via manifest annotation.
+    
+    Args:
+        image: OCI image reference (e.g., 'oci://registry/path:tag')
+    
+    Returns:
+        List of plugin paths from the manifest annotation
+    """
+    skopeo_path = shutil.which('skopeo')
+    if not skopeo_path:
+        raise InstallException('skopeo executable not found in PATH')
+    
+    try:
+        image_url = image.replace(OCI_PROTOCOL_PREFIX, DOCKER_PROTOCOL_PREFIX)
+        result = subprocess.run(
+            [skopeo_path, 'inspect', '--raw', image_url],
+            check=True,
+            capture_output=True
+        )
+        
+        manifest = json.loads(result.stdout)
+        annotations = manifest.get('annotations', {})
+        annotation_value = annotations.get('io.backstage.dynamic-packages')
+        
+        if not annotation_value:
+            return []
+        
+        decoded = base64.b64decode(annotation_value).decode('utf-8')
+        plugins_metadata = json.loads(decoded)
+        
+        plugin_paths = []
+        for plugin_obj in plugins_metadata:
+            if isinstance(plugin_obj, dict):
+                plugin_paths.extend(plugin_obj.keys())
+        
+        return plugin_paths
+        
+    except Exception as e:
+        raise InstallException(f"Failed to read plugin metadata from {image}: {e}")
 
 class PackageMerger:
-    def __init__(self, plugin: dict, dynamicPluginsFile: str, allPlugins: dict):
+    def __init__(self, plugin: dict, dynamic_plugins_file: str, all_plugins: dict):
         self.plugin = plugin
-        self.dynamicPluginsFile = dynamicPluginsFile
-        self.allPlugins = allPlugins
+        self.dynamic_plugins_file = dynamic_plugins_file
+        self.all_plugins = all_plugins
         
     def parse_plugin_key(self, package: str) -> str:
         """Parses the package and returns the plugin key. Must be implemented by subclasses."""
         return package
     
-    def add_new_plugin(self, pluginKey: str):
-        """Adds a new plugin to the allPlugins dict."""
-        self.allPlugins[pluginKey] = self.plugin
-    def override_plugin(self, pluginKey: str):
-        """Overrides an existing plugin config with a new plugin config in the allPlugins dict."""
+    def add_new_plugin(self, _version: str, _inherit_version: bool, plugin_key: str):
+        """Adds a new plugin to the all_plugins dict."""
+        self.all_plugins[plugin_key] = self.plugin
+    def override_plugin(self, _version: str, _inherit_version: bool, plugin_key: str):
+        """Overrides an existing plugin config with a new plugin config in the all_plugins dict."""
         for key in self.plugin:
-            self.allPlugins[pluginKey][key] = self.plugin[key]
+            self.all_plugins[plugin_key][key] = self.plugin[key]
     def merge_plugin(self, level: int):
-        pluginKey = self.plugin['package']
-        if not isinstance(pluginKey, str):
-            raise InstallException(f"content of the \'package\' field must be a string in {self.dynamicPluginsFile}")
-        pluginKey = self.parse_plugin_key(pluginKey)
+        plugin_key = self.plugin['package']
+        if not isinstance(plugin_key, str):
+            raise InstallException(f"content of the \'package\' field must be a string in {self.dynamic_plugins_file}")
+        plugin_key = self.parse_plugin_key(plugin_key)
         
-        if pluginKey not in self.allPlugins:
-            print(f'\n======= Adding new dynamic plugin configuration for {pluginKey}', flush=True)
+        if plugin_key not in self.all_plugins:
+            print(f'\n======= Adding new dynamic plugin configuration for {plugin_key}', flush=True)
             # Keep track of the level of the plugin modification to know when dupe conflicts occur in `includes` and main config files
             self.plugin["last_modified_level"] = level
-            self.add_new_plugin(pluginKey)
+            self.add_new_plugin("", False, plugin_key)
         else:
             # Override the included plugins with fields in the main plugins list
-            print('\n======= Overriding dynamic plugin configuration', pluginKey, flush=True)
+            print('\n======= Overriding dynamic plugin configuration', plugin_key, flush=True)
             
             # Check for duplicate plugin configurations defined at the same level (level = 0 for `includes` and 1 for the main config file)
-            if self.allPlugins[pluginKey].get("last_modified_level") == level:
-                raise InstallException(f"Duplicate plugin configuration for {self.plugin['package']} found in {self.dynamicPluginsFile}.")
+            if self.all_plugins[plugin_key].get("last_modified_level") == level:
+                raise InstallException(f"Duplicate plugin configuration for {self.plugin['package']} found in {self.dynamic_plugins_file}.")
             
-            self.allPlugins[pluginKey]["last_modified_level"] = level
-            self.override_plugin(pluginKey)
+            self.all_plugins[plugin_key]["last_modified_level"] = level
+            self.override_plugin("", False, plugin_key)
 
 class NPMPackageMerger(PackageMerger):
     """Handles NPM package merging with version stripping for plugin keys."""
@@ -243,8 +288,8 @@ class NPMPackageMerger(PackageMerger):
         )
     ]
     
-    def __init__(self, plugin: dict, dynamicPluginsFile: str, allPlugins: dict):
-        super().__init__(plugin, dynamicPluginsFile, allPlugins)
+    def __init__(self, plugin: dict, dynamic_plugins_file: str, all_plugins: dict):
+        super().__init__(plugin, dynamic_plugins_file, all_plugins)
     
     def parse_plugin_key(self, package: str) -> str:
         """
@@ -273,7 +318,6 @@ class NPMPackageMerger(PackageMerger):
             alias_name = alias_match.group(1)
             package_scope = alias_match.group(2) or ''
             npm_package = alias_match.group(3)
-            print(alias_match.group(4))
             # Recursively parse the npm package part to strip its version
             npm_key = self._strip_npm_package_version(package_scope + npm_package)
             return f"{alias_name}@npm:{npm_key}"
@@ -309,7 +353,7 @@ class PluginInstaller:
         
     def should_skip_installation(self, plugin: dict, plugin_path_by_hash: dict) -> tuple[bool, str]:
         """Check if plugin installation should be skipped based on pull policy and current state."""
-        plugin_hash = plugin['hash']
+        plugin_hash = plugin['plugin_hash']
         pull_policy = plugin.get('pullPolicy', PullPolicy.IF_NOT_PRESENT)
         force_download = plugin.get('forceDownload', False)
         
@@ -327,17 +371,17 @@ class PluginInstaller:
 
 class OciPackageMerger(PackageMerger):
     EXPECTED_OCI_PATTERN = (
-        r'^(oci://[^\s:@]+)'
+        r'^(' + OCI_PROTOCOL_PREFIX + r'[^\s:@]+)'
         r'(?:'
             r':([^\s!@:]+)'  # tag only
             r'|'
             r'@((?:sha256|sha512|blake3):[^\s!@:]+)'  # digest only
         r')'
-        r'!([^\s]+)$'
+        r'(?:!([^\s]+))?$'  # plugin path is optional for single plugin packages
     )
-    def __init__(self, plugin: dict, dynamicPluginsFile: str, allPlugins: dict):
-        super().__init__(plugin, dynamicPluginsFile, allPlugins)
-    def parse_plugin_key(self, package: str) -> tuple[str, str, bool]:
+    def __init__(self, plugin: dict, dynamic_plugins_file: str, all_plugins: dict):
+        super().__init__(plugin, dynamic_plugins_file, all_plugins)
+    def parse_plugin_key(self, package: str) -> tuple[str, str, bool, str]:
         """
         Parses and validates OCI package name format.
         Generates a plugin key and version from the OCI package name.
@@ -346,13 +390,14 @@ class OciPackageMerger(PackageMerger):
         Args:
             package: The OCI package name.
         Returns:
-            pluginKey: plugin key generated from the OCI package name
+            plugin_key: plugin key generated from the OCI package name
             version: detected tag or digest of the plugin
-            inheritVersion: boolean indicating if the `{{inherit}}` tag is used
+            inherit_version: boolean indicating if the `{{inherit}}` tag is used
+            resolved_path: the resolved plugin path (either explicit or auto-detected)
         """  
         match = re.match(self.EXPECTED_OCI_PATTERN, package)
         if not match:
-            raise InstallException(f"oci package \'{package}\' is not in the expected format \'oci://<registry>:<tag>!<path>\' or \'oci://<registry>@sha<algo>:<digest>!<path>\' in {self.dynamicPluginsFile} where <algo> is one of {RECOGNIZED_ALGORITHMS}")
+            raise InstallException(f"oci package \'{package}\' is not in the expected format \'{OCI_PROTOCOL_PREFIX}<registry>:<tag>\' or \'{OCI_PROTOCOL_PREFIX}<registry>@sha<algo>:<digest>\' (optionally followed by \'!<path>\') in {self.dynamic_plugins_file} where <algo> is one of {RECOGNIZED_ALGORITHMS}")
         
         # Strip away the version (tag or digest) from the package string, resulting in oci://<registry>:!<path>
         # This helps ensure keys used to identify OCI plugins are independent of the version of the plugin
@@ -362,65 +407,136 @@ class OciPackageMerger(PackageMerger):
 
         version = tag_version if tag_version else digest_version
         
-        path = match.group(4) 
+        path = match.group(4)
         
         # {{inherit}} tag indicates that the version should be inherited from the included configuration. Must NOT have a SHA digest included.
-        inheritVersion = (tag_version == "{{inherit}}" and digest_version == None)
-        pluginKey = f"{registry}:!{path}"
+        inherit_version = (tag_version == "{{inherit}}" and digest_version == None)
         
-        return pluginKey, version, inheritVersion
-    def add_new_plugin(self, version: str, inheritVersion: bool, pluginKey: str):
+        # If {{inherit}} without path, we'll use plugin name with registry as the plugin key
+        if inherit_version and not path:
+            # Return None for resolved_path - will be inherited during merge_plugin()
+            return registry, version, inherit_version, None
+        
+        # If path is None, auto-detect from OCI manifest
+        if not path:
+            full_image = f"{registry}:{version}" if tag_version else f"{registry}@{version}"
+            print(f"\n======= No plugin path specified for {full_image}, auto-detecting from OCI manifest", flush=True)
+            plugin_paths = get_oci_plugin_paths(full_image)
+            
+            if len(plugin_paths) == 0:
+                raise InstallException(
+                    f"No plugins found in OCI image {full_image}."
+                    f"The image might not contain the 'io.backstage.dynamic-packages' annotation."
+                    f"Please ensure this was packaged correctly using the @red-hat-developer-hub/cli plugin package command."
+                )
+            
+            if len(plugin_paths) > 1:
+                plugins_list = '\n  - '.join(plugin_paths)
+                raise InstallException(
+                    f"Multiple plugins found in OCI image {full_image}:\n  - {plugins_list}\n"
+                    f"Please specify which plugin to install using the syntax: {full_image}!<plugin-name>"
+                )
+            
+            path = plugin_paths[0]
+            print(f'\n======= Auto-resolving OCI package {full_image} to use plugin path: {path}', flush=True)
+        
+        # At this point, path always exists (either explicitly provided or auto-detected)
+        plugin_key = f"{registry}:!{path}"
+        
+        return plugin_key, version, inherit_version, path
+    def add_new_plugin(self, version: str, inherit_version: bool, plugin_key: str):
         """
-        Adds a new plugin to the allPlugins dict.
+        Adds a new plugin to the all_plugins dict.
         """
-        if inheritVersion is True:
+        if inherit_version is True:
             # Cannot use {{inherit}} for the initial plugin configuration
-            raise InstallException(f"ERROR: {{{{inherit}}}} tag is set and there is currently no resolved tag or digest for {self.plugin['package']} in {self.dynamicPluginsFile}.")
+            raise InstallException(f"ERROR: {{{{inherit}}}} tag is set and there is currently no resolved tag or digest for {self.plugin['package']} in {self.dynamic_plugins_file}.")
         else:
             self.plugin["version"] = version
-        self.allPlugins[pluginKey] = self.plugin
-    def override_plugin(self, version: str, inheritVersion: bool, pluginKey: str):
+        self.all_plugins[plugin_key] = self.plugin
+    def override_plugin(self, version: str, inherit_version: bool, plugin_key: str):
         """
-        Overrides an existing plugin config with a new plugin config in the allPlugins dict.
-        If `inheritVersion` is True, the version of the existing plugin config will be ignored.
+        Overrides an existing plugin config with a new plugin config in the all_plugins dict.
+        If `inherit_version` is True, the version of the existing plugin config will be ignored.
         """
-        if inheritVersion is not True:
-            self.allPlugins[pluginKey]['package'] = self.plugin['package'] # Override package since no version inheritance        
+        if inherit_version is not True:
+            self.all_plugins[plugin_key]['package'] = self.plugin['package'] # Override package since no version inheritance        
             
-            if self.allPlugins[pluginKey]['version'] != version:
-                print(f"INFO: Overriding version for {pluginKey} from `{self.allPlugins[pluginKey]['version']}` to `{version}`")
+            if self.all_plugins[plugin_key]['version'] != version:
+                print(f"INFO: Overriding version for {plugin_key} from `{self.all_plugins[plugin_key]['version']}` to `{version}`")
             
-            self.allPlugins[pluginKey]["version"] = version
+            self.all_plugins[plugin_key]["version"] = version
             
         for key in self.plugin:
             if key == 'package':
                 continue
             if key == "version":
                 continue
-            self.allPlugins[pluginKey][key] = self.plugin[key]
+            self.all_plugins[plugin_key][key] = self.plugin[key]
             
     def merge_plugin(self, level: int):
         package = self.plugin['package']
         if not isinstance(package, str):
-            raise InstallException(f"content of the \'package\' field must be a string in {self.dynamicPluginsFile}")
-        pluginKey, version, inheritVersion = self.parse_plugin_key(package)
+            raise InstallException(f"content of the \'package\' field must be a string in {self.dynamic_plugins_file}")
+        plugin_key, version, inherit_version, resolved_path = self.parse_plugin_key(package)
+        
+        # Special case: {{inherit}} without explicit path - match on image only
+        if inherit_version and resolved_path is None:
+            # plugin_key is the registry (oci://registry/image) when path is omitted
+            
+            # Find plugins from same image (ignoring path component)
+            matches = [key for key in self.all_plugins.keys() 
+                      if key.startswith(f"{plugin_key}:!")]
+            
+            if len(matches) == 0:
+                raise InstallException(
+                    f"Cannot use {{{{inherit}}}} for {plugin_key}: no existing plugin configuration found. "
+                    f"Ensure a plugin from this image is defined in an included file with an explicit version."
+                )
+            
+            if len(matches) > 1:
+                full_packages = []
+                for m in matches:
+                    base_plugin = self.all_plugins[m]
+                    base_version = base_plugin.get('version', '')
+                    formatted = f"{m.split(':!')[0]}:{base_version}!{m.split(':!')[-1]}"
+                    full_packages.append(formatted)
+                paths_formatted = '\n  - '.join(full_packages)
+                raise InstallException(
+                    f"Cannot use {{{{inherit}}}} for {plugin_key}: multiple plugins from this image are defined in the included files:\n  - {paths_formatted}\n"
+                    f"Please specify which plugin configuration to inherit from using: {plugin_key}:{{{{inherit}}}}!<plugin_path>"
+                )
+            
+            # inherit both version AND path from the existing plugin configuration
+            plugin_key = matches[0]
+            base_plugin = self.all_plugins[plugin_key]
+            version = base_plugin['version']
+            resolved_path = plugin_key.split(':!')[-1]
+            
+            registry_part = plugin_key.split(':!')[0]
+            self.plugin['package'] = f"{registry_part}:{version}!{resolved_path}"
+            print(f'\n======= Inheriting version `{version}` and plugin path `{resolved_path}` for {plugin_key}', flush=True)
+        
+        # Update package with resolved path if it was auto-detected (package didn't originally contain !path)
+        elif '!' not in package:
+            self.plugin['package'] = f"{package}!{resolved_path}"
         
         # If package does not already exist, add it
-        if pluginKey not in self.allPlugins:
-            print(f'\n======= Adding new dynamic plugin configuration for version `{version}` of {pluginKey}', flush=True)
+        if plugin_key not in self.all_plugins:
+            print(f'\n======= Adding new dynamic plugin configuration for version `{version}` of {plugin_key}', flush=True)
             # Keep track of the level of the plugin modification to know when dupe conflicts occur in `includes` and main config files
             self.plugin["last_modified_level"] = level
-            self.add_new_plugin(version, inheritVersion, pluginKey)
+            self.add_new_plugin(version, inherit_version, plugin_key)
         else:
             # Override the included plugins with fields in the main plugins list
-            print('\n======= Overriding dynamic plugin configuration', pluginKey, flush=True)
+            print('\n======= Overriding dynamic plugin configuration', plugin_key, flush=True)
             
             # Check for duplicate plugin configurations defined at the same level (level = 0 for `includes` and 1 for the main config file)
-            if self.allPlugins[pluginKey].get("last_modified_level") == level:
-                raise InstallException(f"Duplicate plugin configuration for {self.plugin['package']} found in {self.dynamicPluginsFile}.")
+            if self.all_plugins[plugin_key].get("last_modified_level") == level:
+                raise InstallException(f"Duplicate plugin configuration for {self.plugin['package']} found in {self.dynamic_plugins_file}.")
         
-            self.allPlugins[pluginKey]["last_modified_level"] = level
-            self.override_plugin(version, inheritVersion, pluginKey)
+            self.all_plugins[plugin_key]["last_modified_level"] = level
+            self.override_plugin(version, inherit_version, plugin_key)
 
 class OciDownloader:
     """Helper class for downloading and extracting plugins from OCI container images."""
@@ -449,7 +565,7 @@ class OciDownloader:
             image_digest = hashlib.sha256(image.encode('utf-8'), usedforsecurity=False).hexdigest()
             local_dir = os.path.join(self.tmp_dir, image_digest)
             # replace oci:// prefix with docker://
-            image_url = image.replace('oci://', DOCKER_PROTOCOL_PREFIX)
+            image_url = image.replace(OCI_PROTOCOL_PREFIX, DOCKER_PROTOCOL_PREFIX)
             self.skopeo(['copy', image_url, f'dir:{local_dir}'])
             manifest_path = os.path.join(local_dir, 'manifest.json')
             manifest = json.load(open(manifest_path))
@@ -464,7 +580,7 @@ class OciDownloader:
     def extract_plugin(self, tar_file: str, plugin_path: str) -> None:
         with tarfile.open(tar_file, 'r:*') as tar: # NOSONAR
             # extract only the files in specified directory
-            filesToExtract = []
+            files_to_extract = []
             for member in tar.getmembers():
                 if not member.name.startswith(plugin_path):
                     continue
@@ -475,15 +591,16 @@ class OciDownloader:
                 if member.islnk() or member.issym():
                     realpath = os.path.realpath(os.path.join(plugin_path, *os.path.split(member.linkname)))
                     if not realpath.startswith(plugin_path):
-                        print(f'\t==> WARNING: skipping file containing link outside of the archive: ' + member.name + ' -> ' + member.linkpath)
+                        print(f'\t==> WARNING: skipping file containing link outside of the archive: {member.name} -> {member.linkpath}', flush=True)
                         continue
 
-                filesToExtract.append(member)
-            tar.extractall(os.path.abspath(self.destination), members=filesToExtract, filter='tar')
+                files_to_extract.append(member)
+            tar.extractall(os.path.abspath(self.destination), members=files_to_extract, filter='tar')
 
     def download(self, package: str) -> str:
-        # split by ! to get the path in the image
+        # At this point, package always contains ! since parse_plugin_key resolved it
         (image, plugin_path) = package.split('!')
+        
         tar_file = self.get_plugin_tar(image)
         plugin_directory = os.path.join(self.destination, plugin_path)
         if os.path.exists(plugin_directory):
@@ -493,8 +610,13 @@ class OciDownloader:
         return plugin_path
     
     def digest(self, package: str) -> str:
-        (image, _) = package.split('!')
-        image_url = image.replace('oci://', DOCKER_PROTOCOL_PREFIX)
+        # Extract image reference (before the ! if present)
+        if '!' in package:
+            (image, _) = package.split('!')
+        else:
+            image = package
+        
+        image_url = image.replace(OCI_PROTOCOL_PREFIX, DOCKER_PROTOCOL_PREFIX)
         output = self.skopeo(['inspect', image_url])
         data = json.loads(output)
         # OCI artifact digest field is defined as "hash method" ":" "hash"
@@ -511,7 +633,7 @@ class OciPluginInstaller(PluginInstaller):
     def should_skip_installation(self, plugin: dict, plugin_path_by_hash: dict) -> tuple[bool, str]:
         """OCI packages have special digest-based checking for ALWAYS pull policy."""
         package = plugin['package']
-        plugin_hash = plugin['hash']
+        plugin_hash = plugin['plugin_hash']
         pull_policy = plugin.get('pullPolicy', PullPolicy.ALWAYS if ':latest!' in package else PullPolicy.IF_NOT_PRESENT)
         
         if plugin_hash not in plugin_path_by_hash:
@@ -591,7 +713,7 @@ class NpmPluginInstaller(PluginInstaller):
         # Verify integrity for remote packages
         if not (package_is_local or self.skip_integrity_check):
             print('\t==> Verifying package integrity', flush=True)
-            verify_package_integrity(plugin, archive, self.destination)
+            verify_package_integrity(plugin, archive)
         
         # Extract package
         plugin_path = self._extract_npm_package(archive)
@@ -600,6 +722,7 @@ class NpmPluginInstaller(PluginInstaller):
     
     def _extract_npm_package(self, archive: str) -> str:
         """Extract NPM package archive with security protections."""
+        PACKAGE_DIRECTORY_PREFIX = 'package/'
         directory = archive.replace('.tgz', '')
         directory_realpath = os.path.realpath(directory)
         plugin_path = os.path.basename(directory_realpath)
@@ -613,24 +736,24 @@ class NpmPluginInstaller(PluginInstaller):
         with tarfile.open(archive, 'r:*') as tar:  # NOSONAR
             for member in tar.getmembers():
                 if member.isreg():
-                    if not member.name.startswith('package/'):
+                    if not member.name.startswith(PACKAGE_DIRECTORY_PREFIX):
                         raise InstallException(f"NPM package archive does not start with 'package/' as it should: {member.name}")
                     
                     if member.size > self.max_entry_size:
                         raise InstallException(f'Zip bomb detected in {member.name}')
                     
-                    member.name = member.name.removeprefix('package/')
+                    member.name = member.name.removeprefix(PACKAGE_DIRECTORY_PREFIX)
                     tar.extract(member, path=directory, filter='data')
                     
                 elif member.isdir():
                     print('\t\tSkipping directory entry', member.name, flush=True)
                     
                 elif member.islnk() or member.issym():
-                    if not member.linkpath.startswith('package/'):
+                    if not member.linkpath.startswith(PACKAGE_DIRECTORY_PREFIX):
                         raise InstallException(f'NPM package archive contains a link outside of the archive: {member.name} -> {member.linkpath}')
                     
-                    member.name = member.name.removeprefix('package/')
-                    member.linkpath = member.linkpath.removeprefix('package/')
+                    member.name = member.name.removeprefix(PACKAGE_DIRECTORY_PREFIX)
+                    member.linkpath = member.linkpath.removeprefix(PACKAGE_DIRECTORY_PREFIX)
                     
                     realpath = os.path.realpath(os.path.join(directory, *os.path.split(member.linkname)))
                     if not realpath.startswith(directory_realpath):
@@ -654,7 +777,7 @@ class NpmPluginInstaller(PluginInstaller):
 
 def create_plugin_installer(package: str, destination: str, skip_integrity_check: bool = False) -> PluginInstaller:
     """Factory function to create appropriate plugin installer based on package type."""
-    if package.startswith('oci://'):
+    if package.startswith(OCI_PROTOCOL_PREFIX):
         return OciPluginInstaller(destination, skip_integrity_check)
     else:
         return NpmPluginInstaller(destination, skip_integrity_check)
@@ -676,8 +799,8 @@ def install_plugin(plugin: dict, plugin_path_by_hash: dict, destination: str, sk
     if should_skip:
         print(f'\n======= Skipping download of already installed dynamic plugin {package} ({reason})', flush=True)
         # Remove from tracking dict so we don't delete it later
-        if plugin['hash'] in plugin_path_by_hash:
-            plugin_path_by_hash.pop(plugin['hash'])
+        if plugin['plugin_hash'] in plugin_path_by_hash:
+            plugin_path_by_hash.pop(plugin['plugin_hash'])
         return None, plugin.get('pluginConfig', {})
     
     # Install the plugin
@@ -687,7 +810,7 @@ def install_plugin(plugin: dict, plugin_path_by_hash: dict, destination: str, sk
     # Create hash file for tracking
     hash_file_path = os.path.join(destination, plugin_path, 'dynamic-plugin-config.hash')
     with open(hash_file_path, 'w') as f:
-        f.write(plugin['hash'])
+        f.write(plugin['plugin_hash'])
     
     print(f'\t==> Successfully installed dynamic plugin {package}', flush=True)
     
@@ -740,7 +863,7 @@ def get_local_package_info(package_path: str) -> dict:
         # This ensures we'll try to reinstall if there are permission issues, etc.
         return {'_error': str(e)}
 
-def verify_package_integrity(plugin: dict, archive: str, working_directory: str) -> None:
+def verify_package_integrity(plugin: dict, archive: str) -> None:
     package = plugin['package']
     if 'integrity' not in plugin:
         raise InstallException(f'Package integrity for {package} is missing')
@@ -880,11 +1003,11 @@ def extract_catalog_index(catalog_index_image: str, catalog_index_mount: str) ->
 
 def main():
 
-    dynamicPluginsRoot = sys.argv[1]
+    dynamic_plugins_root = sys.argv[1]
 
-    lock_file_path = os.path.join(dynamicPluginsRoot, 'install-dynamic-plugins.lock')
+    lock_file_path = os.path.join(dynamic_plugins_root, 'install-dynamic-plugins.lock')
     atexit.register(remove_lock, lock_file_path)
-    atexit.register(cleanup_catalog_index_temp_dir, dynamicPluginsRoot)
+    atexit.register(cleanup_catalog_index_temp_dir, dynamic_plugins_root)
     signal.signal(signal.SIGTERM, lambda signum, frame: sys.exit(0))
     create_lock(lock_file_path)
 
@@ -892,44 +1015,44 @@ def main():
     catalog_index_image = os.environ.get("CATALOG_INDEX_IMAGE", "")
     catalog_index_default_file = None
     if catalog_index_image:
-        catalog_index_default_file = extract_catalog_index(catalog_index_image, dynamicPluginsRoot)
+        catalog_index_default_file = extract_catalog_index(catalog_index_image, dynamic_plugins_root)
 
-    skipIntegrityCheck = os.environ.get("SKIP_INTEGRITY_CHECK", "").lower() == "true"
+    skip_integrity_check = os.environ.get("SKIP_INTEGRITY_CHECK", "").lower() == "true"
 
-    dynamicPluginsFile = 'dynamic-plugins.yaml'
-    dynamicPluginsGlobalConfigFile = os.path.join(dynamicPluginsRoot, 'app-config.dynamic-plugins.yaml')
+    dynamic_plugins_file = 'dynamic-plugins.yaml'
+    dynamic_plugins_global_config_file = os.path.join(dynamic_plugins_root, 'app-config.dynamic-plugins.yaml')
 
     # test if file dynamic-plugins.yaml exists
-    if not os.path.isfile(dynamicPluginsFile):
-        print(f"No {dynamicPluginsFile} file found. Skipping dynamic plugins installation.")
-        with open(dynamicPluginsGlobalConfigFile, 'w') as file:
+    if not os.path.isfile(dynamic_plugins_file):
+        print(f"No {dynamic_plugins_file} file found. Skipping dynamic plugins installation.")
+        with open(dynamic_plugins_global_config_file, 'w') as file:
             file.write('')
             file.close()
         exit(0)
 
-    globalConfig = {
+    global_config = {
         'dynamicPlugins': {
             'rootDirectory': 'dynamic-plugins-root',
         }
     }
 
-    with open(dynamicPluginsFile, 'r') as file:
+    with open(dynamic_plugins_file, 'r') as file:
         content = yaml.safe_load(file)
 
     if content == '' or content is None:
-        print(f"{dynamicPluginsFile} file is empty. Skipping dynamic plugins installation.")
-        with open(dynamicPluginsGlobalConfigFile, 'w') as file:
+        print(f"{dynamic_plugins_file} file is empty. Skipping dynamic plugins installation.")
+        with open(dynamic_plugins_global_config_file, 'w') as file:
             file.write('')
             file.close()
         exit(0)
 
     if not isinstance(content, dict):
-        raise InstallException(f"{dynamicPluginsFile} content must be a YAML object")
+        raise InstallException(f"{dynamic_plugins_file} content must be a YAML object")
 
-    allPlugins = {}
+    all_plugins = {}
 
-    if skipIntegrityCheck:
-        print(f"SKIP_INTEGRITY_CHECK has been set to {skipIntegrityCheck}, skipping integrity check of remote NPM packages")
+    if skip_integrity_check:
+        print(f"SKIP_INTEGRITY_CHECK has been set to {skip_integrity_check}, skipping integrity check of remote NPM packages")
 
     if 'includes' in content:
         includes = content['includes']
@@ -937,7 +1060,7 @@ def main():
         includes = []
 
     if not isinstance(includes, list):
-        raise InstallException(f"content of the \'includes\' field must be a list in {dynamicPluginsFile}")
+        raise InstallException(f"content of the \'includes\' field must be a list in {dynamic_plugins_file}")
 
     # Replace dynamic-plugins.default.yaml with catalog index if it was extracted
     if catalog_index_image:
@@ -950,7 +1073,7 @@ def main():
 
     for include in includes:
         if not isinstance(include, str):
-            raise InstallException(f"content of the \'includes\' field must be a list of strings in {dynamicPluginsFile}")
+            raise InstallException(f"content of the \'includes\' field must be a list of strings in {dynamic_plugins_file}")
 
         print('\n======= Including dynamic plugins from', include, flush=True)
 
@@ -959,17 +1082,17 @@ def main():
             continue
 
         with open(include, 'r') as file:
-            includeContent = yaml.safe_load(file)
+            include_content = yaml.safe_load(file)
 
-        if not isinstance(includeContent, dict):
+        if not isinstance(include_content, dict):
             raise InstallException(f"{include} content must be a YAML object")
 
-        includePlugins = includeContent['plugins']
-        if not isinstance(includePlugins, list):
+        include_plugins = include_content['plugins']
+        if not isinstance(include_plugins, list):
             raise InstallException(f"content of the \'plugins\' field must be a list in {include}")
 
-        for plugin in includePlugins:
-            mergePlugin(plugin, allPlugins, include, level=0)
+        for plugin in include_plugins:
+            merge_plugin(plugin, all_plugins, include, level=0)
 
     if 'plugins' in content:
         plugins = content['plugins']
@@ -977,13 +1100,13 @@ def main():
         plugins = []
 
     if not isinstance(plugins, list):
-        raise InstallException(f"content of the \'plugins\' field must be a list in {dynamicPluginsFile}")
+        raise InstallException(f"content of the \'plugins\' field must be a list in {dynamic_plugins_file}")
 
     for plugin in plugins:
-        mergePlugin(plugin, allPlugins, dynamicPluginsFile, level=1)
+        merge_plugin(plugin, all_plugins, dynamic_plugins_file, level=1)
         
     # add a hash for each plugin configuration to detect changes and check if version field is set for OCI packages
-    for plugin in allPlugins.values():
+    for plugin in all_plugins.values():
         hash_dict = copy.deepcopy(plugin)
         # remove elements that shouldn't be tracked for installation detection
         hash_dict.pop('pluginConfig', None)
@@ -995,13 +1118,13 @@ def main():
             local_info = get_local_package_info(package)
             hash_dict['_local_package_info'] = local_info
         
-        hash = hashlib.sha256(json.dumps(hash_dict, sort_keys=True).encode('utf-8')).hexdigest()
-        plugin['hash'] = hash
+        plugin_hash = hashlib.sha256(json.dumps(hash_dict, sort_keys=True).encode('utf-8')).hexdigest()
+        plugin['plugin_hash'] = plugin_hash
 
-    # create a dict of all currently installed plugins in dynamicPluginsRoot
+    # create a dict of all currently installed plugins in dynamic_plugins_root
     plugin_path_by_hash = {}
-    for dir_name in os.listdir(dynamicPluginsRoot):
-        dir_path = os.path.join(dynamicPluginsRoot, dir_name)
+    for dir_name in os.listdir(dynamic_plugins_root):
+        dir_path = os.path.join(dynamic_plugins_root, dir_name)
         if os.path.isdir(dir_path):
             hash_file_path = os.path.join(dir_path, 'dynamic-plugin-config.hash')
             if os.path.isfile(hash_file_path):
@@ -1010,18 +1133,18 @@ def main():
                     plugin_path_by_hash[hash_value] = dir_name
                     
     # iterate through the list of plugins
-    for plugin in allPlugins.values():
-        _, plugin_config = install_plugin(plugin, plugin_path_by_hash, dynamicPluginsRoot, skipIntegrityCheck)
+    for plugin in all_plugins.values():
+        _, plugin_config = install_plugin(plugin, plugin_path_by_hash, dynamic_plugins_root, skip_integrity_check)
         
         # Merge plugin configuration if provided
         if plugin_config:
-            globalConfig = maybeMergeConfig(plugin_config, globalConfig)
+            global_config = maybe_merge_config(plugin_config, global_config)
 
-    yaml.safe_dump(globalConfig, open(dynamicPluginsGlobalConfigFile, 'w'))
+    yaml.safe_dump(global_config, open(dynamic_plugins_global_config_file, 'w'))
 
     # remove plugins that have been removed from the configuration
     for hash_value in plugin_path_by_hash:
-        plugin_directory = os.path.join(dynamicPluginsRoot, plugin_path_by_hash[hash_value])
+        plugin_directory = os.path.join(dynamic_plugins_root, plugin_path_by_hash[hash_value])
         print('\n======= Removing previously installed dynamic plugin', plugin_path_by_hash[hash_value], flush=True)
         shutil.rmtree(plugin_directory, ignore_errors=True, onerror=None)
 
