@@ -64,7 +64,7 @@ If the initial automatically triggered tests fail, OpenShift-CI will add a comme
      - **Cluster Configuration:** Sets up the required namespaces and applies necessary configurations and secrets.
      - **Application Deployment:** Deploys the RHDH instances using Helm charts, tailored to the specific test scenarios.
   3. **Test Execution:**
-     - **Running Tests:** Executes test suites using `yarn` commands specified in `package.json`.
+     - **Running Tests:** Executes test suites using `yarn playwright test --project=<project-name>` directly.
      - **Retry Logic:** Individual tests are retried up to 2 times as specified in the Playwright configuration.
   4. **Artifact Collection:**
      - Collects test artifacts (logs, screenshots, recordings).
@@ -115,7 +115,7 @@ The nightly job for the `main` branch also runs against three OpenShift Containe
      - **Resource Configuration:** Sets up namespaces and configures resources.
      - **Deployment:** Deploys the Red Hat Developer Hub (RHDH) instance and necessary services.
   3. **Test Execution:**
-     - Runs full test suites using the `yarn` commands.
+     - Runs full test suites using `yarn playwright test --project=<project-name>` directly.
      - Tests are executed similarly to the PR tests but may include additional suites.
      - **Retry Logic:** Individual tests are retried up to 2 times as specified in the Playwright configuration.
   4. **Artifact Collection:**
@@ -156,7 +156,23 @@ The OpenShift CI definitions for PR checks and nightly runs, as well as executio
 - **Testing:** Runs end-to-end tests with Playwright.
 - **Cleanup and Reporting:** Cleans up resources and collects artifacts after testing.
 
-Detailed steps on how the tests and reports are managed can be found in the `run_tests()` function within the `openshift-ci-tests.sh` script. Additionally, all the different `yarn` commands that trigger various Playwright projects are described in the `package.json` file.
+Detailed steps on how the tests and reports are managed can be found in the `run_tests()` function within the `utils.sh` script. The CI pipeline executes tests directly using Playwright's `--project` flag (e.g., `yarn playwright test --project=showcase`) rather than yarn script aliases. The `check_and_test()` and `run_tests()` functions accept an explicit Playwright project argument, decoupling the namespace from the test project name for more flexible reuse.
+
+### Playwright Project Names (Single Source of Truth)
+
+All Playwright project names are defined in a single JSON file: [`e2e-tests/playwright/projects.json`](../../e2e-tests/playwright/projects.json). This file serves as the single source of truth for:
+
+- **TypeScript** (`playwright.config.ts`): Imports via `e2e-tests/playwright/projects.ts`
+- **CI/CD Scripts**: Loaded via `.ibm/pipelines/playwright-projects.sh` as `$PW_PROJECT_*` environment variables
+
+When adding or modifying Playwright projects, update `projects.json` first. The project names are automatically available as:
+
+| JSON Key | Shell Variable | Value |
+|----------|----------------|-------|
+| `SHOWCASE` | `$PW_PROJECT_SHOWCASE` | `showcase` |
+| `SHOWCASE_RBAC` | `$PW_PROJECT_SHOWCASE_RBAC` | `showcase-rbac` |
+| `SHOWCASE_K8S` | `$PW_PROJECT_SHOWCASE_K8S` | `showcase-k8s` |
+| ... | ... | ... |
 
 When the test run is complete, the status will be reported under your PR checks.
 
@@ -170,7 +186,7 @@ When the test run is complete, the status will be reported under your PR checks.
 - **Deployment:**
   - RHDH instances are deployed using automated scripts and Helm charts.
 - **Test Execution:**
-  - Tests are executed using `yarn` scripts defined in `package.json`.
+  - Tests are executed using `yarn playwright test --project=<project-name>` directly in CI. Yarn scripts are available for local development.
 - **Cleanup:**
   - The script cleans up all temporary resources after tests.
 - **Reporting:**

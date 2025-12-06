@@ -4,6 +4,8 @@
 source "$DIR"/lib/log.sh
 # shellcheck source=.ibm/pipelines/utils.sh
 source "$DIR"/utils.sh
+# shellcheck source=.ibm/pipelines/playwright-projects.sh
+source "$DIR"/playwright-projects.sh
 
 handle_ocp_helm_upgrade() {
   export NAME_SPACE="${NAME_SPACE:-showcase-upgrade-nightly}"
@@ -40,5 +42,5 @@ handle_ocp_helm_upgrade() {
   deploy_orchestrator_workflows "${NAME_SPACE}"
   initiate_upgrade_deployments "${RELEASE_NAME}" "${NAME_SPACE}" "${url}"
 
-  check_upgrade_and_test "${DEPLOYMENT_NAME}" "${RELEASE_NAME}" "${NAME_SPACE}" "${url}"
+  check_upgrade_and_test "${DEPLOYMENT_NAME}" "${RELEASE_NAME}" "${NAME_SPACE}" "${PW_PROJECT_SHOWCASE_UPGRADE}" "${url}"
 }

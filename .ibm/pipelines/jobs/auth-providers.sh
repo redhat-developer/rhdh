@@ -6,6 +6,8 @@ source "$DIR"/lib/log.sh
 source "$DIR"/utils.sh
 # shellcheck source=.ibm/pipelines/install-methods/operator.sh
 source "$DIR"/install-methods/operator.sh
+# shellcheck source=.ibm/pipelines/playwright-projects.sh
+source "$DIR"/playwright-projects.sh
 
 handle_auth_providers() {
   local retry_operator_installation="${1:-1}"
@@ -23,5 +25,5 @@ handle_auth_providers() {
   export LOGS_FOLDER
 
   log::info "Running tests ${AUTH_PROVIDERS_RELEASE} in ${AUTH_PROVIDERS_NAMESPACE}"
-  run_tests "${AUTH_PROVIDERS_RELEASE}" "${AUTH_PROVIDERS_NAMESPACE}"
+  run_tests "${AUTH_PROVIDERS_RELEASE}" "${AUTH_PROVIDERS_NAMESPACE}" "${PW_PROJECT_SHOWCASE_AUTH_PROVIDERS}" "https://${K8S_CLUSTER_ROUTER_BASE}"
 }
