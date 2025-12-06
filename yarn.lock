@@ -34970,7 +34970,7 @@ __metadata:
     jsdom: 26.1.0
     lint-staged: 15.5.2
     node-gyp: 10.3.1
-    rulesync: 3.28.0
+    rulesync: 3.29.0
     sherif: 1.9.0
     turbo: 2.6.1
   languageName: unknown
@@ -35005,9 +35005,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rulesync@npm:3.28.0":
-  version: 3.28.0
-  resolution: "rulesync@npm:3.28.0"
+"rulesync@npm:3.29.0":
+  version: 3.29.0
+  resolution: "rulesync@npm:3.29.0"
   dependencies:
     "@modelcontextprotocol/sdk": 1.22.0
     commander: 14.0.2
@@ -35022,7 +35022,7 @@ __metadata:
     zod: 4.1.13
   bin:
     rulesync: dist/index.js
-  checksum: e5bc881e6f8a9d04c6c5213d1b2f1ac303c9d5bb82f8fc263d70cf938179009195cb05401746e96015d2fcb04755ea5f0be6705edbd548d9fe094857004853b5
+  checksum: fc9fb1464bd7f1c62a9737236917c50eff19d60875d91bd4c8ea029b8cbece189c8aec26dc8c9127cd62408442f297b999794cdf0dadfbbde5230fc941ce3631
   languageName: node
   linkType: hard
 
