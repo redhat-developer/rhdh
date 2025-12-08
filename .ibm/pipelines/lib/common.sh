@@ -1,20 +1,33 @@
 #!/usr/bin/env bash
 
 # Common utility functions for pipeline scripts
-# Dependencies: oc, kubectl
+# Dependencies: oc, kubectl, lib/log.sh
 
 set -euo pipefail
+
+# Source logging library
+# shellcheck source=.ibm/pipelines/lib/log.sh
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/log.sh"
 
 # Authenticate to OpenShift cluster using token
 # Uses K8S_CLUSTER_TOKEN and K8S_CLUSTER_URL env vars
 common::oc_login() {
+  if ! command -v oc &> /dev/null; then
+    log::error "oc command not found. Please install OpenShift CLI."
+    return 1
+  fi
+
   oc login --token="${K8S_CLUSTER_TOKEN}" --server="${K8S_CLUSTER_URL}" --insecure-skip-tls-verify=true
-  echo "OCP version: $(oc version)"
+  # Safely log version without exposing sensitive server details
+  oc version --client 2>&1 | head -1 || log::warn "Could not retrieve oc client version"
+  return 0
 }
 
 # Check if current cluster is OpenShift
 common::is_openshift() {
   oc get routes.route.openshift.io &> /dev/null || kubectl get routes.route.openshift.io &> /dev/null
+  return $?
 }
 
 # Cross-platform sed in-place editing (macOS/Linux)
@@ -24,6 +37,7 @@ common::sed_inplace() {
   else
     sed -i "$@"
   fi
+  return $?
 }
 
 # Calculate previous release version from current version

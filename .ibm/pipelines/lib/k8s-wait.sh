@@ -5,6 +5,15 @@
 
 set -euo pipefail
 
+# Prevent re-sourcing
+if [[ -n "${K8S_WAIT_LIB_SOURCED:-}" ]]; then
+  return 0
+fi
+readonly K8S_WAIT_LIB_SOURCED=1
+
+# Constants
+readonly ERR_MISSING_PARAMS="Missing required parameters"
+
 # Wait for deployment to become ready
 # Args: namespace, resource_name, timeout_minutes (default: 5), check_interval_seconds (default: 10)
 k8s_wait::deployment() {
@@ -14,7 +23,7 @@ k8s_wait::deployment() {
   local check_interval=${4:-10}
 
   if [[ -z "$namespace" || -z "$resource_name" ]]; then
-    log::error "Missing required parameters"
+    log::error "${ERR_MISSING_PARAMS}"
     log::info "Usage: k8s_wait::deployment <namespace> <resource-name> [timeout_minutes] [check_interval_seconds]"
     return 1
   fi
@@ -23,24 +32,33 @@ k8s_wait::deployment() {
 
   log::info "Waiting for resource '$resource_name' in namespace '$namespace' (timeout: ${timeout_minutes}m)..."
 
+  # Try to resolve selector from deployment if it exists
+  local selector
+  selector=$(oc get deployment "$resource_name" -n "$namespace" -o jsonpath='{.spec.selector.matchLabels}' 2> /dev/null | grep -o '"[^"]*":"[^"]*"' | sed 's/"//g' | tr '\n' ',' | sed 's/,$//' || echo "")
+
   for ((i = 1; i <= max_attempts; i++)); do
-    local pod_name
-    pod_name=$(oc get pods -n "$namespace" | grep "$resource_name" | awk '{print $1}' | head -n 1)
+    local pod_name=""
+
+    # Use deployment selector if available, otherwise fall back to name matching
+    if [[ -n "$selector" ]]; then
+      pod_name=$(oc get pods -n "$namespace" -l "$selector" -o jsonpath='{.items[0].metadata.name}' 2> /dev/null || echo "")
+    else
+      pod_name=$(oc get pods -n "$namespace" -o name 2> /dev/null | awk -F'/' -v r="$resource_name" '$2 ~ "^"r {print $2; exit}')
+    fi
 
     if [[ -n "$pod_name" ]]; then
-      local pod_ready_status
-      pod_ready_status=$(oc get pod "$pod_name" -n "$namespace" -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}')
+      local phase ready
+      phase=$(oc get pod "$pod_name" -n "$namespace" -o jsonpath='{.status.phase}' 2> /dev/null || echo "")
+      ready=$(oc get pod "$pod_name" -n "$namespace" -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' 2> /dev/null || echo "")
 
-      if [[ "$pod_ready_status" == "True" ]]; then
+      if [[ "$phase" == "Running" && "$ready" == "True" ]]; then
         log::success "Resource '$resource_name' is ready in namespace '$namespace'"
         return 0
       fi
 
-      local container_statuses
-      container_statuses=$(oc get pod "$pod_name" -n "$namespace" -o jsonpath='{.status.containerStatuses}')
-      log::debug "Pod '$pod_name' status: Ready=$pod_ready_status, Containers=$container_statuses"
+      log::debug "Pod '$pod_name' phase=$phase ready=$ready"
     else
-      log::debug "No pods found matching '$resource_name' in namespace '$namespace'"
+      log::debug "No pods found for '$resource_name' in '$namespace'"
     fi
 
     if ((i == max_attempts)); then
@@ -64,7 +82,7 @@ k8s_wait::job() {
   local check_interval=${4:-10}
 
   if [[ -z "$namespace" || -z "$job_name" ]]; then
-    log::error "Missing required parameters"
+    log::error "${ERR_MISSING_PARAMS}"
     log::info "Usage: k8s_wait::job <namespace> <job-name> [timeout_minutes] [check_interval_seconds]"
     return 1
   fi
@@ -118,7 +136,7 @@ k8s_wait::service() {
   local check_interval=${4:-5}
 
   if [[ -z "$service_name" || -z "$namespace" ]]; then
-    log::error "Missing required parameters"
+    log::error "${ERR_MISSING_PARAMS}"
     log::info "Usage: k8s_wait::service <service-name> <namespace> [timeout_seconds] [check_interval_seconds]"
     return 1
   fi
@@ -154,7 +172,7 @@ k8s_wait::endpoint() {
   local check_interval=${4:-5}
 
   if [[ -z "$service_name" || -z "$namespace" ]]; then
-    log::error "Missing required parameters"
+    log::error "${ERR_MISSING_PARAMS}"
     log::info "Usage: k8s_wait::endpoint <service-name> <namespace> [timeout_seconds] [check_interval_seconds]"
     return 1
   fi
@@ -182,16 +200,16 @@ k8s_wait::endpoint() {
 }
 
 # Wait for Backstage CR to become available
-# Args: backstage_name, namespace, timeout_seconds (default: 300), check_interval_seconds (default: 10)
+# Args: namespace, backstage_name (default: "backstage"), timeout_seconds (default: 300), check_interval_seconds (default: 10)
 k8s_wait::backstage_resource() {
-  local backstage_name=$1
-  local namespace=$2
+  local namespace=$1
+  local backstage_name=${2:-backstage}
   local timeout=${3:-300}
   local check_interval=${4:-10}
 
-  if [[ -z "$backstage_name" || -z "$namespace" ]]; then
-    log::error "Missing required parameters"
-    log::info "Usage: k8s_wait::backstage_resource <backstage-name> <namespace> [timeout_seconds] [check_interval_seconds]"
+  if [[ -z "$namespace" ]]; then
+    log::error "${ERR_MISSING_PARAMS}: namespace"
+    log::info "Usage: k8s_wait::backstage_resource <namespace> [backstage-name] [timeout_seconds] [check_interval_seconds]"
     return 1
   fi
 
