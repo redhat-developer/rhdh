@@ -31,7 +31,7 @@ export const createOidcSubClaimResolver = (provider: OidcProviderInfo) =>
       .object({
         dangerouslyAllowSignInWithoutUserInCatalog: z.boolean().optional(),
       })
-      .optional() as any,
+      .optional(),
     create(options) {
       return async (
         info: SignInInfo<OAuthAuthenticatorResult<OidcAuthResult>>,

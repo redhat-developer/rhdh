@@ -44,7 +44,7 @@ export namespace rhdhSignInResolvers {
         .object({
           dangerouslyAllowSignInWithoutUserInCatalog: z.boolean().optional(),
         })
-        .optional() as any,
+        .optional(),
       create(options) {
         return async (
           info: SignInInfo<OAuthAuthenticatorResult<OidcAuthResult>>,
@@ -96,7 +96,7 @@ export namespace rhdhSignInResolvers {
         .object({
           dangerouslyAllowSignInWithoutUserInCatalog: z.boolean().optional(),
         })
-        .optional() as any,
+        .optional(),
       create(options) {
         return async (
           info: SignInInfo<OAuth2ProxyResult>,
@@ -142,7 +142,7 @@ export namespace rhdhSignInResolvers {
         dangerouslyAllowSignInWithoutUserInCatalog: z.boolean().optional(),
         ldapUuidKey: z.string().optional(),
       })
-      .optional() as any,
+      .optional(),
     create(options) {
       return async (
         info: SignInInfo<OAuthAuthenticatorResult<OidcAuthResult>>,
