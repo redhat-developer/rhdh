@@ -459,48 +459,59 @@ delete_namespace() {
 }
 
 configure_external_postgres_db() {
+  set -euo pipefail # Enable strict error handling
+
   local project=$1
-  local max_attempts=60  # 5 minutes total (60 attempts × 5 seconds)
+  local max_attempts=60 # 5 minutes total (60 attempts × 5 seconds)
   local wait_interval=5
 
   log::info "Creating PostgresCluster in namespace ${NAME_SPACE_POSTGRES_DB}..."
-  oc apply -f "${DIR}/resources/postgres-db/postgres.yaml" --namespace="${NAME_SPACE_POSTGRES_DB}"
+
+  # Validate oc apply command execution
+  if ! oc apply -f "${DIR}/resources/postgres-db/postgres.yaml" --namespace="${NAME_SPACE_POSTGRES_DB}"; then
+    log::error "Failed to create PostgresCluster"
+    return 1
+  fi
 
   # Wait for cluster cert secret (usually created quickly)
   log::info "Waiting for cluster certificate secret..."
-  for ((i=1; i<=max_attempts; i++)); do
-    if oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" &>/dev/null; then
+  for ((i = 1; i <= max_attempts; i++)); do
+    if oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" &> /dev/null; then
       log::success "Cluster certificate secret found!"
       break
     fi
-    if [ $i -eq $max_attempts ]; then
+    if [ "$i" -eq "$max_attempts" ]; then
       log::error "Timeout waiting for cluster certificate secret"
       return 1
     fi
     log::debug "Attempt $i/$max_attempts: Waiting for cluster certificate..."
-    sleep $wait_interval
+    sleep "$wait_interval"
   done
 
   # Extract cluster certificates
   oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.ca\.crt}' | base64 --decode > postgres-ca
   oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.tls\.crt}' | base64 --decode > postgres-tls-crt
-  oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.tls\.key}' | base64 --decode > postgres-tsl-key
+  oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.tls\.key}' | base64 --decode > postgres-tls-key
 
-  oc create secret generic postgress-external-db-cluster-cert \
+  # Validate secret creation
+  if ! oc create secret generic postgress-external-db-cluster-cert \
     --from-file=ca.crt=postgres-ca \
     --from-file=tls.crt=postgres-tls-crt \
-    --from-file=tls.key=postgres-tsl-key \
-    --dry-run=client -o yaml | oc apply -f - --namespace="${project}"
+    --from-file=tls.key=postgres-tls-key \
+    --dry-run=client -o yaml | oc apply -f - --namespace="${project}"; then
+    log::error "Failed to create cluster certificate secret"
+    return 1
+  fi
 
   # Wait for USER secret (this is the critical one that causes CI failures!)
   log::info "Waiting for PostgreSQL user secret 'postgress-external-db-pguser-janus-idp'..."
   log::info "This secret is created by the Crunchy Postgres operator after the database is ready"
-  for ((i=1; i<=max_attempts; i++)); do
-    if oc get secret postgress-external-db-pguser-janus-idp -n "${NAME_SPACE_POSTGRES_DB}" &>/dev/null; then
+  for ((i = 1; i <= max_attempts; i++)); do
+    if oc get secret postgress-external-db-pguser-janus-idp -n "${NAME_SPACE_POSTGRES_DB}" &> /dev/null; then
       log::success "PostgreSQL user secret found!"
       break
     fi
-    if [ $i -eq $max_attempts ]; then
+    if [ "$i" -eq "$max_attempts" ]; then
       log::error "Timeout waiting for PostgreSQL user secret 'postgress-external-db-pguser-janus-idp'"
       log::error "This usually means the Crunchy Postgres operator failed to create the user"
       log::info "Checking PostgresCluster status..."
@@ -510,7 +521,7 @@ configure_external_postgres_db() {
       return 1
     fi
     log::debug "Attempt $i/$max_attempts: Waiting for user secret (this may take 15-30s)..."
-    sleep $wait_interval
+    sleep "$wait_interval"
   done
 
   # Now we can safely get the password
@@ -518,7 +529,12 @@ configure_external_postgres_db() {
   sed_inplace "s|POSTGRES_PASSWORD:.*|POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
   POSTGRES_HOST=$(echo -n "postgress-external-db-primary.$NAME_SPACE_POSTGRES_DB.svc.cluster.local" | base64 | tr -d '\n')
   sed_inplace "s|POSTGRES_HOST:.*|POSTGRES_HOST: ${POSTGRES_HOST}|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
-  oc apply -f "${DIR}/resources/postgres-db/postgres-cred.yaml" --namespace="${project}"
+
+  # Validate final configuration apply
+  if ! oc apply -f "${DIR}/resources/postgres-db/postgres-cred.yaml" --namespace="${project}"; then
+    log::error "Failed to apply PostgreSQL credentials"
+    return 1
+  fi
 
   log::success "External PostgreSQL database configured successfully!"
 }
