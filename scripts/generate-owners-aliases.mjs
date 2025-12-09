@@ -17,6 +17,7 @@ const GITHUB_ORG = "redhat-developer";
 
 // List of GitHub team slugs to sync. The team slug is used as the alias name.
 const TEAMS = [
+  "rhdh", // this is the root team
   "rhdh-cope",
   "rhdh-plugins",
   "rhdh-security",
