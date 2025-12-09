@@ -52,12 +52,12 @@ clear_database() {
       "SELECT datname FROM pg_database WHERE datistemplate = false AND datname NOT IN ('postgres', 'rdsadmin');" 2> /dev/null
   )
 
-  if [ $? -ne 0 ]; then
+  if [[ $? -ne 0 ]]; then
     log::error "Failed to retrieve database list"
     return 1
   fi
 
-  if [ -z "$databases" ]; then
+  if [[ -z "$databases" ]]; then
     log::info "No user databases found to drop"
   else
     log::info "Found $(echo "$databases" | wc -l | tr -d ' ') database(s) to drop"
@@ -91,7 +91,7 @@ clear_database() {
       "SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename LIKE 'knex_%';" 2> /dev/null || echo ""
   )
 
-  if [ -n "$migration_tables" ]; then
+  if [[ -n "$migration_tables" ]]; then
     local table_count
     table_count=$(echo "$migration_tables" | wc -l | tr -d ' ')
     log::info "Found $table_count Knex migration table(s)"
