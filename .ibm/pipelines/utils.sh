@@ -669,16 +669,15 @@ run_tests() {
   pkill Xvfb
 
   # Use namespace for artifact directory to keep artifacts organized by deployment
-  mkdir -p "${ARTIFACT_DIR}/${project}/test-results"
-  mkdir -p "${ARTIFACT_DIR}/${project}/attachments/screenshots"
-  cp -a "${e2e_tests_dir}/test-results/"* "${ARTIFACT_DIR}/${project}/test-results" || true
-  cp -a "${e2e_tests_dir}/${JUNIT_RESULTS}" "${ARTIFACT_DIR}/${project}/${JUNIT_RESULTS}" || true
+  mkdir -p "${ARTIFACT_DIR}/${namespace}/test-results"
+  mkdir -p "${ARTIFACT_DIR}/${namespace}/attachments/screenshots"
+  cp -a "${e2e_tests_dir}/test-results/"* "${ARTIFACT_DIR}/${namespace}/test-results" || true
+  cp -a "${e2e_tests_dir}/${JUNIT_RESULTS}" "${ARTIFACT_DIR}/${namespace}/${JUNIT_RESULTS}" || true
   if [[ "${CI}" == "true" ]]; then
-    cp "${ARTIFACT_DIR}/${project}/${JUNIT_RESULTS}" "${SHARED_DIR}/junit-results-${project}.xml" || true
+    cp "${ARTIFACT_DIR}/${namespace}/${JUNIT_RESULTS}" "${SHARED_DIR}/junit-results-${namespace}.xml" || true
   fi
 
   cp -a "${e2e_tests_dir}/screenshots/"* "${ARTIFACT_DIR}/${namespace}/attachments/screenshots/" || true
-
   ansi2html < "/tmp/${LOGFILE}" > "/tmp/${LOGFILE}.html"
   cp -a "/tmp/${LOGFILE}.html" "${ARTIFACT_DIR}/${namespace}" || true
   cp -a "${e2e_tests_dir}/playwright-report/"* "${ARTIFACT_DIR}/${namespace}" || true
