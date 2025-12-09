@@ -682,8 +682,6 @@ run_tests() {
   cp -a "/tmp/${LOGFILE}.html" "${ARTIFACT_DIR}/${namespace}" || true
   cp -a "${e2e_tests_dir}/playwright-report/"* "${ARTIFACT_DIR}/${namespace}" || true
 
-  save_data_router_junit_results "${namespace}"
-
   echo "Playwright project '${playwright_project}' in namespace '${namespace}' RESULT: ${RESULT}"
   if [ "${RESULT}" -ne 0 ]; then
     save_overall_result 1
