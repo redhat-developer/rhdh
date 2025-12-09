@@ -1,22 +1,40 @@
 #!/bin/bash
 
+# Ensure DIR is set, otherwise calculate it from script location
+if [[ -z "${DIR:-}" ]]; then
+  DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  export DIR
+fi
+
 # shellcheck source=.ibm/pipelines/lib/log.sh
 source "${DIR}/lib/log.sh"
 
 # Clears all databases and migration tables from the shared RDS PostgreSQL instance
 # This ensures that each test run starts with a clean state, preventing migration
 # conflicts between different RHDH versions (e.g., release-1.7 vs main branch)
+#
+# SECURITY NOTE: This script drops ALL non-system databases on the target RDS instance.
+# Ensure that:
+# - RDS_1_HOST points to an isolated CI/test database instance
+# - Credentials have limited scope to CI databases only
+# - The RDS instance is NOT shared with production or other environments
 clear_database() {
   set -euo pipefail
 
   log::section "PostgreSQL Database Cleanup"
+
+  # Validate required environment variables
+  if [[ -z "${RDS_USER:-}" ]] || [[ -z "${RDS_PASSWORD:-}" ]] || [[ -z "${RDS_1_HOST:-}" ]]; then
+    log::error "Required environment variables not set: RDS_USER, RDS_PASSWORD, RDS_1_HOST"
+    return 1
+  fi
 
   export POSTGRES_USER="$(echo -n "$RDS_USER" | base64 --decode)"
   export PGPASSWORD=$RDS_PASSWORD
   export POSTGRES_HOST=$RDS_1_HOST
 
   log::info "Target PostgreSQL host: $POSTGRES_HOST"
-  log::info "PostgreSQL user: $POSTGRES_USER"
+  log::debug "PostgreSQL user: $POSTGRES_USER"
 
   # Test database connectivity
   log::debug "Testing database connectivity..."
