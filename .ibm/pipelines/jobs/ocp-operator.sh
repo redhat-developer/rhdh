@@ -35,6 +35,9 @@ initiate_operator_deployments() {
 
 run_operator_runtime_config_change_tests() {
   # Deploy `showcase-runtime` to run tests that require configuration changes at runtime
+  # Clean the RDS database first to prevent migration conflicts between RHDH versions
+  clear_database
+  
   configure_namespace "${NAME_SPACE_RUNTIME}"
   local runtime_url="https://backstage-${RELEASE_NAME}-${NAME_SPACE_RUNTIME}.${K8S_CLUSTER_ROUTER_BASE}"
   sed -i "s|POSTGRES_USER:.*|POSTGRES_USER: $RDS_USER|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
