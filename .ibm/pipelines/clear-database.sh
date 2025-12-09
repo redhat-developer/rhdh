@@ -29,7 +29,8 @@ clear_database() {
     return 1
   fi
 
-  export POSTGRES_USER="$(echo -n "$RDS_USER" | base64 --decode)"
+  POSTGRES_USER="$(echo -n "$RDS_USER" | base64 --decode)"
+  export POSTGRES_USER
   export PGPASSWORD=$RDS_PASSWORD
   export POSTGRES_HOST=$RDS_1_HOST
 
