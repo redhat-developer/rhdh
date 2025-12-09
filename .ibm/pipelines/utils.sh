@@ -624,12 +624,18 @@ prepare_operator_app_config() {
 
 run_tests() {
   local release_name=$1
-  local project=$2
-  local url="${3:-}"
+  local namespace=$2
+  local playwright_project=$3
+  local url="${4:-}"
+
+  CURRENT_DEPLOYMENT=$((CURRENT_DEPLOYMENT + 1))
+  save_status_deployment_namespace $CURRENT_DEPLOYMENT "$namespace"
+  save_status_failed_to_deploy $CURRENT_DEPLOYMENT false
 
   BASE_URL="${url}"
   export BASE_URL
   echo "BASE_URL: ${BASE_URL}"
+  echo "Running Playwright project '${playwright_project}' against namespace '${namespace}'"
 
   cd "${DIR}/../../e2e-tests"
   local e2e_tests_dir
@@ -654,27 +660,29 @@ run_tests() {
   (
     set -e
     echo "Using PR container image: ${TAG_NAME}"
-    yarn "$project"
+    # Run Playwright directly with --project flag instead of using yarn script aliases
+    yarn playwright test --project="${playwright_project}"
   ) 2>&1 | tee "/tmp/${LOGFILE}"
 
   local RESULT=${PIPESTATUS[0]}
 
   pkill Xvfb
 
-  mkdir -p "${ARTIFACT_DIR}/${project}/test-results"
-  mkdir -p "${ARTIFACT_DIR}/${project}/attachments/screenshots"
-  cp -a "${e2e_tests_dir}/test-results/"* "${ARTIFACT_DIR}/${project}/test-results" || true
-  cp -a "${e2e_tests_dir}/${JUNIT_RESULTS}" "${ARTIFACT_DIR}/${project}/${JUNIT_RESULTS}" || true
+  # Use namespace for artifact directory to keep artifacts organized by deployment
+  mkdir -p "${ARTIFACT_DIR}/${namespace}/test-results"
+  mkdir -p "${ARTIFACT_DIR}/${namespace}/attachments/screenshots"
+  cp -a "${e2e_tests_dir}/test-results/"* "${ARTIFACT_DIR}/${namespace}/test-results" || true
+  cp -a "${e2e_tests_dir}/${JUNIT_RESULTS}" "${ARTIFACT_DIR}/${namespace}/${JUNIT_RESULTS}" || true
+  if [[ "${CI}" == "true" ]]; then
+    cp "${ARTIFACT_DIR}/${namespace}/${JUNIT_RESULTS}" "${SHARED_DIR}/junit-results-${namespace}.xml" || true
+  fi
 
-  cp -a "${e2e_tests_dir}/screenshots/"* "${ARTIFACT_DIR}/${project}/attachments/screenshots/" || true
-
+  cp -a "${e2e_tests_dir}/screenshots/"* "${ARTIFACT_DIR}/${namespace}/attachments/screenshots/" || true
   ansi2html < "/tmp/${LOGFILE}" > "/tmp/${LOGFILE}.html"
-  cp -a "/tmp/${LOGFILE}.html" "${ARTIFACT_DIR}/${project}" || true
-  cp -a "${e2e_tests_dir}/playwright-report/"* "${ARTIFACT_DIR}/${project}" || true
+  cp -a "/tmp/${LOGFILE}.html" "${ARTIFACT_DIR}/${namespace}" || true
+  cp -a "${e2e_tests_dir}/playwright-report/"* "${ARTIFACT_DIR}/${namespace}" || true
 
-  save_data_router_junit_results "${project}"
-
-  echo "${project} RESULT: ${RESULT}"
+  echo "Playwright project '${playwright_project}' in namespace '${namespace}' RESULT: ${RESULT}"
   if [ "${RESULT}" -ne 0 ]; then
     save_overall_result 1
     save_status_test_failed $CURRENT_DEPLOYMENT true
@@ -1089,20 +1097,19 @@ initiate_sanity_plugin_checks_deployment() {
 check_and_test() {
   local release_name=$1
   local namespace=$2
-  local url=$3
-  local max_attempts=${4:-30} # Default to 30 if not set
-  local wait_seconds=${5:-30} # Default to 30 if not set
-
-  CURRENT_DEPLOYMENT=$((CURRENT_DEPLOYMENT + 1))
-  save_status_deployment_namespace $CURRENT_DEPLOYMENT "$namespace"
+  local playwright_project=$3
+  local url=$4
+  local max_attempts=${5:-30} # Default to 30 if not set
+  local wait_seconds=${6:-30} # Default to 30 if not set
 
   if check_backstage_running "${release_name}" "${namespace}" "${url}" "${max_attempts}" "${wait_seconds}"; then
-    save_status_failed_to_deploy $CURRENT_DEPLOYMENT false
     echo "Display pods for verification..."
     oc get pods -n "${namespace}"
-    run_tests "${release_name}" "${namespace}" "${url}"
+    run_tests "${release_name}" "${namespace}" "${playwright_project}" "${url}"
   else
     echo "Backstage is not running. Exiting..."
+    CURRENT_DEPLOYMENT=$((CURRENT_DEPLOYMENT + 1))
+    save_status_deployment_namespace $CURRENT_DEPLOYMENT "$namespace"
     save_status_failed_to_deploy $CURRENT_DEPLOYMENT true
     save_status_test_failed $CURRENT_DEPLOYMENT true
     save_overall_result 1
@@ -1114,13 +1121,16 @@ check_upgrade_and_test() {
   local deployment_name="$1"
   local release_name="$2"
   local namespace="$3"
-  local url=$4
-  local timeout=${5:-600} # Timeout in seconds (default: 600 seconds)
+  local playwright_project="$4"
+  local url=$5
+  local timeout=${6:-600} # Timeout in seconds (default: 600 seconds)
 
   if check_helm_upgrade "${deployment_name}" "${namespace}" "${timeout}"; then
-    check_and_test "${release_name}" "${namespace}" "${url}"
+    check_and_test "${release_name}" "${namespace}" "${playwright_project}" "${url}"
   else
     echo "Helm upgrade encountered an issue or timed out. Exiting..."
+    CURRENT_DEPLOYMENT=$((CURRENT_DEPLOYMENT + 1))
+    save_status_deployment_namespace $CURRENT_DEPLOYMENT "$namespace"
     save_status_failed_to_deploy $CURRENT_DEPLOYMENT true
     save_status_test_failed $CURRENT_DEPLOYMENT true
     save_overall_result 1

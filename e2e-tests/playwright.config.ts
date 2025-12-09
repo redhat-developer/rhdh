@@ -1,4 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
+import { PW_PROJECT } from "./playwright/projects";
 
 process.env.JOB_NAME = process.env.JOB_NAME || "";
 process.env.IS_OPENSHIFT = process.env.IS_OPENSHIFT || "";
@@ -6,7 +7,7 @@ process.env.IS_OPENSHIFT = process.env.IS_OPENSHIFT || "";
 // Set LOCALE based on which project is being run
 const args = process.argv;
 
-if (args.some((arg) => arg.includes("showcase-localization-fr"))) {
+if (args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_FR))) {
   process.env.LOCALE = "fr";
 } else if (!process.env.LOCALE) {
   process.env.LOCALE = "en";
@@ -60,13 +61,13 @@ export default defineConfig({
   /* Configure projects for major browsers */
   projects: [
     {
-      name: "smoke-test",
+      name: PW_PROJECT.SMOKE_TEST,
       testMatch: "**/playwright/e2e/smoke-test.spec.ts",
       retries: 10,
     },
     {
-      name: "showcase",
-      dependencies: ["smoke-test"],
+      name: PW_PROJECT.SHOWCASE,
+      dependencies: [PW_PROJECT.SMOKE_TEST],
       testIgnore: [
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
@@ -82,8 +83,8 @@ export default defineConfig({
       ],
     },
     {
-      name: "showcase-rbac",
-      dependencies: ["smoke-test"],
+      name: PW_PROJECT.SHOWCASE_RBAC,
+      dependencies: [PW_PROJECT.SMOKE_TEST],
       testMatch: [
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
@@ -94,7 +95,7 @@ export default defineConfig({
       ],
     },
     {
-      name: "showcase-auth-providers",
+      name: PW_PROJECT.SHOWCASE_AUTH_PROVIDERS,
       testMatch: ["**/playwright/e2e/auth-providers/*.spec.ts"],
       testIgnore: [
         "**/playwright/e2e/auth-providers/github-happy-path.spec.ts", // temporarily disable
@@ -105,9 +106,9 @@ export default defineConfig({
       retries: 1,
     },
     {
-      name: "showcase-k8s",
+      name: PW_PROJECT.SHOWCASE_K8S,
       ...k8sSpecificConfig,
-      dependencies: ["smoke-test"],
+      dependencies: [PW_PROJECT.SMOKE_TEST],
       testIgnore: [
         "**/playwright/e2e/smoke-test.spec.ts",
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
@@ -128,9 +129,9 @@ export default defineConfig({
       ],
     },
     {
-      name: "showcase-rbac-k8s",
+      name: PW_PROJECT.SHOWCASE_RBAC_K8S,
       ...k8sSpecificConfig,
-      dependencies: ["smoke-test"],
+      dependencies: [PW_PROJECT.SMOKE_TEST],
       testMatch: [
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
@@ -139,8 +140,8 @@ export default defineConfig({
       ],
     },
     {
-      name: "showcase-operator",
-      dependencies: ["smoke-test"],
+      name: PW_PROJECT.SHOWCASE_OPERATOR,
+      dependencies: [PW_PROJECT.SMOKE_TEST],
       testIgnore: [
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
@@ -159,8 +160,8 @@ export default defineConfig({
       ],
     },
     {
-      name: "showcase-operator-rbac",
-      dependencies: ["smoke-test"],
+      name: PW_PROJECT.SHOWCASE_OPERATOR_RBAC,
+      dependencies: [PW_PROJECT.SMOKE_TEST],
       testMatch: [
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
@@ -169,7 +170,7 @@ export default defineConfig({
       ],
     },
     {
-      name: "showcase-runtime-db",
+      name: PW_PROJECT.SHOWCASE_RUNTIME_DB,
       workers: 1,
       testMatch: [
         "**/playwright/e2e/external-database/verify-tls-config-with-external-rds.spec.ts",
@@ -177,15 +178,15 @@ export default defineConfig({
       ],
     },
     {
-      name: "showcase-runtime",
+      name: PW_PROJECT.SHOWCASE_RUNTIME,
       workers: 1,
-      dependencies: ["showcase-runtime-db"],
+      dependencies: [PW_PROJECT.SHOWCASE_RUNTIME_DB],
       testMatch: ["**/playwright/e2e/configuration-test/config-map.spec.ts"],
     },
 
     {
-      name: "showcase-sanity-plugins",
-      dependencies: ["smoke-test"],
+      name: PW_PROJECT.SHOWCASE_SANITY_PLUGINS,
+      dependencies: [PW_PROJECT.SMOKE_TEST],
       testMatch: [
         "**/playwright/e2e/catalog-timestamp.spec.ts",
         "**/playwright/e2e/plugins/frontend/sidebar.spec.ts",
@@ -194,19 +195,19 @@ export default defineConfig({
       ],
     },
     {
-      name: "any-test",
+      name: PW_PROJECT.ANY_TEST,
       testMatch: "**/*.spec.ts", // Allows running any test file
     },
     {
-      name: "showcase-upgrade",
-      dependencies: ["smoke-test"],
+      name: PW_PROJECT.SHOWCASE_UPGRADE,
+      dependencies: [PW_PROJECT.SMOKE_TEST],
       testMatch: [
         "**/playwright/e2e/home-page-customization.spec.ts",
         "**/playwright/e2e/plugins/quick-access-and-tech-radar.spec.ts",
       ],
     },
     {
-      name: "showcase-localization-fr",
+      name: PW_PROJECT.SHOWCASE_LOCALIZATION_FR,
       use: {
         locale: "fr",
       },
