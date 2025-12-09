@@ -6,6 +6,8 @@ source "$DIR"/lib/log.sh
 source "$DIR"/utils.sh
 # shellcheck source=.ibm/pipelines/playwright-projects.sh
 source "$DIR"/playwright-projects.sh
+# shellcheck source=.ibm/pipelines/clear-database.sh
+source "$DIR"/clear-database.sh
 
 handle_ocp_nightly() {
   export NAME_SPACE="${NAME_SPACE:-showcase-ci-nightly}"
@@ -44,6 +46,9 @@ run_standard_deployment_tests() {
 
 run_runtime_config_change_tests() {
   # Deploy `showcase-runtime` to run tests that require configuration changes at runtime
+  # Clean the RDS database first to prevent migration conflicts between RHDH versions
+  clear_database
+
   initiate_runtime_deployment "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}"
   local runtime_url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE_RUNTIME}.${K8S_CLUSTER_ROUTER_BASE}"
   run_tests "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${PW_PROJECT_SHOWCASE_RUNTIME}" "${runtime_url}"

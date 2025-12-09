@@ -8,6 +8,8 @@ source "$DIR"/utils.sh
 source "$DIR"/install-methods/operator.sh
 # shellcheck source=.ibm/pipelines/playwright-projects.sh
 source "$DIR"/playwright-projects.sh
+# shellcheck source=.ibm/pipelines/clear-database.sh
+source "$DIR"/clear-database.sh
 
 initiate_operator_deployments() {
   log::info "Initiating Operator-backed deployments on OCP"
@@ -80,6 +82,9 @@ initiate_operator_deployments_osd_gcp() {
 
 run_operator_runtime_config_change_tests() {
   # Deploy `showcase-runtime` to run tests that require configuration changes at runtime
+  # Clean the RDS database first to prevent migration conflicts between RHDH versions
+  clear_database
+
   configure_namespace "${NAME_SPACE_RUNTIME}"
   oc apply -f "$DIR/resources/postgres-db/dynamic-plugins-root-PVC.yaml" -n "${NAME_SPACE_RUNTIME}"
   create_app_config_map "$DIR/resources/postgres-db/rds-app-config.yaml" "${NAME_SPACE_RUNTIME}"
