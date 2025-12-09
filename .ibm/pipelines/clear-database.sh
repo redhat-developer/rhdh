@@ -36,7 +36,7 @@ clear_database() {
   log::info "PostgreSQL user: $POSTGRES_USER"
 
   # Test database connectivity
-  if ! psql -h "$POSTGRES_HOST" -U "$POSTGRES_USER" -p "5432" -d postgres -c "SELECT 1;" &>/dev/null; then
+  if ! psql -h "$POSTGRES_HOST" -U "$POSTGRES_USER" -p "5432" -d postgres -c "SELECT 1;" &> /dev/null; then
     log::error "Failed to connect to PostgreSQL at $POSTGRES_HOST"
     return 1
   fi
@@ -46,7 +46,7 @@ clear_database() {
   local databases
   databases=$(
     psql -h "$POSTGRES_HOST" -U "$POSTGRES_USER" -p "5432" -d postgres -Atc \
-      "SELECT datname FROM pg_database WHERE datistemplate = false AND datname NOT IN ('postgres', 'rdsadmin');" 2>/dev/null
+      "SELECT datname FROM pg_database WHERE datistemplate = false AND datname NOT IN ('postgres', 'rdsadmin');" 2> /dev/null
   )
 
   if [ $? -ne 0 ]; then
@@ -65,10 +65,10 @@ clear_database() {
 
       # Terminate all active connections to the database before dropping
       psql -h "$POSTGRES_HOST" -U "$POSTGRES_USER" -p "5432" -d postgres -c \
-        "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$db' AND pid <> pg_backend_pid();" &>/dev/null || true
+        "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$db' AND pid <> pg_backend_pid();" &> /dev/null || true
 
       # Drop the database
-      if psql -h "$POSTGRES_HOST" -U "$POSTGRES_USER" -p "5432" -d postgres -c "DROP DATABASE IF EXISTS \"$db\";" 2>&1; then
+      if psql -h "$POSTGRES_HOST" -U "$POSTGRES_USER" -p "5432" -d postgres -c "DROP DATABASE IF EXISTS \"$db\";" &> /dev/null; then
         log::success "Successfully dropped database: $db"
       else
         log::warn "Failed to drop database $db, but continuing with cleanup"
@@ -83,14 +83,14 @@ clear_database() {
   local migration_tables
   migration_tables=$(
     psql -h "$POSTGRES_HOST" -U "$POSTGRES_USER" -p "5432" -d postgres -Atc \
-      "SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename LIKE 'knex_%';" 2>/dev/null || echo ""
+      "SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename LIKE 'knex_%';" 2> /dev/null || echo ""
   )
 
   if [ -n "$migration_tables" ]; then
     log::info "Found Knex migration tables: $(echo "$migration_tables" | tr '\n' ' ')"
     for table in $migration_tables; do
       log::info "Dropping migration table: $table"
-      if psql -h "$POSTGRES_HOST" -U "$POSTGRES_USER" -p "5432" -d postgres -c "DROP TABLE IF EXISTS \"$table\" CASCADE;" 2>&1; then
+      if psql -h "$POSTGRES_HOST" -U "$POSTGRES_USER" -p "5432" -d postgres -c "DROP TABLE IF EXISTS \"$table\" CASCADE;" &> /dev/null; then
         log::success "Successfully dropped table: $table"
       else
         log::warn "Failed to drop table $table, but continuing"
