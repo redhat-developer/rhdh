@@ -150,10 +150,10 @@ class CatalogPage {
 
 ```bash
 # Generate locators automatically
-npx playwright codegen http://localhost:7007
+yarn playwright codegen http://localhost:7007
 
 # Debug tests step-by-step
-npx playwright test --debug
+yarn playwright test --debug
 
 # Or pause in test
 await page.pause();

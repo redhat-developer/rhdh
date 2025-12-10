@@ -1,0 +1,16 @@
+{
+  "SMOKE_TEST": "smoke-test",
+  "SHOWCASE": "showcase",
+  "SHOWCASE_RBAC": "showcase-rbac",
+  "ANY_TEST": "any-test",
+  "SHOWCASE_K8S": "showcase-k8s",
+  "SHOWCASE_RBAC_K8S": "showcase-rbac-k8s",
+  "SHOWCASE_OPERATOR": "showcase-operator",
+  "SHOWCASE_OPERATOR_RBAC": "showcase-operator-rbac",
+  "SHOWCASE_RUNTIME_DB": "showcase-runtime-db",
+  "SHOWCASE_RUNTIME": "showcase-runtime",
+  "SHOWCASE_AUTH_PROVIDERS": "showcase-auth-providers",
+  "SHOWCASE_SANITY_PLUGINS": "showcase-sanity-plugins",
+  "SHOWCASE_UPGRADE": "showcase-upgrade",
+  "SHOWCASE_LOCALIZATION_FR": "showcase-localization-fr"
+}

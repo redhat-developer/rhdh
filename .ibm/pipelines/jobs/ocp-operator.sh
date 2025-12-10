@@ -6,6 +6,8 @@ source "$DIR"/lib/log.sh
 source "$DIR"/utils.sh
 # shellcheck source=.ibm/pipelines/install-methods/operator.sh
 source "$DIR"/install-methods/operator.sh
+# shellcheck source=.ibm/pipelines/playwright-projects.sh
+source "$DIR"/playwright-projects.sh
 
 initiate_operator_deployments() {
   log::info "Initiating Operator-backed deployments on OCP"
@@ -83,7 +85,7 @@ run_operator_runtime_config_change_tests() {
   create_app_config_map "$DIR/resources/postgres-db/rds-app-config.yaml" "${NAME_SPACE_RUNTIME}"
   deploy_rhdh_operator "${NAME_SPACE_RUNTIME}" "${DIR}/resources/rhdh-operator/rhdh-start-runtime.yaml"
   local runtime_url="https://backstage-${RELEASE_NAME}-${NAME_SPACE_RUNTIME}.${K8S_CLUSTER_ROUTER_BASE}"
-  run_tests "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${runtime_url}"
+  run_tests "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${PW_PROJECT_SHOWCASE_RUNTIME}" "${runtime_url}"
 }
 
 handle_ocp_operator() {
@@ -110,8 +112,8 @@ handle_ocp_operator() {
     initiate_operator_deployments
   fi
 
-  check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${url}"
-  check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${rbac_url}"
+  check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${PW_PROJECT_SHOWCASE_OPERATOR}" "${url}"
+  check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${PW_PROJECT_SHOWCASE_OPERATOR_RBAC}" "${rbac_url}"
 
   run_operator_runtime_config_change_tests
 }

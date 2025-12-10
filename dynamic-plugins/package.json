@@ -40,7 +40,8 @@
     "@backstage/plugin-auth-node@^0.5.2": "patch:@backstage/plugin-auth-node@npm%3A0.6.0#./.yarn/patches/@backstage-plugin-auth-node-npm-0.6.0-69f2f0dc3f.patch",
     "@backstage/plugin-auth-node@^0.4.16": "patch:@backstage/plugin-auth-node@npm%3A0.6.0#./.yarn/patches/@backstage-plugin-auth-node-npm-0.6.0-69f2f0dc3f.patch",
     "@backstage/plugin-scaffolder-node@^0.2.9": "^0.7.0",
-    "@backstage/plugin-home@^0.8.11": "patch:@backstage/plugin-home@npm%3A0.8.12#./.yarn/patches/@backstage-plugin-home-npm-0.8.12-0d7fbcc764.patch"
+    "@backstage/plugin-home@^0.8.11": "patch:@backstage/plugin-home@npm%3A0.8.12#./.yarn/patches/@backstage-plugin-home-npm-0.8.12-0d7fbcc764.patch",
+    "refractor@npm:3.6.0/prismjs": "^1.30.0"
   },
   "packageManager": "yarn@3.8.7"
 }
