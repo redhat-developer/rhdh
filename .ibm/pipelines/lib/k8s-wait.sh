@@ -3,8 +3,6 @@
 # Kubernetes/OpenShift resource waiting and polling utilities
 # Dependencies: oc, kubectl, lib/log.sh
 
-set -euo pipefail
-
 # Prevent re-sourcing
 if [[ -n "${K8S_WAIT_LIB_SOURCED:-}" ]]; then
   return 0
