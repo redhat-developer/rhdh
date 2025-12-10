@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# shellcheck source=.ibm/pipelines/lib/log.sh
-source "${DIR}/lib/log.sh"
-
 # Clears all databases and migration tables from the shared RDS PostgreSQL instances
 # This ensures that each test run starts with a clean state, preventing migration
 # conflicts between different RHDH versions (e.g., release-1.7 vs main branch)
@@ -21,14 +18,14 @@ clean_single_database() {
   local host=$1
   local host_id=$2
   
-  log::info "Cleaning database on ${host_id} (${host})..."
+  echo "[INFO] Cleaning database on ${host_id} (${host})..."
   
   # Test database connectivity
   if ! psql -h "$host" -U "$POSTGRES_USER" -p "5432" -d postgres -c "SELECT 1;" &> /dev/null; then
-    log::error "Failed to connect to PostgreSQL at ${host_id} (${host})"
+    echo "[ERROR] Failed to connect to PostgreSQL at ${host_id} (${host})"
     return 1
   fi
-  log::success "Successfully connected to ${host_id}"
+  echo "[SUCCESS] Successfully connected to ${host_id}"
 
   # Get list of databases, excluding system databases
   local databases
@@ -38,19 +35,19 @@ clean_single_database() {
   )
 
   if [[ $? -ne 0 ]]; then
-    log::error "Failed to retrieve database list from ${host_id}"
+    echo "[ERROR] Failed to retrieve database list from ${host_id}"
     return 1
   fi
 
   if [[ -z "$databases" ]]; then
-    log::info "No user databases found to drop on ${host_id}"
+    echo "[INFO] No user databases found to drop on ${host_id}"
   else
-    log::info "Found $(echo "$databases" | wc -l | tr -d ' ') database(s) to drop on ${host_id}"
-    log::debug "Databases: $(echo "$databases" | tr '\n' ' ')"
+    echo "[INFO] Found $(echo "$databases" | wc -l | tr -d ' ') database(s) to drop on ${host_id}"
+    echo "[DEBUG] Databases: $(echo "$databases" | tr '\n' ' ')"
 
     # Drop each database
     for db in $databases; do
-      log::info "  Processing database: $db"
+      echo "[INFO]   Processing database: $db"
 
       # Terminate all active connections to the database before dropping
       psql -h "$host" -U "$POSTGRES_USER" -p "5432" -d postgres -c \
@@ -58,15 +55,15 @@ clean_single_database() {
 
       # Drop the database
       if psql -h "$host" -U "$POSTGRES_USER" -p "5432" -d postgres -c "DROP DATABASE IF EXISTS \"$db\";" &> /dev/null; then
-        log::success "    Database '$db' dropped successfully"
+        echo "[SUCCESS]     Database '$db' dropped successfully"
       else
-        log::warn "    Failed to drop database '$db', continuing cleanup"
+        echo "[WARN]     Failed to drop database '$db', continuing cleanup"
       fi
     done
   fi
 
   # Clean migration tables in the default 'postgres' database
-  log::info "Checking for Knex migration tables on ${host_id}..."
+  echo "[INFO] Checking for Knex migration tables on ${host_id}..."
 
   local migration_tables
   migration_tables=$(
@@ -77,21 +74,21 @@ clean_single_database() {
   if [[ -n "$migration_tables" ]]; then
     local table_count
     table_count=$(echo "$migration_tables" | wc -l | tr -d ' ')
-    log::info "Found $table_count Knex migration table(s) on ${host_id}"
-    log::debug "Tables: $(echo "$migration_tables" | tr '\n' ' ')"
+    echo "[INFO] Found $table_count Knex migration table(s) on ${host_id}"
+    echo "[DEBUG] Tables: $(echo "$migration_tables" | tr '\n' ' ')"
 
     for table in $migration_tables; do
       if psql -h "$host" -U "$POSTGRES_USER" -p "5432" -d postgres -c "DROP TABLE IF EXISTS \"$table\" CASCADE;" &> /dev/null; then
-        log::success "    Table '$table' dropped successfully"
+        echo "[SUCCESS]     Table '$table' dropped successfully"
       else
-        log::warn "    Failed to drop table '$table', continuing"
+        echo "[WARN]     Failed to drop table '$table', continuing"
       fi
     done
   else
-    log::info "No Knex migration tables found on ${host_id}"
+    echo "[INFO] No Knex migration tables found on ${host_id}"
   fi
   
-  log::success "Cleanup completed for ${host_id}"
+  echo "[SUCCESS] Cleanup completed for ${host_id}"
   echo ""
 }
 
@@ -99,11 +96,13 @@ clean_single_database() {
 clear_database() {
   set -euo pipefail
 
-  log::section "PostgreSQL Database Cleanup - Multiple RDS Instances"
+  echo "========================================"
+  echo "PostgreSQL Database Cleanup - Multiple RDS Instances"
+  echo "========================================"
 
   # Validate required environment variables
   if [[ -z "${RDS_USER:-}" ]] || [[ -z "${RDS_PASSWORD:-}" ]]; then
-    log::error "Required environment variables not set: RDS_USER, RDS_PASSWORD"
+    echo "[ERROR] Required environment variables not set: RDS_USER, RDS_PASSWORD"
     return 1
   fi
 
@@ -112,7 +111,7 @@ clear_database() {
   export POSTGRES_USER
   export PGPASSWORD=$RDS_PASSWORD
 
-  log::info "PostgreSQL user: $POSTGRES_USER"
+  echo "[INFO] PostgreSQL user: $POSTGRES_USER"
   
   # List of RDS hosts to clean (RDS_1, RDS_2, RDS_3)
   local -a rds_hosts=()
@@ -121,12 +120,12 @@ clear_database() {
   [[ -n "${RDS_3_HOST:-}" ]] && rds_hosts+=("RDS_3_HOST:$RDS_3_HOST")
   
   if [[ ${#rds_hosts[@]} -eq 0 ]]; then
-    log::error "No RDS hosts configured (RDS_1_HOST, RDS_2_HOST, RDS_3_HOST)"
+    echo "[ERROR] No RDS hosts configured (RDS_1_HOST, RDS_2_HOST, RDS_3_HOST)"
     return 1
   fi
   
-  log::info "Found ${#rds_hosts[@]} RDS host(s) to clean"
-  log::hr
+  echo "[INFO] Found ${#rds_hosts[@]} RDS host(s) to clean"
+  echo "========================================"
   
   # Clean each RDS host
   local failed_hosts=()
@@ -136,17 +135,17 @@ clear_database() {
     
     if ! clean_single_database "$host_addr" "$host_id"; then
       failed_hosts+=("$host_id")
-      log::error "Failed to clean ${host_id}, but continuing with other hosts"
+      echo "[ERROR] Failed to clean ${host_id}, but continuing with other hosts"
     fi
   done
   
-  log::hr
+  echo "========================================"
   if [[ ${#failed_hosts[@]} -eq 0 ]]; then
-    log::success "All RDS database instances cleaned successfully"
-    log::info "Next RHDH deployment will start with a clean state"
+    echo "[SUCCESS] All RDS database instances cleaned successfully"
+    echo "[INFO] Next RHDH deployment will start with a clean state"
   else
-    log::warn "Some RDS hosts failed to clean: ${failed_hosts[*]}"
-    log::info "Successfully cleaned $((${#rds_hosts[@]} - ${#failed_hosts[@]}))/${#rds_hosts[@]} RDS host(s)"
+    echo "[WARN] Some RDS hosts failed to clean: ${failed_hosts[*]}"
+    echo "[INFO] Successfully cleaned $((${#rds_hosts[@]} - ${#failed_hosts[@]}))/${#rds_hosts[@]} RDS host(s)"
     return 1
   fi
 }
