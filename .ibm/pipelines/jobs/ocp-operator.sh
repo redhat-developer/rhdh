@@ -31,6 +31,7 @@ initiate_operator_deployments() {
   deploy_rhdh_operator "${NAME_SPACE_RBAC}" "${DIR}/resources/rhdh-operator/rhdh-start-rbac.yaml"
   enable_orchestrator_plugins_op "${NAME_SPACE_RBAC}"  
   deploy_orchestrator_workflows_operator "${NAME_SPACE_RBAC}"
+  echo "TEST"
 }
 
 run_operator_runtime_config_change_tests() {
