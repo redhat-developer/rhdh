@@ -3,8 +3,8 @@ kind: PostgresCluster
 metadata:
   name: postgress-external-db
 spec:
-  image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-16.3-1
-  postgresVersion: 16
+  image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi9-17.7-2547
+  postgresVersion: 17
   instances:
     - name: instance1
       dataVolumeClaimSpec:
@@ -27,7 +27,7 @@ spec:
               cpu: 200m
   backups:
     pgbackrest:
-      image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi8-2.51-1
+      image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi9-2.56.0-2547
       global:
         # Save backups for 7 days, this means 1 full backups with 6 differential ones in between
         repo1-retention-full: "1"

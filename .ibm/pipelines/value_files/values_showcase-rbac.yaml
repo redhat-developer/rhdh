@@ -469,7 +469,7 @@ orchestrator:
     externalDBPort: "5432"
 
     # -- Image for the init container used by the create-db job
-    initContainerImage: "registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-16.3-1"
+    initContainerImage: "registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi9-17.7-2547"
 
     # -- Image for the container used by the create-db job
-    createDBJobImage: "registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-16.3-1"
+    createDBJobImage: "registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi9-17.7-2547"
