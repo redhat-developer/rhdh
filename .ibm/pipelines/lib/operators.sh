@@ -3,8 +3,6 @@
 # Operator and OLM installation utilities
 # Dependencies: oc, kubectl, operator-sdk
 
-set -euo pipefail
-
 # Prevent re-sourcing
 if [[ -n "${OPERATORS_LIB_SOURCED:-}" ]]; then
   return 0
