@@ -43,8 +43,9 @@ type InternalTranslationResourceLoader = () => Promise<{
   messages: { [key in string]: string | null };
 }>;
 
-export interface InternalTranslationResource<TId extends string = string>
-  extends TranslationResource<TId> {
+export interface InternalTranslationResource<
+  TId extends string = string,
+> extends TranslationResource<TId> {
   version: 'v1';
   resources: {
     language: string;
