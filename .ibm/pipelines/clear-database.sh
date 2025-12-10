@@ -1,11 +1,5 @@
 #!/bin/bash
 
-# Ensure DIR is set, otherwise calculate it from script location
-if [[ -z "${DIR:-}" ]]; then
-  DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-  export DIR
-fi
-
 # shellcheck source=.ibm/pipelines/lib/log.sh
 source "${DIR}/lib/log.sh"
 
