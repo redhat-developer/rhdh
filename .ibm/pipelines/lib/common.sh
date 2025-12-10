@@ -3,12 +3,9 @@
 # Common utility functions for pipeline scripts
 # Dependencies: oc, kubectl, lib/log.sh
 
-set -euo pipefail
-
 # Source logging library
 # shellcheck source=.ibm/pipelines/lib/log.sh
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/log.sh"
+source "${DIR}/lib/log.sh"
 
 # Authenticate to OpenShift cluster using token
 # Uses K8S_CLUSTER_TOKEN and K8S_CLUSTER_URL env vars
@@ -22,12 +19,6 @@ common::oc_login() {
   # Safely log version without exposing sensitive server details
   oc version --client 2>&1 | head -1 || log::warn "Could not retrieve oc client version"
   return 0
-}
-
-# Check if current cluster is OpenShift
-common::is_openshift() {
-  oc get routes.route.openshift.io &> /dev/null || kubectl get routes.route.openshift.io &> /dev/null
-  return $?
 }
 
 # Cross-platform sed in-place editing (macOS/Linux)

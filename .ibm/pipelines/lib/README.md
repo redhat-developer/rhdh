@@ -14,8 +14,7 @@ Functions: `log::info`, `log::warn`, `log::error`, `log::success`, `log::debug`,
 
 Common utilities.
 
-Functions: `common::oc_login`, `common::is_openshift`, `common::sed_inplace`,
-`common::get_previous_release_version`
+Functions: `common::oc_login`, `common::sed_inplace`, `common::get_previous_release_version`
 
 ### `k8s-wait.sh`
 
@@ -45,8 +44,6 @@ Functions: `operator::install_subscription`, `operator::check_status`,
 # Description: <brief description>
 # Dependencies: <tools required>
 
-set -euo pipefail
-
 # Function: namespace::function_name
 # Arguments:
 #   $1 - param: description
@@ -70,7 +67,6 @@ namespace::function_name() {
 - **Files**: kebab-case (`k8s-wait.sh`)
 - **Functions**: `namespace::function_name` (`k8s_wait::deployment`)
 - **Private**: Underscore prefix (`_namespace::helper`)
-- Use `set -euo pipefail`
 - Validate inputs
 - Log errors before returning
 
