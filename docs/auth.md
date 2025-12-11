@@ -130,7 +130,7 @@ For more information on setting up the OIDC auth provider, consult the [Backstag
 
 ### Sign In Page configuration value
 
-After selecting the authentication provider(s) you wish to use with your RHDH instance, ensure to add the `signInPage` configuration value to ensure that the frontend displays the appropriate authentication provider(s).
+After selecting the authentication provider(s) you wish to use with your RHDH instance, add the `signInPage` configuration value to ensure that the frontend displays the appropriate authentication provider(s).
 
 #### Single provider
 
