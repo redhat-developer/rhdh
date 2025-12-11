@@ -661,16 +661,22 @@ apply_yaml_files() {
     --namespace="${project}" \
     --dry-run=client -o yaml | oc apply -f -
 
-  # Create Pipeline run for tekton test case.
-  oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline.yaml"
-  oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline-run.yaml"
+  # Skip Tekton and Topology resources for K8s deployments (AKS/EKS/GKE)
+  # Tekton tests are not executed in showcase-k8s or showcase-rbac-k8s projects
+  if [[ "$JOB_NAME" != *"aks"* && "$JOB_NAME" != *"eks"* && "$JOB_NAME" != *"gke"* ]]; then
+    # Create Pipeline run for tekton test case.
+    oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline.yaml"
+    oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline-run.yaml"
 
-  # Create Deployment and Pipeline for Topology test.
-  oc apply -f "$dir/resources/topology_test/topology-test.yaml"
-  if [[ -z "${IS_OPENSHIFT}" || "${IS_OPENSHIFT}" == "false" ]]; then
-    kubectl apply -f "$dir/resources/topology_test/topology-test-ingress.yaml"
+    # Create Deployment and Pipeline for Topology test.
+    oc apply -f "$dir/resources/topology_test/topology-test.yaml"
+    if [[ -z "${IS_OPENSHIFT}" || "${IS_OPENSHIFT}" == "false" ]]; then
+      kubectl apply -f "$dir/resources/topology_test/topology-test-ingress.yaml"
+    else
+      oc apply -f "$dir/resources/topology_test/topology-test-route.yaml"
+    fi
   else
-    oc apply -f "$dir/resources/topology_test/topology-test-route.yaml"
+    log::info "Skipping Tekton Pipeline and Topology resources for K8s deployment (${JOB_NAME})"
   fi
 }
 
@@ -987,25 +993,20 @@ cluster_setup_ocp_operator() {
 }
 
 cluster_setup_k8s_operator() {
-  # first install all operators to run the installation in parallel
-  install_olm
-  install_tekton_pipelines
-  # install_crunchy_postgres_k8s_operator # Works with K8s but disabled in values file
-
-  # then wait for the right status one by one
-  waitfor_tekton_pipelines
-  # waitfor_crunchy_postgres_k8s_operator
+  operator::install_olm
+  # Tekton not installed for K8s deployments (AKS/EKS/GKE)
+  # Tekton tests are not executed in showcase-k8s or showcase-rbac-k8s projects
+  # operator::install_tekton
+  # operator::install_postgres_k8s # Works with K8s but disabled in values file
 }
 
 cluster_setup_k8s_helm() {
-  # first install all operators to run the installation in parallel
-  # install_olm
-  install_tekton_pipelines
-  # install_crunchy_postgres_k8s_operator # Works with K8s but disabled in values file
-
-  # then wait for the right status one by one
-  waitfor_tekton_pipelines
-  # waitfor_crunchy_postgres_k8s_operator
+  # Tekton not installed for K8s deployments (AKS/EKS/GKE)
+  # Tekton tests are not executed in showcase-k8s or showcase-rbac-k8s projects
+  log::info "Skipping Tekton installation for K8s Helm deployment"
+  # operator::install_olm
+  # operator::install_tekton
+  # operator::install_postgres_k8s # Works with K8s but disabled in values file
 }
 
 install_orchestrator_infra_chart() {
