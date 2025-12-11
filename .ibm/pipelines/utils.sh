@@ -9,11 +9,12 @@ retrieve_pod_logs() {
   local pod_name=$1
   local container=$2
   local namespace=$3
+  local log_timeout=${4:-30} # Default timeout: 30 seconds
   log::debug "Retrieving logs for container: $container"
-  # Save logs for the current and previous container
-  kubectl logs $pod_name -c $container -n $namespace > "pod_logs/${pod_name}_${container}.log" || { log::warn "logs for container $container not found"; }
-  kubectl logs $pod_name -c $container -n $namespace --previous > "pod_logs/${pod_name}_${container}-previous.log" 2> /dev/null || {
-    log::debug "Previous logs for container $container not found"
+  # Save logs for the current and previous container with timeout to prevent hanging
+  timeout "${log_timeout}" kubectl logs "$pod_name" -c "$container" -n "$namespace" > "pod_logs/${pod_name}_${container}.log" 2> /dev/null || { log::warn "logs for container $container not found or timed out"; }
+  timeout "${log_timeout}" kubectl logs "$pod_name" -c "$container" -n "$namespace" --previous > "pod_logs/${pod_name}_${container}-previous.log" 2> /dev/null || {
+    log::debug "Previous logs for container $container not found or timed out"
     rm -f "pod_logs/${pod_name}_${container}-previous.log"
   }
 }
@@ -459,8 +460,6 @@ delete_namespace() {
 }
 
 configure_external_postgres_db() {
-  set -euo pipefail # Enable strict error handling
-
   local project=$1
   local max_attempts=60 # 5 minutes total (60 attempts × 5 seconds)
   local wait_interval=5
@@ -702,7 +701,6 @@ run_tests() {
   e2e_tests_dir=$(pwd)
 
   yarn install --immutable > /tmp/yarn.install.log.txt 2>&1
-
   INSTALL_STATUS=$?
   if [ $INSTALL_STATUS -ne 0 ]; then
     echo "=== YARN INSTALL FAILED ==="
@@ -726,7 +724,7 @@ run_tests() {
 
   local RESULT=${PIPESTATUS[0]}
 
-  pkill Xvfb
+  pkill Xvfb || true
 
   # Use namespace for artifact directory to keep artifacts organized by deployment
   mkdir -p "${ARTIFACT_DIR}/${namespace}/test-results"
@@ -1167,14 +1165,14 @@ check_and_test() {
     oc get pods -n "${namespace}"
     run_tests "${release_name}" "${namespace}" "${playwright_project}" "${url}"
   else
-    echo "Backstage is not running. Exiting..."
+    echo "Backstage is not running. Marking deployment as failed and continuing..."
     CURRENT_DEPLOYMENT=$((CURRENT_DEPLOYMENT + 1))
     save_status_deployment_namespace $CURRENT_DEPLOYMENT "$namespace"
     save_status_failed_to_deploy $CURRENT_DEPLOYMENT true
     save_status_test_failed $CURRENT_DEPLOYMENT true
     save_overall_result 1
   fi
-  save_all_pod_logs $namespace
+  save_all_pod_logs "$namespace"
 }
 
 check_upgrade_and_test() {
