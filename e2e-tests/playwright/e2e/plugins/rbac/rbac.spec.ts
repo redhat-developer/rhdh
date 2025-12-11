@@ -121,7 +121,7 @@ test.describe.serial("Test RBAC", () => {
       });
       await expect(unregisterUserOwned).toBeEnabled();
 
-      await page.getByText("Unregister entity").click();
+      await page.getByRole("menuitem", { name: "Unregister entity" }).click();
       await expect(page.getByRole("heading")).toContainText(
         "Are you sure you want to unregister this entity?",
       );
@@ -305,7 +305,8 @@ test.describe.serial("Test RBAC", () => {
       );
 
       await uiHelper.clickButton("Next");
-      await page.waitForTimeout(1_000);
+      // Wait for the users and groups step to be visible
+      await expect(page.getByTestId("users-and-groups-text-field")).toBeVisible();
       await uiHelper.fillTextInputByLabel(
         "Select users and groups",
         "sample-role-1",
@@ -336,14 +337,17 @@ test.describe.serial("Test RBAC", () => {
       );
       await uiHelper.verifyHeading("Edit Role");
       await uiHelper.clickButton("Next");
-      await page.waitForTimeout(1_000);
+      // Wait for users and groups step to be ready
+      await expect(page.getByLabel("Select users and groups")).toBeVisible();
       await rbacPo.addUsersAndGroups(testUser);
       await page.click(rbacPo.selectMember(testUser));
       await uiHelper.verifyHeading(rbacPo.regexpShortUsersAndGroups(3, 1));
       await uiHelper.clickButton("Next");
-      await page.waitForTimeout(1_000);
+      // Wait for permissions step to be ready
+      await expect(page.getByRole("heading", { name: /Configure permission/i }).or(page.getByTestId("nextButton-2"))).toBeVisible();
       await uiHelper.clickButton("Next");
-      await page.waitForTimeout(1_000);
+      // Wait for review step to be ready
+      await expect(page.getByRole("heading", { name: /Review/i }).or(page.getByRole("button", { name: "Save" }))).toBeVisible();
       await uiHelper.clickButton("Save");
       await uiHelper.verifyText(
         "Role role:default/test-role updated successfully",
@@ -356,10 +360,10 @@ test.describe.serial("Test RBAC", () => {
         .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)
         .fill("test-role");
       await uiHelper.verifyHeading("All roles (1)");
+      // Use semantic selector for table cell
       const usersAndGroupsLocator = page
-        .locator(UI_HELPER_ELEMENTS.MuiTableCell)
+        .getByRole("cell")
         .filter({ hasText: rbacPo.regexpShortUsersAndGroups(3, 1) });
-      await usersAndGroupsLocator.waitFor();
       await expect(usersAndGroupsLocator).toBeVisible();
 
       await rbacPo.deleteRole("role:default/test-role");
@@ -395,19 +399,15 @@ test.describe.serial("Test RBAC", () => {
       await page.click(rbacPo.selectMember("Guest User"));
       await uiHelper.verifyHeading(rbacPo.regexpShortUsersAndGroups(1, 1));
       await uiHelper.clickByDataTestId("nextButton-1");
-      let nextButton2: Locator;
-      let matchNextButton2: Locator[];
-      let attempts = 0;
-      do {
-        await page.waitForTimeout(500);
-        nextButton2 = page.getByTestId("nextButton-2");
-        matchNextButton2 = await nextButton2.all();
-        attempts++;
-        // eslint-disable-next-line playwright/no-conditional-in-test
-      } while (matchNextButton2.length > 1 && attempts < 5);
-      // eslint-disable-next-line playwright/no-force-option
-      await nextButton2.click({ force: true });
-      await page.waitForTimeout(1_000);
+      // Wait for next step to be ready and clickable (replaced manual loop with proper wait)
+      const nextButton2 = page.getByTestId("nextButton-2");
+      await expect(nextButton2).toBeVisible();
+      await expect(nextButton2).toBeEnabled();
+      // Wait for any animations or transitions to complete
+      await expect(nextButton2).toHaveCount(1);
+      await nextButton2.click();
+      // Wait for review step before Save
+      await expect(page.getByRole("button", { name: "Save" })).toBeVisible();
       await uiHelper.clickButton("Save");
       await uiHelper.verifyText(
         "Role role:default/test-role1 updated successfully",
@@ -420,10 +420,12 @@ test.describe.serial("Test RBAC", () => {
       await uiHelper.verifyHeading("Edit Role");
       await rbacPo.selectPluginsCombobox.click();
       await rbacPo.selectOption("scaffolder");
-      await page.getByText("Select...").click();
+      // Use more specific selector for the permission dropdown
+      await page.getByRole("button", { name: /Select/i }).or(page.locator('[placeholder*="Select"]')).first().click();
       await rbacPo.selectPermissionCheckbox("scaffolder.template.parameter");
       await uiHelper.clickButton("Next");
-      await page.waitForTimeout(1_000);
+      // Wait for review step to be ready
+      await expect(page.getByRole("button", { name: "Save" })).toBeVisible();
       await uiHelper.clickButton("Save");
       await uiHelper.verifyText(
         "Role role:default/test-role1 updated successfully",
@@ -736,14 +738,17 @@ test.describe.serial("Test RBAC", () => {
       );
       await uiHelper.verifyHeading("Edit Role");
       await uiHelper.clickButton("Next");
-      await page.waitForTimeout(1_000);
+      // Wait for users and groups step to be ready
+      await expect(page.getByLabel("Select users and groups")).toBeVisible();
       await rbacPo.addUsersAndGroups(testUser);
       await page.click(rbacPo.selectMember(testUser));
       await uiHelper.verifyHeading(rbacPo.regexpShortUsersAndGroups(3, 1));
       await uiHelper.clickButton("Next");
-      await page.waitForTimeout(1_000);
+      // Wait for permissions step to be ready
+      await expect(page.getByRole("heading", { name: /Configure permission/i }).or(page.getByTestId("nextButton-2"))).toBeVisible();
       await uiHelper.clickButton("Next");
-      await page.waitForTimeout(1_000);
+      // Wait for review step to be ready
+      await expect(page.getByRole("heading", { name: /Review/i }).or(page.getByRole("button", { name: "Save" }))).toBeVisible();
       await uiHelper.clickButton("Save");
       await uiHelper.verifyText(
         "Role role:default/test-role updated successfully",
