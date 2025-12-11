@@ -425,23 +425,14 @@ export async function findTableCellByColumn(
 
 /**
  * Wait strategies - Prefer these over waitForTimeout
+ *
+ * Note: For element visibility/hidden states, prefer using expect() assertions:
+ * - await expect(locator).toBeVisible() - Auto-waits for visibility
+ * - await expect(locator).toBeHidden() - Auto-waits for hidden state
+ *
+ * These methods are only for specialized waiting scenarios.
  */
 export class WaitStrategies {
-  /**
-   * Wait for element to be visible (auto-waiting assertion)
-   * Preferred over waitForTimeout
-   */
-  static async forVisible(locator: Locator, timeout?: number): Promise<void> {
-    await locator.waitFor({ state: 'visible', timeout });
-  }
-
-  /**
-   * Wait for element to be hidden
-   */
-  static async forHidden(locator: Locator, timeout?: number): Promise<void> {
-    await locator.waitFor({ state: 'hidden', timeout });
-  }
-
   /**
    * Wait for network to be idle
    */
