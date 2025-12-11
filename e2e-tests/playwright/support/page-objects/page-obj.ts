@@ -99,9 +99,11 @@ export const KUBERNETES_COMPONENTS = {
    */
   getClusterAccordion: (page: Page, clusterName?: string | RegExp): Locator => {
     if (clusterName) {
-      return page.getByRole('button', { name: clusterName });
+      return page.getByRole('button', { name: clusterName, expanded: false })
+        .or(page.getByRole('button', { name: clusterName, expanded: true }));
     }
-    return page.getByRole('button').filter({ has: page.locator('[class*="MuiAccordion"]') }).first();
+    // Get first accordion button (buttons with expanded attribute)
+    return page.getByRole('button', { expanded: false }).or(page.getByRole('button', { expanded: true })).first();
   },
 
   /**
