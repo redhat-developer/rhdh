@@ -49,18 +49,16 @@ test.describe.skip("Test Kubernetes Actions plugin", () => {
     await uiHelper.fillTextInputByLabel("Url", process.env.K8S_CLUSTER_URL);
     await uiHelper.fillTextInputByLabel("Token", process.env.K8S_CLUSTER_TOKEN);
     await uiHelper.checkCheckbox("Skip TLS verification");
-    await page.waitForTimeout(2000);
+    // Wait for form validation to complete before proceeding
+    await expect(page.getByRole("button", { name: "Review" })).toBeEnabled();
     await uiHelper.clickButton("Review");
-    await page.waitForTimeout(1500);
+    // Wait for review step to be ready
+    await expect(page.getByRole("button", { name: "Create" })).toBeVisible();
     await uiHelper.clickButton("Create");
-    await page.waitForTimeout(1500);
-    await page.waitForSelector(
-      `${UI_HELPER_ELEMENTS.MuiTypography}:has-text("second")`,
-    );
-    await page.waitForTimeout(1500);
-    await expect(
-      page.locator(`${UI_HELPER_ELEMENTS.MuiTypography}:has-text("Error")`),
-    ).toBeHidden();
+    // Wait for creation process to show progress indicator
+    await expect(page.getByText("second")).toBeVisible();
+    // Verify no error occurred during creation
+    await expect(page.getByText("Error")).toBeHidden();
     await kubeClient.getNamespaceByName(namespace);
   });
 
