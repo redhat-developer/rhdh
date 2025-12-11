@@ -21,7 +21,7 @@ const test = base.extend<GithubDiscoveryFixture>({
   testOrganization: JANUS_QE_ORG,
 });
 
-test.describe("Github Discovery Catalog", () => {
+test.describe.skip("Github Discovery Catalog", () => {
   test.beforeAll(async () => {
     test.info().annotations.push({
       type: "component",

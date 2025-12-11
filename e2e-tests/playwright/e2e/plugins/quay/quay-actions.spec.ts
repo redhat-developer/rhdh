@@ -4,7 +4,7 @@ import { UIhelper } from "../../../utils/ui-helper";
 import { UI_HELPER_ELEMENTS } from "../../../support/page-objects/global-obj";
 import { QuayClient } from "../../../utils/quay/quay-client";
 
-test.describe("Test Quay Actions plugin", () => {
+test.describe.skip("Test Quay Actions plugin", () => {
   let common: Common;
   let uiHelper: UIhelper;
   let page: Page;

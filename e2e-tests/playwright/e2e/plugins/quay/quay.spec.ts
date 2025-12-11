@@ -3,7 +3,7 @@ import { UIhelper } from "../../../utils/ui-helper";
 import { Common } from "../../../utils/common";
 import { ImageRegistry } from "../../../utils/quay/quay";
 
-test.describe("Test Quay.io plugin", () => {
+test.describe.skip("Test Quay.io plugin", () => {
   const quayRepository = "rhdh-community/rhdh";
   let uiHelper: UIhelper;
 

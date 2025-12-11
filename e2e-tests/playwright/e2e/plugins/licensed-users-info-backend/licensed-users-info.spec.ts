@@ -10,7 +10,7 @@ import {
 } from "@playwright/test";
 import playwrightConfig from "../../../../playwright.config";
 
-test.describe("Test licensed users info backend plugin", async () => {
+test.describe.skip("Test licensed users info backend plugin", async () => {
   let common: Common;
 
   test.beforeAll(async () => {

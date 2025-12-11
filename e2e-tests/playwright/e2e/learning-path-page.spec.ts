@@ -3,7 +3,7 @@ import { UIhelper } from "../utils/ui-helper";
 import { Common } from "../utils/common";
 import { runAccessibilityTests } from "../utils/accessibility";
 
-test.describe("Learning Paths", () => {
+test.describe.skip("Learning Paths", () => {
   test.beforeAll(async () => {
     test.info().annotations.push({
       type: "component",

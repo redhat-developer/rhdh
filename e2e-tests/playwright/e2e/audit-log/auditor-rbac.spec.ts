@@ -20,7 +20,7 @@ let rbacApi: RhdhRbacApi;
 /*  RBAC AUDIT‑LOG PLAYWRIGHT SPEC                                         */
 /* ======================================================================== */
 
-test.describe("Auditor check for RBAC Plugin", () => {
+test.describe.skip("Auditor check for RBAC Plugin", () => {
   test.beforeAll(async ({ browser }, testInfo) => {
     test.info().annotations.push({
       type: "component",

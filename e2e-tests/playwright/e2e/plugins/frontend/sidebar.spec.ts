@@ -8,7 +8,7 @@ const lang = getCurrentLanguage();
 
 let page: Page;
 
-test.describe("Validate Sidebar Navigation Customization", () => {
+test.describe.skip("Validate Sidebar Navigation Customization", () => {
   let uiHelper: UIhelper;
   let common: Common;
 

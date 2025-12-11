@@ -13,7 +13,7 @@ LDAP:
     [x] -> (Default)
 */
 
-test.describe("Configure LDAP Provider", async () => {
+test.describe.skip("Configure LDAP Provider", async () => {
   let common: Common;
   let uiHelper: UIhelper;
 

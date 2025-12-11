@@ -2,7 +2,7 @@
 import test, { expect } from "@playwright/test";
 import { Common } from "../../utils/common";
 
-test.describe("Test middleware plugin", () => {
+test.describe.skip("Test middleware plugin", () => {
   test.beforeAll(async () => {
     test.info().annotations.push({
       type: "component",

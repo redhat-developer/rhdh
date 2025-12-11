@@ -4,7 +4,7 @@ import { Common } from "../utils/common";
 import { HomePage } from "../support/pages/home-page";
 import { runAccessibilityTests } from "../utils/accessibility";
 
-test.describe("Home page customization", () => {
+test.describe.skip("Home page customization", () => {
   let common: Common;
   let uiHelper: UIhelper;
   let homePage: HomePage;

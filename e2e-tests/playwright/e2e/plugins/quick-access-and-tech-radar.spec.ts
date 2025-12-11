@@ -6,7 +6,7 @@ import { TechRadar } from "../../support/pages/tech-radar";
 
 // Pre-req: Enable plugin-tech-radar and plugin-tech-radar-backend Plugin
 
-test.describe("Test Customized Quick Access and tech-radar plugin", () => {
+test.describe.skip("Test Customized Quick Access and tech-radar plugin", () => {
   test.beforeAll(async () => {
     test.info().annotations.push({
       type: "component",

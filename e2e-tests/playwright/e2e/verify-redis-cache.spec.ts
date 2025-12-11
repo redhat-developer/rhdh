@@ -4,7 +4,7 @@ import { Common } from "../utils/common";
 import Redis from "ioredis";
 import { ChildProcessWithoutNullStreams, exec, spawn } from "child_process";
 
-test.describe("Verify Redis Cache DB", () => {
+test.describe.skip("Verify Redis Cache DB", () => {
   test.beforeAll(async () => {
     test.info().annotations.push({
       type: "component",

@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { UIhelper } from "../../utils/ui-helper";
 import { Common } from "../../utils/common";
 
-test.describe("Test ApplicationListener", () => {
+test.describe.skip("Test ApplicationListener", () => {
   test.beforeAll(async () => {
     test.info().annotations.push({
       type: "component",

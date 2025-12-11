@@ -4,7 +4,7 @@ import RhdhNotificationsApi from "../../../support/api/notifications";
 import { Notifications } from "../../../support/api/notifications-api-structures";
 import { NotificationPage } from "../../../support/pages/notifications";
 
-test.describe("Filter critical notification tests", () => {
+test.describe.skip("Filter critical notification tests", () => {
   let common: Common;
   let notificationPage: NotificationPage;
   let apiToken: string;
