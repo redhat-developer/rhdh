@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# This script exists as a clone of pr.yaml, minus the python testing that was added in 1.9
+# This file can be deleted once 1.10 is live as 1.8 will be EOL. 
+
 name: PR
 
 on:
