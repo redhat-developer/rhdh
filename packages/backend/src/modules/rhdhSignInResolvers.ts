@@ -35,11 +35,7 @@ export namespace rhdhSignInResolvers {
    * as the entity name
    */
   export const preferredUsernameMatchingUserEntityName =
-    createSignInResolverFactory<
-      OAuthAuthenticatorResult<OidcAuthResult>,
-      { dangerouslyAllowSignInWithoutUserInCatalog?: boolean } | undefined,
-      { dangerouslyAllowSignInWithoutUserInCatalog?: boolean } | undefined
-    >({
+    createSignInResolverFactory({
       optionsSchema: z
         .object({
           dangerouslyAllowSignInWithoutUserInCatalog: z.boolean().optional(),
@@ -87,11 +83,7 @@ export namespace rhdhSignInResolvers {
    * 'x-forwarded-preferred-username' or 'x-forwarded-user'.
    */
   export const oauth2ProxyUserHeaderMatchingUserEntityName =
-    createSignInResolverFactory<
-      OAuth2ProxyResult,
-      { dangerouslyAllowSignInWithoutUserInCatalog?: boolean } | undefined,
-      { dangerouslyAllowSignInWithoutUserInCatalog?: boolean } | undefined
-    >({
+    createSignInResolverFactory({
       optionsSchema: z
         .object({
           dangerouslyAllowSignInWithoutUserInCatalog: z.boolean().optional(),
@@ -124,19 +116,7 @@ export namespace rhdhSignInResolvers {
       },
     });
 
-  export const oidcLdapUuidMatchingAnnotation = createSignInResolverFactory<
-    OAuthAuthenticatorResult<OidcAuthResult>,
-    | {
-        dangerouslyAllowSignInWithoutUserInCatalog?: boolean;
-        ldapUuidKey?: string;
-      }
-    | undefined,
-    | {
-        dangerouslyAllowSignInWithoutUserInCatalog?: boolean;
-        ldapUuidKey?: string;
-      }
-    | undefined
-  >({
+  export const oidcLdapUuidMatchingAnnotation = createSignInResolverFactory({
     optionsSchema: z
       .object({
         dangerouslyAllowSignInWithoutUserInCatalog: z.boolean().optional(),
