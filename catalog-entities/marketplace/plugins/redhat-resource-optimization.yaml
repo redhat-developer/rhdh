@@ -20,7 +20,7 @@ spec:
   author: Red Hat
   support:
     provider: Red Hat
-    level: tech-preview
+    level: dev-preview
   lifecycle: active
   publisher: Red Hat
 
@@ -40,12 +40,12 @@ spec:
 
     ## Adding The Plugin To Red Hat Developer Hub
 
-    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8) 
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8)
     for further instructions on how to add, enable, configure, and remove plugins in your instance.
 
     ## Configuring The Plugin ##
 
-    Plugins often need additional configuration to work correctly - particularly those that integrate with other 
+    Plugins often need additional configuration to work correctly - particularly those that integrate with other
     systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8)
     for further details regarding the configuration required.
 
