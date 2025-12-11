@@ -31,7 +31,10 @@ describe('Default service factory list comparison', () => {
     const serviceFactoryIds = DEFAULT_SERVICE_FACTORIES.map(
       (serviceFactory: ServiceFactory) => serviceFactory.service.id,
     );
-    const difference = findSymmetricDifference(upstreamServiceFactoryIds, serviceFactoryIds);
+    const difference = findSymmetricDifference(
+      upstreamServiceFactoryIds,
+      serviceFactoryIds,
+    );
     // intentionally exclude the deprecated instanceMetadataServiceFactory
     const expectedDifferences = ['core.instanceMetadata'];
     expect(difference).toEqual(expectedDifferences);
