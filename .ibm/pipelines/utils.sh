@@ -459,8 +459,6 @@ delete_namespace() {
 }
 
 configure_external_postgres_db() {
-  set -euo pipefail # Enable strict error handling
-
   local project=$1
   local max_attempts=60 # 5 minutes total (60 attempts × 5 seconds)
   local wait_interval=5
