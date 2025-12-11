@@ -22,11 +22,7 @@ export type OidcProviderInfo = {
  * @param providerName - The name of the identity provider to report in error message if the `sub` claim is missing.
  */
 export const createOidcSubClaimResolver = (provider: OidcProviderInfo) =>
-  createSignInResolverFactory<
-    OAuthAuthenticatorResult<OidcAuthResult>,
-    { dangerouslyAllowSignInWithoutUserInCatalog?: boolean } | undefined,
-    { dangerouslyAllowSignInWithoutUserInCatalog?: boolean } | undefined
-  >({
+  createSignInResolverFactory({
     optionsSchema: z
       .object({
         dangerouslyAllowSignInWithoutUserInCatalog: z.boolean().optional(),
