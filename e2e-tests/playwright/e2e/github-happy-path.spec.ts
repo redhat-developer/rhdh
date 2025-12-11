@@ -141,19 +141,27 @@ test.describe.skip("GitHub Happy path", async () => {
     await backstageShowcase.verifyPRRows(openPRs, 0, 5);
   });
 
-  test("Click on the CLOSED filter and verify that the 5 most recently updated Closed PRs are rendered (same with ALL)", async () => {
-    await uiHelper.clickButton("CLOSED", { force: true });
+  test("Click on the CLOSED filter and verify that the 5 most recently updated Closed PRs are rendered (same with ALL)", async ({ page }) => {
+    // Use semantic selector and wait for button to be ready (no force needed)
+    const closedButton = page.getByRole('button', { name: 'CLOSED' });
+    await expect(closedButton).toBeVisible();
+    await expect(closedButton).toBeEnabled();
+    await closedButton.click();
     const closedPRs = await BackstageShowcase.getShowcasePRs("closed");
     await common.waitForLoad();
     await backstageShowcase.verifyPRRows(closedPRs, 0, 5);
   });
 
-  test("Click on the arrows to verify that the next/previous/first/last pages of PRs are loaded", async () => {
+  test("Click on the arrows to verify that the next/previous/first/last pages of PRs are loaded", async ({ page }) => {
     console.log("Fetching all PRs from GitHub");
     const allPRs = await BackstageShowcase.getShowcasePRs("all", true);
 
     console.log("Clicking on ALL button");
-    await uiHelper.clickButton("ALL", { force: true });
+    // Use semantic selector and wait for button to be ready (no force needed)
+    const allButton = page.getByRole('button', { name: 'ALL' });
+    await expect(allButton).toBeVisible();
+    await expect(allButton).toBeEnabled();
+    await allButton.click();
     await backstageShowcase.verifyPRRows(allPRs, 0, 5);
 
     console.log("Clicking on Next Page button");
