@@ -18,7 +18,7 @@ OIDC:
     [-] oidcSubClaimMatchingPingIdentityUserId -> Ping Identity not supported
 */
 
-test.describe.skip("Configure OIDC provider (using RHBK)", async () => {
+test.describe("Configure OIDC provider (using RHBK)", async () => {
   let common: Common;
   let uiHelper: UIhelper;
 
