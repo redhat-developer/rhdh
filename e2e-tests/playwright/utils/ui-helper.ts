@@ -364,19 +364,21 @@ export class UIhelper {
 
   async selectMuiBox(label: string, value: string) {
     // Wait for any overlaying dialogs to close before interacting
-    await this.page.locator('[role="presentation"].MuiDialog-root')
-      .waitFor({ state: 'detached', timeout: 3000 })
+    await this.page
+      .locator('[role="presentation"].MuiDialog-root')
+      .waitFor({ state: "detached", timeout: 3000 })
       .catch(() => {}); // Ignore if no dialog exists
 
     // Use semantic selector with fallback to CSS selector
-    const combobox = this.page.getByRole('combobox', { name: label })
+    const combobox = this.page
+      .getByRole("combobox", { name: label })
       .or(this.page.locator(`div[aria-label="${label}"]`));
 
     await expect(combobox).toBeVisible();
     await combobox.click();
 
     // Wait for and click option using semantic selector
-    const option = this.page.getByRole('option', { name: value });
+    const option = this.page.getByRole("option", { name: value });
     await expect(option).toBeVisible();
     await option.click();
   }

@@ -25,8 +25,9 @@ export const HOME_PAGE_COMPONENTS = {
    * @example HOME_PAGE_COMPONENTS.getAccordion(page, 'Quick Access').click()
    */
   getAccordion: (page: Page, heading: string | RegExp): Locator =>
-    page.getByRole('button', { name: heading, expanded: false })
-      .or(page.getByRole('button', { name: heading, expanded: true })),
+    page
+      .getByRole("button", { name: heading, expanded: false })
+      .or(page.getByRole("button", { name: heading, expanded: true })),
 
   /**
    * Get card by heading or content
@@ -34,9 +35,12 @@ export const HOME_PAGE_COMPONENTS = {
    * @example HOME_PAGE_COMPONENTS.getCard(page, 'Recently Visited')
    */
   getCard: (page: Page, headingOrText: string | RegExp): Locator =>
-    page.locator('[role="region"], article, section').filter({
-      hasText: headingOrText
-    }).first(),
+    page
+      .locator('[role="region"], article, section')
+      .filter({
+        hasText: headingOrText,
+      })
+      .first(),
 };
 
 /**
@@ -55,8 +59,7 @@ export const SEARCH_OBJECTS_COMPONENTS = {
    */
   getSearchInput: (page: Page): Locator => {
     const searchTitle = t["search-react"][lang]["searchBar.title"];
-    return page.getByLabel(searchTitle)
-      .or(page.getByPlaceholder(searchTitle));
+    return page.getByLabel(searchTitle).or(page.getByPlaceholder(searchTitle));
   },
 };
 
@@ -73,8 +76,7 @@ export const CATALOG_IMPORT_COMPONENTS = {
    * ✅ Preferred when label exists
    * @example CATALOG_IMPORT_COMPONENTS.getURLInput(page).fill('https://...')
    */
-  getURLInput: (page: Page): Locator =>
-    page.locator('input[name="url"]'),
+  getURLInput: (page: Page): Locator => page.locator('input[name="url"]'),
 };
 
 /**
@@ -99,11 +101,15 @@ export const KUBERNETES_COMPONENTS = {
    */
   getClusterAccordion: (page: Page, clusterName?: string | RegExp): Locator => {
     if (clusterName) {
-      return page.getByRole('button', { name: clusterName, expanded: false })
-        .or(page.getByRole('button', { name: clusterName, expanded: true }));
+      return page
+        .getByRole("button", { name: clusterName, expanded: false })
+        .or(page.getByRole("button", { name: clusterName, expanded: true }));
     }
     // Get first accordion button (buttons with expanded attribute)
-    return page.getByRole('button', { expanded: false }).or(page.getByRole('button', { expanded: true })).first();
+    return page
+      .getByRole("button", { expanded: false })
+      .or(page.getByRole("button", { expanded: true }))
+      .first();
   },
 
   /**
@@ -126,7 +132,9 @@ export const KUBERNETES_COMPONENTS = {
    * @example await expect(KUBERNETES_COMPONENTS.getNotification(page)).toContainText('Error')
    */
   getNotification: (page: Page, message?: string | RegExp): Locator =>
-    message ? SemanticSelectors.alert(page, message) : SemanticSelectors.alert(page),
+    message
+      ? SemanticSelectors.alert(page, message)
+      : SemanticSelectors.alert(page),
 };
 
 /**
@@ -151,28 +159,28 @@ export const BACKSTAGE_SHOWCASE_COMPONENTS = {
    * @example BACKSTAGE_SHOWCASE_COMPONENTS.getNextPageButton(page).click()
    */
   getNextPageButton: (page: Page): Locator =>
-    page.getByRole('button', { name: 'Next Page' }),
+    page.getByRole("button", { name: "Next Page" }),
 
   /**
    * Get previous page button
    * @example BACKSTAGE_SHOWCASE_COMPONENTS.getPreviousPageButton(page).click()
    */
   getPreviousPageButton: (page: Page): Locator =>
-    page.getByRole('button', { name: 'Previous Page' }),
+    page.getByRole("button", { name: "Previous Page" }),
 
   /**
    * Get last page button
    * @example BACKSTAGE_SHOWCASE_COMPONENTS.getLastPageButton(page).click()
    */
   getLastPageButton: (page: Page): Locator =>
-    page.getByRole('button', { name: 'Last Page' }),
+    page.getByRole("button", { name: "Last Page" }),
 
   /**
    * Get first page button
    * @example BACKSTAGE_SHOWCASE_COMPONENTS.getFirstPageButton(page).click()
    */
   getFirstPageButton: (page: Page): Locator =>
-    page.getByRole('button', { name: 'First Page' }),
+    page.getByRole("button", { name: "First Page" }),
 
   /**
    * Get table rows
@@ -180,7 +188,7 @@ export const BACKSTAGE_SHOWCASE_COMPONENTS = {
    * @example const rows = BACKSTAGE_SHOWCASE_COMPONENTS.getTableRows(page)
    */
   getTableRows: (page: Page): Locator =>
-    SemanticSelectors.table(page).locator('tbody tr'),
+    SemanticSelectors.table(page).locator("tbody tr"),
 
   /**
    * Get specific table row by content
@@ -204,14 +212,13 @@ export const SETTINGS_PAGE_COMPONENTS = {
    * @example SETTINGS_PAGE_COMPONENTS.getUserSettingsMenu(page).click()
    */
   getUserSettingsMenu: (page: Page): Locator =>
-    page.getByTestId('user-settings-menu'),
+    page.getByTestId("user-settings-menu"),
 
   /**
    * Get sign out menu item
    * @example SETTINGS_PAGE_COMPONENTS.getSignOut(page).click()
    */
-  getSignOut: (page: Page): Locator =>
-    page.getByTestId('sign-out'),
+  getSignOut: (page: Page): Locator => page.getByTestId("sign-out"),
 };
 
 /**
