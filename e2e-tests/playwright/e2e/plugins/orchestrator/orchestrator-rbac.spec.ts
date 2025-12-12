@@ -278,11 +278,14 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       const buttonCount = await runButton.count();
 
       // Test that either button doesn't exist OR it's disabled
+      // eslint-disable-next-line playwright/no-conditional-in-test
       if (buttonCount === 0) {
         // Button doesn't exist - this is valid for read-only access
+        // eslint-disable-next-line playwright/no-conditional-expect
         expect(buttonCount).toBe(0);
       } else {
         // Button exists - it should be disabled
+        // eslint-disable-next-line playwright/no-conditional-expect
         await expect(runButton).toBeDisabled();
       }
     });
@@ -877,11 +880,14 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       const buttonCount = await runButton.count();
 
       // For read-only access, the button should either not exist or be disabled
+      // eslint-disable-next-line playwright/no-conditional-in-test
       if (buttonCount === 0) {
         // Button doesn't exist - this is valid for read-only access
+        // eslint-disable-next-line playwright/no-conditional-expect
         expect(buttonCount).toBe(0);
       } else {
         // Button exists - it should be disabled
+        // eslint-disable-next-line playwright/no-conditional-expect
         await expect(runButton).toBeDisabled();
       }
     });
@@ -1056,17 +1062,20 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       const roleOk = rolePostResponse.ok();
       const policyOk = policyPostResponse.ok();
 
-      // Log errors for debugging purposes (always log, but don't use conditionals)
-      const roleStatus = rolePostResponse.status;
-      const policyStatus = policyPostResponse.status;
+      // Log status codes for debugging purposes.
+      // Playwright APIResponse exposes status as a method: status()
+      const roleStatus = rolePostResponse.status();
+      const policyStatus = policyPostResponse.status();
 
       console.log(`Role creation status: ${roleStatus}`);
       console.log(`Policy creation status: ${policyStatus}`);
 
+      // eslint-disable-next-line playwright/no-conditional-in-test
       if (!roleOk) {
         const errorBody = await rolePostResponse.text();
         console.log(`Role creation error body: ${errorBody}`);
       }
+      // eslint-disable-next-line playwright/no-conditional-in-test
       if (!policyOk) {
         const errorBody = await policyPostResponse.text();
         console.log(`Policy creation error body: ${errorBody}`);
@@ -1224,8 +1233,6 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       // rhdh-qe-2 should NOT be able to access rhdh-qe's workflow instance
       // This enforces instance isolation - users can only see their own instances
 
-      // Debug: Take a screenshot and log page content to see what's actually displayed
-      await page.screenshot({ path: "debug-direct-access-test.png" });
       const pageContent = await page.textContent("body");
       console.log(
         "Page content when rhdh-qe-2 accesses workflow instance:",
@@ -1233,15 +1240,18 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       );
 
       // Check if the page shows "You need to enable JavaScript" (indicates page load issue)
-      const hasJavaScriptMessage =
-        pageContent?.includes("You need to enable JavaScript") || false;
+      const hasJavaScriptMessage = Boolean(
+        pageContent?.includes("You need to enable JavaScript"),
+      );
 
+      // eslint-disable-next-line playwright/no-conditional-in-test
       if (hasJavaScriptMessage) {
         console.log(
           "Page shows JavaScript disabled message - this might indicate a session or loading issue",
         );
         // This could be expected behavior - the user might be redirected or blocked
         // Let's check if we're still on the correct URL
+        // eslint-disable-next-line playwright/no-conditional-expect
         expect(page.url()).toContain(workflowInstanceId);
         return; // Exit the test as this might be the expected behavior
       }
@@ -1255,6 +1265,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       // If workflow instance is visible, that's a bug - user should not see it
       expect(workflowInstanceVisible).toBeFalsy();
 
+      // eslint-disable-next-line playwright/no-conditional-in-test
       if (workflowInstanceVisible) {
         console.log(
           "WARNING: rhdh-qe-2 can see the workflow instance - this might be a RBAC bug!",
@@ -1407,9 +1418,10 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       const roleUpdateOk = roleUpdateResponse.ok();
 
       // Log errors for debugging purposes
+      // eslint-disable-next-line playwright/no-conditional-in-test
       if (!roleUpdateOk) {
         console.log(
-          `Role update failed with status: ${roleUpdateResponse.status}`,
+          `Role update failed with status: ${roleUpdateResponse.status()}`,
         );
         const errorBody = await roleUpdateResponse.text();
         console.log(`Role update error body: ${errorBody}`);
@@ -1487,6 +1499,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
         .catch(() => false);
 
       // If admin sees no records, that indicates admin permissions aren't working
+      // eslint-disable-next-line playwright/no-conditional-in-test
       if (noRecordsVisible) {
         console.log(
           'WARNING: rhdh-qe-2 (admin) sees "No records to display" - admin permissions are not working correctly',
@@ -1541,6 +1554,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       );
 
       // If admin gets unauthorized, that indicates admin permissions aren't working
+      // eslint-disable-next-line playwright/no-conditional-in-test
       if (hasUnauthorizedInContent) {
         console.log(
           "WARNING: rhdh-qe-2 (admin) cannot access the instance directly - admin permissions are not working correctly",
