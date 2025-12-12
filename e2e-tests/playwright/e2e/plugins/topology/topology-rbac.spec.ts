@@ -4,7 +4,7 @@ import { UIhelper } from "../../../utils/ui-helper";
 import { Catalog } from "../../../support/pages/catalog";
 import { Topology } from "../../../support/pages/topology";
 
-test.describe.skip("Test Topology Plugin with RBAC", () => {
+test.describe("Test Topology Plugin with RBAC", () => {
   let common: Common;
   let uiHelper: UIhelper;
   let catalog: Catalog;
