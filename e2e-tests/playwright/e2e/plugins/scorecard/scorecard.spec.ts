@@ -27,7 +27,7 @@ import {
   INVALID_THRESHOLD_RESPONSE,
 } from "../../../utils/scorecard-response-utils";
 
-test.describe.skip("Scorecard Plugin Tests", () => {
+test.describe.serial("Scorecard Plugin Tests", () => {
   let context;
   let page;
   let catalog: Catalog;
