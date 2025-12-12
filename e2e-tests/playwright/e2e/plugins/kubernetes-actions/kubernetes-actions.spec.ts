@@ -2,7 +2,6 @@ import { expect, Page, test } from "@playwright/test";
 import { Common, setupBrowser } from "../../../utils/common";
 import { UIhelper } from "../../../utils/ui-helper";
 import { KubeClient } from "../../../utils/kube-client";
-import { UI_HELPER_ELEMENTS } from "../../../support/page-objects/global-obj";
 
 test.describe.skip("Test Kubernetes Actions plugin", () => {
   let common: Common;
