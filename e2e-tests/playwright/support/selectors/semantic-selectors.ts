@@ -27,7 +27,7 @@ export class SemanticSelectors {
    * await SemanticSelectors.button(page, /save/i).click();
    */
   static button(page: Page, name: string | RegExp): Locator {
-    return page.getByRole('button', { name });
+    return page.getByRole("button", { name });
   }
 
   /**
@@ -40,7 +40,7 @@ export class SemanticSelectors {
    * await SemanticSelectors.link(page, 'View Details').click();
    */
   static link(page: Page, name: string | RegExp): Locator {
-    return page.getByRole('link', { name });
+    return page.getByRole("link", { name });
   }
 
   /**
@@ -53,7 +53,7 @@ export class SemanticSelectors {
    * const rows = table.getByRole('row');
    */
   static table(page: Page): Locator {
-    return page.getByRole('table');
+    return page.getByRole("table");
   }
 
   /**
@@ -67,8 +67,8 @@ export class SemanticSelectors {
    */
   static tableCell(page: Page, text?: string | RegExp): Locator {
     return text
-      ? page.getByRole('cell', { name: text })
-      : page.getByRole('cell');
+      ? page.getByRole("cell", { name: text })
+      : page.getByRole("cell");
   }
 
   /**
@@ -81,7 +81,7 @@ export class SemanticSelectors {
    * await SemanticSelectors.tableHeader(page, 'Created At').click();
    */
   static tableHeader(page: Page, name: string | RegExp): Locator {
-    return page.getByRole('columnheader', { name });
+    return page.getByRole("columnheader", { name });
   }
 
   /**
@@ -95,7 +95,7 @@ export class SemanticSelectors {
    * await row.getByRole('button', { name: 'Edit' }).click();
    */
   static tableRow(page: Page, text?: string | RegExp): Locator {
-    const rows = page.getByRole('row');
+    const rows = page.getByRole("row");
     return text ? rows.filter({ hasText: text }) : rows;
   }
 
@@ -110,8 +110,12 @@ export class SemanticSelectors {
    * await expect(SemanticSelectors.heading(page, 'RBAC', 1)).toBeVisible();
    * await expect(SemanticSelectors.heading(page, /settings/i)).toBeVisible();
    */
-  static heading(page: Page, name: string | RegExp, level?: 1 | 2 | 3 | 4 | 5 | 6): Locator {
-    return page.getByRole('heading', { name, level });
+  static heading(
+    page: Page,
+    name: string | RegExp,
+    level?: 1 | 2 | 3 | 4 | 5 | 6,
+  ): Locator {
+    return page.getByRole("heading", { name, level });
   }
 
   /**
@@ -150,7 +154,7 @@ export class SemanticSelectors {
    * await SemanticSelectors.checkbox(page, 'Accept terms').check();
    */
   static checkbox(page: Page, label: string | RegExp): Locator {
-    return page.getByRole('checkbox', { name: label });
+    return page.getByRole("checkbox", { name: label });
   }
 
   /**
@@ -163,7 +167,7 @@ export class SemanticSelectors {
    * await SemanticSelectors.radio(page, 'Option A').check();
    */
   static radio(page: Page, label: string | RegExp): Locator {
-    return page.getByRole('radio', { name: label });
+    return page.getByRole("radio", { name: label });
   }
 
   /**
@@ -177,9 +181,7 @@ export class SemanticSelectors {
    * await dialog.getByRole('button', { name: 'OK' }).click();
    */
   static dialog(page: Page, name?: string | RegExp): Locator {
-    return name
-      ? page.getByRole('dialog', { name })
-      : page.getByRole('dialog');
+    return name ? page.getByRole("dialog", { name }) : page.getByRole("dialog");
   }
 
   /**
@@ -194,8 +196,8 @@ export class SemanticSelectors {
    */
   static navigation(page: Page, name?: string | RegExp): Locator {
     return name
-      ? page.getByRole('navigation', { name })
-      : page.getByRole('navigation');
+      ? page.getByRole("navigation", { name })
+      : page.getByRole("navigation");
   }
 
   /**
@@ -208,7 +210,7 @@ export class SemanticSelectors {
    * await expect(header).toContainText('Welcome');
    */
   static banner(page: Page): Locator {
-    return page.getByRole('banner');
+    return page.getByRole("banner");
   }
 
   /**
@@ -221,7 +223,7 @@ export class SemanticSelectors {
    * await expect(main.getByRole('heading')).toBeVisible();
    */
   static main(page: Page): Locator {
-    return page.getByRole('main');
+    return page.getByRole("main");
   }
 
   /**
@@ -234,7 +236,7 @@ export class SemanticSelectors {
    * await SemanticSelectors.tab(page, 'Settings').click();
    */
   static tab(page: Page, name: string | RegExp): Locator {
-    return page.getByRole('tab', { name });
+    return page.getByRole("tab", { name });
   }
 
   /**
@@ -247,7 +249,7 @@ export class SemanticSelectors {
    * await SemanticSelectors.menuItem(page, 'Delete').click();
    */
   static menuItem(page: Page, name: string | RegExp): Locator {
-    return page.getByRole('menuitem', { name });
+    return page.getByRole("menuitem", { name });
   }
 
   /**
@@ -261,9 +263,7 @@ export class SemanticSelectors {
    * const items = list.getByRole('listitem');
    */
   static list(page: Page, name?: string | RegExp): Locator {
-    return name
-      ? page.getByRole('list', { name })
-      : page.getByRole('list');
+    return name ? page.getByRole("list", { name }) : page.getByRole("list");
   }
 
   /**
@@ -276,7 +276,7 @@ export class SemanticSelectors {
    * await SemanticSelectors.listItem(page, 'Product 1').click();
    */
   static listItem(page: Page, text?: string | RegExp): Locator {
-    const items = page.getByRole('listitem');
+    const items = page.getByRole("listitem");
     return text ? items.filter({ hasText: text }) : items;
   }
 
@@ -290,7 +290,7 @@ export class SemanticSelectors {
    * await expect(article.getByRole('link')).toBeVisible();
    */
   static article(page: Page): Locator {
-    return page.getByRole('article');
+    return page.getByRole("article");
   }
 
   /**
@@ -304,9 +304,7 @@ export class SemanticSelectors {
    * await sidebar.getByRole('button', { name: 'Filter' }).click();
    */
   static region(page: Page, name?: string | RegExp): Locator {
-    return name
-      ? page.getByRole('region', { name })
-      : page.getByRole('region');
+    return name ? page.getByRole("region", { name }) : page.getByRole("region");
   }
 
   /**
@@ -319,9 +317,7 @@ export class SemanticSelectors {
    * await expect(SemanticSelectors.alert(page, 'Error')).toBeVisible();
    */
   static alert(page: Page, name?: string | RegExp): Locator {
-    return name
-      ? page.getByRole('alert', { name })
-      : page.getByRole('alert');
+    return name ? page.getByRole("alert", { name }) : page.getByRole("alert");
   }
 
   /**
@@ -377,8 +373,18 @@ export class SemanticSelectors {
    */
   static scopedByRole(
     container: Locator,
-    role: 'button' | 'link' | 'heading' | 'textbox' | 'cell' | 'row' | 'columnheader' | 'tab' | 'menuitem' | 'listitem',
-    name?: string | RegExp
+    role:
+      | "button"
+      | "link"
+      | "heading"
+      | "textbox"
+      | "cell"
+      | "row"
+      | "columnheader"
+      | "tab"
+      | "menuitem"
+      | "listitem",
+    name?: string | RegExp,
   ): Locator {
     return name
       ? container.getByRole(role, { name })
@@ -397,9 +403,13 @@ export class SemanticSelectors {
  * const createdAtCell = findTableCell(page, 'timestamp-test', 7);
  * await expect(createdAtCell).toHaveText(/\d{1,2}\/\d{1,2}\/\d{4}/);
  */
-export function findTableCell(page: Page, rowText: string | RegExp, cellIndex: number): Locator {
+export function findTableCell(
+  page: Page,
+  rowText: string | RegExp,
+  cellIndex: number,
+): Locator {
   const row = SemanticSelectors.tableRow(page, rowText);
-  return row.getByRole('cell').nth(cellIndex);
+  return row.getByRole("cell").nth(cellIndex);
 }
 
 /**
@@ -416,10 +426,12 @@ export function findTableCell(page: Page, rowText: string | RegExp, cellIndex: n
 export async function findTableCellByColumn(
   page: Page,
   rowText: string | RegExp,
-  columnName: string | RegExp
+  columnName: string | RegExp,
 ): Promise<Locator> {
   const header = SemanticSelectors.tableHeader(page, columnName);
-  const columnIndex = await header.evaluate((th: HTMLTableCellElement) => th.cellIndex);
+  const columnIndex = await header.evaluate(
+    (th: HTMLTableCellElement) => th.cellIndex,
+  );
   return findTableCell(page, rowText, columnIndex);
 }
 
@@ -437,14 +449,14 @@ export class WaitStrategies {
    * Wait for network to be idle
    */
   static async forNetworkIdle(page: Page): Promise<void> {
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState("networkidle");
   }
 
   /**
    * Wait for DOM content to be loaded
    */
   static async forDOMContentLoaded(page: Page): Promise<void> {
-    await page.waitForLoadState('domcontentloaded');
+    await page.waitForLoadState("domcontentloaded");
   }
 
   /**
@@ -453,13 +465,14 @@ export class WaitStrategies {
   static async forAPIResponse(
     page: Page,
     urlPattern: string | RegExp,
-    statusCode: number = 200
+    statusCode: number = 200,
   ): Promise<void> {
-    await page.waitForResponse(response => {
+    await page.waitForResponse((response) => {
       const url = response.url();
-      const matchesUrl = typeof urlPattern === 'string'
-        ? url.includes(urlPattern)
-        : urlPattern.test(url);
+      const matchesUrl =
+        typeof urlPattern === "string"
+          ? url.includes(urlPattern)
+          : urlPattern.test(url);
       return matchesUrl && response.status() === statusCode;
     });
   }

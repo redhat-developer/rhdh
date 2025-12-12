@@ -95,8 +95,7 @@ export const UI_HELPER_ELEMENTS = {
    * ✅ Preferred over MuiTable
    * @example const table = UI_HELPER_ELEMENTS.getTable(page)
    */
-  getTable: (page: Page): Locator =>
-    SemanticSelectors.table(page),
+  getTable: (page: Page): Locator => SemanticSelectors.table(page),
 
   /**
    * Get a table cell by content
@@ -126,8 +125,11 @@ export const UI_HELPER_ELEMENTS = {
    * Get a heading by text and optional level
    * @example UI_HELPER_ELEMENTS.getHeading(page, 'RBAC', 1)
    */
-  getHeading: (page: Page, name: string | RegExp, level?: 1 | 2 | 3 | 4 | 5 | 6): Locator =>
-    SemanticSelectors.heading(page, name, level),
+  getHeading: (
+    page: Page,
+    name: string | RegExp,
+    level?: 1 | 2 | 3 | 4 | 5 | 6,
+  ): Locator => SemanticSelectors.heading(page, name, level),
 
   /**
    * Get a tab by name
@@ -151,9 +153,12 @@ export const UI_HELPER_ELEMENTS = {
    */
   getCardByHeading: (page: Page, heading: string | RegExp): Locator => {
     // Find region or article containing the heading
-    return page.locator('[role="region"], article, section').filter({
-      has: page.getByRole('heading', { name: heading })
-    }).first();
+    return page
+      .locator('[role="region"], article, section')
+      .filter({
+        has: page.getByRole("heading", { name: heading }),
+      })
+      .first();
   },
 
   /**
@@ -162,9 +167,12 @@ export const UI_HELPER_ELEMENTS = {
    * @example const card = UI_HELPER_ELEMENTS.getCardByText(page, 'Context one')
    */
   getCardByText: (page: Page, text: string | RegExp): Locator => {
-    return page.locator('[role="region"], article, section').filter({
-      hasText: text
-    }).first();
+    return page
+      .locator('[role="region"], article, section')
+      .filter({
+        hasText: text,
+      })
+      .first();
   },
 
   /**
