@@ -2,7 +2,6 @@ import { Page, expect, test } from "@playwright/test";
 import { UIhelper } from "../utils/ui-helper";
 import { Common, setupBrowser } from "../utils/common";
 import { CatalogImport } from "../support/pages/catalog-import";
-import { UI_HELPER_ELEMENTS } from "../support/page-objects/global-obj";
 import {
   getTranslations,
   getCurrentLanguage,
@@ -62,8 +61,7 @@ test.describe("Test timestamp column on Catalog", () => {
 
   test("Toggle 'CREATED AT' to see if the component list can be sorted in ascending/decending order", async () => {
     // Get the first data row's "Created At" cell using semantic selectors
-    const table = page.getByRole('table');
-    const firstRow = table.locator('tbody tr').first();
+    const firstRow = page.getByRole('row').filter({ has: page.getByRole('cell') }).first();
     const createdAtCell = firstRow.getByRole('cell').nth(7); // 0-indexed, 8th column = index 7
 
     //Verify by default Rows are in ascending (empty for oldest entries)
