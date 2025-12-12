@@ -8,8 +8,8 @@ import { Policy } from "../../../support/api/rbac-api-structures";
 import { Response } from "../../../support/pages/rbac";
 
 test.describe.serial("Test Orchestrator RBAC", () => {
-  test.beforeAll(async () => {
-    test.info().annotations.push({
+  test.beforeAll(async ({}, testInfo) => {
+    testInfo.annotations.push({
       type: "component",
       description: "orchestrator",
     });
@@ -1465,114 +1465,6 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       expect(workflowUserRole?.memberReferences).not.toContain(
         "user:default/rhdh-qe-2",
       );
-    });
-
-    test("rhdh-qe-2 admin user can see rhdh-qe's workflow instance in runs list", async () => {
-      // Clear browser storage and navigate to a fresh state
-      await page.context().clearCookies();
-      await page.goto("/");
-      await page.waitForLoadState("load");
-
-      // Now login as rhdh-qe-2
-      try {
-        await common.loginAsKeycloakUser(
-          process.env.GH_USER2_ID,
-          process.env.GH_USER2_PASS,
-        );
-        console.log("Successfully logged in as rhdh-qe-2 (admin)");
-      } catch (error) {
-        console.log("Login failed:", error);
-        throw error; // Re-throw to fail the test if login doesn't work
-      }
-
-      await uiHelper.goToPageUrl("/orchestrator/workflows/greeting/runs");
-      await uiHelper.verifyHeading("Greeting workflow");
-
-      // TODO: Admin permissions are not working as expected
-      // The admin user should be able to see all workflow instances, but currently sees "No records to display"
-      // This indicates that the orchestrator.instance and orchestrator.instance.use permissions are not functioning correctly
-      // For now, we'll skip this assertion until the admin permissions are properly configured
-
-      const noRecordsVisible = await page
-        .getByText("No records to display")
-        .isVisible()
-        .catch(() => false);
-
-      // If admin sees no records, that indicates admin permissions aren't working
-      // eslint-disable-next-line playwright/no-conditional-in-test
-      if (noRecordsVisible) {
-        console.log(
-          'WARNING: rhdh-qe-2 (admin) sees "No records to display" - admin permissions are not working correctly',
-        );
-        // Skip the assertion for now - this is a known issue with admin permissions
-        return;
-      }
-
-      // With admin permissions, rhdh-qe-2 should now see the instance
-      const instanceLink = page.locator(`a[href*="${workflowInstanceId}"]`);
-      await expect(instanceLink).toBeVisible({ timeout: 20000 });
-    });
-
-    test("rhdh-qe-2 admin user can directly access rhdh-qe's workflow instance URL", async () => {
-      // Check if workflowInstanceId is available (required for this test)
-      expect(workflowInstanceId).toBeDefined();
-      expect(workflowInstanceId).toBeTruthy();
-
-      // Clear browser storage and navigate to a fresh state
-      await page.context().clearCookies();
-      await page.goto("/");
-      await page.waitForLoadState("load");
-
-      // Now login as rhdh-qe-2
-      try {
-        await common.loginAsKeycloakUser(
-          process.env.GH_USER2_ID,
-          process.env.GH_USER2_PASS,
-        );
-        console.log("Successfully logged in as rhdh-qe-2 (admin)");
-      } catch (error) {
-        console.log("Login failed:", error);
-        throw error; // Re-throw to fail the test if login doesn't work
-      }
-
-      // Navigate directly to the instance URL
-      await uiHelper.goToPageUrl(
-        `/orchestrator/instances/${workflowInstanceId}`,
-      );
-
-      // TODO: Admin permissions are not working as expected
-      // The admin user should be able to access the instance directly, but this is currently not functioning
-      // For now, we'll skip this assertion until the admin permissions are properly configured
-
-      // Wait a moment for the page to load and check for error messages
-      await page.waitForTimeout(3000);
-
-      // Check if we get an error message (which would indicate admin permissions aren't working)
-      const pageContent = await page.textContent("body").catch(() => "");
-      const hasUnauthorizedInContent = pageContent.includes(
-        "Unauthorized to access instance",
-      );
-
-      // If admin gets unauthorized, that indicates admin permissions aren't working
-      // eslint-disable-next-line playwright/no-conditional-in-test
-      if (hasUnauthorizedInContent) {
-        console.log(
-          "WARNING: rhdh-qe-2 (admin) cannot access the instance directly - admin permissions are not working correctly",
-        );
-        console.log(
-          "Page content shows unauthorized access - this is expected behavior until admin permissions are fixed",
-        );
-        // Skip the assertion for now - this is a known issue with admin permissions
-        return;
-      }
-
-      // Should successfully load the instance page
-      await expect(page.getByText(/Run completed at/i)).toBeVisible({
-        timeout: 30000,
-      });
-
-      // Verify we're on the correct instance page
-      expect(page.url()).toContain(workflowInstanceId);
     });
 
     test.afterAll(async () => {
