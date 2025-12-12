@@ -241,7 +241,7 @@ wait_for_job_completion() {
     succeeded_pods=$(oc get job "$job_name" -n "$namespace" -o jsonpath='{.status.succeeded}' 2> /dev/null || echo "0")
     failed_pods=$(oc get job "$job_name" -n "$namespace" -o jsonpath='{.status.failed}' 2> /dev/null || echo "0")
 
-    echo "Job status - Active: $active_pods, Succeeded: $succeeded_pods, Failed: $failed_pods (${i}/${max_attempts} checks)"
+    log::info "Job status - Active: $active_pods, Succeeded: $succeeded_pods, Failed: $failed_pods (${i}/${max_attempts} checks)"
 
     sleep "$check_interval"
   done
@@ -291,13 +291,13 @@ wait_for_svc() {
   local timeout=${3:-300}
 
   timeout "${timeout}" bash -c "
-    echo ${svc_name}
+    log::info ${svc_name}
     while ! oc get svc $svc_name -n $namespace &> /dev/null; do
-      echo \"Waiting for ${svc_name} service to be created...\"
+      log::info \"Waiting for ${svc_name} service to be created...\"
       sleep 5
     done
-    echo \"Service ${svc_name} is created.\"
-    " || echo "Error: Timed out waiting for $svc_name service creation."
+    log::success \"Service ${svc_name} is created.\"
+    " || log::error "Error: Timed out waiting for $svc_name service creation."
 }
 
 wait_for_endpoint() {
@@ -308,11 +308,11 @@ wait_for_endpoint() {
   timeout "${timeout}" bash -c "
     echo ${endpoint_name}
     while ! kubectl get endpoints $endpoint_name -n $namespace &> /dev/null; do
-      echo \"Waiting for ${endpoint_name} endpoint to be created...\"
+      log::info \"Waiting for ${endpoint_name} endpoint to be created...\"
       sleep 5
     done
-    echo \"Endpoint ${endpoint_name} is created.\"
-    " || echo "Error: Timed out waiting for $endpoint_name endpoint creation."
+    log::success \"Endpoint ${endpoint_name} is created.\"
+    " || log::error "Error: Timed out waiting for $endpoint_name endpoint creation."
 }
 
 # Creates an OpenShift Operator subscription
@@ -377,17 +377,17 @@ check_operator_status() {
   local operator_name=$3                  # Operator name
   local expected_status=${4:-"Succeeded"} # Expected status phase (default Succeeded)
 
-  echo "Checking the status of operator '${operator_name}' in namespace '${namespace}' with a timeout of ${timeout} seconds."
-  echo "Expected status: ${expected_status}"
+  log::info "Checking the status of operator '${operator_name}' in namespace '${namespace}' with a timeout of ${timeout} seconds."
+  log::info "Expected status: ${expected_status}"
 
   timeout "${timeout}" bash -c "
     while true; do
       CURRENT_PHASE=\$(oc get csv -n '${namespace}' -o jsonpath='{.items[?(@.spec.displayName==\"${operator_name}\")].status.phase}')
-      echo \"Operator '${operator_name}' current phase: \${CURRENT_PHASE}\"
-      [[ \"\${CURRENT_PHASE}\" == \"${expected_status}\" ]] && echo \"Operator '${operator_name}' is now in '${expected_status}' phase.\" && break
+      log::info \"Operator '${operator_name}' current phase: \${CURRENT_PHASE}\"
+      [[ \"\${CURRENT_PHASE}\" == \"${expected_status}\" ]] && log::success \"Operator '${operator_name}' is now in '${expected_status}' phase.\" && break
       sleep 10
     done
-  " || echo "Timed out after ${timeout} seconds. Operator '${operator_name}' did not reach '${expected_status}' phase."
+  " || log::error "Timed out after ${timeout} seconds. Operator '${operator_name}' did not reach '${expected_status}' phase."
 }
 
 # Installs the Crunchy Postgres Operator from Openshift Marketplace using predefined parameters
@@ -396,17 +396,17 @@ install_crunchy_postgres_ocp_operator() {
   check_operator_status 300 "openshift-operators" "Crunchy Postgres for Kubernetes" "Succeeded"
 
   # Wait for PostgresCluster CRD to be registered before proceeding
-  echo "Waiting for PostgresCluster CRD to be registered..."
+  log::info "Waiting for PostgresCluster CRD to be registered..."
   timeout 120 bash -c '
     until oc get crd postgresclusters.postgres-operator.crunchydata.com &>/dev/null; do
-      echo "Waiting for postgresclusters.postgres-operator.crunchydata.com CRD..."
+      log::info "Waiting for postgresclusters.postgres-operator.crunchydata.com CRD..."
       sleep 5
     done
   ' || {
-    echo "Error: Timed out waiting for PostgresCluster CRD to be registered."
+    log::error "Error: Timed out waiting for PostgresCluster CRD to be registered."
     return 1
   }
-  echo "PostgresCluster CRD is available."
+  log::success "PostgresCluster CRD is available."
 }
 
 # Installs the Crunchy Postgres Operator from OperatorHub.io
@@ -415,17 +415,17 @@ install_crunchy_postgres_k8s_operator() {
   check_operator_status 300 "operators" "Crunchy Postgres for Kubernetes" "Succeeded"
 
   # Wait for PostgresCluster CRD to be registered before proceeding
-  echo "Waiting for PostgresCluster CRD to be registered..."
+  log::info "Waiting for PostgresCluster CRD to be registered..."
   timeout 120 bash -c '
     until kubectl get crd postgresclusters.postgres-operator.crunchydata.com &>/dev/null; do
-      echo "Waiting for postgresclusters.postgres-operator.crunchydata.com CRD..."
+      log::info "Waiting for postgresclusters.postgres-operator.crunchydata.com CRD..."
       sleep 5
     done
   ' || {
-    echo "Error: Timed out waiting for PostgresCluster CRD to be registered."
+    log::error "Error: Timed out waiting for PostgresCluster CRD to be registered."
     return 1
   }
-  echo "PostgresCluster CRD is available."
+  log::success "PostgresCluster CRD is available."
 }
 
 # Installs the OpenShift Serverless Logic Operator (SonataFlow) from OpenShift Marketplace
@@ -444,22 +444,22 @@ uninstall_helmchart() {
   local project=$1
   local release=$2
   if helm list -n "${project}" | grep -q "${release}"; then
-    echo "Chart already exists. Removing it before install."
+    log::warn "Chart already exists. Removing it before install."
     helm uninstall "${release}" -n "${project}"
   fi
 }
 
 configure_namespace() {
   local project=$1
-  echo "Deleting and recreating namespace: $project"
+  log::warn "Deleting and recreating namespace: $project"
   delete_namespace $project
 
   if ! oc create namespace "${project}"; then
-    echo "Error: Failed to create namespace ${project}" >&2
+    log::error "Error: Failed to create namespace ${project}" >&2
     exit 1
   fi
   if ! oc config set-context --current --namespace="${project}"; then
-    echo "Error: Failed to set context for namespace ${project}" >&2
+    log::error "Error: Failed to set context for namespace ${project}" >&2
     exit 1
   fi
 
@@ -469,7 +469,7 @@ configure_namespace() {
 delete_namespace() {
   local project=$1
   if oc get namespace "$project" > /dev/null 2>&1; then
-    echo "Namespace ${project} exists. Attempting to delete..."
+    log::warn "Namespace ${project} exists. Attempting to delete..."
 
     # Remove blocking finalizers
     # remove_finalizers_from_resources "$project"
@@ -479,7 +479,7 @@ delete_namespace() {
 
     # Check if namespace is still stuck in 'Terminating' and force removal if necessary
     if oc get namespace "$project" -o jsonpath='{.status.phase}' | grep -q 'Terminating'; then
-      echo "Namespace ${project} is stuck in Terminating. Forcing deletion..."
+      log::warn "Namespace ${project} is stuck in Terminating. Forcing deletion..."
       force_delete_namespace "$project"
     fi
   fi
@@ -719,8 +719,8 @@ run_tests() {
 
   BASE_URL="${url}"
   export BASE_URL
-  echo "BASE_URL: ${BASE_URL}"
-  echo "Running Playwright project '${playwright_project}' against namespace '${namespace}'"
+  log::info "BASE_URL: ${BASE_URL}"
+  log::info "Running Playwright project '${playwright_project}' against namespace '${namespace}'"
 
   cd "${DIR}/../../e2e-tests"
   local e2e_tests_dir
@@ -729,11 +729,11 @@ run_tests() {
   yarn install --immutable > /tmp/yarn.install.log.txt 2>&1
   INSTALL_STATUS=$?
   if [ $INSTALL_STATUS -ne 0 ]; then
-    echo "=== YARN INSTALL FAILED ==="
+    log::error "=== YARN INSTALL FAILED ==="
     cat /tmp/yarn.install.log.txt
     exit $INSTALL_STATUS
   else
-    echo "Yarn install completed successfully."
+    log::success "Yarn install completed successfully."
   fi
 
   yarn playwright install chromium
@@ -743,7 +743,7 @@ run_tests() {
 
   (
     set -e
-    echo "Using PR container image: ${TAG_NAME}"
+    log::info "Using PR container image: ${TAG_NAME}"
     # Run Playwright directly with --project flag instead of using yarn script aliases
     yarn playwright test --project="${playwright_project}"
   ) 2>&1 | tee "/tmp/${LOGFILE}"
@@ -793,11 +793,11 @@ check_backstage_running() {
   local wait_seconds=${5:-30}
 
   if [ -z "${url}" ]; then
-    echo "Error: URL is not set. Please provide a valid URL."
+    log::error "Error: URL is not set. Please provide a valid URL."
     return 1
   fi
 
-  echo "Checking if Backstage is up and running at ${url}"
+  log::info "Checking if Backstage is up and running at ${url}"
 
   for ((i = 1; i <= max_attempts; i++)); do
     # Check HTTP status
@@ -805,16 +805,16 @@ check_backstage_running() {
     http_status=$(curl --insecure -I -s -o /dev/null -w "%{http_code}" "${url}")
 
     if [ "${http_status}" -eq 200 ]; then
-      echo "✅ Backstage is up and running!"
+      log::success "✅ Backstage is up and running!"
       return 0
     else
-      echo "Attempt ${i} of ${max_attempts}: Backstage not yet available (HTTP Status: ${http_status})"
+      log::warn "Attempt ${i} of ${max_attempts}: Backstage not yet available (HTTP Status: ${http_status})"
       oc get pods -n "${namespace}"
       sleep "${wait_seconds}"
     fi
   done
 
-  echo "❌ Failed to reach Backstage at ${url} after ${max_attempts} attempts."
+  log::error "❌ Failed to reach Backstage at ${url} after ${max_attempts} attempts."
   oc get events -n "${namespace}" --sort-by='.lastTimestamp' | tail -10
   mkdir -p "${ARTIFACT_DIR}/${namespace}"
   cp -a "/tmp/${LOGFILE}" "${ARTIFACT_DIR}/${namespace}/" || true
@@ -824,19 +824,19 @@ check_backstage_running() {
 
 install_olm() {
   if operator-sdk olm status > /dev/null 2>&1; then
-    echo "OLM is already installed."
+    log::warn "OLM is already installed."
   else
-    echo "OLM is not installed. Installing..."
+    log::info "OLM is not installed. Installing..."
     operator-sdk olm install
   fi
 }
 
 uninstall_olm() {
   if operator-sdk olm status > /dev/null 2>&1; then
-    echo "OLM is installed. Uninstalling..."
+    log::info "OLM is installed. Uninstalling..."
     operator-sdk olm uninstall
   else
-    echo "OLM is not installed. Nothing to uninstall."
+    log::info "OLM is not installed. Nothing to uninstall."
   fi
 }
 
@@ -845,9 +845,9 @@ install_pipelines_operator() {
   DISPLAY_NAME="Red Hat OpenShift Pipelines"
   # Check if operator is already installed
   if oc get csv -n "openshift-operators" | grep -q "${DISPLAY_NAME}"; then
-    echo "Red Hat OpenShift Pipelines operator is already installed."
+    log::warn "Red Hat OpenShift Pipelines operator is already installed."
   else
-    echo "Red Hat OpenShift Pipelines operator is not installed. Installing..."
+    log::info "Red Hat OpenShift Pipelines operator is not installed. Installing..."
     # Install the operator and wait for deployment
     install_subscription openshift-pipelines-operator openshift-operators latest openshift-pipelines-operator-rh redhat-operators openshift-marketplace
     wait_for_deployment "openshift-operators" "pipelines"
@@ -855,63 +855,63 @@ install_pipelines_operator() {
   fi
 
   # Wait for Tekton Pipeline CRD to be registered before proceeding
-  echo "Waiting for Tekton Pipeline CRD to be registered..."
+  log::info "Waiting for Tekton Pipeline CRD to be registered..."
   timeout 120 bash -c '
     until oc get crd pipelines.tekton.dev &>/dev/null; do
-      echo "Waiting for pipelines.tekton.dev CRD..."
+      log::info "Waiting for pipelines.tekton.dev CRD..."
       sleep 5
     done
   ' || {
-    echo "Error: Timed out waiting for Tekton Pipeline CRD to be registered."
+    log::error "Error: Timed out waiting for Tekton Pipeline CRD to be registered."
     return 1
   }
-  echo "Tekton Pipeline CRD is available."
+  log::success "Tekton Pipeline CRD is available."
 }
 
 # Installs the Tekton Pipelines if not already installed (alternative of OpenShift Pipelines for Kubernetes clusters)
 install_tekton_pipelines() {
   DISPLAY_NAME="tekton-pipelines-webhook"
   if oc get pods -n "tekton-pipelines" | grep -q "${DISPLAY_NAME}"; then
-    echo "Tekton Pipelines are already installed."
+    log::info "Tekton Pipelines are already installed."
   else
-    echo "Tekton Pipelines is not installed. Installing..."
+    log::info "Tekton Pipelines is not installed. Installing..."
     kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
     wait_for_deployment "tekton-pipelines" "${DISPLAY_NAME}"
     wait_for_endpoint "tekton-pipelines-webhook" "tekton-pipelines"
   fi
 
   # Wait for Tekton Pipeline CRD to be registered before proceeding
-  echo "Waiting for Tekton Pipeline CRD to be registered..."
+  log::info "Waiting for Tekton Pipeline CRD to be registered..."
   timeout 120 bash -c '
     until kubectl get crd pipelines.tekton.dev &>/dev/null; do
-      echo "Waiting for pipelines.tekton.dev CRD..."
+      log::info "Waiting for pipelines.tekton.dev CRD..."
       sleep 5
     done
   ' || {
-    echo "Error: Timed out waiting for Tekton Pipeline CRD to be registered."
+    log::error "Error: Timed out waiting for Tekton Pipeline CRD to be registered."
     return 1
   }
-  echo "Tekton Pipeline CRD is available."
+  log::success "Tekton Pipeline CRD is available."
 }
 
 delete_tekton_pipelines() {
-  echo "Checking for Tekton Pipelines installation..."
+  log::info "Checking for Tekton Pipelines installation..."
   # Check if tekton-pipelines namespace exists
   if kubectl get namespace tekton-pipelines &> /dev/null; then
-    echo "Found Tekton Pipelines installation. Attempting to delete..."
+    log::info "Found Tekton Pipelines installation. Attempting to delete..."
     # Delete the resources and ignore errors
     kubectl delete -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml --ignore-not-found=true 2> /dev/null || true
     # Wait for namespace deletion (with timeout)
-    echo "Waiting for Tekton Pipelines namespace to be deleted..."
+    log::info "Waiting for Tekton Pipelines namespace to be deleted..."
     timeout 30 bash -c '
         while kubectl get namespace tekton-pipelines &> /dev/null; do
             echo "Waiting for tekton-pipelines namespace deletion..."
             sleep 5
         done
-        echo "Tekton Pipelines deleted successfully."
-        ' || echo "Warning: Timed out waiting for namespace deletion, continuing..."
+        log::success "Tekton Pipelines deleted successfully."
+        ' || log::warn "Warning: Timed out waiting for namespace deletion, continuing..."
   else
-    echo "Tekton Pipelines is not installed. Nothing to delete."
+    log::info "Tekton Pipelines is not installed. Nothing to delete."
   fi
 }
 
@@ -1238,7 +1238,7 @@ check_upgrade_and_test() {
   if check_helm_upgrade "${deployment_name}" "${namespace}" "${timeout}"; then
     check_and_test "${release_name}" "${namespace}" "${playwright_project}" "${url}"
   else
-    echo "Helm upgrade encountered an issue or timed out. Exiting..."
+    log::error "Helm upgrade encountered an issue or timed out. Exiting..."
     CURRENT_DEPLOYMENT=$((CURRENT_DEPLOYMENT + 1))
     save_status_deployment_namespace $CURRENT_DEPLOYMENT "$namespace"
     save_status_failed_to_deploy $CURRENT_DEPLOYMENT true
@@ -1252,13 +1252,13 @@ check_helm_upgrade() {
   local namespace="$2"
   local timeout="$3"
 
-  echo "Checking rollout status for deployment: ${deployment_name} in namespace: ${namespace}..."
+  log::info "Checking rollout status for deployment: ${deployment_name} in namespace: ${namespace}..."
 
   if oc rollout status "deployment/${deployment_name}" -n "${namespace}" --timeout="${timeout}s" -w; then
-    echo "RHDH upgrade is complete."
+    log::info "RHDH upgrade is complete."
     return 0
   else
-    echo "RHDH upgrade encountered an issue or timed out."
+    log::error "RHDH upgrade encountered an issue or timed out."
     return 1
   fi
 }
@@ -1295,14 +1295,14 @@ force_delete_namespace() {
 
   while oc get namespace "$project" &> /dev/null; do
     if [[ $elapsed -ge $timeout_seconds ]]; then
-      echo "Timeout: Namespace '${project}' was not deleted within $timeout_seconds seconds." >&2
+      log::warn "Timeout: Namespace '${project}' was not deleted within $timeout_seconds seconds." >&2
       return 1
     fi
     sleep $sleep_interval
     elapsed=$((elapsed + sleep_interval))
   done
 
-  echo "Namespace '${project}' successfully deleted."
+  log::success "Namespace '${project}' successfully deleted."
 }
 
 oc_login() {
@@ -1333,14 +1333,14 @@ get_previous_release_version() {
 
   # Check if version parameter is provided
   if [[ -z "$version" ]]; then
-    echo "Error: Version parameter is required" >&2
+    log::error "Error: Version parameter is required" >&2
     exit 1
     save_overall_result 1
   fi
 
   # Validate version format (should be like "1.6")
   if [[ ! "$version" =~ ^[0-9]+\.[0-9]+$ ]]; then
-    echo "Error: Version must be in format X.Y (e.g., 1.6)" >&2
+    log::error "Error: Version must be in format X.Y (e.g., 1.6)" >&2
     exit 1
     save_overall_result 1
   fi
@@ -1380,12 +1380,12 @@ get_previous_release_value_file() {
   previous_release_version=$(get_previous_release_version "$CHART_MAJOR_VERSION")
 
   if [[ -z "$previous_release_version" ]]; then
-    echo "Failed to determine previous release version." >&2
+    log::error "Failed to determine previous release version." >&2
     save_overall_result 1
     exit 1
   fi
 
-  echo "Using previous release version: ${previous_release_version}" >&2
+  log::info "Using previous release version: ${previous_release_version}" >&2
 
   # Construct the GitHub URL for the value file
   local github_url="https://raw.githubusercontent.com/redhat-developer/rhdh/release-${previous_release_version}/.ibm/pipelines/value_files/values_${value_file_type}.yaml"
@@ -1397,10 +1397,10 @@ get_previous_release_value_file() {
 
   # Download the value file from GitHub
   if curl -fsSL "${github_url}" -o "${temp_value_file}"; then
-    echo "Successfully downloaded value file to: ${temp_value_file}" >&2
-    echo "${temp_value_file}"
+    log::success "Successfully downloaded value file to: ${temp_value_file}" >&2
+    log::info "${temp_value_file}"
   else
-    echo "Failed to download value file from GitHub." >&2
+    log::error "Failed to download value file from GitHub." >&2
     save_overall_result 1
     exit 1
   fi
@@ -1485,8 +1485,8 @@ deploy_orchestrator_workflows_operator() {
     return 1
   fi
 
-  echo "Found PostgreSQL secret: $pqsl_secret_name"
-  echo "Found PostgreSQL service: $pqsl_svc_name"
+  log::info "Found PostgreSQL secret: $pqsl_secret_name"
+  log::info "Found PostgreSQL service: $pqsl_svc_name"
 
   # Apply user-onboarding workflow manifests
   oc apply -f "${WORKFLOW_MANIFESTS}" -n "$namespace"
@@ -1502,7 +1502,7 @@ deploy_orchestrator_workflows_operator() {
     sleep 5
   done
   "
-  echo "Updating user-onboarding secret with dynamic service URLs..."
+  log::info "Updating user-onboarding secret with dynamic service URLs..."
   # Update the user-onboarding secret with correct service URLs
   local onboarding_server_url="http://user-onboarding-server:8080"
 
@@ -1510,7 +1510,7 @@ deploy_orchestrator_workflows_operator() {
   local backstage_service
   backstage_service=$(oc get svc -l app.kubernetes.io/name=backstage -n "$namespace" --no-headers=true | grep -v psql | awk '{print $1}' | head -1)
   if [[ -z "$backstage_service" ]]; then
-    echo "Warning: No backstage service found, using fallback"
+    log::warn "Warning: No backstage service found, using fallback"
     backstage_service="backstage-rhdh"
   fi
   local backstage_notifications_url="http://${backstage_service}:80"
@@ -1519,7 +1519,7 @@ deploy_orchestrator_workflows_operator() {
   local notifications_bearer_token
   notifications_bearer_token=$(oc get secret rhdh-secrets -n "$namespace" -o json | jq '.data.BACKEND_SECRET' -r | base64 -d)
   if [[ -z "$notifications_bearer_token" ]]; then
-    echo "Warning: No BACKEND_SECRET found in rhdh-secrets, using empty token"
+    log::warn "Warning: No BACKEND_SECRET found in rhdh-secrets, using empty token"
     notifications_bearer_token=""
   fi
 
@@ -1539,7 +1539,7 @@ deploy_orchestrator_workflows_operator() {
       \"NOTIFICATIONS_BEARER_TOKEN\": \"$notifications_bearer_token_b64\"
     }
   }"
-  echo "User-onboarding secret updated successfully!"
+  log::success "User-onboarding secret updated successfully!"
 
   for workflow in greeting user-onboarding; do
     # Create PostgreSQL patch configuration
@@ -1567,18 +1567,18 @@ deploy_orchestrator_workflows_operator() {
 EOF
     )
 
-    echo "Patching SonataFlow '$workflow' with PostgreSQL configuration..."
+    log::info "Patching SonataFlow '$workflow' with PostgreSQL configuration..."
     oc -n "$namespace" patch sonataflow "$workflow" --type merge -p "$postgres_patch"
 
-    echo "Restarting deployment for '$workflow'..."
+    log::info "Restarting deployment for '$workflow'..."
     oc rollout status deployment/"$workflow" -n "$namespace" --timeout=600s
   done
 
-  echo "Waiting for all workflow pods to be running..."
+  log::info "Waiting for all workflow pods to be running..."
   wait_for_deployment $namespace greeting 5
   wait_for_deployment $namespace user-onboarding 5
-
-  echo "All workflow pods are now running!"
+  # TODO: are we sure that all is running?
+  log::info "All workflow pods are now running!"
 }
 
 # Helper function to wait for backstage resource to exist in namespace
@@ -1588,18 +1588,18 @@ wait_for_backstage_resource() {
 
   local sleep_interval=15
 
-  echo "Waiting for backstage resource to exist in namespace: $namespace"
+  log::info "Waiting for backstage resource to exist in namespace: $namespace"
 
   for ((i = 1; i <= max_attempts; i++)); do
     if [[ $(oc get backstage -n "$namespace" -o json | jq '.items | length') -gt 0 ]]; then
-      echo "Backstage resource found in namespace: $namespace"
+      log::success "Backstage resource found in namespace: $namespace"
       return 0
     fi
-    echo "Attempt $i/$max_attempts: No backstage resource found, waiting ${sleep_interval}s..."
+    log::info "Attempt $i/$max_attempts: No backstage resource found, waiting ${sleep_interval}s..."
     sleep $sleep_interval
   done
 
-  echo "Error: No backstage resource found after 10 minutes"
+  log::error "Error: No backstage resource found after 10 minutes"
   return 1
 }
 
@@ -1609,12 +1609,12 @@ enable_orchestrator_plugins_op() {
 
   # Validate required parameter
   if [[ -z "$namespace" ]]; then
-    echo "Error: Missing required namespace parameter"
-    echo "Usage: enable_orchestrator_plugins_op <namespace>"
+    log::error "Error: Missing required namespace parameter"
+    log::error "Usage: enable_orchestrator_plugins_op <namespace>"
     return 1
   fi
 
-  echo "Enabling orchestrator plugins in namespace: $namespace"
+  log::info "Enabling orchestrator plugins in namespace: $namespace"
 
   # Wait for backstage resource to exist
   wait_for_backstage_resource "$namespace"
@@ -1625,43 +1625,43 @@ enable_orchestrator_plugins_op() {
   rm -rf "$work_dir" && mkdir -p "$work_dir"
 
   # Extract custom dynamic plugins configmap
-  echo "Extracting custom dynamic plugins configmap..."
+  log::info "Extracting custom dynamic plugins configmap..."
   if ! oc get cm dynamic-plugins -n "$namespace" -o json | jq '.data."dynamic-plugins.yaml"' -r > "$work_dir/custom-plugins.yaml"; then
-    echo "Error: Failed to extract dynamic-plugins configmap"
+    log::error "Error: Failed to extract dynamic-plugins configmap"
     return 1
   fi
 
   # Find and extract default configmap
-  echo "Finding default dynamic plugins configmap..."
+  log::info "Finding default dynamic plugins configmap..."
   local default_cm
   default_cm=$(oc get cm -n "$namespace" --no-headers | grep "backstage-dynamic-plugins" | awk '{print $1}' | head -1)
 
   if [[ -z "$default_cm" ]]; then
-    echo "Error: No default configmap found matching pattern 'backstage-dynamic-plugins-'"
+    log::error "Error: No default configmap found matching pattern 'backstage-dynamic-plugins-'"
     return 1
   fi
 
-  echo "Found default configmap: $default_cm"
+  log::info "Found default configmap: $default_cm"
   if ! oc get cm "$default_cm" -n "$namespace" -o json | jq '.data."dynamic-plugins.yaml"' -r > "$work_dir/default-plugins.yaml"; then
-    echo "Error: Failed to extract $default_cm configmap"
+    log::error "Error: Failed to extract $default_cm configmap"
     return 1
   fi
 
   # Extract plugins array with disabled: false and append to custom plugins
-  echo "Extracting and enabling default plugins..."
+  log::info "Extracting and enabling default plugins..."
   if ! yq eval '.plugins | map(. + {"disabled": false})' "$work_dir/default-plugins.yaml" > "$work_dir/default-plugins-array.yaml"; then
-    echo "Error: Failed to extract and modify plugins array from default file"
+    log::error "Error: Failed to extract and modify plugins array from default file"
     return 1
   fi
 
   if ! yq eval '.plugins += load("'$work_dir'/default-plugins-array.yaml")' -i "$work_dir/custom-plugins.yaml"; then
-    echo "Error: Failed to append default plugins to custom plugins"
+    log::error "Error: Failed to append default plugins to custom plugins"
     return 1
   fi
 
   # Use the modified custom file as the final merged result
   if ! cp "$work_dir/custom-plugins.yaml" "$work_dir/merged-plugins.yaml"; then
-    echo "Error: Failed to create merged plugins file"
+    log::error "Error: Failed to create merged plugins file"
     return 1
   fi
 
@@ -1669,28 +1669,28 @@ enable_orchestrator_plugins_op() {
   if ! oc create configmap dynamic-plugins \
     --from-file="dynamic-plugins.yaml=$work_dir/merged-plugins.yaml" \
     -n "$namespace" --dry-run=client -o yaml | oc apply -f -; then
-    echo "Error: Failed to apply updated dynamic-plugins configmap"
+    log::error "Error: Failed to apply updated dynamic-plugins configmap"
     return 1
   fi
 
   # Find and restart backstage deployment
-  echo "Finding backstage deployment..."
+  log::info "Finding backstage deployment..."
   local backstage_deployment
   backstage_deployment=$(oc get deployment -n "$namespace" --no-headers | grep "^backstage-rhdh" | awk '{print $1}' | head -1)
 
   if [[ -z "$backstage_deployment" ]]; then
-    echo "Error: No backstage deployment found matching pattern 'backstage-rhdh*'"
+    log::error "Error: No backstage deployment found matching pattern 'backstage-rhdh*'"
     return 1
   fi
 
-  echo "Restarting backstage deployment: $backstage_deployment"
+  log::info "Restarting backstage deployment: $backstage_deployment"
   if ! oc rollout restart deployment/"$backstage_deployment" -n "$namespace"; then
-    echo "Error: Failed to restart backstage deployment"
+    log::error "Error: Failed to restart backstage deployment"
     return 1
   fi
 
   # Cleanup
   rm -rf "$work_dir"
 
-  echo "Successfully enabled orchestrator plugins in namespace: $namespace"
+  log::info "Successfully enabled orchestrator plugins in namespace: $namespace"
 }
