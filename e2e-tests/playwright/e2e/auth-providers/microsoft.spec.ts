@@ -15,7 +15,7 @@ MICOROSFT:
     [-] emailLocalPartMatchingUserEntityName
 */
 
-test.describe.skip("Configure Microsoft Provider", async () => {
+test.describe("Configure Microsoft Provider", async () => {
   let common: Common;
   let uiHelper: UIhelper;
 
