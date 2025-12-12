@@ -3,7 +3,7 @@ import { UIhelper } from "../../utils/ui-helper";
 import { Common, setupBrowser } from "../../utils/common";
 
 let page;
-test.describe.skip("Test ACR plugin", () => {
+test.describe("Test ACR plugin", () => {
   test.beforeAll(async () => {
     test.info().annotations.push({
       type: "component",
