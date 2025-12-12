@@ -61,14 +61,20 @@ test.describe("Test timestamp column on Catalog", () => {
 
   test("Toggle 'CREATED AT' to see if the component list can be sorted in ascending/decending order", async () => {
     // Get the first data row's "Created At" cell using semantic selectors
-    const firstRow = page.getByRole('row').filter({ has: page.getByRole('cell') }).first();
-    const createdAtCell = firstRow.getByRole('cell').nth(7); // 0-indexed, 8th column = index 7
+    const firstRow = page
+      .getByRole("row")
+      .filter({ has: page.getByRole("cell") })
+      .first();
+    const createdAtCell = firstRow.getByRole("cell").nth(7); // 0-indexed, 8th column = index 7
 
     //Verify by default Rows are in ascending (empty for oldest entries)
     await expect(createdAtCell).toBeEmpty();
 
     // Use semantic selector for column header instead of MUI class
-    const column = page.getByRole('columnheader', { name: "Created At", exact: true });
+    const column = page.getByRole("columnheader", {
+      name: "Created At",
+      exact: true,
+    });
     await column.dblclick(); // Double click to Toggle into descending order.
     await expect(createdAtCell).not.toBeEmpty();
   });

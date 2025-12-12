@@ -306,7 +306,9 @@ test.describe.serial("Test RBAC", () => {
 
       await uiHelper.clickButton("Next");
       // Wait for the users and groups step to be visible
-      await expect(page.getByTestId("users-and-groups-text-field")).toBeVisible();
+      await expect(
+        page.getByTestId("users-and-groups-text-field"),
+      ).toBeVisible();
       await uiHelper.fillTextInputByLabel(
         "Select users and groups",
         "sample-role-1",
@@ -344,10 +346,18 @@ test.describe.serial("Test RBAC", () => {
       await uiHelper.verifyHeading(rbacPo.regexpShortUsersAndGroups(3, 1));
       await uiHelper.clickButton("Next");
       // Wait for permissions step to be ready
-      await expect(page.getByRole("heading", { name: /Configure permission/i }).or(page.getByTestId("nextButton-2"))).toBeVisible();
+      await expect(
+        page
+          .getByRole("heading", { name: /Configure permission/i })
+          .or(page.getByTestId("nextButton-2")),
+      ).toBeVisible();
       await uiHelper.clickButton("Next");
       // Wait for review step to be ready
-      await expect(page.getByRole("heading", { name: /Review/i }).or(page.getByRole("button", { name: "Save" }))).toBeVisible();
+      await expect(
+        page
+          .getByRole("heading", { name: /Review/i })
+          .or(page.getByRole("button", { name: "Save" })),
+      ).toBeVisible();
       await uiHelper.clickButton("Save");
       await uiHelper.verifyText(
         "Role role:default/test-role updated successfully",
@@ -421,7 +431,11 @@ test.describe.serial("Test RBAC", () => {
       await rbacPo.selectPluginsCombobox.click();
       await rbacPo.selectOption("scaffolder");
       // Use more specific selector for the permission dropdown
-      await page.getByRole("button", { name: /Select/i }).or(page.locator('[placeholder*="Select"]')).first().click();
+      await page
+        .getByRole("button", { name: /Select/i })
+        .or(page.locator('[placeholder*="Select"]'))
+        .first()
+        .click();
       await rbacPo.selectPermissionCheckbox("scaffolder.template.parameter");
       await uiHelper.clickButton("Next");
       // Wait for review step to be ready
@@ -745,10 +759,18 @@ test.describe.serial("Test RBAC", () => {
       await uiHelper.verifyHeading(rbacPo.regexpShortUsersAndGroups(3, 1));
       await uiHelper.clickButton("Next");
       // Wait for permissions step to be ready
-      await expect(page.getByRole("heading", { name: /Configure permission/i }).or(page.getByTestId("nextButton-2"))).toBeVisible();
+      await expect(
+        page
+          .getByRole("heading", { name: /Configure permission/i })
+          .or(page.getByTestId("nextButton-2")),
+      ).toBeVisible();
       await uiHelper.clickButton("Next");
       // Wait for review step to be ready
-      await expect(page.getByRole("heading", { name: /Review/i }).or(page.getByRole("button", { name: "Save" }))).toBeVisible();
+      await expect(
+        page
+          .getByRole("heading", { name: /Review/i })
+          .or(page.getByRole("button", { name: "Save" })),
+      ).toBeVisible();
       await uiHelper.clickButton("Save");
       await uiHelper.verifyText(
         "Role role:default/test-role updated successfully",
