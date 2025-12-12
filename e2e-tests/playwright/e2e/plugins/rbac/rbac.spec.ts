@@ -1,6 +1,5 @@
-import { Locator, Page, expect, test } from "@playwright/test";
+import { Page, expect, test } from "@playwright/test";
 import { Response, Roles } from "../../../support/pages/rbac";
-import { UI_HELPER_ELEMENTS } from "../../../support/page-objects/global-obj";
 import {
   SEARCH_OBJECTS_COMPONENTS,
   ROLE_OVERVIEW_COMPONENTS_TEST_ID,
