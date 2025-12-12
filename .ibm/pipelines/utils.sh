@@ -1208,6 +1208,12 @@ deploy_orchestrator_workflows_operator() {
   # Wait for backstage and sonata flow pods to be ready before continuing
   wait_for_deployment $namespace backstage-psql 15
   wait_for_deployment $namespace backstage-rhdh 15
+
+  # DEBUG: Sleep for 2 hours to allow manual troubleshooting
+  echo "Sleeping for 2 hours (7200 seconds) to allow manual debugging..."
+  sleep 7200
+  echo "Sleep completed, continuing with deployment..."
+
   wait_for_deployment $namespace sonataflow-platform-data 20
   wait_for_deployment $namespace sonataflow-platform-jobs-service 20
 
