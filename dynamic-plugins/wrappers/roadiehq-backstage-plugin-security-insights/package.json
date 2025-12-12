@@ -55,7 +55,7 @@
   ],
   "author": "Red Hat",
   "homepage": "https://red.ht/rhdh",
-  "bugs": "https://issues.redhat.com/browse/RHIDP",
+  "bugs": "https://github.com/roadiehq/backstage-plugin-security-insights/issues",
   "keywords": [
     "support:tech-preview",
     "lifecycle:active"
