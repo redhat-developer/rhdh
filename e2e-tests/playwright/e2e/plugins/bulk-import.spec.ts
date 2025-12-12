@@ -10,7 +10,7 @@ import {
 } from "../../support/test-data/bulk-import";
 
 // Pre-req : plugin-bulk-import & plugin-bulk-import-backend-dynamic
-test.describe.skip("Bulk Import plugin", () => {
+test.describe.serial("Bulk Import plugin", () => {
   test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
   // TODO: https://issues.redhat.com/browse/RHDHBUGS-2116
   test.fixme(() => process.env.JOB_TYPE.includes("presubmit")); // skip on PR checks
