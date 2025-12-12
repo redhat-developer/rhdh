@@ -26,7 +26,7 @@ async function ensureEntityDoesNotExist() {
   }
 }
 
-test.describe.skip("Audit Log check for Catalog Plugin", () => {
+test.describe.serial("Audit Log check for Catalog Plugin", () => {
   let uiHelper: UIhelper;
   let common: Common;
   let catalogImport: CatalogImport;
