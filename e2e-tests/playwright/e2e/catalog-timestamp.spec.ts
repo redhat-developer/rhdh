@@ -12,7 +12,7 @@ const t = getTranslations();
 const lang = getCurrentLanguage();
 
 let page: Page;
-test.describe.skip("Test timestamp column on Catalog", () => {
+test.describe("Test timestamp column on Catalog", () => {
   test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
 
   let uiHelper: UIhelper;
