@@ -392,14 +392,40 @@ check_operator_status() {
 
 # Installs the Crunchy Postgres Operator from Openshift Marketplace using predefined parameters
 install_crunchy_postgres_ocp_operator() {
-  install_subscription postgresql openshift-operators v5 postgresql community-operators openshift-marketplace
+  install_subscription crunchy-postgres-operator openshift-operators v5 crunchy-postgres-operator certified-operators openshift-marketplace
   check_operator_status 300 "openshift-operators" "Crunchy Postgres for Kubernetes" "Succeeded"
+
+  # Wait for PostgresCluster CRD to be registered before proceeding
+  echo "Waiting for PostgresCluster CRD to be registered..."
+  timeout 120 bash -c '
+    until oc get crd postgresclusters.postgres-operator.crunchydata.com &>/dev/null; do
+      echo "Waiting for postgresclusters.postgres-operator.crunchydata.com CRD..."
+      sleep 5
+    done
+  ' || {
+    echo "Error: Timed out waiting for PostgresCluster CRD to be registered."
+    return 1
+  }
+  echo "PostgresCluster CRD is available."
 }
 
 # Installs the Crunchy Postgres Operator from OperatorHub.io
 install_crunchy_postgres_k8s_operator() {
-  install_subscription postgresql openshift-operators v5 postgresql community-operators openshift-marketplace
+  install_subscription crunchy-postgres-operator openshift-operators v5 crunchy-postgres-operator certified-operators openshift-marketplace
   check_operator_status 300 "operators" "Crunchy Postgres for Kubernetes" "Succeeded"
+
+  # Wait for PostgresCluster CRD to be registered before proceeding
+  echo "Waiting for PostgresCluster CRD to be registered..."
+  timeout 120 bash -c '
+    until kubectl get crd postgresclusters.postgres-operator.crunchydata.com &>/dev/null; do
+      echo "Waiting for postgresclusters.postgres-operator.crunchydata.com CRD..."
+      sleep 5
+    done
+  ' || {
+    echo "Error: Timed out waiting for PostgresCluster CRD to be registered."
+    return 1
+  }
+  echo "PostgresCluster CRD is available."
 }
 
 # Installs the OpenShift Serverless Logic Operator (SonataFlow) from OpenShift Marketplace
@@ -827,6 +853,19 @@ install_pipelines_operator() {
     wait_for_deployment "openshift-operators" "pipelines"
     wait_for_endpoint "tekton-pipelines-webhook" "openshift-pipelines"
   fi
+
+  # Wait for Tekton Pipeline CRD to be registered before proceeding
+  echo "Waiting for Tekton Pipeline CRD to be registered..."
+  timeout 120 bash -c '
+    until oc get crd pipelines.tekton.dev &>/dev/null; do
+      echo "Waiting for pipelines.tekton.dev CRD..."
+      sleep 5
+    done
+  ' || {
+    echo "Error: Timed out waiting for Tekton Pipeline CRD to be registered."
+    return 1
+  }
+  echo "Tekton Pipeline CRD is available."
 }
 
 # Installs the Tekton Pipelines if not already installed (alternative of OpenShift Pipelines for Kubernetes clusters)
@@ -840,6 +879,19 @@ install_tekton_pipelines() {
     wait_for_deployment "tekton-pipelines" "${DISPLAY_NAME}"
     wait_for_endpoint "tekton-pipelines-webhook" "tekton-pipelines"
   fi
+
+  # Wait for Tekton Pipeline CRD to be registered before proceeding
+  echo "Waiting for Tekton Pipeline CRD to be registered..."
+  timeout 120 bash -c '
+    until kubectl get crd pipelines.tekton.dev &>/dev/null; do
+      echo "Waiting for pipelines.tekton.dev CRD..."
+      sleep 5
+    done
+  ' || {
+    echo "Error: Timed out waiting for Tekton Pipeline CRD to be registered."
+    return 1
+  }
+  echo "Tekton Pipeline CRD is available."
 }
 
 delete_tekton_pipelines() {
