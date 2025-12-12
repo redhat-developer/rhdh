@@ -443,15 +443,12 @@ export async function findTableCellByColumn(
  * - await expect(locator).toBeHidden() - Auto-waits for hidden state
  *
  * These methods are only for specialized waiting scenarios.
+ *
+ * ⚠️ networkidle removed: Not recommended by Playwright as it doesn't wait for
+ * requests triggered after load and can give false positives with polling.
+ * Use forAPIResponse() or expect() assertions instead.
  */
 export class WaitStrategies {
-  /**
-   * Wait for network to be idle
-   */
-  static async forNetworkIdle(page: Page): Promise<void> {
-    await page.waitForLoadState("networkidle");
-  }
-
   /**
    * Wait for DOM content to be loaded
    */
