@@ -962,9 +962,14 @@ delete_tekton_pipelines() {
 }
 
 cluster_setup_ocp_helm() {
-  # first install all operators to run the installation in parallel
-  install_pipelines_operator
-  install_crunchy_postgres_ocp_operator
+  operator::install_pipelines
+
+  # Wait for OpenShift Pipelines to be ready before proceeding
+  log::info "Waiting for OpenShift Pipelines to be ready..."
+  k8s_wait::deployment "openshift-operators" "pipelines" 30 10 || return 1
+  k8s_wait::endpoint "tekton-pipelines-webhook" "openshift-pipelines" 1800 10 || return 1
+
+  operator::install_postgres_ocp
 
   # Skip orchestrator infra installation based on job type (see should_skip_orchestrator)
   if should_skip_orchestrator; then
@@ -972,24 +977,19 @@ cluster_setup_ocp_helm() {
   else
     install_orchestrator_infra_chart
   fi
-
-  # then wait for the right status one by one
-  waitfor_pipelines_operator
-  waitfor_crunchy_postgres_ocp_operator
 }
 
 cluster_setup_ocp_operator() {
-  # first install all operators to run the installation in parallel
-  install_pipelines_operator
-  install_crunchy_postgres_ocp_operator
-  install_serverless_ocp_operator
-  install_serverless_logic_ocp_operator
+  operator::install_pipelines
 
-  # then wait for the right status one by one
-  waitfor_pipelines_operator
-  waitfor_crunchy_postgres_ocp_operator
-  waitfor_serverless_ocp_operator
-  waitfor_serverless_logic_ocp_operator
+  # Wait for OpenShift Pipelines to be ready before proceeding
+  log::info "Waiting for OpenShift Pipelines to be ready..."
+  k8s_wait::deployment "openshift-operators" "pipelines" 30 10 || return 1
+  k8s_wait::endpoint "tekton-pipelines-webhook" "openshift-pipelines" 1800 10 || return 1
+
+  operator::install_postgres_ocp
+  operator::install_serverless
+  operator::install_serverless_logic
 }
 
 cluster_setup_k8s_operator() {
