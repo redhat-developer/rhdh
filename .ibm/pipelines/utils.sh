@@ -538,6 +538,12 @@ check_backstage_running() {
 
 cluster_setup_ocp_helm() {
   operator::install_pipelines
+
+  # Wait for OpenShift Pipelines to be ready before proceeding
+  log::info "Waiting for OpenShift Pipelines to be ready..."
+  k8s_wait::deployment "openshift-operators" "pipelines" 30 10
+  k8s_wait::endpoint "tekton-pipelines-webhook" "openshift-pipelines" 30 10
+
   operator::install_postgres_ocp
 
   # Skip orchestrator infra installation on OSD-GCP due to infrastructure limitations
@@ -550,6 +556,12 @@ cluster_setup_ocp_helm() {
 
 cluster_setup_ocp_operator() {
   operator::install_pipelines
+
+  # Wait for OpenShift Pipelines to be ready before proceeding
+  log::info "Waiting for OpenShift Pipelines to be ready..."
+  k8s_wait::deployment "openshift-operators" "pipelines" 30 10
+  k8s_wait::endpoint "tekton-pipelines-webhook" "openshift-pipelines" 30 10
+
   operator::install_postgres_ocp
   operator::install_serverless
   operator::install_serverless_logic
