@@ -3,7 +3,7 @@ import { UIhelper } from "../../utils/ui-helper";
 import { Common } from "../../utils/common";
 import { UI_HELPER_ELEMENTS } from "../../support/page-objects/global-obj";
 
-test.describe.skip("Test ApplicationProvider", () => {
+test.describe("Test ApplicationProvider", () => {
   test.beforeAll(async () => {
     test.info().annotations.push({
       type: "component",
