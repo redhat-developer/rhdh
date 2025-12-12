@@ -11,7 +11,7 @@ import { TEMPLATES } from "../support/test-data/templates";
 let page: Page;
 let context: BrowserContext;
 
-test.describe.skip("GitHub Happy path", async () => {
+test.describe.serial("GitHub Happy path", async () => {
   let common: Common;
   let uiHelper: UIhelper;
   let catalogImport: CatalogImport;
