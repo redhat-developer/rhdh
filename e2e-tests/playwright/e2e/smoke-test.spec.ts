@@ -1,7 +1,7 @@
 import { test } from "@playwright/test";
 import { UIhelper } from "../utils/ui-helper";
 import { Common } from "../utils/common";
-test.describe.skip("Smoke test", () => {
+test.describe("Smoke test", () => {
   let uiHelper: UIhelper;
   let common: Common;
 
