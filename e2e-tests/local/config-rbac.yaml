@@ -1,0 +1,51 @@
+# RBAC local config for e2e testing with rhdh-local
+# This config enables RBAC/permissions without external services
+
+app:
+  baseUrl: http://localhost:7007
+  title: Red Hat Developer Hub (Local E2E - RBAC)
+
+backend:
+  baseUrl: http://localhost:7007
+  cors:
+    origin: http://localhost:7007
+  auth:
+    dangerouslyDisableDefaultAuthPolicy: true
+    externalAccess:
+      - type: static
+        options:
+          token: test-token
+          subject: test-user
+
+auth:
+  environment: development
+  session:
+    secret: super-secret-session-key-for-local-testing
+  providers:
+    guest:
+      dangerouslyAllowOutsideDevelopment: true
+
+permission:
+  enabled: true
+  rbac:
+    maxDepth: 1
+    policyFileReload: true
+    policies-csv-file: /opt/app-root/src/configs/rbac/rbac-policy.csv
+    pluginsWithPermission:
+      - catalog
+      - permission
+      - scaffolder
+    admin:
+      users:
+        - name: user:development/guest
+
+catalog:
+  import:
+    entityFilename: catalog-info.yaml
+    pullRequestBranchName: backstage-integration
+  rules:
+    - allow: [API, Component, Group, Location, Resource, System, Template, User]
+  locations:
+    - type: url
+      target: https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/all.yaml
+
