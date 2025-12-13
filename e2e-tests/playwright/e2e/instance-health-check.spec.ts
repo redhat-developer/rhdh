@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-test.describe.skip("Application health check", () => {
+test.describe("Application health check", () => {
   test.beforeAll(async () => {
     test.info().annotations.push({
       type: "component",
