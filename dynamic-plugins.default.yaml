@@ -154,10 +154,6 @@ plugins:
           - importName: AdoptionInsightsAnalyticsApi
 - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-catalog-backend-module-marketplace-dynamic
   disabled: false
-- package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-dynamic-home-page:1.9.0--1.9.2!red-hat-developer-hub-backstage-plugin-dynamic-home-page
-  # new approach using oci images: to switch to the new approach, remove
-  # these comments + the next two lines, but keep the pluginConfig details.
-  disabled: true
 - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-dynamic-home-page
   disabled: false
   pluginConfig:
@@ -898,39 +894,6 @@ plugins:
             rbac:
               parent: default.admin
               icon: rbacIcon
-- package: oci://quay.io/rhdh/backstage-community-plugin-redhat-argocd:1.9.0--2.0.0!backstage-community-plugin-redhat-argocd
-  # new approach using oci images: to switch to the new approach, remove
-  # these comments + the next two lines, but keep the pluginConfig details.
-  disabled: true
-- package: ./dynamic-plugins/dist/backstage-community-plugin-redhat-argocd
-  disabled: true
-  pluginConfig:
-    dynamicPlugins:
-      frontend:
-        backstage-community.plugin-redhat-argocd:
-          translationResources:
-          - importName: argocdTranslations
-            module: Alpha
-            ref: argocdTranslationRef
-          mountPoints:
-          - mountPoint: entity.page.overview/cards
-            importName: ArgocdDeploymentSummary
-            config:
-              layout:
-                gridColumnEnd:
-                  lg: span 8
-                  xs: span 12
-              if:
-                allOf:
-                - isArgocdConfigured
-          - mountPoint: entity.page.cd/cards
-            importName: ArgocdDeploymentLifecycle
-            config:
-              layout:
-                gridColumn: 1 / -1
-              if:
-                allOf:
-                - isArgocdConfigured
 - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-kubernetes-dynamic
   disabled: true
 - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-servicenow-dynamic
@@ -1609,3 +1572,32 @@ plugins:
     orchestrator:
       dataIndexService:
         url: http://sonataflow-platform-data-index-service
+- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-redhat-argocd:next__2.0.0
+  disabled: true
+  pluginConfig:
+    dynamicPlugins:
+      frontend:
+        backstage-community.plugin-redhat-argocd:
+          translationResources:
+          - importName: argocdTranslations
+            module: Alpha
+            ref: argocdTranslationRef
+          mountPoints:
+          - mountPoint: entity.page.overview/cards
+            importName: ArgocdDeploymentSummary
+            config:
+              layout:
+                gridColumnEnd:
+                  lg: span 8
+                  xs: span 12
+              if:
+                allOf:
+                - isArgocdConfigured
+          - mountPoint: entity.page.cd/cards
+            importName: ArgocdDeploymentLifecycle
+            config:
+              layout:
+                gridColumn: 1 / -1
+              if:
+                allOf:
+                - isArgocdConfigured
