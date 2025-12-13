@@ -4,7 +4,7 @@ import { Common } from "../utils/common";
 import { expect } from "@playwright/test";
 import { Catalog } from "../support/pages/catalog";
 
-test.describe.skip("TechDocs", () => {
+test.describe("TechDocs", () => {
   let common: Common;
   let uiHelper: UIhelper;
   let catalog: Catalog;
