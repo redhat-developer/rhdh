@@ -7,7 +7,7 @@ import { JOB_NAME_PATTERNS } from "../../../utils/constants";
 
 /* eslint-disable playwright/no-conditional-in-test */
 
-test.describe.skip("Test Adoption Insights", () => {
+test.describe.serial("Test Adoption Insights", () => {
   test.skip(() => skipIfJobName(JOB_NAME_PATTERNS.GKE));
 
   test.beforeAll(async () => {
