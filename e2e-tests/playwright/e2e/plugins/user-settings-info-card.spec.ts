@@ -3,7 +3,7 @@ import { Common } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
 import { UI_HELPER_ELEMENTS } from "../../support/page-objects/global-obj";
 
-test.describe.skip("Test user settings info card", () => {
+test.describe("Test user settings info card", () => {
   test.beforeAll(async () => {
     test.info().annotations.push({
       type: "component",
