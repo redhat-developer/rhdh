@@ -43,7 +43,7 @@ source "${DIR}/utils.sh"
 
 main() {
   log::info "Log file: ${LOGFILE}"
-  log::info "JOB_NAME : $JOB_NAME"
+  log::info "JOB_NAME: $JOB_NAME"
 
   CHART_VERSION=$(get_chart_version "$CHART_MAJOR_VERSION")
   export CHART_VERSION
