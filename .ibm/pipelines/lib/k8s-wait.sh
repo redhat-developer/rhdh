@@ -197,6 +197,41 @@ k8s_wait::endpoint() {
   return 1
 }
 
+# Wait for CRD (Custom Resource Definition) to become available
+# Args: crd_name, timeout_seconds (default: 300), check_interval_seconds (default: 10)
+k8s_wait::crd() {
+  local crd_name=$1
+  local timeout=${2:-300}
+  local check_interval=${3:-10}
+
+  if [[ -z "$crd_name" ]]; then
+    log::error "${ERR_MISSING_PARAMS}: crd_name"
+    log::info "Usage: k8s_wait::crd <crd-name> [timeout_seconds] [check_interval_seconds]"
+    return 1
+  fi
+
+  local max_attempts=$((timeout / check_interval))
+
+  log::info "Waiting for CRD '$crd_name' to be available (timeout: ${timeout}s)..."
+
+  for ((i = 1; i <= max_attempts; i++)); do
+    if oc get crd "$crd_name" > /dev/null 2>&1; then
+      log::success "CRD '$crd_name' is available"
+      return 0
+    fi
+
+    if ((i == max_attempts)); then
+      log::error "Timeout waiting for CRD '$crd_name' after ${timeout} seconds"
+      return 1
+    fi
+
+    log::debug "Attempt $i/$max_attempts - Waiting ${check_interval}s..."
+    sleep "$check_interval"
+  done
+
+  return 1
+}
+
 # Wait for Backstage CR to become available
 # Args: namespace, backstage_name (default: "backstage"), timeout_seconds (default: 300), check_interval_seconds (default: 10)
 k8s_wait::backstage_resource() {
