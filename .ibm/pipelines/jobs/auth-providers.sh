@@ -16,7 +16,7 @@ handle_auth_providers() {
   install_rhdh_operator "${OPERATOR_MANAGER}" "$retry_operator_installation"
 
   # Wait for Backstage CRD to be available after operator installation
-  k8s_wait::crd "backstages.rhdh.redhat.com" 300 10
+  k8s_wait::crd "backstages.rhdh.redhat.com" 300 10 || return 1
 
   K8S_CLUSTER_ROUTER_BASE=$(oc get route console -n openshift-console -o=jsonpath='{.spec.host}' | sed 's/^[^.]*\.//')
   export K8S_CLUSTER_ROUTER_BASE
