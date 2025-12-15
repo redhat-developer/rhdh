@@ -101,10 +101,15 @@ operator::install_pipelines() {
   log::info "Red Hat OpenShift Pipelines operator is not installed. Installing..."
   operator::install_subscription openshift-pipelines-operator "${OPERATOR_NAMESPACE}" latest openshift-pipelines-operator-rh redhat-operators openshift-marketplace
 
-  # Note: Calling script should wait for deployment:
-  # k8s_wait::deployment "openshift-operators" "pipelines"
-  # k8s_wait::endpoint "tekton-pipelines-webhook" "openshift-pipelines"
-  return $?
+  # Wait for Tekton Pipelines CRDs to be available
+  log::info "Waiting for Tekton Pipelines CRDs to be created..."
+  k8s_wait::crd "tasks.tekton.dev" 300 10 || return 1
+  k8s_wait::crd "pipelines.tekton.dev" 300 10 || return 1
+  
+  # Note: Calling script should still wait for deployment readiness:
+  # k8s_wait::deployment "openshift-operators" "pipelines" 30 10
+  # k8s_wait::endpoint "tekton-pipelines-webhook" "openshift-pipelines" 30 10
+  return 0
 }
 
 # Install Tekton Pipelines (alternative to OpenShift Pipelines for Kubernetes)
