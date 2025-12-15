@@ -541,8 +541,8 @@ cluster_setup_ocp_helm() {
 
   # Wait for OpenShift Pipelines to be ready before proceeding
   log::info "Waiting for OpenShift Pipelines to be ready..."
-  k8s_wait::deployment "openshift-operators" "pipelines" 30 10
-  k8s_wait::endpoint "tekton-pipelines-webhook" "openshift-pipelines" 30 10
+  k8s_wait::deployment "openshift-operators" "pipelines" 30 10 || return 1
+  k8s_wait::endpoint "tekton-pipelines-webhook" "openshift-pipelines" 30 10 || return 1
 
   operator::install_postgres_ocp
 
@@ -559,8 +559,8 @@ cluster_setup_ocp_operator() {
 
   # Wait for OpenShift Pipelines to be ready before proceeding
   log::info "Waiting for OpenShift Pipelines to be ready..."
-  k8s_wait::deployment "openshift-operators" "pipelines" 30 10
-  k8s_wait::endpoint "tekton-pipelines-webhook" "openshift-pipelines" 30 10
+  k8s_wait::deployment "openshift-operators" "pipelines" 30 10 || return 1
+  k8s_wait::endpoint "tekton-pipelines-webhook" "openshift-pipelines" 30 10 || return 1
 
   operator::install_postgres_ocp
   operator::install_serverless
