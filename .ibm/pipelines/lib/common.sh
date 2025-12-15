@@ -15,7 +15,11 @@ common::oc_login() {
     return 1
   fi
 
-  oc login --token="${K8S_CLUSTER_TOKEN}" --server="${K8S_CLUSTER_URL}" --insecure-skip-tls-verify=true
+  if ! oc login --token="${K8S_CLUSTER_TOKEN}" --server="${K8S_CLUSTER_URL}" --insecure-skip-tls-verify=true; then
+    log::error "Failed to authenticate to OpenShift cluster at ${K8S_CLUSTER_URL}"
+    return 1
+  fi
+
   # Safely log version without exposing sensitive server details
   oc version --client 2>&1 | head -1 || log::warn "Could not retrieve oc client version"
   return 0
