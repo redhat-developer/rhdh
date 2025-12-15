@@ -65,7 +65,49 @@ jobs:
           echo "Using artifact name: $ARTIFACT_NAME"
           echo "Using skip artifact name: $SKIP_ARTIFACT_NAME"
 
+      - name: Checkout PR
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+
+      - name: Check if changes are only in specific directories
+        id: check-changeset
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ steps.get-pr-info.outputs.pr_number }}
+          PR_TARGET_REPO: ${{ github.repository }}
+        run: |
+          # Get the base branch using GitHub CLI
+          BASE_REF=$(gh pr view "$PR_NUMBER" --repo "$PR_TARGET_REPO" --json baseRefName --jq '.baseRefName')
+          echo "Base branch: $BASE_REF"
+          
+          # Get the base branch
+          git fetch origin "$BASE_REF"
+          
+          # Get changeset
+          PR_CHANGESET=$(git diff --name-only "origin/$BASE_REF"...HEAD)
+          echo "Changeset:"
+          echo "$PR_CHANGESET"
+          
+          # Check if changes are exclusively within the specified directories
+          # Has to be aligned with https://github.com/openshift/release/blob/master/ci-operator/step-registry/redhat-developer/rhdh/ocp/helm/redhat-developer-rhdh-ocp-helm-commands.sh
+          DIRECTORIES_TO_CHECK=".ibm|e2e-tests|docs|.claude|.cursor|.rulesync|.vscode"
+          ONLY_IN_DIRS=true
+          
+          for change in $PR_CHANGESET; do
+              # Check if the change is not within the specified directories
+              if ! echo "$change" | grep -qE "^($DIRECTORIES_TO_CHECK)/"; then
+                  ONLY_IN_DIRS=false
+                  break
+              fi
+          done
+          
+          echo "ONLY_IN_DIRS: $ONLY_IN_DIRS"
+          echo "only_in_dirs=$ONLY_IN_DIRS" >> $GITHUB_OUTPUT
+
       - name: Download Skip Status Artifact
+        if: ${{ steps.check-changeset.outputs.only_in_dirs != 'true' }}
         id: download-skip-status
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
@@ -76,6 +118,7 @@ jobs:
         continue-on-error: true
 
       - name: Check Skip Status
+        if: ${{ steps.check-changeset.outputs.only_in_dirs != 'true' }}
         id: check-skip
         run: |
           if [ -f "./rhdh-skip-artifacts/isSkipped.txt" ]; then
@@ -88,7 +131,7 @@ jobs:
           fi
 
       - name: Download Image Artifacts
-        if: ${{ steps.check-skip.outputs.is_skipped != 'true' }}
+        if: ${{ steps.check-changeset.outputs.only_in_dirs != 'true' && steps.check-skip.outputs.is_skipped != 'true' }}
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: ${{ env.ARTIFACT_NAME }}
@@ -97,7 +140,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Load and prepare image
-        if: ${{ steps.check-skip.outputs.is_skipped != 'true' }}
+        if: ${{ steps.check-changeset.outputs.only_in_dirs != 'true' && steps.check-skip.outputs.is_skipped != 'true' }}
         id: prepare
         run: |
           # Check if artifacts exist
@@ -125,22 +168,54 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Push Images
-        if: ${{ steps.check-skip.outputs.is_skipped != 'true' }}
+        if: ${{ steps.check-changeset.outputs.only_in_dirs != 'true' && steps.check-skip.outputs.is_skipped != 'true' }}
         uses: redhat-actions/push-to-registry@5ed88d269cf581ea9ef6dd6806d01562096bee9c # v2.8
         with:
           tags: ${{ steps.prepare.outputs.tags }}
           username: ${{ secrets.QUAY_USERNAME }}
           password: ${{ secrets.QUAY_TOKEN }}
 
-      - name: Log skip status
-        if: ${{ steps.check-skip.outputs.is_skipped == 'true' }}
+      - name: Log skip status - only test directories changed
+        if: ${{ steps.check-changeset.outputs.only_in_dirs == 'true' }}
+        run: |
+          echo "🚫 Image Build/Push Skipped"
+          echo "Changes are only in test/docs/tooling directories (.ibm, e2e-tests, docs, .claude, .cursor, .rulesync, .vscode)"
+          echo "The e2e job will use the 'next' image instead of waiting for a PR-specific build"
+
+      - name: Log skip status - build skipped
+        if: ${{ steps.check-changeset.outputs.only_in_dirs != 'true' && steps.check-skip.outputs.is_skipped == 'true' }}
         run: |
           echo "🚫 Image Push Skipped"
           echo "The container image push was skipped because the build was skipped"
           echo "(either due to [skip-build] tag or no relevant changes with existing image)"
 
+      - name: Comment for next image usage
+        if: ${{ steps.check-changeset.outputs.only_in_dirs == 'true' }}
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        env:
+          PR_NUMBER: ${{ steps.get-pr-info.outputs.pr_number }}
+        with:
+          script: |
+            const prNumber = process.env.PR_NUMBER;
+            
+            if (!prNumber) {
+              console.log('No pull request number found');
+              return;
+            }
+            
+            const body = `The job uses next image\n\n/test e2e-ocp-helm\n`;
+            
+            console.log(`Creating comment for PR ${prNumber} with body:\n${body}`);
+
+            github.rest.issues.createComment({
+              issue_number: parseInt(prNumber),
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            })
+
       - name: Comment the image pull link
-        if: ${{ steps.check-skip.outputs.is_skipped != 'true' }}
+        if: ${{ steps.check-changeset.outputs.only_in_dirs != 'true' && steps.check-skip.outputs.is_skipped != 'true' }}
         uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         env:
           PUSHED_TAGS: ${{ steps.prepare.outputs.tags }}
@@ -173,7 +248,7 @@ jobs:
               return `* [\`${fullTag}\`](https://${fullTag})`;
             }).join('\n');
             
-            const body = `The image is available at:\n\n${tagLinks}\n\n`;
+            const body = `The image is available at:\n\n${tagLinks}\n\n/test e2e-ocp-helm\n`;
             
             console.log(`Creating comment for PR ${prNumber} with body:\n ${body}`);
 
