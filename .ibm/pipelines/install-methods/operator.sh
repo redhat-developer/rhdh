@@ -59,7 +59,7 @@ prepare_operator() {
   local retry_operator_installation="${1:-1}"
   configure_namespace "${OPERATOR_MANAGER}"
   install_rhdh_operator "${OPERATOR_MANAGER}" "$retry_operator_installation"
-  
+
   # Wait for Backstage CRD to be available after operator installation
   k8s_wait::crd "backstages.rhdh.redhat.com" 300 10
 }
@@ -70,7 +70,7 @@ deploy_rhdh_operator() {
 
   # CRD should already be available from prepare_operator, but verify
   k8s_wait::crd "backstages.rhdh.redhat.com" 60 5
-  
+
   rendered_yaml=$(envsubst < "$backstage_crd_path")
   log::info "Applying Backstage CR from: $backstage_crd_path"
   log::debug "$rendered_yaml"
