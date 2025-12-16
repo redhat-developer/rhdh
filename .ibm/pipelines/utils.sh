@@ -1410,28 +1410,6 @@ EOF
   echo "All workflow pods are now running!"
 }
 
-# Helper function to wait for backstage resource to exist in namespace
-wait_for_backstage_resource() {
-  local namespace=$1
-  local max_attempts=40 # 40 attempts * 15 seconds = 10 minutes
-
-  local sleep_interval=15
-
-  echo "Waiting for backstage resource to exist in namespace: $namespace"
-
-  for ((i = 1; i <= max_attempts; i++)); do
-    if [[ $(oc get backstage -n "$namespace" -o json | jq '.items | length') -gt 0 ]]; then
-      echo "Backstage resource found in namespace: $namespace"
-      return 0
-    fi
-    echo "Attempt $i/$max_attempts: No backstage resource found, waiting ${sleep_interval}s..."
-    sleep $sleep_interval
-  done
-
-  echo "Error: No backstage resource found after 10 minutes"
-  return 1
-}
-
 # Helper function to enable orchestrator plugins by merging default and custom dynamic plugins
 enable_orchestrator_plugins_op() {
   local namespace=$1
@@ -1445,9 +1423,19 @@ enable_orchestrator_plugins_op() {
 
   echo "Enabling orchestrator plugins in namespace: $namespace"
 
-  # Wait for backstage resource to exist
-  wait_for_backstage_resource "$namespace"
-  sleep 5
+  # Construct backstage deployment name based on namespace
+  # Pattern: backstage-rhdh for non-RBAC, backstage-rhdh-rbac for RBAC
+  local backstage_deployment
+  if [[ "$namespace" == *"rbac"* ]]; then
+    backstage_deployment="backstage-rhdh-rbac"
+  else
+    backstage_deployment="backstage-rhdh"
+  fi
+
+  echo "Waiting for backstage deployment: $backstage_deployment in namespace: $namespace"
+  # Wait for backstage deployment to be ready (15 minutes timeout)
+  wait_for_deployment "$namespace" "$backstage_deployment" 15
+
 
   # Setup working directory
   local work_dir="/tmp/orchestrator-plugins-merge"
@@ -1488,6 +1476,18 @@ enable_orchestrator_plugins_op() {
     return 1
   fi
 
+  # For RBAC namespaces, disable all tech-radar plugins (frontend and backend) if they exist
+  # These plugins are mistakenly enabled in the RBAC values file and cause deployment issues
+  # Using global replacement to handle duplicate entries
+  if [[ "$namespace" == *"rbac"* ]]; then
+    echo "Disabling all tech-radar plugins (frontend and backend) for RBAC namespace..."
+    # Disable frontend plugin (all instances)
+    yq eval '(.plugins[] | select(.package == "./dynamic-plugins/dist/backstage-community-plugin-tech-radar") | .disabled) = true' -i "$work_dir/custom-plugins.yaml" || true
+    # Disable backend plugin (all instances)
+    yq eval '(.plugins[] | select(.package == "./dynamic-plugins/dist/backstage-community-plugin-tech-radar-backend-dynamic") | .disabled) = true' -i "$work_dir/custom-plugins.yaml" || true
+  fi
+
+
   # Use the modified custom file as the final merged result
   if ! cp "$work_dir/custom-plugins.yaml" "$work_dir/merged-plugins.yaml"; then
     echo "Error: Failed to create merged plugins file"
@@ -1502,16 +1502,7 @@ enable_orchestrator_plugins_op() {
     return 1
   fi
 
-  # Find and restart backstage deployment
-  echo "Finding backstage deployment..."
-  local backstage_deployment
-  backstage_deployment=$(oc get deployment -n "$namespace" --no-headers | grep "^backstage-rhdh" | awk '{print $1}' | head -1)
-
-  if [[ -z "$backstage_deployment" ]]; then
-    echo "Error: No backstage deployment found matching pattern 'backstage-rhdh*'"
-    return 1
-  fi
-
+  # Restart backstage deployment (using the deployment name determined earlier)
   echo "Restarting backstage deployment: $backstage_deployment"
   if ! oc rollout restart deployment/"$backstage_deployment" -n "$namespace"; then
     echo "Error: Failed to restart backstage deployment"
