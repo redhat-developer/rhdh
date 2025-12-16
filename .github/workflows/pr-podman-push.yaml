@@ -163,7 +163,7 @@ jobs:
               return;
             }
             
-            const body = `The job uses next image\n\n/test e2e-ocp-helm\n`;
+            const body = `The job uses next image`;
             
             console.log(`Creating comment for PR ${prNumber} with body:\n ${body}`);
 
@@ -208,9 +208,33 @@ jobs:
               return `* [\`${fullTag}\`](https://${fullTag})`;
             }).join('\n');
             
-            const body = `The image is available at:\n\n${tagLinks}\n\n/test e2e-ocp-helm\n`;
+            const body = `The image is available at:\n\n${tagLinks}\n\n`;
             
             console.log(`Creating comment for PR ${prNumber} with body:\n ${body}`);
+
+            github.rest.issues.createComment({
+              issue_number: parseInt(prNumber),
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            })
+
+      - name: Trigger e2e tests
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        env:
+          PR_NUMBER: ${{ steps.get-pr-info.outputs.pr_number }}
+        with:
+          script: |
+            const prNumber = process.env.PR_NUMBER;
+            
+            if (!prNumber) {
+              console.log('No pull request number found');
+              return;
+            }
+            
+            const body = `/test e2e-ocp-helm`;
+            
+            console.log(`Triggering e2e tests for PR ${prNumber}`);
 
             github.rest.issues.createComment({
               issue_number: parseInt(prNumber),
