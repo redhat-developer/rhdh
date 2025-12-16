@@ -168,7 +168,7 @@ test.describe("Default Global Header", () => {
     request,
     page,
   }) => {
-    const notificationsBadge = page.getByRole("navigation").getByRole("link", {
+    const notificationsBadge = page.getByRole("navigation").first().getByRole("link", {
       name: t["plugin.global-header"][lang]["notifications.title"],
     });
 

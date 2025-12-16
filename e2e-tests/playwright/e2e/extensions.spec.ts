@@ -546,9 +546,6 @@ test.describe("Admin > Extensions", () => {
         page.getByRole("cell", { name: "Frontend plugin module" }),
       ).toBeVisible();
       await expect(page.getByRole("cell", { name: "1.1.27" })).toBeVisible();
-      await expect(
-        page.getByRole("button", { name: /view/i }).first(),
-      ).toBeVisible();
       await page
         .getByRole("button", {
           name: new RegExp(

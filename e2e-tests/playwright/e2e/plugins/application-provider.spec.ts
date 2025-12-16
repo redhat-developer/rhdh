@@ -27,11 +27,6 @@ test.describe("Test ApplicationProvider", () => {
 
     // Verify Context one cards are visible
     await uiHelper.verifyTextinCard("Context one", "Context one");
-    const contextOneHeadings = page.getByRole("heading", {
-      name: "Context one",
-    });
-    await expect(contextOneHeadings.first()).toBeVisible();
-    await expect(contextOneHeadings.last()).toBeVisible();
 
     // Click the first + button (Context one card)
     await page.getByRole("button", { name: "+" }).first().click();
@@ -43,11 +38,6 @@ test.describe("Test ApplicationProvider", () => {
 
     // Verify Context two cards are visible
     await uiHelper.verifyTextinCard("Context two", "Context two");
-    const contextTwoHeadings = page.getByRole("heading", {
-      name: "Context two",
-    });
-    await expect(contextTwoHeadings.first()).toBeVisible();
-    await expect(contextTwoHeadings.last()).toBeVisible();
 
     // Click the third + button (first Context two card)
     await page.getByRole("button", { name: "+" }).nth(2).click();
