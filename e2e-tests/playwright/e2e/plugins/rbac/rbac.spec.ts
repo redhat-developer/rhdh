@@ -12,7 +12,7 @@ import { RbacPo } from "../../../support/page-objects/rbac-po";
 import { RhdhAuthApiHack } from "../../../support/api/rhdh-auth-api-hack";
 import RhdhRbacApi from "../../../support/api/rbac-api";
 import { RbacConstants } from "../../../data/rbac-constants";
-import { Policy } from "../../../support/api/rbac-api-structures";
+import { Policy, Role } from "../../../support/api/rbac-api-structures";
 import { CatalogImport } from "../../../support/pages/catalog-import";
 import { downloadAndReadFile } from "../../../utils/helper";
 
@@ -507,10 +507,29 @@ test.describe.serial("Test RBAC", () => {
         );
       }
 
-      await Response.checkResponse(
-        rolesResponse,
-        RbacConstants.getExpectedRoles(),
+      // Get all roles and filter out dynamically created test roles
+      const allRoles = await Response.removeMetadataFromResponse(rolesResponse) as Role[];
+
+      // Filter out test-created roles to prevent test interference during parallel execution.
+      // Some tests (e.g., orchestrator RBAC tests) dynamically create roles like workflowUser
+      // and workflowAdmin during their execution. Since Playwright runs tests in parallel by
+      // default, these dynamic roles may exist when this test runs. Rather than requiring strict
+      // serial execution (which slows down test runs), we filter out known test role patterns
+      // and only validate that the expected predefined roles exist with correct members.
+      const testRolePatterns = [/^role:default\/workflow/i];
+      const filteredRoles = allRoles.filter((role: Role) =>
+        !testRolePatterns.some(pattern => pattern.test(role.name))
       );
+
+      // Verify all expected roles exist in the filtered list
+      const expectedRoles = RbacConstants.getExpectedRoles();
+      for (const expectedRole of expectedRoles) {
+        const foundRole = filteredRoles.find((r: Role) => r.name === expectedRole.name);
+        expect(foundRole, `Role ${expectedRole.name} should exist`).toBeDefined();
+        expect((foundRole as Role).memberReferences, `Role ${expectedRole.name} should have correct members`).toEqual(expectedRole.memberReferences);
+      }
+
+      // Policies check remains unchanged as they're not affected by parallel test execution
       await Response.checkResponse(
         policiesResponse,
         RbacConstants.getExpectedPolicies(),
