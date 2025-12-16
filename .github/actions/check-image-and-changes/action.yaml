@@ -49,7 +49,7 @@ runs:
         # Non-essential directories that align with OpenShift CI ONLY_IN_DIRS check
         # https://github.com/openshift/release/blob/master/ci-operator/step-registry/redhat-developer/rhdh/ocp/helm/redhat-developer-rhdh-ocp-helm-commands.sh#L104
         # These directories don't require a new image build - e2e jobs will use "next" image
-        NON_ESSENTIAL_DIRS="^(\.ibm|e2e-tests|docs|\.claude|\.cursor|\.rulesync|\.vscode|\.rhdh/docker)/"
+        NON_ESSENTIAL_DIRS="^(\.ibm|e2e-tests|docs|\.claude|\.cursor|\.rulesync|\.github|\.vscode|\.rhdh/docker)/"
         
         # Flag to track if we found any relevant changes
         RELEVANT_CHANGES=false
