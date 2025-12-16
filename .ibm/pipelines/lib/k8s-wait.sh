@@ -30,19 +30,10 @@ k8s_wait::deployment() {
 
   log::info "Waiting for resource '$resource_name' in namespace '$namespace' (timeout: ${timeout_minutes}m)..."
 
-  # Try to resolve selector from deployment if it exists
-  local selector
-  selector=$(oc get deployment "$resource_name" -n "$namespace" -o jsonpath='{.spec.selector.matchLabels}' 2> /dev/null | grep -o '"[^"]*":"[^"]*"' | sed 's/"//g' | tr '\n' ',' | sed 's/,$//' || echo "")
-
   for ((i = 1; i <= max_attempts; i++)); do
-    local pod_name=""
-
-    # Use deployment selector if available, otherwise fall back to name matching
-    if [[ -n "$selector" ]]; then
-      pod_name=$(oc get pods -n "$namespace" -l "$selector" -o jsonpath='{.items[0].metadata.name}' 2> /dev/null || echo "")
-    else
-      pod_name=$(oc get pods -n "$namespace" -o name 2> /dev/null | awk -F'/' -v r="$resource_name" '$2 ~ "^"r {print $2; exit}')
-    fi
+    # Get the first pod name matching the resource name (grep-based, same as original)
+    local pod_name
+    pod_name=$(oc get pods -n "$namespace" 2> /dev/null | grep "$resource_name" | awk '{print $1}' | head -n 1)
 
     if [[ -n "$pod_name" ]]; then
       local phase ready
@@ -56,7 +47,7 @@ k8s_wait::deployment() {
 
       log::debug "Pod '$pod_name' phase=$phase ready=$ready"
     else
-      log::debug "No pods found for '$resource_name' in '$namespace'"
+      log::debug "No pods found matching '$resource_name' in '$namespace'"
     fi
 
     if ((i == max_attempts)); then
