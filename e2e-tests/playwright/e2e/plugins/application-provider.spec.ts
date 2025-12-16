@@ -28,22 +28,43 @@ test.describe("Test ApplicationProvider", () => {
     // Verify Context one cards are visible
     await uiHelper.verifyTextinCard("Context one", "Context one");
 
-    // Click the first + button (Context one card)
-    await page.getByRole("button", { name: "+" }).first().click();
+    // Get both Context one cards (they share state)
+    const contextOneCards = page
+      .getByRole("article")
+      .filter({ hasText: "Context one" });
+    const firstContextOneCard = contextOneCards.first();
+    const secondContextOneCard = contextOneCards.last();
 
-    // Verify count is now 1 (shared state between both Context one cards)
-    const countTexts = page.getByText("1", { exact: true });
-    await expect(countTexts.first()).toBeVisible();
-    await expect(countTexts.nth(1)).toBeVisible();
+    // Click the + button in the first Context one card
+    await firstContextOneCard.getByRole("button", { name: "+" }).click();
+
+    // Verify count is now 1 in both Context one cards (shared state)
+    await expect(
+      firstContextOneCard.getByRole("heading", { name: "1" }),
+    ).toBeVisible();
+    await expect(
+      secondContextOneCard.getByRole("heading", { name: "1" }),
+    ).toBeVisible();
 
     // Verify Context two cards are visible
     await uiHelper.verifyTextinCard("Context two", "Context two");
 
-    // Click the third + button (first Context two card)
-    await page.getByRole("button", { name: "+" }).nth(2).click();
+    // Get both Context two cards (they share state)
+    const contextTwoCards = page
+      .getByRole("article")
+      .filter({ hasText: "Context two" });
+    const firstContextTwoCard = contextTwoCards.first();
+    const secondContextTwoCard = contextTwoCards.last();
 
-    // Verify count is now 1 for Context two cards as well
-    await expect(countTexts.nth(2)).toBeVisible();
-    await expect(countTexts.nth(3)).toBeVisible();
+    // Click the + button in the first Context two card
+    await firstContextTwoCard.getByRole("button", { name: "+" }).click();
+
+    // Verify count is now 1 in both Context two cards (shared state)
+    await expect(
+      firstContextTwoCard.getByRole("heading", { name: "1" }),
+    ).toBeVisible();
+    await expect(
+      secondContextTwoCard.getByRole("heading", { name: "1" }),
+    ).toBeVisible();
   });
 });

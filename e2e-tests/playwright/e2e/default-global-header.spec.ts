@@ -139,9 +139,10 @@ test.describe("Default Global Header", () => {
     await expect(page.getByRole("tab", { name: "Overview" })).toBeVisible();
 
     await uiHelper.openProfileDropdown();
+    // Scope sign-out search to the profile menu (role=menu)
     await page
+      .getByRole("menu")
       .getByText(t["plugin.global-header"][lang]["profile.signOut"])
-      .first()
       .click();
     await uiHelper.verifyHeading(t["rhdh"][lang]["signIn.page.title"]);
   });
@@ -168,9 +169,12 @@ test.describe("Default Global Header", () => {
     request,
     page,
   }) => {
-    const notificationsBadge = page.getByRole("navigation").first().getByRole("link", {
-      name: t["plugin.global-header"][lang]["notifications.title"],
-    });
+    const notificationsBadge = page
+      .getByRole("navigation")
+      .first()
+      .getByRole("link", {
+        name: t["plugin.global-header"][lang]["notifications.title"],
+      });
 
     await uiHelper.clickLink({
       ariaLabel: t["plugin.global-header"][lang]["notifications.title"],
