@@ -1,7 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { UIhelper } from "../../utils/ui-helper";
 import { Common } from "../../utils/common";
-import { UI_HELPER_ELEMENTS } from "../../support/page-objects/global-obj";
 
 test.describe("Test ApplicationProvider", () => {
   test.beforeAll(async () => {
@@ -25,33 +24,36 @@ test.describe("Test ApplicationProvider", () => {
     await uiHelper.verifyText(
       "This card will work only if you register the TestProviderOne and TestProviderTwo correctly.",
     );
+
+    // Verify Context one cards are visible
     await uiHelper.verifyTextinCard("Context one", "Context one");
+    const contextOneHeadings = page.getByRole("heading", {
+      name: "Context one",
+    });
+    await expect(contextOneHeadings.first()).toBeVisible();
+    await expect(contextOneHeadings.last()).toBeVisible();
 
-    const contextOneFirstLocator = page
-      .locator(UI_HELPER_ELEMENTS.MuiCard("Context one"))
-      .first();
-    const contextOneSecondLocator = page
-      .locator(UI_HELPER_ELEMENTS.MuiCard("Context one"))
-      .last();
-    const contextOneIncrementButton = contextOneFirstLocator
-      .locator("button")
-      .filter({ hasText: "+" });
-    await contextOneIncrementButton.click();
-    await expect(contextOneFirstLocator.getByText("1")).toBeVisible();
-    await expect(contextOneSecondLocator.getByText("1")).toBeVisible();
+    // Click the first + button (Context one card)
+    await page.getByRole("button", { name: "+" }).first().click();
 
+    // Verify count is now 1 (shared state between both Context one cards)
+    const countTexts = page.getByText("1", { exact: true });
+    await expect(countTexts.first()).toBeVisible();
+    await expect(countTexts.nth(1)).toBeVisible();
+
+    // Verify Context two cards are visible
     await uiHelper.verifyTextinCard("Context two", "Context two");
-    const contextTwoFirstLocator = page
-      .locator(UI_HELPER_ELEMENTS.MuiCard("Context two"))
-      .first();
-    const contextTwoSecondLocator = page
-      .locator(UI_HELPER_ELEMENTS.MuiCard("Context two"))
-      .last();
-    const contextTwoIncrementButton = contextTwoFirstLocator
-      .locator("button")
-      .filter({ hasText: "+" });
-    await contextTwoIncrementButton.click();
-    await expect(contextTwoFirstLocator.getByText("1")).toBeVisible();
-    await expect(contextTwoSecondLocator.getByText("1")).toBeVisible();
+    const contextTwoHeadings = page.getByRole("heading", {
+      name: "Context two",
+    });
+    await expect(contextTwoHeadings.first()).toBeVisible();
+    await expect(contextTwoHeadings.last()).toBeVisible();
+
+    // Click the third + button (first Context two card)
+    await page.getByRole("button", { name: "+" }).nth(2).click();
+
+    // Verify count is now 1 for Context two cards as well
+    await expect(countTexts.nth(2)).toBeVisible();
+    await expect(countTexts.nth(3)).toBeVisible();
   });
 });

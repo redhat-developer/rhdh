@@ -3,7 +3,7 @@ import { Common, setupBrowser } from "../../../utils/common";
 import { UIhelper } from "../../../utils/ui-helper";
 import { KubeClient } from "../../../utils/kube-client";
 
-test.describe.skip("Test Kubernetes Actions plugin", () => {
+test.describe("Test Kubernetes Actions plugin", () => {
   let common: Common;
   let uiHelper: UIhelper;
   let page: Page;

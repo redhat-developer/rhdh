@@ -42,7 +42,7 @@ test.describe(`Settings page`, () => {
       - paragraph: ${t["user-settings"][lang]["languageToggle.description"]}
     `);
 
-    await expect(page.getByTestId("select").locator("div")).toContainText(
+    await expect(page.getByTestId("select")).toContainText(
       /English|Français|Deutsch/,
     );
     await page
@@ -56,9 +56,7 @@ test.describe(`Settings page`, () => {
       - option "Deutsch"
     `);
     await page.getByRole("option", { name: "Français" }).click();
-    await expect(page.getByTestId("select").locator("div")).toContainText(
-      "Français",
-    );
+    await expect(page.getByTestId("select")).toContainText("Français");
 
     const fr = getLocale("fr");
     const langfr = "fr";
