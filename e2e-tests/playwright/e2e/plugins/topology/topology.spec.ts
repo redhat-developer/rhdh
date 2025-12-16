@@ -52,7 +52,9 @@ test.describe("Test Topology Plugin", () => {
     );
     await uiHelper.verifyDivHasText(/\d+ (Succeeded|Failed|Cancelled|Running)/);
     await topology.verifyDeployment("topology-test");
-    await uiHelper.verifyButtonURL("Open URL", "topology-test-route");
+    await uiHelper.verifyButtonURL("Open URL", "topology-test-route", {
+      locator: '[data-test-id="topology-test"]',
+    });
     await uiHelper.clickTab("Details");
     await uiHelper.verifyText("Status");
     await uiHelper.verifyText("Active");
