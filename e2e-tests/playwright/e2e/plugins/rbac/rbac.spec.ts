@@ -508,7 +508,9 @@ test.describe.serial("Test RBAC", () => {
       }
 
       // Get all roles and filter out dynamically created test roles
-      const allRoles = await Response.removeMetadataFromResponse(rolesResponse) as Role[];
+      const allRoles = (await Response.removeMetadataFromResponse(
+        rolesResponse,
+      )) as Role[];
 
       // Filter out test-created roles to prevent test interference during parallel execution.
       // Some tests (e.g., orchestrator RBAC tests) dynamically create roles like workflowUser
@@ -517,36 +519,54 @@ test.describe.serial("Test RBAC", () => {
       // serial execution (which slows down test runs), we filter out known test role patterns
       // and only validate that the expected predefined roles exist with correct members.
       const testRolePatterns = [/^role:default\/workflow/i];
-      const filteredRoles = allRoles.filter((role: Role) =>
-        !testRolePatterns.some(pattern => pattern.test(role.name))
+      const filteredRoles = allRoles.filter(
+        (role: Role) =>
+          !testRolePatterns.some((pattern) => pattern.test(role.name)),
       );
 
       // Verify all expected roles exist in the filtered list
       const expectedRoles = RbacConstants.getExpectedRoles();
       for (const expectedRole of expectedRoles) {
-        const foundRole = filteredRoles.find((r: Role) => r.name === expectedRole.name);
-        expect(foundRole, `Role ${expectedRole.name} should exist`).toBeDefined();
-        expect((foundRole as Role).memberReferences, `Role ${expectedRole.name} should have correct members`).toEqual(expectedRole.memberReferences);
+        const foundRole = filteredRoles.find(
+          (r: Role) => r.name === expectedRole.name,
+        );
+        expect(
+          foundRole,
+          `Role ${expectedRole.name} should exist`,
+        ).toBeDefined();
+        expect(
+          (foundRole as Role).memberReferences,
+          `Role ${expectedRole.name} should have correct members`,
+        ).toEqual(expectedRole.memberReferences);
       }
 
       // Get all policies and filter out policies associated with dynamically created test roles
-      const allPolicies = await Response.removeMetadataFromResponse(policiesResponse) as Policy[];
+      const allPolicies = (await Response.removeMetadataFromResponse(
+        policiesResponse,
+      )) as Policy[];
 
       // Filter out policies associated with test-created roles (same pattern as roles)
-      const filteredPolicies = allPolicies.filter((policy: Policy) =>
-        !testRolePatterns.some(pattern => pattern.test(policy.entityReference))
+      const filteredPolicies = allPolicies.filter(
+        (policy: Policy) =>
+          !testRolePatterns.some((pattern) =>
+            pattern.test(policy.entityReference),
+          ),
       );
 
       // Verify all expected policies exist in the filtered list
       const expectedPolicies = RbacConstants.getExpectedPolicies();
       for (const expectedPolicy of expectedPolicies) {
-        const foundPolicy = filteredPolicies.find((p: Policy) =>
-          p.entityReference === expectedPolicy.entityReference &&
-          p.permission === expectedPolicy.permission &&
-          p.policy === expectedPolicy.policy &&
-          p.effect === expectedPolicy.effect
+        const foundPolicy = filteredPolicies.find(
+          (p: Policy) =>
+            p.entityReference === expectedPolicy.entityReference &&
+            p.permission === expectedPolicy.permission &&
+            p.policy === expectedPolicy.policy &&
+            p.effect === expectedPolicy.effect,
         );
-        expect(foundPolicy, `Policy for ${expectedPolicy.entityReference} with permission ${expectedPolicy.permission} should exist`).toBeDefined();
+        expect(
+          foundPolicy,
+          `Policy for ${expectedPolicy.entityReference} with permission ${expectedPolicy.permission} should exist`,
+        ).toBeDefined();
       }
     });
 
