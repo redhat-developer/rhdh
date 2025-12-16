@@ -529,11 +529,25 @@ test.describe.serial("Test RBAC", () => {
         expect((foundRole as Role).memberReferences, `Role ${expectedRole.name} should have correct members`).toEqual(expectedRole.memberReferences);
       }
 
-      // Policies check remains unchanged as they're not affected by parallel test execution
-      await Response.checkResponse(
-        policiesResponse,
-        RbacConstants.getExpectedPolicies(),
+      // Get all policies and filter out policies associated with dynamically created test roles
+      const allPolicies = await Response.removeMetadataFromResponse(policiesResponse) as Policy[];
+
+      // Filter out policies associated with test-created roles (same pattern as roles)
+      const filteredPolicies = allPolicies.filter((policy: Policy) =>
+        !testRolePatterns.some(pattern => pattern.test(policy.entityReference))
       );
+
+      // Verify all expected policies exist in the filtered list
+      const expectedPolicies = RbacConstants.getExpectedPolicies();
+      for (const expectedPolicy of expectedPolicies) {
+        const foundPolicy = filteredPolicies.find((p: Policy) =>
+          p.entityReference === expectedPolicy.entityReference &&
+          p.permission === expectedPolicy.permission &&
+          p.policy === expectedPolicy.policy &&
+          p.effect === expectedPolicy.effect
+        );
+        expect(foundPolicy, `Policy for ${expectedPolicy.entityReference} with permission ${expectedPolicy.permission} should exist`).toBeDefined();
+      }
     });
 
     test("Create new role for rhdh-qe, change its name, and deny it from reading catalog entities", async () => {
