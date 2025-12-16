@@ -77,7 +77,8 @@ upstream:
               orgs: ["${AUTH_PROVIDERS_GH_ORG_NAME}"]
               schedule:
                 initialDelay: { seconds: 0 }
-                frequency: { minutes: 1 }
+                # Let's perform a single execution per test run
+                frequency: { hours: 24 }
                 timeout: { minutes: 1 }
           microsoftGraphOrg:
             default:

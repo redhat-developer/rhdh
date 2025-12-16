@@ -194,7 +194,8 @@ catalog:
       providerId:
         organization: "${GITHUB_ORG}"
         schedule:
-          frequency: { minutes: 30 }
+          # Let's perform a single execution
+          frequency: { hours: 24 }
           timeout: { minutes: 30 }
     githubOrg:
       id: production
@@ -206,8 +207,9 @@ catalog:
         group: rhdh-qe-test
         host: gitlab.com
         schedule:
+          # Let's perform a single execution per test run
           frequency:
-            minutes: 1
+            hours: 24
           initialDelay:
             seconds: 15
           timeout:
