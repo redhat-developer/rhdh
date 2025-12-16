@@ -229,14 +229,40 @@ check_operator_status() {
 
 # Installs the Crunchy Postgres Operator from Openshift Marketplace using predefined parameters
 install_crunchy_postgres_ocp_operator(){
-  install_subscription postgresql openshift-operators v5 postgresql community-operators openshift-marketplace
+  install_subscription crunchy-postgres-operator openshift-operators v5 crunchy-postgres-operator certified-operators openshift-marketplace
   check_operator_status 300 "openshift-operators" "Crunchy Postgres for Kubernetes" "Succeeded"
+
+  # Wait for PostgresCluster CRD to be registered before proceeding
+  echo "Waiting for PostgresCluster CRD to be registered..."
+  timeout 120 bash -c '
+    until oc get crd postgresclusters.postgres-operator.crunchydata.com &>/dev/null; do
+      echo "Waiting for postgresclusters.postgres-operator.crunchydata.com CRD..."
+      sleep 5
+    done
+  ' || {
+    echo "Error: Timed out waiting for PostgresCluster CRD to be registered."
+    return 1
+  }
+  echo "PostgresCluster CRD is available."
 }
 
 # Installs the Crunchy Postgres Operator from OperatorHub.io
 install_crunchy_postgres_k8s_operator(){
-  install_subscription postgresql openshift-operators v5 postgresql community-operators openshift-marketplace
+  install_subscription crunchy-postgres-operator openshift-operators v5 crunchy-postgres-operator certified-operators openshift-marketplace
   check_operator_status 300 "operators" "Crunchy Postgres for Kubernetes" "Succeeded"
+
+  # Wait for PostgresCluster CRD to be registered before proceeding
+  echo "Waiting for PostgresCluster CRD to be registered..."
+  timeout 120 bash -c '
+    until kubectl get crd postgresclusters.postgres-operator.crunchydata.com &>/dev/null; do
+      echo "Waiting for postgresclusters.postgres-operator.crunchydata.com CRD..."
+      sleep 5
+    done
+  ' || {
+    echo "Error: Timed out waiting for PostgresCluster CRD to be registered."
+    return 1
+  }
+  echo "PostgresCluster CRD is available."
 }
 
 # Installs the OpenShift Serverless Logic Operator (SonataFlow) from OpenShift Marketplace
@@ -638,6 +664,19 @@ install_pipelines_operator() {
     wait_for_deployment "openshift-operators" "pipelines"
     wait_for_endpoint "tekton-pipelines-webhook" "openshift-pipelines"
   fi
+
+  # Wait for Tekton Pipeline CRD to be registered before proceeding
+  echo "Waiting for Tekton Pipeline CRD to be registered..."
+  timeout 120 bash -c '
+    until oc get crd pipelines.tekton.dev &>/dev/null; do
+      echo "Waiting for pipelines.tekton.dev CRD..."
+      sleep 5
+    done
+  ' || {
+    echo "Error: Timed out waiting for Tekton Pipeline CRD to be registered."
+    return 1
+  }
+  echo "Tekton Pipeline CRD is available."
 }
 
 # Installs the Tekton Pipelines if not already installed (alternative of OpenShift Pipelines for Kubernetes clusters)
@@ -651,6 +690,19 @@ install_tekton_pipelines() {
     wait_for_deployment "tekton-pipelines" "${DISPLAY_NAME}"
     wait_for_endpoint "tekton-pipelines-webhook" "tekton-pipelines"
   fi
+
+  # Wait for Tekton Pipeline CRD to be registered before proceeding
+  echo "Waiting for Tekton Pipeline CRD to be registered..."
+  timeout 120 bash -c '
+    until kubectl get crd pipelines.tekton.dev &>/dev/null; do
+      echo "Waiting for pipelines.tekton.dev CRD..."
+      sleep 5
+    done
+  ' || {
+    echo "Error: Timed out waiting for Tekton Pipeline CRD to be registered."
+    return 1
+  }
+  echo "Tekton Pipeline CRD is available."
 }
 
 delete_tekton_pipelines() {
@@ -1320,28 +1372,6 @@ EOF
   echo "All workflow pods are now running!"
 }
 
-# Helper function to wait for backstage resource to exist in namespace
-wait_for_backstage_resource() {
-  local namespace=$1
-  local max_attempts=40  # 40 attempts * 15 seconds = 10 minutes
-
-  local sleep_interval=15
-  
-  echo "Waiting for backstage resource to exist in namespace: $namespace"
-  
-  for ((i=1; i<=max_attempts; i++)); do
-    if [[ $(oc get backstage -n "$namespace" -o json | jq '.items | length') -gt 0 ]]; then
-      echo "Backstage resource found in namespace: $namespace"
-      return 0
-    fi
-    echo "Attempt $i/$max_attempts: No backstage resource found, waiting ${sleep_interval}s..."
-    sleep $sleep_interval
-  done
-  
-  echo "Error: No backstage resource found after 10 minutes"
-  return 1
-}
-
 # Helper function to enable orchestrator plugins by merging default and custom dynamic plugins
 enable_orchestrator_plugins_op() {
   local namespace=$1
@@ -1354,11 +1384,20 @@ enable_orchestrator_plugins_op() {
   fi
   
   echo "Enabling orchestrator plugins in namespace: $namespace"
-  
-  # Wait for backstage resource to exist
-  wait_for_backstage_resource "$namespace"
-  sleep 5
-  
+
+  # Construct backstage deployment name based on namespace
+  # Pattern: backstage-rhdh for non-RBAC, backstage-rhdh-rbac for RBAC
+  local backstage_deployment
+  if [[ "$namespace" == *"rbac"* ]]; then
+    backstage_deployment="backstage-rhdh-rbac"
+  else
+    backstage_deployment="backstage-rhdh"
+  fi
+
+  echo "Waiting for backstage deployment: $backstage_deployment in namespace: $namespace"
+  # Wait for backstage deployment to be ready (15 minutes timeout)
+  wait_for_deployment "$namespace" "$backstage_deployment" 15
+
   # Setup working directory
   local work_dir="/tmp/orchestrator-plugins-merge"
   rm -rf "$work_dir" && mkdir -p "$work_dir"
@@ -1397,7 +1436,18 @@ enable_orchestrator_plugins_op() {
     echo "Error: Failed to append default plugins to custom plugins"
     return 1
   fi
-  
+
+  # For RBAC namespaces, disable all tech-radar plugins (frontend and backend) if they exist
+  # These plugins are mistakenly enabled in the RBAC values file and cause deployment issues
+  # Using global replacement to handle duplicate entries
+  if [[ "$namespace" == *"rbac"* ]]; then
+    echo "Disabling all tech-radar plugins (frontend and backend) for RBAC namespace..."
+    # Disable frontend plugin (all instances)
+    yq eval '(.plugins[] | select(.package == "./dynamic-plugins/dist/backstage-community-plugin-tech-radar") | .disabled) = true' -i "$work_dir/custom-plugins.yaml" || true
+    # Disable backend plugin (all instances)
+    yq eval '(.plugins[] | select(.package == "./dynamic-plugins/dist/backstage-community-plugin-tech-radar-backend-dynamic") | .disabled) = true' -i "$work_dir/custom-plugins.yaml" || true
+  fi
+
   # Use the modified custom file as the final merged result
   if ! cp "$work_dir/custom-plugins.yaml" "$work_dir/merged-plugins.yaml"; then
     echo "Error: Failed to create merged plugins file"
@@ -1410,24 +1460,15 @@ enable_orchestrator_plugins_op() {
     -n "$namespace" --dry-run=client -o yaml | oc apply -f -; then
     echo "Error: Failed to apply updated dynamic-plugins configmap"
     return 1
-  fi 
-
-  # Find and restart backstage deployment
-  echo "Finding backstage deployment..."
-  local backstage_deployment
-  backstage_deployment=$(oc get deployment -n "$namespace" --no-headers | grep "^backstage-rhdh" | awk '{print $1}' | head -1)
-  
-  if [[ -z "$backstage_deployment" ]]; then
-    echo "Error: No backstage deployment found matching pattern 'backstage-rhdh*'"
-    return 1
   fi
-  
+
+  # Restart backstage deployment (using the deployment name determined earlier)
   echo "Restarting backstage deployment: $backstage_deployment"
   if ! oc rollout restart deployment/"$backstage_deployment" -n "$namespace"; then
     echo "Error: Failed to restart backstage deployment"
     return 1
   fi
-  
+
   # Cleanup
   rm -rf "$work_dir"
   
