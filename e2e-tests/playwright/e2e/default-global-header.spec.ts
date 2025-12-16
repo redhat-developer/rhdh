@@ -27,7 +27,7 @@ test.describe("Default Global Header", () => {
       process.env.GH_USER2_ID,
       process.env.GH_USER2_PASS,
     );
-    await expect(page.getByRole("navigation")).toBeVisible();
+    await expect(page.getByRole("navigation").first()).toBeVisible();
   });
 
   test("Verify that global header and default header components are visible", async ({
@@ -42,7 +42,7 @@ test.describe("Default Global Header", () => {
       label: t["rhdh"][lang]["menuItem.selfService"],
     });
 
-    const globalHeader = page.getByRole("navigation");
+    const globalHeader = page.getByRole("navigation").first();
     const helpDropdownButton = globalHeader
       .getByRole("button", {
         name: t["plugin.global-header"][lang]["help.tooltip"],
@@ -81,7 +81,7 @@ test.describe("Default Global Header", () => {
     context,
     page,
   }) => {
-    const globalHeader = page.getByRole("navigation");
+    const globalHeader = page.getByRole("navigation").first();
 
     const helpDropdownButton = globalHeader
       .getByRole("button", {
