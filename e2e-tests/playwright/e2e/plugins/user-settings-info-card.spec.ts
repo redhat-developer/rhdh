@@ -25,9 +25,7 @@ test.describe("Test user settings info card", () => {
     await page.getByRole("menuitem", { name: "Settings" }).click();
 
     // Verify card header is visible
-    await expect(
-      page.getByRole("heading", { name: "RHDH Build info" }),
-    ).toBeVisible();
+    await expect(page.getByText("RHDH Build info")).toBeVisible();
 
     // Verify initial card content using text content
     await expect(page.getByText("TechDocs builder: local")).toBeVisible();
