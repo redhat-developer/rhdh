@@ -150,7 +150,7 @@ jobs:
           echo "(either due to [skip-build] tag or no relevant changes with existing image)"
 
       - name: Comment on skip - job uses next image
-        if: ${{ steps.check-skip.outputs.is_skipped == 'true' && steps.check-skip.outputs.relevant_changes == 'false' }}
+        if: ${{ steps.check-skip.outputs.is_skipped == 'true' }}
         uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         env:
           PR_NUMBER: ${{ steps.get-pr-info.outputs.pr_number }}
