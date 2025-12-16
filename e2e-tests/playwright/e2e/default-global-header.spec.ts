@@ -27,29 +27,29 @@ test.describe("Default Global Header", () => {
       process.env.GH_USER2_ID,
       process.env.GH_USER2_PASS,
     );
-    await expect(page.locator("nav[id='global-header']")).toBeVisible();
+    await expect(page.getByRole("navigation")).toBeVisible();
   });
 
   test("Verify that global header and default header components are visible", async ({
     page,
   }) => {
     await expect(
-      page.locator(
-        `input[placeholder="${t["plugin.global-header"][lang]["search.placeholder"]}"]`,
+      page.getByPlaceholder(
+        t["plugin.global-header"][lang]["search.placeholder"],
       ),
     ).toBeVisible();
     await uiHelper.verifyLink({
       label: t["rhdh"][lang]["menuItem.selfService"],
     });
 
-    const globalHeader = page.locator("nav[id='global-header']");
+    const globalHeader = page.getByRole("navigation");
     const helpDropdownButton = globalHeader
-      .locator(
-        `button[aria-label='${t["plugin.global-header"][lang]["help.tooltip"]}']`,
-      )
+      .getByRole("button", {
+        name: t["plugin.global-header"][lang]["help.tooltip"],
+      })
       .or(
-        globalHeader.locator("button").filter({
-          has: page.locator("svg[data-testid='HelpOutlineIcon']"),
+        globalHeader.getByRole("button").filter({
+          has: page.getByTestId("HelpOutlineIcon"),
         }),
       )
       .first();
@@ -81,15 +81,15 @@ test.describe("Default Global Header", () => {
     context,
     page,
   }) => {
-    const globalHeader = page.locator("nav[id='global-header']");
+    const globalHeader = page.getByRole("navigation");
 
     const helpDropdownButton = globalHeader
-      .locator(
-        `button[aria-label='${t["plugin.global-header"][lang]["help.tooltip"]}']`,
-      )
+      .getByRole("button", {
+        name: t["plugin.global-header"][lang]["help.tooltip"],
+      })
       .or(
-        globalHeader.locator("button").filter({
-          has: page.locator("svg[data-testid='HelpOutlineIcon']"),
+        globalHeader.getByRole("button").filter({
+          has: page.getByTestId("HelpOutlineIcon"),
         }),
       )
       .first();
@@ -140,7 +140,6 @@ test.describe("Default Global Header", () => {
 
     await uiHelper.openProfileDropdown();
     await page
-      .locator(`p`)
       .getByText(t["plugin.global-header"][lang]["profile.signOut"])
       .first()
       .click();
@@ -148,19 +147,19 @@ test.describe("Default Global Header", () => {
   });
 
   test("Verify Search bar behaves as expected", async ({ page }) => {
-    const searchBar = page.locator(
-      `input[placeholder="${t["plugin.global-header"][lang]["search.placeholder"]}"]`,
+    const searchBar = page.getByPlaceholder(
+      t["plugin.global-header"][lang]["search.placeholder"],
     );
     await searchBar.click();
     await searchBar.fill("test query term");
     expect(await uiHelper.isBtnVisibleByTitle("Clear")).toBeTruthy();
-    const dropdownList = page.locator(`ul[role="listbox"]`);
+    const dropdownList = page.getByRole("listbox");
     await expect(dropdownList).toBeVisible();
     await searchBar.press("Enter");
     await uiHelper.verifyHeading(t["rhdh"][lang]["app.search.title"]);
-    const searchResultPageInput = page.locator(
-      `input[id="search-bar-text-field"]`,
-    );
+    const searchResultPageInput = page.getByRole("textbox", {
+      name: /search/i,
+    });
     await expect(searchResultPageInput).toHaveValue("test query term");
   });
 
@@ -169,11 +168,9 @@ test.describe("Default Global Header", () => {
     request,
     page,
   }) => {
-    const notificationsBadge = page
-      .locator("#global-header")
-      .getByRole("link", {
-        name: t["plugin.global-header"][lang]["notifications.title"],
-      });
+    const notificationsBadge = page.getByRole("navigation").getByRole("link", {
+      name: t["plugin.global-header"][lang]["notifications.title"],
+    });
 
     await uiHelper.clickLink({
       ariaLabel: t["plugin.global-header"][lang]["notifications.title"],
