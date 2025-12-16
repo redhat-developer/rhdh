@@ -151,8 +151,8 @@ test("Verify that TechDocs Docs page for Red Hat Developer Hub works", async ({ 
 Set the `LOCALE` environment variable to run tests in your desired language:
 
 ```bash
-LOCALE=fr npx playwright test
-LOCALE=de npx playwright test
+LOCALE=fr yarn playwright test
+LOCALE=de yarn playwright test
 ```
 
 If not set, tests default to English (`en`).
@@ -208,7 +208,7 @@ No changes are required in test files, as they dynamically load the locale using
 Use the `LOCALE` environment variable to execute tests in the new language:
 
 ```bash
-LOCALE=es npx playwright test
+LOCALE=es yarn playwright test
 ```
 
 ---

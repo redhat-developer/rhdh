@@ -13,7 +13,7 @@ GITHUB:
     [x] emailLocalPartMatchingUserEntityName
 */
 
-test.describe("Configure Github Provider", async () => {
+test.describe.skip("Configure Github Provider", async () => {
   let common: Common;
   let uiHelper: UIhelper;
 

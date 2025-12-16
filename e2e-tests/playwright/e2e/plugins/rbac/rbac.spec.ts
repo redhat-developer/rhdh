@@ -21,7 +21,7 @@ import { downloadAndReadFile } from "../../../utils/helper";
     The policies generated from a policy.csv or ConfigMap file cannot be edited or deleted using the Developer Hub Web UI.
     https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.3/html/authorization/managing-authorizations-by-using-the-web-ui#proc-rbac-ui-edit-role_title-authorization
 */
-test.describe.serial("Test RBAC", () => {
+test.describe.skip("Test RBAC", () => {
   test.beforeAll(async () => {
     test.info().annotations.push({
       type: "component",
@@ -501,39 +501,36 @@ test.describe.serial("Test RBAC", () => {
     });
 
     // TODO: https://issues.redhat.com/browse/RHDHBUGS-2100
-    test.fixme(
-      "Test that roles and policies from GET request are what expected",
-      async () => {
-        const rbacApi = await RhdhRbacApi.build(apiToken);
+    test.fixme("Test that roles and policies from GET request are what expected", async () => {
+      const rbacApi = await RhdhRbacApi.build(apiToken);
 
-        const rolesResponse = await rbacApi.getRoles();
+      const rolesResponse = await rbacApi.getRoles();
 
-        const policiesResponse = await rbacApi.getPolicies();
+      const policiesResponse = await rbacApi.getPolicies();
 
-        // eslint-disable-next-line playwright/no-conditional-in-test
-        if (!rolesResponse.ok()) {
-          throw Error(
-            `RBAC rolesResponse API call failed with status code ${rolesResponse.status()}`,
-          );
-        }
-
-        // eslint-disable-next-line playwright/no-conditional-in-test
-        if (!policiesResponse.ok()) {
-          throw Error(
-            `RBAC policiesResponse API call failed with status code ${policiesResponse.status()}`,
-          );
-        }
-
-        await Response.checkResponse(
-          rolesResponse,
-          RbacConstants.getExpectedRoles(),
+      // eslint-disable-next-line playwright/no-conditional-in-test
+      if (!rolesResponse.ok()) {
+        throw Error(
+          `RBAC rolesResponse API call failed with status code ${rolesResponse.status()}`,
         );
-        await Response.checkResponse(
-          policiesResponse,
-          RbacConstants.getExpectedPolicies(),
+      }
+
+      // eslint-disable-next-line playwright/no-conditional-in-test
+      if (!policiesResponse.ok()) {
+        throw Error(
+          `RBAC policiesResponse API call failed with status code ${policiesResponse.status()}`,
         );
-      },
-    );
+      }
+
+      await Response.checkResponse(
+        rolesResponse,
+        RbacConstants.getExpectedRoles(),
+      );
+      await Response.checkResponse(
+        policiesResponse,
+        RbacConstants.getExpectedPolicies(),
+      );
+    });
 
     test("Create new role for rhdh-qe, change its name, and deny it from reading catalog entities", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);

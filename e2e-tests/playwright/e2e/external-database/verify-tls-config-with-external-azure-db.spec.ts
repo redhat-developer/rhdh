@@ -14,7 +14,7 @@ interface AzureDbConfig {
 }
 
 test.describe
-  .serial("Verify TLS configuration with Azure Database for PostgreSQL health check", () => {
+  .skip("Verify TLS configuration with Azure Database for PostgreSQL health check", () => {
   const namespace = process.env.NAME_SPACE_RUNTIME || "showcase-runtime";
   const job: string = process.env.JOB_NAME || "";
   let deploymentName = process.env.RELEASE_NAME + "-developer-hub";

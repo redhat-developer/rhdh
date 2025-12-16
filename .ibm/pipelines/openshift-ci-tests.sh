@@ -35,7 +35,7 @@ save_container_platform "${CONTAINER_PLATFORM}" "${CONTAINER_PLATFORM_VERSION}"
 # Define a cleanup function to be executed upon script exit.
 # shellcheck source=.ibm/pipelines/cleanup.sh
 source "${DIR}/cleanup.sh"
-trap cleanup EXIT INT ERR
+trap cleanup EXIT
 
 log::debug "Sourcing utils.sh"
 # shellcheck source=.ibm/pipelines/utils.sh

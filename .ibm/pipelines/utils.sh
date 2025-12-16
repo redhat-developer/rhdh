@@ -9,11 +9,12 @@ retrieve_pod_logs() {
   local pod_name=$1
   local container=$2
   local namespace=$3
+  local log_timeout=${4:-30} # Default timeout: 30 seconds
   log::debug "Retrieving logs for container: $container"
-  # Save logs for the current and previous container
-  kubectl logs $pod_name -c $container -n $namespace > "pod_logs/${pod_name}_${container}.log" || { log::warn "logs for container $container not found"; }
-  kubectl logs $pod_name -c $container -n $namespace --previous > "pod_logs/${pod_name}_${container}-previous.log" 2> /dev/null || {
-    log::debug "Previous logs for container $container not found"
+  # Save logs for the current and previous container with timeout to prevent hanging
+  timeout "${log_timeout}" kubectl logs "$pod_name" -c "$container" -n "$namespace" > "pod_logs/${pod_name}_${container}.log" 2> /dev/null || { log::warn "logs for container $container not found or timed out"; }
+  timeout "${log_timeout}" kubectl logs "$pod_name" -c "$container" -n "$namespace" --previous > "pod_logs/${pod_name}_${container}-previous.log" 2> /dev/null || {
+    log::debug "Previous logs for container $container not found or timed out"
     rm -f "pod_logs/${pod_name}_${container}-previous.log"
   }
 }
@@ -391,14 +392,40 @@ check_operator_status() {
 
 # Installs the Crunchy Postgres Operator from Openshift Marketplace using predefined parameters
 install_crunchy_postgres_ocp_operator() {
-  install_subscription postgresql openshift-operators v5 postgresql community-operators openshift-marketplace
+  install_subscription crunchy-postgres-operator openshift-operators v5 crunchy-postgres-operator certified-operators openshift-marketplace
   check_operator_status 300 "openshift-operators" "Crunchy Postgres for Kubernetes" "Succeeded"
+
+  # Wait for PostgresCluster CRD to be registered before proceeding
+  echo "Waiting for PostgresCluster CRD to be registered..."
+  timeout 120 bash -c '
+    until oc get crd postgresclusters.postgres-operator.crunchydata.com &>/dev/null; do
+      echo "Waiting for postgresclusters.postgres-operator.crunchydata.com CRD..."
+      sleep 5
+    done
+  ' || {
+    echo "Error: Timed out waiting for PostgresCluster CRD to be registered."
+    return 1
+  }
+  echo "PostgresCluster CRD is available."
 }
 
 # Installs the Crunchy Postgres Operator from OperatorHub.io
 install_crunchy_postgres_k8s_operator() {
-  install_subscription postgresql openshift-operators v5 postgresql community-operators openshift-marketplace
+  install_subscription crunchy-postgres-operator openshift-operators v5 crunchy-postgres-operator certified-operators openshift-marketplace
   check_operator_status 300 "operators" "Crunchy Postgres for Kubernetes" "Succeeded"
+
+  # Wait for PostgresCluster CRD to be registered before proceeding
+  echo "Waiting for PostgresCluster CRD to be registered..."
+  timeout 120 bash -c '
+    until kubectl get crd postgresclusters.postgres-operator.crunchydata.com &>/dev/null; do
+      echo "Waiting for postgresclusters.postgres-operator.crunchydata.com CRD..."
+      sleep 5
+    done
+  ' || {
+    echo "Error: Timed out waiting for PostgresCluster CRD to be registered."
+    return 1
+  }
+  echo "PostgresCluster CRD is available."
 }
 
 # Installs the OpenShift Serverless Logic Operator (SonataFlow) from OpenShift Marketplace
@@ -460,23 +487,81 @@ delete_namespace() {
 
 configure_external_postgres_db() {
   local project=$1
-  oc apply -f "${DIR}/resources/postgres-db/postgres.yaml" --namespace="${NAME_SPACE_POSTGRES_DB}"
-  sleep 5
+  local max_attempts=60 # 5 minutes total (60 attempts × 5 seconds)
+  local wait_interval=5
+
+  log::info "Creating PostgresCluster in namespace ${NAME_SPACE_POSTGRES_DB}..."
+
+  # Validate oc apply command execution
+  if ! oc apply -f "${DIR}/resources/postgres-db/postgres.yaml" --namespace="${NAME_SPACE_POSTGRES_DB}"; then
+    log::error "Failed to create PostgresCluster"
+    return 1
+  fi
+
+  # Wait for cluster cert secret (usually created quickly)
+  log::info "Waiting for cluster certificate secret..."
+  for ((i = 1; i <= max_attempts; i++)); do
+    if oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" &> /dev/null; then
+      log::success "Cluster certificate secret found!"
+      break
+    fi
+    if [ "$i" -eq "$max_attempts" ]; then
+      log::error "Timeout waiting for cluster certificate secret"
+      return 1
+    fi
+    log::debug "Attempt $i/$max_attempts: Waiting for cluster certificate..."
+    sleep "$wait_interval"
+  done
+
+  # Extract cluster certificates
   oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.ca\.crt}' | base64 --decode > postgres-ca
   oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.tls\.crt}' | base64 --decode > postgres-tls-crt
-  oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.tls\.key}' | base64 --decode > postgres-tsl-key
+  oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.tls\.key}' | base64 --decode > postgres-tls-key
 
-  oc create secret generic postgress-external-db-cluster-cert \
+  # Validate secret creation
+  if ! oc create secret generic postgress-external-db-cluster-cert \
     --from-file=ca.crt=postgres-ca \
     --from-file=tls.crt=postgres-tls-crt \
-    --from-file=tls.key=postgres-tsl-key \
-    --dry-run=client -o yaml | oc apply -f - --namespace="${project}"
+    --from-file=tls.key=postgres-tls-key \
+    --dry-run=client -o yaml | oc apply -f - --namespace="${project}"; then
+    log::error "Failed to create cluster certificate secret"
+    return 1
+  fi
 
+  # Wait for USER secret (this is the critical one that causes CI failures!)
+  log::info "Waiting for PostgreSQL user secret 'postgress-external-db-pguser-janus-idp'..."
+  log::info "This secret is created by the Crunchy Postgres operator after the database is ready"
+  for ((i = 1; i <= max_attempts; i++)); do
+    if oc get secret postgress-external-db-pguser-janus-idp -n "${NAME_SPACE_POSTGRES_DB}" &> /dev/null; then
+      log::success "PostgreSQL user secret found!"
+      break
+    fi
+    if [ "$i" -eq "$max_attempts" ]; then
+      log::error "Timeout waiting for PostgreSQL user secret 'postgress-external-db-pguser-janus-idp'"
+      log::error "This usually means the Crunchy Postgres operator failed to create the user"
+      log::info "Checking PostgresCluster status..."
+      oc describe postgrescluster postgress-external-db -n "${NAME_SPACE_POSTGRES_DB}" || true
+      log::info "Checking operator logs..."
+      oc logs -n "${NAME_SPACE_POSTGRES_DB}" -l postgres-operator.crunchydata.com/cluster=postgress-external-db --tail=50 || true
+      return 1
+    fi
+    log::debug "Attempt $i/$max_attempts: Waiting for user secret (this may take 15-30s)..."
+    sleep "$wait_interval"
+  done
+
+  # Now we can safely get the password
   POSTGRES_PASSWORD=$(oc get secret/postgress-external-db-pguser-janus-idp -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.password}')
   sed_inplace "s|POSTGRES_PASSWORD:.*|POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
   POSTGRES_HOST=$(echo -n "postgress-external-db-primary.$NAME_SPACE_POSTGRES_DB.svc.cluster.local" | base64 | tr -d '\n')
   sed_inplace "s|POSTGRES_HOST:.*|POSTGRES_HOST: ${POSTGRES_HOST}|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
-  oc apply -f "${DIR}/resources/postgres-db/postgres-cred.yaml" --namespace="${project}"
+
+  # Validate final configuration apply
+  if ! oc apply -f "${DIR}/resources/postgres-db/postgres-cred.yaml" --namespace="${project}"; then
+    log::error "Failed to apply PostgreSQL credentials"
+    return 1
+  fi
+
+  log::success "External PostgreSQL database configured successfully!"
 }
 
 apply_yaml_files() {
@@ -624,19 +709,24 @@ prepare_operator_app_config() {
 
 run_tests() {
   local release_name=$1
-  local project=$2
-  local url="${3:-}"
+  local namespace=$2
+  local playwright_project=$3
+  local url="${4:-}"
+
+  CURRENT_DEPLOYMENT=$((CURRENT_DEPLOYMENT + 1))
+  save_status_deployment_namespace $CURRENT_DEPLOYMENT "$namespace"
+  save_status_failed_to_deploy $CURRENT_DEPLOYMENT false
 
   BASE_URL="${url}"
   export BASE_URL
   echo "BASE_URL: ${BASE_URL}"
+  echo "Running Playwright project '${playwright_project}' against namespace '${namespace}'"
 
   cd "${DIR}/../../e2e-tests"
   local e2e_tests_dir
   e2e_tests_dir=$(pwd)
 
   yarn install --immutable > /tmp/yarn.install.log.txt 2>&1
-
   INSTALL_STATUS=$?
   if [ $INSTALL_STATUS -ne 0 ]; then
     echo "=== YARN INSTALL FAILED ==="
@@ -654,27 +744,29 @@ run_tests() {
   (
     set -e
     echo "Using PR container image: ${TAG_NAME}"
-    yarn "$project"
+    # Run Playwright directly with --project flag instead of using yarn script aliases
+    yarn playwright test --project="${playwright_project}"
   ) 2>&1 | tee "/tmp/${LOGFILE}"
 
   local RESULT=${PIPESTATUS[0]}
 
-  pkill Xvfb
+  pkill Xvfb || true
 
-  mkdir -p "${ARTIFACT_DIR}/${project}/test-results"
-  mkdir -p "${ARTIFACT_DIR}/${project}/attachments/screenshots"
-  cp -a "${e2e_tests_dir}/test-results/"* "${ARTIFACT_DIR}/${project}/test-results" || true
-  cp -a "${e2e_tests_dir}/${JUNIT_RESULTS}" "${ARTIFACT_DIR}/${project}/${JUNIT_RESULTS}" || true
+  # Use namespace for artifact directory to keep artifacts organized by deployment
+  mkdir -p "${ARTIFACT_DIR}/${namespace}/test-results"
+  mkdir -p "${ARTIFACT_DIR}/${namespace}/attachments/screenshots"
+  cp -a "${e2e_tests_dir}/test-results/"* "${ARTIFACT_DIR}/${namespace}/test-results" || true
+  cp -a "${e2e_tests_dir}/${JUNIT_RESULTS}" "${ARTIFACT_DIR}/${namespace}/${JUNIT_RESULTS}" || true
+  if [[ "${CI}" == "true" ]]; then
+    cp "${ARTIFACT_DIR}/${namespace}/${JUNIT_RESULTS}" "${SHARED_DIR}/junit-results-${namespace}.xml" || true
+  fi
 
-  cp -a "${e2e_tests_dir}/screenshots/"* "${ARTIFACT_DIR}/${project}/attachments/screenshots/" || true
-
+  cp -a "${e2e_tests_dir}/screenshots/"* "${ARTIFACT_DIR}/${namespace}/attachments/screenshots/" || true
   ansi2html < "/tmp/${LOGFILE}" > "/tmp/${LOGFILE}.html"
-  cp -a "/tmp/${LOGFILE}.html" "${ARTIFACT_DIR}/${project}" || true
-  cp -a "${e2e_tests_dir}/playwright-report/"* "${ARTIFACT_DIR}/${project}" || true
+  cp -a "/tmp/${LOGFILE}.html" "${ARTIFACT_DIR}/${namespace}" || true
+  cp -a "${e2e_tests_dir}/playwright-report/"* "${ARTIFACT_DIR}/${namespace}" || true
 
-  save_data_router_junit_results "${project}"
-
-  echo "${project} RESULT: ${RESULT}"
+  echo "Playwright project '${playwright_project}' in namespace '${namespace}' RESULT: ${RESULT}"
   if [ "${RESULT}" -ne 0 ]; then
     save_overall_result 1
     save_status_test_failed $CURRENT_DEPLOYMENT true
@@ -761,6 +853,19 @@ install_pipelines_operator() {
     wait_for_deployment "openshift-operators" "pipelines"
     wait_for_endpoint "tekton-pipelines-webhook" "openshift-pipelines"
   fi
+
+  # Wait for Tekton Pipeline CRD to be registered before proceeding
+  echo "Waiting for Tekton Pipeline CRD to be registered..."
+  timeout 120 bash -c '
+    until oc get crd pipelines.tekton.dev &>/dev/null; do
+      echo "Waiting for pipelines.tekton.dev CRD..."
+      sleep 5
+    done
+  ' || {
+    echo "Error: Timed out waiting for Tekton Pipeline CRD to be registered."
+    return 1
+  }
+  echo "Tekton Pipeline CRD is available."
 }
 
 # Installs the Tekton Pipelines if not already installed (alternative of OpenShift Pipelines for Kubernetes clusters)
@@ -774,6 +879,19 @@ install_tekton_pipelines() {
     wait_for_deployment "tekton-pipelines" "${DISPLAY_NAME}"
     wait_for_endpoint "tekton-pipelines-webhook" "tekton-pipelines"
   fi
+
+  # Wait for Tekton Pipeline CRD to be registered before proceeding
+  echo "Waiting for Tekton Pipeline CRD to be registered..."
+  timeout 120 bash -c '
+    until kubectl get crd pipelines.tekton.dev &>/dev/null; do
+      echo "Waiting for pipelines.tekton.dev CRD..."
+      sleep 5
+    done
+  ' || {
+    echo "Error: Timed out waiting for Tekton Pipeline CRD to be registered."
+    return 1
+  }
+  echo "Tekton Pipeline CRD is available."
 }
 
 delete_tekton_pipelines() {
@@ -1089,38 +1207,40 @@ initiate_sanity_plugin_checks_deployment() {
 check_and_test() {
   local release_name=$1
   local namespace=$2
-  local url=$3
-  local max_attempts=${4:-30} # Default to 30 if not set
-  local wait_seconds=${5:-30} # Default to 30 if not set
-
-  CURRENT_DEPLOYMENT=$((CURRENT_DEPLOYMENT + 1))
-  save_status_deployment_namespace $CURRENT_DEPLOYMENT "$namespace"
+  local playwright_project=$3
+  local url=$4
+  local max_attempts=${5:-30} # Default to 30 if not set
+  local wait_seconds=${6:-30} # Default to 30 if not set
 
   if check_backstage_running "${release_name}" "${namespace}" "${url}" "${max_attempts}" "${wait_seconds}"; then
-    save_status_failed_to_deploy $CURRENT_DEPLOYMENT false
     echo "Display pods for verification..."
     oc get pods -n "${namespace}"
-    run_tests "${release_name}" "${namespace}" "${url}"
+    run_tests "${release_name}" "${namespace}" "${playwright_project}" "${url}"
   else
-    echo "Backstage is not running. Exiting..."
+    echo "Backstage is not running. Marking deployment as failed and continuing..."
+    CURRENT_DEPLOYMENT=$((CURRENT_DEPLOYMENT + 1))
+    save_status_deployment_namespace $CURRENT_DEPLOYMENT "$namespace"
     save_status_failed_to_deploy $CURRENT_DEPLOYMENT true
     save_status_test_failed $CURRENT_DEPLOYMENT true
     save_overall_result 1
   fi
-  save_all_pod_logs $namespace
+  save_all_pod_logs "$namespace"
 }
 
 check_upgrade_and_test() {
   local deployment_name="$1"
   local release_name="$2"
   local namespace="$3"
-  local url=$4
-  local timeout=${5:-600} # Timeout in seconds (default: 600 seconds)
+  local playwright_project="$4"
+  local url=$5
+  local timeout=${6:-600} # Timeout in seconds (default: 600 seconds)
 
   if check_helm_upgrade "${deployment_name}" "${namespace}" "${timeout}"; then
-    check_and_test "${release_name}" "${namespace}" "${url}"
+    check_and_test "${release_name}" "${namespace}" "${playwright_project}" "${url}"
   else
     echo "Helm upgrade encountered an issue or timed out. Exiting..."
+    CURRENT_DEPLOYMENT=$((CURRENT_DEPLOYMENT + 1))
+    save_status_deployment_namespace $CURRENT_DEPLOYMENT "$namespace"
     save_status_failed_to_deploy $CURRENT_DEPLOYMENT true
     save_status_test_failed $CURRENT_DEPLOYMENT true
     save_overall_result 1

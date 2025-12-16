@@ -8,6 +8,8 @@ source "$DIR"/utils.sh
 source "$DIR"/cluster/gke/gcloud.sh
 # shellcheck source=.ibm/pipelines/cluster/gke/gke-helm-deployment.sh
 source "$DIR"/cluster/gke/gke-helm-deployment.sh
+# shellcheck source=.ibm/pipelines/playwright-projects.sh
+source "$DIR"/playwright-projects.sh
 
 handle_gke_helm() {
   export NAME_SPACE="${NAME_SPACE:-showcase-k8s-ci-nightly}"
@@ -28,10 +30,10 @@ handle_gke_helm() {
   cluster_setup_k8s_helm
 
   initiate_gke_helm_deployment
-  check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
+  check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${PW_PROJECT_SHOWCASE_K8S}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
   delete_namespace "${NAME_SPACE}"
 
   initiate_rbac_gke_helm_deployment
-  check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
+  check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${PW_PROJECT_SHOWCASE_RBAC_K8S}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
   delete_namespace "${NAME_SPACE_RBAC}"
 }

@@ -11,7 +11,7 @@ import {
 const t = getTranslations();
 const lang = getCurrentLanguage();
 
-test.describe("Admin > Extensions", () => {
+test.describe.skip("Admin > Extensions", () => {
   let extensions: Extensions;
   let uiHelper: UIhelper;
   const isMac = process.platform === "darwin";

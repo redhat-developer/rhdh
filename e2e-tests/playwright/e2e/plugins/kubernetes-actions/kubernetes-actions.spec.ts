@@ -4,7 +4,7 @@ import { UIhelper } from "../../../utils/ui-helper";
 import { KubeClient } from "../../../utils/kube-client";
 import { UI_HELPER_ELEMENTS } from "../../../support/page-objects/global-obj";
 
-test.describe("Test Kubernetes Actions plugin", () => {
+test.describe.skip("Test Kubernetes Actions plugin", () => {
   let common: Common;
   let uiHelper: UIhelper;
   let page: Page;

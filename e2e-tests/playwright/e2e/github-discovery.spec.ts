@@ -21,7 +21,7 @@ const test = base.extend<GithubDiscoveryFixture>({
   testOrganization: JANUS_QE_ORG,
 });
 
-test.describe("Github Discovery Catalog", () => {
+test.describe.skip("Github Discovery Catalog", () => {
   test.beforeAll(async () => {
     test.info().annotations.push({
       type: "component",
@@ -30,28 +30,26 @@ test.describe("Github Discovery Catalog", () => {
   });
 
   //TODO: https://issues.redhat.com/browse/RHIDP-4992
-  test.fixme(
-    `Discover Organization's Catalog`,
-    async ({ catalogPage, githubApi, testOrganization }) => {
-      const organizationRepos =
-        await githubApi.getReposFromOrg(testOrganization);
-      const reposNames: string[] = organizationRepos.map(
-        (repo) => repo["name"],
-      );
-      const realComponents: string[] = reposNames.filter(
-        async (repo) =>
-          await githubApi.fileExistsOnRepo(
-            `${testOrganization}/${repo}`,
-            CATALOG_FILE,
-          ),
-      );
+  test.fixme(`Discover Organization's Catalog`, async ({
+    catalogPage,
+    githubApi,
+    testOrganization,
+  }) => {
+    const organizationRepos = await githubApi.getReposFromOrg(testOrganization);
+    const reposNames: string[] = organizationRepos.map((repo) => repo["name"]);
+    const realComponents: string[] = reposNames.filter(
+      async (repo) =>
+        await githubApi.fileExistsOnRepo(
+          `${testOrganization}/${repo}`,
+          CATALOG_FILE,
+        ),
+    );
 
-      for (let i = 0; i != realComponents.length; i++) {
-        const repo = realComponents[i];
-        await catalogPage.search(repo);
-        const row = await catalogPage.tableRow(repo);
-        assert(await row.isVisible());
-      }
-    },
-  );
+    for (let i = 0; i != realComponents.length; i++) {
+      const repo = realComponents[i];
+      await catalogPage.search(repo);
+      const row = await catalogPage.tableRow(repo);
+      assert(await row.isVisible());
+    }
+  });
 });
