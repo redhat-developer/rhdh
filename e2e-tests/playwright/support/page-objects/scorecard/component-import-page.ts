@@ -15,6 +15,8 @@
  */
 import { Page } from "@playwright/test";
 import { UIhelper } from "../../../utils/ui-helper";
+import { Catalog } from "../../../support/pages/catalog";
+import { ScorecardPage } from "./scorecard-page";
 
 export class ComponentImportPage {
   readonly page: Page;
@@ -34,12 +36,29 @@ export class ComponentImportPage {
     await this.uiHelper.fillTextInputByLabel("URL", url);
     await this.uiHelper.clickButton("Analyze");
     await this.uiHelper.clickButton("Import");
-    //wait for few seconds
     await this.page.waitForTimeout(5000);
   }
 
   async viewImportedComponent() {
     await this.uiHelper.clickButton("View Component");
+    const entityNotFoundLocator = this.page.getByRole("button", {
+      name: "Warning: Entity not found",
+    });
+    if (await entityNotFoundLocator.isVisible({ timeout: 10000 })) {
+      await this.page.reload();
+    }
     await this.uiHelper.verifyText("Overview");
+  }
+
+  async importAndOpenScorecard(
+    url: string,
+    catalog: Catalog,
+    scorecardPage: ScorecardPage,
+  ) {
+    await catalog.go();
+    await this.startComponentImport();
+    await this.analyzeComponent(url);
+    await this.viewImportedComponent();
+    await scorecardPage.openTab();
   }
 }
