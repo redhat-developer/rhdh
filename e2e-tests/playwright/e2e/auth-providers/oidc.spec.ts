@@ -387,8 +387,9 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
 
   test("Ensure Guest login is disabled when setting environment to production", async () => {
     await uiHelper.goToPageUrl("/", "Select a sign-in method");
-    // Use semantic selector to get all sign-in method cards
-    const singInMethods = await page
+    // Scope to the main content area to get only sign-in method card headers
+    const signInMethodsContainer = page.getByRole("main");
+    const singInMethods = await signInMethodsContainer
       .getByRole("heading", { level: 6 })
       .allInnerTexts();
     expect(singInMethods).not.toContain("Guest");
