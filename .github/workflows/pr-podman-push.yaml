@@ -75,7 +75,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
 
-      - name: Check Skip Status
+      - name: Check Skip Status and Relevant Changes
         id: check-skip
         run: |
           if [ -f "./rhdh-skip-artifacts/isSkipped.txt" ]; then
@@ -85,6 +85,16 @@ jobs:
           else
             echo "Skip status artifact not found, proceeding with push"
             echo "is_skipped=false" >> $GITHUB_OUTPUT
+          fi
+          
+          # Check relevant changes status to determine if e2e job will use "next" image
+          if [ -f "./rhdh-skip-artifacts/relevantChanges.txt" ]; then
+            RELEVANT_CHANGES=$(cat ./rhdh-skip-artifacts/relevantChanges.txt)
+            echo "Found relevant changes status: $RELEVANT_CHANGES"
+            echo "relevant_changes=$RELEVANT_CHANGES" >> $GITHUB_OUTPUT
+          else
+            echo "Relevant changes status not found, assuming true"
+            echo "relevant_changes=true" >> $GITHUB_OUTPUT
           fi
 
       - name: Download Image Artifacts
@@ -139,6 +149,31 @@ jobs:
           echo "The container image push was skipped because the build was skipped"
           echo "(either due to [skip-build] tag or no relevant changes with existing image)"
 
+      - name: Comment on skip - job uses next image
+        if: ${{ steps.check-skip.outputs.is_skipped == 'true' && steps.check-skip.outputs.relevant_changes == 'false' }}
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        env:
+          PR_NUMBER: ${{ steps.get-pr-info.outputs.pr_number }}
+        with:
+          script: |
+            const prNumber = process.env.PR_NUMBER;
+            
+            if (!prNumber) {
+              console.log('No pull request number found');
+              return;
+            }
+            
+            const body = `The job uses next image\n\n/test e2e-ocp-helm\n`;
+            
+            console.log(`Creating comment for PR ${prNumber} with body:\n ${body}`);
+
+            github.rest.issues.createComment({
+              issue_number: parseInt(prNumber),
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            })
+
       - name: Comment the image pull link
         if: ${{ steps.check-skip.outputs.is_skipped != 'true' }}
         uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
@@ -173,7 +208,7 @@ jobs:
               return `* [\`${fullTag}\`](https://${fullTag})`;
             }).join('\n');
             
-            const body = `The image is available at:\n\n${tagLinks}\n\n`;
+            const body = `The image is available at:\n\n${tagLinks}\n\n/test e2e-ocp-helm\n`;
             
             console.log(`Creating comment for PR ${prNumber} with body:\n ${body}`);
 

@@ -39,16 +39,17 @@ jobs:
         id: check-image
         uses: ./.github/actions/check-image-and-changes
       
-      - name: Store isSkipped status
+      - name: Store skip and relevant changes status
         run: |
           mkdir -p ./rhdh-skip-artifacts
           echo "${{ steps.check-image.outputs.is_skipped }}" > ./rhdh-skip-artifacts/isSkipped.txt
+          echo "${{ steps.check-image.outputs.relevant_changes }}" > ./rhdh-skip-artifacts/relevantChanges.txt
 
-      - name: Upload isSkipped status
+      - name: Upload skip and relevant changes status
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: pr-${{ github.event.number }}-${{ env.SHORT_SHA }}-isSkipped
-          path: ./rhdh-skip-artifacts/isSkipped.txt
+          path: ./rhdh-skip-artifacts/
           retention-days: 1
           if-no-files-found: error
       - name: Debug outputs
