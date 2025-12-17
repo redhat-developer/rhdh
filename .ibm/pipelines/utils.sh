@@ -818,6 +818,91 @@ perform_helm_install() {
     $(get_image_helm_set_params)
 }
 
+# Helper function to manually create sonataflow database with SSL support
+# This is a workaround for the helm chart's create-db job not including PGSSLMODE env var
+create_sonataflow_database_with_ssl() {
+  local namespace=$1
+
+  echo "Manually creating sonataflow database with SSL support..."
+
+  # Create a temporary pod to run psql with SSL
+  cat <<EOF | oc apply -f -
+apiVersion: v1
+kind: Pod
+metadata:
+  name: create-sonataflow-db-manual
+  namespace: ${namespace}
+spec:
+  restartPolicy: Never
+  containers:
+  - name: psql
+    image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-16.3-1
+    securityContext:
+      readOnlyRootFilesystem: true
+      allowPrivilegeEscalation: false
+      runAsNonRoot: true
+      capabilities:
+        drop:
+          - ALL
+    command: ["sh", "-c"]
+    args:
+      - |
+        export PGSSLMODE=require
+        psql -h \${POSTGRES_HOST} -p \${POSTGRES_PORT} -U \${POSTGRES_USER} -d postgres -c 'CREATE DATABASE sonataflow;' && echo "Database created successfully" || echo "Database creation failed or database already exists"
+    env:
+    - name: POSTGRES_HOST
+      valueFrom:
+        secretKeyRef:
+          name: postgres-cred
+          key: POSTGRES_HOST
+    - name: POSTGRES_USER
+      valueFrom:
+        secretKeyRef:
+          name: postgres-cred
+          key: POSTGRES_USER
+    - name: POSTGRES_PORT
+      valueFrom:
+        secretKeyRef:
+          name: postgres-cred
+          key: POSTGRES_PORT
+    - name: PGPASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: postgres-cred
+          key: POSTGRES_PASSWORD
+    - name: PGSSLMODE
+      valueFrom:
+        secretKeyRef:
+          name: postgres-cred
+          key: PGSSLMODE
+EOF
+
+  # Wait for the pod to start and complete
+  echo "Waiting for manual database creation pod to complete..."
+  sleep 2
+
+  # Wait up to 2 minutes for completion
+  local timeout=120
+  local elapsed=0
+  while [ $elapsed -lt $timeout ]; do
+    local status=$(oc get pod create-sonataflow-db-manual -n "${namespace}" -o jsonpath='{.status.phase}' 2>/dev/null || echo "NotFound")
+    if [[ "$status" == "Succeeded" ]] || [[ "$status" == "Failed" ]]; then
+      break
+    fi
+    sleep 5
+    elapsed=$((elapsed + 5))
+  done
+
+  # Check logs
+  echo "Database creation output:"
+  oc logs create-sonataflow-db-manual -n "${namespace}" 2>/dev/null || echo "Could not retrieve logs"
+
+  # Clean up the pod
+  oc delete pod create-sonataflow-db-manual -n "${namespace}" --ignore-not-found=true
+
+  echo "Manual database creation completed"
+}
+
 base_deployment() {
   configure_namespace ${NAME_SPACE}
 
@@ -843,12 +928,18 @@ rbac_deployment() {
   echo "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${RELEASE_NAME_RBAC}"
   perform_helm_install "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${HELM_CHART_RBAC_VALUE_FILE_NAME}"
 
-  # NOTE: This is a workaround to allow the sonataflow platform to connect to the external postgres db using ssl.
+  # NOTE: The helm chart's create-sonataflow-database job will fail because it doesn't include PGSSLMODE env var.
+  # We wait for the job to be created (indicating helm install is progressing), then manually create the database with SSL.
   until [[ $(oc get jobs -n "${NAME_SPACE_RBAC}" 2> /dev/null | grep "${RELEASE_NAME_RBAC}-create-sonataflow-database" | wc -l) -eq 1 ]]; do
     echo "Waiting for sf db creation job to be created. Retrying in 5 seconds..."
     sleep 5
   done
-  oc wait --for=condition=complete job/"${RELEASE_NAME_RBAC}-create-sonataflow-database" -n "${NAME_SPACE_RBAC}" --timeout=3m
+
+  # Don't wait for the helm job to complete - it will fail due to missing SSL configuration
+  # Instead, manually create the database with proper SSL support
+  create_sonataflow_database_with_ssl "${NAME_SPACE_RBAC}"
+
+  # Patch the sonataflow platform to configure SSL for the jobs service
   oc -n "${NAME_SPACE_RBAC}" patch sfp sonataflow-platform --type=merge \
     -p '{"spec":{"services":{"jobService":{"podTemplate":{"container":{"env":[{"name":"QUARKUS_DATASOURCE_REACTIVE_URL","value":"postgresql://postgress-external-db-primary.postgress-external-db.svc.cluster.local:5432/sonataflow?search_path=jobs-service&sslmode=require&ssl=true&trustAll=true"},{"name":"QUARKUS_DATASOURCE_REACTIVE_SSL_MODE","value":"require"},{"name":"QUARKUS_DATASOURCE_REACTIVE_TRUST_ALL","value":"true"}]}}}}}}'
   oc rollout restart deployment/sonataflow-platform-jobs-service -n "${NAME_SPACE_RBAC}"
