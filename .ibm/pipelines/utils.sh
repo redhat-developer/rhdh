@@ -823,14 +823,10 @@ perform_helm_install() {
 create_sonataflow_database_with_ssl() {
   local namespace=$1
 
-  echo "DEBUG: ========== ENTERING create_sonataflow_database_with_ssl() =========="
-  echo "DEBUG: namespace=${namespace}"
-  echo "DEBUG: Checking if postgres-cred secret exists..."
   if ! oc get secret postgres-cred -n "${namespace}" &> /dev/null; then
     echo "ERROR: postgres-cred secret not found in namespace ${namespace}"
     return 1
   fi
-  echo "DEBUG: postgres-cred secret found"
 
   echo "Manually creating sonataflow database with SSL support..."
 
@@ -887,14 +883,10 @@ spec:
 EOF
 
   local apply_result=$?
-  echo "DEBUG: Pod apply result: $apply_result"
   if [[ $apply_result -ne 0 ]]; then
     echo "ERROR: Failed to create database creation pod"
     return 1
   fi
-
-  echo "DEBUG: Verifying pod was created..."
-  oc get pod create-sonataflow-db-manual -n "${namespace}" 2>&1 || echo "DEBUG: Pod not found immediately after apply"
 
   # Wait for the pod to start and complete
   echo "Waiting for manual database creation pod to complete..."
@@ -1042,12 +1034,6 @@ base_deployment() {
 }
 
 rbac_deployment() {
-  echo "DEBUG: ========== ENTERING rbac_deployment() =========="
-  echo "DEBUG: NAME_SPACE_POSTGRES_DB=${NAME_SPACE_POSTGRES_DB}"
-  echo "DEBUG: NAME_SPACE_RBAC=${NAME_SPACE_RBAC}"
-  echo "DEBUG: RELEASE_NAME_RBAC=${RELEASE_NAME_RBAC}"
-  echo "DEBUG: K8S_CLUSTER_ROUTER_BASE=${K8S_CLUSTER_ROUTER_BASE}"
-
   configure_namespace "${NAME_SPACE_POSTGRES_DB}"
   configure_namespace "${NAME_SPACE_RBAC}"
   configure_external_postgres_db "${NAME_SPACE_RBAC}"
@@ -1060,26 +1046,21 @@ rbac_deployment() {
 
   # NOTE: The helm chart's create-sonataflow-database job will fail because it doesn't include PGSSLMODE env var.
   # We wait for the job to be created (indicating helm install is progressing), then manually create the database with SSL.
-  echo "DEBUG: Waiting for sonataflow database job: ${RELEASE_NAME_RBAC}-create-sonataflow-database"
   local wait_count=0
   local max_wait=60 # 5 minutes max (60 * 5 seconds)
   until [[ $(oc get jobs -n "${NAME_SPACE_RBAC}" 2> /dev/null | grep "${RELEASE_NAME_RBAC}-create-sonataflow-database" | wc -l) -eq 1 ]]; do
     echo "Waiting for sf db creation job to be created. Retrying in 5 seconds... (attempt $((wait_count + 1))/$max_wait)"
-    oc get jobs -n "${NAME_SPACE_RBAC}" 2> /dev/null || echo "DEBUG: Failed to get jobs"
     sleep 5
     wait_count=$((wait_count + 1))
     if [[ $wait_count -ge $max_wait ]]; then
       echo "ERROR: Timed out waiting for sonataflow database job after $((max_wait * 5)) seconds"
-      echo "DEBUG: Current jobs in namespace:"
       oc get jobs -n "${NAME_SPACE_RBAC}" 2>&1 || true
       break
     fi
   done
-  echo "DEBUG: Database job wait completed. wait_count=$wait_count"
 
   # Don't wait for the helm job to complete - it will fail due to missing SSL configuration
   # Instead, manually create the database with proper SSL support
-  echo "DEBUG: Calling create_sonataflow_database_with_ssl for namespace: ${NAME_SPACE_RBAC}"
   create_sonataflow_database_with_ssl "${NAME_SPACE_RBAC}"
 
   # Verify the database was created successfully
