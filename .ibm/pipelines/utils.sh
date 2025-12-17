@@ -899,8 +899,10 @@ EOF
       echo "Database creation pod completed successfully"
       break
     elif [[ "$status" == "Failed" ]]; then
-      echo "WARNING: Database creation pod failed"
-      break
+      echo "ERROR: Database creation pod failed"
+      oc logs create-sonataflow-db-manual -n "${namespace}" 2>/dev/null || echo "Could not retrieve logs"
+      oc delete pod create-sonataflow-db-manual -n "${namespace}" --ignore-not-found=true
+      return 1
     fi
 
     sleep 5
@@ -908,22 +910,20 @@ EOF
   done
 
   if [ $elapsed -ge $timeout ]; then
-    echo "WARNING: Timeout waiting for database creation pod (${timeout}s elapsed)"
+    echo "ERROR: Timeout waiting for database creation pod (${timeout}s elapsed)"
+    oc logs create-sonataflow-db-manual -n "${namespace}" 2>/dev/null || echo "Could not retrieve logs"
+    oc delete pod create-sonataflow-db-manual -n "${namespace}" --ignore-not-found=true
+    return 1
   fi
 
-  # Check logs
+  # Check logs for successful completion
   echo "Database creation output:"
   oc logs create-sonataflow-db-manual -n "${namespace}" 2>/dev/null || echo "Could not retrieve logs"
-
-  # Check pod status for troubleshooting
-  echo "Final pod status:"
-  oc get pod create-sonataflow-db-manual -n "${namespace}" -o jsonpath='{.status.containerStatuses[0].state}' 2>/dev/null || echo "Could not get pod status"
-  echo ""
 
   # Clean up the pod
   oc delete pod create-sonataflow-db-manual -n "${namespace}" --ignore-not-found=true
 
-  echo "Manual database creation completed"
+  echo "Manual database creation completed successfully"
 }
 
 # Verify that the sonataflow database exists
