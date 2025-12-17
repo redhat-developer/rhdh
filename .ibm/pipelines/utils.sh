@@ -884,9 +884,10 @@ EOF
   local timeout=300
   local elapsed=0
   local last_status=""
+  local status
 
   while [ $elapsed -lt $timeout ]; do
-    local status=$(oc get pod create-sonataflow-db-manual -n "${namespace}" -o jsonpath='{.status.phase}' 2>/dev/null || echo "NotFound")
+    status=$(oc get pod create-sonataflow-db-manual -n "${namespace}" -o jsonpath='{.status.phase}' 2>/dev/null || echo "NotFound")
 
     # Print status changes
     if [[ "$status" != "$last_status" ]]; then
@@ -979,8 +980,9 @@ EOF
   # Wait for completion (shorter timeout since image should be cached)
   local timeout=60
   local elapsed=0
+  local status
   while [ $elapsed -lt $timeout ]; do
-    local status=$(oc get pod verify-sonataflow-db -n "${namespace}" -o jsonpath='{.status.phase}' 2>/dev/null || echo "NotFound")
+    status=$(oc get pod verify-sonataflow-db -n "${namespace}" -o jsonpath='{.status.phase}' 2>/dev/null || echo "NotFound")
     if [[ "$status" == "Succeeded" ]] || [[ "$status" == "Failed" ]]; then
       break
     fi
@@ -989,7 +991,8 @@ EOF
   done
 
   # Check the result
-  local verification_output=$(oc logs verify-sonataflow-db -n "${namespace}" 2>/dev/null)
+  local verification_output
+  verification_output=$(oc logs verify-sonataflow-db -n "${namespace}" 2>/dev/null)
   echo "$verification_output"
 
   # Clean up
