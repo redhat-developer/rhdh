@@ -3,7 +3,7 @@ import { Page } from "@playwright/test";
 const workflowsTable = (page: Page) =>
   page
     .locator("#root div")
-    .filter({ hasText: "WorkflowsNameCategoryLast" })
+    .filter({ hasText: "Workflows" })
     .nth(2);
 
 const WORKFLOWS = {
