@@ -95,7 +95,8 @@ export class Common {
         await popup.waitForLoadState();
         await popup.locator("#username").fill(userid);
         await popup.locator("#password").fill(password);
-        await popup.locator("#kc-login").click();
+        // Use waitUntil: 'commit' to avoid waiting for full navigation in closing popup
+        await popup.locator("#kc-login").click({ waitUntil: 'commit' });
         resolve();
       });
     });

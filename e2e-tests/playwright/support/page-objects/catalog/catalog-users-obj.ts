@@ -4,9 +4,15 @@ export class CatalogUsersPO {
   static BASE_URL = "/catalog?filters%5Bkind%5D=user&filters%5Buser";
 
   static getListOfUsers(page: Page): Locator {
-    // Get all user links in the table's Name column (first cell of each row)
+    // Get all user links in the table's body
+    // Using rowgroup to target tbody, then getting links within cells
     // These links point to /catalog/{namespace}/user/{username}
-    return page.getByRole("table").locator("tbody a[href*='/catalog/'][href*='/user/']");
+    return page
+      .getByRole("table")
+      .getByRole("rowgroup")
+      .last() // tbody is the last rowgroup (thead is first)
+      .getByRole("cell")
+      .getByRole("link");
   }
 
   static getEmailLink(page: Page): Locator {
