@@ -1436,7 +1436,6 @@ enable_orchestrator_plugins_op() {
   # Wait for backstage deployment to be ready (15 minutes timeout)
   wait_for_deployment "$namespace" "$backstage_deployment" 15
 
-
   # Setup working directory
   local work_dir="/tmp/orchestrator-plugins-merge"
   rm -rf "$work_dir" && mkdir -p "$work_dir"
@@ -1486,7 +1485,6 @@ enable_orchestrator_plugins_op() {
     # Disable backend plugin (all instances)
     yq eval '(.plugins[] | select(.package == "./dynamic-plugins/dist/backstage-community-plugin-tech-radar-backend-dynamic") | .disabled) = true' -i "$work_dir/custom-plugins.yaml" || true
   fi
-
 
   # Use the modified custom file as the final merged result
   if ! cp "$work_dir/custom-plugins.yaml" "$work_dir/merged-plugins.yaml"; then
