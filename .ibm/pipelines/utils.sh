@@ -1263,7 +1263,7 @@ deploy_orchestrator_workflows() {
   oc apply -f "${WORKFLOW_MANIFESTS}"
 
   helm repo add orchestrator-workflows https://rhdhorchestrator.io/serverless-workflows
-  helm install greeting orchestrator-workflows/greeting -n "$namespace"
+  helm install greeting orchestrator-workflows/greeting -n "$namespace" --wait --timeout=5m
 
   until [[ $(oc get sf -n "$namespace" --no-headers 2> /dev/null | wc -l) -eq 2 ]]; do
     echo "No sf resources found. Retrying in 5 seconds..."
