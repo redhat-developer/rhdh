@@ -837,13 +837,8 @@ spec:
   containers:
   - name: psql
     image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-16.3-1
-    securityContext:
-      readOnlyRootFilesystem: true
-      allowPrivilegeEscalation: false
-      runAsNonRoot: true
-      capabilities:
-        drop:
-          - ALL
+    # Note: We intentionally do not set readOnlyRootFilesystem here because
+    # psql requires write access to /tmp for temporary files during SSL connections
     command: ["sh", "-c"]
     args:
       - |
