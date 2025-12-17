@@ -826,7 +826,7 @@ create_sonataflow_database_with_ssl() {
   echo "Manually creating sonataflow database with SSL support..."
 
   # Create a temporary pod to run psql with SSL
-  cat <<EOF | oc apply -f -
+  cat << EOF | oc apply -f -
 apiVersion: v1
 kind: Pod
 metadata:
@@ -887,7 +887,7 @@ EOF
   local status
 
   while [ $elapsed -lt $timeout ]; do
-    status=$(oc get pod create-sonataflow-db-manual -n "${namespace}" -o jsonpath='{.status.phase}' 2>/dev/null || echo "NotFound")
+    status=$(oc get pod create-sonataflow-db-manual -n "${namespace}" -o jsonpath='{.status.phase}' 2> /dev/null || echo "NotFound")
 
     # Print status changes
     if [[ "$status" != "$last_status" ]]; then
@@ -900,7 +900,7 @@ EOF
       break
     elif [[ "$status" == "Failed" ]]; then
       echo "ERROR: Database creation pod failed"
-      oc logs create-sonataflow-db-manual -n "${namespace}" 2>/dev/null || echo "Could not retrieve logs"
+      oc logs create-sonataflow-db-manual -n "${namespace}" 2> /dev/null || echo "Could not retrieve logs"
       oc delete pod create-sonataflow-db-manual -n "${namespace}" --ignore-not-found=true
       return 1
     fi
@@ -911,14 +911,14 @@ EOF
 
   if [ $elapsed -ge $timeout ]; then
     echo "ERROR: Timeout waiting for database creation pod (${timeout}s elapsed)"
-    oc logs create-sonataflow-db-manual -n "${namespace}" 2>/dev/null || echo "Could not retrieve logs"
+    oc logs create-sonataflow-db-manual -n "${namespace}" 2> /dev/null || echo "Could not retrieve logs"
     oc delete pod create-sonataflow-db-manual -n "${namespace}" --ignore-not-found=true
     return 1
   fi
 
   # Check logs for successful completion
   echo "Database creation output:"
-  oc logs create-sonataflow-db-manual -n "${namespace}" 2>/dev/null || echo "Could not retrieve logs"
+  oc logs create-sonataflow-db-manual -n "${namespace}" 2> /dev/null || echo "Could not retrieve logs"
 
   # Clean up the pod
   oc delete pod create-sonataflow-db-manual -n "${namespace}" --ignore-not-found=true
@@ -933,7 +933,7 @@ verify_sonataflow_database() {
   echo "Verifying sonataflow database exists..."
 
   # Create a verification pod
-  cat <<EOF | oc apply -f -
+  cat << EOF | oc apply -f -
 apiVersion: v1
 kind: Pod
 metadata:
@@ -982,7 +982,7 @@ EOF
   local elapsed=0
   local status
   while [ $elapsed -lt $timeout ]; do
-    status=$(oc get pod verify-sonataflow-db -n "${namespace}" -o jsonpath='{.status.phase}' 2>/dev/null || echo "NotFound")
+    status=$(oc get pod verify-sonataflow-db -n "${namespace}" -o jsonpath='{.status.phase}' 2> /dev/null || echo "NotFound")
     if [[ "$status" == "Succeeded" ]] || [[ "$status" == "Failed" ]]; then
       break
     fi
@@ -992,7 +992,7 @@ EOF
 
   # Check the result
   local verification_output
-  verification_output=$(oc logs verify-sonataflow-db -n "${namespace}" 2>/dev/null)
+  verification_output=$(oc logs verify-sonataflow-db -n "${namespace}" 2> /dev/null)
   echo "$verification_output"
 
   # Clean up
