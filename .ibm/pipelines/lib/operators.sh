@@ -63,14 +63,18 @@ operator::check_status() {
 
 # Install Crunchy Postgres Operator from OpenShift Marketplace
 operator::install_postgres_ocp() {
-  operator::install_subscription postgresql "${OPERATOR_NAMESPACE}" v5 postgresql community-operators openshift-marketplace
-  operator::check_status 300 "${OPERATOR_NAMESPACE}" "Crunchy Postgres for Kubernetes" "${OPERATOR_STATUS_SUCCEEDED}"
-  return $?
+  operator::install_subscription crunchy-postgres-operator "${OPERATOR_NAMESPACE}" v5 crunchy-postgres-operator certified-operators openshift-marketplace
+  operator::check_status 300 "${OPERATOR_NAMESPACE}" "Crunchy Postgres for Kubernetes" "${OPERATOR_STATUS_SUCCEEDED}" || return 1
+
+  # Wait for PostgresCluster CRD to be registered
+  log::info "Waiting for PostgresCluster CRD to be registered..."
+  k8s_wait::crd "postgresclusters.postgres-operator.crunchydata.com" 120 5 || return 1
+  return 0
 }
 
 # Install Crunchy Postgres Operator from OperatorHub.io
 operator::install_postgres_k8s() {
-  operator::install_subscription postgresql "${OPERATOR_NAMESPACE}" v5 postgresql community-operators openshift-marketplace
+  operator::install_subscription crunchy-postgres-operator "${OPERATOR_NAMESPACE}" v5 crunchy-postgres-operator certified-operators openshift-marketplace
   operator::check_status 300 "operators" "Crunchy Postgres for Kubernetes" "${OPERATOR_STATUS_SUCCEEDED}"
   return $?
 }
