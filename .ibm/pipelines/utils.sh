@@ -1410,6 +1410,28 @@ EOF
   echo "All workflow pods are now running!"
 }
 
+# Helper function to wait for backstage resource to exist in namespace
+wait_for_backstage_resource() {
+  local namespace=$1
+  local max_attempts=40 # 40 attempts * 15 seconds = 10 minutes
+
+  local sleep_interval=15
+
+  echo "Waiting for backstage resource to exist in namespace: $namespace"
+
+  for ((i = 1; i <= max_attempts; i++)); do
+    if [[ $(oc get backstage -n "$namespace" -o json | jq '.items | length') -gt 0 ]]; then
+      echo "Backstage resource found in namespace: $namespace"
+      return 0
+    fi
+    echo "Attempt $i/$max_attempts: No backstage resource found, waiting ${sleep_interval}s..."
+    sleep $sleep_interval
+  done
+
+  echo "Error: No backstage resource found after 10 minutes"
+  return 1
+}
+
 # Helper function to enable orchestrator plugins by merging default and custom dynamic plugins
 enable_orchestrator_plugins_op() {
   local namespace=$1
@@ -1422,6 +1444,10 @@ enable_orchestrator_plugins_op() {
   fi
 
   echo "Enabling orchestrator plugins in namespace: $namespace"
+
+  # Wait for backstage resource to exist first
+  wait_for_backstage_resource "$namespace"
+  sleep 5
 
   # Construct backstage deployment name based on namespace
   # Pattern: backstage-rhdh for non-RBAC, backstage-rhdh-rbac for RBAC
