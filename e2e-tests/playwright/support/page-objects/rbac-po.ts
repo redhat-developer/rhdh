@@ -280,7 +280,13 @@ export class RbacPo extends PageObject {
     );
     await this.verifyPermissionPoliciesHeader(policies.length);
     await this.create();
-    // Use semantic locator for the roles list filter input
+
+    // Wait for success message before proceeding to roles list
+    await this.uiHelper.verifyText(
+      `Role role:default/${name} created successfully`,
+    );
+
+    // Now we should be on the roles list page
     await this.page.getByPlaceholder("Filter").waitFor({ state: "visible" });
     await this.page.getByPlaceholder("Filter").fill(name);
     await this.uiHelper.verifyHeading("All roles (1)");
