@@ -280,12 +280,9 @@ export class RbacPo extends PageObject {
     );
     await this.verifyPermissionPoliciesHeader(policies.length);
     await this.create();
-    await this.page
-      .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)
-      .waitFor();
-    await this.page
-      .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)
-      .fill(name);
+    // Use semantic locator for the roles list filter input
+    await this.page.getByPlaceholder("Filter").waitFor({ state: "visible" });
+    await this.page.getByPlaceholder("Filter").fill(name);
     await this.uiHelper.verifyHeading("All roles (1)");
   }
 

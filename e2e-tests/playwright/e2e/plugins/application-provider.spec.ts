@@ -28,17 +28,15 @@ test.describe("Test ApplicationProvider", () => {
     // Verify Context one cards are visible
     await uiHelper.verifyTextinCard("Context one", "Context one");
 
-    // Get both Context one cards (they share state)
-    const contextOneCards = page
-      .getByRole("article")
-      .filter({ hasText: "Context one" });
-    const firstContextOneCard = contextOneCards.first();
-    const secondContextOneCard = contextOneCards.last();
+    // Get all card containers (children of the main grid)
+    const allCards = page.locator("main article > div:first-child > div");
 
-    // Click the + button in the first Context one card
+    // Context one cards are index 0 and 1
+    const firstContextOneCard = allCards.nth(0);
+    const secondContextOneCard = allCards.nth(1);
+
     await firstContextOneCard.getByRole("button", { name: "+" }).click();
 
-    // Verify count is now 1 in both Context one cards (shared state)
     await expect(
       firstContextOneCard.getByRole("heading", { name: "1" }),
     ).toBeVisible();
@@ -49,17 +47,12 @@ test.describe("Test ApplicationProvider", () => {
     // Verify Context two cards are visible
     await uiHelper.verifyTextinCard("Context two", "Context two");
 
-    // Get both Context two cards (they share state)
-    const contextTwoCards = page
-      .getByRole("article")
-      .filter({ hasText: "Context two" });
-    const firstContextTwoCard = contextTwoCards.first();
-    const secondContextTwoCard = contextTwoCards.last();
+    // Context two cards are index 2 and 3
+    const firstContextTwoCard = allCards.nth(2);
+    const secondContextTwoCard = allCards.nth(3);
 
-    // Click the + button in the first Context two card
     await firstContextTwoCard.getByRole("button", { name: "+" }).click();
 
-    // Verify count is now 1 in both Context two cards (shared state)
     await expect(
       firstContextTwoCard.getByRole("heading", { name: "1" }),
     ).toBeVisible();

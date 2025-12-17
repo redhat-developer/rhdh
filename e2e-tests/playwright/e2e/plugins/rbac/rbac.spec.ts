@@ -132,9 +132,11 @@ test.describe("Test RBAC", () => {
       await page
         .getByRole("link", { name: "test-rhdh-qe-2-team-owned" })
         .click();
-      // Verify owner group in the component metadata
+      // Verify owner group in the component metadata (scope to article to avoid duplicates)
       await expect(
-        page.getByRole("link", { name: /janus-qe\/rhdh-qe-2-team/ }),
+        page
+          .getByRole("article")
+          .getByRole("link", { name: /janus-qe\/rhdh-qe-2-team/ }),
       ).toBeVisible();
       await page.getByTestId("menu-button").click();
       const unregisterGroupOwned = page.getByRole("menuitem", {
@@ -165,7 +167,9 @@ test.describe("Test RBAC", () => {
       await page.getByRole("link", { name: "mock-site" }).click();
       // Verify owner group in the component metadata
       await expect(
-        page.getByRole("link", { name: new RegExp(testParentGroup) }),
+        page
+          .getByRole("article")
+          .getByRole("link", { name: new RegExp(testParentGroup) }),
       ).toBeVisible();
 
       // rhdh-qe-child-team owns mock-child-site, check that it can see it's own groups' components
@@ -177,7 +181,9 @@ test.describe("Test RBAC", () => {
       await page.getByRole("link", { name: "mock-child-site" }).click();
       // Verify owner group in the component metadata
       await expect(
-        page.getByRole("link", { name: new RegExp(testChildGroup) }),
+        page
+          .getByRole("article")
+          .getByRole("link", { name: new RegExp(testChildGroup) }),
       ).toBeVisible();
     });
 
@@ -200,7 +206,9 @@ test.describe("Test RBAC", () => {
       await page.getByRole("link", { name: "mock-site" }).click();
       // Verify owner group in the component metadata
       await expect(
-        page.getByRole("link", { name: new RegExp(testParentGroup) }),
+        page
+          .getByRole("article")
+          .getByRole("link", { name: new RegExp(testParentGroup) }),
       ).toBeVisible();
 
       // rhdh-qe-child-team owns mock-child-site
@@ -212,7 +220,9 @@ test.describe("Test RBAC", () => {
       await page.getByRole("link", { name: "mock-child-site" }).click();
       // Verify owner group in the component metadata
       await expect(
-        page.getByRole("link", { name: new RegExp(testChildGroup) }),
+        page
+          .getByRole("article")
+          .getByRole("link", { name: new RegExp(testChildGroup) }),
       ).toBeVisible();
 
       // rhdh-qe-sub-child-team owns mock-sub-child-site, check that it can see it's own groups' components
@@ -224,7 +234,9 @@ test.describe("Test RBAC", () => {
       await page.getByRole("link", { name: "mock-sub-child-site" }).click();
       // Verify owner group in the component metadata
       await expect(
-        page.getByRole("link", { name: new RegExp(testSubChildGroup) }),
+        page
+          .getByRole("article")
+          .getByRole("link", { name: new RegExp(testSubChildGroup) }),
       ).toBeVisible();
     });
   });
@@ -362,12 +374,10 @@ test.describe("Test RBAC", () => {
       await page.click(rbacPo.selectMember(testUser));
       await uiHelper.verifyHeading(rbacPo.regexpShortUsersAndGroups(3, 1));
       await uiHelper.clickButton("Next");
-      // Wait for permissions step to be ready
-      await expect(
-        page
-          .getByRole("heading", { name: /Configure permission/i })
-          .or(page.getByTestId("nextButton-2")),
-      ).toBeVisible();
+      // Wait for permissions step to be ready (use .first() to handle multiple Next buttons)
+      const nextButton = page.getByTestId("nextButton-2").first();
+      await expect(nextButton).toBeVisible();
+      await expect(nextButton).toBeEnabled();
       await uiHelper.clickButton("Next");
       // Wait for review step to be ready
       await expect(
@@ -424,12 +434,10 @@ test.describe("Test RBAC", () => {
       await page.click(rbacPo.selectMember("Guest User"));
       await uiHelper.verifyHeading(rbacPo.regexpShortUsersAndGroups(1, 1));
       await uiHelper.clickByDataTestId("nextButton-1");
-      // Wait for next step to be ready and clickable (replaced manual loop with proper wait)
-      const nextButton2 = page.getByTestId("nextButton-2");
+      // Wait for next step to be ready and clickable (use .first() to handle multiple Next buttons)
+      const nextButton2 = page.getByTestId("nextButton-2").first();
       await expect(nextButton2).toBeVisible();
       await expect(nextButton2).toBeEnabled();
-      // Wait for any animations or transitions to complete
-      await expect(nextButton2).toHaveCount(1);
       await nextButton2.click();
       // Wait for review step before Save
       await expect(page.getByRole("button", { name: "Save" })).toBeVisible();
@@ -772,12 +780,10 @@ test.describe("Test RBAC", () => {
       await page.click(rbacPo.selectMember(testUser));
       await uiHelper.verifyHeading(rbacPo.regexpShortUsersAndGroups(3, 1));
       await uiHelper.clickButton("Next");
-      // Wait for permissions step to be ready
-      await expect(
-        page
-          .getByRole("heading", { name: /Configure permission/i })
-          .or(page.getByTestId("nextButton-2")),
-      ).toBeVisible();
+      // Wait for permissions step to be ready (use .first() to handle multiple Next buttons)
+      const nextButton = page.getByTestId("nextButton-2").first();
+      await expect(nextButton).toBeVisible();
+      await expect(nextButton).toBeEnabled();
       await uiHelper.clickButton("Next");
       // Wait for review step to be ready
       await expect(
