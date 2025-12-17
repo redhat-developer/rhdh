@@ -879,28 +879,130 @@ EOF
 
   # Wait for the pod to start and complete
   echo "Waiting for manual database creation pod to complete..."
-  sleep 2
 
-  # Wait up to 2 minutes for completion
-  local timeout=120
+  # Wait up to 5 minutes for completion (accounts for image pull delays, rate limiting, etc.)
+  local timeout=300
   local elapsed=0
+  local last_status=""
+
   while [ $elapsed -lt $timeout ]; do
     local status=$(oc get pod create-sonataflow-db-manual -n "${namespace}" -o jsonpath='{.status.phase}' 2>/dev/null || echo "NotFound")
-    if [[ "$status" == "Succeeded" ]] || [[ "$status" == "Failed" ]]; then
+
+    # Print status changes
+    if [[ "$status" != "$last_status" ]]; then
+      echo "Pod status: $status (elapsed: ${elapsed}s)"
+      last_status="$status"
+    fi
+
+    if [[ "$status" == "Succeeded" ]]; then
+      echo "Database creation pod completed successfully"
+      break
+    elif [[ "$status" == "Failed" ]]; then
+      echo "WARNING: Database creation pod failed"
       break
     fi
+
     sleep 5
     elapsed=$((elapsed + 5))
   done
+
+  if [ $elapsed -ge $timeout ]; then
+    echo "WARNING: Timeout waiting for database creation pod (${timeout}s elapsed)"
+  fi
 
   # Check logs
   echo "Database creation output:"
   oc logs create-sonataflow-db-manual -n "${namespace}" 2>/dev/null || echo "Could not retrieve logs"
 
+  # Check pod status for troubleshooting
+  echo "Final pod status:"
+  oc get pod create-sonataflow-db-manual -n "${namespace}" -o jsonpath='{.status.containerStatuses[0].state}' 2>/dev/null || echo "Could not get pod status"
+  echo ""
+
   # Clean up the pod
   oc delete pod create-sonataflow-db-manual -n "${namespace}" --ignore-not-found=true
 
   echo "Manual database creation completed"
+}
+
+# Verify that the sonataflow database exists
+verify_sonataflow_database() {
+  local namespace=$1
+
+  echo "Verifying sonataflow database exists..."
+
+  # Create a verification pod
+  cat <<EOF | oc apply -f -
+apiVersion: v1
+kind: Pod
+metadata:
+  name: verify-sonataflow-db
+  namespace: ${namespace}
+spec:
+  restartPolicy: Never
+  containers:
+  - name: psql
+    image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-16.3-1
+    command: ["sh", "-c"]
+    args:
+      - |
+        export PGSSLMODE=require
+        psql -h \${POSTGRES_HOST} -p \${POSTGRES_PORT} -U \${POSTGRES_USER} -d postgres -c '\l' | grep sonataflow && echo "DATABASE EXISTS" || echo "DATABASE DOES NOT EXIST"
+    env:
+    - name: POSTGRES_HOST
+      valueFrom:
+        secretKeyRef:
+          name: postgres-cred
+          key: POSTGRES_HOST
+    - name: POSTGRES_USER
+      valueFrom:
+        secretKeyRef:
+          name: postgres-cred
+          key: POSTGRES_USER
+    - name: POSTGRES_PORT
+      valueFrom:
+        secretKeyRef:
+          name: postgres-cred
+          key: POSTGRES_PORT
+    - name: PGPASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: postgres-cred
+          key: POSTGRES_PASSWORD
+    - name: PGSSLMODE
+      valueFrom:
+        secretKeyRef:
+          name: postgres-cred
+          key: PGSSLMODE
+EOF
+
+  # Wait for completion (shorter timeout since image should be cached)
+  local timeout=60
+  local elapsed=0
+  while [ $elapsed -lt $timeout ]; do
+    local status=$(oc get pod verify-sonataflow-db -n "${namespace}" -o jsonpath='{.status.phase}' 2>/dev/null || echo "NotFound")
+    if [[ "$status" == "Succeeded" ]] || [[ "$status" == "Failed" ]]; then
+      break
+    fi
+    sleep 3
+    elapsed=$((elapsed + 3))
+  done
+
+  # Check the result
+  local verification_output=$(oc logs verify-sonataflow-db -n "${namespace}" 2>/dev/null)
+  echo "$verification_output"
+
+  # Clean up
+  oc delete pod verify-sonataflow-db -n "${namespace}" --ignore-not-found=true
+
+  # Return success if database exists
+  if echo "$verification_output" | grep -q "DATABASE EXISTS"; then
+    echo "✓ Database verification successful"
+    return 0
+  else
+    echo "✗ Database verification failed"
+    return 1
+  fi
 }
 
 base_deployment() {
@@ -939,10 +1041,23 @@ rbac_deployment() {
   # Instead, manually create the database with proper SSL support
   create_sonataflow_database_with_ssl "${NAME_SPACE_RBAC}"
 
+  # Verify the database was created successfully
+  if ! verify_sonataflow_database "${NAME_SPACE_RBAC}"; then
+    echo "ERROR: Failed to verify sonataflow database creation. Workflows may fail to start."
+    echo "Attempting to continue anyway..."
+  fi
+
   # Patch the sonataflow platform to configure SSL for the jobs service
+  echo "Patching SonataFlowPlatform with SSL configuration..."
   oc -n "${NAME_SPACE_RBAC}" patch sfp sonataflow-platform --type=merge \
     -p '{"spec":{"services":{"jobService":{"podTemplate":{"container":{"env":[{"name":"QUARKUS_DATASOURCE_REACTIVE_URL","value":"postgresql://postgress-external-db-primary.postgress-external-db.svc.cluster.local:5432/sonataflow?search_path=jobs-service&sslmode=require&ssl=true&trustAll=true"},{"name":"QUARKUS_DATASOURCE_REACTIVE_SSL_MODE","value":"require"},{"name":"QUARKUS_DATASOURCE_REACTIVE_TRUST_ALL","value":"true"}]}}}}}}'
+
+  echo "Restarting jobs-service deployment..."
   oc rollout restart deployment/sonataflow-platform-jobs-service -n "${NAME_SPACE_RBAC}"
+
+  # Wait for jobs-service to be ready before deploying workflows
+  echo "Waiting for jobs-service to be ready..."
+  oc rollout status deployment/sonataflow-platform-jobs-service -n "${NAME_SPACE_RBAC}" --timeout=3m || echo "WARNING: jobs-service rollout did not complete in time"
 
   # initiate orchestrator workflows deployment
   deploy_orchestrator_workflows "${NAME_SPACE_RBAC}"
