@@ -156,27 +156,46 @@ export function SignInPage(props: SignInPageProps): React.JSX.Element {
   const configApi = useApi(configApiRef);
   const { t } = useTranslation();
   const isDevEnv = configApi.getString('auth.environment') === 'development';
-  const provider =
-    configApi.getOptionalString('signInPage') ?? DEFAULT_PROVIDER;
+
+  const signInPageConfig = configApi.getOptional<string | string[]>(
+    'signInPage',
+  );
+  const configValue = signInPageConfig ?? DEFAULT_PROVIDER;
+  const providerNames = Array.isArray(configValue)
+    ? configValue
+    : [configValue];
 
   const providers = createProviders(t);
-  const providerConfig =
-    providers.get(provider) ?? providers.get(DEFAULT_PROVIDER)!;
 
-  if (typeof providerConfig === 'object') {
-    const providerList = isDevEnv
-      ? (['guest', providerConfig] satisfies ['guest', SignInProviderConfig])
-      : [providerConfig];
-
-    return (
-      <CCSignInPage
-        {...props}
-        title={t('signIn.page.title')}
-        align="center"
-        providers={providerList}
-      />
+  const providerConfigs = providerNames
+    .map(name => providers.get(name))
+    .filter(
+      (config): config is SignInProviderConfig | string => config !== undefined,
     );
+
+  if (providerConfigs.length === 0) {
+    const defaultProvider = providers.get(DEFAULT_PROVIDER);
+    if (defaultProvider) providerConfigs.push(defaultProvider);
   }
 
-  return <ProxiedSignInPage {...props} provider={providerConfig} />;
+  // If any provider is proxied (i.e. does not use SignInProviderConfig), use the first proxied provider
+  if (providerConfigs.some(config => typeof config === 'string')) {
+    const proxiedProvider = providerConfigs.find(
+      config => typeof config === 'string',
+    ) as string;
+    return <ProxiedSignInPage {...props} provider={proxiedProvider} />;
+  }
+
+  const providerList = isDevEnv
+    ? ['guest' as const, ...(providerConfigs as SignInProviderConfig[])]
+    : (providerConfigs as SignInProviderConfig[]);
+
+  return (
+    <CCSignInPage
+      {...props}
+      title={t('signIn.page.title')}
+      align="center"
+      providers={providerList}
+    />
+  );
 }

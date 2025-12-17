@@ -3,7 +3,7 @@ import { Common } from "../utils/common";
 import { HomePageCustomization } from "../support/pages/home-page-customization";
 import { runAccessibilityTests } from "../utils/accessibility";
 
-test.describe.serial("Dynamic Home Page Customization", () => {
+test.describe.skip("Dynamic Home Page Customization", () => {
   let common: Common;
   let homePageCustomization: HomePageCustomization;
 

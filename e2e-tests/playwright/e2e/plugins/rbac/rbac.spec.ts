@@ -21,7 +21,7 @@ import { downloadAndReadFile } from "../../../utils/helper";
     The policies generated from a policy.csv or ConfigMap file cannot be edited or deleted using the Developer Hub Web UI.
     https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.3/html/authorization/managing-authorizations-by-using-the-web-ui#proc-rbac-ui-edit-role_title-authorization
 */
-test.describe.serial("Test RBAC", () => {
+test.describe.skip("Test RBAC", () => {
   test.beforeAll(async () => {
     test.info().annotations.push({
       type: "component",

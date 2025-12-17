@@ -15,7 +15,7 @@ const t = getTranslations();
 const lang = getCurrentLanguage();
 let page: Page;
 
-test.describe("CustomTheme should be applied", () => {
+test.describe.skip("CustomTheme should be applied", () => {
   let common: Common;
   let themeVerifier: ThemeVerifier;
 

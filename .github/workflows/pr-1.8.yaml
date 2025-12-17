@@ -12,15 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# This script exists as a clone of pr.yaml, minus the python testing that was added in 1.9
+# This file can be deleted once 1.10 is live as 1.8 will be EOL. 
+
 name: PR
 
 on:
   pull_request_target:
     types: [opened, synchronize, reopened, ready_for_review]
     branches:
-      - main
-      - release-1.9
-      - release-1.1[0-9]
+      - release-1.7
+      - release-1.8
 
 env:
   TURBO_SCM_BASE: ${{ github.event.pull_request.base.sha }}
@@ -163,10 +165,6 @@ jobs:
         with:
           cache-prefix: ${{ runner.os }}-v${{ matrix.node-version }}
 
-      - name: Install Python dependencies
-        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
-        run: pip install -r python/requirements-dev.in -r python/requirements-build.in -r python/requirements.txt
-
       - name: Run prettier
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         run: yarn prettier:check --continue --affected
@@ -189,10 +187,6 @@ jobs:
       - name: Run tests
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         run: yarn run test --continue --affected
-
-      - name: Run Python tests
-        if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
-        run: pytest docker/test_install-dynamic-plugins.py -v
 
       - name: Change directory to dynamic-plugins
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}

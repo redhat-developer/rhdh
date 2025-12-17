@@ -340,6 +340,13 @@ yarn prettier:fix            # Fix formatting for shell, markdown, and YAML file
 
 **Purpose**: This package provides essential tooling for maintaining code quality in the CI infrastructure, ensuring consistent formatting and shell script best practices across the pipeline scripts.
 
+#### Shell Script Conventions
+
+**Shell scripts in `.ibm/` folder:**
+- **Never use** `set pipefail` or `set -o pipefail`
+- Only `.ibm/pipelines/openshift-ci-tests.sh` defines global `set` options; other scripts inherit them
+- Functions may temporarily disable/re-enable error handling with `set +e` / `set -e` pattern
+
 #### Job Handlers
 The main script handles different job types:
 - `handle_aks_helm`: AKS Helm deployment
