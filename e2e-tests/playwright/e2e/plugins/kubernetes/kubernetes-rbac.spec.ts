@@ -5,7 +5,7 @@ import { Catalog } from "../../../support/pages/catalog";
 import { KUBERNETES_COMPONENTS } from "../../../support/page-objects/page-obj";
 import { KubernetesPage } from "../../../support/pages/kubernetes";
 
-test.describe.skip("Test Kubernetes Plugin", () => {
+test.describe("Test Kubernetes Plugin", () => {
   let common: Common;
   let uiHelper: UIhelper;
   let catalog: Catalog;
@@ -37,10 +37,10 @@ test.describe.skip("Test Kubernetes Plugin", () => {
       await uiHelper.clickTab("Kubernetes");
       await uiHelper.verifyText("backstage-janus");
 
-      await page
-        .locator(KUBERNETES_COMPONENTS.MuiAccordion)
-        .getByRole("button", { name: "my-cluster Cluster" })
-        .click();
+      await KUBERNETES_COMPONENTS.getClusterAccordion(
+        page,
+        "my-cluster Cluster",
+      ).click();
     });
 
     test("Verify pods visibility in the Kubernetes tab", async () => {
@@ -68,7 +68,9 @@ test.describe.skip("Test Kubernetes Plugin", () => {
       await uiHelper.verifyText("backstage-janus");
 
       await expect(
-        page.locator("h6").filter({ hasText: "Warning: Permission required" }),
+        page
+          .getByRole("heading", { level: 6 })
+          .filter({ hasText: "Warning: Permission required" }),
       ).toBeVisible();
     });
 
@@ -86,10 +88,10 @@ test.describe.skip("Test Kubernetes Plugin", () => {
       await uiHelper.clickTab("Kubernetes");
       await uiHelper.verifyText("backstage-janus");
 
-      await page
-        .locator(KUBERNETES_COMPONENTS.MuiAccordion)
-        .getByRole("button", { name: "my-cluster Cluster" })
-        .click();
+      await KUBERNETES_COMPONENTS.getClusterAccordion(
+        page,
+        "my-cluster Cluster",
+      ).click();
       await kubernetes.verifyPodLogs("topology-test", "topology-test");
     });
   });

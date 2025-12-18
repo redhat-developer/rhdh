@@ -6,7 +6,7 @@ import { test, expect } from "@playwright/test";
 import { ChildProcessWithoutNullStreams, spawn, exec } from "child_process";
 import { KubeClient } from "../../../utils/kube-client";
 
-test.describe.skip("Test Keycloak plugin", () => {
+test.describe("Test Keycloak plugin", () => {
   let uiHelper: UIhelper;
   let keycloak: Keycloak;
   let common: Common;
@@ -33,7 +33,7 @@ test.describe.skip("Test Keycloak plugin", () => {
     page,
   }) => {
     const keycloakUsers = await keycloak.getUsers(token);
-    const backStageUsersLocator = await CatalogUsersPO.getListOfUsers(page);
+    const backStageUsersLocator = CatalogUsersPO.getListOfUsers(page);
     await backStageUsersLocator.first().waitFor({ state: "visible" });
     const backStageUsersCount = await backStageUsersLocator.count();
 
@@ -62,7 +62,7 @@ test.describe.skip("Test Keycloak plugin", () => {
   });
 });
 
-test.describe.skip("Test Keycloak plugin metrics", () => {
+test.describe("Test Keycloak plugin metrics", () => {
   let portForward: ChildProcessWithoutNullStreams;
 
   test.beforeEach(async () => {
