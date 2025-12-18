@@ -36,7 +36,7 @@
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
-    "@backstage-community/plugin-catalog-backend-module-scaffolder-relation-processor": "2.8.0"
+    "@backstage-community/plugin-catalog-backend-module-scaffolder-relation-processor": "2.10.0"
   },
   "devDependencies": {
     "@backstage/cli": "0.34.5",

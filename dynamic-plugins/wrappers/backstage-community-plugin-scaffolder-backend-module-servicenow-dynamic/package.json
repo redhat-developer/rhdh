@@ -36,7 +36,7 @@
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
-    "@backstage-community/plugin-scaffolder-backend-module-servicenow": "2.8.1"
+    "@backstage-community/plugin-scaffolder-backend-module-servicenow": "2.10.1"
   },
   "files": [
     "dist",

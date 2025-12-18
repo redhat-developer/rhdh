@@ -36,7 +36,7 @@
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
-    "@roadiehq/scaffolder-backend-module-utils": "4.0.3"
+    "@roadiehq/scaffolder-backend-module-utils": "4.1.1"
   },
   "devDependencies": {
     "@backstage/cli": "0.34.5",

@@ -36,7 +36,7 @@
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
-    "@roadiehq/scaffolder-backend-argocd": "1.7.1"
+    "@roadiehq/scaffolder-backend-argocd": "1.8.1"
   },
   "devDependencies": {
     "@backstage/cli": "0.34.5",

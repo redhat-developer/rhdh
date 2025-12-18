@@ -36,7 +36,7 @@
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
-    "@backstage/plugin-scaffolder-backend-module-bitbucket-cloud": "0.2.15"
+    "@backstage/plugin-scaffolder-backend-module-bitbucket-cloud": "0.3.0"
   },
   "devDependencies": {
     "@backstage/cli": "0.34.5",
