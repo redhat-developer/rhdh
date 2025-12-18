@@ -1724,18 +1724,6 @@ enable_orchestrator_plugins_op() {
     return 1
   fi
 
-  # For RBAC namespaces, disable all tech-radar plugins (frontend and backend) if they exist
-  # The tech-radar backend plugin requires techRadar.url configuration which is not present
-  # in app-config-rhdh-rbac.yaml, causing: "Missing required config value at 'techRadar.url'"
-  # See: .ibm/pipelines/resources/config_map/app-config-rhdh-rbac.yaml
-  if [[ "$namespace" == *"rbac"* ]]; then
-    echo "Disabling all tech-radar plugins (frontend and backend) for RBAC namespace..."
-    # Disable frontend plugin (all instances)
-    yq eval '(.plugins[] | select(.package == "./dynamic-plugins/dist/backstage-community-plugin-tech-radar") | .disabled) = true' -i "$work_dir/custom-plugins.yaml" || true
-    # Disable backend plugin (all instances)
-    yq eval '(.plugins[] | select(.package == "./dynamic-plugins/dist/backstage-community-plugin-tech-radar-backend-dynamic") | .disabled) = true' -i "$work_dir/custom-plugins.yaml" || true
-  fi
-
   # Use the modified custom file as the final merged result
   if ! cp "$work_dir/custom-plugins.yaml" "$work_dir/merged-plugins.yaml"; then
     echo "Error: Failed to create merged plugins file"
