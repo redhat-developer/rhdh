@@ -1,0 +1,63 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: github-actions
+  namespace: rhdh
+  title: GitHub Actions
+  description: The GitHub Actions Plugin integrates GitHub Actions workflow data into your catalog.
+  annotations:
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
+  tags:
+    - cicd
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Documentation for Red Hat Developer Hub
+      url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
+    - title: Source Code
+      url: https://github.com/backstage/community-plugins/tree/main/workspaces/github-actions/plugins/github-actions
+spec:
+  author: Backstage Community
+  support:
+    provider: Red Hat
+    level: tech-preview
+  lifecycle: active
+  publisher: Red Hat
+  categories:
+    - CI/CD
+
+  description: |
+    The GitHub Actions Plugin integrates GitHub Actions workflow data into your catalog.
+
+    GitHub Actions makes it easy to automate all your software workflows, now with world-class CI/CD. Build, test, and deploy your code right from GitHub.
+
+    Plugin features:
+    - List workflow runs for a project
+    - Dive into one run to see a job steps
+    - Retry runs
+    - Pagination for runs
+
+    ## Adding The Plugin To Red Hat Developer Hub
+
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further instructions on how to add, enable, and configure plugins in your instance.
+
+    ## Configuring The Plugin ##
+
+    Plugins often need additional configuration to work correctly - particularly those that integrate with other
+    systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further details on the configuration required.
+
+  # unused yet
+  # assets:
+  #   - type: icon
+  #     Url: https://avatars2.githubusercontent.com/u/44036562?s=400&v=4
+
+  packages:
+    - name: backstage-community-plugin-github-actions
+
+  history:
+    added: '2021-01-20'

@@ -1,0 +1,57 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: lighthouse
+  namespace: rhdh
+  title: LightHouse
+  annotations:
+    extensions.backstage.io/pre-installed: 'true' # For plugins contained in the RHDH image
+  links:
+    - title: readme
+      url: https://github.com/backstage/community-plugins/tree/main/workspaces/lighthouse/plugins/lighthouse
+    - title: Homepage
+      url: https://red.ht/rhdh
+    - title: Bugs
+      url: https://issues.redhat.com/browse/RHIDP
+    - title: Documentation for Red Hat Developer Hub
+      url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/
+  tags:
+    - analytics # Used for filtering
+  description: |
+    A frontend for lighthouse-audit-service, this plugin allows you to trigger Lighthouse audits on websites and track them over time.
+    Google's Lighthouse tool is a great resource for benchmarking and improving the accessibility, performance, SEO, and best practices of your website.
+
+spec:
+  author: Backstage Community
+  support:
+    provider: Red Hat
+    level: tech-preview
+  lifecycle: active
+  publisher: Red Hat
+
+  categories:
+    - Analytics
+
+  description: |
+    A frontend for lighthouse-audit-service, this plugin allows you to trigger Lighthouse audits on websites and track them over time.
+
+    Google's Lighthouse tool is a great resource for benchmarking and improving the accessibility, performance, SEO, and best practices of your website.
+
+    This plugin allows you to generate on-demand Lighthouse audits for websites, and to track the trends for the top-level categories of Lighthouse at a glance.
+
+    ## Adding The Plugin To Red Hat Developer Hub
+
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further instructions on how to add, enable, configure, and remove plugins in your instance.
+
+    ## Configuring The Plugin ##
+
+    Plugins often need additional configuration to work correctly - particularly those that integrate with other
+    systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further details regarding the configuration required.
+
+  packages:
+    - backstage-community-plugin-lighthouse

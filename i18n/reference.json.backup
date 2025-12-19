@@ -1,0 +1,133 @@
+{
+  "catalog": {
+    "en": {
+      "indexPage.createButtonTitle": "Self-service"
+    }
+  },
+  "catalog-import": {
+    "en": {
+      "defaultImportPage.headerTitle": "Import an existing Git repository",
+      "importInfoCard.title": "Import an existing Git repository"
+    }
+  },
+  "core-components": {
+    "en": {
+      "table.filter.placeholder": "All results",
+      "table.body.emptyDataSourceMessage": "No records to display",
+      "table.pagination.firstTooltip": "First Page",
+      "table.pagination.labelDisplayedRows": "{from}-{to} of {count}",
+      "table.pagination.labelRowsSelect": "rows",
+      "table.pagination.lastTooltip": "Last Page",
+      "table.pagination.nextTooltip": "Next Page",
+      "table.pagination.previousTooltip": "Previous Page",
+      "table.toolbar.search": "Filter",
+      "alertDisplay.message_one": "({{ count }} newer message)",
+      "alertDisplay.message_other": "({{ count }} newer messages)",
+      "table.header.actions": "Actions",
+      "oauthRequestDialog.message": "Sign-in to allow {{appTitle}} access to {{provider}} APIs and identities."
+    }
+  },
+  "rhdh": {
+    "en": {
+      "menuItem.home": "Home",
+      "menuItem.myGroup": "My Group",
+      "menuItem.catalog": "Catalog",
+      "menuItem.apis": "APIs",
+      "menuItem.learningPaths": "Learning Paths",
+      "menuItem.selfService": "Self-service",
+      "menuItem.userSettings": "User Settings",
+      "menuItem.administration": "Administration",
+      "menuItem.extensions": "Extensions",
+      "menuItem.clusters": "Clusters",
+      "menuItem.rbac": "RBAC",
+      "menuItem.bulkImport": "Bulk import",
+      "menuItem.docs": "Docs",
+      "menuItem.lighthouse": "Lighthouse",
+      "menuItem.techRadar": "Tech Radar",
+      "menuItem.orchestrator": "Orchestrator",
+      "menuItem.adoptionInsights": "Adoption Insights",
+      "sidebar.menu": "Menu",
+      "sidebar.home": "Home",
+      "sidebar.homeLogo": "Home logo",
+      "signIn.page.title": "Select a sign-in method",
+      "signIn.providers.auth0.title": "Auth0",
+      "signIn.providers.auth0.message": "Sign in using Auth0",
+      "signIn.providers.atlassian.title": "Atlassian",
+      "signIn.providers.atlassian.message": "Sign in using Atlassian",
+      "signIn.providers.microsoft.title": "Microsoft",
+      "signIn.providers.microsoft.message": "Sign in using Microsoft",
+      "signIn.providers.bitbucket.title": "Bitbucket",
+      "signIn.providers.bitbucket.message": "Sign in using Bitbucket",
+      "signIn.providers.bitbucketServer.title": "Bitbucket Server",
+      "signIn.providers.bitbucketServer.message": "Sign in using Bitbucket Server",
+      "signIn.providers.github.title": "GitHub",
+      "signIn.providers.github.message": "Sign in using GitHub",
+      "signIn.providers.gitlab.title": "GitLab",
+      "signIn.providers.gitlab.message": "Sign in using GitLab",
+      "signIn.providers.google.title": "Google",
+      "signIn.providers.google.message": "Sign in using Google",
+      "signIn.providers.oidc.title": "OIDC",
+      "signIn.providers.oidc.message": "Sign in using OIDC",
+      "signIn.providers.okta.title": "Okta",
+      "signIn.providers.okta.message": "Sign in using Okta",
+      "signIn.providers.onelogin.title": "OneLogin",
+      "signIn.providers.onelogin.message": "Sign in using OneLogin",
+      "signIn.providers.saml.title": "SAML",
+      "signIn.providers.saml.message": "Sign in using SAML",
+      "catalog.entityPage.overview.title": "Overview",
+      "catalog.entityPage.topology.title": "Topology",
+      "catalog.entityPage.issues.title": "Issues",
+      "catalog.entityPage.pullRequests.title": "Pull/Merge Requests",
+      "catalog.entityPage.ci.title": "CI",
+      "catalog.entityPage.cd.title": "CD",
+      "catalog.entityPage.kubernetes.title": "Kubernetes",
+      "catalog.entityPage.imageRegistry.title": "Image Registry",
+      "catalog.entityPage.monitoring.title": "Monitoring",
+      "catalog.entityPage.lighthouse.title": "Lighthouse",
+      "catalog.entityPage.api.title": "API",
+      "catalog.entityPage.dependencies.title": "Dependencies",
+      "catalog.entityPage.docs.title": "Docs",
+      "catalog.entityPage.definition.title": "Definition",
+      "catalog.entityPage.diagram.title": "System Diagram",
+      "catalog.entityPage.workflows.title": "Workflows",
+      "app.scaffolder.title": "Self-service",
+      "app.search.title": "Search",
+      "app.search.resultType": "Result Type",
+      "app.search.softwareCatalog": "Software Catalog",
+      "app.search.filters.kind": "Kind",
+      "app.search.filters.lifecycle": "Lifecycle",
+      "app.search.filters.component": "Component",
+      "app.search.filters.template": "Template",
+      "app.search.filters.experimental": "experimental",
+      "app.search.filters.production": "production",
+      "app.learningPaths.title": "Learning Paths",
+      "app.learningPaths.error.title": "Could not fetch data.",
+      "app.learningPaths.error.unknownError": "Unknown error",
+      "app.userSettings.infoCard.title": "RHDH Metadata",
+      "app.userSettings.infoCard.metadataCopied": "Metadata copied to clipboard",
+      "app.userSettings.infoCard.copyMetadata": "Copy metadata to your clipboard",
+      "app.userSettings.infoCard.showLess": "Show less",
+      "app.userSettings.infoCard.showMore": "Show more",
+      "app.errors.contactSupport": "Contact support",
+      "app.errors.goBack": "Go back",
+      "app.errors.notFound.message": "We couldn't find that page",
+      "app.errors.notFound.additionalInfo": "The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.",
+      "app.table.createdAt": "Created At"
+    }
+  },
+  "scaffolder": {
+    "en": {
+      "templateListPage.contentHeader.registerExistingButtonTitle": "Import an existing Git repository"
+    }
+  },
+  "search": {
+    "en": {
+      "sidebarSearchModal.title": "Search"
+    }
+  },
+  "user-settings": {
+    "en": {
+      "sidebarTitle": "Settings"
+    }
+  }
+}

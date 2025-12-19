@@ -1,0 +1,124 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: tekton
+  namespace: rhdh
+  title: Pipelines With Tekton
+  description: |
+    The Tekton plugin enables you to visualize the PipelineRun resources available on your Kubernetes cluster. Once
+    enabled a CI/CD tab will display the list of these resources and associated pipeline run details such as
+    NAME, STATUS, TASK STATUS, STARTED, and DURATION.
+  annotations:
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
+    extensions.backstage.io/verified-by: Red Hat
+  tags:
+    - kubernetes
+    - openshift
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Documentation for Red Hat Developer Hub
+      url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
+    - title: Source Code
+      url: https://github.com/backstage/community-plugins/tree/main/workspaces/tekton/plugins/tekton
+
+spec:
+  author: Red Hat
+  support:
+    provider: Red Hat
+    level: generally-available
+  lifecycle: active
+  publisher: Red Hat
+
+  categories:
+    - CI/CD # One category will show up on the tile view
+  highlights:
+    - Visualize PipelineRun resources
+    - View pipeline run details
+
+  description: |
+    The Tekton plugin enables you to visualize the `PipelineRun` resources available on the Kubernetes cluster.
+    The CI/CD tab displays the list of PipelineRun resources associated with a Kubernetes cluster.
+    The list contains pipeline run details, such as NAME, STATUS, TASK STATUS, STARTED, and DURATION.
+
+    Vulnerabilities column provides a visual representation of identified vulnerabilities in the OCI image produced by the pipelinerun.
+    The Author of the pipeline scanner task would provide the CVE summary data using the below format that the UI can interpret.
+    The result of the scanner task should be emitted back to the pipelinerun and it should contain a result that ends with SCAN_OUTPUT string.
+
+    The "Link to SBOM" action will be enabled if there is a Security Bill Of Materials task in the pipelinerun and the correct configuration is added.
+
+    ## Adding The Plugin To Red Hat Developer Hub
+
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further instructions on how to add, enable, configure, and remove plugins in your instance.
+
+    ## Configuring The Plugin ##
+
+    Plugins often need additional configuration to work correctly - particularly those that integrate with other
+    systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further details regarding the configuration required.
+
+  icon: data:image/svg+xml;base64,
+    PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48c3ZnIGlkPSJ1dWlkLWViNTA1
+    YjAzLTBlYTYtNDExYy04ZTM1LWEzMzE4NzU1NzRlYSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3Jn
+    LzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgMzggMzgiPgo8ZGVmcz48c3R5bGU+LnV1aWQtNjI2YTMx
+    ZmUtMzhlYi00NDkwLWE2MGEtM2E3YmUwNmYyN2Zke2ZpbGw6I2UwMDt9LnV1aWQtM2Q0MjVmYTgt
+    YjBhMC00ZTcxLTlmMGQtOGVjYjY0NWUxNDlie2ZpbGw6I2ZmZjt9LnV1aWQtYjcxMjRiNzYtNWJh
+    ZC00OTYwLThjYzItZmZmNTI4YzJlMDc1e2ZpbGw6I2UwZTBlMDt9PC9zdHlsZT48L2RlZnM+PHBh
+    dGggY2xhc3M9InV1aWQtM2Q0MjVmYTgtYjBhMC00ZTcxLTlmMGQtOGVjYjY0NWUxNDliIiBkPSJt
+    MjgsMUgxMEM1LjAyOTQ0LDEsMSw1LjAyOTQ0LDEsMTB2MThjMCw0Ljk3MDU3LDQuMDI5NDQsOSw5
+    LDloMThjNC45NzA1NiwwLDktNC4wMjk0Myw5LTlWMTBjMC00Ljk3MDU2LTQuMDI5NDQtOS05LTlo
+    MFoiLz48cGF0aCBjbGFzcz0idXVpZC1iNzEyNGI3Ni01YmFkLTQ5NjAtOGNjMi1mZmY1MjhjMmUw
+    NzUiIGQ9Im0yOCwyLjI1YzQuMjczMzIsMCw3Ljc1LDMuNDc2NjgsNy43NSw3Ljc1djE4YzAsNC4y
+    NzMzMi0zLjQ3NjY4LDcuNzUtNy43NSw3Ljc1SDEwYy00LjI3MzMyLDAtNy43NS0zLjQ3NjY4LTcu
+    NzUtNy43NVYxMGMwLTQuMjczMzIsMy40NzY2OC03Ljc1LDcuNzUtNy43NWgxOG0wLTEuMjVIMTBD
+    NS4wMjk0MiwxLDEsNS4wMjk0MiwxLDEwdjE4YzAsNC45NzA1OCw0LjAyOTQyLDksOSw5aDE4YzQu
+    OTcwNTgsMCw5LTQuMDI5NDIsOS05VjEwYzAtNC45NzA1OC00LjAyOTQyLTktOS05aDBaIi8+PHBh
+    dGggY2xhc3M9InV1aWQtNjI2YTMxZmUtMzhlYi00NDkwLWE2MGEtM2E3YmUwNmYyN2ZkIiBkPSJt
+    MzAuNDQyMzgsMTcuNTU3NjJjLS4yNDQxNC0uMjQ0MTQtLjY0MDYyLS4yNDQxNC0uODg0NzcsMGwt
+    Ljk2NTcuOTY2MzFjLS4xNzAwNC0zLjQ4NTg0LTIuMTYwMDMtNi41ODEwNS01LjMxMzYtOC4xNDc5
+    NS0uMzExNTItLjE1NjI1LS42ODQ1Ny0uMDI4MzItLjgzNzg5LjI4MTI1cy0uMDI3MzQuNjg0NTcu
+    MjgxMjUuODM3ODljMi43MDQzNSwxLjM0MzM4LDQuNDIzMzQsMy45Nzg3Niw0LjYxNTIzLDYuOTU3
+    NjRsLS44OTQ1My0uODk1MTRjLS4yNDQxNC0uMjQ0MTQtLjY0MDYyLS4yNDQxNC0uODg0NzcsMC0u
+    MjQzMTYuMjQ0MTQtLjI0MzE2LjY0MDYyLDAsLjg4NDc3bDIsMmMuMTIyMDcuMTIyMDcuMjgyMjMu
+    MTgyNjIuNDQyMzguMTgyNjJzLjMyMDMxLS4wNjA1NS40NDIzOC0uMTgyNjJsMi0yYy4yNDMxNi0u
+    MjQ0MTQuMjQzMTYtLjY0MDYyLDAtLjg4NDc3WiIvPjxwYXRoIGNsYXNzPSJ1dWlkLTYyNmEzMWZl
+    LTM4ZWItNDQ5MC1hNjBhLTNhN2JlMDZmMjdmZCIgZD0ibTEwLjkzNTU1LDE1LjYyNWMtLjA5Mzc1
+    LDAtLjE4ODQ4LS4wMjA1MS0uMjc4MzItLjA2NTQzLS4zMDg1OS0uMTUzMzItLjQzNDU3LS41Mjgz
+    Mi0uMjgxMjUtLjgzNzg5LjkwNTI3LTEuODIyMjcsMi40MDAzOS0zLjM0MTgsNC4yMDk5Ni00LjI3
+    NzM0LjMwODU5LS4xNTgyLjY4NDU3LS4wMzcxMS44NDI3Ny4yNjg1NS4xNTgyLjMwNjY0LjAzODA5
+    LjY4MzU5LS4yNjg1NS44NDI3Ny0xLjU3NTIuODEzNDgtMi44NzY5NSwyLjEzNTc0LTMuNjY1MDQs
+    My43MjI2Ni0uMTA5MzguMjE5NzMtLjMzMDA4LjM0NjY4LS41NTk1Ny4zNDY2OFoiLz48cGF0aCBj
+    bGFzcz0idXVpZC02MjZhMzFmZS0zOGViLTQ0OTAtYTYwYS0zYTdiZTA2ZjI3ZmQiIGQ9Im0xNSwy
+    Ny42ODk0NWMtLjA5Mzc1LDAtLjE4ODQ4LS4wMjA1MS0uMjc4MzItLjA2NTQzLTEuODcyMDctLjkz
+    MDY2LTMuNDE1MDQtMi40NzM2My00LjM0NTctNC4zNDU3LS4xNTMzMi0uMzA5NTctLjAyNzM0LS42
+    ODQ1Ny4yODEyNS0uODM3ODkuMzExNTItLjE1NDMuNjg0NTctLjAyODMyLjgzNzg5LjI4MTI1Ljgw
+    OTU3LDEuNjI5ODgsMi4xNTMzMiwyLjk3MzYzLDMuNzgzMiwzLjc4MzIuMzA4NTkuMTUzMzIuNDM0
+    NTcuNTI4MzIuMjgxMjUuODM3ODktLjEwOTM4LjIxOTczLS4zMzAwOC4zNDY2OC0uNTU5NTcuMzQ2
+    NjhaIi8+PHBhdGggY2xhc3M9InV1aWQtNjI2YTMxZmUtMzhlYi00NDkwLWE2MGEtM2E3YmUwNmYy
+    N2ZkIiBkPSJtMjMuMTI3OTMsMjcuNjI1Yy0uMjI2NTYsMC0uNDQ1MzEtLjEyMzA1LS41NTY2NC0u
+    MzM3ODktLjE1ODItLjMwNjY0LS4wMzgwOS0uNjgzNTkuMjY4NTUtLjg0Mjc3LDEuNTc1Mi0uODEz
+    NDgsMi44NzY5NS0yLjEzNTc0LDMuNjY1MDQtMy43MjI2Ni4xNTMzMi0uMzA5NTcuNTI4MzItLjQz
+    NzUuODM3ODktLjI4MTI1LjMwODU5LjE1MzMyLjQzNDU3LjUyODMyLjI4MTI1LjgzNzg5LS45MDUy
+    NywxLjgyMjI3LTIuNDAwMzksMy4zNDE4LTQuMjA5OTYsNC4yNzczNC0uMDkxOC4wNDY4OC0uMTkw
+    NDMuMDY5MzQtLjI4NjEzLjA2OTM0WiIvPjxwYXRoIGQ9Im0xOSwxMi42MjVjLTEuNDQ3MjcsMC0y
+    LjYyNS0xLjE3NzczLTIuNjI1LTIuNjI1czEuMTc3NzMtMi42MjUsMi42MjUtMi42MjUsMi42MjUs
+    MS4xNzc3MywyLjYyNSwyLjYyNS0xLjE3NzczLDIuNjI1LTIuNjI1LDIuNjI1Wm0wLTRjLS43NTc4
+    MSwwLTEuMzc1LjYxNzE5LTEuMzc1LDEuMzc1cy42MTcxOSwxLjM3NSwxLjM3NSwxLjM3NSwxLjM3
+    NS0uNjE3MTksMS4zNzUtMS4zNzUtLjYxNzE5LTEuMzc1LTEuMzc1LTEuMzc1WiIvPjxwYXRoIGQ9
+    Im0xMCwyMS42MjVjLTEuNDQ3MjcsMC0yLjYyNS0xLjE3NzczLTIuNjI1LTIuNjI1czEuMTc3NzMt
+    Mi42MjUsMi42MjUtMi42MjUsMi42MjUsMS4xNzc3MywyLjYyNSwyLjYyNS0xLjE3NzczLDIuNjI1
+    LTIuNjI1LDIuNjI1Wm0wLTRjLS43NTc4MSwwLTEuMzc1LjYxNzE5LTEuMzc1LDEuMzc1cy42MTcx
+    OSwxLjM3NSwxLjM3NSwxLjM3NSwxLjM3NS0uNjE3MTksMS4zNzUtMS4zNzUtLjYxNzE5LTEuMzc1
+    LTEuMzc1LTEuMzc1WiIvPjxwYXRoIGQ9Im0xOSwzMC42MjVjLTEuNDQ3MjcsMC0yLjYyNS0xLjE3
+    NzczLTIuNjI1LTIuNjI1czEuMTc3NzMtMi42MjUsMi42MjUtMi42MjUsMi42MjUsMS4xNzc3Mywy
+    LjYyNSwyLjYyNS0xLjE3NzczLDIuNjI1LTIuNjI1LDIuNjI1Wm0wLTRjLS43NTc4MSwwLTEuMzc1
+    LjYxNzE5LTEuMzc1LDEuMzc1cy42MTcxOSwxLjM3NSwxLjM3NSwxLjM3NSwxLjM3NS0uNjE3MTks
+    MS4zNzUtMS4zNzUtLjYxNzE5LTEuMzc1LTEuMzc1LTEuMzc1WiIvPjwvc3ZnPg==
+
+  packages:
+    - backstage-community-plugin-tekton
+    - backstage-plugin-kubernetes-backend

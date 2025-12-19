@@ -1,0 +1,59 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: ldap-catalog-integration
+  namespace: rhdh
+  title: LDAP Catalog Integration
+  description: |
+    This is an extension module to the plugin-catalog-backend plugin, providing an `LdapOrgReaderProcessor` that
+    can be used to ingest organization data from an LDAP server. This processor is useful if you want to import
+    users and groups from your Active Directory or another LDAP compatible server.
+  annotations:
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
+  links:
+    - title: readme
+      url: https://github.com/backstage/backstage/blob/master/plugins/catalog-backend-module-ldap/README.md
+    - title: Homepage
+      url: https://red.ht/rhdh
+    - title: Bugs
+      url: https://issues.redhat.com/browse/RHIDP
+    - title: Documentation for Red Hat Developer Hub
+      url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/
+  tags:
+    - catalog
+
+spec:
+  author: Backstage Community
+  support:
+    provider: Red Hat
+    level: generally-available
+  lifecycle: active
+  publisher: Red Hat
+
+  categories:
+    - Software Catalog # One category will show up on the tile view
+
+  highlights:
+    - Software Catalog integration
+
+  description: |
+    This is an extension module to the plugin-catalog-backend plugin, providing an LdapOrgReaderProcessor that can be used to ingest
+    organization data from an LDAP server. This processor is useful if you want to import users and groups from your Active Directory
+    or another LDAP compatible server.
+
+    ## Adding The Plugin To Red Hat Developer Hub
+
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further instructions on how to add, enable, configure, and remove plugins in your instance.
+
+    ## Configuring The Plugin ##
+
+    Plugins often need additional configuration to work correctly - particularly those that integrate with other
+    systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further details regarding the configuration required.
+
+  packages:
+    - backstage-plugin-catalog-backend-module-ldap

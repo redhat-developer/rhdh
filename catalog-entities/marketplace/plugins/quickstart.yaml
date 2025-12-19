@@ -1,0 +1,50 @@
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: quickstart
+  namespace: rhdh
+  title: Quickstart
+  description: "Guided quickstarts to help users discover and set up key features in Red Hat Developer Hub."
+  annotations:
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
+  tags:
+    - onboarding
+    - customization
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Documentation for Red Hat Developer Hub
+      url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/red-hat-developer-hub-backstage-plugin-quickstart
+spec:
+  author: Red Hat
+  support:
+    provider: Red Hat
+    level: generally-available
+  lifecycle: active
+  publisher: Red Hat
+
+  categories:
+    - Customization
+
+  highlights:
+    - Provide in-product quickstarts and guidance
+
+  description: |
+    Quickstart provides in-product, contextual onboarding flows that help users set up and discover
+    features in Red Hat Developer Hub. It includes a help button in the global header and a drawer
+    provider to surface guidance when needed.
+
+    ## Adding The Plugin To Red Hat Developer Hub
+
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further instructions on how to add, enable, configure, and remove plugins in your instance.
+
+
+  packages:
+    - rhdh-backstage-plugin-quickstart
+
+

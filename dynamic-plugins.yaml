@@ -1,0 +1,179 @@
+plugins:
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import-backend-dynamic
+    disabled: false
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import
+    disabled: true
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-bulk-import:
+            appIcons:
+              - name: bulkImportIcon3
+                importName: BulkImportIcon3
+            dynamicRoutes:
+              - path: /bulk-import/repositories
+                importName: BulkImportPage
+                menuItem:
+                  icon: bulkImportIcon
+                  text: Bulk import
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-marketplace
+    disabled: false # DEBSMITA TEST
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-marketplace:
+            appIcons:
+              - name: marketplace
+                importName: MarketplaceIcon1
+            dynamicRoutes:
+              - path: /extensions/catalog
+                importName: DynamicMarketplacePluginRouter
+            mountPoints:
+              - mountPoint: internal.plugins/tab
+                importName: DynamicMarketplacePluginContent
+                config:
+                  path: marketplace
+                  title: Catalog
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-marketplace-backend-dynamic
+    disabled: true
+  - package: ./dynamic-plugins/dist/backstage-community-plugin-quay
+    disabled: false
+    # TODO: enable
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          backstage-community.plugin-quay:
+            mountPoints:
+              - mountPoint: entity.page.image-registry/cards
+                importName: QuayPage
+                config:
+                  layout:
+                    gridColumn: 1 / -1
+                  if:
+                    anyOf:
+                      - isQuayAvailable
+  - package: ./dynamic-plugins/dist/backstage-community-plugin-3scale-backend-dynamic
+    disabled: true
+  - package: ./dynamic-plugins/dist/backstage-community-plugin-topology
+    disabled: true
+  # - package: ./dynamic-plugins/dist/backstage-plugin-kubernetes-backend-dynamic
+  #   disabled: true
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-header
+    disabled: false
+    pluginConfig:
+      app:
+        sidebar:
+          search: false
+          settings: false
+          logo: false
+      dynamicPlugins:
+        frontend:
+          default.main-menu-items:
+            menuItems:
+              default.create:
+                title: Global Header
+          red-hat-developer-hub.backstage-plugin-global-header:
+            mountPoints:
+              - mountPoint: application/header
+                importName: GlobalHeader
+                config:
+                  position: above-sidebar
+              - mountPoint: global.header/component
+                importName: CompanyLogo
+                config:
+                  priority: 200
+                  props:
+                    to: /
+              - mountPoint: global.header/component
+                importName: SearchComponent
+                config:
+                  priority: 100
+              - mountPoint: global.header/component
+                importName: Spacer
+                config:
+                  priority: 99
+                  props:
+                    growFactor: 0
+              - mountPoint: global.header/component
+                importName: HeaderIconButton
+                config:
+                  priority: 90
+                  props:
+                    title: Self-service
+                    icon: add
+                    to: create
+              - mountPoint: global.header/component
+                importName: StarredDropdown
+                config:
+                  priority: 85
+              - mountPoint: global.header/component
+                importName: ApplicationLauncherDropdown
+                config:
+                  priority: 82
+              - mountPoint: global.header/application-launcher
+                importName: MenuItemLink
+                config:
+                  section: Documentation
+                  priority: 150
+                  props:
+                    title: Developer Hub
+                    icon: developerHub
+                    link: https://docs.redhat.com/en/documentation/red_hat_developer_hub
+              - mountPoint: global.header/application-launcher
+                importName: MenuItemLink
+                config:
+                  section: Developer Tools
+                  priority: 100
+                  props:
+                    title: RHDH Local
+                    icon: developerHub
+                    link: https://github.com/redhat-developer/rhdh-local
+              - mountPoint: global.header/component
+                importName: HelpDropdown
+                config:
+                  priority: 80
+              - mountPoint: global.header/help
+                importName: SupportButton
+                config:
+                  priority: 10
+              - mountPoint: global.header/component
+                importName: NotificationButton
+                config:
+                  priority: 70
+              - mountPoint: global.header/component
+                importName: Divider
+                config:
+                  priority: 50
+              - mountPoint: global.header/component
+                importName: ProfileDropdown
+                config:
+                  priority: 10
+              - mountPoint: global.header/profile
+                importName: MenuItemLink
+                config:
+                  priority: 100
+                  props:
+                    title: Settings
+                    link: /settings
+                    icon: manageAccounts
+              - mountPoint: global.header/profile
+                importName: MenuItemLink
+                config:
+                  priority: 90
+                  props:
+                    title: My profile
+                    icon: account
+              - mountPoint: global.header/profile
+                importName: LogoutButton
+                config:
+                  priority: 10
+  - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
+    disabled: true
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-dynamic-home-page
+    disabled: true
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-adoption-insights
+    disabled: true
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-adoption-insights-backend-dynamic
+    disabled: true
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-analytics-module-adoption-insights-dynamic
+    disabled: true

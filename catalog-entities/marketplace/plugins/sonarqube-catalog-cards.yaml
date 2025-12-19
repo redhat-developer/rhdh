@@ -1,0 +1,63 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: sonarqube-catalog-cards
+  namespace: rhdh
+  title: SonarQube
+  description: |
+    This plugin provides SonarQube catalog cards for Backstage allowing Backstage users to 
+    view code statistics from SonarCloud or SonarQube without leaving the portal.
+  annotations:
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
+  tags:
+    - code-quality
+    - sonarqube
+  links:
+    - title: Homepage
+      url: https://red.ht/rhdh
+    - title: Bugs
+      url: https://issues.redhat.com/browse/RHIDP
+    - title: Documentation for Red Hat Developer Hub
+      url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/    
+
+spec:
+
+  author: SDA SE
+  support:
+    provider: Red Hat
+    level: tech-preview
+  lifecycle: active
+  publisher: Red Hat
+
+  categories:
+    - Code Quality # One category will show up on the tile view
+
+  highlights:
+    - Code Quality
+    - Code Statistics
+    - Static Analysis
+
+  description: |
+    The SonarQube Plugin displays code statistics from SonarCloud or SonarQube. SonarQube (formerly Sonar)
+    is an open-source platform developed by SonarSource for continuous inspection of code quality to perform 
+    automatic reviews with static analysis of code to detect bugs and code smells on 29 programming languages. 
+    SonarQube offers reports on duplicated code, coding standards, unit tests, code coverage, code complexity, 
+    comments, bugs, and security recommendations.
+
+    ## Adding The Plugin To Red Hat Developer Hub
+
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub) 
+    for further instructions on how to add, enable, configure, and remove plugins in your instance.
+
+    ## Configuring The Plugin ##
+
+    Plugins often need additional configuration to work correctly - particularly those that integrate with other 
+    systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further details regarding the configuration required.  
+
+  packages:
+    - backstage-community-plugin-sonarqube
+    - backstage-community-plugin-sonarqube-backend

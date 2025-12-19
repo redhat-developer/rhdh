@@ -1,0 +1,61 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: backstage-plugin-catalog-backend-module-github-org
+  namespace: rhdh
+  title: GitHub Org Software Catalog Integration
+  description: |
+    Provides a GitHub integration for the Software Catalog. 
+    Searches your GitHub account and imports your users and groups from GitHub.
+  annotations:
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
+    extensions.backstage.io/verified-by: Red Hat
+  links:
+    - title: Homepage
+      url: https://red.ht/rhdh
+    - title: Bugs
+      url: https://issues.redhat.com/browse/RHIDP
+    - title: Documentation for Red Hat Developer Hub
+      url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/
+    - title: Backstge docs
+      url: https://backstage.io/docs/reference/plugin-catalog-backend-module-github-org/
+  tags:
+    - software-catalog
+spec:
+
+  author: Backstage Community
+  support:
+    provider: Red Hat
+    level: generally-available
+  lifecycle: active
+  publisher: Red Hat
+
+  highlights:
+    - Provides a GitHub integration for the Software Catalog
+    - Ingests org data (users and groups) from GitHub.
+
+  categories:
+    - Software Catalog
+
+  description: |
+    Discovers users and groups located in [GitHub](https://github.com). The provider will search your
+    GitHub account and register catalog files matching the configured path as Location entity and via
+    following processing steps add all contained catalog entities. This can be useful as an
+    alternative to static locations or manually adding things to the catalog.
+
+    ## Adding The Plugin To Red Hat Developer Hub
+
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further instructions on how to add, enable, configure, and remove plugins in your instance.
+
+    ## Configuring The Plugin ##
+
+    Plugins often need additional configuration to work correctly - particularly those that integrate with other
+    systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further details regarding the configuration required.
+
+  packages:
+    - backstage-plugin-catalog-backend-module-github-org

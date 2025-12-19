@@ -1,0 +1,107 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: quay-scaffolder-actions
+  namespace: rhdh
+  title: Quay Software Template Actions
+  description: |
+    Adds a set of actions for Quay to the Software Template system.
+  annotations:
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
+    extensions.backstage.io/verified-by: Red Hat
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Documentation for Red Hat Developer Hub
+      url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/
+  tags:
+    - scaffolder # Used for filtering
+spec:
+  authors:
+   - name: Red Hat
+     url: https://redhat.com
+
+  support:
+    provider: Red Hat
+    level: generally-available
+  lifecycle: active
+  publisher: Red Hat
+
+  categories:
+    - Scaffolder # One category will show up on the tile view
+  highlights:
+    - Adds a set of actions for Quay to the Software Template system.
+
+  description: |
+    This plugin ships as enabled by default in Red Hat Developer Hub.
+
+    Adds a set of actions for Quay to the Software Template system, specifically 
+    the ability to create a Quay repository dusing the execution of a software template.
+
+    ## Adding The Plugin To Red Hat Developer Hub
+
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub) 
+    for further instructions on how to add, enable, configure, and remove plugins in your instance.
+
+    ## Configuring The Plugin ##
+
+    Plugins often need additional configuration to work correctly - particularly those that integrate with other 
+    systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further details regarding the configuration required.
+
+  icon: data:image/svg+xml;base64,
+    PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48c3ZnIGlkPSJ1dWlkLTllZTli
+    NTNhLWEwMWItNDJiMi1iZWE2LWRhNTFjMzMxY2I3YSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3Jn
+    LzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgMzggMzgiPjxkZWZzPjxzdHlsZT4udXVpZC0yYTY4Yzk0
+    MC1iZTZjLTQ2NGItYTJlMC1mZjk5ZTdlNmVhNDN7ZmlsbDojZTAwO30udXVpZC00MTJlY2Q0NS02
+    ODgwLTQzYjEtOGQ2My0wNTY4NWI0OTA0Njd7ZmlsbDojZmZmO30udXVpZC01YTU3NDgyYy05ODcy
+    LTQxYTUtOWIwNS05NzhjNzQ4MTcwNTF7ZmlsbDojNGQ0ZDRkO308L3N0eWxlPjwvZGVmcz48cmVj
+    dCB4PSIxIiB5PSIxIiB3aWR0aD0iMzYiIGhlaWdodD0iMzYiIHJ4PSI5IiByeT0iOSIvPjxwYXRo
+    IGNsYXNzPSJ1dWlkLTVhNTc0ODJjLTk4NzItNDFhNS05YjA1LTk3OGM3NDgxNzA1MSIgZD0ibTI4
+    LDIuMjVjNC4yNzMzOCwwLDcuNzUsMy40NzY2Miw3Ljc1LDcuNzV2MThjMCw0LjI3MzM4LTMuNDc2
+    NjIsNy43NS03Ljc1LDcuNzVIMTBjLTQuMjczMzgsMC03Ljc1LTMuNDc2NjItNy43NS03Ljc1VjEw
+    YzAtNC4yNzMzOCwzLjQ3NjYyLTcuNzUsNy43NS03Ljc1aDE4bTAtMS4yNUgxMEM1LjAyOTQyLDEs
+    MSw1LjAyOTQyLDEsMTB2MThjMCw0Ljk3MDU4LDQuMDI5NDIsOSw5LDloMThjNC45NzA1OCwwLDkt
+    NC4wMjk0Miw5LTlWMTBjMC00Ljk3MDU4LTQuMDI5NDItOS05LTloMFoiLz48cGF0aCBjbGFzcz0i
+    dXVpZC0yYTY4Yzk0MC1iZTZjLTQ2NGItYTJlMC1mZjk5ZTdlNmVhNDMiIGQ9Im0xNS40OTkwMiwy
+    OS41MjUzOWMtLjEwMjU0LDAtLjIwNjA1LS4wMjUzOS0uMzAyNzMtLjA3OTEtLjMwMTc2LS4xNjY5
+    OS0uNDEwMTYtLjU0Nzg1LS4yNDIxOS0uODQ5NjFsMy41LTYuMzAwNzhjLjE2NjAyLS4zMDE3Ni41
+    NDU5LS40MTIxMS44NDk2MS0uMjQyMTkuMzAxNzYuMTY2OTkuNDEwMTYuNTQ3ODUuMjQyMTkuODQ5
+    NjFsLTMuNSw2LjMwMDc4Yy0uMTEzMjguMjA1MDgtLjMyNzE1LjMyMTI5LS41NDY4OC4zMjEyOVoi
+    Lz48cGF0aCBjbGFzcz0idXVpZC00MTJlY2Q0NS02ODgwLTQzYjEtOGQ2My0wNTY4NWI0OTA0Njci
+    IGQ9Im0xNS41MDA5OCwyOS41MjUzOWMtLjIxOTczLDAtLjQzMjYyLS4xMTYyMS0uNTQ2ODgtLjMy
+    MTI5bC01LjUtOS45MDAzOWMtLjEwNTQ3LS4xODg0OC0uMTA1NDctLjQxODk1LDAtLjYwNzQybDUu
+    NS05LjkwMDM5Yy4xNjY5OS0uMzAwNzguNTQ1OS0uNDExMTMuODQ5NjEtLjI0MjE5LjMwMTc2LjE2
+    Njk5LjQxMDE2LjU0Nzg1LjI0MjE5Ljg0OTYxbC01LjMzMTA1LDkuNTk2NjgsNS4zMzEwNSw5LjU5
+    NjY4Yy4xNjc5Ny4zMDE3Ni4wNTk1Ny42ODI2Mi0uMjQyMTkuODQ5NjEtLjA5NjY4LjA1MzcxLS4y
+    MDAyLjA3OTEtLjMwMjczLjA3OTFaIi8+PHBhdGggY2xhc3M9InV1aWQtMmE2OGM5NDAtYmU2Yy00
+    NjRiLWEyZTAtZmY5OWU3ZTZlYTQzIiBkPSJtMjIuNDk5MDIsMjkuNTI1MzljLS4xMDI1NCwwLS4y
+    MDYwNS0uMDI1MzktLjMwMjczLS4wNzkxLS4zMDE3Ni0uMTY2OTktLjQxMDE2LS41NDc4NS0uMjQy
+    MTktLjg0OTYxbDUuNS05LjkwMDM5Yy4xNjYwMi0uMzAwNzguNTQ1OS0uNDExMTMuODQ5NjEtLjI0
+    MjE5LjMwMTc2LjE2Njk5LjQxMDE2LjU0Nzg1LjI0MjE5Ljg0OTYxbC01LjUsOS45MDAzOWMtLjEx
+    MzI4LjIwNTA4LS4zMjcxNS4zMjEyOS0uNTQ2ODguMzIxMjlaIi8+PHBhdGggY2xhc3M9InV1aWQt
+    MmE2OGM5NDAtYmU2Yy00NjRiLWEyZTAtZmY5OWU3ZTZlYTQzIiBkPSJtMTkuMDAwOTgsMTYuMDI1
+    MzljLS4yMTk3MywwLS40MzM1OS0uMTE2MjEtLjU0Njg4LS4zMjEyOWwtMy41LTYuMzAwNzhjLS4x
+    Njc5Ny0uMzAxNzYtLjA1OTU3LS42ODI2Mi4yNDIxOS0uODQ5NjEuMzAzNzEtLjE2ODk1LjY4MzU5
+    LS4wNTg1OS44NDk2MS4yNDIxOWwzLjUsNi4zMDA3OGMuMTY3OTcuMzAxNzYuMDU5NTcuNjgyNjIt
+    LjI0MjE5Ljg0OTYxLS4wOTY2OC4wNTM3MS0uMjAwMi4wNzkxLS4zMDI3My4wNzkxWiIvPjxwYXRo
+    IGNsYXNzPSJ1dWlkLTQxMmVjZDQ1LTY4ODAtNDNiMS04ZDYzLTA1Njg1YjQ5MDQ2NyIgZD0ibTIy
+    LjUwMDk4LDI5LjUyNTM5Yy0uMjE5NzMsMC0uNDMyNjItLjExNjIxLS41NDY4OC0uMzIxMjlsLTUu
+    NS05LjkwMDM5Yy0uMTA1NDctLjE4ODQ4LS4xMDU0Ny0uNDE4OTUsMC0uNjA3NDJsNS41LTkuOTAw
+    MzljLjE2NjAyLS4zMDA3OC41NDU5LS40MTExMy44NDk2MS0uMjQyMTkuMzAxNzYuMTY2OTkuNDEw
+    MTYuNTQ3ODUuMjQyMTkuODQ5NjFsLTUuMzMxMDUsOS41OTY2OCw1LjMzMTA1LDkuNTk2NjhjLjE2
+    Nzk3LjMwMTc2LjA1OTU3LjY4MjYyLS4yNDIxOS44NDk2MS0uMDk2NjguMDUzNzEtLjIwMDIuMDc5
+    MS0uMzAyNzMuMDc5MVoiLz48cGF0aCBjbGFzcz0idXVpZC0yYTY4Yzk0MC1iZTZjLTQ2NGItYTJl
+    MC1mZjk5ZTdlNmVhNDMiIGQ9Im0yOC4wMDA5OCwxOS42MjVjLS4yMTk3MywwLS40MzI2Mi0uMTE2
+    MjEtLjU0Njg4LS4zMjEyOWwtNS41LTkuOTAwMzljLS4xNjc5Ny0uMzAxNzYtLjA1OTU3LS42ODI2
+    Mi4yNDIxOS0uODQ5NjEuMzAzNzEtLjE2ODk1LjY4MTY0LS4wNTg1OS44NDk2MS4yNDIxOWw1LjUs
+    OS45MDAzOWMuMTY3OTcuMzAxNzYuMDU5NTcuNjgyNjItLjI0MjE5Ljg0OTYxLS4wOTY2OC4wNTM3
+    MS0uMjAwMi4wNzkxLS4zMDI3My4wNzkxWiIvPjwvc3ZnPg==
+
+  packages:
+    - backstage-community-plugin-scaffolder-backend-module-quay

@@ -1,0 +1,63 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: jira
+  namespace: rhdh
+  title: Jira
+  description: View Jira summary for your projects in Backstage.
+  annotations:
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
+  tags:
+    - planning
+  links:
+    - url: https://roadie.io/backstage/plugins/jira/
+      title: Roadie Documentation
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/roadiehq-backstage-plugin-jira
+spec:
+  authors:
+    - name: Roadie
+      url: https://roadie.io/
+
+  publisher: Red Hat
+  support:
+    provider: Red Hat
+    level: tech-preview
+  lifecycle: active
+  categories:
+    - Planning
+
+  highlights:
+    - Bug tracking and agile project management.
+    - Show project details and tasks
+    - View JIRA issues of the Project
+    - Activity Stream
+    - Show my assigned JIRA tickets
+
+  description: |
+    The Jira Backstage plugin lets you bring the Jira project related to your service into the Catalog.
+    You can keep track of tasks, stories, bugs, and epics from the service page in Backstage. 
+    
+    ## Adding The Plugin To Red Hat Developer Hub
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub) 
+    for further instructions on how to add, enable, configure, and remove plugins in your instance.
+
+    ## Configuring The Plugin ##
+
+    Plugins often need additional configuration to work correctly - particularly those that integrate with other 
+    systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further details regarding the configuration required.
+
+  packages:
+    - roadiehq-backstage-plugin-jira
+
+  # unused yet
+  # assets:
+  #   - type: icon
+  #     Url: https://roadie.io/images/logos/jira.png
+
+  history:
+    added: '2021-04-20'

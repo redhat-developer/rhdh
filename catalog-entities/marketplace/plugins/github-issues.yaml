@@ -1,0 +1,62 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: github-issues
+  namespace: rhdh
+  title: GitHub Issues
+  description: 'Based on the well-known GitHub slug annotation associated with the Entity, it renders the list of Open issues in GitHub'
+  annotations:
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
+  tags:
+    - issue-tracker
+  links:
+    - title: Homepage
+      url: https://red.ht/rhdh
+    - title: Bugs
+      url: https://issues.redhat.com/browse/RHIDP
+    - title: Documentation for Red Hat Developer Hub
+      url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
+    - title: Source Code
+      url: https://github.com/backstage/community-plugins/tree/main/workspaces/github-issues/plugins/github-issues
+spec:
+  categories:
+    - Code Quality
+
+  author: Backstage Community
+  support:
+    provider: Red Hat
+    level: tech-preview
+  lifecycle: active
+  publisher: Red Hat
+  highlights:
+    - Show GitHub issues for your entities
+
+  description: |
+    Based on the [well-known GitHub slug annotation](https://backstage.io/docs/features/software-catalog/well-known-annotations#githubcomproject-slug) associated with the Entity, it renders the list of Open issues in GitHub.
+    The plugin will attempt to determine the source code location using the [well-known Source location slug annotation](https://backstage.io/docs/features/software-catalog/well-known-annotations/#backstageiosource-location) or [Managed by location slug annotation](https://backstage.io/docs/features/software-catalog/well-known-annotations/#backstageiomanaged-by-location) associated with the Entity.
+    If no configured Github provider will match, the first one will be used.
+
+    The plugin is designed to work with four Entity kinds, and it behaves a bit differently depending on that kind:
+
+    - Kind: Group/User: plugin renders issues from all repositories for which the Entity is the owner.
+    - Kind: API/Component: plugin renders issues from only one repository assigned to the Entity
+
+    **Issues are sorted from the recently updated DESC order (the plugin might not render all issues from a single repo next to each other).**
+
+    ## Adding The Plugin To Red Hat Developer Hub
+
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further instructions on how to add, enable, configure, and remove plugins in your instance.
+
+    ## Configuring The Plugin ##
+
+    Plugins often need additional configuration to work correctly - particularly those that integrate with other
+    systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further details regarding the configuration required.
+
+
+
+
+  packages:
+    - backstage-community-plugin-github-issues

@@ -1,0 +1,17 @@
+{
+  "tms": {
+    "url": "https://cloud.memsource.com/web",
+    "projectId": "gO1x9evesBS0qAX7AUPaY0"
+  },
+  "directories": {
+    "sourceDir": "src",
+    "outputDir": "i18n",
+    "localesDir": "src/locales"
+  },
+  "languages": ["it", "ja", "fr"],
+  "format": "json",
+  "patterns": {
+    "include": "**/*.{ts,tsx,js,jsx}",
+    "exclude": "**/node_modules/**,**/dist/**,**/build/**,**/*.test.ts,**/*.spec.ts"
+  }
+}

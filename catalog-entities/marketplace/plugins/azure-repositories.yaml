@@ -1,0 +1,167 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: azure-repositories
+  namespace: rhdh
+  title: Azure Repository Software Template Actions
+  description: A collection of Backstage scaffolder backend modules for Azure repositories. azure:repo:clone, azure:repo:push, azure:repo:pr
+  annotations:
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
+    github.com/project-slug: Parfuemerie-Douglas/scaffolder-backend-module-azure-repositories
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Documentation for Red Hat Developer Hub
+      url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
+    - title: Source Code
+      url: https://github.com/Parfuemerie-Douglas/scaffolder-backend-module-azure-repositories
+  tags:
+    - microsoft
+    - azure
+    - cloud
+    - automation
+    - software-templates
+spec:
+  author: Parfümerie Douglas
+  publisher: Red Hat
+  support:
+    provider: Red Hat
+    level: tech-preview
+  lifecycle: active
+
+  categories:
+    - Scaffolder
+
+  highlights:
+    - Azure cloud integration
+    - Software Template actions
+
+  description: |
+    This plugin contains a collection of actions:
+
+    - `azure:repo:clone`
+    - `azure:repo:push`
+    - `azure:repo:pr`
+
+
+    ## Using the template
+
+    After loading and configuring the Azure repository template actions, you can use
+    the actions in your template:
+
+    ```yaml
+    # template.yaml
+
+    apiVersion: scaffolder.backstage.io/v1beta3
+    kind: Template
+    metadata:
+      name: azure-repo-demo
+      title: Azure Repository Test
+      description: Clone and push to an Azure repository example.
+    spec:
+      owner: parfuemerie-douglas
+      type: service
+
+      parameters:
+        - title: Fill in some steps
+          required:
+            - name
+            - owner
+          properties:
+            name:
+              title: Project name
+              type: string
+              description: Choose a unique project name.
+              ui:field: EntityNamePicker
+              ui:autofocus: true
+            owner:
+              title: Owner
+              type: string
+              description: Select an owner for the Backstage component.
+              ui:field: OwnerPicker
+              ui:options:
+                allowedKinds:
+                  - Group
+
+      steps:
+        - id: cloneAzureRepo
+          name: Clone Azure Repo
+          action: azure:repo:clone
+          input:
+            remoteUrl: "https://<MY_AZURE_ORGANIZATION>@dev.azure.com/<MY_AZURE_ORGANIZATION>/<MY_AZURE_PROJECT>/_git/<MY_AZURE_REPOSITORY>"
+            branch: "main"
+            targetPath: ./sub-directory
+
+        - id: fetch
+          name: Template Skeleton
+          action: fetch:template
+          input:
+            url: ./skeleton
+            targetPath: ./sub-directory
+            values:
+              name: ${{ parameters.name }}
+              owner: ${{ parameters.owner }}
+
+        - id: pushAzureRepo
+          name: Push to Remote Azure Repo
+          action: azure:repo:push
+          input:
+            branch: <MY_AZURE_REPOSITORY_BRANCH>
+            sourcePath: ./sub-directory
+            gitCommitMessage: Add ${{ parameters.name }} project files
+
+        - id: pullRequestAzureRepo
+          name: Create a Pull Request to Azure Repo
+          action: azure:repo:pr
+          input:
+            sourceBranch: <MY_AZURE_REPOSITORY_BRANCH>
+            targetBranch: "main"
+            repoId: <MY_AZURE_REPOSITORY>
+            title: ${{ parameters.name }}
+            project: <MY_AZURE_PROJECT>
+            organization: <MY_AZURE_ORGANIZATION>
+            supportsIterations: false
+
+        - id: register
+          name: Register
+          action: catalog:register
+          input:
+            repoContentsUrl: "dev.azure.com?owner=<MY_AZURE_PROJECT>&repo=<MY_AZURE_REPOSITORY>&organization=<MY_AZURE_ORGANIZATION>&version=<MY_AZURE_REPOSITORY_BRANCH>"
+            catalogInfoPath: "/catalog-info.yaml"
+
+      output:
+        links:
+          - title: Repository
+            url: "dev.azure.com?owner=<MY_AZURE_PROJECT>&repo=<MY_AZURE_REPOSITORY>&organization=<MY_AZURE_ORGANIZATION>"
+          - title: Open in catalog
+            icon: catalog
+            entityRef: ${{ steps.register.output.entityRef }}
+    ```
+
+    Replace `<MY_AZURE_ORGANIZATION>` with the name of your Azure DevOps
+    organization, `<MY_AZURE_PROJECT>` with the name of your Azure DevOps project,
+    `<MY_AZURE_REPOSITORY_BRANCH` with the name of the desired Azure DevOps repository branch,
+    and `<MY_AZURE_REPOSITORY>` with the name of your Azure DevOps repository.
+
+    NOTE: You will not be able to register the Pull Request since the file will not exist from the main branch!
+
+    You can find a list of all registered actions including their parameters at the
+    `/create/actions` route in your Backstage application.
+
+
+    ## Adding The Plugin To Red Hat Developer Hub
+
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further instructions on how to add, enable, and configure plugins in your instance.
+
+    ## Configuring The Plugin ##
+
+    Plugins often need additional configuration to work correctly - particularly those that integrate with other
+    systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further details on the configuration required.
+
+  packages:
+    - parfuemerie-douglas-scaffolder-backend-module-azure-repositorie

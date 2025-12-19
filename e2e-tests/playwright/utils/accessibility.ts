@@ -6,7 +6,7 @@ export async function runAccessibilityTests(
   testInfo: TestInfo,
   attachName = "accessibility-scan-results.violations.json",
 ) {
-  const accessibilityScanResults = await new AxeBuilder({ page })
+  const accessibilityScanResults = await new AxeBuilder({ page } as any)
     .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
     .disableRules(["color-contrast"])
     .analyze();

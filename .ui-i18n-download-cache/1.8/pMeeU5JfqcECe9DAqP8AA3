@@ -1,0 +1,17 @@
+{
+  "uid": "pMeeU5JfqcECe9DAqP8AA3",
+  "status": "COMPLETED",
+  "providers": [
+    {
+      "type": "USER",
+      "id": "285168"
+    }
+  ],
+  "target_lang": "fr",
+  "workflow_step": null,
+  "filename": "rhdh-plugins__workspaces__adoption-insights__plugins__adoption-insights__src__translations__ref-en.json",
+  "date_due": "null",
+  "date_created": "2025-09-03 06:43:56+00:00",
+  "imported": true,
+  "continuous": false
+}

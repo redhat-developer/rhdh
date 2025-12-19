@@ -1,0 +1,115 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: analytics-provider-segment
+  namespace: rhdh
+  title: Segment Analytics Module
+  description: |
+    Segment Analytics Module for Backstage. This plugin ships as enabled by default in Red Hat Developer Hub.
+  annotations:
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
+    extensions.backstage.io/verified-by: Red Hat
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Documentation for Red Hat Developer Hub
+      url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-analytics-provider-segment
+  tags: 
+    - analytics
+spec:
+  categories:
+    - Analytics
+  author: Red Hat
+  publisher: Red Hat
+  support:
+    provider: Red Hat
+    level: generally-available
+  lifecycle: active
+  description: |
+    This plugin ships as enabled by default in Red Hat Developer Hub.
+
+    This plugin provides an implementation of the Backstage Analytics API for
+    Segment. Once installed and configured, analytics events will be sent to
+    Segment as your users navigate and use your Backstage instance.
+
+    This plugin contains no other functionality.
+
+    ## Adding The Plugin To Red Hat Developer Hub
+
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub) 
+    for further instructions on how to add, enable, configure, and remove plugins in your instance.
+
+  installation: |
+    ## Configuration
+
+    1. Wire up the API implementation to your App in `packages/app/src/apis.ts`:
+
+      ```tsx title="packages/app/src/apis.ts"
+      /* highlight-add-start */
+      import { SegmentAnalytics } from '@backstage-community/plugin-analytics-provider-segment';
+      import {
+        analyticsApiRef,
+        configApiRef,
+        identityApiRef,
+      } from '@backstage/core-plugin-api';
+
+      /* highlight-add-end */
+
+      export const apis: AnyApiFactory[] = [
+        // Other APIs...
+        // Instantiate and register the GA Analytics API Implementation.
+        /* highlight-add-start */
+        createApiFactory({
+          api: analyticsApiRef,
+          deps: { configApi: configApiRef, identityApi: identityApiRef },
+          factory: ({ configApi, identityApi }) =>
+            SegmentAnalytics.fromConfig(configApi, identityApi),
+        }),
+        /* highlight-add-end */
+      ];
+      ```
+
+    2. Configure the plugin in your `app-config.yaml`:
+
+    The following is the minimum configuration required to start sending analytics
+    events to Segment. All that's needed is your Segment Write Key
+
+    ```yaml title="app-config.yaml"
+    app:
+      analytics:
+        segment:
+          # highlight-start
+          writeKey: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+          maskIP: true # prevents IP addresses from being sent if true
+          testMode: false # prevents data from being sent if true
+          appVersion: ${RHDH_VERSION} # RHDH application version
+          backstageVersion: ${BACKSTAGE_VERSION} # Backstage version
+          # highlight-end
+    ```
+
+    ## Debugging and Testing
+
+    In pre-production environments, you may wish to set additional configurations
+    to turn off reporting to Analytics. You can do so like this:
+
+    ```yaml title="app-config.yaml"
+    app:
+      analytics:
+        segment:
+          # highlight-next-line
+          testMode: true # prevents data from being sent if true
+    ```
+
+    You might commonly set the above in an `app-config.local.yaml` file, which is
+    normally `gitignore`'d but loaded and merged in when Backstage is bootstrapped.
+
+  icon: data:image/svg+xml;base64,
+    PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjM4IiBoZWlnaHQ9IjM4IiB2aWV3Qm94PSIwIDAgMzggMzgiPjxnIGlkPSJ1dWlkLTc5MDFmODc4LWNlMDAtNDQxZi1hYzI2LWRkZDM2NTRkNGY3OSI+PHJlY3QgeD0iMSIgeT0iMSIgd2lkdGg9IjM2IiBoZWlnaHQ9IjM2IiByeD0iOSIgcnk9IjkiIHN0cm9rZS13aWR0aD0iMCIvPjxwYXRoIGQ9Im0yOCwyLjI1YzQuMjczMzYsMCw3Ljc1LDMuNDc2NjQsNy43NSw3Ljc1djE4YzAsNC4yNzMzNi0zLjQ3NjY0LDcuNzUtNy43NSw3Ljc1SDEwYy00LjI3MzM2LDAtNy43NS0zLjQ3NjY0LTcuNzUtNy43NVYxMGMwLTQuMjczMzYsMy40NzY2NC03Ljc1LDcuNzUtNy43NWgxOG0wLTEuMjVIMTBDNS4wMjk0NCwxLDEsNS4wMjk0MywxLDEwdjE4YzAsNC45NzA1Nyw0LjAyOTQ0LDksOSw5aDE4YzQuOTcwNTYsMCw5LTQuMDI5NDMsOS05VjEwYzAtNC45NzA1Ny00LjAyOTQ0LTktOS05aDBaIiBmaWxsPSIjNGQ0ZDRkIiBzdHJva2Utd2lkdGg9IjAiLz48L2c+PGcgaWQ9InV1aWQtYzNjYTY4OTEtNmUxOC00MmNiLTg1MmItM2RlZGQ2YzMxZTY4Ij48cGF0aCBkPSJtMjYuNDQyMzgsMjUuNTU4MTFsLTMuNzczNzQtMy43NzM3NGMuNTkxNDMtLjc3NzA0Ljk1NjM2LTEuNzM0OC45NTYzNi0yLjc4NDM2LDAtMi41NTAyOS0yLjA3NTItNC42MjUtNC42MjUtNC42MjUtMi41NTAyOSwwLTQuNjI1LDIuMDc0NzEtNC42MjUsNC42MjVzMi4wNzQ3MSw0LjYyNSw0LjYyNSw0LjYyNWMxLjA0OTQ0LDAsMi4wMDcyNi0uMzY0OTMsMi43ODQzNi0uOTU2MzZsMy43NzMyNSwzLjc3MzI1Yy4xMjIwNy4xMjIwNy4yODIyMy4xODMxMS40NDIzOC4xODMxMXMuMzIwMzEtLjA2MTA0LjQ0MjM4LS4xODMxMWMuMjQzMTYtLjI0NDE0LjI0MzE2LS42Mzk2NSwwLS44ODM3OVptLTEwLjgxNzM4LTYuNTU4MTFjMC0xLjg2MDg0LDEuNTE0MTYtMy4zNzUsMy4zNzUtMy4zNzUsMS44NjEzMywwLDMuMzc1LDEuNTE0MTYsMy4zNzUsMy4zNzVzLTEuNTEzNjcsMy4zNzUtMy4zNzUsMy4zNzVjLTEuODYwODQsMC0zLjM3NS0xLjUxNDE2LTMuMzc1LTMuMzc1WiIgZmlsbD0iI2UwMCIgc3Ryb2tlLXdpZHRoPSIwIi8+PHBhdGggZD0ibTI3LDEzLjYyNWMxLjQ0NzI3LDAsMi42MjUtMS4xNzc3MywyLjYyNS0yLjYyNXMtMS4xNzc3My0yLjYyNS0yLjYyNS0yLjYyNS0yLjYyNSwxLjE3NzczLTIuNjI1LDIuNjI1YzAsLjQ5NjcuMTQ2NjEuOTU2NTQuMzg3MjcsMS4zNTMwM2wtMS4yMDQ2NSwxLjIwNTA4Yy0uMjQ0MTQuMjQ0MTQtLjI0MzE2LjYzOTY1LjAwMDk4Ljg4Mzc5LjEyMTA5LjEyMjA3LjI4MTI1LjE4MzExLjQ0MTQxLjE4MzExcy4zMjAzMS0uMDYxMDQuNDQyMzgtLjE4MzExbDEuMjA0MS0xLjIwNDQ3Yy4zOTY2MS4yNDA5MS44NTY2My4zODc1NywxLjM1MzUyLjM4NzU3Wm0wLTRjLjc1NzgxLDAsMS4zNzUuNjE2NywxLjM3NSwxLjM3NXMtLjYxNzE5LDEuMzc1LTEuMzc1LDEuMzc1Yy0uMzc4MTEsMC0uNzIxMDctLjE1MzY5LS45Njk5Ny0uNDAxNzMtLjAwMDczLS4wMDA3My0uMDAwOTgtLjAwMTgzLS4wMDE3MS0uMDAyNTYtLjAwMDYxLS4wMDA2MS0uMDAxNTMtLjAwMDc5LS4wMDIxNC0uMDAxNC0uMjQ3NjItLjI0ODc4LS40MDExOC0uNTkxMzctLjQwMTE4LS45NjkzLDAtLjc1ODMuNjE3MTktMS4zNzUsMS4zNzUtMS4zNzVaIiBmaWxsPSIjZmZmIiBzdHJva2Utd2lkdGg9IjAiLz48cGF0aCBkPSJtMTksOC4zNzVjLTEuMTcxODgsMC0yLjEyNS45NTMxMi0yLjEyNSwyLjEyNXMuOTUzMTIsMi4xMjUsMi4xMjUsMi4xMjUsMi4xMjUtLjk1MzEyLDIuMTI1LTIuMTI1LS45NTMxMi0yLjEyNS0yLjEyNS0yLjEyNVptMCwzYy0uNDgyNDIsMC0uODc1LS4zOTI1OC0uODc1LS44NzVzLjM5MjU4LS44NzUuODc1LS44NzUuODc1LjM5MjU4Ljg3NS44NzUtLjM5MjU4Ljg3NS0uODc1Ljg3NVoiIGZpbGw9IiNmZmYiIHN0cm9rZS13aWR0aD0iMCIvPjxwYXRoIGQ9Im0xOSwyNS4zNzVjLTEuMTcxODgsMC0yLjEyNS45NTMxMi0yLjEyNSwyLjEyNXMuOTUzMTIsMi4xMjUsMi4xMjUsMi4xMjUsMi4xMjUtLjk1MzEyLDIuMTI1LTIuMTI1LS45NTMxMi0yLjEyNS0yLjEyNS0yLjEyNVptMCwzYy0uNDgyNDIsMC0uODc1LS4zOTI1OC0uODc1LS44NzVzLjM5MjU4LS44NzUuODc1LS44NzUuODc1LjM5MjU4Ljg3NS44NzUtLjM5MjU4Ljg3NS0uODc1Ljg3NVoiIGZpbGw9IiNmZmYiIHN0cm9rZS13aWR0aD0iMCIvPjxwYXRoIGQ9Im0yNy41LDE2Ljg3NWMtMS4xNzE4OCwwLTIuMTI1Ljk1MzEyLTIuMTI1LDIuMTI1cy45NTMxMiwyLjEyNSwyLjEyNSwyLjEyNSwyLjEyNS0uOTUzMTIsMi4xMjUtMi4xMjUtLjk1MzEyLTIuMTI1LTIuMTI1LTIuMTI1Wm0wLDNjLS40ODI0MiwwLS44NzUtLjM5MjU4LS44NzUtLjg3NXMuMzkyNTgtLjg3NS44NzUtLjg3NS44NzUuMzkyNTguODc1Ljg3NS0uMzkyNTguODc1LS44NzUuODc1WiIgZmlsbD0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIwIi8+PHBhdGggZD0ibTEyLjYyNSwxOWMwLTEuMTcxODgtLjk1MzEyLTIuMTI1LTIuMTI1LTIuMTI1cy0yLjEyNS45NTMxMi0yLjEyNSwyLjEyNS45NTMxMiwyLjEyNSwyLjEyNSwyLjEyNSwyLjEyNS0uOTUzMTIsMi4xMjUtMi4xMjVabS0zLDBjMC0uNDgyNDIuMzkyNTgtLjg3NS44NzUtLjg3NXMuODc1LjM5MjU4Ljg3NS44NzUtLjM5MjU4Ljg3NS0uODc1Ljg3NS0uODc1LS4zOTI1OC0uODc1LS44NzVaIiBmaWxsPSIjZmZmIiBzdHJva2Utd2lkdGg9IjAiLz48cGF0aCBkPSJtMTMuMjM3NDMsMTIuMzUzNjRjLjI0MDkxLS4zOTY2MS4zODc1Ny0uODU2NzUuMzg3NTctMS4zNTM2NCwwLTEuNDQ3MjctMS4xNzc3My0yLjYyNS0yLjYyNS0yLjYyNXMtMi42MjUsMS4xNzc3My0yLjYyNSwyLjYyNSwxLjE3NzczLDIuNjI1LDIuNjI1LDIuNjI1Yy40OTY4OSwwLC45NTcwMy0uMTQ2NjcsMS4zNTM2NC0uMzg3NTdsMS4yMDQ0NywxLjIwNDQ3Yy4xMjIwNy4xMjIwNy4yODE3NC4xODMxMS40NDE4OS4xODMxMXMuMzE5ODItLjA2MTA0LjQ0MTg5LS4xODMxMWMuMjQ0MTQtLjI0NDE0LjI0NDE0LS42Mzk2NSwwLS44ODM3OWwtMS4yMDQ0Ny0xLjIwNDQ3Wm0tMy42MTI0My0xLjM1MzY0YzAtLjc1ODMuNjE2Ny0xLjM3NSwxLjM3NS0xLjM3NXMxLjM3NS42MTY3LDEuMzc1LDEuMzc1YzAsLjM3Nzk5LS4xNTM1LjcyMDU4LS40MDExMi45NjkzNi0uMDAwNzkuMDAwNzktLjAwMTg5LjAwMTA0LS4wMDI2OS4wMDE4M3MtLjAwMTA0LjAwMTg5LS4wMDE4My4wMDI2OWMtLjI0ODc4LjI0NzYyLS41OTEzNy40MDExMi0uOTY5MzYuNDAxMTItLjc1ODMsMC0xLjM3NS0uNjE2Ny0xLjM3NS0xLjM3NVoiIGZpbGw9IiNmZmYiIHN0cm9rZS13aWR0aD0iMCIvPjxwYXRoIGQ9Im0xMy41NTgxMSwyMy41NTgxMWwtMS4yMDQ0NywxLjIwNDQ3Yy0uMzk2NjEtLjI0MDkxLS44NTY3NS0uMzg3NTctMS4zNTM2NC0uMzg3NTctMS40NDcyNywwLTIuNjI1LDEuMTc3NzMtMi42MjUsMi42MjVzMS4xNzc3MywyLjYyNSwyLjYyNSwyLjYyNSwyLjYyNS0xLjE3NzczLDIuNjI1LTIuNjI1YzAtLjQ5Njg5LS4xNDY2Ny0uOTU3MDMtLjM4NzU3LTEuMzUzNjRsMS4yMDQ0Ny0xLjIwNDQ3Yy4yNDQxNC0uMjQ0MTQuMjQ0MTQtLjYzOTY1LDAtLjg4Mzc5cy0uNjM5NjUtLjI0NDE0LS44ODM3OSwwWm0tMi41NTgxMSw0LjgxNjg5Yy0uNzU4MywwLTEuMzc1LS42MTY3LTEuMzc1LTEuMzc1cy42MTY3LTEuMzc1LDEuMzc1LTEuMzc1Yy4zNzg4NSwwLC43MjIyOS4xNTM5OS45NzExOS40MDI1OS4wMDAyNC4wMDAyNC4wMDAyNC4wMDA0OS4wMDA0OS4wMDA3M3MuMDAwNDkuMDAwMjQuMDAwNzMuMDAwNDljLjI0ODYuMjQ4OS40MDI1OS41OTIzNS40MDI1OS45NzExOSwwLC43NTgzLS42MTY3LDEuMzc1LTEuMzc1LDEuMzc1WiIgZmlsbD0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIwIi8+PC9nPjwvc3ZnPg==
+
+  packages:
+     - backstage-community-plugin-analytics-provider-segment

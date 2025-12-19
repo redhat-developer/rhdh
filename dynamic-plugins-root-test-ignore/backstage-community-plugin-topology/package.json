@@ -1,0 +1,77 @@
+{
+  "name": "backstage-community-plugin-topology",
+  "version": "2.2.2",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "license": "Apache-2.0",
+  "private": true,
+  "publishConfig": {
+    "access": "public"
+  },
+  "backstage": {
+    "role": "frontend-plugin",
+    "supported-versions": "1.42.5",
+    "pluginId": "topology",
+    "pluginPackages": [
+      "backstage-community-plugin-topology"
+    ]
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "package.json": [
+        "package.json"
+      ]
+    }
+  },
+  "sideEffects": false,
+  "scripts": {
+    "tsc": "tsc",
+    "build": "backstage-cli package build",
+    "clean": "backstage-cli package clean",
+    "export-dynamic": "janus-cli package export-dynamic-plugin --in-place",
+    "lint:check": "backstage-cli package lint",
+    "test": "backstage-cli package test --passWithNoTests --coverage",
+    "clean-dynamic-sources": "yarn clean && rm -Rf node_modules",
+    "export-dynamic:clean": "run export-dynamic --clean"
+  },
+  "dependencies": {
+    "@backstage-community/plugin-topology": "2.2.2",
+    "@mui/material": "5.18.0"
+  },
+  "devDependencies": {
+    "@backstage/cli": "^0.34.1",
+    "@janus-idp/cli": "3.6.1",
+    "typescript": "5.9.2"
+  },
+  "files": [
+    "dist",
+    "dist-scalprum"
+  ],
+  "scalprum": {
+    "name": "backstage-community.plugin-topology",
+    "exposedModules": {
+      "PluginRoot": "./src/index.ts"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/redhat-developer/rhdh",
+    "directory": "dynamic-plugins/wrappers/backstage-community-plugin-topology"
+  },
+  "keywords": [
+    "support:production",
+    "lifecycle:active"
+  ],
+  "homepage": "https://red.ht/rhdh",
+  "bugs": "https://github.com/janus-idp/backstage-plugins/issues",
+  "maintainers": [
+    "debsmita1",
+    "divyanshiGupta",
+    "ciiay"
+  ],
+  "author": "Red Hat"
+}

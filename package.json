@@ -36,7 +36,8 @@
   "workspaces": {
     "packages": [
       "packages/*",
-      "plugins/*"
+      "plugins/*",
+      "e2e-tests"
     ]
   },
   "devDependencies": {

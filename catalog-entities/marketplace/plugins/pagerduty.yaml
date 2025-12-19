@@ -1,0 +1,75 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: pagerduty
+  namespace: rhdh
+  title: PagerDuty
+  description: |
+    Bring the power of PagerDuty to Backstage, reduce cognitive load, improve service visibility and enforce incident management best practices.
+  annotations:
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
+  links:
+    - url: https://pagerduty.github.io/backstage-plugin-docs/index.html
+      title: PagerDuty Documentation
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Documentation for Red Hat Developer Hub
+      url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/pagerduty-backstage-plugin
+  tags:
+    - monitoring
+    - errors
+    - alerting
+    - observability
+
+spec:
+  author: PagerDuty
+  support:
+    provider: Red Hat
+    level: tech-preview
+  lifecycle: active
+  publisher: Red Hat
+
+  categories:
+    - Monitoring
+  highlights:
+    - Incident Management
+    - Service Visibility
+
+  description: |
+    Bring the power of PagerDuty to Backstage, reduce cognitive load, improve service visibility and enforce incident management best practices.
+
+    [PagerDuty](https://pagerduty.github.io/backstage-plugin-docs/index.html) is transforming critical work for modern business. 
+    Our powerful and unique platform makes sure you can 
+    take the right action, when seconds matter. From developers and reliability engineers to customer success, security 
+    and the C-suite, we empower teams with the time and efficiency to build the future.
+
+    The plugin was initially started by Backstage and then transitioned into PagerDuty. 
+    
+    The plugin currently offers a PagerDuty card for:
+
+    * Displaying relevant PagerDuty information about an entity within Bacsktage, such as active incidents or recent changes.
+    * Quickly check who is on call for a service.
+    * Trigger an incident to the currently on call responder(s) for a service.
+    * Easily map PagerDuty Services to Backstage Entities.
+    
+    The scope for the plugin is quite limited at the time but we are working on bringing new features based on customer feedback. 
+
+    ## Adding The Plugin To Red Hat Developer Hub
+
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub) 
+    for further instructions on how to add, enable, configure, and remove plugins in your instance.
+
+    ## Configuring The Plugin ##
+
+    Plugins often need additional configuration to work correctly - particularly those that integrate with other 
+    systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further details regarding the configuration required.
+
+  packages:
+    - pagerduty-backstage-plugin
+    - pagerduty-backstage-plugin-backend

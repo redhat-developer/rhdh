@@ -1,0 +1,122 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: dynatrace-community
+  namespace: rhdh
+  title: Dynatrace For Managed
+  annotations:
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
+    extensions.backstage.io/verified-by: Red Hat
+  description: 'This community supported plugin allows you to view problem and synthetic information for services in your software catalog.'
+  tags:
+    - observability
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Documentation for Red Hat Developer Hub
+      url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/
+  
+spec:
+
+  author: Backstage Community
+  support:
+    provider: Red Hat
+    level: tech-preview
+  lifecycle: active
+  publisher: Red Hat
+
+  categories:
+    - Observability
+
+  highlights:
+    - Community Supported
+    - View problem and synthetic information
+
+  description: |
+    This community supported plugin for Dynatrace allows you to view problem and synthetic information for services in your software catalog.
+
+    ## Adding The Plugin To Red Hat Developer Hub
+
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub) 
+    for further instructions on how to add, enable, and configure plugins in your instance.
+
+    ## Configuring The Plugin ##
+
+    Plugins often need additional configuration to work correctly - particularly those that integrate with other 
+    systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further details regarding the configuration required.
+
+  icon: data:image/svg+xml;base64,
+    PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPCEtLSBVcGxvYWRlZCB0bzog
+    U1ZHIFJlcG8sIHd3dy5zdmdyZXBvLmNvbSwgR2VuZXJhdG9yOiBTVkcgUmVwbyBNaXhlciBUb29s
+    cyAtLT4KPHN2ZyB3aWR0aD0iODAwcHgiIGhlaWdodD0iODAwcHgiIHZpZXdCb3g9Ii0yIDAgMjYw
+    IDI2MCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHht
+    bG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiBwcmVzZXJ2ZUFzcGVjdFJh
+    dGlvPSJ4TWlkWU1pZCI+CiAgICA8Zz4KICAgICAgICA8cGF0aCBkPSJNODYuMzg1NzY4NywyMS42
+    ODk1NzM3IEM4My4wNTY3NTAzLDM5LjI1OTM5MjkgNzguOTg3OTUwMSw2NS4zMzY3MDM0IDc2Ljc2
+    ODYwNDUsOTEuNzgzOTA0OSBDNzIuODg0NzQ5OCwxMzguMzkwMTYyIDc1LjI4OTA0MDgsMTY5LjY0
+    NTk0NiA3NS4yODkwNDA4LDE2OS42NDU5NDYgTDkuNjMzNDAwODEsMjMxLjk3MjU2NyBDOS42MzM0
+    MDA4MSwyMzEuOTcyNTY3IDQuNjM5ODczMjYsMTk3LjAxNzg3NCAyLjA1MDYzNjc1LDE1Ny42MjQ0
+    OSBDMC41NzEwNzMwMzMsMTMzLjIxMTY4OSAwLjAxNjIzNjYzODksMTExLjc1ODAxNSAwLjAxNjIz
+    NjYzODksOTguODExODMyNiBDMC4wMTYyMzY2Mzg5LDk4LjA3MjA1MDcgMC4zODYxMjc1NjgsOTcu
+    MzMyMjY4OCAwLjM4NjEyNzU2OCw5Ni41OTI0ODcgQzAuMzg2MTI3NTY4LDk1LjY2Nzc1OTcgMS40
+    OTU4MDAzNiw4Ni45NzUzMjI4IDEwLjAwMzI5MTcsNzguODM3NzIyNCBDMTkuMjUwNTY1LDY5Ljk2
+    MDM0MDEgODcuNDk1NDQxNSwxNi41MTExMDA3IDg2LjM4NTc2ODcsMjEuNjg5NTczNyBaIiBmaWxs
+    PSIjMTQ5NkZGIj4KDTwvcGF0aD4KICAgICAgICA8cGF0aCBkPSJNODYuMzg1NzY4NywyMS42ODk1
+    NzM3IEM4My4wNTY3NTAzLDM5LjI1OTM5MjkgNzguOTg3OTUwMSw2NS4zMzY3MDM0IDc2Ljc2ODYw
+    NDUsOTEuNzgzOTA0OSBDNzYuNzY4NjA0NSw5MS43ODM5MDQ5IDQuMDg1MDM2ODYsODMuMDkxNDY4
+    MSAwLjAxNjIzNjYzODksMTAwLjY2MTI4NyBDMC4wMTYyMzY2Mzg5LDk5LjczNjU1OTkgMS4zMTA4
+    NTQ4OSw4OS4wMDk3MjI5IDkuODE4MzQ2MjcsODAuODcyMTIyNSBDMTkuMDY1NjE5NSw3MS45OTQ3
+    NDAyIDg3LjQ5NTQ0MTUsMTYuNTExMTAwNyA4Ni4zODU3Njg3LDIxLjY4OTU3MzcgTDg2LjM4NTc2
+    ODcsMjEuNjg5NTczNyBaIiBmaWxsPSIjMTI4NEVBIj4KDTwvcGF0aD4KICAgICAgICA8cGF0aCBk
+    PSJNMC4wMTYyMzY2Mzg5LDk2LjQwNzU0MTUgTDAuMDE2MjM2NjM4OSwxMDAuNDc2MzQyIEMwLjc1
+    NjAxODQ5OCw5Ny4zMzIyNjg4IDIuMDUwNjM2NzUsOTUuMTEyOTIzMyA0LjYzOTg3MzI2LDkxLjU5
+    ODk1OTQgQzEwLjAwMzI5MTcsODQuNzU1OTc3MiAxOC42OTU3Mjg2LDgyLjkwNjUyMjYgMjIuMjA5
+    NjkyNCw4Mi41MzY2MzE3IEMzOS45NjQ0NTcsODAuMTMyMzQwNiA2Ni4yMjY3MTMsNzcuMzU4MTU4
+    NyA5Mi42NzM5MTQ1LDc2LjYxODM3NjggQzEzOS40NjUxMTcsNzUuMTM4ODEzMSAxNzAuMzUxMDEs
+    NzkuMDIyNjY3OCAxNzAuMzUxMDEsNzkuMDIyNjY3OCBMMjM2LjAwNjY1LDE2LjY5NjA0NjIgQzIz
+    Ni4wMDY2NSwxNi42OTYwNDYyIDIwMS42MDY3OTMsMTAuMjIyOTU0OSAxNjIuMzk4MzU1LDUuNTk5
+    MzE4MzEgQzEzNi42OTA5MzUsMi40NTUyNDU0MSAxMTQuMTI3NTg4LDAuNzkwNzM2MjIyIDEwMS4z
+    NjYzNTEsMC4wNTA5NTQzNjI4IEMxMDAuNDQxNjI0LDAuMDUwOTU0MzYyOCA5MS4zNzkyOTYzLC0x
+    LjA1ODcxODQzIDgyLjg3MTgwNDksNy4wNzg4ODIwMyBDNzMuNjI0NTMxNiwxNS45NTYyNjQzIDI2
+    LjY0ODM4MzYsNjAuNTI4MTIxNCA3Ljc4Mzk0NjE2LDc4LjQ2NzgzMTQgQy0wLjcyMzU0NTIyLDg2
+    LjYwNTQzMTkgMC4wMTYyMzY2Mzg5LDk1LjY2Nzc1OTcgMC4wMTYyMzY2Mzg5LDk2LjQwNzU0MTUg
+    WiIgZmlsbD0iI0I0REMwMCI+Cg08L3BhdGg+CiAgICAgICAgPHBhdGggZD0iTTIzMy42MDIzNTks
+    MTc2LjExOTAzNyBDMjE1Ljg0NzU5NCwxNzguNTIzMzI4IDE4OS41ODUzMzgsMTgxLjQ4MjQ1NSAx
+    NjMuMTM4MTM3LDE4Mi40MDcxODMgQzExNi4zNDY5MzQsMTgzLjg4Njc0NiA4NS4yNzYwOTU5LDE4
+    MC4wMDI4OTIgODUuMjc2MDk1OSwxODAuMDAyODkyIEwxOS42MjA0NTU5LDI0Mi41MTQ0NTkgQzE5
+    LjYyMDQ1NTksMjQyLjUxNDQ1OSA1NC4zOTAyMDMzLDI0OS4zNTc0NDEgOTMuNTk4NjQxOCwyNTMu
+    Nzk2MTMyIEMxMTcuNjQxNTUyLDI1Ni41NzAzMTQgMTM4LjkxMDI4MSwyNTguMDQ5ODc4IDE1MS44
+    NTY0NjMsMjU4Ljc4OTY2IEMxNTIuNzgxMTkxLDI1OC43ODk2NiAxNTQuMjYwNzU0LDI1OC4wNDk4
+    NzggMTU1LjE4NTQ4MiwyNTguMDQ5ODc4IEMxNTYuMTEwMjA5LDI1OC4wNDk4NzggMTY1LjE3MjUz
+    NywyNTYuMzg1MzY5IDE3My42ODAwMjgsMjQ4LjI0Nzc2OCBDMTgyLjkyNzMwMSwyMzkuMzcwMzg2
+    IDIzOC43ODA4MzIsMTc1LjU2NDIgMjMzLjYwMjM1OSwxNzYuMTE5MDM3IEwyMzMuNjAyMzU5LDE3
+    Ni4xMTkwMzcgWiIgZmlsbD0iIzZGMkRBOCI+Cg08L3BhdGg+CiAgICAgICAgPHBhdGggZD0iTTIz
+    My42MDIzNTksMTc2LjExOTAzNyBDMjE1Ljg0NzU5NCwxNzguNTIzMzI4IDE4OS41ODUzMzgsMTgx
+    LjQ4MjQ1NSAxNjMuMTM4MTM3LDE4Mi40MDcxODMgQzE2My4xMzgxMzcsMTgyLjQwNzE4MyAxNjgu
+    MTMxNjY0LDI1NS40NjA2NDEgMTUwLjU2MTg0NSwyNTguNjA0NzE0IEMxNTEuNDg2NTcyLDI1OC42
+    MDQ3MTQgMTYzLjUwODAyOCwyNTguMDQ5ODc4IDE3Mi4wMTU1MTksMjQ5LjkxMjI3NyBDMTgxLjI2
+    Mjc5MiwyNDEuMDM0ODk1IDIzOC43ODA4MzIsMTc1LjU2NDIgMjMzLjYwMjM1OSwxNzYuMTE5MDM3
+    IEwyMzMuNjAyMzU5LDE3Ni4xMTkwMzcgWiIgZmlsbD0iIzU5MUY5MSI+Cg08L3BhdGg+CiAgICAg
+    ICAgPHBhdGggZD0iTTE1NC40NDU3LDI1OC45NzQ2MDUgQzE1My4xNTEwODEsMjU4Ljk3NDYwNSAx
+    NTEuODU2NDYzLDI1OC43ODk2NiAxNTAuMzc2OSwyNTguNzg5NjYgQzE1My43MDU5MTgsMjU4LjIz
+    NDgyMyAxNTUuOTI1MjYzLDI1Ny4xMjUxNSAxNTkuNDM5MjI3LDI1NC41MzU5MTQgQzE2Ni40Njcx
+    NTUsMjQ5LjU0MjM4NiAxNjguNjg2NTAxLDI0MC44NDk5NSAxNjkuNDI2MjgyLDIzNy4zMzU5ODYg
+    QzE3Mi41NzAzNTUsMjE5Ljc2NjE2NyAxNzYuODI0MTAxLDE5My42ODg4NTYgMTc4Ljg1ODUwMSwx
+    NjcuMjQxNjU1IEMxODIuNTU3NDEsMTIwLjYzNTM5NyAxODAuMzM4MDY1LDg5LjU2NDU1OTMgMTgw
+    LjMzODA2NSw4OS41NjQ1NTkzIEwyNDUuOTkzNzA1LDI3LjA1Mjk5MjIgQzI0NS45OTM3MDUsMjcu
+    MDUyOTkyMiAyNTAuODAyMjg3LDYxLjgyMjczOTYgMjUzLjU3NjQ2OSwxMDEuMjE2MTI0IEMyNTUu
+    MjQwOTc4LDEyNi45MjM1NDMgMjU1Ljc5NTgxNCwxNDkuNjcxODM1IDI1NS45ODA3NiwxNjIuMjQ4
+    MTI3IEMyNTUuOTgwNzYsMTYzLjE3Mjg1NCAyNTYuNzIwNTQyLDE3Mi4yMzUxODIgMjQ4LjIxMzA1
+    LDE4MC4zNzI3ODMgQzIzOC45NjU3NzcsMTg5LjI1MDE2NSAxOTEuOTg5NjI5LDIzNC4wMDY5Njcg
+    MTczLjMxMDEzNywyNTEuOTQ2Njc3IEMxNjQuNDMyNzU1LDI2MC4wODQyNzggMTU1LjM3MDQyNywy
+    NTguOTc0NjA1IDE1NC40NDU3LDI1OC45NzQ2MDUgTDE1NC40NDU3LDI1OC45NzQ2MDUgWiIgZmls
+    bD0iIzczQkUyOCI+Cg08L3BhdGg+CiAgICA8L2c+Cjwvc3ZnPg==
+
+  packages:
+    - backstage-community-plugin-dynatrace

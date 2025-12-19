@@ -1,0 +1,53 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: gerrit-scaffolder-actions
+  namespace: rhdh
+  title: Gerrit Software Template Actions
+  description: 'This plugin contains a collection of actions for working with Gerrit'
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Documentation for Red Hat Developer Hub
+      url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
+    - title: Source Code
+      url: https://github.com/backstage/backstage/tree/master/plugins/scaffolder-backend-module-gerrit
+  annotations:
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
+  tags:
+    - scaffolder
+    - software-templates
+spec:
+  categories:
+    - Scaffolder
+  authors:
+    - name: Backstage Community
+  publisher: Red Hat
+  lifecycle: active
+  support:
+    provider: Red Hat
+    level: tech-preview
+
+  description: |
+    This plugin contains a collection of actions for working with Gerrit
+
+    - publish:gerrit
+    - publish:gerrit:review
+
+
+    ## Adding The Plugin To Red Hat Developer Hub
+
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further instructions on how to add, enable, and configure plugins in your instance.
+
+    ## Configuring The Plugin ##
+
+    Plugins often need additional configuration to work correctly - particularly those that integrate with other
+    systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further details on the configuration required.
+
+  packages:
+    - backstage-plugin-scaffolder-backend-module-gerrit

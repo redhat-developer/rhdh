@@ -1,0 +1,65 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: azure-devops
+  namespace: rhdh
+  title: Azure DevOps
+  description: |
+    Azure DevOps is a set of services provided by Microsoft for teams to plan, build, and ship software. 
+    This plugin provides a set of components to interact with Azure DevOps services.
+  annotations:
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Documentation for Red Hat Developer Hub
+      url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
+    - title: Source Code
+      url: https://github.com/backstage/community-plugins/tree/main/workspaces/azure-devops/plugins/azure-devops
+  tags:
+    - azure
+    - devops
+
+spec:
+  author: Backstage Community
+  publisher: Red Hat
+  support:
+    provider: Red Hat
+    level: tech-preview
+  lifecycle: active
+
+  categories:
+    - DevOps
+
+  highlights:
+    - List builds for a given Azure Repo
+    - List Active, Completed, or Abandoned PRs
+    - List Git tags
+    - Show repository Readme
+
+  description: |
+    Azure DevOps is a set of services provided by Microsoft for teams to plan, build, and ship software. 
+    This plugin provides a set of components to interact with Azure DevOps services.
+
+    - **Azure Pipelines**: Lists the top _n_ builds for a given Azure Repo where _n_ is a configurable value
+    - **Azure Repos**: Lists the top _n_ Active, Completed, or Abandoned Pull Requests for a given repository where _n_ is a configurable value
+    - **Azure Repos Git Tags**: Lists all Git Tags for a given repository
+    - **Azure Readme**: Readme for a given repository
+
+    ## Adding The Plugin To Red Hat Developer Hub
+
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further instructions on how to add, enable, and configure plugins in your instance.
+
+    ## Configuring The Plugin ##
+
+    Plugins often need additional configuration to work correctly - particularly those that integrate with other
+    systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further details on the configuration required.
+
+  packages:
+    - backstage-community-plugin-azure-devops
+    - backstage-community-plugin-azure-devops-backend

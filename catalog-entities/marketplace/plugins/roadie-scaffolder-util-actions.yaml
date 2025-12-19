@@ -1,0 +1,68 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: roadie-scaffolder-util-actions
+  namespace: rhdh
+  title: Software Template Utility Actions
+  annotations:
+    extensions.backstage.io/pre-installed: 'true' # For plugins contained in the RHDH image
+  links:
+    - title: Homepage
+      url: https://red.ht/rhdh
+    - title: Bugs
+      url: https://issues.redhat.com/browse/RHIDP
+    - title: Documentation for Red Hat Developer Hub
+      url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
+    - title: Source Code
+      url: https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/
+  tags:
+    - apis # Used for filtering
+  description: |
+    These utility actions for the scaffolder-backend offer a set of actions that can be used extensively in scaffolder templates.
+    With these additions, your templates can be more dynamic and flexible, offering more options to template authors.
+
+spec:
+  author: Roadie
+  support:
+    provider: Red Hat
+    level: tech-preview
+  lifecycle: active
+  publisher: Red Hat
+
+  categories:
+    - Scaffolder # One category will show up on the tile view
+
+  highlights:
+    - Extends Software Templates
+
+  description: |
+    These utility actions for the scaffolder-backend offer a set of actions that can be used in extensively scaffolder templates.
+    With these additions, your templates can be more dynamic and flexible, offering more options to template authors.
+
+    This plugin contains a collection of actions ready to use in scaffolder templates:
+
+    * Zip
+    * Sleep
+    * Deserialise a file
+    * Serialise to JSON or YAML
+    * Parse and Transform JSON or YAML
+    * Merge new data into an existing JSON file
+    * Merge
+    * Append content to a file
+    * Write content to a file
+    * Replace in files
+
+    ## Adding The Plugin To Red Hat Developer Hub
+
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub) 
+    for further instructions on how to add, enable, configure, and remove plugins in your instance.
+
+    ## Configuring The Plugin ##
+
+    Plugins often need additional configuration to work correctly - particularly those that integrate with other 
+    systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further details regarding the configuration required.
+
+  packages:
+    - roadiehq-scaffolder-backend-module-utils

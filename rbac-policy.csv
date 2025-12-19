@@ -1,0 +1,20 @@
+p, role:default/team_a, catalog-entity, read, allow
+p, role:default/team_a, policy-entity, read, allow
+p, role:default/team_a, policy-entity, create, allow
+g, user:default/team_a/ciiay, role:default/team_a
+
+p, role:default/team_a, bulk.import, use, allow
+
+p, role:default/team_a, catalog-entity, read, allow
+p, role:default/team_a, policy-entity, read, allow
+p, role:default/team_a, policy-entity, create, allow
+g, user:default/team_a/rhdh-qe, role:default/rhdh-qe
+
+p, role:default/team_a, bulk.import, use, allow
+p, role:default/rhdh-ui-test, bulk.import, use, allow
+
+p, role:default/admins, extension-plugin, read, allow
+p, role:default/admins, extension-plugin, create, allow
+
+p, role:default/team_a, extensions-plugin, read, allow
+p, role:default/team_a, extensions-plugin, create, allow

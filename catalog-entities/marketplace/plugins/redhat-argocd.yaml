@@ -1,0 +1,113 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/refs/heads/main/workspaces/marketplace/json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: redhat-argocd
+  namespace: rhdh
+  title: Red Hat Argo CD
+  description: 'This plugin provides a visual overview of the application’s status, deployment details, commit message, author of the commit, container image promoted to environment and deployment history.'
+  annotations:
+    extensions.backstage.io/pre-installed: 'true' # this means the plugin yaml is preinstalled, not the plugin itself, all other plugins are marked as 'custom'
+  tags:
+    - cicd
+    - argocd
+  links:
+    - url: https://red.ht/rhdh
+      title: Homepage
+    - url: https://issues.redhat.com/browse/RHIDP
+      title: Bugs
+    - title: Documentation for Red Hat Developer Hub
+      url: https://docs.redhat.com/en/documentation/red_hat_developer_hub
+    - title: Source Code
+      url: https://github.com/backstage/community-plugins/tree/main/workspaces/redhat-argocd
+spec:
+  categories:
+    - CI/CD
+
+  author: Red Hat
+  support:
+    provider: Red Hat
+    level: tech-preview
+  lifecycle: active
+  publisher: Red Hat
+  description: |
+    You can use the Argo CD plugin to visualize the Continuous Delivery (CD) workflows in OpenShift GitOps.
+    This plugin provides a visual overview of the application's status, deployment details, commit message,
+    author of the commit, container image promoted to environment and deployment history.
+
+    ## Adding The Plugin To Red Hat Developer Hub
+
+    See the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further instructions on how to add, enable, and configure plugins in your instance.
+
+    ## Configuring The Plugin ##
+
+    Plugins often need additional configuration to work correctly - particularly those that integrate with other
+    systems. See the original source code repository, the software vendor, or the [Red Hat Developer Hub documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+    for further details on the configuration required.
+
+  highlights:
+    - Visual overview of the application's status
+    - Deployment details
+    - Argo CD Rollouts
+
+  icon: data:image/svg+xml;base64,
+    PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48c3ZnIGlkPSJ1dWlkLTk5YTZi
+    NWRmLTcwNjMtNDJjMS1iMWNjLTg5ZGUzODFlMDRiOSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3Jn
+    LzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgMzggMzgiPgo8ZGVmcz48c3R5bGU+LnV1aWQtZmJjOGEz
+    NTgtNGVlNC00MTI3LTk0MGItMzc3MzIwYWYzMjdke2ZpbGw6I2VkMDAwMDt9LnV1aWQtYjNjNmFm
+    ZTItM2RlOS00ZTFlLTk5ZmYtMDZkNGRkMGNiYzZhe2ZpbGw6I2ZmZjt9LnV1aWQtY2ZjMWViNjYt
+    MGYyOS00MjBiLWJmMzMtZTc0YjkyNDZiMTA0e2ZpbGw6I2UwZTBlMDt9PC9zdHlsZT48L2RlZnM+
+    PHBhdGggY2xhc3M9InV1aWQtYjNjNmFmZTItM2RlOS00ZTFlLTk5ZmYtMDZkNGRkMGNiYzZhIiBk
+    PSJtMjguMDAwMDEsMzdjNC45NzA1NiwwLDktNC4wMjk0NCw5LTlWMTBjMC00Ljk3MDU3LTQuMDI5
+    NDQtOS05LTlIMTAuMDAwMDFDNS4wMjk0NSwxLDEuMDAwMDEsNS4wMjk0MywxLjAwMDAxLDEwdjE4
+    YzAsNC45NzA1Niw0LjAyOTQ0LDksOSw5aDE4WiIvPjxwYXRoIGNsYXNzPSJ1dWlkLWNmYzFlYjY2
+    LTBmMjktNDIwYi1iZjMzLWU3NGI5MjQ2YjEwNCIgZD0ibTI4LDIuMjVjNC4yNzMzMiwwLDcuNzUs
+    My40NzY2Miw3Ljc1LDcuNzV2MThjMCw0LjI3MzMyLTMuNDc2NjgsNy43NS03Ljc1LDcuNzVIMTBj
+    LTQuMjczMzIsMC03Ljc1LTMuNDc2NjgtNy43NS03Ljc1VjEwYzAtNC4yNzMzOCwzLjQ3NjY4LTcu
+    NzUsNy43NS03Ljc1aDE4bTAtMS4yNUgxMEM1LjAyOTQyLDEsMSw1LjAyOTQyLDEsMTB2MThjMCw0
+    Ljk3MDU4LDQuMDI5NDIsOSw5LDloMThjNC45NzA1OCwwLDktNC4wMjk0Miw5LTlWMTBjMC00Ljk3
+    MDU4LTQuMDI5NDItOS05LTloMFoiLz48cGF0aCBjbGFzcz0idXVpZC1mYmM4YTM1OC00ZWU0LTQx
+    MjctOTQwYi0zNzczMjBhZjMyN2QiIGQ9Im0yOCwxNy4zNzVjLS40OTY1OCwwLS45NTY1NC4xNDY0
+    OC0xLjM1MzAzLjM4NzIxbC0xLjQwOTE4LTEuNDA5MThjLjI0MDcyLS4zOTY0OC4zODcyMS0uODU2
+    NDUuMzg3MjEtMS4zNTMwMywwLTEuNDQ3MjctMS4xNzc3My0yLjYyNS0yLjYyNS0yLjYyNXMtMi42
+    MjUsMS4xNzc3My0yLjYyNSwyLjYyNWMwLDEuMjMwODMuODU0OTgsMi4yNTkyOCwyLDIuNTQxNXY0
+    LjkxNjk5Yy0xLjE0NTAyLjI4MjIzLTIsMS4zMTA2Ny0yLDIuNTQxNSwwLDEuNDQ3MjcsMS4xNzc3
+    MywyLjYyNSwyLjYyNSwyLjYyNXMyLjYyNS0xLjE3NzczLDIuNjI1LTIuNjI1YzAtMS4yMzA4My0u
+    ODU0OTgtMi4yNTkyOC0yLTIuNTQxNXYtNC45MTY5OWMuMjYwNzQtLjA2NDIxLjUwNDI3LS4xNjc5
+    Ny43MjgwMy0uMzAzNzFsMS40MDkxOCwxLjQwOTE4Yy0uMjQwNi4zOTY0OC0uMzg3MjEuODU2NDUt
+    LjM4NzIxLDEuMzUzMDMsMCwxLjQ0NzI3LDEuMTc3NzMsMi42MjUsMi42MjUsMi42MjVzMi42MjUt
+    MS4xNzc3MywyLjYyNS0yLjYyNS0xLjE3NzczLTIuNjI1LTIuNjI1LTIuNjI1Wm0tNi4zNzUtMi4z
+    NzVjMC0uNzU3ODEuNjE3MTktMS4zNzUsMS4zNzUtMS4zNzVzMS4zNzUuNjE3MTksMS4zNzUsMS4z
+    NzUtLjYxNzE5LDEuMzc1LTEuMzc1LDEuMzc1LTEuMzc1LS42MTcxOS0xLjM3NS0xLjM3NVptMi43
+    NSwxMGMwLC43NTc4MS0uNjE3MTksMS4zNzUtMS4zNzUsMS4zNzVzLTEuMzc1LS42MTcxOS0xLjM3
+    NS0xLjM3NS42MTcxOS0xLjM3NSwxLjM3NS0xLjM3NSwxLjM3NS42MTcxOSwxLjM3NSwxLjM3NVpt
+    My42MjUtMy42MjVjLS43NTc4MSwwLTEuMzc1LS42MTcxOS0xLjM3NS0xLjM3NXMuNjE3MTktMS4z
+    NzUsMS4zNzUtMS4zNzUsMS4zNzUuNjE3MTksMS4zNzUsMS4zNzUtLjYxNzE5LDEuMzc1LTEuMzc1
+    LDEuMzc1WiIvPjxwYXRoIGQ9Im0yMS4yNSwxOS4wMTE3MmMtLjMwOTU3LS4xMzU3NC0uNjAzNTIt
+    LjMwNzYyLS44NzQwMi0uNTEwNzQtLjI3NzM0LS4yMDgwMS0uNjY3OTctLjE1MjM0LS44NzUuMTIz
+    MDUtLjIwODAxLjI3NjM3LS4xNTIzNC42Njc5Ny4xMjMwNS44NzUuMzQ3NjYuMjYxNzIuNzI2NTYu
+    NDgzNCwxLjEyNTk4LjY1NzIzLjA4MTA1LjAzNjEzLjE2NjAyLjA1MjczLjI1LjA1MjczLjI0MDIz
+    LDAsLjQ2OTczLS4xMzk2NS41NzIyNy0uMzc1LjEzODY3LS4zMTY0MS0uMDA1ODYtLjY4NDU3LS4z
+    MjIyNy0uODIyMjdaIi8+PHBhdGggZD0ibTIzLDkuMzc1Yy0zLjEwMTU2LDAtNS42MjUsMi41MjM0
+    NC01LjYyNSw1LjYyNXY2YzAsMS4zODk2NS0uNjM3NywyLjY2NTA0LTEuNzUsMy41LS4yNzYzNy4y
+    MDcwMy0uMzMyMDMuNTk5NjEtLjEyNS44NzUuMTIzMDUuMTY0MDYuMzEwNTUuMjUuNS4yNS4xMzA4
+    NiwwLC4yNjI3LS4wNDEwMi4zNzUtLjEyNSwxLjQyOTY5LTEuMDczMjQsMi4yNS0yLjcxMzg3LDIu
+    MjUtNC41di02YzAtMi40MTIxMSwxLjk2Mjg5LTQuMzc1LDQuMzc1LTQuMzc1czQuMzc1LDEuOTYy
+    ODksNC4zNzUsNC4zNzVjMCwuMjk1OS0uMDI5My41ODk4NC0uMDg2OTEuODc1OTgtLjA2ODM2LjMz
+    Nzg5LjE1MDM5LjY2Nzk3LjQ4ODI4LjczNjMzLjMzOTg0LjA3MjI3LjY2ODk1LS4xNDk0MS43MzYz
+    My0uNDg4MjguMDc0MjItLjM2NzE5LjExMjMtLjc0NTEyLjExMjMtMS4xMjQwMiwwLTMuMTAxNTYt
+    Mi41MjM0NC01LjYyNS01LjYyNS01LjYyNVoiLz48cGF0aCBkPSJtMTIuNDc2NTYsMjMuNDU4MDFj
+    LS4yNDQxNC0uMjQ0MTQtLjY0MDYyLS4yNDQxNC0uODg0NzcsMC0uMjQzMTYuMjQ0MTQtLjI0MzE2
+    LjY0MDYyLDAsLjg4NDc3bC45OTA2Ljk4OTk5Yy0yLjIxMzk5LS4yMTM4Ny0zLjk1NzQtMi4wNjM3
+    Mi0zLjk1NzQtNC4zMzI3NiwwLTIuNDEyMTEsMS45NjI4OS00LjM3NSw0LjM3NS00LjM3NS45NTYw
+    NSwwLDEuODYzMjguMzAyNzMsMi42MjQwMi44NzQwMi4yNzgzMi4yMDg5OC42Njg5NS4xNTIzNC44
+    NzUtLjEyMzA1LjIwODAxLS4yNzYzNy4xNTIzNC0uNjY3OTctLjEyMzA1LS44NzUtLjk3OTQ5LS43
+    MzYzMy0yLjE0NjQ4LTEuMTI1OTgtMy4zNzU5OC0xLjEyNTk4LTMuMTAxNTYsMC01LjYyNSwyLjUy
+    MzQ0LTUuNjI1LDUuNjI1LDAsMi45MTY5OSwyLjIzMjQyLDUuMzIxMTcsNS4wNzgxMiw1LjU5NzI5
+    bC0uODYxMzMuODYwNzJjLS4yNDMxNi4yNDQxNC0uMjQzMTYuNjQwNjIsMCwuODg0NzcuMTIyMDcu
+    MTIyMDcuMjgyMjMuMTgyNjIuNDQyMzguMTgyNjJzLjMyMDMxLS4wNjA1NS40NDIzOC0uMTgyNjJs
+    Mi0yYy4yNDMxNi0uMjQ0MTQuMjQzMTYtLjY0MDYyLDAtLjg4NDc3bC0yLTJaIi8+PC9zdmc+
+
+  packages:
+    - backstage-community-plugin-redhat-argocd
