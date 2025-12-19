@@ -15,6 +15,7 @@
  */
 
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
+
 import { rhdhTranslationRef } from './ref';
 
 export default createTranslationMessages({
@@ -52,7 +53,8 @@ export default createTranslationMessages({
     'signIn.providers.bitbucket.title': 'Bitbucket',
     'signIn.providers.bitbucket.message': 'Bitbucket を使用してサインイン',
     'signIn.providers.bitbucketServer.title': 'Bitbucket Server',
-    'signIn.providers.bitbucketServer.message': 'Bitbucket Server を使用してサインイン',
+    'signIn.providers.bitbucketServer.message':
+      'Bitbucket Server を使用してサインイン',
     'signIn.providers.github.title': 'GitHub',
     'signIn.providers.github.message': 'GitHub を使用してサインイン',
     'signIn.providers.gitlab.title': 'GitLab',
@@ -97,14 +99,17 @@ export default createTranslationMessages({
     'app.learningPaths.error.title': 'データを取得できませんでした。',
     'app.learningPaths.error.unknownError': '不明なエラー',
     'app.userSettings.infoCard.title': 'RHDH メタデータ',
-    'app.userSettings.infoCard.metadataCopied': 'メタデータがクリップボードにコピーされました',
-    'app.userSettings.infoCard.copyMetadata': 'メタデータをクリップボードにコピーする',
+    'app.userSettings.infoCard.metadataCopied':
+      'メタデータがクリップボードにコピーされました',
+    'app.userSettings.infoCard.copyMetadata':
+      'メタデータをクリップボードにコピーする',
     'app.userSettings.infoCard.showLess': '簡易表示',
     'app.userSettings.infoCard.showMore': '詳細表示',
     'app.errors.contactSupport': 'サポートにお問い合わせください',
     'app.errors.goBack': '戻る',
     'app.errors.notFound.message': '該当するページが見つかりませんでした',
-    'app.errors.notFound.additionalInfo': 'お探しのページは削除されたか、名前が変更されたか、一時的に利用できない可能性があります。',
+    'app.errors.notFound.additionalInfo':
+      'お探しのページは削除されたか、名前が変更されたか、一時的に利用できない可能性があります。',
     'app.table.createdAt': '作成日時',
   },
 });

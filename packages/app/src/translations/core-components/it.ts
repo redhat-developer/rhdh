@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 import { coreComponentsTranslationRef } from '@backstage/core-components/alpha';
+import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 
 export default createTranslationMessages({
   ref: coreComponentsTranslationRef,
@@ -33,6 +33,7 @@ export default createTranslationMessages({
     'alertDisplay.message_one': '({{ count }} messaggio più recente)',
     'alertDisplay.message_other': '({{ count }} messaggi più recenti)',
     'table.header.actions': 'Azioni',
-    'oauthRequestDialog.message': 'Accedere per consentire a {{appTitle}} di accedere alle API e alle identità di {{provider}}.',
+    'oauthRequestDialog.message':
+      'Accedere per consentire a {{appTitle}} di accedere alle API e alle identità di {{provider}}.',
   },
 });

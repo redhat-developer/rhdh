@@ -21,6 +21,7 @@ export default createTranslationMessages({
   ref: scaffolderTranslationRef,
   full: false,
   messages: {
-    'templateListPage.contentHeader.registerExistingButtonTitle': '既存の Git リポジトリーのインポート',
+    'templateListPage.contentHeader.registerExistingButtonTitle':
+      '既存の Git リポジトリーのインポート',
   },
 });

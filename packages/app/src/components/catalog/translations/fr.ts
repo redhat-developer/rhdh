@@ -23,9 +23,11 @@ export default createTranslationMessages({
   messages: {
     'indexPage.createButtonTitle': 'Self-service',
     'indexPage.title': 'Catalogue {{orgName}}',
-    'indexPage.supportButtonContent': 'Toutes les entités de votre catalogue de logiciels',
+    'indexPage.supportButtonContent':
+      'Toutes les entités de votre catalogue de logiciels',
     'aboutCard.title': 'À propos',
-    'aboutCard.refreshButtonTitle': 'Actualisation de l\'entité de planification',
+    'aboutCard.refreshButtonTitle':
+      "Actualisation de l'entité de planification",
     'aboutCard.editButtonTitle': 'Modifier les métadonnées',
     'aboutCard.createSimilarButtonTitle': 'Créer quelque chose de similaire',
     'aboutCard.refreshScheduledMessage': 'Actualisation programmée',
@@ -49,53 +51,68 @@ export default createTranslationMessages({
     'aboutCard.targetsField.label': 'Cibles',
     'searchResultItem.lifecycle': 'Cycle de vie',
     'searchResultItem.Owner': 'Propriétaire',
-    'catalogTable.warningPanelTitle': 'Impossible de récupérer les entités du catalogue.',
+    'catalogTable.warningPanelTitle':
+      'Impossible de récupérer les entités du catalogue.',
     'catalogTable.viewActionTitle': 'Voir',
     'catalogTable.editActionTitle': 'Modifier',
     'catalogTable.starActionTitle': 'Ajouter aux favoris',
     'catalogTable.unStarActionTitle': 'Supprimer des favoris',
     'dependencyOfComponentsCard.title': 'Dépendance des composants',
-    'dependencyOfComponentsCard.emptyMessage': 'Aucun composant ne dépend de ce composant',
+    'dependencyOfComponentsCard.emptyMessage':
+      'Aucun composant ne dépend de ce composant',
     'dependsOnComponentsCard.title': 'Cela dépend des composants',
-    'dependsOnComponentsCard.emptyMessage': 'Aucun composant n\'est une dépendance de ce composant',
+    'dependsOnComponentsCard.emptyMessage':
+      "Aucun composant n'est une dépendance de ce composant",
     'dependsOnResourcesCard.title': 'Cela dépend des ressources',
-    'dependsOnResourcesCard.emptyMessage': 'Aucune ressource n\'est une dépendance de ce composant',
+    'dependsOnResourcesCard.emptyMessage':
+      "Aucune ressource n'est une dépendance de ce composant",
     'entityContextMenu.copiedMessage': 'Copié!',
     'entityContextMenu.moreButtonTitle': 'Plus',
-    'entityContextMenu.inspectMenuTitle': 'Inspecter l\'entité',
-    'entityContextMenu.copyURLMenuTitle': 'Copier l\'URL de l\'entité',
-    'entityContextMenu.unregisterMenuTitle': 'Désenregistrer l\'entité',
+    'entityContextMenu.inspectMenuTitle': "Inspecter l'entité",
+    'entityContextMenu.copyURLMenuTitle': "Copier l'URL de l'entité",
+    'entityContextMenu.unregisterMenuTitle': "Désenregistrer l'entité",
     'entityLabelsCard.title': 'Étiquettes',
-    'entityLabelsCard.emptyDescription': 'Aucune étiquette définie pour cette entité. Vous pouvez ajouter des étiquettes à votre entité YAML comme indiqué dans l\'exemple en surbrillance ci-dessous :',
+    'entityLabelsCard.emptyDescription':
+      "Aucune étiquette définie pour cette entité. Vous pouvez ajouter des étiquettes à votre entité YAML comme indiqué dans l'exemple en surbrillance ci-dessous :",
     'entityLabelsCard.readMoreButtonTitle': 'En savoir plus',
     'entityLabels.warningPanelTitle': 'Entité non trouvée',
     'entityLabels.ownerLabel': 'Propriétaire',
     'entityLabels.lifecycleLabel': 'Cycle de vie',
     'entityLinksCard.title': 'Links',
-    'entityLinksCard.emptyDescription': 'Aucun lien défini pour cette entité. Vous pouvez ajouter des liens vers votre entité YAML comme indiqué dans l\'exemple en surbrillance ci-dessous :',
+    'entityLinksCard.emptyDescription':
+      "Aucun lien défini pour cette entité. Vous pouvez ajouter des liens vers votre entité YAML comme indiqué dans l'exemple en surbrillance ci-dessous :",
     'entityLinksCard.readMoreButtonTitle': 'En savoir plus',
-    'entityNotFound.title': 'L\'entité n\'a pas été trouvée',
-    'entityNotFound.description': 'Vous voulez nous aider à construire cela ? Consultez notre documentation de mise en route.',
+    'entityNotFound.title': "L'entité n'a pas été trouvée",
+    'entityNotFound.description':
+      'Vous voulez nous aider à construire cela ? Consultez notre documentation de mise en route.',
     'entityNotFound.docButtonTitle': 'DOCUMENTS',
-    'deleteEntity.dialogTitle': 'Êtes-vous sûr de vouloir supprimer cette entité ?',
+    'deleteEntity.dialogTitle':
+      'Êtes-vous sûr de vouloir supprimer cette entité ?',
     'deleteEntity.deleteButtonTitle': 'Supprimer',
     'deleteEntity.cancelButtonTitle': 'Annuler',
-    'deleteEntity.description': 'Cette entité n\'est référencée par aucun emplacement et ne reçoit donc pas de mises à jour. Cliquez ici pour supprimer.',
-    'entityProcessingErrorsDescription': 'L\'erreur ci-dessous provient de',
-    'entityRelationWarningDescription': 'Cette entité a des relations avec d\'autres entités, qui ne peuvent pas être trouvées dans le catalogue. Les entités non trouvées sont : ',
+    'deleteEntity.description':
+      "Cette entité n'est référencée par aucun emplacement et ne reçoit donc pas de mises à jour. Cliquez ici pour supprimer.",
+    entityProcessingErrorsDescription: "L'erreur ci-dessous provient de",
+    entityRelationWarningDescription:
+      "Cette entité a des relations avec d'autres entités, qui ne peuvent pas être trouvées dans le catalogue. Les entités non trouvées sont : ",
     'hasComponentsCard.title': 'Contient des composants',
-    'hasComponentsCard.emptyMessage': 'Aucun composant ne fait partie de ce système',
+    'hasComponentsCard.emptyMessage':
+      'Aucun composant ne fait partie de ce système',
     'hasResourcesCard.title': 'Dispose de ressources',
-    'hasResourcesCard.emptyMessage': 'Aucune ressource ne fait partie de ce système',
+    'hasResourcesCard.emptyMessage':
+      'Aucune ressource ne fait partie de ce système',
     'hasSubcomponentsCard.title': 'A des sous-composants',
-    'hasSubcomponentsCard.emptyMessage': 'Aucun sous-composant ne fait partie de ce composant',
+    'hasSubcomponentsCard.emptyMessage':
+      'Aucun sous-composant ne fait partie de ce composant',
     'hasSubdomainsCard.title': 'A des sous-domaines',
-    'hasSubdomainsCard.emptyMessage': 'Aucun sous-domaine ne fait partie de ce domaine',
+    'hasSubdomainsCard.emptyMessage':
+      'Aucun sous-domaine ne fait partie de ce domaine',
     'hasSystemsCard.title': 'A des systèmes',
     'hasSystemsCard.emptyMessage': 'Aucun système ne fait partie de ce domaine',
     'relatedEntitiesCard.emptyHelpLinkTitle': 'Apprenez à changer cela',
     'systemDiagramCard.title': 'Diagramme du système',
-    'systemDiagramCard.description': 'Utilisez le pincement et le zoom pour vous déplacer dans le diagramme.',
+    'systemDiagramCard.description':
+      'Utilisez le pincement et le zoom pour vous déplacer dans le diagramme.',
     'systemDiagramCard.edgeLabels.partOf': 'une partie de',
     'systemDiagramCard.edgeLabels.provides': 'fournit',
     'systemDiagramCard.edgeLabels.dependsOn': 'dépend de',

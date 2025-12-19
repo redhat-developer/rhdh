@@ -15,6 +15,7 @@
  */
 
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
+
 import { rhdhTranslationRef } from './ref';
 
 export default createTranslationMessages({
@@ -52,7 +53,8 @@ export default createTranslationMessages({
     'signIn.providers.bitbucket.title': 'Bitbucket',
     'signIn.providers.bitbucket.message': 'Connectez-vous avec Bitbucket',
     'signIn.providers.bitbucketServer.title': 'Serveur Bitbucket',
-    'signIn.providers.bitbucketServer.message': 'Connectez-vous à l\'aide de Bitbucket Server',
+    'signIn.providers.bitbucketServer.message':
+      "Connectez-vous à l'aide de Bitbucket Server",
     'signIn.providers.github.title': 'GitHub',
     'signIn.providers.github.message': 'Connectez-vous avec GitHub',
     'signIn.providers.gitlab.title': 'GitLab',
@@ -97,14 +99,17 @@ export default createTranslationMessages({
     'app.learningPaths.error.title': 'Impossible de récupérer les données.',
     'app.learningPaths.error.unknownError': 'Erreur inconnue',
     'app.userSettings.infoCard.title': 'Métadonnées RHDH',
-    'app.userSettings.infoCard.metadataCopied': 'Métadonnées copiées dans le presse-papiers',
-    'app.userSettings.infoCard.copyMetadata': 'Copier les métadonnées dans votre presse-papiers',
+    'app.userSettings.infoCard.metadataCopied':
+      'Métadonnées copiées dans le presse-papiers',
+    'app.userSettings.infoCard.copyMetadata':
+      'Copier les métadonnées dans votre presse-papiers',
     'app.userSettings.infoCard.showLess': 'Afficher moins',
     'app.userSettings.infoCard.showMore': 'Afficher plus',
     'app.errors.contactSupport': 'Contacter le support',
     'app.errors.goBack': 'Retour',
-    'app.errors.notFound.message': 'Nous n\'avons pas pu trouver cette page',
-    'app.errors.notFound.additionalInfo': 'La page que vous recherchez a peut-être été supprimée, son nom a peut-être été modifié ou elle est temporairement indisponible.',
+    'app.errors.notFound.message': "Nous n'avons pas pu trouver cette page",
+    'app.errors.notFound.additionalInfo':
+      'La page que vous recherchez a peut-être été supprimée, son nom a peut-être été modifié ou elle est temporairement indisponible.',
     'app.table.createdAt': 'Créé à',
   },
 });

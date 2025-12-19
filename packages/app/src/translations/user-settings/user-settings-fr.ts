@@ -21,7 +21,7 @@ export default createTranslationMessages({
   ref: userSettingsTranslationRef,
   full: false,
   messages: {
-    'sidebarTitle': 'Paramètres',
+    sidebarTitle: 'Paramètres',
     'languageToggle.title': 'Langue',
     'languageToggle.description': 'Changer la langue',
     'languageToggle.select': 'Sélectionnez la langue {{language}}',
@@ -35,7 +35,7 @@ export default createTranslationMessages({
     'signOutMenu.title': 'Se déconnecter',
     'signOutMenu.moreIconTitle': 'plus',
     'pinToggle.title': 'Épingler la barre latérale',
-    'pinToggle.description': 'Empêcher l\'effondrement de la barre latérale',
+    'pinToggle.description': "Empêcher l'effondrement de la barre latérale",
     'pinToggle.switchTitles.unpin': 'Détacher la barre latérale',
     'pinToggle.switchTitles.pin': 'Épingler la barre latérale',
     'pinToggle.ariaLabelTitle': 'Commutateur de barre latérale à broches',
@@ -43,10 +43,13 @@ export default createTranslationMessages({
     'identityCard.noIdentityTitle': 'Aucune identité en coulisses',
     'identityCard.userEntity': 'Entité utilisateur',
     'identityCard.ownershipEntities': 'Entités propriétaires',
-    'defaultProviderSettings.description': 'Fournit une authentification vers les API et les identités {{provider}}',
-    'emptyProviders.title': 'Aucun fournisseur d\'authentification',
-    'emptyProviders.description': 'Vous pouvez ajouter des fournisseurs d’authentification à Backstage, ce qui vous permet d’utiliser ces fournisseurs pour vous authentifier.',
-    'emptyProviders.action.title': 'Ouvrez app-config.yaml et effectuez les modifications comme indiqué ci-dessous :',
+    'defaultProviderSettings.description':
+      'Fournit une authentification vers les API et les identités {{provider}}',
+    'emptyProviders.title': "Aucun fournisseur d'authentification",
+    'emptyProviders.description':
+      'Vous pouvez ajouter des fournisseurs d’authentification à Backstage, ce qui vous permet d’utiliser ces fournisseurs pour vous authentifier.',
+    'emptyProviders.action.title':
+      'Ouvrez app-config.yaml et effectuez les modifications comme indiqué ci-dessous :',
     'emptyProviders.action.readMoreButtonTitle': 'En savoir plus',
     'providerSettingsItem.title.signIn': 'Connectez-vous à {{title}}',
     'providerSettingsItem.title.signOut': 'Se déconnecter de {{title}}',
@@ -54,20 +57,26 @@ export default createTranslationMessages({
     'providerSettingsItem.buttonTitle.signOut': 'Se déconnecter',
     'authProviders.title': 'Fournisseurs disponibles',
     'defaultSettingsPage.tabsTitle.general': 'Général',
-    'defaultSettingsPage.tabsTitle.authProviders': 'Fournisseurs d\'authentification',
+    'defaultSettingsPage.tabsTitle.authProviders':
+      "Fournisseurs d'authentification",
     'defaultSettingsPage.tabsTitle.featureFlags': 'Drapeaux de fonctionnalités',
     'featureFlags.title': 'Drapeaux de fonctionnalités',
-    'featureFlags.description': 'Veuillez actualiser la page lorsque vous activez ou désactivez les indicateurs de fonctionnalité.',
+    'featureFlags.description':
+      'Veuillez actualiser la page lorsque vous activez ou désactivez les indicateurs de fonctionnalité.',
     'featureFlags.emptyFlags.title': 'Aucun indicateur de fonctionnalité',
-    'featureFlags.emptyFlags.description': 'Les indicateurs de fonctionnalités permettent aux plugins d\'enregistrer des fonctionnalités dans Backstage pour que les utilisateurs puissent les accepter. Vous pouvez l\'utiliser pour diviser la logique dans votre code pour les tests A/B manuels, etc.',
-    'featureFlags.emptyFlags.action.title': 'Un exemple de la manière d’ajouter un indicateur de fonctionnalité est mis en évidence ci-dessous :',
+    'featureFlags.emptyFlags.description':
+      "Les indicateurs de fonctionnalités permettent aux plugins d'enregistrer des fonctionnalités dans Backstage pour que les utilisateurs puissent les accepter. Vous pouvez l'utiliser pour diviser la logique dans votre code pour les tests A/B manuels, etc.",
+    'featureFlags.emptyFlags.action.title':
+      'Un exemple de la manière d’ajouter un indicateur de fonctionnalité est mis en évidence ci-dessous :',
     'featureFlags.emptyFlags.action.readMoreButtonTitle': 'En savoir plus',
     'featureFlags.filterTitle': 'Filtre',
     'featureFlags.clearFilter': 'Effacer le filtre',
     'featureFlags.flagItem.title.disable': 'Désactiver',
     'featureFlags.flagItem.title.enable': 'Activer',
-    'featureFlags.flagItem.subtitle.registeredInApplication': 'Enregistré dans l\'application',
-    'featureFlags.flagItem.subtitle.registeredInPlugin': 'Enregistré dans le plugin {{pluginId}}',
+    'featureFlags.flagItem.subtitle.registeredInApplication':
+      "Enregistré dans l'application",
+    'featureFlags.flagItem.subtitle.registeredInPlugin':
+      'Enregistré dans le plugin {{pluginId}}',
     'settingsLayout.title': 'Paramètres',
     'profileCard.title': 'Profil',
     'appearanceCard.title': 'Apparence',

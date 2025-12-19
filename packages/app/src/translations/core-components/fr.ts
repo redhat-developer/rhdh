@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 import { coreComponentsTranslationRef } from '@backstage/core-components/alpha';
+import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 
 export default createTranslationMessages({
   ref: coreComponentsTranslationRef,
@@ -33,19 +33,23 @@ export default createTranslationMessages({
     'alertDisplay.message_one': '({{ count }} message plus récent)',
     'alertDisplay.message_other': '({{ count }} messages plus récents)',
     'table.header.actions': 'Actes',
-    'oauthRequestDialog.message': 'Connectez-vous pour autoriser {{appTitle}} à accéder aux API et identités de {{provider}}.',
+    'oauthRequestDialog.message':
+      'Connectez-vous pour autoriser {{appTitle}} à accéder aux API et identités de {{provider}}.',
     'signIn.title': 'Se connecter',
     'signIn.loginFailed': 'La connexion a échoué',
     'signIn.customProvider.title': 'Utilisateur personnalisé',
-    'signIn.customProvider.subtitle': 'Saisissez votre propre identifiant utilisateur et vos informations d\'identification. Cette sélection ne sera pas enregistrée.',
-    'signIn.customProvider.userId': 'ID de l\'utilisateur',
-    'signIn.customProvider.tokenInvalid': 'Le jeton n\'est pas un jeton JWT OpenID Connect valide',
+    'signIn.customProvider.subtitle':
+      "Saisissez votre propre identifiant utilisateur et vos informations d'identification. Cette sélection ne sera pas enregistrée.",
+    'signIn.customProvider.userId': "ID de l'utilisateur",
+    'signIn.customProvider.tokenInvalid':
+      "Le jeton n'est pas un jeton JWT OpenID Connect valide",
     'signIn.customProvider.continue': 'Continuer',
-    'signIn.customProvider.idToken': 'Jeton d\'identification (facultatif)',
+    'signIn.customProvider.idToken': "Jeton d'identification (facultatif)",
     'signIn.guestProvider.title': 'Invité',
-    'signIn.guestProvider.subtitle': 'Entrez en tant qu\'utilisateur invité. Votre identité n\'aura pas été vérifiée, ce qui signifie que certaines fonctionnalités pourraient ne pas être disponibles.',
+    'signIn.guestProvider.subtitle':
+      "Entrez en tant qu'utilisateur invité. Votre identité n'aura pas été vérifiée, ce qui signifie que certaines fonctionnalités pourraient ne pas être disponibles.",
     'signIn.guestProvider.enter': 'Entrer',
-    'skipToContent': 'Accéder au contenu',
+    skipToContent: 'Accéder au contenu',
     'copyTextButton.tooltipText': 'Texte copié dans le presse-papiers',
     'simpleStepper.reset': 'Réinitialiser',
     'simpleStepper.finish': 'Finition',
@@ -53,26 +57,31 @@ export default createTranslationMessages({
     'simpleStepper.skip': 'Ignorer',
     'simpleStepper.back': 'Arrière',
     'errorPage.subtitle': 'ERREUR {{status}} : {{statusMessage}}',
-    'errorPage.title': 'On dirait que quelqu\'un a laissé tomber le micro !',
+    'errorPage.title': "On dirait que quelqu'un a laissé tomber le micro !",
     'errorPage.goBack': 'Retour',
     'errorPage.showMoreDetails': 'Afficher plus de détails',
     'errorPage.showLessDetails': 'Afficher moins de détails',
     'emptyState.missingAnnotation.title': 'Annotation manquante',
-    'emptyState.missingAnnotation.actionTitle': 'Ajoutez l\'annotation à votre composant YAML comme indiqué dans l\'exemple en surbrillance ci-dessous :',
+    'emptyState.missingAnnotation.actionTitle':
+      "Ajoutez l'annotation à votre composant YAML comme indiqué dans l'exemple en surbrillance ci-dessous :",
     'emptyState.missingAnnotation.readMore': 'En savoir plus',
     'supportConfig.default.title': 'Support non configuré',
-    'supportConfig.default.linkTitle': 'Ajouter la clé de configuration « app.support »',
-    'errorBoundary.title': 'Veuillez contacter {{slackChannel}} pour obtenir de l\'aide.',
+    'supportConfig.default.linkTitle':
+      'Ajouter la clé de configuration « app.support »',
+    'errorBoundary.title':
+      "Veuillez contacter {{slackChannel}} pour obtenir de l'aide.",
     'oauthRequestDialog.title': 'Connexion requise',
-    'oauthRequestDialog.authRedirectTitle': 'Cela déclenchera une redirection http vers la connexion OAuth.',
+    'oauthRequestDialog.authRedirectTitle':
+      'Cela déclenchera une redirection http vers la connexion OAuth.',
     'oauthRequestDialog.login': 'Connexion',
     'oauthRequestDialog.rejectAll': 'Tout rejeter',
     'supportButton.title': 'Support',
     'supportButton.close': 'Fermer',
     'table.filter.title': 'Filtres',
     'table.filter.clearAll': 'Tout effacer',
-    'autoLogout.stillTherePrompt.title': 'Déconnexion en raison d\'inactivité',
+    'autoLogout.stillTherePrompt.title': "Déconnexion en raison d'inactivité",
     'autoLogout.stillTherePrompt.buttonText': 'Oui! Ne me déconnectez pas',
-    'proxiedSignInPage.title': 'Vous ne semblez pas être connecté. Veuillez essayer de recharger la page du navigateur.',
+    'proxiedSignInPage.title':
+      'Vous ne semblez pas être connecté. Veuillez essayer de recharger la page du navigateur.',
   },
 });

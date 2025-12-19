@@ -15,6 +15,7 @@
  */
 
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
+
 import { rhdhTranslationRef } from './ref';
 
 export default createTranslationMessages({
@@ -52,7 +53,8 @@ export default createTranslationMessages({
     'signIn.providers.bitbucket.title': 'Bitbucket',
     'signIn.providers.bitbucket.message': 'Accesso tramite Bitbucket',
     'signIn.providers.bitbucketServer.title': 'Bitbucket Server',
-    'signIn.providers.bitbucketServer.message': 'Accesso tramite Bitbucket Server',
+    'signIn.providers.bitbucketServer.message':
+      'Accesso tramite Bitbucket Server',
     'signIn.providers.github.title': 'GitHub',
     'signIn.providers.github.message': 'Accesso tramite GitHub',
     'signIn.providers.gitlab.title': 'GitLab',
@@ -97,14 +99,16 @@ export default createTranslationMessages({
     'app.learningPaths.error.title': 'Impossibile recuperare i dati.',
     'app.learningPaths.error.unknownError': 'Errore sconosciuto',
     'app.userSettings.infoCard.title': 'Metadati RHDH',
-    'app.userSettings.infoCard.metadataCopied': 'Metadati copiati negli appunti',
+    'app.userSettings.infoCard.metadataCopied':
+      'Metadati copiati negli appunti',
     'app.userSettings.infoCard.copyMetadata': 'Copia i metadati negli appunti',
     'app.userSettings.infoCard.showLess': 'Mostra meno',
     'app.userSettings.infoCard.showMore': 'Mostra altro',
-    'app.errors.contactSupport': 'Contattare l\'assistenza',
+    'app.errors.contactSupport': "Contattare l'assistenza",
     'app.errors.goBack': 'Indietro',
     'app.errors.notFound.message': 'Non è stato possibile trovare la pagina',
-    'app.errors.notFound.additionalInfo': 'La pagina potrebbe essere stata rimossa, potrebbe aver cambiato nome o potrebbe non essere temporaneamente disponibile.',
+    'app.errors.notFound.additionalInfo':
+      'La pagina potrebbe essere stata rimossa, potrebbe aver cambiato nome o potrebbe non essere temporaneamente disponibile.',
     'app.table.createdAt': 'Creato alle',
   },
 });
