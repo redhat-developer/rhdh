@@ -2,8 +2,7 @@ import { test, expect } from "@playwright/test";
 import { Analytics } from "../../../utils/analytics/analytics";
 import { APIHelper } from "../../../utils/api-helper";
 
-test.describe
-  .skip('Check "analytics-provider-segment" plugin is disabled', () => {
+test.describe('Check "analytics-provider-segment" plugin is disabled', () => {
   test.beforeAll(async () => {
     test.info().annotations.push({
       type: "component",
