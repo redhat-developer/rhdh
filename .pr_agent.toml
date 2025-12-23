@@ -9,7 +9,6 @@ pr_commands = [
     "/describe --pr_description.final_update_message=false",
     "/improve",
 ]
-feedback_on_draft_pr = false
 
 [pr_reviewer] # /review #
 persistent_comment = true
@@ -34,8 +33,8 @@ commitable_code_suggestions = false
 enable=false
 
 [config]
-ignore_pr_authors = ["renovate","openshift-cherrypick-robot","rhdh-bot"]
-allow_only_specific_folders=["e2e-tests"]
+ignore_pr_authors = ["renovate","openshift-cherrypick-robot"]
+allow_only_specific_folders=["e2e-tests",".ibm"]
 
 [rag_arguments]
 enable_rag=true
