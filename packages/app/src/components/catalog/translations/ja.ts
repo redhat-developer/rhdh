@@ -15,12 +15,12 @@
  */
 
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
-import { userSettingsTranslationRef } from '@backstage/plugin-user-settings/alpha';
+import { catalogTranslationRef } from '@backstage/plugin-catalog/alpha';
 
 export default createTranslationMessages({
-  ref: userSettingsTranslationRef,
+  ref: catalogTranslationRef,
   full: false,
   messages: {
-    sidebarTitle: 'Impostazioni',
+    'indexPage.createButtonTitle': 'セルフサービス',
   },
 });

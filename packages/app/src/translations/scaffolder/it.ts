@@ -15,12 +15,13 @@
  */
 
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
-import { userSettingsTranslationRef } from '@backstage/plugin-user-settings/alpha';
+import { scaffolderTranslationRef } from '@backstage/plugin-scaffolder/alpha';
 
 export default createTranslationMessages({
-  ref: userSettingsTranslationRef,
+  ref: scaffolderTranslationRef,
   full: false,
   messages: {
-    sidebarTitle: 'Impostazioni',
+    'templateListPage.contentHeader.registerExistingButtonTitle':
+      'Importa un repository Git esistente',
   },
 });

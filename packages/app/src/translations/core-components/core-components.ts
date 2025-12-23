@@ -5,5 +5,8 @@ export const coreComponentsTranslations = createTranslationResource({
   ref: coreComponentsTranslationRef,
   translations: {
     en: () => import('./core-components-en'),
+    fr: () => import('./fr'),
+    it: () => import('./it'),
+    ja: () => import('./ja'),
   },
 });
