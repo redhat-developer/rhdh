@@ -1,6 +1,6 @@
 # README for End-to-End Automation Framework
 
-**Stack**: [Playwright](https://playwright.dev/) over TypeScript  
+**Stack**: [Playwright](https://playwright.dev/) over TypeScript
 **Repository Location**: [GitHub Repository](https://github.com/redhat-developer/rhdh/tree/main/e2e-tests)
 
 ## File Structure of the Testing Framework
@@ -49,6 +49,7 @@ To run the tests, ensure you have:
 - [Playwright browsers installed](#install-playwright-browsers)
 
 #### macOS Users
+
 **Important**: If you're using macOS, you need to install GNU `grep` and GNU `sed` to avoid compatibility issues with scripts and CI/CD pipelines:
 
 ```bash
@@ -115,6 +116,88 @@ All Playwright project names are defined in [`e2e-tests/playwright/projects.json
 - yarn scripts in `package.json`
 
 See the [CI documentation](CI.md#playwright-project-names-single-source-of-truth) for more details.
+
+## Running Tests Locally with rhdh-local
+
+For quick local testing without a Kubernetes cluster, you can use the `run-e2e-tests.sh` script which automatically sets up [rhdh-local](https://github.com/redhat-developer/rhdh-local) and runs tests against it.
+
+### Prerequisites
+
+- **Podman** (v5.4.1+)
+- **Node.js** (v18+)
+- **Git**
+
+### Quick Start
+
+From the repository root:
+
+```bash
+# Run basic sanity tests with the latest community image
+./scripts/run-e2e-tests.sh --project showcase-sanity-plugins
+
+# Run RBAC tests
+./scripts/run-e2e-tests.sh --profile rbac --project showcase-rbac
+
+# Build and test local changes
+./scripts/run-e2e-tests.sh --build --project showcase-sanity-plugins
+```
+
+### Available Options
+
+| Option | Description |
+|--------|-------------|
+| `--profile <name>` | Test profile: `basic` (default) or `rbac` |
+| `--project <name>` | Playwright project (default: `showcase-sanity-plugins`) |
+| `--build` | Build local RHDH image from `docker/Dockerfile` |
+| `--image <url>` | Use a specific registry image |
+| `--fresh` | Force re-clone rhdh-local |
+| `--skip-setup` | Skip setup, use existing running RHDH instance |
+| `--skip-teardown` | Leave RHDH running after tests |
+
+### How It Works
+
+1. The script clones [rhdh-local](https://github.com/redhat-developer/rhdh-local) into `./rhdh-local/` (gitignored)
+2. Copies local configs from `e2e-tests/local/` (these work without external services)
+3. Starts RHDH using podman/docker compose
+4. Waits for the health check endpoint
+5. Runs Playwright tests with `CI=true BASE_URL=http://localhost:7007`
+6. Tears down the environment (unless `--skip-teardown`)
+
+### Test Profiles
+
+| Profile | Config File | Use Case |
+|---------|-------------|----------|
+| `basic` | `e2e-tests/local/config-basic.yaml` | General testing with guest auth |
+| `rbac` | `e2e-tests/local/config-rbac.yaml` | RBAC/permissions testing |
+
+> **Note**: These are minimal configs designed for local testing without external services (GitHub Apps, Keycloak, etc.). They differ from the CI configs in `.ibm/pipelines/resources/config_map/` which require a fully-configured environment. See `e2e-tests/local/README.md` for more details.
+
+### Test Compatibility
+
+Not all tests work with local rhdh-local. Here's a compatibility matrix:
+
+| Test Project | Compatible | Notes |
+|--------------|------------|-------|
+| `showcase-sanity-plugins` | ✅ Yes | Quick sanity checks |
+| `showcase` | ⚠️ Partial | Some tests require GitHub integration |
+| `showcase-rbac` | ✅ Yes | Use `--profile rbac` |
+| `showcase-k8s` | ❌ No | Requires Kubernetes cluster |
+| `showcase-auth-providers` | ❌ No | Requires Keycloak/external auth |
+
+### Debugging
+
+To keep RHDH running after tests for debugging:
+
+```bash
+./scripts/run-e2e-tests.sh --project showcase-sanity-plugins --skip-teardown
+```
+
+Then access RHDH at <http://localhost:7007> and run tests manually:
+
+```bash
+cd e2e-tests
+BASE_URL=http://localhost:7007 yarn playwright test --ui
+```
 
 ## Setting Up Backstage Configuration During the Pipeline
 
