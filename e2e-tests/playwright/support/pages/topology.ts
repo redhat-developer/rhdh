@@ -12,12 +12,15 @@ export class Topology {
   }
 
   async hoverOnPodStatusIndicator() {
-    const locator = this.page
-      .locator('[data-test-id="topology-test"]')
-      .getByText("1Pod")
-      .first();
+    const locator = this.page.getByText("1Pod").first();
     await locator.hover();
-    await this.page.waitForTimeout(1000);
+    // Check if tooltip appears after hover - wait briefly, ignore if it doesn't show up
+    const tooltip = this.page.getByRole("tooltip");
+    try {
+      await tooltip.waitFor({ state: "visible", timeout: 1000 });
+    } catch {
+      // Tooltip didn't appear, ignore and continue
+    }
   }
 
   async verifyMissingTopologyPermission() {
