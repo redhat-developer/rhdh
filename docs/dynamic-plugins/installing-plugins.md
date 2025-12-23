@@ -51,9 +51,9 @@ When the `CATALOG_INDEX_IMAGE` environment variable is set, the `install-dynamic
 
 The configuration method depends on your deployment approach:
 
-- **Helm Chart**: Use the `pluginCatalogIndex.image` value. See the [Helm Chart Catalog Index Configuration](https://github.com/redhat-developer/rhdh-chart/blob/main/docs/catalog-index-configuration.md) for details.
+- **Helm Chart**: See the [Helm Chart Catalog Index Configuration](https://github.com/redhat-developer/rhdh-chart/blob/main/docs/catalog-index-configuration.md) for details.
 
-- **RHDH Operator**: Use the `CATALOG_INDEX_IMAGE` environment variable in the Backstage CR. See the [Operator Catalog Index Configuration](https://github.com/redhat-developer/rhdh-operator/blob/main/docs/dynamic-plugins.md#catalog-index-configuration) for details.
+- **RHDH Operator**: See the [Operator Catalog Index Configuration](https://github.com/redhat-developer/rhdh-operator/blob/main/docs/dynamic-plugins.md#catalog-index-configuration) for details.
 
 ### Catalog Index Image Structure
 
