@@ -943,18 +943,19 @@ delete_tekton_pipelines() {
 cluster_setup_ocp_helm() {
   # first install all operators to run the installation in parallel
   install_pipelines_operator
-  install_crunchy_postgres_ocp_operator
+  # install_crunchy_postgres_ocp_operator
 
   # Skip orchestrator infra installation on OSD-GCP due to infrastructure limitations
   if [[ ! "${JOB_NAME}" =~ osd-gcp ]]; then
-    install_orchestrator_infra_chart
+    echo "skipping install_orchestrator_infra_chart"
+    # install_orchestrator_infra_chart
   else
     echo "Skipping orchestrator-infra installation on OSD-GCP environment"
   fi
 
   # then wait for the right status one by one
   waitfor_pipelines_operator
-  waitfor_crunchy_postgres_ocp_operator
+  # waitfor_crunchy_postgres_ocp_operator
 }
 
 cluster_setup_ocp_operator() {
