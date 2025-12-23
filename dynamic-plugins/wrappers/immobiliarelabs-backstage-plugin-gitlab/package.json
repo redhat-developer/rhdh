@@ -56,7 +56,7 @@
   ],
   "author": "Red Hat",
   "homepage": "https://red.ht/rhdh",
-  "bugs": "https://issues.redhat.com/browse/RHIDP",
+  "bugs": "https://github.com/immobiliare/backstage-plugin-gitlab/issues",
   "keywords": [
     "support:tech-preview",
     "lifecycle:active"

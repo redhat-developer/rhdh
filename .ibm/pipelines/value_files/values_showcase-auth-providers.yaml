@@ -77,7 +77,8 @@ upstream:
               orgs: ["${AUTH_PROVIDERS_GH_ORG_NAME}"]
               schedule:
                 initialDelay: { seconds: 0 }
-                frequency: { minutes: 1 }
+                # Let's perform a single execution per test run
+                frequency: { hours: 24 }
                 timeout: { minutes: 1 }
           microsoftGraphOrg:
             default:
@@ -94,8 +95,9 @@ upstream:
                   and mailEnabled eq false
                   and startswith(displayName,'rhdh_test_group_')
               schedule:
-                frequency: PT1M
-                timeout: PT1M
+                # Let's perform a single execution per test run
+                frequency: { hours: 24 }
+                timeout: { minutes: 1 }
           keycloakOrg:
             default:
               baseUrl: ${RHSSO76_URL}
@@ -104,7 +106,8 @@ upstream:
               clientId: ${RHSSO76_CLIENT_ID}
               clientSecret: ${RHSSO76_CLIENT_SECRET}
               schedule:
-                frequency: { minutes: 1 }
+                # Let's perform a single execution per test run
+                frequency: { hours: 24 }
                 timeout: { minutes: 1 }
       permission:
         enabled: true
