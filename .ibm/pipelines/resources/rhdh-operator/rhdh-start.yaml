@@ -24,3 +24,18 @@ spec:
       secrets:
         - name: rhdh-secrets
         - name: redis-secret
+  deployment:
+    patch:
+      spec:
+        template:
+          spec:
+            volumes:
+              - name: dynamic-plugins-root
+                ephemeral:
+                  volumeClaimTemplate:
+                    spec:
+                      accessModes:
+                        - ReadWriteOnce
+                      resources:
+                        requests:
+                          storage: 5Gi
