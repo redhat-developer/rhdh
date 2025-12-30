@@ -161,10 +161,10 @@ const SidebarLayout = styled(Box, {
       flexGrow: 1,
     },
 
-    // When quickstart drawer is open, adjust the content size
-    'body.quickstart-drawer-open #rhdh-sidebar-layout&': {
+    // When drawer is docked, adjust the content size
+    'body.docked-drawer-open #rhdh-sidebar-layout&': {
       '> div > main': {
-        marginRight: `calc(var(--quickstart-drawer-width, 500px) + ${(theme as ThemeConfig).palette?.rhdh?.general.pageInset})`,
+        marginRight: `calc(var(--docked-drawer-width, 500px) + ${(theme as ThemeConfig).palette?.rhdh?.general.pageInset})`,
         transition: 'margin-right 0.3s ease',
       },
     },
