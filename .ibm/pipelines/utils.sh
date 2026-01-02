@@ -1747,17 +1747,17 @@ enable_orchestrator_plugins_op() {
   # Wait for and find default configmap created by the operator
   log::info "Waiting for default dynamic plugins configmap to be created by operator..."
   local default_cm
-  local max_attempts=30  # 30 attempts * 5 seconds = 2.5 minutes
+  local max_attempts=30 # 30 attempts * 5 seconds = 2.5 minutes
   local attempt=0
-  
+
   while [[ $attempt -lt $max_attempts ]]; do
-    default_cm=$(oc get cm -n "$namespace" --no-headers 2>/dev/null | grep "backstage-dynamic-plugins" | awk '{print $1}' | head -1)
-    
+    default_cm=$(oc get cm -n "$namespace" --no-headers 2> /dev/null | grep "backstage-dynamic-plugins" | awk '{print $1}' | head -1)
+
     if [[ -n "$default_cm" ]]; then
       log::info "Found default configmap: $default_cm"
       break
     fi
-    
+
     attempt=$((attempt + 1))
     if [[ $attempt -lt $max_attempts ]]; then
       log::debug "Attempt $attempt/$max_attempts: Waiting for default configmap..."
