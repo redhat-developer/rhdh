@@ -2,6 +2,8 @@
 
 # shellcheck source=.ibm/pipelines/lib/log.sh
 source "$DIR"/lib/log.sh
+# shellcheck source=.ibm/pipelines/lib/common.sh
+source "$DIR"/lib/common.sh
 # shellcheck source=.ibm/pipelines/utils.sh
 source "$DIR"/utils.sh
 # shellcheck source=.ibm/pipelines/install-methods/operator.sh
