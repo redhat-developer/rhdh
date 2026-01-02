@@ -391,8 +391,12 @@ check_operator_status() {
 }
 
 # Installs the Crunchy Postgres Operator from Openshift Marketplace using predefined parameters
+# Use waitfor_crunchy_postgres_ocp_operator to wait for the operator to be ready
 install_crunchy_postgres_ocp_operator() {
   install_subscription crunchy-postgres-operator openshift-operators v5 crunchy-postgres-operator certified-operators openshift-marketplace
+}
+
+waitfor_crunchy_postgres_ocp_operator() {
   check_operator_status 300 "openshift-operators" "Crunchy Postgres for Kubernetes" "Succeeded"
 
   # Wait for PostgresCluster CRD to be registered before proceeding
@@ -410,8 +414,12 @@ install_crunchy_postgres_ocp_operator() {
 }
 
 # Installs the Crunchy Postgres Operator from OperatorHub.io
+# Use waitfor_crunchy_postgres_k8s_operator to wait for the operator to be ready
 install_crunchy_postgres_k8s_operator() {
   install_subscription crunchy-postgres-operator openshift-operators v5 crunchy-postgres-operator certified-operators openshift-marketplace
+}
+
+waitfor_crunchy_postgres_k8s_operator() {
   check_operator_status 300 "operators" "Crunchy Postgres for Kubernetes" "Succeeded"
 
   # Wait for PostgresCluster CRD to be registered before proceeding
@@ -429,14 +437,22 @@ install_crunchy_postgres_k8s_operator() {
 }
 
 # Installs the OpenShift Serverless Logic Operator (SonataFlow) from OpenShift Marketplace
+# Use waitfor_serverless_logic_ocp_operator to wait for the operator to be ready
 install_serverless_logic_ocp_operator() {
   install_subscription logic-operator-rhel8 openshift-operators alpha logic-operator-rhel8 redhat-operators openshift-marketplace
+}
+
+waitfor_serverless_logic_ocp_operator() {
   check_operator_status 300 "openshift-operators" "OpenShift Serverless Logic Operator" "Succeeded"
 }
 
 # Installs the OpenShift Serverless Operator (Knative) from OpenShift Marketplace
+# Use waitfor_serverless_ocp_operator to wait for the operator to be ready
 install_serverless_ocp_operator() {
   install_subscription serverless-operator openshift-operators stable serverless-operator redhat-operators openshift-marketplace
+}
+
+waitfor_serverless_ocp_operator() {
   check_operator_status 300 "openshift-operators" "Red Hat OpenShift Serverless" "Succeeded"
 }
 
@@ -841,6 +857,7 @@ uninstall_olm() {
 }
 
 # Installs the Red Hat OpenShift Pipelines operator if not already installed
+# Use waitfor_pipelines_operator to wait for the operator to be ready
 install_pipelines_operator() {
   DISPLAY_NAME="Red Hat OpenShift Pipelines"
   # Check if operator is already installed
@@ -850,8 +867,6 @@ install_pipelines_operator() {
     log::info "Red Hat OpenShift Pipelines operator is not installed. Installing..."
     # Install the operator and wait for deployment
     install_subscription openshift-pipelines-operator openshift-operators latest openshift-pipelines-operator-rh redhat-operators openshift-marketplace
-    wait_for_deployment "openshift-operators" "pipelines"
-    wait_for_endpoint "tekton-pipelines-webhook" "openshift-pipelines"
   fi
 
   # Wait for Tekton Pipeline CRD to be registered before proceeding
@@ -868,7 +883,13 @@ install_pipelines_operator() {
   log::success "Tekton Pipeline CRD is available."
 }
 
+waitfor_pipelines_operator() {
+  wait_for_deployment "openshift-operators" "pipelines"
+  wait_for_endpoint "tekton-pipelines-webhook" "openshift-pipelines"
+}
+
 # Installs the Tekton Pipelines if not already installed (alternative of OpenShift Pipelines for Kubernetes clusters)
+# Use waitfor_tekton_pipelines to wait for the operator to be ready
 install_tekton_pipelines() {
   DISPLAY_NAME="tekton-pipelines-webhook"
   if oc get pods -n "tekton-pipelines" | grep -q "${DISPLAY_NAME}"; then
@@ -876,9 +897,13 @@ install_tekton_pipelines() {
   else
     log::info "Tekton Pipelines is not installed. Installing..."
     kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
-    wait_for_deployment "tekton-pipelines" "${DISPLAY_NAME}"
-    wait_for_endpoint "tekton-pipelines-webhook" "tekton-pipelines"
   fi
+}
+
+waitfor_tekton_pipelines() {
+  DISPLAY_NAME="tekton-pipelines-webhook"
+  wait_for_deployment "tekton-pipelines" "${DISPLAY_NAME}"
+  wait_for_endpoint "tekton-pipelines-webhook" "tekton-pipelines"
 
   # Wait for Tekton Pipeline CRD to be registered before proceeding
   log::info "Waiting for Tekton Pipeline CRD to be registered..."
@@ -916,6 +941,7 @@ delete_tekton_pipelines() {
 }
 
 cluster_setup_ocp_helm() {
+  # first install all operators to run the installation in parallel
   install_pipelines_operator
   install_crunchy_postgres_ocp_operator
 
@@ -925,25 +951,46 @@ cluster_setup_ocp_helm() {
   else
     echo "Skipping orchestrator-infra installation on OSD-GCP environment"
   fi
+
+  # then wait for the right status one by one
+  waitfor_pipelines_operator
+  waitfor_crunchy_postgres_ocp_operator
 }
 
 cluster_setup_ocp_operator() {
+  # first install all operators to run the installation in parallel
   install_pipelines_operator
   install_crunchy_postgres_ocp_operator
   install_serverless_ocp_operator
   install_serverless_logic_ocp_operator
+
+  # then wait for the right status one by one
+  waitfor_pipelines_operator
+  waitfor_crunchy_postgres_ocp_operator
+  waitfor_serverless_ocp_operator
+  waitfor_serverless_logic_ocp_operator
 }
 
 cluster_setup_k8s_operator() {
+  # first install all operators to run the installation in parallel
   install_olm
   install_tekton_pipelines
   # install_crunchy_postgres_k8s_operator # Works with K8s but disabled in values file
+
+  # then wait for the right status one by one
+  waitfor_tekton_pipelines
+  # waitfor_crunchy_postgres_k8s_operator
 }
 
 cluster_setup_k8s_helm() {
+  # first install all operators to run the installation in parallel
   # install_olm
   install_tekton_pipelines
   # install_crunchy_postgres_k8s_operator # Works with K8s but disabled in values file
+
+  # then wait for the right status one by one
+  waitfor_tekton_pipelines
+  # waitfor_crunchy_postgres_k8s_operator
 }
 
 install_orchestrator_infra_chart() {
