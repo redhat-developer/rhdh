@@ -84,6 +84,15 @@ integrations:
   gitlab:
     - host: gitlab.com
       token: ${GITLAB_TOKEN}
+
+# Events Module configuration
+events:
+  http:
+    topics:
+          - github
+  modules:
+    github:
+      webhookSecret: ${GITHUB_APP_WEBHOOK_SECRET}
 auth:
   # see https://backstage.io/docs/auth/ to learn about auth providers
   environment: development

@@ -28,4 +28,15 @@ export const GITHUB_API_ENDPOINTS = {
 
   contents: (owner: string, repoName: string) =>
     `${getRepoUrl(owner, repoName)}/contents`,
+
+  createTeam: (org: string) => `${getOrgUrl(org)}/teams`,
+  
+  deleteTeam: (org: string, teamSlug: string) =>
+    `${getOrgUrl(org)}/teams/${teamSlug}`,
+
+  teamMembership: (org: string, teamSlug: string, username: string) =>
+    `${getOrgUrl(org)}/teams/${teamSlug}/memberships/${username}`,
+
+  orgMembership: (org: string, username: string) =>
+    `${getOrgUrl(org)}/memberships/${username}`,
 };

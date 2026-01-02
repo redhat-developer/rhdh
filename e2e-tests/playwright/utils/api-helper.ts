@@ -95,6 +95,67 @@ export class APIHelper {
     );
   }
 
+  static async updateFileInRepo(
+    owner: string,
+    repoName: string,
+    filePath: string,
+    content: string,
+    commitMessage: string,
+  ) {
+    const getFileResponse = await APIHelper.githubRequest(
+      "GET",
+      `${GITHUB_API_ENDPOINTS.contents(owner, repoName)}/${filePath}?ref=main`
+    );
+    
+    if (!getFileResponse.ok()) {
+      throw new Error(`File ${filePath} not found in ${owner}/${repoName}`);
+    }
+    
+    const fileData = await getFileResponse.json();
+    
+    const encodedContent = Buffer.from(content).toString("base64");
+    const response = await APIHelper.githubRequest(
+      "PUT",
+      `${GITHUB_API_ENDPOINTS.contents(owner, repoName)}/${filePath}`,
+      {
+        message: commitMessage,
+        content: encodedContent,
+        branch: "main",
+        sha: fileData.sha,
+      },
+    );
+    expect(response.status() === 200 || response.ok()).toBeTruthy();
+  }
+
+  static async deleteFileInRepo(
+    owner: string,
+    repoName: string,
+    filePath: string,
+    commitMessage: string,
+  ) {
+    const getFileResponse = await APIHelper.githubRequest(
+      "GET",
+      `${GITHUB_API_ENDPOINTS.contents(owner, repoName)}/${filePath}?ref=main`
+    );
+    
+    if (!getFileResponse.ok()) {
+      throw new Error(`File ${filePath} not found in ${owner}/${repoName}`);
+    }
+    
+    const fileData = await getFileResponse.json();
+    
+    const response = await APIHelper.githubRequest(
+      "DELETE",
+      `${GITHUB_API_ENDPOINTS.contents(owner, repoName)}/${filePath}`,
+      {
+        message: commitMessage,
+        sha: fileData.sha, 
+        branch: "main",
+      },
+    );
+    expect(response.status() === 200 || response.ok()).toBeTruthy();
+  }
+
   static async createFileInRepo(
     owner: string,
     repoName: string,
@@ -137,6 +198,73 @@ export class APIHelper {
       "DELETE",
       GITHUB_API_ENDPOINTS.deleteRepo(owner, repoName),
     );
+  }
+
+  static async createTeamInOrg(
+    org: string,
+    teamName: string,
+  ) {
+    const response = await APIHelper.githubRequest(
+      "POST",
+      GITHUB_API_ENDPOINTS.createTeam(org),
+      {
+        name: teamName,
+        description: "",
+        privacy: "closed",
+      },
+    );
+    expect(response.status() === 201 || response.ok()).toBeTruthy();
+  }
+
+  static async deleteTeamFromOrg(org: string, teamSlug: string) {
+    const response = await APIHelper.githubRequest(
+      "DELETE",
+      GITHUB_API_ENDPOINTS.deleteTeam(org, teamSlug),
+    );
+    expect([204, 404].includes(response.status())).toBeTruthy();
+  }
+
+  static async addUserToTeam(org: string, teamSlug: string, username: string) {
+    const response = await APIHelper.githubRequest(
+      "PUT",
+      GITHUB_API_ENDPOINTS.teamMembership(org, teamSlug, username),
+      {
+        role: "member",
+      },
+    );
+    expect(response.status() === 200 || response.ok()).toBeTruthy();
+  }
+
+  static async removeUserFromTeam(
+    org: string,
+    teamSlug: string,
+    username: string,
+  ) {
+    const response = await APIHelper.githubRequest(
+      "DELETE",
+      GITHUB_API_ENDPOINTS.teamMembership(org, teamSlug, username),
+    );
+    expect([204, 404].includes(response.status())).toBeTruthy();
+  }
+
+  // Organization membership methods
+  static async addUserToOrg(org: string, username: string) {
+    const response = await APIHelper.githubRequest(
+      "PUT",
+      GITHUB_API_ENDPOINTS.orgMembership(org, username),
+      {
+        role: "member",
+      },
+    );
+    expect(response.status() === 200 || response.ok()).toBeTruthy();
+  }
+
+  static async removeUserFromOrg(org: string, username: string) {
+    const response = await APIHelper.githubRequest(
+      "DELETE",
+      GITHUB_API_ENDPOINTS.orgMembership(org, username),
+    );
+    expect([204, 404].includes(response.status())).toBeTruthy();
   }
 
   static async mergeGitHubPR(

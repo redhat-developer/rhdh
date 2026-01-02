@@ -28,6 +28,15 @@ integrations:
   gitlab:
     - host: gitlab.com
       token: temp
+
+# Events Module configuration
+events:
+  http:
+    topics:
+      - github
+  modules:
+    github:
+      webhookSecret: ${GITHUB_APP_WEBHOOK_SECRET}
 auth:
   environment: development
   session:
