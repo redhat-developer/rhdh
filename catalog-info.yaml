@@ -26,7 +26,7 @@ metadata:
       title: Official documentation
       icon: docs
       type: docs
-    - url: https://issues.redhat.com/browse/RHIDP
+    - url: https://issues.redhat.com/browse/RHDHBUGS
       title: Jira issues
       icon: help
       type: jira
@@ -67,7 +67,7 @@ metadata:
       title: Official documentation
       icon: docs
       type: docs
-    - url: https://issues.redhat.com/browse/RHIDP
+    - url: https://issues.redhat.com/browse/RHDHBUGS
       title: Jira issues
       icon: help
       type: jira
