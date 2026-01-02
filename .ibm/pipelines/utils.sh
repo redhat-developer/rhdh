@@ -5,6 +5,10 @@ source "${DIR}/reporting.sh"
 # shellcheck source=.ibm/pipelines/lib/log.sh
 source "${DIR}/lib/log.sh"
 
+# Constants
+OPENSHIFT_OPERATORS_NAMESPACE="openshift-operators"
+TEKTON_PIPELINES_WEBHOOK="tekton-pipelines-webhook"
+
 retrieve_pod_logs() {
   local pod_name=$1
   local container=$2
@@ -966,8 +970,8 @@ cluster_setup_ocp_helm() {
 
   # Wait for OpenShift Pipelines to be ready before proceeding
   log::info "Waiting for OpenShift Pipelines to be ready..."
-  k8s_wait::deployment "openshift-operators" "pipelines" 30 10 || return 1
-  k8s_wait::endpoint "tekton-pipelines-webhook" "openshift-pipelines" 1800 10 || return 1
+  k8s_wait::deployment "${OPENSHIFT_OPERATORS_NAMESPACE}" "pipelines" 30 10 || return 1
+  k8s_wait::endpoint "${TEKTON_PIPELINES_WEBHOOK}" "openshift-pipelines" 1800 10 || return 1
 
   operator::install_postgres_ocp
 
@@ -984,8 +988,8 @@ cluster_setup_ocp_operator() {
 
   # Wait for OpenShift Pipelines to be ready before proceeding
   log::info "Waiting for OpenShift Pipelines to be ready..."
-  k8s_wait::deployment "openshift-operators" "pipelines" 30 10 || return 1
-  k8s_wait::endpoint "tekton-pipelines-webhook" "openshift-pipelines" 1800 10 || return 1
+  k8s_wait::deployment "${OPENSHIFT_OPERATORS_NAMESPACE}" "pipelines" 30 10 || return 1
+  k8s_wait::endpoint "${TEKTON_PIPELINES_WEBHOOK}" "openshift-pipelines" 1800 10 || return 1
 
   operator::install_postgres_ocp
   operator::install_serverless
