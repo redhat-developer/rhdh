@@ -1,11 +1,10 @@
-import { test, expect, Page, BrowserContext } from "@playwright/test";
+import { test, expect, Page } from "@playwright/test";
 import { Common, setupBrowser } from "../utils/common";
 import { UIhelper } from "../utils/ui-helper";
 import { APIHelper } from "../utils/api-helper";
 import { GitHubEventsHelper } from "../support/api/github-events";
 
 let page: Page;
-let context: BrowserContext;
 
 test.describe("GitHub Events Module", () => {
   let common: Common;
@@ -18,7 +17,7 @@ test.describe("GitHub Events Module", () => {
       description: "integration",
     });
 
-    ({ page, context } = await setupBrowser(browser, testInfo));
+    page = (await setupBrowser(browser, testInfo)).page;
     common = new Common(page);
     uiHelper = new UIhelper(page);
     eventsHelper = await GitHubEventsHelper.build();
@@ -129,7 +128,7 @@ test.describe("GitHub Events Module", () => {
       });
     });
 
-    test.skip("Deleting an entity from the catalog", async () => {
+    test("Deleting an entity from the catalog", async () => {
       // Step 1: Delete the catalog-info.yaml file
       await APIHelper.deleteFileInRepo(
         catalogRepoDetails.owner,
@@ -164,11 +163,7 @@ test.describe("GitHub Events Module", () => {
 
       test.afterEach(async () => {
         if (teamCreated) {
-          try {
-            await APIHelper.deleteTeamFromOrg("janus-test", "test-team");
-          } catch (error) {
-            console.log("Team already deleted or doesn't exist");
-          }
+          await APIHelper.deleteTeamFromOrg("janus-test", "test-team");
           teamCreated = false;
         }
       });
@@ -228,24 +223,16 @@ test.describe("GitHub Events Module", () => {
 
       test.afterEach(async () => {
         if (userAddedToTeam) {
-          try {
             await APIHelper.removeUserFromTeam(
               "janus-test",
               "test-team",
               "test-user",
             );
-          } catch (error) {
-            console.log("User already removed or doesn't exist");
-          }
           userAddedToTeam = false;
         }
 
         if (teamCreated) {
-          try {
-            await APIHelper.deleteTeamFromOrg("janus-test", "test-team");
-          } catch (error) {
-            console.log("Team already deleted or doesn't exist");
-          }
+          await APIHelper.deleteTeamFromOrg("janus-test", "test-team");
           teamCreated = false;
         }
       });
