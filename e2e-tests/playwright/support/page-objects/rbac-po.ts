@@ -281,6 +281,19 @@ export class RbacPo extends PageObject {
     await this.verifyPermissionPoliciesHeader(policies.length);
     await this.create();
 
+    // Check for error alert first
+    const errorAlert = this.page
+      .getByRole("alert")
+      .filter({ hasText: /error/i });
+    const errorCount = await errorAlert.count();
+
+    if (errorCount > 0) {
+      const errorMessage = await errorAlert.textContent();
+      throw new Error(
+        `Failed to create role: ${errorMessage}. This may indicate insufficient permissions.`,
+      );
+    }
+
     // Wait for success message before proceeding to roles list
     await this.uiHelper.verifyText(
       `Role role:default/${name} created successfully`,

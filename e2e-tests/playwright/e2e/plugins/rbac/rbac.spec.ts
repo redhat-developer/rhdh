@@ -380,11 +380,8 @@ test.describe("Test RBAC", () => {
       await expect(nextButton).toBeEnabled();
       await uiHelper.clickButton("Next");
       // Wait for review step to be ready
-      await expect(
-        page
-          .getByRole("heading", { name: /Review/i })
-          .or(page.getByRole("button", { name: "Save" })),
-      ).toBeVisible();
+      await expect(page.getByRole("button", { name: "Save" })).toBeVisible();
+      await expect(page.getByRole("button", { name: "Save" })).toBeEnabled();
       await uiHelper.clickButton("Save");
       await uiHelper.verifyText(
         "Role role:default/test-role updated successfully",
@@ -453,12 +450,16 @@ test.describe("Test RBAC", () => {
       await uiHelper.verifyHeading("Edit Role");
       await rbacPo.selectPluginsCombobox.click();
       await rbacPo.selectOption("scaffolder");
-      // Use more specific selector for the permission dropdown
+
+      // Close the plugins dropdown to access the permissions table
+      await page.getByRole("button", { name: "Close" }).click();
+
+      // Expand the Scaffolder row to access its permissions
       await page
-        .getByRole("button", { name: /Select/i })
-        .or(page.getByPlaceholder(/Select/i))
-        .first()
+        .getByRole("row", { name: /Scaffolder/i })
+        .getByRole("button", { name: "expand row" })
         .click();
+
       await rbacPo.selectPermissionCheckbox("scaffolder.template.parameter");
       await uiHelper.clickButton("Next");
       // Wait for review step to be ready
@@ -786,11 +787,8 @@ test.describe("Test RBAC", () => {
       await expect(nextButton).toBeEnabled();
       await uiHelper.clickButton("Next");
       // Wait for review step to be ready
-      await expect(
-        page
-          .getByRole("heading", { name: /Review/i })
-          .or(page.getByRole("button", { name: "Save" })),
-      ).toBeVisible();
+      await expect(page.getByRole("button", { name: "Save" })).toBeVisible();
+      await expect(page.getByRole("button", { name: "Save" })).toBeEnabled();
       await uiHelper.clickButton("Save");
       await uiHelper.verifyText(
         "Role role:default/test-role updated successfully",

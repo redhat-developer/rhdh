@@ -9,8 +9,9 @@ export class CatalogUsersPO {
     // These links point to /catalog/{namespace}/user/{username}
     return page
       .getByRole("table")
+      .first() // Scope to the first table (users table), not pagination table
       .getByRole("rowgroup")
-      .last() // tbody is the last rowgroup (thead is first)
+      .nth(1) // Second rowgroup (data rows), 0-indexed: 0=header, 1=data
       .getByRole("cell")
       .getByRole("link");
   }

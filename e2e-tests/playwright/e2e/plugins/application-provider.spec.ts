@@ -29,7 +29,7 @@ test.describe("Test ApplicationProvider", () => {
     await uiHelper.verifyTextinCard("Context one", "Context one");
 
     // Get all card containers (children of the main grid)
-    const allCards = page.locator("main article > div:first-child > div");
+    const allCards = page.locator("main article").last().locator("> div > div");
 
     // Context one cards are index 0 and 1
     const firstContextOneCard = allCards.nth(0);
