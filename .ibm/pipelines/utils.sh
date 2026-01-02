@@ -1744,17 +1744,34 @@ enable_orchestrator_plugins_op() {
     return 1
   fi
 
-  # Find and extract default configmap
-  log::info "Finding default dynamic plugins configmap..."
+  # Wait for and find default configmap created by the operator
+  log::info "Waiting for default dynamic plugins configmap to be created by operator..."
   local default_cm
-  default_cm=$(oc get cm -n "$namespace" --no-headers | grep "backstage-dynamic-plugins" | awk '{print $1}' | head -1)
+  local max_attempts=30  # 30 attempts * 5 seconds = 2.5 minutes
+  local attempt=0
+  
+  while [[ $attempt -lt $max_attempts ]]; do
+    default_cm=$(oc get cm -n "$namespace" --no-headers 2>/dev/null | grep "backstage-dynamic-plugins" | awk '{print $1}' | head -1)
+    
+    if [[ -n "$default_cm" ]]; then
+      log::info "Found default configmap: $default_cm"
+      break
+    fi
+    
+    attempt=$((attempt + 1))
+    if [[ $attempt -lt $max_attempts ]]; then
+      log::debug "Attempt $attempt/$max_attempts: Waiting for default configmap..."
+      sleep 5
+    fi
+  done
 
   if [[ -z "$default_cm" ]]; then
-    log::error "Error: No default configmap found matching pattern 'backstage-dynamic-plugins-'"
+    log::error "Error: No default configmap found matching pattern 'backstage-dynamic-plugins-' after waiting"
+    log::info "Available configmaps in namespace $namespace:"
+    oc get cm -n "$namespace" --no-headers | head -20
     return 1
   fi
 
-  log::info "Found default configmap: $default_cm"
   if ! oc get cm "$default_cm" -n "$namespace" -o json | jq '.data."dynamic-plugins.yaml"' -r > "$work_dir/default-plugins.yaml"; then
     log::error "Error: Failed to extract $default_cm configmap"
     return 1
