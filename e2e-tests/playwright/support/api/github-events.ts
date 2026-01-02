@@ -9,7 +9,10 @@ export class GitHubEventsHelper {
 
   private constructor() {
     this.eventsUrl = `${playwrightConfig.use.baseURL}/api/events/http/github`;
-    this.webhookSecret = process.env.GITHUB_WEBHOOK_SECRET || process.env.GITHUB_APP_WEBHOOK_SECRET || "";
+    this.webhookSecret =
+      process.env.GITHUB_WEBHOOK_SECRET ||
+      process.env.GITHUB_APP_WEBHOOK_SECRET ||
+      "";
   }
 
   public static async build(): Promise<GitHubEventsHelper> {
@@ -31,7 +34,7 @@ export class GitHubEventsHelper {
     return await this.myContext.post(this.eventsUrl, {
       data: payloadString,
       headers: {
-        "Accept": "*/*",
+        Accept: "*/*",
         "Content-Type": "application/json",
         "User-Agent": "GitHub-Hookshot/test",
         "X-GitHub-Delivery": crypto.randomUUID(),
@@ -49,7 +52,7 @@ export class GitHubEventsHelper {
 
   public async sendPushEvent(
     repo: string,
-    catalogAction: "added" | "modified" | "removed" = "modified"
+    catalogAction: "added" | "modified" | "removed" = "modified",
   ): Promise<APIResponse> {
     const payload = this.createPushPayload(repo, catalogAction);
     return await this.sendWebhookEvent("push", payload);
@@ -70,7 +73,12 @@ export class GitHubEventsHelper {
     teamName: string,
     orgName: string,
   ): Promise<APIResponse> {
-    const payload = this.createMembershipPayload(action, username, teamName, orgName);
+    const payload = this.createMembershipPayload(
+      action,
+      username,
+      teamName,
+      orgName,
+    );
     return await this.sendWebhookEvent("membership", payload);
   }
 
@@ -85,10 +93,10 @@ export class GitHubEventsHelper {
 
   private createPushPayload(
     repo: string,
-    catalogAction: "added" | "modified" | "removed" = "modified"
+    catalogAction: "added" | "modified" | "removed" = "modified",
   ): any {
     const [owner, repoName] = repo.split("/");
-    
+
     // Determine which array gets catalog-info.yaml based on action
     const catalogFile = "catalog-info.yaml";
     const commitFiles = {
@@ -96,16 +104,16 @@ export class GitHubEventsHelper {
       removed: catalogAction === "removed" ? [catalogFile] : [],
       modified: catalogAction === "modified" ? [catalogFile] : [],
     };
-    
+
     // Update commit message based on action
     const commitMessages = {
       added: "Add catalog-info.yaml",
       modified: "Update catalog-info.yaml",
       removed: "Remove catalog-info.yaml",
     };
-    
+
     return {
-      "ref": "refs/heads/main",
+      ref: "refs/heads/main",
       before: "0000000000000000000000000000000000000000",
       after: crypto.randomUUID().substring(0, 40).replace(/-/g, "0"),
       repository: {
@@ -172,8 +180,8 @@ export class GitHubEventsHelper {
             date: new Date().toISOString(),
             username: "web-flow",
           },
-          added: commitFiles.added,      
-          removed: commitFiles.removed,  
+          added: commitFiles.added,
+          removed: commitFiles.removed,
           modified: commitFiles.modified,
         },
       ],
@@ -203,7 +211,11 @@ export class GitHubEventsHelper {
     };
   }
 
-  private createTeamPayload(action: string, teamName: string, orgName: string): any {
+  private createTeamPayload(
+    action: string,
+    teamName: string,
+    orgName: string,
+  ): any {
     const slug = teamName.toLowerCase().replace(/\s+/g, "-");
     const orgId = Math.floor(Math.random() * 1000000);
     const teamId = Math.floor(Math.random() * 100000000);
@@ -335,7 +347,11 @@ export class GitHubEventsHelper {
     };
   }
 
-  private createOrganizationPayload(action: string, username: string, orgName: string): any {
+  private createOrganizationPayload(
+    action: string,
+    username: string,
+    orgName: string,
+  ): any {
     const orgId = Math.floor(Math.random() * 1000000);
     const userId = Math.floor(Math.random() * 1000000);
     return {
@@ -398,5 +414,3 @@ export class GitHubEventsHelper {
     };
   }
 }
-
-

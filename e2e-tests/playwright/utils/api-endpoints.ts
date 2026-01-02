@@ -30,7 +30,7 @@ export const GITHUB_API_ENDPOINTS = {
     `${getRepoUrl(owner, repoName)}/contents`,
 
   createTeam: (org: string) => `${getOrgUrl(org)}/teams`,
-  
+
   deleteTeam: (org: string, teamSlug: string) =>
     `${getOrgUrl(org)}/teams/${teamSlug}`,
 

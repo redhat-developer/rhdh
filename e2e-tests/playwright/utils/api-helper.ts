@@ -104,15 +104,15 @@ export class APIHelper {
   ) {
     const getFileResponse = await APIHelper.githubRequest(
       "GET",
-      `${GITHUB_API_ENDPOINTS.contents(owner, repoName)}/${filePath}?ref=main`
+      `${GITHUB_API_ENDPOINTS.contents(owner, repoName)}/${filePath}?ref=main`,
     );
-    
+
     if (!getFileResponse.ok()) {
       throw new Error(`File ${filePath} not found in ${owner}/${repoName}`);
     }
-    
+
     const fileData = await getFileResponse.json();
-    
+
     const encodedContent = Buffer.from(content).toString("base64");
     const response = await APIHelper.githubRequest(
       "PUT",
@@ -135,21 +135,21 @@ export class APIHelper {
   ) {
     const getFileResponse = await APIHelper.githubRequest(
       "GET",
-      `${GITHUB_API_ENDPOINTS.contents(owner, repoName)}/${filePath}?ref=main`
+      `${GITHUB_API_ENDPOINTS.contents(owner, repoName)}/${filePath}?ref=main`,
     );
-    
+
     if (!getFileResponse.ok()) {
       throw new Error(`File ${filePath} not found in ${owner}/${repoName}`);
     }
-    
+
     const fileData = await getFileResponse.json();
-    
+
     const response = await APIHelper.githubRequest(
       "DELETE",
       `${GITHUB_API_ENDPOINTS.contents(owner, repoName)}/${filePath}`,
       {
         message: commitMessage,
-        sha: fileData.sha, 
+        sha: fileData.sha,
         branch: "main",
       },
     );
@@ -200,10 +200,7 @@ export class APIHelper {
     );
   }
 
-  static async createTeamInOrg(
-    org: string,
-    teamName: string,
-  ) {
+  static async createTeamInOrg(org: string, teamName: string) {
     const response = await APIHelper.githubRequest(
       "POST",
       GITHUB_API_ENDPOINTS.createTeam(org),

@@ -89,7 +89,7 @@ integrations:
 events:
   http:
     topics:
-          - github
+      - github
   modules:
     github:
       webhookSecret: ${GITHUB_APP_WEBHOOK_SECRET}
