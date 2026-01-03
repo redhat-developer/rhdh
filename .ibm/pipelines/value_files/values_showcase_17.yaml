@@ -358,6 +358,31 @@ upstream:
       repository: fedora/postgresql-16
       tag: latest
     primary:
+      # podSecurityContext:
+      #   enabled: false
+      # containerSecurityContext:
+      #   enabled: false
+      #   allowPrivilegeEscalation: false
+      #   capabilities:
+      #     drop:
+      #       - ALL
+      # resources:
+      #   requests:
+      #     cpu: 250m
+      #     memory: 256Mi
+      #   limits:
+      #     cpu: 250m
+      #     memory: 1024Mi
+      #     ephemeral-storage: 20Mi
+      # persistence:
+      #   enabled: true
+      #   size: 1Gi
+      #   mountPath: /var/lib/pgsql/data
       extraEnvVars:
         - name: POSTGRESQL_UPGRADE
           value: "copy"
+        - name: POSTGRESQL_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: postgres-password
+              name: '{{- include "postgresql.v1.secretName" . }}'
