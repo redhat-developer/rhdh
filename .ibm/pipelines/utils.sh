@@ -947,8 +947,8 @@ cluster_setup_ocp_helm() {
 
   # Skip orchestrator infra installation on OSD-GCP due to infrastructure limitations
   if [[ ! "${JOB_NAME}" =~ osd-gcp ]]; then
-    echo "skipping install_orchestrator_infra_chart"
-    # install_orchestrator_infra_chart
+    # echo "skipping install_orchestrator_infra_chart"
+    install_orchestrator_infra_chart
   else
     echo "Skipping orchestrator-infra installation on OSD-GCP environment"
   fi
