@@ -28,6 +28,16 @@ test.describe("GitHub Events Module", () => {
     );
   });
 
+  test("Events endpoint accepts webhook payloads", async () => {
+    const response = await eventsHelper.sendPushEvent(
+      "janus-test/test-repo-verification",
+      "modified",
+    );
+
+    expect(response.status()).toBe(202);
+    expect(response.ok()).toBeTruthy();
+  });
+
   test.describe("GitHub Discovery", () => {
     let catalogRepoName: string;
     let catalogRepoDetails: {
