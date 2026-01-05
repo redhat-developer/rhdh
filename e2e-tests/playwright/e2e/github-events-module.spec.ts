@@ -40,7 +40,7 @@ test.describe("GitHub Events Module", () => {
     test.beforeEach(async () => {
       // Before Test: Create a real GitHub repository with catalog-info.yaml
       catalogRepoName = `janus-test-github-events-test-${Date.now()}`;
-      const catalogRepoDetails = {
+      catalogRepoDetails = {
         name: catalogRepoName,
         url: `github.com/janus-test/${catalogRepoName}`,
         org: "github.com/janus-test",
