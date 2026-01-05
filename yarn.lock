@@ -18759,7 +18759,7 @@ __metadata:
     "@types/node": 22.19.1
     "@types/react": 18.3.27
     "@types/react-dom": 18.3.7
-    eslint-plugin-unused-imports: ^4.1.4
+    eslint-plugin-unused-imports: ^4.3.0
     lodash: 4.17.21
     prettier: 3.7.4
     react: 18.3.1
@@ -23572,6 +23572,19 @@ __metadata:
     "@typescript-eslint/eslint-plugin":
       optional: true
   checksum: 1f4ce3e3972699345513840f3af1b783033dbc3a3e85b62ce12b3f6a89fd8c92afe46d0c00af40bacb14465445983ba0ccc326a6fd5132553061fb0e47bcba19
+  languageName: node
+  linkType: hard
+
+"eslint-plugin-unused-imports@npm:^4.3.0":
+  version: 4.3.0
+  resolution: "eslint-plugin-unused-imports@npm:4.3.0"
+  peerDependencies:
+    "@typescript-eslint/eslint-plugin": ^8.0.0-0 || ^7.0.0 || ^6.0.0 || ^5.0.0
+    eslint: ^9.0.0 || ^8.0.0
+  peerDependenciesMeta:
+    "@typescript-eslint/eslint-plugin":
+      optional: true
+  checksum: e03d2399f429a865c156a2f76de40060f8b290f4e2626a6102a1bac22ccea5ac42eb63280b3b1abe5c32eccc8e90dd2ce27f8066f62bb4ffb0fe6754612eceb1
   languageName: node
   linkType: hard
 
