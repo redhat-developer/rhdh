@@ -18,6 +18,7 @@ metadata:
     argocd/app-name: 'janus-idp'
     backstage.io/kubernetes-id: 'janus-idp'
     github.com/project-slug: redhat-developer/rhdh
+    jira/project-key: RHIDP
     quay.io/repository-slug: rhdh-community/rhdh
     backstage.io/techdocs-ref: url:https://github.com/redhat-developer/rhdh
     backstage.io/kubernetes-namespace: janus-idp-prod
