@@ -52,6 +52,25 @@ k8s_wait::deployment() {
 
     if ((i == max_attempts)); then
       log::error "Timeout waiting for resource '$resource_name' in namespace '$namespace' after ${timeout_minutes} minutes"
+      log::info "Collecting diagnostic information..."
+
+      # Show pod status
+      log::info "Pod status:"
+      oc get pods -n "$namespace" | grep "$resource_name" || log::warn "No pods found"
+
+      # Show pod description if pod exists
+      if [[ -n "$pod_name" ]]; then
+        log::info "Pod description (last 30 lines):"
+        oc describe pod "$pod_name" -n "$namespace" | tail -30
+
+        log::info "Pod logs (last 50 lines):"
+        oc logs "$pod_name" -n "$namespace" --tail=50 2>&1 || log::warn "Could not retrieve logs"
+      fi
+
+      # Show recent events
+      log::info "Recent events in namespace:"
+      oc get events -n "$namespace" --sort-by='.lastTimestamp' | grep "$resource_name" | tail -10 || log::warn "No events found"
+
       return 1
     fi
 
