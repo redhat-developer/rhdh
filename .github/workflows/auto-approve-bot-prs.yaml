@@ -32,10 +32,10 @@ jobs:
   auto-approve:
     name: Auto-Approve and Label PRs
     runs-on: ubuntu-latest
-    
+
     # Only run if PR is from rhdh-bot
     if: github.event.pull_request.user.login == 'rhdh-bot'
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -45,22 +45,22 @@ jobs:
         run: |
           PR_BRANCH="${{ github.event.pull_request.head.ref }}"
           PR_DRAFT="${{ github.event.pull_request.draft }}"
-          
+
           # Don't auto-approve draft PRs
           if [[ "$PR_DRAFT" == "true" ]]; then
             echo "eligible=false" >> $GITHUB_OUTPUT
             echo "reason=PR is in draft state" >> $GITHUB_OUTPUT
             exit 0
           fi
-          
+
           # Labels will be added automatically if eligible
-          
+
           # Define branch patterns that are eligible for auto-approval
           # Add more patterns as needed
           ELIGIBLE_PATTERNS=(
             "^chore/automated-.*"
           )
-          
+
           ELIGIBLE=false
           for pattern in "${ELIGIBLE_PATTERNS[@]}"; do
             if [[ "$PR_BRANCH" =~ $pattern ]]; then
@@ -68,7 +68,7 @@ jobs:
               break
             fi
           done
-          
+
           if [[ "$ELIGIBLE" == "true" ]]; then
             echo "eligible=true" >> $GITHUB_OUTPUT
           else
@@ -89,6 +89,8 @@ jobs:
             --body "**Auto-Approved**
 
           This PR has been automatically approved by the auto-approve workflow.
+
+          /override ci/prow/e2e-ocp-helm
 
           **Labels Added:** \`lgtm\`, \`approved\`"
         env:
