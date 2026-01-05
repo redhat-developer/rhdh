@@ -15,12 +15,12 @@
  */
 
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
-import { userSettingsTranslationRef } from '@backstage/plugin-user-settings/alpha';
+import { searchTranslationRef } from '@backstage/plugin-search/alpha';
 
 export default createTranslationMessages({
-  ref: userSettingsTranslationRef,
+  ref: searchTranslationRef,
   full: false,
   messages: {
-    sidebarTitle: 'Impostazioni',
+    'sidebarSearchModal.title': '検索',
   },
 });

@@ -21,6 +21,6 @@ export default createTranslationMessages({
   ref: userSettingsTranslationRef,
   full: false,
   messages: {
-    sidebarTitle: 'Impostazioni',
+    sidebarTitle: '設定',
   },
 });

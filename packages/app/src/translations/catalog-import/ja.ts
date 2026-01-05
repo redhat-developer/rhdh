@@ -15,12 +15,13 @@
  */
 
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
-import { userSettingsTranslationRef } from '@backstage/plugin-user-settings/alpha';
+import { catalogImportTranslationRef } from '@backstage/plugin-catalog-import/alpha';
 
 export default createTranslationMessages({
-  ref: userSettingsTranslationRef,
+  ref: catalogImportTranslationRef,
   full: false,
   messages: {
-    sidebarTitle: 'Impostazioni',
+    'defaultImportPage.headerTitle': '既存の Git リポジトリーのインポート',
+    'importInfoCard.title': '既存の Git リポジトリーのインポート',
   },
 });
