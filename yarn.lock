@@ -18766,7 +18766,7 @@ __metadata:
     react-dom: 18.3.1
     react-router-dom: 6.30.2
     react-use: 17.6.0
-    tss-react: 4.9.19
+    tss-react: 4.9.20
     typescript: 5.9.3
   languageName: unknown
   linkType: soft
@@ -37609,9 +37609,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tss-react@npm:4.9.19":
-  version: 4.9.19
-  resolution: "tss-react@npm:4.9.19"
+"tss-react@npm:4.9.20":
+  version: 4.9.20
+  resolution: "tss-react@npm:4.9.20"
   dependencies:
     "@emotion/cache": "*"
     "@emotion/serialize": "*"
@@ -37627,7 +37627,7 @@ __metadata:
       optional: true
     "@mui/material":
       optional: true
-  checksum: 1e29114220d26aa3a30c05f372f61bd876a0a4eb5482b8cd16a13c9783d1ad5c33bc15cf379d467965dc98ad7c528c9165c816c26958032761dea05296e78466
+  checksum: ef2a62b4c3c07239d6cdb3d2ab855efc6c2469423e89381d530ca4fc62cbac4b9af8e8196539f02ed4e06918f615ceab2834689af4b97a47d5275295ab399af0
   languageName: node
   linkType: hard
 
