@@ -1716,7 +1716,10 @@ wait_for_backstage_resource() {
   return 1
 }
 
-# Helper function to enable orchestrator plugins by merging default and custom dynamic plugins
+# Helper function to enable orchestrator plugins
+# Note: Since we specify dynamicPluginsConfigMapName in the Backstage CR,
+# the operator doesn't create a default backstage-dynamic-plugins-* configmap.
+# We just need to wait for the deployment to be ready.
 enable_orchestrator_plugins_op() {
   local namespace=$1
 
@@ -1727,106 +1730,11 @@ enable_orchestrator_plugins_op() {
     return 1
   fi
 
-  log::info "Enabling orchestrator plugins in namespace: $namespace"
+  log::info "Orchestrator plugins are configured via dynamic-plugins configmap"
+  log::info "Waiting for backstage resource to exist in namespace: $namespace"
 
   # Wait for backstage resource to exist
   wait_for_backstage_resource "$namespace"
-  sleep 5
 
-  # Setup working directory
-  local work_dir="/tmp/orchestrator-plugins-merge"
-  rm -rf "$work_dir" && mkdir -p "$work_dir"
-
-  # Extract custom dynamic plugins configmap
-  log::info "Extracting custom dynamic plugins configmap..."
-  if ! oc get cm dynamic-plugins -n "$namespace" -o json | jq '.data."dynamic-plugins.yaml"' -r > "$work_dir/custom-plugins.yaml"; then
-    log::error "Error: Failed to extract dynamic-plugins configmap"
-    return 1
-  fi
-
-  # Wait for and find default configmap created by the operator
-  log::info "Waiting for default dynamic plugins configmap to be created by operator..."
-  local default_cm
-  local max_attempts=30 # 30 attempts * 5 seconds = 2.5 minutes
-  local attempt=0
-
-  while [[ $attempt -lt $max_attempts ]]; do
-    default_cm=$(oc get cm -n "$namespace" --no-headers 2> /dev/null | grep "backstage-dynamic-plugins" | awk '{print $1}' | head -1)
-
-    if [[ -n "$default_cm" ]]; then
-      log::info "Found default configmap: $default_cm"
-      break
-    fi
-
-    attempt=$((attempt + 1))
-    if [[ $attempt -lt $max_attempts ]]; then
-      log::debug "Attempt $attempt/$max_attempts: Waiting for default configmap..."
-      sleep 5
-    fi
-  done
-
-  if [[ -z "$default_cm" ]]; then
-    log::error "Error: No default configmap found matching pattern 'backstage-dynamic-plugins-' after waiting"
-    log::info "Available configmaps in namespace $namespace:"
-    oc get cm -n "$namespace" --no-headers | head -20
-    return 1
-  fi
-
-  if ! oc get cm "$default_cm" -n "$namespace" -o json | jq '.data."dynamic-plugins.yaml"' -r > "$work_dir/default-plugins.yaml"; then
-    log::error "Error: Failed to extract $default_cm configmap"
-    return 1
-  fi
-
-  # Merge custom and default plugins intelligently
-  log::info "Merging custom and default plugins..."
-
-  # Strategy: Keep custom plugins as-is, only add default plugins that don't exist in custom
-  # This preserves the operator's default plugin states and avoids enabling everything
-
-  # First, extract just the plugins array from default
-  if ! yq eval '.plugins' "$work_dir/default-plugins.yaml" > "$work_dir/default-plugins-array.yaml"; then
-    log::error "Error: Failed to extract default plugins array"
-    return 1
-  fi
-
-  # Merge: custom plugins + default plugins (deduplicated by package name)
-  if ! yq eval-all '
-    select(fileIndex == 0) as $custom |
-    select(fileIndex == 1) as $default |
-    {"plugins": ($custom.plugins + $default) | unique_by(.package)}
-  ' "$work_dir/custom-plugins.yaml" "$work_dir/default-plugins-array.yaml" > "$work_dir/merged-plugins.yaml"; then
-    log::error "Error: Failed to merge plugins"
-    return 1
-  fi
-
-  log::info "Merged plugins successfully (custom plugins take precedence, deduplicated by package name)"
-
-  # Apply new configmap with merged content
-  if ! oc create configmap dynamic-plugins \
-    --from-file="dynamic-plugins.yaml=$work_dir/merged-plugins.yaml" \
-    -n "$namespace" --dry-run=client -o yaml | oc apply -f -; then
-    log::error "Error: Failed to apply updated dynamic-plugins configmap"
-    return 1
-  fi
-
-  # Find and restart backstage deployment
-  log::info "Finding backstage deployment..."
-  local backstage_deployment
-  backstage_deployment=$(oc get deployment -n "$namespace" --no-headers | grep "^backstage-rhdh" | awk '{print $1}' | head -1)
-
-  if [[ -z "$backstage_deployment" ]]; then
-    log::error "Error: No backstage deployment found matching pattern 'backstage-rhdh*'"
-    return 1
-  fi
-
-  log::info "Restarting backstage deployment: $backstage_deployment"
-  if ! oc rollout restart deployment/"$backstage_deployment" -n "$namespace"; then
-    log::error "Error: Failed to restart backstage deployment"
-    return 1
-  fi
-
-  # Cleanup
-  rm -rf "$work_dir"
-
-  log::info "Successfully enabled orchestrator plugins in namespace: $namespace"
+  log::info "Backstage resource is ready with orchestrator plugins configured"
 }
