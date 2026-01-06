@@ -1048,6 +1048,67 @@ perform_helm_install() {
     $(get_image_helm_set_params)
 }
 
+# Refresh PostgreSQL collation versions after a major version upgrade
+# This suppresses the "collation version mismatch" warnings that occur when
+# upgrading PostgreSQL across glibc versions (e.g., 2.34 -> 2.40)
+refresh_postgres_collation_versions() {
+  local namespace=$1
+  local max_wait=${2:-120} # Max seconds to wait for PostgreSQL pod
+
+  log::info "Refreshing PostgreSQL collation versions in namespace: ${namespace}"
+
+  # Find the PostgreSQL pod
+  local pg_pod
+  local waited=0
+  while [[ $waited -lt $max_wait ]]; do
+    pg_pod=$(oc get pods -n "${namespace}" -l "app.kubernetes.io/name=postgresql" -o jsonpath='{.items[0].metadata.name}' 2> /dev/null)
+    if [[ -n "$pg_pod" ]]; then
+      # Check if pod is ready
+      local ready
+      ready=$(oc get pod -n "${namespace}" "${pg_pod}" -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' 2> /dev/null)
+      if [[ "$ready" == "True" ]]; then
+        break
+      fi
+    fi
+    log::debug "Waiting for PostgreSQL pod to be ready... (${waited}s/${max_wait}s)"
+    sleep 5
+    waited=$((waited + 5))
+  done
+
+  if [[ -z "$pg_pod" ]]; then
+    log::warn "No PostgreSQL pod found in namespace ${namespace}. Skipping collation refresh."
+    return 0
+  fi
+
+  log::info "Found PostgreSQL pod: ${pg_pod}"
+
+  # Get list of databases (excluding templates)
+  local databases
+  databases=$(oc exec -n "${namespace}" "${pg_pod}" -- psql -U postgres -t -c \
+    "SELECT datname FROM pg_database WHERE datistemplate = false AND datname NOT IN ('postgres');" 2> /dev/null | tr -d ' ')
+
+  # Refresh collation version for postgres database first
+  log::info "Refreshing collation version for database: postgres"
+  oc exec -n "${namespace}" "${pg_pod}" -- psql -U postgres -c \
+    "ALTER DATABASE postgres REFRESH COLLATION VERSION;" 2> /dev/null || log::warn "Failed to refresh collation for postgres"
+
+  # Refresh collation version for template1
+  log::info "Refreshing collation version for database: template1"
+  oc exec -n "${namespace}" "${pg_pod}" -- psql -U postgres -c \
+    "ALTER DATABASE template1 REFRESH COLLATION VERSION;" 2> /dev/null || log::warn "Failed to refresh collation for template1"
+
+  # Refresh collation version for user databases
+  for db in $databases; do
+    if [[ -n "$db" ]]; then
+      log::info "Refreshing collation version for database: ${db}"
+      oc exec -n "${namespace}" "${pg_pod}" -- psql -U postgres -c \
+        "ALTER DATABASE \"${db}\" REFRESH COLLATION VERSION;" 2> /dev/null || log::warn "Failed to refresh collation for ${db}"
+    fi
+  done
+
+  log::info "Collation version refresh completed for namespace: ${namespace}"
+}
+
 base_deployment() {
   configure_namespace ${NAME_SPACE}
 

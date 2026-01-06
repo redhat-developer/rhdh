@@ -25,6 +25,10 @@ handle_ocp_pull() {
   # Perform PostgreSQL 15 -> 16 upgrade
   perform_helm_install "${RELEASE_NAME}" "${NAME_SPACE}" "values_showcase_16_upgrade.yaml"
   check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${PW_PROJECT_SHOWCASE}" "${url}"
+
+  # Refresh collation versions after PostgreSQL upgrade to suppress glibc version mismatch warnings
+  refresh_postgres_collation_versions "${NAME_SPACE}"
+
   perform_helm_install "${RELEASE_NAME}" "${NAME_SPACE}" "values_showcase_16.yaml"
   check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${PW_PROJECT_SHOWCASE}" "${url}"
   run_tests "${RELEASE_NAME}" "${NAME_SPACE}" "${PW_PROJECT_SHOWCASE}" "${url}"
