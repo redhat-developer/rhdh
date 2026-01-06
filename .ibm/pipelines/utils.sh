@@ -1780,23 +1780,26 @@ enable_orchestrator_plugins_op() {
   # Merge custom and default plugins intelligently
   log::info "Merging custom and default plugins..."
 
-  # Strategy: Keep custom plugins as-is, only add default plugins that don't conflict
+  # Strategy: Keep custom plugins as-is, only add default plugins that don't exist in custom
   # This preserves the operator's default plugin states and avoids enabling everything
+
+  # First, extract just the plugins array from default
+  if ! yq eval '.plugins' "$work_dir/default-plugins.yaml" > "$work_dir/default-plugins-array.yaml"; then
+    log::error "Error: Failed to extract default plugins array"
+    return 1
+  fi
+
+  # Merge: custom plugins + default plugins (deduplicated by package name)
   if ! yq eval-all '
     select(fileIndex == 0) as $custom |
     select(fileIndex == 1) as $default |
-    {
-      "plugins": (
-        $custom.plugins + 
-        ($default.plugins | map(select(.package as $pkg | $custom.plugins | all(.package != $pkg))))
-      )
-    }
-  ' "$work_dir/custom-plugins.yaml" "$work_dir/default-plugins.yaml" > "$work_dir/merged-plugins.yaml"; then
+    {"plugins": ($custom.plugins + $default) | unique_by(.package)}
+  ' "$work_dir/custom-plugins.yaml" "$work_dir/default-plugins-array.yaml" > "$work_dir/merged-plugins.yaml"; then
     log::error "Error: Failed to merge plugins"
     return 1
   fi
 
-  log::info "Merged plugins successfully (custom plugins take precedence)"
+  log::info "Merged plugins successfully (custom plugins take precedence, deduplicated by package name)"
 
   # Apply new configmap with merged content
   if ! oc create configmap dynamic-plugins \
