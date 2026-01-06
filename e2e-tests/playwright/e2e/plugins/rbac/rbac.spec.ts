@@ -378,11 +378,12 @@ test.describe("Test RBAC", () => {
       const nextButton = page.getByTestId("nextButton-2").first();
       await expect(nextButton).toBeVisible();
       await expect(nextButton).toBeEnabled();
-      await uiHelper.clickButton("Next");
+      await nextButton.click();
       // Wait for review step to be ready
-      await expect(page.getByRole("button", { name: "Save" })).toBeVisible();
-      await expect(page.getByRole("button", { name: "Save" })).toBeEnabled();
-      await uiHelper.clickButton("Save");
+      const saveButton = page.getByRole("button", { name: "Save" });
+      await expect(saveButton).toBeVisible();
+      await expect(saveButton).toBeEnabled();
+      await saveButton.click();
       await uiHelper.verifyText(
         "Role role:default/test-role updated successfully",
       );
@@ -785,11 +786,12 @@ test.describe("Test RBAC", () => {
       const nextButton = page.getByTestId("nextButton-2").first();
       await expect(nextButton).toBeVisible();
       await expect(nextButton).toBeEnabled();
-      await uiHelper.clickButton("Next");
+      await nextButton.click();
       // Wait for review step to be ready
-      await expect(page.getByRole("button", { name: "Save" })).toBeVisible();
-      await expect(page.getByRole("button", { name: "Save" })).toBeEnabled();
-      await uiHelper.clickButton("Save");
+      const saveButton = page.getByRole("button", { name: "Save" });
+      await expect(saveButton).toBeVisible();
+      await expect(saveButton).toBeEnabled();
+      await saveButton.click();
       await uiHelper.verifyText(
         "Role role:default/test-role updated successfully",
       );

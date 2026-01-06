@@ -29,8 +29,7 @@ test.describe("Learning Paths", () => {
     // Scope to main content area to get only Learning Path links
     const learningPathLinks = page.getByRole("main").getByRole("link");
 
-    for (let i = 0; i < 5; i++) {
-      const learningPathCard = learningPathLinks.nth(i);
+    for (const learningPathCard of await learningPathLinks.all()) {
       await expect(learningPathCard).toBeVisible();
       await expect(learningPathCard).toHaveAttribute("target", "_blank");
       await expect(learningPathCard).not.toHaveAttribute("href", "");

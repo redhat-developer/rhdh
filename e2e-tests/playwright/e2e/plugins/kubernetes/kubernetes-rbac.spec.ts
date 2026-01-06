@@ -69,7 +69,7 @@ test.describe("Test Kubernetes Plugin", () => {
 
       await expect(
         page
-          .getByRole("heading", { level: 6 })
+          .getByRole("heading")
           .filter({ hasText: "Warning: Permission required" }),
       ).toBeVisible();
     });

@@ -558,16 +558,19 @@ export class UIhelper {
   async verifyButtonURL(
     label: string | RegExp,
     url: string | RegExp,
-    options: { locator?: string; exact?: boolean } = {
+    options: { locator?: string | Locator; exact?: boolean } = {
       locator: "",
       exact: true,
     },
   ) {
     // To verify the button URL if it is in a specific locator
+    // Now supports both CSS selector strings and Locator objects
     const baseLocator =
       !options.locator || options.locator === ""
         ? this.page
-        : this.page.locator(options.locator);
+        : typeof options.locator === "string"
+          ? this.page.locator(options.locator)
+          : options.locator;
 
     const buttonUrl = await baseLocator
       .getByRole("button", { name: label, exact: options.exact })
