@@ -39,6 +39,15 @@ test.describe.serial("Scorecard Plugin Tests", () => {
     importPage = new ComponentImportPage(page);
     scorecardPage = new ScorecardPage(page);
     await new Common(page).loginAsKeycloakUser();
+
+    // Import the component here instead of the first tests so that they can re-run.
+    // It would be great if this would detect if the component is already imported.
+    await catalog.go();
+    await importPage.startComponentImport();
+    await importPage.analyzeComponent(
+      "https://github.com/rhdh-pai-qe/backstage-catalog/blob/main/catalog-info.yaml",
+    );
+    await importPage.viewImportedComponent();
   });
 
   test.afterAll(async () => {
@@ -51,7 +60,6 @@ test.describe.serial("Scorecard Plugin Tests", () => {
       catalog,
       scorecardPage,
     );
-
     for (const metric of scorecardPage.scorecardMetrics) {
       await scorecardPage.validateScorecardAriaFor(metric);
     }

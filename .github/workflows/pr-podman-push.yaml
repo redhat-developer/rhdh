@@ -132,12 +132,23 @@ jobs:
           username: ${{ secrets.QUAY_USERNAME }}
           password: ${{ secrets.QUAY_TOKEN }}
 
-      - name: Log skip status
+      - name: Comment skip status
         if: ${{ steps.check-skip.outputs.is_skipped == 'true' }}
-        run: |
-          echo "🚫 Image Push Skipped"
-          echo "The container image push was skipped because the build was skipped"
-          echo "(either due to [skip-build] tag or no relevant changes with existing image)"
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        env:
+          PR_NUMBER: ${{ steps.get-pr-info.outputs.pr_number }}
+        with:
+          script: |
+            const prNumber = process.env.PR_NUMBER;
+
+            const body = '🚫 Image Push Skipped.\n\nThe container image push was skipped because the build was skipped (either due to [skip-build] tag or no relevant changes with existing image)\n\n/test e2e-ocp-helm\n';
+
+            github.rest.issues.createComment({
+              issue_number: parseInt(prNumber),
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            })
 
       - name: Comment the image pull link
         if: ${{ steps.check-skip.outputs.is_skipped != 'true' }}
@@ -173,7 +184,7 @@ jobs:
               return `* [\`${fullTag}\`](https://${fullTag})`;
             }).join('\n');
             
-            const body = `The image is available at:\n\n${tagLinks}\n\n`;
+            const body = `The image is available at:\n\n${tagLinks}\n\n/test e2e-ocp-helm\n`;
             
             console.log(`Creating comment for PR ${prNumber} with body:\n ${body}`);
 

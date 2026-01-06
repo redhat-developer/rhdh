@@ -176,7 +176,8 @@ catalog:
         clientId: ${KEYCLOAK_AUTH_CLIENTID}
         clientSecret: ${KEYCLOAK_AUTH_CLIENT_SECRET}
         schedule:
-          frequency: { minutes: 1 }
+          # Let's perform a single execution per test run
+          frequency: { hours: 24 }
           timeout: { minutes: 1 }
       badConfigForMetrics:
         baseUrl: ${KEYCLOAK_AUTH_BASE_URL}/auth
@@ -187,14 +188,15 @@ catalog:
         clientSecret: ABC
         schedule:
           # Let's perform a single execution to trigger the metrics fetch failure counter; next fetch will never happen again.
-          frequency: { minutes: 10000 }
+          frequency: { hours: 24 }
           timeout: { minutes: 1 }
           initialDelay: { seconds: 15 }
     github:
       providerId:
         organization: "${GITHUB_ORG}"
         schedule:
-          frequency: { minutes: 30 }
+          # Let's perform a single execution
+          frequency: { hours: 24 }
           timeout: { minutes: 30 }
     githubOrg:
       id: production
@@ -206,8 +208,9 @@ catalog:
         group: rhdh-qe-test
         host: gitlab.com
         schedule:
+          # Let's perform a single execution per test run
           frequency:
-            minutes: 1
+            hours: 24
           initialDelay:
             seconds: 15
           timeout:

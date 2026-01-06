@@ -3,7 +3,7 @@ import { Common } from "../utils/common";
 import { UIhelper } from "../utils/ui-helper";
 let page: Page;
 
-test.describe.skip("Google signin happy path", () => {
+test.describe("Google signin happy path", () => {
   test.beforeAll(async () => {
     test.info().annotations.push({
       type: "component",

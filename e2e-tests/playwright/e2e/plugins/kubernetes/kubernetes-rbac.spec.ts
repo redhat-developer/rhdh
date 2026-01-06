@@ -5,7 +5,7 @@ import { Catalog } from "../../../support/pages/catalog";
 import { KUBERNETES_COMPONENTS } from "../../../support/page-objects/page-obj";
 import { KubernetesPage } from "../../../support/pages/kubernetes";
 
-test.describe.skip("Test Kubernetes Plugin", () => {
+test.describe("Test Kubernetes Plugin", () => {
   let common: Common;
   let uiHelper: UIhelper;
   let catalog: Catalog;
