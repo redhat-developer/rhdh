@@ -141,9 +141,7 @@ test.describe.skip("GitHub Happy path", async () => {
     await backstageShowcase.verifyPRRows(openPRs, 0, 5);
   });
 
-  test("Click on the CLOSED filter and verify that the 5 most recently updated Closed PRs are rendered (same with ALL)", async ({
-    page,
-  }) => {
+  test("Click on the CLOSED filter and verify that the 5 most recently updated Closed PRs are rendered (same with ALL)", async () => {
     // Use semantic selector and wait for button to be ready (no force needed)
     const closedButton = page.getByRole("button", { name: "CLOSED" });
     await expect(closedButton).toBeVisible();
@@ -154,9 +152,7 @@ test.describe.skip("GitHub Happy path", async () => {
     await backstageShowcase.verifyPRRows(closedPRs, 0, 5);
   });
 
-  test("Click on the arrows to verify that the next/previous/first/last pages of PRs are loaded", async ({
-    page,
-  }) => {
+  test("Click on the arrows to verify that the next/previous/first/last pages of PRs are loaded", async () => {
     console.log("Fetching all PRs from GitHub");
     const allPRs = await BackstageShowcase.getShowcasePRs("all", true);
 
