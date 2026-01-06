@@ -1109,6 +1109,14 @@ rbac_deployment() {
   configure_namespace "${NAME_SPACE_RBAC}"
   configure_external_postgres_db "${NAME_SPACE_RBAC}"
 
+  # Wait for PostgreSQL to be fully ready before deploying RBAC instance
+  # This ensures the sonataflow database creation job can connect immediately
+  log::info "Waiting for external PostgreSQL to be ready..."
+  if ! k8s_wait::deployment "${NAME_SPACE_POSTGRES_DB}" "postgress-external-db" 10 10; then
+    log::error "PostgreSQL deployment failed to become ready"
+    return 1
+  fi
+
   # Initiate rbac instance deployment.
   local rbac_rhdh_base_url="https://${RELEASE_NAME_RBAC}-developer-hub-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
