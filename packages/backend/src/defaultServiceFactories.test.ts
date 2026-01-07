@@ -31,8 +31,12 @@ describe('Default service factory list comparison', () => {
     const serviceFactoryIds = DEFAULT_SERVICE_FACTORIES.map(
       (serviceFactory: ServiceFactory) => serviceFactory.service.id,
     );
-    expect(
-      findSymmetricDifference(upstreamServiceFactoryIds, serviceFactoryIds),
-    ).toEqual([]);
+    const difference = findSymmetricDifference(
+      upstreamServiceFactoryIds,
+      serviceFactoryIds,
+    );
+    // intentionally exclude the deprecated instanceMetadataServiceFactory
+    const expectedDifferences = ['core.instanceMetadata'];
+    expect(difference).toEqual(expectedDifferences);
   });
 });
