@@ -548,15 +548,14 @@ test.describe("Admin > Extensions", () => {
       await expect(page.getByRole("cell", { name: "1.1.30" })).toBeVisible();
 
       // Verify actions column - in production, buttons are disabled with tooltip
-      const actionsCell = page
+      const techdocsRow = page
         .getByRole("row")
-        .filter({ hasText: "Techdocs Module Addons Contrib" })
-        .getByRole("cell")
-        .last();
+        .filter({ hasText: "Techdocs Module Addons Contrib" });
 
-      await expect(actionsCell).toBeVisible();
-      // In production environment, verify disabled state with explanatory message
-      await expect(actionsCell).toContainText(
+      await expect(techdocsRow).toBeVisible();
+      // In production environment, the entire row contains the disabled state message
+      // (text is inside nested generic elements within the actions cell)
+      await expect(techdocsRow).toContainText(
         /Package cannot be managed in the production environment/i,
       );
       await page
