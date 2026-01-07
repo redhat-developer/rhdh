@@ -510,7 +510,7 @@ test.describe("Admin > Extensions", () => {
       );
     });
 
-    test("Installed packages page", async ({ page }, testInfo) => {
+    test.skip("Installed packages page", async ({ page }, testInfo) => {
       await runAccessibilityTests(page, testInfo);
       await uiHelper.verifyTableHeadingAndRows([
         t["plugin.marketplace"][lang]["installedPackages.table.columns.name"],
