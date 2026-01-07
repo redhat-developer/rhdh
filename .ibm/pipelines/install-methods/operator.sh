@@ -75,6 +75,23 @@ deploy_rhdh_operator() {
   log::info "Applying Backstage CR from: $backstage_crd_path"
   log::debug "$rendered_yaml"
   echo "$rendered_yaml" | oc apply -f - -n "$namespace"
+
+  # Wait for the operator to create the Backstage deployment
+  log::info "Waiting for operator to create Backstage deployment..."
+  local max_wait=60 # Wait up to 5 minutes for deployment to be created
+  local waited=0
+  while [[ $waited -lt $max_wait ]]; do
+    if oc get deployment -n "$namespace" --no-headers 2> /dev/null | grep -q "backstage-"; then
+      log::success "Backstage deployment created by operator"
+      return 0
+    fi
+    log::debug "Waiting for deployment to be created... ($waited/$max_wait checks)"
+    sleep 5
+    waited=$((waited + 1))
+  done
+
+  log::warn "Deployment not found after ${max_wait} checks, but continuing (may be created asynchronously)"
+  return 0
 }
 
 delete_rhdh_operator() {
