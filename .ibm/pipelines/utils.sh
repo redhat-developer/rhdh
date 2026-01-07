@@ -1742,7 +1742,10 @@ enable_orchestrator_plugins_op() {
   log::info "Waiting for backstage resource to exist in namespace: $namespace"
 
   # Wait for backstage resource to exist
-  wait_for_backstage_resource "$namespace"
+  if ! wait_for_backstage_resource "$namespace"; then
+    log::error "Failed to find backstage resource in namespace: $namespace"
+    return 1
+  fi
 
   log::info "Backstage resource is ready with orchestrator plugins configured"
 }
