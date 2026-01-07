@@ -102,25 +102,41 @@ deploy_rhdh_operator() {
     log::warn "Backstage deployment not found after ${max_wait} checks"
   fi
 
-  # Wait for the operator to create the PostgresCluster resource
-  log::info "Waiting for operator to create PostgresCluster resource..."
-  local psql_wait=60 # Wait up to 5 minutes for PostgresCluster to be created
+  # Wait for the operator to create the database resource
+  # The operator can create either:
+  # 1. PostgresCluster (if Crunchy operator is used)
+  # 2. StatefulSet (built-in postgres)
+  log::info "Waiting for operator to create database resource..."
+  local psql_wait=60 # Wait up to 5 minutes for database to be created
   local psql_waited=0
+  
   while [[ $psql_waited -lt $psql_wait ]]; do
+    # Check for PostgresCluster (Crunchy-based)
     if oc get postgrescluster -n "$namespace" --no-headers 2> /dev/null | grep -q "backstage-psql"; then
-      log::success "PostgresCluster 'backstage-psql' created by operator"
+      log::success "PostgresCluster 'backstage-psql' created by operator (Crunchy-based)"
       return 0
     fi
-    log::debug "Waiting for PostgresCluster to be created... ($psql_waited/$psql_wait checks)"
+    
+    # Check for StatefulSet (built-in postgres)
+    if oc get statefulset -n "$namespace" --no-headers 2> /dev/null | grep -q "backstage-psql"; then
+      log::success "StatefulSet 'backstage-psql-rhdh' created by operator (built-in postgres)"
+      return 0
+    fi
+    
+    log::debug "Waiting for database resource to be created... ($psql_waited/$psql_wait checks)"
     sleep 5
     psql_waited=$((psql_waited + 1))
   done
 
-  log::error "PostgresCluster 'backstage-psql' not created after ${psql_wait} checks"
+  log::error "Database resource not created after ${psql_wait} checks"
   log::info "Checking Backstage CR status for errors..."
   oc get backstage rhdh -n "$namespace" -o yaml | grep -A 20 "status:" || true
   log::info "Checking operator logs..."
   oc logs -n "${OPERATOR_MANAGER:-rhdh-operator}" -l control-plane=controller-manager --tail=50 || true
+  log::info "Checking for StatefulSet..."
+  oc get statefulset -n "$namespace" || true
+  log::info "Checking for PostgresCluster..."
+  oc get postgrescluster -n "$namespace" 2> /dev/null || echo "No PostgresCluster CRD or resources found"
   return 1
 }
 
