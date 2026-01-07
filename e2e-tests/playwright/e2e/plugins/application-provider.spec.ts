@@ -28,36 +28,39 @@ test.describe("Test ApplicationProvider", () => {
     // Verify Context one cards are visible
     await uiHelper.verifyTextinCard("Context one", "Context one");
 
-    // Get all card containers (children of the main grid)
-    const allCards = page.locator("main article").last().locator("> div > div");
+    // Get Context one cards by filtering on their heading text (more robust than .nth())
+    const contextOneCards = page
+      .getByRole("article")
+      .filter({ hasText: "Context one" });
 
-    // Context one cards are index 0 and 1
-    const firstContextOneCard = allCards.nth(0);
-    const secondContextOneCard = allCards.nth(1);
+    // Click increment on the first Context one card
+    await contextOneCards.first().getByRole("button", { name: "+" }).click();
 
-    await firstContextOneCard.getByRole("button", { name: "+" }).click();
-
+    // Verify both Context one cards show count of 1 (shared state)
     await expect(
-      firstContextOneCard.getByRole("heading", { name: "1" }),
+      contextOneCards.first().getByRole("heading", { name: "1" }),
     ).toBeVisible();
     await expect(
-      secondContextOneCard.getByRole("heading", { name: "1" }),
+      contextOneCards.last().getByRole("heading", { name: "1" }),
     ).toBeVisible();
 
     // Verify Context two cards are visible
     await uiHelper.verifyTextinCard("Context two", "Context two");
 
-    // Context two cards are index 2 and 3
-    const firstContextTwoCard = allCards.nth(2);
-    const secondContextTwoCard = allCards.nth(3);
+    // Get Context two cards by filtering on their heading text
+    const contextTwoCards = page
+      .getByRole("article")
+      .filter({ hasText: "Context two" });
 
-    await firstContextTwoCard.getByRole("button", { name: "+" }).click();
+    // Click increment on the first Context two card
+    await contextTwoCards.first().getByRole("button", { name: "+" }).click();
 
+    // Verify both Context two cards show count of 1 (shared state)
     await expect(
-      firstContextTwoCard.getByRole("heading", { name: "1" }),
+      contextTwoCards.first().getByRole("heading", { name: "1" }),
     ).toBeVisible();
     await expect(
-      secondContextTwoCard.getByRole("heading", { name: "1" }),
+      contextTwoCards.last().getByRole("heading", { name: "1" }),
     ).toBeVisible();
   });
 });
