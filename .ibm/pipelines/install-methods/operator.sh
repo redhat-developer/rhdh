@@ -109,20 +109,20 @@ deploy_rhdh_operator() {
   log::info "Waiting for operator to create database resource..."
   local psql_wait=60 # Wait up to 5 minutes for database to be created
   local psql_waited=0
-  
+
   while [[ $psql_waited -lt $psql_wait ]]; do
     # Check for PostgresCluster (Crunchy-based)
     if oc get postgrescluster -n "$namespace" --no-headers 2> /dev/null | grep -q "backstage-psql"; then
       log::success "PostgresCluster 'backstage-psql' created by operator (Crunchy-based)"
       return 0
     fi
-    
+
     # Check for StatefulSet (built-in postgres)
     if oc get statefulset -n "$namespace" --no-headers 2> /dev/null | grep -q "backstage-psql"; then
       log::success "StatefulSet 'backstage-psql-rhdh' created by operator (built-in postgres)"
       return 0
     fi
-    
+
     log::debug "Waiting for database resource to be created... ($psql_waited/$psql_wait checks)"
     sleep 5
     psql_waited=$((psql_waited + 1))
