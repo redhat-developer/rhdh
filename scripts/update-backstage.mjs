@@ -309,6 +309,7 @@ async function main() {
 
     console.log("Bumping version...");
     execSync(bumpCommand, { stdio: "inherit" });
+    execSync(bumpCommand, { stdio: "inherit", cwd: join(ROOT_DIR, "dynamic-plugins") });
 
     console.log("Pinning all dependencies...");
     pinDependencies();
@@ -330,6 +331,7 @@ async function main() {
 
     console.log("Updating lockfile...");
     execSync("yarn install --no-immutable", { stdio: "inherit" });
+    execSync("yarn install --no-immutable", { stdio: "inherit", cwd: join(ROOT_DIR, "dynamic-plugins") });
 
     console.log("Deduping lockfile...");
     execSync("yarn dedupe", { stdio: "inherit" });

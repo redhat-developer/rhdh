@@ -40,8 +40,8 @@
     ]
   },
   "devDependencies": {
-    "@backstage/cli": "0.34.1",
-    "@backstage/frontend-test-utils": "0.3.5",
+    "@backstage/cli": "0.34.5",
+    "@backstage/frontend-test-utils": "0.4.1",
     "@ianvs/prettier-plugin-sort-imports": "4.7.0",
     "@manypkg/cli": "0.25.1",
     "glob": "11.1.0",
@@ -59,7 +59,7 @@
     "@aws-sdk/util-utf8-browser": "npm:@smithy/util-utf8@~2",
     "@kubernetes/client-node@npm:0.20.0/jsonpath-plus": "^10.3.0",
     "@backstage/plugin-permission-backend": "0.7.3",
-    "@backstage/plugin-catalog-react": "1.20.1",
+    "@backstage/plugin-catalog-react": "1.21.3",
     "refractor@npm:3.6.0/prismjs": "^1.30.0"
   },
   "jest": {
