@@ -68,7 +68,15 @@ deploy_rhdh_operator() {
   local namespace=$1
   local backstage_crd_path=$2
 
-  # CRD should already be available from prepare_operator, but verify
+  # Ensure PostgresCluster CRD is available before deploying Backstage CR
+  # This is critical because the operator will try to create a PostgresCluster resource
+  log::info "Verifying PostgresCluster CRD is available before deploying Backstage CR..."
+  k8s_wait::crd "postgresclusters.postgres-operator.crunchydata.com" 60 5 || {
+    log::error "PostgresCluster CRD not available - operator won't be able to create internal database"
+    return 1
+  }
+
+  # Verify Backstage CRD is also available
   k8s_wait::crd "backstages.rhdh.redhat.com" 60 5 || return 1
 
   rendered_yaml=$(envsubst < "$backstage_crd_path")
@@ -83,15 +91,37 @@ deploy_rhdh_operator() {
   while [[ $waited -lt $max_wait ]]; do
     if oc get deployment -n "$namespace" --no-headers 2> /dev/null | grep -q "backstage-"; then
       log::success "Backstage deployment created by operator"
-      return 0
+      break
     fi
     log::debug "Waiting for deployment to be created... ($waited/$max_wait checks)"
     sleep 5
     waited=$((waited + 1))
   done
 
-  log::warn "Deployment not found after ${max_wait} checks, but continuing (may be created asynchronously)"
-  return 0
+  if [[ $waited -eq $max_wait ]]; then
+    log::warn "Backstage deployment not found after ${max_wait} checks"
+  fi
+
+  # Wait for the operator to create the PostgresCluster resource
+  log::info "Waiting for operator to create PostgresCluster resource..."
+  local psql_wait=60 # Wait up to 5 minutes for PostgresCluster to be created
+  local psql_waited=0
+  while [[ $psql_waited -lt $psql_wait ]]; do
+    if oc get postgrescluster -n "$namespace" --no-headers 2> /dev/null | grep -q "backstage-psql"; then
+      log::success "PostgresCluster 'backstage-psql' created by operator"
+      return 0
+    fi
+    log::debug "Waiting for PostgresCluster to be created... ($psql_waited/$psql_wait checks)"
+    sleep 5
+    psql_waited=$((psql_waited + 1))
+  done
+
+  log::error "PostgresCluster 'backstage-psql' not created after ${psql_wait} checks"
+  log::info "Checking Backstage CR status for errors..."
+  oc get backstage rhdh -n "$namespace" -o yaml | grep -A 20 "status:" || true
+  log::info "Checking operator logs..."
+  oc logs -n "${OPERATOR_MANAGER:-rhdh-operator}" -l control-plane=controller-manager --tail=50 || true
+  return 1
 }
 
 delete_rhdh_operator() {
