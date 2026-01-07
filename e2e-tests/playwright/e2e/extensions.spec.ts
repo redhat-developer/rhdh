@@ -553,10 +553,15 @@ test.describe("Admin > Extensions", () => {
         .filter({ hasText: "Techdocs Module Addons Contrib" });
 
       await expect(techdocsRow).toBeVisible();
-      // In production environment, the entire row contains the disabled state message
-      // (text is inside nested generic elements within the actions cell)
-      await expect(techdocsRow).toContainText(
+
+      // Wait specifically for the Actions cell (5th cell / last cell) to be rendered
+      const actionsCell = techdocsRow.getByRole("cell").last();
+      await expect(actionsCell).toBeVisible({ timeout: 15000 });
+
+      // Now wait for the tooltip text to appear in the actions cell
+      await expect(actionsCell).toContainText(
         /Package cannot be managed in the production environment/i,
+        { timeout: 15000 },
       );
       await page
         .getByRole("button", {
