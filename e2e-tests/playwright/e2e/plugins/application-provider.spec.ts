@@ -28,39 +28,41 @@ test.describe("Test ApplicationProvider", () => {
     // Verify Context one cards are visible
     await uiHelper.verifyTextinCard("Context one", "Context one");
 
-    // Get Context one cards by filtering on their heading text (more robust than .nth())
-    const contextOneCards = page
-      .getByRole("article")
-      .filter({ hasText: "Context one" });
+    // Use heading as anchor to find card containers (cards are divs, not articles)
+    const contextOneHeadings = page
+      .locator("main")
+      .getByText("Context one", { exact: true });
 
-    // Click increment on the first Context one card
-    await contextOneCards.first().getByRole("button", { name: "+" }).click();
+    // Get first Context one card's container and click its increment button
+    const firstContextOneCard = contextOneHeadings.first().locator("..");
+    await firstContextOneCard.getByRole("button", { name: "+" }).click();
 
     // Verify both Context one cards show count of 1 (shared state)
     await expect(
-      contextOneCards.first().getByRole("heading", { name: "1" }),
+      contextOneHeadings.first().locator("..").getByRole("heading", { name: "1" }),
     ).toBeVisible();
     await expect(
-      contextOneCards.last().getByRole("heading", { name: "1" }),
+      contextOneHeadings.last().locator("..").getByRole("heading", { name: "1" }),
     ).toBeVisible();
 
     // Verify Context two cards are visible
     await uiHelper.verifyTextinCard("Context two", "Context two");
 
-    // Get Context two cards by filtering on their heading text
-    const contextTwoCards = page
-      .getByRole("article")
-      .filter({ hasText: "Context two" });
+    // Use heading as anchor to find card containers
+    const contextTwoHeadings = page
+      .locator("main")
+      .getByText("Context two", { exact: true });
 
-    // Click increment on the first Context two card
-    await contextTwoCards.first().getByRole("button", { name: "+" }).click();
+    // Get first Context two card's container and click its increment button
+    const firstContextTwoCard = contextTwoHeadings.first().locator("..");
+    await firstContextTwoCard.getByRole("button", { name: "+" }).click();
 
     // Verify both Context two cards show count of 1 (shared state)
     await expect(
-      contextTwoCards.first().getByRole("heading", { name: "1" }),
+      contextTwoHeadings.first().locator("..").getByRole("heading", { name: "1" }),
     ).toBeVisible();
     await expect(
-      contextTwoCards.last().getByRole("heading", { name: "1" }),
+      contextTwoHeadings.last().locator("..").getByRole("heading", { name: "1" }),
     ).toBeVisible();
   });
 });
