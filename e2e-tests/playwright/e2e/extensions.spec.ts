@@ -546,14 +546,14 @@ test.describe("Admin > Extensions", () => {
         page.getByRole("cell", { name: "Frontend plugin module" }),
       ).toBeVisible();
       await expect(page.getByRole("cell", { name: "1.1.30" })).toBeVisible();
-      
+
       // Verify actions column - in production, buttons are disabled with tooltip
       const actionsCell = page
         .getByRole("row")
         .filter({ hasText: "Techdocs Module Addons Contrib" })
         .getByRole("cell")
         .last();
-      
+
       await expect(actionsCell).toBeVisible();
       // In production environment, verify disabled state with explanatory message
       await expect(actionsCell).toContainText(

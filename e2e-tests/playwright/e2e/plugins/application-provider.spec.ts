@@ -39,10 +39,16 @@ test.describe("Test ApplicationProvider", () => {
 
     // Verify both Context one cards show count of 1 (shared state)
     await expect(
-      contextOneHeadings.first().locator("..").getByRole("heading", { name: "1" }),
+      contextOneHeadings
+        .first()
+        .locator("..")
+        .getByRole("heading", { name: "1" }),
     ).toBeVisible();
     await expect(
-      contextOneHeadings.last().locator("..").getByRole("heading", { name: "1" }),
+      contextOneHeadings
+        .last()
+        .locator("..")
+        .getByRole("heading", { name: "1" }),
     ).toBeVisible();
 
     // Verify Context two cards are visible
@@ -59,10 +65,16 @@ test.describe("Test ApplicationProvider", () => {
 
     // Verify both Context two cards show count of 1 (shared state)
     await expect(
-      contextTwoHeadings.first().locator("..").getByRole("heading", { name: "1" }),
+      contextTwoHeadings
+        .first()
+        .locator("..")
+        .getByRole("heading", { name: "1" }),
     ).toBeVisible();
     await expect(
-      contextTwoHeadings.last().locator("..").getByRole("heading", { name: "1" }),
+      contextTwoHeadings
+        .last()
+        .locator("..")
+        .getByRole("heading", { name: "1" }),
     ).toBeVisible();
   });
 });
