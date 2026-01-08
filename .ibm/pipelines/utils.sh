@@ -1738,8 +1738,7 @@ enable_orchestrator_plugins_op() {
     return 1
   fi
 
-  log::info "Orchestrator plugins are configured via dynamic-plugins configmap"
-  log::info "Waiting for backstage resource to exist in namespace: $namespace"
+  log::info "Enabling orchestrator plugins in namespace: $namespace"
 
   # Wait for backstage resource to exist
   if ! wait_for_backstage_resource "$namespace"; then
@@ -1747,5 +1746,101 @@ enable_orchestrator_plugins_op() {
     return 1
   fi
 
-  log::info "Backstage resource is ready with orchestrator plugins configured"
+  local work_dir="/tmp/orchestrator-plugins-merge"
+  rm -rf "$work_dir" && mkdir -p "$work_dir"
+
+  # Extract current custom dynamic plugins configmap
+  log::info "Extracting custom dynamic plugins configmap..."
+  if ! oc get cm dynamic-plugins -n "$namespace" -o json | jq '.data."dynamic-plugins.yaml"' -r > "$work_dir/custom-plugins.yaml"; then
+    log::error "Error: Failed to extract dynamic-plugins configmap"
+    return 1
+  fi
+
+  # Locate operator-managed default configmap
+  log::info "Waiting for operator-managed dynamic plugins configmap..."
+  local default_cm=""
+  local attempts=0
+  local max_attempts=60
+  while [[ $attempts -lt $max_attempts ]]; do
+    default_cm=$(oc get cm -n "$namespace" -o name 2> /dev/null | grep "backstage-dynamic-plugins-" | head -1 | sed 's#configmap/##')
+    if [[ -n "$default_cm" ]]; then
+      break
+    fi
+    sleep 5
+    attempts=$((attempts + 1))
+  done
+
+  if [[ -z "$default_cm" ]]; then
+    log::error "Error: No default configmap found matching pattern 'backstage-dynamic-plugins-' after waiting"
+    log::info "Available configmaps in namespace $namespace:"
+    oc get cm -n "$namespace" || true
+    return 1
+  fi
+
+  log::info "Found default configmap: $default_cm"
+  if ! oc get cm "$default_cm" -n "$namespace" -o json | jq '.data."dynamic-plugins.yaml"' -r > "$work_dir/default-plugins.yaml"; then
+    log::error "Error: Failed to extract $default_cm configmap"
+    return 1
+  fi
+
+  # Merge default and custom plugins (custom overrides default on conflicts)
+  log::info "Merging custom and default dynamic plugins..."
+  if ! yq eval-all '
+    select(fileIndex == 0) as $default |
+    select(fileIndex == 1) as $custom |
+    {
+      includes: (($default.includes // []) + ($custom.includes // [])) | unique,
+      plugins: (
+        (($default.plugins // []) + ($custom.plugins // []))
+        | group_by(.package)
+        | map(.[-1])
+      )
+    }
+  ' "$work_dir/default-plugins.yaml" "$work_dir/custom-plugins.yaml" > "$work_dir/merged-plugins.yaml"; then
+    log::error "Error: Failed to merge plugins"
+    return 1
+  fi
+
+  # Create configmap manifest with merged content
+  cat << 'EOF' > "$work_dir/merged-configmap.yaml"
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: dynamic-plugins
+data:
+  dynamic-plugins.yaml: |
+EOF
+  if ! sed 's/^/    /' "$work_dir/merged-plugins.yaml" >> "$work_dir/merged-configmap.yaml"; then
+    log::error "Error: Failed to prepare merged configmap manifest"
+    return 1
+  fi
+
+  # Apply merged configmap
+  if ! oc apply -f "$work_dir/merged-configmap.yaml" -n "$namespace"; then
+    log::error "Error: Failed to apply merged dynamic-plugins configmap"
+    return 1
+  fi
+
+  # Restart backstage deployment to pick up updated plugins
+  local backstage_deployment
+  backstage_deployment=$(oc get deployment -n "$namespace" --no-headers | grep "^backstage-" | awk '{print $1}' | head -1)
+  if [[ -z "$backstage_deployment" ]]; then
+    log::error "Error: No backstage deployment found matching pattern 'backstage-*'"
+    return 1
+  fi
+
+  log::info "Restarting backstage deployment: $backstage_deployment"
+  if ! oc rollout restart deployment/"$backstage_deployment" -n "$namespace"; then
+    log::error "Error: Failed to restart backstage deployment"
+    return 1
+  fi
+
+  log::info "Waiting for backstage deployment to become ready after restart..."
+  if ! wait_for_deployment "$namespace" "$backstage_deployment" 15; then
+    log::error "Backstage deployment failed to become ready after plugin merge"
+    return 1
+  fi
+
+  log::success "Successfully enabled orchestrator plugins in namespace: $namespace"
+  rm -rf "$work_dir"
 }
