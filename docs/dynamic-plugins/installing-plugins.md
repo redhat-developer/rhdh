@@ -46,6 +46,7 @@ When the `CATALOG_INDEX_IMAGE` environment variable is set, the `install-dynamic
 2. Look for a `dynamic-plugins.default.yaml` file within the image
 3. Use this file as the primary source for default plugin configurations
 4. Replace the embedded `dynamic-plugins.default.yaml` if it's present in the `includes` list
+5. Extract catalog entities from `catalog-entities/marketplace` directory (if present in the index image) to a configurable location
 
 ### Configuring the Catalog Index Image
 
@@ -57,7 +58,10 @@ The configuration method depends on your deployment approach:
 
 ### Catalog Index Image Structure
 
-The catalog index OCI image should contain a `dynamic-plugins.default.yaml` file at the root level with the same structure as the embedded default configuration file:
+The catalog index OCI image should contain the following at the root level:
+
+- A `dynamic-plugins.default.yaml` file with the same structure as the embedded default configuration file
+- Optionally, a `catalog-entities/marketplace` directory containing extension catalog entity definitions
 
 ```yaml
 # Contents of dynamic-plugins.default.yaml in the OCI image
@@ -69,6 +73,17 @@ plugins:
   - package: oci://quay.io/example/plugin:v1.0!my-plugin
     disabled: true
 ```
+
+### Catalog Entities Extraction
+
+When the `CATALOG_INDEX_IMAGE` is set and the index image contains a `catalog-entities/marketplace` directory, the [`install-dynamic-plugins.py`](../../docker/install-dynamic-plugins.py) will automatically extract these catalog entities to a configurable location.
+
+The extraction destination is governed by the `CATALOG_ENTITIES_EXTRACT_DIR` environment variable:
+
+- If `CATALOG_ENTITIES_EXTRACT_DIR` is set, entities are extracted to `<CATALOG_ENTITIES_EXTRACT_DIR>/catalog-entities`
+- If not set, it defaults to `<dynamic-plugins-root>/marketplace/catalog-entities`
+
+**Note:** If the catalog index image does not contain the `catalog-entities/marketplace` directory, a warning will be printed but the extraction of `dynamic-plugins.default.yaml` will still succeed.
 
 ## Installing External Dynamic Plugins
 
