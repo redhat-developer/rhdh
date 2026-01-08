@@ -35,7 +35,7 @@
     "test": "backstage-cli package test --passWithNoTests --coverage",
     "clean": "backstage-cli package clean",
     "clean-dynamic-sources": "yarn clean && rm -Rf node_modules",
-    "export-dynamic": "janus-cli package export-dynamic-plugin --embed-package @red-hat-developer-hub/backstage-plugin-bulk-import-backend --embed-package @backstage/plugin-permission-common --embed-package @backstage/types --embed-package @backstage/errors --embed-package @backstage/config --shared-package !@backstage/core-plugin-api --shared-package !@backstage/version-bridge",
+    "export-dynamic": "janus-cli package export-dynamic-plugin --embed-package @red-hat-developer-hub/backstage-plugin-bulk-import-backend --embed-package @backstage/plugin-permission-common --embed-package @backstage/types --embed-package @backstage/errors --embed-package @backstage/config --shared-package !@backstage/frontend-plugin-api --shared-package !@backstage/core-plugin-api --shared-package !@backstage/version-bridge",
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
@@ -43,7 +43,7 @@
   },
   "devDependencies": {
     "@backstage/cli": "0.34.5",
-    "@janus-idp/cli": "3.6.1",
+    "@janus-idp/cli": "3.7.0",
     "typescript": "5.9.3"
   },
   "files": [
