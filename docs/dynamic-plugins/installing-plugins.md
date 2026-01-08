@@ -49,42 +49,11 @@ When the `CATALOG_INDEX_IMAGE` environment variable is set, the `install-dynamic
 
 ### Configuring the Catalog Index Image
 
-Set the `CATALOG_INDEX_IMAGE` environment variable in the `install-dynamic-plugins` init container to specify the OCI image containing your plugin catalog:
+The configuration method depends on your deployment approach:
 
-```yaml
-# Example using RHDH Operator (Kubernetes/OpenShift)
-apiVersion: rhdh.redhat.com/v1alpha4
-kind: Backstage
-metadata:
-  name: my-backstage
-spec:
-  application:
-    extraEnvs:
-      envs:
-        - name: CATALOG_INDEX_IMAGE
-          value: "quay.io/rhdh/plugin-catalog-index:1.9"
-          containers: ["install-dynamic-plugins"]
-```
+- **Helm Chart**: See the [Helm Chart Catalog Index Configuration](https://github.com/redhat-developer/rhdh-chart/blob/main/docs/catalog-index-configuration.md) for details.
 
-```yaml
-# Example using Helm chart values
-# Note: Until native support is added to the Helm chart, you need to customize the
-# install-dynamic-plugins init container definition to add the CATALOG_INDEX_IMAGE env var.
-
-# In your custom values.yaml, add the CATALOG_INDEX_IMAGE environment variable:
-
-upstream:
-  backstage:
-    initContainers:
-      - name: install-dynamic-plugins
-        # ... other configuration from the chart ...
-        env:
-          - name: CATALOG_INDEX_IMAGE
-            value: "quay.io/rhdh/plugin-catalog-index:1.9"
-          # ... other environment variables ...
-```
-
-To update the catalog index, modify the `CATALOG_INDEX_IMAGE` value in your custom values file and run `helm upgrade`.
+- **RHDH Operator**: See the [Operator Catalog Index Configuration](https://github.com/redhat-developer/rhdh-operator/blob/main/docs/dynamic-plugins.md#catalog-index-configuration) for details.
 
 ### Catalog Index Image Structure
 

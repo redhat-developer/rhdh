@@ -18759,13 +18759,14 @@ __metadata:
     "@types/node": 22.19.1
     "@types/react": 18.3.27
     "@types/react-dom": 18.3.7
+    eslint-plugin-unused-imports: ^4.3.0
     lodash: 4.17.21
     prettier: 3.7.4
     react: 18.3.1
     react-dom: 18.3.1
     react-router-dom: 6.30.2
     react-use: 17.6.0
-    tss-react: 4.9.19
+    tss-react: 4.9.20
     typescript: 5.9.3
   languageName: unknown
   linkType: soft
@@ -23574,6 +23575,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"eslint-plugin-unused-imports@npm:^4.3.0":
+  version: 4.3.0
+  resolution: "eslint-plugin-unused-imports@npm:4.3.0"
+  peerDependencies:
+    "@typescript-eslint/eslint-plugin": ^8.0.0-0 || ^7.0.0 || ^6.0.0 || ^5.0.0
+    eslint: ^9.0.0 || ^8.0.0
+  peerDependenciesMeta:
+    "@typescript-eslint/eslint-plugin":
+      optional: true
+  checksum: e03d2399f429a865c156a2f76de40060f8b290f4e2626a6102a1bac22ccea5ac42eb63280b3b1abe5c32eccc8e90dd2ce27f8066f62bb4ffb0fe6754612eceb1
+  languageName: node
+  linkType: hard
+
 "eslint-rspack-plugin@npm:^4.2.1":
   version: 4.2.1
   resolution: "eslint-rspack-plugin@npm:4.2.1"
@@ -25200,8 +25214,8 @@ __metadata:
   linkType: hard
 
 "glob@npm:^10.0.0, glob@npm:^10.2.2, glob@npm:^10.3.10, glob@npm:^10.4.1, glob@npm:^10.4.5":
-  version: 10.4.5
-  resolution: "glob@npm:10.4.5"
+  version: 10.5.0
+  resolution: "glob@npm:10.5.0"
   dependencies:
     foreground-child: ^3.1.0
     jackspeak: ^3.1.2
@@ -25211,7 +25225,7 @@ __metadata:
     path-scurry: ^1.11.1
   bin:
     glob: dist/esm/bin.mjs
-  checksum: 0bc725de5e4862f9f387fd0f2b274baf16850dcd2714502ccf471ee401803997983e2c05590cb65f9675a3c6f2a58e7a53f9e365704108c6ad3cbf1d60934c4a
+  checksum: cda96c074878abca9657bd984d2396945cf0d64283f6feeb40d738fe2da642be0010ad5210a1646244a5fc3511b0cab5a374569b3de5a12b8a63d392f18c6043
   languageName: node
   linkType: hard
 
@@ -37595,9 +37609,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tss-react@npm:4.9.19":
-  version: 4.9.19
-  resolution: "tss-react@npm:4.9.19"
+"tss-react@npm:4.9.20":
+  version: 4.9.20
+  resolution: "tss-react@npm:4.9.20"
   dependencies:
     "@emotion/cache": "*"
     "@emotion/serialize": "*"
@@ -37613,7 +37627,7 @@ __metadata:
       optional: true
     "@mui/material":
       optional: true
-  checksum: 1e29114220d26aa3a30c05f372f61bd876a0a4eb5482b8cd16a13c9783d1ad5c33bc15cf379d467965dc98ad7c528c9165c816c26958032761dea05296e78466
+  checksum: ef2a62b4c3c07239d6cdb3d2ab855efc6c2469423e89381d530ca4fc62cbac4b9af8e8196539f02ed4e06918f615ceab2834689af4b97a47d5275295ab399af0
   languageName: node
   linkType: hard
 

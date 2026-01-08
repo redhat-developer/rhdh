@@ -4,7 +4,7 @@ import { FabPo } from "../../support/page-objects/global-fab-po";
 import { UIhelper } from "../../utils/ui-helper";
 import { PagesUrl } from "../../support/page-objects/page";
 
-test.describe.skip("Test global floating action button plugin", () => {
+test.describe("Test global floating action button plugin", () => {
   let uiHelper: UIhelper;
   let fabHelper: FabPo;
 
@@ -33,6 +33,7 @@ test.describe.skip("Test global floating action button plugin", () => {
 
   test("Check if floating button is shown with two sub-menu actions on the Catalog Page, verify Git sub-menu", async () => {
     await uiHelper.openSidebar("Catalog");
+    await uiHelper.verifyHeading(/All Components \((\d+)\)/);
     await fabHelper.verifyFabButtonByDataTestId("floating-button-with-submenu");
     await fabHelper.clickFabMenuByTestId("floating-button-with-submenu");
     await fabHelper.verifyFabButtonByLabel("Git");
@@ -43,6 +44,7 @@ test.describe.skip("Test global floating action button plugin", () => {
 
   test("Check if floating button is shown with two sub-menu actions on the Catalog Page, verify Quay sub-menu", async () => {
     await uiHelper.openSidebar("Catalog");
+    await uiHelper.verifyHeading(/All Components \((\d+)\)/);
     await fabHelper.verifyFabButtonByDataTestId("floating-button-with-submenu");
     await fabHelper.clickFabMenuByTestId("floating-button-with-submenu");
     await fabHelper.verifyFabButtonByLabel("Git");

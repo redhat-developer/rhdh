@@ -465,6 +465,87 @@ export class KubeClient {
     }
   }
 
+  /**
+   * Check if pods are in a failure state (CrashLoopBackOff, ImagePullBackOff, etc.)
+   * Returns a failure reason if found, null otherwise
+   */
+  async checkPodFailureStates(
+    namespace: string,
+    labelSelector: string,
+  ): Promise<string | null> {
+    try {
+      const response = await this.coreV1Api.listNamespacedPod(
+        namespace,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        labelSelector,
+      );
+
+      const pods = response.body.items;
+      if (pods.length === 0) {
+        return null; // No pods yet, not a failure
+      }
+
+      for (const pod of pods) {
+        const podName = pod.metadata?.name || "unknown";
+        const phase = pod.status?.phase;
+
+        // Check for Failed phase
+        if (phase === "Failed") {
+          const reason = pod.status?.reason || "Unknown";
+          const message = pod.status?.message || "";
+          return `Pod ${podName} is in Failed phase: ${reason} - ${message}`;
+        }
+
+        // Check container statuses for failure states
+        const containerStatuses = [
+          ...(pod.status?.containerStatuses || []),
+          ...(pod.status?.initContainerStatuses || []),
+        ];
+
+        for (const containerStatus of containerStatuses) {
+          const containerName = containerStatus.name;
+          const waiting = containerStatus.state?.waiting;
+
+          if (waiting) {
+            const reason = waiting.reason || "";
+            // Check for common failure states
+            const failureStates = [
+              "CrashLoopBackOff",
+              "ImagePullBackOff",
+              "ErrImagePull",
+              "InvalidImageName",
+              "CreateContainerConfigError",
+              "CreateContainerError",
+            ];
+
+            if (failureStates.includes(reason)) {
+              const message = waiting.message || "";
+              return `Pod ${podName} container ${containerName} is in ${reason} state: ${message}`;
+            }
+          }
+
+          // Check for containers that have terminated with errors
+          const terminated = containerStatus.state?.terminated;
+          if (terminated && terminated.exitCode !== 0) {
+            const reason = terminated.reason || "Error";
+            const message = terminated.message || "";
+            console.warn(
+              `Pod ${podName} container ${containerName} terminated with exit code ${terminated.exitCode}: ${reason} - ${message}`,
+            );
+          }
+        }
+      }
+
+      return null; // No failure states detected
+    } catch (error) {
+      console.error(`Error checking pod failure states: ${error}`);
+      return null; // Don't fail the check if we can't retrieve pod info
+    }
+  }
+
   async waitForDeploymentReady(
     deploymentName: string,
     namespace: string,
@@ -492,6 +573,23 @@ export class KubeClient {
           JSON.stringify(conditions, null, 2),
         );
 
+        // Check for pod failure states when expecting replicas > 0
+        if (expectedReplicas > 0) {
+          const podFailureReason = await this.checkPodFailureStates(
+            namespace,
+            labelSelector,
+          );
+          if (podFailureReason) {
+            console.error(
+              `Pod failure detected: ${podFailureReason}. Logging events and pod logs...`,
+            );
+            await this.logDeploymentEvents(deploymentName, namespace);
+            throw new Error(
+              `Deployment ${deploymentName} failed to start: ${podFailureReason}`,
+            );
+          }
+        }
+
         // Log pod conditions using label selector
         await this.logPodConditions(namespace, labelSelector);
 
@@ -508,11 +606,17 @@ export class KubeClient {
         );
       } catch (error) {
         console.error(`Error checking deployment status: ${error}`);
+        // If we threw an error about pod failure, re-throw it
+        if (error.message?.includes("failed to start")) {
+          throw error;
+        }
       }
 
       await new Promise((resolve) => setTimeout(resolve, checkInterval));
     }
 
+    // On timeout, collect final diagnostics
+    await this.logDeploymentEvents(deploymentName, namespace);
     throw new Error(
       `Deployment ${deploymentName} did not become ready in time (timeout: ${timeout / 1000}s).`,
     );
