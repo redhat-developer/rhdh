@@ -99,7 +99,12 @@ deploy_rhdh_operator() {
   done
 
   if [[ $waited -eq $max_wait ]]; then
-    log::warn "Backstage deployment not found after ${max_wait} checks"
+    log::error "Backstage deployment not created after ${max_wait} checks (5 minutes)"
+    log::info "Checking Backstage CR status for errors..."
+    oc get backstage rhdh -n "$namespace" -o yaml | grep -A 20 "status:" || true
+    log::info "Checking operator logs..."
+    oc logs -n "${OPERATOR_MANAGER:-rhdh-operator}" -l control-plane=controller-manager --tail=50 || true
+    return 1
   fi
 
   # Wait for the operator to create the database resource
