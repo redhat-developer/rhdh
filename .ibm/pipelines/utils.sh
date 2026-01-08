@@ -1785,18 +1785,17 @@ enable_orchestrator_plugins_op() {
 
   # Merge default and custom plugins (custom overrides default on conflicts)
   log::info "Merging custom and default dynamic plugins..."
+
+  # Use yq to merge: default plugins + custom plugins, with custom taking precedence
+  # The expression concatenates arrays and deduplicates by .package, keeping the last occurrence
   if ! yq eval-all '
     select(fileIndex == 0) as $default |
     select(fileIndex == 1) as $custom |
     {
-      includes: (($default.includes // []) + ($custom.includes // [])) | unique,
-      plugins: (
-        (($default.plugins // []) + ($custom.plugins // []))
-        | group_by(.package)
-        | map(.[-1])
-      )
+      "includes": (($default.includes // []) + ($custom.includes // [])) | unique,
+      "plugins": (($default.plugins // []) + ($custom.plugins // [])) | group_by(.package) | map(.[-1])
     }
-  ' "$work_dir/default-plugins.yaml" "$work_dir/custom-plugins.yaml" > "$work_dir/merged-plugins.yaml"; then
+  ' "$work_dir/default-plugins.yaml" "$work_dir/custom-plugins.yaml" | yq eval 'select(di == 0)' - > "$work_dir/merged-plugins.yaml"; then
     log::error "Error: Failed to merge plugins"
     return 1
   fi
