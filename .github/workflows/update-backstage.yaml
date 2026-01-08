@@ -66,22 +66,34 @@ jobs:
           cache-prefix: ${{ runner.os }}-v20
 
       - name: Run versons:bump script
+        env:
+          INPUT_RELEASE: ${{ inputs.release }}
+          INPUT_PATTERN: ${{ inputs.pattern }}
         run: |
-          yarn versions:bump \
-            ${{ inputs.release && format('--release {0}', inputs.release) }} \
-            ${{ inputs.pattern && format('--pattern {0}', inputs.pattern) }}
+          RELEASE_ARG=""
+          PATTERN_ARG=""
+          if [[ -n "$INPUT_RELEASE" ]]; then
+            RELEASE_ARG="--release $INPUT_RELEASE"
+          fi
+          if [[ -n "$INPUT_PATTERN" ]]; then
+            PATTERN_ARG="--pattern $INPUT_PATTERN"
+          fi
+          yarn versions:bump $RELEASE_ARG $PATTERN_ARG
 
       - name: Determine PR details
         id: pr-details
+        env:
+          INPUT_RELEASE: ${{ inputs.release }}
+          INPUT_PATTERN: ${{ inputs.pattern }}
         run: |
-          if [[ -n "${{ inputs.release }}" ]]; then
-            echo "commit_message=feat: update Backstage to ${{ inputs.release }}" >> $GITHUB_OUTPUT
-            echo "branch=dependencies/backstage-${{ inputs.release }}" >> $GITHUB_OUTPUT
-          elif [[ -n "${{ inputs.pattern }}" ]]; then
-            sanitized_branch=$(echo "${{ inputs.pattern }}" | tr -d '@{}*' | tr '/' '-' | tr ',' '.')
+          if [[ -n "$INPUT_RELEASE" ]]; then
+            echo "commit_message=feat: update Backstage to $INPUT_RELEASE" >> $GITHUB_OUTPUT
+            echo "branch=dependencies/backstage-$INPUT_RELEASE" >> $GITHUB_OUTPUT
+          elif [[ -n "$INPUT_PATTERN" ]]; then
+            sanitized_branch=$(echo "$INPUT_PATTERN" | tr -d '@{}*' | tr '/' '-' | tr ',' '.')
             # Remove trailing hyphen if present
             sanitized_branch=${sanitized_branch%-*}
-            echo "commit_message=feat: update Backstage plugins dependencies with pattern ${{ inputs.pattern }}" >> $GITHUB_OUTPUT
+            echo "commit_message=feat: update Backstage plugins dependencies with pattern $INPUT_PATTERN" >> $GITHUB_OUTPUT
             echo "branch=dependencies/${sanitized_branch}" >> $GITHUB_OUTPUT
           else
             echo "commit_message=feat: update Backstage to the latest version" >> $GITHUB_OUTPUT

@@ -1,0 +1,613 @@
+---
+alwaysApply: false
+description: Security best practices for GitHub Actions workflows based on GitHub Security Lab guidelines
+globs: .github/workflows/**,.github/actions/**
+---
+
+# GitHub Workflows Security Best Practices
+
+This rule provides comprehensive guidance for creating secure GitHub Actions workflows, based on the [GitHub Security Lab](https://securitylab.github.com/) blog series on GitHub Actions security.
+
+> **Note on Action Versions:** The action versions (commit SHAs and version tags) used in examples throughout this document may be outdated. When implementing these patterns, always check for the latest versions of actions and update the commit SHAs accordingly. You can find the latest versions on each action's GitHub releases page.
+
+## Table of Contents
+
+- [Untrusted Input Handling](#untrusted-input-handling)
+- [pull_request_target Security](#pull_request_target-security)
+- [Action Pinning and Permissions](#action-pinning-and-permissions)
+- [Environment Variable Safety](#environment-variable-safety)
+- [Artifact Security](#artifact-security)
+- [Repository-Specific Patterns](#repository-specific-patterns)
+- [Reusable Actions](#reusable-actions)
+
+---
+
+## Untrusted Input Handling
+
+Reference: [GitHub Actions: Untrusted Input](https://securitylab.github.com/resources/github-actions-untrusted-input/)
+
+### Always Use Environment Variables for GitHub Context Expressions
+
+**NEVER** directly interpolate GitHub context expressions in `run:` scripts. Always encapsulate them in environment variables first.
+
+```yaml
+# BAD - Direct interpolation is vulnerable to injection
+- name: Print PR title
+  run: echo "Title: ${{ github.event.pull_request.title }}"
+
+# GOOD - Use environment variable encapsulation
+- name: Print PR title
+  env:
+    TITLE: ${{ github.event.pull_request.title }}
+  run: echo "Title: $TITLE"
+```
+
+### Use Default GitHub Environment Variables
+
+Prefer using default GitHub environment variables (like `$GITHUB_REF_NAME`, `$GITHUB_SHA`, `$GITHUB_REPOSITORY`) over context expressions when available:
+
+```yaml
+# GOOD - Use default environment variables
+- name: Show branch info
+  run: |
+    echo "Branch: $GITHUB_REF_NAME"
+    echo "SHA: $GITHUB_SHA"
+    echo "Repository: $GITHUB_REPOSITORY"
+
+# Also acceptable when env vars aren't available
+- name: Show PR number
+  env:
+    PR_NUMBER: ${{ github.event.number }}
+  run: echo "PR #$PR_NUMBER"
+```
+
+### Dangerous Context Expressions
+
+The following context expressions are **especially dangerous** because they are controlled by external users:
+
+| Expression | Risk |
+|------------|------|
+| `github.event.issue.title` | Attacker-controlled issue title |
+| `github.event.issue.body` | Attacker-controlled issue body |
+| `github.event.pull_request.title` | Attacker-controlled PR title |
+| `github.event.pull_request.body` | Attacker-controlled PR description |
+| `github.event.comment.body` | Attacker-controlled comment content |
+| `github.event.review.body` | Attacker-controlled review content |
+| `github.event.pages.*.page_name` | Attacker-controlled page name |
+| `github.event.commits.*.message` | Attacker-controlled commit message |
+| `github.event.head_commit.message` | Attacker-controlled commit message |
+| `github.event.head_commit.author.email` | Attacker-controlled author email |
+| `github.event.head_commit.author.name` | Attacker-controlled author name |
+| `github.event.commits.*.author.email` | Attacker-controlled author email |
+| `github.event.commits.*.author.name` | Attacker-controlled author name |
+| `github.event.pull_request.head.ref` | Attacker-controlled branch name |
+| `github.event.pull_request.head.label` | Attacker-controlled label |
+| `github.event.pull_request.head.repo.default_branch` | Attacker-controlled default branch |
+| `github.head_ref` | Attacker-controlled branch name |
+
+**Always sanitize or encapsulate these in environment variables:**
+
+```yaml
+# GOOD - Proper encapsulation of dangerous inputs
+- name: Check PR eligibility
+  env:
+    PR_BRANCH: ${{ github.event.pull_request.head.ref }}
+    PR_TITLE: ${{ github.event.pull_request.title }}
+  run: |
+    # Now safe to use in shell
+    echo "Branch: $PR_BRANCH"
+    echo "Title: $PR_TITLE"
+```
+
+---
+
+## pull_request_target Security
+
+Reference: [GitHub Actions: Preventing pwn requests](https://securitylab.github.com/resources/github-actions-preventing-pwn-requests/)
+
+### When to Use Each Trigger
+
+| Trigger | Secrets Access | Write Permission | Use Case |
+|---------|---------------|------------------|----------|
+| `pull_request` | No (from forks) | No | Build/test PR code safely |
+| `pull_request_target` | Yes | Yes | Label PRs, comment, NO code checkout |
+| `workflow_run` | Yes | Yes | Post-processing after `pull_request` |
+
+### CRITICAL: Never Checkout Untrusted Code with pull_request_target
+
+```yaml
+# DANGEROUS - Checking out PR code with secrets access
+on: pull_request_target
+jobs:
+  build:
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}  # UNSAFE!
+      - run: npm install  # Attacker's code runs with secrets!
+
+# SAFE - Only checkout target branch (default behavior)
+on: pull_request_target
+jobs:
+  label:
+    steps:
+      - uses: actions/checkout@v4  # Checks out base branch, safe
+      - name: Add label
+        run: gh pr edit $PR_NUMBER --add-label "needs-review"
+```
+
+### Preferred Pattern: pull_request + workflow_run
+
+When you need to run untrusted PR code AND access secrets/write permissions, split into two workflows:
+
+**Step 1: Unprivileged `pull_request` workflow**
+
+```yaml
+# .github/workflows/pr-build.yaml
+name: PR Build
+on: pull_request
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4  # Safe - no secrets access
+
+      - name: Build and test
+        run: |
+          npm install
+          npm test
+
+      - name: Save PR number
+        run: echo "${{ github.event.number }}" > pr_number.txt
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-results
+          path: |
+            pr_number.txt
+            test-results/
+```
+
+**Step 2: Privileged `workflow_run` workflow**
+
+```yaml
+# .github/workflows/pr-comment.yaml
+name: PR Comment
+on:
+  workflow_run:
+    workflows: ["PR Build"]
+    types: [completed]
+
+jobs:
+  comment:
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success'
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: pr-results
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Comment on PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER=$(cat pr_number.txt)
+          gh pr comment "$PR_NUMBER" --body "Build succeeded!"
+```
+
+### When pull_request_target is Necessary: Use Author Verification
+
+If you must use `pull_request_target` with code checkout, use the repository's `check-author` action to verify the author is trusted:
+
+```yaml
+# Reference implementation from .github/workflows/pr.yaml
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  check-commit-author:
+    runs-on: ubuntu-latest
+    outputs:
+      is_active_team_member: ${{ steps.team-check.outputs.is_active_member }}
+    steps:
+      - name: Generate GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
+        with:
+          app-id: ${{ secrets.RHDH_GITHUB_APP_ID }}
+          private-key: ${{ secrets.RHDH_GITHUB_APP_PRIVATE_KEY }}
+
+      - name: Checkout main branch for secure version of check-author action
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 1
+          ref: main  # Always use main branch for security-critical action
+          persist-credentials: false
+
+      - name: Check if commit author is an active member of the team
+        id: team-check
+        uses: ./.github/actions/check-author
+        with:
+          author: ${{ github.actor }}
+          organization: redhat-developer
+          team: rhdh
+          gh_token: ${{ steps.app-token.outputs.token }}
+          whitelisted_authors: '["openshift-cherrypick-robot"]'
+
+  authorize:
+    environment:
+      ${{ (needs.check-commit-author.outputs.is_active_team_member == 'true' || 
+          github.event.pull_request.head.repo.full_name == github.repository) && 
+          'internal' || 'external' }}
+    runs-on: ubuntu-latest
+    needs: check-commit-author
+    steps:
+      - name: Authorized
+        run: echo "Author is authorized to run this workflow"
+
+  build:
+    needs: authorize
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR code (now safe after authorization)
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+```
+
+---
+
+## Action Pinning and Permissions
+
+Reference: [GitHub Actions: Building Blocks](https://securitylab.github.com/resources/github-actions-building-blocks/)
+
+### Pin Actions to Commit SHAs
+
+**Always** pin third-party actions to full commit SHAs, not tags:
+
+```yaml
+# BAD - Tags can be moved to malicious commits
+- uses: actions/checkout@v4
+- uses: docker/login-action@v3
+
+# GOOD - Pinned to immutable commit SHA with version comment
+- uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+- uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3
+```
+
+### Use persist-credentials: false
+
+Always disable credential persistence unless explicitly needed:
+
+```yaml
+- uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+  with:
+    persist-credentials: false  # Prevents token from being stored on disk
+```
+
+### Explicit Permissions Block
+
+Always declare the minimum required permissions:
+
+```yaml
+# At workflow level
+permissions:
+  contents: read
+  pull-requests: write
+
+# Or at job level for finer control
+jobs:
+  build:
+    permissions:
+      contents: read
+    # ...
+
+  deploy:
+    permissions:
+      contents: read
+      packages: write
+    # ...
+```
+
+### Common Permission Patterns
+
+```yaml
+# Read-only workflow (most restrictive)
+permissions:
+  contents: read
+
+# PR workflows that need to comment
+permissions:
+  contents: read
+  pull-requests: write
+
+# Package publishing
+permissions:
+  contents: read
+  packages: write
+
+# Release workflows
+permissions:
+  contents: write
+  packages: write
+```
+
+---
+
+## Environment Variable Safety
+
+Reference: [GitHub Actions: New Patterns and Mitigations](https://securitylab.github.com/resources/github-actions-new-patterns-and-mitigations/)
+
+### NEVER Append Untrusted Data to GITHUB_ENV
+
+```yaml
+# DANGEROUS - Allows command injection via GITHUB_ENV
+- name: Set environment
+  run: |
+    echo "BRANCH=${{ github.head_ref }}" >> $GITHUB_ENV  # UNSAFE!
+
+# SAFE - Use env: block instead
+- name: Use branch
+  env:
+    BRANCH: ${{ github.head_ref }}
+  run: echo "Branch is $BRANCH"
+```
+
+### Safe GITHUB_ENV Usage
+
+Only write trusted, validated data to `GITHUB_ENV`:
+
+```yaml
+# SAFE - Writing computed/validated values
+- name: Compute values
+  run: |
+    # Safe - internally computed values
+    SHORT_SHA="${GITHUB_SHA:0:7}"
+    echo "SHORT_SHA=$SHORT_SHA" >> $GITHUB_ENV
+
+    # Safe - output from trusted command
+    DATE=$(date +%Y-%m-%d)
+    echo "BUILD_DATE=$DATE" >> $GITHUB_ENV
+```
+
+### Use GITHUB_OUTPUT for Step Outputs
+
+```yaml
+- name: Generate output
+  id: compute
+  env:
+    INPUT_VALUE: ${{ github.event.inputs.value }}
+  run: |
+    # Process the input safely
+    result=$(echo "$INPUT_VALUE" | tr '[:upper:]' '[:lower:]')
+    echo "result=$result" >> $GITHUB_OUTPUT
+
+- name: Use output
+  run: echo "Result: ${{ steps.compute.outputs.result }}"
+```
+
+---
+
+## Artifact Security
+
+### Treat Artifacts from Untrusted Sources as Untrusted
+
+When using `workflow_run` to process artifacts from `pull_request` workflows:
+
+```yaml
+on:
+  workflow_run:
+    workflows: ["PR Build"]
+    types: [completed]
+
+jobs:
+  process:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build-results
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      # DANGEROUS - Never execute downloaded binaries
+      # - run: ./downloaded-binary
+
+      # SAFE - Only read data files
+      - name: Read PR number
+        run: |
+          PR_NUMBER=$(cat pr_number.txt)
+          # Validate it's actually a number
+          if ! [[ "$PR_NUMBER" =~ ^[0-9]+$ ]]; then
+            echo "Invalid PR number"
+            exit 1
+          fi
+```
+
+### Validate Artifact Contents
+
+```yaml
+- name: Process artifact safely
+  run: |
+    # Validate file exists and is reasonable size
+    if [[ ! -f "result.txt" ]] || [[ $(stat -c%s "result.txt") -gt 1000000 ]]; then
+      echo "Invalid artifact"
+      exit 1
+    fi
+
+    # Read and validate content
+    CONTENT=$(cat result.txt)
+    # Add validation as needed
+```
+
+---
+
+## Repository-Specific Patterns
+
+### Concurrency Control
+
+Use concurrency to cancel duplicate runs **from the same PR or branch only**. A new push to PR A should cancel the previous workflow for PR A, but should NOT affect workflows for PR B.
+
+```yaml
+concurrency:
+  # Group by workflow name + PR number (for PRs) or ref (for branches)
+  # This ensures:
+  #   - PR A's new workflow cancels PR A's old workflow
+  #   - PR A's workflow does NOT cancel PR B's workflow
+  #   - Push to branch X cancels previous push to branch X
+  group: ${{ github.workflow }}-${{ github.event.number || github.ref }}
+  cancel-in-progress: true
+```
+
+**How the group key works:**
+- For pull requests: `github.event.number` provides the unique PR number (e.g., `my-workflow-123`)
+- For branch pushes: `github.ref` provides the branch ref (e.g., `my-workflow-refs/heads/main`)
+- Each unique group runs independently; only duplicate runs within the same group are cancelled
+
+### Standard Workflow Header
+
+```yaml
+# Copyright Red Hat, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# ...
+
+name: Descriptive Workflow Name
+
+on:
+  pull_request:  # Or appropriate trigger
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # Global environment variables
+  REGISTRY: quay.io
+
+jobs:
+  # ...
+```
+
+### Environment-Based Authorization
+
+Use GitHub Environments for manual approval gates:
+
+```yaml
+jobs:
+  authorize:
+    environment:
+      ${{ (condition) && 'internal' || 'external' }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Authorized"
+
+  deploy:
+    needs: authorize
+    # Proceeds only after environment approval
+```
+
+---
+
+## Reusable Actions
+
+### When to Create Reusable Actions
+
+Create a reusable composite action in `.github/actions/` when:
+
+1. Logic is used by multiple workflows
+2. Logic is complex enough to benefit from encapsulation
+3. Logic requires multiple steps that should be tested together
+
+### Composite Action Template
+
+```yaml
+# .github/actions/my-action/action.yaml
+name: "My Action"
+description: "Description of what this action does"
+
+inputs:
+  required-input:
+    description: "A required input"
+    required: true
+  optional-input:
+    description: "An optional input"
+    required: false
+    default: "default-value"
+
+outputs:
+  result:
+    description: "The result of the action"
+    value: ${{ steps.main.outputs.result }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Validate inputs
+      shell: bash
+      env:
+        INPUT_VALUE: ${{ inputs.required-input }}
+      run: |
+        if [[ -z "$INPUT_VALUE" ]]; then
+          echo "Error: required-input is empty"
+          exit 1
+        fi
+
+    - name: Main logic
+      id: main
+      shell: bash
+      env:
+        REQUIRED: ${{ inputs.required-input }}
+        OPTIONAL: ${{ inputs.optional-input }}
+      run: |
+        # Your logic here
+        echo "result=success" >> $GITHUB_OUTPUT
+```
+
+### Existing Reusable Actions
+
+This repository provides the following reusable actions:
+
+| Action | Purpose |
+|--------|---------|
+| `.github/actions/check-author` | Verify if PR author is a team member |
+| `.github/actions/check-image-and-changes` | Check if image exists and detect relevant changes |
+| `.github/actions/docker-build` | Build Docker images with hermetic build |
+| `.github/actions/get-sha` | Get short SHA for tagging |
+
+---
+
+## Quick Reference Checklist
+
+When creating or reviewing a workflow, verify:
+
+- [ ] All GitHub context expressions are encapsulated in `env:` blocks
+- [ ] No direct interpolation of untrusted inputs in `run:` scripts
+- [ ] Actions are pinned to commit SHAs with version comments
+- [ ] `permissions:` block is explicit and minimal
+- [ ] `persist-credentials: false` used with `actions/checkout` where appropriate
+- [ ] `pull_request_target` is only used when secrets/write access is truly needed
+- [ ] If `pull_request_target` checks out PR code, author verification is in place
+- [ ] No untrusted data is appended to `GITHUB_ENV`
+- [ ] Artifacts from untrusted sources are validated before use
+- [ ] Concurrency is configured to prevent duplicate runs
+
+---
+
+## References
+
+- [Part 1: Preventing pwn requests](https://securitylab.github.com/resources/github-actions-preventing-pwn-requests/)
+- [Part 2: Untrusted Input](https://securitylab.github.com/resources/github-actions-untrusted-input/)
+- [Part 3: Building Blocks](https://securitylab.github.com/resources/github-actions-building-blocks/)
+- [Part 4: New Patterns and Mitigations](https://securitylab.github.com/resources/github-actions-new-patterns-and-mitigations/)

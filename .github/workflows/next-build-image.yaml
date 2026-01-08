@@ -62,17 +62,20 @@ jobs:
           fetch-depth: 0
 
       - name: Prepare
+        env:
+          MATRIX_OS: ${{ matrix.os }}
         run: |
-          if [ "${{ matrix.os }}" == "ubuntu-24.04" ]; then
+          if [ "$MATRIX_OS" == "ubuntu-24.04" ]; then
             platform="linux/amd64"
-          elif [ "${{ matrix.os }}" == "ubuntu-24.04-arm" ]; then
+          elif [ "$MATRIX_OS" == "ubuntu-24.04-arm" ]; then
             platform="linux/arm64"
           else
             echo "Unknown platform"
             exit 1
           fi
 
-          ref_name=${{ github.ref_name }}
+          ref_name="$GITHUB_REF_NAME"
+
           if [ "$ref_name" == "main" ]; then
             ref_name="next"
           elif [[ "$ref_name" =~ ^release-([0-9]+)\.([0-9]+) ]]; then
@@ -104,7 +107,7 @@ jobs:
 
       - name: Check Quay credentials
         run: |
-          if [ "${{ env.HAS_QUAY_AUTH }}" != "true" ]; then
+          if [ "$HAS_QUAY_AUTH" != "true" ]; then
             echo "::error::Missing QUAY_USERNAME or QUAY_TOKEN secrets"
             exit 1
           fi
@@ -120,28 +123,37 @@ jobs:
       - name: Get the last commit short SHA
         uses: ./.github/actions/get-sha
 
-      - name: Build and Push with Buildx
+      - name: Build with Hermetic Build
         uses: ./.github/actions/docker-build
         id: build-image
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ secrets.QUAY_USERNAME }}
-          password: ${{ secrets.QUAY_TOKEN }}
-          imageName: ${{ env.REGISTRY_IMAGE }}
+          imageName: ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}
           imageTags: |
             type=raw,value=${{ env.REF_NAME }}-${{ env.PLATFORM_ARCH }}
             type=raw,value=${{ env.REF_NAME }}-${{ env.SHORT_SHA }}-${{ env.PLATFORM_ARCH }}
           imageLabels: |
             quay.expires-after=${{ env.EXPIRES_AFTER }}
             org.opencontainers.image.expires=${{ env.EXPIRES_AFTER }}
-          push: true
           platform: ${{ env.PLATFORM }}
+          skipArtifactUpload: true
+
+      - name: Push Image to Registry
+        id: push-image
+        uses: redhat-actions/push-to-registry@5ed88d269cf581ea9ef6dd6806d01562096bee9c # v2.8
+        with:
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:${{ env.REF_NAME }}-${{ env.PLATFORM_ARCH }}
+            ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:${{ env.REF_NAME }}-${{ env.SHORT_SHA }}-${{ env.PLATFORM_ARCH }}
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_TOKEN }}
 
       - name: Export digest
         id: export-digest
+        env:
+          DIGEST: ${{ steps.push-image.outputs.digest }}
         run: |
           mkdir -p /tmp/digests
-          digest="${{ steps.build-image.outputs.digest }}"
+          digest="$DIGEST"
           touch "/tmp/digests/${digest#sha256:}"
 
       - name: Upload digest
@@ -171,7 +183,7 @@ jobs:
 
         - name: Prepare
           run: |
-            ref_name=${{ github.ref_name }}
+            ref_name="$GITHUB_REF_NAME"
             if [ "$ref_name" == "main" ]; then
               ref_name="next"
             elif [[ "$ref_name" =~ ^release-([0-9]+)\.([0-9]+) ]]; then
@@ -245,11 +257,14 @@ jobs:
 
         - name: Create manifest list and push
           working-directory: /tmp/digests
+          env:
+            META_RELEASE_JSON: ${{ steps.meta-release.outputs.json }}
+            META_NEXT_JSON: ${{ steps.meta-next.outputs.json }}
           run: |
             # Read tags from the metadata JSON of the step that ran
-            meta='${{ steps.meta-release.outputs.json }}'
+            meta="$META_RELEASE_JSON"
             if [ -z "$meta" ] || [ "$meta" = "null" ]; then
-              meta='${{ steps.meta-next.outputs.json }}'
+              meta="$META_NEXT_JSON"
             fi
 
             # Create and annotate the manifest list for EACH tag to ensure Quay applies expiry per tag
@@ -258,20 +273,24 @@ jobs:
               docker buildx imagetools create \
                 --annotation "quay.expires-after=${EXPIRES_AFTER}" \
                 -t "$tag" \
-                $(printf '${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}@sha256:%s ' *)
+                $(printf "${REGISTRY}/${REGISTRY_IMAGE}@sha256:%s " *)
             done
 
         - name: Inspect image (for :next builds)
           id: inspect-next
           if: ${{ env.REF_NAME_SHORT == 'next' || startsWith(env.REF_NAME_SHORT,'next-') }}
+          env:
+            META_VERSION: ${{ steps.meta-next.outputs.version }}
           run: |
-            docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:${{ steps.meta-next.outputs.version }}
+            docker buildx imagetools inspect "${REGISTRY}/${REGISTRY_IMAGE}:${META_VERSION}"
 
         - name: Inspect image (for releases)
           id: inspect-release
           if: ${{ env.REF_NAME_SHORT != 'next' && !startsWith(env.REF_NAME_SHORT,'next-') }}
+          env:
+            META_VERSION: ${{ steps.meta-release.outputs.version }}
           run: |
-            docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:${{ steps.meta-release.outputs.version }}
+            docker buildx imagetools inspect "${REGISTRY}/${REGISTRY_IMAGE}:${META_VERSION}"
 
         - name: Wait for manifest propagation
           if: env.HAS_QUAY_AUTH == 'true'
@@ -279,10 +298,10 @@ jobs:
             echo "Waiting for Quay to propagate multi-arch manifests..."
 
             # Determine which metadata step ran to get the primary tag
-            if [ "${{ env.REF_NAME_SHORT }}" == "next" ] || [[ "${{ env.REF_NAME_SHORT }}" == "next-"* ]]; then
-              primary_tag="${{ env.REF_NAME }}"
+            if [ "$REF_NAME_SHORT" == "next" ] || [[ "$REF_NAME_SHORT" == "next-"* ]]; then
+              primary_tag="$REF_NAME"
             else
-              primary_tag="${{ env.REF_NAME }}"
+              primary_tag="$REF_NAME"
             fi
 
             # Retry loop to check manifest availability
@@ -292,7 +311,7 @@ jobs:
             while [ $attempt -le $max_attempts ]; do
               echo "Checking manifest availability (attempt $attempt/$max_attempts)..."
 
-              if docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:${primary_tag} >/dev/null 2>&1; then
+              if docker buildx imagetools inspect "${REGISTRY}/${REGISTRY_IMAGE}:${primary_tag}" >/dev/null 2>&1; then
                 echo "✓ Multi-arch manifest is available after $((($attempt - 1) * 5)) seconds"
                 break
               fi
@@ -492,10 +511,10 @@ jobs:
                 echo "Re-annotating tag: ${tag}"
 
                 if docker buildx imagetools create \
-                  --tag "${{ env.REGISTRY }}/${REGISTRY_IMAGE}:${tag}" \
+                  --tag "${REGISTRY}/${REGISTRY_IMAGE}:${tag}" \
                   --annotation "quay.expires-after=${EXPIRES_AFTER}" \
                   --annotation "org.opencontainers.image.expires=${EXPIRES_AFTER}" \
-                  "${{ env.REGISTRY }}/${REGISTRY_IMAGE}:${tag}"; then
+                  "${REGISTRY}/${REGISTRY_IMAGE}:${tag}"; then
                   echo "Expiry annotations applied to: ${tag}"
                 else
                   echo "::warning::Failed to re-annotate ${tag}"

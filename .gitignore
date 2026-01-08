@@ -80,3 +80,7 @@ dynamic-plugins-root/*
 **/__pycache__/
 **/.pytest_cache/
 **/.venv/
+
+# Hermeto Cache
+hermeto-cache/
+docker/Containerfile.hermeto
