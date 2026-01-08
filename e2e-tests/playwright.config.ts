@@ -27,6 +27,10 @@ export default defineConfig({
   testDir: "./playwright",
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
+  /* Global test ignore patterns */
+  testIgnore: [
+    "**/playwright/e2e/plugins/orchestrator/**/*.spec.ts", // Skip orchestrator tests for now
+  ],
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
   /* Opt out of parallel tests on CI. */

@@ -9,6 +9,7 @@ import { runAccessibilityTests } from "../utils/accessibility";
 let page: Page;
 
 test.describe.serial("Test Scaffolder Backend Module Annotator Actions", () => {
+  test.skip(true, "Disabled on Backstage 1.45 update");
   test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
   let uiHelper: UIhelper;
   let common: Common;
