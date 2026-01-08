@@ -42,8 +42,23 @@ Options:
                   - image: Build the image
   <directory> The directory of the component to build.
   [image]     The name of the container image to build. Required for 'image' type.
+Note: after using `cache`, you may want to revert any changes done to the `python/requirements*.txt` files before running `cache` again.
 EOF
   exit 1
+}
+
+#######################################
+# Check for GNU sed on macOS
+#######################################
+check_gnu_sed() {
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    if ! sed --version 2>/dev/null | grep -q "GNU sed"; then
+      echo "Error: GNU sed is required on macOS."
+      echo "Install it with: brew install gnu-sed"
+      echo "Then add to your PATH: export PATH=\"\$(brew --prefix)/opt/gnu-sed/libexec/gnubin:\$PATH\""
+      exit 1
+    fi
+  fi
 }
 
 #######################################
@@ -156,6 +171,8 @@ build_image() {
 #   Command line arguments
 #######################################
 main() {
+  check_gnu_sed
+  
   if [[ $# -lt 2 ]]; then
     usage
   fi
@@ -176,6 +193,7 @@ main() {
     usage
   fi
 
+  mkdir -p "${LOCAL_CACHE_BASEDIR}"
   # Resolve paths
   local resolved_component_dir="$(realpath "${component_dir}")"
   local local_cache_dir="$(realpath "${LOCAL_CACHE_BASEDIR}")/$(basename "${resolved_component_dir}")"
