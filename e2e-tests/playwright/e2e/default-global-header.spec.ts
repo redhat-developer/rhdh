@@ -9,7 +9,7 @@ import {
 const t = getTranslations();
 const lang = getCurrentLanguage();
 
-test.describe.skip("Default Global Header", () => {
+test.describe("Default Global Header", () => {
   let common: Common;
   let uiHelper: UIhelper;
 

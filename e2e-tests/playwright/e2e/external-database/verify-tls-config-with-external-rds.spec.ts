@@ -13,8 +13,7 @@ interface RdsConfig {
   host: string | undefined;
 }
 
-test.describe
-  .skip("Verify TLS configuration with RDS PostgreSQL health check", () => {
+test.describe("Verify TLS configuration with RDS PostgreSQL health check", () => {
   const namespace = process.env.NAME_SPACE_RUNTIME || "showcase-runtime";
   const job: string = process.env.JOB_NAME || "";
   let deploymentName = process.env.RELEASE_NAME + "-developer-hub";

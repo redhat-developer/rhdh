@@ -11,7 +11,7 @@ import {
 const t = getTranslations();
 const lang = getCurrentLanguage();
 
-test.describe.skip("Admin > Extensions", () => {
+test.describe("Admin > Extensions", () => {
   let extensions: Extensions;
   let uiHelper: UIhelper;
   const isMac = process.platform === "darwin";
@@ -547,7 +547,7 @@ test.describe.skip("Admin > Extensions", () => {
       await expect(
         page.getByRole("cell", { name: "Frontend plugin module" }),
       ).toBeVisible();
-      await expect(page.getByRole("cell", { name: "1.1.27" })).toBeVisible();
+      await expect(page.getByRole("cell", { name: "1.1.30" })).toBeVisible();
       await expect(
         page.locator(".v5-MuiBox-root.css-1i27l4i").first(),
       ).toBeVisible();
