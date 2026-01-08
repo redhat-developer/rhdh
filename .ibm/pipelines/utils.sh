@@ -1834,12 +1834,7 @@ EOF
     return 1
   fi
 
-  log::info "Waiting for backstage deployment to become ready after restart..."
-  if ! wait_for_deployment "$namespace" "$backstage_deployment" 15; then
-    log::error "Backstage deployment failed to become ready after plugin merge"
-    return 1
-  fi
-
   log::success "Successfully enabled orchestrator plugins in namespace: $namespace"
+  log::info "Note: Deployment will be verified by subsequent wait_for_deployment calls"
   rm -rf "$work_dir"
 }
