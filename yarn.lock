@@ -3151,7 +3151,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-rbac-common@npm:1.20.0, @backstage-community/plugin-rbac-common@npm:^1.20.0":
+"@backstage-community/plugin-rbac-common@npm:1.22.0":
+  version: 1.22.0
+  resolution: "@backstage-community/plugin-rbac-common@npm:1.22.0"
+  peerDependencies:
+    "@backstage/errors": ^1.2.7
+    "@backstage/plugin-permission-common": ^0.9.3
+  checksum: e9027ef6cb54f078c8b690a0cac021bf0be9455920cf0769d6f0647bef108900b3c90fd3bfef5b6d903ded1ebb979f889828f500cb71acdbff4104639d615d42
+  languageName: node
+  linkType: hard
+
+"@backstage-community/plugin-rbac-common@npm:^1.20.0":
   version: 1.20.0
   resolution: "@backstage-community/plugin-rbac-common@npm:1.20.0"
   peerDependencies:
@@ -7631,7 +7641,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@internal/plugin-licensed-users-info-backend@workspace:plugins/licensed-users-info-backend"
   dependencies:
-    "@backstage-community/plugin-rbac-common": 1.20.0
+    "@backstage-community/plugin-rbac-common": 1.22.0
     "@backstage/backend-defaults": 0.13.1
     "@backstage/backend-plugin-api": 1.5.0
     "@backstage/backend-test-utils": 1.10.1
@@ -18390,7 +18400,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "app@workspace:packages/app"
   dependencies:
-    "@backstage-community/plugin-rbac-common": 1.20.0
+    "@backstage-community/plugin-rbac-common": 1.22.0
     "@backstage/app-defaults": 1.7.2
     "@backstage/catalog-model": 1.7.6
     "@backstage/cli": 0.34.5
