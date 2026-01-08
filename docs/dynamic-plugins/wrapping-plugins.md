@@ -9,4 +9,6 @@ In order to add dynamic plugin support to a third-party backend plugin, without 
 - reexport the third-party plugin in `src/index.ts` via `export {default} from '<package_name>'`,
 - export it as a dynamic plugin.
 
-Examples of such a wrapper plugins can be found in the [Janus showcase repository](https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers). For example, [roadiehq-scaffolder-backend-module-utils-dynamic](https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/roadiehq-scaffolder-backend-module-utils-dynamic) wraps the `@roadiehq/scaffolder-backend-module-utils` package to make it compatible with the dynamic plugin support. It then embeds the wrapped plugin code in the generated code and hoist its `@backstage` dependencies as peer dependencies in the resulting dynamic plugin through the use of the `--embed-package` option in the [`export-dynamic` script](https://github.com/redhat-developer/rhdh/blob/main/dynamic-plugins/wrappers/roadiehq-scaffolder-backend-module-utils-dynamic/package.json#L26).
+While the idea of wrapped plugins has been deprecated since RHDH 1.7, some old examples of wrapped plugins can still be found in the [RHDH repository](https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers). 
+
+These will be removed over time as they are migrated to https://github.com/redhat-developer/rhdh-plugin-export-overlays/ and replaced by OCI artifacts. 
