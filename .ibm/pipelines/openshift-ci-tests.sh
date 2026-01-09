@@ -40,7 +40,7 @@ source "${DIR}/clear-database.sh"
 
 main() {
   echo "Log file: ${LOGFILE}"
-  echo "JOB_NAME : $JOB_NAME"
+  echo "JOB_NAME: $JOB_NAME"
 
   CHART_VERSION=$(get_chart_version "$CHART_MAJOR_VERSION")
   export CHART_VERSION
