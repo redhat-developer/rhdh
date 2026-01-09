@@ -280,12 +280,28 @@ export class RbacPo extends PageObject {
     );
     await this.verifyPermissionPoliciesHeader(policies.length);
     await this.create();
-    await this.page
-      .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)
-      .waitFor();
-    await this.page
-      .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)
-      .fill(name);
+
+    // Check for error alert first
+    const errorAlert = this.page
+      .getByRole("alert")
+      .filter({ hasText: /error/i });
+    const errorCount = await errorAlert.count();
+
+    if (errorCount > 0) {
+      const errorMessage = await errorAlert.textContent();
+      throw new Error(
+        `Failed to create role: ${errorMessage}. This may indicate insufficient permissions.`,
+      );
+    }
+
+    // Wait for success message before proceeding to roles list
+    await this.uiHelper.verifyText(
+      `Role role:default/${name} created successfully`,
+    );
+
+    // Now we should be on the roles list page
+    await this.page.getByPlaceholder("Filter").waitFor({ state: "visible" });
+    await this.page.getByPlaceholder("Filter").fill(name);
     await this.uiHelper.verifyHeading("All roles (1)");
   }
 

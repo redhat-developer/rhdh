@@ -145,3 +145,20 @@ log::hr() {
   reset="$(log::reset_code)"
   printf '%s%s%s\n' "${color}" "--------------------------------------------------------------------------------" "${reset}" >&2
 }
+
+# Export all log functions so they are available in subshells (e.g., timeout bash -c "...")
+export -f log::timestamp
+export -f log::level_value
+export -f log::should_log
+export -f log::reset_code
+export -f log::color_for_level
+export -f log::icon_for_level
+export -f log::emit_line
+export -f log::emit
+export -f log::debug
+export -f log::info
+export -f log::warn
+export -f log::error
+export -f log::success
+export -f log::section
+export -f log::hr

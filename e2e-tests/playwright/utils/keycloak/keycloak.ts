@@ -98,7 +98,7 @@ class Keycloak {
     keycloak: Keycloak,
   ) {
     await CatalogUsersPO.visitUserPage(page, keycloakUser.username);
-    const emailLink = await CatalogUsersPO.getEmailLink(page);
+    const emailLink = CatalogUsersPO.getEmailLink(page);
     await expect(emailLink).toBeVisible();
     await uiHelper.verifyDivHasText(
       `${keycloakUser.firstName} ${keycloakUser.lastName}`,
@@ -106,7 +106,7 @@ class Keycloak {
 
     const groups = await keycloak.getGroupsOfUser(token, keycloakUser.id);
     for (const group of groups) {
-      const groupLink = await CatalogUsersPO.getGroupLink(page, group.name);
+      const groupLink = CatalogUsersPO.getGroupLink(page, group.name);
       await expect(groupLink).toBeVisible();
     }
 

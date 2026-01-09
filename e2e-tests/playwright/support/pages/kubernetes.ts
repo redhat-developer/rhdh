@@ -23,7 +23,7 @@ export class KubernetesPage {
     await this.verifyDeployment(text);
     const pods = this.page.locator(KUBERNETES_COMPONENTS.statusOk).nth(4);
     await pods.scrollIntoViewIfNeeded();
-    await expect(pods).toHaveText("1 pods");
+    await expect(pods).toHaveText(/1 pods?/);
     await pods.click();
 
     const pod = this.page.locator("h6").filter({ hasText: text }).first();
@@ -39,7 +39,7 @@ export class KubernetesPage {
 
     if (allowed) {
       await expect(
-        this.page.locator(`input[placeholder="Search"]`),
+        this.page.getByRole("textbox", { name: /search/i }),
       ).toBeVisible();
     } else {
       await this.page

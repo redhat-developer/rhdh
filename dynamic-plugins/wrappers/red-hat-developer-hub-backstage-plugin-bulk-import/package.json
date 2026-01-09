@@ -1,6 +1,6 @@
 {
   "name": "red-hat-developer-hub-backstage-plugin-bulk-import",
-  "version": "1.18.1",
+  "version": "6.9.1",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "license": "Apache-2.0",
@@ -43,7 +43,7 @@
   },
   "dependencies": {
     "@mui/material": "5.18.0",
-    "@red-hat-developer-hub/backstage-plugin-bulk-import": "1.18.1"
+    "@red-hat-developer-hub/backstage-plugin-bulk-import": "6.9.1"
   },
   "devDependencies": {
     "@backstage/cli": "0.34.5",

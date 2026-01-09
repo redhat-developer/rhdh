@@ -199,7 +199,58 @@ global:
         disabled: false
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-floating-action-button
         disabled: false
-      # Orchestrator plugins completely removed for e2e tests
+      # Enable orchestrator plugins - Official release (Backstage 1.45.3)
+      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator:bs_1.45.3__5.1.0!red-hat-developer-hub-backstage-plugin-orchestrator"
+        disabled: false
+        pluginConfig:
+          dynamicPlugins:
+            frontend:
+              red-hat-developer-hub.backstage-plugin-orchestrator:
+                appIcons:
+                  - importName: OrchestratorIcon
+                    name: orchestratorIcon
+                dynamicRoutes:
+                  - importName: OrchestratorPage
+                    menuItem:
+                      icon: orchestratorIcon
+                      text: Orchestrator
+                      textKey: menuItem.orchestrator
+                    path: /orchestrator
+                entityTabs:
+                  - path: /workflows
+                    title: Workflows
+                    titleKey: catalog.entityPage.workflows.title
+                    mountPoint: entity.page.workflows
+                mountPoints:
+                  - mountPoint: entity.page.workflows/cards
+                    importName: OrchestratorCatalogTab
+                    config:
+                      layout:
+                        gridColumn: "1 / -1"
+                        if:
+                          anyOf:
+                            - IsOrchestratorCatalogTabAvailable
+      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator-backend:bs_1.45.3__8.3.0!red-hat-developer-hub-backstage-plugin-orchestrator-backend"
+        disabled: false
+        pluginConfig:
+          orchestrator:
+            dataIndexService:
+              url: http://sonataflow-platform-data-index-service
+
+      # scaffolder-backend-module-orchestrator disabled - causes startup error with Backstage 1.45.3
+      # - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator:bs_1.45.3__1.1.0!red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator"
+      #   disabled: false
+      #   pluginConfig:
+      #     orchestrator:
+      #       dataIndexService:
+      #         url: http://sonataflow-platform-data-index-service
+
+      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets:bs_1.45.3__1.2.0!red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets"
+        disabled: false
+        pluginConfig:
+          dynamicPlugins:
+            frontend:
+              red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets: {}
 
 # -- Upstream Backstage [chart configuration](https://github.com/backstage/charts/blob/main/charts/backstage/values.yaml)
 upstream:
