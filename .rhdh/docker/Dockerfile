@@ -267,8 +267,17 @@ COPY --from=build --chown=1001:1001 "$CONTAINER_SOURCE"/ ./
 # RHIDP-4220 - make Konflux preflight and EC checks happy - [check-container] Create a directory named /licenses and include all relevant licensing
 COPY $EXTERNAL_SOURCE_NESTED/LICENSE /licenses/
 
-# RHIDP-5216/RHIDP-5215 - interim marketplace catalog entities until these data will be loaded from container images
-COPY $EXTERNAL_SOURCE_NESTED/catalog-entities/marketplace /marketplace/catalog-entities/
+# Catalog index image configuration for runtime extraction
+# Catalog entities are removed from the RHDH image build - they are extracted at runtime from the catalog index image
+# This changes HOW the content gets there (runtime extraction vs build-time embedding)
+# Uses the new catalog index image location as per RHIDP-9762/RHIDP-9763
+# (https://github.com/redhat-developer/rhdh-operator/pull/2000)
+# The CATALOG_INDEX_IMAGE env var can be overridden at runtime via extraEnvs (e.g., in Helm values or Operator CR)
+# Note: This only sets up the environment variable and directory - actual extraction/unpacking of catalog entities
+# from the catalog index image happens at runtime (typically in an init container or startup script)
+ENV CATALOG_INDEX_IMAGE=quay.io/rhdh/plugin-catalog-index:1.9
+# Create directory where catalog entities will be unpacked at runtime
+RUN mkdir -p /marketplace/catalog-entities
 
 # Copy script to gather dynamic plugins; copy embedded dynamic plugins to root folder; fix permissions
 COPY $EXTERNAL_SOURCE_NESTED/docker/install-dynamic-plugins.py $EXTERNAL_SOURCE_NESTED/docker/install-dynamic-plugins.sh ./

@@ -999,6 +999,25 @@ def extract_catalog_index(catalog_index_image: str, catalog_index_mount: str) ->
     if not os.path.isfile(default_plugins_file):
         raise InstallException(f"Catalog index image {catalog_index_image} does not contain the expected dynamic-plugins.default.yaml file")
     print("\t==> Successfully extracted catalog index with dynamic-plugins.default.yaml", flush=True)
+    
+    # Extract catalog entities to /marketplace/catalog-entities if they exist in the catalog index image
+    catalog_entities_source = os.path.join(catalog_index_temp_dir, 'catalog-entities', 'marketplace')
+    marketplace_dest = '/marketplace/catalog-entities'
+    if os.path.exists(catalog_entities_source):
+        print(f"\t==> Copying catalog entities from catalog index to {marketplace_dest}", flush=True)
+        os.makedirs(marketplace_dest, exist_ok=True)
+        # Copy all files and directories from catalog-entities/marketplace to /marketplace/catalog-entities
+        for item in os.listdir(catalog_entities_source):
+            source_path = os.path.join(catalog_entities_source, item)
+            dest_path = os.path.join(marketplace_dest, item)
+            if os.path.isdir(source_path):
+                shutil.copytree(source_path, dest_path, dirs_exist_ok=True)
+            else:
+                shutil.copy2(source_path, dest_path)
+        print(f"\t==> Successfully copied catalog entities to {marketplace_dest}", flush=True)
+    else:
+        print(f"\t==> WARNING: catalog-entities/marketplace not found in catalog index image, skipping catalog entities extraction", flush=True)
+    
     return default_plugins_file
 
 def main():
