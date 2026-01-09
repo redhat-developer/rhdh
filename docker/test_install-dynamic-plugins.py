@@ -2622,6 +2622,59 @@ class TestExtractCatalogIndex:
         entity_file = entities_dir / "test-entity.yaml"
         assert entity_file.exists(), "Entity file should be copied"
 
+    def test_extract_catalog_index_removes_existing_destination(self, tmp_path, mocker, mock_oci_image):
+        """Test that existing catalog-entities directory is removed before copying."""
+        catalog_mount = tmp_path / "catalog-mount"
+        catalog_mount.mkdir()
+        catalog_entities_parent_dir = tmp_path / "existing-dir"
+        catalog_entities_parent_dir.mkdir()
+
+        # Create an existing catalog-entities directory with old content
+        existing_entities_dir = catalog_entities_parent_dir / "catalog-entities"
+        existing_entities_dir.mkdir()
+        old_file = existing_entities_dir / "old-file.yaml"
+        old_file.write_text("old content")
+        old_subdir = existing_entities_dir / "old-subdir"
+        old_subdir.mkdir()
+        (old_subdir / "old-nested.yaml").write_text("old nested content")
+
+        # Verify old content exists
+        assert existing_entities_dir.exists()
+        assert old_file.exists()
+        assert old_subdir.exists()
+
+        mocker.patch('shutil.which', return_value='/usr/bin/skopeo')
+
+        mock_result = mocker.Mock()
+        mock_result.returncode = 0
+        mock_subprocess_run = create_mock_skopeo_copy(
+            mock_oci_image['manifest_path'],
+            mock_oci_image['layer_tarball'],
+            mock_result
+        )
+        mocker.patch('subprocess.run', side_effect=mock_subprocess_run)
+
+        install_dynamic_plugins.extract_catalog_index(
+            "quay.io/test/catalog-index:1.9",
+            str(catalog_mount),
+            str(catalog_entities_parent_dir)
+        )
+
+        # Verify old content was removed
+        assert not old_file.exists(), "Old file should have been removed"
+        assert not old_subdir.exists(), "Old subdirectory should have been removed"
+
+        # Verify new content exists
+        entities_dir = catalog_entities_parent_dir / "catalog-entities"
+        assert entities_dir.exists(), "Catalog entities directory should exist"
+        entity_file = entities_dir / "test-entity.yaml"
+        assert entity_file.exists(), "New entity file should exist"
+        assert "kind: Component" in entity_file.read_text()
+
+        # Verify old content is definitely gone
+        assert not (entities_dir / "old-file.yaml").exists(), "Old file should not exist"
+        assert not (entities_dir / "old-subdir").exists(), "Old subdirectory should not exist"
+
     def test_extract_catalog_index_without_catalog_entities(self, tmp_path, mocker, capsys):
         """Test that extraction succeeds with warning if catalog-entities directory doesn't exist in image."""
         import tarfile
@@ -2677,6 +2730,7 @@ class TestExtractCatalogIndex:
         # Verify warning was printed
         captured = capsys.readouterr()
         assert 'WARNING' in captured.out
+        assert 'does not have a' in captured.out
         assert 'catalog-entities/marketplace' in captured.out
 
         # Verify catalog entities directory was not created

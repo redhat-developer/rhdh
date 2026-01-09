@@ -1005,10 +1005,14 @@ def extract_catalog_index(catalog_index_image: str, catalog_index_mount: str, ca
     marketplace_dir_from_catalog_index = os.path.join(catalog_index_temp_dir, 'catalog-entities', 'marketplace')
     if os.path.isdir(marketplace_dir_from_catalog_index):
         os.makedirs(catalog_entities_parent_dir, exist_ok=True)
-        shutil.copytree(marketplace_dir_from_catalog_index, os.path.join(catalog_entities_parent_dir, 'catalog-entities'), dirs_exist_ok=True)
+        catalog_entities_dest = os.path.join(catalog_entities_parent_dir, 'catalog-entities')
+        # Ensure the destination directory is is sync with the catalog entities from the index image
+        if os.path.exists(catalog_entities_dest):
+            shutil.rmtree(catalog_entities_dest, ignore_errors=True, onerror=None)
+        shutil.copytree(marketplace_dir_from_catalog_index, catalog_entities_dest, dirs_exist_ok=True)
         print("\t==> Successfully extracted extensions catalog entities from index image", flush=True)
     else:
-        print(f"\t==> WARNING: Catalog index image {catalog_index_image} does not contain the expected 'catalog-entities/marketplace' directory", flush=True)
+        print(f"\t==> WARNING: Catalog index image {catalog_index_image} does not have a 'catalog-entities/marketplace' directory", flush=True)
 
     return default_plugins_file
 
