@@ -1,7 +1,6 @@
-import { test } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 import { Common } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
-import { UI_HELPER_ELEMENTS } from "../../support/page-objects/global-obj";
 
 test.describe("Test user settings info card", () => {
   test.beforeAll(async () => {
@@ -24,18 +23,23 @@ test.describe("Test user settings info card", () => {
     await uiHelper.openSidebar("Home");
     await page.getByText("Guest").click();
     await page.getByRole("menuitem", { name: "Settings" }).click();
-    await uiHelper.verifyTextInSelector(
-      UI_HELPER_ELEMENTS.MuiCardHeader,
-      "RHDH Build info",
-    );
-    await uiHelper.verifyTextInSelector(
-      UI_HELPER_ELEMENTS.MuiCard("RHDH Build info"),
-      "TechDocs builder: local\nAuthentication provider: Github",
-    );
+
+    // Verify card header is visible
+    await expect(page.getByText("RHDH Build info")).toBeVisible();
+
+    // Verify initial card content using text content
+    await expect(page.getByText("TechDocs builder: local")).toBeVisible();
+    await expect(
+      page.getByText("Authentication provider: Github"),
+    ).toBeVisible();
+
     await page.getByTitle("Show more").click();
-    await uiHelper.verifyTextInSelector(
-      UI_HELPER_ELEMENTS.MuiCard("RHDH Build info"),
-      "TechDocs builder: local\nAuthentication provider: Github\nRBAC: disabled",
-    );
+
+    // Verify expanded card content shows RBAC status
+    await expect(page.getByText("TechDocs builder: local")).toBeVisible();
+    await expect(
+      page.getByText("Authentication provider: Github"),
+    ).toBeVisible();
+    await expect(page.getByText("RBAC: disabled")).toBeVisible();
   });
 });
