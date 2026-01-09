@@ -267,9 +267,6 @@ COPY --from=build --chown=1001:1001 "$CONTAINER_SOURCE"/ ./
 # RHIDP-4220 - make Konflux preflight and EC checks happy - [check-container] Create a directory named /licenses and include all relevant licensing
 COPY $EXTERNAL_SOURCE_NESTED/LICENSE /licenses/
 
-# RHIDP-5216/RHIDP-5215 - interim marketplace catalog entities until these data will be loaded from container images
-COPY $EXTERNAL_SOURCE_NESTED/catalog-entities/marketplace /marketplace/catalog-entities/
-
 # Copy script to gather dynamic plugins; copy embedded dynamic plugins to root folder; fix permissions
 COPY $EXTERNAL_SOURCE_NESTED/docker/install-dynamic-plugins.py $EXTERNAL_SOURCE_NESTED/docker/install-dynamic-plugins.sh ./
 RUN chmod -R a+rx ./install-dynamic-plugins.*
