@@ -8,10 +8,6 @@
   # https://github.com/redhat-developer/rhdh/blob/main/.github/workflows/update-dynamic-plugins-default.yaml#L44-L75
   
 plugins:
-- package: oci://quay.io/rhdh/backstage-community-plugin-analytics-provider-segment:1.9.0--1.19.1!backstage-community-plugin-analytics-provider-segment
-  # new approach using oci images: to switch to the new approach, remove
-  # these comments + the next two lines, but keep the pluginConfig details.
-  disabled: true
 - package: ./dynamic-plugins/dist/backstage-community-plugin-analytics-provider-segment
   disabled: false
   pluginConfig:
@@ -38,10 +34,6 @@ plugins:
   disabled: false
 - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-regex-dynamic
   disabled: false
-- package: oci://quay.io/rhdh/backstage-plugin-techdocs:1.9.0--1.14.1!backstage-plugin-techdocs
-  # new approach using oci images: to switch to the new approach, remove
-  # these comments + the next two lines, but keep the pluginConfig details.
-  disabled: true
 - package: ./dynamic-plugins/dist/backstage-plugin-techdocs
   disabled: false
   pluginConfig:
@@ -95,10 +87,6 @@ plugins:
         runIn: local
       publisher:
         type: local
-- package: oci://quay.io/rhdh/backstage-plugin-techdocs-module-addons-contrib:1.9.0--1.1.27!backstage-plugin-techdocs-module-addons-contrib
-  # new approach using oci images: to switch to the new approach, remove
-  # these comments + the next two lines, but keep the pluginConfig details.
-  disabled: true
 - package: ./dynamic-plugins/dist/backstage-plugin-techdocs-module-addons-contrib
   disabled: false
   pluginConfig:
@@ -107,10 +95,6 @@ plugins:
         backstage.plugin-techdocs-module-addons-contrib:
           techdocsAddons:
           - importName: ReportIssue
-- package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-adoption-insights:1.9.0--0.4.1!red-hat-developer-hub-backstage-plugin-adoption-insights
-  # new approach using oci images: to switch to the new approach, remove
-  # these comments + the next two lines, but keep the pluginConfig details.
-  disabled: true
 - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-adoption-insights
   disabled: false
   pluginConfig:
@@ -154,10 +138,6 @@ plugins:
           - importName: AdoptionInsightsAnalyticsApi
 - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-catalog-backend-module-marketplace-dynamic
   disabled: false
-- package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-dynamic-home-page:1.9.0--1.9.2!red-hat-developer-hub-backstage-plugin-dynamic-home-page
-  # new approach using oci images: to switch to the new approach, remove
-  # these comments + the next two lines, but keep the pluginConfig details.
-  disabled: true
 - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-dynamic-home-page
   disabled: false
   pluginConfig:
@@ -316,10 +296,6 @@ plugins:
           translationResources:
           - importName: homepageTranslations
             ref: homepageTranslationRef
-- package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-global-floating-action-button:1.9.0--1.5.0!red-hat-developer-hub-backstage-plugin-global-floating-action-button
-  # new approach using oci images: to switch to the new approach, remove
-  # these comments + the next two lines, but keep the pluginConfig details.
-  disabled: true
 - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-floating-action-button
   disabled: false
   pluginConfig:
@@ -332,10 +308,6 @@ plugins:
           mountPoints:
           - mountPoint: application/listener
             importName: DynamicGlobalFloatingActionButton
-- package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-global-header:1.9.0--1.18.2!red-hat-developer-hub-backstage-plugin-global-header
-  # new approach using oci images: to switch to the new approach, remove
-  # these comments + the next two lines, but keep the pluginConfig details.
-  disabled: true
 - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-header
   disabled: false
   pluginConfig:
@@ -458,10 +430,6 @@ plugins:
             importName: LogoutButton
             config:
               priority: 10
-- package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-marketplace:1.9.0--0.11.4!red-hat-developer-hub-backstage-plugin-marketplace
-  # new approach using oci images: to switch to the new approach, remove
-  # these comments + the next two lines, but keep the pluginConfig details.
-  disabled: true
 - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-marketplace
   disabled: false
   pluginConfig:
@@ -487,10 +455,6 @@ plugins:
               parent: default.admin
 - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-marketplace-backend-dynamic
   disabled: false
-- package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-quickstart:1.9.0--1.6.2!red-hat-developer-hub-backstage-plugin-quickstart
-  # new approach using oci images: to switch to the new approach, remove
-  # these comments + the next two lines, but keep the pluginConfig details.
-  disabled: true
 - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-quickstart
   disabled: false
   pluginConfig:
@@ -591,10 +555,6 @@ plugins:
           default:
             baseUrl: ${THREESCALE_BASE_URL}
             accessToken: ${THREESCALE_ACCESS_TOKEN}
-- package: oci://quay.io/rhdh/backstage-community-plugin-acr:1.9.0--1.17.0!backstage-community-plugin-acr
-  # new approach using oci images: to switch to the new approach, remove
-  # these comments + the next two lines, but keep the pluginConfig details.
-  disabled: true
 - package: ./dynamic-plugins/dist/backstage-community-plugin-acr
   disabled: true
   pluginConfig:
@@ -793,10 +753,6 @@ plugins:
               if:
                 anyOf:
                 - isNexusRepositoryManagerAvailable
-- package: oci://quay.io/rhdh/backstage-community-plugin-ocm:1.9.0--5.8.0!backstage-community-plugin-ocm
-  # new approach using oci images: to switch to the new approach, remove
-  # these comments + the next two lines, but keep the pluginConfig details.
-  disabled: true
 - package: ./dynamic-plugins/dist/backstage-community-plugin-ocm
   disabled: true
   pluginConfig:
@@ -851,7 +807,8 @@ plugins:
             url: ${OCM_HUB_URL}
             serviceAccountToken: ${OCM_SA_TOKEN}
             owner: janus-authors
-- package: oci://quay.io/rhdh/backstage-community-plugin-quay:1.9.0--1.24.0!backstage-community-plugin-quay
+# Tag: 1.9.0--1.24.0, Build date: 2025-11-14T14:55:19Z
+- package: oci://quay.io/rhdh/backstage-community-plugin-quay@sha256:7ad3b927ca47b2862e80172b61f6dbbf271c1c651d9b0d622f63155a9b4c48d6!backstage-community-plugin-quay
   # new approach using oci images: to switch to the new approach, remove
   # these comments + the next two lines, but keep the pluginConfig details.
   disabled: true
@@ -870,10 +827,6 @@ plugins:
               if:
                 anyOf:
                 - isQuayAvailable
-- package: oci://quay.io/rhdh/backstage-community-plugin-rbac:1.9.0--1.45.1!backstage-community-plugin-rbac
-  # new approach using oci images: to switch to the new approach, remove
-  # these comments + the next two lines, but keep the pluginConfig details.
-  disabled: true
 - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
   disabled: true
   pluginConfig:
@@ -898,39 +851,6 @@ plugins:
             rbac:
               parent: default.admin
               icon: rbacIcon
-- package: oci://quay.io/rhdh/backstage-community-plugin-redhat-argocd:1.9.0--2.0.0!backstage-community-plugin-redhat-argocd
-  # new approach using oci images: to switch to the new approach, remove
-  # these comments + the next two lines, but keep the pluginConfig details.
-  disabled: true
-- package: ./dynamic-plugins/dist/backstage-community-plugin-redhat-argocd
-  disabled: true
-  pluginConfig:
-    dynamicPlugins:
-      frontend:
-        backstage-community.plugin-redhat-argocd:
-          translationResources:
-          - importName: argocdTranslations
-            module: Alpha
-            ref: argocdTranslationRef
-          mountPoints:
-          - mountPoint: entity.page.overview/cards
-            importName: ArgocdDeploymentSummary
-            config:
-              layout:
-                gridColumnEnd:
-                  lg: span 8
-                  xs: span 12
-              if:
-                allOf:
-                - isArgocdConfigured
-          - mountPoint: entity.page.cd/cards
-            importName: ArgocdDeploymentLifecycle
-            config:
-              layout:
-                gridColumn: 1 / -1
-              if:
-                allOf:
-                - isArgocdConfigured
 - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-kubernetes-dynamic
   disabled: true
 - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-servicenow-dynamic
@@ -966,10 +886,6 @@ plugins:
     sonarqube:
       baseUrl: ${SONARQUBE_URL}
       apiKey: ${SONARQUBE_TOKEN}
-- package: oci://quay.io/rhdh/backstage-community-plugin-tech-radar:1.9.0--1.10.1!backstage-community-plugin-tech-radar
-  # new approach using oci images: to switch to the new approach, remove
-  # these comments + the next two lines, but keep the pluginConfig details.
-  disabled: true
 - package: ./dynamic-plugins/dist/backstage-community-plugin-tech-radar
   disabled: true
   pluginConfig:
@@ -997,10 +913,6 @@ plugins:
   pluginConfig:
     techRadar:
       url: ${TECH_RADAR_DATA_URL}
-- package: oci://quay.io/rhdh/backstage-community-plugin-tekton:1.9.0--3.29.0!backstage-community-plugin-tekton
-  # new approach using oci images: to switch to the new approach, remove
-  # these comments + the next two lines, but keep the pluginConfig details.
-  disabled: true
 - package: ./dynamic-plugins/dist/backstage-community-plugin-tekton
   disabled: true
   pluginConfig:
@@ -1019,10 +931,6 @@ plugins:
               if:
                 allOf:
                 - isTektonCIAvailable
-- package: oci://quay.io/rhdh/backstage-community-plugin-topology:1.9.0--2.6.1!backstage-community-plugin-topology
-  # new approach using oci images: to switch to the new approach, remove
-  # these comments + the next two lines, but keep the pluginConfig details.
-  disabled: true
 - package: ./dynamic-plugins/dist/backstage-community-plugin-topology
   disabled: true
   pluginConfig:
@@ -1185,10 +1093,6 @@ plugins:
           authProvider: serviceAccount
           skipTLSVerify: true
           serviceAccountToken: ${K8S_CLUSTER_TOKEN}
-- package: oci://quay.io/rhdh/backstage-plugin-notifications:1.9.0--0.5.8!backstage-plugin-notifications
-  # new approach using oci images: to switch to the new approach, remove
-  # these comments + the next two lines, but keep the pluginConfig details.
-  disabled: true
 - package: ./dynamic-plugins/dist/backstage-plugin-notifications
   disabled: true
   pluginConfig:
@@ -1316,10 +1220,6 @@ plugins:
         clientSecret: ${PAGERDUTY_CLIENT_SECRET}
         subDomain: ${PAGERDUTY_SUBDOMAIN}
 - package: ./dynamic-plugins/dist/parfuemerie-douglas-scaffolder-backend-module-azure-repositories-dynamic
-  disabled: true
-- package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-bulk-import:1.9.0--1.18.1!red-hat-developer-hub-backstage-plugin-bulk-import
-  # new approach using oci images: to switch to the new approach, remove
-  # these comments + the next two lines, but keep the pluginConfig details.
   disabled: true
 - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import
   disabled: true
@@ -1557,55 +1457,32 @@ plugins:
   disabled: true
 - package: ./dynamic-plugins/dist/roadiehq-scaffolder-backend-module-utils-dynamic
   disabled: true
-- package: '@redhat/backstage-plugin-orchestrator-backend-dynamic@1.8.2'
+- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-redhat-argocd:next__2.0.0
   disabled: true
-  integrity: sha512-6G0YguzCM5nCDpOrIGJpLTXVMr6EBdIVqSXtsLH9RvBH25RTuFpfJ7q6eEp26DqveaiqUCfBpJ51smdjcsEzFQ==
-  pluginConfig:
-    orchestrator:
-      dataIndexService:
-        url: http://sonataflow-platform-data-index-service
-- package: '@redhat/backstage-plugin-orchestrator-form-widgets@1.8.2'
-  disabled: true
-  integrity: sha512-Pe0dn3g+YTK3jbl36E8nt4zdyH/3w+MWgRyFWPc2B0eV4/L/aRfRC4KxcktmHPdamRGXTIaXL6cFae8TZl8Htw==
   pluginConfig:
     dynamicPlugins:
       frontend:
-        red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets: {}
-- package: '@redhat/backstage-plugin-orchestrator@1.8.2'
-  disabled: true
-  integrity: sha512-rnUA6iZ2JVAyASfwS4P9HeFmpqCgH6FQouzzg4s6lCPAsYUFvu6tifJ3df5lThXPUTJ2cDvvQgamU+4DiHP2jw==
-  pluginConfig:
-    dynamicPlugins:
-      frontend:
-        red-hat-developer-hub.backstage-plugin-orchestrator:
-          appIcons:
-          - importName: OrchestratorIcon
-            name: orchestratorIcon
-          dynamicRoutes:
-          - importName: OrchestratorPage
-            menuItem:
-              icon: orchestratorIcon
-              text: Orchestrator
-              textKey: menuItem.orchestrator
-            path: /orchestrator
-          entityTabs:
-          - path: /workflows
-            title: Workflows
-            titleKey: catalog.entityPage.workflows.title
-            mountPoint: entity.page.workflows
+        backstage-community.plugin-redhat-argocd:
+          translationResources:
+          - importName: argocdTranslations
+            module: Alpha
+            ref: argocdTranslationRef
           mountPoints:
-          - mountPoint: entity.page.workflows/cards
-            importName: OrchestratorCatalogTab
+          - mountPoint: entity.page.overview/cards
+            importName: ArgocdDeploymentSummary
+            config:
+              layout:
+                gridColumnEnd:
+                  lg: span 8
+                  xs: span 12
+              if:
+                allOf:
+                - isArgocdConfigured
+          - mountPoint: entity.page.cd/cards
+            importName: ArgocdDeploymentLifecycle
             config:
               layout:
                 gridColumn: 1 / -1
-                if:
-                  anyOf:
-                  - IsOrchestratorCatalogTabAvailable
-- package: '@redhat/backstage-plugin-scaffolder-backend-module-orchestrator-dynamic@1.8.2'
-  disabled: true
-  integrity: sha512-N2hCn9RI/QVEoK56FAkGkSDbvfQCOIzVsJTwDX0kf//npO++2crRSJpB1Lr/m2UtYxfaXZX53p8sPcK3g8yWkQ==
-  pluginConfig:
-    orchestrator:
-      dataIndexService:
-        url: http://sonataflow-platform-data-index-service
+              if:
+                allOf:
+                - isArgocdConfigured
