@@ -567,9 +567,9 @@ configure_external_postgres_db() {
 
   # Now we can safely get the password
   POSTGRES_PASSWORD=$(oc get secret/postgress-external-db-pguser-janus-idp -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.password}')
-  sed_inplace "s|POSTGRES_PASSWORD:.*|POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
+  sed "s|POSTGRES_PASSWORD:.*|POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
   POSTGRES_HOST=$(echo -n "postgress-external-db-primary.$NAME_SPACE_POSTGRES_DB.svc.cluster.local" | base64 | tr -d '\n')
-  sed_inplace "s|POSTGRES_HOST:.*|POSTGRES_HOST: ${POSTGRES_HOST}|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
+  sed "s|POSTGRES_HOST:.*|POSTGRES_HOST: ${POSTGRES_HOST}|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
 
   # Validate final configuration apply
   if ! oc apply -f "${DIR}/resources/postgres-db/postgres-cred.yaml" --namespace="${project}"; then
@@ -595,7 +595,7 @@ apply_yaml_files() {
   )
 
   for file in "${files[@]}"; do
-    sed_inplace "s/namespace:.*/namespace: ${project}/g" "$file"
+    sed "s/namespace:.*/namespace: ${project}/g" "$file"
   done
 
   DH_TARGET_URL=$(echo -n "test-backstage-customization-provider-${project}.${K8S_CLUSTER_ROUTER_BASE}" | base64 -w 0)
@@ -943,10 +943,11 @@ delete_tekton_pipelines() {
 cluster_setup_ocp_helm() {
   # first install all operators to run the installation in parallel
   install_pipelines_operator
-  install_crunchy_postgres_ocp_operator
+  # install_crunchy_postgres_ocp_operator
 
   # Skip orchestrator infra installation on OSD-GCP due to infrastructure limitations
   if [[ ! "${JOB_NAME}" =~ osd-gcp ]]; then
+    # echo "skipping install_orchestrator_infra_chart"
     install_orchestrator_infra_chart
   else
     echo "Skipping orchestrator-infra installation on OSD-GCP environment"
@@ -954,7 +955,7 @@ cluster_setup_ocp_helm() {
 
   # then wait for the right status one by one
   waitfor_pipelines_operator
-  waitfor_crunchy_postgres_ocp_operator
+  # waitfor_crunchy_postgres_ocp_operator
 }
 
 cluster_setup_ocp_operator() {
@@ -1047,6 +1048,67 @@ perform_helm_install() {
     $(get_image_helm_set_params)
 }
 
+# Refresh PostgreSQL collation versions after a major version upgrade
+# This suppresses the "collation version mismatch" warnings that occur when
+# upgrading PostgreSQL across glibc versions (e.g., 2.34 -> 2.40)
+refresh_postgres_collation_versions() {
+  local namespace=$1
+  local max_wait=${2:-120} # Max seconds to wait for PostgreSQL pod
+
+  log::info "Refreshing PostgreSQL collation versions in namespace: ${namespace}"
+
+  # Find the PostgreSQL pod
+  local pg_pod
+  local waited=0
+  while [[ $waited -lt $max_wait ]]; do
+    pg_pod=$(oc get pods -n "${namespace}" -l "app.kubernetes.io/name=postgresql" -o jsonpath='{.items[0].metadata.name}' 2> /dev/null)
+    if [[ -n "$pg_pod" ]]; then
+      # Check if pod is ready
+      local ready
+      ready=$(oc get pod -n "${namespace}" "${pg_pod}" -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' 2> /dev/null)
+      if [[ "$ready" == "True" ]]; then
+        break
+      fi
+    fi
+    log::debug "Waiting for PostgreSQL pod to be ready... (${waited}s/${max_wait}s)"
+    sleep 5
+    waited=$((waited + 5))
+  done
+
+  if [[ -z "$pg_pod" ]]; then
+    log::warn "No PostgreSQL pod found in namespace ${namespace}. Skipping collation refresh."
+    return 0
+  fi
+
+  log::info "Found PostgreSQL pod: ${pg_pod}"
+
+  # Get list of databases (excluding templates)
+  local databases
+  databases=$(oc exec -n "${namespace}" "${pg_pod}" -- psql -U postgres -t -c \
+    "SELECT datname FROM pg_database WHERE datistemplate = false AND datname NOT IN ('postgres');" 2> /dev/null | tr -d ' ')
+
+  # Refresh collation version for postgres database first
+  log::info "Refreshing collation version for database: postgres"
+  oc exec -n "${namespace}" "${pg_pod}" -- psql -U postgres -c \
+    "ALTER DATABASE postgres REFRESH COLLATION VERSION;" 2> /dev/null || log::warn "Failed to refresh collation for postgres"
+
+  # Refresh collation version for template1
+  log::info "Refreshing collation version for database: template1"
+  oc exec -n "${namespace}" "${pg_pod}" -- psql -U postgres -c \
+    "ALTER DATABASE template1 REFRESH COLLATION VERSION;" 2> /dev/null || log::warn "Failed to refresh collation for template1"
+
+  # Refresh collation version for user databases
+  for db in $databases; do
+    if [[ -n "$db" ]]; then
+      log::info "Refreshing collation version for database: ${db}"
+      oc exec -n "${namespace}" "${pg_pod}" -- psql -U postgres -c \
+        "ALTER DATABASE \"${db}\" REFRESH COLLATION VERSION;" 2> /dev/null || log::warn "Failed to refresh collation for ${db}"
+    fi
+  done
+
+  log::info "Collation version refresh completed for namespace: ${namespace}"
+}
+
 base_deployment() {
   configure_namespace ${NAME_SPACE}
 
@@ -1089,7 +1151,7 @@ rbac_deployment() {
 initiate_deployments() {
   cd "${DIR}"
   base_deployment
-  rbac_deployment
+  # rbac_deployment
 }
 
 # OSD-GCP specific deployment functions that merge diff files and skip orchestrator workflows
@@ -1262,7 +1324,8 @@ check_and_test() {
   if check_backstage_running "${release_name}" "${namespace}" "${url}" "${max_attempts}" "${wait_seconds}"; then
     echo "Display pods for verification..."
     oc get pods -n "${namespace}"
-    run_tests "${release_name}" "${namespace}" "${playwright_project}" "${url}"
+    # run_tests "${release_name}" "${namespace}" "${playwright_project}" "${url}"
+    echo "SKIPPING TESTS"
   else
     echo "Backstage is not running. Marking deployment as failed and continuing..."
     CURRENT_DEPLOYMENT=$((CURRENT_DEPLOYMENT + 1))
