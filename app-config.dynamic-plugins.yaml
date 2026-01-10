@@ -265,6 +265,16 @@ dynamicPlugins:
       mountPoints:
         - mountPoint: application/provider
           importName: QuickstartDrawerProvider
+        - mountPoint: application/internal/drawer-state
+          importName: QuickstartDrawerStateExposer
+        - mountPoint: application/internal/drawer-content
+          importName: QuickstartDrawerContent
+          config:
+            id: quickstart
+        - mountPoint: global.header/help
+          importName: QuickstartButton
+          config:
+            priority: 100
     red-hat-developer-hub.backstage-plugin-dynamic-home-page:
       dynamicRoutes:
         - path: /
