@@ -1036,8 +1036,8 @@ def main():
     catalog_index_image = os.environ.get("CATALOG_INDEX_IMAGE", "")
     catalog_index_default_file = None
     if catalog_index_image:
-        # default to <dynamic-plugins-root>/extensions if the env var is not set, to make it easier to run locally.
-        catalog_entities_parent_dir = os.environ.get("CATALOG_ENTITIES_EXTRACT_DIR", os.path.join(dynamic_plugins_root, "extensions"))
+        # default to a temporary directory if the env var is not set
+        catalog_entities_parent_dir = os.environ.get("CATALOG_ENTITIES_EXTRACT_DIR", os.path.join(tempfile.gettempdir(), "extensions"))
         catalog_index_default_file = extract_catalog_index(catalog_index_image, dynamic_plugins_root, catalog_entities_parent_dir)
 
     skip_integrity_check = os.environ.get("SKIP_INTEGRITY_CHECK", "").lower() == "true"
