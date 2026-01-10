@@ -81,9 +81,9 @@ When the `CATALOG_INDEX_IMAGE` is set and the index image contains a `catalog-en
 The extraction destination is governed by the `CATALOG_ENTITIES_EXTRACT_DIR` environment variable:
 
 - If `CATALOG_ENTITIES_EXTRACT_DIR` is set, entities are extracted to `<CATALOG_ENTITIES_EXTRACT_DIR>/catalog-entities`
-- If not set, it defaults to `<dynamic-plugins-root>/marketplace/catalog-entities`
+- If not set, it defaults to `/tmp/extensions/catalog-entities`
 
-**Note:** If the catalog index image does not contain the `catalog-entities/marketplace` directory, a warning will be printed but the extraction of `dynamic-plugins.default.yaml` will still succeed.
+**Note:** If the catalog index image does not contain the `catalog-entities/extensions` (or `catalog-entities/marketplace`) directory, a warning will be printed but the extraction of `dynamic-plugins.default.yaml` will still succeed.
 
 ## Installing External Dynamic Plugins
 
