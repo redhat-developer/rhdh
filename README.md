@@ -17,6 +17,7 @@ Today, we have several plugins integrated into RHDH as a way to demonstrate the 
 
 Our current list of plugins include:
 
+- [ArgoCD plugin](https://github.com/backstage/community-plugins/tree/main/workspaces/redhat-argocd/plugins/argocd)
 - [OCM plugin](https://github.com/backstage/community-plugins/tree/main/workspaces/ocm/plugins/ocm)
 - [Quay plugin](https://github.com/backstage/community-plugins/tree/main/workspaces/quay/plugins/quay)
 - [Kubernetes plugin](https://github.com/backstage/backstage/tree/master/plugins/kubernetes)
