@@ -4,6 +4,13 @@
 source "${DIR}/reporting.sh"
 # shellcheck source=.ibm/pipelines/lib/log.sh
 source "${DIR}/lib/log.sh"
+# shellcheck source=.ibm/pipelines/lib/operators.sh
+source "${DIR}/lib/operators.sh"
+# shellcheck source=.ibm/pipelines/lib/k8s-wait.sh
+source "${DIR}/lib/k8s-wait.sh"
+
+# Constants
+TEKTON_PIPELINES_WEBHOOK="tekton-pipelines-webhook"
 
 retrieve_pod_logs() {
   local pod_name=$1
@@ -646,16 +653,22 @@ apply_yaml_files() {
     --namespace="${project}" \
     --dry-run=client -o yaml | oc apply -f -
 
-  # Create Pipeline run for tekton test case.
-  oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline.yaml"
-  oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline-run.yaml"
+  # Skip Tekton and Topology resources for K8s deployments (AKS/EKS/GKE)
+  # Tekton tests are not executed in showcase-k8s or showcase-rbac-k8s projects
+  if [[ "$JOB_NAME" != *"aks"* && "$JOB_NAME" != *"eks"* && "$JOB_NAME" != *"gke"* ]]; then
+    # Create Pipeline run for tekton test case.
+    oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline.yaml"
+    oc apply -f "$dir/resources/pipeline-run/hello-world-pipeline-run.yaml"
 
-  # Create Deployment and Pipeline for Topology test.
-  oc apply -f "$dir/resources/topology_test/topology-test.yaml"
-  if [[ -z "${IS_OPENSHIFT}" || "${IS_OPENSHIFT}" == "false" ]]; then
-    kubectl apply -f "$dir/resources/topology_test/topology-test-ingress.yaml"
+    # Create Deployment and Pipeline for Topology test.
+    oc apply -f "$dir/resources/topology_test/topology-test.yaml"
+    if [[ -z "${IS_OPENSHIFT}" || "${IS_OPENSHIFT}" == "false" ]]; then
+      kubectl apply -f "$dir/resources/topology_test/topology-test-ingress.yaml"
+    else
+      oc apply -f "$dir/resources/topology_test/topology-test-route.yaml"
+    fi
   else
-    oc apply -f "$dir/resources/topology_test/topology-test-route.yaml"
+    log::info "Skipping Tekton Pipeline and Topology resources for K8s deployment (${JOB_NAME})"
   fi
 }
 
@@ -941,9 +954,14 @@ delete_tekton_pipelines() {
 }
 
 cluster_setup_ocp_helm() {
-  # first install all operators to run the installation in parallel
-  install_pipelines_operator
-  install_crunchy_postgres_ocp_operator
+  operator::install_pipelines
+
+  # Wait for OpenShift Pipelines to be ready before proceeding
+  log::info "Waiting for OpenShift Pipelines to be ready..."
+  k8s_wait::deployment "${OPERATOR_NAMESPACE}" "pipelines" 30 10 || return 1
+  k8s_wait::endpoint "${TEKTON_PIPELINES_WEBHOOK}" "openshift-pipelines" 1800 10 || return 1
+
+  operator::install_postgres_ocp
 
   # Skip orchestrator infra installation on OSD-GCP due to infrastructure limitations
   if [[ ! "${JOB_NAME}" =~ osd-gcp ]]; then
@@ -951,46 +969,36 @@ cluster_setup_ocp_helm() {
   else
     echo "Skipping orchestrator-infra installation on OSD-GCP environment"
   fi
-
-  # then wait for the right status one by one
-  waitfor_pipelines_operator
-  waitfor_crunchy_postgres_ocp_operator
 }
 
 cluster_setup_ocp_operator() {
-  # first install all operators to run the installation in parallel
-  install_pipelines_operator
-  install_crunchy_postgres_ocp_operator
-  install_serverless_ocp_operator
-  install_serverless_logic_ocp_operator
+  operator::install_pipelines
 
-  # then wait for the right status one by one
-  waitfor_pipelines_operator
-  waitfor_crunchy_postgres_ocp_operator
-  waitfor_serverless_ocp_operator
-  waitfor_serverless_logic_ocp_operator
+  # Wait for OpenShift Pipelines to be ready before proceeding
+  log::info "Waiting for OpenShift Pipelines to be ready..."
+  k8s_wait::deployment "${OPERATOR_NAMESPACE}" "pipelines" 30 10 || return 1
+  k8s_wait::endpoint "${TEKTON_PIPELINES_WEBHOOK}" "openshift-pipelines" 1800 10 || return 1
+
+  operator::install_postgres_ocp
+  operator::install_serverless
+  operator::install_serverless_logic
 }
 
 cluster_setup_k8s_operator() {
-  # first install all operators to run the installation in parallel
-  install_olm
-  install_tekton_pipelines
-  # install_crunchy_postgres_k8s_operator # Works with K8s but disabled in values file
-
-  # then wait for the right status one by one
-  waitfor_tekton_pipelines
-  # waitfor_crunchy_postgres_k8s_operator
+  operator::install_olm
+  # Tekton not installed for K8s deployments (AKS/EKS/GKE)
+  # Tekton tests are not executed in showcase-k8s or showcase-rbac-k8s projects
+  # operator::install_tekton
+  # operator::install_postgres_k8s # Works with K8s but disabled in values file
 }
 
 cluster_setup_k8s_helm() {
-  # first install all operators to run the installation in parallel
-  # install_olm
-  install_tekton_pipelines
-  # install_crunchy_postgres_k8s_operator # Works with K8s but disabled in values file
-
-  # then wait for the right status one by one
-  waitfor_tekton_pipelines
-  # waitfor_crunchy_postgres_k8s_operator
+  # Tekton not installed for K8s deployments (AKS/EKS/GKE)
+  # Tekton tests are not executed in showcase-k8s or showcase-rbac-k8s projects
+  log::info "Skipping Tekton installation for K8s Helm deployment"
+  # operator::install_olm
+  # operator::install_tekton
+  # operator::install_postgres_k8s # Works with K8s but disabled in values file
 }
 
 install_orchestrator_infra_chart() {
@@ -1065,6 +1073,14 @@ rbac_deployment() {
   configure_namespace "${NAME_SPACE_POSTGRES_DB}"
   configure_namespace "${NAME_SPACE_RBAC}"
   configure_external_postgres_db "${NAME_SPACE_RBAC}"
+
+  # Wait for PostgreSQL to be fully ready before deploying RBAC instance
+  # This ensures the sonataflow database creation job can connect immediately
+  log::info "Waiting for external PostgreSQL to be ready..."
+  if ! k8s_wait::deployment "${NAME_SPACE_POSTGRES_DB}" "postgress-external-db" 10 10; then
+    log::error "PostgreSQL deployment failed to become ready"
+    return 1
+  fi
 
   # Initiate rbac instance deployment.
   local rbac_rhdh_base_url="https://${RELEASE_NAME_RBAC}-developer-hub-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
@@ -1650,7 +1666,10 @@ wait_for_backstage_resource() {
   return 1
 }
 
-# Helper function to enable orchestrator plugins by merging default and custom dynamic plugins
+# Helper function to enable orchestrator plugins
+# Note: Since we specify dynamicPluginsConfigMapName in the Backstage CR,
+# the operator doesn't create a default backstage-dynamic-plugins-* configmap.
+# We just need to wait for the deployment to be ready.
 enable_orchestrator_plugins_op() {
   local namespace=$1
 
@@ -1664,27 +1683,39 @@ enable_orchestrator_plugins_op() {
   log::info "Enabling orchestrator plugins in namespace: $namespace"
 
   # Wait for backstage resource to exist
-  wait_for_backstage_resource "$namespace"
-  sleep 5
+  if ! wait_for_backstage_resource "$namespace"; then
+    log::error "Failed to find backstage resource in namespace: $namespace"
+    return 1
+  fi
 
-  # Setup working directory
   local work_dir="/tmp/orchestrator-plugins-merge"
   rm -rf "$work_dir" && mkdir -p "$work_dir"
 
-  # Extract custom dynamic plugins configmap
+  # Extract current custom dynamic plugins configmap
   log::info "Extracting custom dynamic plugins configmap..."
   if ! oc get cm dynamic-plugins -n "$namespace" -o json | jq '.data."dynamic-plugins.yaml"' -r > "$work_dir/custom-plugins.yaml"; then
     log::error "Error: Failed to extract dynamic-plugins configmap"
     return 1
   fi
 
-  # Find and extract default configmap
-  log::info "Finding default dynamic plugins configmap..."
-  local default_cm
-  default_cm=$(oc get cm -n "$namespace" --no-headers | grep "backstage-dynamic-plugins" | awk '{print $1}' | head -1)
+  # Locate operator-managed default configmap
+  log::info "Waiting for operator-managed dynamic plugins configmap..."
+  local default_cm=""
+  local attempts=0
+  local max_attempts=60
+  while [[ $attempts -lt $max_attempts ]]; do
+    default_cm=$(oc get cm -n "$namespace" -o name 2> /dev/null | grep "backstage-dynamic-plugins-" | head -1 | sed 's#configmap/##')
+    if [[ -n "$default_cm" ]]; then
+      break
+    fi
+    sleep 5
+    attempts=$((attempts + 1))
+  done
 
   if [[ -z "$default_cm" ]]; then
-    log::error "Error: No default configmap found matching pattern 'backstage-dynamic-plugins-'"
+    log::error "Error: No default configmap found matching pattern 'backstage-dynamic-plugins-' after waiting"
+    log::info "Available configmaps in namespace $namespace:"
+    oc get cm -n "$namespace" || true
     return 1
   fi
 
@@ -1694,39 +1725,48 @@ enable_orchestrator_plugins_op() {
     return 1
   fi
 
-  # Extract plugins array with disabled: false and append to custom plugins
-  log::info "Extracting and enabling default plugins..."
-  if ! yq eval '.plugins | map(. + {"disabled": false})' "$work_dir/default-plugins.yaml" > "$work_dir/default-plugins-array.yaml"; then
-    log::error "Error: Failed to extract and modify plugins array from default file"
+  # Merge default and custom plugins (custom overrides default on conflicts)
+  log::info "Merging custom and default dynamic plugins..."
+
+  # Use yq to merge: default plugins + custom plugins, with custom taking precedence
+  # The expression concatenates arrays and deduplicates by .package, keeping the last occurrence
+  if ! yq eval-all '
+    select(fileIndex == 0) as $default |
+    select(fileIndex == 1) as $custom |
+    {
+      "includes": (($default.includes // []) + ($custom.includes // [])) | unique,
+      "plugins": (($default.plugins // []) + ($custom.plugins // [])) | group_by(.package) | map(.[-1])
+    }
+  ' "$work_dir/default-plugins.yaml" "$work_dir/custom-plugins.yaml" | yq eval 'select(di == 0)' - > "$work_dir/merged-plugins.yaml"; then
+    log::error "Error: Failed to merge plugins"
     return 1
   fi
 
-  if ! yq eval '.plugins += load("'$work_dir'/default-plugins-array.yaml")' -i "$work_dir/custom-plugins.yaml"; then
-    log::error "Error: Failed to append default plugins to custom plugins"
+  # Create configmap manifest with merged content
+  cat << 'EOF' > "$work_dir/merged-configmap.yaml"
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: dynamic-plugins
+data:
+  dynamic-plugins.yaml: |
+EOF
+  if ! sed 's/^/    /' "$work_dir/merged-plugins.yaml" >> "$work_dir/merged-configmap.yaml"; then
+    log::error "Error: Failed to prepare merged configmap manifest"
     return 1
   fi
 
-  # Use the modified custom file as the final merged result
-  if ! cp "$work_dir/custom-plugins.yaml" "$work_dir/merged-plugins.yaml"; then
-    log::error "Error: Failed to create merged plugins file"
+  # Apply merged configmap
+  if ! oc apply -f "$work_dir/merged-configmap.yaml" -n "$namespace"; then
+    log::error "Error: Failed to apply merged dynamic-plugins configmap"
     return 1
   fi
 
-  # Apply new configmap with merged content
-  if ! oc create configmap dynamic-plugins \
-    --from-file="dynamic-plugins.yaml=$work_dir/merged-plugins.yaml" \
-    -n "$namespace" --dry-run=client -o yaml | oc apply -f -; then
-    log::error "Error: Failed to apply updated dynamic-plugins configmap"
-    return 1
-  fi
-
-  # Find and restart backstage deployment
-  log::info "Finding backstage deployment..."
+  # Restart backstage deployment to pick up updated plugins
   local backstage_deployment
-  backstage_deployment=$(oc get deployment -n "$namespace" --no-headers | grep "^backstage-rhdh" | awk '{print $1}' | head -1)
-
+  backstage_deployment=$(oc get deployment -n "$namespace" --no-headers | grep "^backstage-" | awk '{print $1}' | head -1)
   if [[ -z "$backstage_deployment" ]]; then
-    log::error "Error: No backstage deployment found matching pattern 'backstage-rhdh*'"
+    log::error "Error: No backstage deployment found matching pattern 'backstage-*'"
     return 1
   fi
 
@@ -1736,8 +1776,7 @@ enable_orchestrator_plugins_op() {
     return 1
   fi
 
-  # Cleanup
+  log::success "Successfully enabled orchestrator plugins in namespace: $namespace"
+  log::info "Note: Deployment will be verified by subsequent wait_for_deployment calls"
   rm -rf "$work_dir"
-
-  log::info "Successfully enabled orchestrator plugins in namespace: $namespace"
 }
