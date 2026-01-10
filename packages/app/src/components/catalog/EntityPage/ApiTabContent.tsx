@@ -4,8 +4,9 @@ import {
 } from '@backstage/plugin-api-docs';
 import { EntitySwitch, isKind } from '@backstage/plugin-catalog';
 
+import { isType } from '@red-hat-developer-hub/app-utils';
+
 import Grid from '../Grid';
-import { isType } from '../utils';
 
 export const ApiTabContent = () => (
   <EntitySwitch>

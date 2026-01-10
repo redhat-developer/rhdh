@@ -1,4 +1,5 @@
-import { TranslationConfig } from '../../types/types';
+import { TranslationConfig } from '@red-hat-developer-hub/app-utils';
+
 import { getDefaultLanguage } from './language';
 
 // Mock navigator for testing

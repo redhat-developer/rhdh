@@ -1,4 +1,4 @@
-import { TranslationConfig } from '../../types/types';
+import { TranslationConfig } from '@red-hat-developer-hub/app-utils';
 
 /**
  * Determines the default language:

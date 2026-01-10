@@ -8,6 +8,7 @@ export const isType = (types: string | string[]) => (entity: Entity) => {
     ? entity?.spec?.type === types
     : types.includes(entity.spec.type as string);
 };
+
 export const hasAnnotation = (keys: string) => (entity: Entity) =>
   Boolean(entity.metadata.annotations?.[keys]);
 
