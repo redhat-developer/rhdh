@@ -159,7 +159,8 @@ def get_oci_plugin_paths(image: str) -> list[str]:
         result = subprocess.run(
             [skopeo_path, 'inspect', '--raw', image_url],
             check=True,
-            capture_output=True
+            capture_output=True,
+            text=True
         )
         
         manifest = json.loads(result.stdout)
@@ -179,6 +180,13 @@ def get_oci_plugin_paths(image: str) -> list[str]:
         
         return plugin_paths
         
+    except subprocess.CalledProcessError as e:
+        error_msg = f"Failed to inspect OCI image {image}: skopeo command failed with exit code {e.returncode}"
+        if e.stderr:
+            error_msg += f"\nstderr: {e.stderr.strip()}"
+        if e.stdout:
+            error_msg += f"\nstdout: {e.stdout.strip()}"
+        raise InstallException(error_msg)
     except Exception as e:
         raise InstallException(f"Failed to read plugin metadata from {image}: {e}")
 
@@ -553,10 +561,16 @@ class OciDownloader:
         self.max_entry_size = int(os.environ.get('MAX_ENTRY_SIZE', 20000000))
 
     def skopeo(self, command):
-        rv = subprocess.run([self._skopeo] + command, check=True, capture_output=True)
-        if rv.returncode != 0:
-            raise InstallException(f'Error while running skopeo command: {rv.stderr}')
-        return rv.stdout
+        try:
+            rv = subprocess.run([self._skopeo] + command, check=True, capture_output=True, text=True)
+            return rv.stdout
+        except subprocess.CalledProcessError as e:
+            error_msg = f'skopeo command failed with exit code {e.returncode}'
+            if e.stderr:
+                error_msg += f'\nstderr: {e.stderr.strip()}'
+            if e.stdout:
+                error_msg += f'\nstdout: {e.stdout.strip()}'
+            raise InstallException(error_msg)
 
     def get_plugin_tar(self, image: str) -> str:
         if image not in self.image_to_tarball:
@@ -978,13 +992,20 @@ def extract_catalog_index(catalog_index_image: str, catalog_index_mount: str, ca
         local_dir = os.path.join(tmp_dir, 'catalog-index-oci')
 
         # Download the OCI image using skopeo
-        result = subprocess.run(
-            [skopeo_path, 'copy', image_url, f'dir:{local_dir}'],
-            capture_output=True,
-            text=True
-        )
-        if result.returncode != 0:
-            raise InstallException(f"Failed to download catalog index image {catalog_index_image}: {result.stderr}")
+        try:
+            result = subprocess.run(
+                [skopeo_path, 'copy', image_url, f'dir:{local_dir}'],
+                check=True,
+                capture_output=True,
+                text=True
+            )
+        except subprocess.CalledProcessError as e:
+            error_msg = f"Failed to download catalog index image {catalog_index_image}: skopeo command failed with exit code {e.returncode}"
+            if e.stderr:
+                error_msg += f"\nstderr: {e.stderr.strip()}"
+            if e.stdout:
+                error_msg += f"\nstdout: {e.stdout.strip()}"
+            raise InstallException(error_msg)
 
         manifest_path = os.path.join(local_dir, 'manifest.json')
         if not os.path.isfile(manifest_path):
