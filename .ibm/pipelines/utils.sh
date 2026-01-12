@@ -310,31 +310,41 @@ wait_for_job_completion() {
 wait_for_svc() {
   local svc_name=$1
   local namespace=$2
-  local timeout=${3:-300}
+  local timeout_seconds=${3:-300}
+  local check_interval=5
+  local max_attempts=$((timeout_seconds / check_interval))
 
-  timeout "${timeout}" bash -c "
-    log::info ${svc_name}
-    while ! oc get svc $svc_name -n $namespace &> /dev/null; do
-      log::info \"Waiting for ${svc_name} service to be created...\"
-      sleep 5
-    done
-    log::success \"Service ${svc_name} is created.\"
-    " || log::error "Error: Timed out waiting for $svc_name service creation."
+  log::info "Waiting for service '$svc_name' in namespace '$namespace' (timeout: ${timeout_seconds}s)..."
+  for ((i = 1; i <= max_attempts; i++)); do
+    if oc get svc "$svc_name" -n "$namespace" &> /dev/null; then
+      log::success "Service '$svc_name' is created."
+      return 0
+    fi
+    log::debug "Attempt $i/$max_attempts: Waiting for service..."
+    sleep "$check_interval"
+  done
+  log::error "Timed out waiting for '$svc_name' service creation after ${timeout_seconds}s."
+  return 1
 }
 
 wait_for_endpoint() {
   local endpoint_name=$1
   local namespace=$2
-  local timeout=${3:-500}
+  local timeout_seconds=${3:-500}
+  local check_interval=5
+  local max_attempts=$((timeout_seconds / check_interval))
 
-  timeout "${timeout}" bash -c "
-    echo ${endpoint_name}
-    while ! kubectl get endpoints $endpoint_name -n $namespace &> /dev/null; do
-      log::info \"Waiting for ${endpoint_name} endpoint to be created...\"
-      sleep 5
-    done
-    log::success \"Endpoint ${endpoint_name} is created.\"
-    " || log::error "Error: Timed out waiting for $endpoint_name endpoint creation."
+  log::info "Waiting for endpoint '$endpoint_name' in namespace '$namespace' (timeout: ${timeout_seconds}s)..."
+  for ((i = 1; i <= max_attempts; i++)); do
+    if kubectl get endpoints "$endpoint_name" -n "$namespace" &> /dev/null; then
+      log::success "Endpoint '$endpoint_name' is created."
+      return 0
+    fi
+    log::debug "Attempt $i/$max_attempts: Waiting for endpoint..."
+    sleep "$check_interval"
+  done
+  log::error "Timed out waiting for '$endpoint_name' endpoint creation after ${timeout_seconds}s."
+  return 1
 }
 
 # Creates an OpenShift Operator subscription
@@ -394,22 +404,30 @@ setup_image_pull_secret() {
 # Monitors the status of an operator in an OpenShift namespace.
 # It checks the ClusterServiceVersion (CSV) for a specific operator to verify if its phase matches an expected value.
 check_operator_status() {
-  local timeout=${1:-300}                 # Timeout in seconds (default 300)
-  local namespace=$2                      # Namespace to check
-  local operator_name=$3                  # Operator name
-  local expected_status=${4:-"Succeeded"} # Expected status phase (default Succeeded)
+  local timeout_seconds=${1:-300}
+  local namespace=$2
+  local operator_name=$3
+  local expected_status=${4:-"Succeeded"}
+  local check_interval=10
+  local max_attempts=$((timeout_seconds / check_interval))
 
-  log::info "Checking the status of operator '${operator_name}' in namespace '${namespace}' with a timeout of ${timeout} seconds."
-  log::info "Expected status: ${expected_status}"
+  log::info "Checking operator '${operator_name}' in namespace '${namespace}' (timeout: ${timeout_seconds}s, expected: ${expected_status})..."
 
-  timeout "${timeout}" bash -c "
-    while true; do
-      CURRENT_PHASE=\$(oc get csv -n '${namespace}' -o jsonpath='{.items[?(@.spec.displayName==\"${operator_name}\")].status.phase}')
-      log::info \"Operator '${operator_name}' current phase: \${CURRENT_PHASE}\"
-      [[ \"\${CURRENT_PHASE}\" == \"${expected_status}\" ]] && log::success \"Operator '${operator_name}' is now in '${expected_status}' phase.\" && break
-      sleep 10
-    done
-  " || log::error "Timed out after ${timeout} seconds. Operator '${operator_name}' did not reach '${expected_status}' phase."
+  for ((i = 1; i <= max_attempts; i++)); do
+    local current_phase
+    current_phase=$(oc get csv -n "${namespace}" -o jsonpath="{.items[?(@.spec.displayName==\"${operator_name}\")].status.phase}" 2>/dev/null || echo "")
+
+    if [[ "${current_phase}" == "${expected_status}" ]]; then
+      log::success "Operator '${operator_name}' is now in '${expected_status}' phase."
+      return 0
+    fi
+
+    log::debug "Attempt $i/$max_attempts: Operator phase: ${current_phase:-NotFound}"
+    sleep "$check_interval"
+  done
+
+  log::error "Timed out after ${timeout_seconds}s. Operator '${operator_name}' did not reach '${expected_status}' phase."
+  return 1
 }
 
 # Installs the Crunchy Postgres Operator from Openshift Marketplace using predefined parameters
@@ -420,19 +438,7 @@ install_crunchy_postgres_ocp_operator() {
 
 waitfor_crunchy_postgres_ocp_operator() {
   check_operator_status 300 "openshift-operators" "Crunchy Postgres for Kubernetes" "Succeeded"
-
-  # Wait for PostgresCluster CRD to be registered before proceeding
-  log::info "Waiting for PostgresCluster CRD to be registered..."
-  timeout 120 bash -c '
-    until oc get crd postgresclusters.postgres-operator.crunchydata.com &>/dev/null; do
-      log::info "Waiting for postgresclusters.postgres-operator.crunchydata.com CRD..."
-      sleep 5
-    done
-  ' || {
-    log::error "Error: Timed out waiting for PostgresCluster CRD to be registered."
-    return 1
-  }
-  log::success "PostgresCluster CRD is available."
+  k8s_wait::crd "postgresclusters.postgres-operator.crunchydata.com" 120 5 || return 1
 }
 
 # Installs the Crunchy Postgres Operator from OperatorHub.io
@@ -443,19 +449,7 @@ install_crunchy_postgres_k8s_operator() {
 
 waitfor_crunchy_postgres_k8s_operator() {
   check_operator_status 300 "operators" "Crunchy Postgres for Kubernetes" "Succeeded"
-
-  # Wait for PostgresCluster CRD to be registered before proceeding
-  log::info "Waiting for PostgresCluster CRD to be registered..."
-  timeout 120 bash -c '
-    until kubectl get crd postgresclusters.postgres-operator.crunchydata.com &>/dev/null; do
-      log::info "Waiting for postgresclusters.postgres-operator.crunchydata.com CRD..."
-      sleep 5
-    done
-  ' || {
-    log::error "Error: Timed out waiting for PostgresCluster CRD to be registered."
-    return 1
-  }
-  log::success "PostgresCluster CRD is available."
+  k8s_wait::crd "postgresclusters.postgres-operator.crunchydata.com" 120 5 || return 1
 }
 
 # Installs the OpenShift Serverless Logic Operator (SonataFlow) from OpenShift Marketplace
@@ -743,7 +737,7 @@ data:
 create_conditional_policies_operator() {
   local destination_file=$1
   yq '.upstream.backstage.initContainers[0].command[2]' "${DIR}/value_files/values_showcase-rbac.yaml" | head -n -4 | tail -n +2 > $destination_file
-  sed -i 's/\\\$/\$/g' $destination_file
+  sed_inplace 's/\\\$/\$/g' "$destination_file"
 }
 
 prepare_operator_app_config() {
@@ -887,28 +881,16 @@ uninstall_olm() {
 # Installs the Red Hat OpenShift Pipelines operator if not already installed
 # Use waitfor_pipelines_operator to wait for the operator to be ready
 install_pipelines_operator() {
-  DISPLAY_NAME="Red Hat OpenShift Pipelines"
+  local display_name="Red Hat OpenShift Pipelines"
   # Check if operator is already installed
-  if oc get csv -n "openshift-operators" | grep -q "${DISPLAY_NAME}"; then
+  if oc get csv -n "openshift-operators" | grep -q "${display_name}"; then
     log::warn "Red Hat OpenShift Pipelines operator is already installed."
   else
     log::info "Red Hat OpenShift Pipelines operator is not installed. Installing..."
-    # Install the operator and wait for deployment
     install_subscription openshift-pipelines-operator openshift-operators latest openshift-pipelines-operator-rh redhat-operators openshift-marketplace
   fi
-
   # Wait for Tekton Pipeline CRD to be registered before proceeding
-  log::info "Waiting for Tekton Pipeline CRD to be registered..."
-  timeout 120 bash -c '
-    until oc get crd pipelines.tekton.dev &>/dev/null; do
-      log::info "Waiting for pipelines.tekton.dev CRD..."
-      sleep 5
-    done
-  ' || {
-    log::error "Error: Timed out waiting for Tekton Pipeline CRD to be registered."
-    return 1
-  }
-  log::success "Tekton Pipeline CRD is available."
+  k8s_wait::crd "pipelines.tekton.dev" 120 5 || return 1
 }
 
 waitfor_pipelines_operator() {
@@ -919,8 +901,8 @@ waitfor_pipelines_operator() {
 # Installs the Tekton Pipelines if not already installed (alternative of OpenShift Pipelines for Kubernetes clusters)
 # Use waitfor_tekton_pipelines to wait for the operator to be ready
 install_tekton_pipelines() {
-  DISPLAY_NAME="tekton-pipelines-webhook"
-  if oc get pods -n "tekton-pipelines" | grep -q "${DISPLAY_NAME}"; then
+  local display_name="tekton-pipelines-webhook"
+  if oc get pods -n "tekton-pipelines" | grep -q "${display_name}"; then
     log::info "Tekton Pipelines are already installed."
   else
     log::info "Tekton Pipelines is not installed. Installing..."
@@ -929,43 +911,34 @@ install_tekton_pipelines() {
 }
 
 waitfor_tekton_pipelines() {
-  DISPLAY_NAME="tekton-pipelines-webhook"
-  wait_for_deployment "tekton-pipelines" "${DISPLAY_NAME}"
+  local display_name="tekton-pipelines-webhook"
+  wait_for_deployment "tekton-pipelines" "${display_name}"
   wait_for_endpoint "tekton-pipelines-webhook" "tekton-pipelines"
-
-  # Wait for Tekton Pipeline CRD to be registered before proceeding
-  log::info "Waiting for Tekton Pipeline CRD to be registered..."
-  timeout 120 bash -c '
-    until kubectl get crd pipelines.tekton.dev &>/dev/null; do
-      log::info "Waiting for pipelines.tekton.dev CRD..."
-      sleep 5
-    done
-  ' || {
-    log::error "Error: Timed out waiting for Tekton Pipeline CRD to be registered."
-    return 1
-  }
-  log::success "Tekton Pipeline CRD is available."
+  k8s_wait::crd "pipelines.tekton.dev" 120 5 || return 1
 }
 
 delete_tekton_pipelines() {
   log::info "Checking for Tekton Pipelines installation..."
-  # Check if tekton-pipelines namespace exists
-  if kubectl get namespace tekton-pipelines &> /dev/null; then
-    log::info "Found Tekton Pipelines installation. Attempting to delete..."
-    # Delete the resources and ignore errors
-    kubectl delete -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml --ignore-not-found=true 2> /dev/null || true
-    # Wait for namespace deletion (with timeout)
-    log::info "Waiting for Tekton Pipelines namespace to be deleted..."
-    timeout 30 bash -c '
-        while kubectl get namespace tekton-pipelines &> /dev/null; do
-            echo "Waiting for tekton-pipelines namespace deletion..."
-            sleep 5
-        done
-        log::success "Tekton Pipelines deleted successfully."
-        ' || log::warn "Warning: Timed out waiting for namespace deletion, continuing..."
-  else
+  if ! kubectl get namespace tekton-pipelines &> /dev/null; then
     log::info "Tekton Pipelines is not installed. Nothing to delete."
+    return 0
   fi
+
+  log::info "Found Tekton Pipelines installation. Attempting to delete..."
+  kubectl delete -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml --ignore-not-found=true 2> /dev/null || true
+
+  # Wait for namespace deletion with simple polling loop
+  log::info "Waiting for Tekton Pipelines namespace to be deleted..."
+  local max_attempts=6  # 30 seconds total
+  for ((i = 1; i <= max_attempts; i++)); do
+    if ! kubectl get namespace tekton-pipelines &> /dev/null; then
+      log::success "Tekton Pipelines deleted successfully."
+      return 0
+    fi
+    log::debug "Attempt $i/$max_attempts: Waiting for namespace deletion..."
+    sleep 5
+  done
+  log::warn "Timed out waiting for namespace deletion, continuing..."
 }
 
 cluster_setup_ocp_helm() {
@@ -1581,7 +1554,8 @@ deploy_orchestrator_workflows_operator() {
   # Wait for backstage and sonata flow pods to be ready before continuing
   wait_for_deployment $namespace backstage-psql 15
   wait_for_deployment $namespace backstage-rhdh 15
-  wait_for_deployment $namespace sonataflow-platform-data 20
+  # SonataFlowPlatform v1alpha08 deploys the Data Index as `sonataflow-platform-data-index-service`
+  wait_for_deployment $namespace sonataflow-platform-data-index-service 20
   wait_for_deployment $namespace sonataflow-platform-jobs-service 20
 
   # Dynamic PostgreSQL configuration detection
@@ -1608,6 +1582,37 @@ deploy_orchestrator_workflows_operator() {
 
   log::info "Found PostgreSQL secret: $pqsl_secret_name"
   log::info "Found PostgreSQL service: $pqsl_svc_name"
+
+  # Ensure the DB exists before workflows start (otherwise `greeting` will CrashLoop with
+  # `FATAL: database \"${sonataflow_db}\" does not exist`)
+  log::info "Ensuring PostgreSQL database '${sonataflow_db}' exists..."
+  local psql_pod=""
+  psql_pod="$(oc get pods -n "$namespace" -o name 2>/dev/null | grep 'backstage-psql' | head -1 | sed 's#pod/##' || true)"
+  if [[ -z "$psql_pod" ]]; then
+    log::warn "Warning: Could not find a PostgreSQL pod matching 'backstage-psql' to bootstrap database '${sonataflow_db}'."
+  else
+    if oc exec -n "$namespace" "$psql_pod" -- sh -lc 'command -v psql >/dev/null 2>&1 && command -v createdb >/dev/null 2>&1'; then
+      # Best-effort: use in-pod env vars to auth (works for both built-in and most operator-managed postgres images).
+      # Note: We intentionally do not fail the whole job here if this bootstrap fails, as some environments may
+      # provision the DB differently.
+      oc exec -n "$namespace" "$psql_pod" -- sh -lc "
+        set -eu
+        db='${sonataflow_db}'
+        user=\"\${POSTGRES_USER:-postgres}\"
+        export PGPASSWORD=\"\${POSTGRES_PASSWORD:-\${POSTGRESQL_ADMIN_PASSWORD:-}}\"
+
+        found=\"\$(psql -U \"\$user\" -d postgres -tAc \"SELECT 1 FROM pg_database WHERE datname='\$db'\")\"
+        if [ \"\$found\" = \"1\" ]; then
+          echo \"Database '\$db' already exists\"
+        else
+          createdb -U \"\$user\" \"\$db\"
+          echo \"Database '\$db' created\"
+        fi
+      " || log::warn "Warning: Failed to ensure database '${sonataflow_db}' exists (workflows may fail to start)."
+    else
+      log::warn "Warning: Pod '$psql_pod' does not have psql/createdb; skipping database bootstrap for '${sonataflow_db}'."
+    fi
+  fi
 
   # Apply user-onboarding workflow manifests
   oc apply -f "${WORKFLOW_MANIFESTS}" -n "$namespace"
@@ -1662,11 +1667,10 @@ deploy_orchestrator_workflows_operator() {
   }"
   log::success "User-onboarding secret updated successfully!"
 
-  for workflow in greeting user-onboarding; do
-    # Create PostgreSQL patch configuration
-    local postgres_patch
-    postgres_patch=$(
-      cat << EOF
+  # Create PostgreSQL patch configuration (applied to both workflows)
+  local postgres_patch
+  postgres_patch=$(
+    cat << EOF
 {
   "spec": {
     "persistence": {
@@ -1686,14 +1690,17 @@ deploy_orchestrator_workflows_operator() {
   }
 }
 EOF
-    )
+  )
 
+  # Patch both workflows first so a failure in one rollout doesn't prevent patching the other.
+  for workflow in greeting user-onboarding; do
     log::info "Patching SonataFlow '$workflow' with PostgreSQL configuration..."
     oc -n "$namespace" patch sonataflow "$workflow" --type merge -p "$postgres_patch"
-
-    log::info "Restarting deployment for '$workflow'..."
-    oc rollout status deployment/"$workflow" -n "$namespace" --timeout=600s
   done
+
+  # Force restart so pods pick up persistence changes deterministically.
+  oc rollout restart deployment/greeting -n "$namespace" 2>/dev/null || true
+  oc rollout restart deployment/user-onboarding -n "$namespace" 2>/dev/null || true
 
   log::info "Waiting for all workflow pods to be running..."
   wait_for_deployment $namespace greeting 5
