@@ -176,8 +176,9 @@ global:
                   clientId: temp
                   clientSecret: temp
                   schedule:
+                    # Let's perform a single execution per test run
                     frequency:
-                      minutes: 60
+                      hours: 24
                     initialDelay:
                       seconds: 15
                     timeout:
@@ -202,8 +203,9 @@ global:
                       options:
                         filter: (cn=*)
                   schedule:
+                    # Let's perform a single execution per test run
                     frequency:
-                      minutes: 60
+                      hours: 24
                     initialDelay:
                       seconds: 15
                     timeout:

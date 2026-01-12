@@ -28,11 +28,12 @@ test.describe("Test global floating action button plugin", () => {
     await fabHelper.verifyFabButtonByLabel("Git");
     await fabHelper.verifyFabButtonByDataTestId("bulk-import");
     await fabHelper.clickFabMenuByTestId("bulk-import");
-    await uiHelper.verifyText("Imported entities");
+    await uiHelper.verifyText("Import to Red Hat Developer Hub");
   });
 
   test("Check if floating button is shown with two sub-menu actions on the Catalog Page, verify Git sub-menu", async () => {
     await uiHelper.openSidebar("Catalog");
+    await uiHelper.verifyHeading(/All Components \((\d+)\)/);
     await fabHelper.verifyFabButtonByDataTestId("floating-button-with-submenu");
     await fabHelper.clickFabMenuByTestId("floating-button-with-submenu");
     await fabHelper.verifyFabButtonByLabel("Git");
@@ -43,6 +44,7 @@ test.describe("Test global floating action button plugin", () => {
 
   test("Check if floating button is shown with two sub-menu actions on the Catalog Page, verify Quay sub-menu", async () => {
     await uiHelper.openSidebar("Catalog");
+    await uiHelper.verifyHeading(/All Components \((\d+)\)/);
     await fabHelper.verifyFabButtonByDataTestId("floating-button-with-submenu");
     await fabHelper.clickFabMenuByTestId("floating-button-with-submenu");
     await fabHelper.verifyFabButtonByLabel("Git");
