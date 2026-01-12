@@ -1,10 +1,9 @@
 kind: Backstage
-apiVersion: rhdh.redhat.com/v1alpha4
+apiVersion: rhdh.redhat.com/v1alpha5
 metadata:
   name: rhdh-rbac
 spec:
   application:
-    image: "quay.io/$QUAY_REPO:$TAG_NAME"
     appConfig:
       configMaps:
         - name: app-config-rhdh
@@ -24,3 +23,28 @@ spec:
       configMaps:
         - name: rbac-policy
       mountPath: /opt/app-root/src/rbac
+
+  # v1alpha5 does not support `spec.application.image`.
+  # Override the generated Deployment instead.
+  deployment:
+    patch:
+      spec:
+        template:
+          spec:
+            initContainers:
+              - name: install-dynamic-plugins
+                image: "quay.io/$QUAY_REPO:$TAG_NAME"
+            containers:
+              - name: backstage-backend
+                image: "quay.io/$QUAY_REPO:$TAG_NAME"
+            volumes:
+              - name: dynamic-plugins-root
+                ephemeral:
+                  volumeClaimTemplate:
+                    spec:
+                      accessModes:
+                        - ReadWriteOnce
+                      resources:
+                        requests:
+                          # The default (2Gi) is not enough for the full dynamic plugins set.
+                          storage: 10Gi

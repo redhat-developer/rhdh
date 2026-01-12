@@ -415,7 +415,7 @@ check_operator_status() {
 
   for ((i = 1; i <= max_attempts; i++)); do
     local current_phase
-    current_phase=$(oc get csv -n "${namespace}" -o jsonpath="{.items[?(@.spec.displayName==\"${operator_name}\")].status.phase}" 2>/dev/null || echo "")
+    current_phase=$(oc get csv -n "${namespace}" -o jsonpath="{.items[?(@.spec.displayName==\"${operator_name}\")].status.phase}" 2> /dev/null || echo "")
 
     if [[ "${current_phase}" == "${expected_status}" ]]; then
       log::success "Operator '${operator_name}' is now in '${expected_status}' phase."
@@ -929,7 +929,7 @@ delete_tekton_pipelines() {
 
   # Wait for namespace deletion with simple polling loop
   log::info "Waiting for Tekton Pipelines namespace to be deleted..."
-  local max_attempts=6  # 30 seconds total
+  local max_attempts=6 # 30 seconds total
   for ((i = 1; i <= max_attempts; i++)); do
     if ! kubectl get namespace tekton-pipelines &> /dev/null; then
       log::success "Tekton Pipelines deleted successfully."
@@ -1587,7 +1587,7 @@ deploy_orchestrator_workflows_operator() {
   # `FATAL: database \"${sonataflow_db}\" does not exist`)
   log::info "Ensuring PostgreSQL database '${sonataflow_db}' exists..."
   local psql_pod=""
-  psql_pod="$(oc get pods -n "$namespace" -o name 2>/dev/null | grep 'backstage-psql' | head -1 | sed 's#pod/##' || true)"
+  psql_pod="$(oc get pods -n "$namespace" -o name 2> /dev/null | grep 'backstage-psql' | head -1 | sed 's#pod/##' || true)"
   if [[ -z "$psql_pod" ]]; then
     log::warn "Warning: Could not find a PostgreSQL pod matching 'backstage-psql' to bootstrap database '${sonataflow_db}'."
   else
@@ -1699,8 +1699,8 @@ EOF
   done
 
   # Force restart so pods pick up persistence changes deterministically.
-  oc rollout restart deployment/greeting -n "$namespace" 2>/dev/null || true
-  oc rollout restart deployment/user-onboarding -n "$namespace" 2>/dev/null || true
+  oc rollout restart deployment/greeting -n "$namespace" 2> /dev/null || true
+  oc rollout restart deployment/user-onboarding -n "$namespace" 2> /dev/null || true
 
   log::info "Waiting for all workflow pods to be running..."
   wait_for_deployment $namespace greeting 5
