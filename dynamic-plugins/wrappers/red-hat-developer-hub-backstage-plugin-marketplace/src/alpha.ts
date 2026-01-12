@@ -1,1 +1,1 @@
-export * from "@red-hat-developer-hub/backstage-plugin-marketplace/alpha";
+export * from "@red-hat-developer-hub/backstage-plugin-extensions/alpha";
