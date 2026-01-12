@@ -95,7 +95,15 @@ export class Common {
         await popup.waitForLoadState();
         await popup.locator("#username").fill(userid);
         await popup.locator("#password").fill(password);
-        await popup.locator("#kc-login").click();
+        // Handle popup close during navigation (popup may close before navigation completes)
+        try {
+          await popup.locator("#kc-login").click({ timeout: 5000 });
+        } catch (error) {
+          // Popup likely closed - this is expected behavior
+          if (!error.message?.includes("Target closed")) {
+            throw error;
+          }
+        }
         resolve();
       });
     });

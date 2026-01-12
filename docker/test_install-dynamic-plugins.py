@@ -2301,7 +2301,7 @@ class TestExtractCatalogIndex:
         manifest_path = oci_dir / "manifest.json"
         manifest_path.write_text(json.dumps(manifest))
 
-        # Create a layer tarball with dynamic-plugins.default.yaml
+        # Create a layer tarball with dynamic-plugins.default.yaml and catalog entities
         layer_content_dir = tmp_path / "layer-content"
         layer_content_dir.mkdir()
 
@@ -2312,16 +2312,87 @@ class TestExtractCatalogIndex:
 """
         yaml_file.write_text(yaml_content)
 
+        # Create catalog entities directory structure (using marketplace for backward compatibility)
+        catalog_entities_dir = layer_content_dir / "catalog-entities" / "marketplace"
+        catalog_entities_dir.mkdir(parents=True)
+        entity_file = catalog_entities_dir / "test-entity.yaml"
+        entity_file.write_text("apiVersion: backstage.io/v1alpha1\nkind: Component\nmetadata:\n  name: test")
+
         # Create the layer tarball
         layer_tarball = oci_dir / "abc123def456"
         with create_test_tarball(layer_tarball) as tar:
             tar.add(str(yaml_file), arcname="dynamic-plugins.default.yaml")
+            # Add catalog entities directory structure recursively
+            # This ensures the directory structure is preserved in the tarball
+            tar.add(str(layer_content_dir / "catalog-entities"), arcname="catalog-entities", recursive=True)
 
         return {
             "oci_dir": str(oci_dir),
             "manifest_path": str(manifest_path),
             "layer_tarball": str(layer_tarball),
-            "yaml_content": yaml_content
+            "yaml_content": yaml_content,
+            "entity_file": str(entity_file)
+        }
+
+    @pytest.fixture
+    def mock_oci_image_with_extensions(self, tmp_path):
+        """Create a mock OCI image structure with extensions directory (new format)."""
+        import tarfile
+
+        # Create a temporary directory for the OCI image
+        oci_dir = tmp_path / "oci-image-extensions"
+        oci_dir.mkdir()
+
+        # Create manifest.json
+        manifest = {
+            "schemaVersion": 2,
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "config": {
+                "mediaType": "application/vnd.oci.image.config.v1+json",
+                "digest": "sha256:test456",
+                "size": 100
+            },
+            "layers": [
+                {
+                    "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+                    "digest": "sha256:def789ghi012",
+                    "size": 1000
+                }
+            ]
+        }
+        manifest_path = oci_dir / "manifest.json"
+        manifest_path.write_text(json.dumps(manifest))
+
+        # Create a layer tarball with dynamic-plugins.default.yaml and catalog entities
+        layer_content_dir = tmp_path / "layer-content-extensions"
+        layer_content_dir.mkdir()
+
+        yaml_file = layer_content_dir / "dynamic-plugins.default.yaml"
+        yaml_content = """plugins:
+  - package: '@backstage/plugin-catalog'
+    integrity: sha512-test
+"""
+        yaml_file.write_text(yaml_content)
+
+        # Create catalog entities directory structure using extensions (new format)
+        catalog_entities_dir = layer_content_dir / "catalog-entities" / "extensions"
+        catalog_entities_dir.mkdir(parents=True)
+        entity_file = catalog_entities_dir / "test-entity.yaml"
+        entity_file.write_text("apiVersion: backstage.io/v1alpha1\nkind: Component\nmetadata:\n  name: test-extensions")
+
+        # Create the layer tarball
+        layer_tarball = oci_dir / "def789ghi012"
+        with create_test_tarball(layer_tarball) as tar:
+            tar.add(str(yaml_file), arcname="dynamic-plugins.default.yaml")
+            # Add catalog entities directory structure recursively
+            tar.add(str(layer_content_dir / "catalog-entities"), arcname="catalog-entities", recursive=True)
+
+        return {
+            "oci_dir": str(oci_dir),
+            "manifest_path": str(manifest_path),
+            "layer_tarball": str(layer_tarball),
+            "yaml_content": yaml_content,
+            "entity_file": str(entity_file)
         }
 
     def test_extract_catalog_index_skopeo_not_found(self, tmp_path, mocker):
@@ -2331,7 +2402,8 @@ class TestExtractCatalogIndex:
         with pytest.raises(install_dynamic_plugins.InstallException, match="skopeo executable not found in PATH"):
             install_dynamic_plugins.extract_catalog_index(
                 "quay.io/test/image:latest",
-                str(tmp_path)
+                str(tmp_path),
+                str(tmp_path / "m4rk3tpl4c3")
             )
 
     def test_extract_catalog_index_skopeo_copy_fails(self, tmp_path, mocker):
@@ -2347,7 +2419,8 @@ class TestExtractCatalogIndex:
         with pytest.raises(install_dynamic_plugins.InstallException, match="Failed to download catalog index image"):
             install_dynamic_plugins.extract_catalog_index(
                 "quay.io/test/image:latest",
-                str(tmp_path)
+                str(tmp_path),
+                str(tmp_path / "m4rk3tpl4c3")
             )
 
     def test_extract_catalog_index_no_manifest(self, tmp_path, mocker):
@@ -2362,13 +2435,15 @@ class TestExtractCatalogIndex:
         with pytest.raises(install_dynamic_plugins.InstallException, match="manifest.json not found in catalog index image"):
             install_dynamic_plugins.extract_catalog_index(
                 "quay.io/test/image:latest",
-                str(tmp_path)
+                str(tmp_path),
+                str(tmp_path / "m4rk3tpl4c3")
             )
 
-    def test_extract_catalog_index_success(self, tmp_path, mocker, mock_oci_image):
+    def test_extract_catalog_index_success(self, tmp_path, mocker, mock_oci_image, capsys):
         """Test successful extraction of catalog index with dynamic-plugins.default.yaml."""
         catalog_mount = tmp_path / "catalog-mount"
         catalog_mount.mkdir()
+        catalog_entities_parent_dir = tmp_path / "m4rk3tpl4c3"
 
         mocker.patch('shutil.which', return_value='/usr/bin/skopeo')
 
@@ -2384,7 +2459,8 @@ class TestExtractCatalogIndex:
 
         result = install_dynamic_plugins.extract_catalog_index(
             "quay.io/test/catalog-index:1.9",
-            str(catalog_mount)
+            str(catalog_mount),
+            str(catalog_entities_parent_dir)
         )
 
         # Verify the function returned a path
@@ -2396,6 +2472,19 @@ class TestExtractCatalogIndex:
         with open(result, 'r') as f:
             content = f.read()
             assert '@backstage/plugin-catalog' in content
+
+        # Verify catalog entities were extracted
+        # Note: copytree copies the contents of marketplace into catalog-entities
+        entities_dir = catalog_entities_parent_dir / "catalog-entities"
+        assert entities_dir.exists()
+        entity_file = entities_dir / "test-entity.yaml"
+        assert entity_file.exists()
+        assert "kind: Component" in entity_file.read_text()
+
+        # Verify success messages were printed
+        captured = capsys.readouterr()
+        assert 'Successfully extracted dynamic-plugins.default.yaml' in captured.out
+        assert 'Successfully extracted extensions catalog entities' in captured.out
 
     def test_extract_catalog_index_no_yaml_file(self, tmp_path, mocker):
         """Test that function returns None when dynamic-plugins.default.yaml is not found in the image."""
@@ -2438,7 +2527,8 @@ class TestExtractCatalogIndex:
         with pytest.raises(install_dynamic_plugins.InstallException, match="does not contain the expected dynamic-plugins.default.yaml file"):
             install_dynamic_plugins.extract_catalog_index(
                 "quay.io/test/empty-index:latest",
-                str(catalog_mount)
+                str(catalog_mount),
+                str(tmp_path / "m4rk3tpl4c3")
             )
 
     def test_extract_catalog_index_large_file_skipped(self, tmp_path, mocker, monkeypatch):
@@ -2495,7 +2585,8 @@ class TestExtractCatalogIndex:
 
         result = install_dynamic_plugins.extract_catalog_index(
             "quay.io/test/large-file-index:latest",
-            str(catalog_mount)
+            str(catalog_mount),
+            str(tmp_path / "m4rk3tpl4c3")
         )
 
         # Should still succeed and find the YAML file
@@ -2517,8 +2608,275 @@ class TestExtractCatalogIndex:
         with pytest.raises(Exception, match="Unexpected error"):
             install_dynamic_plugins.extract_catalog_index(
                 "quay.io/test/image:latest",
-                str(tmp_path)
+                str(tmp_path),
+                str(tmp_path / "m4rk3tpl4c3")
             )
+
+    def test_extract_catalog_index_extracts_catalog_entities(self, tmp_path, mocker, mock_oci_image, capsys):
+        """Test that catalog entities are extracted to the specified directory."""
+        catalog_mount = tmp_path / "catalog-mount"
+        catalog_mount.mkdir()
+        catalog_entities_parent_dir = tmp_path / "entities-dest"
+
+        mocker.patch('shutil.which', return_value='/usr/bin/skopeo')
+
+        mock_result = mocker.Mock()
+        mock_result.returncode = 0
+        mock_subprocess_run = create_mock_skopeo_copy(
+            mock_oci_image['manifest_path'],
+            mock_oci_image['layer_tarball'],
+            mock_result
+        )
+        mocker.patch('subprocess.run', side_effect=mock_subprocess_run)
+
+        install_dynamic_plugins.extract_catalog_index(
+            "quay.io/test/catalog-index:1.9",
+            str(catalog_mount),
+            str(catalog_entities_parent_dir)
+        )
+
+        # Verify catalog entities directory was created
+        # Note: copytree copies the contents of marketplace into catalog-entities
+        entities_dir = catalog_entities_parent_dir / "catalog-entities"
+        assert entities_dir.exists(), "Catalog entities directory should exist"
+
+        # Verify entity file was copied
+        entity_file = entities_dir / "test-entity.yaml"
+        assert entity_file.exists(), "Entity file should be copied"
+        assert "kind: Component" in entity_file.read_text()
+
+        # Verify success message was printed
+        captured = capsys.readouterr()
+        assert 'Successfully extracted extensions catalog entities' in captured.out
+
+    def test_extract_catalog_index_creates_entities_directory(self, tmp_path, mocker, mock_oci_image):
+        """Test that catalog entities parent directory is created if it doesn't exist."""
+        catalog_mount = tmp_path / "catalog-mount"
+        catalog_mount.mkdir()
+        catalog_entities_parent_dir = tmp_path / "new-entities-dir"
+        # Don't create the directory - let the function create it
+
+        mocker.patch('shutil.which', return_value='/usr/bin/skopeo')
+
+        mock_result = mocker.Mock()
+        mock_result.returncode = 0
+        mock_subprocess_run = create_mock_skopeo_copy(
+            mock_oci_image['manifest_path'],
+            mock_oci_image['layer_tarball'],
+            mock_result
+        )
+        mocker.patch('subprocess.run', side_effect=mock_subprocess_run)
+
+        install_dynamic_plugins.extract_catalog_index(
+            "quay.io/test/catalog-index:1.9",
+            str(catalog_mount),
+            str(catalog_entities_parent_dir)
+        )
+
+        # Verify directory was created
+        assert catalog_entities_parent_dir.exists(), "Catalog entities parent directory should be created"
+        # Note: copytree copies the contents of marketplace into catalog-entities
+        entities_dir = catalog_entities_parent_dir / "catalog-entities"
+        assert entities_dir.exists(), "Catalog entities directory should exist"
+
+        # Verify entity file was copied
+        entity_file = entities_dir / "test-entity.yaml"
+        assert entity_file.exists(), "Entity file should be copied"
+
+    def test_extract_catalog_index_removes_existing_destination(self, tmp_path, mocker, mock_oci_image):
+        """Test that existing catalog-entities directory is removed before copying."""
+        catalog_mount = tmp_path / "catalog-mount"
+        catalog_mount.mkdir()
+        catalog_entities_parent_dir = tmp_path / "existing-dir"
+        catalog_entities_parent_dir.mkdir()
+
+        # Create an existing catalog-entities directory with old content
+        existing_entities_dir = catalog_entities_parent_dir / "catalog-entities"
+        existing_entities_dir.mkdir()
+        old_file = existing_entities_dir / "old-file.yaml"
+        old_file.write_text("old content")
+        old_subdir = existing_entities_dir / "old-subdir"
+        old_subdir.mkdir()
+        (old_subdir / "old-nested.yaml").write_text("old nested content")
+
+        # Verify old content exists
+        assert existing_entities_dir.exists()
+        assert old_file.exists()
+        assert old_subdir.exists()
+
+        mocker.patch('shutil.which', return_value='/usr/bin/skopeo')
+
+        mock_result = mocker.Mock()
+        mock_result.returncode = 0
+        mock_subprocess_run = create_mock_skopeo_copy(
+            mock_oci_image['manifest_path'],
+            mock_oci_image['layer_tarball'],
+            mock_result
+        )
+        mocker.patch('subprocess.run', side_effect=mock_subprocess_run)
+
+        install_dynamic_plugins.extract_catalog_index(
+            "quay.io/test/catalog-index:1.9",
+            str(catalog_mount),
+            str(catalog_entities_parent_dir)
+        )
+
+        # Verify old content was removed
+        assert not old_file.exists(), "Old file should have been removed"
+        assert not old_subdir.exists(), "Old subdirectory should have been removed"
+
+        # Verify new content exists
+        entities_dir = catalog_entities_parent_dir / "catalog-entities"
+        assert entities_dir.exists(), "Catalog entities directory should exist"
+        entity_file = entities_dir / "test-entity.yaml"
+        assert entity_file.exists(), "New entity file should exist"
+        assert "kind: Component" in entity_file.read_text()
+
+        # Verify old content is definitely gone
+        assert not (entities_dir / "old-file.yaml").exists(), "Old file should not exist"
+        assert not (entities_dir / "old-subdir").exists(), "Old subdirectory should not exist"
+
+    def test_extract_catalog_index_uses_extensions_directory(self, tmp_path, mocker, mock_oci_image_with_extensions, capsys):
+        """Test that extraction prefers extensions directory over marketplace."""
+        catalog_mount = tmp_path / "catalog-mount"
+        catalog_mount.mkdir()
+        catalog_entities_parent_dir = tmp_path / "entities-extensions"
+
+        mocker.patch('shutil.which', return_value='/usr/bin/skopeo')
+
+        mock_result = mocker.Mock()
+        mock_result.returncode = 0
+        mock_subprocess_run = create_mock_skopeo_copy(
+            mock_oci_image_with_extensions['manifest_path'],
+            mock_oci_image_with_extensions['layer_tarball'],
+            mock_result
+        )
+        mocker.patch('subprocess.run', side_effect=mock_subprocess_run)
+
+        result = install_dynamic_plugins.extract_catalog_index(
+            "quay.io/test/catalog-index-extensions:1.9",
+            str(catalog_mount),
+            str(catalog_entities_parent_dir)
+        )
+
+        # Verify the function returned a path
+        assert result is not None
+        assert result.endswith('dynamic-plugins.default.yaml')
+
+        # Verify catalog entities were extracted from extensions directory
+        entities_dir = catalog_entities_parent_dir / "catalog-entities"
+        assert entities_dir.exists()
+        entity_file = entities_dir / "test-entity.yaml"
+        assert entity_file.exists()
+        assert "kind: Component" in entity_file.read_text()
+        assert "test-extensions" in entity_file.read_text()
+
+        # Verify success messages were printed
+        captured = capsys.readouterr()
+        assert 'Successfully extracted dynamic-plugins.default.yaml' in captured.out
+        assert 'Successfully extracted extensions catalog entities' in captured.out
+
+    def test_extract_catalog_index_falls_back_to_marketplace(self, tmp_path, mocker, mock_oci_image, capsys):
+        """Test that extraction falls back to marketplace directory when extensions doesn't exist."""
+        catalog_mount = tmp_path / "catalog-mount"
+        catalog_mount.mkdir()
+        catalog_entities_parent_dir = tmp_path / "entities-marketplace"
+
+        mocker.patch('shutil.which', return_value='/usr/bin/skopeo')
+
+        mock_result = mocker.Mock()
+        mock_result.returncode = 0
+        mock_subprocess_run = create_mock_skopeo_copy(
+            mock_oci_image['manifest_path'],
+            mock_oci_image['layer_tarball'],
+            mock_result
+        )
+        mocker.patch('subprocess.run', side_effect=mock_subprocess_run)
+
+        result = install_dynamic_plugins.extract_catalog_index(
+            "quay.io/test/catalog-index-marketplace:1.9",
+            str(catalog_mount),
+            str(catalog_entities_parent_dir)
+        )
+
+        # Verify the function returned a path
+        assert result is not None
+        assert result.endswith('dynamic-plugins.default.yaml')
+
+        # Verify catalog entities were extracted from marketplace directory (fallback)
+        entities_dir = catalog_entities_parent_dir / "catalog-entities"
+        assert entities_dir.exists()
+        entity_file = entities_dir / "test-entity.yaml"
+        assert entity_file.exists()
+        assert "kind: Component" in entity_file.read_text()
+
+        # Verify success messages were printed
+        captured = capsys.readouterr()
+        assert 'Successfully extracted dynamic-plugins.default.yaml' in captured.out
+        assert 'Successfully extracted extensions catalog entities' in captured.out
+
+    def test_extract_catalog_index_without_catalog_entities(self, tmp_path, mocker, capsys):
+        """Test that extraction succeeds with warning if neither extensions nor marketplace directory exists."""
+        import tarfile
+
+        catalog_mount = tmp_path / "catalog-mount"
+        catalog_mount.mkdir()
+        catalog_entities_parent_dir = tmp_path / "m4rk3tpl4c3"
+
+        # Create OCI structure without catalog-entities
+        oci_dir = tmp_path / "oci-no-entities"
+        oci_dir.mkdir()
+
+        manifest = {
+            "schemaVersion": 2,
+            "layers": [
+                {
+                    "digest": "sha256:noentities123",
+                    "size": 500
+                }
+            ]
+        }
+        manifest_path = oci_dir / "manifest.json"
+        manifest_path.write_text(json.dumps(manifest))
+
+        # Create layer tarball with only YAML file (no catalog-entities)
+        layer_tarball = oci_dir / "noentities123"
+        layer_content_dir = tmp_path / "layer-content-no-entities"
+        layer_content_dir.mkdir()
+        yaml_file = layer_content_dir / "dynamic-plugins.default.yaml"
+        yaml_file.write_text("plugins: []")
+
+        with create_test_tarball(layer_tarball) as tar:
+            tar.add(str(yaml_file), arcname="dynamic-plugins.default.yaml")
+
+        mocker.patch('shutil.which', return_value='/usr/bin/skopeo')
+
+        mock_result = mocker.Mock()
+        mock_result.returncode = 0
+        mock_subprocess_run = create_mock_skopeo_copy(manifest_path, layer_tarball, mock_result)
+        mocker.patch('subprocess.run', side_effect=mock_subprocess_run)
+
+        # Should succeed even without catalog-entities, but print a warning
+        result = install_dynamic_plugins.extract_catalog_index(
+            "quay.io/test/no-entities-index:latest",
+            str(catalog_mount),
+            str(catalog_entities_parent_dir)
+        )
+
+        # Verify YAML file extraction succeeded
+        assert result is not None
+        assert result.endswith('dynamic-plugins.default.yaml')
+
+        # Verify warning was printed with both directory names
+        captured = capsys.readouterr()
+        assert 'WARNING' in captured.out
+        assert 'does not have neither' in captured.out
+        assert 'catalog-entities/extensions/' in captured.out
+        assert 'catalog-entities/marketplace/' in captured.out
+
+        # Verify catalog entities directory was not created
+        entities_dir = catalog_entities_parent_dir / "catalog-entities"
+        assert not entities_dir.exists()
 
 if __name__ == '__main__':
     pytest.main([__file__, '-v'])
