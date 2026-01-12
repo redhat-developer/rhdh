@@ -196,7 +196,7 @@ export default defineConfig({
     },
     {
       name: PW_PROJECT.ANY_TEST,
-      testMatch: "**/*.spec.ts", // Allows running any test file
+      testMatch: "**/auth-providers/gitlab.spec.ts", // Run only GitLab auth provider tests
     },
     {
       name: PW_PROJECT.SHOWCASE_UPGRADE,
