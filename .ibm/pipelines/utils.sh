@@ -86,6 +86,13 @@ is_pr_e2e_ocp_helm_job() {
   [[ "${JOB_NAME}" == *pull* ]] && [[ "${JOB_NAME}" == *e2e-ocp-helm* ]]
 }
 
+# Post-process merged Helm values to disable all orchestrator plugins
+# This avoids hardcoding plugin versions in PR diff files
+disable_orchestrator_plugins_in_values() {
+  local values_file=$1
+  yq eval -i '(.global.dynamic.plugins[] | select(.package | contains("orchestrator")) | .disabled) = true' "${values_file}"
+}
+
 # Waits for a Kubernetes/OpenShift deployment to become ready within a specified timeout period
 wait_for_deployment() {
   local namespace=$1
@@ -1065,9 +1072,7 @@ base_deployment() {
   if is_pr_e2e_ocp_helm_job; then
     local merged_pr_value_file="/tmp/merged-values_showcase_PR.yaml"
     yq_merge_value_files "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/diff-values_showcase_PR.yaml" "${merged_pr_value_file}"
-
-    # Post-process: disable all orchestrator plugins (avoids hardcoding versions in diff file)
-    yq eval -i '(.global.dynamic.plugins[] | select(.package | contains("orchestrator")) | .disabled) = true' "${merged_pr_value_file}"
+    disable_orchestrator_plugins_in_values "${merged_pr_value_file}"
 
     mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE}"
     cp -a "${merged_pr_value_file}" "${ARTIFACT_DIR}/${NAME_SPACE}/" || true
@@ -1100,9 +1105,7 @@ rbac_deployment() {
   if is_pr_e2e_ocp_helm_job; then
     local merged_pr_rbac_value_file="/tmp/merged-values_showcase-rbac_PR.yaml"
     yq_merge_value_files "merge" "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "${DIR}/value_files/diff-values_showcase-rbac_PR.yaml" "${merged_pr_rbac_value_file}"
-
-    # Post-process: disable all orchestrator plugins (avoids hardcoding versions in diff file)
-    yq eval -i '(.global.dynamic.plugins[] | select(.package | contains("orchestrator")) | .disabled) = true' "${merged_pr_rbac_value_file}"
+    disable_orchestrator_plugins_in_values "${merged_pr_rbac_value_file}"
 
     mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE_RBAC}"
     cp -a "${merged_pr_rbac_value_file}" "${ARTIFACT_DIR}/${NAME_SPACE_RBAC}/" || true
