@@ -1303,11 +1303,7 @@ class RHDHDeployment {
         default: {
           host: "${AUTH_PROVIDERS_GITLAB_HOST}",
           orgEnabled: true,
-          relations: [
-            "INHERITED",
-            "DESCENDANTS",
-            "SHARED_FROM_GROUPS"
-          ],
+          relations: ["INHERITED", "DESCENDANTS", "SHARED_FROM_GROUPS"],
           includeUsersWithoutSeat: true,
           schedule: {
             initialDelay: {

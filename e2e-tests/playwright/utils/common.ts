@@ -412,9 +412,7 @@ export class Common {
       await popup.locator("#user_login").fill(username, { timeout: 5000 });
       await popup.locator("#user_password").click({ timeout: 5000 });
       await popup.locator("#user_password").fill(password, { timeout: 5000 });
-      await popup
-        .getByTestId("sign-in-button")
-        .click({ timeout: 5000 });
+      await popup.getByTestId("sign-in-button").click({ timeout: 5000 });
 
       // Handle 2FA if present
       const twoFactorInput = popup.locator("#user_otp_attempt");
