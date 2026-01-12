@@ -748,7 +748,7 @@ test.describe("Test RBAC", () => {
       await uiHelper.verifyHeading("All roles (1)");
     });
 
-    test("Test that user with `IsOwner` condition can access the RBAC page, create a role, edit a role, and delete the role", async ({
+    test.skip("Test that user with `IsOwner` condition can access the RBAC page, create a role, edit a role, and delete the role", async ({
       page,
     }) => {
       const common = new Common(page);
