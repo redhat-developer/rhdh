@@ -1065,6 +1065,10 @@ base_deployment() {
   if is_pr_e2e_ocp_helm_job; then
     local merged_pr_value_file="/tmp/merged-values_showcase_PR.yaml"
     yq_merge_value_files "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/diff-values_showcase_PR.yaml" "${merged_pr_value_file}"
+
+    # Post-process: disable all orchestrator plugins (avoids hardcoding versions in diff file)
+    yq eval -i '(.global.dynamic.plugins[] | select(.package | contains("orchestrator")) | .disabled) = true' "${merged_pr_value_file}"
+
     mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE}"
     cp -a "${merged_pr_value_file}" "${ARTIFACT_DIR}/${NAME_SPACE}/" || true
     # shellcheck disable=SC2046
@@ -1096,6 +1100,10 @@ rbac_deployment() {
   if is_pr_e2e_ocp_helm_job; then
     local merged_pr_rbac_value_file="/tmp/merged-values_showcase-rbac_PR.yaml"
     yq_merge_value_files "merge" "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "${DIR}/value_files/diff-values_showcase-rbac_PR.yaml" "${merged_pr_rbac_value_file}"
+
+    # Post-process: disable all orchestrator plugins (avoids hardcoding versions in diff file)
+    yq eval -i '(.global.dynamic.plugins[] | select(.package | contains("orchestrator")) | .disabled) = true' "${merged_pr_rbac_value_file}"
+
     mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE_RBAC}"
     cp -a "${merged_pr_rbac_value_file}" "${ARTIFACT_DIR}/${NAME_SPACE_RBAC}/" || true
     # shellcheck disable=SC2046

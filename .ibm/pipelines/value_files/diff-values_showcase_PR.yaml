@@ -4,16 +4,5 @@
 # The only exception is global.dynamic.plugins, that gets merged with the base file.
 
 # Disable orchestrator for PRs to speed up the mandatory presubmit job and avoid extra infra installs.
+# Orchestrator dynamic plugins are disabled via post-processing (see base_deployment in utils.sh)
 orchestrator: null
-
-global:
-  dynamic:
-    plugins:
-      # Disable orchestrator plugins for PRs - Official release (Backstage 1.45.3)
-      # These match the exact package strings from values_showcase.yaml so the merge logic de-duplicates correctly.
-      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator:bs_1.45.3__5.1.0!red-hat-developer-hub-backstage-plugin-orchestrator"
-        disabled: true
-      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator-backend:bs_1.45.3__8.3.0!red-hat-developer-hub-backstage-plugin-orchestrator-backend"
-        disabled: true
-      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets:bs_1.45.3__1.2.0!red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets"
-        disabled: true

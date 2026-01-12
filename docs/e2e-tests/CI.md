@@ -64,7 +64,7 @@ If the initial automatically triggered tests fail, OpenShift-CI will add a comme
   3. **Test Execution:**
      - **Running Tests:** Executes test suites using `yarn playwright test --project=<project-name>` directly.
      - **Retry Logic:** Individual tests are retried up to 2 times as specified in the Playwright configuration.
-     - **Note:** Orchestrator tests and orchestrator infra setup are excluded from the mandatory PR job (`/test e2e-ocp-helm`) and run in nightly jobs instead.
+     - **Note:** Orchestrator infra setup and subsequent associated tests are excluded from the mandatory PR job (`/test e2e-ocp-helm`) and run in nightly jobs instead.
   4. **Artifact Collection:**
      - Collects test artifacts (logs, screenshots, recordings).
      - Stores artifacts in the designated `ARTIFACT_DIR` for a retention period of **6 months**.
