@@ -134,7 +134,7 @@ test.describe("Configure GitLab Provider", async () => {
 
   test("Login with GitLab default resolver", async () => {
     test.setTimeout(10 * 60 * 1000); // 10 minutes timeout
-    
+
     const login = await common.gitlabLogin(
       "user1",
       process.env.DEFAULT_USER_PASSWORD,
@@ -155,7 +155,7 @@ test.describe("Configure GitLab Provider", async () => {
       await deployment.checkUserIsIngestedInCatalog([
         "user1",
         "user2",
-        "Administrator"
+        "Administrator",
       ]),
     ).toBe(true);
     expect(
@@ -165,31 +165,17 @@ test.describe("Configure GitLab Provider", async () => {
         "nested",
       ]),
     ).toBe(true);
-    expect(
-      await deployment.checkUserIsInGroup("user1", "group1"),
-    ).toBe(true);
-    expect(
-      await deployment.checkUserIsInGroup("user2", "group1"),
-    ).toBe(true);
-    expect(
-      await deployment.checkUserIsInGroup("root", "group1"),
-    ).toBe(true);
-    expect(
-      await deployment.checkUserIsInGroup("user1", "nested"),
-    ).toBe(true);
-    expect(
-      await deployment.checkUserIsInGroup("user2", "nested"),
-    ).toBe(true);
-    expect(
-      await deployment.checkUserIsInGroup("root", "nested"),
-    ).toBe(true);
-      
-
+    expect(await deployment.checkUserIsInGroup("user1", "group1")).toBe(true);
+    expect(await deployment.checkUserIsInGroup("user2", "group1")).toBe(true);
+    expect(await deployment.checkUserIsInGroup("root", "group1")).toBe(true);
+    expect(await deployment.checkUserIsInGroup("user1", "nested")).toBe(true);
+    expect(await deployment.checkUserIsInGroup("user2", "nested")).toBe(true);
+    expect(await deployment.checkUserIsInGroup("root", "nested")).toBe(true);
   });
 
   test.afterAll(async () => {
     console.log("[TEST] Starting cleanup...");
-    
+
     // Delete the dynamically created OAuth application
     if (oauthAppId !== null && gitlabHelper) {
       try {
@@ -202,9 +188,8 @@ test.describe("Configure GitLab Provider", async () => {
         );
       }
     }
-    
+
     await deployment.killRunningProcess();
     console.log("[TEST] Cleanup completed");
   });
 });
-

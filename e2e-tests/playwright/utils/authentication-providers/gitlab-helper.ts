@@ -62,7 +62,7 @@ export class GitLabHelper {
       }
 
       const app = await response.json();
-      
+
       // Validate required fields
       if (!app.id || !app.application_id || !app.secret) {
         // Log response without sensitive data
@@ -87,7 +87,8 @@ export class GitLabHelper {
         application_name: app.application_name || app.name || name,
         secret: app.secret,
         callback_url: app.callback_url || app.redirect_uri || redirectUri,
-        scopes: app.scopes || (typeof scopes === "string" ? scopes.split(" ") : []),
+        scopes:
+          app.scopes || (typeof scopes === "string" ? scopes.split(" ") : []),
       };
     } catch (error) {
       console.error("[GITLAB] Failed to create OAuth application:", error);
@@ -175,4 +176,3 @@ export class GitLabHelper {
     }
   }
 }
-
