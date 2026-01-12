@@ -15,7 +15,7 @@ const currentFileName = fileURLToPath(import.meta.url);
 const currentDirName = dirname(currentFileName);
 const rootDirName = resolve(currentDirName, "..", "..", "..", "..");
 const syncedLogRegex =
-  /Committed \d+ (Keycloak|msgraph|GitHub|LDAP) users? and \d+ (Keycloak|msgraph|GitHub|LDAP) groups? in \d+(\.\d+)? seconds/;
+  /(Committed \d+ (Keycloak|msgraph|GitHub|LDAP|GitLab) users? and \d+ (Keycloak|msgraph|GitHub|LDAP|GitLab) groups? in \d+(\.\d+)? seconds|Scanned \d+ users? and processed \d+ users?)/;
 
 class RHDHDeployment {
   instanceName: string;
@@ -1282,6 +1282,93 @@ class RHDHDeployment {
     return this;
   }
 
+  async enableGitlabLoginWithIngestion(): Promise<RHDHDeployment> {
+    console.log("Enabling GitLab login with ingestion...");
+
+    //expect the config variable to be set
+    expect(process.env.AUTH_PROVIDERS_GITLAB_HOST).toBeDefined();
+    expect(process.env.AUTH_PROVIDERS_GITLAB_CLIENT_ID).toBeDefined();
+    expect(process.env.AUTH_PROVIDERS_GITLAB_CLIENT_SECRET).toBeDefined();
+    expect(process.env.AUTH_PROVIDERS_GITLAB_TOKEN).toBeDefined();
+
+    // enable the catalog backend dynamic plugin
+    // and set the required configuration properties
+    this.setDynamicPluginEnabled(
+      "./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-gitlab-org-dynamic",
+      true,
+    );
+
+    this.setAppConfigProperty("catalog.providers", {
+      gitlab: {
+        default: {
+          host: "${AUTH_PROVIDERS_GITLAB_HOST}",
+          orgEnabled: true,
+          relations: [
+            "INHERITED",
+            "DESCENDANTS",
+            "SHARED_FROM_GROUPS"
+          ],
+          includeUsersWithoutSeat: true,
+          schedule: {
+            initialDelay: {
+              seconds: 0,
+            },
+            frequency: {
+              minutes: 1,
+            },
+            timeout: {
+              minutes: 1,
+            },
+          },
+        },
+      },
+    });
+
+    // enable gitlab integration
+    this.setAppConfigProperty("integrations", {
+      gitlab: [
+        {
+          host: "${AUTH_PROVIDERS_GITLAB_HOST}",
+          token: "${AUTH_PROVIDERS_GITLAB_TOKEN}",
+          apiBaseUrl: "https://${AUTH_PROVIDERS_GITLAB_HOST}/api/v4",
+        },
+      ],
+    });
+
+    // enable the gitlab login provider
+    this.setAppConfigProperty("auth.providers.gitlab", {
+      production: {
+        audience: "https://${AUTH_PROVIDERS_GITLAB_HOST}",
+        clientId: "${AUTH_PROVIDERS_GITLAB_CLIENT_ID}",
+        clientSecret: "${AUTH_PROVIDERS_GITLAB_CLIENT_SECRET}",
+        callbackUrl:
+          "${BASE_URL:-http://localhost:7007}/api/auth/gitlab/handler/frame",
+      },
+    });
+
+    this.setAppConfigProperty("auth.environment", "production");
+    this.setAppConfigProperty("signInPage", "gitlab");
+
+    return this;
+  }
+
+  async setGitlabResolver(
+    resolver: string,
+    dangerouslyAllowSignInWithoutUserInCatalog: boolean = false,
+  ): Promise<RHDHDeployment> {
+    this.setAppConfigProperty(
+      "auth.providers.gitlab.production.signIn.resolvers",
+      [
+        {
+          resolver: resolver,
+          dangerouslyAllowSignInWithoutUserInCatalog:
+            dangerouslyAllowSignInWithoutUserInCatalog,
+        },
+      ],
+    );
+    return this;
+  }
+
   async waitForSynced(): Promise<RHDHDeployment> {
     const synced = await this.followLogs(syncedLogRegex, 120000);
     expect(synced).toBe(true);
@@ -1375,7 +1462,7 @@ class RHDHDeployment {
     const groupEntity: GroupEntity = await api.getGroupEntityFromAPI(group);
     const members = this.parseGroupMemberFromEntity(groupEntity);
     console.log(
-      `Checking group ${group} (${JSON.stringify(members)}) contains groups ${user}`,
+      `Checking group ${group} (${JSON.stringify(members)}) contains user ${user}`,
     );
     return members.includes(user);
   }

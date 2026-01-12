@@ -377,6 +377,79 @@ export class Common {
 
     return this.handleGitHubPopupLogin(popup, username, password, twofactor);
   }
+
+  private async handleGitlabPopupLogin(
+    popup: Page,
+    username: string,
+    password: string,
+  ): Promise<string> {
+    await expect(async () => {
+      await popup.waitForLoadState("domcontentloaded");
+      expect(popup).toBeTruthy();
+    }).toPass({
+      intervals: [5_000, 10_000],
+      timeout: 20 * 1000,
+    });
+
+    // Check if popup closes automatically
+    try {
+      await popup.waitForEvent("close", { timeout: 5000 });
+      return "Already logged in";
+    } catch {
+      // Popup didn't close, proceed with login
+    }
+
+    try {
+      await popup.locator("#user_login").click({ timeout: 5000 });
+      await popup.locator("#user_login").fill(username, { timeout: 5000 });
+      await popup.locator("#user_password").click({ timeout: 5000 });
+      await popup.locator("#user_password").fill(password, { timeout: 5000 });
+      await popup
+        .getByTestId("sign-in-button")
+        .click({ timeout: 5000 });
+
+      // Handle 2FA if present
+      const twoFactorInput = popup.locator("#user_otp_attempt");
+      if (await twoFactorInput.isVisible({ timeout: 5000 })) {
+        // If 2FA is required, we'll need to handle it
+        // For now, we'll wait for the popup to close or authorization
+        await popup.waitForEvent("close", { timeout: 20000 });
+        return "Login successful";
+      }
+
+      // Check for authorization button
+      const authorization = popup.locator('button:has-text("Authorize")');
+      if (await authorization.isVisible({ timeout: 10000 })) {
+        await authorization.click();
+      }
+
+      await popup.waitForEvent("close", { timeout: 20000 });
+      return "Login successful";
+    } catch (e) {
+      const authorization = popup.locator('button:has-text("Authorize")');
+      if (await authorization.isVisible()) {
+        await authorization.click();
+        return "Login successful";
+      } else {
+        throw e;
+      }
+    }
+  }
+
+  async gitlabLogin(username: string, password: string) {
+    await this.page.goto("/");
+    await this.page.waitForSelector(
+      `p:has-text("${t["rhdh"][lang]["signIn.providers.gitlab.message"]}")`,
+    );
+
+    const [popup] = await Promise.all([
+      this.page.waitForEvent("popup"),
+      this.uiHelper.clickButton(t["core-components"][lang]["signIn.title"]),
+    ]);
+
+    return this.handleGitlabPopupLogin(popup, username, password);
+  }
+
   async MicrosoftAzureLogin(username: string, password: string) {
     let popup: Page;
     this.page.once("popup", (asyncnewPage) => {
