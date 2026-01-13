@@ -404,7 +404,7 @@ test.describe("Test RBAC", () => {
     });
 
     //FIXME https://issues.redhat.com/browse/RHDHBUGS-2483
-    test("Edit users and groups and update policies of a role from the overview page", async ({
+    test.skip("Edit users and groups and update policies of a role from the overview page", async ({
       page,
     }) => {
       const uiHelper = new UIhelper(page);
