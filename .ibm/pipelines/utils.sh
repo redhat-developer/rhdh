@@ -1732,9 +1732,10 @@ wait_for_backstage_resource() {
 }
 
 # Helper function to enable orchestrator plugins
-# Note: Since we specify dynamicPluginsConfigMapName in the Backstage CR,
-# the operator doesn't create a default backstage-dynamic-plugins-* configmap.
-# We just need to wait for the deployment to be ready.
+# This function merges the operator-provided default dynamic plugins configmap
+# (backstage-dynamic-plugins-*) with our custom dynamic-plugins configmap.
+# The merge ensures custom plugins override defaults when packages conflict.
+# After merging, the deployment is restarted to pick up the updated plugins.
 enable_orchestrator_plugins_op() {
   local namespace=$1
 
