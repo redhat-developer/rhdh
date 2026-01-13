@@ -82,8 +82,10 @@ yq_merge_value_files() {
   fi
 }
 
-is_pr_e2e_ocp_helm_job() {
-  [[ "${JOB_NAME}" == *pull* ]] && [[ "${JOB_NAME}" == *e2e-ocp-helm* ]]
+# Skip orchestrator on mandatory PR presubmit job (e2e-ocp-helm) to speed up CI.
+# Nightly jobs (e2e-ocp-helm-nightly) should run orchestrator for full testing.
+should_skip_orchestrator() {
+  [[ "${JOB_NAME}" =~ e2e-ocp-helm ]] && [[ "${JOB_NAME}" != *nightly* ]]
 }
 
 # Post-process merged Helm values to disable all orchestrator plugins
@@ -958,7 +960,7 @@ cluster_setup_ocp_helm() {
 
   # Skip orchestrator infra installation on OSD-GCP due to infrastructure limitations.
   # Also skip it for the mandatory PR job (e2e-ocp-helm) to speed up presubmits.
-  if [[ "${JOB_NAME}" =~ osd-gcp ]] || is_pr_e2e_ocp_helm_job; then
+  if [[ "${JOB_NAME}" =~ osd-gcp ]] || should_skip_orchestrator; then
     echo "Skipping orchestrator-infra installation on this job: ${JOB_NAME}"
   else
     install_orchestrator_infra_chart
@@ -1069,7 +1071,7 @@ base_deployment() {
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
   log::info "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
 
-  if is_pr_e2e_ocp_helm_job; then
+  if should_skip_orchestrator; then
     local merged_pr_value_file="/tmp/merged-values_showcase_PR.yaml"
     yq_merge_value_files "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/diff-values_showcase_PR.yaml" "${merged_pr_value_file}"
     disable_orchestrator_plugins_in_values "${merged_pr_value_file}"
@@ -1086,7 +1088,7 @@ base_deployment() {
     perform_helm_install "${RELEASE_NAME}" "${NAME_SPACE}" "${HELM_CHART_VALUE_FILE_NAME}"
   fi
 
-  if is_pr_e2e_ocp_helm_job; then
+  if should_skip_orchestrator; then
     log::warn "Skipping orchestrator workflows deployment on PR job: ${JOB_NAME}"
   else
     deploy_orchestrator_workflows "${NAME_SPACE}"
@@ -1102,7 +1104,7 @@ rbac_deployment() {
   local rbac_rhdh_base_url="https://${RELEASE_NAME_RBAC}-developer-hub-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
   log::info "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${RELEASE_NAME_RBAC}"
-  if is_pr_e2e_ocp_helm_job; then
+  if should_skip_orchestrator; then
     local merged_pr_rbac_value_file="/tmp/merged-values_showcase-rbac_PR.yaml"
     yq_merge_value_files "merge" "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "${DIR}/value_files/diff-values_showcase-rbac_PR.yaml" "${merged_pr_rbac_value_file}"
     disable_orchestrator_plugins_in_values "${merged_pr_rbac_value_file}"
@@ -1120,7 +1122,7 @@ rbac_deployment() {
   fi
 
   # NOTE: This is a workaround to allow the sonataflow platform to connect to the external postgres db using ssl.
-  if is_pr_e2e_ocp_helm_job; then
+  if should_skip_orchestrator; then
     log::warn "Skipping sonataflow (orchestrator) external DB SSL workaround on PR job: ${JOB_NAME}"
   else
     # Wait for the sonataflow database creation job to complete with robust error handling
@@ -1134,7 +1136,7 @@ rbac_deployment() {
   fi
 
   # initiate orchestrator workflows deployment
-  if is_pr_e2e_ocp_helm_job; then
+  if should_skip_orchestrator; then
     log::warn "Skipping orchestrator workflows deployment on PR job: ${JOB_NAME}"
   else
     deploy_orchestrator_workflows "${NAME_SPACE_RBAC}"
