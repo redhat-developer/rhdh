@@ -161,7 +161,7 @@ git add catalog-entities/extensions/packages/all.yaml
 git add catalog-entities/extensions/plugins/all.yaml
 
 # Commit with descriptive message
-git commit -m "feat: add {plugin-name} plugin to RHDH marketplace
+git commit -m "feat: add {plugin-name} plugin to RHDH extensions
 
 - Added Package entity with OCI URL and version
 - Added Plugin entity with description and metadata
