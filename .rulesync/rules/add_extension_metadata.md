@@ -244,6 +244,6 @@ Correct format: `oci://registry/path:tag!package-name`
 ## References
 
 - [README with detailed documentation](../../catalog-entities/extensions/README.md)
-- [Extension Schemas](https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/marketplace/json-schema)
+- [Extension Schemas](https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/extensions/json-schema)
 - [RHDH Local Testing](https://github.com/redhat-developer/rhdh-local)
 - [Dynamic Plugins Documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
