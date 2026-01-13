@@ -102,37 +102,13 @@ done
 yq --version | grep -q "mikefarah" && echo "✓ yq is Go version (mikefarah/yq)" || echo "❌ Wrong yq version - install mikefarah/yq"
 ```
 
-### Step 3: Generate Package Metadata
-
-For plugins from the overlay repository, use the marketplace CLI:
-
-```bash
-# Generate package metadata from dynamic-plugins.default.yaml
-npx --yes @red-hat-developer-hub/marketplace-cli generate \
-  --namespace rhdh \
-  -p dynamic-plugins.default.yaml \
-  -o catalog-entities/marketplace/packages
-
-# For external plugins, create manually using examples in README
-```
-
-### Step 4: Create/Edit Plugin Metadata
+### Step 3: Create/Edit Plugin Metadata
 
 Create `catalog-entities/marketplace/plugins/{plugin-name}.yaml`:
 - Use `catalog-entities/marketplace/plugins/3scale.yaml` as a template
 - See README for complete field descriptions
 
-### Step 5: Update Index Files
-
-**Important**: Add entries in **alphabetical order**!
-
-Use the AI agent's editing capabilities to:
-1. Add `- ./{plugin-name}.yaml` to `catalog-entities/marketplace/packages/all.yaml` in alphabetical order
-2. Add `- ./{plugin-name}.yaml` to `catalog-entities/marketplace/plugins/all.yaml` in alphabetical order
-
-The AI agent will automatically determine the correct alphabetical position and insert the entries accordingly.
-
-### Step 6: Validate Files
+### Step 4: Validate Files
 
 ```bash
 # Navigate to marketplace directory
@@ -161,7 +137,7 @@ rm /tmp/rhdh-schemas/package-temp.json /tmp/rhdh-schemas/plugin-temp.json
 
 **Note**: This uses the Go-based `yq` syntax (`yq eval file.yaml -o json`). If validation fails, check that you have the correct yq version installed.
 
-### Step 7: Test Locally (Optional)
+### Step 5: Test Locally (Optional)
 
 Follow the RHDH-local testing instructions in the README:
 1. Clone `rhdh-local` repository
@@ -170,21 +146,18 @@ Follow the RHDH-local testing instructions in the README:
 4. Start with `docker compose up -d`
 5. Check http://localhost:7007 → Catalog → Extensions
 
-### Step 8: Create Pull Request
+### Step 6: Create Pull Request
 
 ```bash
 # Stage changes
 git add catalog-entities/marketplace/packages/{plugin-name}.yaml
 git add catalog-entities/marketplace/plugins/{plugin-name}.yaml
-git add catalog-entities/marketplace/packages/all.yaml
-git add catalog-entities/marketplace/plugins/all.yaml
 
 # Commit with descriptive message
 git commit -m "feat: add {plugin-name} plugin to RHDH marketplace
 
 - Added Package entity with OCI URL and version
 - Added Plugin entity with description and metadata
-- Updated all.yaml indexes in alphabetical order"
 
 # Create PR
 gh pr create --title "feat: add {plugin-name} plugin to marketplace" \
@@ -196,7 +169,6 @@ gh pr create --title "feat: add {plugin-name} plugin to marketplace" \
 ## Checklist
 - [ ] Package and Plugin YAML files created
 - [ ] Schemas validate successfully
-- [ ] Added to all.yaml files alphabetically
 - [ ] Tested locally with rhdh-local (if applicable)"
 ```
 
@@ -206,7 +178,6 @@ Before submitting:
 - [ ] Tools installed (`yq` Go version, `ajv-cli`, `gh`)
 - [ ] Package YAML validates against schema
 - [ ] Plugin YAML validates against schema
-- [ ] Both added to `all.yaml` files in **alphabetical order**
 - [ ] Namespace consistent between Package and Plugin
 - [ ] OCI URL correctly formatted
 - [ ] All required fields populated
@@ -247,3 +218,4 @@ Correct format: `oci://registry/path:tag!package-name`
 - [Extension Schemas](https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/marketplace/json-schema)
 - [RHDH Local Testing](https://github.com/redhat-developer/rhdh-local)
 - [Dynamic Plugins Documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+- [RHDH Plugin Catalog](https://gitlab.cee.redhat.com/rhidp/rhdh-plugin-catalog/-/blob/rhdh-1-rhel-9/catalog-index) (RH VPN Required)
