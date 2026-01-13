@@ -162,6 +162,20 @@ export class Orchestrator {
     }
   }
 
+  async validateWorkflowAllRunsStatusIcons() {
+    await this.page.getByRole("tab", { name: "all runs" }).click();
+    const statuses = ["Running", "Failed", "Completed", "Aborted"];
+    for (const status of statuses) {
+      await expect(this.page.getByText(status)).toHaveText(
+        status,
+      );
+    }
+    await expect(this.page.getByRole('cell', { name: /Running/ }).locator('svg').first()).toBeVisible();
+    await expect(this.page.getByRole('cell', { name: /Completed/ }).locator('svg').first()).toBeVisible();
+    await expect(this.page.getByTestId('ErrorOutlineOutlinedIcon')).toBeVisible();
+    await expect(this.page.getByRole('cell', { name: /Aborted/ }).locator('svg').first()).toBeVisible();
+  }
+
   async getPageUrl() {
     return this.page.url();
   }
@@ -189,6 +203,7 @@ export class Orchestrator {
     await this.page.getByRole("button", { name: "Abort" }).click();    
     await this.page.getByRole("button", { name: "Abort" }).click();
     await expect(this.page.getByText("Run has aborted")).toBeVisible();
+    await expect(this.page.getByText("-- Aborted")).toBeVisible();
   }
 
   async validateErrorPopup() {
