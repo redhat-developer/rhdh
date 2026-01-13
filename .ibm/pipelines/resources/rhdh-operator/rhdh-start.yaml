@@ -37,14 +37,3 @@ spec:
             containers:
               - name: backstage-backend
                 image: "quay.io/$QUAY_REPO:$TAG_NAME"
-            volumes:
-              - name: dynamic-plugins-root
-                ephemeral:
-                  volumeClaimTemplate:
-                    spec:
-                      accessModes:
-                        - ReadWriteOnce
-                      resources:
-                        requests:
-                          # The default (2Gi) is not enough for the full dynamic plugins set.
-                          storage: 10Gi
