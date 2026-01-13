@@ -4,7 +4,7 @@ This cursor rule provides an automated workflow for adding dynamic plugin metada
 
 ## Important Documentation
 
-**Primary Reference**: Read `catalog-entities/marketplace/README.md` for:
+**Primary Reference**: Read `catalog-entities/extensions/README.md` for:
 - Detailed YAML structure and field explanations
 - Complete examples (3scale plugin)
 - RHDH-local testing setup
@@ -92,15 +92,15 @@ For plugins from the overlay repository, use the marketplace CLI:
 npx --yes @red-hat-developer-hub/marketplace-cli generate \
   --namespace rhdh \
   -p dynamic-plugins.default.yaml \
-  -o catalog-entities/marketplace/packages
+  -o catalog-entities/extensions/packages
 
 # For external plugins, create manually using examples in README
 ```
 
 ### Step 4: Create/Edit Plugin Metadata
 
-Create `catalog-entities/marketplace/plugins/{plugin-name}.yaml`:
-- Use `catalog-entities/marketplace/plugins/3scale.yaml` as a template
+Create `catalog-entities/extensions/plugins/{plugin-name}.yaml`:
+- Use `catalog-entities/extensions/plugins/3scale.yaml` as a template
 - See README for complete field descriptions
 
 ### Step 5: Update Index Files
@@ -108,8 +108,8 @@ Create `catalog-entities/marketplace/plugins/{plugin-name}.yaml`:
 **Important**: Add entries in **alphabetical order**!
 
 Use the AI agent's editing capabilities to:
-1. Add `- ./{plugin-name}.yaml` to `catalog-entities/marketplace/packages/all.yaml` in alphabetical order
-2. Add `- ./{plugin-name}.yaml` to `catalog-entities/marketplace/plugins/all.yaml` in alphabetical order
+1. Add `- ./{plugin-name}.yaml` to `catalog-entities/extensions/packages/all.yaml` in alphabetical order
+2. Add `- ./{plugin-name}.yaml` to `catalog-entities/extensions/plugins/all.yaml` in alphabetical order
 
 The AI agent will automatically determine the correct alphabetical position and insert the entries accordingly.
 
@@ -117,7 +117,7 @@ The AI agent will automatically determine the correct alphabetical position and 
 
 ```bash
 # Navigate to marketplace directory
-cd catalog-entities/marketplace
+cd catalog-entities/extensions
 
 # Download schemas to temp directory (ajv doesn't support remote schemas well)
 mkdir -p /tmp/rhdh-schemas
@@ -155,10 +155,10 @@ Follow the RHDH-local testing instructions in the README:
 
 ```bash
 # Stage changes
-git add catalog-entities/marketplace/packages/{plugin-name}.yaml
-git add catalog-entities/marketplace/plugins/{plugin-name}.yaml
-git add catalog-entities/marketplace/packages/all.yaml
-git add catalog-entities/marketplace/plugins/all.yaml
+git add catalog-entities/extensions/packages/{plugin-name}.yaml
+git add catalog-entities/extensions/plugins/{plugin-name}.yaml
+git add catalog-entities/extensions/packages/all.yaml
+git add catalog-entities/extensions/plugins/all.yaml
 
 # Commit with descriptive message
 git commit -m "feat: add {plugin-name} plugin to RHDH marketplace
@@ -224,7 +224,7 @@ Correct format: `oci://registry/path:tag!package-name`
 
 ## References
 
-- [README with detailed documentation](../../catalog-entities/marketplace/README.md)
+- [README with detailed documentation](../../catalog-entities/extensions/README.md)
 - [Extension Schemas](https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/marketplace/json-schema)
 - [RHDH Local Testing](https://github.com/redhat-developer/rhdh-local)
 - [Dynamic Plugins Documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
