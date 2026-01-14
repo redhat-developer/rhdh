@@ -190,7 +190,9 @@ RUN tar xzf "$TARBALL_PATH"/skeleton.tar.gz; tar xzf "$TARBALL_PATH"/bundle.tar.
 
 # Copy app-config files needed in runtime
 COPY $EXTERNAL_SOURCE_NESTED/app-config*.yaml ./
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins.default.yaml ./
+
+# moved to plugin-catalog-index image
+# COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins.default.yaml ./
 
 # Hackaround: create library symlinks to build: isolated-vm node-gyp better-sqlite cpu-features
 # TODO is this still needed? maintaining it over time will be a chore if the .so files change
