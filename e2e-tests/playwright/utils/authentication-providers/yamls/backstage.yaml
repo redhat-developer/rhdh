@@ -4,7 +4,6 @@ metadata:
   name: rhdh
 spec:
   application:
-    image: "quay.io/rhdh-community/rhdh:next"
     appConfig:
       configMaps:
         - name: app-config-rhdh
