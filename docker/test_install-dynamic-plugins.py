@@ -2415,10 +2415,11 @@ class TestExtractCatalogIndex:
         # This simulates skopeo failure
         mock_error = subprocess.CalledProcessError(
             returncode=1,
-            cmd=['/usr/bin/skopeo', 'copy', 'docker://quay.io/test/image:latest', 'dir:/tmp/...'],
-            stderr="Error: image not found",
-            stdout=""
+            cmd=['/usr/bin/skopeo', 'copy', 'docker://quay.io/test/image:latest', 'dir:/tmp/...']
         )
+        # Set stderr and stdout attributes (these are set by subprocess.run when capture_output=True)
+        mock_error.stderr = "Error: image not found"
+        mock_error.stdout = ""
         mocker.patch('subprocess.run', side_effect=mock_error)
 
         with pytest.raises(install_dynamic_plugins.InstallException) as exc_info:
