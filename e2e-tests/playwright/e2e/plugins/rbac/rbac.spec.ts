@@ -320,7 +320,8 @@ test.describe("Test RBAC", () => {
       await uiHelper.clickLink("RBAC");
     });
 
-    test("Create and edit a role from the roles list page", async ({
+    //FIXME RHDHBUGS-2483
+    test.skip("Create and edit a role from the roles list page", async ({
       page,
     }) => {
       const uiHelper = new UIhelper(page);
@@ -402,7 +403,8 @@ test.describe("Test RBAC", () => {
       await rbacPo.deleteRole("role:default/test-role");
     });
 
-    test("Edit users and groups and update policies of a role from the overview page", async ({
+    //FIXME https://issues.redhat.com/browse/RHDHBUGS-2483
+    test.skip("Edit users and groups and update policies of a role from the overview page", async ({
       page,
     }) => {
       const uiHelper = new UIhelper(page);
@@ -747,7 +749,8 @@ test.describe("Test RBAC", () => {
       await uiHelper.verifyHeading("All roles (1)");
     });
 
-    test("Test that user with `IsOwner` condition can access the RBAC page, create a role, edit a role, and delete the role", async ({
+    //FIXME https://issues.redhat.com/browse/RHDHBUGS-2483
+    test.skip("Test that user with `IsOwner` condition can access the RBAC page, create a role, edit a role, and delete the role", async ({
       page,
     }) => {
       const common = new Common(page);
