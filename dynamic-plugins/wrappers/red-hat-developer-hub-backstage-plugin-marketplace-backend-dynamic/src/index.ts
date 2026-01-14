@@ -1,1 +1,1 @@
-export { default } from "@red-hat-developer-hub/backstage-plugin-marketplace-backend";
+export { default } from "@red-hat-developer-hub/backstage-plugin-extensions-backend";

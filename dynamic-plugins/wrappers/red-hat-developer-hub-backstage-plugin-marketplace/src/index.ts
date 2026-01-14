@@ -6,4 +6,4 @@ ClassNameGenerator.configure(componentName => {
     : `v5-${componentName}`;
 })
 
-export * from "@red-hat-developer-hub/backstage-plugin-marketplace";
+export * from "@red-hat-developer-hub/backstage-plugin-extensions";
