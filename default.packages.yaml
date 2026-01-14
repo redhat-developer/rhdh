@@ -73,7 +73,6 @@ packages:
   - package: '@immobiliarelabs/backstage-plugin-gitlab-backend'
   - package: '@pagerduty/backstage-plugin'
   - package: '@pagerduty/backstage-plugin-backend'
-  - package: '@parfuemerie-douglas/scaffolder-backend-module-azure-repositories'
   - package: '@red-hat-developer-hub/backstage-plugin-bulk-import'
   - package: '@red-hat-developer-hub/backstage-plugin-bulk-import-backend'
   - package: '@redhat/backstage-plugin-orchestrator'
