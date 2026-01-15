@@ -191,11 +191,11 @@ global:
       - package: "@backstage-community/plugin-todo@0.2.42"
         disabled: false
         integrity: sha512-agmfwxHkZPy0zaXzjMKY9Us9l7J2og+z7p2lDWQBmlJ1KZRo6OBQdnlG1mTEryfEEl/bx5Ko+f1PhFj2/BmiIQ==
-      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-catalog-backend-module-marketplace-dynamic
+      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-catalog-backend-module-extensions-dynamic
         disabled: false
-      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-marketplace-backend-dynamic
+      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-extensions-backend-dynamic
         disabled: false
-      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-marketplace
+      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-extensions
         disabled: false
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-floating-action-button
         disabled: false

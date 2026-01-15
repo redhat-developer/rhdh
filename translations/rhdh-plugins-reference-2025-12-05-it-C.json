@@ -521,7 +521,7 @@
       "settings.pinned.disabled.description": "Le chat bloccate sono attualmente disabilitate"
     }
   },
-  "plugin.marketplace": {
+  "plugin.extensions": {
     "it": {
       "header.title": "Estensioni",
       "header.extensions": "Estensioni",
@@ -553,7 +553,7 @@
       "emptyState.noPluginsFound": "Nessun plugin trovato",
       "emptyState.mustEnableBackend": "È necessario abilitare il plugin backend Estensioni",
       "emptyState.noPluginsDescription": "Si è verificato un errore durante il caricamento dei plugin. Per risolvere il problema, controllare la configurazione o consultare la documentazione del plugin. È anche possibile verificare gli altri plugin disponibili.",
-      "emptyState.configureBackend": "Configurare il plugin '@red-hat-developer-hub/backstage-plugin-marketplace-backend'.",
+      "emptyState.configureBackend": "Configurare il plugin '@red-hat-developer-hub/backstage-plugin-extensions-backend'.",
       "alert.productionDisabled": "L'installazione del plugin è disabilitata nell'ambiente di produzione.",
       "alert.installationDisabled": "L'installazione del plugin è disabilitata.",
       "alert.missingDynamicArtifact": "Impossibile gestire questo pacchetto. Per abilitare le azioni, è necessario aggiungere un'entità Catalogo con lo **spec.dynamicArtifact** richiesto.",
