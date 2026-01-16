@@ -20,13 +20,13 @@ import {
   ScmIntegrationsApi,
   scmIntegrationsApiRef,
 } from '@backstage/integration-react';
-import { UserSettingsStorage } from '@backstage/plugin-user-settings';
 import {
-  ALL_RELATIONS,
   ALL_RELATION_PAIRS,
+  ALL_RELATIONS,
   catalogGraphApiRef,
   DefaultCatalogGraphApi,
 } from '@backstage/plugin-catalog-graph';
+import { UserSettingsStorage } from '@backstage/plugin-user-settings';
 
 import {
   auth0AuthApiRef,
@@ -119,7 +119,7 @@ export const apis: AnyApiFactory[] = [
           ...ALL_RELATION_PAIRS,
           [RELATION_SCAFFOLDER_OF, RELATION_SCAFFOLDED_FROM],
         ],
-        defaultRelationTypes: { exclude: [] }
+        defaultRelationTypes: { exclude: [] },
       }),
   }),
   // OIDC
