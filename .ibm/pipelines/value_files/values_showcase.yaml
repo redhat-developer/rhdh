@@ -86,7 +86,7 @@ global:
         disabled: false
       - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-github-pull-requests:bs_1.45.3__3.6.2!roadiehq-backstage-plugin-github-pull-requests
         disabled: false
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-github-actions
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-github-actions:bs_1.45.3__0.18.0!backstage-community-plugin-github-actions
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-quay
         disabled: false
