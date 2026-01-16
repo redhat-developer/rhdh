@@ -90,7 +90,7 @@ global:
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-quay
         disabled: false
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-quay-dynamic
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-scaffolder-backend-module-quay:bs_1.45.3__2.14.0!backstage-community-plugin-scaffolder-backend-module-quay
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-keycloak-dynamic
         disabled: false
