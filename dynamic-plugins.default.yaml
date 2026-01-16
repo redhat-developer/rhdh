@@ -477,7 +477,7 @@ plugins:
             importName: PluginsIcon
           dynamicRoutes:
           - path: /extensions
-            importName: DynamicExtensionPluginRouter
+            importName: DynamicExtensionsPluginRouter
             menuItem:
               icon: pluginsIcon
               text: Extensions
