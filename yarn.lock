@@ -3473,6 +3473,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@backstage/backend-plugin-api@npm:^1.6.0":
+  version: 1.6.0
+  resolution: "@backstage/backend-plugin-api@npm:1.6.0"
+  dependencies:
+    "@backstage/cli-common": ^0.1.16
+    "@backstage/config": ^1.3.6
+    "@backstage/errors": ^1.2.7
+    "@backstage/plugin-auth-node": ^0.6.10
+    "@backstage/plugin-permission-common": ^0.9.3
+    "@backstage/plugin-permission-node": ^0.10.7
+    "@backstage/types": ^1.2.2
+    "@types/express": ^4.17.6
+    "@types/json-schema": ^7.0.6
+    "@types/luxon": ^3.0.0
+    json-schema: ^0.4.0
+    knex: ^3.0.0
+    luxon: ^3.0.0
+    zod: ^3.22.4
+  checksum: 547bbef0db45cbc3ff2ddeaf19c8358ea537ebc62632fbe8413742a441896371970a2f4d56245f1f66eed204636f294e6c51cc3cc1ed669b18c44be616bdbe51
+  languageName: node
+  linkType: hard
+
 "@backstage/backend-test-utils@npm:1.10.1":
   version: 1.10.1
   resolution: "@backstage/backend-test-utils@npm:1.10.1"
@@ -3541,6 +3563,18 @@ __metadata:
   version: 0.1.15
   resolution: "@backstage/cli-common@npm:0.1.15"
   checksum: fbfded2ff0122c28c2104fa40703486c0fe5c43acd68de2659533d46ebc11f296a06c45499d0ced1579a75ee6002739d2cb90f08fe2587e887d79b82d4f91515
+  languageName: node
+  linkType: hard
+
+"@backstage/cli-common@npm:^0.1.16":
+  version: 0.1.16
+  resolution: "@backstage/cli-common@npm:0.1.16"
+  dependencies:
+    "@backstage/errors": ^1.2.7
+    cross-spawn: ^7.0.3
+    global-agent: ^3.0.0
+    undici: ^7.2.3
+  checksum: 8fba4579aa834a22786df220985a90ef68308c3be9a5ee89b416d69aec4e575551192eb4936175c858bb45418a3c9a6b269742c42798bc39cd00bcb051eabe67
   languageName: node
   linkType: hard
 
@@ -4489,11 +4523,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-auth-node@npm:0.6.9, @backstage/plugin-auth-node@npm:^0.6.6, @backstage/plugin-auth-node@npm:^0.6.9":
-  version: 0.6.9
-  resolution: "@backstage/plugin-auth-node@npm:0.6.9"
+"@backstage/plugin-auth-node@npm:0.6.10":
+  version: 0.6.10
+  resolution: "@backstage/plugin-auth-node@npm:0.6.10"
   dependencies:
-    "@backstage/backend-plugin-api": ^1.5.0
+    "@backstage/backend-plugin-api": ^1.6.0
     "@backstage/catalog-client": ^1.12.1
     "@backstage/catalog-model": ^1.7.6
     "@backstage/config": ^1.3.6
@@ -4501,14 +4535,14 @@ __metadata:
     "@backstage/types": ^1.2.2
     "@types/express": ^4.17.6
     "@types/passport": ^1.0.3
-    express: ^4.17.1
+    express: ^4.22.0
     jose: ^5.0.0
     lodash: ^4.17.21
     passport: ^0.7.0
     zod: ^3.22.4
     zod-to-json-schema: ^3.21.4
     zod-validation-error: ^3.4.0
-  checksum: a69d61db47ef088daa25d2bfd134c6225235bee4277cec4fa22befb13d1a40fa50f8481432edb9a7f3601e20c15fa31b894184ff1875331d42f281b170076e87
+  checksum: d94c2e6652ea3e05dc7899c3c94b6293950f067bd9c4dcf71072e6d3f754043448248e2805e6145a06ea5f7abcb6036249e4324c22af6456282a827f6dbf673e
   languageName: node
   linkType: hard
 
@@ -5015,6 +5049,24 @@ __metadata:
     zod: ^3.22.4
     zod-to-json-schema: ^3.20.4
   checksum: b29c79b3d563fb2712767e50a8e0a026257df88acbeb260d666c7062fe007ea4174f142b305b6e63f159f85f20b6603bcf2df53fdd46573702df9e3b3174dcff
+  languageName: node
+  linkType: hard
+
+"@backstage/plugin-permission-node@npm:^0.10.7":
+  version: 0.10.7
+  resolution: "@backstage/plugin-permission-node@npm:0.10.7"
+  dependencies:
+    "@backstage/backend-plugin-api": ^1.6.0
+    "@backstage/config": ^1.3.6
+    "@backstage/errors": ^1.2.7
+    "@backstage/plugin-auth-node": ^0.6.10
+    "@backstage/plugin-permission-common": ^0.9.3
+    "@types/express": ^4.17.6
+    express: ^4.22.0
+    express-promise-router: ^4.1.0
+    zod: ^3.22.4
+    zod-to-json-schema: ^3.20.4
+  checksum: 645e3a2278885dab0f642ce48139cdf20df45b195e604905092e158e42827b0517d69d7f0f98a9cfbd738d7482727cc0b1bc34a79e86f95ff60f85b0d008f4f3
   languageName: node
   linkType: hard
 
@@ -23647,7 +23699,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"express@npm:4.22.1":
+"express@npm:4.22.1, express@npm:^4.22.0":
   version: 4.22.1
   resolution: "express@npm:4.22.1"
   dependencies:

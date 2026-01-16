@@ -959,9 +959,10 @@ def _extract_layer_tarball(layer_file: str, catalog_index_temp_dir: str, max_ent
                     continue
             tar.extract(member, path=catalog_index_temp_dir, filter='data')
 
-def extract_catalog_index(catalog_index_image: str, catalog_index_mount: str) -> str:
+def extract_catalog_index(catalog_index_image: str, catalog_index_mount: str, catalog_entities_parent_dir: str) -> str:
     """Extract the catalog index OCI image and return the path to dynamic-plugins.default.yaml if found."""
     print(f"\n======= Extracting catalog index from {catalog_index_image}", flush=True)
+
     skopeo_path = shutil.which('skopeo')
     if skopeo_path is None:
         raise InstallException("CATALOG_INDEX_IMAGE is set but skopeo executable not found in PATH. Cannot extract catalog index.")
@@ -998,7 +999,27 @@ def extract_catalog_index(catalog_index_image: str, catalog_index_mount: str) ->
     default_plugins_file = os.path.join(catalog_index_temp_dir, 'dynamic-plugins.default.yaml')
     if not os.path.isfile(default_plugins_file):
         raise InstallException(f"Catalog index image {catalog_index_image} does not contain the expected dynamic-plugins.default.yaml file")
-    print("\t==> Successfully extracted catalog index with dynamic-plugins.default.yaml", flush=True)
+    print("\t==> Successfully extracted dynamic-plugins.default.yaml from catalog index image", flush=True)
+
+    print(f"\t==> Extracting extensions catalog entities to {catalog_entities_parent_dir}", flush=True)
+
+    extensions_dir_from_catalog_index = os.path.join(catalog_index_temp_dir, 'catalog-entities', 'extensions')
+    if not os.path.isdir(extensions_dir_from_catalog_index):
+        # fallback to 'catalog-entities/marketplace' directory for backward compatibility
+        extensions_dir_from_catalog_index = os.path.join(catalog_index_temp_dir, 'catalog-entities', 'marketplace')
+
+    if os.path.isdir(extensions_dir_from_catalog_index):
+        os.makedirs(catalog_entities_parent_dir, exist_ok=True)
+        catalog_entities_dest = os.path.join(catalog_entities_parent_dir, 'catalog-entities')
+        # Ensure the destination directory is is sync with the catalog entities from the index image
+        if os.path.exists(catalog_entities_dest):
+            shutil.rmtree(catalog_entities_dest, ignore_errors=True, onerror=None)
+        shutil.copytree(extensions_dir_from_catalog_index, catalog_entities_dest, dirs_exist_ok=True)
+        print("\t==> Successfully extracted extensions catalog entities from index image", flush=True)
+    else:
+        print(f"\t==> WARNING: Catalog index image {catalog_index_image} does not have neither 'catalog-entities/extensions/' nor 'catalog-entities/marketplace/' directory",
+            flush=True)
+
     return default_plugins_file
 
 def main():
@@ -1015,7 +1036,9 @@ def main():
     catalog_index_image = os.environ.get("CATALOG_INDEX_IMAGE", "")
     catalog_index_default_file = None
     if catalog_index_image:
-        catalog_index_default_file = extract_catalog_index(catalog_index_image, dynamic_plugins_root)
+        # default to a temporary directory if the env var is not set
+        catalog_entities_parent_dir = os.environ.get("CATALOG_ENTITIES_EXTRACT_DIR", os.path.join(tempfile.gettempdir(), "extensions"))
+        catalog_index_default_file = extract_catalog_index(catalog_index_image, dynamic_plugins_root, catalog_entities_parent_dir)
 
     skip_integrity_check = os.environ.get("SKIP_INTEGRITY_CHECK", "").lower() == "true"
 

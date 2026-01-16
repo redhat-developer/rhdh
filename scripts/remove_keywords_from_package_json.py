@@ -2,7 +2,7 @@
 Safe removal of support:/lifecycle: keywords from dynamic plugins' package.json files.
 
 Behavior:
-- Runs a pre-flight consistency check against marketplace YAML files.
+- Runs a pre-flight consistency check against extensions (formerly marketplace) YAML files.
 - If any package has mismatched lifecycle/support or a missing YAML, aborts with a report.
 - Otherwise, removes only support:/lifecycle: keywords.
 
@@ -67,16 +67,16 @@ def run_preflight_check(repo_root: Path, verbose: bool = False) -> int:
         mismatch_count = len([p for p in problems if p["status"] == "MISMATCH"])
         no_yaml_count = len([p for p in problems if p["status"] == "NO_YAML"])
         print(f"❌ Inconsistent packages: {mismatch_count}")
-        print(f"⚠️ Missing marketplace catalog entity files: {no_yaml_count}")
+        print(f"⚠️ Missing extensions catalog entity files: {no_yaml_count}")
         print("Fix the above issues before removing keywords.")
         print("\nTo fix these issues:")
         print("1. Run the consistency checker to see details: python scripts/check_package_yaml_consistency.py")
         print("2. Create missing YAML files or fix mismatches")
         print("3. Re-run this script")
-        
+
     else:
         if verbose:
-            print("✅ Pre-flight check passed: no inconsistencies or missing marketplace catalog entity files found.")
+            print("✅ Pre-flight check passed: no inconsistencies or missing extensions catalog entity files found.")
 
     return len(problems)
 
@@ -196,7 +196,7 @@ def main() -> None:
     if args.yes:
         print(f"\n✅ Done. Files modified: {modified}")
         if args.verbose:
-            print(f"\n💡 Note: YAML files in catalog-entities/marketplace/packages/ are now")
+            print(f"\n💡 Note: YAML files in catalog-entities/extensions/packages/ are now")
             print(f"   the single source of truth for support and lifecycle metadata.")
     else:
         print(f"\nℹ️ Dry run complete. Files that would be modified: {modified}")

@@ -60,7 +60,8 @@
     "@kubernetes/client-node@npm:0.20.0/jsonpath-plus": "^10.3.0",
     "@backstage/plugin-permission-backend": "0.7.3",
     "@backstage/plugin-catalog-react": "1.21.3",
-    "refractor@npm:3.6.0/prismjs": "^1.30.0"
+    "refractor@npm:3.6.0/prismjs": "^1.30.0",
+    "@backstage/plugin-auth-node": "0.6.10"
   },
   "jest": {
     "testTimeout": 20000

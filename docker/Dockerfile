@@ -15,7 +15,7 @@
 
 # Stage 1 - Build nodejs skeleton
 # https://registry.access.redhat.com/ubi9/nodejs-22
-FROM registry.access.redhat.com/ubi9/nodejs-22:9.7-1766414965@sha256:79ad5a5555751cbb59f3a9618b01af02d589b425946f2a81cb8befd1ecdf1c25 AS skeleton
+FROM registry.access.redhat.com/ubi9/nodejs-22:9.7-1767745544@sha256:bbd9e582dcb61f1cef28dffdc647f23b63e82674c480fc32be446c8f62b7ad7a AS skeleton
 # hadolint ignore=DL3002
 USER 0
 
@@ -172,7 +172,9 @@ RUN tar xzf "$TARBALL_PATH"/skeleton.tar.gz; tar xzf "$TARBALL_PATH"/bundle.tar.
 
 # Copy app-config files needed in runtime
 COPY $EXTERNAL_SOURCE_NESTED/app-config*.yaml ./
-COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins.default.yaml ./
+
+# moved to plugin-catalog-index image
+# COPY $EXTERNAL_SOURCE_NESTED/dynamic-plugins.default.yaml ./
 
 # Hackaround: create library symlinks to build: isolated-vm node-gyp better-sqlite cpu-features
 # TODO is this still needed? maintaining it over time will be a chore if the .so files change
@@ -202,7 +204,7 @@ RUN \
 
 # Stage 5 - Build the runner image
 # https://registry.access.redhat.com/ubi9/nodejs-22-minimal
-FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:9.7-1766364286@sha256:31e285bca3a7f88c473a94bb1ae245a9595391802d2a66fba7fd774c3c1e7eb5 AS runner
+FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:9.7-1767673763@sha256:65c830be98403ebe6e5ec47d2bd2ca8086aa9fe3e03dbae8f706e94eb75d4988 AS runner
 USER 0
 
 ENV EXTERNAL_SOURCE_NESTED=.
@@ -237,9 +239,6 @@ COPY --from=build --chown=1001:1001 $CONTAINER_SOURCE/dynamic-plugins/dist/ ./dy
 
 # RHIDP-4220 - make Konflux preflight and EC checks happy - [check-container] Create a directory named /licenses and include all relevant licensing
 COPY $EXTERNAL_SOURCE_NESTED/LICENSE /licenses/
-
-# RHIDP-5216/RHIDP-5215 - interim marketplace catalog entities until these data will be loaded from container images
-COPY $EXTERNAL_SOURCE_NESTED/catalog-entities/marketplace /marketplace/catalog-entities/
 
 # Copy script to gather dynamic plugins; copy embedded dynamic plugins to root folder; fix permissions
 COPY docker/install-dynamic-plugins.py docker/install-dynamic-plugins.sh ./
