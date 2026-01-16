@@ -1319,6 +1319,54 @@ plugins:
               if:
                 allOf:
                 - isPluginApplicableToEntity
+- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator-backend:bs_1.45.3__8.5.1
+  disabled: true
+  pluginConfig:
+    orchestrator:
+      dataIndexService:
+        url: http://sonataflow-platform-data-index-service
+- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets:bs_1.45.3__1.6.0
+  disabled: true
+  pluginConfig:
+    dynamicPlugins:
+      frontend:
+        red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets: {}
+- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator:bs_1.45.3__5.3.1
+  disabled: true
+  pluginConfig:
+    dynamicPlugins:
+      frontend:
+        red-hat-developer-hub.backstage-plugin-orchestrator:
+          appIcons:
+          - importName: OrchestratorIcon
+            name: orchestratorIcon
+          dynamicRoutes:
+          - importName: OrchestratorPage
+            menuItem:
+              icon: orchestratorIcon
+              text: Orchestrator
+              textKey: menuItem.orchestrator
+            path: /orchestrator
+          entityTabs:
+          - path: /workflows
+            title: Workflows
+            titleKey: catalog.entityPage.workflows.title
+            mountPoint: entity.page.workflows
+          mountPoints:
+          - mountPoint: entity.page.workflows/cards
+            importName: OrchestratorCatalogTab
+            config:
+              layout:
+                gridColumn: 1 / -1
+                if:
+                  anyOf:
+                  - IsOrchestratorCatalogTabAvailable
+- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator:bs_1.45.3__1.3.1
+  disabled: true
+  pluginConfig:
+    orchestrator:
+      dataIndexService:
+        url: http://sonataflow-platform-data-index-service
 - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-argo-cd-backend:bs_1.45.3__4.4.2!roadiehq-backstage-plugin-argo-cd-backend
   disabled: true
   pluginConfig:
