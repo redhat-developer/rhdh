@@ -90,7 +90,7 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
   test("Verify scaffoldedFrom relation in dependency graph and raw YAML", async () => {
     // Verify the scaffoldedFrom relation in the YAML view of the entity
     await catalogImport.inspectEntityAndVerifyYaml(
-        `relations:
+      `relations:
         - type: ownedBy
             targetRef: group:janus-qe/maintainers
         - type: scaffoldedFrom
@@ -100,7 +100,7 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
         lifecycle: experimental
         owner: group:janus-qe/maintainers
         scaffoldedFrom: template:default/create-react-app-template-with-timestamp-entityref`,
-        );
+    );
 
     await uiHelper.openCatalogSidebar("Component");
     await uiHelper.searchInputPlaceholder("test-relation-\n");
@@ -152,12 +152,10 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
   });
 
   async function clickOnRelationTestComponent() {
-    const selector =
-      'a[href*="/catalog/default/component/test-relation-"]';
+    const selector = 'a[href*="/catalog/default/component/test-relation-"]';
     await page.locator(selector).first().waitFor({ state: "visible" });
     const link = page.locator(selector).first();
     await expect(link).toBeVisible();
     await link.click();
   }
 });
-
