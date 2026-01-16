@@ -11602,7 +11602,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@octokit/auth-app@npm:^6.0.0, @octokit/auth-app@npm:^6.0.3":
+"@octokit/auth-app@npm:^6.0.0":
   version: 6.1.2
   resolution: "@octokit/auth-app@npm:6.1.2"
   dependencies:
@@ -11616,6 +11616,22 @@ __metadata:
     universal-github-app-jwt: ^1.1.2
     universal-user-agent: ^6.0.0
   checksum: fa9c16a9cf884a87f78ed11f4ab9b300908f3648ab9cd710037b22abbf496b3edb86440bf97acb28cf6d4ee4d64fbab4a845b75e739d0582879bc50ab0b74852
+  languageName: node
+  linkType: hard
+
+"@octokit/auth-app@npm:^7.2.2":
+  version: 7.2.2
+  resolution: "@octokit/auth-app@npm:7.2.2"
+  dependencies:
+    "@octokit/auth-oauth-app": ^8.1.4
+    "@octokit/auth-oauth-user": ^5.1.4
+    "@octokit/request": ^9.2.3
+    "@octokit/request-error": ^6.1.8
+    "@octokit/types": ^14.0.0
+    toad-cache: ^3.7.0
+    universal-github-app-jwt: ^2.2.0
+    universal-user-agent: ^7.0.0
+  checksum: f76228f474689e2a2de8782b4d2baf5bda7254b25c8e00528764dc9810b6b41850106ac69d6f9c1e2ebe4a67dbb9cc5b7fe1a366c24737ca5d64a17618f74a30
   languageName: node
   linkType: hard
 
@@ -11649,6 +11665,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@octokit/auth-oauth-app@npm:^8.1.4":
+  version: 8.1.4
+  resolution: "@octokit/auth-oauth-app@npm:8.1.4"
+  dependencies:
+    "@octokit/auth-oauth-device": ^7.1.5
+    "@octokit/auth-oauth-user": ^5.1.4
+    "@octokit/request": ^9.2.3
+    "@octokit/types": ^14.0.0
+    universal-user-agent: ^7.0.0
+  checksum: 7547f77d0753c9866ed429987fc376fc9ec451663a2356ee3906b6254ada636efa06cac5207b83658ad21c2cfb8a0967d94d1186ef88fea8a615f36d0c26ef23
+  languageName: node
+  linkType: hard
+
 "@octokit/auth-oauth-device@npm:^4.0.0":
   version: 4.0.5
   resolution: "@octokit/auth-oauth-device@npm:4.0.5"
@@ -11670,6 +11699,18 @@ __metadata:
     "@octokit/types": ^13.0.0
     universal-user-agent: ^6.0.0
   checksum: 2824f74ea5eca3d8da9793f463ebca725c8a13a241085015f96f037771ef3e5fa82d5842f538353c683b709d8d32ccd481bfc0ba8cbcde708916ea95a78dd0d2
+  languageName: node
+  linkType: hard
+
+"@octokit/auth-oauth-device@npm:^7.1.5":
+  version: 7.1.5
+  resolution: "@octokit/auth-oauth-device@npm:7.1.5"
+  dependencies:
+    "@octokit/oauth-methods": ^5.1.5
+    "@octokit/request": ^9.2.3
+    "@octokit/types": ^14.0.0
+    universal-user-agent: ^7.0.0
+  checksum: 48172f9d9ecb7ccf56d0d56706a01cc29c56a2c4b6bb242a4564bf787c6e8481cd7e0acaab52760f44ad8461b954f1812ae77174865ce31b18415da65d3ea718
   languageName: node
   linkType: hard
 
@@ -11698,6 +11739,19 @@ __metadata:
     btoa-lite: ^1.0.0
     universal-user-agent: ^6.0.0
   checksum: 581197a427c1ef153350e46de7315c9da1a98904b67e5e13aed88d36e334d95d869f8f12a35ed70d7232c6afd6d3912200988e41959e30c83f880d072ee8b8ba
+  languageName: node
+  linkType: hard
+
+"@octokit/auth-oauth-user@npm:^5.1.4":
+  version: 5.1.6
+  resolution: "@octokit/auth-oauth-user@npm:5.1.6"
+  dependencies:
+    "@octokit/auth-oauth-device": ^7.1.5
+    "@octokit/oauth-methods": ^5.1.5
+    "@octokit/request": ^9.2.3
+    "@octokit/types": ^14.0.0
+    universal-user-agent: ^7.0.0
+  checksum: 35aeeb19d7a43d8a689d6908dba93cc697736c4bd36757d89dc9b3c95c14605a0eb07c238df1deee380895fcad604ada38873a0a0d1566700c23ff0edcd14382
   languageName: node
   linkType: hard
 
@@ -11752,6 +11806,16 @@ __metadata:
     before-after-hook: ^2.2.0
     universal-user-agent: ^6.0.0
   checksum: 57d5f02b759b569323dcb76cc72bf94ea7d0de58638c118ee14ec3e37d303c505893137dd72918328794844f35c74b3cd16999319c4b40d410a310d44a9b7566
+  languageName: node
+  linkType: hard
+
+"@octokit/endpoint@npm:^10.1.4":
+  version: 10.1.4
+  resolution: "@octokit/endpoint@npm:10.1.4"
+  dependencies:
+    "@octokit/types": ^14.0.0
+    universal-user-agent: ^7.0.2
+  checksum: 83270f39fab12bb830549c0613783c3dd40d00e33ce19bb5c510c99be230102323f99549fc6baee779486c63927679cf3f4167ee0506924703c6645945ac6dea
   languageName: node
   linkType: hard
 
@@ -11828,6 +11892,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@octokit/oauth-authorization-url@npm:^7.0.0":
+  version: 7.1.1
+  resolution: "@octokit/oauth-authorization-url@npm:7.1.1"
+  checksum: 02ad29fa4540c6b4b3a1e9f6936d40057174be91e9c7cad1afcd09d027fa2a50598dad5857699d1be25568bf70d86123dc9cd3874afe044ce6791e6805e97542
+  languageName: node
+  linkType: hard
+
 "@octokit/oauth-methods@npm:^2.0.0":
   version: 2.0.6
   resolution: "@octokit/oauth-methods@npm:2.0.6"
@@ -11851,6 +11922,18 @@ __metadata:
     "@octokit/types": ^13.0.0
     btoa-lite: ^1.0.0
   checksum: 2ca42f054a3b92f6f3fa9a984df7d75cc8c1f19aba5f6fc9636499dde3a8031e33148cbc936cace103b1eb7fe79d978aee7077aa6f69e0dd996ee345a10f2aa4
+  languageName: node
+  linkType: hard
+
+"@octokit/oauth-methods@npm:^5.1.5":
+  version: 5.1.5
+  resolution: "@octokit/oauth-methods@npm:5.1.5"
+  dependencies:
+    "@octokit/oauth-authorization-url": ^7.0.0
+    "@octokit/request": ^9.2.3
+    "@octokit/request-error": ^6.1.8
+    "@octokit/types": ^14.0.0
+  checksum: 529fc086beb5463599cc533e63ce3a0eeec8cdbaea128c8d4e236bade6a41c31753144d4854cbbebbadb67702423c97f5fdd78947f3fdafd136584dfcb629036
   languageName: node
   linkType: hard
 
@@ -11879,6 +11962,13 @@ __metadata:
   version: 23.0.1
   resolution: "@octokit/openapi-types@npm:23.0.1"
   checksum: 1e6766c60375375d85ecabded67d9ee313cf9401c18a44534b942717cf840d41b5a9d42035522efffe6b811ee2204d4615f72c333e984e81b25545926eb77989
+  languageName: node
+  linkType: hard
+
+"@octokit/openapi-types@npm:^25.1.0":
+  version: 25.1.0
+  resolution: "@octokit/openapi-types@npm:25.1.0"
+  checksum: 441b17f801254629b3ddb4b878c589fee1fd23015253c8b72a3acb3eeedbe981691bb311649ab5f955005c5d7adb940f19e18eaf0c875752fe0cc12b3dc1d24b
   languageName: node
   linkType: hard
 
@@ -12023,6 +12113,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@octokit/request-error@npm:^6.1.8":
+  version: 6.1.8
+  resolution: "@octokit/request-error@npm:6.1.8"
+  dependencies:
+    "@octokit/types": ^14.0.0
+  checksum: 9354d9f6d95147fce0ab90d4a60d1a9b78a382876634d9504e49b3a077eb2857f92bef3aede2d9a6235e65ce9bbe93d72e4e99012e0a307bad6d23d637dfa802
+  languageName: node
+  linkType: hard
+
 "@octokit/request@npm:^6.0.0, @octokit/request@npm:^6.2.3":
   version: 6.2.8
   resolution: "@octokit/request@npm:6.2.8"
@@ -12046,6 +12145,19 @@ __metadata:
     "@octokit/types": ^13.1.0
     universal-user-agent: ^6.0.0
   checksum: 0ba76728583543baeef9fda98690bc86c57e0a3ccac8c189d2b7d144d248c89167eb37a071ed8fead8f4da0a1c55c4dd98a8fc598769c263b95179fb200959de
+  languageName: node
+  linkType: hard
+
+"@octokit/request@npm:^9.2.3":
+  version: 9.2.4
+  resolution: "@octokit/request@npm:9.2.4"
+  dependencies:
+    "@octokit/endpoint": ^10.1.4
+    "@octokit/request-error": ^6.1.8
+    "@octokit/types": ^14.0.0
+    fast-content-type-parse: ^2.0.0
+    universal-user-agent: ^7.0.2
+  checksum: edd5d975543edaaf3db8abbb9bb61f19169155be5a87d6ee7001d295a5e3f1dadaf7b62e11ec2b79fe4ff5ed65b6d470eac5b87688d62c432e39999f5a9b7592
   languageName: node
   linkType: hard
 
@@ -12104,6 +12216,15 @@ __metadata:
   dependencies:
     "@octokit/openapi-types": ^23.0.1
   checksum: be5fb327d0e39765e06f5a314556a273ff2bfb9ce4fd5a6e52c237d2f20a4c329493a8bde2c595cb82a5022f07ee6495dfff07ce24e3de4660c9ead913e3db0d
+  languageName: node
+  linkType: hard
+
+"@octokit/types@npm:^14.0.0":
+  version: 14.1.0
+  resolution: "@octokit/types@npm:14.1.0"
+  dependencies:
+    "@octokit/openapi-types": ^25.1.0
+  checksum: 0513520e26dc5395c3b3b407568151d32be1f51bedb151f5b294cadc72dc3fe2d0dbbccad96f01dc80d26247b4aed3358de0ce31ad3c013eb22b96e6234feeb5
   languageName: node
   linkType: hard
 
@@ -12666,9 +12787,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-bulk-import-backend@npm:6.9.1":
-  version: 6.9.1
-  resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import-backend@npm:6.9.1"
+"@red-hat-developer-hub/backstage-plugin-bulk-import-backend@npm:6.11.0":
+  version: 6.11.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import-backend@npm:6.11.0"
   dependencies:
     "@backstage/backend-defaults": ^0.13.1
     "@backstage/backend-plugin-api": ^1.5.0
@@ -12680,9 +12801,10 @@ __metadata:
     "@backstage/plugin-permission-common": ^0.9.3
     "@backstage/plugin-permission-node": ^0.10.6
     "@gitbeaker/rest": ^43.4.0
-    "@octokit/auth-app": ^6.0.3
+    "@octokit/auth-app": ^7.2.2
     "@octokit/rest": ^20.0.2
-    "@red-hat-developer-hub/backstage-plugin-bulk-import-common": ^6.9.1
+    "@red-hat-developer-hub/backstage-plugin-bulk-import-common": ^6.11.0
+    "@red-hat-developer-hub/backstage-plugin-orchestrator-common": ^3.2.0
     ajv-formats: ^3.0.1
     eventsource-client: ^1.2.0
     express: ^4.17.1
@@ -12693,24 +12815,22 @@ __metadata:
     luxon: ^3.4.4
     node-fetch: ^2.6.7
     openapi-backend: ^5.10.6
-  peerDependencies:
-    "@janus-idp/backstage-plugin-audit-log-node": ^1.7.0
-  checksum: 5939f0778f86f102826bbfd4a8c9c68578ec8000065273d7de8ae2688a5897f74181670f3e1372f2e3c7b82527a3e3f48e6f56d721a0a279d77fb004972b9669
+  checksum: d313cc0ee6113a1bf39c230245e403bf13d720efcc91821dfd3ef674bf6ad95e782a323c4edaeaac587fcd8ea6cc4615baa01ad261e1f954a7ca4649eeeb3f9f
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-bulk-import-common@npm:^6.9.1":
-  version: 6.9.1
-  resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import-common@npm:6.9.1"
+"@red-hat-developer-hub/backstage-plugin-bulk-import-common@npm:^6.11.0":
+  version: 6.11.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import-common@npm:6.11.0"
   peerDependencies:
     "@backstage/plugin-permission-common": ^0.9.3
-  checksum: c9904899505a95f9c041fd3067beb4947538a55df98fb14f6fe2d0f8f4b4e34eee81848cb7e41fe76477600ace81ed2592274abac7f94397a394ef3b04e614ec
+  checksum: 545df6fbb36e0ee566a6edf7d3d4eef7318a44d8b5baf47bb08946138d3e1d22131616d66373877409d04cb10dc7676e839778970ef249d0343fe630970d10d0
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-bulk-import@npm:6.9.1":
-  version: 6.9.1
-  resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import@npm:6.9.1"
+"@red-hat-developer-hub/backstage-plugin-bulk-import@npm:6.11.0":
+  version: 6.11.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import@npm:6.11.0"
   dependencies:
     "@backstage/catalog-model": ^1.7.6
     "@backstage/core-components": ^0.18.3
@@ -12722,7 +12842,7 @@ __metadata:
     "@mui/icons-material": ^5.15.17
     "@mui/material": ^5.12.2
     "@mui/styles": 5.18.0
-    "@red-hat-developer-hub/backstage-plugin-bulk-import-common": ^6.9.1
+    "@red-hat-developer-hub/backstage-plugin-bulk-import-common": ^6.11.0
     "@tanstack/react-query": ^4.29.21
     formik: ^2.4.5
     js-yaml: ^4.1.0
@@ -12733,7 +12853,7 @@ __metadata:
   peerDependencies:
     react: 16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.0.0
-  checksum: 3a9759ea311eb3d1739a4174e126ee9b2b31f30e49f54f5609833794827e9e557e0b93b14c0806bed3aaf26cc2e71f775f2991b60aab8970faacf0a45e03afe6
+  checksum: 2c80c2af12796f229e7f7c193a7436bd6095f5e972efef9dbe73ef8059b4c16e91caecba6c2c787481aca892f29e2a66768ec0e9d198783673fbb87882af6c31
   languageName: node
   linkType: hard
 
@@ -12906,6 +13026,20 @@ __metadata:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.0.0
   checksum: 35708a424c980de29e8f666511ade1cc059615d25e0deff9543beeba440110ccf07ce9d85709512c5b03b227df9fc7b96f150096e71db20248a8bc270c7330c9
+  languageName: node
+  linkType: hard
+
+"@red-hat-developer-hub/backstage-plugin-orchestrator-common@npm:^3.2.0":
+  version: 3.3.1
+  resolution: "@red-hat-developer-hub/backstage-plugin-orchestrator-common@npm:3.3.1"
+  dependencies:
+    "@backstage/core-plugin-api": ^1.12.0
+    "@backstage/plugin-permission-common": ^0.9.3
+    "@backstage/types": ^1.2.2
+    "@serverlessworkflow/sdk-typescript": ^0.8.4
+    axios: ^1.11.0
+    js-yaml: ^4.1.0
+  checksum: b7ab5003d3b92a66f13f8d98c477c47b3c0794c5901653c259d88467ac0680d41760bf577155b67320bd589c37f4460ee852752fe6490f9899cc779d1605cdab
   languageName: node
   linkType: hard
 
@@ -13659,6 +13793,17 @@ __metadata:
   version: 1.0.3
   resolution: "@segment/isodate@npm:1.0.3"
   checksum: 31faf12e83fa6ab5ba7dfd5600dfaf8d224a00ab24f3a2d3d9ba7f4ecdc1683a55c00fc9246585361aa5cb67c6d7846e1d5497cc3bcca58c105902b79c91c34a
+  languageName: node
+  linkType: hard
+
+"@serverlessworkflow/sdk-typescript@npm:^0.8.4":
+  version: 0.8.4
+  resolution: "@serverlessworkflow/sdk-typescript@npm:0.8.4"
+  dependencies:
+    ajv: ^8.17.1
+    ajv-formats: ^3.0.1
+    js-yaml: ^4.1.0
+  checksum: d92c0c08c34ae71b8e886edcc46752cc0deac16ab565160f11dfa9251cc016db31d35b56233a041af5f17759f3583baa8b7541e0ec7f3a14d2907a671efe2fbf
   languageName: node
   linkType: hard
 
@@ -17625,6 +17770,17 @@ __metadata:
     form-data: ^4.0.4
     proxy-from-env: ^1.1.0
   checksum: f0331594fe053a4bbff04104edb073973a3aabfad2e56b0aa18de82428aa63f6f0839ca3d837258ec739cb4528014121793b1649a21e5115ffb2bf8237eadca3
+  languageName: node
+  linkType: hard
+
+"axios@npm:^1.11.0":
+  version: 1.13.2
+  resolution: "axios@npm:1.13.2"
+  dependencies:
+    follow-redirects: ^1.15.6
+    form-data: ^4.0.4
+    proxy-from-env: ^1.1.0
+  checksum: 057d0204d5930e2969f0bccb9f0752745b1524a36994667833195e7e1a82f245d660752ba8517b2dbea17e9e4ed0479f10b80c5fe45edd0b5a0df645c0060386
   languageName: node
   linkType: hard
 
@@ -22804,6 +22960,13 @@ __metadata:
   version: 1.4.1
   resolution: "extsprintf@npm:1.4.1"
   checksum: a2f29b241914a8d2bad64363de684821b6b1609d06ae68d5b539e4de6b28659715b5bea94a7265201603713b7027d35399d10b0548f09071c5513e65e8323d33
+  languageName: node
+  linkType: hard
+
+"fast-content-type-parse@npm:^2.0.0":
+  version: 2.0.1
+  resolution: "fast-content-type-parse@npm:2.0.1"
+  checksum: 0ea4c7dce77c579d19805ea874d128832f535086465c57994a49a28a4784538ea4eeaa49261a5c675a4764c634e12a74bae26e09d64e886cb826c0b97e4c621d
   languageName: node
   linkType: hard
 
@@ -31963,7 +32126,7 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.34.5
     "@janus-idp/cli": 3.6.1
-    "@red-hat-developer-hub/backstage-plugin-bulk-import-backend": 6.9.1
+    "@red-hat-developer-hub/backstage-plugin-bulk-import-backend": 6.11.0
     typescript: 5.9.3
   languageName: unknown
   linkType: soft
@@ -31975,7 +32138,7 @@ __metadata:
     "@backstage/cli": 0.34.5
     "@janus-idp/cli": 3.6.1
     "@mui/material": 5.18.0
-    "@red-hat-developer-hub/backstage-plugin-bulk-import": 6.9.1
+    "@red-hat-developer-hub/backstage-plugin-bulk-import": 6.11.0
     typescript: 5.9.3
   languageName: unknown
   linkType: soft
@@ -34625,6 +34788,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"toad-cache@npm:^3.7.0":
+  version: 3.7.0
+  resolution: "toad-cache@npm:3.7.0"
+  checksum: d0f2092ab2c0f3355d3537c41b13888a12996f38080e6c39907e715eb382d997ccf61baab9e8eda3f202b6c07e304728106be3631c9fe3b6c001aaf15b7bdb8f
+  languageName: node
+  linkType: hard
+
 "toggle-selection@npm:^1.0.6":
   version: 1.0.6
   resolution: "toggle-selection@npm:1.0.6"
@@ -35515,10 +35685,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"universal-github-app-jwt@npm:^2.2.0":
+  version: 2.2.2
+  resolution: "universal-github-app-jwt@npm:2.2.2"
+  checksum: 95c0801e69898aec15b42731b47e7a5a830dbe7e456ba84b66b9b78542d2e79a62d633424c98c58e6fe6b09fbad6951111cce7db85573955c14dd930ecda0ee4
+  languageName: node
+  linkType: hard
+
 "universal-user-agent@npm:^6.0.0":
   version: 6.0.1
   resolution: "universal-user-agent@npm:6.0.1"
   checksum: fdc8e1ae48a05decfc7ded09b62071f571c7fe0bd793d700704c80cea316101d4eac15cc27ed2bb64f4ce166d2684777c3198b9ab16034f547abea0d3aa1c93c
+  languageName: node
+  linkType: hard
+
+"universal-user-agent@npm:^7.0.0, universal-user-agent@npm:^7.0.2":
+  version: 7.0.3
+  resolution: "universal-user-agent@npm:7.0.3"
+  checksum: c497e85f8b11eb8fa4dce584d7a39cc98710164959f494cafc3c269b51abb20fff269951838efd7424d15f6b3d001507f3cb8b52bb5676fdb642019dfd17e63e
   languageName: node
   linkType: hard
 
