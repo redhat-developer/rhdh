@@ -179,4 +179,3 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
     await page.close();
   });
 });
-
