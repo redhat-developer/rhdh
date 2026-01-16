@@ -152,7 +152,7 @@ plugins:
         red-hat-developer-hub.backstage-plugin-analytics-module-adoption-insights:
           analyticsApiExtensions:
           - importName: AdoptionInsightsAnalyticsApi
-- package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-catalog-backend-module-marketplace-dynamic
+- package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-catalog-backend-module-extensions-dynamic
   disabled: false
 - package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-dynamic-home-page:1.9.0--1.9.2!red-hat-developer-hub-backstage-plugin-dynamic-home-page
   # new approach using oci images: to switch to the new approach, remove
@@ -458,26 +458,26 @@ plugins:
             importName: LogoutButton
             config:
               priority: 10
-- package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-marketplace:1.9.0--0.11.4!red-hat-developer-hub-backstage-plugin-marketplace
+# - package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-marketplace:1.9.0--0.11.4!red-hat-developer-hub-backstage-plugin-marketplace
   # new approach using oci images: to switch to the new approach, remove
   # these comments + the next two lines, but keep the pluginConfig details.
-  disabled: true
-- package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-marketplace
+  # disabled: true
+- package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-extensions
   disabled: false
   pluginConfig:
     dynamicPlugins:
       frontend:
-        red-hat-developer-hub.backstage-plugin-marketplace:
+        red-hat-developer-hub.backstage-plugin-extensions:
           translationResources:
-          - importName: marketplaceTranslations
-            ref: marketplaceTranslationRef
+          - importName: extensionsTranslations
+            ref: extensionsTranslationRef
             module: Alpha
           appIcons:
           - name: pluginsIcon
             importName: PluginsIcon
           dynamicRoutes:
           - path: /extensions
-            importName: DynamicMarketplacePluginRouter
+            importName: DynamicExtensionsPluginRouter
             menuItem:
               icon: pluginsIcon
               text: Extensions
@@ -485,7 +485,7 @@ plugins:
           menuItems:
             extensions:
               parent: default.admin
-- package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-marketplace-backend-dynamic
+- package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-extensions-backend-dynamic
   disabled: false
 - package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-quickstart:1.9.0--1.6.2!red-hat-developer-hub-backstage-plugin-quickstart
   # new approach using oci images: to switch to the new approach, remove

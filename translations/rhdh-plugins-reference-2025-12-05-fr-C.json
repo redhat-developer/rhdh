@@ -521,7 +521,7 @@
       "settings.pinned.disabled.description": "Les conversations épinglées sont actuellement désactivées"
     }
   },
-  "plugin.marketplace": {
+  "plugin.extensions": {
     "fr": {
       "header.title": "Extensions",
       "header.extensions": "Extensions",
@@ -553,7 +553,7 @@
       "emptyState.noPluginsFound": "Aucun plugin trouvé",
       "emptyState.mustEnableBackend": "Doit activer le plugin backend Extensions",
       "emptyState.noPluginsDescription": "Une erreur s'est produite lors du chargement des plugins. Vérifiez votre configuration ou consultez la documentation du plugin pour résoudre le problème. Vous pouvez également explorer d’autres plugins disponibles.",
-      "emptyState.configureBackend": "Configurez le plugin '@red-hat-developer-hub/backstage-plugin-marketplace-backend'.",
+      "emptyState.configureBackend": "Configurez le plugin '@red-hat-developer-hub/backstage-plugin-extensions-backend'.",
       "alert.productionDisabled": "L'installation du plugin est désactivée dans l'environnement de production.",
       "alert.installationDisabled": "L'installation du plugin est désactivée.",
       "alert.missingDynamicArtifact": "Impossible de gérer ce paquet. Pour activer les actions, un catalogue avec l’  **spec.dynamicArtifact** requis doit être ajouté.",
