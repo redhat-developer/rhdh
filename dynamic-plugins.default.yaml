@@ -504,7 +504,7 @@ plugins:
         cta:
           text: Learn more
           textKey: steps.setupAuthentication.ctaTitle
-          link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/authentication_in_red_hat_developer_hub/
+          link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/${RHDH_DOCS_VERSION}/html/authentication_in_red_hat_developer_hub/
       - title: Configure RBAC
         titleKey: steps.configureRbac.title
         icon: Rbac
@@ -524,7 +524,7 @@ plugins:
         cta:
           text: Learn more
           textKey: steps.configureGit.ctaTitle
-          link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/integrating_red_hat_developer_hub_with_github/
+          link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/${RHDH_DOCS_VERSION}/html/integrating_red_hat_developer_hub_with_github/
       - title: Manage plugins
         titleKey: steps.managePlugins.title
         icon: Plugins

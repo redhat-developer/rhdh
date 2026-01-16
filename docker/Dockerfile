@@ -121,6 +121,10 @@ RUN \
   -e "s/(\"Last Commit\": \"(.+)\")/\1, \"Build Time\": \"$now\"/" && \
   cat packages/app/src/build-metadata.json; echo
 
+# Replace ${RHDH_DOCS_VERSION:-latest} placeholder with actual version (major.minor) from package.json
+RUN RHDH_DOCS_VERSION=$(node -p "require('./package.json').version.split('.').slice(0,2).join('.')") && \
+  sed -i "s/\${RHDH_DOCS_VERSION:-latest}/$RHDH_DOCS_VERSION/g" dynamic-plugins.default.yaml
+
 # suppress git warnings about dubious ownership in repository at '/opt/app-root/src' when building
 RUN echo "=== YARN BUILD ==="; FAILED=0; \
   git config --global --add safe.directory /opt/app-root/src; \
