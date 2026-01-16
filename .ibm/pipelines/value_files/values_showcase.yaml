@@ -179,7 +179,7 @@ global:
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic
         disabled: false
-      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlay/immobiliarelabs-backstage-plugin-gitlab-backend:bs_1.45.3__6.13.0!immobiliarelabs-backstage-plugin-gitlab-backend
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/immobiliarelabs-backstage-plugin-gitlab-backend:bs_1.45.3__6.13.0!immobiliarelabs-backstage-plugin-gitlab-backend
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-gitlab-dynamic
         disabled: false
