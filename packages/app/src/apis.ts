@@ -119,6 +119,7 @@ export const apis: AnyApiFactory[] = [
           ...ALL_RELATION_PAIRS,
           [RELATION_SCAFFOLDER_OF, RELATION_SCAFFOLDED_FROM],
         ],
+        defaultRelationTypes: { exclude: [] }
       }),
   }),
   // OIDC
