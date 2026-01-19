@@ -8,7 +8,7 @@ export class ImageRegistry {
       /^[A-Za-z]{3} \d{1,2}, \d{4}, \d{1,2}:\d{2} (AM|PM)$/; // Example: Jan 21, 2025, 7:54 PM
     const size = /^\d+(\.\d+)?\s?(GB|MB)$/; // Example: 1.16 GB or 512 MB
     const expires =
-      /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun), \d{1,2} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4} \d{1,2}:\d{2}:\d{2} [+-]\d{4}$/; // Example: Tue, 04 Feb 2025 22:54:18 -0000
+      /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{1,2}, \d{4}, \d{1,2}:\d{2} [APM]{2}$/; // Example: Feb 2, 2026 4:01 PM
 
     const manifest = /^sha256/;
     const securityScan =
