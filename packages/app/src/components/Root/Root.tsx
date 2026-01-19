@@ -487,7 +487,12 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
       ? menuItemArray.filter(mi => mi.name.includes('admin'))
       : menuItemArray.filter(mi => !mi.name.includes('admin'));
 
-    if (isBottomMenuSection && !canDisplayRBACMenuItem && !loadingPermission && menuItemArray[0]?.children) {
+    if (
+      isBottomMenuSection &&
+      !canDisplayRBACMenuItem &&
+      !loadingPermission &&
+      menuItemArray[0]?.children
+    ) {
       menuItemArray[0].children = menuItemArray[0].children.filter(
         mi => mi.name !== 'rbac',
       );
@@ -499,8 +504,9 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
           const isOpen = openItems[menuItem.name] || false;
           return (
             <Fragment key={menuItem.name}>
-              {!menuItem.children || menuItem.children!.length === 0 &&
-                getMenuItem(menuItem, false, getMenuText)}
+              {!menuItem.children ||
+                (menuItem.children!.length === 0 &&
+                  getMenuItem(menuItem, false, getMenuText))}
               {menuItem.children && menuItem.children.length > 0 && (
                 <SidebarItem
                   key={menuItem.name}
@@ -511,7 +517,8 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
                   {menuItem.children.length > 0 && renderExpandIcon(isOpen)}
                 </SidebarItem>
               )}
-              {menuItem.children && menuItem.children.length > 0 &&
+              {menuItem.children &&
+                menuItem.children.length > 0 &&
                 renderExpandableMenuItems(menuItem, isOpen)}
             </Fragment>
           );
