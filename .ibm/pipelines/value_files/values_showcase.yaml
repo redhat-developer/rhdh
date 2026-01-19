@@ -103,7 +103,7 @@ global:
         disabled: false
       - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-github-actions:bs_1.45.3__0.18.0!backstage-community-plugin-github-actions
         disabled: false
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-quay
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-quay:bs_1.45.3__1.28.1!backstage-community-plugin-quay
         disabled: false
       - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-scaffolder-backend-module-quay:bs_1.45.3__2.14.0!backstage-community-plugin-scaffolder-backend-module-quay
         disabled: false
