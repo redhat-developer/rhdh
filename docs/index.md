@@ -62,6 +62,8 @@ data:
         disabled: true
 ```
 
+Note that as of 1.9, the latest version of the `dynamic-plugins.default.yaml` file exists in the plugin catalog index container image. It is recommened to NOT use the file in this reepo anymore, as it is now generated from the contents of that container image.
+
 ### Disable Telemetry for Local Development
 
 By default, the `analytics-provider-segment` plugin is disabled when you run your application locally without using the `dynamic-plugins.default.yaml` file.
@@ -75,6 +77,8 @@ dynamicPlugins:
 ```
 
 Than delete the `dynamic-plugins-root/backstage-community-plugin-analytics-provider-segment` plugin directory, to stop plugin from loading.
+
+Note that as of 1.9, the latest version of the `dynamic-plugins.default.yaml` file exists in the plugin catalog index container image. It is recommened to NOT use the file in this reepo anymore, as it is now generated from the contents of that container image.
 
 ### Disabling Telemetry in Continuous Integration (CI) Environments
 

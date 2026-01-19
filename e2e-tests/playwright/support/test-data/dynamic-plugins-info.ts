@@ -25,11 +25,6 @@ export const PLUGINS = [
     role: "backend-plugin",
   },
   {
-    name: "roadiehq-scaffolder-backend-module-utils-dynamic",
-    platform: "node",
-    role: "backend-plugin-module",
-  },
-  {
     name: "backstage-community-plugin-catalog-backend-module-keycloak",
     platform: "node",
     role: "backend-plugin-module",

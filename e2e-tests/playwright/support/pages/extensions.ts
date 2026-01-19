@@ -14,12 +14,12 @@ export class Extensions {
   private uiHelper: UIhelper;
 
   private commonHeadings = [
-    t["plugin.marketplace"][lang]["metadata.versions"],
-    t["plugin.marketplace"][lang]["search.author"],
-    t["plugin.marketplace"][lang]["package.tags"],
-    t["plugin.marketplace"][lang]["metadata.category"],
-    t["plugin.marketplace"][lang]["metadata.publisher"],
-    t["plugin.marketplace"][lang]["metadata.supportProvider"],
+    t["plugin.extensions"][lang]["metadata.versions"],
+    t["plugin.extensions"][lang]["search.author"],
+    t["plugin.extensions"][lang]["package.tags"],
+    t["plugin.extensions"][lang]["metadata.category"],
+    t["plugin.extensions"][lang]["metadata.publisher"],
+    t["plugin.extensions"][lang]["metadata.supportProvider"],
   ];
   private tableHeaders = [
     "Package name",
@@ -40,7 +40,7 @@ export class Extensions {
     const targetCard = allCards.filter({ hasText: pluginTitle });
     await targetCard
       .getByRole("link", {
-        name: t["plugin.marketplace"][lang]["common.readMore"],
+        name: t["plugin.extensions"][lang]["common.readMore"],
       })
       .click();
   }
@@ -65,7 +65,7 @@ export class Extensions {
 
   async selectSupportTypeFilter(supportType: string) {
     await this.selectDropdown(
-      t["plugin.marketplace"][lang]["search.supportType"],
+      t["plugin.extensions"][lang]["search.supportType"],
     );
     await this.toggleOption(supportType);
     await this.page.keyboard.press("Escape");
@@ -73,7 +73,7 @@ export class Extensions {
 
   async resetSupportTypeFilter(supportType: string) {
     await this.selectDropdown(
-      t["plugin.marketplace"][lang]["search.supportType"],
+      t["plugin.extensions"][lang]["search.supportType"],
     );
     await this.toggleOption(supportType);
     await this.page.keyboard.press("Escape");
@@ -114,7 +114,7 @@ export class Extensions {
 
     if (includeAbout) {
       await this.uiHelper.verifyText(
-        t["plugin.marketplace"][lang]["metadata.about"],
+        t["plugin.extensions"][lang]["metadata.about"],
       );
     }
 

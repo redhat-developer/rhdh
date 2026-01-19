@@ -521,7 +521,7 @@
       "settings.pinned.disabled.description": "チャットの固定は現在無効です"
     }
   },
-  "plugin.marketplace": {
+  "plugin.extensions": {
     "ja": {
       "header.title": "拡張機能",
       "header.extensions": "拡張機能",
@@ -553,7 +553,7 @@
       "emptyState.noPluginsFound": "プラグインが見つかりません",
       "emptyState.mustEnableBackend": "Extensions バックエンドプラグインを有効にする必要があります",
       "emptyState.noPluginsDescription": "プラグインの読み込み中にエラーが発生しました。解決するには、設定を確認するか、プラグインのドキュメントを確認してください。利用可能な他のプラグインを探すこともできます。",
-      "emptyState.configureBackend": "'@red-hat-developer-hub/backstage-plugin-marketplace-backend' プラグインを設定してください。",
+      "emptyState.configureBackend": "'@red-hat-developer-hub/backstage-plugin-extensions-backend' プラグインを設定してください。",
       "alert.productionDisabled": "実稼働環境ではプラグインのインストールが無効になっています。",
       "alert.installationDisabled": "プラグインのインストールが無効になっています。",
       "alert.missingDynamicArtifact": "このパッケージを管理できません。アクションを有効にするには、必要な **spec.dynamicArtifact** を持つカタログエンティティーを追加する必要があります。",

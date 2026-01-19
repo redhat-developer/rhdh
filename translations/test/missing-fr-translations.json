@@ -14,7 +14,7 @@
       "profile.myProfile": "Mon profil"
     }
   },
-  "plugin.marketplace": {
+  "plugin.extensions": {
     "fr": {
       "header.title": "Extensions",
       "header.extensions": "Extensions",

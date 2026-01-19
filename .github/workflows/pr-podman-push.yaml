@@ -141,7 +141,7 @@ jobs:
           script: |
             const prNumber = process.env.PR_NUMBER;
 
-            const body = '🚫 Image Push Skipped.\n\nThe container image push was skipped because the build was skipped (either due to [skip-build] tag or no relevant changes with existing image)\n\n/test e2e-ocp-helm\n';
+            const body = '🚫 Image Push Skipped.\n\nThe container image push was skipped because the build was skipped (either due to [skip-build] tag or no relevant changes with existing image)\n\n';
 
             github.rest.issues.createComment({
               issue_number: parseInt(prNumber),

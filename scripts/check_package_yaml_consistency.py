@@ -10,7 +10,7 @@ class PackageYamlChecker:
     def __init__(self, repo_root: str):
         self.repo_root = Path(repo_root)
         self.dynamic_plugins_dir = self.repo_root / "dynamic-plugins" / "wrappers"
-        self.marketplace_dir = self.repo_root / "catalog-entities" / "marketplace" / "packages"
+        self.extensions_dir = self.repo_root / "catalog-entities" / "extensions" / "packages"
         self.results = []
         
     def find_package_json_files(self) -> List[Path]:
@@ -49,7 +49,7 @@ class PackageYamlChecker:
             Assisted-by: Cursor
         """
         # First try exact match
-        yaml_file = self.marketplace_dir / f"{package_name}.yaml"
+        yaml_file = self.extensions_dir / f"{package_name}.yaml"
         if yaml_file.exists():
             return yaml_file
         
@@ -57,14 +57,14 @@ class PackageYamlChecker:
         # This handles backend plugins where directory is name-dynamic but YAML is just name
         if package_name.endswith('-dynamic'):
             yaml_name_without_dynamic = package_name[:-8]  # Remove '-dynamic'
-            yaml_file = self.marketplace_dir / f"{yaml_name_without_dynamic}.yaml"
+            yaml_file = self.extensions_dir / f"{yaml_name_without_dynamic}.yaml"
             if yaml_file.exists():
                 return yaml_file
         
         # fuzzy: try prefix/suffix relations and common aliasing
         # Assisted-by: Cursor - since the naming convention is not consistent
         alias_name = package_name.replace('red-hat-developer-hub', 'rhdh')
-        for p in self.marketplace_dir.glob('*.yaml'):
+        for p in self.extensions_dir.glob('*.yaml'):
             stem = p.stem
             if (
                 stem.endswith(package_name)
@@ -129,7 +129,7 @@ class PackageYamlChecker:
                 continue
             
             # Track if we used the -dynamic mapping
-            used_dynamic_mapping = package_name.endswith('-dynamic') and not (self.marketplace_dir / f"{package_name}.yaml").exists()
+            used_dynamic_mapping = package_name.endswith('-dynamic') and not (self.extensions_dir / f"{package_name}.yaml").exists()
             
             yaml_spec = self.extract_spec_from_yaml(yaml_path)
             
@@ -178,7 +178,7 @@ class PackageYamlChecker:
         """
         if verbose:
             print("=" * 80)
-            print("PACKAGE.JSON vs marketplace catalog entity CONSISTENCY CHECK REPORT")
+            print("PACKAGE.JSON vs extensions catalog entity CONSISTENCY CHECK REPORT")
             print("=" * 80)
         
         ok_count = 0
@@ -211,7 +211,7 @@ class PackageYamlChecker:
         print(f"\nSUMMARY:")
         print(f"✅ Consistent packages: {ok_count}")
         print(f"❌ Inconsistent packages: {mismatch_count}")
-        print(f"⚠️ Missing marketplace catalog entity files: {no_yaml_count}")
+        print(f"⚠️ Missing extensions catalog entity files: {no_yaml_count}")
         print(f"📁 Total packages checked: {len(self.results)}")
         print(f"🔧 Backend/module plugins: {backend_plugin_count}")
         print(f"🎨 Frontend plugins: {frontend_plugin_count}")
@@ -238,7 +238,7 @@ class PackageYamlChecker:
         if no_yaml_count > 0:
             if verbose:
                 print(f"\n{'='*50}")
-                print("MISSING marketplace catalog entity FILES:")
+                print("MISSING extensions catalog entity FILES:")
                 print(f"{'='*50}")
             
             for result in self.results:
