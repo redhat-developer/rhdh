@@ -117,7 +117,7 @@ global:
       - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-regex-dynamic
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-servicenow-dynamic
-        disabled: false
+        disabled: true
         pluginConfig:
           servicenow:
             # The base url of the ServiceNow instance.
