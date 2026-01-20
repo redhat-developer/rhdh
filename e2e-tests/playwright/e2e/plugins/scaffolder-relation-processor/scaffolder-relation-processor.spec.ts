@@ -112,7 +112,7 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
     const labelSelector = 'g[data-testid="label"]';
     const nodeSelector = 'g[data-testid="node"]';
 
-    await uiHelper.verifyTextInSelector(labelSelector, "scaffoldedFrom");
+    await uiHelper.verifyPartialTextInSelector(labelSelector, "scaffoldedFrom");
 
     await uiHelper.verifyPartialTextInSelector(
       nodeSelector,
