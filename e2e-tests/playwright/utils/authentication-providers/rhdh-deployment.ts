@@ -1287,9 +1287,8 @@ class RHDHDeployment {
 
     //expect the config variable to be set
     expect(process.env.AUTH_PROVIDERS_GITLAB_HOST).toBeDefined();
-    expect(process.env.AUTH_PROVIDERS_GITLAB_CLIENT_ID).toBeDefined();
-    expect(process.env.AUTH_PROVIDERS_GITLAB_CLIENT_SECRET).toBeDefined();
     expect(process.env.AUTH_PROVIDERS_GITLAB_TOKEN).toBeDefined();
+    expect(process.env.AUTH_PROVIDERS_GITLAB_PARENT_ORG).toBeDefined();
 
     // enable the catalog backend dynamic plugin
     // and set the required configuration properties
@@ -1303,7 +1302,8 @@ class RHDHDeployment {
         default: {
           host: "${AUTH_PROVIDERS_GITLAB_HOST}",
           orgEnabled: true,
-          relations: ["INHERITED", "DESCENDANTS", "SHARED_FROM_GROUPS"],
+          group: "${AUTH_PROVIDERS_GITLAB_PARENT_ORG}",
+          restrictUsersToGroup: true,
           includeUsersWithoutSeat: true,
           schedule: {
             initialDelay: {

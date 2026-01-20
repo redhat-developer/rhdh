@@ -423,8 +423,8 @@ export class Common {
         return "Login successful";
       }
 
-      // Check for authorization button
-      const authorization = popup.locator('button:has-text("Authorize")');
+      // Check for authorization button using data-testid
+      const authorization = popup.getByTestId("authorize-button");
       if (await authorization.isVisible({ timeout: 10000 })) {
         await authorization.click();
       }
@@ -432,9 +432,16 @@ export class Common {
       await popup.waitForEvent("close", { timeout: 20000 });
       return "Login successful";
     } catch (e) {
-      const authorization = popup.locator('button:has-text("Authorize")');
-      if (await authorization.isVisible()) {
+      // Try data-testid first
+      const authorization = popup.getByTestId("authorize-button");
+      if (await authorization.isVisible({ timeout: 5000 })) {
         await authorization.click();
+        return "Login successful";
+      }
+      // Fallback to text-based selector if data-testid doesn't exist
+      const authorizationByText = popup.locator('button:has-text("Authorize")');
+      if (await authorizationByText.isVisible({ timeout: 5000 })) {
+        await authorizationByText.click();
         return "Login successful";
       } else {
         throw e;

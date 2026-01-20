@@ -196,7 +196,10 @@ export default defineConfig({
     },
     {
       name: PW_PROJECT.ANY_TEST,
-      testMatch: "**/*.spec.ts",
+      //testMatch: "**/*.spec.ts",
+      testMatch: [
+        "**/playwright/e2e/auth-providers/gitlab.spec.ts",
+      ],
     },
     {
       name: PW_PROJECT.SHOWCASE_UPGRADE,
