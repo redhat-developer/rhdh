@@ -7,6 +7,17 @@ export interface GitLabOAuthApp {
   scopes: string[];
 }
 
+interface GitLabOAuthAppResponse {
+  id: number;
+  application_id: string;
+  application_name?: string;
+  name?: string;
+  secret: string;
+  callback_url?: string;
+  redirect_uri?: string;
+  scopes?: string[];
+}
+
 interface GitLabConfig {
   host: string;
   personalAccessToken: string;
@@ -160,9 +171,9 @@ export class GitLabHelper {
         );
       }
 
-      const apps = await response.json();
+      const apps = (await response.json()) as GitLabOAuthAppResponse[];
       console.log(`[GITLAB] Found ${apps.length} OAuth applications`);
-      return apps.map((app: any) => ({
+      return apps.map((app: GitLabOAuthAppResponse) => ({
         id: app.id,
         application_id: app.application_id,
         application_name: app.application_name,
