@@ -422,9 +422,11 @@ export class Common {
       await popup.getByTestId("sign-in-button").click({ timeout: 5000 });
 
       // Wait for navigation after sign-in (either to 2FA, authorization, or close)
-      await popup.waitForLoadState("domcontentloaded", { timeout: 10000 }).catch(() => {
-        // Continue if load state check fails
-      });
+      await popup
+        .waitForLoadState("domcontentloaded", { timeout: 10000 })
+        .catch(() => {
+          // Continue if load state check fails
+        });
 
       // Handle 2FA if present
       const twoFactorInput = popup.locator("#user_otp_attempt");
@@ -439,17 +441,23 @@ export class Common {
       // Try data-testid first, then fallback to text-based selector
       const authorization = popup.getByTestId("authorize-button");
       const authorizationByText = popup.locator('button:has-text("Authorize")');
-      
+
       // Wait for button to appear with retry logic
       let buttonToClick: Locator | null = null;
       await expect(async () => {
         // Check data-testid first
-        if (await authorization.isVisible({ timeout: 2000 }).catch(() => false)) {
+        if (
+          await authorization.isVisible({ timeout: 2000 }).catch(() => false)
+        ) {
           buttonToClick = authorization;
           return true;
         }
         // Fallback to text-based selector
-        if (await authorizationByText.isVisible({ timeout: 2000 }).catch(() => false)) {
+        if (
+          await authorizationByText
+            .isVisible({ timeout: 2000 })
+            .catch(() => false)
+        ) {
           buttonToClick = authorizationByText;
           return true;
         }
@@ -464,9 +472,12 @@ export class Common {
       }
 
       // Click on document/body first to potentially dismiss any overlays (similar to GitHub flow)
-      await popup.getByRole("document").click({ timeout: 1000 }).catch(() => {
-        // Ignore if document click fails
-      });
+      await popup
+        .getByRole("document")
+        .click({ timeout: 1000 })
+        .catch(() => {
+          // Ignore if document click fails
+        });
 
       // Wait for button to be enabled and clickable
       await buttonToClick.waitFor({ state: "visible", timeout: 5000 });
@@ -474,7 +485,7 @@ export class Common {
       await buttonToClick.scrollIntoViewIfNeeded({ timeout: 5000 });
       // Small delay to ensure any animations/transitions complete
       await popup.waitForTimeout(1000);
-      
+
       try {
         await buttonToClick.click({ timeout: 5000 });
       } catch {
