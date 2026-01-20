@@ -138,7 +138,6 @@ test.describe("Configure GitLab Provider", async () => {
   });
 
   test("Login with GitLab default resolver", async () => {
-
     const login = await common.gitlabLogin(
       "user1",
       process.env.DEFAULT_USER_PASSWORD,
@@ -179,24 +178,56 @@ test.describe("Configure GitLab Provider", async () => {
 
     expect(await deployment.checkUserIsInGroup("root", "group1")).toBe(true);
 
-    expect(await deployment.checkUserIsInGroup("user1", "group1-nested")).toBe(true);
-    expect(await deployment.checkUserIsInGroup("user2", "group1-nested")).toBe(true);
-    expect(await deployment.checkUserIsInGroup("root", "group1-nested")).toBe(true);
+    expect(await deployment.checkUserIsInGroup("user1", "group1-nested")).toBe(
+      true,
+    );
+    expect(await deployment.checkUserIsInGroup("user2", "group1-nested")).toBe(
+      true,
+    );
+    expect(await deployment.checkUserIsInGroup("root", "group1-nested")).toBe(
+      true,
+    );
 
-    expect(await deployment.checkUserIsInGroup("user3", "group1-nested-nested_2")).toBe(true);
-    expect(await deployment.checkUserIsInGroup("root", "group1-nested-nested_2")).toBe(true);
+    expect(
+      await deployment.checkUserIsInGroup("user3", "group1-nested-nested_2"),
+    ).toBe(true);
+    expect(
+      await deployment.checkUserIsInGroup("root", "group1-nested-nested_2"),
+    ).toBe(true);
 
-    expect(await deployment.checkGroupIsChildOfGroup("group1", "my-org")).toBe(true);
-    expect(await deployment.checkGroupIsParentOfGroup("my-org", "group1")).toBe(true);
+    expect(await deployment.checkGroupIsChildOfGroup("group1", "my-org")).toBe(
+      true,
+    );
+    expect(await deployment.checkGroupIsParentOfGroup("my-org", "group1")).toBe(
+      true,
+    );
 
-    expect(await deployment.checkGroupIsChildOfGroup("all", "my-org")).toBe(true);
-    expect(await deployment.checkGroupIsParentOfGroup("my-org", "all")).toBe(true);
+    expect(await deployment.checkGroupIsChildOfGroup("all", "my-org")).toBe(
+      true,
+    );
+    expect(await deployment.checkGroupIsParentOfGroup("my-org", "all")).toBe(
+      true,
+    );
 
-    expect(await deployment.checkGroupIsChildOfGroup("group1-nested", "group1")).toBe(true);
-    expect(await deployment.checkGroupIsParentOfGroup("group1", "group1-nested")).toBe(true);
+    expect(
+      await deployment.checkGroupIsChildOfGroup("group1-nested", "group1"),
+    ).toBe(true);
+    expect(
+      await deployment.checkGroupIsParentOfGroup("group1", "group1-nested"),
+    ).toBe(true);
 
-    expect(await deployment.checkGroupIsChildOfGroup("group1-nested-nested_2", "group1-nested")).toBe(true);
-    expect(await deployment.checkGroupIsParentOfGroup("group1-nested", "group1-nested-nested_2")).toBe(true);
+    expect(
+      await deployment.checkGroupIsChildOfGroup(
+        "group1-nested-nested_2",
+        "group1-nested",
+      ),
+    ).toBe(true);
+    expect(
+      await deployment.checkGroupIsParentOfGroup(
+        "group1-nested",
+        "group1-nested-nested_2",
+      ),
+    ).toBe(true);
   });
 
   test.afterAll(async () => {
