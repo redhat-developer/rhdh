@@ -1,6 +1,6 @@
 import { UIhelper } from "./ui-helper";
 import { authenticator } from "otplib";
-import { test, Browser, expect, Page, TestInfo } from "@playwright/test";
+import { test, Browser, expect, Page, TestInfo, Locator } from "@playwright/test";
 import { SETTINGS_PAGE_COMPONENTS } from "../support/page-objects/page-obj";
 import { WAIT_OBJECTS } from "../support/page-objects/global-obj";
 import * as path from "path";
@@ -423,29 +423,50 @@ export class Common {
         return "Login successful";
       }
 
-      // Check for authorization button using data-testid
+      // Wait for page to stabilize after sign-in
+      await popup.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {
+        // Network idle might not always be reached, continue anyway
+      });
+
+      // Helper function to click authorization button
+      const clickAuthorizationButton = async (locator: Locator) => {
+        // Click on body first to potentially dismiss any overlays (similar to GitHub flow)
+        await popup.locator("body").click({ timeout: 1000 }).catch(() => {
+          // Ignore if body click fails
+        });
+        await locator.waitFor({ state: "visible", timeout: 5000 });
+        await locator.scrollIntoViewIfNeeded({ timeout: 5000 });
+        await popup.waitForTimeout(500);
+        try {
+          await locator.click({ timeout: 5000 });
+        } catch (clickError) {
+          // If regular click fails, try force click
+          // eslint-disable-next-line playwright/no-force-option
+          await locator.click({ force: true, timeout: 5000 });
+        }
+      };
+
+      // Check for authorization button using data-testid first
       const authorization = popup.getByTestId("authorize-button");
       if (await authorization.isVisible({ timeout: 10000 })) {
-        await authorization.click();
+        await clickAuthorizationButton(authorization);
+      } else {
+        // Fallback to text-based selector if data-testid doesn't exist
+        const authorizationByText = popup.locator('button:has-text("Authorize")');
+        if (await authorizationByText.isVisible({ timeout: 5000 })) {
+          await clickAuthorizationButton(authorizationByText);
+        }
       }
 
       await popup.waitForEvent("close", { timeout: 20000 });
       return "Login successful";
     } catch (e) {
-      // Try data-testid first
-      const authorization = popup.getByTestId("authorize-button");
-      if (await authorization.isVisible({ timeout: 5000 })) {
-        await authorization.click();
+      // If popup close timeout, check if popup is already closed
+      if (popup.isClosed()) {
         return "Login successful";
       }
-      // Fallback to text-based selector if data-testid doesn't exist
-      const authorizationByText = popup.locator('button:has-text("Authorize")');
-      if (await authorizationByText.isVisible({ timeout: 5000 })) {
-        await authorizationByText.click();
-        return "Login successful";
-      } else {
-        throw e;
-      }
+      // Re-throw other errors
+      throw e;
     }
   }
 

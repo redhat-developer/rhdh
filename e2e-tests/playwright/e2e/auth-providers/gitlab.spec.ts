@@ -131,14 +131,13 @@ test.describe("Configure GitLab Provider", async () => {
   });
 
   test.beforeEach(async () => {
-    test.info().setTimeout(600 * 1000);
+    test.info().setTimeout(60 * 1000);
     console.log(
       `Running test case ${test.info().title} - Attempt #${test.info().retry}`,
     );
   });
 
   test("Login with GitLab default resolver", async () => {
-    test.setTimeout(10 * 60 * 1000); // 10 minutes timeout
 
     const login = await common.gitlabLogin(
       "user1",
@@ -153,8 +152,7 @@ test.describe("Configure GitLab Provider", async () => {
   });
 
   test(`Ingestion of GitLab users and groups: verify the user entities and groups are created with the correct relationships`, async () => {
-    test.setTimeout(300 * 1000);
-    await page.waitForTimeout(10000);
+    await page.waitForTimeout(5000);
 
     expect(
       await deployment.checkUserIsIngestedInCatalog([
