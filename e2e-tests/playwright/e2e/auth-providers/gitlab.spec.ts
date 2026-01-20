@@ -53,6 +53,7 @@ test.describe("Configure GitLab Provider", async () => {
     // expect some expected variables
     expect(process.env.AUTH_PROVIDERS_GITLAB_HOST).toBeDefined();
     expect(process.env.AUTH_PROVIDERS_GITLAB_TOKEN).toBeDefined();
+    expect(process.env.AUTH_PROVIDERS_GITLAB_PARENT_ORG).toBeDefined();
     expect(process.env.DEFAULT_USER_PASSWORD).toBeDefined();
 
     // Initialize GitLab helper and create OAuth application dynamically
@@ -95,6 +96,10 @@ test.describe("Configure GitLab Provider", async () => {
     await deployment.addSecretData(
       "AUTH_PROVIDERS_GITLAB_HOST",
       process.env.AUTH_PROVIDERS_GITLAB_HOST!,
+    );
+    await deployment.addSecretData(
+      "AUTH_PROVIDERS_GITLAB_PARENT_ORG",
+      process.env.AUTH_PROVIDERS_GITLAB_PARENT_ORG!,
     );
     await deployment.addSecretData(
       "AUTH_PROVIDERS_GITLAB_CLIENT_ID",
@@ -149,28 +154,51 @@ test.describe("Configure GitLab Provider", async () => {
 
   test(`Ingestion of GitLab users and groups: verify the user entities and groups are created with the correct relationships`, async () => {
     test.setTimeout(300 * 1000);
-    await page.waitForTimeout(5000);
+    await page.waitForTimeout(10000);
 
     expect(
       await deployment.checkUserIsIngestedInCatalog([
         "user1",
         "user2",
+        "user3",
         "Administrator",
       ]),
     ).toBe(true);
     expect(
       await deployment.checkGroupIsIngestedInCatalog([
+        "my-org",
         "group1",
         "all",
         "nested",
+        "nested_2",
       ]),
     ).toBe(true);
-    expect(await deployment.checkUserIsInGroup("user1", "group1")).toBe(true);
-    expect(await deployment.checkUserIsInGroup("user2", "group1")).toBe(true);
+
+    expect(await deployment.checkUserIsInGroup("user1", "all")).toBe(true);
+    expect(await deployment.checkUserIsInGroup("user2", "all")).toBe(true);
+    expect(await deployment.checkUserIsInGroup("user3", "all")).toBe(true);
+    expect(await deployment.checkUserIsInGroup("root", "all")).toBe(true);
+
     expect(await deployment.checkUserIsInGroup("root", "group1")).toBe(true);
-    expect(await deployment.checkUserIsInGroup("user1", "nested")).toBe(true);
-    expect(await deployment.checkUserIsInGroup("user2", "nested")).toBe(true);
-    expect(await deployment.checkUserIsInGroup("root", "nested")).toBe(true);
+
+    expect(await deployment.checkUserIsInGroup("user1", "group1-nested")).toBe(true);
+    expect(await deployment.checkUserIsInGroup("user2", "group1-nested")).toBe(true);
+    expect(await deployment.checkUserIsInGroup("root", "group1-nested")).toBe(true);
+
+    expect(await deployment.checkUserIsInGroup("user3", "group1-nested-nested_2")).toBe(true);
+    expect(await deployment.checkUserIsInGroup("root", "group1-nested-nested_2")).toBe(true);
+
+    expect(await deployment.checkGroupIsChildOfGroup("group1", "my-org")).toBe(true);
+    expect(await deployment.checkGroupIsParentOfGroup("my-org", "group1")).toBe(true);
+
+    expect(await deployment.checkGroupIsChildOfGroup("all", "my-org")).toBe(true);
+    expect(await deployment.checkGroupIsParentOfGroup("my-org", "all")).toBe(true);
+
+    expect(await deployment.checkGroupIsChildOfGroup("group1-nested", "group1")).toBe(true);
+    expect(await deployment.checkGroupIsParentOfGroup("group1", "group1-nested")).toBe(true);
+
+    expect(await deployment.checkGroupIsChildOfGroup("group1-nested-nested_2", "group1-nested")).toBe(true);
+    expect(await deployment.checkGroupIsParentOfGroup("group1-nested", "group1-nested-nested_2")).toBe(true);
   });
 
   test.afterAll(async () => {
