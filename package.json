@@ -49,9 +49,9 @@
     "jsdom": "26.1.0",
     "lint-staged": "15.5.2",
     "node-gyp": "10.3.1",
-    "rulesync": "3.28.0",
+    "rulesync": "3.34.0",
     "sherif": "1.9.0",
-    "turbo": "2.6.1"
+    "turbo": "2.7.5"
   },
   "resolutions": {
     "@types/react": "18.3.27",

@@ -17,21 +17,21 @@ test.describe("Admin > Extensions", () => {
   const isMac = process.platform === "darwin";
 
   const commonHeadings = [
-    t["plugin.marketplace"][lang]["metadata.versions"],
-    t["plugin.marketplace"][lang]["search.author"],
-    t["plugin.marketplace"][lang]["package.tags"],
-    t["plugin.marketplace"][lang]["metadata.category"],
-    t["plugin.marketplace"][lang]["metadata.publisher"],
-    t["plugin.marketplace"][lang]["metadata.supportProvider"],
+    t["plugin.extensions"][lang]["metadata.versions"],
+    t["plugin.extensions"][lang]["search.author"],
+    t["plugin.extensions"][lang]["package.tags"],
+    t["plugin.extensions"][lang]["metadata.category"],
+    t["plugin.extensions"][lang]["metadata.publisher"],
+    t["plugin.extensions"][lang]["metadata.supportProvider"],
   ];
   const supportTypeOptions = [
-    t["plugin.marketplace"][lang]["badges.generallyAvailable"],
-    t["plugin.marketplace"][lang]["badges.certified"],
+    t["plugin.extensions"][lang]["badges.generallyAvailable"],
+    t["plugin.extensions"][lang]["badges.certified"],
     // TODO: Custom plugin is not on the list: https://issues.redhat.com/browse/RHDHBUGS-2153
-    // t["plugin.marketplace"][lang]["badges.customPlugin"],
-    t["plugin.marketplace"][lang]["badges.techPreview"],
-    t["plugin.marketplace"][lang]["badges.devPreview"],
-    t["plugin.marketplace"][lang]["badges.communityPlugin"],
+    // t["plugin.extensions"][lang]["badges.customPlugin"],
+    t["plugin.extensions"][lang]["badges.techPreview"],
+    t["plugin.extensions"][lang]["badges.devPreview"],
+    t["plugin.extensions"][lang]["badges.communityPlugin"],
   ];
 
   test.beforeAll(async () => {
@@ -48,9 +48,9 @@ test.describe("Admin > Extensions", () => {
     await uiHelper.openSidebarButton(
       t["rhdh"][lang]["menuItem.administration"],
     );
-    await uiHelper.openSidebar(t["plugin.marketplace"][lang]["header.title"]);
+    await uiHelper.openSidebar(t["plugin.extensions"][lang]["header.title"]);
     await uiHelper.verifyHeading(
-      t["plugin.marketplace"][lang]["header.extensions"],
+      t["plugin.extensions"][lang]["header.extensions"],
     );
   });
 
@@ -61,7 +61,7 @@ test.describe("Admin > Extensions", () => {
       await uiHelper.verifyHeading("DynaTrace");
       await page
         .getByRole("button", {
-          name: t["plugin.marketplace"][lang]["search.clear"],
+          name: t["plugin.extensions"][lang]["search.clear"],
         })
         .click();
     });
@@ -73,21 +73,21 @@ test.describe("Admin > Extensions", () => {
 
       await runAccessibilityTests(page, testInfo);
 
-      await uiHelper.clickTab(t["plugin.marketplace"][lang]["header.catalog"]);
+      await uiHelper.clickTab(t["plugin.extensions"][lang]["header.catalog"]);
       await extensions.selectDropdown(
-        t["plugin.marketplace"][lang]["search.category"],
+        t["plugin.extensions"][lang]["search.category"],
       );
       await extensions.toggleOption("CI/CD");
       await page.getByRole("option", { name: "CI/CD" }).isChecked();
       await page.keyboard.press(`Escape`);
       await extensions.selectDropdown(
-        t["plugin.marketplace"][lang]["search.author"],
+        t["plugin.extensions"][lang]["search.author"],
       );
       await extensions.toggleOption("Red Hat");
       await page.keyboard.press(`Escape`);
       await uiHelper.verifyHeading("Red Hat Argo CD");
       await uiHelper.verifyText(
-        t["plugin.marketplace"][lang]["metadata.by"] + "Red Hat",
+        t["plugin.extensions"][lang]["metadata.by"] + "Red Hat",
       );
       await page.getByRole("heading", { name: "Red Hat Argo CD" }).click();
       await uiHelper.verifyTableHeadingAndRows([
@@ -98,23 +98,21 @@ test.describe("Admin > Extensions", () => {
         "Status",
       ]);
       await uiHelper.verifyHeading(
-        t["plugin.marketplace"][lang]["metadata.versions"],
+        t["plugin.extensions"][lang]["metadata.versions"],
       );
       await page
         .getByRole("button", {
           name: "close",
         })
         .click();
-      await uiHelper.clickLink(
-        t["plugin.marketplace"][lang]["common.readMore"],
-      );
+      await uiHelper.clickLink(t["plugin.extensions"][lang]["common.readMore"]);
       await page
         .getByRole("button", {
           name: "close",
         })
         .click();
       await extensions.selectDropdown(
-        t["plugin.marketplace"][lang]["search.author"],
+        t["plugin.extensions"][lang]["search.author"],
       );
       await extensions.toggleOption("Red Hat");
       await expect(
@@ -124,7 +122,7 @@ test.describe("Admin > Extensions", () => {
       await page.keyboard.press(`Escape`);
       await expect(
         page
-          .getByLabel(t["plugin.marketplace"][lang]["search.category"])
+          .getByLabel(t["plugin.extensions"][lang]["search.category"])
           .getByRole("combobox"),
       ).toBeEmpty();
       await page.keyboard.press(`Escape`);
@@ -132,7 +130,7 @@ test.describe("Admin > Extensions", () => {
 
     test("Verify support type filters in extensions", async ({ page }) => {
       await extensions.selectDropdown(
-        t["plugin.marketplace"][lang]["search.supportType"],
+        t["plugin.extensions"][lang]["search.supportType"],
       );
       await expect(page.getByRole("listbox")).toBeVisible();
 
@@ -147,24 +145,24 @@ test.describe("Admin > Extensions", () => {
       await page.keyboard.press("Escape");
       await expect(
         page
-          .getByLabel(t["plugin.marketplace"][lang]["search.category"])
+          .getByLabel(t["plugin.extensions"][lang]["search.category"])
           .getByRole("combobox"),
       ).toBeEmpty();
     });
 
     test("Verify certified badge in extensions", async ({ page }) => {
       await extensions.selectDropdown(
-        t["plugin.marketplace"][lang]["search.supportType"],
+        t["plugin.extensions"][lang]["search.supportType"],
       );
       await extensions.toggleOption(
-        t["plugin.marketplace"][lang]["badges.certified"],
+        t["plugin.extensions"][lang]["badges.certified"],
       );
       await page.keyboard.press(`Escape`);
       await uiHelper.verifyHeading("DynaTrace");
       await expect(
         page
           .getByLabel(
-            t["plugin.marketplace"][lang]["badges.certifiedBy"].replace(
+            t["plugin.extensions"][lang]["badges.certifiedBy"].replace(
               "{{provider}}",
               "Red Hat",
             ),
@@ -174,7 +172,7 @@ test.describe("Admin > Extensions", () => {
       await expect(extensions.badge.first()).toBeVisible();
       await extensions.badge.first().hover();
       await uiHelper.verifyTextInTooltip(
-        t["plugin.marketplace"][lang]["badges.certifiedBy"].replace(
+        t["plugin.extensions"][lang]["badges.certifiedBy"].replace(
           "{{provider}}",
           "Red Hat",
         ),
@@ -186,24 +184,20 @@ test.describe("Admin > Extensions", () => {
           name: "close",
         })
         .click();
-      await uiHelper.clickLink(
-        t["plugin.marketplace"][lang]["common.readMore"],
-      );
+      await uiHelper.clickLink(t["plugin.extensions"][lang]["common.readMore"]);
       await expect(
         page
           .getByLabel(
-            t["plugin.marketplace"][lang]["badges.stableAndSecured"].replace(
+            t["plugin.extensions"][lang]["badges.stableAndSecured"].replace(
               "{{provider}}",
               "Red Hat",
             ),
           )
-          .getByText(t["plugin.marketplace"][lang]["badges.certified"]),
+          .getByText(t["plugin.extensions"][lang]["badges.certified"]),
       ).toBeVisible();
-      await uiHelper.verifyText(
-        t["plugin.marketplace"][lang]["metadata.about"],
-      );
+      await uiHelper.verifyText(t["plugin.extensions"][lang]["metadata.about"]);
       await uiHelper.verifyHeading(
-        t["plugin.marketplace"][lang]["metadata.versions"],
+        t["plugin.extensions"][lang]["metadata.versions"],
       );
       await uiHelper.verifyTableHeadingAndRows([
         "Package name",
@@ -218,22 +212,22 @@ test.describe("Admin > Extensions", () => {
         })
         .click();
       await extensions.selectDropdown(
-        t["plugin.marketplace"][lang]["search.supportType"],
+        t["plugin.extensions"][lang]["search.supportType"],
       );
       await extensions.toggleOption(
-        t["plugin.marketplace"][lang]["badges.certified"],
+        t["plugin.extensions"][lang]["badges.certified"],
       );
     });
 
     test("Verify Generally available badge in extensions", async ({ page }) => {
       await extensions.selectSupportTypeFilter(
-        t["plugin.marketplace"][lang]["badges.generallyAvailable"],
+        t["plugin.extensions"][lang]["badges.generallyAvailable"],
       );
 
       await expect(
         page
           .getByLabel(
-            t["plugin.marketplace"][lang]["badges.gaAndSupportedBy"].replace(
+            t["plugin.extensions"][lang]["badges.gaAndSupportedBy"].replace(
               "{{provider}}",
               "Red Hat",
             ),
@@ -243,26 +237,22 @@ test.describe("Admin > Extensions", () => {
       await expect(extensions.badge.first()).toBeVisible();
       await extensions.badge.first().hover();
       await uiHelper.verifyTextInTooltip(
-        t["plugin.marketplace"][lang]["badges.gaAndSupportedBy"].replace(
+        t["plugin.extensions"][lang]["badges.gaAndSupportedBy"].replace(
           "{{provider}}",
           "Red Hat",
         ),
       );
 
-      await uiHelper.clickLink(
-        t["plugin.marketplace"][lang]["common.readMore"],
-      );
+      await uiHelper.clickLink(t["plugin.extensions"][lang]["common.readMore"]);
       await expect(
         page
           .getByLabel(
-            t["plugin.marketplace"][lang]["badges.productionReadyBy"].replace(
+            t["plugin.extensions"][lang]["badges.productionReadyBy"].replace(
               "{{provider}}",
               "Red Hat",
             ),
           )
-          .getByText(
-            t["plugin.marketplace"][lang]["badges.generallyAvailable"],
-          ),
+          .getByText(t["plugin.extensions"][lang]["badges.generallyAvailable"]),
       ).toBeVisible();
 
       for (const heading of commonHeadings) {
@@ -277,7 +267,7 @@ test.describe("Admin > Extensions", () => {
         .click();
 
       await extensions.resetSupportTypeFilter(
-        t["plugin.marketplace"][lang]["badges.generallyAvailable"],
+        t["plugin.extensions"][lang]["badges.generallyAvailable"],
       );
     });
 
@@ -285,16 +275,16 @@ test.describe("Admin > Extensions", () => {
       // TODO: https://issues.redhat.com/browse/RHDHBUGS-2104
       test.fixme();
       await extensions.selectDropdown(
-        t["plugin.marketplace"][lang]["search.supportType"],
+        t["plugin.extensions"][lang]["search.supportType"],
       );
       await extensions.toggleOption(
-        t["plugin.marketplace"][lang]["badges.customPlugin"],
+        t["plugin.extensions"][lang]["badges.customPlugin"],
       );
       await page.keyboard.press(`Escape`);
       await expect(
         page
           .getByLabel(
-            t["plugin.marketplace"][lang]["supportTypes.customPlugins"].replace(
+            t["plugin.extensions"][lang]["supportTypes.customPlugins"].replace(
               " ({{count}})",
               "",
             ),
@@ -304,17 +294,15 @@ test.describe("Admin > Extensions", () => {
       await expect(extensions.badge.first()).toBeVisible();
       await extensions.badge.first().hover();
       await uiHelper.verifyTextInTooltip(
-        t["plugin.marketplace"][lang]["supportTypes.customPlugins"].replace(
+        t["plugin.extensions"][lang]["supportTypes.customPlugins"].replace(
           " ({{count}})",
           "",
         ),
       );
-      await uiHelper.clickLink(
-        t["plugin.marketplace"][lang]["common.readMore"],
-      );
+      await uiHelper.clickLink(t["plugin.extensions"][lang]["common.readMore"]);
       await expect(
         page
-          .getByLabel(t["plugin.marketplace"][lang]["badges.addedByAdmin"])
+          .getByLabel(t["plugin.extensions"][lang]["badges.addedByAdmin"])
           .getByText("Custom"),
       ).toBeVisible();
       await page
@@ -323,25 +311,25 @@ test.describe("Admin > Extensions", () => {
         })
         .click();
       await extensions.selectDropdown(
-        t["plugin.marketplace"][lang]["search.supportType"],
+        t["plugin.extensions"][lang]["search.supportType"],
       );
       await extensions.toggleOption(
-        t["plugin.marketplace"][lang]["badges.customPlugin"],
+        t["plugin.extensions"][lang]["badges.customPlugin"],
       );
       await page.keyboard.press(`Escape`);
     });
 
     test("Verify tech preview badge in extensions", async () => {
       await extensions.verifySupportTypeBadge({
-        supportType: t["plugin.marketplace"][lang]["badges.techPreview"],
+        supportType: t["plugin.extensions"][lang]["badges.techPreview"],
         pluginName: "Bulk Import",
-        badgeLabel: t["plugin.marketplace"][lang]["badges.pluginInDevelopment"],
-        badgeText: t["plugin.marketplace"][lang]["badges.techPreview"],
+        badgeLabel: t["plugin.extensions"][lang]["badges.pluginInDevelopment"],
+        badgeText: t["plugin.extensions"][lang]["badges.techPreview"],
         tooltipText: "",
         searchTerm: "Bulk Import",
         headings: [
-          t["plugin.marketplace"][lang]["metadata.about"],
-          t["plugin.marketplace"][lang]["metadata.versions"],
+          t["plugin.extensions"][lang]["metadata.about"],
+          t["plugin.extensions"][lang]["metadata.versions"],
           ...commonHeadings,
         ],
         includeTable: true,
@@ -351,28 +339,28 @@ test.describe("Admin > Extensions", () => {
 
     test("Verify dev preview badge in extensions", async () => {
       await extensions.selectSupportTypeFilter(
-        t["plugin.marketplace"][lang]["badges.devPreview"],
+        t["plugin.extensions"][lang]["badges.devPreview"],
       );
       await uiHelper.verifyHeading("Developer Lightspeed");
 
       await extensions.verifyPluginDetails({
         pluginName: "Developer Lightspeed",
         badgeLabel:
-          t["plugin.marketplace"][lang]["badges.earlyStageExperimental"],
-        badgeText: t["plugin.marketplace"][lang]["badges.devPreview"],
+          t["plugin.extensions"][lang]["badges.earlyStageExperimental"],
+        badgeText: t["plugin.extensions"][lang]["badges.devPreview"],
         headings: commonHeadings,
         includeTable: true,
         includeAbout: false,
       });
 
       await extensions.resetSupportTypeFilter(
-        t["plugin.marketplace"][lang]["badges.devPreview"],
+        t["plugin.extensions"][lang]["badges.devPreview"],
       );
     });
 
     test("Verify community plugin badge in extensions", async ({ page }) => {
       await extensions.selectSupportTypeFilter(
-        t["plugin.marketplace"][lang]["badges.communityPlugin"],
+        t["plugin.extensions"][lang]["badges.communityPlugin"],
       );
 
       await extensions.clickReadMoreByPluginTitle(
@@ -381,14 +369,12 @@ test.describe("Admin > Extensions", () => {
       await expect(
         page
           .getByLabel(
-            t["plugin.marketplace"][lang]["badges.openSourceNoSupport"],
+            t["plugin.extensions"][lang]["badges.openSourceNoSupport"],
           )
-          .getByText(t["plugin.marketplace"][lang]["badges.communityPlugin"]),
+          .getByText(t["plugin.extensions"][lang]["badges.communityPlugin"]),
       ).toBeVisible();
 
-      await uiHelper.verifyText(
-        t["plugin.marketplace"][lang]["metadata.about"],
-      );
+      await uiHelper.verifyText(t["plugin.extensions"][lang]["metadata.about"]);
       for (const heading of commonHeadings) {
         console.log(`Verifying heading: ${heading}`);
         await uiHelper.verifyHeading(heading);
@@ -396,7 +382,7 @@ test.describe("Admin > Extensions", () => {
 
       await expect(
         page.getByText(
-          t["plugin.marketplace"][lang]["search.author"] + "Red Hat",
+          t["plugin.extensions"][lang]["search.author"] + "Red Hat",
         ),
       ).toBeVisible();
 
@@ -406,7 +392,7 @@ test.describe("Admin > Extensions", () => {
         })
         .click();
       await extensions.resetSupportTypeFilter(
-        t["plugin.marketplace"][lang]["badges.communityPlugin"],
+        t["plugin.extensions"][lang]["badges.communityPlugin"],
       );
     });
 
@@ -419,35 +405,31 @@ test.describe("Admin > Extensions", () => {
     }) => {
       const productionEnvAlert = page.getByRole("alert").first();
       productionEnvAlert.getByText(
-        t["plugin.marketplace"][lang]["alert.productionDisabled"],
+        t["plugin.extensions"][lang]["alert.productionDisabled"],
         { exact: true },
       );
       await uiHelper.searchInputPlaceholder("Topology");
       await extensions.waitForSearchResults("Topology");
       await extensions.clickReadMoreByPluginTitle("Topology");
-      await uiHelper.clickButton(t["plugin.marketplace"][lang]["actions.view"]);
+      await uiHelper.clickButton(t["plugin.extensions"][lang]["actions.view"]);
       await uiHelper.verifyHeading("Application Topology for Kubernetes");
       await uiHelper.verifyText(
         "- package: ./dynamic-plugins/dist/backstage-community-plugin-topology",
       );
       await uiHelper.verifyText("disabled: false");
-      await uiHelper.verifyText(t["plugin.marketplace"][lang]["common.apply"]);
+      await uiHelper.verifyText(t["plugin.extensions"][lang]["common.apply"]);
       await uiHelper.verifyHeading("Default configuration");
-      await uiHelper.clickButton(t["plugin.marketplace"][lang]["common.apply"]);
+      await uiHelper.clickButton(t["plugin.extensions"][lang]["common.apply"]);
       await uiHelper.verifyText("pluginConfig:");
       await uiHelper.verifyText("dynamicPlugins:");
       await uiHelper.clickTab(
-        t["plugin.marketplace"][lang]["install.aboutPlugin"],
+        t["plugin.extensions"][lang]["install.aboutPlugin"],
       );
       await uiHelper.verifyHeading("Configuring The Plugin");
-      await uiHelper.clickTab(
-        t["plugin.marketplace"][lang]["install.examples"],
-      );
+      await uiHelper.clickTab(t["plugin.extensions"][lang]["install.examples"]);
       await uiHelper.clickByDataTestId("ContentCopyRoundedIcon");
       await expect(page.getByRole("button", { name: "✔" })).toBeVisible();
-      await uiHelper.clickButton(
-        t["plugin.marketplace"][lang]["install.reset"],
-      );
+      await uiHelper.clickButton(t["plugin.extensions"][lang]["install.reset"]);
       await expect(page.getByText("pluginConfig:")).toBeHidden();
       // eslint-disable-next-line playwright/no-conditional-in-test
       const modifier = isMac ? "Meta" : "Control";
@@ -465,10 +447,10 @@ test.describe("Admin > Extensions", () => {
       expect(clipboardContent).toContain(
         "backstage-community.plugin-topology:",
       );
-      await uiHelper.clickButton(t["plugin.marketplace"][lang]["install.back"]);
+      await uiHelper.clickButton(t["plugin.extensions"][lang]["install.back"]);
       await expect(
         page.getByRole("button", {
-          name: t["plugin.marketplace"][lang]["actions.view"],
+          name: t["plugin.extensions"][lang]["actions.view"],
         }),
       ).toBeVisible();
       await uiHelper.verifyHeading("Application Topology for Kubernetes");
@@ -478,9 +460,7 @@ test.describe("Admin > Extensions", () => {
     test("Enable plugin from catalog extension page", async ({ page }) => {
       // TODO: https://issues.redhat.com/browse/RHDHBUGS-2146
       test.fixme();
-      await uiHelper.clickTab(
-        t["plugin.marketplace"][lang]["menuItem.catalog"],
-      );
+      await uiHelper.clickTab(t["plugin.extensions"][lang]["menuItem.catalog"]);
       await extensions.clickReadMoreByPluginTitle(
         "Adoption Insights for Red Hat Developer Hub",
       );
@@ -490,7 +470,7 @@ test.describe("Admin > Extensions", () => {
       await page.getByTestId("disable-plugin").click();
       const alertText = await page.getByRole("alert").first().textContent();
       expect(alertText).toContain(
-        t["plugin.marketplace"][lang]["alert.backendRestartRequired"],
+        t["plugin.extensions"][lang]["alert.backendRestartRequired"],
       );
       expect(alertText).toContain(
         "The Adoption Insights for Red Hat Developer Hub plugin requires a restart of the backend system to finish installing, updating, enabling or disabling.",
@@ -501,11 +481,11 @@ test.describe("Admin > Extensions", () => {
   test.describe("Extensions > Installed Plugin", () => {
     test.beforeEach(async () => {
       await uiHelper.clickTab(
-        t["plugin.marketplace"][lang]["header.installedPackages"],
+        t["plugin.extensions"][lang]["header.installedPackages"],
       );
       await uiHelper.verifyHeading(
         new RegExp(
-          `^${t["plugin.marketplace"][lang]["header.installedPackages"]} \\(\\d+\\)$`,
+          `^${t["plugin.extensions"][lang]["header.installedPackages"]} \\(\\d+\\)$`,
         ),
       );
     });
@@ -513,22 +493,18 @@ test.describe("Admin > Extensions", () => {
     test.skip("Installed packages page", async ({ page }, testInfo) => {
       await runAccessibilityTests(page, testInfo);
       await uiHelper.verifyTableHeadingAndRows([
-        t["plugin.marketplace"][lang]["installedPackages.table.columns.name"],
-        t["plugin.marketplace"][lang][
+        t["plugin.extensions"][lang]["installedPackages.table.columns.name"],
+        t["plugin.extensions"][lang][
           "installedPackages.table.columns.packageName"
         ],
-        t["plugin.marketplace"][lang]["installedPackages.table.columns.role"],
-        t["plugin.marketplace"][lang][
-          "installedPackages.table.columns.version"
-        ],
-        t["plugin.marketplace"][lang][
-          "installedPackages.table.columns.actions"
-        ],
+        t["plugin.extensions"][lang]["installedPackages.table.columns.role"],
+        t["plugin.extensions"][lang]["installedPackages.table.columns.version"],
+        t["plugin.extensions"][lang]["installedPackages.table.columns.actions"],
       ]);
       await page.waitForTimeout(2000);
       await page
         .getByRole("button", {
-          name: t["plugin.marketplace"][lang][
+          name: t["plugin.extensions"][lang][
             "installedPackages.table.columns.name"
           ],
           exact: true,
@@ -566,7 +542,7 @@ test.describe("Admin > Extensions", () => {
       await page
         .getByRole("button", {
           name: new RegExp(
-            `Rows per page: 5 ${t["plugin.marketplace"][lang]["table.pagination.rows"]}`,
+            `Rows per page: 5 ${t["plugin.extensions"][lang]["table.pagination.rows"]}`,
           ),
         })
         .click();
@@ -574,14 +550,14 @@ test.describe("Admin > Extensions", () => {
       await page
         .getByRole("button", {
           name: new RegExp(
-            `Rows per page: 10 ${t["plugin.marketplace"][lang]["table.pagination.rows"]}`,
+            `Rows per page: 10 ${t["plugin.extensions"][lang]["table.pagination.rows"]}`,
           ),
         })
         .scrollIntoViewIfNeeded();
       await expect(
         page.getByRole("button", {
           name: new RegExp(
-            `Rows per page: 10 ${t["plugin.marketplace"][lang]["table.pagination.rows"]}`,
+            `Rows per page: 10 ${t["plugin.extensions"][lang]["table.pagination.rows"]}`,
           ),
         }),
       ).toBeVisible();
@@ -598,14 +574,14 @@ test.describe("Admin > Extensions", () => {
       test.fixme();
       await page
         .getByRole("textbox", {
-          name: t["plugin.marketplace"][lang][
+          name: t["plugin.extensions"][lang][
             "installedPackages.table.searchPlaceholder"
           ],
         })
         .click();
       await page
         .getByRole("textbox", {
-          name: t["plugin.marketplace"][lang][
+          name: t["plugin.extensions"][lang][
             "installedPackages.table.searchPlaceholder"
           ],
         })
@@ -644,12 +620,12 @@ test.describe("Admin > Extensions", () => {
       ).toBeVisible();
       await expect(
         page.getByRole("button", {
-          name: t["plugin.marketplace"][lang]["actions.view"],
+          name: t["plugin.extensions"][lang]["actions.view"],
         }),
       ).toBeVisible();
       await page
         .getByRole("button", {
-          name: t["plugin.marketplace"][lang]["actions.view"],
+          name: t["plugin.extensions"][lang]["actions.view"],
         })
         .hover();
       // Following commented code to be updated when the tooltip message is available in the production env with pr https://github.com/redhat-developer/rhdh/pull/3565
@@ -660,7 +636,7 @@ test.describe("Admin > Extensions", () => {
       await expect(
         page
           .getByRole("cell", {
-            name: t["plugin.marketplace"][lang][
+            name: t["plugin.extensions"][lang][
               "installedPackages.table.tooltips.enableActions"
             ],
           })
@@ -676,14 +652,14 @@ test.describe("Admin > Extensions", () => {
       test.fixme();
       await page
         .getByRole("textbox", {
-          name: t["plugin.marketplace"][lang][
+          name: t["plugin.extensions"][lang][
             "installedPackages.table.searchPlaceholder"
           ],
         })
         .click();
       await page
         .getByRole("textbox", {
-          name: t["plugin.marketplace"][lang][
+          name: t["plugin.extensions"][lang][
             "installedPackages.table.searchPlaceholder"
           ],
         })
@@ -705,7 +681,7 @@ test.describe("Admin > Extensions", () => {
       await expect(page.getByText('plugins: - package: "./')).toBeVisible();
       await page
         .getByRole("button", {
-          name: t["plugin.marketplace"][lang]["common.apply"],
+          name: t["plugin.extensions"][lang]["common.apply"],
         })
         .click();
       await expect(page.getByRole("code")).toContainText(
@@ -713,7 +689,7 @@ test.describe("Admin > Extensions", () => {
       );
       await page
         .getByRole("button", {
-          name: t["plugin.marketplace"][lang]["install.reset"],
+          name: t["plugin.extensions"][lang]["install.reset"],
         })
         .click();
       await expect(page.getByRole("code")).not.toContainText(
@@ -721,7 +697,7 @@ test.describe("Admin > Extensions", () => {
       );
       await page
         .getByRole("button", {
-          name: t["plugin.marketplace"][lang]["install.cancel"],
+          name: t["plugin.extensions"][lang]["install.cancel"],
         })
         .click();
       await expect(
@@ -738,14 +714,14 @@ test.describe("Admin > Extensions", () => {
       test.fixme();
       await page
         .getByRole("textbox", {
-          name: t["plugin.marketplace"][lang][
+          name: t["plugin.extensions"][lang][
             "installedPackages.table.searchPlaceholder"
           ],
         })
         .click();
       await page
         .getByRole("textbox", {
-          name: t["plugin.marketplace"][lang][
+          name: t["plugin.extensions"][lang][
             "installedPackages.table.searchPlaceholder"
           ],
         })
@@ -755,23 +731,23 @@ test.describe("Admin > Extensions", () => {
       ).toBeVisible();
       await page
         .getByRole("button", {
-          name: t["plugin.marketplace"][lang][
+          name: t["plugin.extensions"][lang][
             "installedPackages.table.tooltips.editPackage"
           ],
         })
         .click();
       await uiHelper.verifyHeading(
-        t["plugin.marketplace"][lang]["install.editInstructions"],
+        t["plugin.extensions"][lang]["install.editInstructions"],
       );
       await expect(page.getByText("SaveCancelReset")).toBeVisible();
       await page
         .getByRole("button", {
-          name: t["plugin.marketplace"][lang]["button.save"],
+          name: t["plugin.extensions"][lang]["button.save"],
         })
         .click();
       await uiHelper.verifyHeading(
         new RegExp(
-          `^${t["plugin.marketplace"][lang]["header.installedPackages"]} \\(\\d+\\)$`,
+          `^${t["plugin.extensions"][lang]["header.installedPackages"]} \\(\\d+\\)$`,
         ),
         10000,
       );
@@ -789,14 +765,14 @@ test.describe("Admin > Extensions", () => {
       test.fixme();
       await page
         .getByRole("textbox", {
-          name: t["plugin.marketplace"][lang][
+          name: t["plugin.extensions"][lang][
             "installedPackages.table.searchPlaceholder"
           ],
         })
         .click();
       await page
         .getByRole("textbox", {
-          name: t["plugin.marketplace"][lang][
+          name: t["plugin.extensions"][lang][
             "installedPackages.table.searchPlaceholder"
           ],
         })
@@ -807,7 +783,7 @@ test.describe("Admin > Extensions", () => {
       await page.getByRole("checkbox").hover();
       await expect(
         page.getByLabel(
-          t["plugin.marketplace"][lang][
+          t["plugin.extensions"][lang][
             "installedPackages.table.tooltips.disablePackage"
           ],
         ),
@@ -819,7 +795,7 @@ test.describe("Admin > Extensions", () => {
       );
       await page
         .getByRole("textbox", {
-          name: t["plugin.marketplace"][lang][
+          name: t["plugin.extensions"][lang][
             "installedPackages.table.searchPlaceholder"
           ],
         })
@@ -830,7 +806,7 @@ test.describe("Admin > Extensions", () => {
       await page.getByRole("checkbox").hover();
       await expect(
         page.getByLabel(
-          t["plugin.marketplace"][lang][
+          t["plugin.extensions"][lang][
             "installedPackages.table.tooltips.disablePackage"
           ],
         ),
@@ -839,16 +815,16 @@ test.describe("Admin > Extensions", () => {
 
       await page
         .getByRole("button", {
-          name: t["plugin.marketplace"][lang]["alert.viewPackages"],
+          name: t["plugin.extensions"][lang]["alert.viewPackages"],
         })
         .click();
       await expect(
         page
           .getByLabel(
-            t["plugin.marketplace"][lang]["alert.backendRestartRequired"],
+            t["plugin.extensions"][lang]["alert.backendRestartRequired"],
           )
           .getByText(
-            t["plugin.marketplace"][lang]["alert.backendRestartRequired"],
+            t["plugin.extensions"][lang]["alert.backendRestartRequired"],
           ),
       ).toBeVisible({ timeout: 10000 });
 
