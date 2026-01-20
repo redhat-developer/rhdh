@@ -75,14 +75,20 @@ packages:
   - package: '@pagerduty/backstage-plugin-backend'
   - package: '@red-hat-developer-hub/backstage-plugin-bulk-import'
   - package: '@red-hat-developer-hub/backstage-plugin-bulk-import-backend'
-  - package: '@redhat/backstage-plugin-orchestrator'
-    integrity: sha512-rnUA6iZ2JVAyASfwS4P9HeFmpqCgH6FQouzzg4s6lCPAsYUFvu6tifJ3df5lThXPUTJ2cDvvQgamU+4DiHP2jw==
-  - package: '@redhat/backstage-plugin-orchestrator-backend-dynamic'
-    integrity: sha512-6G0YguzCM5nCDpOrIGJpLTXVMr6EBdIVqSXtsLH9RvBH25RTuFpfJ7q6eEp26DqveaiqUCfBpJ51smdjcsEzFQ==
-  - package: '@redhat/backstage-plugin-orchestrator-form-widgets'
-    integrity: sha512-Pe0dn3g+YTK3jbl36E8nt4zdyH/3w+MWgRyFWPc2B0eV4/L/aRfRC4KxcktmHPdamRGXTIaXL6cFae8TZl8Htw==
-  - package: '@redhat/backstage-plugin-scaffolder-backend-module-orchestrator-dynamic'
-    integrity: sha512-N2hCn9RI/QVEoK56FAkGkSDbvfQCOIzVsJTwDX0kf//npO++2crRSJpB1Lr/m2UtYxfaXZX53p8sPcK3g8yWkQ==
+  # Orchestrator package names for 1.8
+  # - package: '@redhat/backstage-plugin-orchestrator'
+  #   integrity: sha512-rnUA6iZ2JVAyASfwS4P9HeFmpqCgH6FQouzzg4s6lCPAsYUFvu6tifJ3df5lThXPUTJ2cDvvQgamU+4DiHP2jw==
+  # - package: '@redhat/backstage-plugin-orchestrator-backend-dynamic'
+  #   integrity: sha512-6G0YguzCM5nCDpOrIGJpLTXVMr6EBdIVqSXtsLH9RvBH25RTuFpfJ7q6eEp26DqveaiqUCfBpJ51smdjcsEzFQ==
+  # - package: '@redhat/backstage-plugin-orchestrator-form-widgets'
+  #   integrity: sha512-Pe0dn3g+YTK3jbl36E8nt4zdyH/3w+MWgRyFWPc2B0eV4/L/aRfRC4KxcktmHPdamRGXTIaXL6cFae8TZl8Htw==
+  # - package: '@redhat/backstage-plugin-scaffolder-backend-module-orchestrator-dynamic'
+  #   integrity: sha512-N2hCn9RI/QVEoK56FAkGkSDbvfQCOIzVsJTwDX0kf//npO++2crRSJpB1Lr/m2UtYxfaXZX53p8sPcK3g8yWkQ==
+  # Orchestrator package names for 1.9+
+  - package: '@red-hat-developer-hub/backstage-plugin-orchestrator'
+  - package: '@red-hat-developer-hub/backstage-plugin-orchestrator-backend'
+  - package: '@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets'
+  - package: '@red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-orchestrator'
   - package: '@roadiehq/backstage-plugin-argo-cd-backend'
   - package: '@roadiehq/backstage-plugin-datadog'
   - package: '@roadiehq/backstage-plugin-github-insights'
