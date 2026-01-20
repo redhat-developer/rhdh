@@ -12828,9 +12828,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-bulk-import@npm:6.11.0":
-  version: 6.11.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import@npm:6.11.0"
+"@red-hat-developer-hub/backstage-plugin-bulk-import-common@npm:^6.11.1":
+  version: 6.11.1
+  resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import-common@npm:6.11.1"
+  peerDependencies:
+    "@backstage/plugin-permission-common": ^0.9.3
+  checksum: e0c765f0f8740f888b8cd9f09f74bba8b3e2737f57819f95d3a8fe3233bc3c95a471ebc993c2101994625edace4f81bea201d839ef356bea8bc842fbc2e91a01
+  languageName: node
+  linkType: hard
+
+"@red-hat-developer-hub/backstage-plugin-bulk-import@npm:6.11.1":
+  version: 6.11.1
+  resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import@npm:6.11.1"
   dependencies:
     "@backstage/catalog-model": ^1.7.6
     "@backstage/core-components": ^0.18.3
@@ -12842,7 +12851,7 @@ __metadata:
     "@mui/icons-material": ^5.15.17
     "@mui/material": ^5.12.2
     "@mui/styles": 5.18.0
-    "@red-hat-developer-hub/backstage-plugin-bulk-import-common": ^6.11.0
+    "@red-hat-developer-hub/backstage-plugin-bulk-import-common": ^6.11.1
     "@tanstack/react-query": ^4.29.21
     formik: ^2.4.5
     js-yaml: ^4.1.0
@@ -12853,7 +12862,7 @@ __metadata:
   peerDependencies:
     react: 16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.0.0
-  checksum: 2c80c2af12796f229e7f7c193a7436bd6095f5e972efef9dbe73ef8059b4c16e91caecba6c2c787481aca892f29e2a66768ec0e9d198783673fbb87882af6c31
+  checksum: 55418f0cd0efad5554b4acad0f99c69ac930a44c3a92b6e136a15efcbedee2e99203c3f5d7fbb7164d3f0de3dcc69ec85dd6b4f155f3c9ca6bbd1611ff4f264f
   languageName: node
   linkType: hard
 
@@ -32138,7 +32147,7 @@ __metadata:
     "@backstage/cli": 0.34.5
     "@janus-idp/cli": 3.6.1
     "@mui/material": 5.18.0
-    "@red-hat-developer-hub/backstage-plugin-bulk-import": 6.11.0
+    "@red-hat-developer-hub/backstage-plugin-bulk-import": 6.11.1
     typescript: 5.9.3
   languageName: unknown
   linkType: soft
