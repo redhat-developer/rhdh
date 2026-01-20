@@ -573,18 +573,18 @@ dynamicPlugins:
         rbac:
           parent: admin
           icon: rbacIcon
-    red-hat-developer-hub.backstage-plugin-marketplace:
+    red-hat-developer-hub.backstage-plugin-extensions:
       appIcons:
-        - name: marketplace
-          importName: MarketplaceIcon
+        - name: extensions
+          importName: ExtensionsIcon
       dynamicRoutes:
         - path: /extensions/catalog
-          importName: DynamicMarketplacePluginRouter
+          importName: DynamicExtensionsPluginRouter
       mountPoints:
         - mountPoint: internal.plugins/tab
-          importName: DynamicMarketplacePluginContent
+          importName: DynamicExtensionsPluginContent
           config:
-            path: marketplace
+            path: extensions
             title: Catalog
     red-hat-developer-hub.backstage-plugin-adoption-insights:
       appIcons:

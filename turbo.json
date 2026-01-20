@@ -7,8 +7,7 @@
     "YARN_GLOBAL_FOLDER"
   ],
   "globalDependencies": [
-    "app-config.dynamic-plugins.yaml",
-    "dynamic-plugins.default.yaml"
+    "app-config.dynamic-plugins.yaml"
   ],
   "tasks": {
     "start": {
