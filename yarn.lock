@@ -16369,6 +16369,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@toon-format/toon@npm:2.1.0":
+  version: 2.1.0
+  resolution: "@toon-format/toon@npm:2.1.0"
+  checksum: 79d3595d4806cf16ce7a4961fdcbb8a9afe4583ecd6297e0d4cbcd07c5ef2a7ee60665a5d82ce07cbe3dd36c22ee54fa515968b12afa04c74df449baee28fb6a
+  languageName: node
+  linkType: hard
+
 "@tootallnate/once@npm:2":
   version: 2.0.0
   resolution: "@tootallnate/once@npm:2.0.0"
@@ -23907,17 +23914,6 @@ __metadata:
   bin:
     fxparser: src/cli/cli.js
   checksum: f440c01cd141b98789ae777503bcb6727393296094cc82924ae9f88a5b971baa4eec7e65306c7e07746534caa661fc83694ff437d9012dc84dee39dfbfaab947
-  languageName: node
-  linkType: hard
-
-"fast-xml-parser@npm:5.3.2":
-  version: 5.3.2
-  resolution: "fast-xml-parser@npm:5.3.2"
-  dependencies:
-    strnum: ^2.1.0
-  bin:
-    fxparser: src/cli/cli.js
-  checksum: f311f3d392fbe75ecd66385049966e68e9d9449cbe1aa503679d84a031011bc97c96a6d9144d2493208eb204fa24bf211e7487ddb618864580cf4a31817473cf
   languageName: node
   linkType: hard
 
@@ -34753,9 +34749,9 @@ __metadata:
     jsdom: 26.1.0
     lint-staged: 15.5.2
     node-gyp: 10.3.1
-    rulesync: 3.28.0
+    rulesync: 3.34.0
     sherif: 1.9.0
-    turbo: 2.6.1
+    turbo: 2.7.5
   languageName: unknown
   linkType: soft
 
@@ -34788,15 +34784,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rulesync@npm:3.28.0":
-  version: 3.28.0
-  resolution: "rulesync@npm:3.28.0"
+"rulesync@npm:3.34.0":
+  version: 3.34.0
+  resolution: "rulesync@npm:3.34.0"
   dependencies:
     "@modelcontextprotocol/sdk": 1.22.0
+    "@toon-format/toon": 2.1.0
     commander: 14.0.2
     consola: 3.4.2
     es-toolkit: 1.42.0
-    fast-xml-parser: 5.3.2
     fastmcp: 3.23.1
     gray-matter: 4.0.3
     js-yaml: 4.1.1
@@ -34805,7 +34801,7 @@ __metadata:
     zod: 4.1.13
   bin:
     rulesync: dist/index.js
-  checksum: e5bc881e6f8a9d04c6c5213d1b2f1ac303c9d5bb82f8fc263d70cf938179009195cb05401746e96015d2fcb04755ea5f0be6705edbd548d9fe094857004853b5
+  checksum: 7f6d598efd5b306e15e5fbffd32a50f6252a2290c7a2785ea79b5fbbccdc7b3fe4a38b8b53721a1f848f033ef3a88a10d87b67979453b2c4cad5e122d08e6f68
   languageName: node
   linkType: hard
 
@@ -36335,13 +36331,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"strnum@npm:^2.1.0":
-  version: 2.1.1
-  resolution: "strnum@npm:2.1.1"
-  checksum: 566139b218ef13bdde2a69c744852ac41ea167588f624d46c3b3bebb5d1d1775c55bca4702a0ad2a6a66eb4b3b7de4cbbc83e8d40c5835feabebf6f9cc468993
-  languageName: node
-  linkType: hard
-
 "strtok3@npm:^10.3.1":
   version: 10.3.4
   resolution: "strtok3@npm:10.3.4"
@@ -37450,58 +37439,58 @@ __metadata:
   languageName: node
   linkType: hard
 
-"turbo-darwin-64@npm:2.6.1":
-  version: 2.6.1
-  resolution: "turbo-darwin-64@npm:2.6.1"
+"turbo-darwin-64@npm:2.7.5":
+  version: 2.7.5
+  resolution: "turbo-darwin-64@npm:2.7.5"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"turbo-darwin-arm64@npm:2.6.1":
-  version: 2.6.1
-  resolution: "turbo-darwin-arm64@npm:2.6.1"
+"turbo-darwin-arm64@npm:2.7.5":
+  version: 2.7.5
+  resolution: "turbo-darwin-arm64@npm:2.7.5"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"turbo-linux-64@npm:2.6.1":
-  version: 2.6.1
-  resolution: "turbo-linux-64@npm:2.6.1"
+"turbo-linux-64@npm:2.7.5":
+  version: 2.7.5
+  resolution: "turbo-linux-64@npm:2.7.5"
   conditions: os=linux & cpu=x64
   languageName: node
   linkType: hard
 
-"turbo-linux-arm64@npm:2.6.1":
-  version: 2.6.1
-  resolution: "turbo-linux-arm64@npm:2.6.1"
+"turbo-linux-arm64@npm:2.7.5":
+  version: 2.7.5
+  resolution: "turbo-linux-arm64@npm:2.7.5"
   conditions: os=linux & cpu=arm64
   languageName: node
   linkType: hard
 
-"turbo-windows-64@npm:2.6.1":
-  version: 2.6.1
-  resolution: "turbo-windows-64@npm:2.6.1"
+"turbo-windows-64@npm:2.7.5":
+  version: 2.7.5
+  resolution: "turbo-windows-64@npm:2.7.5"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"turbo-windows-arm64@npm:2.6.1":
-  version: 2.6.1
-  resolution: "turbo-windows-arm64@npm:2.6.1"
+"turbo-windows-arm64@npm:2.7.5":
+  version: 2.7.5
+  resolution: "turbo-windows-arm64@npm:2.7.5"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
 
-"turbo@npm:2.6.1":
-  version: 2.6.1
-  resolution: "turbo@npm:2.6.1"
+"turbo@npm:2.7.5":
+  version: 2.7.5
+  resolution: "turbo@npm:2.7.5"
   dependencies:
-    turbo-darwin-64: 2.6.1
-    turbo-darwin-arm64: 2.6.1
-    turbo-linux-64: 2.6.1
-    turbo-linux-arm64: 2.6.1
-    turbo-windows-64: 2.6.1
-    turbo-windows-arm64: 2.6.1
+    turbo-darwin-64: 2.7.5
+    turbo-darwin-arm64: 2.7.5
+    turbo-linux-64: 2.7.5
+    turbo-linux-arm64: 2.7.5
+    turbo-windows-64: 2.7.5
+    turbo-windows-arm64: 2.7.5
   dependenciesMeta:
     turbo-darwin-64:
       optional: true
@@ -37517,7 +37506,7 @@ __metadata:
       optional: true
   bin:
     turbo: bin/turbo
-  checksum: da6eabbc59760a60ebc6213e0e4f57ad1984281cffc818dfcd8d69df3f38629c3d0a870be7b6b9f3b529e27cf43650e834984e5604eb5f5e260ece495ec0e751
+  checksum: 4cb93dfe35fb4ed6ca9a400208fc31b7cba3e94be6d25d986148b8c0d42721f31fab1c36a49550974bc9297c72a3cdfacbe52f74a58b63723481c381448d13bb
   languageName: node
   linkType: hard
 
