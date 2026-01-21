@@ -13,7 +13,7 @@ import {
 test.describe.serial("Bulk Import plugin", () => {
   test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
   // TODO: https://issues.redhat.com/browse/RHDHBUGS-2116
-  test.fixme(() => process.env.JOB_TYPE.includes("presubmit")); // skip on PR checks
+  // test.fixme(() => process.env.JOB_TYPE.includes("presubmit")); // skip on PR checks
   test.fixme(() => !process.env.JOB_NAME.includes("ocp")); // run only on OCP jobs to avoid GH rate limit
   test.describe.configure({ retries: process.env.CI ? 5 : 0 });
 
@@ -78,6 +78,44 @@ spec:
       process.env.GH_USER2_ID,
       process.env.GH_USER2_PASS,
     );
+  });
+
+  test("Bulk import plugin page", async () => {
+    await uiHelper.openSidebar("Bulk import");
+    await uiHelper.verifyHeading("Bulk import");
+    await expect(page.getByText("Import to Red Hat Developer")).toHaveAttribute(
+      "aria-expanded",
+      "true",
+    );
+    await page
+      .getByRole("button", { name: "Import to Red Hat Developer" })
+      .click();
+    await expect(page.getByText("Import to Red Hat Developer")).toHaveAttribute(
+      "aria-expanded",
+      "false",
+    );
+    await expect(
+      page.getByText("Source control tool", { exact: true }),
+    ).toBeVisible();
+    await page.getByTestId("HelpOutlineIcon").hover();
+    await expect(
+      page.getByRole("tooltip", { name: "Importing requires approval." }),
+    ).toBeVisible();
+    await expect(page.getByRole("radio", { name: "GitHub" })).toBeChecked();
+    await page.getByRole("radio", { name: "GitLab" }).check();
+    await expect(page.getByRole("radio", { name: "GitLab" })).toBeChecked();
+    await page.getByRole("radio", { name: "GitHub" }).check();
+    await expect(page.getByRole("article")).toMatchAriaSnapshot(`
+      - table:
+        - rowgroup:
+          - row "select all repositories Name URL Organization Status":
+            - columnheader "select all repositories Name":
+              - checkbox "select all repositories"
+              - text: Name
+            - columnheader "URL"
+            - columnheader "Organization"
+            - columnheader "Status"
+    `);
   });
 
   // TODO: https://issues.redhat.com/browse/RHDHBUGS-2230
