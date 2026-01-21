@@ -7839,9 +7839,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@janus-idp/cli@npm:3.6.1":
-  version: 3.6.1
-  resolution: "@janus-idp/cli@npm:3.6.1"
+"@janus-idp/cli@npm:3.7.0":
+  version: 3.7.0
+  resolution: "@janus-idp/cli@npm:3.7.0"
   dependencies:
     "@backstage/cli-common": ^0.1.15
     "@backstage/cli-node": ^0.2.12
@@ -7897,7 +7897,7 @@ __metadata:
       optional: true
   bin:
     janus-cli: bin/janus-cli
-  checksum: e239e70aeaca07a45de2d3d0eafa03fb7cee83f57a5e666aaf63602fb79924d18a66ad98eb7e8ab6df47f703575d98e3aa7d798708f92f74c3d786ffbca4d635
+  checksum: 3c89ee334ae8410101e8d11273e90cab1c406d89a31de448a1cd3d09c8ff5794170a801d0b9cab94c31c5ce83e7d8ea8e96ec402cf16468800d50e28bed70105
   languageName: node
   linkType: hard
 
@@ -18433,7 +18433,7 @@ __metadata:
     "@backstage/ui": 0.9.1
     "@emotion/react": 11.14.0
     "@emotion/styled": 11.14.1
-    "@janus-idp/cli": 3.6.1
+    "@janus-idp/cli": 3.7.0
     "@mui/icons-material": 5.18.0
     "@mui/material": 5.18.0
     "@mui/styled-engine": 5.18.0
