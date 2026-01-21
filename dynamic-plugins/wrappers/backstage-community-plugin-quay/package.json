@@ -1,6 +1,6 @@
 {
   "name": "backstage-community-plugin-quay",
-  "version": "1.24.0",
+  "version": "1.28.1",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "license": "Apache-2.0",
@@ -29,12 +29,12 @@
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
-    "@backstage-community/plugin-quay": "1.24.0",
+    "@backstage-community/plugin-quay": "1.28.1",
     "@mui/material": "5.18.0"
   },
   "devDependencies": {
     "@backstage/cli": "0.34.5",
-    "@janus-idp/cli": "3.6.1",
+    "@janus-idp/cli": "3.7.0",
     "typescript": "5.9.3"
   },
   "files": [
