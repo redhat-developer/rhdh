@@ -108,11 +108,10 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
 
     await uiHelper.clickTab("Dependencies");
 
-    // Verify custom relation label in the dependency graph rendered by the catalog-graph plugin
     const labelSelector = 'g[data-testid="label"]';
     const nodeSelector = 'g[data-testid="node"]';
 
-    await uiHelper.verifyPartialTextInSelector(labelSelector, "scaffoldedFrom");
+    await uiHelper.verifyTextInSelector(labelSelector, "scaffolderOf / scaffoldedFrom");
 
     await uiHelper.verifyPartialTextInSelector(
       nodeSelector,
