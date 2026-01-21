@@ -82,10 +82,12 @@ yq_merge_value_files() {
   fi
 }
 
-# Skip orchestrator on mandatory PR presubmit job (e2e-ocp-helm) to speed up CI.
-# Nightly jobs (e2e-ocp-helm-nightly) should run orchestrator for full testing.
+# Skip orchestrator installation/deployment in the following cases:
+# 1. OSD-GCP jobs: Infrastructure limitations prevent orchestrator from working
+# 2. PR presubmit jobs (e2e-ocp-helm non-nightly): Speed up CI feedback loop
+# Nightly jobs should always run orchestrator for full testing coverage.
 should_skip_orchestrator() {
-  [[ "${JOB_NAME}" =~ e2e-ocp-helm ]] && [[ "${JOB_NAME}" != *nightly* ]]
+  [[ "${JOB_NAME}" =~ osd-gcp ]] || { [[ "${JOB_NAME}" =~ e2e-ocp-helm ]] && [[ "${JOB_NAME}" != *nightly* ]]; }
 }
 
 # Post-process merged Helm values to disable all orchestrator plugins
@@ -958,9 +960,8 @@ cluster_setup_ocp_helm() {
   install_pipelines_operator
   install_crunchy_postgres_ocp_operator
 
-  # Skip orchestrator infra installation on OSD-GCP due to infrastructure limitations.
-  # Also skip it for the mandatory PR job (e2e-ocp-helm) to speed up presubmits.
-  if [[ "${JOB_NAME}" =~ osd-gcp ]] || should_skip_orchestrator; then
+  # Skip orchestrator infra installation based on job type (see should_skip_orchestrator)
+  if should_skip_orchestrator; then
     echo "Skipping orchestrator-infra installation on this job: ${JOB_NAME}"
   else
     install_orchestrator_infra_chart
