@@ -5,4 +5,4 @@
 
 # Disable orchestrator for PRs to speed up the mandatory presubmit job and avoid extra infra installs.
 # Orchestrator dynamic plugins are disabled via post-processing (see rbac_deployment in utils.sh)
-orchestrator: null
+#orchestrator: null
