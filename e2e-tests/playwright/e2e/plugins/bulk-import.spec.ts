@@ -80,6 +80,45 @@ spec:
     );
   });
 
+  test("Bulk import plugin page", async () => {
+    await uiHelper.openSidebar("Bulk import");
+    await uiHelper.verifyHeading("Bulk import");
+    await expect(
+      page.getByRole("button", { name: "Import to Red Hat Developer" }),
+    ).toHaveAttribute("aria-expanded", "true");
+    await page
+      .getByRole("button", { name: "Import to Red Hat Developer" })
+      .click();
+    await expect(
+      page.getByRole("button", { name: "Import to Red Hat Developer" }),
+    ).toHaveAttribute("aria-expanded", "false");
+    await expect(
+      page.getByText("Source control tool", { exact: true }),
+    ).toBeVisible();
+    await page
+      .getByLabel("Importing requires approval.")
+      .getByTestId("HelpOutlineIcon")
+      .hover();
+    await expect(
+      page.getByRole("tooltip", { name: "Importing requires approval." }),
+    ).toBeVisible();
+    await expect(page.getByRole("radio", { name: "GitHub" })).toBeChecked();
+    await page.getByRole("radio", { name: "GitLab" }).check();
+    await expect(page.getByRole("radio", { name: "GitLab" })).toBeChecked();
+    await page.getByRole("radio", { name: "GitHub" }).check();
+    await expect(page.getByRole("article")).toMatchAriaSnapshot(`
+      - table:
+        - rowgroup:
+          - row "select all repositories Name URL Organization Status":
+            - columnheader "select all repositories Name":
+              - checkbox "select all repositories"
+              - text: Name
+            - columnheader "URL"
+            - columnheader "Organization"
+            - columnheader "Status"
+    `);
+  });
+
   // TODO: https://issues.redhat.com/browse/RHDHBUGS-2230
   // Select two repos: one with an existing catalog.yaml file and another without it
   test.fixme("Add a Repository from the Repository Tab and Confirm its Preview", async () => {
@@ -106,7 +145,6 @@ spec:
   });
 
   test("Add a Repository from the Organization Tab and Confirm its Preview", async () => {
-    await uiHelper.clickByDataTestId("organization-view");
     await uiHelper.searchInputPlaceholder(newRepoDetails.owner);
     await uiHelper.verifyRowInTableByUniqueText(newRepoDetails.owner, [
       new RegExp(`github.com/${newRepoDetails.owner}`),
