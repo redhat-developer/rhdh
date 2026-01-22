@@ -10,6 +10,8 @@ source "$DIR"/lib/log.sh
 cleanup() {
   if [[ $? -ne 0 ]]; then
 
+    echo "TEST: revert me:"
+
     log::error "Exited with an error, setting OVERALL_RESULT to 1"
     save_overall_result 1
   fi
