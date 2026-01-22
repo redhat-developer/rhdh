@@ -155,6 +155,12 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
 
     await uiHelper.goToPageUrl("/settings", "Settings");
     await uiHelper.verifyHeading("Zeus Giove");
+    
+    // Click "Show more" button to display metadata info
+    await page.getByTitle("Show more").click();
+    // Verify Metadata text is present
+    await uiHelper.verifyText("RHDH Metadata");
+
     await common.signOut();
   });
 
