@@ -260,7 +260,7 @@ global:
 
       # Disabled due to issue with the plugin
       # See: https://issues.redhat.com/browse/RHDHBUGS-2530
-      - package: "oci://quay.io/rhdh/backstage-community-plugin-analytics-provider-segment@sha256:3ab84da5049c2434aadf508e22b5ecfe7dc54c4506f1c60ed9171296d0b4c6fc"
+      - package: "oci://quay.io/rhdh/backstage-community-plugin-analytics-provider-segment@sha256:3ab84da5049c2434aadf508e22b5ecfe7dc54c4506f1c60ed9171296d0b4c6fc!backstage-community-plugin-analytics-provider-segment"
         disabled: true
 
 # -- Upstream Backstage [chart configuration](https://github.com/backstage/charts/blob/main/charts/backstage/values.yaml)
