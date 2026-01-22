@@ -155,7 +155,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
 
     await uiHelper.goToPageUrl("/settings", "Settings");
     await uiHelper.verifyHeading("Zeus Giove");
-    
+
     // Click "Show more" button to display metadata info
     await page.getByTitle("Show more").click();
     // Verify Metadata text is present
@@ -171,7 +171,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
       false,
     );
     await deployment.updateAllConfigs();
-    // waitForDeploymentReady() and waitForSynced() handle timing - no manual timeout needed
+    await page.waitForTimeout(3000); // wait for the deployment to be ready is needed or the openshift rollout won't be detected
     await deployment.restartLocalDeployment();
     await deployment.waitForDeploymentReady();
 
@@ -196,7 +196,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     );
     await deployment.updateAllConfigs();
     await deployment.restartLocalDeployment();
-    // waitForDeploymentReady() and waitForSynced() handle timing - no manual timeout needed
+    await page.waitForTimeout(3000); // wait for the deployment to be ready is needed or the openshift rollout won't be detected
     await deployment.waitForDeploymentReady();
 
     // wait for rhdh first sync and portal to be reachable
@@ -220,7 +220,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     );
     await deployment.updateAllConfigs();
     await deployment.restartLocalDeployment();
-    // waitForDeploymentReady() and waitForSynced() handle timing - no manual timeout needed
+    await page.waitForTimeout(3000); // wait for the deployment to be ready is needed or the openshift rollout won't be detected
     await deployment.waitForDeploymentReady();
 
     // wait for rhdh first sync and portal to be reachable
@@ -256,7 +256,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     );
     await deployment.updateAllConfigs();
     await deployment.restartLocalDeployment();
-    // waitForDeploymentReady() and waitForSynced() handle timing - no manual timeout needed
+    await page.waitForTimeout(3000); // wait for the deployment to be ready is needed or the openshift rollout won't be detected
     await deployment.waitForDeploymentReady();
 
     // wait for rhdh first sync and portal to be reachable
@@ -288,7 +288,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
       false,
     );
     await deployment.updateAllConfigs();
-    // waitForDeploymentReady() and waitForSynced() handle timing - no manual timeout needed
+    await page.waitForTimeout(3000); // wait for the deployment to be ready is needed or the openshift rollout won't be detected
     await deployment.restartLocalDeployment();
     await deployment.waitForDeploymentReady();
 
@@ -430,7 +430,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     );
     await deployment.updateAllConfigs();
     await deployment.restartLocalDeployment();
-    // waitForDeploymentReady() and waitForSynced() handle timing - no manual timeout needed
+    await page.waitForTimeout(3000); // wait for the deployment to be ready is needed or the openshift rollout won't be detected
     await deployment.waitForDeploymentReady();
 
     // wait for rhdh first sync and portal to be reachable
