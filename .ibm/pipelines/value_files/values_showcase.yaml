@@ -278,6 +278,37 @@ upstream:
               options:
                 token: test-token
                 subject: test-subject
+    # FIXME: https://issues.redhat.com/browse/RHDHBUGS-2530
+    # Workaround to force the deployment to use wrapper from container
+    initContainers:
+      - name: install-dynamic-plugins
+        image: '{{ include "backstage.image" . }}'
+        command:
+          - sh
+          - "-c"
+          - |
+            ./install-dynamic-plugins.sh /dynamic-plugins-root
+        env:
+          - name: NPM_CONFIG_USERCONFIG
+            value: /opt/app-root/src/.npmrc.dynamic-plugins
+          - name: MAX_ENTRY_SIZE
+            value: "30000000"
+        imagePullPolicy: Always
+        volumeMounts:
+          - mountPath: /dynamic-plugins-root
+            name: dynamic-plugins-root
+          - mountPath: /opt/app-root/src/dynamic-plugins.yaml
+            name: dynamic-plugins
+            readOnly: true
+            subPath: dynamic-plugins.yaml
+          - mountPath: /opt/app-root/src/.npmrc.dynamic-plugins
+            name: dynamic-plugins-npmrc
+            readOnly: true
+            subPath: .npmrc
+          - mountPath: /opt/app-root/src/.config/containers
+            name: dynamic-plugins-registry-auth
+            readOnly: true
+        workingDir: /opt/app-root/src
     image:
       pullPolicy: Always
       registry: quay.io
