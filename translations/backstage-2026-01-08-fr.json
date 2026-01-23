@@ -1,6 +1,6 @@
 {
   "api-docs": {
-    "en": {
+    "fr": {
       "apiDefinitionCard.error.title": "Impossible de contacter l'API",
       "apiDefinitionCard.rawButtonTitle": "Brut",
       "apiDefinitionDialog.closeButtonTitle": "Fermer",
@@ -33,7 +33,7 @@
     }
   },
   "catalog-graph": {
-    "en": {
+    "fr": {
       "catalogGraphCard.title": "Rapports",
       "catalogGraphCard.deepLinkTitle": "Voir le graphique",
       "catalogGraphPage.title": "Graphique du catalogue",
@@ -58,7 +58,7 @@
     }
   },
   "catalog-import": {
-    "en": {
+    "fr": {
       "buttons.back": "Retour",
       "defaultImportPage.headerTitle": "Enregistrer un composant existant",
       "defaultImportPage.contentHeaderTitle": "Commencez à suivre votre composant dans {{appTitle}}",
@@ -128,7 +128,7 @@
     }
   },
   "catalog-react": {
-    "en": {
+    "fr": {
       "catalogFilter.title": "Filtres",
       "catalogFilter.buttonTitle": "Filtres",
       "entityKindPicker.title": "Type",
@@ -219,14 +219,14 @@
     }
   },
   "home-react": {
-    "en": {
+    "fr": {
       "settingsModal.title": "Paramètres",
       "settingsModal.closeButtonTitle": "Fermer",
       "cardExtension.settingsButtonTitle": "Paramètres"
     }
   },
   "home": {
-    "en": {
+    "fr": {
       "addWidgetDialog.title": "Ajouter un nouveau widget au tableau de bord",
       "customHomepageButtons.edit": "Modifier",
       "customHomepageButtons.restoreDefaults": "Restaurer les valeurs par défaut",
@@ -255,18 +255,18 @@
     }
   },
   "kubernetes-cluster": {
-    "en": {
+    "fr": {
       "kubernetesClusterContentPage.permissionAlert.title": "Autorisation requise",
       "kubernetesClusterContentPage.permissionAlert.message": "Pour afficher les objets Kubernetes, contactez l'administrateur de votre portail pour qu'il vous accorde l'autorisation « kubernetes.clusters.read »."
     }
   },
   "kubernetes-react": {
-    "en": {
+    "fr": {
       "podDrawer.buttons.delete": "Supprimer le pod"
     }
   },
   "org": {
-    "en": {
+    "fr": {
       "groupProfileCard.groupNotFound": "Groupe non trouvé",
       "groupProfileCard.editIconButtonTitle": "Modifier les métadonnées",
       "groupProfileCard.refreshIconButtonTitle": "Actualisation de l'entité de planification",
@@ -296,7 +296,7 @@
     }
   },
   "scaffolder-react": {
-    "en": {
+    "fr": {
       "passwordWidget.content": "Ce widget n'est pas sécurisé. Veuillez utiliser [`ui:field: Secret`](https://backstage.io/docs/features/software-templates/writing-templates/#using-secrets) au lieu de `ui:widget: password`",
       "scaffolderPageContextMenu.moreLabel": "davantage",
       "scaffolderPageContextMenu.createLabel": "Créer",
@@ -318,7 +318,7 @@
     }
   },
   "scaffolder": {
-    "en": {
+    "fr": {
       "aboutCard.launchTemplate": "Modèle de lancement",
       "actionsPage.title": "Actions installées",
       "actionsPage.pageTitle": "Créer un nouveau composant",
@@ -498,7 +498,7 @@
     }
   },
   "search-react": {
-    "en": {
+    "fr": {
       "searchBar.title": "Rechercher",
       "searchBar.placeholder": "Rechercher dans {{org}}",
       "searchBar.clearButtonTitle": "Effacer",
@@ -513,7 +513,7 @@
     }
   },
   "search": {
-    "en": {
+    "fr": {
       "searchModal.viewFullResults": "Voir les résultats complets",
       "searchType.allResults": "Tous les résultats",
       "searchType.tabs.allTitle": "Tous",
@@ -524,12 +524,12 @@
     }
   },
   "techdocs": {
-    "en": {
+    "fr": {
       "aboutCard.viewTechdocs": "Voir TechDocs"
     }
   },
   "user-settings": {
-    "en": {
+    "fr": {
       "languageToggle.title": "Langue",
       "languageToggle.description": "Changer la langue",
       "languageToggle.select": "Sélectionnez la langue {{language}}",
@@ -583,7 +583,7 @@
     }
   },
   "catalog": {
-    "en": {
+    "fr": {
       "indexPage.title": "Catalogue {{orgName}}",
       "indexPage.createButtonTitle": "Créer",
       "indexPage.supportButtonContent": "Toutes les entités de votre catalogue de logiciels",
@@ -665,13 +665,13 @@
     }
   },
   "kubernetes": {
-    "en": {
+    "fr": {
       "kubernetesContentPage.permissionAlert.title": "Autorisation requise",
       "kubernetesContentPage.permissionAlert.message": "Pour afficher les objets Kubernetes, contactez l'administrateur de votre portail pour qu'il vous accorde l'autorisation « kubernetes.clusters.read » et « kubernetes.resources.read »."
     }
   },
   "core-components": {
-    "en": {
+    "fr": {
       "signIn.title": "Se connecter",
       "signIn.loginFailed": "La connexion a échoué",
       "signIn.customProvider.title": "Utilisateur personnalisé",

@@ -1,6 +1,6 @@
 {
   "api-docs": {
-    "en": {
+    "ja": {
       "apiDefinitionCard.error.title": "API を取得できませんでした",
       "apiDefinitionCard.rawButtonTitle": "未加工 (Raw)",
       "apiDefinitionDialog.closeButtonTitle": "閉じる",
@@ -33,7 +33,7 @@
     }
   },
   "catalog-graph": {
-    "en": {
+    "ja": {
       "catalogGraphCard.title": "関係",
       "catalogGraphCard.deepLinkTitle": "グラフの表示",
       "catalogGraphPage.title": "カタロググラフ",
@@ -58,7 +58,7 @@
     }
   },
   "catalog-import": {
-    "en": {
+    "ja": {
       "buttons.back": "戻る",
       "defaultImportPage.headerTitle": "既存のコンポーネントの登録",
       "defaultImportPage.contentHeaderTitle": "{{appTitle}} でのコンポーネントの追跡開始",
@@ -128,7 +128,7 @@
     }
   },
   "catalog-react": {
-    "en": {
+    "ja": {
       "catalogFilter.title": "フィルター",
       "catalogFilter.buttonTitle": "フィルター",
       "entityKindPicker.title": "種類",
@@ -219,14 +219,14 @@
     }
   },
   "home-react": {
-    "en": {
+    "ja": {
       "settingsModal.title": "設定",
       "settingsModal.closeButtonTitle": "閉じる",
       "cardExtension.settingsButtonTitle": "設定"
     }
   },
   "home": {
-    "en": {
+    "ja": {
       "addWidgetDialog.title": "ダッシュボードへの新しいウィジェットの追加",
       "customHomepageButtons.edit": "編集",
       "customHomepageButtons.restoreDefaults": "デフォルトに戻す",
@@ -255,18 +255,18 @@
     }
   },
   "kubernetes-cluster": {
-    "en": {
+    "ja": {
       "kubernetesClusterContentPage.permissionAlert.title": "権限が必要",
       "kubernetesClusterContentPage.permissionAlert.message": "Kubernetes オブジェクトを表示するには、ポータル管理者に連絡して 'kubernetes.clusters.read' 権限を付与してもらってください。"
     }
   },
   "kubernetes-react": {
-    "en": {
+    "ja": {
       "podDrawer.buttons.delete": "Pod の削除"
     }
   },
   "org": {
-    "en": {
+    "ja": {
       "groupProfileCard.groupNotFound": "グループが見つかりません",
       "groupProfileCard.editIconButtonTitle": "メタデータの編集",
       "groupProfileCard.refreshIconButtonTitle": "エンティティー更新のスケジューリング",
@@ -296,7 +296,7 @@
     }
   },
   "scaffolder-react": {
-    "en": {
+    "ja": {
       "passwordWidget.content": "このウィジェットはセキュアではありません。`ui:widget: password` の代わりに [`ui:field: Secret`](https://backstage.io/docs/features/software-templates/writing-templates/#using-secrets) を使用してください",
       "scaffolderPageContextMenu.moreLabel": "詳細",
       "scaffolderPageContextMenu.createLabel": "作成",
@@ -318,7 +318,7 @@
     }
   },
   "scaffolder": {
-    "en": {
+    "ja": {
       "aboutCard.launchTemplate": "テンプレートの起動",
       "actionsPage.title": "インストール済みアクション",
       "actionsPage.pageTitle": "新しいコンポーネントの作成",
@@ -498,7 +498,7 @@
     }
   },
   "search-react": {
-    "en": {
+    "ja": {
       "searchBar.title": "検索",
       "searchBar.placeholder": "{{org}} で検索",
       "searchBar.clearButtonTitle": "クリア",
@@ -513,7 +513,7 @@
     }
   },
   "search": {
-    "en": {
+    "ja": {
       "searchModal.viewFullResults": "詳細な結果の表示",
       "searchType.allResults": "すべての結果",
       "searchType.tabs.allTitle": "すべて",
@@ -524,12 +524,12 @@
     }
   },
   "techdocs": {
-    "en": {
+    "ja": {
       "aboutCard.viewTechdocs": "TechDocs の表示"
     }
   },
   "user-settings": {
-    "en": {
+    "ja": {
       "languageToggle.title": "言語",
       "languageToggle.description": "言語の変更",
       "languageToggle.select": "言語の選択 {{language}}",
@@ -583,7 +583,7 @@
     }
   },
   "catalog": {
-    "en": {
+    "ja": {
       "indexPage.title": "{{orgName}} のカタログ",
       "indexPage.createButtonTitle": "作成",
       "indexPage.supportButtonContent": "すべてのソフトウェアカタログエンティティー",
@@ -665,13 +665,13 @@
     }
   },
   "kubernetes": {
-    "en": {
+    "ja": {
       "kubernetesContentPage.permissionAlert.title": "権限が必要",
       "kubernetesContentPage.permissionAlert.message": "Kubernetes オブジェクトを表示するには、ポータル管理者に連絡して、'kubernetes.clusters.read' および 'kubernetes.resources.read' 権限を付与してもらってください。"
     }
   },
   "core-components": {
-    "en": {
+    "ja": {
       "signIn.title": "サインイン",
       "signIn.loginFailed": "ログインに失敗しました",
       "signIn.customProvider.title": "カスタムユーザー",
