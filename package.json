@@ -62,7 +62,9 @@
     "@backstage/plugin-catalog-react": "1.21.3",
     "refractor@npm:3.6.0/prismjs": "^1.30.0",
     "@backstage/plugin-auth-node": "0.6.10",
-    "@backstage/backend-plugin-api": "1.5.0"
+    "@backstage/backend-plugin-api": "1.5.0",
+    "@backstage/plugin-catalog-graph@0.5.3": "patch:@backstage/plugin-catalog-graph@npm%3A0.5.3#./.yarn/patches/@backstage-plugin-catalog-graph-npm-0.5.3-761764c7c3.patch",
+    "@backstage/plugin-search@1.5.0": "patch:@backstage/plugin-search@npm%3A1.5.0#./.yarn/patches/@backstage-plugin-search-npm-1.5.0-111cd7d8ed.patch"
   },
   "jest": {
     "testTimeout": 20000
