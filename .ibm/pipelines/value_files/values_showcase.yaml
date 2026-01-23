@@ -277,12 +277,13 @@ upstream:
     # Workaround to force the deployment to use wrapper from container
     initContainers:
       - name: install-dynamic-plugins
+        # -- Image used by the initContainer to install dynamic plugins into the `dynamic-plugins-root` volume mount.
+        # It could be replaced by a custom image based on this one.
+        # @default -- `quay.io/rhdh-community/rhdh:latest`
         image: '{{ include "backstage.image" . }}'
         command:
-          - sh
-          - "-c"
-          - |
-            ./install-dynamic-plugins.sh /dynamic-plugins-root
+          - ./install-dynamic-plugins.sh
+          - /dynamic-plugins-root
         env:
           - name: NPM_CONFIG_USERCONFIG
             value: /opt/app-root/src/.npmrc.dynamic-plugins
