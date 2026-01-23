@@ -1,3 +1,12 @@
+  # THIS FILE IS DEPRECATED. CONTENTS ARE GENERATED - DO NOT EDIT!
+  #
+  # File dynamic-plugins.default.yaml is now generated from default.package.yaml (in this repo)
+  # and default configuration located in the overlays repo under workspaces/*/metadata/*.yaml
+  # See https://github.com/redhat-developer/rhdh-plugin-export-overlays/
+  #
+  # To fetch + unpack the latest index image see 
+  # https://github.com/redhat-developer/rhdh/blob/main/.github/workflows/update-dynamic-plugins-default.yaml#L44-L75
+  
 plugins:
 - package: ./dynamic-plugins/dist/backstage-community-plugin-analytics-provider-segment
   disabled: false
