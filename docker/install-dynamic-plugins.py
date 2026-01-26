@@ -41,6 +41,10 @@ Environment Variables:
     MAX_ENTRY_SIZE: Maximum size of a file in the archive (default: 20MB)
     SKIP_INTEGRITY_CHECK: Set to "true" to skip integrity check of remote packages
     CATALOG_INDEX_IMAGE: OCI image reference for the plugin catalog index (e.g., quay.io/rhdh/plugin-catalog-index:1.9)
+    OCP_INTERNAL_REGISTRY_URL: Internal OCP registry URL for ImageStream-based pulls (e.g., image-registry.openshift-image-registry.svc:5000)
+    OCP_REGISTRY_NAMESPACE: Namespace where ImageStreams are created (defaults to current namespace from serviceaccount)
+    OCP_PULL_SECRET_PATH: Path to the pull secret file for registry.redhat.io auth (default: /var/run/secrets/kubernetes.io/dockerconfigjson/.dockerconfigjson)
+    REGISTRY_REDIRECT_ENABLED: Set to "true" to enable registry.redhat.io to OCP internal registry redirect (auto-detected if OCP_INTERNAL_REGISTRY_URL is set)
 
 Configuration:
     The script expects the `dynamic-plugins.yaml` file to be present in the current directory and to contain the list of plugins to install along with their optional configuration.
@@ -107,6 +111,187 @@ RECOGNIZED_ALGORITHMS = (
 DOCKER_PROTOCOL_PREFIX = 'docker://'
 OCI_PROTOCOL_PREFIX = 'oci://'
 
+# OCP Registry Redirect Constants
+DEFAULT_OCP_PULL_SECRET_PATH = '/var/run/secrets/kubernetes.io/dockerconfigjson/.dockerconfigjson'
+DEFAULT_SERVICEACCOUNT_NAMESPACE_PATH = '/var/run/secrets/kubernetes.io/serviceaccount/namespace'
+REGISTRY_REDHAT_IO = 'registry.redhat.io'
+
+class OCPRegistryRedirect:
+    """
+    Handles redirecting registry.redhat.io requests to the OCP internal registry.
+    
+    On OpenShift, ImageStreams can be used to mirror images from external registries
+    using the cluster's pull secret. This class sets up the necessary configuration
+    for skopeo to use the internal registry instead of directly accessing registry.redhat.io.
+    """
+    
+    def __init__(self):
+        self.enabled = False
+        self.internal_registry_url = os.environ.get('OCP_INTERNAL_REGISTRY_URL', '')
+        self.namespace = self._get_namespace()
+        self.registries_conf_path = None
+        self.auth_file_path = None
+        self._temp_dir = None
+        
+        # Auto-enable if internal registry URL is set
+        if self.internal_registry_url:
+            explicit_enabled = os.environ.get('REGISTRY_REDIRECT_ENABLED', 'true').lower()
+            self.enabled = explicit_enabled != 'false'
+    
+    def _get_namespace(self) -> str:
+        """Get the namespace from environment or service account."""
+        ns = os.environ.get('OCP_REGISTRY_NAMESPACE', '')
+        if ns:
+            return ns
+        
+        # Try to read from service account
+        ns_path = DEFAULT_SERVICEACCOUNT_NAMESPACE_PATH
+        if os.path.isfile(ns_path):
+            with open(ns_path, 'r') as f:
+                return f.read().strip()
+        
+        return ''
+    
+    def setup(self) -> bool:
+        """
+        Set up the registry redirect configuration.
+        Returns True if setup was successful, False otherwise.
+        """
+        if not self.enabled:
+            return False
+        
+        if not self.internal_registry_url:
+            print("WARNING: Registry redirect enabled but OCP_INTERNAL_REGISTRY_URL not set", flush=True)
+            return False
+        
+        if not self.namespace:
+            print("WARNING: Registry redirect enabled but namespace could not be determined", flush=True)
+            return False
+        
+        print(f"\n======= Setting up OCP registry redirect", flush=True)
+        print(f"\t==> Internal registry: {self.internal_registry_url}", flush=True)
+        print(f"\t==> Namespace: {self.namespace}", flush=True)
+        
+        self._temp_dir = tempfile.mkdtemp(prefix='ocp-registry-redirect-')
+        
+        # Create registries.conf for registry redirect
+        if not self._create_registries_conf():
+            return False
+        
+        # Set up auth file if pull secret is available
+        self._setup_auth_file()
+        
+        return True
+    
+    def _create_registries_conf(self) -> bool:
+        """Create a registries.conf that redirects registry.redhat.io to the internal registry."""
+        # The internal registry URL with namespace prefix for ImageStreams
+        # ImageStreams are accessible as: internal-registry:5000/namespace/imagestream-name:tag
+        internal_mirror = f"{self.internal_registry_url}/{self.namespace}"
+        
+        registries_conf_content = f'''# Auto-generated registries.conf for OCP ImageStream-based registry access
+# This redirects registry.redhat.io to the OCP internal registry where ImageStreams
+# have been created to mirror the images using the cluster's pull secret.
+
+unqualified-search-registries = ["registry.access.redhat.com", "docker.io"]
+
+[[registry]]
+prefix = "{REGISTRY_REDHAT_IO}"
+location = "{REGISTRY_REDHAT_IO}"
+
+[[registry.mirror]]
+location = "{internal_mirror}"
+insecure = true
+'''
+        
+        self.registries_conf_path = os.path.join(self._temp_dir, 'registries.conf')
+        try:
+            with open(self.registries_conf_path, 'w') as f:
+                f.write(registries_conf_content)
+            print(f"\t==> Created registries.conf at {self.registries_conf_path}", flush=True)
+            return True
+        except Exception as e:
+            print(f"ERROR: Failed to create registries.conf: {e}", flush=True)
+            return False
+    
+    def _setup_auth_file(self) -> None:
+        """Set up authentication file for the internal registry."""
+        # Check for pull secret
+        pull_secret_path = os.environ.get('OCP_PULL_SECRET_PATH', DEFAULT_OCP_PULL_SECRET_PATH)
+        
+        if os.path.isfile(pull_secret_path):
+            print(f"\t==> Using pull secret from {pull_secret_path}", flush=True)
+            self.auth_file_path = pull_secret_path
+        else:
+            # Try the standard Docker config location
+            docker_config = os.path.expanduser('~/.docker/config.json')
+            if os.path.isfile(docker_config):
+                print(f"\t==> Using Docker config from {docker_config}", flush=True)
+                self.auth_file_path = docker_config
+            else:
+                print("\t==> No pull secret or Docker config found, proceeding without auth", flush=True)
+    
+    def get_skopeo_args(self) -> list:
+        """Get additional skopeo arguments for using the registry redirect."""
+        args = []
+        
+        if self.registries_conf_path:
+            args.extend(['--registries-conf', self.registries_conf_path])
+        
+        if self.auth_file_path:
+            args.extend(['--authfile', self.auth_file_path])
+        
+        # The internal OCP registry uses a self-signed certificate
+        # We need to skip TLS verification
+        args.extend(['--tls-verify=false'])
+        
+        return args
+    
+    def transform_image_ref(self, image_ref: str) -> str:
+        """
+        Transform an image reference to use the internal registry if applicable.
+        
+        For example:
+            registry.redhat.io/rhdh/rhdh-hub-rhel9:1.9
+        becomes:
+            image-registry.openshift-image-registry.svc:5000/my-namespace/rhdh-hub-rhel9:1.9
+        
+        The ImageStream name is derived from the image name (last component of the path).
+        """
+        if not self.enabled:
+            return image_ref
+        
+        # Only transform registry.redhat.io references
+        if not image_ref.startswith(f'{REGISTRY_REDHAT_IO}/'):
+            return image_ref
+        
+        # Extract the image name (last component) and tag
+        # e.g., registry.redhat.io/rhdh/rhdh-hub-rhel9:1.9 -> rhdh-hub-rhel9:1.9
+        parts = image_ref.split('/')
+        image_name_with_tag = parts[-1]
+        
+        # Construct the internal registry URL
+        # ImageStreams are named after the image name (without tag)
+        transformed = f"{self.internal_registry_url}/{self.namespace}/{image_name_with_tag}"
+        
+        print(f"\t==> Redirecting {image_ref} -> {transformed}", flush=True)
+        return transformed
+    
+    def cleanup(self) -> None:
+        """Clean up temporary files."""
+        if self._temp_dir and os.path.exists(self._temp_dir):
+            shutil.rmtree(self._temp_dir, ignore_errors=True)
+
+# Global registry redirect instance
+_ocp_registry_redirect: OCPRegistryRedirect = None
+
+def get_ocp_registry_redirect() -> OCPRegistryRedirect:
+    """Get the global OCP registry redirect instance."""
+    global _ocp_registry_redirect
+    if _ocp_registry_redirect is None:
+        _ocp_registry_redirect = OCPRegistryRedirect()
+    return _ocp_registry_redirect
+
 def merge(source, destination, prefix = ''):
     for key, value in source.items():
         if isinstance(value, dict):
@@ -156,8 +341,22 @@ def get_oci_plugin_paths(image: str) -> list[str]:
     
     try:
         image_url = image.replace(OCI_PROTOCOL_PREFIX, DOCKER_PROTOCOL_PREFIX)
+        
+        # Apply OCP registry redirect if enabled
+        registry_redirect = get_ocp_registry_redirect()
+        if registry_redirect.enabled:
+            image_ref = image_url[len(DOCKER_PROTOCOL_PREFIX):]
+            transformed = registry_redirect.transform_image_ref(image_ref)
+            image_url = f"{DOCKER_PROTOCOL_PREFIX}{transformed}"
+        
+        # Build skopeo command with registry redirect args if enabled
+        skopeo_cmd = [skopeo_path]
+        if registry_redirect.enabled:
+            skopeo_cmd.extend(registry_redirect.get_skopeo_args())
+        skopeo_cmd.extend(['inspect', '--raw', image_url])
+        
         result = subprocess.run(
-            [skopeo_path, 'inspect', '--raw', image_url],
+            skopeo_cmd,
             check=True,
             capture_output=True
         )
@@ -551,12 +750,41 @@ class OciDownloader:
         self.image_to_tarball = {}
         self.destination = destination
         self.max_entry_size = int(os.environ.get('MAX_ENTRY_SIZE', 20000000))
+        self._registry_redirect = get_ocp_registry_redirect()
 
-    def skopeo(self, command):
-        rv = subprocess.run([self._skopeo] + command, check=True, capture_output=True)
+    def skopeo(self, command, use_redirect: bool = True):
+        """
+        Execute a skopeo command with optional OCP registry redirect support.
+        
+        Args:
+            command: The skopeo command arguments
+            use_redirect: Whether to apply OCP registry redirect (default: True)
+        """
+        full_command = [self._skopeo]
+        
+        # Add registry redirect arguments if enabled
+        if use_redirect and self._registry_redirect.enabled:
+            full_command.extend(self._registry_redirect.get_skopeo_args())
+        
+        full_command.extend(command)
+        
+        rv = subprocess.run(full_command, check=True, capture_output=True)
         if rv.returncode != 0:
             raise InstallException(f'Error while running skopeo command: {rv.stderr}')
         return rv.stdout
+    
+    def _maybe_transform_image(self, image_url: str) -> str:
+        """Transform an image URL to use the internal registry if applicable."""
+        if not self._registry_redirect.enabled:
+            return image_url
+        
+        # Extract the actual image reference (without docker:// prefix)
+        if image_url.startswith(DOCKER_PROTOCOL_PREFIX):
+            image_ref = image_url[len(DOCKER_PROTOCOL_PREFIX):]
+            transformed = self._registry_redirect.transform_image_ref(image_ref)
+            return f"{DOCKER_PROTOCOL_PREFIX}{transformed}"
+        
+        return image_url
 
     def get_plugin_tar(self, image: str) -> str:
         if image not in self.image_to_tarball:
@@ -566,6 +794,10 @@ class OciDownloader:
             local_dir = os.path.join(self.tmp_dir, image_digest)
             # replace oci:// prefix with docker://
             image_url = image.replace(OCI_PROTOCOL_PREFIX, DOCKER_PROTOCOL_PREFIX)
+            
+            # Apply OCP registry redirect if enabled
+            image_url = self._maybe_transform_image(image_url)
+            
             self.skopeo(['copy', image_url, f'dir:{local_dir}'])
             manifest_path = os.path.join(local_dir, 'manifest.json')
             manifest = json.load(open(manifest_path))
@@ -617,6 +849,10 @@ class OciDownloader:
             image = package
         
         image_url = image.replace(OCI_PROTOCOL_PREFIX, DOCKER_PROTOCOL_PREFIX)
+        
+        # Apply OCP registry redirect if enabled
+        image_url = self._maybe_transform_image(image_url)
+        
         output = self.skopeo(['inspect', image_url])
         data = json.loads(output)
         # OCI artifact digest field is defined as "hash method" ":" "hash"
@@ -970,16 +1206,33 @@ def extract_catalog_index(catalog_index_image: str, catalog_index_mount: str, ca
     catalog_index_temp_dir = os.path.join(catalog_index_mount, '.catalog-index-temp')
     os.makedirs(catalog_index_temp_dir, exist_ok=True)
 
+    # Get registry redirect instance
+    registry_redirect = get_ocp_registry_redirect()
+
     with tempfile.TemporaryDirectory() as tmp_dir:
         image_url = catalog_index_image
         if not image_url.startswith(DOCKER_PROTOCOL_PREFIX):
             image_url = f'{DOCKER_PROTOCOL_PREFIX}{image_url}'
+        
+        # Apply OCP registry redirect if enabled
+        if registry_redirect.enabled:
+            # Extract the actual image reference (without docker:// prefix)
+            image_ref = image_url[len(DOCKER_PROTOCOL_PREFIX):]
+            transformed = registry_redirect.transform_image_ref(image_ref)
+            image_url = f"{DOCKER_PROTOCOL_PREFIX}{transformed}"
+        
         print("\t==> Copying catalog index image to local filesystem", flush=True)
         local_dir = os.path.join(tmp_dir, 'catalog-index-oci')
 
+        # Build skopeo command with registry redirect args if enabled
+        skopeo_cmd = [skopeo_path]
+        if registry_redirect.enabled:
+            skopeo_cmd.extend(registry_redirect.get_skopeo_args())
+        skopeo_cmd.extend(['copy', image_url, f'dir:{local_dir}'])
+
         # Download the OCI image using skopeo
         result = subprocess.run(
-            [skopeo_path, 'copy', image_url, f'dir:{local_dir}'],
+            skopeo_cmd,
             capture_output=True,
             text=True
         )
@@ -1031,6 +1284,17 @@ def main():
     atexit.register(cleanup_catalog_index_temp_dir, dynamic_plugins_root)
     signal.signal(signal.SIGTERM, lambda signum, frame: sys.exit(0))
     create_lock(lock_file_path)
+
+    # Set up OCP registry redirect if running on OpenShift with ImageStreams
+    registry_redirect = get_ocp_registry_redirect()
+    if registry_redirect.enabled:
+        if registry_redirect.setup():
+            print("======= OCP registry redirect enabled for registry.redhat.io images", flush=True)
+            # Register cleanup for the redirect temp files
+            atexit.register(registry_redirect.cleanup)
+        else:
+            print("======= OCP registry redirect setup failed, falling back to direct registry access", flush=True)
+            registry_redirect.enabled = False
 
     # Extract catalog index if CATALOG_INDEX_IMAGE is set
     catalog_index_image = os.environ.get("CATALOG_INDEX_IMAGE", "")
