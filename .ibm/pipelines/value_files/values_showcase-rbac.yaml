@@ -251,7 +251,7 @@ upstream:
       # using test image from https://quay.io/repository/rhdh-community/rhdh
       registry: quay.io
       repository: rhdh-community/rhdh
-      tag: next
+      tag: next-1.9
     startupProbe:
       # This gives enough time upon container startup before the liveness and readiness probes are triggered.
       # Giving (120s = initialDelaySeconds + failureThreshold * periodSeconds) to account for the worst case scenario.
