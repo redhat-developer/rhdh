@@ -293,6 +293,8 @@ upstream:
       successThreshold: 1
       timeoutSeconds: 4
     extraEnvVars:
+      # NOTE: Lists will not be merged with the default values file. So need to append all the defaults if you want to add a new item here
+      # See https://issues.redhat.com/browse/RHDHPLAN-869
       - name: BACKEND_SECRET
         valueFrom:
           secretKeyRef:
@@ -306,9 +308,16 @@ upstream:
       - name: NODE_ENV
         value: "production"
     extraVolumeMounts:
+      # NOTE: Lists will not be merged with the default values file. So need to append all the defaults if you want to add a new item here
+      # See https://issues.redhat.com/browse/RHDHPLAN-869
       # The initContainer below will install dynamic plugins in this volume mount.
       - name: dynamic-plugins-root
         mountPath: /opt/app-root/src/dynamic-plugins-root
+      - name: extensions-catalog
+        mountPath: /extensions
+      - name: temp
+        mountPath: /tmp
+
       - name: rbac-policy
         mountPath: /opt/app-root/src/rbac
       - name: rbac-conditions
@@ -323,6 +332,8 @@ upstream:
         name: postgress-external-db-cluster-cert
         subPath: tls.key
     extraVolumes:
+      # NOTE: Lists will not be merged with the default values file. So need to append all the defaults if you want to add a new item here
+      # See https://issues.redhat.com/browse/RHDHPLAN-869
       # -- Ephemeral volume that will contain the dynamic plugins installed by the initContainer below at start.
       # To have more control on underlying storage, the [emptyDir](https://docs.openshift.com/container-platform/4.13/storage/understanding-ephemeral-storage.html)
       # could be changed to a [generic ephemeral volume](https://docs.openshift.com/container-platform/4.13/storage/generic-ephemeral-vols.html#generic-ephemeral-vols-procedure_generic-ephemeral-volumes).
@@ -347,6 +358,15 @@ upstream:
           defaultMode: 416
           optional: true
           secretName: '{{ printf "%s-dynamic-plugins-registry-auth" .Release.Name }}'
+      - name: npmcacache
+        emptyDir: {}
+      # -- Ephemeral volume used by the install-dynamic-plugins init container to extract catalog entities from the catalog index image.
+      # Mounted at the /extensions path in the backstage-backend main container for automatic discovery by the extension catalog backend providers.
+      - name: extensions-catalog
+        emptyDir: {}
+      - name: temp
+        emptyDir: {}
+
       - name: postgress-external-db-cluster-cert
         secret:
           secretName: postgress-external-db-cluster-cert
@@ -357,6 +377,8 @@ upstream:
       - name: rbac-conditions
         emptyDir: {}
     initContainers:
+      # NOTE: Lists will not be merged with the default values file. So need to append all the defaults if you want to add a new item here
+      # See https://issues.redhat.com/browse/RHDHPLAN-869
       - name: install-dynamic-plugins
         # -- Image used by the initContainer to install dynamic plugins into the `dynamic-plugins-root` volume mount.
         # It could be replaced by a custom image based on this one.
@@ -460,6 +482,13 @@ upstream:
           - mountPath: /opt/app-root/src/.config/containers
             name: dynamic-plugins-registry-auth
             readOnly: true
+          - mountPath: /opt/app-root/src/.npm/_cacache
+            name: npmcacache
+          - name: extensions-catalog
+            mountPath: /extensions
+          - name: temp
+            mountPath: /tmp
+
           - mountPath: /rbac
             name: rbac-policy
           - mountPath: /rbac-conditions
