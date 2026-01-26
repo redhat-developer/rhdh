@@ -2,7 +2,11 @@ import { useContext } from 'react';
 import { Route } from 'react-router-dom';
 
 import { FlatRoutes } from '@backstage/core-app-api';
-import { AlertDisplay, OAuthRequestDialog } from '@backstage/core-components';
+import {
+  AlertDisplay,
+  AutoLogout,
+  OAuthRequestDialog,
+} from '@backstage/core-components';
 import { ApiExplorerPage } from '@backstage/plugin-api-docs';
 import {
   CatalogEntityPage,
@@ -152,6 +156,11 @@ const AppBase = () => {
           </Root>
         </ApplicationProvider>
       </AppRouter>
+      <AutoLogout
+        enabled={false}
+        idleTimeoutMinutes={60}
+        useWorkerTimers={false}
+      />
     </AppProvider>
   );
 };
