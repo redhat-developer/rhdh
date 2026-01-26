@@ -94,7 +94,9 @@ test.describe("Catalog Column Customization", () => {
     await uiHelper.searchInputPlaceholder("backstage");
 
     // Verify that search results are displayed
-    const tableRows = page.getByRole("row").filter({ has: page.getByRole("cell") });
+    const tableRows = page
+      .getByRole("row")
+      .filter({ has: page.getByRole("cell") });
     await expect(tableRows.first()).toBeVisible();
   });
 
