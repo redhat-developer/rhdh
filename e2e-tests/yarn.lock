@@ -446,10 +446,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ioredis/commands@npm:1.4.0":
-  version: 1.4.0
-  resolution: "@ioredis/commands@npm:1.4.0"
-  checksum: c2fca9809f4a5508e9c23cd837fb575c0a6b04351643da08f6b66b3b72a6a89ad183dd2da216add28ea5d5b9141925a3c3e4fff74103225a59f70264da50e5f2
+"@ioredis/commands@npm:1.5.0":
+  version: 1.5.0
+  resolution: "@ioredis/commands@npm:1.5.0"
+  checksum: 09fee2ca1c1e721a09cf5c16586d44513e0e89f8d99ea78ee04c9c61183156e6a7242c0edd1e8dc195c842c4ece05486beb3c94802a6b1f81ba969389cf75a54
   languageName: node
   linkType: hard
 
@@ -965,23 +965,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:22.19.1":
-  version: 22.19.1
-  resolution: "@types/node@npm:22.19.1"
+"@types/node@npm:22.19.7":
+  version: 22.19.7
+  resolution: "@types/node@npm:22.19.7"
   dependencies:
     undici-types: ~6.21.0
-  checksum: 62b72e26a51659e654cfd6791f296a95ebc4b1deb1fa97f7a5cea4032434d1b4f14021f6e52eb9ea0cc1d1a7ab90567797a25c3865e3ea3d2caf6b3ea0ac4c4d
+  checksum: 3feba083e0e29d58dfceec726de19cb246616c1af5bed8d779ac2b6ee92662016ad2ead44f04279143b459741300c52883e759d68f42d75e372da247b38eebe9
   languageName: node
   linkType: hard
 
-"@types/pg@npm:8.15.6":
-  version: 8.15.6
-  resolution: "@types/pg@npm:8.15.6"
+"@types/pg@npm:8.16.0":
+  version: 8.16.0
+  resolution: "@types/pg@npm:8.16.0"
   dependencies:
     "@types/node": "*"
     pg-protocol: "*"
     pg-types: ^2.2.0
-  checksum: 35a8fe848552be8f3f5d4d8428edf525bc48c96607992ef068edf2ed5c64bb015132b46a3f7f5524a911a055c76f103ac3407f2a9b9330a11d1174cbbafdb20e
+  checksum: 98b5c95650659e78a512699814097ecd29102adb4299f198072d7152508dfda56191b5ca6036f5164d8b364cf1d9fe16dd3d9d26bd40845a3eea59a7e7032415
   languageName: node
   linkType: hard
 
@@ -1349,7 +1349,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"buffer-equal-constant-time@npm:1.0.1":
+"buffer-equal-constant-time@npm:^1.0.1":
   version: 1.0.1
   resolution: "buffer-equal-constant-time@npm:1.0.1"
   checksum: 80bb945f5d782a56f374b292770901065bad21420e34936ecbe949e57724b4a13874f735850dd1cc61f078773c4fb5493a41391e7bda40d1fa388d6bd80daaab
@@ -1626,15 +1626,15 @@ __metadata:
     "@microsoft/microsoft-graph-client": 3.0.7
     "@microsoft/microsoft-graph-types": 2.43.1
     "@playwright/test": 1.57.0
-    "@types/node": 22.19.1
-    "@types/pg": 8.15.6
+    "@types/node": 22.19.7
+    "@types/pg": 8.16.0
     "@typescript-eslint/eslint-plugin": 8.51.0
     "@typescript-eslint/parser": 8.51.0
     eslint: 9.39.2
     eslint-plugin-check-file: 3.3.1
     eslint-plugin-filenames: 1.3.2
     eslint-plugin-playwright: 2.4.0
-    ioredis: 5.8.2
+    ioredis: 5.9.2
     isomorphic-fetch: 3.0.0
     js-yaml: 4.1.1
     node-fetch: 2.7.0
@@ -2243,11 +2243,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ioredis@npm:5.8.2":
-  version: 5.8.2
-  resolution: "ioredis@npm:5.8.2"
+"ioredis@npm:5.9.2":
+  version: 5.9.2
+  resolution: "ioredis@npm:5.9.2"
   dependencies:
-    "@ioredis/commands": 1.4.0
+    "@ioredis/commands": 1.5.0
     cluster-key-slot: ^1.1.0
     debug: ^4.3.4
     denque: ^2.1.0
@@ -2256,7 +2256,7 @@ __metadata:
     redis-errors: ^1.2.0
     redis-parser: ^3.0.0
     standard-as-callback: ^2.1.0
-  checksum: eb351f2559233858cf1792992a183b956e9d8a3cc29669fd068ba6a9b5e16576c07c7197dc7ad1e4b78ecfcd5319ba0ae9ca4a90ba1b66a81b125b6d38565f21
+  checksum: fc7f330430cebf170b7adfd84b9a213ee750ce187c6b316d1f2d520192c01bfc82c08773e6b671ee4689c7bcaad7d517e7b8b385a80f99a49dd3b432e0e92326
   languageName: node
   linkType: hard
 
@@ -2539,24 +2539,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jwa@npm:^1.4.1":
-  version: 1.4.1
-  resolution: "jwa@npm:1.4.1"
+"jwa@npm:^1.4.2":
+  version: 1.4.2
+  resolution: "jwa@npm:1.4.2"
   dependencies:
-    buffer-equal-constant-time: 1.0.1
+    buffer-equal-constant-time: ^1.0.1
     ecdsa-sig-formatter: 1.0.11
     safe-buffer: ^5.0.1
-  checksum: ff30ea7c2dcc61f3ed2098d868bf89d43701605090c5b21b5544b512843ec6fd9e028381a4dda466cbcdb885c2d1150f7c62e7168394ee07941b4098e1035e2f
+  checksum: fd1a6de6c649a4b16f0775439ac9173e4bc9aa0162c7f3836699af47736ae000fafe89f232a2345170de6c14021029cb94b488f7882c6caf61e6afef5fce6494
   languageName: node
   linkType: hard
 
 "jws@npm:^3.2.2":
-  version: 3.2.2
-  resolution: "jws@npm:3.2.2"
+  version: 3.2.3
+  resolution: "jws@npm:3.2.3"
   dependencies:
-    jwa: ^1.4.1
+    jwa: ^1.4.2
     safe-buffer: ^5.0.1
-  checksum: f0213fe5b79344c56cd443428d8f65c16bf842dc8cb8f5aed693e1e91d79c20741663ad6eff07a6d2c433d1831acc9814e8d7bada6a0471fbb91d09ceb2bf5c2
+  checksum: 58f88f1898899e47e9eb0fe61e6347268a498ef75a3d6563158cca855fe0c628138c9c42964d60a4daad8a955696c69fbae5c3e66da8e0f0138bdd7a140cbb27
   languageName: node
   linkType: hard
 

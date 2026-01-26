@@ -31,14 +31,47 @@ global:
                       seconds: 15
       - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-org-dynamic
         disabled: false
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-github-issues
+        pluginConfig:
+          catalog:
+            providers:
+              githubOrg:
+                id: production
+                githubUrl: ${GITHUB_URL}
+                orgs:
+                  - ${GITHUB_ORG}
+                schedule:
+                  frequency:
+                    minutes: 60
+                  initialDelay:
+                    seconds: 15
+                  timeout:
+                    minutes: 15
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-github-issues:bs_1.45.3__0.16.0!backstage-community-plugin-github-issues
         disabled: false
-      - package: ./dynamic-plugins/dist/roadiehq-backstage-plugin-github-pull-requests
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-github-pull-requests:bs_1.45.3__3.6.2!roadiehq-backstage-plugin-github-pull-requests
         disabled: false
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-github-actions
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-github-actions:bs_1.45.3__0.18.0!backstage-community-plugin-github-actions
         disabled: false
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-quay
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-quay-backend:bs_1.45.3__1.10.1!backstage-community-plugin-quay-backend
         disabled: false
+        pluginConfig:
+          quay:
+            apiUrl: https://quay.io
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-quay:bs_1.45.3__1.28.1!backstage-community-plugin-quay
+        disabled: false
+        pluginConfig:
+          dynamicPlugins:
+            frontend:
+              backstage-community.plugin-quay:
+                mountPoints:
+                  - mountPoint: entity.page.image-registry/cards
+                    importName: QuayPage
+                    config:
+                      layout:
+                        gridColumn: 1 / -1
+                      if:
+                        anyOf:
+                          - isQuayAvailable
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-keycloak-dynamic
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-tekton
@@ -82,8 +115,6 @@ global:
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import
         disabled: false
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-header
-        disabled: false
-      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-dynamic-home-page
         disabled: false
       # Enable tech-radar plugin.
       - package: ./dynamic-plugins/dist/backstage-community-plugin-tech-radar
