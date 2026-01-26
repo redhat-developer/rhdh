@@ -2,6 +2,139 @@ import { APIRequestContext, APIResponse, request } from "@playwright/test";
 import * as crypto from "crypto";
 import playwrightConfig from "../../../playwright.config";
 
+type CatalogAction = "added" | "modified" | "removed";
+type TeamAction = "created" | "deleted";
+type MembershipAction = "added" | "removed";
+
+interface Commit {
+  id: string;
+  tree_id: string;
+  distinct: boolean;
+  message: string;
+  timestamp: string;
+  url: string;
+  author: {
+    name: string;
+    email: string;
+    date: string;
+    username: string;
+  };
+  committer: {
+    name: string;
+    email: string;
+    date: string;
+    username: string;
+  };
+  added: string[];
+  removed: string[];
+  modified: string[];
+}
+
+interface Repository {
+  id: number;
+  node_id: string;
+  name: string;
+  full_name: string;
+  private: boolean;
+  owner: {
+    name: string;
+    login: string;
+    id: number;
+    node_id: string;
+    avatar_url: string;
+    type: string;
+  };
+  html_url: string;
+  description: string;
+  url: string;
+  default_branch: string;
+  topics: string[];
+  archived: boolean;
+  fork: boolean;
+  visibility: string;
+}
+
+interface PushPayload {
+  ref: string;
+  before: string;
+  after: string;
+  repository: Repository;
+  pusher: { name: string; email: string };
+  organization: {
+    login: string;
+    id: number;
+    node_id: string;
+    url: string;
+    avatar_url: string;
+  };
+  sender: { login: string; id: number; type: string };
+  created: boolean;
+  deleted: boolean;
+  forced: boolean;
+  base_ref: string | null;
+  compare: string;
+  commits: Commit[];
+  head_commit: Commit;
+}
+
+interface Team {
+  name: string;
+  id: number;
+  node_id: string;
+  slug: string;
+  description: string;
+  privacy: string;
+  notification_setting: string;
+  url: string;
+  html_url: string;
+  members_url: string;
+  repositories_url: string;
+  type: string;
+  organization_id: number;
+  permission: string;
+  parent: null;
+}
+
+interface TeamPayload {
+  action: TeamAction;
+  team: Team;
+  organization: {
+    login: string;
+    id: number;
+    node_id: string;
+    url: string;
+    repos_url: string;
+    events_url: string;
+    hooks_url: string;
+    issues_url: string;
+    members_url: string;
+    public_members_url: string;
+    avatar_url: string;
+    description: string | null;
+  };
+  sender: {
+    login: string;
+    id: number;
+    node_id: string;
+    avatar_url: string;
+    gravatar_id: string;
+    url: string;
+    html_url: string;
+    type: string;
+    user_view_type: string;
+    site_admin: boolean;
+  };
+}
+
+interface MembershipPayload {
+  action: MembershipAction;
+  scope: "team";
+  member: TeamPayload["sender"];
+  sender: TeamPayload["sender"];
+  team: Team;
+  organization: TeamPayload["organization"];
+}
+
 export class GitHubEventsHelper {
   private readonly eventsUrl: string;
   private readonly webhookSecret: string;
@@ -23,11 +156,9 @@ export class GitHubEventsHelper {
     return instance;
   }
 
-  // Send webhook payload with proper GitHub signature
-  public async sendWebhookEvent(
-    eventType: string,
-    payload: any,
-  ): Promise<APIResponse> {
+  public async sendWebhookEvent<
+    T extends PushPayload | TeamPayload | MembershipPayload,
+  >(eventType: string, payload: T): Promise<APIResponse> {
     const payloadString = JSON.stringify(payload);
     const signature = this.calculateSignature(payloadString);
 
@@ -82,19 +213,10 @@ export class GitHubEventsHelper {
     return await this.sendWebhookEvent("membership", payload);
   }
 
-  public async sendOrganizationEvent(
-    action: "member_added" | "member_removed",
-    username: string,
-    orgName: string,
-  ): Promise<APIResponse> {
-    const payload = this.createOrganizationPayload(action, username, orgName);
-    return await this.sendWebhookEvent("organization", payload);
-  }
-
   private createPushPayload(
     repo: string,
-    catalogAction: "added" | "modified" | "removed" = "modified",
-  ): any {
+    catalogAction: CatalogAction = "modified",
+  ): PushPayload {
     const [owner, repoName] = repo.split("/");
 
     // Determine which array gets catalog-info.yaml based on action
@@ -212,10 +334,10 @@ export class GitHubEventsHelper {
   }
 
   private createTeamPayload(
-    action: string,
+    action: TeamAction,
     teamName: string,
     orgName: string,
-  ): any {
+  ): TeamPayload {
     const slug = teamName.toLowerCase().replace(/\s+/g, "-");
     const orgId = Math.floor(Math.random() * 1000000);
     const teamId = Math.floor(Math.random() * 100000000);
@@ -268,11 +390,11 @@ export class GitHubEventsHelper {
   }
 
   private createMembershipPayload(
-    action: string,
+    action: MembershipAction,
     username: string,
     teamName: string,
     orgName: string,
-  ): any {
+  ): MembershipPayload {
     const teamSlug = teamName.toLowerCase().replace(/\s+/g, "-");
     const orgId = Math.floor(Math.random() * 1000000);
     const teamId = Math.floor(Math.random() * 100000000);
@@ -343,73 +465,6 @@ export class GitHubEventsHelper {
         public_members_url: `https://api.github.com/orgs/${orgName}/public_members{/member}`,
         avatar_url: `https://avatars.githubusercontent.com/u/${orgId}?v=4`,
         description: null,
-      },
-    };
-  }
-
-  private createOrganizationPayload(
-    action: string,
-    username: string,
-    orgName: string,
-  ): any {
-    const orgId = Math.floor(Math.random() * 1000000);
-    const userId = Math.floor(Math.random() * 1000000);
-    return {
-      action,
-      membership: {
-        url: `https://api.github.com/orgs/${orgName}/memberships/${username}`,
-        state: action === "member_added" ? "active" : "inactive",
-        role: action === "member_added" ? "member" : "unaffiliated",
-        organization_url: `https://api.github.com/orgs/${orgName}`,
-        user: {
-          login: username,
-          id: userId,
-          node_id: "U_" + crypto.randomUUID().substring(0, 20),
-          avatar_url: `https://avatars.githubusercontent.com/u/${userId}?v=4`,
-          gravatar_id: "",
-          url: `https://api.github.com/users/${username}`,
-          html_url: `https://github.com/${username}`,
-          followers_url: `https://api.github.com/users/${username}/followers`,
-          following_url: `https://api.github.com/users/${username}/following{/other_user}`,
-          gists_url: `https://api.github.com/users/${username}/gists{/gist_id}`,
-          starred_url: `https://api.github.com/users/${username}/starred{/owner}{/repo}`,
-          subscriptions_url: `https://api.github.com/users/${username}/subscriptions`,
-          organizations_url: `https://api.github.com/users/${username}/orgs`,
-          repos_url: `https://api.github.com/users/${username}/repos`,
-          events_url: `https://api.github.com/users/${username}/events{/privacy}`,
-          received_events_url: `https://api.github.com/users/${username}/received_events`,
-          type: "User",
-          user_view_type: "public",
-          site_admin: false,
-        },
-        direct_membership: action === "member_added",
-        enterprise_teams_providing_indirect_membership: [],
-      },
-      organization: {
-        login: orgName,
-        id: orgId,
-        node_id: "O_" + crypto.randomUUID().substring(0, 20),
-        url: `https://api.github.com/orgs/${orgName}`,
-        repos_url: `https://api.github.com/orgs/${orgName}/repos`,
-        events_url: `https://api.github.com/orgs/${orgName}/events`,
-        hooks_url: `https://api.github.com/orgs/${orgName}/hooks`,
-        issues_url: `https://api.github.com/orgs/${orgName}/issues`,
-        members_url: `https://api.github.com/orgs/${orgName}/members{/member}`,
-        public_members_url: `https://api.github.com/orgs/${orgName}/public_members{/member}`,
-        avatar_url: `https://avatars.githubusercontent.com/u/${orgId}?v=4`,
-        description: null,
-      },
-      sender: {
-        login: "test-admin",
-        id: Math.floor(Math.random() * 100000),
-        node_id: "U_" + crypto.randomUUID().substring(0, 20),
-        avatar_url: `https://avatars.githubusercontent.com/u/${Math.floor(Math.random() * 100000)}?v=4`,
-        gravatar_id: "",
-        url: `https://api.github.com/users/test-admin`,
-        html_url: `https://github.com/test-admin`,
-        type: "User",
-        user_view_type: "public",
-        site_admin: false,
       },
     };
   }

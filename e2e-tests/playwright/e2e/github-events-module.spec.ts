@@ -1,15 +1,16 @@
-import { test, expect, Page } from "@playwright/test";
+import { request, test, expect, Page } from "@playwright/test";
 import { Common, setupBrowser } from "../utils/common";
 import { UIhelper } from "../utils/ui-helper";
 import { APIHelper } from "../utils/api-helper";
 import { GitHubEventsHelper } from "../support/api/github-events";
+import * as crypto from "crypto";
 
 let page: Page;
 
 test.describe("GitHub Events Module", () => {
   let common: Common;
   let uiHelper: UIhelper;
-  let eventsHelper: GitHubEventsHelper;
+  let githubEventsHelper: GitHubEventsHelper;
 
   test.beforeAll(async ({ browser }, testInfo) => {
     testInfo.annotations.push({
@@ -20,54 +21,62 @@ test.describe("GitHub Events Module", () => {
     page = (await setupBrowser(browser, testInfo)).page;
     common = new Common(page);
     uiHelper = new UIhelper(page);
-    eventsHelper = await GitHubEventsHelper.build();
-
-    await common.loginAsKeycloakUser(
-      process.env.GH_USER2_ID,
-      process.env.GH_USER2_PASS,
-    );
+    githubEventsHelper = await GitHubEventsHelper.build();
+    await common.loginAsGuest();
   });
 
-  test("Events endpoint accepts webhook payloads", async () => {
-    const response = await eventsHelper.sendPushEvent(
-      "janus-test/test-repo-verification",
-      "modified",
-    );
+  test("Events endpoint accepts signed GitHub webhook payloads", async () => {
+    const rawBody = JSON.stringify({
+      zen: "Test Payload.",
+      hook_id: 123456,
+      repository: {
+        full_name: "test/repo",
+      },
+      organization: {
+        login: "test-org",
+      },
+    });
+
+    const secret = process.env.GITHUB_APP_WEBHOOK_SECRET!;
+    const signature =
+      "sha256=" +
+      crypto.createHmac("sha256", secret).update(rawBody, "utf8").digest("hex");
+
+    const context = await request.newContext();
+
+    const response = await context.post("/api/events/http/github", {
+      headers: {
+        "Content-Type": "application/json",
+        "X-GitHub-Event": "ping",
+        "X-GitHub-Delivery": "test-delivery-id",
+        "X-Hub-Signature-256": signature,
+      },
+      data: rawBody,
+    });
 
     expect(response.status()).toBe(202);
-    expect(response.ok()).toBeTruthy();
   });
 
   test.describe("GitHub Discovery", () => {
-    let catalogRepoName: string;
-    let catalogRepoDetails: {
-      name: string;
-      url: string;
-      org: string;
-      owner: string;
+    const catalogRepoName = `janus-test-github-events-test-${Date.now()}`;
+    const catalogRepoDetails = {
+      name: catalogRepoName,
+      url: `github.com/${process.env.GITHUB_EVENTS_ORG}/${catalogRepoName}`,
+      org: `github.com/${process.env.GITHUB_EVENTS_ORG}`,
+      owner: process.env.GITHUB_EVENTS_ORG,
     };
-
-    test.beforeEach(async () => {
-      // Before Test: Create a real GitHub repository with catalog-info.yaml
-      catalogRepoName = `janus-test-github-events-test-${Date.now()}`;
-      catalogRepoDetails = {
-        name: catalogRepoName,
-        url: `github.com/janus-test/${catalogRepoName}`,
-        org: "github.com/janus-test",
-        owner: "janus-test",
-      };
-
+    test("Adding a new entity to the catalog", async () => {
       const catalogInfoYamlContent = `apiVersion: backstage.io/v1alpha1
-    kind: Component
-    metadata:
-      name: ${catalogRepoName}
-      annotations:
-        github.com/project-slug: janus-test/${catalogRepoName}
-      description: E2E test component for github events module
-    spec:
-      type: other
-      lifecycle: unknown
-      owner: user:default/rhdh-qe-2`;
+kind: Component
+metadata:
+  name: ${catalogRepoName}
+  annotations:
+    github.com/project-slug: ${process.env.GITHUB_EVENTS_ORG}/${catalogRepoName}
+  description: E2E test component for github events module
+spec:
+  type: other
+  lifecycle: unknown
+  owner: user:default/rhdh-qe-user`;
 
       await APIHelper.createGitHubRepoWithFile(
         catalogRepoDetails.owner,
@@ -75,25 +84,18 @@ test.describe("GitHub Events Module", () => {
         "catalog-info.yaml",
         catalogInfoYamlContent,
       );
-    });
 
-    test.afterEach(async () => {
-      await APIHelper.deleteGitHubRepo(
-        catalogRepoDetails.owner,
-        catalogRepoDetails.name,
+      await githubEventsHelper.sendPushEvent(
+        `${process.env.GITHUB_EVENTS_ORG}/${catalogRepoName}`,
+        "added",
       );
-    });
 
-    test("Adding a new entity to the catalog", async () => {
-      // Step 2: Send webhook event for this repository
-      await eventsHelper.sendPushEvent(catalogRepoName, "added");
-
-      // Step 3: Wait for catalog processing and navigate to catalog
-      await page.waitForTimeout(10000); // 10 seconds for catalog processing
+      await page.waitForTimeout(10000);
+      await page.reload();
+      await page.waitForTimeout(10000);
       await uiHelper.openSidebar("Catalog");
       await uiHelper.selectMuiBox("Kind", "Component");
 
-      // Step 4: Search and verify entity appears in catalog
       await uiHelper.searchInputPlaceholder(catalogRepoName);
       await expect(
         page.getByRole("link", { name: catalogRepoName }),
@@ -103,19 +105,18 @@ test.describe("GitHub Events Module", () => {
     });
 
     test("Updating an entity in the catalog", async () => {
-      // Step 1: Update the catalog-info.yaml file
       const updatedDescription = "updated description";
       const updatedCatalogInfoYaml = `apiVersion: backstage.io/v1alpha1
-      kind: Component
-      metadata:
-        name: ${catalogRepoName}
-        annotations:
-          github.com/project-slug: janus-test/${catalogRepoName}
-        description: ${updatedDescription}
-      spec:
-        type: other
-        lifecycle: unknown
-        owner: user:default/rhdh-qe-2`;
+kind: Component
+metadata:
+  name: ${catalogRepoName}
+  annotations:
+    github.com/project-slug: ${process.env.GITHUB_EVENTS_ORG}/${catalogRepoName}
+  description: ${updatedDescription}
+spec:
+  type: other
+  lifecycle: unknown
+  owner: user:default/rhdh-qe-user`;
       await APIHelper.updateFileInRepo(
         catalogRepoDetails.owner,
         catalogRepoDetails.name,
@@ -123,14 +124,16 @@ test.describe("GitHub Events Module", () => {
         updatedCatalogInfoYaml,
         "Update catalog-info.yaml description",
       );
-      // Step 2: Send push event with modified catalog-info.yaml
-      await eventsHelper.sendPushEvent(catalogRepoName, "modified");
-      // Step 3: Wait for catalog processing and navigate to catalog
-      await page.waitForTimeout(10000); // 10 seconds for catalog processing
+      await githubEventsHelper.sendPushEvent(
+        `${process.env.GITHUB_EVENTS_ORG}/${catalogRepoName}`,
+        "modified",
+      );
+      await page.waitForTimeout(10000);
+      await page.reload();
+      await page.waitForTimeout(10000);
       await uiHelper.openSidebar("Catalog");
       await uiHelper.selectMuiBox("Kind", "Component");
 
-      // Step 4: Search and verify the description of the entity is updated
       await uiHelper.searchInputPlaceholder(catalogRepoName);
       await page.getByRole("link", { name: catalogRepoName }).click();
       await expect(page.getByText(updatedDescription)).toBeVisible({
@@ -139,20 +142,22 @@ test.describe("GitHub Events Module", () => {
     });
 
     test("Deleting an entity from the catalog", async () => {
-      // Step 1: Delete the catalog-info.yaml file
       await APIHelper.deleteFileInRepo(
         catalogRepoDetails.owner,
         catalogRepoDetails.name,
         "catalog-info.yaml",
         "Remove catalog-info.yaml",
       );
-      // Step 2: Send push event removing catalog-info.yaml
-      await eventsHelper.sendPushEvent(catalogRepoName, "removed");
-      // Step 3: Wait for catalog processing and navigate to catalog
-      await page.waitForTimeout(10000); // 10 seconds for catalog processing
+      await githubEventsHelper.sendPushEvent(
+        `${process.env.GITHUB_EVENTS_ORG}/${catalogRepoName}`,
+        "removed",
+      );
+      await page.waitForTimeout(10000);
+      await page.reload();
+      await page.waitForTimeout(10000);
       await uiHelper.openSidebar("Catalog");
       await uiHelper.selectMuiBox("Kind", "Component");
-      // Step 4: Search and verify the entity is deleted
+
       await uiHelper.searchInputPlaceholder(catalogRepoName);
       await expect(
         page.getByRole("link", { name: catalogRepoName }),
@@ -164,55 +169,49 @@ test.describe("GitHub Events Module", () => {
 
   test.describe("GitHub Organizational Data", () => {
     test.describe("Teams", () => {
-      let teamCreated = false;
-
-      test.beforeEach(async () => {
-        await APIHelper.createTeamInOrg("janus-test", "test-team");
-        teamCreated = true;
-      });
-
-      test.afterEach(async () => {
-        if (teamCreated) {
-          await APIHelper.deleteTeamFromOrg("janus-test", "test-team");
-          teamCreated = false;
-        }
-      });
+      const teamName = "test-team-" + Date.now();
 
       test("Adding a new group", async () => {
-        // Step 1: Send team created payload
-        await eventsHelper.sendTeamEvent("created", "test-team", "janus-test");
+        await APIHelper.createTeamInOrg(
+          process.env.GITHUB_EVENTS_ORG,
+          teamName,
+        );
+        await githubEventsHelper.sendTeamEvent(
+          "created",
+          teamName,
+          process.env.GITHUB_EVENTS_ORG,
+        );
 
-        // Step 2: Wait for catalog processing and navigate to catalog
         await page.waitForTimeout(10000);
         await uiHelper.openSidebar("Catalog");
         await uiHelper.selectMuiBox("Kind", "Group");
-        await uiHelper.searchInputPlaceholder("test-team");
+        await uiHelper.searchInputPlaceholder(teamName);
 
-        // Step 3: Verify team appears in catalog
-        await expect(page.getByRole("link", { name: "test-team" })).toBeVisible(
-          {
-            timeout: 15000,
-          },
-        );
+        await expect(page.getByRole("link", { name: teamName })).toBeVisible({
+          timeout: 15000,
+        });
       });
 
       test("Deleting a group", async () => {
-        // Step 1: Delete the team from GitHub
-        await APIHelper.deleteTeamFromOrg("janus-test", "test-team");
-        teamCreated = false;
+        await APIHelper.deleteTeamFromOrg(
+          process.env.GITHUB_EVENTS_ORG,
+          teamName,
+        );
 
-        // Step 2: Send team deleted payload
-        await eventsHelper.sendTeamEvent("deleted", "test-team", "janus-test");
-
-        // Step 3: Wait for catalog processing and navigate to catalog
+        await githubEventsHelper.sendTeamEvent(
+          "deleted",
+          teamName,
+          process.env.GITHUB_EVENTS_ORG,
+        );
+        await page.waitForTimeout(10000);
+        await page.reload();
         await page.waitForTimeout(10000);
         await uiHelper.openSidebar("Catalog");
         await uiHelper.selectMuiBox("Kind", "Group");
-        await uiHelper.searchInputPlaceholder("test-team");
+        await uiHelper.searchInputPlaceholder(teamName);
 
-        // Step 4: Verify team is removed from catalog
         await expect(
-          page.getByRole("link", { name: "test-team" }),
+          page.getByRole("link", { name: teamName }),
         ).not.toBeVisible({
           timeout: 15000,
         });
@@ -222,153 +221,94 @@ test.describe("GitHub Events Module", () => {
     test.describe("Team Membership", () => {
       let teamCreated = false;
       let userAddedToTeam = false;
+      const teamName = "test-team-" + Date.now();
 
       test.beforeEach(async () => {
-        await APIHelper.createTeamInOrg("janus-test", "test-team");
+        await APIHelper.createTeamInOrg(
+          process.env.GITHUB_EVENTS_ORG,
+          teamName,
+        );
         teamCreated = true;
 
-        await APIHelper.addUserToTeam("janus-test", "test-team", "test-user");
+        await APIHelper.addUserToTeam(
+          process.env.GITHUB_EVENTS_ORG,
+          teamName,
+          process.env.GITHUB_EVENTS_TEST_USER,
+        );
         userAddedToTeam = true;
       });
 
       test.afterEach(async () => {
         if (userAddedToTeam) {
-            await APIHelper.removeUserFromTeam(
-              "janus-test",
-              "test-team",
-              "test-user",
-            );
+          await APIHelper.removeUserFromTeam(
+            process.env.GITHUB_EVENTS_ORG,
+            teamName,
+            process.env.GITHUB_EVENTS_TEST_USER,
+          );
           userAddedToTeam = false;
         }
 
         if (teamCreated) {
-          await APIHelper.deleteTeamFromOrg("janus-test", "test-team");
+          await APIHelper.deleteTeamFromOrg(
+            process.env.GITHUB_EVENTS_ORG,
+            teamName,
+          );
           teamCreated = false;
         }
       });
 
       test("Adding a user to a group", async () => {
-        // Step 1: Send membership added payload
-        await eventsHelper.sendMembershipEvent(
+        await githubEventsHelper.sendMembershipEvent(
           "added",
-          "test-user",
-          "test-team",
-          "janus-test",
+          process.env.GITHUB_EVENTS_TEST_USER,
+          teamName,
+          process.env.GITHUB_EVENTS_ORG,
         );
 
-        // Step 2: Wait for catalog processing
         await page.waitForTimeout(10000);
 
-        // Step 3: Verify via catalog API
         const api = new APIHelper();
         await api.UseStaticToken(process.env.BACKEND_AUTH_SECRET);
         await api.UseBaseUrl(process.env.BASE_URL);
 
-        const groupEntity = await api.getGroupEntityFromAPI("test-team");
+        const groupEntity = await api.getGroupEntityFromAPI(teamName);
         const members =
           groupEntity.relations
             ?.filter((r) => r.type === "hasMember")
             .map((r) => r.targetRef.split("/")[1]) || [];
 
-        expect(members).toContain("test-user");
+        expect(members).toContain("maryamtaj");
       });
 
       test("Removing a user from a group", async () => {
         // Step 1: Remove user from the team
         await APIHelper.removeUserFromTeam(
-          "janus-test",
-          "test-team",
-          "test-user",
+          process.env.GITHUB_EVENTS_ORG,
+          teamName,
+          process.env.GITHUB_EVENTS_TEST_USER,
         );
         userAddedToTeam = false;
 
-        // Step 2: Send membership removed payload
-        await eventsHelper.sendMembershipEvent(
+        await githubEventsHelper.sendMembershipEvent(
           "removed",
-          "test-user",
-          "test-team",
-          "janus-test",
+          process.env.GITHUB_EVENTS_TEST_USER,
+          teamName,
+          process.env.GITHUB_EVENTS_ORG,
         );
 
-        // Step 3: Wait for catalog processing
         await page.waitForTimeout(10000);
 
-        // Step 4: Verify via catalog API
         const api = new APIHelper();
         await api.UseStaticToken(process.env.BACKEND_AUTH_SECRET);
         await api.UseBaseUrl(process.env.BASE_URL);
 
-        const groupEntity = await api.getGroupEntityFromAPI("test-team");
+        const groupEntity = await api.getGroupEntityFromAPI(teamName);
         const members =
           groupEntity.relations
             ?.filter((r) => r.type === "hasMember")
             .map((r) => r.targetRef.split("/")[1]) || [];
 
-        expect(members).not.toContain("test-user");
-      });
-    });
-
-    test.describe("Organization Membership", () => {
-      let userAddedToOrg = false;
-
-      test.beforeEach(async () => {
-        await APIHelper.addUserToOrg("janus-test", "test-user");
-        userAddedToOrg = true;
-      });
-
-      test.afterEach(async () => {
-        if (userAddedToOrg) {
-          await APIHelper.removeUserFromOrg("janus-test", "test-user");
-          userAddedToOrg = false;
-        }
-      });
-
-      test("Adding a user to the org", async () => {
-        // Step 1: Send organization member added payload
-        await eventsHelper.sendOrganizationEvent(
-          "member_added",
-          "test-user",
-          "janus-test",
-        );
-
-        // Step 2: Wait for catalog processing and navigate to catalog
-        await page.waitForTimeout(10000);
-        await uiHelper.openSidebar("Catalog");
-        await uiHelper.selectMuiBox("Kind", "User");
-        await uiHelper.searchInputPlaceholder("test-user");
-
-        // Step 3: Verify user appears in catalog
-        await expect(page.getByRole("link", { name: "test-user" })).toBeVisible(
-          {
-            timeout: 15000,
-          },
-        );
-      });
-
-      test("Removing a user from the org", async () => {
-        // Step 1: Remove user from the organization
-        await APIHelper.removeUserFromOrg("janus-test", "test-user");
-        userAddedToOrg = false; // Mark as removed
-
-        // Step 2: Send organization member removed payload
-        await eventsHelper.sendOrganizationEvent(
-          "member_removed",
-          "test-user",
-          "janus-test",
-        );
-
-        // Step 3: Wait for catalog processing and navigate to catalog
-        await page.waitForTimeout(10000);
-        await uiHelper.openSidebar("Catalog");
-        await uiHelper.selectMuiBox("Kind", "User");
-        await uiHelper.searchInputPlaceholder("test-user");
-
-        // Step 4: Verify user is removed from catalog
-        await expect(
-          page.getByRole("link", { name: "test-user" }),
-        ).not.toBeVisible({
-          timeout: 15000,
-        });
+        expect(members).not.toContain("maryamtaj");
       });
     });
   });

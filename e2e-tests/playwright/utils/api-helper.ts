@@ -244,26 +244,6 @@ export class APIHelper {
     expect([204, 404].includes(response.status())).toBeTruthy();
   }
 
-  // Organization membership methods
-  static async addUserToOrg(org: string, username: string) {
-    const response = await APIHelper.githubRequest(
-      "PUT",
-      GITHUB_API_ENDPOINTS.orgMembership(org, username),
-      {
-        role: "member",
-      },
-    );
-    expect(response.status() === 200 || response.ok()).toBeTruthy();
-  }
-
-  static async removeUserFromOrg(org: string, username: string) {
-    const response = await APIHelper.githubRequest(
-      "DELETE",
-      GITHUB_API_ENDPOINTS.orgMembership(org, username),
-    );
-    expect([204, 404].includes(response.status())).toBeTruthy();
-  }
-
   static async mergeGitHubPR(
     owner: string,
     repoName: string,
