@@ -18528,7 +18528,7 @@ __metadata:
     "@types/node": 22.19.7
     "@types/react": 18.3.27
     "@types/react-dom": 18.3.7
-    eslint-plugin-unused-imports: ^4.3.0
+    eslint-plugin-unused-imports: 4.3.0
     lodash: 4.17.21
     prettier: 3.7.4
     react: 18.3.1
@@ -23264,7 +23264,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-unused-imports@npm:^4.1.4, eslint-plugin-unused-imports@npm:^4.3.0":
+"eslint-plugin-unused-imports@npm:4.3.0, eslint-plugin-unused-imports@npm:^4.1.4":
   version: 4.3.0
   resolution: "eslint-plugin-unused-imports@npm:4.3.0"
   peerDependencies:
