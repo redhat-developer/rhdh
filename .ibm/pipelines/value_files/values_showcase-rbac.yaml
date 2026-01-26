@@ -441,6 +441,10 @@ upstream:
             value: /opt/app-root/src/.npmrc.dynamic-plugins
           - name: MAX_ENTRY_SIZE
             value: "30000000"
+          - name: CATALOG_INDEX_IMAGE
+            value: "{{ .Values.global.catalogIndex.image.registry }}/{{ .Values.global.catalogIndex.image.repository }}:{{ .Values.global.catalogIndex.image.tag }}"
+          - name: CATALOG_ENTITIES_EXTRACT_DIR
+            value: "/extensions"
         imagePullPolicy: Always
         volumeMounts:
           - mountPath: /dynamic-plugins-root
