@@ -10,7 +10,8 @@ import {
 } from "@playwright/test";
 import playwrightConfig from "../../../../playwright.config";
 
-test.describe("Test licensed users info backend plugin", async () => {
+// FIXME https://issues.redhat.com/browse/RHDHBUGS-2548
+test.describe.fixme("Test licensed users info backend plugin", async () => {
   let common: Common;
 
   test.beforeAll(async () => {
