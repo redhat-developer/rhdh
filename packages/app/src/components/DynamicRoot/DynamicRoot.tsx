@@ -25,6 +25,7 @@ import {
 import { useThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 import { I18nextTranslationApi } from '@red-hat-developer-hub/backstage-plugin-translations';
 import DynamicRootContext, {
+  CatalogColumnConfig,
   ComponentRegistry,
   DynamicRootConfig,
   EntityTabOverrides,
@@ -101,6 +102,7 @@ export const DynamicRoot = ({
   staticPluginStore = {},
   scalprumConfig,
   translationConfig,
+  catalogColumnConfig,
   baseUrl,
 }: {
   afterInit: () => Promise<{ default: React.ComponentType }>;
@@ -111,6 +113,7 @@ export const DynamicRoot = ({
   scalprumConfig: AppsConfig;
   baseUrl: string;
   translationConfig?: TranslationConfig;
+  catalogColumnConfig?: CatalogColumnConfig;
 }) => {
   const app = useRef<BackstageApp>();
   const [ChildComponent, setChildComponent] = useState<
@@ -627,6 +630,7 @@ export const DynamicRoot = ({
       scaffolderFieldExtensionComponents;
     dynamicRootConfig.techdocsAddons = techdocsAddonComponents;
     dynamicRootConfig.translationResources = allTranslationResources;
+    dynamicRootConfig.catalogTableColumns = catalogColumnConfig;
     // make the dynamic UI configuration available to DynamicRootContext consumers
     setComponentRegistry({
       AppProvider: app.current.getProvider(),
@@ -639,6 +643,7 @@ export const DynamicRoot = ({
       scaffolderFieldExtensions: scaffolderFieldExtensionComponents,
       techdocsAddons: techdocsAddonComponents,
       translationRefs,
+      catalogTableColumns: catalogColumnConfig,
     });
     afterInit().then(({ default: Component }) => {
       setChildComponent(() => Component);
@@ -653,6 +658,7 @@ export const DynamicRoot = ({
     staticPluginStore,
     themes,
     translationConfig,
+    catalogColumnConfig,
     baseUrl,
   ]);
 
