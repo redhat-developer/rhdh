@@ -62,7 +62,7 @@
     "@backstage/cli": "0.34.5",
     "@backstage/test-utils": "1.7.13",
     "@janus-idp/cli": "3.7.0",
-    "@scalprum/react-test-utils": "0.2.7",
+    "@scalprum/react-test-utils": "0.2.11",
     "@testing-library/dom": "9.3.4",
     "@testing-library/jest-dom": "6.9.1",
     "@testing-library/react": "14.3.1",
