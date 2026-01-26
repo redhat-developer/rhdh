@@ -129,6 +129,28 @@ global:
         disabled: true
       - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
         disabled: false
+        pluginConfig:
+          dynamicPlugins:
+            frontend:
+              backstage-community.plugin-rbac:
+                translationResources:
+                  - importName: rbacTranslations
+                    ref: rbacTranslationRef
+                    module: Alpha
+                appIcons:
+                  - name: rbacIcon
+                    importName: RbacIcon
+                dynamicRoutes:
+                  - path: /rbac
+                    importName: RbacPage
+                    menuItem:
+                      icon: rbacIcon
+                      text: RBAC
+                      textKey: menuItem.rbac
+                menuItems:
+                  rbac:
+                    parent: default.admin
+                    icon: rbacIcon
       - package: ./dynamic-plugins/dist/backstage-community-plugin-analytics-provider-segment
         disabled: true
       #Enable Scorecard plugin.
