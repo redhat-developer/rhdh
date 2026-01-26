@@ -8,10 +8,7 @@ import {
   OAuthRequestDialog,
 } from '@backstage/core-components';
 import { ApiExplorerPage } from '@backstage/plugin-api-docs';
-import {
-  CatalogEntityPage,
-  CatalogIndexPage,
-} from '@backstage/plugin-catalog';
+import { CatalogEntityPage, CatalogIndexPage } from '@backstage/plugin-catalog';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
 import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
 import { CatalogImportPage } from '@backstage/plugin-catalog-import';

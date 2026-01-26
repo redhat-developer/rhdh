@@ -32,9 +32,10 @@ const BUILTIN_COLUMN_BUILDERS: ColumnBuilderMap = {
   name: CatalogTable.columns.createNameColumn as ColumnBuilderFunc,
   owner: CatalogTable.columns.createOwnerColumn as ColumnBuilderFunc,
   type: CatalogTable.columns.createSpecTypeColumn as ColumnBuilderFunc,
-  lifecycle: CatalogTable.columns.createSpecLifecycleColumn as ColumnBuilderFunc,
-  description:
-    CatalogTable.columns.createMetadataDescriptionColumn as ColumnBuilderFunc,
+  lifecycle: CatalogTable.columns
+    .createSpecLifecycleColumn as ColumnBuilderFunc,
+  description: CatalogTable.columns
+    .createMetadataDescriptionColumn as ColumnBuilderFunc,
   tags: CatalogTable.columns.createTagsColumn as ColumnBuilderFunc,
   namespace: CatalogTable.columns.createNamespaceColumn as ColumnBuilderFunc,
   system: CatalogTable.columns.createSystemColumn as ColumnBuilderFunc,
@@ -65,8 +66,7 @@ export function createCreatedAtColumn(): TableColumn<CatalogTableRow> {
       return dateA.localeCompare(dateB);
     },
     render: (data: CatalogTableRow) => {
-      const date =
-        data.entity.metadata.annotations?.['backstage.io/createdAt'];
+      const date = data.entity.metadata.annotations?.['backstage.io/createdAt'];
       return !isNaN(new Date(date || '').getTime()) ? date || '' : '';
     },
   };

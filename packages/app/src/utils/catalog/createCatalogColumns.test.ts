@@ -359,7 +359,9 @@ describe('createCatalogColumnsFunc', () => {
       const componentColumns = columnsFunc(
         createMockEntityListContext('component'),
       );
-      expect(componentColumns.find(c => c.title === 'API Version')).toBeUndefined();
+      expect(
+        componentColumns.find(c => c.title === 'API Version'),
+      ).toBeUndefined();
       expect(componentColumns.find(c => c.title === 'Team')).toBeDefined();
 
       // When viewing APIs, API-specific column should appear
@@ -383,13 +385,17 @@ describe('createCatalogColumnsFunc', () => {
       const componentColumns = columnsFunc(
         createMockEntityListContext('component'),
       );
-      expect(componentColumns.find(c => c.title === 'Shared Column')).toBeDefined();
+      expect(
+        componentColumns.find(c => c.title === 'Shared Column'),
+      ).toBeDefined();
 
       const apiColumns = columnsFunc(createMockEntityListContext('api'));
       expect(apiColumns.find(c => c.title === 'Shared Column')).toBeDefined();
 
       const systemColumns = columnsFunc(createMockEntityListContext('system'));
-      expect(systemColumns.find(c => c.title === 'Shared Column')).toBeUndefined();
+      expect(
+        systemColumns.find(c => c.title === 'Shared Column'),
+      ).toBeUndefined();
     });
   });
 

@@ -71,8 +71,9 @@ const ScalprumRoot = ({
         );
       }
       try {
-        catalogColumnConfig =
-          reader.getOptional<CatalogColumnConfig>('catalog.table.columns');
+        catalogColumnConfig = reader.getOptional<CatalogColumnConfig>(
+          'catalog.table.columns',
+        );
       } catch (err) {
         // eslint-disable-next-line no-console
         console.warn(
