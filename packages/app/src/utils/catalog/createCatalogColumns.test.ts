@@ -107,7 +107,7 @@ describe('createCreatedAtColumn', () => {
   it('renders the createdAt annotation value', () => {
     const column = createCreatedAtColumn();
     const row = createMockCatalogTableRow();
-    const result = column.render?.(row, 0);
+    const result = column.render?.(row, 'row');
     expect(result).toBe('2024-01-15T10:30:00Z');
   });
 
@@ -121,7 +121,7 @@ describe('createCreatedAtColumn', () => {
         },
       },
     });
-    const result = column.render?.(row, 0);
+    const result = column.render?.(row, 'row');
     expect(result).toBe('');
   });
 
@@ -130,7 +130,7 @@ describe('createCreatedAtColumn', () => {
     const row = createMockCatalogTableRow({
       metadata: { name: 'test', annotations: {} },
     });
-    const result = column.render?.(row, 0);
+    const result = column.render?.(row, 'row');
     expect(result).toBe('');
   });
 
@@ -148,7 +148,7 @@ describe('createCreatedAtColumn', () => {
         annotations: { 'backstage.io/createdAt': '2024-06-01T00:00:00Z' },
       },
     });
-    const result = column.customSort?.(rowA, rowB, 'asc');
+    const result = column.customSort?.(rowA, rowB, 'row');
     expect(result).toBeLessThan(0);
   });
 });
@@ -170,7 +170,7 @@ describe('createCustomColumn', () => {
     };
     const column = createCustomColumn(config);
     const row = createMockCatalogTableRow();
-    const result = column.render?.(row, 0);
+    const result = column.render?.(row, 'row');
     expect(result).toBe('tier-1');
   });
 
@@ -181,7 +181,7 @@ describe('createCustomColumn', () => {
     };
     const column = createCustomColumn(config);
     const row = createMockCatalogTableRow();
-    const result = column.render?.(row, 0);
+    const result = column.render?.(row, 'row');
     expect(result).toBe('Platform');
   });
 
@@ -193,7 +193,7 @@ describe('createCustomColumn', () => {
     };
     const column = createCustomColumn(config);
     const row = createMockCatalogTableRow();
-    const result = column.render?.(row, 0);
+    const result = column.render?.(row, 'row');
     expect(result).toBe('N/A');
   });
 
@@ -204,7 +204,7 @@ describe('createCustomColumn', () => {
     };
     const column = createCustomColumn(config);
     const row = createMockCatalogTableRow();
-    const result = column.render?.(row, 0);
+    const result = column.render?.(row, 'row');
     expect(result).toBe('');
   });
 
