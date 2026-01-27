@@ -1,4 +1,4 @@
-# to use this file, `pip install pip-tools -U` first (need >= 7.3), then 
+# to use this file, `pip install pip-tools -U` first (need >= 7.3), then
 # pip-compile --allow-unsafe --output-file=requirements-build.txt --strip-extras requirements-build.in
 
 babel

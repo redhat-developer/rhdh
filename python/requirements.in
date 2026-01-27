@@ -1,4 +1,4 @@
-# to use this file, `pip install pip-tools -U` first (need >= 7.3), then 
+# to use this file, `pip install pip-tools -U` first (need >= 7.3), then
 # pip-compile --allow-unsafe --output-file=requirements.txt --strip-extras requirements.in
 
 babel
@@ -50,4 +50,3 @@ typing-extensions
 urllib3==2.2.2
 watchdog==3.0.0
 wheel
-wheel==0.43.0
