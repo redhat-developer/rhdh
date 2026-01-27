@@ -22,6 +22,7 @@ export class ThemeVerifier {
       "/settings",
       t["user-settings"][lang]["settingsLayout.title"],
     );
+    await this.uiHelper.hideQuickstartIfVisible();
     await this.uiHelper.clickBtnByTitleIfNotPressed(`Select ${theme}`);
     const themeButton = this.page.getByRole("button", {
       name: theme,
