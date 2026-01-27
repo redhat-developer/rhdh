@@ -17,7 +17,8 @@ test.describe("Test Quick Start plugin", () => {
     uiHelper = new UIhelper(page);
   });
 
-  test("Access Quick start from Global Header", async ({ page }) => {
+  // FIXME https://issues.redhat.com/browse/RHDHBUGS-2547
+  test.fixme("Access Quick start from Global Header", async ({ page }) => {
     await common.loginAsKeycloakUser();
     await page.waitForTimeout(1000);
     // eslint-disable-next-line playwright/no-conditional-in-test
@@ -29,8 +30,8 @@ test.describe("Test Quick Start plugin", () => {
     await expect(page.getByRole("button", { name: "Hide" })).toBeVisible();
   });
 
-  // FIXME https://issues.redhat.com/browse/RHIDP-8971
-  test.skip("Access Quick start as Guest or Admin", async ({ page }) => {
+  // FIXME https://issues.redhat.com/browse/RHDHBUGS-2547
+  test.fixme("Access Quick start as Guest or Admin", async ({ page }) => {
     // eslint-disable-next-line playwright/no-conditional-in-test
     if (test.info().project.name !== "showcase-rbac") {
       await common.loginAsGuest();
@@ -65,7 +66,8 @@ test.describe("Test Quick Start plugin", () => {
     await expect(page.getByRole("button", { name: "Hide" })).toBeHidden();
   });
 
-  test("Access Quick start as User", async ({ page }) => {
+  // FIXME https://issues.redhat.com/browse/RHDHBUGS-2547
+  test.fixme("Access Quick start as User", async ({ page }) => {
     // eslint-disable-next-line playwright/no-conditional-in-test
     if (test.info().project.name !== "showcase-rbac") {
       test.skip();

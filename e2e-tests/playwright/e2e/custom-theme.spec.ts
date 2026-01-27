@@ -10,6 +10,7 @@ import {
   getTranslations,
   getCurrentLanguage,
 } from "../e2e/localization/locale";
+import { UIhelper } from "../utils/ui-helper";
 
 const t = getTranslations();
 const lang = getCurrentLanguage();
@@ -18,6 +19,7 @@ let page: Page;
 test.describe("CustomTheme should be applied", () => {
   let common: Common;
   let themeVerifier: ThemeVerifier;
+  let uiHelper: UIhelper;
 
   test.beforeAll(async ({ browser }, testInfo) => {
     test.info().annotations.push({
@@ -28,13 +30,10 @@ test.describe("CustomTheme should be applied", () => {
     page = (await setupBrowser(browser, testInfo)).page;
     common = new Common(page);
     themeVerifier = new ThemeVerifier(page);
+    uiHelper = new UIhelper(page);
 
     await common.loginAsGuest();
-    await page
-      .getByRole("button", {
-        name: t["plugin.quickstart"][lang]["footer.hide"],
-      })
-      .click();
+    await uiHelper.hideQuickstartIfVisible();
   });
 
   test("Verify theme colors are applied and make screenshots", async ({}, testInfo: TestInfo) => {
