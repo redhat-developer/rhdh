@@ -13,7 +13,7 @@ import {
 test.describe.serial("Bulk Import plugin", () => {
   test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
   // TODO: https://issues.redhat.com/browse/RHDHBUGS-2116
-  test.fixme(() => process.env.JOB_TYPE.includes("presubmit")); // skip on PR checks
+  // test.fixme(() => process.env.JOB_TYPE.includes("presubmit")); // skip on PR checks
   test.fixme(() => !process.env.JOB_NAME.includes("ocp")); // run only on OCP jobs to avoid GH rate limit
   test.describe.configure({ retries: process.env.CI ? 5 : 0 });
 
@@ -80,9 +80,8 @@ spec:
     );
   });
 
-  // TODO: https://issues.redhat.com/browse/RHDHBUGS-2230
   // Select two repos: one with an existing catalog.yaml file and another without it
-  test.fixme("Add a Repository from the Repository Tab and Confirm its Preview", async () => {
+  test("Add a Repository from the Repository Tab and Confirm its Preview", async () => {
     await uiHelper.openSidebar("Bulk import");
     await uiHelper.clickButton("Import");
     await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
@@ -100,7 +99,9 @@ spec:
       catalogRepoDetails.name,
       "Preview file",
     );
-    await expect(await uiHelper.clickButton("Save")).not.toBeVisible({
+    const saveButton = page.getByRole("button", { name: "Save" });
+    await saveButton.click();
+    await expect(saveButton).not.toBeVisible({
       timeout: 10000,
     });
   });
