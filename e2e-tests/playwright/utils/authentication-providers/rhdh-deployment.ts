@@ -397,12 +397,10 @@ class RHDHDeployment {
 
         // Check if rollout has started (generation changed or progressing condition indicates rollout)
         const currentGeneration = deployment.metadata?.generation || 0;
-        const observedGeneration =
-          deployment.status?.observedGeneration || 0;
+        const observedGeneration = deployment.status?.observedGeneration || 0;
         const isProgressing = conditions.some(
           (condition) =>
-            condition.type === "Progressing" &&
-            condition.status === "True",
+            condition.type === "Progressing" && condition.status === "True",
         );
 
         // Rollout has started if:
