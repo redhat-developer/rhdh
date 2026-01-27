@@ -279,6 +279,7 @@
       "roleForm.titles.nameAndDescription": "ロールの名前と説明を入力してください",
       "roleForm.titles.usersAndGroups": "ユーザーとグループの追加",
       "roleForm.titles.permissionPolicies": "権限ポリシーの追加",
+      "roleForm.review.permissionPoliciesWithCount": "権限ポリシー ({{count}})",
       "roleForm.review.reviewAndCreate": "確認および作成",
       "roleForm.review.reviewAndSave": "確認および保存",
       "roleForm.review.nameDescriptionOwner": "ロールの名前、説明、および所有者",
