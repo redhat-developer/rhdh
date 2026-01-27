@@ -131,7 +131,7 @@
     "fr": {
       "catalogFilter.title": "Filtres",
       "catalogFilter.buttonTitle": "Filtres",
-      "entityKindPicker.title": "Type",
+      "entityKindPicker.title": "Catégorie",
       "entityKindPicker.errorMessage": "Échec du chargement des types d'entités",
       "entityLifecyclePicker.title": "Cycle de vie",
       "entityNamespacePicker.title": "Espace de noms",
