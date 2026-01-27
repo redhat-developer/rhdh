@@ -829,4 +829,17 @@ export class UIhelper {
     const tooltip = this.page.getByRole("tooltip").getByText(text);
     await expect(tooltip).toBeVisible();
   }
+
+  /**
+   * Hides the Quick Start panel if it is currently visible.
+   * This is useful in test setup to ensure a clean state without the Quick Start overlay.
+   */
+  async hideQuickstartIfVisible(): Promise<void> {
+    const quickstartHideButton = this.page.getByRole("button", {
+      name: t["plugin.quickstart"][lang]["footer.hide"],
+    });
+    if (await quickstartHideButton.isVisible()) {
+      await quickstartHideButton.click();
+    }
+  }
 }

@@ -265,6 +265,16 @@ dynamicPlugins:
       mountPoints:
         - mountPoint: application/provider
           importName: QuickstartDrawerProvider
+        - mountPoint: application/internal/drawer-state
+          importName: QuickstartDrawerStateExposer
+        - mountPoint: application/internal/drawer-content
+          importName: QuickstartDrawerContent
+          config:
+            id: quickstart
+        - mountPoint: global.header/help
+          importName: QuickstartButton
+          config:
+            priority: 100
     red-hat-developer-hub.backstage-plugin-dynamic-home-page:
       dynamicRoutes:
         - path: /
@@ -573,18 +583,18 @@ dynamicPlugins:
         rbac:
           parent: admin
           icon: rbacIcon
-    red-hat-developer-hub.backstage-plugin-marketplace:
+    red-hat-developer-hub.backstage-plugin-extensions:
       appIcons:
-        - name: marketplace
-          importName: MarketplaceIcon
+        - name: extensions
+          importName: ExtensionsIcon
       dynamicRoutes:
         - path: /extensions/catalog
-          importName: DynamicMarketplacePluginRouter
+          importName: DynamicExtensionsPluginRouter
       mountPoints:
         - mountPoint: internal.plugins/tab
-          importName: DynamicMarketplacePluginContent
+          importName: DynamicExtensionsPluginContent
           config:
-            path: marketplace
+            path: extensions
             title: Catalog
     red-hat-developer-hub.backstage-plugin-adoption-insights:
       appIcons:

@@ -161,10 +161,10 @@ const SidebarLayout = styled(Box, {
       flexGrow: 1,
     },
 
-    // When quickstart drawer is open, adjust the content size
-    'body.quickstart-drawer-open #rhdh-sidebar-layout&': {
+    // When drawer is docked, adjust the content size
+    'body.docked-drawer-open #rhdh-sidebar-layout&': {
       '> div > main': {
-        marginRight: `calc(var(--quickstart-drawer-width, 500px) + ${(theme as ThemeConfig).palette?.rhdh?.general.pageInset})`,
+        marginRight: `calc(var(--docked-drawer-width, 500px) + ${(theme as ThemeConfig).palette?.rhdh?.general.pageInset})`,
         transition: 'margin-right 0.3s ease',
       },
     },
@@ -487,30 +487,38 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
       ? menuItemArray.filter(mi => mi.name.includes('admin'))
       : menuItemArray.filter(mi => !mi.name.includes('admin'));
 
-    if (isBottomMenuSection && !canDisplayRBACMenuItem && !loadingPermission) {
-      menuItemArray[0].children = menuItemArray[0].children?.filter(
+    if (
+      isBottomMenuSection &&
+      !canDisplayRBACMenuItem &&
+      !loadingPermission &&
+      menuItemArray[0]?.children
+    ) {
+      menuItemArray[0].children = menuItemArray[0].children.filter(
         mi => mi.name !== 'rbac',
       );
     }
+
     return (
       <>
         {menuItemArray.map(menuItem => {
           const isOpen = openItems[menuItem.name] || false;
           return (
             <Fragment key={menuItem.name}>
-              {menuItem.children!.length === 0 &&
-                getMenuItem(menuItem, false, getMenuText)}
-              {menuItem.children!.length > 0 && (
+              {!menuItem.children ||
+                (menuItem.children!.length === 0 &&
+                  getMenuItem(menuItem, false, getMenuText))}
+              {menuItem.children && menuItem.children.length > 0 && (
                 <SidebarItem
                   key={menuItem.name}
                   icon={renderIcon(menuItem.icon ?? '')}
                   text={getMenuText(menuItem)}
                   onClick={() => handleClick(menuItem.name)}
                 >
-                  {menuItem.children!.length > 0 && renderExpandIcon(isOpen)}
+                  {menuItem.children.length > 0 && renderExpandIcon(isOpen)}
                 </SidebarItem>
               )}
-              {menuItem.children!.length > 0 &&
+              {menuItem.children &&
+                menuItem.children.length > 0 &&
                 renderExpandableMenuItems(menuItem, isOpen)}
             </Fragment>
           );

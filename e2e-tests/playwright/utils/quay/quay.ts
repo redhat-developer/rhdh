@@ -3,12 +3,12 @@ import { UI_HELPER_ELEMENTS } from "../../support/page-objects/global-obj";
 
 export class ImageRegistry {
   static getAllCellsIdentifier() {
-    const tagText = /^(pr|next)-.*$/i; // Example: pr-123 or pr-123-abc
+    const tagText = /^((pr|next)-.*|\d+\.\d+.*)$/i;
     const lastModifiedDate =
       /^[A-Za-z]{3} \d{1,2}, \d{4}, \d{1,2}:\d{2} (AM|PM)$/; // Example: Jan 21, 2025, 7:54 PM
     const size = /^\d+(\.\d+)?\s?(GB|MB)$/; // Example: 1.16 GB or 512 MB
     const expires =
-      /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun), \d{1,2} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4} \d{1,2}:\d{2}:\d{2} [+-]\d{4}$/; // Example: Tue, 04 Feb 2025 22:54:18 -0000
+      /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{1,2}, \d{4}, \d{1,2}:\d{2} [APM]{2}$/; // Example: Feb 2, 2026 4:01 PM
 
     const manifest = /^sha256/;
     const securityScan =
@@ -33,6 +33,7 @@ export class ImageRegistry {
     );
     return new RegExp(
       `^(Passed|unsupported|Queued|Medium|Low|(?:${securityScan.join("|")})+)$`,
+      "i", // Case-insensitive flag to match "Unsupported" or "unsupported"
     );
   }
 

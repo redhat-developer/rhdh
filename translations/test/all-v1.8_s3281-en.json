@@ -340,7 +340,7 @@
       "permission.description": "To view \"Adoption Insights\" plugin, contact your administrator to give the adoption-insights.events.read permissions."
     }
   },
-  "plugin.marketplace": {
+  "plugin.extensions": {
     "en": {
       "header.title": "Extensions",
       "header.extensions": "Extensions",
@@ -373,7 +373,7 @@
       "emptyState.noPluginsFound": "No plugins found",
       "emptyState.mustEnableBackend": "Must enable the Extensions backend plugin",
       "emptyState.noPluginsDescription": "There was an error with loading plugins. Check your configuration or review plugin documentation to resolve. You can also explore other available plugins.",
-      "emptyState.configureBackend": "Configure the '@red-hat-developer-hub/backstage-plugin-marketplace-backend' plugin.",
+      "emptyState.configureBackend": "Configure the '@red-hat-developer-hub/backstage-plugin-extensions-backend' plugin.",
       "alert.productionDisabled": "Plugin installation is disabled in the production environment.",
       "alert.installationDisabled": "Plugin installation is disabled.",
       "alert.extensionsExample": "Example how to enable extensions plugin installation",
