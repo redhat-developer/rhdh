@@ -127,7 +127,7 @@ permission:
     maxDepth: 1
     policyFileReload: true
     policies-csv-file: "./rbac/rbac-policy.csv"
-    conditionalPoliciesFile: "./rbac-conditions/conditional-policies.yaml"
+    conditionalPoliciesFile: "./rbac/conditional-policies.yaml"
     pluginsWithPermission:
       - catalog
       - permission
