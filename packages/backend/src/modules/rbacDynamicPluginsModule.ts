@@ -50,7 +50,7 @@ export const pluginIDProviderService = createServiceFactory({
       })
       .map(p => {
         const removedPrefix = p.manifest.name.replace(
-          /(^@[^\/]*\/plugin-|^[^@/]*-plugin-)/,
+          /(^@[^\/]*\/(?:plugin-|backstage-plugin-)|^[^@/]*-plugin-)/,
           '',
         );
         const removedSuffix = removedPrefix.replace(/-backend-dynamic$/, '');
