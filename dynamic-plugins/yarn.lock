@@ -12358,6 +12358,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@red-hat-developer-hub/backstage-plugin-orchestrator-common@npm:^3.2.0":
+  version: 3.4.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-orchestrator-common@npm:3.4.0"
+  dependencies:
+    "@backstage/core-plugin-api": ^1.12.0
+    "@backstage/plugin-permission-common": ^0.9.3
+    "@backstage/types": ^1.2.2
+    "@serverlessworkflow/sdk-typescript": ^0.8.4
+    axios: ^1.11.0
+    js-yaml: ^4.1.0
+  checksum: 67b4589f0a2435f4cb4c469ea955b0562fc94d0fa4c5f836401eb8f9b61a3cdc069018d21818a760b2ad3e95ecb08fb5dc1eb16e95e1eb8660e3c06f1b897d59
+  languageName: node
+  linkType: hard
+
 "@red-hat-developer-hub/backstage-plugin-quickstart@npm:1.8.2":
   version: 1.8.2
   resolution: "@red-hat-developer-hub/backstage-plugin-quickstart@npm:1.8.2"
