@@ -2,6 +2,7 @@ import { test, expect } from "@playwright/test";
 import { KubeClient } from "../../utils/kube-client";
 import { Common } from "../../utils/common";
 import { UIhelper } from "../../utils/ui-helper";
+
 test.describe("Change app-config at e2e test runtime", () => {
   test.beforeAll(async () => {
     test.info().annotations.push(
