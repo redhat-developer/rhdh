@@ -37,9 +37,6 @@ jobs:
     if: github.event.pull_request.user.login == 'rhdh-bot'
     
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
       - name: Check PR eligibility
         id: check-eligibility
         run: |
