@@ -114,6 +114,7 @@ packaging==24.1
     #   hatchling
     #   mkdocs
     #   setuptools-scm
+    #   wheel
 paginate==0.5.7
     # via mkdocs-material
 pathspec==0.12.1
@@ -203,7 +204,7 @@ watchdog==3.0.0
     # via
     #   -r requirements-build.in
     #   mkdocs
-wheel==0.43.0
+wheel==0.46.3
     # via -r requirements-build.in
 
 # The following packages are considered to be unsafe in a requirements file:
