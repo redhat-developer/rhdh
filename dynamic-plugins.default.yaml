@@ -519,7 +519,7 @@ plugins:
           portal.
         cta:
           text: Import
-          link: /bulk-import/repositories
+          link: /bulk-import
       - title: Learn about the Catalog
         roles:
         - developer
