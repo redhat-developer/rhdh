@@ -4,6 +4,8 @@
 source "${DIR}/reporting.sh"
 # shellcheck source=.ibm/pipelines/lib/log.sh
 source "${DIR}/lib/log.sh"
+# shellcheck source=.ibm/pipelines/lib/common.sh
+source "${DIR}/lib/common.sh"
 # shellcheck source=.ibm/pipelines/lib/operators.sh
 source "${DIR}/lib/operators.sh"
 # shellcheck source=.ibm/pipelines/lib/k8s-wait.sh
@@ -52,6 +54,12 @@ save_all_pod_logs() {
   cp -a pod_logs/* "${ARTIFACT_DIR}/${namespace}/pod_logs" || true
   set -e
 }
+
+# ==============================================================================
+# FUTURE MODULE: lib/helm.sh
+# Functions: yq_merge_value_files, uninstall_helmchart, get_image_helm_set_params,
+#            perform_helm_install, get_chart_version, get_previous_release_value_file
+# ==============================================================================
 
 # Merge the base YAML value file with the differences file for Kubernetes
 yq_merge_value_files() {
@@ -104,272 +112,28 @@ disable_orchestrator_plugins_in_values() {
   yq eval -i '(.global.dynamic.plugins[] | select(.package | contains("orchestrator")) | .disabled) = true' "${values_file}"
 }
 
-# Waits for a Kubernetes/OpenShift deployment to become ready within a specified timeout period
-wait_for_deployment() {
-  local namespace=$1
-  local resource_name=$2
-  local timeout_minutes=${3:-5} # Default timeout: 5 minutes
-  local check_interval=${4:-10} # Default interval: 10 seconds
+# ==============================================================================
+# K8s Wait Functions - Delegate to lib/k8s-wait.sh
+# ==============================================================================
+wait_for_deployment() { k8s_wait::deployment "$@"; }
 
-  # Validate required parameters
-  if [[ -z "$namespace" || -z "$resource_name" ]]; then
-    log::error "Missing required parameters"
-    log::info "Usage: wait_for_deployment <namespace> <resource-name> [timeout_minutes] [check_interval_seconds]"
-    log::info "Example: wait_for_deployment my-namespace my-deployment 5 10"
-    return 1
-  fi
+wait_for_job_completion() { k8s_wait::job "$@"; }
 
-  local max_attempts=$((timeout_minutes * 60 / check_interval))
+wait_for_svc() { k8s_wait::service "$@"; }
 
-  log::info "Waiting for resource '$resource_name' in namespace '$namespace' (timeout: ${timeout_minutes}m)..."
+wait_for_endpoint() { k8s_wait::endpoint "$@"; }
 
-  for ((i = 1; i <= max_attempts; i++)); do
-    # Get the first pod name matching the resource name
-    local pod_name
-    pod_name=$(oc get pods -n "$namespace" | grep "$resource_name" | awk '{print $1}' | head -n 1)
+# ==============================================================================
+# Operator Functions - Delegate to lib/operators.sh
+# ==============================================================================
+install_subscription() { operator::install_subscription "$@"; }
 
-    if [[ -n "$pod_name" ]]; then
-      # Check if pod's Ready condition is True
-      local is_ready
-      is_ready=$(oc get pod "$pod_name" -n "$namespace" -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}')
-      # Verify pod is both Ready and Running
-      if [[ "$is_ready" == "True" ]] \
-        && oc get pod "$pod_name" -n "$namespace" | grep -q "Running"; then
-        log::success "Pod '$pod_name' is running and ready"
-        return 0
-      else
-        log::debug "Pod '$pod_name' is not ready (Ready: $is_ready)"
-      fi
-    else
-      log::warn "No pods found matching '$resource_name' in namespace '$namespace'"
-    fi
-
-    log::debug "Still waiting... (${i}/${max_attempts} checks)"
-    sleep "$check_interval"
-  done
-
-  # Timeout occurred
-  log::error "Timeout waiting for resource to be ready. Please check:"
-  log::info "oc get pods -n $namespace | grep $resource_name"
-  return 1
-}
-
-# Wait for a Kubernetes job to complete with proper error handling and detailed logging
-wait_for_job_completion() {
-  local namespace=$1
-  local job_name=$2
-  local timeout_minutes=${3:-10} # Default timeout: 10 minutes
-  local check_interval=${4:-10}  # Default interval: 10 seconds
-
-  # Validate required parameters
-  if [[ -z "$namespace" || -z "$job_name" ]]; then
-    log::error "Missing required parameters"
-    log::info "Usage: wait_for_job_completion <namespace> <job-name> [timeout_minutes] [check_interval_seconds]"
-    log::info "Example: wait_for_job_completion my-namespace my-job 10 10"
-    return 1
-  fi
-
-  local max_attempts=$((timeout_minutes * 60 / check_interval))
-
-  log::info "Waiting for job '$job_name' to be created in namespace '$namespace'..."
-
-  # Phase 1: Wait for job to exist (with timeout)
-  for ((i = 1; i <= max_attempts; i++)); do
-    if oc get job "$job_name" -n "$namespace" &> /dev/null; then
-      log::success "Job '$job_name' found!"
-      break
-    fi
-
-    if [[ $i -eq $max_attempts ]]; then
-      log::hr
-      log::error "JOB FAILURE"
-      log::hr
-      log::info "Job: $job_name"
-      log::info "Namespace: $namespace"
-      log::error "Reason: Job was not created within ${timeout_minutes} minutes"
-      log::info "Timestamp: $(date)"
-      log::info ""
-      log::info "Recent events in namespace:"
-      oc get events -n "$namespace" --sort-by='.lastTimestamp' | tail -20
-      log::info ""
-      log::info "NOTE: Full pod logs will be saved by save_all_pod_logs() at the end of deployment"
-      log::hr
-      return 1
-    fi
-
-    log::debug "Job not yet created... (${i}/${max_attempts} checks)"
-    sleep "$check_interval"
-  done
-
-  # Phase 2: Wait for job to complete
-  log::info "Waiting for job '$job_name' to complete (timeout: ${timeout_minutes}m)..."
-
-  for ((i = 1; i <= max_attempts; i++)); do
-    # Get job status
-    local job_status
-    job_status=$(oc get job "$job_name" -n "$namespace" -o jsonpath='{.status.conditions[?(@.type=="Complete")].status}' 2> /dev/null)
-    local job_failed
-    job_failed=$(oc get job "$job_name" -n "$namespace" -o jsonpath='{.status.conditions[?(@.type=="Failed")].status}' 2> /dev/null)
-
-    # Check if job completed successfully
-    if [[ "$job_status" == "True" ]]; then
-      log::success "Job '$job_name' completed successfully!"
-      return 0
-    fi
-
-    # Check if job failed
-    if [[ "$job_failed" == "True" ]]; then
-      echo "=========================================="
-      echo "❌ JOB FAILURE"
-      echo "=========================================="
-      echo "Job: $job_name"
-      echo "Namespace: $namespace"
-      echo "Reason: Job failed"
-      echo "Timestamp: $(date)"
-      echo ""
-
-      local pod_name
-      pod_name=$(oc get pods -n "$namespace" -l job-name="$job_name" --sort-by=.metadata.creationTimestamp -o name 2> /dev/null | tail -1 | sed 's|pod/||')
-
-      echo "--- Job Description ---"
-      oc describe job "$job_name" -n "$namespace"
-      echo ""
-
-      if [[ -n "$pod_name" ]]; then
-        echo "--- Pod: $pod_name ---"
-        echo "Pod Status:"
-        oc get pod "$pod_name" -n "$namespace" -o wide
-        echo ""
-        echo "Pod Logs (last 100 lines):"
-        oc logs "$pod_name" -n "$namespace" --tail=100 || echo "Could not retrieve logs"
-        echo ""
-        echo "Pod Events:"
-        oc get events -n "$namespace" --field-selector involvedObject.name="$pod_name" | tail -20
-      else
-        echo "⚠️  Could not find pod for job '$job_name'"
-        echo "Listing all pods in namespace:"
-        oc get pods -n "$namespace"
-      fi
-
-      echo ""
-      echo "NOTE: Full pod logs will be saved by save_all_pod_logs() at the end of deployment"
-      echo "=========================================="
-      return 1
-    fi
-
-    # Show progress
-    local active_pods succeeded_pods failed_pods
-    active_pods=$(oc get job "$job_name" -n "$namespace" -o jsonpath='{.status.active}' 2> /dev/null || echo "0")
-    succeeded_pods=$(oc get job "$job_name" -n "$namespace" -o jsonpath='{.status.succeeded}' 2> /dev/null || echo "0")
-    failed_pods=$(oc get job "$job_name" -n "$namespace" -o jsonpath='{.status.failed}' 2> /dev/null || echo "0")
-
-    log::info "Job status - Active: $active_pods, Succeeded: $succeeded_pods, Failed: $failed_pods (${i}/${max_attempts} checks)"
-
-    sleep "$check_interval"
-  done
-
-  # Timeout occurred
-  echo "=========================================="
-  echo "❌ JOB TIMEOUT"
-  echo "=========================================="
-  echo "Job: $job_name"
-  echo "Namespace: $namespace"
-  echo "Reason: Job did not complete within ${timeout_minutes} minutes"
-  echo "Timestamp: $(date)"
-  echo ""
-
-  local pod_name
-  pod_name=$(oc get pods -n "$namespace" -l job-name="$job_name" --sort-by=.metadata.creationTimestamp -o name 2> /dev/null | tail -1 | sed 's|pod/||')
-
-  echo "--- Job Description ---"
-  oc describe job "$job_name" -n "$namespace"
-  echo ""
-
-  if [[ -n "$pod_name" ]]; then
-    echo "--- Pod: $pod_name ---"
-    echo "Pod Status:"
-    oc get pod "$pod_name" -n "$namespace" -o wide
-    echo ""
-    echo "Pod Logs (last 100 lines):"
-    oc logs "$pod_name" -n "$namespace" --tail=100 || echo "Could not retrieve logs"
-    echo ""
-    echo "Pod Events:"
-    oc get events -n "$namespace" --field-selector involvedObject.name="$pod_name" | tail -20
-  else
-    echo "⚠️  Could not find pod for job '$job_name'"
-    echo "Listing all pods in namespace:"
-    oc get pods -n "$namespace"
-  fi
-
-  echo ""
-  echo "NOTE: Full pod logs will be saved by save_all_pod_logs() at the end of deployment"
-  echo "=========================================="
-  return 1
-}
-
-wait_for_svc() {
-  local svc_name=$1
-  local namespace=$2
-  local timeout_seconds=${3:-300}
-  local check_interval=5
-  local max_attempts=$((timeout_seconds / check_interval))
-
-  log::info "Waiting for service '$svc_name' in namespace '$namespace' (timeout: ${timeout_seconds}s)..."
-  for ((i = 1; i <= max_attempts; i++)); do
-    if oc get svc "$svc_name" -n "$namespace" &> /dev/null; then
-      log::success "Service '$svc_name' is created."
-      return 0
-    fi
-    log::debug "Attempt $i/$max_attempts: Waiting for service..."
-    sleep "$check_interval"
-  done
-  log::error "Timed out waiting for '$svc_name' service creation after ${timeout_seconds}s."
-  return 1
-}
-
-wait_for_endpoint() {
-  local endpoint_name=$1
-  local namespace=$2
-  local timeout_seconds=${3:-500}
-  local check_interval=5
-  local max_attempts=$((timeout_seconds / check_interval))
-
-  log::info "Waiting for endpoint '$endpoint_name' in namespace '$namespace' (timeout: ${timeout_seconds}s)..."
-  for ((i = 1; i <= max_attempts; i++)); do
-    if kubectl get endpoints "$endpoint_name" -n "$namespace" &> /dev/null; then
-      log::success "Endpoint '$endpoint_name' is created."
-      return 0
-    fi
-    log::debug "Attempt $i/$max_attempts: Waiting for endpoint..."
-    sleep "$check_interval"
-  done
-  log::error "Timed out waiting for '$endpoint_name' endpoint creation after ${timeout_seconds}s."
-  return 1
-}
-
-# Creates an OpenShift Operator subscription
-install_subscription() {
-  name=$1             # Name of the subscription
-  namespace=$2        # Namespace to install the operator
-  channel=$3          # Channel to subscribe to
-  package=$4          # Package name of the operator
-  source_name=$5      # Name of the source catalog
-  source_namespace=$6 # Source namespace (typically openshift-marketplace or olm)
-  # Apply the subscription manifest
-  oc apply -f - << EOD
-apiVersion: operators.coreos.com/v1alpha1
-kind: Subscription
-metadata:
-  name: $name
-  namespace: $namespace
-spec:
-  channel: $channel
-  installPlanApproval: Automatic
-  name: $package
-  source: $source_name
-  sourceNamespace: $source_namespace
-EOD
-}
+# ==============================================================================
+# FUTURE MODULE: lib/namespace.sh
+# Functions: configure_namespace, delete_namespace, force_delete_namespace,
+#            remove_finalizers_from_resources, setup_image_pull_secret,
+#            create_secret_dockerconfigjson, add_image_pull_secret_to_namespace_default_serviceaccount
+# ==============================================================================
 
 create_secret_dockerconfigjson() {
   namespace=$1
@@ -401,56 +165,31 @@ setup_image_pull_secret() {
   add_image_pull_secret_to_namespace_default_serviceaccount "$namespace" "$secret_name"
 }
 
-# Monitors the status of an operator in an OpenShift namespace.
-# It checks the ClusterServiceVersion (CSV) for a specific operator to verify if its phase matches an expected value.
-check_operator_status() {
-  local timeout_seconds=${1:-300}
-  local namespace=$2
-  local operator_name=$3
-  local expected_status=${4:-"Succeeded"}
-  local check_interval=10
-  local max_attempts=$((timeout_seconds / check_interval))
+check_operator_status() { operator::check_status "$@"; }
 
-  log::info "Checking operator '${operator_name}' in namespace '${namespace}' (timeout: ${timeout_seconds}s, expected: ${expected_status})..."
-
-  for ((i = 1; i <= max_attempts; i++)); do
-    local current_phase
-    current_phase=$(oc get csv -n "${namespace}" -o jsonpath="{.items[?(@.spec.displayName==\"${operator_name}\")].status.phase}" 2> /dev/null || echo "")
-
-    if [[ "${current_phase}" == "${expected_status}" ]]; then
-      log::success "Operator '${operator_name}' is now in '${expected_status}' phase."
-      return 0
-    fi
-
-    log::debug "Attempt $i/$max_attempts: Operator phase: ${current_phase:-NotFound}"
-    sleep "$check_interval"
-  done
-
-  log::error "Timed out after ${timeout_seconds}s. Operator '${operator_name}' did not reach '${expected_status}' phase."
-  return 1
-}
-
-# Installs the Crunchy Postgres Operator from Openshift Marketplace using predefined parameters
-# Use waitfor_crunchy_postgres_ocp_operator to wait for the operator to be ready
-install_crunchy_postgres_ocp_operator() {
+# Installs the Crunchy Postgres Operator
+# Args: platform ("ocp" or "k8s", default: "ocp")
+install_crunchy_postgres_operator() {
+  local platform=${1:-ocp}
   install_subscription crunchy-postgres-operator openshift-operators v5 crunchy-postgres-operator certified-operators openshift-marketplace
 }
 
-waitfor_crunchy_postgres_ocp_operator() {
-  check_operator_status 300 "openshift-operators" "Crunchy Postgres for Kubernetes" "Succeeded"
+# Waits for the Crunchy Postgres Operator to be ready
+# Args: platform ("ocp" or "k8s", default: "ocp")
+waitfor_crunchy_postgres_operator() {
+  local platform=${1:-ocp}
+  local namespace="openshift-operators"
+  [[ "$platform" == "k8s" ]] && namespace="operators"
+
+  check_operator_status 300 "$namespace" "Crunchy Postgres for Kubernetes" "Succeeded"
   k8s_wait::crd "postgresclusters.postgres-operator.crunchydata.com" 120 5 || return 1
 }
 
-# Installs the Crunchy Postgres Operator from OperatorHub.io
-# Use waitfor_crunchy_postgres_k8s_operator to wait for the operator to be ready
-install_crunchy_postgres_k8s_operator() {
-  install_subscription crunchy-postgres-operator openshift-operators v5 crunchy-postgres-operator certified-operators openshift-marketplace
-}
-
-waitfor_crunchy_postgres_k8s_operator() {
-  check_operator_status 300 "operators" "Crunchy Postgres for Kubernetes" "Succeeded"
-  k8s_wait::crd "postgresclusters.postgres-operator.crunchydata.com" 120 5 || return 1
-}
+# Backward compatibility shims
+install_crunchy_postgres_ocp_operator() { install_crunchy_postgres_operator "ocp"; }
+install_crunchy_postgres_k8s_operator() { install_crunchy_postgres_operator "k8s"; }
+waitfor_crunchy_postgres_ocp_operator() { waitfor_crunchy_postgres_operator "ocp"; }
+waitfor_crunchy_postgres_k8s_operator() { waitfor_crunchy_postgres_operator "k8s"; }
 
 # Installs the OpenShift Serverless Logic Operator (SonataFlow) from OpenShift Marketplace
 # Use waitfor_serverless_logic_ocp_operator to wait for the operator to be ready
@@ -532,18 +271,12 @@ configure_external_postgres_db() {
 
   # Wait for cluster cert secret (usually created quickly)
   log::info "Waiting for cluster certificate secret..."
-  for ((i = 1; i <= max_attempts; i++)); do
-    if oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" &> /dev/null; then
-      log::success "Cluster certificate secret found!"
-      break
-    fi
-    if [ "$i" -eq "$max_attempts" ]; then
-      log::error "Timeout waiting for cluster certificate secret"
-      return 1
-    fi
-    log::debug "Attempt $i/$max_attempts: Waiting for cluster certificate..."
-    sleep "$wait_interval"
-  done
+  if ! common::poll_until \
+    "oc get secret postgress-external-db-cluster-cert -n '${NAME_SPACE_POSTGRES_DB}'" \
+    "$max_attempts" "$wait_interval" \
+    "Cluster certificate secret found"; then
+    return 1
+  fi
 
   # Extract cluster certificates
   oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.ca\.crt}' | base64 --decode > postgres-ca
@@ -563,28 +296,22 @@ configure_external_postgres_db() {
   # Wait for USER secret (this is the critical one that causes CI failures!)
   log::info "Waiting for PostgreSQL user secret 'postgress-external-db-pguser-janus-idp'..."
   log::info "This secret is created by the Crunchy Postgres operator after the database is ready"
-  for ((i = 1; i <= max_attempts; i++)); do
-    if oc get secret postgress-external-db-pguser-janus-idp -n "${NAME_SPACE_POSTGRES_DB}" &> /dev/null; then
-      log::success "PostgreSQL user secret found!"
-      break
-    fi
-    if [ "$i" -eq "$max_attempts" ]; then
-      log::error "Timeout waiting for PostgreSQL user secret 'postgress-external-db-pguser-janus-idp'"
-      log::error "This usually means the Crunchy Postgres operator failed to create the user"
-      log::info "Checking PostgresCluster status..."
-      oc describe postgrescluster postgress-external-db -n "${NAME_SPACE_POSTGRES_DB}" || true
-      log::info "Checking operator logs..."
-      oc logs -n "${NAME_SPACE_POSTGRES_DB}" -l postgres-operator.crunchydata.com/cluster=postgress-external-db --tail=50 || true
-      return 1
-    fi
-    log::debug "Attempt $i/$max_attempts: Waiting for user secret (this may take 15-30s)..."
-    sleep "$wait_interval"
-  done
+  if ! common::poll_until \
+    "oc get secret postgress-external-db-pguser-janus-idp -n '${NAME_SPACE_POSTGRES_DB}'" \
+    "$max_attempts" "$wait_interval" \
+    "PostgreSQL user secret found"; then
+    log::error "This usually means the Crunchy Postgres operator failed to create the user"
+    log::info "Checking PostgresCluster status..."
+    oc describe postgrescluster postgress-external-db -n "${NAME_SPACE_POSTGRES_DB}" || true
+    log::info "Checking operator logs..."
+    oc logs -n "${NAME_SPACE_POSTGRES_DB}" -l postgres-operator.crunchydata.com/cluster=postgress-external-db --tail=50 || true
+    return 1
+  fi
 
   # Now we can safely get the password
   POSTGRES_PASSWORD=$(oc get secret/postgress-external-db-pguser-janus-idp -n "${NAME_SPACE_POSTGRES_DB}" -o jsonpath='{.data.password}')
   sed_inplace "s|POSTGRES_PASSWORD:.*|POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
-  POSTGRES_HOST=$(echo -n "postgress-external-db-primary.$NAME_SPACE_POSTGRES_DB.svc.cluster.local" | base64 | tr -d '\n')
+  POSTGRES_HOST=$(common::base64_encode "postgress-external-db-primary.$NAME_SPACE_POSTGRES_DB.svc.cluster.local")
   sed_inplace "s|POSTGRES_HOST:.*|POSTGRES_HOST: ${POSTGRES_HOST}|g" "${DIR}/resources/postgres-db/postgres-cred.yaml"
 
   # Validate final configuration apply
@@ -614,9 +341,9 @@ apply_yaml_files() {
     sed_inplace "s/namespace:.*/namespace: ${project}/g" "$file"
   done
 
-  DH_TARGET_URL=$(echo -n "test-backstage-customization-provider-${project}.${K8S_CLUSTER_ROUTER_BASE}" | base64 -w 0)
-  RHDH_BASE_URL=$(echo -n "$rhdh_base_url" | base64 | tr -d '\n')
-  RHDH_BASE_URL_HTTP=$(echo -n "${rhdh_base_url/https/http}" | base64 | tr -d '\n')
+  DH_TARGET_URL=$(common::base64_encode "test-backstage-customization-provider-${project}.${K8S_CLUSTER_ROUTER_BASE}")
+  RHDH_BASE_URL=$(common::base64_encode "$rhdh_base_url")
+  RHDH_BASE_URL_HTTP=$(common::base64_encode "${rhdh_base_url/https/http}")
   export DH_TARGET_URL RHDH_BASE_URL RHDH_BASE_URL_HTTP
 
   oc apply -f "$dir/resources/service_account/service-account-rhdh.yaml" --namespace="${project}"
@@ -632,35 +359,25 @@ apply_yaml_files() {
   # Apply the ConfigMap with the correct file
   create_app_config_map "$config_file" "$project"
 
-  oc create configmap dynamic-plugins-config \
-    --from-file="dynamic-plugins-config.yaml"="$dir/resources/config_map/dynamic-plugins-config.yaml" \
-    --namespace="${project}" \
-    --dry-run=client -o yaml | oc apply -f -
+  common::create_configmap_from_file "dynamic-plugins-config" "$project" \
+    "dynamic-plugins-config.yaml" "$dir/resources/config_map/dynamic-plugins-config.yaml"
 
   if [[ "$JOB_NAME" == *operator* ]] && [[ "${project}" == *rbac* ]]; then
-    oc create configmap rbac-policy \
-      --from-file="rbac-policy.csv"="$dir/resources/config_map/rbac-policy.csv" \
-      --from-file="conditional-policies.yaml"="/tmp/conditional-policies.yaml" \
-      --namespace="$project" \
-      --dry-run=client -o yaml | oc apply -f -
+    common::create_configmap_from_files "rbac-policy" "$project" \
+      "rbac-policy.csv=$dir/resources/config_map/rbac-policy.csv" \
+      "conditional-policies.yaml=/tmp/conditional-policies.yaml"
   else
-    oc create configmap rbac-policy \
-      --from-file="rbac-policy.csv"="$dir/resources/config_map/rbac-policy.csv" \
-      --namespace="$project" \
-      --dry-run=client -o yaml | oc apply -f -
+    common::create_configmap_from_file "rbac-policy" "$project" \
+      "rbac-policy.csv" "$dir/resources/config_map/rbac-policy.csv"
   fi
 
   # configuration for testing global floating action button.
-  oc create configmap dynamic-global-floating-action-button-config \
-    --from-file="dynamic-global-floating-action-button-config.yaml"="$dir/resources/config_map/dynamic-global-floating-action-button-config.yaml" \
-    --namespace="${project}" \
-    --dry-run=client -o yaml | oc apply -f -
+  common::create_configmap_from_file "dynamic-global-floating-action-button-config" "$project" \
+    "dynamic-global-floating-action-button-config.yaml" "$dir/resources/config_map/dynamic-global-floating-action-button-config.yaml"
 
   # configuration for testing global header and header mount points.
-  oc create configmap dynamic-global-header-config \
-    --from-file="dynamic-global-header-config.yaml"="$dir/resources/config_map/dynamic-global-header-config.yaml" \
-    --namespace="${project}" \
-    --dry-run=client -o yaml | oc apply -f -
+  common::create_configmap_from_file "dynamic-global-header-config" "$project" \
+    "dynamic-global-header-config.yaml" "$dir/resources/config_map/dynamic-global-header-config.yaml"
 
   # Skip Tekton and Topology resources for K8s deployments (AKS/EKS/GKE)
   # Tekton tests are not executed in showcase-k8s or showcase-rbac-k8s projects
@@ -704,6 +421,12 @@ deploy_redis_cache() {
   oc apply -f "$DIR/resources/redis-cache/redis-deployment.yaml" --namespace="${namespace}"
 }
 
+# ==============================================================================
+# FUTURE MODULE: lib/config.sh
+# Functions: create_app_config_map, select_config_map_file, create_dynamic_plugins_config,
+#            create_conditional_policies_operator, prepare_operator_app_config
+# ==============================================================================
+
 create_app_config_map() {
   local config_file=$1
   local project=$2
@@ -744,6 +467,12 @@ prepare_operator_app_config() {
   local config_file=$1
   yq e -i '.permission.rbac.conditionalPoliciesFile = "./rbac/conditional-policies.yaml"' ${config_file}
 }
+
+# ==============================================================================
+# FUTURE MODULE: lib/testing.sh
+# Functions: run_tests, check_backstage_running, check_and_test, check_upgrade_and_test,
+#            check_helm_upgrade
+# ==============================================================================
 
 run_tests() {
   local release_name=$1
@@ -860,23 +589,9 @@ check_backstage_running() {
   return 1
 }
 
-install_olm() {
-  if operator-sdk olm status > /dev/null 2>&1; then
-    log::warn "OLM is already installed."
-  else
-    log::info "OLM is not installed. Installing..."
-    operator-sdk olm install
-  fi
-}
-
-uninstall_olm() {
-  if operator-sdk olm status > /dev/null 2>&1; then
-    log::info "OLM is installed. Uninstalling..."
-    operator-sdk olm uninstall
-  else
-    log::info "OLM is not installed. Nothing to uninstall."
-  fi
-}
+# OLM Functions - Delegate to lib/operators.sh
+install_olm() { operator::install_olm "$@"; }
+uninstall_olm() { operator::uninstall_olm "$@"; }
 
 # Installs the Red Hat OpenShift Pipelines operator if not already installed
 # Use waitfor_pipelines_operator to wait for the operator to be ready
@@ -927,19 +642,24 @@ delete_tekton_pipelines() {
   log::info "Found Tekton Pipelines installation. Attempting to delete..."
   kubectl delete -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml --ignore-not-found=true 2> /dev/null || true
 
-  # Wait for namespace deletion with simple polling loop
+  # Wait for namespace deletion with polling
   log::info "Waiting for Tekton Pipelines namespace to be deleted..."
-  local max_attempts=6 # 30 seconds total
-  for ((i = 1; i <= max_attempts; i++)); do
-    if ! kubectl get namespace tekton-pipelines &> /dev/null; then
-      log::success "Tekton Pipelines deleted successfully."
-      return 0
-    fi
-    log::debug "Attempt $i/$max_attempts: Waiting for namespace deletion..."
-    sleep 5
-  done
+  if common::poll_until \
+    "! kubectl get namespace tekton-pipelines" \
+    6 5 \
+    "Tekton Pipelines deleted successfully"; then
+    return 0
+  fi
   log::warn "Timed out waiting for namespace deletion, continuing..."
 }
+
+# ==============================================================================
+# FUTURE MODULE: lib/orchestrator.sh
+# Functions: cluster_setup_ocp_helm, cluster_setup_ocp_operator, cluster_setup_k8s_operator,
+#            cluster_setup_k8s_helm, install_orchestrator_infra_chart,
+#            deploy_orchestrator_workflows, deploy_orchestrator_workflows_operator,
+#            enable_orchestrator_plugins_op, wait_for_backstage_resource
+# ==============================================================================
 
 cluster_setup_ocp_helm() {
   operator::install_pipelines
@@ -1042,6 +762,16 @@ perform_helm_install() {
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     $(get_image_helm_set_params)
 }
+
+# ==============================================================================
+# FUTURE MODULE: lib/deployment.sh
+# Functions: base_deployment, rbac_deployment, initiate_deployments,
+#            base_deployment_osd_gcp, rbac_deployment_osd_gcp, initiate_deployments_osd_gcp,
+#            initiate_upgrade_base_deployments, initiate_upgrade_deployments,
+#            initiate_runtime_deployment, initiate_sanity_plugin_checks_deployment,
+#            apply_yaml_files, deploy_test_backstage_customization_provider,
+#            deploy_redis_cache, configure_external_postgres_db
+# ==============================================================================
 
 base_deployment() {
   configure_namespace ${NAME_SPACE}
@@ -1399,65 +1129,18 @@ force_delete_namespace() {
   log::success "Namespace '${project}' successfully deleted."
 }
 
-oc_login() {
-  oc login --token="${K8S_CLUSTER_TOKEN}" --server="${K8S_CLUSTER_URL}" --insecure-skip-tls-verify=true
-  echo "OCP version: $(oc version)"
-}
+# ==============================================================================
+# Common Functions - Delegate to lib/common.sh
+# ==============================================================================
+oc_login() { common::oc_login "$@"; }
 
 is_openshift() {
   oc get routes.route.openshift.io &> /dev/null || kubectl get routes.route.openshift.io &> /dev/null
 }
 
-# Helper function for cross-platform sed
-sed_inplace() {
-  if [[ "$OSTYPE" == "darwin"* ]]; then
-    # macOS
-    sed -i '' "$@"
-  else
-    # Linux
-    sed -i "$@"
-  fi
-}
+sed_inplace() { common::sed_inplace "$@"; }
 
-# Function to get the appropriate release version based on current branch
-# Return the latest release version if current branch is not a release branch
-# Return the previous release version if current branch is a release branch
-get_previous_release_version() {
-  local version=$1
-
-  # Check if version parameter is provided
-  if [[ -z "$version" ]]; then
-    log::error "Error: Version parameter is required" >&2
-    exit 1
-    save_overall_result 1
-  fi
-
-  # Validate version format (should be like "1.6")
-  if [[ ! "$version" =~ ^[0-9]+\.[0-9]+$ ]]; then
-    log::error "Error: Version must be in format X.Y (e.g., 1.6)" >&2
-    exit 1
-    save_overall_result 1
-  fi
-
-  # Extract major and minor version numbers
-  local major_version
-  major_version=$(echo "$version" | cut -d'.' -f1)
-  local minor_version
-  minor_version=$(echo "$version" | cut -d'.' -f2)
-
-  # Calculate previous minor version
-  local previous_minor=$((minor_version - 1))
-
-  # Check if previous minor version is valid (non-negative)
-  if [[ $previous_minor -lt 0 ]]; then
-    echo "Error: Cannot calculate previous version for $version" >&2
-    exit 1
-    save_overall_result 1
-  fi
-
-  # Return the previous version
-  echo "${major_version}.${previous_minor}"
-}
+get_previous_release_version() { common::get_previous_release_version "$@"; }
 
 get_chart_version() {
   local chart_major_version=$1
@@ -1651,11 +1334,11 @@ deploy_orchestrator_workflows_operator() {
 
   # Base64 encode the URLs and token
   local onboarding_server_url_b64
-  onboarding_server_url_b64=$(echo -n "$onboarding_server_url" | base64 -w 0)
+  onboarding_server_url_b64=$(common::base64_encode "$onboarding_server_url")
   local backstage_notifications_url_b64
-  backstage_notifications_url_b64=$(echo -n "$backstage_notifications_url" | base64 -w 0)
+  backstage_notifications_url_b64=$(common::base64_encode "$backstage_notifications_url")
   local notifications_bearer_token_b64
-  notifications_bearer_token_b64=$(echo -n "$notifications_bearer_token" | base64 -w 0)
+  notifications_bearer_token_b64=$(common::base64_encode "$notifications_bearer_token")
 
   # Patch the secret
   oc patch secret user-onboarding-creds -n "$namespace" --type merge -p "{
@@ -1713,22 +1396,18 @@ EOF
 wait_for_backstage_resource() {
   local namespace=$1
   local max_attempts=40 # 40 attempts * 15 seconds = 10 minutes
-
   local sleep_interval=15
 
   log::info "Waiting for backstage resource to exist in namespace: $namespace"
 
-  for ((i = 1; i <= max_attempts; i++)); do
-    if [[ $(oc get backstage -n "$namespace" -o json | jq '.items | length') -gt 0 ]]; then
-      log::success "Backstage resource found in namespace: $namespace"
-      return 0
-    fi
-    log::info "Attempt $i/$max_attempts: No backstage resource found, waiting ${sleep_interval}s..."
-    sleep $sleep_interval
-  done
-
-  log::error "Error: No backstage resource found after 10 minutes"
-  return 1
+  if ! common::poll_until \
+    "[[ \$(oc get backstage -n '$namespace' -o json | jq '.items | length') -gt 0 ]]" \
+    "$max_attempts" "$sleep_interval" \
+    "Backstage resource found in namespace: $namespace"; then
+    log::error "Error: No backstage resource found after 10 minutes"
+    return 1
+  fi
+  return 0
 }
 
 # Helper function to enable orchestrator plugins

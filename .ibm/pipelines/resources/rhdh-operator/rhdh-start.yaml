@@ -1,9 +1,10 @@
 kind: Backstage
-apiVersion: rhdh.redhat.com/v1alpha5
+apiVersion: rhdh.redhat.com/v1alpha4
 metadata:
   name: rhdh
 spec:
   application:
+    image: "quay.io/$QUAY_REPO:$TAG_NAME"
     appConfig:
       configMaps:
         - name: app-config-rhdh
@@ -23,17 +24,3 @@ spec:
       secrets:
         - name: rhdh-secrets
         - name: redis-secret
-
-  # v1alpha5 does not support `spec.application.image`.
-  # Override the generated Deployment instead.
-  deployment:
-    patch:
-      spec:
-        template:
-          spec:
-            initContainers:
-              - name: install-dynamic-plugins
-                image: "quay.io/$QUAY_REPO:$TAG_NAME"
-            containers:
-              - name: backstage-backend
-                image: "quay.io/$QUAY_REPO:$TAG_NAME"

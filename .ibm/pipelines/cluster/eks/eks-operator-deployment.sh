@@ -21,8 +21,7 @@ initiate_eks_operator_deployment() {
   log::info "Creating and applying ConfigMap for dynamic plugins"
   yq_merge_value_files "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_EKS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}"
   create_dynamic_plugins_config "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}" "/tmp/configmap-dynamic-plugins.yaml"
-  mkdir -p "${ARTIFACT_DIR}/${namespace}"
-  cp -a "/tmp/configmap-dynamic-plugins.yaml" "${ARTIFACT_DIR}/${namespace}/" # Save the final value-file into the artifacts directory.
+  common::save_artifact "${namespace}" "/tmp/configmap-dynamic-plugins.yaml"
   kubectl apply -f /tmp/configmap-dynamic-plugins.yaml -n "${namespace}"
 
   setup_image_pull_secret "${namespace}" "rh-pull-secret" "${REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON}"
@@ -47,8 +46,7 @@ initiate_rbac_eks_operator_deployment() {
   log::info "Creating and applying ConfigMap for dynamic plugins"
   yq_merge_value_files "merge" "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_RBAC_EKS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}"
   create_dynamic_plugins_config "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}" "/tmp/configmap-dynamic-plugins-rbac.yaml"
-  mkdir -p "${ARTIFACT_DIR}/${namespace}"
-  cp -a "/tmp/configmap-dynamic-plugins-rbac.yaml" "${ARTIFACT_DIR}/${namespace}/" # Save the final value-file into the artifacts directory.
+  common::save_artifact "${namespace}" "/tmp/configmap-dynamic-plugins-rbac.yaml"
   kubectl apply -f /tmp/configmap-dynamic-plugins-rbac.yaml -n "${namespace}"
 
   setup_image_pull_secret "${namespace}" "rh-pull-secret" "${REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON}"

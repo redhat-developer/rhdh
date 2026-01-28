@@ -22,7 +22,7 @@ handle_gke_helm() {
   export K8S_CLUSTER_ROUTER_BASE
 
   K8S_CLUSTER_URL=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')
-  K8S_CLUSTER_API_SERVER_URL=$(printf "%s" "$K8S_CLUSTER_URL" | base64 | tr -d '\n')
+  K8S_CLUSTER_API_SERVER_URL=$(common::base64_encode "$K8S_CLUSTER_URL")
   export K8S_CLUSTER_URL K8S_CLUSTER_API_SERVER_URL
 
   log::info "Starting GKE Helm deployment"

@@ -51,8 +51,7 @@ initiate_operator_deployments_osd_gcp() {
   # Merge base values with OSD-GCP diff file before creating dynamic plugins config
   yq_merge_value_files "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_OSD_GCP_DIFF_VALUE_FILE_NAME}" "/tmp/merged-values_showcase_OSD-GCP.yaml"
   create_dynamic_plugins_config "/tmp/merged-values_showcase_OSD-GCP.yaml" "/tmp/configmap-dynamic-plugins.yaml"
-  mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE}"
-  cp -a "/tmp/configmap-dynamic-plugins.yaml" "${ARTIFACT_DIR}/${NAME_SPACE}/"
+  common::save_artifact "${NAME_SPACE}" "/tmp/configmap-dynamic-plugins.yaml"
 
   oc apply -f /tmp/configmap-dynamic-plugins.yaml -n "${NAME_SPACE}"
   deploy_redis_cache "${NAME_SPACE}"
@@ -70,8 +69,7 @@ initiate_operator_deployments_osd_gcp() {
   # Merge RBAC values with OSD-GCP diff file before creating dynamic plugins config
   yq_merge_value_files "merge" "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_RBAC_OSD_GCP_DIFF_VALUE_FILE_NAME}" "/tmp/merged-values_showcase-rbac_OSD-GCP.yaml"
   create_dynamic_plugins_config "/tmp/merged-values_showcase-rbac_OSD-GCP.yaml" "/tmp/configmap-dynamic-plugins-rbac.yaml"
-  mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE_RBAC}"
-  cp -a "/tmp/configmap-dynamic-plugins-rbac.yaml" "${ARTIFACT_DIR}/${NAME_SPACE_RBAC}/"
+  common::save_artifact "${NAME_SPACE_RBAC}" "/tmp/configmap-dynamic-plugins-rbac.yaml"
 
   oc apply -f /tmp/configmap-dynamic-plugins-rbac.yaml -n "${NAME_SPACE_RBAC}"
   deploy_rhdh_operator "${NAME_SPACE_RBAC}" "${DIR}/resources/rhdh-operator/rhdh-start-rbac.yaml"

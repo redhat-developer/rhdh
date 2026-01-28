@@ -18,22 +18,13 @@ install_rhdh_operator() {
   rm -f /tmp/install-rhdh-catalog-source.sh
   curl -L "https://raw.githubusercontent.com/redhat-developer/rhdh-operator/refs/heads/${RELEASE_BRANCH_NAME}/.rhdh/scripts/install-rhdh-catalog-source.sh" > /tmp/install-rhdh-catalog-source.sh
   chmod +x /tmp/install-rhdh-catalog-source.sh
+
   if [[ "$RELEASE_BRANCH_NAME" == "main" ]]; then
     log::info "Installing RHDH operator with '--next' flag"
-    for ((i = 1; i <= max_attempts; i++)); do
-      if output=$(bash -x /tmp/install-rhdh-catalog-source.sh --next --install-operator rhdh); then
-        log::debug "${output}"
-        log::success "RHDH Operator installed on attempt ${i}."
-        break
-      elif ((i < max_attempts)); then
-        log::warn "Attempt ${i} failed, retrying in 10 seconds..."
-        sleep 10
-      elif ((i == max_attempts)); then
-        log::error "$output"
-        log::error "Failed install RHDH Operator after ${max_attempts} attempts."
-        return 1
-      fi
-    done
+    if ! common::retry "$max_attempts" 10 bash -x /tmp/install-rhdh-catalog-source.sh --next --install-operator rhdh; then
+      log::error "Failed install RHDH Operator after ${max_attempts} attempts."
+      return 1
+    fi
   else
     local operator_version="${RELEASE_BRANCH_NAME#release-}"
     if [[ -z "$operator_version" ]]; then
@@ -41,17 +32,10 @@ install_rhdh_operator() {
       return 1
     fi
     log::info "Installing RHDH operator with '-v $operator_version' flag"
-    for ((i = 1; i <= max_attempts; i++)); do
-      if output=$(bash -x /tmp/install-rhdh-catalog-source.sh -v "$operator_version" --install-operator rhdh); then
-        log::debug "${output}"
-        log::success "RHDH Operator installed on attempt ${i}."
-        break
-      elif ((i == max_attempts)); then
-        log::error "${output}"
-        log::error "Failed install RHDH Operator after ${max_attempts} attempts."
-        return 1
-      fi
-    done
+    if ! common::retry "$max_attempts" 10 bash -x /tmp/install-rhdh-catalog-source.sh -v "$operator_version" --install-operator rhdh; then
+      log::error "Failed install RHDH Operator after ${max_attempts} attempts."
+      return 1
+    fi
   fi
 }
 
