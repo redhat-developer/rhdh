@@ -6,7 +6,8 @@ process.env.IS_OPENSHIFT = process.env.IS_OPENSHIFT || "";
 
 const isPrOcpHelmJob =
   process.env.JOB_NAME.includes("pull") &&
-  process.env.JOB_NAME.includes("e2e-ocp-helm");
+  process.env.JOB_NAME.includes("e2e-ocp-helm") &&
+  !process.env.JOB_NAME.includes("e2e-ocp-helm-nightly");
 
 // Set LOCALE based on which project is being run
 const args = process.argv;
