@@ -15,7 +15,7 @@
 name: PR Docker Build
 
 on:
-  pull_request_target:
+  pull_request:
     paths-ignore:
       - 'docs/**'
       - 'showcase-docs/**'
