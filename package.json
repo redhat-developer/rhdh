@@ -50,8 +50,8 @@
     "lint-staged": "15.5.2",
     "node-gyp": "10.3.1",
     "rulesync": "3.34.0",
-    "sherif": "1.9.0",
-    "turbo": "2.7.5"
+    "sherif": "1.10.0",
+    "turbo": "2.7.6"
   },
   "resolutions": {
     "@types/react": "18.3.27",
