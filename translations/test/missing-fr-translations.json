@@ -4,16 +4,6 @@
       "buttons.importExistingGitRepository": "Importer un dépôt Git existant"
     }
   },
-  "plugin.global-header": {
-    "fr": {
-      "search.placeholder": "Recherche...",
-      "help.tooltip": "Aide",
-      "help.supportTitle": "Support",
-      "notifications.title": "Notifications",
-      "profile.signOut": "Se déconnecter",
-      "profile.myProfile": "Mon profil"
-    }
-  },
   "plugin.extensions": {
     "fr": {
       "header.title": "Extensions",

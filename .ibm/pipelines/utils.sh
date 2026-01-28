@@ -742,7 +742,8 @@ run_tests() {
   local release_name=$1
   local namespace=$2
   local playwright_project=$3
-  local url="${4:-}"
+  local url=$4
+  local artifacts_dir="${5:-${namespace}}"
 
   CURRENT_DEPLOYMENT=$((CURRENT_DEPLOYMENT + 1))
   save_status_deployment_namespace $CURRENT_DEPLOYMENT "$namespace"
@@ -783,19 +784,18 @@ run_tests() {
 
   pkill Xvfb || true
 
-  # Use namespace for artifact directory to keep artifacts organized by deployment
-  mkdir -p "${ARTIFACT_DIR}/${namespace}/test-results"
-  mkdir -p "${ARTIFACT_DIR}/${namespace}/attachments/screenshots"
-  cp -a "${e2e_tests_dir}/test-results/"* "${ARTIFACT_DIR}/${namespace}/test-results" || true
-  cp -a "${e2e_tests_dir}/${JUNIT_RESULTS}" "${ARTIFACT_DIR}/${namespace}/${JUNIT_RESULTS}" || true
+  mkdir -p "${ARTIFACT_DIR}/${artifacts_dir}/test-results"
+  mkdir -p "${ARTIFACT_DIR}/${artifacts_dir}/attachments/screenshots"
+  cp -a "${e2e_tests_dir}/test-results/"* "${ARTIFACT_DIR}/${artifacts_dir}/test-results" || true
+  cp -a "${e2e_tests_dir}/${JUNIT_RESULTS}" "${ARTIFACT_DIR}/${artifacts_dir}/${JUNIT_RESULTS}" || true
   if [[ "${CI}" == "true" ]]; then
-    cp "${ARTIFACT_DIR}/${namespace}/${JUNIT_RESULTS}" "${SHARED_DIR}/junit-results-${namespace}.xml" || true
+    cp "${ARTIFACT_DIR}/${artifacts_dir}/${JUNIT_RESULTS}" "${SHARED_DIR}/junit-results-${artifacts_dir}.xml" || true
   fi
 
-  cp -a "${e2e_tests_dir}/screenshots/"* "${ARTIFACT_DIR}/${namespace}/attachments/screenshots/" || true
+  cp -a "${e2e_tests_dir}/screenshots/"* "${ARTIFACT_DIR}/${artifacts_dir}/attachments/screenshots/" || true
   ansi2html < "/tmp/${LOGFILE}" > "/tmp/${LOGFILE}.html"
-  cp -a "/tmp/${LOGFILE}.html" "${ARTIFACT_DIR}/${namespace}" || true
-  cp -a "${e2e_tests_dir}/playwright-report/"* "${ARTIFACT_DIR}/${namespace}" || true
+  cp -a "/tmp/${LOGFILE}.html" "${ARTIFACT_DIR}/${artifacts_dir}" || true
+  cp -a "${e2e_tests_dir}/playwright-report/"* "${ARTIFACT_DIR}/${artifacts_dir}" || true
 
   echo "Playwright project '${playwright_project}' in namespace '${namespace}' RESULT: ${RESULT}"
   if [ "${RESULT}" -ne 0 ]; then
@@ -1314,13 +1314,14 @@ check_and_test() {
   local namespace=$2
   local playwright_project=$3
   local url=$4
-  local max_attempts=${5:-30} # Default to 30 if not set
-  local wait_seconds=${6:-30} # Default to 30 if not set
+  local max_attempts=${5:-30}              # Default to 30 if not set
+  local wait_seconds=${6:-30}              # Default to 30 if not set
+  local artifacts_dir="${7:-${namespace}}" # Default to namespace if not set
 
   if check_backstage_running "${release_name}" "${namespace}" "${url}" "${max_attempts}" "${wait_seconds}"; then
     echo "Display pods for verification..."
     oc get pods -n "${namespace}"
-    run_tests "${release_name}" "${namespace}" "${playwright_project}" "${url}"
+    run_tests "${release_name}" "${namespace}" "${playwright_project}" "${url}" "${artifacts_dir}"
   else
     echo "Backstage is not running. Marking deployment as failed and continuing..."
     CURRENT_DEPLOYMENT=$((CURRENT_DEPLOYMENT + 1))

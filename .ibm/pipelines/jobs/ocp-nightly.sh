@@ -33,6 +33,11 @@ handle_ocp_nightly() {
   run_runtime_config_change_tests
   run_sanity_plugins_check
 
+  # Skip localization tests for OSD-GCP jobs
+  if [[ ! "${JOB_NAME}" =~ osd-gcp ]]; then
+    run_localization_tests
+  fi
+
 }
 
 run_standard_deployment_tests() {
@@ -53,4 +58,11 @@ run_sanity_plugins_check() {
   local sanity_plugins_url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE_SANITY_PLUGINS_CHECK}.${K8S_CLUSTER_ROUTER_BASE}"
   initiate_sanity_plugin_checks_deployment "${RELEASE_NAME}" "${NAME_SPACE_SANITY_PLUGINS_CHECK}" "${sanity_plugins_url}"
   check_and_test "${RELEASE_NAME}" "${NAME_SPACE_SANITY_PLUGINS_CHECK}" "${PW_PROJECT_SHOWCASE_SANITY_PLUGINS}" "${sanity_plugins_url}"
+}
+
+run_localization_tests() {
+  local url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
+  log::section "Running localization tests"
+  # French (fr) - uses custom artifacts_dir to avoid overwriting main showcase test artifacts
+  check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${PW_PROJECT_SHOWCASE_LOCALIZATION_FR}" "${url}" "" "" "${PW_PROJECT_SHOWCASE_LOCALIZATION_FR}"
 }
