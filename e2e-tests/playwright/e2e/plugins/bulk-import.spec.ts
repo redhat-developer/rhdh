@@ -83,8 +83,13 @@ spec:
   // Select two repos: one with an existing catalog.yaml file and another without it
   test("Add a Repository from the Repository Tab and Confirm its Preview", async () => {
     await uiHelper.openSidebar("Bulk import");
-    await page.getByText('Ready to import').first().waitFor({ state: 'visible' });
+    await page
+      .getByText("Ready to import")
+      .first()
+      .waitFor({ state: "visible" });
     await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
+    await expect(page.getByText("Ready to import")).toHaveCount(1);
+    await page.getByRole("checkbox").first().click();
 
     await uiHelper.clickButton("Import");
     await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
