@@ -33,6 +33,7 @@ export class RhdhAuthUiHack {
         request.url() ===
           `${playwrightConfig.use.baseURL}/api/search/query?term=` &&
         request.method() === "GET",
+      { timeout: 15000 },
     );
     await uiHelper.openSidebar("Home");
     const getRequest = await requestPromise;
