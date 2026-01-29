@@ -186,8 +186,11 @@ export class Orchestrator {
     await expect(
       this.page.getByRole("button", { name: "Abort" }),
     ).toBeEnabled();
-    await this.page.getByRole("button", { name: "Abort" }).click();    
-    await this.page.getByRole('dialog', { name: /Abort workflow run\?/i }).getByRole('button', { name: 'Abort' }).click();
+    await this.page.getByRole("button", { name: "Abort" }).click();
+    await this.page
+      .getByRole("dialog", { name: /Abort workflow run\?/i })
+      .getByRole("button", { name: "Abort" })
+      .click();
     await expect(this.page.getByText("Run has aborted")).toBeVisible();
   }
 
