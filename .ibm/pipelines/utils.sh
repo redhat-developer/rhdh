@@ -102,9 +102,12 @@ yq_merge_value_files() {
 # ==============================================================================
 # Orchestrator Functions - Delegate to lib/orchestrator.sh
 # ==============================================================================
-should_skip_orchestrator() { orchestrator::should_skip "$@"; }
+should_skip_orchestrator() { orchestrator::should_skip; }
 
-disable_orchestrator_plugins_in_values() { orchestrator::disable_plugins_in_values "$@"; }
+disable_orchestrator_plugins_in_values() {
+  orchestrator::disable_plugins_in_values "$@"
+  return $?
+}
 
 # ==============================================================================
 # K8s Wait Functions - Delegate to lib/k8s-wait.sh
@@ -684,13 +687,25 @@ delete_tekton_pipelines() {
 # Orchestrator functions are delegated to lib/orchestrator.sh
 # ==============================================================================
 
-install_orchestrator_infra_chart() { orchestrator::install_infra_chart "$@"; }
+install_orchestrator_infra_chart() {
+  orchestrator::install_infra_chart
+  return $?
+}
 
-deploy_orchestrator_workflows() { orchestrator::deploy_workflows "$@"; }
+deploy_orchestrator_workflows() {
+  orchestrator::deploy_workflows "$@"
+  return $?
+}
 
-deploy_orchestrator_workflows_operator() { orchestrator::deploy_workflows_operator "$@"; }
+deploy_orchestrator_workflows_operator() {
+  orchestrator::deploy_workflows_operator "$@"
+  return $?
+}
 
-enable_orchestrator_plugins_op() { orchestrator::enable_plugins_operator "$@"; }
+enable_orchestrator_plugins_op() {
+  orchestrator::enable_plugins_operator "$@"
+  return $?
+}
 
 cluster_setup_ocp_helm() {
   operator::install_pipelines

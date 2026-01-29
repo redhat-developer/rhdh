@@ -27,7 +27,13 @@ readonly ORCHESTRATOR_WORKFLOWS="greeting failswitch"
 #   0 - Should skip orchestrator
 #   1 - Should NOT skip orchestrator
 orchestrator::should_skip() {
-  [[ "${JOB_NAME}" =~ osd-gcp ]] || { [[ "${JOB_NAME}" =~ e2e-ocp-helm ]] && [[ "${JOB_NAME}" != *nightly* ]]; }
+  if [[ "${JOB_NAME}" =~ osd-gcp ]]; then
+    return 0
+  fi
+  if [[ "${JOB_NAME}" =~ e2e-ocp-helm ]] && [[ "${JOB_NAME}" != *nightly* ]]; then
+    return 0
+  fi
+  return 1
 }
 
 # Function: orchestrator::disable_plugins_in_values
@@ -39,6 +45,7 @@ orchestrator::should_skip() {
 orchestrator::disable_plugins_in_values() {
   local values_file=$1
   yq eval -i '(.global.dynamic.plugins[] | select(.package | contains("orchestrator")) | .disabled) = true' "${values_file}"
+  return 0
 }
 
 # ==============================================================================
@@ -64,6 +71,7 @@ _orchestrator::clone_workflows() {
   else
     git clone "${ORCHESTRATOR_WORKFLOW_REPO}" "${WORKFLOW_DIR}"
   fi
+  return 0
 }
 
 # Function: _orchestrator::apply_manifests
@@ -75,6 +83,7 @@ _orchestrator::apply_manifests() {
 
   oc apply -f "${FAILSWITCH_MANIFESTS}" -n "$namespace"
   oc apply -f "${GREETING_MANIFESTS}" -n "$namespace"
+  return 0
 }
 
 # Function: _orchestrator::wait_for_sonataflow_resources
@@ -92,6 +101,7 @@ _orchestrator::wait_for_sonataflow_resources() {
       sleep 5
     done
   " || log::warn "Timeout waiting for sonataflow resources, continuing..."
+  return 0
 }
 
 # Function: _orchestrator::patch_workflow_postgres
@@ -145,6 +155,7 @@ EOF
 
   oc -n "$namespace" patch sonataflow "$workflow" --type merge -p "$patch_json"
   oc rollout status deployment/"$workflow" -n "$namespace" --timeout=600s
+  return 0
 }
 
 # Function: _orchestrator::wait_for_workflow_deployments
@@ -159,6 +170,7 @@ _orchestrator::wait_for_workflow_deployments() {
     k8s_wait::deployment "$namespace" "$workflow" 5
   done
   log::success "All workflow pods are now running!"
+  return 0
 }
 
 # ==============================================================================
@@ -181,15 +193,16 @@ orchestrator::install_infra_chart() {
     --set serverlessLogicOperator.subscription.spec.installPlanApproval=Automatic \
     --set serverlessOperator.subscription.spec.installPlanApproval=Automatic
 
-  until [ "$(oc get pods -n openshift-serverless --no-headers 2> /dev/null | wc -l)" -gt 0 ]; do
+  until [[ "$(oc get pods -n openshift-serverless --no-headers 2> /dev/null | wc -l)" -gt 0 ]]; do
     sleep 5
   done
 
-  until [ "$(oc get pods -n openshift-serverless-logic --no-headers 2> /dev/null | wc -l)" -gt 0 ]; do
+  until [[ "$(oc get pods -n openshift-serverless-logic --no-headers 2> /dev/null | wc -l)" -gt 0 ]]; do
     sleep 5
   done
 
   log::info "orchestrator-infra chart deployed - openshift-serverless and openshift-serverless-logic pods found"
+  return 0
 }
 
 # ==============================================================================
@@ -237,6 +250,7 @@ orchestrator::deploy_workflows() {
   done
 
   _orchestrator::wait_for_workflow_deployments "$namespace"
+  return 0
 }
 
 # Function: orchestrator::deploy_workflows_operator
@@ -290,6 +304,7 @@ orchestrator::deploy_workflows_operator() {
   done
 
   _orchestrator::wait_for_workflow_deployments "$namespace"
+  return 0
 }
 
 # ==============================================================================
@@ -366,4 +381,5 @@ orchestrator::enable_plugins_operator() {
   fi
 
   log::success "Orchestrator plugins enabled successfully"
+  return 0
 }
