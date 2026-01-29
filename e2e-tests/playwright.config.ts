@@ -9,6 +9,10 @@ const isPrOcpHelmJob =
   process.env.JOB_NAME.includes("e2e-ocp-helm") &&
   !process.env.JOB_NAME.includes("e2e-ocp-helm-nightly");
 
+const isOsdGcpJob = process.env.JOB_NAME.includes("osd-gcp");
+
+const shouldSkipOrchestratorTests = isPrOcpHelmJob || isOsdGcpJob;
+
 // Set LOCALE based on which project is being run
 const args = process.argv;
 
@@ -85,7 +89,7 @@ export default defineConfig({
         "**/playwright/e2e/plugins/tekton/tekton.spec.ts",
         "**/playwright/e2e/dynamic-home-page-customization.spec.ts",
         "**/playwright/e2e/plugins/scorecard/scorecard.spec.ts",
-        ...(isPrOcpHelmJob
+        ...(shouldSkipOrchestratorTests
           ? ["**/playwright/e2e/plugins/orchestrator/**/*.spec.ts"]
           : []),
       ],
