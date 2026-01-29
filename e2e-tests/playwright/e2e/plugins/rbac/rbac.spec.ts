@@ -478,9 +478,6 @@ test.describe("Test RBAC", () => {
     test("Create a role with a permission policy per resource type and verify that the only authorized users can access specific resources.", async ({
       page,
     }) => {
-      // TODO: https://issues.redhat.com/browse/RHDHBUGS-2127
-      test.fixme(true, "Cannot delete role because of missing permissions");
-
       const uiHelper = new UIhelper(page);
       const rbacPo = new RbacPo(page);
       await rbacPo.createConditionalRole(
