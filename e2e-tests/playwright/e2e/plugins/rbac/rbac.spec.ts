@@ -26,6 +26,7 @@ test.describe("Test RBAC", () => {
       description: "plugins",
     });
   });
+
   test.describe
     .serial("Test RBAC plugin: load permission policies and conditions from files", () => {
     test.beforeEach(async ({ page }) => {

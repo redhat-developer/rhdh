@@ -212,4 +212,8 @@ GITHUB_OAUTH_APP_SECRET_ENCODED=$(printf "%s" $GITHUB_OAUTH_APP_SECRET | base64 
 
 BACKEND_SECRET=$(printf temp | base64 | tr -d '\n')
 
+AUTH_PROVIDERS_GITLAB_HOST=$(cat /tmp/secrets/AUTH_PROVIDERS_GITLAB_HOST)
+AUTH_PROVIDERS_GITLAB_TOKEN=$(cat /tmp/secrets/AUTH_PROVIDERS_GITLAB_TOKEN)
+AUTH_PROVIDERS_GITLAB_PARENT_ORG=$(cat /tmp/secrets/AUTH_PROVIDERS_GITLAB_PARENT_ORG)
+
 set +a # Stop automatically exporting variables
