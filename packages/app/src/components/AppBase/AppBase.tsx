@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { useContext, useMemo } from 'react';
 import { Route } from 'react-router-dom';
 
 import { FlatRoutes } from '@backstage/core-app-api';
@@ -8,13 +8,7 @@ import {
   OAuthRequestDialog,
 } from '@backstage/core-components';
 import { ApiExplorerPage } from '@backstage/plugin-api-docs';
-import {
-  CatalogEntityPage,
-  CatalogIndexPage,
-  CatalogTable,
-  CatalogTableColumnsFunc,
-  CatalogTableRow,
-} from '@backstage/plugin-catalog';
+import { CatalogEntityPage, CatalogIndexPage } from '@backstage/plugin-catalog';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
 import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
 import { CatalogImportPage } from '@backstage/plugin-catalog-import';
@@ -26,6 +20,7 @@ import { UserSettingsPage } from '@backstage/plugin-user-settings';
 
 import DynamicRootContext from '@red-hat-developer-hub/plugin-utils';
 
+import { createCatalogColumnsFunc } from '../../utils/catalog';
 import getDynamicRootConfig from '../../utils/dynamicUI/getDynamicRootConfig';
 import { entityPage } from '../catalog/EntityPage';
 import { CustomCatalogFilters } from '../catalog/filters/CustomCatalogFilters';
@@ -46,38 +41,14 @@ const AppBase = () => {
     entityTabOverrides,
     providerSettings,
     scaffolderFieldExtensions,
+    catalogTableColumns,
   } = useContext(DynamicRootContext);
 
-  const myCustomColumnsFunc: CatalogTableColumnsFunc = entityListContext => [
-    ...CatalogTable.defaultColumnsFunc(entityListContext),
-    {
-      title: 'Created At',
-      customSort: (a: CatalogTableRow, b: CatalogTableRow): any => {
-        const timestampA =
-          a.entity.metadata.annotations?.['backstage.io/createdAt'];
-        const timestampB =
-          b.entity.metadata.annotations?.['backstage.io/createdAt'];
-
-        const dateA =
-          timestampA && timestampA !== ''
-            ? new Date(timestampA).toISOString()
-            : '';
-        const dateB =
-          timestampB && timestampB !== ''
-            ? new Date(timestampB).toISOString()
-            : '';
-
-        return dateA.localeCompare(dateB);
-      },
-      render: (data: CatalogTableRow) => {
-        const date =
-          data.entity.metadata.annotations?.['backstage.io/createdAt'];
-        return !isNaN(new Date(date || '') as any)
-          ? data.entity.metadata.annotations?.['backstage.io/createdAt']
-          : '';
-      },
-    },
-  ];
+  // Create catalog columns function based on configuration
+  const catalogColumnsFunc = useMemo(
+    () => createCatalogColumnsFunc(catalogTableColumns),
+    [catalogTableColumns],
+  );
 
   return (
     <AppProvider>
@@ -94,7 +65,7 @@ const AppBase = () => {
                 element={
                   <CatalogIndexPage
                     pagination
-                    columns={myCustomColumnsFunc}
+                    columns={catalogColumnsFunc}
                     filters={<CustomCatalogFilters />}
                   />
                 }
