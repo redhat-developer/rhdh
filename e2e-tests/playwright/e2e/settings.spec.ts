@@ -15,6 +15,7 @@ let uiHelper: UIhelper;
 test.describe(`Settings page`, () => {
   // TODO: https://issues.redhat.com/browse/RHDHBUGS-2162
   test.fixme();
+
   test.beforeEach(async ({ page }) => {
     test.info().annotations.push({
       type: "component",

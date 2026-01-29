@@ -1,4 +1,4 @@
-# to use this file, `pip install pip-tools -U` first (need >= 7.3), then 
+# to use this file, `pip install pip-tools -U` first (need >= 7.3), then
 # pip-compile --allow-unsafe --output-file=requirements.txt --strip-extras requirements.in
 
 babel
@@ -9,7 +9,7 @@ click==8.1.7
 colorama==0.4.6
 Cython==0.29.37
 editables==0.5
-flit_core==3.9.0
+flit_core<4,>=3.11
 ghp-import==2.1.0
 hatch-nodejs-version==0.3.2
 hatch-requirements-txt
@@ -49,5 +49,4 @@ trove-classifiers
 typing-extensions
 urllib3==2.2.2
 watchdog==3.0.0
-wheel
-wheel==0.43.0
+wheel==0.46.3

@@ -82,6 +82,21 @@ yq_merge_value_files() {
   fi
 }
 
+# Skip orchestrator installation/deployment in the following cases:
+# 1. OSD-GCP jobs: Infrastructure limitations prevent orchestrator from working
+# 2. PR presubmit jobs (e2e-ocp-helm non-nightly): Speed up CI feedback loop
+# Nightly jobs should always run orchestrator for full testing coverage.
+should_skip_orchestrator() {
+  [[ "${JOB_NAME}" =~ osd-gcp ]] || { [[ "${JOB_NAME}" =~ e2e-ocp-helm ]] && [[ "${JOB_NAME}" != *nightly* ]]; }
+}
+
+# Post-process merged Helm values to disable all orchestrator plugins
+# This avoids hardcoding plugin versions in PR diff files
+disable_orchestrator_plugins_in_values() {
+  local values_file=$1
+  yq eval -i '(.global.dynamic.plugins[] | select(.package | contains("orchestrator")) | .disabled) = true' "${values_file}"
+}
+
 # Waits for a Kubernetes/OpenShift deployment to become ready within a specified timeout period
 wait_for_deployment() {
   local namespace=$1
@@ -976,11 +991,11 @@ cluster_setup_ocp_helm() {
   install_pipelines_operator
   install_crunchy_postgres_ocp_operator
 
-  # Skip orchestrator infra installation on OSD-GCP due to infrastructure limitations
-  if [[ ! "${JOB_NAME}" =~ osd-gcp ]]; then
-    install_orchestrator_infra_chart
+  # Skip orchestrator infra installation based on job type (see should_skip_orchestrator)
+  if should_skip_orchestrator; then
+    echo "Skipping orchestrator-infra installation on this job: ${JOB_NAME}"
   else
-    echo "Skipping orchestrator-infra installation on OSD-GCP environment"
+    install_orchestrator_infra_chart
   fi
 
   # then wait for the right status one by one
@@ -1087,9 +1102,29 @@ base_deployment() {
   local rhdh_base_url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
   log::info "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
-  perform_helm_install "${RELEASE_NAME}" "${NAME_SPACE}" "${HELM_CHART_VALUE_FILE_NAME}"
 
-  deploy_orchestrator_workflows "${NAME_SPACE}"
+  if should_skip_orchestrator; then
+    local merged_pr_value_file="/tmp/merged-values_showcase_PR.yaml"
+    yq_merge_value_files "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/diff-values_showcase_PR.yaml" "${merged_pr_value_file}"
+    disable_orchestrator_plugins_in_values "${merged_pr_value_file}"
+
+    mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE}"
+    cp -a "${merged_pr_value_file}" "${ARTIFACT_DIR}/${NAME_SPACE}/" || true
+    # shellcheck disable=SC2046
+    helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
+      "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
+      -f "${merged_pr_value_file}" \
+      --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
+      $(get_image_helm_set_params)
+  else
+    perform_helm_install "${RELEASE_NAME}" "${NAME_SPACE}" "${HELM_CHART_VALUE_FILE_NAME}"
+  fi
+
+  if should_skip_orchestrator; then
+    log::warn "Skipping orchestrator workflows deployment on PR job: ${JOB_NAME}"
+  else
+    deploy_orchestrator_workflows "${NAME_SPACE}"
+  fi
 }
 
 rbac_deployment() {
@@ -1101,20 +1136,43 @@ rbac_deployment() {
   local rbac_rhdh_base_url="https://${RELEASE_NAME_RBAC}-developer-hub-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
   log::info "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${RELEASE_NAME_RBAC}"
-  perform_helm_install "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${HELM_CHART_RBAC_VALUE_FILE_NAME}"
+  if should_skip_orchestrator; then
+    local merged_pr_rbac_value_file="/tmp/merged-values_showcase-rbac_PR.yaml"
+    yq_merge_value_files "merge" "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "${DIR}/value_files/diff-values_showcase-rbac_PR.yaml" "${merged_pr_rbac_value_file}"
+    disable_orchestrator_plugins_in_values "${merged_pr_rbac_value_file}"
+
+    mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE_RBAC}"
+    cp -a "${merged_pr_rbac_value_file}" "${ARTIFACT_DIR}/${NAME_SPACE_RBAC}/" || true
+    # shellcheck disable=SC2046
+    helm upgrade -i "${RELEASE_NAME_RBAC}" -n "${NAME_SPACE_RBAC}" \
+      "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
+      -f "${merged_pr_rbac_value_file}" \
+      --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
+      $(get_image_helm_set_params)
+  else
+    perform_helm_install "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${HELM_CHART_RBAC_VALUE_FILE_NAME}"
+  fi
 
   # NOTE: This is a workaround to allow the sonataflow platform to connect to the external postgres db using ssl.
-  # Wait for the sonataflow database creation job to complete with robust error handling
-  if ! wait_for_job_completion "${NAME_SPACE_RBAC}" "${RELEASE_NAME_RBAC}-create-sonataflow-database" 10 10; then
-    echo "❌ Failed to create sonataflow database. Aborting RBAC deployment."
-    return 1
+  if should_skip_orchestrator; then
+    log::warn "Skipping sonataflow (orchestrator) external DB SSL workaround on PR job: ${JOB_NAME}"
+  else
+    # Wait for the sonataflow database creation job to complete with robust error handling
+    if ! wait_for_job_completion "${NAME_SPACE_RBAC}" "${RELEASE_NAME_RBAC}-create-sonataflow-database" 10 10; then
+      echo "❌ Failed to create sonataflow database. Aborting RBAC deployment."
+      return 1
+    fi
+    oc -n "${NAME_SPACE_RBAC}" patch sfp sonataflow-platform --type=merge \
+      -p '{"spec":{"services":{"jobService":{"podTemplate":{"container":{"env":[{"name":"QUARKUS_DATASOURCE_REACTIVE_URL","value":"postgresql://postgress-external-db-primary.postgress-external-db.svc.cluster.local:5432/sonataflow?search_path=jobs-service&sslmode=require&ssl=true&trustAll=true"},{"name":"QUARKUS_DATASOURCE_REACTIVE_SSL_MODE","value":"require"},{"name":"QUARKUS_DATASOURCE_REACTIVE_TRUST_ALL","value":"true"}]}}}}}}'
+    oc rollout restart deployment/sonataflow-platform-jobs-service -n "${NAME_SPACE_RBAC}"
   fi
-  oc -n "${NAME_SPACE_RBAC}" patch sfp sonataflow-platform --type=merge \
-    -p '{"spec":{"services":{"jobService":{"podTemplate":{"container":{"env":[{"name":"QUARKUS_DATASOURCE_REACTIVE_URL","value":"postgresql://postgress-external-db-primary.postgress-external-db.svc.cluster.local:5432/sonataflow?search_path=jobs-service&sslmode=require&ssl=true&trustAll=true"},{"name":"QUARKUS_DATASOURCE_REACTIVE_SSL_MODE","value":"require"},{"name":"QUARKUS_DATASOURCE_REACTIVE_TRUST_ALL","value":"true"}]}}}}}}'
-  oc rollout restart deployment/sonataflow-platform-jobs-service -n "${NAME_SPACE_RBAC}"
 
   # initiate orchestrator workflows deployment
-  deploy_orchestrator_workflows "${NAME_SPACE_RBAC}"
+  if should_skip_orchestrator; then
+    log::warn "Skipping orchestrator workflows deployment on PR job: ${JOB_NAME}"
+  else
+    deploy_orchestrator_workflows "${NAME_SPACE_RBAC}"
+  fi
 }
 
 initiate_deployments() {

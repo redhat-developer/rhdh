@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { UIhelper } from "../utils/ui-helper";
 import { Common } from "../utils/common";
+
 test.describe("Header mount points", () => {
   let common: Common;
   let uiHelper: UIhelper;
