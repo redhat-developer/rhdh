@@ -33,6 +33,21 @@ Functions: `operator::install_subscription`, `operator::check_status`,
 `operator::install_tekton`, `operator::delete_tekton`, `operator::install_olm`,
 `operator::uninstall_olm`
 
+### `helm.sh`
+
+Helm chart operations and value file manipulation.
+
+Functions: `helm::merge_values`, `helm::get_previous_release_values`, `helm::get_chart_version`,
+`helm::uninstall`, `helm::get_image_params`, `helm::install`
+
+### `orchestrator.sh`
+
+Orchestrator/Sonataflow deployment and configuration.
+
+Functions: `orchestrator::should_skip`, `orchestrator::disable_plugins_in_values`,
+`orchestrator::deploy_workflows`, `orchestrator::deploy_workflows_operator`,
+`orchestrator::enable_plugins_op`
+
 ## Creating New Modules
 
 ### Structure
