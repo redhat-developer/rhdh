@@ -135,6 +135,13 @@ main() {
       log::info "Calling handle_ocp_operator"
       handle_ocp_operator
       ;;
+    *rerun-failed-tests*)
+      log::info "Sourcing ocp-rerun-failed-tests.sh"
+      # shellcheck source=.ibm/pipelines/jobs/ocp-rerun-failed-tests.sh
+      source "${DIR}/jobs/ocp-rerun-failed-tests.sh"
+      log::info "Calling handle_ocp_rerun_failed_tests"
+      handle_ocp_rerun_failed_tests
+      ;;
     *pull*ocp*helm*)
       log::info "Sourcing ocp-pull.sh"
       # shellcheck source=.ibm/pipelines/jobs/ocp-pull.sh
