@@ -172,6 +172,7 @@ helm::get_image_params() {
   params+="--set upstream.backstage.image.tag=${TAG_NAME} "
 
   echo "${params}"
+  return 0
 }
 
 # Perform Helm install/upgrade with standard parameters
@@ -210,9 +211,9 @@ helm::install() {
 # ==============================================================================
 
 # Alias for backward compatibility
-yq_merge_value_files() { helm::merge_values "$@"; }
-uninstall_helmchart() { helm::uninstall "$@"; }
-get_image_helm_set_params() { helm::get_image_params "$@"; }
-perform_helm_install() { helm::install "$@"; }
-get_chart_version() { helm::get_chart_version "$@"; }
-get_previous_release_value_file() { helm::get_previous_release_values "$@"; }
+yq_merge_value_files() { helm::merge_values "$@"; return $?; }
+uninstall_helmchart() { helm::uninstall "$@"; return $?; }
+get_image_helm_set_params() { helm::get_image_params "$@"; return $?; }
+perform_helm_install() { helm::install "$@"; return $?; }
+get_chart_version() { helm::get_chart_version "$@"; return $?; }
+get_previous_release_value_file() { helm::get_previous_release_values "$@"; return $?; }
