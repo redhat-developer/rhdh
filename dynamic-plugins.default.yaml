@@ -504,7 +504,7 @@ plugins:
           portal.
         cta:
           text: Import
-          link: /bulk-import/repositories
+          link: /bulk-import
       - title: Learn about the Catalog
         roles:
         - developer
@@ -893,7 +893,7 @@ plugins:
           - name: bulkImportIcon
             importName: BulkImportIcon
           dynamicRoutes:
-          - path: /bulk-import/repositories
+          - path: /bulk-import
             importName: BulkImportPage
             menuItem:
               icon: bulkImportIcon
