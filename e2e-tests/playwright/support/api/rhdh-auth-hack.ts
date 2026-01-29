@@ -27,7 +27,6 @@ export class RhdhAuthUiHack {
   private async _getApiToken(page: Page) {
     const uiHelper = new UIhelper(page);
 
-    await uiHelper.openSidebar("Catalog");
     const requestPromise = page.waitForRequest(
       (request) =>
         request.url() ===
