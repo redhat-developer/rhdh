@@ -4,11 +4,6 @@ metadata:
   name: rhdh
 spec:
   application:
-    image:
-      pullPolicy: Always
-      registry: quay.io
-      repository: rhdh-community/rhdh
-      tag: next
     appConfig:
       configMaps:
         - name: app-config-rhdh
