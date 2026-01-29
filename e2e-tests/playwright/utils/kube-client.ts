@@ -2,6 +2,60 @@ import * as k8s from "@kubernetes/client-node";
 import { V1ConfigMap } from "@kubernetes/client-node";
 import * as yaml from "js-yaml";
 
+/**
+ * Interface representing the structure of Kubernetes API errors.
+ * Used for type-safe error handling without exposing sensitive data.
+ */
+interface KubeApiError {
+  body?: { message?: string; reason?: string; code?: number };
+  statusCode?: number;
+  message?: string;
+  response?: { statusCode?: number; statusMessage?: string };
+}
+
+/**
+ * Type guard to check if an unknown error is a KubeApiError.
+ */
+function isKubeApiError(error: unknown): error is KubeApiError {
+  return error !== null && typeof error === "object";
+}
+
+/**
+ * Safely extracts error information from Kubernetes API errors without leaking sensitive data.
+ * The @kubernetes/client-node HttpError contains the full HTTP request/response which includes
+ * the Authorization header with the bearer token. This function extracts only safe information.
+ */
+function getKubeApiErrorMessage(error: unknown): string {
+  if (isKubeApiError(error)) {
+    const err = error;
+
+    // Kubernetes API errors have a body with message, reason, and code
+    if (err.body?.message) {
+      const parts = [err.body.message];
+      if (err.body.reason) parts.push(`reason: ${err.body.reason}`);
+      if (err.body.code) parts.push(`code: ${err.body.code}`);
+      return parts.join(", ");
+    }
+
+    // Fallback to statusCode and statusMessage from response
+    if (err.response?.statusCode) {
+      return `HTTP ${err.response.statusCode}: ${err.response.statusMessage || "Unknown error"}`;
+    }
+
+    // Fallback to statusCode on error object
+    if (err.statusCode) {
+      return `HTTP ${err.statusCode}`;
+    }
+
+    // Fallback to error message (safe as it doesn't contain request details)
+    if (err.message) {
+      return err.message;
+    }
+  }
+
+  return "Unknown Kubernetes API error";
+}
+
 export class KubeClient {
   coreV1Api: k8s.CoreV1Api;
   appsApi: k8s.AppsV1Api;
@@ -37,7 +91,9 @@ export class KubeClient {
       this.appsApi = this.kc.makeApiClient(k8s.AppsV1Api);
       this.coreV1Api = this.kc.makeApiClient(k8s.CoreV1Api);
     } catch (e) {
-      console.log(e);
+      console.log(
+        `Error initializing KubeClient: ${getKubeApiErrorMessage(e)}`,
+      );
       throw e;
     }
   }
@@ -114,7 +170,9 @@ export class KubeClient {
         `No suitable app-config ConfigMap found in namespace ${namespace}`,
       );
     } catch (error) {
-      console.error(`Error finding app config ConfigMap: ${error}`);
+      console.error(
+        `Error finding app config ConfigMap: ${getKubeApiErrorMessage(error)}`,
+      );
       throw error;
     }
   }
@@ -217,7 +275,7 @@ export class KubeClient {
         options,
       );
     } catch (e) {
-      console.log(e.statusCode, e);
+      console.log(`Error updating configmap: ${getKubeApiErrorMessage(e)}`);
       throw e;
     }
   }
@@ -326,8 +384,12 @@ export class KubeClient {
         `ConfigMap '${actualConfigMapName}' updated successfully with new title: '${newTitle}'`,
       );
     } catch (error) {
-      console.error("Error updating ConfigMap:", error);
-      throw new Error(`Failed to update ConfigMap: ${error.message}`);
+      console.error(
+        `Error updating ConfigMap: ${getKubeApiErrorMessage(error)}`,
+      );
+      throw new Error(
+        `Failed to update ConfigMap: ${getKubeApiErrorMessage(error)}`,
+      );
     }
   }
 
@@ -397,7 +459,9 @@ export class KubeClient {
         );
       });
     } catch (err) {
-      console.log("Error deleting or waiting for namespace deletion:", err);
+      console.log(
+        `Error deleting or waiting for namespace deletion: ${getKubeApiErrorMessage(err)}`,
+      );
       throw err;
     }
   }
@@ -410,7 +474,9 @@ export class KubeClient {
       try {
         await this.deleteNamespaceAndWait(namespace);
       } catch (err) {
-        console.log(err);
+        console.log(
+          `Error deleting namespace ${namespace}: ${getKubeApiErrorMessage(err)}`,
+        );
         throw err;
       }
     }
@@ -541,7 +607,9 @@ export class KubeClient {
 
       return null; // No failure states detected
     } catch (error) {
-      console.error(`Error checking pod failure states: ${error}`);
+      console.error(
+        `Error checking pod failure states: ${getKubeApiErrorMessage(error)}`,
+      );
       return null; // Don't fail the check if we can't retrieve pod info
     }
   }
@@ -605,7 +673,9 @@ export class KubeClient {
           `Waiting for ${deploymentName} to reach ${expectedReplicas} replicas, currently has ${availableReplicas} available, ${readyReplicas} ready.`,
         );
       } catch (error) {
-        console.error(`Error checking deployment status: ${error}`);
+        console.error(
+          `Error checking deployment status: ${getKubeApiErrorMessage(error)}`,
+        );
         // If we threw an error about pod failure, re-throw it
         if (error.message?.includes("failed to start")) {
           throw error;
@@ -650,13 +720,12 @@ export class KubeClient {
       );
     } catch (error) {
       console.error(
-        `Error during deployment restart: Deployment '${deploymentName}' in namespace '${namespace}'.`,
-        error,
+        `Error during deployment restart: Deployment '${deploymentName}' in namespace '${namespace}': ${getKubeApiErrorMessage(error)}`,
       );
       await this.logPodConditions(namespace);
       await this.logDeploymentEvents(deploymentName, namespace);
       throw new Error(
-        `Failed to restart deployment '${deploymentName}' in namespace '${namespace}': ${error.message}`,
+        `Failed to restart deployment '${deploymentName}' in namespace '${namespace}': ${getKubeApiErrorMessage(error)}`,
       );
     }
   }
@@ -689,8 +758,7 @@ export class KubeClient {
       }
     } catch (error) {
       console.error(
-        `Error while retrieving pod conditions for selector '${selector}':`,
-        error,
+        `Error while retrieving pod conditions for selector '${selector}': ${getKubeApiErrorMessage(error)}`,
       );
     }
   }
@@ -718,7 +786,7 @@ export class KubeClient {
       );
     } catch (error) {
       console.error(
-        `Error retrieving events for deployment ${deploymentName}: ${error}`,
+        `Error retrieving events for deployment ${deploymentName}: ${getKubeApiErrorMessage(error)}`,
       );
     }
   }
@@ -739,8 +807,7 @@ export class KubeClient {
       return response.body.items;
     } catch (error) {
       console.error(
-        `Error fetching services with label ${labelSelector}:`,
-        error,
+        `Error fetching services with label ${labelSelector}: ${getKubeApiErrorMessage(error)}`,
       );
       throw error;
     }
