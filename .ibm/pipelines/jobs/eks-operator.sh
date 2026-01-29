@@ -16,12 +16,6 @@ source "$DIR"/playwright-projects.sh
 handle_eks_operator() {
   log::info "Starting EKS Operator deployment"
 
-  # Verify EKS cluster connectivity
-  aws_eks_verify_cluster
-
-  # Get cluster information
-  aws_eks_get_cluster_info
-
   export NAME_SPACE="${NAME_SPACE:-showcase-k8s-ci-nightly}"
   export NAME_SPACE_RBAC="${NAME_SPACE_RBAC:-showcase-rbac-k8s-ci-nightly}"
 
