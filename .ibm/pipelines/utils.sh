@@ -1247,7 +1247,6 @@ deploy_orchestrator_workflows() {
   oc apply -f "${FAILSWITCH_MANIFESTS}" -n "$namespace"
   oc apply -f "${GREETING_MANIFESTS}" -n "$namespace"
 
-
   until [[ $(oc get sf -n "$namespace" --no-headers 2> /dev/null | wc -l) -eq 2 ]]; do
     echo "No sf resources found. Retrying in 5 seconds..."
     sleep 5
