@@ -15,7 +15,6 @@
  */
 
 import { Page, expect } from "@playwright/test";
-import { waitUntilApiCallSucceeds } from "../../../utils/scorecard-utils";
 
 export class ScorecardPage {
   readonly page: Page;
@@ -34,25 +33,15 @@ export class ScorecardPage {
       {
         title: "Jira open blocking tickets",
         description:
-          "Highlights the number of critical, blocking issues that are currently open in Jira.",
+          "Highlights the number of issues that are currently open in Jira.",
       },
     ];
   }
 
   async openTab() {
-    const scorecardTab = this.page.getByText("Scorecard");
+    const scorecardTab = this.page.getByText("Scorecard", { exact: true });
     await expect(scorecardTab).toBeVisible();
-    await Promise.all([
-      waitUntilApiCallSucceeds(this.page),
-      scorecardTab.click(),
-    ]);
-  }
-
-  async verifyScorecardValues(expectedValues: { [key: string]: string }) {
-    for (const [metric, value] of Object.entries(expectedValues)) {
-      await expect(this.page.getByText(metric)).toBeVisible();
-      await expect(this.page.getByText(value)).toBeVisible();
-    }
+    await scorecardTab.click();
   }
 
   async expectEmptyState() {
@@ -79,9 +68,9 @@ export class ScorecardPage {
       - article:
         - text: ${title}
         - paragraph: ${description}
-        - paragraph: /Error/
-        - paragraph: /Warning/
         - paragraph: /Success/
+        - paragraph: /Warning/
+        - paragraph: /Error/
     `);
   }
 

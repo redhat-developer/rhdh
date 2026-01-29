@@ -16,16 +16,9 @@
 
 import { test, expect } from "@playwright/test";
 import { Common } from "../../../utils/common";
-import { mockScorecardResponse } from "../../../utils/scorecard-utils";
 import { ComponentImportPage } from "../../../support/page-objects/scorecard/component-import-page";
 import { Catalog } from "../../../support/pages/catalog";
 import { ScorecardPage } from "../../../support/page-objects/scorecard/scorecard-page";
-import {
-  CUSTOM_SCORECARD_RESPONSE,
-  EMPTY_SCORECARD_RESPONSE,
-  UNAVAILABLE_METRIC_RESPONSE,
-  INVALID_THRESHOLD_RESPONSE,
-} from "../../../utils/scorecard-response-utils";
 
 test.describe.serial("Scorecard Plugin Tests", () => {
   let context;
@@ -62,38 +55,33 @@ test.describe.serial("Scorecard Plugin Tests", () => {
   });
 
   test("Import component and validate scorecard tabs for GitHub PRs and Jira tickets", async () => {
-    await mockScorecardResponse(page, CUSTOM_SCORECARD_RESPONSE);
-
-    await catalog.go();
-    await catalog.goToByName("rhdh-app");
-    await scorecardPage.openTab();
-
-    await scorecardPage.verifyScorecardValues({
-      "GitHub open PRs": "9",
-      "Jira open blocking tickets": "8",
-    });
+    await importPage.importAndOpenScorecard(
+      "https://github.com/rhdh-pai-qe/RHDH-scorecard-plugin-test/blob/main/all-scorecards.yaml",
+      catalog,
+      scorecardPage,
+    );
 
     for (const metric of scorecardPage.scorecardMetrics) {
       await scorecardPage.validateScorecardAriaFor(metric);
     }
   });
 
-  test("Display empty state when scorecard API returns no metrics", async () => {
-    await mockScorecardResponse(page, EMPTY_SCORECARD_RESPONSE);
-
-    await catalog.go();
-    await catalog.goToByName("rhdh-app");
-    await scorecardPage.openTab();
+  test("Validate empty scorecard state", async () => {
+    await importPage.importAndOpenScorecard(
+      "https://github.com/rhdh-pai-qe/RHDH-scorecard-plugin-test/blob/main/no-scorecards.yaml",
+      catalog,
+      scorecardPage,
+    );
 
     await scorecardPage.expectEmptyState();
   });
 
   test("Displays error state for unavailable data while rendering metrics", async () => {
-    await mockScorecardResponse(page, UNAVAILABLE_METRIC_RESPONSE);
-
-    await catalog.go();
-    await catalog.goToByName("rhdh-app");
-    await scorecardPage.openTab();
+    await importPage.importAndOpenScorecard(
+      "https://github.com/rhdh-pai-qe/RHDH-scorecard-plugin-test/blob/main/metrics-unavailable.yaml",
+      catalog,
+      scorecardPage,
+    );
 
     const jiraMetric = scorecardPage.scorecardMetrics[1];
     const githubMetric = scorecardPage.scorecardMetrics[0];
@@ -114,22 +102,19 @@ test.describe.serial("Scorecard Plugin Tests", () => {
     await expect(errorLocator).toBeVisible();
 
     await errorLocator.hover();
-    const errorTooltip = UNAVAILABLE_METRIC_RESPONSE.find(
-      (metric) => metric.id === "github.open-prs",
-    )?.error;
-
-    expect(errorTooltip).toBeTruthy();
-    await expect(page.getByText(errorTooltip!)).toBeVisible();
+    const errorTooltip =
+      "GraphqlResponseError: Request failed due to following response errors: - Could not resolve to a Repository with the name 'dzemanov/react-app-t1'.";
+    await expect(page.getByText(errorTooltip)).toBeVisible();
 
     await scorecardPage.validateScorecardAriaFor(jiraMetric);
   });
 
   test("Display error state for invalid threshold config while rendering metrics", async () => {
-    await mockScorecardResponse(page, INVALID_THRESHOLD_RESPONSE);
-
-    await catalog.go();
-    await catalog.goToByName("rhdh-app");
-    await scorecardPage.openTab();
+    await importPage.importAndOpenScorecard(
+      "https://github.com/rhdh-pai-qe/RHDH-scorecard-plugin-test/blob/main/invalid-threshold.yaml",
+      catalog,
+      scorecardPage,
+    );
 
     const githubMetric = scorecardPage.scorecardMetrics[0];
     const jiraMetric = scorecardPage.scorecardMetrics[1];
@@ -150,12 +135,55 @@ test.describe.serial("Scorecard Plugin Tests", () => {
     await expect(errorLocator).toBeVisible();
 
     await errorLocator.hover();
-    const errorTooltip = INVALID_THRESHOLD_RESPONSE.find(
-      (metric) => metric.id === "github.open-prs",
-    )?.result?.thresholdResult?.error;
+    const errorTooltip =
+      "ThresholdConfigFormatError: Invalid threshold annotation 'scorecard.io/github.open_prs.thresholds.rules.error: >50d' in entity 'component:default/invalid-threshold': Cannot parse \"50d\" as number from expression: \">50d\"";
+    await expect(page.getByText(errorTooltip)).toBeVisible();
 
-    expect(errorTooltip).toBeTruthy();
-    await expect(page.getByText(errorTooltip!)).toBeVisible();
+    await scorecardPage.validateScorecardAriaFor(jiraMetric);
+  });
+
+  test("Validate only GitHub scorecard is displayed", async () => {
+    await importPage.importAndOpenScorecard(
+      "https://github.com/rhdh-pai-qe/RHDH-scorecard-plugin-test/blob/main/github-scorecard-only.yaml",
+      catalog,
+      scorecardPage,
+    );
+
+    const githubMetric = scorecardPage.scorecardMetrics[0];
+    const jiraMetric = scorecardPage.scorecardMetrics[1];
+
+    const isGithubVisible = await scorecardPage.isScorecardVisible(
+      githubMetric.title,
+    );
+    expect(isGithubVisible).toBe(true);
+
+    const isJiraVisible = await scorecardPage.isScorecardVisible(
+      jiraMetric.title,
+    );
+    expect(isJiraVisible).toBe(false);
+
+    await scorecardPage.validateScorecardAriaFor(githubMetric);
+  });
+
+  test("Validate only Jira scorecard is displayed", async () => {
+    await importPage.importAndOpenScorecard(
+      "https://github.com/rhdh-pai-qe/RHDH-scorecard-plugin-test/blob/main/jira-scorecard-only.yaml",
+      catalog,
+      scorecardPage,
+    );
+
+    const githubMetric = scorecardPage.scorecardMetrics[0];
+    const jiraMetric = scorecardPage.scorecardMetrics[1];
+
+    const isGithubVisible = await scorecardPage.isScorecardVisible(
+      githubMetric.title,
+    );
+    expect(isGithubVisible).toBe(false);
+
+    const isJiraVisible = await scorecardPage.isScorecardVisible(
+      jiraMetric.title,
+    );
+    expect(isJiraVisible).toBe(true);
 
     await scorecardPage.validateScorecardAriaFor(jiraMetric);
   });
