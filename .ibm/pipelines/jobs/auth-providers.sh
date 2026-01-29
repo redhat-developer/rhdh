@@ -2,6 +2,8 @@
 
 # shellcheck source=.ibm/pipelines/lib/log.sh
 source "$DIR"/lib/log.sh
+# shellcheck source=.ibm/pipelines/lib/common.sh
+source "$DIR"/lib/common.sh
 # shellcheck source=.ibm/pipelines/utils.sh
 source "$DIR"/utils.sh
 # shellcheck source=.ibm/pipelines/install-methods/operator.sh
@@ -11,10 +13,12 @@ source "$DIR"/playwright-projects.sh
 
 handle_auth_providers() {
   local retry_operator_installation="${1:-1}"
-  oc_login
+  common::oc_login
   configure_namespace "${OPERATOR_MANAGER}"
   install_rhdh_operator "${OPERATOR_MANAGER}" "$retry_operator_installation"
-  wait_for_backstage_crd "default"
+
+  # Wait for Backstage CRD to be available after operator installation
+  k8s_wait::crd "backstages.rhdh.redhat.com" 300 10 || return 1
 
   K8S_CLUSTER_ROUTER_BASE=$(oc get route console -n openshift-console -o=jsonpath='{.spec.host}' | sed 's/^[^.]*\.//')
   export K8S_CLUSTER_ROUTER_BASE

@@ -16,11 +16,8 @@ source "$DIR"/playwright-projects.sh
 handle_eks_helm() {
   log::info "Starting EKS Helm deployment"
 
-  # Verify EKS cluster connectivity
-  aws_eks_verify_cluster
-
-  # Get cluster information
-  aws_eks_get_cluster_info
+  # Note: aws_eks_verify_cluster removed in PR #3610 - cluster is pre-configured by CI environment
+  # Note: aws_eks_get_cluster_info removed in PR #3610 - platform vars are now hardcoded
 
   export NAME_SPACE="${NAME_SPACE:-showcase-k8s-ci-nightly}"
   export NAME_SPACE_RBAC="${NAME_SPACE_RBAC:-showcase-rbac-k8s-ci-nightly}"
