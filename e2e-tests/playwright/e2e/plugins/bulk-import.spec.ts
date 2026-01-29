@@ -249,6 +249,7 @@ spec:
       notVisible: true,
     });
   });
+
   test("Verify Deleted Bulk Import Repositories Does not Appear in the Catalog", async () => {
     await uiHelper.openSidebar("Catalog");
     await uiHelper.selectMuiBox("Kind", "Component");
@@ -299,6 +300,7 @@ test.describe
     repoName: "janus-test-2-bulk-import-test",
     url: "https://github.com/janus-test/janus-test-2-bulk-import-test/blob/main/catalog-info.yaml",
   };
+
   test.beforeAll(async ({ browser }, testInfo) => {
     page = (await setupBrowser(browser, testInfo)).page;
 
@@ -352,6 +354,7 @@ test.describe
   let page: Page;
   let uiHelper: UIhelper;
   let common: Common;
+
   test.beforeAll(async ({ browser }, testInfo) => {
     page = (await setupBrowser(browser, testInfo)).page;
 

@@ -121,3 +121,52 @@ retrieve ephemeral environment credentials.
   - `KEYCLOAK_AUTH_CLIENT_SECRET`
   - `KEYCLOAK_AUTH_LOGIN_REALM`
   - `KEYCLOAK_AUTH_REALM`
+
+---
+
+## Development Guidelines
+
+### Code Quality
+
+The `.ibm` directory contains linting and formatting tools for pipeline scripts.
+
+Install dependencies:
+
+```bash
+cd .ibm
+yarn install
+```
+
+Available commands:
+
+- `yarn shellcheck` - Lint shell scripts (must pass with zero warnings)
+- `yarn prettier:check` - Check file formatting
+- `yarn prettier:fix` - Auto-format files
+
+Before submitting a PR:
+
+```bash
+cd .ibm
+yarn prettier:fix
+yarn shellcheck
+```
+
+### Modular Architecture
+
+Pipeline utilities are organized into modules in `.ibm/pipelines/lib/`:
+
+- `log.sh` - Logging functions
+- `common.sh` - Common utilities (oc_login, sed_inplace, etc.)
+- `k8s-wait.sh` - Kubernetes wait/polling operations
+- `operators.sh` - Operator installations
+
+Usage example:
+
+```bash
+# Using modular functions
+k8s_wait::deployment "namespace" "deployment"
+common::oc_login
+operator::install_pipelines
+```
+
+See `lib/README.md` for module details.

@@ -5,6 +5,7 @@ The authentication providers tests are currently running for the following provi
 - OIDC using RHBK
 - Microsoft using oauth2 provider
 - Github
+- GitLab
 <!--- - LDAP using Active Directory -->
 
 For each providers the tests verify:
@@ -32,4 +33,5 @@ The following plugins are required to run these tests, make sure they are export
 - backstage-community-plugin-catalog-backend-module-keycloak-dynamic
 - backstage-plugin-catalog-backend-module-github-org-dynamic
 - backstage-plugin-catalog-backend-module-msgraph-dynamic
+- backstage-plugin-catalog-backend-module-gitlab-org-dynamic
 - backstage-community-plugin-rbac

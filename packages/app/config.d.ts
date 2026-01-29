@@ -217,6 +217,7 @@ export interface Config {
                 | string
               )[];
             };
+            id?: string;
           };
         }[];
         appIcons?: {

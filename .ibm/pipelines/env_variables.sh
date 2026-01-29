@@ -47,13 +47,21 @@ QUAY_REPO="${QUAY_REPO:-rhdh-community/rhdh}"
 QUAY_NAMESPACE=$(cat /tmp/secrets/QUAY_NAMESPACE)
 QUAY_TOKEN=$(cat /tmp/secrets/QUAY_TOKEN)
 
+# =============================================================================
+# Release and Namespace Configuration
+# These can be overridden by CI environment or local configuration
+# =============================================================================
 RELEASE_NAME=rhdh
 RELEASE_NAME_RBAC=rhdh-rbac
-NAME_SPACE="${NAME_SPACE:-showcase}"
-NAME_SPACE_RBAC="${NAME_SPACE_RBAC:-showcase-rbac}"
-NAME_SPACE_RUNTIME="${NAME_SPACE_RUNTIME:-showcase-runtime}"
-NAME_SPACE_POSTGRES_DB="${NAME_SPACE_POSTGRES_DB:-postgress-external-db}"
-NAME_SPACE_SANITY_PLUGINS_CHECK="showcase-sanity-plugins"
+
+# Default namespaces (override via environment for different environments)
+: "${NAME_SPACE:=showcase}"                               # Standard deployment namespace
+: "${NAME_SPACE_RBAC:=showcase-rbac}"                     # RBAC-enabled deployment namespace
+: "${NAME_SPACE_RUNTIME:=showcase-runtime}"               # Runtime configuration tests namespace
+: "${NAME_SPACE_POSTGRES_DB:=postgress-external-db}"      # External PostgreSQL database namespace
+NAME_SPACE_SANITY_PLUGINS_CHECK="showcase-sanity-plugins" # Sanity check namespace (fixed)
+
+# Operator configuration
 OPERATOR_MANAGER='rhdh-operator'
 CHART_MAJOR_VERSION="1.9"
 GITHUB_APP_APP_ID=$(cat /tmp/secrets/GITHUB_APP_3_APP_ID)
@@ -211,5 +219,9 @@ GITHUB_OAUTH_APP_ID_ENCODED=$(printf "%s" $GITHUB_OAUTH_APP_ID | base64 | tr -d 
 GITHUB_OAUTH_APP_SECRET_ENCODED=$(printf "%s" $GITHUB_OAUTH_APP_SECRET | base64 | tr -d '\n')
 
 BACKEND_SECRET=$(printf temp | base64 | tr -d '\n')
+
+AUTH_PROVIDERS_GITLAB_HOST=$(cat /tmp/secrets/AUTH_PROVIDERS_GITLAB_HOST)
+AUTH_PROVIDERS_GITLAB_TOKEN=$(cat /tmp/secrets/AUTH_PROVIDERS_GITLAB_TOKEN)
+AUTH_PROVIDERS_GITLAB_PARENT_ORG=$(cat /tmp/secrets/AUTH_PROVIDERS_GITLAB_PARENT_ORG)
 
 set +a # Stop automatically exporting variables
