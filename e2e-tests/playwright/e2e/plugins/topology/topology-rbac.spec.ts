@@ -33,6 +33,7 @@ test.describe("Test Topology Plugin with RBAC", () => {
       process.env.JOB_NAME.includes("operator"),
       "Failing on Operator, fix https://issues.redhat.com/browse/RHIDP-6492",
     );
+
     // User is able to read from the catalog
     // User is missing 'kubernetes.clusters.read', 'kubernetes.resources.read', 'kubernetes.proxy' permissions
     test("Verify pods are not visible in the Topology tab", async () => {

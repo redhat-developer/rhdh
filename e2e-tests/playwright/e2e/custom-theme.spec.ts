@@ -30,11 +30,6 @@ test.describe("CustomTheme should be applied", () => {
     themeVerifier = new ThemeVerifier(page);
 
     await common.loginAsGuest();
-    await page
-      .getByRole("button", {
-        name: t["plugin.quickstart"][lang]["footer.hide"],
-      })
-      .click();
   });
 
   test("Verify theme colors are applied and make screenshots", async ({}, testInfo: TestInfo) => {

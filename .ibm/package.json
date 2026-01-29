@@ -1,6 +1,6 @@
 {
   "name": ".ibm",
-  "version": "1.9.0",
+  "version": "1.10.0",
   "private": true,
   "engines": {
     "node": "22"
@@ -11,7 +11,7 @@
     "prettier:fix": "npx prettier --write **/*.{sh,md,yaml,yml}"
   },
   "devDependencies": {
-    "prettier": "3.7.4",
+    "prettier": "3.8.1",
     "prettier-plugin-sh": "0.18.0",
     "shellcheck": "4.1.0"
   },

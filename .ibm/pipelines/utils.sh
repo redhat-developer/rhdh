@@ -9,7 +9,7 @@ retrieve_pod_logs() {
   local pod_name=$1
   local container=$2
   local namespace=$3
-  local log_timeout=${4:-30} # Default timeout: 30 seconds
+  local log_timeout=${4:-5} # Default timeout: 5 seconds (reduced from 30s to speed up failure cases)
   log::debug "Retrieving logs for container: $container"
   # Save logs for the current and previous container with timeout to prevent hanging
   timeout "${log_timeout}" kubectl logs "$pod_name" -c "$container" -n "$namespace" > "pod_logs/${pod_name}_${container}.log" 2> /dev/null || { log::warn "logs for container $container not found or timed out"; }
@@ -80,6 +80,21 @@ yq_merge_value_files() {
     log::error "Invalid operation with plugins key: $plugin_operation"
     exit 1
   fi
+}
+
+# Skip orchestrator installation/deployment in the following cases:
+# 1. OSD-GCP jobs: Infrastructure limitations prevent orchestrator from working
+# 2. PR presubmit jobs (e2e-ocp-helm non-nightly): Speed up CI feedback loop
+# Nightly jobs should always run orchestrator for full testing coverage.
+should_skip_orchestrator() {
+  [[ "${JOB_NAME}" =~ osd-gcp ]] || { [[ "${JOB_NAME}" =~ e2e-ocp-helm ]] && [[ "${JOB_NAME}" != *nightly* ]]; }
+}
+
+# Post-process merged Helm values to disable all orchestrator plugins
+# This avoids hardcoding plugin versions in PR diff files
+disable_orchestrator_plugins_in_values() {
+  local values_file=$1
+  yq eval -i '(.global.dynamic.plugins[] | select(.package | contains("orchestrator")) | .disabled) = true' "${values_file}"
 }
 
 # Waits for a Kubernetes/OpenShift deployment to become ready within a specified timeout period
@@ -665,9 +680,13 @@ deploy_test_backstage_customization_provider() {
 
   # Check if the buildconfig already exists
   if ! oc get buildconfig test-backstage-customization-provider -n "${project}" > /dev/null 2>&1; then
-    log::info "Creating new app for test-backstage-customization-provider"
-    oc new-app -S openshift/nodejs:18-minimal-ubi8
-    oc new-app https://github.com/janus-qe/test-backstage-customization-provider --image-stream="openshift/nodejs:18-ubi8" --namespace="${project}"
+    # Get latest nodejs UBI9 tag from cluster, fallback to 18-ubi8
+    local nodejs_tag
+    nodejs_tag=$(oc get imagestream nodejs -n openshift -o jsonpath='{.spec.tags[*].name}' 2> /dev/null \
+      | tr ' ' '\n' | grep -E '^[0-9]+-ubi9$' | sort -t'-' -k1 -n | tail -1)
+    nodejs_tag="${nodejs_tag:-18-ubi8}"
+    log::info "Creating new app for test-backstage-customization-provider using nodejs:${nodejs_tag}"
+    oc new-app "openshift/nodejs:${nodejs_tag}~https://github.com/janus-qe/test-backstage-customization-provider" --namespace="${project}"
   else
     log::warn "BuildConfig for test-backstage-customization-provider already exists in ${project}. Skipping new-app creation."
   fi
@@ -826,6 +845,33 @@ check_backstage_running() {
     else
       log::warn "Attempt ${i} of ${max_attempts}: Backstage not yet available (HTTP Status: ${http_status})"
       oc get pods -n "${namespace}"
+
+      # Early crash detection: fail fast if RHDH pods are in CrashLoopBackOff
+      # Check both the main deployment and postgresql pods
+      local crash_pods
+      crash_pods=$(oc get pods -n "${namespace}" -l "app.kubernetes.io/instance in (${release_name},redhat-developer-hub,developer-hub,${release_name}-postgresql)" \
+        -o jsonpath='{range .items[*]}{.metadata.name}{" "}{.status.phase}{" "}{range .status.containerStatuses[*]}{.state.waiting.reason}{end}{range .status.initContainerStatuses[*]}{.state.waiting.reason}{end}{"\n"}{end}' 2> /dev/null | grep -E "CrashLoopBackOff" || true)
+      # Also check by name pattern for postgresql pods that may have different labels
+      if [ -z "${crash_pods}" ]; then
+        crash_pods=$(oc get pods -n "${namespace}" --no-headers 2> /dev/null | grep -E "(${release_name}|developer-hub|postgresql)" | grep -E "CrashLoopBackOff|Init:CrashLoopBackOff" || true)
+      fi
+
+      if [ -n "${crash_pods}" ]; then
+        log::error "Detected pods in CrashLoopBackOff state - failing fast instead of waiting:"
+        echo "${crash_pods}"
+        log::error "Deployment status:"
+        oc get deployment -l "app.kubernetes.io/instance in (${release_name},redhat-developer-hub,developer-hub)" -n "${namespace}" -o wide 2> /dev/null || true
+        log::error "Recent logs from deployment:"
+        oc logs deployment/${release_name}-developer-hub -n "${namespace}" --tail=100 --all-containers=true 2> /dev/null \
+          || oc logs deployment/${release_name} -n "${namespace}" --tail=100 --all-containers=true 2> /dev/null || true
+        log::error "Recent events:"
+        oc get events -n "${namespace}" --sort-by='.lastTimestamp' | tail -20
+        mkdir -p "${ARTIFACT_DIR}/${namespace}"
+        cp -a "/tmp/${LOGFILE}" "${ARTIFACT_DIR}/${namespace}/" || true
+        save_all_pod_logs "${namespace}"
+        return 1
+      fi
+
       sleep "${wait_seconds}"
     fi
   done
@@ -945,11 +991,11 @@ cluster_setup_ocp_helm() {
   install_pipelines_operator
   install_crunchy_postgres_ocp_operator
 
-  # Skip orchestrator infra installation on OSD-GCP due to infrastructure limitations
-  if [[ ! "${JOB_NAME}" =~ osd-gcp ]]; then
-    install_orchestrator_infra_chart
+  # Skip orchestrator infra installation based on job type (see should_skip_orchestrator)
+  if should_skip_orchestrator; then
+    echo "Skipping orchestrator-infra installation on this job: ${JOB_NAME}"
   else
-    echo "Skipping orchestrator-infra installation on OSD-GCP environment"
+    install_orchestrator_infra_chart
   fi
 
   # then wait for the right status one by one
@@ -1056,9 +1102,29 @@ base_deployment() {
   local rhdh_base_url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
   log::info "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
-  perform_helm_install "${RELEASE_NAME}" "${NAME_SPACE}" "${HELM_CHART_VALUE_FILE_NAME}"
 
-  deploy_orchestrator_workflows "${NAME_SPACE}"
+  if should_skip_orchestrator; then
+    local merged_pr_value_file="/tmp/merged-values_showcase_PR.yaml"
+    yq_merge_value_files "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/diff-values_showcase_PR.yaml" "${merged_pr_value_file}"
+    disable_orchestrator_plugins_in_values "${merged_pr_value_file}"
+
+    mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE}"
+    cp -a "${merged_pr_value_file}" "${ARTIFACT_DIR}/${NAME_SPACE}/" || true
+    # shellcheck disable=SC2046
+    helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
+      "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
+      -f "${merged_pr_value_file}" \
+      --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
+      $(get_image_helm_set_params)
+  else
+    perform_helm_install "${RELEASE_NAME}" "${NAME_SPACE}" "${HELM_CHART_VALUE_FILE_NAME}"
+  fi
+
+  if should_skip_orchestrator; then
+    log::warn "Skipping orchestrator workflows deployment on PR job: ${JOB_NAME}"
+  else
+    deploy_orchestrator_workflows "${NAME_SPACE}"
+  fi
 }
 
 rbac_deployment() {
@@ -1070,20 +1136,43 @@ rbac_deployment() {
   local rbac_rhdh_base_url="https://${RELEASE_NAME_RBAC}-developer-hub-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
   log::info "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${RELEASE_NAME_RBAC}"
-  perform_helm_install "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${HELM_CHART_RBAC_VALUE_FILE_NAME}"
+  if should_skip_orchestrator; then
+    local merged_pr_rbac_value_file="/tmp/merged-values_showcase-rbac_PR.yaml"
+    yq_merge_value_files "merge" "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "${DIR}/value_files/diff-values_showcase-rbac_PR.yaml" "${merged_pr_rbac_value_file}"
+    disable_orchestrator_plugins_in_values "${merged_pr_rbac_value_file}"
+
+    mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE_RBAC}"
+    cp -a "${merged_pr_rbac_value_file}" "${ARTIFACT_DIR}/${NAME_SPACE_RBAC}/" || true
+    # shellcheck disable=SC2046
+    helm upgrade -i "${RELEASE_NAME_RBAC}" -n "${NAME_SPACE_RBAC}" \
+      "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
+      -f "${merged_pr_rbac_value_file}" \
+      --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
+      $(get_image_helm_set_params)
+  else
+    perform_helm_install "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${HELM_CHART_RBAC_VALUE_FILE_NAME}"
+  fi
 
   # NOTE: This is a workaround to allow the sonataflow platform to connect to the external postgres db using ssl.
-  # Wait for the sonataflow database creation job to complete with robust error handling
-  if ! wait_for_job_completion "${NAME_SPACE_RBAC}" "${RELEASE_NAME_RBAC}-create-sonataflow-database" 10 10; then
-    echo "❌ Failed to create sonataflow database. Aborting RBAC deployment."
-    return 1
+  if should_skip_orchestrator; then
+    log::warn "Skipping sonataflow (orchestrator) external DB SSL workaround on PR job: ${JOB_NAME}"
+  else
+    # Wait for the sonataflow database creation job to complete with robust error handling
+    if ! wait_for_job_completion "${NAME_SPACE_RBAC}" "${RELEASE_NAME_RBAC}-create-sonataflow-database" 10 10; then
+      echo "❌ Failed to create sonataflow database. Aborting RBAC deployment."
+      return 1
+    fi
+    oc -n "${NAME_SPACE_RBAC}" patch sfp sonataflow-platform --type=merge \
+      -p '{"spec":{"services":{"jobService":{"podTemplate":{"container":{"env":[{"name":"QUARKUS_DATASOURCE_REACTIVE_URL","value":"postgresql://postgress-external-db-primary.postgress-external-db.svc.cluster.local:5432/sonataflow?search_path=jobs-service&sslmode=require&ssl=true&trustAll=true"},{"name":"QUARKUS_DATASOURCE_REACTIVE_SSL_MODE","value":"require"},{"name":"QUARKUS_DATASOURCE_REACTIVE_TRUST_ALL","value":"true"}]}}}}}}'
+    oc rollout restart deployment/sonataflow-platform-jobs-service -n "${NAME_SPACE_RBAC}"
   fi
-  oc -n "${NAME_SPACE_RBAC}" patch sfp sonataflow-platform --type=merge \
-    -p '{"spec":{"services":{"jobService":{"podTemplate":{"container":{"env":[{"name":"QUARKUS_DATASOURCE_REACTIVE_URL","value":"postgresql://postgress-external-db-primary.postgress-external-db.svc.cluster.local:5432/sonataflow?search_path=jobs-service&sslmode=require&ssl=true&trustAll=true"},{"name":"QUARKUS_DATASOURCE_REACTIVE_SSL_MODE","value":"require"},{"name":"QUARKUS_DATASOURCE_REACTIVE_TRUST_ALL","value":"true"}]}}}}}}'
-  oc rollout restart deployment/sonataflow-platform-jobs-service -n "${NAME_SPACE_RBAC}"
 
   # initiate orchestrator workflows deployment
-  deploy_orchestrator_workflows "${NAME_SPACE_RBAC}"
+  if should_skip_orchestrator; then
+    log::warn "Skipping orchestrator workflows deployment on PR job: ${JOB_NAME}"
+  else
+    deploy_orchestrator_workflows "${NAME_SPACE_RBAC}"
+  fi
 }
 
 initiate_deployments() {
@@ -1262,7 +1351,11 @@ check_and_test() {
   if check_backstage_running "${release_name}" "${namespace}" "${url}" "${max_attempts}" "${wait_seconds}"; then
     echo "Display pods for verification..."
     oc get pods -n "${namespace}"
-    run_tests "${release_name}" "${namespace}" "${playwright_project}" "${url}"
+    if [[ "${SKIP_TESTS:-false}" == "true" ]]; then
+      log::info "SKIP_TESTS=true, skipping test execution for namespace: ${namespace}"
+    else
+      run_tests "${release_name}" "${namespace}" "${playwright_project}" "${url}"
+    fi
   else
     echo "Backstage is not running. Marking deployment as failed and continuing..."
     CURRENT_DEPLOYMENT=$((CURRENT_DEPLOYMENT + 1))
