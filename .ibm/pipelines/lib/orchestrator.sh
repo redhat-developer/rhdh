@@ -111,6 +111,48 @@ _orchestrator::wait_for_sonataflow_resources() {
   return 0
 }
 
+# Function: _orchestrator::wait_for_sonataflow_reconciliation
+# Description: Wait for SonataFlow operator to reconcile after CR patch
+# Arguments:
+#   $1 - namespace: Kubernetes namespace
+#   $2 - workflow: Workflow name
+#   $3 - timeout_secs: Timeout in seconds (default: 60)
+# Returns:
+#   0 - Success (operator reconciled)
+#   1 - Timeout waiting for reconciliation
+_orchestrator::wait_for_sonataflow_reconciliation() {
+  local namespace=$1
+  local workflow=$2
+  local timeout_secs=${3:-60}
+
+  log::info "Waiting for SonataFlow operator to reconcile $workflow..."
+
+  local start_time
+  start_time=$(date +%s)
+
+  while true; do
+    local current_time
+    current_time=$(date +%s)
+    local elapsed=$((current_time - start_time))
+
+    if [[ $elapsed -ge $timeout_secs ]]; then
+      log::warn "Timeout waiting for operator reconciliation after ${timeout_secs}s"
+      return 1
+    fi
+
+    # Check if deployment exists and has available replicas or is progressing
+    local ready
+    ready=$(oc get deployment "$workflow" -n "$namespace" -o jsonpath='{.status.conditions[?(@.type=="Progressing")].status}' 2> /dev/null || echo "")
+
+    if [[ "$ready" == "True" ]]; then
+      log::info "SonataFlow operator reconciled $workflow deployment"
+      return 0
+    fi
+
+    sleep 2
+  done
+}
+
 # Function: _orchestrator::patch_workflow_postgres
 # Description: Patch a single workflow with PostgreSQL configuration
 # Arguments:
@@ -161,6 +203,10 @@ EOF
   fi
 
   oc -n "$namespace" patch sonataflow "$workflow" --type merge -p "$patch_json"
+
+  # Wait for operator to reconcile before checking rollout status
+  _orchestrator::wait_for_sonataflow_reconciliation "$namespace" "$workflow" 60
+
   oc rollout status deployment/"$workflow" -n "$namespace" --timeout=600s
   return 0
 }
