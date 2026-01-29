@@ -4745,7 +4745,7 @@ __metadata:
 
 "@backstage/plugin-catalog-graph@patch:@backstage/plugin-catalog-graph@npm%3A0.5.3#./.yarn/patches/@backstage-plugin-catalog-graph-npm-0.5.3-761764c7c3.patch::locator=root%40workspace%3A.":
   version: 0.5.3
-  resolution: "@backstage/plugin-catalog-graph@patch:@backstage/plugin-catalog-graph@npm%3A0.5.3#./.yarn/patches/@backstage-plugin-catalog-graph-npm-0.5.3-761764c7c3.patch::version=0.5.3&hash=b2877f&locator=root%40workspace%3A."
+  resolution: "@backstage/plugin-catalog-graph@patch:@backstage/plugin-catalog-graph@npm%3A0.5.3#./.yarn/patches/@backstage-plugin-catalog-graph-npm-0.5.3-761764c7c3.patch::version=0.5.3&hash=62bb3c&locator=root%40workspace%3A."
   dependencies:
     "@backstage/catalog-client": ^1.12.1
     "@backstage/catalog-model": ^1.7.6
@@ -4771,7 +4771,7 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 171348bd773820c30ebf36ef2d062caa6ee6014d3af6a44805fc2a10510ab05a130c7f69031aaaa746d2a8f91469c0ab3b4d7ca0cc23004de702d726122186af
+  checksum: 1c8759060a83a5d4e19c2adebab2126d57715fcc4f5494852c63ed1a300b6003446282e72bf19a0efb7de351e3f3539f700a679a4caa59c97c1c0aa93e768059
   languageName: node
   linkType: hard
 
