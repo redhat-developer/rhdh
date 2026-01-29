@@ -1668,7 +1668,7 @@ __metadata:
     eslint: 9.39.2
     eslint-plugin-check-file: 3.3.1
     eslint-plugin-filenames: 1.3.2
-    eslint-plugin-playwright: 2.5.0
+    eslint-plugin-playwright: 2.5.1
     ioredis: 5.9.2
     isomorphic-fetch: 3.0.0
     js-yaml: 4.1.1
@@ -1788,14 +1788,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-playwright@npm:2.5.0":
-  version: 2.5.0
-  resolution: "eslint-plugin-playwright@npm:2.5.0"
+"eslint-plugin-playwright@npm:2.5.1":
+  version: 2.5.1
+  resolution: "eslint-plugin-playwright@npm:2.5.1"
   dependencies:
     globals: ^16.4.0
   peerDependencies:
     eslint: ">=8.40.0"
-  checksum: fce7cbf08f5f3347921313236ec97911152efe79dae77085ecbf224da53416b4a87412a9014a50170e3fe02bf7c76e55599c9cb3d9da622dcf898501734da90b
+  checksum: 86c586b6e8b50a1701ef1770c0958ee45f4eaa0619a27ef3d46d6834c2e480a546a3bc5d65595948dd019190d4b66ba6676e81ca2898c5c27b90f427021dd874
   languageName: node
   linkType: hard
 
