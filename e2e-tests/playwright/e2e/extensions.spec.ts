@@ -55,7 +55,7 @@ test.describe("Admin > Extensions", () => {
   });
 
   // FIXME https://issues.redhat.com/browse/RHIDP-8971
-  test.describe.skip("Extensions > Catalog", () => {
+  test.describe("Extensions > Catalog", () => {
     test("Verify search bar in extensions", async ({ page }) => {
       await uiHelper.searchInputAriaLabel("Dynatrace");
       await uiHelper.verifyHeading("DynaTrace");
