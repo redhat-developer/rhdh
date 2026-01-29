@@ -659,7 +659,12 @@ class RHDHDeployment {
     const backstageConfig = await this.readYamlToJson(configPath);
     expect(process.env.QUAY_REPO).toBeDefined();
     expect(process.env.TAG_NAME).toBeDefined();
-    backstageConfig.spec.application.image = `quay.io/${process.env.QUAY_REPO}:${process.env.TAG_NAME}`;
+    backstageConfig.spec.application.image = {
+      pullPolicy: "Always",
+      registry: "quay.io",
+      repository: process.env.QUAY_REPO,
+      tag: process.env.TAG_NAME,
+    };
     console.log(
       `Setting Backstage CR image to quay.io/${process.env.QUAY_REPO}:${process.env.TAG_NAME}`,
     );

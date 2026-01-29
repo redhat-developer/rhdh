@@ -4,7 +4,11 @@ metadata:
   name: rhdh
 spec:
   application:
-    image: "quay.io/rhdh/rhdh-hub-rhel9:next"
+    image:
+      pullPolicy: Always
+      registry: quay.io
+      repository: rhdh-community/rhdh
+      tag: next
     appConfig:
       configMaps:
         - name: app-config-rhdh
