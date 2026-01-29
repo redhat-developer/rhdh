@@ -17,6 +17,7 @@ test.describe("Verify Redis Cache DB", () => {
   let uiHelper: UIhelper;
   let portForward: ChildProcessWithoutNullStreams;
   let redis: Redis;
+
   test.beforeEach(async ({ page }) => {
     uiHelper = new UIhelper(page);
     common = new Common(page);

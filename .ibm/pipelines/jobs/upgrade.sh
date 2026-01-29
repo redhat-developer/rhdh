@@ -2,6 +2,8 @@
 
 # shellcheck source=.ibm/pipelines/lib/log.sh
 source "$DIR"/lib/log.sh
+# shellcheck source=.ibm/pipelines/lib/common.sh
+source "$DIR"/lib/common.sh
 # shellcheck source=.ibm/pipelines/utils.sh
 source "$DIR"/utils.sh
 # shellcheck source=.ibm/pipelines/playwright-projects.sh
@@ -14,7 +16,7 @@ handle_ocp_helm_upgrade() {
   export QUAY_REPO_BASE="${QUAY_REPO_BASE:-rhdh/rhdh-hub-rhel9}"
 
   # Dynamically determine the previous release version and chart version
-  previous_release_version=$(get_previous_release_version "$CHART_MAJOR_VERSION")
+  previous_release_version=$(common::get_previous_release_version "$CHART_MAJOR_VERSION")
   if [[ -z "$previous_release_version" ]]; then
     log::error "Failed to determine latest release version. Exiting."
     save_overall_result 1
@@ -30,7 +32,7 @@ handle_ocp_helm_upgrade() {
   log::info "Using previous release version: ${previous_release_version} and chart version: ${CHART_VERSION_BASE}"
   export TAG_NAME_BASE=$previous_release_version
 
-  oc_login
+  common::oc_login
 
   K8S_CLUSTER_ROUTER_BASE=$(oc get route console -n openshift-console -o=jsonpath='{.spec.host}' | sed 's/^[^.]*\.//')
   export K8S_CLUSTER_ROUTER_BASE

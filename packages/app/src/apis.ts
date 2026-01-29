@@ -20,6 +20,12 @@ import {
   ScmIntegrationsApi,
   scmIntegrationsApiRef,
 } from '@backstage/integration-react';
+import {
+  ALL_RELATION_PAIRS,
+  ALL_RELATIONS,
+  catalogGraphApiRef,
+  DefaultCatalogGraphApi,
+} from '@backstage/plugin-catalog-graph';
 import { UserSettingsStorage } from '@backstage/plugin-user-settings';
 
 import {
@@ -31,6 +37,10 @@ import {
   LearningPathApiClient,
   learningPathApiRef,
 } from './api/LearningPathApiClient';
+
+// Custom relations from @backstage-community/plugin-catalog-backend-module-scaffolder-relation-processor
+const RELATION_SCAFFOLDED_FROM = 'scaffoldedFrom';
+const RELATION_SCAFFOLDER_OF = 'scaffolderOf';
 
 export const apis: AnyApiFactory[] = [
   createApiFactory({
@@ -93,6 +103,24 @@ export const apis: AnyApiFactory[] = [
     },
     factory: ({ discoveryApi, configApi, identityApi }) =>
       new LearningPathApiClient({ discoveryApi, configApi, identityApi }),
+  }),
+  // Catalog Graph API with custom scaffolder relations
+  createApiFactory({
+    api: catalogGraphApiRef,
+    deps: {},
+    factory: () =>
+      new DefaultCatalogGraphApi({
+        knownRelations: [
+          ...ALL_RELATIONS,
+          RELATION_SCAFFOLDED_FROM,
+          RELATION_SCAFFOLDER_OF,
+        ],
+        knownRelationPairs: [
+          ...ALL_RELATION_PAIRS,
+          [RELATION_SCAFFOLDER_OF, RELATION_SCAFFOLDED_FROM],
+        ],
+        defaultRelationTypes: { exclude: [] },
+      }),
   }),
   // OIDC
   createApiFactory({

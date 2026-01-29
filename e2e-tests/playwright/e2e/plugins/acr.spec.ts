@@ -3,6 +3,7 @@ import { UIhelper } from "../../utils/ui-helper";
 import { Common, setupBrowser } from "../../utils/common";
 
 let page;
+
 test.describe("Test ACR plugin", () => {
   test.beforeAll(async () => {
     test.info().annotations.push({
@@ -15,6 +16,7 @@ test.describe("Test ACR plugin", () => {
   let common: Common;
   const dateRegex =
     /(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s\d{1,2},\s\d{4}/gm;
+
   test.beforeAll(async ({ browser }, testInfo) => {
     page = (await setupBrowser(browser, testInfo)).page;
 

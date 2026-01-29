@@ -19,7 +19,7 @@ upstream:
         valueFrom:
           secretKeyRef:
             key: backend-secret
-            name: '{{ include "janus-idp.backend-secret-name" $ }}'
+            name: '{{ include "rhdh.backend-secret-name" $ }}'
     extraVolumeMounts:
       - mountPath: /opt/app-root/src/dynamic-plugins-root
         name: dynamic-plugins-root

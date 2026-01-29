@@ -7,6 +7,8 @@ global:
         disabled: true
       - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-org-dynamic
         disabled: true
+      - package: oci://quay.io/rh-ee-jhe/catalog-github-org-transformer:v0.1.0!internal-backstage-plugin-catalog-backend-module-github-org-transformer
+        disabled: true
       - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-msgraph-dynamic
         disabled: true
       - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
@@ -157,7 +159,7 @@ upstream:
         valueFrom:
           secretKeyRef:
             key: backend-secret
-            name: '{{ include "janus-idp.backend-secret-name" $ }}'
+            name: '{{ include "rhdh.backend-secret-name" $ }}'
       - name: POSTGRESQL_ADMIN_PASSWORD
         valueFrom:
           secretKeyRef:

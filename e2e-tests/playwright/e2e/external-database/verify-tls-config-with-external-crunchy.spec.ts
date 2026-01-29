@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { UIhelper } from "../../utils/ui-helper";
 import { Common } from "../../utils/common";
+
 test.describe("Verify TLS configuration with external Crunchy Postgres DB", () => {
   test.beforeAll(async () => {
     test.info().annotations.push(

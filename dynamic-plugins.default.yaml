@@ -8,6 +8,11 @@
   # https://github.com/redhat-developer/rhdh/blob/main/.github/workflows/update-dynamic-plugins-default.yaml#L44-L75
   
 plugins:
+- package: oci://quay.io/rhdh/backstage-community-plugin-analytics-provider-segment@sha256:e96109f420c3725191dddbc43bec29f6e4e66537e9767aec20ba114ef521d920!backstage-community-plugin-analytics-provider-segment
+# Tag: 1.10.0--1.22.2, Build date: 2026-01-27T20:08:42Z
+  # new approach using oci images: to switch to the new approach, remove
+  # these comments + the next two lines, but keep the pluginConfig details.
+  disabled: true
 - package: ./dynamic-plugins/dist/backstage-community-plugin-analytics-provider-segment
   disabled: false
   pluginConfig:
@@ -32,6 +37,11 @@ plugins:
           backstageVersion: ${BACKSTAGE_VERSION}
 - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-regex-dynamic
   disabled: false
+- package: oci://quay.io/rhdh/backstage-plugin-techdocs@sha256:40e9489ad29ee0c55d56a2feccf6008e089202eaed9b929726cbf8a2853e8220!backstage-plugin-techdocs
+# Tag: 1.10.0--1.16.0, Build date: 2026-01-27T20:27:42Z
+  # new approach using oci images: to switch to the new approach, remove
+  # these comments + the next two lines, but keep the pluginConfig details.
+  disabled: true
 - package: ./dynamic-plugins/dist/backstage-plugin-techdocs
   disabled: false
   pluginConfig:
@@ -85,6 +95,11 @@ plugins:
         runIn: local
       publisher:
         type: local
+- package: oci://quay.io/rhdh/backstage-plugin-techdocs-module-addons-contrib@sha256:afd09574e841b35b8b3f442fffae8db7869038314ec271275d7415b8eb34e3ad!backstage-plugin-techdocs-module-addons-contrib
+# Tag: 1.10.0--1.1.30, Build date: 2026-01-27T20:21:25Z
+  # new approach using oci images: to switch to the new approach, remove
+  # these comments + the next two lines, but keep the pluginConfig details.
+  disabled: true
 - package: ./dynamic-plugins/dist/backstage-plugin-techdocs-module-addons-contrib
   disabled: false
   pluginConfig:
@@ -93,6 +108,11 @@ plugins:
         backstage.plugin-techdocs-module-addons-contrib:
           techdocsAddons:
           - importName: ReportIssue
+- package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-adoption-insights@sha256:b43839738b49708d496583ce384aa87229d04ca6fd79c0894cc72b131650275a!red-hat-developer-hub-backstage-plugin-adoption-insights
+# Tag: 1.10.0--0.6.2, Build date: 2026-01-27T20:14:22Z
+  # new approach using oci images: to switch to the new approach, remove
+  # these comments + the next two lines, but keep the pluginConfig details.
+  disabled: true
 - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-adoption-insights
   disabled: false
   pluginConfig:
@@ -331,6 +351,11 @@ plugins:
           mountPoints:
           - mountPoint: application/listener
             importName: DynamicGlobalFloatingActionButton
+- package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-global-header@sha256:63c7992182ff22874c80709b3b981e5f31f215d26063d6dcd1ddd876f86a4756!red-hat-developer-hub-backstage-plugin-global-header
+# Tag: 1.10.0--1.20.1, Build date: 2026-01-29T12:01:22Z
+  # new approach using oci images: to switch to the new approach, remove
+  # these comments + the next two lines, but keep the pluginConfig details.
+  disabled: true
 - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-header
   disabled: false
   pluginConfig:
@@ -453,6 +478,11 @@ plugins:
             importName: LogoutButton
             config:
               priority: 10
+- package: oci://quay.io/rhdh/red-hat-developer-hub-backstage-plugin-quickstart@sha256:f1dd799a410008f7a71b07d8097bd5f3618fbcee74e2222b2505d1be7cbb90e3!red-hat-developer-hub-backstage-plugin-quickstart
+# Tag: 1.10.0--1.8.2, Build date: 2026-01-27T20:29:18Z
+  # new approach using oci images: to switch to the new approach, remove
+  # these comments + the next two lines, but keep the pluginConfig details.
+  disabled: true
 - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-quickstart
   disabled: false
   pluginConfig:
@@ -504,7 +534,7 @@ plugins:
           portal.
         cta:
           text: Import
-          link: /bulk-import/repositories
+          link: /bulk-import
       - title: Learn about the Catalog
         roles:
         - developer
@@ -540,12 +570,23 @@ plugins:
           mountPoints:
           - mountPoint: application/provider
             importName: QuickstartDrawerProvider
+          - mountPoint: application/internal/drawer-state
+            importName: QuickstartDrawerStateExposer
+          - mountPoint: application/internal/drawer-content
+            importName: QuickstartDrawerContent
+            config:
+              id: quickstart
           - mountPoint: global.header/help
             importName: QuickstartButton
             config:
               priority: 100
 - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-scaffolder-backend-module-quay:bs_1.45.3__2.14.0!backstage-community-plugin-scaffolder-backend-module-quay
   disabled: false
+- package: oci://quay.io/rhdh/backstage-community-plugin-acr@sha256:58eff4ccec4c90f27f5b0999f11e0122c80fbec8e9db866a926f929366b86af2!backstage-community-plugin-acr
+# Tag: 1.10.0--1.20.1, Build date: 2026-01-27T18:44:02Z
+  # new approach using oci images: to switch to the new approach, remove
+  # these comments + the next two lines, but keep the pluginConfig details.
+  disabled: true
 - package: ./dynamic-plugins/dist/backstage-community-plugin-acr
   disabled: true
   pluginConfig:
@@ -587,6 +628,11 @@ plugins:
       providers:
         pingIdentityOrg: {}
 - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic
+  disabled: true
+- package: oci://quay.io/rhdh/backstage-community-plugin-ocm@sha256:05cf33c4d9461a76adc72e3c7b8fd2e69a03ca30ebca7116bbca84d1935385d9!backstage-community-plugin-ocm
+# Tag: 1.10.0--5.11.1, Build date: 2026-01-27T16:35:58Z
+  # new approach using oci images: to switch to the new approach, remove
+  # these comments + the next two lines, but keep the pluginConfig details.
   disabled: true
 - package: ./dynamic-plugins/dist/backstage-community-plugin-ocm
   disabled: true
@@ -668,6 +714,11 @@ plugins:
               icon: rbacIcon
 - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-kubernetes-dynamic
   disabled: true
+- package: oci://quay.io/rhdh/backstage-community-plugin-tech-radar@sha256:544ba78dd3bc933b46f937a5dc4961176249c606e3a85ecb741f2d90d2cb09a5!backstage-community-plugin-tech-radar
+# Tag: 1.10.0--1.13.0, Build date: 2026-01-27T20:01:12Z
+  # new approach using oci images: to switch to the new approach, remove
+  # these comments + the next two lines, but keep the pluginConfig details.
+  disabled: true
 - package: ./dynamic-plugins/dist/backstage-community-plugin-tech-radar
   disabled: true
   pluginConfig:
@@ -695,6 +746,11 @@ plugins:
   pluginConfig:
     techRadar:
       url: ${TECH_RADAR_DATA_URL}
+- package: oci://quay.io/rhdh/backstage-community-plugin-topology@sha256:af526fc69c131e5d9fc3ac59e339ba7fa4584ef092393d78e3be6f1619a51cb6!backstage-community-plugin-topology
+# Tag: 1.10.0--2.9.3, Build date: 2026-01-27T16:44:24Z
+  # new approach using oci images: to switch to the new approach, remove
+  # these comments + the next two lines, but keep the pluginConfig details.
+  disabled: true
 - package: ./dynamic-plugins/dist/backstage-community-plugin-topology
   disabled: true
   pluginConfig:
@@ -827,6 +883,11 @@ plugins:
           authProvider: serviceAccount
           skipTLSVerify: true
           serviceAccountToken: ${K8S_CLUSTER_TOKEN}
+- package: oci://quay.io/rhdh/backstage-plugin-notifications@sha256:7d7892b09cf1a74a46a0d4c55aacc16bce7078c5ec4b22b490d2228c9c46831f!backstage-plugin-notifications
+# Tag: 1.10.0--0.5.11, Build date: 2026-01-27T20:20:06Z
+  # new approach using oci images: to switch to the new approach, remove
+  # these comments + the next two lines, but keep the pluginConfig details.
+  disabled: true
 - package: ./dynamic-plugins/dist/backstage-plugin-notifications
   disabled: true
   pluginConfig:
@@ -887,7 +948,7 @@ plugins:
           - name: bulkImportIcon
             importName: BulkImportIcon
           dynamicRoutes:
-          - path: /bulk-import/repositories
+          - path: /bulk-import
             importName: BulkImportPage
             menuItem:
               icon: bulkImportIcon
@@ -906,7 +967,7 @@ plugins:
           default:
             baseUrl: ${THREESCALE_BASE_URL}
             accessToken: ${THREESCALE_ACCESS_TOKEN}
-- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-argocd-backend:bs_1.45.3__1.0.0!backstage-community-plugin-argocd-backend
+- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-argocd-backend:bs_1.45.3__1.0.2!backstage-community-plugin-argocd-backend
   disabled: true
   pluginConfig:
     argocd:
@@ -918,7 +979,7 @@ plugins:
         - name: argoInstance1
           url: ${ARGOCD_INSTANCE1_URL}
           token: ${ARGOCD_AUTH_TOKEN}
-- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-argocd:bs_1.45.3__2.4.0!backstage-community-plugin-argocd
+- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-argocd:bs_1.45.3__2.4.3!backstage-community-plugin-argocd
   disabled: true
   pluginConfig:
     dynamicPlugins:
@@ -1123,8 +1184,6 @@ plugins:
               if:
                 anyOf:
                 - isQuayAvailable
-- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-scaffolder-backend-module-servicenow:bs_1.45.3__2.11.0!backstage-community-plugin-scaffolder-backend-module-servicenow
-  disabled: true
   pluginConfig:
     servicenow:
       baseUrl: ${SERVICENOW_BASE_URL}

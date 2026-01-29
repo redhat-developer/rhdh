@@ -15,9 +15,11 @@ source "${DIR}/lib/log.sh"
 export OPENSHIFT_CI="${OPENSHIFT_CI:-false}"
 if [[ -z "${OPENSHIFT_CI}" || "${OPENSHIFT_CI}" == "false" ]]; then
   # NOTE: Use this file to override the environment variables for the local testing.
-  log::debug "Sourcing env_override.local.sh"
-  # shellcheck source=.ibm/pipelines/env_override.local.sh
-  source "${DIR}/env_override.local.sh"
+  if [[ -f "${DIR}/env_override.local.sh" ]]; then
+    log::debug "Sourcing env_override.local.sh"
+    # shellcheck source=.ibm/pipelines/env_override.local.sh
+    source "${DIR}/env_override.local.sh"
+  fi
 fi
 
 log::debug "Sourcing env_variables.sh"
