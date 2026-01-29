@@ -1,6 +1,13 @@
 import { UIhelper } from "./ui-helper";
 import { authenticator } from "otplib";
-import { test, Browser, expect, Page, TestInfo } from "@playwright/test";
+import {
+  test,
+  Browser,
+  expect,
+  Page,
+  TestInfo,
+  Locator,
+} from "@playwright/test";
 import { SETTINGS_PAGE_COMPONENTS } from "../support/page-objects/page-obj";
 import { WAIT_OBJECTS } from "../support/page-objects/global-obj";
 import * as path from "path";
@@ -385,6 +392,134 @@ export class Common {
 
     return this.handleGitHubPopupLogin(popup, username, password, twofactor);
   }
+
+  private async handleGitlabPopupLogin(
+    popup: Page,
+    username: string,
+    password: string,
+  ): Promise<string> {
+    await expect(async () => {
+      await popup.waitForLoadState("domcontentloaded");
+      expect(popup).toBeTruthy();
+    }).toPass({
+      intervals: [5_000, 10_000],
+      timeout: 20 * 1000,
+    });
+
+    // Check if popup closes automatically
+    try {
+      await popup.waitForEvent("close", { timeout: 5000 });
+      return "Already logged in";
+    } catch {
+      // Popup didn't close, proceed with login
+    }
+
+    try {
+      await popup.locator("#user_login").click({ timeout: 5000 });
+      await popup.locator("#user_login").fill(username, { timeout: 5000 });
+      await popup.locator("#user_password").click({ timeout: 5000 });
+      await popup.locator("#user_password").fill(password, { timeout: 5000 });
+      await popup.getByTestId("sign-in-button").click({ timeout: 5000 });
+
+      // Wait for navigation after sign-in (either to 2FA, authorization, or close)
+      await popup
+        .waitForLoadState("domcontentloaded", { timeout: 10000 })
+        .catch(() => {
+          // Continue if load state check fails
+        });
+
+      // Handle 2FA if present
+      const twoFactorInput = popup.locator("#user_otp_attempt");
+      if (await twoFactorInput.isVisible({ timeout: 5000 })) {
+        // If 2FA is required, we'll need to handle it
+        // For now, we'll wait for the popup to close or authorization
+        await popup.waitForEvent("close", { timeout: 20000 });
+        return "Login successful";
+      }
+
+      // Wait for authorization button to appear and click it
+      // Try data-testid first, then fallback to text-based selector
+      const authorization = popup.getByTestId("authorize-button");
+      const authorizationByText = popup.locator('button:has-text("Authorize")');
+
+      // Wait for button to appear with retry logic
+      let buttonToClick: Locator | null = null;
+      await expect(async () => {
+        // Check data-testid first
+        if (
+          await authorization.isVisible({ timeout: 2000 }).catch(() => false)
+        ) {
+          buttonToClick = authorization;
+          return true;
+        }
+        // Fallback to text-based selector
+        if (
+          await authorizationByText
+            .isVisible({ timeout: 2000 })
+            .catch(() => false)
+        ) {
+          buttonToClick = authorizationByText;
+          return true;
+        }
+        throw new Error("Authorization button not found");
+      }).toPass({
+        intervals: [1000, 2000],
+        timeout: 15000,
+      });
+
+      if (!buttonToClick) {
+        throw new Error("Failed to find authorization button");
+      }
+
+      // Click on document/body first to potentially dismiss any overlays (similar to GitHub flow)
+      await popup
+        .getByRole("document")
+        .click({ timeout: 1000 })
+        .catch(() => {
+          // Ignore if document click fails
+        });
+
+      // Wait for button to be enabled and clickable
+      await buttonToClick.waitFor({ state: "visible", timeout: 5000 });
+      await expect(buttonToClick).toBeEnabled({ timeout: 10000 });
+      await buttonToClick.scrollIntoViewIfNeeded({ timeout: 5000 });
+      // Small delay to ensure any animations/transitions complete
+      await popup.waitForTimeout(1000);
+
+      try {
+        await buttonToClick.click({ timeout: 5000 });
+      } catch {
+        // If regular click fails, try force click
+        // eslint-disable-next-line playwright/no-force-option
+        await buttonToClick.click({ force: true, timeout: 5000 });
+      }
+
+      await popup.waitForEvent("close", { timeout: 20000 });
+      return "Login successful";
+    } catch (e) {
+      // If popup close timeout, check if popup is already closed
+      if (popup.isClosed()) {
+        return "Login successful";
+      }
+      // Re-throw other errors
+      throw e;
+    }
+  }
+
+  async gitlabLogin(username: string, password: string) {
+    await this.page.goto("/");
+    await this.page.waitForSelector(
+      `p:has-text("${t["rhdh"][lang]["signIn.providers.gitlab.message"]}")`,
+    );
+
+    const [popup] = await Promise.all([
+      this.page.waitForEvent("popup"),
+      this.uiHelper.clickButton(t["core-components"][lang]["signIn.title"]),
+    ]);
+
+    return this.handleGitlabPopupLogin(popup, username, password);
+  }
+
   async MicrosoftAzureLogin(username: string, password: string) {
     let popup: Page;
     this.page.once("popup", (asyncnewPage) => {
