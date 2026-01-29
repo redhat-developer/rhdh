@@ -4,6 +4,17 @@
 source "${DIR}/reporting.sh"
 # shellcheck source=.ibm/pipelines/lib/log.sh
 source "${DIR}/lib/log.sh"
+# shellcheck source=.ibm/pipelines/lib/common.sh
+source "${DIR}/lib/common.sh"
+# shellcheck source=.ibm/pipelines/lib/operators.sh
+source "${DIR}/lib/operators.sh"
+# shellcheck source=.ibm/pipelines/lib/k8s-wait.sh
+source "${DIR}/lib/k8s-wait.sh"
+# shellcheck source=.ibm/pipelines/lib/orchestrator.sh
+source "${DIR}/lib/orchestrator.sh"
+
+# Constants
+TEKTON_PIPELINES_WEBHOOK="tekton-pipelines-webhook"
 
 retrieve_pod_logs() {
   local pod_name=$1
@@ -82,262 +93,38 @@ yq_merge_value_files() {
   fi
 }
 
-# Waits for a Kubernetes/OpenShift deployment to become ready within a specified timeout period
-wait_for_deployment() {
-  local namespace=$1
-  local resource_name=$2
-  local timeout_minutes=${3:-5} # Default timeout: 5 minutes
-  local check_interval=${4:-10} # Default interval: 10 seconds
+# ==============================================================================
+# Orchestrator Functions - Delegate to lib/orchestrator.sh
+# ==============================================================================
+should_skip_orchestrator() { orchestrator::should_skip; }
 
-  # Validate required parameters
-  if [[ -z "$namespace" || -z "$resource_name" ]]; then
-    log::error "Missing required parameters"
-    log::info "Usage: wait_for_deployment <namespace> <resource-name> [timeout_minutes] [check_interval_seconds]"
-    log::info "Example: wait_for_deployment my-namespace my-deployment 5 10"
-    return 1
-  fi
-
-  local max_attempts=$((timeout_minutes * 60 / check_interval))
-
-  log::info "Waiting for resource '$resource_name' in namespace '$namespace' (timeout: ${timeout_minutes}m)..."
-
-  for ((i = 1; i <= max_attempts; i++)); do
-    # Get the first pod name matching the resource name
-    local pod_name
-    pod_name=$(oc get pods -n "$namespace" | grep "$resource_name" | awk '{print $1}' | head -n 1)
-
-    if [[ -n "$pod_name" ]]; then
-      # Check if pod's Ready condition is True
-      local is_ready
-      is_ready=$(oc get pod "$pod_name" -n "$namespace" -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}')
-      # Verify pod is both Ready and Running
-      if [[ "$is_ready" == "True" ]] \
-        && oc get pod "$pod_name" -n "$namespace" | grep -q "Running"; then
-        log::success "Pod '$pod_name' is running and ready"
-        return 0
-      else
-        log::debug "Pod '$pod_name' is not ready (Ready: $is_ready)"
-      fi
-    else
-      log::warn "No pods found matching '$resource_name' in namespace '$namespace'"
-    fi
-
-    log::debug "Still waiting... (${i}/${max_attempts} checks)"
-    sleep "$check_interval"
-  done
-
-  # Timeout occurred
-  log::error "Timeout waiting for resource to be ready. Please check:"
-  log::info "oc get pods -n $namespace | grep $resource_name"
-  return 1
+disable_orchestrator_plugins_in_values() {
+  orchestrator::disable_plugins_in_values "$@"
+  return $?
 }
 
-# Wait for a Kubernetes job to complete with proper error handling and detailed logging
-wait_for_job_completion() {
-  local namespace=$1
-  local job_name=$2
-  local timeout_minutes=${3:-10} # Default timeout: 10 minutes
-  local check_interval=${4:-10}  # Default interval: 10 seconds
+# ==============================================================================
+# K8s Wait Functions - Delegate to lib/k8s-wait.sh
+# ==============================================================================
+wait_for_deployment() { k8s_wait::deployment "$@"; }
 
-  # Validate required parameters
-  if [[ -z "$namespace" || -z "$job_name" ]]; then
-    log::error "Missing required parameters"
-    log::info "Usage: wait_for_job_completion <namespace> <job-name> [timeout_minutes] [check_interval_seconds]"
-    log::info "Example: wait_for_job_completion my-namespace my-job 10 10"
-    return 1
-  fi
+wait_for_job_completion() { k8s_wait::job "$@"; }
 
-  local max_attempts=$((timeout_minutes * 60 / check_interval))
+wait_for_svc() { k8s_wait::service "$@"; }
 
-  log::info "Waiting for job '$job_name' to be created in namespace '$namespace'..."
+wait_for_endpoint() { k8s_wait::endpoint "$@"; }
 
-  # Phase 1: Wait for job to exist (with timeout)
-  for ((i = 1; i <= max_attempts; i++)); do
-    if oc get job "$job_name" -n "$namespace" &> /dev/null; then
-      log::success "Job '$job_name' found!"
-      break
-    fi
+# ==============================================================================
+# Operator Functions - Delegate to lib/operators.sh
+# ==============================================================================
+install_subscription() { operator::install_subscription "$@"; }
 
-    if [[ $i -eq $max_attempts ]]; then
-      log::hr
-      log::error "JOB FAILURE"
-      log::hr
-      log::info "Job: $job_name"
-      log::info "Namespace: $namespace"
-      log::error "Reason: Job was not created within ${timeout_minutes} minutes"
-      log::info "Timestamp: $(date)"
-      log::info ""
-      log::info "Recent events in namespace:"
-      oc get events -n "$namespace" --sort-by='.lastTimestamp' | tail -20
-      log::info ""
-      log::info "NOTE: Full pod logs will be saved by save_all_pod_logs() at the end of deployment"
-      log::hr
-      return 1
-    fi
-
-    log::debug "Job not yet created... (${i}/${max_attempts} checks)"
-    sleep "$check_interval"
-  done
-
-  # Phase 2: Wait for job to complete
-  log::info "Waiting for job '$job_name' to complete (timeout: ${timeout_minutes}m)..."
-
-  for ((i = 1; i <= max_attempts; i++)); do
-    # Get job status
-    local job_status
-    job_status=$(oc get job "$job_name" -n "$namespace" -o jsonpath='{.status.conditions[?(@.type=="Complete")].status}' 2> /dev/null)
-    local job_failed
-    job_failed=$(oc get job "$job_name" -n "$namespace" -o jsonpath='{.status.conditions[?(@.type=="Failed")].status}' 2> /dev/null)
-
-    # Check if job completed successfully
-    if [[ "$job_status" == "True" ]]; then
-      log::success "Job '$job_name' completed successfully!"
-      return 0
-    fi
-
-    # Check if job failed
-    if [[ "$job_failed" == "True" ]]; then
-      echo "=========================================="
-      echo "❌ JOB FAILURE"
-      echo "=========================================="
-      echo "Job: $job_name"
-      echo "Namespace: $namespace"
-      echo "Reason: Job failed"
-      echo "Timestamp: $(date)"
-      echo ""
-
-      local pod_name
-      pod_name=$(oc get pods -n "$namespace" -l job-name="$job_name" --sort-by=.metadata.creationTimestamp -o name 2> /dev/null | tail -1 | sed 's|pod/||')
-
-      echo "--- Job Description ---"
-      oc describe job "$job_name" -n "$namespace"
-      echo ""
-
-      if [[ -n "$pod_name" ]]; then
-        echo "--- Pod: $pod_name ---"
-        echo "Pod Status:"
-        oc get pod "$pod_name" -n "$namespace" -o wide
-        echo ""
-        echo "Pod Logs (last 100 lines):"
-        oc logs "$pod_name" -n "$namespace" --tail=100 || echo "Could not retrieve logs"
-        echo ""
-        echo "Pod Events:"
-        oc get events -n "$namespace" --field-selector involvedObject.name="$pod_name" | tail -20
-      else
-        echo "⚠️  Could not find pod for job '$job_name'"
-        echo "Listing all pods in namespace:"
-        oc get pods -n "$namespace"
-      fi
-
-      echo ""
-      echo "NOTE: Full pod logs will be saved by save_all_pod_logs() at the end of deployment"
-      echo "=========================================="
-      return 1
-    fi
-
-    # Show progress
-    local active_pods succeeded_pods failed_pods
-    active_pods=$(oc get job "$job_name" -n "$namespace" -o jsonpath='{.status.active}' 2> /dev/null || echo "0")
-    succeeded_pods=$(oc get job "$job_name" -n "$namespace" -o jsonpath='{.status.succeeded}' 2> /dev/null || echo "0")
-    failed_pods=$(oc get job "$job_name" -n "$namespace" -o jsonpath='{.status.failed}' 2> /dev/null || echo "0")
-
-    log::info "Job status - Active: $active_pods, Succeeded: $succeeded_pods, Failed: $failed_pods (${i}/${max_attempts} checks)"
-
-    sleep "$check_interval"
-  done
-
-  # Timeout occurred
-  echo "=========================================="
-  echo "❌ JOB TIMEOUT"
-  echo "=========================================="
-  echo "Job: $job_name"
-  echo "Namespace: $namespace"
-  echo "Reason: Job did not complete within ${timeout_minutes} minutes"
-  echo "Timestamp: $(date)"
-  echo ""
-
-  local pod_name
-  pod_name=$(oc get pods -n "$namespace" -l job-name="$job_name" --sort-by=.metadata.creationTimestamp -o name 2> /dev/null | tail -1 | sed 's|pod/||')
-
-  echo "--- Job Description ---"
-  oc describe job "$job_name" -n "$namespace"
-  echo ""
-
-  if [[ -n "$pod_name" ]]; then
-    echo "--- Pod: $pod_name ---"
-    echo "Pod Status:"
-    oc get pod "$pod_name" -n "$namespace" -o wide
-    echo ""
-    echo "Pod Logs (last 100 lines):"
-    oc logs "$pod_name" -n "$namespace" --tail=100 || echo "Could not retrieve logs"
-    echo ""
-    echo "Pod Events:"
-    oc get events -n "$namespace" --field-selector involvedObject.name="$pod_name" | tail -20
-  else
-    echo "⚠️  Could not find pod for job '$job_name'"
-    echo "Listing all pods in namespace:"
-    oc get pods -n "$namespace"
-  fi
-
-  echo ""
-  echo "NOTE: Full pod logs will be saved by save_all_pod_logs() at the end of deployment"
-  echo "=========================================="
-  return 1
-}
-
-wait_for_svc() {
-  local svc_name=$1
-  local namespace=$2
-  local timeout=${3:-300}
-
-  timeout "${timeout}" bash -c "
-    log::info ${svc_name}
-    while ! oc get svc $svc_name -n $namespace &> /dev/null; do
-      log::info \"Waiting for ${svc_name} service to be created...\"
-      sleep 5
-    done
-    log::success \"Service ${svc_name} is created.\"
-    " || log::error "Error: Timed out waiting for $svc_name service creation."
-}
-
-wait_for_endpoint() {
-  local endpoint_name=$1
-  local namespace=$2
-  local timeout=${3:-500}
-
-  timeout "${timeout}" bash -c "
-    echo ${endpoint_name}
-    while ! kubectl get endpoints $endpoint_name -n $namespace &> /dev/null; do
-      log::info \"Waiting for ${endpoint_name} endpoint to be created...\"
-      sleep 5
-    done
-    log::success \"Endpoint ${endpoint_name} is created.\"
-    " || log::error "Error: Timed out waiting for $endpoint_name endpoint creation."
-}
-
-# Creates an OpenShift Operator subscription
-install_subscription() {
-  name=$1             # Name of the subscription
-  namespace=$2        # Namespace to install the operator
-  channel=$3          # Channel to subscribe to
-  package=$4          # Package name of the operator
-  source_name=$5      # Name of the source catalog
-  source_namespace=$6 # Source namespace (typically openshift-marketplace or olm)
-  # Apply the subscription manifest
-  oc apply -f - << EOD
-apiVersion: operators.coreos.com/v1alpha1
-kind: Subscription
-metadata:
-  name: $name
-  namespace: $namespace
-spec:
-  channel: $channel
-  installPlanApproval: Automatic
-  name: $package
-  source: $source_name
-  sourceNamespace: $source_namespace
-EOD
-}
+# ==============================================================================
+# FUTURE MODULE: lib/namespace.sh
+# Functions: configure_namespace, delete_namespace, force_delete_namespace,
+#            remove_finalizers_from_resources, setup_image_pull_secret,
+#            create_secret_dockerconfigjson, add_image_pull_secret_to_namespace_default_serviceaccount
+# ==============================================================================
 
 create_secret_dockerconfigjson() {
   namespace=$1
@@ -922,23 +709,49 @@ waitfor_tekton_pipelines() {
 
 delete_tekton_pipelines() {
   log::info "Checking for Tekton Pipelines installation..."
-  # Check if tekton-pipelines namespace exists
-  if kubectl get namespace tekton-pipelines &> /dev/null; then
-    log::info "Found Tekton Pipelines installation. Attempting to delete..."
-    # Delete the resources and ignore errors
-    kubectl delete -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml --ignore-not-found=true 2> /dev/null || true
-    # Wait for namespace deletion (with timeout)
-    log::info "Waiting for Tekton Pipelines namespace to be deleted..."
-    timeout 30 bash -c '
-        while kubectl get namespace tekton-pipelines &> /dev/null; do
-            echo "Waiting for tekton-pipelines namespace deletion..."
-            sleep 5
-        done
-        log::success "Tekton Pipelines deleted successfully."
-        ' || log::warn "Warning: Timed out waiting for namespace deletion, continuing..."
-  else
+  if ! kubectl get namespace tekton-pipelines &> /dev/null; then
     log::info "Tekton Pipelines is not installed. Nothing to delete."
+    return 0
   fi
+
+  log::info "Found Tekton Pipelines installation. Attempting to delete..."
+  kubectl delete -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml --ignore-not-found=true 2> /dev/null || true
+
+  # Wait for namespace deletion with polling
+  log::info "Waiting for Tekton Pipelines namespace to be deleted..."
+  if common::poll_until \
+    "! kubectl get namespace tekton-pipelines" \
+    6 5 \
+    "Tekton Pipelines deleted successfully"; then
+    return 0
+  fi
+  log::warn "Timed out waiting for namespace deletion, continuing..."
+}
+
+# ==============================================================================
+# Cluster Setup Functions
+# These functions configure the cluster for different deployment types
+# Orchestrator functions are delegated to lib/orchestrator.sh
+# ==============================================================================
+
+install_orchestrator_infra_chart() {
+  orchestrator::install_infra_chart
+  return $?
+}
+
+deploy_orchestrator_workflows() {
+  orchestrator::deploy_workflows "$@"
+  return $?
+}
+
+deploy_orchestrator_workflows_operator() {
+  orchestrator::deploy_workflows_operator "$@"
+  return $?
+}
+
+enable_orchestrator_plugins_op() {
+  orchestrator::enable_plugins_operator "$@"
+  return $?
 }
 
 cluster_setup_ocp_helm() {
@@ -984,41 +797,12 @@ cluster_setup_k8s_operator() {
 }
 
 cluster_setup_k8s_helm() {
-  # first install all operators to run the installation in parallel
-  # install_olm
-  install_tekton_pipelines
-  # install_crunchy_postgres_k8s_operator # Works with K8s but disabled in values file
-
-  # then wait for the right status one by one
-  waitfor_tekton_pipelines
-  # waitfor_crunchy_postgres_k8s_operator
-}
-
-install_orchestrator_infra_chart() {
-  ORCH_INFRA_NS="orchestrator-infra"
-  configure_namespace ${ORCH_INFRA_NS}
-
-  log::info "Deploying orchestrator-infra chart"
-  cd "${DIR}"
-  helm upgrade -i orch-infra -n "${ORCH_INFRA_NS}" \
-    "oci://quay.io/rhdh/orchestrator-infra-chart" --version "${CHART_VERSION}" \
-    --wait --timeout=5m \
-    --set serverlessLogicOperator.subscription.spec.installPlanApproval=Automatic \
-    --set serverlessOperator.subscription.spec.installPlanApproval=Automatic
-
-  until [ "$(oc get pods -n openshift-serverless --no-headers 2> /dev/null | wc -l)" -gt 0 ]; do
-    sleep 5
-  done
-
-  until [ "$(oc get pods -n openshift-serverless-logic --no-headers 2> /dev/null | wc -l)" -gt 0 ]; do
-    sleep 5
-  done
-
-  oc wait pod --all --for=condition=Ready --namespace=openshift-serverless --timeout=5m
-  oc wait pod --all --for=condition=Ready --namespace=openshift-serverless-logic --timeout=5m
-
-  oc get crd | grep "sonataflow" || echo "Sonataflow CRDs not found"
-  oc get crd | grep "knative" || echo "Serverless CRDs not found"
+  # Tekton not installed for K8s deployments (AKS/EKS/GKE)
+  # Tekton tests are not executed in showcase-k8s or showcase-rbac-k8s projects
+  log::info "Skipping Tekton installation for K8s Helm deployment"
+  # operator::install_olm
+  # operator::install_tekton
+  # operator::install_postgres_k8s # Works with K8s but disabled in values file
 }
 
 # Helper function to get common helm set parameters
@@ -1074,14 +858,18 @@ rbac_deployment() {
   perform_helm_install "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${HELM_CHART_RBAC_VALUE_FILE_NAME}"
 
   # NOTE: This is a workaround to allow the sonataflow platform to connect to the external postgres db using ssl.
-  # Wait for the sonataflow database creation job to complete with robust error handling
-  if ! wait_for_job_completion "${NAME_SPACE_RBAC}" "${RELEASE_NAME_RBAC}-create-sonataflow-database" 10 10; then
-    echo "❌ Failed to create sonataflow database. Aborting RBAC deployment."
-    return 1
+  if should_skip_orchestrator; then
+    log::warn "Skipping sonataflow (orchestrator) external DB SSL workaround on PR job: ${JOB_NAME}"
+  else
+    # Wait for the sonataflow database creation job to complete with robust error handling
+    if ! wait_for_job_completion "${NAME_SPACE_RBAC}" "${RELEASE_NAME_RBAC}-create-sonataflow-database" 10 10; then
+      echo "❌ Failed to create sonataflow database. Aborting RBAC deployment."
+      return 1
+    fi
+    oc -n "${NAME_SPACE_RBAC}" patch sfp sonataflow-platform --type=merge \
+      -p '{"spec":{"services":{"jobService":{"podTemplate":{"container":{"env":[{"name":"QUARKUS_DATASOURCE_REACTIVE_POSTGRESQL_SSL_MODE","value":"allow"},{"name":"QUARKUS_DATASOURCE_REACTIVE_TRUST_ALL","value":"true"}]}}}}}}'
+    oc rollout restart deployment/sonataflow-platform-jobs-service -n "${NAME_SPACE_RBAC}"
   fi
-  oc -n "${NAME_SPACE_RBAC}" patch sfp sonataflow-platform --type=merge \
-    -p '{"spec":{"services":{"jobService":{"podTemplate":{"container":{"env":[{"name":"QUARKUS_DATASOURCE_REACTIVE_URL","value":"postgresql://postgress-external-db-primary.postgress-external-db.svc.cluster.local:5432/sonataflow?search_path=jobs-service&sslmode=require&ssl=true&trustAll=true"},{"name":"QUARKUS_DATASOURCE_REACTIVE_SSL_MODE","value":"require"},{"name":"QUARKUS_DATASOURCE_REACTIVE_TRUST_ALL","value":"true"}]}}}}}}'
-  oc rollout restart deployment/sonataflow-platform-jobs-service -n "${NAME_SPACE_RBAC}"
 
   # initiate orchestrator workflows deployment
   deploy_orchestrator_workflows "${NAME_SPACE_RBAC}"
@@ -1454,181 +1242,6 @@ get_previous_release_value_file() {
   fi
 }
 
-# Helper function to deploy workflows for orchestrator testing
-deploy_orchestrator_workflows() {
-  local namespace=$1
-
-  local WORKFLOW_REPO="https://github.com/rhdh-orchestrator-test/serverless-workflows.git"
-  local WORKFLOW_DIR="${DIR}/serverless-workflows"
-  local WORKFLOW_MANIFESTS="${WORKFLOW_DIR}/workflows/experimentals/user-onboarding/manifests/"
-
-  rm -rf "${WORKFLOW_DIR}"
-  git clone "${WORKFLOW_REPO}" "${WORKFLOW_DIR}"
-
-  if [[ "$namespace" == "${NAME_SPACE_RBAC}" ]]; then
-    local pqsl_secret_name="postgres-cred"
-    local pqsl_user_key="POSTGRES_USER"
-    local pqsl_password_key="POSTGRES_PASSWORD"
-    local pqsl_svc_name="postgress-external-db-primary"
-    local patch_namespace="${NAME_SPACE_POSTGRES_DB}"
-  else
-    local pqsl_secret_name="rhdh-postgresql-svcbind-postgres"
-    local pqsl_user_key="username"
-    local pqsl_password_key="password"
-    local pqsl_svc_name="rhdh-postgresql"
-    local patch_namespace="$namespace"
-  fi
-
-  oc apply -f "${WORKFLOW_MANIFESTS}"
-
-  helm repo add orchestrator-workflows https://rhdhorchestrator.io/serverless-workflows
-  helm install greeting orchestrator-workflows/greeting -n "$namespace"
-
-  until [[ $(oc get sf -n "$namespace" --no-headers 2> /dev/null | wc -l) -eq 2 ]]; do
-    echo "No sf resources found. Retrying in 5 seconds..."
-    sleep 5
-  done
-
-  for workflow in greeting user-onboarding; do
-    oc -n "$namespace" patch sonataflow "$workflow" --type merge -p "{\"spec\": { \"persistence\": { \"postgresql\": { \"secretRef\": {\"name\": \"$pqsl_secret_name\",\"userKey\": \"$pqsl_user_key\",\"passwordKey\": \"$pqsl_password_key\"},\"serviceRef\": {\"name\": \"$pqsl_svc_name\",\"namespace\": \"$patch_namespace\"}}}}}"
-  done
-}
-
-# Helper function to deploy workflows for orchestrator testing
-deploy_orchestrator_workflows_operator() {
-  local namespace=$1
-
-  local WORKFLOW_REPO="https://github.com/rhdh-orchestrator-test/serverless-workflows.git"
-  local WORKFLOW_DIR="${DIR}/serverless-workflows"
-  local WORKFLOW_MANIFESTS="${WORKFLOW_DIR}/workflows/experimentals/user-onboarding/manifests/"
-
-  rm -rf "${WORKFLOW_DIR}"
-  git clone --depth=1 "${WORKFLOW_REPO}" "${WORKFLOW_DIR}"
-
-  # Wait for backstage and sonata flow pods to be ready before continuing
-  wait_for_deployment $namespace backstage-psql 15
-  wait_for_deployment $namespace backstage-rhdh 15
-  wait_for_deployment $namespace sonataflow-platform-data 20
-  wait_for_deployment $namespace sonataflow-platform-jobs-service 20
-
-  # Dynamic PostgreSQL configuration detection
-  # Dynamic discovery of PostgreSQL secret and service using patterns
-  local pqsl_secret_name
-  pqsl_secret_name=$(oc get secrets -n "$namespace" -o name | grep "backstage-psql" | grep "secret" | head -1 | sed 's/secret\///')
-  local pqsl_user_key="POSTGRES_USER"
-  local pqsl_password_key="POSTGRES_PASSWORD"
-  local pqsl_svc_name
-  pqsl_svc_name=$(oc get svc -n "$namespace" -o name | grep "backstage-psql" | grep -v "secret" | head -1 | sed 's/service\///')
-  local patch_namespace="$namespace"
-  local sonataflow_db="backstage_plugin_orchestrator"
-
-  # Validate that we found the required resources
-  if [[ -z "$pqsl_secret_name" ]]; then
-    echo "Error: No PostgreSQL secret found matching pattern 'backstage-psql.*secret' in namespace '$namespace'"
-    return 1
-  fi
-
-  if [[ -z "$pqsl_svc_name" ]]; then
-    echo "Error: No PostgreSQL service found matching pattern 'backstage-psql' in namespace '$namespace'"
-    return 1
-  fi
-
-  log::info "Found PostgreSQL secret: $pqsl_secret_name"
-  log::info "Found PostgreSQL service: $pqsl_svc_name"
-
-  # Apply user-onboarding workflow manifests
-  oc apply -f "${WORKFLOW_MANIFESTS}" -n "$namespace"
-
-  # Install greeting workflow via helm
-  helm repo add orchestrator-workflows https://rhdhorchestrator.io/serverless-workflows || true
-  helm upgrade --install greeting orchestrator-workflows/greeting -n "$namespace" --wait --timeout=5m --atomic
-
-  # Wait for sonataflow resources to be created (regardless of state)
-  timeout 30s bash -c "
-  until [[ \$(oc get sf -n $namespace --no-headers 2>/dev/null | wc -l) -eq 2 ]]; do
-    echo \"Waiting for 2 sf resources... Current count: \$(oc get sf -n $namespace --no-headers 2>/dev/null | wc -l)\"
-    sleep 5
-  done
-  "
-  log::info "Updating user-onboarding secret with dynamic service URLs..."
-  # Update the user-onboarding secret with correct service URLs
-  local onboarding_server_url="http://user-onboarding-server:8080"
-
-  # Dynamically determine the backstage service (excluding psql)
-  local backstage_service
-  backstage_service=$(oc get svc -l app.kubernetes.io/name=backstage -n "$namespace" --no-headers=true | grep -v psql | awk '{print $1}' | head -1)
-  if [[ -z "$backstage_service" ]]; then
-    log::warn "Warning: No backstage service found, using fallback"
-    backstage_service="backstage-rhdh"
-  fi
-  local backstage_notifications_url="http://${backstage_service}:80"
-
-  # Get the notifications bearer token from rhdh-secrets
-  local notifications_bearer_token
-  notifications_bearer_token=$(oc get secret rhdh-secrets -n "$namespace" -o json | jq '.data.BACKEND_SECRET' -r | base64 -d)
-  if [[ -z "$notifications_bearer_token" ]]; then
-    log::warn "Warning: No BACKEND_SECRET found in rhdh-secrets, using empty token"
-    notifications_bearer_token=""
-  fi
-
-  # Base64 encode the URLs and token
-  local onboarding_server_url_b64
-  onboarding_server_url_b64=$(echo -n "$onboarding_server_url" | base64 -w 0)
-  local backstage_notifications_url_b64
-  backstage_notifications_url_b64=$(echo -n "$backstage_notifications_url" | base64 -w 0)
-  local notifications_bearer_token_b64
-  notifications_bearer_token_b64=$(echo -n "$notifications_bearer_token" | base64 -w 0)
-
-  # Patch the secret
-  oc patch secret user-onboarding-creds -n "$namespace" --type merge -p "{
-    \"data\": {
-      \"ONBOARDING_SERVER_URL\": \"$onboarding_server_url_b64\",
-      \"BACKSTAGE_NOTIFICATIONS_URL\": \"$backstage_notifications_url_b64\",
-      \"NOTIFICATIONS_BEARER_TOKEN\": \"$notifications_bearer_token_b64\"
-    }
-  }"
-  log::success "User-onboarding secret updated successfully!"
-
-  for workflow in greeting user-onboarding; do
-    # Create PostgreSQL patch configuration
-    local postgres_patch
-    postgres_patch=$(
-      cat << EOF
-{
-  "spec": {
-    "persistence": {
-      "postgresql": {
-        "secretRef": {
-          "name": "$pqsl_secret_name",
-          "userKey": "$pqsl_user_key",
-          "passwordKey": "$pqsl_password_key"
-        },
-        "serviceRef": {
-          "name": "$pqsl_svc_name",
-          "namespace": "$patch_namespace",
-          "databaseName": "$sonataflow_db"
-        }
-      }
-    }
-  }
-}
-EOF
-    )
-
-    log::info "Patching SonataFlow '$workflow' with PostgreSQL configuration..."
-    oc -n "$namespace" patch sonataflow "$workflow" --type merge -p "$postgres_patch"
-
-    log::info "Restarting deployment for '$workflow'..."
-    oc rollout status deployment/"$workflow" -n "$namespace" --timeout=600s
-  done
-
-  log::info "Waiting for all workflow pods to be running..."
-  wait_for_deployment $namespace greeting 5
-  wait_for_deployment $namespace user-onboarding 5
-  # TODO: are we sure that all is running?
-  log::info "All workflow pods are now running!"
-}
-
 # Helper function to wait for backstage resource to exist in namespace
 wait_for_backstage_resource() {
   local namespace=$1
@@ -1649,96 +1262,4 @@ wait_for_backstage_resource() {
 
   log::error "Error: No backstage resource found after 10 minutes"
   return 1
-}
-
-# Helper function to enable orchestrator plugins by merging default and custom dynamic plugins
-enable_orchestrator_plugins_op() {
-  local namespace=$1
-
-  # Validate required parameter
-  if [[ -z "$namespace" ]]; then
-    log::error "Error: Missing required namespace parameter"
-    log::error "Usage: enable_orchestrator_plugins_op <namespace>"
-    return 1
-  fi
-
-  log::info "Enabling orchestrator plugins in namespace: $namespace"
-
-  # Wait for backstage resource to exist
-  wait_for_backstage_resource "$namespace"
-  sleep 5
-
-  # Setup working directory
-  local work_dir="/tmp/orchestrator-plugins-merge"
-  rm -rf "$work_dir" && mkdir -p "$work_dir"
-
-  # Extract custom dynamic plugins configmap
-  log::info "Extracting custom dynamic plugins configmap..."
-  if ! oc get cm dynamic-plugins -n "$namespace" -o json | jq '.data."dynamic-plugins.yaml"' -r > "$work_dir/custom-plugins.yaml"; then
-    log::error "Error: Failed to extract dynamic-plugins configmap"
-    return 1
-  fi
-
-  # Find and extract default configmap
-  log::info "Finding default dynamic plugins configmap..."
-  local default_cm
-  default_cm=$(oc get cm -n "$namespace" --no-headers | grep "backstage-dynamic-plugins" | awk '{print $1}' | head -1)
-
-  if [[ -z "$default_cm" ]]; then
-    log::error "Error: No default configmap found matching pattern 'backstage-dynamic-plugins-'"
-    return 1
-  fi
-
-  log::info "Found default configmap: $default_cm"
-  if ! oc get cm "$default_cm" -n "$namespace" -o json | jq '.data."dynamic-plugins.yaml"' -r > "$work_dir/default-plugins.yaml"; then
-    log::error "Error: Failed to extract $default_cm configmap"
-    return 1
-  fi
-
-  # Extract plugins array with disabled: false and append to custom plugins
-  log::info "Extracting and enabling default plugins..."
-  if ! yq eval '.plugins | map(. + {"disabled": false})' "$work_dir/default-plugins.yaml" > "$work_dir/default-plugins-array.yaml"; then
-    log::error "Error: Failed to extract and modify plugins array from default file"
-    return 1
-  fi
-
-  if ! yq eval '.plugins += load("'$work_dir'/default-plugins-array.yaml")' -i "$work_dir/custom-plugins.yaml"; then
-    log::error "Error: Failed to append default plugins to custom plugins"
-    return 1
-  fi
-
-  # Use the modified custom file as the final merged result
-  if ! cp "$work_dir/custom-plugins.yaml" "$work_dir/merged-plugins.yaml"; then
-    log::error "Error: Failed to create merged plugins file"
-    return 1
-  fi
-
-  # Apply new configmap with merged content
-  if ! oc create configmap dynamic-plugins \
-    --from-file="dynamic-plugins.yaml=$work_dir/merged-plugins.yaml" \
-    -n "$namespace" --dry-run=client -o yaml | oc apply -f -; then
-    log::error "Error: Failed to apply updated dynamic-plugins configmap"
-    return 1
-  fi
-
-  # Find and restart backstage deployment
-  log::info "Finding backstage deployment..."
-  local backstage_deployment
-  backstage_deployment=$(oc get deployment -n "$namespace" --no-headers | grep "^backstage-rhdh" | awk '{print $1}' | head -1)
-
-  if [[ -z "$backstage_deployment" ]]; then
-    log::error "Error: No backstage deployment found matching pattern 'backstage-rhdh*'"
-    return 1
-  fi
-
-  log::info "Restarting backstage deployment: $backstage_deployment"
-  if ! oc rollout restart deployment/"$backstage_deployment" -n "$namespace"; then
-    log::error "Error: Failed to restart backstage deployment"
-    return 1
-  fi
-
-  # Cleanup
-  rm -rf "$work_dir"
-
-  log::info "Successfully enabled orchestrator plugins in namespace: $namespace"
 }
