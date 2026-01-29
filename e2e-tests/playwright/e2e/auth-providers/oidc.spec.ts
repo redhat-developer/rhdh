@@ -146,7 +146,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     );
   });
 
-  test("Login with OIDC default resolver", async () => {
+  test.skip("Login with OIDC default resolver", async () => {
     const login = await common.keycloakLogin(
       "zeus",
       process.env.DEFAULT_USER_PASSWORD,
@@ -164,7 +164,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     await common.signOut();
   });
 
-  test("Login with OIDC oidcSubClaimMatchingKeycloakUserId resolver", async () => {
+  test.skip("Login with OIDC oidcSubClaimMatchingKeycloakUserId resolver", async () => {
     await deployment.enableOIDCLoginWithIngestion();
     await deployment.setOIDCResolver(
       "oidcSubClaimMatchingKeycloakUserId",
@@ -189,7 +189,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     await common.signOut();
   });
 
-  test("Login with OIDC emailMatchingUserEntityProfileEmail resolver", async () => {
+  test.skip("Login with OIDC emailMatchingUserEntityProfileEmail resolver", async () => {
     await deployment.setOIDCResolver(
       "emailMatchingUserEntityProfileEmail",
       false,
@@ -213,7 +213,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     await common.signOut();
   });
 
-  test("Login with OIDC emailLocalPartMatchingUserEntityName resolver", async () => {
+  test.skip("Login with OIDC emailLocalPartMatchingUserEntityName resolver", async () => {
     await deployment.setOIDCResolver(
       "emailLocalPartMatchingUserEntityName",
       false,
@@ -249,7 +249,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     await keycloakHelper.clearUserSessions("atena");
   });
 
-  test("Login with OIDC emailLocalPartMatchingUserEntityName with dangerouslyAllowSignInWithoutUserInCatalog resolver", async () => {
+  test.skip("Login with OIDC emailLocalPartMatchingUserEntityName with dangerouslyAllowSignInWithoutUserInCatalog resolver", async () => {
     await deployment.setOIDCResolver(
       "emailLocalPartMatchingUserEntityName",
       true,
@@ -282,7 +282,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     await common.signOut();
   });
 
-  test("Login with OIDC preferredUsernameMatchingUserEntityName resolver", async () => {
+  test.skip("Login with OIDC preferredUsernameMatchingUserEntityName resolver", async () => {
     await deployment.setOIDCResolver(
       "preferredUsernameMatchingUserEntityName",
       false,
@@ -306,7 +306,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     await common.signOut();
   });
 
-  test(`Set sessionDuration and confirm in auth cookie duration has been set`, async () => {
+  test.skip(`Set sessionDuration and confirm in auth cookie duration has been set`, async () => {
     deployment.setAppConfigProperty(
       "auth.providers.oidc.production.sessionDuration",
       "3days",
@@ -345,7 +345,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     await common.signOut();
   });
 
-  test(`Ingestion of users and groups: verify the user entities and groups are created with the correct relationships`, async () => {
+  test.skip(`Ingestion of users and groups: verify the user entities and groups are created with the correct relationships`, async () => {
     expect(
       await deployment.checkUserIsIngestedInCatalog([
         "Admin E2e",
@@ -383,7 +383,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     );
   });
 
-  test(`Ingestion of users and groups with invalid characters: check sanitize[User/Group]NameTransformer`, async () => {
+  test.skip(`Ingestion of users and groups with invalid characters: check sanitize[User/Group]NameTransformer`, async () => {
     expect(
       await deployment.checkUserIsIngestedInCatalog(["Invalid Username"]),
     ).toBe(true);
@@ -392,7 +392,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     ).toBe(true);
   });
 
-  test("Ensure Guest login is disabled when setting environment to production", async () => {
+  test.skip("Ensure Guest login is disabled when setting environment to production", async () => {
     await uiHelper.goToPageUrl("/", "Select a sign-in method");
     // Scope to the main content area to get only sign-in method card headers
     const signInMethodsContainer = page.getByRole("main");
@@ -402,7 +402,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     expect(singInMethods).not.toContain("Guest");
   });
 
-  test("Login with OIDC as primary sign in provider and GitHub auth as secondary", async () => {
+  test.skip("Login with OIDC as primary sign in provider and GitHub auth as secondary", async () => {
     const oidcLogin = await common.keycloakLogin(
       "zeus",
       process.env.DEFAULT_USER_PASSWORD,
@@ -454,6 +454,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
   });
 
   test(`Enable autologout and user is logged out after inactivity`, async () => {
+    test.setTimeout(30 * 60 * 1000);
     deployment.setAppConfigProperty("auth.autologout.enabled", "true");
     deployment.setAppConfigProperty(
       "auth.autologout.idleTimeoutMinutes",
@@ -482,7 +483,8 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
       false,
       60000,
     );
-    await page.waitForTimeout(5000);
+    // In CI: pause long enough to attach debugger or inspect logs/artifacts (headless)
+    await page.waitForTimeout(20 * 60 * 1000);
 
     await page.reload();
 

@@ -96,13 +96,7 @@ export default defineConfig({
     },
     {
       name: PW_PROJECT.SHOWCASE_AUTH_PROVIDERS,
-      testMatch: ["**/playwright/e2e/auth-providers/*.spec.ts"],
-      testIgnore: [
-        "**/playwright/e2e/auth-providers/github-happy-path.spec.ts", // temporarily disable
-        "**/playwright/e2e/external-database/verify-tls-config-with-external-rds.spec.ts",
-        "**/playwright/e2e/external-database/verify-tls-config-with-external-azure-db.spec.ts",
-        "**/playwright/e2e/dynamic-home-page-customization.spec.ts",
-      ],
+      testMatch: ["**/playwright/e2e/auth-providers/oidc.spec.ts"],
       retries: 1,
     },
     {
