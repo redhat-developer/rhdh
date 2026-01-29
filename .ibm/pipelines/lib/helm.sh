@@ -211,9 +211,27 @@ helm::install() {
 # ==============================================================================
 
 # Alias for backward compatibility
-yq_merge_value_files() { helm::merge_values "$@"; return $?; }
-uninstall_helmchart() { helm::uninstall "$@"; return $?; }
-get_image_helm_set_params() { helm::get_image_params "$@"; return $?; }
-perform_helm_install() { helm::install "$@"; return $?; }
-get_chart_version() { helm::get_chart_version "$@"; return $?; }
-get_previous_release_value_file() { helm::get_previous_release_values "$@"; return $?; }
+yq_merge_value_files() {
+  helm::merge_values "$@"
+  return $?
+}
+uninstall_helmchart() {
+  helm::uninstall "$@"
+  return $?
+}
+get_image_helm_set_params() {
+  helm::get_image_params "$@"
+  return $?
+}
+perform_helm_install() {
+  helm::install "$@"
+  return $?
+}
+get_chart_version() {
+  helm::get_chart_version "$@"
+  return $?
+}
+get_previous_release_value_file() {
+  helm::get_previous_release_values "$@"
+  return $?
+}
