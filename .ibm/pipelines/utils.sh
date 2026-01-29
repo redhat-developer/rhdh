@@ -10,6 +10,8 @@ source "${DIR}/lib/common.sh"
 source "${DIR}/lib/operators.sh"
 # shellcheck source=.ibm/pipelines/lib/k8s-wait.sh
 source "${DIR}/lib/k8s-wait.sh"
+# shellcheck source=.ibm/pipelines/lib/orchestrator.sh
+source "${DIR}/lib/orchestrator.sh"
 
 # Constants
 TEKTON_PIPELINES_WEBHOOK="tekton-pipelines-webhook"
@@ -97,20 +99,12 @@ yq_merge_value_files() {
   fi
 }
 
-# Skip orchestrator installation/deployment in the following cases:
-# 1. OSD-GCP jobs: Infrastructure limitations prevent orchestrator from working
-# 2. PR presubmit jobs (e2e-ocp-helm non-nightly): Speed up CI feedback loop
-# Nightly jobs should always run orchestrator for full testing coverage.
-should_skip_orchestrator() {
-  [[ "${JOB_NAME}" =~ osd-gcp ]] || { [[ "${JOB_NAME}" =~ e2e-ocp-helm ]] && [[ "${JOB_NAME}" != *nightly* ]]; }
-}
+# ==============================================================================
+# Orchestrator Functions - Delegate to lib/orchestrator.sh
+# ==============================================================================
+should_skip_orchestrator() { orchestrator::should_skip "$@"; }
 
-# Post-process merged Helm values to disable all orchestrator plugins
-# This avoids hardcoding plugin versions in PR diff files
-disable_orchestrator_plugins_in_values() {
-  local values_file=$1
-  yq eval -i '(.global.dynamic.plugins[] | select(.package | contains("orchestrator")) | .disabled) = true' "${values_file}"
-}
+disable_orchestrator_plugins_in_values() { orchestrator::disable_plugins_in_values "$@"; }
 
 # ==============================================================================
 # K8s Wait Functions - Delegate to lib/k8s-wait.sh
@@ -685,12 +679,18 @@ delete_tekton_pipelines() {
 }
 
 # ==============================================================================
-# FUTURE MODULE: lib/orchestrator.sh
-# Functions: cluster_setup_ocp_helm, cluster_setup_ocp_operator, cluster_setup_k8s_operator,
-#            cluster_setup_k8s_helm, install_orchestrator_infra_chart,
-#            deploy_orchestrator_workflows, deploy_orchestrator_workflows_operator,
-#            enable_orchestrator_plugins_op, wait_for_backstage_resource
+# Cluster Setup Functions
+# These functions configure the cluster for different deployment types
+# Orchestrator functions are delegated to lib/orchestrator.sh
 # ==============================================================================
+
+install_orchestrator_infra_chart() { orchestrator::install_infra_chart "$@"; }
+
+deploy_orchestrator_workflows() { orchestrator::deploy_workflows "$@"; }
+
+deploy_orchestrator_workflows_operator() { orchestrator::deploy_workflows_operator "$@"; }
+
+enable_orchestrator_plugins_op() { orchestrator::enable_plugins_operator "$@"; }
 
 cluster_setup_ocp_helm() {
   operator::install_pipelines
@@ -738,33 +738,6 @@ cluster_setup_k8s_helm() {
   # operator::install_olm
   # operator::install_tekton
   # operator::install_postgres_k8s # Works with K8s but disabled in values file
-}
-
-install_orchestrator_infra_chart() {
-  ORCH_INFRA_NS="orchestrator-infra"
-  configure_namespace ${ORCH_INFRA_NS}
-
-  log::info "Deploying orchestrator-infra chart"
-  cd "${DIR}"
-  helm upgrade -i orch-infra -n "${ORCH_INFRA_NS}" \
-    "oci://quay.io/rhdh/orchestrator-infra-chart" --version "${CHART_VERSION}" \
-    --wait --timeout=5m \
-    --set serverlessLogicOperator.subscription.spec.installPlanApproval=Automatic \
-    --set serverlessOperator.subscription.spec.installPlanApproval=Automatic
-
-  until [ "$(oc get pods -n openshift-serverless --no-headers 2> /dev/null | wc -l)" -gt 0 ]; do
-    sleep 5
-  done
-
-  until [ "$(oc get pods -n openshift-serverless-logic --no-headers 2> /dev/null | wc -l)" -gt 0 ]; do
-    sleep 5
-  done
-
-  oc wait pod --all --for=condition=Ready --namespace=openshift-serverless --timeout=5m
-  oc wait pod --all --for=condition=Ready --namespace=openshift-serverless-logic --timeout=5m
-
-  oc get crd | grep "sonataflow" || echo "Sonataflow CRDs not found"
-  oc get crd | grep "knative" || echo "Serverless CRDs not found"
 }
 
 # Helper function to get common helm set parameters
@@ -1218,144 +1191,6 @@ get_previous_release_value_file() {
   fi
 }
 
-# Helper function to deploy workflows for orchestrator testing
-deploy_orchestrator_workflows() {
-  local namespace=$1
-
-  local WORKFLOW_REPO="https://github.com/rhdhorchestrator/serverless-workflows.git"
-  local WORKFLOW_DIR="${DIR}/serverless-workflows"
-  local FAILSWITCH_MANIFESTS="${WORKFLOW_DIR}/workflows/fail-switch/src/main/resources/manifests/"
-  local GREETING_MANIFESTS="${WORKFLOW_DIR}/workflows/greeting/manifests/"
-
-  rm -rf "${WORKFLOW_DIR}"
-  git clone "${WORKFLOW_REPO}" "${WORKFLOW_DIR}"
-
-  if [[ "$namespace" == "${NAME_SPACE_RBAC}" ]]; then
-    local pqsl_secret_name="postgres-cred"
-    local pqsl_user_key="POSTGRES_USER"
-    local pqsl_password_key="POSTGRES_PASSWORD"
-    local pqsl_svc_name="postgress-external-db-primary"
-    local patch_namespace="${NAME_SPACE_POSTGRES_DB}"
-  else
-    local pqsl_secret_name="rhdh-postgresql-svcbind-postgres"
-    local pqsl_user_key="username"
-    local pqsl_password_key="password"
-    local pqsl_svc_name="rhdh-postgresql"
-    local patch_namespace="$namespace"
-  fi
-
-  oc apply -f "${FAILSWITCH_MANIFESTS}" -n "$namespace"
-  oc apply -f "${GREETING_MANIFESTS}" -n "$namespace"
-
-  until [[ $(oc get sf -n "$namespace" --no-headers 2> /dev/null | wc -l) -eq 2 ]]; do
-    echo "No sf resources found. Retrying in 5 seconds..."
-    sleep 5
-  done
-
-  for workflow in greeting failswitch; do
-    oc -n "$namespace" patch sonataflow "$workflow" --type merge -p "{\"spec\": { \"persistence\": { \"postgresql\": { \"secretRef\": {\"name\": \"$pqsl_secret_name\",\"userKey\": \"$pqsl_user_key\",\"passwordKey\": \"$pqsl_password_key\"},\"serviceRef\": {\"name\": \"$pqsl_svc_name\",\"namespace\": \"$patch_namespace\"}}}}}"
-    oc rollout status deployment/"$workflow" -n "$namespace" --timeout=600s
-  done
-
-  echo "Waiting for all workflow pods to be running..."
-  wait_for_deployment $namespace greeting 5
-  wait_for_deployment $namespace failswitch 5
-
-  echo "All workflow pods are now running!"
-}
-
-# Helper function to deploy workflows for orchestrator testing
-deploy_orchestrator_workflows_operator() {
-  local namespace=$1
-
-  local WORKFLOW_REPO="https://github.com/rhdhorchestrator/serverless-workflows.git"
-  local WORKFLOW_DIR="${DIR}/serverless-workflows"
-  local FAILSWITCH_MANIFESTS="${WORKFLOW_DIR}/workflows/fail-switch/src/main/resources/manifests/"
-  local GREETING_MANIFESTS="${WORKFLOW_DIR}/workflows/greeting/manifests/"
-
-  rm -rf "${WORKFLOW_DIR}"
-  git clone --depth=1 "${WORKFLOW_REPO}" "${WORKFLOW_DIR}"
-
-  # Wait for backstage and sonata flow pods to be ready before continuing
-  wait_for_deployment $namespace backstage-psql 15
-  wait_for_deployment $namespace backstage-rhdh 15
-  # SonataFlowPlatform v1alpha08 deploys the Data Index as `sonataflow-platform-data-index-service`
-  wait_for_deployment $namespace sonataflow-platform-data-index-service 20
-  wait_for_deployment $namespace sonataflow-platform-jobs-service 20
-
-  # Dynamic PostgreSQL configuration detection
-  # Dynamic discovery of PostgreSQL secret and service using patterns
-  local pqsl_secret_name
-  pqsl_secret_name=$(oc get secrets -n "$namespace" -o name | grep "backstage-psql" | grep "secret" | head -1 | sed 's/secret\///')
-  local pqsl_user_key="POSTGRES_USER"
-  local pqsl_password_key="POSTGRES_PASSWORD"
-  local pqsl_svc_name
-  pqsl_svc_name=$(oc get svc -n "$namespace" -o name | grep "backstage-psql" | grep -v "secret" | head -1 | sed 's/service\///')
-  local patch_namespace="$namespace"
-  local sonataflow_db="backstage_plugin_orchestrator"
-
-  # Validate that we found the required resources
-  if [[ -z "$pqsl_secret_name" ]]; then
-    echo "Error: No PostgreSQL secret found matching pattern 'backstage-psql.*secret' in namespace '$namespace'"
-    return 1
-  fi
-
-  if [[ -z "$pqsl_svc_name" ]]; then
-    echo "Error: No PostgreSQL service found matching pattern 'backstage-psql' in namespace '$namespace'"
-    return 1
-  fi
-
-  log::info "Found PostgreSQL secret: $pqsl_secret_name"
-  log::info "Found PostgreSQL service: $pqsl_svc_name"
-
-  # Apply workflow manifests
-  oc apply -f "${FAILSWITCH_MANIFESTS}" -n "$namespace"
-  oc apply -f "${GREETING_MANIFESTS}" -n "$namespace"
-
-  # Wait for sonataflow resources to be created (regardless of state)
-  timeout 30s bash -c "
-  until [[ \$(oc get sf -n $namespace --no-headers 2>/dev/null | wc -l) -eq 2 ]]; do
-    echo \"Waiting for 2 sf resources... Current count: \$(oc get sf -n $namespace --no-headers 2>/dev/null | wc -l)\"
-    sleep 5
-  done
-  "
-
-  for workflow in greeting failswitch; do
-    # Create PostgreSQL patch configuration
-    local postgres_patch
-    postgres_patch=$(
-      cat << EOF
-{
-  "spec": {
-    "persistence": {
-      "postgresql": {
-        "secretRef": {
-          "name": "$pqsl_secret_name",
-          "userKey": "$pqsl_user_key",
-          "passwordKey": "$pqsl_password_key"
-        },
-        "serviceRef": {
-          "name": "$pqsl_svc_name",
-          "namespace": "$patch_namespace",
-          "databaseName": "$sonataflow_db"
-        }
-      }
-    }
-  }
-}
-EOF
-    )
-    oc -n "$namespace" patch sonataflow "$workflow" --type merge -p "$postgres_patch"
-    oc rollout status deployment/"$workflow" -n "$namespace" --timeout=600s
-  done
-
-  echo "Waiting for all workflow pods to be running..."
-  wait_for_deployment $namespace greeting 5
-  wait_for_deployment $namespace failswitch 5
-
-  echo "All workflow pods are now running!"
-}
-
 # Helper function to wait for backstage resource to exist in namespace
 wait_for_backstage_resource() {
   local namespace=$1
@@ -1372,120 +1207,4 @@ wait_for_backstage_resource() {
     return 1
   fi
   return 0
-}
-
-# Helper function to enable orchestrator plugins
-# This function merges the operator-provided default dynamic plugins configmap
-# (backstage-dynamic-plugins-*) with our custom dynamic-plugins configmap.
-# The merge ensures custom plugins override defaults when packages conflict.
-# After merging, the deployment is restarted to pick up the updated plugins.
-enable_orchestrator_plugins_op() {
-  local namespace=$1
-
-  # Validate required parameter
-  if [[ -z "$namespace" ]]; then
-    log::error "Error: Missing required namespace parameter"
-    log::error "Usage: enable_orchestrator_plugins_op <namespace>"
-    return 1
-  fi
-
-  log::info "Enabling orchestrator plugins in namespace: $namespace"
-
-  # Wait for backstage resource to exist
-  if ! wait_for_backstage_resource "$namespace"; then
-    log::error "Failed to find backstage resource in namespace: $namespace"
-    return 1
-  fi
-
-  local work_dir="/tmp/orchestrator-plugins-merge"
-  rm -rf "$work_dir" && mkdir -p "$work_dir"
-
-  # Extract current custom dynamic plugins configmap
-  log::info "Extracting custom dynamic plugins configmap..."
-  if ! oc get cm dynamic-plugins -n "$namespace" -o json | jq '.data."dynamic-plugins.yaml"' -r > "$work_dir/custom-plugins.yaml"; then
-    log::error "Error: Failed to extract dynamic-plugins configmap"
-    return 1
-  fi
-
-  # Locate operator-managed default configmap
-  log::info "Waiting for operator-managed dynamic plugins configmap..."
-  local default_cm=""
-  local attempts=0
-  local max_attempts=60
-  while [[ $attempts -lt $max_attempts ]]; do
-    default_cm=$(oc get cm -n "$namespace" -o name 2> /dev/null | grep "backstage-dynamic-plugins-" | head -1 | sed 's#configmap/##')
-    if [[ -n "$default_cm" ]]; then
-      break
-    fi
-    sleep 5
-    attempts=$((attempts + 1))
-  done
-
-  if [[ -z "$default_cm" ]]; then
-    log::error "Error: No default configmap found matching pattern 'backstage-dynamic-plugins-' after waiting"
-    log::info "Available configmaps in namespace $namespace:"
-    oc get cm -n "$namespace" || true
-    return 1
-  fi
-
-  log::info "Found default configmap: $default_cm"
-  if ! oc get cm "$default_cm" -n "$namespace" -o json | jq '.data."dynamic-plugins.yaml"' -r > "$work_dir/default-plugins.yaml"; then
-    log::error "Error: Failed to extract $default_cm configmap"
-    return 1
-  fi
-
-  # Merge default and custom plugins (custom overrides default on conflicts)
-  log::info "Merging custom and default dynamic plugins..."
-
-  # Use yq to merge: default plugins + custom plugins, with custom taking precedence
-  # The expression concatenates arrays and deduplicates by .package, keeping the last occurrence
-  if ! yq eval-all '
-    select(fileIndex == 0) as $default |
-    select(fileIndex == 1) as $custom |
-    {
-      "includes": (($default.includes // []) + ($custom.includes // [])) | unique,
-      "plugins": (($default.plugins // []) + ($custom.plugins // [])) | group_by(.package) | map(.[-1])
-    }
-  ' "$work_dir/default-plugins.yaml" "$work_dir/custom-plugins.yaml" | yq eval 'select(di == 0)' - > "$work_dir/merged-plugins.yaml"; then
-    log::error "Error: Failed to merge plugins"
-    return 1
-  fi
-
-  # Create configmap manifest with merged content
-  cat << 'EOF' > "$work_dir/merged-configmap.yaml"
-kind: ConfigMap
-apiVersion: v1
-metadata:
-  name: dynamic-plugins
-data:
-  dynamic-plugins.yaml: |
-EOF
-  if ! sed 's/^/    /' "$work_dir/merged-plugins.yaml" >> "$work_dir/merged-configmap.yaml"; then
-    log::error "Error: Failed to prepare merged configmap manifest"
-    return 1
-  fi
-
-  # Apply merged configmap
-  if ! oc apply -f "$work_dir/merged-configmap.yaml" -n "$namespace"; then
-    log::error "Error: Failed to apply merged dynamic-plugins configmap"
-    return 1
-  fi
-
-  # Restart backstage deployment to pick up updated plugins
-  local backstage_deployment
-  backstage_deployment=$(oc get deployment -n "$namespace" --no-headers | grep "^backstage-" | awk '{print $1}' | head -1)
-  if [[ -z "$backstage_deployment" ]]; then
-    log::error "Error: No backstage deployment found matching pattern 'backstage-*'"
-    return 1
-  fi
-
-  log::info "Restarting backstage deployment: $backstage_deployment"
-  if ! oc rollout restart deployment/"$backstage_deployment" -n "$namespace"; then
-    log::error "Error: Failed to restart backstage deployment"
-    return 1
-  fi
-
-  log::success "Successfully enabled orchestrator plugins in namespace: $namespace"
-  log::info "Note: Deployment will be verified by subsequent wait_for_deployment calls"
-  rm -rf "$work_dir"
 }
