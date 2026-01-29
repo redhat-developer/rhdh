@@ -48,6 +48,7 @@ aliases:
     - maysunfaisal
     - michael-valdron
     - nickboldt
+    - OpinionatedHeron
     - pabel-rh
     - PatAKnight
     - polasudo
@@ -82,13 +83,11 @@ aliases:
     - lholmquist
     - PatAKnight
     - rostalan
-    - Zaperex
   rhdh-security:
     - albarbaro
     - alizard0
     - JessicaJHee
     - kim-tsao
-    - Zaperex
   rhdh-ui:
     - christoph-jerolimov
     - ciiay
@@ -117,3 +116,10 @@ aliases:
     - rm3l
     - schultzp2020
     - Zaperex
+  rhdh-install:
+    - Fortune-Ndlovu
+    - gazarenkov
+    - OpinionatedHeron
+    - rm3l
+    - subhashkhileri
+    - zdrapela
