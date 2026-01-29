@@ -2,10 +2,17 @@
 
 # Module: orchestrator
 # Description: Orchestrator infrastructure and workflow deployment utilities
-# Dependencies: oc, helm, git, yq
+# Dependencies: oc, helm, git, yq, lib/log.sh, lib/k8s-wait.sh
 
-# shellcheck source=./log.sh
-source "$(dirname "${BASH_SOURCE[0]}")/log.sh"
+# Prevent re-sourcing
+if [[ -n "${ORCHESTRATOR_LIB_SOURCED:-}" ]]; then
+  return 0
+fi
+readonly ORCHESTRATOR_LIB_SOURCED=1
+
+# Source logging library
+# shellcheck source=.ibm/pipelines/lib/log.sh
+source "${DIR}/lib/log.sh"
 
 # ==============================================================================
 # Constants
