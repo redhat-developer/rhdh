@@ -8,6 +8,12 @@
 source "$(dirname "${BASH_SOURCE[0]}")/log.sh"
 
 # ==============================================================================
+# Constants
+# ==============================================================================
+readonly ORCHESTRATOR_WORKFLOW_REPO="https://github.com/rhdhorchestrator/serverless-workflows.git"
+readonly ORCHESTRATOR_WORKFLOWS="greeting failswitch"
+
+# ==============================================================================
 # Orchestrator Skip Logic
 # ==============================================================================
 
@@ -33,6 +39,126 @@ orchestrator::should_skip() {
 orchestrator::disable_plugins_in_values() {
   local values_file=$1
   yq eval -i '(.global.dynamic.plugins[] | select(.package | contains("orchestrator")) | .disabled) = true' "${values_file}"
+}
+
+# ==============================================================================
+# Private Helper Functions
+# ==============================================================================
+
+# Function: _orchestrator::clone_workflows
+# Description: Clone the serverless-workflows repository
+# Arguments:
+#   $1 - shallow: if "true", use --depth=1 for faster clone
+# Returns:
+#   Sets WORKFLOW_DIR, FAILSWITCH_MANIFESTS, GREETING_MANIFESTS variables
+_orchestrator::clone_workflows() {
+  local shallow=${1:-false}
+
+  WORKFLOW_DIR="${DIR}/serverless-workflows"
+  FAILSWITCH_MANIFESTS="${WORKFLOW_DIR}/workflows/fail-switch/src/main/resources/manifests/"
+  GREETING_MANIFESTS="${WORKFLOW_DIR}/workflows/greeting/manifests/"
+
+  rm -rf "${WORKFLOW_DIR}"
+  if [[ "$shallow" == "true" ]]; then
+    git clone --depth=1 "${ORCHESTRATOR_WORKFLOW_REPO}" "${WORKFLOW_DIR}"
+  else
+    git clone "${ORCHESTRATOR_WORKFLOW_REPO}" "${WORKFLOW_DIR}"
+  fi
+}
+
+# Function: _orchestrator::apply_manifests
+# Description: Apply workflow manifests to the namespace
+# Arguments:
+#   $1 - namespace: Kubernetes namespace
+_orchestrator::apply_manifests() {
+  local namespace=$1
+
+  oc apply -f "${FAILSWITCH_MANIFESTS}" -n "$namespace"
+  oc apply -f "${GREETING_MANIFESTS}" -n "$namespace"
+}
+
+# Function: _orchestrator::wait_for_sonataflow_resources
+# Description: Wait for sonataflow resources to be created
+# Arguments:
+#   $1 - namespace: Kubernetes namespace
+#   $2 - timeout: optional timeout in seconds (default: 30)
+_orchestrator::wait_for_sonataflow_resources() {
+  local namespace=$1
+  local timeout_secs=${2:-30}
+
+  timeout "${timeout_secs}s" bash -c "
+    until [[ \$(oc get sf -n $namespace --no-headers 2>/dev/null | wc -l) -eq 2 ]]; do
+      echo 'Waiting for 2 sonataflow resources...'
+      sleep 5
+    done
+  " || log::warn "Timeout waiting for sonataflow resources, continuing..."
+}
+
+# Function: _orchestrator::patch_workflow_postgres
+# Description: Patch a single workflow with PostgreSQL configuration
+# Arguments:
+#   $1 - namespace: Kubernetes namespace
+#   $2 - workflow: Workflow name
+#   $3 - secret_name: PostgreSQL secret name
+#   $4 - user_key: Key for username in secret
+#   $5 - password_key: Key for password in secret
+#   $6 - svc_name: PostgreSQL service name
+#   $7 - svc_namespace: PostgreSQL service namespace
+#   $8 - database_name: Database name (optional)
+_orchestrator::patch_workflow_postgres() {
+  local namespace=$1
+  local workflow=$2
+  local secret_name=$3
+  local user_key=$4
+  local password_key=$5
+  local svc_name=$6
+  local svc_namespace=$7
+  local database_name=${8:-}
+
+  local patch_json
+  if [[ -n "$database_name" ]]; then
+    patch_json=$(
+      cat << EOF
+{
+  "spec": {
+    "persistence": {
+      "postgresql": {
+        "secretRef": {
+          "name": "$secret_name",
+          "userKey": "$user_key",
+          "passwordKey": "$password_key"
+        },
+        "serviceRef": {
+          "name": "$svc_name",
+          "namespace": "$svc_namespace",
+          "databaseName": "$database_name"
+        }
+      }
+    }
+  }
+}
+EOF
+    )
+  else
+    patch_json="{\"spec\": { \"persistence\": { \"postgresql\": { \"secretRef\": {\"name\": \"$secret_name\",\"userKey\": \"$user_key\",\"passwordKey\": \"$password_key\"},\"serviceRef\": {\"name\": \"$svc_name\",\"namespace\": \"$svc_namespace\"}}}}}"
+  fi
+
+  oc -n "$namespace" patch sonataflow "$workflow" --type merge -p "$patch_json"
+  oc rollout status deployment/"$workflow" -n "$namespace" --timeout=600s
+}
+
+# Function: _orchestrator::wait_for_workflow_deployments
+# Description: Wait for all workflow deployments to be ready
+# Arguments:
+#   $1 - namespace: Kubernetes namespace
+_orchestrator::wait_for_workflow_deployments() {
+  local namespace=$1
+
+  log::info "Waiting for all workflow pods to be running..."
+  for workflow in $ORCHESTRATOR_WORKFLOWS; do
+    k8s_wait::deployment "$namespace" "$workflow" 5
+  done
+  log::success "All workflow pods are now running!"
 }
 
 # ==============================================================================
@@ -80,46 +206,37 @@ orchestrator::install_infra_chart() {
 orchestrator::deploy_workflows() {
   local namespace=$1
 
-  local WORKFLOW_REPO="https://github.com/rhdhorchestrator/serverless-workflows.git"
-  local WORKFLOW_DIR="${DIR}/serverless-workflows"
-  local FAILSWITCH_MANIFESTS="${WORKFLOW_DIR}/workflows/fail-switch/src/main/resources/manifests/"
-  local GREETING_MANIFESTS="${WORKFLOW_DIR}/workflows/greeting/manifests/"
+  # Clone workflows repository
+  _orchestrator::clone_workflows "false"
 
-  rm -rf "${WORKFLOW_DIR}"
-  git clone "${WORKFLOW_REPO}" "${WORKFLOW_DIR}"
-
+  # Determine PostgreSQL configuration based on namespace
+  local pqsl_secret_name pqsl_user_key pqsl_password_key pqsl_svc_name patch_namespace
   if [[ "$namespace" == "${NAME_SPACE_RBAC}" ]]; then
-    local pqsl_secret_name="postgres-cred"
-    local pqsl_user_key="POSTGRES_USER"
-    local pqsl_password_key="POSTGRES_PASSWORD"
-    local pqsl_svc_name="postgress-external-db-primary"
-    local patch_namespace="${NAME_SPACE_POSTGRES_DB}"
+    pqsl_secret_name="postgres-cred"
+    pqsl_user_key="POSTGRES_USER"
+    pqsl_password_key="POSTGRES_PASSWORD"
+    pqsl_svc_name="postgress-external-db-primary"
+    patch_namespace="${NAME_SPACE_POSTGRES_DB}"
   else
-    local pqsl_secret_name="rhdh-postgresql-svcbind-postgres"
-    local pqsl_user_key="username"
-    local pqsl_password_key="password"
-    local pqsl_svc_name="rhdh-postgresql"
-    local patch_namespace="$namespace"
+    pqsl_secret_name="rhdh-postgresql-svcbind-postgres"
+    pqsl_user_key="username"
+    pqsl_password_key="password"
+    pqsl_svc_name="rhdh-postgresql"
+    patch_namespace="$namespace"
   fi
 
-  oc apply -f "${FAILSWITCH_MANIFESTS}" -n "$namespace"
-  oc apply -f "${GREETING_MANIFESTS}" -n "$namespace"
+  # Apply manifests and wait for resources
+  _orchestrator::apply_manifests "$namespace"
+  _orchestrator::wait_for_sonataflow_resources "$namespace"
 
-  until [[ $(oc get sf -n "$namespace" --no-headers 2> /dev/null | wc -l) -eq 2 ]]; do
-    echo "No sf resources found. Retrying in 5 seconds..."
-    sleep 5
+  # Patch each workflow with PostgreSQL configuration
+  for workflow in $ORCHESTRATOR_WORKFLOWS; do
+    _orchestrator::patch_workflow_postgres "$namespace" "$workflow" \
+      "$pqsl_secret_name" "$pqsl_user_key" "$pqsl_password_key" \
+      "$pqsl_svc_name" "$patch_namespace"
   done
 
-  for workflow in greeting failswitch; do
-    oc -n "$namespace" patch sonataflow "$workflow" --type merge -p "{\"spec\": { \"persistence\": { \"postgresql\": { \"secretRef\": {\"name\": \"$pqsl_secret_name\",\"userKey\": \"$pqsl_user_key\",\"passwordKey\": \"$pqsl_password_key\"},\"serviceRef\": {\"name\": \"$pqsl_svc_name\",\"namespace\": \"$patch_namespace\"}}}}}"
-    oc rollout status deployment/"$workflow" -n "$namespace" --timeout=600s
-  done
-
-  echo "Waiting for all workflow pods to be running..."
-  k8s_wait::deployment "$namespace" greeting 5
-  k8s_wait::deployment "$namespace" failswitch 5
-
-  echo "All workflow pods are now running!"
+  _orchestrator::wait_for_workflow_deployments "$namespace"
 }
 
 # Function: orchestrator::deploy_workflows_operator
@@ -132,33 +249,21 @@ orchestrator::deploy_workflows() {
 orchestrator::deploy_workflows_operator() {
   local namespace=$1
 
-  local WORKFLOW_REPO="https://github.com/rhdhorchestrator/serverless-workflows.git"
-  local WORKFLOW_DIR="${DIR}/serverless-workflows"
-  local FAILSWITCH_MANIFESTS="${WORKFLOW_DIR}/workflows/fail-switch/src/main/resources/manifests/"
-  local GREETING_MANIFESTS="${WORKFLOW_DIR}/workflows/greeting/manifests/"
+  # Clone workflows repository (shallow for speed)
+  _orchestrator::clone_workflows "true"
 
-  rm -rf "${WORKFLOW_DIR}"
-  git clone --depth=1 "${WORKFLOW_REPO}" "${WORKFLOW_DIR}"
-
-  # Wait for backstage and sonata flow pods to be ready before continuing
+  # Wait for backstage and sonataflow pods to be ready
   k8s_wait::deployment "$namespace" backstage-psql 15
   k8s_wait::deployment "$namespace" backstage-rhdh 15
-  # SonataFlowPlatform v1alpha08 deploys the Data Index as `sonataflow-platform-data-index-service`
   k8s_wait::deployment "$namespace" sonataflow-platform-data-index-service 20
   k8s_wait::deployment "$namespace" sonataflow-platform-jobs-service 20
 
-  # Dynamic PostgreSQL configuration detection
-  # Dynamic discovery of PostgreSQL secret and service using patterns
-  local pqsl_secret_name
+  # Dynamic PostgreSQL configuration discovery
+  local pqsl_secret_name pqsl_svc_name
   pqsl_secret_name=$(oc get secrets -n "$namespace" -o name | grep "backstage-psql" | grep "secret" | head -1 | sed 's/secret\///')
-  local pqsl_user_key="POSTGRES_USER"
-  local pqsl_password_key="POSTGRES_PASSWORD"
-  local pqsl_svc_name
   pqsl_svc_name=$(oc get svc -n "$namespace" -o name | grep "backstage-psql" | grep -v "secret" | head -1 | sed 's/service\///')
-  local patch_namespace="$namespace"
-  local sonataflow_db="backstage_plugin_orchestrator"
 
-  # Validate that we found the required resources
+  # Validate discovered resources
   if [[ -z "$pqsl_secret_name" ]]; then
     log::error "No PostgreSQL secret found matching pattern 'backstage-psql.*secret' in namespace '$namespace'"
     return 1
@@ -172,52 +277,19 @@ orchestrator::deploy_workflows_operator() {
   log::info "Found PostgreSQL secret: $pqsl_secret_name"
   log::info "Found PostgreSQL service: $pqsl_svc_name"
 
-  # Apply workflow manifests
-  oc apply -f "${FAILSWITCH_MANIFESTS}" -n "$namespace"
-  oc apply -f "${GREETING_MANIFESTS}" -n "$namespace"
+  # Apply manifests and wait for resources
+  _orchestrator::apply_manifests "$namespace"
+  _orchestrator::wait_for_sonataflow_resources "$namespace"
 
-  # Wait for sonataflow resources to be created (regardless of state)
-  timeout 30s bash -c "
-  until [[ \$(oc get sf -n $namespace --no-headers 2>/dev/null | wc -l) -eq 2 ]]; do
-    echo \"Waiting for 2 sf resources... Current count: \$(oc get sf -n $namespace --no-headers 2>/dev/null | wc -l)\"
-    sleep 5
-  done
-  "
-
-  for workflow in greeting failswitch; do
-    # Create PostgreSQL patch configuration
-    local postgres_patch
-    postgres_patch=$(
-      cat << EOF
-{
-  "spec": {
-    "persistence": {
-      "postgresql": {
-        "secretRef": {
-          "name": "$pqsl_secret_name",
-          "userKey": "$pqsl_user_key",
-          "passwordKey": "$pqsl_password_key"
-        },
-        "serviceRef": {
-          "name": "$pqsl_svc_name",
-          "namespace": "$patch_namespace",
-          "databaseName": "$sonataflow_db"
-        }
-      }
-    }
-  }
-}
-EOF
-    )
-    oc -n "$namespace" patch sonataflow "$workflow" --type merge -p "$postgres_patch"
-    oc rollout status deployment/"$workflow" -n "$namespace" --timeout=600s
+  # Patch each workflow with PostgreSQL configuration (including database name)
+  local sonataflow_db="backstage_plugin_orchestrator"
+  for workflow in $ORCHESTRATOR_WORKFLOWS; do
+    _orchestrator::patch_workflow_postgres "$namespace" "$workflow" \
+      "$pqsl_secret_name" "POSTGRES_USER" "POSTGRES_PASSWORD" \
+      "$pqsl_svc_name" "$namespace" "$sonataflow_db"
   done
 
-  echo "Waiting for all workflow pods to be running..."
-  k8s_wait::deployment "$namespace" greeting 5
-  k8s_wait::deployment "$namespace" failswitch 5
-
-  echo "All workflow pods are now running!"
+  _orchestrator::wait_for_workflow_deployments "$namespace"
 }
 
 # ==============================================================================
