@@ -41,6 +41,15 @@ Review the contents of `requirements-build.in` to remove dupes. Then regenerate 
 pip-compile --allow-unsafe --strip-extras requirements-build.in -o requirements-build.txt
 ```
 
+If it passes, you can run `cachito_hash.sh` to fix the sha256sums.
+
+Finally, MAKE SURE YOU OVERRIDE what's in the .txt files to add in the cachito_hash values, as pip-compile will remove them. This can be done by running `cachito_hash.sh`.
+
+```
+# plantuml-markdown==3.11.1
+plantuml-markdown @ https://github.com/mikitex70/plantuml-markdown/archive/592837e9c26b9e92d711af42bce8fb8697183f9d.zip#cachito_hash=sha256:adb7dd7f1aa90a0fdb279f3ad58ede6cdc9eb826adc9d1405b02d4491e492df0
+```
+
 ## Testing locally with Hermeto
 
 To validate your requirements files in an offline way, you can use Hermeto.
@@ -71,6 +80,13 @@ rm -fr "./requirements"*.txt && \
 pip-compile --allow-unsafe --output-file=requirements.txt --strip-extras requirements.in && \
 pip-compile --allow-unsafe --output-file=requirements-build.txt --strip-extras requirements-build.in && \
 pip-compile --allow-unsafe --output-file=requirements-dev.txt --strip-extras requirements-dev.in
+
+# add the plantuml-markdown hash back in
+hash=$(grep "plantuml-markdown @"  requirements.in) && \
+sed -i requirements.txt -r -e "s|plantuml-markdown @.+|${hash}|" && \
+sed -i requirements-build.txt -r -e "s|plantuml-markdown @.+|${hash}|"
+
+cd -
 ```
 
 Next, run Hermeto:
