@@ -12,6 +12,8 @@ source "${DIR}/lib/operators.sh"
 source "${DIR}/lib/k8s-wait.sh"
 # shellcheck source=.ibm/pipelines/lib/orchestrator.sh
 source "${DIR}/lib/orchestrator.sh"
+# shellcheck source=.ibm/pipelines/lib/helm.sh
+source "${DIR}/lib/helm.sh"
 
 # Constants
 TEKTON_PIPELINES_WEBHOOK="tekton-pipelines-webhook"
@@ -55,48 +57,6 @@ save_all_pod_logs() {
   mkdir -p "${ARTIFACT_DIR}/${namespace}/pod_logs"
   cp -a pod_logs/* "${ARTIFACT_DIR}/${namespace}/pod_logs" || true
   set -e
-}
-
-# ==============================================================================
-# FUTURE MODULE: lib/helm.sh
-# Functions: yq_merge_value_files, uninstall_helmchart, get_image_helm_set_params,
-#            perform_helm_install, get_chart_version, get_previous_release_value_file
-# ==============================================================================
-
-# Merge the base YAML value file with the differences file for Kubernetes
-yq_merge_value_files() {
-  local plugin_operation=$1 # Chose whether you want to merge or overwrite the plugins key (the second file will overwrite the first)
-  local base_file=$2
-  local diff_file=$3
-  local step_1_file="/tmp/step-without-plugins.yaml"
-  local step_2_file="/tmp/step-only-plugins.yaml"
-  local final_file=$4
-  if [ "$plugin_operation" = "merge" ]; then
-    # Step 1: Merge files, excluding the .global.dynamic.plugins key
-    # Values from `diff_file` override those in `base_file`
-    yq eval-all '
-      select(fileIndex == 0) * select(fileIndex == 1) |
-      del(.global.dynamic.plugins)
-    ' "${base_file}" "${diff_file}" > "${step_1_file}"
-    # Step 2: Merge files, combining the .global.dynamic.plugins key
-    # Values from `diff_file` take precedence; plugins are merged and deduplicated by the .package field
-    yq eval-all '
-      select(fileIndex == 0) *+ select(fileIndex == 1) |
-      .global.dynamic.plugins |= (reverse | unique_by(.package) | reverse)
-    ' "${base_file}" "${diff_file}" > "${step_2_file}"
-    # Step 3: Combine results from the previous steps and remove null values
-    # Values from `step_2_file` override those in `step_1_file`
-    yq eval-all '
-      select(fileIndex == 0) * select(fileIndex == 1) | del(.. | select(. == null))
-    ' "${step_2_file}" "${step_1_file}" > "${final_file}"
-  elif [ "$plugin_operation" = "overwrite" ]; then
-    yq eval-all '
-    select(fileIndex == 0) * select(fileIndex == 1)
-  ' "${base_file}" "${diff_file}" > "${final_file}"
-  else
-    log::error "Invalid operation with plugins key: $plugin_operation"
-    exit 1
-  fi
 }
 
 # ==============================================================================
@@ -206,15 +166,6 @@ install_serverless_ocp_operator() {
 
 waitfor_serverless_ocp_operator() {
   check_operator_status 300 "openshift-operators" "Red Hat OpenShift Serverless" "Succeeded"
-}
-
-uninstall_helmchart() {
-  local project=$1
-  local release=$2
-  if helm list -n "${project}" | grep -q "${release}"; then
-    log::warn "Chart already exists. Removing it before install."
-    helm uninstall "${release}" -n "${project}"
-  fi
 }
 
 configure_namespace() {
@@ -755,33 +706,6 @@ cluster_setup_k8s_helm() {
   # operator::install_postgres_k8s # Works with K8s but disabled in values file
 }
 
-# Helper function to get common helm set parameters
-get_image_helm_set_params() {
-  local params=""
-
-  # Add image repository
-  params+="--set upstream.backstage.image.repository=${QUAY_REPO} "
-
-  # Add image tag
-  params+="--set upstream.backstage.image.tag=${TAG_NAME} "
-
-  echo "${params}"
-}
-
-# Helper function to perform helm install/upgrade
-perform_helm_install() {
-  local release_name=$1
-  local namespace=$2
-  local value_file=$3
-
-  # shellcheck disable=SC2046
-  helm upgrade -i "${release_name}" -n "${namespace}" \
-    "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
-    -f "${DIR}/value_files/${value_file}" \
-    --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    $(get_image_helm_set_params)
-}
-
 # ==============================================================================
 # FUTURE MODULE: lib/deployment.sh
 # Functions: base_deployment, rbac_deployment, initiate_deployments,
@@ -1164,47 +1088,6 @@ is_openshift() {
 sed_inplace() { common::sed_inplace "$@"; }
 
 get_previous_release_version() { common::get_previous_release_version "$@"; }
-
-get_chart_version() {
-  local chart_major_version=$1
-  curl -sSX GET "https://quay.io/api/v1/repository/rhdh/chart/tag/?onlyActiveTags=true&filter_tag_name=like:${chart_major_version}-" -H "Content-Type: application/json" \
-    | jq '.tags[0].name' | grep -oE '[0-9]+\.[0-9]+-[0-9]+-CI'
-}
-
-# Helper function to get dynamic value file path based on previous release version
-get_previous_release_value_file() {
-  local value_file_type=${1:-"showcase"} # Default to showcase, can be "showcase-rbac" for RBAC
-
-  # Get the previous release version
-  local previous_release_version
-  previous_release_version=$(get_previous_release_version "$CHART_MAJOR_VERSION")
-
-  if [[ -z "$previous_release_version" ]]; then
-    log::error "Failed to determine previous release version." >&2
-    save_overall_result 1
-    exit 1
-  fi
-
-  log::info "Using previous release version: ${previous_release_version}" >&2
-
-  # Construct the GitHub URL for the value file
-  local github_url="https://raw.githubusercontent.com/redhat-developer/rhdh/release-${previous_release_version}/.ibm/pipelines/value_files/values_${value_file_type}.yaml"
-
-  # Create a temporary file path for the downloaded value file
-  local temp_value_file="/tmp/values_${value_file_type}_${previous_release_version}.yaml"
-
-  echo "Fetching value file from: ${github_url}" >&2
-
-  # Download the value file from GitHub
-  if curl -fsSL "${github_url}" -o "${temp_value_file}"; then
-    log::success "Successfully downloaded value file to: ${temp_value_file}" >&2
-    log::info "${temp_value_file}"
-  else
-    log::error "Failed to download value file from GitHub." >&2
-    save_overall_result 1
-    exit 1
-  fi
-}
 
 # Helper function to wait for backstage resource to exist in namespace
 wait_for_backstage_resource() {
