@@ -362,7 +362,7 @@ export class UIhelper {
     await navLink.click();
   }
 
-  async selectMuiBox(label: string, value: string) {
+  async selectMuiBox(label: string, value: string, notVisible?: boolean) {
     // Wait for any overlaying dialogs to close before interacting
     await this.page
       .locator('[role="presentation"].MuiDialog-root')
@@ -379,8 +379,13 @@ export class UIhelper {
 
     // Wait for and click option using semantic selector
     const option = this.page.getByRole("option", { name: value });
-    await expect(option).toBeVisible();
-    await option.click();
+
+    if (notVisible) {
+      await expect(option).toBeHidden();
+    } else {
+      await expect(option).toBeVisible();
+      await option.click();
+    }
   }
 
   async verifyRowsInTable(
