@@ -1,6 +1,6 @@
 # Development dependencies for testing
 # This file is not included in the production Docker image
-# 
+#
 # to use this file, `pip install pip-tools -U` first (need >= 7.3), then
 # pip-compile --allow-unsafe --output-file=requirements-dev.txt --strip-extras requirements-dev.in
 
