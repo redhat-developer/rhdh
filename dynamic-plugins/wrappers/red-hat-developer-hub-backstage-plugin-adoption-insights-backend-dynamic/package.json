@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "@red-hat-developer-hub/backstage-plugin-adoption-insights-backend": "0.6.2",
-    "@red-hat-developer-hub/backstage-plugin-adoption-insights-common": "0.6.1"
+    "@red-hat-developer-hub/backstage-plugin-adoption-insights-common": "0.6.2"
   },
   "devDependencies": {
     "@backstage/cli": "0.34.5",
