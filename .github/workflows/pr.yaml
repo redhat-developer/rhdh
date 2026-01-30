@@ -21,6 +21,8 @@ on:
     - main
     - release-1.[0-9]+
 
+permissions:
+  contents: read
 env:
   TURBO_SCM_BASE: ${{ github.event.pull_request.base.sha }}
   TURBO_SCM_HEAD: ${{ github.sha }}
@@ -108,6 +110,8 @@ jobs:
       - name: Setup local Turbo cache
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         uses: dtinth/setup-github-actions-caching-for-turbo@cc723b4600e40a6b8815b65701d8614b91e2669e # v1
+        with:
+          cache-prefix: turbogha-pr-${{ github.event.number }}
 
       - name: Use app-config.example.yaml
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
@@ -151,6 +155,8 @@ jobs:
       - name: Setup local Turbo cache
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         uses: dtinth/setup-github-actions-caching-for-turbo@cc723b4600e40a6b8815b65701d8614b91e2669e # v1
+        with:
+          cache-prefix: turbogha-pr-${{ github.event.number }}
 
       - name: Use app-config.example.yaml
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}

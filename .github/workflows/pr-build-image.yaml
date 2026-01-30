@@ -16,6 +16,10 @@ name: PR Build Image (Hermetic)
 
 on:
   pull_request:
+
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number || github.event.pull_request.head.ref }}
   cancel-in-progress: true
@@ -64,8 +68,8 @@ jobs:
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         run: |
           git remote add base-origin https://github.com/${{ github.repository }} || true
-          git config user.name "${{ github.event.pull_request.user.login }}"
-          git config user.email "${{ github.event.pull_request.user.email }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           echo "Updating PR with latest commits from ${{ github.event.pull_request.base.ref }} ..."
           git fetch base-origin ${{ github.event.pull_request.base.ref }}
           git merge --no-edit base-origin/${{ github.event.pull_request.base.ref }}
