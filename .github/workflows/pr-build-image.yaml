@@ -17,9 +17,6 @@ name: PR Build Image (Hermetic)
 on:
   pull_request:
 
-permissions:
-  contents: read
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number || github.event.pull_request.head.ref }}
   cancel-in-progress: true
@@ -32,7 +29,8 @@ jobs:
   build-image:
     name: Build Image
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
