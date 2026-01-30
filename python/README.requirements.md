@@ -10,6 +10,12 @@ You can also remove all the pinned versions, then:
 pip-compile --allow-unsafe --strip-extras requirements.in -o requirements.txt
 ```
 
+Or attempt to update a single package with:
+
+```
+--upgrade-package urllib3
+```
+
 Try to install everything in `requirements.txt`:
 
 ```bash
@@ -64,14 +70,14 @@ Next, regenerate the requirements*.txt files.
 You may also want to remove any versions pinned to the .in files to see if the latest deps can work together.
 
 ```bash
+git_repo=`pwd`; cd "$git_repo"
+
 # for github
 path_to_python=python
-
 # or for gitlab
 path_to_python=distgit/containers/rhdh-hub/python
-
-cd "$git_repo"
 cd "$path_to_python"
+
 rm -fr "./requirements"*.txt && \
 pip-compile --allow-unsafe --output-file=requirements.txt --strip-extras requirements.in && \
 pip-compile --allow-unsafe --output-file=requirements-build.txt --strip-extras requirements-build.in && \
@@ -92,7 +98,7 @@ Next, run Hermeto:
 alias hermeto='podman run --rm -ti -v "$PWD:$PWD:z" -w "$PWD" quay.io/konflux-ci/hermeto:latest'
 
 # make sure you're running repo clone folder or Hermeto will get lost:
-cd "$git_repo"
+git_repo=`pwd`; cd "$git_repo"
 
 # fetch deps to see if anything breaks:
 hermeto fetch-deps --source ${git_repo} --output /tmp/python-hermeto-github-output $(jq -c '.' ${git_repo}/python/hermeto_github.json)
