@@ -1238,10 +1238,10 @@ class TestNpmPluginInstallerInstall:
         plugin = {'package': 'test-package@1.0.0'}  # No integrity
         plugin_path_by_hash = {}
 
-        # Mock npm pack
+        # Mock npm pack - use string (not bytes) since run_command uses text=True
         mock_result = mocker.MagicMock()
         mock_result.returncode = 0
-        mock_result.stdout = b'test-package-1.0.0.tgz'
+        mock_result.stdout = 'test-package-1.0.0.tgz'
         mocker.patch('subprocess.run', return_value=mock_result)
 
         # Mock tarball extraction
@@ -2458,7 +2458,7 @@ class TestExtractCatalogIndex:
         # Verify the error message includes the expected content
         error_msg = str(exc_info.value)
         assert "Failed to download catalog index image" in error_msg
-        assert "skopeo command failed with exit code 1" in error_msg
+        assert "command failed with exit code 1" in error_msg
         assert "stderr: Error: image not found" in error_msg
 
     def test_extract_catalog_index_no_manifest(self, tmp_path, mocker):
