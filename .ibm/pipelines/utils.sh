@@ -72,17 +72,6 @@ disable_orchestrator_plugins_in_values() {
 }
 
 # ==============================================================================
-# K8s Wait Functions - Delegate to lib/k8s-wait.sh
-# ==============================================================================
-wait_for_deployment() { k8s_wait::deployment "$@"; }
-
-wait_for_job_completion() { k8s_wait::job "$@"; }
-
-wait_for_svc() { k8s_wait::service "$@"; }
-
-wait_for_endpoint() { k8s_wait::endpoint "$@"; }
-
-# ==============================================================================
 # Operator Functions - Delegate to lib/operators.sh
 # ==============================================================================
 install_subscription() { operator::install_subscription "$@"; }
@@ -657,7 +646,7 @@ base_deployment() {
 
   if should_skip_orchestrator; then
     local merged_pr_value_file="/tmp/merged-values_showcase_PR.yaml"
-    yq_merge_value_files "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/diff-values_showcase_PR.yaml" "${merged_pr_value_file}"
+    helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/diff-values_showcase_PR.yaml" "${merged_pr_value_file}"
     disable_orchestrator_plugins_in_values "${merged_pr_value_file}"
 
     mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE}"
@@ -667,9 +656,9 @@ base_deployment() {
       "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
       -f "${merged_pr_value_file}" \
       --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-      $(get_image_helm_set_params)
+      $(helm::get_image_params)
   else
-    perform_helm_install "${RELEASE_NAME}" "${NAME_SPACE}" "${HELM_CHART_VALUE_FILE_NAME}"
+    helm::install "${RELEASE_NAME}" "${NAME_SPACE}" "${HELM_CHART_VALUE_FILE_NAME}"
   fi
 
   if should_skip_orchestrator; then
@@ -698,7 +687,7 @@ rbac_deployment() {
   log::info "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${RELEASE_NAME_RBAC}"
   if should_skip_orchestrator; then
     local merged_pr_rbac_value_file="/tmp/merged-values_showcase-rbac_PR.yaml"
-    yq_merge_value_files "merge" "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "${DIR}/value_files/diff-values_showcase-rbac_PR.yaml" "${merged_pr_rbac_value_file}"
+    helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "${DIR}/value_files/diff-values_showcase-rbac_PR.yaml" "${merged_pr_rbac_value_file}"
     disable_orchestrator_plugins_in_values "${merged_pr_rbac_value_file}"
 
     mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE_RBAC}"
@@ -708,9 +697,9 @@ rbac_deployment() {
       "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
       -f "${merged_pr_rbac_value_file}" \
       --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-      $(get_image_helm_set_params)
+      $(helm::get_image_params)
   else
-    perform_helm_install "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${HELM_CHART_RBAC_VALUE_FILE_NAME}"
+    helm::install "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${HELM_CHART_RBAC_VALUE_FILE_NAME}"
   fi
 
   # NOTE: This is a workaround to allow the sonataflow platform to connect to the external postgres db using ssl.
@@ -752,7 +741,7 @@ base_deployment_osd_gcp() {
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
 
   # Merge base values with OSD-GCP diff file
-  yq_merge_value_files "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_OSD_GCP_DIFF_VALUE_FILE_NAME}" "/tmp/merged-values_showcase_OSD-GCP.yaml"
+  helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_OSD_GCP_DIFF_VALUE_FILE_NAME}" "/tmp/merged-values_showcase_OSD-GCP.yaml"
   mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE}"
   cp -a "/tmp/merged-values_showcase_OSD-GCP.yaml" "${ARTIFACT_DIR}/${NAME_SPACE}/" # Save the final value-file into the artifacts directory.
 
@@ -763,7 +752,7 @@ base_deployment_osd_gcp() {
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "/tmp/merged-values_showcase_OSD-GCP.yaml" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    $(get_image_helm_set_params)
+    $(helm::get_image_params)
 
   # Skip orchestrator workflows deployment for OSD-GCP
   log::warn "Skipping orchestrator workflows deployment on OSD-GCP environment"
@@ -779,7 +768,7 @@ rbac_deployment_osd_gcp() {
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
 
   # Merge RBAC values with OSD-GCP diff file
-  yq_merge_value_files "merge" "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_RBAC_OSD_GCP_DIFF_VALUE_FILE_NAME}" "/tmp/merged-values_showcase-rbac_OSD-GCP.yaml"
+  helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_RBAC_OSD_GCP_DIFF_VALUE_FILE_NAME}" "/tmp/merged-values_showcase-rbac_OSD-GCP.yaml"
   mkdir -p "${ARTIFACT_DIR}/${NAME_SPACE_RBAC}"
   cp -a "/tmp/merged-values_showcase-rbac_OSD-GCP.yaml" "${ARTIFACT_DIR}/${NAME_SPACE_RBAC}/" # Save the final value-file into the artifacts directory.
 
@@ -790,7 +779,7 @@ rbac_deployment_osd_gcp() {
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "/tmp/merged-values_showcase-rbac_OSD-GCP.yaml" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    $(get_image_helm_set_params)
+    $(helm::get_image_params)
 
   # Skip orchestrator workflows deployment for OSD-GCP
   log::warn "Skipping orchestrator workflows deployment on OSD-GCP RBAC environment"
@@ -826,7 +815,7 @@ initiate_upgrade_base_deployments() {
 
   # Get dynamic value file path based on previous release version
   local previous_release_value_file
-  previous_release_value_file=$(get_previous_release_value_file "showcase")
+  previous_release_value_file=$(helm::get_previous_release_values "showcase")
   echo "Using dynamic value file: ${previous_release_value_file}"
 
   helm upgrade -i "${release_name}" -n "${namespace}" \
@@ -848,7 +837,7 @@ initiate_upgrade_deployments() {
   log::info "Initiating upgrade deployment"
   cd "${DIR}"
 
-  yq_merge_value_files "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/diff-values_showcase_upgrade.yaml" "/tmp/merged_value_file.yaml"
+  helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/diff-values_showcase_upgrade.yaml" "/tmp/merged_value_file.yaml"
   log::info "Deploying image from repository: ${QUAY_REPO}, TAG_NAME: ${TAG_NAME}, in NAME_SPACE: ${NAME_SPACE}"
 
   helm upgrade -i "${RELEASE_NAME}" -n "${NAME_SPACE}" \
@@ -867,7 +856,7 @@ initiate_runtime_deployment() {
   local release_name=$1
   local namespace=$2
   namespace::configure "${namespace}"
-  uninstall_helmchart "${namespace}" "${release_name}"
+  helm::uninstall "${namespace}" "${release_name}"
 
   oc apply -f "$DIR/resources/postgres-db/dynamic-plugins-root-PVC.yaml" -n "${namespace}"
 
@@ -876,7 +865,7 @@ initiate_runtime_deployment() {
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "$DIR/resources/postgres-db/values-showcase-postgres.yaml" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    $(get_image_helm_set_params)
+    $(helm::get_image_params)
 }
 
 initiate_sanity_plugin_checks_deployment() {
@@ -885,10 +874,10 @@ initiate_sanity_plugin_checks_deployment() {
   local sanity_plugins_url=$3
 
   namespace::configure "${name_space_sanity_plugins_check}"
-  uninstall_helmchart "${name_space_sanity_plugins_check}" "${release_name}"
+  helm::uninstall "${name_space_sanity_plugins_check}" "${release_name}"
   deploy_redis_cache "${name_space_sanity_plugins_check}"
   apply_yaml_files "${DIR}" "${name_space_sanity_plugins_check}" "${sanity_plugins_url}"
-  yq_merge_value_files "overwrite" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_SANITY_PLUGINS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}"
+  helm::merge_values "overwrite" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_SANITY_PLUGINS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}"
   mkdir -p "${ARTIFACT_DIR}/${name_space_sanity_plugins_check}"
   cp -a "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" "${ARTIFACT_DIR}/${name_space_sanity_plugins_check}/" || true # Save the final value-file into the artifacts directory.
   # shellcheck disable=SC2046
@@ -896,7 +885,7 @@ initiate_sanity_plugin_checks_deployment() {
     "${HELM_CHART_URL}" --version "${CHART_VERSION}" \
     -f "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
-    $(get_image_helm_set_params) \
+    $(helm::get_image_params) \
     --set orchestrator.enabled=true
 }
 
@@ -966,15 +955,11 @@ check_helm_upgrade() {
 # ==============================================================================
 # Common Functions - Delegate to lib/common.sh
 # ==============================================================================
-oc_login() { common::oc_login "$@"; }
-
 is_openshift() {
   oc get routes.route.openshift.io &> /dev/null || kubectl get routes.route.openshift.io &> /dev/null
 }
 
 sed_inplace() { common::sed_inplace "$@"; }
-
-get_previous_release_version() { common::get_previous_release_version "$@"; }
 
 # Helper function to wait for backstage resource to exist in namespace
 wait_for_backstage_resource() {
