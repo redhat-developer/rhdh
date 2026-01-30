@@ -494,6 +494,9 @@ test.describe("Test RBAC", () => {
       });
       await page.getByPlaceholder("Filter").fill("test-role1");
       await uiHelper.verifyHeading("All roles (1)");
+
+      await uiHelper.openCatalogSidebar("Template");
+      await uiHelper.openCatalogSidebar("API");
       await rbacPo.deleteRole("role:default/test-role1");
     });
   });
