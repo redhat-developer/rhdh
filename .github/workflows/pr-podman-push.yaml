@@ -84,12 +84,21 @@ jobs:
         id: check-skip
         run: |
           if [ -f "./rhdh-skip-artifacts/isSkipped.txt" ]; then
-            IS_SKIPPED=$(cat ./rhdh-skip-artifacts/isSkipped.txt)
-            echo "Found skip status: $IS_SKIPPED"
+            IS_SKIPPED_RAW=$(cat ./rhdh-skip-artifacts/isSkipped.txt)
+            
+            # Sanitize: Allow only 'true' or 'false', default to false if unknown to skip artifact download in case of injection
+            if [[ "$IS_SKIPPED_RAW" == "false" ]]; then
+              IS_SKIPPED="false"
+            else
+              IS_SKIPPED="true"
+            fi
+            
+            echo "Found skip status: $IS_SKIPPED_RAW"
+            echo "Sanitized skip status: $IS_SKIPPED"
             echo "is_skipped=$IS_SKIPPED" >> $GITHUB_OUTPUT
           else
-            echo "Skip status artifact not found, proceeding with push"
-            echo "is_skipped=false" >> $GITHUB_OUTPUT
+            echo "Skip status artifact not found, skipping push"
+            echo "is_skipped=true" >> $GITHUB_OUTPUT
           fi
 
       - name: Download Image Artifacts
@@ -124,12 +133,13 @@ jobs:
           podman images
           
           echo "Full tags from metadata:"
-          echo "$TAGS_LIST"
+          printf '%s\n' "$TAGS_LIST"
           
-          # Use a heredoc since TAGS_LIST contains newlines
-          echo "tags<<EOF" >> $GITHUB_OUTPUT
-          echo "$TAGS_LIST" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          # SECURITY: Use a random delimiter to prevent output injection from artifact poisoning
+          DELIMITER=$(openssl rand -hex 16)
+          echo "tags<<$DELIMITER" >> $GITHUB_OUTPUT
+          printf '%s\n' "$TAGS_LIST" >> $GITHUB_OUTPUT
+          echo "$DELIMITER" >> $GITHUB_OUTPUT
 
       - name: Push Images
         if: ${{ steps.check-skip.outputs.is_skipped != 'true' }}

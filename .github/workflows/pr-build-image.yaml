@@ -16,6 +16,7 @@ name: PR Build Image (Hermetic)
 
 on:
   pull_request:
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number || github.event.pull_request.head.ref }}
   cancel-in-progress: true
@@ -28,7 +29,8 @@ jobs:
   build-image:
     name: Build Image
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -71,13 +73,10 @@ jobs:
 
       - name: Get the latest commits from base branch
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
-        env:
-          PR_USER_LOGIN: ${{ github.event.pull_request.user.login }}
-          PR_USER_EMAIL: ${{ github.event.pull_request.user.email }}
         run: |
           git remote add base-origin https://github.com/"$GITHUB_REPOSITORY" || true
-          git config user.name "$PR_USER_LOGIN"
-          git config user.email "$PR_USER_EMAIL"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           echo "Updating PR with latest commits from $GITHUB_BASE_REF ..."
           git fetch base-origin "$GITHUB_BASE_REF"
           git merge --no-edit base-origin/"$GITHUB_BASE_REF"
