@@ -22,8 +22,6 @@ on:
       - release-1.9
       - release-1.1[0-9]
 
-permissions:
-  contents: read
 env:
   TURBO_SCM_BASE: ${{ github.event.pull_request.base.sha }}
   TURBO_SCM_HEAD: ${{ github.sha }}
@@ -36,6 +34,8 @@ jobs:
   build:
     name: Build with Node.js ${{ matrix.node-version }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       matrix:
         node-version: [22]
@@ -80,6 +80,8 @@ jobs:
   test:
     name: Test with Node.js ${{ matrix.node-version }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       matrix:
         node-version: [22]
