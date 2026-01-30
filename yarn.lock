@@ -7880,15 +7880,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@janus-idp/backstage-plugin-audit-log-node@npm:1.7.2":
-  version: 1.7.2
-  resolution: "@janus-idp/backstage-plugin-audit-log-node@npm:1.7.2"
-  dependencies:
-    lodash: ^4.17.21
-  checksum: 8b896df97a4079da2081740eb4b9ecdddcff416ead28a397184b9f7c9bb9321dde4a0bb12a054a3ae430cdc4e1d8693c7411201251279ca094b15ca5bbb6b199
-  languageName: node
-  linkType: hard
-
 "@janus-idp/cli@npm:3.7.0":
   version: 3.7.0
   resolution: "@janus-idp/cli@npm:3.7.0"
@@ -19155,7 +19146,6 @@ __metadata:
     "@internal/plugin-dynamic-plugins-info-backend": "*"
     "@internal/plugin-licensed-users-info-backend": "*"
     "@internal/plugin-scalprum-backend": "*"
-    "@janus-idp/backstage-plugin-audit-log-node": 1.7.2
     "@opentelemetry/api": 1.9.0
     "@opentelemetry/auto-instrumentations-node": 0.58.1
     "@opentelemetry/exporter-prometheus": 0.57.2
