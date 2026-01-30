@@ -18,7 +18,7 @@ initiate_operator_deployments() {
   deploy_test_backstage_customization_provider "${NAME_SPACE}"
   local rhdh_base_url="https://backstage-${RELEASE_NAME}-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
-  create_dynamic_plugins_config "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "/tmp/configmap-dynamic-plugins.yaml"
+  config::create_dynamic_plugins_config "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "/tmp/configmap-dynamic-plugins.yaml"
   oc apply -f /tmp/configmap-dynamic-plugins.yaml -n "${NAME_SPACE}"
   deploy_redis_cache "${NAME_SPACE}"
   deploy_rhdh_operator "${NAME_SPACE}" "${DIR}/resources/rhdh-operator/rhdh-start.yaml"
@@ -26,11 +26,11 @@ initiate_operator_deployments() {
   deploy_orchestrator_workflows_operator "${NAME_SPACE}"
 
   namespace::configure "${NAME_SPACE_RBAC}"
-  create_conditional_policies_operator /tmp/conditional-policies.yaml
-  prepare_operator_app_config "${DIR}/resources/config_map/app-config-rhdh-rbac.yaml"
+  config::create_conditional_policies_operator /tmp/conditional-policies.yaml
+  config::prepare_operator_app_config "${DIR}/resources/config_map/app-config-rhdh-rbac.yaml"
   local rbac_rhdh_base_url="https://backstage-${RELEASE_NAME_RBAC}-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
-  create_dynamic_plugins_config "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "/tmp/configmap-dynamic-plugins-rbac.yaml"
+  config::create_dynamic_plugins_config "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "/tmp/configmap-dynamic-plugins-rbac.yaml"
   oc apply -f /tmp/configmap-dynamic-plugins-rbac.yaml -n "${NAME_SPACE_RBAC}"
   deploy_rhdh_operator "${NAME_SPACE_RBAC}" "${DIR}/resources/rhdh-operator/rhdh-start-rbac.yaml"
   enable_orchestrator_plugins_op "${NAME_SPACE_RBAC}"
@@ -50,7 +50,7 @@ initiate_operator_deployments_osd_gcp() {
 
   # Merge base values with OSD-GCP diff file before creating dynamic plugins config
   helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_OSD_GCP_DIFF_VALUE_FILE_NAME}" "/tmp/merged-values_showcase_OSD-GCP.yaml"
-  create_dynamic_plugins_config "/tmp/merged-values_showcase_OSD-GCP.yaml" "/tmp/configmap-dynamic-plugins.yaml"
+  config::create_dynamic_plugins_config "/tmp/merged-values_showcase_OSD-GCP.yaml" "/tmp/configmap-dynamic-plugins.yaml"
   common::save_artifact "${NAME_SPACE}" "/tmp/configmap-dynamic-plugins.yaml"
 
   oc apply -f /tmp/configmap-dynamic-plugins.yaml -n "${NAME_SPACE}"
@@ -61,14 +61,14 @@ initiate_operator_deployments_osd_gcp() {
   log::warn "Skipping orchestrator plugins and workflows deployment on OSD-GCP environment"
 
   namespace::configure "${NAME_SPACE_RBAC}"
-  create_conditional_policies_operator /tmp/conditional-policies.yaml
-  prepare_operator_app_config "${DIR}/resources/config_map/app-config-rhdh-rbac.yaml"
+  config::create_conditional_policies_operator /tmp/conditional-policies.yaml
+  config::prepare_operator_app_config "${DIR}/resources/config_map/app-config-rhdh-rbac.yaml"
   local rbac_rhdh_base_url="https://backstage-${RELEASE_NAME_RBAC}-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
 
   # Merge RBAC values with OSD-GCP diff file before creating dynamic plugins config
   helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_RBAC_OSD_GCP_DIFF_VALUE_FILE_NAME}" "/tmp/merged-values_showcase-rbac_OSD-GCP.yaml"
-  create_dynamic_plugins_config "/tmp/merged-values_showcase-rbac_OSD-GCP.yaml" "/tmp/configmap-dynamic-plugins-rbac.yaml"
+  config::create_dynamic_plugins_config "/tmp/merged-values_showcase-rbac_OSD-GCP.yaml" "/tmp/configmap-dynamic-plugins-rbac.yaml"
   common::save_artifact "${NAME_SPACE_RBAC}" "/tmp/configmap-dynamic-plugins-rbac.yaml"
 
   oc apply -f /tmp/configmap-dynamic-plugins-rbac.yaml -n "${NAME_SPACE_RBAC}"
@@ -82,7 +82,7 @@ run_operator_runtime_config_change_tests() {
   # Deploy `showcase-runtime` to run tests that require configuration changes at runtime
   namespace::configure "${NAME_SPACE_RUNTIME}"
   oc apply -f "$DIR/resources/postgres-db/dynamic-plugins-root-PVC.yaml" -n "${NAME_SPACE_RUNTIME}"
-  create_app_config_map "$DIR/resources/postgres-db/rds-app-config.yaml" "${NAME_SPACE_RUNTIME}"
+  config::create_app_config_map "$DIR/resources/postgres-db/rds-app-config.yaml" "${NAME_SPACE_RUNTIME}"
   deploy_rhdh_operator "${NAME_SPACE_RUNTIME}" "${DIR}/resources/rhdh-operator/rhdh-start-runtime.yaml"
   local runtime_url="https://backstage-${RELEASE_NAME}-${NAME_SPACE_RUNTIME}.${K8S_CLUSTER_ROUTER_BASE}"
   run_tests "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${PW_PROJECT_SHOWCASE_RUNTIME}" "${runtime_url}"

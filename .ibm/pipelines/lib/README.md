@@ -56,6 +56,14 @@ Functions: `namespace::configure`, `namespace::delete`, `namespace::force_delete
 `namespace::remove_finalizers`, `namespace::setup_image_pull_secret`,
 `namespace::create_dockerconfigjson_secret`, `namespace::add_pull_secret_to_sa`
 
+### `config.sh`
+
+Configuration management for ConfigMaps, dynamic plugins, and app configuration.
+
+Functions: `config::create_app_config_map`, `config::select_config_map_file`,
+`config::create_dynamic_plugins_config`, `config::create_conditional_policies_operator`,
+`config::prepare_operator_app_config`
+
 ## Creating New Modules
 
 ### Structure

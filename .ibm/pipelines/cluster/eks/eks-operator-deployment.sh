@@ -20,7 +20,7 @@ initiate_eks_operator_deployment() {
 
   log::info "Creating and applying ConfigMap for dynamic plugins"
   helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_EKS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}"
-  create_dynamic_plugins_config "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}" "/tmp/configmap-dynamic-plugins.yaml"
+  config::create_dynamic_plugins_config "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}" "/tmp/configmap-dynamic-plugins.yaml"
   common::save_artifact "${namespace}" "/tmp/configmap-dynamic-plugins.yaml"
   kubectl apply -f /tmp/configmap-dynamic-plugins.yaml -n "${namespace}"
 
@@ -39,13 +39,13 @@ initiate_rbac_eks_operator_deployment() {
 
   namespace::configure "${namespace}"
   # deploy_test_backstage_customization_provider "${namespace}" # Doesn't work on K8s
-  create_conditional_policies_operator /tmp/conditional-policies.yaml
-  prepare_operator_app_config "${DIR}/resources/config_map/app-config-rhdh-rbac.yaml"
+  config::create_conditional_policies_operator /tmp/conditional-policies.yaml
+  config::prepare_operator_app_config "${DIR}/resources/config_map/app-config-rhdh-rbac.yaml"
   apply_yaml_files "${DIR}" "${namespace}" "${rhdh_base_url}"
 
   log::info "Creating and applying ConfigMap for dynamic plugins"
   helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_RBAC_EKS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}"
-  create_dynamic_plugins_config "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}" "/tmp/configmap-dynamic-plugins-rbac.yaml"
+  config::create_dynamic_plugins_config "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}" "/tmp/configmap-dynamic-plugins-rbac.yaml"
   common::save_artifact "${namespace}" "/tmp/configmap-dynamic-plugins-rbac.yaml"
   kubectl apply -f /tmp/configmap-dynamic-plugins-rbac.yaml -n "${namespace}"
 
