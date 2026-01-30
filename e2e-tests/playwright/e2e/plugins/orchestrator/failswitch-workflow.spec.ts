@@ -5,7 +5,7 @@ import { Orchestrator } from "../../../support/pages/orchestrator";
 import { skipIfJobName } from "../../../utils/helper";
 import { JOB_NAME_PATTERNS } from "../../../utils/constants";
 
-test.describe("Orchestrator greeting workflow tests", () => {
+test.describe("Orchestrator failswitch workflow tests", () => {
   test.skip(() => skipIfJobName(JOB_NAME_PATTERNS.OSD_GCP)); // skipping orchestrator tests on OSD-GCP due to infra not being installed
   test.skip(() => skipIfJobName(JOB_NAME_PATTERNS.GKE)); // skipping orchestrator tests on GKE - plugins disabled to save disk space
 
@@ -20,19 +20,22 @@ test.describe("Orchestrator greeting workflow tests", () => {
     await common.loginAsKeycloakUser();
   });
 
-  test("Greeting workflow execution and workflow tab validation", async () => {
+  test("Failswitch workflow execution and workflow tab validation", async () => {
     await uiHelper.openSidebar("Orchestrator");
-    await orchestrator.selectGreetingWorkflowItem();
-    await orchestrator.runGreetingWorkflow();
+    await orchestrator.selectFailSwitchWorkflowItem();
+    await orchestrator.runFailSwitchWorkflow("OK");
+    await orchestrator.reRunFailSwitchWorkflow("Wait");
+    await orchestrator.abortWorkflow();
+    await orchestrator.reRunFailSwitchWorkflow("KO");
+    await orchestrator.validateWorkflowStatus("Failed");
     await uiHelper.openSidebar("Orchestrator");
-    await orchestrator.validateGreetingWorkflow();
+    await orchestrator.validateWorkflowAllRuns();
   });
 
-  test("Greeting workflow run details validation", async () => {
+  test("Failswitch workflow execution and test abort workflow", async () => {
     await uiHelper.openSidebar("Orchestrator");
-    await orchestrator.selectGreetingWorkflowItem();
-    await orchestrator.runGreetingWorkflow();
-    await orchestrator.reRunGreetingWorkflow();
-    await orchestrator.validateWorkflowRunsDetails();
+    await orchestrator.selectFailSwitchWorkflowItem();
+    await orchestrator.runFailSwitchWorkflow("Wait");
+    await orchestrator.abortWorkflow();
   });
 });
