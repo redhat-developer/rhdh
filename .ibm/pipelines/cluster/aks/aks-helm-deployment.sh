@@ -14,12 +14,12 @@ initiate_aks_helm_deployment() {
   deploy_redis_cache "${NAME_SPACE}"
   patch_and_restart "$NAME_SPACE" "deployment" "redis" "${DIR}/cluster/aks/patch/aks-spot-patch.yaml" # Patch Redis deployment to run on spot cluster
 
-  uninstall_helmchart "${NAME_SPACE}" "${RELEASE_NAME}"
+  helm::uninstall "${NAME_SPACE}" "${RELEASE_NAME}"
 
   cd "${DIR}" || exit
   local rhdh_base_url="https://${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
-  yq_merge_value_files "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_AKS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}"
+  helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_AKS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}"
   common::save_artifact "${NAME_SPACE}" "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}"
 
   namespace::setup_image_pull_secret "${NAME_SPACE}" "rh-pull-secret" "${REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON}"
@@ -37,12 +37,12 @@ initiate_rbac_aks_helm_deployment() {
   namespace::delete "${NAME_SPACE}"
   namespace::configure "${NAME_SPACE_RBAC}"
 
-  uninstall_helmchart "${NAME_SPACE_RBAC}" "${RELEASE_NAME_RBAC}"
+  helm::uninstall "${NAME_SPACE_RBAC}" "${RELEASE_NAME_RBAC}"
 
   cd "${DIR}" || exit
   local rbac_rhdh_base_url="https://${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
-  yq_merge_value_files "merge" "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_RBAC_AKS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_RBAC_K8S_MERGED_VALUE_FILE_NAME}"
+  helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_RBAC_AKS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_RBAC_K8S_MERGED_VALUE_FILE_NAME}"
   common::save_artifact "${NAME_SPACE_RBAC}" "/tmp/${HELM_CHART_RBAC_K8S_MERGED_VALUE_FILE_NAME}"
 
   namespace::setup_image_pull_secret "${NAME_SPACE_RBAC}" "rh-pull-secret" "${REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON}"

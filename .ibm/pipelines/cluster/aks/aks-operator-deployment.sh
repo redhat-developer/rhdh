@@ -21,7 +21,7 @@ initiate_aks_operator_deployment() {
   apply_yaml_files "${DIR}" "${namespace}" "${rhdh_base_url}"
 
   log::info "Creating and applying ConfigMap for dynamic plugins"
-  yq_merge_value_files "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_AKS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}"
+  helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_AKS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}"
   create_dynamic_plugins_config "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}" "/tmp/configmap-dynamic-plugins.yaml"
   common::save_artifact "${namespace}" "/tmp/configmap-dynamic-plugins.yaml"
   kubectl apply -f /tmp/configmap-dynamic-plugins.yaml -n "${namespace}"
@@ -47,7 +47,7 @@ initiate_rbac_aks_operator_deployment() {
   apply_yaml_files "${DIR}" "${namespace}" "${rhdh_base_url}"
 
   log::info "Creating and applying ConfigMap for dynamic plugins"
-  yq_merge_value_files "merge" "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_RBAC_AKS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}"
+  helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_RBAC_AKS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}"
   create_dynamic_plugins_config "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}" "/tmp/configmap-dynamic-plugins-rbac.yaml"
   common::save_artifact "${namespace}" "/tmp/configmap-dynamic-plugins-rbac.yaml"
   kubectl apply -f /tmp/configmap-dynamic-plugins-rbac.yaml -n "${namespace}"
