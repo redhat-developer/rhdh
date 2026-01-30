@@ -22,7 +22,7 @@ handle_ocp_helm_upgrade() {
     save_overall_result 1
     exit 1
   fi
-  CHART_VERSION_BASE=$(get_chart_version "$previous_release_version")
+  CHART_VERSION_BASE=$(helm::get_chart_version "$previous_release_version")
   if [[ -z "$CHART_VERSION_BASE" ]]; then
     log::error "Failed to determine correct chart version for $previous_release_version. Exiting."
     save_overall_result 1
