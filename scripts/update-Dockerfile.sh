@@ -10,14 +10,11 @@
 # Utility script to inject all the package.json files into the container before running yarn install
 # see also ../package.json build stage which should trigger this when building in CI
 
-for dockerfile in ./docker/Dockerfile .rhdh/docker/Dockerfile; do
+for containerfile in ./docker/Containerfile; do
   # trim existing COPY lines
-  sed -i "/# BEGIN COPY package.json files/,/# END COPY package.json files/c# BEGIN COPY package.json files\n# END COPY package.json files" $dockerfile
+  sed -i "/# BEGIN COPY package.json files/,/# END COPY package.json files/c# BEGIN COPY package.json files\n# END COPY package.json files" $containerfile
   # add new COPY lines
-for path in $( (find . -maxdepth 1 -name package.json; find ./plugins ./packages -name package.json) | sort -uV); do
-    sed -i "s|\# BEGIN COPY package.json files|\# BEGIN COPY package.json files\nCOPY ${path/\./\$EXTERNAL_SOURCE_NESTED} $path|g" $dockerfile
+  for path in $( (find . -maxdepth 1 -name package.json; find ./plugins ./packages -name package.json) | sort -uV); do
+    sed -i "s|\# BEGIN COPY package.json files|\# BEGIN COPY package.json files\nCOPY ${path/\./\$EXTERNAL_SOURCE_NESTED} $path|g" $containerfile
   done
 done
-
-# remove e2e-tests from downstream dockerfile
-sed -i .rhdh/docker/Dockerfile -r -e "/e2e-tests/d"

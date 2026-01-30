@@ -54,8 +54,7 @@
         "minor"
       ],      
       "matchFileNames": [
-        ".rhdh/docker/Dockerfile",
-        "docker/Dockerfile"
+        "docker/Containerfile"
       ],        
       "additionalBranchPrefix": "dockerfile ",        
       "groupName": "Dockerfile images (non-major) [skip-build]",
