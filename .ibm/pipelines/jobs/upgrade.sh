@@ -6,6 +6,8 @@ source "$DIR"/lib/log.sh
 source "$DIR"/lib/common.sh
 # shellcheck source=.ibm/pipelines/utils.sh
 source "$DIR"/utils.sh
+# shellcheck source=.ibm/pipelines/lib/testing.sh
+source "$DIR"/lib/testing.sh
 # shellcheck source=.ibm/pipelines/playwright-projects.sh
 source "$DIR"/playwright-projects.sh
 
@@ -44,5 +46,5 @@ handle_ocp_helm_upgrade() {
   deploy_orchestrator_workflows "${NAME_SPACE}"
   initiate_upgrade_deployments "${RELEASE_NAME}" "${NAME_SPACE}" "${url}"
 
-  check_upgrade_and_test "${DEPLOYMENT_NAME}" "${RELEASE_NAME}" "${NAME_SPACE}" "${PW_PROJECT_SHOWCASE_UPGRADE}" "${url}"
+  testing::check_upgrade_and_test "${DEPLOYMENT_NAME}" "${RELEASE_NAME}" "${NAME_SPACE}" "${PW_PROJECT_SHOWCASE_UPGRADE}" "${url}"
 }
