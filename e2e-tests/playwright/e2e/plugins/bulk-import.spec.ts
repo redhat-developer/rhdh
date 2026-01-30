@@ -103,6 +103,7 @@ spec:
   });
 
   test("Add a Repository from the Organization Tab and Confirm its Preview", async () => {
+    await uiHelper.openSidebar("Bulk import");
     await uiHelper.clickByDataTestId("organization-view");
     await uiHelper.searchInputPlaceholder(newRepoDetails.owner);
     await uiHelper.verifyRowInTableByUniqueText(newRepoDetails.owner, [
