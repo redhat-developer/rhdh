@@ -9,6 +9,7 @@ test.describe("Test Quick Start plugin", () => {
       description: "plugins",
     });
   });
+
   let uiHelper: UIhelper;
   let common: Common;
 
@@ -29,8 +30,7 @@ test.describe("Test Quick Start plugin", () => {
     await expect(page.getByRole("button", { name: "Hide" })).toBeVisible();
   });
 
-  // FIXME https://issues.redhat.com/browse/RHIDP-8971
-  test.skip("Access Quick start as Guest or Admin", async ({ page }) => {
+  test("Access Quick start as Guest or Admin", async ({ page }) => {
     // eslint-disable-next-line playwright/no-conditional-in-test
     if (test.info().project.name !== "showcase-rbac") {
       await common.loginAsGuest();
@@ -78,7 +78,7 @@ test.describe("Test Quick Start plugin", () => {
     await uiHelper.verifyText("Let's get you started with Developer Hub");
     await uiHelper.verifyText("We'll guide you through a few quick steps");
     await uiHelper.clickButtonByText("Import application");
-    await uiHelper.verifyButtonURL("Import", "/bulk-import/repositories");
+    await uiHelper.verifyButtonURL("Import", "/bulk-import");
     await uiHelper.clickButtonByText("Import");
     await uiHelper.verifyHeading("Bulk import");
     await uiHelper.clickButtonByText("Learn about the Catalog");

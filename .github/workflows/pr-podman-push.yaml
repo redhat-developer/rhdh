@@ -193,7 +193,7 @@ jobs:
               return `* [\`${fullTag}\`](https://${fullTag})`;
             }).join('\n');
             
-            const body = `The image is available at:\n\n${tagLinks}\n\n/test e2e-ocp-helm\n`;
+            const body = `The image is available at:\n\n${tagLinks}\n`;
             
             console.log(`Creating comment for PR ${prNumber} with body:\n ${body}`);
 

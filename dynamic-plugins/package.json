@@ -1,6 +1,6 @@
 {
   "name": "dynamic-plugins-root",
-  "version": "1.9.0",
+  "version": "1.10.0",
   "private": true,
   "engines": {
     "node": "22"
@@ -24,7 +24,7 @@
   },
   "devDependencies": {
     "@backstage/cli": "0.34.5",
-    "turbo": "2.7.5"
+    "turbo": "2.7.6"
   },
   "resolutions": {
     "@types/react": "18.3.27",

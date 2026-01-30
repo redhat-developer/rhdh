@@ -333,7 +333,7 @@ export class RbacPo extends PageObject {
       await this.page.getByPlaceholder("string, string").click();
       await this.page
         .getByPlaceholder("string, string")
-        .fill("component,template");
+        .fill("component,template,user,group");
       await this.addRuleButton.click();
       await this.page.getByLabel("Open").nth(2).click();
       await this.hasSpecButton.click();

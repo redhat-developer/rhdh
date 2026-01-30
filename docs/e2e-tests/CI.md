@@ -16,7 +16,6 @@ When a new Pull Request (PR) is opened at [rhdh](https://github.com/redhat-devel
 For scenarios where tests are not automatically triggered, or when you need to manually initiate tests (e.g., for draft PRs or external contributions), you can use the following commands:
 
 1. **Commenting `/ok-to-test`:**
-
    - **Purpose:** This command is used to validate a PR for testing, especially important for external contributors or when tests are not automatically triggered.
    - **Who Can Use It:** Only members of the [janus-idp](https://github.com/janus-idp) GitHub organization can mark the PR with this comment.
    - **Use Cases:**
@@ -29,15 +28,15 @@ For scenarios where tests are not automatically triggered, or when you need to m
      - `/test e2e-ocp-helm` for mandatory PR checks
    - **Note:** Avoid using `/test all` as it may trigger unnecessary jobs and consume CI resources. Instead, use `/test ?` to see available options and trigger only the specific tests you need.
 3. **Triggering Optional Nightly Job Execution on Pull Requests:**
-     The following optional nightly jobs can be manually triggered on PRs targeting the `main` branch and `release-*` branches. These jobs help validate changes across various deployment environments by commenting the trigger command on PR.
+   The following optional nightly jobs can be manually triggered on PRs targeting the `main` branch and `release-*` branches. These jobs help validate changes across various deployment environments by commenting the trigger command on PR.
 
-     **Job Name Format:** Jobs follow the naming scheme `redhat-developer-rhdh-PLATFORM-[VERSION]-INSTALL_METHOD-[SPECIAL_TEST]-nightly` where:
-     - `PLATFORM`: The target platform (e.g., `ocp`, `aks`, `gke`)
-     - `VERSION`: The platform version (e.g., `v4-17`, `v4-18`, `v4-19`)
-     - `INSTALL_METHOD`: The deployment method (e.g., `helm`, `operator`)
-     - `SPECIAL_TEST`: Optional special test type (e.g., `auth-providers`, `upgrade`)
+   **Job Name Format:** Jobs follow the naming scheme `redhat-developer-rhdh-PLATFORM-[VERSION]-INSTALL_METHOD-[SPECIAL_TEST]-nightly` where:
+   - `PLATFORM`: The target platform (e.g., `ocp`, `aks`, `gke`)
+   - `VERSION`: The platform version (e.g., `v4-17`, `v4-18`, `v4-19`)
+   - `INSTALL_METHOD`: The deployment method (e.g., `helm`, `operator`)
+   - `SPECIAL_TEST`: Optional special test type (e.g., `auth-providers`, `upgrade`)
 
-     Use `/test ?` to see the complete list of available jobs for your specific branch and PR context.
+   Use `/test ?` to see the complete list of available jobs for your specific branch and PR context.
 
 These interactions are picked up by the OpenShift-CI service, which sets up a test environmentr. The configurations and steps for setting up this environment are defined in the `openshift-ci-tests.sh` script. For more details, see the [High-Level Overview of `openshift-ci-tests.sh`](#high-level-overview-of-openshift-ci-testssh).
 
@@ -58,7 +57,6 @@ If the initial automatically triggered tests fail, OpenShift-CI will add a comme
   - Tests are executed on both **RBAC** (Role-Based Access Control) and **non-RBAC** namespaces. Different sets of tests are executed for both the **non-RBAC RHDH instance** and the **RBAC RHDH instance**, each deployed in separate namespaces.
 - **Access:** In order to access the environment, you can run the bash at `.ibm/pipelines/ocp-cluster-claim-login.sh`. You will be prompted the prow url (the url from the openshift agent, which looks like https://prow.ci.openshift.org/...). Once you test calimed a cluster, this script will forward the cluster web console url along with the credentials.
 - **Steps:**
-
   1. **Detection:** OpenShift-CI detects the PR event.
   2. **Environment Setup:** The test environment is set up using the `openshift-ci-tests.sh` script (see the [High-Level Overview](#high-level-overview-of-openshift-ci-testssh)).
      - **Cluster Configuration:** Sets up the required namespaces and applies necessary configurations and secrets.
@@ -66,6 +64,7 @@ If the initial automatically triggered tests fail, OpenShift-CI will add a comme
   3. **Test Execution:**
      - **Running Tests:** Executes test suites using `yarn playwright test --project=<project-name>` directly.
      - **Retry Logic:** Individual tests are retried up to 2 times as specified in the Playwright configuration.
+     - **Note:** Orchestrator infra setup and subsequent associated tests are excluded from the mandatory PR job (`/test e2e-ocp-helm`) and run in nightly jobs instead.
   4. **Artifact Collection:**
      - Collects test artifacts (logs, screenshots, recordings).
      - Stores artifacts in the designated `ARTIFACT_DIR` for a retention period of **6 months**.
@@ -136,7 +135,6 @@ The nightly job for the `main` branch also runs against three OpenShift Containe
 ### Automation Processes
 
 - **Script Used:**
-
   - **`openshift-ci-tests.sh`**: Automates the setup of the test environment, deployment of RHDH instances, and execution of tests. For more details, refer to the [High-Level Overview of `openshift-ci-tests.sh`](#high-level-overview-of-openshift-ci-testssh).
 
 ### High-Level Overview of `openshift-ci-tests.sh`
@@ -167,12 +165,12 @@ All Playwright project names are defined in a single JSON file: [`e2e-tests/play
 
 When adding or modifying Playwright projects, update `projects.json` first. The project names are automatically available as:
 
-| JSON Key | Shell Variable | Value |
-|----------|----------------|-------|
-| `SHOWCASE` | `$PW_PROJECT_SHOWCASE` | `showcase` |
+| JSON Key        | Shell Variable              | Value           |
+| --------------- | --------------------------- | --------------- |
+| `SHOWCASE`      | `$PW_PROJECT_SHOWCASE`      | `showcase`      |
 | `SHOWCASE_RBAC` | `$PW_PROJECT_SHOWCASE_RBAC` | `showcase-rbac` |
-| `SHOWCASE_K8S` | `$PW_PROJECT_SHOWCASE_K8S` | `showcase-k8s` |
-| ... | ... | ... |
+| `SHOWCASE_K8S`  | `$PW_PROJECT_SHOWCASE_K8S`  | `showcase-k8s`  |
+| ...             | ...                         | ...             |
 
 When the test run is complete, the status will be reported under your PR checks.
 

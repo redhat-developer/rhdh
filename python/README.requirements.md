@@ -73,8 +73,9 @@ path_to_python=distgit/containers/rhdh-hub/python
 cd "$git_repo"
 cd "$path_to_python"
 rm -fr "./requirements"*.txt && \
-pip-compile --output-file=requirements.txt --strip-extras requirements.in && \
-pip-compile --output-file=requirements-build.txt --strip-extras requirements-build.in
+pip-compile --allow-unsafe --output-file=requirements.txt --strip-extras requirements.in && \
+pip-compile --allow-unsafe --output-file=requirements-build.txt --strip-extras requirements-build.in && \
+pip-compile --allow-unsafe --output-file=requirements-dev.txt --strip-extras requirements-dev.in
 
 # add the plantuml-markdown hash back in
 hash=$(grep "plantuml-markdown @"  requirements.in) && \

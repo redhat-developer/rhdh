@@ -362,7 +362,7 @@ export class UIhelper {
     await navLink.click();
   }
 
-  async selectMuiBox(label: string, value: string) {
+  async selectMuiBox(label: string, value: string, notVisible?: boolean) {
     // Wait for any overlaying dialogs to close before interacting
     await this.page
       .locator('[role="presentation"].MuiDialog-root')
@@ -379,8 +379,13 @@ export class UIhelper {
 
     // Wait for and click option using semantic selector
     const option = this.page.getByRole("option", { name: value });
-    await expect(option).toBeVisible();
-    await option.click();
+
+    if (notVisible) {
+      await expect(option).toBeHidden();
+    } else {
+      await expect(option).toBeVisible();
+      await option.click();
+    }
   }
 
   async verifyRowsInTable(
@@ -828,5 +833,18 @@ export class UIhelper {
   async verifyTextInTooltip(text: string | RegExp) {
     const tooltip = this.page.getByRole("tooltip").getByText(text);
     await expect(tooltip).toBeVisible();
+  }
+
+  /**
+   * Hides the Quick Start panel if it is currently visible.
+   * This is useful in test setup to ensure a clean state without the Quick Start overlay.
+   */
+  async hideQuickstartIfVisible(): Promise<void> {
+    const quickstartHideButton = this.page.getByRole("button", {
+      name: t["plugin.quickstart"][lang]["footer.hide"],
+    });
+    if (await quickstartHideButton.isVisible()) {
+      await quickstartHideButton.click();
+    }
   }
 }

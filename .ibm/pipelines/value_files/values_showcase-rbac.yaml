@@ -1,4 +1,10 @@
 global:
+  # use the latest catalog index
+  catalogIndex:
+    image:
+      registry: quay.io
+      repository: rhdh/plugin-catalog-index
+      tag: "1.10"
   dynamic:
     # -- Array of YAML files listing dynamic plugins to include with those listed in the `plugins` field.
     # Relative paths are resolved from the working directory of the initContainer that will install the plugins (`/opt/app-root/src`).
@@ -12,6 +18,109 @@ global:
     # an optional `pluginConfig` with plugin-specific backstage configuration, and an optional `disabled` flag to disable/enable a plugin
     # listed in `includes` files. It also includes an `integrity` field that is used to verify the plugin package [integrity](https://w3c.github.io/webappsec-subresource-integrity/#integrity-metadata-description).
     plugins:
+      # Enforce new quick start configuration for now but normally this should not be required.
+      # FIXME: remove this again.
+      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-quickstart
+        disabled: false
+        pluginConfig:
+          app:
+            quickstart:
+              - title: Set up authentication
+                titleKey: steps.setupAuthentication.title
+                icon: Admin
+                description: Set up secure login credentials to protect your account from unauthorized access.
+                descriptionKey: steps.setupAuthentication.description
+                cta:
+                  text: Learn more
+                  textKey: steps.setupAuthentication.ctaTitle
+                  link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/authentication_in_red_hat_developer_hub/
+              - title: Configure RBAC
+                titleKey: steps.configureRbac.title
+                icon: Rbac
+                description:
+                  Assign roles and permissions to control who can view, create, or edit resources, ensuring secure and
+                  efficient collaboration.
+                descriptionKey: steps.configureRbac.description
+                cta:
+                  text: Manage access
+                  textKey: steps.configureRbac.ctaTitle
+                  link: /rbac
+              - title: Configure Git
+                titleKey: steps.configureGit.title
+                icon: Git
+                description:
+                  Connect your Git providers, such as GitHub to manage code, automate workflows, and integrate with platform
+                  features.
+                descriptionKey: steps.configureGit.description
+                cta:
+                  text: Learn more
+                  textKey: steps.configureGit.ctaTitle
+                  link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/integrating_red_hat_developer_hub_with_github/
+              - title: Manage plugins
+                titleKey: steps.managePlugins.title
+                icon: Plugins
+                description: Browse and install extensions to add features, connect with external tools, and customize your experience.
+                descriptionKey: steps.managePlugins.description
+                cta:
+                  text: Explore plugins
+                  textKey: steps.managePlugins.ctaTitle
+                  link: /extensions
+              - title: Import application
+                roles:
+                  - developer
+                icon: Import
+                description:
+                  Import your existing code and services into the catalog to organize and access them through your developer
+                  portal.
+                cta:
+                  text: Import
+                  link: /bulk-import/repositories
+              - title: Learn about the Catalog
+                roles:
+                  - developer
+                icon: Catalog
+                description: Discover all software components, services, and APIs, and view their owners and documentation.
+                cta:
+                  text: View Catalog
+                  link: /catalog
+              - title: Explore Self-service templates
+                roles:
+                  - developer
+                icon: SelfService
+                description: Use our self-service templates to quickly set up new projects, services, or documentation.
+                cta:
+                  text: Explore templates
+                  link: /create
+              - title: Find all Learning Paths
+                roles:
+                  - developer
+                icon: Learning
+                description:
+                  Integrate tailored e-learning into your workflows with Learning Paths to accelerate onboarding, close
+                  skill gaps, and promote best practices.
+                cta:
+                  text: View Learning Paths
+                  link: /learning-paths
+          dynamicPlugins:
+            frontend:
+              red-hat-developer-hub.backstage-plugin-quickstart:
+                translationResources:
+                  - importName: quickstartTranslations
+                    module: Alpha
+                    ref: quickstartTranslationRef
+                mountPoints:
+                  - mountPoint: application/provider
+                    importName: QuickstartDrawerProvider
+                  - mountPoint: application/internal/drawer-state
+                    importName: QuickstartDrawerStateExposer
+                  - mountPoint: application/internal/drawer-content
+                    importName: QuickstartDrawerContent
+                    config:
+                      id: quickstart
+                  - mountPoint: global.header/help
+                    importName: QuickstartButton
+                    config:
+                      priority: 100
       - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-dynamic
         disabled: false
         pluginConfig:
@@ -123,6 +232,28 @@ global:
         disabled: true
       - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
         disabled: false
+        pluginConfig:
+          dynamicPlugins:
+            frontend:
+              backstage-community.plugin-rbac:
+                translationResources:
+                  - importName: rbacTranslations
+                    ref: rbacTranslationRef
+                    module: Alpha
+                appIcons:
+                  - name: rbacIcon
+                    importName: RbacIcon
+                dynamicRoutes:
+                  - path: /rbac
+                    importName: RbacPage
+                    menuItem:
+                      icon: rbacIcon
+                      text: RBAC
+                      textKey: menuItem.rbac
+                menuItems:
+                  rbac:
+                    parent: default.admin
+                    icon: rbacIcon
       - package: ./dynamic-plugins/dist/backstage-community-plugin-analytics-provider-segment
         disabled: true
       #Enable Scorecard plugin.
@@ -211,6 +342,165 @@ global:
             frontend:
               red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets: {}
 
+      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-dynamic-home-page
+        disabled: false
+        pluginConfig:
+          dynamicPlugins:
+            frontend:
+              red-hat-developer-hub.backstage-plugin-dynamic-home-page:
+                dynamicRoutes:
+                  - path: /
+                    importName: DynamicHomePage
+                mountPoints:
+                  - mountPoint: application/listener
+                    importName: VisitListener
+                  - mountPoint: home.page/cards
+                    importName: OnboardingSection
+                    config:
+                      id: rhdh-onboarding-section
+                      title: Red Hat Developer Hub - Onboarding
+                      cardLayout:
+                        width:
+                          minColumns: 4
+                          maxColumns: 12
+                          defaultColumns: 12
+                        height:
+                          minRows: 2
+                          maxRows: 12
+                          defaultRows: 4
+                      layouts:
+                        xl:
+                          w: 12
+                          h: 6
+                        lg:
+                          w: 12
+                          h: 6
+                        md:
+                          w: 12
+                          h: 7
+                        sm:
+                          w: 12
+                          h: 8
+                        xs:
+                          w: 12
+                          h: 9
+                        xxs:
+                          w: 12
+                          h: 14
+                  - mountPoint: home.page/cards
+                    importName: EntitySection
+                    config:
+                      id: rhdh-entity-section
+                      title: Red Hat Developer Hub - Software Catalog
+                      cardLayout:
+                        width:
+                          minColumns: 4
+                          maxColumns: 12
+                          defaultColumns: 12
+                        height:
+                          minRows: 2
+                          maxRows: 12
+                          defaultRows: 4
+                      layouts:
+                        xl:
+                          w: 12
+                          h: 7
+                        lg:
+                          w: 12
+                          h: 7
+                        md:
+                          w: 12
+                          h: 8
+                        sm:
+                          w: 12
+                          h: 9
+                        xs:
+                          w: 12
+                          h: 11
+                        xxs:
+                          w: 12
+                          h: 15
+                  - mountPoint: home.page/cards
+                    importName: TemplateSection
+                    config:
+                      id: rhdh-template-section
+                      title: Red Hat Developer Hub - Explore templates
+                      cardLayout:
+                        width:
+                          minColumns: 4
+                          maxColumns: 12
+                          defaultColumns: 12
+                        height:
+                          minRows: 2
+                          maxRows: 12
+                          defaultRows: 4
+                      layouts:
+                        xl:
+                          w: 12
+                          h: 5
+                        lg:
+                          w: 12
+                          h: 5
+                        md:
+                          w: 12
+                          h: 5
+                        sm:
+                          w: 12
+                          h: 5
+                        xs:
+                          w: 12
+                          h: 7.5
+                        xxs:
+                          w: 12
+                          h: 13.5
+                  - mountPoint: home.page/cards
+                    importName: QuickAccessCard
+                    config:
+                      id: quickaccess-card
+                      title: Quick Access Card
+                  - mountPoint: home.page/cards
+                    importName: SearchBar
+                    config:
+                      id: searchbar
+                      title: Search
+                      cardLayout:
+                        width:
+                          minColumns: 4
+                          maxColumns: 12
+                          defaultColumns: 12
+                        height:
+                          minRows: 1
+                          maxRows: 2
+                          defaultRows: 2
+                  - mountPoint: home.page/cards
+                    importName: CatalogStarredEntitiesCard
+                    config:
+                      id: catalog-starred-entities-card
+                      title: Starred catalog entities
+                  - mountPoint: home.page/cards
+                    importName: RecentlyVisitedCard
+                    config:
+                      id: recently-visited-card
+                      title: Recently visited
+                  - mountPoint: home.page/cards
+                    importName: TopVisitedCard
+                    config:
+                      id: top-visited-card
+                      title: Top visited
+                  - mountPoint: home.page/cards
+                    importName: FeaturedDocsCard
+                    config:
+                      id: featured-docs-card
+                      title: Featured docs
+                  - mountPoint: home.page/cards
+                    importName: JokeCard
+                    config:
+                      id: joke-card
+                      title: Random joke
+                translationResources:
+                  - importName: homepageTranslations
+                    ref: homepageTranslationRef
+
 # -- Upstream Backstage [chart configuration](https://github.com/backstage/charts/blob/main/charts/backstage/values.yaml)
 # @default -- Use Openshift compatible settings
 upstream:
@@ -221,11 +511,11 @@ upstream:
     appConfig:
       app:
         # Please update to match host in case you don't want to configure hostname via `global.clusterRouterBase` or `global.host`.
-        baseUrl: 'https://{{- include "janus-idp.hostname" . }}'
+        baseUrl: 'https://{{- include "rhdh.hostname" . }}'
       backend:
-        baseUrl: 'https://{{- include "janus-idp.hostname" . }}'
+        baseUrl: 'https://{{- include "rhdh.hostname" . }}'
         cors:
-          origin: 'https://{{- include "janus-idp.hostname" . }}'
+          origin: 'https://{{- include "rhdh.hostname" . }}'
         database:
           connection: # configure Backstage DB connection parameters
             host: ${POSTGRES_HOST}
@@ -287,11 +577,13 @@ upstream:
       successThreshold: 1
       timeoutSeconds: 4
     extraEnvVars:
+      # NOTE: Lists will not be merged with the default values file. So need to append all the defaults if you want to add a new item here
+      # See https://issues.redhat.com/browse/RHDHPLAN-869
       - name: BACKEND_SECRET
         valueFrom:
           secretKeyRef:
             key: backend-secret
-            name: '{{ include "janus-idp.backend-secret-name" $ }}'
+            name: '{{ include "rhdh.backend-secret-name" $ }}'
       # disable telemetry in CI
       - name: SEGMENT_TEST_MODE
         value: "true"
@@ -300,9 +592,16 @@ upstream:
       - name: NODE_ENV
         value: "production"
     extraVolumeMounts:
+      # NOTE: Lists will not be merged with the default values file. So need to append all the defaults if you want to add a new item here
+      # See https://issues.redhat.com/browse/RHDHPLAN-869
       # The initContainer below will install dynamic plugins in this volume mount.
       - name: dynamic-plugins-root
         mountPath: /opt/app-root/src/dynamic-plugins-root
+      - name: extensions-catalog
+        mountPath: /extensions
+      - name: temp
+        mountPath: /tmp
+
       - name: rbac-policy
         mountPath: /opt/app-root/src/rbac
       - name: rbac-conditions
@@ -317,6 +616,8 @@ upstream:
         name: postgress-external-db-cluster-cert
         subPath: tls.key
     extraVolumes:
+      # NOTE: Lists will not be merged with the default values file. So need to append all the defaults if you want to add a new item here
+      # See https://issues.redhat.com/browse/RHDHPLAN-869
       # -- Ephemeral volume that will contain the dynamic plugins installed by the initContainer below at start.
       # To have more control on underlying storage, the [emptyDir](https://docs.openshift.com/container-platform/4.13/storage/understanding-ephemeral-storage.html)
       # could be changed to a [generic ephemeral volume](https://docs.openshift.com/container-platform/4.13/storage/generic-ephemeral-vols.html#generic-ephemeral-vols-procedure_generic-ephemeral-volumes).
@@ -341,6 +642,15 @@ upstream:
           defaultMode: 416
           optional: true
           secretName: '{{ printf "%s-dynamic-plugins-registry-auth" .Release.Name }}'
+      - name: npmcacache
+        emptyDir: {}
+      # -- Ephemeral volume used by the install-dynamic-plugins init container to extract catalog entities from the catalog index image.
+      # Mounted at the /extensions path in the backstage-backend main container for automatic discovery by the extension catalog backend providers.
+      - name: extensions-catalog
+        emptyDir: {}
+      - name: temp
+        emptyDir: {}
+
       - name: postgress-external-db-cluster-cert
         secret:
           secretName: postgress-external-db-cluster-cert
@@ -351,6 +661,8 @@ upstream:
       - name: rbac-conditions
         emptyDir: {}
     initContainers:
+      # NOTE: Lists will not be merged with the default values file. So need to append all the defaults if you want to add a new item here
+      # See https://issues.redhat.com/browse/RHDHPLAN-869
       - name: install-dynamic-plugins
         # -- Image used by the initContainer to install dynamic plugins into the `dynamic-plugins-root` volume mount.
         # It could be replaced by a custom image based on this one.
@@ -435,6 +747,10 @@ upstream:
             value: /opt/app-root/src/.npmrc.dynamic-plugins
           - name: MAX_ENTRY_SIZE
             value: "30000000"
+          - name: CATALOG_INDEX_IMAGE
+            value: "{{ .Values.global.catalogIndex.image.registry }}/{{ .Values.global.catalogIndex.image.repository }}:{{ .Values.global.catalogIndex.image.tag }}"
+          - name: CATALOG_ENTITIES_EXTRACT_DIR
+            value: "/extensions"
         imagePullPolicy: Always
         volumeMounts:
           - mountPath: /dynamic-plugins-root
@@ -450,6 +766,13 @@ upstream:
           - mountPath: /opt/app-root/src/.config/containers
             name: dynamic-plugins-registry-auth
             readOnly: true
+          - mountPath: /opt/app-root/src/.npm/_cacache
+            name: npmcacache
+          - name: extensions-catalog
+            mountPath: /extensions
+          - name: temp
+            mountPath: /tmp
+
           - mountPath: /rbac
             name: rbac-policy
           - mountPath: /rbac-conditions

@@ -22,7 +22,7 @@ handle_gke_helm() {
   export K8S_CLUSTER_ROUTER_BASE
 
   K8S_CLUSTER_URL=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')
-  K8S_CLUSTER_API_SERVER_URL=$(printf "%s" "$K8S_CLUSTER_URL" | base64 | tr -d '\n')
+  K8S_CLUSTER_API_SERVER_URL=$(common::base64_encode "$K8S_CLUSTER_URL")
   export K8S_CLUSTER_URL K8S_CLUSTER_API_SERVER_URL
 
   log::info "Starting GKE Helm deployment"
@@ -31,9 +31,9 @@ handle_gke_helm() {
 
   initiate_gke_helm_deployment
   check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${PW_PROJECT_SHOWCASE_K8S}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
-  delete_namespace "${NAME_SPACE}"
+  namespace::delete "${NAME_SPACE}"
 
   initiate_rbac_gke_helm_deployment
   check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${PW_PROJECT_SHOWCASE_RBAC_K8S}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
-  delete_namespace "${NAME_SPACE_RBAC}"
+  namespace::delete "${NAME_SPACE_RBAC}"
 }

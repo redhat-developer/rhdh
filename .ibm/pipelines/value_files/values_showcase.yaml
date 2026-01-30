@@ -1,4 +1,10 @@
 global:
+  # use the latest catalog index
+  catalogIndex:
+    image:
+      registry: quay.io
+      repository: rhdh/plugin-catalog-index
+      tag: "1.10"
   dynamic:
     # -- Array of YAML files listing dynamic plugins to include with those listed in the `plugins` field.
     # Relative paths are resolved from the working directory of the initContainer that will install the plugins (`/opt/app-root/src`).
@@ -12,6 +18,109 @@ global:
     # an optional `pluginConfig` with plugin-specific backstage configuration, and an optional `disabled` flag to disable/enable a plugin
     # listed in `includes` files. It also includes an `integrity` field that is used to verify the plugin package [integrity](https://w3c.github.io/webappsec-subresource-integrity/#integrity-metadata-description).
     plugins:
+      # Enforce new quick start configuration for now but normally this should not be required.
+      # FIXME: remove this again.
+      - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-quickstart
+        disabled: false
+        pluginConfig:
+          app:
+            quickstart:
+              - title: Set up authentication
+                titleKey: steps.setupAuthentication.title
+                icon: Admin
+                description: Set up secure login credentials to protect your account from unauthorized access.
+                descriptionKey: steps.setupAuthentication.description
+                cta:
+                  text: Learn more
+                  textKey: steps.setupAuthentication.ctaTitle
+                  link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/authentication_in_red_hat_developer_hub/
+              - title: Configure RBAC
+                titleKey: steps.configureRbac.title
+                icon: Rbac
+                description:
+                  Assign roles and permissions to control who can view, create, or edit resources, ensuring secure and
+                  efficient collaboration.
+                descriptionKey: steps.configureRbac.description
+                cta:
+                  text: Manage access
+                  textKey: steps.configureRbac.ctaTitle
+                  link: /rbac
+              - title: Configure Git
+                titleKey: steps.configureGit.title
+                icon: Git
+                description:
+                  Connect your Git providers, such as GitHub to manage code, automate workflows, and integrate with platform
+                  features.
+                descriptionKey: steps.configureGit.description
+                cta:
+                  text: Learn more
+                  textKey: steps.configureGit.ctaTitle
+                  link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/integrating_red_hat_developer_hub_with_github/
+              - title: Manage plugins
+                titleKey: steps.managePlugins.title
+                icon: Plugins
+                description: Browse and install extensions to add features, connect with external tools, and customize your experience.
+                descriptionKey: steps.managePlugins.description
+                cta:
+                  text: Explore plugins
+                  textKey: steps.managePlugins.ctaTitle
+                  link: /extensions
+              - title: Import application
+                roles:
+                  - developer
+                icon: Import
+                description:
+                  Import your existing code and services into the catalog to organize and access them through your developer
+                  portal.
+                cta:
+                  text: Import
+                  link: /bulk-import/repositories
+              - title: Learn about the Catalog
+                roles:
+                  - developer
+                icon: Catalog
+                description: Discover all software components, services, and APIs, and view their owners and documentation.
+                cta:
+                  text: View Catalog
+                  link: /catalog
+              - title: Explore Self-service templates
+                roles:
+                  - developer
+                icon: SelfService
+                description: Use our self-service templates to quickly set up new projects, services, or documentation.
+                cta:
+                  text: Explore templates
+                  link: /create
+              - title: Find all Learning Paths
+                roles:
+                  - developer
+                icon: Learning
+                description:
+                  Integrate tailored e-learning into your workflows with Learning Paths to accelerate onboarding, close
+                  skill gaps, and promote best practices.
+                cta:
+                  text: View Learning Paths
+                  link: /learning-paths
+          dynamicPlugins:
+            frontend:
+              red-hat-developer-hub.backstage-plugin-quickstart:
+                translationResources:
+                  - importName: quickstartTranslations
+                    module: Alpha
+                    ref: quickstartTranslationRef
+                mountPoints:
+                  - mountPoint: application/provider
+                    importName: QuickstartDrawerProvider
+                  - mountPoint: application/internal/drawer-state
+                    importName: QuickstartDrawerStateExposer
+                  - mountPoint: application/internal/drawer-content
+                    importName: QuickstartDrawerContent
+                    config:
+                      id: quickstart
+                  - mountPoint: global.header/help
+                    importName: QuickstartButton
+                    config:
+                      priority: 100
       - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-github-dynamic
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-dynamic
@@ -283,7 +392,7 @@ upstream:
         valueFrom:
           secretKeyRef:
             key: backend-secret
-            name: '{{ include "janus-idp.backend-secret-name" $ }}'
+            name: '{{ include "rhdh.backend-secret-name" $ }}'
       - name: POSTGRESQL_ADMIN_PASSWORD
         valueFrom:
           secretKeyRef:

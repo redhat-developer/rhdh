@@ -16,7 +16,7 @@ upstream:
     appConfig:
       app:
         title: Red Hat Developer Hub
-        baseUrl: 'https://{{- include "janus-idp.hostname" . }}'
+        baseUrl: 'https://{{- include "rhdh.hostname" . }}'
       backend:
         auth:
           externalAccess:
@@ -24,9 +24,9 @@ upstream:
                 secret: "${BACKEND_SECRET}"
                 subject: legacy-default-config
               type: legacy
-        baseUrl: 'https://{{- include "janus-idp.hostname" . }}'
+        baseUrl: 'https://{{- include "rhdh.hostname" . }}'
         cors:
-          origin: 'https://{{- include "janus-idp.hostname" . }}'
+          origin: 'https://{{- include "rhdh.hostname" . }}'
         database:
           connection: # configure Backstage DB connection parameters
             host: ${POSTGRES_HOST}
@@ -43,7 +43,7 @@ upstream:
         valueFrom:
           secretKeyRef:
             key: backend-secret
-            name: '{{ include "janus-idp.backend-secret-name" $ }}'
+            name: '{{ include "rhdh.backend-secret-name" $ }}'
     extraVolumeMounts:
       - mountPath: /opt/app-root/src/dynamic-plugins-root
         name: dynamic-plugins-root

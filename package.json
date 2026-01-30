@@ -1,6 +1,6 @@
 {
   "name": "root",
-  "version": "1.9.0",
+  "version": "1.10.0",
   "private": true,
   "engines": {
     "node": "22"
@@ -50,8 +50,8 @@
     "lint-staged": "15.5.2",
     "node-gyp": "10.3.1",
     "rulesync": "3.34.0",
-    "sherif": "1.9.0",
-    "turbo": "2.7.5"
+    "sherif": "1.10.0",
+    "turbo": "2.7.6"
   },
   "resolutions": {
     "@types/react": "18.3.27",
@@ -61,7 +61,8 @@
     "@backstage/plugin-permission-backend": "0.7.3",
     "@backstage/plugin-catalog-react": "1.21.3",
     "refractor@npm:3.6.0/prismjs": "^1.30.0",
-    "@backstage/plugin-auth-node": "0.6.10"
+    "@backstage/plugin-auth-node": "0.6.10",
+    "@backstage/backend-plugin-api": "1.5.0"
   },
   "jest": {
     "testTimeout": 20000

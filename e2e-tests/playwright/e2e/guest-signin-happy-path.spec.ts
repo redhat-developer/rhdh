@@ -2,6 +2,7 @@ import { test } from "@playwright/test";
 import { UIhelper } from "../utils/ui-helper";
 import { HomePage } from "../support/pages/home-page";
 import { Common } from "../utils/common";
+
 test.describe("Guest Signing Happy path", () => {
   test.beforeAll(async () => {
     test.info().annotations.push({
