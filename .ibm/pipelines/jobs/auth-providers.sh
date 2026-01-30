@@ -14,7 +14,7 @@ source "$DIR"/playwright-projects.sh
 handle_auth_providers() {
   local retry_operator_installation="${1:-1}"
   common::oc_login
-  configure_namespace "${OPERATOR_MANAGER}"
+  namespace::configure "${OPERATOR_MANAGER}"
   install_rhdh_operator "${OPERATOR_MANAGER}" "$retry_operator_installation"
 
   # Wait for Backstage CRD to be available after operator installation

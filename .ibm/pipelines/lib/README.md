@@ -48,6 +48,14 @@ Functions: `orchestrator::should_skip`, `orchestrator::disable_plugins_in_values
 `orchestrator::deploy_workflows`, `orchestrator::deploy_workflows_operator`,
 `orchestrator::enable_plugins_op`
 
+### `namespace.sh`
+
+Namespace lifecycle management.
+
+Functions: `namespace::configure`, `namespace::delete`, `namespace::force_delete`,
+`namespace::remove_finalizers`, `namespace::setup_image_pull_secret`,
+`namespace::create_dockerconfigjson_secret`, `namespace::add_pull_secret_to_sa`
+
 ## Creating New Modules
 
 ### Structure

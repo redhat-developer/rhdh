@@ -14,6 +14,8 @@ source "${DIR}/lib/k8s-wait.sh"
 source "${DIR}/lib/orchestrator.sh"
 # shellcheck source=.ibm/pipelines/lib/helm.sh
 source "${DIR}/lib/helm.sh"
+# shellcheck source=.ibm/pipelines/lib/namespace.sh
+source "${DIR}/lib/namespace.sh"
 
 # Constants
 TEKTON_PIPELINES_WEBHOOK="tekton-pipelines-webhook"
@@ -85,43 +87,6 @@ wait_for_endpoint() { k8s_wait::endpoint "$@"; }
 # ==============================================================================
 install_subscription() { operator::install_subscription "$@"; }
 
-# ==============================================================================
-# FUTURE MODULE: lib/namespace.sh
-# Functions: configure_namespace, delete_namespace, force_delete_namespace,
-#            remove_finalizers_from_resources, setup_image_pull_secret,
-#            create_secret_dockerconfigjson, add_image_pull_secret_to_namespace_default_serviceaccount
-# ==============================================================================
-
-create_secret_dockerconfigjson() {
-  namespace=$1
-  secret_name=$2
-  dockerconfigjson_value=$3
-  log::info "Creating dockerconfigjson secret $secret_name in namespace $namespace"
-  kubectl apply -n "$namespace" -f - << EOD
-apiVersion: v1
-kind: Secret
-metadata:
-  name: $secret_name
-data:
-  .dockerconfigjson: $dockerconfigjson_value
-type: kubernetes.io/dockerconfigjson
-EOD
-}
-add_image_pull_secret_to_namespace_default_serviceaccount() {
-  namespace=$1
-  secret_name=$2
-  log::info "Adding image pull secret $secret_name to default service account"
-  kubectl -n "${namespace}" patch serviceaccount default -p "{\"imagePullSecrets\": [{\"name\": \"${secret_name}\"}]}"
-}
-setup_image_pull_secret() {
-  local namespace=$1
-  local secret_name=$2
-  local dockerconfigjson_value=$3
-  log::info "Creating $secret_name secret in $namespace namespace"
-  create_secret_dockerconfigjson "$namespace" "$secret_name" "$dockerconfigjson_value"
-  add_image_pull_secret_to_namespace_default_serviceaccount "$namespace" "$secret_name"
-}
-
 check_operator_status() { operator::check_status "$@"; }
 
 # Installs the Crunchy Postgres Operator
@@ -166,42 +131,6 @@ install_serverless_ocp_operator() {
 
 waitfor_serverless_ocp_operator() {
   check_operator_status 300 "openshift-operators" "Red Hat OpenShift Serverless" "Succeeded"
-}
-
-configure_namespace() {
-  local project=$1
-  log::warn "Deleting and recreating namespace: $project"
-  delete_namespace $project
-
-  if ! oc create namespace "${project}"; then
-    log::error "Error: Failed to create namespace ${project}" >&2
-    exit 1
-  fi
-  if ! oc config set-context --current --namespace="${project}"; then
-    log::error "Error: Failed to set context for namespace ${project}" >&2
-    exit 1
-  fi
-
-  echo "Namespace ${project} is ready."
-}
-
-delete_namespace() {
-  local project=$1
-  if oc get namespace "$project" > /dev/null 2>&1; then
-    log::warn "Namespace ${project} exists. Attempting to delete..."
-
-    # Remove blocking finalizers
-    # remove_finalizers_from_resources "$project"
-
-    # Attempt to delete the namespace
-    oc delete namespace "$project" --grace-period=0 --force || true
-
-    # Check if namespace is still stuck in 'Terminating' and force removal if necessary
-    if oc get namespace "$project" -o jsonpath='{.status.phase}' | grep -q 'Terminating'; then
-      log::warn "Namespace ${project} is stuck in Terminating. Forcing deletion..."
-      force_delete_namespace "$project"
-    fi
-  fi
 }
 
 configure_external_postgres_db() {
@@ -717,7 +646,7 @@ cluster_setup_k8s_helm() {
 # ==============================================================================
 
 base_deployment() {
-  configure_namespace ${NAME_SPACE}
+  namespace::configure ${NAME_SPACE}
 
   deploy_redis_cache "${NAME_SPACE}"
 
@@ -751,8 +680,8 @@ base_deployment() {
 }
 
 rbac_deployment() {
-  configure_namespace "${NAME_SPACE_POSTGRES_DB}"
-  configure_namespace "${NAME_SPACE_RBAC}"
+  namespace::configure "${NAME_SPACE_POSTGRES_DB}"
+  namespace::configure "${NAME_SPACE_RBAC}"
   configure_external_postgres_db "${NAME_SPACE_RBAC}"
 
   # Wait for PostgreSQL to be fully ready before deploying RBAC instance
@@ -814,7 +743,7 @@ initiate_deployments() {
 
 # OSD-GCP specific deployment functions that merge diff files and skip orchestrator workflows
 base_deployment_osd_gcp() {
-  configure_namespace ${NAME_SPACE}
+  namespace::configure ${NAME_SPACE}
 
   deploy_redis_cache "${NAME_SPACE}"
 
@@ -841,8 +770,8 @@ base_deployment_osd_gcp() {
 }
 
 rbac_deployment_osd_gcp() {
-  configure_namespace "${NAME_SPACE_POSTGRES_DB}"
-  configure_namespace "${NAME_SPACE_RBAC}"
+  namespace::configure "${NAME_SPACE_POSTGRES_DB}"
+  namespace::configure "${NAME_SPACE_RBAC}"
   configure_external_postgres_db "${NAME_SPACE_RBAC}"
 
   # Initiate rbac instance deployment.
@@ -886,7 +815,7 @@ initiate_upgrade_base_deployments() {
   CURRENT_DEPLOYMENT=$((CURRENT_DEPLOYMENT + 1))
   save_status_deployment_namespace $CURRENT_DEPLOYMENT "$namespace"
 
-  configure_namespace "${namespace}"
+  namespace::configure "${namespace}"
 
   deploy_redis_cache "${namespace}"
 
@@ -937,7 +866,7 @@ initiate_upgrade_deployments() {
 initiate_runtime_deployment() {
   local release_name=$1
   local namespace=$2
-  configure_namespace "${namespace}"
+  namespace::configure "${namespace}"
   uninstall_helmchart "${namespace}" "${release_name}"
 
   oc apply -f "$DIR/resources/postgres-db/dynamic-plugins-root-PVC.yaml" -n "${namespace}"
@@ -955,7 +884,7 @@ initiate_sanity_plugin_checks_deployment() {
   local name_space_sanity_plugins_check=$2
   local sanity_plugins_url=$3
 
-  configure_namespace "${name_space_sanity_plugins_check}"
+  namespace::configure "${name_space_sanity_plugins_check}"
   uninstall_helmchart "${name_space_sanity_plugins_check}" "${release_name}"
   deploy_redis_cache "${name_space_sanity_plugins_check}"
   apply_yaml_files "${DIR}" "${name_space_sanity_plugins_check}" "${sanity_plugins_url}"
@@ -1032,48 +961,6 @@ check_helm_upgrade() {
     log::error "RHDH upgrade encountered an issue or timed out."
     return 1
   fi
-}
-
-# Function to remove finalizers from specific resources in a namespace that are blocking deletion.
-remove_finalizers_from_resources() {
-  local project=$1
-  echo "Removing finalizers from resources in namespace ${project} that are blocking deletion."
-
-  # Remove finalizers from stuck PipelineRuns and TaskRuns
-  for resource_type in "pipelineruns.tekton.dev" "taskruns.tekton.dev"; do
-    for resource in $(oc get "$resource_type" -n "$project" -o name); do
-      oc patch "$resource" -n "$project" --type='merge' -p '{"metadata":{"finalizers":[]}}' || true
-      echo "Removed finalizers from $resource in $project."
-    done
-  done
-
-  # Check and remove specific finalizers stuck on 'chains.tekton.dev' resources
-  for chain_resource in $(oc get pipelineruns.tekton.dev,taskruns.tekton.dev -n "$project" -o name); do
-    oc patch "$chain_resource" -n "$project" --type='json' -p='[{"op": "remove", "path": "/metadata/finalizers"}]' || true
-    echo "Removed Tekton finalizers from $chain_resource in $project."
-  done
-}
-
-# Function to forcibly delete a namespace stuck in 'Terminating' status
-force_delete_namespace() {
-  local project=$1
-  echo "Forcefully deleting namespace ${project}."
-  oc get namespace "$project" -o json | jq '.spec = {"finalizers":[]}' | oc replace --raw "/api/v1/namespaces/$project/finalize" -f -
-
-  local elapsed=0
-  local sleep_interval=2
-  local timeout_seconds=${2:-120}
-
-  while oc get namespace "$project" &> /dev/null; do
-    if [[ $elapsed -ge $timeout_seconds ]]; then
-      log::warn "Timeout: Namespace '${project}' was not deleted within $timeout_seconds seconds." >&2
-      return 1
-    fi
-    sleep $sleep_interval
-    elapsed=$((elapsed + sleep_interval))
-  done
-
-  log::success "Namespace '${project}' successfully deleted."
 }
 
 # ==============================================================================

@@ -14,7 +14,7 @@ source "$DIR"/playwright-projects.sh
 initiate_operator_deployments() {
   log::info "Initiating Operator-backed deployments on OCP"
 
-  configure_namespace "${NAME_SPACE}"
+  namespace::configure "${NAME_SPACE}"
   deploy_test_backstage_customization_provider "${NAME_SPACE}"
   local rhdh_base_url="https://backstage-${RELEASE_NAME}-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
@@ -25,7 +25,7 @@ initiate_operator_deployments() {
   enable_orchestrator_plugins_op "${NAME_SPACE}"
   deploy_orchestrator_workflows_operator "${NAME_SPACE}"
 
-  configure_namespace "${NAME_SPACE_RBAC}"
+  namespace::configure "${NAME_SPACE_RBAC}"
   create_conditional_policies_operator /tmp/conditional-policies.yaml
   prepare_operator_app_config "${DIR}/resources/config_map/app-config-rhdh-rbac.yaml"
   local rbac_rhdh_base_url="https://backstage-${RELEASE_NAME_RBAC}-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
@@ -43,7 +43,7 @@ initiate_operator_deployments_osd_gcp() {
 
   prepare_operator
 
-  configure_namespace "${NAME_SPACE}"
+  namespace::configure "${NAME_SPACE}"
   deploy_test_backstage_customization_provider "${NAME_SPACE}"
   local rhdh_base_url="https://backstage-${RELEASE_NAME}-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
@@ -60,7 +60,7 @@ initiate_operator_deployments_osd_gcp() {
   # Skip orchestrator plugins and workflows for OSD-GCP
   log::warn "Skipping orchestrator plugins and workflows deployment on OSD-GCP environment"
 
-  configure_namespace "${NAME_SPACE_RBAC}"
+  namespace::configure "${NAME_SPACE_RBAC}"
   create_conditional_policies_operator /tmp/conditional-policies.yaml
   prepare_operator_app_config "${DIR}/resources/config_map/app-config-rhdh-rbac.yaml"
   local rbac_rhdh_base_url="https://backstage-${RELEASE_NAME_RBAC}-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
@@ -80,7 +80,7 @@ initiate_operator_deployments_osd_gcp() {
 
 run_operator_runtime_config_change_tests() {
   # Deploy `showcase-runtime` to run tests that require configuration changes at runtime
-  configure_namespace "${NAME_SPACE_RUNTIME}"
+  namespace::configure "${NAME_SPACE_RUNTIME}"
   oc apply -f "$DIR/resources/postgres-db/dynamic-plugins-root-PVC.yaml" -n "${NAME_SPACE_RUNTIME}"
   create_app_config_map "$DIR/resources/postgres-db/rds-app-config.yaml" "${NAME_SPACE_RUNTIME}"
   deploy_rhdh_operator "${NAME_SPACE_RUNTIME}" "${DIR}/resources/rhdh-operator/rhdh-start-runtime.yaml"

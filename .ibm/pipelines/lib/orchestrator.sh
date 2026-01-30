@@ -237,7 +237,7 @@ _orchestrator::wait_for_workflow_deployments() {
 #   1 - Failure
 orchestrator::install_infra_chart() {
   local orch_infra_ns="orchestrator-infra"
-  configure_namespace "${orch_infra_ns}"
+  namespace::configure "${orch_infra_ns}"
 
   log::info "Deploying orchestrator-infra chart"
   helm upgrade -i orch-infra -n "${orch_infra_ns}" \

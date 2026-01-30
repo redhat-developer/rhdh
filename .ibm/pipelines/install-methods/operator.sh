@@ -9,10 +9,10 @@ install_rhdh_operator() {
   local namespace=$1
   local max_attempts=$2
 
-  configure_namespace "$namespace"
+  namespace::configure "$namespace"
 
   if [[ -z "${IS_OPENSHIFT}" || "${IS_OPENSHIFT}" == "false" ]]; then
-    setup_image_pull_secret "rhdh-operator" "rh-pull-secret" "${REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON}"
+    namespace::setup_image_pull_secret "rhdh-operator" "rh-pull-secret" "${REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON}"
   fi
   # Make sure script is up to date
   rm -f /tmp/install-rhdh-catalog-source.sh
@@ -41,7 +41,7 @@ install_rhdh_operator() {
 
 prepare_operator() {
   local retry_operator_installation="${1:-1}"
-  configure_namespace "${OPERATOR_MANAGER}"
+  namespace::configure "${OPERATOR_MANAGER}"
   install_rhdh_operator "${OPERATOR_MANAGER}" "$retry_operator_installation"
 
   # Wait for Backstage CRD to be available after operator installation

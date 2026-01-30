@@ -15,7 +15,7 @@ initiate_aks_operator_deployment() {
 
   log::info "Initiating Operator-backed non-RBAC deployment on AKS"
 
-  configure_namespace "${namespace}"
+  namespace::configure "${namespace}"
   deploy_redis_cache "${namespace}"
   # deploy_test_backstage_customization_provider "${namespace}" # Doesn't work on K8s
   apply_yaml_files "${DIR}" "${namespace}" "${rhdh_base_url}"
@@ -26,7 +26,7 @@ initiate_aks_operator_deployment() {
   common::save_artifact "${namespace}" "/tmp/configmap-dynamic-plugins.yaml"
   kubectl apply -f /tmp/configmap-dynamic-plugins.yaml -n "${namespace}"
 
-  setup_image_pull_secret "${namespace}" "rh-pull-secret" "${REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON}"
+  namespace::setup_image_pull_secret "${namespace}" "rh-pull-secret" "${REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON}"
 
   deploy_rhdh_operator "${namespace}" "${DIR}/resources/rhdh-operator/rhdh-start_K8s.yaml"
   patch_and_restart_aks_spot "${namespace}" "$RELEASE_NAME"
@@ -40,7 +40,7 @@ initiate_rbac_aks_operator_deployment() {
 
   log::info "Initiating Operator-backed RBAC deployment on AKS"
 
-  configure_namespace "${namespace}"
+  namespace::configure "${namespace}"
   # deploy_test_backstage_customization_provider "${namespace}" # Doesn't work on K8s
   create_conditional_policies_operator /tmp/conditional-policies.yaml
   prepare_operator_app_config "${DIR}/resources/config_map/app-config-rhdh-rbac.yaml"
@@ -52,7 +52,7 @@ initiate_rbac_aks_operator_deployment() {
   common::save_artifact "${namespace}" "/tmp/configmap-dynamic-plugins-rbac.yaml"
   kubectl apply -f /tmp/configmap-dynamic-plugins-rbac.yaml -n "${namespace}"
 
-  setup_image_pull_secret "${namespace}" "rh-pull-secret" "${REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON}"
+  namespace::setup_image_pull_secret "${namespace}" "rh-pull-secret" "${REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON}"
 
   deploy_rhdh_operator "${namespace}" "${DIR}/resources/rhdh-operator/rhdh-start-rbac_K8s.yaml"
   patch_and_restart_aks_spot_rbac "${namespace}" "$RELEASE_NAME_RBAC"
@@ -85,5 +85,5 @@ apply_aks_operator_ingress() {
 
 cleanup_aks_deployment() {
   local namespace=$1
-  delete_namespace "$namespace"
+  namespace::delete "$namespace"
 }
