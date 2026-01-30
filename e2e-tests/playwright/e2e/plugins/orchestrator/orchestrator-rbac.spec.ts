@@ -6,8 +6,13 @@ import { RhdhAuthApiHack } from "../../../support/api/rhdh-auth-api-hack";
 import RhdhRbacApi from "../../../support/api/rbac-api";
 import { Policy } from "../../../support/api/rbac-api-structures";
 import { Response } from "../../../support/pages/rbac";
+import { skipIfJobName } from "../../../utils/helper";
+import { JOB_NAME_PATTERNS } from "../../../utils/constants";
 
 test.describe.serial("Test Orchestrator RBAC", () => {
+  test.skip(() => skipIfJobName(JOB_NAME_PATTERNS.OSD_GCP)); // skipping orchestrator tests on OSD-GCP due to infra not being installed
+  test.skip(() => skipIfJobName(JOB_NAME_PATTERNS.GKE)); // skipping orchestrator tests on GKE - plugins disabled to save disk space
+
   test.beforeAll(async ({}, testInfo) => {
     testInfo.annotations.push({
       type: "component",
