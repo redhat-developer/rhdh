@@ -483,6 +483,7 @@ test.describe("Test RBAC", () => {
 
       await uiHelper.verifyComponentInCatalog("Group", ["Janus-IDP Authors"]);
       await uiHelper.verifyComponentInCatalog("API", ["Petstore"]);
+      await uiHelper.goToPageUrl("/rbac");
 
       await rbacPo.createConditionalRole(
         "test-role1",
