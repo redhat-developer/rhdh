@@ -25,10 +25,11 @@ runs:
     - name: Check if Image Already Exists
       id: image-check
       shell: bash
-      run: |
+      env:
         IMAGE_TAG_COMMIT="pr-${{ github.event.number }}-${{ env.SHORT_SHA }}"
         IMAGE_NAME_COMMIT="${{ env.REGISTRY }}/rhdh-community/rhdh:${IMAGE_TAG_COMMIT}"
-
+      run: |
+       
         IMAGE_EXISTS_COMMIT=$(curl -s "https://quay.io/api/v1/repository/rhdh-community/rhdh/tag/" | jq -r --arg tag "$IMAGE_TAG_COMMIT" '.tags[] | select(.name == $tag) | .name')
 
         if [ -n "$IMAGE_EXISTS_COMMIT" ]; then
@@ -42,9 +43,10 @@ runs:
     - name: Determine Changed Files
       id: changes
       shell: bash
-      run: |
+      env:
         BASE_COMMIT=${{ github.event.pull_request.base.sha }}
         HEAD_COMMIT=${{ github.event.pull_request.head.sha }}
+      run: |
 
         # Default to not skipped
         echo "is_skipped=false" >> $GITHUB_OUTPUT
@@ -53,7 +55,7 @@ runs:
         CHANGED_FILES=$(git diff --name-only "$BASE_COMMIT" "$HEAD_COMMIT")
 
         echo "Changed files:"
-        echo "$CHANGED_FILES"
+        printf '%s\n' "$CHANGED_FILES"
 
         # Check if commit message contains [skip-build]
         COMMIT_MSG=$(git log -1 --pretty=%B)
