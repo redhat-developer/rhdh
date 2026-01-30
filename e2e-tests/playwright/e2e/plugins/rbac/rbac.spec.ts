@@ -480,6 +480,10 @@ test.describe("Test RBAC", () => {
     }) => {
       const uiHelper = new UIhelper(page);
       const rbacPo = new RbacPo(page);
+
+      await uiHelper.verifyComponentInCatalog("Group", ["Janus-IDP Authors"]);
+      await uiHelper.verifyComponentInCatalog("API", ["Petstore"]);
+
       await rbacPo.createConditionalRole(
         "test-role1",
         ["Guest User", "rhdh-qe rhdh-qe"],
@@ -495,8 +499,9 @@ test.describe("Test RBAC", () => {
       await page.getByPlaceholder("Filter").fill("test-role1");
       await uiHelper.verifyHeading("All roles (1)");
 
-      await uiHelper.openCatalogSidebar("Template");
-      await uiHelper.openCatalogSidebar("API");
+      await uiHelper.verifyComponentInCatalog("Group", ["Janus-IDP Authors"]);
+      await uiHelper.selectMuiBox("Kind", "API", true);
+
       await rbacPo.deleteRole("role:default/test-role1");
     });
   });
