@@ -461,8 +461,8 @@ install_pipelines_operator() {
 }
 
 waitfor_pipelines_operator() {
-  wait_for_deployment "openshift-operators" "pipelines"
-  wait_for_endpoint "tekton-pipelines-webhook" "openshift-pipelines"
+  k8s_wait::deployment "openshift-operators" "pipelines"
+  k8s_wait::endpoint "tekton-pipelines-webhook" "openshift-pipelines"
 }
 
 # Installs the Tekton Pipelines if not already installed (alternative of OpenShift Pipelines for Kubernetes clusters)
@@ -479,8 +479,8 @@ install_tekton_pipelines() {
 
 waitfor_tekton_pipelines() {
   local display_name="tekton-pipelines-webhook"
-  wait_for_deployment "tekton-pipelines" "${display_name}"
-  wait_for_endpoint "tekton-pipelines-webhook" "tekton-pipelines"
+  k8s_wait::deployment "tekton-pipelines" "${display_name}"
+  k8s_wait::endpoint "tekton-pipelines-webhook" "tekton-pipelines"
   k8s_wait::crd "pipelines.tekton.dev" 120 5 || return 1
 }
 
@@ -662,7 +662,7 @@ rbac_deployment() {
     log::warn "Skipping sonataflow (orchestrator) external DB SSL workaround on PR job: ${JOB_NAME}"
   else
     # Wait for the sonataflow database creation job to complete with robust error handling
-    if ! wait_for_job_completion "${NAME_SPACE_RBAC}" "${RELEASE_NAME_RBAC}-create-sonataflow-database" 10 10; then
+    if ! k8s_wait::job "${NAME_SPACE_RBAC}" "${RELEASE_NAME_RBAC}-create-sonataflow-database" 10 10; then
       echo "❌ Failed to create sonataflow database. Aborting RBAC deployment."
       return 1
     fi
