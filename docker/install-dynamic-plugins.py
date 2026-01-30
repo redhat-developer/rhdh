@@ -151,6 +151,40 @@ def substring_between(text, start_marker, end_marker):
         return ""
     return text[start:end]
 
+def run_command(command: list[str], error_message: str, cwd: str = None, text: bool = True) -> subprocess.CompletedProcess:
+    """
+    Run a subprocess command with consistent error handling.
+    
+    Args:
+        command: List of command arguments to execute
+        error_message: Descriptive error message prefix for failures
+        cwd: Working directory for the command (optional)
+        text: If True, decode stdout/stderr as text (default: True)
+    
+    Returns:
+        subprocess.CompletedProcess: The result of the command execution
+    
+    Raises:
+        InstallException: If the command fails with detailed error information
+    """
+    try:
+        return subprocess.run(
+            command,
+            check=True,
+            capture_output=True,
+            text=text,
+            cwd=cwd
+        )
+    except subprocess.CalledProcessError as e:
+        msg = f"{error_message}: command failed with exit code {e.returncode}"
+        if e.stderr:
+            stderr_text = e.stderr.strip() if isinstance(e.stderr, str) else e.stderr.decode('utf-8').strip()
+            msg += f"\nstderr: {stderr_text}"
+        if e.stdout:
+            stdout_text = e.stdout.strip() if isinstance(e.stdout, str) else e.stdout.decode('utf-8').strip()
+            msg += f"\nstdout: {stdout_text}"
+        raise InstallException(msg)
+
 def get_oci_plugin_paths(image: str) -> list[str]:
     """
     Get list of plugin paths from OCI image via manifest annotation.
@@ -165,79 +199,65 @@ def get_oci_plugin_paths(image: str) -> list[str]:
     if not skopeo_path:
         raise InstallException('skopeo executable not found in PATH')
     
-    try:
-        image_url = image.replace(OCI_PROTOCOL_PREFIX, DOCKER_PROTOCOL_PREFIX)
-        # option 1: read --raw config to get the annotation set by docker (GH action)
-        # skopeo inspect docker://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-analytics-provider-segment:bs_1.45.3__1.22.2 --raw | \
-        # jq -r '.annotations["io.backstage.dynamic-packages"]'
-        result = subprocess.run(
-            [skopeo_path, 'inspect', '--raw', image_url],
-            check=True,
-            capture_output=True,
-            text=True
+    image_url = image.replace(OCI_PROTOCOL_PREFIX, DOCKER_PROTOCOL_PREFIX)
+    
+    # option 1: read --raw config to get the annotation set by docker (GH action)
+    # skopeo inspect docker://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-analytics-provider-segment:bs_1.45.3__1.22.2 --raw | \
+    # jq -r '.annotations["io.backstage.dynamic-packages"]'
+    result = run_command(
+        [skopeo_path, 'inspect', '--raw', image_url],
+        f"Failed to inspect OCI image {image}"
+    )
+    
+    manifest = json.loads(result.stdout)
+    annotations = manifest.get('annotations', {})
+    annotation_value = annotations.get('io.backstage.dynamic-packages')
+    
+    if not annotation_value:
+        # option 2: read --config, then extract the annotation from ugly json
+        # skopeo inspect docker://quay.io/rhdh/backstage-community-plugin-analytics-provider-segment:1.10.0--1.22.2 --config | \
+        # jq -r '.history | last | .created_by'
+        # then extract string between "io.backstage.dynamic-packages=" and ","
+        result = run_command(
+            [skopeo_path, 'inspect', '--config', image_url],
+            f"Failed to read config metadata from {image}"
         )
         
-        manifest = json.loads(result.stdout)
-        annotations = manifest.get('annotations', {})
-        annotation_value = annotations.get('io.backstage.dynamic-packages')
+        config = json.loads(result.stdout)
+        history = config.get('history', [])
         
-        if not annotation_value:
-            # option 2: read --config, then extract the annotation from ugly json
-            # skopeo inspect docker://quay.io/rhdh/backstage-community-plugin-analytics-provider-segment:1.10.0--1.22.2 --config | \
-            # jq -r '.history | last | .created_by'
-            # then extract string between "io.backstage.dynamic-packages=" and ","
-            try:
-                result = subprocess.run(
-                    [skopeo_path, 'inspect', '--config', image_url],
-                    check=True,
-                    capture_output=True
-                )
-                
-                config = json.loads(result.stdout)
-                history = config.get('history', [])
-                
-                if not history:
-                    print(f"No plugin config history found in {image}", flush=True)
-                    return []
-                
-                # Get the last history entry's created_by field
-                last_history = history[-1]
-                created_by = last_history.get('created_by', '')
-                
-                if not created_by:
-                    print(f"No plugin config history created_by item found in {image}", flush=True)
-                    return []
-                
-                # Extract the annotation value from the created_by string
-                annotation_value = substring_between(created_by, "io.backstage.dynamic-packages=", ",")
-
-                if not annotation_value: # if still no annotation value, give up and return empty list
-                    print(f"No plugin metadata found matching 'io.backstage.dynamic-packages=...,' in {image}", flush=True)
-                    return []
-
-            except Exception as e:
-                raise InstallException(f"Failed to read config metadata from {image}: {e}") from e
+        if not history:
+            print(f"No plugin config history found in {image}", flush=True)
+            return []
         
-        # Decode and extract plugin paths
+        # Get the last history entry's created_by field
+        last_history = history[-1]
+        created_by = last_history.get('created_by', '')
+        
+        if not created_by:
+            print(f"No plugin config history created_by item found in {image}", flush=True)
+            return []
+        
+        # Extract the annotation value from the created_by string
+        annotation_value = substring_between(created_by, "io.backstage.dynamic-packages=", ",")
+
+        if not annotation_value: # if still no annotation value, give up and return empty list
+            print(f"No plugin metadata found matching 'io.backstage.dynamic-packages=...,' in {image}", flush=True)
+            return []
+    
+    # Decode and extract plugin paths
+    try:
         decoded = base64.b64decode(annotation_value).decode('utf-8')
         plugins_metadata = json.loads(decoded)
-        
-        plugin_paths = []
-        for plugin_obj in plugins_metadata:
-            if isinstance(plugin_obj, dict):
-                plugin_paths.extend(plugin_obj.keys())
-        
-        return plugin_paths
-        
-    except subprocess.CalledProcessError as e:
-        error_msg = f"Failed to inspect OCI image {image}: skopeo command failed with exit code {e.returncode}"
-        if e.stderr:
-            error_msg += f"\nstderr: {e.stderr.strip()}"
-        if e.stdout:
-            error_msg += f"\nstdout: {e.stdout.strip()}"
-        raise InstallException(error_msg)
-    except Exception as e:
-        raise InstallException(f"Failed to read raw metadata from {image}: {e}")
+    except (binascii.Error, json.JSONDecodeError) as e:
+        raise InstallException(f"Failed to decode plugin metadata from {image}: {e}")
+    
+    plugin_paths = []
+    for plugin_obj in plugins_metadata:
+        if isinstance(plugin_obj, dict):
+            plugin_paths.extend(plugin_obj.keys())
+    
+    return plugin_paths
 
 class PackageMerger:
     def __init__(self, plugin: dict, dynamic_plugins_file: str, all_plugins: dict):
@@ -610,16 +630,8 @@ class OciDownloader:
         self.max_entry_size = int(os.environ.get('MAX_ENTRY_SIZE', 20000000))
 
     def skopeo(self, command):
-        try:
-            rv = subprocess.run([self._skopeo] + command, check=True, capture_output=True, text=True)
-            return rv.stdout
-        except subprocess.CalledProcessError as e:
-            error_msg = f'skopeo command failed with exit code {e.returncode}'
-            if e.stderr:
-                error_msg += f'\nstderr: {e.stderr.strip()}'
-            if e.stdout:
-                error_msg += f'\nstdout: {e.stdout.strip()}'
-            raise InstallException(error_msg)
+        result = run_command([self._skopeo] + command, 'skopeo command failed')
+        return result.stdout
 
     def get_plugin_tar(self, image: str) -> str:
         if image not in self.image_to_tarball:
@@ -767,11 +779,13 @@ class NpmPluginInstaller(PluginInstaller):
         
         # Download package
         print('\t==> Grabbing package archive through `npm pack`', flush=True)
-        result = subprocess.run(['npm', 'pack', package], capture_output=True, cwd=self.destination)
-        if result.returncode != 0:
-            raise InstallException(f'Error while installing plugin {package} with \'npm pack\' : {result.stderr.decode("utf-8")}')
+        result = run_command(
+            ['npm', 'pack', package],
+            f"Error while installing plugin {package} with 'npm pack'",
+            cwd=self.destination
+        )
         
-        archive = os.path.join(self.destination, result.stdout.decode('utf-8').strip())
+        archive = os.path.join(self.destination, result.stdout.strip())
         
         # Verify integrity for remote packages
         if not (package_is_local or self.skip_integrity_check):
@@ -1041,20 +1055,10 @@ def extract_catalog_index(catalog_index_image: str, catalog_index_mount: str, ca
         local_dir = os.path.join(tmp_dir, 'catalog-index-oci')
 
         # Download the OCI image using skopeo
-        try:
-            result = subprocess.run(
-                [skopeo_path, 'copy', image_url, f'dir:{local_dir}'],
-                check=True,
-                capture_output=True,
-                text=True
-            )
-        except subprocess.CalledProcessError as e:
-            error_msg = f"Failed to download catalog index image {catalog_index_image}: skopeo command failed with exit code {e.returncode}"
-            if e.stderr:
-                error_msg += f"\nstderr: {e.stderr.strip()}"
-            if e.stdout:
-                error_msg += f"\nstdout: {e.stdout.strip()}"
-            raise InstallException(error_msg)
+        run_command(
+            [skopeo_path, 'copy', image_url, f'dir:{local_dir}'],
+            f"Failed to download catalog index image {catalog_index_image}"
+        )
 
         manifest_path = os.path.join(local_dir, 'manifest.json')
         if not os.path.isfile(manifest_path):
