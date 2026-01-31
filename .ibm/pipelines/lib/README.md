@@ -64,6 +64,13 @@ Functions: `config::create_app_config_map`, `config::select_config_map_file`,
 `config::create_dynamic_plugins_config`, `config::create_conditional_policies_operator`,
 `config::prepare_operator_app_config`
 
+### `testing.sh`
+
+Testing utilities for CI pipelines including Playwright test execution and health checks.
+
+Functions: `testing::run_tests`, `testing::check_backstage_running`, `testing::check_and_test`,
+`testing::check_helm_upgrade`, `testing::check_upgrade_and_test`
+
 ## Creating New Modules
 
 ### Structure
