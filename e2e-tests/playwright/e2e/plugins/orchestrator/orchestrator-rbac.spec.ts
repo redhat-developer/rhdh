@@ -1044,6 +1044,9 @@ test.describe.serial("Test Orchestrator RBAC", () => {
         name: workflowUserRoleName,
       };
 
+      // Workflow-specific permissions for greeting workflow
+      // Note: Users can always see their own workflow instances (initiator-based access)
+      // without needing orchestrator.instanceAdminView permission
       const workflowUserPolicies = [
         {
           entityReference: workflowUserRoleName,
@@ -1054,21 +1057,6 @@ test.describe.serial("Test Orchestrator RBAC", () => {
         {
           entityReference: workflowUserRoleName,
           permission: "orchestrator.workflow.use.greeting",
-          policy: "update",
-          effect: "allow",
-        },
-        // Instance permissions needed to view workflow runs
-        // Using global instance permissions as workflow-specific instance permissions
-        // may not be supported
-        {
-          entityReference: workflowUserRoleName,
-          permission: "orchestrator.instance",
-          policy: "read",
-          effect: "allow",
-        },
-        {
-          entityReference: workflowUserRoleName,
-          permission: "orchestrator.instance.use",
           policy: "update",
           effect: "allow",
         },
@@ -1127,7 +1115,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       expect(policiesResponse.ok()).toBeTruthy();
 
       const policies = await policiesResponse.json();
-      expect(policies).toHaveLength(4);
+      expect(policies).toHaveLength(2);
 
       const allowReadPolicy = policies.find(
         (policy: { permission: string; policy: string; effect: string }) =>
@@ -1139,25 +1127,11 @@ test.describe.serial("Test Orchestrator RBAC", () => {
           policy.permission === "orchestrator.workflow.use.greeting" &&
           policy.policy === "update",
       );
-      const allowInstanceReadPolicy = policies.find(
-        (policy: { permission: string; policy: string; effect: string }) =>
-          policy.permission === "orchestrator.instance" &&
-          policy.policy === "read",
-      );
-      const allowInstanceUpdatePolicy = policies.find(
-        (policy: { permission: string; policy: string; effect: string }) =>
-          policy.permission === "orchestrator.instance.use" &&
-          policy.policy === "update",
-      );
 
       expect(allowReadPolicy).toBeDefined();
       expect(allowUpdatePolicy).toBeDefined();
-      expect(allowInstanceReadPolicy).toBeDefined();
-      expect(allowInstanceUpdatePolicy).toBeDefined();
       expect(allowReadPolicy.effect).toBe("allow");
       expect(allowUpdatePolicy.effect).toBe("allow");
-      expect(allowInstanceReadPolicy.effect).toBe("allow");
-      expect(allowInstanceUpdatePolicy.effect).toBe("allow");
     });
 
     test("rhdh-qe user runs greeting workflow and captures instance ID", async () => {
@@ -1340,6 +1314,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
         name: workflowAdminRoleName,
       };
 
+      // Admin policies: global workflow access + instanceAdminView to see ALL instances
       const workflowAdminPolicies = [
         {
           entityReference: workflowAdminRoleName,
@@ -1355,14 +1330,8 @@ test.describe.serial("Test Orchestrator RBAC", () => {
         },
         {
           entityReference: workflowAdminRoleName,
-          permission: "orchestrator.instance",
+          permission: "orchestrator.instanceAdminView",
           policy: "read",
-          effect: "allow",
-        },
-        {
-          entityReference: workflowAdminRoleName,
-          permission: "orchestrator.instance.use",
-          policy: "update",
           effect: "allow",
         },
       ];
@@ -1433,7 +1402,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       expect(policiesResponse.ok()).toBeTruthy();
 
       const policies = await policiesResponse.json();
-      expect(policies).toHaveLength(4);
+      expect(policies).toHaveLength(3);
 
       // Verify workflowUser role no longer has rhdh-qe-2
       const workflowUserRole = roles.find(
@@ -1446,6 +1415,41 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       );
       expect(workflowUserRole?.memberReferences).not.toContain(
         "user:default/rhdh-qe-2",
+      );
+    });
+
+    test("rhdh-qe-2 with instanceAdminView CAN access rhdh-qe's workflow instance", async () => {
+      // Clear browser storage and navigate to a fresh state
+      await page.context().clearCookies();
+      await page.goto("/");
+      await page.waitForLoadState("load");
+
+      // Login as rhdh-qe-2 who now has instanceAdminView permission
+      try {
+        await common.loginAsKeycloakUser(
+          process.env.GH_USER2_ID,
+          process.env.GH_USER2_PASS,
+        );
+        console.log("Successfully logged in as rhdh-qe-2 with admin permissions");
+      } catch (error) {
+        console.log("Login failed:", error);
+        throw error;
+      }
+
+      // Navigate to rhdh-qe's workflow instance - should now be accessible
+      await uiHelper.goToPageUrl(
+        `/orchestrator/instances/${workflowInstanceId}`,
+      );
+      await page.waitForLoadState("networkidle");
+
+      // With instanceAdminView, rhdh-qe-2 should be able to see the instance details
+      // Verify the instance details are visible (not an error page)
+      await expect(page.getByText("Completed", { exact: true })).toBeVisible({
+        timeout: 30000,
+      });
+
+      console.log(
+        `Admin user rhdh-qe-2 successfully accessed workflow instance: ${workflowInstanceId}`,
       );
     });
 
