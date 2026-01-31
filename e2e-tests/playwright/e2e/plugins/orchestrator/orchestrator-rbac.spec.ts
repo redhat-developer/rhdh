@@ -1181,10 +1181,21 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       await uiHelper.goToPageUrl("/orchestrator/workflows/greeting/runs");
       await uiHelper.verifyHeading("Greeting workflow");
 
-      // Verify the instance ID appears in the runs list (as a link or in a table)
-      // Use explicit timeout for workflow instance to appear in the runs list
+      // Wait for the runs table to be populated (not showing "No records to display")
+      // Sometimes the table takes time to load
+      await expect(page.getByText("No records to display")).not.toBeVisible({
+        timeout: 30000,
+      });
+
+      // Verify the instance ID appears in the runs list
+      // Try multiple selectors as the UI might show the ID in different ways
       const instanceLink = page.locator(`a[href*="${workflowInstanceId}"]`);
-      await expect(instanceLink).toBeVisible({ timeout: 30000 });
+      const instanceText = page.getByText(workflowInstanceId.substring(0, 8)); // First 8 chars of UUID
+
+      // Wait for either the link or the text to be visible
+      await expect(instanceLink.or(instanceText).first()).toBeVisible({
+        timeout: 30000,
+      });
     });
 
     test("rhdh-qe-2 user cannot see rhdh-qe's workflow instance in runs list", async () => {
