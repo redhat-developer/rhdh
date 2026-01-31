@@ -1181,21 +1181,44 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       await uiHelper.goToPageUrl("/orchestrator/workflows/greeting/runs");
       await uiHelper.verifyHeading("Greeting workflow");
 
-      // Wait for the runs table to be populated (not showing "No records to display")
-      // Sometimes the table takes time to load
-      await expect(page.getByText("No records to display")).not.toBeVisible({
+      // Wait for network to be idle to ensure data is loaded
+      await page.waitForLoadState("networkidle");
+
+      // Wait for the runs table body to have at least one row
+      // This is more reliable than checking for absence of "No records"
+      const tableBody = page.locator("tbody");
+      await expect(tableBody.getByRole("row").first()).toBeVisible({
         timeout: 30000,
       });
 
-      // Verify the instance ID appears in the runs list
-      // Try multiple selectors as the UI might show the ID in different ways
+      // The ID column is the first cell in the table rows
+      // The ID might be displayed as a link or as text, and might be truncated
+      // Check if the instance ID (or a portion of it) appears in the first column
+      const firstRowFirstCell = tableBody
+        .getByRole("row")
+        .first()
+        .getByRole("cell")
+        .first();
+      await expect(firstRowFirstCell).toBeVisible({ timeout: 30000 });
+
+      // Get the text content of the first cell to verify it contains the instance ID
+      // The ID might be the full UUID or a shortened version
+      const instanceId8Chars = workflowInstanceId.substring(0, 8);
+      const cellText = await firstRowFirstCell.textContent();
+      console.log(`First row ID cell content: "${cellText}"`);
+      console.log(`Looking for instance ID: ${workflowInstanceId}`);
+      console.log(`First 8 chars: ${instanceId8Chars}`);
+
+      // Verify the instance ID appears somewhere in the table
+      // Check for the link, the full ID text, or the shortened ID
       const instanceLink = page.locator(`a[href*="${workflowInstanceId}"]`);
-      const instanceText = page.getByText(workflowInstanceId.substring(0, 8)); // First 8 chars of UUID
+      const instanceFullText = page.getByText(workflowInstanceId);
+      const instanceShortText = page.getByText(instanceId8Chars);
 
-      // Wait for either the link or the text to be visible
-      await expect(instanceLink.or(instanceText).first()).toBeVisible({
-        timeout: 30000,
-      });
+      // Use polling to check if any of these selectors become visible
+      await expect(
+        instanceLink.or(instanceFullText).or(instanceShortText).first(),
+      ).toBeVisible({ timeout: 30000 });
     });
 
     test("rhdh-qe-2 user cannot see rhdh-qe's workflow instance in runs list", async () => {
