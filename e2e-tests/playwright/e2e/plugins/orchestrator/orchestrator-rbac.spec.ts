@@ -1188,7 +1188,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
 
       // Verify the instance details page loads correctly
       // The page should show instance details with workflow status
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       // Verify we can see the instance - check for key elements
       // The page should show "Completed" status and have details/results tabs
@@ -1440,7 +1440,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       await uiHelper.goToPageUrl(
         `/orchestrator/instances/${workflowInstanceId}`,
       );
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       // With instanceAdminView, rhdh-qe-2 should be able to see the instance details
       // Verify the instance details are visible (not an error page)
