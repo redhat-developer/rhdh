@@ -1197,7 +1197,9 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       });
 
       // Verify the instance ID appears in the URL or page
-      console.log(`Verified access to workflow instance: ${workflowInstanceId}`);
+      console.log(
+        `Verified access to workflow instance: ${workflowInstanceId}`,
+      );
     });
 
     test("rhdh-qe-2 user cannot access rhdh-qe's workflow instance", async () => {
@@ -1228,7 +1230,9 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       // rhdh-qe-2 should NOT be able to access rhdh-qe's workflow instance
       // Expect either an error, a 404, or a redirect away from the instance page
       const pageContent = await page.textContent("body");
-      console.log(`Page content when accessing instance: ${pageContent?.substring(0, 500)}`);
+      console.log(
+        `Page content when accessing instance: ${pageContent?.substring(0, 500)}`,
+      );
 
       // Verify that rhdh-qe-2 cannot see the instance details
       // The page should show an error or redirect to a different page
@@ -1430,7 +1434,9 @@ test.describe.serial("Test Orchestrator RBAC", () => {
           process.env.GH_USER2_ID,
           process.env.GH_USER2_PASS,
         );
-        console.log("Successfully logged in as rhdh-qe-2 with admin permissions");
+        console.log(
+          "Successfully logged in as rhdh-qe-2 with admin permissions",
+        );
       } catch (error) {
         console.log("Login failed:", error);
         throw error;
