@@ -17,10 +17,7 @@ export class Orchestrator {
   async closeWorkflowAlert() {
     await this.page.getByRole("alert").getByRole("button").nth(2).click();
   }
-  async waitForWorkflowVisible(
-    workflowName: string,
-    timeout: number = 30000,
-  ) {
+  async waitForWorkflowVisible(workflowName: string, timeout: number = 30000) {
     const workflowLink = this.page.getByRole("link", { name: workflowName });
     await expect(workflowLink).toBeVisible({ timeout });
   }
