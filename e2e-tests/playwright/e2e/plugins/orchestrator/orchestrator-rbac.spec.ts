@@ -1057,6 +1057,19 @@ test.describe.serial("Test Orchestrator RBAC", () => {
           policy: "update",
           effect: "allow",
         },
+        // Instance permissions needed to view workflow runs
+        {
+          entityReference: workflowUserRoleName,
+          permission: "orchestrator.instance.greeting",
+          policy: "read",
+          effect: "allow",
+        },
+        {
+          entityReference: workflowUserRoleName,
+          permission: "orchestrator.instance.use.greeting",
+          policy: "update",
+          effect: "allow",
+        },
       ];
 
       const rolePostResponse = await rbacApi.createRoles(workflowUserRole);
@@ -1112,7 +1125,7 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       expect(policiesResponse.ok()).toBeTruthy();
 
       const policies = await policiesResponse.json();
-      expect(policies).toHaveLength(2);
+      expect(policies).toHaveLength(4);
 
       const allowReadPolicy = policies.find(
         (policy: { permission: string; policy: string; effect: string }) =>
@@ -1124,11 +1137,25 @@ test.describe.serial("Test Orchestrator RBAC", () => {
           policy.permission === "orchestrator.workflow.use.greeting" &&
           policy.policy === "update",
       );
+      const allowInstanceReadPolicy = policies.find(
+        (policy: { permission: string; policy: string; effect: string }) =>
+          policy.permission === "orchestrator.instance.greeting" &&
+          policy.policy === "read",
+      );
+      const allowInstanceUpdatePolicy = policies.find(
+        (policy: { permission: string; policy: string; effect: string }) =>
+          policy.permission === "orchestrator.instance.use.greeting" &&
+          policy.policy === "update",
+      );
 
       expect(allowReadPolicy).toBeDefined();
       expect(allowUpdatePolicy).toBeDefined();
+      expect(allowInstanceReadPolicy).toBeDefined();
+      expect(allowInstanceUpdatePolicy).toBeDefined();
       expect(allowReadPolicy.effect).toBe("allow");
       expect(allowUpdatePolicy.effect).toBe("allow");
+      expect(allowInstanceReadPolicy.effect).toBe("allow");
+      expect(allowInstanceUpdatePolicy.effect).toBe("allow");
     });
 
     test("rhdh-qe user runs greeting workflow and captures instance ID", async () => {
