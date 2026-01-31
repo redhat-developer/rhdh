@@ -1058,15 +1058,17 @@ test.describe.serial("Test Orchestrator RBAC", () => {
           effect: "allow",
         },
         // Instance permissions needed to view workflow runs
+        // Using global instance permissions as workflow-specific instance permissions
+        // may not be supported
         {
           entityReference: workflowUserRoleName,
-          permission: "orchestrator.instance.greeting",
+          permission: "orchestrator.instance",
           policy: "read",
           effect: "allow",
         },
         {
           entityReference: workflowUserRoleName,
-          permission: "orchestrator.instance.use.greeting",
+          permission: "orchestrator.instance.use",
           policy: "update",
           effect: "allow",
         },
@@ -1139,12 +1141,12 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       );
       const allowInstanceReadPolicy = policies.find(
         (policy: { permission: string; policy: string; effect: string }) =>
-          policy.permission === "orchestrator.instance.greeting" &&
+          policy.permission === "orchestrator.instance" &&
           policy.policy === "read",
       );
       const allowInstanceUpdatePolicy = policies.find(
         (policy: { permission: string; policy: string; effect: string }) =>
-          policy.permission === "orchestrator.instance.use.greeting" &&
+          policy.permission === "orchestrator.instance.use" &&
           policy.policy === "update",
       );
 
