@@ -6,13 +6,16 @@ import {
   CUSTOM_SIDEBAR_LOGO,
 } from "../support/test-data/custom-theme";
 import { ThemeConstants } from "../data/theme-constants";
-import {
-  getTranslations,
-  getCurrentLanguage,
-} from "../e2e/localization/locale";
 
-const t = getTranslations();
-const lang = getCurrentLanguage();
+// TODO: RHDHBUGS-2552 - Strings not getting translated
+// import {
+//   getTranslations,
+//   getCurrentLanguage,
+// } from "../e2e/localization/locale";
+
+// TODO: RHDHBUGS-2552 - Strings not getting translated
+// const t = getTranslations();
+// const lang = getCurrentLanguage();
 let page: Page;
 
 test.describe("CustomTheme should be applied", () => {
@@ -59,7 +62,8 @@ test.describe("CustomTheme should be applied", () => {
 
   test("Verify that RHDH CompanyLogo can be customized", async () => {
     await themeVerifier.setTheme(
-      t["user-settings"][lang]["themeToggle.names.light"],
+      // TODO: RHDHBUGS-2552 - Strings not getting translated
+      "Light", // t["user-settings"][lang]["themeToggle.names.light"],
     );
 
     await expect(page.getByTestId("home-logo")).toHaveAttribute(
@@ -68,7 +72,8 @@ test.describe("CustomTheme should be applied", () => {
     );
 
     await themeVerifier.setTheme(
-      t["user-settings"][lang]["themeToggle.names.dark"],
+      // TODO: RHDHBUGS-2552 - Strings not getting translated
+      "Dark", // t["user-settings"][lang]["themeToggle.names.dark"],
     );
     await expect(page.getByTestId("home-logo")).toHaveAttribute(
       "src",

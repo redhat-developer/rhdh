@@ -247,7 +247,11 @@ export class UIhelper {
   async goToMyProfilePage() {
     await expect(this.page.locator("nav[id='global-header']")).toBeVisible();
     await this.openProfileDropdown();
-    await this.clickLink(t["plugin.global-header"][lang]["profile.myProfile"]);
+    await this.clickLink(
+      // TODO: RHDHBUGS-2552 - Strings not getting translated
+      // t["plugin.global-header"][lang]["profile.myProfile"],
+      "My profile",
+    );
   }
 
   async verifyLink(

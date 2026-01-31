@@ -40,6 +40,6 @@ export class ThemeConstants {
       navigationIndicatorColor: "rgb(244, 238, 169)",
     };
 
-    return [light, dark, lightDynamic, darkDynamic];
+    return [light, dark, darkDynamic, lightDynamic];
   }
 }

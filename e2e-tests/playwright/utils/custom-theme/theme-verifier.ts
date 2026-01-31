@@ -23,7 +23,9 @@ export class ThemeVerifier {
       t["user-settings"][lang]["settingsLayout.title"],
     );
     await this.uiHelper.hideQuickstartIfVisible();
-    await this.uiHelper.clickBtnByTitleIfNotPressed(`Select ${theme}`);
+    await this.uiHelper.clickBtnByTitleIfNotPressed(
+      `${t["user-settings"][lang]["themeToggle.select"].replace("{{theme}}", theme)}`,
+    );
     const themeButton = this.page.getByRole("button", {
       name: theme,
       exact: true,

@@ -685,7 +685,7 @@
       "languageToggle.select": "Select language {{language}}",
       "themeToggle.title": "Theme",
       "themeToggle.description": "Change the theme mode",
-      "themeToggle.select": "Select theme {{theme}}",
+      "themeToggle.select": "Select {{theme}}",
       "themeToggle.selectAuto": "Select Auto Theme",
       "themeToggle.names.light": "Light",
       "themeToggle.names.dark": "Dark",
@@ -1158,7 +1158,8 @@
       "app.errors.goBack": "Go back",
       "app.errors.notFound.message": "We couldn't find that page",
       "app.errors.notFound.additionalInfo": "The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.",
-      "app.table.createdAt": "Created At"
+      "app.table.createdAt": "Created At",
+      "catalog.entityPage.overview.title": "Overview"
     }
   },
   "catalog-react": {
