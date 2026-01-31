@@ -1730,10 +1730,12 @@ class TestOciDownloader:
         paths = install_dynamic_plugins.get_oci_plugin_paths('oci://registry.io/plugin:v1.0')
 
         assert len(paths) == 0
-
+        
     @pytest.mark.integration
+    # Corresponds to the quay.io/rhdh/backstage-community-plugin-analytics-provider-segment:bcp-analytics-provider-segment-1-on-push-hv5kz-build-container image
+    # Not to quay.io/rhdh/backstage-community-plugin-analytics-provider-segment:1.10.0--1.22.2 which is a manifest list
     @pytest.mark.parametrize("image", [
-        'oci://quay.io/rhdh/backstage-community-plugin-analytics-provider-segment:1.10.0--1.22.2',
+        'oci://quay.io/rhdh/backstage-community-plugin-analytics-provider-segment@sha256:d465b0f4f85af8a0767a84055c366cebc11c8c1f6a8488248874e3acc7f148ee',
         'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-analytics-provider-segment:bs_1.45.3__1.22.2'
     ])
     def test_get_oci_plugin_paths_real_image(self, tmp_path, image):
@@ -1756,7 +1758,7 @@ class TestOciDownloader:
             assert len(path) > 0
             # display path
             print(f"\nPath: {path}")
-
+            
     def test_download_with_explicit_path(self, tmp_path, mocker):
         """Test download extracts the specified plugin path."""
         mocker.patch('shutil.which', return_value='/usr/bin/skopeo')
