@@ -17,14 +17,24 @@ export class Orchestrator {
   async closeWorkflowAlert() {
     await this.page.getByRole("alert").getByRole("button").nth(2).click();
   }
-  async selectGreetingWorkflowItem() {
+  async waitForWorkflowVisible(workflowName: string, timeout: number = 30000) {
+    const workflowLink = this.page.getByRole("link", { name: workflowName });
+    await expect(workflowLink).toBeVisible({ timeout });
+  }
+
+  async selectGreetingWorkflowItem(timeout: number = 30000) {
     const workflowHeader = this.page.getByRole("heading", {
       name: "Workflows",
     });
     await expect(workflowHeader).toBeVisible();
     await expect(workflowHeader).toHaveText("Workflows");
     await expect(Workflows.workflowsTable(this.page)).toBeVisible();
-    await this.page.getByRole("link", { name: "Greeting workflow" }).click();
+    // Wait for the workflow to be visible with explicit timeout for RBAC permission propagation
+    const greetingLink = this.page.getByRole("link", {
+      name: "Greeting workflow",
+    });
+    await expect(greetingLink).toBeVisible({ timeout });
+    await greetingLink.click();
   }
 
   async runGreetingWorkflow(language = "English", status = "Completed") {
@@ -215,14 +225,19 @@ export class Orchestrator {
     await this.page.getByRole("button", { name: "Reset" }).click();
   }
 
-  async selectFailSwitchWorkflowItem() {
+  async selectFailSwitchWorkflowItem(timeout: number = 30000) {
     const workflowHeader = this.page.getByRole("heading", {
       name: "Workflows",
     });
     await expect(workflowHeader).toBeVisible();
     await expect(workflowHeader).toHaveText("Workflows");
     await expect(Workflows.workflowsTable(this.page)).toBeVisible();
-    await this.page.getByRole("link", { name: "FailSwitch workflow" }).click();
+    // Wait for the workflow to be visible with explicit timeout for RBAC permission propagation
+    const failSwitchLink = this.page.getByRole("link", {
+      name: "FailSwitch workflow",
+    });
+    await expect(failSwitchLink).toBeVisible({ timeout });
+    await failSwitchLink.click();
   }
 
   async runFailSwitchWorkflow(input = "OK") {
