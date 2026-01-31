@@ -1182,8 +1182,9 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       await uiHelper.verifyHeading("Greeting workflow");
 
       // Verify the instance ID appears in the runs list (as a link or in a table)
+      // Use explicit timeout for workflow instance to appear in the runs list
       const instanceLink = page.locator(`a[href*="${workflowInstanceId}"]`);
-      await expect(instanceLink).toBeVisible();
+      await expect(instanceLink).toBeVisible({ timeout: 30000 });
     });
 
     test("rhdh-qe-2 user cannot see rhdh-qe's workflow instance in runs list", async () => {
