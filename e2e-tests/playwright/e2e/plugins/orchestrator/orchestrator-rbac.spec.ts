@@ -1207,22 +1207,24 @@ test.describe.serial("Test Orchestrator RBAC", () => {
 
     test("rhdh-qe user can see their workflow instance in runs list", async () => {
       await page.reload();
-      await uiHelper.goToPageUrl("/orchestrator/workflows/greeting/runs");
-      await uiHelper.verifyHeading("Greeting workflow");
+      // Navigate to the main orchestrator page
+      await uiHelper.goToPageUrl("/orchestrator");
+
+      // Click on the "all runs" tab to see the runs list
+      const allRunsTab = page.getByRole("tab", { name: "all runs" });
+      await expect(allRunsTab).toBeVisible({ timeout: 30000 });
+      await allRunsTab.click();
 
       // Wait for network to be idle to ensure data is loaded
       await page.waitForLoadState("networkidle");
 
       // Wait for the runs table body to have at least one row
-      // This is more reliable than checking for absence of "No records"
       const tableBody = page.locator("tbody");
       await expect(tableBody.getByRole("row").first()).toBeVisible({
         timeout: 30000,
       });
 
       // The ID column is the first cell in the table rows
-      // The ID might be displayed as a link or as text, and might be truncated
-      // Check if the instance ID (or a portion of it) appears in the first column
       const firstRowFirstCell = tableBody
         .getByRole("row")
         .first()
@@ -1231,7 +1233,6 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       await expect(firstRowFirstCell).toBeVisible({ timeout: 30000 });
 
       // Get the text content of the first cell to verify it contains the instance ID
-      // The ID might be the full UUID or a shortened version
       const instanceId8Chars = workflowInstanceId.substring(0, 8);
       const cellText = await firstRowFirstCell.textContent();
       console.log(`First row ID cell content: "${cellText}"`);
@@ -1239,12 +1240,10 @@ test.describe.serial("Test Orchestrator RBAC", () => {
       console.log(`First 8 chars: ${instanceId8Chars}`);
 
       // Verify the instance ID appears somewhere in the table
-      // Check for the link, the full ID text, or the shortened ID
       const instanceLink = page.locator(`a[href*="${workflowInstanceId}"]`);
       const instanceFullText = page.getByText(workflowInstanceId);
       const instanceShortText = page.getByText(instanceId8Chars);
 
-      // Use polling to check if any of these selectors become visible
       await expect(
         instanceLink.or(instanceFullText).or(instanceShortText).first(),
       ).toBeVisible({ timeout: 30000 });
@@ -1268,8 +1267,16 @@ test.describe.serial("Test Orchestrator RBAC", () => {
         // Continue with the test - user might already be logged in
       }
 
-      await uiHelper.goToPageUrl("/orchestrator/workflows/greeting/runs");
-      await uiHelper.verifyHeading("Greeting workflow");
+      // Navigate to the main orchestrator page
+      await uiHelper.goToPageUrl("/orchestrator");
+
+      // Click on the "all runs" tab to see the runs list
+      const allRunsTab = page.getByRole("tab", { name: "all runs" });
+      await expect(allRunsTab).toBeVisible({ timeout: 30000 });
+      await allRunsTab.click();
+
+      // Wait for the page to load
+      await page.waitForLoadState("networkidle");
 
       // rhdh-qe-2 should NOT be able to see rhdh-qe's workflow instance in the runs list
       // This enforces complete instance isolation - users can only see their own instances
