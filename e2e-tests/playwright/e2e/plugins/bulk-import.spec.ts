@@ -116,10 +116,9 @@ spec:
     `);
   });
 
-  test.fixme("Add a Repository and Confirm its Preview", async () => {
+  test("Add a Repository and Confirm its Preview", async () => {
     await uiHelper.openSidebar("Bulk import");
-    // await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
-    await uiHelper.searchInputPlaceholder("janus-test-1-bulk-import-test");
+    await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
 
     await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
       "Ready to import",
