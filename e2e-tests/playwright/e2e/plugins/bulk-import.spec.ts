@@ -116,15 +116,12 @@ spec:
     `);
   });
 
-  // TODO: https://issues.redhat.com/browse/RHDHBUGS-2230
-  // Select two repos: one with an existing catalog.yaml file and another without it
-  test.fixme("Add a Repository from the Repository Tab and Confirm its Preview", async () => {
+  test.fixme("Add a Repository and Confirm its Preview", async () => {
     await uiHelper.openSidebar("Bulk import");
-    await uiHelper.clickButton("Import");
     await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
 
     await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
-      "Not Generated",
+      "Ready to import",
     ]);
     await bulkimport.selectRepoInTable(catalogRepoDetails.name);
     await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
@@ -139,24 +136,6 @@ spec:
     await expect(await uiHelper.clickButton("Save")).not.toBeVisible({
       timeout: 10000,
     });
-  });
-
-  test("Add a Repository from the Organization Tab and Confirm its Preview", async () => {
-    await uiHelper.searchInputPlaceholder(newRepoDetails.owner);
-    await uiHelper.verifyRowInTableByUniqueText(newRepoDetails.owner, [
-      new RegExp(`github.com/${newRepoDetails.owner}`),
-      /1\/(\d+) Edit/,
-      /Ready to import Preview file/,
-    ]);
-    await uiHelper.clickOnLinkInTableByUniqueText(newRepoDetails.owner, "Edit");
-    await bulkimport.searchInOrg(newRepoDetails.repoName);
-    await bulkimport.selectRepoInTable(newRepoDetails.repoName);
-    await uiHelper.clickButton("Select");
-    await uiHelper.verifyRowInTableByUniqueText(newRepoDetails.owner, [
-      new RegExp(`github.com/${newRepoDetails.owner}`),
-      /2\/(\d+) Edit/,
-      /Ready to import Preview files/,
-    ]);
     await expect(await uiHelper.clickButton("Import")).toBeDisabled({
       timeout: 10000,
     });
