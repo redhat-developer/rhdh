@@ -9,13 +9,6 @@ export class BulkImport {
     this.page = page;
   }
 
-  async searchInOrg(searchText: string) {
-    await this.page
-      .getByTestId("search-in-organization")
-      .getByPlaceholder("Search", { exact: true })
-      .fill(searchText);
-  }
-
   async filterAddedRepo(searchText: string) {
     await expect(async () => {
       // Clear any existing filter first
