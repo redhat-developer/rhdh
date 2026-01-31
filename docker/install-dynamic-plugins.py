@@ -140,17 +140,6 @@ def merge_plugin(plugin: dict, all_plugins: dict, dynamic_plugins_file: str, lev
         # Use NPMPackageMerger for all other package types (NPM, git, local, tarball, etc.)
         return NPMPackageMerger(plugin, dynamic_plugins_file, all_plugins).merge_plugin(level)
 
-
-def substring_between(text, start_marker, end_marker):
-    start = text.find(start_marker)
-    if start == -1:
-        return ""
-    start += len(start_marker)
-    end = text.find(end_marker, start)
-    if end == -1:
-        return ""
-    return text[start:end]
-
 def get_oci_plugin_paths(image: str) -> list[str]:
     """
     Get list of plugin paths from OCI image via manifest annotation.
@@ -167,9 +156,6 @@ def get_oci_plugin_paths(image: str) -> list[str]:
     
     try:
         image_url = image.replace(OCI_PROTOCOL_PREFIX, DOCKER_PROTOCOL_PREFIX)
-        # option 1: read --raw config to get the annotation set by docker (GH action)
-        # skopeo inspect docker://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-analytics-provider-segment:bs_1.45.3__1.22.2 --raw | \
-        # jq -r '.annotations["io.backstage.dynamic-packages"]'
         result = subprocess.run(
             [skopeo_path, 'inspect', '--raw', image_url],
             check=True,
@@ -181,43 +167,8 @@ def get_oci_plugin_paths(image: str) -> list[str]:
         annotation_value = annotations.get('io.backstage.dynamic-packages')
         
         if not annotation_value:
-            # option 2: read --config, then extract the annotation from ugly json
-            # skopeo inspect docker://quay.io/rhdh/backstage-community-plugin-analytics-provider-segment:1.10.0--1.22.2 --config | \
-            # jq -r '.history | last | .created_by'
-            # then extract string between "io.backstage.dynamic-packages=" and ","
-            try:
-                result = subprocess.run(
-                    [skopeo_path, 'inspect', '--config', image_url],
-                    check=True,
-                    capture_output=True
-                )
-                
-                config = json.loads(result.stdout)
-                history = config.get('history', [])
-                
-                if not history:
-                    print(f"No plugin config history found in {image}", flush=True)
-                    return []
-                
-                # Get the last history entry's created_by field
-                last_history = history[-1]
-                created_by = last_history.get('created_by', '')
-                
-                if not created_by:
-                    print(f"No plugin config history created_by item found in {image}", flush=True)
-                    return []
-                
-                # Extract the annotation value from the created_by string
-                annotation_value = substring_between(created_by, "io.backstage.dynamic-packages=", ",")
-
-                if not annotation_value: # if still no annotation value, give up and return empty list
-                    print(f"No plugin metadata found matching 'io.backstage.dynamic-packages=...,' in {image}", flush=True)
-                    return []
-
-            except Exception as e:
-                raise InstallException(f"Failed to read config metadata from {image}: {e}") from e
+            return []
         
-        # Decode and extract plugin paths
         decoded = base64.b64decode(annotation_value).decode('utf-8')
         plugins_metadata = json.loads(decoded)
         
@@ -229,7 +180,7 @@ def get_oci_plugin_paths(image: str) -> list[str]:
         return plugin_paths
         
     except Exception as e:
-        raise InstallException(f"Failed to read raw metadata from {image}: {e}")
+        raise InstallException(f"Failed to read plugin metadata from {image}: {e}")
 
 class PackageMerger:
     def __init__(self, plugin: dict, dynamic_plugins_file: str, all_plugins: dict):
