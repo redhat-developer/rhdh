@@ -90,6 +90,7 @@ QE_USER8_ID=$(cat /tmp/secrets/QE_USER8_ID)
 QE_USER8_PASS=$(cat /tmp/secrets/QE_USER8_PASS)
 QE_USER9_ID=$(cat /tmp/secrets/QE_USER9_ID)
 QE_USER9_PASS=$(cat /tmp/secrets/QE_USER9_PASS)
+JIRA_TOKEN=$(cat /tmp/secrets/jira_token)
 
 K8S_CLUSTER_TOKEN_TEMPORARY=$(cat /tmp/secrets/K8S_CLUSTER_TOKEN_TEMPORARY)
 
