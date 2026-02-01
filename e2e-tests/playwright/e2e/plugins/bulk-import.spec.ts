@@ -78,6 +78,7 @@ spec:
   });
 
   test("Add a Repository and Confirm its Preview", async () => {
+    await uiHelper.openSidebar("Catalog");
     await common.waitForLoad();
     await uiHelper.openSidebar("Bulk import");
     await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
