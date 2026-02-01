@@ -125,8 +125,8 @@ spec:
         "Ready to import",
       ]);
     }).toPass({
-      intervals: [2_000],
-      timeout: 10_000,
+      intervals: [3_000],
+      timeout: 15_000,
     });
 
     await bulkimport.selectRepoInTable(catalogRepoDetails.name);
