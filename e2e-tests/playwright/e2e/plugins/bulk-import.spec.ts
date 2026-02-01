@@ -132,7 +132,8 @@ spec:
     await bulkimport.selectRepoInTable(catalogRepoDetails.name);
     await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
       catalogRepoDetails.url,
-      "Ready to import Preview file",
+      "Ready to import",
+      "Preview file",
     ]);
 
     await uiHelper.clickOnLinkInTableByUniqueText(
