@@ -12,9 +12,6 @@ import {
 // Pre-req : plugin-bulk-import & plugin-bulk-import-backend-dynamic
 test.describe.serial("Bulk Import plugin", () => {
   test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
-  // TODO: https://issues.redhat.com/browse/RHDHBUGS-2116
-  test.fixme(() => process.env.JOB_TYPE.includes("presubmit")); // skip on PR checks
-  test.fixme(() => !process.env.JOB_NAME.includes("ocp")); // run only on OCP jobs to avoid GH rate limit
   test.describe.configure({ retries: process.env.CI ? 5 : 0 });
 
   let page: Page;
@@ -80,20 +77,24 @@ spec:
     );
   });
 
-  // TODO: https://issues.redhat.com/browse/RHDHBUGS-2230
-  // Select two repos: one with an existing catalog.yaml file and another without it
-  test.fixme("Add a Repository from the Repository Tab and Confirm its Preview", async () => {
-    await uiHelper.openSidebar("Bulk import");
-    await uiHelper.clickButton("Import");
-    await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
+  test("Add a Repository and Confirm its Preview", async () => {
+    // Wait to ensure that we give time for the Bulk Import plugin to ingest the repo
+    await expect(async () => {
+      await uiHelper.openSidebar("Bulk import");
+      await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
+      await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
+        "Ready to import",
+      ]);
+    }).toPass({
+      intervals: [3_000],
+      timeout: 15_000,
+    });
 
-    await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
-      "Not Generated",
-    ]);
     await bulkimport.selectRepoInTable(catalogRepoDetails.name);
     await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
       catalogRepoDetails.url,
-      "Ready to import Preview file",
+      "Ready to import",
+      "Preview file",
     ]);
 
     await uiHelper.clickOnLinkInTableByUniqueText(
@@ -103,25 +104,6 @@ spec:
     await expect(await uiHelper.clickButton("Save")).not.toBeVisible({
       timeout: 10000,
     });
-  });
-
-  test("Add a Repository from the Organization Tab and Confirm its Preview", async () => {
-    await uiHelper.clickByDataTestId("organization-view");
-    await uiHelper.searchInputPlaceholder(newRepoDetails.owner);
-    await uiHelper.verifyRowInTableByUniqueText(newRepoDetails.owner, [
-      new RegExp(`github.com/${newRepoDetails.owner}`),
-      /1\/(\d+) Edit/,
-      /Ready to import Preview file/,
-    ]);
-    await uiHelper.clickOnLinkInTableByUniqueText(newRepoDetails.owner, "Edit");
-    await bulkimport.searchInOrg(newRepoDetails.repoName);
-    await bulkimport.selectRepoInTable(newRepoDetails.repoName);
-    await uiHelper.clickButton("Select");
-    await uiHelper.verifyRowInTableByUniqueText(newRepoDetails.owner, [
-      new RegExp(`github.com/${newRepoDetails.owner}`),
-      /2\/(\d+) Edit/,
-      /Ready to import Preview files/,
-    ]);
     await expect(await uiHelper.clickButton("Import")).toBeDisabled({
       timeout: 10000,
     });
@@ -285,9 +267,6 @@ spec:
 test.describe
   .serial("Bulk Import - Verify existing repo are displayed in bulk import Added repositories", () => {
   test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
-  // TODO: https://issues.redhat.com/browse/RHDHBUGS-2116
-  test.fixme(() => process.env.JOB_TYPE.includes("presubmit")); // skip on PR checks
-  test.fixme(() => !process.env.JOB_NAME.includes("ocp")); // run only on OCP jobs to avoid GH rate limit
   let page: Page;
   let uiHelper: UIhelper;
   let common: Common;
@@ -348,9 +327,6 @@ test.describe
 test.describe
   .serial("Bulk Import - Ensure users without bulk import permissions cannot access the bulk import plugin", () => {
   test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
-  // TODO: https://issues.redhat.com/browse/RHDHBUGS-2116
-  test.fixme(() => process.env.JOB_TYPE.includes("presubmit")); // skip on PR checks
-  test.fixme(() => !process.env.JOB_NAME.includes("ocp")); // run only on OCP jobs to avoid GH rate limit
   let page: Page;
   let uiHelper: UIhelper;
   let common: Common;
