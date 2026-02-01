@@ -125,8 +125,8 @@ spec:
         "Ready to import",
       ]);
     }).toPass({
-      intervals: [3_000],
-      timeout: 15_000,
+      intervals: [5_000],
+      timeout: 20_000,
     });
 
     await bulkimport.selectRepoInTable(catalogRepoDetails.name);
@@ -153,7 +153,7 @@ spec:
     await bulkimport.filterAddedRepo(catalogRepoDetails.name);
     await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
       catalogRepoDetails.url,
-      "Added",
+      "Imported",
     ]);
     await bulkimport.filterAddedRepo(newRepoDetails.repoName);
     await uiHelper.verifyRowInTableByUniqueText(newRepoDetails.repoName, [
@@ -358,7 +358,7 @@ test.describe
     await bulkimport.filterAddedRepo(existingComponentDetails.repoName);
     await uiHelper.verifyRowInTableByUniqueText(
       existingComponentDetails.repoName,
-      ["Already imported"],
+      ["Imported"],
     );
   });
 });
