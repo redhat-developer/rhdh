@@ -406,7 +406,7 @@ test.describe("Admin > Extensions", () => {
       permissions: ["clipboard-read", "clipboard-write"],
     });
 
-    // Test case is disabled due to bug https://issues.redhat.com/browse/RHDHBUGS-799
+    // TODO: https://issues.redhat.com/browse/RHDHBUGS-799
     test.fixme("Verify plugin configuration can be viewed in the production environment", async ({
       page,
     }) => {
