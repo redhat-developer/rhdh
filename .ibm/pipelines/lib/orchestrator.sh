@@ -468,12 +468,12 @@ orchestrator::enable_plugins_operator() {
 
   # Find and restart the backstage deployment
   local backstage_deployment
-  backstage_deployment=$(oc get deployment -n "$namespace" -o name 2> /dev/null | grep "backstage" | grep -v "psql" | head -1)
+  backstage_deployment=$(oc get deployment -n "$namespace" -o name 2> /dev/null | grep "backstage" | grep -v "psql" | head -1 | sed 's#deployment.apps/##')
 
   if [[ -n "$backstage_deployment" ]]; then
-    log::info "Restarting $backstage_deployment to pick up plugin changes..."
-    oc rollout restart "$backstage_deployment" -n "$namespace"
-    oc rollout status "$backstage_deployment" -n "$namespace" --timeout=300s
+    log::info "Restarting deployment/$backstage_deployment to pick up plugin changes..."
+    oc rollout restart "deployment/$backstage_deployment" -n "$namespace"
+    k8s_wait::deployment "$namespace" "$backstage_deployment" 15
   fi
 
   log::success "Orchestrator plugins enabled successfully"
