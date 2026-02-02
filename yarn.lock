@@ -4844,6 +4844,38 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@backstage/plugin-catalog-graph@patch:@backstage/plugin-catalog-graph@npm%3A0.4.22#./.yarn/patches/@backstage-plugin-catalog-graph-npm-0.4.22-9b7885f2b0.patch::locator=root%40workspace%3A.":
+  version: 0.4.22
+  resolution: "@backstage/plugin-catalog-graph@patch:@backstage/plugin-catalog-graph@npm%3A0.4.22#./.yarn/patches/@backstage-plugin-catalog-graph-npm-0.4.22-9b7885f2b0.patch::version=0.4.22&hash=91c4a2&locator=root%40workspace%3A."
+  dependencies:
+    "@backstage/catalog-client": ^1.11.0
+    "@backstage/catalog-model": ^1.7.5
+    "@backstage/core-compat-api": ^0.5.0
+    "@backstage/core-components": ^0.17.5
+    "@backstage/core-plugin-api": ^1.10.9
+    "@backstage/frontend-plugin-api": ^0.11.0
+    "@backstage/plugin-catalog-react": ^1.20.0
+    "@backstage/types": ^1.2.1
+    "@material-ui/core": ^4.12.2
+    "@material-ui/icons": ^4.9.1
+    "@material-ui/lab": 4.0.0-alpha.61
+    classnames: ^2.3.1
+    lodash: ^4.17.15
+    p-limit: ^3.1.0
+    qs: ^6.9.4
+    react-use: ^17.2.4
+  peerDependencies:
+    "@types/react": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.3.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 483c8000e4cd9aa1e62da9cbf206b59d7ee2ea9b5a14507955cd23ec881eab6fb4479bc6a1ffde9f40d40d5841b45fa40cc44edfdb851321c7e27f42446cf3b2
+  languageName: node
+  linkType: hard
+
 "@backstage/plugin-catalog-import@npm:0.13.4":
   version: 0.13.4
   resolution: "@backstage/plugin-catalog-import@npm:0.13.4"
@@ -5761,6 +5793,36 @@ __metadata:
     "@types/react":
       optional: true
   checksum: 0e94de61db6383afcc070cc6643f186b73e7c19026fc962deb127f48e0f62b4d6f70858440f7baf5555d2109ac238522a6dfb2d9138ef478a77ce891ca055e43
+  languageName: node
+  linkType: hard
+
+"@backstage/plugin-search@patch:@backstage/plugin-search@npm%3A1.4.29#./.yarn/patches/@backstage-plugin-search-npm-1.4.29-73fcb2942c.patch::locator=root%40workspace%3A.":
+  version: 1.4.29
+  resolution: "@backstage/plugin-search@patch:@backstage/plugin-search@npm%3A1.4.29#./.yarn/patches/@backstage-plugin-search-npm-1.4.29-73fcb2942c.patch::version=1.4.29&hash=fba996&locator=root%40workspace%3A."
+  dependencies:
+    "@backstage/core-compat-api": ^0.5.0
+    "@backstage/core-components": ^0.17.5
+    "@backstage/core-plugin-api": ^1.10.9
+    "@backstage/errors": ^1.2.7
+    "@backstage/frontend-plugin-api": ^0.11.0
+    "@backstage/plugin-catalog-react": ^1.20.0
+    "@backstage/plugin-search-common": ^1.2.19
+    "@backstage/plugin-search-react": ^1.9.3
+    "@backstage/types": ^1.2.1
+    "@backstage/version-bridge": ^1.0.11
+    "@material-ui/core": ^4.12.2
+    "@material-ui/icons": ^4.9.1
+    qs: ^6.9.4
+    react-use: ^17.2.4
+  peerDependencies:
+    "@types/react": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.3.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 2044facafeb7ddf4ef0eb60c745b5becf6cdd38103a48ea64a8a7b1231ca4da570c83c543955311a42cb8f05ff2e322b79a6e657979d8e66db955f89037df9d2
   languageName: node
   linkType: hard
 

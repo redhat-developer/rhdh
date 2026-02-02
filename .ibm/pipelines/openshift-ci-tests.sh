@@ -97,13 +97,6 @@ main() {
       echo "Calling handle_auth_providers"
       handle_auth_providers
       ;;
-    *ocp*helm*sealights*nightly*)
-      echo "Sourcing ocp-nightly.sh"
-      # shellcheck source=.ibm/pipelines/jobs/ocp-nightly.sh
-      source "${DIR}/jobs/ocp-nightly.sh"
-      echo "Calling handle_ocp_nightly"
-      handle_ocp_nightly
-      ;;
     *ocp*helm*upgrade*nightly*)
       echo "Sourcing upgrade.sh"
       # shellcheck source=.ibm/pipelines/jobs/upgrade.sh
