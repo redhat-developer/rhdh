@@ -235,8 +235,9 @@ apply_yaml_files() {
       "rbac-policy.csv=$dir/resources/config_map/rbac-policy.csv" \
       "conditional-policies.yaml=/tmp/conditional-policies.yaml"
   else
-    common::create_configmap_from_file "rbac-policy" "$project" \
-      "rbac-policy.csv" "$dir/resources/config_map/rbac-policy.csv"
+    common::create_configmap_from_files "rbac-policy" "$project" \
+      "rbac-policy.csv=$dir/resources/config_map/rbac-policy.csv" \
+      "conditional-policies.yaml=$dir/resources/config_map/conditional-policies.yaml"
   fi
 
   # configuration for testing global floating action button.
