@@ -235,15 +235,19 @@ spec:
       ),
     ).toHaveLength(0);
 
-    await bulkimport.filterAddedRepo(newRepoDetails.repoName);
-    // verify that the status has changed to "Already imported."
-    await uiHelper.clickOnButtonInTableByUniqueText(
-      newRepoDetails.repoName,
-      "Refresh",
-    );
-    await uiHelper.verifyRowInTableByUniqueText(newRepoDetails.repoName, [
-      "Already imported",
-    ]);
+    // Wait to ensure the repo will appear in the Bulk Import UI
+    await expect(async () => {
+      await page.reload();
+      await common.waitForLoad();
+      await bulkimport.filterAddedRepo(newRepoDetails.repoName);
+      // verify that the status has changed to "Already imported."
+      await uiHelper.verifyRowInTableByUniqueText(newRepoDetails.repoName, [
+        "Imported",
+      ]);
+    }).toPass({
+      intervals: [5_000],
+      timeout: 40_000,
+    });
   });
 
   test("Verify Added Repositories Appear in the Catalog as Expected", async () => {
