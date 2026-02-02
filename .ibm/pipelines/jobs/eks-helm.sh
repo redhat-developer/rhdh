@@ -10,6 +10,8 @@ source "$DIR"/cluster/eks/eks-helm-deployment.sh
 source "$DIR"/cluster/eks/aws.sh
 # shellcheck source=.ibm/pipelines/cluster/k8s/k8s-utils.sh
 source "$DIR"/cluster/k8s/k8s-utils.sh
+# shellcheck source=.ibm/pipelines/lib/testing.sh
+source "$DIR"/lib/testing.sh
 # shellcheck source=.ibm/pipelines/playwright-projects.sh
 source "$DIR"/playwright-projects.sh
 
@@ -32,7 +34,7 @@ handle_eks_helm() {
 
   initiate_eks_helm_deployment
   configure_eks_ingress_and_dns "${NAME_SPACE}" "${RELEASE_NAME}-developer-hub"
-  check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${PW_PROJECT_SHOWCASE_K8S}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
+  testing::check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${PW_PROJECT_SHOWCASE_K8S}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
   cleanup_eks_dns_record "${EKS_INSTANCE_DOMAIN_NAME}"
   namespace::delete "${NAME_SPACE}"
 
@@ -43,7 +45,7 @@ handle_eks_helm() {
 
   initiate_rbac_eks_helm_deployment
   configure_eks_ingress_and_dns "${NAME_SPACE_RBAC}" "${RELEASE_NAME_RBAC}-developer-hub"
-  check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${PW_PROJECT_SHOWCASE_RBAC_K8S}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
+  testing::check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${PW_PROJECT_SHOWCASE_RBAC_K8S}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
   cleanup_eks_dns_record "${EKS_INSTANCE_DOMAIN_NAME}"
   namespace::delete "${NAME_SPACE_RBAC}"
 }
