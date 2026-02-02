@@ -2,18 +2,21 @@
 targets:
   - '*'
 root: false
-description: Security best practices for GitHub Actions workflows based on GitHub Security Lab guidelines
+description: >-
+  Security best practices for GitHub Actions workflows based on GitHub Security
+  Lab guidelines
 globs:
   - .github/workflows/**
   - .github/actions/**
 cursor:
   alwaysApply: false
-  description: Security best practices for GitHub Actions workflows based on GitHub Security Lab guidelines
+  description: >-
+    Security best practices for GitHub Actions workflows based on GitHub
+    Security Lab guidelines
   globs:
     - .github/workflows/**
     - .github/actions/**
 ---
-
 # GitHub Workflows Security Best Practices
 
 This rule provides comprehensive guidance for creating secure GitHub Actions workflows, based on the [GitHub Security Lab](https://securitylab.github.com/) blog series on GitHub Actions security.
@@ -621,4 +624,3 @@ When creating or reviewing a workflow, verify:
 - [Part 2: Untrusted Input](https://securitylab.github.com/resources/github-actions-untrusted-input/)
 - [Part 3: Building Blocks](https://securitylab.github.com/resources/github-actions-building-blocks/)
 - [Part 4: New Patterns and Mitigations](https://securitylab.github.com/resources/github-actions-new-patterns-and-mitigations/)
-
