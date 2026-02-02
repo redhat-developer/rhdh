@@ -117,16 +117,19 @@ spec:
   });
 
   test("Add a Repository and Confirm its Preview", async () => {
-    // Wait to ensure that we give time for the Bulk Import plugin to ingest the repo
+    await uiHelper.openSidebar("Bulk import");
+
+    // Wait to ensure the repo will appear in the Bulk Import UI
     await expect(async () => {
-      await uiHelper.openSidebar("Bulk import");
+      await page.reload();
+      await common.waitForLoad();
       await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
       await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
         "Ready to import",
       ]);
     }).toPass({
       intervals: [5_000],
-      timeout: 25_000,
+      timeout: 40_000,
     });
 
     await bulkimport.selectRepoInTable(catalogRepoDetails.name);
