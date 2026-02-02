@@ -36,6 +36,7 @@ test.describe("Test Topology Plugin with RBAC", () => {
 
     // User is able to read from the catalog
     // User is missing 'kubernetes.clusters.read', 'kubernetes.resources.read', 'kubernetes.proxy' permissions
+
     test("Verify pods are not visible in the Topology tab", async () => {
       await common.loginAsKeycloakUser(
         process.env.QE_USER6_ID,
@@ -66,7 +67,6 @@ test.describe("Test Topology Plugin with RBAC", () => {
   // User is able to read from the catalog
   // User has 'kubernetes.clusters.read', 'kubernetes.resources.read', 'kubernetes.proxy' permissions
   test.describe("Verify a user with permissions is able to access the Topology plugin", () => {
-    //Skipping for now as it is failing RHIDP-7164
     test.beforeEach(async () => {
       await common.loginAsKeycloakUser();
 
