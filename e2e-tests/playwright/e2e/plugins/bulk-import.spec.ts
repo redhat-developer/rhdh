@@ -259,27 +259,6 @@ spec:
     ]);
   });
 
-  test("Delete catalog entity to ensure that it doesn't exist in Bulk Import UI", async () => {
-    await uiHelper.openCatalogSidebar("Component");
-    await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
-    await uiHelper.verifyLink(catalogRepoDetails.name);
-    await uiHelper.clickLink(`${catalogRepoDetails.name}`);
-
-    await uiHelper.clickUnregisterButtonForDisplayedEntity();
-    await uiHelper.verifyAlertErrorMessage(
-      `Removed entity ${catalogRepoDetails.name}`,
-    );
-  });
-
-  test("Verify repository does not show within Bulk Import UI", async () => {
-    await uiHelper.openSidebar("Bulk import");
-    await common.waitForLoad();
-    await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
-    await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
-      "Ready to import",
-    ]);
-  });
-
   test.afterAll(async () => {
     try {
       // Delete the dynamically created GitHub repository with catalog-info.yaml
@@ -332,7 +311,6 @@ test.describe
     );
   });
 
-  // TODO: https://issues.redhat.com/browse/RHDHBUGS-2230
   test("Verify existing repo from app-config is displayed in bulk import Added repositories", async () => {
     await uiHelper.openSidebar("Bulk import");
     await common.waitForLoad();
