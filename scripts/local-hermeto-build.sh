@@ -9,7 +9,7 @@
 #
 # This script simulates the Konflux build process locally using Hermeto.
 # It can either build the dependency cache or build a container image.
-set -ex
+set -e
 set -uo pipefail
 
 #######################################
@@ -72,32 +72,35 @@ TARGET_ARCH="$(get_target_arch)"
 #######################################
 usage() {
   cat << EOF
-This script tries to somewhat simulate the Konflux build process.
 
-Usage: $0 <type> <directory> [image]
+Usage: Tries to somewhat simulate the Konflux build process by building a hermeto cache using dependencies found in the given
+  component directory. Then builds a container image using the hermeto cache.
 
-The examples below assume you are in the root of the repository.
-Examples:
-  $0 cache .
-  $0 image . quay.io/example/image:tag
-
-Cross-platform build example (ARM on x86), this requires `qemu-user-static` to be installed:
-  TARGET_PLATFORM=linux/arm64 $0 cache .
-  TARGET_PLATFORM=linux/arm64 $0 image . quay.io/example/image:tag
+Required:
+  -d, --directory <path>   The directory of the component to build
 
 Options:
-  <type>      The type of build. Options are:
-                  - cache: Build the cache using Hermeto
-                  - image: Build the image
-  <directory> The directory of the component to build.
-  [image]     The name of the container image to build. Required for 'image' type.
+  -i, --image <name>      Container image name (e.g., quay.io/example/image:tag)
+                          Required unless --no-image is specified
+  --no-cache              Skip cache build (use existing cache)
+  --no-image              Skip image build (only build cache)
+  -h, --help              Show this help message
 
 Environment variables:
-  TARGET_PLATFORM  Target platform for podman (e.g., linux/arm64, linux/amd64).
-                   If not set, builds for the native platform.
-                   The architecture (aarch64, x86_64) is automatically derived.
+  TARGET_PLATFORM         Target platform for podman (e.g., linux/arm64, linux/amd64).
+                          If not set, builds for the native platform.
+                          The architecture (aarch64, x86_64) is automatically derived.
 
-Note: after using 'cache', you may want to revert any changes done to the 'python/requirements*.txt' files before running 'cache' again.
+Examples (assume you are in the root of the rhdh repository):
+  $0 -d .                                           # Build cache only (no image builds by default)
+  $0 -d . -i quay.io/example/image:tag              # Build cache and image
+  $0 -d . -i quay.io/example/image:tag --no-cache   # Build image only (hermeto cache must exist)
+  $0 -d . --no-image                                # Build cache only (explicit)
+
+Cross-platform build (ARM on x86), requires \`qemu-user-static\` to be installed:
+  TARGET_PLATFORM=linux/arm64 $0 -d . -i quay.io/example/image:tag
+
+Note: after building cache, you may want to revert any changes done to the 'python/requirements*.txt' files before running cache again.
 EOF
   exit 1
 }
@@ -221,8 +224,8 @@ build_image() {
 
   # Ensure the local cache dir exists
   if [[ ! -d "${local_cache_dir}" ]]; then
-    echo "Local cache dir does not exist. Please run the script with 'cache' first."
-    echo "example: $0 cache ${component_dir}"
+    echo "Local cache dir does not exist. Please run the script without --no-cache first."
+    echo "example: $0 -d ${component_dir} -i <image>"
     exit 1
   fi
 
@@ -261,44 +264,89 @@ build_image() {
 #######################################
 main() {
   check_gnu_sed
-  
-  if [[ $# -lt 2 ]]; then
+
+  local component_dir=""
+  local image=""
+  local no_cache=false
+  local no_image=false
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      -d|--directory)
+        if [[ -z "${2:-}" ]]; then
+          echo "Error: -d/--directory requires a path argument" >&2
+          usage
+        fi
+        component_dir="$2"
+        shift 2
+        ;;
+      -i|--image)
+        if [[ -z "${2:-}" ]]; then
+          echo "Error: -i/--image requires an image name argument" >&2
+          usage
+        fi
+        image="$2"
+        shift 2
+        ;;
+      --no-cache)
+        no_cache=true
+        shift
+        ;;
+      --no-image)
+        no_image=true
+        shift
+        ;;
+      -h|--help)
+        usage
+        ;;
+      *)
+        echo "Error: Unknown option: $1" >&2
+        usage
+        ;;
+    esac
+  done
+
+  if [[ -z "${component_dir}" ]]; then
+    echo "Error: Directory is required. Use -d or --directory to specify." >&2
     usage
   fi
 
-  local type="$1"
-  local component_dir="$2"
-  local image="${3:-}"
-
-  # Check if the type is valid
-  if [[ "${type}" != "cache" && "${type}" != "image" ]]; then
-    echo "Invalid type: ${type}"
+  if [[ "${no_cache}" == true && "${no_image}" == true ]]; then
+    echo "Error: Nothing to do - both cache and image builds are disabled" >&2
     usage
   fi
 
-  # Check if image is provided for the 'image' type
-  if [[ "${type}" == "image" && -z "${image}" ]]; then
-    echo "Image name is required for the 'image' type."
-    usage
+  # If image is not provided, implicitly skip image build
+  if [[ -z "${image}" ]]; then
+    no_image=true
   fi
 
   mkdir -p "${LOCAL_CACHE_BASEDIR}"
   # Resolve paths
-  local resolved_component_dir="$(realpath "${component_dir}")"
-  local local_cache_dir="$(realpath "${LOCAL_CACHE_BASEDIR}")/$(basename "${resolved_component_dir}")"
-  local local_cache_output_dir="${local_cache_dir}/output"
+  local resolved_component_dir
+  local local_cache_dir
+  local local_cache_output_dir
+
+  resolved_component_dir="$(realpath "${component_dir}")"
+  local_cache_dir="$(realpath "${LOCAL_CACHE_BASEDIR}")/$(basename "${resolved_component_dir}")"
+  local_cache_output_dir="${local_cache_dir}/output"
 
   echo "Component dir: ${resolved_component_dir}"
   echo "Local cache dir: ${local_cache_dir}"
 
-  case "${type}" in
-    cache)
-      build_cache "${local_cache_dir}" "${local_cache_output_dir}"
-      ;;
-    image)
-      build_image "${resolved_component_dir}" "${local_cache_dir}" "${image}"
-      ;;
-  esac
+  if [[ "${no_cache}" == false ]]; then
+    echo "Building cache..."
+    build_cache "${local_cache_dir}" "${local_cache_output_dir}"
+  else
+    echo "Skipping cache build (--no-cache specified)"
+  fi
+
+  if [[ "${no_image}" == false ]]; then
+    echo "Building image..."
+    build_image "${resolved_component_dir}" "${local_cache_dir}" "${image}"
+  else
+    echo "Skipping image build (--no-image specified or -i/--image not provided)"
+  fi
 }
 
 main "$@"
