@@ -33,7 +33,7 @@ test.describe("Test Topology Plugin", () => {
   }
 
   // TODO: https://issues.redhat.com/browse/RHDHBUGS-2101
-  test.fixme("Verify pods visibility in the Topology tab", async ({
+  test("Verify pods visibility in the Topology tab", async ({
     page,
   }, testInfo) => {
     // progressively increase test timeout for retries
