@@ -38,6 +38,10 @@ spec:
           value: "0"
         - name: NODE_ENV
           value: "production"
+        - name: CATALOG_INDEX_IMAGE
+          value: "quay.io/rhdh/plugin-catalog-index:1.10"
+          containers:
+            - install-dynamic-plugins
       secrets:
         - name: rhdh-secrets
     extraFiles:

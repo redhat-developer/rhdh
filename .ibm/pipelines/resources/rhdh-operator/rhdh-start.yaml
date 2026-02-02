@@ -41,6 +41,10 @@ spec:
           value: "production"
         - name: NODE_TLS_REJECT_UNAUTHORIZED
           value: "0"
+        - name: CATALOG_INDEX_IMAGE
+          value: "quay.io/rhdh/plugin-catalog-index:1.10"
+          containers:
+            - install-dynamic-plugins
       secrets:
         - name: rhdh-secrets
         - name: redis-secret
