@@ -42,6 +42,16 @@ test.describe("Test Topology Plugin", () => {
     await uiHelper.clickTab("Topology");
     await uiHelper.verifyText("backstage-janus");
     await page.getByRole("button", { name: "Fit to Screen" }).click();
+
+    // Wait for topology to fully render and status indicators to appear
+    await expect(
+      page
+        .getByTestId("topology-test")
+        .getByTestId(/(status-error|status-ok)/)
+        .first(),
+    ).toBeVisible({ timeout: 15000 });
+
+    // Click the status indicator
     await page
       .getByTestId("topology-test")
       .getByTestId(/(status-error|status-ok)/)
