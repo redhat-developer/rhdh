@@ -207,10 +207,9 @@ spec:
 
   test("Verify Selected repositories shows catalog-info.yaml status as 'Already imported' and 'WAIT_PR_APPROVAL'", async () => {
     await uiHelper.openSidebar("Bulk import");
-    await uiHelper.clickButton("Import");
     await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
     await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
-      "Already imported",
+      "Imported",
     ]);
     await uiHelper.searchInputPlaceholder(newRepoDetails.repoName);
     await uiHelper.verifyRowInTableByUniqueText(newRepoDetails.repoName, [
@@ -267,6 +266,9 @@ spec:
     await uiHelper.clickLink(`${catalogRepoDetails.name}`);
 
     await uiHelper.clickUnregisterButtonForDisplayedEntity();
+    await uiHelper.verifyAlertErrorMessage(
+      `Removed entity ${catalogRepoDetails.name}`,
+    );
   });
 
   test("Verify repository does not show within Bulk Import UI", async () => {

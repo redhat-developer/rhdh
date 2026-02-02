@@ -785,7 +785,9 @@ export class UIhelper {
     await expect(unregisterItem).toBeEnabled();
   }
 
-  async clickUnregisterButtonForDisplayedEntity() {
+  async clickUnregisterButtonForDisplayedEntity(
+    buttonName: "Delete Entity" | "Unregister Location" = "Delete Entity",
+  ) {
     const moreButton = this.page.locator("button[aria-label='more']").first();
     await moreButton.waitFor({ state: "visible" });
     await moreButton.waitFor({ state: "attached" });
@@ -799,7 +801,7 @@ export class UIhelper {
     await unregisterItem.click();
 
     const deleteButton = this.page.getByRole("button", {
-      name: "Delete Entity",
+      name: buttonName,
     });
     await deleteButton.waitFor({ state: "visible" });
     await deleteButton.waitFor({ state: "attached" });
