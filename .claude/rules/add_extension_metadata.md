@@ -95,14 +95,14 @@ Create `catalog-entities/extensions/plugins/{plugin-name}.yaml`:
 ### Step 4: Validate Files
 
 ```bash
-# Navigate to marketplace directory
+# Navigate to extensions directory
 cd catalog-entities/extensions
 
 # Download schemas to temp directory (ajv doesn't support remote schemas well)
 mkdir -p /tmp/rhdh-schemas
-curl -s "https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/main/workspaces/marketplace/json-schema/packages.json" \
+curl -s "https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/main/workspaces/extensions/json-schema/packages.json" \
   -o /tmp/rhdh-schemas/packages.json
-curl -s "https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/main/workspaces/marketplace/json-schema/plugins.json" \
+curl -s "https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/main/workspaces/extensions/json-schema/plugins.json" \
   -o /tmp/rhdh-schemas/plugins.json
 
 # Convert YAML to JSON and validate Package against local schema
@@ -134,17 +134,17 @@ Follow the RHDH-local testing instructions in the README:
 
 ```bash
 # Stage changes
-git add catalog-entities/marketplace/packages/{plugin-name}.yaml
-git add catalog-entities/marketplace/plugins/{plugin-name}.yaml
+git add catalog-entities/extensions/packages/{plugin-name}.yaml
+git add catalog-entities/extensions/plugins/{plugin-name}.yaml
 
 # Commit with descriptive message
-git commit -m "feat: add {plugin-name} plugin to RHDH marketplace
+git commit -m "feat: add {plugin-name} plugin to RHDH Extensions Catalog
 
 - Added Package entity with OCI URL and version
 - Added Plugin entity with description and metadata
 
 # Create PR
-gh pr create --title "feat: add {plugin-name} plugin to marketplace" \
+gh pr create --title "feat: add {plugin-name} plugin to Extensions Catalog" \
   --body "## Summary
 - Added {plugin-name} plugin metadata to Extensions Catalog
 - Package: \`{npm-package-name}\` version {version}
