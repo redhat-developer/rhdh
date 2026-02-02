@@ -287,6 +287,8 @@ global:
             token: ${JIRA_TOKEN}
             product: cloud
         disabled: false
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard-backend-module-openssf:bs_1.45.3__0.1.1!red-hat-developer-hub-backstage-plugin-scorecard-backend-module-openssf
+        disabled: false
 
       # Enable orchestrator plugins - Official release (Backstage 1.45.3)
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator:bs_1.45.3__5.1.0!red-hat-developer-hub-backstage-plugin-orchestrator"
