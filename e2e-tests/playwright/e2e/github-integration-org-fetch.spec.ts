@@ -12,7 +12,10 @@ test.describe.fixme("GitHub integration with Org data fetching", () => {
     });
   });
 
-  test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
+  test.skip(
+    () => process.env.JOB_NAME.includes("osd-gcp"),
+    "skipping due to RHDHBUGS-555 on OSD Env",
+  );
   let common: Common;
   let uiHelper: UIhelper;
 
