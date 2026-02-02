@@ -27,59 +27,9 @@ env:
   REGISTRY: quay.io
 
 jobs:
-  check-commit-author:
-    # This job is used to check if the commit author is an active member of the rhdh team.
-    # It is used to determine if the PR should be run with the internal or external environment.
-    # The job is run on the main branch to ensure that the action is not tampered with.
-    runs-on: ubuntu-latest
-    outputs:
-      is_active_team_member: ${{ steps.team-check.outputs.is_active_member }}
-    steps:   
-      - name: Generate GitHub App Token
-        id: app-token
-        uses: actions/create-github-app-token@a8d616148505b5069dccd32f177bb87d7f39123b # v2.1.1
-        with:
-          app-id: ${{ secrets.RHDH_GITHUB_APP_ID }}
-          private-key: ${{ secrets.RHDH_GITHUB_APP_PRIVATE_KEY }}
-      - name: Checkout main branch for secure version of check-author action
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-        with:
-          fetch-depth: 1
-          ref: main  # Always use main branch for security-critical action
-          persist-credentials: false
-      - name: Check if commit author is an active member of the team
-        id: team-check
-        uses: ./.github/actions/check-author
-        with:
-          author: ${{ github.actor }}
-          organization: redhat-developer
-          team: rhdh
-          gh_token: ${{ steps.app-token.outputs.token }}
-  
-  authorize:
-    # The 'external' environment is configured with the maintainers team as required reviewers.
-    # All the subsequent jobs in this workflow 'need' this job, which will require manual approval for PRs coming from external forks.
-    # Use 'internal' environment if the author is in the team OR if it's an internal PR (not from a fork)
-    # see list of approvers in OWNERS file
-    environment:
-      ${{ (needs.check-commit-author.outputs.is_active_team_member == 'true' || github.event.pull_request.head.repo.full_name == github.repository) && 'internal' || 'external' }}
-    runs-on: ubuntu-latest
-    needs: check-commit-author
-    steps:
-      - name: Check if internal PR
-        id: check
-        run: |
-          if [[ "${{ needs.check-commit-author.outputs.is_active_team_member }}" == "true" ]]; then
-            echo "✓ Commit author is in rhdh team - using internal environment"
-          elif [[ "${{ github.event.pull_request.head.repo.full_name }}" == "${{ github.repository }}" ]]; then
-            echo "✓ Internal PR (not from fork) - using internal environment"
-          else
-            echo "✓ External PR from fork from non-rhdh team member - using external environment for security"
-          fi
   build-image:
     name: Build Image
     runs-on: ubuntu-latest
-    needs: authorize
     permissions:
       contents: read
       packages: write
