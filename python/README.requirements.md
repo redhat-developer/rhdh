@@ -1,31 +1,29 @@
 # To iteratively add/fix requirements:
 
-
 ## Testing locally using github sources
 
-Add more to, or update existing dependencies in, the `requirements.in`.
+This project uses uv to manage deps. See https://github.com/astral-sh/uv for syntax details.
 
-You can also remove all the pinned versions, then:
-
-```
-pip-compile --allow-unsafe --strip-extras requirements.in -o requirements.txt
-```
-
-Or attempt to update a single package with:
+You can update requirements with -U
 
 ```
---upgrade-package urllib3
+uv sync
+uv pip compile --group runtime --universal --output-file requirements.txt -U
 ```
 
-Try to install everything in `requirements.txt`:
+
+Try to install everything in the various `requirements*.txt` files:
 
 ```
 rm -rf pyvenv.cfg lib* bin/*
 virtualenv .; . bin/activate
-pip install --upgrade pip; pip install -r requirements.txt
+pip install --upgrade pip uv;
+pip install -r requirements-dev.txt -r requirements-build.txt -r requirements.txt
 ```
 
-If it fails, repeat previous step to add more dependencies `requirements.in` and repeat.
+If it fails, repeat previous step to add more dependencies to `pyproject.toml` and repeat.
+
+## OLD INSTRUCTIONS
 
 Now, set up BUILD requirements, see https://github.com/containerbuildsystem/cachito/blob/master/docs/pip.md#build-dependencies to get `pip_find_builddeps.py`, then run:
 
@@ -77,14 +75,10 @@ path_to_python=distgit/containers/rhdh-hub/python
 cd "$path_to_python"
 
 rm -fr "./requirements"*.txt && \
-pip-compile --allow-unsafe --output-file=requirements.txt --strip-extras requirements.in && \
-pip-compile --allow-unsafe --output-file=requirements-build.txt --strip-extras requirements-build.in && \
-pip-compile --allow-unsafe --output-file=requirements-dev.txt --strip-extras requirements-dev.in
-
-# add the plantuml-markdown hash back in
-hash=$(grep "plantuml-markdown @"  requirements.in) && \
-sed -i requirements.txt -r -e "s|plantuml-markdown @.+|${hash}|" && \
-sed -i requirements-build.txt -r -e "s|plantuml-markdown @.+|${hash}|"
+uv sync
+uv pip compile --group dev     --universal --output-file requirements-dev.txt -U
+uv pip compile --group build   --universal --output-file requirements-build.txt -U
+uv pip compile --group runtime --universal --output-file requirements.txt -U
 
 cd -
 ```
