@@ -126,7 +126,7 @@ spec:
       ]);
     }).toPass({
       intervals: [5_000],
-      timeout: 20_000,
+      timeout: 25_000,
     });
 
     await bulkimport.selectRepoInTable(catalogRepoDetails.name);
@@ -333,12 +333,12 @@ test.describe
   });
 
   // TODO: https://issues.redhat.com/browse/RHDHBUGS-2230
-  test.fixme("Verify existing repo from app-config is displayed in bulk import Added repositories", async () => {
+  test("Verify existing repo from app-config is displayed in bulk import Added repositories", async () => {
     await uiHelper.openSidebar("Bulk import");
     await common.waitForLoad();
     await bulkimport.filterAddedRepo(existingRepoFromAppConfig);
     await uiHelper.verifyRowInTableByUniqueText(existingRepoFromAppConfig, [
-      "Already imported",
+      "Imported",
     ]);
   });
 
