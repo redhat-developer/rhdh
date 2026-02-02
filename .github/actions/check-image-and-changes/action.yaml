@@ -40,8 +40,7 @@ runs:
 
         # Check for [skip-build] tag in commit messages
         SKIP_BUILD_TAG=false
-        COMMIT_MESSAGES=$(git log --format=%B "$BASE_COMMIT"..HEAD)
-        if echo "$COMMIT_MESSAGES" | grep -q "\[skip-build\]"; then
+        if git log --format=%B "$BASE_COMMIT"..HEAD | grep -qF "[skip-build]"; then
           echo "Found [skip-build] tag in commit messages."
           SKIP_BUILD_TAG=true
         fi
