@@ -260,28 +260,22 @@ spec:
     ]);
   });
 
-  test("Delete a Bulk Import Repository and Verify It's No Longer Visible in the UI", async () => {
-    await uiHelper.openSidebar("Bulk import");
-    await common.waitForLoad();
-    await bulkimport.filterAddedRepo(catalogRepoDetails.name);
-    await uiHelper.clickOnButtonInTableByUniqueText(
-      catalogRepoDetails.name,
-      "Delete",
-    );
-    await page.getByRole("button", { name: "Remove" }).click();
-    await uiHelper.verifyLink(catalogRepoDetails.url, {
-      exact: false,
-      notVisible: true,
-    });
+  test("Delete catalog entity to ensure that it doesn't exist in Bulk Import UI", async () => {
+    await uiHelper.openCatalogSidebar("Component");
+    await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
+    await uiHelper.verifyLink(catalogRepoDetails.name);
+    await uiHelper.clickLink(`${catalogRepoDetails.name}`);
+
+    await uiHelper.clickUnregisterButtonForDisplayedEntity();
   });
 
-  test("Verify Deleted Bulk Import Repositories Does not Appear in the Catalog", async () => {
-    await uiHelper.openSidebar("Catalog");
-    await uiHelper.selectMuiBox("Kind", "Component");
+  test("Verify repository does not show within Bulk Import UI", async () => {
+    await uiHelper.openSidebar("Bulk import");
+    await common.waitForLoad();
     await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
-    await uiHelper.verifyLink(catalogRepoDetails.name, {
-      notVisible: true,
-    });
+    await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
+      "Ready to import",
+    ]);
   });
 
   test.afterAll(async () => {
