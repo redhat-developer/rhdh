@@ -27,8 +27,6 @@ test.describe("Admin > Extensions", () => {
   const supportTypeOptions = [
     t["plugin.extensions"][lang]["badges.generallyAvailable"],
     t["plugin.extensions"][lang]["badges.certified"],
-    // TODO: Custom plugin is not on the list: https://issues.redhat.com/browse/RHDHBUGS-2153
-    // t["plugin.extensions"][lang]["badges.customPlugin"],
     t["plugin.extensions"][lang]["badges.techPreview"],
     t["plugin.extensions"][lang]["badges.devPreview"],
     t["plugin.extensions"][lang]["badges.communityPlugin"],
@@ -274,54 +272,6 @@ test.describe("Admin > Extensions", () => {
       await extensions.resetSupportTypeFilter(
         t["plugin.extensions"][lang]["badges.generallyAvailable"],
       );
-    });
-
-    test("Verify custom plugin badge in extensions", async ({ page }) => {
-      // TODO: https://issues.redhat.com/browse/RHDHBUGS-2104
-      test.fixme();
-      await extensions.selectDropdown(
-        t["plugin.extensions"][lang]["search.supportType"],
-      );
-      await extensions.toggleOption(
-        t["plugin.extensions"][lang]["badges.customPlugin"],
-      );
-      await page.keyboard.press(`Escape`);
-      await expect(
-        page
-          .getByLabel(
-            t["plugin.extensions"][lang]["supportTypes.customPlugins"].replace(
-              " ({{count}})",
-              "",
-            ),
-          )
-          .first(),
-      ).toBeVisible();
-      await expect(extensions.badge.first()).toBeVisible();
-      await extensions.badge.first().hover();
-      await uiHelper.verifyTextInTooltip(
-        t["plugin.extensions"][lang]["supportTypes.customPlugins"].replace(
-          " ({{count}})",
-          "",
-        ),
-      );
-      await uiHelper.clickLink(t["plugin.extensions"][lang]["common.readMore"]);
-      await expect(
-        page
-          .getByLabel(t["plugin.extensions"][lang]["badges.addedByAdmin"])
-          .getByText("Custom"),
-      ).toBeVisible();
-      await page
-        .getByRole("button", {
-          name: "close",
-        })
-        .click();
-      await extensions.selectDropdown(
-        t["plugin.extensions"][lang]["search.supportType"],
-      );
-      await extensions.toggleOption(
-        t["plugin.extensions"][lang]["badges.customPlugin"],
-      );
-      await page.keyboard.press(`Escape`);
     });
 
     test("Verify tech preview badge in extensions", async () => {
