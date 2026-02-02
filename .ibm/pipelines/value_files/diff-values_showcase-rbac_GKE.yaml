@@ -57,7 +57,6 @@ upstream:
         mountPath: /extensions
       - name: temp
         mountPath: /tmp
-
       - name: rbac-policy
         mountPath: /opt/app-root/src/rbac
     extraVolumes:
@@ -93,7 +92,6 @@ upstream:
         emptyDir: {}
       - name: temp
         emptyDir: {}
-
       - name: rbac-policy
         configMap:
           defaultMode: 420
