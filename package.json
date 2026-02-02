@@ -62,7 +62,8 @@
     "@backstage/plugin-catalog-react": "1.21.3",
     "refractor@npm:3.6.0/prismjs": "^1.30.0",
     "@backstage/plugin-auth-node": "0.6.10",
-    "@backstage/backend-plugin-api": "1.5.0"
+    "@backstage/backend-plugin-api": "1.5.0",
+    "@backstage/plugin-scaffolder-node@^0.12.1": "0.12.3"
   },
   "jest": {
     "testTimeout": 20000
