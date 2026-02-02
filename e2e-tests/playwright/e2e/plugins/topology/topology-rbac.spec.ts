@@ -29,10 +29,8 @@ test.describe("Test Topology Plugin with RBAC", () => {
   });
 
   test.describe("Verify a user without permissions is not able to access parts of the Topology plugin", () => {
-    test.fixme(
-      process.env.JOB_NAME.includes("operator"),
-      "Failing on Operator, fix https://issues.redhat.com/browse/RHIDP-6492",
-    );
+    // TODO: https://issues.redhat.com/browse/RHDHBUGS-2573
+    test.fixme(process.env.JOB_NAME.includes("operator"));
 
     // User is able to read from the catalog
     // User is missing 'kubernetes.clusters.read', 'kubernetes.resources.read', 'kubernetes.proxy' permissions
