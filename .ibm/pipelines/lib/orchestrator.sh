@@ -387,39 +387,82 @@ orchestrator::enable_plugins_operator() {
 
   log::info "Enabling orchestrator plugins in namespace: $namespace"
 
-  # Find the dynamic plugins configmap created by the operator
-  local operator_cm
-  operator_cm=$(oc get cm -n "$namespace" -o name 2> /dev/null | grep "backstage-dynamic-plugins-" | head -1 | sed 's/configmap\///')
+  # Wait for the operator to create the dynamic plugins configmap
+  # The operator needs time after the Backstage CR is created to reconcile and create resources
+  local operator_cm=""
+  local max_attempts=30
+  local wait_seconds=5
+  local attempt=1
 
-  if [[ -z "$operator_cm" ]]; then
-    log::error "No operator dynamic plugins configmap found (backstage-dynamic-plugins-*) in namespace: $namespace"
+  log::info "Waiting for operator to create dynamic plugins configmap (max ${max_attempts} attempts, ${wait_seconds}s interval)..."
+
+  while [[ $attempt -le $max_attempts ]]; do
+    operator_cm=$(oc get cm -n "$namespace" -o name 2> /dev/null | grep "backstage-dynamic-plugins-" | head -1 | sed 's/configmap\///')
+
+    if [[ -n "$operator_cm" ]]; then
+      log::info "Found operator configmap: $operator_cm (attempt $attempt/$max_attempts)"
+      break
+    fi
+
+    if [[ $attempt -eq $max_attempts ]]; then
+      log::error "Timed out waiting for operator dynamic plugins configmap (backstage-dynamic-plugins-*) in namespace: $namespace"
+      log::error "Available configmaps in namespace:"
+      oc get cm -n "$namespace" -o name 2> /dev/null | while read -r cm; do
+        log::error "  - $cm"
+      done
+      return 1
+    fi
+
+    log::debug "Configmap not found yet, waiting ${wait_seconds}s... (attempt $attempt/$max_attempts)"
+    sleep "$wait_seconds"
+    ((attempt++))
+  done
+
+  # Create temporary working directory for merge operation
+  local work_dir="/tmp/orchestrator-plugins-merge-$$"
+  mkdir -p "$work_dir"
+  trap 'rm -rf "$work_dir"' RETURN
+
+  # Extract the YAML content from both configmaps to files
+  log::info "Extracting dynamic plugins configmaps..."
+  if ! oc get cm "$operator_cm" -n "$namespace" -o jsonpath='{.data.dynamic-plugins\.yaml}' > "$work_dir/default-plugins.yaml"; then
+    log::error "Failed to extract operator configmap: $operator_cm"
     return 1
   fi
-  log::info "Found operator configmap: $operator_cm"
 
-  # Extract the YAML content from both configmaps
-  local operator_yaml custom_yaml
-  operator_yaml=$(oc get cm "$operator_cm" -n "$namespace" -o jsonpath='{.data.dynamic-plugins\.yaml}')
-  custom_yaml=$(oc get cm "dynamic-plugins" -n "$namespace" -o jsonpath='{.data.dynamic-plugins\.yaml}' 2> /dev/null || echo "")
-
-  if [[ -z "$custom_yaml" ]]; then
+  if ! oc get cm "dynamic-plugins" -n "$namespace" -o jsonpath='{.data.dynamic-plugins\.yaml}' > "$work_dir/custom-plugins.yaml" 2> /dev/null; then
     log::warn "No custom dynamic-plugins configmap found, using operator defaults only"
+    return 0
+  fi
+
+  # Check if custom plugins file is empty
+  if [[ ! -s "$work_dir/custom-plugins.yaml" ]]; then
+    log::warn "Custom dynamic-plugins configmap is empty, using operator defaults only"
     return 0
   fi
 
   # Merge the plugins arrays: custom plugins override operator defaults
   # Uses package name as the unique key for deduplication
+  # The select(di == 0) filter prevents yq from outputting multiple YAML documents
+  log::info "Merging custom and default dynamic plugins..."
   local merged_yaml
-  merged_yaml=$(
-    echo "$operator_yaml" "$custom_yaml" | yq eval-all '
-    {"plugins": [
-      ([.[].plugins[]] | group_by(.package) | .[] | last)
-    ]}
-  '
-  )
+  if ! merged_yaml=$(yq eval-all '
+    select(fileIndex == 0) as $default |
+    select(fileIndex == 1) as $custom |
+    {
+      "includes": (($default.includes // []) + ($custom.includes // [])) | unique,
+      "plugins": (($default.plugins // []) + ($custom.plugins // [])) | group_by(.package) | map(.[-1])
+    }
+  ' "$work_dir/default-plugins.yaml" "$work_dir/custom-plugins.yaml" | yq eval 'select(di == 0)' -); then
+    log::error "Failed to merge dynamic plugins configmaps"
+    return 1
+  fi
 
   # Patch the operator configmap with merged content
-  oc patch cm "$operator_cm" -n "$namespace" --type merge -p "{\"data\":{\"dynamic-plugins.yaml\":$(echo "$merged_yaml" | jq -Rs .)}}"
+  if ! oc patch cm "$operator_cm" -n "$namespace" --type merge -p "{\"data\":{\"dynamic-plugins.yaml\":$(echo "$merged_yaml" | jq -Rs .)}}"; then
+    log::error "Failed to patch operator configmap with merged plugins"
+    return 1
+  fi
 
   log::info "Merged dynamic plugins configmap updated"
 
