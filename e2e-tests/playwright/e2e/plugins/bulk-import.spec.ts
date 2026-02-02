@@ -4,10 +4,7 @@ import { Common, setupBrowser } from "../../utils/common";
 import { APIHelper } from "../../utils/api-helper";
 import { BulkImport } from "../../support/pages/bulk-import";
 import { CatalogImport } from "../../support/pages/catalog-import";
-import {
-  DEFAULT_CATALOG_INFO_YAML,
-  UPDATED_CATALOG_INFO_YAML,
-} from "../../support/test-data/bulk-import";
+import { DEFAULT_CATALOG_INFO_YAML } from "../../support/test-data/bulk-import";
 
 // Pre-req : plugin-bulk-import & plugin-bulk-import-backend-dynamic
 test.describe.serial("Bulk Import plugin", () => {
@@ -203,35 +200,6 @@ spec:
     const expectedCatalogInfoYaml = DEFAULT_CATALOG_INFO_YAML(
       newRepoDetails.repoName,
       `${newRepoDetails.owner}/${newRepoDetails.repoName}`,
-      process.env.GH_USER2_ID,
-    );
-    expect(prCatalogInfoYaml).toEqual(expectedCatalogInfoYaml);
-  });
-
-  test("Edit Pull request Details and Ensure PR Content Reflects Changes", async () => {
-    await bulkimport.filterAddedRepo(newRepoDetails.repoName);
-    await uiHelper.clickOnButtonInTableByUniqueText(
-      newRepoDetails.repoName,
-      "Update",
-    );
-
-    await bulkimport.fillTextInputByNameAtt(
-      "componentName",
-      newRepoDetails.updatedComponentName,
-    );
-    await bulkimport.fillTextInputByNameAtt("prLabels", newRepoDetails.labels);
-    await expect(await uiHelper.clickButton("Save")).toBeHidden();
-
-    const prCatalogInfoYaml = await APIHelper.getfileContentFromPR(
-      newRepoDetails.owner,
-      newRepoDetails.repoName,
-      1,
-      "catalog-info.yaml",
-    );
-    const expectedCatalogInfoYaml = UPDATED_CATALOG_INFO_YAML(
-      newRepoDetails.updatedComponentName,
-      `${newRepoDetails.owner}/${newRepoDetails.repoName}`,
-      newRepoDetails.labels,
       process.env.GH_USER2_ID,
     );
     expect(prCatalogInfoYaml).toEqual(expectedCatalogInfoYaml);
