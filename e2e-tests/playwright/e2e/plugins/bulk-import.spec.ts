@@ -143,9 +143,38 @@ spec:
       catalogRepoDetails.name,
       "Preview file",
     );
+
     await expect(await uiHelper.clickButton("Save")).not.toBeVisible({
       timeout: 10000,
     });
+    await expect(await uiHelper.clickButton("Import")).toBeDisabled({
+      timeout: 10000,
+    });
+  });
+
+  test("Add a Repository, generate a PR, and confirm its preview", async () => {
+    // Wait to ensure the repo will appear in the Bulk Import UI
+    await expect(async () => {
+      await page.reload();
+      await common.waitForLoad();
+      await uiHelper.searchInputPlaceholder(newRepoDetails.repoName);
+      await uiHelper.verifyRowInTableByUniqueText(newRepoDetails.repoName, [
+        "Ready to import",
+      ]);
+    }).toPass({
+      intervals: [5_000],
+      timeout: 40_000,
+    });
+
+    await bulkimport.selectRepoInTable(newRepoDetails.repoName);
+    await uiHelper.clickOnLinkInTableByUniqueText(
+      newRepoDetails.repoName,
+      "Preview file",
+    );
+    await uiHelper.clickButton("Save");
+    await uiHelper.verifyRowInTableByUniqueText(newRepoDetails.repoName, [
+      "Ready to import",
+    ]);
     await expect(await uiHelper.clickButton("Import")).toBeDisabled({
       timeout: 10000,
     });
