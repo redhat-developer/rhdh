@@ -59,10 +59,11 @@ test.describe("Test Quick Start plugin", () => {
   });
 
   test("Access Quick start as User", async ({ page }) => {
-    // eslint-disable-next-line playwright/no-conditional-in-test
-    if (test.info().project.name !== "showcase-rbac") {
-      test.skip();
-    }
+    test.skip(
+      test.info().project.name !== "showcase-rbac",
+      "Test only runs for showcase-rbac project",
+    );
+
     await common.loginAsKeycloakUser(
       process.env.GH_USER2_ID,
       process.env.GH_USER2_PASS,
