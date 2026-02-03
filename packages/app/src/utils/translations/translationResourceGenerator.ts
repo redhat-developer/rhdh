@@ -25,7 +25,6 @@ const mergeTranslations = (
   resource: InternalTranslationResource<any>,
   jsonTranslations: { [key: string]: any },
   ref: TranslationRef<string, any>,
-  baseMessagesWinOverOverrides: boolean,
 ) => {
   const resourceWithNewTranslations: Record<string, any> = {};
   for (const res of resource.resources) {
@@ -36,11 +35,10 @@ const mergeTranslations = (
           jsonTranslations[res.language];
         const baseMessages = await res.loader();
 
-        const mergedMessages = (
-          baseMessagesWinOverOverrides
-            ? { ...overrides, ...baseMessages.messages }
-            : { ...baseMessages.messages, ...overrides }
-        ) as { [key: string]: string };
+        const mergedMessages = {
+          ...baseMessages.messages,
+          ...overrides,
+        } as { [key: string]: string };
 
         return createTranslationMessagesWrapper(ref, mergedMessages, false);
       };
@@ -76,26 +74,13 @@ const mergeTranslations = (
   return resourceWithNewTranslations;
 };
 
-export interface TranslationResourceGeneratorOptions {
-  /** When true, base (app/plugin) messages win over JSON overrides for the same key. Use for static app translations. */
-  baseMessagesWinOverOverrides?: boolean;
-}
-
 export const translationResourceGenerator = (
   ref: TranslationRef<string, any>,
   resource: InternalTranslationResource<any>,
   jsonTranslations: { [key: string]: any },
-  options: TranslationResourceGeneratorOptions = {},
 ): TranslationResource<string> => {
-  const baseMessagesWinOverOverrides =
-    options.baseMessagesWinOverOverrides ?? false;
   return createTranslationResource({
     ref,
-    translations: mergeTranslations(
-      resource,
-      jsonTranslations,
-      ref,
-      baseMessagesWinOverOverrides,
-    ),
+    translations: mergeTranslations(resource, jsonTranslations, ref),
   });
 };

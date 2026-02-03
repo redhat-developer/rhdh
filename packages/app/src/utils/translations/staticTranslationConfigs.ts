@@ -66,15 +66,17 @@ export const staticTranslationConfigs: StaticTranslationConfig[] = [
     resource: rhdhTranslations,
     ref: rhdhTranslationRef,
   },
-  // Refs that already have static resources above must not get an empty resource (would overwrite)
   ...[
     catalogReactTranslationRef,
+    scaffolderTranslationRef,
+    userSettingsTranslationRef,
     searchTranslationRef,
     searchReactTranslationRef,
     scaffolderReactTranslationRef,
     apiDocsTranslationRef,
     catalogGraphTranslationRef,
     orgTranslationRef,
+    userSettingsTranslationRef,
   ].map((ref: TranslationRef<string, any>) => ({
     resource: createTranslationResource({
       ref,
