@@ -39,7 +39,7 @@
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
-    "@red-hat-developer-hub/backstage-plugin-bulk-import-backend": "7.0.0"
+    "@red-hat-developer-hub/backstage-plugin-bulk-import-backend": "7.0.1"
   },
   "devDependencies": {
     "@backstage/cli": "0.34.5",

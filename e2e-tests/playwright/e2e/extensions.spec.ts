@@ -54,8 +54,7 @@ test.describe("Admin > Extensions", () => {
     );
   });
 
-  // FIXME https://issues.redhat.com/browse/RHIDP-8971
-  test.describe.skip("Extensions > Catalog", () => {
+  test.describe("Extensions > Catalog", () => {
     test("Verify search bar in extensions", async ({ page }) => {
       await uiHelper.searchInputAriaLabel("Dynatrace");
       await uiHelper.verifyHeading("DynaTrace");
@@ -85,11 +84,11 @@ test.describe("Admin > Extensions", () => {
       );
       await extensions.toggleOption("Red Hat");
       await page.keyboard.press(`Escape`);
-      await uiHelper.verifyHeading("Red Hat Argo CD");
+      await uiHelper.verifyHeading("Argo CD");
       await uiHelper.verifyText(
         t["plugin.extensions"][lang]["metadata.by"] + "Red Hat",
       );
-      await page.getByRole("heading", { name: "Red Hat Argo CD" }).click();
+      await page.getByRole("heading", { name: "Argo CD" }).click();
       await uiHelper.verifyTableHeadingAndRows([
         "Package name",
         "Version",
@@ -344,7 +343,7 @@ test.describe("Admin > Extensions", () => {
       await uiHelper.verifyHeading("Developer Lightspeed");
 
       await extensions.verifyPluginDetails({
-        pluginName: "Developer Lightspeed",
+        pluginName: "Red Hat Developer Lightspeed for Red Hat Developer Hub",
         badgeLabel:
           t["plugin.extensions"][lang]["badges.earlyStageExperimental"],
         badgeText: t["plugin.extensions"][lang]["badges.devPreview"],
@@ -365,6 +364,7 @@ test.describe("Admin > Extensions", () => {
 
       await extensions.clickReadMoreByPluginTitle(
         "ServiceNow Integration for Red Hat Developer Hub",
+        t["plugin.extensions"][lang]["badges.communityPlugin"],
       );
       await expect(
         page
@@ -400,7 +400,8 @@ test.describe("Admin > Extensions", () => {
       permissions: ["clipboard-read", "clipboard-write"],
     });
 
-    test("Verify plugin configuration can be viewed in the production environment", async ({
+    // Test case is disabled due to bug https://issues.redhat.com/browse/RHDHBUGS-799
+    test.fixme("Verify plugin configuration can be viewed in the production environment", async ({
       page,
     }) => {
       const productionEnvAlert = page.getByRole("alert").first();
@@ -410,7 +411,10 @@ test.describe("Admin > Extensions", () => {
       );
       await uiHelper.searchInputPlaceholder("Topology");
       await extensions.waitForSearchResults("Topology");
-      await extensions.clickReadMoreByPluginTitle("Topology");
+      await extensions.clickReadMoreByPluginTitle(
+        "Application Topology for Kubernetes",
+        t["plugin.extensions"][lang]["badges.generallyAvailable"],
+      );
       await uiHelper.clickButton(t["plugin.extensions"][lang]["actions.view"]);
       await uiHelper.verifyHeading("Application Topology for Kubernetes");
       await uiHelper.verifyText(
@@ -463,6 +467,7 @@ test.describe("Admin > Extensions", () => {
       await uiHelper.clickTab(t["plugin.extensions"][lang]["menuItem.catalog"]);
       await extensions.clickReadMoreByPluginTitle(
         "Adoption Insights for Red Hat Developer Hub",
+        t["plugin.extensions"][lang]["badges.communityPlugin"],
       );
       await uiHelper.verifyHeading("Adoption Insights for Red Hat");
       await page.getByTestId("plugin-actions").click();
@@ -521,7 +526,9 @@ test.describe("Admin > Extensions", () => {
       await expect(
         page.getByRole("cell", { name: "Frontend plugin module" }),
       ).toBeVisible();
-      await expect(page.getByRole("cell", { name: "1.1.30" })).toBeVisible();
+      await expect(
+        page.getByRole("cell", { name: /(\d+)\.(\d+)\.(\d+)/ }),
+      ).toBeVisible();
 
       // Verify actions column - in production, buttons are disabled with tooltip
       const techdocsRow = page

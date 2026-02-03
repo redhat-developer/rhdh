@@ -12,7 +12,7 @@ export class RbacConstants {
         name: "role:default/guests",
       },
       {
-        memberReferences: ["user:default/user_team_a"],
+        memberReferences: ["user:default/user_team_a", "user:default/rhdh-qe"],
         name: "role:default/team_a",
       },
       {
@@ -45,6 +45,26 @@ export class RbacConstants {
       {
         memberReferences: ["user:default/rhdh-qe-5", "user:default/rhdh-qe-6"],
         name: "role:default/catalog_reader",
+      },
+      {
+        memberReferences: ["user:default/rhdh-qe"],
+        name: "role:default/extension",
+      },
+      {
+        memberReferences: ["user:default/rhdh-qe-7", "user:default/rhdh-qe-9"],
+        name: "role:default/all_resource_reader",
+      },
+      {
+        memberReferences: ["user:default/rhdh-qe-8"],
+        name: "role:default/all_resource_denier",
+      },
+      {
+        memberReferences: ["user:default/rhdh-qe-7", "user:default/rhdh-qe-8"],
+        name: "role:default/owned_resource_reader",
+      },
+      {
+        memberReferences: ["user:default/rhdh-qe-9"],
+        name: "role:default/conditional_denier",
       },
     ];
   }
@@ -90,6 +110,12 @@ export class RbacConstants {
       {
         entityReference: "role:default/team_a",
         permission: "catalog-entity",
+        policy: "read",
+        effect: "allow",
+      },
+      {
+        entityReference: "role:default/team_a",
+        permission: "scorecard.metric.read",
         policy: "read",
         effect: "allow",
       },
@@ -187,6 +213,42 @@ export class RbacConstants {
         entityReference: "role:default/catalog_reader",
         permission: "catalog.entity.read",
         policy: "read",
+        effect: "allow",
+      },
+      {
+        entityReference: "role:default/extension",
+        permission: "extension-plugin",
+        policy: "read",
+        effect: "allow",
+      },
+      {
+        entityReference: "role:default/extension",
+        permission: "extension-plugin",
+        policy: "create",
+        effect: "allow",
+      },
+      {
+        entityReference: "role:default/all_resource_reader",
+        permission: "catalog-entity",
+        policy: "read",
+        effect: "allow",
+      },
+      {
+        entityReference: "role:default/all_resource_reader",
+        permission: "catalog-entity",
+        policy: "create",
+        effect: "allow",
+      },
+      {
+        entityReference: "role:default/all_resource_denier",
+        permission: "catalog-entity",
+        policy: "read",
+        effect: "deny",
+      },
+      {
+        entityReference: "role:default/all_resource_denier",
+        permission: "catalog-entity",
+        policy: "create",
         effect: "allow",
       },
     ];
