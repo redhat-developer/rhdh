@@ -254,15 +254,15 @@ describe("Dynamic Plugin Wrappers", () => {
       },
       {
         package:
-          "@red-hat-developer-hub/backstage-plugin-application-provider-test@0.0.2",
+          "@red-hat-developer-hub/backstage-plugin-application-provider-test@0.6.0",
       },
       {
         package:
-          "@red-hat-developer-hub/backstage-plugin-application-listener-test@0.0.2",
+          "@red-hat-developer-hub/backstage-plugin-application-listener-test@0.6.0",
       },
       {
         package:
-          "@red-hat-developer-hub/backstage-plugin-global-header-test@0.0.2",
+          "@red-hat-developer-hub/backstage-plugin-global-header-test@0.7.0",
       },
       {
         package:
