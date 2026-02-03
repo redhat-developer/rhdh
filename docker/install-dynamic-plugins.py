@@ -196,18 +196,18 @@ def get_oci_plugin_paths(image: str) -> list[str]:
         f"Failed to inspect OCI image {image}"
     )
     
-    manifest = json.loads(result.stdout)
-    annotations = manifest.get('annotations', {})
-    annotation_value = annotations.get('io.backstage.dynamic-packages')
-    
-    if not annotation_value:
-        return []
-    
     try:
+        manifest = json.loads(result.stdout)
+        annotations = manifest.get('annotations', {})
+        annotation_value = annotations.get('io.backstage.dynamic-packages')
+        
+        if not annotation_value:
+            return []
+        
         decoded = base64.b64decode(annotation_value).decode('utf-8')
         plugins_metadata = json.loads(decoded)
-    except (binascii.Error, json.JSONDecodeError) as e:
-        raise InstallException(f"Failed to decode plugin metadata from {image}: {e}")
+    except (json.JSONDecodeError, binascii.Error) as e:
+        raise InstallException(f"Failed to parse plugin metadata from {image}: {e}")
     
     plugin_paths = []
     for plugin_obj in plugins_metadata:
