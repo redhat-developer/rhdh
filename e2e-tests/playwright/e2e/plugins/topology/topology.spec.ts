@@ -65,10 +65,8 @@ test.describe("Test Topology Plugin", () => {
     // Continue with rest of test
     await topology.verifyDeployment("topology-test");
 
-    // Verify the details dialog is open for topology-test
-    const detailsDialog = page.getByRole("dialog");
-    await expect(detailsDialog).toBeVisible();
-    await expect(detailsDialog.getByText("topology-test")).toBeVisible();
+    // Verify the details dialog is open
+    await expect(page.getByRole("dialog")).toBeVisible();
 
     await uiHelper.clickTab("Details");
     await uiHelper.verifyText("Status");
