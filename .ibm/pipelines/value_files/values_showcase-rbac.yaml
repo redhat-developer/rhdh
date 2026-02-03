@@ -278,6 +278,21 @@ global:
                           - isKind: component
       - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard-backend:bs_1.45.3__2.3.4!red-hat-developer-hub-backstage-plugin-scorecard-backend
         disabled: false
+        pluginConfig:
+          scorecard:
+            plugins:
+              jira:
+                open_issues:
+                  schedule:
+                    frequency: { minutes: 2 }
+                    timeout: { minutes: 5 }
+                    initialDelay: { seconds: 10 }
+              github:
+                open_prs:
+                  schedule:
+                    frequency: { minutes: 2 }
+                    timeout: { minutes: 15 }
+                    initialDelay: { seconds: 10 }
       - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard-backend-module-github:bs_1.45.3__2.3.4!red-hat-developer-hub-backstage-plugin-scorecard-backend-module-github
         disabled: false
       - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard-backend-module-jira:bs_1.45.3__2.3.4!red-hat-developer-hub-backstage-plugin-scorecard-backend-module-jira
