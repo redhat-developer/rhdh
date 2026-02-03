@@ -105,12 +105,7 @@ const AppBase = () => {
               >
                 {entityPage(entityTabOverrides)}
               </Route>
-              <Route
-                path="/create"
-                element={
-                  <ScaffolderPage headerOptions={{ title: 'Self-service' }} />
-                }
-              >
+              <Route path="/create" element={<ScaffolderPage />}>
                 <ScaffolderFieldExtensions>
                   {scaffolderFieldExtensions.map(
                     ({ scope, module, importName, Component }) => (

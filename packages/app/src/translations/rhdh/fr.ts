@@ -85,7 +85,6 @@ export default createTranslationMessages({
     'catalog.entityPage.definition.title': 'Définition',
     'catalog.entityPage.diagram.title': 'Diagramme du système',
     'catalog.entityPage.workflows.title': 'Flux de travail',
-    'app.scaffolder.title': 'Self-service',
     'app.search.title': 'Recherche',
     'app.search.resultType': 'Type de résultat',
     'app.search.softwareCatalog': 'Catalogue de logiciels',
