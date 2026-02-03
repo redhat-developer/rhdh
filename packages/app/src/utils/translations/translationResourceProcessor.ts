@@ -82,6 +82,7 @@ export function processStaticTranslationResource(
       ref,
       resource as any as InternalTranslationResource,
       overrideTranslations[resource.id],
+      { baseMessagesWinOverOverrides: true },
     );
   }
 
