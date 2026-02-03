@@ -264,6 +264,17 @@ Example of JSON translation file, where the top-level key is the plugin translat
 }
 ```
 
+### Translation priority order
+
+Translations are resolved in this order (highest priority first):
+
+1. **app-config overrides** — Paths listed in `i18n.overrides` in `app-config.yaml`. This is the only level users should change for custom labels.
+2. **`/translations` JSON files** — Files under `translations/` (e.g. in the repo or mounted at `/src/translations/`). **RHDH override files (`rhdh-<locale>.json`) must win over Backstage defaults (`backstage-<locale>.json`)** when the same key exists in both. For 1.9 this is ensured by processing files in order: `backstage-*.json`, then `community-plugins-*.json`, then `rhdh-*.json`. Going forward, the i18n CLI or build pipeline should enforce this order.
+3. **Locale TS files** — App sources under `app/src/.../<locale>.ts` (e.g. `packages/app/src/translations/scaffolder/ja.ts`). Left as-is for 1.9.
+4. **Fallback English** — Default messages in `app/src/.../ref.ts` (e.g. `rhdhMessages` in `packages/app/src/translations/rhdh/ref.ts`).
+
+Levels 2–4 are for internal management only; only level 1 is user-configurable.
+
 ### Customizing Translations
 
 In a translation override JSON file, you can:

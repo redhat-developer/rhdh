@@ -594,7 +594,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
                 {showAdministration && (
                   <>
                     <SidebarDivider />
-                    <SidebarGroup label="Administration">
+                    <SidebarGroup label={t('menuItem.administration')}>
                       {renderMenuItems(true, true)}
                     </SidebarGroup>
                   </>

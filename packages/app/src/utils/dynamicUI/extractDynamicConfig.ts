@@ -32,6 +32,7 @@ export type DynamicRouteMenuItem =
 export type MenuItemConfig = {
   icon?: string;
   title?: string;
+  textKey?: string;
   priority?: number;
   parent?: string;
 };

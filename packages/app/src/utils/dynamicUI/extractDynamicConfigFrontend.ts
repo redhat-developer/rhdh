@@ -28,14 +28,16 @@ export function compareMenuItems(a: MenuItem, b: MenuItem) {
 function convertMenuItemsRecordToArray(
   menuItemsRecord: Record<string, MenuItemConfig>,
 ): MenuItem[] {
-  return Object.keys(menuItemsRecord).map(
-    key =>
-      ({
-        ...menuItemsRecord[key],
-        children: [],
-        name: key,
-      }) as MenuItem,
-  );
+  return Object.keys(menuItemsRecord).map(key => {
+    const config = menuItemsRecord[key];
+    const { textKey, ...rest } = config;
+    return {
+      ...rest,
+      name: key,
+      children: [],
+      titleKey: textKey,
+    } as MenuItem;
+  });
 }
 
 export function buildTree(menuItemsArray: MenuItem[]): MenuItem[] {
