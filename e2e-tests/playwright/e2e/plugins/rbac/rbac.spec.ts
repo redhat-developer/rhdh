@@ -381,6 +381,9 @@ test.describe("Test RBAC", () => {
       await expect(nextButton).toBeEnabled();
       await nextButton.click();
       // Wait for review step to be ready
+      await page
+        .getByText("users are not granted access")
+        .waitFor({ state: "hidden" });
       const saveButton = page.getByRole("button", { name: "Save" });
       await expect(saveButton).toBeVisible();
       await expect(saveButton).toBeEnabled();
@@ -439,6 +442,9 @@ test.describe("Test RBAC", () => {
       await expect(nextButton2).toBeEnabled();
       await nextButton2.click();
       // Wait for review step before Save
+      await page
+        .getByText("users are not granted access")
+        .waitFor({ state: "hidden" });
       await expect(page.getByRole("button", { name: "Save" })).toBeVisible();
       await uiHelper.clickButton("Save");
       await uiHelper.verifyText(
@@ -465,6 +471,9 @@ test.describe("Test RBAC", () => {
       await rbacPo.selectPermissionCheckbox("scaffolder.template.parameter");
       await uiHelper.clickButton("Next");
       // Wait for review step to be ready
+      await page
+        .getByText("users are not granted access")
+        .waitFor({ state: "hidden" });
       await expect(page.getByRole("button", { name: "Save" })).toBeVisible();
       await uiHelper.clickButton("Save");
       await uiHelper.verifyText(
@@ -794,6 +803,9 @@ test.describe("Test RBAC", () => {
       await expect(nextButton).toBeEnabled();
       await nextButton.click();
       // Wait for review step to be ready
+      await page
+        .getByText("users are not granted access")
+        .waitFor({ state: "hidden" });
       const saveButton = page.getByRole("button", { name: "Save" });
       await expect(saveButton).toBeVisible();
       await expect(saveButton).toBeEnabled();
