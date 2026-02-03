@@ -5,6 +5,7 @@ const en = createTranslationMessages({
   ref: scaffolderTranslationRef,
   full: false, // False means that this is a partial translation
   messages: {
+    'templateListPage.title': 'Self-service',
     'templateListPage.contentHeader.registerExistingButtonTitle':
       'Import an existing Git repository',
   },

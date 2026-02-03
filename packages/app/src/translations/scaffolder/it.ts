@@ -21,6 +21,7 @@ export default createTranslationMessages({
   ref: scaffolderTranslationRef,
   full: false,
   messages: {
+    'templateListPage.title': 'Self-service',
     'templateListPage.contentHeader.registerExistingButtonTitle':
       'Importa un repository Git esistente',
   },
