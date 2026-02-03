@@ -13,7 +13,13 @@ dependencies = [
 
 [dependency-groups]
 build = [
+    "calver>=2025.10.20",
+    "cython>=3.2.4",
+    "flit-core>=3.11,<4",
+    "hatch-requirements-txt>=0.4.1",
+    "hatchling>=0.21.1",
     "setuptools>=80.10.2",
+    "setuptools-scm[toml]>=8.0",
     "wheel>=0.46.3",
 ]
 dev = [
