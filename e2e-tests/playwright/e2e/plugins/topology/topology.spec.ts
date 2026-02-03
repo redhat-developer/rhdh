@@ -59,7 +59,9 @@ test.describe("Test Topology Plugin", () => {
       await uiHelper.verifyDivHasText(
         /Pipeline (Succeeded|Failed|Cancelled|Running)/,
       );
-      await uiHelper.verifyDivHasText(/\d+ (Succeeded|Failed|Cancelled|Running)/);
+      await uiHelper.verifyDivHasText(
+        /\d+ (Succeeded|Failed|Cancelled|Running)/,
+      );
     }
 
     // Continue with rest of test
