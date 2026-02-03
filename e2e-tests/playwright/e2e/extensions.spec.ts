@@ -451,7 +451,8 @@ test.describe("Admin > Extensions", () => {
       );
     });
 
-    test.skip("Installed packages page", async ({ page }, testInfo) => {
+    //TODO: https://issues.redhat.com/browse/RHDHBUGS-2576
+    test.fixme("Installed packages page", async ({ page }, testInfo) => {
       await runAccessibilityTests(page, testInfo);
       await uiHelper.verifyTableHeadingAndRows([
         t["plugin.extensions"][lang]["installedPackages.table.columns.name"],
