@@ -36,6 +36,8 @@ jobs:
   build:
     name: Build with Node.js ${{ matrix.node-version }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       matrix:
         node-version: [22]
@@ -60,6 +62,8 @@ jobs:
       - name: Setup local Turbo cache
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         uses: dtinth/setup-github-actions-caching-for-turbo@cc723b4600e40a6b8815b65701d8614b91e2669e # v1
+        with:
+          cache-prefix: turbogha-pr-${{ github.event.number }}
 
       - name: Use app-config.example.yaml
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
@@ -78,6 +82,8 @@ jobs:
   test:
     name: Test with Node.js ${{ matrix.node-version }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       matrix:
         node-version: [22]
@@ -101,6 +107,8 @@ jobs:
       - name: Setup local Turbo cache
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         uses: dtinth/setup-github-actions-caching-for-turbo@cc723b4600e40a6b8815b65701d8614b91e2669e # v1
+        with:
+          cache-prefix: turbogha-pr-${{ github.event.number }}
 
       - name: Use app-config.example.yaml
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}

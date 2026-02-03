@@ -33,6 +33,44 @@ Functions: `operator::install_subscription`, `operator::check_status`,
 `operator::install_tekton`, `operator::delete_tekton`, `operator::install_olm`,
 `operator::uninstall_olm`
 
+### `helm.sh`
+
+Helm chart operations and value file manipulation.
+
+Functions: `helm::merge_values`, `helm::get_previous_release_values`, `helm::get_chart_version`,
+`helm::uninstall`, `helm::get_image_params`, `helm::install`
+
+### `orchestrator.sh`
+
+Orchestrator/Sonataflow deployment and configuration.
+
+Functions: `orchestrator::should_skip`, `orchestrator::disable_plugins_in_values`,
+`orchestrator::deploy_workflows`, `orchestrator::deploy_workflows_operator`,
+`orchestrator::enable_plugins_op`
+
+### `namespace.sh`
+
+Namespace lifecycle management.
+
+Functions: `namespace::configure`, `namespace::delete`, `namespace::force_delete`,
+`namespace::remove_finalizers`, `namespace::setup_image_pull_secret`,
+`namespace::create_dockerconfigjson_secret`, `namespace::add_pull_secret_to_sa`
+
+### `config.sh`
+
+Configuration management for ConfigMaps, dynamic plugins, and app configuration.
+
+Functions: `config::create_app_config_map`, `config::select_config_map_file`,
+`config::create_dynamic_plugins_config`, `config::create_conditional_policies_operator`,
+`config::prepare_operator_app_config`
+
+### `testing.sh`
+
+Testing utilities for CI pipelines including Playwright test execution and health checks.
+
+Functions: `testing::run_tests`, `testing::check_backstage_running`, `testing::check_and_test`,
+`testing::check_helm_upgrade`, `testing::check_upgrade_and_test`
+
 ## Creating New Modules
 
 ### Structure

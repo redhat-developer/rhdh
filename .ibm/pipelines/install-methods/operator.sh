@@ -9,10 +9,10 @@ install_rhdh_operator() {
   local namespace=$1
   local max_attempts=$2
 
-  configure_namespace "$namespace"
+  namespace::configure "$namespace"
 
   if [[ -z "${IS_OPENSHIFT}" || "${IS_OPENSHIFT}" == "false" ]]; then
-    setup_image_pull_secret "rhdh-operator" "rh-pull-secret" "${REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON}"
+    namespace::setup_image_pull_secret "rhdh-operator" "rh-pull-secret" "${REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON}"
   fi
   # Make sure script is up to date
   rm -f /tmp/install-rhdh-catalog-source.sh
@@ -41,7 +41,7 @@ install_rhdh_operator() {
 
 prepare_operator() {
   local retry_operator_installation="${1:-1}"
-  configure_namespace "${OPERATOR_MANAGER}"
+  namespace::configure "${OPERATOR_MANAGER}"
   install_rhdh_operator "${OPERATOR_MANAGER}" "$retry_operator_installation"
 
   # Wait for Backstage CRD to be available after operator installation
@@ -68,56 +68,32 @@ deploy_rhdh_operator() {
   log::debug "$rendered_yaml"
   echo "$rendered_yaml" | oc apply -f - -n "$namespace"
 
-  # Wait for the operator to create the Backstage deployment
-  log::info "Waiting for operator to create Backstage deployment..."
-  local max_wait=60 # Wait up to 5 minutes for deployment to be created
-  local waited=0
-  while [[ $waited -lt $max_wait ]]; do
-    if oc get deployment -n "$namespace" --no-headers 2> /dev/null | grep -q "backstage-"; then
-      log::success "Backstage deployment created by operator"
-      break
-    fi
-    log::debug "Waiting for deployment to be created... ($waited/$max_wait checks)"
-    sleep 5
-    waited=$((waited + 1))
-  done
-
-  if [[ $waited -eq $max_wait ]]; then
-    log::error "Backstage deployment not created after ${max_wait} checks (5 minutes)"
-    log::info "Checking Backstage CR status for errors..."
-    oc get backstage rhdh -n "$namespace" -o yaml | grep -A 20 "status:" || true
-    log::info "Checking operator logs..."
-    oc logs -n "${OPERATOR_MANAGER:-rhdh-operator}" -l control-plane=controller-manager --tail=50 || true
+  # Wait for the operator to create the Backstage deployment (5 minutes max)
+  if ! common::poll_until \
+    "oc get deployment -n '$namespace' --no-headers 2>/dev/null | grep -q 'backstage-'" \
+    60 5 "Backstage deployment created by operator"; then
+    log::error "Backstage deployment not created after 5 minutes"
+    _operator_debug_info "$namespace"
     return 1
   fi
 
-  # Wait for the operator to create the database resource
-  # The operator can create either:
-  # 1. PostgresCluster (if Crunchy operator is used)
-  # 2. StatefulSet (built-in postgres)
-  log::info "Waiting for operator to create database resource..."
-  local psql_wait=60 # Wait up to 5 minutes for database to be created
-  local psql_waited=0
+  # Wait for the operator to create the database resource (5 minutes max)
+  # The operator can create either PostgresCluster (Crunchy) or StatefulSet (built-in)
+  if ! common::poll_until \
+    "oc get postgrescluster -n '$namespace' --no-headers 2>/dev/null | grep -q 'backstage-psql' || \
+     oc get statefulset -n '$namespace' --no-headers 2>/dev/null | grep -q 'backstage-psql'" \
+    60 5 "Database resource created by operator"; then
+    log::error "Database resource not created after 5 minutes"
+    _operator_debug_info "$namespace"
+    return 1
+  fi
 
-  while [[ $psql_waited -lt $psql_wait ]]; do
-    # Check for PostgresCluster (Crunchy-based)
-    if oc get postgrescluster -n "$namespace" --no-headers 2> /dev/null | grep -q "backstage-psql"; then
-      log::success "PostgresCluster 'backstage-psql' created by operator (Crunchy-based)"
-      return 0
-    fi
+  return 0
+}
 
-    # Check for StatefulSet (built-in postgres)
-    if oc get statefulset -n "$namespace" --no-headers 2> /dev/null | grep -q "backstage-psql"; then
-      log::success "StatefulSet 'backstage-psql-rhdh' created by operator (built-in postgres)"
-      return 0
-    fi
-
-    log::debug "Waiting for database resource to be created... ($psql_waited/$psql_wait checks)"
-    sleep 5
-    psql_waited=$((psql_waited + 1))
-  done
-
-  log::error "Database resource not created after ${psql_wait} checks"
+# Helper function to collect operator debug information
+_operator_debug_info() {
+  local namespace=$1
   log::info "Checking Backstage CR status for errors..."
   oc get backstage rhdh -n "$namespace" -o yaml | grep -A 20 "status:" || true
   log::info "Checking operator logs..."
@@ -126,7 +102,6 @@ deploy_rhdh_operator() {
   oc get statefulset -n "$namespace" || true
   log::info "Checking for PostgresCluster..."
   oc get postgrescluster -n "$namespace" 2> /dev/null || echo "No PostgresCluster CRD or resources found"
-  return 1
 }
 
 delete_rhdh_operator() {

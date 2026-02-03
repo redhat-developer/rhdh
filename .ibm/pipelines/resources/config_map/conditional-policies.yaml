@@ -1,0 +1,65 @@
+result: CONDITIONAL
+roleEntityRef: "role:default/test2-role"
+pluginId: catalog
+resourceType: catalog-entity
+permissionMapping:
+  - read
+  - update
+conditions:
+  rule: IS_ENTITY_OWNER
+  resourceType: catalog-entity
+  params:
+    claims:
+      - "group:janus-qe/rhdh-qe-2-team"
+      - $currentUser
+---
+result: CONDITIONAL
+roleEntityRef: "role:default/test2-role"
+pluginId: catalog
+resourceType: catalog-entity
+permissionMapping:
+  - delete
+conditions:
+  rule: IS_ENTITY_OWNER
+  resourceType: catalog-entity
+  params:
+    claims:
+      - $currentUser
+---
+result: CONDITIONAL
+roleEntityRef: "role:default/transitive-owner"
+pluginId: catalog
+resourceType: catalog-entity
+permissionMapping:
+  - read
+conditions:
+  rule: IS_ENTITY_OWNER
+  resourceType: catalog-entity
+  params:
+    claims:
+      - $ownerRefs
+---
+result: CONDITIONAL
+roleEntityRef: "role:default/owned_resource_reader"
+pluginId: catalog
+resourceType: catalog-entity
+permissionMapping:
+  - read
+conditions:
+  rule: IS_ENTITY_OWNER
+  resourceType: catalog-entity
+  params:
+    claims:
+      - $currentUser
+---
+result: CONDITIONAL
+roleEntityRef: "role:default/conditional_denier"
+pluginId: catalog
+resourceType: catalog-entity
+permissionMapping:
+  - read
+conditions:
+  rule: HAS_LABEL
+  resourceType: catalog-entity
+  params:
+    label: test-label

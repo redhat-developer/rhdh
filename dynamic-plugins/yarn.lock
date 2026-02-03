@@ -2812,9 +2812,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-acr@npm:1.20.1":
-  version: 1.20.1
-  resolution: "@backstage-community/plugin-acr@npm:1.20.1"
+"@backstage-community/plugin-acr@npm:1.20.2":
+  version: 1.20.2
+  resolution: "@backstage-community/plugin-acr@npm:1.20.2"
   dependencies:
     "@backstage/catalog-model": ^1.7.6
     "@backstage/core-components": ^0.18.3
@@ -2828,7 +2828,7 @@ __metadata:
     react-use: ^17.4.0
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 923bd74cabb7f25a58262983094b7235e626a93c6126954cfcd60ca8e4af5948e4a6b419a1b33d770769bb2526edb6543f7e7429a99426533fc73061c2a0f422
+  checksum: cdb2d7eac506d9bb8d356ee89070366709df8dca105bae912fcabfa6f0314266a66180b8fe09dfb4c14635d30e892fd37900e711ff301f9151a193bf9f85d3f1
   languageName: node
   linkType: hard
 
@@ -3011,9 +3011,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-rbac@npm:1.47.2":
-  version: 1.47.2
-  resolution: "@backstage-community/plugin-rbac@npm:1.47.2"
+"@backstage-community/plugin-rbac@npm:1.47.4":
+  version: 1.47.4
+  resolution: "@backstage-community/plugin-rbac@npm:1.47.4"
   dependencies:
     "@backstage-community/plugin-rbac-common": ^1.22.0
     "@backstage/catalog-model": ^1.7.6
@@ -3038,7 +3038,7 @@ __metadata:
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.0.0
-  checksum: d46f6a73dba9eec67a27359f51bc1d93913519a43e1015652bc468f09518b5d2205e6bdacb61a734577134af8fa61d3af845044a8862f6b1f200ab4e3d387589
+  checksum: 06367b4e67d54ad57466bffcd56b107608634d2db2fcb3934d5d91d92091ef4ccbac95898ec11a8c28d7f6761c5def701d84e69c21f8f773580813cacfa35ee9
   languageName: node
   linkType: hard
 
@@ -3107,12 +3107,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-tech-radar-common@npm:1.11.0":
-  version: 1.11.0
-  resolution: "@backstage-community/plugin-tech-radar-common@npm:1.11.0"
+"@backstage-community/plugin-tech-radar-common@npm:1.12.0":
+  version: 1.12.0
+  resolution: "@backstage-community/plugin-tech-radar-common@npm:1.12.0"
   dependencies:
     zod: ^3.20.0
-  checksum: 03054059c6ee31644b69c851ed168dd5ffd88eba6988ee71b9d51c061af63bede4a38c25a467122cbe1019ff62ea448ddbe898b083ed5671f00ec8fe9cb1d666
+  checksum: c0636ae2a9b96200ae8c632c8a818440a39a4858e13db24e10c2394113b2f2d3013ea5047dd5de6a6cb9afb5229753774e45cda2eeb9d719367bee64e24eb3e2
   languageName: node
   linkType: hard
 
@@ -3170,9 +3170,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-tekton@npm:3.33.2":
-  version: 3.33.2
-  resolution: "@backstage-community/plugin-tekton@npm:3.33.2"
+"@backstage-community/plugin-tekton@npm:3.33.3":
+  version: 3.33.3
+  resolution: "@backstage-community/plugin-tekton@npm:3.33.3"
   dependencies:
     "@aonic-ui/pipelines": ^3.1.0
     "@backstage-community/plugin-tekton-common": ^1.16.0
@@ -3206,13 +3206,13 @@ __metadata:
     react: ^17.0.0 || ^18.0.0
     react-dom: ^17.0.0 || ^18.0.0
     react-router-dom: ^6.0.0
-  checksum: ab88d2a3013cb068286cc72719ecee90b62752f0f1a81c1c65a8bd8d458bf01591ac6a49145854d46194b4e93a5fd5a33632da389cf974e1ef258e5588ceec54
+  checksum: 57c1a0006d65a8b06f541a5c3ab73020baf2a5ee0a5ade44bd107e62ef5ba946442f60bd8d2af3bb3292ed0443579d1cf68f3787a9ab6352da52280e142e36c0
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-topology@npm:2.9.3":
-  version: 2.9.3
-  resolution: "@backstage-community/plugin-topology@npm:2.9.3"
+"@backstage-community/plugin-topology@npm:2.9.4":
+  version: 2.9.4
+  resolution: "@backstage-community/plugin-topology@npm:2.9.4"
   dependencies:
     "@backstage-community/plugin-tekton-react": ^0.1.1
     "@backstage/catalog-model": ^1.7.6
@@ -3245,7 +3245,7 @@ __metadata:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.0.0
-  checksum: ef2898f7fd7f3197bd60048d1141cc6cf5c6eadb9a57aa040a2c39c2f03e287ecc2c3bf4e317f4f3fd2feffe35f21032230493cc0f32405b01aa58bca8117ab7
+  checksum: 6291ad4049f26e912eca2e6fd3e347a258f2a06eca39afc12a69195b08210bdc74081454a19cc30500caa8ede3601ff11b254594fa7b1531d19bc1448c65a8b1
   languageName: node
   linkType: hard
 
@@ -12107,9 +12107,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-bulk-import-backend@npm:7.0.0":
-  version: 7.0.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import-backend@npm:7.0.0"
+"@red-hat-developer-hub/backstage-plugin-bulk-import-backend@npm:7.0.1":
+  version: 7.0.1
+  resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import-backend@npm:7.0.1"
   dependencies:
     "@backstage/backend-defaults": ^0.13.1
     "@backstage/backend-plugin-api": ^1.5.0
@@ -12123,7 +12123,7 @@ __metadata:
     "@gitbeaker/rest": ^43.4.0
     "@octokit/auth-app": ^7.2.2
     "@octokit/rest": ^20.0.2
-    "@red-hat-developer-hub/backstage-plugin-bulk-import-common": ^7.0.0
+    "@red-hat-developer-hub/backstage-plugin-bulk-import-common": ^7.0.1
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": ^3.2.0
     ajv-formats: ^3.0.1
     eventsource-client: ^1.2.0
@@ -12135,11 +12135,11 @@ __metadata:
     luxon: ^3.4.4
     node-fetch: ^2.6.7
     openapi-backend: ^5.10.6
-  checksum: d0b27e3178077b4fb38c355a26a965279616ea283c23bd5d7b1b0c7b2ab48e48621359459f61f6df535151c30fa0be16b6c7e415bb6c80a9c465ed79701d22a3
+  checksum: e99c908ee69ce7c47abbc6a9fdeff41f911a543cb0f88ae2fe540103ce563d8b28b72e9e927396741e04fd5ecf3f24d9b6a160f2f4e99bae5420f3de60a5c5a2
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-bulk-import-common@npm:^7.0.0, @red-hat-developer-hub/backstage-plugin-bulk-import-common@npm:^7.0.1":
+"@red-hat-developer-hub/backstage-plugin-bulk-import-common@npm:^7.0.1":
   version: 7.0.1
   resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import-common@npm:7.0.1"
   peerDependencies:
@@ -12177,9 +12177,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-catalog-backend-module-extensions@npm:0.14.3":
-  version: 0.14.3
-  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-extensions@npm:0.14.3"
+"@red-hat-developer-hub/backstage-plugin-catalog-backend-module-extensions@npm:0.14.4":
+  version: 0.14.4
+  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-extensions@npm:0.14.4"
   dependencies:
     "@backstage/backend-dynamic-feature-service": ^0.7.6
     "@backstage/backend-plugin-api": ^1.5.0
@@ -12190,18 +12190,18 @@ __metadata:
     "@backstage/plugin-catalog-common": ^1.1.7
     "@backstage/plugin-catalog-node": ^1.20.0
     "@backstage/types": ^1.2.2
-    "@red-hat-developer-hub/backstage-plugin-extensions-common": ^0.14.3
+    "@red-hat-developer-hub/backstage-plugin-extensions-common": ^0.14.4
     find-root: ^1.1.0
     glob: ^8.1.0
     js-yaml: ^4.1.0
     semver: ^7.6.3
-  checksum: 839cb9d3525e4cc9dad5ff4242df2bc4cad8e217563e3e5c7c56800f357ae99b38d8d507e5709faf143f2c566df1c48c76117bbf5a69a6809557ff6dcf835ffd
+  checksum: 0ce9729ba7f2823d57556a63c2d46dfcef862faa6cfc4d3421e193cef209cef190999eca4f59409df4bcc5c78e914e63912219656e3b8aa5f14def6e339f3f5a
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-dynamic-home-page@npm:1.10.3":
-  version: 1.10.3
-  resolution: "@red-hat-developer-hub/backstage-plugin-dynamic-home-page@npm:1.10.3"
+"@red-hat-developer-hub/backstage-plugin-dynamic-home-page@npm:1.10.5":
+  version: 1.10.5
+  resolution: "@red-hat-developer-hub/backstage-plugin-dynamic-home-page@npm:1.10.5"
   dependencies:
     "@backstage/catalog-client": ^1.12.1
     "@backstage/catalog-model": ^1.7.6
@@ -12223,13 +12223,13 @@ __metadata:
   peerDependencies:
     react: 16.13.1 || ^17.0.0 || ^18.2.0
     react-router-dom: 6.30.3
-  checksum: 80d20b909dd2f2ab4d430ea5c51c294fe70c54ef7f91e9517e69bf6a198faaf15c48861f2a3fb31b33e90757c57ed4ea6b9ad32c5c0afae22cfe7c9e7017cd8e
+  checksum: fec6caaaffca0e2cc8d70497cf2e7bd1cd6b8a8a274a6d9e027926bb7bd038c6d6a8ec206f3c7b08effdff1e34c297a30ffe9a83baf1dc976b3a9b6884041d4d
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-extensions-backend@npm:0.14.3":
-  version: 0.14.3
-  resolution: "@red-hat-developer-hub/backstage-plugin-extensions-backend@npm:0.14.3"
+"@red-hat-developer-hub/backstage-plugin-extensions-backend@npm:0.14.4":
+  version: 0.14.4
+  resolution: "@red-hat-developer-hub/backstage-plugin-extensions-backend@npm:0.14.4"
   dependencies:
     "@backstage/backend-defaults": ^0.13.1
     "@backstage/backend-dynamic-feature-service": ^0.7.6
@@ -12240,18 +12240,18 @@ __metadata:
     "@backstage/plugin-catalog-node": ^1.20.0
     "@backstage/plugin-permission-common": ^0.9.3
     "@backstage/plugin-permission-node": ^0.10.6
-    "@red-hat-developer-hub/backstage-plugin-extensions-common": ^0.14.3
+    "@red-hat-developer-hub/backstage-plugin-extensions-common": ^0.14.4
     express: ^4.17.1
     express-promise-router: ^4.1.0
     yaml: ^2.7.1
     zod: ^3.22.4
-  checksum: e2b5c1669d9d753e016ea9b6f308d7d27124d80d11c18e51cbbcc0302a855a9e13326ea9704634225da265cb9fb1db920abe7042054048018852b7ecbdb5ac4e
+  checksum: 3163b5d202707972e5da6c8890aefc4cfce9c06283fb4372d27d49d9630a1072d30b49a3a0f3f62f896d61123cbc80f3dd26379c3bd2fcd8521cbf06f59d7d03
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-extensions-common@npm:0.14.3, @red-hat-developer-hub/backstage-plugin-extensions-common@npm:^0.14.3":
-  version: 0.14.3
-  resolution: "@red-hat-developer-hub/backstage-plugin-extensions-common@npm:0.14.3"
+"@red-hat-developer-hub/backstage-plugin-extensions-common@npm:0.14.4, @red-hat-developer-hub/backstage-plugin-extensions-common@npm:^0.14.4":
+  version: 0.14.4
+  resolution: "@red-hat-developer-hub/backstage-plugin-extensions-common@npm:0.14.4"
   dependencies:
     "@backstage/backend-plugin-api": ^1.5.0
     "@backstage/catalog-client": ^1.12.1
@@ -12261,13 +12261,13 @@ __metadata:
   peerDependencies:
     "@backstage/backend-plugin-api": ^1.5.0
     "@backstage/types": ^1.2.2
-  checksum: 5ea4c03bcbcc4ea674ad48962b6d009e464e2f5d188c8239a4123d922b5b81784d845f189a50ba004cf947dc77ed0ba0e8c056c070cc7a55efd534905ca25b33
+  checksum: d411d6c63fd151233cbd98dd5f9ce81a09801bc2583c29298ebe463dd708b8c263529990bb2d1a7d640ba30873f32f21a89e8881f0fbb5c86914a0484e7e8c47
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-extensions@npm:0.14.3":
-  version: 0.14.3
-  resolution: "@red-hat-developer-hub/backstage-plugin-extensions@npm:0.14.3"
+"@red-hat-developer-hub/backstage-plugin-extensions@npm:0.14.4":
+  version: 0.14.4
+  resolution: "@red-hat-developer-hub/backstage-plugin-extensions@npm:0.14.4"
   dependencies:
     "@backstage/catalog-client": ^1.12.1
     "@backstage/core-components": ^0.18.3
@@ -12282,7 +12282,7 @@ __metadata:
     "@mui/icons-material": ^5.16.7
     "@mui/material": ^5.12.2
     "@mui/styles": 5.18.0
-    "@red-hat-developer-hub/backstage-plugin-extensions-common": ^0.14.3
+    "@red-hat-developer-hub/backstage-plugin-extensions-common": ^0.14.4
     "@scalprum/react-core": 0.11.1
     "@tanstack/react-query": ^5.60.5
     monaco-editor: ^0.55.0
@@ -12292,7 +12292,7 @@ __metadata:
     react: ^17.0.0 || ^18.0.0
     react-dom: ^17.0.0 || ^18.0.0
     react-router-dom: ^6.3.0
-  checksum: 7de0499ccf6a9ee29502bd394fdc302dc6f15f2a3e036c03bc9bcf9930ffdf2e70dd0d070609987122a901781dc3acf173efe0ed93a0c34d8f305fce5089ab87
+  checksum: a20ba07b624b56a66a85156834c4db38fe60d16804718ce7207277907fbf6dfb3cb0cbc735701ca9b042ded97dc2e5041a7c68f3c61df7daec36bec4a2425691
   languageName: node
   linkType: hard
 
@@ -16735,7 +16735,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backstage-community-plugin-acr@workspace:wrappers/backstage-community-plugin-acr"
   dependencies:
-    "@backstage-community/plugin-acr": 1.20.1
+    "@backstage-community/plugin-acr": 1.20.2
     "@backstage/cli": 0.34.5
     "@backstage/core-plugin-api": 1.12.0
     "@janus-idp/cli": 3.7.0
@@ -16828,7 +16828,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backstage-community-plugin-rbac@workspace:wrappers/backstage-community-plugin-rbac"
   dependencies:
-    "@backstage-community/plugin-rbac": 1.47.2
+    "@backstage-community/plugin-rbac": 1.47.4
     "@backstage/cli": 0.34.5
     "@janus-idp/cli": 3.7.0
     "@mui/material": 5.18.0
@@ -16896,7 +16896,7 @@ __metadata:
   resolution: "backstage-community-plugin-tech-radar@workspace:wrappers/backstage-community-plugin-tech-radar"
   dependencies:
     "@backstage-community/plugin-tech-radar": 1.13.0
-    "@backstage-community/plugin-tech-radar-common": 1.11.0
+    "@backstage-community/plugin-tech-radar-common": 1.12.0
     "@backstage/cli": 0.34.5
     "@backstage/core-plugin-api": 1.12.1
     "@janus-idp/cli": 3.7.0
@@ -16909,7 +16909,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backstage-community-plugin-tekton@workspace:wrappers/backstage-community-plugin-tekton"
   dependencies:
-    "@backstage-community/plugin-tekton": 3.33.2
+    "@backstage-community/plugin-tekton": 3.33.3
     "@backstage/cli": 0.34.5
     "@janus-idp/cli": 3.7.0
     "@mui/material": 5.18.0
@@ -16921,7 +16921,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backstage-community-plugin-topology@workspace:wrappers/backstage-community-plugin-topology"
   dependencies:
-    "@backstage-community/plugin-topology": 2.9.3
+    "@backstage-community/plugin-topology": 2.9.4
     "@backstage/cli": 0.34.5
     "@janus-idp/cli": 3.7.0
     "@mui/material": 5.18.0
@@ -30607,7 +30607,7 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.34.5
     "@janus-idp/cli": 3.7.0
-    "@red-hat-developer-hub/backstage-plugin-bulk-import-backend": 7.0.0
+    "@red-hat-developer-hub/backstage-plugin-bulk-import-backend": 7.0.1
     typescript: 5.9.3
   languageName: unknown
   linkType: soft
@@ -30630,7 +30630,7 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.34.5
     "@janus-idp/cli": 3.7.0
-    "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-extensions": 0.14.3
+    "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-extensions": 0.14.4
     typescript: 5.9.3
   languageName: unknown
   linkType: soft
@@ -30642,7 +30642,7 @@ __metadata:
     "@backstage/cli": 0.34.5
     "@janus-idp/cli": 3.7.0
     "@mui/material": 5.18.0
-    "@red-hat-developer-hub/backstage-plugin-dynamic-home-page": 1.10.3
+    "@red-hat-developer-hub/backstage-plugin-dynamic-home-page": 1.10.5
     typescript: 5.9.3
   languageName: unknown
   linkType: soft
@@ -30653,8 +30653,8 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.34.5
     "@janus-idp/cli": 3.7.0
-    "@red-hat-developer-hub/backstage-plugin-extensions-backend": 0.14.3
-    "@red-hat-developer-hub/backstage-plugin-extensions-common": 0.14.3
+    "@red-hat-developer-hub/backstage-plugin-extensions-backend": 0.14.4
+    "@red-hat-developer-hub/backstage-plugin-extensions-common": 0.14.4
     typescript: 5.9.3
   languageName: unknown
   linkType: soft
@@ -30666,7 +30666,7 @@ __metadata:
     "@backstage/cli": 0.34.5
     "@janus-idp/cli": 3.7.0
     "@mui/material": 5.18.0
-    "@red-hat-developer-hub/backstage-plugin-extensions": 0.14.3
+    "@red-hat-developer-hub/backstage-plugin-extensions": 0.14.4
     typescript: 5.9.3
   languageName: unknown
   linkType: soft

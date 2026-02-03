@@ -659,10 +659,25 @@ class RHDHDeployment {
     const backstageConfig = await this.readYamlToJson(configPath);
     expect(process.env.QUAY_REPO).toBeDefined();
     expect(process.env.TAG_NAME).toBeDefined();
-    backstageConfig.spec.application.image = `quay.io/${process.env.QUAY_REPO}:${process.env.TAG_NAME}`;
-    console.log(
-      `Setting Backstage CR image to quay.io/${process.env.QUAY_REPO}:${process.env.TAG_NAME}`,
-    );
+    const image = `quay.io/${process.env.QUAY_REPO}:${process.env.TAG_NAME}`;
+    backstageConfig.spec.deployment = {
+      patch: {
+        spec: {
+          template: {
+            spec: {
+              containers: [
+                {
+                  name: "backstage-backend",
+                  image,
+                  imagePullPolicy: "Always",
+                },
+              ],
+            },
+          },
+        },
+      },
+    };
+    console.log(`Setting Backstage CR image via deployment.patch to ${image}`);
     this.cr = backstageConfig;
     this.instanceName = backstageConfig.metadata.name.toString();
     return backstageConfig;
