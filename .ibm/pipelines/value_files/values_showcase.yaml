@@ -140,8 +140,7 @@ global:
                       minutes: 1
                     initialDelay:
                       seconds: 15
-      - package: "@red-hat-developer-hub/backstage-plugin-application-provider-test@0.0.2"
-        integrity: "sha512-N3HxvTNe/CxTDtXIsvfre3ZoFLWYfPxz/IJiKY3nzA5C0wcH4lZn+fI+mDFoTUXogt7fZWyl3mCrdwQWrOEM8A=="
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-application-provider-test:bs_1.45.3__0.6.0!red-hat-developer-hub-backstage-plugin-application-provider-test
         pluginConfig:
           dynamicPlugins:
             frontend:
@@ -154,8 +153,7 @@ global:
                     importName: TestProviderOne
                   - mountPoint: application/provider
                     importName: TestProviderTwo
-      - package: "@red-hat-developer-hub/backstage-plugin-application-listener-test@0.0.2"
-        integrity: "sha512-GRLbpjXE9ZyfRJr/iyp+1L2sUQL97aPc+FV/IORH63eGT32Uc0xCFBu51fGPYJFmXY49BlSh+CnVnbKNsyiOAQ=="
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-application-listener-test:bs_1.45.3__0.6.0!red-hat-developer-hub-backstage-plugin-application-listener-test
         pluginConfig:
           dynamicPlugins:
             frontend:
@@ -250,8 +248,7 @@ global:
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-header
         disabled: false
       # Enable an extra header test plugin
-      - package: "@red-hat-developer-hub/backstage-plugin-global-header-test@0.0.2"
-        integrity: "sha512-Dlay4DUAC3SifSJx4dmKDeD07DITGX9ZZ2SMCgcMMc00GJVKToD3DFuPYZ7lV2C2Ve7gWDufCf5NUmqaUWf6GA=="
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-global-header-test:bs_1.45.3__0.7.0 !red-hat-developer-hub-backstage-plugin-global-header-test
         pluginConfig:
           dynamicPlugins:
             frontend:
