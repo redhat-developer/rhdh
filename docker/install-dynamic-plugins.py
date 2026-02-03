@@ -165,13 +165,14 @@ def run_command(command: list[str], error_message: str, cwd: str = None, text: b
             cwd=cwd
         )
     except subprocess.CalledProcessError as e:
+        def to_text(output):
+            return output.strip() if isinstance(output, str) else output.decode('utf-8').strip()
+        
         msg = f"{error_message}: command failed with exit code {e.returncode}"
         if e.stderr:
-            stderr_text = e.stderr.strip() if isinstance(e.stderr, str) else e.stderr.decode('utf-8').strip()
-            msg += f"\nstderr: {stderr_text}"
+            msg += f"\nstderr: {to_text(e.stderr)}"
         if e.stdout:
-            stdout_text = e.stdout.strip() if isinstance(e.stdout, str) else e.stdout.decode('utf-8').strip()
-            msg += f"\nstdout: {stdout_text}"
+            msg += f"\nstdout: {to_text(e.stdout)}"
         raise InstallException(msg)
 
 def get_oci_plugin_paths(image: str) -> list[str]:
