@@ -24,6 +24,7 @@ test.describe("gitlab discovery UI tests", () => {
   });
 
   test("GitLab integration for discovering catalog entities from GitLab", async () => {
+    await uiHelper.searchInputPlaceholder("scaffoldedForm");
     await uiHelper.verifyText("scaffoldedForm-test");
     await uiHelper.clickLink("scaffoldedForm-test");
     await uiHelper.verifyHeading("scaffoldedForm-test");
