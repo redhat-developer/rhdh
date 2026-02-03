@@ -1,10 +1,20 @@
 kind: Backstage
-apiVersion: rhdh.redhat.com/v1alpha4
+apiVersion: rhdh.redhat.com/v1alpha5
 metadata:
   name: rhdh-rbac
 spec:
+  deployment:
+    patch:
+      spec:
+        template:
+          spec:
+            containers:
+              - name: backstage-backend
+                image: "quay.io/$QUAY_REPO:$TAG_NAME"
+            initContainers:
+              - name: install-dynamic-plugins
+                image: "quay.io/$QUAY_REPO:$TAG_NAME"
   application:
-    image: "quay.io/$QUAY_REPO:$TAG_NAME"
     appConfig:
       configMaps:
         - name: app-config-rhdh
