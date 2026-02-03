@@ -169,6 +169,7 @@ def run_command(command: list[str], error_message: str, cwd: str = None, text: b
             return output.strip() if isinstance(output, str) else output.decode('utf-8').strip()
         
         msg = f"{error_message}: command failed with exit code {e.returncode}"
+        msg += f"\ncommand: {' '.join(e.cmd)}"
         if e.stderr:
             msg += f"\nstderr: {to_text(e.stderr)}"
         if e.stdout:
