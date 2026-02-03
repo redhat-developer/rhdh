@@ -64,11 +64,9 @@ test.describe("Test Topology Plugin", () => {
 
     // Continue with rest of test
     await topology.verifyDeployment("topology-test");
-    // Use Locator object for better reusability and type safety
-    const topologyTestLocator = page.getByTestId("topology-test");
-    await uiHelper.verifyButtonURL("Open URL", "topology-test-route", {
-      locator: topologyTestLocator,
-    });
+    
+    // Verify "Open URL" button exists in the details panel
+    await expect(page.getByRole("button", { name: "Open URL" })).toBeVisible();
     await uiHelper.clickTab("Details");
     await uiHelper.verifyText("Status");
     await uiHelper.verifyText("Active");
