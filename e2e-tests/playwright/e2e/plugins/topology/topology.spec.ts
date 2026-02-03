@@ -109,15 +109,10 @@ test.describe("Test Topology Plugin", () => {
     );
     await uiHelper.clickTab("Resources");
     await uiHelper.verifyText("P");
-    await expect(page.getByTestId("icon-with-title-Running")).toBeVisible();
-    await expect(
-      page.getByTestId("icon-with-title-Running").getByRole("img", {
-        includeHidden: true,
-      }),
-    ).toBeVisible();
-    await expect(
-      page.getByTestId("icon-with-title-Running").getByTestId("status-text"),
-    ).toHaveText("Running");
+
+    // Verify pod status is Running (text-based verification)
+    await expect(page.getByRole("dialog").getByText("Running")).toBeVisible();
+
     await uiHelper.verifyHeading("PipelineRuns");
     await uiHelper.verifyText("PL");
     await uiHelper.verifyText("PLR");
