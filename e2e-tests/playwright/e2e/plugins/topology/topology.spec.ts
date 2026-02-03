@@ -64,9 +64,14 @@ test.describe("Test Topology Plugin", () => {
 
     // Continue with rest of test
     await topology.verifyDeployment("topology-test");
-    
-    // Verify "Open URL" button exists in the details panel
-    await expect(page.getByRole("button", { name: "Open URL" })).toBeVisible();
+
+    // Verify "Open URL" button in the details dialog for topology-test
+    const detailsDialog = page.getByRole("dialog");
+    await expect(detailsDialog).toBeVisible();
+    await expect(
+      detailsDialog.getByRole("button", { name: "Open URL" }),
+    ).toBeVisible();
+
     await uiHelper.clickTab("Details");
     await uiHelper.verifyText("Status");
     await uiHelper.verifyText("Active");
