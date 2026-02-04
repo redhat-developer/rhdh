@@ -466,14 +466,35 @@ orchestrator::enable_plugins_operator() {
 
   log::info "Merged dynamic plugins configmap updated"
 
-  # Find and restart the backstage deployment
+  # Restart the deployment to pick up the new configuration
   local backstage_deployment
   backstage_deployment=$(oc get deployment -n "$namespace" -o name 2> /dev/null | grep "backstage" | grep -v "psql" | head -1 | sed 's#deployment.apps/##')
 
-  if [[ -n "$backstage_deployment" ]]; then
-    log::info "Restarting deployment/$backstage_deployment to pick up plugin changes..."
-    oc rollout restart "deployment/$backstage_deployment" -n "$namespace"
-    k8s_wait::deployment "$namespace" "$backstage_deployment" 15
+  if [[ "${JOB_NAME}" =~ "operator" ]]; then
+    # Trigger operator reconciliation by annotating the Backstage CR
+    # This is the proper way to restart operator-managed deployments
+    # Direct `oc rollout restart` bypasses the operator and can cause
+    # the operator to create duplicate StatefulSets during reconciliation
+    local backstage_cr
+    backstage_cr=$(oc get backstage -n "$namespace" -o name 2> /dev/null | head -1 | sed 's#backstage.rhdh.redhat.com/##')
+
+    if [[ -n "$backstage_cr" ]]; then
+      log::info "Triggering operator reconciliation for Backstage CR: $backstage_cr"
+      oc annotate backstage "$backstage_cr" -n "$namespace" --overwrite \
+        "rhdh.redhat.com/restart=$(date +%s)"
+
+      # Wait for the operator to reconcile and restart the deployment
+      if [[ -n "$backstage_deployment" ]]; then
+        k8s_wait::deployment "$namespace" "$backstage_deployment" 15
+      fi
+    fi
+  elif [[ "${JOB_NAME}" =~ "helm" ]]; then
+    # For Helm deployments, use direct rollout restart
+    if [[ -n "$backstage_deployment" ]]; then
+      log::info "Restarting deployment: $backstage_deployment"
+      oc rollout restart deployment/"$backstage_deployment" -n "$namespace"
+      k8s_wait::deployment "$namespace" "$backstage_deployment" 15
+    fi
   fi
 
   log::success "Orchestrator plugins enabled successfully"
