@@ -7,6 +7,8 @@ const en = createTranslationMessages({
   messages: {
     'templateListPage.title': 'Self-service',
     'templateListPage.pageTitle': 'Self-service',
+    'templateWizardPage.title': 'Self-service',
+    'templateWizardPage.pageTitle': 'Self-service',
     'templateListPage.contentHeader.registerExistingButtonTitle':
       'Import an existing Git repository',
   },
