@@ -1063,6 +1063,25 @@ catalog:
           sortable: true
 ```
 
+### Re-ordering Columns
+
+Columns can be re-ordered using the `include` option. Columns appear in the exact order specified in the `include` array:
+
+```yaml
+catalog:
+  table:
+    columns:
+      include:
+        - owner      # 1st column
+        - name       # 2nd column
+        - type       # 3rd column
+        - lifecycle  # 4th column
+```
+
+**Result:** Columns display as Owner → Name → Type → Lifecycle (in that order).
+
+> **Note:** Custom columns are always appended at the end, in the order they are defined in the `custom` array.
+
 ### Default Behavior
 
 When no `catalog.table.columns` configuration is provided:
