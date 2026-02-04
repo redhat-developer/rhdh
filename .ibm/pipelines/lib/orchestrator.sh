@@ -220,7 +220,7 @@ _orchestrator::wait_for_workflow_deployments() {
 
   log::info "Waiting for all workflow pods to be running..."
   for workflow in $ORCHESTRATOR_WORKFLOWS; do
-    k8s_wait::deployment "$namespace" "$workflow" 5
+    k8s_wait::deployment "$namespace" "$workflow" 5 || return 1
   done
   log::success "All workflow pods are now running!"
   return 0
@@ -320,10 +320,10 @@ orchestrator::deploy_workflows_operator() {
   _orchestrator::clone_workflows "true"
 
   # Wait for backstage and sonataflow pods to be ready
-  k8s_wait::deployment "$namespace" backstage-psql 15
-  k8s_wait::deployment "$namespace" backstage-rhdh 15
-  k8s_wait::deployment "$namespace" sonataflow-platform-data-index-service 20
-  k8s_wait::deployment "$namespace" sonataflow-platform-jobs-service 20
+  k8s_wait::deployment "$namespace" backstage-psql 15 || return 1
+  k8s_wait::deployment "$namespace" backstage-rhdh 15 || return 1
+  k8s_wait::deployment "$namespace" sonataflow-platform-data-index-service 20 || return 1
+  k8s_wait::deployment "$namespace" sonataflow-platform-jobs-service 20 || return 1
 
   # Dynamic PostgreSQL configuration discovery
   local pqsl_secret_name pqsl_svc_name
@@ -485,15 +485,15 @@ orchestrator::enable_plugins_operator() {
 
       # Wait for the operator to reconcile and restart the deployment
       if [[ -n "$backstage_deployment" ]]; then
-        k8s_wait::deployment "$namespace" "$backstage_deployment" 15
+        k8s_wait::deployment "$namespace" "$backstage_deployment" 15 || return 1
       fi
     fi
-  elif [[ "${JOB_NAME}" =~ "helm" ]]; then
+  else
     # For Helm deployments, use direct rollout restart
     if [[ -n "$backstage_deployment" ]]; then
       log::info "Restarting deployment: $backstage_deployment"
       oc rollout restart deployment/"$backstage_deployment" -n "$namespace"
-      k8s_wait::deployment "$namespace" "$backstage_deployment" 15
+      k8s_wait::deployment "$namespace" "$backstage_deployment" 15 || return 1
     fi
   fi
 
