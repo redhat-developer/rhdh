@@ -4,6 +4,15 @@ import { PW_PROJECT } from "./playwright/projects";
 process.env.JOB_NAME = process.env.JOB_NAME || "";
 process.env.IS_OPENSHIFT = process.env.IS_OPENSHIFT || "";
 
+const isPrOcpHelmJob =
+  process.env.JOB_NAME.includes("pull") &&
+  process.env.JOB_NAME.includes("e2e-ocp-helm") &&
+  !process.env.JOB_NAME.includes("e2e-ocp-helm-nightly");
+
+const isOsdGcpJob = process.env.JOB_NAME.includes("osd-gcp");
+
+const shouldSkipOrchestratorTests = isPrOcpHelmJob || isOsdGcpJob;
+
 // Set LOCALE based on which project is being run
 const args = process.argv;
 

@@ -549,8 +549,8 @@ test.describe("Test RBAC", () => {
       );
     });
 
-    // TODO: https://issues.redhat.com/browse/RHDHBUGS-2100
-    test.fixme("Test that roles and policies from GET request are what expected", async () => {
+    // TODO: https://issues.redhat.com/browse/RHDHBUGS-2100 - TEMPORARILY ENABLED FOR TESTING, RE-DISABLE BEFORE MERGE
+    test("Test that roles and policies from GET request are what expected", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
 
       const rolesResponse = await rbacApi.getRoles();
