@@ -485,7 +485,10 @@ orchestrator::enable_plugins_operator() {
 
       # Wait for the operator to reconcile and restart the deployment
       if [[ -n "$backstage_deployment" ]]; then
-        k8s_wait::deployment "$namespace" "$backstage_deployment" 15 || return 1
+        if ! k8s_wait::deployment "$namespace" "$backstage_deployment" 15; then
+          save_all_pod_logs "$namespace"
+          return 1
+        fi
       fi
     fi
   else
@@ -493,7 +496,10 @@ orchestrator::enable_plugins_operator() {
     if [[ -n "$backstage_deployment" ]]; then
       log::info "Restarting deployment: $backstage_deployment"
       oc rollout restart deployment/"$backstage_deployment" -n "$namespace"
-      k8s_wait::deployment "$namespace" "$backstage_deployment" 15 || return 1
+      if ! k8s_wait::deployment "$namespace" "$backstage_deployment" 15; then
+        save_all_pod_logs "$namespace"
+        return 1
+      fi
     fi
   fi
 
