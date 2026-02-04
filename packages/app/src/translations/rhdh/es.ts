@@ -94,7 +94,6 @@ export default createTranslationMessages({
     'signIn.providers.saml.message': 'Iniciar sesión con SAML',
 
     // App translations
-    'app.scaffolder.title': 'Autoservicio',
     'app.search.title': 'Buscar',
     'app.search.resultType': 'Tipo de resultado',
     'app.search.softwareCatalog': 'Catálogo de software',
