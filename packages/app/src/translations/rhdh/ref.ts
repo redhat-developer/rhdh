@@ -157,9 +157,6 @@ export const rhdhMessages = {
     },
   },
   app: {
-    scaffolder: {
-      title: 'Self-service',
-    },
     search: {
       title: 'Search',
       resultType: 'Result Type',

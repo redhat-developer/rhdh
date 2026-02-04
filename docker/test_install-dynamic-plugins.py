@@ -1238,10 +1238,10 @@ class TestNpmPluginInstallerInstall:
         plugin = {'package': 'test-package@1.0.0'}  # No integrity
         plugin_path_by_hash = {}
 
-        # Mock npm pack
+        # Mock npm pack - use string (not bytes) since run_command uses text=True
         mock_result = mocker.MagicMock()
         mock_result.returncode = 0
-        mock_result.stdout = b'test-package-1.0.0.tgz'
+        mock_result.stdout = 'test-package-1.0.0.tgz'
         mocker.patch('subprocess.run', return_value=mock_result)
 
         # Mock tarball extraction
@@ -1730,7 +1730,35 @@ class TestOciDownloader:
         paths = install_dynamic_plugins.get_oci_plugin_paths('oci://registry.io/plugin:v1.0')
 
         assert len(paths) == 0
+        
+    @pytest.mark.integration
+    # Corresponds to the quay.io/rhdh/backstage-community-plugin-analytics-provider-segment:bcp-analytics-provider-segment-1-on-push-hv5kz-build-container image
+    # Not to quay.io/rhdh/backstage-community-plugin-analytics-provider-segment:1.10.0--1.22.2 which is a manifest list
+    @pytest.mark.parametrize("image", [
+        'oci://quay.io/rhdh/backstage-community-plugin-analytics-provider-segment@sha256:d465b0f4f85af8a0767a84055c366cebc11c8c1f6a8488248874e3acc7f148ee',
+        'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-analytics-provider-segment:bs_1.45.3__1.22.2'
+    ])
+    def test_get_oci_plugin_paths_real_image(self, tmp_path, image):
+        """Test get_oci_plugin_paths with real OCI images."""
+        import shutil
 
+        # Skip if skopeo not available
+        if not shutil.which('skopeo'):
+            pytest.skip("skopeo not available")
+
+        paths = install_dynamic_plugins.get_oci_plugin_paths(image)
+
+        # Verify we got at least one plugin path
+        assert isinstance(paths, list)
+        assert len(paths) > 0
+
+        # Verify all paths are strings
+        for path in paths:
+            assert isinstance(path, str)
+            assert len(path) > 0
+            # display path
+            print(f"\nPath: {path}")
+            
     def test_download_with_explicit_path(self, tmp_path, mocker):
         """Test download extracts the specified plugin path."""
         mocker.patch('shutil.which', return_value='/usr/bin/skopeo')
@@ -2408,20 +2436,30 @@ class TestExtractCatalogIndex:
 
     def test_extract_catalog_index_skopeo_copy_fails(self, tmp_path, mocker):
         """Test that function raises InstallException when skopeo copy fails."""
+        import subprocess
         mocker.patch('shutil.which', return_value='/usr/bin/skopeo')
 
-        # Mock subprocess.run to simulate skopeo failure
-        mock_result = mocker.Mock()
-        mock_result.returncode = 1
-        mock_result.stderr = "Error: image not found"
-        mocker.patch('subprocess.run', return_value=mock_result)
+        # Mock subprocess.run to raise CalledProcessError (since run_command uses check=True)
+        mock_error = subprocess.CalledProcessError(
+            returncode=1,
+            cmd=['/usr/bin/skopeo', 'copy', 'docker://quay.io/test/image:latest', 'dir:/tmp/...']
+        )
+        mock_error.stderr = "Error: image not found"
+        mock_error.stdout = ""
+        mocker.patch('subprocess.run', side_effect=mock_error)
 
-        with pytest.raises(install_dynamic_plugins.InstallException, match="Failed to download catalog index image"):
+        with pytest.raises(install_dynamic_plugins.InstallException) as exc_info:
             install_dynamic_plugins.extract_catalog_index(
                 "quay.io/test/image:latest",
                 str(tmp_path),
                 str(tmp_path / "m4rk3tpl4c3")
             )
+        
+        # Verify the error message includes the expected content
+        error_msg = str(exc_info.value)
+        assert "Failed to download catalog index image" in error_msg
+        assert "command failed with exit code 1" in error_msg
+        assert "stderr: Error: image not found" in error_msg
 
     def test_extract_catalog_index_no_manifest(self, tmp_path, mocker):
         """Test that function raises InstallException when manifest.json is not found."""

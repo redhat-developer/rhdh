@@ -26,6 +26,7 @@ import { entityPage } from '../catalog/EntityPage';
 import { CustomCatalogFilters } from '../catalog/filters/CustomCatalogFilters';
 import { LearningPaths } from '../learningPaths/LearningPathsPage';
 import { Root } from '../Root';
+import { ApplicationDrawer } from '../Root/ApplicationDrawer';
 import { ApplicationListener } from '../Root/ApplicationListener';
 import { ApplicationProvider } from '../Root/ApplicationProvider';
 import ConfigUpdater from '../Root/ConfigUpdater';
@@ -75,12 +76,7 @@ const AppBase = () => {
               >
                 {entityPage(entityTabOverrides)}
               </Route>
-              <Route
-                path="/create"
-                element={
-                  <ScaffolderPage headerOptions={{ title: 'Self-service' }} />
-                }
-              >
+              <Route path="/create" element={<ScaffolderPage />}>
                 <ScaffolderFieldExtensions>
                   {scaffolderFieldExtensions.map(
                     ({ scope, module, importName, Component }) => (
@@ -125,6 +121,7 @@ const AppBase = () => {
               )}
             </FlatRoutes>
           </Root>
+          <ApplicationDrawer />
         </ApplicationProvider>
       </AppRouter>
       <AutoLogout

@@ -10,7 +10,7 @@ import { RbacPo } from "../../../support/page-objects/rbac-po";
 import { RhdhAuthApiHack } from "../../../support/api/rhdh-auth-api-hack";
 import RhdhRbacApi from "../../../support/api/rbac-api";
 import { RbacConstants } from "../../../data/rbac-constants";
-import { Policy } from "../../../support/api/rbac-api-structures";
+import { Policy, Role } from "../../../support/api/rbac-api-structures";
 import { CatalogImport } from "../../../support/pages/catalog-import";
 import { downloadAndReadFile } from "../../../utils/helper";
 
@@ -26,6 +26,7 @@ test.describe("Test RBAC", () => {
       description: "plugins",
     });
   });
+
   test.describe
     .serial("Test RBAC plugin: load permission policies and conditions from files", () => {
     test.beforeEach(async ({ page }) => {
@@ -320,8 +321,7 @@ test.describe("Test RBAC", () => {
       await uiHelper.clickLink("RBAC");
     });
 
-    //FIXME RHDHBUGS-2483
-    test.skip("Create and edit a role from the roles list page", async ({
+    test("Create and edit a role from the roles list page", async ({
       page,
     }) => {
       const uiHelper = new UIhelper(page);
@@ -381,6 +381,9 @@ test.describe("Test RBAC", () => {
       await expect(nextButton).toBeEnabled();
       await nextButton.click();
       // Wait for review step to be ready
+      await page
+        .getByText("users are not granted access")
+        .waitFor({ state: "hidden" });
       const saveButton = page.getByRole("button", { name: "Save" });
       await expect(saveButton).toBeVisible();
       await expect(saveButton).toBeEnabled();
@@ -403,8 +406,7 @@ test.describe("Test RBAC", () => {
       await rbacPo.deleteRole("role:default/test-role");
     });
 
-    //FIXME https://issues.redhat.com/browse/RHDHBUGS-2483
-    test.skip("Edit users and groups and update policies of a role from the overview page", async ({
+    test("Edit users and groups and update policies of a role from the overview page", async ({
       page,
     }) => {
       const uiHelper = new UIhelper(page);
@@ -440,6 +442,9 @@ test.describe("Test RBAC", () => {
       await expect(nextButton2).toBeEnabled();
       await nextButton2.click();
       // Wait for review step before Save
+      await page
+        .getByText("users are not granted access")
+        .waitFor({ state: "hidden" });
       await expect(page.getByRole("button", { name: "Save" })).toBeVisible();
       await uiHelper.clickButton("Save");
       await uiHelper.verifyText(
@@ -466,6 +471,9 @@ test.describe("Test RBAC", () => {
       await rbacPo.selectPermissionCheckbox("scaffolder.template.parameter");
       await uiHelper.clickButton("Next");
       // Wait for review step to be ready
+      await page
+        .getByText("users are not granted access")
+        .waitFor({ state: "hidden" });
       await expect(page.getByRole("button", { name: "Save" })).toBeVisible();
       await uiHelper.clickButton("Save");
       await uiHelper.verifyText(
@@ -479,11 +487,13 @@ test.describe("Test RBAC", () => {
     test("Create a role with a permission policy per resource type and verify that the only authorized users can access specific resources.", async ({
       page,
     }) => {
-      // TODO: https://issues.redhat.com/browse/RHDHBUGS-2127
-      test.fixme(true, "Cannot delete role because of missing permissions");
-
       const uiHelper = new UIhelper(page);
       const rbacPo = new RbacPo(page);
+
+      await uiHelper.verifyComponentInCatalog("Group", ["Janus-IDP Authors"]);
+      await uiHelper.verifyComponentInCatalog("API", ["Petstore"]);
+      await uiHelper.goToPageUrl("/rbac");
+
       await rbacPo.createConditionalRole(
         "test-role1",
         ["Guest User", "rhdh-qe rhdh-qe"],
@@ -498,6 +508,10 @@ test.describe("Test RBAC", () => {
       });
       await page.getByPlaceholder("Filter").fill("test-role1");
       await uiHelper.verifyHeading("All roles (1)");
+
+      await uiHelper.verifyComponentInCatalog("Group", ["Janus-IDP Authors"]);
+      await uiHelper.selectMuiBox("Kind", "API", true);
+
       await rbacPo.deleteRole("role:default/test-role1");
     });
   });
@@ -544,8 +558,7 @@ test.describe("Test RBAC", () => {
       );
     });
 
-    // TODO: https://issues.redhat.com/browse/RHDHBUGS-2100
-    test.fixme("Test that roles and policies from GET request are what expected", async () => {
+    test("Test that roles and policies from GET request are what expected", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
 
       const rolesResponse = await rbacApi.getRoles();
@@ -566,14 +579,67 @@ test.describe("Test RBAC", () => {
         );
       }
 
-      await Response.checkResponse(
+      // Get all roles and filter out dynamically created test roles
+      const allRoles = (await Response.removeMetadataFromResponse(
         rolesResponse,
-        RbacConstants.getExpectedRoles(),
+      )) as Role[];
+
+      // Filter out test-created roles to prevent test interference during parallel execution.
+      // Some tests (e.g., orchestrator RBAC tests) dynamically create roles like workflowUser
+      // and workflowAdmin during their execution. Since Playwright runs tests in parallel by
+      // default, these dynamic roles may exist when this test runs. Rather than requiring strict
+      // serial execution (which slows down test runs), we filter out known test role patterns
+      // and only validate that the expected predefined roles exist with correct members.
+      const testRolePatterns = [/^role:default\/workflow/i];
+      const filteredRoles = allRoles.filter(
+        (role: Role) =>
+          !testRolePatterns.some((pattern) => pattern.test(role.name)),
       );
-      await Response.checkResponse(
+
+      // Verify all expected roles exist in the filtered list
+      const expectedRoles = RbacConstants.getExpectedRoles();
+      for (const expectedRole of expectedRoles) {
+        const foundRole = filteredRoles.find(
+          (r: Role) => r.name === expectedRole.name,
+        );
+        expect(
+          foundRole,
+          `Role ${expectedRole.name} should exist`,
+        ).toBeDefined();
+        expect(
+          (foundRole as Role).memberReferences,
+          `Role ${expectedRole.name} should have correct members`,
+        ).toEqual(expectedRole.memberReferences);
+      }
+
+      // Get all policies and filter out policies associated with dynamically created test roles
+      const allPolicies = (await Response.removeMetadataFromResponse(
         policiesResponse,
-        RbacConstants.getExpectedPolicies(),
+      )) as Policy[];
+
+      // Filter out policies associated with test-created roles (same pattern as roles)
+      const filteredPolicies = allPolicies.filter(
+        (policy: Policy) =>
+          !testRolePatterns.some((pattern) =>
+            pattern.test(policy.entityReference),
+          ),
       );
+
+      // Verify all expected policies exist in the filtered list
+      const expectedPolicies = RbacConstants.getExpectedPolicies();
+      for (const expectedPolicy of expectedPolicies) {
+        const foundPolicy = filteredPolicies.find(
+          (p: Policy) =>
+            p.entityReference === expectedPolicy.entityReference &&
+            p.permission === expectedPolicy.permission &&
+            p.policy === expectedPolicy.policy &&
+            p.effect === expectedPolicy.effect,
+        );
+        expect(
+          foundPolicy,
+          `Policy for ${expectedPolicy.entityReference} with permission ${expectedPolicy.permission} should exist`,
+        ).toBeDefined();
+      }
     });
 
     test("Create new role for rhdh-qe, change its name, and deny it from reading catalog entities", async () => {
@@ -749,8 +815,7 @@ test.describe("Test RBAC", () => {
       await uiHelper.verifyHeading("All roles (1)");
     });
 
-    //FIXME https://issues.redhat.com/browse/RHDHBUGS-2483
-    test.skip("Test that user with `IsOwner` condition can access the RBAC page, create a role, edit a role, and delete the role", async ({
+    test("Test that user with `IsOwner` condition can access the RBAC page, create a role, edit a role, and delete the role", async ({
       page,
     }) => {
       const common = new Common(page);
@@ -791,6 +856,9 @@ test.describe("Test RBAC", () => {
       await expect(nextButton).toBeEnabled();
       await nextButton.click();
       // Wait for review step to be ready
+      await page
+        .getByText("users are not granted access")
+        .waitFor({ state: "hidden" });
       const saveButton = page.getByRole("button", { name: "Save" });
       await expect(saveButton).toBeVisible();
       await expect(saveButton).toBeEnabled();

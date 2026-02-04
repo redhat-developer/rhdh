@@ -1,6 +1,6 @@
 {
   "name": "red-hat-developer-hub-backstage-plugin-bulk-import-backend",
-  "version": "6.11.0",
+  "version": "7.0.1",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "license": "Apache-2.0",
@@ -39,7 +39,7 @@
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
-    "@red-hat-developer-hub/backstage-plugin-bulk-import-backend": "6.11.0"
+    "@red-hat-developer-hub/backstage-plugin-bulk-import-backend": "7.0.1"
   },
   "devDependencies": {
     "@backstage/cli": "0.34.5",

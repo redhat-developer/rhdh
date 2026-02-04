@@ -15,7 +15,7 @@ const currentFileName = fileURLToPath(import.meta.url);
 const currentDirName = dirname(currentFileName);
 const rootDirName = resolve(currentDirName, "..", "..", "..", "..");
 const syncedLogRegex =
-  /Committed \d+ (Keycloak|msgraph|GitHub|LDAP) users? and \d+ (Keycloak|msgraph|GitHub|LDAP) groups? in \d+(\.\d+)? seconds/;
+  /(Committed \d+ (Keycloak|msgraph|GitHub|LDAP|GitLab) users? and \d+ (Keycloak|msgraph|GitHub|LDAP|GitLab) groups? in \d+(\.\d+)? seconds|Scanned \d+ users? and processed \d+ users?)/;
 
 class RHDHDeployment {
   instanceName: string;
@@ -364,6 +364,11 @@ class RHDHDeployment {
       .map(([key, value]) => `${key}=${value}`)
       .join(",");
 
+    // First, capture the initial deployment state to detect when rollout starts
+    let initialGeneration: number | undefined;
+    let rolloutStarted = false;
+    const rolloutStartTimeout = 60000; // Wait up to 60 seconds for rollout to start
+
     while (Date.now() - startTime < timeoutMs) {
       try {
         const deployments = await this.appsV1Api.listNamespacedDeployment(
@@ -382,12 +387,63 @@ class RHDHDeployment {
         const deployment = deployments.body.items[0];
         const conditions = deployment.status?.conditions || [];
 
+        // Capture initial generation on first check
+        if (initialGeneration === undefined) {
+          initialGeneration = deployment.metadata?.generation || 0;
+          console.log(
+            `[INFO] Initial deployment generation: ${initialGeneration}`,
+          );
+        }
+
+        // Check if rollout has started (generation changed or progressing condition indicates rollout)
+        const currentGeneration = deployment.metadata?.generation || 0;
+        const observedGeneration = deployment.status?.observedGeneration || 0;
+        const isProgressing = conditions.some(
+          (condition) =>
+            condition.type === "Progressing" && condition.status === "True",
+        );
+
+        // Rollout has started if:
+        // 1. Generation increased (new spec applied)
+        // 2. Observed generation is less than current generation (rollout in progress)
+        // 3. Progressing condition is true
+        if (
+          !rolloutStarted &&
+          (currentGeneration > initialGeneration ||
+            observedGeneration < currentGeneration ||
+            isProgressing)
+        ) {
+          rolloutStarted = true;
+          console.log(
+            `[INFO] Rollout detected - Generation: ${currentGeneration}, Observed: ${observedGeneration}`,
+          );
+        }
+
+        // If we haven't detected rollout start yet, wait a bit and check again
+        // This handles the delay between configmap update and Kubernetes detecting the change
+        if (!rolloutStarted) {
+          const elapsedSinceStart = Date.now() - startTime;
+          if (elapsedSinceStart < rolloutStartTimeout) {
+            console.log(
+              `[INFO] Waiting for rollout to start... (${Math.round(elapsedSinceStart / 1000)}s elapsed)`,
+            );
+            await new Promise((resolve) => setTimeout(resolve, 2000)); // Check every 2 seconds
+            continue;
+          } else {
+            // If no rollout detected but deployment is ready, assume no restart was needed
+            console.log(
+              `[INFO] No rollout detected after ${rolloutStartTimeout}ms, checking if deployment is already ready`,
+            );
+            rolloutStarted = true; // Proceed to check readiness
+          }
+        }
+
         const isAvailable = conditions.some(
           (condition) =>
             condition.type === "Available" && condition.status === "True",
         );
 
-        const isProgressing = conditions.some(
+        const isProgressingWithRollout = conditions.some(
           (condition) =>
             condition.type === "Progressing" &&
             condition.status === "True" &&
@@ -398,11 +454,34 @@ class RHDHDeployment {
         const desiredReplicas = this.cr.spec.replicas
           ? this.cr.spec.replicas
           : 1;
-        if (isAvailable && !isProgressing && replicas == desiredReplicas) {
+
+        // Check replica counts to ensure rollout has completed
+        const availableReplicas = deployment.status?.availableReplicas || 0;
+        const readyReplicas = deployment.status?.readyReplicas || 0;
+        const updatedReplicas = deployment.status?.updatedReplicas || 0;
+
+        const replicasMatch =
+          availableReplicas === desiredReplicas &&
+          readyReplicas === desiredReplicas &&
+          updatedReplicas === desiredReplicas;
+
+        // Deployment is ready when:
+        // - Available condition is true
+        // - Not progressing (or only NewReplicaSetAvailable which is fine)
+        // - All replica counts match
+        if (
+          isAvailable &&
+          !isProgressingWithRollout &&
+          replicas == desiredReplicas &&
+          replicasMatch &&
+          observedGeneration >= currentGeneration
+        ) {
           await new Promise((resolve) => setTimeout(resolve, 5000));
           return this;
-        } else if (isProgressing) {
-          console.log(`[INFO] Deployment is progressing (${replicas})`);
+        } else if (isProgressingWithRollout || !replicasMatch) {
+          console.log(
+            `[INFO] Deployment is progressing - Available: ${availableReplicas}, Ready: ${readyReplicas}, Updated: ${updatedReplicas}, Desired: ${desiredReplicas}, Observed Gen: ${observedGeneration}/${currentGeneration}`,
+          );
         }
 
         await new Promise((resolve) => setTimeout(resolve, 5000));
@@ -580,10 +659,25 @@ class RHDHDeployment {
     const backstageConfig = await this.readYamlToJson(configPath);
     expect(process.env.QUAY_REPO).toBeDefined();
     expect(process.env.TAG_NAME).toBeDefined();
-    backstageConfig.spec.application.image = `quay.io/${process.env.QUAY_REPO}:${process.env.TAG_NAME}`;
-    console.log(
-      `Setting Backstage CR image to quay.io/${process.env.QUAY_REPO}:${process.env.TAG_NAME}`,
-    );
+    const image = `quay.io/${process.env.QUAY_REPO}:${process.env.TAG_NAME}`;
+    backstageConfig.spec.deployment = {
+      patch: {
+        spec: {
+          template: {
+            spec: {
+              containers: [
+                {
+                  name: "backstage-backend",
+                  image,
+                  imagePullPolicy: "Always",
+                },
+              ],
+            },
+          },
+        },
+      },
+    };
+    console.log(`Setting Backstage CR image via deployment.patch to ${image}`);
     this.cr = backstageConfig;
     this.instanceName = backstageConfig.metadata.name.toString();
     return backstageConfig;
@@ -1139,6 +1233,12 @@ class RHDHDeployment {
       "./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-org-dynamic",
       true,
     );
+    // Use local path for local development, OCI path for CI/CD
+    const transformerPluginPath = this.isRunningLocal
+      ? "./dynamic-plugins/dist/@internal/backstage-plugin-catalog-backend-module-github-org-transformer-dynamic"
+      : "oci://quay.io/rh-ee-jhe/catalog-github-org-transformer:v0.1.0!internal-backstage-plugin-catalog-backend-module-github-org-transformer";
+
+    this.setDynamicPluginEnabled(transformerPluginPath, true);
 
     this.setAppConfigProperty("catalog.providers", {
       githubOrg: [
@@ -1282,6 +1382,89 @@ class RHDHDeployment {
     return this;
   }
 
+  async enableGitlabLoginWithIngestion(): Promise<RHDHDeployment> {
+    console.log("Enabling GitLab login with ingestion...");
+
+    //expect the config variable to be set
+    expect(process.env.AUTH_PROVIDERS_GITLAB_HOST).toBeDefined();
+    expect(process.env.AUTH_PROVIDERS_GITLAB_TOKEN).toBeDefined();
+    expect(process.env.AUTH_PROVIDERS_GITLAB_PARENT_ORG).toBeDefined();
+
+    // enable the catalog backend dynamic plugin
+    // and set the required configuration properties
+    this.setDynamicPluginEnabled(
+      "./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-gitlab-org-dynamic",
+      true,
+    );
+
+    this.setAppConfigProperty("catalog.providers", {
+      gitlab: {
+        default: {
+          host: "${AUTH_PROVIDERS_GITLAB_HOST}",
+          orgEnabled: true,
+          group: "${AUTH_PROVIDERS_GITLAB_PARENT_ORG}",
+          restrictUsersToGroup: true,
+          includeUsersWithoutSeat: true,
+          schedule: {
+            initialDelay: {
+              seconds: 0,
+            },
+            frequency: {
+              minutes: 1,
+            },
+            timeout: {
+              minutes: 1,
+            },
+          },
+        },
+      },
+    });
+
+    // enable gitlab integration
+    this.setAppConfigProperty("integrations", {
+      gitlab: [
+        {
+          host: "${AUTH_PROVIDERS_GITLAB_HOST}",
+          token: "${AUTH_PROVIDERS_GITLAB_TOKEN}",
+          apiBaseUrl: "https://${AUTH_PROVIDERS_GITLAB_HOST}/api/v4",
+        },
+      ],
+    });
+
+    // enable the gitlab login provider
+    this.setAppConfigProperty("auth.providers.gitlab", {
+      production: {
+        audience: "https://${AUTH_PROVIDERS_GITLAB_HOST}",
+        clientId: "${AUTH_PROVIDERS_GITLAB_CLIENT_ID}",
+        clientSecret: "${AUTH_PROVIDERS_GITLAB_CLIENT_SECRET}",
+        callbackUrl:
+          "${BASE_URL:-http://localhost:7007}/api/auth/gitlab/handler/frame",
+      },
+    });
+
+    this.setAppConfigProperty("auth.environment", "production");
+    this.setAppConfigProperty("signInPage", "gitlab");
+
+    return this;
+  }
+
+  async setGitlabResolver(
+    resolver: string,
+    dangerouslyAllowSignInWithoutUserInCatalog: boolean = false,
+  ): Promise<RHDHDeployment> {
+    this.setAppConfigProperty(
+      "auth.providers.gitlab.production.signIn.resolvers",
+      [
+        {
+          resolver: resolver,
+          dangerouslyAllowSignInWithoutUserInCatalog:
+            dangerouslyAllowSignInWithoutUserInCatalog,
+        },
+      ],
+    );
+    return this;
+  }
+
   async waitForSynced(): Promise<RHDHDeployment> {
     const synced = await this.followLogs(syncedLogRegex, 120000);
     expect(synced).toBe(true);
@@ -1375,7 +1558,7 @@ class RHDHDeployment {
     const groupEntity: GroupEntity = await api.getGroupEntityFromAPI(group);
     const members = this.parseGroupMemberFromEntity(groupEntity);
     console.log(
-      `Checking group ${group} (${JSON.stringify(members)}) contains groups ${user}`,
+      `Checking group ${group} (${JSON.stringify(members)}) contains user ${user}`,
     );
     return members.includes(user);
   }
@@ -1408,6 +1591,23 @@ class RHDHDeployment {
       `Checking parents of ${child} (${JSON.stringify(parents)}) contain group ${parent}`,
     );
     return parents.includes(parent);
+  }
+
+  async checkUserHasAnnotation(
+    user: string,
+    annotationKey: string,
+    expectedValue: string,
+  ): Promise<boolean> {
+    const api = new APIHelper();
+    await api.UseStaticToken(this.staticToken);
+    await api.UseBaseUrl(await this.computeBackstageBackendUrl());
+    const userEntity: UserEntity = await api.getCatalogUserFromAPI(user);
+    const annotations = userEntity.metadata?.annotations || {};
+    const actualValue = annotations[annotationKey];
+    console.log(
+      `Checking user ${user} has annotation ${annotationKey}=${expectedValue}, actual value: ${actualValue}`,
+    );
+    return actualValue === expectedValue;
   }
 }
 

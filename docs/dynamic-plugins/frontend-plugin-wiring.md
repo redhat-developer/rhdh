@@ -168,7 +168,6 @@ plugins:
 Up to 3 levels of nested menu items are supported.
 
 - <menu_item_name> - A unique name in the main sidebar navigation. This can represent either a standalone menu item or a parent menu item. If it represents a plugin menu item, the name must match the corresponding path in `dynamicRoutes`. For example, if `dynamicRoutes` defines `path: /my-plugin`, the `menu_item_name` must be `my-plugin`.
-
   - Handling Complex Paths:
     - For simple paths like `path: /my-plugin`, the `menu_item_name` should be `my-plugin`.
     - For more complex paths, such as multi-segment paths like `path: /metrics/users/info`, the `menu_item_name` should represent the full path in dot notation (e.g., `metrics.users.info`).
@@ -334,13 +333,11 @@ Each mount point supports additional configuration:
 - `if` - Used only in `*/cards` type which renders visible content. This is passed to `<EntitySwitch.Case if={<here>}`.
 
   The following conditions are available:
-
   - `allOf`: All conditions must be met
   - `anyOf`: At least one condition must be met
   - `oneOf`: Only one condition must be met
 
   Conditions can be:
-
   - `isKind`: Accepts a string or a list of string with entity kinds. For example `isKind: component` will render the component only for entity of `kind: Component`.
   - `isType`: Accepts a string or a list of string with entity types. For example `isType: service` will render the component only for entities of `spec.type: 'service'`.
   - `hasAnnotation`: Accepts a string or a list of string with annotation keys. For example `hasAnnotation: my-annotation` will render the component only for entities that have `metadata.annotations['my-annotation']` defined.
@@ -438,6 +435,148 @@ dynamicPlugins:
 ```
 
 Users can configure multiple application providers by adding entries to the `mountPoints` field.
+
+### Adding application drawers
+
+The application drawer system allows plugins to create persistent side drawers that can be opened and closed independently. Multiple drawer plugins can coexist, with RHDH automatically managing which drawer is displayed. When a user opens a drawer, any previously open drawer is automatically closed, ensuring only one drawer is visible at a time.
+
+> **Note**: The `application/internal/drawer-state` and `application/internal/drawer-content` mount points are for internal use only and are subject to change. These will be updated with the introduction of the new frontend system.
+
+#### Architecture Overview
+
+The drawer system uses three key mount points:
+
+1. **`application/provider`**: Wraps the application with the plugin's context provider that manages drawer state
+2. **`application/internal/drawer-state`**: Exposes minimal drawer state (open/closed, width, close function) to RHDH
+3. **`application/internal/drawer-content`**: Provides the actual content to render inside the drawer
+
+#### Configuration Example
+
+Below is a complete example showing how to configure a drawer plugin:
+
+```yaml
+# app-config.yaml
+dynamicPlugins:
+  frontend:
+    <package_name>: # plugin package name
+      mountPoints:
+        # 1. Provider: Manages the drawer's internal state
+        - mountPoint: application/provider
+          importName: MyDrawerProvider
+
+        # 2. State Exposer: Shares drawer state with RHDH
+        - mountPoint: application/internal/drawer-state
+          importName: MyDrawerStateExposer
+
+        # 3. Content: Defines what renders inside the drawer
+        - mountPoint: application/internal/drawer-content
+          importName: MyDrawerContent
+          config:
+            id: my-drawer # Unique identifier matching the context id
+            props:
+              resizable: true # Enable resize handle (optional, default: false)
+```
+
+#### Mount Point Details
+
+##### `application/provider`
+
+The provider component wraps the application and manages the drawer's full internal state (open/closed, width, toggle methods, etc.). This is a standard React context provider.
+
+##### `application/internal/drawer-state`
+
+The state exposer component reads from the plugin's context and exposes only the minimal state needed by RHDH to render and coordinate the drawer. This uses a callback pattern to avoid shared dependencies between plugins and RHDH.
+
+**Key Points:**
+
+- Component receives `onStateChange` callback from RHDH
+- Exposes exactly 5 properties:
+  - `id`: Unique drawer identifier
+  - `isDrawerOpen`: Current open/closed state
+  - `drawerWidth`: Current drawer width in pixels
+  - `setDrawerWidth`: Function to update drawer width
+  - `closeDrawer`: Function RHDH calls to close this drawer
+- Returns `null` (doesn't render anything, only acts as a bridge)
+- RHDH detects state transitions (closed→open, open→closed) automatically
+- When a drawer opens, RHDH automatically closes other open drawers by calling their `closeDrawer` function
+
+##### `application/internal/drawer-content`
+
+The content component defines what renders inside the drawer.
+
+**Configuration:**
+
+- `id` (required): Unique identifier that must match the `id` in the provider's context
+- `props.resizable` (optional): Boolean enabling a resize handle on the drawer (default: `false`)
+
+#### Automatic Drawer Coordination
+
+RHDH automatically manages drawer visibility through state transition detection:
+
+**When a drawer opens:**
+
+1. Plugin's internal state changes (`isDrawerOpen` becomes `true`)
+2. State exposer detects the change and calls `onStateChange`
+3. RHDH receives the state update and sets this drawer as active
+4. RHDH automatically calls `closeDrawer()` on all other open drawers
+5. Only the most recently opened drawer remains visible
+
+**Example Scenario:**
+
+```yaml
+# Both plugins configured, but only one drawer visible at a time
+red-hat-developer-hub.backstage-plugin-quickstart:
+  mountPoints:
+    - mountPoint: application/provider
+      importName: QuickstartDrawerProvider
+    - mountPoint: application/internal/drawer-state
+      importName: QuickstartDrawerStateExposer
+    - mountPoint: application/internal/drawer-content
+      importName: QuickstartDrawerContent
+      config:
+        id: quickstart
+    - mountPoint: global.header/help
+      importName: QuickstartButton
+      config:
+        priority: 100
+              
+              
+
+red-hat-developer-hub.backstage-plugin-test-drawer:
+  mountPoints:
+    - mountPoint: application/provider
+      importName: TestDrawerProvider
+    - mountPoint: application/internal/drawer-state
+      importName: TestDrawerStateExposer
+    - mountPoint: application/internal/drawer-content
+      importName: TestDrawerContent
+      config:
+        id: test-drawer
+    - mountPoint: global.header/help
+      importName: TestButton
+
+# Flow: User opens Quickstart → Quickstart drawer shows
+#       User opens Test Drawer → Quickstart auto-closes, Test drawer shows
+#       User opens Quickstart → test drawer auto-closes, Quickstart shows
+```
+
+#### Resizable Drawers
+
+Enable user-resizable drawers with the `resizable` configuration:
+
+```yaml
+- mountPoint: application/drawer-content
+  importName: MyDrawerContent
+  config:
+    id: my-drawer
+    resizable: true # Adds a drag handle on the left edge
+```
+
+When `resizable: true`, users can:
+
+- Drag the left edge of the drawer to resize
+- Changes are managed by the plugin's `setDrawerWidth` function
+- Typically constrained to min/max width limits defined by the plugin
 
 ## Customizing and Adding Entity tabs
 

@@ -140,6 +140,42 @@ def merge_plugin(plugin: dict, all_plugins: dict, dynamic_plugins_file: str, lev
         # Use NPMPackageMerger for all other package types (NPM, git, local, tarball, etc.)
         return NPMPackageMerger(plugin, dynamic_plugins_file, all_plugins).merge_plugin(level)
 
+def run_command(command: list[str], error_message: str, cwd: str = None, text: bool = True) -> subprocess.CompletedProcess:
+    """
+    Run a subprocess command with consistent error handling.
+    
+    Args:
+        command: List of command arguments to execute
+        error_message: Descriptive error message prefix for failures
+        cwd: Working directory for the command (optional)
+        text: If True, decode stdout/stderr as text (default: True)
+    
+    Returns:
+        subprocess.CompletedProcess: The result of the command execution
+    
+    Raises:
+        InstallException: If the command fails with detailed error information
+    """
+    try:
+        return subprocess.run(
+            command,
+            check=True,
+            capture_output=True,
+            text=text,
+            cwd=cwd
+        )
+    except subprocess.CalledProcessError as e:
+        def to_text(output):
+            return output.strip() if isinstance(output, str) else output.decode('utf-8').strip()
+        
+        msg = f"{error_message}: command failed with exit code {e.returncode}"
+        msg += f"\ncommand: {' '.join(e.cmd)}"
+        if e.stderr:
+            msg += f"\nstderr: {to_text(e.stderr)}"
+        if e.stdout:
+            msg += f"\nstdout: {to_text(e.stdout)}"
+        raise InstallException(msg)
+
 def get_oci_plugin_paths(image: str) -> list[str]:
     """
     Get list of plugin paths from OCI image via manifest annotation.
@@ -154,14 +190,13 @@ def get_oci_plugin_paths(image: str) -> list[str]:
     if not skopeo_path:
         raise InstallException('skopeo executable not found in PATH')
     
+    image_url = image.replace(OCI_PROTOCOL_PREFIX, DOCKER_PROTOCOL_PREFIX)
+    result = run_command(
+        [skopeo_path, 'inspect', '--raw', image_url],
+        f"Failed to inspect OCI image {image}"
+    )
+    
     try:
-        image_url = image.replace(OCI_PROTOCOL_PREFIX, DOCKER_PROTOCOL_PREFIX)
-        result = subprocess.run(
-            [skopeo_path, 'inspect', '--raw', image_url],
-            check=True,
-            capture_output=True
-        )
-        
         manifest = json.loads(result.stdout)
         annotations = manifest.get('annotations', {})
         annotation_value = annotations.get('io.backstage.dynamic-packages')
@@ -171,16 +206,15 @@ def get_oci_plugin_paths(image: str) -> list[str]:
         
         decoded = base64.b64decode(annotation_value).decode('utf-8')
         plugins_metadata = json.loads(decoded)
-        
-        plugin_paths = []
-        for plugin_obj in plugins_metadata:
-            if isinstance(plugin_obj, dict):
-                plugin_paths.extend(plugin_obj.keys())
-        
-        return plugin_paths
-        
-    except Exception as e:
-        raise InstallException(f"Failed to read plugin metadata from {image}: {e}")
+    except (json.JSONDecodeError, binascii.Error) as e:
+        raise InstallException(f"Failed to parse plugin metadata from {image}: {e}")
+    
+    plugin_paths = []
+    for plugin_obj in plugins_metadata:
+        if isinstance(plugin_obj, dict):
+            plugin_paths.extend(plugin_obj.keys())
+    
+    return plugin_paths
 
 class PackageMerger:
     def __init__(self, plugin: dict, dynamic_plugins_file: str, all_plugins: dict):
@@ -553,10 +587,8 @@ class OciDownloader:
         self.max_entry_size = int(os.environ.get('MAX_ENTRY_SIZE', 20000000))
 
     def skopeo(self, command):
-        rv = subprocess.run([self._skopeo] + command, check=True, capture_output=True)
-        if rv.returncode != 0:
-            raise InstallException(f'Error while running skopeo command: {rv.stderr}')
-        return rv.stdout
+        result = run_command([self._skopeo] + command, 'skopeo command failed')
+        return result.stdout
 
     def get_plugin_tar(self, image: str) -> str:
         if image not in self.image_to_tarball:
@@ -704,11 +736,13 @@ class NpmPluginInstaller(PluginInstaller):
         
         # Download package
         print('\t==> Grabbing package archive through `npm pack`', flush=True)
-        result = subprocess.run(['npm', 'pack', package], capture_output=True, cwd=self.destination)
-        if result.returncode != 0:
-            raise InstallException(f'Error while installing plugin {package} with \'npm pack\' : {result.stderr.decode("utf-8")}')
+        result = run_command(
+            ['npm', 'pack', package],
+            f"Error while installing plugin {package} with 'npm pack'",
+            cwd=self.destination
+        )
         
-        archive = os.path.join(self.destination, result.stdout.decode('utf-8').strip())
+        archive = os.path.join(self.destination, result.stdout.strip())
         
         # Verify integrity for remote packages
         if not (package_is_local or self.skip_integrity_check):
@@ -978,13 +1012,10 @@ def extract_catalog_index(catalog_index_image: str, catalog_index_mount: str, ca
         local_dir = os.path.join(tmp_dir, 'catalog-index-oci')
 
         # Download the OCI image using skopeo
-        result = subprocess.run(
+        run_command(
             [skopeo_path, 'copy', image_url, f'dir:{local_dir}'],
-            capture_output=True,
-            text=True
+            f"Failed to download catalog index image {catalog_index_image}"
         )
-        if result.returncode != 0:
-            raise InstallException(f"Failed to download catalog index image {catalog_index_image}: {result.stderr}")
 
         manifest_path = os.path.join(local_dir, 'manifest.json')
         if not os.path.isfile(manifest_path):

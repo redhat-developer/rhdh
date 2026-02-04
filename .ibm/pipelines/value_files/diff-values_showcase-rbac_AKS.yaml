@@ -12,11 +12,11 @@ upstream:
     appConfig:
       app:
         # Please update to match host in case you don't want to configure hostname via `global.clusterRouterBase` or `global.host`.
-        baseUrl: 'https://{{- include "janus-idp.hostname" . }}'
+        baseUrl: 'https://{{- include "rhdh.hostname" . }}'
       backend:
-        baseUrl: 'https://{{- include "janus-idp.hostname" . }}'
+        baseUrl: 'https://{{- include "rhdh.hostname" . }}'
         cors:
-          origin: 'https://{{- include "janus-idp.hostname" . }}'
+          origin: 'https://{{- include "rhdh.hostname" . }}'
         database:
           connection:
             host: null
@@ -32,7 +32,7 @@ upstream:
         valueFrom:
           secretKeyRef:
             key: backend-secret
-            name: '{{ include "janus-idp.backend-secret-name" $ }}'
+            name: '{{ include "rhdh.backend-secret-name" $ }}'
       - name: POSTGRESQL_ADMIN_PASSWORD
         valueFrom:
           secretKeyRef:
@@ -47,14 +47,35 @@ upstream:
         value: "production"
       - name: ENABLE_CORE_ROOTHTTPROUTER_OVERRIDE
         value: "true"
+    # Tolerations and affinity needed to be scheduled on a spot AKS cluster
+    tolerations:
+      - key: "kubernetes.azure.com/scalesetpriority"
+        operator: "Equal"
+        value: "spot"
+        effect: "NoSchedule"
+    affinity:
+      nodeAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            preference:
+              matchExpressions:
+                - key: "kubernetes.azure.com/scalesetpriority"
+                  operator: In
+                  values:
+                    - "spot"
     extraVolumeMounts:
+      # NOTE: Lists will not be merged with the default values file. So need to append all the defaults if you want to add a new item here
+      # See https://issues.redhat.com/browse/RHDHPLAN-869
       # The initContainer below will install dynamic plugins in this volume mount.
       - name: dynamic-plugins-root
         mountPath: /opt/app-root/src/dynamic-plugins-root
+      - name: extensions-catalog
+        mountPath: /extensions
+      - name: temp
+        mountPath: /tmp
+
       - name: rbac-policy
         mountPath: /opt/app-root/src/rbac
-      - name: rbac-conditions
-        mountPath: /opt/app-root/src/rbac-conditions
     extraVolumes:
       # -- Ephemeral volume that will contain the dynamic plugins installed by the initContainer below at start.
       # To have more control on underlying storage, the [emptyDir](https://docs.openshift.com/container-platform/4.13/storage/understanding-ephemeral-storage.html)
@@ -80,12 +101,19 @@ upstream:
           defaultMode: 416
           optional: true
           secretName: '{{ printf "%s-dynamic-plugins-registry-auth" .Release.Name }}'
+      - name: npmcacache
+        emptyDir: {}
+      # -- Ephemeral volume used by the install-dynamic-plugins init container to extract catalog entities from the catalog index image.
+      # Mounted at the /extensions path in the backstage-backend main container for automatic discovery by the extension catalog backend providers.
+      - name: extensions-catalog
+        emptyDir: {}
+      - name: temp
+        emptyDir: {}
+
       - name: rbac-policy
         configMap:
           defaultMode: 420
           name: rbac-policy
-      - name: rbac-conditions
-        emptyDir: {}
     extraEnvVarsSecrets:
       - rhdh-secrets
     podSecurityContext:

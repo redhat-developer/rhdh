@@ -155,6 +155,14 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
 
     await uiHelper.goToPageUrl("/settings", "Settings");
     await uiHelper.verifyHeading("Zeus Giove");
+
+    await uiHelper.hideQuickstartIfVisible();
+
+    // Click "Show more" button to display metadata info
+    await page.getByTitle("Show more").click();
+    // Verify Metadata text is present
+    await uiHelper.verifyText("RHDH Metadata");
+
     await common.signOut();
   });
 
@@ -165,7 +173,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
       false,
     );
     await deployment.updateAllConfigs();
-    // waitForDeploymentReady() and waitForSynced() handle timing - no manual timeout needed
+    await page.waitForTimeout(3000); // wait is needed or the openshift rollout won't be detected - WORKING A MORE PERMANENT FIX TO REMOVE EXPLICIT TIMEOUT - FOR NOW IT UNBLOCK THE TESTS
     await deployment.restartLocalDeployment();
     await deployment.waitForDeploymentReady();
 
@@ -190,7 +198,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     );
     await deployment.updateAllConfigs();
     await deployment.restartLocalDeployment();
-    // waitForDeploymentReady() and waitForSynced() handle timing - no manual timeout needed
+    await page.waitForTimeout(3000); // wait is needed or the openshift rollout won't be detected - WORKING A MORE PERMANENT FIX TO REMOVE EXPLICIT TIMEOUT - FOR NOW IT UNBLOCK THE TESTS
     await deployment.waitForDeploymentReady();
 
     // wait for rhdh first sync and portal to be reachable
@@ -214,7 +222,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     );
     await deployment.updateAllConfigs();
     await deployment.restartLocalDeployment();
-    // waitForDeploymentReady() and waitForSynced() handle timing - no manual timeout needed
+    await page.waitForTimeout(3000); // wait is needed or the openshift rollout won't be detected - WORKING A MORE PERMANENT FIX TO REMOVE EXPLICIT TIMEOUT - FOR NOW IT UNBLOCK THE TESTS
     await deployment.waitForDeploymentReady();
 
     // wait for rhdh first sync and portal to be reachable
@@ -250,7 +258,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     );
     await deployment.updateAllConfigs();
     await deployment.restartLocalDeployment();
-    // waitForDeploymentReady() and waitForSynced() handle timing - no manual timeout needed
+    await page.waitForTimeout(3000); // wait is needed or the openshift rollout won't be detected - WORKING A MORE PERMANENT FIX TO REMOVE EXPLICIT TIMEOUT - FOR NOW IT UNBLOCK THE TESTS
     await deployment.waitForDeploymentReady();
 
     // wait for rhdh first sync and portal to be reachable
@@ -282,7 +290,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
       false,
     );
     await deployment.updateAllConfigs();
-    // waitForDeploymentReady() and waitForSynced() handle timing - no manual timeout needed
+    await page.waitForTimeout(3000); // wait is needed or the openshift rollout won't be detected - WORKING A MORE PERMANENT FIX TO REMOVE EXPLICIT TIMEOUT - FOR NOW IT UNBLOCK THE TESTS
     await deployment.restartLocalDeployment();
     await deployment.waitForDeploymentReady();
 
@@ -307,6 +315,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     );
     await deployment.updateAllConfigs();
     await deployment.restartLocalDeployment();
+    await page.waitForTimeout(3000); // wait is needed or the openshift rollout won't be detected - WORKING A MORE PERMANENT FIX TO REMOVE EXPLICIT TIMEOUT - FOR NOW IT UNBLOCK THE TESTS
     await deployment.waitForDeploymentReady();
 
     // wait for rhdh first sync and portal to be reachable
@@ -424,11 +433,13 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     );
     await deployment.updateAllConfigs();
     await deployment.restartLocalDeployment();
-    // waitForDeploymentReady() and waitForSynced() handle timing - no manual timeout needed
+    await page.waitForTimeout(3000); // wait is needed or the openshift rollout won't be detected - WORKING A MORE PERMANENT FIX TO REMOVE EXPLICIT TIMEOUT - FOR NOW IT UNBLOCK THE TESTS
     await deployment.waitForDeploymentReady();
 
     // wait for rhdh first sync and portal to be reachable
     await deployment.waitForSynced();
+
+    await uiHelper.hideQuickstartIfVisible();
 
     const ghLogin = await common.githubLoginFromSettingsPage(
       "rhdhqeauth1",
@@ -444,6 +455,77 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     await uiHelper.verifyHeading("Zeus Giove");
     await common.signOut();
     await context.clearCookies();
+  });
+
+  test(`Enable autologout and user is logged out after inactivity`, async () => {
+    deployment.setAppConfigProperty("auth.autologout.enabled", "true");
+    deployment.setAppConfigProperty(
+      "auth.autologout.idleTimeoutMinutes",
+      0.5, // minimum allowed value is 0.5 minutes
+    );
+    deployment.setAppConfigProperty(
+      "auth.autologout.promptBeforeIdleSeconds",
+      5,
+    );
+    await deployment.updateAllConfigs();
+    await deployment.restartLocalDeployment();
+    await page.waitForTimeout(3000); // wait is needed or the openshift rollout won't be detected - WORKING A MORE PERMANENT FIX TO REMOVE EXPLICIT TIMEOUT - FOR NOW IT UNBLOCK THE TESTS
+    await deployment.waitForDeploymentReady();
+
+    // wait for rhdh first sync and portal to be reachable
+    await deployment.waitForSynced();
+
+    const login = await common.keycloakLogin(
+      "zeus",
+      process.env.DEFAULT_USER_PASSWORD,
+    );
+    expect(login).toBe("Login successful");
+
+    await uiHelper.verifyTextVisible(
+      "Logging out due to inactivity",
+      false,
+      60000,
+    );
+    await page.waitForTimeout(5000);
+
+    await page.reload();
+
+    const cookies = await context.cookies();
+    const authCookie = cookies.find(
+      (cookie) => cookie.name === "oidc-refresh-token",
+    );
+    expect(authCookie).toBeUndefined();
+  });
+
+  test(`Enable autologout and user stays logged in after clicking "Don't log me out"`, async () => {
+    deployment.setAppConfigProperty("auth.autologout.enabled", "true");
+    deployment.setAppConfigProperty(
+      "auth.autologout.idleTimeoutMinutes",
+      0.5, // minimum allowed value is 0.5 minutes
+    );
+    deployment.setAppConfigProperty(
+      "auth.autologout.promptBeforeIdleSeconds",
+      5,
+    );
+    await deployment.updateAllConfigs();
+    await deployment.restartLocalDeployment();
+    await page.waitForTimeout(3000); // wait is needed or the openshift rollout won't be detected - WORKING A MORE PERMANENT FIX TO REMOVE EXPLICIT TIMEOUT - FOR NOW IT UNBLOCK THE TESTS
+    await deployment.waitForDeploymentReady();
+
+    // wait for rhdh first sync and portal to be reachable
+    await deployment.waitForSynced();
+
+    const login = await common.keycloakLogin(
+      "zeus",
+      process.env.DEFAULT_USER_PASSWORD,
+    );
+    expect(login).toBe("Login successful");
+
+    await uiHelper.clickButtonByText("Don't log me out", { timeout: 60000 });
+
+    await uiHelper.goToPageUrl("/settings", "Settings");
+    await uiHelper.verifyHeading("Zeus Giove");
+    await common.signOut();
   });
 
   test.afterAll(async () => {

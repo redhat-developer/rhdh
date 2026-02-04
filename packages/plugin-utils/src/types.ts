@@ -47,6 +47,7 @@ export type ResolvedDynamicRoute = {
 };
 
 export type MountPointConfigBase = {
+  id?: string;
   layout?: Record<string, string>;
   props?: Record<string, any>;
 };
