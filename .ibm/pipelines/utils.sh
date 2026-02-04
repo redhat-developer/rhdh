@@ -1090,6 +1090,13 @@ initiate_deployments() {
   cd "${DIR}"
   base_deployment
   rbac_deployment
+
+  # DEBUG: 2-hour sleep after orchestrator workflows are deployed for debugging
+  log::info "DEBUG: Sleeping for 2 hours after orchestrator workflow deployment for debugging..."
+  log::info "DEBUG: Orchestrator workflows deployed in ${NAME_SPACE} and ${NAME_SPACE_RBAC}"
+  log::info "DEBUG: You can connect to the cluster now to investigate"
+  sleep 7200
+  log::info "DEBUG: 2-hour sleep completed, continuing with tests..."
 }
 
 # OSD-GCP specific deployment functions that merge diff files and skip orchestrator workflows
