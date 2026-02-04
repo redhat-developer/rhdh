@@ -30,12 +30,12 @@ function convertMenuItemsRecordToArray(
 ): MenuItem[] {
   return Object.keys(menuItemsRecord).map(key => {
     const config = menuItemsRecord[key];
-    const { textKey, ...rest } = config;
+    const { textKey, titleKey: configTitleKey, ...rest } = config;
     return {
       ...rest,
       name: key,
       children: [],
-      titleKey: textKey,
+      titleKey: textKey ?? configTitleKey,
     } as MenuItem;
   });
 }
