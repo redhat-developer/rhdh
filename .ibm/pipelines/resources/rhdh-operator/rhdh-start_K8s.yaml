@@ -17,16 +17,16 @@ spec:
             initContainers:
               - name: install-dynamic-plugins
                 image: "quay.io/$QUAY_REPO:$TAG_NAME"
-                # Increase ephemeral storage limit for dynamic plugins installation
-                # This prevents "No space left on device" errors during plugin extraction
-                resources:
-                  requests:
-                    cpu: 250m
-                    memory: 256Mi
-                  limits:
-                    cpu: 1000m
-                    memory: 2.5Gi
-                    ephemeral-storage: 10Gi
+            volumes:
+              - name: dynamic-plugins-root
+                ephemeral:
+                  volumeClaimTemplate:
+                    spec:
+                      accessModes:
+                        - ReadWriteOnce
+                      resources:
+                        requests:
+                          storage: 5Gi
   application:
     route:
       enabled: false

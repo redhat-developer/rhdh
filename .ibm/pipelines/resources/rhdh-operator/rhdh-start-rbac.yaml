@@ -14,6 +14,16 @@ spec:
             initContainers:
               - name: install-dynamic-plugins
                 image: "quay.io/$QUAY_REPO:$TAG_NAME"
+            volumes:
+              - name: dynamic-plugins-root
+                ephemeral:
+                  volumeClaimTemplate:
+                    spec:
+                      accessModes:
+                        - ReadWriteOnce
+                      resources:
+                        requests:
+                          storage: 5Gi
   application:
     appConfig:
       configMaps:
