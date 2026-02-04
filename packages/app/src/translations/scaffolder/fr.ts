@@ -22,6 +22,9 @@ export default createTranslationMessages({
   full: false,
   messages: {
     'templateListPage.title': 'Self-service',
+    'templateListPage.pageTitle': 'Self-service',
+    'templateWizardPage.title': 'Self-service',
+    'templateWizardPage.pageTitle': 'Self-service',
     'templateListPage.contentHeader.registerExistingButtonTitle':
       'Importer un dépôt Git existant',
   },

@@ -1,21 +1,4 @@
 {
-  "catalog": {
-    "fr": {
-      "indexPage.createButtonTitle": "Self-service"
-    }
-  },
-  "catalog-import": {
-    "fr": {
-      "defaultImportPage.headerTitle": "Importer un dépôt Git existant",
-      "importInfoCard.title": "Importer un dépôt Git existant"
-    }
-  },
-  "scaffolder": {
-    "fr": {
-      "templateListPage.title": "Self-service",
-      "templateListPage.contentHeader.registerExistingButtonTitle": "Importer un dépôt Git existant"
-    }
-  },
   "rhdh": {
     "fr": {
       "menuItem.home": "Home",

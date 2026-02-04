@@ -1,21 +1,4 @@
 {
-  "catalog": {
-    "it": {
-      "indexPage.createButtonTitle": "Self-service"
-    }
-  },
-  "catalog-import": {
-    "it": {
-      "defaultImportPage.headerTitle": "Importa un repository Git esistente",
-      "importInfoCard.title": "Importa un repository Git esistente"
-    }
-  },
-  "scaffolder": {
-    "it": {
-      "templateListPage.title": "Self-service",
-      "templateListPage.contentHeader.registerExistingButtonTitle": "Importa un repository Git esistente"
-    }
-  },
   "rhdh": {
     "it": {
       "menuItem.home": "Home",

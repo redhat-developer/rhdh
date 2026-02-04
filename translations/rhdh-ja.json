@@ -1,21 +1,4 @@
 {
-  "catalog": {
-    "ja": {
-      "indexPage.createButtonTitle": "セルフサービス"
-    }
-  },
-  "catalog-import": {
-    "ja": {
-      "defaultImportPage.headerTitle": "既存の Git リポジトリーのインポート",
-      "importInfoCard.title": "既存の Git リポジトリーのインポート"
-    }
-  },
-  "scaffolder": {
-    "ja": {
-      "templateListPage.title": "セルフサービス",
-      "templateListPage.contentHeader.registerExistingButtonTitle": "既存の Git リポジトリーのインポート"
-    }
-  },
   "rhdh": {
     "ja": {
       "menuItem.home": "ホーム",
