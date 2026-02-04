@@ -15,6 +15,7 @@ aliases:
     - deerskindoll
     - divyanshiGupta
     - djanickova
+    - dom-aug
     - durandom
     - dzemanov
     - elsony
@@ -54,6 +55,7 @@ aliases:
     - polasudo
     - rm3l
     - rohitkrai03
+    - rohitratannagar
     - rostalan
     - sanketpathak
     - schultzp2020
@@ -76,6 +78,7 @@ aliases:
   rhdh-plugins:
     - AndrienkoAleksandr
     - djanickova
+    - dom-aug
     - dzemanov
     - gashcrumb
     - gustavolira
@@ -102,6 +105,7 @@ aliases:
     - lokanandaprabhu
     - Lucifergene
     - rohitkrai03
+    - rohitratannagar
     - sanketpathak
     - teknaS47
   rhdh-administrators:
@@ -122,4 +126,15 @@ aliases:
     - OpinionatedHeron
     - rm3l
     - subhashkhileri
+    - zdrapela
+  rhdh-qe:
+    - gustavolira
+    - HusneShabbir
+    - josephca
+    - jrichter1
+    - kadel
+    - rostalan
+    - sanketpathak
+    - subhashkhileri
+    - teknaS47
     - zdrapela
