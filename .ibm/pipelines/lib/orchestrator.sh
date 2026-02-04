@@ -421,7 +421,6 @@ orchestrator::enable_plugins_operator() {
   # Create temporary working directory for merge operation
   local work_dir="/tmp/orchestrator-plugins-merge-$$"
   mkdir -p "$work_dir"
-  trap 'rm -rf "$work_dir"' RETURN
 
   # Extract the YAML content from both configmaps to files
   log::info "Extracting dynamic plugins configmaps..."
@@ -457,6 +456,8 @@ orchestrator::enable_plugins_operator() {
     log::error "Failed to merge dynamic plugins configmaps"
     return 1
   fi
+
+  rm -rf "$work_dir"
 
   # Patch the operator configmap with merged content
   if ! oc patch cm "$operator_cm" -n "$namespace" --type merge -p "{\"data\":{\"dynamic-plugins.yaml\":$(echo "$merged_yaml" | jq -Rs .)}}"; then
