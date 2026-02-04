@@ -93,6 +93,11 @@ export default defineConfig({
         "**/playwright/e2e/plugins/quick-start.spec.ts",
         "**/playwright/e2e/plugins/scorecard/scorecard.spec.ts",
       ],
+      testIgnore: [
+        ...(shouldSkipOrchestratorTests
+          ? ["**/playwright/e2e/plugins/orchestrator/**/*.spec.ts"]
+          : []),
+      ],
     },
     {
       name: PW_PROJECT.SHOWCASE_AUTH_PROVIDERS,
@@ -139,6 +144,7 @@ export default defineConfig({
         "**/playwright/e2e/plugins/bulk-import.spec.ts",
         "**/playwright/e2e/plugins/scorecard/scorecard.spec.ts",
       ],
+      testIgnore: ["**/playwright/e2e/plugins/orchestrator/**/*.spec.ts"],
     },
     {
       name: PW_PROJECT.SHOWCASE_OPERATOR,
@@ -169,6 +175,11 @@ export default defineConfig({
         "**/playwright/e2e/**/*-rbac.spec.ts",
         "**/playwright/e2e/plugins/bulk-import.spec.ts",
         "**/playwright/e2e/plugins/scorecard/scorecard.spec.ts",
+      ],
+      testIgnore: [
+        ...(shouldSkipOrchestratorTests
+          ? ["**/playwright/e2e/plugins/orchestrator/**/*.spec.ts"]
+          : []),
       ],
     },
     {
