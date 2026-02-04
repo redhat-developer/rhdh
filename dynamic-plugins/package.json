@@ -23,7 +23,7 @@
     ]
   },
   "devDependencies": {
-    "@backstage/cli": "0.34.5",
+    "@backstage/cli": "0.35.3",
     "turbo": "2.7.6"
   },
   "resolutions": {

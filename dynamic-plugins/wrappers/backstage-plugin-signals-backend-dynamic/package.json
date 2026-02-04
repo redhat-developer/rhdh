@@ -1,6 +1,6 @@
 {
   "name": "backstage-plugin-signals-backend",
-  "version": "0.3.10",
+  "version": "0.3.11",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "license": "Apache-2.0",
@@ -9,7 +9,7 @@
   },
   "backstage": {
     "role": "backend-plugin",
-    "supported-versions": "1.45.3",
+    "supported-versions": "1.47.3",
     "pluginId": "signals",
     "pluginPackages": [
       "backstage-plugin-signals",
@@ -38,10 +38,10 @@
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
-    "@backstage/plugin-signals-backend": "0.3.10"
+    "@backstage/plugin-signals-backend": "0.3.11"
   },
   "devDependencies": {
-    "@backstage/cli": "0.34.5",
+    "@backstage/cli": "0.35.3",
     "@janus-idp/cli": "3.7.0",
     "typescript": "5.9.3"
   },

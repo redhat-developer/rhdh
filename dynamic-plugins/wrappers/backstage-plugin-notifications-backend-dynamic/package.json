@@ -1,6 +1,6 @@
 {
   "name": "backstage-plugin-notifications-backend",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "main": "./dist/index.cjs.js",
   "types": "src/index.ts",
   "license": "Apache-2.0",
@@ -11,7 +11,7 @@
   },
   "backstage": {
     "role": "backend-plugin",
-    "supported-versions": "1.45.3",
+    "supported-versions": "1.47.3",
     "pluginId": "notifications",
     "pluginPackages": [
       "backstage-plugin-notifications",
@@ -40,11 +40,11 @@
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
-    "@backstage/plugin-notifications-backend": "0.6.0",
-    "@backstage/plugin-signals-node": "0.1.26"
+    "@backstage/plugin-notifications-backend": "0.6.1",
+    "@backstage/plugin-signals-node": "0.1.27"
   },
   "devDependencies": {
-    "@backstage/cli": "0.34.5",
+    "@backstage/cli": "0.35.3",
     "@janus-idp/cli": "3.7.0",
     "typescript": "5.9.3"
   },
