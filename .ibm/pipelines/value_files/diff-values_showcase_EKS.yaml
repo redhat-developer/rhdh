@@ -11,6 +11,15 @@ global:
     plugins:
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic
         disabled: false
+      # Disable orchestrator plugins for EKS
+      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator:{{inherit}}!red-hat-developer-hub-backstage-plugin-orchestrator"
+        disabled: true
+      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator-backend:{{inherit}}!red-hat-developer-hub-backstage-plugin-orchestrator-backend"
+        disabled: true
+      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator:{{inherit}}!red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator"
+        disabled: true
+      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets:{{inherit}}!red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets"
+        disabled: true
 upstream:
   backstage:
     extraEnvVarsSecrets:
