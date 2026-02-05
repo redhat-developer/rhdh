@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@backstage-community/plugin-tech-radar": "1.13.0",
-    "@backstage-community/plugin-tech-radar-common": "1.11.0",
+    "@backstage-community/plugin-tech-radar-common": "1.12.0",
     "@backstage/core-plugin-api": "1.12.1",
     "@mui/icons-material": "5.18.0"
   },

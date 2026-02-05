@@ -4,17 +4,14 @@ import { Common, setupBrowser } from "../../utils/common";
 import { APIHelper } from "../../utils/api-helper";
 import { BulkImport } from "../../support/pages/bulk-import";
 import { CatalogImport } from "../../support/pages/catalog-import";
-import {
-  DEFAULT_CATALOG_INFO_YAML,
-  UPDATED_CATALOG_INFO_YAML,
-} from "../../support/test-data/bulk-import";
+import { DEFAULT_CATALOG_INFO_YAML } from "../../support/test-data/bulk-import";
 
 // Pre-req : plugin-bulk-import & plugin-bulk-import-backend-dynamic
 test.describe.serial("Bulk Import plugin", () => {
-  test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
-  // TODO: https://issues.redhat.com/browse/RHDHBUGS-2116
-  test.fixme(() => process.env.JOB_TYPE.includes("presubmit")); // skip on PR checks
-  test.fixme(() => !process.env.JOB_NAME.includes("ocp")); // run only on OCP jobs to avoid GH rate limit
+  test.skip(
+    () => process.env.JOB_NAME.includes("osd-gcp"),
+    "skipping due to RHDHBUGS-555 on OSD Env",
+  );
   test.describe.configure({ retries: process.env.CI ? 5 : 0 });
 
   let page: Page;
@@ -80,47 +77,103 @@ spec:
     );
   });
 
-  // TODO: https://issues.redhat.com/browse/RHDHBUGS-2230
-  // Select two repos: one with an existing catalog.yaml file and another without it
-  test.fixme("Add a Repository from the Repository Tab and Confirm its Preview", async () => {
+  test("Bulk import plugin page", async () => {
     await uiHelper.openSidebar("Bulk import");
-    await uiHelper.clickButton("Import");
-    await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
+    await uiHelper.verifyHeading("Bulk import");
+    await expect(
+      page.getByRole("button", { name: "Import to Red Hat Developer" }),
+    ).toHaveAttribute("aria-expanded", "true");
+    await page
+      .getByRole("button", { name: "Import to Red Hat Developer" })
+      .click();
+    await expect(
+      page.getByRole("button", { name: "Import to Red Hat Developer" }),
+    ).toHaveAttribute("aria-expanded", "false");
+    await expect(
+      page.getByText("Source control tool", { exact: true }),
+    ).toBeVisible();
+    await page
+      .getByLabel("Importing requires approval.")
+      .getByTestId("HelpOutlineIcon")
+      .hover();
+    await expect(
+      page.getByRole("tooltip", { name: "Importing requires approval." }),
+    ).toBeVisible();
+    await expect(page.getByRole("radio", { name: "GitHub" })).toBeChecked();
+    await page.getByRole("radio", { name: "GitLab" }).check();
+    await expect(page.getByRole("radio", { name: "GitLab" })).toBeChecked();
+    await page.getByRole("radio", { name: "GitHub" }).check();
+    await expect(page.getByRole("article")).toMatchAriaSnapshot(`
+      - table:
+        - rowgroup:
+          - row "select all repositories Name URL Organization Status":
+            - columnheader "select all repositories Name":
+              - checkbox "select all repositories"
+              - text: Name
+            - columnheader "URL"
+            - columnheader "Organization"
+            - columnheader "Status"
+    `);
+  });
 
-    await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
-      "Not Generated",
-    ]);
+  test("Add a Repository and Confirm its Preview", async () => {
+    await uiHelper.openSidebar("Bulk import");
+
+    // Wait to ensure the repo will appear in the Bulk Import UI
+    await expect(async () => {
+      await page.reload();
+      await common.waitForLoad();
+      await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
+      await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
+        "Ready to import",
+      ]);
+    }).toPass({
+      intervals: [5_000],
+      timeout: 40_000,
+    });
+
     await bulkimport.selectRepoInTable(catalogRepoDetails.name);
     await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
       catalogRepoDetails.url,
-      "Ready to import Preview file",
+      "Ready to import",
+      "Preview file",
     ]);
 
     await uiHelper.clickOnLinkInTableByUniqueText(
       catalogRepoDetails.name,
       "Preview file",
     );
+
     await expect(await uiHelper.clickButton("Save")).not.toBeVisible({
+      timeout: 10000,
+    });
+    await expect(await uiHelper.clickButton("Import")).toBeDisabled({
       timeout: 10000,
     });
   });
 
-  test("Add a Repository from the Organization Tab and Confirm its Preview", async () => {
-    await uiHelper.clickByDataTestId("organization-view");
-    await uiHelper.searchInputPlaceholder(newRepoDetails.owner);
-    await uiHelper.verifyRowInTableByUniqueText(newRepoDetails.owner, [
-      new RegExp(`github.com/${newRepoDetails.owner}`),
-      /1\/(\d+) Edit/,
-      /Ready to import Preview file/,
-    ]);
-    await uiHelper.clickOnLinkInTableByUniqueText(newRepoDetails.owner, "Edit");
-    await bulkimport.searchInOrg(newRepoDetails.repoName);
+  test("Add a Repository, generate a PR, and confirm its preview", async () => {
+    // Wait to ensure the repo will appear in the Bulk Import UI
+    await expect(async () => {
+      await page.reload();
+      await common.waitForLoad();
+      await uiHelper.searchInputPlaceholder(newRepoDetails.repoName);
+      await uiHelper.verifyRowInTableByUniqueText(newRepoDetails.repoName, [
+        "Ready to import",
+      ]);
+    }).toPass({
+      intervals: [5_000],
+      timeout: 40_000,
+    });
+
     await bulkimport.selectRepoInTable(newRepoDetails.repoName);
-    await uiHelper.clickButton("Select");
-    await uiHelper.verifyRowInTableByUniqueText(newRepoDetails.owner, [
-      new RegExp(`github.com/${newRepoDetails.owner}`),
-      /2\/(\d+) Edit/,
-      /Ready to import Preview files/,
+    await uiHelper.clickOnLinkInTableByUniqueText(
+      newRepoDetails.repoName,
+      "Preview file",
+    );
+    await uiHelper.clickButton("Save");
+    await uiHelper.verifyRowInTableByUniqueText(newRepoDetails.repoName, [
+      "Ready to import",
     ]);
     await expect(await uiHelper.clickButton("Import")).toBeDisabled({
       timeout: 10000,
@@ -132,7 +185,7 @@ spec:
     await bulkimport.filterAddedRepo(catalogRepoDetails.name);
     await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
       catalogRepoDetails.url,
-      "Added",
+      "Imported",
     ]);
     await bulkimport.filterAddedRepo(newRepoDetails.repoName);
     await uiHelper.verifyRowInTableByUniqueText(newRepoDetails.repoName, [
@@ -155,41 +208,11 @@ spec:
     expect(prCatalogInfoYaml).toEqual(expectedCatalogInfoYaml);
   });
 
-  test("Edit Pull request Details and Ensure PR Content Reflects Changes", async () => {
-    await bulkimport.filterAddedRepo(newRepoDetails.repoName);
-    await uiHelper.clickOnButtonInTableByUniqueText(
-      newRepoDetails.repoName,
-      "Update",
-    );
-
-    await bulkimport.fillTextInputByNameAtt(
-      "componentName",
-      newRepoDetails.updatedComponentName,
-    );
-    await bulkimport.fillTextInputByNameAtt("prLabels", newRepoDetails.labels);
-    await expect(await uiHelper.clickButton("Save")).toBeHidden();
-
-    const prCatalogInfoYaml = await APIHelper.getfileContentFromPR(
-      newRepoDetails.owner,
-      newRepoDetails.repoName,
-      1,
-      "catalog-info.yaml",
-    );
-    const expectedCatalogInfoYaml = UPDATED_CATALOG_INFO_YAML(
-      newRepoDetails.updatedComponentName,
-      `${newRepoDetails.owner}/${newRepoDetails.repoName}`,
-      newRepoDetails.labels,
-      process.env.GH_USER2_ID,
-    );
-    expect(prCatalogInfoYaml).toEqual(expectedCatalogInfoYaml);
-  });
-
   test("Verify Selected repositories shows catalog-info.yaml status as 'Already imported' and 'WAIT_PR_APPROVAL'", async () => {
     await uiHelper.openSidebar("Bulk import");
-    await uiHelper.clickButton("Import");
     await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
     await uiHelper.verifyRowInTableByUniqueText(catalogRepoDetails.name, [
-      "Already imported",
+      "Imported",
     ]);
     await uiHelper.searchInputPlaceholder(newRepoDetails.repoName);
     await uiHelper.verifyRowInTableByUniqueText(newRepoDetails.repoName, [
@@ -214,15 +237,19 @@ spec:
       ),
     ).toHaveLength(0);
 
-    await bulkimport.filterAddedRepo(newRepoDetails.repoName);
-    // verify that the status has changed to "Already imported."
-    await uiHelper.clickOnButtonInTableByUniqueText(
-      newRepoDetails.repoName,
-      "Refresh",
-    );
-    await uiHelper.verifyRowInTableByUniqueText(newRepoDetails.repoName, [
-      "Already imported",
-    ]);
+    // Wait to ensure the repo will appear in the Bulk Import UI
+    await expect(async () => {
+      await page.reload();
+      await common.waitForLoad();
+      await bulkimport.filterAddedRepo(newRepoDetails.repoName);
+      // verify that the status has changed to "Already imported."
+      await uiHelper.verifyRowInTableByUniqueText(newRepoDetails.repoName, [
+        "Imported",
+      ]);
+    }).toPass({
+      intervals: [5_000],
+      timeout: 40_000,
+    });
   });
 
   test("Verify Added Repositories Appear in the Catalog as Expected", async () => {
@@ -233,30 +260,6 @@ spec:
       "other",
       "unknown",
     ]);
-  });
-
-  test("Delete a Bulk Import Repository and Verify It's No Longer Visible in the UI", async () => {
-    await uiHelper.openSidebar("Bulk import");
-    await common.waitForLoad();
-    await bulkimport.filterAddedRepo(catalogRepoDetails.name);
-    await uiHelper.clickOnButtonInTableByUniqueText(
-      catalogRepoDetails.name,
-      "Delete",
-    );
-    await page.getByRole("button", { name: "Remove" }).click();
-    await uiHelper.verifyLink(catalogRepoDetails.url, {
-      exact: false,
-      notVisible: true,
-    });
-  });
-
-  test("Verify Deleted Bulk Import Repositories Does not Appear in the Catalog", async () => {
-    await uiHelper.openSidebar("Catalog");
-    await uiHelper.selectMuiBox("Kind", "Component");
-    await uiHelper.searchInputPlaceholder(catalogRepoDetails.name);
-    await uiHelper.verifyLink(catalogRepoDetails.name, {
-      notVisible: true,
-    });
   });
 
   test.afterAll(async () => {
@@ -284,10 +287,10 @@ spec:
 
 test.describe
   .serial("Bulk Import - Verify existing repo are displayed in bulk import Added repositories", () => {
-  test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
-  // TODO: https://issues.redhat.com/browse/RHDHBUGS-2116
-  test.fixme(() => process.env.JOB_TYPE.includes("presubmit")); // skip on PR checks
-  test.fixme(() => !process.env.JOB_NAME.includes("ocp")); // run only on OCP jobs to avoid GH rate limit
+  test.skip(
+    () => process.env.JOB_NAME.includes("osd-gcp"),
+    "skipping due to RHDHBUGS-555 on OSD Env",
+  );
   let page: Page;
   let uiHelper: UIhelper;
   let common: Common;
@@ -314,13 +317,12 @@ test.describe
     );
   });
 
-  // TODO: https://issues.redhat.com/browse/RHDHBUGS-2230
-  test.fixme("Verify existing repo from app-config is displayed in bulk import Added repositories", async () => {
+  test("Verify existing repo from app-config is displayed in bulk import Added repositories", async () => {
     await uiHelper.openSidebar("Bulk import");
     await common.waitForLoad();
     await bulkimport.filterAddedRepo(existingRepoFromAppConfig);
     await uiHelper.verifyRowInTableByUniqueText(existingRepoFromAppConfig, [
-      "Already imported",
+      "Imported",
     ]);
   });
 
@@ -340,17 +342,17 @@ test.describe
     await bulkimport.filterAddedRepo(existingComponentDetails.repoName);
     await uiHelper.verifyRowInTableByUniqueText(
       existingComponentDetails.repoName,
-      ["Already imported"],
+      ["Imported"],
     );
   });
 });
 
 test.describe
   .serial("Bulk Import - Ensure users without bulk import permissions cannot access the bulk import plugin", () => {
-  test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
-  // TODO: https://issues.redhat.com/browse/RHDHBUGS-2116
-  test.fixme(() => process.env.JOB_TYPE.includes("presubmit")); // skip on PR checks
-  test.fixme(() => !process.env.JOB_NAME.includes("ocp")); // run only on OCP jobs to avoid GH rate limit
+  test.skip(
+    () => process.env.JOB_NAME.includes("osd-gcp"),
+    "skipping due to RHDHBUGS-555 on OSD Env",
+  );
   let page: Page;
   let uiHelper: UIhelper;
   let common: Common;

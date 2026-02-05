@@ -240,9 +240,14 @@ buildInfo:
     Authentication provider: "Github"
     RBAC: disabled
   overrideBuildInfo: true
+# Opt-out of database storage for user settings
+userSettings:
+  persistence: browser
 i18n:
   locales:
     - en
     - fr
+    - it
+    - ja
     - de
   defaultLocale: en

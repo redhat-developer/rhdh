@@ -47,14 +47,14 @@
       "signIn.providers.onelogin.message": "Connectez-vous avec OneLogin",
       "signIn.providers.saml.title": "SAML",
       "signIn.providers.saml.message": "Connectez-vous en utilisant SAML",
-      "catalog.entityPage.overview.title": "Vue d’ensemble",
+      "catalog.entityPage.overview.title": "Vue d'ensemble",
       "catalog.entityPage.topology.title": "Topologie",
       "catalog.entityPage.issues.title": "Problèmes",
       "catalog.entityPage.pullRequests.title": "Extraire/Merger les Demandes",
       "catalog.entityPage.ci.title": "CI",
       "catalog.entityPage.cd.title": "CD",
       "catalog.entityPage.kubernetes.title": "Kubernetes",
-      "catalog.entityPage.imageRegistry.title": "Registre d’images",
+      "catalog.entityPage.imageRegistry.title": "Registre d'images",
       "catalog.entityPage.monitoring.title": "Surveillance",
       "catalog.entityPage.lighthouse.title": "Lighthouse",
       "catalog.entityPage.api.title": "API",
@@ -63,7 +63,6 @@
       "catalog.entityPage.definition.title": "Définition",
       "catalog.entityPage.diagram.title": "Diagramme du système",
       "catalog.entityPage.workflows.title": "Flux de travail",
-      "app.scaffolder.title": "Self-service",
       "app.search.title": "Recherche",
       "app.search.resultType": "Type de résultat",
       "app.search.softwareCatalog": "Catalogue de logiciels",
@@ -85,9 +84,7 @@
       "app.errors.goBack": "Retour",
       "app.errors.notFound.message": "Nous n'avons pas pu trouver cette page",
       "app.errors.notFound.additionalInfo": "La page que vous recherchez a peut-être été supprimée, son nom a peut-être été modifié ou elle est temporairement indisponible.",
-      "app.table.createdAt": "Créé à",
-      "menuItem.myGroup": "Mon groupe",
-      "app.entityPage.diagram.title": "Diagramme du système"
+      "app.table.createdAt": "Créé à"
     }
   }
 }

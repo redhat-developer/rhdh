@@ -18,6 +18,8 @@ source "${DIR}/lib/helm.sh"
 source "${DIR}/lib/namespace.sh"
 # shellcheck source=.ibm/pipelines/lib/config.sh
 source "${DIR}/lib/config.sh"
+# shellcheck source=.ibm/pipelines/lib/testing.sh
+source "${DIR}/lib/testing.sh"
 
 # Constants
 TEKTON_PIPELINES_WEBHOOK="tekton-pipelines-webhook"

@@ -27,6 +27,8 @@ export const PW_PROJECT = projectsJson as {
   readonly SHOWCASE_SANITY_PLUGINS: string;
   readonly SHOWCASE_UPGRADE: string;
   readonly SHOWCASE_LOCALIZATION_FR: string;
+  readonly SHOWCASE_LOCALIZATION_IT: string;
+  readonly SHOWCASE_LOCALIZATION_JA: string;
 };
 
 // Type for project names

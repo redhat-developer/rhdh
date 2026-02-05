@@ -1238,10 +1238,10 @@ class TestNpmPluginInstallerInstall:
         plugin = {'package': 'test-package@1.0.0'}  # No integrity
         plugin_path_by_hash = {}
 
-        # Mock npm pack
+        # Mock npm pack - use string (not bytes) since run_command uses text=True
         mock_result = mocker.MagicMock()
         mock_result.returncode = 0
-        mock_result.stdout = b'test-package-1.0.0.tgz'
+        mock_result.stdout = 'test-package-1.0.0.tgz'
         mocker.patch('subprocess.run', return_value=mock_result)
 
         # Mock tarball extraction
@@ -2436,20 +2436,30 @@ class TestExtractCatalogIndex:
 
     def test_extract_catalog_index_skopeo_copy_fails(self, tmp_path, mocker):
         """Test that function raises InstallException when skopeo copy fails."""
+        import subprocess
         mocker.patch('shutil.which', return_value='/usr/bin/skopeo')
 
-        # Mock subprocess.run to simulate skopeo failure
-        mock_result = mocker.Mock()
-        mock_result.returncode = 1
-        mock_result.stderr = "Error: image not found"
-        mocker.patch('subprocess.run', return_value=mock_result)
+        # Mock subprocess.run to raise CalledProcessError (since run_command uses check=True)
+        mock_error = subprocess.CalledProcessError(
+            returncode=1,
+            cmd=['/usr/bin/skopeo', 'copy', 'docker://quay.io/test/image:latest', 'dir:/tmp/...']
+        )
+        mock_error.stderr = "Error: image not found"
+        mock_error.stdout = ""
+        mocker.patch('subprocess.run', side_effect=mock_error)
 
-        with pytest.raises(install_dynamic_plugins.InstallException, match="Failed to download catalog index image"):
+        with pytest.raises(install_dynamic_plugins.InstallException) as exc_info:
             install_dynamic_plugins.extract_catalog_index(
                 "quay.io/test/image:latest",
                 str(tmp_path),
                 str(tmp_path / "m4rk3tpl4c3")
             )
+        
+        # Verify the error message includes the expected content
+        error_msg = str(exc_info.value)
+        assert "Failed to download catalog index image" in error_msg
+        assert "command failed with exit code 1" in error_msg
+        assert "stderr: Error: image not found" in error_msg
 
     def test_extract_catalog_index_no_manifest(self, tmp_path, mocker):
         """Test that function raises InstallException when manifest.json is not found."""
@@ -2905,6 +2915,102 @@ class TestExtractCatalogIndex:
         # Verify catalog entities directory was not created
         entities_dir = catalog_entities_parent_dir / "catalog-entities"
         assert not entities_dir.exists()
+
+class TestImageExistsInRegistry:
+    """Tests for image_exists_in_registry function."""
+
+    def test_image_exists_returns_true(self, mocker):
+        """Test that image_exists_in_registry returns True when image exists."""
+        mocker.patch('shutil.which', return_value='/usr/bin/skopeo')
+        mock_result = mocker.Mock()
+        mock_result.returncode = 0
+        mocker.patch('subprocess.run', return_value=mock_result)
+
+        result = install_dynamic_plugins.image_exists_in_registry('docker://quay.io/test/image:latest')
+        assert result is True
+
+    def test_image_not_exists_returns_false(self, mocker):
+        """Test that image_exists_in_registry returns False when image doesn't exist."""
+        mocker.patch('shutil.which', return_value='/usr/bin/skopeo')
+        mocker.patch('subprocess.run', side_effect=install_dynamic_plugins.subprocess.CalledProcessError(1, 'skopeo'))
+
+        result = install_dynamic_plugins.image_exists_in_registry('docker://quay.io/test/nonexistent:latest')
+        assert result is False
+
+    def test_skopeo_not_found_raises_exception(self, mocker):
+        """Test that missing skopeo raises InstallException."""
+        mocker.patch('shutil.which', return_value=None)
+
+        with pytest.raises(InstallException, match='skopeo executable not found'):
+            install_dynamic_plugins.image_exists_in_registry('docker://quay.io/test/image:latest')
+
+
+class TestResolveImageReference:
+    """Tests for resolve_image_reference function."""
+
+    def test_non_rhdh_image_unchanged(self, mocker):
+        """Test that non-RHDH images are returned unchanged."""
+        # No mocking needed - should return immediately without checking
+        result = install_dynamic_plugins.resolve_image_reference('oci://quay.io/other/image:v1.0')
+        assert result == 'oci://quay.io/other/image:v1.0'
+
+    def test_rhdh_image_exists_returns_original(self, mocker, capsys):
+        """Test that existing RHDH image returns original reference."""
+        mocker.patch('shutil.which', return_value='/usr/bin/skopeo')
+        mock_result = mocker.Mock()
+        mock_result.returncode = 0
+        mocker.patch('subprocess.run', return_value=mock_result)
+
+        result = install_dynamic_plugins.resolve_image_reference('oci://registry.access.redhat.com/rhdh/plugin:v1.0')
+        assert result == 'oci://registry.access.redhat.com/rhdh/plugin:v1.0'
+
+        captured = capsys.readouterr()
+        assert 'Image found in registry.access.redhat.com/rhdh/' in captured.out
+
+    def test_rhdh_image_not_exists_falls_back_to_quay(self, mocker, capsys):
+        """Test that missing RHDH image falls back to quay.io/rhdh/."""
+        mocker.patch('shutil.which', return_value='/usr/bin/skopeo')
+        mocker.patch('subprocess.run', side_effect=install_dynamic_plugins.subprocess.CalledProcessError(1, 'skopeo'))
+
+        result = install_dynamic_plugins.resolve_image_reference('oci://registry.access.redhat.com/rhdh/plugin:v1.0')
+        assert result == 'oci://quay.io/rhdh/plugin:v1.0'
+
+        captured = capsys.readouterr()
+        assert 'falling back to quay.io/rhdh/' in captured.out
+        assert 'Using fallback image: quay.io/rhdh/plugin:v1.0' in captured.out
+
+    def test_rhdh_docker_protocol_falls_back_to_quay(self, mocker, capsys):
+        """Test fallback works with docker:// protocol prefix."""
+        mocker.patch('shutil.which', return_value='/usr/bin/skopeo')
+        mocker.patch('subprocess.run', side_effect=install_dynamic_plugins.subprocess.CalledProcessError(1, 'skopeo'))
+
+        result = install_dynamic_plugins.resolve_image_reference('docker://registry.access.redhat.com/rhdh/plugin:v1.0')
+        assert result == 'docker://quay.io/rhdh/plugin:v1.0'
+
+    def test_rhdh_no_protocol_falls_back_to_quay(self, mocker, capsys):
+        """Test fallback works without protocol prefix."""
+        mocker.patch('shutil.which', return_value='/usr/bin/skopeo')
+        mocker.patch('subprocess.run', side_effect=install_dynamic_plugins.subprocess.CalledProcessError(1, 'skopeo'))
+
+        result = install_dynamic_plugins.resolve_image_reference('registry.access.redhat.com/rhdh/plugin:v1.0')
+        assert result == 'quay.io/rhdh/plugin:v1.0'
+
+    def test_rhdh_with_digest_falls_back_to_quay(self, mocker, capsys):
+        """Test fallback works with image digest format."""
+        mocker.patch('shutil.which', return_value='/usr/bin/skopeo')
+        mocker.patch('subprocess.run', side_effect=install_dynamic_plugins.subprocess.CalledProcessError(1, 'skopeo'))
+
+        result = install_dynamic_plugins.resolve_image_reference('oci://registry.access.redhat.com/rhdh/plugin@sha256:abc123')
+        assert result == 'oci://quay.io/rhdh/plugin@sha256:abc123'
+
+    def test_rhdh_with_path_falls_back_preserving_path(self, mocker, capsys):
+        """Test fallback preserves full path after rhdh/."""
+        mocker.patch('shutil.which', return_value='/usr/bin/skopeo')
+        mocker.patch('subprocess.run', side_effect=install_dynamic_plugins.subprocess.CalledProcessError(1, 'skopeo'))
+
+        result = install_dynamic_plugins.resolve_image_reference('oci://registry.access.redhat.com/rhdh/catalog/plugin-name:v2.0')
+        assert result == 'oci://quay.io/rhdh/catalog/plugin-name:v2.0'
+
 
 if __name__ == '__main__':
     pytest.main([__file__, '-v'])
