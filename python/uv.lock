@@ -285,6 +285,18 @@ wheels = [
 ]
 
 [[package]]
+name = "hatch-nodejs-version"
+version = "0.4.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "hatchling" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/19/c9/1823a9e45eadd487bece8f2b3b29311edd79ba900d874885b1e9f7973a50/hatch_nodejs_version-0.4.0.tar.gz", hash = "sha256:2428ea398dd053f019d2b7ac949dd6b690ca8e826b6d433ad13c5b6c475ae91b", size = 17797, upload-time = "2025-07-24T09:38:57.872Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/be/a6/bda41831a7999ad7e167cc0aeb9dd03b057cc68df08105ced569309f7f59/hatch_nodejs_version-0.4.0-py3-none-any.whl", hash = "sha256:37ac31fce33ede0b47a59c4c8ffed232e11113bda9618a95bd07ec716260d5c7", size = 8896, upload-time = "2025-07-24T09:38:56.643Z" },
+]
+
+[[package]]
 name = "hatch-requirements-txt"
 version = "0.4.1"
 source = { registry = "https://pypi.org/simple" }
@@ -711,6 +723,7 @@ build = [
     { name = "calver" },
     { name = "cython" },
     { name = "flit-core" },
+    { name = "hatch-nodejs-version" },
     { name = "hatch-requirements-txt" },
     { name = "hatchling" },
     { name = "setuptools" },
@@ -740,6 +753,7 @@ build = [
     { name = "calver", specifier = ">=2025.10.20" },
     { name = "cython", specifier = ">=3.2.4" },
     { name = "flit-core", specifier = ">=3.11,<4" },
+    { name = "hatch-nodejs-version", specifier = ">=0.3.0" },
     { name = "hatch-requirements-txt", specifier = ">=0.4.1" },
     { name = "hatchling", specifier = ">=0.21.1" },
     { name = "setuptools", specifier = ">=80.10.2" },
