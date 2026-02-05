@@ -24,7 +24,7 @@ initiate_operator_deployments() {
   oc apply -f /tmp/configmap-dynamic-plugins.yaml -n "${NAME_SPACE}"
   deploy_redis_cache "${NAME_SPACE}"
   deploy_rhdh_operator "${NAME_SPACE}" "${DIR}/resources/rhdh-operator/rhdh-start.yaml"
-  # TODO: fix orchestrator workflows deployment on operator
+  # TODO: https://issues.redhat.com/browse/RHDHBUGS-2184 fix orchestrator workflows deployment on operator
   # enable_orchestrator_plugins_op "${NAME_SPACE}"
   # deploy_orchestrator_workflows_operator "${NAME_SPACE}"
 
@@ -36,7 +36,7 @@ initiate_operator_deployments() {
   config::create_dynamic_plugins_config "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "/tmp/configmap-dynamic-plugins-rbac.yaml"
   oc apply -f /tmp/configmap-dynamic-plugins-rbac.yaml -n "${NAME_SPACE_RBAC}"
   deploy_rhdh_operator "${NAME_SPACE_RBAC}" "${DIR}/resources/rhdh-operator/rhdh-start-rbac.yaml"
-  # TODO: fix orchestrator workflows deployment on operator
+  # TODO: https://issues.redhat.com/browse/RHDHBUGS-2184 fix orchestrator workflows deployment on operator
   # enable_orchestrator_plugins_op "${NAME_SPACE_RBAC}"
   # deploy_orchestrator_workflows_operator "${NAME_SPACE_RBAC}"
 }
