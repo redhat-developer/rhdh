@@ -469,7 +469,7 @@ test.describe("Admin > Extensions", () => {
     //Following test is disabled for CI as plugin installation is disabled in CI
     test("Enable plugin from catalog extension page", async ({ page }) => {
       // TODO: https://issues.redhat.com/browse/RHDHBUGS-2146
-      test.fixme();
+      // test.fixme();
       await uiHelper.clickTab(t["plugin.extensions"][lang]["menuItem.catalog"]);
       await extensions.clickReadMoreByPluginTitle(
         "Adoption Insights for Red Hat Developer Hub",
@@ -501,7 +501,7 @@ test.describe("Admin > Extensions", () => {
       );
     });
 
-    test.skip("Installed packages page", async ({ page }, testInfo) => {
+    test("Installed packages page", async ({ page }, testInfo) => {
       await runAccessibilityTests(page, testInfo);
       await uiHelper.verifyTableHeadingAndRows([
         t["plugin.extensions"][lang]["installedPackages.table.columns.name"],
@@ -521,20 +521,25 @@ test.describe("Admin > Extensions", () => {
           exact: true,
         })
         .click();
-      await expect(
-        page.getByRole("cell", { name: "Techdocs" }).first(),
-      ).toBeVisible();
-      await expect(
-        page.getByRole("cell", {
-          name: "backstage-plugin-techdocs-module-addons-contrib",
-        }),
-      ).toBeVisible();
-      await expect(
-        page.getByRole("cell", { name: "Frontend plugin module" }),
-      ).toBeVisible();
-      await expect(
-        page.getByRole("cell", { name: /(\d+)\.(\d+)\.(\d+)/ }),
-      ).toBeVisible();
+      await uiHelper.verifyRowInTableByUniqueText("TechDocs Add-ons Contrib", [
+        /backstage-plugin-techdocs-module-addons-contrib/,
+        /Frontend plugin module/,
+        /(\d+)\.(\d+)\.(\d+)/,
+      ]);
+      // await expect(
+      //   page.getByRole("cell", { name: "Techdocs" }).first(),
+      // ).toBeVisible();
+      // await expect(
+      //   page.getByRole("cell", {
+      //     name: "backstage-plugin-techdocs-module-addons-contrib",
+      //   }),
+      // ).toBeVisible();
+      // await expect(
+      //   page.getByRole("cell", { name: "Frontend plugin module" }),
+      // ).toBeVisible();
+      // await expect(
+      //   page.getByRole("cell", { name: /(\d+)\.(\d+)\.(\d+)/ }),
+      // ).toBeVisible();
 
       // Verify actions column - in production, buttons are disabled with tooltip
       const techdocsRow = page
@@ -584,7 +589,7 @@ test.describe("Admin > Extensions", () => {
 
     test("Topology package sidebar for CI", async ({ page }) => {
       // TODO: https://issues.redhat.com/browse/RHDHBUGS-2144
-      test.fixme();
+      // test.fixme();
       await page
         .getByRole("textbox", {
           name: t["plugin.extensions"][lang][
