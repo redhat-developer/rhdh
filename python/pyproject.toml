@@ -31,5 +31,8 @@ dev = [
 runtime = [
     "mkdocs>=1.6.1",
     "mkdocs-techdocs-core>=1.6.1",
-    "plantuml-markdown>=3.11.1"
+    "plantuml-markdown>=3.11.1",
 ]
+
+[tool.uv.sources]
+plantuml-markdown = { url = "https://github.com/mikitex70/plantuml-markdown/archive/592837e9c26b9e92d711af42bce8fb8697183f9d.zip" }
