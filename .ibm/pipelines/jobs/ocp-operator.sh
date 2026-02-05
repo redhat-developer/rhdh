@@ -24,8 +24,9 @@ initiate_operator_deployments() {
   oc apply -f /tmp/configmap-dynamic-plugins.yaml -n "${NAME_SPACE}"
   deploy_redis_cache "${NAME_SPACE}"
   deploy_rhdh_operator "${NAME_SPACE}" "${DIR}/resources/rhdh-operator/rhdh-start.yaml"
-  enable_orchestrator_plugins_op "${NAME_SPACE}"
-  deploy_orchestrator_workflows_operator "${NAME_SPACE}"
+  # TODO: fix orchestrator workflows deployment on operator
+  # enable_orchestrator_plugins_op "${NAME_SPACE}"
+  # deploy_orchestrator_workflows_operator "${NAME_SPACE}"
 
   namespace::configure "${NAME_SPACE_RBAC}"
   config::create_conditional_policies_operator /tmp/conditional-policies.yaml
@@ -35,8 +36,9 @@ initiate_operator_deployments() {
   config::create_dynamic_plugins_config "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "/tmp/configmap-dynamic-plugins-rbac.yaml"
   oc apply -f /tmp/configmap-dynamic-plugins-rbac.yaml -n "${NAME_SPACE_RBAC}"
   deploy_rhdh_operator "${NAME_SPACE_RBAC}" "${DIR}/resources/rhdh-operator/rhdh-start-rbac.yaml"
-  enable_orchestrator_plugins_op "${NAME_SPACE_RBAC}"
-  deploy_orchestrator_workflows_operator "${NAME_SPACE_RBAC}"
+  # TODO: fix orchestrator workflows deployment on operator
+  # enable_orchestrator_plugins_op "${NAME_SPACE_RBAC}"
+  # deploy_orchestrator_workflows_operator "${NAME_SPACE_RBAC}"
 }
 
 # OSD-GCP specific operator deployment that skips orchestrator workflows
