@@ -111,6 +111,16 @@ catalog:
       orgs: ["${GITHUB_ORG}", "${GITHUB_ORG_2}"]
 dynatrace:
   baseUrl: temp
+bulkImport:
+  instructionsEnabled: true
+  instructionsDefaultExpanded: true
+  instructionsSteps:
+    - id: "step1"
+      text: "Choose your source control platform"
+      icon: "kind:component"
+    - id: "step2"
+      text: "Browse and select repositories"
+      icon: "search"
 argocd:
   appLocatorMethods:
     - type: "config"
@@ -127,7 +137,7 @@ permission:
     maxDepth: 1
     policyFileReload: true
     policies-csv-file: "./rbac/rbac-policy.csv"
-    conditionalPoliciesFile: "./rbac-conditions/conditional-policies.yaml"
+    conditionalPoliciesFile: "./rbac/conditional-policies.yaml"
     pluginsWithPermission:
       - catalog
       - permission

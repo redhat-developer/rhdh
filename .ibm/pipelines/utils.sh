@@ -630,6 +630,7 @@ apply_yaml_files() {
   else
     oc create configmap rbac-policy \
       --from-file="rbac-policy.csv"="$dir/resources/config_map/rbac-policy.csv" \
+      --from-file="conditional-policies.yaml"="$dir/resources/config_map/conditional-policies.yaml" \
       --namespace="$project" \
       --dry-run=client -o yaml | oc apply -f -
   fi
