@@ -615,15 +615,19 @@ wheels = [
 [[package]]
 name = "plantuml-markdown"
 version = "3.11.1"
-source = { registry = "https://pypi.org/simple" }
+source = { url = "https://github.com/mikitex70/plantuml-markdown/archive/592837e9c26b9e92d711af42bce8fb8697183f9d.zip" }
 dependencies = [
     { name = "markdown" },
     { name = "requests" },
     { name = "six" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f7/c5/1749bae9c838a78d9f6bb0c628fd47251572d5ad1502e33b51fb72582838/plantuml_markdown-3.11.1.tar.gz", hash = "sha256:0ac39c5d13d3ea8b84ec88f57369a85d058ff15c0c225591dd649b327586142c", size = 32120, upload-time = "2025-02-07T17:30:57.131Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/e1/06/fed3b67b5488854eb7934bfbbb580d0651d8af243ffb39937cb00838bc3d/plantuml_markdown-3.11.1-py3-none-any.whl", hash = "sha256:52c8507be5b4e5b57e3c4c1cfbe8894b6204f4b6bac2279896efb03d3b79bacf", size = 20116, upload-time = "2025-02-07T17:30:54.88Z" },
+sdist = { hash = "sha256:adb7dd7f1aa90a0fdb279f3ad58ede6cdc9eb826adc9d1405b02d4491e492df0" }
+
+[package.metadata]
+requires-dist = [
+    { name = "markdown" },
+    { name = "requests" },
+    { name = "six" },
 ]
 
 [[package]]
@@ -745,7 +749,7 @@ runtime = [
 requires-dist = [
     { name = "mkdocs", specifier = ">=1.6.1" },
     { name = "mkdocs-techdocs-core", specifier = ">=1.6.1" },
-    { name = "plantuml-markdown", specifier = ">=3.11.1" },
+    { name = "plantuml-markdown", url = "https://github.com/mikitex70/plantuml-markdown/archive/592837e9c26b9e92d711af42bce8fb8697183f9d.zip" },
 ]
 
 [package.metadata.requires-dev]
@@ -768,7 +772,7 @@ dev = [
 runtime = [
     { name = "mkdocs", specifier = ">=1.6.1" },
     { name = "mkdocs-techdocs-core", specifier = ">=1.6.1" },
-    { name = "plantuml-markdown", specifier = ">=3.11.1" },
+    { name = "plantuml-markdown", url = "https://github.com/mikitex70/plantuml-markdown/archive/592837e9c26b9e92d711af42bce8fb8697183f9d.zip" },
 ]
 
 [[package]]
