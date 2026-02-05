@@ -25,12 +25,15 @@ runs:
     - name: Check for relevant changes
       id: changes
       shell: bash
+      env:
+        GET_SHA_OUTPUT: ${{ steps.get-sha.outputs.short_sha }}
+        PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
       run: |
         # Ensure that SHORT_SHA is available for subsequent steps in this context
-        echo "SHORT_SHA=${SHORT_SHA:-${{ steps.get-sha.outputs.short_sha }}}" >> $GITHUB_ENV
+        echo "SHORT_SHA=${SHORT_SHA:-$GET_SHA_OUTPUT}" >> $GITHUB_ENV
 
         # Get base commit for comparison
-        BASE_COMMIT=$(git merge-base ${{ github.event.pull_request.base.sha }} HEAD)
+        BASE_COMMIT=$(git merge-base "$PR_BASE_SHA" HEAD)
         echo "BASE_COMMIT=$BASE_COMMIT"
 
         # Get list of changed files
@@ -52,8 +55,7 @@ runs:
         while IFS= read -r file; do
           if [[ -n "$file" ]]; then
             # If file is NOT in one of the non-essential directories, mark as relevant
-            # contents of .rhdh/docker are only for downstream and we do zero testing of those python or docker files in upstream e2e
-            if ! [[ "$file" =~ ^(e2e|e2e-tests|doc|docs|\.ibm|\.rhdh/docker)/ ]]; then
+            if ! [[ "$file" =~ ^(e2e|e2e-tests|doc|docs|\.ibm)/ ]]; then
               echo "Relevant change detected: $file"
               RELEVANT_CHANGES=true
               break
@@ -76,16 +78,19 @@ runs:
     - name: Check if Docker image exists
       id: image-check
       shell: bash
+      env:
+        PR_NUMBER: ${{ github.event.number }}
+        IMAGE_REGISTRY: ${{ env.REGISTRY }}
       run: |
         # First check the PR base tag (most important for skipping builds)
-        IMAGE_TAG_PR="pr-${{ github.event.number }}"
-        IMAGE_NAME_PR="${{ env.REGISTRY }}/rhdh-community/rhdh:${IMAGE_TAG_PR}"
+        IMAGE_TAG_PR="pr-${PR_NUMBER}"
+        IMAGE_NAME_PR="${IMAGE_REGISTRY}/rhdh-community/rhdh:${IMAGE_TAG_PR}"
 
         IMAGE_EXISTS_PR=$(curl -s "https://quay.io/api/v1/repository/rhdh-community/rhdh/tag/" | jq -r --arg tag "$IMAGE_TAG_PR" '.tags[] | select(.name == $tag) | .name')
 
         # For safety, also check commit-specific tag
-        IMAGE_TAG_COMMIT="pr-${{ github.event.number }}-${SHORT_SHA}"
-        IMAGE_NAME_COMMIT="${{ env.REGISTRY }}/rhdh-community/rhdh:${IMAGE_TAG_COMMIT}"
+        IMAGE_TAG_COMMIT="pr-${PR_NUMBER}-${SHORT_SHA}"
+        IMAGE_NAME_COMMIT="${IMAGE_REGISTRY}/rhdh-community/rhdh:${IMAGE_TAG_COMMIT}"
 
         IMAGE_EXISTS_COMMIT=$(curl -s "https://quay.io/api/v1/repository/rhdh-community/rhdh/tag/" | jq -r --arg tag "$IMAGE_TAG_COMMIT" '.tags[] | select(.name == $tag) | .name')
 
@@ -104,12 +109,12 @@ runs:
     - name: Determine final skip decision
       id: final-decision
       shell: bash
+      env:
+        SKIP_BUILD_TAG: ${{ steps.changes.outputs.skip_build_tag }}
+        RELEVANT_CHANGES: ${{ steps.changes.outputs.relevant_changes }}
+        IMAGE_EXISTS: ${{ steps.image-check.outputs.exists }}
       run: |
         # Get the values from previous steps
-        SKIP_BUILD_TAG="${{ steps.changes.outputs.skip_build_tag }}"
-        RELEVANT_CHANGES="${{ steps.changes.outputs.relevant_changes }}"
-        IMAGE_EXISTS="${{ steps.image-check.outputs.exists }}"
-        
         echo "Skip build tag: $SKIP_BUILD_TAG"
         echo "Relevant changes: $RELEVANT_CHANGES"
         echo "Image exists: $IMAGE_EXISTS"

@@ -141,13 +141,13 @@ git add catalog-entities/extensions/packages/{plugin-name}.yaml
 git add catalog-entities/extensions/plugins/{plugin-name}.yaml
 
 # Commit with descriptive message
-git commit -m "feat: add {plugin-name} plugin to RHDH extensions
+git commit -m "feat: add {plugin-name} plugin to RHDH Extensions Catalog
 
 - Added Package entity with OCI URL and version
 - Added Plugin entity with description and metadata
 
 # Create PR
-gh pr create --title "feat: add {plugin-name} plugin to extensions" \
+gh pr create --title "feat: add {plugin-name} plugin to Extensions Catalog" \
   --body "## Summary
 - Added {plugin-name} plugin metadata to Extensions Catalog
 - Package: \`{npm-package-name}\` version {version}
