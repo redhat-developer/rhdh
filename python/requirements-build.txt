@@ -6,11 +6,14 @@ cython==3.2.4
     # via python (pyproject.toml:build)
 flit-core==3.12.0
     # via python (pyproject.toml:build)
+hatch-nodejs-version==0.4.0
+    # via python (pyproject.toml:build)
 hatch-requirements-txt==0.4.1
     # via python (pyproject.toml:build)
 hatchling==1.28.0
     # via
     #   python (pyproject.toml:build)
+    #   hatch-nodejs-version
     #   hatch-requirements-txt
 packaging==26.0
     # via
