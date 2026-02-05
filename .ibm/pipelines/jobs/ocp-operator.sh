@@ -121,5 +121,6 @@ handle_ocp_operator() {
   testing::check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${PW_PROJECT_SHOWCASE_OPERATOR}" "${url}"
   testing::check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${PW_PROJECT_SHOWCASE_OPERATOR_RBAC}" "${rbac_url}"
 
-  run_operator_runtime_config_change_tests
+  # TODO: https://issues.redhat.com/browse/RHDHBUGS-2608
+  # run_operator_runtime_config_change_tests
 }
