@@ -27,6 +27,7 @@ initiate_operator_deployments() {
   # TODO: https://issues.redhat.com/browse/RHDHBUGS-2184 fix orchestrator workflows deployment on operator
   # enable_orchestrator_plugins_op "${NAME_SPACE}"
   # deploy_orchestrator_workflows_operator "${NAME_SPACE}"
+  log::warn "Skipping orchestrator plugins and workflows deployment on Operator $NAME_SPACE deployment"
 
   namespace::configure "${NAME_SPACE_RBAC}"
   config::create_conditional_policies_operator /tmp/conditional-policies.yaml
@@ -39,6 +40,7 @@ initiate_operator_deployments() {
   # TODO: https://issues.redhat.com/browse/RHDHBUGS-2184 fix orchestrator workflows deployment on operator
   # enable_orchestrator_plugins_op "${NAME_SPACE_RBAC}"
   # deploy_orchestrator_workflows_operator "${NAME_SPACE_RBAC}"
+  log::warn "Skipping orchestrator plugins and workflows deployment on Operator $NAME_SPACE_RBAC deployment"
 }
 
 # OSD-GCP specific operator deployment that skips orchestrator workflows
