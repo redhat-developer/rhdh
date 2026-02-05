@@ -257,7 +257,7 @@ global:
       - package: ./dynamic-plugins/dist/backstage-community-plugin-analytics-provider-segment
         disabled: true
       #Enable Scorecard plugin.
-      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard:bs_1.45.3__2.3.4!red-hat-developer-hub-backstage-plugin-scorecard
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard:bs_1.45.3__2.3.5!red-hat-developer-hub-backstage-plugin-scorecard
         disabled: false
         pluginConfig:
           dynamicPlugins:
@@ -276,26 +276,11 @@ global:
                       if:
                         allOf:
                           - isKind: component
-      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard-backend:bs_1.45.3__2.3.4!red-hat-developer-hub-backstage-plugin-scorecard-backend
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard-backend:bs_1.45.3__2.3.5!red-hat-developer-hub-backstage-plugin-scorecard-backend
         disabled: false
-        pluginConfig:
-          scorecard:
-            plugins:
-              jira:
-                open_issues:
-                  schedule:
-                    frequency: { hours: 1 }
-                    timeout: { minutes: 15 }
-                    initialDelay: { minutes: 1 }
-              github:
-                open_prs:
-                  schedule:
-                    frequency: { hours: 1 }
-                    timeout: { minutes: 15 }
-                    initialDelay: { minutes: 1 }
-      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard-backend-module-github:bs_1.45.3__2.3.4!red-hat-developer-hub-backstage-plugin-scorecard-backend-module-github
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard-backend-module-github:bs_1.45.3__2.3.5!red-hat-developer-hub-backstage-plugin-scorecard-backend-module-github
         disabled: false
-      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard-backend-module-jira:bs_1.45.3__2.3.4!red-hat-developer-hub-backstage-plugin-scorecard-backend-module-jira
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard-backend-module-jira:bs_1.45.3__2.3.5!red-hat-developer-hub-backstage-plugin-scorecard-backend-module-jira
         pluginConfig:
           jira:
             baseUrl: https://redhat-team-f703ynt3.atlassian.net

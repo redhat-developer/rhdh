@@ -30,7 +30,7 @@ global:
 
       # Scorecard - test ignored
       # Test file: e2e-tests/playwright/e2e/plugins/scorecard/scorecard.spec.ts
-      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard:pr_1499__0.1.0!red-hat-developer-hub-backstage-plugin-scorecard
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard:bs_1.45.3__2.3.5!red-hat-developer-hub-backstage-plugin-scorecard
         disabled: true
 
       # Adoption Insights - large plugin (~300MB) causing disk space issues
