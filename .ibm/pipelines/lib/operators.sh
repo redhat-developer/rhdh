@@ -166,7 +166,7 @@ operator::install_olm() {
   fi
 
   log::info "OLM is not installed. Installing..."
-  operator-sdk olm install --version="0.40.0"
+  operator-sdk olm install
   return $?
 }
 
@@ -174,7 +174,7 @@ operator::install_olm() {
 operator::uninstall_olm() {
   if operator-sdk olm status > /dev/null 2>&1; then
     log::info "OLM is installed. Uninstalling..."
-    operator-sdk olm uninstall --version="0.40.0"
+    operator-sdk olm uninstall
     return 0
   fi
 
