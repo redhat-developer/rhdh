@@ -93,7 +93,6 @@ export default createTranslationMessages({
     'signIn.providers.saml.message': 'Mit SAML anmelden',
 
     // App translations
-    'app.scaffolder.title': 'Self-Service',
     'app.search.title': 'Suchen',
     'app.search.resultType': 'Ergebnistyp',
     'app.search.softwareCatalog': 'Software-Katalog',

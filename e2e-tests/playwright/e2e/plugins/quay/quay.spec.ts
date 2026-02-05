@@ -20,6 +20,7 @@ test.describe("Test Quay.io plugin", () => {
 
     uiHelper = new UIhelper(page);
     await uiHelper.openCatalogSidebar("Component");
+    await uiHelper.searchInputPlaceholder("Developer Hub");
     await uiHelper.clickLink("Red Hat Developer Hub");
     await uiHelper.clickTab("Image Registry");
   });

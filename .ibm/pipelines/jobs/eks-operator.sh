@@ -10,6 +10,8 @@ source "$DIR"/cluster/eks/eks-operator-deployment.sh
 source "$DIR"/cluster/k8s/k8s-utils.sh
 # shellcheck source=.ibm/pipelines/cluster/eks/aws.sh
 source "$DIR"/cluster/eks/aws.sh
+# shellcheck source=.ibm/pipelines/lib/testing.sh
+source "$DIR"/lib/testing.sh
 # shellcheck source=.ibm/pipelines/playwright-projects.sh
 source "$DIR"/playwright-projects.sh
 
@@ -33,7 +35,7 @@ handle_eks_operator() {
 
   initiate_eks_operator_deployment "${NAME_SPACE}" "https://${K8S_CLUSTER_ROUTER_BASE}"
   configure_eks_ingress_and_dns "${NAME_SPACE}" "dh-ingress"
-  check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${PW_PROJECT_SHOWCASE_K8S}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
+  testing::check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${PW_PROJECT_SHOWCASE_K8S}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
   cleanup_eks_dns_record "${EKS_INSTANCE_DOMAIN_NAME}"
   cleanup_eks_deployment "${NAME_SPACE}"
 
@@ -44,7 +46,7 @@ handle_eks_operator() {
 
   initiate_rbac_eks_operator_deployment "${NAME_SPACE_RBAC}" "https://${K8S_CLUSTER_ROUTER_BASE}"
   configure_eks_ingress_and_dns "${NAME_SPACE_RBAC}" "dh-ingress"
-  check_and_test "${RELEASE_NAME}" "${NAME_SPACE_RBAC}" "${PW_PROJECT_SHOWCASE_RBAC_K8S}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
+  testing::check_and_test "${RELEASE_NAME}" "${NAME_SPACE_RBAC}" "${PW_PROJECT_SHOWCASE_RBAC_K8S}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
   cleanup_eks_dns_record "${EKS_INSTANCE_DOMAIN_NAME}"
   cleanup_eks_deployment "${NAME_SPACE_RBAC}"
 }

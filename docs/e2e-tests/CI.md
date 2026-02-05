@@ -96,6 +96,18 @@ The nightly job for the `main` branch also runs against three OpenShift Containe
 
 > **Note:** The output of the nightly runs, including test results and any relevant notifications, is posted on the Slack channel **`#rhdh-e2e-test-alerts`**.
 
+### Localization Tests
+
+Localization tests verify that the RHDH UI displays correctly translated strings for supported languages. These tests run as part of the OCP Helm nightly job.
+
+- **Supported Languages:** French (fr), Italian (it), and Japanese (ja)
+- **When They Run:** Localization tests run at the end of the OCP nightly job, after standard deployment tests, runtime config tests, and sanity plugin checks.
+- **Skip Condition:** Localization tests are **skipped for OSD-GCP jobs** due to environment constraints.
+- **Reuses Existing Deployment:** The tests run against the same RHDH instance deployed for standard tests, so no additional deployment is needed.
+- **Playwright Projects:** `showcase-localization-fr`, `showcase-localization-it`, `showcase-localization-ja`
+
+The localization test implementation is in `.ibm/pipelines/jobs/ocp-nightly.sh` (`run_localization_tests()` function).
+
 ### CI Job Definitions
 
 #### Nightly Test Job

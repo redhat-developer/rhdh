@@ -1,0 +1,205 @@
+---
+paths: 'catalog-entities/extensions/**, docs/dynamic-plugins/**'
+---
+# RHDH Extensions Catalog - Plugin Metadata Workflow
+
+This cursor rule provides an automated workflow for adding dynamic plugin metadata to the RHDH Extensions Catalog.
+
+## Important Documentation
+
+**Primary Reference**: Read `catalog-entities/extensions/README.md` for:
+- Detailed YAML structure and field explanations
+- Complete examples (3scale plugin)
+- RHDH-local testing setup
+- Troubleshooting guide
+
+This rule focuses on the **workflow automation** and **validation** aspects not covered in the README.
+
+## Prerequisites
+
+Before starting, ensure you have:
+
+1. **Successfully exported plugin** from [RHDH Plugin Export Overlays](https://github.com/redhat-developer/rhdh-plugin-export-overlays)
+   - OCI URL from build output (e.g., `oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/aws-ecs:pr_1426__0.6.0!aws-ecs`)
+   - Plugin version and integrity information
+
+2. **Required tools installed**:
+   ```bash
+   # Check if tools are installed
+   command -v yq &> /dev/null || echo "❌ Install yq (Go version): brew install yq (macOS) or snap install yq (Linux)"
+   command -v ajv &> /dev/null || echo "❌ Install ajv-cli: npm install -g ajv-cli"
+   command -v gh &> /dev/null || echo "❌ Install GitHub CLI: brew install gh (macOS)"
+   ```
+
+   **Important**: Ensure you have the **Go-based version of yq** (mikefarah/yq), not the Python version (kislyuk/yq).
+   Verify with: `yq --version` (should show "mikefarah/yq")
+
+## Interactive Information Gathering
+
+When adding a plugin, gather the following information:
+
+### Required Information
+1. **Plugin Identification**
+   - Plugin name (e.g., `aws-ecs`, `todo`)
+   - NPM package name (e.g., `@aws/amazon-ecs-plugin-for-backstage`)
+   - Namespace (e.g., `rhdh` for Red Hat maintained, `community` for community plugins)
+
+2. **Technical Details**
+   - OCI URL from overlay build
+   - Plugin version
+   - Backstage version compatibility
+   - Role: `frontend-plugin` or `backend-plugin`
+
+3. **User-Facing Information**
+   - Title and short description (2-3 lines for tile view)
+   - Long description (markdown, for expanded view)
+   - Category (one of: AI, Analytics, CI/CD, Cloud, Compliance, Cost, Developer Tools, Docs, Feature Flags, Kubernetes, Monitoring, Productivity, Reporting, Search, Security, Storage, Supply Chain, Testing)
+   - Tags (lowercase, kebab-case)
+   - Support level: `production`, `tech-preview`, or `dev-preview`
+
+4. **Links**
+   - Homepage/documentation URL
+   - Source code repository
+   - Bug tracker URL
+
+## Workflow Steps
+
+### Step 1: Create Feature Branch
+
+```bash
+# Ensure we're on latest main
+git fetch origin && git checkout main && git pull origin main
+
+# Create feature branch
+git checkout -b add-{plugin-name}-plugin-metadata
+```
+
+### Step 2: Tool Verification
+
+```bash
+# Verify required tools
+for tool in yq ajv gh; do
+  command -v $tool &> /dev/null && echo "✓ $tool installed" || echo "❌ $tool missing"
+done
+
+# Verify yq is the Go version
+yq --version | grep -q "mikefarah" && echo "✓ yq is Go version (mikefarah/yq)" || echo "❌ Wrong yq version - install mikefarah/yq"
+```
+
+### Step 3: Create/Edit Plugin Metadata
+
+Create `catalog-entities/extensions/plugins/{plugin-name}.yaml`:
+- Use `catalog-entities/extensions/plugins/3scale.yaml` as a template
+- See README for complete field descriptions
+
+### Step 4: Validate Files
+
+```bash
+# Navigate to extensions directory
+cd catalog-entities/extensions
+
+# Download schemas to temp directory (ajv doesn't support remote schemas well)
+mkdir -p /tmp/rhdh-schemas
+curl -s "https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/main/workspaces/extensions/json-schema/packages.json" \
+  -o /tmp/rhdh-schemas/packages.json
+curl -s "https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/main/workspaces/extensions/json-schema/plugins.json" \
+  -o /tmp/rhdh-schemas/plugins.json
+
+# Convert YAML to JSON and validate Package against local schema
+echo "Validating packages/{plugin-name}.yaml..."
+yq eval packages/{plugin-name}.yaml -o json > /tmp/rhdh-schemas/package-temp.json
+ajv validate -s /tmp/rhdh-schemas/packages.json -d /tmp/rhdh-schemas/package-temp.json
+
+# Convert YAML to JSON and validate Plugin against local schema
+echo "Validating plugins/{plugin-name}.yaml..."
+yq eval plugins/{plugin-name}.yaml -o json > /tmp/rhdh-schemas/plugin-temp.json
+ajv validate -s /tmp/rhdh-schemas/plugins.json -d /tmp/rhdh-schemas/plugin-temp.json
+
+# Clean up temp files
+rm /tmp/rhdh-schemas/package-temp.json /tmp/rhdh-schemas/plugin-temp.json
+```
+
+**Note**: This uses the Go-based `yq` syntax (`yq eval file.yaml -o json`). If validation fails, check that you have the correct yq version installed.
+
+### Step 5: Test Locally (Optional)
+
+Follow the RHDH-local testing instructions in the README:
+1. Clone `rhdh-local` repository
+2. Mount your local catalog in `compose.yaml`
+3. Set `catalog.processingInterval: { seconds: 15 }` in `app-config.yaml`
+4. Start with `docker compose up -d`
+5. Check http://localhost:7007 → Catalog → Extensions
+
+### Step 6: Create Pull Request
+
+```bash
+# Stage changes
+git add catalog-entities/extensions/packages/{plugin-name}.yaml
+git add catalog-entities/extensions/plugins/{plugin-name}.yaml
+
+# Commit with descriptive message
+git commit -m "feat: add {plugin-name} plugin to RHDH extensions
+
+- Added Package entity with OCI URL and version
+- Added Plugin entity with description and metadata
+
+# Create PR
+gh pr create --title "feat: add {plugin-name} plugin to extensions" \
+  --body "## Summary
+- Added {plugin-name} plugin metadata to Extensions Catalog
+- Package: \`{npm-package-name}\` version {version}
+- Support level: {support-level}
+
+## Checklist
+- [ ] Package and Plugin YAML files created
+- [ ] Schemas validate successfully
+- [ ] Tested locally with rhdh-local (if applicable)"
+```
+
+## Validation Checklist
+
+Before submitting:
+- [ ] Tools installed (`yq` Go version, `ajv-cli`, `gh`)
+- [ ] Package YAML validates against schema
+- [ ] Plugin YAML validates against schema
+- [ ] Namespace consistent between Package and Plugin
+- [ ] OCI URL correctly formatted
+- [ ] All required fields populated
+
+## Common Issues
+
+### Schema Validation Fails
+```bash
+# Debug by checking JSON conversion (using Go-based yq)
+yq eval your-file.yaml -o json | jq '.'
+
+# Common issues:
+# - Missing required fields
+# - Wrong field types
+# - Invalid enum values (e.g., wrong category)
+```
+
+### Wrong yq Version
+```bash
+# Check if you have the Go version
+yq --version
+
+# Should show: yq (https://github.com/mikefarah/yq/) version X.X.X
+
+# If you have the Python version (kislyuk/yq), uninstall and install Go version:
+# macOS: brew install mikefarah/yq/yq
+# Linux: snap install yq
+```
+
+### OCI URL Format
+Correct format: `oci://registry/path:tag!package-name`
+- Must include `!package-name` suffix
+- Tag typically includes PR number and version
+
+## References
+
+- [README with detailed documentation](../../catalog-entities/extensions/README.md)
+- [Extension Schemas](https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/extensions/json-schema)
+- [RHDH Local Testing](https://github.com/redhat-developer/rhdh-local)
+- [Dynamic Plugins Documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
+- [RHDH Plugin Catalog](https://gitlab.cee.redhat.com/rhidp/rhdh-plugin-catalog/-/blob/rhdh-1-rhel-9/catalog-index) (RH VPN Required)

@@ -229,7 +229,7 @@ global:
       - package: ./dynamic-plugins/dist/backstage-community-plugin-tech-radar
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-tech-radar-backend-dynamic
-        disabled: true
+        disabled: false
       - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
         disabled: false
         pluginConfig:
@@ -257,8 +257,8 @@ global:
       - package: ./dynamic-plugins/dist/backstage-community-plugin-analytics-provider-segment
         disabled: true
       #Enable Scorecard plugin.
-      - disabled: false
-        package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard:pr_1499__0.1.0!red-hat-developer-hub-backstage-plugin-scorecard
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard:bs_1.45.3__2.3.4!red-hat-developer-hub-backstage-plugin-scorecard
+        disabled: false
         pluginConfig:
           dynamicPlugins:
             frontend:
@@ -266,7 +266,6 @@ global:
                 entityTabs:
                   - path: "/scorecard"
                     title: Scorecard
-                    titleKey: catalog.entityPage.scorecard.title
                     mountPoint: entity.page.scorecard
                 mountPoints:
                   - mountPoint: entity.page.scorecard/cards
@@ -274,22 +273,36 @@ global:
                     config:
                       layout:
                         gridColumn: 1 / -1
-      - disabled: false
-        package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard-backend:pr_1499__0.1.0!red-hat-developer-hub-backstage-plugin-scorecard-backend
-      - disabled: false
-        package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard-backend-module-github:pr_1499__0.1.0!red-hat-developer-hub-backstage-plugin-scorecard-backend-module-github
+                      if:
+                        allOf:
+                          - isKind: component
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard-backend:bs_1.45.3__2.3.4!red-hat-developer-hub-backstage-plugin-scorecard-backend
+        disabled: false
         pluginConfig:
-          integrations:
-            github:
-              - host: github.com
-                token: "{gh-token}"
-      - disabled: false
-        package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard-backend-module-jira:pr_1499__0.1.0!red-hat-developer-hub-backstage-plugin-scorecard-backend-module-jira
+          scorecard:
+            plugins:
+              jira:
+                open_issues:
+                  schedule:
+                    frequency: { hours: 1 }
+                    timeout: { minutes: 15 }
+                    initialDelay: { minutes: 1 }
+              github:
+                open_prs:
+                  schedule:
+                    frequency: { hours: 1 }
+                    timeout: { minutes: 15 }
+                    initialDelay: { minutes: 1 }
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard-backend-module-github:bs_1.45.3__2.3.4!red-hat-developer-hub-backstage-plugin-scorecard-backend-module-github
+        disabled: false
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard-backend-module-jira:bs_1.45.3__2.3.4!red-hat-developer-hub-backstage-plugin-scorecard-backend-module-jira
         pluginConfig:
           jira:
-            baseUrl: "{jira-base-url}"
-            token: "{jira-api-token}"
-            product: datacenter
+            baseUrl: https://redhat-team-f703ynt3.atlassian.net
+            token: ${JIRA_TOKEN}
+            product: cloud
+        disabled: false
+
       # Enable orchestrator plugins - Official release (Backstage 1.45.3)
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator:bs_1.45.3__5.1.0!red-hat-developer-hub-backstage-plugin-orchestrator"
         disabled: false
@@ -604,8 +617,6 @@ upstream:
 
       - name: rbac-policy
         mountPath: /opt/app-root/src/rbac
-      - name: rbac-conditions
-        mountPath: /opt/app-root/src/rbac-conditions
       - mountPath: /opt/app-root/src/postgres-crt.pem
         name: postgress-external-db-cluster-cert
         subPath: tls.crt
@@ -658,126 +669,6 @@ upstream:
         configMap:
           defaultMode: 420
           name: rbac-policy
-      - name: rbac-conditions
-        emptyDir: {}
-    initContainers:
-      # NOTE: Lists will not be merged with the default values file. So need to append all the defaults if you want to add a new item here
-      # See https://issues.redhat.com/browse/RHDHPLAN-869
-      - name: install-dynamic-plugins
-        # -- Image used by the initContainer to install dynamic plugins into the `dynamic-plugins-root` volume mount.
-        # It could be replaced by a custom image based on this one.
-        # @default -- `quay.io/rhdh-community/rhdh:latest`
-        image: '{{ include "backstage.image" . }}'
-        command:
-          - sh
-          - "-c"
-          - |
-            cat > /rbac-conditions/conditional-policies.yaml <<EOF
-            ---
-            result: CONDITIONAL
-            roleEntityRef: 'role:default/test2-role'
-            pluginId: catalog
-            resourceType: catalog-entity
-            permissionMapping:
-              - read
-              - update
-            conditions:
-              rule: IS_ENTITY_OWNER
-              resourceType: catalog-entity
-              params:
-                claims:
-                  - 'group:janus-qe/rhdh-qe-2-team'
-                  - \$currentUser
-            ---
-            result: CONDITIONAL
-            roleEntityRef: 'role:default/test2-role'
-            pluginId: catalog
-            resourceType: catalog-entity
-            permissionMapping:
-              - delete
-            conditions:
-              rule: IS_ENTITY_OWNER
-              resourceType: catalog-entity
-              params:
-                claims:
-                  - \$currentUser
-            ---
-            result: CONDITIONAL
-            roleEntityRef: 'role:default/transitive-owner'
-            pluginId: catalog
-            resourceType: catalog-entity
-            permissionMapping:
-              - read
-            conditions:
-              rule: IS_ENTITY_OWNER
-              resourceType: catalog-entity
-              params:
-                claims:
-                  - \$ownerRefs
-            ---
-            result: CONDITIONAL
-            roleEntityRef: 'role:default/owned_resource_reader'
-            pluginId: catalog
-            resourceType: catalog-entity
-            permissionMapping:
-              - read
-            conditions:
-              rule: IS_ENTITY_OWNER
-              resourceType: catalog-entity
-              params:
-                claims:
-                  - \$currentUser
-            ---
-            result: CONDITIONAL
-            roleEntityRef: 'role:default/conditional_denier'
-            pluginId: catalog
-            resourceType: catalog-entity
-            permissionMapping:
-              - read
-            conditions:
-              rule: HAS_LABEL
-              resourceType: catalog-entity
-              params:
-                label: test-label
-            EOF
-
-            ./install-dynamic-plugins.sh /dynamic-plugins-root
-        env:
-          - name: NPM_CONFIG_USERCONFIG
-            value: /opt/app-root/src/.npmrc.dynamic-plugins
-          - name: MAX_ENTRY_SIZE
-            value: "30000000"
-          - name: CATALOG_INDEX_IMAGE
-            value: "{{ .Values.global.catalogIndex.image.registry }}/{{ .Values.global.catalogIndex.image.repository }}:{{ .Values.global.catalogIndex.image.tag }}"
-          - name: CATALOG_ENTITIES_EXTRACT_DIR
-            value: "/extensions"
-        imagePullPolicy: Always
-        volumeMounts:
-          - mountPath: /dynamic-plugins-root
-            name: dynamic-plugins-root
-          - mountPath: /opt/app-root/src/dynamic-plugins.yaml
-            name: dynamic-plugins
-            readOnly: true
-            subPath: dynamic-plugins.yaml
-          - mountPath: /opt/app-root/src/.npmrc.dynamic-plugins
-            name: dynamic-plugins-npmrc
-            readOnly: true
-            subPath: .npmrc
-          - mountPath: /opt/app-root/src/.config/containers
-            name: dynamic-plugins-registry-auth
-            readOnly: true
-          - mountPath: /opt/app-root/src/.npm/_cacache
-            name: npmcacache
-          - name: extensions-catalog
-            mountPath: /extensions
-          - name: temp
-            mountPath: /tmp
-
-          - mountPath: /rbac
-            name: rbac-policy
-          - mountPath: /rbac-conditions
-            name: rbac-conditions
-        workingDir: /opt/app-root/src
     installDir: /opt/app-root/src
     extraAppConfig:
       - configMapRef: app-config-rhdh

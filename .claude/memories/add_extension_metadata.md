@@ -92,14 +92,14 @@ Create `catalog-entities/extensions/plugins/{plugin-name}.yaml`:
 ### Step 4: Validate Files
 
 ```bash
-# Navigate to marketplace directory
+# Navigate to extensions directory
 cd catalog-entities/extensions
 
 # Download schemas to temp directory (ajv doesn't support remote schemas well)
 mkdir -p /tmp/rhdh-schemas
-curl -s "https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/main/workspaces/marketplace/json-schema/packages.json" \
+curl -s "https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/main/workspaces/extensions/json-schema/packages.json" \
   -o /tmp/rhdh-schemas/packages.json
-curl -s "https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/main/workspaces/marketplace/json-schema/plugins.json" \
+curl -s "https://raw.githubusercontent.com/redhat-developer/rhdh-plugins/main/workspaces/extensions/json-schema/plugins.json" \
   -o /tmp/rhdh-schemas/plugins.json
 
 # Convert YAML to JSON and validate Package against local schema
@@ -141,7 +141,7 @@ git commit -m "feat: add {plugin-name} plugin to RHDH extensions
 - Added Plugin entity with description and metadata
 
 # Create PR
-gh pr create --title "feat: add {plugin-name} plugin to marketplace" \
+gh pr create --title "feat: add {plugin-name} plugin to extensions" \
   --body "## Summary
 - Added {plugin-name} plugin metadata to Extensions Catalog
 - Package: \`{npm-package-name}\` version {version}

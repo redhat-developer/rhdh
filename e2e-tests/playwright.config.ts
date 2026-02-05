@@ -18,6 +18,14 @@ const args = process.argv;
 
 if (args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_FR))) {
   process.env.LOCALE = "fr";
+} else if (
+  args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_IT))
+) {
+  process.env.LOCALE = "it";
+} else if (
+  args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_JA))
+) {
+  process.env.LOCALE = "ja";
 } else if (!process.env.LOCALE) {
   process.env.LOCALE = "en";
 }
@@ -105,6 +113,11 @@ export default defineConfig({
         "**/playwright/e2e/plugins/quick-start.spec.ts",
         "**/playwright/e2e/plugins/scorecard/scorecard.spec.ts",
       ],
+      testIgnore: [
+        ...(shouldSkipOrchestratorTests
+          ? ["**/playwright/e2e/plugins/orchestrator/**/*.spec.ts"]
+          : []),
+      ],
     },
     {
       name: PW_PROJECT.SHOWCASE_AUTH_PROVIDERS,
@@ -151,6 +164,7 @@ export default defineConfig({
         "**/playwright/e2e/plugins/bulk-import.spec.ts",
         "**/playwright/e2e/plugins/scorecard/scorecard.spec.ts",
       ],
+      testIgnore: ["**/playwright/e2e/plugins/orchestrator/**/*.spec.ts"],
     },
     {
       name: PW_PROJECT.SHOWCASE_OPERATOR,
@@ -181,6 +195,11 @@ export default defineConfig({
         "**/playwright/e2e/**/*-rbac.spec.ts",
         "**/playwright/e2e/plugins/bulk-import.spec.ts",
         "**/playwright/e2e/plugins/scorecard/scorecard.spec.ts",
+      ],
+      testIgnore: [
+        ...(shouldSkipOrchestratorTests
+          ? ["**/playwright/e2e/plugins/orchestrator/**/*.spec.ts"]
+          : []),
       ],
     },
     {
@@ -224,6 +243,35 @@ export default defineConfig({
       name: PW_PROJECT.SHOWCASE_LOCALIZATION_FR,
       use: {
         locale: "fr",
+      },
+      testMatch: [
+        "**/playwright/e2e/extensions.spec.ts",
+        "**/playwright/e2e/default-global-header.spec.ts",
+        "**/playwright/e2e/catalog-timestamp.spec.ts",
+        "**/playwright/e2e/custom-theme.spec.ts",
+        "**/playwright/e2e/plugins/frontend/sidebar.spec.ts",
+        "**/playwright/e2e/settings.spec.ts",
+      ],
+    },
+    {
+      name: PW_PROJECT.SHOWCASE_LOCALIZATION_IT,
+      use: {
+        locale: "it",
+      },
+      testMatch: [
+        "**/playwright/e2e/extensions.spec.ts",
+        "**/playwright/e2e/default-global-header.spec.ts",
+        "**/playwright/e2e/catalog-timestamp.spec.ts",
+        // TODO: RHDHBUGS-2592 - Custom theme spec is not working
+        // "**/playwright/e2e/custom-theme.spec.ts",
+        "**/playwright/e2e/plugins/frontend/sidebar.spec.ts",
+        "**/playwright/e2e/settings.spec.ts",
+      ],
+    },
+    {
+      name: PW_PROJECT.SHOWCASE_LOCALIZATION_JA,
+      use: {
+        locale: "ja",
       },
       testMatch: [
         "**/playwright/e2e/extensions.spec.ts",

@@ -18,6 +18,8 @@
     "showcase-auth-providers": "playwright test --project=showcase-auth-providers",
     "showcase-sanity-plugins": "playwright test --project=showcase-sanity-plugins",
     "showcase-localization-fr": "LOCALE=fr playwright test --project=showcase-localization-fr",
+    "showcase-localization-it": "LOCALE=it playwright test --project=showcase-localization-it",
+    "showcase-localization-ja": "LOCALE=ja playwright test --project=showcase-localization-ja",
     "lint:check": "eslint . --ext .js,.ts",
     "lint:fix": "eslint . \"playwright/**/*.{ts,js}\" --fix",
     "postinstall": "playwright install chromium",
@@ -55,7 +57,7 @@
     "js-yaml": "4.1.1",
     "node-fetch": "2.7.0",
     "octokit": "4.1.4",
-    "pg": "8.16.3",
+    "pg": "8.18.0",
     "uuid": "11.1.0",
     "winston": "3.14.2",
     "yaml": "2.8.2"

@@ -615,6 +615,8 @@
       "package.notFound": "Paquet {{namespace}}/{{name}} introuvable !",
       "package.notAvailable": "Paquet {{name}} non disponible",
       "package.ensureCatalogEntity": "Veillez à ce que l’entité de catalogue existe pour ce paquet.",
+      "package.tags": "Mots-clés",
+      "table.pagination.rows": "rangées",
       "table.packageName": "Nom du paquet",
       "table.version": "Version",
       "table.role": "Rôle",

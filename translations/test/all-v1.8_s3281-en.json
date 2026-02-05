@@ -485,6 +485,7 @@
       "metadata.bySomeone": "by someone",
       "metadata.category": "Category",
       "metadata.versions": "Versions",
+      "metadata.backstageCompatibility": "Backstage compatibility version",
       "supportTypes.certifiedBy": "Certified by {{value}} ({{count}})",
       "supportTypes.verifiedBy": "Verified by {{value}} ({{count}})",
       "supportTypes.customPlugins": "Custom plugins ({{count}})",
@@ -685,7 +686,7 @@
       "languageToggle.select": "Select language {{language}}",
       "themeToggle.title": "Theme",
       "themeToggle.description": "Change the theme mode",
-      "themeToggle.select": "Select theme {{theme}}",
+      "themeToggle.select": "Select {{theme}}",
       "themeToggle.selectAuto": "Select Auto Theme",
       "themeToggle.names.light": "Light",
       "themeToggle.names.dark": "Dark",
@@ -966,12 +967,12 @@
       "templateEditorPage.templateEditorTextArea.refreshIconTooltip": "Reload file",
       "templateEditorPage.templateEditorTextArea.emptyStateParagraph": "Please select an action on the file menu.",
       "templateEditorPage.templateFormPreviewer.title": "Load Existing Template",
-      "templateListPage.title": "Create a new component",
+      "templateListPage.title": "Self-service",
       "templateListPage.subtitle": "Create new software components using standard templates in your organization",
-      "templateListPage.pageTitle": "Create a new component",
+      "templateListPage.pageTitle": "Self-service",
       "templateListPage.templateGroups.defaultTitle": "Templates",
       "templateListPage.templateGroups.otherTitle": "Other Templates",
-      "templateListPage.contentHeader.registerExistingButtonTitle": "Register Existing Component",
+      "templateListPage.contentHeader.registerExistingButtonTitle": "Import an existing Git repository",
       "templateListPage.contentHeader.supportButtonTitle": "Create new software components using standard templates. Different templates create different kinds of components (services, websites, documentation, ...).",
       "templateListPage.additionalLinksForEntity.viewTechDocsTitle": "View TechDocs",
       "templateWizardPage.title": "Create a new component",
@@ -1158,7 +1159,8 @@
       "app.errors.goBack": "Go back",
       "app.errors.notFound.message": "We couldn't find that page",
       "app.errors.notFound.additionalInfo": "The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.",
-      "app.table.createdAt": "Created At"
+      "app.table.createdAt": "Created At",
+      "catalog.entityPage.overview.title": "Overview"
     }
   },
   "catalog-react": {
