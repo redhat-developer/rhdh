@@ -166,7 +166,7 @@ operator::install_olm() {
   fi
 
   log::info "OLM is not installed. Installing..."
-  operator-sdk olm install
+  operator-sdk olm install --timeout="5m0s"
   return $?
 }
 
