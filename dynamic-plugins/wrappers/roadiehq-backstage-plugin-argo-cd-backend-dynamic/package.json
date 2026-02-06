@@ -10,7 +10,7 @@
   },
   "backstage": {
     "role": "backend-plugin",
-    "supported-versions": "1.45.3",
+    "supported-versions": "1.47.3",
     "pluginId": "roadiehq-argo-cd",
     "pluginPackages": [
       "roadiehq-backstage-plugin-argo-cd",
@@ -42,7 +42,7 @@
     "@roadiehq/backstage-plugin-argo-cd-backend": "4.6.0"
   },
   "devDependencies": {
-    "@backstage/cli": "0.34.5",
+    "@backstage/cli": "0.35.3",
     "@janus-idp/cli": "3.7.0",
     "typescript": "5.9.3"
   },

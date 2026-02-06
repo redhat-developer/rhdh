@@ -40,8 +40,8 @@
     ]
   },
   "devDependencies": {
-    "@backstage/cli": "0.34.5",
-    "@backstage/frontend-test-utils": "0.4.1",
+    "@backstage/cli": "0.35.3",
+    "@backstage/frontend-test-utils": "0.4.5",
     "@ianvs/prettier-plugin-sort-imports": "4.7.0",
     "@manypkg/cli": "0.25.1",
     "glob": "11.1.0",
