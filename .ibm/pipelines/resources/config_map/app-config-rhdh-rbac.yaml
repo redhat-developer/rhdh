@@ -50,6 +50,8 @@ auth:
           resolvers:
             - resolver: emailLocalPartMatchingUserEntityName
 signInPage: oidc
+techRadar:
+  url: "http://${DH_TARGET_URL}/tech-radar"
 proxy:
   skipInvalidProxies: true
   # endpoints: {}
