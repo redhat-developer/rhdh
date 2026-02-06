@@ -69,7 +69,7 @@ jobs:
 
       - name: Install dependencies
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
-        uses: backstage/actions/yarn-install@b3c1841fd69e1658ac631afafd0fb140a2309024 # v0.6.17
+        uses: backstage/actions/yarn-install@a3895cac2a515224a101c4a2b962b216ed0c9ac8 # v0.7.5
         with:
           cache-prefix: ${{ runner.os }}-v${{ matrix.node-version }}
 
@@ -114,7 +114,7 @@ jobs:
 
       - name: Install dependencies
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
-        uses: backstage/actions/yarn-install@b3c1841fd69e1658ac631afafd0fb140a2309024 # v0.6.17
+        uses: backstage/actions/yarn-install@a3895cac2a515224a101c4a2b962b216ed0c9ac8 # v0.7.5
         with:
           cache-prefix: ${{ runner.os }}-v${{ matrix.node-version }}
 
