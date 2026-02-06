@@ -107,6 +107,36 @@ export type ProviderSetting = {
   provider: string;
 };
 
+/**
+ * Configuration for a custom catalog table column
+ */
+export type CustomColumnConfig = {
+  /** The column header title */
+  title: string;
+  /** The entity field path to display (e.g., "metadata.annotations['custom/field']" or "spec.team") */
+  field: string;
+  /** Optional column width in pixels */
+  width?: number;
+  /** Whether the column should be sortable */
+  sortable?: boolean;
+  /** Default value to display when the field is empty or undefined */
+  defaultValue?: string;
+  /** Optional entity kind(s) to apply this column to. If not specified, applies to all kinds. */
+  kind?: string | string[];
+};
+
+/**
+ * Configuration for catalog table columns
+ */
+export type CatalogColumnConfig = {
+  /** List of column IDs to include. When specified, only these columns will be shown. */
+  include?: string[];
+  /** List of column IDs to exclude from the default columns. */
+  exclude?: string[];
+  /** Custom columns to add to the catalog table */
+  custom?: CustomColumnConfig[];
+};
+
 export type DynamicRootConfig = {
   dynamicRoutes: ResolvedDynamicRoute[];
   entityTabOverrides: EntityTabOverrides;
@@ -116,6 +146,7 @@ export type DynamicRootConfig = {
   scaffolderFieldExtensions: ScaffolderFieldExtension[];
   techdocsAddons: TechdocsAddon[];
   translationRefs: TranslationRef[];
+  catalogTableColumns?: CatalogColumnConfig;
 };
 
 export type ComponentRegistry = {
