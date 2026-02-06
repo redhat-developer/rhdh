@@ -51,17 +51,21 @@ prepare_operator() {
 deploy_rhdh_operator() {
   local namespace=$1
   local backstage_crd_path=$2
+  local timeout_seconds=60
+  if [[ -z "${IS_OPENSHIFT}" || "${IS_OPENSHIFT}" == "false" ]]; then
+    timeout_seconds=300
+  fi
 
   # Ensure PostgresCluster CRD is available before deploying Backstage CR
   # This is critical because the operator will try to create a PostgresCluster resource
   log::info "Verifying PostgresCluster CRD is available before deploying Backstage CR..."
-  k8s_wait::crd "postgresclusters.postgres-operator.crunchydata.com" 60 5 || {
+  k8s_wait::crd "postgresclusters.postgres-operator.crunchydata.com" $timeout_seconds 5 || {
     log::error "PostgresCluster CRD not available - operator won't be able to create internal database"
     return 1
   }
 
   # Verify Backstage CRD is also available
-  k8s_wait::crd "backstages.rhdh.redhat.com" 60 5 || return 1
+  k8s_wait::crd "backstages.rhdh.redhat.com" $timeout_seconds 5 || return 1
 
   rendered_yaml=$(envsubst < "$backstage_crd_path")
   log::info "Applying Backstage CR from: $backstage_crd_path"
@@ -71,7 +75,7 @@ deploy_rhdh_operator() {
   # Wait for the operator to create the Backstage deployment (5 minutes max)
   if ! common::poll_until \
     "oc get deployment -n '$namespace' --no-headers 2>/dev/null | grep -q 'backstage-'" \
-    60 5 "Backstage deployment created by operator"; then
+    $timeout_seconds 5 "Backstage deployment created by operator"; then
     log::error "Backstage deployment not created after 5 minutes"
     _operator_debug_info "$namespace"
     return 1
@@ -82,7 +86,7 @@ deploy_rhdh_operator() {
   if ! common::poll_until \
     "oc get postgrescluster -n '$namespace' --no-headers 2>/dev/null | grep -q 'backstage-psql' || \
      oc get statefulset -n '$namespace' --no-headers 2>/dev/null | grep -q 'backstage-psql'" \
-    60 5 "Database resource created by operator"; then
+    $timeout_seconds 5 "Database resource created by operator"; then
     log::error "Database resource not created after 5 minutes"
     _operator_debug_info "$namespace"
     return 1
