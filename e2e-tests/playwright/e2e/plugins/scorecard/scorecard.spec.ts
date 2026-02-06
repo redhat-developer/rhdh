@@ -17,6 +17,7 @@
 import { test } from "@playwright/test";
 import { Common } from "../../../utils/common";
 import { Catalog } from "../../../support/pages/catalog";
+import { CatalogImport } from "../../../support/pages/catalog-import";
 import { ScorecardPage } from "../../../support/page-objects/scorecard/scorecard-page";
 import type { BrowserContext, Page } from "@playwright/test";
 
@@ -24,6 +25,7 @@ test.describe.serial("Scorecard Plugin Tests", () => {
   let context: BrowserContext;
   let page: Page;
   let catalog: Catalog;
+  let catalogImport: CatalogImport;
   let scorecardPage: ScorecardPage;
 
   test.beforeAll(async ({ browser }, testInfo) => {
@@ -35,6 +37,7 @@ test.describe.serial("Scorecard Plugin Tests", () => {
     context = await browser.newContext();
     page = await context.newPage();
     catalog = new Catalog(page);
+    catalogImport = new CatalogImport(page);
     scorecardPage = new ScorecardPage(page);
     await new Common(page).loginAsKeycloakUser();
   });
@@ -43,70 +46,133 @@ test.describe.serial("Scorecard Plugin Tests", () => {
     await context?.close();
   });
 
-  test("Validate scorecard tabs for GitHub PRs and Jira tickets", async () => {
-    await catalog.go();
-    await catalog.goToByName("all-scorecards");
-    await scorecardPage.openTab();
+  test.describe("Entity Scorecards", () => {
+    test("Validate scorecard tabs for GitHub PRs and Jira tickets", async () => {
+      await catalog.go();
+      await catalog.goToByName("all-scorecards");
+      await scorecardPage.openTab();
 
-    for (const metric of scorecardPage.scorecardMetrics) {
-      await scorecardPage.validateScorecardAriaFor(metric);
-    }
+      for (const metric of scorecardPage.scorecardMetrics) {
+        await scorecardPage.validateScorecardAriaFor(metric);
+      }
+    });
+
+    test("Validate empty scorecard state", async () => {
+      await catalog.go();
+      await catalog.goToByName("no-scorecards");
+      await scorecardPage.openTab();
+      await scorecardPage.expectEmptyState();
+    });
+
+    test("Displays error state for unavailable data while rendering metrics", async () => {
+      await catalog.go();
+      await catalog.goToByName("unavailable-metric-service");
+      await scorecardPage.openTab();
+
+      const [githubMetric, jiraMetric] = scorecardPage.scorecardMetrics;
+
+      await scorecardPage.expectScorecardVisible(githubMetric.title);
+      await scorecardPage.expectScorecardVisible(jiraMetric.title);
+      await scorecardPage.expectErrorHeading("Metric data unavailable");
+      await scorecardPage.validateScorecardAriaFor(jiraMetric);
+    });
+
+    test("Validate only GitHub scorecard is displayed", async () => {
+      await catalog.go();
+      await catalog.goToByName("github-scorecard-only");
+      await scorecardPage.openTab();
+
+      const [githubMetric, jiraMetric] = scorecardPage.scorecardMetrics;
+
+      await scorecardPage.expectScorecardVisible(githubMetric.title);
+      await scorecardPage.expectScorecardHidden(jiraMetric.title);
+      await scorecardPage.validateScorecardAriaFor(githubMetric);
+    });
+
+    test("Validate only Jira scorecard is displayed", async () => {
+      await catalog.go();
+      await catalog.goToByName("jira-scorecard-only");
+      await scorecardPage.openTab();
+
+      const [githubMetric, jiraMetric] = scorecardPage.scorecardMetrics;
+
+      await scorecardPage.expectScorecardHidden(githubMetric.title);
+      await scorecardPage.expectScorecardVisible(jiraMetric.title);
+      await scorecardPage.validateScorecardAriaFor(jiraMetric);
+    });
+
+    test("Display error state for invalid threshold config while rendering metrics", async () => {
+      await catalog.go();
+      await catalog.goToByName("invalid-threshold");
+      await scorecardPage.openTab();
+
+      const [githubMetric, jiraMetric] = scorecardPage.scorecardMetrics;
+
+      await scorecardPage.expectScorecardVisible(githubMetric.title);
+      await scorecardPage.expectScorecardVisible(jiraMetric.title);
+      await scorecardPage.expectErrorHeading("Invalid thresholds");
+      await scorecardPage.validateScorecardAriaFor(jiraMetric);
+    });
   });
 
-  test("Validate empty scorecard state", async () => {
-    await catalog.go();
-    await catalog.goToByName("no-scorecards");
-    await scorecardPage.openTab();
-    await scorecardPage.expectEmptyState();
-  });
+  test.describe("Aggregated Scorecards", () => {
+    test("Verify aggregated scorecards are visible on homepage with entity counts", async () => {
+      await scorecardPage.navigateToHome();
 
-  test("Displays error state for unavailable data while rendering metrics", async () => {
-    await catalog.go();
-    await catalog.goToByName("unavailable-metric-service");
-    await scorecardPage.openTab();
+      // Add scorecard widgets to the homepage
+      await scorecardPage.openAddWidgetDialog();
+      await scorecardPage.selectWidget("GitHub open PRs");
+      await scorecardPage.enterEditMode();
+      await scorecardPage.openAddWidgetDialog();
+      await scorecardPage.selectWidget("Jira open blocking tickets");
+      await scorecardPage.saveChanges();
 
-    const [githubMetric, jiraMetric] = scorecardPage.scorecardMetrics;
+      const [githubMetric, jiraMetric] = scorecardPage.scorecardMetrics;
 
-    await scorecardPage.expectScorecardVisible(githubMetric.title);
-    await scorecardPage.expectScorecardVisible(jiraMetric.title);
-    await scorecardPage.expectErrorHeading("Metric data unavailable");
-    await scorecardPage.validateScorecardAriaFor(jiraMetric);
-  });
+      await scorecardPage.expectAggregatedScorecardVisible(githubMetric.title);
+      await scorecardPage.expectAggregatedScorecardVisible(jiraMetric.title);
 
-  test("Validate only GitHub scorecard is displayed", async () => {
-    await catalog.go();
-    await catalog.goToByName("github-scorecard-only");
-    await scorecardPage.openTab();
+      await scorecardPage.expectAggregatedScorecardEntityCount(
+        githubMetric.title,
+        "2",
+      );
+      await scorecardPage.expectAggregatedScorecardEntityCount(
+        jiraMetric.title,
+        "4",
+      );
+    });
 
-    const [githubMetric, jiraMetric] = scorecardPage.scorecardMetrics;
+    test("Verify aggregated scorecard counts increase after importing new entity", async () => {
+      const addonTestUrl =
+        "https://github.com/janus-qe/RHDH-scorecard-plugin-test/blob/main/addon-test.yaml";
 
-    await scorecardPage.expectScorecardVisible(githubMetric.title);
-    await scorecardPage.expectScorecardHidden(jiraMetric.title);
-    await scorecardPage.validateScorecardAriaFor(githubMetric);
-  });
+      // Import the addon-test entity
+      await catalog.go();
+      await page.getByRole("button", { name: "Self-service" }).click();
+      await scorecardPage.uiHelper.clickButton(
+        "Import an existing Git repository",
+      );
+      await catalogImport.registerExistingComponent(addonTestUrl);
+      await page.reload();
+      // Verify scorecards are visible for the addon-test component
+      await scorecardPage.openTab();
 
-  test("Validate only Jira scorecard is displayed", async () => {
-    await catalog.go();
-    await catalog.goToByName("jira-scorecard-only");
-    await scorecardPage.openTab();
+      const [githubMetric, jiraMetric] = scorecardPage.scorecardMetrics;
 
-    const [githubMetric, jiraMetric] = scorecardPage.scorecardMetrics;
+      await scorecardPage.expectScorecardVisible(githubMetric.title);
+      await scorecardPage.expectScorecardVisible(jiraMetric.title);
 
-    await scorecardPage.expectScorecardHidden(githubMetric.title);
-    await scorecardPage.expectScorecardVisible(jiraMetric.title);
-    await scorecardPage.validateScorecardAriaFor(jiraMetric);
-  });
+      // Navigate to home and verify aggregated counts increased by 1
+      await scorecardPage.navigateToHome();
 
-  test("Display error state for invalid threshold config while rendering metrics", async () => {
-    await catalog.go();
-    await catalog.goToByName("invalid-threshold");
-    await scorecardPage.openTab();
-
-    const [githubMetric, jiraMetric] = scorecardPage.scorecardMetrics;
-
-    await scorecardPage.expectScorecardVisible(githubMetric.title);
-    await scorecardPage.expectScorecardVisible(jiraMetric.title);
-    await scorecardPage.expectErrorHeading("Invalid thresholds");
-    await scorecardPage.validateScorecardAriaFor(jiraMetric);
+      await scorecardPage.expectAggregatedScorecardEntityCount(
+        githubMetric.title,
+        "3",
+      );
+      await scorecardPage.expectAggregatedScorecardEntityCount(
+        jiraMetric.title,
+        "5",
+      );
+    });
   });
 });
