@@ -126,7 +126,7 @@ helm::get_previous_release_values() {
 # Returns:
 #   Prints the major.minor version (e.g., "1.9")
 helm::get_chart_major_version() {
-  local version_override=$1
+  local version_override=${1:-}
 
   if [[ -n "$version_override" ]]; then
     echo "$version_override"
@@ -166,7 +166,7 @@ helm::get_chart_major_version() {
 #   Prints the chart version (e.g., "1.4-123-CI")
 helm::get_chart_version() {
   local chart_major_version
-  chart_major_version=$(helm::get_chart_major_version "$1")
+  chart_major_version=$(helm::get_chart_major_version "${1:-}")
   if [[ -z "$chart_major_version" ]]; then
     return 1
   fi
