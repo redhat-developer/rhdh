@@ -4,7 +4,7 @@ import { Common } from "../utils/common";
 import { expect } from "@playwright/test";
 import { Catalog } from "../support/pages/catalog";
 
-test.describe("TechDocs", () => {
+test.describe("TechDocs tmp testsdfsd", () => {
   let common: Common;
   let uiHelper: UIhelper;
   let catalog: Catalog;
