@@ -120,7 +120,7 @@ jobs:
 
       - name: Install Python dependencies
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
-        run: pip install -r python/requirements-dev.in -r python/requirements-build.in -r python/requirements.txt
+        run: pip install -r python/requirements-dev.txt -r python/requirements-build.txt -r python/requirements.txt
 
       - name: Run prettier
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
