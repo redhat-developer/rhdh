@@ -1233,6 +1233,12 @@ class RHDHDeployment {
       "./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-org-dynamic",
       true,
     );
+    // Use local path for local development, OCI path for CI/CD
+    const transformerPluginPath = this.isRunningLocal
+      ? "./dynamic-plugins/dist/@internal/backstage-plugin-catalog-backend-module-github-org-transformer-dynamic"
+      : "oci://quay.io/rh-ee-jhe/catalog-github-org-transformer:v0.1.0!internal-backstage-plugin-catalog-backend-module-github-org-transformer";
+
+    this.setDynamicPluginEnabled(transformerPluginPath, true);
 
     this.setAppConfigProperty("catalog.providers", {
       githubOrg: [
@@ -1585,6 +1591,23 @@ class RHDHDeployment {
       `Checking parents of ${child} (${JSON.stringify(parents)}) contain group ${parent}`,
     );
     return parents.includes(parent);
+  }
+
+  async checkUserHasAnnotation(
+    user: string,
+    annotationKey: string,
+    expectedValue: string,
+  ): Promise<boolean> {
+    const api = new APIHelper();
+    await api.UseStaticToken(this.staticToken);
+    await api.UseBaseUrl(await this.computeBackstageBackendUrl());
+    const userEntity: UserEntity = await api.getCatalogUserFromAPI(user);
+    const annotations = userEntity.metadata?.annotations || {};
+    const actualValue = annotations[annotationKey];
+    console.log(
+      `Checking user ${user} has annotation ${annotationKey}=${expectedValue}, actual value: ${actualValue}`,
+    );
+    return actualValue === expectedValue;
   }
 }
 
