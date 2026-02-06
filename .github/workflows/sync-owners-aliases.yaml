@@ -16,7 +16,7 @@ jobs:
     env:
       # This token is used to fetch the members of the GitHub teams
       # It is a Personal Access Token with the `read:org` scope
-      OWNERS_GITHUB_TOKEN: ${{ secrets.OWNERS_GITHUB_TOKEN }}
+      OWNERS_GITHUB_TOKEN: ${{ secrets.RHDH_BOT_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
