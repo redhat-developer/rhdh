@@ -7627,9 +7627,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ianvs/prettier-plugin-sort-imports@npm:4.7.0":
-  version: 4.7.0
-  resolution: "@ianvs/prettier-plugin-sort-imports@npm:4.7.0"
+"@ianvs/prettier-plugin-sort-imports@npm:4.7.1":
+  version: 4.7.1
+  resolution: "@ianvs/prettier-plugin-sort-imports@npm:4.7.1"
   dependencies:
     "@babel/generator": ^7.26.2
     "@babel/parser": ^7.26.2
@@ -7637,7 +7637,7 @@ __metadata:
     "@babel/types": ^7.26.0
     semver: ^7.5.2
   peerDependencies:
-    "@prettier/plugin-oxc": ^0.0.4
+    "@prettier/plugin-oxc": ^0.0.4 || ^0.1.0
     "@vue/compiler-sfc": 2.7.x || 3.x
     content-tag: ^4.0.0
     prettier: 2 || 3 || ^4.0.0-0
@@ -7651,7 +7651,7 @@ __metadata:
       optional: true
     prettier-plugin-ember-template-tag:
       optional: true
-  checksum: 142a1ea272a42650110ba1d7d8f87c98c19c0126267bbd48e7bca0c2b6ca5a7fa057226bdb2b8404bb7c1d94e358349f69c8a5d56ce036574a5eced3eca39bcd
+  checksum: 120d15f69f53c82c79777a62c52f644e7850f9f6c30d17de97d3c3cd0342c490ebc498624f128491b1f199bfe428c55a9b029c0b34b39c7b8221f621ff856cee
   languageName: node
   linkType: hard
 
@@ -34643,7 +34643,7 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.34.5
     "@backstage/frontend-test-utils": 0.4.1
-    "@ianvs/prettier-plugin-sort-imports": 4.7.0
+    "@ianvs/prettier-plugin-sort-imports": 4.7.1
     "@manypkg/cli": 0.25.1
     glob: 11.1.0
     husky: 8.0.3
@@ -34652,7 +34652,7 @@ __metadata:
     node-gyp: 10.3.1
     rulesync: 3.34.0
     sherif: 1.10.0
-    turbo: 2.7.6
+    turbo: 2.8.3
   languageName: unknown
   linkType: soft
 
@@ -37307,58 +37307,58 @@ __metadata:
   languageName: node
   linkType: hard
 
-"turbo-darwin-64@npm:2.7.6":
-  version: 2.7.6
-  resolution: "turbo-darwin-64@npm:2.7.6"
+"turbo-darwin-64@npm:2.8.3":
+  version: 2.8.3
+  resolution: "turbo-darwin-64@npm:2.8.3"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"turbo-darwin-arm64@npm:2.7.6":
-  version: 2.7.6
-  resolution: "turbo-darwin-arm64@npm:2.7.6"
+"turbo-darwin-arm64@npm:2.8.3":
+  version: 2.8.3
+  resolution: "turbo-darwin-arm64@npm:2.8.3"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"turbo-linux-64@npm:2.7.6":
-  version: 2.7.6
-  resolution: "turbo-linux-64@npm:2.7.6"
+"turbo-linux-64@npm:2.8.3":
+  version: 2.8.3
+  resolution: "turbo-linux-64@npm:2.8.3"
   conditions: os=linux & cpu=x64
   languageName: node
   linkType: hard
 
-"turbo-linux-arm64@npm:2.7.6":
-  version: 2.7.6
-  resolution: "turbo-linux-arm64@npm:2.7.6"
+"turbo-linux-arm64@npm:2.8.3":
+  version: 2.8.3
+  resolution: "turbo-linux-arm64@npm:2.8.3"
   conditions: os=linux & cpu=arm64
   languageName: node
   linkType: hard
 
-"turbo-windows-64@npm:2.7.6":
-  version: 2.7.6
-  resolution: "turbo-windows-64@npm:2.7.6"
+"turbo-windows-64@npm:2.8.3":
+  version: 2.8.3
+  resolution: "turbo-windows-64@npm:2.8.3"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"turbo-windows-arm64@npm:2.7.6":
-  version: 2.7.6
-  resolution: "turbo-windows-arm64@npm:2.7.6"
+"turbo-windows-arm64@npm:2.8.3":
+  version: 2.8.3
+  resolution: "turbo-windows-arm64@npm:2.8.3"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
 
-"turbo@npm:2.7.6":
-  version: 2.7.6
-  resolution: "turbo@npm:2.7.6"
+"turbo@npm:2.8.3":
+  version: 2.8.3
+  resolution: "turbo@npm:2.8.3"
   dependencies:
-    turbo-darwin-64: 2.7.6
-    turbo-darwin-arm64: 2.7.6
-    turbo-linux-64: 2.7.6
-    turbo-linux-arm64: 2.7.6
-    turbo-windows-64: 2.7.6
-    turbo-windows-arm64: 2.7.6
+    turbo-darwin-64: 2.8.3
+    turbo-darwin-arm64: 2.8.3
+    turbo-linux-64: 2.8.3
+    turbo-linux-arm64: 2.8.3
+    turbo-windows-64: 2.8.3
+    turbo-windows-arm64: 2.8.3
   dependenciesMeta:
     turbo-darwin-64:
       optional: true
@@ -37374,7 +37374,7 @@ __metadata:
       optional: true
   bin:
     turbo: bin/turbo
-  checksum: 6bbed00a353f631dc0558e3cc0d480cf63c5b930bb58ff4f93b5500d154380f35638143d42fb2aa2593d90b0a704c06ccaabcecdc11107ab69aea878231db25b
+  checksum: e2a35ed1a14ee6e19283bf714b20db8f30b2529e4b615552948ac4a912411ba133a777530ba04bb6d04c4e1de28fc6dc3fef2b890fb82095cdd50af2e03f4749
   languageName: node
   linkType: hard
 
