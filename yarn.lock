@@ -13794,8 +13794,8 @@ __metadata:
     "@testing-library/jest-dom": 6.9.1
     "@testing-library/react": 14.3.1
     "@testing-library/react-hooks": 8.0.1
-    "@types/node": 22.19.7
-    "@types/react": 18.3.27
+    "@types/node": 22.19.9
+    "@types/react": 18.3.28
     "@types/react-dom": 18.3.7
     prettier: 3.8.1
     react: 18.3.1
@@ -17046,12 +17046,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:22.19.7":
-  version: 22.19.7
-  resolution: "@types/node@npm:22.19.7"
+"@types/node@npm:22.19.9":
+  version: 22.19.9
+  resolution: "@types/node@npm:22.19.9"
   dependencies:
     undici-types: ~6.21.0
-  checksum: 3feba083e0e29d58dfceec726de19cb246616c1af5bed8d779ac2b6ee92662016ad2ead44f04279143b459741300c52883e759d68f42d75e372da247b38eebe9
+  checksum: 8a0ef0ddcbdd3290eb9eae8b7c5f6d703d2fc98be726e386c4c0f9c221370326e7a0634f97c4e6d24b7bf2d1d76c89336de8d71f5eebfcbca392d277e23b4339
   languageName: node
   linkType: hard
 
@@ -17230,13 +17230,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:18.3.27":
-  version: 18.3.27
-  resolution: "@types/react@npm:18.3.27"
+"@types/react@npm:18.3.28":
+  version: 18.3.28
+  resolution: "@types/react@npm:18.3.28"
   dependencies:
     "@types/prop-types": "*"
     csstype: ^3.2.2
-  checksum: c74d0ab5155226998a52b568f6280536205f8fe4317f77bd5d5258bc131cc9134a2db68dc818cb8e8402a2f229843c4a5bde339faf7e64d441630e569a9e5421
+  checksum: 9d59fb3def4e712d4f8fa15998791a07f9799462f8d581d17039a9503017bfce3463d57fc737ce1d28d6aa3f482f4a3a5bae5a662d97560a9359aab111556c97
   languageName: node
   linkType: hard
 
@@ -18398,7 +18398,7 @@ __metadata:
     "@testing-library/react": 14.3.1
     "@testing-library/user-event": 14.6.1
     "@types/jquery": 3.5.33
-    "@types/react": 18.3.27
+    "@types/react": 18.3.28
     "@types/react-dom": 18.3.7
     "@types/zen-observable": 0.8.7
     cross-env: 7.0.3
@@ -18465,8 +18465,8 @@ __metadata:
     "@testing-library/react": 14.3.1
     "@testing-library/react-hooks": 8.0.1
     "@testing-library/user-event": 14.6.1
-    "@types/node": 22.19.7
-    "@types/react": 18.3.27
+    "@types/node": 22.19.9
+    "@types/react": 18.3.28
     "@types/react-dom": 18.3.7
     eslint-plugin-unused-imports: 4.3.0
     lodash: 4.17.23
