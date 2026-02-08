@@ -11,7 +11,8 @@ LOGFILE="test-log"
 # https://docs.ci.openshift.org/docs/architecture/step-registry/#available-environment-variables
 # https://docs.prow.k8s.io/docs/jobs/#job-environment-variables
 JOB_NAME="${JOB_NAME:-unknown-job}"
-TAG_NAME="${TAG_NAME:-}"
+TAG_NAME="next-715b4c6e"
+echo "TAG_NAME override: ${TAG_NAME}"
 OPENSHIFT_CI="${OPENSHIFT_CI:-false}"
 REPO_OWNER="${REPO_OWNER:-redhat-developer}"
 REPO_NAME="${REPO_NAME:-rhdh}"
