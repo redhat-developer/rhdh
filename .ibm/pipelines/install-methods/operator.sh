@@ -53,7 +53,7 @@ deploy_rhdh_operator() {
   local backstage_crd_path=$2
   local timeout_seconds=60
   if [[ -z "${IS_OPENSHIFT}" || "${IS_OPENSHIFT}" == "false" ]]; then
-    timeout_seconds=300
+    timeout_seconds=9000
   fi
 
   # Ensure PostgresCluster CRD is available before deploying Backstage CR
