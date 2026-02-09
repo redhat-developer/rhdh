@@ -239,9 +239,8 @@ build_image() {
   # /run/secrets/rhsm, /run/secrets/etc-pki-entitlement) which enables RHEL repos
   # not in the hermeto cache. With --network none, dnf/microdnf fails trying to
   # access these repos. Mount empty paths over these secrets to block injection.
-  local empty_dir
-  empty_dir=$(mktemp -d)
-  trap 'rm -rf "${empty_dir}"' EXIT
+  EMPTY_DIR=$(mktemp -d)
+  trap 'rm -rf "${EMPTY_DIR}"' EXIT
 
   podman build -t "${image}" \
     ${platform_args} \
@@ -250,8 +249,8 @@ build_image() {
     -f "${component_dir}/docker/Containerfile.hermeto" \
     -v "${local_cache_dir}:/cachi2" \
     -v /dev/null:/run/secrets/redhat.repo \
-    -v "${empty_dir}:/run/secrets/rhsm:z" \
-    -v "${empty_dir}:/run/secrets/etc-pki-entitlement:z" \
+    -v "${EMPTY_DIR}:/run/secrets/rhsm:z" \
+    -v "${EMPTY_DIR}:/run/secrets/etc-pki-entitlement:z" \
     "${component_dir}"
 }
 
