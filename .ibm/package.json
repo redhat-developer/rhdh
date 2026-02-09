@@ -15,5 +15,5 @@
     "prettier-plugin-sh": "0.18.0",
     "shellcheck": "4.1.0"
   },
-  "packageManager": "yarn@3.8.7"
+  "packageManager": "yarn@4.12.0"
 }
