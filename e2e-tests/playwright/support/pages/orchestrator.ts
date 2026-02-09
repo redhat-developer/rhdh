@@ -135,13 +135,21 @@ export class Orchestrator {
       "aria-label",
       "Status",
     );
-    await this.page.getByTestId("select").first().click();
+    await this.page
+      .getByLabel("Status")
+      .getByRole("button", { name: "All" })
+      .click();
 
     const statuses = ["All", "Running", "Failed", "Completed", "Aborted"];
     for (const status of statuses) {
       await expect(this.page.getByRole("option", { name: status })).toHaveText(
         status,
       );
+      await this.page.getByRole("option", { name: status }).click();
+      await this.page
+        .getByLabel("Status")
+        .getByRole("button", { name: status })
+        .click();
     }
     await this.page.getByRole("option", { name: "All" }).click();
 
@@ -160,6 +168,32 @@ export class Orchestrator {
         }),
       ).toBeVisible();
     }
+  }
+
+  async validateWorkflowAllRunsStatusIcons() {
+    await this.page.getByRole("tab", { name: "all runs" }).click();
+    const statuses = ["Running", "Failed", "Completed", "-- Aborted"];
+    for (const status of statuses) {
+      await expect(this.page.getByText(status).first()).toHaveText(status);
+    }
+    await expect(
+      this.page
+        .getByRole("cell", { name: /Running/ })
+        .locator("svg")
+        .first(),
+    ).toBeVisible();
+    await expect(
+      this.page
+        .getByRole("cell", { name: /Completed/ })
+        .locator("svg")
+        .first(),
+    ).toBeVisible();
+    await expect(
+      this.page
+        .getByRole("cell", { name: /Failed/ })
+        .locator("svg")
+        .first(),
+    ).toBeVisible();
   }
 
   async getPageUrl() {
@@ -192,6 +226,7 @@ export class Orchestrator {
       .getByRole("button", { name: "Abort" })
       .click();
     await expect(this.page.getByText("Run has aborted")).toBeVisible();
+    await expect(this.page.getByText("-- Aborted")).toBeVisible();
   }
 
   async validateErrorPopup() {
@@ -236,21 +271,81 @@ export class Orchestrator {
 
     switch (input) {
       case "OK":
-        await this.validateWorkflowStatus("Completed");
+        await this.validateCurrentWorkflowStatus("Completed");
         break;
       case "KO":
-        await this.validateWorkflowStatus("Failed");
+        await this.validateCurrentWorkflowStatus("Failed");
         break;
       case "Wait":
-        await this.validateWorkflowStatus("Running");
+        await this.validateCurrentWorkflowStatus("Running");
         break;
     }
   }
 
-  async validateWorkflowStatus(status = "Completed") {
+  async validateWorkflowStatusDetails(status = "Completed") {
+    const details = this.page
+      .getByRole("article")
+      .filter({ has: this.page.getByRole("heading", { name: "Workflow" }) });
+
+    if (status === "Running") {
+      // Verify Run status heading and spinner in details area
+      await expect(
+        details.getByRole("heading", { name: /Run\s*status/i }),
+      ).toBeVisible();
+      await expect(
+        this.page
+          .locator("b")
+          .filter({ hasText: "Running" })
+          .getByRole("progressbar"),
+      ).toBeVisible();
+      // Verify a button shows 'Running' text and has a spinner
+      const workflowButtons = this.page
+        .locator("div")
+        .filter({ hasText: "Abort Running..." })
+        .nth(4);
+      await expect(workflowButtons).toHaveText(/Running/i);
+      await expect(workflowButtons.getByRole("progressbar")).toBeVisible();
+      // Results section verifications
+      await expect(
+        this.page.getByTestId("info-card-subheader").getByRole("img"),
+      ).toBeVisible();
+      // Verify workflow is running message is visible with timestamp
+      // Note: Following line is blocked in main branch due to bug RHDHBUGS-2220. TODO: Uncomment this once the bug is fixed.
+      // await expect(this.page.getByText(/workflow is running\.?\s*Started at\s+\d{1,2}\/\d{1,2}\/\d{4},\s+\d{1,2}:\d{2}:\d{2}\s+(AM|PM)/i)).toBeVisible();
+    }
+    if (status === "Failed") {
+      await expect(
+        details.getByTestId("ErrorOutlineOutlinedIcon"),
+      ).toBeVisible();
+      await expect(
+        this.page.getByText(
+          /Run has failed at\s+\d{1,2}\/\d{1,2}\/\d{4},\s+\d{1,2}:\d{2}:\d{2}\s+(AM|PM)/,
+        ),
+      ).toBeVisible();
+      await expect(
+        this.page.getByTestId("ErrorOutlineOutlinedIcon"),
+      ).toBeVisible();
+    }
+    if (status === "Completed") {
+      await expect(
+        this.page
+          .locator("b")
+          .filter({ hasText: "Completed" })
+          .getByTestId("CheckCircleOutlinedIcon"),
+      ).toBeVisible();
+      await expect(
+        this.page.getByText(
+          /Run completed at\s+\d{1,2}\/\d{1,2}\/\d{4},\s+\d{1,2}:\d{2}:\d{2}\s+(AM|PM)/,
+        ),
+      ).toBeVisible();
+      await expect(this.page.getByTestId("SuccessOutlinedIcon")).toBeVisible();
+    }
+  }
+
+  async validateCurrentWorkflowStatus(status = "Completed", timeout = 120000) {
     await expect(this.page.getByText(`${status}`, { exact: true })).toBeVisible(
       {
-        timeout: 600000,
+        timeout,
       },
     );
   }
@@ -267,6 +362,6 @@ export class Orchestrator {
   async reRunOnFailure(input = "Entire workflow") {
     await expect(this.page.getByText("Run again")).toBeVisible();
     await this.page.getByText("Run again").click();
-    await this.page.getByRole("option", { name: input }).click();
+    await this.page.getByRole("menuitem", { name: input }).click();
   }
 }
