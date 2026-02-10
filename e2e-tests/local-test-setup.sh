@@ -120,18 +120,29 @@ if ! vault token lookup &>/dev/null; then
 fi
 
 log::info "Exporting secrets as environment variables..."
-# Export secrets safely without eval (avoids code injection risk)
-# Uses base64 encoding to safely handle special characters in values
-# Replaces -, . and / with _ in key names (env vars can only have alphanumeric and _)
-SECRETS_JSON=$(vault kv get -format=json -mount="kv" "selfservice/rhdh-qe/rhdh" | jq -r '.data.data')
-for key in $(echo "$SECRETS_JSON" | jq -r 'keys[]'); do
-    # Skip metadata keys
-    [[ "$key" == "secretsync/"* ]] && continue
-    # Get value and sanitize key name (put - at end for macOS tr compatibility)
-    value=$(echo "$SECRETS_JSON" | jq -r --arg k "$key" '.[$k]')
-    safe_key=$(echo "$key" | tr './-' '___')
-    export "$safe_key"="$value"
-done
+if [ -n "$ZSH_VERSION" ]; then
+    # --- ZSH / macOS FIX ---
+    # Fix: Vault flag order, printf to avoid control char interpretation, while loop for safety
+    SECRETS_JSON=$(vault kv get -mount="kv" -format=json "selfservice/rhdh-qe/rhdh" | jq -r '.data.data')
+    
+    while read -r key; do
+        [[ "$key" == "secretsync/"* ]] && continue
+        value=$(printf '%s' "$SECRETS_JSON" | jq -r --arg k "$key" '.[$k]')
+        safe_key=$(echo "$key" | tr './-' '___')
+        export "$safe_key"="$value"
+    done < <(printf '%s' "$SECRETS_JSON" | jq -r 'keys[]')
+
+elif [ -n "$BASH_VERSION" ]; then
+    # --- ORIGINAL BASH LOGIC ---
+    SECRETS_JSON=$(vault kv get -format=json -mount="kv" "selfservice/rhdh-qe/rhdh" | jq -r '.data.data')
+    
+    for key in $(echo "$SECRETS_JSON" | jq -r 'keys[]'); do
+        [[ "$key" == "secretsync/"* ]] && continue
+        value=$(echo "$SECRETS_JSON" | jq -r --arg k "$key" '.[$k]')
+        safe_key=$(echo "$key" | tr './-' '___')
+        export "$safe_key"="$value"
+    done
+fi
 
 log::section "Environment Ready"
 log::info "Available URLs:"

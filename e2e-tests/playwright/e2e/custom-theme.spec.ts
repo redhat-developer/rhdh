@@ -36,6 +36,7 @@ test.describe("CustomTheme should be applied", () => {
   });
 
   test("Verify theme colors are applied and make screenshots", async ({}, testInfo: TestInfo) => {
+    test.setTimeout(180000); // allow waitForLoad(120s) and multiple theme switches to complete
     const themes = ThemeConstants.getThemes();
 
     for (const theme of themes) {

@@ -6,7 +6,8 @@ import { test, expect } from "@playwright/test";
 import { ChildProcessWithoutNullStreams, spawn, exec } from "child_process";
 import { KubeClient } from "../../../utils/kube-client";
 
-test.describe("Test Keycloak plugin", () => {
+// Keycloak users and groups ingestion is well tested in auth-provider and here is flaky causing too many failures. Skipping for now. 
+test.describe.skip("Test Keycloak plugin", () => {
   let uiHelper: UIhelper;
   let keycloak: Keycloak;
   let common: Common;

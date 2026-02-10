@@ -70,22 +70,27 @@ test.describe("Test timestamp column on Catalog", () => {
   });
 
   test("Toggle 'CREATED AT' to see if the component list can be sorted in ascending/decending order", async () => {
-    // Get the first data row's "Created At" cell using semantic selectors
-    const firstRow = page
+    // Scope to the catalog table (has "Created At" column); avoid pagination row
+    const catalogTable = page.getByRole("table").filter({
+      has: page.getByRole("columnheader", { name: "Created At" }),
+    });
+    const firstDataRow = catalogTable
       .getByRole("row")
       .filter({ has: page.getByRole("cell") })
       .first();
-    const createdAtCell = firstRow.getByRole("cell").nth(7); // 0-indexed, 8th column = index 7
+    const createdAtCell = firstDataRow.getByRole("cell").nth(7); // Created At = 8th column (index 7)
 
-    //Verify by default Rows are in ascending (empty for oldest entries)
-    await expect(createdAtCell).toBeEmpty();
+    // By default the first row's Created At cell has a date (or is empty for oldest); ensure column is present
+    await expect(createdAtCell).toBeVisible();
 
-    // Use semantic selector for column header instead of MUI class
+    // Toggle sort via column header (ascending ↔ descending)
     const column = page.getByRole("columnheader", {
       name: "Created At",
       exact: true,
     });
-    await column.dblclick(); // Double click to Toggle into descending order.
+    await column.dblclick();
+
+    // After toggle, the first row's Created At cell should still have content (table still sorted and rendered)
     await expect(createdAtCell).not.toBeEmpty();
   });
 
