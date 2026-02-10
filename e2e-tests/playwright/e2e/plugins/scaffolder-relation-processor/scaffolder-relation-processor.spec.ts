@@ -84,8 +84,11 @@ test.describe.fixme("Test Scaffolder Relation Processor Plugin", () => {
     await uiHelper.clickButton("Review");
 
     await uiHelper.clickButton("Create");
-    await page.waitForTimeout(5000);
-    await uiHelper.clickLink("Open in catalog");
+
+    const linkLocator = page.locator("a").filter({ hasText: "Open in catalog" }).first();
+    // scaffolder might take a bit longer to create the entity, so we wait for the link to be visible before clicking
+    await linkLocator.waitFor({ state: "visible", timeout: 60_000 });
+    await linkLocator.click();
   });
 
   test("Verify scaffoldedFrom relation in dependency graph and raw YAML", async () => {
