@@ -11,7 +11,7 @@ jobs:
   podman-push:
     name: Push Podman Image to Registry
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event_name == 'workflow_run' }}
     permissions:
       contents: read
       issues: write
@@ -45,10 +45,38 @@ jobs:
             echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
             echo "short-sha=$SHORT_SHA" >> $GITHUB_OUTPUT
           else
-            echo "Failed to determine PR number"
+            echo "::error::Failed to determine PR number for branch: $PR_BRANCH"
+            echo "## Failed to determine PR number" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Could not find a PR for branch: \`$PR_BRANCH\`" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "No PR comment could be posted for this workflow run." >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
+      - name: Comment build failure
+        if: ${{ github.event.workflow_run.conclusion != 'success' }}
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          PR_NUMBER: ${{ steps.get-pr-info.outputs.pr_number }}
+          BUILD_WORKFLOW_URL: ${{ github.event.workflow_run.html_url }}
+          BUILD_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+        with:
+          script: |
+            const prNumber = process.env.PR_NUMBER;
+            const buildUrl = process.env.BUILD_WORKFLOW_URL;
+            const conclusion = process.env.BUILD_CONCLUSION;
+
+            const body = `The container image [build workflow](${buildUrl}) finished with status: \`${conclusion}\`.\n\n`
+
+            github.rest.issues.createComment({
+              issue_number: parseInt(prNumber),
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            })
+
       - name: Determine artifact name
+        if: ${{ github.event.workflow_run.conclusion == 'success' }}
         id: get-artifact-name
         env:
           PR_NUMBER: ${{ steps.get-pr-info.outputs.pr_number }}
@@ -69,6 +97,7 @@ jobs:
 
 
       - name: Download Skip Status Artifact
+        if: ${{ github.event.workflow_run.conclusion == 'success' }}
         id: download-skip-status
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         env:
@@ -81,6 +110,7 @@ jobs:
         continue-on-error: true
 
       - name: Check Skip Status
+        if: ${{ github.event.workflow_run.conclusion == 'success' }}
         id: check-skip
         run: |
           if [ -f "./rhdh-skip-artifacts/isSkipped.txt" ]; then
@@ -102,7 +132,7 @@ jobs:
           fi
 
       - name: Download Image Artifacts
-        if: ${{ steps.check-skip.outputs.is_skipped != 'true' }}
+        if: ${{ github.event.workflow_run.conclusion == 'success' && steps.check-skip.outputs.is_skipped != 'true' }}
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         env:
           ARTIFACT_NAME: ${{ steps.get-artifact-name.outputs.artifact_name }}
@@ -113,7 +143,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Load and prepare image
-        if: ${{ steps.check-skip.outputs.is_skipped != 'true' }}
+        if: ${{ github.event.workflow_run.conclusion == 'success' && steps.check-skip.outputs.is_skipped != 'true' }}
         id: prepare
         run: |
           # Check if artifacts exist
@@ -142,7 +172,7 @@ jobs:
           echo "$DELIMITER" >> $GITHUB_OUTPUT
 
       - name: Push Images
-        if: ${{ steps.check-skip.outputs.is_skipped != 'true' }}
+        if: ${{ github.event.workflow_run.conclusion == 'success' && steps.check-skip.outputs.is_skipped != 'true' }}
         uses: redhat-actions/push-to-registry@5ed88d269cf581ea9ef6dd6806d01562096bee9c # v2.8
         env:
           PUSHED_TAGS: ${{ steps.prepare.outputs.tags }}
@@ -152,15 +182,19 @@ jobs:
           password: ${{ secrets.QUAY_TOKEN }}
 
       - name: Comment skip status
-        if: ${{ steps.check-skip.outputs.is_skipped == 'true' }}
+        if: ${{ github.event.workflow_run.conclusion == 'success' && steps.check-skip.outputs.is_skipped == 'true' }}
         uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         env:
           PR_NUMBER: ${{ steps.get-pr-info.outputs.pr_number }}
+          BUILD_WORKFLOW_URL: ${{ github.event.workflow_run.html_url }}
+          PUBLISH_WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         with:
           script: |
             const prNumber = process.env.PR_NUMBER;
+            const buildUrl = process.env.BUILD_WORKFLOW_URL;
+            const publishUrl = process.env.PUBLISH_WORKFLOW_URL;
 
-            const body = '🚫 Image Push Skipped.\n\nThe container image push was skipped because the build was skipped (either due to [skip-build] tag or no relevant changes with existing image)\n\n';
+            const body = `The container image [build](${buildUrl}) and [publish](${publishUrl}) workflows were skipped (either due to [skip-build] tag or no relevant changes with existing image).\n`;
 
             github.rest.issues.createComment({
               issue_number: parseInt(prNumber),
@@ -170,30 +204,42 @@ jobs:
             })
 
       - name: Comment the image pull link
-        if: ${{ steps.check-skip.outputs.is_skipped != 'true' }}
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        if: ${{ github.event.workflow_run.conclusion == 'success' && steps.check-skip.outputs.is_skipped != 'true' }}
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           PUSHED_TAGS: ${{ steps.prepare.outputs.tags }}
           PR_NUMBER: ${{ steps.get-pr-info.outputs.pr_number }}
+          BUILD_WORKFLOW_URL: ${{ github.event.workflow_run.html_url }}
+          PUBLISH_WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         with:
           script: |
             const prNumber = process.env.PR_NUMBER;
             const pushedTags = process.env.PUSHED_TAGS;
+            const buildUrl = process.env.BUILD_WORKFLOW_URL;
+            const publishUrl = process.env.PUBLISH_WORKFLOW_URL;
             
-            if (!prNumber) {
-              console.log('No pull request number found');
-              return;
-            }
-            
+            // This shouldn't happen since Push Images would've failed, but just in case a mistake is made in the workflow logic or logic changes
+            const noTagsError = (reason) => {
+              const body = `The image was [built](${buildUrl}) and [published](${publishUrl}) but no tags were found: ${reason}.\n`;
+
+              github.rest.issues.createComment({
+                issue_number: parseInt(prNumber),
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              });
+              core.setFailed(reason);
+            };
+
             if (!pushedTags) {
-              console.log('No pushed tags found');
+              noTagsError('No pushed tags output found');
               return;
             }
             
             const tags = pushedTags.trim().split('\n').filter(tag => tag.trim());
             
             if (tags.length === 0) {
-              console.log('No valid tags found');
+              noTagsError('Pushed tags output was empty');
               return;
             }
             
@@ -203,9 +249,31 @@ jobs:
               return `* [\`${fullTag}\`](https://${fullTag})`;
             }).join('\n');
             
-            const body = `The image is available at:\n\n${tagLinks}\n`;
+            const body = `Image was [built](${buildUrl}) and [published](${publishUrl}) successfully. It is available at:\n\n${tagLinks}\n`;
             
             console.log(`Creating comment for PR ${prNumber} with body:\n ${body}`);
+
+            github.rest.issues.createComment({
+              issue_number: parseInt(prNumber),
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            })
+
+      - name: Comment publish failure
+        if: ${{ failure() && github.event.workflow_run.conclusion == 'success' }}
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          PR_NUMBER: ${{ steps.get-pr-info.outputs.pr_number }}
+          BUILD_WORKFLOW_URL: ${{ github.event.workflow_run.html_url }}
+          PUBLISH_WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        with:
+          script: |
+            const prNumber = process.env.PR_NUMBER;
+            const buildUrl = process.env.BUILD_WORKFLOW_URL;
+            const publishUrl = process.env.PUBLISH_WORKFLOW_URL;
+
+            const body = `The container image was [built](${buildUrl}) successfully but failed to [publish](${publishUrl}) to the registry.\n`;
 
             github.rest.issues.createComment({
               issue_number: parseInt(prNumber),
