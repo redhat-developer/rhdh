@@ -420,7 +420,7 @@ export class Orchestrator {
     await runButton.click();
   }
 
-  async verifyBreadcrumbNavigation(entityName: string, workflowName: string) {
+  async verifyBreadcrumbNavigation(entityName: string) {
     // Verify breadcrumb contains entity name
     const breadcrumb = this.page.getByRole("navigation", {
       name: "Breadcrumb",
