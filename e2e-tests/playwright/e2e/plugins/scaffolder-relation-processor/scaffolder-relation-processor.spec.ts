@@ -85,7 +85,10 @@ test.describe.fixme("Test Scaffolder Relation Processor Plugin", () => {
 
     await uiHelper.clickButton("Create");
 
-    const linkLocator = page.locator("a").filter({ hasText: "Open in catalog" }).first();
+    const linkLocator = page
+      .locator("a")
+      .filter({ hasText: "Open in catalog" })
+      .first();
     // scaffolder might take a bit longer to create the entity, so we wait for the link to be visible before clicking
     await linkLocator.waitFor({ state: "visible", timeout: 60_000 });
     await linkLocator.click();
