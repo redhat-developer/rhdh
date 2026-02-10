@@ -48,7 +48,7 @@ test.describe.skip("GitHub Happy path", async () => {
   });
 
   test("Verify Profile is Github Account Name in the Settings page", async () => {
-    await uiHelper.goToPageUrl("/settings", "Settings");
+    await uiHelper.goToSettingsPage();
     await uiHelper.verifyHeading(process.env.GH_USER2_ID);
     await uiHelper.verifyHeading(`User Entity: ${process.env.GH_USER2_ID}`);
   });
@@ -87,7 +87,7 @@ test.describe.skip("GitHub Happy path", async () => {
   });
 
   test("Verify all 12 Software Templates appear in the Create page", async () => {
-    await uiHelper.clickLink({ ariaLabel: "Self-service" });
+    await uiHelper.goToSelfServicePage();
     await uiHelper.verifyHeading("Templates");
 
     for (const template of TEMPLATES) {
@@ -222,7 +222,7 @@ test.describe.skip("GitHub Happy path", async () => {
 
   // TODO: https://issues.redhat.com/browse/RHDHBUGS-2099
   test.fixme("Sign out and verify that you return back to the Sign in page", async () => {
-    await uiHelper.goToPageUrl("/settings", "Settings");
+    await uiHelper.goToSettingsPage();
     await common.signOut();
     await context.clearCookies();
   });

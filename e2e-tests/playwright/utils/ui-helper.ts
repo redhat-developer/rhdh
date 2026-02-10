@@ -229,9 +229,7 @@ export class UIhelper {
   async openProfileDropdown() {
     const header = this.page.locator("nav[id='global-header']");
     await expect(header).toBeVisible();
-    await header
-      .locator("[data-testid='KeyboardArrowDownOutlinedIcon']")
-      .click();
+    await header.getByTestId("KeyboardArrowDownOutlinedIcon").click();
   }
 
   async goToPageUrl(url: string, heading?: string) {
@@ -247,6 +245,23 @@ export class UIhelper {
     await expect(this.page.locator("nav[id='global-header']")).toBeVisible();
     await this.openProfileDropdown();
     await this.clickLink(t["plugin.global-header"][lang]["profile.myProfile"]);
+  }
+
+  async goToSettingsPage() {
+    await expect(this.page.locator("nav[id='global-header']")).toBeVisible();
+    await this.openProfileDropdown();
+    await this.clickLink(
+      // TODO: RHDHBUGS-2552 - Strings not getting translated
+      // t["plugin.global-header"][lang]["profile.settings"],
+      "Settings",
+    );
+  }
+
+  async goToSelfServicePage() {
+    // TODO: RHDHBUGS-2564 - String not getting translated
+    // t["rhdh"][lang]["menuItem.selfService"]
+    await this.clickLink({ ariaLabel: "Self-service" });
+    await this.verifyHeading("Self-service");
   }
 
   async verifyLink(
