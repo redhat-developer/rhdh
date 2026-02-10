@@ -5,6 +5,7 @@ import {
   getTranslations,
   getCurrentLanguage,
 } from "../e2e/localization/locale";
+import { Common } from "./common";
 
 const t = getTranslations();
 const lang = getCurrentLanguage();
@@ -233,6 +234,7 @@ export class UIhelper {
   async goToPageUrl(url: string, heading?: string) {
     await this.page.goto(url);
     await expect(this.page).toHaveURL(url);
+    await new Common(this.page).waitForLoad();
     if (heading) {
       await this.verifyHeading(heading);
     }
@@ -771,6 +773,7 @@ export class UIhelper {
   async verifyLocationRefreshButtonIsEnabled(locationName: string) {
     await expect(async () => {
       await this.page.goto("/");
+      await new Common(this.page).waitForLoad();
       await this.openSidebar("Catalog");
       await this.selectMuiBox("Kind", "Location");
       await this.verifyHeading("All locations");

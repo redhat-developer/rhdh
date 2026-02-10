@@ -23,6 +23,7 @@ test.describe.serial("Test Adoption Insights", () => {
     let page;
     let testHelper: TestHelper;
     let uiHelper: UIhelper;
+    let common: Common;
     let initialSearchCount: number;
     let templatesFirstEntry: string[];
     let catalogEntitiesFirstEntry: string[];
@@ -33,8 +34,9 @@ test.describe.serial("Test Adoption Insights", () => {
       context = await browser.newContext();
       page = await context.newPage();
       uiHelper = new UIhelper(page);
+      common = new Common(page);
       testHelper = new TestHelper(page);
-      await new Common(page).loginAsKeycloakUser();
+      await common.loginAsKeycloakUser();
       await uiHelper.goToPageUrl("/", "Welcome back!");
     });
 
