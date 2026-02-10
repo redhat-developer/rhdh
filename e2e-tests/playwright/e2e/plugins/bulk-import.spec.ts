@@ -99,7 +99,7 @@ spec:
       catalogRepoDetails.name,
       "Preview file",
     );
-    await expect(await uiHelper.clickButton("Save")).not.toBeVisible();
+    await expect(await uiHelper.clickButton("Save")).toBeHidden();
   });
 
   test("Add a Repository from the Organization Tab and Confirm its Preview", async () => {
