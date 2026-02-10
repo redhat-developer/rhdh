@@ -145,19 +145,50 @@ export class TestHelper {
     await newpage.close();
   }
 
+  private readonly defaultApiTimeoutMs = 20000;
+
+  /**
+   * Waits for the adoption-insights API to return 200. Prefer
+   * waitForApiCallAfterAction() when you trigger the call with an action to avoid
+   * missing the response and to use a shorter timeout.
+   */
   async waitUntilApiCallSucceeds(
     page: Page,
     urlPart: string = "/api/adoption-insights/events",
+    timeoutMs: number = this.defaultApiTimeoutMs,
   ): Promise<void> {
     const response = await page.waitForResponse(
-      async (response) => {
+      (response) => {
         const urlMatches = response.url().includes(urlPart);
         const isSuccess = response.status() === 200;
         return urlMatches && isSuccess;
       },
-      { timeout: 60000 },
+      { timeout: timeoutMs },
     );
 
+    expect(response.status()).toBe(200);
+  }
+
+  /**
+   * Starts listening for a successful API response, then runs the action. Use
+   * this when the action (e.g. reload, search) triggers the call so we don't
+   * miss the response and fail fast with a shorter timeout. Reduces flakiness and
+   * saves time vs waiting up to 60s after the action.
+   */
+  async waitForApiCallAfterAction(
+    page: Page,
+    action: () => Promise<void>,
+    urlPart: string = "/api/adoption-insights/events",
+    timeoutMs: number = 15000,
+  ): Promise<void> {
+    const [response] = await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          response.url().includes(urlPart) && response.status() === 200,
+        { timeout: timeoutMs },
+      ),
+      action(),
+    ]);
     expect(response.status()).toBe(200);
   }
 

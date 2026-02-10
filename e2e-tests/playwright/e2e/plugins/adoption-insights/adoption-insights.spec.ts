@@ -141,14 +141,15 @@ test.describe.serial("Test Adoption Insights", () => {
           catalogEntitiesFirstEntry,
           techdocsFirstEntry,
         );
-        // Do a search
-        await page.getByPlaceholder("Search...").fill("Dummy search");
-        await testHelper.waitUntilApiCallSucceeds(page);
+        // Do a search (wait for API in parallel so we don't miss the response)
+        await testHelper.waitForApiCallAfterAction(page, () =>
+          page.getByPlaceholder("Search...").fill("Dummy search"),
+        );
         await expect(page.getByText("No results found")).toBeVisible();
 
         await uiHelper.clickLink("Catalog");
-        await page.reload();
-        await testHelper.waitUntilApiCallSucceeds(page);
+        await testHelper.waitForApiCallAfterAction(page, () => page.reload());
+        await uiHelper.waitForLoad();
         await uiHelper.openSidebarButton("Administration");
 
         await uiHelper.clickLink("Adoption Insights");
@@ -224,8 +225,8 @@ test.describe.serial("Test Adoption Insights", () => {
             await testHelper.clickAndVerifyText(firstEntry, headerTxt);
           }
         }
-        await page.reload();
-        await testHelper.waitUntilApiCallSucceeds(page);
+        await testHelper.waitForApiCallAfterAction(page, () => page.reload());
+        await uiHelper.waitForLoad();
         await uiHelper.openSidebarButton("Administration");
         await uiHelper.clickLink("Adoption Insights");
         await testHelper.clickByText("Last 28 days");
