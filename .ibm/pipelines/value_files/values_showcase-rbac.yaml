@@ -331,9 +331,9 @@ global:
                     config:
                       layout:
                         gridColumn: "1 / -1"
-                        if:
-                          anyOf:
-                            - IsOrchestratorCatalogTabAvailable
+                      if:
+                        anyOf:
+                          - IsOrchestratorCatalogTabAvailable
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator-backend:bs_1.45.3__8.3.0!red-hat-developer-hub-backstage-plugin-orchestrator-backend"
         disabled: false
         pluginConfig:

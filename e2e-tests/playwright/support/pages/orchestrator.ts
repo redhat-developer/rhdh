@@ -379,4 +379,78 @@ export class Orchestrator {
     await this.page.getByText("Run again").click();
     await this.page.getByRole("menuitem", { name: input }).click();
   }
+
+  // Entity-Workflow Integration Methods (RHIDP-11833 through RHIDP-11840)
+
+  async navigateToEntityWorkflowsTab(entityName: string) {
+    await this.page.goto(`/catalog/default/component/${entityName}/workflows`, {
+      timeout: 120000,
+    });
+    await this.page.waitForLoadState("load");
+  }
+
+  async verifyWorkflowsTabVisible() {
+    const workflowsTab = this.page.getByRole("tab", { name: "Workflows" });
+    await expect(workflowsTab).toBeVisible();
+  }
+
+  async verifyWorkflowsTabNotVisible() {
+    const workflowsTab = this.page.getByRole("tab", { name: "Workflows" });
+    await expect(workflowsTab).toHaveCount(0);
+  }
+
+  async verifyWorkflowInEntityTab(workflowName: string) {
+    const workflowLink = this.page.getByRole("link", { name: workflowName });
+    await expect(workflowLink).toBeVisible();
+  }
+
+  async verifyNoWorkflowsInEntityTab() {
+    // Verify the workflows table is empty or shows "No workflows" message
+    const noWorkflowsMessage = this.page.getByText(/no workflows/i);
+    const emptyTable = this.page.locator("tbody").filter({ hasText: "" });
+    await expect(noWorkflowsMessage.or(emptyTable.first())).toBeVisible();
+  }
+
+  async runWorkflowFromEntityTab(workflowName: string) {
+    const workflowRow = this.page
+      .getByRole("row")
+      .filter({ hasText: workflowName });
+    const runButton = workflowRow.getByRole("button", { name: "Run" });
+    await expect(runButton).toBeVisible();
+    await runButton.click();
+  }
+
+  async verifyBreadcrumbNavigation(entityName: string, workflowName: string) {
+    // Verify breadcrumb contains entity name
+    const breadcrumb = this.page.getByRole("navigation", {
+      name: "Breadcrumb",
+    });
+    await expect(breadcrumb.getByText(entityName)).toBeVisible();
+
+    // Click on entity in breadcrumb to navigate back
+    await breadcrumb.getByText(entityName).click();
+    await this.page.waitForLoadState("load");
+
+    // Verify we're back on the entity page
+    await expect(
+      this.page.getByRole("heading", { name: entityName }),
+    ).toBeVisible();
+  }
+
+  async clickWorkflowsTab() {
+    await this.page.getByRole("tab", { name: "Workflows" }).click();
+    await this.page.waitForLoadState("load");
+  }
+
+  async verifyOrchestratorCatalogTabCard() {
+    // Verify the OrchestratorCatalogTab card is rendered
+    const orchestratorCard = this.page.locator(
+      '[data-testid="orchestrator-catalog-tab"]',
+    );
+    // If no testid, look for the card by its content
+    const workflowsCard = this.page
+      .getByRole("article")
+      .filter({ has: this.page.getByText("Workflows") });
+    await expect(orchestratorCard.or(workflowsCard.first())).toBeVisible();
+  }
 }
