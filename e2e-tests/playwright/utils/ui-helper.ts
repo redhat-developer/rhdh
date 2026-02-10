@@ -126,7 +126,6 @@ export class UIhelper {
       force?: boolean;
     } = {
       exact: true,
-      timeout: 10000,
       force: false,
     },
   ) {
@@ -166,9 +165,7 @@ export class UIhelper {
         await markAllReadDiv.click();
 
         // Then click on "Mark All" button
-        await this.clickButtonByText("Mark All", {
-          timeout: 5000,
-        });
+        await this.clickButtonByText("Mark All");
       }
     } catch (error) {
       console.log(
@@ -330,7 +327,7 @@ export class UIhelper {
   }
 
   async waitForSideBarVisible() {
-    await this.page.waitForSelector("nav a", { timeout: 10_000 });
+    await this.page.waitForSelector("nav a");
   }
 
   async openSidebar(navBarText: SidebarTabs) {
@@ -366,7 +363,7 @@ export class UIhelper {
     // Wait for any overlaying dialogs to close before interacting
     await this.page
       .locator('[role="presentation"].MuiDialog-root')
-      .waitFor({ state: "detached", timeout: 3000 })
+      .waitFor({ state: "detached" })
       .catch(() => {}); // Ignore if no dialog exists
 
     // Use semantic selector with fallback to CSS selector
@@ -772,16 +769,16 @@ export class UIhelper {
     await this.verifyAlertErrorMessage("Refresh scheduled");
 
     const moreButton = this.page.locator("button[aria-label='more']").first();
-    await moreButton.waitFor({ state: "visible", timeout: 4000 });
-    await moreButton.waitFor({ state: "attached", timeout: 4000 });
+    await moreButton.waitFor({ state: "visible" });
+    await moreButton.waitFor({ state: "attached" });
     await moreButton.click();
 
     const unregisterItem = this.page
       .locator("li[role='menuitem']")
       .filter({ hasText: "Unregister entity" })
       .first();
-    await unregisterItem.waitFor({ state: "visible", timeout: 4000 });
-    await unregisterItem.waitFor({ state: "attached", timeout: 4000 });
+    await unregisterItem.waitFor({ state: "visible" });
+    await unregisterItem.waitFor({ state: "attached" });
     await expect(unregisterItem).toBeEnabled();
   }
 

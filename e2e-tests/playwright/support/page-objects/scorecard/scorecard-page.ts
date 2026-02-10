@@ -89,7 +89,7 @@ export class ScorecardPage {
     try {
       await expect(
         this.page.getByText(scorecardTitle, { exact: true }),
-      ).toBeVisible({ timeout: 10000 });
+      ).toBeVisible();
       return true;
     } catch {
       return false;

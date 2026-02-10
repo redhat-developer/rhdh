@@ -141,12 +141,8 @@ spec:
       "Preview file",
     );
 
-    await expect(await uiHelper.clickButton("Save")).not.toBeVisible({
-      timeout: 10000,
-    });
-    await expect(await uiHelper.clickButton("Import")).toBeDisabled({
-      timeout: 10000,
-    });
+    await expect(await uiHelper.clickButton("Save")).not.toBeVisible();
+    await expect(await uiHelper.clickButton("Import")).toBeDisabled();
   });
 
   test("Add a Repository, generate a PR, and confirm its preview", async () => {
@@ -172,9 +168,7 @@ spec:
     await uiHelper.verifyRowInTableByUniqueText(newRepoDetails.repoName, [
       "Ready to import",
     ]);
-    await expect(await uiHelper.clickButton("Import")).toBeDisabled({
-      timeout: 10000,
-    });
+    await expect(await uiHelper.clickButton("Import")).toBeDisabled();
   });
 
   test('Verify that the two selected repositories are listed: one with the status "Already imported" and another with the status "WAIT_PR_APPROVAL."', async () => {
