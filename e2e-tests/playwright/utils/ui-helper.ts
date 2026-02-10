@@ -6,6 +6,7 @@ import {
   getTranslations,
   getCurrentLanguage,
 } from "../e2e/localization/locale";
+import { Common } from "./common";
 
 const t = getTranslations();
 const lang = getCurrentLanguage();
@@ -234,6 +235,7 @@ export class UIhelper {
   async goToPageUrl(url: string, heading?: string) {
     await this.page.goto(url);
     await expect(this.page).toHaveURL(url);
+    await new Common(this.page).waitForLoad();
     if (heading) {
       await this.verifyHeading(heading);
     }
