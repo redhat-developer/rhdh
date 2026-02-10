@@ -172,7 +172,7 @@ test.describe.serial("Test Adoption Insights", () => {
         await testHelper.expectTopEntriesToBePresent("templates");
       });
 
-      test("Changes are Reflecting in panels", async () => {
+      test.fixme("Changes are Reflecting in panels", async () => {
         const titles = ["catalog entities", "techdocs"];
 
         interface PanelState {

@@ -84,7 +84,7 @@ export default defineConfig({
     },
     {
       name: PW_PROJECT.SHOWCASE,
-      //dependencies: [PW_PROJECT.SMOKE_TEST],
+      dependencies: [PW_PROJECT.SMOKE_TEST],
       testIgnore: [
         "**/playwright/e2e/plugins/rbac/**/*.spec.ts",
         "**/playwright/e2e/**/*-rbac.spec.ts",
