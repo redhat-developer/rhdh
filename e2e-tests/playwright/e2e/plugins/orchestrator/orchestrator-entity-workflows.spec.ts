@@ -44,7 +44,7 @@ test.describe("Orchestrator Entity-Workflow Integration", () => {
       await common.loginAsKeycloakUser();
     });
 
-    test("TC-1 RHIDP-11833: Select existing entity via EntityPicker for workflow run", async () => {
+    test("RHIDP-11833: Select existing entity via EntityPicker for workflow run", async () => {
       // Navigate to Self-service (Catalog > Templates)
       await uiHelper.goToPageUrl("/create");
       await uiHelper.verifyHeading("Self-service");
@@ -88,7 +88,7 @@ test.describe("Orchestrator Entity-Workflow Integration", () => {
       });
     });
 
-    test("TC-2 RHIDP-11834: Template WITH orchestrator.io/workflows annotation", async () => {
+    test("RHIDP-11834: Template WITH orchestrator.io/workflows annotation", async () => {
       // Navigate to Catalog
       await uiHelper.goToPageUrl("/catalog");
       await uiHelper.verifyHeading("Catalog");
@@ -117,7 +117,7 @@ test.describe("Orchestrator Entity-Workflow Integration", () => {
       }
     });
 
-    test("TC-3 RHIDP-11835: Template WITHOUT orchestrator.io/workflows annotation (negative)", async () => {
+    test("RHIDP-11835: Template WITHOUT orchestrator.io/workflows annotation (negative)", async () => {
       // Navigate to Catalog
       await uiHelper.goToPageUrl("/catalog");
       await uiHelper.verifyHeading("Catalog");
@@ -149,7 +149,7 @@ test.describe("Orchestrator Entity-Workflow Integration", () => {
       }
     });
 
-    test("TC-4 RHIDP-11836: Catalog ↔ Workflows breadcrumb navigation", async () => {
+    test("RHIDP-11836: Catalog ↔ Workflows breadcrumb navigation", async () => {
       // Navigate to Catalog
       await uiHelper.goToPageUrl("/catalog");
       await uiHelper.verifyHeading("Catalog");
@@ -204,7 +204,7 @@ test.describe("Orchestrator Entity-Workflow Integration", () => {
       }
     });
 
-    test("TC-5 RHIDP-11837: Template run produces visible workflow runs", async () => {
+    test("RHIDP-11837: Template run produces visible workflow runs", async () => {
       // Navigate to Catalog and find a template with orchestrator annotation
       await uiHelper.goToPageUrl("/catalog");
 
@@ -254,7 +254,7 @@ test.describe("Orchestrator Entity-Workflow Integration", () => {
       }
     });
 
-    test("TC-6 RHIDP-11838: Dynamic plugin config enables Workflows tab", async () => {
+    test("RHIDP-11838: Dynamic plugin config enables Workflows tab", async () => {
       // Navigate to Catalog
       await uiHelper.goToPageUrl("/catalog");
 

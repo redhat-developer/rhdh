@@ -31,7 +31,7 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
   });
 
   test.describe
-    .serial("TC-7 RHIDP-11839: Template run WITHOUT workflow permissions", () => {
+    .serial("RHIDP-11839: Template run WITHOUT workflow permissions", () => {
     test.describe.configure({ retries: 0 });
     let common: Common;
     let uiHelper: UIhelper;
@@ -225,7 +225,7 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
   });
 
   test.describe
-    .serial("TC-8 RHIDP-11840: Template run WITH workflow permissions", () => {
+    .serial("RHIDP-11840: Template run WITH workflow permissions", () => {
     test.describe.configure({ retries: 0 });
     let common: Common;
     let uiHelper: UIhelper;
