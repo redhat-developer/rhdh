@@ -128,9 +128,8 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
     });
 
     test("Navigate to Catalog and find orchestrator-tagged template", async () => {
-      await page.reload();
       await uiHelper.openSidebar("Catalog");
-      await uiHelper.verifyHeading("Catalog");
+      await uiHelper.verifyHeading(/Catalog|All/);
 
       // Filter by Kind=Template
       await page.getByRole("button", { name: /Kind/i }).click();
@@ -153,19 +152,12 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
     });
 
     test("Launch template and attempt to run workflow - verify unauthorized", async () => {
-      // Navigate to Self-service page
-      await uiHelper.openSidebar("Self-service");
+      // Navigate to Self-service page via global header link
+      await uiHelper.clickLink({ ariaLabel: "Self-service" });
       await uiHelper.verifyHeading("Self-service");
 
-      // Wait for templates to load
+      // Wait for templates to load and click "Greeting Test Picker" template
       await page.waitForLoadState("domcontentloaded");
-
-      // Find and click on "Greeting Test Picker" template
-      const templateCard = page.locator(
-        `//div[contains(@class,'MuiCard-root')][descendant::text()[contains(., 'Greeting Test Picker')]]`,
-      );
-
-      await expect(templateCard.first()).toBeVisible({ timeout: 60000 });
       await uiHelper.clickBtnInCard("Greeting Test Picker", "Choose");
 
       // Wait for template form to load
@@ -359,9 +351,8 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
     });
 
     test("Navigate to Catalog and find orchestrator-tagged template", async () => {
-      await page.reload();
       await uiHelper.openSidebar("Catalog");
-      await uiHelper.verifyHeading("Catalog");
+      await uiHelper.verifyHeading(/Catalog|All/);
 
       // Filter by Kind=Template
       await page.getByRole("button", { name: /Kind/i }).click();
@@ -384,19 +375,14 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
     });
 
     test("Launch template and run workflow - verify success", async () => {
-      // Navigate to Self-service page
-      await uiHelper.openSidebar("Self-service");
+      // Navigate to Self-service page via global header link
+      await uiHelper.clickLink({ ariaLabel: "Self-service" });
       await uiHelper.verifyHeading("Self-service");
 
       // Wait for templates to load
       await page.waitForLoadState("domcontentloaded");
 
-      // Find and click on "Greeting Test Picker" template
-      const templateCard = page.locator(
-        `//div[contains(@class,'MuiCard-root')][descendant::text()[contains(., 'Greeting Test Picker')]]`,
-      );
-
-      await expect(templateCard.first()).toBeVisible({ timeout: 60000 });
+      // Click "Greeting Test Picker" template
       await uiHelper.clickBtnInCard("Greeting Test Picker", "Choose");
 
       // Wait for template form to load
@@ -442,7 +428,7 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
     });
 
     test("Verify workflow run appears in Orchestrator", async () => {
-      // Navigate to Orchestrator page
+      // Navigate to Orchestrator page via sidebar
       await uiHelper.openSidebar("Orchestrator");
       await expect(
         page.getByRole("heading", { name: "Workflows" }),
