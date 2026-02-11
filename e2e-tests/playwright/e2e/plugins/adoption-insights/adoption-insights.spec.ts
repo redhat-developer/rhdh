@@ -149,7 +149,7 @@ test.describe.serial("Test Adoption Insights", () => {
 
         await uiHelper.clickLink("Catalog");
         await testHelper.waitForApiCallAfterAction(page, () => page.reload());
-        await uiHelper.waitForLoad();
+        await Common.waitForLoad(page);
         await uiHelper.openSidebarButton("Administration");
 
         await uiHelper.clickLink("Adoption Insights");
@@ -226,7 +226,7 @@ test.describe.serial("Test Adoption Insights", () => {
           }
         }
         await testHelper.waitForApiCallAfterAction(page, () => page.reload());
-        await uiHelper.waitForLoad();
+        await Common.waitForLoad(page);
         await uiHelper.openSidebarButton("Administration");
         await uiHelper.clickLink("Adoption Insights");
         await testHelper.clickByText("Last 28 days");
