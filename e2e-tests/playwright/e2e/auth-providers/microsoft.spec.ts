@@ -156,7 +156,7 @@ test.describe("Configure Microsoft Provider", async () => {
     );
     expect(login).toBe("Login successful");
 
-    await uiHelper.goToPageUrl("/settings", "Settings");
+    await uiHelper.goToSettingsPage();
     await uiHelper.verifyHeading("TEST Zeus");
     await common.signOut();
     await context.clearCookies();
@@ -183,7 +183,7 @@ test.describe("Configure Microsoft Provider", async () => {
     );
     expect(login).toBe("Login successful");
 
-    await uiHelper.goToPageUrl("/settings", "Settings");
+    await uiHelper.goToSettingsPage();
     await uiHelper.verifyHeading("TEST Zeus");
     await common.signOut();
     await context.clearCookies();
@@ -219,7 +219,7 @@ test.describe("Configure Microsoft Provider", async () => {
     );
     expect(login).toBe("Login successful");
 
-    await uiHelper.goToPageUrl("/settings", "Settings");
+    await uiHelper.goToSettingsPage();
     await uiHelper.verifyHeading("TEST Zeus");
     await common.signOut();
     await context.clearCookies();
@@ -246,7 +246,7 @@ test.describe("Configure Microsoft Provider", async () => {
     );
     expect(login).toBe("Login successful");
 
-    await uiHelper.goToPageUrl("/settings", "Settings");
+    await uiHelper.goToSettingsPage();
     await uiHelper.verifyHeading("TEST Zeus");
     await common.signOut();
     await context.clearCookies();
@@ -296,7 +296,7 @@ test.describe("Configure Microsoft Provider", async () => {
     expect(actualDuration).toBeGreaterThan(threeDays - tolerance);
     expect(actualDuration).toBeLessThan(threeDays + tolerance);
 
-    await uiHelper.goToPageUrl("/settings", "Settings");
+    await uiHelper.goToSettingsPage();
     await uiHelper.verifyHeading("TEST Zeus");
     await common.signOut();
   });

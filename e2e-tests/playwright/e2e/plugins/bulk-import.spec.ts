@@ -8,7 +8,10 @@ import { DEFAULT_CATALOG_INFO_YAML } from "../../support/test-data/bulk-import";
 
 // Pre-req : plugin-bulk-import & plugin-bulk-import-backend-dynamic
 test.describe.serial("Bulk Import plugin", () => {
-  test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
+  test.skip(
+    () => process.env.JOB_NAME.includes("osd-gcp"),
+    "skipping due to RHDHBUGS-555 on OSD Env",
+  );
   test.describe.configure({ retries: process.env.CI ? 5 : 0 });
 
   let page: Page;
@@ -141,12 +144,8 @@ spec:
       "Preview file",
     );
 
-    await expect(await uiHelper.clickButton("Save")).not.toBeVisible({
-      timeout: 10000,
-    });
-    await expect(await uiHelper.clickButton("Import")).toBeDisabled({
-      timeout: 10000,
-    });
+    await expect(await uiHelper.clickButton("Save")).toBeHidden();
+    await expect(await uiHelper.clickButton("Import")).toBeDisabled();
   });
 
   test("Add a Repository, generate a PR, and confirm its preview", async () => {
@@ -284,7 +283,10 @@ spec:
 
 test.describe
   .serial("Bulk Import - Verify existing repo are displayed in bulk import Added repositories", () => {
-  test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
+  test.skip(
+    () => process.env.JOB_NAME.includes("osd-gcp"),
+    "skipping due to RHDHBUGS-555 on OSD Env",
+  );
   let page: Page;
   let uiHelper: UIhelper;
   let common: Common;
@@ -343,7 +345,10 @@ test.describe
 
 test.describe
   .serial("Bulk Import - Ensure users without bulk import permissions cannot access the bulk import plugin", () => {
-  test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
+  test.skip(
+    () => process.env.JOB_NAME.includes("osd-gcp"),
+    "skipping due to RHDHBUGS-555 on OSD Env",
+  );
   let page: Page;
   let uiHelper: UIhelper;
   let common: Common;

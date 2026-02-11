@@ -11,15 +11,17 @@ test.describe("Test ApplicationProvider", () => {
   });
 
   let uiHelper: UIhelper;
+  let common: Common;
 
   test.beforeEach(async ({ page }) => {
-    const common = new Common(page);
+    common = new Common(page);
     uiHelper = new UIhelper(page);
     await common.loginAsGuest();
   });
 
   test("Verify that the TestPage is rendered", async ({ page }) => {
     await uiHelper.goToPageUrl("/application-provider-test-page");
+    await common.waitForLoad();
     await uiHelper.verifyText("application/provider TestPage");
     await uiHelper.verifyText(
       "This card will work only if you register the TestProviderOne and TestProviderTwo correctly.",

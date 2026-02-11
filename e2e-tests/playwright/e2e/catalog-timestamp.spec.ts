@@ -13,7 +13,10 @@ const lang = getCurrentLanguage();
 let page: Page;
 
 test.describe("Test timestamp column on Catalog", () => {
-  test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
+  test.skip(
+    () => process.env.JOB_NAME.includes("osd-gcp"),
+    "skipping on OSD-GCP cluster due to RHDHBUGS-555",
+  );
 
   let uiHelper: UIhelper;
   let common: Common;
@@ -46,11 +49,7 @@ test.describe("Test timestamp column on Catalog", () => {
   });
 
   test("Import an existing Git repository and verify `Created At` column and value in the Catalog Page", async () => {
-    await uiHelper.clickLink({
-      // TODO: RHDHBUGS-2564 - String not getting translated
-      // ariaLabel: t["rhdh"][lang]["menuItem.selfService"],
-      ariaLabel: "Self-service",
-    });
+    await uiHelper.goToSelfServicePage();
     await uiHelper.clickButton(
       t["scaffolder"][lang][
         "templateListPage.contentHeader.registerExistingButtonTitle"
