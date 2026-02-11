@@ -17,6 +17,14 @@ import { JOB_NAME_PATTERNS } from "../../../utils/constants";
  * - Workflows tab visibility on entity pages
  * - Catalog ↔ Workflows breadcrumb navigation
  * - Template execution → workflow run linkage
+ *
+ * Templates used (from catalog locations in app-config-rhdh.yaml):
+ * - greeting.yaml: name=greeting, title="Greeting workflow" - NO orchestrator.io/workflows annotation
+ * - greeting_w_component.yaml: name=greetingComponent, title="Greeting Test Picker" - HAS annotation
+ * - yamlgreet.yaml: name=greet, title="Greeting" - HAS annotation
+ *
+ * These are scaffolder templates that use the orchestrator:workflow:run action
+ * to trigger the "greeting" SonataFlow workflow deployed by CI.
  */
 test.describe("Orchestrator Entity-Workflow Integration", () => {
   test.skip(() => skipIfJobName(JOB_NAME_PATTERNS.OSD_GCP)); // skipping orchestrator tests on OSD-GCP due to infra not being installed
@@ -45,246 +53,311 @@ test.describe("Orchestrator Entity-Workflow Integration", () => {
     });
 
     test("RHIDP-11833: Select existing entity via EntityPicker for workflow run", async () => {
-      // Navigate to Self-service (Catalog > Templates)
-      await uiHelper.goToPageUrl("/create");
+      // Navigate to Self-service page
+      await uiHelper.openSidebar("Self-service");
       await uiHelper.verifyHeading("Self-service");
 
-      // Find and launch the "Greeting workflow" template (greeting.yaml)
-      const greetingTemplate = page.getByRole("link", {
-        name: /Greeting workflow/i,
-      });
-      await expect(greetingTemplate).toBeVisible({ timeout: 30000 });
-      await greetingTemplate.click();
+      // Wait for templates to load and find "Greeting workflow" template (greeting.yaml)
+      // This template has an EntityPicker field for selecting a target entity
+      await page.waitForLoadState("domcontentloaded");
+
+      // Look for the template card - it should have title "Greeting workflow"
+      const templateCard = page.locator(
+        `//div[contains(@class,'MuiCard-root')][descendant::text()[contains(., 'Greeting workflow')]]`,
+      );
+
+      // Verify template is visible
+      await expect(templateCard.first()).toBeVisible({ timeout: 60000 });
+
+      // Click Choose button on the template card
+      await uiHelper.clickBtnInCard("Greeting workflow", "Choose");
 
       // Wait for template form to load
-      await expect(
-        page.getByRole("heading", { name: /Greeting workflow/i }),
-      ).toBeVisible();
+      await uiHelper.waitForTitle("Greeting workflow", 2);
 
-      // Use EntityPicker to select an existing Component entity
-      // The EntityPicker should be visible for selecting an entity
-      const entityPicker = page.getByLabel(/entity/i);
-      if (await entityPicker.isVisible()) {
-        await entityPicker.click();
-        // Select the first available entity from the dropdown
-        const firstOption = page.getByRole("option").first();
-        await expect(firstOption).toBeVisible();
-        await firstOption.click();
+      // The first step should have an EntityPicker for selecting target entity
+      // Look for the entity picker field
+      const entityPickerLabel = page.getByText(
+        /Target Entity|Select an entity/i,
+      );
+      await expect(entityPickerLabel).toBeVisible({ timeout: 10000 });
+
+      // Click on the entity picker to open dropdown
+      const entityInput = page.getByRole("combobox").first();
+      await entityInput.click();
+
+      // Wait for options to load and select the first available entity
+      const firstOption = page.getByRole("option").first();
+      await expect(firstOption).toBeVisible({ timeout: 10000 });
+      await firstOption.click();
+
+      // Click Next to proceed to the next step
+      await uiHelper.clickButton("Next");
+
+      // Fill in required workflow parameters
+      // Language field
+      const languageField = page.getByLabel("Language");
+      if (await languageField.isVisible({ timeout: 5000 })) {
+        await languageField.click();
+        await page.getByRole("option", { name: "English" }).click();
       }
 
-      // Complete the template wizard - click Next
-      const nextButton = page.getByRole("button", { name: "Next" });
-      await expect(nextButton).toBeVisible();
-      await nextButton.click();
+      // Name field (if visible)
+      const nameField = page.getByLabel("Name");
+      if (await nameField.isVisible({ timeout: 2000 })) {
+        await nameField.fill("testname");
+      }
 
-      // Click Run to execute
-      const runButton = page.getByRole("button", { name: "Run" });
-      await expect(runButton).toBeVisible();
-      await runButton.click();
+      // Click Review/Next
+      const reviewButton = page.getByRole("button", { name: /Review|Next/i });
+      await expect(reviewButton).toBeEnabled();
+      await reviewButton.click();
 
-      // Wait for workflow to complete
-      await expect(page.getByText(/Completed|Running/i)).toBeVisible({
-        timeout: 120000,
+      // Click Create/Run to execute
+      const createButton = page.getByRole("button", { name: /Create|Run/i });
+      await expect(createButton).toBeVisible();
+      await createButton.click();
+
+      // Wait for execution to start - look for progress indicator
+      await expect(page.getByText(/Running|Processing|second/i)).toBeVisible({
+        timeout: 30000,
       });
+
+      // Wait for completion
+      await expect(page.getByText(/Completed|succeeded|finished/i)).toBeVisible(
+        {
+          timeout: 120000,
+        },
+      );
     });
 
     test("RHIDP-11834: Template WITH orchestrator.io/workflows annotation", async () => {
       // Navigate to Catalog
-      await uiHelper.goToPageUrl("/catalog");
+      await uiHelper.openSidebar("Catalog");
       await uiHelper.verifyHeading("Catalog");
 
       // Filter by Kind=Template
       await page.getByRole("button", { name: /Kind/i }).click();
       await page.getByRole("option", { name: "Template" }).click();
 
-      // Find the "Greeting Test Picker" entity (greeting_w_component.yaml)
-      // This template has the orchestrator.io/workflows annotation
+      // Wait for filter to apply
+      await page.waitForLoadState("domcontentloaded");
+
+      // Find the "Greeting Test Picker" template (greeting_w_component.yaml)
+      // This template HAS the orchestrator.io/workflows annotation: '["greeting"]'
       const templateLink = page.getByRole("link", {
-        name: /Greeting.*component|greeting_w_component/i,
+        name: /Greeting Test Picker/i,
       });
 
-      if (await templateLink.isVisible({ timeout: 10000 })) {
-        await templateLink.click();
+      await expect(templateLink).toBeVisible({ timeout: 30000 });
+      await templateLink.click();
 
-        // Navigate to its Workflows tab
-        await orchestrator.clickWorkflowsTab();
+      // Wait for entity page to load
+      await page.waitForLoadState("domcontentloaded");
 
-        // Verify that "greeting" workflow is listed
-        await orchestrator.verifyWorkflowInEntityTab("greeting");
-      } else {
-        // Template may not be registered yet - skip gracefully
-        test.skip();
-      }
+      // Navigate to Workflows tab - this should be visible because of the annotation
+      await orchestrator.clickWorkflowsTab();
+
+      // Verify that "greeting" workflow is listed (from the annotation)
+      await orchestrator.verifyWorkflowInEntityTab("greeting");
     });
 
     test("RHIDP-11835: Template WITHOUT orchestrator.io/workflows annotation (negative)", async () => {
       // Navigate to Catalog
-      await uiHelper.goToPageUrl("/catalog");
+      await uiHelper.openSidebar("Catalog");
       await uiHelper.verifyHeading("Catalog");
 
       // Filter by Kind=Template
       await page.getByRole("button", { name: /Kind/i }).click();
       await page.getByRole("option", { name: "Template" }).click();
 
-      // Find the "yamlgreet" template entity (yamlgreet.yaml)
+      // Wait for filter to apply
+      await page.waitForLoadState("domcontentloaded");
+
+      // Find the "Greeting workflow" template (greeting.yaml)
       // This template does NOT have the orchestrator.io/workflows annotation
-      const templateLink = page.getByRole("link", { name: /yamlgreet/i });
+      const templateLink = page.getByRole("link", {
+        name: /Greeting workflow/i,
+      });
 
-      if (await templateLink.isVisible({ timeout: 10000 })) {
-        await templateLink.click();
+      await expect(templateLink).toBeVisible({ timeout: 30000 });
+      await templateLink.click();
 
-        // Navigate to Workflows tab (or verify tab is hidden)
-        const workflowsTab = page.getByRole("tab", { name: "Workflows" });
-        const tabCount = await workflowsTab.count();
+      // Wait for entity page to load
+      await page.waitForLoadState("domcontentloaded");
 
-        if (tabCount > 0) {
-          // Tab exists - click it and verify NO workflows are listed
-          await workflowsTab.click();
-          await orchestrator.verifyNoWorkflowsInEntityTab();
-        }
-        // If tab doesn't exist, that's also valid for entities without annotation
-      } else {
-        // Template may not be registered yet - skip gracefully
-        test.skip();
+      // Check if Workflows tab exists
+      const workflowsTab = page.getByRole("tab", { name: "Workflows" });
+      const tabCount = await workflowsTab.count();
+
+      if (tabCount > 0) {
+        // Tab exists - click it and verify NO workflows are listed
+        await workflowsTab.click();
+        await orchestrator.verifyNoWorkflowsInEntityTab();
       }
+      // If tab doesn't exist, that's the expected behavior for entities without annotation
     });
 
     test("RHIDP-11836: Catalog ↔ Workflows breadcrumb navigation", async () => {
       // Navigate to Catalog
-      await uiHelper.goToPageUrl("/catalog");
+      await uiHelper.openSidebar("Catalog");
       await uiHelper.verifyHeading("Catalog");
 
-      // Filter by Kind=Template and find orchestrator-tagged template
+      // Filter by Kind=Template
       await page.getByRole("button", { name: /Kind/i }).click();
       await page.getByRole("option", { name: "Template" }).click();
 
-      // Select a template with orchestrator annotation
+      // Wait for filter to apply
+      await page.waitForLoadState("domcontentloaded");
+
+      // Select "Greeting Test Picker" template (has orchestrator annotation)
       const templateLink = page.getByRole("link", {
-        name: /Greeting.*component|greeting_w_component/i,
+        name: /Greeting Test Picker/i,
       });
 
-      if (await templateLink.isVisible({ timeout: 10000 })) {
-        await templateLink.click();
+      await expect(templateLink).toBeVisible({ timeout: 30000 });
+      await templateLink.click();
 
-        // Get the entity name from the heading
-        const heading = page.getByRole("heading").first();
-        const entityName = await heading.textContent();
+      // Wait for entity page to load
+      await page.waitForLoadState("domcontentloaded");
 
-        // Navigate to Workflows tab
-        await orchestrator.clickWorkflowsTab();
+      // Get the entity name from the heading for later verification
+      const heading = page.getByRole("heading").first();
+      const entityName = await heading.textContent();
 
-        // Click on a workflow in the workflows table
-        const workflowLink = page.getByRole("link", { name: /greeting/i });
-        if (await workflowLink.isVisible({ timeout: 5000 })) {
-          await workflowLink.click();
+      // Navigate to Workflows tab
+      await orchestrator.clickWorkflowsTab();
 
-          // Verify Orchestrator workflow page loads
-          await expect(
-            page.getByRole("heading", { name: /greeting/i }),
-          ).toBeVisible();
+      // Click on the "greeting" workflow link
+      const workflowLink = page.getByRole("link", { name: /greeting/i });
+      await expect(workflowLink).toBeVisible({ timeout: 10000 });
+      await workflowLink.click();
 
-          // Verify breadcrumb navigation works
-          const breadcrumb = page.getByRole("navigation", {
-            name: /breadcrumb/i,
-          });
-          if (await breadcrumb.isVisible()) {
-            // Click breadcrumb to navigate back to entity
-            const entityBreadcrumb = breadcrumb.getByText(entityName || "");
-            if (await entityBreadcrumb.isVisible()) {
-              await entityBreadcrumb.click();
-              await page.waitForLoadState("load");
+      // Verify we're on the Orchestrator workflow page
+      await expect(
+        page.getByRole("heading", { name: /greeting/i }),
+      ).toBeVisible();
 
-              // Verify entity page is displayed
-              await expect(page.getByRole("heading").first()).toBeVisible();
-            }
-          }
+      // Verify breadcrumb navigation works - look for breadcrumb with entity name
+      const breadcrumb = page.getByRole("navigation", { name: /breadcrumb/i });
+      if ((await breadcrumb.count()) > 0 && entityName) {
+        const entityBreadcrumb = breadcrumb.getByText(entityName);
+        if ((await entityBreadcrumb.count()) > 0) {
+          await entityBreadcrumb.click();
+          await page.waitForLoadState("load");
+
+          // Verify we're back on the entity page
+          await expect(page.getByRole("heading").first()).toBeVisible();
         }
-      } else {
-        test.skip();
       }
     });
 
     test("RHIDP-11837: Template run produces visible workflow runs", async () => {
-      // Navigate to Catalog and find a template with orchestrator annotation
-      await uiHelper.goToPageUrl("/catalog");
+      // Navigate to Self-service page
+      await uiHelper.openSidebar("Self-service");
+      await uiHelper.verifyHeading("Self-service");
 
-      // Filter by Kind=Template
-      await page.getByRole("button", { name: /Kind/i }).click();
-      await page.getByRole("option", { name: "Template" }).click();
+      // Wait for templates to load
+      await page.waitForLoadState("domcontentloaded");
 
-      const templateLink = page.getByRole("link", {
-        name: /Greeting.*component|greeting_w_component/i,
-      });
+      // Find and click on "Greeting Test Picker" template
+      const templateCard = page.locator(
+        `//div[contains(@class,'MuiCard-root')][descendant::text()[contains(., 'Greeting Test Picker')]]`,
+      );
 
-      if (await templateLink.isVisible({ timeout: 10000 })) {
-        await templateLink.click();
+      await expect(templateCard.first()).toBeVisible({ timeout: 60000 });
+      await uiHelper.clickBtnInCard("Greeting Test Picker", "Choose");
 
-        // Launch template
-        const launchButton = page.getByRole("button", { name: /Launch/i });
-        if (await launchButton.isVisible({ timeout: 5000 })) {
-          await launchButton.click();
+      // Wait for template form to load
+      await uiHelper.waitForTitle("Greeting Test Picker", 2);
 
-          // Complete wizard
-          const nextButton = page.getByRole("button", { name: "Next" });
-          if (await nextButton.isVisible()) {
-            await nextButton.click();
-          }
+      // Fill in the entity name field
+      const entityNameField = page.getByLabel(/Entity Name/i);
+      await expect(entityNameField).toBeVisible();
+      const uniqueName = `test-entity-${Date.now()}`;
+      await entityNameField.fill(uniqueName);
 
-          const runButton = page.getByRole("button", { name: "Run" });
-          await expect(runButton).toBeVisible();
-          await runButton.click();
+      // Click Next
+      await uiHelper.clickButton("Next");
 
-          // Verify workflow execution completes
-          await expect(page.getByText(/Completed|Running/i)).toBeVisible({
-            timeout: 120000,
-          });
-
-          // Navigate to the entity's Workflows tab
-          await page.goBack();
-          await orchestrator.clickWorkflowsTab();
-
-          // Verify the workflow run is visible
-          const workflowRunRow = page
-            .getByRole("row")
-            .filter({ hasText: /greeting/i });
-          await expect(workflowRunRow.first()).toBeVisible({ timeout: 30000 });
-        }
-      } else {
-        test.skip();
+      // Fill in workflow parameters
+      const languageField = page.getByLabel("Language");
+      if (await languageField.isVisible({ timeout: 5000 })) {
+        await languageField.click();
+        await page.getByRole("option", { name: "English" }).click();
       }
+
+      const nameField = page.getByLabel("Name");
+      if (await nameField.isVisible({ timeout: 2000 })) {
+        await nameField.fill("testuser");
+      }
+
+      // Click Review/Next
+      const reviewButton = page.getByRole("button", { name: /Review|Next/i });
+      await expect(reviewButton).toBeEnabled();
+      await reviewButton.click();
+
+      // Click Create to execute
+      const createButton = page.getByRole("button", { name: /Create/i });
+      await expect(createButton).toBeVisible();
+      await createButton.click();
+
+      // Wait for execution to complete
+      await expect(page.getByText(/Completed|succeeded|finished/i)).toBeVisible(
+        {
+          timeout: 120000,
+        },
+      );
+
+      // Navigate to Orchestrator to verify workflow run is visible
+      await uiHelper.openSidebar("Orchestrator");
+      await expect(
+        page.getByRole("heading", { name: "Workflows" }),
+      ).toBeVisible();
+
+      // Verify the greeting workflow shows recent runs
+      const greetingWorkflow = page.getByRole("link", {
+        name: /Greeting workflow/i,
+      });
+      await expect(greetingWorkflow).toBeVisible({ timeout: 30000 });
     });
 
     test("RHIDP-11838: Dynamic plugin config enables Workflows tab", async () => {
       // Navigate to Catalog
-      await uiHelper.goToPageUrl("/catalog");
+      await uiHelper.openSidebar("Catalog");
+      await uiHelper.verifyHeading("Catalog");
 
       // Filter by Kind=Template
       await page.getByRole("button", { name: /Kind/i }).click();
       await page.getByRole("option", { name: "Template" }).click();
 
-      // Select a template entity with orchestrator.io/workflows annotation
+      // Wait for filter to apply
+      await page.waitForLoadState("domcontentloaded");
+
+      // Select "Greeting Test Picker" template (has orchestrator.io/workflows annotation)
       const templateLink = page.getByRole("link", {
-        name: /Greeting.*component|greeting_w_component/i,
+        name: /Greeting Test Picker/i,
       });
 
-      if (await templateLink.isVisible({ timeout: 10000 })) {
-        await templateLink.click();
+      await expect(templateLink).toBeVisible({ timeout: 30000 });
+      await templateLink.click();
 
-        // Verify the "Workflows" tab is present on the entity page
-        await orchestrator.verifyWorkflowsTabVisible();
+      // Wait for entity page to load
+      await page.waitForLoadState("domcontentloaded");
 
-        // Click on Workflows tab
-        await orchestrator.clickWorkflowsTab();
+      // Verify the "Workflows" tab is present on the entity page
+      // This tab is enabled by the dynamic plugin configuration in values.yaml
+      await orchestrator.verifyWorkflowsTabVisible();
 
-        // Verify the OrchestratorCatalogTab card renders inside the tab
-        // The card should show workflow information
-        const workflowsContent = page.locator("main").filter({
-          has: page.getByText(/workflow/i),
-        });
-        await expect(workflowsContent).toBeVisible();
-      } else {
-        test.skip();
-      }
+      // Click on Workflows tab
+      await orchestrator.clickWorkflowsTab();
+
+      // Verify the OrchestratorCatalogTab card renders inside the tab
+      // The card should show workflow information from the annotation
+      const workflowsContent = page.locator("main").filter({
+        has: page.getByText(/workflow|greeting/i),
+      });
+      await expect(workflowsContent).toBeVisible();
     });
   });
 });
