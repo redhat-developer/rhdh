@@ -942,6 +942,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@reteps/dockerfmt@npm:^0.3.6":
+  version: 0.3.6
+  resolution: "@reteps/dockerfmt@npm:0.3.6"
+  checksum: 701b908e1d89d4657c24eaf54d26842de5817c2261e4634d55285676d232d338429075c8e072bcfad157412a8e7ad94e318fe3833e1e928d68a9eee3714afc64
+  languageName: node
+  linkType: hard
+
 "@types/aws-lambda@npm:^8.10.83":
   version: 8.10.147
   resolution: "@types/aws-lambda@npm:8.10.147"
@@ -1677,6 +1684,7 @@ __metadata:
     otplib: 12.0.1
     pg: 8.18.0
     prettier: 3.8.1
+    prettier-plugin-sh: ^0.18.0
     typescript: 5.9.3
     typescript-eslint: 8.53.1
     uuid: 11.1.0
@@ -3317,6 +3325,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"prettier-plugin-sh@npm:^0.18.0":
+  version: 0.18.0
+  resolution: "prettier-plugin-sh@npm:0.18.0"
+  dependencies:
+    "@reteps/dockerfmt": ^0.3.6
+    sh-syntax: ^0.5.8
+  peerDependencies:
+    prettier: ^3.6.0
+  checksum: 32a5399a7c70ac1ec30d4561d2a8970ab3e0f1c8c0a5b8d5fbc3ffd8c15cf01052e33691c848fbf4ea45cd1995c9ca0a8cdeee25c9ba6fc00cf5825fa5da06c2
+  languageName: node
+  linkType: hard
+
 "prettier@npm:3.8.1":
   version: 3.8.1
   resolution: "prettier@npm:3.8.1"
@@ -3501,6 +3521,15 @@ __metadata:
   bin:
     semver: bin/semver.js
   checksum: f013a3ee4607857bcd3503b6ac1d80165f7f8ea94f5d55e2d3e33df82fce487aa3313b987abf9b39e0793c83c9fc67b76c36c067625141a9f6f704ae0ea18db2
+  languageName: node
+  linkType: hard
+
+"sh-syntax@npm:^0.5.8":
+  version: 0.5.8
+  resolution: "sh-syntax@npm:0.5.8"
+  dependencies:
+    tslib: ^2.8.1
+  checksum: 18fba5785dd3966cec2533dc9e7a625ef3af5851ce15d9db505c0c4294d513c54ff89bf4d0e52ff35da8116ef80d1a65a8d2b2351a0bd8cdeee27b223027531c
   languageName: node
   linkType: hard
 
