@@ -46,13 +46,17 @@ export class Common {
     await this.uiHelper.waitForSideBarVisible();
   }
 
-  async waitForLoad(timeout = 120000) {
+  static async waitForLoad(page: Page, timeout = 120000) {
     for (const item of Object.values(WAIT_OBJECTS)) {
-      await this.page.waitForSelector(item, {
+      await page.waitForSelector(item, {
         state: "hidden",
         timeout: timeout,
       });
     }
+  }
+
+  async waitForLoad(timeout = 120000) {
+    await Common.waitForLoad(this.page, timeout);
   }
 
   async signOut() {

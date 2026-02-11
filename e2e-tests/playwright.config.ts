@@ -40,7 +40,7 @@ const k8sSpecificConfig = {
 };
 
 export default defineConfig({
-  timeout: 180 * 1000,
+  timeout: 120 * 1000,
   testDir: "./playwright",
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,

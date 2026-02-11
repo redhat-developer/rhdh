@@ -1,11 +1,11 @@
 import { expect, Locator, Page } from "@playwright/test";
 import { UI_HELPER_ELEMENTS } from "../support/page-objects/global-obj";
 import { SEARCH_OBJECTS_COMPONENTS } from "../support/page-objects/page-obj";
-import { WAIT_OBJECTS } from "../support/page-objects/global-obj";
 import {
   getTranslations,
   getCurrentLanguage,
 } from "../e2e/localization/locale";
+import { Common } from "./common";
 
 const t = getTranslations();
 const lang = getCurrentLanguage();
@@ -236,18 +236,9 @@ export class UIhelper {
       .click();
   }
 
-  async waitForLoad(timeout = 120000) {
-    for (const item of Object.values(WAIT_OBJECTS)) {
-      await this.page.waitForSelector(item, {
-        state: "hidden",
-        timeout: timeout,
-      });
-    }
-  }
-
   async goToPageUrl(url: string, heading?: string) {
     await this.page.goto(url);
-    await this.waitForLoad()
+    await Common.waitForLoad(this.page, 120000);
     await expect(this.page).toHaveURL(url);
     if (heading) {
       await this.verifyHeading(heading);

@@ -120,29 +120,15 @@ if ! vault token lookup &>/dev/null; then
 fi
 
 log::info "Exporting secrets as environment variables..."
-if [ -n "$ZSH_VERSION" ]; then
-    # --- ZSH / macOS FIX ---
-    # Fix: Vault flag order, printf to avoid control char interpretation, while loop for safety
-    SECRETS_JSON=$(vault kv get -mount="kv" -format=json "selfservice/rhdh-qe/rhdh" | jq -r '.data.data')
-    
-    while read -r key; do
-        [[ "$key" == "secretsync/"* ]] && continue
-        value=$(printf '%s' "$SECRETS_JSON" | jq -r --arg k "$key" '.[$k]')
-        safe_key=$(echo "$key" | tr './-' '___')
-        export "$safe_key"="$value"
-    done < <(printf '%s' "$SECRETS_JSON" | jq -r 'keys[]')
+# --- ZSH FIX ---
+SECRETS_JSON=$(vault kv get -mount="kv" -format=json "selfservice/rhdh-qe/rhdh" | jq -r '.data.data')
 
-elif [ -n "$BASH_VERSION" ]; then
-    # --- ORIGINAL BASH LOGIC ---
-    SECRETS_JSON=$(vault kv get -format=json -mount="kv" "selfservice/rhdh-qe/rhdh" | jq -r '.data.data')
-    
-    for key in $(echo "$SECRETS_JSON" | jq -r 'keys[]'); do
-        [[ "$key" == "secretsync/"* ]] && continue
-        value=$(echo "$SECRETS_JSON" | jq -r --arg k "$key" '.[$k]')
-        safe_key=$(echo "$key" | tr './-' '___')
-        export "$safe_key"="$value"
-    done
-fi
+while read -r key; do
+    [[ "$key" == "secretsync/"* ]] && continue
+    value=$(printf '%s' "$SECRETS_JSON" | jq -r --arg k "$key" '.[$k]')
+    safe_key=$(echo "$key" | tr './-' '___')
+    export "$safe_key"="$value"
+done < <(printf '%s' "$SECRETS_JSON" | jq -r 'keys[]')
 
 log::section "Environment Ready"
 log::info "Available URLs:"
