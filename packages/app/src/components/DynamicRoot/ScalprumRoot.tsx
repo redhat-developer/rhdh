@@ -11,6 +11,7 @@ import { AppsConfig } from '@scalprum/core';
 import { ScalprumProvider } from '@scalprum/react-core';
 
 import { TranslationConfig } from '../../types/types';
+import { CatalogColumnConfig } from '../../utils/catalog';
 import { DynamicPluginConfig } from '../../utils/dynamicUI/extractDynamicConfig';
 import overrideBaseUrlConfigs from '../../utils/dynamicUI/overrideBaseUrlConfigs';
 import { DynamicRoot, StaticPlugins } from './DynamicRoot';
@@ -38,6 +39,7 @@ const ScalprumRoot = ({
       baseUrl: string;
       scalprumConfig?: AppsConfig;
       translationConfig?: TranslationConfig;
+      catalogColumnConfig?: CatalogColumnConfig;
     }> => {
       const appConfig = overrideBaseUrlConfigs(await defaultConfigLoader());
       const reader = ConfigReader.fromConfigs([
@@ -48,6 +50,7 @@ const ScalprumRoot = ({
       const dynamicPlugins = reader.get<DynamicPluginConfig>('dynamicPlugins');
       let scalprumConfig: AppsConfig = {};
       let translationConfig: TranslationConfig | undefined = undefined;
+      let catalogColumnConfig: CatalogColumnConfig | undefined = undefined;
       try {
         scalprumConfig = await fetch(`${baseUrl}/api/scalprum/plugins`).then(
           r => r.json(),
@@ -67,19 +70,35 @@ const ScalprumRoot = ({
  ${JSON.stringify(err)}`,
         );
       }
+      try {
+        catalogColumnConfig = reader.getOptional<CatalogColumnConfig>(
+          'catalog.table.columns',
+        );
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `Failed to load catalog column configuration: ${JSON.stringify(err)}`,
+        );
+      }
       return {
         dynamicPlugins,
         baseUrl,
         scalprumConfig,
         translationConfig,
+        catalogColumnConfig,
       };
     },
   );
   if (loading && !value) {
     return <Loader />;
   }
-  const { dynamicPlugins, baseUrl, scalprumConfig, translationConfig } =
-    value || {};
+  const {
+    dynamicPlugins,
+    baseUrl,
+    scalprumConfig,
+    translationConfig,
+    catalogColumnConfig,
+  } = value || {};
   const scalprumApiHolder = {
     dynamicRootConfig: {
       dynamicRoutes: [],
@@ -90,6 +109,7 @@ const ScalprumRoot = ({
       techdocsAddons: [],
       providerSettings: [],
       translationRefs: [],
+      catalogTableColumns: catalogColumnConfig,
     } as DynamicRootConfig,
   };
   return (
@@ -117,6 +137,7 @@ const ScalprumRoot = ({
         staticPluginStore={plugins}
         scalprumConfig={scalprumConfig ?? {}}
         translationConfig={translationConfig}
+        catalogColumnConfig={catalogColumnConfig}
         baseUrl={baseUrl as string}
       />
     </ScalprumProvider>
