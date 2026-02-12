@@ -11,11 +11,11 @@ on:
       - release-1.**
     paths:
       - 'rpms.in.yaml'
-      - 'docker/Containerfile'
+      - 'build/containerfiles/Containerfile'
 permissions:
   contents: write
 env:
-  CONTAINERFILE_PATH: docker/Containerfile
+  CONTAINERFILE_PATH: build/containerfiles/Containerfile
 jobs:
   update-lockfile:
     runs-on: ubuntu-latest

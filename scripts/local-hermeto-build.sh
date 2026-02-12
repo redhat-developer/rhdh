@@ -231,8 +231,8 @@ build_image() {
 
   # Transform the containerfile to simulate Konflux build
   transform_containerfile \
-    "${component_dir}/docker/Containerfile" \
-    "${component_dir}/docker/Containerfile.hermeto"
+    "${component_dir}/build/containerfiles/Containerfile" \
+    "${component_dir}/build/containerfiles/Containerfile.hermeto"
 
   # Prevent podman from injecting host RHEL subscriptions into the container.
   # Podman automatically mounts host subscription secrets (/run/secrets/redhat.repo,
@@ -246,7 +246,7 @@ build_image() {
     ${platform_args} \
     --network none \
     --no-cache \
-    -f "${component_dir}/docker/Containerfile.hermeto" \
+    -f "${component_dir}/build/containerfiles/Containerfile.hermeto" \
     -v "${local_cache_dir}:/cachi2" \
     -v /dev/null:/run/secrets/redhat.repo \
     -v "${EMPTY_DIR}:/run/secrets/rhsm:z" \

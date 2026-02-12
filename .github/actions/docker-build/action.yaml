@@ -35,7 +35,7 @@ inputs:
   containerfilePath:
     description: Path to the Containerfile to use
     required: false
-    default: 'docker/Containerfile'
+    default: 'build/containerfiles/Containerfile'
   skipArtifactUpload:
     description: Skip uploading the built image as a GitHub artifact
     required: false

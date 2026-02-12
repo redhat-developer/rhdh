@@ -90,4 +90,4 @@ e2e-tests/test-results/
 
 # Hermeto Cache
 hermeto-cache/
-docker/Containerfile.hermeto
+build/containerfiles/Containerfile.hermeto

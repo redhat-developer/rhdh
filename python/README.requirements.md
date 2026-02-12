@@ -129,4 +129,4 @@ If the build fails, add more dependencies to the requirements file, and try agai
 
 When the build passes, commit changes to upstream repo, and trigger sync to cause a midstream/downstream build to verify your changes.
 
-- `docker/Containerfile` is transformed to `distgit/containers/rhdh-hub/Containerfile` via [sync-midstream.sh](https://gitlab.cee.redhat.com/rhidp/rhdh/-/blob/rhdh-1-rhel-9/build/ci/sync-midstream.sh)
+- `build/containerfiles/Containerfile` is transformed to `distgit/containers/rhdh-hub/Containerfile` via [sync-midstream.sh](https://gitlab.cee.redhat.com/rhidp/rhdh/-/blob/rhdh-1-rhel-9/build/ci/sync-midstream.sh)
