@@ -130,13 +130,7 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
     test("Navigate to Catalog and find orchestrator-tagged template", async () => {
       await uiHelper.openSidebar("Catalog");
       await uiHelper.verifyHeading(/Catalog|All/);
-
-      // Filter by Kind=Template
-      await page.getByRole("button", { name: /Kind/i }).click();
-      await page.getByRole("option", { name: "Template" }).click();
-
-      // Wait for filter to apply
-      await page.waitForLoadState("domcontentloaded");
+      await uiHelper.selectMuiBox("Kind", "Template");
 
       // Find the "Greeting Test Picker" template (greeting_w_component.yaml)
       const templateLink = page.getByRole("link", {
@@ -161,7 +155,7 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
       await uiHelper.clickBtnInCard("Greeting Test Picker", "Choose");
 
       // Wait for template form to load
-      await uiHelper.waitForTitle("Greeting Test Picker", 2);
+      await uiHelper.verifyHeading(/Greeting Test Picker/i, 30000);
 
       // Fill in the entity name field
       const entityNameField = page.getByLabel(/Entity Name/i);
@@ -353,13 +347,7 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
     test("Navigate to Catalog and find orchestrator-tagged template", async () => {
       await uiHelper.openSidebar("Catalog");
       await uiHelper.verifyHeading(/Catalog|All/);
-
-      // Filter by Kind=Template
-      await page.getByRole("button", { name: /Kind/i }).click();
-      await page.getByRole("option", { name: "Template" }).click();
-
-      // Wait for filter to apply
-      await page.waitForLoadState("domcontentloaded");
+      await uiHelper.selectMuiBox("Kind", "Template");
 
       // Find the "Greeting Test Picker" template (greeting_w_component.yaml)
       const templateLink = page.getByRole("link", {
@@ -386,7 +374,7 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
       await uiHelper.clickBtnInCard("Greeting Test Picker", "Choose");
 
       // Wait for template form to load
-      await uiHelper.waitForTitle("Greeting Test Picker", 2);
+      await uiHelper.verifyHeading(/Greeting Test Picker/i, 30000);
 
       // Fill in the entity name field
       const entityNameField = page.getByLabel(/Entity Name/i);

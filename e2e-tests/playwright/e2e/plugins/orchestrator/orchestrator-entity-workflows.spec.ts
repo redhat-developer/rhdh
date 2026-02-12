@@ -65,7 +65,7 @@ test.describe("Orchestrator Entity-Workflow Integration", () => {
       await uiHelper.clickBtnInCard("Greeting workflow", "Choose");
 
       // Wait for template form to load
-      await uiHelper.waitForTitle("Greeting workflow", 2);
+      await uiHelper.verifyHeading(/Greeting/i, 30000);
 
       // The first step should have an EntityPicker for selecting target entity
       // Look for the entity picker field
@@ -124,16 +124,10 @@ test.describe("Orchestrator Entity-Workflow Integration", () => {
     });
 
     test("RHIDP-11834: Template WITH orchestrator.io/workflows annotation", async () => {
-      // Navigate to Catalog via sidebar
+      // Navigate to Catalog via sidebar and filter by Template kind
       await uiHelper.openSidebar("Catalog");
       await uiHelper.verifyHeading("My Org Catalog");
-
-      // Filter by Kind=Template
-      await page.getByRole("button", { name: /Kind/i }).click();
-      await page.getByRole("option", { name: "Template" }).click();
-
-      // Wait for filter to apply
-      await page.waitForLoadState("domcontentloaded");
+      await uiHelper.selectMuiBox("Kind", "Template");
 
       // Find the "Greeting Test Picker" template (greeting_w_component.yaml)
       // This template HAS the orchestrator.io/workflows annotation: '["greeting"]'
@@ -155,16 +149,10 @@ test.describe("Orchestrator Entity-Workflow Integration", () => {
     });
 
     test("RHIDP-11835: Template WITHOUT orchestrator.io/workflows annotation (negative)", async () => {
-      // Navigate to Catalog via sidebar
+      // Navigate to Catalog via sidebar and filter by Template kind
       await uiHelper.openSidebar("Catalog");
       await uiHelper.verifyHeading("My Org Catalog");
-
-      // Filter by Kind=Template
-      await page.getByRole("button", { name: /Kind/i }).click();
-      await page.getByRole("option", { name: "Template" }).click();
-
-      // Wait for filter to apply
-      await page.waitForLoadState("domcontentloaded");
+      await uiHelper.selectMuiBox("Kind", "Template");
 
       // Find the "Greeting workflow" template (greeting.yaml)
       // This template does NOT have the orchestrator.io/workflows annotation
@@ -183,16 +171,10 @@ test.describe("Orchestrator Entity-Workflow Integration", () => {
     });
 
     test("RHIDP-11836: Catalog ↔ Workflows breadcrumb navigation", async () => {
-      // Navigate to Catalog via sidebar
+      // Navigate to Catalog via sidebar and filter by Template kind
       await uiHelper.openSidebar("Catalog");
       await uiHelper.verifyHeading("My Org Catalog");
-
-      // Filter by Kind=Template
-      await page.getByRole("button", { name: /Kind/i }).click();
-      await page.getByRole("option", { name: "Template" }).click();
-
-      // Wait for filter to apply
-      await page.waitForLoadState("domcontentloaded");
+      await uiHelper.selectMuiBox("Kind", "Template");
 
       // Select "Greeting Test Picker" template (has orchestrator annotation)
       const templateLink = page.getByRole("link", {
@@ -247,10 +229,10 @@ test.describe("Orchestrator Entity-Workflow Integration", () => {
       await uiHelper.clickBtnInCard("Greeting Test Picker", "Choose");
 
       // Wait for template form to load
-      await uiHelper.waitForTitle("Greeting Test Picker", 2);
+      await uiHelper.verifyHeading(/Greeting Test Picker/i, 30000);
 
       // Fill in the entity name field
-      const entityNameField = page.getByLabel(/Entity Name/i);
+      const entityNameField = page.locator('#root_name');
       await expect(entityNameField).toBeVisible();
       const uniqueName = `test-entity-${Date.now()}`;
       await entityNameField.fill(uniqueName);
@@ -301,16 +283,10 @@ test.describe("Orchestrator Entity-Workflow Integration", () => {
     });
 
     test("RHIDP-11838: Dynamic plugin config enables Workflows tab", async () => {
-      // Navigate to Catalog via sidebar
+      // Navigate to Catalog via sidebar and filter by Template kind
       await uiHelper.openSidebar("Catalog");
       await uiHelper.verifyHeading("My Org Catalog");
-
-      // Filter by Kind=Template
-      await page.getByRole("button", { name: /Kind/i }).click();
-      await page.getByRole("option", { name: "Template" }).click();
-
-      // Wait for filter to apply
-      await page.waitForLoadState("domcontentloaded");
+      await uiHelper.selectMuiBox("Kind", "Template");
 
       // Select "Greeting Test Picker" template (has orchestrator.io/workflows annotation)
       const templateLink = page.getByRole("link", {
