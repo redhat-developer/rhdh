@@ -15,12 +15,15 @@
  */
 
 import { Page, expect, Locator } from "@playwright/test";
+import { UIhelper } from "../../../utils/ui-helper";
 
 export class ScorecardPage {
   readonly page: Page;
+  readonly uiHelper: UIhelper;
 
   constructor(page: Page) {
     this.page = page;
+    this.uiHelper = new UIhelper(page);
   }
 
   get scorecardMetrics() {
@@ -92,5 +95,50 @@ export class ScorecardPage {
 
   async expectErrorHeading(errorText: string) {
     await expect(this.getErrorHeading(errorText)).toBeVisible();
+  }
+
+  async navigateToHome() {
+    await this.uiHelper.openSidebar("Home");
+  }
+
+  async enterEditMode() {
+    await this.page.getByRole("button", { name: "Edit" }).click();
+  }
+
+  async openAddWidgetDialog() {
+    await this.page.getByRole("button", { name: "Add widget" }).click();
+  }
+
+  async selectWidget(cardName: string) {
+    await this.page.getByRole("button", { name: cardName }).click();
+  }
+
+  async saveChanges() {
+    await this.page.getByRole("button", { name: "Save" }).click();
+  }
+
+  getAggregatedScorecardCard(metricTitle: string): Locator {
+    return this.page.locator("article").filter({ hasText: metricTitle });
+  }
+
+  async expectAggregatedScorecardVisible(metricTitle: string) {
+    await expect(this.getAggregatedScorecardCard(metricTitle)).toBeVisible();
+  }
+
+  async getAggregatedScorecardEntityCount(
+    metricTitle: string,
+  ): Promise<number> {
+    const card = this.getAggregatedScorecardCard(metricTitle);
+    const text = await card.textContent();
+    const match = text?.match(/(\d+)\s*entities/);
+    return match ? parseInt(match[1], 10) : 0;
+  }
+
+  async expectAggregatedScorecardEntityCountToBe(
+    metricTitle: string,
+    expectedCount: number,
+  ) {
+    const card = this.getAggregatedScorecardCard(metricTitle);
+    await expect(card).toContainText(`${expectedCount} entities`);
   }
 }
