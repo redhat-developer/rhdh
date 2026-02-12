@@ -317,41 +317,5 @@
     "description": "Learn more about Ansible Content Collections. Content Collections provide a format for organizing and sharing your Ansible content, such as modules, Playbooks, and documentation.",
     "label": "Getting started with Content Collections",
     "url": "https://red.ht/aap-lp-getting-started-collections"
-  },
-  {
-    "paths": 1,
-    "minutes": 30,
-    "level": "Beginner",
-    "type": "Ansible Lab",
-    "description": "Install ansible-navigator and get hands-on using it.",
-    "label": "Getting started with ansible-navigator",
-    "url": "https://red.ht/aap-lab-getting-started-navigator"
-  },
-  {
-    "paths": 1,
-    "minutes": 45,
-    "level": "Beginner",
-    "type": "Ansible Lab",
-    "description": "Install ansible-builder and create a custom Execution Environment.",
-    "label": "Getting started with ansible-builder",
-    "url": "https://red.ht/aap-lab-getting-started-builder"
-  },
-  {
-    "paths": 1,
-    "hours": 1,
-    "level": "Beginner",
-    "type": "Ansible Lab",
-    "description": "Learn the basics of Ansible playbooks and automate basic infrastructure tasks.",
-    "label": "Writing your first playbook",
-    "url": "https://red.ht/aap-lab-getting-started-playbook"
-  },
-  {
-    "paths": 1,
-    "minutes": 30,
-    "level": "Beginner",
-    "type": "Ansible Lab",
-    "description": "Learn to sign Ansible Content Collections using a Private Automation Hub and install collections with ansible-galaxy CLI.",
-    "label": "Signing Ansible Content Collections with Private Automation Hub",
-    "url": "https://red.ht/aap-lab-sign-collections-with-pah"
   }
 ]
