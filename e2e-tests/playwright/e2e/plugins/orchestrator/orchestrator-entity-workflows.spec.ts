@@ -232,7 +232,7 @@ test.describe("Orchestrator Entity-Workflow Integration", () => {
       await uiHelper.verifyHeading(/Greeting Test Picker/i, 30000);
 
       // Fill in the entity name field
-      const entityNameField = page.locator('#root_name');
+      const entityNameField = page.locator("#root_name");
       await expect(entityNameField).toBeVisible();
       const uniqueName = `test-entity-${Date.now()}`;
       await entityNameField.fill(uniqueName);
