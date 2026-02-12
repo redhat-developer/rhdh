@@ -267,7 +267,7 @@ test.describe("Orchestrator Entity-Workflow Integration", () => {
       const reviewButton = page.getByRole("button", { name: /Review/i });
       await expect(reviewButton).toBeVisible({ timeout: 10000 });
       await reviewButton.click();
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Click Create to execute
       const createButton = page.getByRole("button", { name: /Create/i });

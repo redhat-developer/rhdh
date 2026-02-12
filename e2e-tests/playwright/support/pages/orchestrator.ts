@@ -444,9 +444,7 @@ export class Orchestrator {
 
   async verifyOrchestratorCatalogTabCard() {
     // Verify the OrchestratorCatalogTab card is rendered
-    const orchestratorCard = this.page.locator(
-      '[data-testid="orchestrator-catalog-tab"]',
-    );
+    const orchestratorCard = this.page.getByTestId("orchestrator-catalog-tab");
     // If no testid, look for the card by its content
     const workflowsCard = this.page
       .getByRole("article")
