@@ -147,7 +147,7 @@ main() {
       handle_ocp_operator
       ;;
     *pull*ocp*helm*)
-      # Rotate among HELM_PR, HELM_PR_2, and HELM_PR_3 using nanosecond-based selection
+      # Rotate among HELM_PR, HELM_PR_2, and HELM_PR_3
       result=$(( $(date +%N) % 3 ))
       case $result in
         0) override_github_app_env_with_prefix "HELM_PR" ;;
