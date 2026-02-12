@@ -47,7 +47,7 @@ main() {
   log::info "Log file: ${LOGFILE}"
   log::info "JOB_NAME : $JOB_NAME"
 
-  CHART_VERSION=$(helm::get_chart_version "$CHART_MAJOR_VERSION")
+  CHART_VERSION=$(helm::get_chart_version)
   export CHART_VERSION
 
   case "$JOB_NAME" in

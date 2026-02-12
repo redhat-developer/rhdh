@@ -80,9 +80,15 @@ helm::merge_values() {
 helm::get_previous_release_values() {
   local value_file_type=${1:-"showcase"}
 
+  local current_release_version
+  current_release_version=$(helm::get_chart_major_version)
+  if [[ -z "$current_release_version" ]]; then
+    return 1
+  fi
+
   # Get the previous release version
   local previous_release_version
-  previous_release_version=$(common::get_previous_release_version "$CHART_MAJOR_VERSION")
+  previous_release_version=$(common::get_previous_release_version "$current_release_version")
 
   if [[ -z "$previous_release_version" ]]; then
     log::error "Failed to determine previous release version."
@@ -113,17 +119,55 @@ helm::get_previous_release_values() {
 # Chart Operations
 # ==============================================================================
 
-# Get the latest chart version for a given major version
+# Get the chart major.minor version based on RELEASE_BRANCH_NAME or an optional override.
+# Uses RELEASE_BRANCH_NAME: 'main' -> highest major.minor from Quay; 'release-x.y' -> extract x.y.
 # Args:
-#   $1 - chart_major_version: The major version to search for (e.g., "1.4")
+#   $1 - (optional) version_override: Specific version to use (e.g., "1.8" for upgrade base)
+# Returns:
+#   Prints the major.minor version (e.g., "1.9")
+helm::get_chart_major_version() {
+  local version_override=${1:-}
+
+  if [[ -n "$version_override" ]]; then
+    echo "$version_override"
+    return 0
+  fi
+
+  if [[ -z "${RELEASE_BRANCH_NAME:-}" ]]; then
+    log::error "RELEASE_BRANCH_NAME is not set"
+    return 1
+  fi
+
+  if [[ "$RELEASE_BRANCH_NAME" == "main" ]]; then
+    local chart_major_version
+    chart_major_version=$(curl -sSX GET "https://quay.io/api/v1/repository/rhdh/chart/tag/?onlyActiveTags=true&limit=100" \
+      -H "Content-Type: application/json" \
+      | jq -r '.tags[].name' \
+      | grep -oE '^[0-9]+\.[0-9]+' \
+      | sort -t. -k1,1n -k2,2n \
+      | uniq | tail -1)
+    if [[ -z "$chart_major_version" ]]; then
+      log::error "Failed to determine highest chart version from tags"
+      return 1
+    fi
+    echo "$chart_major_version"
+  elif echo "$RELEASE_BRANCH_NAME" | grep -qE '^release-[0-9]+\.[0-9]+$'; then
+    echo "$RELEASE_BRANCH_NAME" | grep -oE '[0-9]+\.[0-9]+'
+  else
+    log::error "Invalid RELEASE_BRANCH_NAME: $RELEASE_BRANCH_NAME (expected 'main' or 'release-x.y')"
+    return 1
+  fi
+}
+
+# Get the latest chart version based on RELEASE_BRANCH_NAME or an optional version override.
+# Args:
+#   $1 - (optional) version_override: Specific version to use (e.g., "1.8" for upgrade base)
 # Returns:
 #   Prints the chart version (e.g., "1.4-123-CI")
 helm::get_chart_version() {
-  local chart_major_version=$1
-
+  local chart_major_version
+  chart_major_version=$(helm::get_chart_major_version "${1:-}")
   if [[ -z "$chart_major_version" ]]; then
-    log::error "Missing chart major version parameter"
-    log::info "Usage: helm::get_chart_version <major_version>"
     return 1
   fi
 

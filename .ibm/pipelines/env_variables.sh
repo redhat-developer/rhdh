@@ -63,7 +63,6 @@ NAME_SPACE_SANITY_PLUGINS_CHECK="showcase-sanity-plugins" # Sanity check namespa
 
 # Operator configuration
 OPERATOR_MANAGER='rhdh-operator'
-CHART_MAJOR_VERSION="1.9"
 GITHUB_APP_APP_ID=$(cat /tmp/secrets/GITHUB_APP_3_APP_ID)
 GITHUB_APP_CLIENT_ID=$(cat /tmp/secrets/GITHUB_APP_3_CLIENT_ID)
 GITHUB_APP_PRIVATE_KEY=$(cat /tmp/secrets/GITHUB_APP_3_PRIVATE_KEY)
