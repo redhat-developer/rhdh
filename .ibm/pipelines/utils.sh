@@ -24,6 +24,33 @@ source "${DIR}/lib/testing.sh"
 # Constants
 TEKTON_PIPELINES_WEBHOOK="tekton-pipelines-webhook"
 
+# Override GitHub App env vars with prefixed versions if all 4 are set.
+# Usage: override_github_app_env_with_prefix <PREFIX>
+# Example: override_github_app_env_with_prefix AKS
+# Replaces GITHUB_APP_APP_ID with GITHUB_APP_APP_ID_AKS (and same for CLIENT_ID, PRIVATE_KEY, CLIENT_SECRET).
+# If any of the prefixed vars is empty, leaves the original envs unchanged.
+override_github_app_env_with_prefix() {
+  local prefix="$1"
+  [[ -n "${prefix}" ]] || return 0
+
+  local app_id_var="GITHUB_APP_APP_ID_${prefix}"
+  local client_id_var="GITHUB_APP_CLIENT_ID_${prefix}"
+  local private_key_var="GITHUB_APP_PRIVATE_KEY_${prefix}"
+  local client_secret_var="GITHUB_APP_CLIENT_SECRET_${prefix}"
+
+  if [[ -n "${!app_id_var:-}" ]] && [[ -n "${!client_id_var:-}" ]] && \
+     [[ -n "${!private_key_var:-}" ]] && [[ -n "${!client_secret_var:-}" ]]; then
+    log::info "Overriding env vars (GITHUB_APP_APP_ID, GITHUB_APP_CLIENT_ID, GITHUB_APP_PRIVATE_KEY, GITHUB_APP_CLIENT_SECRET) with values from (GITHUB_APP_APP_ID_${prefix}, GITHUB_APP_CLIENT_ID_${prefix}, GITHUB_APP_PRIVATE_KEY_${prefix}, GITHUB_APP_CLIENT_SECRET_${prefix})"
+    GITHUB_APP_APP_ID="${!app_id_var}"
+    GITHUB_APP_CLIENT_ID="${!client_id_var}"
+    GITHUB_APP_PRIVATE_KEY="${!private_key_var}"
+    GITHUB_APP_CLIENT_SECRET="${!client_secret_var}"
+    export GITHUB_APP_APP_ID GITHUB_APP_CLIENT_ID GITHUB_APP_PRIVATE_KEY GITHUB_APP_CLIENT_SECRET
+  else
+    log::info "Not overriding GitHub App env vars with prefix ${prefix}: one or more of ${app_id_var}, ${client_id_var}, ${private_key_var}, ${client_secret_var} is empty"
+  fi
+}
+
 retrieve_pod_logs() {
   local pod_name=$1
   local container=$2
