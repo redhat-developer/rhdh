@@ -512,6 +512,10 @@ rbac_deployment() {
   else
     deploy_orchestrator_workflows "${NAME_SPACE_RBAC}"
   fi
+
+  # DEBUG: Sleep for 2 hours to allow manual investigation
+  log::info "DEBUG: Sleeping for 2 hours to allow manual cluster investigation..."
+  sleep 7200
 }
 
 initiate_deployments() {
