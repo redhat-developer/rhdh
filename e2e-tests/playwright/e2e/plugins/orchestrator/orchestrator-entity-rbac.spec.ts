@@ -158,13 +158,15 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
       await uiHelper.verifyHeading(/Greeting Test Picker/i, 30000);
 
       // Fill in the entity name field
-      const entityNameField = page.getByLabel(/Entity Name/i);
-      await expect(entityNameField).toBeVisible();
+      const entityNameField = page.locator("#root_name");
+      await expect(entityNameField).toBeVisible({ timeout: 10000 });
       const uniqueName = `test-no-workflow-${Date.now()}`;
       await entityNameField.fill(uniqueName);
 
-      // Click Next
-      await uiHelper.clickButton("Next");
+      // Wait for Next button to be enabled and click it
+      const nextButton = page.getByRole("button", { name: "Next" });
+      await expect(nextButton).toBeEnabled({ timeout: 10000 });
+      await nextButton.click();
 
       // Fill in workflow parameters
       const languageField = page.getByLabel("Language");
@@ -377,13 +379,15 @@ test.describe.serial("Orchestrator Entity-Workflow RBAC", () => {
       await uiHelper.verifyHeading(/Greeting Test Picker/i, 30000);
 
       // Fill in the entity name field
-      const entityNameField = page.getByLabel(/Entity Name/i);
-      await expect(entityNameField).toBeVisible();
+      const entityNameField = page.locator("#root_name");
+      await expect(entityNameField).toBeVisible({ timeout: 10000 });
       const uniqueName = `test-with-workflow-${Date.now()}`;
       await entityNameField.fill(uniqueName);
 
-      // Click Next
-      await uiHelper.clickButton("Next");
+      // Wait for Next button to be enabled and click it
+      const nextButton = page.getByRole("button", { name: "Next" });
+      await expect(nextButton).toBeEnabled({ timeout: 10000 });
+      await nextButton.click();
 
       // Fill in workflow parameters
       const languageField = page.getByLabel("Language");

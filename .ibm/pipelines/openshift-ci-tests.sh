@@ -113,7 +113,6 @@ main() {
       source "${DIR}/jobs/ocp-nightly.sh"
       log::info "Calling handle_ocp_nightly"
       handle_ocp_nightly
-      sleep 120*60 # sleep for 2 hours to debug the job
       ;;
     *ocp*operator*nightly*)
       log::info "Sourcing ocp-operator.sh"

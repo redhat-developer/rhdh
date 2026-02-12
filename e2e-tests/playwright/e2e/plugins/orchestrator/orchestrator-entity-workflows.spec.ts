@@ -68,10 +68,8 @@ test.describe("Orchestrator Entity-Workflow Integration", () => {
       await uiHelper.verifyHeading(/Greeting/i, 30000);
 
       // The first step should have an EntityPicker for selecting target entity
-      // Look for the entity picker field
-      const entityPickerLabel = page.getByText(
-        /Target Entity|Select an entity/i,
-      );
+      // Look for the entity picker field - use a specific label selector to avoid strict mode violations
+      const entityPickerLabel = page.locator("#root_target_entity-label");
       await expect(entityPickerLabel).toBeVisible({ timeout: 10000 });
 
       // Click on the entity picker to open dropdown
@@ -233,12 +231,14 @@ test.describe("Orchestrator Entity-Workflow Integration", () => {
 
       // Fill in the entity name field
       const entityNameField = page.locator("#root_name");
-      await expect(entityNameField).toBeVisible();
+      await expect(entityNameField).toBeVisible({ timeout: 10000 });
       const uniqueName = `test-entity-${Date.now()}`;
       await entityNameField.fill(uniqueName);
 
-      // Click Next
-      await uiHelper.clickButton("Next");
+      // Wait for Next button to be enabled and click it
+      const nextButton = page.getByRole("button", { name: "Next" });
+      await expect(nextButton).toBeEnabled({ timeout: 10000 });
+      await nextButton.click();
 
       // Fill in workflow parameters
       const languageField = page.getByLabel("Language");
