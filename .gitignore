@@ -15,7 +15,7 @@ lerna-debug.log*
 # Dependencies
 node_modules/
 
-# Yarn 3 files
+# Yarn
 **/.pnp.*
 **/.yarn/*
 !**/.yarn/patches
