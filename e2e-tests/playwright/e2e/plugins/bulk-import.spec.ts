@@ -171,9 +171,7 @@ spec:
     await uiHelper.verifyRowInTableByUniqueText(newRepoDetails.repoName, [
       "Ready to import",
     ]);
-    await expect(await uiHelper.clickButton("Import")).toBeDisabled({
-      timeout: 10000,
-    });
+    await expect(await uiHelper.clickButton("Import")).toBeDisabled();
   });
 
   test('Verify that the two selected repositories are listed: one with the status "Already imported" and another with the status "WAIT_PR_APPROVAL."', async () => {

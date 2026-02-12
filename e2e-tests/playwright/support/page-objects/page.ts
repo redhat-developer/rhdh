@@ -1,5 +1,6 @@
 import { Page } from "@playwright/test";
 import { UIhelper } from "../../utils/ui-helper";
+import { Common } from "../../utils/common";
 
 export enum PagesUrl {
   RBAC = "/rbac",
@@ -18,6 +19,7 @@ export abstract class PageObject {
 
   async goto() {
     await this.page.goto(this.url);
+    await new Common(this.page).waitForLoad();
   }
 
   async verifyATextIsVisible(text: string) {
