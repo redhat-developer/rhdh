@@ -15,3 +15,4 @@ examples
 !.ibm/images/Dockerfile
 !.yarnrc.yml
 hermeto-cache
+translations/test
