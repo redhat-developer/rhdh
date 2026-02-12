@@ -9,8 +9,8 @@ orchestrator: null
 global:
   dynamic:
     plugins:
-      # Disable orchestrator plugins for OSD-GCP - Official release (Backstage 1.42.5)
-      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator:bs_1.45.3__5.3.1!red-hat-developer-hub-backstage-plugin-orchestrator"
+      # Disable orchestrator plugins for OSD-GCP - Official release (Backstage 1.45.3)
+      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator:bs_1.45.3__5.1.0!red-hat-developer-hub-backstage-plugin-orchestrator"
         disabled: true
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator-backend:bs_1.45.3__8.3.0!red-hat-developer-hub-backstage-plugin-orchestrator-backend"
         disabled: true
