@@ -413,8 +413,15 @@ cluster_setup_ocp_operator() {
   k8s_wait::endpoint "${TEKTON_PIPELINES_WEBHOOK}" "openshift-pipelines" 1800 10 || return 1
 
   operator::install_postgres_ocp
-  operator::install_serverless
-  operator::install_serverless_logic
+
+  # Serverless operators are only needed for orchestrator workflows.
+  # Skip them on OSD-GCP and PR jobs where orchestrator is disabled.
+  if should_skip_orchestrator; then
+    log::warn "Skipping Serverless and Serverless Logic operator installation (orchestrator disabled for this job)"
+  else
+    operator::install_serverless
+    operator::install_serverless_logic
+  fi
 }
 
 cluster_setup_k8s_operator() {
