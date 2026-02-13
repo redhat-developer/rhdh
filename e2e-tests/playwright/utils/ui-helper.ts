@@ -378,10 +378,24 @@ export class UIhelper {
   }
 
   async selectMuiBox(label: string, value: string) {
-    await this.page.click(`div[aria-label="${label}"]`);
-    const optionSelector = `li[role="option"]:has-text("${value}")`;
-    await this.page.waitForSelector(optionSelector);
-    await this.page.click(optionSelector);
+    // Wait for any overlaying dialogs to close before interacting
+    await this.page
+      .locator('[role="presentation"].MuiDialog-root')
+      .waitFor({ state: "detached", timeout: 3000 })
+      .catch(() => {}); // Ignore if no dialog exists
+
+    // Use semantic selector with fallback to CSS selector
+    const combobox = this.page
+      .getByRole("combobox", { name: label })
+      .or(this.page.locator(`div[aria-label="${label}"]`));
+
+    await expect(combobox).toBeVisible();
+    await combobox.click();
+
+    // Wait for and click option using semantic selector
+    const option = this.page.getByRole("option", { name: value });
+    await expect(option).toBeVisible();
+    await option.click();
   }
 
   async verifyRowsInTable(
@@ -559,16 +573,19 @@ export class UIhelper {
   async verifyButtonURL(
     label: string | RegExp,
     url: string | RegExp,
-    options: { locator?: string; exact?: boolean } = {
+    options: { locator?: string | Locator; exact?: boolean } = {
       locator: "",
       exact: true,
     },
   ) {
     // To verify the button URL if it is in a specific locator
+    // Now supports both CSS selector strings and Locator objects
     const baseLocator =
       !options.locator || options.locator === ""
         ? this.page
-        : this.page.locator(options.locator);
+        : typeof options.locator === "string"
+          ? this.page.locator(options.locator)
+          : options.locator;
 
     const buttonUrl = await baseLocator
       .getByRole("button", { name: label, exact: options.exact })
