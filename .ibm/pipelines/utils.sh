@@ -48,9 +48,9 @@ override_github_app_env_with_prefix() {
   local webhook_url_rbac_var="GITHUB_APP_WEBHOOK_URL_RBAC_${prefix}"
   local webhook_secret_rbac_var="GITHUB_APP_WEBHOOK_SECRET_RBAC_${prefix}"
 
-  if [[ -n "${!app_id_var:-}" ]] && [[ -n "${!client_id_var:-}" ]] && \
-     [[ -n "${!private_key_var:-}" ]] && [[ -n "${!client_secret_var:-}" ]] && \
-     [[ -n "${!webhook_url_var:-}" ]] && [[ -n "${!webhook_secret_var:-}" ]]; then
+  if [[ -n "${!app_id_var:-}" ]] && [[ -n "${!client_id_var:-}" ]] \
+    && [[ -n "${!private_key_var:-}" ]] && [[ -n "${!client_secret_var:-}" ]] \
+    && [[ -n "${!webhook_url_var:-}" ]] && [[ -n "${!webhook_secret_var:-}" ]]; then
     log::info "Overriding showcase env vars (GITHUB_APP_APP_ID, CLIENT_ID, PRIVATE_KEY, CLIENT_SECRET, WEBHOOK_URL, WEBHOOK_SECRET) with values from _${prefix}"
     GITHUB_APP_APP_ID="${!app_id_var}"
     GITHUB_APP_CLIENT_ID="${!client_id_var}"
@@ -63,9 +63,9 @@ override_github_app_env_with_prefix() {
     log::info "Not overriding showcase GitHub App env vars with prefix ${prefix}: one or more of ${app_id_var}, ${client_id_var}, ${private_key_var}, ${client_secret_var}, ${webhook_url_var}, ${webhook_secret_var} is empty"
   fi
 
-  if [[ -n "${!app_id_rbac_var:-}" ]] && [[ -n "${!client_id_rbac_var:-}" ]] && \
-     [[ -n "${!private_key_rbac_var:-}" ]] && [[ -n "${!client_secret_rbac_var:-}" ]] && \
-     [[ -n "${!webhook_url_rbac_var:-}" ]] && [[ -n "${!webhook_secret_rbac_var:-}" ]]; then
+  if [[ -n "${!app_id_rbac_var:-}" ]] && [[ -n "${!client_id_rbac_var:-}" ]] \
+    && [[ -n "${!private_key_rbac_var:-}" ]] && [[ -n "${!client_secret_rbac_var:-}" ]] \
+    && [[ -n "${!webhook_url_rbac_var:-}" ]] && [[ -n "${!webhook_secret_rbac_var:-}" ]]; then
     log::info "Overriding RBAC env vars (GITHUB_APP_APP_ID_RBAC, CLIENT_ID_RBAC, PRIVATE_KEY_RBAC, CLIENT_SECRET_RBAC, WEBHOOK_URL_RBAC, WEBHOOK_SECRET_RBAC) with values from _RBAC_${prefix}"
     GITHUB_APP_APP_ID_RBAC="${!app_id_rbac_var}"
     GITHUB_APP_CLIENT_ID_RBAC="${!client_id_rbac_var}"
