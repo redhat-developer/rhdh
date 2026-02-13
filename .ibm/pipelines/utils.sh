@@ -106,26 +106,6 @@ install_crunchy_postgres_k8s_operator() { install_crunchy_postgres_operator "k8s
 waitfor_crunchy_postgres_ocp_operator() { waitfor_crunchy_postgres_operator "ocp"; }
 waitfor_crunchy_postgres_k8s_operator() { waitfor_crunchy_postgres_operator "k8s"; }
 
-# Installs the OpenShift Serverless Logic Operator (SonataFlow) from OpenShift Marketplace
-# Use waitfor_serverless_logic_ocp_operator to wait for the operator to be ready
-install_serverless_logic_ocp_operator() {
-  install_subscription logic-operator-rhel8 openshift-operators alpha logic-operator-rhel8 redhat-operators openshift-marketplace
-}
-
-waitfor_serverless_logic_ocp_operator() {
-  check_operator_status 300 "openshift-operators" "OpenShift Serverless Logic Operator" "Succeeded"
-}
-
-# Installs the OpenShift Serverless Operator (Knative) from OpenShift Marketplace
-# Use waitfor_serverless_ocp_operator to wait for the operator to be ready
-install_serverless_ocp_operator() {
-  install_subscription serverless-operator openshift-operators stable serverless-operator redhat-operators openshift-marketplace
-}
-
-waitfor_serverless_ocp_operator() {
-  check_operator_status 300 "openshift-operators" "Red Hat OpenShift Serverless" "Succeeded"
-}
-
 configure_external_postgres_db() {
   local project=$1
   local max_attempts=60 # 5 minutes total (60 attempts × 5 seconds)

@@ -17,10 +17,7 @@ test.describe(`Settings page`, () => {
     const common = new Common(page);
     uiHelper = new UIhelper(page);
     await common.loginAsGuest();
-    await uiHelper.goToPageUrl(
-      "/settings",
-      t["user-settings"][lang]["settingsLayout.title"],
-    );
+    await uiHelper.goToSettingsPage();
   });
 
   // Run tests only for the selected language

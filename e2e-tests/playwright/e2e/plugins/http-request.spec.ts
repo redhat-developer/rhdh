@@ -7,7 +7,10 @@ import { CatalogImport } from "../../support/pages/catalog-import";
 // Pre-req: Enable roadiehq-scaffolder-backend-module-http-request-dynamic plugin
 // Pre-req: Enable janus-idp-backstage-plugin-quay plugin
 test.describe("Testing scaffolder-backend-module-http-request to invoke an external request", () => {
-  test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
+  test.skip(
+    () => process.env.JOB_NAME.includes("osd-gcp"),
+    "skipping due to RHDHBUGS-555 on OSD Env",
+  );
   let uiHelper: UIhelper;
   let common: Common;
   let catalogImport: CatalogImport;
@@ -30,7 +33,7 @@ test.describe("Testing scaffolder-backend-module-http-request to invoke an exter
 
   test("Create a software template using http-request plugin", async () => {
     test.setTimeout(130000);
-    await uiHelper.clickLink({ ariaLabel: "Self-service" });
+    await uiHelper.goToSelfServicePage();
     await uiHelper.verifyHeading("Templates");
     await uiHelper.clickButton("Import an existing Git repository");
     await catalogImport.registerExistingComponent(template, false);
