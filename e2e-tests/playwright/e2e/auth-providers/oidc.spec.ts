@@ -51,7 +51,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
 
   test.use({ baseURL: backstageUrl });
 
-  test.beforeAll(async ({ browser }, testInfo) => {
+  test.beforeAll(async ({ browser }) => {
     test.info().annotations.push({
       type: "component",
       description: "authentication",
@@ -61,7 +61,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     // load default configs from yaml files
     await deployment.loadAllConfigs();
     // setup playwright helpers
-    ({ context, page } = await setupBrowser(browser, testInfo));
+    ({ context, page } = await setupBrowser(browser));
     common = new Common(page);
     uiHelper = new UIhelper(page);
 

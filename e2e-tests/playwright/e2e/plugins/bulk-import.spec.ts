@@ -47,13 +47,13 @@ spec:
     repoUrl: `github.com/janus-test/${newRepoName}`,
   };
 
-  test.beforeAll(async ({ browser }, testInfo) => {
+  test.beforeAll(async ({ browser }) => {
     test.info().annotations.push({
       type: "component",
       description: "plugins",
     });
 
-    page = (await setupBrowser(browser, testInfo)).page;
+    page = (await setupBrowser(browser)).page;
 
     uiHelper = new UIhelper(page);
     common = new Common(page);
@@ -300,8 +300,8 @@ test.describe
     url: "https://github.com/janus-test/janus-test-2-bulk-import-test/blob/main/catalog-info.yaml",
   };
 
-  test.beforeAll(async ({ browser }, testInfo) => {
-    page = (await setupBrowser(browser, testInfo)).page;
+  test.beforeAll(async ({ browser }) => {
+    page = (await setupBrowser(browser)).page;
 
     uiHelper = new UIhelper(page);
     common = new Common(page);
@@ -353,8 +353,8 @@ test.describe
   let uiHelper: UIhelper;
   let common: Common;
 
-  test.beforeAll(async ({ browser }, testInfo) => {
-    page = (await setupBrowser(browser, testInfo)).page;
+  test.beforeAll(async ({ browser }) => {
+    page = (await setupBrowser(browser)).page;
 
     uiHelper = new UIhelper(page);
     common = new Common(page);

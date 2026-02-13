@@ -21,13 +21,13 @@ test.describe.fixme("GitHub Happy path", async () => {
   const component =
     "https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/all.yaml";
 
-  test.beforeAll(async ({ browser }, testInfo) => {
+  test.beforeAll(async ({ browser }) => {
     test.info().annotations.push({
       type: "component",
       description: "core",
     });
 
-    ({ page, context } = await setupBrowser(browser, testInfo));
+    ({ page, context } = await setupBrowser(browser));
     uiHelper = new UIhelper(page);
     common = new Common(page);
     catalogImport = new CatalogImport(page);

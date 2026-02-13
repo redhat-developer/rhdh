@@ -31,8 +31,8 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     let page: Page;
     let apiToken: string;
 
-    test.beforeAll(async ({ browser }, testInfo) => {
-      page = (await setupBrowser(browser, testInfo)).page;
+    test.beforeAll(async ({ browser }) => {
+      page = (await setupBrowser(browser)).page;
 
       uiHelper = new UIhelper(page);
       common = new Common(page);
@@ -177,8 +177,8 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     let page: Page;
     let apiToken: string;
 
-    test.beforeAll(async ({ browser }, testInfo) => {
-      page = (await setupBrowser(browser, testInfo)).page;
+    test.beforeAll(async ({ browser }) => {
+      page = (await setupBrowser(browser)).page;
 
       uiHelper = new UIhelper(page);
       common = new Common(page);
@@ -334,8 +334,8 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     let page: Page;
     let apiToken: string;
 
-    test.beforeAll(async ({ browser }, testInfo) => {
-      page = (await setupBrowser(browser, testInfo)).page;
+    test.beforeAll(async ({ browser }) => {
+      page = (await setupBrowser(browser)).page;
 
       uiHelper = new UIhelper(page);
       common = new Common(page);
@@ -474,8 +474,8 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     let page: Page;
     let apiToken: string;
 
-    test.beforeAll(async ({ browser }, testInfo) => {
-      page = (await setupBrowser(browser, testInfo)).page;
+    test.beforeAll(async ({ browser }) => {
+      page = (await setupBrowser(browser)).page;
 
       uiHelper = new UIhelper(page);
       common = new Common(page);
@@ -620,8 +620,8 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     let page: Page;
     let apiToken: string;
 
-    test.beforeAll(async ({ browser }, testInfo) => {
-      page = (await setupBrowser(browser, testInfo)).page;
+    test.beforeAll(async ({ browser }) => {
+      page = (await setupBrowser(browser)).page;
 
       uiHelper = new UIhelper(page);
       common = new Common(page);
@@ -774,8 +774,8 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     let page: Page;
     let apiToken: string;
 
-    test.beforeAll(async ({ browser }, testInfo) => {
-      page = (await setupBrowser(browser, testInfo)).page;
+    test.beforeAll(async ({ browser }) => {
+      page = (await setupBrowser(browser)).page;
 
       uiHelper = new UIhelper(page);
       common = new Common(page);
@@ -941,8 +941,8 @@ test.describe.serial("Test Orchestrator RBAC", () => {
     let workflowUserRoleName: string;
     let workflowAdminRoleName: string;
 
-    test.beforeAll(async ({ browser }, testInfo) => {
-      page = (await setupBrowser(browser, testInfo)).page;
+    test.beforeAll(async ({ browser }) => {
+      page = (await setupBrowser(browser)).page;
 
       uiHelper = new UIhelper(page);
       common = new Common(page);

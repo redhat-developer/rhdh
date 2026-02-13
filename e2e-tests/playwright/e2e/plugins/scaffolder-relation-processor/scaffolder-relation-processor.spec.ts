@@ -34,13 +34,13 @@ test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
     ).toString("utf8"), // Default repoOwner janus-qe
   };
 
-  test.beforeAll(async ({ browser }, testInfo) => {
+  test.beforeAll(async ({ browser }) => {
     test.info().annotations.push({
       type: "component",
       description: "plugins",
     });
 
-    page = (await setupBrowser(browser, testInfo)).page;
+    page = (await setupBrowser(browser)).page;
 
     common = new Common(page);
     uiHelper = new UIhelper(page);

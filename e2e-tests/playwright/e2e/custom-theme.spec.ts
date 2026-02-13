@@ -22,13 +22,13 @@ test.describe("CustomTheme should be applied", () => {
   let common: Common;
   let themeVerifier: ThemeVerifier;
 
-  test.beforeAll(async ({ browser }, testInfo) => {
+  test.beforeAll(async ({ browser }) => {
     test.info().annotations.push({
       type: "component",
       description: "core",
     });
 
-    page = (await setupBrowser(browser, testInfo)).page;
+    page = (await setupBrowser(browser)).page;
     common = new Common(page);
     themeVerifier = new ThemeVerifier(page);
 

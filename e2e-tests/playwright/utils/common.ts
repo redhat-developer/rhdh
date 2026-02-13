@@ -1,16 +1,8 @@
 import { UIhelper } from "./ui-helper";
 import { authenticator } from "otplib";
-import {
-  test,
-  Browser,
-  expect,
-  Page,
-  TestInfo,
-  Locator,
-} from "@playwright/test";
+import { test, Browser, expect, Page, Locator } from "@playwright/test";
 import { SETTINGS_PAGE_COMPONENTS } from "../support/page-objects/page-obj";
 import { WAIT_OBJECTS } from "../support/page-objects/global-obj";
-import * as path from "path";
 import * as fs from "fs";
 import {
   getTranslations,
@@ -550,15 +542,8 @@ export class Common {
   }
 }
 
-export async function setupBrowser(browser: Browser, testInfo: TestInfo) {
-  const context = await browser.newContext({
-    recordVideo: {
-      dir: `test-results/${path
-        .parse(testInfo.file)
-        .name.replace(".spec", "")}/${testInfo.titlePath[1]}`,
-      size: { width: 1920, height: 1080 },
-    },
-  });
+export async function setupBrowser(browser: Browser) {
+  const context = await browser.newContext();
   const page = await context.newPage();
   return { page, context };
 }
