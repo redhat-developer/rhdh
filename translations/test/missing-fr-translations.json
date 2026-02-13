@@ -1,0 +1,75 @@
+{
+  "catalog-import-test": {
+    "fr": {
+      "buttons.importExistingGitRepository": "Importer un dépôt Git existant"
+    }
+  },
+  "plugin.global-header": {
+    "fr": {
+      "search.placeholder": "Recherche...",
+      "help.tooltip": "Aide",
+      "help.supportTitle": "Support",
+      "notifications.title": "Notifications",
+      "profile.signOut": "Se déconnecter",
+      "profile.myProfile": "Mon profil"
+    }
+  },
+  "plugin.marketplace": {
+    "fr": {
+      "header.title": "Extensions",
+      "header.extensions": "Extensions",
+      "header.catalog": "Catalogue",
+      "search.clear": "Effacer la recherche",
+      "search.category": "Catégorie",
+      "search.author": "Auteur",
+      "search.supportType": "Type de support",
+      "metadata.by": " par ",
+      "metadata.about": "À propos",
+      "metadata.versions": "Versions",
+      "metadata.category": "Catégorie",
+      "metadata.publisher": "Éditeur",
+      "metadata.supportProvider": "Fournisseur de support",
+      "package.tags": "Mots-clés",
+      "common.readMore": "En savoir plus",
+      "common.apply": "Appliquer",
+      "actions.view": "Voir",
+      "install.aboutPlugin": "À propos du plugin",
+      "install.examples": "Exemples",
+      "install.reset": "Réinitialiser",
+      "install.back": "Arrière",
+      "alert.productionDisabled": "L'installation de plugins est désactivée dans l'environnement de production.",
+      "badges.generallyAvailable": "Généralement disponible (GA)",
+      "badges.certified": "Certifié",
+      "badges.customPlugin": "Plugin personnalisé",
+      "badges.techPreview": "Aperçu technique (TP)",
+      "badges.devPreview": "Aperçu du développement (DP)",
+      "badges.communityPlugin": "Plugin communautaire",
+      "badges.certifiedBy": "Certifié par {{provider}}",
+      "badges.stableAndSecured": "Stable et sécurisé par {{provider}}",
+      "badges.gaAndSupportedBy": "Généralement disponible (GA) et pris en charge par {{provider}}",
+      "badges.productionReadyBy": "Prêt pour la production et pris en charge par {{provider}}",
+      "badges.pluginInDevelopment": "Plugin toujours en développement",
+      "badges.earlyStageExperimental": "Un plugin expérimental en phase de démarrage",
+      "badges.openSourceNoSupport": "Plugins open source, pas de support officiel",
+      "badges.addedByAdmin": "Plugins ajoutés par l'administrateur",
+      "supportTypes.customPlugins": "Plugins personnalisés ({{count}})",
+      "menuItem.bulkImport": "Importation en masse",
+      "header.installedPackages": "Paquets installés",
+      "installedPackages.table.searchPlaceholder": "Rechercher",
+      "installedPackages.table.columns.name": "Nom",
+      "installedPackages.table.columns.packageName": "Nom du package npm",
+      "installedPackages.table.columns.role": "Rôle",
+      "installedPackages.table.columns.version": "Version",
+      "installedPackages.table.columns.actions": "Actes",
+      "installedPackages.table.tooltips.editPackage": "Modifier la configuration du package",
+      "installedPackages.table.tooltips.disablePackage": "Désactiver le package",
+      "installedPackages.table.tooltips.enableActions": "Pour activer les actions, ajoutez une entité de catalogue pour ce package",
+      "alert.backendRestartRequired": "Redémarrage du backend requis",
+      "alert.viewPackages": "Voir les packages",
+      "install.editInstructions": "Instructions de modification",
+      "install.cancel": "Annuler",
+      "button.save": "Enregistrer",
+      "table.pagination.rows": "rangées"
+    }
+  }
+}

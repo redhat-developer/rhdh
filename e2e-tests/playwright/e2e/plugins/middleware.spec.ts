@@ -15,6 +15,7 @@ test.describe("Test middleware plugin", () => {
 
     await common.loginAsGuest();
     await page.goto("/simple-chat", { waitUntil: "domcontentloaded" });
+    await common.waitForLoad();
     await page.getByRole("checkbox", { name: "Use Proxy" }).check();
     await page.getByRole("textbox").fill("hi");
 

@@ -1,6 +1,6 @@
 {
   "name": "e2e-tests",
-  "version": "1.8.3",
+  "version": "1.8.4",
   "private": true,
   "type": "module",
   "engines": {
@@ -19,6 +19,7 @@
     "showcase-upgrade-nightly": "playwright test --project=showcase-upgrade",
     "showcase-auth-providers": "playwright test --project=showcase-auth-providers",
     "showcase-sanity-plugins": "playwright test --project=showcase-sanity-plugins",
+    "showcase-localization-fr": "LOCALE=fr playwright test --project=showcase-localization-fr",
     "lint:check": "eslint . --ext .js,.ts",
     "lint:fix": "eslint . \"playwright/**/*.{ts,js}\" --fix",
     "postinstall": "playwright install chromium",

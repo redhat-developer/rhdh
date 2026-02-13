@@ -9,6 +9,7 @@ test.describe("Test Quick Start plugin", () => {
       description: "plugins",
     });
   });
+
   let uiHelper: UIhelper;
   let common: Common;
 
@@ -19,7 +20,7 @@ test.describe("Test Quick Start plugin", () => {
 
   test("Access Quick start from Global Header", async ({ page }) => {
     await common.loginAsKeycloakUser();
-    await page.waitForTimeout(1000);
+    await common.waitForLoad();
     // eslint-disable-next-line playwright/no-conditional-in-test
     if (await page.getByRole("button", { name: "Hide" }).isHidden()) {
       await uiHelper.clickButtonByLabel("Help");
@@ -29,8 +30,7 @@ test.describe("Test Quick Start plugin", () => {
     await expect(page.getByRole("button", { name: "Hide" })).toBeVisible();
   });
 
-  // FIXME https://issues.redhat.com/browse/RHIDP-8971
-  test.skip("Access Quick start as Guest or Admin", async ({ page }) => {
+  test("Access Quick start as Guest or Admin", async ({ page }) => {
     // eslint-disable-next-line playwright/no-conditional-in-test
     if (test.info().project.name !== "showcase-rbac") {
       await common.loginAsGuest();

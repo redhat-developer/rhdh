@@ -52,7 +52,7 @@ test.describe.serial("Test Scaffolder Backend Module Annotator Actions", () => {
 
     await runAccessibilityTests(page, testInfo);
 
-    await uiHelper.clickButton("Self-service");
+    await uiHelper.goToSelfServicePage();
     await uiHelper.clickButton("Import an existing Git repository");
     await catalogImport.registerExistingComponent(template, false);
   });
@@ -60,7 +60,7 @@ test.describe.serial("Test Scaffolder Backend Module Annotator Actions", () => {
   test("Create a React App using the newly registered Template", async () => {
     test.setTimeout(130000);
     await uiHelper.openSidebar("Catalog");
-    await uiHelper.clickButton("Self-service");
+    await uiHelper.goToSelfServicePage();
     await uiHelper.searchInputPlaceholder("Create React App Template");
     await uiHelper.verifyText("Create React App Template");
     await uiHelper.waitForTextDisappear("Add ArgoCD to an existing project");

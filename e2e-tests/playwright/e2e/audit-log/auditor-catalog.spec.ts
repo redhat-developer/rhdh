@@ -5,7 +5,7 @@ import { LogUtils } from "./log-utils";
 import { CatalogImport } from "../../support/pages/catalog-import";
 import { APIHelper } from "../../utils/api-helper";
 const template =
-  "https://github.com/RoadieHQ/sample-service/blob/main/demo_template.yaml";
+  "https://github.com/janus-qe/sample-service/blob/main/demo_template.yaml";
 const entityName = "hello-world-2";
 const namespace = "default";
 
@@ -43,7 +43,7 @@ test.describe.serial("Audit Log check for Catalog Plugin", () => {
     common = new Common(page);
     catalogImport = new CatalogImport(page);
     await common.loginAsGuest();
-    await uiHelper.goToPageUrl("/create", "Self-service");
+    await uiHelper.goToSelfServicePage();
   });
 
   test("Should fetch logs for entity-mutate event and validate log structure and values", async () => {
