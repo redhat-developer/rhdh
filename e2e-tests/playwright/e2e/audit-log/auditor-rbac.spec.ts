@@ -21,14 +21,14 @@ let rbacApi: RhdhRbacApi;
 /* ======================================================================== */
 
 test.describe("Auditor check for RBAC Plugin", () => {
-  test.beforeAll(async ({ browser }, testInfo) => {
+  test.beforeAll(async ({ browser }) => {
     test.info().annotations.push({
       type: "component",
       description: "audit-log",
     });
 
     await (await import("./log-utils")).LogUtils.loginToOpenShift();
-    const page = (await setupBrowser(browser, testInfo)).page;
+    const page = (await setupBrowser(browser)).page;
     common = new Common(page);
     await common.loginAsKeycloakUser();
     rbacApi = await RhdhRbacApi.buildRbacApi(page);

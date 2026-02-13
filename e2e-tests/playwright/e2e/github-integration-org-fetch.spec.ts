@@ -19,8 +19,8 @@ test.describe.fixme("GitHub integration with Org data fetching", () => {
   let common: Common;
   let uiHelper: UIhelper;
 
-  test.beforeAll(async ({ browser }, testInfo) => {
-    page = (await setupBrowser(browser, testInfo)).page;
+  test.beforeAll(async ({ browser }) => {
+    page = (await setupBrowser(browser)).page;
     uiHelper = new UIhelper(page);
     common = new Common(page);
     await common.loginAsKeycloakUser();

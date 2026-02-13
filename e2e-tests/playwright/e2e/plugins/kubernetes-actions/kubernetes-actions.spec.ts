@@ -16,7 +16,7 @@ test.describe("Test Kubernetes Actions plugin", () => {
       description: "plugins",
     });
 
-    page = (await setupBrowser(browser, testInfo)).page;
+    page = (await setupBrowser(browser)).page;
     common = new Common(page);
     uiHelper = new UIhelper(page);
     kubeClient = new KubeClient();

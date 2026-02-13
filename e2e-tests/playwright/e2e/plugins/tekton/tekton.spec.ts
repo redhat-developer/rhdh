@@ -17,13 +17,13 @@ test.describe("Test Tekton plugin", () => {
   let tekton: Tekton;
   let catalog: Catalog;
 
-  test.beforeAll(async ({ browser }, testInfo) => {
+  test.beforeAll(async ({ browser }) => {
     test.info().annotations.push({
       type: "component",
       description: "plugins",
     });
 
-    const page = (await setupBrowser(browser, testInfo)).page;
+    const page = (await setupBrowser(browser)).page;
     common = new Common(page);
     await common.loginAsGuest();
     uiHelper = new UIhelper(page);

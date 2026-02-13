@@ -12,13 +12,13 @@ test.describe("Validate Sidebar Navigation Customization", () => {
   let uiHelper: UIhelper;
   let common: Common;
 
-  test.beforeAll(async ({ browser }, testInfo) => {
+  test.beforeAll(async ({ browser }) => {
     test.info().annotations.push({
       type: "component",
       description: "plugins",
     });
 
-    page = (await setupBrowser(browser, testInfo)).page;
+    page = (await setupBrowser(browser)).page;
     uiHelper = new UIhelper(page);
     common = new Common(page);
 

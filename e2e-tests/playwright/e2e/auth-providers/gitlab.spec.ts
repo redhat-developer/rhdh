@@ -35,7 +35,7 @@ test.describe("Configure GitLab Provider", async () => {
 
   test.use({ baseURL: backstageUrl });
 
-  test.beforeAll(async ({ browser }, testInfo) => {
+  test.beforeAll(async ({ browser }) => {
     test.info().annotations.push({
       type: "component",
       description: "authentication",
@@ -46,7 +46,7 @@ test.describe("Configure GitLab Provider", async () => {
     await deployment.loadAllConfigs();
 
     // setup playwright helpers
-    ({ context, page } = await setupBrowser(browser, testInfo));
+    ({ context, page } = await setupBrowser(browser));
     common = new Common(page);
     uiHelper = new UIhelper(page);
 

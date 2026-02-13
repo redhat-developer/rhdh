@@ -17,8 +17,8 @@ test.describe("Test ACR plugin", () => {
   const dateRegex =
     /(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s\d{1,2},\s\d{4}/gm;
 
-  test.beforeAll(async ({ browser }, testInfo) => {
-    page = (await setupBrowser(browser, testInfo)).page;
+  test.beforeAll(async ({ browser }) => {
+    page = (await setupBrowser(browser)).page;
 
     uiHelper = new UIhelper(page);
     common = new Common(page);

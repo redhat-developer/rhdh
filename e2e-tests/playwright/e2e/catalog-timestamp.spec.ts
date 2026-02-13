@@ -25,13 +25,13 @@ test.describe("Test timestamp column on Catalog", () => {
   const component =
     "https://github.com/janus-qe/custom-catalog-entities/blob/main/timestamp-catalog-info.yaml";
 
-  test.beforeAll(async ({ browser }, testInfo) => {
+  test.beforeAll(async ({ browser }) => {
     test.info().annotations.push({
       type: "component",
       description: "core",
     });
 
-    page = (await setupBrowser(browser, testInfo)).page;
+    page = (await setupBrowser(browser)).page;
 
     common = new Common(page);
     uiHelper = new UIhelper(page);
