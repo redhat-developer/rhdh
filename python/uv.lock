@@ -775,7 +775,7 @@ build = [
     { name = "hatch-requirements-txt", specifier = ">=0.4.1" },
     { name = "hatch-vcs", specifier = ">=0.5" },
     { name = "hatchling", specifier = ">=0.21.1" },
-    { name = "setuptools", specifier = ">=80.10.2" },
+    { name = "setuptools", specifier = ">=80.10.2,<81" },
     { name = "setuptools-scm", extras = ["toml"], specifier = ">=8.0" },
     { name = "wheel", specifier = ">=0.46.3" },
 ]
