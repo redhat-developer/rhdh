@@ -29,15 +29,12 @@ This script will do the following:
 
 +
 ```bash
-# create the hermeto cache
-./scripts/local-hermeto-build.sh cache .
-
-# build the image using the hermeto cache
-./scripts/local-hermeto-build.sh image . image:tag
+# create the hermeto cache and build the image using the hermeto cache
+./scripts/local-hermeto-build.sh -d . -i image:tag
 ```
 
 +
-Note: After running `cache`,you may want to revert any changes done to the `python/requirements*.txt` files before running `cache` again. This is because the `cache` command will modify the `plantuml-markdown @ https://github.com/mikitex70/plantuml-markdown/archive/fcf62aa9...` github reference into a local path reference `plantuml-markdown @ file:///cachi2/output/deps/pip/plantuml-markdown-a487c2312...` which is not supported by hermeto.
+Note: After running the script to build the cache (if --no-cache is not specified),you may want to revert any changes done to the `python/requirements*.txt` files before running the script again. This is because the generation of the hermeto cache will modify the `plantuml-markdown @ https://github.com/mikitex70/plantuml-markdown/archive/fcf62aa9...` github reference into a local path reference `plantuml-markdown @ file:///cachi2/output/deps/pip/plantuml-markdown-a487c2312...` which is not supported by hermeto.
 
 2. Create a pull request in this repository to trigger a PR build in Github which will publish the image to `quay.io/rhdh-community/rhdh`. Note: this will only build AMD64 images.
 

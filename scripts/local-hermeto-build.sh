@@ -81,8 +81,8 @@ Required:
 
 Options:
   -i, --image <name>      Container image name (e.g., quay.io/example/image:tag)
-                          Required unless --no-image is specified
-  --no-cache              Skip cache build (use existing cache)
+                          Required to build image unless --no-image is specified
+  --no-cache              Skip cache build (use existing cache). Script will build the cache by default this is is specified.
   --no-image              Skip image build (only build cache)
   -h, --help              Show this help message
 
@@ -92,15 +92,14 @@ Environment variables:
                           The architecture (aarch64, x86_64) is automatically derived.
 
 Examples (assume you are in the root of the rhdh repository):
-  $0 -d .                                           # Build cache only (no image builds by default)
-  $0 -d . -i quay.io/example/image:tag              # Build cache and image
+  $0 -d . --no-image                                # Build cache only (build cache by default unless --no-cache is specified)
+  $0 -d . -i quay.io/example/image:tag              # Builds cache and image
   $0 -d . -i quay.io/example/image:tag --no-cache   # Build image only (hermeto cache must exist)
-  $0 -d . --no-image                                # Build cache only (explicit)
 
 Cross-platform build (ARM on x86), requires \`qemu-user-static\` to be installed:
   TARGET_PLATFORM=linux/arm64 $0 -d . -i quay.io/example/image:tag
 
-Note: after building cache, you may want to revert any changes done to the 'python/requirements*.txt' files before running cache again.
+Note: after building cache, you may want to revert any changes done to the 'python/requirements*.txt' files before running the script again.
 EOF
   exit 1
 }
