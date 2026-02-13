@@ -27,7 +27,7 @@ log::debug "Sourcing env_variables.sh"
 source "${DIR}/env_variables.sh"
 
 # Rotate among 5 pairs (showcase _1.._5 and RBAC_1..RBAC_5)
-result=$(($(date +%N) % 5))
+result=$(( 10#$(date +%N) % 5 ))
 case $result in
   0) override_github_app_env_with_prefix "1" ;;
   1) override_github_app_env_with_prefix "2" ;;
