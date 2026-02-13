@@ -6,6 +6,7 @@ import {
   getTranslations,
   getCurrentLanguage,
 } from "../e2e/localization/locale";
+import { Common } from "./common";
 
 const t = getTranslations();
 const lang = getCurrentLanguage();
@@ -126,7 +127,6 @@ export class UIhelper {
       force?: boolean;
     } = {
       exact: true,
-      timeout: 10000,
       force: false,
     },
   ) {
@@ -166,9 +166,7 @@ export class UIhelper {
         await markAllReadDiv.click();
 
         // Then click on "Mark All" button
-        await this.clickButtonByText("Mark All", {
-          timeout: 5000,
-        });
+        await this.clickButtonByText("Mark All");
       }
     } catch (error) {
       console.log(
@@ -231,14 +229,13 @@ export class UIhelper {
   async openProfileDropdown() {
     const header = this.page.locator("nav[id='global-header']");
     await expect(header).toBeVisible();
-    await header
-      .locator("[data-testid='KeyboardArrowDownOutlinedIcon']")
-      .click();
+    await header.getByTestId("KeyboardArrowDownOutlinedIcon").click();
   }
 
   async goToPageUrl(url: string, heading?: string) {
     await this.page.goto(url);
     await expect(this.page).toHaveURL(url);
+    await new Common(this.page).waitForLoad();
     if (heading) {
       await this.verifyHeading(heading);
     }
@@ -248,6 +245,23 @@ export class UIhelper {
     await expect(this.page.locator("nav[id='global-header']")).toBeVisible();
     await this.openProfileDropdown();
     await this.clickLink(t["plugin.global-header"][lang]["profile.myProfile"]);
+  }
+
+  async goToSettingsPage() {
+    await expect(this.page.locator("nav[id='global-header']")).toBeVisible();
+    await this.openProfileDropdown();
+    await this.clickLink(
+      // TODO: RHDHBUGS-2552 - Strings not getting translated
+      // t["plugin.global-header"][lang]["profile.settings"],
+      "Settings",
+    );
+  }
+
+  async goToSelfServicePage() {
+    // TODO: RHDHBUGS-2564 - String not getting translated
+    // t["rhdh"][lang]["menuItem.selfService"]
+    await this.clickLink({ ariaLabel: "Self-service" });
+    await this.verifyHeading("Self-service");
   }
 
   async verifyLink(
@@ -330,7 +344,7 @@ export class UIhelper {
   }
 
   async waitForSideBarVisible() {
-    await this.page.waitForSelector("nav a", { timeout: 10_000 });
+    await this.page.waitForSelector("nav a");
   }
 
   async openSidebar(navBarText: SidebarTabs) {
@@ -366,7 +380,7 @@ export class UIhelper {
     // Wait for any overlaying dialogs to close before interacting
     await this.page
       .locator('[role="presentation"].MuiDialog-root')
-      .waitFor({ state: "detached", timeout: 3000 })
+      .waitFor({ state: "detached" })
       .catch(() => {}); // Ignore if no dialog exists
 
     // Use semantic selector with fallback to CSS selector
@@ -753,6 +767,7 @@ export class UIhelper {
   async verifyLocationRefreshButtonIsEnabled(locationName: string) {
     await expect(async () => {
       await this.page.goto("/");
+      await new Common(this.page).waitForLoad();
       await this.openSidebar("Catalog");
       await this.selectMuiBox("Kind", "Location");
       await this.verifyHeading("All locations");
@@ -772,16 +787,16 @@ export class UIhelper {
     await this.verifyAlertErrorMessage("Refresh scheduled");
 
     const moreButton = this.page.locator("button[aria-label='more']").first();
-    await moreButton.waitFor({ state: "visible", timeout: 4000 });
-    await moreButton.waitFor({ state: "attached", timeout: 4000 });
+    await moreButton.waitFor({ state: "visible" });
+    await moreButton.waitFor({ state: "attached" });
     await moreButton.click();
 
     const unregisterItem = this.page
       .locator("li[role='menuitem']")
       .filter({ hasText: "Unregister entity" })
       .first();
-    await unregisterItem.waitFor({ state: "visible", timeout: 4000 });
-    await unregisterItem.waitFor({ state: "attached", timeout: 4000 });
+    await unregisterItem.waitFor({ state: "visible" });
+    await unregisterItem.waitFor({ state: "attached" });
     await expect(unregisterItem).toBeEnabled();
   }
 
