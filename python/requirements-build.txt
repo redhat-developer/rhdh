@@ -10,7 +10,7 @@ hatch-nodejs-version==0.4.0
     # via python (pyproject.toml:build)
 hatch-requirements-txt==0.4.1
     # via python (pyproject.toml:build)
-hatch-vcs==0.5.0
+hatch-vcs==0.4.0
     # via python (pyproject.toml:build)
 hatchling==1.28.0
     # via
@@ -32,11 +32,13 @@ setuptools==80.10.2
     # via
     #   python (pyproject.toml:build)
     #   setuptools-scm
-setuptools-scm==9.2.2
+setuptools-scm==7.1.0
     # via
     #   python (pyproject.toml:build)
     #   hatch-vcs
 trove-classifiers==2026.1.14.14
     # via hatchling
+typing-extensions==4.15.0
+    # via setuptools-scm
 wheel==0.46.3
     # via python (pyproject.toml:build)
