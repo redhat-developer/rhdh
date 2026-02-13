@@ -1490,6 +1490,29 @@ deploy_orchestrator_workflows() {
 
   for workflow in greeting failswitch; do
     oc -n "$namespace" patch sonataflow "$workflow" --type merge -p "{\"spec\": { \"persistence\": { \"postgresql\": { \"secretRef\": {\"name\": \"$pqsl_secret_name\",\"userKey\": \"$pqsl_user_key\",\"passwordKey\": \"$pqsl_password_key\"},\"serviceRef\": {\"name\": \"$pqsl_svc_name\",\"namespace\": \"$patch_namespace\"}}}}}"
+
+    # Wait for SonataFlow operator to reconcile and create the deployment
+    log::info "Waiting for SonataFlow operator to reconcile '$workflow'..."
+    local timeout_secs=60
+    local start_time
+    start_time=$(date +%s)
+    while true; do
+      local current_time
+      current_time=$(date +%s)
+      local elapsed=$((current_time - start_time))
+      if [[ $elapsed -ge $timeout_secs ]]; then
+        log::warn "Timeout waiting for operator reconciliation of '$workflow' after ${timeout_secs}s"
+        break
+      fi
+      local ready
+      ready=$(oc get deployment "$workflow" -n "$namespace" -o jsonpath='{.status.conditions[?(@.type=="Progressing")].status}' 2> /dev/null || echo "")
+      if [[ "$ready" == "True" ]]; then
+        log::info "SonataFlow operator reconciled '$workflow' deployment"
+        break
+      fi
+      sleep 2
+    done
+
     oc rollout status deployment/"$workflow" -n "$namespace" --timeout=600s
   done
 }
@@ -1578,7 +1601,28 @@ EOF
     log::info "Patching SonataFlow '$workflow' with PostgreSQL configuration..."
     oc -n "$namespace" patch sonataflow "$workflow" --type merge -p "$postgres_patch"
 
-    log::info "Waiting for deployment '$workflow' rollout..."
+    # Wait for SonataFlow operator to reconcile and create the deployment
+    log::info "Waiting for SonataFlow operator to reconcile '$workflow'..."
+    local timeout_secs=60
+    local start_time
+    start_time=$(date +%s)
+    while true; do
+      local current_time
+      current_time=$(date +%s)
+      local elapsed=$((current_time - start_time))
+      if [[ $elapsed -ge $timeout_secs ]]; then
+        log::warn "Timeout waiting for operator reconciliation of '$workflow' after ${timeout_secs}s"
+        break
+      fi
+      local ready
+      ready=$(oc get deployment "$workflow" -n "$namespace" -o jsonpath='{.status.conditions[?(@.type=="Progressing")].status}' 2> /dev/null || echo "")
+      if [[ "$ready" == "True" ]]; then
+        log::info "SonataFlow operator reconciled '$workflow' deployment"
+        break
+      fi
+      sleep 2
+    done
+
     oc rollout status deployment/"$workflow" -n "$namespace" --timeout=600s
   done
 
