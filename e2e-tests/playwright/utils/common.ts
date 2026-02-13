@@ -194,7 +194,7 @@ export class Common {
   async checkAndClickOnGHloginPopup(force = false) {
     const frameLocator = this.page.getByLabel("Login Required");
     try {
-      await frameLocator.waitFor({ state: "visible", timeout: 2000 });
+      await frameLocator.waitFor({ state: "visible" });
       await this.clickOnGHloginPopup();
     } catch (error) {
       if (force) throw error;
@@ -269,8 +269,8 @@ export class Common {
         await popup.locator("#username").click();
         await popup.locator("#username").fill(username);
         await popup.locator("#password").fill(password);
-        await popup.locator("[name=login]").click({ timeout: 5000 });
-        await popup.waitForEvent("close", { timeout: 2000 });
+        await popup.locator("[name=login]").click();
+        await popup.waitForEvent("close");
         return "Login successful";
       } catch (e) {
         const usernameError = popup.locator("id=input-error");
@@ -303,21 +303,21 @@ export class Common {
       return "Already logged in";
     } else {
       try {
-        await popup.locator("#login_field").click({ timeout: 5000 });
-        await popup.locator("#login_field").fill(username, { timeout: 5000 });
+        await popup.locator("#login_field").click();
+        await popup.locator("#login_field").fill(username);
         const cookieLocator = popup.locator("#wcpConsentBannerCtrl");
         if (await cookieLocator.isVisible()) {
-          await popup.click('button:has-text("Reject")', { timeout: 5000 });
+          await popup.click('button:has-text("Reject")');
         }
-        await popup.locator("#password").click({ timeout: 5000 });
-        await popup.locator("#password").fill(password, { timeout: 5000 });
+        await popup.locator("#password").click();
+        await popup.locator("#password").fill(password);
         await popup
           .locator("[type='submit'][value='Sign in']:not(webauthn-status *)")
           .first()
-          .click({ timeout: 5000 });
+          .click();
         const twofactorcode = authenticator.generate(twofactor);
-        await popup.locator("#app_totp").click({ timeout: 5000 });
-        await popup.locator("#app_totp").fill(twofactorcode, { timeout: 5000 });
+        await popup.locator("#app_totp").click();
+        await popup.locator("#app_totp").fill(twofactorcode);
 
         await popup.waitForEvent("close", { timeout: 20000 });
         return "Login successful";
@@ -398,18 +398,12 @@ export class Common {
     } else {
       try {
         await popup.locator("[name=loginfmt]").click();
-        await popup
-          .locator("[name=loginfmt]")
-          .fill(username, { timeout: 5000 });
-        await popup
-          .locator('[type=submit]:has-text("Next")')
-          .click({ timeout: 5000 });
+        await popup.locator("[name=loginfmt]").fill(username);
+        await popup.locator('[type=submit]:has-text("Next")').click();
 
         await popup.locator("[name=passwd]").click();
-        await popup.locator("[name=passwd]").fill(password, { timeout: 5000 });
-        await popup
-          .locator('[type=submit]:has-text("Sign in")')
-          .click({ timeout: 5000 });
+        await popup.locator("[name=passwd]").fill(password);
+        await popup.locator('[type=submit]:has-text("Sign in")').click();
         await popup
           .locator('[type=button]:has-text("No")')
           .click({ timeout: 15000 });
