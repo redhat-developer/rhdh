@@ -41,25 +41,28 @@ runs:
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.gh_token }}
+        AUTHOR: ${{ inputs.author }}
+        TEAM: ${{ inputs.team }}
+        ORGANIZATION: ${{ inputs.organization }}
       run: |
-        echo "Checking if ${{ inputs.author }} is an active member of ${{ inputs.team }} team in ${{ inputs.organization }}..."
+        echo "Checking if $AUTHOR is an active member of $TEAM team in $ORGANIZATION..."
         
         # Use the memberships endpoint to get specific membership info
-        if response=$(gh api "/orgs/${{ inputs.organization }}/teams/${{ inputs.team }}/memberships/${{ inputs.author }}" 2>/dev/null); then
+        if response=$(gh api "/orgs/${ORGANIZATION}/teams/${TEAM}/memberships/${AUTHOR}" 2>/dev/null); then
           state=$(echo "$response" | jq -r '.state')
           
           if [[ "$state" == "active" ]]; then
-            echo "✓ Author ${{ inputs.author }} is an active member of the ${{ inputs.team }} team"
+            echo "✓ Author $AUTHOR is an active member of the $TEAM team"
             echo "is_active_member=true" >> $GITHUB_OUTPUT
           elif [[ "$state" == "pending" ]]; then
-            echo "⚠️  Author ${{ inputs.author }} has a pending invitation to the ${{ inputs.team }} team (not active)"
+            echo "⚠️  Author $AUTHOR has a pending invitation to the $TEAM team (not active)"
             echo "is_active_member=false" >> $GITHUB_OUTPUT
           else
-            echo "✗ Author ${{ inputs.author }} has unexpected membership state: $state"
+            echo "✗ Author $AUTHOR has unexpected membership state: $state"
             echo "is_active_member=false" >> $GITHUB_OUTPUT
           fi
         else
           # API call failed (user not in team)
-          echo "✗ Author ${{ inputs.author }} is not a member of the ${{ inputs.team }} team"
+          echo "✗ Author $AUTHOR is not a member of the $TEAM team"
           echo "is_active_member=false" >> $GITHUB_OUTPUT
         fi

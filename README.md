@@ -75,14 +75,10 @@ Want to know more about Backstage, consult the [documentation](https://backstage
 
 RHDH is currently only available for amd64/x86_64.
 
-For additional architecture support, please vote for https://issues.redhat.com/browse/RHIDP-1351 with your reason for needing additional arches.
+For additional architecture support, please vote for <https://issues.redhat.com/browse/RHIDP-1351> with your reason for needing additional arches.
 
 If you want an image that runs on Mac M1 (arm64/aarch64) or another architecture, you will need to build it yourself.
 
 ### Building locally
 
-Check out this repo, choose the branch or tag you want to use, then build an image:
-
-```
-podman build -f docker/Dockerfile . -t rhdh:local
-```
+Refer to the [Containerfile documentation](docker/README.adoc) for details on building locally

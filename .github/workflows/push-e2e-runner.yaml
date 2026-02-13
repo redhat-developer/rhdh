@@ -42,16 +42,18 @@ jobs:
           fetch-depth: 0
 
       - name: Prepare Environment Variables
+        env:
+          INPUT_BRANCH: ${{ inputs.branch }}
         run: |
           echo "PLATFORM=linux/amd64" >> $GITHUB_ENV
 
           # create image tag from the correct branch (either from a push or a workflow_dispatch trigger)
-          if [[ "${{ inputs.branch }}" ]] && [[ "${{ inputs.branch }}"  != "NONE" ]]; then
-            echo "Switch to ${{ inputs.branch }}"
-            git checkout "${{ inputs.branch }}"
-            IMAGE_TAG="${{ inputs.branch }}"
+          if [[ "$INPUT_BRANCH" ]] && [[ "$INPUT_BRANCH" != "NONE" ]]; then
+            echo "Switch to $INPUT_BRANCH"
+            git checkout "$INPUT_BRANCH"
+            IMAGE_TAG="$INPUT_BRANCH"
           else
-            echo "Use current branch ${{ github.ref }}"
+            echo "Use current branch $GITHUB_REF"
             IMAGE_TAG=$(git rev-parse --abbrev-ref HEAD)
           fi
           echo "Use IMAGE_TAG = $IMAGE_TAG"

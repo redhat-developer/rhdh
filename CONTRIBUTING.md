@@ -162,10 +162,7 @@ Follow the [Conventional Commits](https://www.conventionalcommits.org/) specific
 
 ### Adding Statically Linked Plugins for Frontend and Backend
 
-When contributing a new `@internal` plugin into this repo, you must remember to add the plugin to the Dockerfiles under the section titled `Stage 2 - Install dependencies`:
-
-- [Upstream Dockerfile](.rhdh/docker/Dockerfile)
-- [Downstream Dockerfile](docker/Dockerfile)
+When contributing a new `@internal` plugin into this repo, you must remember to add the plugin to the [Containerfile](build/containerfiles/Containerfile) under the section titled `Stage 2 - Install dependencies`:
 
 For example:
 

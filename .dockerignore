@@ -15,3 +15,11 @@ examples
 !.ibm/images/Dockerfile
 !.yarnrc.yml
 hermeto-cache
+.github
+.cursor
+.claude
+.rulesync
+.rulesyncignore
+.pr_agents.toml
+.sonarcloud.properties
+

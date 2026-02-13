@@ -43,46 +43,50 @@ jobs:
         uses: ./.github/actions/check-image-and-changes
       
       - name: Store isSkipped status
+        env:
+          IS_SKIPPED: ${{ steps.check-image.outputs.is_skipped }}
         run: |
           mkdir -p ./rhdh-skip-artifacts
-          echo "${{ steps.check-image.outputs.is_skipped }}" > ./rhdh-skip-artifacts/isSkipped.txt
+          echo "$IS_SKIPPED" > ./rhdh-skip-artifacts/isSkipped.txt
 
       - name: Upload isSkipped status
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        env:
+          ARTIFACT_NAME: pr-${{ github.event.number }}-${{ env.SHORT_SHA }}-isSkipped
         with:
-          name: pr-${{ github.event.number }}-${{ env.SHORT_SHA }}-isSkipped
+          name: ${{ env.ARTIFACT_NAME }}
           path: ./rhdh-skip-artifacts/isSkipped.txt
           retention-days: 1
           if-no-files-found: error
       - name: Debug outputs
+        env:
+          IMAGE_EXISTS: ${{ steps.check-image.outputs.image_exists }}
+          RELEVANT_CHANGES: ${{ steps.check-image.outputs.relevant_changes }}
+          PR_NUMBER: ${{ github.event.number }}
         run: |
-              echo "Image exists: ${{ steps.check-image.outputs.image_exists }}"
-              echo "Relevant changes: ${{ steps.check-image.outputs.relevant_changes }}"
-              echo "SHORT_SHA: ${{ env.SHORT_SHA }}"
-              echo "PR Number: ${{ github.event.number }}"
-              echo "Base Tag: pr-${{ github.event.number }}"
-              echo "Commit Tag: pr-${{ github.event.number }}-${{ env.SHORT_SHA }}"
+              echo "Image exists: $IMAGE_EXISTS"
+              echo "Relevant changes: $RELEVANT_CHANGES"
+              echo "SHORT_SHA: $SHORT_SHA"
+              echo "PR Number: $PR_NUMBER"
+              echo "Base Tag: pr-$PR_NUMBER"
+              echo "Commit Tag: pr-$PR_NUMBER-$SHORT_SHA"
 
       - name: Get the latest commits from base branch
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         run: |
-          git remote add base-origin https://github.com/${{ github.repository }} || true
+          git remote add base-origin https://github.com/"$GITHUB_REPOSITORY" || true
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          echo "Updating PR with latest commits from ${{ github.event.pull_request.base.ref }} ..."
-          git fetch base-origin ${{ github.event.pull_request.base.ref }}
-          git merge --no-edit base-origin/${{ github.event.pull_request.base.ref }}
+          echo "Updating PR with latest commits from $GITHUB_BASE_REF ..."
+          git fetch base-origin "$GITHUB_BASE_REF"
+          git merge --no-edit base-origin/"$GITHUB_BASE_REF"
       - name: Build Image (Hermetic)
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
         uses: ./.github/actions/docker-build
         with:
-          registry: ${{ env.REGISTRY }}
-          imageName: ${{ env.IMAGE_NAME }}
+          imageName: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           imageTags: |
             pr-${{ github.event.number }}
             pr-${{ github.event.number }}-${{ env.SHORT_SHA }}
-          enableHermeticBuild: true
           imageLabels: quay.expires-after=14d
-          push: false
           platform: linux/amd64
-          dockerfilePath: .rhdh/docker/Dockerfile

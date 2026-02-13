@@ -1,5 +1,4 @@
-# To iteratively add/fix requirements:
-
+# To iteratively add/fix requirements
 
 ## Testing locally using github sources
 
@@ -7,13 +6,13 @@ Add more to, or update existing dependencies in, the `requirements.in`.
 
 You can also remove all the pinned versions, then:
 
-```
+```bash
 pip-compile --allow-unsafe --strip-extras requirements.in -o requirements.txt
 ```
 
 Try to install everything in `requirements.txt`:
 
-```
+```bash
 rm -rf pyvenv.cfg lib* bin/*
 virtualenv .; . bin/activate
 pip install --upgrade pip; pip install -r requirements.txt
@@ -21,9 +20,9 @@ pip install --upgrade pip; pip install -r requirements.txt
 
 If it fails, repeat previous step to add more dependencies `requirements.in` and repeat.
 
-Now, set up BUILD requirements, see https://github.com/containerbuildsystem/cachito/blob/master/docs/pip.md#build-dependencies to get `pip_find_builddeps.py`, then run:
+Now, set up BUILD requirements, see <https://github.com/containerbuildsystem/cachito/blob/master/docs/pip.md#build-dependencies> to get `pip_find_builddeps.py`, then run:
 
-```
+```bash
 rm -fr /tmp/pip_find_builddeps.py*
 cd /tmp; curl -sSLO https://raw.githubusercontent.com/containerbuildsystem/cachito/refs/heads/master/bin/pip_find_builddeps.py && chmod +x pip_find_builddeps.py; cd -
 /tmp/pip_find_builddeps.py requirements.txt -o requirements-build.in --append --no-cache
@@ -31,7 +30,7 @@ cd /tmp; curl -sSLO https://raw.githubusercontent.com/containerbuildsystem/cachi
 
 Review the contents of `requirements-build.in` to remove dupes. Then regenerate `requirements-build.txt`
 
-```
+```bash
 pip-compile --allow-unsafe --strip-extras requirements-build.in -o requirements-build.txt
 ```
 
@@ -39,7 +38,7 @@ If it passes, you can run `cachito_hash.sh` to fix the sha256sums.
 
 Finally, MAKE SURE YOU OVERRIDE what's in the .txt files to add in the cachito_hash values, as pip-compile will remove them. This can be done by running `cachito_hash.sh`.
 
-```
+```bash
 # plantuml-markdown==3.9.7
 plantuml-markdown @ https://github.com/mikitex70/plantuml-markdown/archive/fcf62aa930708368ec1daaad8b5b5dbe1d1b2014.zip#cachito_hash=sha256:a487c2312a53fe47a0947e8624290b2c8ea51e373140d02950531966b1db5caa
 
@@ -64,7 +63,7 @@ Next, regenerate the requirements*.txt files.
 
 You may also want to remove any versions pinned to the .in files to see if the latest deps can work together.
 
-```
+```bash
 # for github
 path_to_python=python
 
@@ -88,7 +87,7 @@ cd -
 
 Next, run Hermeto:
 
-```
+```bash
 # "install" hermeto as a podman-run container:
 alias hermeto='podman run --rm -ti -v "$PWD:$PWD:z" -w "$PWD" quay.io/konflux-ci/hermeto:latest'
 
@@ -104,7 +103,7 @@ hermeto fetch-deps --source ${git_repo} --output /tmp/python-hermeto-gitlab-outp
 
 Should see something like this:
 
-```
+```bash
 2025-07-14 14:49:25,691 INFO Found name in setup.py: 'Python dependencies'
 2025-07-14 14:49:25,691 INFO Found version in setup.py: '1.0'
 2025-07-14 14:49:25,691 INFO Resolved name Python dependencies for package at /home/nboldt/4/tmp70bz7pdq.hermeto-source-copy/distgit/containers/rhdh-hub/python
@@ -113,13 +112,13 @@ Should see something like this:
 2025-07-14 14:50:30,784 INFO All dependencies fetched successfully \o/
 ```
 
-For more on Hermeto and pip, see https://github.com/hermetoproject/hermeto/blob/main/docs/pip.md
+For more on Hermeto and pip, see <https://github.com/hermetoproject/hermeto/blob/main/docs/pip.md>
 
 ## Testing in Konflux using gitlab sources
 
 To test in Konflux, repeat the above steps in the midstream (gitlab) repo, using something like:
 
-```
+```bash
 pip3.11 install --user --no-cache-dir -r requirements.txt -r requirements-build.txt
 ```
 
@@ -130,8 +129,4 @@ If the build fails, add more dependencies to the requirements file, and try agai
 
 When the build passes, commit changes to upstream repo, and trigger sync to cause a midstream/downstream build to verify your changes.
 
-Note that some files are transformed between up/mid/downstream, so you may have to apply changes in more than one file.
-
-- Upstream: `docker/Dockerfile` (upstream) and `.rhdh/docker/Dockerfile` (midstream)
-
-- Midstream is transformed to `distgit/containers/rhdh-hub/Containerfile` via [sync-midstream.sh](https://gitlab.cee.redhat.com/rhidp/rhdh/-/blob/rhdh-1-rhel-9/build/ci/sync-midstream.sh)
+- `build/containerfiles/Containerfile` is transformed to `distgit/containers/rhdh-hub/Containerfile` via [sync-midstream.sh](https://gitlab.cee.redhat.com/rhidp/rhdh/-/blob/rhdh-1-rhel-9/build/ci/sync-midstream.sh)

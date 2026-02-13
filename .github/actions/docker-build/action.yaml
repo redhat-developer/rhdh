@@ -15,17 +15,8 @@
 name: Docker Build
 description: Docker Build
 inputs:
-  registry:
-    description: The registry to push to
-    required: true
-  password:
-    description: The password to use for the registry
-    required: false
-  username:
-    description: The username to use for the registry
-    required: false
   imageName:
-    description: The name of the image to build
+    description: The full image name including registry (e.g., quay.io/rhdh-community/rhdh)
     required: true
   imageTags:
     description: The tags to apply to the image
@@ -33,30 +24,22 @@ inputs:
   imageLabels:
     description: The labels for the Docker image
     required: false
-  push:
-    description: Whether to push the image (automatically ignored and assumed to be false if enableHermeticBuild is true)
-    required: true
   platform:
     description: "Target given CPU platform architecture (default: linux/amd64)"
     required: false
     default: linux/amd64
-  enableHermeticBuild:
-    description: Whether to enable hermetic builds using hermeto (currently only supported for linux/amd64)
-    required: false
-    default: 'false'
   componentDirectory:
     description: Path to the component directory for hermetic builds
     required: false
     default: '.'
-  dockerfilePath:
-    description: Path to the Dockerfile to use
+  containerfilePath:
+    description: Path to the Containerfile to use
     required: false
-    default: 'docker/Dockerfile'
-
-outputs:
-  digest:
-    description: The digest of the built Docker image
-    value: ${{ steps.build.outputs.digest }}
+    default: 'build/containerfiles/Containerfile'
+  skipArtifactUpload:
+    description: Skip uploading the built image as a GitHub artifact
+    required: false
+    default: 'false'
 
 runs:
   using: composite
@@ -72,29 +55,11 @@ runs:
         docker-images: false
         swap-storage: false
 
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3
-
-    # - name: Install qemu dependency
-    #   shell: bash 
-    #   run: |
-    #     set -ex
-    #     sudo apt-get update
-    #     sudo apt-get install -y qemu-user-static
-
-    - name: Login to Registry
-      if: ${{ inputs.push == 'true' && inputs.enableHermeticBuild != 'true' }}
-      uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
-      with:
-        registry: ${{ inputs.registry }}
-        username: ${{ inputs.username }}
-        password: ${{ inputs.password }}
-
     - name: Extract metadata (tags, labels, annotations) for Docker
       id: meta
       uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
       with:
-        images: ${{ inputs.registry }}/${{ inputs.imageName }}
+        images: ${{ inputs.imageName }}
         tags: |
           ${{ inputs.imageTags }}
         labels: |
@@ -102,39 +67,42 @@ runs:
 
     # Hermetic Build Steps
     - name: Set up hermetic build variables
-      if: ${{ inputs.enableHermeticBuild == 'true' }}
       shell: bash
+      env:
+        COMPONENT_DIR: ${{ inputs.componentDirectory }}
       run: |
         echo "HERMETO_IMAGE=quay.io/konflux-ci/hermeto:latest" >> $GITHUB_ENV
-        echo "LOCAL_CACHE_DIR=./hermeto-cache/$(basename ${{ inputs.componentDirectory }})" >> $GITHUB_ENV
-        echo "COMPONENT_ABS_DIR=${{ github.workspace }}/${{ inputs.componentDirectory }}" >> $GITHUB_ENV
+        echo "LOCAL_CACHE_DIR=./hermeto-cache/$(basename "$COMPONENT_DIR")" >> $GITHUB_ENV
+        echo "COMPONENT_ABS_DIR=${GITHUB_WORKSPACE}/${COMPONENT_DIR}" >> $GITHUB_ENV
 
     - name: Cache dependencies with hermeto
-      if: ${{ inputs.enableHermeticBuild == 'true' }}
       shell: bash
       run: |        
         set -ex
 
-        echo "=== Creating local cache directory ==="
+        echo "::group::Creating local cache directory"
         mkdir -p ${{ env.LOCAL_CACHE_DIR }} || echo "Failed to create local cache directory"
+        echo "::endgroup::"
         
-        echo "=== Fetching dependencies with hermeto ==="
-        # Build hermeto cache for rpm, yarn, and pip (currently does not support ARM64 due to quay.io/konflux-ci/hermeto:latest not having an arm64 image)
+        echo "::group::Fetching dependencies with hermeto"
+        # Build hermeto cache for rpm, yarn, and pip
         podman run --rm -v "$PWD:/source:z" -v "$LOCAL_CACHE_DIR:/cachi2:z" -w /source "$HERMETO_IMAGE" \
           --log-level DEBUG \
           fetch-deps --dev-package-managers \
           --source . \
           --output /cachi2/output \
           '[{"type": "rpm", "path": "."}, {"type": "yarn","path": "."}, {"type": "yarn","path": "./dynamic-plugins"}, {"type": "pip","path": "./python", "allow_binary": "false"}]'  || echo "Fetch-deps failed"
+        echo "::endgroup::"
         
         if [ -d ${{ env.LOCAL_CACHE_DIR }}/output ]; then
-          echo "=== Output directory exists, running generate-env ==="
+          echo "::group::Generating environment file"
           
           # Generate environment file
           podman run --rm -v "$PWD:/source:z" -v "$LOCAL_CACHE_DIR:/cachi2:z" -w /source "$HERMETO_IMAGE" \
                       --log-level DEBUG \
                       generate-env --format env \
                       --output /cachi2/cachi2.env /cachi2/output
+          echo "::endgroup::"
           
         else
           echo "No output directory found, skipping generate-env"
@@ -142,11 +110,12 @@ runs:
         fi
 
         if [ -d ${{ env.LOCAL_CACHE_DIR }}/output ]; then
-          echo "=== Running inject-files ==="
+          echo "::group::Injecting files"
           
           podman run --rm -v "$PWD:/source:z" -v "$LOCAL_CACHE_DIR:/cachi2:z" -w /source "$HERMETO_IMAGE" \
             --log-level DEBUG \
             inject-files /cachi2/output || echo "Inject-files failed"
+          echo "::endgroup::"
 
         else
           echo "No output directory found, skipping inject-files"
@@ -156,59 +125,51 @@ runs:
         echo LOCAL_CACHE_DIR_REALPATH=$(realpath "${{ env.LOCAL_CACHE_DIR }}") >> $GITHUB_ENV
 
     - name: "Fix Cache Ownership for Non-Root Buildah"
-      if: ${{ inputs.enableHermeticBuild == 'true' }}
       shell: bash
       run: |
         set -ex
+        echo "::group::Fixing cache ownership"
+
         echo "=== Before ownership fix ==="
         ls -l ${{ env.LOCAL_CACHE_DIR_REALPATH }}
+
         echo "=== Attempting to fix ownership to runner user ==="
         sudo chown -R runner ${{ env.LOCAL_CACHE_DIR_REALPATH }}
+        
         echo "=== After ownership fix ==="
         ls -l ${{ env.LOCAL_CACHE_DIR_REALPATH }}
+
+        echo "::endgroup::"
         
     - name: Transform Containerfile for hermetic build
-      if: ${{ inputs.enableHermeticBuild == 'true' }}
       shell: bash
+      id: transform-containerfile
+      env:
+        CONTAINERFILE_PATH: ${{ inputs.containerfilePath }}
+        TRANSFORMED_CONTAINERFILE: ${{ inputs.containerfilePath }}.hermeto
       run: |
         set -x
         
-        CONTAINERFILE_PATH="${{ inputs.dockerfilePath }}"
-        
-        TRANSFORMED_CONTAINERFILE="${CONTAINERFILE_PATH}.hermeto"
+        echo "::group::Transforming Containerfile for hermetic build"
         
         # Copy original dockerfile for hermetic build modifications
         cp "$CONTAINERFILE_PATH" "$TRANSFORMED_CONTAINERFILE"
         
         # Transform the dockerfile to simulate Konflux build
-        # Configure dnf to use the cachi2 repo
-        sed -i '/RUN *\(dnf\|microdnf\) install/i RUN rm -r /etc/yum.repos.d/* && cp /cachi2/output/deps/rpm/x86_64/repos.d/hermeto.repo /etc/yum.repos.d/' "$TRANSFORMED_CONTAINERFILE"
+        # Configure dnf to use the cachi2 repo (supports both x86_64 and aarch64)
+        sed -i '/RUN *\(dnf\|microdnf\) install/i RUN rm -r /etc/yum.repos.d/* && cp /cachi2/output/deps/rpm/$(uname -m)/repos.d/hermeto.repo /etc/yum.repos.d/' "$TRANSFORMED_CONTAINERFILE"
         
         # Inject the cachi2 env variables to every RUN command
         sed -i 's/^\s*RUN /RUN . \/cachi2\/cachi2.env \&\& /' "$TRANSFORMED_CONTAINERFILE"
+        echo "::endgroup::"
         
-        echo "TRANSFORMED_CONTAINERFILE=$TRANSFORMED_CONTAINERFILE" >> $GITHUB_ENV
+        echo "transformed_containerfile=$TRANSFORMED_CONTAINERFILE" >> $GITHUB_OUTPUT
 
-    - name: Build and push Docker image (Standard)
-      if: ${{ inputs.enableHermeticBuild != 'true' }}
-      uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6
+    - name: "Build Docker Image"
       id: build
-      with:
-        context: .
-        file: ${{ inputs.dockerfilePath }}
-        push: ${{ inputs.push }}
-        provenance: false
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
-        annotations: ${{ steps.meta.outputs.annotations }}
-        platforms: ${{ inputs.platform }}
-        
-    - name: "Build Docker Image (Hermetic)"
-      id: hermetic-build
-      if: ${{ inputs.enableHermeticBuild == 'true' }}
       uses: redhat-actions/buildah-build@7a95fa7ee0f02d552a32753e7414641a04307056 # v2.13
       with:
-        containerfiles: ${{ inputs.dockerfilePath }}.hermeto
+        containerfiles: ${{ steps.transform-containerfile.outputs.transformed_containerfile }}
         context: .
         platform: ${{ inputs.platform }}
         tags: ${{ steps.meta.outputs.tags }}
@@ -217,20 +178,16 @@ runs:
           --network=none
           --volume ${{ env.LOCAL_CACHE_DIR_REALPATH }}:/cachi2:z
 
-    - name: Set build output for hermetic builds
-      if: ${{ inputs.enableHermeticBuild == 'true' }}
+    - name: Save image as artifact
+      if: ${{ inputs.skipArtifactUpload != 'true' }}
       shell: bash
-      run: |
-        echo "digest=${{ steps.hermetic-build.outputs.digest || 'no-digest-available' }}" >> $GITHUB_OUTPUT
+      env:
+        TAGS_LIST: ${{ steps.meta.outputs.tags }} # Extract the built image tags from the metadata
 
-    - name: Save image as artifact (Hermetic)
-      if: ${{ inputs.enableHermeticBuild == 'true' }}
-      shell: bash
       run: |
+        echo "::group::Saving image and metadata for artifact"
         mkdir -p ./rhdh-podman-artifacts
-        
-        # Extract the built image tags from the metadata
-        TAGS_LIST="${{ steps.meta.outputs.tags }}"
+
         
         # Save all the built images to tar (podman save can handle multiple tags)
         echo "Saving images with tags:"
@@ -240,12 +197,13 @@ runs:
         
         # Save metadata for the push workflow
         echo "$TAGS_LIST" > ./rhdh-podman-artifacts/tags.txt
+        echo "::endgroup::"
 
     - name: Upload image artifact
-      if: ${{ inputs.enableHermeticBuild == 'true' }}
+      if: ${{ inputs.skipArtifactUpload != 'true' }}
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
       with:
-        name: podman-image-${{ github.event.number || 'main' }}-${{ env.SHORT_SHA }}
+        name: podman-image-${{ github.event.number || github.ref_name }}-${{ env.SHORT_SHA }}
         path: ./rhdh-podman-artifacts/
         retention-days: 1
         if-no-files-found: error

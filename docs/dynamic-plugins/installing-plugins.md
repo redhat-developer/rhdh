@@ -76,7 +76,7 @@ plugins:
 
 ### Catalog Entities Extraction
 
-When the `CATALOG_INDEX_IMAGE` is set and the index image contains a `catalog-entities/marketplace` directory, the [`install-dynamic-plugins.py`](../../docker/install-dynamic-plugins.py) will automatically extract these catalog entities to a configurable location.
+When the `CATALOG_INDEX_IMAGE` is set and the index image contains a `catalog-entities/marketplace` directory, the [`install-dynamic-plugins.py`](../../scripts/install-dynamic-plugins/install-dynamic-plugins.py) will automatically extract these catalog entities to a configurable location.
 
 The extraction destination is governed by the `CATALOG_ENTITIES_EXTRACT_DIR` environment variable:
 

@@ -1,0 +1,54 @@
+# Building this repo as a container image
+
+## Multi-arch support
+
+RHDH is currently only available for amd64/x86_64. 
+
+If you want an image that runs on Mac M1 (arm64/aarch64) or another architecture, you will need to build it yourself.
+
+## Building locally
+
+This folder contains the Containerfile used in Konflux downstream for RHDH builds.
+
+It requires hermeto to cache dependencies (rpm, pip, yarn) before the build can proceed, so that the build is reproduceable/offline/hermetically sealed.
+
+Note that some things in this repo are changed when they're synced to downstream. See link:https://gitlab.cee.redhat.com/rhidp/rhdh/-/blob/rhdh-1-rhel-9/build/ci/sync-midstream.sh[build/ci/sync-midstream.sh]. Note: RH VPN required.
+
+## How to build this Containerfile
+
+Depending on what you're trying to accomplish you have some options:
+
+1. Use the link:../scripts/local-hermeto-build.sh[local-hermeto-build.sh] script to build the image locally. 
++
+
+This script will do the following:
+
+* creates a hermeto cache folder in the `./hermeto-cache` folder
+* generates a transformed Containerfile that uses the hermeto cache (injects the cachi2 env variables to every RUN command, and configures dnf, pip and yarn to use the cachi2 repo. See link:https://github.com/hermetoproject/hermeto/blob/main/docs/usage.md#generate-environment-variables[Generating Environment Variables] for more information.)
+* builds the image using the transformed Containerfile
+
++
+```bash
+# create the hermeto cache and build the image using the hermeto cache
+./scripts/local-hermeto-build.sh -d . -i image:tag
+```
+
++
+Note: After running the script to build the cache (if --no-cache is not specified),you may want to revert any changes done to the `python/requirements*.txt` files before running the script again. This is because the generation of the hermeto cache will modify the `plantuml-markdown @ https://github.com/mikitex70/plantuml-markdown/archive/fcf62aa9...` github reference into a local path reference `plantuml-markdown @ file:///cachi2/output/deps/pip/plantuml-markdown-a487c2312...` which is not supported by hermeto.
+
+2. Create a pull request in this repository to trigger a PR build in Github which will publish the image to `quay.io/rhdh-community/rhdh`. Note: this will only build AMD64 images.
+
+3. Trigger the link:../.github/workflows/next-build-image.yaml[Build Next and Tag Image] action in Github manually to perform a multi-arch build and publish the images to `quay.io/rhdh-community/rhdh`.
+
+4. Use Konflux to build a merge request against the midstream repo. See link:https://gitlab.cee.redhat.com/rhidp/rhdh/-/blob/rhdh-1-rhel-9/docs/RHDH-Konflux-user-guide.adoc#user-content-building-locally[Konflux user guide - building locally]. Note: RH VPN required.
+
+
+## Downstream builds
+
+*_Red Hat VPN access required._*
+
+* https://gitlab.cee.redhat.com/rhidp/rhdh
+
+For more info on building downstream with the Red Hat build pipeline, see the docs.
+
+* https://gitlab.cee.redhat.com/rhidp/rhdh/-/blob/rhdh-1-rhel-9/docs/RHDH-FAQ.adoc?ref_type=heads
