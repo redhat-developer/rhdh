@@ -57,15 +57,15 @@ test.describe("Orchestrator Entity-Workflow Integration", () => {
       await uiHelper.clickLink({ ariaLabel: "Self-service" });
       await uiHelper.verifyHeading("Self-service");
 
-      // Wait for templates to load and click "Greeting" template (yamlgreet.yaml)
+      // Wait for templates to load and click "Greeting Test Picker" template (greeting_w_component.yaml)
       // This template has an EntityPicker field for selecting a target entity
       await page.waitForLoadState("domcontentloaded");
 
       // Click Choose button on the template card
-      await uiHelper.clickBtnInCard("Greeting", "Choose");
+      await uiHelper.clickBtnInCard("Greeting Test Picker", "Choose");
 
       // Wait for template form to load
-      await uiHelper.verifyHeading(/Greeting/i, 30000);
+      await uiHelper.verifyHeading(/Greeting Test Picker/i, 30000);
 
       // The first step should have an EntityPicker for selecting target entity
       // Use the specific input ID selector (MUI Autocomplete pattern)
