@@ -110,7 +110,7 @@ global:
         disabled: true
       #Enable Scorecard plugin.
       - disabled: false
-        package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard:pr_1499__0.1.0!red-hat-developer-hub-backstage-plugin-scorecard
+        package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard:bs_1.42.5__1.0.0!red-hat-developer-hub-backstage-plugin-scorecard
         pluginConfig:
           dynamicPlugins:
             frontend:
@@ -127,16 +127,16 @@ global:
                       layout:
                         gridColumn: 1 / -1
       - disabled: false
-        package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard-backend:pr_1499__0.1.0!red-hat-developer-hub-backstage-plugin-scorecard-backend
+        package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard-backend:bs_1.42.5__1.0.0!red-hat-developer-hub-backstage-plugin-scorecard-backend
       - disabled: false
-        package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard-backend-module-github:pr_1499__0.1.0!red-hat-developer-hub-backstage-plugin-scorecard-backend-module-github
+        package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard-backend-module-github:bs_1.42.5__1.0.0!red-hat-developer-hub-backstage-plugin-scorecard-backend-module-github
         pluginConfig:
           integrations:
             github:
               - host: github.com
                 token: "{gh-token}"
       - disabled: false
-        package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard-backend-module-jira:pr_1499__0.1.0!red-hat-developer-hub-backstage-plugin-scorecard-backend-module-jira
+        package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard-backend-module-jira:bs_1.42.5__1.0.0!red-hat-developer-hub-backstage-plugin-scorecard-backend-module-jira
         pluginConfig:
           jira:
             baseUrl: "{jira-base-url}"
