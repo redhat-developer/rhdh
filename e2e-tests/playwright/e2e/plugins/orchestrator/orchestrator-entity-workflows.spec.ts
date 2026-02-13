@@ -91,8 +91,15 @@ test.describe("Orchestrator Entity-Workflow Integration", () => {
       await expect(createButton).toBeVisible({ timeout: 10000 });
       await createButton.click();
 
-      // Wait for completion
-      await expect(page.getByText(/Completed|succeeded|finished/i)).toBeVisible(
+      // Wait for completion - look for "View in catalog" or "Open workflow run" links
+      // which appear when the task finishes successfully
+      const viewInCatalog = page.getByRole("link", { name: "View in catalog" });
+      const openWorkflowRun = page.getByRole("link", {
+        name: "Open workflow run",
+      });
+      const startOver = page.getByRole("button", { name: "Start Over" });
+
+      await expect(viewInCatalog.or(openWorkflowRun).or(startOver)).toBeVisible(
         {
           timeout: 120000,
         },
