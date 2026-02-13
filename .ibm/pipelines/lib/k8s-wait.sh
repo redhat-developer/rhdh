@@ -226,7 +226,8 @@ k8s_wait::crd() {
 
   for ((i = 1; i <= max_attempts; i++)); do
     if oc get crd "$crd_name" > /dev/null 2>&1; then
-      log::success "CRD '$crd_name' is available"
+      local elapsed_time=$((i * check_interval))
+      log::success "CRD '$crd_name' is available after ${elapsed_time} seconds"
       return 0
     fi
 
