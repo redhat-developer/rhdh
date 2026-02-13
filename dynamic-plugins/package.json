@@ -36,5 +36,5 @@
     "@backstage/plugin-home@^0.8.11": "patch:@backstage/plugin-home@npm%3A0.8.12#./.yarn/patches/@backstage-plugin-home-npm-0.8.12-0d7fbcc764.patch",
     "refractor@npm:3.6.0/prismjs": "^1.30.0"
   },
-  "packageManager": "yarn@3.8.7"
+  "packageManager": "yarn@4.12.0"
 }

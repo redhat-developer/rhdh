@@ -1,10 +1,30 @@
 kind: Backstage
-apiVersion: rhdh.redhat.com/v1alpha4
+apiVersion: rhdh.redhat.com/v1alpha5
 metadata:
   name: rhdh-rbac
 spec:
+  deployment:
+    patch:
+      spec:
+        template:
+          spec:
+            containers:
+              - name: backstage-backend
+                image: "quay.io/$QUAY_REPO:$TAG_NAME"
+            initContainers:
+              - name: install-dynamic-plugins
+                image: "quay.io/$QUAY_REPO:$TAG_NAME"
+            volumes:
+              - name: dynamic-plugins-root
+                ephemeral:
+                  volumeClaimTemplate:
+                    spec:
+                      accessModes:
+                        - ReadWriteOnce
+                      resources:
+                        requests:
+                          storage: 5Gi
   application:
-    image: "quay.io/$QUAY_REPO:$TAG_NAME"
     appConfig:
       configMaps:
         - name: app-config-rhdh
@@ -18,6 +38,10 @@ spec:
           value: "0"
         - name: NODE_ENV
           value: "production"
+        - name: CATALOG_INDEX_IMAGE
+          value: "quay.io/rhdh/plugin-catalog-index:1.10"
+          containers:
+            - install-dynamic-plugins
       secrets:
         - name: rhdh-secrets
     extraFiles:

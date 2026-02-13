@@ -317,7 +317,7 @@ global:
         disabled: false
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-floating-action-button
         disabled: false
-      # Enable orchestrator plugins - Official release (Backstage 1.45.3)
+      # Enable orchestrator plugins
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator:bs_1.45.3__5.1.0!red-hat-developer-hub-backstage-plugin-orchestrator"
         disabled: false
         pluginConfig:
