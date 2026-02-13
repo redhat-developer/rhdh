@@ -20,12 +20,11 @@ test.describe("Test Quick Start plugin", () => {
 
   test("Access Quick start from Global Header", async ({ page }) => {
     await common.loginAsKeycloakUser();
-    await page.waitForTimeout(1000);
+    await common.waitForLoad();
     // eslint-disable-next-line playwright/no-conditional-in-test
     if (await page.getByRole("button", { name: "Hide" }).isHidden()) {
       await uiHelper.clickButtonByLabel("Help");
       await uiHelper.clickByDataTestId("quickstart-button");
-      console.log("Quick start button clicked");
     }
     await expect(page.getByRole("button", { name: "Hide" })).toBeVisible();
   });

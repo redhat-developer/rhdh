@@ -1,13 +1,15 @@
 import { expect, type Page } from "@playwright/test";
 import { UIhelper } from "../../utils/ui-helper";
+import { Common } from "../../utils/common";
 
 export class NotificationPage {
   private readonly page: Page;
   private readonly uiHelper: UIhelper;
-
+  private readonly common: Common;
   constructor(page: Page) {
     this.page = page;
     this.uiHelper = new UIhelper(page);
+    this.common = new Common(page);
   }
 
   async clickNotificationsNavBarItem() {
@@ -15,6 +17,7 @@ export class NotificationPage {
     await expect(
       this.page.getByTestId("loading-indicator").getByRole("img"),
     ).toHaveCount(0);
+    await this.common.waitForLoad();
   }
 
   async notificationContains(text: string | RegExp) {

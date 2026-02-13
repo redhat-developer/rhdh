@@ -1,11 +1,13 @@
 import { Page, expect, Locator } from "@playwright/test";
 import { UIhelper } from "../../utils/ui-helper";
+import { Common } from "../../utils/common";
 
 export class TestHelper {
   readonly page: Page;
-
+  private readonly common: Common;
   constructor(page: Page) {
     this.page = page;
+    this.common = new Common(page);
   }
 
   async selectOption(optionName: string) {
@@ -116,6 +118,7 @@ export class TestHelper {
     if (techdocsFirstLast.length === 0) {
       // Visit docs
       await page.goto("/docs");
+      await this.common.waitForLoad();
       await uiHelper.clickLink("Red Hat Developer Hub");
       await uiHelper.openSidebarButton("Administration");
     }

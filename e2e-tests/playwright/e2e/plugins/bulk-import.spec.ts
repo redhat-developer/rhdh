@@ -141,12 +141,8 @@ spec:
       "Preview file",
     );
 
-    await expect(await uiHelper.clickButton("Save")).not.toBeVisible({
-      timeout: 10000,
-    });
-    await expect(await uiHelper.clickButton("Import")).toBeDisabled({
-      timeout: 10000,
-    });
+    await expect(await uiHelper.clickButton("Save")).toBeHidden();
+    await expect(await uiHelper.clickButton("Import")).toBeDisabled();
   });
 
   test("Add a Repository, generate a PR, and confirm its preview", async () => {
