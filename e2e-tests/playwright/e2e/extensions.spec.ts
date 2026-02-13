@@ -544,7 +544,7 @@ test.describe("Admin > Extensions", () => {
       await expect(
         page.getByRole("cell", { name: "Frontend plugin module" }),
       ).toBeVisible();
-      await expect(page.getByRole("cell", { name: "1.1.30" })).toBeVisible();
+      await expect(page.getByRole("cell", { name: "1.1.27" })).toBeVisible();
 
       // Verify actions column - in production, buttons are disabled with tooltip
       const techdocsRow = page
