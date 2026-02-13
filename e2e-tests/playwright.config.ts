@@ -59,15 +59,16 @@ export default defineConfig({
     locale: process.env.LOCALE || "en",
     baseURL: process.env.BASE_URL,
     ignoreHTTPSErrors: true,
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "on",
     screenshot: "on",
     ...devices["Desktop Chrome"],
     viewport: { width: 1920, height: 1080 },
-    video: {
-      mode: "on-first-retry",
-      size: { width: 1920, height: 1080 },
-    },
+    video: process.env.CI
+      ? "off"
+      : {
+          mode: "on",
+          size: { width: 1920, height: 1080 },
+        },
     actionTimeout: 10 * 1000,
     navigationTimeout: 50 * 1000,
   },
