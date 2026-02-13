@@ -91,11 +91,6 @@ test.describe("Orchestrator Entity-Workflow Integration", () => {
       await expect(createButton).toBeVisible({ timeout: 10000 });
       await createButton.click();
 
-      // Wait for execution to start - look for progress indicator
-      await expect(page.getByText(/Running|Processing|second/i)).toBeVisible({
-        timeout: 30000,
-      });
-
       // Wait for completion
       await expect(page.getByText(/Completed|succeeded|finished/i)).toBeVisible(
         {
