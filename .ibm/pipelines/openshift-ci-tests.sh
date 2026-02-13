@@ -26,6 +26,16 @@ log::debug "Sourcing env_variables.sh"
 # shellcheck source=.ibm/pipelines/env_variables.sh
 source "${DIR}/env_variables.sh"
 
+# Rotate among 5 pairs (showcase _1.._5 and RBAC_1..RBAC_5)
+result=$(( $(date +%N) % 5 ))
+case $result in
+  0) override_github_app_env_with_prefix "1" ;;
+  1) override_github_app_env_with_prefix "2" ;;
+  2) override_github_app_env_with_prefix "3" ;;
+  3) override_github_app_env_with_prefix "4" ;;
+  4) override_github_app_env_with_prefix "5" ;;
+esac
+
 log::debug "Sourcing reporting.sh"
 # shellcheck source=.ibm/pipelines/reporting.sh
 source "${DIR}/reporting.sh"
@@ -52,7 +62,6 @@ main() {
 
   case "$JOB_NAME" in
     *aks*helm*nightly*)
-      override_github_app_env_with_prefix "AKS"
       log::info "Sourcing aks-helm.sh"
       # shellcheck source=.ibm/pipelines/jobs/aks-helm.sh
       source "${DIR}/jobs/aks-helm.sh"
@@ -60,7 +69,6 @@ main() {
       handle_aks_helm
       ;;
     *aks*operator*nightly*)
-      override_github_app_env_with_prefix "AKS"
       log::info "Sourcing aks-operator.sh"
       # shellcheck source=.ibm/pipelines/jobs/aks-operator.sh
       source "${DIR}/jobs/aks-operator.sh"
@@ -68,7 +76,6 @@ main() {
       handle_aks_operator
       ;;
     *eks*helm*nightly*)
-      override_github_app_env_with_prefix "EKS"
       log::info "Sourcing eks-helm.sh"
       # shellcheck source=.ibm/pipelines/jobs/eks-helm.sh
       source "${DIR}/jobs/eks-helm.sh"
@@ -76,7 +83,6 @@ main() {
       handle_eks_helm
       ;;
     *eks*operator*nightly*)
-      override_github_app_env_with_prefix "EKS"
       log::info "Sourcing eks-operator.sh"
       # shellcheck source=.ibm/pipelines/jobs/eks-operator.sh
       source "${DIR}/jobs/eks-operator.sh"
@@ -84,7 +90,6 @@ main() {
       handle_eks_operator
       ;;
     *gke*helm*nightly*)
-      override_github_app_env_with_prefix "GKE"
       log::info "Sourcing gke-helm.sh"
       # shellcheck source=.ibm/pipelines/jobs/gke-helm.sh
       source "${DIR}/jobs/gke-helm.sh"
@@ -92,7 +97,6 @@ main() {
       handle_gke_helm
       ;;
     *gke*operator*nightly*)
-      override_github_app_env_with_prefix "GKE"
       log::info "Sourcing gke-operator.sh"
       # shellcheck source=.ibm/pipelines/jobs/gke-operator.sh
       source "${DIR}/jobs/gke-operator.sh"
@@ -107,7 +111,6 @@ main() {
       handle_auth_providers
       ;;
     *ocp*helm*upgrade*nightly*)
-      override_github_app_env_with_prefix "HELM"
       log::info "Sourcing upgrade.sh"
       # shellcheck source=.ibm/pipelines/jobs/upgrade.sh
       source "${DIR}/jobs/upgrade.sh"
@@ -115,7 +118,6 @@ main() {
       handle_ocp_helm_upgrade
       ;;
     *ocp*helm*nightly*)
-      override_github_app_env_with_prefix "HELM"
       log::info "Sourcing ocp-nightly.sh"
       # shellcheck source=.ibm/pipelines/jobs/ocp-nightly.sh
       source "${DIR}/jobs/ocp-nightly.sh"
@@ -123,7 +125,6 @@ main() {
       handle_ocp_nightly
       ;;
     *ocp*operator*nightly*)
-      override_github_app_env_with_prefix "OPERATOR"
       log::info "Sourcing ocp-operator.sh"
       # shellcheck source=.ibm/pipelines/jobs/ocp-operator.sh
       source "${DIR}/jobs/ocp-operator.sh"
@@ -131,7 +132,6 @@ main() {
       handle_ocp_operator
       ;;
     *osd-gcp*helm*nightly*)
-      override_github_app_env_with_prefix "OSD"
       log::info "Sourcing ocp-nightly.sh"
       # shellcheck source=.ibm/pipelines/jobs/ocp-nightly.sh
       source "${DIR}/jobs/ocp-nightly.sh"
@@ -139,7 +139,6 @@ main() {
       handle_ocp_nightly
       ;;
     *osd-gcp*operator*nightly*)
-      override_github_app_env_with_prefix "OSD"
       log::info "Sourcing ocp-operator.sh"
       # shellcheck source=.ibm/pipelines/jobs/ocp-operator.sh
       source "${DIR}/jobs/ocp-operator.sh"
@@ -147,13 +146,6 @@ main() {
       handle_ocp_operator
       ;;
     *pull*ocp*helm*)
-      # Rotate among HELM_PR, HELM_PR_2, and HELM_PR_3
-      result=$(( $(date +%N) % 3 ))
-      case $result in
-        0) override_github_app_env_with_prefix "HELM_PR" ;;
-        1) override_github_app_env_with_prefix "HELM_PR_2" ;;
-        2) override_github_app_env_with_prefix "HELM_PR_3" ;;
-      esac
       log::info "Sourcing ocp-pull.sh"
       # shellcheck source=.ibm/pipelines/jobs/ocp-pull.sh
       source "${DIR}/jobs/ocp-pull.sh"
