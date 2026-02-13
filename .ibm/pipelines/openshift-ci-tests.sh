@@ -26,16 +26,6 @@ log::debug "Sourcing env_variables.sh"
 # shellcheck source=.ibm/pipelines/env_variables.sh
 source "${DIR}/env_variables.sh"
 
-# Rotate among 5 pairs (showcase _1.._5 and RBAC_1..RBAC_5)
-result=$(( 10#$(date +%N) % 5 ))
-case $result in
-  0) override_github_app_env_with_prefix "1" ;;
-  1) override_github_app_env_with_prefix "2" ;;
-  2) override_github_app_env_with_prefix "3" ;;
-  3) override_github_app_env_with_prefix "4" ;;
-  4) override_github_app_env_with_prefix "5" ;;
-esac
-
 log::debug "Sourcing reporting.sh"
 # shellcheck source=.ibm/pipelines/reporting.sh
 source "${DIR}/reporting.sh"
@@ -52,6 +42,16 @@ trap cleanup EXIT
 log::debug "Sourcing utils.sh"
 # shellcheck source=.ibm/pipelines/utils.sh
 source "${DIR}/utils.sh"
+
+# Rotate among 5 pairs (showcase _1.._5 and RBAC_1..RBAC_5)
+result=$((10#$(date +%N) % 5))
+case $result in
+  0) override_github_app_env_with_prefix "1" ;;
+  1) override_github_app_env_with_prefix "2" ;;
+  2) override_github_app_env_with_prefix "3" ;;
+  3) override_github_app_env_with_prefix "4" ;;
+  4) override_github_app_env_with_prefix "5" ;;
+esac
 
 main() {
   log::info "Log file: ${LOGFILE}"
