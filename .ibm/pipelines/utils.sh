@@ -1458,13 +1458,13 @@ get_previous_release_value_file() {
 deploy_orchestrator_workflows() {
   local namespace=$1
 
-  local WORKFLOW_REPO="https://github.com/rhdhorchestrator/serverless-workflows.git"
-  local WORKFLOW_DIR="${DIR}/serverless-workflows"
-  local FAILSWITCH_MANIFESTS="${WORKFLOW_DIR}/workflows/fail-switch/src/main/resources/manifests/"
-  local GREETING_MANIFESTS="${WORKFLOW_DIR}/workflows/greeting/manifests/"
+  local workflow_repo="https://github.com/rhdhorchestrator/serverless-workflows.git"
+  local workflow_dir="${DIR}/serverless-workflows"
+  local failswitch_manifests="${workflow_dir}/workflows/fail-switch/src/main/resources/manifests/"
+  local greeting_manifests="${workflow_dir}/workflows/greeting/manifests/"
 
-  rm -rf "${WORKFLOW_DIR}"
-  git clone "${WORKFLOW_REPO}" "${WORKFLOW_DIR}"
+  rm -rf "${workflow_dir}"
+  git clone "${workflow_repo}" "${workflow_dir}"
 
   if [[ "$namespace" == "${NAME_SPACE_RBAC}" ]]; then
     local pqsl_secret_name="postgres-cred"
@@ -1480,8 +1480,8 @@ deploy_orchestrator_workflows() {
     local patch_namespace="$namespace"
   fi
 
-  oc apply -f "${FAILSWITCH_MANIFESTS}" -n "$namespace"
-  oc apply -f "${GREETING_MANIFESTS}" -n "$namespace"
+  oc apply -f "${failswitch_manifests}" -n "$namespace"
+  oc apply -f "${greeting_manifests}" -n "$namespace"
 
   until [[ $(oc get sf -n "$namespace" --no-headers 2> /dev/null | wc -l) -eq 2 ]]; do
     echo "Waiting for 2 sonataflow resources. Retrying in 5 seconds..."
@@ -1521,13 +1521,13 @@ deploy_orchestrator_workflows() {
 deploy_orchestrator_workflows_operator() {
   local namespace=$1
 
-  local WORKFLOW_REPO="https://github.com/rhdhorchestrator/serverless-workflows.git"
-  local WORKFLOW_DIR="${DIR}/serverless-workflows"
-  local FAILSWITCH_MANIFESTS="${WORKFLOW_DIR}/workflows/fail-switch/src/main/resources/manifests/"
-  local GREETING_MANIFESTS="${WORKFLOW_DIR}/workflows/greeting/manifests/"
+  local workflow_repo="https://github.com/rhdhorchestrator/serverless-workflows.git"
+  local workflow_dir="${DIR}/serverless-workflows"
+  local failswitch_manifests="${workflow_dir}/workflows/fail-switch/src/main/resources/manifests/"
+  local greeting_manifests="${workflow_dir}/workflows/greeting/manifests/"
 
-  rm -rf "${WORKFLOW_DIR}"
-  git clone --depth=1 "${WORKFLOW_REPO}" "${WORKFLOW_DIR}"
+  rm -rf "${workflow_dir}"
+  git clone --depth=1 "${workflow_repo}" "${workflow_dir}"
 
   # Wait for backstage and sonata flow pods to be ready before continuing
   wait_for_deployment $namespace backstage-psql 15
@@ -1561,8 +1561,8 @@ deploy_orchestrator_workflows_operator() {
   log::info "Found PostgreSQL service: $pqsl_svc_name"
 
   # Apply workflow manifests
-  oc apply -f "${FAILSWITCH_MANIFESTS}" -n "$namespace"
-  oc apply -f "${GREETING_MANIFESTS}" -n "$namespace"
+  oc apply -f "${failswitch_manifests}" -n "$namespace"
+  oc apply -f "${greeting_manifests}" -n "$namespace"
 
   # Wait for sonataflow resources to be created (regardless of state)
   timeout 30s bash -c "
