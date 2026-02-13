@@ -60,12 +60,12 @@ export default defineConfig({
     baseURL: process.env.BASE_URL,
     ignoreHTTPSErrors: true,
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: "retain-on-failure",
-    screenshot: "only-on-failure",
+    trace: "on",
+    screenshot: "on",
     ...devices["Desktop Chrome"],
     viewport: { width: 1920, height: 1080 },
     video: {
-      mode: "on",
+      mode: "on-first-retry",
       size: { width: 1920, height: 1080 },
     },
     actionTimeout: 10 * 1000,
