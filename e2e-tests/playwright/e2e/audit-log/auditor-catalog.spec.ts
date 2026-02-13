@@ -43,7 +43,7 @@ test.describe.serial("Audit Log check for Catalog Plugin", () => {
     common = new Common(page);
     catalogImport = new CatalogImport(page);
     await common.loginAsGuest();
-    await uiHelper.goToPageUrl("/create", "Self-service");
+    await uiHelper.goToSelfServicePage();
   });
 
   test("Should fetch logs for entity-mutate event and validate log structure and values", async () => {

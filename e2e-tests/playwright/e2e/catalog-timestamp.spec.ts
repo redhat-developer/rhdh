@@ -3,8 +3,16 @@ import { UIhelper } from "../utils/ui-helper";
 import { Common, setupBrowser } from "../utils/common";
 import { CatalogImport } from "../support/pages/catalog-import";
 import { UI_HELPER_ELEMENTS } from "../support/page-objects/global-obj";
+import {
+  getTranslations,
+  getCurrentLanguage,
+} from "../e2e/localization/locale";
+
+const t = getTranslations();
+const lang = getCurrentLanguage();
 
 let page: Page;
+
 test.describe("Test timestamp column on Catalog", () => {
   test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
 
@@ -31,14 +39,18 @@ test.describe("Test timestamp column on Catalog", () => {
   });
 
   test.beforeEach(async () => {
-    await uiHelper.openSidebar("Catalog");
-    await uiHelper.verifyHeading("My Org Catalog");
+    await uiHelper.openSidebar(t["rhdh"][lang]["menuItem.catalog"]);
+    await uiHelper.verifyHeading(
+      t["catalog"][lang]["indexPage.title"].replace("{{orgName}}", "My Org"),
+    );
     await uiHelper.openCatalogSidebar("Component");
   });
 
   test("Import an existing Git repository and verify `Created At` column and value in the Catalog Page", async () => {
-    await uiHelper.clickButton("Self-service");
-    await uiHelper.clickButton("Import an existing Git repository");
+    await uiHelper.goToSelfServicePage();
+    await uiHelper.clickButton(
+      t["catalog-import-test"][lang]["buttons.importExistingGitRepository"],
+    );
     await catalogImport.registerExistingComponent(component);
     await uiHelper.openCatalogSidebar("Component");
     await uiHelper.searchInputPlaceholder("timestamp-test-created");

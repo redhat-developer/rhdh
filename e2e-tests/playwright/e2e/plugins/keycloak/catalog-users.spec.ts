@@ -34,6 +34,7 @@ test.describe("Test Keycloak plugin", () => {
   }) => {
     const keycloakUsers = await keycloak.getUsers(token);
     const backStageUsersLocator = await CatalogUsersPO.getListOfUsers(page);
+    await common.waitForLoad();
     await backStageUsersLocator.first().waitFor({ state: "visible" });
     const backStageUsersCount = await backStageUsersLocator.count();
 
