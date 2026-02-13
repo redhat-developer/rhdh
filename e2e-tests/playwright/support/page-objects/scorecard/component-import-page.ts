@@ -40,6 +40,10 @@ export class ComponentImportPage {
 
   async viewImportedComponent() {
     await this.uiHelper.clickButton("View Component");
-    await this.uiHelper.verifyText("Overview");
+    // After a component is imported, wait for the Overview tab to be visible
+    // This could take sometime more time depending on the environment performance.
+    // We saw API calls taking round about 10 seconds in some cases on our CI.
+    const tabLocator = this.page.getByRole("tab", { name: "Overview" });
+    await tabLocator.waitFor({ state: "visible", timeout: 20000 });
   }
 }
