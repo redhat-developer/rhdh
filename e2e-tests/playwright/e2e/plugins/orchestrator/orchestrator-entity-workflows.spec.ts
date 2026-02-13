@@ -57,8 +57,8 @@ test.describe("Orchestrator Entity-Workflow Integration", () => {
       await uiHelper.clickLink({ ariaLabel: "Self-service" });
       await uiHelper.verifyHeading("Self-service");
 
-      // Wait for templates to load and click "Greeting Test Picker" template (greeting_w_component.yaml)
-      // This template has an EntityPicker field for selecting a target entity
+      // Wait for templates to load and click "Greeting Test Picker" template
+      // This template has Language and Name fields on Step 1, then Review on Step 2
       await page.waitForLoadState("domcontentloaded");
 
       // Click Choose button on the template card
@@ -67,64 +67,28 @@ test.describe("Orchestrator Entity-Workflow Integration", () => {
       // Wait for template form to load
       await uiHelper.verifyHeading(/Greeting Test Picker/i, 30000);
 
-      // The first step should have an EntityPicker for selecting target entity
-      // Use the specific input ID selector (MUI Autocomplete pattern)
-      const entityInput = page.locator("#root_target_entity");
-      await expect(entityInput).toBeVisible({ timeout: 15000 });
-
-      // Click on the input to focus it
-      await entityInput.click();
-
-      // Type "component:" to trigger autocomplete search for catalog entities
-      await entityInput.fill("component:");
-      await page.waitForTimeout(3000);
-
-      // Check if options appeared; if not, try clicking the popup indicator button
-      let options = page.getByRole("option");
-      if ((await options.count()) === 0) {
-        await entityInput.clear();
-        // Click the popup indicator button (the dropdown arrow)
-        const popupButton = page.locator(
-          "[aria-label='Open'], [aria-label='Toggle'], button.MuiAutocomplete-popupIndicator",
-        );
-        if ((await popupButton.count()) > 0) {
-          await popupButton.first().click();
-          await page.waitForTimeout(2000);
-        }
-        options = page.getByRole("option");
-      }
-
-      // Wait for options to load and select the first available entity
-      await expect(options.first()).toBeVisible({ timeout: 15000 });
-      await options.first().click();
-
-      // Click Next to proceed to the next step
-      const nextButton = page.getByRole("button", { name: "Next" });
-      await expect(nextButton).toBeEnabled({ timeout: 10000 });
-      await nextButton.click();
-
-      // Fill in required workflow parameters
-      // Language field
+      // Step 1: Fill in workflow parameters
+      // Language field (dropdown)
       const languageField = page.getByLabel("Language");
-      if (await languageField.isVisible({ timeout: 5000 })) {
-        await languageField.click();
-        await page.getByRole("option", { name: "English" }).click();
-      }
+      await expect(languageField).toBeVisible({ timeout: 15000 });
+      await languageField.click();
+      await page.getByRole("option", { name: "English" }).click();
 
-      // Name field (if visible)
+      // Name field (required)
       const nameField = page.getByLabel("Name");
-      if (await nameField.isVisible({ timeout: 2000 })) {
-        await nameField.fill("testname");
-      }
+      await expect(nameField).toBeVisible({ timeout: 10000 });
+      const uniqueName = `test-entity-${Date.now()}`;
+      await nameField.fill(uniqueName);
 
-      // Click Review/Next
-      const reviewButton = page.getByRole("button", { name: /Review|Next/i });
-      await expect(reviewButton).toBeEnabled();
+      // Click Review to proceed to Step 2
+      const reviewButton = page.getByRole("button", { name: /Review/i });
+      await expect(reviewButton).toBeVisible({ timeout: 10000 });
       await reviewButton.click();
+      await page.waitForLoadState("domcontentloaded");
 
-      // Click Create/Run to execute
-      const createButton = page.getByRole("button", { name: /Create|Run/i });
-      await expect(createButton).toBeVisible();
+      // Click Create to execute
+      const createButton = page.getByRole("button", { name: /Create/i });
+      await expect(createButton).toBeVisible({ timeout: 10000 });
       await createButton.click();
 
       // Wait for execution to start - look for progress indicator
