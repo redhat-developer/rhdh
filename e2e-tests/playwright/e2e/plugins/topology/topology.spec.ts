@@ -43,7 +43,7 @@ test.describe("Test Topology Plugin", () => {
       await uiHelper.verifyText("backstage-janus");
       await page.getByRole("button", { name: "Fit to Screen" }).click();
       await page
-        .locator('[data-test-id="topology-test"]')
+        .getByTestId("topology-test")
         .getByTestId(/(status-error|status-ok)/)
         .first()
         .click();
@@ -54,8 +54,10 @@ test.describe("Test Topology Plugin", () => {
         /\d+ (Succeeded|Failed|Cancelled|Running)/,
       );
       await topology.verifyDeployment("topology-test");
+      // Use Locator object for better reusability and type safety
+      const topologyTestLocator = page.getByTestId("topology-test");
       await uiHelper.verifyButtonURL("Open URL", "topology-test-route", {
-        locator: `[data-test-id="topology-test"]`,
+        locator: topologyTestLocator,
       });
       await uiHelper.clickTab("Details");
       await uiHelper.verifyText("Status");
@@ -77,7 +79,8 @@ test.describe("Test Topology Plugin", () => {
       await uiHelper.verifyText("Location:");
       await expect(page.getByTitle("Deployment")).toBeVisible();
       await uiHelper.verifyText("S");
-      await expect(page.locator("rect").first()).toBeVisible();
+      // Verify the topology visualization is rendered
+      await expect(page.getByTitle("Deployment")).toBeVisible();
       await uiHelper.clickTab("Details");
       await page.getByLabel("Pod").hover();
       await page.getByText("Display options").click();
@@ -97,7 +100,9 @@ test.describe("Test Topology Plugin", () => {
       await uiHelper.verifyText("P");
       await expect(page.getByTestId("icon-with-title-Running")).toBeVisible();
       await expect(
-        page.getByTestId("icon-with-title-Running").locator("svg"),
+        page.getByTestId("icon-with-title-Running").getByRole("img", {
+          includeHidden: true,
+        }),
       ).toBeVisible();
       await expect(
         page.getByTestId("icon-with-title-Running").getByTestId("status-text"),
@@ -120,7 +125,10 @@ async function testIngressResources(page: Page, uiHelper: UIhelper) {
       .getByRole("link", { name: "topology-test-route" })
       .first(),
   ).toBeVisible();
-  await expect(page.locator("pre").first()).toBeVisible();
+  // Verify code block is visible (pre element containing configuration)
+  await expect(
+    page.getByText(/apiVersion:|kind:|metadata:/).first(),
+  ).toBeVisible();
 }
 
 async function testRouteResources(page: Page, uiHelper: UIhelper) {

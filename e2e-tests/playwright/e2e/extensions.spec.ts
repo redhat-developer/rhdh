@@ -416,9 +416,7 @@ test.describe("Admin > Extensions", () => {
     test("Verify plugin configuration can be viewed in the production environment", async ({
       page,
     }) => {
-      const productionEnvAlert = page
-        .locator('div[class*="MuiAlertTitle-root"]')
-        .first();
+      const productionEnvAlert = page.getByRole("alert").first();
       productionEnvAlert.getByText(
         t["plugin.marketplace"][lang]["alert.productionDisabled"],
         { exact: true },
@@ -455,7 +453,7 @@ test.describe("Admin > Extensions", () => {
       await page.keyboard.press(`${modifier}+KeyA`);
       await page.keyboard.press(`${modifier}+KeyV`);
       await uiHelper.verifyText("pluginConfig:");
-      await page.locator("button[class^='copy-button']").nth(0).click();
+      await page.getByRole("button", { name: /copy/i }).first().click();
       await expect(
         page.getByRole("button", { name: "✔" }).nth(0),
       ).toBeVisible();
@@ -546,10 +544,24 @@ test.describe("Admin > Extensions", () => {
       await expect(
         page.getByRole("cell", { name: "Frontend plugin module" }),
       ).toBeVisible();
-      await expect(page.getByRole("cell", { name: "1.1.27" })).toBeVisible();
-      await expect(
-        page.locator(".v5-MuiBox-root.css-1i27l4i").first(),
-      ).toBeVisible();
+      await expect(page.getByRole("cell", { name: "1.1.30" })).toBeVisible();
+
+      // Verify actions column - in production, buttons are disabled with tooltip
+      const techdocsRow = page
+        .getByRole("row")
+        .filter({ hasText: "Techdocs Module Addons Contrib" });
+
+      await expect(techdocsRow).toBeVisible();
+
+      // Wait specifically for the Actions cell (5th cell / last cell) to be rendered
+      const actionsCell = techdocsRow.getByRole("cell").last();
+      await expect(actionsCell).toBeVisible({ timeout: 15000 });
+
+      // Now wait for the tooltip text to appear in the actions cell
+      await expect(actionsCell).toContainText(
+        /Package cannot be managed in the production environment/i,
+        { timeout: 15000 },
+      );
       await page
         .getByRole("button", {
           name: new RegExp(
@@ -559,7 +571,6 @@ test.describe("Admin > Extensions", () => {
         .click();
       await page.getByRole("option", { name: "10", exact: true }).click();
       await page
-        .locator("div")
         .getByRole("button", {
           name: new RegExp(
             `Rows per page: 10 ${t["plugin.marketplace"][lang]["table.pagination.rows"]}`,
@@ -696,31 +707,24 @@ test.describe("Admin > Extensions", () => {
           name: t["plugin.marketplace"][lang]["common.apply"],
         })
         .click();
-      await expect(
-        page.locator(
-          '.v5-MuiCardContent-root [data-mode-id="yaml"] [role="code"]',
-        ),
-      ).toContainText("testMode: ${SEGMENT_TEST_MODE}");
+      await expect(page.getByRole("code")).toContainText(
+        "testMode: ${SEGMENT_TEST_MODE}",
+      );
       await page
         .getByRole("button", {
           name: t["plugin.marketplace"][lang]["install.reset"],
         })
         .click();
-      await expect(
-        page.locator(
-          '.v5-MuiCardContent-root [data-mode-id="yaml"] [role="code"]',
-        ),
-      ).not.toContainText("testMode: ${SEGMENT_TEST_MODE}");
+      await expect(page.getByRole("code")).not.toContainText(
+        "testMode: ${SEGMENT_TEST_MODE}",
+      );
       await page
         .getByRole("button", {
           name: t["plugin.marketplace"][lang]["install.cancel"],
         })
         .click();
       await expect(
-        page
-          .locator("div")
-          .filter({ hasText: "Analytics Provider Segmentby" })
-          .nth(4),
+        page.getByText("Analytics Provider Segmentby"),
       ).toBeVisible();
       await page.getByRole("button", { name: "close" }).click();
     });
