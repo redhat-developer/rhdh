@@ -18,6 +18,7 @@ build = [
     "flit-core>=3.11,<4",
     "hatch-nodejs-version>=0.3.0",
     "hatch-requirements-txt>=0.4.1",
+    "hatch-vcs>=0.5",
     "hatchling>=0.21.1",
     "setuptools>=80.10.2",
     "setuptools-scm[toml]>=8.0",
