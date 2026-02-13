@@ -353,7 +353,7 @@ export class Common {
     twofactor: string,
   ) {
     await this.page.goto("/settings/auth-providers");
-
+    await this.waitForLoad();
     const [popup] = await Promise.all([
       this.page.waitForEvent("popup"),
       this.page

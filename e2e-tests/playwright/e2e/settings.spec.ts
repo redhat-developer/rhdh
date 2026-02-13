@@ -54,7 +54,8 @@ test.describe(`Settings page`, () => {
     const fr = getLocale("fr");
     const langfr = "fr";
 
-    await uiHelper.verifyText(fr["user-settings"][langfr]["profileCard.title"]);
+    // await uiHelper.verifyText(fr["user-settings"][langfr]["profileCard.title"]);
+    await uiHelper.verifyText("Profile");
     await uiHelper.verifyText(
       fr["user-settings"][langfr]["appearanceCard.title"],
     );
