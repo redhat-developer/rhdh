@@ -1,25 +1,29 @@
 # To iteratively add/fix requirements:
 
-
 ## Testing locally using github sources
 
-Add more to, or update existing dependencies in, the `requirements.in`.
+This project uses uv to manage deps. See https://github.com/astral-sh/uv for syntax details.
 
-You can also remove all the pinned versions, then:
+You can update requirements with -U
 
 ```
-pip-compile --allow-unsafe --strip-extras requirements.in -o requirements.txt
+uv sync
+uv pip compile --group runtime --universal --output-file requirements.txt -U
 ```
 
-Try to install everything in `requirements.txt`:
+
+Try to install everything in the various `requirements*.txt` files:
 
 ```
 rm -rf pyvenv.cfg lib* bin/*
 virtualenv .; . bin/activate
-pip install --upgrade pip; pip install -r requirements.txt
+pip install --upgrade pip uv;
+pip install -r requirements-dev.txt -r requirements-build.txt -r requirements.txt
 ```
 
-If it fails, repeat previous step to add more dependencies `requirements.in` and repeat.
+If it fails, repeat previous step to add more dependencies to `pyproject.toml` and repeat.
+
+## OLD INSTRUCTIONS
 
 Now, set up BUILD requirements, see https://github.com/containerbuildsystem/cachito/blob/master/docs/pip.md#build-dependencies to get `pip_find_builddeps.py`, then run:
 
@@ -40,9 +44,6 @@ If it passes, you can run `cachito_hash.sh` to fix the sha256sums.
 Finally, MAKE SURE YOU OVERRIDE what's in the .txt files to add in the cachito_hash values, as pip-compile will remove them. This can be done by running `cachito_hash.sh`.
 
 ```
-# plantuml-markdown==3.9.7
-plantuml-markdown @ https://github.com/mikitex70/plantuml-markdown/archive/fcf62aa930708368ec1daaad8b5b5dbe1d1b2014.zip#cachito_hash=sha256:a487c2312a53fe47a0947e8624290b2c8ea51e373140d02950531966b1db5caa
-
 # plantuml-markdown==3.11.1
 plantuml-markdown @ https://github.com/mikitex70/plantuml-markdown/archive/592837e9c26b9e92d711af42bce8fb8697183f9d.zip#cachito_hash=sha256:adb7dd7f1aa90a0fdb279f3ad58ede6cdc9eb826adc9d1405b02d4491e492df0
 ```
@@ -65,23 +66,19 @@ Next, regenerate the requirements*.txt files.
 You may also want to remove any versions pinned to the .in files to see if the latest deps can work together.
 
 ```
+git_repo=`pwd`; cd "$git_repo"
+
 # for github
 path_to_python=python
-
 # or for gitlab
 path_to_python=distgit/containers/rhdh-hub/python
-
-cd "$git_repo"
 cd "$path_to_python"
-rm -fr "./requirements"*.txt && \
-pip-compile --allow-unsafe --output-file=requirements.txt --strip-extras requirements.in && \
-pip-compile --allow-unsafe --output-file=requirements-build.txt --strip-extras requirements-build.in && \
-pip-compile --allow-unsafe --output-file=requirements-dev.txt --strip-extras requirements-dev.in
 
-# add the plantuml-markdown hash back in
-hash=$(grep "plantuml-markdown @"  requirements.in) && \
-sed -i requirements.txt -r -e "s|plantuml-markdown @.+|${hash}|" && \
-sed -i requirements-build.txt -r -e "s|plantuml-markdown @.+|${hash}|"
+rm -fr "./requirements"*.txt && \
+uv sync && \
+uv pip compile --group dev     --universal --output-file requirements-dev.txt -U && \
+uv pip compile --group build   --universal --output-file requirements-build.txt -U && \
+uv pip compile --group runtime --universal --output-file requirements.txt -U
 
 cd -
 ```
@@ -93,7 +90,7 @@ Next, run Hermeto:
 alias hermeto='podman run --rm -ti -v "$PWD:$PWD:z" -w "$PWD" quay.io/konflux-ci/hermeto:latest'
 
 # make sure you're running repo clone folder or Hermeto will get lost:
-cd "$git_repo"
+git_repo=`pwd`; cd "$git_repo"
 
 # fetch deps to see if anything breaks:
 hermeto fetch-deps --source ${git_repo} --output /tmp/python-hermeto-github-output $(jq -c '.' ${git_repo}/python/hermeto_github.json)
