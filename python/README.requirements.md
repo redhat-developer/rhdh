@@ -75,9 +75,9 @@ path_to_python=distgit/containers/rhdh-hub/python
 cd "$path_to_python"
 
 rm -fr "./requirements"*.txt && \
-uv sync
-uv pip compile --group dev     --universal --output-file requirements-dev.txt -U
-uv pip compile --group build   --universal --output-file requirements-build.txt -U
+uv sync && \
+uv pip compile --group dev     --universal --output-file requirements-dev.txt -U && \
+uv pip compile --group build   --universal --output-file requirements-build.txt -U && \
 uv pip compile --group runtime --universal --output-file requirements.txt -U
 
 cd -

@@ -28,7 +28,7 @@ pathspec==1.0.4
     # via hatchling
 pluggy==1.6.0
     # via hatchling
-setuptools==82.0.0
+setuptools==80.10.2
     # via
     #   python (pyproject.toml:build)
     #   setuptools-scm
