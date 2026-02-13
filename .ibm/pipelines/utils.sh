@@ -24,6 +24,61 @@ source "${DIR}/lib/testing.sh"
 # Constants
 TEKTON_PIPELINES_WEBHOOK="tekton-pipelines-webhook"
 
+# Override GitHub App env vars (showcase and RBAC) with prefixed versions for the same pair index.
+# Usage: override_github_app_env_with_prefix <PREFIX>
+# Example: override_github_app_env_with_prefix 3
+# Replaces GITHUB_APP_APP_ID (and CLIENT_ID, PRIVATE_KEY, CLIENT_SECRET, WEBHOOK_URL, WEBHOOK_SECRET) from _${PREFIX}.
+# Replaces GITHUB_APP_APP_ID_RBAC (and same set with _RBAC) from _RBAC_${PREFIX}.
+# If any of the prefixed vars is empty, leaves the original envs unchanged.
+override_github_app_env_with_prefix() {
+  local prefix="$1"
+  [[ -n "${prefix}" ]] || return 0
+
+  local app_id_var="GITHUB_APP_APP_ID_${prefix}"
+  local client_id_var="GITHUB_APP_CLIENT_ID_${prefix}"
+  local private_key_var="GITHUB_APP_PRIVATE_KEY_${prefix}"
+  local client_secret_var="GITHUB_APP_CLIENT_SECRET_${prefix}"
+  local webhook_url_var="GITHUB_APP_WEBHOOK_URL_${prefix}"
+  local webhook_secret_var="GITHUB_APP_WEBHOOK_SECRET_${prefix}"
+
+  local app_id_rbac_var="GITHUB_APP_APP_ID_RBAC_${prefix}"
+  local client_id_rbac_var="GITHUB_APP_CLIENT_ID_RBAC_${prefix}"
+  local private_key_rbac_var="GITHUB_APP_PRIVATE_KEY_RBAC_${prefix}"
+  local client_secret_rbac_var="GITHUB_APP_CLIENT_SECRET_RBAC_${prefix}"
+  local webhook_url_rbac_var="GITHUB_APP_WEBHOOK_URL_RBAC_${prefix}"
+  local webhook_secret_rbac_var="GITHUB_APP_WEBHOOK_SECRET_RBAC_${prefix}"
+
+  if [[ -n "${!app_id_var:-}" ]] && [[ -n "${!client_id_var:-}" ]] \
+    && [[ -n "${!private_key_var:-}" ]] && [[ -n "${!client_secret_var:-}" ]] \
+    && [[ -n "${!webhook_url_var:-}" ]] && [[ -n "${!webhook_secret_var:-}" ]]; then
+    log::info "Overriding showcase env vars (GITHUB_APP_APP_ID, CLIENT_ID, PRIVATE_KEY, CLIENT_SECRET, WEBHOOK_URL, WEBHOOK_SECRET) with values from _${prefix}"
+    GITHUB_APP_APP_ID="${!app_id_var}"
+    GITHUB_APP_CLIENT_ID="${!client_id_var}"
+    GITHUB_APP_PRIVATE_KEY="${!private_key_var}"
+    GITHUB_APP_CLIENT_SECRET="${!client_secret_var}"
+    GITHUB_APP_WEBHOOK_URL="${!webhook_url_var}"
+    GITHUB_APP_WEBHOOK_SECRET="${!webhook_secret_var}"
+    export GITHUB_APP_APP_ID GITHUB_APP_CLIENT_ID GITHUB_APP_PRIVATE_KEY GITHUB_APP_CLIENT_SECRET GITHUB_APP_WEBHOOK_URL GITHUB_APP_WEBHOOK_SECRET
+  else
+    log::info "Not overriding showcase GitHub App env vars with prefix ${prefix}: one or more of ${app_id_var}, ${client_id_var}, ${private_key_var}, ${client_secret_var}, ${webhook_url_var}, ${webhook_secret_var} is empty"
+  fi
+
+  if [[ -n "${!app_id_rbac_var:-}" ]] && [[ -n "${!client_id_rbac_var:-}" ]] \
+    && [[ -n "${!private_key_rbac_var:-}" ]] && [[ -n "${!client_secret_rbac_var:-}" ]] \
+    && [[ -n "${!webhook_url_rbac_var:-}" ]] && [[ -n "${!webhook_secret_rbac_var:-}" ]]; then
+    log::info "Overriding RBAC env vars (GITHUB_APP_APP_ID_RBAC, CLIENT_ID_RBAC, PRIVATE_KEY_RBAC, CLIENT_SECRET_RBAC, WEBHOOK_URL_RBAC, WEBHOOK_SECRET_RBAC) with values from _RBAC_${prefix}"
+    GITHUB_APP_APP_ID_RBAC="${!app_id_rbac_var}"
+    GITHUB_APP_CLIENT_ID_RBAC="${!client_id_rbac_var}"
+    GITHUB_APP_PRIVATE_KEY_RBAC="${!private_key_rbac_var}"
+    GITHUB_APP_CLIENT_SECRET_RBAC="${!client_secret_rbac_var}"
+    GITHUB_APP_WEBHOOK_URL_RBAC="${!webhook_url_rbac_var}"
+    GITHUB_APP_WEBHOOK_SECRET_RBAC="${!webhook_secret_rbac_var}"
+    export GITHUB_APP_APP_ID_RBAC GITHUB_APP_CLIENT_ID_RBAC GITHUB_APP_PRIVATE_KEY_RBAC GITHUB_APP_CLIENT_SECRET_RBAC GITHUB_APP_WEBHOOK_URL_RBAC GITHUB_APP_WEBHOOK_SECRET_RBAC
+  else
+    log::info "Not overriding RBAC GitHub App env vars with prefix ${prefix}: one or more of ${app_id_rbac_var}, ${client_id_rbac_var}, ${private_key_rbac_var}, ${client_secret_rbac_var}, ${webhook_url_rbac_var}, ${webhook_secret_rbac_var} is empty"
+  fi
+}
+
 retrieve_pod_logs() {
   local pod_name=$1
   local container=$2

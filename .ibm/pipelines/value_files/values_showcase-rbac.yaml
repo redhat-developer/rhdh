@@ -123,21 +123,22 @@ global:
                       priority: 100
       - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-dynamic
         disabled: false
-        pluginConfig:
-          catalog:
-            providers:
-              github:
-                my-test-org:
-                  organization: janus-qe
-                  catalogPath: "/catalog-info.yaml"
-                  schedule:
-                    # Let's perform a single execution per test run
-                    frequency:
-                      hours: 24
-                    timeout:
-                      minutes: 1
-                    initialDelay:
-                      seconds: 15
+        # Disabled due to https://issues.redhat.com/browse/RHIDP-12153
+        # pluginConfig:
+        #   catalog:
+        #     providers:
+        #       github:
+        #         my-test-org:
+        #           organization: janus-qe
+        #           catalogPath: "/catalog-info.yaml"
+        #           schedule:
+        #             # Let's perform a single execution per test run
+        #             frequency:
+        #               hours: 24
+        #             timeout:
+        #               minutes: 1
+        #             initialDelay:
+        #               seconds: 15
       - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-org-dynamic
         disabled: false
         pluginConfig:
@@ -148,9 +149,10 @@ global:
                 githubUrl: ${GITHUB_URL}
                 orgs:
                   - ${GITHUB_ORG}
+                  - ${GITHUB_ORG_2}
                 schedule:
                   frequency:
-                    minutes: 60
+                    hours: 24
                   initialDelay:
                     seconds: 15
                   timeout:

@@ -58,6 +58,7 @@
     "node-fetch": "2.7.0",
     "octokit": "4.1.4",
     "pg": "8.18.0",
+    "prettier-plugin-sh": "^0.18.0",
     "uuid": "11.1.0",
     "winston": "3.14.2",
     "yaml": "2.8.2"
