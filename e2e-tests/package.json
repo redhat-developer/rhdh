@@ -33,7 +33,7 @@
     "@eslint/js": "9.39.2",
     "@microsoft/microsoft-graph-types": "2.43.1",
     "@playwright/test": "1.58.0",
-    "@types/node": "22.19.7",
+    "@types/node": "22.19.11",
     "@types/pg": "8.16.0",
     "@typescript-eslint/eslint-plugin": "8.53.1",
     "@typescript-eslint/parser": "8.53.1",
