@@ -2,7 +2,7 @@
 #    uv pip compile --group dev --universal --output-file requirements-dev.txt
 colorama==0.4.6 ; sys_platform == 'win32'
     # via pytest
-coverage==7.13.3
+coverage==7.13.4
     # via pytest-cov
 iniconfig==2.3.0
     # via pytest

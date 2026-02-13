@@ -310,6 +310,19 @@ wheels = [
 ]
 
 [[package]]
+name = "hatch-vcs"
+version = "0.5.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "hatchling" },
+    { name = "setuptools-scm" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/6b/b0/4cc743d38adbee9d57d786fa496ed1daadb17e48589b6da8fa55717a0746/hatch_vcs-0.5.0.tar.gz", hash = "sha256:0395fa126940340215090c344a2bf4e2a77bcbe7daab16f41b37b98c95809ff9", size = 11424, upload-time = "2025-05-27T05:16:04.49Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/5f/48/1f85cee4b7b4f40b9b814b1febbc661bda6ced9649e410a0b74f6e415dd0/hatch_vcs-0.5.0-py3-none-any.whl", hash = "sha256:b49677dbdc597460cc22d01b27ab3696f5e16a21ecf2700fb01bc28e1f2a04a7", size = 8507, upload-time = "2025-05-27T05:16:03.184Z" },
+]
+
+[[package]]
 name = "hatchling"
 version = "1.28.0"
 source = { registry = "https://pypi.org/simple" }
@@ -729,6 +742,7 @@ build = [
     { name = "flit-core" },
     { name = "hatch-nodejs-version" },
     { name = "hatch-requirements-txt" },
+    { name = "hatch-vcs" },
     { name = "hatchling" },
     { name = "setuptools" },
     { name = "setuptools-scm" },
@@ -759,6 +773,7 @@ build = [
     { name = "flit-core", specifier = ">=3.11,<4" },
     { name = "hatch-nodejs-version", specifier = ">=0.3.0" },
     { name = "hatch-requirements-txt", specifier = ">=0.4.1" },
+    { name = "hatch-vcs", specifier = ">=0.5" },
     { name = "hatchling", specifier = ">=0.21.1" },
     { name = "setuptools", specifier = ">=80.10.2" },
     { name = "setuptools-scm", extras = ["toml"], specifier = ">=8.0" },

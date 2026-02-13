@@ -23,7 +23,7 @@ jinja2==3.1.6
     # via
     #   mkdocs
     #   mkdocs-material
-markdown==3.10.1
+markdown==3.10.2
     # via
     #   markdown-graphviz-inline
     #   mdx-truly-sane-lists
@@ -69,11 +69,12 @@ paginate==0.5.7
     # via mkdocs-material
 pathspec==1.0.4
     # via mkdocs
+# plantuml-markdown==3.11.1
 plantuml-markdown @ https://github.com/mikitex70/plantuml-markdown/archive/592837e9c26b9e92d711af42bce8fb8697183f9d.zip#cachito_hash=sha256:adb7dd7f1aa90a0fdb279f3ad58ede6cdc9eb826adc9d1405b02d4491e492df0
     # via
     #   python (pyproject.toml:runtime)
     #   mkdocs-techdocs-core
-platformdirs==4.5.1
+platformdirs==4.7.0
     # via mkdocs-get-deps
 pygments==2.19.2
     # via
