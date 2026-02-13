@@ -77,6 +77,25 @@ catalog:
   rules:
     - allow: [API, Component, Group, Location, Resource, System, Template]
   locations:
+    # Scorecard test entities
+    - type: url
+      target: https://github.com/janus-qe/RHDH-scorecard-plugin-test/blob/main/all-scorecards.yaml
+
+    - type: url
+      target: https://github.com/janus-qe/RHDH-scorecard-plugin-test/blob/main/jira-scorecard-only.yaml
+
+    - type: url
+      target: https://github.com/janus-qe/RHDH-scorecard-plugin-test/blob/main/github-scorecard-only.yaml
+
+    - type: url
+      target: https://github.com/janus-qe/RHDH-scorecard-plugin-test/blob/main/no-scorecards.yaml
+
+    - type: url
+      target: https://github.com/janus-qe/RHDH-scorecard-plugin-test/blob/main/metrics-unavailable.yaml
+
+    - type: url
+      target: https://github.com/janus-qe/RHDH-scorecard-plugin-test/blob/main/invalid-threshold.yaml
+
     - type: url
       target: https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/all.yaml
     - type: url
