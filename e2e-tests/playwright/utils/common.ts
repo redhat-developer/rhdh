@@ -93,6 +93,10 @@ export class Common {
     await new Promise<void>((resolve) => {
       this.page.once("popup", async (popup) => {
         await popup.waitForLoadState();
+        // Wait for login button to be visible with longer timeout for slow Keycloak responses
+        await popup
+          .locator("#kc-login")
+          .waitFor({ state: "visible", timeout: 30000 });
         await popup.locator("#username").fill(userid);
         await popup.locator("#password").fill(password);
         await popup.locator("#kc-login").click();
