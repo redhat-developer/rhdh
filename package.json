@@ -42,7 +42,7 @@
   "devDependencies": {
     "@backstage/cli": "0.34.5",
     "@backstage/frontend-test-utils": "0.4.1",
-    "@ianvs/prettier-plugin-sort-imports": "4.7.0",
+    "@ianvs/prettier-plugin-sort-imports": "4.7.1",
     "@manypkg/cli": "0.25.1",
     "glob": "11.1.0",
     "husky": "8.0.3",
@@ -51,7 +51,7 @@
     "node-gyp": "10.3.1",
     "rulesync": "3.34.0",
     "sherif": "1.10.0",
-    "turbo": "2.7.6"
+    "turbo": "2.8.7"
   },
   "resolutions": {
     "@types/react": "18.3.27",
