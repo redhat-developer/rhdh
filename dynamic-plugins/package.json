@@ -24,7 +24,7 @@
   },
   "devDependencies": {
     "@backstage/cli": "0.34.5",
-    "turbo": "2.7.6"
+    "turbo": "2.8.7"
   },
   "resolutions": {
     "@types/react": "18.3.27",
