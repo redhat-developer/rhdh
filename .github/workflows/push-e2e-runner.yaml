@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - 'release-1.*'
     paths:
       - '.ibm/images/Dockerfile'
       - '.yarnrc.yml'

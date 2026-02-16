@@ -82,7 +82,7 @@ operator::install_postgres_k8s() {
 # Install OpenShift Serverless Logic Operator (SonataFlow)
 operator::install_serverless_logic() {
   operator::install_subscription logic-operator-rhel8 "${OPERATOR_NAMESPACE}" alpha logic-operator-rhel8 redhat-operators openshift-marketplace
-  operator::check_status 300 "${OPERATOR_NAMESPACE}" "OpenShift Serverless Logic Operator" "${OPERATOR_STATUS_SUCCEEDED}"
+  operator::check_status 300 "${OPERATOR_NAMESPACE}" "OpenShift Serverless Logic Operator (Alpha)" "${OPERATOR_STATUS_SUCCEEDED}"
   return $?
 }
 

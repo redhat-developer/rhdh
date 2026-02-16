@@ -53,7 +53,7 @@ ENV EXTERNAL_SOURCE_NESTED=.
 ENV CONTAINER_SOURCE=/opt/app-root/src
 
 # Env vars
-ENV YARN=$CONTAINER_SOURCE/.yarn/releases/yarn-3.8.7.cjs
+ENV YARN=$CONTAINER_SOURCE/.yarn/releases/yarn-4.12.0.cjs
 
 WORKDIR $CONTAINER_SOURCE/
 COPY $EXTERNAL_SOURCE_NESTED/.yarn ./.yarn
@@ -106,6 +106,12 @@ RUN echo "=== YARN INSTALL ==="; FAILED=0; "$YARN" install --immutable || FAILED
 FROM deps AS build
 
 COPY $EXTERNAL_SOURCE_NESTED ./
+
+# Tweak .yarnrc.yml for build:
+RUN echo "=== TWEAK .yarnrc.yml ==="; \
+  echo "enableGlobalCache: false" >> .yarnrc.yml && \
+  echo "Current .yarnrc.yml" && \
+  cat .yarnrc.yml
 
 RUN git config --global --add safe.directory ./
 # Upstream only
