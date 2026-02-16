@@ -49,11 +49,7 @@ test.describe("Test timestamp column on Catalog", () => {
   });
 
   test("Import an existing Git repository and verify `Created At` column and value in the Catalog Page", async () => {
-    await uiHelper.clickLink({
-      // TODO: RHDHBUGS-2564 - String not getting translated
-      // ariaLabel: t["rhdh"][lang]["menuItem.selfService"],
-      ariaLabel: "Self-service",
-    });
+    await uiHelper.goToSelfServicePage();
     await uiHelper.clickButton(
       t["scaffolder"][lang][
         "templateListPage.contentHeader.registerExistingButtonTitle"
