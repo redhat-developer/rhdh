@@ -41,6 +41,15 @@ log::debug "Sourcing utils.sh"
 # shellcheck source=.ibm/pipelines/utils.sh
 source "${DIR}/utils.sh"
 
+export K8S_CLUSTER_URL='https://api.hgdri-27mmj-7wj.wq6f.p3.openshiftapps.com:443'
+export OCM_CLUSTER_TOKEN=$K8S_CLUSTER_TOKEN_TEMPORARY
+export K8S_CLUSTER_TOKEN=$K8S_CLUSTER_TOKEN_TEMPORARY
+
+export CHART_VERSION="1.9-193-CI"
+export HELM_CHART_URL="oci://quay.io/rhdh/chart"
+export QUAY_REPO="rhdh/rhdh-hub-rhel9"
+export TAG_NAME="1.9-193"
+
 main() {
   log::info "Log file: ${LOGFILE}"
   log::info "JOB_NAME : $JOB_NAME"
