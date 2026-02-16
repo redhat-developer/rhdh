@@ -18,7 +18,6 @@
     "prettier:fix": "prettier --ignore-unknown --write ."
   },
   "dependencies": {
-    "@backstage-community/plugin-rbac-common": "1.22.0",
     "@backstage/app-defaults": "1.7.2",
     "@backstage/catalog-model": "1.7.6",
     "@backstage/config": "1.3.6",
@@ -46,6 +45,7 @@
     "@mui/icons-material": "5.18.0",
     "@mui/material": "5.18.0",
     "@mui/styled-engine": "5.18.0",
+    "@oandriie/plugin-rbac-common": "1.24.0",
     "@red-hat-developer-hub/backstage-plugin-theme": "0.12.0",
     "@red-hat-developer-hub/backstage-plugin-translations": "0.2.1",
     "@red-hat-developer-hub/plugin-utils": "1.0.0",

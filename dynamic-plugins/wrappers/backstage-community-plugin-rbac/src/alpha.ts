@@ -1,1 +1,1 @@
-export * from '@backstage-community/plugin-rbac/alpha';
+export * from '@oandriie/plugin-rbac/alpha';

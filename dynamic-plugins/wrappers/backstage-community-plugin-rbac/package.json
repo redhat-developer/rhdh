@@ -43,11 +43,11 @@
     "export-dynamic:clean": "run export-dynamic --clean"
   },
   "dependencies": {
-    "@backstage-community/plugin-rbac": "1.47.4",
-    "@mui/material": "5.18.0"
+    "@mui/material": "5.18.0",
+    "@oandriie/plugin-rbac": "1.49.2"
   },
   "devDependencies": {
-    "@backstage/cli": "0.34.5",
+    "@backstage/cli": "0.35.3",
     "@janus-idp/cli": "3.7.0",
     "typescript": "5.9.3"
   },

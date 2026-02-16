@@ -6,4 +6,4 @@ ClassNameGenerator.configure(componentName => {
     : `v5-${componentName}`;
 });
 
-export * from '@backstage-community/plugin-rbac';
+export * from '@oandriie/plugin-rbac';

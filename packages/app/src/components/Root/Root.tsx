@@ -27,7 +27,6 @@ import { searchTranslationRef } from '@backstage/plugin-search/alpha';
 import { Settings as SidebarSettings } from '@backstage/plugin-user-settings';
 import { userSettingsTranslationRef } from '@backstage/plugin-user-settings/alpha';
 
-import { policyEntityCreatePermission } from '@backstage-community/plugin-rbac-common';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ExpandMore from '@mui/icons-material/ExpandMore';
@@ -38,6 +37,7 @@ import Collapse from '@mui/material/Collapse';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import { styled, SxProps, Theme } from '@mui/material/styles';
+import { policyEntityCreatePermission } from '@oandriie/plugin-rbac-common';
 import { ThemeConfig } from '@red-hat-developer-hub/backstage-plugin-theme';
 import DynamicRootContext, {
   ResolvedMenuItem,

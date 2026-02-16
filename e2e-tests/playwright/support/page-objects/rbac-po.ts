@@ -5,7 +5,7 @@ import {
   SEARCH_OBJECTS_COMPONENTS,
   ROLES_PAGE_COMPONENTS,
 } from "./page-obj";
-import { type RoleBasedPolicy } from "@backstage-community/plugin-rbac-common";
+import { type RoleBasedPolicy } from "@oandriie/plugin-rbac-common";
 
 type PermissionPolicyType = "anyOf" | "not";
 

@@ -356,65 +356,76 @@ test.describe("Admin > Extensions", () => {
       permissions: ["clipboard-read", "clipboard-write"],
     });
 
-    // TODO: https://issues.redhat.com/browse/RHDHBUGS-2146
-    test.fixme("Verify plugin configuration can be viewed in the production environment", async ({
-      page,
-    }) => {
-      const productionEnvAlert = page.getByRole("alert").first();
-      productionEnvAlert.getByText(
-        t["plugin.extensions"][lang]["alert.productionDisabled"],
-        { exact: true },
-      );
-      await extensions.searchExtensions("Topology");
-      await extensions.waitForSearchResults("Topology");
-      await extensions.clickReadMoreByPluginTitle(
-        "Application Topology for Kubernetes",
-        t["plugin.extensions"][lang]["badges.generallyAvailable"],
-      );
-      await uiHelper.clickButton(t["plugin.extensions"][lang]["actions.view"]);
-      await uiHelper.verifyHeading("Application Topology for Kubernetes");
-      await uiHelper.verifyText(
-        "- package: ./dynamic-plugins/dist/backstage-community-plugin-topology",
-      );
-      await uiHelper.verifyText("disabled: false");
-      await uiHelper.verifyText(t["plugin.extensions"][lang]["common.apply"]);
-      await uiHelper.verifyHeading("Default configuration");
-      await uiHelper.clickButton(t["plugin.extensions"][lang]["common.apply"]);
-      await uiHelper.verifyText("pluginConfig:");
-      await uiHelper.verifyText("dynamicPlugins:");
-      await uiHelper.clickTab(
-        t["plugin.extensions"][lang]["install.aboutPlugin"],
-      );
-      await uiHelper.verifyHeading("Configuring The Plugin");
-      await uiHelper.clickTab(t["plugin.extensions"][lang]["install.examples"]);
-      await uiHelper.clickByDataTestId("ContentCopyRoundedIcon");
-      await expect(page.getByRole("button", { name: "✔" })).toBeVisible();
-      await uiHelper.clickButton(t["plugin.extensions"][lang]["install.reset"]);
-      await expect(page.getByText("pluginConfig:")).toBeHidden();
-      // eslint-disable-next-line playwright/no-conditional-in-test
-      const modifier = isMac ? "Meta" : "Control";
-      await page.keyboard.press(`${modifier}+KeyA`);
-      await page.keyboard.press(`${modifier}+KeyV`);
-      await uiHelper.verifyText("pluginConfig:");
-      await page.getByRole("button", { name: /copy/i }).first().click();
-      await expect(
-        page.getByRole("button", { name: "✔" }).nth(0),
-      ).toBeVisible();
-      const clipboardContent = await page.evaluate(() =>
-        navigator.clipboard.readText(),
-      );
-      expect(clipboardContent).not.toContain("pluginConfig:");
-      expect(clipboardContent).toContain(
-        "backstage-community.plugin-topology:",
-      );
-      await uiHelper.clickButton(t["plugin.extensions"][lang]["install.back"]);
-      await expect(
-        page.getByRole("button", {
-          name: t["plugin.extensions"][lang]["actions.view"],
-        }),
-      ).toBeVisible();
-      await uiHelper.verifyHeading("Application Topology for Kubernetes");
-    });
+    // Test case is disabled due to bug https://issues.redhat.com/browse/RHDHBUGS-799
+    test.fixme(
+      "Verify plugin configuration can be viewed in the production environment",
+      async ({ page }) => {
+        const productionEnvAlert = page.getByRole("alert").first();
+        productionEnvAlert.getByText(
+          t["plugin.extensions"][lang]["alert.productionDisabled"],
+          { exact: true },
+        );
+        await uiHelper.searchInputPlaceholder("Topology");
+        await extensions.waitForSearchResults("Topology");
+        await extensions.clickReadMoreByPluginTitle(
+          "Application Topology for Kubernetes",
+          t["plugin.extensions"][lang]["badges.generallyAvailable"],
+        );
+        await uiHelper.clickButton(
+          t["plugin.extensions"][lang]["actions.view"],
+        );
+        await uiHelper.verifyHeading("Application Topology for Kubernetes");
+        await uiHelper.verifyText(
+          "- package: ./dynamic-plugins/dist/backstage-community-plugin-topology",
+        );
+        await uiHelper.verifyText("disabled: false");
+        await uiHelper.verifyText(t["plugin.extensions"][lang]["common.apply"]);
+        await uiHelper.verifyHeading("Default configuration");
+        await uiHelper.clickButton(
+          t["plugin.extensions"][lang]["common.apply"],
+        );
+        await uiHelper.verifyText("pluginConfig:");
+        await uiHelper.verifyText("dynamicPlugins:");
+        await uiHelper.clickTab(
+          t["plugin.extensions"][lang]["install.aboutPlugin"],
+        );
+        await uiHelper.verifyHeading("Configuring The Plugin");
+        await uiHelper.clickTab(
+          t["plugin.extensions"][lang]["install.examples"],
+        );
+        await uiHelper.clickByDataTestId("ContentCopyRoundedIcon");
+        await expect(page.getByRole("button", { name: "✔" })).toBeVisible();
+        await uiHelper.clickButton(
+          t["plugin.extensions"][lang]["install.reset"],
+        );
+        await expect(page.getByText("pluginConfig:")).toBeHidden();
+        // eslint-disable-next-line playwright/no-conditional-in-test
+        const modifier = isMac ? "Meta" : "Control";
+        await page.keyboard.press(`${modifier}+KeyA`);
+        await page.keyboard.press(`${modifier}+KeyV`);
+        await uiHelper.verifyText("pluginConfig:");
+        await page.getByRole("button", { name: /copy/i }).first().click();
+        await expect(
+          page.getByRole("button", { name: "✔" }).nth(0),
+        ).toBeVisible();
+        const clipboardContent = await page.evaluate(() =>
+          navigator.clipboard.readText(),
+        );
+        expect(clipboardContent).not.toContain("pluginConfig:");
+        expect(clipboardContent).toContain(
+          "backstage-community.plugin-topology:",
+        );
+        await uiHelper.clickButton(
+          t["plugin.extensions"][lang]["install.back"],
+        );
+        await expect(
+          page.getByRole("button", {
+            name: t["plugin.extensions"][lang]["actions.view"],
+          }),
+        ).toBeVisible();
+        await uiHelper.verifyHeading("Application Topology for Kubernetes");
+      },
+    );
 
     //Following test is disabled for CI as plugin installation is disabled in CI
     test("Enable plugin from catalog extension page", async ({ page }) => {

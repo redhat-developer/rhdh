@@ -33,83 +33,86 @@ test.describe("Test Topology Plugin", () => {
   }
 
   // TODO: https://issues.redhat.com/browse/RHDHBUGS-2101
-  test.fixme("Verify pods visibility in the Topology tab", async ({
-    page,
-  }, testInfo) => {
-    // progressively increase test timeout for retries
-    test.setTimeout(150000 + testInfo.retry * 30000);
-    await catalog.goToBackstageJanusProject();
-    await uiHelper.clickTab("Topology");
-    await uiHelper.verifyText("backstage-janus");
-    await page.getByRole("button", { name: "Fit to Screen" }).click();
-    await page
-      .getByTestId("topology-test")
-      .getByTestId(/(status-error|status-ok)/)
-      .first()
-      .click();
-    await uiHelper.verifyDivHasText(
-      /Pipeline (Succeeded|Failed|Cancelled|Running)/,
-    );
-    await uiHelper.verifyDivHasText(/\d+ (Succeeded|Failed|Cancelled|Running)/);
-    await topology.verifyDeployment("topology-test");
-    // Use Locator object for better reusability and type safety
-    const topologyTestLocator = page.getByTestId("topology-test");
-    await uiHelper.verifyButtonURL("Open URL", "topology-test-route", {
-      locator: topologyTestLocator,
-    });
-    await uiHelper.clickTab("Details");
-    await uiHelper.verifyText("Status");
-    await uiHelper.verifyText("Active");
-    await uiHelper.clickTab("Resources");
-    await uiHelper.verifyHeading("Pods");
-    await uiHelper.verifyHeading("Services");
+  test.fixme(
+    "Verify pods visibility in the Topology tab",
+    async ({ page }, testInfo) => {
+      // progressively increase test timeout for retries
+      test.setTimeout(150000 + testInfo.retry * 30000);
+      await catalog.goToBackstageJanusProject();
+      await uiHelper.clickTab("Topology");
+      await uiHelper.verifyText("backstage-janus");
+      await page.getByRole("button", { name: "Fit to Screen" }).click();
+      await page
+        .getByTestId("topology-test")
+        .getByTestId(/(status-error|status-ok)/)
+        .first()
+        .click();
+      await uiHelper.verifyDivHasText(
+        /Pipeline (Succeeded|Failed|Cancelled|Running)/,
+      );
+      await uiHelper.verifyDivHasText(
+        /\d+ (Succeeded|Failed|Cancelled|Running)/,
+      );
+      await topology.verifyDeployment("topology-test");
+      // Use Locator object for better reusability and type safety
+      const topologyTestLocator = page.getByTestId("topology-test");
+      await uiHelper.verifyButtonURL("Open URL", "topology-test-route", {
+        locator: topologyTestLocator,
+      });
+      await uiHelper.clickTab("Details");
+      await uiHelper.verifyText("Status");
+      await uiHelper.verifyText("Active");
+      await uiHelper.clickTab("Resources");
+      await uiHelper.verifyHeading("Pods");
+      await uiHelper.verifyHeading("Services");
 
-    // Determine resource type and run appropriate test
-    const resourceType = await getResourceType(page);
+      // Determine resource type and run appropriate test
+      const resourceType = await getResourceType(page);
 
-    // eslint-disable-next-line playwright/no-conditional-in-test
-    if (resourceType === "ingress") {
-      await testIngressResources(page, uiHelper);
-    } else {
-      await testRouteResources(page, uiHelper);
-    }
+      // eslint-disable-next-line playwright/no-conditional-in-test
+      if (resourceType === "ingress") {
+        await testIngressResources(page, uiHelper);
+      } else {
+        await testRouteResources(page, uiHelper);
+      }
 
-    await uiHelper.verifyText("Location:");
-    await expect(page.getByTitle("Deployment")).toBeVisible();
-    await uiHelper.verifyText("S");
-    // Verify the topology visualization is rendered
-    await expect(page.getByTitle("Deployment")).toBeVisible();
-    await uiHelper.clickTab("Details");
-    await page.getByLabel("Pod").hover();
-    await page.getByText("Display options").click();
-    await page.getByLabel("Pod count").click();
-    await uiHelper.verifyText("1");
-    await uiHelper.verifyText("Pod");
+      await uiHelper.verifyText("Location:");
+      await expect(page.getByTitle("Deployment")).toBeVisible();
+      await uiHelper.verifyText("S");
+      // Verify the topology visualization is rendered
+      await expect(page.getByTitle("Deployment")).toBeVisible();
+      await uiHelper.clickTab("Details");
+      await page.getByLabel("Pod").hover();
+      await page.getByText("Display options").click();
+      await page.getByLabel("Pod count").click();
+      await uiHelper.verifyText("1");
+      await uiHelper.verifyText("Pod");
 
-    // await topology.hoverOnPodStatusIndicator();
-    // await uiHelper.verifyTextInTooltip("Running");
-    // await uiHelper.verifyText("1Running");
+      // await topology.hoverOnPodStatusIndicator();
+      // await uiHelper.verifyTextInTooltip("Running");
+      // await uiHelper.verifyText("1Running");
 
-    await uiHelper.verifyButtonURL(
-      "Edit source code",
-      "https://github.com/janus-idp/backstage-showcase",
-    );
-    await uiHelper.clickTab("Resources");
-    await uiHelper.verifyText("P");
-    await expect(page.getByTestId("icon-with-title-Running")).toBeVisible();
-    await expect(
-      page.getByTestId("icon-with-title-Running").getByRole("img", {
-        includeHidden: true,
-      }),
-    ).toBeVisible();
-    await expect(
-      page.getByTestId("icon-with-title-Running").getByTestId("status-text"),
-    ).toHaveText("Running");
-    await uiHelper.verifyHeading("PipelineRuns");
-    await uiHelper.verifyText("PL");
-    await uiHelper.verifyText("PLR");
-    await uiHelper.verifyText(/(Succeeded|Failed|Cancelled|Running)/);
-  });
+      await uiHelper.verifyButtonURL(
+        "Edit source code",
+        "https://github.com/janus-idp/backstage-showcase",
+      );
+      await uiHelper.clickTab("Resources");
+      await uiHelper.verifyText("P");
+      await expect(page.getByTestId("icon-with-title-Running")).toBeVisible();
+      await expect(
+        page.getByTestId("icon-with-title-Running").getByRole("img", {
+          includeHidden: true,
+        }),
+      ).toBeVisible();
+      await expect(
+        page.getByTestId("icon-with-title-Running").getByTestId("status-text"),
+      ).toHaveText("Running");
+      await uiHelper.verifyHeading("PipelineRuns");
+      await uiHelper.verifyText("PL");
+      await uiHelper.verifyText("PLR");
+      await uiHelper.verifyText(/(Succeeded|Failed|Cancelled|Running)/);
+    },
+  );
 });
 
 // Helper functions for resource-specific testing
