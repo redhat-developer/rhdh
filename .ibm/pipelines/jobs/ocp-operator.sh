@@ -24,8 +24,10 @@ initiate_operator_deployments() {
   oc apply -f /tmp/configmap-dynamic-plugins.yaml -n "${NAME_SPACE}"
   deploy_redis_cache "${NAME_SPACE}"
   deploy_rhdh_operator "${NAME_SPACE}" "${DIR}/resources/rhdh-operator/rhdh-start.yaml"
-  enable_orchestrator_plugins_op "${NAME_SPACE}"
-  deploy_orchestrator_workflows_operator "${NAME_SPACE}"
+  # TODO: https://issues.redhat.com/browse/RHDHBUGS-2184 fix orchestrator workflows deployment on operator
+  # enable_orchestrator_plugins_op "${NAME_SPACE}"
+  # deploy_orchestrator_workflows_operator "${NAME_SPACE}"
+  log::warn "Skipping orchestrator plugins and workflows deployment on Operator $NAME_SPACE deployment"
 
   namespace::configure "${NAME_SPACE_RBAC}"
   config::create_conditional_policies_operator /tmp/conditional-policies.yaml
@@ -35,8 +37,10 @@ initiate_operator_deployments() {
   config::create_dynamic_plugins_config "${DIR}/value_files/${HELM_CHART_RBAC_VALUE_FILE_NAME}" "/tmp/configmap-dynamic-plugins-rbac.yaml"
   oc apply -f /tmp/configmap-dynamic-plugins-rbac.yaml -n "${NAME_SPACE_RBAC}"
   deploy_rhdh_operator "${NAME_SPACE_RBAC}" "${DIR}/resources/rhdh-operator/rhdh-start-rbac.yaml"
-  enable_orchestrator_plugins_op "${NAME_SPACE_RBAC}"
-  deploy_orchestrator_workflows_operator "${NAME_SPACE_RBAC}"
+  # TODO: https://issues.redhat.com/browse/RHDHBUGS-2184 fix orchestrator workflows deployment on operator
+  # enable_orchestrator_plugins_op "${NAME_SPACE_RBAC}"
+  # deploy_orchestrator_workflows_operator "${NAME_SPACE_RBAC}"
+  log::warn "Skipping orchestrator plugins and workflows deployment on Operator $NAME_SPACE_RBAC deployment"
 }
 
 # OSD-GCP specific operator deployment that skips orchestrator workflows
@@ -117,5 +121,6 @@ handle_ocp_operator() {
   testing::check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${PW_PROJECT_SHOWCASE_OPERATOR}" "${url}"
   testing::check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${PW_PROJECT_SHOWCASE_OPERATOR_RBAC}" "${rbac_url}"
 
-  run_operator_runtime_config_change_tests
+  # TODO: https://issues.redhat.com/browse/RHDHBUGS-2608
+  # run_operator_runtime_config_change_tests
 }

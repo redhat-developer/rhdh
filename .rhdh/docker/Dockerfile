@@ -15,7 +15,7 @@
 
 # Stage 1 - Build nodejs skeleton
 # https://registry.access.redhat.com/ubi9/nodejs-22
-FROM registry.access.redhat.com/ubi9/nodejs-22:9.7-1770309564@sha256:be024784db8614780f3e57a7451e5eb36cb75a4e03cbe67e6406bc48730897ec AS skeleton
+FROM registry.access.redhat.com/ubi9/nodejs-22:9.7-1770626511@sha256:b7c468c6cafa40380bf6cd8c89ad2f94ad4c85e47e2fa6e2e4a33d0c5d0c8ef7 AS skeleton
 # hadolint ignore=DL3002
 USER 0
 
@@ -53,7 +53,7 @@ ENV EXTERNAL_SOURCE_NESTED=.
 ENV CONTAINER_SOURCE=/opt/app-root/src
 
 # Env vars
-ENV YARN=$CONTAINER_SOURCE/.yarn/releases/yarn-3.8.7.cjs
+ENV YARN=$CONTAINER_SOURCE/.yarn/releases/yarn-4.12.0.cjs
 
 WORKDIR $CONTAINER_SOURCE/
 COPY $EXTERNAL_SOURCE_NESTED/.yarn ./.yarn
@@ -117,6 +117,7 @@ COPY $EXTERNAL_SOURCE_NESTED ./
 # Explicitly disable networking + use local cache:
 RUN echo "=== TWEAK .yarnrc.yml ==="; \
   echo "enableNetwork: false" >> .yarnrc.yml && \
+  echo "enableGlobalCache: false" >> .yarnrc.yml && \
   echo "cacheFolder: $YARN_GLOBAL_FOLDER" >> .yarnrc.yml && \
   echo "Current .yarnrc.yml" && \
   cat .yarnrc.yml
