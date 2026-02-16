@@ -64,10 +64,6 @@ rbac_deployment_pr() {
   configure_namespace "${NAME_SPACE_RBAC}"
   configure_external_postgres_db "${NAME_SPACE_RBAC}"
 
-  # Wait for external PostgreSQL to be fully ready before deploying RHDH.
-  # Without orchestrator, the deployment is faster and the DB may not be accepting connections yet.
-  wait_for_deployment "${NAME_SPACE_POSTGRES_DB}" "postgress-external-db" 10 10
-
   local rbac_rhdh_base_url="https://${RELEASE_NAME_RBAC}-developer-hub-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
 
@@ -84,6 +80,18 @@ rbac_deployment_pr() {
     -f "/tmp/merged-values_showcase-rbac_PR.yaml" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     $(get_image_helm_set_params)
+
+  # Without orchestrator, the deploy finishes faster and the external PostgreSQL
+  # may not yet be accepting connections when the RHDH pod starts. Backstage does
+  # not retry DB connections after a failed startup, so the pod stays broken.
+  # Wait for the deployment to become ready; if it doesn't, restart it so the new
+  # pod can connect to the now-ready PostgreSQL.
+  local rbac_deploy="${RELEASE_NAME_RBAC}-developer-hub"
+  if ! oc rollout status "deployment/${rbac_deploy}" -n "${NAME_SPACE_RBAC}" --timeout=300s 2>/dev/null; then
+    log::warn "RHDH RBAC deployment not ready. Restarting to retry database connection..."
+    oc rollout restart "deployment/${rbac_deploy}" -n "${NAME_SPACE_RBAC}"
+    oc rollout status "deployment/${rbac_deploy}" -n "${NAME_SPACE_RBAC}" --timeout=300s
+  fi
 
   log::warn "Skipping sonataflow database workaround for PR job"
   log::warn "Skipping orchestrator workflows deployment for PR job"
