@@ -38,6 +38,8 @@ HELM_CHART_EKS_DIFF_VALUE_FILE_NAME="diff-values_showcase_EKS.yaml"
 HELM_CHART_RBAC_EKS_DIFF_VALUE_FILE_NAME="diff-values_showcase-rbac_EKS.yaml"
 HELM_CHART_OSD_GCP_DIFF_VALUE_FILE_NAME="diff-values_showcase_OSD-GCP.yaml"
 HELM_CHART_RBAC_OSD_GCP_DIFF_VALUE_FILE_NAME="diff-values_showcase-rbac_OSD-GCP.yaml"
+HELM_CHART_PR_DIFF_VALUE_FILE_NAME="diff-values_showcase_PR.yaml"
+HELM_CHART_RBAC_PR_DIFF_VALUE_FILE_NAME="diff-values_showcase-rbac_PR.yaml"
 HELM_CHART_SANITY_PLUGINS_DIFF_VALUE_FILE_NAME="diff-values_showcase-sanity-plugins.yaml"
 HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME="merged-values_showcase-sanity-plugins.yaml"
 
