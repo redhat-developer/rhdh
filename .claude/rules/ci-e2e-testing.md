@@ -1,0 +1,551 @@
+---
+paths: '.ibm/**, e2e-tests/**, docs/e2e-tests/**'
+---
+# RHDH (Red Hat Developer Hub) Repository Context
+
+This document serves as a comprehensive starting point for LLMs working with the RHDH repository. It provides detailed information about the e2e-tests, testing infrastructure and CI/CD pipeline.
+
+## Table of Contents
+
+- [E2E Testing Framework](#e2e-testing-framework)
+- [CI/CD Infrastructure](#cicd-infrastructure)
+- [Key Dependencies and Common Issues](#key-dependencies-and-common-issues)
+- [Documentation References](#documentation-references)
+
+## E2E Testing Framework
+
+### Technology Stack
+- **Testing Framework**: Playwright with TypeScript
+- **Node.js Version**: 22
+- **Package Manager**: Yarn 3.8.7
+- **Test Runner**: Playwright Test
+- **Reporting**: HTML, JUnit XML, List reporters
+
+Current versions for e2e-tests are defined in `e2e-tests/package.json`
+
+### Test Structure and Organization
+
+#### Directory Structure
+```text
+e2e-tests/
+├── playwright/
+│   ├── e2e/                    # Main test files
+│   │   └── *.spec.ts          # General test files
+│   ├── utils/                 # Test utilities
+│   ├── data/                  # Test data
+│   └── support/               # Test support files
+```
+
+#### Test File Requirements
+
+**Component Assignment**: Every test file (`*.spec.ts`) in the `e2e-tests` folder must have a component assigned in the `test.beforeAll` hook using the following syntax:
+
+```typescript
+test.beforeAll(async ({ }, testInfo) => {
+  testInfo.annotations.push({
+    type: "component",
+    description: "your_value",
+  });
+});
+```
+
+**Purpose**: This component annotation is used for test categorization, reporting, and CI/CD pipeline organization. It helps identify which component or feature area each test file is validating.
+
+**Examples of Component Values**:
+- `"authentication"` - for authentication provider tests
+- `"rbac"` - for role-based access control tests
+- `"plugins"` - for plugin functionality tests
+- `"configuration"` - for configuration validation tests
+- `"audit-log"` - for audit logging tests
+- `"core"` - for core functionality tests
+- `"navigation"` - for navigation and routing tests
+- `"api"` - for API endpoint and integration tests
+- `"integration"` - for external service integration tests
+- `"monitoring"` - for monitoring and observability tests
+- `"data-management"` - for data handling and management tests
+
+**Note**: The component description should be descriptive and consistent across related test files to ensure proper test organization and reporting.
+
+#### Key Test Categories
+
+1. **Smoke Tests** (`smoke-test.spec.ts`)
+   - Basic functionality verification
+   - Health checks and core features
+
+2. **Showcase Tests** (defined in `e2e-tests/playwright/projects.json`)
+   - `showcase`: General functionality tests with base deployment using Helm chart
+   - `showcase-rbac`: General functionality tests with RBAC-enabled deployment using Helm chart
+   - `showcase-k8s`: Kubernetes integration tests with base deployment
+   - `showcase-rbac-k8s`: Kubernetes integration tests with RBAC-enabled deployment
+   - `showcase-operator`: General functionality tests with base deployment using Operator
+   - `showcase-operator-rbac`: General functionality tests with RBAC-enabled deployment using Operator
+   - `showcase-runtime`: Runtime environment tests
+   - `showcase-sanity-plugins`: Plugin sanity checks
+   - `showcase-upgrade`: Upgrade scenario tests
+   - `showcase-localization-fr`: French localization tests
+   - `showcase-localization-it`: Italian localization tests
+   - `showcase-localization-ja`: Japanese localization tests
+   - `any-test`: Use for debugging when you need to run a specific tests
+
+   **Note**: All project names are defined in `e2e-tests/playwright/projects.json` as the single source of truth. This file is consumed by:
+   - `playwright.config.ts` via TypeScript import (`e2e-tests/playwright/projects.ts`)
+   - CI/CD scripts via `.ibm/pipelines/playwright-projects.sh` (exports as `$PW_PROJECT_*` variables)
+
+3. **Authentication Provider Tests** (`showcase-auth-providers`)
+   - OIDC (Red Hat Backstage Keycloak)
+   - Microsoft OAuth2
+   - GitHub authentication
+   - LDAP (Active Directory)
+
+4. **Plugin Tests** (`playwright/e2e/plugins/`)
+   - RBAC (Role-Based Access Control)
+   - Kubernetes actions
+   - Notifications
+   - Topology
+   - Quay integration
+   - Tekton
+   - Dynamic plugins info
+   - Adoption insights
+   - Analytics
+
+5. **Configuration Tests** (`playwright/e2e/configuration-test/`)
+   - Config map validation
+   - Environment-specific configurations
+
+6. **Audit Log Tests** (`playwright/e2e/audit-log/`)
+   - Audit logging functionality
+   - Compliance verification
+
+7. **Localization Tests** (`playwright/e2e/localization/`)
+   - Verify UI displays correctly translated strings
+   - Supports **French (fr)**, **Italian (it)**, and **Japanese (ja)**
+   - Runs as part of OCP nightly job (skipped for OSD-GCP)
+   - Uses `showcase-localization-fr`, `showcase-localization-it`, `showcase-localization-ja` Playwright projects
+   - Translation files located in `translations/` directory
+   - Test helper: `e2e-tests/playwright/e2e/localization/locale.ts`
+
+### Test Execution
+
+#### CI/CD Pipeline Execution
+
+In the CI/CD pipeline, tests are executed directly using Playwright's `--project` flag via the `run_tests()` function in `.ibm/pipelines/utils.sh`:
+
+```bash
+yarn playwright test --project="${playwright_project}"
+```
+
+The namespace and Playwright project are decoupled, allowing flexible reuse. The `check_and_test()` and `run_tests()` functions accept an explicit `playwright_project` argument:
+
+```bash
+# Function signatures:
+check_and_test "${RELEASE_NAME}" "${NAMESPACE}" "${PLAYWRIGHT_PROJECT}" "${URL}" [max_attempts] [wait_seconds]
+run_tests "${RELEASE_NAME}" "${NAMESPACE}" "${PLAYWRIGHT_PROJECT}" "${URL}"
+```
+
+#### Local Development Scripts
+
+Available yarn scripts in `e2e-tests/package.json` for local development:
+
+```bash
+# Showcase tests - OpenShift deployments (Helm)
+yarn showcase                       # General showcase tests
+yarn showcase-rbac                 # General showcase tests with RBAC
+
+# Showcase tests - Kubernetes deployments
+yarn showcase-k8s                  # Kubernetes showcase tests
+yarn showcase-rbac-k8s             # Kubernetes showcase tests with RBAC
+
+# Showcase tests - Operator deployments
+yarn showcase-operator             # Operator showcase tests
+yarn showcase-operator-rbac        # Operator showcase tests with RBAC
+
+# Showcase tests - Other scenarios
+yarn showcase-runtime              # Runtime configuration tests
+yarn showcase-upgrade              # Upgrade scenario tests
+
+# Authentication provider tests
+yarn showcase-auth-providers       # Auth provider tests
+
+# Plugin tests
+yarn showcase-sanity-plugins       # Plugin sanity tests
+
+# Localization tests
+yarn showcase-localization-fr      # French localization tests
+yarn showcase-localization-it      # Italian localization tests
+yarn showcase-localization-ja      # Japanese localization tests
+
+# Utility scripts
+yarn lint:check                    # Lint checking
+yarn lint:fix                      # Lint fixing
+yarn tsc                           # TypeScript compilation
+yarn prettier:check                # Prettier checking
+yarn prettier:fix                  # Prettier fixing
+```
+
+**Note**: The CI pipeline no longer uses yarn script aliases. Instead, it runs Playwright directly with `yarn playwright test --project=<project-name>`. This decouples the namespace from the test project name, enabling more flexible namespace and test project reuse.
+
+### Environment Variables
+
+All the important environment variables are sourced in `.ibm/pipelines/env_variables.sh`
+Most of them are populated by secrets from the Vault.
+
+⚠️ Important Notice
+Do not place any secrets directly into a file.
+All sensitive information must be stored in the Vault.
+
+### Test Configuration
+
+Playwright configuration (`e2e-tests/playwright.config.ts`):
+- **Timeout**: 90 seconds global, 10-15 seconds for actions
+- **Retries**: 2 on CI, 0 locally
+- **Workers**: 3 parallel workers
+- **Viewport**: 1920x1080
+- **Video**: Enabled for all tests
+- **Screenshots**: Only on failure
+- **Trace**: Retain on failure
+
+### Key Differences: showcase-auth-providers vs Other Showcase Projects
+
+The `showcase-auth-providers` project has several significant differences from other showcase projects, particularly in deployment and configuration:
+
+#### **Namespace and Release Management**
+- **Other Showcase Projects**: Use standard namespace patterns (`showcase-ci-nightly`, `showcase-rbac-nightly`)
+- **showcase-auth-providers**: Uses dedicated namespace `showcase-auth-providers` and release `rhdh-auth-providers`
+- **Logging**: Dedicated logs folder: `e2e-tests/auth-providers-logs`
+
+#### **Test Retry Configuration**
+- **Other Showcase Projects**: Typically use 2 retries (CI default)
+- **showcase-auth-providers**: Configured with only 1 retry due to the complexity of authentication provider setup and teardown
+
+#### **Configuration and Deployment Approach**
+- **Other Showcase Projects**: Use Bash scripts for configuration and deployment
+- **showcase-auth-providers**: Uses TypeScript for configuration and deployment management
+- **Configuration Files**: Uses different configuration files compared to other showcase projects:
+  - `e2e-tests/playwright/e2e/auth-providers/` directory structure with TypeScript test files
+  - Dedicated values file: `.ibm/pipelines/value_files/values_showcase-auth-providers.yaml`
+  - TypeScript-based test configuration instead of Bash scripts
+  - Dynamic RHDH instance management (create, update, restart, delete)
+
+#### **Required Plugins and Dependencies**
+- **Other Showcase Projects**: Standard plugin dependencies
+- **showcase-auth-providers**: Requires specific plugins exported to `dynamic-plugins-root`:
+  - `backstage-community-plugin-catalog-backend-module-keycloak-dynamic`
+  - `backstage-plugin-catalog-backend-module-github-org-dynamic`
+  - `backstage-plugin-catalog-backend-module-msgraph-dynamic`
+  - `backstage-community-plugin-rbac`
+
+#### **Authentication Provider Coverage**
+- **Other Showcase Projects**: Standard authentication testing
+- **showcase-auth-providers**: Tests multiple authentication providers:
+  - OIDC using Red Hat Backstage Keycloak (RHBK)
+  - Microsoft OAuth2 provider
+  - GitHub authentication
+  - LDAP using Active Directory (commented out)
+
+#### **Test Structure and Files**
+- **Other Showcase Projects**: Standard test file patterns
+- **showcase-auth-providers**: Dedicated test structure:
+  - `e2e-tests/playwright/e2e/auth-providers/` directory
+  - Individual test files: `oidc.spec.ts`, `microsoft.spec.ts`, `github.spec.ts`, `ldap.spec.ts`
+  - Tests verify: supported resolvers, user/group ingestion, nested groups, session token configuration
+
+These differences make `showcase-auth-providers` a specialized testing environment focused on validating authentication provider integrations rather than general RHDH functionality testing.
+
+## CI/CD Infrastructure
+
+### OpenShift CI Overview
+
+The RHDH CI/CD pipeline uses **OpenShift CI** with **Prow-based** automation and **ephemeral clusters** for testing.
+
+Check the readme at `.ibm/pipelines/README.md`
+
+#### Key Components
+
+1. **Ephemeral Clusters**: AWS-based clusters in `us-east-2` region
+2. **Cluster Management**: Managed via cluster claims
+3. **CI Job Types**: OCP, EKS, GKE, AKS environments
+4. **Authentication**: Keycloak as default provider
+5. **Secrets Management**: Vault-managed secrets
+
+### Cluster Pools
+
+Available cluster pools for different OCP versions:
+
+- **RHDH-4-19-US-EAST-2**
+  - Usage: OCP v4.19 nightly jobs
+  - [Cluster Pool Configuration](https://github.com/openshift/release/blob/master/clusters/hosted-mgmt/hive/pools/rhdh/rhdh-ocp-4-19-0-amd64-aws-us-east-2_clusterpool.yaml)
+
+- **RHDH-4-18-US-EAST-2**
+  - Usage: OCP v4.18 nightly jobs
+  - [Cluster Pool Configuration](https://github.com/openshift/release/blob/master/clusters/hosted-mgmt/hive/pools/rhdh/rhdh-ocp-4-18-0-amd64-aws-us-east-2_clusterpool.yaml)
+
+- **RHDH-4-17-US-EAST-2**
+  - Usage: PR checks on main branch and OCP v4.17 nightly jobs
+  - [Cluster Pool Configuration](https://github.com/openshift/release/blob/master/clusters/hosted-mgmt/hive/pools/rhdh/rhdh-ocp-4-17-0-amd64-aws-us-east-2_clusterpool.yaml)
+
+- **RHDH-4-16-US-EAST-2**
+  - Usage: OCP v4.16 nightly jobs
+  - [Cluster Pool Configuration](https://github.com/openshift/release/blob/master/clusters/hosted-mgmt/hive/pools/rhdh/rhdh-ocp-4-16-0-amd64-aws-us-east-2_clusterpool.yaml)
+
+**Note:** This is subject to change. Use `.ibm/pipelines/README.md` as a source of truth.
+
+### CI Job Types
+
+#### Pull Request Tests
+- **Trigger**: Automatic for code changes, manual with `/ok-to-test`
+- **Environment**: Ephemeral OpenShift cluster
+- **Scope**: Both RBAC and non-RBAC namespaces
+- **Artifacts**: 6-month retention period
+
+#### Nightly Tests
+- **Schedule**: Automated nightly runs
+- **Environments**: Multiple OCP versions, AKS, GKE
+- **Reporting**: Slack notifications to `#rhdh-e2e-test-alerts`
+
+### Test Execution Environment
+
+#### Local Development
+Tests are run directly using Playwright Test with Node.js 22 and Yarn 3.8.7 as specified in the technology stack above.
+
+#### CI/CD Pipeline Execution
+For CI/CD pipeline execution, tests run in a containerized environment using the image `.ibm/images/Dockerfile`. This image is based on `mcr.microsoft.com/playwright` and uses Ubuntu as the base operating system.
+
+**Note**: Any additional system dependencies required for testing must be installed in this Docker image to ensure CI/CD pipeline compatibility.
+
+#### Alternative Execution Methods
+**Podman Usage**: If you need to prepare the environment or run tests close to how CI/CD pipeline runs them, you can use Podman to run the `.ibm/pipelines/openshift-ci-tests.sh` script inside the Docker image.
+
+**RHEL/Fedora Systems**: On Playwright unsupported systems such as RHEL or Fedora, running tests inside the containerized environment using Podman is the recommended approach to avoid compatibility issues.
+
+### Key CI Scripts
+
+#### Main Orchestration
+- **`.ibm/pipelines/openshift-ci-tests.sh`**: Main test orchestration script
+- **`.ibm/pipelines/utils.sh`**: Utility functions
+- **`.ibm/pipelines/reporting.sh`**: Reporting and notifications
+- **`.ibm/pipelines/env_variables.sh`**: Environment variable management
+- **`.ibm/pipelines/playwright-projects.sh`**: Loads Playwright project names from `projects.json` as `$PW_PROJECT_*` variables
+
+#### CI Infrastructure Package Configuration
+
+The `.ibm/package.json` file defines the CI infrastructure package configuration and development tools:
+
+**Available Scripts:**
+```bash
+# Code quality and linting
+yarn shellcheck              # Shell script linting with severity warnings
+yarn prettier:check          # Check formatting for shell, markdown, and YAML files
+yarn prettier:fix            # Fix formatting for shell, markdown, and YAML files
+```
+
+⚠️ **Important**: Before using any of these scripts, you must first run `yarn install` in the `.ibm` folder to install the required dependencies (prettier, prettier-plugin-sh, shellcheck).
+
+**Purpose**: This package provides essential tooling for maintaining code quality in the CI infrastructure, ensuring consistent formatting and shell script best practices across the pipeline scripts.
+
+#### Shell Script Conventions
+
+**Shell scripts in `.ibm/` folder:**
+- **Never use** `set pipefail` or `set -o pipefail`
+- Only `.ibm/pipelines/openshift-ci-tests.sh` defines global `set` options; other scripts inherit them
+- Functions may temporarily disable/re-enable error handling with `set +e` / `set -e` pattern
+
+#### Job Handlers
+The main script handles different job types:
+- `handle_aks_helm`: AKS Helm deployment
+- `handle_eks_helm`: EKS Helm deployment
+- `handle_gke_helm`: GKE Helm deployment
+- `handle_ocp_operator`: OCP Operator deployment
+- `handle_ocp_nightly`: OCP nightly tests
+- `handle_ocp_pull`: OCP PR tests
+- `handle_auth_providers`: Auth provider tests
+
+#### Special Case: showcase-auth-providers Deployment
+
+The `showcase-auth-providers` project has a unique deployment workflow that differs significantly from other showcase projects:
+
+**Handler**: `handle_auth_providers()` function in `.ibm/pipelines/jobs/auth-providers.sh`
+**Configuration**: Uses dedicated values file `values_showcase-auth-providers.yaml` with auth provider-specific settings
+**Test Execution**: Runs TypeScript-based tests from `e2e-tests/playwright/e2e/auth-providers/` directory
+
+### Access and Debugging
+
+#### Cluster Access
+For cluster pool admins, use the login script:
+```bash
+.ibm/pipelines/ocp-cluster-claim-login.sh
+```
+
+#### Debugging Process
+1. Run the login script
+2. Provide Prow log URL when prompted
+3. Script will forward cluster web console URL and credentials
+4. Ephemeral clusters are deleted after CI job termination
+
+### CI Configuration Files
+
+- **Job Definitions**: [OpenShift Release Jobs](https://github.com/openshift/release/tree/master/ci-operator/jobs/redhat-developer/rhdh)
+- **Configuration**: [OpenShift Release Config](https://github.com/openshift/release/tree/master/ci-operator/config/redhat-developer/rhdh)
+- **Step Registry**: [OpenShift Release Steps](https://github.com/openshift/release/tree/master/ci-operator/step-registry/redhat-developer/rhdh)
+
+### Debugging
+
+#### Local Debugging
+```bash
+# Set local development flags
+export ISRUNNINGLOCAL=true
+export ISRUNNINGLOCALDEBUG=true
+
+# Run tests locally
+yarn playwright test --project showcase-auth-providers --workers 1
+```
+
+#### CI Debugging
+1. **Access Logs**: Check PR artifacts or CI logs
+2. **Cluster Access**: Use cluster claim login script
+3. **Environment Variables**: Verify required variables
+4. **Test Failures**: Review test reports and screenshots
+
+#### Common Debugging Tools
+- **Playwright Inspector**: `yarn playwright test --debug`
+- **Trace Viewer**: `yarn playwright show-trace`
+- **Screenshots**: Automatic on failure
+- **Video Recording**: Available for all tests
+
+## Key Dependencies and Common Issues
+
+### System Dependencies
+
+#### macOS Requirements
+**Important**: macOS users need to use GNU `grep` and GNU `sed` instead of the built-in BSD versions to avoid compatibility issues with scripts and CI/CD pipelines.
+
+Install using Homebrew:
+```bash
+brew install grep
+brew install gnu-sed
+```
+
+**Important**: Make sure to set the GNU versions as default to ensure they are used instead of the built-in macOS versions.
+
+**Note**: The built-in macOS versions of these tools may cause issues when running scripts or tests that expect GNU-compatible behavior.
+
+### External Services
+
+#### Required Services
+- **GitHub**: Authentication, repository access
+- **Keycloak**: Default authentication provider
+- **OpenShift**: Primary deployment platform
+- **Advanced Cluster Management**: For OCM plugins
+
+### Internal Components
+
+#### Core Components
+- **Backstage**: Main application framework
+- **Dynamic Plugins**: Plugin management system
+- **Catalog**: Entity management
+- **Scaffolder**: Template system
+
+### Common Issues and Solutions
+
+#### Test Failures
+1. **Environment Issues**: Verify environment variables
+2. **Authentication Problems**: Check credentials and tokens
+3. **Resource Constraints**: Check cluster resources
+
+#### CI Failures
+1. **Cluster Issues**: Verify cluster availability
+2. **Resource Limits**: Check resource quotas
+3. **Network Problems**: Verify connectivity
+4. **Configuration Errors**: Review job configuration
+
+#### Plugin Issues
+1. **Loading Failures**: Check plugin configuration
+2. **Dependency Conflicts**: Verify package versions
+3. **Configuration Errors**: Review plugin config
+4. **Build Issues**: Check build process
+
+## Documentation References
+
+### Core Documentation
+- [E2E Testing CI Documentation](docs/e2e-tests/CI.md)
+- [Dynamic Plugins Documentation](docs/dynamic-plugins/index.md)
+- [Authentication Providers README](e2e-tests/playwright/e2e/auth-providers/README.md)
+- [OpenShift CI Pipeline README](.ibm/pipelines/README.md)
+
+### Configuration Files
+- [Playwright Project Names (Single Source of Truth)](e2e-tests/playwright/projects.json)
+- [Playwright Configuration](e2e-tests/playwright.config.ts)
+- [Package Configuration](e2e-tests/package.json)
+- [Dynamic Plugins Config](dynamic-plugins/package.json)
+- [CI Test Script](.ibm/pipelines/openshift-ci-tests.sh)
+
+### External Resources
+- [OpenShift CI Documentation](https://docs.ci.openshift.org/)
+- [Playwright Documentation](https://playwright.dev/)
+- [Red Hat Developer Hub Documentation](https://redhat-developer.github.io/red-hat-developers-documentation-rhdh/main/)
+- [Backstage Documentation](https://backstage.io/docs)
+- [Dynamic Plugins Guide](https://github.com/backstage/backstage/tree/master/packages/backend-dynamic-feature-service)
+
+### Key Scripts and Tools
+- [Cluster Login Script](.ibm/pipelines/ocp-cluster-claim-login.sh)
+- [Test Reporting Script](.ibm/pipelines/reporting.sh)
+- [Environment Variables](.ibm/pipelines/env_variables.sh)
+- [Dynamic Plugin Installer](docker/install-dynamic-plugins.py)
+
+## Test Configuration Files (Config Maps)
+
+### Overview
+
+The RHDH e2e testing infrastructure uses two main configuration files located in `.ibm/pipelines/resources/config_map/`:
+
+1. **`app-config-rhdh.yaml`** - Non-RBAC configuration
+2. **`app-config-rhdh-rbac.yaml`** - RBAC-enabled configuration
+
+### Config Map Usage Pattern
+
+The choice of config map depends on the **Playwright test project** being executed, as defined in `e2e-tests/playwright.config.ts`:
+
+#### **app-config-rhdh.yaml** (Non-RBAC Configuration)
+
+**Used for test projects that exclude RBAC testing:**
+
+- `smoke-test` - Basic smoke tests
+- `showcase` - General functionality tests (explicitly excludes RBAC tests)
+- `showcase-k8s` - Kubernetes integration tests (explicitly excludes RBAC tests)
+- `showcase-operator` - Operator-based tests (explicitly excludes RBAC tests)
+- `showcase-runtime` - Runtime environment tests
+- `showcase-sanity-plugins` - Plugin sanity tests
+- `showcase-upgrade` - Upgrade scenario tests
+- `showcase-localization-fr` - French localization tests
+- `showcase-localization-it` - Italian localization tests
+- `showcase-localization-ja` - Japanese localization tests
+- `showcase-auth-providers` - Authentication provider tests (uses special deployment process)
+
+#### **app-config-rhdh-rbac.yaml** (RBAC Configuration)
+
+**Used for test projects that include RBAC testing:**
+
+- `showcase-rbac` - RBAC-specific tests
+- `showcase-rbac-k8s` - Kubernetes + RBAC tests
+- `showcase-operator-rbac` - Operator + RBAC tests
+
+### **CRITICAL RULE: Config Map Selection**
+
+**When adding new tests:**
+
+1. **Identify the test project scope:**
+   - Will the new test/plugin be tested with RBAC? → Use `app-config-rhdh-rbac.yaml`
+   - Will the new test/plugin be tested without RBAC? → Use `app-config-rhdh.yaml`
+
+2. **Check the Playwright project configuration:**
+   - Projects that exclude RBAC tests (using `testIgnore` for RBAC patterns) → Use `app-config-rhdh.yaml`
+   - Projects that include RBAC tests (using `testMatch` for RBAC patterns) → Use `app-config-rhdh-rbac.yaml`
+
+### **Special Cases**
+
+1. **showcase-auth-providers**: Although it uses the non-RBAC config pattern, it has its own specialized deployment process with dedicated values file (`values_showcase-auth-providers.yaml`) and TypeScript-based configuration management.
+
+### **Configuration Deployment Process**
+
+The config maps are deployed as Kubernetes ConfigMaps during CI/CD pipeline execution and are mounted into the RHDH pods to provide runtime configuration. The pipeline selects the appropriate config map based on the test project being executed.
+
+---

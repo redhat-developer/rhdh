@@ -9,6 +9,7 @@ test.describe("Test Quick Start plugin", () => {
       description: "plugins",
     });
   });
+
   let uiHelper: UIhelper;
   let common: Common;
 
@@ -17,20 +18,12 @@ test.describe("Test Quick Start plugin", () => {
     uiHelper = new UIhelper(page);
   });
 
-  test("Access Quick start from Global Header", async ({ page }) => {
+  test("Access Quick start from Global Header", async () => {
     await common.loginAsKeycloakUser();
-    await page.waitForTimeout(1000);
-    // eslint-disable-next-line playwright/no-conditional-in-test
-    if (await page.getByRole("button", { name: "Hide" }).isHidden()) {
-      await uiHelper.clickButtonByLabel("Help");
-      await uiHelper.clickByDataTestId("quickstart-button");
-      console.log("Quick start button clicked");
-    }
-    await expect(page.getByRole("button", { name: "Hide" })).toBeVisible();
+    await uiHelper.openQuickstartIfHidden();
   });
 
-  // FIXME https://issues.redhat.com/browse/RHIDP-8971
-  test.skip("Access Quick start as Guest or Admin", async ({ page }) => {
+  test("Access Quick start as Guest or Admin", async ({ page }) => {
     // eslint-disable-next-line playwright/no-conditional-in-test
     if (test.info().project.name !== "showcase-rbac") {
       await common.loginAsGuest();
@@ -66,10 +59,11 @@ test.describe("Test Quick Start plugin", () => {
   });
 
   test("Access Quick start as User", async ({ page }) => {
-    // eslint-disable-next-line playwright/no-conditional-in-test
-    if (test.info().project.name !== "showcase-rbac") {
-      test.skip();
-    }
+    test.skip(
+      test.info().project.name !== "showcase-rbac",
+      "Test only runs for showcase-rbac project",
+    );
+
     await common.loginAsKeycloakUser(
       process.env.GH_USER2_ID,
       process.env.GH_USER2_PASS,
@@ -78,7 +72,7 @@ test.describe("Test Quick Start plugin", () => {
     await uiHelper.verifyText("Let's get you started with Developer Hub");
     await uiHelper.verifyText("We'll guide you through a few quick steps");
     await uiHelper.clickButtonByText("Import application");
-    await uiHelper.verifyButtonURL("Import", "/bulk-import/repositories");
+    await uiHelper.verifyButtonURL("Import", "/bulk-import");
     await uiHelper.clickButtonByText("Import");
     await uiHelper.verifyHeading("Bulk import");
     await uiHelper.clickButtonByText("Learn about the Catalog");

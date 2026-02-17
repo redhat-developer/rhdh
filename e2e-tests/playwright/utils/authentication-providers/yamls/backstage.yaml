@@ -1,10 +1,9 @@
 kind: Backstage
-apiVersion: rhdh.redhat.com/v1alpha3
+apiVersion: rhdh.redhat.com/v1alpha4
 metadata:
   name: rhdh
 spec:
   application:
-    image: "quay.io/rhdh-community/rhdh:next"
     appConfig:
       configMaps:
         - name: app-config-rhdh

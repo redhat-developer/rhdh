@@ -23,7 +23,7 @@ test.describe("Test Quay Actions plugin", () => {
     quayClient = new QuayClient();
 
     await common.loginAsGuest();
-    await uiHelper.clickLink({ ariaLabel: "Self-service" });
+    await uiHelper.goToSelfServicePage();
   });
 
   test("Creates Quay repository", async () => {

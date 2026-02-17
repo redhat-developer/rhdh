@@ -1,6 +1,5 @@
 import { expect, Locator, Page } from "@playwright/test";
 import { UI_HELPER_ELEMENTS } from "../support/page-objects/global-obj";
-import { SidebarTabs } from "./navbar";
 import { SEARCH_OBJECTS_COMPONENTS } from "../support/page-objects/page-obj";
 import {
   getTranslations,
@@ -231,9 +230,7 @@ export class UIhelper {
   async openProfileDropdown() {
     const header = this.page.locator("nav[id='global-header']");
     await expect(header).toBeVisible();
-    await header
-      .locator("[data-testid='KeyboardArrowDownOutlinedIcon']")
-      .click();
+    await header.getByTestId("KeyboardArrowDownOutlinedIcon").click();
   }
 
   async goToPageUrl(url: string, heading?: string) {
@@ -247,7 +244,28 @@ export class UIhelper {
   async goToMyProfilePage() {
     await expect(this.page.locator("nav[id='global-header']")).toBeVisible();
     await this.openProfileDropdown();
-    await this.clickLink(t["plugin.global-header"][lang]["profile.myProfile"]);
+    await this.clickLink(
+      // TODO: RHDHBUGS-2552 - Strings not getting translated
+      // t["plugin.global-header"][lang]["profile.myProfile"],
+      "My profile",
+    );
+  }
+
+  async goToSettingsPage() {
+    await expect(this.page.locator("nav[id='global-header']")).toBeVisible();
+    await this.openProfileDropdown();
+    await this.clickLink(
+      // TODO: RHDHBUGS-2552 - Strings not getting translated
+      // t["plugin.global-header"][lang]["profile.settings"],
+      "Settings",
+    );
+  }
+
+  async goToSelfServicePage() {
+    // TODO: RHDHBUGS-2564 - String not getting translated
+    // t["rhdh"][lang]["menuItem.selfService"]
+    await this.clickLink({ ariaLabel: "Self-service" });
+    await this.verifyHeading("Self-service");
   }
 
   async verifyLink(
@@ -333,7 +351,7 @@ export class UIhelper {
     await this.page.waitForSelector("nav a", { timeout: 10_000 });
   }
 
-  async openSidebar(navBarText: SidebarTabs) {
+  async openSidebar(navBarText: string) {
     const navLink = this.page
       .locator(`nav a:has-text("${navBarText}")`)
       .first();
@@ -342,8 +360,11 @@ export class UIhelper {
   }
 
   async openCatalogSidebar(kind: string) {
-    await this.openSidebar("Catalog");
-    await this.selectMuiBox("Kind", kind);
+    await this.openSidebar(t["rhdh"][lang]["menuItem.catalog"]);
+    await this.selectMuiBox(
+      `${t["catalog-react"][lang]["entityKindPicker.title"]}`,
+      kind,
+    );
     await expect(async () => {
       await this.clickByDataTestId("user-picker-all");
       await this.page.waitForTimeout(1_500);
@@ -362,7 +383,7 @@ export class UIhelper {
     await navLink.click();
   }
 
-  async selectMuiBox(label: string, value: string) {
+  async selectMuiBox(label: string, value: string, notVisible?: boolean) {
     // Wait for any overlaying dialogs to close before interacting
     await this.page
       .locator('[role="presentation"].MuiDialog-root')
@@ -379,8 +400,13 @@ export class UIhelper {
 
     // Wait for and click option using semantic selector
     const option = this.page.getByRole("option", { name: value });
-    await expect(option).toBeVisible();
-    await option.click();
+
+    if (notVisible) {
+      await expect(option).toBeHidden();
+    } else {
+      await expect(option).toBeVisible();
+      await option.click();
+    }
   }
 
   async verifyRowsInTable(
@@ -409,7 +435,7 @@ export class UIhelper {
       ? this.page.locator(locator).getByText(text, { exact }).first()
       : this.page.getByText(text, { exact }).first();
 
-    await elementLocator.waitFor({ state: "visible" });
+    await elementLocator.waitFor({ state: "visible", timeout: 5000 });
     await elementLocator.waitFor({ state: "attached" });
 
     try {
@@ -780,7 +806,9 @@ export class UIhelper {
     await expect(unregisterItem).toBeEnabled();
   }
 
-  async clickUnregisterButtonForDisplayedEntity() {
+  async clickUnregisterButtonForDisplayedEntity(
+    buttonName: "Delete Entity" | "Unregister Location" = "Delete Entity",
+  ) {
     const moreButton = this.page.locator("button[aria-label='more']").first();
     await moreButton.waitFor({ state: "visible" });
     await moreButton.waitFor({ state: "attached" });
@@ -794,7 +822,7 @@ export class UIhelper {
     await unregisterItem.click();
 
     const deleteButton = this.page.getByRole("button", {
-      name: "Delete Entity",
+      name: buttonName,
     });
     await deleteButton.waitFor({ state: "visible" });
     await deleteButton.waitFor({ state: "attached" });
@@ -828,5 +856,32 @@ export class UIhelper {
   async verifyTextInTooltip(text: string | RegExp) {
     const tooltip = this.page.getByRole("tooltip").getByText(text);
     await expect(tooltip).toBeVisible();
+  }
+
+  /**
+   * Hides the Quick Start panel if it is currently visible.
+   * This is useful in test setup to ensure a clean state without the Quick Start overlay.
+   */
+  async hideQuickstartIfVisible(): Promise<void> {
+    const quickstartHideButton = this.page.getByRole("button", {
+      name: t["plugin.quickstart"][lang]["footer.hide"],
+    });
+    if (await quickstartHideButton.isVisible()) {
+      await quickstartHideButton.click();
+    }
+  }
+
+  async openQuickstartIfHidden(): Promise<void> {
+    const quickstartHideButton = this.page.getByRole("button", {
+      name: t["plugin.quickstart"][lang]["footer.hide"],
+    });
+    const progressBars = this.page.getByTestId("progress");
+    await expect(progressBars).toHaveCount(0);
+
+    if (!(await quickstartHideButton.isVisible())) {
+      await this.clickButtonByLabel("Help");
+      await this.clickByDataTestId("quickstart-button");
+    }
+    await expect(quickstartHideButton).toBeVisible();
   }
 }

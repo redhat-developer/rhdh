@@ -9,21 +9,14 @@ export class BulkImport {
     this.page = page;
   }
 
-  async searchInOrg(searchText: string) {
-    await this.page
-      .getByTestId("search-in-organization")
-      .getByPlaceholder("Search", { exact: true })
-      .fill(searchText);
-  }
-
   async filterAddedRepo(searchText: string) {
     await expect(async () => {
       // Clear any existing filter first
-      await this.page.getByPlaceholder("Filter", { exact: true }).clear();
+      await this.page.getByPlaceholder("Search", { exact: true }).clear();
 
       // Fill the filter with search text
       await this.page
-        .getByPlaceholder("Filter", { exact: true })
+        .getByPlaceholder("Search", { exact: true })
         .fill(searchText);
 
       // Wait for the filter to be applied and verify no "no-import-jobs-found" message appears

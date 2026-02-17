@@ -4,11 +4,28 @@ import { PW_PROJECT } from "./playwright/projects";
 process.env.JOB_NAME = process.env.JOB_NAME || "";
 process.env.IS_OPENSHIFT = process.env.IS_OPENSHIFT || "";
 
+const isPrOcpHelmJob =
+  process.env.JOB_NAME.includes("pull") &&
+  process.env.JOB_NAME.includes("e2e-ocp-helm") &&
+  !process.env.JOB_NAME.includes("e2e-ocp-helm-nightly");
+
+const isOsdGcpJob = process.env.JOB_NAME.includes("osd-gcp");
+
+const shouldSkipOrchestratorTests = isPrOcpHelmJob || isOsdGcpJob;
+
 // Set LOCALE based on which project is being run
 const args = process.argv;
 
 if (args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_FR))) {
   process.env.LOCALE = "fr";
+} else if (
+  args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_IT))
+) {
+  process.env.LOCALE = "it";
+} else if (
+  args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_JA))
+) {
+  process.env.LOCALE = "ja";
 } else if (!process.env.LOCALE) {
   process.env.LOCALE = "en";
 }
@@ -80,6 +97,9 @@ export default defineConfig({
         "**/playwright/e2e/plugins/tekton/tekton.spec.ts",
         "**/playwright/e2e/dynamic-home-page-customization.spec.ts",
         "**/playwright/e2e/plugins/scorecard/scorecard.spec.ts",
+        ...(shouldSkipOrchestratorTests
+          ? ["**/playwright/e2e/plugins/orchestrator/**/*.spec.ts"]
+          : []),
       ],
     },
     {
@@ -92,6 +112,11 @@ export default defineConfig({
         "**/playwright/e2e/plugins/bulk-import.spec.ts",
         "**/playwright/e2e/plugins/quick-start.spec.ts",
         "**/playwright/e2e/plugins/scorecard/scorecard.spec.ts",
+      ],
+      testIgnore: [
+        ...(shouldSkipOrchestratorTests
+          ? ["**/playwright/e2e/plugins/orchestrator/**/*.spec.ts"]
+          : []),
       ],
     },
     {
@@ -117,7 +142,8 @@ export default defineConfig({
         "**/playwright/e2e/auth-providers/**/*.spec.ts",
         "**/playwright/e2e/plugins/bulk-import.spec.ts",
         "**/playwright/e2e/plugins/tekton/tekton.spec.ts",
-        "**/playwright/e2e/scaffolder-backend-module-annotator.spec.ts",
+        "**/playwright/e2e/plugins/scaffolder-backend-module-annotator/**/*.spec.ts",
+        "**/playwright/e2e/plugins/scaffolder-relation-processor/**/*.spec.ts",
         "**/playwright/e2e/plugins/ocm.spec.ts",
         "**/playwright/e2e/audit-log/**/*.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-rds.spec.ts",
@@ -138,6 +164,7 @@ export default defineConfig({
         "**/playwright/e2e/plugins/bulk-import.spec.ts",
         "**/playwright/e2e/plugins/scorecard/scorecard.spec.ts",
       ],
+      testIgnore: ["**/playwright/e2e/plugins/orchestrator/**/*.spec.ts"],
     },
     {
       name: PW_PROJECT.SHOWCASE_OPERATOR,
@@ -149,7 +176,8 @@ export default defineConfig({
         "**/playwright/e2e/auth-providers/**/*.spec.ts",
         "**/playwright/e2e/plugins/bulk-import.spec.ts",
         "**/playwright/e2e/plugins/tekton/tekton.spec.ts",
-        "**/playwright/e2e/scaffolder-backend-module-annotator.spec.ts",
+        "**/playwright/e2e/plugins/scaffolder-backend-module-annotator/**/*.spec.ts",
+        "**/playwright/e2e/plugins/scaffolder-relation-processor/**/*.spec.ts",
         "**/playwright/e2e/audit-log/**/*.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-rds.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-azure-db.spec.ts",
@@ -167,6 +195,11 @@ export default defineConfig({
         "**/playwright/e2e/**/*-rbac.spec.ts",
         "**/playwright/e2e/plugins/bulk-import.spec.ts",
         "**/playwright/e2e/plugins/scorecard/scorecard.spec.ts",
+      ],
+      testIgnore: [
+        ...(shouldSkipOrchestratorTests
+          ? ["**/playwright/e2e/plugins/orchestrator/**/*.spec.ts"]
+          : []),
       ],
     },
     {
@@ -196,7 +229,7 @@ export default defineConfig({
     },
     {
       name: PW_PROJECT.ANY_TEST,
-      testMatch: "**/*.spec.ts", // Allows running any test file
+      testMatch: "**/*.spec.ts",
     },
     {
       name: PW_PROJECT.SHOWCASE_UPGRADE,
@@ -210,6 +243,35 @@ export default defineConfig({
       name: PW_PROJECT.SHOWCASE_LOCALIZATION_FR,
       use: {
         locale: "fr",
+      },
+      testMatch: [
+        "**/playwright/e2e/extensions.spec.ts",
+        "**/playwright/e2e/default-global-header.spec.ts",
+        "**/playwright/e2e/catalog-timestamp.spec.ts",
+        "**/playwright/e2e/custom-theme.spec.ts",
+        "**/playwright/e2e/plugins/frontend/sidebar.spec.ts",
+        "**/playwright/e2e/settings.spec.ts",
+      ],
+    },
+    {
+      name: PW_PROJECT.SHOWCASE_LOCALIZATION_IT,
+      use: {
+        locale: "it",
+      },
+      testMatch: [
+        "**/playwright/e2e/extensions.spec.ts",
+        "**/playwright/e2e/default-global-header.spec.ts",
+        "**/playwright/e2e/catalog-timestamp.spec.ts",
+        // TODO: RHDHBUGS-2592 - Custom theme spec is not working
+        // "**/playwright/e2e/custom-theme.spec.ts",
+        "**/playwright/e2e/plugins/frontend/sidebar.spec.ts",
+        "**/playwright/e2e/settings.spec.ts",
+      ],
+    },
+    {
+      name: PW_PROJECT.SHOWCASE_LOCALIZATION_JA,
+      use: {
+        locale: "ja",
       },
       testMatch: [
         "**/playwright/e2e/extensions.spec.ts",

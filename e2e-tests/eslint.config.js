@@ -117,13 +117,6 @@ export default [
       ],
       "no-restricted-syntax": [
         "error",
-        // Custom rule to disallow test.describe.fixme() as it's not valid in Playwright
-        {
-          selector:
-            "CallExpression[callee.property.name='fixme'][callee.object.property.name='describe'][callee.object.object.name='test']",
-          message:
-            "test.describe.fixme() is not valid in Playwright. Use test.fixme() on individual tests instead.",
-        },
         {
           selector:
             "CallExpression[callee.name='test'] > ArrowFunctionExpression CallExpression[callee.property.name='fixme'][callee.object.name='test'] > ArrowFunctionExpression.arguments:first-child",

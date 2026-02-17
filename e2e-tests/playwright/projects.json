@@ -12,5 +12,7 @@
   "SHOWCASE_AUTH_PROVIDERS": "showcase-auth-providers",
   "SHOWCASE_SANITY_PLUGINS": "showcase-sanity-plugins",
   "SHOWCASE_UPGRADE": "showcase-upgrade",
-  "SHOWCASE_LOCALIZATION_FR": "showcase-localization-fr"
+  "SHOWCASE_LOCALIZATION_FR": "showcase-localization-fr",
+  "SHOWCASE_LOCALIZATION_IT": "showcase-localization-it",
+  "SHOWCASE_LOCALIZATION_JA": "showcase-localization-ja"
 }

@@ -24,7 +24,7 @@ global:
                   - name: bulkImportIcon
                     importName: BulkImportIcon
                 dynamicRoutes:
-                  - path: /bulk-import/repositories
+                  - path: /bulk-import
                     importName: BulkImportPage
                     menuItem:
                       icon: bulkImportIcon
@@ -253,11 +253,11 @@ upstream:
     appConfig:
       app:
         # Please update to match host in case you don't want to configure hostname via `global.clusterRouterBase` or `global.host` if not deploying on an openshift cluster.
-        baseUrl: 'https://{{- include "janus-idp.hostname" . }}'
+        baseUrl: 'https://{{- include "rhdh.hostname" . }}'
       backend:
-        baseUrl: 'https://{{- include "janus-idp.hostname" . }}'
+        baseUrl: 'https://{{- include "rhdh.hostname" . }}'
         cors:
-          origin: 'https://{{- include "janus-idp.hostname" . }}'
+          origin: 'https://{{- include "rhdh.hostname" . }}'
         database:
           connection:
             password: ${POSTGRESQL_ADMIN_PASSWORD}
@@ -313,12 +313,12 @@ upstream:
         valueFrom:
           secretKeyRef:
             key: backend-secret
-            name: '{{ include "janus-idp.backend-secret-name" $ }}'
+            name: '{{ include "rhdh.backend-secret-name" $ }}'
       - name: POSTGRESQL_ADMIN_PASSWORD
         valueFrom:
           secretKeyRef:
             key: postgres-password
-            name: '{{- include "janus-idp.postgresql.secretName" . }}'
+            name: '{{- include "rhdh.postgresql.secretName" . }}'
       - name: NODE_TLS_REJECT_UNAUTHORIZED
         value: '0'
     args:

@@ -15,7 +15,7 @@
 
 # Stage 1 - Build nodejs skeleton
 # https://registry.access.redhat.com/ubi9/nodejs-22
-FROM registry.access.redhat.com/ubi9/nodejs-22:9.7-1767745544@sha256:bbd9e582dcb61f1cef28dffdc647f23b63e82674c480fc32be446c8f62b7ad7a AS skeleton
+FROM registry.access.redhat.com/ubi9/nodejs-22:9.7-1770626511@sha256:b7c468c6cafa40380bf6cd8c89ad2f94ad4c85e47e2fa6e2e4a33d0c5d0c8ef7 AS skeleton
 # hadolint ignore=DL3002
 USER 0
 
@@ -53,7 +53,7 @@ ENV EXTERNAL_SOURCE_NESTED=.
 ENV CONTAINER_SOURCE=/opt/app-root/src
 
 # Env vars
-ENV YARN=$CONTAINER_SOURCE/.yarn/releases/yarn-3.8.7.cjs
+ENV YARN=$CONTAINER_SOURCE/.yarn/releases/yarn-4.12.0.cjs
 
 WORKDIR $CONTAINER_SOURCE/
 COPY $EXTERNAL_SOURCE_NESTED/.yarn ./.yarn
@@ -106,6 +106,12 @@ RUN echo "=== YARN INSTALL ==="; FAILED=0; "$YARN" install --immutable || FAILED
 FROM deps AS build
 
 COPY $EXTERNAL_SOURCE_NESTED ./
+
+# Tweak .yarnrc.yml for build:
+RUN echo "=== TWEAK .yarnrc.yml ==="; \
+  echo "enableGlobalCache: false" >> .yarnrc.yml && \
+  echo "Current .yarnrc.yml" && \
+  cat .yarnrc.yml
 
 RUN git config --global --add safe.directory ./
 # Upstream only
@@ -204,7 +210,7 @@ RUN \
 
 # Stage 5 - Build the runner image
 # https://registry.access.redhat.com/ubi9/nodejs-22-minimal
-FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:9.7-1767673763@sha256:65c830be98403ebe6e5ec47d2bd2ca8086aa9fe3e03dbae8f706e94eb75d4988 AS runner
+FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:9.7-1770309067@sha256:449f3e1b0a9c1ef766777ca84ea89bcc040a96d5f6d456c3a9acdd558dfc2b4f AS runner
 USER 0
 
 ENV EXTERNAL_SOURCE_NESTED=.

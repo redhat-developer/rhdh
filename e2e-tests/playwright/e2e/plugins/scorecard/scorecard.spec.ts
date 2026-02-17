@@ -14,25 +14,24 @@
  * limitations under the License.
  */
 
-import { test, expect } from "@playwright/test";
+import { test } from "@playwright/test";
 import { Common } from "../../../utils/common";
-import { mockScorecardResponse } from "../../../utils/scorecard-utils";
-import { ComponentImportPage } from "../../../support/page-objects/scorecard/component-import-page";
 import { Catalog } from "../../../support/pages/catalog";
+// TODO: Re-enable/uncomment once https://issues.redhat.com/browse/RHIDP-12130 is fixed
+// import { CatalogImport } from "../../../support/pages/catalog-import";
 import { ScorecardPage } from "../../../support/page-objects/scorecard/scorecard-page";
-import {
-  CUSTOM_SCORECARD_RESPONSE,
-  EMPTY_SCORECARD_RESPONSE,
-  UNAVAILABLE_METRIC_RESPONSE,
-  INVALID_THRESHOLD_RESPONSE,
-} from "../../../utils/scorecard-response-utils";
+import type { BrowserContext, Page } from "@playwright/test";
 
 test.describe.serial("Scorecard Plugin Tests", () => {
-  let context;
-  let page;
+  let context: BrowserContext;
+  let page: Page;
   let catalog: Catalog;
-  let importPage: ComponentImportPage;
+  // TODO: Re-enable/uncomment once https://issues.redhat.com/browse/RHIDP-12130 is fixed
+  // let catalogImport: CatalogImport;
   let scorecardPage: ScorecardPage;
+
+  let initialGithubCount: number;
+  let initialJiraCount: number;
 
   test.beforeAll(async ({ browser }, testInfo) => {
     testInfo.annotations.push({
@@ -43,120 +42,146 @@ test.describe.serial("Scorecard Plugin Tests", () => {
     context = await browser.newContext();
     page = await context.newPage();
     catalog = new Catalog(page);
-    importPage = new ComponentImportPage(page);
+    // TODO: Re-enable/uncomment once https://issues.redhat.com/browse/RHIDP-12130 is fixed
+    // catalogImport = new CatalogImport(page);
     scorecardPage = new ScorecardPage(page);
     await new Common(page).loginAsKeycloakUser();
-
-    // Import the component here instead of the first tests so that they can re-run.
-    // It would be great if this would detect if the component is already imported.
-    await catalog.go();
-    await importPage.startComponentImport();
-    await importPage.analyzeComponent(
-      "https://github.com/rhdh-pai-qe/backstage-catalog/blob/main/catalog-info.yaml",
-    );
-    await importPage.viewImportedComponent();
   });
 
   test.afterAll(async () => {
     await context?.close();
   });
 
-  test("Import component and validate scorecard tabs for GitHub PRs and Jira tickets", async () => {
-    await mockScorecardResponse(page, CUSTOM_SCORECARD_RESPONSE);
+  test("Setup aggregated scorecards on homepage", async () => {
+    await scorecardPage.navigateToHome();
 
-    await catalog.go();
-    await catalog.goToByName("rhdh-app");
-    await scorecardPage.openTab();
+    await scorecardPage.openAddWidgetDialog();
+    await scorecardPage.selectWidget("GitHub open PRs");
+    await scorecardPage.enterEditMode();
+    await scorecardPage.openAddWidgetDialog();
+    await scorecardPage.selectWidget("Jira open blocking tickets");
+    await scorecardPage.saveChanges();
 
-    await scorecardPage.verifyScorecardValues({
-      "GitHub open PRs": "9",
-      "Jira open blocking tickets": "8",
-    });
+    const [githubMetric, jiraMetric] = scorecardPage.scorecardMetrics;
 
-    for (const metric of scorecardPage.scorecardMetrics) {
-      await scorecardPage.validateScorecardAriaFor(metric);
-    }
-  });
+    await scorecardPage.expectAggregatedScorecardVisible(githubMetric.title);
+    await scorecardPage.expectAggregatedScorecardVisible(jiraMetric.title);
 
-  test("Display empty state when scorecard API returns no metrics", async () => {
-    await mockScorecardResponse(page, EMPTY_SCORECARD_RESPONSE);
-
-    await catalog.go();
-    await catalog.goToByName("rhdh-app");
-    await scorecardPage.openTab();
-
-    await scorecardPage.expectEmptyState();
-  });
-
-  test("Displays error state for unavailable data while rendering metrics", async () => {
-    await mockScorecardResponse(page, UNAVAILABLE_METRIC_RESPONSE);
-
-    await catalog.go();
-    await catalog.goToByName("rhdh-app");
-    await scorecardPage.openTab();
-
-    const jiraMetric = scorecardPage.scorecardMetrics[1];
-    const githubMetric = scorecardPage.scorecardMetrics[0];
-
-    const isJiraVisible = await scorecardPage.isScorecardVisible(
-      jiraMetric.title,
-    );
-    expect(isJiraVisible).toBe(true);
-
-    const isGithubVisible = await scorecardPage.isScorecardVisible(
+    initialGithubCount = await scorecardPage.getAggregatedScorecardEntityCount(
       githubMetric.title,
     );
-    expect(isGithubVisible).toBe(true);
-
-    const errorLocator = page.getByRole("heading", {
-      name: "Metric data unavailable",
-    });
-    await expect(errorLocator).toBeVisible();
-
-    await errorLocator.hover();
-    const errorTooltip = UNAVAILABLE_METRIC_RESPONSE.find(
-      (metric) => metric.id === "github.open-prs",
-    )?.error;
-
-    expect(errorTooltip).toBeTruthy();
-    await expect(page.getByText(errorTooltip!)).toBeVisible();
-
-    await scorecardPage.validateScorecardAriaFor(jiraMetric);
-  });
-
-  test("Display error state for invalid threshold config while rendering metrics", async () => {
-    await mockScorecardResponse(page, INVALID_THRESHOLD_RESPONSE);
-
-    await catalog.go();
-    await catalog.goToByName("rhdh-app");
-    await scorecardPage.openTab();
-
-    const githubMetric = scorecardPage.scorecardMetrics[0];
-    const jiraMetric = scorecardPage.scorecardMetrics[1];
-
-    const isGithubVisible = await scorecardPage.isScorecardVisible(
-      githubMetric.title,
-    );
-    expect(isGithubVisible).toBe(true);
-
-    const isJiraVisible = await scorecardPage.isScorecardVisible(
+    initialJiraCount = await scorecardPage.getAggregatedScorecardEntityCount(
       jiraMetric.title,
     );
-    expect(isJiraVisible).toBe(true);
+  });
 
-    const errorLocator = page.getByRole("heading", {
-      name: "Invalid thresholds",
+  test.describe("Entity Scorecards", () => {
+    // TODO: Re-enable/uncomment once https://issues.redhat.com/browse/RHIDP-12130 is fixed
+    // test.beforeAll(async () => {
+    //   const addonTestUrl =
+    //     "https://github.com/janus-qe/RHDH-scorecard-plugin-test/blob/main/addon-test.yaml";
+
+    //   await catalog.go();
+    //   await page.getByRole("button", { name: "Self-service" }).click();
+    //   await scorecardPage.uiHelper.clickButton(
+    //     "Import an existing Git repository",
+    //   );
+    //   await catalogImport.registerExistingComponent(addonTestUrl);
+    // });
+
+    test("Validate scorecard tabs for GitHub PRs and Jira tickets", async () => {
+      await catalog.go();
+      await catalog.goToByName("all-scorecards");
+      await scorecardPage.openTab();
+
+      for (const metric of scorecardPage.scorecardMetrics) {
+        await scorecardPage.validateScorecardAriaFor(metric);
+      }
     });
-    await expect(errorLocator).toBeVisible();
 
-    await errorLocator.hover();
-    const errorTooltip = INVALID_THRESHOLD_RESPONSE.find(
-      (metric) => metric.id === "github.open-prs",
-    )?.result?.thresholdResult?.error;
+    test("Validate empty scorecard state", async () => {
+      await catalog.go();
+      await catalog.goToByName("no-scorecards");
+      await scorecardPage.openTab();
+      await scorecardPage.expectEmptyState();
+    });
 
-    expect(errorTooltip).toBeTruthy();
-    await expect(page.getByText(errorTooltip!)).toBeVisible();
+    test("Displays error state for unavailable data while rendering metrics", async () => {
+      await catalog.go();
+      await catalog.goToByName("unavailable-metric-service");
+      await scorecardPage.openTab();
 
-    await scorecardPage.validateScorecardAriaFor(jiraMetric);
+      const [githubMetric, jiraMetric] = scorecardPage.scorecardMetrics;
+
+      await scorecardPage.expectScorecardVisible(githubMetric.title);
+      await scorecardPage.expectScorecardVisible(jiraMetric.title);
+      await scorecardPage.expectErrorHeading("Metric data unavailable");
+      await scorecardPage.validateScorecardAriaFor(jiraMetric);
+    });
+
+    test("Validate only GitHub scorecard is displayed", async () => {
+      await catalog.go();
+      await catalog.goToByName("github-scorecard-only");
+      await scorecardPage.openTab();
+
+      const [githubMetric, jiraMetric] = scorecardPage.scorecardMetrics;
+
+      await scorecardPage.expectScorecardVisible(githubMetric.title);
+      await scorecardPage.expectScorecardHidden(jiraMetric.title);
+      await scorecardPage.validateScorecardAriaFor(githubMetric);
+    });
+
+    test("Validate only Jira scorecard is displayed", async () => {
+      await catalog.go();
+      await catalog.goToByName("jira-scorecard-only");
+      await scorecardPage.openTab();
+
+      const [githubMetric, jiraMetric] = scorecardPage.scorecardMetrics;
+
+      await scorecardPage.expectScorecardHidden(githubMetric.title);
+      await scorecardPage.expectScorecardVisible(jiraMetric.title);
+      await scorecardPage.validateScorecardAriaFor(jiraMetric);
+    });
+
+    test("Display error state for invalid threshold config while rendering metrics", async () => {
+      await catalog.go();
+      await catalog.goToByName("invalid-threshold");
+      await scorecardPage.openTab();
+
+      const [githubMetric, jiraMetric] = scorecardPage.scorecardMetrics;
+
+      await scorecardPage.expectScorecardVisible(githubMetric.title);
+      await scorecardPage.expectScorecardVisible(jiraMetric.title);
+      await scorecardPage.expectErrorHeading("Invalid thresholds");
+      await scorecardPage.validateScorecardAriaFor(jiraMetric);
+    });
+
+    // TODO: Re-enable/uncomment once https://issues.redhat.com/browse/RHIDP-12130 is fixed
+    test.skip("Validate scorecards on imported addon-test entity", async () => {
+      await catalog.go();
+      await catalog.goToByName("addon-test");
+      await scorecardPage.openTab();
+
+      const [githubMetric, jiraMetric] = scorecardPage.scorecardMetrics;
+
+      await scorecardPage.expectScorecardVisible(githubMetric.title);
+      await scorecardPage.expectScorecardVisible(jiraMetric.title);
+    });
+  });
+
+  // TODO: Re-enable/uncomment once https://issues.redhat.com/browse/RHIDP-12130 is fixed
+  test.skip("Verify aggregated scorecard counts increased after import", async () => {
+    await scorecardPage.navigateToHome();
+
+    const [githubMetric, jiraMetric] = scorecardPage.scorecardMetrics;
+
+    await scorecardPage.expectAggregatedScorecardEntityCountToBe(
+      githubMetric.title,
+      initialGithubCount + 1,
+    );
+    await scorecardPage.expectAggregatedScorecardEntityCountToBe(
+      jiraMetric.title,
+      initialJiraCount + 1,
+    );
   });
 });

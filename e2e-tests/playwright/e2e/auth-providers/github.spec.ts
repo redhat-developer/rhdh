@@ -140,7 +140,7 @@ test.describe("Configure Github Provider", async () => {
     );
     expect(login).toBe("Login successful");
 
-    await uiHelper.goToPageUrl("/settings", "Settings");
+    await uiHelper.goToSettingsPage();
     await uiHelper.verifyHeading("RHDH QE Admin");
     await common.signOut();
     await context.clearCookies();
@@ -238,7 +238,7 @@ test.describe("Configure Github Provider", async () => {
     expect(actualDuration).toBeGreaterThan(threeDays - tolerance);
     expect(actualDuration).toBeLessThan(threeDays + tolerance);
 
-    await uiHelper.goToPageUrl("/settings", "Settings");
+    await uiHelper.goToSettingsPage();
     await uiHelper.verifyHeading("RHDH QE Admin");
     await common.signOut();
     await context.clearCookies();
@@ -273,6 +273,21 @@ test.describe("Configure Github Provider", async () => {
     ).toBe(true);
     expect(
       await deployment.checkGroupIsChildOfGroup("test_admins", "test_all"),
+    ).toBe(true);
+
+    expect(
+      await deployment.checkUserHasAnnotation(
+        "rhdhqeauthadmin",
+        "MY_CUSTOM_ANNOTATION",
+        "rhdhqeauthadmin",
+      ),
+    ).toBe(true);
+    expect(
+      await deployment.checkUserHasAnnotation(
+        "rhdhqeauth1",
+        "MY_CUSTOM_ANNOTATION",
+        "rhdhqeauth1",
+      ),
     ).toBe(true);
   });
 

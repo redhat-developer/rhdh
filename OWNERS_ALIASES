@@ -15,6 +15,7 @@ aliases:
     - deerskindoll
     - divyanshiGupta
     - djanickova
+    - dom-aug
     - durandom
     - dzemanov
     - elsony
@@ -48,11 +49,13 @@ aliases:
     - maysunfaisal
     - michael-valdron
     - nickboldt
+    - OpinionatedHeron
     - pabel-rh
     - PatAKnight
     - polasudo
     - rm3l
     - rohitkrai03
+    - rohitratannagar
     - rostalan
     - sanketpathak
     - schultzp2020
@@ -75,6 +78,7 @@ aliases:
   rhdh-plugins:
     - AndrienkoAleksandr
     - djanickova
+    - dom-aug
     - dzemanov
     - gashcrumb
     - gustavolira
@@ -82,13 +86,11 @@ aliases:
     - lholmquist
     - PatAKnight
     - rostalan
-    - Zaperex
   rhdh-security:
     - albarbaro
     - alizard0
     - JessicaJHee
     - kim-tsao
-    - Zaperex
   rhdh-ui:
     - christoph-jerolimov
     - ciiay
@@ -103,6 +105,7 @@ aliases:
     - lokanandaprabhu
     - Lucifergene
     - rohitkrai03
+    - rohitratannagar
     - sanketpathak
     - teknaS47
   rhdh-administrators:
@@ -117,3 +120,21 @@ aliases:
     - rm3l
     - schultzp2020
     - Zaperex
+  rhdh-install:
+    - Fortune-Ndlovu
+    - gazarenkov
+    - OpinionatedHeron
+    - rm3l
+    - subhashkhileri
+    - zdrapela
+  rhdh-qe:
+    - gustavolira
+    - HusneShabbir
+    - josephca
+    - jrichter1
+    - kadel
+    - rostalan
+    - sanketpathak
+    - subhashkhileri
+    - teknaS47
+    - zdrapela

@@ -31,13 +31,13 @@ dynamicPlugins:
             icon: bulkImportIcon
             label: "Bulk import"
             toolTip: "Register multiple repositories in bulk"
-            to: /bulk-import/repositories
+            to: /bulk-import
             excludeOnPaths: ["/catalog"]
       appIcons:
         - name: bulkImportIcon
           importName: BulkImportIcon
       dynamicRoutes:
-        - path: /bulk-import/repositories
+        - path: /bulk-import
           importName: BulkImportPage
           menuItem:
             icon: bulkImportIcon

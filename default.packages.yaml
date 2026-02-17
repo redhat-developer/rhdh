@@ -87,6 +87,7 @@ packages:
   # Orchestrator package names for 1.9+
   - package: '@red-hat-developer-hub/backstage-plugin-orchestrator'
   - package: '@red-hat-developer-hub/backstage-plugin-orchestrator-backend'
+  - package: '@red-hat-developer-hub/backstage-plugin-orchestrator-backend-module-loki'
   - package: '@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets'
   - package: '@red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-orchestrator'
   - package: '@roadiehq/backstage-plugin-argo-cd-backend'
