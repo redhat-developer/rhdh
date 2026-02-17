@@ -95,7 +95,7 @@ export class Extensions {
     await this.uiHelper.verifyHeading("Plugins (1)");
     await expect(
       this.page.locator(".v5-MuiPaper-outlined").first(),
-    ).toContainText(searchText, { timeout: 10000 });
+    ).toContainText(searchText);
   }
 
   async verifyPluginDetails({

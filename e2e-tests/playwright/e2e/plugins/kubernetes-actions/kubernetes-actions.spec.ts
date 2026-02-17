@@ -24,7 +24,7 @@ test.describe("Test Kubernetes Actions plugin", () => {
     test.setTimeout(testInfo.timeout + 6500);
 
     await common.loginAsGuest();
-    await uiHelper.clickLink({ ariaLabel: "Self-service" });
+    await uiHelper.goToSelfServicePage();
   });
 
   test.beforeEach(async ({}, testInfo) => {

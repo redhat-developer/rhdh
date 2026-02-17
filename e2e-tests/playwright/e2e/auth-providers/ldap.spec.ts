@@ -200,7 +200,7 @@ test.describe("Configure LDAP Provider", async () => {
     );
     expect(login).toBe("Login successful");
 
-    await uiHelper.goToPageUrl("/settings", "Settings");
+    await uiHelper.goToSettingsPage();
     await uiHelper.verifyHeading("User 1");
     await common.signOut();
   });

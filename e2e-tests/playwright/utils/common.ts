@@ -104,7 +104,7 @@ export class Common {
         await popup.locator("#password").fill(password);
         // Handle popup close during navigation (popup may close before navigation completes)
         try {
-          await popup.locator("#kc-login").click({ timeout: 5000 });
+          await popup.locator("#kc-login").click();
         } catch (error) {
           // Popup likely closed - this is expected behavior
           if (!error.message?.includes("Target closed")) {
@@ -209,7 +209,7 @@ export class Common {
   async checkAndClickOnGHloginPopup(force = false) {
     const frameLocator = this.page.getByLabel("Login Required");
     try {
-      await frameLocator.waitFor({ state: "visible", timeout: 2000 });
+      await frameLocator.waitFor({ state: "visible" });
       await this.clickOnGHloginPopup();
     } catch (error) {
       if (force) throw error;
@@ -278,7 +278,7 @@ export class Common {
 
     // Check if popup closes automatically (already logged in)
     try {
-      await popup.waitForEvent("close", { timeout: 5000 });
+      await popup.waitForEvent("close");
       return "Already logged in";
     } catch {
       // Popup didn't close, proceed with login
@@ -288,8 +288,8 @@ export class Common {
       await popup.locator("#username").click();
       await popup.locator("#username").fill(username);
       await popup.locator("#password").fill(password);
-      await popup.locator("[name=login]").click({ timeout: 5000 });
-      await popup.waitForEvent("close", { timeout: 2000 });
+      await popup.locator("[name=login]").click();
+      await popup.waitForEvent("close");
       return "Login successful";
     } catch (e) {
       const usernameError = popup.locator("id=input-error");
@@ -318,28 +318,28 @@ export class Common {
 
     // Check if popup closes automatically
     try {
-      await popup.waitForEvent("close", { timeout: 5000 });
+      await popup.waitForEvent("close");
       return "Already logged in";
     } catch {
       // Popup didn't close, proceed with login
     }
 
     try {
-      await popup.locator("#login_field").click({ timeout: 5000 });
-      await popup.locator("#login_field").fill(username, { timeout: 5000 });
+      await popup.locator("#login_field").click();
+      await popup.locator("#login_field").fill(username);
       const cookieLocator = popup.locator("#wcpConsentBannerCtrl");
       if (await cookieLocator.isVisible()) {
-        await popup.click('button:has-text("Reject")', { timeout: 5000 });
+        await popup.click('button:has-text("Reject")');
       }
-      await popup.locator("#password").click({ timeout: 5000 });
-      await popup.locator("#password").fill(password, { timeout: 5000 });
+      await popup.locator("#password").click();
+      await popup.locator("#password").fill(password);
       await popup
         .locator("[type='submit'][value='Sign in']:not(webauthn-status *)")
         .first()
-        .click({ timeout: 5000 });
+        .click();
       const twofactorcode = authenticator.generate(twofactor);
-      await popup.locator("#app_totp").click({ timeout: 5000 });
-      await popup.locator("#app_totp").fill(twofactorcode, { timeout: 5000 });
+      await popup.locator("#app_totp").click();
+      await popup.locator("#app_totp").fill(twofactorcode);
 
       await popup.waitForEvent("close", { timeout: 20000 });
       return "Login successful";
@@ -408,18 +408,18 @@ export class Common {
 
     // Check if popup closes automatically
     try {
-      await popup.waitForEvent("close", { timeout: 5000 });
+      await popup.waitForEvent("close");
       return "Already logged in";
     } catch {
       // Popup didn't close, proceed with login
     }
 
     try {
-      await popup.locator("#user_login").click({ timeout: 5000 });
-      await popup.locator("#user_login").fill(username, { timeout: 5000 });
-      await popup.locator("#user_password").click({ timeout: 5000 });
-      await popup.locator("#user_password").fill(password, { timeout: 5000 });
-      await popup.getByTestId("sign-in-button").click({ timeout: 5000 });
+      await popup.locator("#user_login").click();
+      await popup.locator("#user_login").fill(username);
+      await popup.locator("#user_password").click();
+      await popup.locator("#user_password").fill(password);
+      await popup.getByTestId("sign-in-button").click();
 
       // Wait for navigation after sign-in (either to 2FA, authorization, or close)
       await popup
@@ -430,7 +430,7 @@ export class Common {
 
       // Handle 2FA if present
       const twoFactorInput = popup.locator("#user_otp_attempt");
-      if (await twoFactorInput.isVisible({ timeout: 5000 })) {
+      if (await twoFactorInput.isVisible()) {
         // If 2FA is required, we'll need to handle it
         // For now, we'll wait for the popup to close or authorization
         await popup.waitForEvent("close", { timeout: 20000 });
@@ -446,18 +446,12 @@ export class Common {
       let buttonToClick: Locator | null = null;
       await expect(async () => {
         // Check data-testid first
-        if (
-          await authorization.isVisible({ timeout: 2000 }).catch(() => false)
-        ) {
+        if (await authorization.isVisible().catch(() => false)) {
           buttonToClick = authorization;
           return true;
         }
         // Fallback to text-based selector
-        if (
-          await authorizationByText
-            .isVisible({ timeout: 2000 })
-            .catch(() => false)
-        ) {
+        if (await authorizationByText.isVisible().catch(() => false)) {
           buttonToClick = authorizationByText;
           return true;
         }
@@ -480,18 +474,18 @@ export class Common {
         });
 
       // Wait for button to be enabled and clickable
-      await buttonToClick.waitFor({ state: "visible", timeout: 5000 });
-      await expect(buttonToClick).toBeEnabled({ timeout: 10000 });
-      await buttonToClick.scrollIntoViewIfNeeded({ timeout: 5000 });
+      await buttonToClick.waitFor({ state: "visible" });
+      await expect(buttonToClick).toBeEnabled();
+      await buttonToClick.scrollIntoViewIfNeeded();
       // Small delay to ensure any animations/transitions complete
       await popup.waitForTimeout(1000);
 
       try {
-        await buttonToClick.click({ timeout: 5000 });
+        await buttonToClick.click();
       } catch {
         // If regular click fails, try force click
         // eslint-disable-next-line playwright/no-force-option
-        await buttonToClick.click({ force: true, timeout: 5000 });
+        await buttonToClick.click({ force: true });
       }
 
       await popup.waitForEvent("close", { timeout: 20000 });
@@ -543,7 +537,7 @@ export class Common {
 
     // Check if popup closes automatically (already logged in)
     try {
-      await popup.waitForEvent("close", { timeout: 5000 });
+      await popup.waitForEvent("close");
       return "Already logged in";
     } catch {
       // Popup didn't close, proceed with login
@@ -551,16 +545,12 @@ export class Common {
 
     try {
       await popup.locator("[name=loginfmt]").click();
-      await popup.locator("[name=loginfmt]").fill(username, { timeout: 5000 });
-      await popup
-        .locator('[type=submit]:has-text("Next")')
-        .click({ timeout: 5000 });
+      await popup.locator("[name=loginfmt]").fill(username);
+      await popup.locator('[type=submit]:has-text("Next")').click();
 
       await popup.locator("[name=passwd]").click();
-      await popup.locator("[name=passwd]").fill(password, { timeout: 5000 });
-      await popup
-        .locator('[type=submit]:has-text("Sign in")')
-        .click({ timeout: 5000 });
+      await popup.locator("[name=passwd]").fill(password);
+      await popup.locator('[type=submit]:has-text("Sign in")').click();
       await popup
         .locator('[type=button]:has-text("No")')
         .click({ timeout: 15000 });

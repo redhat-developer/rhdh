@@ -758,7 +758,6 @@ test.describe("Admin > Extensions", () => {
       );
       await expect(page.getByRole("alert").first()).toContainText(
         "The Analytics Provider Segment package requires a restart of the backend system to finish installing, updating, enabling or disabling.",
-        { timeout: 10000 },
       );
     });
 
@@ -831,7 +830,7 @@ test.describe("Admin > Extensions", () => {
           .getByText(
             t["plugin.extensions"][lang]["alert.backendRestartRequired"],
           ),
-      ).toBeVisible({ timeout: 10000 });
+      ).toBeVisible();
 
       const packageVerifications = [
         { rowTitle: "Name", rowValue: "Action" },

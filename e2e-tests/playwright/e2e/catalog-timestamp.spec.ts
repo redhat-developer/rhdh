@@ -46,7 +46,7 @@ test.describe("Test timestamp column on Catalog", () => {
   });
 
   test("Import an existing Git repository and verify `Created At` column and value in the Catalog Page", async () => {
-    await uiHelper.clickButton(t["rhdh"][lang]["menuItem.selfService"]);
+    await uiHelper.goToSelfServicePage();
     await uiHelper.clickButton(
       t["catalog-import-test"][lang]["buttons.importExistingGitRepository"],
     );

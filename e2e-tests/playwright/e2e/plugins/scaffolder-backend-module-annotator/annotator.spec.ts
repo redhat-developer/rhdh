@@ -104,8 +104,14 @@ test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
     ]);
 
     await uiHelper.clickButton("Create");
-    await page.waitForTimeout(5000);
-    await uiHelper.clickLink("Open in catalog");
+
+    const linkLocator = page
+      .locator("a")
+      .filter({ hasText: "Open in catalog" })
+      .first();
+    // scaffolder might take a bit longer to create the entity, so we wait for the link to be visible before clicking
+    await linkLocator.waitFor({ state: "visible", timeout: 60_000 });
+    await linkLocator.click();
   });
 
   test("Verify custom label is added to scaffolded component", async () => {
