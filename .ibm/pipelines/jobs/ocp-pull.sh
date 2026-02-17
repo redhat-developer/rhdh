@@ -18,7 +18,7 @@ handle_ocp_pull() {
   export K8S_CLUSTER_ROUTER_BASE
   cluster_setup_ocp_helm
 
-  cd "${DIR}"
+  cd "${DIR}" || return 1
   # PR jobs: deploy with orchestrator disabled to avoid SonataFlow deployment timeouts.
   # Orchestrator is fully tested in nightly jobs.
   base_deployment_pr
@@ -37,7 +37,7 @@ base_deployment_pr() {
 
   deploy_redis_cache "${NAME_SPACE}"
 
-  cd "${DIR}"
+  cd "${DIR}" || return 1
   local rhdh_base_url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
 
