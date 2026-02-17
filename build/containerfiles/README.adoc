@@ -18,7 +18,7 @@ Note that some things in this repo are changed when they're synced to downstream
 
 Depending on what you're trying to accomplish you have some options:
 
-1. Use the link:../scripts/local-hermeto-build.sh[local-hermeto-build.sh] script to build the image locally. 
+1. Use the link:../../scripts/local-hermeto-build.sh[local-hermeto-build.sh] script to build the image locally. 
 +
 
 This script will do the following:
@@ -30,6 +30,7 @@ This script will do the following:
 +
 ```bash
 # create the hermeto cache and build the image using the hermeto cache
+# Run the script from the root of the repository.
 ./scripts/local-hermeto-build.sh -d . -i image:tag
 ```
 
