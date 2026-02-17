@@ -99,7 +99,13 @@ Examples (assume you are in the root of the rhdh repository):
 Cross-platform build (ARM on x86), requires \`qemu-user-static\` to be installed:
   TARGET_PLATFORM=linux/arm64 $0 -d . -i quay.io/example/image:tag
 
-Note: after building cache, you may want to revert any changes done to the 'python/requirements*.txt' files before running the script again.
+Notes:
+  - Please remove all \`node_modules\` and run \`yarn cache clean\` in the root
+    and ./dynamic-plugins directories before running the script.
+  - Remove any folders with additional \`yarn.lock\` files outside of the main \`yarn.lock\`
+    files in the root and \`./dynamic-plugins\` directories.
+  - After building the cache, you should revert any changes to the
+    \`python/requirements*.txt\` files before running the script again.
 EOF
   exit 1
 }
