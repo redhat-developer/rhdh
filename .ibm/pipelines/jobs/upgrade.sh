@@ -18,7 +18,14 @@ handle_ocp_helm_upgrade() {
   export QUAY_REPO_BASE="${QUAY_REPO_BASE:-rhdh/rhdh-hub-rhel9}"
 
   # Dynamically determine the previous release version and chart version
-  previous_release_version=$(common::get_previous_release_version "$CHART_MAJOR_VERSION")
+  local current_release_version
+  current_release_version=$(helm::get_chart_major_version)
+  if [[ -z "$current_release_version" ]]; then
+    log::error "Failed to determine current release version. Exiting."
+    save_overall_result 1
+    exit 1
+  fi
+  previous_release_version=$(common::get_previous_release_version "$current_release_version")
   if [[ -z "$previous_release_version" ]]; then
     log::error "Failed to determine latest release version. Exiting."
     save_overall_result 1
