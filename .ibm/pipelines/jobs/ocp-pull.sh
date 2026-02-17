@@ -64,6 +64,21 @@ rbac_deployment_pr() {
   configure_namespace "${NAME_SPACE_RBAC}"
   configure_external_postgres_db "${NAME_SPACE_RBAC}"
 
+  # Wait for PostgreSQL primary pod to be Running and Ready before deploying RHDH.
+  # configure_external_postgres_db only waits for secrets; the pod may still be starting.
+  # Without orchestrator the helm install finishes fast and RHDH tries to connect
+  # before PostgreSQL is accepting connections, causing a permanent startup failure.
+  log::info "Waiting for PostgreSQL primary pod to be ready in ${NAME_SPACE_POSTGRES_DB}..."
+  if ! oc wait --for=condition=Ready pod \
+    -l postgres-operator.crunchydata.com/cluster=postgress-external-db,postgres-operator.crunchydata.com/role=master \
+    -n "${NAME_SPACE_POSTGRES_DB}" --timeout=300s 2> /dev/null; then
+    log::warn "PostgreSQL primary pod not ready via label 'role=master', trying 'data' label..."
+    oc wait --for=condition=Ready pod \
+      -l postgres-operator.crunchydata.com/cluster=postgress-external-db,postgres-operator.crunchydata.com/data=postgres \
+      -n "${NAME_SPACE_POSTGRES_DB}" --timeout=300s
+  fi
+  log::info "PostgreSQL primary pod is ready."
+
   local rbac_rhdh_base_url="https://${RELEASE_NAME_RBAC}-developer-hub-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
 
@@ -80,18 +95,6 @@ rbac_deployment_pr() {
     -f "/tmp/merged-values_showcase-rbac_PR.yaml" \
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     $(get_image_helm_set_params)
-
-  # Without orchestrator, the deploy finishes faster and the external PostgreSQL
-  # may not yet be accepting connections when the RHDH pod starts. Backstage does
-  # not retry DB connections after a failed startup, so the pod stays broken.
-  # Wait for the deployment to become ready; if it doesn't, restart it so the new
-  # pod can connect to the now-ready PostgreSQL.
-  local rbac_deploy="${RELEASE_NAME_RBAC}-developer-hub"
-  if ! oc rollout status "deployment/${rbac_deploy}" -n "${NAME_SPACE_RBAC}" --timeout=300s 2> /dev/null; then
-    log::warn "RHDH RBAC deployment not ready. Restarting to retry database connection..."
-    oc rollout restart "deployment/${rbac_deploy}" -n "${NAME_SPACE_RBAC}"
-    oc rollout status "deployment/${rbac_deploy}" -n "${NAME_SPACE_RBAC}" --timeout=300s
-  fi
 
   log::warn "Skipping sonataflow database workaround for PR job"
   log::warn "Skipping orchestrator workflows deployment for PR job"
