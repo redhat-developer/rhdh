@@ -87,7 +87,7 @@ rbac_deployment_pr() {
   # Wait for the deployment to become ready; if it doesn't, restart it so the new
   # pod can connect to the now-ready PostgreSQL.
   local rbac_deploy="${RELEASE_NAME_RBAC}-developer-hub"
-  if ! oc rollout status "deployment/${rbac_deploy}" -n "${NAME_SPACE_RBAC}" --timeout=300s 2>/dev/null; then
+  if ! oc rollout status "deployment/${rbac_deploy}" -n "${NAME_SPACE_RBAC}" --timeout=300s 2> /dev/null; then
     log::warn "RHDH RBAC deployment not ready. Restarting to retry database connection..."
     oc rollout restart "deployment/${rbac_deploy}" -n "${NAME_SPACE_RBAC}"
     oc rollout status "deployment/${rbac_deploy}" -n "${NAME_SPACE_RBAC}" --timeout=300s
