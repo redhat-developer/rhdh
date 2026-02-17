@@ -7,7 +7,8 @@ import { GITHUB_API_ENDPOINTS } from "../../../utils/api-endpoints";
 
 let page: Page;
 
-test.describe.serial("Test Scaffolder Relation Processor Plugin", () => {
+// FIXME: fix Relation Catalog feature and re-enable tests https://issues.redhat.com/browse/RHDHBUGS-2578
+test.describe.fixme("Test Scaffolder Relation Processor Plugin", () => {
   test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
 
   let uiHelper: UIhelper;

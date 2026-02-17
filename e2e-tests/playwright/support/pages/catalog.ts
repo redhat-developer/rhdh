@@ -20,6 +20,7 @@ export class Catalog {
 
   async goToByName(name: string) {
     await this.uiHelper.openCatalogSidebar("Component");
+    await this.page.getByRole("textbox", { name: "Search" }).fill(name);
     await this.uiHelper.clickLink(name);
   }
 

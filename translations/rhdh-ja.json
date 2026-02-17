@@ -1,32 +1,4 @@
 {
-  "catalog": {
-    "ja": {
-      "indexPage.createButtonTitle": "セルフサービス"
-    }
-  },
-  "catalog-import": {
-    "ja": {
-      "defaultImportPage.headerTitle": "既存の Git リポジトリーのインポート",
-      "importInfoCard.title": "既存の Git リポジトリーのインポート"
-    }
-  },
-  "core-components": {
-    "ja": {
-      "table.filter.placeholder": "すべての結果",
-      "table.body.emptyDataSourceMessage": "表示するレコードがありません",
-      "table.pagination.firstTooltip": "最初のページ",
-      "table.pagination.labelDisplayedRows": "{count} 件中 {from}-{to} 件目",
-      "table.pagination.labelRowsSelect": "行",
-      "table.pagination.lastTooltip": "最後のページ",
-      "table.pagination.nextTooltip": "次のページ",
-      "table.pagination.previousTooltip": "前のページ",
-      "table.toolbar.search": "フィルター",
-      "alertDisplay.message_one": "({{ count }} 件の新しいメッセージ)",
-      "alertDisplay.message_other": "({{ count }} 件の新しいメッセージ)",
-      "table.header.actions": "アクション",
-      "oauthRequestDialog.message": "{{appTitle}} が {{provider}} API と ID にアクセスすることを許可するには、サインインしてください。"
-    }
-  },
   "rhdh": {
     "ja": {
       "menuItem.home": "ホーム",
@@ -91,7 +63,6 @@
       "catalog.entityPage.definition.title": "定義",
       "catalog.entityPage.diagram.title": "システム図",
       "catalog.entityPage.workflows.title": "ワークフロー",
-      "app.scaffolder.title": "セルフサービス",
       "app.search.title": "検索",
       "app.search.resultType": "結果タイプ",
       "app.search.softwareCatalog": "ソフトウェアカタログ",
@@ -114,21 +85,6 @@
       "app.errors.notFound.message": "該当するページが見つかりませんでした",
       "app.errors.notFound.additionalInfo": "お探しのページは削除されたか、名前が変更されたか、一時的に利用できない可能性があります。",
       "app.table.createdAt": "作成日時"
-    }
-  },
-  "scaffolder": {
-    "ja": {
-      "templateListPage.contentHeader.registerExistingButtonTitle": "既存の Git リポジトリーのインポート"
-    }
-  },
-  "search": {
-    "ja": {
-      "sidebarSearchModal.title": "検索"
-    }
-  },
-  "user-settings": {
-    "ja": {
-      "sidebarTitle": "設定"
     }
   }
 }

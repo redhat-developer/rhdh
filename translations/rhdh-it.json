@@ -1,32 +1,4 @@
 {
-  "catalog": {
-    "it": {
-      "indexPage.createButtonTitle": "Self-service"
-    }
-  },
-  "catalog-import": {
-    "it": {
-      "defaultImportPage.headerTitle": "Importa un repository Git esistente",
-      "importInfoCard.title": "Importa un repository Git esistente"
-    }
-  },
-  "core-components": {
-    "it": {
-      "table.filter.placeholder": "Tutti i risultati",
-      "table.body.emptyDataSourceMessage": "Nessun record da visualizzare",
-      "table.pagination.firstTooltip": "Prima pagina",
-      "table.pagination.labelDisplayedRows": "{from}-{to} di {count}",
-      "table.pagination.labelRowsSelect": "righe",
-      "table.pagination.lastTooltip": "Ultima pagina",
-      "table.pagination.nextTooltip": "Pagina successiva",
-      "table.pagination.previousTooltip": "Pagina precedente",
-      "table.toolbar.search": "Filtra",
-      "alertDisplay.message_one": "({{ count }} messaggio più recente)",
-      "alertDisplay.message_other": "({{ count }} messaggi più recenti)",
-      "table.header.actions": "Azioni",
-      "oauthRequestDialog.message": "Accedere per consentire a {{appTitle}} di accedere alle API e alle identità di {{provider}}."
-    }
-  },
   "rhdh": {
     "it": {
       "menuItem.home": "Home",
@@ -91,7 +63,6 @@
       "catalog.entityPage.definition.title": "Definizione",
       "catalog.entityPage.diagram.title": "Diagramma di sistema",
       "catalog.entityPage.workflows.title": "Flussi di lavoro",
-      "app.scaffolder.title": "Self-service",
       "app.search.title": "Ricerca",
       "app.search.resultType": "Tipo di risultato",
       "app.search.softwareCatalog": "Catalogo software",
@@ -114,21 +85,6 @@
       "app.errors.notFound.message": "Non è stato possibile trovare la pagina",
       "app.errors.notFound.additionalInfo": "La pagina potrebbe essere stata rimossa, potrebbe aver cambiato nome o potrebbe non essere temporaneamente disponibile.",
       "app.table.createdAt": "Creato alle"
-    }
-  },
-  "scaffolder": {
-    "it": {
-      "templateListPage.contentHeader.registerExistingButtonTitle": "Importa un repository Git esistente"
-    }
-  },
-  "search": {
-    "it": {
-      "sidebarSearchModal.title": "Ricerca"
-    }
-  },
-  "user-settings": {
-    "it": {
-      "sidebarTitle": "Impostazioni"
     }
   }
 }

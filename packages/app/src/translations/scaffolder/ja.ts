@@ -21,6 +21,10 @@ export default createTranslationMessages({
   ref: scaffolderTranslationRef,
   full: false,
   messages: {
+    'templateListPage.title': 'セルフサービス',
+    'templateListPage.pageTitle': 'セルフサービス',
+    'templateWizardPage.title': 'セルフサービス',
+    'templateWizardPage.pageTitle': 'セルフサービス',
     'templateListPage.contentHeader.registerExistingButtonTitle':
       '既存の Git リポジトリーのインポート',
   },

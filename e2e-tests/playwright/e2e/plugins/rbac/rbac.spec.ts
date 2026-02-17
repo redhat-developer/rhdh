@@ -478,11 +478,13 @@ test.describe("Test RBAC", () => {
     test("Create a role with a permission policy per resource type and verify that the only authorized users can access specific resources.", async ({
       page,
     }) => {
-      // TODO: https://issues.redhat.com/browse/RHDHBUGS-2127
-      test.fixme(true, "Cannot delete role because of missing permissions");
-
       const uiHelper = new UIhelper(page);
       const rbacPo = new RbacPo(page);
+
+      await uiHelper.verifyComponentInCatalog("Group", ["Janus-IDP Authors"]);
+      await uiHelper.verifyComponentInCatalog("API", ["Petstore"]);
+      await uiHelper.goToPageUrl("/rbac");
+
       await rbacPo.createConditionalRole(
         "test-role1",
         ["Guest User", "rhdh-qe rhdh-qe"],
@@ -497,6 +499,10 @@ test.describe("Test RBAC", () => {
       });
       await page.getByPlaceholder("Filter").fill("test-role1");
       await uiHelper.verifyHeading("All roles (1)");
+
+      await uiHelper.verifyComponentInCatalog("Group", ["Janus-IDP Authors"]);
+      await uiHelper.selectMuiBox("Kind", "API", true);
+
       await rbacPo.deleteRole("role:default/test-role1");
     });
   });
@@ -543,8 +549,7 @@ test.describe("Test RBAC", () => {
       );
     });
 
-    // TODO: https://issues.redhat.com/browse/RHDHBUGS-2100
-    test.fixme("Test that roles and policies from GET request are what expected", async () => {
+    test("Test that roles and policies from GET request are what expected", async () => {
       const rbacApi = await RhdhRbacApi.build(apiToken);
 
       const rolesResponse = await rbacApi.getRoles();

@@ -78,7 +78,7 @@ test.describe("Test Quick Start plugin", () => {
     await uiHelper.verifyText("Let's get you started with Developer Hub");
     await uiHelper.verifyText("We'll guide you through a few quick steps");
     await uiHelper.clickButtonByText("Import application");
-    await uiHelper.verifyButtonURL("Import", "/bulk-import/repositories");
+    await uiHelper.verifyButtonURL("Import", "/bulk-import");
     await uiHelper.clickButtonByText("Import");
     await uiHelper.verifyHeading("Bulk import");
     await uiHelper.clickButtonByText("Learn about the Catalog");
