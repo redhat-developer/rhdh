@@ -68,15 +68,12 @@ rbac_deployment_pr() {
   # configure_external_postgres_db only waits for secrets; the pod may still be starting.
   # Without orchestrator the helm install finishes fast and RHDH tries to connect
   # before PostgreSQL is accepting connections, causing a permanent startup failure.
-  log::info "Waiting for PostgreSQL primary pod to be ready in ${NAME_SPACE_POSTGRES_DB}..."
-  if ! oc wait --for=condition=Ready pod \
-    -l postgres-operator.crunchydata.com/cluster=postgress-external-db,postgres-operator.crunchydata.com/role=master \
-    -n "${NAME_SPACE_POSTGRES_DB}" --timeout=300s 2> /dev/null; then
-    log::warn "PostgreSQL primary pod not ready via label 'role=master', trying 'data' label..."
-    oc wait --for=condition=Ready pod \
-      -l postgres-operator.crunchydata.com/cluster=postgress-external-db,postgres-operator.crunchydata.com/data=postgres \
-      -n "${NAME_SPACE_POSTGRES_DB}" --timeout=300s
-  fi
+  # The 'role=master' label is only set by Patroni after the pod is fully running,
+  # so we use the 'data=postgres' label which is set at pod creation time.
+  log::info "Waiting for PostgreSQL primary pod to be ready in ${NAME_SPACE_POSTGRES_DB} (up to 10 min)..."
+  oc wait --for=condition=Ready pod \
+    -l postgres-operator.crunchydata.com/cluster=postgress-external-db,postgres-operator.crunchydata.com/data=postgres \
+    -n "${NAME_SPACE_POSTGRES_DB}" --timeout=600s
   log::info "PostgreSQL primary pod is ready."
 
   local rbac_rhdh_base_url="https://${RELEASE_NAME_RBAC}-developer-hub-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
