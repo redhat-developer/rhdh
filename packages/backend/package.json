@@ -80,7 +80,7 @@
     "app-next": "workspace:*",
     "global-agent": "3.0.0",
     "jose": "5.10.0",
-    "undici": "6.22.0",
+    "undici": "6.23.0",
     "winston": "3.14.2",
     "zod": "3.25.76"
   },
