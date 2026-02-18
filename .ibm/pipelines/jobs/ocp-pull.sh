@@ -62,6 +62,23 @@ base_deployment_pr() {
 rbac_deployment_pr() {
   configure_namespace "${NAME_SPACE_POSTGRES_DB}"
   configure_namespace "${NAME_SPACE_RBAC}"
+
+  # Ensure the Crunchy Postgres operator pod is fully ready before creating
+  # the PostgresCluster. The CSV may be "Succeeded" and the CRD registered,
+  # but the operator pod might still be starting. If we create the CR too
+  # early, the operator only partially reconciles it (secrets are created
+  # but PVCs like postgress-external-db-repo1 are not), leaving the
+  # instance pod stuck in Pending forever.
+  log::info "Waiting for Crunchy Postgres operator pod to be ready..."
+  oc wait --for=condition=Ready pod \
+    -l postgres-operator.crunchydata.com/control-plane=postgres-operator \
+    -n openshift-operators --timeout=300s 2> /dev/null \
+    || oc wait --for=condition=Ready pod \
+      -l app.kubernetes.io/name=pgo \
+      -n openshift-operators --timeout=300s 2> /dev/null \
+    || log::warn "Could not verify operator pod readiness, proceeding anyway..."
+  log::info "Crunchy Postgres operator is ready."
+
   configure_external_postgres_db "${NAME_SPACE_RBAC}"
 
   local rbac_rhdh_base_url="https://${RELEASE_NAME_RBAC}-developer-hub-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
@@ -96,15 +113,16 @@ rbac_deployment_pr() {
 # so the new pod can connect to the database.
 wait_for_postgres_and_restart_rhdh() {
   local pg_label="postgres-operator.crunchydata.com/cluster=postgress-external-db"
-  local max_wait=600
+  local max_wait=900
   local interval=30
   local elapsed=0
 
   log::info "Waiting for PostgreSQL pod to be ready in ${NAME_SPACE_POSTGRES_DB} (up to ${max_wait}s)..."
 
   while [ "$elapsed" -lt "$max_wait" ]; do
-    # Check if any postgres pod is Ready
-    if oc wait --for=condition=Ready pod -l "${pg_label}" \
+    # Check if any postgres data pod is Ready
+    if oc wait --for=condition=Ready pod \
+      -l "${pg_label},postgres-operator.crunchydata.com/data=postgres" \
       -n "${NAME_SPACE_POSTGRES_DB}" --timeout=5s 2> /dev/null; then
       log::info "PostgreSQL pod is ready after ${elapsed}s."
 
@@ -116,22 +134,24 @@ wait_for_postgres_and_restart_rhdh() {
       return 0
     fi
 
-    # Log pod status for diagnostics
-    log::info "PostgreSQL pod status at ${elapsed}s:"
-    oc get pods -l "${pg_label}" -n "${NAME_SPACE_POSTGRES_DB}" -o wide 2>&1 | while IFS= read -r line; do
-      log::info "  ${line}"
+    # Log pod and PVC status for diagnostics
+    log::info "PostgreSQL status at ${elapsed}s:"
+    oc get pods -l "${pg_label}" -n "${NAME_SPACE_POSTGRES_DB}" -o wide --no-headers 2>&1 | while IFS= read -r line; do
+      log::info "  pod: ${line}"
     done
-    # Show events for stuck pods
-    oc get events -n "${NAME_SPACE_POSTGRES_DB}" --sort-by='.lastTimestamp' 2>&1 | tail -5 | while IFS= read -r line; do
-      log::debug "  ${line}"
+    oc get pvc -n "${NAME_SPACE_POSTGRES_DB}" --no-headers 2>&1 | while IFS= read -r line; do
+      log::info "  pvc: ${line}"
     done
 
     sleep "${interval}"
-    elapsed=$((elapsed + interval + 5)) # account for the 5s oc wait timeout
+    elapsed=$((elapsed + interval + 5))
   done
 
   log::error "PostgreSQL pod did not become ready within ${max_wait}s"
-  log::info "Final pod status:"
-  oc describe pods -l "${pg_label}" -n "${NAME_SPACE_POSTGRES_DB}" 2>&1 | tail -30
+  log::info "Final pod describe:"
+  oc describe pods -l "${pg_label},postgres-operator.crunchydata.com/data=postgres" \
+    -n "${NAME_SPACE_POSTGRES_DB}" 2>&1 | tail -40
+  log::info "Events in namespace:"
+  oc get events -n "${NAME_SPACE_POSTGRES_DB}" --sort-by='.lastTimestamp' 2>&1 | tail -20
   return 1
 }
