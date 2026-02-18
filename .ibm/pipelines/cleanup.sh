@@ -13,6 +13,13 @@ cleanup() {
     log::error "Exited with an error, setting OVERALL_RESULT to 1"
     save_overall_result 1
   fi
+  # Write TESTS_PASSED marker to SHARED_DIR for gather-extra/must-gather optimization.
+  # When present, the openshift/release post-phase steps can skip heavy artifact collection.
+  if [[ "${OVERALL_RESULT:-1}" == "0" && -n "${SHARED_DIR:-}" ]]; then
+    touch "${SHARED_DIR}/TESTS_PASSED"
+    log::info "TESTS_PASSED marker written to ${SHARED_DIR}"
+  fi
+
   if [[ "${OPENSHIFT_CI}" == "true" ]]; then
     log::info "Cleaning up before exiting"
     case "$JOB_NAME" in
