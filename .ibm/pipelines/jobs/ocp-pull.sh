@@ -126,11 +126,16 @@ wait_for_postgres_and_restart_rhdh() {
       -n "${NAME_SPACE_POSTGRES_DB}" --timeout=5s 2> /dev/null; then
       log::info "PostgreSQL pod is ready after ${elapsed}s."
 
-      # Restart RHDH RBAC deployment so the new pod connects to the ready DB
+      # Delete the existing RHDH RBAC pod so the ReplicaSet creates a fresh one
+      # that connects to the now-ready PostgreSQL. We delete the pod instead of
+      # using 'oc rollout restart' because the 2-node CI cluster does not have
+      # enough CPU to run both the old and new pod simultaneously during a
+      # rolling update.
       local rbac_deploy="${RELEASE_NAME_RBAC}-developer-hub"
-      log::info "Restarting RHDH RBAC deployment to connect to PostgreSQL..."
-      oc rollout restart "deployment/${rbac_deploy}" -n "${NAME_SPACE_RBAC}"
-      oc rollout status "deployment/${rbac_deploy}" -n "${NAME_SPACE_RBAC}" --timeout=300s
+      log::info "Deleting RHDH RBAC pod to reconnect to PostgreSQL..."
+      oc delete pod -l "app.kubernetes.io/instance=${RELEASE_NAME_RBAC}" \
+        -n "${NAME_SPACE_RBAC}" --grace-period=0 --force 2> /dev/null || true
+      oc rollout status "deployment/${rbac_deploy}" -n "${NAME_SPACE_RBAC}" --timeout=600s
       return 0
     fi
 
