@@ -41,7 +41,7 @@ log::debug "Sourcing utils.sh"
 # shellcheck source=.ibm/pipelines/utils.sh
 source "${DIR}/utils.sh"
 
-export K8S_CLUSTER_URL='https://api.v9cjq-49kk8-cqo.khj7.p3.openshiftapps.com:443'
+export K8S_CLUSTER_URL='https://api.ngqkg-znw2n-k7a.ohpr.p3.openshiftapps.com:443'
 export OCM_CLUSTER_TOKEN=$K8S_CLUSTER_TOKEN_TEMPORARY
 export K8S_CLUSTER_TOKEN=$K8S_CLUSTER_TOKEN_TEMPORARY
 
