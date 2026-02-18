@@ -50,10 +50,13 @@ helm::merge_values() {
     ' "${base_file}" "${diff_file}" > "${step_1_file}"
 
     # Step 2: Merge files, combining the .global.dynamic.plugins key
-    # Values from `diff_file` take precedence; plugins are merged and deduplicated by the .package field
+    # Values from `diff_file` take precedence; plugins are merged and deduplicated.
+    # For OCI packages (oci://registry:tag!path), deduplication strips the version tag
+    # so that packages differing only in version are treated as the same plugin.
+    # This prevents duplicate entries when diff files use different plugin versions than the base.
     yq eval-all '
       select(fileIndex == 0) *+ select(fileIndex == 1) |
-      .global.dynamic.plugins |= (reverse | unique_by(.package) | reverse)
+      .global.dynamic.plugins |= (reverse | unique_by(.package | sub(":[^!]+!"; ":!")) | reverse)
     ' "${base_file}" "${diff_file}" > "${step_2_file}"
 
     # Step 3: Combine results from the previous steps and remove null values
