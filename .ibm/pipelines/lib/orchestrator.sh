@@ -76,9 +76,15 @@ _orchestrator::clone_workflows() {
 
   rm -rf "${WORKFLOW_DIR}"
   if [[ "$shallow" == "true" ]]; then
-    git clone --depth=1 "${ORCHESTRATOR_WORKFLOW_REPO}" "${WORKFLOW_DIR}"
+    git clone --depth=1 "${ORCHESTRATOR_WORKFLOW_REPO}" "${WORKFLOW_DIR}" || {
+      log::error "Failed to clone serverless-workflows"
+      return 1
+    }
   else
-    git clone "${ORCHESTRATOR_WORKFLOW_REPO}" "${WORKFLOW_DIR}"
+    git clone "${ORCHESTRATOR_WORKFLOW_REPO}" "${WORKFLOW_DIR}" || {
+      log::error "Failed to clone serverless-workflows"
+      return 1
+    }
   fi
   return 0
 }
@@ -97,9 +103,15 @@ _orchestrator::clone_demo_workflows() {
 
   rm -rf "${DEMO_WORKFLOW_DIR}"
   if [[ "$shallow" == "true" ]]; then
-    git clone --depth=1 "${ORCHESTRATOR_DEMO_REPO}" "${DEMO_WORKFLOW_DIR}"
+    git clone --depth=1 "${ORCHESTRATOR_DEMO_REPO}" "${DEMO_WORKFLOW_DIR}" || {
+      log::error "Failed to clone orchestrator-demo"
+      return 1
+    }
   else
-    git clone "${ORCHESTRATOR_DEMO_REPO}" "${DEMO_WORKFLOW_DIR}"
+    git clone "${ORCHESTRATOR_DEMO_REPO}" "${DEMO_WORKFLOW_DIR}" || {
+      log::error "Failed to clone orchestrator-demo"
+      return 1
+    }
   fi
   return 0
 }
@@ -123,19 +135,29 @@ _orchestrator::prepare_token_propagation_manifests() {
   local specs_cm="${TOKEN_PROPAGATION_MANIFESTS}/03-configmap_02-token-propagation-resources-specs.yaml"
   local sf_cr="${TOKEN_PROPAGATION_MANIFESTS}/04-sonataflow_token-propagation.yaml"
 
+  # Export values for yq to use via strenv() - safely handles special characters
+  export KC_AUTH_SERVER_URL="${kc_auth_server_url}"
+  export KC_CLIENT_ID="${kc_client_id}"
+  export KC_CLIENT_SECRET="${kc_client_secret}"
+  export SAMPLE_SERVER_URL="http://sample-server-service.${namespace}:8080"
+  export KC_TOKEN_URL="${kc_token_url}"
+
   # Props ConfigMap: substitute Keycloak and sample-server placeholders
-  sed -i "s|http://example-kc-service.keycloak:8080/realms/quarkus|${kc_auth_server_url}|g" "${props_cm}"
-  sed -i "s|client-id=quarkus-app|client-id=${kc_client_id}|" "${props_cm}"
-  sed -i "s|client-secret=lVGSvdaoDUem7lqeAnqXn1F92dCPbQea|client-secret=${kc_client_secret}|" "${props_cm}"
-  sed -i "s|http://sample-server-service.rhdh-operator|http://sample-server-service.${namespace}:8080|" "${props_cm}"
+  yq eval -i '.data."application.properties" |= gsub("http://example-kc-service.keycloak:8080/realms/quarkus", strenv(KC_AUTH_SERVER_URL))' "${props_cm}"
+  yq eval -i '.data."application.properties" |= gsub("client-id=quarkus-app", "client-id=" + strenv(KC_CLIENT_ID))' "${props_cm}"
+  yq eval -i '.data."application.properties" |= gsub("client-secret=lVGSvdaoDUem7lqeAnqXn1F92dCPbQea", "client-secret=" + strenv(KC_CLIENT_SECRET))' "${props_cm}"
+  yq eval -i '.data."application.properties" |= gsub("http://sample-server-service.rhdh-operator", strenv(SAMPLE_SERVER_URL))' "${props_cm}"
 
   # Ensure quarkus.tls.trust-all=true is present (defensive)
-  if ! grep -q 'quarkus.tls.trust-all=true' "${props_cm}"; then
-    sed -i '/kie.flyway.enabled=true/a\    quarkus.tls.trust-all=true' "${props_cm}"
+  if ! yq eval '.data."application.properties"' "${props_cm}" | grep -q 'quarkus.tls.trust-all=true'; then
+    yq eval -i '.data."application.properties" |= sub("kie.flyway.enabled=true", "kie.flyway.enabled=true\n    quarkus.tls.trust-all=true")' "${props_cm}"
   fi
 
   # Specs ConfigMap: substitute Keycloak token URL
-  sed -i "s|http://example-kc-service.keycloak:8080/realms/quarkus/protocol/openid-connect/token|${kc_token_url}|g" "${specs_cm}"
+  yq eval -i '.data."sample-server.yaml" |= gsub("http://example-kc-service.keycloak:8080/realms/quarkus/protocol/openid-connect/token", strenv(KC_TOKEN_URL))' "${specs_cm}"
+
+  # Clean up exported variables
+  unset KC_AUTH_SERVER_URL KC_CLIENT_ID KC_CLIENT_SECRET SAMPLE_SERVER_URL KC_TOKEN_URL
 
   # SonataFlow CR: set image, strip persistence and status
   yq eval -i '.spec.podTemplate.container.image = "'"${ORCHESTRATOR_TOKEN_PROPAGATION_IMAGE}"'"' "${sf_cr}"
@@ -303,7 +325,7 @@ spec:
     spec:
       containers:
         - name: sample-server
-          image: quay.io/gfarache/sample-server:latest
+          image: quay.io/orchestrator/sample-server:latest
           ports:
             - containerPort: 8080
           livenessProbe:

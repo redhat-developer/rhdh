@@ -5,6 +5,24 @@ import { RhdhAuthApiHack } from "../../../support/api/rhdh-auth-api-hack";
 import { skipIfJobName } from "../../../utils/helper";
 import { JOB_NAME_PATTERNS } from "../../../utils/constants";
 
+interface WorkflowNode {
+  name: string;
+  errorMessage: string | null;
+  exit: string | null;
+}
+
+interface WorkflowInstance {
+  state: string;
+  workflowdata: {
+    result: {
+      completedWith: string;
+      message: string;
+    };
+  };
+  nodes: WorkflowNode[];
+  serviceUrl?: string;
+}
+
 /**
  * Decode a base64-encoded environment variable.
  */
@@ -110,8 +128,7 @@ test.describe("Token propagation workflow API tests", () => {
     const maxPolls = 30;
     const pollInterval = 5000; // 5 seconds
     let finalState = "";
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let statusBody: Record<string, any> = {};
+    let statusBody: WorkflowInstance = {} as WorkflowInstance;
 
     for (let poll = 1; poll <= maxPolls; poll++) {
       const statusResponse = await page.request.get(
@@ -160,8 +177,7 @@ test.describe("Token propagation workflow API tests", () => {
       "extractUser",
     ];
     for (const nodeName of expectedNodes) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const node = nodes.find((n: Record<string, any>) => n.name === nodeName);
+      const node = nodes.find((n: WorkflowNode) => n.name === nodeName);
       expect(node, `Node '${nodeName}' should exist`).toBeDefined();
       expect(
         node.errorMessage,
@@ -180,6 +196,14 @@ test.describe("Token propagation workflow API tests", () => {
       const namespace = nsMatch?.[1] || process.env.NAME_SPACE || "";
 
       if (namespace) {
+        // Validate namespace conforms to Kubernetes DNS-1123 label format
+        // to prevent command injection via shell metacharacters
+        if (!/^[a-z0-9-]+$/.test(namespace)) {
+          throw new Error(
+            `Invalid namespace format: "${namespace}". Must contain only lowercase alphanumeric characters and hyphens.`,
+          );
+        }
+
         const sampleServerLogs = execSync(
           `oc logs -l app=sample-server -n ${namespace} --tail=200`,
           { encoding: "utf-8", timeout: 30000 },
