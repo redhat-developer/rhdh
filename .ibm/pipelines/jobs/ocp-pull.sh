@@ -64,18 +64,6 @@ rbac_deployment_pr() {
   configure_namespace "${NAME_SPACE_RBAC}"
   configure_external_postgres_db "${NAME_SPACE_RBAC}"
 
-  # Wait for PostgreSQL primary pod to be Running and Ready before deploying RHDH.
-  # configure_external_postgres_db only waits for secrets; the pod may still be starting.
-  # Without orchestrator the helm install finishes fast and RHDH tries to connect
-  # before PostgreSQL is accepting connections, causing a permanent startup failure.
-  # The 'role=master' label is only set by Patroni after the pod is fully running,
-  # so we use the 'data=postgres' label which is set at pod creation time.
-  log::info "Waiting for PostgreSQL primary pod to be ready in ${NAME_SPACE_POSTGRES_DB} (up to 10 min)..."
-  oc wait --for=condition=Ready pod \
-    -l postgres-operator.crunchydata.com/cluster=postgress-external-db,postgres-operator.crunchydata.com/data=postgres \
-    -n "${NAME_SPACE_POSTGRES_DB}" --timeout=600s
-  log::info "PostgreSQL primary pod is ready."
-
   local rbac_rhdh_base_url="https://${RELEASE_NAME_RBAC}-developer-hub-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
 
@@ -93,6 +81,57 @@ rbac_deployment_pr() {
     --set global.clusterRouterBase="${K8S_CLUSTER_ROUTER_BASE}" \
     $(get_image_helm_set_params)
 
+  # Without orchestrator the helm install returns quickly, but the external
+  # PostgreSQL may still be starting. Backstage does not retry DB connections
+  # after a failed startup, so the initial pod will crash-loop.
+  # Wait for PostgreSQL to be ready, then restart the RHDH deployment so the
+  # new pod connects to the now-ready database.
+  wait_for_postgres_and_restart_rhdh
   log::warn "Skipping sonataflow database workaround for PR job"
   log::warn "Skipping orchestrator workflows deployment for PR job"
+}
+
+# Wait for the external PostgreSQL pod to become ready, logging its status
+# periodically for diagnostics. Once ready, restart the RHDH RBAC deployment
+# so the new pod can connect to the database.
+wait_for_postgres_and_restart_rhdh() {
+  local pg_label="postgres-operator.crunchydata.com/cluster=postgress-external-db"
+  local max_wait=600
+  local interval=30
+  local elapsed=0
+
+  log::info "Waiting for PostgreSQL pod to be ready in ${NAME_SPACE_POSTGRES_DB} (up to ${max_wait}s)..."
+
+  while [ "$elapsed" -lt "$max_wait" ]; do
+    # Check if any postgres pod is Ready
+    if oc wait --for=condition=Ready pod -l "${pg_label}" \
+      -n "${NAME_SPACE_POSTGRES_DB}" --timeout=5s 2> /dev/null; then
+      log::info "PostgreSQL pod is ready after ${elapsed}s."
+
+      # Restart RHDH RBAC deployment so the new pod connects to the ready DB
+      local rbac_deploy="${RELEASE_NAME_RBAC}-developer-hub"
+      log::info "Restarting RHDH RBAC deployment to connect to PostgreSQL..."
+      oc rollout restart "deployment/${rbac_deploy}" -n "${NAME_SPACE_RBAC}"
+      oc rollout status "deployment/${rbac_deploy}" -n "${NAME_SPACE_RBAC}" --timeout=300s
+      return 0
+    fi
+
+    # Log pod status for diagnostics
+    log::info "PostgreSQL pod status at ${elapsed}s:"
+    oc get pods -l "${pg_label}" -n "${NAME_SPACE_POSTGRES_DB}" -o wide 2>&1 | while IFS= read -r line; do
+      log::info "  ${line}"
+    done
+    # Show events for stuck pods
+    oc get events -n "${NAME_SPACE_POSTGRES_DB}" --sort-by='.lastTimestamp' 2>&1 | tail -5 | while IFS= read -r line; do
+      log::debug "  ${line}"
+    done
+
+    sleep "${interval}"
+    elapsed=$((elapsed + interval + 5)) # account for the 5s oc wait timeout
+  done
+
+  log::error "PostgreSQL pod did not become ready within ${max_wait}s"
+  log::info "Final pod status:"
+  oc describe pods -l "${pg_label}" -n "${NAME_SPACE_POSTGRES_DB}" 2>&1 | tail -30
+  return 1
 }
