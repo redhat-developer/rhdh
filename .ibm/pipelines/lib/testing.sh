@@ -252,11 +252,12 @@ testing::check_and_test() {
     save_overall_result 1
   fi
 
-  # Collect pod logs only on failure to speed up successful PR runs.
-  # On backstage failure, check_backstage_running already collects logs internally.
-  if [[ "$_deployment_failed" == "true" ]] || [[ "${STATUS_TEST_FAILED[$CURRENT_DEPLOYMENT]:-}" == "true" ]]; then
+  # Collect pod logs only on test failure to speed up successful PR runs.
+  # Skip when deployment failed — check_backstage_running already collects logs internally.
+  # Skip when tests passed — no debugging artifacts needed.
+  if [[ "$_deployment_failed" == "false" ]] && [[ "${STATUS_TEST_FAILED[$CURRENT_DEPLOYMENT]:-}" == "true" ]]; then
     save_all_pod_logs "$namespace"
-  else
+  elif [[ "$_deployment_failed" == "false" ]]; then
     log::info "Tests passed — skipping pod log collection for namespace: ${namespace}"
   fi
   return 0
