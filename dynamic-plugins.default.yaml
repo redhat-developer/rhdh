@@ -8,931 +8,742 @@
   # https://github.com/redhat-developer/rhdh/blob/main/.github/workflows/update-dynamic-plugins-default.yaml#L44-L75
   
 plugins:
-# - package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-analytics-provider-segment@sha256:d465b0f4f85af8a0767a84055c366cebc11c8c1f6a8488248874e3acc7f148ee
-  # Tag: 1.10.0--1.22.2, Build date: 2026-01-29T16:35:53Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/backstage-community-plugin-analytics-provider-segment
-  disabled: false
-  pluginConfig:
-    dynamicPlugins:
-      frontend:
-        backstage-community.plugin-analytics-provider-segment:
-          analyticsApiExtensions:
-          - importName: SegmentAnalytics
-    backend:
-      csp:
-        script-src:
-        - '''self'''
-        - '''unsafe-eval'''
-        - https://cdn.segment.com
-    app:
-      analytics:
-        segment:
-          writeKey: ${SEGMENT_WRITE_KEY}
-          maskIP: true
-          testMode: ${SEGMENT_TEST_MODE}
-          appVersion: ${RHDH_VERSION}
-          backstageVersion: ${BACKSTAGE_VERSION}
-# - package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-scaffolder-backend-module-regex@sha256:655a023e75c9bcfecfb963a6219b4a1c7abb462e8b8ebd5462b94eaadf91ec4f
-  # Tag: 1.10.0--2.11.0, Build date: 2026-01-29T16:23:58Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-regex-dynamic
-  disabled: false
-# - package: oci://registry.access.redhat.com/rhdh/backstage-plugin-techdocs@sha256:44060db142001d1a6cbfcb7eb90daa0a7c07c492cc2693c0c9a5d8645fbe64f4
-  # Tag: 1.10.0--1.16.0, Build date: 2026-01-29T15:44:15Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/backstage-plugin-techdocs
-  disabled: false
-  pluginConfig:
-    dynamicPlugins:
-      frontend:
-        backstage.plugin-techdocs:
-          routeBindings:
-            targets:
-            - importName: techdocsPlugin
-            bindings:
-            - bindTarget: catalogPlugin.externalRoutes
-              bindMap:
-                viewTechDoc: techdocsPlugin.routes.docRoot
-            - bindTarget: scaffolderPlugin.externalRoutes
-              bindMap:
-                viewTechDoc: techdocsPlugin.routes.docRoot
-          dynamicRoutes:
-          - path: /docs
-            importName: TechDocsIndexPage
-            menuItem:
-              icon: docs
-              text: Docs
-              textKey: menuItem.docs
-          - path: /docs/:namespace/:kind/:name/*
-            importName: TechDocsReaderPage
-          mountPoints:
-          - mountPoint: entity.page.docs/cards
-            importName: EntityTechdocsContent
-            config:
-              layout:
-                gridColumn: 1 / -1
-              if:
-                allOf:
-                - isTechDocsAvailable
-          - mountPoint: search.page.results
-            importName: TechDocsSearchResultListItem
-          - mountPoint: search.page.filters
-            importName: TechdocsSearchFilter
-          - mountPoint: search.page.types
-            importName: techdocsSearchType
-            config:
-              props:
-                name: Documentation
-                icon: docs
-# - package: oci://registry.access.redhat.com/rhdh/backstage-plugin-techdocs-backend@sha256:5aed0a6217851c088837f5ba8467ae2ebb6e75a9db167c142ac63722b98ba82d
-  # Tag: 1.10.0--2.1.2, Build date: 2026-01-29T16:06:02Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/backstage-plugin-techdocs-backend-dynamic
-  disabled: false
-  pluginConfig:
-    techdocs:
-      builder: local
-      generator:
-        runIn: local
-      publisher:
-        type: local
-# - package: oci://registry.access.redhat.com/rhdh/backstage-plugin-techdocs-module-addons-contrib@sha256:07c180d7391e4003ee60cf27c6f5ced9d04f7c17a17c02fba0bdffdc0be88dfb
-  # Tag: 1.10.0--1.1.30, Build date: 2026-01-29T16:32:57Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/backstage-plugin-techdocs-module-addons-contrib
-  disabled: false
-  pluginConfig:
-    dynamicPlugins:
-      frontend:
-        backstage.plugin-techdocs-module-addons-contrib:
-          techdocsAddons:
-          - importName: ReportIssue
-# - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-adoption-insights@sha256:9aa00931cb0759f64c2c0ee253887edc733293a958c58bf57189a9127a4733d5
-  # Tag: 1.10.0--0.6.2, Build date: 2026-01-29T16:00:24Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-adoption-insights
-  disabled: false
-  pluginConfig:
-    dynamicPlugins:
-      frontend:
-        red-hat-developer-hub.backstage-plugin-adoption-insights:
-          translationResources:
-          - importName: adoptionInsightsTranslations
-            ref: adoptionInsightsTranslationRef
-          appIcons:
-          - name: adoptionInsightsIcon
-            importName: AdoptionInsightsIcon
-          dynamicRoutes:
-          - path: /adoption-insights
-            importName: AdoptionInsightsPage
-            menuItem:
-              icon: adoptionInsightsIcon
-              text: Adoption Insights
-              textKey: menuItem.adoptionInsights
-          menuItems:
-            adoption-insights:
-              parent: default.admin
-              icon: adoptionInsightsIcon
-# - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-adoption-insights-backend@sha256:58f130b65492a43aa2d48cc3160fb4b6d7b19c289633e3b305d1d8e58d9692e1
-  # Tag: 1.10.0--0.6.2, Build date: 2026-01-29T16:02:32Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-adoption-insights-backend-dynamic
-  disabled: false
-  pluginConfig:
-    app:
-      analytics:
-        adoptionInsights:
-          maxBufferSize: 20
-          flushInterval: 5000
-          debug: false
-          licensedUsers: 100
-# - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-analytics-module-adoption-insights@sha256:dae9c9df044af705618236605277d57f5c76c669e99f4e1d1fed548dbf7694c7
-  # Tag: 1.10.0--0.6.2, Build date: 2026-01-29T16:18:33Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-analytics-module-adoption-insights-dynamic
-  disabled: false
-  pluginConfig:
-    dynamicPlugins:
-      frontend:
-        red-hat-developer-hub.backstage-plugin-analytics-module-adoption-insights:
-          analyticsApiExtensions:
-          - importName: AdoptionInsightsAnalyticsApi
-# - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-catalog-backend-module-extensions@sha256:66c212aa13ef5eaf47cadb1662a0917a8eb5633fca9923b69ed324767d4007f3
-  # Tag: 1.10.0--0.14.3, Build date: 2026-01-30T20:21:29Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-catalog-backend-module-extensions-dynamic
-  disabled: false
-# - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-dynamic-home-page@sha256:1fd1ecac1b8100044917bcf75b0949440d6c8af9fb4acff96b82adf4ee8db896
-  # Tag: 1.10.0--1.10.4, Build date: 2026-01-30T20:20:23Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-dynamic-home-page
-  disabled: false
-  pluginConfig:
-    dynamicPlugins:
-      frontend:
-        red-hat-developer-hub.backstage-plugin-dynamic-home-page:
-          dynamicRoutes:
-          - path: /
-            importName: DynamicHomePage
-          mountPoints:
-          - mountPoint: application/listener
-            importName: VisitListener
-          - mountPoint: home.page/cards
-            importName: OnboardingSection
-            config:
-              id: rhdh-onboarding-section
-              title: Red Hat Developer Hub - Onboarding
-              cardLayout:
-                width:
-                  minColumns: 4
-                  maxColumns: 12
-                  defaultColumns: 12
-                height:
-                  minRows: 2
-                  maxRows: 12
-                  defaultRows: 4
-              layouts:
-                xl:
-                  w: 12
-                  h: 6
-                lg:
-                  w: 12
-                  h: 6
-                md:
-                  w: 12
-                  h: 7
-                sm:
-                  w: 12
-                  h: 8
-                xs:
-                  w: 12
-                  h: 9
-                xxs:
-                  w: 12
-                  h: 14
-          - mountPoint: home.page/cards
-            importName: EntitySection
-            config:
-              id: rhdh-entity-section
-              title: Red Hat Developer Hub - Software Catalog
-              cardLayout:
-                width:
-                  minColumns: 4
-                  maxColumns: 12
-                  defaultColumns: 12
-                height:
-                  minRows: 2
-                  maxRows: 12
-                  defaultRows: 4
-              layouts:
-                xl:
-                  w: 12
-                  h: 7
-                lg:
-                  w: 12
-                  h: 7
-                md:
-                  w: 12
-                  h: 8
-                sm:
-                  w: 12
-                  h: 9
-                xs:
-                  w: 12
-                  h: 11
-                xxs:
-                  w: 12
-                  h: 15
-          - mountPoint: home.page/cards
-            importName: TemplateSection
-            config:
-              id: rhdh-template-section
-              title: Red Hat Developer Hub - Explore templates
-              cardLayout:
-                width:
-                  minColumns: 4
-                  maxColumns: 12
-                  defaultColumns: 12
-                height:
-                  minRows: 2
-                  maxRows: 12
-                  defaultRows: 4
-              layouts:
-                xl:
-                  w: 12
-                  h: 5
-                lg:
-                  w: 12
-                  h: 5
-                md:
-                  w: 12
-                  h: 5
-                sm:
-                  w: 12
-                  h: 5
-                xs:
-                  w: 12
-                  h: 7.5
-                xxs:
-                  w: 12
-                  h: 13.5
-          - mountPoint: home.page/cards
-            importName: QuickAccessCard
-            config:
-              id: quickaccess-card
-              title: Quick Access Card
-          - mountPoint: home.page/cards
-            importName: SearchBar
-            config:
-              id: searchbar
-              title: Search
-              cardLayout:
-                width:
-                  minColumns: 4
-                  maxColumns: 12
-                  defaultColumns: 12
-                height:
-                  minRows: 1
-                  maxRows: 2
-                  defaultRows: 2
-          - mountPoint: home.page/cards
-            importName: CatalogStarredEntitiesCard
-            config:
-              id: catalog-starred-entities-card
-              title: Starred catalog entities
-          - mountPoint: home.page/cards
-            importName: RecentlyVisitedCard
-            config:
-              id: recently-visited-card
-              title: Recently visited
-          - mountPoint: home.page/cards
-            importName: TopVisitedCard
-            config:
-              id: top-visited-card
-              title: Top visited
-          - mountPoint: home.page/cards
-            importName: FeaturedDocsCard
-            config:
-              id: featured-docs-card
-              title: Featured docs
-          - mountPoint: home.page/cards
-            importName: JokeCard
-            config:
-              id: joke-card
-              title: Random joke
-          translationResources:
-          - importName: homepageTranslations
-            ref: homepageTranslationRef
-# - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-extensions@sha256:71d6cfd7f31ebf4ae9ce589df94f549b69dcfbf2a3ab65837558503e84575d61
-  # Tag: 1.10.0--0.14.3, Build date: 2026-01-30T20:21:56Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-extensions
-  disabled: false
-  pluginConfig:
-    dynamicPlugins:
-      frontend:
-        red-hat-developer-hub.backstage-plugin-extensions:
-          translationResources:
-          - importName: extensionsTranslations
-            ref: extensionsTranslationRef
-            module: Alpha
-          appIcons:
-          - name: pluginsIcon
-            importName: PluginsIcon
-          dynamicRoutes:
-          - path: /extensions
-            importName: DynamicExtensionsPluginRouter
-            menuItem:
-              icon: pluginsIcon
-              text: Extensions
-              textKey: menuItem.extensions
-          menuItems:
-            extensions:
-              parent: default.admin
-# - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-extensions-backend@sha256:156e6b981d5c886146571c8bd55a05eabcd8819f1c40c1675dae65165f16d8fa
-  # Tag: 1.10.0--0.14.3, Build date: 2026-01-30T20:23:47Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-extensions-backend-dynamic
-  disabled: false
-# - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-global-floating-action-button@sha256:4ed7c2cfa3271e13f9380aed939a9b36e0016c2492fcc6e9fd42ded85f12671f
-  # Tag: 1.10.0--1.7.3, Build date: 2026-01-30T20:20:39Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-floating-action-button
-  disabled: false
-  pluginConfig:
-    dynamicPlugins:
-      frontend:
-        red-hat-developer-hub.backstage-plugin-global-floating-action-button:
-          translationResources:
-          - importName: globalFloatingActionButtonTranslations
-            ref: globalFloatingActionButtonTranslationRef
-          mountPoints:
-          - mountPoint: application/listener
-            importName: DynamicGlobalFloatingActionButton
-# - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-global-header@sha256:8f1b31acf2868bddd7572fe4af64b5d0b8e14f2a3e868e44630f4bbb7d95aa3f
-  # Tag: 1.10.0--1.20.1, Build date: 2026-01-29T15:57:30Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-header
-  disabled: false
-  pluginConfig:
-    app:
-      sidebar:
-        search: false
-        settings: false
-        logo: false
-    dynamicPlugins:
-      frontend:
-        default.main-menu-items:
-          menuItems:
-            default.create:
-              title: ''
-            default.admin:
-              title: Administration
-              textKey: menuItem.administration
-              icon: admin
-        red-hat-developer-hub.backstage-plugin-global-header:
-          translationResources:
-          - importName: globalHeaderTranslations
-            ref: globalHeaderTranslationRef
-          mountPoints:
-          - mountPoint: application/header
-            importName: GlobalHeader
-            config:
-              position: above-sidebar
-          - mountPoint: global.header/component
-            importName: CompanyLogo
-            config:
-              priority: 200
-              props:
-                to: /
-          - mountPoint: global.header/component
-            importName: SearchComponent
-            config:
-              priority: 100
-          - mountPoint: global.header/component
-            importName: Spacer
-            config:
-              priority: 99
-              props:
-                growFactor: 0
-          - mountPoint: global.header/component
-            importName: HeaderIconButton
-            config:
-              priority: 90
-              props:
-                title: Self-service
-                titleKey: create.title
-                icon: add
-                to: create
-          - mountPoint: global.header/component
-            importName: StarredDropdown
-            config:
-              priority: 85
-          - mountPoint: global.header/component
-            importName: ApplicationLauncherDropdown
-            config:
-              priority: 82
-          - mountPoint: global.header/application-launcher
-            importName: MenuItemLink
-            config:
-              section: Documentation
-              priority: 150
-              props:
-                title: Developer Hub
-                titleKey: applicationLauncher.developerHub
-                icon: developerHub
-                link: https://docs.redhat.com/en/documentation/red_hat_developer_hub
-          - mountPoint: global.header/application-launcher
-            importName: MenuItemLink
-            config:
-              section: Developer Tools
-              priority: 100
-              props:
-                title: RHDH Local
-                titleKey: applicationLauncher.rhdhLocal
-                icon: developerHub
-                link: https://github.com/redhat-developer/rhdh-local
-          - mountPoint: global.header/component
-            importName: HelpDropdown
-            config:
-              priority: 80
-          - mountPoint: global.header/help
-            importName: SupportButton
-            config:
-              priority: 10
-          - mountPoint: global.header/component
-            importName: NotificationButton
-            config:
-              priority: 70
-          - mountPoint: global.header/component
-            importName: Divider
-            config:
-              priority: 50
-          - mountPoint: global.header/component
-            importName: ProfileDropdown
-            config:
-              priority: 10
-          - mountPoint: global.header/profile
-            importName: MenuItemLink
-            config:
-              priority: 100
-              props:
-                title: Settings
-                titleKey: profile.settings
-                link: /settings
-                icon: manageAccounts
-          - mountPoint: global.header/profile
-            importName: MenuItemLink
-            config:
-              priority: 90
-              props:
-                title: My profile
-                titleKey: profile.myProfile
-                type: myProfile
-                icon: account
-          - mountPoint: global.header/profile
-            importName: LogoutButton
-            config:
-              priority: 10
-# - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-quickstart@sha256:588df44c05fbccd3a5d9fd30f89974abdded9063d24ee41bd42642222999babe
-  # Tag: 1.10.0--1.8.2, Build date: 2026-01-29T15:49:16Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-quickstart
-  disabled: false
-  pluginConfig:
-    app:
-      quickstart:
-      - title: Set up authentication
-        titleKey: steps.setupAuthentication.title
-        icon: Admin
-        description: Set up secure login credentials to protect your account from unauthorized access.
-        descriptionKey: steps.setupAuthentication.description
-        cta:
-          text: Learn more
-          textKey: steps.setupAuthentication.ctaTitle
-          link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/authentication_in_red_hat_developer_hub/
-      - title: Configure RBAC
-        titleKey: steps.configureRbac.title
-        icon: Rbac
-        description: Assign roles and permissions to control who can view, create, or edit resources, ensuring secure and
-          efficient collaboration.
-        descriptionKey: steps.configureRbac.description
-        cta:
-          text: Manage access
-          textKey: steps.configureRbac.ctaTitle
-          link: /rbac
-      - title: Configure Git
-        titleKey: steps.configureGit.title
-        icon: Git
-        description: Connect your Git providers, such as GitHub to manage code, automate workflows, and integrate with platform
-          features.
-        descriptionKey: steps.configureGit.description
-        cta:
-          text: Learn more
-          textKey: steps.configureGit.ctaTitle
-          link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/integrating_red_hat_developer_hub_with_github/
-      - title: Manage plugins
-        titleKey: steps.managePlugins.title
-        icon: Plugins
-        description: Browse and install extensions to add features, connect with external tools, and customize your experience.
-        descriptionKey: steps.managePlugins.description
-        cta:
-          text: Explore plugins
-          textKey: steps.managePlugins.ctaTitle
-          link: /extensions
-      - title: Import application
-        roles:
-        - developer
-        icon: Import
-        description: Import your existing code and services into the catalog to organize and access them through your developer
-          portal.
-        cta:
-          text: Import
-          link: /bulk-import
-      - title: Learn about the Catalog
-        roles:
-        - developer
-        icon: Catalog
-        description: Discover all software components, services, and APIs, and view their owners and documentation.
-        cta:
-          text: View Catalog
-          link: /catalog
-      - title: Explore Self-service templates
-        roles:
-        - developer
-        icon: SelfService
-        description: Use our self-service templates to quickly set up new projects, services, or documentation.
-        cta:
-          text: Explore templates
-          link: /create
-      - title: Find all Learning Paths
-        roles:
-        - developer
-        icon: Learning
-        description: Integrate tailored e-learning into your workflows with Learning Paths to accelerate onboarding, close
-          skill gaps, and promote best practices.
-        cta:
-          text: View Learning Paths
-          link: /learning-paths
-    dynamicPlugins:
-      frontend:
-        red-hat-developer-hub.backstage-plugin-quickstart:
-          translationResources:
-          - importName: quickstartTranslations
-            module: Alpha
-            ref: quickstartTranslationRef
-          mountPoints:
-          - mountPoint: application/provider
-            importName: QuickstartDrawerProvider
-          - mountPoint: application/internal/drawer-state
-            importName: QuickstartDrawerStateExposer
-          - mountPoint: application/internal/drawer-content
-            importName: QuickstartDrawerContent
-            config:
-              id: quickstart
-          - mountPoint: global.header/help
-            importName: QuickstartButton
-            config:
-              priority: 100
-- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-scaffolder-backend-module-quay:bs_1.45.3__2.14.0
-  disabled: false
-# - package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-acr@sha256:0e696523e14e975ba81765bba6b053b7baf8b840e1e302006071c866f9a1131b
-  # Tag: 1.10.0--1.20.2, Build date: 2026-02-02T22:19:00Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/backstage-community-plugin-acr
-  disabled: true
-  pluginConfig:
-    dynamicPlugins:
-      frontend:
-        backstage-community.plugin-acr:
-          mountPoints:
-          - mountPoint: entity.page.image-registry/cards
-            importName: AcrImagesEntityContent
-            config:
-              layout:
-                gridColumn: 1 / -1
-              if:
-                anyOf:
-                - isAcrAvailable
-# - package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-catalog-backend-module-keycloak@sha256:7a6ebe07a9efa14a511673491970c7508470dd856642d45958bc768ecc21a240
-  # Tag: 1.10.0--3.16.0, Build date: 2026-01-29T16:08:53Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-keycloak-dynamic
-  disabled: true
-  pluginConfig:
-    catalog:
-      providers:
-        keycloakOrg:
-          default:
-            baseUrl: ${KEYCLOAK_BASE_URL}
-            loginRealm: ${KEYCLOAK_LOGIN_REALM}
-            realm: ${KEYCLOAK_REALM}
-            clientId: ${KEYCLOAK_CLIENT_ID}
-            clientSecret: ${KEYCLOAK_CLIENT_SECRET}
-            schedule:
-              frequency:
-                minutes: 60
-              initialDelay:
-                seconds: 15
-              timeout:
-                minutes: 50
-# - package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-catalog-backend-module-pingidentity@sha256:05521725b507f62c80dd0c186fa0fa1f8b2d3d5109aa47b4b059abf97dab14f9
-  # Tag: 1.10.0--0.9.0, Build date: 2026-01-29T16:20:26Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-pingidentity-dynamic
-  disabled: true
-  pluginConfig:
-    catalog:
-      providers:
-        pingIdentityOrg: {}
-# - package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor@sha256:881ec85345871421131b54e459b9d44ebd9716e04ef1f528dff3b426e3855e5e
-  # Tag: 1.10.0--2.11.0, Build date: 2026-02-17T17:09:13Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic
-  disabled: true
-# - package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-ocm@sha256:f5f82eafaa8bcdea4d71666a36a813b05ba21f8c85357df0228951707fdc233e
-  # Tag: 1.10.0--5.11.1, Build date: 2026-01-29T16:17:31Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/backstage-community-plugin-ocm
-  disabled: true
-  pluginConfig:
-    dynamicPlugins:
-      frontend:
-        backstage-community.plugin-ocm:
-          appIcons:
-          - name: ocmIcon
-            importName: OcmIcon
-          dynamicRoutes:
-          - path: /ocm
-            importName: OcmPage
-            menuItem:
-              icon: ocmIcon
-              text: Clusters
-              textKey: menuItem.clusters
-          mountPoints:
-          - mountPoint: entity.page.overview/context
-            importName: ClusterContextProvider
-          - mountPoint: entity.page.overview/cards
-            importName: ClusterAvailableResourceCard
-            config:
-              layout:
-                gridColumnEnd:
-                  lg: span 4
-                  md: span 6
-                  xs: span 12
-              if:
-                allOf:
-                - isKind: resource
-                - isType: kubernetes-cluster
-          - mountPoint: entity.page.overview/cards
-            importName: ClusterInfoCard
-            config:
-              layout:
-                gridColumnEnd:
-                  lg: span 4
-                  md: span 6
-                  xs: span 12
-              if:
-                allOf:
-                - isKind: resource
-                - isType: kubernetes-cluster
-# - package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-ocm-backend@sha256:38a7c015a180face8b25b62db72474e504629ae1663b45c0405e103f80b7ea97
-  # Tag: 1.10.0--5.12.2, Build date: 2026-01-29T16:25:55Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/backstage-community-plugin-ocm-backend-dynamic
-  disabled: true
-  pluginConfig:
-    catalog:
-      providers:
-        ocm:
-          default:
-            name: ${OCM_HUB_NAME}
-            url: ${OCM_HUB_URL}
-            serviceAccountToken: ${OCM_SA_TOKEN}
-            owner: janus-authors
-# - package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-rbac@sha256:ed578944c397b18d679747566ede1f5d64fc4cc72fe331027bd775ea552d1087
-  # Tag: 1.10.0--1.47.3, Build date: 2026-01-30T20:19:14Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
-  disabled: true
-  pluginConfig:
-    dynamicPlugins:
-      frontend:
-        backstage-community.plugin-rbac:
-          translationResources:
-          - importName: rbacTranslations
-            ref: rbacTranslationRef
-            module: Alpha
-          appIcons:
-          - name: rbacIcon
-            importName: RbacIcon
-          dynamicRoutes:
-          - path: /rbac
-            importName: RbacPage
-            menuItem:
-              icon: rbacIcon
-              text: RBAC
-              textKey: menuItem.rbac
-          menuItems:
-            rbac:
-              parent: default.admin
-              icon: rbacIcon
-# - package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-scaffolder-backend-module-kubernetes@sha256:8c8a6f1f110b39f6819217387aa21dc86a3e41878b91f8239814527553031da1
-  # Tag: 1.10.0--2.13.0, Build date: 2026-01-30T19:30:18Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-kubernetes-dynamic
-  disabled: true
-# - package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-tech-radar@sha256:be977d3dd9a8de9ade044731a293e33ea396cadacbf45f266353367310762a5e
-  # Tag: 1.10.0--1.13.0, Build date: 2026-01-29T16:36:56Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/backstage-community-plugin-tech-radar
-  disabled: true
-  pluginConfig:
-    dynamicPlugins:
-      frontend:
-        backstage-community.plugin-tech-radar:
-          apiFactories:
-          - importName: TechRadarApi
-          appIcons:
-          - name: techRadar
-            importName: TechRadarIcon
-          dynamicRoutes:
-          - path: /tech-radar
-            importName: TechRadarPage
-            menuItem:
-              icon: techRadar
-              text: menuItem.techRadar
-              textKey: menuItem.techRadar
-            config:
-              props:
-                width: 1500
-                height: 800
-# - package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-tech-radar-backend@sha256:edb18149ee32751bb530be3e9e9b0296ec44e146820ffdd15b87765588f1b55e
-  # Tag: 1.10.0--1.12.0, Build date: 2026-01-29T16:31:09Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/backstage-community-plugin-tech-radar-backend-dynamic
-  disabled: true
-  pluginConfig:
-    techRadar:
-      url: ${TECH_RADAR_DATA_URL}
-# - package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-topology@sha256:810378511c2ac5f8299a0fe2a9af20d3d436128b6d7bf4c534ad33874cdc7e57
-  # Tag: 1.10.0--2.9.4, Build date: 2026-02-02T22:19:02Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/backstage-community-plugin-topology
-  disabled: true
-  pluginConfig:
-    dynamicPlugins:
-      frontend:
-        backstage-community.plugin-topology:
-          translationResources:
-          - importName: topologyTranslations
-            ref: topologyTranslationRef
-            module: Alpha
-          mountPoints:
-          - mountPoint: entity.page.topology/cards
-            importName: TopologyPage
-            config:
-              layout:
-                gridColumn: 1 / -1
-                height: 75vh
-              if:
-                anyOf:
-                - hasAnnotation: backstage.io/kubernetes-id
-                - hasAnnotation: backstage.io/kubernetes-namespace
-# - package: oci://registry.access.redhat.com/rhdh/backstage-plugin-catalog-backend-module-github@sha256:2b4d57a30393a4d467dcf8a6c10ad8b492ffcd97790bb65f3033906b684e9bb3
-  # Tag: 1.10.0--0.11.2, Build date: 2026-01-29T15:54:09Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-dynamic
-  disabled: true
-  pluginConfig:
-    catalog:
-      providers:
-        github:
-          providerId:
-            organization: ${GITHUB_ORG}
-# - package: oci://registry.access.redhat.com/rhdh/backstage-plugin-catalog-backend-module-github-org@sha256:01fad5315536e4292f9afb5a8e86d6d9860414a6fe956812724b676fe14cd560
-  # Tag: 1.10.0--0.3.16, Build date: 2026-01-29T16:00:18Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-org-dynamic
-  disabled: true
-  pluginConfig:
-    catalog:
-      providers:
-        githubOrg:
-          id: production
-          githubUrl: ${GITHUB_URL}
-          orgs:
-          - ${GITHUB_ORG}
-          schedule:
-            frequency:
-              minutes: 60
-            initialDelay:
-              seconds: 15
-            timeout:
-              minutes: 15
-# - package: oci://registry.access.redhat.com/rhdh/backstage-plugin-catalog-backend-module-gitlab@sha256:7d018563f6ebd8e28ff643d4c74a9cf305c95d734668ff5e0026e2170bae9128
-  # Tag: 1.10.0--0.7.5, Build date: 2026-01-29T16:00:24Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-gitlab-dynamic
-  disabled: true
-  pluginConfig:
-    catalog:
-      providers:
-        gitlab: {}
-# - package: oci://registry.access.redhat.com/rhdh/backstage-plugin-catalog-backend-module-gitlab-org@sha256:b61ffbe45b12ce7360db3d6e188fa00e97942644035446895723329c90d5f677
-  # Tag: 1.10.0--0.2.15, Build date: 2026-01-29T16:28:02Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-gitlab-org-dynamic
-  disabled: true
-  pluginConfig:
-    catalog:
-      providers:
-        gitlab: {}
-# - package: oci://registry.access.redhat.com/rhdh/backstage-plugin-catalog-backend-module-ldap@sha256:f740955061f2b2520d0486f68da1ab47d50c72862642d54f0e43c551c2b1e8af
-  # Tag: 1.10.0--0.12.0, Build date: 2026-01-29T15:46:11Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-ldap-dynamic
-  disabled: true
-  pluginConfig:
-    catalog:
-      providers:
-        ldapOrg:
-          default:
-            target: ${LDAP_TARGET_URL}
-            bind:
-              dn: ${LDAP_BIND_DN}
-              secret: ${LDAP_BIND_SECRET}
-            users:
-            - dn: ${LDAP_USERS_DN}
-              options:
-                filter: (uid=*)
-            groups:
-            - dn: ${LDAP_GROUPS_DN}
-              options:
-                filter: (cn=*)
+  - package: ./dynamic-plugins/dist/backstage-community-plugin-analytics-provider-segment
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          backstage-community.plugin-analytics-provider-segment:
+            analyticsApiExtensions:
+              - importName: SegmentAnalytics
+      backend:
+        csp:
+          script-src:
+            - '''self'''
+            - '''unsafe-eval'''
+            - https://cdn.segment.com
+      app:
+        analytics:
+          segment:
+            writeKey: ${SEGMENT_WRITE_KEY}
+            maskIP: true
+            testMode: ${SEGMENT_TEST_MODE}
+            appVersion: ${RHDH_VERSION}
+            backstageVersion: ${BACKSTAGE_VERSION}
+  - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-regex-dynamic
+    disabled: false
+  - package: ./dynamic-plugins/dist/backstage-plugin-techdocs
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          backstage.plugin-techdocs:
+            routeBindings:
+              targets:
+                - importName: techdocsPlugin
+              bindings:
+                - bindTarget: catalogPlugin.externalRoutes
+                  bindMap:
+                    viewTechDoc: techdocsPlugin.routes.docRoot
+                - bindTarget: scaffolderPlugin.externalRoutes
+                  bindMap:
+                    viewTechDoc: techdocsPlugin.routes.docRoot
+            dynamicRoutes:
+              - path: /docs
+                importName: TechDocsIndexPage
+                menuItem:
+                  icon: docs
+                  text: Docs
+                  textKey: menuItem.docs
+              - path: /docs/:namespace/:kind/:name/*
+                importName: TechDocsReaderPage
+            mountPoints:
+              - mountPoint: entity.page.docs/cards
+                importName: EntityTechdocsContent
+                config:
+                  layout:
+                    gridColumn: 1 / -1
+                  if:
+                    allOf:
+                      - isTechDocsAvailable
+              - mountPoint: search.page.results
+                importName: TechDocsSearchResultListItem
+              - mountPoint: search.page.filters
+                importName: TechdocsSearchFilter
+              - mountPoint: search.page.types
+                importName: techdocsSearchType
+                config:
+                  props:
+                    name: Documentation
+                    icon: docs
+  - package: ./dynamic-plugins/dist/backstage-plugin-techdocs-backend-dynamic
+    disabled: false
+    pluginConfig:
+      techdocs:
+        builder: local
+        generator:
+          runIn: local
+        publisher:
+          type: local
+  - package: ./dynamic-plugins/dist/backstage-plugin-techdocs-module-addons-contrib
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          backstage.plugin-techdocs-module-addons-contrib:
+            techdocsAddons:
+              - importName: ReportIssue
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-adoption-insights
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-adoption-insights:
+            translationResources:
+              - importName: adoptionInsightsTranslations
+                ref: adoptionInsightsTranslationRef
+            appIcons:
+              - name: adoptionInsightsIcon
+                importName: AdoptionInsightsIcon
+            dynamicRoutes:
+              - path: /adoption-insights
+                importName: AdoptionInsightsPage
+                menuItem:
+                  icon: adoptionInsightsIcon
+                  text: Adoption Insights
+                  textKey: menuItem.adoptionInsights
+            menuItems:
+              adoption-insights:
+                parent: default.admin
+                icon: adoptionInsightsIcon
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-adoption-insights-backend-dynamic
+    disabled: false
+    pluginConfig:
+      app:
+        analytics:
+          adoptionInsights:
+            maxBufferSize: 20
+            flushInterval: 5000
+            debug: false
+            licensedUsers: 100
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-analytics-module-adoption-insights-dynamic
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-analytics-module-adoption-insights:
+            analyticsApiExtensions:
+              - importName: AdoptionInsightsAnalyticsApi
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-catalog-backend-module-extensions-dynamic
+    disabled: false
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-dynamic-home-page
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-dynamic-home-page:
+            dynamicRoutes:
+              - path: /
+                importName: DynamicHomePage
+            mountPoints:
+              - mountPoint: application/listener
+                importName: VisitListener
+              - mountPoint: home.page/cards
+                importName: OnboardingSection
+                config:
+                  id: rhdh-onboarding-section
+                  title: Red Hat Developer Hub - Onboarding
+                  cardLayout:
+                    width:
+                      minColumns: 4
+                      maxColumns: 12
+                      defaultColumns: 12
+                    height:
+                      minRows: 2
+                      maxRows: 12
+                      defaultRows: 4
+                  layouts:
+                    xl:
+                      w: 12
+                      h: 6
+                    lg:
+                      w: 12
+                      h: 6
+                    md:
+                      w: 12
+                      h: 7
+                    sm:
+                      w: 12
+                      h: 8
+                    xs:
+                      w: 12
+                      h: 9
+                    xxs:
+                      w: 12
+                      h: 14
+              - mountPoint: home.page/cards
+                importName: EntitySection
+                config:
+                  id: rhdh-entity-section
+                  title: Red Hat Developer Hub - Software Catalog
+                  cardLayout:
+                    width:
+                      minColumns: 4
+                      maxColumns: 12
+                      defaultColumns: 12
+                    height:
+                      minRows: 2
+                      maxRows: 12
+                      defaultRows: 4
+                  layouts:
+                    xl:
+                      w: 12
+                      h: 7
+                    lg:
+                      w: 12
+                      h: 7
+                    md:
+                      w: 12
+                      h: 8
+                    sm:
+                      w: 12
+                      h: 9
+                    xs:
+                      w: 12
+                      h: 11
+                    xxs:
+                      w: 12
+                      h: 15
+              - mountPoint: home.page/cards
+                importName: TemplateSection
+                config:
+                  id: rhdh-template-section
+                  title: Red Hat Developer Hub - Explore templates
+                  cardLayout:
+                    width:
+                      minColumns: 4
+                      maxColumns: 12
+                      defaultColumns: 12
+                    height:
+                      minRows: 2
+                      maxRows: 12
+                      defaultRows: 4
+                  layouts:
+                    xl:
+                      w: 12
+                      h: 5
+                    lg:
+                      w: 12
+                      h: 5
+                    md:
+                      w: 12
+                      h: 5
+                    sm:
+                      w: 12
+                      h: 5
+                    xs:
+                      w: 12
+                      h: 7.5
+                    xxs:
+                      w: 12
+                      h: 13.5
+              - mountPoint: home.page/cards
+                importName: QuickAccessCard
+                config:
+                  id: quickaccess-card
+                  title: Quick Access Card
+              - mountPoint: home.page/cards
+                importName: SearchBar
+                config:
+                  id: searchbar
+                  title: Search
+                  cardLayout:
+                    width:
+                      minColumns: 4
+                      maxColumns: 12
+                      defaultColumns: 12
+                    height:
+                      minRows: 1
+                      maxRows: 2
+                      defaultRows: 2
+              - mountPoint: home.page/cards
+                importName: CatalogStarredEntitiesCard
+                config:
+                  id: catalog-starred-entities-card
+                  title: Starred catalog entities
+              - mountPoint: home.page/cards
+                importName: RecentlyVisitedCard
+                config:
+                  id: recently-visited-card
+                  title: Recently visited
+              - mountPoint: home.page/cards
+                importName: TopVisitedCard
+                config:
+                  id: top-visited-card
+                  title: Top visited
+              - mountPoint: home.page/cards
+                importName: FeaturedDocsCard
+                config:
+                  id: featured-docs-card
+                  title: Featured docs
+              - mountPoint: home.page/cards
+                importName: JokeCard
+                config:
+                  id: joke-card
+                  title: Random joke
+            translationResources:
+              - importName: homepageTranslations
+                ref: homepageTranslationRef
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-extensions
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-extensions:
+            translationResources:
+              - importName: extensionsTranslations
+                ref: extensionsTranslationRef
+                module: Alpha
+            appIcons:
+              - name: pluginsIcon
+                importName: PluginsIcon
+            dynamicRoutes:
+              - path: /extensions
+                importName: DynamicExtensionsPluginRouter
+                menuItem:
+                  icon: pluginsIcon
+                  text: Extensions
+                  textKey: menuItem.extensions
+            menuItems:
+              extensions:
+                parent: default.admin
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-extensions-backend-dynamic
+    disabled: false
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-floating-action-button
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-global-floating-action-button:
+            translationResources:
+              - importName: globalFloatingActionButtonTranslations
+                ref: globalFloatingActionButtonTranslationRef
+            mountPoints:
+              - mountPoint: application/listener
+                importName: DynamicGlobalFloatingActionButton
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-header
+    disabled: false
+    pluginConfig:
+      app:
+        sidebar:
+          search: false
+          settings: false
+          logo: false
+      dynamicPlugins:
+        frontend:
+          default.main-menu-items:
+            menuItems:
+              default.create:
+                title: ''
+              default.admin:
+                title: Administration
+                textKey: menuItem.administration
+                icon: admin
+          red-hat-developer-hub.backstage-plugin-global-header:
+            translationResources:
+              - importName: globalHeaderTranslations
+                ref: globalHeaderTranslationRef
+            mountPoints:
+              - mountPoint: application/header
+                importName: GlobalHeader
+                config:
+                  position: above-sidebar
+              - mountPoint: global.header/component
+                importName: CompanyLogo
+                config:
+                  priority: 200
+                  props:
+                    to: /
+              - mountPoint: global.header/component
+                importName: SearchComponent
+                config:
+                  priority: 100
+              - mountPoint: global.header/component
+                importName: Spacer
+                config:
+                  priority: 99
+                  props:
+                    growFactor: 0
+              - mountPoint: global.header/component
+                importName: HeaderIconButton
+                config:
+                  priority: 90
+                  props:
+                    title: Self-service
+                    titleKey: create.title
+                    icon: add
+                    to: create
+              - mountPoint: global.header/component
+                importName: StarredDropdown
+                config:
+                  priority: 85
+              - mountPoint: global.header/component
+                importName: ApplicationLauncherDropdown
+                config:
+                  priority: 82
+              - mountPoint: global.header/application-launcher
+                importName: MenuItemLink
+                config:
+                  section: Documentation
+                  priority: 150
+                  props:
+                    title: Developer Hub
+                    titleKey: applicationLauncher.developerHub
+                    icon: developerHub
+                    link: https://docs.redhat.com/en/documentation/red_hat_developer_hub
+              - mountPoint: global.header/application-launcher
+                importName: MenuItemLink
+                config:
+                  section: Developer Tools
+                  priority: 100
+                  props:
+                    title: RHDH Local
+                    titleKey: applicationLauncher.rhdhLocal
+                    icon: developerHub
+                    link: https://github.com/redhat-developer/rhdh-local
+              - mountPoint: global.header/component
+                importName: HelpDropdown
+                config:
+                  priority: 80
+              - mountPoint: global.header/help
+                importName: SupportButton
+                config:
+                  priority: 10
+              - mountPoint: global.header/component
+                importName: NotificationButton
+                config:
+                  priority: 70
+              - mountPoint: global.header/component
+                importName: Divider
+                config:
+                  priority: 50
+              - mountPoint: global.header/component
+                importName: ProfileDropdown
+                config:
+                  priority: 10
+              - mountPoint: global.header/profile
+                importName: MenuItemLink
+                config:
+                  priority: 100
+                  props:
+                    title: Settings
+                    titleKey: profile.settings
+                    link: /settings
+                    icon: manageAccounts
+              - mountPoint: global.header/profile
+                importName: MenuItemLink
+                config:
+                  priority: 90
+                  props:
+                    title: My profile
+                    titleKey: profile.myProfile
+                    type: myProfile
+                    icon: account
+              - mountPoint: global.header/profile
+                importName: LogoutButton
+                config:
+                  priority: 10
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-quickstart
+    disabled: false
+    pluginConfig:
+      app:
+        quickstart:
+          - title: Set up authentication
+            titleKey: steps.setupAuthentication.title
+            icon: Admin
+            description: Set up secure login credentials to protect your account from
+              unauthorized access.
+            descriptionKey: steps.setupAuthentication.description
+            cta:
+              text: Learn more
+              textKey: steps.setupAuthentication.ctaTitle
+              link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/authentication_in_red_hat_developer_hub/
+          - title: Configure RBAC
+            titleKey: steps.configureRbac.title
+            icon: Rbac
+            description: Assign roles and permissions to control who can view, create,
+              or edit resources, ensuring secure and efficient collaboration.
+            descriptionKey: steps.configureRbac.description
+            cta:
+              text: Manage access
+              textKey: steps.configureRbac.ctaTitle
+              link: /rbac
+          - title: Configure Git
+            titleKey: steps.configureGit.title
+            icon: Git
+            description: Connect your Git providers, such as GitHub to manage code,
+              automate workflows, and integrate with platform features.
+            descriptionKey: steps.configureGit.description
+            cta:
+              text: Learn more
+              textKey: steps.configureGit.ctaTitle
+              link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/integrating_red_hat_developer_hub_with_github/
+          - title: Manage plugins
+            titleKey: steps.managePlugins.title
+            icon: Plugins
+            description: Browse and install extensions to add features, connect with
+              external tools, and customize your experience.
+            descriptionKey: steps.managePlugins.description
+            cta:
+              text: Explore plugins
+              textKey: steps.managePlugins.ctaTitle
+              link: /extensions
+          - title: Import application
+            roles:
+              - developer
+            icon: Import
+            description: Import your existing code and services into the catalog to
+              organize and access them through your developer portal.
+            cta:
+              text: Import
+              link: /bulk-import
+          - title: Learn about the Catalog
+            roles:
+              - developer
+            icon: Catalog
+            description: Discover all software components, services, and APIs, and
+              view their owners and documentation.
+            cta:
+              text: View Catalog
+              link: /catalog
+          - title: Explore Self-service templates
+            roles:
+              - developer
+            icon: SelfService
+            description: Use our self-service templates to quickly set up new projects,
+              services, or documentation.
+            cta:
+              text: Explore templates
+              link: /create
+          - title: Find all Learning Paths
+            roles:
+              - developer
+            icon: Learning
+            description: Integrate tailored e-learning into your workflows with Learning
+              Paths to accelerate onboarding, close skill gaps, and promote best practices.
+            cta:
+              text: View Learning Paths
+              link: /learning-paths
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-quickstart:
+            translationResources:
+              - importName: quickstartTranslations
+                module: Alpha
+                ref: quickstartTranslationRef
+            mountPoints:
+              - mountPoint: application/provider
+                importName: QuickstartDrawerProvider
+              - mountPoint: application/internal/drawer-state
+                importName: QuickstartDrawerStateExposer
+              - mountPoint: application/internal/drawer-content
+                importName: QuickstartDrawerContent
+                config:
+                  id: quickstart
+              - mountPoint: global.header/help
+                importName: QuickstartButton
+                config:
+                  priority: 100
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-scaffolder-backend-module-quay:bs_1.45.3__2.14.0
+    disabled: false
+  - package: ./dynamic-plugins/dist/backstage-community-plugin-acr
+    disabled: true
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          backstage-community.plugin-acr:
+            mountPoints:
+              - mountPoint: entity.page.image-registry/cards
+                importName: AcrImagesEntityContent
+                config:
+                  layout:
+                    gridColumn: 1 / -1
+                  if:
+                    anyOf:
+                      - isAcrAvailable
+  - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-keycloak-dynamic
+    disabled: true
+    pluginConfig:
+      catalog:
+        providers:
+          keycloakOrg:
+            default:
+              baseUrl: ${KEYCLOAK_BASE_URL}
+              loginRealm: ${KEYCLOAK_LOGIN_REALM}
+              realm: ${KEYCLOAK_REALM}
+              clientId: ${KEYCLOAK_CLIENT_ID}
+              clientSecret: ${KEYCLOAK_CLIENT_SECRET}
+              schedule:
+                frequency:
+                  minutes: 60
+                initialDelay:
+                  seconds: 15
+                timeout:
+                  minutes: 50
+  - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-pingidentity-dynamic
+    disabled: true
+    pluginConfig:
+      catalog:
+        providers:
+          pingIdentityOrg: {}
+  - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-scaffolder-relation-processor-dynamic
+    disabled: true
+  - package: ./dynamic-plugins/dist/backstage-community-plugin-ocm
+    disabled: true
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          backstage-community.plugin-ocm:
+            appIcons:
+              - name: ocmIcon
+                importName: OcmIcon
+            dynamicRoutes:
+              - path: /ocm
+                importName: OcmPage
+                menuItem:
+                  icon: ocmIcon
+                  text: Clusters
+                  textKey: menuItem.clusters
+            mountPoints:
+              - mountPoint: entity.page.overview/context
+                importName: ClusterContextProvider
+              - mountPoint: entity.page.overview/cards
+                importName: ClusterAvailableResourceCard
+                config:
+                  layout:
+                    gridColumnEnd:
+                      lg: span 4
+                      md: span 6
+                      xs: span 12
+                  if:
+                    allOf:
+                      - isKind: resource
+                      - isType: kubernetes-cluster
+              - mountPoint: entity.page.overview/cards
+                importName: ClusterInfoCard
+                config:
+                  layout:
+                    gridColumnEnd:
+                      lg: span 4
+                      md: span 6
+                      xs: span 12
+                  if:
+                    allOf:
+                      - isKind: resource
+                      - isType: kubernetes-cluster
+  - package: ./dynamic-plugins/dist/backstage-community-plugin-ocm-backend-dynamic
+    disabled: true
+    pluginConfig:
+      catalog:
+        providers:
+          ocm:
+            default:
+              name: ${OCM_HUB_NAME}
+              url: ${OCM_HUB_URL}
+              serviceAccountToken: ${OCM_SA_TOKEN}
+              owner: janus-authors
+  - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
+    disabled: true
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          backstage-community.plugin-rbac:
+            translationResources:
+              - importName: rbacTranslations
+                ref: rbacTranslationRef
+                module: Alpha
+            appIcons:
+              - name: rbacIcon
+                importName: RbacIcon
+            dynamicRoutes:
+              - path: /rbac
+                importName: RbacPage
+                menuItem:
+                  icon: rbacIcon
+                  text: RBAC
+                  textKey: menuItem.rbac
+            menuItems:
+              rbac:
+                parent: default.admin
+                icon: rbacIcon
+  - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-kubernetes-dynamic
+    disabled: true
+  - package: ./dynamic-plugins/dist/backstage-community-plugin-tech-radar
+    disabled: true
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          backstage-community.plugin-tech-radar:
+            apiFactories:
+              - importName: TechRadarApi
+            appIcons:
+              - name: techRadar
+                importName: TechRadarIcon
+            dynamicRoutes:
+              - path: /tech-radar
+                importName: TechRadarPage
+                menuItem:
+                  icon: techRadar
+                  text: menuItem.techRadar
+                  textKey: menuItem.techRadar
+                config:
+                  props:
+                    width: 1500
+                    height: 800
+  - package: ./dynamic-plugins/dist/backstage-community-plugin-tech-radar-backend-dynamic
+    disabled: true
+    pluginConfig:
+      techRadar:
+        url: ${TECH_RADAR_DATA_URL}
+  - package: ./dynamic-plugins/dist/backstage-community-plugin-topology
+    disabled: true
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          backstage-community.plugin-topology:
+            translationResources:
+              - importName: topologyTranslations
+                ref: topologyTranslationRef
+                module: Alpha
+            mountPoints:
+              - mountPoint: entity.page.topology/cards
+                importName: TopologyPage
+                config:
+                  layout:
+                    gridColumn: 1 / -1
+                    height: 75vh
+                  if:
+                    anyOf:
+                      - hasAnnotation: backstage.io/kubernetes-id
+                      - hasAnnotation: backstage.io/kubernetes-namespace
+  - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-dynamic
+    disabled: true
+    pluginConfig:
+      catalog:
+        providers:
+          github:
+            providerId:
+              organization: ${GITHUB_ORG}
+  - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-org-dynamic
+    disabled: true
+    pluginConfig:
+      catalog:
+        providers:
+          githubOrg:
+            id: production
+            githubUrl: ${GITHUB_URL}
+            orgs:
+              - ${GITHUB_ORG}
             schedule:
               frequency:
                 minutes: 60
@@ -940,837 +751,814 @@ plugins:
                 seconds: 15
               timeout:
                 minutes: 15
-# - package: oci://registry.access.redhat.com/rhdh/backstage-plugin-catalog-backend-module-msgraph@sha256:e92594f74fcff77b72e5d14c2b85d6f110b3404a9a6984ad043182af01470e1b
-  # Tag: 1.10.0--0.8.2, Build date: 2026-01-29T15:56:54Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-msgraph-dynamic
-  disabled: true
-  pluginConfig:
-    catalog:
-      providers:
-        microsoftGraphOrg:
-          providerId:
-            target: https://graph.microsoft.com/v1.0
-            tenantId: ${MICROSOFT_TENANT_ID}
-            clientId: ${MICROSOFT_CLIENT_ID}
-            clientSecret: ${MICROSOFT_CLIENT_SECRET}
-            schedule:
-              frequency:
-                minutes: 60
-              initialDelay:
-                seconds: 15
-              timeout:
-                minutes: 15
-# - package: oci://registry.access.redhat.com/rhdh/backstage-plugin-kubernetes@sha256:8248ba7ec02fcdc3c0d9ddd530df89482e42e190c5dd161a96a56091d21433da
-  # Tag: 1.10.0--0.12.13, Build date: 2026-01-30T19:31:25Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/backstage-plugin-kubernetes
-  disabled: true
-  pluginConfig:
-    dynamicPlugins:
-      frontend:
-        backstage.plugin-kubernetes:
-          mountPoints:
-          - mountPoint: entity.page.kubernetes/cards
-            importName: EntityKubernetesContent
-            config:
-              layout:
-                gridColumn: 1 / -1
-              if:
-                anyOf:
-                - hasAnnotation: backstage.io/kubernetes-id
-                - hasAnnotation: backstage.io/kubernetes-namespace
-# - package: oci://registry.access.redhat.com/rhdh/backstage-plugin-kubernetes-backend@sha256:b464ce2365c9ec558423266300950fef6e5174dab24b013fd320aafae48287a3
-  # Tag: 1.10.0--0.20.4, Build date: 2026-01-30T19:31:38Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/backstage-plugin-kubernetes-backend-dynamic
-  disabled: true
-  pluginConfig:
-    kubernetes:
-      serviceLocatorMethod:
-        type: multiTenant
-      clusterLocatorMethods:
-      - type: config
-        clusters:
-        - name: ${K8S_CLUSTER_NAME}
-          url: ${K8S_CLUSTER_URL}
-          authProvider: serviceAccount
-          skipTLSVerify: true
-          serviceAccountToken: ${K8S_CLUSTER_TOKEN}
-# - package: oci://registry.access.redhat.com/rhdh/backstage-plugin-notifications@sha256:7a84935c5b7823dc109fca02a2e32b27e96fa8c6f9f6bfebe517366d9b45907d
-  # Tag: 1.10.0--0.5.11, Build date: 2026-01-29T16:05:00Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/backstage-plugin-notifications
-  disabled: true
-  pluginConfig:
-    dynamicPlugins:
-      frontend:
-        backstage.plugin-notifications:
-          dynamicRoutes:
-          - importName: NotificationsPage
-            menuItem:
-              config:
-                props:
-                  titleCounterEnabled: true
-                  webNotificationsEnabled: false
-              importName: NotificationsSidebarItem
-            path: /notifications
-# - package: oci://registry.access.redhat.com/rhdh/backstage-plugin-notifications-backend@sha256:e3e2b2f42cadf68b6c529648cb6ed554add3405a9b360babf3ea7994a245fe7e
-  # Tag: 1.10.0--0.6.0, Build date: 2026-01-29T15:59:43Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/backstage-plugin-notifications-backend-dynamic
-  disabled: true
-# - package: oci://registry.access.redhat.com/rhdh/backstage-plugin-notifications-backend-module-email@sha256:b107531e1207edc76229e774bf7010e7e2e58840cbb7f0a9561357887cb377aa
-  # Tag: 1.10.0--0.3.16, Build date: 2026-01-29T15:43:21Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/backstage-plugin-notifications-backend-module-email-dynamic
-  disabled: true
-  pluginConfig:
-    notifications:
-      processors:
-        email:
-          transportConfig:
-            transport: smtp
-            hostname: ${EMAIL_HOSTNAME}
-            port: 587
-            username: ${EMAIL_USERNAME}
-            password: ${EMAIL_PASSWORD}
-          sender: ${EMAIL_SENDER}
-          broadcastConfig:
-            receiver: users
-- package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-azure-dynamic
-  disabled: true
-# - package: oci://registry.access.redhat.com/rhdh/backstage-plugin-scaffolder-backend-module-github@sha256:91e8a80d3da1e270a1f3559f1d083de703196a56d738444b66ed8f07331631e8
-  # Tag: 1.10.0--0.9.2, Build date: 2026-01-30T19:31:25Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-github-dynamic
-  disabled: true
-# - package: oci://registry.access.redhat.com/rhdh/backstage-plugin-scaffolder-backend-module-gitlab@sha256:8d1f3c6941a70e56583720e31a39716306a70bfe9fb9b9742c9922419f2652cc
-  # Tag: 1.10.0--0.10.0, Build date: 2026-01-29T15:49:06Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-gitlab-dynamic
-  disabled: true
-# - package: oci://registry.access.redhat.com/rhdh/backstage-plugin-signals@sha256:c96e28dd983bdfd0b41fb409e596857a06592187fce17063f1889f829b055359
-  # Tag: 1.10.0--0.0.25, Build date: 2026-01-30T19:31:30Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/backstage-plugin-signals
-  disabled: true
-  pluginConfig:
-    dynamicPlugins:
-      frontend:
-        backstage.plugin-signals: {}
-# - package: oci://registry.access.redhat.com/rhdh/backstage-plugin-signals-backend@sha256:8fd997dd1c313bad679053a18eb6115d01feb9e0c0b0d3d7566246934922c265
-  # Tag: 1.10.0--0.3.10, Build date: 2026-01-30T19:31:25Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/backstage-plugin-signals-backend-dynamic
-  disabled: true
-# - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-bulk-import@sha256:996b2043e988e39ea31beecdab29ea90c430eb98a6c513fae85ff326064e2b49
-  # Tag: 1.10.0--7.0.1, Build date: 2026-01-30T20:24:40Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import
-  disabled: true
-  pluginConfig:
-    dynamicPlugins:
-      frontend:
-        red-hat-developer-hub.backstage-plugin-bulk-import:
-          translationResources:
-          - importName: bulkImportTranslations
-            module: Alpha
-            ref: bulkImportTranslationRef
-          appIcons:
-          - name: bulkImportIcon
-            importName: BulkImportIcon
-          dynamicRoutes:
-          - path: /bulk-import
-            importName: BulkImportPage
-            menuItem:
-              icon: bulkImportIcon
-              text: Bulk import
-              textKey: menuItem.bulkImport
-# - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-bulk-import-backend@sha256:e34e7f7d5077d565d1b75e982312733ef7652b5d4c337bed59d5b18222fd2876
-  # Tag: 1.10.0--7.0.1, Build date: 2026-01-30T20:24:43Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import-backend-dynamic
-  disabled: true
-# - package: oci://registry.access.redhat.com/rhdh/roadiehq-scaffolder-backend-module-http-request@sha256:2e498033306df2711ec2a548db0a9db921f911eb9b99af2b9e44162b4851bbe8
-  # Tag: 1.10.0--5.5.1, Build date: 2026-01-29T15:59:37Z
-  # new approach using oci images: to switch to the new approach, uncommment
-  # the 'package' line above and remove the next two lines, keeping the pluginConfig.
-  # disabled: true
-- package: ./dynamic-plugins/dist/roadiehq-scaffolder-backend-module-http-request-dynamic
-  disabled: true
-- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-3scale-backend:bs_1.45.3__3.10.0
-  disabled: true
-  pluginConfig:
-    catalog:
-      providers:
-        threeScaleApiEntity:
-          default:
-            baseUrl: ${THREESCALE_BASE_URL}
-            accessToken: ${THREESCALE_ACCESS_TOKEN}
-- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-argocd-backend:bs_1.45.3__1.0.2
-  disabled: true
-  pluginConfig:
-    argocd:
-      username: ${ARGOCD_USERNAME}
-      password: ${ARGOCD_PASSWORD}
-      appLocatorMethods:
-      - type: config
+  - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-gitlab-dynamic
+    disabled: true
+    pluginConfig:
+      catalog:
+        providers:
+          gitlab: {}
+  - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-gitlab-org-dynamic
+    disabled: true
+    pluginConfig:
+      catalog:
+        providers:
+          gitlab: {}
+  - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-ldap-dynamic
+    disabled: true
+    pluginConfig:
+      catalog:
+        providers:
+          ldapOrg:
+            default:
+              target: ${LDAP_TARGET_URL}
+              bind:
+                dn: ${LDAP_BIND_DN}
+                secret: ${LDAP_BIND_SECRET}
+              users:
+                - dn: ${LDAP_USERS_DN}
+                  options:
+                    filter: (uid=*)
+              groups:
+                - dn: ${LDAP_GROUPS_DN}
+                  options:
+                    filter: (cn=*)
+              schedule:
+                frequency:
+                  minutes: 60
+                initialDelay:
+                  seconds: 15
+                timeout:
+                  minutes: 15
+  - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-msgraph-dynamic
+    disabled: true
+    pluginConfig:
+      catalog:
+        providers:
+          microsoftGraphOrg:
+            providerId:
+              target: https://graph.microsoft.com/v1.0
+              tenantId: ${MICROSOFT_TENANT_ID}
+              clientId: ${MICROSOFT_CLIENT_ID}
+              clientSecret: ${MICROSOFT_CLIENT_SECRET}
+              schedule:
+                frequency:
+                  minutes: 60
+                initialDelay:
+                  seconds: 15
+                timeout:
+                  minutes: 15
+  - package: ./dynamic-plugins/dist/backstage-plugin-kubernetes
+    disabled: true
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          backstage.plugin-kubernetes:
+            mountPoints:
+              - mountPoint: entity.page.kubernetes/cards
+                importName: EntityKubernetesContent
+                config:
+                  layout:
+                    gridColumn: 1 / -1
+                  if:
+                    anyOf:
+                      - hasAnnotation: backstage.io/kubernetes-id
+                      - hasAnnotation: backstage.io/kubernetes-namespace
+  - package: ./dynamic-plugins/dist/backstage-plugin-kubernetes-backend-dynamic
+    disabled: true
+    pluginConfig:
+      kubernetes:
+        serviceLocatorMethod:
+          type: multiTenant
+        clusterLocatorMethods:
+          - type: config
+            clusters:
+              - name: ${K8S_CLUSTER_NAME}
+                url: ${K8S_CLUSTER_URL}
+                authProvider: serviceAccount
+                skipTLSVerify: true
+                serviceAccountToken: ${K8S_CLUSTER_TOKEN}
+  - package: ./dynamic-plugins/dist/backstage-plugin-notifications
+    disabled: true
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          backstage.plugin-notifications:
+            dynamicRoutes:
+              - importName: NotificationsPage
+                menuItem:
+                  config:
+                    props:
+                      titleCounterEnabled: true
+                      webNotificationsEnabled: false
+                  importName: NotificationsSidebarItem
+                path: /notifications
+  - package: ./dynamic-plugins/dist/backstage-plugin-notifications-backend-dynamic
+    disabled: true
+  - package: ./dynamic-plugins/dist/backstage-plugin-notifications-backend-module-email-dynamic
+    disabled: true
+    pluginConfig:
+      notifications:
+        processors:
+          email:
+            transportConfig:
+              transport: smtp
+              hostname: ${EMAIL_HOSTNAME}
+              port: 587
+              username: ${EMAIL_USERNAME}
+              password: ${EMAIL_PASSWORD}
+            sender: ${EMAIL_SENDER}
+            broadcastConfig:
+              receiver: users
+  - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-azure-dynamic
+    disabled: true
+  - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-github-dynamic
+    disabled: true
+  - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-gitlab-dynamic
+    disabled: true
+  - package: ./dynamic-plugins/dist/backstage-plugin-signals
+    disabled: true
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          backstage.plugin-signals: {}
+  - package: ./dynamic-plugins/dist/backstage-plugin-signals-backend-dynamic
+    disabled: true
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import
+    disabled: true
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-bulk-import:
+            translationResources:
+              - importName: bulkImportTranslations
+                module: Alpha
+                ref: bulkImportTranslationRef
+            appIcons:
+              - name: bulkImportIcon
+                importName: BulkImportIcon
+            dynamicRoutes:
+              - path: /bulk-import
+                importName: BulkImportPage
+                menuItem:
+                  icon: bulkImportIcon
+                  text: Bulk import
+                  textKey: menuItem.bulkImport
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import-backend-dynamic
+    disabled: true
+  - package: ./dynamic-plugins/dist/roadiehq-scaffolder-backend-module-http-request-dynamic
+    disabled: true
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-3scale-backend:bs_1.45.3__3.10.0
+    disabled: true
+    pluginConfig:
+      catalog:
+        providers:
+          threeScaleApiEntity:
+            default:
+              baseUrl: ${THREESCALE_BASE_URL}
+              accessToken: ${THREESCALE_ACCESS_TOKEN}
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-argocd-backend:bs_1.45.3__1.0.2
+    disabled: true
+    pluginConfig:
+      argocd:
+        username: ${ARGOCD_USERNAME}
+        password: ${ARGOCD_PASSWORD}
+        appLocatorMethods:
+          - type: config
+            instances:
+              - name: argoInstance1
+                url: ${ARGOCD_INSTANCE1_URL}
+                token: ${ARGOCD_AUTH_TOKEN}
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-argocd:bs_1.45.3__2.4.3
+    disabled: true
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          backstage-community.plugin-argocd:
+            translationResources:
+              - importName: argocdTranslations
+                module: Alpha
+                ref: argocdTranslationRef
+            mountPoints:
+              - mountPoint: entity.page.overview/cards
+                importName: ArgocdDeploymentSummary
+                config:
+                  layout:
+                    gridColumnEnd:
+                      lg: span 8
+                      xs: span 12
+                  if:
+                    allOf:
+                      - isArgocdConfigured
+              - mountPoint: entity.page.cd/cards
+                importName: ArgocdDeploymentLifecycle
+                config:
+                  layout:
+                    gridColumn: 1 / -1
+                  if:
+                    allOf:
+                      - isArgocdConfigured
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-azure-devops-backend:bs_1.45.3__0.23.0
+    disabled: true
+    pluginConfig:
+      azureDevOps:
+        host: dev.azure.com
+        token: ${AZURE_TOKEN}
+        organization: ${AZURE_ORG}
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-azure-devops:bs_1.45.3__0.23.0
+    disabled: true
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          backstage-community.plugin-azure-devops:
+            mountPoints:
+              - mountPoint: entity.page.ci/cards
+                importName: EntityAzurePipelinesContent
+                config:
+                  layout:
+                    gridColumn: 1 / -1
+                  if:
+                    allOf:
+                      - isAzureDevOpsAvailable
+              - mountPoint: entity.page.pull-requests/cards
+                importName: EntityAzurePullRequestsContent
+                config:
+                  layout:
+                    gridColumn: 1 / -1
+                  if:
+                    allOf:
+                      - isAzureDevOpsAvailable
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-dynatrace:bs_1.45.3__10.12.1
+    disabled: true
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          backstage-community.plugin-dynatrace:
+            mountPoints:
+              - mountPoint: entity.page.monitoring/cards
+                importName: DynatraceTab
+                config:
+                  layout:
+                    gridColumn: 1 / -1
+                  if:
+                    allOf:
+                      - isDynatraceAvailable
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-github-actions:bs_1.45.3__0.18.0
+    disabled: true
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          backstage-community.plugin-github-actions:
+            mountPoints:
+              - mountPoint: entity.page.ci/cards
+                importName: EntityGithubActionsContent
+                config:
+                  layout:
+                    gridColumn: 1 / -1
+                  if:
+                    allOf:
+                      - isGithubActionsAvailable
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-github-issues:bs_1.45.3__0.16.0
+    disabled: true
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          backstage-community.plugin-github-issues:
+            mountPoints:
+              - mountPoint: entity.page.issues/cards
+                importName: GithubIssuesCard
+                config:
+                  layout:
+                    gridColumn: 1 / -1
+                  if:
+                    allOf:
+                      - hasAnnotation: github.com/project-slug
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-jenkins-backend:bs_1.45.3__0.22.0
+    disabled: true
+    pluginConfig:
+      jenkins:
         instances:
-        - name: argoInstance1
-          url: ${ARGOCD_INSTANCE1_URL}
-          token: ${ARGOCD_AUTH_TOKEN}
-- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-argocd:bs_1.45.3__2.4.3
-  disabled: true
-  pluginConfig:
-    dynamicPlugins:
-      frontend:
-        backstage-community.plugin-argocd:
-          translationResources:
-          - importName: argocdTranslations
-            module: Alpha
-            ref: argocdTranslationRef
-          mountPoints:
-          - mountPoint: entity.page.overview/cards
-            importName: ArgocdDeploymentSummary
-            config:
-              layout:
-                gridColumnEnd:
-                  lg: span 8
-                  xs: span 12
-              if:
-                allOf:
-                - isArgocdConfigured
-          - mountPoint: entity.page.cd/cards
-            importName: ArgocdDeploymentLifecycle
-            config:
-              layout:
-                gridColumn: 1 / -1
-              if:
-                allOf:
-                - isArgocdConfigured
-- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-azure-devops-backend:bs_1.45.3__0.23.0
-  disabled: true
-  pluginConfig:
-    azureDevOps:
-      host: dev.azure.com
-      token: ${AZURE_TOKEN}
-      organization: ${AZURE_ORG}
-- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-azure-devops:bs_1.45.3__0.23.0
-  disabled: true
-  pluginConfig:
-    dynamicPlugins:
-      frontend:
-        backstage-community.plugin-azure-devops:
-          mountPoints:
-          - mountPoint: entity.page.ci/cards
-            importName: EntityAzurePipelinesContent
-            config:
-              layout:
-                gridColumn: 1 / -1
-              if:
-                allOf:
-                - isAzureDevOpsAvailable
-          - mountPoint: entity.page.pull-requests/cards
-            importName: EntityAzurePullRequestsContent
-            config:
-              layout:
-                gridColumn: 1 / -1
-              if:
-                allOf:
-                - isAzureDevOpsAvailable
-- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-dynatrace:bs_1.45.3__10.12.1
-  disabled: true
-  pluginConfig:
-    dynamicPlugins:
-      frontend:
-        backstage-community.plugin-dynatrace:
-          mountPoints:
-          - mountPoint: entity.page.monitoring/cards
-            importName: DynatraceTab
-            config:
-              layout:
-                gridColumn: 1 / -1
-              if:
-                allOf:
-                - isDynatraceAvailable
-- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-github-actions:bs_1.45.3__0.18.0
-  disabled: true
-  pluginConfig:
-    dynamicPlugins:
-      frontend:
-        backstage-community.plugin-github-actions:
-          mountPoints:
-          - mountPoint: entity.page.ci/cards
-            importName: EntityGithubActionsContent
-            config:
-              layout:
-                gridColumn: 1 / -1
-              if:
-                allOf:
-                - isGithubActionsAvailable
-- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-github-issues:bs_1.45.3__0.16.0
-  disabled: true
-  pluginConfig:
-    dynamicPlugins:
-      frontend:
-        backstage-community.plugin-github-issues:
-          mountPoints:
-          - mountPoint: entity.page.issues/cards
-            importName: GithubIssuesCard
-            config:
-              layout:
-                gridColumn: 1 / -1
-              if:
-                allOf:
-                - hasAnnotation: github.com/project-slug
-- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-jenkins-backend:bs_1.45.3__0.22.0
-  disabled: true
-  pluginConfig:
-    jenkins:
-      instances:
-      - name: default
-        baseUrl: ${JENKINS_URL}
-        username: ${JENKINS_USERNAME}
-        apiKey: ${JENKINS_TOKEN}
-- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-jenkins:bs_1.45.3__0.26.0
-  disabled: true
-  pluginConfig:
-    dynamicPlugins:
-      frontend:
-        backstage-community.plugin-jenkins:
-          mountPoints:
-          - mountPoint: entity.page.ci/cards
-            importName: EntityJenkinsContent
-            config:
-              layout:
-                gridColumn: 1 / -1
-              if:
-                allOf:
-                - isJenkinsAvailable
-- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-jfrog-artifactory:bs_1.45.3__1.24.1
-  disabled: true
-  pluginConfig:
-    dynamicPlugins:
-      frontend:
-        backstage-community.plugin-jfrog-artifactory:
-          mountPoints:
-          - mountPoint: entity.page.image-registry/cards
-            importName: JfrogArtifactoryPage
-            config:
-              layout:
-                gridColumn: 1 / -1
-              if:
-                anyOf:
-                - isJfrogArtifactoryAvailable
-- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-lighthouse:bs_1.45.3__0.16.0
-  disabled: true
-  pluginConfig:
-    dynamicPlugins:
-      frontend:
-        backstage-community.plugin-lighthouse:
-          appIcons:
-          - name: lighthouse
-            importName: LighthouseIcon
-          dynamicRoutes:
-          - path: /lighthouse
-            importName: LighthousePage
-            menuItem:
-              icon: lighthouse
-              text: menuItem.lighthouse
-              textKey: menuItem.lighthouse
-          mountPoints:
-          - mountPoint: entity.page.overview/cards
-            importName: EntityLastLighthouseAuditCard
-            config:
-              layout:
-                gridColumnEnd:
-                  md: span 6
-                  xs: span 12
-              if:
-                allOf:
-                - isLighthouseAvailable
-- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-nexus-repository-manager:bs_1.45.3__1.19.4
-  disabled: true
-  pluginConfig:
-    dynamicPlugins:
-      frontend:
-        backstage-community.plugin-nexus-repository-manager:
-          mountPoints:
-          - mountPoint: entity.page.image-registry/cards
-            importName: NexusRepositoryManagerPage
-            config:
-              layout:
-                gridColumn: 1 / -1
-              if:
-                anyOf:
-                - isNexusRepositoryManagerAvailable
-- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-quay-backend:bs_1.45.3__1.10.1
-  disabled: true
-  pluginConfig:
-    quay:
-      apiUrl: https://quay.io
-- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-quay:bs_1.45.3__1.28.1
-  disabled: true
-  pluginConfig:
-    dynamicPlugins:
-      frontend:
-        backstage-community.plugin-quay:
-          mountPoints:
-          - mountPoint: entity.page.image-registry/cards
-            importName: QuayPage
-            config:
-              layout:
-                gridColumn: 1 / -1
-              if:
-                anyOf:
-                - isQuayAvailable
-- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-scaffolder-backend-module-sonarqube:bs_1.45.3__2.11.0
-  disabled: true
-- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-sonarqube-backend:bs_1.45.3__0.15.0
-  disabled: true
-  pluginConfig:
-    sonarqube:
-      baseUrl: ${SONARQUBE_URL}
-      apiKey: ${SONARQUBE_TOKEN}
-- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-sonarqube:bs_1.45.3__0.21.0
-  disabled: true
-  pluginConfig:
-    dynamicPlugins:
-      frontend:
-        backstage-community.plugin-sonarqube:
-          mountPoints:
-          - mountPoint: entity.page.overview/cards
-            importName: EntitySonarQubeCard
-            config:
-              layout:
-                gridColumnEnd:
-                  lg: span 4
-                  md: span 6
-                  xs: span 12
-              if:
-                allOf:
-                - isSonarQubeAvailable
-- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-tekton:bs_1.45.3__3.33.3
-  disabled: true
-  pluginConfig:
-    dynamicPlugins:
-      frontend:
-        backstage-community.plugin-tekton:
-          translationResources:
-          - importName: tektonTranslations
-            ref: tektonTranslationRef
-          mountPoints:
-          - mountPoint: entity.page.ci/cards
-            importName: TektonCI
-            config:
-              layout:
-                gridColumn: 1 / -1
-              if:
-                allOf:
-                - isTektonCIAvailable
-- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-catalog-backend-module-bitbucket-cloud:bs_1.45.3__0.5.5
-  disabled: true
-  pluginConfig:
-    catalog:
-      providers:
-        bitbucketCloud:
-          default:
-            workspace: ${BITBUCKET_WORKSPACE}
-            schedule:
-              frequency:
-                minutes: 30
-              initialDelay:
-                minutes: 1
-              timeout:
-                minutes: 3
-- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-catalog-backend-module-bitbucket-server:bs_1.45.3__0.5.5
-  disabled: true
-  pluginConfig:
-    catalog:
-      providers:
-        bitbucketServer:
-          default:
-            host: ${BITBUCKET_HOST}
-            schedule:
-              frequency:
-                minutes: 30
-              initialDelay:
-                minutes: 1
-              timeout:
-                minutes: 3
-- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-scaffolder-backend-module-bitbucket-cloud:bs_1.45.3__0.2.15
-  disabled: true
-- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-scaffolder-backend-module-bitbucket-server:bs_1.45.3__0.2.15
-  disabled: true
-- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-scaffolder-backend-module-gerrit:bs_1.45.3__0.2.15
-  disabled: true
-- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/immobiliarelabs-backstage-plugin-gitlab-backend:bs_1.45.3__6.13.0
-  disabled: true
-  pluginConfig:
-    gitlab:
-      host: ${GITLAB_HOST}
-      token: ${GITLAB_TOKEN}
-- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/immobiliarelabs-backstage-plugin-gitlab:bs_1.45.3__6.13.0
-  disabled: true
-  pluginConfig:
-    dynamicPlugins:
-      frontend:
-        immobiliarelabs.backstage-plugin-gitlab:
-          mountPoints:
-          - mountPoint: entity.page.overview/cards
-            importName: EntityGitlabMergeRequestStatsCard
-            config:
-              layout:
-                gridColumnEnd:
-                  lg: span 4
-                  md: span 6
-                  xs: span 12
-              if:
-                allOf:
-                - isGitlabAvailable
-          - mountPoint: entity.page.ci/cards
-            importName: EntityGitlabPipelinesTable
-            config:
-              layout:
-                gridColumn: 1 / -1
-              if:
-                allOf:
-                - isGitlabAvailable
-          - mountPoint: entity.page.issues/cards
-            importName: EntityGitlabIssuesTable
-            config:
-              layout:
-                gridColumn: 1 / -1
-              if:
-                allOf:
-                - isGitlabAvailable
-          - mountPoint: entity.page.pull-requests/cards
-            importName: EntityGitlabMergeRequestsTable
-            config:
-              layout:
-                gridColumn: 1 / -1
-              if:
-                allOf:
-                - isGitlabAvailable
-- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/pagerduty-backstage-plugin-backend:bs_1.45.3__0.10.1
-  disabled: true
-  pluginConfig:
-    pagerDuty:
-      apiBaseUrl: ${PAGERDUTY_API_BASE}
-      oauth:
-        clientId: ${PAGERDUTY_CLIENT_ID}
-        clientSecret: ${PAGERDUTY_CLIENT_SECRET}
-        subDomain: ${PAGERDUTY_SUBDOMAIN}
-- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/pagerduty-backstage-plugin:bs_1.45.3__0.16.4
-  disabled: true
-  pluginConfig:
-    dynamicPlugins:
-      frontend:
-        pagerduty.backstage-plugin:
-          mountPoints:
-          - mountPoint: entity.page.overview/cards
-            importName: EntityPagerDutyCard
-            config:
-              layout:
-                gridColumnEnd:
-                  md: span 6
-                  xs: span 12
-              if:
-                allOf:
-                - isPluginApplicableToEntity
-- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-argo-cd-backend:bs_1.45.3__4.6.0
-  disabled: true
-  pluginConfig:
-    argocd:
-      username: ${ARGOCD_USERNAME}
-      password: ${ARGOCD_PASSWORD}
-      appLocatorMethods:
-      - type: config
-        instances:
-        - name: argoInstance1
-          url: ${ARGOCD_INSTANCE1_URL}
-          token: ${ARGOCD_AUTH_TOKEN}
-        - name: argoInstance2
-          url: ${ARGOCD_INSTANCE2_URL}
-          token: ${ARGOCD_AUTH_TOKEN2}
-- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-datadog:bs_1.45.3__2.6.0
-  disabled: true
-  pluginConfig:
-    dynamicPlugins:
-      frontend:
-        roadiehq.backstage-plugin-datadog:
-          mountPoints:
-          - mountPoint: entity.page.monitoring/cards
-            importName: EntityDatadogContent
-            config:
-              layout:
-                gridColumn: 1 / -1
-              if:
-                allOf:
-                - isDatadogAvailable
-- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-github-insights:bs_1.45.3__3.4.1
-  disabled: true
-  pluginConfig:
-    dynamicPlugins:
-      frontend:
-        roadiehq.backstage-plugin-github-insights:
-          mountPoints:
-          - mountPoint: entity.page.overview/cards
-            importName: EntityGithubInsightsComplianceCard
-            config:
-              layout:
-                gridColumnEnd:
-                  lg: span 4
-                  md: span 6
-                  xs: span 12
-              if:
-                allOf:
-                - isGithubInsightsAvailable
-- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-github-pull-requests:bs_1.45.3__3.6.2
-  disabled: true
-  pluginConfig:
-    dynamicPlugins:
-      frontend:
-        roadiehq.backstage-plugin-github-pull-requests:
-          mountPoints:
-          - mountPoint: entity.page.overview/cards
-            importName: EntityGithubPullRequestsOverviewCard
-            config:
-              layout:
-                gridColumnEnd:
-                  lg: span 4
-                  md: span 6
-                  xs: span 12
-              if:
-                allOf:
-                - isGithubPullRequestsAvailable
-          - mountPoint: entity.page.pull-requests/cards
-            importName: EntityGithubPullRequestsContent
-            config:
-              layout:
-                gridColumn: 1 / -1
-              if:
-                allOf:
-                - isGithubPullRequestsAvailable
-          - mountPoint: home.page/cards
-            importName: HomePageYourOpenPullRequestsCard
-            config:
-              id: github-assigned-issues
-              title: 'GitHub: Assigned Issues'
-              description: Issues assigned to the logged in user
-              cardLayout:
-                width:
-                  minColumns: 4
-                  maxColumns: 12
-                  defaultColumns: 12
-                height:
-                  minRows: 2
-                  maxRows: 12
-                  defaultRows: 4
-              props:
-                title: 'GitHub: Assigned Issues'
-                query: is:issue state:open archived:false assignee:@me
-          - mountPoint: home.page/cards
-            importName: HomePageYourOpenPullRequestsCard
-            config:
-              id: github-assigned-pull-requests
-              title: 'GitHub: Assigned Pull Requests'
-              description: Pull Requests assigned to the logged in user
-              cardLayout:
-                width:
-                  minColumns: 4
-                  maxColumns: 12
-                  defaultColumns: 12
-                height:
-                  minRows: 2
-                  maxRows: 12
-                  defaultRows: 4
-              props:
-                title: 'GitHub: Assigned Pull Requests'
-                query: is:pr state:open archived:false assignee:@me
-          - mountPoint: home.page/cards
-            importName: HomePageYourOpenPullRequestsCard
-            config:
-              id: github-open-issues
-              title: 'GitHub: Open Issues'
-              description: Issues opened by the logged in user
-              cardLayout:
-                width:
-                  minColumns: 4
-                  maxColumns: 12
-                  defaultColumns: 12
-                height:
-                  minRows: 2
-                  maxRows: 12
-                  defaultRows: 4
-              props:
-                title: 'GitHub: Open Issues'
-                query: is:issue state:open archived:false author:@me
-          - mountPoint: home.page/cards
-            importName: HomePageYourOpenPullRequestsCard
-            config:
-              id: github-open-pull-requests
-              title: 'GitHub: Open Pull Requests'
-              description: Pull Requests opened by the logged in user
-              cardLayout:
-                width:
-                  minColumns: 4
-                  maxColumns: 12
-                  defaultColumns: 12
-                height:
-                  minRows: 2
-                  maxRows: 12
-                  defaultRows: 4
-              props:
-                title: 'GitHub: Open Pull Requests'
-          - mountPoint: home.page/cards
-            importName: HomePageRequestedReviewsCard
-            config:
-              id: github-requested-reviews
-              title: 'GitHub: Requested Reviews'
-              description: Pull Requests that waiting for a code review of the logged in user
-              cardLayout:
-                width:
-                  minColumns: 4
-                  maxColumns: 12
-                  defaultColumns: 12
-                height:
-                  minRows: 2
-                  maxRows: 12
-                  defaultRows: 4
-              props:
-                title: 'GitHub: Requested Reviews'
-- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-jira:bs_1.45.3__2.14.0
-  disabled: true
-  pluginConfig:
-    dynamicPlugins:
-      frontend:
-        roadiehq.backstage-plugin-jira:
-          mountPoints:
-          - mountPoint: entity.page.issues/cards
-            importName: EntityJiraOverviewCard
-            config:
-              layout:
-                gridColumn: 1 / -1
-              if:
-                allOf:
-                - isJiraAvailable
-- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-security-insights:bs_1.45.3__3.3.1
-  disabled: true
-  pluginConfig:
-    dynamicPlugins:
-      frontend:
-        roadiehq.backstage-plugin-security-insights:
-          mountPoints:
-          - mountPoint: entity.page.overview/cards
-            importName: EntityDependabotAlertsCard
-            config:
-              layout:
-                gridColumnEnd:
-                  lg: span 4
-                  md: span 6
-                  xs: span 12
-              if:
-                allOf:
-                - isSecurityInsightsAvailable
-- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-scaffolder-backend-argocd:bs_1.45.3__1.8.1
-  disabled: true
-  pluginConfig:
-    argocd:
-      username: ${ARGOCD_USERNAME}
-      password: ${ARGOCD_PASSWORD}
-      appLocatorMethods:
-      - type: config
-        instances:
-        - name: argoInstance1
-          url: ${ARGOCD_INSTANCE1_URL}
-          token: ${ARGOCD_AUTH_TOKEN}
-        - name: argoInstance2
-          url: ${ARGOCD_INSTANCE2_URL}
-          token: ${ARGOCD_AUTH_TOKEN2}
-- package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-scaffolder-backend-module-utils:bs_1.45.3__4.1.1
-  disabled: true
-# Tag: 1.10.0--2.11.0, Build date: 2026-01-29T16:10:04Z
-- package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-scaffolder-backend-module-servicenow@sha256:91dbbc82a634ef54a729aa084beb09098ad045ea2b6dfb3539fccb23a1eb48d0
-  disabled: true
-  pluginConfig:
-    servicenow:
-      baseUrl: ${SERVICENOW_BASE_URL}
-      username: ${SERVICENOW_USERNAME}
-      password: ${SERVICENOW_PASSWORD}
-- package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-backend@sha256:7c54719a054a06bfc2715576fa520de5be1cfea93fecb4c03436f837631c7c5e
-  disabled: true
-  pluginConfig:
-    orchestrator:
-      dataIndexService:
-        url: http://sonataflow-platform-data-index-service
-# Tag: 1.10.0--1.6.1, Build date: 2026-01-29T16:08:58Z
-- package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets@sha256:06ad37be6aa31328d0e1e6a3b83a81a6428c2033b3317d23ad1fd964865f79fe
-  disabled: true
-  pluginConfig:
-    dynamicPlugins:
-      frontend:
-        red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets: {}
-# Tag: 1.10.0--5.4.0, Build date: 2026-01-29T16:08:22Z
-- package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator@sha256:03052706c1e59d1cbb634a80c5fb236417148657320265dd0ed59988b3bb9307
-  disabled: true
-  pluginConfig:
-    dynamicPlugins:
-      frontend:
-        red-hat-developer-hub.backstage-plugin-orchestrator:
-          appIcons:
-          - importName: OrchestratorIcon
-            name: orchestratorIcon
-          dynamicRoutes:
-          - importName: OrchestratorPage
-            menuItem:
-              icon: orchestratorIcon
-              text: Orchestrator
-              textKey: menuItem.orchestrator
-            path: /orchestrator
-          entityTabs:
-          - path: /workflows
-            title: Workflows
-            titleKey: catalog.entityPage.workflows.title
-            mountPoint: entity.page.workflows
-          mountPoints:
-          - mountPoint: entity.page.workflows/cards
-            importName: OrchestratorCatalogTab
-            config:
-              layout:
-                gridColumn: 1 / -1
-                if:
-                  anyOf:
-                  - IsOrchestratorCatalogTabAvailable
-# Tag: 1.10.0--1.3.2, Build date: 2026-01-29T16:21:53Z
-- package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator@sha256:35e88943f01173f4edac4bb6641c065760b1f5718dc70277450e85f2db647ffc
-  disabled: true
-  pluginConfig:
-    orchestrator:
-      dataIndexService:
-        url: http://sonataflow-platform-data-index-service
+          - name: default
+            baseUrl: ${JENKINS_URL}
+            username: ${JENKINS_USERNAME}
+            apiKey: ${JENKINS_TOKEN}
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-jenkins:bs_1.45.3__0.26.0
+    disabled: true
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          backstage-community.plugin-jenkins:
+            mountPoints:
+              - mountPoint: entity.page.ci/cards
+                importName: EntityJenkinsContent
+                config:
+                  layout:
+                    gridColumn: 1 / -1
+                  if:
+                    allOf:
+                      - isJenkinsAvailable
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-jfrog-artifactory:bs_1.45.3__1.24.1
+    disabled: true
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          backstage-community.plugin-jfrog-artifactory:
+            mountPoints:
+              - mountPoint: entity.page.image-registry/cards
+                importName: JfrogArtifactoryPage
+                config:
+                  layout:
+                    gridColumn: 1 / -1
+                  if:
+                    anyOf:
+                      - isJfrogArtifactoryAvailable
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-lighthouse:bs_1.45.3__0.16.0
+    disabled: true
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          backstage-community.plugin-lighthouse:
+            appIcons:
+              - name: lighthouse
+                importName: LighthouseIcon
+            dynamicRoutes:
+              - path: /lighthouse
+                importName: LighthousePage
+                menuItem:
+                  icon: lighthouse
+                  text: menuItem.lighthouse
+                  textKey: menuItem.lighthouse
+            mountPoints:
+              - mountPoint: entity.page.overview/cards
+                importName: EntityLastLighthouseAuditCard
+                config:
+                  layout:
+                    gridColumnEnd:
+                      md: span 6
+                      xs: span 12
+                  if:
+                    allOf:
+                      - isLighthouseAvailable
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-nexus-repository-manager:bs_1.45.3__1.19.4
+    disabled: true
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          backstage-community.plugin-nexus-repository-manager:
+            mountPoints:
+              - mountPoint: entity.page.image-registry/cards
+                importName: NexusRepositoryManagerPage
+                config:
+                  layout:
+                    gridColumn: 1 / -1
+                  if:
+                    anyOf:
+                      - isNexusRepositoryManagerAvailable
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-quay-backend:bs_1.45.3__1.10.1
+    disabled: true
+    pluginConfig:
+      quay:
+        apiUrl: https://quay.io
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-quay:bs_1.45.3__1.28.1
+    disabled: true
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          backstage-community.plugin-quay:
+            mountPoints:
+              - mountPoint: entity.page.image-registry/cards
+                importName: QuayPage
+                config:
+                  layout:
+                    gridColumn: 1 / -1
+                  if:
+                    anyOf:
+                      - isQuayAvailable
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-scaffolder-backend-module-sonarqube:bs_1.45.3__2.11.0
+    disabled: true
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-sonarqube-backend:bs_1.45.3__0.15.0
+    disabled: true
+    pluginConfig:
+      sonarqube:
+        baseUrl: ${SONARQUBE_URL}
+        apiKey: ${SONARQUBE_TOKEN}
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-sonarqube:bs_1.45.3__0.21.0
+    disabled: true
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          backstage-community.plugin-sonarqube:
+            mountPoints:
+              - mountPoint: entity.page.overview/cards
+                importName: EntitySonarQubeCard
+                config:
+                  layout:
+                    gridColumnEnd:
+                      lg: span 4
+                      md: span 6
+                      xs: span 12
+                  if:
+                    allOf:
+                      - isSonarQubeAvailable
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-tekton:bs_1.45.3__3.33.3
+    disabled: true
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          backstage-community.plugin-tekton:
+            translationResources:
+              - importName: tektonTranslations
+                ref: tektonTranslationRef
+            mountPoints:
+              - mountPoint: entity.page.ci/cards
+                importName: TektonCI
+                config:
+                  layout:
+                    gridColumn: 1 / -1
+                  if:
+                    allOf:
+                      - isTektonCIAvailable
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-catalog-backend-module-bitbucket-cloud:bs_1.45.3__0.5.5
+    disabled: true
+    pluginConfig:
+      catalog:
+        providers:
+          bitbucketCloud:
+            default:
+              workspace: ${BITBUCKET_WORKSPACE}
+              schedule:
+                frequency:
+                  minutes: 30
+                initialDelay:
+                  minutes: 1
+                timeout:
+                  minutes: 3
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-catalog-backend-module-bitbucket-server:bs_1.45.3__0.5.5
+    disabled: true
+    pluginConfig:
+      catalog:
+        providers:
+          bitbucketServer:
+            default:
+              host: ${BITBUCKET_HOST}
+              schedule:
+                frequency:
+                  minutes: 30
+                initialDelay:
+                  minutes: 1
+                timeout:
+                  minutes: 3
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-scaffolder-backend-module-bitbucket-cloud:bs_1.45.3__0.2.15
+    disabled: true
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-scaffolder-backend-module-bitbucket-server:bs_1.45.3__0.2.15
+    disabled: true
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-scaffolder-backend-module-gerrit:bs_1.45.3__0.2.15
+    disabled: true
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/immobiliarelabs-backstage-plugin-gitlab-backend:bs_1.45.3__6.13.0
+    disabled: true
+    pluginConfig:
+      gitlab:
+        host: ${GITLAB_HOST}
+        token: ${GITLAB_TOKEN}
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/immobiliarelabs-backstage-plugin-gitlab:bs_1.45.3__6.13.0
+    disabled: true
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          immobiliarelabs.backstage-plugin-gitlab:
+            mountPoints:
+              - mountPoint: entity.page.overview/cards
+                importName: EntityGitlabMergeRequestStatsCard
+                config:
+                  layout:
+                    gridColumnEnd:
+                      lg: span 4
+                      md: span 6
+                      xs: span 12
+                  if:
+                    allOf:
+                      - isGitlabAvailable
+              - mountPoint: entity.page.ci/cards
+                importName: EntityGitlabPipelinesTable
+                config:
+                  layout:
+                    gridColumn: 1 / -1
+                  if:
+                    allOf:
+                      - isGitlabAvailable
+              - mountPoint: entity.page.issues/cards
+                importName: EntityGitlabIssuesTable
+                config:
+                  layout:
+                    gridColumn: 1 / -1
+                  if:
+                    allOf:
+                      - isGitlabAvailable
+              - mountPoint: entity.page.pull-requests/cards
+                importName: EntityGitlabMergeRequestsTable
+                config:
+                  layout:
+                    gridColumn: 1 / -1
+                  if:
+                    allOf:
+                      - isGitlabAvailable
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/pagerduty-backstage-plugin-backend:bs_1.45.3__0.10.1
+    disabled: true
+    pluginConfig:
+      pagerDuty:
+        apiBaseUrl: ${PAGERDUTY_API_BASE}
+        oauth:
+          clientId: ${PAGERDUTY_CLIENT_ID}
+          clientSecret: ${PAGERDUTY_CLIENT_SECRET}
+          subDomain: ${PAGERDUTY_SUBDOMAIN}
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/pagerduty-backstage-plugin:bs_1.45.3__0.16.4
+    disabled: true
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          pagerduty.backstage-plugin:
+            mountPoints:
+              - mountPoint: entity.page.overview/cards
+                importName: EntityPagerDutyCard
+                config:
+                  layout:
+                    gridColumnEnd:
+                      md: span 6
+                      xs: span 12
+                  if:
+                    allOf:
+                      - isPluginApplicableToEntity
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-argo-cd-backend:bs_1.45.3__4.6.0
+    disabled: true
+    pluginConfig:
+      argocd:
+        username: ${ARGOCD_USERNAME}
+        password: ${ARGOCD_PASSWORD}
+        appLocatorMethods:
+          - type: config
+            instances:
+              - name: argoInstance1
+                url: ${ARGOCD_INSTANCE1_URL}
+                token: ${ARGOCD_AUTH_TOKEN}
+              - name: argoInstance2
+                url: ${ARGOCD_INSTANCE2_URL}
+                token: ${ARGOCD_AUTH_TOKEN2}
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-datadog:bs_1.45.3__2.6.0
+    disabled: true
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          roadiehq.backstage-plugin-datadog:
+            mountPoints:
+              - mountPoint: entity.page.monitoring/cards
+                importName: EntityDatadogContent
+                config:
+                  layout:
+                    gridColumn: 1 / -1
+                  if:
+                    allOf:
+                      - isDatadogAvailable
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-github-insights:bs_1.45.3__3.4.1
+    disabled: true
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          roadiehq.backstage-plugin-github-insights:
+            mountPoints:
+              - mountPoint: entity.page.overview/cards
+                importName: EntityGithubInsightsComplianceCard
+                config:
+                  layout:
+                    gridColumnEnd:
+                      lg: span 4
+                      md: span 6
+                      xs: span 12
+                  if:
+                    allOf:
+                      - isGithubInsightsAvailable
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-github-pull-requests:bs_1.45.3__3.6.2
+    disabled: true
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          roadiehq.backstage-plugin-github-pull-requests:
+            mountPoints:
+              - mountPoint: entity.page.overview/cards
+                importName: EntityGithubPullRequestsOverviewCard
+                config:
+                  layout:
+                    gridColumnEnd:
+                      lg: span 4
+                      md: span 6
+                      xs: span 12
+                  if:
+                    allOf:
+                      - isGithubPullRequestsAvailable
+              - mountPoint: entity.page.pull-requests/cards
+                importName: EntityGithubPullRequestsContent
+                config:
+                  layout:
+                    gridColumn: 1 / -1
+                  if:
+                    allOf:
+                      - isGithubPullRequestsAvailable
+              - mountPoint: home.page/cards
+                importName: HomePageYourOpenPullRequestsCard
+                config:
+                  id: github-assigned-issues
+                  title: 'GitHub: Assigned Issues'
+                  description: Issues assigned to the logged in user
+                  cardLayout:
+                    width:
+                      minColumns: 4
+                      maxColumns: 12
+                      defaultColumns: 12
+                    height:
+                      minRows: 2
+                      maxRows: 12
+                      defaultRows: 4
+                  props:
+                    title: 'GitHub: Assigned Issues'
+                    query: is:issue state:open archived:false assignee:@me
+              - mountPoint: home.page/cards
+                importName: HomePageYourOpenPullRequestsCard
+                config:
+                  id: github-assigned-pull-requests
+                  title: 'GitHub: Assigned Pull Requests'
+                  description: Pull Requests assigned to the logged in user
+                  cardLayout:
+                    width:
+                      minColumns: 4
+                      maxColumns: 12
+                      defaultColumns: 12
+                    height:
+                      minRows: 2
+                      maxRows: 12
+                      defaultRows: 4
+                  props:
+                    title: 'GitHub: Assigned Pull Requests'
+                    query: is:pr state:open archived:false assignee:@me
+              - mountPoint: home.page/cards
+                importName: HomePageYourOpenPullRequestsCard
+                config:
+                  id: github-open-issues
+                  title: 'GitHub: Open Issues'
+                  description: Issues opened by the logged in user
+                  cardLayout:
+                    width:
+                      minColumns: 4
+                      maxColumns: 12
+                      defaultColumns: 12
+                    height:
+                      minRows: 2
+                      maxRows: 12
+                      defaultRows: 4
+                  props:
+                    title: 'GitHub: Open Issues'
+                    query: is:issue state:open archived:false author:@me
+              - mountPoint: home.page/cards
+                importName: HomePageYourOpenPullRequestsCard
+                config:
+                  id: github-open-pull-requests
+                  title: 'GitHub: Open Pull Requests'
+                  description: Pull Requests opened by the logged in user
+                  cardLayout:
+                    width:
+                      minColumns: 4
+                      maxColumns: 12
+                      defaultColumns: 12
+                    height:
+                      minRows: 2
+                      maxRows: 12
+                      defaultRows: 4
+                  props:
+                    title: 'GitHub: Open Pull Requests'
+              - mountPoint: home.page/cards
+                importName: HomePageRequestedReviewsCard
+                config:
+                  id: github-requested-reviews
+                  title: 'GitHub: Requested Reviews'
+                  description: Pull Requests that waiting for a code review of the
+                    logged in user
+                  cardLayout:
+                    width:
+                      minColumns: 4
+                      maxColumns: 12
+                      defaultColumns: 12
+                    height:
+                      minRows: 2
+                      maxRows: 12
+                      defaultRows: 4
+                  props:
+                    title: 'GitHub: Requested Reviews'
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-jira:bs_1.45.3__2.14.0
+    disabled: true
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          roadiehq.backstage-plugin-jira:
+            mountPoints:
+              - mountPoint: entity.page.issues/cards
+                importName: EntityJiraOverviewCard
+                config:
+                  layout:
+                    gridColumn: 1 / -1
+                  if:
+                    allOf:
+                      - isJiraAvailable
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-security-insights:bs_1.45.3__3.3.1
+    disabled: true
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          roadiehq.backstage-plugin-security-insights:
+            mountPoints:
+              - mountPoint: entity.page.overview/cards
+                importName: EntityDependabotAlertsCard
+                config:
+                  layout:
+                    gridColumnEnd:
+                      lg: span 4
+                      md: span 6
+                      xs: span 12
+                  if:
+                    allOf:
+                      - isSecurityInsightsAvailable
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-scaffolder-backend-argocd:bs_1.45.3__1.8.1
+    disabled: true
+    pluginConfig:
+      argocd:
+        username: ${ARGOCD_USERNAME}
+        password: ${ARGOCD_PASSWORD}
+        appLocatorMethods:
+          - type: config
+            instances:
+              - name: argoInstance1
+                url: ${ARGOCD_INSTANCE1_URL}
+                token: ${ARGOCD_AUTH_TOKEN}
+              - name: argoInstance2
+                url: ${ARGOCD_INSTANCE2_URL}
+                token: ${ARGOCD_AUTH_TOKEN2}
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-scaffolder-backend-module-utils:bs_1.45.3__4.1.1
+    disabled: true
+  - package: oci://registry.access.redhat.com/rhdh/backstage-community-plugin-scaffolder-backend-module-servicenow@sha256:91dbbc82a634ef54a729aa084beb09098ad045ea2b6dfb3539fccb23a1eb48d0
+    disabled: true
+    pluginConfig:
+      servicenow:
+        baseUrl: ${SERVICENOW_BASE_URL}
+        username: ${SERVICENOW_USERNAME}
+        password: ${SERVICENOW_PASSWORD}
+  - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-backend-module-loki@sha256:779f888d47a9b87ad81a13897e171fe4a6a67498a937d7560026dd081361a3b2
+    disabled: true
+    pluginConfig:
+      orchestrator:
+        workflowLogProvider:
+          loki:
+            baseUrl: ${LOKI_BASE_URL}
+  - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-backend@sha256:7c54719a054a06bfc2715576fa520de5be1cfea93fecb4c03436f837631c7c5e
+    disabled: true
+    pluginConfig:
+      orchestrator:
+        dataIndexService:
+          url: http://sonataflow-platform-data-index-service
+  - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets@sha256:06ad37be6aa31328d0e1e6a3b83a81a6428c2033b3317d23ad1fd964865f79fe
+    disabled: true
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets: {}
+  - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-orchestrator@sha256:03052706c1e59d1cbb634a80c5fb236417148657320265dd0ed59988b3bb9307
+    disabled: true
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-orchestrator:
+            appIcons:
+              - importName: OrchestratorIcon
+                name: orchestratorIcon
+            dynamicRoutes:
+              - importName: OrchestratorPage
+                menuItem:
+                  icon: orchestratorIcon
+                  text: Orchestrator
+                  textKey: menuItem.orchestrator
+                path: /orchestrator
+            entityTabs:
+              - path: /workflows
+                title: Workflows
+                titleKey: catalog.entityPage.workflows.title
+                mountPoint: entity.page.workflows
+            mountPoints:
+              - mountPoint: entity.page.workflows/cards
+                importName: OrchestratorCatalogTab
+                config:
+                  layout:
+                    gridColumn: 1 / -1
+                    if:
+                      anyOf:
+                        - IsOrchestratorCatalogTabAvailable
+  - package: oci://registry.access.redhat.com/rhdh/red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator@sha256:35e88943f01173f4edac4bb6641c065760b1f5718dc70277450e85f2db647ffc
+    disabled: true
+    pluginConfig:
+      orchestrator:
+        dataIndexService:
+          url: http://sonataflow-platform-data-index-service
