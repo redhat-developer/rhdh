@@ -105,12 +105,25 @@ export class ScorecardPage {
     await this.page.getByRole("button", { name: "Edit" }).click();
   }
 
+  async enterEditModeIfNeeded() {
+    const editButton = this.page.getByRole("button", { name: "Edit" });
+    if (await editButton.isVisible()) {
+      await editButton.click();
+    }
+  }
+
   async openAddWidgetDialog() {
     await this.page.getByRole("button", { name: "Add widget" }).click();
   }
 
   async selectWidget(cardName: string) {
     await this.page.getByRole("button", { name: cardName }).click();
+  }
+
+  async expectNoProgressBar() {
+    await expect(
+      this.page.getByRole("article").getByRole("progressbar").first(),
+    ).toBeHidden({ timeout: 5000 });
   }
 
   async saveChanges() {

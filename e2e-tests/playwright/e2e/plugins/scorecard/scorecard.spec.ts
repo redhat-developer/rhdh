@@ -55,9 +55,12 @@ test.describe.serial("Scorecard Plugin Tests", () => {
   test("Setup aggregated scorecards on homepage", async () => {
     await scorecardPage.navigateToHome();
 
+    await scorecardPage.enterEditModeIfNeeded();
     await scorecardPage.openAddWidgetDialog();
     await scorecardPage.selectWidget("GitHub open PRs");
+    await scorecardPage.expectNoProgressBar();
     await scorecardPage.enterEditMode();
+    await scorecardPage.expectNoProgressBar();
     await scorecardPage.openAddWidgetDialog();
     await scorecardPage.selectWidget("Jira open blocking tickets");
     await scorecardPage.saveChanges();
