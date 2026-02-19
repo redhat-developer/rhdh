@@ -512,14 +512,12 @@ aws::get_certificate() {
     log::info "Creating new certificate..."
 
     local new_certificate_arn
-    new_certificate_arn=$(aws acm request-certificate \
+    if ! new_certificate_arn=$(aws acm request-certificate \
       --region "${region}" \
       --domain-name "${domain_name}" \
       --validation-method DNS \
       --query 'CertificateArn' \
-      --output text 2> /dev/null)
-
-    if [[ $? -ne 0 || -z "${new_certificate_arn}" ]]; then
+      --output text 2> /dev/null) || [[ -z "${new_certificate_arn}" ]]; then
       log::error "Failed to create new certificate for domain: ${domain_name}"
       return 1
     fi
@@ -530,12 +528,10 @@ aws::get_certificate() {
     # Get validation records that need to be created
     log::info "Getting DNS validation records..."
     local validation_records
-    validation_records=$(aws acm describe-certificate --region "${region}" \
+    if validation_records=$(aws acm describe-certificate --region "${region}" \
       --certificate-arn "${certificate_arn}" \
       --query 'Certificate.DomainValidationOptions[0].ResourceRecord' \
-      --output json 2> /dev/null)
-
-    if [[ $? -eq 0 && "${validation_records}" != "null" && "${validation_records}" != "[]" ]]; then
+      --output json 2> /dev/null) && [[ "${validation_records}" != "null" && "${validation_records}" != "[]" ]]; then
       local validation_name
       local validation_value
       validation_name=$(echo "${validation_records}" | jq -r '.Name')
@@ -652,10 +648,8 @@ aws::get_certificate() {
   # Get certificate details
   log::info "Retrieving certificate details..."
   local certificate_details
-  certificate_details=$(aws acm describe-certificate --region "${region}" \
-    --certificate-arn "${certificate_arn}" 2> /dev/null)
-
-  if [[ $? -ne 0 ]]; then
+  if ! certificate_details=$(aws acm describe-certificate --region "${region}" \
+    --certificate-arn "${certificate_arn}" 2> /dev/null); then
     log::error "Failed to retrieve certificate details"
     return 1
   fi
@@ -694,14 +688,15 @@ aws::get_certificate() {
 # ==============================================================================
 
 # Set up EKS ingress hosts configuration and update Route53 DNS.
-# Args: namespace, ingress_name
+# Args: namespace, ingress_name, domain_name
 aws::configure_ingress_and_dns() {
   local namespace=$1
   local ingress_name=$2
+  local domain_name=${3:-${EKS_INSTANCE_DOMAIN_NAME:-}}
 
   if [[ -z "${namespace}" || -z "${ingress_name}" ]]; then
     log::error "Missing required parameters"
-    log::info "Usage: aws::configure_ingress_and_dns <namespace> <ingress_name>"
+    log::info "Usage: aws::configure_ingress_and_dns <namespace> <ingress_name> [domain_name]"
     return 1
   fi
 
@@ -737,17 +732,17 @@ aws::configure_ingress_and_dns() {
   log::success "EKS ingress hosts configuration completed successfully"
 
   # Update DNS record in Route53 if domain name is configured
-  if [[ -n "${EKS_INSTANCE_DOMAIN_NAME}" ]]; then
+  if [[ -n "${domain_name}" ]]; then
     local masked_domain
     local masked_target
-    masked_domain=$(_aws::mask_value "${EKS_INSTANCE_DOMAIN_NAME}")
+    masked_domain=$(_aws::mask_value "${domain_name}")
     masked_target=$(_aws::mask_value "${ingress_address}")
     log::info "Updating DNS record for domain ${masked_domain} -> target ${masked_target}"
 
-    if _aws::update_route53_dns_record "${EKS_INSTANCE_DOMAIN_NAME}" "${ingress_address}"; then
+    if _aws::update_route53_dns_record "${domain_name}" "${ingress_address}"; then
       log::success "DNS record updated successfully"
 
-      if _aws::verify_dns_resolution "${EKS_INSTANCE_DOMAIN_NAME}" "${ingress_address}" 30 15; then
+      if _aws::verify_dns_resolution "${domain_name}" "${ingress_address}" 30 15; then
         log::success "DNS resolution verified successfully"
       else
         log::warn "DNS resolution verification failed, but record was updated"

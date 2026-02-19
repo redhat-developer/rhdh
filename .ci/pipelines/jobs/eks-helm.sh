@@ -33,7 +33,7 @@ handle_eks_helm() {
   aws::get_certificate "${EKS_INSTANCE_DOMAIN_NAME}"
 
   initiate_eks_helm_deployment
-  aws::configure_ingress_and_dns "${NAME_SPACE}" "${RELEASE_NAME}-developer-hub"
+  aws::configure_ingress_and_dns "${NAME_SPACE}" "${RELEASE_NAME}-developer-hub" "${EKS_INSTANCE_DOMAIN_NAME}"
   testing::check_and_test "${RELEASE_NAME}" "${NAME_SPACE}" "${PW_PROJECT_SHOWCASE_K8S}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
   aws::cleanup_dns_record "${EKS_INSTANCE_DOMAIN_NAME}"
   namespace::delete "${NAME_SPACE}"
@@ -44,7 +44,7 @@ handle_eks_helm() {
   aws::get_certificate "${EKS_INSTANCE_DOMAIN_NAME}"
 
   initiate_rbac_eks_helm_deployment
-  aws::configure_ingress_and_dns "${NAME_SPACE_RBAC}" "${RELEASE_NAME_RBAC}-developer-hub"
+  aws::configure_ingress_and_dns "${NAME_SPACE_RBAC}" "${RELEASE_NAME_RBAC}-developer-hub" "${EKS_INSTANCE_DOMAIN_NAME}"
   testing::check_and_test "${RELEASE_NAME_RBAC}" "${NAME_SPACE_RBAC}" "${PW_PROJECT_SHOWCASE_RBAC_K8S}" "https://${K8S_CLUSTER_ROUTER_BASE}" 50 30
   aws::cleanup_dns_record "${EKS_INSTANCE_DOMAIN_NAME}"
   namespace::delete "${NAME_SPACE_RBAC}"
