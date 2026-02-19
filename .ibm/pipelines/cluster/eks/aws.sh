@@ -33,6 +33,17 @@ _aws::mask_value() {
   fi
 }
 
+# Validate that a required parameter is non-empty.
+# Args: param_name, param_value [, usage_hint]
+# Returns 1 with log::error if empty.
+_aws::require_param() {
+  if [[ -z "$2" ]]; then
+    log::error "Missing required parameter: $1"
+    [[ -n "${3:-}" ]] && log::info "Usage: $3"
+    return 1
+  fi
+}
+
 # Look up the Route53 hosted zone ID for AWS_EKS_PARENT_DOMAIN.
 # Prints the bare zone ID (without /hostedzone/ prefix).
 # Returns 1 if AWS_EKS_PARENT_DOMAIN is unset or zone is not found.
@@ -126,10 +137,7 @@ _aws::find_available_domain_number() {
   local region=$1
   local max_attempts=50
 
-  if [[ -z "${region}" ]]; then
-    log::error "Missing required parameter: region"
-    return 1
-  fi
+  _aws::require_param "region" "${region}" || return 1
 
   log::info "Finding available domain number for region: ${region}"
   log::debug "Using parent domain from AWS_EKS_PARENT_DOMAIN"
@@ -235,10 +243,7 @@ _aws::find_available_domain_number() {
 _aws::create_placeholder_dns_record() {
   local domain_name=$1
 
-  if [[ -z "${domain_name}" ]]; then
-    log::error "Missing required parameter: domain_name"
-    return 1
-  fi
+  _aws::require_param "domain_name" "${domain_name}" || return 1
 
   local domain_prefix
   if [[ "${domain_name}" =~ ^(eks-ci-[0-9]+\.[a-z0-9-]+)\. ]]; then
@@ -290,10 +295,8 @@ _aws::update_route53_dns_record() {
   local domain_name=$1
   local target_value=$2
 
-  if [[ -z "${domain_name}" || -z "${target_value}" ]]; then
-    log::error "Missing required parameters: domain_name and target_value"
-    return 1
-  fi
+  _aws::require_param "domain_name" "${domain_name}" || return 1
+  _aws::require_param "target_value" "${target_value}" || return 1
 
   local masked_domain
   local masked_target
@@ -338,10 +341,7 @@ _aws::verify_dns_resolution() {
   local max_attempts=${3:-30}
   local wait_seconds=${4:-10}
 
-  if [[ -z "${domain_name}" ]]; then
-    log::error "Missing required parameter: domain_name"
-    return 1
-  fi
+  _aws::require_param "domain_name" "${domain_name}" || return 1
 
   log::info "Verifying DNS resolution for configured domain"
 
@@ -384,11 +384,7 @@ _aws::verify_dns_resolution() {
 aws::cleanup_dns_record() {
   local domain_name=$1
 
-  if [[ -z "${domain_name}" ]]; then
-    log::error "Missing required parameter: domain_name"
-    log::info "Usage: aws::cleanup_dns_record <domain_name>"
-    return 1
-  fi
+  _aws::require_param "domain_name" "${domain_name}" "aws::cleanup_dns_record <domain_name>" || return 1
 
   log::info "Cleaning up EKS DNS record"
 
@@ -475,11 +471,7 @@ aws::generate_domain_name() {
 aws::get_certificate() {
   local domain_name=$1
 
-  if [[ -z "${domain_name}" ]]; then
-    log::error "Missing required parameter: domain_name"
-    log::info "Usage: aws::get_certificate <domain_name>"
-    return 1
-  fi
+  _aws::require_param "domain_name" "${domain_name}" "aws::get_certificate <domain_name>" || return 1
 
   log::info "Retrieving certificate for configured domain"
 
@@ -694,11 +686,8 @@ aws::configure_ingress_and_dns() {
   local ingress_name=$2
   local domain_name=${3:-${EKS_INSTANCE_DOMAIN_NAME:-}}
 
-  if [[ -z "${namespace}" || -z "${ingress_name}" ]]; then
-    log::error "Missing required parameters"
-    log::info "Usage: aws::configure_ingress_and_dns <namespace> <ingress_name> [domain_name]"
-    return 1
-  fi
+  _aws::require_param "namespace" "${namespace}" "aws::configure_ingress_and_dns <namespace> <ingress_name> [domain_name]" || return 1
+  _aws::require_param "ingress_name" "${ingress_name}" "aws::configure_ingress_and_dns <namespace> <ingress_name> [domain_name]" || return 1
 
   log::info "Setting up EKS ingress hosts configuration..."
 
