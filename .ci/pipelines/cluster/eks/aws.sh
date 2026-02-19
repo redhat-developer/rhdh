@@ -439,17 +439,13 @@ aws::generate_domain_name() {
   log::info "Generating dynamic domain name..."
 
   local region
-  region=$(aws::get_cluster_region)
-
-  if [[ $? -ne 0 ]]; then
+  if ! region=$(aws::get_cluster_region); then
     log::error "Could not determine AWS region"
     return 1
   fi
 
   local number
-  number=$(_aws::find_available_domain_number "${region}")
-
-  if [[ $? -ne 0 ]]; then
+  if ! number=$(_aws::find_available_domain_number "${region}"); then
     log::error "Could not find available domain number"
     return 1
   fi
@@ -498,8 +494,7 @@ aws::get_certificate() {
   fi
 
   local region
-  region=$(aws::get_cluster_region)
-  if [[ $? -ne 0 ]]; then
+  if ! region=$(aws::get_cluster_region); then
     log::error "Failed to get cluster AWS region"
     return 1
   fi
