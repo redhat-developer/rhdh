@@ -425,6 +425,10 @@ _orchestrator::deploy_token_propagation() {
   # Clean up cloned repo
   rm -rf "${DEMO_WORKFLOW_DIR}"
 
+  # TODO: Remove — temporary 2h pause for CI investigation
+  log::info "Sleeping 2 hours for CI investigation..."
+  sleep 7200
+
   return 0
 }
 
