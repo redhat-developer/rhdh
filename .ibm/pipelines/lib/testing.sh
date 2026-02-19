@@ -187,7 +187,6 @@ testing::check_backstage_running() {
         oc get events -n "${namespace}" --sort-by='.lastTimestamp' | tail -20
         mkdir -p "${ARTIFACT_DIR}/${namespace}"
         cp -a "/tmp/${LOGFILE}" "${ARTIFACT_DIR}/${namespace}/" || true
-        save_all_pod_logs "${namespace}"
         return 1
       fi
 
@@ -199,7 +198,6 @@ testing::check_backstage_running() {
   oc get events -n "${namespace}" --sort-by='.lastTimestamp' | tail -10
   mkdir -p "${ARTIFACT_DIR}/${namespace}"
   cp -a "/tmp/${LOGFILE}" "${ARTIFACT_DIR}/${namespace}/" || true
-  save_all_pod_logs "${namespace}"
   return 1
 }
 
@@ -232,8 +230,6 @@ testing::check_and_test() {
     return 1
   fi
 
-  local _deployment_failed=false
-
   if testing::check_backstage_running "${release_name}" "${namespace}" "${url}" "${max_attempts}" "${wait_seconds}"; then
     echo "Display pods for verification..."
     oc get pods -n "${namespace}"
@@ -243,7 +239,6 @@ testing::check_and_test() {
       testing::run_tests "${release_name}" "${namespace}" "${playwright_project}" "${url}" "${artifacts_subdir}"
     fi
   else
-    _deployment_failed=true
     echo "Backstage is not running. Marking deployment as failed and continuing..."
     CURRENT_DEPLOYMENT=$((CURRENT_DEPLOYMENT + 1))
     save_status_deployment_namespace $CURRENT_DEPLOYMENT "$namespace"
@@ -252,12 +247,10 @@ testing::check_and_test() {
     save_overall_result 1
   fi
 
-  # Collect pod logs only on test failure to speed up successful PR runs.
-  # Skip when deployment failed — check_backstage_running already collects logs internally.
-  # Skip when tests passed — no debugging artifacts needed.
-  if [[ "$_deployment_failed" == "false" ]] && [[ "${STATUS_TEST_FAILED[$CURRENT_DEPLOYMENT]:-}" == "true" ]]; then
+  # Collect pod logs only on failure to speed up successful PR runs.
+  if [[ "${STATUS_TEST_FAILED[$CURRENT_DEPLOYMENT]:-}" == "true" || "${STATUS_FAILED_TO_DEPLOY[$CURRENT_DEPLOYMENT]:-}" == "true" ]]; then
     save_all_pod_logs "$namespace"
-  elif [[ "$_deployment_failed" == "false" ]]; then
+  else
     log::info "Tests passed — skipping pod log collection for namespace: ${namespace}"
   fi
   return 0
