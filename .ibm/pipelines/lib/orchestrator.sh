@@ -135,29 +135,31 @@ _orchestrator::prepare_token_propagation_manifests() {
   local specs_cm="${TOKEN_PROPAGATION_MANIFESTS}/03-configmap_02-token-propagation-resources-specs.yaml"
   local sf_cr="${TOKEN_PROPAGATION_MANIFESTS}/04-sonataflow_token-propagation.yaml"
 
-  # Export values for yq to use via strenv() - safely handles special characters
-  export KC_AUTH_SERVER_URL="${kc_auth_server_url}"
-  export KC_CLIENT_ID="${kc_client_id}"
-  export KC_CLIENT_SECRET="${kc_client_secret}"
-  export SAMPLE_SERVER_URL="http://sample-server-service.${namespace}:8080"
-  export KC_TOKEN_URL="${kc_token_url}"
+  local sample_server_url="http://sample-server-service.${namespace}:8080"
 
   # Props ConfigMap: substitute Keycloak and sample-server placeholders
-  yq eval -i '.data."application.properties" |= gsub("http://example-kc-service.keycloak:8080/realms/quarkus", strenv(KC_AUTH_SERVER_URL))' "${props_cm}"
-  yq eval -i '.data."application.properties" |= gsub("client-id=quarkus-app", "client-id=" + strenv(KC_CLIENT_ID))' "${props_cm}"
-  yq eval -i '.data."application.properties" |= gsub("client-secret=lVGSvdaoDUem7lqeAnqXn1F92dCPbQea", "client-secret=" + strenv(KC_CLIENT_SECRET))' "${props_cm}"
-  yq eval -i '.data."application.properties" |= gsub("http://sample-server-service.rhdh-operator", strenv(SAMPLE_SERVER_URL))' "${props_cm}"
+  # Uses yq to read/write YAML safely + sed for string substitution (avoids yq gsub which requires v4.30+)
+  export MODIFIED_PROPS
+  MODIFIED_PROPS=$(yq eval '.data."application.properties"' "${props_cm}" | sed \
+    -e "s|http://example-kc-service.keycloak:8080/realms/quarkus|${kc_auth_server_url}|g" \
+    -e "s|client-id=quarkus-app|client-id=${kc_client_id}|g" \
+    -e "s|client-secret=lVGSvdaoDUem7lqeAnqXn1F92dCPbQea|client-secret=${kc_client_secret}|g" \
+    -e "s|http://sample-server-service.rhdh-operator|${sample_server_url}|g")
 
   # Ensure quarkus.tls.trust-all=true is present (defensive)
-  if ! yq eval '.data."application.properties"' "${props_cm}" | grep -q 'quarkus.tls.trust-all=true'; then
-    yq eval -i '.data."application.properties" |= sub("kie.flyway.enabled=true", "kie.flyway.enabled=true\n    quarkus.tls.trust-all=true")' "${props_cm}"
+  if ! echo "${MODIFIED_PROPS}" | grep -q 'quarkus.tls.trust-all=true'; then
+    MODIFIED_PROPS=$(echo "${MODIFIED_PROPS}" | sed 's|kie.flyway.enabled=true|kie.flyway.enabled=true\n    quarkus.tls.trust-all=true|')
   fi
 
-  # Specs ConfigMap: substitute Keycloak token URL
-  yq eval -i '.data."sample-server.yaml" |= gsub("http://example-kc-service.keycloak:8080/realms/quarkus/protocol/openid-connect/token", strenv(KC_TOKEN_URL))' "${specs_cm}"
+  yq eval -i '.data."application.properties" = strenv(MODIFIED_PROPS)' "${props_cm}"
+  unset MODIFIED_PROPS
 
-  # Clean up exported variables
-  unset KC_AUTH_SERVER_URL KC_CLIENT_ID KC_CLIENT_SECRET SAMPLE_SERVER_URL KC_TOKEN_URL
+  # Specs ConfigMap: substitute Keycloak token URL
+  export MODIFIED_SPECS
+  MODIFIED_SPECS=$(yq eval '.data."sample-server.yaml"' "${specs_cm}" | sed \
+    -e "s|http://example-kc-service.keycloak:8080/realms/quarkus/protocol/openid-connect/token|${kc_token_url}|g")
+  yq eval -i '.data."sample-server.yaml" = strenv(MODIFIED_SPECS)' "${specs_cm}"
+  unset MODIFIED_SPECS
 
   # SonataFlow CR: set image, strip persistence and status
   yq eval -i '.spec.podTemplate.container.image = "'"${ORCHESTRATOR_TOKEN_PROPAGATION_IMAGE}"'"' "${sf_cr}"
