@@ -63,7 +63,7 @@ test.describe("Test Kubernetes Actions plugin", () => {
     ).toBeHidden();
     // Wait for creation process to complete (progressbar reaches 100%)
     await expect(
-      page.getByRole("article").getByRole("progressbar"),
+      page.getByRole("article").getByRole("progressbar").first(),
     ).toHaveAttribute("aria-valuenow", "100", { timeout: 5000 });
     await expect(page.getByText("second")).toBeVisible();
     // Verify no error occurred during creation
