@@ -180,32 +180,6 @@ export class Common {
     });
   }
 
-  async googleSignIn(email: string) {
-    await new Promise<void>((resolve) => {
-      this.page.once("popup", async (popup) => {
-        await popup.waitForLoadState();
-        const locator = popup
-          .getByRole("link", { name: email, exact: false })
-          .first();
-        await popup.waitForTimeout(3000);
-        await locator.waitFor({ state: "visible" });
-        // eslint-disable-next-line playwright/no-force-option
-        await locator.click({ force: true });
-        await popup.waitForTimeout(3000);
-
-        await popup.locator("[name=Passwd]").fill(process.env.GOOGLE_USER_PASS);
-        await popup.locator("[name=Passwd]").press("Enter");
-        await popup.waitForTimeout(3500);
-        await popup.locator("[name=totpPin]").fill(this.getGoogle2FAOTP());
-        await popup.locator("[name=totpPin]").press("Enter");
-        await popup
-          .getByRole("button", { name: /Continue|Weiter/ })
-          .click({ timeout: 60000 });
-        resolve();
-      });
-    });
-  }
-
   async checkAndClickOnGHloginPopup(force = false) {
     const frameLocator = this.page.getByLabel("Login Required");
     try {
@@ -576,15 +550,23 @@ export class Common {
   }
 }
 
+// Creates an isolated browser context for tests that share a page via beforeAll
+// instead of using the built-in { page } fixture. Video recording must be configured
+// here explicitly because the use.video option in playwright.config.ts only applies
+// to the built-in fixtures, not to manually created contexts.
 export async function setupBrowser(browser: Browser, testInfo: TestInfo) {
   const context = await browser.newContext({
-    recordVideo: {
-      dir: `test-results/${path
-        .parse(testInfo.file)
-        .name.replace(".spec", "")}/${testInfo.titlePath[1]}`,
-      size: { width: 1920, height: 1080 },
-    },
+    // only record video when the test block is being retried
+    ...(testInfo.retry > 0 && {
+      recordVideo: {
+        dir: `test-results/${path
+          .parse(testInfo.file)
+          .name.replace(".spec", "")}/${testInfo.titlePath[1]}`,
+        size: { width: 1280, height: 720 },
+      },
+    }),
   });
   const page = await context.newPage();
+
   return { page, context };
 }

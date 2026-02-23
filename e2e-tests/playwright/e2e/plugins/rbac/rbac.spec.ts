@@ -376,6 +376,7 @@ test.describe("Test RBAC", () => {
       await uiHelper.verifyHeading(rbacPo.regexpShortUsersAndGroups(3, 1));
       await uiHelper.clickButton("Next");
       // Wait for permissions step to be ready (use .first() to handle multiple Next buttons)
+      await page.getByText(/\d plugins/).waitFor({ state: "visible" });
       const nextButton = page.getByTestId("nextButton-2").first();
       await expect(nextButton).toBeVisible();
       await expect(nextButton).toBeEnabled();
@@ -437,6 +438,7 @@ test.describe("Test RBAC", () => {
       await uiHelper.verifyHeading(rbacPo.regexpShortUsersAndGroups(1, 1));
       await uiHelper.clickByDataTestId("nextButton-1");
       // Wait for next step to be ready and clickable (use .first() to handle multiple Next buttons)
+      await page.getByText(/\d plugins/).waitFor({ state: "visible" });
       const nextButton2 = page.getByTestId("nextButton-2").first();
       await expect(nextButton2).toBeVisible();
       await expect(nextButton2).toBeEnabled();
@@ -849,8 +851,12 @@ test.describe("Test RBAC", () => {
       await rbacPo.addUsersAndGroups(testUser);
       await page.click(rbacPo.selectMember(testUser));
       await uiHelper.verifyHeading(rbacPo.regexpShortUsersAndGroups(3, 1));
+      await page
+        .getByText("Search and select users")
+        .waitFor({ state: "visible" });
       await uiHelper.clickButton("Next");
       // Wait for permissions step to be ready (use .first() to handle multiple Next buttons)
+      await page.getByText(/\d plugins/).waitFor({ state: "visible" });
       const nextButton = page.getByTestId("nextButton-2").first();
       await expect(nextButton).toBeVisible();
       await expect(nextButton).toBeEnabled();

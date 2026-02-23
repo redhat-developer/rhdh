@@ -39,7 +39,9 @@ test.describe("Default Global Header", () => {
       ),
     ).toBeVisible();
     await uiHelper.verifyLink({
-      label: t["rhdh"][lang]["menuItem.selfService"],
+      // TODO: RHDHBUGS-2564 - String not getting translated
+      // label: t["rhdh"][lang]["menuItem.selfService"],
+      label: "Self-service",
     });
 
     const globalHeader = page.getByRole("navigation").first();
@@ -71,10 +73,7 @@ test.describe("Default Global Header", () => {
   });
 
   test("Verify that clicking on Self-service button opens the Templates page", async () => {
-    await uiHelper.clickLink({
-      ariaLabel: t["rhdh"][lang]["menuItem.selfService"],
-    });
-    await uiHelper.verifyHeading(t["rhdh"][lang]["menuItem.selfService"]);
+    await uiHelper.goToSelfServicePage();
   });
 
   test("Verify that clicking on Support button in HelpDropdown opens a new tab", async ({
@@ -118,7 +117,9 @@ test.describe("Default Global Header", () => {
   test("Verify Profile Dropdown behaves as expected", async ({ page }) => {
     await uiHelper.openProfileDropdown();
     await uiHelper.verifyLinkVisible(
-      t["user-settings"][lang]["settingsLayout.title"],
+      // TODO: RHDHBUGS-2552 - Strings not getting translated
+      // t["plugin.global-header"][lang]["profile.settings"],
+      "Settings",
     );
     await uiHelper.verifyTextVisible(
       t["plugin.global-header"][lang]["profile.signOut"],
@@ -126,7 +127,9 @@ test.describe("Default Global Header", () => {
 
     await page
       .getByRole("menuitem", {
-        name: t["user-settings"][lang]["settingsLayout.title"],
+        // TODO: RHDHBUGS-2552 - Strings not getting translated
+        // t["plugin.global-header"][lang]["profile.settings"],
+        name: "Settings",
       })
       .click();
     await uiHelper.verifyHeading(
@@ -136,7 +139,11 @@ test.describe("Default Global Header", () => {
     await uiHelper.goToMyProfilePage();
     await uiHelper.verifyTextInSelector("header > div > p", "user");
     await uiHelper.verifyHeading(process.env.GH_USER2_ID);
-    await expect(page.getByRole("tab", { name: "Overview" })).toBeVisible();
+    await expect(
+      page.getByRole("tab", {
+        name: t["rhdh"][lang]["catalog.entityPage.overview.title"],
+      }),
+    ).toBeVisible();
 
     await uiHelper.openProfileDropdown();
     // Scope sign-out search to the profile menu (role=menu)
@@ -158,9 +165,8 @@ test.describe("Default Global Header", () => {
     await expect(dropdownList).toBeVisible();
     await searchBar.press("Enter");
     await uiHelper.verifyHeading(t["rhdh"][lang]["app.search.title"]);
-    const searchResultPageInput = page.getByRole("textbox", {
-      name: /search/i,
-    });
+    // eslint-disable-next-line playwright/no-raw-locators
+    const searchResultPageInput = page.locator("#search-bar-text-field");
     await expect(searchResultPageInput).toHaveValue("test query term");
   });
 
@@ -180,7 +186,9 @@ test.describe("Default Global Header", () => {
       ariaLabel: t["plugin.global-header"][lang]["notifications.title"],
     });
     await uiHelper.verifyHeading(
-      t["plugin.global-header"][lang]["notifications.title"],
+      // TODO: RHDHBUGS-2585 - String not getting translated
+      // t["plugin.global-header"][lang]["notifications.title"],
+      "Notifications",
     );
     await uiHelper.markAllNotificationsAsReadIfVisible();
 

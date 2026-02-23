@@ -18,6 +18,14 @@ const args = process.argv;
 
 if (args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_FR))) {
   process.env.LOCALE = "fr";
+} else if (
+  args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_IT))
+) {
+  process.env.LOCALE = "it";
+} else if (
+  args.some((arg) => arg.includes(PW_PROJECT.SHOWCASE_LOCALIZATION_JA))
+) {
+  process.env.LOCALE = "ja";
 } else if (!process.env.LOCALE) {
   process.env.LOCALE = "en";
 }
@@ -51,14 +59,17 @@ export default defineConfig({
     locale: process.env.LOCALE || "en",
     baseURL: process.env.BASE_URL,
     ignoreHTTPSErrors: true,
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: "retain-on-failure",
-    screenshot: "only-on-failure",
+    trace: "on",
+    screenshot: "on",
     ...devices["Desktop Chrome"],
     viewport: { width: 1920, height: 1080 },
+    // Note: this video config only applies to tests using the built-in { page } fixture.
+    // Tests that create their own context via setupBrowser() in playwright/utils/common.ts
+    // must configure recordVideo explicitly because manually created contexts don't
+    // inherit these recording options.
     video: {
-      mode: "on",
-      size: { width: 1920, height: 1080 },
+      mode: "retain-on-failure",
+      size: { width: 1280, height: 720 },
     },
     actionTimeout: 10 * 1000,
     navigationTimeout: 50 * 1000,
@@ -144,6 +155,7 @@ export default defineConfig({
         "**/playwright/e2e/github-happy-path.spec.ts",
         "**/playwright/e2e/dynamic-home-page-customization.spec.ts",
         "**/playwright/e2e/plugins/scorecard/scorecard.spec.ts",
+        "**/playwright/e2e/plugins/orchestrator/token-propagation-workflow.spec.ts",
       ],
     },
     {
@@ -177,6 +189,7 @@ export default defineConfig({
         "**/playwright/e2e/github-happy-path.spec.ts",
         "**/playwright/e2e/dynamic-home-page-customization.spec.ts",
         "**/playwright/e2e/plugins/scorecard/scorecard.spec.ts",
+        "**/playwright/e2e/plugins/orchestrator/token-propagation-workflow.spec.ts",
       ],
     },
     {
@@ -235,6 +248,35 @@ export default defineConfig({
       name: PW_PROJECT.SHOWCASE_LOCALIZATION_FR,
       use: {
         locale: "fr",
+      },
+      testMatch: [
+        "**/playwright/e2e/extensions.spec.ts",
+        "**/playwright/e2e/default-global-header.spec.ts",
+        "**/playwright/e2e/catalog-timestamp.spec.ts",
+        "**/playwright/e2e/custom-theme.spec.ts",
+        "**/playwright/e2e/plugins/frontend/sidebar.spec.ts",
+        "**/playwright/e2e/settings.spec.ts",
+      ],
+    },
+    {
+      name: PW_PROJECT.SHOWCASE_LOCALIZATION_IT,
+      use: {
+        locale: "it",
+      },
+      testMatch: [
+        "**/playwright/e2e/extensions.spec.ts",
+        "**/playwright/e2e/default-global-header.spec.ts",
+        "**/playwright/e2e/catalog-timestamp.spec.ts",
+        // TODO: RHDHBUGS-2592 - Custom theme spec is not working
+        // "**/playwright/e2e/custom-theme.spec.ts",
+        "**/playwright/e2e/plugins/frontend/sidebar.spec.ts",
+        "**/playwright/e2e/settings.spec.ts",
+      ],
+    },
+    {
+      name: PW_PROJECT.SHOWCASE_LOCALIZATION_JA,
+      use: {
+        locale: "ja",
       },
       testMatch: [
         "**/playwright/e2e/extensions.spec.ts",

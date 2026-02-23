@@ -51,7 +51,7 @@ Our current list of plugins include:
 Dependencies:
 
 - [Node.js](https://nodejs.org/en/) - [required version](.nvmrc)
-- [yarn](https://classic.yarnpkg.com/en/docs/install#debian-stable) - [required version](.yarnrc.yml)
+- [corepack](https://github.com/nodejs/corepack)
 
 Information on running RHDH can be found in our [Getting Started](https://github.com/redhat-developer/rhdh/blob/main/docs/index.md) documentation. In the documentation is how to set up and run an instance locally. We plan to expand upon the documentation at a later point if there is enough interest in other methods for getting the app up and running.
 
