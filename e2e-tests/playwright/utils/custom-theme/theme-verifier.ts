@@ -18,22 +18,18 @@ export class ThemeVerifier {
   }
 
   async setTheme(theme: "Light" | "Dark" | "Light Dynamic" | "Dark Dynamic") {
-    await this.uiHelper.goToPageUrl(
-      "/settings",
-      t["user-settings"][lang]["settingsLayout.title"],
-    );
+    await this.uiHelper.goToSettingsPage();
     await this.uiHelper.hideQuickstartIfVisible();
-    await this.uiHelper.clickBtnByTitleIfNotPressed(`Select ${theme}`);
+    await this.uiHelper.clickBtnByTitleIfNotPressed(
+      `${t["user-settings"][lang]["themeToggle.select"].replace("{{theme}}", theme)}`,
+    );
     const themeButton = this.page.getByRole("button", {
       name: theme,
       exact: true,
     });
 
     // TODO: https://issues.redhat.com/browse/RHDHBUGS-2076 navigating back to settings page is needed until the issue is resolved
-    await this.uiHelper.goToPageUrl(
-      "/settings",
-      t["user-settings"][lang]["settingsLayout.title"],
-    );
+    await this.uiHelper.goToSettingsPage();
 
     await expect(themeButton).toHaveAttribute("aria-pressed", "true");
   }
@@ -45,8 +41,10 @@ export class ThemeVerifier {
   }
 
   async verifyBorderLeftColor(expectedColor: string) {
-    await this.uiHelper.openSidebar("Home");
-    const homeLinkLocator = this.page.locator("a").filter({ hasText: "Home" });
+    await this.uiHelper.openSidebar(t["rhdh"][lang]["menuItem.home"]);
+    const homeLinkLocator = this.page
+      .locator("a")
+      .filter({ hasText: `${t["rhdh"][lang]["menuItem.home"]}` });
     await expect(homeLinkLocator).toHaveCSS(
       "border-left",
       `3px solid ${expectedColor}`,
@@ -64,7 +62,7 @@ export class ThemeVerifier {
       UI_HELPER_ELEMENTS.MuiSwitchColorPrimary,
       colorPrimary,
     );
-    await this.uiHelper.openSidebar("Catalog");
+    await this.uiHelper.openSidebar(t["rhdh"][lang]["menuItem.catalog"]);
     await this.uiHelper.checkCssColor(
       this.page,
       UI_HELPER_ELEMENTS.MuiButtonTextPrimary,

@@ -140,7 +140,7 @@ test.describe("Configure Github Provider", async () => {
     );
     expect(login).toBe("Login successful");
 
-    await uiHelper.goToPageUrl("/settings", "Settings");
+    await uiHelper.goToSettingsPage();
     await uiHelper.verifyHeading("RHDH QE Admin");
     await common.signOut();
     await context.clearCookies();
@@ -238,7 +238,7 @@ test.describe("Configure Github Provider", async () => {
     expect(actualDuration).toBeGreaterThan(threeDays - tolerance);
     expect(actualDuration).toBeLessThan(threeDays + tolerance);
 
-    await uiHelper.goToPageUrl("/settings", "Settings");
+    await uiHelper.goToSettingsPage();
     await uiHelper.verifyHeading("RHDH QE Admin");
     await common.signOut();
     await context.clearCookies();

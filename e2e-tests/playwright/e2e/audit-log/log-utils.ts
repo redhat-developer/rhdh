@@ -32,6 +32,42 @@ export class LogUtils {
   }
 
   /**
+   * Executes a command with retry logic.
+   *
+   * @param command The command to execute
+   * @param args An array of arguments for the command
+   * @param maxRetries Maximum number of retry attempts (default: 3)
+   * @returns A promise that resolves with the command output
+   */
+  static async executeCommandWithRetries(
+    command: string,
+    args: string[] = [],
+    maxRetries: number = 3,
+  ): Promise<string> {
+    let attempt = 0;
+    while (attempt <= maxRetries) {
+      try {
+        console.log(
+          `Attempt ${attempt + 1}/${maxRetries}: Executing command: ${command} ${args.join(" ")}`,
+        );
+        const output = await LogUtils.executeCommand(command, args);
+        console.log(`Command executed successfully on attempt ${attempt + 1}`);
+        return output;
+      } catch (error) {
+        console.error(
+          `Error executing command on attempt ${attempt + 1}:`,
+          error,
+        );
+        attempt++;
+      }
+    }
+
+    throw new Error(
+      `Failed to execute command "${command} ${args.join(" ")}" after ${maxRetries} attempts.`,
+    );
+  }
+
+  /**
    * Executes a shell command and returns the output as a promise.
    *
    * @param command The shell command to execute

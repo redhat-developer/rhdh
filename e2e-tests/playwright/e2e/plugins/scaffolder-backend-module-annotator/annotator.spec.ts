@@ -9,7 +9,10 @@ import { runAccessibilityTests } from "../../../utils/accessibility";
 let page: Page;
 
 test.describe.serial("Test Scaffolder Backend Module Annotator", () => {
-  test.skip(() => process.env.JOB_NAME.includes("osd-gcp")); // skipping due to RHIDP-5704 on OSD Env
+  test.skip(
+    () => process.env.JOB_NAME.includes("osd-gcp"),
+    "skipping due to RHDHBUGS-555 on OSD Env",
+  );
 
   let uiHelper: UIhelper;
   let common: Common;

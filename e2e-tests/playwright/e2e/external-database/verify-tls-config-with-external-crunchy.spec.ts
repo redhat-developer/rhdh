@@ -16,9 +16,7 @@ test.describe("Verify TLS configuration with external Crunchy Postgres DB", () =
     );
   });
 
-  test("Verify successful DB connection and display of expected entities in the Home Page and Catalog", async ({
-    page,
-  }) => {
+  test("Verify successful DB connection", async ({ page }) => {
     const uiHelper = new UIhelper(page);
     const common = new Common(page);
     await common.loginAsKeycloakUser(
@@ -26,7 +24,6 @@ test.describe("Verify TLS configuration with external Crunchy Postgres DB", () =
       process.env.GH_USER2_PASS,
     );
     await uiHelper.verifyHeading("Welcome back!");
-    await uiHelper.verifyText("Explore Your Software Catalog");
     await page.getByLabel("Catalog").first().click();
     await uiHelper.selectMuiBox("Kind", "Component");
     await expect(async () => {

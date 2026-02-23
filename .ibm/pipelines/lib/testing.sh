@@ -29,6 +29,7 @@ readonly _TESTING_ERR_MISSING_PARAMS="Missing required parameters"
 #   $2 - namespace: The namespace where Backstage is deployed
 #   $3 - playwright_project: The Playwright project to run
 #   $4 - url: (optional) The URL to test against
+#   $5 - artifacts_subdir: (optional) Subdirectory for artifacts (defaults to namespace)
 # Returns:
 #   0 - Tests passed
 #   Non-zero - Tests failed
@@ -38,10 +39,11 @@ testing::run_tests() {
   local namespace=$2
   local playwright_project=$3
   local url="${4:-}"
+  local artifacts_subdir="${5:-$namespace}"
 
   if [[ -z "$release_name" || -z "$namespace" || -z "$playwright_project" ]]; then
     log::error "${_TESTING_ERR_MISSING_PARAMS}"
-    log::info "Usage: testing::run_tests <release_name> <namespace> <playwright_project> [url]"
+    log::info "Usage: testing::run_tests <release_name> <namespace> <playwright_project> [url] [artifacts_subdir]"
     return 1
   fi
 
@@ -83,21 +85,21 @@ testing::run_tests() {
 
   pkill Xvfb || true
 
-  # Use namespace for artifact directory to keep artifacts organized by deployment
-  mkdir -p "${ARTIFACT_DIR}/${namespace}/test-results"
-  mkdir -p "${ARTIFACT_DIR}/${namespace}/attachments/screenshots"
-  cp -a "${e2e_tests_dir}/test-results/"* "${ARTIFACT_DIR}/${namespace}/test-results" || true
-  cp -a "${e2e_tests_dir}/${JUNIT_RESULTS}" "${ARTIFACT_DIR}/${namespace}/${JUNIT_RESULTS}" || true
+  # Use artifacts_subdir for artifact directory to keep artifacts organized
+  mkdir -p "${ARTIFACT_DIR}/${artifacts_subdir}/test-results"
+  mkdir -p "${ARTIFACT_DIR}/${artifacts_subdir}/attachments/screenshots"
+  cp -a "${e2e_tests_dir}/test-results/"* "${ARTIFACT_DIR}/${artifacts_subdir}/test-results" || true
+  cp -a "${e2e_tests_dir}/${JUNIT_RESULTS}" "${ARTIFACT_DIR}/${artifacts_subdir}/${JUNIT_RESULTS}" || true
   if [[ "${CI}" == "true" ]]; then
-    cp "${ARTIFACT_DIR}/${namespace}/${JUNIT_RESULTS}" "${SHARED_DIR}/junit-results-${namespace}.xml" || true
+    cp "${ARTIFACT_DIR}/${artifacts_subdir}/${JUNIT_RESULTS}" "${SHARED_DIR}/junit-results-${artifacts_subdir}.xml" || true
   fi
 
-  cp -a "${e2e_tests_dir}/screenshots/"* "${ARTIFACT_DIR}/${namespace}/attachments/screenshots/" || true
+  cp -a "${e2e_tests_dir}/screenshots/"* "${ARTIFACT_DIR}/${artifacts_subdir}/attachments/screenshots/" || true
   ansi2html < "/tmp/${LOGFILE}" > "/tmp/${LOGFILE}.html"
-  cp -a "/tmp/${LOGFILE}.html" "${ARTIFACT_DIR}/${namespace}" || true
-  cp -a "${e2e_tests_dir}/playwright-report/"* "${ARTIFACT_DIR}/${namespace}" || true
+  cp -a "/tmp/${LOGFILE}.html" "${ARTIFACT_DIR}/${artifacts_subdir}" || true
+  cp -a "${e2e_tests_dir}/playwright-report/"* "${ARTIFACT_DIR}/${artifacts_subdir}" || true
 
-  echo "Playwright project '${playwright_project}' in namespace '${namespace}' RESULT: ${test_result}"
+  echo "Playwright project '${playwright_project}' in namespace '${namespace}' (artifacts: ${artifacts_subdir}) RESULT: ${test_result}"
   if [[ "${test_result}" -ne 0 ]]; then
     save_overall_result 1
     save_status_test_failed $CURRENT_DEPLOYMENT true
@@ -213,6 +215,7 @@ testing::check_backstage_running() {
 #   $4 - url: The URL to test against
 #   $5 - max_attempts: (optional) Maximum number of attempts (default: 30)
 #   $6 - wait_seconds: (optional) Seconds to wait between attempts (default: 30)
+#   $7 - artifacts_subdir: (optional) Subdirectory for artifacts (defaults to namespace)
 # Uses globals: CURRENT_DEPLOYMENT, SKIP_TESTS
 testing::check_and_test() {
   local release_name=$1
@@ -221,10 +224,11 @@ testing::check_and_test() {
   local url=$4
   local max_attempts=${5:-30}
   local wait_seconds=${6:-30}
+  local artifacts_subdir="${7:-$namespace}"
 
   if [[ -z "$release_name" || -z "$namespace" || -z "$playwright_project" || -z "$url" ]]; then
     log::error "${_TESTING_ERR_MISSING_PARAMS}"
-    log::info "Usage: testing::check_and_test <release_name> <namespace> <playwright_project> <url> [max_attempts] [wait_seconds]"
+    log::info "Usage: testing::check_and_test <release_name> <namespace> <playwright_project> <url> [max_attempts] [wait_seconds] [artifacts_subdir]"
     return 1
   fi
 
@@ -234,7 +238,7 @@ testing::check_and_test() {
     if [[ "${SKIP_TESTS:-false}" == "true" ]]; then
       log::info "SKIP_TESTS=true, skipping test execution for namespace: ${namespace}"
     else
-      testing::run_tests "${release_name}" "${namespace}" "${playwright_project}" "${url}"
+      testing::run_tests "${release_name}" "${namespace}" "${playwright_project}" "${url}" "${artifacts_subdir}"
     fi
   else
     echo "Backstage is not running. Marking deployment as failed and continuing..."

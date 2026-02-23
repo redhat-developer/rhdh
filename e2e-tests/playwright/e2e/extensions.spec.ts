@@ -27,8 +27,6 @@ test.describe("Admin > Extensions", () => {
   const supportTypeOptions = [
     t["plugin.extensions"][lang]["badges.generallyAvailable"],
     t["plugin.extensions"][lang]["badges.certified"],
-    // TODO: Custom plugin is not on the list: https://issues.redhat.com/browse/RHDHBUGS-2153
-    // t["plugin.extensions"][lang]["badges.customPlugin"],
     t["plugin.extensions"][lang]["badges.techPreview"],
     t["plugin.extensions"][lang]["badges.devPreview"],
     t["plugin.extensions"][lang]["badges.communityPlugin"],
@@ -46,7 +44,9 @@ test.describe("Admin > Extensions", () => {
     uiHelper = new UIhelper(page);
     await new Common(page).loginAsKeycloakUser();
     await uiHelper.openSidebarButton(
-      t["rhdh"][lang]["menuItem.administration"],
+      // TODO: RHDHBUGS-2584 - Administration sidebar menu not translating
+      // label: t["rhdh"][lang]["menuItem.administration"],
+      "Administration",
     );
     await uiHelper.openSidebar(t["plugin.extensions"][lang]["header.title"]);
     await uiHelper.verifyHeading(
@@ -56,7 +56,7 @@ test.describe("Admin > Extensions", () => {
 
   test.describe("Extensions > Catalog", () => {
     test("Verify search bar in extensions", async ({ page }) => {
-      await uiHelper.searchInputAriaLabel("Dynatrace");
+      await extensions.searchExtensions("Dynatrace");
       await uiHelper.verifyHeading("DynaTrace");
       await page
         .getByRole("button", {
@@ -68,7 +68,11 @@ test.describe("Admin > Extensions", () => {
     test("Verify category and author filters in extensions", async ({
       page,
     }, testInfo) => {
-      await uiHelper.verifyHeading(/Plugins \(\d+\)/);
+      await uiHelper.verifyHeading(
+        new RegExp(
+          `^${t["plugin.extensions"][lang]["header.pluginsPage"]} \\(\\d+\\)$`,
+        ),
+      );
 
       await runAccessibilityTests(page, testInfo);
 
@@ -90,11 +94,11 @@ test.describe("Admin > Extensions", () => {
       );
       await page.getByRole("heading", { name: "Argo CD" }).click();
       await uiHelper.verifyTableHeadingAndRows([
-        "Package name",
-        "Version",
-        "Role",
-        "Backstage compatibility version",
-        "Status",
+        t["plugin.extensions"][lang]["table.packageName"],
+        t["plugin.extensions"][lang]["table.version"],
+        t["plugin.extensions"][lang]["table.role"],
+        t["plugin.extensions"][lang]["metadata.backstageCompatibility"],
+        t["plugin.extensions"][lang]["table.status"],
       ]);
       await uiHelper.verifyHeading(
         t["plugin.extensions"][lang]["metadata.versions"],
@@ -199,11 +203,11 @@ test.describe("Admin > Extensions", () => {
         t["plugin.extensions"][lang]["metadata.versions"],
       );
       await uiHelper.verifyTableHeadingAndRows([
-        "Package name",
-        "Version",
-        "Role",
-        "Backstage compatibility version",
-        "Status",
+        t["plugin.extensions"][lang]["table.packageName"],
+        t["plugin.extensions"][lang]["table.version"],
+        t["plugin.extensions"][lang]["table.role"],
+        t["plugin.extensions"][lang]["metadata.backstageCompatibility"],
+        t["plugin.extensions"][lang]["table.status"],
       ]);
       await page
         .getByRole("button", {
@@ -268,54 +272,6 @@ test.describe("Admin > Extensions", () => {
       await extensions.resetSupportTypeFilter(
         t["plugin.extensions"][lang]["badges.generallyAvailable"],
       );
-    });
-
-    test("Verify custom plugin badge in extensions", async ({ page }) => {
-      // TODO: https://issues.redhat.com/browse/RHDHBUGS-2104
-      test.fixme();
-      await extensions.selectDropdown(
-        t["plugin.extensions"][lang]["search.supportType"],
-      );
-      await extensions.toggleOption(
-        t["plugin.extensions"][lang]["badges.customPlugin"],
-      );
-      await page.keyboard.press(`Escape`);
-      await expect(
-        page
-          .getByLabel(
-            t["plugin.extensions"][lang]["supportTypes.customPlugins"].replace(
-              " ({{count}})",
-              "",
-            ),
-          )
-          .first(),
-      ).toBeVisible();
-      await expect(extensions.badge.first()).toBeVisible();
-      await extensions.badge.first().hover();
-      await uiHelper.verifyTextInTooltip(
-        t["plugin.extensions"][lang]["supportTypes.customPlugins"].replace(
-          " ({{count}})",
-          "",
-        ),
-      );
-      await uiHelper.clickLink(t["plugin.extensions"][lang]["common.readMore"]);
-      await expect(
-        page
-          .getByLabel(t["plugin.extensions"][lang]["badges.addedByAdmin"])
-          .getByText("Custom"),
-      ).toBeVisible();
-      await page
-        .getByRole("button", {
-          name: "close",
-        })
-        .click();
-      await extensions.selectDropdown(
-        t["plugin.extensions"][lang]["search.supportType"],
-      );
-      await extensions.toggleOption(
-        t["plugin.extensions"][lang]["badges.customPlugin"],
-      );
-      await page.keyboard.press(`Escape`);
     });
 
     test("Verify tech preview badge in extensions", async () => {
@@ -400,7 +356,7 @@ test.describe("Admin > Extensions", () => {
       permissions: ["clipboard-read", "clipboard-write"],
     });
 
-    // Test case is disabled due to bug https://issues.redhat.com/browse/RHDHBUGS-799
+    // TODO: https://issues.redhat.com/browse/RHDHBUGS-2146
     test.fixme("Verify plugin configuration can be viewed in the production environment", async ({
       page,
     }) => {
@@ -409,7 +365,7 @@ test.describe("Admin > Extensions", () => {
         t["plugin.extensions"][lang]["alert.productionDisabled"],
         { exact: true },
       );
-      await uiHelper.searchInputPlaceholder("Topology");
+      await extensions.searchExtensions("Topology");
       await extensions.waitForSearchResults("Topology");
       await extensions.clickReadMoreByPluginTitle(
         "Application Topology for Kubernetes",
@@ -495,7 +451,8 @@ test.describe("Admin > Extensions", () => {
       );
     });
 
-    test.skip("Installed packages page", async ({ page }, testInfo) => {
+    //TODO: https://issues.redhat.com/browse/RHDHBUGS-2576
+    test.fixme("Installed packages page", async ({ page }, testInfo) => {
       await runAccessibilityTests(page, testInfo);
       await uiHelper.verifyTableHeadingAndRows([
         t["plugin.extensions"][lang]["installedPackages.table.columns.name"],

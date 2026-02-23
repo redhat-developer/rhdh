@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-import { Page, expect } from "@playwright/test";
-import { waitUntilApiCallSucceeds } from "../../../utils/scorecard-utils";
+import { Page, expect, Locator } from "@playwright/test";
+import { UIhelper } from "../../../utils/ui-helper";
 
 export class ScorecardPage {
   readonly page: Page;
+  readonly uiHelper: UIhelper;
 
   constructor(page: Page) {
     this.page = page;
+    this.uiHelper = new UIhelper(page);
   }
 
   get scorecardMetrics() {
@@ -39,20 +41,18 @@ export class ScorecardPage {
     ];
   }
 
-  async openTab() {
-    const scorecardTab = this.page.getByText("Scorecard");
-    await expect(scorecardTab).toBeVisible();
-    await Promise.all([
-      waitUntilApiCallSucceeds(this.page),
-      scorecardTab.click(),
-    ]);
+  getScorecardLocator(scorecardTitle: string): Locator {
+    return this.page.getByText(scorecardTitle, { exact: true });
   }
 
-  async verifyScorecardValues(expectedValues: { [key: string]: string }) {
-    for (const [metric, value] of Object.entries(expectedValues)) {
-      await expect(this.page.getByText(metric)).toBeVisible();
-      await expect(this.page.getByText(value)).toBeVisible();
-    }
+  getErrorHeading(errorText: string): Locator {
+    return this.page.getByText(errorText, { exact: true });
+  }
+
+  async openTab() {
+    const scorecardTab = this.page.getByRole("tab", { name: "Scorecard" });
+    await expect(scorecardTab).toBeVisible();
+    await scorecardTab.click();
   }
 
   async expectEmptyState() {
@@ -79,20 +79,79 @@ export class ScorecardPage {
       - article:
         - text: ${title}
         - paragraph: ${description}
-        - paragraph: /Error/
-        - paragraph: /Warning/
         - paragraph: /Success/
+        - paragraph: /Warning/
+        - paragraph: /Error/
     `);
   }
 
-  async isScorecardVisible(scorecardTitle: string): Promise<boolean> {
-    try {
-      await expect(
-        this.page.getByText(scorecardTitle, { exact: true }),
-      ).toBeVisible({ timeout: 10000 });
-      return true;
-    } catch {
-      return false;
+  async expectScorecardVisible(scorecardTitle: string) {
+    await expect(this.getScorecardLocator(scorecardTitle)).toBeVisible();
+  }
+
+  async expectScorecardHidden(scorecardTitle: string) {
+    await expect(this.getScorecardLocator(scorecardTitle)).toBeHidden();
+  }
+
+  async expectErrorHeading(errorText: string) {
+    await expect(this.getErrorHeading(errorText)).toBeVisible();
+  }
+
+  async navigateToHome() {
+    await this.uiHelper.openSidebar("Home");
+  }
+
+  async enterEditMode() {
+    await this.page.getByRole("button", { name: "Edit" }).click();
+  }
+
+  async enterEditModeIfNeeded() {
+    const editButton = this.page.getByRole("button", { name: "Edit" });
+    if (await editButton.isVisible()) {
+      await editButton.click();
     }
+  }
+
+  async openAddWidgetDialog() {
+    await this.page.getByRole("button", { name: "Add widget" }).click();
+  }
+
+  async selectWidget(cardName: string) {
+    await this.page.getByRole("button", { name: cardName }).click();
+  }
+
+  async expectNoProgressBar() {
+    await expect(
+      this.page.getByRole("article").getByRole("progressbar").first(),
+    ).toBeHidden({ timeout: 5000 });
+  }
+
+  async saveChanges() {
+    await this.page.getByRole("button", { name: "Save" }).click();
+  }
+
+  getAggregatedScorecardCard(metricTitle: string): Locator {
+    return this.page.locator("article").filter({ hasText: metricTitle });
+  }
+
+  async expectAggregatedScorecardVisible(metricTitle: string) {
+    await expect(this.getAggregatedScorecardCard(metricTitle)).toBeVisible();
+  }
+
+  async getAggregatedScorecardEntityCount(
+    metricTitle: string,
+  ): Promise<number> {
+    const card = this.getAggregatedScorecardCard(metricTitle);
+    const text = await card.textContent();
+    const match = text?.match(/(\d+)\s*entities/);
+    return match ? parseInt(match[1], 10) : 0;
+  }
+
+  async expectAggregatedScorecardEntityCountToBe(
+    metricTitle: string,
+    expectedCount: number,
+  ) {
+    const card = this.getAggregatedScorecardCard(metricTitle);
+    await expect(card).toContainText(`${expectedCount} entities`);
   }
 }

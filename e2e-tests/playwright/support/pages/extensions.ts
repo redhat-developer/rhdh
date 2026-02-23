@@ -22,11 +22,11 @@ export class Extensions {
     t["plugin.extensions"][lang]["metadata.supportProvider"],
   ];
   private tableHeaders = [
-    "Package name",
-    "Version",
-    "Role",
-    "Backstage compatibility version",
-    "Status",
+    t["plugin.extensions"][lang]["table.packageName"],
+    t["plugin.extensions"][lang]["table.version"],
+    t["plugin.extensions"][lang]["table.role"],
+    t["plugin.extensions"][lang]["metadata.backstageCompatibility"],
+    t["plugin.extensions"][lang]["table.status"],
   ];
 
   constructor(page: Page) {
@@ -44,9 +44,16 @@ export class Extensions {
       })
       .click();
     await expect(
-      this.page.getByText(pluginTitle + " by Red Hat" + badgeText, {
-        exact: true,
-      }),
+      this.page.getByText(
+        pluginTitle +
+          " " +
+          t["plugin.extensions"][lang]["metadata.by"] +
+          " Red Hat" +
+          badgeText,
+        {
+          exact: true,
+        },
+      ),
     ).toBeVisible();
   }
 
@@ -91,8 +98,26 @@ export class Extensions {
     }
   }
 
+  async searchExtensions(searchText: string) {
+    const searchInput = this.page
+      .getByRole("textbox")
+      .getByLabel(t["plugin.extensions"][lang]["search.placeholder"], {
+        exact: true,
+      })
+      .or(
+        this.page.getByPlaceholder(
+          t["plugin.extensions"][lang]["search.placeholder"],
+          { exact: true },
+        ),
+      );
+
+    await searchInput.fill(searchText);
+  }
+
   async waitForSearchResults(searchText: string) {
-    await this.uiHelper.verifyHeading("Plugins (1)");
+    await this.uiHelper.verifyHeading(
+      t["plugin.extensions"][lang]["header.pluginsPage"] + " (1)",
+    );
     await expect(
       this.page.locator(".v5-MuiPaper-outlined").first(),
     ).toContainText(searchText, { timeout: 10000 });
@@ -161,7 +186,7 @@ export class Extensions {
     await this.selectSupportTypeFilter(supportType);
 
     if (searchTerm) {
-      await this.uiHelper.searchInputPlaceholder(searchTerm);
+      await this.searchExtensions(searchTerm);
       await this.waitForSearchResults(searchTerm);
     }
 
