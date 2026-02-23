@@ -114,7 +114,7 @@ jobs:
           echo "✓ Quay credentials are available"
 
       - name: Login to Quay
-        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ secrets.QUAY_USERNAME }}
@@ -175,7 +175,7 @@ jobs:
         HAS_QUAY_AUTH: ${{ secrets.QUAY_USERNAME != '' && secrets.QUAY_TOKEN != '' }}
       steps:
         - name: Login to Quay
-          uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
+          uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
           with:
             registry: ${{ env.REGISTRY }}
             username: ${{ secrets.QUAY_USERNAME }}

@@ -550,15 +550,23 @@ export class Common {
   }
 }
 
+// Creates an isolated browser context for tests that share a page via beforeAll
+// instead of using the built-in { page } fixture. Video recording must be configured
+// here explicitly because the use.video option in playwright.config.ts only applies
+// to the built-in fixtures, not to manually created contexts.
 export async function setupBrowser(browser: Browser, testInfo: TestInfo) {
   const context = await browser.newContext({
-    recordVideo: {
-      dir: `test-results/${path
-        .parse(testInfo.file)
-        .name.replace(".spec", "")}/${testInfo.titlePath[1]}`,
-      size: { width: 1920, height: 1080 },
-    },
+    // only record video when the test block is being retried
+    ...(testInfo.retry > 0 && {
+      recordVideo: {
+        dir: `test-results/${path
+          .parse(testInfo.file)
+          .name.replace(".spec", "")}/${testInfo.titlePath[1]}`,
+        size: { width: 1280, height: 720 },
+      },
+    }),
   });
   const page = await context.newPage();
+
   return { page, context };
 }
