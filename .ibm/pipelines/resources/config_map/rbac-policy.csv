@@ -53,3 +53,35 @@ g, user:default/rhdh-qe-8, role:default/owned_resource_reader
 
 g, user:default/rhdh-qe-9, role:default/all_resource_reader
 g, user:default/rhdh-qe-9, role:default/conditional_denier
+
+#######################################################################
+# Orchestrator Entity-Workflow RBAC (RHIDP-11839, RHIDP-11840)
+#######################################################################
+
+# catalogSuperuser: full catalog + scaffolder + orchestrator.workflow
+p, role:default/catalogSuperuser, catalog-entity, read, allow
+p, role:default/catalogSuperuser, catalog.entity.create, create, allow
+p, role:default/catalogSuperuser, catalog.entity.delete, delete, allow
+p, role:default/catalogSuperuser, catalog.entity.refresh, update, allow
+p, role:default/catalogSuperuser, catalog.location.read, read, allow
+p, role:default/catalogSuperuser, catalog.location.create, create, allow
+p, role:default/catalogSuperuser, catalog.location.delete, delete, allow
+p, role:default/catalogSuperuser, orchestrator.workflow, read, allow
+p, role:default/catalogSuperuser, orchestrator.workflow.use, update, allow
+p, role:default/catalogSuperuser, scaffolder.action.execute, use, allow
+p, role:default/catalogSuperuser, scaffolder.task.create, create, allow
+p, role:default/catalogSuperuser, scaffolder.task.read, read, allow
+g, user:default/catalog-user, role:default/catalogSuperuser
+
+# catalogSuperuserNoWorkflow: catalog + scaffolder, NO orchestrator
+p, role:default/catalogSuperuserNoWorkflow, catalog-entity, read, allow
+p, role:default/catalogSuperuserNoWorkflow, catalog.entity.create, create, allow
+p, role:default/catalogSuperuserNoWorkflow, catalog.entity.delete, delete, allow
+p, role:default/catalogSuperuserNoWorkflow, catalog.entity.refresh, update, allow
+p, role:default/catalogSuperuserNoWorkflow, catalog.location.read, read, allow
+p, role:default/catalogSuperuserNoWorkflow, catalog.location.create, create, allow
+p, role:default/catalogSuperuserNoWorkflow, catalog.location.delete, delete, allow
+p, role:default/catalogSuperuserNoWorkflow, scaffolder.action.execute, use, allow
+p, role:default/catalogSuperuserNoWorkflow, scaffolder.task.create, create, allow
+p, role:default/catalogSuperuserNoWorkflow, scaffolder.task.read, read, allow
+g, user:default/catalog-user-no-workflow, role:default/catalogSuperuserNoWorkflow

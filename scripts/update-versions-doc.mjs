@@ -224,7 +224,7 @@ https://github.com/redhat-developer/rhdh/blob/${branch}/backstage.json
 
 Based on [Backstage ${backstageVersion}](https://backstage.io/docs/releases/v${minorBackstageVersion}.0)
 
-To bootstrap Backstage app that is compatible with RHDH 1.4, you can use:
+To bootstrap Backstage app that is compatible with RHDH ${release}, you can use:
 
 \`\`\`bash
 npx @backstage/create-app@${createAppVersion}

@@ -7,7 +7,7 @@ https://github.com/redhat-developer/rhdh/blob/main/backstage.json
 
 Based on [Backstage 1.45.3](https://backstage.io/docs/releases/v1.45.0)
 
-To bootstrap Backstage app that is compatible with RHDH 1.4, you can use:
+To bootstrap Backstage app that is compatible with RHDH next, you can use:
 
 ```bash
 npx @backstage/create-app@0.7.6
@@ -61,7 +61,7 @@ https://github.com/redhat-developer/rhdh/blob/release-1.9/backstage.json
 
 Based on [Backstage 1.45.3](https://backstage.io/docs/releases/v1.45.0)
 
-To bootstrap Backstage app that is compatible with RHDH 1.4, you can use:
+To bootstrap Backstage app that is compatible with RHDH 1.9, you can use:
 
 ```bash
 npx @backstage/create-app@0.7.6
@@ -115,7 +115,7 @@ https://github.com/redhat-developer/rhdh/blob/release-1.8/backstage.json
 
 Based on [Backstage 1.42.5](https://backstage.io/docs/releases/v1.42.0)
 
-To bootstrap Backstage app that is compatible with RHDH 1.4, you can use:
+To bootstrap Backstage app that is compatible with RHDH 1.8, you can use:
 
 ```bash
 npx @backstage/create-app@0.7.3
@@ -169,7 +169,7 @@ https://github.com/redhat-developer/rhdh/blob/release-1.7/backstage.json
 
 Based on [Backstage 1.39.1](https://backstage.io/docs/releases/v1.39.0)
 
-To bootstrap Backstage app that is compatible with RHDH 1.4, you can use:
+To bootstrap Backstage app that is compatible with RHDH 1.7, you can use:
 
 ```bash
 npx @backstage/create-app@0.6.2
@@ -223,7 +223,7 @@ https://github.com/redhat-developer/rhdh/blob/release-1.6/backstage.json
 
 Based on [Backstage 1.36.1](https://backstage.io/docs/releases/v1.36.0)
 
-To bootstrap Backstage app that is compatible with RHDH 1.4, you can use:
+To bootstrap Backstage app that is compatible with RHDH 1.6, you can use:
 
 ```bash
 npx @backstage/create-app@0.5.25
