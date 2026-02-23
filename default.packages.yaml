@@ -56,6 +56,7 @@ packages:
   - package: '@backstage/plugin-catalog-backend-module-gitlab-org'
   - package: '@backstage/plugin-catalog-backend-module-ldap'
   - package: '@backstage/plugin-catalog-backend-module-msgraph'
+  - package: '@backstage/plugin-events-backend-module-github'
   - package: '@backstage/plugin-kubernetes'
   - package: '@backstage/plugin-kubernetes-backend'
   - package: '@backstage/plugin-notifications'
