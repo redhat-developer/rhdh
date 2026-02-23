@@ -248,7 +248,7 @@ global:
       - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-header
         disabled: false
       # Enable an extra header test plugin
-      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-global-header-test:bs_1.45.3__0.7.0 !red-hat-developer-hub-backstage-plugin-global-header-test
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-global-header-test:bs_1.45.3__0.7.0!red-hat-developer-hub-backstage-plugin-global-header-test
         pluginConfig:
           dynamicPlugins:
             frontend:
