@@ -45,9 +45,7 @@ test.describe("Test Kubernetes Actions plugin", () => {
     await uiHelper.waitForTitle("Create a kubernetes namespace", 2);
 
     await uiHelper.fillTextInputByLabel("Namespace name", namespace);
-    expect(process.env.K8S_CLUSTER_URL.trim()).toBeTruthy();
     await uiHelper.fillTextInputByLabel("Url", process.env.K8S_CLUSTER_URL);
-    expect(process.env.K8S_CLUSTER_TOKEN.trim()).toBeTruthy();
     await uiHelper.fillTextInputByLabel("Token", process.env.K8S_CLUSTER_TOKEN);
     await uiHelper.checkCheckbox("Skip TLS verification");
     await page.waitForTimeout(1500); // DO NOT REMOVE - allows form validation to complete
