@@ -274,7 +274,7 @@ function getAuthProviderFactory(
 
 const authProvidersModule = createBackendModule({
   pluginId: 'auth',
-  moduleId: 'auth.providers',
+  moduleId: 'auth-providers',
   register(reg) {
     reg.registerInit({
       deps: {
