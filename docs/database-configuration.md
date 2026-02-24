@@ -82,5 +82,3 @@ psql -U postgres
 \dt scaffolder.*
 \dt auth.*
 ```
-
-**Note:** If you migrated from database mode to schema mode, old `backstage_plugin_*` databases may still exist but are no longer used. RHDH will use schemas going forward.
