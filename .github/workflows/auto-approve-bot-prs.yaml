@@ -39,10 +39,10 @@ jobs:
     steps:
       - name: Check PR eligibility
         id: check-eligibility
+        env:
+          PR_BRANCH: ${{ github.event.pull_request.head.ref }}
+          PR_DRAFT: ${{ github.event.pull_request.draft }}
         run: |
-          PR_BRANCH="${{ github.event.pull_request.head.ref }}"
-          PR_DRAFT="${{ github.event.pull_request.draft }}"
-
           # Don't auto-approve draft PRs
           if [[ "$PR_DRAFT" == "true" ]]; then
             echo "eligible=false" >> $GITHUB_OUTPUT
@@ -75,14 +75,17 @@ jobs:
 
       - name: Add required labels and approve PR
         if: steps.check-eligibility.outputs.eligible == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           # Add the required labels if not already present
-          gh pr edit ${{ github.event.pull_request.number }} --add-label "lgtm,approved" --repo ${{ github.repository }}
+          gh pr edit "$PR_NUMBER" --add-label "lgtm,approved" --repo "$GITHUB_REPOSITORY"
 
           # Auto-approve the PR
-          gh pr review ${{ github.event.pull_request.number }} \
+          gh pr review "$PR_NUMBER" \
             --approve \
-            --repo ${{ github.repository }} \
+            --repo "$GITHUB_REPOSITORY" \
             --body "**Auto-Approved**
 
           This PR has been automatically approved by the auto-approve workflow.
@@ -90,6 +93,4 @@ jobs:
           /override ci/prow/e2e-ocp-helm
 
           **Labels Added:** \`lgtm\`, \`approved\`"
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
