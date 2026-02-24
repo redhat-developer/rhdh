@@ -147,7 +147,7 @@ jobs:
 
       - name: Run Python tests
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}
-        run: pytest docker/test_install-dynamic-plugins.py -v
+        run: pytest scripts/install-dynamic-plugins/test_install-dynamic-plugins.py -v
 
       - name: Change directory to dynamic-plugins
         if: ${{ steps.check-image.outputs.is_skipped != 'true' }}

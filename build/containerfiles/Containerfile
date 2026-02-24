@@ -1,6 +1,6 @@
-# THIS IS USED BY Konflux builds == 1.4 - 1.5; see ../.rhdh/docker/Dockerfile for >=1.6
+# THIS IS USED BY Konflux builds >= 1.6
 #
-# Copyright (c) 2023-2024 Red Hat, Inc.
+# Copyright (c) Red Hat, Inc.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -32,7 +32,7 @@ RUN dnf install -q -y --allowerasing --nobest \
   libeconf libedit libevent libfdisk libffi libfido2 libgcc libgcrypt libgomp libgpg-error libidn2 libksba libmnl libmodulemd libmount libmpc libnet libnghttp2 libnl3 \
   libpipeline libpkgconf libpwquality librepo libreport-filesystem librhsm libseccomp libselinux libsemanage libsepol libsigsegv libslirp libsmartcols libsolv libstdc++ libstdc++-devel \
   libtasn1 libunistring libuser libutempter libuuid libverto libxcrypt libxcrypt-compat libxcrypt-devel libxml2 libyaml libzstd lua-libs lz4-libs make man mpfr \
-  ncurses ncurses-base ncurses-libs nettle nodejs nodejs-devel nodejs-docs nodejs-full-i18n nodejs-libs nodejs-nodemon nodejs-packaging npm npth nss_wrapper-libs openldap \
+  ncurses ncurses-base ncurses-libs nettle npth nss_wrapper-libs openldap \
   openssh openssh-clients openssl openssl-devel openssl-fips-provider openssl-fips-provider-so openssl-libs p11-kit p11-kit-trust pam passwd pcre pcre2 pcre2-syntax \
   perl perl-AutoLoader perl-B perl-base perl-Carp perl-Class-Struct perl-constant perl-Data-Dumper perl-Digest perl-Digest-MD5 perl-DynaLoader perl-Encode perl-Errno perl-Error \
   perl-Exporter perl-Fcntl perl-File-Basename perl-File-Find perl-File-Path perl-File-stat perl-File-Temp perl-FileHandle perl-Getopt-Long perl-Getopt-Std perl-Git perl-HTTP-Tiny \
@@ -93,6 +93,13 @@ RUN NODE_HEADERS_VERSION=$(node --version); echo "=== Install node headers $NODE
 # Increase timeout for yarn install
 RUN "$YARN" config set httpTimeout 600000
 
+# Using cachi2 env vars:
+#   export YARN_ENABLE_GLOBAL_CACHE=false
+#   export YARN_ENABLE_IMMUTABLE_CACHE=false
+#   export YARN_ENABLE_MIRROR=true
+#   export YARN_GLOBAL_FOLDER=/cachi2/output/deps/yarn
+RUN cat /cachi2/cachi2.env; echo; find /cachi2/output/deps/yarn/*
+
 RUN echo "=== YARN INSTALL ==="; FAILED=0; "$YARN" install --immutable || FAILED=1; \
   for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then \
   (( FAILED = FAILED + 1 )); \
@@ -107,18 +114,18 @@ FROM deps AS build
 
 COPY $EXTERNAL_SOURCE_NESTED ./
 
-# Tweak .yarnrc.yml for build:
+# Explicitly disable networking + use local cache:
 RUN echo "=== TWEAK .yarnrc.yml ==="; \
+  echo "enableNetwork: false" >> .yarnrc.yml && \
   echo "enableGlobalCache: false" >> .yarnrc.yml && \
+  echo "cacheFolder: $YARN_GLOBAL_FOLDER" >> .yarnrc.yml && \
   echo "Current .yarnrc.yml" && \
   cat .yarnrc.yml
 
 RUN git config --global --add safe.directory ./
-# Upstream only
-RUN rm app-config.yaml && mv app-config.example.yaml app-config.yaml
 
-# Downstream only - replace midstream build-metadata.json with the version from downstream (where we include the midstream SHA)
-# COPY packages/app/src/build-metadata.json ./packages/app/src/
+# replace midstream build-metadata.json with the version from downstream (where we include the midstream SHA)
+COPY packages/app/src/build-metadata.json ./packages/app/src/
 
 # hadolint ignore=DL3059,DL4006,SC2086
 RUN \
@@ -158,18 +165,9 @@ RUN echo "=== YARN COPY DYNAMIC PLUGINS in $(pwd) ==="; "$YARN" copy-dynamic-plu
 
 WORKDIR $CONTAINER_SOURCE
 
-# Stage 4 - Build the actual backend image and install production dependencies
-# Upstream only
-FROM skeleton AS cleanup
-
-# Upstream only - copy the install dependencies from the build stage and context
-COPY --from=build $CONTAINER_SOURCE/yarn.lock \
-  $CONTAINER_SOURCE/package.json \
-  ./
-COPY --from=build \
-  $CONTAINER_SOURCE/packages/backend/dist/skeleton.tar.gz \
-  $CONTAINER_SOURCE/packages/backend/dist/bundle.tar.gz \
-  ./packages/backend/dist/
+# Clean up dynamic plugins sources:
+# Only keep the dist sub-folder in the dynamic-plugins folder
+RUN echo "=== DELETE DYNAMIC PLUGINS/* (except dist/) from $(pwd) ==="; find dynamic-plugins -maxdepth 1 -mindepth 1 -type d -not -name dist -exec rm -Rf {} \;
 
 # unpack and remove tarballs
 ENV TARBALL_PATH=./packages/backend/dist
@@ -185,7 +183,16 @@ COPY $EXTERNAL_SOURCE_NESTED/app-config*.yaml ./
 # Hackaround: create library symlinks to build: isolated-vm node-gyp better-sqlite cpu-features
 # TODO is this still needed? maintaining it over time will be a chore if the .so files change
 RUN echo "=== lib64 symlinks ==="; \
-  for l in libbrotlidec.so.1 libbrotlienc.so.1 libbrotlicommon.so.1 libc.so.6 ld-linux-x86-64.so.2 libcrypto.so.3 libk5crypto.so.3 libz.so.1 libssl.so.3; do \
+  ARCH=$(uname -m); \
+  if [ "$ARCH" = "x86_64" ]; then \
+    LD_LINUX="ld-linux-x86-64.so.2"; \
+  elif [ "$ARCH" = "aarch64" ]; then \
+    LD_LINUX="ld-linux-aarch64.so.1"; \
+  else \
+    echo "Unsupported architecture: $ARCH"; \
+    exit 1; \
+  fi; \
+  for l in libbrotlidec.so.1 libbrotlienc.so.1 libbrotlicommon.so.1 libc.so.6 $LD_LINUX libcrypto.so.3 libk5crypto.so.3 libz.so.1 libssl.so.3; do \
   ln -s /usr/lib64/$l /usr/lib64/${l%.*} 2>/dev/null || true; \
   ls -l /usr/lib64/${l%.*}; \
   done
@@ -195,7 +202,7 @@ RUN "$YARN" config set httpTimeout 600000
 
 # Install production dependencies
 # hadolint ignore=DL3059
-RUN echo "=== YARN WORKSPACES FOCUS ==="; FAILED=0; "$YARN" workspaces focus --all --production || true; \
+RUN echo "=== YARN WORKSPACES FOCUS ==="; FAILED=0; "$YARN" workspaces focus --all --production || FAILED=1; \
   for d in /tmp/xfs-*; do if [[ -f ${d}/build.log ]]; then \
   (( FAILED = FAILED + 1 )); echo; echo $d; echo "======"; cat ${d}/build.log; \
   fi; done; \
@@ -208,6 +215,16 @@ RUN \
   npm config set registry=https://registry.npmjs.org/ && \
   npm config set cafile /opt/app-root/src/registry-ca.pem
 
+# dump console logs if they have errors
+RUN hadFail=0; for d in $(find /tmp -name "yarn*log*" || true) $(find /tmp/xfs-*  -name build.log || true); do \
+  failsCheck="$(grep -E "Failed with errors|Failed to execute command|Failed to install|Failed to download|exit code 1" "$d")"; \
+  if [[ $failsCheck != "" ]]; then \
+  echo "==== $d SUMMARY ===="; echo "$failsCheck"; \
+  echo "==== $d FULL ====";    cat "$d"; echo "==== $d ===="; \
+  (( hadFail = hadFail +1 )); \
+  fi; \
+  done; if [[ $hadFail -gt 0 ]]; then exit $hadFail; fi
+
 # Stage 5 - Build the runner image
 # https://registry.access.redhat.com/ubi9/nodejs-22-minimal
 FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:9.7-1770309067@sha256:449f3e1b0a9c1ef766777ca84ea89bcc040a96d5f6d456c3a9acdd558dfc2b4f AS runner
@@ -216,6 +233,10 @@ USER 0
 ENV EXTERNAL_SOURCE_NESTED=.
 ENV CONTAINER_SOURCE=/opt/app-root/src
 WORKDIR $CONTAINER_SOURCE/
+
+# cachi2 env vars:
+#   export PIP_FIND_LINKS=/cachi2/output/deps/pip
+#   export PIP_NO_INDEX=true
 
 # Install techdocs dependencies using requirements files
 # hadolint ignore=DL3013,DL3041,SC2086
@@ -235,21 +256,15 @@ RUN microdnf install -y python3.11 python3.11-pip python3.11-devel make cmake cp
   rm -fr python/; \
   microdnf clean all
 
-# Upstream only - copy from cleanup stage
-COPY --from=cleanup --chown=1001:1001 $CONTAINER_SOURCE/ ./
-# Downstream only - copy from build, not cleanup stage
-# COPY --from=build --chown=1001:1001 "$CONTAINER_SOURCE"/ ./
-
-# Copy embedded dynamic plugins from $CONTAINER_SOURCE
-COPY --from=build --chown=1001:1001 $CONTAINER_SOURCE/dynamic-plugins/dist/ ./dynamic-plugins/dist/
+# copy from build, not cleanup stage
+COPY --from=build --chown=1001:1001 "$CONTAINER_SOURCE"/ ./
 
 # RHIDP-4220 - make Konflux preflight and EC checks happy - [check-container] Create a directory named /licenses and include all relevant licensing
 COPY $EXTERNAL_SOURCE_NESTED/LICENSE /licenses/
 
 # Copy script to gather dynamic plugins; copy embedded dynamic plugins to root folder; fix permissions
-COPY docker/install-dynamic-plugins.py docker/install-dynamic-plugins.sh ./
+COPY $EXTERNAL_SOURCE_NESTED/scripts/install-dynamic-plugins/install-dynamic-plugins.py $EXTERNAL_SOURCE_NESTED/scripts/install-dynamic-plugins/install-dynamic-plugins.sh ./
 RUN chmod -R a+rx ./install-dynamic-plugins.*
-
 
 # Fix for https://issues.redhat.com/browse/RHIDP-728
 RUN mkdir -p /opt/app-root/src/.npm; chown -R 1001:1001 /opt/app-root/src/.npm
@@ -270,7 +285,7 @@ ENV CHOKIDAR_USEPOLLING='1' CHOKIDAR_INTERVAL='10000'
 ENV NPM_CONFIG_ignore-scripts='true'
 
 # gGVM6sYRK0D0ndVX22BOtS7NRcxPej8t is key for dev environment
-# Upstream - Use dev key in all branches
+# Use production key in stable release-1.yy branch; use dev key in main for CI/next builds
 ENV SEGMENT_WRITE_KEY=gGVM6sYRK0D0ndVX22BOtS7NRcxPej8t
 ENV SEGMENT_TEST_MODE=false
 
@@ -286,7 +301,7 @@ ENV GLOBAL_AGENT_ENVIRONMENT_VARIABLE_NAMESPACE=''
 # Users can still override this when running the image.
 ENV NO_PROXY='localhost,127.0.0.1'
 
-# The `--no-node-snapshot` node option enables the usage of the backstage scaffolder on nodejs 20
+# The `--no-node-snapshot` node option enables the usage of the backstage scaffolder on nodejs 20+
 # https://github.com/backstage/backstage/issues/20661
 
 # Copy instrumentation needed for surfacing metrics
