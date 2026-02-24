@@ -213,6 +213,7 @@ export default defineConfig({
       testMatch: [
         "**/playwright/e2e/external-database/verify-tls-config-with-external-rds.spec.ts",
         "**/playwright/e2e/external-database/verify-tls-config-with-external-azure-db.spec.ts",
+        "**/playwright/e2e/plugin-division-mode-schema/verify-schema-mode.spec.ts",
       ],
     },
     {
