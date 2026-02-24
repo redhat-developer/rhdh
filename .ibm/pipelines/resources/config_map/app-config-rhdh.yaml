@@ -237,7 +237,7 @@ permission:
 # Marketplace plugin configuration
 extensions:
   installation:
-    enabled: false
+    enabled: true
 buildInfo:
   title: "RHDH Build info"
   card:
