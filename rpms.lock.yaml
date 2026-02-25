@@ -277,13 +277,13 @@ arches:
     name: go-srpm-macros
     evr: 3.6.0-12.el9_7
     sourcerpm: go-rpm-macros-3.6.0-12.el9_7.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/k/kernel-headers-5.14.0-611.34.1.el9_7.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/k/kernel-headers-5.14.0-611.35.1.el9_7.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 3017565
-    checksum: sha256:a44cd4df083740e6de10a546a6a549b5df55ef20063af9f9fdac2e290879a368
+    size: 3017809
+    checksum: sha256:beca4f8a886a45f20f1ff796fe68b0c2b447d54cff861c3c658c8d497f1adcc5
     name: kernel-headers
-    evr: 5.14.0-611.34.1.el9_7
-    sourcerpm: kernel-5.14.0-611.34.1.el9_7.src.rpm
+    evr: 5.14.0-611.35.1.el9_7
+    sourcerpm: kernel-5.14.0-611.35.1.el9_7.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/k/kernel-srpm-macros-1.0-14.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 14098
@@ -2384,13 +2384,13 @@ arches:
     name: scl-utils
     evr: 1:2.0.3-4.el9
     sourcerpm: scl-utils-2.0.3-4.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/s/skopeo-1.20.0-2.el9_7.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/s/skopeo-1.20.0-3.el9_7.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 8597530
-    checksum: sha256:309fcf6286c96bcd6e2a07c1e2d163011449dcde358e103e2fa4c3b92e65364d
+    size: 8599922
+    checksum: sha256:500206cfd14841e6fc29461d9847f069c4b2d298b06070854f71836254c22dd8
     name: skopeo
-    evr: 2:1.20.0-2.el9_7
-    sourcerpm: skopeo-1.20.0-2.el9_7.src.rpm
+    evr: 2:1.20.0-3.el9_7
+    sourcerpm: skopeo-1.20.0-3.el9_7.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/s/slirp4netns-1.3.3-1.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 48562
@@ -4529,12 +4529,12 @@ arches:
     checksum: sha256:ca6fe92503402d24ebc976123288ec2169e75632bd63dd1c146e8d310eb5ee01
     name: sgml-common
     evr: 0.6.3-58.el9
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/s/skopeo-1.20.0-2.el9_7.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/s/skopeo-1.20.0-3.el9_7.src.rpm
     repoid: ubi-9-for-x86_64-appstream-source-rpms
-    size: 10334884
-    checksum: sha256:8c02ac43b701d7c73685bfe72bb61a1edf5011a0d33333fdf9e011a3d5b5485a
+    size: 10341496
+    checksum: sha256:5c7f223d71f33791b1b0a7c74e0aa7d3037fc64b2d5440a53cea8ba8d6e82639
     name: skopeo
-    evr: 2:1.20.0-2.el9_7
+    evr: 2:1.20.0-3.el9_7
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/s/slirp4netns-1.3.3-1.el9.src.rpm
     repoid: ubi-9-for-x86_64-appstream-source-rpms
     size: 76019
