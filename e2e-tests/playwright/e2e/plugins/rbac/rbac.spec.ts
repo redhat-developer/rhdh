@@ -1,8 +1,6 @@
-import { Locator, Page, expect, test } from "@playwright/test";
+import { Page, expect, test } from "@playwright/test";
 import { Response, Roles } from "../../../support/pages/rbac";
-import { UI_HELPER_ELEMENTS } from "../../../support/page-objects/global-obj";
 import {
-  SEARCH_OBJECTS_COMPONENTS,
   ROLE_OVERVIEW_COMPONENTS_TEST_ID,
   ROLES_PAGE_COMPONENTS,
 } from "../../../support/page-objects/page-obj";
@@ -21,7 +19,7 @@ import { downloadAndReadFile } from "../../../utils/helper";
     The policies generated from a policy.csv or ConfigMap file cannot be edited or deleted using the Developer Hub Web UI.
     https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.3/html/authorization/managing-authorizations-by-using-the-web-ui#proc-rbac-ui-edit-role_title-authorization
 */
-test.describe.serial("Test RBAC", () => {
+test.describe("Test RBAC", () => {
   test.beforeAll(async () => {
     test.info().annotations.push({
       type: "component",
@@ -42,9 +40,9 @@ test.describe.serial("Test RBAC", () => {
       const uiHelper = new UIhelper(page);
       await uiHelper.goToPageUrl("/", "Welcome back!");
       await uiHelper.openSidebarButton("Administration");
-      const dropdownMenuLocator = page.locator(`text="RBAC"`);
-      await expect(dropdownMenuLocator).toBeVisible();
-      await dropdownMenuLocator.click();
+      const rbacLink = page.getByRole("link", { name: "RBAC" });
+      await expect(rbacLink).toBeVisible();
+      await rbacLink.click();
       await uiHelper.verifyHeading("RBAC");
       expect(await page.title()).toContain("RBAC");
     });
@@ -114,14 +112,17 @@ test.describe.serial("Test RBAC", () => {
       await uiHelper.searchInputPlaceholder(testUser);
       await page.getByRole("link", { name: testUser, exact: true }).click();
 
-      await expect(page.locator("header")).toContainText(testUser);
+      // Verify component name in the main heading
+      await expect(page.getByRole("heading", { level: 1 })).toContainText(
+        testUser,
+      );
       await page.getByTestId("menu-button").click();
       const unregisterUserOwned = page.getByRole("menuitem", {
         name: "Unregister entity",
       });
       await expect(unregisterUserOwned).toBeEnabled();
 
-      await page.getByText("Unregister entity").click();
+      await page.getByRole("menuitem", { name: "Unregister entity" }).click();
       await expect(page.getByRole("heading")).toContainText(
         "Are you sure you want to unregister this entity?",
       );
@@ -131,9 +132,12 @@ test.describe.serial("Test RBAC", () => {
       await page
         .getByRole("link", { name: "test-rhdh-qe-2-team-owned" })
         .click();
-      await expect(page.locator("header")).toContainText(
-        "janus-qe/rhdh-qe-2-team",
-      );
+      // Verify owner group in the component metadata (scope to article to avoid duplicates)
+      await expect(
+        page
+          .getByRole("article")
+          .getByRole("link", { name: /janus-qe\/rhdh-qe-2-team/ }),
+      ).toBeVisible();
       await page.getByTestId("menu-button").click();
       const unregisterGroupOwned = page.getByRole("menuitem", {
         name: "Unregister entity",
@@ -161,7 +165,12 @@ test.describe.serial("Test RBAC", () => {
 
       await uiHelper.searchInputPlaceholder("mock-site");
       await page.getByRole("link", { name: "mock-site" }).click();
-      await expect(page.locator("header")).toContainText(testParentGroup);
+      // Verify owner group in the component metadata
+      await expect(
+        page
+          .getByRole("article")
+          .getByRole("link", { name: new RegExp(testParentGroup) }),
+      ).toBeVisible();
 
       // rhdh-qe-child-team owns mock-child-site, check that it can see it's own groups' components
       const testChildGroup = "rhdh-qe-child-team";
@@ -170,7 +179,12 @@ test.describe.serial("Test RBAC", () => {
 
       await uiHelper.searchInputPlaceholder("mock-child-site");
       await page.getByRole("link", { name: "mock-child-site" }).click();
-      await expect(page.locator("header")).toContainText(testChildGroup);
+      // Verify owner group in the component metadata
+      await expect(
+        page
+          .getByRole("article")
+          .getByRole("link", { name: new RegExp(testChildGroup) }),
+      ).toBeVisible();
     });
 
     test("Check if user is allowed to read component owned by transitive parent group with 2 layers of hierarchy.", async ({
@@ -190,7 +204,12 @@ test.describe.serial("Test RBAC", () => {
 
       await uiHelper.searchInputPlaceholder("mock-site");
       await page.getByRole("link", { name: "mock-site" }).click();
-      await expect(page.locator("header")).toContainText(testParentGroup);
+      // Verify owner group in the component metadata
+      await expect(
+        page
+          .getByRole("article")
+          .getByRole("link", { name: new RegExp(testParentGroup) }),
+      ).toBeVisible();
 
       // rhdh-qe-child-team owns mock-child-site
       const testChildGroup = "rhdh-qe-child-team";
@@ -199,7 +218,12 @@ test.describe.serial("Test RBAC", () => {
 
       await uiHelper.searchInputPlaceholder("mock-child-site");
       await page.getByRole("link", { name: "mock-child-site" }).click();
-      await expect(page.locator("header")).toContainText(testChildGroup);
+      // Verify owner group in the component metadata
+      await expect(
+        page
+          .getByRole("article")
+          .getByRole("link", { name: new RegExp(testChildGroup) }),
+      ).toBeVisible();
 
       // rhdh-qe-sub-child-team owns mock-sub-child-site, check that it can see it's own groups' components
       const testSubChildGroup = "rhdh-qe-sub-child-team";
@@ -208,7 +232,12 @@ test.describe.serial("Test RBAC", () => {
 
       await uiHelper.searchInputPlaceholder("mock-sub-child-site");
       await page.getByRole("link", { name: "mock-sub-child-site" }).click();
-      await expect(page.locator("header")).toContainText(testSubChildGroup);
+      // Verify owner group in the component metadata
+      await expect(
+        page
+          .getByRole("article")
+          .getByRole("link", { name: new RegExp(testSubChildGroup) }),
+      ).toBeVisible();
     });
   });
 
@@ -305,7 +334,10 @@ test.describe.serial("Test RBAC", () => {
       );
 
       await uiHelper.clickButton("Next");
-      await page.waitForTimeout(1_000);
+      // Wait for the users and groups step to be visible
+      await expect(
+        page.getByTestId("users-and-groups-text-field"),
+      ).toBeVisible();
       await uiHelper.fillTextInputByLabel(
         "Select users and groups",
         "sample-role-1",
@@ -315,7 +347,7 @@ test.describe.serial("Test RBAC", () => {
         .getByLabel("clear search")
         .click();
       await expect(
-        page.getByTestId("users-and-groups-text-field").locator("input"),
+        page.getByTestId("users-and-groups-text-field").getByRole("combobox"),
       ).toBeEmpty();
       await uiHelper.verifyHeading("No users and groups selected");
       await uiHelper.clickButton("Cancel");
@@ -336,30 +368,35 @@ test.describe.serial("Test RBAC", () => {
       );
       await uiHelper.verifyHeading("Edit Role");
       await uiHelper.clickButton("Next");
-      await page.waitForTimeout(1_000);
+      // Wait for users and groups step to be ready
+      await expect(page.getByLabel("Select users and groups")).toBeVisible();
       await rbacPo.addUsersAndGroups(testUser);
       await page.click(rbacPo.selectMember(testUser));
       await uiHelper.verifyHeading(rbacPo.regexpShortUsersAndGroups(3, 1));
       await uiHelper.clickButton("Next");
-      await page.waitForTimeout(1_000);
-      await uiHelper.clickButton("Next");
-      await page.waitForTimeout(1_000);
-      await uiHelper.clickButton("Save");
+      // Wait for permissions step to be ready (use .first() to handle multiple Next buttons)
+      const nextButton = page.getByTestId("nextButton-2").first();
+      await expect(nextButton).toBeVisible();
+      await expect(nextButton).toBeEnabled();
+      await nextButton.click();
+      // Wait for review step to be ready
+      const saveButton = page.getByRole("button", { name: "Save" });
+      await expect(saveButton).toBeVisible();
+      await expect(saveButton).toBeEnabled();
+      await saveButton.click();
       await uiHelper.verifyText(
         "Role role:default/test-role updated successfully",
       );
 
-      await page
-        .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)
-        .waitFor({ state: "visible" });
-      await page
-        .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)
-        .fill("test-role");
+      await page.getByPlaceholder("Filter").waitFor({
+        state: "visible",
+      });
+      await page.getByPlaceholder("Filter").fill("test-role");
       await uiHelper.verifyHeading("All roles (1)");
+      // Use semantic selector for table cell
       const usersAndGroupsLocator = page
-        .locator(UI_HELPER_ELEMENTS.MuiTableCell)
+        .getByRole("cell")
         .filter({ hasText: rbacPo.regexpShortUsersAndGroups(3, 1) });
-      await usersAndGroupsLocator.waitFor();
       await expect(usersAndGroupsLocator).toBeVisible();
 
       await rbacPo.deleteRole("role:default/test-role");
@@ -377,7 +414,7 @@ test.describe.serial("Test RBAC", () => {
         [{ permission: "catalog.entity.delete" }],
       );
 
-      await uiHelper.searchInputAriaLabel("test-role1");
+      await page.getByPlaceholder("Filter").fill("test-role1");
 
       await uiHelper.clickLink("role:default/test-role1");
 
@@ -395,19 +432,13 @@ test.describe.serial("Test RBAC", () => {
       await page.click(rbacPo.selectMember("Guest User"));
       await uiHelper.verifyHeading(rbacPo.regexpShortUsersAndGroups(1, 1));
       await uiHelper.clickByDataTestId("nextButton-1");
-      let nextButton2: Locator;
-      let matchNextButton2: Locator[];
-      let attempts = 0;
-      do {
-        await page.waitForTimeout(500);
-        nextButton2 = page.locator('[data-testid="nextButton-2"]');
-        matchNextButton2 = await nextButton2.all();
-        attempts++;
-        // eslint-disable-next-line playwright/no-conditional-in-test
-      } while (matchNextButton2.length > 1 && attempts < 5);
-      // eslint-disable-next-line playwright/no-force-option
-      await nextButton2.click({ force: true });
-      await page.waitForTimeout(1_000);
+      // Wait for next step to be ready and clickable (use .first() to handle multiple Next buttons)
+      const nextButton2 = page.getByTestId("nextButton-2").first();
+      await expect(nextButton2).toBeVisible();
+      await expect(nextButton2).toBeEnabled();
+      await nextButton2.click();
+      // Wait for review step before Save
+      await expect(page.getByRole("button", { name: "Save" })).toBeVisible();
       await uiHelper.clickButton("Save");
       await uiHelper.verifyText(
         "Role role:default/test-role1 updated successfully",
@@ -420,10 +451,20 @@ test.describe.serial("Test RBAC", () => {
       await uiHelper.verifyHeading("Edit Role");
       await rbacPo.selectPluginsCombobox.click();
       await rbacPo.selectOption("scaffolder");
-      await page.getByText("Select...").click();
+
+      // Close the plugins dropdown to access the permissions table
+      await page.getByRole("button", { name: "Close" }).click();
+
+      // Expand the Scaffolder row to access its permissions
+      await page
+        .getByRole("row", { name: /Scaffolder/i })
+        .getByRole("button", { name: "expand row" })
+        .click();
+
       await rbacPo.selectPermissionCheckbox("scaffolder.template.parameter");
       await uiHelper.clickButton("Next");
-      await page.waitForTimeout(1_000);
+      // Wait for review step to be ready
+      await expect(page.getByRole("button", { name: "Save" })).toBeVisible();
       await uiHelper.clickButton("Save");
       await uiHelper.verifyText(
         "Role role:default/test-role1 updated successfully",
@@ -450,12 +491,10 @@ test.describe.serial("Test RBAC", () => {
         "user:default/rhdh-qe",
       );
 
-      await page
-        .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)
-        .waitFor({ state: "visible" });
-      await page
-        .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)
-        .fill("test-role1");
+      await page.getByPlaceholder("Filter").waitFor({
+        state: "visible",
+      });
+      await page.getByPlaceholder("Filter").fill("test-role1");
       await uiHelper.verifyHeading("All roles (1)");
       await rbacPo.deleteRole("role:default/test-role1");
     });
@@ -472,8 +511,11 @@ test.describe.serial("Test RBAC", () => {
     }) => {
       const uiHelper = new UIhelper(page);
       await uiHelper.openSidebarButton("Administration");
-      const dropdownMenuLocator = page.locator(`text="RBAC"`);
-      await expect(dropdownMenuLocator).toBeHidden();
+      // Check specifically for RBAC link in sidebar navigation, not anywhere on the page
+      const rbacNavLink = page
+        .getByRole("navigation", { name: "sidebar nav" })
+        .getByRole("link", { name: "RBAC" });
+      await expect(rbacNavLink).toHaveCount(0);
     });
   });
 
@@ -701,12 +743,10 @@ test.describe.serial("Test RBAC", () => {
         "user:default/rhdh-qe-6",
       );
 
-      await page
-        .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)
-        .waitFor({ state: "visible" });
-      await page
-        .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)
-        .fill("test-conditional-role");
+      await page.getByPlaceholder("Filter").waitFor({
+        state: "visible",
+      });
+      await page.getByPlaceholder("Filter").fill("test-conditional-role");
       await uiHelper.verifyHeading("All roles (1)");
     });
 
@@ -739,25 +779,30 @@ test.describe.serial("Test RBAC", () => {
       );
       await uiHelper.verifyHeading("Edit Role");
       await uiHelper.clickButton("Next");
-      await page.waitForTimeout(1_000);
+      // Wait for users and groups step to be ready
+      await expect(page.getByLabel("Select users and groups")).toBeVisible();
       await rbacPo.addUsersAndGroups(testUser);
       await page.click(rbacPo.selectMember(testUser));
       await uiHelper.verifyHeading(rbacPo.regexpShortUsersAndGroups(3, 1));
       await uiHelper.clickButton("Next");
-      await page.waitForTimeout(1_000);
-      await uiHelper.clickButton("Next");
-      await page.waitForTimeout(1_000);
-      await uiHelper.clickButton("Save");
+      // Wait for permissions step to be ready (use .first() to handle multiple Next buttons)
+      const nextButton = page.getByTestId("nextButton-2").first();
+      await expect(nextButton).toBeVisible();
+      await expect(nextButton).toBeEnabled();
+      await nextButton.click();
+      // Wait for review step to be ready
+      const saveButton = page.getByRole("button", { name: "Save" });
+      await expect(saveButton).toBeVisible();
+      await expect(saveButton).toBeEnabled();
+      await saveButton.click();
       await uiHelper.verifyText(
         "Role role:default/test-role updated successfully",
       );
 
-      await page
-        .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)
-        .waitFor({ state: "visible" });
-      await page
-        .locator(SEARCH_OBJECTS_COMPONENTS.ariaLabelSearch)
-        .fill("test-role");
+      await page.getByPlaceholder("Filter").waitFor({
+        state: "visible",
+      });
+      await page.getByPlaceholder("Filter").fill("test-role");
       await uiHelper.verifyHeading("All roles (1)");
       await rbacPo.deleteRole("role:default/test-role", "All roles");
     });
@@ -782,7 +827,7 @@ test.describe.serial("Test RBAC", () => {
       );
       const uiHelper = new UIhelper(page);
       await uiHelper.openSidebarButton("Administration");
-      const dropdownMenuLocator = page.locator(`text="RBAC"`);
+      const dropdownMenuLocator = page.getByText("RBAC");
       await expect(dropdownMenuLocator).toBeHidden();
     });
   });

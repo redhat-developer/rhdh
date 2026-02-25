@@ -165,7 +165,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
       false,
     );
     await deployment.updateAllConfigs();
-    await page.waitForTimeout(3000);
+    // waitForDeploymentReady() and waitForSynced() handle timing - no manual timeout needed
     await deployment.restartLocalDeployment();
     await deployment.waitForDeploymentReady();
 
@@ -190,7 +190,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     );
     await deployment.updateAllConfigs();
     await deployment.restartLocalDeployment();
-    await page.waitForTimeout(3000);
+    // waitForDeploymentReady() and waitForSynced() handle timing - no manual timeout needed
     await deployment.waitForDeploymentReady();
 
     // wait for rhdh first sync and portal to be reachable
@@ -214,7 +214,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     );
     await deployment.updateAllConfigs();
     await deployment.restartLocalDeployment();
-    await page.waitForTimeout(3000);
+    // waitForDeploymentReady() and waitForSynced() handle timing - no manual timeout needed
     await deployment.waitForDeploymentReady();
 
     // wait for rhdh first sync and portal to be reachable
@@ -250,7 +250,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     );
     await deployment.updateAllConfigs();
     await deployment.restartLocalDeployment();
-    await page.waitForTimeout(3000);
+    // waitForDeploymentReady() and waitForSynced() handle timing - no manual timeout needed
     await deployment.waitForDeploymentReady();
 
     // wait for rhdh first sync and portal to be reachable
@@ -282,7 +282,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
       false,
     );
     await deployment.updateAllConfigs();
-    await page.waitForTimeout(3000);
+    // waitForDeploymentReady() and waitForSynced() handle timing - no manual timeout needed
     await deployment.restartLocalDeployment();
     await deployment.waitForDeploymentReady();
 
@@ -387,8 +387,10 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
 
   test("Ensure Guest login is disabled when setting environment to production", async () => {
     await uiHelper.goToPageUrl("/", "Select a sign-in method");
-    const singInMethods = await page
-      .locator("div[class^='MuiCardHeader-root']")
+    // Scope to the main content area to get only sign-in method card headers
+    const signInMethodsContainer = page.getByRole("main");
+    const singInMethods = await signInMethodsContainer
+      .getByRole("heading", { level: 6 })
       .allInnerTexts();
     expect(singInMethods).not.toContain("Guest");
   });
@@ -422,7 +424,7 @@ test.describe("Configure OIDC provider (using RHBK)", async () => {
     );
     await deployment.updateAllConfigs();
     await deployment.restartLocalDeployment();
-    await page.waitForTimeout(3000);
+    // waitForDeploymentReady() and waitForSynced() handle timing - no manual timeout needed
     await deployment.waitForDeploymentReady();
 
     // wait for rhdh first sync and portal to be reachable

@@ -32,13 +32,13 @@ test.describe("Test Quay.io plugin", () => {
 
     // Verify Headers
     for (const column of allGridColumnsText) {
-      const columnLocator = page.locator("th").filter({ hasText: column });
+      const columnLocator = page
+        .getByRole("columnheader")
+        .filter({ hasText: column });
       await expect(columnLocator).toBeVisible();
     }
 
-    await page
-      .locator('div[data-testid="quay-repo-table"]')
-      .waitFor({ state: "visible" });
+    await page.getByTestId("quay-repo-table").waitFor({ state: "visible" });
     // Verify cells with the adjusted selector
     const allCellsIdentifier = ImageRegistry.getAllCellsIdentifier();
     await uiHelper.verifyCellsInTable(allCellsIdentifier);

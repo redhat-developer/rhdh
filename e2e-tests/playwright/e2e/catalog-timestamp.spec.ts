@@ -2,7 +2,6 @@ import { Page, expect, test } from "@playwright/test";
 import { UIhelper } from "../utils/ui-helper";
 import { Common, setupBrowser } from "../utils/common";
 import { CatalogImport } from "../support/pages/catalog-import";
-import { UI_HELPER_ELEMENTS } from "../support/page-objects/global-obj";
 import {
   getTranslations,
   getCurrentLanguage,
@@ -61,17 +60,24 @@ test.describe("Test timestamp column on Catalog", () => {
     ]);
   });
 
-  test("Toggle ‘CREATED AT’ to see if the component list can be sorted in ascending/decending order", async () => {
-    const createdAtFirstRow =
-      "table > tbody > tr:nth-child(1) > td:nth-child(8)";
-    //Verify by default Rows are in ascending
-    await expect(page.locator(createdAtFirstRow)).toBeEmpty();
+  test("Toggle 'CREATED AT' to see if the component list can be sorted in ascending/decending order", async () => {
+    // Get the first data row's "Created At" cell using semantic selectors
+    const firstRow = page
+      .getByRole("row")
+      .filter({ has: page.getByRole("cell") })
+      .first();
+    const createdAtCell = firstRow.getByRole("cell").nth(7); // 0-indexed, 8th column = index 7
 
-    const column = page
-      .locator(`${UI_HELPER_ELEMENTS.MuiTableHead}`)
-      .getByText("Created At", { exact: true });
-    await column.dblclick(); // Double click to Toggle into decending order.
-    await expect(page.locator(createdAtFirstRow)).not.toBeEmpty();
+    //Verify by default Rows are in ascending (empty for oldest entries)
+    await expect(createdAtCell).toBeEmpty();
+
+    // Use semantic selector for column header instead of MUI class
+    const column = page.getByRole("columnheader", {
+      name: "Created At",
+      exact: true,
+    });
+    await column.dblclick(); // Double click to Toggle into descending order.
+    await expect(createdAtCell).not.toBeEmpty();
   });
 
   test.afterAll(async () => {
