@@ -266,8 +266,8 @@ const getMenuItem = (
         // Style the My Groups sub sidebar (SidebarSubmenu + SidebarSubmenuItem)
         '& [class*="BackstageSidebarSubmenu"]': {
           background: (theme: Theme) =>
-            (theme as ThemeConfig).palette?.rhdh?.general?.sidebarBackgroundColor ||
-            theme.palette.background.paper,
+            (theme as ThemeConfig).palette?.rhdh?.general
+              ?.sidebarBackgroundColor || theme.palette.background.paper,
           fontSize: 14,
           '& [class*="BackstageSidebarSubmenu-title"], & [class*="title"]': {
             fontSize: 14,
@@ -281,12 +281,14 @@ const getMenuItem = (
           fontSize: 14,
           '& [class*="selected"], & a[class*="active"]:hover': {
             background: (theme: Theme) =>
-              (theme as ThemeConfig).palette?.rhdh?.general?.sidebarItemSelectedBackgroundColor ||
+              (theme as ThemeConfig).palette?.rhdh?.general
+                ?.sidebarItemSelectedBackgroundColor ||
               theme.palette.primary.main,
-            
+
             color: (theme: Theme) =>
-              (theme as ThemeConfig).pageTheme?.rhdh?.colors as string | string[] ||
-              theme.palette.text.primary,
+              ((theme as ThemeConfig).pageTheme?.rhdh?.colors as
+                | string
+                | string[]) || theme.palette.text.primary,
           },
         },
         '& [class*="BackstageSidebarSubmenuItem-label"]': {
