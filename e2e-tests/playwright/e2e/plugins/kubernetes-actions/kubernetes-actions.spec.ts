@@ -48,17 +48,30 @@ test.describe("Test Kubernetes Actions plugin", () => {
     await uiHelper.fillTextInputByLabel("Url", process.env.K8S_CLUSTER_URL);
     await uiHelper.fillTextInputByLabel("Token", process.env.K8S_CLUSTER_TOKEN);
     await uiHelper.checkCheckbox("Skip TLS verification");
+    await page.waitForTimeout(1500); // DO NOT REMOVE - allows form validation to complete
     // Wait for form validation to complete before proceeding
     await expect(page.getByRole("button", { name: "Review" })).toBeEnabled();
     await uiHelper.clickButton("Review");
-    // Wait for review step to be ready
-    await expect(page.getByRole("button", { name: "Create" })).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Create", exact: true }),
+    ).toBeVisible();
     await uiHelper.clickButton("Create");
-    // Wait for creation process to show progress indicator
+    await expect(
+      page.getByRole("button", { name: "Create", exact: true }),
+    ).toBeHidden();
+    // Wait for creation process to complete (progressbar reaches 100%)
+    await expect(
+      page.getByRole("article").getByRole("progressbar").first(),
+    ).toHaveAttribute("aria-valuenow", "100", { timeout: 5000 });
     await expect(page.getByText("second")).toBeVisible();
     // Verify no error occurred during creation
-    await expect(page.getByText("Error")).toBeHidden();
-    await kubeClient.getNamespaceByName(namespace);
+    await expect(page.getByRole("article").getByRole("alert")).toHaveCount(0);
+
+    console.log(`Verifying namespace ${namespace} exists in Kubernetes API`);
+    await expect
+      .poll(() => kubeClient.getNamespaceByName(namespace), { timeout: 5000 })
+      .toBeTruthy();
+    console.log(`Namespace ${namespace} verified successfully`);
   });
 
   test.afterEach(async () => {
