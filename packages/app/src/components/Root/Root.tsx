@@ -259,7 +259,43 @@ const getMenuItem = (
   const translatedText = getMenuText(menuItem);
   const pluralTranslatedText = getMenuText(menuItem, 2);
   return menuItem.name === 'default.my-group' ? (
-    <Box key={menuItem.name} sx={{ '& a': menuItemStyle }}>
+    <Box
+      key={menuItem.name}
+      sx={{
+        '& a': menuItemStyle,
+        // Style the My Groups sub sidebar (SidebarSubmenu + SidebarSubmenuItem)
+        '& [class*="BackstageSidebarSubmenu"]': {
+          background: (theme: Theme) =>
+            (theme as ThemeConfig).palette?.rhdh?.general?.sidebarBackgroundColor ||
+            theme.palette.background.paper,
+          fontSize: 14,
+          '& [class*="BackstageSidebarSubmenu-title"], & [class*="title"]': {
+            fontSize: 14,
+            fontWeight: 400,
+          },
+        },
+        '& [class*="BackstageSidebarSubmenuItem-itemContainer"]': {
+          minHeight: 40,
+        },
+        '& [class*="BackstageSidebarSubmenuItem-item"]': {
+          fontSize: 14,
+          '& [class*="selected"], & a[class*="active"]:hover': {
+            background: (theme: Theme) =>
+              (theme as ThemeConfig).palette?.rhdh?.general?.sidebarItemSelectedBackgroundColor ||
+              theme.palette.primary.main,
+            
+            color: (theme: Theme) =>
+              (theme as ThemeConfig).pageTheme?.rhdh?.colors as string | string[] ||
+              theme.palette.text.primary,
+          },
+        },
+        '& [class*="BackstageSidebarSubmenuItem-label"]': {
+          '&.MuiTypography-subtitle1': {
+            background: 'transparent',
+          },
+        },
+      }}
+    >
       <MyGroupsSidebarItem
         key={menuItem.name}
         icon={renderIcon(menuItem.icon ?? '')}
