@@ -1668,7 +1668,7 @@ __metadata:
     otplib: "npm:12.0.1"
     pg: "npm:8.18.0"
     prettier: "npm:3.8.1"
-    prettier-plugin-sh: "npm:^0.18.0"
+    prettier-plugin-sh: "npm:0.18.0"
     typescript: "npm:5.9.3"
     typescript-eslint: "npm:8.56.0"
     uuid: "npm:11.1.0"
@@ -3316,7 +3316,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier-plugin-sh@npm:^0.18.0":
+"prettier-plugin-sh@npm:0.18.0":
   version: 0.18.0
   resolution: "prettier-plugin-sh@npm:0.18.0"
   dependencies:
