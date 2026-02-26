@@ -15,18 +15,23 @@
  */
 
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
-import { searchTranslationRef } from '@backstage/plugin-search/alpha';
+import { scaffolderTranslationRef } from '@backstage/plugin-scaffolder/alpha';
 
 /**
- * de translation for search.
+ * es translation for scaffolder.
  * @public
  */
-const de = createTranslationMessages({
-  ref: searchTranslationRef,
+const es = createTranslationMessages({
+  ref: scaffolderTranslationRef,
   full: false,
   messages: {
-    'sidebarSearchModal.title': 'Suchen',
+    'templateListPage.title': 'Autoservicio',
+    'templateListPage.pageTitle': 'Autoservicio',
+    'templateWizardPage.title': 'Autoservicio',
+    'templateWizardPage.pageTitle': 'Autoservicio',
+    'templateListPage.contentHeader.registerExistingButtonTitle':
+      'Importar un repositorio Git existente',
   },
 });
 
-export default de;
+export default es;

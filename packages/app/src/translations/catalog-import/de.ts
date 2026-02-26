@@ -15,17 +15,18 @@
  */
 
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
-import { searchTranslationRef } from '@backstage/plugin-search/alpha';
+import { catalogImportTranslationRef } from '@backstage/plugin-catalog-import/alpha';
 
 /**
- * de translation for search.
+ * de translation for catalog-import.
  * @public
  */
 const de = createTranslationMessages({
-  ref: searchTranslationRef,
+  ref: catalogImportTranslationRef,
   full: false,
   messages: {
-    'sidebarSearchModal.title': 'Suchen',
+    'defaultImportPage.headerTitle': 'Vorhandenes Git-Repository importieren',
+    'importInfoCard.title': 'Vorhandenes Git-Repository importieren',
   },
 });
 
