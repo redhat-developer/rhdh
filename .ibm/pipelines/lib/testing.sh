@@ -187,7 +187,6 @@ testing::check_backstage_running() {
         oc get events -n "${namespace}" --sort-by='.lastTimestamp' | tail -20
         mkdir -p "${ARTIFACT_DIR}/${namespace}"
         cp -a "/tmp/${LOGFILE}" "${ARTIFACT_DIR}/${namespace}/" || true
-        save_all_pod_logs "${namespace}"
         return 1
       fi
 
@@ -199,7 +198,6 @@ testing::check_backstage_running() {
   oc get events -n "${namespace}" --sort-by='.lastTimestamp' | tail -10
   mkdir -p "${ARTIFACT_DIR}/${namespace}"
   cp -a "/tmp/${LOGFILE}" "${ARTIFACT_DIR}/${namespace}/" || true
-  save_all_pod_logs "${namespace}"
   return 1
 }
 
@@ -248,7 +246,13 @@ testing::check_and_test() {
     save_status_test_failed $CURRENT_DEPLOYMENT true
     save_overall_result 1
   fi
-  save_all_pod_logs "$namespace"
+
+  # Collect pod logs only on failure to speed up successful PR runs.
+  if [[ "${STATUS_TEST_FAILED[$CURRENT_DEPLOYMENT]:-}" == "true" || "${STATUS_FAILED_TO_DEPLOY[$CURRENT_DEPLOYMENT]:-}" == "true" ]]; then
+    save_all_pod_logs "$namespace"
+  else
+    log::info "Tests passed — skipping pod log collection for namespace: ${namespace}"
+  fi
   return 0
 }
 
