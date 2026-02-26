@@ -19,6 +19,8 @@ source "${DIR}/lib/log.sh"
 # ==============================================================================
 readonly ORCHESTRATOR_WORKFLOW_REPO="https://github.com/rhdhorchestrator/serverless-workflows.git"
 readonly ORCHESTRATOR_WORKFLOWS="greeting failswitch"
+readonly ORCHESTRATOR_DEMO_REPO="https://github.com/rhdhorchestrator/orchestrator-demo.git"
+readonly ORCHESTRATOR_TOKEN_PROPAGATION_IMAGE="${TOKEN_PROPAGATION_IMAGE:-quay.io/orchestrator/demo-token-propagation:latest}"
 
 # ==============================================================================
 # Orchestrator Skip Logic
@@ -74,10 +76,96 @@ _orchestrator::clone_workflows() {
 
   rm -rf "${WORKFLOW_DIR}"
   if [[ "$shallow" == "true" ]]; then
-    git clone --depth=1 "${ORCHESTRATOR_WORKFLOW_REPO}" "${WORKFLOW_DIR}"
+    git clone --depth=1 "${ORCHESTRATOR_WORKFLOW_REPO}" "${WORKFLOW_DIR}" || {
+      log::error "Failed to clone serverless-workflows"
+      return 1
+    }
   else
-    git clone "${ORCHESTRATOR_WORKFLOW_REPO}" "${WORKFLOW_DIR}"
+    git clone "${ORCHESTRATOR_WORKFLOW_REPO}" "${WORKFLOW_DIR}" || {
+      log::error "Failed to clone serverless-workflows"
+      return 1
+    }
   fi
+  return 0
+}
+
+# Function: _orchestrator::clone_demo_workflows
+# Description: Clone the orchestrator-demo repository
+# Arguments:
+#   $1 - shallow: if "true", use --depth=1 for faster clone (default: true)
+# Returns:
+#   Sets DEMO_WORKFLOW_DIR, TOKEN_PROPAGATION_MANIFESTS variables
+_orchestrator::clone_demo_workflows() {
+  local shallow=${1:-true}
+
+  DEMO_WORKFLOW_DIR="${DIR}/orchestrator-demo"
+  TOKEN_PROPAGATION_MANIFESTS="${DEMO_WORKFLOW_DIR}/09_token_propagation/manifests"
+
+  rm -rf "${DEMO_WORKFLOW_DIR}"
+  if [[ "$shallow" == "true" ]]; then
+    git clone --depth=1 "${ORCHESTRATOR_DEMO_REPO}" "${DEMO_WORKFLOW_DIR}" || {
+      log::error "Failed to clone orchestrator-demo"
+      return 1
+    }
+  else
+    git clone "${ORCHESTRATOR_DEMO_REPO}" "${DEMO_WORKFLOW_DIR}" || {
+      log::error "Failed to clone orchestrator-demo"
+      return 1
+    }
+  fi
+  return 0
+}
+
+# Function: _orchestrator::prepare_token_propagation_manifests
+# Description: Substitute placeholder values in cloned token-propagation manifests
+# Arguments:
+#   $1 - namespace: Kubernetes namespace
+#   $2 - kc_auth_server_url: Keycloak auth server URL
+#   $3 - kc_client_id: Keycloak client ID
+#   $4 - kc_client_secret: Keycloak client secret
+#   $5 - kc_token_url: Keycloak token URL
+_orchestrator::prepare_token_propagation_manifests() {
+  local namespace=$1
+  local kc_auth_server_url=$2
+  local kc_client_id=$3
+  local kc_client_secret=$4
+  local kc_token_url=$5
+
+  local props_cm="${TOKEN_PROPAGATION_MANIFESTS}/01-configmap_token-propagation-props.yaml"
+  local specs_cm="${TOKEN_PROPAGATION_MANIFESTS}/03-configmap_02-token-propagation-resources-specs.yaml"
+  local sf_cr="${TOKEN_PROPAGATION_MANIFESTS}/04-sonataflow_token-propagation.yaml"
+
+  local sample_server_url="http://sample-server-service.${namespace}:8080"
+
+  # Props ConfigMap: substitute Keycloak and sample-server placeholders
+  # Uses yq to read/write YAML safely + sed for string substitution (avoids yq gsub which requires v4.30+)
+  export MODIFIED_PROPS
+  MODIFIED_PROPS=$(yq eval '.data."application.properties"' "${props_cm}" | sed \
+    -e "s|http://example-kc-service.keycloak:8080/realms/quarkus|${kc_auth_server_url}|g" \
+    -e "s|client-id=quarkus-app|client-id=${kc_client_id}|g" \
+    -e "s|client-secret=lVGSvdaoDUem7lqeAnqXn1F92dCPbQea|client-secret=${kc_client_secret}|g" \
+    -e "s|http://sample-server-service.rhdh-operator|${sample_server_url}|g")
+
+  # Ensure quarkus.tls.trust-all=true is present (defensive)
+  if ! echo "${MODIFIED_PROPS}" | grep -q 'quarkus.tls.trust-all=true'; then
+    MODIFIED_PROPS=$(echo "${MODIFIED_PROPS}" | sed 's|kie.flyway.enabled=true|kie.flyway.enabled=true\n    quarkus.tls.trust-all=true|')
+  fi
+
+  yq eval -i '.data."application.properties" = strenv(MODIFIED_PROPS)' "${props_cm}"
+  unset MODIFIED_PROPS
+
+  # Specs ConfigMap: substitute Keycloak token URL
+  export MODIFIED_SPECS
+  MODIFIED_SPECS=$(yq eval '.data."sample-server.yaml"' "${specs_cm}" | sed \
+    -e "s|http://example-kc-service.keycloak:8080/realms/quarkus/protocol/openid-connect/token|${kc_token_url}|g")
+  yq eval -i '.data."sample-server.yaml" = strenv(MODIFIED_SPECS)' "${specs_cm}"
+  unset MODIFIED_SPECS
+
+  # SonataFlow CR: set image, strip persistence and status
+  yq eval -i '.spec.podTemplate.container.image = "'"${ORCHESTRATOR_TOKEN_PROPAGATION_IMAGE}"'"' "${sf_cr}"
+  yq eval -i 'del(.spec.persistence)' "${sf_cr}"
+  yq eval -i 'del(.status)' "${sf_cr}"
+
   return 0
 }
 
@@ -164,6 +252,7 @@ _orchestrator::wait_for_sonataflow_reconciliation() {
 #   $6 - svc_name: PostgreSQL service name
 #   $7 - svc_namespace: PostgreSQL service namespace
 #   $8 - database_name: Database name (optional)
+#   $9 - database_schema: Database schema (optional)
 _orchestrator::patch_workflow_postgres() {
   local namespace=$1
   local workflow=$2
@@ -173,34 +262,18 @@ _orchestrator::patch_workflow_postgres() {
   local svc_name=$6
   local svc_namespace=$7
   local database_name=${8:-}
+  local database_schema=${9:-}
 
-  local patch_json
+  local service_ref="{\"name\": \"$svc_name\", \"namespace\": \"$svc_namespace\""
   if [[ -n "$database_name" ]]; then
-    patch_json=$(
-      cat << EOF
-{
-  "spec": {
-    "persistence": {
-      "postgresql": {
-        "secretRef": {
-          "name": "$secret_name",
-          "userKey": "$user_key",
-          "passwordKey": "$password_key"
-        },
-        "serviceRef": {
-          "name": "$svc_name",
-          "namespace": "$svc_namespace",
-          "databaseName": "$database_name"
-        }
-      }
-    }
-  }
-}
-EOF
-    )
-  else
-    patch_json="{\"spec\": { \"persistence\": { \"postgresql\": { \"secretRef\": {\"name\": \"$secret_name\",\"userKey\": \"$user_key\",\"passwordKey\": \"$password_key\"},\"serviceRef\": {\"name\": \"$svc_name\",\"namespace\": \"$svc_namespace\"}}}}}"
+    service_ref+=", \"databaseName\": \"$database_name\""
   fi
+  if [[ -n "$database_schema" ]]; then
+    service_ref+=", \"databaseSchema\": \"$database_schema\""
+  fi
+  service_ref+="}"
+
+  local patch_json="{\"spec\": {\"persistence\": {\"postgresql\": {\"secretRef\": {\"name\": \"$secret_name\", \"userKey\": \"$user_key\", \"passwordKey\": \"$password_key\"}, \"serviceRef\": $service_ref}}}}"
 
   oc -n "$namespace" patch sonataflow "$workflow" --type merge -p "$patch_json"
 
@@ -223,6 +296,137 @@ _orchestrator::wait_for_workflow_deployments() {
     k8s_wait::deployment "$namespace" "$workflow" 5
   done
   log::success "All workflow pods are now running!"
+  return 0
+}
+
+# Function: _orchestrator::deploy_sample_server
+# Description: Deploy the sample-server echo server for token propagation testing
+# Arguments:
+#   $1 - namespace: Kubernetes namespace
+_orchestrator::deploy_sample_server() {
+  local namespace=$1
+
+  log::info "Deploying sample-server..."
+
+  oc apply -n "$namespace" -f - << 'EOF'
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sample-server
+  labels:
+    app: sample-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sample-server
+  template:
+    metadata:
+      labels:
+        app: sample-server
+    spec:
+      containers:
+        - name: sample-server
+          image: quay.io/orchestrator/sample-server:latest
+          ports:
+            - containerPort: 8080
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sample-server-service
+  labels:
+    app: sample-server
+spec:
+  selector:
+    app: sample-server
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+EOF
+
+  log::info "Waiting for sample-server to become available..."
+  if ! oc wait deployment/sample-server -n "$namespace" --for=condition=Available --timeout=120s; then
+    log::error "sample-server deployment did not become available within 120s"
+    return 1
+  fi
+  log::info "sample-server is running"
+  return 0
+}
+
+# Function: _orchestrator::deploy_token_propagation
+# Description: Deploy the token-propagation workflow by cloning manifests from
+#   orchestrator-demo, substituting placeholders, applying, and patching persistence.
+# Arguments:
+#   $1 - namespace: Kubernetes namespace
+#   $2 - psql_secret_name: PostgreSQL secret name
+#   $3 - psql_user_key: Key for username in secret
+#   $4 - psql_password_key: Key for password in secret
+#   $5 - psql_svc_name: PostgreSQL service name
+#   $6 - psql_svc_namespace: PostgreSQL service namespace
+#   $7 - psql_db_name: Database name (optional)
+_orchestrator::deploy_token_propagation() {
+  local namespace=$1
+  local psql_secret_name=$2
+  local psql_user_key=$3
+  local psql_password_key=$4
+  local psql_svc_name=$5
+  local psql_svc_namespace=$6
+  local psql_db_name=${7:-}
+
+  log::info "Deploying token-propagation workflow..."
+
+  # Decode base64-encoded Keycloak env vars
+  local kc_base_url kc_realm kc_client_id kc_client_secret
+  kc_base_url=$(printf '%s' "${KEYCLOAK_AUTH_BASE_URL}" | base64 -d)
+  kc_realm=$(printf '%s' "${KEYCLOAK_AUTH_REALM}" | base64 -d)
+  kc_client_id=$(printf '%s' "${KEYCLOAK_AUTH_CLIENTID}" | base64 -d)
+  kc_client_secret=$(printf '%s' "${KEYCLOAK_AUTH_CLIENT_SECRET}" | base64 -d)
+
+  if [[ -z "$kc_base_url" || -z "$kc_realm" || -z "$kc_client_id" || -z "$kc_client_secret" ]]; then
+    log::error "Failed to decode Keycloak credentials -- check that KEYCLOAK_AUTH_* env vars are set and base64-encoded"
+    return 1
+  fi
+
+  local kc_auth_server_url="${kc_base_url}/auth/realms/${kc_realm}"
+  local kc_token_url="${kc_auth_server_url}/protocol/openid-connect/token"
+
+  log::info "Keycloak auth-server-url: ${kc_auth_server_url}"
+
+  # Clone orchestrator-demo repo
+  _orchestrator::clone_demo_workflows
+
+  # Substitute manifest placeholders
+  _orchestrator::prepare_token_propagation_manifests \
+    "$namespace" "$kc_auth_server_url" "$kc_client_id" "$kc_client_secret" "$kc_token_url"
+
+  # Deploy sample-server echo service
+  _orchestrator::deploy_sample_server "$namespace" || return 1
+
+  # Apply modified manifests
+  oc apply -n "$namespace" -f "${TOKEN_PROPAGATION_MANIFESTS}"
+
+  # Patch persistence (reuse existing function)
+  _orchestrator::patch_workflow_postgres "$namespace" "token-propagation" \
+    "$psql_secret_name" "$psql_user_key" "$psql_password_key" \
+    "$psql_svc_name" "$psql_svc_namespace" "$psql_db_name" "token-propagation"
+
+  # Clean up cloned repo
+  rm -rf "${DEMO_WORKFLOW_DIR}"
+
   return 0
 }
 
@@ -303,6 +507,14 @@ orchestrator::deploy_workflows() {
   done
 
   _orchestrator::wait_for_workflow_deployments "$namespace"
+
+  # Deploy token-propagation workflow in non-RBAC namespace only
+  if [[ "$namespace" != "${NAME_SPACE_RBAC}" ]]; then
+    _orchestrator::deploy_token_propagation "$namespace" \
+      "$pqsl_secret_name" "$pqsl_user_key" "$pqsl_password_key" \
+      "$pqsl_svc_name" "$patch_namespace" || return 1
+  fi
+
   return 0
 }
 

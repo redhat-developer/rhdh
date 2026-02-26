@@ -1,4 +1,4 @@
-# Copyright 2024 The Janus IDP Authors
+# Copyright Red Hat, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,16 +26,19 @@ runs:
   steps:
     - name: Get the last commit short SHA
       shell: bash
+      env:
+        PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        PR_NUMBER: ${{ github.event.number }}
       run: |
-        if [[ -n "${{ github.event.pull_request.head.sha }}" ]]; then
-          # running on a PR
-          REF="${{ github.event.pull_request.head.sha }}"
-          REPO="${{ github.repository }}/pull/${{ github.event.number }}"
+        if [[ -n "$PR_HEAD_SHA" ]]; then
+          # running on a PR
+          REF="$PR_HEAD_SHA"
+          REPO="${GITHUB_REPOSITORY}/pull/${PR_NUMBER}"
         else
           # running on a main branch
           # todo: handle other branches than main
           REF="HEAD"
-          REPO="${{ github.repository }}"
+          REPO="$GITHUB_REPOSITORY"
         fi
         SHORT_SHA=$(git rev-parse --short=8 $REF)
         echo "SHORT_SHA=$SHORT_SHA" >> $GITHUB_ENV

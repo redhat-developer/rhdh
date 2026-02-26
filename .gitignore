@@ -87,3 +87,7 @@ e2e-tests/test-results/
 **/__pycache__/
 **/.pytest_cache/
 **/.venv/
+
+# Hermeto Cache
+hermeto-cache/
+build/containerfiles/Containerfile.hermeto

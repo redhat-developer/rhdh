@@ -489,7 +489,7 @@ brew install gnu-sed
 - [Cluster Login Script](.ibm/pipelines/ocp-cluster-claim-login.sh)
 - [Test Reporting Script](.ibm/pipelines/reporting.sh)
 - [Environment Variables](.ibm/pipelines/env_variables.sh)
-- [Dynamic Plugin Installer](docker/install-dynamic-plugins.py)
+- [Dynamic Plugin Installer](scripts/install-dynamic-plugins/install-dynamic-plugins.py)
 
 ## Test Configuration Files (Config Maps)
 

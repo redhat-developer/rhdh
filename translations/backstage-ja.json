@@ -587,7 +587,7 @@
       "indexPage.title": "{{orgName}} のカタログ",
       "indexPage.createButtonTitle": "セルフサービス",
       "indexPage.supportButtonContent": "すべてのソフトウェアカタログエンティティー",
-      "aboutCard.title": "概要",
+      "aboutCard.title": "詳細情報",
       "aboutCard.refreshButtonTitle": "エンティティー更新のスケジューリング",
       "aboutCard.editButtonTitle": "メタデータの編集",
       "aboutCard.createSimilarButtonTitle": "似たものを作成",
