@@ -15,14 +15,15 @@
  */
 
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
-
 import { rhdhTranslationRef } from './ref';
 
-export default createTranslationMessages({
+/**
+ * de translation for rhdh.
+ * @public
+ */
+const rhdhTranslationDe = createTranslationMessages({
   ref: rhdhTranslationRef,
-  full: true, // False means that this is a partial translation
   messages: {
-    // Default main menu items from consts.ts
     'menuItem.home': 'Startseite',
     'menuItem.myGroup_one': 'Meine Gruppe',
     'menuItem.myGroup_other': 'Meine Gruppen',
@@ -33,40 +34,18 @@ export default createTranslationMessages({
     'menuItem.userSettings': 'Benutzereinstellungen',
     'menuItem.administration': 'Administration',
     'menuItem.extensions': 'Erweiterungen',
-
-    // dynamic-plugins.default.main-menu-items
     'menuItem.clusters': 'Cluster',
     'menuItem.rbac': 'RBAC',
     'menuItem.bulkImport': 'Massenimport',
-    'menuItem.docs': 'Dokumentation',
+    'menuItem.docs': 'Dokumente',
     'menuItem.lighthouse': 'Lighthouse',
-    'menuItem.techRadar': 'Tech-Radar',
+    'menuItem.techRadar': 'Tech Radar',
     'menuItem.orchestrator': 'Orchestrator',
-    'menuItem.adoptionInsights': 'Einführungseinblicke',
-
-    'catalog.entityPage.overview.title': 'Übersicht',
-    'catalog.entityPage.topology.title': 'Topologie',
-    'catalog.entityPage.issues.title': 'Issues',
-    'catalog.entityPage.pullRequests.title': 'Pull/Merge Requests',
-    'catalog.entityPage.ci.title': 'CI',
-    'catalog.entityPage.cd.title': 'CD',
-    'catalog.entityPage.kubernetes.title': 'Kubernetes',
-    'catalog.entityPage.imageRegistry.title': 'Image Registry',
-    'catalog.entityPage.monitoring.title': 'Überwachung',
-    'catalog.entityPage.lighthouse.title': 'Lighthouse',
-    'catalog.entityPage.api.title': 'API',
-    'catalog.entityPage.dependencies.title': 'Abhängigkeiten',
-    'catalog.entityPage.docs.title': 'Dokumentation',
-    'catalog.entityPage.definition.title': 'Definition',
-    'catalog.entityPage.diagram.title': 'Systemdiagramm',
-    'catalog.entityPage.workflows.title': 'Workflows',
-
+    'menuItem.adoptionInsights': 'Adoption Insights',
     'sidebar.menu': 'Menü',
     'sidebar.home': 'Startseite',
-    'sidebar.homeLogo': 'Startseite-Logo',
-
-    // SignIn page translations
-    'signIn.page.title': 'Anmeldeverfahren auswählen',
+    'sidebar.homeLogo': 'Startseitenlogo',
+    'signIn.page.title': 'Wählen Sie eine Anmeldemethode aus',
     'signIn.providers.auth0.title': 'Auth0',
     'signIn.providers.auth0.message': 'Mit Auth0 anmelden',
     'signIn.providers.atlassian.title': 'Atlassian',
@@ -91,32 +70,44 @@ export default createTranslationMessages({
     'signIn.providers.onelogin.message': 'Mit OneLogin anmelden',
     'signIn.providers.saml.title': 'SAML',
     'signIn.providers.saml.message': 'Mit SAML anmelden',
-
-    // App translations
+    'catalog.entityPage.overview.title': 'Übersicht',
+    'catalog.entityPage.topology.title': 'Topologie',
+    'catalog.entityPage.issues.title': 'Probleme',
+    'catalog.entityPage.pullRequests.title': 'Pull-/Merge-Anforderungen',
+    'catalog.entityPage.ci.title': 'CI',
+    'catalog.entityPage.cd.title': 'CD',
+    'catalog.entityPage.kubernetes.title': 'Kubernetes',
+    'catalog.entityPage.imageRegistry.title': 'Image-Registry',
+    'catalog.entityPage.monitoring.title': 'Monitoring',
+    'catalog.entityPage.lighthouse.title': 'Lighthouse',
+    'catalog.entityPage.api.title': 'API',
+    'catalog.entityPage.dependencies.title': 'Abhängigkeiten',
+    'catalog.entityPage.docs.title': 'Dokumente',
+    'catalog.entityPage.definition.title': 'Definition',
+    'catalog.entityPage.diagram.title': 'Systemdiagramm',
+    'catalog.entityPage.workflows.title': 'Workflows',
     'app.search.title': 'Suchen',
     'app.search.resultType': 'Ergebnistyp',
-    'app.search.softwareCatalog': 'Software-Katalog',
+    'app.search.softwareCatalog': 'Softwarekatalog',
     'app.search.filters.kind': 'Art',
-    'app.search.filters.lifecycle': 'Lebenszyklus',
+    'app.search.filters.lifecycle': 'Lifecycle',
     'app.search.filters.component': 'Komponente',
-    'app.search.filters.template': 'Vorlage',
-    'app.search.filters.experimental': 'experimentell',
-    'app.search.filters.production': 'produktionsreif',
+    'app.search.filters.template': 'Template',
+    'app.search.filters.experimental': 'Experimentell',
+    'app.search.filters.production': 'Produktion',
     'app.learningPaths.title': 'Lernpfade',
     'app.learningPaths.error.title': 'Daten konnten nicht abgerufen werden.',
     'app.learningPaths.error.unknownError': 'Unbekannter Fehler',
     'app.userSettings.infoCard.title': 'RHDH-Metadaten',
-    'app.userSettings.infoCard.metadataCopied':
-      'Metadaten in die Zwischenablage kopiert',
-    'app.userSettings.infoCard.copyMetadata':
-      'Metadaten in die Zwischenablage kopieren',
+    'app.userSettings.infoCard.metadataCopied': 'Metadaten in die Zwischenablage kopiert',
+    'app.userSettings.infoCard.copyMetadata': 'Metadaten in die Zwischenablage kopieren',
     'app.userSettings.infoCard.showLess': 'Weniger anzeigen',
     'app.userSettings.infoCard.showMore': 'Mehr anzeigen',
     'app.errors.contactSupport': 'Support kontaktieren',
     'app.errors.goBack': 'Zurück',
-    'app.errors.notFound.message': 'Diese Seite konnten wir nicht finden',
-    'app.errors.notFound.additionalInfo':
-      'Die gesuchte Seite wurde möglicherweise entfernt, umbenannt oder ist vorübergehend nicht verfügbar.',
-    'app.table.createdAt': 'Erstellt am',
+    'app.errors.notFound.message': 'Wir konnten diese Seite nicht finden.',
+    'app.errors.notFound.additionalInfo': 'Die gesuchte Seite wurde möglicherweise entfernt, umbenannt oder ist vorübergehend nicht verfügbar.',
   },
 });
+
+export default rhdhTranslationDe;

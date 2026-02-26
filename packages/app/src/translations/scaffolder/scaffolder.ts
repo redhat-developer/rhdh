@@ -5,6 +5,8 @@ export const scaffolderTranslations = createTranslationResource({
   ref: scaffolderTranslationRef,
   translations: {
     en: () => import('./scaffolder-en'),
+    de: () => import('./de'),
+    es: () => import('./es'),
     fr: () => import('./fr'),
     it: () => import('./it'),
     ja: () => import('./ja'),

@@ -15,18 +15,19 @@
  */
 
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
-import { searchTranslationRef } from '@backstage/plugin-search/alpha';
+import { catalogImportTranslationRef } from '@backstage/plugin-catalog-import/alpha';
 
 /**
- * de translation for search.
+ * es translation for catalog-import.
  * @public
  */
-const de = createTranslationMessages({
-  ref: searchTranslationRef,
+const es = createTranslationMessages({
+  ref: catalogImportTranslationRef,
   full: false,
   messages: {
-    'sidebarSearchModal.title': 'Suchen',
+    'defaultImportPage.headerTitle': 'Importar un repositorio Git existente',
+    'importInfoCard.title': 'Importar un repositorio Git existente',
   },
 });
 
-export default de;
+export default es;

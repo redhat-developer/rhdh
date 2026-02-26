@@ -1,5 +1,5 @@
 /*
- * Copyright Red Hat, Inc.
+ * Copyright 2024 The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,18 +15,12 @@
  */
 
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
-import { searchTranslationRef } from '@backstage/plugin-search/alpha';
+import { catalogTranslationRef } from '@backstage/plugin-catalog/alpha';
 
-/**
- * de translation for search.
- * @public
- */
-const de = createTranslationMessages({
-  ref: searchTranslationRef,
+export default createTranslationMessages({
+  ref: catalogTranslationRef,
   full: false,
   messages: {
-    'sidebarSearchModal.title': 'Suchen',
+    'indexPage.createButtonTitle': 'Self-Service',
   },
 });
-
-export default de;
