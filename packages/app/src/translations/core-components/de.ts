@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 import { coreComponentsTranslationRef } from '@backstage/core-components/alpha';
+import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 
 /**
  * de translation for core-components.
@@ -26,7 +26,8 @@ const de = createTranslationMessages({
   full: false,
   messages: {
     'table.filter.placeholder': 'Alle Ergebnisse',
-    'table.body.emptyDataSourceMessage': 'Keine Datensätze zum Anzeigen vorhanden',
+    'table.body.emptyDataSourceMessage':
+      'Keine Datensätze zum Anzeigen vorhanden',
     'table.pagination.firstTooltip': 'Erste Seite',
     'table.pagination.labelDisplayedRows': '{von}-{bis} von {Anzahl}',
     'table.pagination.labelRowsSelect': 'Zeilen',

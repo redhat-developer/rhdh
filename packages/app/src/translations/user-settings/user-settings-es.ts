@@ -25,7 +25,7 @@ const es = createTranslationMessages({
   ref: userSettingsTranslationRef,
   full: false,
   messages: {
-    'sidebarTitle': 'Configuración',
+    sidebarTitle: 'Configuración',
   },
 });
 
