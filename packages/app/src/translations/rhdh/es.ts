@@ -15,6 +15,7 @@
  */
 
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
+
 import { rhdhTranslationRef } from './ref';
 
 /**
@@ -55,7 +56,8 @@ const rhdhTranslationEs = createTranslationMessages({
     'signIn.providers.bitbucket.title': 'Bitbucket',
     'signIn.providers.bitbucket.message': 'Iniciar sesión con Bitbucket',
     'signIn.providers.bitbucketServer.title': 'Servidor de Bitbucket',
-    'signIn.providers.bitbucketServer.message': 'Iniciar sesión con el servidor de Bitbucket',
+    'signIn.providers.bitbucketServer.message':
+      'Iniciar sesión con el servidor de Bitbucket',
     'signIn.providers.github.title': 'GitHub',
     'signIn.providers.github.message': 'Iniciar sesión con GitHub',
     'signIn.providers.gitlab.title': 'GitLab',
@@ -99,14 +101,17 @@ const rhdhTranslationEs = createTranslationMessages({
     'app.learningPaths.error.title': 'No se pudieron extraer los datos.',
     'app.learningPaths.error.unknownError': 'Error desconocido',
     'app.userSettings.infoCard.title': 'Metadatos de RHDH',
-    'app.userSettings.infoCard.metadataCopied': 'Metadatos copiados en el portapapeles',
-    'app.userSettings.infoCard.copyMetadata': 'Copiar metadatos al portapapeles',
+    'app.userSettings.infoCard.metadataCopied':
+      'Metadatos copiados en el portapapeles',
+    'app.userSettings.infoCard.copyMetadata':
+      'Copiar metadatos al portapapeles',
     'app.userSettings.infoCard.showLess': 'Mostrar menos',
     'app.userSettings.infoCard.showMore': 'Mostrar más',
     'app.errors.contactSupport': 'Comuníquese con Soporte',
     'app.errors.goBack': 'Volver',
     'app.errors.notFound.message': 'No pudimos encontrar esa página',
-    'app.errors.notFound.additionalInfo': 'Es posible que la página que busca se haya eliminado, haya cambiado de nombre o no esté disponible temporalmente.',
+    'app.errors.notFound.additionalInfo':
+      'Es posible que la página que busca se haya eliminado, haya cambiado de nombre o no esté disponible temporalmente.',
   },
 });
 

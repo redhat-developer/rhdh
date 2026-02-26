@@ -15,6 +15,7 @@
  */
 
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
+
 import { rhdhTranslationRef } from './ref';
 
 /**
@@ -99,14 +100,17 @@ const rhdhTranslationDe = createTranslationMessages({
     'app.learningPaths.error.title': 'Daten konnten nicht abgerufen werden.',
     'app.learningPaths.error.unknownError': 'Unbekannter Fehler',
     'app.userSettings.infoCard.title': 'RHDH-Metadaten',
-    'app.userSettings.infoCard.metadataCopied': 'Metadaten in die Zwischenablage kopiert',
-    'app.userSettings.infoCard.copyMetadata': 'Metadaten in die Zwischenablage kopieren',
+    'app.userSettings.infoCard.metadataCopied':
+      'Metadaten in die Zwischenablage kopiert',
+    'app.userSettings.infoCard.copyMetadata':
+      'Metadaten in die Zwischenablage kopieren',
     'app.userSettings.infoCard.showLess': 'Weniger anzeigen',
     'app.userSettings.infoCard.showMore': 'Mehr anzeigen',
     'app.errors.contactSupport': 'Support kontaktieren',
     'app.errors.goBack': 'Zurück',
     'app.errors.notFound.message': 'Wir konnten diese Seite nicht finden.',
-    'app.errors.notFound.additionalInfo': 'Die gesuchte Seite wurde möglicherweise entfernt, umbenannt oder ist vorübergehend nicht verfügbar.',
+    'app.errors.notFound.additionalInfo':
+      'Die gesuchte Seite wurde möglicherweise entfernt, umbenannt oder ist vorübergehend nicht verfügbar.',
   },
 });
 
