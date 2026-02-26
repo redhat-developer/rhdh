@@ -13,14 +13,21 @@
   },
   "license": "Apache-2.0",
   "files": [
-    "dist"
+    "dist",
+    "config.d.ts"
   ],
+  "configSchema": "config.d.ts",
   "scripts": {
     "build": "EXPERIMENTAL_MODULE_FEDERATION=true backstage-cli package build",
     "clean": "backstage-cli package clean",
     "lint": "backstage-cli package lint",
     "start": "backstage-cli package start --config ../../app-config.yaml",
-    "test": "backstage-cli package test"
+    "test": "backstage-cli package test",
+    "lint:check": "backstage-cli package lint",
+    "lint:fix": "backstage-cli package lint --fix",
+    "tsc": "tsc",
+    "prettier:check": "prettier --ignore-unknown --check .",
+    "prettier:fix": "prettier --ignore-unknown --write ."
   },
   "browserslist": {
     "production": [
@@ -89,6 +96,8 @@
     "@types/react": "18.3.28",
     "@types/react-dom": "18.3.7",
     "@types/zen-observable": "0.8.7",
-    "cross-env": "7.0.3"
+    "cross-env": "7.0.3",
+    "prettier": "3.8.1",
+    "typescript": "5.9.3"
   }
 }
