@@ -3077,20 +3077,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-scaffolder-backend-module-servicenow@npm:2.11.0":
-  version: 2.11.0
-  resolution: "@backstage-community/plugin-scaffolder-backend-module-servicenow@npm:2.11.0"
-  dependencies:
-    "@backstage/backend-plugin-api": "npm:^1.5.0"
-    "@backstage/plugin-scaffolder-node": "npm:^0.12.1"
-    abort-controller: "npm:^3.0.0"
-    axios: "npm:^1.7.4"
-    form-data: "npm:^4.0.0"
-    yaml: "npm:^2.3.3"
-  checksum: 10c0/77efd2069ac23d8c74a4788a98596eea12084af005f46b7a92d03b5a78f2286025e8c5926cc4f80691e0977896f9066c595b6845cda550960ec83ac7c9eb901b
-  languageName: node
-  linkType: hard
-
 "@backstage-community/plugin-tech-radar-backend@npm:1.12.0":
   version: 1.12.0
   resolution: "@backstage-community/plugin-tech-radar-backend@npm:1.12.0"
@@ -16863,17 +16849,6 @@ __metadata:
   resolution: "backstage-community-plugin-scaffolder-backend-module-regex@workspace:wrappers/backstage-community-plugin-scaffolder-backend-module-regex-dynamic"
   dependencies:
     "@backstage-community/plugin-scaffolder-backend-module-regex": "npm:2.11.0"
-    "@backstage/cli": "npm:0.34.5"
-    "@janus-idp/cli": "npm:3.7.0"
-    typescript: "npm:5.9.3"
-  languageName: unknown
-  linkType: soft
-
-"backstage-community-plugin-scaffolder-backend-module-servicenow@workspace:wrappers/backstage-community-plugin-scaffolder-backend-module-servicenow-dynamic":
-  version: 0.0.0-use.local
-  resolution: "backstage-community-plugin-scaffolder-backend-module-servicenow@workspace:wrappers/backstage-community-plugin-scaffolder-backend-module-servicenow-dynamic"
-  dependencies:
-    "@backstage-community/plugin-scaffolder-backend-module-servicenow": "npm:2.11.0"
     "@backstage/cli": "npm:0.34.5"
     "@janus-idp/cli": "npm:3.7.0"
     typescript: "npm:5.9.3"

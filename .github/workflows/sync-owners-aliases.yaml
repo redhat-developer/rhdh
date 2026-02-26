@@ -13,18 +13,22 @@ jobs:
   generate:
     name: Generate OWNERS_ALIASES
     runs-on: ubuntu-latest
-    env:
-      # This token is used to fetch the members of the GitHub teams
-      # It is a Personal Access Token with the `read:org` scope
-      OWNERS_GITHUB_TOKEN: ${{ secrets.OWNERS_GITHUB_TOKEN }}
     steps:
+      - name: Generate GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.RHDH_GITHUB_APP_ID }}
+          private-key: ${{ secrets.RHDH_GITHUB_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Generate OWNERS_ALIASES from GitHub Teams
         run: node scripts/generate-owners-aliases.mjs
         env:
-          GITHUB_TOKEN: ${{ env.OWNERS_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
       - name: Configure Git
         run: |
             git config --global user.name "rhdh-bot"
@@ -32,7 +36,7 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676 # v7
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}
           commit-message: |
             chore: sync OWNERS_ALIASES with GitHub teams
           branch: chore/sync-owners-aliases

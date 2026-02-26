@@ -131,7 +131,6 @@ global:
                   organization: janus-qe
                   catalogPath: "/catalog-info.yaml"
                   schedule:
-                    # Let's perform a single execution per test run
                     frequency:
                       hours: 24
                     timeout:
@@ -148,9 +147,10 @@ global:
                 githubUrl: ${GITHUB_URL}
                 orgs:
                   - ${GITHUB_ORG}
+                  - ${GITHUB_ORG_2}
                 schedule:
                   frequency:
-                    minutes: 60
+                    hours: 24
                   initialDelay:
                     seconds: 15
                   timeout:

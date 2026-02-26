@@ -125,21 +125,6 @@ global:
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-dynamic
         disabled: false
-        pluginConfig:
-          catalog:
-            providers:
-              github:
-                my-test-org:
-                  organization: janus-qe
-                  catalogPath: "/catalog-info.yaml"
-                  schedule:
-                    # Let's perform a single execution per test run
-                    frequency:
-                      hours: 24
-                    timeout:
-                      minutes: 1
-                    initialDelay:
-                      seconds: 15
       - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-application-provider-test:bs_1.45.3__0.6.0!red-hat-developer-hub-backstage-plugin-application-provider-test
         pluginConfig:
           dynamicPlugins:
@@ -171,9 +156,10 @@ global:
                 githubUrl: ${GITHUB_URL}
                 orgs:
                   - ${GITHUB_ORG}
+                  - ${GITHUB_ORG_2}
                 schedule:
                   frequency:
-                    minutes: 60
+                    hours: 24
                   initialDelay:
                     seconds: 15
                   timeout:
