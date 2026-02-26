@@ -520,7 +520,7 @@ export class UIhelper {
 
   async verifyHeading(heading: string | RegExp, timeout: number = 20000) {
     const headingLocator = this.page
-      .locator("h1, h2, h3, h4, h5, h6")
+      .getByRole("heading")
       .filter({ hasText: heading })
       .first();
 
