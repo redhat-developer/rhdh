@@ -671,7 +671,7 @@ class OciDownloader:
             local_dir = os.path.join(self.tmp_dir, image_digest)
             # replace oci:// prefix with docker://
             image_url = resolved_image.replace(OCI_PROTOCOL_PREFIX, DOCKER_PROTOCOL_PREFIX)
-            self.skopeo(['copy', image_url, f'dir:{local_dir}'])
+            self.skopeo(['copy', '--override-arch=amd64', image_url, f'dir:{local_dir}'])
             manifest_path = os.path.join(local_dir, 'manifest.json')
             manifest = json.load(open(manifest_path))
             # get the first layer of the image
@@ -1091,7 +1091,7 @@ def extract_catalog_index(catalog_index_image: str, catalog_index_mount: str, ca
 
         # Download the OCI image using skopeo
         run_command(
-            [skopeo_path, 'copy', image_url, f'dir:{local_dir}'],
+            [skopeo_path, 'copy', '--override-arch=amd64', image_url, f'dir:{local_dir}'],
             f"Failed to download catalog index image {resolved_image}"
         )
 
