@@ -10,7 +10,7 @@
   },
   "backstage": {
     "role": "backend-plugin-module",
-    "supported-versions": "1.48.2",
+    "supported-versions": "1.48.3",
     "pluginId": "catalog",
     "pluginPackage": "@backstage/plugin-catalog-backend"
   },
