@@ -42,7 +42,7 @@
   "devDependencies": {
     "@backstage/cli": "0.34.5",
     "@backstage/frontend-test-utils": "0.4.1",
-    "@ianvs/prettier-plugin-sort-imports": "4.7.0",
+    "@ianvs/prettier-plugin-sort-imports": "4.7.1",
     "@jest/environment-jsdom-abstract": "30.2.0",
     "@manypkg/cli": "0.25.1",
     "@types/jest": "30.0.0",
@@ -55,7 +55,7 @@
     "node-gyp": "10.3.1",
     "rulesync": "3.34.0",
     "sherif": "1.10.0",
-    "turbo": "2.7.6"
+    "turbo": "2.8.10"
   },
   "resolutions": {
     "@types/react": "18.3.28",
