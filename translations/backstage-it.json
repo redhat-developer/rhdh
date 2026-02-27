@@ -611,7 +611,7 @@
       "aboutCard.tagsField.value": "Nessun tag",
       "aboutCard.targetsField.label": "Obiettivi",
       "searchResultItem.lifecycle": "Ciclo di vita",
-      "searchResultItem.Owner": "Proprietario",
+      "searchResultItem.owner": "Proprietario",
       "catalogTable.warningPanelTitle": "Impossibile recuperare le entità del catalogo.",
       "catalogTable.viewActionTitle": "Visualizza",
       "catalogTable.editActionTitle": "Modifica",
