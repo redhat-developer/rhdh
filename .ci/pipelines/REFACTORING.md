@@ -273,8 +273,8 @@ upfront.
 
 **Files Modified**:
 
-- `.ci/pipelines/utils.sh` - `enable_orchestrator_plugins_op()` function (simplified from 100+
-  lines to ~20 lines)
+- `.ci/pipelines/utils.sh` - `enable_orchestrator_plugins_op()` function (simplified from 100+ lines
+  to ~20 lines)
 
 **Expected Result**: Function completes in seconds instead of timing out after 2.5 minutes.
 
