@@ -6,7 +6,7 @@ on:
       - main
       - 'release-1.*'
     paths:
-      - '.ibm/images/Dockerfile'
+      - '.ci/images/Dockerfile'
       - '.yarnrc.yml'
   workflow_dispatch:
     inputs:
@@ -76,7 +76,7 @@ jobs:
         uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5
         with:
           context: .
-          file: .ibm/images/Dockerfile
+          file: .ci/images/Dockerfile
           push: true
           tags: |
             ${{ env.REGISTRY }}/${{ env.REGISTRY_IMAGE }}:${{ env.IMAGE_TAG }}

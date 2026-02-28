@@ -18,15 +18,15 @@ const APP_CONFIG_DYNAMIC_PLUGINS_CONFIG_FILE = path.join(
 );
 const IBM_VALUES_SHOWCASE_CONFIG_FILE = path.join(
   ROOT_DIR,
-  ".ibm/pipelines/value_files/values_showcase.yaml",
+  ".ci/pipelines/value_files/values_showcase.yaml",
 );
 const IBM_VALUES_SHOWCASE_RBAC_CONFIG_FILE = path.join(
   ROOT_DIR,
-  ".ibm/pipelines/value_files/values_showcase-rbac.yaml",
+  ".ci/pipelines/value_files/values_showcase-rbac.yaml",
 );
 const IBM_VALUES_SHOWCASE_AUTH_PROVIDERS_CONFIG_FILE = path.join(
   ROOT_DIR,
-  ".ibm/pipelines/value_files/values_showcase-auth-providers.yaml",
+  ".ci/pipelines/value_files/values_showcase-auth-providers.yaml",
 );
 const RHDH_OPENSHIFT_SETUP_CONFIG_FILE = path.join(
   ROOT_DIR,
