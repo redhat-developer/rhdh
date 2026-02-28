@@ -5,9 +5,9 @@ __metadata:
   version: 8
   cacheKey: 10c0
 
-".ibm@workspace:.":
+".ci@workspace:.":
   version: 0.0.0-use.local
-  resolution: ".ibm@workspace:."
+  resolution: ".ci@workspace:."
   dependencies:
     prettier: "npm:3.8.1"
     prettier-plugin-sh: "npm:0.18.0"
