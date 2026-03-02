@@ -171,7 +171,7 @@ config::add_explicit_plugin_paths_osd_gcp() {
 
   # Get current ConfigMap content
   local current_yaml
-  current_yaml=$(oc get cm "${configmap_name}" -n "${namespace}" -o jsonpath='{.data.dynamic-plugins\.yaml}' 2>/dev/null)
+  current_yaml=$(oc get cm "${configmap_name}" -n "${namespace}" -o jsonpath='{.data.dynamic-plugins\.yaml}' 2> /dev/null)
 
   if [[ -z "$current_yaml" ]]; then
     log::warn "ConfigMap ${configmap_name} not found or has no dynamic-plugins.yaml data in namespace ${namespace}"
@@ -191,7 +191,7 @@ config::add_explicit_plugin_paths_osd_gcp() {
 
     # Check if plugin exists without explicit path
     local plugin_without_path
-    plugin_without_path=$(yq eval ".plugins[] | select(.package == \"${plugin_package}\")" "$temp_file" 2>/dev/null)
+    plugin_without_path=$(yq eval ".plugins[] | select(.package == \"${plugin_package}\")" "$temp_file" 2> /dev/null)
 
     if [[ -n "$plugin_without_path" ]]; then
       # Plugin exists without explicit path, update it to include the path
@@ -201,7 +201,7 @@ config::add_explicit_plugin_paths_osd_gcp() {
     else
       # Check if plugin exists with explicit path already
       local plugin_with_path
-      plugin_with_path=$(yq eval ".plugins[] | select(.package == \"${package_with_path}\")" "$temp_file" 2>/dev/null)
+      plugin_with_path=$(yq eval ".plugins[] | select(.package == \"${package_with_path}\")" "$temp_file" 2> /dev/null)
 
       if [[ -z "$plugin_with_path" ]]; then
         # Plugin doesn't exist at all, add it with explicit path (preserving disabled state if it was in catalog index)
