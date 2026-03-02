@@ -69,7 +69,7 @@ export const pluginIDProviderService = createServiceFactory({
 
 export const rbacDynamicPluginsProvider = createBackendModule({
   pluginId: 'permission',
-  moduleId: 'rbac.dynamic-plugin-ids',
+  moduleId: 'rbac-dynamic-plugin-ids',
   register(reg) {
     reg.registerInit({
       deps: {

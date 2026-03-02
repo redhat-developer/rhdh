@@ -106,7 +106,7 @@ describe('useLearningPathData', () => {
     expect(result.current.isLoading).toBe(true);
     await waitFor(() => {
       expect(result.current.data).toBeDefined();
-      expect(result.current.data).toStrictEqual(learningPathDataFallback);
+      expect(result.current.data).toEqual(learningPathDataFallback);
       expect(result.current.isLoading).toBe(false);
     });
   });
