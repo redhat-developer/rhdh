@@ -60,6 +60,10 @@ initiate_operator_deployments_osd_gcp() {
   common::save_artifact "${NAME_SPACE}" "/tmp/configmap-dynamic-plugins.yaml"
 
   oc apply -f /tmp/configmap-dynamic-plugins.yaml -n "${NAME_SPACE}"
+  # Add explicit plugin paths for ghcr.io plugins to avoid network calls during auto-detection
+  # Patch the ConfigMap before deploying the operator so the init container reads the patched version
+  config::add_explicit_plugin_paths_osd_gcp "${NAME_SPACE}" "dynamic-plugins"
+
   deploy_redis_cache "${NAME_SPACE}"
   deploy_rhdh_operator "${NAME_SPACE}" "${DIR}/resources/rhdh-operator/rhdh-start.yaml"
 
@@ -78,6 +82,10 @@ initiate_operator_deployments_osd_gcp() {
   common::save_artifact "${NAME_SPACE_RBAC}" "/tmp/configmap-dynamic-plugins-rbac.yaml"
 
   oc apply -f /tmp/configmap-dynamic-plugins-rbac.yaml -n "${NAME_SPACE_RBAC}"
+  # Add explicit plugin paths for ghcr.io plugins to avoid network calls during auto-detection
+  # Patch the ConfigMap before deploying the operator so the init container reads the patched version
+  config::add_explicit_plugin_paths_osd_gcp "${NAME_SPACE_RBAC}" "dynamic-plugins"
+
   deploy_rhdh_operator "${NAME_SPACE_RBAC}" "${DIR}/resources/rhdh-operator/rhdh-start-rbac.yaml"
 
   # Skip orchestrator plugins and workflows for OSD-GCP RBAC

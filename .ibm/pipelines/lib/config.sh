@@ -140,3 +140,90 @@ config::prepare_operator_app_config() {
   yq e -i '.permission.rbac.conditionalPoliciesFile = "./rbac/conditional-policies.yaml"' "${config_file}"
   return $?
 }
+
+# Add explicit plugin paths for ghcr.io plugins to avoid network calls during auto-detection
+# This is needed for OSD-GCP where ghcr.io is not accessible during init container execution
+# Args:
+#   $1 - namespace: Target namespace
+#   $2 - configmap_name: Name of the ConfigMap (default: dynamic-plugins)
+# Returns:
+#   0 - Success
+config::add_explicit_plugin_paths_osd_gcp() {
+  local namespace=$1
+  local configmap_name="${2:-dynamic-plugins}"
+
+  if [[ -z "$namespace" ]]; then
+    log::error "Missing required parameter: namespace"
+    log::info "Usage: config::add_explicit_plugin_paths_osd_gcp <namespace> [configmap_name]"
+    return 1
+  fi
+
+  log::info "Adding explicit plugin paths for ghcr.io plugins in ConfigMap ${configmap_name} (OSD-GCP cannot reach ghcr.io for auto-detection)"
+
+  # Map of plugin packages to their explicit plugin paths (to avoid network calls for auto-detection)
+  # Format: "package:version" -> "plugin-path"
+  declare -A plugin_paths=(
+    ["oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-scaffolder-backend-module-quay:bs_1.45.3__2.14.0"]="backstage-community-plugin-scaffolder-backend-module-quay"
+    ["oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-nexus-repository-manager:bs_1.45.3__1.19.4"]="backstage-community-plugin-nexus-repository-manager"
+    ["oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-jenkins-backend:bs_1.45.3__0.22.0"]="backstage-community-plugin-jenkins-backend"
+    ["oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-scaffolder-backend-module-bitbucket-cloud:bs_1.45.3__0.2.15"]="backstage-plugin-scaffolder-backend-module-bitbucket-cloud"
+  )
+
+  # Get current ConfigMap content
+  local current_yaml
+  current_yaml=$(oc get cm "${configmap_name}" -n "${namespace}" -o jsonpath='{.data.dynamic-plugins\.yaml}' 2>/dev/null)
+
+  if [[ -z "$current_yaml" ]]; then
+    log::warn "ConfigMap ${configmap_name} not found or has no dynamic-plugins.yaml data in namespace ${namespace}"
+    return 0
+  fi
+
+  # Create a temporary file with the current YAML
+  local temp_file
+  temp_file=$(mktemp)
+  echo "$current_yaml" > "$temp_file"
+
+  # Update each plugin to include explicit plugin path
+  local updated=false
+  for plugin_package in "${!plugin_paths[@]}"; do
+    local plugin_path="${plugin_paths[$plugin_package]}"
+    local package_with_path="${plugin_package}!${plugin_path}"
+
+    # Check if plugin exists without explicit path
+    local plugin_without_path
+    plugin_without_path=$(yq eval ".plugins[] | select(.package == \"${plugin_package}\")" "$temp_file" 2>/dev/null)
+
+    if [[ -n "$plugin_without_path" ]]; then
+      # Plugin exists without explicit path, update it to include the path
+      yq eval -i "(.plugins[] | select(.package == \"${plugin_package}\")).package = \"${package_with_path}\"" "$temp_file"
+      log::info "Added explicit plugin path for: ${plugin_package} -> ${plugin_path}"
+      updated=true
+    else
+      # Check if plugin exists with explicit path already
+      local plugin_with_path
+      plugin_with_path=$(yq eval ".plugins[] | select(.package == \"${package_with_path}\")" "$temp_file" 2>/dev/null)
+
+      if [[ -z "$plugin_with_path" ]]; then
+        # Plugin doesn't exist at all, add it with explicit path (preserving disabled state if it was in catalog index)
+        # We'll add it as enabled by default, but it might be overridden by catalog index entries
+        yq eval -i ".plugins += [{\"package\": \"${package_with_path}\"}]" "$temp_file"
+        log::info "Added plugin with explicit path: ${package_with_path}"
+        updated=true
+      fi
+    fi
+  done
+
+  if [[ "$updated" == "true" ]]; then
+    # Update the ConfigMap with the modified YAML
+    local updated_yaml
+    updated_yaml=$(cat "$temp_file")
+    oc patch cm "${configmap_name}" -n "${namespace}" --type merge \
+      -p "{\"data\":{\"dynamic-plugins.yaml\":$(echo "$updated_yaml" | jq -Rs .)}}"
+    log::success "Updated ConfigMap ${configmap_name} to include explicit plugin paths for ghcr.io plugins"
+  else
+    log::info "No updates needed for ConfigMap ${configmap_name}"
+  fi
+
+  rm -f "$temp_file"
+  return 0
+}
