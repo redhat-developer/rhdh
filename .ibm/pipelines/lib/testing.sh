@@ -95,8 +95,10 @@ testing::run_tests() {
   fi
 
   cp -a "${e2e_tests_dir}/screenshots/"* "${ARTIFACT_DIR}/${artifacts_subdir}/attachments/screenshots/" || true
-  ansi2html < "/tmp/${LOGFILE}" > "/tmp/${LOGFILE}.html"
-  cp -a "/tmp/${LOGFILE}.html" "${ARTIFACT_DIR}/${artifacts_subdir}" || true
+  if [[ -f "/tmp/${LOGFILE}" ]]; then
+    ansi2html < "/tmp/${LOGFILE}" > "/tmp/${LOGFILE}.html"
+    cp -a "/tmp/${LOGFILE}.html" "${ARTIFACT_DIR}/${artifacts_subdir}" || true
+  fi
   cp -a "${e2e_tests_dir}/playwright-report/"* "${ARTIFACT_DIR}/${artifacts_subdir}" || true
 
   echo "Playwright project '${playwright_project}' in namespace '${namespace}' (artifacts: ${artifacts_subdir}) RESULT: ${test_result}"
