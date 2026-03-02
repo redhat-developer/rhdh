@@ -9,7 +9,7 @@
   },
   "backstage": {
     "role": "backend-plugin-module",
-    "supported-versions": "1.48.2",
+    "supported-versions": "1.48.3",
     "pluginId": "notifications",
     "pluginPackage": "@backstage/plugin-notifications-backend"
   },

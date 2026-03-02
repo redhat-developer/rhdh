@@ -11,7 +11,7 @@
   },
   "backstage": {
     "role": "frontend-plugin-module",
-    "supported-versions": "1.48.2",
+    "supported-versions": "1.48.3",
     "pluginId": "techdocs",
     "pluginPackage": "backstage-plugin-techdocs"
   },
