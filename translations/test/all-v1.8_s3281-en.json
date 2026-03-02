@@ -762,7 +762,7 @@
       "aboutCard.tagsField.value": "No Tags",
       "aboutCard.targetsField.label": "Targets",
       "searchResultItem.lifecycle": "Lifecycle",
-      "searchResultItem.Owner": "Owner",
+      "searchResultItem.owner": "Owner",
       "catalogTable.warningPanelTitle": "Could not fetch catalog entities.",
       "catalogTable.viewActionTitle": "View",
       "catalogTable.editActionTitle": "Edit",
