@@ -18,3 +18,11 @@ global:
         disabled: true
       - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets:bs_1.45.3__1.2.0!red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets"
         disabled: true
+      # Disable ghcr.io plugins that require network access (OSD-GCP cannot reach ghcr.io)
+      # These plugins fail during auto-detection of plugin paths due to network timeouts
+      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-scaffolder-backend-module-quay:bs_1.45.3__2.14.0"
+        disabled: true
+      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-nexus-repository-manager:bs_1.45.3__1.19.4"
+        disabled: true
+      - package: "oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-jenkins-backend:bs_1.45.3__0.22.0"
+        disabled: true
