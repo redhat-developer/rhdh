@@ -199,14 +199,10 @@ testing::check_backstage_running() {
         log::error "Recent events:"
         oc get events -n "${namespace}" --sort-by='.lastTimestamp' | tail -20
         mkdir -p "${ARTIFACT_DIR}/${namespace}"
-<<<<<<< HEAD
-        cp -a "/tmp/${LOGFILE}" "${ARTIFACT_DIR}/${namespace}/" || true
-=======
         if [[ -f "/tmp/${LOGFILE}" ]]; then
           cp -a "/tmp/${LOGFILE}" "${ARTIFACT_DIR}/${namespace}/" || true
         fi
         save_all_pod_logs "${namespace}"
->>>>>>> 5aba6da7 (fix: test script to check if the file exists before copying and improve error logging)
         return 1
       fi
 
@@ -217,14 +213,10 @@ testing::check_backstage_running() {
   log::error "Failed to reach Backstage at ${url} after ${max_attempts} attempts."
   oc get events -n "${namespace}" --sort-by='.lastTimestamp' | tail -10
   mkdir -p "${ARTIFACT_DIR}/${namespace}"
-<<<<<<< HEAD
-  cp -a "/tmp/${LOGFILE}" "${ARTIFACT_DIR}/${namespace}/" || true
-=======
   if [[ -f "/tmp/${LOGFILE}" ]]; then
     cp -a "/tmp/${LOGFILE}" "${ARTIFACT_DIR}/${namespace}/" || true
   fi
   save_all_pod_logs "${namespace}"
->>>>>>> 5aba6da7 (fix: test script to check if the file exists before copying and improve error logging)
   return 1
 }
 
