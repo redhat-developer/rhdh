@@ -8,6 +8,9 @@
     ":automergeBranch",
     ":disableMajorUpdates"
   ],
+  "ignorePresets":[
+    ":maintainLockFilesWeekly"
+  ],
   "labels": [
     "kind/dependency upgrade"
   ],
