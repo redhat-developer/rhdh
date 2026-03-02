@@ -191,8 +191,8 @@ testing::check_backstage_running() {
             pod_name=$(echo "${pod_line}" | awk '{print $1}')
             if [[ -n "${pod_name}" ]]; then
               log::error "Logs for init container 'install-dynamic-plugins' in pod ${pod_name}:"
-              oc logs "${pod_name}" -n "${namespace}" -c install-dynamic-plugins --tail=100 2> /dev/null || \
-                log::warn "Could not retrieve init container logs for ${pod_name}"
+              oc logs "${pod_name}" -n "${namespace}" -c install-dynamic-plugins --tail=100 2> /dev/null \
+                || log::warn "Could not retrieve init container logs for ${pod_name}"
             fi
           fi
         done <<< "${crash_pods}"
