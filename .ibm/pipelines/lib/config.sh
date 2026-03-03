@@ -234,16 +234,16 @@ config::add_explicit_plugin_paths_osd_gcp() {
   # Extract all ghcr.io plugins from the ConfigMap and ensure they have explicit paths
   local all_ghcr_plugins
   all_ghcr_plugins=$(yq eval '.plugins[] | select(.package | startswith("oci://ghcr.io")) | .package' "$temp_file" 2> /dev/null || true)
-  
+
   if [[ -n "$all_ghcr_plugins" ]]; then
     while IFS= read -r plugin_package; do
       [[ -z "$plugin_package" ]] && continue
-      
+
       # Skip if already has explicit path (!)
       if [[ "$plugin_package" == *"!"* ]]; then
         continue
       fi
-      
+
       # Check if this plugin is already in our explicit list
       local found=false
       for known_package in "${!plugin_paths[@]}"; do
@@ -255,13 +255,13 @@ config::add_explicit_plugin_paths_osd_gcp() {
           break
         fi
       done
-      
+
       # If not in our list, infer the plugin path from the image name
       if [[ "$found" == "false" ]]; then
         local inferred_path
         inferred_path=$(extract_plugin_path "$plugin_package")
         local package_with_inferred_path="${plugin_package}!${inferred_path}"
-        
+
         # Update the plugin to include the inferred path
         yq eval -i "(.plugins[] | select(.package == \"${plugin_package}\")).package = \"${package_with_inferred_path}\"" "$temp_file"
         log::info "Added inferred plugin path for: ${plugin_package} -> ${inferred_path}"
