@@ -140,3 +140,50 @@ config::prepare_operator_app_config() {
   yq e -i '.permission.rbac.conditionalPoliciesFile = "./rbac/conditional-policies.yaml"' "${config_file}"
   return $?
 }
+
+# Merge two dynamic plugin config YAML files
+# Args:
+#   $1 - plugin_operation: "merge" to combine plugins, "overwrite" to replace
+#   $2 - base_file: Path to the base config file
+#   $3 - diff_file: Path to the differences file
+#   $4 - final_file: Output path for the merged file
+# Returns:
+#   0 - Success
+#   1 - Invalid operation specified
+config::merge_plugin_configs() {
+  local plugin_operation=$1
+  local base_file=$2
+  local diff_file=$3
+  local final_file=$4
+  local temp_file="$final_file.tmp"
+
+  if [[ -z "$plugin_operation" || -z "$base_file" || -z "$diff_file" || -z "$final_file" ]]; then
+    log::error "Missing required parameters"
+    log::info "Usage: helm::merge_values <operation> <base_file> <diff_file> <output_file>"
+    return 1
+  fi
+
+  if [[ "$plugin_operation" != "merge" && "$plugin_operation" != "overwrite" ]]; then
+    log::error "Invalid operation with plugins key: $plugin_operation (expected 'merge' or 'overwrite')"
+    return 1
+  fi
+
+  if [[ "$base_file" == "$final_file" ]]; then
+    rm -f "$temp_file"
+    mv "$final_file" "$temp_file"
+    base_file=$temp_file
+  fi
+
+  if [[ "$plugin_operation" == "merge" ]]; then
+    yq eval-all '
+      select(fileIndex == 0) *+ select(fileIndex == 1) |
+      .plugins |= (reverse | unique_by(.package) | reverse)
+    ' "${base_file}" "${diff_file}" > "${final_file}"
+  elif [[ "$plugin_operation" == "overwrite" ]]; then
+    yq eval-all '
+      select(fileIndex == 0) * select(fileIndex == 1)
+    ' "${base_file}" "${diff_file}" > "${final_file}"
+  fi
+
+  rm -f "$temp_file"
+} 

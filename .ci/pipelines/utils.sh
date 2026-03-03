@@ -267,6 +267,13 @@ apply_yaml_files() {
   common::create_configmap_from_file "dynamic-plugins-config" "$project" \
     "dynamic-plugins-config.yaml" "$dir/resources/config_map/dynamic-plugins-config.yaml"
 
+  local plugin_config="dynamic-plugins-showcase"
+  if [[ "${project}" == *rbac* ]]; then 
+    plugin_config="$plugin_config-rbac"
+  fi
+  common::create_configmap_from_file "$plugin_config" "$project" \
+    "dynamic-plugins.yaml" "$dir/resources/config_map/$plugin_config.yaml"
+
   if [[ "$JOB_NAME" == *operator* ]] && [[ "${project}" == *rbac* ]]; then
     common::create_configmap_from_files "rbac-policy" "$project" \
       "rbac-policy.csv=$dir/resources/config_map/rbac-policy.csv" \
@@ -583,6 +590,7 @@ base_deployment_osd_gcp() {
 
   cd "${DIR}"
   local rhdh_base_url="https://${RELEASE_NAME}-developer-hub-${NAME_SPACE}.${K8S_CLUSTER_ROUTER_BASE}"
+  config::merge_plugin_configs "merge" "${DIR}/resources/config_map/${SHOWCASE_DYNAMIC_PLUGINS_FILE_NAME}" "${DIR}/resources/config_map/${SHOWCASE_DYNAMIC_PLUGINS_OSD_GCP_DIFF_FILE_NAME}" "${DIR}/resources/config_map/${SHOWCASE_DYNAMIC_PLUGINS_FILE_NAME}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
 
   # Merge base values with OSD-GCP diff file
@@ -610,6 +618,7 @@ rbac_deployment_osd_gcp() {
 
   # Initiate rbac instance deployment.
   local rbac_rhdh_base_url="https://${RELEASE_NAME_RBAC}-developer-hub-${NAME_SPACE_RBAC}.${K8S_CLUSTER_ROUTER_BASE}"
+  config::merge_plugin_configs "merge" "${DIR}/resources/config_map/${SHOWCASE_RBAC_DYNAMIC_PLUGINS_FILE_NAME}" "${DIR}/resources/config_map/${SHOWCASE_RBAC_DYNAMIC_PLUGINS_OSD_GCP_DIFF_FILE_NAME}" "${DIR}/resources/config_map/${SHOWCASE_RBAC_DYNAMIC_PLUGINS_FILE_NAME}"
   apply_yaml_files "${DIR}" "${NAME_SPACE_RBAC}" "${rbac_rhdh_base_url}"
 
   # Merge RBAC values with OSD-GCP diff file
@@ -717,8 +726,8 @@ initiate_sanity_plugin_checks_deployment() {
   namespace::configure "${name_space_sanity_plugins_check}"
   helm::uninstall "${name_space_sanity_plugins_check}" "${release_name}"
   deploy_redis_cache "${name_space_sanity_plugins_check}"
+  config::merge_plugin_configs "overwrite" "${DIR}/resources/config_map/${SHOWCASE_DYNAMIC_PLUGINS_FILE_NAME}" "${DIR}/resources/config_map/${SHOWCASE_DYNAMIC_PLUGINS_SANITY_DIFF_FILE_NAME}" "${DIR}/resources/config_map/${SHOWCASE_DYNAMIC_PLUGINS_FILE_NAME}"
   apply_yaml_files "${DIR}" "${name_space_sanity_plugins_check}" "${sanity_plugins_url}"
-  helm::merge_values "overwrite" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "${DIR}/value_files/${HELM_CHART_SANITY_PLUGINS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}"
   mkdir -p "${ARTIFACT_DIR}/${name_space_sanity_plugins_check}"
   cp -a "/tmp/${HELM_CHART_SANITY_PLUGINS_MERGED_VALUE_FILE_NAME}" "${ARTIFACT_DIR}/${name_space_sanity_plugins_check}/" || true # Save the final value-file into the artifacts directory.
   # shellcheck disable=SC2046
