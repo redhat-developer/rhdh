@@ -393,7 +393,7 @@ check_operator_status() {
 # Installs the Crunchy Postgres Operator from Openshift Marketplace using predefined parameters
 # Use waitfor_crunchy_postgres_ocp_operator to wait for the operator to be ready
 install_crunchy_postgres_ocp_operator() {
-  install_subscription crunchy-postgres-operator openshift-operators v5 crunchy-postgres-operator certified-operators openshift-marketplace
+  install_subscription crunchy-postgres-operator openshift-operators v6 crunchy-postgres-operator certified-operators openshift-marketplace
 }
 
 waitfor_crunchy_postgres_ocp_operator() {
@@ -416,7 +416,7 @@ waitfor_crunchy_postgres_ocp_operator() {
 # Installs the Crunchy Postgres Operator from OperatorHub.io
 # Use waitfor_crunchy_postgres_k8s_operator to wait for the operator to be ready
 install_crunchy_postgres_k8s_operator() {
-  install_subscription crunchy-postgres-operator openshift-operators v5 crunchy-postgres-operator certified-operators openshift-marketplace
+  install_subscription crunchy-postgres-operator openshift-operators v6 crunchy-postgres-operator certified-operators openshift-marketplace
 }
 
 waitfor_crunchy_postgres_k8s_operator() {
