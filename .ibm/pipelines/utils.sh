@@ -944,7 +944,7 @@ delete_tekton_pipelines() {
 cluster_setup_ocp_helm() {
   # first install all operators to run the installation in parallel
   install_pipelines_operator
-  # install_crunchy_postgres_ocp_operator
+  install_crunchy_postgres_ocp_operator
 
   # Skip orchestrator infra installation on OSD-GCP due to infrastructure limitations
   if [[ ! "${JOB_NAME}" =~ osd-gcp ]]; then
@@ -955,19 +955,19 @@ cluster_setup_ocp_helm() {
 
   # then wait for the right status one by one
   waitfor_pipelines_operator
-  # waitfor_crunchy_postgres_ocp_operator
+  waitfor_crunchy_postgres_ocp_operator
 }
 
 cluster_setup_ocp_operator() {
   # first install all operators to run the installation in parallel
   install_pipelines_operator
-  # install_crunchy_postgres_ocp_operator
+  install_crunchy_postgres_ocp_operator
   install_serverless_ocp_operator
   install_serverless_logic_ocp_operator
 
   # then wait for the right status one by one
   waitfor_pipelines_operator
-  # waitfor_crunchy_postgres_ocp_operator
+  waitfor_crunchy_postgres_ocp_operator
   waitfor_serverless_ocp_operator
   waitfor_serverless_logic_ocp_operator
 }
@@ -1090,7 +1090,7 @@ rbac_deployment() {
 initiate_deployments() {
   cd "${DIR}"
   base_deployment
-  # rbac_deployment
+  rbac_deployment
 }
 
 # OSD-GCP specific deployment functions that merge diff files and skip orchestrator workflows
