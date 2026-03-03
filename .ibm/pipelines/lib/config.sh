@@ -302,26 +302,57 @@ config::add_explicit_plugin_paths_osd_gcp() {
     yq eval -i '.plugins = []' "$temp_file"
   fi
 
+  # Helper function to get base image path (without version/tag, with oci:// prefix)
+  get_base_image_path() {
+    local package="$1"
+    # Extract everything before : or @ (keeps oci:// prefix)
+    echo "${package}" | sed -E 's|^([^:@]+).*|\1|'
+  }
+
   for plugin_package in "${!plugin_paths[@]}"; do
     local plugin_path="${plugin_paths[$plugin_package]}"
     local package_with_path="${plugin_package}!${plugin_path}"
+    local base_image_path
+    base_image_path=$(get_base_image_path "${plugin_package}")
 
-    # Check if plugin exists without explicit path in the main plugins list
-    local plugin_without_path
-    plugin_without_path=$(yq eval ".plugins[] | select(.package == \"${plugin_package}\")" "$temp_file" 2> /dev/null)
+    # Check if plugin with exact package string exists
+    local exact_match
+    exact_match=$(yq eval ".plugins[] | select(.package == \"${plugin_package}\" or .package == \"${package_with_path}\")" "$temp_file" 2> /dev/null)
 
-    if [[ -n "$plugin_without_path" ]]; then
-      # Plugin exists without explicit path, update it to include the path
-      yq eval -i "(.plugins[] | select(.package == \"${plugin_package}\")).package = \"${package_with_path}\"" "$temp_file"
-      log::info "Added explicit plugin path for: ${plugin_package} -> ${plugin_path}"
-      updated=true
+    if [[ -n "$exact_match" ]]; then
+      # Exact match exists, ensure it has explicit path
+      local existing_package
+      existing_package=$(echo "$exact_match" | yq eval '.package' - 2> /dev/null || echo "")
+      if [[ "$existing_package" != *"!"* ]]; then
+        # Update to include explicit path
+        yq eval -i "(.plugins[] | select(.package == \"${plugin_package}\")).package = \"${package_with_path}\"" "$temp_file"
+        log::info "Added explicit plugin path for: ${plugin_package} -> ${plugin_path}"
+        updated=true
+      fi
     else
-      # Check if plugin exists with explicit path already in the main plugins list
-      local plugin_with_path
-      plugin_with_path=$(yq eval ".plugins[] | select(.package == \"${package_with_path}\")" "$temp_file" 2> /dev/null)
+      # Check if any plugin with the same base image exists (different version)
+      local base_match
+      base_match=$(yq eval ".plugins[] | select(.package | startswith(\"${base_image_path}\"))" "$temp_file" 2> /dev/null | head -n 1)
 
-      if [[ -z "$plugin_with_path" ]]; then
-        # Plugin doesn't exist in main plugins list - ALWAYS add it with explicit path
+      if [[ -n "$base_match" ]]; then
+        # Plugin with same base image exists, check if it needs explicit path
+        local existing_package
+        existing_package=$(echo "$base_match" | yq eval '.package' - 2> /dev/null || echo "")
+        if [[ -n "$existing_package" && "$existing_package" != *"!"* ]]; then
+          # Existing plugin doesn't have explicit path, add our version with explicit path
+          # (Don't remove the old one - having both ensures the one with explicit path is available)
+          yq eval -i ".plugins += [{\"package\": \"${package_with_path}\"}]" "$temp_file"
+          log::info "Added plugin with explicit path (base image already exists without path): ${package_with_path}"
+          updated=true
+        elif [[ -n "$existing_package" && "$existing_package" == *"!"* ]]; then
+          # Already has explicit path, but still add our known version to ensure it's available
+          # This ensures our known version with explicit path is present even if catalog index has different version
+          yq eval -i ".plugins += [{\"package\": \"${package_with_path}\"}]" "$temp_file"
+          log::info "Added plugin with explicit path (base image exists with path, adding known version): ${package_with_path}"
+          updated=true
+        fi
+      else
+        # No plugin with this base image exists - ALWAYS add it with explicit path
         # This is critical: we must add ALL ghcr.io plugins to the main plugins list
         # so they're available when the script processes includes, preventing auto-detection failures
         yq eval -i ".plugins += [{\"package\": \"${package_with_path}\"}]" "$temp_file"
