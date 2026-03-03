@@ -208,15 +208,15 @@ config::add_explicit_plugin_paths_osd_gcp() {
   trap "rm -rf ${catalog_index_temp_dir}" EXIT
 
   log::info "Extracting catalog index ${catalog_index_image} to find all ghcr.io plugins"
-  
+
   if command -v skopeo > /dev/null 2>&1 && command -v yq > /dev/null 2>&1; then
     local catalog_index_local_dir="${catalog_index_temp_dir}/catalog-index-oci"
     mkdir -p "${catalog_index_local_dir}"
-    
+
     # Try to extract the catalog index image (may fail if network is restricted, but that's okay)
     if skopeo copy --override-os=linux --override-arch=amd64 "docker://${catalog_index_image}" "dir:${catalog_index_local_dir}" > /dev/null 2>&1; then
       log::info "Successfully extracted catalog index image"
-      
+
       # Extract the dynamic-plugins.default.yaml file
       local manifest_path="${catalog_index_local_dir}/manifest.json"
       if [[ -f "$manifest_path" ]]; then
@@ -230,29 +230,29 @@ config::add_explicit_plugin_paths_osd_gcp() {
             local catalog_yaml_dir="${catalog_index_temp_dir}/catalog-yaml"
             mkdir -p "${catalog_yaml_dir}"
             tar -xf "${layer_file}" -C "${catalog_yaml_dir}" 2> /dev/null || true
-            
+
             local catalog_plugins_file="${catalog_yaml_dir}/dynamic-plugins.default.yaml"
             if [[ -f "$catalog_plugins_file" ]]; then
               log::info "Found catalog index plugins file, extracting ghcr.io plugins"
-              
+
               # Extract all ghcr.io plugins from the catalog index
               local catalog_ghcr_plugins
               catalog_ghcr_plugins=$(yq eval '.plugins[] | select(.package | startswith("oci://ghcr.io")) | .package' "$catalog_plugins_file" 2> /dev/null || true)
-              
+
               if [[ -n "$catalog_ghcr_plugins" ]]; then
                 while IFS= read -r catalog_plugin; do
                   [[ -z "$catalog_plugin" ]] && continue
-                  
+
                   # Skip if already has explicit path
                   if [[ "$catalog_plugin" == *"!"* ]]; then
                     continue
                   fi
-                  
+
                   # Infer plugin path from image name
                   local inferred_path
                   inferred_path=$(extract_plugin_path "$catalog_plugin")
                   local catalog_plugin_with_path="${catalog_plugin}!${inferred_path}"
-                  
+
                   # Check if this plugin is already in our explicit list or ConfigMap
                   local already_added=false
                   for known_package in "${!plugin_paths[@]}"; do
@@ -263,7 +263,7 @@ config::add_explicit_plugin_paths_osd_gcp() {
                       break
                     fi
                   done
-                  
+
                   # Also check if it's already in the ConfigMap
                   if [[ "$already_added" == "false" ]]; then
                     local existing_in_cm
@@ -272,7 +272,7 @@ config::add_explicit_plugin_paths_osd_gcp() {
                       already_added=true
                     fi
                   fi
-                  
+
                   # Add to plugin_paths map if not already there
                   if [[ "$already_added" == "false" ]]; then
                     plugin_paths["${catalog_plugin}"]="${inferred_path}"
@@ -296,12 +296,12 @@ config::add_explicit_plugin_paths_osd_gcp() {
   # because the Python script processes includes (catalog index) FIRST, and if a plugin
   # without an explicit path is encountered, it fails before checking the main plugins list
   local updated=false
-  
+
   # Initialize plugins array if it doesn't exist
   if ! yq eval '.plugins' "$temp_file" > /dev/null 2>&1; then
     yq eval -i '.plugins = []' "$temp_file"
   fi
-  
+
   for plugin_package in "${!plugin_paths[@]}"; do
     local plugin_path="${plugin_paths[$plugin_package]}"
     local package_with_path="${plugin_package}!${plugin_path}"
