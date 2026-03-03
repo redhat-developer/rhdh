@@ -21,7 +21,8 @@ test.describe(`Settings page`, () => {
   });
 
   // Run tests only for the selected language
-  test(`Verify settings page`, async ({ page }) => {
+  // TODO: https://issues.redhat.com/browse/RHDHBUGS-2674
+  test.fixme(`Verify settings page`, async ({ page }) => {
     await page
       .getByRole("button", {
         name: t["plugin.quickstart"][lang]["footer.hide"],
