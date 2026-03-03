@@ -611,7 +611,7 @@
       "aboutCard.tagsField.value": "タグなし",
       "aboutCard.targetsField.label": "ターゲット",
       "searchResultItem.lifecycle": "ライフサイクル",
-      "searchResultItem.Owner": "所有者",
+      "searchResultItem.owner": "所有者",
       "catalogTable.warningPanelTitle": "カタログエンティティーを取得できませんでした。",
       "catalogTable.viewActionTitle": "表示",
       "catalogTable.editActionTitle": "編集",
