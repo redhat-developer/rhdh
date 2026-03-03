@@ -47,10 +47,16 @@ export function buildTree(menuItemsArray: MenuItem[]): MenuItem[] {
     if (!itemMap[item.name]) {
       itemMap[item.name] = { ...item, children: [] };
     } else {
+      const existing = itemMap[item.name];
       itemMap[item.name] = {
-        ...itemMap[item.name],
+        ...existing,
         ...item,
-        children: itemMap[item.name].children,
+        children: existing.children,
+        // Preserve from existing when incoming has none (e.g. menuItems only adds parent)
+        title: item.title ?? existing.title,
+        titleKey: item.titleKey ?? existing.titleKey,
+        icon: item.icon ?? existing.icon,
+        to: item.to ?? existing.to,
       };
     }
   });
