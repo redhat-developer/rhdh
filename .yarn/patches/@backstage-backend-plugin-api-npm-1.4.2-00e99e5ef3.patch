@@ -1,0 +1,49 @@
+diff --git a/dist/paths.cjs.js b/dist/paths.cjs.js
+index 0be95b8c8b628b683d926286f5ade37cf72bdeab..984c7c04ef2eb65957611a5c11d0e6fa1fbc524f 100644
+--- a/dist/paths.cjs.js
++++ b/dist/paths.cjs.js
+@@ -3,7 +3,6 @@
+ var cliCommon = require('@backstage/cli-common');
+ var errors = require('@backstage/errors');
+ var path = require('path');
+-var fs = require('fs');
+ 
+ const packagePathMocks = /* @__PURE__ */ new Map();
+ function resolvePackagePath(name, ...paths) {
+@@ -18,25 +17,14 @@ function resolvePackagePath(name, ...paths) {
+   return path.resolve(req.resolve(`${name}/package.json`), "..", ...paths);
+ }
+ function resolveSafeChildPath(base, path$1) {
+-  const resolvedBasePath = resolveRealPath(base);
+-  const targetPath = path.resolve(resolvedBasePath, path$1);
+-  if (!cliCommon.isChildPath(resolvedBasePath, resolveRealPath(targetPath))) {
++  const targetPath = path.resolve(base, path$1);
++  if (!cliCommon.isChildPath(base, targetPath)) {
+     throw new errors.NotAllowedError(
+       "Relative path is not allowed to refer to a directory outside its parent"
+     );
+   }
+   return path.resolve(base, path$1);
+ }
+-function resolveRealPath(path) {
+-  try {
+-    return fs.realpathSync(path);
+-  } catch (ex) {
+-    if (ex.code !== "ENOENT") {
+-      throw ex;
+-    }
+-  }
+-  return path;
+-}
+ 
+ Object.defineProperty(exports, "isChildPath", {
+   enumerable: true,
+diff --git a/dist/paths.cjs.js.map b/dist/paths.cjs.js.map
+index 4525a77b02477262b62e420cc53e5e23e934aff5..bf733da58c27db2ef419362a3d9f683994f65d49 100644
+--- a/dist/paths.cjs.js.map
++++ b/dist/paths.cjs.js.map
+@@ -1 +1 @@
+-{"version":3,"file":"paths.cjs.js","sources":["../src/paths.ts"],"sourcesContent":["/*\n * Copyright 2020 The Backstage Authors\n *\n * Licensed under the Apache License, Version 2.0 (the \"License\");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *     http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n\nimport { isChildPath } from '@backstage/cli-common';\nimport { NotAllowedError } from '@backstage/errors';\nimport { resolve as resolvePath } from 'path';\nimport { realpathSync as realPath } from 'fs';\n\n/** @internal */\nexport const packagePathMocks = new Map<\n  string,\n  (paths: string[]) => string | undefined\n>();\n\n/**\n * Resolve a path relative to the root of a package directory.\n * Additional path arguments are resolved relative to the package dir.\n *\n * This is particularly useful when you want to access assets shipped with\n * your backend plugin package. When doing so, do not forget to include the assets\n * in your published package by adding them to `files` in your `package.json`.\n *\n * @public\n */\nexport function resolvePackagePath(name: string, ...paths: string[]) {\n  const mockedResolve = packagePathMocks.get(name);\n  if (mockedResolve) {\n    const resolved = mockedResolve(paths);\n    if (resolved) {\n      return resolved;\n    }\n  }\n\n  const req =\n    typeof __non_webpack_require__ === 'undefined'\n      ? require\n      : __non_webpack_require__;\n\n  return resolvePath(req.resolve(`${name}/package.json`), '..', ...paths);\n}\n\n/**\n * Resolves a target path from a base path while guaranteeing that the result is\n * a path that point to or within the base path. This is useful for resolving\n * paths from user input, as it otherwise opens up for vulnerabilities.\n *\n * @public\n * @param base - The base directory to resolve the path from.\n * @param path - The target path, relative or absolute\n * @returns A path that is guaranteed to point to or within the base path.\n */\nexport function resolveSafeChildPath(base: string, path: string): string {\n  const resolvedBasePath = resolveRealPath(base);\n  const targetPath = resolvePath(resolvedBasePath, path);\n\n  if (!isChildPath(resolvedBasePath, resolveRealPath(targetPath))) {\n    throw new NotAllowedError(\n      'Relative path is not allowed to refer to a directory outside its parent',\n    );\n  }\n\n  // Don't return the resolved path as the original could be a symlink\n  return resolvePath(base, path);\n}\n\nfunction resolveRealPath(path: string): string {\n  try {\n    return realPath(path);\n  } catch (ex) {\n    if (ex.code !== 'ENOENT') {\n      throw ex;\n    }\n  }\n\n  return path;\n}\n// Re-export isChildPath so that backend packages don't need to depend on cli-common\nexport { isChildPath };\n"],"names":["resolvePath","path","isChildPath","NotAllowedError","realPath"],"mappings":";;;;;;;AAsBO,MAAM,gBAAA,uBAAuB,GAAA;AAe7B,SAAS,kBAAA,CAAmB,SAAiB,KAAA,EAAiB;AACnE,EAAA,MAAM,aAAA,GAAgB,gBAAA,CAAiB,GAAA,CAAI,IAAI,CAAA;AAC/C,EAAA,IAAI,aAAA,EAAe;AACjB,IAAA,MAAM,QAAA,GAAW,cAAc,KAAK,CAAA;AACpC,IAAA,IAAI,QAAA,EAAU;AACZ,MAAA,OAAO,QAAA;AAAA,IACT;AAAA,EACF;AAEA,EAAA,MAAM,GAAA,GACJ,OAAO,uBAAA,KAA4B,WAAA,GAC/B,OAAA,GACA,uBAAA;AAEN,EAAA,OAAOA,YAAA,CAAY,IAAI,OAAA,CAAQ,CAAA,EAAG,IAAI,CAAA,aAAA,CAAe,CAAA,EAAG,IAAA,EAAM,GAAG,KAAK,CAAA;AACxE;AAYO,SAAS,oBAAA,CAAqB,MAAcC,MAAA,EAAsB;AACvE,EAAA,MAAM,gBAAA,GAAmB,gBAAgB,IAAI,CAAA;AAC7C,EAAA,MAAM,UAAA,GAAaD,YAAA,CAAY,gBAAA,EAAkBC,MAAI,CAAA;AAErD,EAAA,IAAI,CAACC,qBAAA,CAAY,gBAAA,EAAkB,eAAA,CAAgB,UAAU,CAAC,CAAA,EAAG;AAC/D,IAAA,MAAM,IAAIC,sBAAA;AAAA,MACR;AAAA,KACF;AAAA,EACF;AAGA,EAAA,OAAOH,YAAA,CAAY,MAAMC,MAAI,CAAA;AAC/B;AAEA,SAAS,gBAAgB,IAAA,EAAsB;AAC7C,EAAA,IAAI;AACF,IAAA,OAAOG,gBAAS,IAAI,CAAA;AAAA,EACtB,SAAS,EAAA,EAAI;AACX,IAAA,IAAI,EAAA,CAAG,SAAS,QAAA,EAAU;AACxB,MAAA,MAAM,EAAA;AAAA,IACR;AAAA,EACF;AAEA,EAAA,OAAO,IAAA;AACT;;;;;;;;;;"}
+\ No newline at end of file
++{"version":3,"file":"paths.cjs.js","sources":["../src/paths.ts"],"sourcesContent":["/*\n * Copyright 2020 The Backstage Authors\n *\n * Licensed under the Apache License, Version 2.0 (the \"License\");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *     http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n\nimport { isChildPath } from '@backstage/cli-common';\nimport { NotAllowedError } from '@backstage/errors';\nimport { resolve as resolvePath } from 'path';\n\n/** @internal */\nexport const packagePathMocks = new Map<\n  string,\n  (paths: string[]) => string | undefined\n>();\n\n/**\n * Resolve a path relative to the root of a package directory.\n * Additional path arguments are resolved relative to the package dir.\n *\n * This is particularly useful when you want to access assets shipped with\n * your backend plugin package. When doing so, do not forget to include the assets\n * in your published package by adding them to `files` in your `package.json`.\n *\n * @public\n */\nexport function resolvePackagePath(name: string, ...paths: string[]) {\n  const mockedResolve = packagePathMocks.get(name);\n  if (mockedResolve) {\n    const resolved = mockedResolve(paths);\n    if (resolved) {\n      return resolved;\n    }\n  }\n\n  const req =\n    typeof __non_webpack_require__ === 'undefined'\n      ? require\n      : __non_webpack_require__;\n\n  return resolvePath(req.resolve(`${name}/package.json`), '..', ...paths);\n}\n\n/**\n * Resolves a target path from a base path while guaranteeing that the result is\n * a path that point to or within the base path. This is useful for resolving\n * paths from user input, as it otherwise opens up for vulnerabilities.\n *\n * @public\n * @param base - The base directory to resolve the path from.\n * @param path - The target path, relative or absolute\n * @returns A path that is guaranteed to point to or within the base path.\n */\nexport function resolveSafeChildPath(base: string, path: string): string {\n  const targetPath = resolvePath(base, path);\n\n  if (!isChildPath(base, targetPath)) {\n    throw new NotAllowedError(\n      'Relative path is not allowed to refer to a directory outside its parent',\n    );\n  }\n\n  // Don't return the resolved path as the original could be a symlink\n  return resolvePath(base, path);\n}\n\n// Re-export isChildPath so that backend packages don't need to depend on cli-common\nexport { isChildPath };\n"],"names":["resolvePath","path","isChildPath","NotAllowedError"],"mappings":";;;;;;AAqBO,MAAM,gBAAA,uBAAuB,GAAA;AAe7B,SAAS,kBAAA,CAAmB,SAAiB,KAAA,EAAiB;AACnE,EAAA,MAAM,aAAA,GAAgB,gBAAA,CAAiB,GAAA,CAAI,IAAI,CAAA;AAC/C,EAAA,IAAI,aAAA,EAAe;AACjB,IAAA,MAAM,QAAA,GAAW,cAAc,KAAK,CAAA;AACpC,IAAA,IAAI,QAAA,EAAU;AACZ,MAAA,OAAO,QAAA;AAAA,IACT;AAAA,EACF;AAEA,EAAA,MAAM,GAAA,GACJ,OAAO,uBAAA,KAA4B,WAAA,GAC/B,OAAA,GACA,uBAAA;AAEN,EAAA,OAAOA,YAAA,CAAY,IAAI,OAAA,CAAQ,CAAA,EAAG,IAAI,CAAA,aAAA,CAAe,CAAA,EAAG,IAAA,EAAM,GAAG,KAAK,CAAA;AACxE;AAYO,SAAS,oBAAA,CAAqB,MAAcC,MAAA,EAAsB;AACvE,EAAA,MAAM,UAAA,GAAaD,YAAA,CAAY,IAAA,EAAMC,MAAI,CAAA;AAEzC,EAAA,IAAI,CAACC,qBAAA,CAAY,IAAA,EAAM,UAAU,CAAA,EAAG;AAClC,IAAA,MAAM,IAAIC,sBAAA;AAAA,MACR;AAAA,KACF;AAAA,EACF;AAGA,EAAA,OAAOH,YAAA,CAAY,MAAMC,MAAI,CAAA;AAC/B;;;;;;;;;;"}
+\ No newline at end of file
