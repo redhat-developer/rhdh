@@ -162,15 +162,20 @@ config::add_explicit_plugin_paths_osd_gcp() {
 
   # Map of plugin packages to their explicit plugin paths (to avoid network calls for auto-detection)
   # Format: "package:version" -> "plugin-path"
-  # Note: For plugins with version patterns, we match on the base image path (without version)
+  # This list includes all known ghcr.io plugins that might be in the catalog index
+  # The plugin path is typically the last component of the image path
   declare -A plugin_paths=(
     ["oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-scaffolder-backend-module-quay:bs_1.45.3__2.14.0"]="backstage-community-plugin-scaffolder-backend-module-quay"
     ["oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-nexus-repository-manager:bs_1.45.3__1.19.4"]="backstage-community-plugin-nexus-repository-manager"
     ["oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-jenkins-backend:bs_1.45.3__0.22.0"]="backstage-community-plugin-jenkins-backend"
     ["oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-scaffolder-backend-module-bitbucket-cloud:bs_1.45.3__0.2.15"]="backstage-plugin-scaffolder-backend-module-bitbucket-cloud"
     ["oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-catalog-backend-module-bitbucket-cloud:bs_1.45.3__0.5.5"]="backstage-plugin-catalog-backend-module-bitbucket-cloud"
-    # Also include the older version that might be in value files
-    ["oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-scaffolder-backend-module-bitbucket-cloud:bs_1.45.3__0.2.15"]="backstage-plugin-scaffolder-backend-module-bitbucket-cloud"
+    # Additional ghcr.io plugins that might be in the catalog index
+    ["oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-azure-devops-backend:bs_1.45.3__0.23.0"]="backstage-community-plugin-azure-devops-backend"
+    ["oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-azure-devops:bs_1.45.3__0.23.0"]="backstage-community-plugin-azure-devops"
+    ["oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-3scale-backend:bs_1.45.3__3.10.0"]="backstage-community-plugin-3scale-backend"
+    ["oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-argocd-backend:bs_1.45.3__1.0.2"]="backstage-community-plugin-argocd-backend"
+    ["oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-argocd:bs_1.45.3__2.4.3"]="backstage-community-plugin-argocd"
   )
 
   # Get current ConfigMap content
@@ -195,8 +200,108 @@ config::add_explicit_plugin_paths_osd_gcp() {
     echo "${package}" | sed -E 's|^oci://ghcr.io/[^/]+/[^/]+/([^:@]+).*|\1|'
   }
 
+  # Extract catalog index and add all ghcr.io plugins from it to the ConfigMap
+  # This ensures all catalog index plugins have explicit paths before the init container processes them
+  local catalog_index_image="quay.io/rhdh/plugin-catalog-index:1.10"
+  local catalog_index_temp_dir
+  catalog_index_temp_dir=$(mktemp -d)
+  trap "rm -rf ${catalog_index_temp_dir}" EXIT
+
+  log::info "Extracting catalog index ${catalog_index_image} to find all ghcr.io plugins"
+  
+  if command -v skopeo > /dev/null 2>&1 && command -v yq > /dev/null 2>&1; then
+    local catalog_index_local_dir="${catalog_index_temp_dir}/catalog-index-oci"
+    mkdir -p "${catalog_index_local_dir}"
+    
+    # Try to extract the catalog index image (may fail if network is restricted, but that's okay)
+    if skopeo copy --override-os=linux --override-arch=amd64 "docker://${catalog_index_image}" "dir:${catalog_index_local_dir}" > /dev/null 2>&1; then
+      log::info "Successfully extracted catalog index image"
+      
+      # Extract the dynamic-plugins.default.yaml file
+      local manifest_path="${catalog_index_local_dir}/manifest.json"
+      if [[ -f "$manifest_path" ]]; then
+        # Extract layers to find the YAML file
+        local layer_digest
+        layer_digest=$(jq -r '.layers[0].digest' "$manifest_path" 2> /dev/null || echo "")
+        if [[ -n "$layer_digest" && "$layer_digest" != "null" ]]; then
+          local layer_file="${catalog_index_local_dir}/${layer_digest#sha256:}"
+          if [[ -f "$layer_file" ]]; then
+            # Extract the layer tarball
+            local catalog_yaml_dir="${catalog_index_temp_dir}/catalog-yaml"
+            mkdir -p "${catalog_yaml_dir}"
+            tar -xf "${layer_file}" -C "${catalog_yaml_dir}" 2> /dev/null || true
+            
+            local catalog_plugins_file="${catalog_yaml_dir}/dynamic-plugins.default.yaml"
+            if [[ -f "$catalog_plugins_file" ]]; then
+              log::info "Found catalog index plugins file, extracting ghcr.io plugins"
+              
+              # Extract all ghcr.io plugins from the catalog index
+              local catalog_ghcr_plugins
+              catalog_ghcr_plugins=$(yq eval '.plugins[] | select(.package | startswith("oci://ghcr.io")) | .package' "$catalog_plugins_file" 2> /dev/null || true)
+              
+              if [[ -n "$catalog_ghcr_plugins" ]]; then
+                while IFS= read -r catalog_plugin; do
+                  [[ -z "$catalog_plugin" ]] && continue
+                  
+                  # Skip if already has explicit path
+                  if [[ "$catalog_plugin" == *"!"* ]]; then
+                    continue
+                  fi
+                  
+                  # Infer plugin path from image name
+                  local inferred_path
+                  inferred_path=$(extract_plugin_path "$catalog_plugin")
+                  local catalog_plugin_with_path="${catalog_plugin}!${inferred_path}"
+                  
+                  # Check if this plugin is already in our explicit list or ConfigMap
+                  local already_added=false
+                  for known_package in "${!plugin_paths[@]}"; do
+                    local base_known="${known_package%%:*}"
+                    local base_catalog="${catalog_plugin%%:*}"
+                    if [[ "$base_known" == "$base_catalog" ]]; then
+                      already_added=true
+                      break
+                    fi
+                  done
+                  
+                  # Also check if it's already in the ConfigMap
+                  if [[ "$already_added" == "false" ]]; then
+                    local existing_in_cm
+                    existing_in_cm=$(yq eval ".plugins[] | select(.package == \"${catalog_plugin_with_path}\" or .package == \"${catalog_plugin}\")" "$temp_file" 2> /dev/null || true)
+                    if [[ -n "$existing_in_cm" ]]; then
+                      already_added=true
+                    fi
+                  fi
+                  
+                  # Add to plugin_paths map if not already there
+                  if [[ "$already_added" == "false" ]]; then
+                    plugin_paths["${catalog_plugin}"]="${inferred_path}"
+                    log::info "Found ghcr.io plugin in catalog index: ${catalog_plugin} -> ${inferred_path}"
+                  fi
+                done <<< "$catalog_ghcr_plugins"
+              fi
+            fi
+          fi
+        fi
+      fi
+    else
+      log::warn "Could not extract catalog index image (network may be restricted), using known plugin list only"
+    fi
+  else
+    log::warn "skopeo or yq not available, using known plugin list only"
+  fi
+
   # Update each plugin to include explicit plugin path
+  # CRITICAL: We MUST add ALL ghcr.io plugins to the main plugins list with explicit paths
+  # because the Python script processes includes (catalog index) FIRST, and if a plugin
+  # without an explicit path is encountered, it fails before checking the main plugins list
   local updated=false
+  
+  # Initialize plugins array if it doesn't exist
+  if ! yq eval '.plugins' "$temp_file" > /dev/null 2>&1; then
+    yq eval -i '.plugins = []' "$temp_file"
+  fi
+  
   for plugin_package in "${!plugin_paths[@]}"; do
     local plugin_path="${plugin_paths[$plugin_package]}"
     local package_with_path="${plugin_package}!${plugin_path}"
@@ -216,13 +321,9 @@ config::add_explicit_plugin_paths_osd_gcp() {
       plugin_with_path=$(yq eval ".plugins[] | select(.package == \"${package_with_path}\")" "$temp_file" 2> /dev/null)
 
       if [[ -z "$plugin_with_path" ]]; then
-        # Plugin doesn't exist in main plugins list, add it with explicit path
-        # This ensures the plugin with explicit path is processed before catalog index plugins,
-        # allowing it to override catalog index entries that don't have explicit paths
-        # Initialize plugins array if it doesn't exist
-        if ! yq eval '.plugins' "$temp_file" > /dev/null 2>&1; then
-          yq eval -i '.plugins = []' "$temp_file"
-        fi
+        # Plugin doesn't exist in main plugins list - ALWAYS add it with explicit path
+        # This is critical: we must add ALL ghcr.io plugins to the main plugins list
+        # so they're available when the script processes includes, preventing auto-detection failures
         yq eval -i ".plugins += [{\"package\": \"${package_with_path}\"}]" "$temp_file"
         log::info "Added plugin with explicit path to override catalog index: ${package_with_path}"
         updated=true
