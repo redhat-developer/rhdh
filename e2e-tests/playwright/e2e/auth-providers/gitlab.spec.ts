@@ -6,6 +6,14 @@ import { GitLabHelper } from "../../utils/authentication-providers/gitlab-helper
 let page: Page;
 let context: BrowserContext;
 
+/* SUPORTED RESOLVERS
+GITLAB:
+    [x] userIdMatchingUserEntityAnnotation -> (Default >=1.10.x)
+    [x] usernameMatchingUserEntityName -> (Default <=1.9.x)
+    [x] emailMatchingUserEntityProfileEmail
+    [x] emailLocalPartMatchingUserEntityName
+*/
+
 test.describe("Configure GitLab Provider", async () => {
   let common: Common;
   let uiHelper: UIhelper;

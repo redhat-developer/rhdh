@@ -1236,7 +1236,7 @@ class RHDHDeployment {
     // Use local path for local development, OCI path for CI/CD
     const transformerPluginPath = this.isRunningLocal
       ? "./dynamic-plugins/dist/@internal/backstage-plugin-catalog-backend-module-github-org-transformer-dynamic"
-      : "oci://quay.io/rh-ee-jhe/catalog-github-org-transformer:v0.1.0!internal-backstage-plugin-catalog-backend-module-github-org-transformer";
+      : "oci://quay.io/rh-ee-jhe/catalog-github-org-transformer:v0.3.0!internal-backstage-plugin-catalog-backend-module-github-org-transformer";
 
     this.setDynamicPluginEnabled(transformerPluginPath, true);
 
