@@ -189,7 +189,7 @@ config::add_explicit_plugin_paths_osd_gcp() {
     local plugin_path="${plugin_paths[$plugin_package]}"
     local package_with_path="${plugin_package}!${plugin_path}"
 
-    # Check if plugin exists without explicit path
+    # Check if plugin exists without explicit path in the main plugins list
     local plugin_without_path
     plugin_without_path=$(yq eval ".plugins[] | select(.package == \"${plugin_package}\")" "$temp_file" 2> /dev/null)
 
@@ -199,15 +199,20 @@ config::add_explicit_plugin_paths_osd_gcp() {
       log::info "Added explicit plugin path for: ${plugin_package} -> ${plugin_path}"
       updated=true
     else
-      # Check if plugin exists with explicit path already
+      # Check if plugin exists with explicit path already in the main plugins list
       local plugin_with_path
       plugin_with_path=$(yq eval ".plugins[] | select(.package == \"${package_with_path}\")" "$temp_file" 2> /dev/null)
 
       if [[ -z "$plugin_with_path" ]]; then
-        # Plugin doesn't exist at all, add it with explicit path (preserving disabled state if it was in catalog index)
-        # We'll add it as enabled by default, but it might be overridden by catalog index entries
+        # Plugin doesn't exist in main plugins list, add it with explicit path
+        # This ensures the plugin with explicit path is processed before catalog index plugins,
+        # allowing it to override catalog index entries that don't have explicit paths
+        # Initialize plugins array if it doesn't exist
+        if ! yq eval '.plugins' "$temp_file" > /dev/null 2>&1; then
+          yq eval -i '.plugins = []' "$temp_file"
+        fi
         yq eval -i ".plugins += [{\"package\": \"${package_with_path}\"}]" "$temp_file"
-        log::info "Added plugin with explicit path: ${package_with_path}"
+        log::info "Added plugin with explicit path to override catalog index: ${package_with_path}"
         updated=true
       fi
     fi
