@@ -19,6 +19,7 @@ initiate_eks_helm_deployment() {
   namespace::setup_image_pull_secret "${NAME_SPACE}" "rh-pull-secret" "${REGISTRY_REDHAT_IO_SERVICE_ACCOUNT_DOCKERCONFIGJSON}"
 
   local rhdh_base_url="https://${K8S_CLUSTER_ROUTER_BASE}"
+  config::merge_plugin_configs "merge" "${DIR}/resources/config_map/${SHOWCASE_DYNAMIC_PLUGINS_FILE_NAME}" "${DIR}/resources/config_map/${SHOWCASE_DYNAMIC_PLUGINS_EKS_DIFF_FILE_NAME}" "${DIR}/resources/config_map/${SHOWCASE_DYNAMIC_PLUGINS_FILE_NAME}"
   apply_yaml_files "${DIR}" "${NAME_SPACE}" "${rhdh_base_url}"
   envsubst < "${DIR}/value_files/${HELM_CHART_EKS_DIFF_VALUE_FILE_NAME}" > "/tmp/${HELM_CHART_EKS_DIFF_VALUE_FILE_NAME}"
   helm::merge_values "merge" "${DIR}/value_files/${HELM_CHART_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_EKS_DIFF_VALUE_FILE_NAME}" "/tmp/${HELM_CHART_K8S_MERGED_VALUE_FILE_NAME}"
