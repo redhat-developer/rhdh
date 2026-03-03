@@ -162,10 +162,14 @@ config::add_explicit_plugin_paths_osd_gcp() {
 
   # Map of plugin packages to their explicit plugin paths (to avoid network calls for auto-detection)
   # Format: "package:version" -> "plugin-path"
+  # Note: For plugins with version patterns, we match on the base image path (without version)
   declare -A plugin_paths=(
     ["oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-scaffolder-backend-module-quay:bs_1.45.3__2.14.0"]="backstage-community-plugin-scaffolder-backend-module-quay"
     ["oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-nexus-repository-manager:bs_1.45.3__1.19.4"]="backstage-community-plugin-nexus-repository-manager"
     ["oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-jenkins-backend:bs_1.45.3__0.22.0"]="backstage-community-plugin-jenkins-backend"
+    ["oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-scaffolder-backend-module-bitbucket-cloud:bs_1.45.3__0.2.15"]="backstage-plugin-scaffolder-backend-module-bitbucket-cloud"
+    ["oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-catalog-backend-module-bitbucket-cloud:bs_1.45.3__0.5.5"]="backstage-plugin-catalog-backend-module-bitbucket-cloud"
+    # Also include the older version that might be in value files
     ["oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-scaffolder-backend-module-bitbucket-cloud:bs_1.45.3__0.2.15"]="backstage-plugin-scaffolder-backend-module-bitbucket-cloud"
   )
 
@@ -182,6 +186,14 @@ config::add_explicit_plugin_paths_osd_gcp() {
   local temp_file
   temp_file=$(mktemp)
   echo "$current_yaml" > "$temp_file"
+
+  # Helper function to extract plugin path from image name
+  # For ghcr.io plugins, the path is typically the last component before the tag
+  extract_plugin_path() {
+    local package="$1"
+    # Remove oci:// prefix and extract the last path component before : or @
+    echo "${package}" | sed -E 's|^oci://ghcr.io/[^/]+/[^/]+/([^:@]+).*|\1|'
+  }
 
   # Update each plugin to include explicit plugin path
   local updated=false
@@ -217,6 +229,46 @@ config::add_explicit_plugin_paths_osd_gcp() {
       fi
     fi
   done
+
+  # Also add any ghcr.io plugins from the value files that might not be in our explicit list
+  # Extract all ghcr.io plugins from the ConfigMap and ensure they have explicit paths
+  local all_ghcr_plugins
+  all_ghcr_plugins=$(yq eval '.plugins[] | select(.package | startswith("oci://ghcr.io")) | .package' "$temp_file" 2> /dev/null || true)
+  
+  if [[ -n "$all_ghcr_plugins" ]]; then
+    while IFS= read -r plugin_package; do
+      [[ -z "$plugin_package" ]] && continue
+      
+      # Skip if already has explicit path (!)
+      if [[ "$plugin_package" == *"!"* ]]; then
+        continue
+      fi
+      
+      # Check if this plugin is already in our explicit list
+      local found=false
+      for known_package in "${!plugin_paths[@]}"; do
+        # Compare base image path (without version)
+        local base_known="${known_package%%:*}"
+        local base_plugin="${plugin_package%%:*}"
+        if [[ "$base_known" == "$base_plugin" ]]; then
+          found=true
+          break
+        fi
+      done
+      
+      # If not in our list, infer the plugin path from the image name
+      if [[ "$found" == "false" ]]; then
+        local inferred_path
+        inferred_path=$(extract_plugin_path "$plugin_package")
+        local package_with_inferred_path="${plugin_package}!${inferred_path}"
+        
+        # Update the plugin to include the inferred path
+        yq eval -i "(.plugins[] | select(.package == \"${plugin_package}\")).package = \"${package_with_inferred_path}\"" "$temp_file"
+        log::info "Added inferred plugin path for: ${plugin_package} -> ${inferred_path}"
+        updated=true
+      fi
+    done <<< "$all_ghcr_plugins"
+  fi
 
   if [[ "$updated" == "true" ]]; then
     # Update the ConfigMap with the modified YAML
