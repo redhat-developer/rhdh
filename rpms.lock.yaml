@@ -277,13 +277,13 @@ arches:
     name: go-srpm-macros
     evr: 3.6.0-12.el9_7
     sourcerpm: go-rpm-macros-3.6.0-12.el9_7.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/k/kernel-headers-5.14.0-611.35.1.el9_7.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/k/kernel-headers-5.14.0-611.36.1.el9_7.x86_64.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
-    size: 3017809
-    checksum: sha256:beca4f8a886a45f20f1ff796fe68b0c2b447d54cff861c3c658c8d497f1adcc5
+    size: 3019841
+    checksum: sha256:a8d6bc21a121506d3ab4557de140b256424fef20cb3e40fb411f21f55cee3544
     name: kernel-headers
-    evr: 5.14.0-611.35.1.el9_7
-    sourcerpm: kernel-5.14.0-611.35.1.el9_7.src.rpm
+    evr: 5.14.0-611.36.1.el9_7
+    sourcerpm: kernel-5.14.0-611.36.1.el9_7.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/k/kernel-srpm-macros-1.0-14.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 14098
@@ -2839,13 +2839,13 @@ arches:
     name: libpkgconf
     evr: 1.7.3-10.el9
     sourcerpm: pkgconf-1.7.3-10.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/l/libpng-1.6.37-12.el9_7.1.x86_64.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/l/libpng-1.6.37-12.el9_7.2.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 117649
-    checksum: sha256:561f20f3e8863ba83d1b67ea6e6f2724b82bd6d1393e0d3bb93f9409f3a0c40d
+    size: 124468
+    checksum: sha256:19b5cf6b3a14137a159ea956c61559fb776a72d251b6c60a4d4959cdd88db3d1
     name: libpng
-    evr: 2:1.6.37-12.el9_7.1
-    sourcerpm: libpng-1.6.37-12.el9_7.1.src.rpm
+    evr: 2:1.6.37-12.el9_7.2
+    sourcerpm: libpng-1.6.37-12.el9_7.2.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/l/libpwquality-1.4.4-8.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
     size: 126104
@@ -3224,20 +3224,20 @@ arches:
     name: rsync
     evr: 3.2.5-3.el9
     sourcerpm: rsync-3.2.5-3.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/selinux-policy-38.1.65-1.el9.noarch.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/selinux-policy-38.1.65-1.el9_7.1.noarch.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 43109
-    checksum: sha256:fb9d24fa5770a76e3c15677ec3c74f6910f89ded1d519dc94baedd8ee2db1938
+    size: 44151
+    checksum: sha256:2febb9f769974bd968cb9a5a023f4c596bd68777b782e1320c8472bfdf28d20b
     name: selinux-policy
-    evr: 38.1.65-1.el9
-    sourcerpm: selinux-policy-38.1.65-1.el9.src.rpm
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/selinux-policy-targeted-38.1.65-1.el9.noarch.rpm
+    evr: 38.1.65-1.el9_7.1
+    sourcerpm: selinux-policy-38.1.65-1.el9_7.1.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/selinux-policy-targeted-38.1.65-1.el9_7.1.noarch.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
-    size: 7266040
-    checksum: sha256:30e7116093e0a96b5a156c017fc4a975ca0892fbe70ddf4b33eac12dad5965f5
+    size: 7269373
+    checksum: sha256:d2374ed366fd3ef8618cc222ff141ecbf33033607c66ccccc593197a4e742a5c
     name: selinux-policy-targeted
-    evr: 38.1.65-1.el9
-    sourcerpm: selinux-policy-38.1.65-1.el9.src.rpm
+    evr: 38.1.65-1.el9_7.1
+    sourcerpm: selinux-policy-38.1.65-1.el9_7.1.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/shadow-utils-subid-4.9-15.el9.x86_64.rpm
     repoid: ubi-9-for-x86_64-baseos-rpms
     size: 86604
@@ -4871,12 +4871,12 @@ arches:
     checksum: sha256:f1a40821328b6e3fd7264c78c18f8c2045e7a30a05ef9f8b2934d5ca15724ce3
     name: libpipeline
     evr: 1.5.3-4.el9
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/l/libpng-1.6.37-12.el9_7.1.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/l/libpng-1.6.37-12.el9_7.2.src.rpm
     repoid: ubi-9-for-x86_64-baseos-source-rpms
-    size: 1529318
-    checksum: sha256:763cbd35ca25fe40a68b47306bcfc1291d8fac92a1c20441dcc159edf689242a
+    size: 1537419
+    checksum: sha256:ee557033d0e7472d41825b9c4b9f2b142857cfa17caf43d12d9ecf08c8a5e290
     name: libpng
-    evr: 2:1.6.37-12.el9_7.1
+    evr: 2:1.6.37-12.el9_7.2
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/l/libpwquality-1.4.4-8.el9.src.rpm
     repoid: ubi-9-for-x86_64-baseos-source-rpms
     size: 447225
@@ -5105,12 +5105,12 @@ arches:
     checksum: sha256:a1fd44e58d1fb5b52b72586c5ef2e12c040428f771cde1d1350b36d3b9155db0
     name: rsync
     evr: 3.2.5-3.el9
-  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/s/selinux-policy-38.1.65-1.el9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/s/selinux-policy-38.1.65-1.el9_7.1.src.rpm
     repoid: ubi-9-for-x86_64-baseos-source-rpms
-    size: 1167653
-    checksum: sha256:b9e7269bb64eb50dd44133b0f88dfe13728c03655dac8f57e759d11a2cd57264
+    size: 1169887
+    checksum: sha256:41919662af0c88ffe15109eaae3740ba4accf9de27fa0605bbb332f354fbd1ab
     name: selinux-policy
-    evr: 38.1.65-1.el9
+    evr: 38.1.65-1.el9_7.1
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/s/shadow-utils-4.9-15.el9.src.rpm
     repoid: ubi-9-for-x86_64-baseos-source-rpms
     size: 1712227
