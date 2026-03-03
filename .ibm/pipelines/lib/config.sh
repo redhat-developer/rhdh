@@ -205,7 +205,7 @@ config::add_explicit_plugin_paths_osd_gcp() {
   local catalog_index_image="quay.io/rhdh/plugin-catalog-index:1.10"
   local catalog_index_temp_dir
   catalog_index_temp_dir=$(mktemp -d)
-  trap "rm -rf ${catalog_index_temp_dir}" EXIT
+  trap 'rm -rf "$catalog_index_temp_dir"' EXIT
 
   log::info "Extracting catalog index ${catalog_index_image} to find all ghcr.io plugins"
 
