@@ -14,8 +14,6 @@ test.describe.serial("Test Orchestrator RBAC", () => {
   test.skip(() => skipIfJobName(JOB_NAME_PATTERNS.GKE)); // skipping orchestrator tests on GKE - plugins disabled
   test.skip(() => skipIfJobName(JOB_NAME_PATTERNS.AKS)); // skipping orchestrator tests on AKS - plugins disabled
   test.skip(() => skipIfJobName(JOB_NAME_PATTERNS.EKS)); // skipping orchestrator tests on EKS - plugins disabled
-  // TODO: https://issues.redhat.com/browse/RHDHBUGS-2184 fix orchestrator tests on Operator deployment
-  test.fixme(() => skipIfJobName(JOB_NAME_PATTERNS.OPERATOR));
 
   test.beforeAll(async ({}, testInfo) => {
     testInfo.annotations.push({

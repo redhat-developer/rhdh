@@ -1,0 +1,2 @@
+# Local test copy of repo (has its own .ibm/.prettierrc.js with prettier-plugin-sh)
+.local-test
