@@ -100,13 +100,13 @@ yarn showcase-rbac-1-2-x            # Runs the showcase RBAC 1.2.x test suite
 
 ## Setting Up Backstage Configuration During the Pipeline
 
-[app-config-rhdh.yaml](../../.ibm/pipelines/resources/config_map/app-config-rhdh.yaml) is the configuration file used to add plugins or any other kind of configuration into Backstage during pipeline execution.
+[app-config-rhdh.yaml](../../.ci/pipelines/resources/config_map/app-config-rhdh.yaml) is the configuration file used to add plugins or any other kind of configuration into Backstage during pipeline execution.
 
 ### Environment Variables in `configmap-app-config-rhdh.yaml`
 
-To use environment variables in [`configmap-app-config.yaml`](../../.ibm/pipelines/resources/config_map/app-config-rhdh.yaml), you need to set the variables encoded as Base64 in the [`secrets-rhdh-secrets.yaml`](../../.ibm/pipelines/auth/secrets-rhdh-secrets.yaml). You can use temporary values for the secrets because they can be replaced by the pipeline. Add the required environment variables as Base64-encoded values using secure properties.
+To use environment variables in [`configmap-app-config.yaml`](../../.ci/pipelines/resources/config_map/app-config-rhdh.yaml), you need to set the variables encoded as Base64 in the [`secrets-rhdh-secrets.yaml`](../../.ci/pipelines/auth/secrets-rhdh-secrets.yaml). You can use temporary values for the secrets because they can be replaced by the pipeline. Add the required environment variables as Base64-encoded values using secure properties.
 
-To replace the values in `secrets-rhdh-secrets.yaml`, you need to create a replace function using the [`openshift-ci-tests.sh`](../../.ibm/pipelines/openshift-ci-tests.sh) script. For example:
+To replace the values in `secrets-rhdh-secrets.yaml`, you need to create a replace function using the [`openshift-ci-tests.sh`](../../.ci/pipelines/openshift-ci-tests.sh) script. For example:
 
 ```bash
 sed -i "s|KEYCLOAK_BASE_URL:.*|KEYCLOAK_BASE_URL: $KEYCLOAK_BASE_URL|g" $DIR/auth/secrets-rhdh-secrets.yaml
