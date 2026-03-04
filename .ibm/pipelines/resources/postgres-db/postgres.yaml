@@ -15,16 +15,16 @@ spec:
             storage: 2Gi
       resources:
         limits:
-          cpu: 300m
-        requests:
           cpu: 200m
+        requests:
+          cpu: 50m
       sidecars:
         replicaCertCopy:
           resources:
             limits:
-              cpu: 300m
+              cpu: 100m
             requests:
-              cpu: 200m
+              cpu: 10m
   backups:
     pgbackrest:
       image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi9-2.56.0-2547
@@ -35,9 +35,9 @@ spec:
       repoHost:
         resources:
           limits:
-            cpu: 300m
-          requests:
             cpu: 200m
+          requests:
+            cpu: 50m
       repos:
         - name: repo1
           schedules:
@@ -56,15 +56,15 @@ spec:
         pgbackrest:
           resources:
             limits:
-              cpu: 200m
-            requests:
               cpu: 100m
+            requests:
+              cpu: 10m
         pgbackrestConfig:
           resources:
             limits:
-              cpu: 300m
+              cpu: 100m
             requests:
-              cpu: 200m
+              cpu: 10m
   users:
     - name: janus-idp
       options: "SUPERUSER"
