@@ -95,8 +95,10 @@ testing::run_tests() {
   fi
 
   cp -a "${e2e_tests_dir}/screenshots/"* "${ARTIFACT_DIR}/${artifacts_subdir}/attachments/screenshots/" || true
-  ansi2html < "/tmp/${LOGFILE}" > "/tmp/${LOGFILE}.html"
-  cp -a "/tmp/${LOGFILE}.html" "${ARTIFACT_DIR}/${artifacts_subdir}" || true
+  if [[ -f "/tmp/${LOGFILE}" ]]; then
+    ansi2html < "/tmp/${LOGFILE}" > "/tmp/${LOGFILE}.html"
+    cp -a "/tmp/${LOGFILE}.html" "${ARTIFACT_DIR}/${artifacts_subdir}" || true
+  fi
   cp -a "${e2e_tests_dir}/playwright-report/"* "${ARTIFACT_DIR}/${artifacts_subdir}" || true
 
   echo "Playwright project '${playwright_project}' in namespace '${namespace}' (artifacts: ${artifacts_subdir}) RESULT: ${test_result}"
@@ -167,12 +169,13 @@ testing::check_backstage_running() {
       oc get pods -n "${namespace}"
 
       # Early crash detection: fail fast if RHDH pods are in CrashLoopBackOff
+      # Check for init container crashes first (they show as "Init:CrashLoopBackOff" in pod status)
       local crash_pods
-      crash_pods=$(oc get pods -n "${namespace}" -l "app.kubernetes.io/instance in (${release_name},redhat-developer-hub,developer-hub,${release_name}-postgresql)" \
-        -o jsonpath='{range .items[*]}{.metadata.name}{" "}{.status.phase}{" "}{range .status.containerStatuses[*]}{.state.waiting.reason}{end}{range .status.initContainerStatuses[*]}{.state.waiting.reason}{end}{"\n"}{end}' 2> /dev/null | grep -E "CrashLoopBackOff" || true)
-      # Also check by name pattern for postgresql pods that may have different labels
+      crash_pods=$(oc get pods -n "${namespace}" --no-headers 2> /dev/null | grep -E "(${release_name}|developer-hub|backstage-${release_name})" | grep -E "Init:CrashLoopBackOff|CrashLoopBackOff" || true)
+      # Also check using jsonpath for more detailed status
       if [[ -z "${crash_pods}" ]]; then
-        crash_pods=$(oc get pods -n "${namespace}" --no-headers 2> /dev/null | grep -E "(${release_name}|developer-hub|postgresql)" | grep -E "CrashLoopBackOff|Init:CrashLoopBackOff" || true)
+        crash_pods=$(oc get pods -n "${namespace}" -l "app.kubernetes.io/instance in (${release_name},redhat-developer-hub,developer-hub,${release_name}-postgresql)" \
+          -o jsonpath='{range .items[*]}{.metadata.name}{" "}{range .status.initContainerStatuses[*]}{.state.waiting.reason}{" "}{.state.terminated.reason}{end}{range .status.containerStatuses[*]}{.state.waiting.reason}{" "}{.state.terminated.reason}{end}{"\n"}{end}' 2> /dev/null | grep -E "CrashLoopBackOff|Error" || true)
       fi
 
       if [[ -n "${crash_pods}" ]]; then
@@ -183,10 +186,25 @@ testing::check_backstage_running() {
         log::error "Recent logs from deployment:"
         oc logs deployment/${release_name}-developer-hub -n "${namespace}" --tail=100 --all-containers=true 2> /dev/null \
           || oc logs deployment/${release_name} -n "${namespace}" --tail=100 --all-containers=true 2> /dev/null || true
+        # Get init container logs from crashing pods
+        log::error "Init container logs from crashing pods:"
+        while IFS= read -r pod_line; do
+          if [[ -n "${pod_line}" ]]; then
+            pod_name=$(echo "${pod_line}" | awk '{print $1}')
+            if [[ -n "${pod_name}" ]]; then
+              log::error "Logs for init container 'install-dynamic-plugins' in pod ${pod_name}:"
+              oc logs "${pod_name}" -n "${namespace}" -c install-dynamic-plugins --tail=100 2> /dev/null \
+                || log::warn "Could not retrieve init container logs for ${pod_name}"
+            fi
+          fi
+        done <<< "${crash_pods}"
         log::error "Recent events:"
         oc get events -n "${namespace}" --sort-by='.lastTimestamp' | tail -20
         mkdir -p "${ARTIFACT_DIR}/${namespace}"
-        cp -a "/tmp/${LOGFILE}" "${ARTIFACT_DIR}/${namespace}/" || true
+        if [[ -f "/tmp/${LOGFILE}" ]]; then
+          cp -a "/tmp/${LOGFILE}" "${ARTIFACT_DIR}/${namespace}/" || true
+        fi
+        save_all_pod_logs "${namespace}"
         return 1
       fi
 
@@ -197,7 +215,10 @@ testing::check_backstage_running() {
   log::error "Failed to reach Backstage at ${url} after ${max_attempts} attempts."
   oc get events -n "${namespace}" --sort-by='.lastTimestamp' | tail -10
   mkdir -p "${ARTIFACT_DIR}/${namespace}"
-  cp -a "/tmp/${LOGFILE}" "${ARTIFACT_DIR}/${namespace}/" || true
+  if [[ -f "/tmp/${LOGFILE}" ]]; then
+    cp -a "/tmp/${LOGFILE}" "${ARTIFACT_DIR}/${namespace}/" || true
+  fi
+  save_all_pod_logs "${namespace}"
   return 1
 }
 

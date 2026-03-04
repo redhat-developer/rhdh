@@ -47,7 +47,7 @@ initiate_operator_deployments() {
 initiate_operator_deployments_osd_gcp() {
   log::info "Initiating Operator-backed deployments on OSD-GCP (orchestrator disabled)"
 
-  prepare_operator
+  # Note: prepare_operator is already called in handle_ocp_operator() before this function
 
   namespace::configure "${NAME_SPACE}"
   deploy_test_backstage_customization_provider "${NAME_SPACE}"
@@ -60,6 +60,10 @@ initiate_operator_deployments_osd_gcp() {
   common::save_artifact "${NAME_SPACE}" "/tmp/configmap-dynamic-plugins.yaml"
 
   oc apply -f /tmp/configmap-dynamic-plugins.yaml -n "${NAME_SPACE}"
+  # Add explicit plugin paths for ghcr.io plugins to avoid network calls during auto-detection
+  # Patch the ConfigMap before deploying the operator so the init container reads the patched version
+  config::add_explicit_plugin_paths_osd_gcp "${NAME_SPACE}" "dynamic-plugins"
+
   deploy_redis_cache "${NAME_SPACE}"
   deploy_rhdh_operator "${NAME_SPACE}" "${DIR}/resources/rhdh-operator/rhdh-start.yaml"
 
@@ -78,6 +82,10 @@ initiate_operator_deployments_osd_gcp() {
   common::save_artifact "${NAME_SPACE_RBAC}" "/tmp/configmap-dynamic-plugins-rbac.yaml"
 
   oc apply -f /tmp/configmap-dynamic-plugins-rbac.yaml -n "${NAME_SPACE_RBAC}"
+  # Add explicit plugin paths for ghcr.io plugins to avoid network calls during auto-detection
+  # Patch the ConfigMap before deploying the operator so the init container reads the patched version
+  config::add_explicit_plugin_paths_osd_gcp "${NAME_SPACE_RBAC}" "dynamic-plugins"
+
   deploy_rhdh_operator "${NAME_SPACE_RBAC}" "${DIR}/resources/rhdh-operator/rhdh-start-rbac.yaml"
 
   # Skip orchestrator plugins and workflows for OSD-GCP RBAC
@@ -85,12 +93,36 @@ initiate_operator_deployments_osd_gcp() {
 }
 
 run_operator_runtime_config_change_tests() {
-  # Deploy `showcase-runtime` to run tests that require configuration changes at runtime
+  # Deploy `showcase-runtime` to run tests that require configuration changes at runtime.
+  # The runtime CRD (rhdh-start-runtime.yaml) uses an external PostgreSQL database
+  # (enableLocalDb: false) and requires postgres-crt and postgres-cred secrets.
+
+  namespace::configure "${NAME_SPACE_POSTGRES_DB}"
   namespace::configure "${NAME_SPACE_RUNTIME}"
+
+  # Set up the external PostgreSQL database (Crunchy Postgres) and create the postgres-cred secret
+  configure_external_postgres_db "${NAME_SPACE_RUNTIME}"
+
+  # Create the postgres-crt secret from the Crunchy Postgres cluster CA certificate.
+  # The rhdh-start-runtime.yaml CRD mounts this as /opt/app-root/src/postgres-crt.pem
+  log::info "Creating postgres-crt secret in ${NAME_SPACE_RUNTIME} from Crunchy Postgres cluster certificate..."
+  oc get secret postgress-external-db-cluster-cert -n "${NAME_SPACE_POSTGRES_DB}" \
+    -o jsonpath='{.data.ca\.crt}' | base64 --decode > /tmp/postgres-crt.pem
+  oc create secret generic postgres-crt \
+    --from-file="postgres-crt.pem=/tmp/postgres-crt.pem" \
+    --namespace="${NAME_SPACE_RUNTIME}" \
+    --dry-run=client -o yaml | oc apply -f -
+
+  # Update the RHDH_RUNTIME_URL in the postgres-cred secret
+  local runtime_url="https://backstage-${RELEASE_NAME}-${NAME_SPACE_RUNTIME}.${K8S_CLUSTER_ROUTER_BASE}"
+  local runtime_url_b64
+  runtime_url_b64=$(echo -n "${runtime_url}" | base64 -w 0)
+  oc patch secret postgres-cred -n "${NAME_SPACE_RUNTIME}" \
+    --type='json' -p="[{\"op\": \"replace\", \"path\": \"/data/RHDH_RUNTIME_URL\", \"value\": \"${runtime_url_b64}\"}]" || true
+
   oc apply -f "$DIR/resources/postgres-db/dynamic-plugins-root-PVC.yaml" -n "${NAME_SPACE_RUNTIME}"
   config::create_app_config_map "$DIR/resources/postgres-db/rds-app-config.yaml" "${NAME_SPACE_RUNTIME}"
   deploy_rhdh_operator "${NAME_SPACE_RUNTIME}" "${DIR}/resources/rhdh-operator/rhdh-start-runtime.yaml"
-  local runtime_url="https://backstage-${RELEASE_NAME}-${NAME_SPACE_RUNTIME}.${K8S_CLUSTER_ROUTER_BASE}"
   testing::run_tests "${RELEASE_NAME}" "${NAME_SPACE_RUNTIME}" "${PW_PROJECT_SHOWCASE_RUNTIME}" "${runtime_url}"
 }
 
